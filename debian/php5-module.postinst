@@ -1,0 +1,26 @@
+#!/bin/sh
+
+set -e
+
+# Source debconf library.
+. /usr/share/debconf/confmodule
+
+#DEBHELPER#
+
+if [ "$1" != "configure" ]; then
+	exit 0
+fi
+
+for SAPI in apache apache2 cgi cli
+do
+	if [ -f /etc/php5/$SAPI/php.ini ]; then
+		db_get php5/extension_@dsoname@_$SAPI
+		if [ "$RET" = "true" ] \
+		   && ! grep -q "^[[:space:]]*extension[[:space:]]*=[[:space:]]*@dsoname@\.so" /etc/php5/$SAPI/php.ini
+		then
+			echo "extension=@dsoname@.so" >> /etc/php5/$SAPI/php.ini
+		fi
+	fi
+done
+
+exit 0

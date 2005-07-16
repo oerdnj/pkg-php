@@ -1,0 +1,7 @@
+- Debconf: support removing of extension lines from php.ini on
+  dpkg-reconfigure, not just adding.  Adjust wording of debconf template
+  to match.
+- move default config files out of /usr/share/doc/php5/examples, per
+  policy
+- more modules
+- roxen support (oh my)

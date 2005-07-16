@@ -1,0 +1,81 @@
+# Portuguese translation for php5's debconf messages.
+# 2005, Miguel Figueiredo <elmig@debianpt.org>
+msgid ""
+msgstr ""
+"Project-Id-Version: php5 4:4.3.10-10\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2005-07-16 23:18+1000\n"
+"PO-Revision-Date: 2005-04-17 14:05+0000\n"
+"Last-Translator: Miguel Figueiredo <elmig@debianpt.org>\n"
+"Language-Team: Portuguese <traduz@debianpt.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: boolean
+#. Description
+#: ../php5-module.templates:4
+msgid "Should ${extname} be added to /etc/php5/${sapiconfig}/php.ini?"
+msgstr "Deve ${extname} ser adicionado a /etc/php5/${sapiconfig}/php.ini?"
+
+#. Type: boolean
+#. Description
+#: ../php5-module.templates:4
+msgid ""
+"You are installing ${extname} support for php5, and it is not yet enabled in "
+"the configuration for the ${sapiconfig} SAPI.  Do you want this extension to "
+"be enabled now?"
+msgstr ""
+"Você está a instalar suporte ${extname} para php5, e ainda não está activado "
+"na configuração para SAPI ${sapiconfig}.  Você deseja que esta extenção seja "
+"activada agora?"
+
+#. Type: boolean
+#. Description
+#: ../php5-module.templates:12
+msgid "Should ${extname} be removed from /etc/php5/${sapiconfig}/php.ini?"
+msgstr "Deve ${extname} ser removido de /etc/php5/${sapiconfig}/php.ini?"
+
+#. Type: boolean
+#. Description
+#: ../php5-module.templates:12
+msgid ""
+"You are removing ${extname} support for php5, but it is still enabled in the "
+"configuration for the ${sapiconfig} SAPI.  Leaving this in place will "
+"probably cause problems when trying to use PHP."
+msgstr ""
+"Você está a remover o suporte ${extname} para php5, mas ainda está activado "
+"na configuração para SAPI ${sapiconfig}.  Deixá-lo provavelmente pode causar "
+"problemas quando tentar utilizar PHP."
+
+#~ msgid "Comment out extension_dir config from /etc/php5/apache/php.ini?"
+#~ msgstr "Comentar a configuração extension_dir em /etc/php5/apache/php.ini?"
+
+#~ msgid ""
+#~ "WARNING! The location of the php5 extensions has changed, and you have an "
+#~ "extension_dir configured in /etc/php5/apache/php.ini.  Leaving it in "
+#~ "place may leave you unable to access some extensions from PHP scripts.  "
+#~ "It is recommended that you let PHP use the compiled-in default path for "
+#~ "locating extensions."
+#~ msgstr ""
+#~ "AVISO! Foi alterado o local das extenções php5, e você tem um "
+#~ "extension_dir configurado em /etc/php5/apache/php.ini.  Deixá-lo lá pode "
+#~ "fazer com que não seja possível aceder algumas extensões a partir de "
+#~ "scripts PHP.  Para localizar as extensões é recomendado que você deixe o "
+#~ "PHP utilizar o caminho compilado por omissão."
+
+#~ msgid "Comment out extension_dir config from /etc/php5/cgi/php.ini?"
+#~ msgstr "Comentar a configuração extension_dir em /etc/php5/cgi/php.ini?"
+
+#~ msgid ""
+#~ "WARNING! The location of the php5 extensions has changed, and you have an "
+#~ "extension_dir configured in /etc/php5/cgi/php.ini.  Leaving it in place "
+#~ "may leave you unable to access some extensions from PHP scripts.  It is "
+#~ "recommended that you let PHP use the compiled-in default path for "
+#~ "locating extensions."
+#~ msgstr ""
+#~ "AVISO! Foi alterado o local das extenções php5, e você tem um "
+#~ "extension_dir configurado em /etc/php5/cgi/php.ini.  Deixá-lo lá pode "
+#~ "fazer com que não seja possível aceder algumas extensões a partir de "
+#~ "scripts PHP.  Para localizar as extensões é recomendado que você deixe o "
+#~ "PHP utilizar o caminho compilado por omissão."

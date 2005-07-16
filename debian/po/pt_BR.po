@@ -1,0 +1,93 @@
+#
+#    Translators, if you are not familiar with the PO format, gettext
+#    documentation is worth reading, especially sections dedicated to
+#    this format, e.g. by running:
+#         info -n '(gettext)PO Files'
+#         info -n '(gettext)Header Entry'
+#
+#    Some information specific to po-debconf are available at
+#            /usr/share/doc/po-debconf/README-trans
+#         or http://www.debian.org/intl/l10n/po-debconf/README-trans
+#
+#    Developers do not need to manually edit POT or PO files.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: php5_4.3.2+rc3-3\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2005-07-16 23:18+1000\n"
+"PO-Revision-Date: 2003-08-24 21:44-0300\n"
+"Last-Translator: André Luís Lopes <andrelop@debian.org>\n"
+"Language-Team: Debian-BR Project <debian-l10n-portuguese@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: boolean
+#. Description
+#: ../php5-module.templates:4
+msgid "Should ${extname} be added to /etc/php5/${sapiconfig}/php.ini?"
+msgstr "${extname} deve ser adicionado a /etc/php5/${sapiconfig}/php.ini ?"
+
+#. Type: boolean
+#. Description
+#: ../php5-module.templates:4
+msgid ""
+"You are installing ${extname} support for php5, and it is not yet enabled in "
+"the configuration for the ${sapiconfig} SAPI.  Do you want this extension to "
+"be enabled now?"
+msgstr ""
+"Você está instalando o suporte a ${extname} para o php5 e o mesmo ainda não "
+"está habilitado para a configuração SAPI ${sapiconfig}. Você deseja que essa "
+"extensão seja habilitada agora ?"
+
+#. Type: boolean
+#. Description
+#: ../php5-module.templates:12
+msgid "Should ${extname} be removed from /etc/php5/${sapiconfig}/php.ini?"
+msgstr "${extname} deve ser removido de /etc/php5/${sapiconfig}/php.ini ?"
+
+#. Type: boolean
+#. Description
+#: ../php5-module.templates:12
+msgid ""
+"You are removing ${extname} support for php5, but it is still enabled in the "
+"configuration for the ${sapiconfig} SAPI.  Leaving this in place will "
+"probably cause problems when trying to use PHP."
+msgstr ""
+"Você está removendo o suporte a ${extname} para o php5 e o mesmo ainda "
+"continua habilitado para a configuração SAPI ${sapiconfig}. Mantê-lo onde "
+"está atualmente provavelmente irá causar problemas quando você tentar usar o "
+"PHP."
+
+#~ msgid "Comment out extension_dir config from /etc/php5/apache/php.ini?"
+#~ msgstr "Comentar parâmetro extension_dir de /etc/php5/apache/php.ini ?"
+
+#~ msgid ""
+#~ "WARNING! The location of the php5 extensions has changed, and you have an "
+#~ "extension_dir configured in /etc/php5/apache/php.ini.  Leaving it in "
+#~ "place may leave you unable to access some extensions from PHP scripts.  "
+#~ "It is recommended that you let PHP use the compiled-in default path for "
+#~ "locating extensions."
+#~ msgstr ""
+#~ "AVISO ! A local das extensões php5 mudou e você possui atualmente o "
+#~ "parâmetro extension_dir definido no /etc/php5/apache/php.ini. Mantê-lo "
+#~ "dessa maneira poderá impedir que você acesse algumas extensões a partir "
+#~ "de scripts PHP. É recomendado que você permita que o PHP use o caminho "
+#~ "padrão compilado para localizar extensões."
+
+#~ msgid "Comment out extension_dir config from /etc/php5/cgi/php.ini?"
+#~ msgstr "Comentar parâmetro extension_dir de /etc/php5/cgi/php.ini ?"
+
+#~ msgid ""
+#~ "WARNING! The location of the php5 extensions has changed, and you have an "
+#~ "extension_dir configured in /etc/php5/cgi/php.ini.  Leaving it in place "
+#~ "may leave you unable to access some extensions from PHP scripts.  It is "
+#~ "recommended that you let PHP use the compiled-in default path for "
+#~ "locating extensions."
+#~ msgstr ""
+#~ "AVISO ! A local das extensões php5 mudou e você possui atualmente o "
+#~ "parâmetro extension_dir definido no /etc/php5/cgi/php.ini. Mantê-lo dessa "
+#~ "maneira poderá impedir que você acesse algumas extensões a partir de "
+#~ "scripts PHP. É recomendado que você permita que o PHP use o caminho "
+#~ "padrão compilado para localizar extensões."

@@ -1,0 +1,92 @@
+#
+#    Translators, if you are not familiar with the PO format, gettext
+#    documentation is worth reading, especially sections dedicated to
+#    this format, e.g. by running:
+#         info -n '(gettext)PO Files'
+#         info -n '(gettext)Header Entry'
+#
+#    Some information specific to po-debconf are available at
+#            /usr/share/doc/po-debconf/README-trans
+#         or http://www.debian.org/intl/l10n/po-debconf/README-trans
+#
+#    Developers do not need to manually edit POT or PO files.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PHP for Debian 4.3.2+3rc3-2\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2005-07-16 23:18+1000\n"
+"PO-Revision-Date: 2003-11-29 08:34+0900\n"
+"Last-Translator: Kenshi Muto <kmuto@debian.org>\n"
+"Language-Team: Japanese <debian-japanese@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=EUC-JP\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: boolean
+#. Description
+#: ../php5-module.templates:4
+msgid "Should ${extname} be added to /etc/php5/${sapiconfig}/php.ini?"
+msgstr "${extname} を /etc/php5/${sapiconfig}/php.ini に追加しますか?"
+
+#. Type: boolean
+#. Description
+#: ../php5-module.templates:4
+msgid ""
+"You are installing ${extname} support for php5, and it is not yet enabled in "
+"the configuration for the ${sapiconfig} SAPI.  Do you want this extension to "
+"be enabled now?"
+msgstr ""
+"php5 への ${extname} 機能のサポートをインストールしていますが、まだ "
+"${sapiconfig} SAPI の設定が有効になっていません。この拡張機能をすぐに有効にし"
+"ますか?"
+
+#. Type: boolean
+#. Description
+#: ../php5-module.templates:12
+msgid "Should ${extname} be removed from /etc/php5/${sapiconfig}/php.ini?"
+msgstr "${extname} を /etc/php5/${sapiconfig}/php.ini から削除しますか?"
+
+#. Type: boolean
+#. Description
+#: ../php5-module.templates:12
+msgid ""
+"You are removing ${extname} support for php5, but it is still enabled in the "
+"configuration for the ${sapiconfig} SAPI.  Leaving this in place will "
+"probably cause problems when trying to use PHP."
+msgstr ""
+"php5 への ${extname} 機能のサポートを削除していますが、まだ ${sapiconfig} "
+"SAPI の設定は有効になったままです。このままの場合、PHP を利用しようとする際に"
+"おそらく問題が生じます。"
+
+#~ msgid "Comment out extension_dir config from /etc/php5/apache/php.ini?"
+#~ msgstr ""
+#~ "extension_dir 設定を /etc/php5/apache/php.ini からコメントアウトしますか?"
+
+#~ msgid ""
+#~ "WARNING! The location of the php5 extensions has changed, and you have an "
+#~ "extension_dir configured in /etc/php5/apache/php.ini.  Leaving it in "
+#~ "place may leave you unable to access some extensions from PHP scripts.  "
+#~ "It is recommended that you let PHP use the compiled-in default path for "
+#~ "locating extensions."
+#~ msgstr ""
+#~ "警告! php5 拡張の場所は変更されましたが、/etc/php5/apache/php.ini に設定さ"
+#~ "れた extension_dir があります。このままにしておくと、PHP スクリプトからい"
+#~ "くつかの拡張にアクセスできないことになります。PHP に拡張の位置としてコンパ"
+#~ "イル時のデフォルトパスを使わせるようお勧めします。"
+
+#~ msgid "Comment out extension_dir config from /etc/php5/cgi/php.ini?"
+#~ msgstr ""
+#~ "extension_dir 設定を /etc/php5/cgi/php.ini からコメントアウトしますか?"
+
+#~ msgid ""
+#~ "WARNING! The location of the php5 extensions has changed, and you have an "
+#~ "extension_dir configured in /etc/php5/cgi/php.ini.  Leaving it in place "
+#~ "may leave you unable to access some extensions from PHP scripts.  It is "
+#~ "recommended that you let PHP use the compiled-in default path for "
+#~ "locating extensions."
+#~ msgstr ""
+#~ "警告! php5 拡張の場所は変更されましたが、/etc/php5/cgi/php.ini に設定され"
+#~ "た extension_dir があります。このままにしておくと、PHP スクリプトからいく"
+#~ "つかの拡張にアクセスできないことになります。PHP に拡張の位置としてコンパイ"
+#~ "ル時のデフォルトパスを使わせるようお勧めします。"

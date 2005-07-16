@@ -1,0 +1,13 @@
+curl CURL
+gd GD
+ldap LDAP
+mhash MHASH
+mysql MySQL
+odbc ODBC
+pgsql PostgreSQL
+recode recode
+snmp SNMP
+sqlite SQLite
+sybase Sybase sybase_ct
+xmlrpc XML-RPC
+xsl XSL

@@ -1,0 +1,472 @@
+#!/usr/bin/make -f
+# Sample debian/rules that uses debhelper. 
+# GNU copyright 1997 by Joey Hess.
+#
+# This version is for a hypothetical package that builds an
+# architecture-dependant package, as well as an architecture-independent
+# package.
+
+# Uncomment this to turn on verbose mode. 
+#export DH_VERBOSE=1
+
+# This is the debhelper compatability version to use.
+export DH_COMPAT=3
+
+# This has to be exported to make some magic below work.
+export DH_OPTIONS
+
+DEB_HOST_GNU_TYPE	?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+DEB_BUILD_GNU_TYPE	?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+
+PHP5_SOURCE_VERSION   = $(shell dpkg-parsechangelog | grep ^Version | sed "s/Version: //")
+PHP5_UPSTREAM_VERSION = $(shell echo $(PHP5_SOURCE_VERSION) | sed -e "s/-.*//" -e "s/.*://")
+PHP5_DEBIAN_REVISION  = $(shell echo $(PHP5_SOURCE_VERSION) | sed "s/.*-//")
+
+PROG_SENDMAIL = /usr/sbin/sendmail
+CFLAGS = -O2 -Wall -fsigned-char -fno-strict-aliasing
+LFSFLAGS = -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64
+
+# Enable IEEE-conformant floating point math on alphas (not the default)
+ifeq (alpha-linux-gnu,$(DEB_HOST_GNU_TYPE))
+  CFLAGS += -mieee
+endif
+
+ifeq ($(DEB_HOST_GNU_TYPE), $(findstring $(DEB_HOST_GNU_TYPE), ia64-linux-gnu powerpc64-linux-gnu))
+  CFLAGS += -g
+else
+  CFLAGS += -gstabs
+endif
+
+COMMON_CONFIG=  --build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE) \
+		--enable-memory-limit \
+		--disable-debug \
+		--with-regex=php \
+		--disable-rpath \
+		--disable-static \
+		--with-pic \
+		--with-layout=GNU \
+		--with-pear=/usr/share/php \
+		--enable-calendar \
+		--enable-sysvsem \
+		--enable-sysvshm \
+		--enable-sysvmsg \
+		--enable-track-vars \
+		--enable-trans-sid \
+		--enable-bcmath \
+		--with-bz2 \
+		--enable-ctype \
+		--with-db4 \
+		--with-iconv \
+		--enable-exif \
+		--enable-filepro \
+		--enable-ftp \
+		--with-gettext \
+		--enable-mbstring \
+		--with-pcre-regex=/usr \
+		--enable-shmop \
+		--enable-sockets \
+		--enable-wddx \
+		--with-libxml-dir=/usr \
+		--enable-yp \
+		--with-zlib \
+		--with-kerberos=/usr \
+		--with-openssl=/usr \
+		--enable-dbx \
+		--enable-soap \
+		--with-mime-magic=/usr/share/misc/file/magic.mime \
+		--with-exec-dir=/usr/lib/php5/libexec
+
+apachever=$(shell dpkg -s apache-dev | grep ^Version | cut -d\  -f2 | cut -d- -f1)
+php5ver=$(shell head -1 debian/changelog | cut -d\  -f 2 | sed 's/[()]//g')
+zendapiver=$(shell egrep '\#define ZEND_MODULE_API_NO ' ./Zend/zend_modules.h|sed 's/\#define ZEND_MODULE_API_NO //')
+phpapiver=$(shell grep '\#define PHP_API_VERSION ' ./main/php.h|sed -e 's/\#define PHP_API_VERSION //')
+
+patch: patch-stamp
+patch-stamp:
+	dh_testdir
+	for patch in debian/patches/*.patch; do \
+	        echo '->'`basename $$patch`:; \
+		if ! patch -p1 --ignore-whitespace --dry-run < $$patch; \
+		then \
+			exit 1; \
+		fi; \
+	        patch -p1 --ignore-whitespace < $$patch; \
+	done
+	sed -i -e 's/EXTRA_VERSION=""/EXTRA_VERSION="-$(PHP5_DEBIAN_REVISION)"/' configure.in
+	rm -f aclocal.m4 config.sub config.guess ltmain.sh
+	./buildconf --force
+	touch patch-stamp
+
+unpatch:
+	dh_testdir
+	sed -i -e 's/EXTRA_VERSION="-$(PHP5_DEBIAN_REVISION)"/EXTRA_VERSION=""/' configure.in
+	if [ -f patch-stamp ]; then \
+		for patch in `ls debian/patches/*.patch | sort -r`; do \
+			patch -p1 -R --ignore-whitespace < $$patch; \
+		done; \
+		rm -f aclocal.m4 config.sub config.guess ltmain.sh; \
+		./buildconf --force; \
+	fi
+	rm -f patch-stamp
+
+build: build-apache-stamp build-apache2-stamp build-cgi-stamp build-cli-stamp
+build-apache-stamp: configure-apache-stamp
+	dh_testdir
+	# Add here commands to compile the package.
+	cd apache-build && $(MAKE)
+
+	touch build-apache-stamp
+
+build-apache2-stamp: configure-apache2-stamp
+	dh_testdir
+	cd apache2-build && $(MAKE)
+
+	touch build-apache2-stamp
+
+build-cli-stamp: configure-cli-stamp
+	dh_testdir
+	cd cli-build && $(MAKE)
+
+	touch build-cli-stamp
+
+
+build-cgi-stamp: configure-cgi-stamp
+	dh_testdir
+	cd cgi-build && $(MAKE) && mv sapi/cgi/php sapi/cgi/cgi-bin.php5
+
+	# Dirty hack to not rebuild everything twice
+	cd cgi-build/main && \
+		sed -i -e 's/FORCE_CGI_REDIRECT 1/FORCE_CGI_REDIRECT 0/' \
+		       -e 's/DISCARD_PATH 0/DISCARD_PATH 1/' php_config.h && \
+		sed -i -e 's/--enable-force-cgi-redirect/--enable-discard-path/' build-defs.h && \
+		touch ../../ext/standard/info.c && \
+		touch ../../sapi/cgi/cgi_main.c
+
+	cd cgi-build && $(MAKE) && mv sapi/cgi/php sapi/cgi/usr.bin.php5-cgi
+
+	touch build-cgi-stamp
+
+configure: configure-apache-stamp configure-apache2-stamp configure-cli-stamp configure-cgi-stamp
+configure-apache-stamp: patch-stamp
+	dh_testdir
+	if [ -d apache-build ]; then rm -rf apache-build; fi
+	-mkdir apache-build
+	cd apache-build && \
+        CFLAGS="$(CFLAGS)" PROG_SENDMAIL="$(PROG_SENDMAIL)" ../configure \
+		--prefix=/usr --with-apxs=/usr/bin/apxs \
+		--with-config-file-path=/etc/php5/apache \
+		$(COMMON_CONFIG) \
+		--without-mm \
+		--without-mysql --without-sybase-ct --without-sqlite
+	cd apache-build && \
+	cp ../Zend/zend_ini_scanner.c ../Zend/zend_language_scanner.c \
+	   ../Zend/zend_ini_parser.h ../Zend/zend_language_parser.h \
+	   ../Zend/zend_ini_parser.c ../Zend/zend_language_parser.c \
+	   Zend/
+
+	touch configure-apache-stamp
+
+configure-apache2-stamp: patch-stamp
+	dh_testdir
+	if [ -d apache2-build ]; then rm -rf apache2-build; fi
+	-mkdir apache2-build
+	cd apache2-build && \
+        CFLAGS="$(CFLAGS)" PROG_SENDMAIL="$(PROG_SENDMAIL)" ../configure \
+		--prefix=/usr --with-apxs2=/usr/bin/apxs2 \
+		--with-config-file-path=/etc/php5/apache2 \
+		$(COMMON_CONFIG) \
+		--without-mm \
+		--with-curl=shared,/usr \
+		--with-zlib-dir=/usr \
+		--with-gd=shared,/usr --enable-gd-native-ttf \
+		--with-jpeg-dir=shared,/usr \
+			--with-xpm-dir=shared,/usr/X11R6 \
+			--with-png-dir=shared,/usr \
+			--with-freetype-dir=shared,/usr \
+			--with-ttf=shared,/usr \
+			--with-t1lib=shared,/usr \
+		--with-ldap=shared,/usr \
+		--with-mhash=shared,/usr \
+		--with-mysql=shared,/usr \
+		--with-unixODBC=shared,/usr \
+		--with-recode=shared,/usr \
+		--with-xsl=shared,/usr \
+		--with-snmp=shared,/usr \
+		--with-sqlite=shared,/usr \
+		--with-sybase-ct=shared,/usr \
+		--with-xmlrpc=shared \
+		--with-pgsql=shared,/usr PGSQL_INCLUDE=`pg_config --includedir`
+	cd apache2-build && \
+	cp ../Zend/zend_ini_scanner.c ../Zend/zend_language_scanner.c \
+	   ../Zend/zend_ini_parser.h ../Zend/zend_language_parser.h \
+	   ../Zend/zend_ini_parser.c ../Zend/zend_language_parser.c \
+	   Zend/
+	touch configure-apache2-stamp
+
+configure-cgi-stamp: patch-stamp
+	dh_testdir
+	if [ -d cgi-build ]; then rm -rf cgi-build; fi
+	-mkdir cgi-build
+	cd cgi-build && \
+        CFLAGS="$(CFLAGS)" PROG_SENDMAIL="$(PROG_SENDMAIL)" ../configure \
+		--prefix=/usr --enable-force-cgi-redirect --enable-fastcgi \
+		--with-config-file-path=/etc/php5/cgi \
+		$(COMMON_CONFIG) \
+		--without-mm \
+		--without-mysql --without-sybase-ct --without-sqlite
+	cd cgi-build && \
+	cp ../Zend/zend_ini_scanner.c ../Zend/zend_language_scanner.c \
+	   ../Zend/zend_ini_parser.h ../Zend/zend_language_parser.h \
+	   ../Zend/zend_ini_parser.c ../Zend/zend_language_parser.c \
+	   Zend/
+	touch configure-cgi-stamp
+
+configure-cli-stamp: patch-stamp
+	dh_testdir
+	if [ -d cli-build ]; then rm -rf cli-build; fi
+	-mkdir cli-build
+	cd cli-build && \
+        CFLAGS="$(CFLAGS)" PROG_SENDMAIL="$(PROG_SENDMAIL)" ../configure \
+		--prefix=/usr --disable-cgi \
+		--with-config-file-path=/etc/php5/cli \
+		$(COMMON_CONFIG) \
+		--without-mm \
+		--without-mysql --without-sybase-ct --without-sqlite \
+		--enable-pcntl \
+		--with-ncurses=/usr
+	cd cli-build && \
+	cp ../Zend/zend_ini_scanner.c ../Zend/zend_language_scanner.c \
+	   ../Zend/zend_ini_parser.h ../Zend/zend_language_parser.h \
+	   ../Zend/zend_ini_parser.c ../Zend/zend_language_parser.c \
+	   Zend/
+	touch configure-cli-stamp
+
+clean: unpatch
+	dh_testdir
+	dh_testroot
+	rm -f configure-apache-stamp build-apache-stamp
+	rm -f configure-apache2-stamp build-apache2-stamp
+	rm -f configure-cgi-stamp build-cgi-stamp
+	rm -f configure-cli-stamp build-cli-stamp
+	rm -f install-stamp
+
+	# Add here commands to clean up after the build process.
+	#-$(MAKE) distclean
+	rm -rf apache-build
+	rm -rf apache2-build
+	rm -rf cgi-build
+	rm -rf cli-build
+	rm -f debian/copyright
+
+	dh_clean
+	cat debian/modulelist | while read package extname dsoname; do \
+		rm -f debian/php5-$$package.postinst \
+		   debian/php5-$$package.prerm \
+		   debian/php5-$$package.config \
+		   debian/php5-$$package.templates; \
+	done
+
+install: DH_OPTIONS=
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+
+	chmod 01733 debian/php5-common/var/lib/php5
+
+	# Add here commands to install the package into debian/php5.
+	# install apache DSO module
+	cp apache-build/.libs/libphp5.so debian/libapache-mod-php5/`apxs -q LIBEXECDIR`
+	cp debian/libapache-mod-php5.500mod_php5.info \
+		debian/libapache-mod-php5/`apxs -q LIBEXECDIR`/500mod_php5.info
+	cp debian/libapache-mod-php5.conf \
+		debian/libapache-mod-php5/etc/apache/conf.d/php5.conf
+
+	# install apache2 DSO module
+	cp apache2-build/.libs/libphp5.so \
+		debian/libapache2-mod-php5/`apxs2 -q LIBEXECDIR`/
+	cp debian/libapache2-mod-php5.load \
+		debian/libapache2-mod-php5/etc/apache2/mods-available/php5.load
+	cp debian/libapache2-mod-php5.conf \
+		debian/libapache2-mod-php5/etc/apache2/mods-available/php5.conf
+
+	# sanitize php.ini file
+	cat php.ini-dist | tr "\t" " " > debian/php5-common/usr/share/php5/php.ini-dist
+	ln -s ../../../php5/php.ini-dist debian/php5-common/usr/share/doc/php5-common/examples/php.ini-dist
+	cat php.ini-recommended | tr "\t" " " > debian/php5-common/usr/share/doc/php5-common/examples/php.ini-recommended
+	cat php.ini-paranoid | tr "\t" " " > debian/php5-common/usr/share/doc/php5-common/examples/php.ini-paranoid
+
+	# install the apache modules' files
+	cd apache2-build && make install-headers install-build install-modules install-programs INSTALL_ROOT=$(CURDIR)/debian/libapache2-mod-php5
+	# remove netware and win32 headers that we don't want
+	cd debian/libapache2-mod-php5/usr/include/php5/ && \
+		  rm -f TSRM/readdir.h \
+			TSRM/tsrm_config.{nw,w32}.h \
+			TSRM/tsrm_{nw,win32}.h \
+			Zend/zend_config.{nw,w32}.h \
+			main/config.{nw,w32}.h \
+			main/win95nt.h
+	# install PEAR
+	cd cgi-build && make install-pear PHP_PEAR_PHP_BIN=php PHP_PEAR_INSTALL_DIR=/usr/share/php PHP_PEAR_SYSCONF_DIR=/etc/pear INSTALL_ROOT=$(CURDIR)/debian/php-pear 
+
+	# install extensions
+	ext=`./debian/libapache2-mod-php5/usr/bin/php-config --extension-dir`;\
+	for i in libapache-mod-php5 libapache2-mod-php5 php5-cgi php5-cli; do \
+		mkdir -p debian/$$i/$${ext}; \
+	done; \
+	cat debian/modulelist | while read package extname dsoname; do \
+		if [ -z "$$dsoname" ]; then dsoname=$$package; fi; \
+		mkdir -p debian/php5-$$package$${ext}; \
+		chrpath debian/libapache2-mod-php5/$${ext}/$$dsoname.so; \
+		chrpath -d debian/libapache2-mod-php5/$${ext}/$$dsoname.so; \
+		install -s -m 644 -o root -g root \
+			debian/libapache2-mod-php5/$${ext}/$$dsoname.so \
+			debian/php5-$$package$${ext}/$$dsoname.so; \
+		rm debian/libapache2-mod-php5/$${ext}/$$dsoname.so; \
+	done
+
+	# install CGI
+	cp cgi-build/sapi/cgi/cgi-bin.php5 debian/php5-cgi/usr/lib/cgi-bin/php5
+	cp cgi-build/sapi/cgi/usr.bin.php5-cgi debian/php5-cgi/usr/bin/php5-cgi
+	cp cli-build/sapi/cli/php.1 debian/php5-cgi/usr/share/man/man1/php5-cgi.1
+
+	# install CLI
+	cp cli-build/sapi/cli/php debian/php5-cli/usr/bin/php5
+	cp cli-build/sapi/cli/php.1 debian/php5-cli/usr/share/man/man1/php5.1
+
+	# move and install -dev files
+	dh_movefiles --sourcedir=debian/libapache2-mod-php5
+	rm -rf debian/libapache2-mod-php5/usr/lib/php5/build/ \
+	       debian/libapache2-mod-php5/usr/include/ \
+	       debian/libapache2-mod-php5/usr/bin/
+	for i in Makefile.global acinclude.m4 mkdep.awk phpize.m4 scan_makefile_in.awk; do \
+		chmod 644 debian/php5-dev/usr/lib/php5/build/$$i; \
+	done
+	# make php-dev stuff versioned
+	for i in php-config phpize; do \
+		mv debian/php5-dev/usr/bin/$$i debian/php5-dev/usr/bin/"$$i"5; \
+	done
+
+	# install common files
+	install -m755 debian/maxlifetime debian/php5-common/usr/lib/php5
+
+	touch install-stamp
+
+# Build architecture-independent files here.
+# Pass -i to all debhelper commands in this target to reduce clutter.
+binary-indep: DH_OPTIONS=-i
+binary-indep: build install
+	# Need this version of debhelper for DH_OPTIONS to work.
+	dh_testdir
+	dh_testroot
+	dh_installdebconf
+	cat debian/copyright.header LICENSE Zend/LICENSE > debian/copyright
+
+	dh_installdocs
+#	dh_installexamples
+
+	for package in php5 php-pear; do \
+		rm -rf debian/$$package/usr/share/doc/$$package; \
+		ln -s php5-common debian/$$package/usr/share/doc/$$package; \
+	done
+
+#	dh_installmenu
+#	dh_installemacsen
+#	dh_installpam
+#	dh_installinit
+#	dh_installcron
+#	dh_installmanpages
+#	dh_installinfo
+#	dh_undocumented
+#	dh_installchangelogs
+	dh_link
+	dh_compress -Xphp.ini
+	dh_fixperms
+#	# You may want to make some executables suid here.
+#	dh_suidregister
+	dh_installdeb
+#	dh_perl
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+# Build architecture-dependent files here.
+# Pass -a to all debhelper commands in this target to reduce clutter.
+#binary-arch: DH_OPTIONS=-a
+binary-arch: build install
+	# Need this version of debhelper for DH_OPTIONS to work.
+	dh_testdir
+	dh_testroot
+	# Do this first so we don't overwrite any debhelper-generated files
+	cat debian/modulelist | while read package extname dsoname; do \
+		if [ -z "$$dsoname" ]; then dsoname=$$package; fi; \
+		sed -e"s/@extname@/$$extname/g; s/@dsoname@/$$dsoname/g" \
+		  < debian/php5-module.postinst > debian/php5-$$package.postinst; \
+		sed -e"s/@extname@/$$extname/g; s/@dsoname@/$$dsoname/g" \
+		  < debian/php5-module.prerm > debian/php5-$$package.prerm; \
+		sed -e"s/@extname@/$$extname/g; s/@dsoname@/$$dsoname/g" \
+		  < debian/php5-module.config > debian/php5-$$package.config; \
+		cp debian/php5-module.templates debian/php5-$$package.templates; \
+	done
+	dh_installdebconf -a
+	cat debian/copyright.header LICENSE Zend/LICENSE > debian/copyright
+	dh_installdocs -a
+
+	for i in README CODING_STANDARDS; do \
+		cp pear/$$i debian/php5-common/usr/share/doc/php5-common/PEAR/; \
+	done
+
+	cat debian/modulelist | while read package extname dsoname; do \
+		rm -rf debian/php5-$$package/usr/share/doc/php5-$$package; \
+		ln -s php5-common debian/php5-$$package/usr/share/doc/php5-$$package; \
+	done
+
+	for package in php5-dev php5-cgi php5-cli libapache-mod-php5 libapache2-mod-php5; do \
+		rm -rf debian/$$package/usr/share/doc/$$package; \
+		ln -s php5-common debian/$$package/usr/share/doc/$$package; \
+	done
+
+#	dh_installexamples
+#	dh_installmenu
+#	dh_installemacsen
+#	dh_installpam
+#	dh_installinit
+	dh_installcron -pphp5-common --name=php5
+#	dh_installmanpages
+#	dh_installinfo
+#	dh_undocumented
+	dh_installchangelogs -pphp5-common NEWS
+	dh_strip -a
+	dh_link -a
+	dh_compress -a -Xphp.ini
+	dh_fixperms -a -X /var/lib/php5
+	mkdir -p debian/php5-common/usr/share/lintian/overrides
+	echo "php5-common: non-standard-dir-perm var/lib/php5/ 1733 != 0755" >> debian/php5-common/usr/share/lintian/overrides/php5-common
+	mkdir -p debian/php5-common/usr/share/linda/overrides
+	echo "Tag: non-standard-dir-perm" >> debian/php5-common/usr/share/linda/overrides/php5-common
+	echo "Data: /var/lib/php5.*" >> debian/php5-common/usr/share/linda/overrides/php5-common
+#	# You may want to make some executables suid here.
+#	dh_suidregister
+	dh_installdeb -a
+#	dh_makeshlibs
+#	dh_perl
+	dh_shlibdeps -a
+	echo "apache:Depends=apache-common (>= $(apachever))" >>debian/libapache-mod-php5.substvars
+	echo "php:Provides=phpapi-$(phpapiver)" >> debian/libapache-mod-php5.substvars
+	echo "php:Provides=phpapi-$(phpapiver)" >> debian/php5-cli.substvars
+	echo "php:Provides=phpapi-$(phpapiver)" >> debian/php5-cgi.substvars
+	echo "php:Provides=phpapi-$(phpapiver)" >> debian/libapache2-mod-php5.substvars
+
+	cat debian/modulelist | while read package extname dsoname; do \
+		echo "php:Depends=phpapi-$(phpapiver)" >> debian/php5-$$package.substvars; \
+	done
+
+	echo "apache2:Depends=apache2-mpm-prefork (>> 2.0.52)" >>debian/libapache2-mod-php5.substvars
+
+	dh_gencontrol -a
+	dh_md5sums -a
+	dh_builddeb -a
+
+binary: binary-arch binary-indep
+.PHONY: build clean binary-indep binary-arch binary install configure

@@ -1,0 +1,12 @@
+--- php4-4.3.10/ext/snmp/snmp.c	2005-03-23 00:32:06.000000000 -0700
++++ php4-4.3.10/ext/snmp/snmp.c	2005-03-23 00:30:18.000000000 -0700
+@@ -215,7 +215,9 @@
+  */
+ PHP_MSHUTDOWN_FUNCTION(snmp)
+ {
++/*** This should be re-enabled when I have a newer libsnmp to play with ***
+ 	snmp_shutdown("snmpapp");
++**************************************************************************/
+ 
+ 	return SUCCESS;
+ }

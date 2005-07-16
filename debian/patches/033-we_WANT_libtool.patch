@@ -1,0 +1,14 @@
+--- php4-4.3.10/build/build2.mk.orig	2005-02-06 00:49:53.000000000 -0700
++++ php4-4.3.10/build/build2.mk	2005-02-06 00:51:58.000000000 -0700
+@@ -52,6 +52,11 @@
+ 
+ aclocal.m4: configure.in acinclude.m4
+ 	@echo rebuilding $@
++	@libtoolize=`./build/shtool path glibtoolize libtoolize`; \
++	$$libtoolize --copy --automake --force; \
++	ltpath=`dirname $$libtoolize`; \
++	ltfile=`cd $$ltpath/../share/aclocal; pwd`/libtool.m4; \
++	cp $$ltfile ./build/libtool.m4
+ 	cat acinclude.m4 ./build/libtool.m4 > $@
+ 
+ configure: aclocal.m4 configure.in $(config_m4_files)

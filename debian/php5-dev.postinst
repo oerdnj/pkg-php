@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -e
+
+#DEBHELPER#
+
+if [ "$1" != "configure" ]; then
+    exit 0
+fi
+
+for i in php-config phpize; do
+	update-alternatives \
+          --install /usr/bin/"$i" $i /usr/bin/"$i"5 50
+done
+
+exit 0

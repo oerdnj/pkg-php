@@ -1,0 +1,27 @@
+#!/bin/sh
+
+set -e
+
+#DEBHELPER#
+
+if [ "$1" != "configure" ]; then
+    exit 0
+fi
+
+. /usr/share/debconf/confmodule
+
+phpini="/etc/php5/cgi/php.ini"
+
+if ! [ -f $phpini ]; then
+	mkdir -p /etc/php5/cgi
+	cp /usr/share/php5/php.ini-dist $phpini
+fi
+
+update-alternatives \
+        --install /usr/bin/php-cgi php-cgi /usr/bin/php5-cgi 50 \
+        --slave /usr/share/man/man1/php-cgi.1.gz php-cgi.1.gz /usr/share/man/man1/php5-cgi.1.gz
+
+update-alternatives \
+        --install /usr/lib/cgi-bin/php php-cgi-bin /usr/lib/cgi-bin/php5 50
+
+exit 0

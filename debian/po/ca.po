@@ -1,0 +1,91 @@
+# php5 (debconf) translation to Catalan.
+# Copyright (C) 2004 Free Software Foundation, Inc.
+# Aleix Badia i Bosch <abadia@ica.es>, 2004
+# Josep Lladonosa i Capell <jlladono@pie.xtec.es>, 2004
+# Steve Langasek <vorlon@debian.org>, 2004
+# Jordi Mallach <jordi@debian.org>, 2004
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: php5_4:4.3.3-5_templates\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2005-07-16 23:18+1000\n"
+"PO-Revision-Date: 2004-01-31 19:46GMT\n"
+"Last-Translator: Aleix Badia i Bosch <abadia@ica.es>\n"
+"Language-Team: Debian L10n Catalan <debian-l10n-catalan@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: boolean
+#. Description
+#: ../php5-module.templates:4
+msgid "Should ${extname} be added to /etc/php5/${sapiconfig}/php.ini?"
+msgstr "Voleu afegir l'extensió ${extname} a /etc/php5/${sapiconfig}/php.ini?"
+
+#. Type: boolean
+#. Description
+#: ../php5-module.templates:4
+msgid ""
+"You are installing ${extname} support for php5, and it is not yet enabled in "
+"the configuration for the ${sapiconfig} SAPI.  Do you want this extension to "
+"be enabled now?"
+msgstr ""
+"Esteu instal·lant el suport de ${extname} per a php5 i encara no està "
+"habilitat a la configuració per al SAPI ${sapiconfig}. Voleu habilitar "
+"aquesta extensió?"
+
+#. Type: boolean
+#. Description
+#: ../php5-module.templates:12
+msgid "Should ${extname} be removed from /etc/php5/${sapiconfig}/php.ini?"
+msgstr ""
+"Voleu suprimir l'extensió ${extname} de /etc/php5/${sapiconfig}/php.ini?"
+
+#. Type: boolean
+#. Description
+#: ../php5-module.templates:12
+msgid ""
+"You are removing ${extname} support for php5, but it is still enabled in the "
+"configuration for the ${sapiconfig} SAPI.  Leaving this in place will "
+"probably cause problems when trying to use PHP."
+msgstr ""
+"S'està suprimint el suport de l'extensió ${extname} per a php5 però continua "
+"habilitat a la configuració per al SAPI ${sapiconfig}. Si ho deixeu activat "
+"pot provocar problemes a l'intentar utilitzar el php."
+
+#~ msgid "Comment out extension_dir config from /etc/php5/apache/php.ini?"
+#~ msgstr ""
+#~ "Voleu comentar la configuració de l'extension_dir de l'/etc/php5/apache/"
+#~ "php.ini?"
+
+#~ msgid ""
+#~ "WARNING! The location of the php5 extensions has changed, and you have an "
+#~ "extension_dir configured in /etc/php5/apache/php.ini.  Leaving it in "
+#~ "place may leave you unable to access some extensions from PHP scripts.  "
+#~ "It is recommended that you let PHP use the compiled-in default path for "
+#~ "locating extensions."
+#~ msgstr ""
+#~ "Avís. La ubicació de les extensions del php5 s'ha modificat i disposeu "
+#~ "d'un extension_dir configurat a /etc/php5/apache/php.ini. Si no ho "
+#~ "modifiqueu no podreu accedir a algunes de les extensions des de les "
+#~ "seqüències de php. És recomanable que deixeu que el php utilitzi el camí "
+#~ "predeterminat en la compilació per a la ubicació de les extensions."
+
+#~ msgid "Comment out extension_dir config from /etc/php5/cgi/php.ini?"
+#~ msgstr ""
+#~ "Voleu comentar la configuració de l'extension_dir de /etc/php5/cgi/php."
+#~ "ini?"
+
+#~ msgid ""
+#~ "WARNING! The location of the php5 extensions has changed, and you have an "
+#~ "extension_dir configured in /etc/php5/cgi/php.ini.  Leaving it in place "
+#~ "may leave you unable to access some extensions from PHP scripts.  It is "
+#~ "recommended that you let PHP use the compiled-in default path for "
+#~ "locating extensions."
+#~ msgstr ""
+#~ "Avís. La ubicació de les extensions del php5 s'han modificat i disposeu "
+#~ "d'un extension_dir configurat a /etc/php5/cgi/php.ini. Si no ho "
+#~ "modifiqueu no podreu accedir a algunes de les extensions des de les "
+#~ "seqüències de php. És recomanable que deixeu que el php utilitzi el camí "
+#~ "predeterminat en la compilació per a la ubicació de les extensions."

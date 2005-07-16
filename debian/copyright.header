@@ -1,0 +1,20 @@
+This package was debianized by Gergely Madarasz <gorgo@sztaki.hu> on
+Tue, 16 Nov 1999 19:33:42 +0100.
+
+The last maintainer was Petr Cech <cech@debian.org>, who did a LOT of
+work on these packages.
+
+The current maintainer is Adam Conrad <adconrad@0c3.net>, who gets a
+significant chunk of input and help from Steve Langasek <vorlon@debian.org>
+and Andres Salomon <dilinger@debian.org>.
+
+It was downloaded from www.php.net/version5/downloads
+Changes: removed ext/dbase dir (non-free)
+
+Upstream Authors: The PHP group for PHP5, Andi Gutmans and Zeev Suraski
+for libzend
+
+Two different licences apply to this package, one for PHP5, the other for
+libzend. Both licences are shown here below.
+
+

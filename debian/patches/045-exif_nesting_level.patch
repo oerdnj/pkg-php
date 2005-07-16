@@ -1,0 +1,11 @@
+--- php4-4.3.10/ext/exif/exif.c.orig	2005-02-14 16:13:09.000000000 -0700
++++ php4-4.3.10/ext/exif/exif.c	2005-02-14 16:13:40.000000000 -0700
+@@ -96,7 +96,7 @@
+ 
+ #define EFREE_IF(ptr)	if (ptr) efree(ptr)
+ 
+-#define MAX_IFD_NESTING_LEVEL 100
++#define MAX_IFD_NESTING_LEVEL 250
+ 
+ static
+ ZEND_BEGIN_ARG_INFO(exif_thumbnail_force_ref, 1)

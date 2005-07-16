@@ -1,0 +1,20 @@
+Index: ext/standard/config.m4
+===================================================================
+RCS file: /repository/php-src/ext/standard/config.m4,v
+retrieving revision 1.47.2.14
+diff -u -r1.47.2.14 config.m4
+--- 4.3/ext/standard/config.m4	10 May 2004 07:25:11 -0000	1.47.2.14
++++ 4.3/ext/standard/config.m4	19 Aug 2004 13:55:54 -0000
+@@ -259,8 +259,11 @@
+ AC_MSG_CHECKING([whether rounding works as expected])
+ AC_TRY_RUN([
+ #include <math.h>
++  double my_floor(double n) {
++    return floor(n*pow(10,2) + 0.5);
++  }
+   int main() {
+-    return floor(0.045*pow(10,2) + 0.5)/10.0 != 0.5;
++    return my_floor(0.045)/10.0 != 0.5;
+   }
+ ],[
+   PHP_ROUND_FUZZ=0.5

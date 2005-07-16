@@ -1,0 +1,19 @@
+diff -urN php-5.0.4.orig/ext/standard/dl.c php-5.0.4/ext/standard/dl.c
+--- php-5.0.4.orig/ext/standard/dl.c	2005-04-10 18:08:47.677529904 +0200
++++ php-5.0.4/ext/standard/dl.c	2005-04-10 18:09:04.163023728 +0200
+@@ -60,15 +60,6 @@
+ 
+ 	convert_to_string_ex(file);
+ 
+-#ifdef ZTS
+-	if ((strncmp(sapi_module.name, "cgi", 3)!=0) && 
+-		(strcmp(sapi_module.name, "cli")!=0) &&
+-		(strncmp(sapi_module.name, "embed", 5)!=0)) {
+-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Not supported in multithreaded Web servers - use extension=%s in your php.ini", Z_STRVAL_PP(file));
+-		RETURN_FALSE;
+-	}
+-#endif
+-
+ 	if (!PG(enable_dl)) {
+ 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Dynamically loaded extensions aren't enabled");
+ 	} else if (PG(safe_mode)) {

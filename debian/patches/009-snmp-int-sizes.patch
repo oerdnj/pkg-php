@@ -1,0 +1,14 @@
+--- php4-4.3.4.orig/ext/snmp/snmp.c
++++ php4-4.3.4/ext/snmp/snmp.c
+@@ -352,9 +352,9 @@
+ 	struct snmp_pdu *pdu=NULL, *response;
+ 	struct variable_list *vars;
+ 	oid name[MAX_NAME_LEN];
+-	int name_length;
++	size_t name_length;
+ 	oid root[MAX_NAME_LEN];
+-	int rootlen = 0;
++	size_t rootlen = 0;
+ 	int gotroot = 0;
+ 	int status, count;
+ 	char buf[2048];

@@ -1,0 +1,11 @@
+--- php4/ext/xmlrpc/libxmlrpc/xml_element.c
++++ php4/ext/xmlrpc/libxmlrpc/xml_element.c
+@@ -189,7 +189,7 @@
+ 
+       Q_Destroy(&root->children);
+       Q_Destroy(&root->attrs);
+-      my_free((char*)root->name);
++      my_free(root->name);
+       simplestring_free(&root->text);
+       my_free(root);
+    }

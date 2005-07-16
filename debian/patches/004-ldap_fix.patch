@@ -1,0 +1,21 @@
+--- php4-4.3.4.orig/ext/ldap/ldap.c
++++ php4-4.3.4/ext/ldap/ldap.c
+@@ -1255,7 +1255,7 @@
+ 	}
+ 
+ 	i=0;
+-	while (ldap_value[i] != NULL) i++;
++	while (ldap_value && ldap_value[i] != NULL) i++;
+ 	count = i;
+ 
+ 	array_init(return_value);
+@@ -1265,7 +1265,8 @@
+ 		add_index_string(return_value, i, ldap_value[i], 1);
+ 	}
+ 
+-	ldap_value_free(ldap_value);
++	if (ldap_value)
++		ldap_value_free(ldap_value);
+ }
+ /* }}} */
+ 

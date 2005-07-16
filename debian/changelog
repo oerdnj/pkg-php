@@ -1,0 +1,1938 @@
+php5 (5.0.4-1) unstable; urgency=low
+
+  * Initial PHP5 release; packaging forked from php4 4:4.3.11-1.
+    - Closes: #262977, #293832 
+  * Ondrej Sury <ondrej@sury.org>:
+    - Removed some obsolete cruft, since there wasn't any previous php5
+      packages there is no need, to check /usr/share/doc/*, etc.
+    - Removed apache2 IfModule hack, it's been fixed in php5.
+    - Updated patches to php5, removing those which are obsolete.
+    - Changes xslt extension to xsl (using libxslt).
+    - Updated debian/* including changelog.
+    - Raised update-alternatives priority to 50.
+  * Adam Conrad <adconrad@0c3.net>:
+    - Merged with php4 4:4.4.0-1 packaging.
+    - Re-roll upstream tarball to include PEAR::XML_RPC 1.3.3, which
+      includes a security fix for CVE CAN-2005-1921.
+    - Bump to Standards-Version 3.6.2, with no source changes.
+    - Stop distributing the phpextdist binary, as upstream has stopped.
+    - Drop the ext_skel binary and skeleton dir from php5-dev, as it has
+      been deemed obsolete upstream and the version in the tarball is not
+      considered useful anymore.  PEAR::PECL_Gen upstream will replace it.
+    - Fix longstanding broken shebang lines in debconf config scripts.
+    - Remove lintian overrides for modules; lintian no longer complains
+      about missing shlibs for libraries outside the linker path.
+    - Add a linda override for the non-standard directory permissions on
+      /var/lib/php5 in php5-common.
+    - Rename php5-pear to php-pear, have it replace php4-pear, and depend
+      on php5-cli OR php4-cli; make sure it works with both.
+    - Compile in SOAP extension (closes: #307580)
+    - Enable SQLite extension as shared, make the xmlrpc extension shared.
+    - Enabled the pgsql extension, and disabled the imap extension (which
+      will be moving to another source package and become the example
+      package for out-of-tree builds).
+
+ -- Adam Conrad <adconrad@0c3.net>  Sat, 16 Jul 2005 23:42:36 +1000
+
+php4 (4:4.3.11-1) unstable; urgency=low
+
+  * New upstream release (closes: #304052)
+    - Drop CVS patches, we're back in step with upstream versions.
+    - Remove 048-x509_multiple_orgUnits.patch, incorporated in 4.3.11.
+    - Remove 050-4.3.11_file_copy_fix.patch, incorporated in 4.3.11.
+    - Remove 040-curl_open_basedir.patch, as upstream has solved this
+      in a different fashion.
+    - Adjust patches for offset and fuzz.
+    - Remove bits from debian/rules dealing with the DB PEAR extension,
+      since it's no longer shipped in the php4-pear package.
+  * Rebuild against newer version of freetds library (closes: #317369)
+  * Add 052-phpinfo_no_configure.patch, which disables the display of our
+    "Configure Command" in phpinfo(), which was the source of many bogus
+    bug reports over the years, due to people misinterpreting its meaning.
+  * New translations to Vietnamese and Russian (closes: #316821, #310199)
+    - vi.po contributed by Clytie Siddall <clytie@riverland.net.au>
+    - ru.po contributed by Yuriy Talakan' <yt@amur.elektra.ru>
+  * Mention FastCGI in the description of php4-cgi (closes: #310810)
+
+ -- Adam Conrad <adconrad@0c3.net>  Mon,  4 Jul 2005 17:47:32 +1000
+
+php4 (4:4.3.10-15) unstable; urgency=low
+
+  * Bring back the shipping of /usr/share/doc symlinks in our packages,
+    as this, in concert with moving the migration detection from preinst
+    to postinst (which was done in the last upload), seems to give us the
+    sanest upgrade path.  Thanks to Steve Langasek for smacking me around
+    with unpack/upgrade scenarios for a while to convince me of this.
+
+ -- Adam Conrad <adconrad@0c3.net>  Mon,  9 May 2005 02:13:19 -0600
+
+php4 (4:4.3.10-14) unstable; urgency=high
+
+  * Revert the directory->symlink magic to work how it used to, since the
+    new behaviour broke hideously on upgrades from Woody, causing certain
+    files (like the changelog) to mysteriously go missing (closes: #307591)
+  * Move our template php.ini to /usr/share/php4, so we stop violating
+    policy by using files from /usr/share/doc (as seen in #307591)
+  * Remove 'readline' from the php4-cli package description, since we don't
+    actually build with readline support enabled anymore (closes: #306571)
+
+ -- Adam Conrad <adconrad@0c3.net>  Wed,  4 May 2005 01:48:19 -0600
+
+php4 (4:4.3.10-13) unstable; urgency=low
+
+  * Update email address for Andres Salomon <dilinger@debian.org>
+  * Add Portuguese translation from Miguel Figueiredo (closes: #305038)
+  * Include 051-gcc-4.0.patch, which resolves a build failure in
+    libxmlrpc (from the xmlrpc extension) with gcc-4.0 (closes: #287956)
+
+ -- Adam Conrad <adconrad@0c3.net>  Mon, 18 Apr 2005 00:29:54 -0600
+
+php4 (4:4.3.10-12) unstable; urgency=low
+
+  * Add 050-4.3.11_file_copy_fix.patch, which reverts a broken 'fix'
+    made to the copy() function, causing it to fail in particularly
+    spectacular ways when used on remote files (closes: #304601)
+  * Use -g instead of -gstabs on powerpc64-linux (closes: #301571)
+
+ -- Adam Conrad <adconrad@0c3.net>  Thu, 14 Apr 2005 03:53:27 -0600
+
+php4 (4:4.3.10-11) unstable; urgency=medium
+
+  * Address an FTBFS waiting to happen in the php4-dev package:
+    - Remove Win32 and Netware specific headers.
+    - Stop shipping php4-pgsql headers.
+    - Stop shipping the expat headers, since we don't even
+      use the bundled expat library.
+    - Make php4-dev depend on libssl-dev, since it wants to include
+      ssl.h when you use it to build network-using extensions.
+  * Stop building extensions twice; we don't need two copies.
+
+ -- Adam Conrad <adconrad@0c3.net>  Tue, 12 Apr 2005 03:14:03 -0600
+
+php4 (4:4.3.10-10) unstable; urgency=low
+
+  * Update to 200503131325 CVS (AKA: 4.3.11RC1), fixing several bugs
+    including a segfault in mysql_fetch_field() (closes: #299608)
+  * Remove 042-remove_windows_paths.patch, incorporated upstream.
+  * Add 048-x509_multiple_orgUnits.patch to bring the openssl extension
+    in line with the upcoming 4.3.11 behaviour of listing multiple
+    Organisational Units in an x509 cert as an array, rather than only
+    listing the last in the list.
+  * After much talk with upstream, revert the ZTS changes.  We are no
+    longer building a thread-safe PHP. (closes: #299820, #297223, #297679)
+  * ZTS was breaking file search paths, leading to errors loading files
+    from the cwd (closes: #298282, #298518, #299089, #299356)
+  * Stop building caudium-php4 (closes: #294718, #297702, #295100)
+    - We can't link against the GPL pike7.2, which we've been doing.  Oops.
+    - Even if the above weren't true, upstream has insisted that ZTS is a
+      horribly broken solution, slated for eventual removal, and should
+      never, ever be used.  In light of that, caudium users should instead
+      use php4-cgi, either as a plain CGI, or as a FastCGI backend.
+    - Not even attempting to provide an upgrade path, as it would be
+      needlessly complex, and caudium-php4 in previous stable releases
+      was nothing more than a useless toy, given that it had nearly no
+      useful extensions built-in or supported.
+  * Rewrite 041-shut_up_snmp.patch to take a different approach, this time
+    regrettably reverting a fix for a memory leak, in the name of making
+    things work properly, including squashing the putenv() intecaction
+    bug between PHP and other apache modules (closes: #298511, #300628)
+  * On sidegrades from distributions where different modules may be built
+    from their own source, and thus have their own doc directories, bad
+    things happen when we try to replace those with symlinks, so now we
+    check for this in preinst, and fix stuff up magically to Just Work.
+  * Add Jeroen van Wolffelaar <jeroen@wolffelaar.nl> to Uploaders.
+  * Fix up modules regexes to use "\.so" instead of ".so" (cf: #300998)
+
+ -- Adam Conrad <adconrad@0c3.net>  Wed, 16 Mar 2005 22:46:05 -0700
+
+php4 (4:4.3.10-9) unstable; urgency=low
+
+  * Update 040-curl_open_basedir.patch once more to make sure it doesn't
+    segfault when fed a null or uninitialised URL (closes: #295447)
+  * Add 047-zts_with_dl.patch, courtest of Steve Langasek to re-enable the
+    dl() function in our builds, despite upstream's claim that it "might
+    not be threadsafe on all platforms"; it is on ours (closes: #297839)
+  * Make the php4-dev binaries versioned with alternatives (closes: #295903)
+  * Update build-deps to libmysqlclient12-dev (closes: #290989, #227549)
+
+ -- Adam Conrad <adconrad@0c3.net>  Sun,  6 Mar 2005 07:30:35 -0700
+
+php4 (4:4.3.10-8) unstable; urgency=high
+
+  * Add 046-zend_plist_buggery.patch which unrolls the changes made to
+    zend.c in CVS post-4.3.10.  The memory leaks fixed by these changes
+    seem to not have been hurting us terribly so far, while the "fix"
+    (breaking persistent lists) was, uhm, bad (closes: #295998, #296694)
+  * Revise 041-shut_up_snmp.patch to call init_snmp with 'snmpapp' as the
+    appname, rather than 'php', to maintain backward compatibility, and to
+    wrap our setenv/unsetenv magic only around snmp_shutdown, which seems to
+    solve a segfault when php4-snmp is loaded with mod_perl (closes: #296282)
+  * Fix 042-remove_windows_paths.patch to catch both cases where windows
+    path stripping should occur (closes: #296406)
+
+ -- Adam Conrad <adconrad@0c3.net>  Tue, 22 Feb 2005 07:49:32 -0700
+
+php4 (4:4.3.10-7) unstable; urgency=high
+
+  * Rewrite 040-curl_open_basedir.patch, so it now does what it's supposed
+    to (addressing CAN-2004-1392) and no longer segfaults (closes: #295447)
+
+ -- Adam Conrad <adconrad@0c3.net>  Thu, 17 Feb 2005 00:06:36 -0700
+
+php4 (4:4.3.10-6) unstable; urgency=high
+
+  * Add 044-strtod_arm_fix.patch to fix the FPU confusion FTBFS on arm.
+  * Add 045-exif_nesting_level.patch to bump the exif header parsing max
+    nesting level to something that actually works with most JPEG images.
+
+ -- Adam Conrad <adconrad@0c3.net>  Mon, 14 Feb 2005 16:04:28 -0700
+
+php4 (4:4.3.10-5) unstable; urgency=low
+
+  * Add 043-recode_size_t.patch to fix 32/64-bit issues causing the recode
+    extension to segfault on alpha/amd64/ia64 (closes: #294986)
+  * Move the ./buildconf stuff in the unpatch target inside the test
+    for patch-stamp, as it's uselss unless we're unpatching.
+
+ -- Adam Conrad <adconrad@0c3.net>  Sun, 13 Feb 2005 19:09:39 -0700
+
+php4 (4:4.3.10-4) unstable; urgency=medium
+
+  * Make php4-dev arch:any, as it contains some arch-specific defines.
+  * Add 042-remove_windows_paths.patch, a patch to rfc1867.c to strip Windows
+    paths from uploaded filenames, like it used to.  (closes: #294305)
+  * Fix up caudium description to reflect the fact that caudium it is no
+    longer restricted from sharing extensions with other SAPIs.
+  * Build-dep on apache2-threaded-dev (>= 2.0.53-3) to make sure we
+    get a version with non-broken headers.
+
+ -- Adam Conrad <adconrad@0c3.net>  Wed,  9 Feb 2005 11:52:10 -0700
+
+php4 (4:4.3.10-3) unstable; urgency=medium
+
+  * Update to CVS, as of 200502060530 (closes: #288672)
+    - File uploads with "'" in them aren't cut off anymore (closes: #288679)
+    - unserialize() is no longer ridiculously slow (closes: #291392)
+    - Add 000-200502060530_CVS.patch
+    - Adapt debian/rules to the realities of upstream's new buildconf
+    - Add 033-we_WANT_libtool.patch, to force relibtoolizing with Debian's
+      libtool, rather than using upstream's broken bundled libtool
+    - Drop 031_zend_strtod_1.1.2.10.patch and 032_zend_strtod_debian.patch
+    - Adjust patches for offsets and fuzz
+    - Force --with-pic, as policy demands it, and the build system doesn't
+  * Added several patches, yanked from the Fedora PHP sources:
+    - 034-apache2_umask_fix.patch, fixes umask not being properly reset
+      after each request (closes: #286225)
+    - 036-fd_setsize_fix.patch, fixes misuse of FD_SET()
+    - 038-round_test_fix.patch, makes the rounding test work on gcc-3.3
+  * Removed --with-libedit, as being able to background php is more useful,
+    in my opinion, than using readline functions (see #286356)
+  * Include zip support in all SAPIs (closes: #288534, #288909)
+  * Enable Zend Thread Safety for all SAPIs, meaning that our modules
+    are now compiled for ZTS APIs as well.  (closes: #278212, #264015)
+    - Make sure caudium-php4 now provides phpapi-$(ver), and modules can
+      be configured with the caudium SAPI.
+    - Add 039-reentrant_libs.patch to link to the reentrant versions of
+      libldap and libmysqlclient
+  * Stop suggesting phpdoc, as it's undistributable anyway.
+  * Add 040-curl_open_basedir.patch, to make php4-curl respect the value
+    of open_basedir, thanks to Martin Pitt (closes: #291410)
+  * Add 041-shut_up_snmp.patch, to prevent libsnmp5 from attempting (and
+    failing) to write persistent data every time it shuts down.  Ugh.
+
+ -- Adam Conrad <adconrad@0c3.net>  Sun,  6 Feb 2005 05:32:11 -0700
+
+php4 (4:4.3.10-2) unstable; urgency=high
+
+  * Patch Zend/zend_strtod.c twice:
+    - Patch from upstream CVS to fix FTBFS on Sparc/Linux systems
+    - Patch from me to fix FTBFS on __mc68000__, __ia64__, and __s390__
+
+ -- Adam Conrad <adconrad@0c3.net>  Sat, 18 Dec 2004 19:35:30 -0700
+
+php4 (4:4.3.10-1) unstable; urgency=high
+
+  * New upstream release, including the following security fixes:
+    - CAN-2004-1018 - shmop_write() out of bounds memory write access.
+    - CAN-2004-1018 - integer overflow/underflow in pack() and unpack()
+      functions.
+    - CAN-2004-1019 - possible information disclosure, double free and
+      negative reference index array underflow in deserialization code.
+    - CAN-2004-1020 - addslashes() not escaping \0 correctly.
+    - CAN-2004-1063 - safe_mode execution directory bypass.
+    - CAN-2004-1064 - arbitrary file access through path truncation.
+    - CAN-2004-1065 - exif_read_data() overflow on long sectionname.
+    - magic_quotes_gpc could lead to one level directory traversal with
+      file uploads.
+  * Adjust patch offsets for new upstream, fix 013-force_getaddrinfo.patch
+    to match with new configure.in and drop 026-4.3.10_session_fixes.patch
+    which is included in 4.3.10.
+
+ -- Adam Conrad <adconrad@0c3.net>  Wed, 15 Dec 2004 17:17:40 -0700
+
+php4 (4:4.3.9-2) unstable; urgency=low
+
+  * Adam Conrad <adconrad@0c3.net>:
+    - Add -fno-strict-aliasing to CFLAGS, as the (several thousand)
+      warnings I'm getting from GCC are frightening me a tad.
+    - Remove the php-cgi alternative in php4-cgi's prerm, to avoid
+      leaving dangling symlinks (closes: #275962, #282315)
+    - Include 030-imap_getacl.patch, adding the imap_getacl() function
+      required by the GOsa project (closes: #282484)
+    - Include php.ini-paranoid in doc/examples, provided and maintained
+      by Javier Fernández-Sanguino Peña (closes: #274374)
+    - Make /cgi-bin/php4 an alternative for /cgi-bin/php (closes: #282464)
+    - Remove obsolete info from README.Debian relating to session_mm,
+      since we stopped building with libmm a while back.
+    - Reintroduce /usr/lib/php4/libexec that went missing in a previous
+      upload, since the build uses it as the default safe_mode exec dir.
+  * Andres Salomon <dilinger@voxel.net>:
+    - Add patch to include gd headers in php4-dev, as some PECL modules
+      (notably, pdflib) expect it; 028-export_gd_headers.patch.
+    - Lintian fix: Add missing #DEBHELPER# token to php4-common.postrm.
+
+ -- Adam Conrad <adconrad@0c3.net>  Wed, 01 Dec 2004 18:48:13 -0700
+
+php4 (4:4.3.9-1) unstable; urgency=high
+
+  * New upstream release, removed the following patches fixed upstream:
+    014-apache2handler_CVS_fixes.patch, 015-gdNewDynamicCtx_Add_Ex.patch,
+    018-unix_socket_fd_leak.patch, 020-4.3.9_overflow_fixes.patch,
+    021-4.3.9_sybase_ct_fixes.patch, 022-4.3.9_sprintf_fixes.patch,
+    023-4.3.9_array_fixes.patch, 024-4.3.9_glob_fix.patch,
+    and 025-4.3.9_domxml_segfaults.patch
+  * Resolves undiscolsed vulnerabilities in GPC processing and rfc1867
+    handling of file uploads via the $_FILES array (closes: #274206)
+  * After some fairly heavy testing from several users and developers,
+    finally update php4-snmp to use libsnmp5 (closes: #195929)
+  * Add 026-4.3.10_session_fixes.patch from CVS, which prevents PHP
+    from segfaulting when a nonexistant or unsupported save_handler or
+    serialize_handler is specified in php.ini.
+  * Add /etc/apache/conf.d/php4.conf, setting up our mime-types, on the
+    off chance that the user's /etc/mime.types is broken (closes: #271171)
+  * Reintroduce a CGI binary at /usr/bin/php4-cgi, so people who can't
+    make use of the --force-cgi-redirect CGI binary in /usr/lib/cgi-bin
+    can instead use #!/usr/bin/php4-cgi scripts (closes: #273143)
+  * Enable FastCGI for both CGI binaries, now that it no longer conflicts
+    with, but rather complements, the CGI SAPI (closes: #233849)
+  * Bump libgd2 build-dep a notch to make sure we build against a version
+    that actually has XPM support built in (closes: #270435)
+  * Finally drop the bogus libapache-mod-ssl dependency from the apache1.3
+    php4 module, as glibc (>= 2.3.2.ds1-17) has fixed the dlopen refcount
+    bug that we were hacking around (closes: #205553, #230956, #271000)
+  * Remove the mm session handler from the apache1.3 build.  Since the
+    files handler now works on all arches, and is configured to be secure
+    by default, mm seems to have outlived its usefulness.
+    (closes: #119902, #149430, #166811, #272463, #232840)
+  * Rename sapi/apache2handler/sapi_apache2.c to mod_php4.c so that
+    <IfModule> directives aren't ambiguous between php4 and php5.
+  * Add Czech translation, thanks to Miroslav Kure (closes: #274038)
+  * Configure CLI with --with-libedit for readline support, and add
+    027-readline_is_editline.patch, since Debian's libedit headers are
+    not installed in /usr/include/readline (closes: #274031)
+  * libcurl grew a new SONAME somewhere along the way, and upgrading
+    doesn't seem to cause regressions in php4-curl, so upgrade we shall,
+    changing build-deps accordingly (closes: #260389)
+
+ -- Adam Conrad <adconrad@0c3.net>  Mon,  4 Oct 2004 22:57:37 -0600
+
+php4 (4:4.3.8-12) unstable; urgency=high
+
+  * On new php4-cli installations, if php4-cgi is installed, we copy its
+    php.ini as a starting reference, so that command line scripts that
+    used to work don't start mysteriously failing (closes: #270153)
+  * php4-common has grown a postrm script to make sure we completely
+    clean out and remove /var/lib/php4 during the purge phase.
+  * Optimize garbage collection cronjob to use 'xargs -r -0 rm', so we
+    aren't forking for every session file we delete (closes: #268918)
+
+ -- Adam Conrad <adconrad@0c3.net>  Sun,  5 Sep 2004 19:17:42 -0600
+
+php4 (4:4.3.8-11) unstable; urgency=high
+  
+  * Andres Salomon <dilinger@voxel.net>:
+    - Fix bashism in maxlifetime script (closes: #270015)
+  * Adam Conrad <adconrad@0c3.net>:
+    - Clarify setup instructions in README.Debian for using php4-cgi
+      with the apache and apache2 packages (closes: #228342, #228343)
+
+ -- Adam Conrad <adconrad@0c3.net>  Sat, 04 Sep 2004 23:21:21 -0600
+
+php4 (4:4.3.8-10) unstable; urgency=high
+
+  * Andres Salomon <dilinger@voxel.net>:
+    - Change frequency of session file cleansing, based on the maximum value
+      of session.gc_maxlifetime from all php.ini files (closes: #269688).
+    - Update README.Debian to mention session cleaning cron job.
+  * Adam Conrad <adconrad@0c3.net>:
+    - Drop php4-cgi from the list of alternate dependencies for the php4
+      metpackage to smooth upgrades for woody users who have both php4 and
+      php4-cgi installed (closes: #269628, #269348, #269377)
+    - Fix cut-n-paste issue in php4-cli postinst (closes: #269466)
+    - Add 023-4.3.9_array_fixes.patch, which fixes problems with the
+      extract() function misbehaving with multiple element references.
+    - Add 024-4.3.9_glob_fix.patch to fix broken return values from glob()
+      when it succeeds with no matches (closes: #269287)
+    - Add 025-4.3.9_domxml_segfaults.patch, fixing segfaults in the domxml
+      extension when it shares memory space with other libxml2-using libs.
+    - Update the comments in php.ini to point out that, due to dilinger's
+      changes above, session.gc_maxlifetime is honoured by the gc cronjob.
+
+ -- Adam Conrad <adconrad@0c3.net>  Fri, 03 Sep 2004 20:42:56 -0600
+
+php4 (4:4.3.8-9) unstable; urgency=high
+
+  * Re-introduce the changelog.Debian that went missing in the last
+    upload due to the php4-common move from arch:all to arch:any
+  * Clean up lintian warnings regarding scripts that weren't executable
+    and executables that weren't scripts.
+  * Add a lintian override for the non-standard-dir-perm of /var/lib/php4
+  * Update to Standards-Version 3.6.1 (no changes, other than the above)
+
+ -- Adam Conrad <adconrad@0c3.net>  Thu, 26 Aug 2004 21:53:27 -0600
+
+php4 (4:4.3.8-8) unstable; urgency=low
+
+  * Default session.save_path is now compiled in to php4, allowing
+    us to, again, comment out the value in php.ini.
+  * Comment out session.gc_probability in the default php.ini, as we've
+    now compiled in a default of 0, allowing the cronjob to do the
+    garbage collection for us instead. (closes: #267720)
+  * Make the 5 SAPI postinsts smarter, allowing them to poke around in
+    people's configs and make sure that sessions won't be broken
+    after we upgraded them from a perfectly functional system.
+  * Add 022-4.3.9_sprintf_fixes.patch, fixing incorrect formatting of
+    floats with padding by sprintf().
+  * Make php4-common arch:any, and loosen up some of the other any->all
+    package dependencies to make sure binNMUs won't break.
+
+ -- Adam Conrad <adconrad@0c3.net>  Tue, 24 Aug 2004 03:09:43 -0600
+
+php4 (4:4.3.8-7) unstable; urgency=high
+
+  * Back out LFS support AGAIN, as we're disabling LFS in apache2 for
+    the Sarge release. (closes: #266869)
+  * Add 021-4.3.9_sybase_ct_fixes.patch, backporting several fixes
+    for the sybase_ct extension from 4.3.9rc1.
+  * Tidy up descriptions a fair bit:
+    - Disambiguate short descriptions of SAPIs. (closes: #244571)
+    - Refresh the (now much longer) lists of built-in modules for each SAPI.
+    - Explain why caudium-php4 can't use any loadable extensions.
+    - Remove silly advertising blurb for Zend, since very few people are
+      still using php3, and those who are can't be convinced to upgrade
+      just by telling them "Hey, it's faster!".
+    - Add Homepage URI to each SAPI description.
+    - Fix typo in php4-domxml description. (closes: #146124)
+  * Make caudium-php4 provide php4-mysql and php4-pgsql, so it can be used
+    with packages that depend on something like "php4, php4-mysql".
+  * Enable --with-mime-magic and make sure all SAPIs depend on libmagic1
+    to pull in /usr/share/misc/file/magic.mime (closes: #175136)
+
+ -- Adam Conrad <adconrad@0c3.net>  Thu, 19 Aug 2004 18:27:17 -0600
+
+php4 (4:4.3.8-6) unstable; urgency=high
+
+  * Add libgcrypt11-dev to the build-depends, as something seems to be
+    pulling it in and causing an FTBFS (closes: #265952)
+  * Add 020-4.3.9_overflow_fixes, backporting fix for integer overflows
+    in array_slice(), array_splice(), substr(), substr_replace(),
+    strspn() and strcspn().
+  * Bump the apache2 build-dep to (>= 2.0.50-9) to ensure we're building
+    against the new ABI-incompatble libapr0, which brings in proper
+    large file support.  Bump the apache2 binary dependency as well.
+    (closes: #266210, #266192)
+  * Enable large file support on all SAPIs except for caudium, as I'm not
+    sure how caudium will react to the change, and I don't want to
+    destabilise anything just before release.  This change has been
+    heavily tested with apache2/apache/cgi/cli, and all is well there.
+  * Re-enable 019-z_off_t_as_long.patch, which is needed to make sure
+    that LFS-enabled SAPIs can still use zlib file functions correctly.
+  * Rework the apache2 restarting logic to only restart apache2 if
+    apache2ctl configtest succeeds, otherwise kick out a warning to
+    the user.  Even then, we run force-reload with ||true, in case
+    apache2 fails to start for other reasons (closes: #264958) 
+  * Make php4-gd Provide php4-gd2, so packages which still depend on
+    php4-gd2 are installable (and so packaging frontends can take the
+    provides/conflicts/replaces hint and DTRT with it)
+  * Split php4-cgi to php4-cgi and php4-cli (closes: #227915)
+    - Add php4-cli to debian/control, replaces older php4-cgi versions
+    - php4-cgi depends on php4-cli for smooth transitions
+    - php4-pear now depends on php4-cli (closes: #243214, #221434)
+    - Add php4-cli to list of SAPIs configurable for modules
+    - Munge php.1 manpage to include -cli info
+    - Enable pcntl and ncurses in -cli (closes: #135861, #190947, #241806)
+  * Move all of php4's files to libapache-mod-php4, and make php4 a
+    metapackage that depends on libapache-mod-php4 | libapache2-mod-php4 |
+    php4-cgi | caudium-php4 (closes: #244573, #246654, #244571, #266517)
+  * Include skeleton directory in php4-dev (closes: #95832, #211338)
+  * Include php.ini-recommended in php4-common's examples (closes: #181396)
+  * Move /var/lib/php4 to php4-common and install a cronjob that cleans
+    out old sessions every 30 minutes (closes: #256831, #257111)
+  * Move the libapache-mod-ssl dependency from php4-imap to
+    libapache-mod-php4 to stop irritating users of other SAPIs
+    (closes: #240003, #246887, #263381)
+  * Compile pgsql and mysql support into the caudium SAPI, so it's
+    slightly less useless (closes: #181175)
+
+ -- Adam Conrad <adconrad@0c3.net>  Sun, 15 Aug 2004 19:56:14 -0600
+
+php4 (4:4.3.8-5) unstable; urgency=low
+
+  * Build-depend on chrpath and use it to nuke rpath from modules
+    during the install target of debian/rules.
+  * Add 018-unix_socket_fd_leak.patch to get rid of UNIX socket file
+    descriptor leak on failed fsockopen() calls. (closes: #257269)
+  * It would seem that if we want LFS support, all SAPIs and all extensions
+    that do file access need to be built with LFS support, and since
+    apache2 currently doesn't have LFS, this presents a problem. As
+    such, I'm disabling LFS accross the board until apache2 supports it.
+    (closes: #263962)
+  * Add 019-z_off_t_as_long.patch, including local headers for zlib,
+    forcing off_t = long for gzip file functions, however disable it
+    for now, as we'll only need it if we reenable LFS (closes: #208608)
+  * Add the Debian package revision as EXTRAVERSION to PHP, so one can
+    more easily tell what version is currently running (for instance,
+    if a user fails to restart Apache after an upgrade of php4, this
+    would become obvious to them in the version banner and in phpinfo()
+  * Fixed up debian/patches, adjusting offsets and adding newlines,
+    so patch stops complaining and applies them cleanly.
+  * libapache2-mod-php4 postinst now forces a reload of apache2, which
+    should get the module properly working in all cases where people
+    previously thought 'apachectl graceful' would cut it.
+    (closes: #241352, #263424, #228343)
+  * debian/rules explicitly sets PROG_SENDMAIL during configure so
+    that builds on buildds with no sendmail installed don't get the
+    mail() function disabled. (closes: #180734)
+  * Enable XMLRPC-EPI support for all SAPIs (closes: #228825, #249368)
+  * Enable sysvmsg support for all SAPIs (closes: #236190)
+  * Enable dbx support for all SAPIs (closes: #229508, #249797)
+  * Nuke aclocal.m4 before we run ./buildconf to ensure we get it
+    regenerated correctly, and we get an up-to-date libtoolization.
+
+ -- Adam Conrad <adconrad@0c3.net>  Mon,  9 Aug 2004 07:47:46 -0600
+
+php4 (4:4.3.8-4) unstable; urgency=low
+
+  * Drop 016-pread_pwrite_XOPEN_SOURCE_500.patch, as it didn't seem to
+    solve anything, really, and add 017-pread_pwrite_disable.patch,
+    wich completely disables pread/pwrite usage, fixing session support
+    on sparc, and pread/pwrite usage on amd64.  (closes: #261311)
+
+ -- Adam Conrad <adconrad@0c3.net>  Mon, 26 Jul 2004 06:15:59 -0600
+
+php4 (4:4.3.8-3) unstable; urgency=low
+
+  * Steve Langasek <vorlon@debian.org>:
+    - Give php4-pear a versioned dependency on php4-cgi, due to
+      backwards-compatibility issues (closes: #260924).
+
+  * Adam Conrad <adconrad@0c3.net>:
+    - Added a debian/watch file for the curious, or people running
+      automated uscan scripts over the entire archive.
+    - Bump libgd2 build-dep to 2.0.28 to buy us guaranteed GIF
+      support in php4-gd (closes: #66293)
+    - Add 015-gdNewDynamicCtx_Add_Ex.patch, which fixes three double-free
+      errors in php4-gd.  This, in concert with the librrd0 update
+      (see #261323) should clear up all known segfaults in php4-gd
+      (closes: #220196, #234571, #241270, #246833, #251220, #260790)
+      Thanks to Klaus Reimer <k@ailis.de> for the tip.
+    - Add 016-pread_pwrite_XOPEN_SOURCE_500.patch, which fixes use of
+      pread/pwrite in conjunction with LFS64.  This should fix the files
+      session handler on sparc, as well as the amd64 build failure.
+      (closes: #234766, #239420, #261311, #248765)
+    - Clean up debian/rules to remove a bunch of obsolete cruft, as well
+      as introducing an LFSFLAGS, allowing us to easily turn LFS support
+      on and off for each SAPI.
+    - Re-enable LFS for apache 1.3, as it was enable in Woody and we should
+      remain backward compatible.
+
+ -- Adam Conrad <adconrad@0c3.net>  Sun, 25 Jul 2004 18:49:31 -0600
+
+php4 (4:4.3.8-2) unstable; urgency=high
+
+  * Urgency "high" to make up for the last upload which contained
+    security fixes but was uploaded urgency "low".
+
+  * Adam Conrad <adconrad@0c3.net>:
+    - Bump debhelper build-dep to >= 3, as we were using DH_COMPAT=3
+      in debian/rules.  Not sure how this was missed for so long.
+    - Add 014-apache2handler_CVS_fixes.patch, which fixes a memory
+      leak in the apache2handler SAPI, as well as a logical mishandling
+      of fatal errors during activation.
+
+  * Steve Langasek <vorlon@debian.org>:
+    - Revert large file support, which appears to cause
+      ABI-incompatibilities (and therefore segfaults) for apache2
+      (closes: #259659).
+
+ -- Adam Conrad <adconrad@0c3.net>  Mon, 19 Jul 2004 20:44:00 -0600
+
+php4 (4:4.3.8-1) unstable; urgency=low
+
+  * Adam Conrad <adconrad@0c3.net>:
+    - New upstream release (4.3.8).  Fixes several security issues:
+      + Fixed strip_tags() to correctly handle '\0' characters.
+      + Improved stability during startup when memory_limit is used.
+      + Replace alloca() with emalloc() for better stack protection.
+      + Added missing safe_mode checks inside ftok and itpc.
+      + Fixed address allocation routine in IMAP extension.
+      + Prevent open_basedir bypass via MySQL's LOAD DATA LOCAL.
+    - php4-pear now includes PEAR::Mail 1.1.3 (closes: #257688)
+    - debian/control: change libpng3-dev build-dep to libpng12-dev
+    - Add Turkish debconf translation, thanks to Osman Yuksel.
+      (closes: #252940)
+
+  * Andres Salomon <dilinger@voxel.net>:
+    - New upstream release (4.3.7).  The following patches are dropped:
+      007-dba_fix.patch
+      008-xbithack.patch
+      011-curl_api_update.patch
+      012-curl_deprecated_opts.patch.
+    - Add 013-force_getaddrinfo.patch, so that getaddrinfo support is
+      always enabled (instead of doing check during build).
+
+  * Steve Langasek <vorlon@debian.org>:
+    - Enumerate supported SAPIs in both the module postinst and the module
+      config script, to avoid "question not found" errors from debconf.
+      This doesn't give us automatic support for new SAPIs as they're
+      added, but it avoids trying to configure SAPIs that we don't support
+      (e.g., caudium), and it also sidesteps shell syntax errors caused by
+      strangely-named subdirectories.
+    - Remove apache2 from the TODO list, because it's done
+      (closes: #243793).
+    - Add /var/lib/php4 to the list of directories for the apache2 module,
+      so we don't end up with a missing session dir (closes: #240962).
+    - s/modules-config/apache-modconf/, now that the canonical name of the
+      apache-common tool has changed
+    - Drop references to php3 in README.Debian, and document the
+      simplified process for enabling php4 in apache 1.3 (closes: #244564).
+    - Enable large files support for all SAPIs (closes: #249500).
+    - Fix commented-out default include path in php.ini (closes: #250274).
+
+ -- Adam Conrad <adconrad@0c3.net>  Wed, 14 Jul 2004 18:06:42 -0600
+
+php4 (4:4.3.4-4) unstable; urgency=low
+
+  * Drop apache2 work-around patch and add build-dep on apache2 2.0.48-8,
+    now that #228840 is fixed.
+  * Fix FTBFS problem caused by curl api changes, adding patches 011 and
+    012 (closes: #239159).  
+  * Add phpapi Provides for libapache2-mod-php4 (closes: #240386).
+  * Add versioned build-dep for pcre, as apache2 has proven that pcre-3.9
+    and older won't work (closes: #215069).
+  * Tighten build-dep versions to match upstream's autoconf version checks
+    (closes: #214060).
+
+ -- Andres Salomon <dilinger@voxel.net>  Fri, 26 Mar 2004 23:27:27 -0500
+
+php4 (4:4.3.4-3) unstable; urgency=low
+
+  * Andres Salomon <dilinger@voxel.net>:
+    - Fix incorrect php.ini path in CLI manpage (closes: #233757).
+    - Add libapache2-mod-php4 module (closes: #214611).
+  * Updated Japanese debconf translation; thanks to Kenshi Muto
+    <kmuto@debian.org> (closes: #222424).
+  * Build php4-gd against libgd2-xpm, removing the need for a separate
+    php4-gd2 package (closes: #235390, #206045, #135664).
+  * Add new Catalan debconf translation; thanks to Aleix Badia i Bosch
+    <abadia@ica.es> (closes: #236630).
+  * Add new Spanish debconf translation; thanks to Carlos Valdivia
+    Yagüe <valyag@dat.etsit.upm.es> (closes: #235052).
+
+ -- Steve Langasek <vorlon@debian.org>  Sat, 28 Feb 2004 12:11:57 -0600
+
+php4 (4:4.3.4-2) unstable; urgency=low
+
+  * Add build-depends on autoconf, missed earlier (closes: #235012).
+  * Minor updates to README.Debian list of supported extensions.
+  * Fix integer size mismatch in snmp extension affecting 64-bit
+    platforms
+
+ -- Steve Langasek <vorlon@debian.org>  Thu, 26 Feb 2004 22:25:27 -0600
+
+php4 (4:4.3.4-1) unstable; urgency=low
+
+  * New upstream version.  Update local patch set accordingly, with help
+    from Andres Salomon <dilinger@voxel.net>.
+    - includes fix for snmpget() not closing its socket
+      (closes: #207363).
+  * Update build-depends to libdb4.2-dev, to match apache-dev
+    (closes: #231692).
+  * Drop translations of stale templates, and add new German debconf
+    translation; thanks to Alwin Meschede <ameschede@gmx.de>
+    (closes: #232270).
+  * Add new Danish debconf translation; thanks to Claus Hindsgaul
+    <claus_h@image.dk> (closes: #233887).
+  * Move local patches into debian/patches/ for easier management, and
+    add debian/rules targets for build-time application of patches.
+  * Fix a problem with PHP "xbithack" causing ini scope leakage
+    (closes: #230047).
+  * Re-enable the openssl extension statically, since we now know for
+    sure that the php4-imap problems are a glibc bug (closes: #197450).
+  * Fix pear to set /usr/bin/php4 instead of /usr/bin/php for the value
+    of php_bin, so PEAR-managed scripts work correctly
+    (closes: #228381).  In addition, use alternatives for /usr/bin/php
+    for the benefit of user scripts (closes: #185283).
+  * Set the default session save_path to /var/lib/php4 instead of to
+    /tmp, and create this directory such that all users (for php4-cgi)
+    can create files there and access their own files once created, but
+    not see the names of other files in the directory (closes: #139810).
+  * Drop our override of upstream's register_globals default
+    (closes: #230878).
+
+ -- Steve Langasek <vorlon@debian.org>  Sat, 14 Feb 2004 10:23:24 -0600
+
+php4 (4:4.3.3-5) unstable; urgency=low
+
+  * Have php4-pear Suggest: php4-dev, for PECL extensions
+    (closes: #225969).
+  * Recompiled against the new version of libxslt, to get rid of the
+    dependency on libxsltbreakpoint (closes: #224806).
+  * Also recompiled against the new version of libc-client (closes: #227347).
+  * Fix pear to not expect to be able to twiddle locks when running as
+    non-root, which also seems to fix a memory utilization problem
+    (closes: #225026).
+  * Make php4-imap depend on libapache-mod-ssl, since this seems to be
+    the only reliable way of getting apache to stop segfaulting.
+  * Build-depend on libt1-dev, which replaces t1lib-dev.
+
+ -- Steve Langasek <vorlon@debian.org>  Mon,  5 Jan 2004 22:53:18 -0600
+
+php4 (4:4.3.3-4) unstable; urgency=low
+
+  * Fix prerm script to remove mod_php4, *not* mod_perl, from the
+    config (Closes: #216889).
+  * Use /etc/$i/httpd.conf instead of /etc/$i to decide whether to
+    call modules-config.
+  * Don't invoke debconf unless we have to in the postinst, to reduce
+    the risk of interactions between modules-config and our questions.
+  * Add Dutch debconf translation; thanks to Tim Dijkstra
+    <tim@famdijkstra.org> (closes: #221439).
+  * Sync dba lock handling against upstream CVS HEAD, to fix a bug with
+    truncating db4 files when opening with 'c' (create).
+    (Closes: #221559).
+
+ -- Steve Langasek <vorlon@debian.org>  Tue, 21 Oct 2003 16:49:03 -0500
+
+php4 (4:4.3.3-3) unstable; urgency=low
+
+  * Disable -gstabs on ia64, since this debugging symbol type is
+    apparently unknown there; we should now have clean builds (with
+    appropriate debugging symbols) on all archs.
+
+ -- Steve Langasek <vorlon@debian.org>  Mon, 20 Oct 2003 19:07:40 -0500
+
+php4 (4:4.3.3-2) unstable; urgency=low
+
+  * Don't call db_stop in the postinst, as this seems to cause problems
+    for modules-config (closes: #215663, #215584).
+  * Remove duplicate -prefer-pic flag on caudium build, in hope of
+    making libtool do something sensible on ia64,hppa (closes: #216020).
+  * Always build with debugging symbols, per current policy.
+  * Unconditionally call dh_strip, which knows about DEB_BUILD_OPTIONS;
+    and call install -s when installing shared extensions by hand.
+  * Fix upstream build rules to not call libtool --silent.
+
+ -- Steve Langasek <vorlon@debian.org>  Wed, 15 Oct 2003 23:19:55 -0500
+
+php4 (4:4.3.3-1) unstable; urgency=low
+
+  * New upstream release.
+  * Add Japanese debconf translation; thanks to Kenshi Muto
+    <kmuto@debian.org> (closes: #211961).
+  * Fix caudium handling to always grab the current pike version from
+    dpkg when constructing include paths (closes: #212585).
+  * Bump the c-client build dependencies to use the new -dev package
+    name.
+  * Convert php4 postinst/prerm scripts to use the new apache
+    modules-config interface.
+
+ -- Steve Langasek <vorlon@debian.org>  Sun, 21 Sep 2003 17:26:31 -0500
+
+php4 (4:4.3.2+rc3-6) unstable; urgency=low
+
+  * Add Brazilian Portuguese debconf translation; thanks to André Luís
+    Lopes <andrelop@debian.org> (closes: #207078).
+  * Catch debian/control up with debian/rules for the zendapi -> phpapi
+    transition.
+
+ -- Steve Langasek <vorlon@debian.org>  Sun, 31 Aug 2003 20:35:57 -0500
+
+php4 (4:4.3.2+rc3-5) unstable; urgency=low
+
+  * Kill the lintian warning on the grammar in the copyright file.
+  * Redirect apacheconfig I/O to /dev/tty, to work around debconf
+    behavior (for real this time).  Closes: #207468, #206404.
+  * Replace 'zendapi' with 'phpapi', since the former does not
+    accurately describe the ABI changes that affect modules and can
+    leave some packages installable but broken (closes: #208020).  Also,
+    remove the versioned conflicts with php4-{mysql,pgsql}, since this
+    now supersedes.
+  * Add French debconf translation; thanks to Michel Grentzinger
+    <mic.grentz@online.fr> (closes: #207662).
+
+ -- Steve Langasek <vorlon@debian.org>  Sat, 23 Aug 2003 21:43:24 -0500
+
+php4 (4:4.3.2+rc3-4) unstable; urgency=low
+
+  * Have all php extensions automatically detect and configure for any
+    installed SAPIs (closes: #143436).
+  * Remove spurious dependencies from php4-dev, and replace autoconf2.13
+    with autoconf (closes: #180497).
+  * Conflict with old php4-pgsql as we do with php4-mysql, as it
+    manifests the same bug.
+  * Add preliminary rules for building apache2 SAPI, but don't enable.
+  * Call db_stop before trying to run apacheconfig (closes: #206404).
+  * Check for the existence of /etc/php4 before trying to rmdir it,
+    since there are apparently those who remove such directories
+    prematurely (closes: #206120).
+
+ -- Steve Langasek <vorlon@debian.org>  Sun, 17 Aug 2003 00:19:38 -0500
+
+php4 (4:4.3.2+rc3-3) unstable; urgency=low
+
+  * Fixes for spurious package dependencies
+  * Fix the paths emitted by php-config, so we can build php4-pgsql et al.
+
+ -- Steve Langasek <vorlon@debian.org>  Fri, 15 Aug 2003 23:44:55 -0500
+
+php4 (4:4.3.2+rc3-2) unstable; urgency=low
+
+  * Make sure pear.conf is properly marked as a conffile, by bumping
+    DH_COMPAT to 3.
+  * Generate all per-extension postinsts/prerms at build time, instead
+    of managing them by hand.
+  * Get rid of bogus, non-FHS directories from the caudium build.
+  * Install the upstream php manpage in the php4-cgi package
+    (closes: #175836).
+  * Prevent null dereferencing in ldap_explode_dn() (closes: #205405).
+  * Hard-code /usr/share/pear at the end of the include path, for
+    backwards compatibility.
+  * Debconf support for PHP extension registration, including
+    po-debconf support (closes: #122353).
+  * Fix interpreter path in /usr/bin/pear.
+  * Make php4-pear depends: php4-cgi (closes: #182393).
+
+ -- Steve Langasek <vorlon@debian.org>  Wed, 13 Aug 2003 22:39:08 -0500
+
+php4 (4:4.3.2+rc3-1) unstable; urgency=low
+
+  * New upstream version.
+    - includes fix for buffer overflow crashes in imap module
+      (closes: #191640)
+    - includes fix for dysfunctional open_basedir directive
+      (closes: #197803)
+    - include fix for various XSS vulnerabilities (closes: #200736)
+  * Recompile against newest libc-client libs, following another soname
+    change (closes: #199049)
+  * Replace db2 with db4.
+  * Trim down the cgi sapi rules, since it will now build both cli and
+    cgi for us by default.
+  * Kludge the caudium sapi, by hard-coding the include path we need for
+    pike headers.
+  * Copy the lex/yacc-generated .c and .h files into the build
+    directories, since generating them at build time gives wildly
+    different, and undisputably broken, results.
+  * Update the install rules so they're compatible with current upstream
+    handling of pear and the various SAPIs.
+  * Add '=shared' to the --enable-xslt option, to get the right results
+    for that extension.
+  * Move PEAR extensions from /usr/share/pear to /usr/share/php.
+  * Conflict with php4-mysql=4:4.2.3-14, due to bizarre Zend errors.
+
+ -- Steve Langasek <vorlon@debian.org>  Wed,  6 Aug 2003 22:43:28 -0500
+
+php4 (4:4.2.3-14) unstable; urgency=low
+
+  * Disable openssl extensions AGAIN.  It appears that this double-linking mess
+    is still causing nasty segfaults.
+    (closes: #188014, #188025, #188058, #189202, #189653)
+
+ -- Adam Conrad <adconrad@0c3.net>  Sun, 20 Apr 2003 17:31:59 -0600
+
+php4 (4:4.2.3-13) unstable; urgency=low
+
+  * Revert NET-SNMP patch and build php4-snmp against UCD-SNMP again
+    (closes: #185534)
+  * Build against libmm13, as libmm12 no longer exists (closes: #187401)
+  * Rebuild caudium-php4 against latest caudium-dev
+  * Re-enable openssl linking and functions, now that our glibc 2.3
+    problems appear to be ironed out.
+  * Enable xslt and exslt support in php4-domxml (closes: #172881)
+
+ -- Adam Conrad <adconrad@0c3.net>  Thu,  3 Apr 2003 05:53:24 -0700
+
+php4 (4:4.2.3-12) unstable; urgency=low
+
+  * Rebuild php4-sybase against libct1 (closes: #184461)
+
+ -- Steve Langasek <vorlon@debian.org>  Sat,  8 Mar 2003 20:03:33 -0600
+
+php4 (4:4.2.3-11) unstable; urgency=low
+
+  * Remove pike header location detection from debian/rules and do it
+    properly in sapi/caudium/config.m4, using pike7.2-config --version
+
+ -- Adam Conrad <adconrad@0c3.net>  Mon,  3 Mar 2003 23:33:26 -0700
+
+php4 (4:4.2.3-10) unstable; urgency=low
+
+  * Added patch to build with NET-SNMP 5.x
+  * Updated build-dep for libc-client to 2003debian
+    (closes: #181565, #182854, #169886)
+  * Updated build-dep for libcurl to libcurl2-dev (closes: #179722)
+  * Added -mieee to alpha build to solve FPE errors (closes: #180656)
+  * Removed arch-specific logic to build with gcc-3.2 on arm, since gcc-3.2
+    is now the default compiler on all architectures.
+  * Add libwrap0-dev to the end of the build-depends to work around #183041.
+    Someone remember to remove this later when the bug is fixed. :)
+  * Build against newer libsablot0-dev (closes: #179886, #181550)
+  * Introduce ugly hack in debian/rules to get the pike includes
+    directory right for the caudium SAPI.
+
+ -- Adam Conrad <adconrad@0c3.net>  Sun,  2 Mar 2003 12:49:07 -0700
+
+php4 (4:4.2.3-9) unstable; urgency=low
+
+  * Fix caudium-php4 to not conflict with php4-pear (closes: #175415).
+
+ -- Steve Langasek <vorlon@debian.org>  Sun,  5 Jan 2003 16:40:20 -0600
+
+php4 (4:4.2.3-8) unstable; urgency=low
+
+  * Fix typo in debian/rules
+  * Rebuild to bring in sync with latest caudium packages
+
+ -- Adam Conrad <adconrad@0c3.net>  Wed, 25 Dec 2002 20:00:59 -0700
+
+php4 (4:4.2.3-7) unstable; urgency=low
+
+  * Set a sane default for safe_mode_exec_dir (closes: #122920).
+  * Rebuild against libmm-dev on i386, instead of against the
+    no-longer-available libmm11-dev which Provides: the same
+    (closes: #173509).
+
+ -- Steve Langasek <vorlon@debian.org>  Mon, 16 Dec 2002 22:48:40 -0600
+
+php4 (4:4.2.3-6) unstable; urgency=low
+
+  * Build with PEAR for all SAPIs, so that the built-in include_path is
+    set correctly (overkill?).  Closes: #169786, #172321
+  * Change section of php4-dev package to devel.
+  * Add libkrb5-dev to build-depends, since libc-client2002-dev doesn't
+    pull it in (closes: #173313).
+  * Depend on coreutils instead of fileutils, since the latter is now an 
+    empty package (closes: #171265).
+
+ -- Steve Langasek <vorlon@debian.org>  Sun, 15 Dec 2002 23:20:30 -0600
+
+php4 (4:4.2.3-5) unstable; urgency=low
+
+  * Fix (snip, snip) the upstream build scripts, so that libphp4.so
+    isn't worthlessly linked against the problematic openssl libs
+    (closes: #165699, #165718, #165719, #166414).
+  * Update config.{sub,guess} so that the package builds on mips
+    platforms (closes #173218)
+  * Replace libc-client-ssl2001-dev with libc-client2002-dev in build
+    dependencies, fixing various php4-imap segfaults (closes: #169610,
+    #169769).
+
+ -- Steve Langasek <vorlon@debian.org>  Sun, 15 Dec 2002 19:42:43 -0600
+
+php4 (4:4.2.3-4) unstable; urgency=low
+
+  * Remove build dependency on non-extant libmagick5-dev, which is no
+    longer used anyway (closes: #169829, #172402).
+  * Add myself to the Uploaders: field of the control file.
+
+ -- Steve Langasek <vorlon@debian.org>  Sat, 14 Dec 2002 12:52:06 -0600
+
+php4 (4:4.2.3-3) unstable; urgency=low
+
+   * Backport a patch from CVS to sanitize control characters in php_url_parse()
+     to prevent ASCII control injection in fopen() calls.
+
+ -- Adam Conrad <adconrad@0c3.net>  Thu, 12 Sep 2002 16:29:46 -0600
+
+php4 (4:4.2.3-2) unstable; urgency=low
+
+  * I'm a moron (thanks to James Troup for pointing this out).
+  * Change gcc-3.1 references in debian/rules to gcc-3.2.
+  * Change GD build-dep to libgd-xpm-dev until GD package mess is worked out.
+
+ -- Adam Conrad <adconrad@0c3.net>  Tue, 10 Sep 2002 12:18:21 -0600
+
+php4 (4:4.2.3-1) unstable; urgency=low
+
+  * New upstream version
+  * Added a patch from Ginger Alliance to eliminate warnings in xslt compile
+  * Messed with the php4-imap build:
+    - compiling with SSL support (closes: #122700)
+    - commented out the static-on-i386 hack, libc-client is now linked dynamically
+  * Sessions should finally be fixed, however I won't tag the bugs "woody"
+    until I know for sure.  (if you were affected, please test and send
+    followups to me)
+  * Updated arm build-dep to use gcc-3.2 since gcc-3.1 is gone now.
+
+ -- Adam Conrad <adconrad@0c3.net>  Tue, 10 Sep 2002 09:02:51 -0600
+
+php4 (4:4.2.2-3) unstable; urgency=low
+
+  * Fix typo resulting in php4-odbc not having a postinst
+    (closes: #157116, #157927)
+  * Build against latest caudium-dev to made caudium-php4 installable
+    again.  (closes: #158247)
+  * Update build-deps to swap libpng3 for libpng2.  (closes: #158908)
+
+ -- Adam Conrad <adconrad@0c3.net>  Sat,  7 Sep 2002 01:22:57 -0600
+
+php4 (4:4.2.2-2) unstable; urgency=low
+
+  * Pulled --with-ndbm out of ./configure, as libc6 no longer ships with
+    headers or the library for db1 (closes: #156141, #155889)
+  * Update build deps to build against libmm12 (closes: #155042)
+  * php4-curl no longer depends on libcurl2-ssl (closes: #155015)
+
+ -- Adam Conrad <adconrad@0c3.net>  Sat, 10 Aug 2002 01:12:47 -0600
+
+php4 (4:4.2.2-1) unstable; urgency=medium
+
+  * New upstream
+  * Fixes input validation vulnerability in rfc1867.c (closes: #153850)
+  * Added missing prerm/postinst for php4-xslt (oops)
+
+ -- Adam Conrad <adconrad@0c3.net>  Mon, 22 Jul 2002 11:58:53 -0600
+
+php4 (4:4.2.1-3) unstable; urgency=low
+
+  * Yet more build fixes.  This time, bump the arm build-dep from gcc-3.0 to
+    gcc-3.1 to avoid compiler errors.  I love the arm toolchain.  No, really.
+
+ -- Adam Conrad <adconrad@0c3.net>  Wed, 29 May 2002 17:40:30 -0600
+
+php4 (4:4.2.1-2) unstable; urgency=low
+
+  * Applied small patch to fix building on non-32-bit architectures
+    (closes: #148231)
+  * Added still /more/ documentation about the unserializer, sessions,
+    and the session.save_handler php.ini option.
+
+ -- Adam Conrad <adconrad@0c3.net>  Sun, 26 May 2002 14:43:55 -0600
+
+php4 (4:4.2.1-1) unstable; urgency=low
+
+  * The "When is Debian going to have new software like XF^H^HPHP 4.2?" release.
+  * Probably the last update (barring huge packaging bugs or plain broken
+    binaries) before starting on a complete reorg of the PHP packages.
+  * Deserializer now works on big-endian architectures (addresses bug #121391
+    and probably others)
+  * This release probably fixes a whole bunch of bugs.  Will be going through
+    the bug list and playing the reproducibility game after the upload.
+  * Default include_path in php.ini now set to include pear.
+  * Upstream default for register_globals HAS CHANGED.  In the Debian php.ini
+    we are still using "register_globals = On" for compatibility reasons,
+    however our packages will change too.  This is a warning for anyone
+    packaging PHP scripts and applications to make sure you'll be compatible
+    with the new default once it's set.
+
+ -- Adam Conrad <adconrad@0c3.net>  Sun, 26 May 2002 06:24:21 -0600
+
+php4 (4:4.1.2-4) unstable; urgency=high
+
+  * No binaries were harmed in the making up this upload.
+  * Updated README.Debian and changelog.  All other files untouched,
+    as the binaries were merely unpacked and repacked.
+    - Added a note to README.Debian about how to properly set up
+      Apache for use with php4, if the installation didn't (and it usually
+      doesn't <sigh>) get it right.
+    - Added a note to README.Debian about the unserializer (and sessions)
+      being messed up on big endian architectures.  It's too late to try
+      to get a proper fix in for this, so we're just going to have to cope.
+
+ -- Adam Conrad <adconrad@0c3.net>  Fri, 26 Apr 2002 12:27:40 -0600
+
+php4 (4:4.1.2-3.1) unstable; urgency=low
+
+  * The 'I broke it, I have to take credit for it' release.
+  * Rebuild the package to get proper binary dependencies on alpha.
+
+ -- Steve Langasek <vorlon@debian.org>  Sun, 31 Mar 2002 17:13:09 -0600
+
+php4 (4:4.1.2-3) unstable; urgency=low
+
+  * Switched to --with-regex=php (from =system).  This fixes all the
+    problems with eregi/parse_url/fopen/etc on Alpha.
+  * Cleaned up long descriptions (closes: #130977, #130954)
+
+ -- Adam Conrad <adconrad@0c3.net>  Wed, 27 Mar 2002 15:11:43 -0700
+
+php4 (4:4.1.2-2) unstable; urgency=low
+
+  * New maintainer (closes: #132980)
+  * Enabling unixodbc support (closes: #107201)
+  * Changed the install-modules target in build/rules_pear.mk so that
+    it will error out in the case of an empty modules directory or
+    failure to install modules (closes: #135304)
+
+ -- Adam Conrad <adconrad@0c3.net>  Tue, 12 Mar 2002 00:25:41 -0700
+
+php4 (4:4.1.2-1) unstable; urgency=high
+
+  * New upstream version with a security fix. This
+    supercedes 4.1.1-2.2 from Steve Langasek:
+       * Fix an error in the handling of MIME file upload headers, which left
+         open a potential security hole. (Closes: #136063)
+  * Fixed gcc-3.0 fix :-)
+  * Thanks for fixing apache-common fix
+  * This version should fix session bugs with upstream fix (closes: #133877)
+  * With a brutal change to main/SAPI.c try to fix(?) authorize bugs
+
+ -- Petr Cech <cech@debian.org>  Thu, 28 Feb 2002 11:14:26 +0100
+
+php4 (4:4.1.1-2.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * loosen apache-common dependency to make us forwards-compatible, as
+    recommended by the apache maintainer.
+  * use gcc-3.0 when building on arm, because the default toolchain on 
+    that arch has Issues (closes: #135906, #135913).
+
+ -- Steve Langasek <vorlon@debian.org>  Tue, 26 Feb 2002 09:59:49 -0600
+
+php4 (4:4.1.1-2) unstable; urgency=medium
+
+  * Rebuild with apache 1.3.23.
+  * This package is in maintainer change mode. Though I orphaned it I'm not
+    going to change maintainer to QA, because we already have fresh blood.
+  * ext/gd/gd.c: s/HAVE_GD_GIF/HAVE_GD_GIF_CREATE/ to build correctly with
+    libgd which has GIF support (fixed included upstream)
+  * debian/control:
+    - Build-Depends: s/libgd1g-dev/libgd-dev/
+    also libc-client at least version 4:2001adebian-6 to fix some segfaults
+  * ext/standard/head.c: make the setcookie() thingie test more simple
+
+ -- Petr Cech <cech@debian.org>  Mon, 11 Feb 2002 20:07:22 +0100
+
+php4 (4:4.1.1-1) unstable; urgency=high
+
+  * New upstream bugfix release.
+  * debian/control: php4-gd - Conflicts/Replaces: php4-gd2 if I ever get
+    to upload it
+  * debian/rules: Correctly supply modified CFLAGS to build process
+
+ -- Petr Cech <cech@debian.org>  Fri, 28 Dec 2001 23:23:47 +0100
+
+php4 (4:4.1.0-2) unstable; urgency=low
+
+  * debian/php4-cgi.README.Debian: fix typo (closes: #123866)
+  * debian/rules: remove --enable-mbstr-enc-trans as it breaks parametr
+    parsing (closes: #121403)
+  * debian/README.Debian: document shmmax increase (closes: #119688)
+
+ -- Petr Cech <cech@debian.org>  Fri, 14 Dec 2001 09:59:59 +0100
+
+php4 (4:4.1.0-1) unstable; urgency=high
+
+  * Finally final 4.1.0
+  * Urgency to reflect previous version
+  * debian/control: php4-pear depends on php4-cgi
+
+ -- Petr Cech <cech@debian.org>  Thu, 13 Dec 2001 23:09:54 +0100
+
+php4 (3:4.1-2) unstable; urgency=high
+
+  * FIxes from CSV 4.1.0RC5. Looks like it was not the release after all.
+  * ext/exif/exif.c: MFH
+  * ext/ldap/ldap.c: small crash fix from HEAD
+  * and misc tiny changes. Really :-)
+  * ext/imap/php_imap.c: HIGH. fix from CVS (imap_rfc822_parse_adrlist) changing
+    the argument
+
+ -- Petr Cech <cech@debian.org>  Sun,  9 Dec 2001 00:01:37 +0100
+
+php4 (3:4.1-1) unstable; urgency=medium
+
+  * Final 4.1.0 (not released)
+  * NEWS: s/4.0/4.1/
+  * Build with GD1. It should fix some GD bugs, as gd 2.0.1 is supposed to be
+    a beta version with known bugs. How should I know.
+  * sablot extension removed upstream. So use XSLT (C/R in place)
+  * Apply fix for file_exists() from tilo (closes: #114409)
+  * "Cannot redeclare" were fixed in previous RCs (closes: #112341)
+  * previous version is build in hppa and ia64, so I assume it
+    (closes: #115391)
+  * Add note to sybase_ct, that it conflicts with mod_gzip folowing a user
+    report.
+  * This should fix the "final HTML> stripped" bug that was introduced
+    in 4.0.6-3. (closes: #110415).
+  * add --enable-ucd-snmp-hack to try to fix segfaults with ucd-snmp
+
+ -- Petr Cech <cech@debian.org>  Mon, 26 Nov 2001 14:56:50 +0100
+
+php4 (3:4.0.100-1) unstable; urgency=low
+
+  * Really a 4.1.0RC2
+  * Remove hack for apache 1.3.14, as we build-depends on 1.3.22 anyway
+  * Build-depends: libexpat1 (>= 1.95.2-2.1) for the .1
+  * Added Provides: zendapi-$version to php4 and php4-cgi
+  * Made modules depend on zendapi-$version instead of php4|php4-cgi.
+    Please use this in your php4-$module packages
+  * Apply c-client hack only to i386 most architectures don't support linking
+    both PIC and non-PIC code. I'm still affrai to do this on i386, as it
+    crashes a lot more :(
+  * Apply some CVS patches
+
+ -- Petr Cech <cech@debian.org>  Wed, 14 Nov 2001 20:50:19 +0100
+
+php4 (3:4.0.99-4) unstable; urgency=medium
+
+  * Recompile because of new version of caudium.
+    (I really hope this gets into testing soon as php in testing
+     now doesn't do apache 1.3.22)
+
+ -- Petr Cech <cech@debian.org>  Fri,  9 Nov 2001 11:11:46 +0100
+
+php4 (3:4.0.99-3) unstable; urgency=medium
+
+  * Recompile for new libexpat1 (closes: #116623 and others)
+  * upstream: ext/gd/gd.c, ext/iconv/iconv.c
+  * crypt(): defalt to using DES crypt() (closes: #117092)
+  * debian/rules: disable libmm in -cgi build. Will lesser the impact
+    of the infamous /tmp/session_mm.reg
+  * apply patch to Zend, which should fix the "cannot redeclare" error.
+    It's still a bug in your code though (use include_once). More changes
+    to this are comming (upstream).
+  * Add some documentation to sybase
+
+ -- Petr Cech <cech@debian.org>  Mon, 22 Oct 2001 11:20:46 +0200
+
+php4 (3:4.0.99-2) unstable; urgency=low
+
+  * "Some days are just no good" release.
+  * Recompile with apache 1.3.22 from Incoming
+  * Deal with automake going to 1:1.4 and automake1.5
+
+ -- Petr Cech <cech@debian.org>  Fri, 19 Oct 2001 15:02:00 +0200
+
+php4 (3:4.0.99-1) unstable; urgency=low
+
+  * This is really 4.1.0RC1, but ...
+  * Applied setcookie(), which is not in upstream yet
+
+ -- Petr Cech <cech@debian.org>  Fri, 19 Oct 2001 12:05:20 +0200
+
+php4 (3:4.0.6.7rc3-3) unstable; urgency=medium
+
+  * Fix dependency in caudium-php4. Sorry for this
+
+ -- Petr Cech <cech@debian.org>  Fri, 19 Oct 2001 11:28:07 +0200
+
+php4 (3:4.0.6.7rc3-2) unstable; urgency=medium
+
+  * Recompile with recent caudium/pike. Please, no new version so it can get
+    into testing :)
+  * debian/control: move php4-pear to suggests
+  * Fix setcookie() again. I really hate this bug
+  * Build-Depends: re2c - it's usually not needed, but if you make some
+    strange changes to the parser ...
+  * FIx automake 1.5 build problems (I hope)
+
+ -- Petr Cech <cech@debian.org>  Thu, 18 Oct 2001 12:03:39 +0200
+
+php4 (3:4.0.6.7rc3-1) unstable; urgency=low
+
+  * New upstream test release.
+
+ -- Petr Cech <cech@debian.org>  Fri,  5 Oct 2001 09:23:35 +0000
+
+php4 (3:4.0.6.7rc2-3) unstable; urgency=low
+
+  * "Let's try to fix some bugs" release.
+  * Add some patches: ldap (does this fix things?), pgsql,
+    domxml
+  * Build-Conflicts: automake (>= 1.5) for now
+
+ -- Petr Cech <cech@debian.org>  Tue,  2 Oct 2001 10:55:23 +0200
+
+php4 (3:4.0.6.7rc2-2) unstable; urgency=low
+
+  * Enable recode extension (the library is LGPL) - shared
+  * Enable iconv extension - in main php4. Experimental
+  * Build-Depends: s/libgd-dev/libgd2-dev/
+  * Build-Depends: libxml2-dev (>= 2.4.2) (Closes: #112304)
+    and fix autoconf macros (Closes: #113980)
+  * Improve?? description of PEAR (Closes: #112432)
+
+ -- Petr Cech <cech@debian.org>  Sat, 22 Sep 2001 10:37:42 +0200
+
+php4 (3:4.0.6.7rc2-1) unstable; urgency=medium
+
+  * 2nd release candidate
+  * ext/mbstring: fix compile (cp1252)
+  * ext/standard/url_scanner_ex: off by one
+  * WARNING: caudium builds with Zend Threading enabled, but other
+    modules don't. So you cannot safely use DSO with caudium
+  * Added some Build-Conflicts - with broken libmysqlclient
+                               - with libtool 1.4b
+
+ -- Petr Cech <cech@debian.org>  Mon, 10 Sep 2001 18:04:27 +0200
+
+php4 (3:4.0.6-6) unstable; urgency=medium
+
+  * The "Paul Hampson fixes release".
+  * Closed those atexit() bugs. Now to find out, how to make libtool link with
+    gcc instead of ld :((
+  * ext/standard/head.c: Fix setcookie("bla) (closes: #109524, #109697)
+    Thanks to Paul Hampson for finding the cause, though I've used another
+    fix - fixed changes in CVS made in -3 I think. Silly me to think, that
+    all "small" changes are fixes.
+  * libc-client2001 was fixed in -5, so add a (closes: #109202) here
+  * Conflicts: only with libtool 1.4b-{1,2,3}. libtool 1.4.1 is OK
+
+ -- Petr Cech <cech@debian.org>  Sat,  1 Sep 2001 20:59:40 +0200
+
+php4 (3:4.0.6-5) unstable; urgency=low
+
+  * Recompile for libc-client2001 (I hope it doesn't break anything else)
+    And many other libraries.
+  * ATTENTION. php4 still doesn't work with autoconf 2.52 and thus libtool 1.4b!!
+    You have to get libtool 1.4 to be able to use phpize.
+
+ -- Petr Cech <cech@debian.org>  Wed, 22 Aug 2001 23:26:08 +0200
+
+php4 (3:4.0.6-4) unstable; urgency=high
+
+  * Add pear/CODING_STANDARDS into php4-pear (fixes 105574. closed too early. sorry)
+  * Fix the nasty segfaults with mail(). That'll teach me taking upstream
+    changes without looking. Thanks Cvetan Ivanov for the correct fix (also upstream now)
+    (closes: #105686, #105878).
+
+ -- Petr Cech <cech@debian.org>  Fri, 20 Jul 2001 23:07:30 +0200
+
+php4 (3:4.0.6-3) unstable; urgency=high
+
+  * ext/standard/mail.c: security fix
+  * debian/control: Build-Depends: libtool (>= 1.4)
+  * ext/curl/curl.c: fix typo
+  * ext/gd/config.m4: fix typo
+  * ext/mcrypt/mcrypt.c: upstream buffer overflow fix
+  * ext/mhash/mhash.c: upstream buffer overflow fix
+  * ext/pgsql/pgsql.c: fix
+  * ext/posix/config.m4: check for getpgid
+  * ext/sablot/sablot.c: fix leaks
+  * ext/standard/url* : fixes
+  * ext/sysvshm/sysvshm.c: fixes
+  * Zend/*: small fixes
+
+ -- Petr Cech <cech@debian.org>  Fri, 13 Jul 2001 16:21:04 +0200
+
+php4 (3:4.0.6-2) unstable; urgency=low
+
+  * pear/Makefile.in: add IT_Error.php to installed files (closes: #103087)
+  * debian/control: - allow also libcurl-ssl-dev as Build-Depends (closes: #103618)
+                    - libfreetype6-dev to Build-Depends
+                    - add auto* suite to php4-dev depends (closes: #104199)
+  * debian/rules: - build gd module with freetype2 support
+                  - move common ./configure flags to COMMON_CONFIG
+		  - build with mbstring support
+
+ -- Petr Cech <cech@debian.org>  Fri, 13 Jul 2001 08:22:02 +0200
+
+php4 (3:4.0.6-1) unstable; urgency=medium
+
+  * New upstream release.
+  * NOTE: new extension will probably be in another upload, to get this
+    into testing ...
+
+ -- Petr Cech <cech@debian.org>  Mon, 25 Jun 2001 20:43:24 +0200
+
+php4 (3:4.0.5.6rc3-3) unstable; urgency=low
+
+  * The "I hate sablot release". Recompile with 0.60
+  * debian/php4-domxml.postrm: also fix the :: (closes: #101306)
+  * debian/rules: --enable-ctype - still EXPERIMENTAL!!! Bug upstream
+
+ -- Petr Cech <cech@debian.org>  Mon, 18 Jun 2001 09:46:17 +0200
+
+php4 (3:4.0.5.6rc3-2) unstable; urgency=low
+
+  * ext/sablot/config.m4: link sablot.so with -lsablot, not main php4
+  * build/ ... : upstream fix for building with automake 1.4-pX
+  * don't fail, when libssl-dev is not installed. sigh
+
+ -- Petr Cech <cech@debian.org>  Thu, 14 Jun 2001 23:36:34 +0200
+
+php4 (3:4.0.5.6rc3-1) unstable; urgency=low
+
+  * New upstream test release.
+  * Recompile with apache 1.3.20
+  * debian/control:
+      - php4-dev: Depends: bison, flex (closes: #100634)
+      - Build-Depends: libcurl-dev (>=7.8)
+  * debian/rules:
+      - add --enable-bcmath to all rules (closes: #100491)
+  * Zend/zend.c: apply upstream fix to allow building of caudium
+
+ -- Petr Cech <cech@debian.org>  Tue, 12 Jun 2001 22:27:26 +0200
+
+php4 (3:4.0.5.6rc2-1) unstable; urgency=low
+
+  * New upstream test release.
+  * FIx regex/regex.h (int regoff_t)
+  * fix php4-cgi build with pcre - don't use supplied pcre
+  * Fix wddx support (closes: #99468)
+  * Add missing $(INSTALL_ROOT) to sapi/caudium/config.m4
+
+ -- Petr Cech <cech@debian.org>  Fri,  8 Jun 2001 11:37:07 +0200
+
+php4 (3:4.0.5.6rc1-1) unstable; urgency=low
+
+  * New upstream test release with new bugs :))
+  * moved pear from /usr/lib/php4 to /usr/share/php4
+  * Whups. Sorry about the epoch 3: . It somehow slipped in, so I'll
+    have to live with it
+
+ -- Petr Cech <cech@debian.org>  Wed, 16 May 2001 14:14:04 +0200
+
+php4 (3:4.0.5-2) unstable; urgency=low
+
+  * Build-Depend on newer libmhash-dev, as it supposedly doesn't
+    compile on current woody (closes: #96555)
+  * Build-Depends: s/freetype2/libttf-dev/
+  * Stop building php4-pgsql - move to non-US
+  * Build-Deps on new libsablot0
+
+ -- Petr Cech <cech@debian.org>  Thu, 10 May 2001 10:43:02 +0200
+
+php4 (3:4.0.5-1) unstable; urgency=medium
+
+  * New upstream release.
+  * recompile with new sablot - how I hate this (closes: #95401)
+  * Merge XML into main php4
+  * Reword README.Debian (closes: #89667)
+  * Enable wddx
+  * debian/*.postinst: * only ask upon first install, not upgrade (closes: #93452)
+                       * fix typos (closes: #94118)
+  * Added support for Sybase/MS SQL Server (using FreeTDS)
+    using patch from:
+    http://rpms.arvin.dk/php/source/patches/php-sybase_ct.patch
+    thanks to Bradley Bell <btb@debian.org> for the patch
+  * ext/pcre : two upstream fixes
+  * ext/sablot/sablot.c: small upstream fix
+  * build/buildcheck.sh : fixes to allow compile with libtool 1.4
+  * ext/standard/exec.c: upstream fixes
+  * sapi/apache/mod_php4.c: off by one fix
+  * sapi/cgi/cgi_main.c: fix POST bug
+  * main/snprintf.c: upstream fix
+
+ -- Petr Cech <cech@debian.org>  Wed, 3 May 2001 22:17:10 +0200
+
+php4 (4.0.4.5rc6-2) unstable; urgency=low
+
+  * Build-depends: libcurl-dev will pull libcurl2 (closes: #92994)
+  * TSRM/TSRM.c: upstream fix
+  * ext/pgsql: upstream fix
+
+ -- Petr Cech <cech@debian.org>  Thu,  5 Apr 2001 17:51:09 +0200
+
+php4 (4.0.4.5rc6-1) unstable; urgency=low
+
+  * New upstream test release.
+  * Don't mention CGI support, as it's not so for a long time.
+
+ -- Petr Cech <cech@debian.org>  Wed,  4 Apr 2001 13:47:45 +0200
+
+php4 (4.0.4.5rc5-1) unstable; urgency=low
+
+  * New upstream test release.
+  * ask about /etc/php4/cgi/php.ini also
+  * It's really recompiled for 1.3.19 (closes: #91901, #91822)
+  * problems with modules documented (closes: #81141, #82611)
+
+ -- Petr Cech <cech@debian.org>  Mon,  2 Apr 2001 09:38:16 +0200
+
+php4 (4.0.4.5rc3-1) unstable; urgency=low
+
+  * New upstream RC release
+  * debian/rules: s/with-yp/enable-yp/ to really enable YP support. Discovered
+                  on broken potato upload. -0potato2 is fixed
+  * Looks like there was a bug in latest build, this should fix it (closes: #92018)
+  * remove libmcal0 workaround
+
+ -- Petr Cech <cech@debian.org>  Wed, 28 Mar 2001 21:15:36 +0200
+
+php4 (4.0.4.5rc2-1) unstable; urgency=low
+
+  * New upstream release test release 4.0.5RC2.
+  * debian/rules: Add lintian overrides
+  * debian/control: * add libexpat1-dev to Build-Depends
+                    * add libmcal0 to Build-Depends since libmcal0-dev is
+		      missing this dependancy :(( Bug filled
+  * ext/socket/socket.c: minor upstream patch
+
+ -- Petr Cech <cech@debian.org>  Mon, 26 Mar 2001 20:43:49 +0200
+
+php4 (4.0.4pl1-6) unstable; urgency=low
+
+  * NEVER RELEASED
+  * Build-depends on libcurl1-dev (>= 7.6.1-5), which fixes the libcurl1 or
+    libcurl1-ssl problem.
+  * remove dh_testversion and use versioned Build-depends instead
+
+ -- Petr Cech <cech@debian.org>  Tue, 13 Mar 2001 23:20:58 +0100
+
+php4 (4.0.4pl1-5) unstable; urgency=low
+
+  * Add lintian overrides
+  * Rebuild with correct libgd-dev installed. Sorry
+    (closes: #88490, #88255, #88371, #88619, #88635)
+  * Closed by fixed libjpeg (closes: #85865, #88141)
+
+ -- Petr Cech <cech@debian.org>  Tue,  6 Mar 2001 17:26:41 +0100
+
+php4 (4.0.4pl1-4) unstable; urgency=low
+
+  * The "Enable what you can" release.
+  * Enable sablot extension (many files) (closes: #84073)
+  * Enable mcal extension (finaly closes: #65688, #85925)
+  * Build-Conflicts: bind-dev - this supposedly causes unresolved symbols.
+    Why?
+  * ext/pgsql/pgsql.c: apply tiny patch, which should fix postgres
+    problems. There is a better patch in CVS, but it needs changes to Zend
+  * pear/pear.in: binary is php4 no php (closes: #87848)
+  * ext/domxml/config.m4: link with -lxml2 (closes: #87457)
+  * debian/README.Debian: add notes about ldap, imap and mhash extensions
+  * debian/{control,rules}: activate bz2 extension
+  * php4.ini-dist: comment out include_path so php will use compiled in
+    path (closes 2nd part of 87848)
+
+ -- Petr Cech <cech@debian.org>  Wed, 28 Feb 2001 10:18:11 +0100
+
+php4 (4.0.4pl1-3) unstable; urgency=medium
+
+  * Fixed postrm issues. Sorry
+
+ -- Petr Cech <cech@debian.org>  Sun,  4 Feb 2001 06:13:00 +0100
+
+php4 (4.0.4pl1-2) unstable; urgency=medium
+
+  * debian/control: Build-depends: xlibs-dev (seems it's missing and causes
+                    failed builds for arm, m68k and powerpc)
+		    s/libsnmp4.1/libsnmp4.2/ (closes: #84139)
+  * debian/php4.*: make LoadModule matching case insensitive (fixes 83641
+  		   for unstable)
+
+ -- Petr Cech <cech@debian.org>  Wed, 31 Jan 2001 10:14:29 +0100
+
+php4 (4.0.4pl1-1) unstable; urgency=high
+
+  * New upstream version.
+  * This release fixes some security problems.
+  * Some patches from previous versions are not here.
+  * debian/control: Build-depends on newer libcurl1-dev, remove librecode-dev
+  * debian/control: add libjpeg62-dev to build-depends from powerpc buildlog
+    (hmm. Where ir Roman?)
+  * debian/php4{,-cgi}.postinst: don't mark php.ini as conffile and install it
+    when it doesn't already exist. I should find a way to check, that the default
+    php.ini changed and user should update it.
+  * debian/php4{,-cgi}.postrm: cleanup the /etc/php4 dir after purge
+  * fix xml.so not working with php4-cgi
+
+ -- Petr Cech <cech@debian.org>  Thu, 23 Jan 2001 11:12:59 +0100
+
+php4 (4.0.4final-6) unstable; urgency=medium
+
+  * OK. Now also fix the prerm issues (closes: #81418) and to ease
+    that thanks for submiting bugs (closes: #81818, #81819)
+  * some upstream updates: browsercap, php-config
+
+ -- Petr Cech <cech@debian.org>  Wed, 10 Jan 2001 14:04:19 +0100
+
+php4 (4.0.4final-5) unstable; urgency=medium
+
+  * OK. Take a deep breath and fix those bloody postinst
+    bugs - fix it and rewrite from ed -> sed, because ed is not essential :(
+    closes: #80801.
+  * apply some upstream fixes.
+  * disable ctype extension - not yet ready
+
+ -- Petr Cech <cech@debian.org>  Tue,  2 Jan 2001 13:40:35 +0100
+
+php4 (4.0.4final-4) unstable; urgency=low
+
+  * debian/libc-client.la: add -lpam -ldl -lcrypt
+  * fix php4-cgi.postinst bugs (closes: #80817, #80805, #80801) 
+
+ -- Petr Cech <cech@debian.org>  Fri, 29 Dec 2000 11:40:43 +0100
+
+php4 (4.0.4final-3) unstable; urgency=low
+
+  * Brown Xmas Sock Release
+  * Grr. correctly fix the php4 postinst error
+    (closes: #80303, #80324, #80326, #80359)
+    NMU by Wichert Akkerman (closes: #80381)
+  * also fix php4-cgi. NMU by Marcelo E. Magallon
+    (closes: #80406).
+  * fix fix for php4-cgi postinst s/apache/cgi/
+  * apply some upstream fixes to ext/session/
+  * domxml/config.m4: fix my -Lshared,/usr/lib error
+  * debian/rules:
+      * add --enable-ctype to both targets
+      * --diable-pear to CGI target
+      * generate Depends: php4 (=ver) | php4-cgi (=ver)
+
+ -- Petr Cech <cech@debian.org>  Wed, 27 Dec 2000 15:29:56 +0100
+
+php4 (4.0.4final-2) unstable; urgency=low
+
+  * Run apacheconfig with --force-modules.
+  * Fix stupid bug in php4 and php4-cgi postinst.
+  * ext/sysvshm/sysvshm.c : upstream fix
+
+ -- Petr Cech <cech@debian.org>  Thu, 21 Dec 2000 22:58:27 +0100
+
+php4 (4.0.4final-1) unstable; urgency=low
+
+  * New upstream version.
+  * Sorry for the version, but da-katie doesn't allow overwriting of files, notably
+    .orig.tar.gz. It's my fault I know, but it worked till now.
+
+ -- Petr Cech <cech@debian.org>  Wed, 20 Dec 2000 01:32:34 +0100
+
+php4 (4.0.4-0RC6.1) unstable; urgency=low
+
+  * OK. Final final RC for 4.0.4.
+  * Build-depends on libxml2-dev (>= 2.2.7) because php needs this.
+  * Activate ndbm dba driver.
+
+ -- Petr Cech <cech@debian.org>  Sun, 17 Dec 2000 19:43:51 +0100
+
+php4 (4.0.4-0RC5.1) unstable; urgency=low
+
+  * UNRELEASED.
+  * Final RC for 4.0.4.
+  * Some mods to README.Debian and TODO
+
+ -- Petr Cech <cech@debian.org>  Wed, 13 Dec 2000 00:01:08 +0100
+
+php4 (4.0.4-0RC4.1) unstable; urgency=low
+
+  * New upstream beta release. Let's stabilize things now and add new
+    modules after final release of 4.0.4.
+
+ -- Petr Cech <cech@debian.org>  Thu,  7 Dec 2000 10:12:11 +0100
+
+php4 (4.0.4-0RC3.2) unstable; urgency=low
+
+  * recompile with new libc-client200-dev.
+  * fix source recompile
+  * depend on fixed apache 1.3.14-2
+
+ -- Petr Cech <cech@debian.org>  Thu,  7 Dec 2000 00:49:14 +0100
+
+php4 (4.0.4-0RC3.1) unstable; urgency=low
+
+  * New upstream beta release.
+  * Add libxml2-dev to build-depends (closes: #78479).
+  * implement DEB_BUILD_OPTIONS
+  * fix apache build wrt. apxs
+  * fix typo in description of curl modules (closes: #78828)
+
+ -- Petr Cech <cech@debian.org>  Tue,  5 Dec 2000 14:22:30 +0100
+
+php4 (4.0.3pl1-7) unstable; urgency=low
+
+  * Rebuild with apache 1.3.14-1
+
+ -- Petr Cech <cech@debian.org>  Fri,  1 Dec 2000 01:41:41 +0100
+
+php4 (4.0.3pl1-6) unstable; urgency=low
+
+  * add --enable-memory-limit
+  * add --enable-exif per request from William Ono.
+  * Add Suggests: phpdoc (yes. it's here).
+  * ext/standard/crypt.c - fix from CVS.
+  * ext/ftp/ftp.{c,h} - fix mkdir() and RETR, STOR
+  * ext/gd/gd.c - add format string
+                - add XBM to phpinfo()
+  * ext/imap/php_imap.{c,h} - CVS fixes
+  * main/main.c - fix CGI crash
+                - add HTTP_SERVER_VARS in CGI mode
+  * and many more. Taken from php4.srpm (thanks :))
+  * recompile with apache 1.3.12-2.2
+  * and hack large files support into DSO module. php4 doesn't use it now :((
+
+ -- Petr Cech <cech@debian.org>  Thu, 30 Nov 2000 00:01:39 +0100
+
+php4 (4.0.3pl1-5) unstable; urgency=low
+
+  * Back out changes about --enable-versioning
+  * ext/domxml/php_domxml.c : fix compilation with recent libxml2 (>=2.2.7) 
+
+ -- Petr Cech <cech@debian.org>  Tue, 21 Nov 2000 18:03:56 +0100
+
+php4 (4.0.3pl1-4) unstable; urgency=low
+
+  * Clarify README.Debian about the DB change a bit (dbm_ -> dba_*)
+  * Remove aliasing hack - deprecated upstream. (closes: #76558)
+  * Compile with libgd-dev again (Write 100x always reinstall libgd-dev).
+  * --enable-versioning and tweak debian/control a bit, let's see, what breaks
+
+ -- Petr Cech <cech@debian.org>  Tue, 14 Nov 2000 10:00:54 +0100
+
+php4 (4.0.3pl1-3) unstable; urgency=low
+
+  * Activate curl module.
+  * Really enable shmop module.
+  * Fix include paths in phpize. Now everyone should be able to easilly build
+    php4 extension modules (php4-dbase anyone?).
+
+ -- Petr Cech <cech@debian.org>  Mon,  6 Nov 2000 23:17:41 +0100
+
+php4 (4.0.3pl1-2) unstable; urgency=low
+
+  * Build with libgd-dev installed (NOT libgd-gif).
+
+ -- Petr Cech <cech@debian.org>  Tue, 17 Oct 2000 02:08:36 +0200
+
+php4 (4.0.3pl1-1) unstable; urgency=medium
+
+  * New upstream bugfix release.
+  * Depend on libopenldap1 as with the newer ldap module crashes php&apache.
+
+ -- Petr Cech <cech@debian.org>  Mon, 16 Oct 2000 15:30:55 +0200
+
+php4 (4.0.3-2) unstable; urgency=high
+
+  * Urgency=high because last upload didn't have it ad it fixes some
+    security holes.
+  * ext/domxml/config.m4: don't try to build then --without-domxml
+
+ -- Petr Cech <cech@debian.org>  Thu, 12 Oct 2000 12:50:17 +0200
+
+php4 (4.0.3-1) unstable; urgency=low
+
+  * New upstream release.
+    - fixes also some string format bugs
+  * Build with fixed libmysqlclient10-dev.
+
+ -- Petr Cech <cech@debian.org>  Thu, 12 Oct 2000 00:00:07 +0200
+
+php4 (4.0.2-7) unstable; urgency=low
+
+  * Really, really install libldap2-dev.
+  * Workaround broken libmysqlclient9-dev. It has broken (again) .so symlink.
+
+ -- Petr Cech <cech@debian.org>  Tue, 10 Oct 2000 22:28:48 +0200
+
+php4 (4.0.2-6) unstable; urgency=low
+
+  * Again fix description a little bit.
+  * Correct build-depends.
+  * Sic. Recompile, because I've busted (libopenldap-dev instead of
+    libldap2-dev was installed).
+  * While at it install also new apache glibc NMU and recompile with it.
+  * Move PEAR from php4-dev to php4 and install ALL of PEAR.
+  * add --prefix=/usr
+  * debhelper v2
+  * prepare for CURL module
+  * Updated README.Debian
+  * updated XML module from php4 CVS to close: #72360
+
+ -- Petr Cech <cech@debian.org>  Mon,  2 Oct 2000 14:36:35 +0200
+
+php4 (4.0.2-5) unstable; urgency=low
+
+  * Correct build-depends (libgd1-dev -> libgd-dev). Where is Roman? :)
+  * Add libdb2-dev (>= 2:2.7.7-2.1) to build-depends for glibc 2.1.94.
+  * and recompile with glibc 2.1.94 to fix it.
+
+ -- Petr Cech <cech@debian.org>  Wed, 27 Sep 2000 09:00:27 +0200
+
+php4 (4.0.2-4) unstable; urgency=low
+
+  * Tweak description a little bit more.
+
+ -- Petr Cech <cech@debian.org>  Sun, 24 Sep 2000 23:58:15 +0200
+
+php4 (4.0.2-3) unstable; urgency=low
+
+  * Add info about what modules and why are enabled/disabled
+    into README.Debian.
+  * Install not so many docs (only in -dev now).
+  * Enable calendar and sockets modules.
+  * Rearange package descriptions so module-specific comments
+    go first (closes: # oh great leader).
+  * Create domxml module aka xmlv2.
+  * Fix spelling wan't -> want (closes: #70544).
+  * Add libraries for gd module only when linking this one
+    and not globaly (closes: #71623).
+  * Say that we wait for ENTER (closes: #71769).
+  * Fix logic in prerm script (closes: #71770).
+
+ -- Petr Cech <cech@debian.org>  Sun, 24 Sep 2000 17:54:52 +0000
+
+php4 (4.0.2-2) unstable; urgency=low
+
+  * Add info about what modules and why are enabled/disabled
+    into README.Debian.
+  * Install not so many docs (only in -dev now).
+  * Enable calendar and sockets modules.
+  * Rearange package descriptions so module-specific comments
+    go first (closes: # oh great leader).
+  * Create domxml module aka xmlv2.
+  * Fix building (small typo).
+  * Compile with libmysqlclient9-dev installed.
+
+ -- Petr Cech <cech@debian.org>  Mon, 18 Sep 2000 23:46:40 +0200
+
+php4 (4.0.2-1) unstable; urgency=low
+
+  * The "Back from vacation" release.
+  * New upstream fixed (and bugs).
+  * Correct postm script (only cosmetic) closes: #67350, #68541
+  * build with libpcre3, libldap2
+  * Use modified patch from -3 (remove #define XML_... php_XML_...)
+
+ -- Petr Cech <cech@debian.org>  Thu,  7 Sep 2000 23:17:59 +0200
+
+php4 (4.0.1pl2-3) unstable; urgency=low
+
+  * UNRELEASED
+  * Fixed the XML packages.
+
+ -- Norman Jordan <njordan@home.com>  Thu, 10 Aug 2000 21:45:15 +0000
+
+php4 (4.0.1pl2-2) unstable; urgency=low
+
+  * Fix source archive.
+
+ -- Petr Cech <cech@debian.org>  Tue, 11 Jul 2000 11:04:48 +0000
+
+php4 (4.0.1pl2-1) unstable; urgency=low
+
+  * New upstream bug fix release (variation of the patches in -2)
+  * Build with new libgd1 library (maybe still in Incoming)
+  * Move PEAR stuff to php4 package (closes: #66897).
+
+ -- Petr Cech <cech@debian.org>  Sun,  9 Jul 2000 09:01:06 +0000
+
+php4 (4.0.1-2) unstable; urgency=low
+
+  * Apply some CVS diffs in an attempt to fix opendir() problems.
+
+ -- Petr Cech <cech@debian.org>  Fri, 30 Jun 2000 09:04:24 +0000
+
+php4 (4.0.1-1) unstable; urgency=low
+
+  * New upstream release (taken from CVS tag php_4_0_1).
+  * --with-regex=system else it plays havoc. Dunno why ...
+  * remove autoconf,automake,aclocal from configure rules.
+  * Fix description of XML --help message (no, it's not MySQL).
+
+ -- Petr Cech <cech@debian.org>  Wed, 28 Jun 2000 22:55:16 +0200
+
+php4 (4.0.0-4) unstable; urgency=low
+
+  * Add -dev package (closes: #65907).
+  * Add -cgi and -cgi-* packages (closes: #51097, #52855).
+  * --enable-filepro
+  * Tweak copyright file a bit.
+  * Generate mhash module (closes part of 63186).
+  * Ask to remove libphp4 from httpd.conf upon remove/purge.
+  * Fixed build-depends, thanks to Roman Hodek (closes: #65938).
+    (I told you the first time it won't work :))
+  * Mark /etc/php4/cgi/php.ini as conffile.
+  * Every module now ask if it should be enabled on install
+    (if it's not already) and disabled on remove/purge.
+
+ -- Petr Cech <cech@debian.org>  Tue, 20 Jun 2000 14:29:01 +0200
+
+php4 (4.0.0-3) unstable; urgency=low
+
+  * Ship correct php.ini (extension_dir=/usr/lib/php4/apache).
+  * Don't use included libmysqlclient and use system one (fixes
+    wrong location of mysqld.sock)
+  * link XML module dynamicly with system xmlparse and xmltok.
+
+ -- Petr Cech <cech@debian.org>  Wed, 14 Jun 2000 22:30:07 +0000
+
+php4 (4.0.0-2) unstable; urgency=low
+
+  * fix the IS_SLASH bug (closes: #65625 and probably others as well).
+  * Really change the maintainer field.
+
+ -- Petr Cech <cech@debian.org>  Wed, 14 Jun 2000 07:44:05 +0000
+
+php4 (4.0.0-1) unstable; urgency=low
+
+  * New maintainer.
+  * New upstream release.
+  * Fix dynamic module loading.
+  * Added Build-Depends (I wonder, if I got them right)
+  * Standards-Version: 3.1.1
+
+ -- Petr Cech <cech@debian.org>  Tue, 13 Jun 2000 13:40:56 +0000
+
+php4 (4.0rc1-2) unstable; urgency=low
+
+  * Compile with latest apache and libraries from woody 
+    (Closes: #62631, #62640)
+
+ -- Gergely Madarasz <gorgo@sztaki.hu>  Wed, 19 Apr 2000 14:39:25 +0200
+
+php4 (4.0rc1-1) unstable; urgency=low
+
+  * New upstream version
+  * Fix db2 support (Closes: #61709)
+  * Fix gd support (Closes: #61708)
+  * Remove ucd-snmp-hack from config options
+
+ -- Gergely Madarasz <gorgo@sztaki.hu>  Sun, 16 Apr 2000 17:04:05 +0200
+
+php4 (4.0b4pl1-2) unstable; urgency=low
+
+  * Build with --disable-debug so it should work with the zend
+    optimizer (Closes: #60265)
+  * Build with --enable-trans-sid (Closes: #60430)
+  * Write some more about php4/php3 differences in the description
+    (Closes: #60155)
+
+ -- Gergely Madarasz <gorgo@sztaki.hu>  Fri, 17 Mar 2000 17:35:29 +0100
+
+php4 (4.0b4pl1-1) unstable; urgency=low
+
+  * New upstream version
+  * Upstream reorganized the build system quite a bit, lots of patches
+    removed
+
+ -- Gergely Madarasz <gorgo@sztaki.hu>  Wed, 23 Feb 2000 17:16:00 +0100
+
+php4 (4.0b3-4) unstable; urgency=low
+
+  * Add /etc/php4/apache/php.ini to conffiles (Closes: #54194)
+  * Add info file for apacheconfig
+  * Offer to run apacheconfig and/or apache-sslconfig in postinst
+  * Comment out sendmail_path from php.ini so the default sendmail path
+    should work (Closes: #51355)
+
+ -- Gergely Madarasz <gorgo@sztaki.hu>  Thu,  6 Jan 2000 14:38:20 +0100
+
+php4 (4.0b3-3) unstable; urgency=low
+
+  * Compile with libgd instead of libgd-gif
+
+ -- Gergely Madarasz <gorgo@sztaki.hu>  Tue,  4 Jan 2000 18:07:56 +0100
+
+php4 (4.0b3-2) unstable; urgency=low
+
+  * Build imap and ldap modules
+  * Fix rm -f in rules file (Closes: #51623)
+
+ -- Gergely Madarasz <gorgo@sztaki.hu>  Mon,  3 Jan 2000 16:54:19 +0100
+
+php4 (4.0b3-1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Gergely Madarasz <gorgo@sztaki.hu>  Tue, 16 Nov 1999 19:33:42 +0100

@@ -1,0 +1,12 @@
+diff -ur php-5.0.4/ext/sqlite/config.m4 php5-5.0.4/ext/sqlite/config.m4
+--- php-5.0.4/ext/sqlite/config.m4	2005-01-10 08:05:16.000000000 +1100
++++ php5-5.0.4/ext/sqlite/config.m4	2005-07-17 02:06:05.000000000 +1000
+@@ -49,7 +49,7 @@
+     ])
+  
+     PHP_SUBST(SQLITE_SHARED_LIBADD)
+-    PHP_NEW_EXTENSION(sqlite, sqlite.c sess_sqlite.c libsqlite/src/encode.c, $ext_shared)
++    PHP_NEW_EXTENSION(sqlite, sqlite.c sess_sqlite.c, $ext_shared)
+   else
+     # use bundled library
+ 
