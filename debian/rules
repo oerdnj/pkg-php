@@ -78,8 +78,8 @@ COMMON_CONFIG=  --build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE) \
 
 apachever=$(shell dpkg -s apache-dev | grep ^Version | cut -d\  -f2 | cut -d- -f1)
 php5ver=$(shell head -1 debian/changelog | cut -d\  -f 2 | sed 's/[()]//g')
-zendapiver=$(shell egrep '\#define ZEND_MODULE_API_NO ' ./Zend/zend_modules.h|sed 's/\#define ZEND_MODULE_API_NO //')
-phpapiver=$(shell grep '\#define PHP_API_VERSION ' ./main/php.h|sed -e 's/\#define PHP_API_VERSION //')
+zendapiver=$(shell egrep '\#define ZEND_MODULE_API_NO ' ./Zend/zend_modules.h|awk '{print $$3}')
+phpapiver=$(shell grep '\#define PHP_API_VERSION ' ./main/php.h|awk '{print $$3}')
 
 patch: patch-stamp
 patch-stamp:
@@ -453,13 +453,13 @@ binary-arch: build install
 #	dh_perl
 	dh_shlibdeps -a
 	echo "apache:Depends=apache-common (>= $(apachever))" >>debian/libapache-mod-php5.substvars
-	echo "php:Provides=phpapi-$(phpapiver)" >> debian/libapache-mod-php5.substvars
-	echo "php:Provides=phpapi-$(phpapiver)" >> debian/php5-cli.substvars
-	echo "php:Provides=phpapi-$(phpapiver)" >> debian/php5-cgi.substvars
-	echo "php:Provides=phpapi-$(phpapiver)" >> debian/libapache2-mod-php5.substvars
+	echo "php:Provides=phpapi-$(zendapiver)" >> debian/libapache-mod-php5.substvars
+	echo "php:Provides=phpapi-$(zendapiver)" >> debian/php5-cli.substvars
+	echo "php:Provides=phpapi-$(zendapiver)" >> debian/php5-cgi.substvars
+	echo "php:Provides=phpapi-$(zendapiver)" >> debian/libapache2-mod-php5.substvars
 
 	cat debian/modulelist | while read package extname dsoname; do \
-		echo "php:Depends=phpapi-$(phpapiver)" >> debian/php5-$$package.substvars; \
+		echo "php:Depends=phpapi-$(zendapiver)" >> debian/php5-$$package.substvars; \
 	done
 
 	echo "apache2:Depends=apache2-mpm-prefork (>> 2.0.52)" >>debian/libapache2-mod-php5.substvars

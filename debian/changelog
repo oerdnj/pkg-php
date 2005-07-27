@@ -1,3 +1,17 @@
+php5 (5.0.4-2) unstable; urgency=low
+
+  * We now have a mailing list.  Set the maintainer to the list, and move
+    myself to Uploaders where, apparently, I belong.
+  * Use ZEND_MODULE_API_NO rather than PHP_API_VERSION for extension deps,
+    as recent upstream ABI breakage in 4.4.0 leads me to believe this is
+    the only constant they actually bother to update on ABI changes.
+  * Bring back some concflicts that went missing (libapache-mod-php5 needs
+    to conflict with libapache-mod-php4 and older versions of php4, while
+    the two libapache2-mod-php[45] modules also need to conflict).
+  * Adjust debian/watch to not match on upstream's alpha/beta/rc releases.
+
+ -- Adam Conrad <adconrad@0c3.net>  Wed, 27 Jul 2005 22:30:42 +1000
+
 php5 (5.0.4-1) unstable; urgency=low
 
   * Initial PHP5 release; packaging forked from php4 4:4.3.11-1.

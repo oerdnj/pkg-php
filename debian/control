@@ -1,8 +1,8 @@
 Source: php5
 Section: web
 Priority: optional
-Maintainer: Adam Conrad <adconrad@0c3.net>
-Uploaders: Steve Langasek <vorlon@debian.org>, Andres Salomon <dilinger@debian.org>, Jeroen van Wolffelaar <jeroen@wolffelaar.nl>, Ondřej Surý <ondrej@debian.org>
+Maintainer: Debian PHP Maintainers <pkg-php-maint@lists.alioth.debian.org>
+Uploaders: Adam Conrad <adconrad@0c3.net>, Steve Langasek <vorlon@debian.org>, Andres Salomon <dilinger@debian.org>, Jeroen van Wolffelaar <jeroen@wolffelaar.nl>, Ondřej Surý <ondrej@debian.org>
 Build-Depends: apache-dev (>= 1.3.23), apache2-prefork-dev (>= 2.0.53-3), autoconf, automake1.4, bison, chrpath, debhelper (>= 3), dpkg-dev (>= 1.13.9), flex (>= 2.5.4), freetds-dev, po-debconf, libbz2-dev (>= 1.0.0), libcurl3-dev, libdb4.2-dev, libexpat1-dev (>= 1.95.2-2.1), libfreetype6-dev, libgcrypt11-dev, libgd2-xpm-dev (>= 2.0.28-3), libjpeg62-dev, libkrb5-dev, libldap2-dev, libmhash-dev (>= 0.8.8), libmysqlclient12-dev, libncurses5-dev, libpam0g-dev, libpcre3-dev (>= 4.3-1), libpng12-dev, libpq-dev, librecode-dev, libsnmp5-dev, libsqlite0-dev, libssl-dev (>= 0.9.6), libt1-dev, libtool (>= 1.4.2-4), libwrap0-dev, libxmltok1-dev, libxml2-dev (>= 2.4.14), libxslt1-dev (>= 1.0.18), re2c, unixodbc-dev, zlib1g-dev (>= 1.0.9)
 Build-Conflicts: bind-dev
 Standards-Version: 3.6.2
@@ -40,7 +40,7 @@ Description: Common files for packages built from the php5 source
 Package: libapache-mod-php5
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support (>= 2.03-1), ${apache:Depends}, php5-common (= ${Source-Version}), libmagic1
-Conflicts: php3
+Conflicts: php3, php4 (<< 4:4.3.8-6), libapache-mod-php4
 Provides: ${php:Provides}
 Suggests: php-pear
 Description: server-side, HTML-embedded scripting language (apache 1.3 module)
@@ -63,6 +63,7 @@ Description: server-side, HTML-embedded scripting language (apache 1.3 module)
 Package: libapache2-mod-php5
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support (>= 2.03-1), ${apache2:Depends}, php5-common (= ${Source-Version}), libmagic1
+Conflicts: libapache2-mod-php4
 Provides: ${php:Provides}
 Suggests: php-pear
 Description: server-side, HTML-embedded scripting language (apache 2.0 module)

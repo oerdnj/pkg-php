@@ -1,2 +1,2 @@
 version=2
-http://www.php.net/downloads.php /get/php-(5\..*)\.tar\.gz/from/a/mirror
+http://www.php.net/downloads.php /get/php-(5\.[0-9\.]*)\.tar\.gz/from/a/mirror
