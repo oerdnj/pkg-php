@@ -3,13 +3,13 @@ Section: web
 Priority: optional
 Maintainer: Debian PHP Maintainers <pkg-php-maint@lists.alioth.debian.org>
 Uploaders: Adam Conrad <adconrad@0c3.net>, Steve Langasek <vorlon@debian.org>, Andres Salomon <dilinger@debian.org>, Jeroen van Wolffelaar <jeroen@wolffelaar.nl>, Ondřej Surý <ondrej@debian.org>
-Build-Depends: apache-dev (>= 1.3.23), apache2-prefork-dev (>= 2.0.53-3), autoconf, automake1.4, bison, chrpath, debhelper (>= 3), dpkg-dev (>= 1.13.9), flex (>= 2.5.4), freetds-dev, po-debconf, libbz2-dev (>= 1.0.0), libcurl3-dev, libdb4.2-dev, libexpat1-dev (>= 1.95.2-2.1), libfreetype6-dev, libgcrypt11-dev, libgd2-xpm-dev (>= 2.0.28-3), libjpeg62-dev, libkrb5-dev, libldap2-dev, libmhash-dev (>= 0.8.8), libmysqlclient12-dev, libncurses5-dev, libpam0g-dev, libpcre3-dev (>= 4.3-1), libpng12-dev, libpq-dev, librecode-dev, libsnmp5-dev, libsqlite0-dev, libssl-dev (>= 0.9.6), libt1-dev, libtool (>= 1.4.2-4), libwrap0-dev, libxmltok1-dev, libxml2-dev (>= 2.4.14), libxslt1-dev (>= 1.0.18), re2c, unixodbc-dev, zlib1g-dev (>= 1.0.9)
+Build-Depends: apache-dev (>= 1.3.23), apache2-prefork-dev (>= 2.0.53-3), autoconf, automake1.4, bison, chrpath, debhelper (>= 3), flex (>= 2.5.4), freetds-dev, po-debconf, libbz2-dev (>= 1.0.0), libcurl3-dev, libdb4.2-dev, libexpat1-dev (>= 1.95.2-2.1), libfreetype6-dev, libgcrypt11-dev, libgd2-xpm-dev (>= 2.0.28-3), libjpeg62-dev, libkrb5-dev, libldap2-dev, libmhash-dev (>= 0.8.8), libmysqlclient12-dev, libncurses5-dev, libpam0g-dev, libpcre3-dev (>= 4.3-1), libpng12-dev, libpq-dev | postgresql-dev, librecode-dev, libsnmp5-dev, libsqlite0-dev, libssl-dev (>= 0.9.6), libt1-dev, libtool (>= 1.4.2-4), libwrap0-dev, libxmltok1-dev, libxml2-dev (>= 2.4.14), libxslt1-dev (>= 1.0.18), re2c, unixodbc-dev, zlib1g-dev (>= 1.0.9)
 Build-Conflicts: bind-dev
 Standards-Version: 3.6.2
 
 Package: php5
 Architecture: all
-Depends: libapache-mod-php5 (>= ${Source-Version}) | libapache2-mod-php5 (>= ${Source-Version}) | php5-cgi (>= ${Source-Version}), php5-common (>= ${Source-Version})
+Depends: libapache2-mod-php5 (>= ${Source-Version}) | libapache-mod-php5 (>= ${Source-Version}) | php5-cgi (>= ${Source-Version}), php5-common (>= ${Source-Version})
 Description: server-side, HTML-embedded scripting language (meta-package)
  This package is a meta-package that, when installed, guarantees that you
  have at least one of the four server-side versions of the PHP5 interpreter
@@ -132,8 +132,7 @@ Description: command-line interpreter for the php5 scripting language
  Homepage: http://www.php.net/
 
 Package: php5-dev
-Depends: autoconf, automake1.4, libssl-dev, php5-common (>= ${Source-Version})
-Conflicts: libtool (= 1.4b-1), libtool (= 1.4b-2), libtool (= 1.4b-3)
+Depends: autoconf, automake1.4, libssl-dev, libtool, shtool, php5-common (>= ${Source-Version})
 Section: devel
 Architecture: any
 Description: Files for PHP5 module development

@@ -1,3 +1,25 @@
+php5 (5.0.4-3) unstable; urgency=low
+
+  * And fix the module/extension API situation one last time, this time
+    we read ZEND_EXTENSION_API_NO, ZEND_MODULE_API_NO, and PHP_API_VERSION,
+    pick the most recent of the three, assume things broke in ways we're
+    not willing to cope with, and both change the extension directory to
+    use that value, as well as setting it to the provides/depends for the
+    various SAPI and extension packages.
+  * Add a new option to php-config, 'php-config --phpapi', which extension
+    packagers should now be using to get the current phpapi they're building
+    against and set their dependencies accordingly.
+  * Strip the -gnu off the end of the DEB_*_* variables and drop the
+    versioned dpkg-dev build-dep to ease backporting to sarge and hoary;
+    doing so in such a way as to still allow for easy cross-compiling.
+  * Add postgresql-dev build-dep alternate for easy hoary/sarge backports.
+  * Make libapache2-mod-php5 the default alternate dependency for the php5
+    metapackage, since we really do want to encourage the apache upgrade. 
+  * Make php5-dev stop shipping copies of files from autotools-dev, shtool,
+    and libtool, and instead symlink to them and depend on those packages.
+
+ -- Adam Conrad <adconrad@0c3.net>  Sun, 31 Jul 2005 03:05:08 +1000
+
 php5 (5.0.4-2) unstable; urgency=low
 
   * We now have a mailing list.  Set the maintainer to the list, and move

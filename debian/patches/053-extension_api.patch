@@ -1,0 +1,46 @@
+diff -ur php-5.0.4/configure.in php5-5.0.4/configure.in
+--- php-5.0.4/configure.in	2005-03-31 07:43:12.000000000 +1000
++++ php5-5.0.4/configure.in	2005-07-31 02:35:46.000000000 +1000
+@@ -1033,8 +1033,10 @@
+ 
+ ZEND_MODULE_API_NO=`egrep '#define ZEND_MODULE_API_NO ' $srcdir/Zend/zend_modules.h|sed 's/#define ZEND_MODULE_API_NO //'`
+ 
++DEBIAN_PHP_API=`egrep -h '^#define ZEND_EXTENSION_API_NO|^#define ZEND_MODULE_API_NO|#define PHP_API_VERSION' $srcdir/Zend/zend_extensions.h $srcdir/Zend/zend_modules.h $srcdir/main/php.h | awk '{print $3}' | sed -e 's/^2200/200/' | sort -n | tail -n 1`
++
+ if test -z "$EXTENSION_DIR"; then
+-  extbasedir=$ZEND_MODULE_API_NO
++  extbasedir=$DEBIAN_PHP_API
+   if test "$oldstyleextdir" = "yes"; then
+     if test "$PHP_DEBUG" = "1"; then
+       part1=debug
+@@ -1154,6 +1156,7 @@
+ PHP_SUBST(CXXFLAGS_CLEAN)
+ PHP_SUBST(CXX_PHP_COMPILE)
+ PHP_SUBST_OLD(DEBUG_CFLAGS)
++PHP_SUBST_OLD(DEBIAN_PHP_API)
+ PHP_SUBST_OLD(EXTENSION_DIR)
+ PHP_SUBST_OLD(EXTRA_LDFLAGS)
+ PHP_SUBST_OLD(EXTRA_LDFLAGS_PROGRAM)
+diff -ur php-5.0.4/scripts/php-config.in php5-5.0.4/scripts/php-config.in
+--- php-5.0.4/scripts/php-config.in	2005-03-16 17:36:54.000000000 +1100
++++ php5-5.0.4/scripts/php-config.in	2005-07-31 02:34:52.000000000 +1000
+@@ -7,6 +7,7 @@
+ ldflags="@PHP_LDFLAGS@"
+ libs="@EXTRA_LIBS@"
+ extension_dir='@EXTENSION_DIR@'
++phpapi="@DEBIAN_PHP_API@"
+ 
+ case "$1" in
+ --prefix)
+@@ -21,8 +22,10 @@
+ 	echo $extension_dir;;
+ --version)
+ 	echo $version;;
++--phpapi)
++	echo $phpapi;;
+ *)
+-	echo "Usage: $0 [--prefix|--includes|--ldflags|--libs|--extension-dir|--version]"
++	echo "Usage: $0 [--prefix|--includes|--ldflags|--libs|--extension-dir|--version|--phpapi]"
+ 	exit 1;;
+ esac
+ 
