@@ -1,7 +1,7 @@
 diff -urN php-5.0.4.orig/ext/sockets/sockets.c php-5.0.4/ext/sockets/sockets.c
 --- php-5.0.4.orig/ext/sockets/sockets.c	2005-02-15 00:44:31.000000000 +0100
 +++ php-5.0.4/ext/sockets/sockets.c	2005-04-10 17:32:15.851738072 +0200
-@@ -531,6 +531,7 @@
+@@ -540,6 +540,7 @@
  
  		php_sock = (php_socket*) zend_fetch_resource(element TSRMLS_CC, -1, le_socket_name, NULL, 1, le_socket);
  		if (!php_sock) continue; /* If element is not a resource, skip it */

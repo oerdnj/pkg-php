@@ -1,6 +1,6 @@
 --- php4-4.3.11/ext/standard/info.c.orig	2005-07-10 06:23:11.000000000 +1000
 +++ php4-4.3.11/ext/standard/info.c	2005-07-10 06:23:33.000000000 +1000
-@@ -424,7 +424,7 @@
+@@ -441,7 +441,7 @@
  		php_info_print_table_start();
  		php_info_print_table_row(2, "System", php_uname );
  		php_info_print_table_row(2, "Build Date", __DATE__ " " __TIME__ );

@@ -1,7 +1,7 @@
 diff -ur php-5.0.4/configure.in php5-5.0.4/configure.in
 --- php-5.0.4/configure.in	2005-03-31 07:43:12.000000000 +1000
 +++ php5-5.0.4/configure.in	2005-07-31 02:35:46.000000000 +1000
-@@ -1033,8 +1033,10 @@
+@@ -1044,8 +1044,10 @@
  
  ZEND_MODULE_API_NO=`egrep '#define ZEND_MODULE_API_NO ' $srcdir/Zend/zend_modules.h|sed 's/#define ZEND_MODULE_API_NO //'`
  
@@ -13,7 +13,7 @@ diff -ur php-5.0.4/configure.in php5-5.0.4/configure.in
    if test "$oldstyleextdir" = "yes"; then
      if test "$PHP_DEBUG" = "1"; then
        part1=debug
-@@ -1154,6 +1156,7 @@
+@@ -1176,6 +1178,7 @@
  PHP_SUBST(CXXFLAGS_CLEAN)
  PHP_SUBST(CXX_PHP_COMPILE)
  PHP_SUBST_OLD(DEBUG_CFLAGS)

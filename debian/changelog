@@ -1,3 +1,28 @@
+php5 (5.0.5-1) unstable; urgency=low
+
+  * New upstream release, adjust patch offsets and fuzz, and drop patches:
+    - Drop 009-snmp-int-sizes.patch, finally fixed upstream.
+    - Drop 051-gcc-4.0.patch, fixed differently upstream.
+    - Drop 102-php_streams.patch, fixed upstream.
+    - Drop 103-catch_segv.patch, also fixed upstream.
+  * Distribute the shiny new manpages for php-config and phpize.
+
+ -- Adam Conrad <adconrad@0c3.net>  Mon, 12 Sep 2005 02:29:24 +1000
+
+php5 (5.0.4-4) unstable; urgency=low
+
+  * Ondřej Surý <ondrej@sury.org>:
+    - Add patch from CVS to fix regression in PHP 5.0.4, where file related
+      functions all stop reading at 2,000,000 bytes (closes: #321930)
+  * Adam Conrad <adconrad@0c3.net>:
+    - Enable support for gdbm files in the dba handler; half the base system
+      already appears to depend on libgdm, so we can't make things worse.
+    - Add another patch from CVS to fix a segfault in the catch/throw
+      handler under interesting nesting cases (closes: #322507)  
+    - Rebuild against libsnmp9-dev for new libsnmp SOVER (closes: #327107)
+
+ -- Adam Conrad <adconrad@0c3.net>  Thu,  8 Sep 2005 00:36:36 +1000
+
 php5 (5.0.4-3) unstable; urgency=low
 
   * And fix the module/extension API situation one last time, this time

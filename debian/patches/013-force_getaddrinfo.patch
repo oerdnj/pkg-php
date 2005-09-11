@@ -1,6 +1,6 @@
 --- php4-4.3.10/configure.in	2004-12-15 17:00:57.000000000 -0700
 +++ php4-4.3.10/configure.in	2004-12-15 17:03:30.000000000 -0700
-@@ -570,50 +570,50 @@
+@@ -581,50 +581,50 @@
  
  dnl Check for getaddrinfo, should be a better way, but...
  dnl Also check for working getaddrinfo

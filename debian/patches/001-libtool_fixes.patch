@@ -36,7 +36,7 @@ diff -urN php4-4.3.4.orig/acinclude.m4 php4-4.3.4/acinclude.m4
 diff -urN php4-4.3.4.orig/configure.in php4-4.3.4/configure.in
 --- php4-4.3.4.orig/configure.in	2003-11-02 17:15:05.000000000 -0500
 +++ php4-4.3.4/configure.in	2004-02-16 01:00:52.000000000 -0500
-@@ -1216,9 +1216,6 @@
+@@ -1238,9 +1238,6 @@
  
  LDFLAGS="$LDFLAGS $PHP_AIX_LDFLAGS"
  AC_PROG_LIBTOOL

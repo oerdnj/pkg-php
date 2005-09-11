@@ -1,6 +1,6 @@
 --- php4-4.3.10/build/build2.mk.orig	2005-02-06 00:49:53.000000000 -0700
 +++ php4-4.3.10/build/build2.mk	2005-02-06 00:51:58.000000000 -0700
-@@ -52,6 +52,11 @@
+@@ -55,6 +55,11 @@
  
  aclocal.m4: configure.in acinclude.m4
  	@echo rebuilding $@

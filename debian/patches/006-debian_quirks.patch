@@ -1,7 +1,7 @@
 diff -uNr php-5.0.4.orig/configure.in php-5.0.4/configure.in
 --- php-5.0.4.orig/configure.in	2005-03-30 23:43:12.000000000 +0200
 +++ php-5.0.4/configure.in	2005-04-27 11:15:29.276399240 +0200
-@@ -918,7 +918,7 @@
+@@ -929,7 +929,7 @@
  fi
  
  PHP_ARG_WITH(pear, [whether to install PEAR],
@@ -10,7 +10,7 @@ diff -uNr php-5.0.4.orig/configure.in php-5.0.4/configure.in
    --without-pear          Do not install PEAR], DEFAULT, yes)
  
  if test "$PHP_PEAR" != "no"; then
-@@ -954,7 +954,7 @@
+@@ -965,7 +965,7 @@
    if test "$PHP_PEAR" = "DEFAULT" || test "$PHP_PEAR" = "yes"; then
      case $PHP_LAYOUT in
        GNU) PEAR_INSTALLDIR=$datadir/pear;;
@@ -19,7 +19,7 @@ diff -uNr php-5.0.4.orig/configure.in php-5.0.4/configure.in
      esac
    fi
  
-@@ -1008,12 +1008,12 @@
+@@ -1019,12 +1019,12 @@
  
  case $libdir in
    '${exec_prefix}/lib')
@@ -34,7 +34,7 @@ diff -uNr php-5.0.4.orig/configure.in php-5.0.4/configure.in
      ;;
    *) ;;
  esac
-@@ -1070,7 +1070,7 @@
+@@ -1081,7 +1081,7 @@
  EXPANDED_DATADIR=$datadir
  EXPANDED_PHP_CONFIG_FILE_PATH=`eval echo "$PHP_CONFIG_FILE_PATH"`
  EXPANDED_PHP_CONFIG_FILE_SCAN_DIR=`eval echo "$PHP_CONFIG_FILE_SCAN_DIR"`
@@ -58,11 +58,11 @@ diff -uNr php-5.0.4.orig/ext/ext_skel php-5.0.4/ext/ext_skel
 diff -uNr php-5.0.4.orig/ext/session/session.c php-5.0.4/ext/session/session.c
 --- php-5.0.4.orig/ext/session/session.c	2005-03-24 01:17:53.000000000 +0100
 +++ php-5.0.4/ext/session/session.c	2005-04-27 11:14:32.923966112 +0200
-@@ -137,11 +137,11 @@
+@@ -151,11 +151,11 @@
  PHP_INI_BEGIN()
  	STD_PHP_INI_BOOLEAN("session.bug_compat_42",    "1",         PHP_INI_ALL, OnUpdateBool,   bug_compat,         php_ps_globals,    ps_globals)
  	STD_PHP_INI_BOOLEAN("session.bug_compat_warn",  "1",         PHP_INI_ALL, OnUpdateBool,   bug_compat_warn,    php_ps_globals,    ps_globals)
--	STD_PHP_INI_ENTRY("session.save_path",          "",          PHP_INI_ALL, OnUpdateString, save_path,          php_ps_globals,    ps_globals)
+-	STD_PHP_INI_ENTRY("session.save_path",          "",          PHP_INI_ALL, OnUpdateSaveDir,save_path,          php_ps_globals,    ps_globals)
 +	STD_PHP_INI_ENTRY("session.save_path",          "/var/lib/php5",      PHP_INI_ALL, OnUpdateString, save_path,          php_ps_globals,    ps_globals)
  	STD_PHP_INI_ENTRY("session.name",               "PHPSESSID", PHP_INI_ALL, OnUpdateString, session_name,       php_ps_globals,    ps_globals)
  	PHP_INI_ENTRY("session.save_handler",           "files",     PHP_INI_ALL, OnUpdateSaveHandler)
@@ -91,7 +91,7 @@ diff -uNr php-5.0.4.orig/pear/Makefile.frag php-5.0.4/pear/Makefile.frag
 diff -uNr php-5.0.4.orig/php.ini-dist php-5.0.4/php.ini-dist
 --- php-5.0.4.orig/php.ini-dist	2005-03-01 01:25:09.000000000 +0100
 +++ php-5.0.4/php.ini-dist	2005-04-27 11:14:32.929965200 +0200
-@@ -430,7 +430,7 @@
+@@ -437,7 +437,7 @@
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
  ; UNIX: "/path1:/path2"
@@ -100,7 +100,7 @@ diff -uNr php-5.0.4.orig/php.ini-dist php-5.0.4/php.ini-dist
  ;
  ; Windows: "\path1;\path2"
  ;include_path = ".;c:\php\includes"
-@@ -447,7 +447,7 @@
+@@ -454,7 +454,7 @@
  user_dir =
  
  ; Directory in which the loadable extensions (modules) reside.
@@ -109,7 +109,7 @@ diff -uNr php-5.0.4.orig/php.ini-dist php-5.0.4/php.ini-dist
  
  ; Whether or not to enable the dl() function.  The dl() function does NOT work
  ; properly in multithreaded servers, such as IIS or Zeus, and is automatically
-@@ -546,51 +546,10 @@
+@@ -556,51 +556,10 @@
  ; extension_dir directive above.
  
  
@@ -117,6 +117,7 @@ diff -uNr php-5.0.4.orig/php.ini-dist php-5.0.4/php.ini-dist
 -;Note that ODBC support is built in, so no dll is needed for it.
 -;
 -
+-;extension=php_mbstring.dll
 -;extension=php_bz2.dll
 -;extension=php_cpdf.dll
 -;extension=php_curl.dll
@@ -134,7 +135,6 @@ diff -uNr php-5.0.4.orig/php.ini-dist php-5.0.4/php.ini-dist
 -;extension=php_interbase.dll
 -;extension=php_java.dll
 -;extension=php_ldap.dll
--;extension=php_mbstring.dll
 -;extension=php_mcrypt.dll
 -;extension=php_mhash.dll
 -;extension=php_mime_magic.dll
@@ -164,7 +164,7 @@ diff -uNr php-5.0.4.orig/php.ini-dist php-5.0.4/php.ini-dist
  
  ;;;;;;;;;;;;;;;;;;;
  ; Module Settings ;
-@@ -875,7 +834,7 @@
+@@ -885,7 +844,7 @@
  ;
  ; where MODE is the octal representation of the mode. Note that this
  ; does not overwrite the process's umask.
@@ -173,7 +173,7 @@ diff -uNr php-5.0.4.orig/php.ini-dist php-5.0.4/php.ini-dist
  
  ; Whether to use cookies.
  session.use_cookies = 1
-@@ -908,7 +867,10 @@
+@@ -918,7 +877,10 @@
  ; e.g. 1/100 means there is a 1% chance that the GC process starts
  ; on each request.
  
@@ -188,7 +188,7 @@ diff -uNr php-5.0.4.orig/php.ini-dist php-5.0.4/php.ini-dist
 diff -uNr php-5.0.4.orig/php.ini-recommended php-5.0.4/php.ini-recommended
 --- php-5.0.4.orig/php.ini-recommended	2005-03-01 01:25:09.000000000 +0100
 +++ php-5.0.4/php.ini-recommended	2005-04-27 11:14:32.930965048 +0200
-@@ -488,7 +488,7 @@
+@@ -495,7 +495,7 @@
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
  ; UNIX: "/path1:/path2"
@@ -197,7 +197,7 @@ diff -uNr php-5.0.4.orig/php.ini-recommended php-5.0.4/php.ini-recommended
  ;
  ; Windows: "\path1;\path2"
  ;include_path = ".;c:\php\includes"
-@@ -505,7 +505,7 @@
+@@ -512,7 +512,7 @@
  user_dir =
  
  ; Directory in which the loadable extensions (modules) reside.
@@ -206,7 +206,7 @@ diff -uNr php-5.0.4.orig/php.ini-recommended php-5.0.4/php.ini-recommended
  
  ; Whether or not to enable the dl() function.  The dl() function does NOT work
  ; properly in multithreaded servers, such as IIS or Zeus, and is automatically
-@@ -603,52 +603,10 @@
+@@ -613,52 +613,10 @@
  ; needs to go here.  Specify the location of the extension with the
  ; extension_dir directive above.
  
@@ -216,6 +216,7 @@ diff -uNr php-5.0.4.orig/php.ini-recommended php-5.0.4/php.ini-recommended
 -;Note that ODBC support is built in, so no dll is needed for it.
 -;
 -
+-;extension=php_mbstring.dll
 -;extension=php_bz2.dll
 -;extension=php_cpdf.dll
 -;extension=php_curl.dll
@@ -233,7 +234,6 @@ diff -uNr php-5.0.4.orig/php.ini-recommended php-5.0.4/php.ini-recommended
 -;extension=php_interbase.dll
 -;extension=php_java.dll
 -;extension=php_ldap.dll
--;extension=php_mbstring.dll
 -;extension=php_mcrypt.dll
 -;extension=php_mhash.dll
 -;extension=php_mime_magic.dll
@@ -262,7 +262,7 @@ diff -uNr php-5.0.4.orig/php.ini-recommended php-5.0.4/php.ini-recommended
  
  ;;;;;;;;;;;;;;;;;;;
  ; Module Settings ;
-@@ -933,7 +891,7 @@
+@@ -943,7 +901,7 @@
  ;
  ; where MODE is the octal representation of the mode. Note that this
  ; does not overwrite the process's umask.
@@ -271,7 +271,7 @@ diff -uNr php-5.0.4.orig/php.ini-recommended php-5.0.4/php.ini-recommended
  
  ; Whether to use cookies.
  session.use_cookies = 1
-@@ -966,7 +924,10 @@
+@@ -976,7 +934,10 @@
  ; e.g. 1/100 means there is a 1% chance that the GC process starts
  ; on each request.
  
@@ -342,7 +342,7 @@ diff -uNr php-5.0.4.orig/scripts/Makefile.frag php-5.0.4/scripts/Makefile.frag
  #
  
 -phpincludedir = $(includedir)/php
--phpbuilddir = $(prefix)/lib/php/build
+-phpbuilddir = $(libdir)/build
 +phpincludedir = $(includedir)/php5
 +phpbuilddir = $(prefix)/lib/php5/build
  
@@ -363,12 +363,12 @@ diff -uNr php-5.0.4.orig/scripts/php-config.in php-5.0.4/scripts/php-config.in
 diff -uNr php-5.0.4.orig/scripts/phpize.in php-5.0.4/scripts/phpize.in
 --- php-5.0.4.orig/scripts/phpize.in	2005-01-25 13:54:57.000000000 +0100
 +++ php-5.0.4/scripts/phpize.in	2005-04-27 11:14:32.943963072 +0200
-@@ -2,8 +2,8 @@
- 
+@@ -3,8 +3,8 @@
  # Variable declaration
  prefix='@prefix@'
--phpdir="$prefix/lib/php/build"
--includedir="$prefix/include/php"
+ exec_prefix="`eval echo @exec_prefix@`"
+-phpdir="`eval echo @libdir@`/build"
+-includedir="`eval echo @includedir@`/php"
 +phpdir="$prefix/lib/php5/build"
 +includedir="$prefix/include/php5"
  builddir="`pwd`"

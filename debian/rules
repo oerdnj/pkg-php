@@ -43,6 +43,7 @@ else
 endif
 
 COMMON_CONFIG=  --build=$(PHP5_BUILD_GNU_TYPE)-gnu --host=$(PHP5_HOST_GNU_TYPE)-gnu \
+		--mandir=/usr/share/man \
 		--enable-memory-limit \
 		--disable-debug \
 		--with-regex=php \
@@ -61,6 +62,7 @@ COMMON_CONFIG=  --build=$(PHP5_BUILD_GNU_TYPE)-gnu --host=$(PHP5_HOST_GNU_TYPE)-
 		--with-bz2 \
 		--enable-ctype \
 		--with-db4 \
+		--with-gdbm=/usr \
 		--with-iconv \
 		--enable-exif \
 		--enable-filepro \
@@ -357,6 +359,7 @@ install: build
 	# make php-dev stuff versioned
 	for i in php-config phpize; do \
 		mv debian/php5-dev/usr/bin/$$i debian/php5-dev/usr/bin/"$$i"5; \
+		mv debian/php5-dev/usr/share/man/man1/"$$i".1 debian/php5-dev/usr/share/man/man1/"$$i"5.1; \
 	done
 
 	# install common files
