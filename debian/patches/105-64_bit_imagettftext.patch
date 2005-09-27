@@ -1,0 +1,17 @@
+===================================================================
+RCS file: /repository/php-src/ext/gd/gd.c,v
+retrieving revision 1.307
+retrieving revision 1.308
+diff -p --unified=3 -r1.307 -r1.308
+--- php-5.0.4/ext/gd/gd.c	2005/03/27 23:43:51	1.307
++++ php-5.0.4/ext/gd/gd.c	2005/04/10 21:37:16	1.308
+@@ -3109,7 +3109,8 @@ static void php_imagettftext_common(INTE
+ {
+ 	zval *IM, *EXT = NULL;
+ 	gdImagePtr im=NULL;
+-	int col = -1, x = -1, y = -1, str_len, fontname_len, i, brect[8];
++	long col = -1, x = -1, y = -1;
++	int str_len, fontname_len, i, brect[8];
+ 	double ptsize, angle;
+ 	unsigned char *str = NULL, *fontname = NULL;
+ 	char *error = NULL;

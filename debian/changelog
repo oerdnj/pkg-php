@@ -1,3 +1,21 @@
+php5 (5.0.5-2) unstable; urgency=medium
+
+  * Remove Andres Salomon from the Uploaders field, at his request.  Thanks
+    for all your work on the PHP packages, Andres, now fix our kernel bugs.
+  * Add 054-open_basedir_slash.patch, which fixes a bug where if open_basedir
+    is set to "/foo/", users can access files in "/foobar/", which is not the
+    documented behaviour; this addresses CAN-2005-3054 (see: #323585)
+  * Add 104-64_bit_serialize.patch from Joe Orton, resolving a segfault when
+    serializing objects on all 64-bit architectures (closes: #329768)
+  * Add 105-64_bit_imagettftext.patch, fixing a type mismatch in the GD
+    extension, causing memory corruption on 64-bit arches (closes: #331001)
+  * Add 055-gd_safe_mode_checks.patch from PHP CVS, adding missing safe_mode
+    checks to the _php_image_output and _php_image_output_ctx GD functions.
+  * Make php-pear Provide, Replace, and Conflict php-html-template-it, which
+    we appear to have absorbed into the main PEAR packaging (closes: #332393)
+
+ -- Adam Conrad <adconrad@0c3.net>  Tue, 27 Sep 2005 16:09:29 +1000
+
 php5 (5.0.5-1) unstable; urgency=low
 
   * New upstream release, adjust patch offsets and fuzz, and drop patches:
@@ -5,6 +23,7 @@ php5 (5.0.5-1) unstable; urgency=low
     - Drop 051-gcc-4.0.patch, fixed differently upstream.
     - Drop 102-php_streams.patch, fixed upstream.
     - Drop 103-catch_segv.patch, also fixed upstream.
+    - Includes PEAR XML_RPC fix for CAN-2005-2498.
   * Distribute the shiny new manpages for php-config and phpize.
 
  -- Adam Conrad <adconrad@0c3.net>  Mon, 12 Sep 2005 02:29:24 +1000
@@ -41,7 +60,8 @@ php5 (5.0.4-3) unstable; urgency=low
   * Make libapache2-mod-php5 the default alternate dependency for the php5
     metapackage, since we really do want to encourage the apache upgrade. 
   * Make php5-dev stop shipping copies of files from autotools-dev, shtool,
-    and libtool, and instead symlink to them and depend on those packages.
+    and libtool, and instead symlink to them and depend on those packages,
+    thus avoiding the shtool issues from CAN-2005-1751 and CAN-2005-1759.
 
  -- Adam Conrad <adconrad@0c3.net>  Sun, 31 Jul 2005 03:05:08 +1000
 
@@ -272,6 +292,8 @@ php4 (4:4.3.10-4) unstable; urgency=medium
 php4 (4:4.3.10-3) unstable; urgency=medium
 
   * Update to CVS, as of 200502060530 (closes: #288672)
+    - Fixes two vulnerabilities in exif.c, CAN-2005-1042 and CAN-2005-1043
+    - Fixes two vulnerabilities in image.c, CAN-2005-0524 and CAN-2005-0525
     - File uploads with "'" in them aren't cut off anymore (closes: #288679)
     - unserialize() is no longer ridiculously slow (closes: #291392)
     - Add 000-200502060530_CVS.patch
@@ -363,7 +385,8 @@ php4 (4:4.3.9-1) unstable; urgency=high
     023-4.3.9_array_fixes.patch, 024-4.3.9_glob_fix.patch,
     and 025-4.3.9_domxml_segfaults.patch
   * Resolves undiscolsed vulnerabilities in GPC processing and rfc1867
-    handling of file uploads via the $_FILES array (closes: #274206)
+    handling of file uploads via the $_FILES array; these have since
+    been assigned CVE CAN-2004-0958 and CAN-2004-0959 (closes: #274206)
   * After some fairly heavy testing from several users and developers,
     finally update php4-snmp to use libsnmp5 (closes: #195929)
   * Add 026-4.3.10_session_fixes.patch from CVS, which prevents PHP
@@ -638,6 +661,7 @@ php4 (4:4.3.8-1) unstable; urgency=low
       + Added missing safe_mode checks inside ftok and itpc.
       + Fixed address allocation routine in IMAP extension.
       + Prevent open_basedir bypass via MySQL's LOAD DATA LOCAL.
+      + Fixes DoS in readfile() function, see CAN-2005-0596.
     - php4-pear now includes PEAR::Mail 1.1.3 (closes: #257688)
     - debian/control: change libpng3-dev build-dep to libpng12-dev
     - Add Turkish debconf translation, thanks to Osman Yuksel.

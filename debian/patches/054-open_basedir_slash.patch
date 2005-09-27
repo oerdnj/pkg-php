@@ -1,0 +1,13 @@
+--- php-5.0.5/main/fopen_wrappers.c	2005-07-16 12:14:44.000000000 +0000
++++ php-5.0.5/main/fopen_wrappers.c	2005-09-26 09:07:55.000000000 +0000
+@@ -109,8 +109,8 @@
+ 		/* Handler for basedirs that end with a / */
+ 		resolved_basedir_len = strlen(resolved_basedir);
+ 		if (basedir[strlen(basedir) - 1] == PHP_DIR_SEPARATOR) {
+-			if (resolved_basedir[resolved_basedir_len - 1] == '/') {
+-				resolved_basedir[resolved_basedir_len - 1] = PHP_DIR_SEPARATOR;
++			if (resolved_basedir[resolved_basedir_len - 1] != PHP_DIR_SEPARATOR) {
++				resolved_basedir[resolved_basedir_len] = PHP_DIR_SEPARATOR;
+ 				resolved_basedir[++resolved_basedir_len] = '\0';
+ 			}
+ 		}
