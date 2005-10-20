@@ -1,3 +1,21 @@
+php5 (5.0.5-3) unstable; urgency=low
+
+  * Build-Depend on libcurl3-openssl-dev, since libcurl3-dev is going away
+    soon.  Keep libcurl3-dev as an alternate for backporting (see: #334367)
+  * Switch from libmysqlclient12 to libmysqlclient14; this puts us on the
+    *other* side of the line regarding which combinations of DSOs cause
+    segfaults, so hopefully the others catch up with us soon (closes: #332453)
+  * Look for magic.mime in /usr/share/file now instead of /usr/share/misc/file,
+    as the path has been changed to comply with the FHS (see: #334510)
+  * Make the above backportable as well, by searching for both files, and
+    picking the one that's currently installed on the user's system.
+  * Include swedish debconf translation from Daniel Nylander (closes: #330763)
+  * Make pear use '/usr/bin/php' instead of just 'php' to make sure we don't
+    get some random binary on $PATH that won't work right (closes: #329415)
+  * Set PHP_PEAR_SIG_BIN to /usr/bin/gpg, and have php-pear Recommends: gnupg
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Fri, 21 Oct 2005 02:30:19 +1000
+
 php5 (5.0.5-2) unstable; urgency=medium
 
   * Remove Andres Salomon from the Uploaders field, at his request.  Thanks

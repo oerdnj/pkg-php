@@ -42,6 +42,15 @@ else
   CFLAGS += -gstabs
 endif
 
+# Old magic.mime location:
+ifeq ($(wildcard /usr/share/misc/file/magic.mime), /usr/share/misc/file/magic.mime)
+MAGIC_MIME = /usr/share/misc/file/magic.mime
+endif
+# New magic.mime location:
+ifeq ($(wildcard /usr/share/file/magic.mime), /usr/share/file/magic.mime)
+MAGIC_MIME = /usr/share/file/magic.mime
+endif
+
 COMMON_CONFIG=  --build=$(PHP5_BUILD_GNU_TYPE)-gnu --host=$(PHP5_HOST_GNU_TYPE)-gnu \
 		--mandir=/usr/share/man \
 		--enable-memory-limit \
@@ -80,7 +89,7 @@ COMMON_CONFIG=  --build=$(PHP5_BUILD_GNU_TYPE)-gnu --host=$(PHP5_HOST_GNU_TYPE)-
 		--with-openssl=/usr \
 		--enable-dbx \
 		--enable-soap \
-		--with-mime-magic=/usr/share/misc/file/magic.mime \
+		--with-mime-magic=$(MAGIC_MIME) \
 		--with-exec-dir=/usr/lib/php5/libexec
 
 patch: patch-stamp
@@ -310,7 +319,7 @@ install: build
 			main/config.{nw,w32}.h \
 			main/win95nt.h
 	# install PEAR
-	cd cgi-build && make install-pear PHP_PEAR_PHP_BIN=php PHP_PEAR_INSTALL_DIR=/usr/share/php PHP_PEAR_SYSCONF_DIR=/etc/pear INSTALL_ROOT=$(CURDIR)/debian/php-pear 
+	cd cgi-build && make install-pear PHP_PEAR_PHP_BIN=/usr/bin/php PHP_PEAR_INSTALL_DIR=/usr/share/php PHP_PEAR_SYSCONF_DIR=/etc/pear PHP_PEAR_SIG_BIN=/usr/bin/gpg INSTALL_ROOT=$(CURDIR)/debian/php-pear 
 
 	# install extensions
 	ext=`./debian/libapache2-mod-php5/usr/bin/php-config --extension-dir`;\
