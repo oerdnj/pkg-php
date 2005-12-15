@@ -1,9 +1,9 @@
 diff -ur php-5.0.4/configure.in php5-5.0.4/configure.in
 --- php-5.0.4/configure.in	2005-03-31 07:43:12.000000000 +1000
 +++ php5-5.0.4/configure.in	2005-07-31 02:35:46.000000000 +1000
-@@ -1044,8 +1044,10 @@
+@@ -972,8 +972,10 @@
  
- ZEND_MODULE_API_NO=`egrep '#define ZEND_MODULE_API_NO ' $srcdir/Zend/zend_modules.h|sed 's/#define ZEND_MODULE_API_NO //'`
+ ZEND_MODULE_API_NO=`$EGREP '#define ZEND_MODULE_API_NO ' $srcdir/Zend/zend_modules.h|$SED 's/#define ZEND_MODULE_API_NO //'`
  
 +DEBIAN_PHP_API=`egrep -h '^#define ZEND_EXTENSION_API_NO|^#define ZEND_MODULE_API_NO|#define PHP_API_VERSION' $srcdir/Zend/zend_extensions.h $srcdir/Zend/zend_modules.h $srcdir/main/php.h | awk '{print $3}' | sed -e 's/^2200/200/' | sort -n | tail -n 1`
 +
@@ -13,9 +13,9 @@ diff -ur php-5.0.4/configure.in php5-5.0.4/configure.in
    if test "$oldstyleextdir" = "yes"; then
      if test "$PHP_DEBUG" = "1"; then
        part1=debug
-@@ -1176,6 +1178,7 @@
+@@ -1102,6 +1104,7 @@
+ PHP_SUBST(CXXFLAGS)
  PHP_SUBST(CXXFLAGS_CLEAN)
- PHP_SUBST(CXX_PHP_COMPILE)
  PHP_SUBST_OLD(DEBUG_CFLAGS)
 +PHP_SUBST_OLD(DEBIAN_PHP_API)
  PHP_SUBST_OLD(EXTENSION_DIR)
@@ -24,23 +24,25 @@ diff -ur php-5.0.4/configure.in php5-5.0.4/configure.in
 diff -ur php-5.0.4/scripts/php-config.in php5-5.0.4/scripts/php-config.in
 --- php-5.0.4/scripts/php-config.in	2005-03-16 17:36:54.000000000 +1100
 +++ php5-5.0.4/scripts/php-config.in	2005-07-31 02:34:52.000000000 +1000
-@@ -7,6 +7,7 @@
- ldflags="@PHP_LDFLAGS@"
- libs="@EXTRA_LIBS@"
- extension_dir='@EXTENSION_DIR@'
+@@ -12,6 +12,7 @@
+ program_suffix="@program_suffix@"
+ exe_extension="@EXEEXT@"
+ php_binary="@bindir@/${program_prefix}php${program_suffix}${exe_extension}"
 +phpapi="@DEBIAN_PHP_API@"
  
  case "$1" in
  --prefix)
-@@ -21,8 +22,10 @@
- 	echo $extension_dir;;
- --version)
- 	echo $version;;
+@@ -28,10 +29,12 @@
+ 	echo $includedir;;
+ --php-binary)
+ 	echo $php_binary;;
 +--phpapi)
 +	echo $phpapi;;
+ --version)
+ 	echo $version;;
  *)
--	echo "Usage: $0 [--prefix|--includes|--ldflags|--libs|--extension-dir|--version]"
-+	echo "Usage: $0 [--prefix|--includes|--ldflags|--libs|--extension-dir|--version|--phpapi]"
+-	echo "Usage: $0 [--prefix|--includes|--ldflags|--libs|--extension-dir|--include-dir|--php-binary|--version]"
++	echo "Usage: $0 [--prefix|--includes|--ldflags|--libs|--extension-dir|--include-dir|--php-binary|--phpapi|--version]"
  	exit 1;;
  esac
  

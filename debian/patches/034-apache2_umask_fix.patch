@@ -3,7 +3,7 @@ Save and restore umask across requests correctly.
 
 --- php-4.3.10/sapi/apache2handler/sapi_apache2.c.umask
 +++ php-4.3.10/sapi/apache2handler/sapi_apache2.c
-@@ -395,6 +395,19 @@
+@@ -401,6 +401,19 @@
  	return APR_SUCCESS;
  }
  
@@ -23,7 +23,7 @@ Save and restore umask across requests correctly.
  static int php_apache_request_ctor(request_rec *r, php_struct *ctx TSRMLS_DC)
  {
  	char *content_type;
-@@ -545,6 +558,8 @@
+@@ -575,6 +588,8 @@
  	} else {
  		zend_file_handle zfd;
  
@@ -32,7 +32,7 @@ Save and restore umask across requests correctly.
  		zfd.type = ZEND_HANDLE_FILENAME;
  		zfd.filename = (char *) r->filename;
  		zfd.free_filename = 0;
-@@ -555,6 +570,9 @@
+@@ -585,6 +600,9 @@
  		} else {
  			zend_execute_scripts(ZEND_INCLUDE TSRMLS_CC, NULL, 1, &zfd);
  		}

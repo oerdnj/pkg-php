@@ -1,3 +1,51 @@
+php5 (5.1.1-1) unstable; urgency=low
+
+  * New upstream bugfix release, skipping the problematic 5.1.0 release:
+    - Fixes a zend.ze1_compatibility_mode segfault (closes: #333374)
+    - Remove libtool patch from acinclude.m4, now integrated upstream.
+    - Remove 038-round_test_fix.patch, now integrated upstream.
+    - Remove 049-exported-headers.patch, as upstream's build system has
+      gotten more clever about what they should and shouldn't export.
+    - Remove 054-open_basedir_slash.patch, now integrated upstream.
+    - Remove 055-gd_safe_mode_checks.patch, fixed differently upstream.
+    - Mangle 101-sqlite_is_shared.patch, to deal with upstream changes.
+    - Remove 104-64_bit_serialize.patch, now integrated upstream.
+    - Remove 105-64_bit_imagettftext.patch, now integrated upstream.
+  * Many security vulnerabilities fixed (closes: #341368, #336005, #336654):
+    - Resolves a local denial of service in the apache2 SAPI, which can
+      be triggered by using session.save_path in .htaccess; CVE-2005-3319
+    - Resolves an infinite loop in the exif_read_data function which can
+      be triggered with a specially-crafted JPEG image; CVE-2005-3353
+    - Resolves a vulnerability in the parse_str function whereby a remote
+      attacker can fool PHP into turning on register_globals, thus making
+      applications vulnerable to global variable injections; CVE-2005-3389
+    - Resolves a vulnerability in the RFC1867 file upload feature where, if
+      register_globals is enabled, a remote attacker can modify the GLOBALS
+      array with a multipart/form-data POST request; see CVE-2005-3390
+    - Resolves numerous safe_mode and open_basedir bypasses; CVE-2005-3391
+    - Resolves INI settings leaks in the apache2 SAPI, leading to safe_mode
+      and open_basedir bypasses between virtual hosts; CVE-2005-3392 
+    - Resolves a CRLF injection vulnerability in the mb_send_mail function,
+      allowing injection of arbitrary mail headers; see CVE-2005-3883
+    - Includes PEAR 1.4.5, resolving a vulnerability in the pear installer
+      which could lead to arbitrary code execution; see CVE-2005-4154
+  * Bump libdb build-dep from libdb4.2 to libdb4.3, to match with apache.
+  * Bump our MySQL build-dep to 5.0's libmysqlclient15-dev (closes: #343793)
+  * Automate the process of getting the list of built-in modules into the
+    package descriptions, so it stays fresh in the future (closes: #341867)
+  * Intentionally disable PDO support until I've sorted out the best way to
+    deal with shipping this shiny new feature that won't break the world.
+  * The new PEAR happens to fix the Command.php greedy match bug filed in
+    Debian as part of the fix for the wider security issue (closes: #334969)
+  * Create 056-mime_magic_strings.patch, making the mime_magic extension
+    more liberal about what mime-types is accepts, as well as making it skip
+    over ones it dislikes, rather than disabling itself (closes: #335674)
+  * Add 057-no_apache_installed.patch, to stop spewing a mess of errors in
+    configure because we don't have the apache binaries in the build chroot.
+  * Fix small typo in the php5-xsl package description (closes: #344816)
+
+ -- Adam Conrad <adconrad@0c3.net>  Thu, 15 Dec 2005 14:46:56 +1100
+
 php5 (5.0.5-3) unstable; urgency=low
 
   * Build-Depend on libcurl3-openssl-dev, since libcurl3-dev is going away
@@ -14,7 +62,7 @@ php5 (5.0.5-3) unstable; urgency=low
     get some random binary on $PATH that won't work right (closes: #329415)
   * Set PHP_PEAR_SIG_BIN to /usr/bin/gpg, and have php-pear Recommends: gnupg
 
- -- Adam Conrad <adconrad@ubuntu.com>  Fri, 21 Oct 2005 02:30:19 +1000
+ -- Adam Conrad <adconrad@0c3.net>  Fri, 21 Oct 2005 02:30:19 +1000
 
 php5 (5.0.5-2) unstable; urgency=medium
 
@@ -42,6 +90,7 @@ php5 (5.0.5-1) unstable; urgency=low
     - Drop 102-php_streams.patch, fixed upstream.
     - Drop 103-catch_segv.patch, also fixed upstream.
     - Includes PEAR XML_RPC fix for CAN-2005-2498.
+    - Includes phpinfo() XSS fix for CVE-2005-3388.
   * Distribute the shiny new manpages for php-config and phpize.
 
  -- Adam Conrad <adconrad@0c3.net>  Mon, 12 Sep 2005 02:29:24 +1000

@@ -1,16 +1,16 @@
 diff -uNr php-5.0.4.orig/configure.in php-5.0.4/configure.in
 --- php-5.0.4.orig/configure.in	2005-03-30 23:43:12.000000000 +0200
 +++ php-5.0.4/configure.in	2005-04-27 11:15:29.276399240 +0200
-@@ -929,7 +929,7 @@
+@@ -858,7 +858,7 @@
  fi
  
  PHP_ARG_WITH(pear, [whether to install PEAR],
--[  --with-pear=DIR         Install PEAR in DIR (default PREFIX/lib/php)
-+[  --with-pear=DIR         Install PEAR in DIR (default PREFIX/lib/php5)
+-[  --with-pear=DIR         Install PEAR in DIR [PREFIX/lib/php]
++[  --with-pear=DIR         Install PEAR in DIR [PREFIX/lib/php5]
    --without-pear          Do not install PEAR], DEFAULT, yes)
  
  if test "$PHP_PEAR" != "no"; then
-@@ -965,7 +965,7 @@
+@@ -892,7 +892,7 @@
    if test "$PHP_PEAR" = "DEFAULT" || test "$PHP_PEAR" = "yes"; then
      case $PHP_LAYOUT in
        GNU) PEAR_INSTALLDIR=$datadir/pear;;
@@ -19,7 +19,7 @@ diff -uNr php-5.0.4.orig/configure.in php-5.0.4/configure.in
      esac
    fi
  
-@@ -1019,12 +1019,12 @@
+@@ -947,12 +947,12 @@
  
  case $libdir in
    '${exec_prefix}/lib')
@@ -34,7 +34,7 @@ diff -uNr php-5.0.4.orig/configure.in php-5.0.4/configure.in
      ;;
    *) ;;
  esac
-@@ -1081,7 +1081,7 @@
+@@ -1009,7 +1009,7 @@
  EXPANDED_DATADIR=$datadir
  EXPANDED_PHP_CONFIG_FILE_PATH=`eval echo "$PHP_CONFIG_FILE_PATH"`
  EXPANDED_PHP_CONFIG_FILE_SCAN_DIR=`eval echo "$PHP_CONFIG_FILE_SCAN_DIR"`
@@ -58,7 +58,7 @@ diff -uNr php-5.0.4.orig/ext/ext_skel php-5.0.4/ext/ext_skel
 diff -uNr php-5.0.4.orig/ext/session/session.c php-5.0.4/ext/session/session.c
 --- php-5.0.4.orig/ext/session/session.c	2005-03-24 01:17:53.000000000 +0100
 +++ php-5.0.4/ext/session/session.c	2005-04-27 11:14:32.923966112 +0200
-@@ -151,11 +151,11 @@
+@@ -152,11 +152,11 @@
  PHP_INI_BEGIN()
  	STD_PHP_INI_BOOLEAN("session.bug_compat_42",    "1",         PHP_INI_ALL, OnUpdateBool,   bug_compat,         php_ps_globals,    ps_globals)
  	STD_PHP_INI_BOOLEAN("session.bug_compat_warn",  "1",         PHP_INI_ALL, OnUpdateBool,   bug_compat_warn,    php_ps_globals,    ps_globals)
@@ -72,26 +72,10 @@ diff -uNr php-5.0.4.orig/ext/session/session.c php-5.0.4/ext/session/session.c
  	STD_PHP_INI_ENTRY("session.gc_divisor",         "100",       PHP_INI_ALL, OnUpdateLong,    gc_divisor,        php_ps_globals,    ps_globals)
  	STD_PHP_INI_ENTRY("session.gc_maxlifetime",     "1440",      PHP_INI_ALL, OnUpdateLong,    gc_maxlifetime,     php_ps_globals,    ps_globals)
  	PHP_INI_ENTRY("session.serialize_handler",      "php",       PHP_INI_ALL, OnUpdateSerializer)
-diff -uNr php-5.0.4.orig/pear/Makefile.frag php-5.0.4/pear/Makefile.frag
---- php-5.0.4.orig/pear/Makefile.frag	2003-09-02 03:29:21.000000000 +0200
-+++ php-5.0.4/pear/Makefile.frag	2005-04-27 11:14:32.923966112 +0200
-@@ -6,10 +6,10 @@
- PEAR_INSTALL_FLAGS = -n -dshort_open_tag=0 -dsafe_mode=0
- 
- install-pear-installer: $(top_builddir)/sapi/cli/php
--	@$(top_builddir)/sapi/cli/php $(PEAR_INSTALL_FLAGS) $(srcdir)/install-pear.php -d "$(peardir)" -b "$(bindir)" $(srcdir)/package-*.xml
-+	@$(top_builddir)/sapi/cli/php $(PEAR_INSTALL_FLAGS) $(srcdir)/install-pear.php -b "$(bindir)" $(srcdir)/package-*.xml
- 
- install-pear-packages: $(top_builddir)/sapi/cli/php
--	@$(top_builddir)/sapi/cli/php $(PEAR_INSTALL_FLAGS) $(srcdir)/install-pear.php -d "$(peardir)" -b "$(bindir)" $(srcdir)/packages/*.tar
-+	@$(top_builddir)/sapi/cli/php $(PEAR_INSTALL_FLAGS) $(srcdir)/install-pear.php -b "$(bindir)" $(srcdir)/packages/*.tar
- 
- install-pear:
- 	@echo "Installing PEAR environment:      $(INSTALL_ROOT)$(peardir)/"
 diff -uNr php-5.0.4.orig/php.ini-dist php-5.0.4/php.ini-dist
 --- php-5.0.4.orig/php.ini-dist	2005-03-01 01:25:09.000000000 +0100
 +++ php-5.0.4/php.ini-dist	2005-04-27 11:14:32.929965200 +0200
-@@ -437,7 +437,7 @@
+@@ -441,7 +441,7 @@
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
  ; UNIX: "/path1:/path2"
@@ -100,7 +84,7 @@ diff -uNr php-5.0.4.orig/php.ini-dist php-5.0.4/php.ini-dist
  ;
  ; Windows: "\path1;\path2"
  ;include_path = ".;c:\php\includes"
-@@ -454,7 +454,7 @@
+@@ -458,7 +458,7 @@
  user_dir =
  
  ; Directory in which the loadable extensions (modules) reside.
@@ -109,31 +93,29 @@ diff -uNr php-5.0.4.orig/php.ini-dist php-5.0.4/php.ini-dist
  
  ; Whether or not to enable the dl() function.  The dl() function does NOT work
  ; properly in multithreaded servers, such as IIS or Zeus, and is automatically
-@@ -556,51 +556,10 @@
+@@ -560,46 +560,10 @@
  ; extension_dir directive above.
  
  
--;Windows Extensions
--;Note that ODBC support is built in, so no dll is needed for it.
--;
+-; Windows Extensions
+-; Note that ODBC support is built in, so no dll is needed for it.
+-; Note that many DLL files are located in the extensions/ (PHP 4) ext/ (PHP 5)
+-; extension folders as well as the separate PECL DLL download (PHP 5).
+-; Be sure to appropriately set the extension_dir directive.
 -
 -;extension=php_mbstring.dll
 -;extension=php_bz2.dll
--;extension=php_cpdf.dll
 -;extension=php_curl.dll
 -;extension=php_dba.dll
 -;extension=php_dbase.dll
--;extension=php_dbx.dll
 -;extension=php_exif.dll
 -;extension=php_fdf.dll
 -;extension=php_filepro.dll
 -;extension=php_gd2.dll
 -;extension=php_gettext.dll
 -;extension=php_ifx.dll
--;extension=php_iisfunc.dll
 -;extension=php_imap.dll
 -;extension=php_interbase.dll
--;extension=php_java.dll
 -;extension=php_ldap.dll
 -;extension=php_mcrypt.dll
 -;extension=php_mhash.dll
@@ -145,18 +127,15 @@ diff -uNr php-5.0.4.orig/php.ini-dist php-5.0.4/php.ini-dist
 -;extension=php_oci8.dll
 -;extension=php_openssl.dll
 -;extension=php_oracle.dll
--;extension=php_pdf.dll
 -;extension=php_pgsql.dll
 -;extension=php_shmop.dll
 -;extension=php_snmp.dll
 -;extension=php_sockets.dll
+-;extension=php_sqlite.dll
 -;extension=php_sybase_ct.dll
 -;extension=php_tidy.dll
--;extension=php_w32api.dll
 -;extension=php_xmlrpc.dll
 -;extension=php_xsl.dll
--;extension=php_yaz.dll
--;extension=php_zip.dll
 +; Example lines:
  
 +;extension=mysql.so
@@ -164,7 +143,7 @@ diff -uNr php-5.0.4.orig/php.ini-dist php-5.0.4/php.ini-dist
  
  ;;;;;;;;;;;;;;;;;;;
  ; Module Settings ;
-@@ -885,7 +844,7 @@
+@@ -878,7 +837,7 @@
  ;
  ; where MODE is the octal representation of the mode. Note that this
  ; does not overwrite the process's umask.
@@ -173,7 +152,7 @@ diff -uNr php-5.0.4.orig/php.ini-dist php-5.0.4/php.ini-dist
  
  ; Whether to use cookies.
  session.use_cookies = 1
-@@ -918,7 +877,10 @@
+@@ -911,7 +870,10 @@
  ; e.g. 1/100 means there is a 1% chance that the GC process starts
  ; on each request.
  
@@ -188,7 +167,7 @@ diff -uNr php-5.0.4.orig/php.ini-dist php-5.0.4/php.ini-dist
 diff -uNr php-5.0.4.orig/php.ini-recommended php-5.0.4/php.ini-recommended
 --- php-5.0.4.orig/php.ini-recommended	2005-03-01 01:25:09.000000000 +0100
 +++ php-5.0.4/php.ini-recommended	2005-04-27 11:14:32.930965048 +0200
-@@ -495,7 +495,7 @@
+@@ -499,7 +499,7 @@
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
  ; UNIX: "/path1:/path2"
@@ -197,7 +176,7 @@ diff -uNr php-5.0.4.orig/php.ini-recommended php-5.0.4/php.ini-recommended
  ;
  ; Windows: "\path1;\path2"
  ;include_path = ".;c:\php\includes"
-@@ -512,7 +512,7 @@
+@@ -516,7 +516,7 @@
  user_dir =
  
  ; Directory in which the loadable extensions (modules) reside.
@@ -206,33 +185,31 @@ diff -uNr php-5.0.4.orig/php.ini-recommended php-5.0.4/php.ini-recommended
  
  ; Whether or not to enable the dl() function.  The dl() function does NOT work
  ; properly in multithreaded servers, such as IIS or Zeus, and is automatically
-@@ -613,52 +613,10 @@
+@@ -617,47 +617,10 @@
  ; needs to go here.  Specify the location of the extension with the
  ; extension_dir directive above.
  
 +; Example lines:
  
--;Windows Extensions
--;Note that ODBC support is built in, so no dll is needed for it.
--;
+-; Windows Extensions
+-; Note that ODBC support is built in, so no dll is needed for it.
+-; Note that many DLL files are located in the extensions/ (PHP 4) ext/ (PHP 5)
+-; extension folders as well as the separate PECL DLL download (PHP 5).
+-; Be sure to appropriately set the extension_dir directive.
 -
 -;extension=php_mbstring.dll
 -;extension=php_bz2.dll
--;extension=php_cpdf.dll
 -;extension=php_curl.dll
 -;extension=php_dba.dll
 -;extension=php_dbase.dll
--;extension=php_dbx.dll
 -;extension=php_exif.dll
 -;extension=php_fdf.dll
 -;extension=php_filepro.dll
 -;extension=php_gd2.dll
 -;extension=php_gettext.dll
 -;extension=php_ifx.dll
--;extension=php_iisfunc.dll
 -;extension=php_imap.dll
 -;extension=php_interbase.dll
--;extension=php_java.dll
 -;extension=php_ldap.dll
 -;extension=php_mcrypt.dll
 -;extension=php_mhash.dll
@@ -244,25 +221,22 @@ diff -uNr php-5.0.4.orig/php.ini-recommended php-5.0.4/php.ini-recommended
 -;extension=php_oci8.dll
 -;extension=php_openssl.dll
 -;extension=php_oracle.dll
--;extension=php_pdf.dll
 -;extension=php_pgsql.dll
 -;extension=php_shmop.dll
 -;extension=php_snmp.dll
 -;extension=php_sockets.dll
+-;extension=php_sqlite.dll
 -;extension=php_sybase_ct.dll
 -;extension=php_tidy.dll
--;extension=php_w32api.dll
 -;extension=php_xmlrpc.dll
 -;extension=php_xsl.dll
--;extension=php_yaz.dll
--;extension=php_zip.dll
 -
 +;extension=mysql.so
 +;extension=gd.so
  
  ;;;;;;;;;;;;;;;;;;;
  ; Module Settings ;
-@@ -943,7 +901,7 @@
+@@ -936,7 +894,7 @@
  ;
  ; where MODE is the octal representation of the mode. Note that this
  ; does not overwrite the process's umask.
@@ -271,7 +245,7 @@ diff -uNr php-5.0.4.orig/php.ini-recommended php-5.0.4/php.ini-recommended
  
  ; Whether to use cookies.
  session.use_cookies = 1
-@@ -976,7 +934,10 @@
+@@ -969,7 +927,10 @@
  ; e.g. 1/100 means there is a 1% chance that the GC process starts
  ; on each request.
  
@@ -286,7 +260,7 @@ diff -uNr php-5.0.4.orig/php.ini-recommended php-5.0.4/php.ini-recommended
 diff -uNr php-5.0.4.orig/sapi/caudium/config.m4 php-5.0.4/sapi/caudium/config.m4
 --- php-5.0.4.orig/sapi/caudium/config.m4	2004-01-17 14:00:10.000000000 +0100
 +++ php-5.0.4/sapi/caudium/config.m4	2005-04-27 11:14:32.935964288 +0200
-@@ -25,8 +25,8 @@
+@@ -24,8 +24,8 @@
  		AC_MSG_ERROR(Couldn't find a pike in $withval/bin/)
  	fi
      if $PIKE -e 'float v; int rel;sscanf(version(), "Pike v%f release %d", v, rel);v += rel/10000.0; if(v < 7.0268) exit(1); exit(0);'; then
@@ -297,7 +271,7 @@ diff -uNr php-5.0.4.orig/sapi/caudium/config.m4 php-5.0.4/sapi/caudium/config.m4
  		if test -z "$PIKE_INCLUDE_DIR" -o -z "$PIKE_MODULE_DIR"; then
  			AC_MSG_ERROR(Failed to figure out Pike module and include directories)
  		fi
-@@ -83,7 +83,9 @@
+@@ -82,7 +82,9 @@
      PIKE_VERSION=`$PIKE -e 'string v; int rel;sscanf(version(), "Pike v%s release %d", v, rel); write(v+"."+rel);'`   
  	AC_DEFINE(HAVE_CAUDIUM,1,[Whether to compile with Caudium support])
      PHP_SELECT_SAPI(caudium, shared, caudium.c)
@@ -311,7 +285,7 @@ diff -uNr php-5.0.4.orig/sapi/caudium/config.m4 php-5.0.4/sapi/caudium/config.m4
 diff -uNr php-5.0.4.orig/sapi/cli/php.1.in php-5.0.4/sapi/cli/php.1.in
 --- php-5.0.4.orig/sapi/cli/php.1.in	2004-05-02 11:14:02.000000000 +0200
 +++ php-5.0.4/sapi/cli/php.1.in	2005-04-27 11:14:32.936964136 +0200
-@@ -282,13 +282,17 @@
+@@ -285,13 +285,17 @@
  or script is read from stdin
  .SH FILES
  .TP 15
@@ -351,13 +325,13 @@ diff -uNr php-5.0.4.orig/scripts/Makefile.frag php-5.0.4/scripts/Makefile.frag
 diff -uNr php-5.0.4.orig/scripts/php-config.in php-5.0.4/scripts/php-config.in
 --- php-5.0.4.orig/scripts/php-config.in	2005-03-16 07:36:54.000000000 +0100
 +++ php-5.0.4/scripts/php-config.in	2005-04-27 11:14:32.936964136 +0200
-@@ -2,7 +2,7 @@
- 
+@@ -3,7 +3,7 @@
  prefix="@prefix@"
+ exec_prefix="@exec_prefix@"
  version="@PHP_VERSION@"
 -includedir="@includedir@/php"
 +includedir="@includedir@/php5"
- includes="-I$includedir -I$includedir/main -I$includedir/TSRM -I$includedir/Zend"
+ includes="-I$includedir -I$includedir/main -I$includedir/TSRM -I$includedir/Zend -I$includedir/ext"
  ldflags="@PHP_LDFLAGS@"
  libs="@EXTRA_LIBS@"
 diff -uNr php-5.0.4.orig/scripts/phpize.in php-5.0.4/scripts/phpize.in

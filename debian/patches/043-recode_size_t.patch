@@ -1,9 +1,9 @@
 --- php-5.0.4/ext/recode/recode.c	2005-07-13 14:43:06.000000000 +1000
 +++ php-5.0.4/ext/recode/recode.c	2005-07-13 14:43:45.000000000 +1000
-@@ -130,8 +130,8 @@
+@@ -129,8 +129,8 @@
+ {
  	RECODE_REQUEST request = NULL;
  	char *r = NULL;
- 	bool success;
 -	int r_len = 0, r_alen = 0;
 -	int req_len, str_len;
 +	size_t r_len = 0, r_alen = 0;

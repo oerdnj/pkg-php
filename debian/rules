@@ -88,9 +88,15 @@ COMMON_CONFIG=  --build=$(PHP5_BUILD_GNU_TYPE)-gnu --host=$(PHP5_HOST_GNU_TYPE)-
 		--with-kerberos=/usr \
 		--with-openssl=/usr \
 		--enable-dbx \
+		--disable-pdo \
 		--enable-soap \
 		--with-mime-magic=$(MAGIC_MIME) \
 		--with-exec-dir=/usr/lib/php5/libexec
+
+BUILTIN_EXTENSION_CHECK=$$e=get_loaded_extensions(); natcasesort($$e); \
+			$$s="The following extensions are built in:"; \
+			foreach($$e as $$i) { $$s .= " $$i"; } \
+			echo("php:Extensions=" . wordwrap($$s . ".\n", 75, "\$${Newline} "));
 
 patch: patch-stamp
 patch-stamp:
@@ -436,10 +442,6 @@ binary-arch: build install
 	cat debian/copyright.header LICENSE Zend/LICENSE > debian/copyright
 	dh_installdocs -a
 
-	for i in README CODING_STANDARDS; do \
-		cp pear/$$i debian/php5-common/usr/share/doc/php5-common/PEAR/; \
-	done
-
 	cat debian/modulelist | while read package extname dsoname; do \
 		rm -rf debian/php5-$$package/usr/share/doc/php5-$$package; \
 		ln -s php5-common debian/php5-$$package/usr/share/doc/php5-$$package; \
@@ -482,6 +484,15 @@ binary-arch: build install
 	done; \
 	cat debian/modulelist | while read package extname dsoname; do \
 		echo "php:Depends=phpapi-$${phpapi}" >> debian/php5-$$package.substvars; \
+	done
+
+	for i in cgi cli; do \
+		"$$i"-build/sapi/cli/php -n -r '$(BUILTIN_EXTENSION_CHECK)' \
+			>> debian/php5-"$$i".substvars; \
+	done
+	for i in apache apache2; do \
+		"$$i"-build/sapi/cli/php -n -r '$(BUILTIN_EXTENSION_CHECK)' \
+			>> debian/lib"$$i"-mod-php5.substvars; \
 	done
 
 	echo "apache:Depends=apache-common (>= $(APACHE_VERSION))" >>debian/libapache-mod-php5.substvars

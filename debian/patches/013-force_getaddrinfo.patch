@@ -1,6 +1,6 @@
 --- php4-4.3.10/configure.in	2004-12-15 17:00:57.000000000 -0700
 +++ php4-4.3.10/configure.in	2004-12-15 17:03:30.000000000 -0700
-@@ -581,50 +581,50 @@
+@@ -532,50 +532,50 @@
  
  dnl Check for getaddrinfo, should be a better way, but...
  dnl Also check for working getaddrinfo
@@ -43,7 +43,7 @@
 -  freeaddrinfo(ai);
 -  exit(0);
 -}
--  ],ac_cv_func_getaddrinfo=yes, ac_cv_func_getaddrinfo=no),
+-  ],ac_cv_func_getaddrinfo=yes, ac_cv_func_getaddrinfo=no, ac_cv_func_getaddrinfo=no),
 -ac_cv_func_getaddrinfo=no)])
 -if test "$ac_cv_func_getaddrinfo" = yes; then
 +dnl AC_CACHE_CHECK([for getaddrinfo], ac_cv_func_getaddrinfo,
@@ -85,7 +85,7 @@
 +dnl   freeaddrinfo(ai);
 +dnl   exit(0);
 +dnl }
-+dnl   ],ac_cv_func_getaddrinfo=yes, ac_cv_func_getaddrinfo=no),
++dnl   ],ac_cv_func_getaddrinfo=yes, ac_cv_func_getaddrinfo=no, ac_cv_func_getaddrinfo=no),
 +dnl ac_cv_func_getaddrinfo=no)])
 +dnl if test "$ac_cv_func_getaddrinfo" = yes; then
    AC_DEFINE(HAVE_GETADDRINFO,1,[Define if you have the getaddrinfo function])

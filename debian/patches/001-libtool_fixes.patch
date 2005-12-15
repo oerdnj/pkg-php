@@ -11,32 +11,10 @@ diff -urN php4-4.3.4.orig/TSRM/configure.in php4-4.3.4/TSRM/configure.in
  
  dnl TSRM_PTHREAD
  
-diff -urN php4-4.3.4.orig/acinclude.m4 php4-4.3.4/acinclude.m4
---- php4-4.3.4.orig/acinclude.m4	2003-10-03 00:29:24.000000000 -0400
-+++ php4-4.3.4/acinclude.m4	2004-02-16 00:59:06.000000000 -0500
-@@ -779,13 +779,13 @@
- dnl
- AC_DEFUN([PHP_BUILD_PROGRAM],[
-   OVERALL_TARGET=[]ifelse($1,,php,$1)
--  php_c_pre='$(CC)'
-+  php_c_pre='$(LIBTOOL) --mode=compile $(CC)'
-   php_c_meta='$(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)'
--  php_c_post=' && echo > $[@]'
--  php_cxx_pre='$(CXX)'
-+  php_c_post=
-+  php_cxx_pre='$(LIBTOOL) --mode=compile $(CXX)'
-   php_cxx_meta='$(COMMON_FLAGS) $(CXXFLAGS_CLEAN) $(EXTRA_CXXFLAGS)'
--  php_cxx_post=' && echo > $[@]'
--  php_lo=o
-+  php_cxx_post=
-+  php_lo=lo
- 
-   case $with_pic in
-     yes) pic_setting='-prefer-pic';;
 diff -urN php4-4.3.4.orig/configure.in php4-4.3.4/configure.in
 --- php4-4.3.4.orig/configure.in	2003-11-02 17:15:05.000000000 -0500
 +++ php4-4.3.4/configure.in	2004-02-16 01:00:52.000000000 -0500
-@@ -1238,9 +1238,6 @@
+@@ -1159,9 +1159,6 @@
  
  LDFLAGS="$LDFLAGS $PHP_AIX_LDFLAGS"
  AC_PROG_LIBTOOL
