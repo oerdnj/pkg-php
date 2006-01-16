@@ -14,7 +14,7 @@ diff -urN php4-4.3.4.orig/TSRM/configure.in php4-4.3.4/TSRM/configure.in
 diff -urN php4-4.3.4.orig/configure.in php4-4.3.4/configure.in
 --- php4-4.3.4.orig/configure.in	2003-11-02 17:15:05.000000000 -0500
 +++ php4-4.3.4/configure.in	2004-02-16 01:00:52.000000000 -0500
-@@ -1159,9 +1159,6 @@
+@@ -1226,9 +1226,6 @@
  
  LDFLAGS="$LDFLAGS $PHP_AIX_LDFLAGS"
  AC_PROG_LIBTOOL

@@ -1,3 +1,26 @@
+php5 (5.1.2-1) unstable; urgency=low
+
+  * New upstream bugfix and security update release (closes: #347894)
+    - Fixes multiple cross-site-scripting vulnerabilities; CVE-2006-0208
+    - Resolves multiple HTTP response splitting vulnerabilities, allowing
+      arbitrary header injection via Set-Cookie headers; see CVE-2006-0207
+    - While we don't currently build it, this release also fixes a format
+      string vulnerability in the mysqli extension; see CVE-2006-0200
+    - Includes a new version of the PEAR installer that seems to have a
+      slightly better clue about the difference between INSTALL_ROOT and
+      PHP_PEAR_INSTALL_DIR, fixing pear.conf (closes: #346479, #346501)
+  * While the above is partially true, the PEAR installer is still a bit
+    broken (it won't install correctly under fakeroot anymore, YAY), so
+    shuffle debian/rules to have a build-pear-stamp target, as a stopgap.
+  * Add 106-strptime_xopen.patch, moving the _XOPEN_SOURCE definition down
+    in ext/standard/datetime.c, below the php.h include (closes: #346550)
+  * Add 107-reflection_is_ext.patch, munging ext/reflection/config.m4 to
+    properly call the PHP_ARG_ENABLE macro for an extension, not built-in.
+  * Stop php-pear from Replacing and Conflicting with php-html-template-it,
+    as we only now ship the bare essential to make the pear installer go.
+
+ -- Adam Conrad <adconrad@0c3.net>  Mon, 16 Jan 2006 16:12:31 +1100
+
 php5 (5.1.1-1) unstable; urgency=low
 
   * New upstream bugfix release, skipping the problematic 5.1.0 release:

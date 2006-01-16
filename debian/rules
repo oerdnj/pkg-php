@@ -126,7 +126,7 @@ unpatch:
 	fi
 	rm -f patch-stamp
 
-build: build-apache-stamp build-apache2-stamp build-cgi-stamp build-cli-stamp
+build: build-apache-stamp build-apache2-stamp build-cgi-stamp build-cli-stamp build-pear-stamp
 build-apache-stamp: configure-apache-stamp
 	dh_testdir
 	# Add here commands to compile the package.
@@ -162,6 +162,12 @@ build-cgi-stamp: configure-cgi-stamp
 	cd cgi-build && $(MAKE) && mv sapi/cgi/php sapi/cgi/usr.bin.php5-cgi
 
 	touch build-cgi-stamp
+
+build-pear-stamp: build-cgi-stamp
+	dh_testdir
+	-mkdir pear-build
+	cd cgi-build && make install-pear PHP_PEAR_PHP_BIN=/usr/bin/php PHP_PEAR_INSTALL_DIR=/usr/share/php PHP_PEAR_SYSCONF_DIR=/etc/pear PHP_PEAR_SIG_BIN=/usr/bin/gpg INSTALL_ROOT=$(CURDIR)/pear-build
+	touch build-pear-stamp
 
 configure: configure-apache-stamp configure-apache2-stamp configure-cli-stamp configure-cgi-stamp
 configure-apache-stamp: patch-stamp
@@ -265,6 +271,7 @@ clean: unpatch
 	rm -f configure-apache2-stamp build-apache2-stamp
 	rm -f configure-cgi-stamp build-cgi-stamp
 	rm -f configure-cli-stamp build-cli-stamp
+	rm -f build-pear-stamp
 	rm -f install-stamp
 
 	# Add here commands to clean up after the build process.
@@ -273,6 +280,7 @@ clean: unpatch
 	rm -rf apache2-build
 	rm -rf cgi-build
 	rm -rf cli-build
+	rm -rf pear-build
 	rm -f debian/copyright
 
 	dh_clean
@@ -324,8 +332,9 @@ install: build
 			Zend/zend_config.{nw,w32}.h \
 			main/config.{nw,w32}.h \
 			main/win95nt.h
+
 	# install PEAR
-	cd cgi-build && make install-pear PHP_PEAR_PHP_BIN=/usr/bin/php PHP_PEAR_INSTALL_DIR=/usr/share/php PHP_PEAR_SYSCONF_DIR=/etc/pear PHP_PEAR_SIG_BIN=/usr/bin/gpg INSTALL_ROOT=$(CURDIR)/debian/php-pear 
+	cp -r pear-build/* debian/php-pear/
 
 	# install extensions
 	ext=`./debian/libapache2-mod-php5/usr/bin/php-config --extension-dir`;\

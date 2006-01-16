@@ -2,14 +2,14 @@
 +++ php4-4.3.9/ext/readline/config.m4	2004-10-04 21:40:38.000000000 -0600
 @@ -12,7 +12,7 @@
  
- if test "$PHP_READLINE" != "no"; then
+ if test "$PHP_READLINE" && test "$PHP_READLINE" != "no"; then
    for i in $PHP_READLINE /usr/local /usr; do
 -    test -f $i/include/readline/readline.h && READLINE_DIR=$i && break
 +    test -f $i/include/editline/readline.h && READLINE_DIR=$i && break
    done
  
    if test -z "$READLINE_DIR"; then
-@@ -66,7 +66,7 @@
+@@ -64,7 +64,7 @@
  elif test "$PHP_LIBEDIT" != "no"; then
  
    for i in $PHP_LIBEDIT /usr/local /usr; do
@@ -20,9 +20,9 @@
    if test -z "$LIBEDIT_DIR"; then
 --- php4-4.3.9/ext/readline/readline.c	2002-12-31 09:35:15.000000000 -0700
 +++ php4-4.3.9/ext/readline/readline.c	2004-10-04 21:42:15.000000000 -0600
-@@ -29,9 +29,9 @@
- 
- #if HAVE_LIBREADLINE || HAVE_LIBEDIT
+@@ -33,9 +33,9 @@
+ #define rl_completion_matches completion_matches
+ #endif
  
 -#include <readline/readline.h>
 +#include <editline/readline.h>

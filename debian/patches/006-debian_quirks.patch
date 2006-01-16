@@ -1,7 +1,7 @@
 diff -uNr php-5.0.4.orig/configure.in php-5.0.4/configure.in
 --- php-5.0.4.orig/configure.in	2005-03-30 23:43:12.000000000 +0200
 +++ php-5.0.4/configure.in	2005-04-27 11:15:29.276399240 +0200
-@@ -858,7 +858,7 @@
+@@ -925,7 +925,7 @@
  fi
  
  PHP_ARG_WITH(pear, [whether to install PEAR],
@@ -10,7 +10,7 @@ diff -uNr php-5.0.4.orig/configure.in php-5.0.4/configure.in
    --without-pear          Do not install PEAR], DEFAULT, yes)
  
  if test "$PHP_PEAR" != "no"; then
-@@ -892,7 +892,7 @@
+@@ -959,7 +959,7 @@
    if test "$PHP_PEAR" = "DEFAULT" || test "$PHP_PEAR" = "yes"; then
      case $PHP_LAYOUT in
        GNU) PEAR_INSTALLDIR=$datadir/pear;;
@@ -19,7 +19,7 @@ diff -uNr php-5.0.4.orig/configure.in php-5.0.4/configure.in
      esac
    fi
  
-@@ -947,12 +947,12 @@
+@@ -1014,12 +1014,12 @@
  
  case $libdir in
    '${exec_prefix}/lib')
@@ -34,7 +34,7 @@ diff -uNr php-5.0.4.orig/configure.in php-5.0.4/configure.in
      ;;
    *) ;;
  esac
-@@ -1009,7 +1009,7 @@
+@@ -1076,7 +1076,7 @@
  EXPANDED_DATADIR=$datadir
  EXPANDED_PHP_CONFIG_FILE_PATH=`eval echo "$PHP_CONFIG_FILE_PATH"`
  EXPANDED_PHP_CONFIG_FILE_SCAN_DIR=`eval echo "$PHP_CONFIG_FILE_SCAN_DIR"`
@@ -268,7 +268,7 @@ diff -uNr php-5.0.4.orig/sapi/caudium/config.m4 php-5.0.4/sapi/caudium/config.m4
 -	    PIKE_INCLUDE_DIR=`echo $PIKE_MODULE_DIR | sed -e 's,lib/pike/modules,include/pike,' -e 's,lib/modules,include/pike,' `
 +		PIKE_MODULE_DIR=`$PIKE --show-paths 2>&1| grep '^Master file' | sed -e 's/.*: //' -e 's/master.pike/modules/'`
 +	    PIKE_INCLUDE_DIR=`echo $PIKE_MODULE_DIR | sed -e 's,lib/modules,,' -e 's,modules,include,' `
- 		if test -z "$PIKE_INCLUDE_DIR" -o -z "$PIKE_MODULE_DIR"; then
+ 		if test -z "$PIKE_INCLUDE_DIR" || test -z "$PIKE_MODULE_DIR"; then
  			AC_MSG_ERROR(Failed to figure out Pike module and include directories)
  		fi
 @@ -82,7 +82,9 @@
@@ -285,8 +285,8 @@ diff -uNr php-5.0.4.orig/sapi/caudium/config.m4 php-5.0.4/sapi/caudium/config.m4
 diff -uNr php-5.0.4.orig/sapi/cli/php.1.in php-5.0.4/sapi/cli/php.1.in
 --- php-5.0.4.orig/sapi/cli/php.1.in	2004-05-02 11:14:02.000000000 +0200
 +++ php-5.0.4/sapi/cli/php.1.in	2005-04-27 11:14:32.936964136 +0200
-@@ -285,13 +285,17 @@
- or script is read from stdin
+@@ -296,13 +296,17 @@
+ .B name
  .SH FILES
  .TP 15
 -.B php\-cli.ini

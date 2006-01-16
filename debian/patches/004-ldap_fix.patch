@@ -1,6 +1,6 @@
 --- php4-4.3.4.orig/ext/ldap/ldap.c
 +++ php4-4.3.4/ext/ldap/ldap.c
-@@ -1353,7 +1353,7 @@
+@@ -1356,7 +1356,7 @@
  	}
  
  	i=0;
@@ -9,7 +9,7 @@
  	count = i;
  
  	array_init(return_value);
-@@ -1363,7 +1363,8 @@
+@@ -1366,7 +1366,8 @@
  		add_index_string(return_value, i, ldap_value[i], 1);
  	}
  

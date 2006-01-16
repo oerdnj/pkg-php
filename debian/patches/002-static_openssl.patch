@@ -1,7 +1,7 @@
 diff -urN php4-4.3.4.orig/acinclude.m4 php4-4.3.4/acinclude.m4
 --- php4-4.3.4.orig/acinclude.m4	2004-02-16 01:01:22.000000000 -0500
 +++ php4-4.3.4/acinclude.m4	2004-02-16 01:03:12.000000000 -0500
-@@ -2199,9 +2199,7 @@
+@@ -2221,9 +2221,7 @@
 
      PHP_ADD_INCLUDE($OPENSSL_INCDIR)
    

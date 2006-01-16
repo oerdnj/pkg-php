@@ -136,9 +136,7 @@ Package: php-pear
 Architecture: all
 Depends: php5-cli | php4-cli, php5-common (>= ${Source-Version})
 Recommends: gnupg
-Replaces: php4-pear (<< 4:4.4.0-0), php-html-template-it
-Provides: php-html-template-it
-Conflicts: php-html-template-it
+Replaces: php4-pear (<< 4:4.4.0-0)
 Description: PEAR - PHP Extension and Application Repository
  This package contains the base PEAR classes for PHP, as well as the PEAR
  installer.  Many PEAR classes are already packaged for Debian, and can be
