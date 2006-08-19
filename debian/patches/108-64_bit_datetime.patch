@@ -1,0 +1,12 @@
+--- php5-5.1.4.orig/ext/standard/datetime.c-orig	2006-03-20 08:20:54.000000000 -0800
++++ php5-5.1.4/ext/standard/datetime.c	2006-03-20 08:13:05.000000000 -0800
+@@ -20,6 +20,9 @@
+ 
+ /* $Id: datetime.c,v 1.134.2.2 2006/01/01 12:50:14 sniper Exp $ */
+ 
++#define _XOPEN_SOURCE	/* needed to get strptime() declared */
++#define _BSD_SOURCE		/* needed to get ulong declared */
++
+ #include "php.h"
+ #include "zend_operators.h"
+ #include "datetime.h"

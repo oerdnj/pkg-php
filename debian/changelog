@@ -1,3 +1,42 @@
+php5 (5.1.5-1) unstable; urgency=high
+
+  * Acknowledge NMU.
+  * New upstream release (Closes: #383596)
+    - Added missing safe_mode/open_basedir checks inside the error_log(),
+      file_exists(), imap_open() and imap_reopen() functions.
+    - Fixed overflows inside str_repeat() and wordwrap() functions on 64bit
+      systems.
+    - Fixed possible open_basedir/safe_mode bypass in cURL extension and
+      with realpath cache. (CVE-2006-2563) (Closes: #370165)
+    - Fixed overflow in GD extension on invalid GIF images.
+    - Fixed a buffer overflow inside sscanf() function. (CVE-2006-4020)
+      (Closes: #382256)      
+    - Fixed an out of bounds read inside stripos() function.
+    - Fixed memory_limit restriction on 64 bit system.
+
+ -- Ondřej Surý <ondrej@debian.org>  Sat, 19 Aug 2006 14:41:43 +0200
+
+php5 (5.1.4-0.1) unstable; urgency=high
+
+  * Non-maintainer upload.
+  * New upstream release. (Closes: #366109)
+    * Fixes information leak in html_entity_decode() (CVE-2006-1490).
+      (Closes: #359907)
+    * Fixes phpinfo() XSS (CVE-2006-0996). (Closes: #361914)
+    * Fixes copy() safe mode bypass (CVE-2006-1608). (Closes: #361915)
+    * Fixes tempnam() open_basedir bypass (CVE-2006-1494). (Closes: #361916)
+    * Fixes wordwrap() buffer overflow (CVE-2006-1990). (Closes: #365312)
+    * Fixes substr_compare() DoS condition (CVE-2006-1991).
+    * Fixes crash during too deep recursion (CVE-2006-1549). (Closes: #361917)
+    * Fixes injection in mb_send_mail() (CVE-2006-1014, CVE-2006-1015); not
+      mentioned in upstream changelog. (Closes: #368595)
+  * 044-strtod_arm_fix.patch: Adapted for new upstream; pulled in from
+    Piotr Roszatycki's packages.
+  * 108-64bit_datetime.patch: Patch to fix possible segfault on systems where
+    sizeof(void*) > sizeof(int); patch from David Mosberger-Tang.
+
+ -- Steinar H. Gunderson <sesse@debian.org>  Tue, 13 Jun 2006 22:38:33 +0200
+
 php5 (5.1.2-1) unstable; urgency=low
 
   * New upstream bugfix and security update release (closes: #347894)
