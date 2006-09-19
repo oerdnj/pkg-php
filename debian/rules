@@ -211,6 +211,7 @@ configure-apache2-stamp: patch-stamp
 		--with-ldap=shared,/usr \
 		--with-mhash=shared,/usr \
 		--with-mysql=shared,/usr \
+		--with-mysqli=shared,/usr/bin/mysql_config \
 		--with-unixODBC=shared,/usr \
 		--with-recode=shared,/usr \
 		--with-xsl=shared,/usr \

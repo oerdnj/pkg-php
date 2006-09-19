@@ -1,5 +1,16 @@
-php5 (5.1.5-1) unstable; urgency=high
+php5 (5.1.6-2) unstable; urgency=low
 
+  [ sean finney ]
+  * enable the mysqli extension (closes: #320835).
+
+ -- sean finney <seanius@debian.org>  Tue, 19 Sep 2006 19:31:27 +0200
+
+php5 (5.1.6-1) unstable; urgency=high
+
+  [ Adam Conrad ]
+  * Drop 041-shut_up_snmp.patch, which was no longer needed as of 5.1.0.
+
+  [ Ondřej Surý ]
   * Acknowledge NMU.
   * New upstream release (Closes: #383596)
     - Added missing safe_mode/open_basedir checks inside the error_log(),
@@ -12,7 +23,8 @@ php5 (5.1.5-1) unstable; urgency=high
     - Fixed a buffer overflow inside sscanf() function. (CVE-2006-4020)
       (Closes: #382256)      
     - Fixed an out of bounds read inside stripos() function.
-    - Fixed memory_limit restriction on 64 bit system.
+    - Fixed memory_limit restriction on 64 bit system (really with 5.1.6).
+  * Bump libdb build-dep from libdb4.3 to libdb4.4, to match with apache.
 
  -- Ondřej Surý <ondrej@debian.org>  Sat, 19 Aug 2006 14:41:43 +0200
 
@@ -359,7 +371,7 @@ php4 (4:4.3.10-9) unstable; urgency=low
 
   * Update 040-curl_open_basedir.patch once more to make sure it doesn't
     segfault when fed a null or uninitialised URL (closes: #295447)
-  * Add 047-zts_with_dl.patch, courtest of Steve Langasek to re-enable the
+  * Add 047-zts_with_dl.patch, courtesy of Steve Langasek to re-enable the
     dl() function in our builds, despite upstream's claim that it "might
     not be threadsafe on all platforms"; it is on ours (closes: #297839)
   * Make the php4-dev binaries versioned with alternatives (closes: #295903)
