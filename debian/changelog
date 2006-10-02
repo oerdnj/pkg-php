@@ -1,3 +1,12 @@
+php5 (5.1.6-3) unstable; urgency=low
+
+  [ sean finney ]
+  * php5 was building against db4.3 even though db4.4 headers were
+    installed.  fix applied to ./ext/dba/config.m4 while we wait
+    for a real fix from upstream (closes: #388601).
+
+ -- sean finney <seanius@debian.org>  Mon, 02 Oct 2006 17:42:50 +0200
+
 php5 (5.1.6-2) unstable; urgency=low
 
   [ sean finney ]
