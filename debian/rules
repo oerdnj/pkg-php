@@ -71,7 +71,7 @@ COMMON_CONFIG=  --build=$(PHP5_BUILD_GNU_TYPE)-gnu --host=$(PHP5_HOST_GNU_TYPE)-
 		--with-bz2 \
 		--enable-ctype \
 		--with-db4 \
-		--with-gdbm=/usr \
+		--without-gdbm \
 		--with-iconv \
 		--enable-exif \
 		--enable-filepro \
@@ -506,7 +506,7 @@ binary-arch: build install
 	done
 
 	echo "apache:Depends=apache-common (>= $(APACHE_VERSION))" >>debian/libapache-mod-php5.substvars
-	echo "apache2:Depends=apache2-mpm-prefork (>> 2.0.52)" >>debian/libapache2-mod-php5.substvars
+	echo "apache2:Depends=apache2-mpm-prefork (>> 2.0.52), apache2.2-common" >>debian/libapache2-mod-php5.substvars
 	dh_gencontrol -a
 	dh_md5sums -a
 	dh_builddeb -a

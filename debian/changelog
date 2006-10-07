@@ -1,3 +1,12 @@
+php5 (5.1.6-4) unstable; urgency=high
+
+  [sean finney]
+  * no longer build against GPL'd gdbm library (closes: #390452).
+  * updated apache2 module dependencies to build against and coexist
+    with apache2.2 (closes: #390455).
+
+ -- sean finney <seanius@debian.org>  Sat, 07 Oct 2006 12:06:09 +0200
+
 php5 (5.1.6-3) unstable; urgency=low
 
   [ sean finney ]
