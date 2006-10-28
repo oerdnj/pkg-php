@@ -4,3 +4,4 @@
 /usr/share/php5
 /var/lib/php5
 /usr/lib/php5
+/etc/php5/conf.d

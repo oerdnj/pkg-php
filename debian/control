@@ -3,9 +3,9 @@ Section: web
 Priority: optional
 Maintainer: Debian PHP Maintainers <pkg-php-maint@lists.alioth.debian.org>
 Uploaders: Adam Conrad <adconrad@0c3.net>, Steve Langasek <vorlon@debian.org>, Jeroen van Wolffelaar <jeroen@wolffelaar.nl>, Ondřej Surý <ondrej@debian.org>, sean finney <seanius@debian.org>
-Build-Depends: apache-dev (>= 1.3.23), apache2-prefork-dev (>= 2.0.53-3), autoconf, automake1.4, bison, chrpath, debhelper (>= 3), flex (>= 2.5.4), freetds-dev, po-debconf, libbz2-dev (>= 1.0.0), libcurl3-openssl-dev | libcurl3-dev, libdb4.4-dev, libexpat1-dev (>= 1.95.2-2.1), libfreetype6-dev, libgcrypt11-dev, libgd2-xpm-dev (>= 2.0.28-3), libjpeg62-dev, libkrb5-dev, libldap2-dev, libmhash-dev (>= 0.8.8), libmysqlclient15-dev | libmysqlclient12-dev, libncurses5-dev, libpam0g-dev, libpcre3-dev (>= 4.3-1), libpng12-dev, libpq-dev | postgresql-dev, librecode-dev, libsnmp9-dev | libsnmp-dev, libsqlite0-dev, libssl-dev (>= 0.9.6), libt1-dev, libtool (>= 1.4.2-4), libwrap0-dev, libxmltok1-dev, libxml2-dev (>= 2.4.14), libxslt1-dev (>= 1.0.18), re2c, unixodbc-dev, zlib1g-dev (>= 1.0.9)
+Build-Depends: apache-dev (>= 1.3.23), apache2-prefork-dev (>= 2.0.53-3), autoconf, automake1.4, bison, chrpath, debhelper (>= 3), flex (>= 2.5.4), freetds-dev, libbz2-dev (>= 1.0.0), libcurl3-openssl-dev | libcurl3-dev, libdb4.4-dev, libexpat1-dev (>= 1.95.2-2.1), libfreetype6-dev, libgcrypt11-dev, libgd2-xpm-dev (>= 2.0.28-3), libjpeg62-dev, libkrb5-dev, libldap2-dev, libmhash-dev (>= 0.8.8), libmysqlclient15-dev | libmysqlclient12-dev, libncurses5-dev, libpam0g-dev, libpcre3-dev (>= 4.3-1), libpng12-dev, libpq-dev | postgresql-dev, librecode-dev, libsnmp9-dev | libsnmp-dev, libsqlite0-dev, libssl-dev (>= 0.9.6), libt1-dev, libtool (>= 1.4.2-4), libwrap0-dev, libxmltok1-dev, libxml2-dev (>= 2.4.14), libxslt1-dev (>= 1.0.18), re2c, unixodbc-dev, zlib1g-dev (>= 1.0.9)
 Build-Conflicts: bind-dev
-Standards-Version: 3.6.2
+Standards-Version: 3.7.2
 
 Package: php5
 Architecture: all
@@ -39,7 +39,7 @@ Description: Common files for packages built from the php5 source
 
 Package: libapache-mod-php5
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support (>= 2.03-1), ${apache:Depends}, php5-common (= ${Source-Version}), libmagic1
+Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support (>= 2.03-1), ${apache:Depends}, php5-common (= ${Source-Version}), libmagic1, ucf
 Conflicts: php3, php4 (<< 4:4.3.8-6), libapache-mod-php4
 Provides: ${php:Provides}
 Suggests: php-pear
@@ -59,7 +59,7 @@ Description: server-side, HTML-embedded scripting language (apache 1.3 module)
 
 Package: libapache2-mod-php5
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support (>= 2.03-1), ${apache2:Depends}, php5-common (= ${Source-Version}), libmagic1
+Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support (>= 2.03-1), ${apache2:Depends}, php5-common (= ${Source-Version}), libmagic1, ucf
 Conflicts: libapache2-mod-php4
 Provides: ${php:Provides}
 Suggests: php-pear
@@ -80,7 +80,7 @@ Description: server-side, HTML-embedded scripting language (apache 2.0 module)
 
 Package: php5-cgi
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support (>= 2.03-1), php5-common (= ${Source-Version}), libmagic1
+Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support (>= 2.03-1), php5-common (= ${Source-Version}), libmagic1, ucf
 Provides: ${php:Provides}
 Conflicts: php3 (<= 3.0.18-1)
 Suggests: php-pear
@@ -101,7 +101,7 @@ Description: server-side, HTML-embedded scripting language (CGI binary)
 
 Package: php5-cli
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support (>= 2.03-1), php5-common (= ${Source-Version}), libmagic1
+Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support (>= 2.03-1), php5-common (= ${Source-Version}), libmagic1, ucf
 Provides: ${php:Provides}
 Conflicts: php3 (<= 3.0.18-1)
 Suggests: php-pear
@@ -195,13 +195,13 @@ Description: MHASH module for php5
 
 Package: php5-mysql
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-mysqli (= ${Source-Version}), php5-common (= ${Source-Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${Source-Version})
 Description: MySQL module for php5
  This package provides a module for MySQL database connections directly from
  PHP scripts.  This generic module can be used to connect to all versions of
  MySQL, however when connecting to MySQL servers greater than version 4.1,
  you may want to consider using the interface provided by the php5-mysqli
- extention, which this package depends on.
+ extension.
  .
  PHP5 is an HTML-embedded scripting language. Much of its syntax is borrowed
  from C, Java and Perl with a couple of unique PHP-specific features thrown
@@ -210,13 +210,12 @@ Description: MySQL module for php5
 
 Package: php5-mysqli
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-mysql (= ${Source-Version}), php5-common (= ${Source-Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${Source-Version})
 Description: MySQL Improved module for php5
  This package provides a module for MySQL database connections directly from
  PHP scripts.  This new "Improved" interface should only be used to connect
  to MySQL databases greater than version 4.1.  For older MySQL servers,
- please use the functions from the php5-mysql extension instead, which this
- package depends on.
+ please use the functions from the php5-mysql extension instead.
  .
  PHP5 is an HTML-embedded scripting language. Much of its syntax is borrowed
  from C, Java and Perl with a couple of unique PHP-specific features thrown

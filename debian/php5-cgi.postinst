@@ -8,14 +8,8 @@ if [ "$1" != "configure" ]; then
     exit 0
 fi
 
-. /usr/share/debconf/confmodule
-
 phpini="/etc/php5/cgi/php.ini"
-
-if ! [ -f $phpini ]; then
-	mkdir -p /etc/php5/cgi
-	cp /usr/share/php5/php.ini-dist $phpini
-fi
+ucf /usr/share/php5/php.ini-dist $phpini
 
 update-alternatives \
         --install /usr/bin/php-cgi php-cgi /usr/bin/php5-cgi 50 \

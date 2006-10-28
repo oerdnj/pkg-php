@@ -1,3 +1,32 @@
+php5 (5.1.6-5) unstable; urgency=high
+
+  [sean finney]
+  * add a README.Debian.security to clarify how we handle/respond
+    to security problems in stable releases.
+  * SECURITY: include patch for integer overflow in zend_alloc.c.
+    Reference: CVE-2006-04812 (closes: #391586).
+    patch: 110-CVE-2006-4812_zend_alloc.patch
+  * bump the debhelper compatibility level to 4.
+  * remove cyclic depends for mysql/mysqli.
+  * the long overdue rework of configuration file handling.  this also
+    removes the need for debconf and template translations
+    (closes: #361211, #393788, #388697).
+  * start using ucf to manage the the various SAPI php.ini files.
+  * cleanup and consolidation of a few things in the ./debian dir
+  * bump the memory limit to 32M for the cli API (closes: #375070, #340586).
+  * include a fix for missing mbstring headers reported by Jan Wagner 
+    (closes: #391368).
+    patch: 111-mbstring-headers.patch.
+  * include support for PTY's in proc_open, as reported by Eike Dehling.  
+    according to php's BTS (http://bugs.php.net/bug.php?id=39224) the
+    feature was disabled only because the configure script couldn't
+    accurately determine whether the feature was available, and we know
+    it is :) (closes: #381438).
+    patch: 112-proc_open.patch.
+  * update standards-version to 3.7.2
+
+ -- sean finney <seanius@debian.org>  Sat, 28 Oct 2006 14:29:44 +0200
+
 php5 (5.1.6-4) unstable; urgency=high
 
   [sean finney]

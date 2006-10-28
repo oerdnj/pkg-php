@@ -1,0 +1,13 @@
+php5 (5.1.6-5) unstable; urgency=low
+
+  the debian php packages now support a modular configuration layout.
+
+  if you have previously installed modules that have put entries in
+  your php.ini file, you will probably be getting various warning
+  messages about duplicate modules if you have error reporting enabled
+  with a mask including E_WARN.
+
+  no attempt will be made to muck further with your php.ini file, so you
+  should remove those lines yourself.
+
+ -- sean finney <seanius@debian.org>  Thu, 19 Oct 2006 22:47:19 +0200

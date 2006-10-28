@@ -9,11 +9,7 @@ if [ "$1" != "configure" ]; then
 fi
 
 phpini="/etc/php5/apache2/php.ini"
-
-if ! [ -f $phpini ]; then
-	mkdir -p /etc/php5/apache2
-	cp /usr/share/php5/php.ini-dist $phpini
-fi
+ucf /usr/share/php5/php.ini-dist $phpini
 
 reload_apache()
 {
