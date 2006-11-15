@@ -325,15 +325,17 @@ diff -uNr php-5.0.4.orig/scripts/Makefile.frag php-5.0.4/scripts/Makefile.frag
 diff -uNr php-5.0.4.orig/scripts/php-config.in php-5.0.4/scripts/php-config.in
 --- php-5.0.4.orig/scripts/php-config.in	2005-03-16 07:36:54.000000000 +0100
 +++ php-5.0.4/scripts/php-config.in	2005-04-27 11:14:32.936964136 +0200
-@@ -3,7 +3,7 @@
- prefix="@prefix@"
+@@ -3,8 +3,8 @@
  exec_prefix="@exec_prefix@"
  version="@PHP_VERSION@"
+ version_id="@PHP_VERSION_ID@"
 -includedir="@includedir@/php"
 +includedir="@includedir@/php5"
- includes="-I$includedir -I$includedir/main -I$includedir/TSRM -I$includedir/Zend -I$includedir/ext"
+-includes="-I$includedir -I$includedir/main -I$includedir/TSRM -I$includedir/Zend -I$includedir/ext -I$includedir/ext/date/lib"
++includes="-I$includedir -I$includedir/main -I$includedir/TSRM -I$includedir/Zend -I$includedir/ext -I$includedir/ext/date/lib $(getconf LFS_CFLAGS)"
  ldflags="@PHP_LDFLAGS@"
  libs="@EXTRA_LIBS@"
+ extension_dir='@EXTENSION_DIR@'
 diff -uNr php-5.0.4.orig/scripts/phpize.in php-5.0.4/scripts/phpize.in
 --- php-5.0.4.orig/scripts/phpize.in	2005-01-25 13:54:57.000000000 +0100
 +++ php-5.0.4/scripts/phpize.in	2005-04-27 11:14:32.943963072 +0200

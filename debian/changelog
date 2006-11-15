@@ -1,3 +1,80 @@
+php5 (5.2.0-4) unstable; urgency=high
+
+  * Re-re-enable LFS support, forward-porting vorlon's fixes in
+    the php4 tree.
+  * Add a bit of support in upgrade scripts to avoid unnecessary
+    ucf prompting during upgrades (closes: #398363).
+  * Update build-dependencies to reflect that libpcre3-dev >= 6.6
+    is required.  Thanks to Jan Wagner for pointing this out.
+  * loosen dependencys for libapache2-mod-php5 to allow usage with
+    apache2-mpm-itk as an alternative to prefork.  
+    Closes: #398580, #398481.
+
+ -- sean finney <seanius@debian.org>  Wed, 15 Nov 2006 08:33:28 +0100
+
+php5 (5.2.0-3) unstable; urgency=high
+
+  * Unify PHP options for pear binaries to:
+    -d output_buffering=1 -d open_basedir="" -d safe_mode=0 -d memory_limit="-1"
+    (Closes: #397625)
+  * [debian/rules]: Enable PDO building only in apache2 build.
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 10 Nov 2006 14:09:00 +0100
+
+php5 (5.2.0-2) unstable; urgency=high
+
+  [ Ondřej Surý ]
+  * Revert Large File Support for this moment.  We will try to found
+    root of the problem for etch, but we do not promise anything.
+    (Closes: #397465)
+
+ -- Ondřej Surý <ondrej@debian.org>  Wed,  8 Nov 2006 01:13:48 +0100
+
+php5 (5.2.0-1) unstable; urgency=high
+
+  [ sean finney ]
+  * new upstream release.  since this means the 5.1 series is deadware
+    in the eyes of its developers, we better get on this train before
+    it's too late.  Note: this also fixes the htmlentities() exploit.
+    Reference: 	CVE-2006-5465.
+    Closes: #396766.
+  * s/postinst/postrm/ on one critical line in debian/rules.  whoops.
+    Thanks to Bart Martens for finding this (closes: #396873).
+  * as a pennance i've enabled LFS support (closes: #359686).
+  * new version now includes all mbstring headers (closes: #391368).
+  * enable new built-in zip support.
+  * enable pdo support for currently supported db types, and place the
+    extensions in the respective extension packages.  future db
+    types will be added, but probably post-etch as they will probably
+    introduce new packages/dependencies (closes: #348882).
+  * move the mysqli module into the mysql module's package, and remove
+    the no longer necessary mysqli package.
+  * massaging/removal of various patches to upstream changes:
+    D      patches/106-strptime_xopen.patch
+    D      patches/110-CVE-2006-4812_zend_alloc.patch
+    M      patches/006-debian_quirks.patch
+    D      patches/111-mbstring-headers.patch
+    M      patches/053-extension_api.patch
+
+  [ Ondřej Surý ]
+  * Package checked, upload to unstable.
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue,  7 Nov 2006 09:26:51 +0100
+
+php5 (5.1.6-6) unstable; urgency=high
+
+  [ sean finney ]
+  * add notes to php.ini(-dist) about "unsupported" security features.
+    patch: 113-php.ini_securitynotes.patch
+
+  [ Ondřej Surý ]
+  * SECURITY: include patch for html buffer overflows in ext/standard/html.c
+    Reference: CVE-2006-5465
+    Patch: 114-CVE-2006-5465_htmlentities.patch
+    Closes: #396766
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri,  3 Nov 2006 12:32:50 +0100
+
 php5 (5.1.6-5) unstable; urgency=high
 
   [sean finney]

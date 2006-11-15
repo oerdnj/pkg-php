@@ -1,0 +1,40 @@
+#!/bin/sh
+
+set -e
+
+#DEBHELPER#
+
+if [ "$1" != "configure" ]; then
+    exit 0
+fi
+
+phpini="/etc/php5/cgi/php.ini"
+# LEGACY SUPPORT
+# previous versions of php did not ship $phpini as a conffile nor did
+# they use anything like ucf.  as a result, we need to help transition
+# those files into ucf a little more easily by updating unmodified
+# ini files before registering them
+#
+# if we're upgrading from a pre-ucf version of php:
+if dpkg --compare-versions "$2" le-nl "5.1.6-4"; then
+	# if the SAPI config file already exists and is unmodified
+	if [ -f "$phpini" ]; then
+		oldmd5=`md5sum $phpini | cut -d' ' -f1`
+		if [ "$oldmd5" = "c85605baab79fbcd3c289e442eb3caa2" ]; then
+			# then silently update it before registering via ucf
+			cp /usr/share/php5/php.ini-dist $phpini
+		fi
+	fi
+fi
+# END LEGACY SUPPORT
+
+ucf /usr/share/php5/php.ini-dist $phpini
+
+update-alternatives \
+        --install /usr/bin/php-cgi php-cgi /usr/bin/php5-cgi 50 \
+        --slave /usr/share/man/man1/php-cgi.1.gz php-cgi.1.gz /usr/share/man/man1/php5-cgi.1.gz
+
+update-alternatives \
+        --install /usr/lib/cgi-bin/php php-cgi-bin /usr/lib/cgi-bin/php5 50
+
+exit 0

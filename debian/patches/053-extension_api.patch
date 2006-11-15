@@ -1,11 +1,14 @@
 diff -ur php-5.0.4/configure.in php5-5.0.4/configure.in
 --- php-5.0.4/configure.in	2005-03-31 07:43:12.000000000 +1000
 +++ php5-5.0.4/configure.in	2005-07-31 02:35:46.000000000 +1000
-@@ -1039,8 +1039,10 @@
+@@ -1039,8 +1039,13 @@
  
  ZEND_MODULE_API_NO=`$EGREP '#define ZEND_MODULE_API_NO ' $srcdir/Zend/zend_modules.h|$SED 's/#define ZEND_MODULE_API_NO //'`
  
 +DEBIAN_PHP_API=`egrep -h '^#define ZEND_EXTENSION_API_NO|^#define ZEND_MODULE_API_NO|#define PHP_API_VERSION' $srcdir/Zend/zend_extensions.h $srcdir/Zend/zend_modules.h $srcdir/main/php.h | awk '{print $3}' | sed -e 's/^2200/200/' | sort -n | tail -n 1`
++if echo "$CPPFLAGS $CFLAGS" | grep -q -- -D_FILE_OFFSET_BITS=64; then
++  DEBIAN_PHP_API="${DEBIAN_PHP_API}+lfs"
++fi
 +
  if test -z "$EXTENSION_DIR"; then
 -  extbasedir=$ZEND_MODULE_API_NO
@@ -32,7 +35,7 @@ diff -ur php-5.0.4/scripts/php-config.in php5-5.0.4/scripts/php-config.in
  
  case "$1" in
  --prefix)
-@@ -28,10 +29,12 @@
+@@ -28,12 +29,14 @@
  	echo $includedir;;
  --php-binary)
  	echo $php_binary;;
@@ -40,9 +43,11 @@ diff -ur php-5.0.4/scripts/php-config.in php5-5.0.4/scripts/php-config.in
 +	echo $phpapi;;
  --version)
  	echo $version;;
+ --vernum)
+ 	echo $version_id;;
  *)
--	echo "Usage: $0 [--prefix|--includes|--ldflags|--libs|--extension-dir|--include-dir|--php-binary|--version]"
-+	echo "Usage: $0 [--prefix|--includes|--ldflags|--libs|--extension-dir|--include-dir|--php-binary|--phpapi|--version]"
+-	echo "Usage: $0 [--prefix|--includes|--ldflags|--libs|--extension-dir|--include-dir|--php-binary|--version|--vernum]"
++	echo "Usage: $0 [--prefix|--includes|--ldflags|--libs|--extension-dir|--include-dir|--php-binary|--phpapi|--version|--vernum]"
  	exit 1;;
  esac
  

@@ -111,7 +111,7 @@ central configuration file /etc/php5/$SAPI/php.ini.
 
 Additionally, each SAPI is configured with the compile-time option 
 
-	--with-config-file-scan-dir=/etc/php5/SAPI/conf.d
+	--with-config-file-scan-dir=/etc/php5/$SAPI/conf.d
 
 which for all SAPI's is actually a symlink pointing to a central
 directory /etc/php5/conf.d.  Any file found in this directory ending

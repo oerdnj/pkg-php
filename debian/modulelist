@@ -3,7 +3,6 @@ gd GD
 ldap LDAP
 mhash MHASH
 mysql MySQL
-mysqli MySQLi
 odbc ODBC
 pgsql PostgreSQL
 recode recode

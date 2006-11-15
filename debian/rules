@@ -28,8 +28,9 @@ PHP5_DEBIAN_REVISION  = $(shell echo $(PHP5_SOURCE_VERSION) | sed "s/.*-//")
 APACHE_VERSION = $(shell dpkg -s apache-dev | grep ^Version | cut -d\  -f2 | cut -d- -f1)
 
 PROG_SENDMAIL = /usr/sbin/sendmail
-CFLAGS = -O2 -Wall -fsigned-char -fno-strict-aliasing
-LFSFLAGS = -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64
+CFLAGS = -O2 -Wall -fsigned-char -fno-strict-aliasing 
+# LFS support
+CFLAGS += $(shell getconf LFS_CFLAGS)
 
 # Enable IEEE-conformant floating point math on alphas (not the default)
 ifeq (alpha-linux,$(PHP5_HOST_GNU_TYPE))
@@ -89,8 +90,8 @@ COMMON_CONFIG=--build=$(PHP5_BUILD_GNU_TYPE)-gnu \
 		--with-kerberos=/usr \
 		--with-openssl=/usr \
 		--enable-dbx \
-		--disable-pdo \
 		--enable-soap \
+		--enable-zip \
 		--with-mime-magic=$(MAGIC_MIME) \
 		--with-exec-dir=/usr/lib/php5/libexec
 
@@ -168,6 +169,13 @@ build-pear-stamp: build-cgi-stamp
 	dh_testdir
 	-mkdir pear-build
 	cd cgi-build && make install-pear PHP_PEAR_PHP_BIN=/usr/bin/php PHP_PEAR_INSTALL_DIR=/usr/share/php PHP_PEAR_SYSCONF_DIR=/etc/pear PHP_PEAR_SIG_BIN=/usr/bin/gpg INSTALL_ROOT=$(CURDIR)/pear-build
+	sed -i -e 's/-d output_buffering=1 -d open_basedir="" -d safe_mode=0/-d output_buffering=1 -d open_basedir="" -d safe_mode=0 -d memory_limit="-1"/' \
+	       $(CURDIR)/pear-build/usr/bin/pear && \
+	sed -i -e 's/-d output_buffering=1 -d safe_mode=0/-d output_buffering=1 -d open_basedir="" -d safe_mode=0 -d memory_limit="-1"/' \
+	       $(CURDIR)/pear-build/usr/bin/pecl && \
+	sed -i -e 's/-d memory_limit="-1"//' \
+	       -e 's/-d output_buffering=1 -d open_basedir="" -d safe_mode=0/-d output_buffering=1 -d open_basedir="" -d safe_mode=0 -d memory_limit="-1"/' \
+	       $(CURDIR)/pear-build/usr/bin/peardev
 	touch build-pear-stamp
 
 configure: configure-apache-stamp configure-apache2-stamp configure-cli-stamp configure-cgi-stamp
@@ -222,7 +230,14 @@ configure-apache2-stamp: patch-stamp
 		--with-sqlite=shared,/usr \
 		--with-sybase-ct=shared,/usr \
 		--with-xmlrpc=shared \
-		--with-pgsql=shared,/usr PGSQL_INCLUDE=`pg_config --includedir`
+		--with-pgsql=shared,/usr PGSQL_INCLUDE=`pg_config --includedir` \
+		--enable-pdo=shared \
+		--without-pdo-dblib \
+		--without-pdo-firebird \
+		--with-pdo-mysql=shared,/usr \
+		--with-pdo-odbc=shared,unixODBC,/usr \
+		--with-pdo-pgsql=shared,/usr/bin/pg_config \
+		--with-pdo-sqlite=shared,/usr
 	cd apache2-build && \
 	cp ../Zend/zend_ini_scanner.c ../Zend/zend_language_scanner.c \
 	   ../Zend/zend_ini_parser.h ../Zend/zend_language_parser.h \
@@ -291,7 +306,7 @@ clean: unpatch
 		rm -f debian/php5-$$package.postinst; \
 	done
 	for sapi in libapache-mod-php5 libapache2-mod-php5 php5-cgi php5-cli; do \
-		for cruft in postinst links; do \
+		for cruft in postrm links; do \
 			rm -f debian/$${sapi}.$${cruft}; \
 		done; \
 	done
@@ -347,7 +362,7 @@ install: build
 	for i in libapache-mod-php5 libapache2-mod-php5 php5-cgi php5-cli; do \
 		mkdir -p debian/$$i/$${ext}; \
 	done; \
-	cat debian/modulelist | while read package extname dsoname; do \
+	cat debian/modulelist debian/extramodulelist | while read package extname dsoname; do \
 		if [ -z "$$dsoname" ]; then dsoname=$$package; fi; \
 		mkdir -p debian/php5-$$package$${ext}; \
 		chrpath debian/libapache2-mod-php5/$${ext}/$$dsoname.so; \
@@ -430,18 +445,25 @@ binary-arch: build install
 	dh_testroot
 	# Do this first so we don't overwrite any debhelper-generated files
 	#
-	# generate the config snippets and maintscripts for various php
+	# generate the maintscripts for various php
 	# modules from the templates.
 	cat debian/modulelist | while read package extname dsoname; do \
 		if [ -z "$$dsoname" ]; then dsoname=$$package; fi; \
-		mkdir -p debian/php5-$$package/etc/php5/conf.d; \
-		sed -e"s/@extname@/$$extname/g; s/@dsoname@/$$dsoname/g" \
-		  < debian/php5-module.ini \
-		  > debian/php5-$${package}/etc/php5/conf.d/$${package}.ini; \
 		sed -e"s/@extname@/$$extname/g; s/@dsoname@/$$dsoname/g" \
 		  < debian/php5-module.postinst \
 		  > debian/php5-$${package}.postinst; \
 	done
+
+	# generate the config snippets for various php
+	# modules from the templates.
+	cat debian/modulelist debian/extramodulelist | while read package extname dsoname; do \
+		if [ -z "$$dsoname" ]; then dsoname=$$package; fi; \
+		mkdir -p debian/php5-$$package/etc/php5/conf.d; \
+		sed -e"s/@extname@/$$extname/g; s/@dsoname@/$$dsoname/g" \
+		  < debian/php5-module.ini \
+		  > debian/php5-$${package}/etc/php5/conf.d/$${dsoname}.ini; \
+	done
+
 	# likewise, for the different sapi implementations
 	for tmpl in postrm links; do \
 		for sapi in apache apache2 cgi cli; do \
@@ -497,7 +519,7 @@ binary-arch: build install
 	done
 
 	echo "apache:Depends=apache-common (>= $(APACHE_VERSION))" >>debian/libapache-mod-php5.substvars
-	echo "apache2:Depends=apache2-mpm-prefork (>> 2.0.52), apache2.2-common" >>debian/libapache2-mod-php5.substvars
+	echo "apache2:Depends=apache2-mpm-prefork (>> 2.0.52) | apache2-mpm-itk, apache2.2-common" >>debian/libapache2-mod-php5.substvars
 	dh_gencontrol -a
 	dh_md5sums -a
 	dh_builddeb -a
