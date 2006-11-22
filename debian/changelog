@@ -1,3 +1,29 @@
+php5 (5.2.0-6) unstable; urgency=high
+
+  [ sean finney ]
+  * firebird2-dev (and thus php5-interbase) is only available on
+    i386/amd64, so update the control/rules information accordingly.
+    thanks to Bastian Blank for reporting this (closes: #399558).
+
+ -- sean finney <seanius@debian.org>  Wed, 22 Nov 2006 19:04:04 +0100
+
+php5 (5.2.0-5) unstable; urgency=high
+
+  [ sean finney ]
+  * bring some of the mainline php4 modules back into the php source
+    package instead of distributing them in independant source packages:
+    - php5-imap
+    - php5-interbase
+    - php5-mcrypt
+    - php5-pspell
+    - php5-tidy
+    these modules are still provided in the same binary packages as
+    before, but will now be built in tandem with the core php packages.
+  * fix for pdo.so duplicate loading warnings, thanks to Jan Wagner
+    (closes: #398367, #399248).
+
+ -- sean finney <seanius@debian.org>  Mon, 20 Nov 2006 12:41:37 +0100
+
 php5 (5.2.0-4) unstable; urgency=high
 
   * Re-re-enable LFS support, forward-porting vorlon's fixes in

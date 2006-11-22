@@ -17,6 +17,7 @@ export DH_OPTIONS
 
 DEB_HOST_GNU_TYPE    ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+DEB_BUILD_ARCH   ?= $(shell dpkg-architecture -qDEB_BUILD_ARCH)
 
 PHP5_HOST_GNU_TYPE    = $(shell echo $(DEB_HOST_GNU_TYPE) | sed 's/-gnu$$//')
 PHP5_BUILD_GNU_TYPE   = $(shell echo $(DEB_BUILD_GNU_TYPE) | sed 's/-gnu$$//')
@@ -50,6 +51,11 @@ endif
 # New magic.mime location:
 ifeq ($(wildcard /usr/share/file/magic.mime), /usr/share/file/magic.mime)
 MAGIC_MIME = /usr/share/file/magic.mime
+endif
+
+# only enable interbase support for i386/amd64
+ifneq (,$(filter $(DEB_BUILD_ARCH),amd64 i386))
+	IBFLAGS=--with-interbase=shared,/usr
 endif
 
 COMMON_CONFIG=--build=$(PHP5_BUILD_GNU_TYPE)-gnu \
@@ -190,6 +196,7 @@ configure-apache-stamp: patch-stamp
 		--with-config-file-scan-dir=/etc/php5/apache/conf.d \
 		$(COMMON_CONFIG) \
 		--without-mm \
+		--disable-pdo \
 		--without-mysql --without-sybase-ct --without-sqlite
 	cd apache-build && \
 	cp ../Zend/zend_ini_scanner.c ../Zend/zend_language_scanner.c \
@@ -217,23 +224,29 @@ configure-apache2-stamp: patch-stamp
 		--with-xpm-dir=shared,/usr/X11R6 \
 		--with-png-dir=shared,/usr \
 		--with-freetype-dir=shared,/usr \
+		--with-imap=shared,/usr \
+		--with-imap-ssl \
+		$(IBFLAGS) \
 		--with-ttf=shared,/usr \
 		--with-t1lib=shared,/usr \
 		--with-ldap=shared,/usr \
+		--with-mcrypt=shared,/usr \
 		--with-mhash=shared,/usr \
 		--with-mysql=shared,/usr \
 		--with-mysqli=shared,/usr/bin/mysql_config \
+		--with-pspell=shared,/usr \
 		--with-unixODBC=shared,/usr \
 		--with-recode=shared,/usr \
 		--with-xsl=shared,/usr \
 		--with-snmp=shared,/usr \
 		--with-sqlite=shared,/usr \
 		--with-sybase-ct=shared,/usr \
+		--with-tidy=shared,/usr \
 		--with-xmlrpc=shared \
 		--with-pgsql=shared,/usr PGSQL_INCLUDE=`pg_config --includedir` \
 		--enable-pdo=shared \
 		--without-pdo-dblib \
-		--without-pdo-firebird \
+		--with-pdo-firebird=shared,/usr \
 		--with-pdo-mysql=shared,/usr \
 		--with-pdo-odbc=shared,unixODBC,/usr \
 		--with-pdo-pgsql=shared,/usr/bin/pg_config \
@@ -256,6 +269,7 @@ configure-cgi-stamp: patch-stamp
 		--with-config-file-scan-dir=/etc/php5/cgi/conf.d \
 		$(COMMON_CONFIG) \
 		--without-mm \
+		--disable-pdo \
 		--without-mysql --without-sybase-ct --without-sqlite
 	cd cgi-build && \
 	cp ../Zend/zend_ini_scanner.c ../Zend/zend_language_scanner.c \
@@ -275,6 +289,7 @@ configure-cli-stamp: patch-stamp
 		--with-config-file-scan-dir=/etc/php5/cli/conf.d \
 		$(COMMON_CONFIG) \
 		--without-mm \
+		--disable-pdo \
 		--without-mysql --without-sybase-ct --without-sqlite \
 		--enable-pcntl \
 		--with-ncurses=/usr
@@ -437,8 +452,6 @@ binary-indep: build install
 	dh_builddeb
 
 # Build architecture-dependent files here.
-# Pass -a to all debhelper commands in this target to reduce clutter.
-#binary-arch: DH_OPTIONS=-a
 binary-arch: build install
 	# Need this version of debhelper for DH_OPTIONS to work.
 	dh_testdir
@@ -476,7 +489,7 @@ binary-arch: build install
 	done
 
 	cat debian/copyright.header LICENSE Zend/LICENSE > debian/copyright
-	dh_installdocs -a
+	dh_installdocs -s
 
 	cat debian/modulelist | while read package extname dsoname; do \
 		rm -rf debian/php5-$$package/usr/share/doc/php5-$$package; \
@@ -489,17 +502,17 @@ binary-arch: build install
 	done
 	dh_installcron -pphp5-common --name=php5
 	dh_installchangelogs -pphp5-common NEWS
-	dh_strip -a
-	dh_link -a
-	dh_compress -a -Xphp.ini
-	dh_fixperms -a -X /var/lib/php5
+	dh_strip -s
+	dh_link -s
+	dh_compress -s -Xphp.ini
+	dh_fixperms -s -X /var/lib/php5
 	mkdir -p debian/php5-common/usr/share/lintian/overrides
 	echo "php5-common: non-standard-dir-perm var/lib/php5/ 1733 != 0755" >> debian/php5-common/usr/share/lintian/overrides/php5-common
 	mkdir -p debian/php5-common/usr/share/linda/overrides
 	echo "Tag: non-standard-dir-perm" >> debian/php5-common/usr/share/linda/overrides/php5-common
 	echo "Data: /var/lib/php5.*" >> debian/php5-common/usr/share/linda/overrides/php5-common
-	dh_installdeb -a
-	dh_shlibdeps -a
+	dh_installdeb -s
+	dh_shlibdeps -s
 
 	phpapi=`./debian/php5-dev/usr/bin/php-config5 --phpapi`; \
 	for i in libapache-mod-php5 libapache2-mod-php5 php5-cgi php5-cli; do \
@@ -520,9 +533,9 @@ binary-arch: build install
 
 	echo "apache:Depends=apache-common (>= $(APACHE_VERSION))" >>debian/libapache-mod-php5.substvars
 	echo "apache2:Depends=apache2-mpm-prefork (>> 2.0.52) | apache2-mpm-itk, apache2.2-common" >>debian/libapache2-mod-php5.substvars
-	dh_gencontrol -a
-	dh_md5sums -a
-	dh_builddeb -a
+	dh_gencontrol -s
+	dh_md5sums -s
+	dh_builddeb -s
 
 binary: binary-arch binary-indep
 .PHONY: build clean binary-indep binary-arch binary install configure

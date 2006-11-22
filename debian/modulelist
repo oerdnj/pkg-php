@@ -1,13 +1,18 @@
 curl CURL
 gd GD
+imap IMAP
+interbase Interbase
 ldap LDAP
+mcrypt MCrypt
 mhash MHASH
 mysql MySQL
 odbc ODBC
 pgsql PostgreSQL
+pspell pspell
 recode recode
 snmp SNMP
 sqlite SQLite
 sybase Sybase sybase_ct
+tidy tidy
 xmlrpc XML-RPC
 xsl XSL

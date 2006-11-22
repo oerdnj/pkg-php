@@ -1,6 +1,7 @@
 mysql MySQL mysqli
 mysql MySQL pdo_mysql
-common PHP5Common pdo
+interbase InterBase/Firebird pdo_firebird
+common PDO pdo
 odbc ODBC pdo_odbc
 pgsql PostgreSQL pdo_pgsql
 sqlite SQLite pdo_sqlite
