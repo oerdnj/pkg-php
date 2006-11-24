@@ -55,7 +55,8 @@ endif
 
 # only enable interbase support for i386/amd64
 ifneq (,$(filter $(DEB_BUILD_ARCH),amd64 i386))
-	IBFLAGS=--with-interbase=shared,/usr
+	IBFLAGS=--with-interbase=shared,/usr \
+		--with-pdo-firebird=shared,/usr
 endif
 
 COMMON_CONFIG=--build=$(PHP5_BUILD_GNU_TYPE)-gnu \
@@ -246,7 +247,6 @@ configure-apache2-stamp: patch-stamp
 		--with-pgsql=shared,/usr PGSQL_INCLUDE=`pg_config --includedir` \
 		--enable-pdo=shared \
 		--without-pdo-dblib \
-		--with-pdo-firebird=shared,/usr \
 		--with-pdo-mysql=shared,/usr \
 		--with-pdo-odbc=shared,unixODBC,/usr \
 		--with-pdo-pgsql=shared,/usr/bin/pg_config \

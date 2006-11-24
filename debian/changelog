@@ -1,3 +1,11 @@
+php5 (5.2.0-7) unstable; urgency=high
+
+  [ Steve Langasek ]
+  * Also disable firebird in the PDO config for archs other than
+    i386/amd64.
+
+ -- sean finney <seanius@debian.org>  Fri, 24 Nov 2006 15:20:53 +0100
+
 php5 (5.2.0-6) unstable; urgency=high
 
   [ sean finney ]
