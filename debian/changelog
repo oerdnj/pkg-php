@@ -1,3 +1,57 @@
+php5 (5.2.0-9) unstable; urgency=high
+
+  [ sean finney ]
+  * The following security issues are addressed with this update:
+    - CVE-2007-0906: Multiple buffer overflows in various code:
+      * session (addressed in patch for CVE-2007-0910 below)
+      * imap (062-CVE-2007-0906-imap.patch)
+      * str_replace: (064-CVE-2007-0906-strreplace.patch)
+      * interbase: (063-CVE-2007-0906-interbase.patch)
+      * the zip, sqlite, stream filters, and mail related vulnerabilities
+        in this CVE do not affect the debian sarge php4 source package.
+    - CVE-2007-0907: sapi_header_op buffer underflow (065-CVE-2007-0907.patch)
+    - CVE-2007-0908: wddx information disclosure (066-CVE-2007-0908.patch)
+    - CVE-2007-0909: More buffer overflows:
+      * the odbc_result_all function (067-CVE-2007-0909-odbc.patch)
+      * various formatted print functions (068-CVE-2007-0909-printf.patch)
+    - CVE-2007-0910: Clobbering of super-globals (069-CVE-2007-0910.patch)
+    - CVE-2007-0988: 64bit unserialize DoS (070-CVE-2007-0988.patch)
+    Closes: #410995.
+  * The package maintainers would like to thank Joe Orton from redhat and
+    Martin Pitt from ubuntu for their help in preparation of this update.
+  * backport upstream fix for AUTH PLAIN support in imap extension
+    Closes: #401712.
+
+ -- sean finney <seanius@debian.org>  Sat, 03 Mar 2007 11:13:33 +0100
+
+php5 (5.2.0-8) unstable; urgency=high
+
+  [ sean finney ]
+  * Update package information to say simply "Apache 2" instead
+    of "Apache 2.0" (ref: #400306).
+  * Update package description for php-pear to mention needing
+    phpN-dev for building PECL extensions (closes: #401825).
+  * Add mention of Freetype fonts to php5-gd package description,
+    thanks to Ole Laursen for the suggestion (closes: #387881).
+  * Include a backported version of upstream's fix for
+    alignment calculatations which cause FTBFS problems for
+    some arches.  Thanks to Roman Zippel for finding this (closes: #401129).
+    patch: 114-zend_alloc.c_m68k_alignment.patch
+  * Remove --enable-yp, as it's no longer used and seperately
+    packaged.  Thanks to Martijn Grendelman for mentioning this
+    (closes: #402161).
+  * Add mention to README.Debian of needing to restart apache when
+    installing modules (closes: #392249).
+  * Don't strip the DSO modules if building with DEB_BUILD_OPTIONS
+    containing nostrip
+  * Backported a patch from upstream CVS to fix a rather nasty
+    memory leak in zend_alloc (closes: #402506).
+    patch: 115-zend_alloc.c_memleak.patch
+  * The memleak and FTBFS are targeted at etch, and there aren't
+    any other significant changes, so priority=high. 
+
+ -- sean finney <seanius@debian.org>  Sun, 17 Dec 2006 16:49:35 +0100
+
 php5 (5.2.0-7) unstable; urgency=high
 
   [ Steve Langasek ]

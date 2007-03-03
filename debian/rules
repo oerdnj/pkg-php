@@ -44,6 +44,10 @@ else
   CFLAGS += -gstabs
 endif
 
+ifneq (nostrip, $(findstring nostrip, $(DEB_BUILD_OPTIONS)))
+	install_strip = -s
+endif
+
 # Old magic.mime location:
 ifeq ($(wildcard /usr/share/misc/file/magic.mime), /usr/share/misc/file/magic.mime)
 MAGIC_MIME = /usr/share/misc/file/magic.mime
@@ -92,7 +96,6 @@ COMMON_CONFIG=--build=$(PHP5_BUILD_GNU_TYPE)-gnu \
 		--enable-sockets \
 		--enable-wddx \
 		--with-libxml-dir=/usr \
-		--enable-yp \
 		--with-zlib \
 		--with-kerberos=/usr \
 		--with-openssl=/usr \
@@ -382,7 +385,7 @@ install: build
 		mkdir -p debian/php5-$$package$${ext}; \
 		chrpath debian/libapache2-mod-php5/$${ext}/$$dsoname.so; \
 		chrpath -d debian/libapache2-mod-php5/$${ext}/$$dsoname.so; \
-		install -s -m 644 -o root -g root \
+		install ${install_strip} -m 644 -o root -g root \
 			debian/libapache2-mod-php5/$${ext}/$$dsoname.so \
 			debian/php5-$$package$${ext}/$$dsoname.so; \
 		rm debian/libapache2-mod-php5/$${ext}/$$dsoname.so; \

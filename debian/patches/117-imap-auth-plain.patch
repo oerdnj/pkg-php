@@ -1,0 +1,10 @@
+--- old/ext/imap/php_imap.c	2006/11/24 10:28:51	1.208.2.7.2.10
++++ new/ext/imap/php_imap.c	2006/12/17 18:22:53	1.208.2.7.2.11
+@@ -471,6 +471,7 @@
+ #if HAVE_IMAP_KRB && defined(HAVE_IMAP_AUTH_GSS)
+ 	auth_link(&auth_gss);		/* link in the gss authenticator */
+ #endif
++	auth_link(&auth_pla);		/* link in the plain authenticator */
+ 
+ #ifdef HAVE_IMAP_SSL
+ 	ssl_onceonlyinit ();
