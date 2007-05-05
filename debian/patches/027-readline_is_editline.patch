@@ -1,5 +1,7 @@
---- php4-4.3.9/ext/readline/config.m4	2003-09-30 20:54:04.000000000 -0600
-+++ php4-4.3.9/ext/readline/config.m4	2004-10-04 21:40:38.000000000 -0600
+Index: php5-5.2.0/ext/readline/config.m4
+===================================================================
+--- php5-5.2.0.orig/ext/readline/config.m4	2007-03-18 22:57:00.000000000 +0100
++++ php5-5.2.0/ext/readline/config.m4	2007-03-18 22:58:41.000000000 +0100
 @@ -12,7 +12,7 @@
  
  if test "$PHP_READLINE" && test "$PHP_READLINE" != "no"; then
@@ -18,8 +20,10 @@
    done
  
    if test -z "$LIBEDIT_DIR"; then
---- php4-4.3.9/ext/readline/readline.c	2002-12-31 09:35:15.000000000 -0700
-+++ php4-4.3.9/ext/readline/readline.c	2004-10-04 21:42:15.000000000 -0600
+Index: php5-5.2.0/ext/readline/readline.c
+===================================================================
+--- php5-5.2.0.orig/ext/readline/readline.c	2007-03-18 22:57:00.000000000 +0100
++++ php5-5.2.0/ext/readline/readline.c	2007-03-18 22:58:41.000000000 +0100
 @@ -33,9 +33,9 @@
  #define rl_completion_matches completion_matches
  #endif

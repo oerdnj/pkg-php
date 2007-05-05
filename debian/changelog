@@ -1,21 +1,97 @@
+php5 (5.2.2-1) unstable; urgency=low
+
+  [ sean finney ]
+  * new upstream release (closes: #422405).
+  * /most/ of the previous CVE patches have been committed upstream, though:
+    - the patch for MOPB-41 was fixed in a different way and we'll be keeping
+      our fix for the time being.
+    - it doesn't seem like MOPB-45 has been fixed yet.
+  * remove build-dependency option on libmysqlclient12-dev, since the mysqli
+    option requires it, and 15 is in stable now anyway.  thanks to 
+    Henk van de kamer for finding this (closes: #422224).
+  * now includes requested fix for mysql row counts (closes: #418471).
+  * needle/haystack issues are reported fixed (closes: #399924).
+  * oh yeah, because we're using quilt now: (closes: #338315).
+  * update build-deps to libdb4.5-dev | libdb4.4-dev (closes: #421929).
+    note that the resulting php packages won't actually build against
+    libdb4.5 until all of our build-dependant packages do too.
+
+ -- sean finney <seanius@debian.org>  Sat, 05 May 2007 19:56:30 +0200
+
+php5 (5.2.0-12) unstable; urgency=high
+
+  [ sean finney ]
+  * modify the build-depends to play more nicely when the net-snmp
+    maintainers decide to change their package names (closes: #421061).
+
+ -- sean finney <seanius@debian.org>  Tue, 01 May 2007 14:24:01 +0200
+
+php5 (5.2.0-11) unstable; urgency=high
+
+  [ sean finney ]
+  * The following security issues are addressed with this update:
+    - CVE-2007-0910/MOPB-32 session_decode() Double Free Vulnerability
+      * note that this is an update to the previous version of the upstream
+        fix for CVE-2007-0910, which introduced a seperate exploit path.
+    - CVE-2007-1286/MOPB-04 unserialize() ZVAL Reference Counter Overflow
+    - CVE-2007-1380/MOPB-10 php_binary Session Deserialization Information Leak
+    - CVE-2007-1375/MOPB-14 substr_compare() Information Leak Vulnerability
+    - CVE-2007-1376/MOPB-15 shmop Functions Resource Verification Vulnerability
+    - CVE-2007-1453/MOPB-18 ext/filter HTML Tag Stripping Bypass Vulnerability
+    - CVE-2007-1453/MOPB-19 ext/filter Space Trimming Buffer Underflow Vuln.
+    - CVE-2007-1521/MOPB-22 session_regenerate_id() Double Free Vulnerability
+    - CVE-2007-1583/MOPB-26 mb_parse_str() register_globals Activation Vuln.
+    - CVE-2007-1700/MOPB-30 _SESSION unset() Vulnerability
+    - CVE-2007-1718/MOPB-34 mail() Header Injection
+    - CVE-2007-1777/MOPB-35 zip_entry_read() Integer Overflow Vulnerability
+    - CVE-2007-1887-1888/MOPB-41 sqlite_udf_decode_binary() Buffer Overflow
+    - CVE-2007-1824/MOPB-42 php_stream_filter_create() Off By One Vulnerablity
+    - CVE-2007-1889/MOPB-44 Memory Manager Signed Comparision Vulnerability
+    - CVE-2007-1900/MOPB-45 ext/filter Email Validation Vulnerability
+  * The other security issues resulting from the "Month of PHP bugs" either
+    did not affect the version of php5 shipped in unstable, or did not merit
+    a security update according to the established security policy for php
+    in debian.  You are encouraged to verify that your configuration is not
+    affected by any of the other vulnerabilities by visiting:
+        http://www.php-security.org/
+  * other, less interesting changes:
+    - now use quilt for managing local patches.
+    - massage all of the patches, eliminating fuzz and offsets.
+
+ -- sean finney <seanius@debian.org>  Mon, 23 Apr 2007 19:02:51 +0200
+
+php5 (5.2.0-10) unstable; urgency=high
+
+  [ sean finney ]
+  * The php security update contained a regression in the streams
+    module.  this version contains an updated version of the patch
+    for CVE-2007-0906 (116-CVE-2007-0906_streams.patch), which should
+    fix the regression.  Thanks to Martin Pitt for noticing this.
+  * Fix the patch names in the previous changelog entry, and fix a factual 
+    inaccuracy that was accidentally pasted from the php4 changelog.
+  * The previous update was missing two fixes from CVE-2007-0906:
+      * interbase: (116-CVE-2007-0906_interbase.patch)
+      * zip: (116-CVE-2007-0906_zip.patch)
+
+ -- sean finney <seanius@debian.org>  Wed, 07 Mar 2007 23:11:29 +0100
+
 php5 (5.2.0-9) unstable; urgency=high
 
   [ sean finney ]
   * The following security issues are addressed with this update:
     - CVE-2007-0906: Multiple buffer overflows in various code:
-      * session (addressed in patch for CVE-2007-0910 below)
-      * imap (062-CVE-2007-0906-imap.patch)
-      * str_replace: (064-CVE-2007-0906-strreplace.patch)
-      * interbase: (063-CVE-2007-0906-interbase.patch)
-      * the zip, sqlite, stream filters, and mail related vulnerabilities
-        in this CVE do not affect the debian sarge php4 source package.
-    - CVE-2007-0907: sapi_header_op buffer underflow (065-CVE-2007-0907.patch)
-    - CVE-2007-0908: wddx information disclosure (066-CVE-2007-0908.patch)
+      * session (116-CVE-2007-0906_session.patch)
+      * imap (116-CVE-2007-0906_imap.patch)
+      * str_replace: (116-CVE-2007-0906_string.patch)
+      * the sqlite and mail related vulnerabilities in this CVE do not
+        affect the php5 source packages.
+    - CVE-2007-0907: sapi_header_op buffer underflow (116-CVE-2007-0907.patch)
+    - CVE-2007-0908: wddx information disclosure (116-CVE-2007-0908.patch)
     - CVE-2007-0909: More buffer overflows:
-      * the odbc_result_all function (067-CVE-2007-0909-odbc.patch)
-      * various formatted print functions (068-CVE-2007-0909-printf.patch)
-    - CVE-2007-0910: Clobbering of super-globals (069-CVE-2007-0910.patch)
-    - CVE-2007-0988: 64bit unserialize DoS (070-CVE-2007-0988.patch)
+      * the odbc_result_all function (116-CVE-2007-0909_odbc.patch)
+      * various formatted print functions (116-CVE-2007-0909_print.patch)
+    - CVE-2007-0910: Clobbering of super-globals (116-CVE-2007-0910.patch)
+    - CVE-2007-0988: 64bit unserialize DoS (116-CVE-2007-0988.patch)
     Closes: #410995.
   * The package maintainers would like to thank Joe Orton from redhat and
     Martin Pitt from ubuntu for their help in preparation of this update.

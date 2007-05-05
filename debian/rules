@@ -110,33 +110,25 @@ BUILTIN_EXTENSION_CHECK=$$e=get_loaded_extensions(); natcasesort($$e); \
 			foreach($$e as $$i) { $$s .= " $$i"; } \
 			echo("php:Extensions=" . wordwrap($$s . ".\n", 75, "\$${Newline} "));
 
-patch: patch-stamp
-patch-stamp:
+# include the patch/unpatch rules from quilt
+include /usr/share/quilt/quilt.make
+
+prepared: prepared-stamp
+prepared-stamp: $(QUILT_STAMPFN)
 	dh_testdir
-	for patch in debian/patches/*.patch; do \
-	        echo '->'`basename $$patch`:; \
-		if ! patch -p1 --ignore-whitespace --dry-run < $$patch; \
-		then \
-			exit 1; \
-		fi; \
-	        patch -p1 --ignore-whitespace < $$patch; \
-	done
 	sed -i -e 's/EXTRA_VERSION=""/EXTRA_VERSION="-$(PHP5_DEBIAN_REVISION)"/' configure.in
 	rm -f aclocal.m4 config.sub config.guess ltmain.sh
 	./buildconf --force
-	touch patch-stamp
+	touch prepared-stamp
 
-unpatch:
+unprepared:
 	dh_testdir
 	sed -i -e 's/EXTRA_VERSION="-$(PHP5_DEBIAN_REVISION)"/EXTRA_VERSION=""/' configure.in
-	if [ -f patch-stamp ]; then \
-		for patch in `ls debian/patches/*.patch | sort -r`; do \
-			patch -p1 -R --ignore-whitespace < $$patch; \
-		done; \
+	if [ -f prepared-stamp ]; then \
 		rm -f aclocal.m4 config.sub config.guess ltmain.sh; \
 		./buildconf --force; \
 	fi
-	rm -f patch-stamp
+	rm -f prepared-stamp
 
 build: build-apache-stamp build-apache2-stamp build-cgi-stamp build-cli-stamp build-pear-stamp
 build-apache-stamp: configure-apache-stamp
@@ -189,7 +181,7 @@ build-pear-stamp: build-cgi-stamp
 	touch build-pear-stamp
 
 configure: configure-apache-stamp configure-apache2-stamp configure-cli-stamp configure-cgi-stamp
-configure-apache-stamp: patch-stamp
+configure-apache-stamp: prepared-stamp
 	dh_testdir
 	if [ -d apache-build ]; then rm -rf apache-build; fi
 	-mkdir apache-build
@@ -210,7 +202,7 @@ configure-apache-stamp: patch-stamp
 
 	touch configure-apache-stamp
 
-configure-apache2-stamp: patch-stamp
+configure-apache2-stamp: prepared-stamp
 	dh_testdir
 	if [ -d apache2-build ]; then rm -rf apache2-build; fi
 	-mkdir apache2-build
@@ -261,7 +253,7 @@ configure-apache2-stamp: patch-stamp
 	   Zend/
 	touch configure-apache2-stamp
 
-configure-cgi-stamp: patch-stamp
+configure-cgi-stamp: prepared-stamp
 	dh_testdir
 	if [ -d cgi-build ]; then rm -rf cgi-build; fi
 	-mkdir cgi-build
@@ -281,7 +273,7 @@ configure-cgi-stamp: patch-stamp
 	   Zend/
 	touch configure-cgi-stamp
 
-configure-cli-stamp: patch-stamp
+configure-cli-stamp: prepared-stamp
 	dh_testdir
 	if [ -d cli-build ]; then rm -rf cli-build; fi
 	-mkdir cli-build
@@ -303,7 +295,7 @@ configure-cli-stamp: patch-stamp
 	   Zend/
 	touch configure-cli-stamp
 
-clean: unpatch
+clean: unprepared
 	dh_testdir
 	dh_testroot
 	rm -f configure-apache-stamp build-apache-stamp

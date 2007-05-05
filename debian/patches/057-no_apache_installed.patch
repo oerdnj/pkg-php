@@ -1,5 +1,7 @@
---- php5-5.1.1/sapi/apache/config.m4	2005-05-30 09:16:45.000000000 +1000
-+++ php5-5.1.1/sapi/apache/config.m4	2005-12-20 20:02:26.000000000 +1100
+Index: php5-5.2.0/sapi/apache/config.m4
+===================================================================
+--- php5-5.2.0.orig/sapi/apache/config.m4	2007-03-18 22:56:59.000000000 +0100
++++ php5-5.2.0/sapi/apache/config.m4	2007-03-18 22:58:44.000000000 +0100
 @@ -52,11 +52,11 @@
    APXS_HTTPD=`$APXS -q SBINDIR`/`$APXS -q TARGET`
    APACHE_INCLUDE=-I$APXS_INCLUDEDIR
@@ -17,8 +19,10 @@
  
    for flag in $APXS_CFLAGS; do
      case $flag in
---- php5-5.1.1/sapi/apache2handler/config.m4	2005-09-02 00:33:47.000000000 +1000
-+++ php5-5.1.1/sapi/apache2handler/config.m4	2005-12-20 19:57:17.000000000 +1100
+Index: php5-5.2.0/sapi/apache2handler/config.m4
+===================================================================
+--- php5-5.2.0.orig/sapi/apache2handler/config.m4	2007-03-18 22:56:59.000000000 +0100
++++ php5-5.2.0/sapi/apache2handler/config.m4	2007-03-18 22:58:44.000000000 +0100
 @@ -56,13 +56,13 @@
  
    APACHE_CFLAGS="$APACHE_CPPFLAGS -I$APXS_INCLUDEDIR $APR_CFLAGS $APU_CFLAGS"

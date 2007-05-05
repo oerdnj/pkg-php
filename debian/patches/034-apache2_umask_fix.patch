@@ -1,9 +1,11 @@
 
 Save and restore umask across requests correctly.
 
---- php-4.3.10/sapi/apache2handler/sapi_apache2.c.umask
-+++ php-4.3.10/sapi/apache2handler/sapi_apache2.c
-@@ -401,6 +401,19 @@
+Index: php5-5.2.2/sapi/apache2handler/sapi_apache2.c
+===================================================================
+--- php5-5.2.2.orig/sapi/apache2handler/sapi_apache2.c	2007-01-01 10:36:12.000000000 +0100
++++ php5-5.2.2/sapi/apache2handler/sapi_apache2.c	2007-05-04 17:12:47.000000000 +0200
+@@ -426,6 +426,19 @@
  	return APR_SUCCESS;
  }
  
@@ -22,8 +24,8 @@ Save and restore umask across requests correctly.
 +
  static int php_apache_request_ctor(request_rec *r, php_struct *ctx TSRMLS_DC)
  {
- 	char *content_type;
-@@ -575,6 +588,8 @@
+ 	char *content_length;
+@@ -614,6 +627,8 @@
  	} else {
  		zend_file_handle zfd;
  
@@ -32,13 +34,13 @@ Save and restore umask across requests correctly.
  		zfd.type = ZEND_HANDLE_FILENAME;
  		zfd.filename = (char *) r->filename;
  		zfd.free_filename = 0;
-@@ -585,6 +600,9 @@
- 		} else {
+@@ -625,6 +640,9 @@
  			zend_execute_scripts(ZEND_INCLUDE TSRMLS_CC, NULL, 1, &zfd);
  		}
-+
+ 
 +		php_restore_umask();
 +
- #if MEMORY_LIMIT
- 		{
- 			char *mem_usage;
++
+ 		apr_table_set(r->notes, "mod_php_memory_usage",
+ 			apr_psprintf(ctx->r->pool, "%u", zend_memory_peak_usage(1 TSRMLS_CC)));
+ 	}

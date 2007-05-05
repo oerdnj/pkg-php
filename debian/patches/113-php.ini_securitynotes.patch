@@ -1,6 +1,8 @@
---- old/php.ini-dist	2006-10-30 18:39:00.000000000 +0100
-+++ new/php.ini-dist	2006-10-30 18:40:49.000000000 +0100
-@@ -165,6 +165,11 @@
+Index: php5-5.2.0/php.ini-dist
+===================================================================
+--- php5-5.2.0.orig/php.ini-dist	2007-03-18 22:58:39.000000000 +0100
++++ php5-5.2.0/php.ini-dist	2007-03-18 22:58:45.000000000 +0100
+@@ -166,6 +166,11 @@
  ;
  ; Safe Mode
  ;
@@ -12,7 +14,7 @@
  safe_mode = Off
  
  ; By default, Safe Mode does a UID compare check when
-@@ -201,6 +206,13 @@
+@@ -202,6 +207,13 @@
  ; and below.  This directive makes most sense if used in a per-directory
  ; or per-virtualhost web server configuration file. This directive is
  ; *NOT* affected by whether Safe Mode is turned On or Off.
@@ -26,7 +28,7 @@
  ;open_basedir =
  
  ; This directive allows you to disable certain functions for security reasons.
-@@ -396,6 +408,11 @@
+@@ -400,6 +412,11 @@
  ; You should do your best to write your scripts so that they do not require
  ; register_globals to be on;  Using form variables as globals can easily lead
  ; to possible security problems, if the code is not very well thought of.

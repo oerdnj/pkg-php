@@ -1,6 +1,7 @@
-diff -urN php4-4.3.4.orig/TSRM/configure.in php4-4.3.4/TSRM/configure.in
---- php4-4.3.4.orig/TSRM/configure.in	2001-08-08 06:26:21.000000000 -0400
-+++ php4-4.3.4/TSRM/configure.in	2004-02-16 00:57:50.000000000 -0500
+Index: php5-5.2.2/TSRM/configure.in
+===================================================================
+--- php5-5.2.2.orig/TSRM/configure.in	2007-05-04 17:08:09.000000000 +0200
++++ php5-5.2.2/TSRM/configure.in	2007-05-04 17:08:11.000000000 +0200
 @@ -13,9 +13,6 @@
  TSRM_THREADS_CHECKS
  	
@@ -11,10 +12,11 @@ diff -urN php4-4.3.4.orig/TSRM/configure.in php4-4.3.4/TSRM/configure.in
  
  dnl TSRM_PTHREAD
  
-diff -urN php4-4.3.4.orig/configure.in php4-4.3.4/configure.in
---- php4-4.3.4.orig/configure.in	2003-11-02 17:15:05.000000000 -0500
-+++ php4-4.3.4/configure.in	2004-02-16 01:00:52.000000000 -0500
-@@ -1226,9 +1226,6 @@
+Index: php5-5.2.2/configure.in
+===================================================================
+--- php5-5.2.2.orig/configure.in	2007-05-04 17:08:09.000000000 +0200
++++ php5-5.2.2/configure.in	2007-05-04 17:08:11.000000000 +0200
+@@ -1279,9 +1279,6 @@
  
  LDFLAGS="$LDFLAGS $PHP_AIX_LDFLAGS"
  AC_PROG_LIBTOOL

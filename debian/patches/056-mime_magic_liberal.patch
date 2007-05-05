@@ -1,6 +1,8 @@
---- php-5.1.1/ext/mime_magic/mime_magic.c	2005-10-19 01:04:07.000000000 +1000
-+++ php5-5.1.1/ext/mime_magic/mime_magic.c	2005-12-20 19:25:24.000000000 +1100
-@@ -494,7 +494,7 @@
+Index: php5-5.2.2/ext/mime_magic/mime_magic.c
+===================================================================
+--- php5-5.2.2.orig/ext/mime_magic/mime_magic.c	2007-02-15 01:05:42.000000000 +0100
++++ php5-5.2.2/ext/mime_magic/mime_magic.c	2007-05-04 17:42:41.000000000 +0200
+@@ -501,7 +501,7 @@
  		} while (*(++p) != '/');
  		++p;
  		do {
@@ -9,7 +11,7 @@
  				return 0;
  			}
  		} while (*(++p));
-@@ -627,6 +627,15 @@
+@@ -634,6 +634,15 @@
      else if (strncmp(l, "string", NSTRING) == 0) {
  		m->type = STRING;
  		l += NSTRING;
@@ -25,7 +27,7 @@
      }
      else if (strncmp(l, "date", NDATE) == 0) {
  		m->type = DATE;
-@@ -720,7 +729,7 @@
+@@ -727,7 +736,7 @@
  	if (!is_valid_mimetype(l, strlen(l))) {
  		if(MIME_MAGIC_G(debug))
  			php_error_docref("http://www.php.net/mime_magic" TSRMLS_CC, E_WARNING, ": (%s:%d) '%s' is not a valid mimetype, entry skipped", MIME_MAGIC_G(magicfile), lineno, l);
@@ -33,4 +35,4 @@
 +		return 0;
  	}
  	
- 	strncpy(m->desc, l, sizeof(m->desc) - 1);
+ 	strlcpy(m->desc, l, sizeof(m->desc));

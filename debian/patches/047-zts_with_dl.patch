@@ -1,5 +1,7 @@
---- php5-5.1.1/ext/standard/dl.c	2005-08-09 02:49:43.000000000 +1000
-+++ php5-5.1.1/ext/standard/dl.c	2005-12-15 15:40:28.000000000 +1100
+Index: php5-5.2.2/ext/standard/dl.c
+===================================================================
+--- php5-5.2.2.orig/ext/standard/dl.c	2007-02-23 01:37:35.000000000 +0100
++++ php5-5.2.2/ext/standard/dl.c	2007-05-04 17:42:34.000000000 +0200
 @@ -76,12 +76,7 @@
  	if ((strncmp(sapi_module.name, "cgi", 3)!=0) && 
  		(strcmp(sapi_module.name, "cli")!=0) &&

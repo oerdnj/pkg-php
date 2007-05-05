@@ -1,5 +1,7 @@
---- php-5.0.4/ext/recode/config9.m4.orig	2005-07-13 04:06:02.000000000 +1000
-+++ php-5.0.4/ext/recode/config9.m4	2005-07-13 04:06:28.000000000 +1000
+Index: php5-5.2.0/ext/recode/config9.m4
+===================================================================
+--- php5-5.2.0.orig/ext/recode/config9.m4	2007-03-18 22:56:59.000000000 +0100
++++ php5-5.2.0/ext/recode/config9.m4	2007-03-18 22:58:44.000000000 +0100
 @@ -8,6 +8,6 @@
    test "$PHP_MYSQL" != "no" && recode_conflict="$recode_conflict mysql"
  

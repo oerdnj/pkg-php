@@ -1,6 +1,7 @@
-diff -urN php4-4.3.8.orig/ext/zlib/zconf.h php4-4.3.8/ext/zlib/zconf.h
---- php4-4.3.8.orig/ext/zlib/zconf.h	1969-12-31 17:00:00.000000000 -0700
-+++ php4-4.3.8/ext/zlib/zconf.h	2004-08-04 03:34:18.000000000 -0600
+Index: php5-5.2.0/ext/zlib/zconf.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ php5-5.2.0/ext/zlib/zconf.h	2007-03-18 22:58:40.000000000 +0100
 @@ -0,0 +1,326 @@
 +/* zconf.h -- configuration of the zlib compression library
 + * Copyright (C) 1995-2003 Jean-loup Gailly.
@@ -328,9 +329,10 @@ diff -urN php4-4.3.8.orig/ext/zlib/zconf.h php4-4.3.8/ext/zlib/zconf.h
 +#endif
 +
 +#endif /* ZCONF_H */
-diff -urN php4-4.3.8.orig/ext/zlib/zlib.h php4-4.3.8/ext/zlib/zlib.h
---- php4-4.3.8.orig/ext/zlib/zlib.h	1969-12-31 17:00:00.000000000 -0700
-+++ php4-4.3.8/ext/zlib/zlib.h	2004-08-04 03:34:18.000000000 -0600
+Index: php5-5.2.0/ext/zlib/zlib.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ php5-5.2.0/ext/zlib/zlib.h	2007-03-18 22:58:40.000000000 +0100
 @@ -0,0 +1,1200 @@
 +/* zlib.h -- interface of the 'zlib' general purpose compression library
 +  version 1.2.1.1, January 9th, 2004
