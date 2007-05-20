@@ -1,10 +1,10 @@
 Table of Contents:
 ---------------------------------------------------------------------
 * Using php5 with threaded webservers (eg. apache2-mpm-worker, caudium)
-* Problems starting apache with php5
+* Problems starting apache2 with php5
 * Session storage
 * Other caveats
-* php5-cgi and apache/apache2
+* php5-cgi and apache2
 * Restarting your web server after installing modules
 * Configuration layout
 * Further documentation, errata, etc
@@ -23,7 +23,7 @@ Using php5 with threaded webservers (eg. apache2-mpm-worker, caudium)
 Adam Conrad <adconrad@0c3.net>  Sun, 06 Feb 2005 08:24:56 -0700
 
 
-Problems starting apache with php5
+Problems starting apache2 with php5
 ----------------------------------
 
    At the time of writing, there are no *known* incompatibilities
@@ -31,7 +31,7 @@ Problems starting apache with php5
    many bug reports in the past due to dynamically-loaded extensions,
    and it's possible there are still bugs in the released packages.  If
    Apache fails to start after you install php5, check your list of
-   enabled extensions at the bottom of /etc/php5/apache/php.ini (and in
+   enabled extensions at the bottom of /etc/php5/apache2/php.ini (and in
    the per-sapi configuration directory), and try commenting out or
    reordering the extensions until you find a combination that works.
 
@@ -53,7 +53,7 @@ Session storage
 
     Session files are stored in /var/lib/php5.  For security purposes, this
     directory is unreadable by non-root users.  This means that php5 running
-    from apache, for example, will not be able to clean up stale session
+    from apache2, for example, will not be able to clean up stale session
     files.  Instead, we have a cron job run every 30 mins that cleans up
     stale session files; /etc/cron.d/php5.  You may need to modify how
     often this runs, if you've modified session.gc_maxlifetime in your
@@ -70,27 +70,20 @@ Other caveats
    special settings for them so php will look in compiled-in paths. If you set
    them, you should also add appropriate php install directories there.
 
-php5-cgi and apache/apache2
+php5-cgi and apache2
 ---------------------------
 
 In 99% of cases, what you probably want isn't php5-cgi at all, but rather
-the libapache-mod-php5 or libapache2-mod-php5 package, which will configure
-themselves on installation and Just Work(tm).  If, however, you have a need
-to use the CGI version of php5 with apache/apache2, the following should
-help get you going, though there are dozens of different ways to do this.
+the libapache2-mod-php5 package, which will configure themselves on
+installation and Just Work(tm).  If, however, you have a need to use
+the CGI version of php5 with apache2, the following should help
+get you going, though there are dozens of different ways to do this.
 
 Please note that this process will never be made automatic, as php5-cgi
 is meant to be a webserver-agnostic package that can be used with any
 httpd, and we don't want it to conflict with the httpd-specific packages
-such as libapache-mod-php5.  If both were installed side-by-side and both
+such as libapache2-mod-php5.  If both were installed side-by-side and both
 were automatically enabled, the results would be a bit confusing, obviously.
-
-If you want to use php5-cgi in apache
-  1) activate mod_action (apache-modconf apache enable mod_actions)
-  2) Add the following to a config snippet in /etc/apache/conf.d
-      <IfModule mod_actions.c>
-        Action application/x-httpd-php /cgi-bin/php5
-      </IfModule>
 
 To use php5-cgi with apache2
   1) activate CGI (it's on by default in default debian setups)
@@ -118,7 +111,7 @@ sean finney <seanius@debian.org>  Sat, 09 Dec 2006 12:42:21 +0100
 Configuration Layout
 ---------------------------------------------------------------------
 
-Each of the 4 SAPI's (apache/apache2/cgi/cli) have a different
+Each of the 3 SAPI's (apache2/cgi/cli) have a different
 central configuration file /etc/php5/$SAPI/php.ini.  
 
 Additionally, each SAPI is configured with the compile-time option 

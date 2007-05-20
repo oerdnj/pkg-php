@@ -3,13 +3,13 @@ Section: web
 Priority: optional
 Maintainer: Debian PHP Maintainers <pkg-php-maint@lists.alioth.debian.org>
 Uploaders: Adam Conrad <adconrad@0c3.net>, Steve Langasek <vorlon@debian.org>, Jeroen van Wolffelaar <jeroen@wolffelaar.nl>, Ondřej Surý <ondrej@debian.org>, sean finney <seanius@debian.org>
-Build-Depends: apache-dev (>= 1.3.23), apache2-prefork-dev (>= 2.0.53-3), autoconf, automake1.4, bison, chrpath, debhelper (>= 3), firebird2-dev [i386 amd64], flex (>= 2.5.4), freetds-dev, libapr1-dev (>= 1.2.7-8), libbz2-dev (>= 1.0.0), libc-client-dev, libcurl3-openssl-dev | libcurl3-dev, libdb4.4-dev, libexpat1-dev (>= 1.95.2-2.1), libfreetype6-dev, libgcrypt11-dev, libgd2-xpm-dev (>= 2.0.28-3), libjpeg62-dev, libkrb5-dev, libldap2-dev, libmcrypt-dev, libmhash-dev (>= 0.8.8), libmysqlclient15-dev, libncurses5-dev, libpam0g-dev, libpcre3-dev (>= 6.6), libpng12-dev, libpq-dev | postgresql-dev, libpspell-dev, librecode-dev, libsnmp10-dev | libsnmp-dev, libsqlite0-dev, libssl-dev (>= 0.9.6), libt1-dev, libtidy-dev, libtool (>= 1.4.2-4), libwrap0-dev, libxmltok1-dev, libxml2-dev (>= 2.4.14), libxslt1-dev (>= 1.0.18), quilt, re2c, unixodbc-dev, zlib1g-dev (>= 1.0.9)
+Build-Depends: apache2-prefork-dev (>= 2.0.53-3), autoconf, automake1.4, bison, chrpath, debhelper (>= 3), firebird2-dev [i386 amd64], flex (>= 2.5.4), freetds-dev, libapr1-dev (>= 1.2.7-8), libbz2-dev (>= 1.0.0), libc-client-dev, libcurl3-openssl-dev | libcurl3-dev, libdb4.4-dev, libexpat1-dev (>= 1.95.2-2.1), libfreetype6-dev, libgcrypt11-dev, libgd2-xpm-dev (>= 2.0.28-3), libjpeg62-dev, libkrb5-dev, libldap2-dev, libmcrypt-dev, libmhash-dev (>= 0.8.8), libmysqlclient15-dev, libncurses5-dev, libpam0g-dev, libpcre3-dev (>= 6.6), libpng12-dev, libpq-dev | postgresql-dev, libpspell-dev, librecode-dev, libsasl2-dev, libsnmp10-dev | libsnmp-dev, libsqlite0-dev, libssl-dev (>= 0.9.6), libt1-dev, libtidy-dev, libtool (>= 1.4.2-4), libwrap0-dev, libxmltok1-dev, libxml2-dev (>= 2.4.14), libxslt1-dev (>= 1.0.18), quilt, re2c, unixodbc-dev, zlib1g-dev (>= 1.0.9)
 Build-Conflicts: bind-dev
 Standards-Version: 3.7.2
 
 Package: php5
 Architecture: all
-Depends: libapache2-mod-php5 (>= ${Source-Version}) | libapache-mod-php5 (>= ${Source-Version}) | php5-cgi (>= ${Source-Version}), php5-common (>= ${Source-Version})
+Depends: libapache2-mod-php5 (>= ${Source-Version}) | php5-cgi (>= ${Source-Version}), php5-common (>= ${Source-Version})
 Description: server-side, HTML-embedded scripting language (meta-package)
  This package is a meta-package that, when installed, guarantees that you
  have at least one of the four server-side versions of the PHP5 interpreter
@@ -26,29 +26,11 @@ Description: server-side, HTML-embedded scripting language (meta-package)
 Package: php5-common
 Architecture: any
 Depends: sed (>= 4.1.1-1)
+Provides: php5-json
+Conflicts: php5-json
 Description: Common files for packages built from the php5 source
  This package contains the documentation and example files relevant to all
  the other packages built from the php5 source.
- .
- PHP5 is an HTML-embedded scripting language. Much of its syntax is borrowed
- from C, Java and Perl with a couple of unique PHP-specific features thrown
- in. The goal of the language is to allow web developers to write dynamically
- generated pages quickly.
- .
- Homepage: http://www.php.net/
-
-Package: libapache-mod-php5
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support (>= 2.03-1), ${apache:Depends}, php5-common (= ${Source-Version}), libmagic1, ucf
-Conflicts: php3, php4 (<< 4:4.3.8-6), libapache-mod-php4
-Provides: ${php:Provides}
-Suggests: php-pear
-Description: server-side, HTML-embedded scripting language (apache 1.3 module)
- This package provides the PHP5 module for the Apache 1.3 webserver (as
- found in the apache, apache-ssl, and apache-perl packages).  To use php5
- with Apache 2, you probably want libapache2-mod-php5 instead.
- .
- ${php:Extensions}
  .
  PHP5 is an HTML-embedded scripting language. Much of its syntax is borrowed
  from C, Java and Perl with a couple of unique PHP-specific features thrown
@@ -67,7 +49,6 @@ Description: server-side, HTML-embedded scripting language (apache 2 module)
  This package provides the PHP5 module for the Apache 2 webserver (as
  found in the apache2-mpm-prefork package).  Please note that this package
  ONLY works with Apache's prefork MPM, as it is not compiled thread-safe.
- To use php5 with Apache 1.3, you probably want libapache-mod-php5 instead. 
  .
  ${php:Extensions}
  .
@@ -86,9 +67,9 @@ Conflicts: php3 (<= 3.0.18-1)
 Suggests: php-pear
 Description: server-side, HTML-embedded scripting language (CGI binary)
  This package provides the /usr/lib/cgi-bin/php5 CGI interpreter built
- for use in apache 1.3 or apache 2 with mod_actions, or any other CGI
- httpd that supports a similar mechanism.  Note that MOST apache users
- probably want the libapache-mod-php5 or libapache2-mod-php5 packages.
+ for use in apache 2 with mod_actions, or any other CGI httpd that
+ supports a similar mechanism.  Note that MOST apache users probably
+ want the libapache2-mod-php5 package.
  .
  ${php:Extensions}
  .

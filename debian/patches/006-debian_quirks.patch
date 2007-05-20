@@ -1,7 +1,7 @@
 Index: php5-5.2.2/configure.in
 ===================================================================
---- php5-5.2.2.orig/configure.in	2007-05-04 17:00:49.000000000 +0200
-+++ php5-5.2.2/configure.in	2007-05-04 17:06:47.000000000 +0200
+--- php5-5.2.2.orig/configure.in	2007-05-20 21:13:15.000000000 +0200
++++ php5-5.2.2/configure.in	2007-05-20 21:13:26.000000000 +0200
 @@ -968,7 +968,7 @@
  fi
  
@@ -47,7 +47,7 @@ Index: php5-5.2.2/configure.in
 Index: php5-5.2.2/ext/ext_skel
 ===================================================================
 --- php5-5.2.2.orig/ext/ext_skel	2004-05-16 14:10:35.000000000 +0200
-+++ php5-5.2.2/ext/ext_skel	2007-05-04 17:06:47.000000000 +0200
++++ php5-5.2.2/ext/ext_skel	2007-05-20 21:13:26.000000000 +0200
 @@ -70,7 +70,7 @@
  fi
  
@@ -60,7 +60,7 @@ Index: php5-5.2.2/ext/ext_skel
 Index: php5-5.2.2/ext/session/session.c
 ===================================================================
 --- php5-5.2.2.orig/ext/session/session.c	2007-04-04 21:52:19.000000000 +0200
-+++ php5-5.2.2/ext/session/session.c	2007-05-04 17:06:47.000000000 +0200
++++ php5-5.2.2/ext/session/session.c	2007-05-20 21:13:26.000000000 +0200
 @@ -180,11 +180,11 @@
  PHP_INI_BEGIN()
  	STD_PHP_INI_BOOLEAN("session.bug_compat_42",    "1",         PHP_INI_ALL, OnUpdateBool,   bug_compat,         php_ps_globals,    ps_globals)
@@ -78,7 +78,7 @@ Index: php5-5.2.2/ext/session/session.c
 Index: php5-5.2.2/php.ini-dist
 ===================================================================
 --- php5-5.2.2.orig/php.ini-dist	2007-04-12 14:31:39.000000000 +0200
-+++ php5-5.2.2/php.ini-dist	2007-05-04 17:07:30.000000000 +0200
++++ php5-5.2.2/php.ini-dist	2007-05-20 21:13:26.000000000 +0200
 @@ -455,7 +455,7 @@
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
@@ -180,7 +180,7 @@ Index: php5-5.2.2/php.ini-dist
 Index: php5-5.2.2/php.ini-recommended
 ===================================================================
 --- php5-5.2.2.orig/php.ini-recommended	2007-04-12 14:31:39.000000000 +0200
-+++ php5-5.2.2/php.ini-recommended	2007-05-04 17:07:50.000000000 +0200
++++ php5-5.2.2/php.ini-recommended	2007-05-20 21:13:26.000000000 +0200
 @@ -500,7 +500,7 @@
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
@@ -282,7 +282,7 @@ Index: php5-5.2.2/php.ini-recommended
 Index: php5-5.2.2/sapi/caudium/config.m4
 ===================================================================
 --- php5-5.2.2.orig/sapi/caudium/config.m4	2005-11-29 19:26:02.000000000 +0100
-+++ php5-5.2.2/sapi/caudium/config.m4	2007-05-04 17:06:47.000000000 +0200
++++ php5-5.2.2/sapi/caudium/config.m4	2007-05-20 21:13:26.000000000 +0200
 @@ -24,8 +24,8 @@
  		AC_MSG_ERROR(Couldn't find a pike in $withval/bin/)
  	fi
@@ -308,8 +308,8 @@ Index: php5-5.2.2/sapi/caudium/config.m4
 Index: php5-5.2.2/sapi/cli/php.1.in
 ===================================================================
 --- php5-5.2.2.orig/sapi/cli/php.1.in	2007-04-23 22:54:22.000000000 +0200
-+++ php5-5.2.2/sapi/cli/php.1.in	2007-05-04 17:06:47.000000000 +0200
-@@ -306,13 +306,17 @@
++++ php5-5.2.2/sapi/cli/php.1.in	2007-05-20 21:13:49.000000000 +0200
+@@ -306,13 +306,14 @@
  .B name
  .SH FILES
  .TP 15
@@ -324,9 +324,6 @@ Index: php5-5.2.2/sapi/cli/php.1.in
 +.B /etc/php5/cgi/php.ini
 +The configuration file for the CGI version of PHP.
 +.TP
-+.B /etc/php5/apache/php.ini
-+The configuration file for the version of PHP that apache uses.
-+.TP
 +.B /etc/php5/apache2/php.ini
 +The configuration file for the version of PHP that apache2 uses.
  .SH EXAMPLES
@@ -335,7 +332,7 @@ Index: php5-5.2.2/sapi/cli/php.1.in
 Index: php5-5.2.2/scripts/Makefile.frag
 ===================================================================
 --- php5-5.2.2.orig/scripts/Makefile.frag	2005-11-22 00:08:02.000000000 +0100
-+++ php5-5.2.2/scripts/Makefile.frag	2007-05-04 17:06:47.000000000 +0200
++++ php5-5.2.2/scripts/Makefile.frag	2007-05-20 21:13:26.000000000 +0200
 @@ -3,8 +3,8 @@
  # Build environment install
  #
@@ -350,7 +347,7 @@ Index: php5-5.2.2/scripts/Makefile.frag
 Index: php5-5.2.2/scripts/php-config.in
 ===================================================================
 --- php5-5.2.2.orig/scripts/php-config.in	2006-07-27 10:53:16.000000000 +0200
-+++ php5-5.2.2/scripts/php-config.in	2007-05-04 17:06:47.000000000 +0200
++++ php5-5.2.2/scripts/php-config.in	2007-05-20 21:13:26.000000000 +0200
 @@ -4,8 +4,8 @@
  exec_prefix="@exec_prefix@"
  version="@PHP_VERSION@"
@@ -365,7 +362,7 @@ Index: php5-5.2.2/scripts/php-config.in
 Index: php5-5.2.2/scripts/phpize.in
 ===================================================================
 --- php5-5.2.2.orig/scripts/phpize.in	2005-12-12 12:51:45.000000000 +0100
-+++ php5-5.2.2/scripts/phpize.in	2007-05-04 17:06:47.000000000 +0200
++++ php5-5.2.2/scripts/phpize.in	2007-05-20 21:13:26.000000000 +0200
 @@ -3,8 +3,8 @@
  # Variable declaration
  prefix='@prefix@'

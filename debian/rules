@@ -26,7 +26,6 @@ PHP5_SOURCE_VERSION   = $(shell dpkg-parsechangelog | grep ^Version | sed "s/Ver
 PHP5_UPSTREAM_VERSION = $(shell echo $(PHP5_SOURCE_VERSION) | sed -e "s/-.*//" -e "s/.*://")
 PHP5_DEBIAN_REVISION  = $(shell echo $(PHP5_SOURCE_VERSION) | sed "s/.*-//")
 
-APACHE_VERSION = $(shell dpkg -s apache-dev | grep ^Version | cut -d\  -f2 | cut -d- -f1)
 
 PROG_SENDMAIL = /usr/sbin/sendmail
 CFLAGS = -O2 -Wall -fsigned-char -fno-strict-aliasing 
@@ -130,13 +129,7 @@ unprepared:
 	fi
 	rm -f prepared-stamp
 
-build: build-apache-stamp build-apache2-stamp build-cgi-stamp build-cli-stamp build-pear-stamp
-build-apache-stamp: configure-apache-stamp
-	dh_testdir
-	# Add here commands to compile the package.
-	cd apache-build && $(MAKE)
-
-	touch build-apache-stamp
+build: build-apache2-stamp build-cgi-stamp build-cli-stamp build-pear-stamp
 
 build-apache2-stamp: configure-apache2-stamp
 	dh_testdir
@@ -180,27 +173,7 @@ build-pear-stamp: build-cgi-stamp
 	       $(CURDIR)/pear-build/usr/bin/peardev
 	touch build-pear-stamp
 
-configure: configure-apache-stamp configure-apache2-stamp configure-cli-stamp configure-cgi-stamp
-configure-apache-stamp: prepared-stamp
-	dh_testdir
-	if [ -d apache-build ]; then rm -rf apache-build; fi
-	-mkdir apache-build
-	cd apache-build && \
-        CFLAGS="$(CFLAGS)" PROG_SENDMAIL="$(PROG_SENDMAIL)" ../configure \
-		--prefix=/usr --with-apxs=/usr/bin/apxs \
-		--with-config-file-path=/etc/php5/apache \
-		--with-config-file-scan-dir=/etc/php5/apache/conf.d \
-		$(COMMON_CONFIG) \
-		--without-mm \
-		--disable-pdo \
-		--without-mysql --without-sybase-ct --without-sqlite
-	cd apache-build && \
-	cp ../Zend/zend_ini_scanner.c ../Zend/zend_language_scanner.c \
-	   ../Zend/zend_ini_parser.h ../Zend/zend_language_parser.h \
-	   ../Zend/zend_ini_parser.c ../Zend/zend_language_parser.c \
-	   Zend/
-
-	touch configure-apache-stamp
+configure: configure-apache2-stamp configure-cli-stamp configure-cgi-stamp
 
 configure-apache2-stamp: prepared-stamp
 	dh_testdir
@@ -226,6 +199,7 @@ configure-apache2-stamp: prepared-stamp
 		--with-ttf=shared,/usr \
 		--with-t1lib=shared,/usr \
 		--with-ldap=shared,/usr \
+		--with-ldap-sasl=/usr \
 		--with-mcrypt=shared,/usr \
 		--with-mhash=shared,/usr \
 		--with-mysql=shared,/usr \
@@ -298,13 +272,11 @@ configure-cli-stamp: prepared-stamp
 clean: unprepared
 	dh_testdir
 	dh_testroot
-	rm -f configure-apache-stamp build-apache-stamp
 	rm -f configure-apache2-stamp build-apache2-stamp
 	rm -f configure-cgi-stamp build-cgi-stamp
 	rm -f configure-cli-stamp build-cli-stamp
 	rm -f build-pear-stamp
 	rm -f install-stamp
-	rm -rf apache-build
 	rm -rf apache2-build
 	rm -rf cgi-build
 	rm -rf cli-build
@@ -315,7 +287,7 @@ clean: unprepared
 	cat debian/modulelist | while read package extname dsoname; do \
 		rm -f debian/php5-$$package.postinst; \
 	done
-	for sapi in libapache-mod-php5 libapache2-mod-php5 php5-cgi php5-cli; do \
+	for sapi in libapache2-mod-php5 php5-cgi php5-cli; do \
 		for cruft in postrm links; do \
 			rm -f debian/$${sapi}.$${cruft}; \
 		done; \
@@ -331,13 +303,6 @@ install: build
 	chmod 01733 debian/php5-common/var/lib/php5
 
 	# Add here commands to install the package into debian/php5.
-	# install apache DSO module
-	cp apache-build/.libs/libphp5.so debian/libapache-mod-php5/`apxs -q LIBEXECDIR`
-	cp debian/libapache-mod-php5.500mod_php5.info \
-		debian/libapache-mod-php5/`apxs -q LIBEXECDIR`/500mod_php5.info
-	cp debian/libapache-mod-php5.conf \
-		debian/libapache-mod-php5/etc/apache/conf.d/php5.conf
-
 	# install apache2 DSO module
 	cp apache2-build/.libs/libphp5.so \
 		debian/libapache2-mod-php5/`apxs2 -q LIBEXECDIR`/
@@ -369,7 +334,7 @@ install: build
 
 	# install extensions
 	ext=`./debian/libapache2-mod-php5/usr/bin/php-config --extension-dir`;\
-	for i in libapache-mod-php5 libapache2-mod-php5 php5-cgi php5-cli; do \
+	for i in libapache2-mod-php5 php5-cgi php5-cli; do \
 		mkdir -p debian/$$i/$${ext}; \
 	done; \
 	cat debian/modulelist debian/extramodulelist | while read package extname dsoname; do \
@@ -474,12 +439,11 @@ binary-arch: build install
 
 	# likewise, for the different sapi implementations
 	for tmpl in postrm links; do \
-		for sapi in apache apache2 cgi cli; do \
+		for sapi in apache2 cgi cli; do \
 			sed -e "s/@sapi@/$$sapi/g" \
 		  	< debian/php5-sapi.$$tmpl \
 		  	> debian/php5-$${sapi}.$$tmpl; \
 		done; \
-		mv debian/php5-apache.$$tmpl debian/libapache-mod-php5.$$tmpl; \
 		mv debian/php5-apache2.$$tmpl debian/libapache2-mod-php5.$$tmpl; \
 	done
 
@@ -491,7 +455,7 @@ binary-arch: build install
 		ln -s php5-common debian/php5-$$package/usr/share/doc/php5-$$package; \
 	done
 
-	for package in php5-dev php5-cgi php5-cli libapache-mod-php5 libapache2-mod-php5; do \
+	for package in php5-dev php5-cgi php5-cli libapache2-mod-php5; do \
 		rm -rf debian/$$package/usr/share/doc/$$package; \
 		ln -s php5-common debian/$$package/usr/share/doc/$$package; \
 	done
@@ -510,7 +474,7 @@ binary-arch: build install
 	dh_shlibdeps -s
 
 	phpapi=`./debian/php5-dev/usr/bin/php-config5 --phpapi`; \
-	for i in libapache-mod-php5 libapache2-mod-php5 php5-cgi php5-cli; do \
+	for i in libapache2-mod-php5 php5-cgi php5-cli; do \
 		echo "php:Provides=phpapi-$${phpapi}" >> debian/$$i.substvars; \
 	done; \
 	cat debian/modulelist | while read package extname dsoname; do \
@@ -521,12 +485,11 @@ binary-arch: build install
 		"$$i"-build/sapi/cli/php -n -r '$(BUILTIN_EXTENSION_CHECK)' \
 			>> debian/php5-"$$i".substvars; \
 	done
-	for i in apache apache2; do \
+	for i in apache2; do \
 		"$$i"-build/sapi/cli/php -n -r '$(BUILTIN_EXTENSION_CHECK)' \
 			>> debian/lib"$$i"-mod-php5.substvars; \
 	done
 
-	echo "apache:Depends=apache-common (>= $(APACHE_VERSION))" >>debian/libapache-mod-php5.substvars
 	echo "apache2:Depends=apache2-mpm-prefork (>> 2.0.52) | apache2-mpm-itk, apache2.2-common" >>debian/libapache2-mod-php5.substvars
 	dh_gencontrol -s
 	dh_md5sums -s

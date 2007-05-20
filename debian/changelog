@@ -1,3 +1,18 @@
+php5 (5.2.2-2) unstable; urgency=low
+
+  [sean finney]
+  - build with --with-ldap-sasl and modify build-depends to include
+    libsasl2-dev in order to get the ldap_sasl_bind function (closes: #422490).
+  - the json extension is now on by default in php builds, so there's
+    no need for the php5-json package.  added a Provides/Conflicts to
+    help set an upgrade path.
+  - apache 1.x support is soon disappearing.  as a consequence we are
+    no longer building the libapache-mod-php5 module.  the php5 metapackage
+    should as a result bring in libapache2-mod-php5 by default for those who 
+    already have it installed.
+
+ -- sean finney <seanius@debian.org>  Sun, 20 May 2007 21:59:56 +0200
+
 php5 (5.2.2-1) unstable; urgency=low
 
   [ sean finney ]
