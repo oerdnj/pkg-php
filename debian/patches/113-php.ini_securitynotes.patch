@@ -1,7 +1,7 @@
-Index: php5-5.2.0/php.ini-dist
+Index: php5-5.2.3/php.ini-dist
 ===================================================================
---- php5-5.2.0.orig/php.ini-dist	2007-03-18 22:58:39.000000000 +0100
-+++ php5-5.2.0/php.ini-dist	2007-03-18 22:58:45.000000000 +0100
+--- php5-5.2.3.orig/php.ini-dist	2007-06-02 14:00:07.000000000 +0200
++++ php5-5.2.3/php.ini-dist	2007-06-02 14:00:08.000000000 +0200
 @@ -166,6 +166,11 @@
  ;
  ; Safe Mode
@@ -28,7 +28,7 @@ Index: php5-5.2.0/php.ini-dist
  ;open_basedir =
  
  ; This directive allows you to disable certain functions for security reasons.
-@@ -400,6 +412,11 @@
+@@ -401,6 +413,11 @@
  ; You should do your best to write your scripts so that they do not require
  ; register_globals to be on;  Using form variables as globals can easily lead
  ; to possible security problems, if the code is not very well thought of.

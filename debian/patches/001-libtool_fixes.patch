@@ -1,7 +1,7 @@
-Index: php5-5.2.2/TSRM/configure.in
+Index: php5-5.2.3/TSRM/configure.in
 ===================================================================
---- php5-5.2.2.orig/TSRM/configure.in	2007-05-04 17:08:09.000000000 +0200
-+++ php5-5.2.2/TSRM/configure.in	2007-05-04 17:08:11.000000000 +0200
+--- php5-5.2.3.orig/TSRM/configure.in	2007-06-02 13:59:06.000000000 +0200
++++ php5-5.2.3/TSRM/configure.in	2007-06-02 13:59:09.000000000 +0200
 @@ -13,9 +13,6 @@
  TSRM_THREADS_CHECKS
  	
@@ -12,11 +12,11 @@ Index: php5-5.2.2/TSRM/configure.in
  
  dnl TSRM_PTHREAD
  
-Index: php5-5.2.2/configure.in
+Index: php5-5.2.3/configure.in
 ===================================================================
---- php5-5.2.2.orig/configure.in	2007-05-04 17:08:09.000000000 +0200
-+++ php5-5.2.2/configure.in	2007-05-04 17:08:11.000000000 +0200
-@@ -1279,9 +1279,6 @@
+--- php5-5.2.3.orig/configure.in	2007-06-02 13:59:06.000000000 +0200
++++ php5-5.2.3/configure.in	2007-06-02 13:59:09.000000000 +0200
+@@ -1273,9 +1273,6 @@
  
  LDFLAGS="$LDFLAGS $PHP_AIX_LDFLAGS"
  AC_PROG_LIBTOOL

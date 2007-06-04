@@ -1,3 +1,16 @@
+php5 (5.2.3-1) unstable; urgency=low
+
+  * new upstream release.
+  * upstream has incorporated the last of the recent CVE fixes, so
+    the patches have been removed.
+  * change build dependencies for firebird2-dev -> firebird1.5-dev,
+    as the firebird maintainer has changed names in order to provide
+    more clarity since there's also a firebird2.0 now (closes: #427181).
+  * now include, but do not apply by default, the suhosin patch.  see
+    NEWS.Debian for more information.
+
+ -- sean finney <seanius@debian.org>  Mon, 04 Jun 2007 22:02:10 +0200
+
 php5 (5.2.2-2) unstable; urgency=low
 
   [sean finney]

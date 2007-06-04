@@ -1,13 +1,20 @@
-php5 (5.1.6-5) unstable; urgency=low
+php5 (5.2.3-1) unstable; urgency=low
 
-  the debian php packages now support a modular configuration layout.
+  in addition to this new upstream release, we are now moving towards
+  having the suhosin patch (http://www.hardened-php.net/suhosin/index.html)
+  enabled by default.  we're not yet ready to enable it, but the packages
+  can be built with the patch enabled with very little effort.  if you
+  are interested in trying this out, just do:
 
-  if you have previously installed modules that have put entries in
-  your php.ini file, you will probably be getting various warning
-  messages about duplicate modules if you have error reporting enabled
-  with a mask including E_WARN.
+  apt-get install build-essential fakeroot
+  apt-get build-dep php5
+  cd php5-5.2.3
+  export DEB_BUILD_OPTIONS=suhosin
+  dpkg-buildpackage -rfakeroot
 
-  no attempt will be made to muck further with your php.ini file, so you
-  should remove those lines yourself.
+  or something similar, preferably on your development box :)
 
- -- sean finney <seanius@debian.org>  Thu, 19 Oct 2006 22:47:19 +0200
+  if you try this out, please report successes and/or failures to us at
+  pkg-php-maint@lists.alioth.debian.org. 
+
+ -- sean finney <seanius@debian.org>  Mon, 04 Jun 2007 22:02:52 +0200

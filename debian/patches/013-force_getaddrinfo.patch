@@ -1,8 +1,8 @@
-Index: php5-5.2.2/configure.in
+Index: php5-5.2.3/configure.in
 ===================================================================
---- php5-5.2.2.orig/configure.in	2007-05-04 17:08:28.000000000 +0200
-+++ php5-5.2.2/configure.in	2007-05-04 17:08:32.000000000 +0200
-@@ -553,50 +553,50 @@
+--- php5-5.2.3.orig/configure.in	2007-06-02 13:59:19.000000000 +0200
++++ php5-5.2.3/configure.in	2007-06-02 13:59:25.000000000 +0200
+@@ -547,50 +547,50 @@
  
  dnl Check for getaddrinfo, should be a better way, but...
  dnl Also check for working getaddrinfo
