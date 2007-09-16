@@ -1,3 +1,40 @@
+php5 (5.2.4-1) unstable; urgency=low
+
+  * New upstream release.
+
+  [ sean finney ]
+  * patch from Jan Wagner to be able to conditionally disable any
+    patches that break binary-compatibility with official php
+    binary-only extensions.  see debian/rules for more information.
+  * now incorporate the php unit tests into the build process.  for
+    those interested the output is stored in the file
+    /usr/share/doc/php5-common/test-results.txt .
+  * by default we now ship with enable_dl = Off, as there are some
+    fairly significant ramifications security-wise to having it on.
+  * we shipping with the suhosin patch enabled by default.
+    special thanks to Blars Blarson for providing a sparc machine for
+    testing purposes with 5.2.3 (closes: #397179).
+  * new binary package php5-gmp, with the newly enabled gmp extension,
+    since whatever reason for not doing so either never existed or no
+    no longer exists (closes: #344137).  Build-Depends added for libgmp3-dev.
+
+  [ Steve Langasek ]
+  * php5-module.postinst: don't assume that the postinst is only relevant
+    when called with 'configure' as an argument, some future debhelper code
+    could apply in the case of other methods of invocation.
+  * Clean up build dependencies for recent library transitions:
+    - libsnmp-dev is now the real package name, and is supported as a virtual
+      package for backports.
+    - re-add firebird2-dev as an alternative to firebird1.5-dev, to support
+      backports.
+    - the curl -dev package name has changed from libcurl3-openssl-dev to
+      libcurl4-openssl-dev; update to the proper name, with libcurl-dev as
+      an alternative.
+  * Switch php5-sybase to use the mssql extension instead of the sybase_ct
+    extension.  Closes: #418734, #329065.
+
+ -- sean finney <seanius@debian.org>  Sun, 16 Sep 2007 14:46:06 +0200
+
 php5 (5.2.3-1) unstable; urgency=low
 
   * new upstream release.

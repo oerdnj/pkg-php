@@ -1,8 +1,8 @@
-Index: php5-5.2.3/ext/sockets/sockets.c
+Index: php5-5.2.4/ext/sockets/sockets.c
 ===================================================================
---- php5-5.2.3.orig/ext/sockets/sockets.c	2007-06-02 13:59:05.000000000 +0200
-+++ php5-5.2.3/ext/sockets/sockets.c	2007-06-02 13:59:40.000000000 +0200
-@@ -541,6 +541,7 @@
+--- php5-5.2.4.orig/ext/sockets/sockets.c	2007-07-24 13:35:08.000000000 +0200
++++ php5-5.2.4/ext/sockets/sockets.c	2007-09-11 00:24:23.000000000 +0200
+@@ -566,6 +566,7 @@
  
  		php_sock = (php_socket*) zend_fetch_resource(element TSRMLS_CC, -1, le_socket_name, NULL, 1, le_socket);
  		if (!php_sock) continue; /* If element is not a resource, skip it */
@@ -10,10 +10,10 @@ Index: php5-5.2.3/ext/sockets/sockets.c
  
  		PHP_SAFE_FD_SET(php_sock->bsd_socket, fds);
  		if (php_sock->bsd_socket > *max_fd) {
-Index: php5-5.2.3/ext/standard/streamsfuncs.c
+Index: php5-5.2.4/ext/standard/streamsfuncs.c
 ===================================================================
---- php5-5.2.3.orig/ext/standard/streamsfuncs.c	2007-06-02 13:59:05.000000000 +0200
-+++ php5-5.2.3/ext/standard/streamsfuncs.c	2007-06-02 13:59:40.000000000 +0200
+--- php5-5.2.4.orig/ext/standard/streamsfuncs.c	2007-07-09 19:27:24.000000000 +0200
++++ php5-5.2.4/ext/standard/streamsfuncs.c	2007-09-11 00:24:23.000000000 +0200
 @@ -592,6 +592,9 @@
  		 * is not displayed.
  		 * */

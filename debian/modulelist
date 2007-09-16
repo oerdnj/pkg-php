@@ -1,5 +1,6 @@
 curl CURL
 gd GD
+gmp GMP
 imap IMAP
 interbase Interbase
 ldap LDAP
@@ -12,7 +13,7 @@ pspell pspell
 recode recode
 snmp SNMP
 sqlite SQLite
-sybase Sybase sybase_ct
+sybase Sybase mssql
 tidy tidy
 xmlrpc XML-RPC
 xsl XSL

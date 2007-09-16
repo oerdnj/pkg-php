@@ -1,8 +1,8 @@
-Index: php5-5.2.0/ext/sqlite/config.m4
+Index: php5-5.2.4/ext/sqlite/config.m4
 ===================================================================
---- php5-5.2.0.orig/ext/sqlite/config.m4	2007-03-18 22:56:59.000000000 +0100
-+++ php5-5.2.0/ext/sqlite/config.m4	2007-03-18 22:58:44.000000000 +0100
-@@ -86,7 +86,7 @@
+--- php5-5.2.4.orig/ext/sqlite/config.m4	2007-07-03 19:25:35.000000000 +0200
++++ php5-5.2.4/ext/sqlite/config.m4	2007-09-11 00:41:52.000000000 +0200
+@@ -84,7 +84,7 @@
      ])
      SQLITE_MODULE_TYPE=external
      PHP_SQLITE_CFLAGS=$pdo_inc_path

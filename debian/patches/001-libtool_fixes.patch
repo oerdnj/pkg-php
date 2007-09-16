@@ -1,7 +1,7 @@
-Index: php5-5.2.3/TSRM/configure.in
+Index: php5-5.2.4/TSRM/configure.in
 ===================================================================
---- php5-5.2.3.orig/TSRM/configure.in	2007-06-02 13:59:06.000000000 +0200
-+++ php5-5.2.3/TSRM/configure.in	2007-06-02 13:59:09.000000000 +0200
+--- php5-5.2.4.orig/TSRM/configure.in	2007-09-10 20:45:24.000000000 +0200
++++ php5-5.2.4/TSRM/configure.in	2007-09-10 20:45:26.000000000 +0200
 @@ -13,9 +13,6 @@
  TSRM_THREADS_CHECKS
  	
@@ -12,14 +12,14 @@ Index: php5-5.2.3/TSRM/configure.in
  
  dnl TSRM_PTHREAD
  
-Index: php5-5.2.3/configure.in
+Index: php5-5.2.4/configure.in
 ===================================================================
---- php5-5.2.3.orig/configure.in	2007-06-02 13:59:06.000000000 +0200
-+++ php5-5.2.3/configure.in	2007-06-02 13:59:09.000000000 +0200
-@@ -1273,9 +1273,6 @@
- 
- LDFLAGS="$LDFLAGS $PHP_AIX_LDFLAGS"
+--- php5-5.2.4.orig/configure.in	2007-09-10 20:45:24.000000000 +0200
++++ php5-5.2.4/configure.in	2007-09-10 20:45:26.000000000 +0200
+@@ -1256,9 +1256,6 @@
+ AC_DEFUN([AC_PROG_CXX], [])])
  AC_PROG_LIBTOOL
+ 
 -if test "$enable_debug" != "yes"; then
 -  PHP_SET_LIBTOOL_VARIABLE([--silent])
 -fi

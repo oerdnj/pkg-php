@@ -2,10 +2,6 @@
 
 set -e
 
-if [ "$1" != "configure" ]; then
-	exit 0
-fi
-
 # here we test for upgrades from versions prior to the config-file-scan-dir
 # migration.  
 #
@@ -26,7 +22,6 @@ if [ "$2" ] && dpkg --compare-versions "$2" lt "5.1.6-5"; then
 	done
 fi
 
+#EXTRA#
 #DEBHELPER#
-
-exit 0
 

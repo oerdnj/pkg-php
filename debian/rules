@@ -15,6 +15,10 @@ export DH_COMPAT=4
 # This has to be exported to make some magic below work.
 export DH_OPTIONS
 
+# Set this flag to 'yes' if you want to disable all modifications breaking abi 
+# compatibility to upstream
+PHP5_COMPAT=no
+
 DEB_HOST_GNU_TYPE    ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 DEB_BUILD_ARCH   ?= $(shell dpkg-architecture -qDEB_BUILD_ARCH)
@@ -30,7 +34,9 @@ PHP5_DEBIAN_REVISION  = $(shell echo $(PHP5_SOURCE_VERSION) | sed "s/.*-//")
 PROG_SENDMAIL = /usr/sbin/sendmail
 CFLAGS = -O2 -Wall -fsigned-char -fno-strict-aliasing 
 # LFS support
-CFLAGS += $(shell getconf LFS_CFLAGS)
+ifneq (yes,$(PHP5_COMPAT))
+  CFLAGS += $(shell getconf LFS_CFLAGS)
+endif
 
 # Enable IEEE-conformant floating point math on alphas (not the default)
 ifeq (alpha-linux,$(PHP5_HOST_GNU_TYPE))
@@ -45,11 +51,6 @@ endif
 
 ifneq (nostrip, $(findstring nostrip, $(DEB_BUILD_OPTIONS)))
 	install_strip = -s
-endif
-
-# conditionally you can enable the suhosin patch
-ifneq (, $(findstring suhosin, $(DEB_BUILD_OPTIONS)))
-	SUHOSIN_STAMP = suhosin-stamp
 endif
 
 # Old magic.mime location:
@@ -118,21 +119,12 @@ BUILTIN_EXTENSION_CHECK=$$e=get_loaded_extensions(); natcasesort($$e); \
 include /usr/share/quilt/quilt.make
 
 prepared: prepared-stamp
-prepared-stamp: $(QUILT_STAMPFN) $(SUHOSIN_STAMP)
+prepared-stamp: $(QUILT_STAMPFN)
 	dh_testdir
 	sed -i -e 's/EXTRA_VERSION=""/EXTRA_VERSION="-$(PHP5_DEBIAN_REVISION)"/' configure.in
 	rm -f aclocal.m4 config.sub config.guess ltmain.sh
 	./buildconf --force
 	touch prepared-stamp
-
-# rules to apply the suhosin patch
-suhosin-stamp:	$(QUILT_STAMPFN)
-	patch -p1 < debian/patches/suhosin.patch
-	# the suhosin patches patch both configure/configure.in, so let's
-	# make configure.in and the sapi modules show up as newer
-	touch configure.in
-	touch sapi/*.m4
-	touch suhosin-stamp
 
 unprepared:
 	dh_testdir
@@ -144,6 +136,8 @@ unprepared:
 	rm -f prepared-stamp
 
 build: build-apache2-stamp build-cgi-stamp build-cli-stamp build-pear-stamp
+	env NO_INTERACTION=1 TEST_PHP_CGI_EXECUTABLE=./cgi-build/sapi/cgi/cgi-bin.php5 TEST_PHP_EXECUTABLE=./apache2-build/sapi/cli/php ./apache2-build/sapi/cli/php run-tests.php > test-results.txt
+	cat test-results.txt
 
 build-apache2-stamp: configure-apache2-stamp
 	dh_testdir
@@ -203,6 +197,7 @@ configure-apache2-stamp: prepared-stamp
 		--with-curl=shared,/usr \
 		--with-zlib-dir=/usr \
 		--with-gd=shared,/usr --enable-gd-native-ttf \
+		--with-gmp=shared,/usr \
 		--with-jpeg-dir=shared,/usr \
 		--with-xpm-dir=shared,/usr/X11R6 \
 		--with-png-dir=shared,/usr \
@@ -224,7 +219,7 @@ configure-apache2-stamp: prepared-stamp
 		--with-xsl=shared,/usr \
 		--with-snmp=shared,/usr \
 		--with-sqlite=shared,/usr \
-		--with-sybase-ct=shared,/usr \
+		--with-mssql=shared,/usr \
 		--with-tidy=shared,/usr \
 		--with-xmlrpc=shared \
 		--with-pgsql=shared,/usr PGSQL_INCLUDE=`pg_config --includedir` \
@@ -233,7 +228,8 @@ configure-apache2-stamp: prepared-stamp
 		--with-pdo-mysql=shared,/usr \
 		--with-pdo-odbc=shared,unixODBC,/usr \
 		--with-pdo-pgsql=shared,/usr/bin/pg_config \
-		--with-pdo-sqlite=shared,/usr
+		--with-pdo-sqlite=shared,/usr \
+		--with-pdo-dblib=shared,/usr
 	cd apache2-build && \
 	cp ../Zend/zend_ini_scanner.c ../Zend/zend_language_scanner.c \
 	   ../Zend/zend_ini_parser.h ../Zend/zend_language_parser.h \
@@ -253,7 +249,8 @@ configure-cgi-stamp: prepared-stamp
 		$(COMMON_CONFIG) \
 		--without-mm \
 		--disable-pdo \
-		--without-mysql --without-sybase-ct --without-sqlite
+		--without-mysql --without-sybase-ct --without-mssql \
+		--without-sqlite
 	cd cgi-build && \
 	cp ../Zend/zend_ini_scanner.c ../Zend/zend_language_scanner.c \
 	   ../Zend/zend_ini_parser.h ../Zend/zend_language_parser.h \
@@ -274,7 +271,7 @@ configure-cli-stamp: prepared-stamp
 		--without-mm \
 		--disable-pdo \
 		--without-mysql --without-sybase-ct --without-sqlite \
-		--enable-pcntl \
+		--without-mssql --enable-pcntl \
 		--with-ncurses=/usr
 	cd cli-build && \
 	cp ../Zend/zend_ini_scanner.c ../Zend/zend_language_scanner.c \
@@ -306,12 +303,6 @@ clean: unprepared
 			rm -f debian/$${sapi}.$${cruft}; \
 		done; \
 	done
-	if [ "$(SUHOSIN_STAMP)" ]; then \
-		if [ -f "$(SUHOSIN_STAMP)" ]; then \
-			patch -p1 -R < debian/patches/suhosin.patch; \
-			rm -f "$(SUHOSIN_STAMP)"; \
-		fi; \
-	fi 
 
 install: DH_OPTIONS=
 install: build
@@ -337,6 +328,7 @@ install: build
 	cat php.ini-dist | tr "\t" " " > debian/php5-common/usr/share/doc/php5-common/examples/php.ini-dist
 	cat php.ini-recommended | tr "\t" " " > debian/php5-common/usr/share/doc/php5-common/examples/php.ini-recommended
 	cat php.ini-paranoid | tr "\t" " " > debian/php5-common/usr/share/doc/php5-common/examples/php.ini-paranoid
+	cp test-results.txt debian/php5-common/usr/share/doc/php5-common/
 
 	# install the apache modules' files
 	cd apache2-build && make install-headers install-build install-modules install-programs INSTALL_ROOT=$(CURDIR)/debian/libapache2-mod-php5
@@ -442,8 +434,10 @@ binary-arch: build install
 	# modules from the templates.
 	cat debian/modulelist | while read package extname dsoname; do \
 		if [ -z "$$dsoname" ]; then dsoname=$$package; fi; \
-		sed -e"s/@extname@/$$extname/g; s/@dsoname@/$$dsoname/g" \
+		sed -e"s/@extname@/$$extname/g; s/@dsoname@/$$dsoname/g; \
+		       /#EXTRA#/ r debian/php5-$${package}.postinst.extra" \
 		  < debian/php5-module.postinst \
+		| sed -e'/#EXTRA#/ d' \
 		  > debian/php5-$${package}.postinst; \
 	done
 

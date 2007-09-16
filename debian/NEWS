@@ -1,20 +1,18 @@
-php5 (5.2.3-1) unstable; urgency=low
+php5 (5.2.3-2) unstable; urgency=low
 
-  in addition to this new upstream release, we are now moving towards
-  having the suhosin patch (http://www.hardened-php.net/suhosin/index.html)
-  enabled by default.  we're not yet ready to enable it, but the packages
-  can be built with the patch enabled with very little effort.  if you
-  are interested in trying this out, just do:
+  The suhosin patch is now enabled by default!
 
-  apt-get install build-essential fakeroot
-  apt-get build-dep php5
-  cd php5-5.2.3
-  export DEB_BUILD_OPTIONS=suhosin
-  dpkg-buildpackage -rfakeroot
+  For more information, see
+  <http://www.hardened-php.net/suhosin/index.html>.
 
-  or something similar, preferably on your development box :)
+  Special thanks to Blars Blarson for providing a sparc machine for testing
+  that the patch seems to work okay on that architecture.  If you experience
+  otherwise let us know!
 
-  if you try this out, please report successes and/or failures to us at
+  Suggestions are welcome for default configuration options, examples,
+  documentation, etc.
+
+  In any event please report successes and/or failures to us at
   pkg-php-maint@lists.alioth.debian.org. 
 
- -- sean finney <seanius@debian.org>  Mon, 04 Jun 2007 22:02:52 +0200
+ -- sean finney <seanius@debian.org>  Thu, 12 Jul 2007 23:38:43 +0200

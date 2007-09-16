@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+
+OLD_CONFFILE=/etc/php5/conf.d/sybase_ct.ini
+NEW_CONFFILE=/etc/php5/conf.d/mssql.ini
+if [ -e "$OLD_CONFFILE" ] && dpkg --compare-versions "$2" lt-nl 5.2.3-2
+then
+	sed -e's/\(extension=[[:space:]]*\)sybase_ct\.so/\1mssql.so/' \
+		$OLD_CONFFILE > $NEW_CONFFILE
+fi
+
+#DEBHELPER#

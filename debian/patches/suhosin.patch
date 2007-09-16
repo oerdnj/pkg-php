@@ -1,7 +1,8 @@
-diff -Nura php-5.2.3/configure suhosin-patch-5.2.3-0.9.6.2/configure
---- php-5.2.3/configure	2007-05-30 20:50:52.000000000 +0200
-+++ suhosin-patch-5.2.3-0.9.6.2/configure	2007-06-01 11:07:20.000000000 +0200
-@@ -17925,6 +17925,9 @@
+Index: php5-5.2.4/configure
+===================================================================
+--- php5-5.2.4.orig/configure	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/configure	2007-09-16 14:45:15.000000000 +0200
+@@ -18496,6 +18496,9 @@
  
  fi
  
@@ -10,8 +11,8 @@ diff -Nura php-5.2.3/configure suhosin-patch-5.2.3-0.9.6.2/configure
 +EOF
  
    echo $ac_n "checking for declared timezone""... $ac_c" 1>&6
- echo "configure:17931: checking for declared timezone" >&5
-@@ -114937,7 +114940,7 @@
+ echo "configure:18502: checking for declared timezone" >&5
+@@ -115678,7 +115681,7 @@
         php_ini.c SAPI.c rfc1867.c php_content_types.c strlcpy.c \
         strlcat.c mergesort.c reentrancy.c php_variables.c php_ticks.c \
         network.c php_open_temporary_file.c php_logos.c \
@@ -20,7 +21,7 @@ diff -Nura php-5.2.3/configure suhosin-patch-5.2.3-0.9.6.2/configure
    
        IFS=.
        set $ac_src
-@@ -115139,7 +115142,7 @@
+@@ -115880,7 +115883,7 @@
      zend_variables.c zend.c zend_API.c zend_extensions.c zend_hash.c \
      zend_list.c zend_indent.c zend_builtin_functions.c zend_sprintf.c \
      zend_ini.c zend_qsort.c zend_multibyte.c zend_ts_hash.c zend_stream.c \
@@ -29,10 +30,11 @@ diff -Nura php-5.2.3/configure suhosin-patch-5.2.3-0.9.6.2/configure
    
        IFS=.
        set $ac_src
-diff -Nura php-5.2.3/configure.in suhosin-patch-5.2.3-0.9.6.2/configure.in
---- php-5.2.3/configure.in	2007-05-30 20:45:59.000000000 +0200
-+++ suhosin-patch-5.2.3-0.9.6.2/configure.in	2007-06-01 11:03:54.000000000 +0200
-@@ -220,6 +220,7 @@
+Index: php5-5.2.4/configure.in
+===================================================================
+--- php5-5.2.4.orig/configure.in	2007-09-16 14:45:15.000000000 +0200
++++ php5-5.2.4/configure.in	2007-09-16 14:45:15.000000000 +0200
+@@ -227,6 +227,7 @@
  sinclude(TSRM/threads.m4)
  sinclude(TSRM/tsrm.m4)
  
@@ -40,7 +42,7 @@ diff -Nura php-5.2.3/configure.in suhosin-patch-5.2.3-0.9.6.2/configure.in
  
  divert(2)
  
-@@ -1318,7 +1319,7 @@
+@@ -1304,7 +1305,7 @@
         php_ini.c SAPI.c rfc1867.c php_content_types.c strlcpy.c \
         strlcat.c mergesort.c reentrancy.c php_variables.c php_ticks.c \
         network.c php_open_temporary_file.c php_logos.c \
@@ -49,7 +51,7 @@ diff -Nura php-5.2.3/configure.in suhosin-patch-5.2.3-0.9.6.2/configure.in
  
  PHP_ADD_SOURCES(main/streams, streams.c cast.c memory.c filter.c \
         plain_wrapper.c userspace.c transports.c xp_socket.c mmap.c)
-@@ -1344,7 +1345,7 @@
+@@ -1330,7 +1331,7 @@
      zend_variables.c zend.c zend_API.c zend_extensions.c zend_hash.c \
      zend_list.c zend_indent.c zend_builtin_functions.c zend_sprintf.c \
      zend_ini.c zend_qsort.c zend_multibyte.c zend_ts_hash.c zend_stream.c \
@@ -58,10 +60,11 @@ diff -Nura php-5.2.3/configure.in suhosin-patch-5.2.3-0.9.6.2/configure.in
  
  if test -r "$abs_srcdir/Zend/zend_objects.c"; then
    PHP_ADD_SOURCES(Zend, zend_objects.c zend_object_handlers.c zend_objects_API.c \
-diff -Nura php-5.2.3/ext/standard/basic_functions.c suhosin-patch-5.2.3-0.9.6.2/ext/standard/basic_functions.c
---- php-5.2.3/ext/standard/basic_functions.c	2007-05-22 17:38:27.000000000 +0200
-+++ suhosin-patch-5.2.3-0.9.6.2/ext/standard/basic_functions.c	2007-06-01 11:03:54.000000000 +0200
-@@ -3560,7 +3560,9 @@
+Index: php5-5.2.4/ext/standard/basic_functions.c
+===================================================================
+--- php5-5.2.4.orig/ext/standard/basic_functions.c	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/ext/standard/basic_functions.c	2007-09-16 14:45:15.000000000 +0200
+@@ -3570,7 +3570,9 @@
  	PHP_FALIAS(socket_get_status, stream_get_meta_data,						arginfo_stream_get_meta_data)
  
  #if (!defined(__BEOS__) && !defined(NETWARE) && HAVE_REALPATH) || defined(ZTS)
@@ -72,10 +75,11 @@ diff -Nura php-5.2.3/ext/standard/basic_functions.c suhosin-patch-5.2.3-0.9.6.2/
  #endif
  
  #ifdef HAVE_FNMATCH
-diff -Nura php-5.2.3/ext/standard/dl.c suhosin-patch-5.2.3-0.9.6.2/ext/standard/dl.c
---- php-5.2.3/ext/standard/dl.c	2007-02-23 01:37:35.000000000 +0100
-+++ suhosin-patch-5.2.3-0.9.6.2/ext/standard/dl.c	2007-06-01 11:03:54.000000000 +0200
-@@ -233,6 +233,19 @@
+Index: php5-5.2.4/ext/standard/dl.c
+===================================================================
+--- php5-5.2.4.orig/ext/standard/dl.c	2007-09-16 14:45:15.000000000 +0200
++++ php5-5.2.4/ext/standard/dl.c	2007-09-16 14:45:15.000000000 +0200
+@@ -228,6 +228,19 @@
  			RETURN_FALSE;
  		}
  	}
@@ -95,10 +99,11 @@ diff -Nura php-5.2.3/ext/standard/dl.c suhosin-patch-5.2.3-0.9.6.2/ext/standard/
  	RETURN_TRUE;
  }
  /* }}} */
-diff -Nura php-5.2.3/ext/standard/file.c suhosin-patch-5.2.3-0.9.6.2/ext/standard/file.c
---- php-5.2.3/ext/standard/file.c	2007-05-27 19:33:39.000000000 +0200
-+++ suhosin-patch-5.2.3-0.9.6.2/ext/standard/file.c	2007-06-01 11:03:54.000000000 +0200
-@@ -2359,7 +2359,7 @@
+Index: php5-5.2.4/ext/standard/file.c
+===================================================================
+--- php5-5.2.4.orig/ext/standard/file.c	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/ext/standard/file.c	2007-09-16 14:45:15.000000000 +0200
+@@ -2361,7 +2361,7 @@
  #if (!defined(__BEOS__) && !defined(NETWARE) && HAVE_REALPATH) || defined(ZTS)
  /* {{{ proto string realpath(string path)
     Return the resolved path */
@@ -107,9 +112,10 @@ diff -Nura php-5.2.3/ext/standard/file.c suhosin-patch-5.2.3-0.9.6.2/ext/standar
  {
  	zval **path;
  	char resolved_path_buff[MAXPATHLEN];
-diff -Nura php-5.2.3/ext/standard/file.h suhosin-patch-5.2.3-0.9.6.2/ext/standard/file.h
---- php-5.2.3/ext/standard/file.h	2007-01-10 15:40:06.000000000 +0100
-+++ suhosin-patch-5.2.3-0.9.6.2/ext/standard/file.h	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/ext/standard/file.h
+===================================================================
+--- php5-5.2.4.orig/ext/standard/file.h	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/ext/standard/file.h	2007-09-16 14:45:15.000000000 +0200
 @@ -61,7 +61,7 @@
  PHP_FUNCTION(fd_set);
  PHP_FUNCTION(fd_isset);
@@ -119,9 +125,10 @@ diff -Nura php-5.2.3/ext/standard/file.h suhosin-patch-5.2.3-0.9.6.2/ext/standar
  #endif
  #ifdef HAVE_FNMATCH
  PHP_FUNCTION(fnmatch);
-diff -Nura php-5.2.3/ext/standard/info.c suhosin-patch-5.2.3-0.9.6.2/ext/standard/info.c
---- php-5.2.3/ext/standard/info.c	2007-04-02 14:41:07.000000000 +0200
-+++ suhosin-patch-5.2.3-0.9.6.2/ext/standard/info.c	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/ext/standard/info.c
+===================================================================
+--- php5-5.2.4.orig/ext/standard/info.c	2007-09-16 14:45:15.000000000 +0200
++++ php5-5.2.4/ext/standard/info.c	2007-09-16 14:45:15.000000000 +0200
 @@ -627,6 +627,31 @@
  		
  		php_info_print_table_end();
@@ -154,9 +161,10 @@ diff -Nura php-5.2.3/ext/standard/info.c suhosin-patch-5.2.3-0.9.6.2/ext/standar
  		/* Zend Engine */
  		php_info_print_box_start(0);
  		if (expose_php && !sapi_module.phpinfo_as_text) {
-diff -Nura php-5.2.3/ext/standard/syslog.c suhosin-patch-5.2.3-0.9.6.2/ext/standard/syslog.c
---- php-5.2.3/ext/standard/syslog.c	2007-05-17 08:38:13.000000000 +0200
-+++ suhosin-patch-5.2.3-0.9.6.2/ext/standard/syslog.c	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/ext/standard/syslog.c
+===================================================================
+--- php5-5.2.4.orig/ext/standard/syslog.c	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/ext/standard/syslog.c	2007-09-16 14:45:15.000000000 +0200
 @@ -42,6 +42,7 @@
   */
  PHP_MINIT_FUNCTION(syslog)
@@ -173,9 +181,10 @@ diff -Nura php-5.2.3/ext/standard/syslog.c suhosin-patch-5.2.3-0.9.6.2/ext/stand
  	BG(syslog_device)=NULL;
  
  	return SUCCESS;
-diff -Nura php-5.2.3/main/fopen_wrappers.c suhosin-patch-5.2.3-0.9.6.2/main/fopen_wrappers.c
---- php-5.2.3/main/fopen_wrappers.c	2007-04-18 13:58:40.000000000 +0200
-+++ suhosin-patch-5.2.3-0.9.6.2/main/fopen_wrappers.c	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/main/fopen_wrappers.c
+===================================================================
+--- php5-5.2.4.orig/main/fopen_wrappers.c	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/main/fopen_wrappers.c	2007-09-16 14:45:15.000000000 +0200
 @@ -111,7 +111,7 @@
  
  	/* normalize and expand path */
@@ -185,16 +194,7 @@ diff -Nura php-5.2.3/main/fopen_wrappers.c suhosin-patch-5.2.3-0.9.6.2/main/fope
  	}
  	
  	path_len = strlen(resolved_name);
-@@ -172,14 +172,20 @@
- 			}
- 		}
- 
-+        resolved_name_len = strlen(resolved_name);
- 		if (path_tmp[path_len - 1] == PHP_DIR_SEPARATOR) {
--			resolved_name_len = strlen(resolved_name);
- 			if (resolved_name[resolved_name_len - 1] != PHP_DIR_SEPARATOR) {
- 				resolved_name[resolved_name_len] = PHP_DIR_SEPARATOR;
- 				resolved_name[++resolved_name_len] = '\0';
+@@ -180,6 +180,12 @@
  			}
  		}
  
@@ -207,7 +207,7 @@ diff -Nura php-5.2.3/main/fopen_wrappers.c suhosin-patch-5.2.3-0.9.6.2/main/fope
  		/* Check the path */
  #if defined(PHP_WIN32) || defined(NETWARE)
  		if (strncasecmp(resolved_basedir, resolved_name, resolved_basedir_len) == 0) {
-@@ -193,7 +199,7 @@
+@@ -203,7 +209,7 @@
  		}
  	} else {
  		/* Unable to resolve the real path, return -1 */
@@ -216,7 +216,7 @@ diff -Nura php-5.2.3/main/fopen_wrappers.c suhosin-patch-5.2.3-0.9.6.2/main/fope
  	}
  }
  /* }}} */
-@@ -212,22 +218,44 @@
+@@ -222,22 +228,44 @@
  		char *pathbuf;
  		char *ptr;
  		char *end;
@@ -231,7 +231,7 @@ diff -Nura php-5.2.3/main/fopen_wrappers.c suhosin-patch-5.2.3-0.9.6.2/main/fope
 +		}
 +		if (path_len > 0 && path[path_len-1] == PHP_DIR_SEPARATOR) {
 +			memcpy(path_copy, path, path_len+1);
-+			while (path_len > 0 && path_copy[path_len-1] == PHP_DIR_SEPARATOR) path_len--;
++			while (path_len > 1 && path_copy[path_len-1] == PHP_DIR_SEPARATOR) path_len--;
 +			path_copy[path_len] = '\0';
 +			path = (const char *)&path_copy;
 +		}
@@ -262,9 +262,10 @@ diff -Nura php-5.2.3/main/fopen_wrappers.c suhosin-patch-5.2.3-0.9.6.2/main/fope
  
  			ptr = end;
  		}
-diff -Nura php-5.2.3/main/main.c suhosin-patch-5.2.3-0.9.6.2/main/main.c
---- php-5.2.3/main/main.c	2007-04-18 11:38:56.000000000 +0200
-+++ suhosin-patch-5.2.3-0.9.6.2/main/main.c	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/main/main.c
+===================================================================
+--- php5-5.2.4.orig/main/main.c	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/main/main.c	2007-09-16 14:45:15.000000000 +0200
 @@ -88,6 +88,9 @@
  
  #include "SAPI.h"
@@ -275,7 +276,7 @@ diff -Nura php-5.2.3/main/main.c suhosin-patch-5.2.3-0.9.6.2/main/main.c
  /* }}} */
  
  #ifndef ZTS
-@@ -1211,7 +1214,7 @@
+@@ -1347,7 +1350,7 @@
  
  	/* used to close fd's in the 3..255 range here, but it's problematic
  	 */
@@ -284,7 +285,7 @@ diff -Nura php-5.2.3/main/main.c suhosin-patch-5.2.3-0.9.6.2/main/main.c
  }
  /* }}} */
  
-@@ -1252,6 +1255,9 @@
+@@ -1388,6 +1391,9 @@
  
  	zend_try {
  		shutdown_memory_manager(CG(unclean_shutdown), 0 TSRMLS_CC);
@@ -294,7 +295,7 @@ diff -Nura php-5.2.3/main/main.c suhosin-patch-5.2.3-0.9.6.2/main/main.c
  	} zend_end_try();
  
  	zend_try {
-@@ -1334,6 +1340,9 @@
+@@ -1480,6 +1486,9 @@
  	/* 11. Free Willy (here be crashes) */
  	zend_try {
  		shutdown_memory_manager(CG(unclean_shutdown) || !report_memleaks, 0 TSRMLS_CC);
@@ -304,7 +305,7 @@ diff -Nura php-5.2.3/main/main.c suhosin-patch-5.2.3-0.9.6.2/main/main.c
  	} zend_end_try();
  
  	/* 12. Reset max_execution_time */
-@@ -1457,6 +1466,9 @@
+@@ -1639,6 +1648,9 @@
  #ifdef ZTS
  	tsrm_ls = ts_resource(0);
  #endif
@@ -314,7 +315,7 @@ diff -Nura php-5.2.3/main/main.c suhosin-patch-5.2.3-0.9.6.2/main/main.c
  
  	module_shutdown = 0;
  	module_startup = 1;
-@@ -1586,6 +1598,10 @@
+@@ -1768,6 +1780,10 @@
  	REGISTER_MAIN_STRINGL_CONSTANT("PHP_CONFIG_FILE_PATH", PHP_CONFIG_FILE_PATH, strlen(PHP_CONFIG_FILE_PATH), CONST_PERSISTENT | CONST_CS);
  	REGISTER_MAIN_STRINGL_CONSTANT("PHP_CONFIG_FILE_SCAN_DIR", PHP_CONFIG_FILE_SCAN_DIR, sizeof(PHP_CONFIG_FILE_SCAN_DIR)-1, CONST_PERSISTENT | CONST_CS);
  	REGISTER_MAIN_STRINGL_CONSTANT("PHP_SHLIB_SUFFIX", PHP_SHLIB_SUFFIX, sizeof(PHP_SHLIB_SUFFIX)-1, CONST_PERSISTENT | CONST_CS);
@@ -325,7 +326,7 @@ diff -Nura php-5.2.3/main/main.c suhosin-patch-5.2.3-0.9.6.2/main/main.c
  	REGISTER_MAIN_STRINGL_CONSTANT("PHP_EOL", PHP_EOL, sizeof(PHP_EOL)-1, CONST_PERSISTENT | CONST_CS);
  	REGISTER_MAIN_LONG_CONSTANT("PHP_INT_MAX", LONG_MAX, CONST_PERSISTENT | CONST_CS);
  	REGISTER_MAIN_LONG_CONSTANT("PHP_INT_SIZE", sizeof(long), CONST_PERSISTENT | CONST_CS);
-@@ -1636,7 +1652,9 @@
+@@ -1817,7 +1833,9 @@
  	module_startup = 0;
  
  	shutdown_memory_manager(1, 0 TSRMLS_CC);
@@ -336,7 +337,7 @@ diff -Nura php-5.2.3/main/main.c suhosin-patch-5.2.3-0.9.6.2/main/main.c
  	/* we're done */
  	return SUCCESS;
  }
-@@ -1694,6 +1712,9 @@
+@@ -1876,6 +1894,9 @@
  #ifndef ZTS
  	zend_ini_shutdown(TSRMLS_C);
  	shutdown_memory_manager(CG(unclean_shutdown), 1 TSRMLS_CC);
@@ -346,10 +347,11 @@ diff -Nura php-5.2.3/main/main.c suhosin-patch-5.2.3-0.9.6.2/main/main.c
  	core_globals_dtor(&core_globals TSRMLS_CC);
  #else
  	zend_ini_global_shutdown(TSRMLS_C);
-diff -Nura php-5.2.3/main/php_config.h.in suhosin-patch-5.2.3-0.9.6.2/main/php_config.h.in
---- php-5.2.3/main/php_config.h.in	2007-05-30 20:50:55.000000000 +0200
-+++ suhosin-patch-5.2.3-0.9.6.2/main/php_config.h.in	2007-06-01 11:03:54.000000000 +0200
-@@ -806,6 +806,9 @@
+Index: php5-5.2.4/main/php_config.h.in
+===================================================================
+--- php5-5.2.4.orig/main/php_config.h.in	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/main/php_config.h.in	2007-09-16 14:45:15.000000000 +0200
+@@ -803,6 +803,9 @@
  /* Define if the target system has /dev/urandom device */
  #undef HAVE_DEV_URANDOM
  
@@ -359,9 +361,10 @@ diff -Nura php-5.2.3/main/php_config.h.in suhosin-patch-5.2.3-0.9.6.2/main/php_c
  /* Whether you have AOLserver */
  #undef HAVE_AOLSERVER
  
-diff -Nura php-5.2.3/main/php.h suhosin-patch-5.2.3-0.9.6.2/main/php.h
---- php-5.2.3/main/php.h	2007-01-01 10:36:11.000000000 +0100
-+++ suhosin-patch-5.2.3-0.9.6.2/main/php.h	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/main/php.h
+===================================================================
+--- php5-5.2.4.orig/main/php.h	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/main/php.h	2007-09-16 14:45:15.000000000 +0200
 @@ -40,6 +40,13 @@
  #undef sprintf
  #define sprintf php_sprintf
@@ -387,9 +390,10 @@ diff -Nura php-5.2.3/main/php.h suhosin-patch-5.2.3-0.9.6.2/main/php.h
  #endif
  
  /*
-diff -Nura php-5.2.3/main/php_logos.c suhosin-patch-5.2.3-0.9.6.2/main/php_logos.c
---- php-5.2.3/main/php_logos.c	2007-01-06 21:44:51.000000000 +0100
-+++ suhosin-patch-5.2.3-0.9.6.2/main/php_logos.c	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/main/php_logos.c
+===================================================================
+--- php5-5.2.4.orig/main/php_logos.c	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/main/php_logos.c	2007-09-16 14:45:15.000000000 +0200
 @@ -50,6 +50,10 @@
  	return zend_hash_del(&phpinfo_logo_hash, logo_string, strlen(logo_string));
  }
@@ -411,10 +415,11 @@ diff -Nura php-5.2.3/main/php_logos.c suhosin-patch-5.2.3-0.9.6.2/main/php_logos
  
  	return SUCCESS;
  }
-diff -Nura php-5.2.3/main/snprintf.c suhosin-patch-5.2.3-0.9.6.2/main/snprintf.c
---- php-5.2.3/main/snprintf.c	2007-04-13 00:01:20.000000000 +0200
-+++ suhosin-patch-5.2.3-0.9.6.2/main/snprintf.c	2007-06-01 11:03:54.000000000 +0200
-@@ -1069,7 +1069,11 @@
+Index: php5-5.2.4/main/snprintf.c
+===================================================================
+--- php5-5.2.4.orig/main/snprintf.c	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/main/snprintf.c	2007-09-16 14:45:15.000000000 +0200
+@@ -1079,7 +1079,11 @@
  
  
  				case 'n':
@@ -426,10 +431,11 @@ diff -Nura php-5.2.3/main/snprintf.c suhosin-patch-5.2.3-0.9.6.2/main/snprintf.c
  					goto skip_output;
  
  					/*
-diff -Nura php-5.2.3/main/spprintf.c suhosin-patch-5.2.3-0.9.6.2/main/spprintf.c
---- php-5.2.3/main/spprintf.c	2007-01-01 10:36:11.000000000 +0100
-+++ suhosin-patch-5.2.3-0.9.6.2/main/spprintf.c	2007-06-01 11:03:54.000000000 +0200
-@@ -650,7 +650,11 @@
+Index: php5-5.2.4/main/spprintf.c
+===================================================================
+--- php5-5.2.4.orig/main/spprintf.c	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/main/spprintf.c	2007-09-16 14:45:15.000000000 +0200
+@@ -672,7 +672,11 @@
  
  
  				case 'n':
@@ -441,9 +447,10 @@ diff -Nura php-5.2.3/main/spprintf.c suhosin-patch-5.2.3-0.9.6.2/main/spprintf.c
  					goto skip_output;
  
  					/*
-diff -Nura php-5.2.3/main/suhosin_globals.h suhosin-patch-5.2.3-0.9.6.2/main/suhosin_globals.h
---- php-5.2.3/main/suhosin_globals.h	1970-01-01 01:00:00.000000000 +0100
-+++ suhosin-patch-5.2.3-0.9.6.2/main/suhosin_globals.h	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/main/suhosin_globals.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ php5-5.2.4/main/suhosin_globals.h	2007-09-16 14:45:15.000000000 +0200
 @@ -0,0 +1,61 @@
 +/*
 +   +----------------------------------------------------------------------+
@@ -506,9 +513,10 @@ diff -Nura php-5.2.3/main/suhosin_globals.h suhosin-patch-5.2.3-0.9.6.2/main/suh
 + * c-basic-offset: 4
 + * End:
 + */
-diff -Nura php-5.2.3/main/suhosin_logo.h suhosin-patch-5.2.3-0.9.6.2/main/suhosin_logo.h
---- php-5.2.3/main/suhosin_logo.h	1970-01-01 01:00:00.000000000 +0100
-+++ suhosin-patch-5.2.3-0.9.6.2/main/suhosin_logo.h	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/main/suhosin_logo.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ php5-5.2.4/main/suhosin_logo.h	2007-09-16 14:45:15.000000000 +0200
 @@ -0,0 +1,178 @@
 +static unsigned char suhosin_logo[] =
 +	"\xff\xd8\xff\xe0\x00\x10\x4a\x46\x49\x46\x00\x01\x01\x01\x00\x48"
@@ -688,9 +696,10 @@ diff -Nura php-5.2.3/main/suhosin_logo.h suhosin-patch-5.2.3-0.9.6.2/main/suhosi
 +	"\x21\xb6\x99\x69\xbc\x25\xb6\xdb\x6d\x18\xc2\x10\xda\x12\x94\xa1"
 +	"\x38\xc2\x53\x8c\x63\x18\xc7\x9d\xbe\x7f\xff\xd9"
 +	;
-diff -Nura php-5.2.3/main/suhosin_patch.c suhosin-patch-5.2.3-0.9.6.2/main/suhosin_patch.c
---- php-5.2.3/main/suhosin_patch.c	1970-01-01 01:00:00.000000000 +0100
-+++ suhosin-patch-5.2.3-0.9.6.2/main/suhosin_patch.c	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/main/suhosin_patch.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ php5-5.2.4/main/suhosin_patch.c	2007-09-16 14:45:15.000000000 +0200
 @@ -0,0 +1,380 @@
 +/*
 +   +----------------------------------------------------------------------+
@@ -1072,9 +1081,10 @@ diff -Nura php-5.2.3/main/suhosin_patch.c suhosin-patch-5.2.3-0.9.6.2/main/suhos
 + * vim600: sw=4 ts=4 fdm=marker
 + * vim<600: sw=4 ts=4
 + */
-diff -Nura php-5.2.3/main/suhosin_patch.h suhosin-patch-5.2.3-0.9.6.2/main/suhosin_patch.h
---- php-5.2.3/main/suhosin_patch.h	1970-01-01 01:00:00.000000000 +0100
-+++ suhosin-patch-5.2.3-0.9.6.2/main/suhosin_patch.h	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/main/suhosin_patch.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ php5-5.2.4/main/suhosin_patch.h	2007-09-16 14:45:15.000000000 +0200
 @@ -0,0 +1,40 @@
 +/*
 +   +----------------------------------------------------------------------+
@@ -1116,9 +1126,10 @@ diff -Nura php-5.2.3/main/suhosin_patch.h suhosin-patch-5.2.3-0.9.6.2/main/suhos
 + * c-basic-offset: 4
 + * End:
 + */
-diff -Nura php-5.2.3/main/suhosin_patch.m4 suhosin-patch-5.2.3-0.9.6.2/main/suhosin_patch.m4
---- php-5.2.3/main/suhosin_patch.m4	1970-01-01 01:00:00.000000000 +0100
-+++ suhosin-patch-5.2.3-0.9.6.2/main/suhosin_patch.m4	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/main/suhosin_patch.m4
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ php5-5.2.4/main/suhosin_patch.m4	2007-09-16 14:45:15.000000000 +0200
 @@ -0,0 +1,8 @@
 +dnl
 +dnl $Id: suhosin_patch.m4,v 1.1 2004/11/14 13:24:24 ionic Exp $
@@ -1128,10 +1139,11 @@ diff -Nura php-5.2.3/main/suhosin_patch.m4 suhosin-patch-5.2.3-0.9.6.2/main/suho
 +
 +AC_DEFINE(SUHOSIN_PATCH, 1, [Suhosin Patch])
 +
-diff -Nura php-5.2.3/sapi/apache/mod_php5.c suhosin-patch-5.2.3-0.9.6.2/sapi/apache/mod_php5.c
---- php-5.2.3/sapi/apache/mod_php5.c	2007-01-01 10:36:12.000000000 +0100
-+++ suhosin-patch-5.2.3-0.9.6.2/sapi/apache/mod_php5.c	2007-06-01 11:03:54.000000000 +0200
-@@ -943,7 +943,11 @@
+Index: php5-5.2.4/sapi/apache/mod_php5.c
+===================================================================
+--- php5-5.2.4.orig/sapi/apache/mod_php5.c	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/sapi/apache/mod_php5.c	2007-09-16 14:45:15.000000000 +0200
+@@ -951,7 +951,11 @@
  	{
  		TSRMLS_FETCH();
  		if (PG(expose_php)) {
@@ -1143,9 +1155,10 @@ diff -Nura php-5.2.3/sapi/apache/mod_php5.c suhosin-patch-5.2.3-0.9.6.2/sapi/apa
  		}
  	}
  #endif
-diff -Nura php-5.2.3/sapi/apache2filter/sapi_apache2.c suhosin-patch-5.2.3-0.9.6.2/sapi/apache2filter/sapi_apache2.c
---- php-5.2.3/sapi/apache2filter/sapi_apache2.c	2007-01-01 10:36:12.000000000 +0100
-+++ suhosin-patch-5.2.3-0.9.6.2/sapi/apache2filter/sapi_apache2.c	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/sapi/apache2filter/sapi_apache2.c
+===================================================================
+--- php5-5.2.4.orig/sapi/apache2filter/sapi_apache2.c	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/sapi/apache2filter/sapi_apache2.c	2007-09-16 14:45:15.000000000 +0200
 @@ -562,7 +562,11 @@
  {
  	TSRMLS_FETCH();
@@ -1158,10 +1171,11 @@ diff -Nura php-5.2.3/sapi/apache2filter/sapi_apache2.c suhosin-patch-5.2.3-0.9.6
  	}
  }
  
-diff -Nura php-5.2.3/sapi/apache2handler/sapi_apache2.c suhosin-patch-5.2.3-0.9.6.2/sapi/apache2handler/sapi_apache2.c
---- php-5.2.3/sapi/apache2handler/sapi_apache2.c	2007-01-01 10:36:12.000000000 +0100
-+++ suhosin-patch-5.2.3-0.9.6.2/sapi/apache2handler/sapi_apache2.c	2007-06-01 11:03:54.000000000 +0200
-@@ -364,7 +364,11 @@
+Index: php5-5.2.4/sapi/apache2handler/sapi_apache2.c
+===================================================================
+--- php5-5.2.4.orig/sapi/apache2handler/sapi_apache2.c	2007-09-16 14:45:14.000000000 +0200
++++ php5-5.2.4/sapi/apache2handler/sapi_apache2.c	2007-09-16 14:45:15.000000000 +0200
+@@ -372,7 +372,11 @@
  {
  	TSRMLS_FETCH();
  	if (PG(expose_php)) {
@@ -1173,10 +1187,11 @@ diff -Nura php-5.2.3/sapi/apache2handler/sapi_apache2.c suhosin-patch-5.2.3-0.9.
  	}
  }
  
-diff -Nura php-5.2.3/sapi/cgi/cgi_main.c suhosin-patch-5.2.3-0.9.6.2/sapi/cgi/cgi_main.c
---- php-5.2.3/sapi/cgi/cgi_main.c	2007-05-28 10:11:59.000000000 +0200
-+++ suhosin-patch-5.2.3-0.9.6.2/sapi/cgi/cgi_main.c	2007-06-01 11:03:54.000000000 +0200
-@@ -1560,11 +1560,19 @@
+Index: php5-5.2.4/sapi/cgi/cgi_main.c
+===================================================================
+--- php5-5.2.4.orig/sapi/cgi/cgi_main.c	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/sapi/cgi/cgi_main.c	2007-09-16 14:45:15.000000000 +0200
+@@ -1595,11 +1595,19 @@
  							SG(headers_sent) = 1;
  							SG(request_info).no_headers = 1;
  						}
@@ -1196,10 +1211,11 @@ diff -Nura php-5.2.3/sapi/cgi/cgi_main.c suhosin-patch-5.2.3-0.9.6.2/sapi/cgi/cg
  						php_end_ob_buffers(1 TSRMLS_CC);
  						exit(0);
  						break;
-diff -Nura php-5.2.3/sapi/cli/php_cli.c suhosin-patch-5.2.3-0.9.6.2/sapi/cli/php_cli.c
---- php-5.2.3/sapi/cli/php_cli.c	2007-05-06 14:57:50.000000000 +0200
-+++ suhosin-patch-5.2.3-0.9.6.2/sapi/cli/php_cli.c	2007-06-01 11:03:54.000000000 +0200
-@@ -777,8 +777,14 @@
+Index: php5-5.2.4/sapi/cli/php_cli.c
+===================================================================
+--- php5-5.2.4.orig/sapi/cli/php_cli.c	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/sapi/cli/php_cli.c	2007-09-16 14:45:15.000000000 +0200
+@@ -779,8 +779,14 @@
  				}
  
  				request_started = 1;
@@ -1216,9 +1232,10 @@ diff -Nura php-5.2.3/sapi/cli/php_cli.c suhosin-patch-5.2.3-0.9.6.2/sapi/cli/php
  #if ZEND_DEBUG && defined(HAVE_GCOV)
  					"(DEBUG GCOV)",
  #elif ZEND_DEBUG
-diff -Nura php-5.2.3/TSRM/TSRM.h suhosin-patch-5.2.3-0.9.6.2/TSRM/TSRM.h
---- php-5.2.3/TSRM/TSRM.h	2007-04-17 08:26:32.000000000 +0200
-+++ suhosin-patch-5.2.3-0.9.6.2/TSRM/TSRM.h	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/TSRM/TSRM.h
+===================================================================
+--- php5-5.2.4.orig/TSRM/TSRM.h	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/TSRM/TSRM.h	2007-09-16 14:45:15.000000000 +0200
 @@ -38,6 +38,13 @@
  typedef unsigned long tsrm_uintptr_t;
  #endif
@@ -1241,189 +1258,192 @@ diff -Nura php-5.2.3/TSRM/TSRM.h suhosin-patch-5.2.3-0.9.6.2/TSRM/TSRM.h
  #ifdef __cplusplus
  extern "C" {
  #endif
-diff -Nura php-5.2.3/TSRM/tsrm_virtual_cwd.c suhosin-patch-5.2.3-0.9.6.2/TSRM/tsrm_virtual_cwd.c
---- php-5.2.3/TSRM/tsrm_virtual_cwd.c	2007-05-30 12:50:47.000000000 +0200
-+++ suhosin-patch-5.2.3-0.9.6.2/TSRM/tsrm_virtual_cwd.c	2007-06-01 11:03:54.000000000 +0200
-@@ -267,6 +267,176 @@
-     return p;
+Index: php5-5.2.4/TSRM/tsrm_virtual_cwd.c
+===================================================================
+--- php5-5.2.4.orig/TSRM/tsrm_virtual_cwd.c	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/TSRM/tsrm_virtual_cwd.c	2007-09-16 14:45:15.000000000 +0200
+@@ -273,6 +273,177 @@
  }
+ /* }}} */
  
 +#if SUHOSIN_PATCH
 +CWD_API char *php_realpath(const char *path, char *resolved)
 +{
-+        struct stat sb;
-+        char *p, *q, *s;
-+        size_t left_len, resolved_len;
-+        unsigned symlinks;
-+        int serrno, slen;
-+        int is_dir = 1;
-+        char left[PATH_MAX], next_token[PATH_MAX], symlink[PATH_MAX];
++     struct stat sb;
++     char *p, *q, *s;
++     size_t left_len, resolved_len;
++     unsigned symlinks;
++     int serrno, slen;
++     int is_dir = 1;
++     char left[PATH_MAX], next_token[PATH_MAX], symlink[PATH_MAX];
 +
-+        serrno = errno;
-+        symlinks = 0;
-+        if (path[0] == '/') {
-+                resolved[0] = '/';
-+                resolved[1] = '\0';
-+                if (path[1] == '\0')
-+                        return (resolved);
-+                resolved_len = 1;
-+                left_len = strlcpy(left, path + 1, sizeof(left));
-+        } else {
-+                if (getcwd(resolved, PATH_MAX) == NULL) {
-+                        strlcpy(resolved, ".", PATH_MAX);
-+                        return (NULL);
-+                }
-+                resolved_len = strlen(resolved);
-+                left_len = strlcpy(left, path, sizeof(left));
-+        }
-+        if (left_len >= sizeof(left) || resolved_len >= PATH_MAX) {
-+                errno = ENAMETOOLONG;
-+                return (NULL);
-+        }
++     serrno = errno;
++     symlinks = 0;
++     if (path[0] == '/') {
++             resolved[0] = '/';
++             resolved[1] = '\0';
++             if (path[1] == '\0')
++                 return (resolved);
++             resolved_len = 1;
++             left_len = strlcpy(left, path + 1, sizeof(left));
++     } else {
++             if (getcwd(resolved, PATH_MAX) == NULL) {
++                     strlcpy(resolved, ".", PATH_MAX);
++                     return (NULL);
++             }
++             resolved_len = strlen(resolved);
++             left_len = strlcpy(left, path, sizeof(left));
++     }
++     if (left_len >= sizeof(left) || resolved_len >= PATH_MAX) {
++             errno = ENAMETOOLONG;
++             return (NULL);
++     }
 +
-+        /*
-+         * Iterate over path components in `left'.
-+         */
-+        while (left_len != 0) {
-+                /*
-+                 * Extract the next path component and adjust `left'
-+                 * and its length.
-+                 */
-+                p = strchr(left, '/');
-+                s = p ? p : left + left_len;
-+                if (s - left >= sizeof(next_token)) {
-+                        errno = ENAMETOOLONG;
-+                        return (NULL);
-+                }
-+                memcpy(next_token, left, s - left);
-+                next_token[s - left] = '\0';
-+                left_len -= s - left;
-+                if (p != NULL)
-+                        memmove(left, s + 1, left_len + 1);
-+                if (resolved[resolved_len - 1] != '/') {
-+                        if (resolved_len + 1 >= PATH_MAX) {
-+                                errno = ENAMETOOLONG;
-+                                return (NULL);
-+                        }
-+                        resolved[resolved_len++] = '/';
-+                        resolved[resolved_len] = '\0';
-+                }
-+                if (next_token[0] == '\0')
-+                        continue;
-+                else if (strcmp(next_token, ".") == 0)
-+                        continue;
-+                else if (strcmp(next_token, "..") == 0) {
-+                        /*
-+                         * Strip the last path component except when we have
-+                         * single "/"
-+                         */
-+                        if (!is_dir) {
-+                                errno = ENOENT;
-+                                return (NULL);
-+                        }
-+                        if (resolved_len > 1) {
-+                                resolved[resolved_len - 1] = '\0';
-+                                q = strrchr(resolved, '/');
-+                                *q = '\0';
-+                                resolved_len = q - resolved;
-+                        }
-+                        continue;
-+                }
++     /*
++      * Iterate over path components in `left'.
++      */
++     while (left_len != 0) {
++             /*
++              * Extract the next path component and adjust `left'
++              * and its length.
++              */
++             p = strchr(left, '/');
++             s = p ? p : left + left_len;
++             if (s - left >= sizeof(next_token)) {
++                     errno = ENAMETOOLONG;
++                     return (NULL);
++             }
++             memcpy(next_token, left, s - left);
++             next_token[s - left] = '\0';
++             left_len -= s - left;
++             if (p != NULL)
++                     memmove(left, s + 1, left_len + 1);
++             if (resolved[resolved_len - 1] != '/') {
++                     if (resolved_len + 1 >= PATH_MAX) {
++                             errno = ENAMETOOLONG;
++                             return (NULL);
++                     }
++                     resolved[resolved_len++] = '/';
++                     resolved[resolved_len] = '\0';
++             }
++             if (next_token[0] == '\0')
++                     continue;
++             else if (strcmp(next_token, ".") == 0)
++                     continue;
++             else if (strcmp(next_token, "..") == 0) {
++                     /*
++                      * Strip the last path component except when we have
++                      * single "/"
++                      */
++                     if (!is_dir) {
++                             errno = ENOENT;
++                             return (NULL);
++                     }
++                     if (resolved_len > 1) {
++                             resolved[resolved_len - 1] = '\0';
++                             q = strrchr(resolved, '/');
++                             *q = '\0';
++                             resolved_len = q - resolved;
++                     }
++                     continue;
++             }
 +
-+                /*
-+                 * Append the next path component and lstat() it. If
-+                 * lstat() fails we still can return successfully if
-+                 * there are no more path components left.
-+                 */
-+                resolved_len = strlcat(resolved, next_token, PATH_MAX);
-+                if (resolved_len >= PATH_MAX) {
-+                        errno = ENAMETOOLONG;
-+                        return (NULL);
-+                }
-+                if (lstat(resolved, &sb) != 0) {
-+                        if (errno == ENOENT) {
-+				if (p == NULL) {
-+                            		errno = serrno;
-+                            		return (resolved);
-+				} else if (strstr(left, "/.") == NULL && strstr(left, "./") == NULL) {
-+            				resolved_len = strlcat(resolved, "/", PATH_MAX);
-+            				resolved_len = strlcat(resolved, left, PATH_MAX);
-+            				if (resolved_len >= PATH_MAX) {
-+                    				errno = ENAMETOOLONG;
-+                    				return (NULL);
-+            				}
-+                            		errno = serrno;
-+                            		return (resolved);
++             /*
++              * Append the next path component and lstat() it. If
++              * lstat() fails we still can return successfully if
++              * there are no more path components left.
++              */
++             resolved_len = strlcat(resolved, next_token, PATH_MAX);
++             if (resolved_len >= PATH_MAX) {
++                     errno = ENAMETOOLONG;
++                     return (NULL);
++             }
++             if (lstat(resolved, &sb) != 0) {
++                     if (errno == ENOENT) {
++		     if (p == NULL) {
++	         		errno = serrno;
++                     		return (resolved);
++    			} else if (strstr(left, "/.") == NULL && strstr(left, "./") == NULL) {
++         				resolved_len = strlcat(resolved, "/", PATH_MAX);
++         				resolved_len = strlcat(resolved, left, PATH_MAX);
++         				if (resolved_len >= PATH_MAX) {
++                 				errno = ENAMETOOLONG;
++                 				return (NULL);
++         				}
++                         		errno = serrno;
++                         		return (resolved);
 +				}
-+                        }
-+                        return (NULL);
-+                }
-+                if (S_ISLNK(sb.st_mode)) {
-+                        if (symlinks++ > MAXSYMLINKS) {
-+                                errno = ELOOP;
-+                                return (NULL);
-+                        }
-+                        slen = readlink(resolved, symlink, sizeof(symlink) - 1);
-+                        if (slen < 0)
-+                                return (NULL);
-+                        symlink[slen] = '\0';
-+                        if (symlink[0] == '/') {
-+                                resolved[1] = 0;
-+                                resolved_len = 1;
-+                        } else if (resolved_len > 1) {
-+                                /* Strip the last path component. */
-+                                resolved[resolved_len - 1] = '\0';
-+                                q = strrchr(resolved, '/');
-+                                *q = '\0';
-+                                resolved_len = q - resolved;
-+                        }
++                     }
++                     return (NULL);
++             }
++             if (S_ISLNK(sb.st_mode)) {
++                     if (symlinks++ > MAXSYMLINKS) {
++                             errno = ELOOP;
++                             return (NULL);
++            	     }
++                     slen = readlink(resolved, symlink, sizeof(symlink) - 1);
++                     if (slen < 0)
++                             return (NULL);
++                     symlink[slen] = '\0';
++                     if (symlink[0] == '/') {
++                             resolved[1] = 0;
++                             resolved_len = 1;
++                     } else if (resolved_len > 1) {
++                             /* Strip the last path component. */
++                             resolved[resolved_len - 1] = '\0';
++                             q = strrchr(resolved, '/');
++                             *q = '\0';
++                             resolved_len = q - resolved;
++                     }
 +
-+                        /*
-+                         * If there are any path components left, then
-+                         * append them to symlink. The result is placed
-+                         * in `left'.
-+                         */
-+                        if (p != NULL) {
-+                                if (symlink[slen - 1] != '/') {
-+                                        if (slen + 1 >= sizeof(symlink)) {
-+                                                errno = ENAMETOOLONG;
-+                                                return (NULL);
-+                                        }
-+                                        symlink[slen] = '/';
-+                                        symlink[slen + 1] = 0;
-+                                }
-+                                left_len = strlcat(symlink, left, sizeof(left));
-+                                if (left_len >= sizeof(left)) {
-+                                        errno = ENAMETOOLONG;
-+                                        return (NULL);
-+                                }
-+                        }
-+                        left_len = strlcpy(left, symlink, sizeof(left));
-+                } else {
-+            		if (S_ISDIR(sb.st_mode)) {
-+                    		is_dir = 1;
-+            		} else {
-+                    		is_dir = 0;
-+            		}
-+		}
-+        }
++                     /*
++                      * If there are any path components left, then
++                      * append them to symlink. The result is placed
++                      * in `left'.
++                      */
++                     if (p != NULL) {
++                             if (symlink[slen - 1] != '/') {
++                                     if (slen + 1 >= sizeof(symlink)) {
++                                             errno = ENAMETOOLONG;
++                                             return (NULL);
++                                     }
++                                     symlink[slen] = '/';
++                                     symlink[slen + 1] = 0;
++                             }
++                             left_len = strlcat(symlink, left, sizeof(left));
++                             if (left_len >= sizeof(left)) {
++                                     errno = ENAMETOOLONG;
++                                     return (NULL);
++                             }
++                     }
++                     left_len = strlcpy(left, symlink, sizeof(left));
++             } else {
++         		if (S_ISDIR(sb.st_mode)) {
++                 		is_dir = 1;
++         		} else {
++                 		is_dir = 0;
++         		}
++	    }
++     }
 +
-+        /*
-+         * Remove trailing slash except when the resolved pathname
-+         * is a single "/".
-+         */
-+        if (resolved_len > 1 && resolved[resolved_len - 1] == '/')
-+                resolved[resolved_len - 1] = '\0';
-+        return (resolved);
++     /*
++      * Remove trailing slash except when the resolved pathname
++      * is a single "/".
++      */
++     if (resolved_len > 1 && resolved[resolved_len - 1] == '/')
++             resolved[resolved_len - 1] = '\0';
++     return (resolved);
 +}
 +#endif
 +
- CWD_API void virtual_cwd_startup(void)
++
+ CWD_API void virtual_cwd_startup(void) /* {{{ */
  {
  	char cwd[MAXPATHLEN];
-diff -Nura php-5.2.3/TSRM/tsrm_virtual_cwd.h suhosin-patch-5.2.3-0.9.6.2/TSRM/tsrm_virtual_cwd.h
---- php-5.2.3/TSRM/tsrm_virtual_cwd.h	2007-01-22 10:31:46.000000000 +0100
-+++ suhosin-patch-5.2.3-0.9.6.2/TSRM/tsrm_virtual_cwd.h	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/TSRM/tsrm_virtual_cwd.h
+===================================================================
+--- php5-5.2.4.orig/TSRM/tsrm_virtual_cwd.h	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/TSRM/tsrm_virtual_cwd.h	2007-09-16 14:45:15.000000000 +0200
 @@ -139,6 +139,22 @@
  
  typedef int (*verify_path_func)(const cwd_state *);
@@ -1447,9 +1467,10 @@ diff -Nura php-5.2.3/TSRM/tsrm_virtual_cwd.h suhosin-patch-5.2.3-0.9.6.2/TSRM/ts
  CWD_API void virtual_cwd_startup(void);
  CWD_API void virtual_cwd_shutdown(void);
  CWD_API char *virtual_getcwd_ex(size_t *length TSRMLS_DC);
-diff -Nura php-5.2.3/win32/build/config.w32 suhosin-patch-5.2.3-0.9.6.2/win32/build/config.w32
---- php-5.2.3/win32/build/config.w32	2007-04-18 11:38:59.000000000 +0200
-+++ suhosin-patch-5.2.3-0.9.6.2/win32/build/config.w32	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/win32/build/config.w32
+===================================================================
+--- php5-5.2.4.orig/win32/build/config.w32	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/win32/build/config.w32	2007-09-16 14:45:15.000000000 +0200
 @@ -299,7 +299,7 @@
  	zend_sprintf.c zend_ini.c zend_qsort.c zend_multibyte.c zend_ts_hash.c \
  	zend_stream.c zend_iterators.c zend_interfaces.c zend_objects.c \
@@ -1468,9 +1489,10 @@ diff -Nura php-5.2.3/win32/build/config.w32 suhosin-patch-5.2.3-0.9.6.2/win32/bu
  /* For snapshot builders, where can we find the additional
   * files that make up the snapshot template? */
  ARG_WITH("snapshot-template", "Path to snapshot builder template dir", "no");
-diff -Nura php-5.2.3/Zend/Makefile.am suhosin-patch-5.2.3-0.9.6.2/Zend/Makefile.am
---- php-5.2.3/Zend/Makefile.am	2006-12-05 09:07:57.000000000 +0100
-+++ suhosin-patch-5.2.3-0.9.6.2/Zend/Makefile.am	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/Zend/Makefile.am
+===================================================================
+--- php5-5.2.4.orig/Zend/Makefile.am	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/Zend/Makefile.am	2007-09-16 14:45:15.000000000 +0200
 @@ -17,7 +17,7 @@
  	zend_objects_API.c zend_ts_hash.c zend_stream.c \
  	zend_default_classes.c \
@@ -1480,9 +1502,10 @@ diff -Nura php-5.2.3/Zend/Makefile.am suhosin-patch-5.2.3-0.9.6.2/Zend/Makefile.
  
  libZend_la_LDFLAGS =
  libZend_la_LIBADD = @ZEND_EXTRA_LIBS@
-diff -Nura php-5.2.3/Zend/zend_alloc.c suhosin-patch-5.2.3-0.9.6.2/Zend/zend_alloc.c
---- php-5.2.3/Zend/zend_alloc.c	2007-05-28 12:07:50.000000000 +0200
-+++ suhosin-patch-5.2.3-0.9.6.2/Zend/zend_alloc.c	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/Zend/zend_alloc.c
+===================================================================
+--- php5-5.2.4.orig/Zend/zend_alloc.c	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/Zend/zend_alloc.c	2007-09-16 14:45:15.000000000 +0200
 @@ -311,13 +311,26 @@
  #define	MEM_BLOCK_GUARD  0x2A8FCC84
  #define	MEM_BLOCK_LEAK   0x6C5E8F2D
@@ -1628,7 +1651,7 @@ diff -Nura php-5.2.3/Zend/zend_alloc.c suhosin-patch-5.2.3-0.9.6.2/Zend/zend_all
  }
  
  static void zend_mm_del_segment(zend_mm_heap *heap, zend_mm_segment *segment)
-@@ -1732,6 +1807,11 @@
+@@ -1741,6 +1816,11 @@
  			best_fit = heap->cache[index];
  			heap->cache[index] = best_fit->prev_free_block;
  			heap->cached -= true_size;
@@ -1640,7 +1663,7 @@ diff -Nura php-5.2.3/Zend/zend_alloc.c suhosin-patch-5.2.3-0.9.6.2/Zend/zend_all
  			ZEND_MM_CHECK_MAGIC(best_fit, MEM_BLOCK_CACHED);
  			ZEND_MM_SET_DEBUG_INFO(best_fit, size, 1, 0);
  			return ZEND_MM_DATA_OF(best_fit);
-@@ -1866,6 +1946,12 @@
+@@ -1875,6 +1955,12 @@
  
  	ZEND_MM_SET_DEBUG_INFO(best_fit, size, 1, 1);
  
@@ -1653,7 +1676,7 @@ diff -Nura php-5.2.3/Zend/zend_alloc.c suhosin-patch-5.2.3-0.9.6.2/Zend/zend_all
  	heap->size += true_size;
  	if (heap->peak < heap->size) {
  		heap->peak = heap->size;
-@@ -1889,6 +1975,9 @@
+@@ -1898,6 +1984,9 @@
  
  	mm_block = ZEND_MM_HEADER_OF(p);
  	size = ZEND_MM_BLOCK_SIZE(mm_block);
@@ -1663,7 +1686,7 @@ diff -Nura php-5.2.3/Zend/zend_alloc.c suhosin-patch-5.2.3-0.9.6.2/Zend/zend_all
  	ZEND_MM_CHECK_PROTECTION(mm_block);
  
  #if ZEND_DEBUG || ZEND_MM_HEAP_PROTECTION
-@@ -1951,6 +2040,9 @@
+@@ -1960,6 +2049,9 @@
  	mm_block = ZEND_MM_HEADER_OF(p);
  	true_size = ZEND_MM_TRUE_SIZE(size);
  	orig_size = ZEND_MM_BLOCK_SIZE(mm_block);
@@ -1673,7 +1696,7 @@ diff -Nura php-5.2.3/Zend/zend_alloc.c suhosin-patch-5.2.3-0.9.6.2/Zend/zend_all
  	ZEND_MM_CHECK_PROTECTION(mm_block);
  
  	if (UNEXPECTED(true_size < size)) {
-@@ -1982,6 +2074,11 @@
+@@ -1991,6 +2083,11 @@
  			HANDLE_UNBLOCK_INTERRUPTIONS();
  		}
  		ZEND_MM_SET_DEBUG_INFO(mm_block, size, 0, 0);
@@ -1685,7 +1708,7 @@ diff -Nura php-5.2.3/Zend/zend_alloc.c suhosin-patch-5.2.3-0.9.6.2/Zend/zend_all
  		return p;
  	}
  
-@@ -2001,13 +2098,18 @@
+@@ -2010,13 +2107,18 @@
  			heap->cache[index] = best_fit->prev_free_block;
  			ZEND_MM_CHECK_MAGIC(best_fit, MEM_BLOCK_CACHED);
  			ZEND_MM_SET_DEBUG_INFO(best_fit, size, 1, 0);
@@ -1705,7 +1728,7 @@ diff -Nura php-5.2.3/Zend/zend_alloc.c suhosin-patch-5.2.3-0.9.6.2/Zend/zend_all
  #endif
  
  			heap->cached -= true_size - orig_size;
-@@ -2065,6 +2167,11 @@
+@@ -2074,6 +2176,11 @@
  			if (heap->peak < heap->size) {
  				heap->peak = heap->size;
  			}
@@ -1717,7 +1740,7 @@ diff -Nura php-5.2.3/Zend/zend_alloc.c suhosin-patch-5.2.3-0.9.6.2/Zend/zend_all
  			HANDLE_UNBLOCK_INTERRUPTIONS();
  			return p;
  		} else if (ZEND_MM_IS_FIRST_BLOCK(mm_block) &&
-@@ -2168,6 +2275,11 @@
+@@ -2177,6 +2284,11 @@
  		}
  
  		HANDLE_UNBLOCK_INTERRUPTIONS();
@@ -1729,7 +1752,7 @@ diff -Nura php-5.2.3/Zend/zend_alloc.c suhosin-patch-5.2.3-0.9.6.2/Zend/zend_all
  		return ZEND_MM_DATA_OF(mm_block);
  	}
  
-@@ -2175,7 +2287,7 @@
+@@ -2184,7 +2296,7 @@
  #if ZEND_DEBUG || ZEND_MM_HEAP_PROTECTION
  	memcpy(ptr, p, mm_block->debug.size);
  #else
@@ -1738,7 +1761,7 @@ diff -Nura php-5.2.3/Zend/zend_alloc.c suhosin-patch-5.2.3-0.9.6.2/Zend/zend_all
  #endif
  	_zend_mm_free_int(heap, p ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_ORIG_RELAY_CC);
  	return ptr;
-@@ -2418,6 +2530,17 @@
+@@ -2427,6 +2539,17 @@
  	zend_mm_shutdown(AG(mm_heap), full_shutdown, silent);
  }
  
@@ -1756,9 +1779,10 @@ diff -Nura php-5.2.3/Zend/zend_alloc.c suhosin-patch-5.2.3-0.9.6.2/Zend/zend_all
  static void alloc_globals_ctor(zend_alloc_globals *alloc_globals TSRMLS_DC)
  {
  	char *tmp;
-diff -Nura php-5.2.3/Zend/zend_alloc.h suhosin-patch-5.2.3-0.9.6.2/Zend/zend_alloc.h
---- php-5.2.3/Zend/zend_alloc.h	2007-03-20 07:46:48.000000000 +0100
-+++ suhosin-patch-5.2.3-0.9.6.2/Zend/zend_alloc.h	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/Zend/zend_alloc.h
+===================================================================
+--- php5-5.2.4.orig/Zend/zend_alloc.h	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/Zend/zend_alloc.h	2007-09-16 14:45:15.000000000 +0200
 @@ -128,6 +128,9 @@
  
  ZEND_API void start_memory_manager(TSRMLS_D);
@@ -1769,9 +1793,10 @@ diff -Nura php-5.2.3/Zend/zend_alloc.h suhosin-patch-5.2.3-0.9.6.2/Zend/zend_all
  ZEND_API int is_zend_mm(TSRMLS_D);
  
  #if ZEND_DEBUG
-diff -Nura php-5.2.3/Zend/zend.c suhosin-patch-5.2.3-0.9.6.2/Zend/zend.c
---- php-5.2.3/Zend/zend.c	2007-04-26 21:08:58.000000000 +0200
-+++ suhosin-patch-5.2.3-0.9.6.2/Zend/zend.c	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/Zend/zend.c
+===================================================================
+--- php5-5.2.4.orig/Zend/zend.c	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/Zend/zend.c	2007-09-16 14:45:15.000000000 +0200
 @@ -57,7 +57,9 @@
  ZEND_API void (*zend_error_cb)(int type, const char *error_filename, const uint error_lineno, const char *format, va_list args);
  int (*zend_vspprintf)(char **pbuf, size_t max_len, const char *format, va_list ap);
@@ -1872,9 +1897,10 @@ diff -Nura php-5.2.3/Zend/zend.c suhosin-patch-5.2.3-0.9.6.2/Zend/zend.c
  	STD_ZEND_INI_BOOLEAN("zend.ze1_compatibility_mode",	"0",	ZEND_INI_ALL,		OnUpdateBool,	ze1_compatibility_mode,	zend_executor_globals,	executor_globals)
  #ifdef ZEND_MULTIBYTE
  	STD_ZEND_INI_BOOLEAN("detect_unicode", "1", ZEND_INI_ALL, OnUpdateBool, detect_unicode, zend_compiler_globals, compiler_globals)
-diff -Nura php-5.2.3/Zend/zend_canary.c suhosin-patch-5.2.3-0.9.6.2/Zend/zend_canary.c
---- php-5.2.3/Zend/zend_canary.c	1970-01-01 01:00:00.000000000 +0100
-+++ suhosin-patch-5.2.3-0.9.6.2/Zend/zend_canary.c	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/Zend/zend_canary.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ php5-5.2.4/Zend/zend_canary.c	2007-09-16 14:45:15.000000000 +0200
 @@ -0,0 +1,64 @@
 +/*
 +   +----------------------------------------------------------------------+
@@ -1940,9 +1966,10 @@ diff -Nura php-5.2.3/Zend/zend_canary.c suhosin-patch-5.2.3-0.9.6.2/Zend/zend_ca
 + * vim600: sw=4 ts=4 fdm=marker
 + * vim<600: sw=4 ts=4
 + */
-diff -Nura php-5.2.3/Zend/zend_compile.c suhosin-patch-5.2.3-0.9.6.2/Zend/zend_compile.c
---- php-5.2.3/Zend/zend_compile.c	2007-05-18 15:12:03.000000000 +0200
-+++ suhosin-patch-5.2.3-0.9.6.2/Zend/zend_compile.c	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/Zend/zend_compile.c
+===================================================================
+--- php5-5.2.4.orig/Zend/zend_compile.c	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/Zend/zend_compile.c	2007-09-16 14:45:15.000000000 +0200
 @@ -54,7 +54,6 @@
  	property_info->name = zend_strndup(property_info->name, property_info->name_length);
  }
@@ -1962,9 +1989,10 @@ diff -Nura php-5.2.3/Zend/zend_compile.c suhosin-patch-5.2.3-0.9.6.2/Zend/zend_c
  
  static void build_runtime_defined_function_key(zval *result, char *name, int name_length TSRMLS_DC)
  {
-diff -Nura php-5.2.3/Zend/zend_compile.h suhosin-patch-5.2.3-0.9.6.2/Zend/zend_compile.h
---- php-5.2.3/Zend/zend_compile.h	2007-05-18 15:12:04.000000000 +0200
-+++ suhosin-patch-5.2.3-0.9.6.2/Zend/zend_compile.h	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/Zend/zend_compile.h
+===================================================================
+--- php5-5.2.4.orig/Zend/zend_compile.h	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/Zend/zend_compile.h	2007-09-16 14:45:15.000000000 +0200
 @@ -564,6 +564,11 @@
  
  int zendlex(znode *zendlval TSRMLS_DC);
@@ -1985,9 +2013,10 @@ diff -Nura php-5.2.3/Zend/zend_compile.h suhosin-patch-5.2.3-0.9.6.2/Zend/zend_c
  END_EXTERN_C()
  
  #define ZEND_CLONE_FUNC_NAME		"__clone"
-diff -Nura php-5.2.3/Zend/zend_constants.c suhosin-patch-5.2.3-0.9.6.2/Zend/zend_constants.c
---- php-5.2.3/Zend/zend_constants.c	2007-04-04 02:42:42.000000000 +0200
-+++ suhosin-patch-5.2.3-0.9.6.2/Zend/zend_constants.c	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/Zend/zend_constants.c
+===================================================================
+--- php5-5.2.4.orig/Zend/zend_constants.c	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/Zend/zend_constants.c	2007-09-16 14:45:15.000000000 +0200
 @@ -110,6 +110,75 @@
  	REGISTER_MAIN_LONG_CONSTANT("E_USER_NOTICE", E_USER_NOTICE, CONST_PERSISTENT | CONST_CS);
  
@@ -2064,9 +2093,10 @@ diff -Nura php-5.2.3/Zend/zend_constants.c suhosin-patch-5.2.3-0.9.6.2/Zend/zend
  
  	/* true/false constants */
  	{
-diff -Nura php-5.2.3/Zend/Zend.dsp suhosin-patch-5.2.3-0.9.6.2/Zend/Zend.dsp
---- php-5.2.3/Zend/Zend.dsp	2006-12-05 09:07:57.000000000 +0100
-+++ suhosin-patch-5.2.3-0.9.6.2/Zend/Zend.dsp	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/Zend/Zend.dsp
+===================================================================
+--- php5-5.2.4.orig/Zend/Zend.dsp	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/Zend/Zend.dsp	2007-09-16 14:45:15.000000000 +0200
 @@ -239,6 +239,10 @@
  # End Source File
  # Begin Source File
@@ -2078,9 +2108,10 @@ diff -Nura php-5.2.3/Zend/Zend.dsp suhosin-patch-5.2.3-0.9.6.2/Zend/Zend.dsp
  SOURCE=.\zend_ts_hash.c
  # End Source File
  # Begin Source File
-diff -Nura php-5.2.3/Zend/zend_errors.h suhosin-patch-5.2.3-0.9.6.2/Zend/zend_errors.h
---- php-5.2.3/Zend/zend_errors.h	2007-01-01 10:35:46.000000000 +0100
-+++ suhosin-patch-5.2.3-0.9.6.2/Zend/zend_errors.h	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/Zend/zend_errors.h
+===================================================================
+--- php5-5.2.4.orig/Zend/zend_errors.h	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/Zend/zend_errors.h	2007-09-16 14:45:15.000000000 +0200
 @@ -39,6 +39,20 @@
  #define E_ALL (E_ERROR | E_WARNING | E_PARSE | E_NOTICE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_USER_ERROR | E_USER_WARNING | E_USER_NOTICE | E_RECOVERABLE_ERROR)
  #define E_CORE (E_CORE_ERROR | E_CORE_WARNING)
@@ -2102,9 +2133,10 @@ diff -Nura php-5.2.3/Zend/zend_errors.h suhosin-patch-5.2.3-0.9.6.2/Zend/zend_er
  #endif /* ZEND_ERRORS_H */
  
  /*
-diff -Nura php-5.2.3/Zend/zend.h suhosin-patch-5.2.3-0.9.6.2/Zend/zend.h
---- php-5.2.3/Zend/zend.h	2007-04-26 21:08:58.000000000 +0200
-+++ suhosin-patch-5.2.3-0.9.6.2/Zend/zend.h	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/Zend/zend.h
+===================================================================
+--- php5-5.2.4.orig/Zend/zend.h	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/Zend/zend.h	2007-09-16 14:45:15.000000000 +0200
 @@ -520,6 +520,9 @@
  extern ZEND_API int (*zend_stream_open_function)(const char *filename, zend_file_handle *handle TSRMLS_DC);
  extern int (*zend_vspprintf)(char **pbuf, size_t max_len, const char *format, va_list ap);
@@ -2115,8 +2147,8 @@ diff -Nura php-5.2.3/Zend/zend.h suhosin-patch-5.2.3-0.9.6.2/Zend/zend.h
  
  
  ZEND_API void zend_error(int type, const char *format, ...) ZEND_ATTRIBUTE_FORMAT(printf, 2, 3);
-@@ -650,6 +653,13 @@
- 
+@@ -651,6 +654,13 @@
+ #include "zend_operators.h"
  #include "zend_variables.h"
  
 +#if SUHOSIN_PATCH
@@ -2129,11 +2161,12 @@ diff -Nura php-5.2.3/Zend/zend.h suhosin-patch-5.2.3-0.9.6.2/Zend/zend.h
  #endif /* ZEND_H */
  
  /*
-diff -Nura php-5.2.3/Zend/zend_hash.c suhosin-patch-5.2.3-0.9.6.2/Zend/zend_hash.c
---- php-5.2.3/Zend/zend_hash.c	2007-02-21 15:11:00.000000000 +0100
-+++ suhosin-patch-5.2.3-0.9.6.2/Zend/zend_hash.c	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/Zend/zend_hash.c
+===================================================================
+--- php5-5.2.4.orig/Zend/zend_hash.c	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/Zend/zend_hash.c	2007-09-16 14:45:15.000000000 +0200
 @@ -20,6 +20,7 @@
- /* $Id: zend_hash.c,v 1.121.2.4.2.7 2007/02/21 14:11:00 dmitry Exp $ */
+ /* $Id: zend_hash.c,v 1.121.2.4.2.8 2007/07/24 18:28:39 dmitry Exp $ */
  
  #include "zend.h"
 +#include "zend_compile.h"
@@ -2397,9 +2430,10 @@ diff -Nura php-5.2.3/Zend/zend_hash.c suhosin-patch-5.2.3-0.9.6.2/Zend/zend_hash
  	if (ht->pDestructor) {
  		ht->pDestructor(p->pData);
  	}
-diff -Nura php-5.2.3/Zend/zend_llist.c suhosin-patch-5.2.3-0.9.6.2/Zend/zend_llist.c
---- php-5.2.3/Zend/zend_llist.c	2007-02-16 09:33:28.000000000 +0100
-+++ suhosin-patch-5.2.3-0.9.6.2/Zend/zend_llist.c	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/Zend/zend_llist.c
+===================================================================
+--- php5-5.2.4.orig/Zend/zend_llist.c	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/Zend/zend_llist.c	2007-09-16 14:45:15.000000000 +0200
 @@ -23,6 +23,184 @@
  #include "zend_llist.h"
  #include "zend_qsort.h"
@@ -2617,9 +2651,10 @@ diff -Nura php-5.2.3/Zend/zend_llist.c suhosin-patch-5.2.3-0.9.6.2/Zend/zend_lli
  	if ((old_tail = l->tail)) {
  		if (old_tail->prev) {
  			old_tail->prev->next = NULL;
-diff -Nura php-5.2.3/Zend/ZendTS.dsp suhosin-patch-5.2.3-0.9.6.2/Zend/ZendTS.dsp
---- php-5.2.3/Zend/ZendTS.dsp	2006-12-05 09:07:57.000000000 +0100
-+++ suhosin-patch-5.2.3-0.9.6.2/Zend/ZendTS.dsp	2007-06-01 11:03:54.000000000 +0200
+Index: php5-5.2.4/Zend/ZendTS.dsp
+===================================================================
+--- php5-5.2.4.orig/Zend/ZendTS.dsp	2007-09-16 14:45:09.000000000 +0200
++++ php5-5.2.4/Zend/ZendTS.dsp	2007-09-16 14:45:15.000000000 +0200
 @@ -273,6 +273,10 @@
  # End Source File
  # Begin Source File

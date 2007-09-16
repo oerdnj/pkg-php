@@ -5,3 +5,4 @@ common PDO pdo
 odbc ODBC pdo_odbc
 pgsql PostgreSQL pdo_pgsql
 sqlite SQLite pdo_sqlite
+sybase Sybase pdo_dblib

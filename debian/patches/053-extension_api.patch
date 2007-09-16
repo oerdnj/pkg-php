@@ -1,8 +1,8 @@
-Index: php5-5.2.3/configure.in
+Index: php5-5.2.4/configure.in
 ===================================================================
---- php5-5.2.3.orig/configure.in	2007-06-02 13:59:25.000000000 +0200
-+++ php5-5.2.3/configure.in	2007-06-02 13:59:50.000000000 +0200
-@@ -1076,8 +1076,13 @@
+--- php5-5.2.4.orig/configure.in	2007-09-11 00:24:00.000000000 +0200
++++ php5-5.2.4/configure.in	2007-09-11 00:40:32.000000000 +0200
+@@ -1048,8 +1048,13 @@
  
  ZEND_MODULE_API_NO=`$EGREP '#define ZEND_MODULE_API_NO ' $srcdir/Zend/zend_modules.h|$SED 's/#define ZEND_MODULE_API_NO //'`
  
@@ -17,7 +17,7 @@ Index: php5-5.2.3/configure.in
    if test "$oldstyleextdir" = "yes"; then
      if test "$PHP_DEBUG" = "1"; then
        part1=debug
-@@ -1216,6 +1221,7 @@
+@@ -1193,6 +1198,7 @@
  PHP_SUBST(CXXFLAGS)
  PHP_SUBST(CXXFLAGS_CLEAN)
  PHP_SUBST_OLD(DEBUG_CFLAGS)
@@ -25,31 +25,32 @@ Index: php5-5.2.3/configure.in
  PHP_SUBST_OLD(EXTENSION_DIR)
  PHP_SUBST_OLD(EXTRA_LDFLAGS)
  PHP_SUBST_OLD(EXTRA_LDFLAGS_PROGRAM)
-Index: php5-5.2.3/scripts/php-config.in
+Index: php5-5.2.4/scripts/php-config.in
 ===================================================================
---- php5-5.2.3.orig/scripts/php-config.in	2007-06-02 13:59:19.000000000 +0200
-+++ php5-5.2.3/scripts/php-config.in	2007-06-02 13:59:50.000000000 +0200
-@@ -13,6 +13,7 @@
- program_suffix="@program_suffix@"
- exe_extension="@EXEEXT@"
- php_binary="@bindir@/${program_prefix}php${program_suffix}${exe_extension}"
+--- php5-5.2.4.orig/scripts/php-config.in	2007-09-11 00:23:54.000000000 +0200
++++ php5-5.2.4/scripts/php-config.in	2007-09-11 00:41:21.000000000 +0200
+@@ -17,6 +17,7 @@
+ php_cgi_binary=NONE
+ configure_options="@CONFIGURE_OPTIONS@"
+ php_sapis="@PHP_INSTALLED_SAPIS@"
 +phpapi="@DEBIAN_PHP_API@"
  
- case "$1" in
- --prefix)
-@@ -29,12 +30,14 @@
- 	echo $includedir;;
+ # Set php_cli_binary and php_cgi_binary if available
+ for sapi in $php_sapis; do
+@@ -55,6 +56,8 @@
+   echo $include_dir;;
  --php-binary)
- 	echo $php_binary;;
+   echo $php_binary;;
 +--phpapi)
-+	echo $phpapi;;
- --version)
- 	echo $version;;
- --vernum)
- 	echo $version_id;;
- *)
--	echo "Usage: $0 [--prefix|--includes|--ldflags|--libs|--extension-dir|--include-dir|--php-binary|--version|--vernum]"
-+	echo "Usage: $0 [--prefix|--includes|--ldflags|--libs|--extension-dir|--include-dir|--php-binary|--phpapi|--version|--vernum]"
- 	exit 1;;
- esac
- 
++  echo $phpapi;;
+ --php-sapis)
+   echo $php_sapis;;
+ --configure-options)
+@@ -75,6 +78,7 @@
+   --include-dir       [$include_dir]
+   --php-binary        [$php_binary]
+   --php-sapis         [$php_sapis]
++  --phpapi            [$phpapi]
+   --configure-options [$configure_options]
+   --version           [$version]
+   --vernum            [$vernum]

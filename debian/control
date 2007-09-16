@@ -3,7 +3,7 @@ Section: web
 Priority: optional
 Maintainer: Debian PHP Maintainers <pkg-php-maint@lists.alioth.debian.org>
 Uploaders: Adam Conrad <adconrad@0c3.net>, Steve Langasek <vorlon@debian.org>, Jeroen van Wolffelaar <jeroen@wolffelaar.nl>, Ondřej Surý <ondrej@debian.org>, sean finney <seanius@debian.org>
-Build-Depends: apache2-prefork-dev (>= 2.0.53-3), autoconf, automake1.4, bison, chrpath, debhelper (>= 3), firebird1.5-dev [i386 amd64], flex (>= 2.5.4), freetds-dev, libapr1-dev (>= 1.2.7-8), libbz2-dev (>= 1.0.0), libc-client-dev, libcurl3-openssl-dev | libcurl3-dev, libdb4.4-dev, libexpat1-dev (>= 1.95.2-2.1), libfreetype6-dev, libgcrypt11-dev, libgd2-xpm-dev (>= 2.0.28-3), libjpeg62-dev, libkrb5-dev, libldap2-dev, libmcrypt-dev, libmhash-dev (>= 0.8.8), libmysqlclient15-dev, libncurses5-dev, libpam0g-dev, libpcre3-dev (>= 6.6), libpng12-dev, libpq-dev | postgresql-dev, libpspell-dev, librecode-dev, libsasl2-dev, libsnmp10-dev | libsnmp-dev, libsqlite0-dev, libssl-dev (>= 0.9.6), libt1-dev, libtidy-dev, libtool (>= 1.4.2-4), libwrap0-dev, libxmltok1-dev, libxml2-dev (>= 2.4.14), libxslt1-dev (>= 1.0.18), quilt, re2c, unixodbc-dev, zlib1g-dev (>= 1.0.9)
+Build-Depends: apache2-prefork-dev (>= 2.0.53-3), autoconf, automake1.4, bison, chrpath, debhelper (>= 3), firebird1.5-dev [i386 amd64] | firebird2-dev [i386 amd64], flex (>= 2.5.4), freetds-dev, libapr1-dev (>= 1.2.7-8), libbz2-dev (>= 1.0.0), libc-client-dev, libcurl4-openssl-dev | libcurl-dev, libdb4.4-dev, libexpat1-dev (>= 1.95.2-2.1), libfreetype6-dev, libgcrypt11-dev, libgd2-xpm-dev (>= 2.0.28-3), libgmp3-dev, libjpeg62-dev, libkrb5-dev, libldap2-dev, libmcrypt-dev, libmhash-dev (>= 0.8.8), libmysqlclient15-dev, libncurses5-dev, libpam0g-dev, libpcre3-dev (>= 6.6), libpng12-dev, libpq-dev | postgresql-dev, libpspell-dev, librecode-dev, libsasl2-dev, libsnmp-dev, libsqlite0-dev, libssl-dev (>= 0.9.6), libt1-dev, libtidy-dev, libtool (>= 1.4.2-4), libwrap0-dev, libxmltok1-dev, libxml2-dev (>= 2.4.14), libxslt1-dev (>= 1.0.18), quilt, re2c, unixodbc-dev, zlib1g-dev (>= 1.0.9)
 Build-Conflicts: bind-dev
 Standards-Version: 3.7.2
 
@@ -148,6 +148,18 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${So
 Description: GD module for php5
  This package provides a module for handling graphics directly from PHP
  scripts. It supports the PNG, JPEG, XPM formats as well as Freetype/ttf fonts.
+ .
+ PHP5 is an HTML-embedded scripting language. Much of its syntax is borrowed
+ from C, Java and Perl with a couple of unique PHP-specific features thrown
+ in. The goal of the language is to allow web developers to write
+ dynamically generated pages quickly.
+
+Package: php5-gmp
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${Source-Version})
+Description: GMP module for php5
+ This package provides a module for arbitrary precision arithmetic via the 
+ GNU Multiple Precision (GMP) Arithmetic Library.
  .
  PHP5 is an HTML-embedded scripting language. Much of its syntax is borrowed
  from C, Java and Perl with a couple of unique PHP-specific features thrown
@@ -302,9 +314,11 @@ Description: SQLite module for php5
 Package: php5-sybase
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${Source-Version})
+Provides: php5-mssql
 Description: Sybase / MS SQL Server module for php5
- This package provides a module for Sybase and Microsoft SQL Server database
- connections directly from PHP scripts.
+ This package provides a module for Sybase and Microsoft SQL Server
+ database connections directly from PHP scripts. It also includes the
+ pdo_dblib module for use with the PHP Data Object extension.
  .
  PHP5 is an HTML-embedded scripting language. Much of its syntax is borrowed
  from C, Java and Perl with a couple of unique PHP-specific features thrown

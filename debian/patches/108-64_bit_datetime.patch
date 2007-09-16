@@ -1,10 +1,10 @@
-Index: php5-5.2.2/ext/standard/datetime.c
+Index: php5-5.2.4/ext/standard/datetime.c
 ===================================================================
---- php5-5.2.2.orig/ext/standard/datetime.c	2007-05-04 17:44:19.000000000 +0200
-+++ php5-5.2.2/ext/standard/datetime.c	2007-05-04 17:45:05.000000000 +0200
+--- php5-5.2.4.orig/ext/standard/datetime.c	2007-06-07 10:59:00.000000000 +0200
++++ php5-5.2.4/ext/standard/datetime.c	2007-09-11 00:41:58.000000000 +0200
 @@ -20,6 +20,9 @@
  
- /* $Id: datetime.c,v 1.134.2.2.2.3 2007/01/01 09:36:08 sebastian Exp $ */
+ /* $Id: datetime.c,v 1.134.2.2.2.4 2007/06/07 08:59:00 tony2001 Exp $ */
  
 +#define _XOPEN_SOURCE	/* needed to get strptime() declared */
 +#define _BSD_SOURCE		/* needed to get ulong declared */

@@ -1,0 +1,29 @@
+Index: php5-5.2.4/php.ini-dist
+===================================================================
+--- php5-5.2.4.orig/php.ini-dist	2007-09-11 00:42:09.000000000 +0200
++++ php5-5.2.4/php.ini-dist	2007-09-11 00:42:13.000000000 +0200
+@@ -505,7 +505,8 @@
+ ; Whether or not to enable the dl() function.  The dl() function does NOT work
+ ; properly in multithreaded servers, such as IIS or Zeus, and is automatically
+ ; disabled on them.
+-enable_dl = On
++; NOTE: this is a potential security hole and is disabled by default in debian
++enable_dl = Off
+ 
+ ; cgi.force_redirect is necessary to provide security running PHP as a CGI under
+ ; most web servers.  Left undefined, PHP turns this on by default.  You can
+Index: php5-5.2.4/php.ini-recommended
+===================================================================
+--- php5-5.2.4.orig/php.ini-recommended	2007-09-11 00:23:54.000000000 +0200
++++ php5-5.2.4/php.ini-recommended	2007-09-11 00:42:13.000000000 +0200
+@@ -538,7 +538,9 @@
+ ; Whether or not to enable the dl() function.  The dl() function does NOT work
+ ; properly in multithreaded servers, such as IIS or Zeus, and is automatically
+ ; disabled on them.
+-enable_dl = On
++; NOTE: this is a potential security hole and is disabled by default in debian
++enable_dl = Off
++
+ 
+ ; cgi.force_redirect is necessary to provide security running PHP as a CGI under
+ ; most web servers.  Left undefined, PHP turns this on by default.  You can
