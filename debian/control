@@ -3,13 +3,13 @@ Section: web
 Priority: optional
 Maintainer: Debian PHP Maintainers <pkg-php-maint@lists.alioth.debian.org>
 Uploaders: Adam Conrad <adconrad@0c3.net>, Steve Langasek <vorlon@debian.org>, Jeroen van Wolffelaar <jeroen@wolffelaar.nl>, Ondřej Surý <ondrej@debian.org>, sean finney <seanius@debian.org>
-Build-Depends: apache2-prefork-dev (>= 2.0.53-3), autoconf, automake1.4, bison, chrpath, debhelper (>= 3), firebird1.5-dev [i386 amd64] | firebird2-dev [i386 amd64], flex (>= 2.5.4), freetds-dev, libapr1-dev (>= 1.2.7-8), libbz2-dev (>= 1.0.0), libc-client-dev, libcurl4-openssl-dev | libcurl-dev, libdb4.4-dev, libexpat1-dev (>= 1.95.2-2.1), libfreetype6-dev, libgcrypt11-dev, libgd2-xpm-dev (>= 2.0.28-3), libgmp3-dev, libjpeg62-dev, libkrb5-dev, libldap2-dev, libmcrypt-dev, libmhash-dev (>= 0.8.8), libmysqlclient15-dev, libncurses5-dev, libpam0g-dev, libpcre3-dev (>= 6.6), libpng12-dev, libpq-dev | postgresql-dev, libpspell-dev, librecode-dev, libsasl2-dev, libsnmp-dev, libsqlite0-dev, libssl-dev (>= 0.9.6), libt1-dev, libtidy-dev, libtool (>= 1.4.2-4), libwrap0-dev, libxmltok1-dev, libxml2-dev (>= 2.4.14), libxslt1-dev (>= 1.0.18), quilt, re2c, unixodbc-dev, zlib1g-dev (>= 1.0.9)
+Build-Depends: apache2-prefork-dev (>= 2.0.53-3), autoconf, automake1.4, bison, chrpath, debhelper (>= 3), firebird2.0-dev [i386 amd64 powerpc sparc] | firebird1.5-dev [i386 amd64] | firebird2-dev [i386 amd64], flex (>= 2.5.4), freetds-dev, libapr1-dev (>= 1.2.7-8), libbz2-dev (>= 1.0.0), libc-client-dev, libcurl4-openssl-dev | libcurl-dev, libdb4.4-dev, libexpat1-dev (>= 1.95.2-2.1), libfreetype6-dev, libgcrypt11-dev, libgd2-xpm-dev (>= 2.0.28-3), libgmp3-dev, libjpeg62-dev, libkrb5-dev, libldap2-dev, libmcrypt-dev, libmhash-dev (>= 0.8.8), libmysqlclient15-dev, libncurses5-dev, libpam0g-dev, libpcre3-dev (>= 6.6), libpng12-dev, libpq-dev | postgresql-dev, libpspell-dev, librecode-dev, libsasl2-dev, libsnmp-dev, libsqlite0-dev, libssl-dev (>= 0.9.6), libt1-dev, libtidy-dev, libtool (>= 1.4.2-4), libwrap0-dev, libxmltok1-dev, libxml2-dev (>= 2.4.14), libxslt1-dev (>= 1.0.18), quilt, re2c, unixodbc-dev, zlib1g-dev (>= 1.0.9)
 Build-Conflicts: bind-dev
 Standards-Version: 3.7.2
 
 Package: php5
 Architecture: all
-Depends: libapache2-mod-php5 (>= ${Source-Version}) | php5-cgi (>= ${Source-Version}), php5-common (>= ${Source-Version})
+Depends: libapache2-mod-php5 (>= ${source:Version}) | php5-cgi (>= ${source:Version}), php5-common (>= ${source:Version})
 Description: server-side, HTML-embedded scripting language (meta-package)
  This package is a meta-package that, when installed, guarantees that you
  have at least one of the four server-side versions of the PHP5 interpreter
@@ -41,7 +41,7 @@ Description: Common files for packages built from the php5 source
 
 Package: libapache2-mod-php5
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support (>= 2.03-1), ${apache2:Depends}, php5-common (= ${Source-Version}), libmagic1, ucf
+Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support (>= 2.03-1), ${apache2:Depends}, php5-common (= ${binary:Version}), libmagic1, ucf
 Conflicts: libapache2-mod-php4
 Provides: ${php:Provides}
 Suggests: php-pear
@@ -61,7 +61,7 @@ Description: server-side, HTML-embedded scripting language (apache 2 module)
 
 Package: php5-cgi
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support (>= 2.03-1), php5-common (= ${Source-Version}), libmagic1, ucf
+Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support (>= 2.03-1), php5-common (= ${binary:Version}), libmagic1, ucf
 Provides: ${php:Provides}
 Conflicts: php3 (<= 3.0.18-1)
 Suggests: php-pear
@@ -82,7 +82,7 @@ Description: server-side, HTML-embedded scripting language (CGI binary)
 
 Package: php5-cli
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support (>= 2.03-1), php5-common (= ${Source-Version}), libmagic1, ucf
+Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support (>= 2.03-1), php5-common (= ${binary:Version}), libmagic1, ucf
 Provides: ${php:Provides}
 Conflicts: php3 (<= 3.0.18-1)
 Suggests: php-pear
@@ -101,7 +101,7 @@ Description: command-line interpreter for the php5 scripting language
  Homepage: http://www.php.net/
 
 Package: php5-dev
-Depends: autoconf, automake1.4, libssl-dev, libtool, shtool, php5-common (>= ${Source-Version})
+Depends: autoconf, automake1.4, libssl-dev, libtool, shtool, php5-common (>= ${binary:Version})
 Section: devel
 Architecture: any
 Description: Files for PHP5 module development
@@ -115,7 +115,7 @@ Description: Files for PHP5 module development
 
 Package: php-pear
 Architecture: all
-Depends: php5-cli | php4-cli, php5-common (>= ${Source-Version})
+Depends: php5-cli | php4-cli, php5-common (>= ${source:Version})
 Recommends: gnupg
 Suggests: php5-dev | php4-dev
 Replaces: php4-pear (<< 4:4.4.0-0)
@@ -133,7 +133,7 @@ Description: PEAR - PHP Extension and Application Repository
 
 Package: php5-curl
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${Source-Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
 Description: CURL module for php5
  CURL is a library for getting files from  FTP, GOPHER, HTTP server.
  .
@@ -144,7 +144,7 @@ Description: CURL module for php5
 
 Package: php5-gd
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${Source-Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
 Description: GD module for php5
  This package provides a module for handling graphics directly from PHP
  scripts. It supports the PNG, JPEG, XPM formats as well as Freetype/ttf fonts.
@@ -156,7 +156,7 @@ Description: GD module for php5
 
 Package: php5-gmp
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${Source-Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
 Description: GMP module for php5
  This package provides a module for arbitrary precision arithmetic via the 
  GNU Multiple Precision (GMP) Arithmetic Library.
@@ -168,7 +168,7 @@ Description: GMP module for php5
 
 Package: php5-imap
 Architecture: any
-Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${Source-Version})
+Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${binary:Version})
 Description: IMAP module for php5
  This package provides a module for IMAP functions in PHP scripts.
  .
@@ -178,8 +178,8 @@ Description: IMAP module for php5
  dynamically generated pages quickly.
 
 Package: php5-interbase
-Architecture: i386 amd64
-Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${Source-Version})
+Architecture: i386 amd64 powerpc sparc
+Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${binary:Version})
 Description: interbase/firebird module for php5
  This package provides a module for interbase/firebird functions in PHP scripts.
  .
@@ -190,7 +190,7 @@ Description: interbase/firebird module for php5
 
 Package: php5-ldap
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${Source-Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
 Description: LDAP module for php5
  This package provides a module for LDAP functions in PHP scripts.
  .
@@ -201,7 +201,7 @@ Description: LDAP module for php5
 
 Package: php5-mcrypt
 Architecture: any
-Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${Source-Version})
+Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${binary:Version})
 Description: MCrypt module for php5
  This package provides a module for MCrypt functions in PHP scripts.
  .
@@ -212,7 +212,7 @@ Description: MCrypt module for php5
 
 Package: php5-mhash
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${Source-Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
 Description: MHASH module for php5
  This package provides a module for mhash functions in PHP scripts.
  .
@@ -223,7 +223,7 @@ Description: MHASH module for php5
 
 Package: php5-mysql
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${Source-Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
 Conflicts: php5-mysqli
 Replaces: php5-mysqli
 Description: MySQL module for php5
@@ -240,7 +240,7 @@ Description: MySQL module for php5
 
 Package: php5-odbc
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${Source-Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
 Description: ODBC module for php5
  This package provides a module for database access through ODBC drivers.
  It uses the unixODBC library as an ODBC provider.  It also contains the
@@ -253,7 +253,7 @@ Description: ODBC module for php5
 
 Package: php5-pgsql
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${Source-Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
 Description: PostgreSQL module for php5
  This package provides a module for PostgreSQL database connections
  directly from PHP scripts.  It also includes the pdo_pgsql module for
@@ -266,7 +266,7 @@ Description: PostgreSQL module for php5
 
 Package: php5-pspell
 Architecture: any
-Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${Source-Version})
+Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${binary:Version})
 Description: pspell module for php5
  This package provides a module for pspell functions in PHP scripts.
  .
@@ -277,7 +277,7 @@ Description: pspell module for php5
 
 Package: php5-recode
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${Source-Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
 Description: recode module for php5
  This package provides a module for recode - character set recoding.
  .
@@ -288,7 +288,7 @@ Description: recode module for php5
 
 Package: php5-snmp
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${Source-Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
 Description: SNMP module for php5
  This package provides a module for SNMP functions in PHP scripts.
  .
@@ -299,7 +299,7 @@ Description: SNMP module for php5
 
 Package: php5-sqlite
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${Source-Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
 Description: SQLite module for php5
  This package provides a module allowing you to use the SQLite self-contained
  database engine from within your PHP scripts, eliminating the need for a full
@@ -313,7 +313,7 @@ Description: SQLite module for php5
 
 Package: php5-sybase
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${Source-Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
 Provides: php5-mssql
 Description: Sybase / MS SQL Server module for php5
  This package provides a module for Sybase and Microsoft SQL Server
@@ -327,7 +327,7 @@ Description: Sybase / MS SQL Server module for php5
 
 Package: php5-tidy
 Architecture: any
-Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${Source-Version})
+Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${binary:Version})
 Description: tidy module for php5
  This package provides a module for tidy functions in PHP scripts.
  .
@@ -343,7 +343,7 @@ Description: tidy module for php5
 
 Package: php5-xmlrpc
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${Source-Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
 Description: XML-RPC module for php5
  This package provides a module for XML-RPC functions in PHP scripts.
  .
@@ -354,7 +354,7 @@ Description: XML-RPC module for php5
 
 Package: php5-xsl
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${Source-Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
 Description: XSL module for php5
  This package provides a module for XSL using the libxslt XSL parser.
  .

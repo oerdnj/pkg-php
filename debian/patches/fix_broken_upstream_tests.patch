@@ -1,0 +1,61 @@
+Index: php-5.2.4/tests/basic/bug20539.phpt
+===================================================================
+--- php-5.2.4.orig/tests/basic/bug20539.phpt
++++ php-5.2.4/tests/basic/bug20539.phpt
+@@ -3,6 +3,7 @@
+ --INI--
+ session.auto_start=1
+ session.save_handler=files
++session.save_path=temp_session_store
+ --FILE--
+ <?php
+ 	print "good :)\n";
+Index: php-5.2.4/ext/soap/tests/server009.phpt
+===================================================================
+--- php-5.2.4.orig/ext/soap/tests/server009.phpt
++++ php-5.2.4/ext/soap/tests/server009.phpt
+@@ -7,6 +7,10 @@
+ 		die('skip this test needs session extension');
+ 	}
+ ?>
++--INI--
++session.auto_start=1
++session.save_handler=files
++session.save_path=temp_session_store
+ --FILE--
+ <?php
+ class foo {
+Index: php-5.2.4/ext/standard/tests/general_functions/phpinfo.phpt
+===================================================================
+--- php-5.2.4.orig/ext/standard/tests/general_functions/phpinfo.phpt
++++ php-5.2.4/ext/standard/tests/general_functions/phpinfo.phpt
+@@ -1,5 +1,7 @@
+ --TEST--
+ phpinfo()
++--SKIPIF--
++<?php die("SKIP phpinfo - test suite's handling of "%s" is incompatible with this test"); ?>
+ --FILE--
+ <?php
+ var_dump(phpinfo());
+@@ -23,6 +25,8 @@
+ Server API => Command Line Interface
+ Virtual Directory Support => %s
+ Configuration File (php.ini) Path => %s
++Loaded Configuration File => %s
++Scan this dir for additional .ini files => %s
+ PHP API => %d
+ PHP Extension => %d
+ Zend Extension => %d
+Index: php-5.2.4/ext/standard/tests/strings/moneyformat.phpt
+===================================================================
+--- php-5.2.4.orig/ext/standard/tests/strings/moneyformat.phpt
++++ php-5.2.4/ext/standard/tests/strings/moneyformat.phpt
+@@ -5,6 +5,8 @@
+ 	if (!function_exists('money_format') || !function_exists('setlocale')) {
+ 		die("SKIP money_format - not supported\n");
+ 	}
++	if (!setlocale(LC_MONETARY, 'en_US'))
++		die("SKIP money_format - en_US locale not available\n");
+ ?>
+ --FILE--
+ <?php

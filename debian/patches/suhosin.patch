@@ -1,35 +1,3 @@
-Index: php5-5.2.4/configure
-===================================================================
---- php5-5.2.4.orig/configure	2007-09-16 14:45:09.000000000 +0200
-+++ php5-5.2.4/configure	2007-09-16 14:45:15.000000000 +0200
-@@ -18496,6 +18496,9 @@
- 
- fi
- 
-+cat >> confdefs.h <<\EOF
-+#define SUHOSIN_PATCH 1
-+EOF
- 
-   echo $ac_n "checking for declared timezone""... $ac_c" 1>&6
- echo "configure:18502: checking for declared timezone" >&5
-@@ -115678,7 +115681,7 @@
-        php_ini.c SAPI.c rfc1867.c php_content_types.c strlcpy.c \
-        strlcat.c mergesort.c reentrancy.c php_variables.c php_ticks.c \
-        network.c php_open_temporary_file.c php_logos.c \
--       output.c ; do
-+       output.c suhosin_patch.c ; do
-   
-       IFS=.
-       set $ac_src
-@@ -115880,7 +115883,7 @@
-     zend_variables.c zend.c zend_API.c zend_extensions.c zend_hash.c \
-     zend_list.c zend_indent.c zend_builtin_functions.c zend_sprintf.c \
-     zend_ini.c zend_qsort.c zend_multibyte.c zend_ts_hash.c zend_stream.c \
--    zend_iterators.c zend_interfaces.c zend_exceptions.c zend_strtod.c; do
-+    zend_iterators.c zend_interfaces.c zend_exceptions.c zend_strtod.c zend_canary.c; do
-   
-       IFS=.
-       set $ac_src
 Index: php5-5.2.4/configure.in
 ===================================================================
 --- php5-5.2.4.orig/configure.in	2007-09-16 14:45:15.000000000 +0200
@@ -347,20 +315,6 @@ Index: php5-5.2.4/main/main.c
  	core_globals_dtor(&core_globals TSRMLS_CC);
  #else
  	zend_ini_global_shutdown(TSRMLS_C);
-Index: php5-5.2.4/main/php_config.h.in
-===================================================================
---- php5-5.2.4.orig/main/php_config.h.in	2007-09-16 14:45:09.000000000 +0200
-+++ php5-5.2.4/main/php_config.h.in	2007-09-16 14:45:15.000000000 +0200
-@@ -803,6 +803,9 @@
- /* Define if the target system has /dev/urandom device */
- #undef HAVE_DEV_URANDOM
- 
-+/* Suhosin-Patch for PHP */
-+#undef SUHOSIN_PATCH
-+
- /* Whether you have AOLserver */
- #undef HAVE_AOLSERVER
- 
 Index: php5-5.2.4/main/php.h
 ===================================================================
 --- php5-5.2.4.orig/main/php.h	2007-09-16 14:45:09.000000000 +0200

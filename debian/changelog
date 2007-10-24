@@ -1,6 +1,52 @@
+php5 (5.2.4-2) unstable; urgency=low
+
+  [ sean finney ]
+  * for posterity revised previous changelog to reference the CVE id's
+    of security issues resolved by the latest upstream release.
+  * lintian: use debian/compat instead of DH_COMPAT in debian/rules.
+  * lintian: use source:Version and binary:Version where appropriate,
+    instead of Source-Version
+  * lintian: remove a couple pieces of cruft in the changelog that were causing
+    false-postive wrong-bug-number-in-closes, but were generally useless
+    anyway.
+
+  [ Raphael Geissert ]
+  * Using test-results.txt as a target
+  * cronjob now checks for existance of /usr/lib/php5/maxlifetime (Closes: #439286)
+  * Fixed memory limit of 1232M in php.ini for cli (Closes: #440624)
+  * Build the interbase extension using firebird2.0-dev (Closes: #433736)
+  * Unapply patches with debian/rules clean
+
+  [ Steve Langasek ]
+  * Don't patch configure or php_config.h.in in suhosin.patch, as these are
+    auto-generated and including them in the patch results in a race
+    condition for the necessary build-time regeneration.  Thanks to Daniel
+    Schepler for reporting, and to Damyan Ivanov for helping to sort out the
+    fix.  Closes: #443637.
+  * Also remove the modified auto-generated files in the clean target,
+    which triggers a warning about disappearing files when building the
+    source package but avoids carrying irrelevant diffs to these files
+    in the Debian diff.
+  * Now that the testsuite is being run at build time, test failures cause
+    a bunch of junk files to be left around in the Debian diff.  So clean up
+    several false-positive failures:
+    - 052-phpinfo_no_configure.patch: we're patching the output of phpinfo(),
+      so patch the test as well
+    - fix_broken_upstream_tests.patch: use a local directory for tests that
+      use sessions, skip the phpinfo test after all because it doesn't appear
+      to be compatible with current testsuite behavior, and disable the
+      moneyformat test if en_US locale is not available.
+    There are still several other failing tests, but these are not false
+    positives and remain enabled pending investigation.
+
+ -- sean finney <seanius@debian.org>  Wed, 24 Oct 2007 21:51:14 +0200
+
 php5 (5.2.4-1) unstable; urgency=low
 
   * New upstream release.
+  * Security issues resolved in the latest release:
+    - CVE-2007-2519 - Directory traversal vulnerability in PEAR
+  
 
   [ sean finney ]
   * patch from Jan Wagner to be able to conditionally disable any
@@ -2341,7 +2387,7 @@ php4 (4.0.2-3) unstable; urgency=low
   * Install not so many docs (only in -dev now).
   * Enable calendar and sockets modules.
   * Rearange package descriptions so module-specific comments
-    go first (closes: # oh great leader).
+    go first.
   * Create domxml module aka xmlv2.
   * Fix spelling wan't -> want (closes: #70544).
   * Add libraries for gd module only when linking this one
@@ -2358,7 +2404,7 @@ php4 (4.0.2-2) unstable; urgency=low
   * Install not so many docs (only in -dev now).
   * Enable calendar and sockets modules.
   * Rearange package descriptions so module-specific comments
-    go first (closes: # oh great leader).
+    go first.
   * Create domxml module aka xmlv2.
   * Fix building (small typo).
   * Compile with libmysqlclient9-dev installed.
