@@ -1,7 +1,7 @@
-Index: php-5.2.4/tests/basic/bug20539.phpt
+Index: php5-5.2.5/tests/basic/bug20539.phpt
 ===================================================================
---- php-5.2.4.orig/tests/basic/bug20539.phpt
-+++ php-5.2.4/tests/basic/bug20539.phpt
+--- php5-5.2.5.orig/tests/basic/bug20539.phpt	2005-07-08 09:48:57.000000000 +0200
++++ php5-5.2.5/tests/basic/bug20539.phpt	2007-11-13 23:45:03.000000000 +0100
 @@ -3,6 +3,7 @@
  --INI--
  session.auto_start=1
@@ -10,10 +10,10 @@ Index: php-5.2.4/tests/basic/bug20539.phpt
  --FILE--
  <?php
  	print "good :)\n";
-Index: php-5.2.4/ext/soap/tests/server009.phpt
+Index: php5-5.2.5/ext/soap/tests/server009.phpt
 ===================================================================
---- php-5.2.4.orig/ext/soap/tests/server009.phpt
-+++ php-5.2.4/ext/soap/tests/server009.phpt
+--- php5-5.2.5.orig/ext/soap/tests/server009.phpt	2007-05-07 20:45:01.000000000 +0200
++++ php5-5.2.5/ext/soap/tests/server009.phpt	2007-11-13 23:45:03.000000000 +0100
 @@ -7,6 +7,10 @@
  		die('skip this test needs session extension');
  	}
@@ -25,10 +25,10 @@ Index: php-5.2.4/ext/soap/tests/server009.phpt
  --FILE--
  <?php
  class foo {
-Index: php-5.2.4/ext/standard/tests/general_functions/phpinfo.phpt
+Index: php5-5.2.5/ext/standard/tests/general_functions/phpinfo.phpt
 ===================================================================
---- php-5.2.4.orig/ext/standard/tests/general_functions/phpinfo.phpt
-+++ php-5.2.4/ext/standard/tests/general_functions/phpinfo.phpt
+--- php5-5.2.5.orig/ext/standard/tests/general_functions/phpinfo.phpt	2007-11-13 23:36:17.000000000 +0100
++++ php5-5.2.5/ext/standard/tests/general_functions/phpinfo.phpt	2007-11-13 23:45:03.000000000 +0100
 @@ -1,5 +1,7 @@
  --TEST--
  phpinfo()
@@ -37,19 +37,18 @@ Index: php-5.2.4/ext/standard/tests/general_functions/phpinfo.phpt
  --FILE--
  <?php
  var_dump(phpinfo());
-@@ -23,6 +25,8 @@
- Server API => Command Line Interface
+@@ -24,6 +26,7 @@
  Virtual Directory Support => %s
  Configuration File (php.ini) Path => %s
-+Loaded Configuration File => %s
+ Loaded Configuration File => %s
 +Scan this dir for additional .ini files => %s
  PHP API => %d
  PHP Extension => %d
  Zend Extension => %d
-Index: php-5.2.4/ext/standard/tests/strings/moneyformat.phpt
+Index: php5-5.2.5/ext/standard/tests/strings/moneyformat.phpt
 ===================================================================
---- php-5.2.4.orig/ext/standard/tests/strings/moneyformat.phpt
-+++ php-5.2.4/ext/standard/tests/strings/moneyformat.phpt
+--- php5-5.2.5.orig/ext/standard/tests/strings/moneyformat.phpt	2007-06-06 19:46:17.000000000 +0200
++++ php5-5.2.5/ext/standard/tests/strings/moneyformat.phpt	2007-11-13 23:45:03.000000000 +0100
 @@ -5,6 +5,8 @@
  	if (!function_exists('money_format') || !function_exists('setlocale')) {
  		die("SKIP money_format - not supported\n");
