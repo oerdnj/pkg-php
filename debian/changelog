@@ -1,3 +1,15 @@
+php5 (5.2.5-2) unstable; urgency=low
+
+  * debian/patches/libdb_is_-ldb: reorder the search for db4 instances to
+    give precedence to -ldb, so that we always get the version that matches
+    the installed -dev package instead of whichever most recent version php
+    upstream currently knows about.  Closes: #463397.
+  * Update suhosin patch to not patch .dsp files (and config.w32), which
+    are irrelevant to Unix builds and seem to cause problems for clean
+    patching/unpatching.
+
+ -- Steve Langasek <vorlon@debian.org>  Fri, 01 Feb 2008 18:46:15 +0000
+
 php5 (5.2.5-1) unstable; urgency=low
 
   [ Sean Finney ]

@@ -25,5 +25,6 @@
 112-proc_open.patch
 113-php.ini_securitynotes.patch
 disable_dl_by_default.patch
+libdb_is_-ldb
 suhosin.patch
 fix_broken_upstream_tests.patch
