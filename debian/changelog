@@ -1,3 +1,13 @@
+php5 (5.2.5-3) unstable; urgency=high
+
+  * zend_parse_parameters does not handle size_t's, causing issues with
+    043-recode_size_t.patch and segmentation faults for recode-using pages.
+    changed problematic parameters back to "int" and added an overflow check.
+    thanks to Thomas Stegbauer, Tim Dijkstra, Bart Cortooms, Sebastian Göbel,
+    and Vincent Tondellier for their reports.  closes: #459020.
+
+ -- Sean Finney <seanius@debian.org>  Thu, 21 Feb 2008 00:59:21 +0100
+
 php5 (5.2.5-2) unstable; urgency=low
 
   * debian/patches/libdb_is_-ldb: reorder the search for db4 instances to
