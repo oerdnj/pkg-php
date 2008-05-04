@@ -1,8 +1,8 @@
-Index: php5-5.2.4/ext/ldap/ldap.c
+Index: php5-5.2.6/ext/ldap/ldap.c
 ===================================================================
---- php5-5.2.4.orig/ext/ldap/ldap.c	2007-09-10 20:45:23.000000000 +0200
-+++ php5-5.2.4/ext/ldap/ldap.c	2007-09-10 20:45:39.000000000 +0200
-@@ -1334,7 +1334,7 @@
+--- php5-5.2.6.orig/ext/ldap/ldap.c
++++ php5-5.2.6/ext/ldap/ldap.c
+@@ -1334,7 +1334,7 @@ PHP_FUNCTION(ldap_explode_dn)
  	}
  
  	i=0;
@@ -11,7 +11,7 @@ Index: php5-5.2.4/ext/ldap/ldap.c
  	count = i;
  
  	array_init(return_value);
-@@ -1344,7 +1344,8 @@
+@@ -1344,7 +1344,8 @@ PHP_FUNCTION(ldap_explode_dn)
  		add_index_string(return_value, i, ldap_value[i], 1);
  	}
  

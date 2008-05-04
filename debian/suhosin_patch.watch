@@ -1,0 +1,7 @@
+# Check for new versions with:
+# uscan --watchfile debian/suhosin_patch.watch --package suhosin-patch
+# don't forget to update the version in this file when updating the patch!
+version=3
+
+http://www.hardened-php.net/suhosin/download.html \
+        http://download.suhosin.org/suhosin-patch-(.*)\.patch\.gz 5.2.6-0.9.6.2

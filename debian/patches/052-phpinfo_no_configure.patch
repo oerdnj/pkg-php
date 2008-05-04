@@ -1,8 +1,8 @@
-Index: php-5.2.4/ext/standard/info.c
+Index: php5-5.2.6/ext/standard/info.c
 ===================================================================
---- php-5.2.4.orig/ext/standard/info.c
-+++ php-5.2.4/ext/standard/info.c
-@@ -461,7 +461,7 @@
+--- php5-5.2.6.orig/ext/standard/info.c
++++ php5-5.2.6/ext/standard/info.c
+@@ -486,7 +486,7 @@ PHPAPI void php_print_info(int flag TSRM
  		php_info_print_table_start();
  		php_info_print_table_row(2, "System", php_uname );
  		php_info_print_table_row(2, "Build Date", __DATE__ " " __TIME__ );
@@ -11,11 +11,11 @@ Index: php-5.2.4/ext/standard/info.c
  		php_info_print_table_row(2, "Configure Command", CONFIGURE_COMMAND );
  #endif
  		if (sapi_module.pretty_name) {
-Index: php-5.2.4/ext/standard/tests/general_functions/phpinfo.phpt
+Index: php5-5.2.6/ext/standard/tests/general_functions/phpinfo.phpt
 ===================================================================
---- php-5.2.4.orig/ext/standard/tests/general_functions/phpinfo.phpt
-+++ php-5.2.4/ext/standard/tests/general_functions/phpinfo.phpt
-@@ -20,7 +20,6 @@
+--- php5-5.2.6.orig/ext/standard/tests/general_functions/phpinfo.phpt
++++ php5-5.2.6/ext/standard/tests/general_functions/phpinfo.phpt
+@@ -20,7 +20,6 @@ PHP Version => %s
  
  System => %s
  Build Date => %s

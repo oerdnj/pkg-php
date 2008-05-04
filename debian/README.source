@@ -1,0 +1,8 @@
+
+ == Generation of the php5-dbg package Depends ==
+
+ The following command can be used to generate a heuristic list of packages
+the php5-dbg package probably needs to Depend on:
+dh_testdir && egrep '^Package' debian/control | cut '-d ' -f2 | \
+	egrep -v '(^php5|dbg|dev|common|pear)$' | tr "\n" "|" | sed 's/|$//' |\
+	sed -r 's/([^|]+)(\||$)/ \1 (= ${binary:Version}) \2/g'; echo

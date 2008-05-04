@@ -1,7 +1,7 @@
-Index: php5-5.2.0/ext/standard/proc_open.c
+Index: php5-5.2.6/ext/standard/proc_open.c
 ===================================================================
---- php5-5.2.0.orig/ext/standard/proc_open.c	2007-03-18 22:56:59.000000000 +0100
-+++ php5-5.2.0/ext/standard/proc_open.c	2007-03-18 22:58:45.000000000 +0100
+--- php5-5.2.6.orig/ext/standard/proc_open.c
++++ php5-5.2.6/ext/standard/proc_open.c
 @@ -61,7 +61,7 @@
   * */
  #ifdef PHP_CAN_SUPPORT_PROC_OPEN

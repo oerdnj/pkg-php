@@ -1,6 +1,22 @@
+php5 (5.2.6-1) unstable; urgency=low
+
+  New php5-dbg package.
+
+  We are now shipping a php5-dgb package which will greatly aid in finding
+  the cause of many crashes that you may experience.  So if you are going to
+  report a bug for a reproducible crash, please install this package before
+  sending a backtrace.
+
+  New libapache2-mod-php5filter package.
+
+  We are now also shipping a new libapache2-mod-php5filter package which
+  uses the "Apache 2.0 filter-module support via DSO through APXS".
+
+ -- Sean Finney <seanius@debian.org>  Sun, 04 May 2008 13:58:20 +0200
+
 php5 (5.2.3-2) unstable; urgency=low
 
-  The suhosin patch is now enabled by default!
+  The Suhosin patch is now enabled by default!
 
   For more information, see
   <http://www.hardened-php.net/suhosin/index.html>.

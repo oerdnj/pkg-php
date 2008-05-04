@@ -1,8 +1,8 @@
-Index: php5-5.2.4/Zend/zend_strtod.c
+Index: php5-5.2.6/Zend/zend_strtod.c
 ===================================================================
---- php5-5.2.4.orig/Zend/zend_strtod.c	2007-07-23 18:17:10.000000000 +0200
-+++ php5-5.2.4/Zend/zend_strtod.c	2007-09-11 00:26:29.000000000 +0200
-@@ -142,14 +142,25 @@
+--- php5-5.2.6.orig/Zend/zend_strtod.c
++++ php5-5.2.6/Zend/zend_strtod.c
+@@ -152,14 +152,25 @@ typedef unsigned long int uint32_t;
  #define IEEE_LITTLE_ENDIAN
  #endif
  
@@ -35,7 +35,7 @@ Index: php5-5.2.4/Zend/zend_strtod.c
  #endif
  
  #ifdef __vax__
-@@ -256,8 +267,7 @@
+@@ -266,8 +277,7 @@ BEGIN_EXTERN_C()
  
  #if defined(IEEE_LITTLE_ENDIAN) + defined(IEEE_BIG_ENDIAN) + defined(VAX) + \
  		    defined(IBM) != 1
@@ -45,7 +45,7 @@ Index: php5-5.2.4/Zend/zend_strtod.c
  #endif
  
  	typedef union {
-@@ -277,7 +287,7 @@
+@@ -287,7 +297,7 @@ BEGIN_EXTERN_C()
   * An alternative that might be better on some machines is
   * #define Storeinc(a,b,c) (*a++ = b << 16 | c & 0xffff)
   */

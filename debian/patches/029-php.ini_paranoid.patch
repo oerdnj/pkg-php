@@ -1,15 +1,67 @@
-Index: php5-5.2.0/php.ini-paranoid
+Index: php5-5.2.6/php.ini-paranoid
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ php5-5.2.0/php.ini-paranoid	2007-03-18 22:58:41.000000000 +0100
-@@ -0,0 +1,1195 @@
+--- /dev/null
++++ php5-5.2.6/php.ini-paranoid
+@@ -0,0 +1,1504 @@
 +[PHP]
 +
++;;;;;;;;;;;
++; WARNING ;
++;;;;;;;;;;;
++; This file enables many features in the PHP configuration that will
++; break applications that rely on this. Make sure you test applications
++; with this configuration file before enabling it on production.
++
++;;;;;;;;;;;;;;;;;;;
++; About php.ini   ;
++;;;;;;;;;;;;;;;;;;;
++; This file controls many aspects of PHP's behavior.  In order for PHP to
++; read it, it must be named 'php.ini'.  PHP looks for it in the current
++; working directory, in the path designated by the environment variable
++; PHPRC, and in the path that was defined in compile time (in that order).
++; Under Windows, the compile-time path is the Windows directory.  The
++; path in which the php.ini file is looked for can be overridden using
++; the -c argument in command line mode.
++;
++; The syntax of the file is extremely simple.  Whitespace and Lines
++; beginning with a semicolon are silently ignored (as you probably guessed).
++; Section headers (e.g. [Foo]) are also silently ignored, even though
++; they might mean something in the future.
++;
++; Directives are specified using the following syntax:
++; directive = value
++; Directive names are *case sensitive* - foo=bar is different from FOO=bar.
++;
++; The value can be a string, a number, a PHP constant (e.g. E_ALL or M_PI), one
++; of the INI constants (On, Off, True, False, Yes, No and None) or an expression
++; (e.g. E_ALL & ~E_NOTICE), or a quoted string ("foo").
++;
++; Expressions in the INI file are limited to bitwise operators and parentheses:
++; |        bitwise OR
++; &        bitwise AND
++; ~        bitwise NOT
++; !        boolean NOT
++;
++; Boolean flags can be turned on using the values 1, On, True or Yes.
++; They can be turned off using the values 0, Off, False or No.
++;
++; An empty string can be denoted by simply not writing anything after the equal
++; sign, or by using the None keyword:
++;
++;  foo =         ; sets foo to an empty string
++;  foo = none    ; sets foo to an empty string
++;  foo = "none"  ; sets foo to the string 'none'
++;
++; If you use constants in your value, and these constants belong to a
++; dynamically loaded extension (either a PHP extension or a Zend extension),
++; you may only use these constants *after* the line that loads the extension.
++;
++;
 +;;;;;;;;;;;;;;;;;;;
 +; About this file ;
 +;;;;;;;;;;;;;;;;;;;
 +;
-+; This is the paranoid, PHP 4-style version of the php.ini-dist file.  It
++; This is the paranoid, PHP version of the php.ini-dist file.  It
 +; sets some non standard settings, that make PHP more efficient, more secure
 +; in a very paranoid way. Note that these security settings will make some
 +; applications not work properly.
@@ -31,21 +83,39 @@ Index: php5-5.2.0/php.ini-paranoid
 +; This file is different from the php.ini-dist file in the fact that it features
 +; different values for several directives, in order to improve performance, while
 +; possibly breaking compatibility with the standard out-of-the-box behavior of
-+; PHP 3.  Please make sure you read what's different, and modify your scripts
++; PHP 3. Please make sure you read what's different, and modify your scripts
 +; accordingly, if you decide to use this file instead.
++;
++; Notice that the paranoid configuration file might not be fully up-to-date
++; with the latest variables available so the diff will catch both the changes
++; to the default variable values as well as the variables that are missing in
++; the paranoid configuration file)
++;
++; This version was generated using the version 5.2.4-2 as a basis.
++;
++; Debian users can find the differences between both configurations might
++; be found by running:
++;
++; $  diff -u /usr/share/doc/php5-common/examples/php.ini-dist \
++     /usr/share/doc/php5-common/examples/php.ini-paranoid  |less
++;
++;
++; This is a (not complete) list of some of the changes introduced in this file:
 +;
 +; - safe_mode = On                 [Security, Performance loss]
 +;     Do UID checks when opening files. Enabling safe_mode also enables
 +;     other functions related to this mode. For more information read:
 +;     http://www.php.net/features.safe-mode
-+;     Worthwhile reading, however, is also
++;
++;     However, this feature by itself cannot be relied on to protect all applications.
++;     It  is worthwhile reading also:
 +;     http://ilia.ws/archives/18_PHPs_safe_mode_or_how_not_to_implement_security.html 
 +;     Bottomline: Do not trust that safe_mode will drive all your security vulnerabilities
 +;     away.
 +;
-+; - safe_mode_protected_env_vars = LD_LIBRARY_PATH PATH [Security]
++; - safe_mode_protected_env_vars = LD_LIBRARY_PATH, PATH [Security]
 +;     Environment variables that users will not be able to modify through
-+;     putenv()
++;     putenv(). PATH is added so that scripts cannot overwrite it
 +;
 +; - open_basedir = /var/www/:/usr/lib/php4/ [Security, Performance loss]
 +;     Limits the files that PHP can access to the directories specified.
@@ -75,18 +145,12 @@ Index: php5-5.2.0/php.ini-paranoid
 +;      investigation or when using automatic tools to produce reports or 
 +;      generate alarms based on the syslog information.
 +;
-+; - register_globals = Off         [Security, Performance]
-+;     Global variables are no longer registered for input data (POST, GET, cookies,
-+;     environment and other server variables).  Instead of using $foo, you must use
-+;     you can use $_REQUEST["foo"] (includes any variable that arrives through the
-+;     request, namely, POST, GET and cookie variables), or use one of the specific
-+;     $_GET["foo"], $_POST["foo"], $_COOKIE["foo"] or $_FILES["foo"], depending
-+;     on where the input originates.  Also, you can look at the
-+;     import_request_variables() function.
-+;     Note that register_globals is going to be depracated (i.e., turned off by
-+;     default) in the next version of PHP, because it often leads to security bugs.
-+;     Read http://php.net/manual/en/security.registerglobals.php for further
-+;     information.
++; - error_reporting = E_ALL         [Code Cleanliness, Security(?)]
++;     By default, PHP surpresses errors of type E_NOTICE.  These error messages
++;     are emitted for non-critical errors, but that could be a symptom of a bigger
++;     problem.  Most notably, this will cause error messages about the use
++;     of uninitialized variables to be displayed.
++;
 +; - display_errors = Off           [Security]
 +;     With this directive set to off, errors that occur during the execution of
 +;     scripts will no longer be displayed as a part of the script output, and thus,
@@ -105,22 +169,43 @@ Index: php5-5.2.0/php.ini-paranoid
 +;     writes, and sometimes less packets sent on the wire, which can often lead to
 +;     better performance.  The gain this directive actually yields greatly depends
 +;     on which Web server you're working with, and what kind of scripts you're using.
++; - register_globals = Off         [Security, Performance]
++;     Global variables are no longer registered for input data (POST, GET, cookies,
++;     environment and other server variables).  Instead of using $foo, you must use
++;     you can use $_REQUEST["foo"] (includes any variable that arrives through the
++;     request, namely, POST, GET and cookie variables), or use one of the specific
++;     $_GET["foo"], $_POST["foo"], $_COOKIE["foo"] or $_FILES["foo"], depending
++;     on where the input originates.  Also, you can look at the
++;     import_request_variables() function.
++;     Note that register_globals is deprecated in PHP 6.0, because it often
++;     leads to security bugs.
++;     Read http://php.net/manual/en/security.registerglobals.php for further
++;     information.
++;     Also notice that applications should not rely on this feature being turned Off
++;     to remain secure.
++; - register_long_arrays = Off     [Performance]
++;     Disables registration of HTTP_GET_VARS
 +; - register_argc_argv = Off       [Performance]
 +;     Disables registration of the somewhat redundant $argv and $argc global
 +;     variables.
-+; - magic_quotes_gpc = On         [Security]
++; - include_path = "/usr/share/php" [Security]
++;     Only files under /usr can be included, this prevents applications from
++;     including files from the same directory they are running in.
++; - magic_quotes_gpc = On           [Security]
 +;     Input data is escaped with slashes so that applications that do
 +;     not use addslashes() are not so easily subjected to SQL injection
 +;     when talking to SQL databases.
++;     This features is deprecated in PHP 6.0, applications should be fixed to
++;     prevent SQL injection attacks through input data and not rely on this feature.
++; - magic_quotes_runtime = On       [Security]
++;     Quotes in data returned from functions that access external data sources (such as 
++;     databases) are escapted with a backslash.
++;     This features is deprecated in PHP 6.0, applications should be fixed to
++;     prevent SQL injection attacks through input data and not rely on this feature.
 +;
-+; - variables_order = "GPCS"       [Performance]
++; - variables_order = "GPCS"        [Performance]
 +;     The environment variables are not hashed into the $HTTP_ENV_VARS[].  To access
 +;     environment variables, you can use getenv() instead.
-+; - error_reporting = E_ALL        [Code Cleanliness, Security(?)]
-+;     By default, PHP surpresses errors of type E_NOTICE.  These error messages
-+;     are emitted for non-critical errors, but that could be a symptom of a bigger
-+;     problem.  Most notably, this will cause error messages about the use
-+;     of uninitialized variables to be displayed.
 +; - allow_call_time_pass_reference = Off     [Code cleanliness]
 +;     It's not possible to decide to force a variable to be passed by reference
 +;     when calling a function.  The PHP 4 style to do this is by making the
@@ -139,6 +224,37 @@ Index: php5-5.2.0/php.ini-paranoid
 +;     worms/tools that use it to scan and propagate through badly written
 +;     applications (in conjuntion with other unsafe features)
 +;     http://myhost/myapplication.php?include=http://roguesever/rogueapp.php
++;
++; - session.save_path = /var/lib/php5 [Security]
++;     This is defined to a non-world readable directory so users cannot 
++;     hihack sessions of other users by getting a list of the files.
++;
++;     Notice that on on shared servers on a per application basis, otherwise
++;     other users would be able to get access to other applications' data by
++;     setting a proper session id in a different application. If session paths
++;     are not shared sessions of one application will be invalid on another.
++;     For more information see:
++;     http://php.net/manual/en/ref.session.php#ini.session.save-path
++;     and
++;     http://php.net/manual/en/function.session-save-path.php
++; - session.cookie_secure = 1        [Security]
++;     Cookies will only be sent through secure (SSL) connections.
++; - session.use_only_cookies = 1     [Security]
++;     Session ids are not allowed in URLs which make it more difficult for
++;     cross site scripting (XSS) attacks to be succesfull and also has the
++;     advantaged that session ids will not be stored in the server's logs making
++;     them vulnerable to reuse by people with access to the server logs.
++; - session.cookie_httponly = 1      [Security]
++;     Cookies can only be set through the HTTP protocol, JavaScript can not
++;     modify them, making applications less vulnerable to XSS attacks. This is
++;     not supported, however, by all browsers.
++; - session.hash_function = 1        [Security, Performance loss]
++;     Use SHA-1 instead of MD5 which is not (yet) broken but there are some known
++;     attacks. Slight performance loss as it takes more time to compute.
++;
++;
++; This file is maintained by Javier Fernandez-Sanguino <jfs@debian.org>
++; please forward him any suggestions or changes you believe might be appropiate
 +
 +
 +;;;;;;;;;;;;;;;;;;;;
@@ -148,7 +264,10 @@ Index: php5-5.2.0/php.ini-paranoid
 +; Enable the PHP scripting language engine under Apache.
 +engine = On
 +
-+; Allow the <? tag.  Otherwise, only <?php and <script> tags are recognized.  
++; Enable compatibility mode with Zend Engine 1 (PHP 4.x)
++zend.ze1_compatibility_mode = Off
++
++; Allow the <? tag.  Otherwise, only <?php and <script> tags are recognized. 
 +; NOTE: Using short tags should be avoided when developing applications or
 +; libraries that are meant for redistribution, or deployment on PHP
 +; servers which are not under your control, because short tags may not
@@ -160,7 +279,7 @@ Index: php5-5.2.0/php.ini-paranoid
 +asp_tags = Off
 +
 +; The number of significant digits displayed in floating point numbers.
-+precision    =  14
++precision    =  12
 +
 +; Enforce year 2000 compliance (will cause problems with non-compliant browsers)
 +y2k_compliance = On
@@ -184,17 +303,19 @@ Index: php5-5.2.0/php.ini-paranoid
 +;       is doing.
 +; Note: You cannot use both "mb_output_handler" with "ob_iconv_handler"
 +;       and you cannot use both "ob_gzhandler" and "zlib.output_compression". 
++; Note: output_handler must be empty if this is set 'On' !!!!
++;       Instead you must use zlib.output_handler.
 +;output_handler =
 +
 +; Transparent output compression using the zlib library
 +; Valid values for this option are 'off', 'on', or a specific buffer size
 +; to be used for compression (default is 4KB)
 +; Note: Resulting chunk size may vary due to nature of compression. PHP 
-+;       outputs chunks that are few handreds bytes each as a result of compression. 
-+;       If you want larger chunk size for better performence, enable output_buffering 
-+;       also. 
-+; Note: output_handler must be empty if this is set 'On' !!!!
-+;       Instead you must use zlib.output_handler.
++;       outputs chunks that are few hundreds bytes each as a result of 
++;       compression. If you prefer a larger chunk size for better 
++;       performance, enable output_buffering in addition.
++; Note: You need to use zlib.output_handler instead of the standard
++;       output_handler, or otherwise the output will be corrupted.
 +zlib.output_compression = Off
 +
 +; You cannot specify additional output handlers if zlib.output_compression
@@ -211,10 +332,10 @@ Index: php5-5.2.0/php.ini-paranoid
 +
 +; The unserialize callback function will be called (with the undefined class'
 +; name as parameter), if the unserializer finds an undefined class
-+; which should be instanciated.
++; which should be instantiated.
 +; A warning appears if the specified function is not defined, or if the
 +; function doesn't include/implement the missing class.
-+; So only set this entry, if you really want to implement such a 
++; So only set this entry, if you really want to implement such a
 +; callback-function.
 +unserialize_callback_func=
 +
@@ -236,6 +357,16 @@ Index: php5-5.2.0/php.ini-paranoid
 +
 +;
 +; Safe Mode
++;
++;     Notice that with this mode on PHP will not create new files in
++;     directories which have different owner than the owner of the script. This
++;     typically applies to /tmp, so contrary to Unix intuition, you will not be able
++;     to create new files there (even if the /tmp rights are set correctly). 
++; 
++; NOTE: this is considered a "broken" security measure.
++;       Applications relying on this feature will not recieve full
++;       support by the security team.  For more information please
++;       see /usr/share/doc/php5-common/README.Debian.security
 +;
 +safe_mode = On
 +
@@ -277,16 +408,24 @@ Index: php5-5.2.0/php.ini-paranoid
 +; *NOT* affected by whether Safe Mode is turned On or Off.
 +; 
 +; In Debian, the WebRoot is /var/www/ so we limit file operations to it.
++;
++; NOTE: this is considered a "broken" security measure.
++;       Applications relying on this feature will not recieve full
++;       support by the security team.  For more information please
++;       see /usr/share/doc/php5-common/README.Debian.security
 +open_basedir = /var/www/:/usr/lib/php4/
 +
 +; This directive allows you to disable certain functions for security reasons.
 +; It receives a comma-delimited list of function names. This directive is
 +; *NOT* affected by whether Safe Mode is turned On or Off.
 +; 
-+; Note: The list of functions disabled here might break some applications
-+; however, they are considered dangerous and often subverted by attackers
-+; remotely
-+disable_functions = dl, phpinfo, system, mail, include, shell_exec, exec, escapeshellarg, escapeshellcmd, passthru, proc_close, proc_open, proc_get_status, proc_nice, proc_open, proc_terminate, popen, pclose, chown, disk_free_space, disk_total_space, diskfreespace, fileinode, max_execution_time, set_time_limit,highlight_file, show_source
++; Notes: 
++;  - The list of functions disabled here might break some applications
++;    however, they are considered dangerous and often subverted by attackers
++;    remotely.
++;  - 'include' is not in the list, if your applications do not depend on it
++;    make sure you add it here too.
++disable_functions = dl, phpinfo, system, mail, shell_exec, exec, escapeshellarg, escapeshellcmd, passthru, proc_close, proc_open, proc_get_status, proc_nice, proc_open, proc_terminate, popen, pclose, chown, disk_free_space, disk_total_space, diskfreespace, fileinode, max_execution_time, set_time_limit, highlight_file, show_source 
 +
 +; This directive allows you to disable certain classes for security reasons.
 +; It receives a comma-delimited list of class names. This directive is
@@ -294,7 +433,7 @@ Index: php5-5.2.0/php.ini-paranoid
 +disable_classes =
 +
 +; Colors for Syntax Highlighting mode.  Anything that's acceptable in
-+; <font color="??????"> would work.
++; <span style="color: ???????"> would work.
 +;highlight.string  = #DD0000
 +;highlight.comment = #FF9900
 +;highlight.keyword = #007700
@@ -302,6 +441,20 @@ Index: php5-5.2.0/php.ini-paranoid
 +;highlight.default = #0000BB
 +;highlight.html    = #000000
 +
++; If enabled, the request will be allowed to complete even if the user aborts
++; the request. Consider enabling it if executing long request, which may end up
++; being interrupted by the user or a browser timing out.
++; ignore_user_abort = On
++
++; Determines the size of the realpath cache to be used by PHP. This value should
++; be increased on systems where PHP opens many files to reflect the quantity of
++; the file operations performed.
++; realpath_cache_size=16k
++
++; Duration of time, in seconds for which to cache realpath information for a given
++; file or directory. For systems with rarely changing files, consider increasing this
++; value.
++; realpath_cache_ttl=120
 +
 +;
 +; Misc
@@ -319,6 +472,7 @@ Index: php5-5.2.0/php.ini-paranoid
 +
 +max_execution_time = 30     ; Maximum execution time of each script, in seconds
 +max_input_time = 60	; Maximum amount of time each script may spend parsing request data
++max_input_nesting_level = 64 ; Maximum input variable nesting level
 +memory_limit = 8M      ; Maximum amount of memory a script may consume (8MB)
 +
 +
@@ -328,8 +482,9 @@ Index: php5-5.2.0/php.ini-paranoid
 +
 +; error_reporting is a bit-field.  Or each number up to get desired error
 +; reporting level
-+; E_ALL             - All errors and warnings
++; E_ALL             - All errors and warnings (doesn't include E_STRICT)
 +; E_ERROR           - fatal run-time errors
++; E_RECOVERABLE_ERROR  - almost fatal run-time errors
 +; E_WARNING         - run-time warnings (non-fatal errors)
 +; E_PARSE           - compile-time parse errors
 +; E_NOTICE          - run-time notices (these are warnings which often result
@@ -337,6 +492,9 @@ Index: php5-5.2.0/php.ini-paranoid
 +;                     intentional (e.g., using an uninitialized variable and
 +;                     relying on the fact it's automatically initialized to an
 +;                     empty string)
++; E_STRICT          - run-time notices, enable to have PHP suggest changes
++;                     to your code which will ensure the best interoperability
++;                     and forward compatibility of your code
 +; E_CORE_ERROR      - fatal errors that occur during PHP's initial startup
 +; E_CORE_WARNING    - warnings (non-fatal errors) that occur during PHP's
 +;                     initial startup
@@ -348,13 +506,17 @@ Index: php5-5.2.0/php.ini-paranoid
 +;
 +; Examples:
 +;
-+;   - Show all errors, except for notices
++;   - Show all errors, except for notices and coding standards warnings
 +;
 +;error_reporting = E_ALL & ~E_NOTICE
 +;
++;   - Show all errors, except for notices
++;
++;error_reporting = E_ALL & ~E_NOTICE | E_STRICT
++;
 +;   - Show only errors
 +;
-+;error_reporting = E_COMPILE_ERROR|E_ERROR|E_CORE_ERROR
++;error_reporting = E_COMPILE_ERROR|E_RECOVERABLE_ERROR|E_ERROR|E_CORE_ERROR
 +;
 +;   - Show all errors
 +;
@@ -365,6 +527,13 @@ Index: php5-5.2.0/php.ini-paranoid
 +; instead (see below).  Keeping display_errors enabled on a production web site
 +; may reveal security information to end users, such as file paths on your Web
 +; server, your database schema or other information.
++;
++; possible values for display_errors:
++;
++; Off        - Do not display any errors
++; stderr     - Display errors to STDERR (affects only CGI/CLI binaries!)
++; stdout (On) - Display errors to STDOUT
++;
 +display_errors = Off
 +
 +; Even when display_errors is on, errors that occur during PHP's startup
@@ -387,7 +556,7 @@ Index: php5-5.2.0/php.ini-paranoid
 +
 +; Ignore source of message when ignoring repeated messages. When this setting 
 +; is On you will not log errors with repeated messages from different files or
-+; sourcelines.
++; source lines.
 +ignore_repeated_source = Off
 +
 +; If this parameter is set to Off, then memory leaks will not be shown (on
@@ -395,10 +564,13 @@ Index: php5-5.2.0/php.ini-paranoid
 +; error reporting includes E_WARNING in the allowed list
 +report_memleaks = On
 +
++;report_zend_debug = 0
++
 +; Store the last error/warning message in $php_errormsg (boolean).
 +track_errors = Off
 +
 +; Disable the inclusion of HTML tags in error messages.
++; Note: Never use this feature for production boxes.
 +html_errors = Off
 +
 +; If html_errors is set On PHP produces clickable error messages that direct 
@@ -407,6 +579,7 @@ Index: php5-5.2.0/php.ini-paranoid
 +; and change docref_root to the base URL of your local copy including the
 +; leading '/'. You must also specify the file extension being used including 
 +; the dot.
++; Note: Never use this feature for production boxes.
 +;docref_root = "/phpmanual/"
 +;docref_ext = .html
 +  
@@ -453,27 +626,45 @@ Index: php5-5.2.0/php.ini-paranoid
 +; You should do your best to write your scripts so that they do not require
 +; register_globals to be on;  Using form variables as globals can easily lead
 +; to possible security problems, if the code is not very well thought of.
++
++; NOTE: applications relying on this feature will not recieve full
++;       support by the security team.  For more information please
++;       see /usr/share/doc/php5-common/README.Debian.security
++;
 +register_globals = Off
++
++; Whether or not to register the old-style input arrays, HTTP_GET_VARS
++; and friends.  If you're not using them, it's recommended to turn them off,
++; for performance reasons.
++register_long_arrays = Off
 +
 +; This directive tells PHP whether to declare the argv&argc variables (that
 +; would contain the GET information).  If you don't use these variables, you
 +; should turn it off for increased performance.
 +register_argc_argv = Off
 +
++; When enabled, the SERVER and ENV variables are created when they're first
++; used (Just In Time) instead of when the script starts. If these variables
++; are not used within a script, having this directive on will result in a
++; performance gain. The PHP directives register_globals, register_long_arrays,
++; and register_argc_argv must be disabled for this directive to have any affect.
++auto_globals_jit = On
++
 +; Maximum size of POST data that PHP will accept.
 +post_max_size = 8M
-+
-+; This directive is deprecated.  Use variables_order instead.
-+gpc_order = "GPC"
 +
 +; Magic quotes
 +;
 +
 +; Magic quotes for incoming GET/POST/Cookie data.
++; Note: This feature is deprecated in PHP 6.0. Applications should not rely
++; on this feature to prevent security attacks.
 +magic_quotes_gpc = On
 +
 +; Magic quotes for runtime-generated data, e.g. data from SQL, from exec(), etc.
-+magic_quotes_runtime = Off    
++; Note: This feature is deprecated in PHP 6.0. Applications should not rely
++; on this feature to prevent security attacks.
++magic_quotes_runtime = On
 +
 +; Use Sybase-style magic quotes (escape ' with '' instead of \').
 +magic_quotes_sybase = Off
@@ -490,7 +681,7 @@ Index: php5-5.2.0/php.ini-paranoid
 +default_mimetype = "text/html"
 +;default_charset = "iso-8859-1"
 +
-+; Always populate the $HTTP_RAW_POST_DATA variable.                               
++; Always populate the $HTTP_RAW_POST_DATA variable.
 +;always_populate_raw_post_data = On
 +
 +
@@ -499,8 +690,14 @@ Index: php5-5.2.0/php.ini-paranoid
 +;;;;;;;;;;;;;;;;;;;;;;;;;
 +
 +; UNIX: "/path1:/path2"  
-+;include_path = ".:/php/includes"
-+;
++; Note (paranoid): 
++;      - '.' (the default) is not allowed here, applications that rely on it
++;        need to be modified
++;      - /usr is allowed, but files there should be protected against being
++;        overwritten by mounting the filesystem read-only and should be
++;        monitored with a system integrity check tool.
++include_path = "/usr/share/php"
++
 +; Windows: "\path1;\path2"
 +;include_path = ".;c:\php\includes"
 +
@@ -511,18 +708,18 @@ Index: php5-5.2.0/php.ini-paranoid
 +; cgi.force_redirect configuration below
 +doc_root =
 +
-+; The directory under which PHP opens the script using /~usernamem used only
++; The directory under which PHP opens the script using /~username used only
 +; if nonempty.
 +user_dir =
 +
 +; Directory in which the loadable extensions (modules) reside.
-+extension_dir = "./"
++; extension_dir = "./"
 +
 +; Whether or not to enable the dl() function.  The dl() function does NOT work
 +; properly in multithreaded servers, such as IIS or Zeus, and is automatically
 +; disabled on them.
 +;
-+; The dl function also introduces security issues.
++; NOTE: this is a potential security hole and is disabled by default in debian
 +enable_dl = Off
 +
 +; cgi.force_redirect is necessary to provide security running PHP as a CGI under
@@ -535,7 +732,7 @@ Index: php5-5.2.0/php.ini-paranoid
 +; every request.
 +; cgi.nph = 1
 +
-+; if cgi.force_redirect is turned on, and you are not running under Apache or Netscape 
++; if cgi.force_redirect is turned on, and you are not running under Apache or Netscape
 +; (iPlanet) web servers, you MAY need to set an environment variable name that PHP
 +; will look for to know it is OK to continue execution.  Setting this variable MAY
 +; cause security issues, KNOW WHAT YOU ARE DOING FIRST.
@@ -545,9 +742,9 @@ Index: php5-5.2.0/php.ini-paranoid
 +; previous behaviour was to set PATH_TRANSLATED to SCRIPT_FILENAME, and to not grok
 +; what PATH_INFO is.  For more information on PATH_INFO, see the cgi specs.  Setting
 +; this to 1 will cause PHP CGI to fix it's paths to conform to the spec.  A setting
-+; of zero causes PHP to behave as before.  Default is zero.  You should fix your scripts
++; of zero causes PHP to behave as before.  Default is 1.  You should fix your scripts
 +; to use SCRIPT_FILENAME rather than PATH_TRANSLATED.
-+; cgi.fix_pathinfo=1
++cgi.fix_pathinfo=1
 +
 +; FastCGI under IIS (on WINNT based OS) supports the ability to impersonate
 +; security tokens of the calling client.  This allows IIS to define the
@@ -555,6 +752,9 @@ Index: php5-5.2.0/php.ini-paranoid
 +; does not currently support this feature (03/17/2002)
 +; Set to 1 if running under IIS.  Default is zero.
 +; fastcgi.impersonate = 1;
++
++; Disable logging through FastCGI connection
++; fastcgi.logging = 0
 +
 +; cgi.rfc2616_headers configuration option tells PHP what type of headers to
 +; use when sending HTTP response code. If it's set 0 PHP sends Status: header that
@@ -573,7 +773,11 @@ Index: php5-5.2.0/php.ini-paranoid
 +
 +; Temporary directory for HTTP uploaded files (will use system default if not
 +; specified).
-+;upload_tmp_dir =
++;
++; Note: If enabled above you have to create this directory and set appropiate
++; permissions. The default (/tmp) is insecure since other users might be able
++; to access upload files or make symlink tricks.
++upload_tmp_dir = /var/lib/php5/uploads
 +
 +; Maximum allowed size for uploaded files.
 +upload_max_filesize = 2M
@@ -592,11 +796,14 @@ Index: php5-5.2.0/php.ini-paranoid
 +; http://myhost/myapplication.php?include=http://roguesever/rogueapp.php
 +allow_url_fopen = Off
 +
++; Whether to allow include/require to open URLs (like http:// or ftp://) as files.
++allow_url_include = Off
++
 +; Define the anonymous ftp password (your email address)
 +;from="john@doe.com"
 +
-+; Define the user agent for php to send
-+;user_agent="PHP"
++; Define the User-Agent string
++; user_agent="PHP"
 +
 +; Default timeout for socket based streams (seconds)
 +default_socket_timeout = 60
@@ -631,58 +838,45 @@ Index: php5-5.2.0/php.ini-paranoid
 +; extension_dir directive above.
 +
 +
-+;Windows Extensions
-+;Note that MySQL and ODBC support is now built in, so no dll is needed for it.
-+;
-+;extension=php_bz2.dll
-+;extension=php_cpdf.dll
-+;extension=php_crack.dll
-+;extension=php_curl.dll
-+;extension=php_db.dll
-+;extension=php_dba.dll
-+;extension=php_dbase.dll
-+;extension=php_dbx.dll
-+;extension=php_domxml.dll
-+;extension=php_exif.dll
-+;extension=php_fdf.dll
-+;extension=php_filepro.dll
-+;extension=php_gd2.dll
-+;extension=php_gettext.dll
-+;extension=php_hyperwave.dll
-+;extension=php_iconv.dll
-+;extension=php_ifx.dll
-+;extension=php_iisfunc.dll
-+;extension=php_imap.dll
-+;extension=php_interbase.dll
-+;extension=php_java.dll
-+;extension=php_ldap.dll
-+;extension=php_mbstring.dll
-+;extension=php_mcrypt.dll
-+;extension=php_mhash.dll
-+;extension=php_mime_magic.dll
-+;extension=php_ming.dll
-+;extension=php_mssql.dll
-+;extension=php_msql.dll
-+;extension=php_oci8.dll
-+;extension=php_openssl.dll
-+;extension=php_oracle.dll
-+;extension=php_pdf.dll
-+;extension=php_pgsql.dll
-+;extension=php_printer.dll
-+;extension=php_shmop.dll
-+;extension=php_snmp.dll
-+;extension=php_sockets.dll
-+;extension=php_sybase_ct.dll
-+;extension=php_w32api.dll
-+;extension=php_xmlrpc.dll
-+;extension=php_xslt.dll
-+;extension=php_yaz.dll
-+;extension=php_zip.dll
-+
-+
 +;;;;;;;;;;;;;;;;;;;
 +; Module Settings ;
 +;;;;;;;;;;;;;;;;;;;
++
++[Date]
++; Defines the default timezone used by the date functions
++;date.timezone =
++
++;date.default_latitude = 31.7667
++;date.default_longitude = 35.2333
++
++;date.sunrise_zenith = 90.583333
++;date.sunset_zenith = 90.583333
++
++[filter]
++;filter.default = unsafe_raw
++;filter.default_flags =
++
++[iconv]
++;iconv.input_encoding = ISO-8859-1
++;iconv.internal_encoding = ISO-8859-1
++;iconv.output_encoding = ISO-8859-1
++
++[sqlite]
++;sqlite.assoc_case = 0
++
++[xmlrpc]
++;xmlrpc_error_number = 0
++;xmlrpc_errors = 0
++
++[Pcre]
++;PCRE library backtracking limit.
++;pcre.backtrack_limit=100000
++
++;PCRE library recursion limit. 
++;Please note that if you set this value to a high number you may consume all 
++;the available process stack and eventually crash PHP (due to reaching the 
++;stack size limit imposed by the Operating System).
++;pcre.recursion_limit=100000
 +
 +[Syslog]
 +; Whether or not to define the various syslog variables (e.g. $LOG_PID,
@@ -701,14 +895,21 @@ Index: php5-5.2.0/php.ini-paranoid
 +; For Unix only.  You may supply arguments as well (default: "sendmail -t -i").
 +;sendmail_path =
 +
-+[Java]
-+;java.class.path = .\php_java.jar
-+;java.home = c:\jdk
-+;java.library = c:\jdk\jre\bin\hotspot\jvm.dll 
-+;java.library.path = .\
++; Force the addition of the specified parameters to be passed as extra parameters
++; to the sendmail binary. These parameters will always replace the value of
++; the 5th parameter to mail(), even in safe mode.
++;mail.force_extra_parameters =
 +
 +[SQL]
-+sql.safe_mode = On
++; This configuration directive is unrelated to safe_mode.
++; If enabled, connections to databases (like mysql_connect() or mysql_pconnect())
++; will ignore the arguments provided (which include username and password) and
++; will attempt to connect always using default values. These default values
++; are typically host=localhost, user=the script owner,password=empty password.
++;
++; Note (paranoid): This is disabled as it is not actually a security measure, unless
++; you want script to not have users and passwords hardcoded in them.
++sql.safe_mode = Off
 +
 +[ODBC]
 +;odbc.default_db    =  Not yet implemented
@@ -725,16 +926,16 @@ Index: php5-5.2.0/php.ini-paranoid
 +odbc.max_persistent = -1
 +
 +; Maximum number of links (persistent + non-persistent).  -1 means no limit.
-+odbc.max_links = -1  
++odbc.max_links = -1
 +
 +; Handling of LONG fields.  Returns number of bytes to variables.  0 means
 +; passthru.
-+odbc.defaultlrl = 4096  
++odbc.defaultlrl = 4096
 +
 +; Handling of binary data.  0 means passthru, 1 return as is, 2 convert to char.
 +; See the documentation on odbc_binmode and odbc_longreadlen for an explanation
 +; of uodbc.defaultlrl and uodbc.defaultbinmode
-+odbc.defaultbinmode = 1  
++odbc.defaultbinmode = 1
 +
 +[MySQL]
 +; Allow or prevent persistent links.
@@ -776,6 +977,37 @@ Index: php5-5.2.0/php.ini-paranoid
 +; SQL-Errors will be displayed.
 +mysql.trace_mode = Off
 +
++[MySQLi]
++
++; Maximum number of links.  -1 means no limit.
++mysqli.max_links = -1
++
++; Default port number for mysqli_connect().  If unset, mysqli_connect() will use
++; the $MYSQL_TCP_PORT or the mysql-tcp entry in /etc/services or the
++; compile-time value defined MYSQL_PORT (in that order).  Win32 will only look
++; at MYSQL_PORT.
++mysqli.default_port = 3306
++
++; Default socket name for local MySQL connects.  If empty, uses the built-in
++; MySQL defaults.
++mysqli.default_socket =
++
++; Default host for mysql_connect() (doesn't apply in safe mode).
++mysqli.default_host =
++
++; Default user for mysql_connect() (doesn't apply in safe mode).
++mysqli.default_user =
++
++; Default password for mysqli_connect() (doesn't apply in safe mode).
++; Note that this is generally a *bad* idea to store passwords in this file.
++; *Any* user with PHP access can run 'echo get_cfg_var("mysqli.default_pw")
++; and reveal this password!  And of course, any users with read access to this
++; file will be able to reveal the password as well.
++mysqli.default_pw =
++
++; Allow or prevent reconnect
++mysqli.reconnect = Off
++
 +[mSQL]
 +; Allow or prevent persistent links.
 +msql.allow_persistent = On
@@ -786,11 +1018,42 @@ Index: php5-5.2.0/php.ini-paranoid
 +; Maximum number of links (persistent+non persistent).  -1 means no limit.
 +msql.max_links = -1
 +
++[OCI8]
++; enables privileged connections using external credentials (OCI_SYSOPER, OCI_SYSDBA)
++;oci8.privileged_connect = Off
++
++; Connection: The maximum number of persistent OCI8 connections per
++; process. Using -1 means no limit.
++;oci8.max_persistent = -1
++
++; Connection: The maximum number of seconds a process is allowed to
++; maintain an idle persistent connection. Using -1 means idle
++; persistent connections will be maintained forever.
++;oci8.persistent_timeout = -1
++
++; Connection: The number of seconds that must pass before issuing a
++; ping during oci_pconnect() to check the connection validity. When
++; set to 0, each oci_pconnect() will cause a ping. Using -1 disables
++; pings completely.
++;oci8.ping_interval = 60
++
++; Tuning: This option enables statement caching, and specifies how
++; many statements to cache. Using 0 disables statement caching.
++;oci8.statement_cache_size = 20
++
++; Tuning: Enables statement prefetching and sets the default number of
++; rows that will be fetched automatically after statement execution.
++;oci8.default_prefetch = 10
++
++; Compatibility. Using On means oci_close() will not close
++; oci_connect() and oci_new_connect() connections.
++;oci8.old_oci_close_semantics = Off
++
 +[PostgresSQL]
 +; Allow or prevent persistent links.
 +pgsql.allow_persistent = On
 +
-+; Detect broken persistent links always with pg_pconnect(). 
++; Detect broken persistent links always with pg_pconnect().
 +; Auto reset feature requires a little overheads.
 +pgsql.auto_reset_persistent = Off
 +
@@ -826,7 +1089,7 @@ Index: php5-5.2.0/php.ini-paranoid
 +; Minimum message severity to display.
 +sybase.min_message_severity = 10
 +
-+; Compatability mode with old versions of PHP 3.0.
++; Compatibility mode with old versions of PHP 3.0.
 +; If on, this will cause PHP to automatically assign types to results according
 +; to their Sybase type, instead of treating them all as strings.  This
 +; compatibility mode will probably not stay around forever, so try applying
@@ -848,16 +1111,6 @@ Index: php5-5.2.0/php.ini-paranoid
 +
 +; Minimum client message severity to display.
 +sybct.min_client_severity = 10
-+
-+[dbx]
-+; returned column names can be converted for compatibility reasons
-+; possible values for dbx.colnames_case are
-+; "unchanged" (default, if not set)
-+; "lowercase"
-+; "uppercase"
-+; the recommended default is either upper- or lowercase, but
-+; unchanged is currently set for backwards compatibility
-+dbx.colnames_case = "lowercase"
 +
 +[bcmath]
 +; Number of decimal digits for all bcmath functions.
@@ -908,16 +1161,62 @@ Index: php5-5.2.0/php.ini-paranoid
 +session.save_handler = files
 +
 +; Argument passed to save_handler.  In the case of files, this is the path
-+; where data files are stored. Note: Windows users have to change this 
++; where data files are stored. Note: Windows users have to change this
 +; variable in order to use PHP's session functions.
-+;session.save_path = /tmp
++;
++; As of PHP 4.0.1, you can define the path as:
++;
++;     session.save_path = "N;/path"
++;
++; where N is an integer.  Instead of storing all the session files in
++; /path, what this will do is use subdirectories N-levels deep, and
++; store the session data in those directories.  This is useful if you
++; or your OS have problems with lots of files in one directory, and is
++; a more efficient layout for servers that handle lots of sessions.
++;
++; NOTE 1: PHP will not create this directory structure automatically.
++;         You can use the script in the ext/session dir for that purpose.
++; NOTE 2: See the section on garbage collection below if you choose to
++;         use subdirectories for session storage
++;
++; The file storage module creates files using mode 600 by default.
++; You can change that by using
++;
++;     session.save_path = "N;MODE;/path"
++;
++; where MODE is the octal representation of the mode. Note that this
++; does not overwrite the process's umask.
++session.save_path = /var/lib/php5
++
++; Substring to check each HTTP Referer for. If the Referer was sent by the
++; client and the substring was not found, the embedded session id will be marked
++; as invalid. Defaults to the empty string.
++; Note (paranoid): to prevent some XSS attacks should be defined to the server's URI
++; session.referer_check = 
++
++
++; Path to an external resource (file) which will be used as an additional
++; entropy source in the session id creation process. 
++; Note (paranoid): /dev/urandom is not fully random but if /dev/random is used
++; the entropy pool could be exhaused by constantly asking for session ids and 
++; would compromise other applications relying on randomness
++session.entropy_file = "/dev/urandom"
++
++; Number of bytes which will be read from the file specified above. 
++; Defaults to 0 (disabled).
++session.entropy_length = 6
 +
 +; Whether to use cookies.
 +session.use_cookies = 1
 +
++; If this option is enabled cookies are only sent through secure (SSL)
++; connections and, consequently, are more difficult to intercept.
++; (disabled by default)
++session.cookie_secure = 1
++
 +; This option enables administrators to make their users invulnerable to 
-+; attacks which involve passing session ids in URLs; defaults to 0.
-+; session.use_only_cookies = 1
++; attacks which involve passing session ids in URLs; defaults to 1 (since PHP 6.0).
++session.use_only_cookies = 1
 +
 +; Name of the session (used as cookie name).
 +session.name = PHPSESSID
@@ -929,10 +1228,16 @@ Index: php5-5.2.0/php.ini-paranoid
 +session.cookie_lifetime = 0
 +
 +; The path for which the cookie is valid.
++; Note (paranoid): Applications should restrict the path where the cookie
++; is valid through use of session_set_cookie_params().
 +session.cookie_path = /
 +
 +; The domain for which the cookie is valid.
++; Note (paranoid): Make sure you configure this for your site 
 +session.cookie_domain =
++
++; Whether or not to add the httpOnly flag to the cookie, which makes it inaccessible to browser scripting languages such as JavaScript.
++session.cookie_httponly = 1
 +
 +; Handler used to serialize data.  php is the standard serializer of PHP.
 +session.serialize_handler = php
@@ -943,12 +1248,23 @@ Index: php5-5.2.0/php.ini-paranoid
 +; e.g. 1/100 means there is a 1% chance that the GC process starts
 +; on each request.
 +
-+session.gc_probability = 1
-+session.gc_divisor     = 1000
++; This is disabled in the Debian packages, due to the strict permissions
++; on /var/lib/php5.  Instead of setting this here, see the cronjob at
++; /etc/cron.d/php5, which uses the session.gc_maxlifetime setting below
++;session.gc_probability = 0
++session.gc_divisor     = 100
 +
 +; After this number of seconds, stored data will be seen as 'garbage' and
 +; cleaned up by the garbage collection process.
 +session.gc_maxlifetime = 1440
++
++; NOTE: If you are using the subdirectory option for storing session files
++;       (see session.save_path above), then garbage collection does *not*
++;       happen automatically.  You will need to do your own garbage
++;       collection through a shell script, cron entry, or some other method.
++;       For example, the following script would is the equivalent of
++;       setting session.gc_maxlifetime to 1440 (1440 seconds = 24 minutes):
++;          cd /path/to/sessions; find -cmin +24 | xargs rm
 +
 +; PHP 4.2 and less have an undocumented feature/bug that allows you to
 +; to initialize a session variable in the global scope, albeit register_globals
@@ -974,7 +1290,7 @@ Index: php5-5.2.0/php.ini-paranoid
 +
 +;session.entropy_file = /dev/urandom
 +
-+; Set to {nocache,private,public,} to determine HTTP caching aspects.
++; Set to {nocache,private,public,} to determine HTTP caching aspects
 +; or leave this empty to avoid sending anti-caching headers.
 +session.cache_limiter = nocache
 +
@@ -987,17 +1303,32 @@ Index: php5-5.2.0/php.ini-paranoid
 +; - User may send URL contains active session ID
 +;   to other person via. email/irc/etc.
 +; - URL that contains active session ID may be stored
-+;   in publically accessible computer. 
++;   in publically accessible computer.
 +; - User may access your site with the same session ID
 +;   always using URL stored in browser's history or bookmarks.
 +session.use_trans_sid = 0
++
++; Select a hash function
++; 0: MD5   (128 bits)
++; 1: SHA-1 (160 bits)
++; Note (paranoic): Set to SHA-1 since there are known attacks against MD5
++; although the algorithm is not yet broken)
++session.hash_function = 1
++
++; Define how many bits are stored in each character when converting
++; the binary hash data to something readable.
++;
++; 4 bits: 0-9, a-f
++; 5 bits: 0-9, a-v
++; 6 bits: 0-9, a-z, A-Z, "-", ","
++session.hash_bits_per_character = 4
 +
 +; The URL rewriter will look for URLs in a defined set of HTML tags.
 +; form/fieldset are special; if you include them here, the rewriter will
 +; add a hidden <input> field with the info which is otherwise appended
 +; to URLs.  If you want XHTML conformity, remove the form entry.
 +; Note that all valid entries require a "=", even if no value follows.
-+url_rewriter.tags = "a=href,area=href,frame=src,input=src,form=fakeentry"
++url_rewriter.tags = "a=href,area=href,frame=src,input=src,form=fakeentry,fieldset="
 +
 +[MSSQL]
 +; Allow or prevent persistent links.
@@ -1015,7 +1346,7 @@ Index: php5-5.2.0/php.ini-paranoid
 +; Minimum message severity to display.
 +mssql.min_message_severity = 10
 +
-+; Compatability mode with old versions of PHP 3.0.
++; Compatibility mode with old versions of PHP 3.0.
 +mssql.compatability_mode = Off
 +
 +; Connect timeout
@@ -1041,8 +1372,15 @@ Index: php5-5.2.0/php.ini-paranoid
 +; Use NT authentication when connecting to the server
 +mssql.secure_connection = On
 +
-+; Specify max number of processes. Default = 25
-+;mssql.max_procs = 25
++; Specify max number of processes. -1 = library default
++; msdlib defaults to 25
++; FreeTDS defaults to 4096
++;mssql.max_procs = -1
++
++; Specify client character set. 
++; If empty or not set the client charset from freetds.comf is used
++; This is only used when compiled with FreeTDS
++;mssql.charset = "ISO-8859-1"
 +
 +[Assertion]
 +; Assert(expr); active by default.
@@ -1061,65 +1399,17 @@ Index: php5-5.2.0/php.ini-paranoid
 +; error_reporting(0) around the eval().
 +;assert.quiet_eval = 0
 +
-+[Ingres II]
-+; Allow or prevent persistent links.
-+ingres.allow_persistent = On
-+
-+; Maximum number of persistent links.  -1 means no limit.
-+ingres.max_persistent = -1
-+
-+; Maximum number of links, including persistents.  -1 means no limit.
-+ingres.max_links = -1
-+
-+; Default database (format: [node_id::]dbname[/srv_class]).
-+ingres.default_database =
-+
-+; Default user.
-+ingres.default_user =
-+
-+; Default password.
-+ingres.default_password =
-+
-+[Verisign Payflow Pro]
-+; Default Payflow Pro server.
-+pfpro.defaulthost = "test-payflow.verisign.com"
-+
-+; Default port to connect to.
-+pfpro.defaultport = 443
-+
-+; Default timeout in seconds.
-+pfpro.defaulttimeout = 30
-+
-+; Default proxy IP address (if required).
-+;pfpro.proxyaddress =
-+
-+; Default proxy port.
-+;pfpro.proxyport =
-+
-+; Default proxy logon.
-+;pfpro.proxylogon =
-+
-+; Default proxy password.
-+;pfpro.proxypassword =
-+
-+[Sockets]
-+; Use the system read() function instead of the php_read() wrapper.
-+sockets.use_system_read = On
-+
-+[com]
++[COM]
 +; path to a file containing GUIDs, IIDs or filenames of files with TypeLibs
-+;com.typelib_file = 
++;com.typelib_file =
 +; allow Distributed-COM calls
 +;com.allow_dcom = true
 +; autoregister constants of a components typlib on com_load()
 +;com.autoregister_typelib = true
 +; register constants casesensitive
 +;com.autoregister_casesensitive = false
-+; show warnings on duplicate constat registrations
++; show warnings on duplicate constant registrations
 +;com.autoregister_verbose = true
-+
-+[Printer]
-+;printer.default_printer = ""
 +
 +[mbstring]
 +; language for internal character representation.
@@ -1137,7 +1427,7 @@ Index: php5-5.2.0/php.ini-paranoid
 +; registered as output buffer to function
 +;mbstring.http_output = SJIS
 +
-+; enable automatic encoding translation accoding to 
++; enable automatic encoding translation according to 
 +; mbstring.internal_encoding setting. Input chars are
 +; converted to internal encoding by setting this to On.
 +; Note: Do _not_ use automatic encoding translation for
@@ -1145,7 +1435,7 @@ Index: php5-5.2.0/php.ini-paranoid
 +;mbstring.encoding_translation = Off
 +
 +; automatic encoding detection order.
-+; auto means 
++; auto means
 +;mbstring.detect_order = auto
 +
 +; substitute_character used when character cannot be converted
@@ -1165,7 +1455,8 @@ Index: php5-5.2.0/php.ini-paranoid
 +[FrontBase]
 +;fbsql.allow_persistent = On
 +;fbsql.autocommit = On
-+;fbsql.default_database = 
++;fbsql.show_timestamp_decimals = Off
++;fbsql.default_database =
 +;fbsql.default_database_password =
 +;fbsql.default_host =
 +;fbsql.default_password =
@@ -1175,25 +1466,43 @@ Index: php5-5.2.0/php.ini-paranoid
 +;fbsql.max_links = 128
 +;fbsql.max_persistent = -1
 +;fbsql.max_results = 128
-+;fbsql.batchSize = 1000
 +
-+[Crack]
-+; Modify the setting below to match the directory location of the cracklib
-+; dictionary files.  Include the base filename, but not the file extension.
-+; crack.default_dictionary = "c:\php\lib\cracklib_dict"
++[gd]
++; Tell the jpeg decode to libjpeg warnings and try to create
++; a gd image. The warning will then be displayed as notices
++; disabled by default
++;gd.jpeg_ignore_warning = 0
 +
 +[exif]
-+; Exif UNICODE user comments are handled as UCS-2BE/UCS-2LE and JIS as JIS. 
++; Exif UNICODE user comments are handled as UCS-2BE/UCS-2LE and JIS as JIS.
 +; With mbstring support this will automatically be converted into the encoding
-+; given by corresponding encode setting. When empty mbstring.internal_encoding 
-+; is used. For the decode settings you can distinguish between motorola and 
++; given by corresponding encode setting. When empty mbstring.internal_encoding
++; is used. For the decode settings you can distinguish between motorola and
 +; intel byte order. A decode setting cannot be empty.
 +;exif.encode_unicode = ISO-8859-15
 +;exif.decode_unicode_motorola = UCS-2BE
 +;exif.decode_unicode_intel    = UCS-2LE
-+;exif.encode_jis = 
++;exif.encode_jis =
 +;exif.decode_jis_motorola = JIS
 +;exif.decode_jis_intel    = JIS
++
++[Tidy]
++; The path to a default tidy configuration file to use when using tidy
++;tidy.default_config = /usr/local/lib/php/default.tcfg
++
++; Should tidy clean and repair output automatically?
++; WARNING: Do not use this option if you are generating non-html content
++; such as dynamic images
++tidy.clean_output = Off
++
++[soap]
++; Enables or disables WSDL caching feature.
++soap.wsdl_cache_enabled=1
++; Sets the directory name where SOAP extension will put cache files.
++soap.wsdl_cache_dir="/var/lib/php5/soap-cache"
++; (time to live) Sets the number of second while cached file will be used 
++; instead of original one.
++soap.wsdl_cache_ttl=86400
 +
 +; Local Variables:
 +; tab-width: 4

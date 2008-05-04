@@ -1,2 +1,4 @@
-version=2
+version=3
+opts=downloadurlmangle=s#/a/#/this/#,\
+filenamemangle=s#/get/(php-(5\.[0-9\.]*)\.tar\.gz)/.*#$1# \
 http://www.php.net/downloads.php /get/php-(5\.[0-9\.]*)\.tar\.gz/from/a/mirror

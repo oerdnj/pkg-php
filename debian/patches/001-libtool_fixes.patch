@@ -1,8 +1,8 @@
-Index: php5-5.2.4/TSRM/configure.in
+Index: php5-5.2.6/TSRM/configure.in
 ===================================================================
---- php5-5.2.4.orig/TSRM/configure.in	2007-09-10 20:45:24.000000000 +0200
-+++ php5-5.2.4/TSRM/configure.in	2007-09-10 20:45:26.000000000 +0200
-@@ -13,9 +13,6 @@
+--- php5-5.2.6.orig/TSRM/configure.in
++++ php5-5.2.6/TSRM/configure.in
+@@ -13,9 +13,6 @@ TSRM_BASIC_CHECKS
  TSRM_THREADS_CHECKS
  	
  AM_PROG_LIBTOOL
@@ -12,11 +12,11 @@ Index: php5-5.2.4/TSRM/configure.in
  
  dnl TSRM_PTHREAD
  
-Index: php5-5.2.4/configure.in
+Index: php5-5.2.6/configure.in
 ===================================================================
---- php5-5.2.4.orig/configure.in	2007-09-10 20:45:24.000000000 +0200
-+++ php5-5.2.4/configure.in	2007-09-10 20:45:26.000000000 +0200
-@@ -1256,9 +1256,6 @@
+--- php5-5.2.6.orig/configure.in
++++ php5-5.2.6/configure.in
+@@ -1256,9 +1256,6 @@ AC_PROVIDE_IFELSE([PHP_REQUIRE_CXX], [AC
  AC_DEFUN([AC_PROG_CXX], [])])
  AC_PROG_LIBTOOL
  

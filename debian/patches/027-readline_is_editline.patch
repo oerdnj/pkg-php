@@ -1,8 +1,8 @@
-Index: php5-5.2.0/ext/readline/config.m4
+Index: php5-5.2.6/ext/readline/config.m4
 ===================================================================
---- php5-5.2.0.orig/ext/readline/config.m4	2007-03-18 22:57:00.000000000 +0100
-+++ php5-5.2.0/ext/readline/config.m4	2007-03-18 22:58:41.000000000 +0100
-@@ -12,7 +12,7 @@
+--- php5-5.2.6.orig/ext/readline/config.m4
++++ php5-5.2.6/ext/readline/config.m4
+@@ -12,7 +12,7 @@ fi
  
  if test "$PHP_READLINE" && test "$PHP_READLINE" != "no"; then
    for i in $PHP_READLINE /usr/local /usr; do
@@ -11,7 +11,7 @@ Index: php5-5.2.0/ext/readline/config.m4
    done
  
    if test -z "$READLINE_DIR"; then
-@@ -64,7 +64,7 @@
+@@ -64,7 +64,7 @@ if test "$PHP_READLINE" && test "$PHP_RE
  elif test "$PHP_LIBEDIT" != "no"; then
  
    for i in $PHP_LIBEDIT /usr/local /usr; do
@@ -20,10 +20,10 @@ Index: php5-5.2.0/ext/readline/config.m4
    done
  
    if test -z "$LIBEDIT_DIR"; then
-Index: php5-5.2.0/ext/readline/readline.c
+Index: php5-5.2.6/ext/readline/readline.c
 ===================================================================
---- php5-5.2.0.orig/ext/readline/readline.c	2007-03-18 22:57:00.000000000 +0100
-+++ php5-5.2.0/ext/readline/readline.c	2007-03-18 22:58:41.000000000 +0100
+--- php5-5.2.6.orig/ext/readline/readline.c
++++ php5-5.2.6/ext/readline/readline.c
 @@ -33,9 +33,9 @@
  #define rl_completion_matches completion_matches
  #endif

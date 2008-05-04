@@ -1,3 +1,95 @@
+php5 (5.2.6-1) unstable; urgency=medium
+
+  * New upstream release. Fixes several security issues of unknown impact:
+    + possible stack buffer overflow in the FastCGI SAPI
+    + integer overflow in printf()
+    + unknown issue CVE-2008-0599
+    + a safe_mode bypass in cURL
+    + incomplete multibyte chars inside escapeshellcmd()
+
+  [ Sean Finney ]
+  * New patch (use_embedded_timezonedb.patch) allows us to default to 
+    using the system provided timezone database instead of the one bundled 
+    with PHP.  Many thanks to Joe Orten from Red Hat for the patch!
+    (closes: #447174, #471104).
+  * Updated the Suhosin patch to v0.9.6 (5.2.6).
+  * New patch: force_libmysqlclient_r.patch, forcing the build system
+    to link against the threadsafe libmysqlclient without having to enable
+    the other zts features in php.  This is required since the apr libraries
+    are now linking against this as well and mysql exports the same symbols
+    from both libraries.  Thanks to Stefan Fritsch (closes: #469081).
+  * Massaged/updated various other patches in debian/patches
+  * Update copyright information to have information about non-trivial 
+    patches worthy of copyright attributions, and update information about
+    current debian maintainers.
+  * Add some useful quilt settings in debian/rules to lower the amount of 
+    noise in future quilt updates.
+  * Now building a php5 apache2 module with filter-module support in a new
+    libapache2-mod-php5filter package (closes: #438120).
+
+  [ Thijs Kinkhorst ]
+  * Checked for policy 3.7.3, no changes.
+
+  [ Raphael Geissert ]
+  * Build a php5-dbg package with the debug symbols of the SAPIs & extensions
+   + Bump debhelper dependency to >= 5 as dh_strip behaves differently.
+  * debian/watch: refactored so it can actually be used to download the tarball
+  * debian/rules: removed bashisms (Closes: #478613)
+  * debian/control: add a notice about Suhosin being applied (Closes: #471324)
+    + Additionally make sure the PHP boilerplate is the same for each package
+  * debian/patches/manpage_spelling.patch:
+    - fix spelling mistakes in man page (Closes: #413712)
+  * debian/NEWS: s/suhosin/Suhosin (Closes: #434351)
+  * debian/control: removed ORed postgresql-dev build-dep (Closes: #429981)
+    + postgresql-dev is a transitional package since etch
+  * Override the following lintian messages:
+    + SAPI packages package-contains-empty-directory usr/lib/php5/20060613+lfs/
+    + php5-common package-contains-empty-directory usr/lib/php5/libexec/
+  * Set our custom PHP_PEAR_DOWNLOAD_DIR when building the pear stuff
+    + Avoids the creation of /tmp/pear (Closes: #463979)
+  * Replaced all 'make' with '$(MAKE)' so any extra flag is preserved
+  * debian/rules: s/DEB_BUILD_ARCH/DEB_HOST_ARCH
+    + HOST is the machine the package is built for.
+  * Recommend php5-cli instead of depending on it in php-pear (Closes: #243214)
+    + php5-cli is only needed by the, rearely used, pear installer
+  * debian/README.source: inform how to generate php5-dbg's Depends
+  * debian/patches/029-php.ini_paranoid.patch: updated (Closes: #459814)
+    + Thanks to Javier Fernández-Sanguino Peña <jfs@computer.org>
+    Changes:
+    - includes some variables which were no present in the first version and
+      removes modules not available in PHP5. Also fixes typos in comments which
+      have since been fixed in php.ini-dist
+    - adds notes (Debian-specific) of which security features applications 
+      should not rely on
+    - add more information of why some variables were enabled
+    - reorder the description of chagnes to suit the location in the config file
+    - add notes of deprecated features in PHP6
+    - add more (suggested) changes to the session module to make a more secure
+      use and storage of session IDs.
+    - remove the 'include' function from the list of disabled functions as it
+      is quite common for most applications
+    - modify the valid 'include_path' to make it really paranoid ('.' is not
+      allowed anymore)
+    - adjust locations of directories, including the upload dir and session dir
+    - proper definition for sql.safe_mode and description (missing in
+      php.ini-dist of what it is really for)
+    - added session configuration variables which are not available in
+      php.ini-dist together with recommended paranoid values
+      (session.referer_check, session.entropy_file, session.entropy_length)
+    - added more information to session configuration (not available in php.ini)
+      based on the information at php.net
+  * Lintian-based changes:
+    - debian/php5-common.dirs: do NOT create usr/share/doc/php5-common/PEAR/
+    - fixed a hyphen-used-as-minus-sign in php5(1):319
+    - get rid of usr/share/php/data/Structures_Graph/LICENSE in php-pear
+  * Move /usr/share/php/docs to /usr/share/doc/pear-php/PEAR (Closes: #331034)
+
+  [ Steve Langasek ]
+  * Step down from the PHP maintenance team, removing myself from uploaders.
+    So long, and thanks for all the fish!
+
+ -- Sean Finney <seanius@debian.org>  Sun, 04 May 2008 21:15:47 +0200
+
 php5 (5.2.5-3) unstable; urgency=high
 
   * zend_parse_parameters does not handle size_t's, causing issues with

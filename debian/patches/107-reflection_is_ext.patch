@@ -1,8 +1,8 @@
-Index: php5-5.2.0/ext/reflection/config.m4
+Index: php5-5.2.6/ext/reflection/config.m4
 ===================================================================
---- php5-5.2.0.orig/ext/reflection/config.m4	2007-03-18 22:56:59.000000000 +0100
-+++ php5-5.2.0/ext/reflection/config.m4	2007-03-18 22:58:44.000000000 +0100
-@@ -2,7 +2,7 @@
+--- php5-5.2.6.orig/ext/reflection/config.m4
++++ php5-5.2.6/ext/reflection/config.m4
+@@ -2,7 +2,7 @@ dnl $Id: config.m4,v 1.4.2.3.2.1 2006/08
  dnl config.m4 for extension reflection
  
  PHP_ARG_ENABLE(reflection, whether to enable reflection support,

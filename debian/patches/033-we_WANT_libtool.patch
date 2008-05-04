@@ -1,8 +1,8 @@
-Index: php5-5.2.0/build/build2.mk
+Index: php5-5.2.6/build/build2.mk
 ===================================================================
---- php5-5.2.0.orig/build/build2.mk	2007-03-18 22:57:00.000000000 +0100
-+++ php5-5.2.0/build/build2.mk	2007-03-18 22:58:41.000000000 +0100
-@@ -52,6 +52,11 @@
+--- php5-5.2.6.orig/build/build2.mk
++++ php5-5.2.6/build/build2.mk
+@@ -52,6 +52,11 @@ $(TOUCH_FILES):
  
  aclocal.m4: configure.in acinclude.m4
  	@echo rebuilding $@
