@@ -9,7 +9,7 @@ if [ "$1" != "remove" -a "$1" != "purge" ]; then
 fi
 
 if [ -e /etc/apache2/apache2.conf ]; then
-	a2dismod php5 || true
+	a2dismod php5filter || true
 fi
 
 exit 0

@@ -23,7 +23,7 @@ reload_apache()
 
 if [ -n "$2" ]; then
 # we're upgrading. test if we're enabled, and if so, restart to reload the module.
-	if [ -e /etc/apache2/mods-enabled/php5.load ]; then
+	if [ -e /etc/apache2/mods-enabled/php5filter.load ]; then
 		reload_apache
 	fi
         exit 0
@@ -32,7 +32,7 @@ fi
 if [ -e /etc/apache2/apache2.conf ]; then
 # Enable the module, but hide a2enmod's misleading message about apachectl
 # and force-reload the thing ourselves.
-        a2enmod php5 >/dev/null || true
+        a2enmod php5filter >/dev/null || true
 	reload_apache
 fi
 

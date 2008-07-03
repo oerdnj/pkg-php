@@ -483,7 +483,7 @@ Index: php5-5.2.6/Zend/zend_alloc.c
 +#if SUHOSIN_PATCH
 +
 +# define SUHOSIN_MM_CHECK_CANARIES(block, MFUNCTION) do { \
-+        size_t *p = SUHOSIN_MM_END_CANARY_PTR(block), check; \
++        char *p = SUHOSIN_MM_END_CANARY_PTR(block); size_t check; \
 +		if (((block)->info.canary_1 != heap->canary_1) || ((block)->info.canary_2 != heap->canary_2)) { \
 +			canary_mismatch: \
 +            zend_suhosin_log(S_MEMORY, "canary mismatch on " MFUNCTION " - heap overflow detected"); \
@@ -503,10 +503,10 @@ Index: php5-5.2.6/Zend/zend_alloc.c
 +    } while (0)      
 +
 +# define SUHOSIN_MM_END_CANARY_PTR(block) \
-+	(size_t*)(((char*)(ZEND_MM_DATA_OF(block))) + ((zend_mm_block*)(block))->info.size + END_MAGIC_SIZE)
++	(char*)(((char*)(ZEND_MM_DATA_OF(block))) + ((zend_mm_block*)(block))->info.size + END_MAGIC_SIZE)
 +
 +# define SUHOSIN_MM_SET_END_CANARY(block) do { \
-+		size_t *p = SUHOSIN_MM_END_CANARY_PTR(block); \
++		char *p = SUHOSIN_MM_END_CANARY_PTR(block); \
 +		memcpy(p, &heap->canary_3, CANARY_SIZE); \
 +	} while (0)
 +

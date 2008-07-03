@@ -1,3 +1,35 @@
+php5 (5.2.6-2) unstable; urgency=high
+
+  [ Raphael Geissert ]
+  * Lintian-based changes:
+    - also install a lintian override for libapache2-mod-php5filter
+    - fixed the generic lintian overrides so they are meaningful
+    - dropping linda overrides, linda is gone now
+    - s/meta-package/metapackage
+  * debian/control:
+    - Updated php5's description so it mentions three instead of 
+       only two server-side SAPIs
+    - Depend on php5-cli in php-pear (Closes: #482517)
+      + Previous change reverted because of PEAR packages FTBFS
+    - {B-,}Depend on tzdata to avoid crashes caused by the tz ext patch
+    - Dropped some versioned {b-,}dependencies that are satisified
+       even on sarge
+  * php.ini-*: state that when using a custom save_path,
+    gc_probability should also be set (Closes: #388808, #321460)
+  * tzdb-nofree_ents_ifnotzdata.patch: avoid free'ing ents when the tz dir does
+    not exist (Closes: #483461)
+
+  [ Sean Finney ]
+  * Fix for CVE-2008-2829: unsafe usage of deprecated imap functions
+    Patch: CVE-2008-2829.patch
+  * Modifications to suhosin.patch due to alignment problems on some
+    architectures.  Thanks to Stefan Esser for the initial suggestion.
+    (Closes: #481737).
+  * Rename the apache2 filter module to libphp5filter.so, to prevent
+    conflicting filenames for symbols in the debug package.
+
+ -- Sean Finney <seanius@debian.org>  Thu, 03 Jul 2008 08:14:45 +0200
+
 php5 (5.2.6-1) unstable; urgency=medium
 
   * New upstream release. Fixes several security issues of unknown impact:

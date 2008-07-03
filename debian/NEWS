@@ -1,4 +1,4 @@
-php5 (5.2.6-1) unstable; urgency=low
+php5 (5.2.6-1) unstable; urgency=medium
 
   New php5-dbg package.
 

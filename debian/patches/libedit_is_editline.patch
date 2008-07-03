@@ -2,15 +2,6 @@ Index: php5-5.2.6/ext/readline/config.m4
 ===================================================================
 --- php5-5.2.6.orig/ext/readline/config.m4
 +++ php5-5.2.6/ext/readline/config.m4
-@@ -12,7 +12,7 @@ fi
- 
- if test "$PHP_READLINE" && test "$PHP_READLINE" != "no"; then
-   for i in $PHP_READLINE /usr/local /usr; do
--    test -f $i/include/readline/readline.h && READLINE_DIR=$i && break
-+    test -f $i/include/editline/readline.h && READLINE_DIR=$i && break
-   done
- 
-   if test -z "$READLINE_DIR"; then
 @@ -64,7 +64,7 @@ if test "$PHP_READLINE" && test "$PHP_RE
  elif test "$PHP_LIBEDIT" != "no"; then
  
@@ -24,15 +15,15 @@ Index: php5-5.2.6/ext/readline/readline.c
 ===================================================================
 --- php5-5.2.6.orig/ext/readline/readline.c
 +++ php5-5.2.6/ext/readline/readline.c
-@@ -33,9 +33,9 @@
+@@ -33,8 +33,10 @@
  #define rl_completion_matches completion_matches
  #endif
  
--#include <readline/readline.h>
++#ifdef HAVE_LIBEDIT
 +#include <editline/readline.h>
- #ifndef HAVE_LIBEDIT
--#include <readline/history.h>
-+#include <editline/history.h>
++#else
+ #include <readline/readline.h>
+-#ifndef HAVE_LIBEDIT
+ #include <readline/history.h>
  #endif
  
- PHP_FUNCTION(readline);

@@ -165,14 +165,16 @@ Index: php5-5.2.6/php.ini-dist
  
  ; Whether to use cookies.
  session.use_cookies = 1
-@@ -1026,7 +974,10 @@ session.serialize_handler = php
+@@ -1026,7 +974,12 @@ session.serialize_handler = php
  ; e.g. 1/100 means there is a 1% chance that the GC process starts
  ; on each request.
  
 -session.gc_probability = 1
 +; This is disabled in the Debian packages, due to the strict permissions
 +; on /var/lib/php5.  Instead of setting this here, see the cronjob at
-+; /etc/cron.d/php5, which uses the session.gc_maxlifetime setting below
++; /etc/cron.d/php5, which uses the session.gc_maxlifetime setting below.
++; php scripts using their own session.save_path should make sure garbage
++; collection is enabled by setting session.gc_probability
 +;session.gc_probability = 0
  session.gc_divisor     = 100
  
@@ -267,14 +269,16 @@ Index: php5-5.2.6/php.ini-recommended
  
  ; Whether to use cookies.
  session.use_cookies = 1
-@@ -1076,7 +1024,10 @@ session.serialize_handler = php
+@@ -1076,7 +1024,12 @@ session.serialize_handler = php
  ; e.g. 1/100 means there is a 1% chance that the GC process starts
  ; on each request.
  
 -session.gc_probability = 1
 +; This is disabled in the Debian packages, due to the strict permissions
 +; on /var/lib/php5.  Instead of setting this here, see the cronjob at
-+; /etc/cron.d/php5, which uses the session.gc_maxlifetime setting below
++; /etc/cron.d/php5, which uses the session.gc_maxlifetime setting below.
++; php scripts using their own session.save_path should make sure garbage
++; collection is enabled by setting session.gc_probability
 +;session.gc_probability = 0
  session.gc_divisor     = 1000
  

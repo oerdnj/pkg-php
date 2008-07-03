@@ -359,11 +359,11 @@ install: build
 	# Add here commands to install the package into debian/php5.
 	# install apache2 DSO filter module
 	cp apache2filter-build/.libs/libphp5.so \
-		debian/libapache2-mod-php5filter/`apxs2 -q LIBEXECDIR`/
+		debian/libapache2-mod-php5filter/`apxs2 -q LIBEXECDIR`/libphp5filter.so
 	cp debian/libapache2-mod-php5filter.load \
-		debian/libapache2-mod-php5filter/etc/apache2/mods-available/php5.load
+		debian/libapache2-mod-php5filter/etc/apache2/mods-available/php5filter.load
 	cp debian/libapache2-mod-php5filter.conf \
-		debian/libapache2-mod-php5filter/etc/apache2/mods-available/php5.conf
+		debian/libapache2-mod-php5filter/etc/apache2/mods-available/php5filter.conf
 
 	# sanitize php.ini file
 	cat php.ini-dist | tr "\t" " " > debian/php5-common/usr/share/php5/php.ini-dist
@@ -459,13 +459,17 @@ install: build
 	# install lintian overrides
 	cp debian/php5.lintian-overrides $(CURDIR)/debian/php5-common/usr/share/lintian/overrides/php5-common
 
-	ext=$(shell $(CURDIR)/debian/php5-dev/usr/bin/php-config5 --extension-dir | cut -b2- ); \
-	for sapi in php5-cli php5-cgi libapache2-mod-php5; do \
+	# install some generic lintian overrides
+	ext=`debian/php5-dev/usr/bin/php-config5 --extension-dir | cut -b2- `; \
+	for sapi in php5-cli php5-cgi libapache2-mod-php5 libapache2-mod-php5filter; do \
 		mkdir -p $(CURDIR)/debian/"$$sapi"/usr/share/lintian/overrides/; \
 		printf "%s: package-contains-empty-directory %s/\n" \
 			"$$sapi" "$${ext}" \
 			> $(CURDIR)/debian/"$$sapi"/usr/share/lintian/overrides/"$$sapi"; \
 	done
+
+	# directories cleanup:
+	-rmdir -p debian/libapache2-mod-php5/usr/share/man/man1
 
 	touch install-stamp
 
@@ -550,9 +554,6 @@ binary-arch: build install
 	dh_link -s
 	dh_compress -s -Xphp.ini
 	dh_fixperms -s -X /var/lib/php5
-	mkdir -p debian/php5-common/usr/share/linda/overrides
-	echo "Tag: non-standard-dir-perm" >> debian/php5-common/usr/share/linda/overrides/php5-common
-	echo "Data: /var/lib/php5.*" >> debian/php5-common/usr/share/linda/overrides/php5-common
 	dh_installdeb -s
 	dh_shlibdeps -s
 

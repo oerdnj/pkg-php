@@ -5,7 +5,6 @@
 013-force_getaddrinfo.patch
 017-pread_pwrite_disable.patch
 019-z_off_t_as_long.patch
-027-readline_is_editline.patch
 029-php.ini_paranoid.patch
 033-we_WANT_libtool.patch
 034-apache2_umask_fix.patch
@@ -31,3 +30,6 @@ fix_broken_upstream_tests.patch
 use_embedded_timezonedb.patch
 manpage_spelling.patch
 force_libmysqlclient_r.patch
+tzdb-nofree_ents_ifnotzdata.patch
+CVE-2008-2829.patch
+libedit_is_editline.patch
