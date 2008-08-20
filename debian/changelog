@@ -1,3 +1,40 @@
+php5 (5.2.6-3) unstable; urgency=high
+
+  [ Thijs Kinkhorst ]
+  * Drop unneeded php5-timezonedb Suggests and obsolete php3 Conflicts.
+  * Add documentation about the timezonedb change (Closes: #492025).
+
+  [ Adam Conrad ]
+  * Modify 033-we_WANT_libtool.patch to cope with newer versions of
+    libtool that only copy auxilliary files when --install is used,
+    while still working with older versions that DTRT without.
+
+  [ Raphael Geissert ]
+  * debian/rules:
+    + Avoid installing useless test suites in php-pear (Closes: #478995)
+    + Remove any empty directory in php-pear
+    + Also get rid of usr/share/php/data/Structures_Graph/*
+      - Those were meant to be used by upstream maintainer
+  * debian/php5-dev.lintian-overrides:
+    - usr/lib/php5/build/run-tests.php is not meant to be used directly
+  * debian/control: bumped Standards Version to 3.8.0, no changes needed
+  * bad_whatis_entries.patch: fixes the whatis entries of all the manpages
+  * deprecated_freetds_check.patch: fixes the freetds detection routine
+    + Closes: #494230
+    - Thanks to jklowden@freetds.org and the Gentoo folks for the patch
+      (RC bugfix, upload urgency bumped)
+  * debian/libapache2-mod-php5*-{prerm,postinst}:
+    - Create a status file when removing the package (but not purging)
+       while having the mod enabled so reinstallation of the package
+       does not end up disabling the module (Closes: #471548)
+
+  [ Sean Finney ]
+  * Bump dependency on libmysqlclient15off to require the version from
+    lenny or later, in order to avoid subtle problems not previously detected
+    with libmysqlclient_r on mixed etch/lenny/sid systems (closes: #495575).
+
+ -- Sean Finney <seanius@debian.org>  Wed, 20 Aug 2008 19:32:02 +0200
+
 php5 (5.2.6-2) unstable; urgency=high
 
   [ Raphael Geissert ]

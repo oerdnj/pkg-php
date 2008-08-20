@@ -30,7 +30,7 @@ QUILT_NO_DIFF_TIMESTAMPS=1
 export QUILT_DIFF_OPTS QUILT_NO_DIFF_TIMESTAMPS
 
 PROG_SENDMAIL = /usr/sbin/sendmail
-CFLAGS = -O2 -Wall -fsigned-char -fno-strict-aliasing 
+CFLAGS += -O2 -Wall -fsigned-char -fno-strict-aliasing 
 # LFS support
 ifneq (yes,$(PHP5_COMPAT))
   CFLAGS += $(shell getconf LFS_CFLAGS)
@@ -385,7 +385,7 @@ install: build
 			main/win95nt.h
 
 	# install PEAR
-	cp -r pear-build/* debian/php-pear/
+	cp -a pear-build/* debian/php-pear/
 
 	# everything under usr/share/php/data except 'PEAR' is b0rken
 	# and actually needs to be fixed
@@ -393,8 +393,15 @@ install: build
 		$(RM) debian/php-pear/usr/share/php/data/Structures_Graph/LICENSE
 	[ ! -f debian/php-pear/usr/share/php/doc/PEAR/INSTALL ] || \
 		$(RM) debian/php-pear/usr/share/php/doc/PEAR/INSTALL
+	for f in Structures_Graph/publish.sh Structures_Graph/package.sh \
+		Structures_Graph/genpackage.xml.pl; do \
+		$(RM) debian/php-pear/usr/share/php/data/$$f; \
+	done
+	# we don't want test suites
+	$(RM) -r debian/php-pear/usr/share/php/test/
 	[ -d debian/php-pear/usr/share/php/doc ] && { \
-		mv debian/php-pear/usr/share/php/doc/* debian/php-pear/usr/share/doc/php-pear/PEAR/; \
+		mv debian/php-pear/usr/share/php/doc/* \
+			debian/php-pear/usr/share/doc/php-pear/PEAR/; \
 		$(RM) -r debian/php-pear/usr/share/php/doc; \
 		ln -s ../doc/php-pear/PEAR debian/php-pear/usr/share/php/doc; \
 	}
@@ -458,6 +465,7 @@ install: build
 
 	# install lintian overrides
 	cp debian/php5.lintian-overrides $(CURDIR)/debian/php5-common/usr/share/lintian/overrides/php5-common
+	cp debian/php5-dev.lintian-overrides $(CURDIR)/debian/php5-dev/usr/share/lintian/overrides/php5-dev
 
 	# install some generic lintian overrides
 	ext=`debian/php5-dev/usr/bin/php-config5 --extension-dir | cut -b2- `; \
@@ -465,11 +473,12 @@ install: build
 		mkdir -p $(CURDIR)/debian/"$$sapi"/usr/share/lintian/overrides/; \
 		printf "%s: package-contains-empty-directory %s/\n" \
 			"$$sapi" "$${ext}" \
-			> $(CURDIR)/debian/"$$sapi"/usr/share/lintian/overrides/"$$sapi"; \
+			>> $(CURDIR)/debian/"$$sapi"/usr/share/lintian/overrides/"$$sapi"; \
 	done
 
 	# directories cleanup:
 	-rmdir -p debian/libapache2-mod-php5/usr/share/man/man1
+	-find debian/php-pear -type d -exec rmdir --ignore-fail-on-non-empty -p '{}' \; >/dev/null 2>&1
 
 	touch install-stamp
 

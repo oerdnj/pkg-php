@@ -7,6 +7,7 @@ Table of Contents:
 * php5-cgi and apache2
 * Restarting your web server after installing modules
 * Configuration layout
+* Timezone data from system timezone database
 * Further documentation, errata, etc
 
 
@@ -128,6 +129,21 @@ but at the same time if you want to have SAPI-specific configuration,
 you can just remove the symlink.
 
 sean finney <seanius@debian.org>  Thu, 19 Oct 2006 23:33:05 +0200
+
+Timezone data from system timezone database
+---------------------------------------------------------------------
+
+Debian PHP has been patched to use of the system wide timezone database
+from the tzdata package, making sure any updates there are automatically
+used by PHP aswell.
+
+Note that this requires that the PHP process has access to /etc/localtime
+and /usr/share/zoneinfo. For any regular installation this should be the
+case, but in specific secured environments when reading the timezone
+database is impossible PHP will give a "Timezone database is corrupt -
+this should *never* happen!" error.
+ 
+Thijs Kinkhorst <thijs@debian.org>  Wed, 23 Jul 2008 17:42:06 +0200
 
 Further documentation, errata, etc
 ---------------------------------------------------------------------

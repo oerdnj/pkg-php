@@ -22,6 +22,10 @@ reload_apache()
 }
 
 if [ -n "$2" ]; then
+	# recover the previous state
+	if [ -e /etc/php5/apache2filter/.start ]; then
+	    a2enmod php5filter >/dev/null || true
+	fi
 # we're upgrading. test if we're enabled, and if so, restart to reload the module.
 	if [ -e /etc/apache2/mods-enabled/php5filter.load ]; then
 		reload_apache

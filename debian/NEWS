@@ -1,18 +1,25 @@
 php5 (5.2.6-1) unstable; urgency=medium
 
-  New php5-dbg package.
+  * Now uses system timezone database.
+
+  Debian PHP now makes use of the system wide timezone database from the
+  tzdata package, making sure any updates there are automatically used
+  by PHP aswell. Note that this requires that the PHP process has access
+  to /etc/localtime and /usr/share/zoneinfo (this is usually the case).
+
+  * New php5-dbg package.
 
   We are now shipping a php5-dgb package which will greatly aid in finding
   the cause of many crashes that you may experience.  So if you are going to
   report a bug for a reproducible crash, please install this package before
   sending a backtrace.
 
-  New libapache2-mod-php5filter package.
+  * New libapache2-mod-php5filter package.
 
   We are now also shipping a new libapache2-mod-php5filter package which
   uses the "Apache 2.0 filter-module support via DSO through APXS".
 
- -- Sean Finney <seanius@debian.org>  Sun, 04 May 2008 13:58:20 +0200
+ -- Thijs Kinkhorst <thijs@debian.org>  Wed, 23 Jul 2008 17:42:06 +0200
 
 php5 (5.2.3-2) unstable; urgency=low
 
