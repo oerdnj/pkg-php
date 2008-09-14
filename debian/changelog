@@ -1,3 +1,22 @@
+php5 (5.2.6-4) unstable; urgency=high
+
+  [ Sean Finney ]
+  * Take three unreleased fixes from upstream CVS:
+    - CVE-2008-3658: Buffer overflow in the imageloadfont function.
+      Patch: CVE-2008-3658.patch (closes: #499989)
+    - CVE-2008-3659: Buffer overflow in the memnstr function.
+      Patch: CVE-2008-3659.patch (closes: #499988)
+    - CVE-2008-3660: Remote DoS in fastcgi module
+      Patch: CVE-2008-3660.patch (closes: #499987)
+
+  [ Raphael Geissert ]
+  * snmp_leaks.patch: fixes memory leaks in the snmp extension (Closes: #423296)
+    - Thanks to Rodrigo Campos <rodrigocc@gmail.com> for the follow up
+    - Thanks to Federico Cuello for the original patch
+  * php5-dev.lintian-override: fix it so it actually works
+
+ -- Sean Finney <seanius@debian.org>  Sun, 14 Sep 2008 14:25:11 +0200
+
 php5 (5.2.6-3) unstable; urgency=high
 
   [ Thijs Kinkhorst ]
@@ -131,7 +150,7 @@ php5 (5.2.6-1) unstable; urgency=medium
     - adds notes (Debian-specific) of which security features applications 
       should not rely on
     - add more information of why some variables were enabled
-    - reorder the description of chagnes to suit the location in the config file
+    - reorder the description of changes to suit the location in the config file
     - add notes of deprecated features in PHP6
     - add more (suggested) changes to the session module to make a more secure
       use and storage of session IDs.

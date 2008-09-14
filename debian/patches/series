@@ -35,3 +35,7 @@ CVE-2008-2829.patch
 libedit_is_editline.patch
 bad_whatis_entries.patch
 deprecated_freetds_check.patch
+snmp_leaks.patch
+CVE-2008-3658.patch
+CVE-2008-3659.patch
+CVE-2008-3660.patch
