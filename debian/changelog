@@ -1,3 +1,11 @@
+php5 (5.2.6-5) unstable; urgency=high
+
+  * Update debian/copyright to document that the DFSG-unfree email
+    requirement in ext/standard/rand.c has been rescinded by the
+    copyrightholder (Closes: #498621).
+
+ -- Thijs Kinkhorst <thijs@debian.org>  Sun, 05 Oct 2008 11:32:35 +0200
+
 php5 (5.2.6-4) unstable; urgency=high
 
   [ Sean Finney ]

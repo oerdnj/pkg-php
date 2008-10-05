@@ -27,6 +27,16 @@ Noteworthy/non-trivial patches:
 Upstream Authors: The PHP group for PHP5, Andi Gutmans and Zeev Suraski
 for libzend
 
+The file ext/standard/rand.c contains the following clause with a statement
+that isn't compatible with the DFSG:
+  "The code as Shawn received it included the following notice:
+
+     Copyright (C) 1997 Makoto Matsumoto and Takuji Nishimura.  When
+     you use this, send an e-mail to <matumoto@math.keio.ac.jp> with
+     an appropriate reference to your work."
+However, this requirement has been rescinded by the copyright holder in
+message <48E334A2.6050301@math.sci.hiroshima-u.ac.jp> to bug #498621.
+
 Two different licences apply to this package, one for PHP5, the other for
 libzend. Both licences are shown here below.
 
