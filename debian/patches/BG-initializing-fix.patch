@@ -1,0 +1,23 @@
+proper initialization for uid/gid in apache sapis.
+downloaded from
+http://cvs.php.net/viewvc.cgi/php-src/ext/standard/basic_functions.c?r1=1.725.2.31.2.78&r2=1.725.2.31.2.79&view=patch
+--- php5-5.2.6.dfsg.1.orig/ext/standard/basic_functions.c
++++ php5-5.2.6.dfsg.1/ext/standard/basic_functions.c
+@@ -3919,6 +3919,8 @@ static void basic_globals_ctor(php_basic
+ 	memset(&BG(mblen_state), 0, sizeof(BG(mblen_state)));
+ #endif
+ 	BG(incomplete_class) = incomplete_class_entry;
++	BG(page_uid) = -1;
++	BG(page_gid) = -1;
+ }
+ 
+ 
+@@ -4221,6 +4223,8 @@ PHP_RSHUTDOWN_FUNCTION(basic)
+ 
+ 	PHP_RSHUTDOWN(user_filters)(SHUTDOWN_FUNC_ARGS_PASSTHRU);
+ 	
++	BG(page_uid) = -1;
++	BG(page_gid) = -1;
+ 	return SUCCESS;
+ }
+ 

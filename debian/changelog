@@ -1,3 +1,35 @@
+php5 (5.2.6.dfsg.1-1) unstable; urgency=high
+
+  [ Sean Finney ]
+  * Incorporate previous NMU.
+  * Updated system tzdata patch from Joe Orton.
+  * Removed tzdb-nofree_ents_ifnotzdata.patch, which is now incorporated
+    into Joe's patch.
+  * Two backported fixes from 5.2.8, thanks to Olivier Bonvalet for looking
+    them up.
+    - Upstream bug #46157 (PDOStatement::fetchObject prototype error)
+      Patch: pdo-fetchobject-prototype-error.patch
+    - Upstream bug #46308 (Invalid write in zend object handler / getter)
+      Patch: zend_object_handlers-invalid-write.patch
+  * Security related fixes:
+    - Incorporate fix from 5.3 for proper initialization of uid/gid for
+      apache2 sapi.
+      Patch: BG-initializing-fix.patch
+    - CVE-2008-5557: heap overflows in the mbstring extension.
+      Patch: CVE-2008-5557.patch (closes: #511493).
+
+  [ Thijs Kinkhorst ]
+  * Correct description typo, thanks Mathias Brodala (Closes: #508989).
+
+ -- Sean Finney <seanius@debian.org>  Mon, 12 Jan 2009 12:12:36 +0100
+
+php5 (5.2.6.dfsg.1-0.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Remove exts/dbase from orig tarball (Closes: #341420)
+
+ -- Ben Hutchings <ben@decadent.org.uk>  Sat, 29 Nov 2008 19:19:28 +0000
+
 php5 (5.2.6-5) unstable; urgency=high
 
   * Update debian/copyright to document that the DFSG-unfree email
