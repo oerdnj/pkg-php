@@ -1,3 +1,18 @@
+php5 (5.2.6.dfsg.1-2) unstable; urgency=low
+
+  [ Sean Finney ]
+  * Make sure a file used to track state is properly removed in the 
+    postinst, thanks Raphael (closes: #511049).
+
+  [ Thijs Kinkhorst ]
+  * Fix watch file to mangle version.
+
+  [ Raphael Geissert ]
+  * Ship script used to take an upstream tarball and remove the non
+    DFSG-free stuff, update watch file accordingly.
+
+ -- Sean Finney <seanius@debian.org>  Tue, 13 Jan 2009 08:24:36 +0100
+
 php5 (5.2.6.dfsg.1-1) unstable; urgency=high
 
   [ Sean Finney ]
