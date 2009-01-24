@@ -33,7 +33,7 @@ force_libmysqlclient_r.patch
 CVE-2008-2829.patch
 libedit_is_editline.patch
 bad_whatis_entries.patch
-deprecated_freetds_check.patch
+gentoo/freetds-compat.patch
 snmp_leaks.patch
 CVE-2008-3658.patch
 CVE-2008-3659.patch
@@ -42,3 +42,13 @@ BG-initializing-fix.patch
 CVE-2008-5557.patch
 pdo-fetchobject-prototype-error.patch
 zend_object_handlers-invalid-write.patch
+dba-inifile-truncation.patch
+gentoo/010_ticks-zts-crashes.patch
+gentoo/019_new-memory-corruption.patch
+gentoo/009_array-function-crashes.patch
+gentoo/015_CVE-2008-2665-wrapper-safemode-bypass.patch
+gentoo/017_xmlrpc-invalid-callback-crash.patch
+gentoo/007_dom-setAttributeNode-crash.patch
+gentoo/006_PDORow-crash.patch
+gentoo/005_stream_context_set_params-crash.patch
+CVE-2008-5658.patch

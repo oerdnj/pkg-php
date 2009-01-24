@@ -1,0 +1,68 @@
+Fixed bug #45352 (Segmentation fault because of tick function on second request)
+http://cvs.php.net/viewvc.cgi/php-src/main/main.c?r1=1.640.2.23.2.62&r2=1.640.2.23.2.63&diff_format=u
+http://cvs.php.net/viewvc.cgi/php-src/main/php_ticks.c?r1=1.20.2.1.2.2&r2=1.20.2.1.2.3&diff_format=u
+http://cvs.php.net/viewvc.cgi/php-src/main/php_ticks.h?r1=1.14.2.1.2.2&r2=1.14.2.1.2.3&diff_format=u
+
+diff -r 1cc016a9e5d9 main/main.c
+--- a/main/main.c	Thu Jun 19 18:29:09 2008 +0200
++++ b/main/main.c	Tue Jul 01 19:17:54 2008 +0200
+@@ -18,7 +18,7 @@
+    +----------------------------------------------------------------------+
+ */
+ 
+-/* $Id: main.c,v 1.640.2.23.2.62 2008/03/05 20:58:08 pajoye Exp $ */
++/* $Id: main.c,v 1.640.2.23.2.63 2008/06/25 12:18:21 dmitry Exp $ */
+ 
+ /* {{{ includes
+  */
+@@ -1435,6 +1435,8 @@
+ 	EG(opline_ptr) = NULL;
+ 	EG(active_op_array) = NULL;
+ 
++	php_deactivate_ticks(TSRMLS_C);
++
+ 	/* 1. Call all possible shutdown functions registered with register_shutdown_function() */
+ 	if (PG(modules_activated)) zend_try {
+ 		php_call_shutdown_functions(TSRMLS_C);
+diff -r 1cc016a9e5d9 main/php_ticks.c
+--- a/main/php_ticks.c	Thu Jun 19 18:29:09 2008 +0200
++++ b/main/php_ticks.c	Tue Jul 01 19:17:54 2008 +0200
+@@ -16,7 +16,7 @@
+    +----------------------------------------------------------------------+
+ */
+ 
+-/* $Id: php_ticks.c,v 1.20.2.1.2.2 2007/12/31 07:20:15 sebastian Exp $ */
++/* $Id: php_ticks.c,v 1.20.2.1.2.3 2008/06/25 12:18:22 dmitry Exp $ */
+ 
+ #include "php.h"
+ #include "php_ticks.h"
+@@ -25,6 +25,11 @@
+ {
+ 	zend_llist_init(&PG(tick_functions), sizeof(void(*)(int)), NULL, 1);
+ 	return SUCCESS;
++}
++
++void php_deactivate_ticks(TSRMLS_D)
++{
++	zend_llist_clean(&PG(tick_functions));
+ }
+ 
+ void php_shutdown_ticks(TSRMLS_D)
+diff -r 1cc016a9e5d9 main/php_ticks.h
+--- a/main/php_ticks.h	Thu Jun 19 18:29:09 2008 +0200
++++ b/main/php_ticks.h	Tue Jul 01 19:17:54 2008 +0200
+@@ -16,12 +16,13 @@
+    +----------------------------------------------------------------------+
+ */
+ 
+-/* $Id: php_ticks.h,v 1.14.2.1.2.2 2007/12/31 07:20:15 sebastian Exp $ */
++/* $Id: php_ticks.h,v 1.14.2.1.2.3 2008/06/25 12:18:22 dmitry Exp $ */
+ 
+ #ifndef PHP_TICKS_H
+ #define PHP_TICKS_H
+ 
+ int php_startup_ticks(TSRMLS_D);
++void php_deactivate_ticks(TSRMLS_D);
+ void php_shutdown_ticks(TSRMLS_D);
+ void php_run_ticks(int count);
+ 

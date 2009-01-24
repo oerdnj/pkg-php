@@ -1,0 +1,208 @@
+Fixed bug #45312 (Segmentation fault on second request for array functions).
+http://cvs.php.net/viewvc.cgi/php-src/ext/standard/array.c?r1=1.308.2.21.2.57&r2=1.308.2.21.2.58&diff_format=u
+http://cvs.php.net/viewvc.cgi/php-src/ext/standard/tests/array/bug45312.phpt?revision=1.1.2.1&view=markup
+
+diff -r b542651437b3 ext/standard/array.c
+--- a/ext/standard/array.c	Wed Jun 18 20:03:11 2008 +0200
++++ b/ext/standard/array.c	Thu Jun 19 18:24:36 2008 +0200
+@@ -667,6 +667,7 @@
+ 		PHP_ARRAY_CMP_FUNC_RESTORE();
+ 		WRONG_PARAM_COUNT;
+ 	}
++
+ 	target_hash = HASH_OF(*array);
+ 	if (!target_hash) {
+ 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "The argument should be an array");
+@@ -675,6 +676,7 @@
+ 	}
+ 
+ 	PHP_ARRAY_CMP_FUNC_CHECK(BG(user_compare_func_name))
++	BG(user_compare_fci_cache).initialized = 0;
+ 	
+ 	if (zend_hash_sort(target_hash, zend_qsort, array_user_compare, 1 TSRMLS_CC) == FAILURE) {
+ 		PHP_ARRAY_CMP_FUNC_RESTORE();
+@@ -707,6 +709,7 @@
+ 	}
+ 
+ 	PHP_ARRAY_CMP_FUNC_CHECK(BG(user_compare_func_name))
++	BG(user_compare_fci_cache).initialized = 0;
+ 
+ 	if (zend_hash_sort(target_hash, zend_qsort, array_user_compare, 0 TSRMLS_CC) == FAILURE) {
+ 		PHP_ARRAY_CMP_FUNC_RESTORE();
+@@ -790,6 +793,7 @@
+ 	}
+ 
+ 	PHP_ARRAY_CMP_FUNC_CHECK(BG(user_compare_func_name))
++	BG(user_compare_fci_cache).initialized = 0;
+ 
+ 	if (zend_hash_sort(target_hash, zend_qsort, array_user_key_compare, 0 TSRMLS_CC) == FAILURE) {
+ 		PHP_ARRAY_CMP_FUNC_RESTORE();
+@@ -2988,6 +2992,7 @@
+ 		efree(callback_name);
+ 		intersect_data_compare_func = zval_user_compare;
+ 		BG(user_compare_func_name) = args[argc];
++		BG(user_compare_fci_cache).initialized = 0;
+ 	} else if (data_compare_type == INTERSECT_COMP_DATA_INTERNAL) {
+ 		intersect_data_compare_func = zval_compare;
+ 	}
+@@ -3099,6 +3104,7 @@
+ 			efree(callback_name);
+ 
+ 			BG(user_compare_func_name) = args[arr_argc];
++			BG(user_compare_fci_cache).initialized = 0;
+ 		} else {
+ 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "data_compare_type is %d. This should never happen. Please report as a bug", data_compare_type);
+ 			return;
+@@ -3160,6 +3166,7 @@
+ 				intersect_key_compare_func = array_user_key_compare;
+ 				intersect_data_compare_func = array_data_compare;
+ 				BG(user_compare_func_name) = args[arr_argc];
++				BG(user_compare_fci_cache).initialized = 0;
+ 		} else if (data_compare_type == INTERSECT_COMP_DATA_USER
+ 				&&
+ 				key_compare_type == INTERSECT_COMP_KEY_USER) {
+@@ -3187,6 +3194,7 @@
+ 				intersect_key_compare_func = array_user_key_compare;
+ 				intersect_data_compare_func = array_user_compare;
+ 				BG(user_compare_func_name) = args[arr_argc + 1];/* data - key */
++				BG(user_compare_fci_cache).initialized = 0;
+ 		} else {
+ 			efree(args);
+ 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "data_compare_type is %d. key_compare_type is %d. This should never happen. Please report as a bug", data_compare_type, key_compare_type);
+@@ -3245,6 +3253,7 @@
+ 	if ((behavior & INTERSECT_NORMAL) && data_compare_type == INTERSECT_COMP_DATA_USER) {
+ 		/* array_uintersect() */
+ 		BG(user_compare_func_name) = args[arr_argc];
++		BG(user_compare_fci_cache).initialized = 0;
+ 	}
+ 	
+ 	/* go through the lists and look for common values */
+@@ -3254,6 +3263,7 @@
+ 			key_compare_type == INTERSECT_COMP_KEY_USER) {
+ 
+ 			BG(user_compare_func_name) = args[argc - 1];
++			BG(user_compare_fci_cache).initialized = 0;
+ 		}
+ 
+ 		for (i = 1; i < arr_argc; i++) {
+@@ -3275,11 +3285,13 @@
+ 					*/ 
+ 					if (data_compare_type == INTERSECT_COMP_DATA_USER) {
+ 						BG(user_compare_func_name) = args[arr_argc];
++						BG(user_compare_fci_cache).initialized = 0;
+ 					}
+ 				 	if (intersect_data_compare_func(ptrs[0], ptrs[i] TSRMLS_CC) != 0) {
+ 				 		c = 1;
+ 				 		if (key_compare_type == INTERSECT_COMP_KEY_USER) {
+ 				 			BG(user_compare_func_name) = args[argc - 1];
++							BG(user_compare_fci_cache).initialized = 0;
+ 				 			/* When KEY_USER, the last parameter is always the callback */
+ 				 		}
+ 				 		/* we are going to the break */
+@@ -3466,6 +3478,7 @@
+ 		efree(callback_name);
+ 		diff_data_compare_func = zval_user_compare;
+ 		BG(user_compare_func_name) = args[argc];
++		BG(user_compare_fci_cache).initialized = 0;
+ 	} else if (data_compare_type == DIFF_COMP_DATA_INTERNAL) {
+ 		diff_data_compare_func = zval_compare;
+ 	}
+@@ -3577,6 +3590,7 @@
+ 			efree(callback_name);
+ 
+ 			BG(user_compare_func_name) = args[arr_argc];
++			BG(user_compare_fci_cache).initialized = 0;
+ 		} else {
+ 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "data_compare_type is %d. This should never happen. Please report as a bug", data_compare_type);
+ 			return;		
+@@ -3638,6 +3652,7 @@
+ 			diff_key_compare_func = array_user_key_compare;
+ 			diff_data_compare_func = array_data_compare;
+ 			BG(user_compare_func_name) = args[arr_argc];
++			BG(user_compare_fci_cache).initialized = 0;
+ 		} else if (data_compare_type == DIFF_COMP_DATA_USER 
+ 				&& 
+ 			key_compare_type == DIFF_COMP_KEY_USER) {
+@@ -3665,6 +3680,7 @@
+ 			diff_key_compare_func = array_user_key_compare;
+ 			diff_data_compare_func = array_user_compare;
+ 			BG(user_compare_func_name) = args[arr_argc + 1];/* data - key*/
++			BG(user_compare_fci_cache).initialized = 0;
+ 		} else {
+ 			efree(args);
+ 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "data_compare_type is %d. key_compare_type is %d. This should never happen. Please report as a bug", data_compare_type, key_compare_type);
+@@ -3723,6 +3739,7 @@
+ 	if (behavior == DIFF_NORMAL && data_compare_type == DIFF_COMP_DATA_USER) {
+ 		/* array_udiff() */
+ 		BG(user_compare_func_name) = args[arr_argc];
++		BG(user_compare_fci_cache).initialized = 0;
+ 	}
+ 	
+ 	/* go through the lists and look for values of ptr[0] that are not in the others */
+@@ -3732,6 +3749,7 @@
+ 			key_compare_type == DIFF_COMP_KEY_USER) {
+ 			
+ 			BG(user_compare_func_name) = args[argc - 1];
++			BG(user_compare_fci_cache).initialized = 0;
+ 		}
+ 		c = 1;
+ 		for (i = 1; i < arr_argc; i++) {
+@@ -3759,12 +3777,14 @@
+ 					if (*ptr) {
+ 						if (data_compare_type == DIFF_COMP_DATA_USER) {
+ 							BG(user_compare_func_name) = args[arr_argc];
++							BG(user_compare_fci_cache).initialized = 0;
+ 						}
+ 						if (diff_data_compare_func(ptrs[0], ptr TSRMLS_CC) != 0) {
+ 							/* the data is not the same */
+ 							c = -1;
+ 							if (key_compare_type == DIFF_COMP_KEY_USER) {
+ 								BG(user_compare_func_name) = args[argc - 1];
++								BG(user_compare_fci_cache).initialized = 0;
+ 							}
+ 						} else {
+ 							break;
+diff -r b542651437b3 ext/standard/tests/array/bug45312.phpt
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/ext/standard/tests/array/bug45312.phpt	Thu Jun 19 18:24:36 2008 +0200
+@@ -0,0 +1,40 @@
++--TEST--
++Bug #45312 (Segmentation fault on second request for array functions)
++--FILE--
++<?php
++class cr {
++    private $priv_member;
++    function cr($val) {
++        $this->priv_member = $val;
++    }
++    static function comp_func_cr($a, $b) {
++        if ($a->priv_member === $b->priv_member) return 0;
++        return ($a->priv_member > $b->priv_member) ? 1 : -1;
++    }
++    static function comp_func_cr2($a, $b) {
++    	echo ".";
++        if ($a->priv_member === $b->priv_member) return 0;
++        return ($a->priv_member < $b->priv_member) ? 1 : -1;
++    }
++    function dump() {
++        echo $this->priv_member . "\n";
++    }
++}
++$a = array("0.1" => new cr(9), "0.5" => new cr(12), 0 => new cr(23), 1 => new cr(4), 2 => new cr(-15),);
++$b = array("0.2" => new cr(9), "0.5" => new cr(22), 0 => new cr(3), 1 => new cr(4), 2 => new cr(-15),);
++$result = array_udiff_assoc($a, $b, array("cr", "comp_func_cr"));
++foreach($result as $val) {
++	$val->dump();
++}
++$result = array_udiff_assoc($a, $b, array("cr", "comp_func_cr2"));
++foreach($result as $val) {
++	$val->dump();
++}
++?>
++--EXPECT--
++9
++12
++23
++....9
++12
++23

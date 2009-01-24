@@ -1,0 +1,37 @@
+fixed bug #45251 (double free or corruption with setAttributeNode())
+http://cvs.php.net/viewvc.cgi/php-src/ext/dom/element.c?r1=1.36.2.4.2.10&r2=1.36.2.4.2.11&diff_format=u
+
+diff -r 8101f188933b ext/dom/element.c
+--- a/ext/dom/element.c	Wed Jun 18 19:02:33 2008 +0200
++++ b/ext/dom/element.c	Wed Jun 18 19:12:21 2008 +0200
+@@ -17,7 +17,7 @@
+    +----------------------------------------------------------------------+
+ */
+ 
+-/* $Id: element.c,v 1.36.2.4.2.10 2008/02/04 15:23:11 sebastian Exp $ */
++/* $Id: element.c,v 1.36.2.4.2.11 2008/06/14 11:24:00 rrichards Exp $ */
+ 
+ #ifdef HAVE_CONFIG_H
+ #include "config.h"
+@@ -585,6 +585,10 @@
+ 		xmlUnlinkNode((xmlNodePtr) existattrp);
+ 	}
+ 
++	if (attrp->parent != NULL) {
++		xmlUnlinkNode((xmlNodePtr) attrp);
++	}
++
+ 	if (attrp->doc == NULL && nodep->doc != NULL) {
+ 		attrobj->document = intern->document;
+ 		php_libxml_increment_doc_ref((php_libxml_node_object *)attrobj, NULL TSRMLS_CC);
+@@ -998,6 +1002,10 @@
+ 		xmlUnlinkNode((xmlNodePtr) existattrp);
+ 	}
+ 
++	if (attrp->parent != NULL) {
++		xmlUnlinkNode((xmlNodePtr) attrp);
++	}
++
+ 	if (attrp->doc == NULL && nodep->doc != NULL) {
+ 		attrobj->document = intern->document;
+ 		php_libxml_increment_doc_ref((php_libxml_node_object *)attrobj, NULL TSRMLS_CC);

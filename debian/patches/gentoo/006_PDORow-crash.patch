@@ -1,0 +1,32 @@
+Add check for avoid segfault when trying instantiate PDORow manually
+http://cvs.php.net/viewvc.cgi/php-src/ext/pdo/pdo_stmt.c?r1=1.118.2.38.2.34&r2=1.118.2.38.2.35&diff_format=u
+
+diff -r 34abf22f19f9 ext/pdo/pdo_stmt.c
+--- a/ext/pdo/pdo_stmt.c	Wed Jun 18 18:41:22 2008 +0200
++++ b/ext/pdo/pdo_stmt.c	Wed Jun 18 18:59:15 2008 +0200
+@@ -18,7 +18,7 @@
+   +----------------------------------------------------------------------+
+ */
+ 
+-/* $Id: pdo_stmt.c,v 1.118.2.38.2.34 2008/02/26 00:14:04 iliaa Exp $ */
++/* $Id: pdo_stmt.c,v 1.118.2.38.2.35 2008/05/14 12:34:10 felipe Exp $ */
+ 
+ /* The PDO Statement Handle Class */
+ 
+@@ -2711,10 +2711,12 @@
+ 
+ void pdo_row_free_storage(pdo_stmt_t *stmt TSRMLS_DC)
+ {
+-	ZVAL_NULL(&stmt->lazy_object_ref);
+-	
+-	if (--stmt->refcount == 0) {
+-		free_statement(stmt TSRMLS_CC);
++	if (stmt) {
++		ZVAL_NULL(&stmt->lazy_object_ref);
++		
++		if (--stmt->refcount == 0) {
++			free_statement(stmt TSRMLS_CC);
++		}
+ 	}
+ }
+ 

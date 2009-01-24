@@ -1,0 +1,13 @@
+--- php5-5.2.6.dfsg.1.orig/ext/dba/libinifile/inifile.c
++++ php5-5.2.6.dfsg.1/ext/dba/libinifile/inifile.c
+@@ -508,7 +508,9 @@ static int inifile_delete_replace_append
+ 	
+ 	/* 5 */
+ 	if (ret == SUCCESS) {
+-		ret = inifile_truncate(dba, append ? pos_grp_next : pos_grp_start TSRMLS_CC); /* writes error on fail */
++		if (!value || (key->name && strlen(key->name))) {
++			ret = inifile_truncate(dba, append ? pos_grp_next : pos_grp_start TSRMLS_CC); /* writes error on fail */
++		}
+ 	}
+ 
+ 	if (ret == SUCCESS) {

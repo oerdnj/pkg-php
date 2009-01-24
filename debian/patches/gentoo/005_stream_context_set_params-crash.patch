@@ -1,0 +1,38 @@
+Fixed bug #44712 (stream_context_set_params segfaults on invalid
+arguments).
+http://cvs.php.net/viewvc.cgi/php-src/ext/standard/streamsfuncs.c?r1=1.58.2.6.2.20&r2=1.58.2.6.2.21&diff_format=u
+
+diff -r 971fde6685fa -r 34abf22f19f9 ext/standard/streamsfuncs.c
+--- a/ext/standard/streamsfuncs.c	Wed Jun 18 18:37:26 2008 +0200
++++ b/ext/standard/streamsfuncs.c	Wed Jun 18 18:41:22 2008 +0200
+@@ -879,7 +879,7 @@
+ 	return ret;
+ }
+ 
+-static int parse_context_params(php_stream_context *context, zval *params)
++static int parse_context_params(php_stream_context *context, zval *params TSRMLS_DC)
+ {
+ 	int ret = SUCCESS;
+ 	zval **tmp;
+@@ -898,7 +898,11 @@
+ 		context->notifier->dtor = user_space_stream_notifier_dtor;
+ 	}
+ 	if (SUCCESS == zend_hash_find(Z_ARRVAL_P(params), "options", sizeof("options"), (void**)&tmp)) {
+-		parse_context_options(context, *tmp);
++		if (Z_TYPE_PP(tmp) == IS_ARRAY) {
++			parse_context_options(context, *tmp);
++		} else {
++			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid stream/context parameter");
++		}
+ 	}
+ 	
+ 	return ret;
+@@ -1006,7 +1010,7 @@
+ 		RETURN_FALSE;
+ 	}
+ 
+-	RETVAL_BOOL(parse_context_params(context, params) == SUCCESS);
++	RETVAL_BOOL(parse_context_params(context, params TSRMLS_CC) == SUCCESS);
+ }
+ /* }}} */
+ 

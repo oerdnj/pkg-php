@@ -30,7 +30,10 @@ QUILT_NO_DIFF_TIMESTAMPS=1
 export QUILT_DIFF_OPTS QUILT_NO_DIFF_TIMESTAMPS
 
 PROG_SENDMAIL = /usr/sbin/sendmail
-CFLAGS += -O2 -Wall -fsigned-char -fno-strict-aliasing 
+ifeq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+  CFLAGS += -O2
+endif
+CFLAGS += -Wall -fsigned-char -fno-strict-aliasing 
 # LFS support
 ifneq (yes,$(PHP5_COMPAT))
   CFLAGS += $(shell getconf LFS_CFLAGS)

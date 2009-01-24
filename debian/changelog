@@ -1,3 +1,29 @@
+php5 (5.2.6.dfsg.1-3) unstable; urgency=low
+
+  [ Sean Finney ]
+  * Do not add -O2 to CFLAGS if DEB_BUILD_OPTIONS contains noopt.
+  * Security related fixes:
+    - php: inifile handler for the dba functions can be used to truncate a file
+      Patch: dba-inifile-truncation.patch (closes: #507101).
+    - CVE-2008-5658.patch: ZipArchive::extractTo directory traversal
+      Patch: CVE-2008-5658.patch (closes: #507857).
+      Thanks to Pierre Joye for help with the patch.
+
+  [ Raphael Geissert ]
+  * Picked up some patches from Gentoo (most included in PHP 5.2.7 and later):
+    + patches/gentoo/005_stream_context_set_params-crash.patch
+    + patches/gentoo/006_PDORow-crash.patch
+    + patches/gentoo/007_dom-setAttributeNode-crash.patch
+    + patches/gentoo/009_array-function-crashes.patch
+    + patches/gentoo/010_ticks-zts-crashes.patch
+    + patches/gentoo/015_CVE-2008-2665-wrapper-safemode-bypass.patch
+    + patches/gentoo/017_xmlrpc-invalid-callback-crash.patch
+    + patches/gentoo/019_new-memory-corruption.patch
+    + patches/gentoo/freetds-compat.patch
+      - was deprecated_freetds_check.patch
+
+ -- Sean Finney <seanius@debian.org>  Sat, 24 Jan 2009 21:17:13 +0100
+
 php5 (5.2.6.dfsg.1-2) unstable; urgency=low
 
   [ Sean Finney ]
@@ -27,8 +53,8 @@ php5 (5.2.6.dfsg.1-1) unstable; urgency=high
     - Upstream bug #46308 (Invalid write in zend object handler / getter)
       Patch: zend_object_handlers-invalid-write.patch
   * Security related fixes:
-    - Incorporate fix from 5.3 for proper initialization of uid/gid for
-      apache2 sapi.
+    - CVE-2008-5624: Incorporate fix from 5.3 for proper initialization of
+      uid/gid for apache2 sapi.
       Patch: BG-initializing-fix.patch
     - CVE-2008-5557: heap overflows in the mbstring extension.
       Patch: CVE-2008-5557.patch (closes: #511493).
