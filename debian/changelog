@@ -1,3 +1,39 @@
+php5 (5.2.9.dfsg.1-1) unstable; urgency=low
+
+  * New upstream release (closes: #520538).
+    - fixes regressions with parsing via libxml2 (closes: #520246, #520423).
+
+  [ Sean Finney ]
+  * Refresh all patches.
+  * Update suhosin patch to 5.2.9, remove autotools-generated files (configure,
+    php_config.h.in) and .dsp files from patch.
+  * remove obsolete configure options from ./configure: --enable-memory-limit,
+    --enable-track-vars, --enable-trans-sid, --enable-filepro and --enable-dbx.
+  * Remove obsoleted patches which have been incorporated upstream:
+    - snmp_leaks.patch
+    - BG-initializing-fix.patch
+    - CVE-2008-2829.patch
+    - CVE-2008-3658.patch
+    - CVE-2008-3659.patch
+    - CVE-2008-3660.patch
+    - CVE-2008-5557.patch
+    - CVE-2008-5658.patch
+    - pdo-fetchobject-prototype-error.patch
+    - zend_object_handlers-invalid-write.patch
+    - dba-inifile-truncation.patch
+    - gentoo/freetds-compat.patch
+    - gentoo/010_ticks-zts-crashes.patch
+    - gentoo/019_new-memory-corruption.patch
+    - gentoo/009_array-function-crashes.patch
+    - gentoo/015_CVE-2008-2665-wrapper-safemode-bypass.patch
+    - gentoo/017_xmlrpc-invalid-callback-crash.patch
+    - gentoo/007_dom-setAttributeNode-crash.patch
+    - gentoo/006_PDORow-crash.patch
+    - gentoo/005_stream_context_set_params-crash.patch
+  * Update fix_broken_upstream_tests.patch, one of the tests is fixed.
+
+ -- Sean Finney <seanius@debian.org>  Tue, 24 Mar 2009 19:05:09 +0100
+
 php5 (5.2.6.dfsg.1-3) unstable; urgency=low
 
   [ Sean Finney ]

@@ -1,8 +1,6 @@
-Index: php5-5.2.5/ext/mysql/config.m4
-===================================================================
---- php5-5.2.5.orig/ext/mysql/config.m4	2008-03-01 21:03:07.000000000 +0100
-+++ php5-5.2.5/ext/mysql/config.m4	2008-03-01 21:03:36.000000000 +0100
-@@ -86,7 +86,7 @@
+--- php5-5.2.9.dfsg.1.orig/ext/mysql/config.m4
++++ php5-5.2.9.dfsg.1/ext/mysql/config.m4
+@@ -86,7 +86,7 @@ if test "$PHP_MYSQL" != "no"; then
  Note that the MySQL client library is not bundled anymore!])
    fi
  
@@ -11,11 +9,9 @@ Index: php5-5.2.5/ext/mysql/config.m4
      MYSQL_LIBNAME=mysqlclient_r
    else
      MYSQL_LIBNAME=mysqlclient
-Index: php5-5.2.5/ext/mysqli/config.m4
-===================================================================
---- php5-5.2.5.orig/ext/mysqli/config.m4	2008-03-01 21:03:07.000000000 +0100
-+++ php5-5.2.5/ext/mysqli/config.m4	2008-03-01 21:03:58.000000000 +0100
-@@ -26,7 +26,7 @@
+--- php5-5.2.9.dfsg.1.orig/ext/mysqli/config.m4
++++ php5-5.2.9.dfsg.1/ext/mysqli/config.m4
+@@ -26,7 +26,7 @@ dnl  fi
    if test "$PHP_EMBEDDED_MYSQLI" = "yes"; then
      AC_DEFINE(HAVE_EMBEDDED_MYSQLI, 1, [embedded MySQL support enabled])
      MYSQL_LIB_CFG='--libmysqld-libs'
@@ -24,11 +20,9 @@ Index: php5-5.2.5/ext/mysqli/config.m4
      MYSQL_LIB_CFG='--libs_r'
      MYSQL_LIB_NAME='mysqlclient_r'
    else
-Index: php5-5.2.5/ext/pdo_mysql/config.m4
-===================================================================
---- php5-5.2.5.orig/ext/pdo_mysql/config.m4	2008-03-01 21:03:07.000000000 +0100
-+++ php5-5.2.5/ext/pdo_mysql/config.m4	2008-03-01 21:03:50.000000000 +0100
-@@ -58,7 +58,7 @@
+--- php5-5.2.9.dfsg.1.orig/ext/pdo_mysql/config.m4
++++ php5-5.2.9.dfsg.1/ext/pdo_mysql/config.m4
+@@ -58,7 +58,7 @@ if test "$PHP_PDO_MYSQL" != "no"; then
      if test "x$SED" = "x"; then
        AC_PATH_PROG(SED, sed)
      fi

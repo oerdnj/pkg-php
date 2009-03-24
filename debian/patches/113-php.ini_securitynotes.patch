@@ -1,7 +1,5 @@
-Index: php5-5.2.6/php.ini-dist
-===================================================================
---- php5-5.2.6.orig/php.ini-dist
-+++ php5-5.2.6/php.ini-dist
+--- php5-5.2.9.dfsg.1.orig/php.ini-dist
++++ php5-5.2.9.dfsg.1/php.ini-dist
 @@ -166,6 +166,11 @@ allow_call_time_pass_reference = On
  ;
  ; Safe Mode
@@ -28,7 +26,7 @@ Index: php5-5.2.6/php.ini-dist
  ;open_basedir =
  
  ; This directive allows you to disable certain functions for security reasons.
-@@ -411,6 +423,11 @@ variables_order = "EGPCS"
+@@ -416,6 +428,11 @@ variables_order = "EGPCS"
  ; You should do your best to write your scripts so that they do not require
  ; register_globals to be on;  Using form variables as globals can easily lead
  ; to possible security problems, if the code is not very well thought of.

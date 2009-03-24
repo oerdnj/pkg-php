@@ -1,7 +1,5 @@
-Index: php5-5.2.6/ext/standard/dl.c
-===================================================================
---- php5-5.2.6.orig/ext/standard/dl.c
-+++ php5-5.2.6/ext/standard/dl.c
+--- php5-5.2.9.dfsg.1.orig/ext/standard/dl.c
++++ php5-5.2.9.dfsg.1/ext/standard/dl.c
 @@ -81,12 +81,7 @@ PHP_FUNCTION(dl)
  	if ((strncmp(sapi_module.name, "cgi", 3)!=0) && 
  		(strcmp(sapi_module.name, "cli")!=0) &&

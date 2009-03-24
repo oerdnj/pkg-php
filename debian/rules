@@ -68,7 +68,6 @@ endif
 COMMON_CONFIG=--build=$(DEB_BUILD_GNU_TYPE) \
 		--host=$(DEB_HOST_GNU_TYPE) \
 		--mandir=/usr/share/man \
-		--enable-memory-limit \
 		--disable-debug \
 		--with-regex=php \
 		--disable-rpath \
@@ -80,8 +79,6 @@ COMMON_CONFIG=--build=$(DEB_BUILD_GNU_TYPE) \
 		--enable-sysvsem \
 		--enable-sysvshm \
 		--enable-sysvmsg \
-		--enable-track-vars \
-		--enable-trans-sid \
 		--enable-bcmath \
 		--with-bz2 \
 		--enable-ctype \
@@ -89,7 +86,6 @@ COMMON_CONFIG=--build=$(DEB_BUILD_GNU_TYPE) \
 		--without-gdbm \
 		--with-iconv \
 		--enable-exif \
-		--enable-filepro \
 		--enable-ftp \
 		--with-gettext \
 		--enable-mbstring \
@@ -101,7 +97,6 @@ COMMON_CONFIG=--build=$(DEB_BUILD_GNU_TYPE) \
 		--with-zlib \
 		--with-kerberos=/usr \
 		--with-openssl=/usr \
-		--enable-dbx \
 		--enable-soap \
 		--enable-zip \
 		--with-mime-magic=$(MAGIC_MIME) \

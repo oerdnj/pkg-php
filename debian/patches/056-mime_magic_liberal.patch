@@ -1,7 +1,5 @@
-Index: php5-5.2.6/ext/mime_magic/mime_magic.c
-===================================================================
---- php5-5.2.6.orig/ext/mime_magic/mime_magic.c
-+++ php5-5.2.6/ext/mime_magic/mime_magic.c
+--- php5-5.2.9.dfsg.1.orig/ext/mime_magic/mime_magic.c
++++ php5-5.2.9.dfsg.1/ext/mime_magic/mime_magic.c
 @@ -501,7 +501,7 @@ static int is_valid_mimetype(char *p, in
  		} while (*(++p) != '/');
  		++p;

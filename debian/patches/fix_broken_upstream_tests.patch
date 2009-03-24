@@ -1,19 +1,5 @@
-Index: php5-5.2.6/tests/basic/bug20539.phpt
-===================================================================
---- php5-5.2.6.orig/tests/basic/bug20539.phpt
-+++ php5-5.2.6/tests/basic/bug20539.phpt
-@@ -3,6 +3,7 @@ Bug #20539 (PHP CLI Segmentation Fault)
- --INI--
- session.auto_start=1
- session.save_handler=files
-+session.save_path=temp_session_store
- --FILE--
- <?php
- 	print "good :)\n";
-Index: php5-5.2.6/ext/soap/tests/server009.phpt
-===================================================================
---- php5-5.2.6.orig/ext/soap/tests/server009.phpt
-+++ php5-5.2.6/ext/soap/tests/server009.phpt
+--- php5-5.2.9.dfsg.1.orig/ext/soap/tests/server009.phpt
++++ php5-5.2.9.dfsg.1/ext/soap/tests/server009.phpt
 @@ -7,6 +7,10 @@ SOAP Server 9: setclass and setpersisten
  		die('skip this test needs session extension');
  	}
@@ -25,10 +11,8 @@ Index: php5-5.2.6/ext/soap/tests/server009.phpt
  --FILE--
  <?php
  class foo {
-Index: php5-5.2.6/ext/standard/tests/general_functions/phpinfo.phpt
-===================================================================
---- php5-5.2.6.orig/ext/standard/tests/general_functions/phpinfo.phpt
-+++ php5-5.2.6/ext/standard/tests/general_functions/phpinfo.phpt
+--- php5-5.2.9.dfsg.1.orig/ext/standard/tests/general_functions/phpinfo.phpt
++++ php5-5.2.9.dfsg.1/ext/standard/tests/general_functions/phpinfo.phpt
 @@ -1,5 +1,7 @@
  --TEST--
  phpinfo()
@@ -45,10 +29,8 @@ Index: php5-5.2.6/ext/standard/tests/general_functions/phpinfo.phpt
  PHP API => %d
  PHP Extension => %d
  Zend Extension => %d
-Index: php5-5.2.6/ext/standard/tests/strings/moneyformat.phpt
-===================================================================
---- php5-5.2.6.orig/ext/standard/tests/strings/moneyformat.phpt
-+++ php5-5.2.6/ext/standard/tests/strings/moneyformat.phpt
+--- php5-5.2.9.dfsg.1.orig/ext/standard/tests/strings/moneyformat.phpt
++++ php5-5.2.9.dfsg.1/ext/standard/tests/strings/moneyformat.phpt
 @@ -5,6 +5,8 @@ money_format test
  	if (!function_exists('money_format') || !function_exists('setlocale')) {
  		die("SKIP money_format - not supported\n");

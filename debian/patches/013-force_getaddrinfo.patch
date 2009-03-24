@@ -1,8 +1,6 @@
-Index: php5-5.2.6/configure.in
-===================================================================
---- php5-5.2.6.orig/configure.in
-+++ php5-5.2.6/configure.in
-@@ -557,50 +557,50 @@ vsnprintf \
+--- php5-5.2.9.dfsg.1.orig/configure.in
++++ php5-5.2.9.dfsg.1/configure.in
+@@ -596,50 +596,50 @@ vsnprintf \
  
  dnl Check for getaddrinfo, should be a better way, but...
  dnl Also check for working getaddrinfo

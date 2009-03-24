@@ -1,8 +1,6 @@
-Index: php5-5.2.6/configure.in
-===================================================================
---- php5-5.2.6.orig/configure.in
-+++ php5-5.2.6/configure.in
-@@ -934,7 +934,7 @@ if test "$PHP_CLI" = "no"; then
+--- php5-5.2.9.dfsg.1.orig/configure.in
++++ php5-5.2.9.dfsg.1/configure.in
+@@ -977,7 +977,7 @@ if test "$PHP_CLI" = "no"; then
  fi
  
  PHP_ARG_WITH(pear, [whether to install PEAR],
@@ -11,7 +9,7 @@ Index: php5-5.2.6/configure.in
    --without-pear          Do not install PEAR], DEFAULT, yes)
  
  if test "$PHP_PEAR" != "no"; then
-@@ -968,7 +968,7 @@ dnl
+@@ -1011,7 +1011,7 @@ dnl
    if test "$PHP_PEAR" = "DEFAULT" || test "$PHP_PEAR" = "yes"; then
      case $PHP_LAYOUT in
        GNU) PEAR_INSTALLDIR=$datadir/pear;;
@@ -20,7 +18,7 @@ Index: php5-5.2.6/configure.in
      esac
    fi
  
-@@ -1023,12 +1023,12 @@ test "$program_suffix" = "NONE" && progr
+@@ -1066,12 +1066,12 @@ test "$program_suffix" = "NONE" && progr
  
  case $libdir in
    '${exec_prefix}/lib')
@@ -33,9 +31,9 @@ Index: php5-5.2.6/configure.in
 -    datadir=$datadir/php
 +    datadir=$datadir/php5
      ;;
-   *) ;;
  esac
-@@ -1094,7 +1094,7 @@ EXPANDED_SYSCONFDIR=`eval echo $sysconfd
+ 
+@@ -1136,7 +1136,7 @@ EXPANDED_SYSCONFDIR=`eval echo $sysconfd
  EXPANDED_DATADIR=$datadir
  EXPANDED_PHP_CONFIG_FILE_PATH=`eval echo "$PHP_CONFIG_FILE_PATH"`
  EXPANDED_PHP_CONFIG_FILE_SCAN_DIR=`eval echo "$PHP_CONFIG_FILE_SCAN_DIR"`
@@ -44,10 +42,8 @@ Index: php5-5.2.6/configure.in
  
  exec_prefix=$old_exec_prefix
  libdir=$old_libdir
-Index: php5-5.2.6/ext/ext_skel
-===================================================================
---- php5-5.2.6.orig/ext/ext_skel
-+++ php5-5.2.6/ext/ext_skel
+--- php5-5.2.9.dfsg.1.orig/ext/ext_skel
++++ php5-5.2.9.dfsg.1/ext/ext_skel
 @@ -70,7 +70,7 @@ if test -d "$extname" ; then
  fi
  
@@ -57,10 +53,8 @@ Index: php5-5.2.6/ext/ext_skel
  fi
  
  ## convert skel_dir to full path
-Index: php5-5.2.6/ext/session/session.c
-===================================================================
---- php5-5.2.6.orig/ext/session/session.c
-+++ php5-5.2.6/ext/session/session.c
+--- php5-5.2.9.dfsg.1.orig/ext/session/session.c
++++ php5-5.2.9.dfsg.1/ext/session/session.c
 @@ -181,11 +181,11 @@ static PHP_INI_MH(OnUpdateSaveDir)
  PHP_INI_BEGIN()
  	STD_PHP_INI_BOOLEAN("session.bug_compat_42",    "1",         PHP_INI_ALL, OnUpdateBool,   bug_compat,         php_ps_globals,    ps_globals)
@@ -75,11 +69,9 @@ Index: php5-5.2.6/ext/session/session.c
  	STD_PHP_INI_ENTRY("session.gc_divisor",         "100",       PHP_INI_ALL, OnUpdateLong,    gc_divisor,        php_ps_globals,    ps_globals)
  	STD_PHP_INI_ENTRY("session.gc_maxlifetime",     "1440",      PHP_INI_ALL, OnUpdateLong,    gc_maxlifetime,     php_ps_globals,    ps_globals)
  	PHP_INI_ENTRY("session.serialize_handler",      "php",       PHP_INI_ALL, OnUpdateSerializer)
-Index: php5-5.2.6/php.ini-dist
-===================================================================
---- php5-5.2.6.orig/php.ini-dist
-+++ php5-5.2.6/php.ini-dist
-@@ -466,7 +466,7 @@ default_mimetype = "text/html"
+--- php5-5.2.9.dfsg.1.orig/php.ini-dist
++++ php5-5.2.9.dfsg.1/php.ini-dist
+@@ -471,7 +471,7 @@ default_mimetype = "text/html"
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
  ; UNIX: "/path1:/path2"
@@ -88,7 +80,7 @@ Index: php5-5.2.6/php.ini-dist
  ;
  ; Windows: "\path1;\path2"
  ;include_path = ".;c:\php\includes"
-@@ -483,7 +483,7 @@ doc_root =
+@@ -488,7 +488,7 @@ doc_root =
  user_dir =
  
  ; Directory in which the loadable extensions (modules) reside.
@@ -97,7 +89,7 @@ Index: php5-5.2.6/php.ini-dist
  
  ; Whether or not to enable the dl() function.  The dl() function does NOT work
  ; properly in multithreaded servers, such as IIS or Zeus, and is automatically
-@@ -596,58 +596,6 @@ default_socket_timeout = 60
+@@ -601,58 +601,6 @@ default_socket_timeout = 60
  ; extension_dir directive above.
  
  
@@ -156,7 +148,7 @@ Index: php5-5.2.6/php.ini-dist
  ;;;;;;;;;;;;;;;;;;;
  ; Module Settings ;
  ;;;;;;;;;;;;;;;;;;;
-@@ -988,7 +936,7 @@ session.save_handler = files
+@@ -989,7 +937,7 @@ session.save_handler = files
  ;
  ; where MODE is the octal representation of the mode. Note that this
  ; does not overwrite the process's umask.
@@ -165,7 +157,7 @@ Index: php5-5.2.6/php.ini-dist
  
  ; Whether to use cookies.
  session.use_cookies = 1
-@@ -1026,7 +974,12 @@ session.serialize_handler = php
+@@ -1027,7 +975,12 @@ session.serialize_handler = php
  ; e.g. 1/100 means there is a 1% chance that the GC process starts
  ; on each request.
  
@@ -179,11 +171,9 @@ Index: php5-5.2.6/php.ini-dist
  session.gc_divisor     = 100
  
  ; After this number of seconds, stored data will be seen as 'garbage' and
-Index: php5-5.2.6/php.ini-recommended
-===================================================================
---- php5-5.2.6.orig/php.ini-recommended
-+++ php5-5.2.6/php.ini-recommended
-@@ -516,7 +516,7 @@ default_mimetype = "text/html"
+--- php5-5.2.9.dfsg.1.orig/php.ini-recommended
++++ php5-5.2.9.dfsg.1/php.ini-recommended
+@@ -522,7 +522,7 @@ default_mimetype = "text/html"
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
  ; UNIX: "/path1:/path2"
@@ -192,7 +182,7 @@ Index: php5-5.2.6/php.ini-recommended
  ;
  ; Windows: "\path1;\path2"
  ;include_path = ".;c:\php\includes"
-@@ -533,7 +533,7 @@ doc_root =
+@@ -539,7 +539,7 @@ doc_root =
  user_dir =
  
  ; Directory in which the loadable extensions (modules) reside.
@@ -201,7 +191,7 @@ Index: php5-5.2.6/php.ini-recommended
  
  ; Whether or not to enable the dl() function.  The dl() function does NOT work
  ; properly in multithreaded servers, such as IIS or Zeus, and is automatically
-@@ -646,58 +646,6 @@ default_socket_timeout = 60
+@@ -652,58 +652,6 @@ default_socket_timeout = 60
  ; extension_dir directive above.
  
  
@@ -260,7 +250,7 @@ Index: php5-5.2.6/php.ini-recommended
  ;;;;;;;;;;;;;;;;;;;
  ; Module Settings ;
  ;;;;;;;;;;;;;;;;;;;
-@@ -1038,7 +986,7 @@ session.save_handler = files
+@@ -1040,7 +988,7 @@ session.save_handler = files
  ;
  ; where MODE is the octal representation of the mode. Note that this
  ; does not overwrite the process's umask.
@@ -269,7 +259,7 @@ Index: php5-5.2.6/php.ini-recommended
  
  ; Whether to use cookies.
  session.use_cookies = 1
-@@ -1076,7 +1024,12 @@ session.serialize_handler = php
+@@ -1078,7 +1026,12 @@ session.serialize_handler = php
  ; e.g. 1/100 means there is a 1% chance that the GC process starts
  ; on each request.
  
@@ -283,10 +273,8 @@ Index: php5-5.2.6/php.ini-recommended
  session.gc_divisor     = 1000
  
  ; After this number of seconds, stored data will be seen as 'garbage' and
-Index: php5-5.2.6/sapi/caudium/config.m4
-===================================================================
---- php5-5.2.6.orig/sapi/caudium/config.m4
-+++ php5-5.2.6/sapi/caudium/config.m4
+--- php5-5.2.9.dfsg.1.orig/sapi/caudium/config.m4
++++ php5-5.2.9.dfsg.1/sapi/caudium/config.m4
 @@ -26,8 +26,8 @@ if test "$PHP_CAUDIUM" != "no"; then
      AC_MSG_ERROR([Could not find a pike in $PHP_CAUDIUM/bin/])
    fi
@@ -309,10 +297,8 @@ Index: php5-5.2.6/sapi/caudium/config.m4
    RESULT="  *** Pike binary used:         $PIKE
    *** Pike include dir(s) used: $PIKE_INCLUDE_DIR
    *** Pike version:             $PIKE_VERSION"
-Index: php5-5.2.6/sapi/cli/php.1.in
-===================================================================
---- php5-5.2.6.orig/sapi/cli/php.1.in
-+++ php5-5.2.6/sapi/cli/php.1.in
+--- php5-5.2.9.dfsg.1.orig/sapi/cli/php.1.in
++++ php5-5.2.9.dfsg.1/sapi/cli/php.1.in
 @@ -306,13 +306,14 @@ Shows configuration for extension
  .B name
  .SH FILES
@@ -333,10 +319,8 @@ Index: php5-5.2.6/sapi/cli/php.1.in
  .SH EXAMPLES
  .TP 5
  \fIphp -r 'echo "Hello World\\n";'\fP
-Index: php5-5.2.6/scripts/Makefile.frag
-===================================================================
---- php5-5.2.6.orig/scripts/Makefile.frag
-+++ php5-5.2.6/scripts/Makefile.frag
+--- php5-5.2.9.dfsg.1.orig/scripts/Makefile.frag
++++ php5-5.2.9.dfsg.1/scripts/Makefile.frag
 @@ -3,8 +3,8 @@
  # Build environment install
  #
@@ -348,10 +332,8 @@ Index: php5-5.2.6/scripts/Makefile.frag
  
  BUILD_FILES = \
  	scripts/phpize.m4 \
-Index: php5-5.2.6/scripts/php-config.in
-===================================================================
---- php5-5.2.6.orig/scripts/php-config.in
-+++ php5-5.2.6/scripts/php-config.in
+--- php5-5.2.9.dfsg.1.orig/scripts/php-config.in
++++ php5-5.2.9.dfsg.1/scripts/php-config.in
 @@ -5,8 +5,8 @@ prefix="@prefix@"
  exec_prefix="@exec_prefix@"
  version="@PHP_VERSION@"
@@ -363,10 +345,8 @@ Index: php5-5.2.6/scripts/php-config.in
  ldflags="@PHP_LDFLAGS@"
  libs="@EXTRA_LIBS@"
  extension_dir='@EXTENSION_DIR@'
-Index: php5-5.2.6/scripts/phpize.in
-===================================================================
---- php5-5.2.6.orig/scripts/phpize.in
-+++ php5-5.2.6/scripts/phpize.in
+--- php5-5.2.9.dfsg.1.orig/scripts/phpize.in
++++ php5-5.2.9.dfsg.1/scripts/phpize.in
 @@ -3,8 +3,8 @@
  # Variable declaration
  prefix='@prefix@'

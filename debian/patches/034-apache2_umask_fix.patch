@@ -1,10 +1,8 @@
 
 Save and restore umask across requests correctly.
 
-Index: php5-5.2.6/sapi/apache2handler/sapi_apache2.c
-===================================================================
---- php5-5.2.6.orig/sapi/apache2handler/sapi_apache2.c
-+++ php5-5.2.6/sapi/apache2handler/sapi_apache2.c
+--- php5-5.2.9.dfsg.1.orig/sapi/apache2handler/sapi_apache2.c
++++ php5-5.2.9.dfsg.1/sapi/apache2handler/sapi_apache2.c
 @@ -432,6 +432,19 @@ static apr_status_t php_server_context_c
  	return APR_SUCCESS;
  }
@@ -25,7 +23,7 @@ Index: php5-5.2.6/sapi/apache2handler/sapi_apache2.c
  static int php_apache_request_ctor(request_rec *r, php_struct *ctx TSRMLS_DC)
  {
  	char *content_length;
-@@ -620,6 +633,8 @@ zend_first_try {
+@@ -623,6 +636,8 @@ zend_first_try {
  	} else {
  		zend_file_handle zfd;
  
@@ -34,7 +32,7 @@ Index: php5-5.2.6/sapi/apache2handler/sapi_apache2.c
  		zfd.type = ZEND_HANDLE_FILENAME;
  		zfd.filename = (char *) r->filename;
  		zfd.free_filename = 0;
-@@ -631,6 +646,9 @@ zend_first_try {
+@@ -634,6 +649,9 @@ zend_first_try {
  			zend_execute_scripts(ZEND_INCLUDE TSRMLS_CC, NULL, 1, &zfd);
  		}
  
