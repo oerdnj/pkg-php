@@ -23,7 +23,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: run-tests.php,v 1.226.2.37 2006/05/03 21:37:16 pajoye Exp $ */
+/* $Id: run-tests.php,v 1.226.2.38 2006/08/23 12:43:53 tony2001 Exp $ */
 
 /* Sanity check to ensure that pcre extension needed by this script is available.
  * In the event it is not, print a nice error message indicating that this script will
@@ -192,13 +192,13 @@ More .INIs  : " . (function_exists(\'php_ini_scanned_files\') ? str_replace("\n"
 	$info_params = array();
 	settings2array($ini_overwrites,$info_params);
 	settings2params($info_params);
-	$php_info = `$php $pass_options $info_params $info_file`;
+	$php_info = `$php $pass_options $info_params "$info_file"`;
 	@unlink($info_file);
-	define('TESTED_PHP_VERSION', `$php -r 'echo PHP_VERSION;'`);
+	define('TESTED_PHP_VERSION', `$php -r "echo PHP_VERSION;"`);
 
 	// load list of enabled extensions
 	save_text($info_file, '<?php echo join(",",get_loaded_extensions()); ?>');
-	$exts_to_test = explode(',',`$php $pass_options $info_params $info_file`);
+	$exts_to_test = explode(',',`$php $pass_options $info_params "$info_file"`);
 	// check for extensions that need special handling and regenerate
 	$info_params_ex = array(
 		'session' => array('session.auto_start=0'),
@@ -397,7 +397,7 @@ if (isset($argc) && $argc > 1) {
 					$html_output = is_resource($html_file);
 					break;
 				case '--version':
-					echo '$Revision: 1.226.2.37 $'."\n";
+					echo '$Revision: 1.226.2.38 $'."\n";
 					exit(1);
 				default:
 					echo "Illegal switch '$switch' specified!\n";

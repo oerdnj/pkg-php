@@ -372,7 +372,7 @@ static yyconst short int yy_accept[1411] =
       145,  159,  118,  142,  145,  141,  158,  159,  143,  159,
       157,  155,  140,  159,  118,   38,   37,  101,  100,  127,
 
-      130,  130,  160,  123,  123,  121,  121,  121,  111,    0,
+      130,  130,  122,  122,  122,  121,  121,  121,  111,    0,
       111,  114,  112,  111,  119,   75,    0,  133,    0,  116,
        83,  132,   90,   86,    0,  134,    0,    0,    0,    0,
         0,    0,    0,    0,    0,    0,    0,   80,   70,   78,
@@ -2699,7 +2699,7 @@ char *yytext;
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_language_scanner.l,v 1.131.2.10 2006/01/17 09:39:57 dmitry Exp $ */
+/* $Id: zend_language_scanner.l,v 1.131.2.11 2006/04/13 13:48:28 dmitry Exp $ */
 
 #define yyleng SCNG(yy_leng)
 #define yytext SCNG(yy_text)
@@ -4675,7 +4675,7 @@ YY_RULE_SETUP
 {
     if (CG(asp_tags) || yytext[yyleng-2] != '%') { /* asp comment? */
 		zendlval->value.str.val = yytext; /* no copying - intentional */
-		zendlval->value.str.len = yyleng;
+		zendlval->value.str.len = yyleng-2;
 		zendlval->type = IS_STRING;
 		yyless(yyleng-2);
 		BEGIN(ST_IN_SCRIPTING);

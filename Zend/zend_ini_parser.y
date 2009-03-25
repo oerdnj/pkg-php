@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_ini_parser.y,v 1.41.2.1 2006/01/04 23:53:04 andi Exp $ */
+/* $Id: zend_ini_parser.y,v 1.41.2.2 2006/04/12 09:51:54 dmitry Exp $ */
 
 #define DEBUG_CFG_PARSER 0
 #include "zend.h"
@@ -249,25 +249,26 @@ string_or_value:
 		expr { $$ = $1; }
 	|	CFG_TRUE { $$ = $1; }
 	|	CFG_FALSE { $$ = $1; }
-	|   var_string_list { $$ = $1; }
 	|	'\n' { zend_ini_init_string(&$$); }
 	|	/* empty */ { zend_ini_init_string(&$$); }
 ;
 
 
 var_string_list:
-		var_string_list cfg_var_ref { zend_ini_add_string(&$$, &$1, &$2); free($2.value.str.val); }
+		cfg_var_ref { $$ = $1; }
+	|	TC_ENCAPSULATED_STRING { $$ = $1; }
+	|	constant_string { $$ = $1; }
+	|	var_string_list cfg_var_ref { zend_ini_add_string(&$$, &$1, &$2); free($2.value.str.val); }
 	|	var_string_list TC_ENCAPSULATED_STRING { zend_ini_add_string(&$$, &$1, &$2); free($2.value.str.val); }
-	|	var_string_list constant_string { zend_ini_add_string(&$$, &$1, &$2); }
-	|	/* empty */ { zend_ini_init_string(&$$); }
+	|	var_string_list constant_string { zend_ini_add_string(&$$, &$1, &$2); free($2.value.str.val); }
 ;
 
 cfg_var_ref:
-		TC_DOLLAR_CURLY TC_STRING '}' { zend_ini_get_var(&$$, &$2); }
+		TC_DOLLAR_CURLY TC_STRING '}' { zend_ini_get_var(&$$, &$2); free($2.value.str.val); }
 ;
 
 expr:
-		constant_string			{ $$ = $1; }
+		var_string_list			{ $$ = $1; }
 	|	expr '|' expr			{ zend_ini_do_op('|', &$$, &$1, &$3); }
 	|	expr '&' expr			{ zend_ini_do_op('&', &$$, &$1, &$3); }
 	|	'~' expr				{ zend_ini_do_op('~', &$$, &$2, NULL); }

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_interfaces.c,v 1.33.2.3 2006/02/26 10:53:38 helly Exp $ */
+/* $Id: zend_interfaces.c,v 1.33.2.4 2006/04/10 22:49:29 helly Exp $ */
 
 #include "zend.h"
 #include "zend_API.h"
@@ -287,7 +287,7 @@ static zend_object_iterator *zend_user_it_get_new_iterator(zend_class_entry *ce,
 	if (!ce || !ce_it || !ce_it->get_iterator || (ce_it->get_iterator == zend_user_it_get_new_iterator && iterator == object)) {
 		if (!EG(exception))
 		{
-			zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "Objects returned by %s::getIterator() must be traversable or implement interface Iterator", ce->name);
+			zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "Objects returned by %s::getIterator() must be traversable or implement interface Iterator", ce ? ce->name : Z_OBJCE_P(object)->name);
 		}
 		if (iterator)
 		{
