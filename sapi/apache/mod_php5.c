@@ -17,7 +17,7 @@
    | PHP 4.0 patches by Zeev Suraski <zeev@zend.com>                      |
    +----------------------------------------------------------------------+
  */
-/* $Id: mod_php5.c,v 1.19.2.7.2.9 2007/01/01 09:36:12 sebastian Exp $ */
+/* $Id: mod_php5.c,v 1.19.2.7.2.13 2007/08/06 12:54:57 tony2001 Exp $ */
 
 #include "php_apache_http.h"
 #include "http_conf_globals.h"
@@ -80,6 +80,7 @@ typedef struct _php_per_dir_entry {
 	uint key_length;
 	uint value_length;
 	int type;
+	char htaccess;
 } php_per_dir_entry;
 
 /* some systems are missing these from their header files */
@@ -174,7 +175,7 @@ static int sapi_apache_header_handler(sapi_header_struct *sapi_header, sapi_head
 		efree(sapi_header->header);
 		return 0;
 	}
-      
+
 	header_name = sapi_header->header;
 
 	header_content = p = strchr(header_name, ':');
@@ -547,7 +548,7 @@ static void init_request_info(TSRMLS_D)
  */
 static int php_apache_alter_ini_entries(php_per_dir_entry *per_dir_entry TSRMLS_DC)
 {
-	zend_alter_ini_entry(per_dir_entry->key, per_dir_entry->key_length+1, per_dir_entry->value, per_dir_entry->value_length, per_dir_entry->type, PHP_INI_STAGE_ACTIVATE);
+	zend_alter_ini_entry(per_dir_entry->key, per_dir_entry->key_length+1, per_dir_entry->value, per_dir_entry->value_length, per_dir_entry->type, per_dir_entry->htaccess?PHP_INI_STAGE_HTACCESS:PHP_INI_STAGE_ACTIVATE);
 	return 0;
 }
 /* }}} */
@@ -764,9 +765,15 @@ static void *php_create_dir(pool *p, char *dummy)
  */
 static void *php_merge_dir(pool *p, void *basev, void *addv)
 {
-	/* This function *must* return addv, and not modify basev */
-	zend_hash_merge_ex((HashTable *) addv, (HashTable *) basev, (copy_ctor_func_t) copy_per_dir_entry, sizeof(php_per_dir_entry), (merge_checker_func_t) should_overwrite_per_dir_entry, NULL);
-	return addv;
+	/* This function *must* not modify addv or basev */
+	HashTable *new;
+
+	/* need a copy of addv to merge */
+	new = php_create_dir(p, "php_merge_dir");
+	zend_hash_copy(new, (HashTable *) addv, (copy_ctor_func_t) copy_per_dir_entry, NULL, sizeof(php_per_dir_entry));
+
+	zend_hash_merge_ex(new, (HashTable *) basev, (copy_ctor_func_t) copy_per_dir_entry, sizeof(php_per_dir_entry), (merge_checker_func_t) should_overwrite_per_dir_entry, NULL);
+	return new;
 }
 /* }}} */
 
@@ -785,6 +792,7 @@ static CONST_PREFIX char *php_apache_value_handler_ex(cmd_parms *cmd, HashTable 
 		php_apache_startup(&apache_sapi_module);
 	}
 	per_dir_entry.type = mode;
+	per_dir_entry.htaccess = ((cmd->override & (RSRC_CONF|ACCESS_CONF)) == 0);
 
 	if (strcasecmp(arg2, "none") == 0) {
 		arg2 = "";
@@ -969,7 +977,7 @@ command_rec php_commands[] =
 	{"php_flag",		php_apache_flag_handler, NULL, OR_OPTIONS, TAKE2, "PHP Flag Modifier"},
 	{"php_admin_value",	php_apache_admin_value_handler, NULL, ACCESS_CONF|RSRC_CONF, TAKE2, "PHP Value Modifier (Admin)"},
 	{"php_admin_flag",	php_apache_admin_flag_handler, NULL, ACCESS_CONF|RSRC_CONF, TAKE2, "PHP Flag Modifier (Admin)"},
-	{"PHPINIDir",       php_apache_phpini_set, NULL, RSRC_CONF, TAKE1, "Directory containing the php.ini file"},
+	{"PHPINIDir",		php_apache_phpini_set, NULL, RSRC_CONF, TAKE1, "Directory containing the php.ini file"},
 	{NULL}
 };
 /* }}} */
@@ -997,7 +1005,7 @@ module MODULE_VAR_EXPORT php5_module =
 	, NULL						/* header parser */
 #endif
 #if MODULE_MAGIC_NUMBER >= 19970719
-	, NULL             			/* child_init */
+	, NULL						/* child_init */
 #endif
 #if MODULE_MAGIC_NUMBER >= 19970728
 	, php_child_exit_handler		/* child_exit */

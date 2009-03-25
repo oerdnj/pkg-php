@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: xp_ssl.c,v 1.22.2.3.2.8 2007/05/27 17:05:51 iliaa Exp $ */
+/* $Id: xp_ssl.c,v 1.22.2.3.2.9 2007/07/02 16:42:10 iliaa Exp $ */
 
 #include "php.h"
 #include "ext/standard/file.h"
@@ -109,7 +109,7 @@ static int handle_ssl_error(php_stream *stream, int nr_bytes, zend_bool is_init 
 		case SSL_ERROR_SYSCALL:
 			if (ERR_peek_error() == 0) {
 				if (nr_bytes == 0) {
-					if (!is_http_stream_talking_to_iis(stream TSRMLS_CC)) {
+					if (!is_http_stream_talking_to_iis(stream TSRMLS_CC) && ERR_get_error() != 0) {
 						php_error_docref(NULL TSRMLS_CC, E_WARNING,
 								"SSL: fatal protocol error");
 					}

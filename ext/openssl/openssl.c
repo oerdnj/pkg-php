@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: openssl.c,v 1.98.2.5.2.34 2007/05/19 22:05:08 pajoye Exp $ */
+/* $Id: openssl.c,v 1.98.2.5.2.41 2007/08/08 06:29:46 pajoye Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -999,8 +999,10 @@ PHP_FUNCTION(openssl_x509_parse)
 	char * tmpstr;
 	zval * subitem;
 	X509_EXTENSION *extension;
-	ASN1_OCTET_STRING *extdata;
 	char *extname;
+	BIO  *bio_out;
+	BUF_MEM *bio_buf;
+	char buf[256];
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "Z|b", &zcert, &useshortnames) == FAILURE) {
 		return;
@@ -1082,9 +1084,20 @@ PHP_FUNCTION(openssl_x509_parse)
 
 	for (i = 0; i < X509_get_ext_count(cert); i++) {
 		extension = X509_get_ext(cert, i);
-		extdata = X509_EXTENSION_get_data(extension);
-		extname = (char *)OBJ_nid2sn(OBJ_obj2nid(X509_EXTENSION_get_object(extension)));
-		add_assoc_asn1_string(subitem, extname, extdata);
+		if (OBJ_obj2nid(X509_EXTENSION_get_object(extension)) != NID_undef) {
+			extname = (char *)OBJ_nid2sn(OBJ_obj2nid(X509_EXTENSION_get_object(extension)));
+		} else {
+			OBJ_obj2txt(buf, sizeof(buf)-1, X509_EXTENSION_get_object(extension), 1);
+			extname = buf;
+		}
+		bio_out = BIO_new(BIO_s_mem());
+		if (X509V3_EXT_print(bio_out, extension, 0, 0)) {
+			BIO_get_mem_ptr(bio_out, &bio_buf);
+			add_assoc_stringl(subitem, extname, bio_buf->data, bio_buf->length, 1);
+		} else {
+			add_assoc_asn1_string(subitem, extname, X509_EXTENSION_get_data(extension));
+		}
+		BIO_free(bio_out);
 	}
 	add_assoc_zval(return_value, "extensions", subitem);
 
@@ -1109,17 +1122,20 @@ static STACK_OF(X509) * load_all_certs_from_file(char *certfile)
 	}
 
 	if (php_openssl_safe_mode_chk(certfile TSRMLS_CC)) {
+		sk_X509_free(stack);
 		goto end;
 	}
 
 	if(!(in=BIO_new_file(certfile, "r"))) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "error opening the file, %s", certfile);
+		sk_X509_free(stack);
 		goto end;
 	}
 
 	/* This loads from a file, a stack of x509/crl/pkey sets */
 	if(!(sk=PEM_X509_INFO_read_bio(in, NULL, NULL, NULL))) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "error reading the file, %s", certfile);
+		sk_X509_free(stack);
 		goto end;
 	}
 
@@ -1710,7 +1726,7 @@ static int php_openssl_make_REQ(struct php_x509_request * req, X509_REQ * csr, z
 		/* Finally apply defaults from config file */
 		for(i = 0; i < sk_CONF_VALUE_num(dn_sk); i++) {
 			int len;
-			char buffer[200];
+			char buffer[200 + 1]; /*200 + \0 !*/
 			
 			v = sk_CONF_VALUE_value(dn_sk, i);
 			type = v->name;
@@ -1723,7 +1739,9 @@ static int php_openssl_make_REQ(struct php_x509_request * req, X509_REQ * csr, z
 			if (strcmp("_default", type + len) != 0) {
 				continue;
 			}
-			
+			if (len > 200) {
+				len = 200;
+			}
 			memcpy(buffer, type, len);
 			buffer[len] = '\0';
 			type = buffer;
@@ -2253,6 +2271,7 @@ static EVP_PKEY * php_openssl_evp_from_zval(zval ** val, int public_key, char * 
 		} else {
 			tmp = **zphrase;
 			zval_copy_ctor(&tmp);
+			convert_to_string(&tmp);
 			passphrase = Z_STRVAL(tmp);
 		}
 
@@ -2604,6 +2623,7 @@ PHP_FUNCTION(openssl_pkey_export)
 			RETVAL_TRUE;
 
 			bio_mem_len = BIO_get_mem_data(bio_out, &bio_mem_ptr);
+			zval_dtor(out);
 			ZVAL_STRINGL(out, bio_mem_ptr, bio_mem_len, 1);
 		}
 	}

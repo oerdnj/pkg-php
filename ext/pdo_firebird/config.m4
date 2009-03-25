@@ -1,12 +1,12 @@
 dnl
-dnl $Id: config.m4,v 1.8 2005/06/14 00:00:52 sniper Exp $
+dnl $Id: config.m4,v 1.8.4.2 2007/07/31 13:02:00 jani Exp $
 dnl
 
 if test "$PHP_PDO" != "no"; then
 
 PHP_ARG_WITH(pdo-firebird,for Firebird support for PDO,
 [  --with-pdo-firebird[=DIR] PDO: Firebird support.  DIR is the Firebird base
-                            install directory, defaults to /opt/firebird])
+                            install directory [/opt/firebird]])
 
 if test "$PHP_PDO_FIREBIRD" != "no"; then
   if test "$PHP_PDO_FIREBIRD" = "yes"; then
@@ -14,7 +14,7 @@ if test "$PHP_PDO_FIREBIRD" != "no"; then
     FIREBIRD_LIBDIR=/opt/firebird/lib
   else
     FIREBIRD_INCDIR=$PHP_PDO_FIREBIRD/include
-    FIREBIRD_LIBDIR=$PHP_PDO_FIREBIRD/lib
+    FIREBIRD_LIBDIR=$PHP_PDO_FIREBIRD/$PHP_LIBDIR
   fi
 
   PHP_CHECK_LIBRARY(fbclient, isc_detach_database,

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_builtin_functions.c,v 1.277.2.12.2.17 2007/04/16 08:09:54 dmitry Exp $ */
+/* $Id: zend_builtin_functions.c,v 1.277.2.12.2.24 2007/08/22 13:19:47 dmitry Exp $ */
 
 #include "zend.h"
 #include "zend_API.h"
@@ -25,6 +25,7 @@
 #include "zend_constants.h"
 #include "zend_ini.h"
 #include "zend_exceptions.h"
+#include "zend_extensions.h"
 
 #undef ZEND_TEST_EXCEPTIONS
 
@@ -659,7 +660,7 @@ static void is_a_impl(INTERNAL_FUNCTION_PARAMETERS, zend_bool only_subclass)
 
 	convert_to_string_ex(class_name);
 
-	if (zend_lookup_class_ex(Z_STRVAL_PP(class_name), Z_STRLEN_PP(class_name), (instance_ce != NULL), &ce TSRMLS_CC) == FAILURE) {
+	if (zend_lookup_class_ex(Z_STRVAL_PP(class_name), Z_STRLEN_PP(class_name), 0, &ce TSRMLS_CC) == FAILURE) {
 		retval = 0;
 	} else {
 		if (only_subclass) {
@@ -770,8 +771,8 @@ ZEND_FUNCTION(get_class_vars)
 		RETURN_FALSE;
 	} else {
 		array_init(return_value);
-		add_class_vars(*pce, &(*pce)->default_properties, return_value TSRMLS_CC);
 		zend_update_class_constants(*pce TSRMLS_CC);
+		add_class_vars(*pce, &(*pce)->default_properties, return_value TSRMLS_CC);
 		add_class_vars(*pce, CE_STATIC_MEMBERS(*pce), return_value TSRMLS_CC);
 	}
 }
@@ -789,7 +790,7 @@ ZEND_FUNCTION(get_object_vars)
 	char *key, *prop_name, *class_name;
 	uint key_len;
 	ulong num_index;
-	int instanceof;
+	zend_object *zobj;
 
 	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &obj) == FAILURE) {
 		ZEND_WRONG_PARAM_COUNT();
@@ -808,7 +809,7 @@ ZEND_FUNCTION(get_object_vars)
 		RETURN_FALSE;
 	}
 
-	instanceof = EG(This) && instanceof_function(Z_OBJCE_P(EG(This)), Z_OBJCE_PP(obj) TSRMLS_CC);
+	zobj = zend_objects_get_address(*obj TSRMLS_CC);
 
 	array_init(return_value);
 
@@ -816,17 +817,11 @@ ZEND_FUNCTION(get_object_vars)
 
 	while (zend_hash_get_current_data_ex(properties, (void **) &value, &pos) == SUCCESS) {
 		if (zend_hash_get_current_key_ex(properties, &key, &key_len, &num_index, 0, &pos) == HASH_KEY_IS_STRING) {
-			if (key[0]) {
+			if (zend_check_property_access(zobj, key, key_len-1 TSRMLS_CC) == SUCCESS) {
+				zend_unmangle_property_name(key, key_len-1, &class_name, &prop_name);
 				/* Not separating references */
 				(*value)->refcount++;
-				add_assoc_zval_ex(return_value, key, key_len, *value);
-			} else if (instanceof) {
-				zend_unmangle_property_name(key, key_len-1, &class_name, &prop_name);
-				if (!memcmp(class_name, "*", 2) || (Z_OBJCE_P(EG(This)) == Z_OBJCE_PP(obj) && !strcmp(Z_OBJCE_P(EG(This))->name, class_name))) {
-					/* Not separating references */
-					(*value)->refcount++;
-					add_assoc_zval_ex(return_value, prop_name, strlen(prop_name)+1, *value);
-				}
+				add_assoc_zval_ex(return_value, prop_name, strlen(prop_name)+1, *value);
 			}
 		}
 		zend_hash_move_forward_ex(properties, &pos);
@@ -984,7 +979,8 @@ ZEND_FUNCTION(property_exists)
 		}
 		zend_unmangle_property_name(property_info->name, property_info->name_length, &class_name, &prop_name);
 		if (!strncmp(class_name, "*", 1)) {
-			if (instanceof_function(EG(scope), ce TSRMLS_CC)) {
+			if (instanceof_function(EG(scope), ce TSRMLS_CC) ||
+				(EG(This) && instanceof_function(Z_OBJCE_P(EG(This)), ce TSRMLS_CC))) {
 				RETURN_TRUE;
 			}
 			RETURN_FALSE;
@@ -1554,6 +1550,13 @@ static int add_extension_info(zend_module_entry *module, void *arg TSRMLS_DC)
 	return 0;
 }
 
+static int add_zendext_info(zend_extension *ext, void *arg TSRMLS_DC)
+{
+	zval *name_array = (zval *)arg;
+	add_next_index_string(name_array, ext->name, 1);
+	return 0;
+}
+
 static int add_constant_info(zend_constant *constant, void *arg TSRMLS_DC)
 {
 	zval *name_array = (zval *)arg;
@@ -1568,16 +1571,23 @@ static int add_constant_info(zend_constant *constant, void *arg TSRMLS_DC)
 }
 
 
-/* {{{ proto array get_loaded_extensions(void)
+/* {{{ proto array get_loaded_extensions([bool zend_extensions]) U
    Return an array containing names of loaded extensions */
 ZEND_FUNCTION(get_loaded_extensions)
 {
-	if (ZEND_NUM_ARGS() != 0) {
-		ZEND_WRONG_PARAM_COUNT();
+	zend_bool zendext = 0;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|b", &zendext) == FAILURE) {
+		return;
 	}
 
 	array_init(return_value);
-	zend_hash_apply_with_argument(&module_registry, (apply_func_arg_t) add_extension_info, return_value TSRMLS_CC);
+
+	if (zendext) {
+		zend_llist_apply_with_argument(&zend_extensions, (llist_apply_with_arg_func_t) add_zendext_info, return_value TSRMLS_CC);
+	} else {
+		zend_hash_apply_with_argument(&module_registry, (apply_func_arg_t) add_extension_info, return_value TSRMLS_CC);
+	}
 }
 /* }}} */
 

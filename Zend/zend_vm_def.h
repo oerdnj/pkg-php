@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_vm_def.h,v 1.59.2.29.2.45 2007/05/18 13:12:04 dmitry Exp $ */
+/* $Id: zend_vm_def.h,v 1.59.2.29.2.47 2007/07/24 19:24:39 dmitry Exp $ */
 
 /* If you change this file, please regenerate the zend_vm_execute.h and
  * zend_vm_opcodes.h files by running:
@@ -2613,7 +2613,11 @@ ZEND_VM_HANDLER(99, ZEND_FETCH_CONSTANT, CONST|UNUSED, CONST)
 	ce = EX_T(opline->op1.u.var).class_entry;
 
 	if (zend_hash_find(&ce->constants_table, opline->op2.u.constant.value.str.val, opline->op2.u.constant.value.str.len+1, (void **) &value) == SUCCESS) {
+		zend_class_entry *old_scope = EG(scope);
+
+		EG(scope) = ce;
 		zval_update_constant(value, (void *) 1 TSRMLS_CC);
+		EG(scope) = old_scope;
 		EX_T(opline->result.u.var).tmp_var = **value;
 		zval_copy_ctor(&EX_T(opline->result.u.var).tmp_var);
 	} else {
@@ -3123,11 +3127,9 @@ ZEND_VM_HANDLER(77, ZEND_FE_RESET, CONST|TMP|VAR|CV, ANY)
 				array_ptr->refcount++;
 			}
 		} else {
-			if (OP1_TYPE == IS_VAR &&
-				free_op1.var == NULL &&
+			if ((OP1_TYPE == IS_CV || OP1_TYPE == IS_VAR) &&
 			    !array_ptr->is_ref &&
 			    array_ptr->refcount > 1) {
-				/* non-separated return value from function */
 				zval *tmp;
 
 				ALLOC_ZVAL(tmp);

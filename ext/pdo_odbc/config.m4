@@ -1,4 +1,4 @@
-dnl $Id: config.m4,v 1.22.2.1 2006/04/30 01:42:53 wez Exp $
+dnl $Id: config.m4,v 1.22.2.1.2.3 2007/07/09 12:35:44 jani Exp $
 dnl config.m4 for extension pdo_odbc
 dnl vim:et:sw=2:ts=2:
 
@@ -19,8 +19,7 @@ define([PDO_ODBC_HELP_TEXT],[[
                             
                               --with-pdo-odbc=generic,dir,libname,ldflags,cflags
 
-                            This extension will always be created as a shared extension
-                            named pdo_odbc.so]])
+                            When build as shared the extension filename is always pdo_odbc.so]])
 
 PHP_ARG_WITH(pdo-odbc, for ODBC v3 support for PDO,
 [  --with-pdo-odbc=flavour,dir
@@ -74,13 +73,13 @@ if test "$PHP_PDO_ODBC" != "no"; then
         ;;
 
     unixODBC|unixodbc)
-        pdo_odbc_def_libdir=/usr/local/lib
+        pdo_odbc_def_libdir=/usr/local/$PHP_LIBDIR
         pdo_odbc_def_incdir=/usr/local/include
         pdo_odbc_def_lib=odbc
         ;;
 
     ODBCRouter|odbcrouter)
-        pdo_odbc_def_libdir=/usr/lib
+        pdo_odbc_def_libdir=/usr/$PHP_LIBDIR
         pdo_odbc_def_incdir=/usr/include
         pdo_odbc_def_lib=odbcsdk
         ;;
@@ -89,7 +88,7 @@ if test "$PHP_PDO_ODBC" != "no"; then
         pdo_odbc_def_lib="`echo $PHP_PDO_ODBC | cut -d, -f3`"
         pdo_odbc_def_ldflags="`echo $PHP_PDO_ODBC | cut -d, -f4`"
         pdo_odbc_def_cflags="`echo $PHP_PDO_ODBC | cut -d, -f5`"
-        pdo_odbc_flavour="$pdo_odbc_flavour ($pdo_odbc_def_lib)"
+        pdo_odbc_flavour="generic-$pdo_odbc_def_lib"
         ;;
 
       *)
@@ -99,7 +98,7 @@ if test "$PHP_PDO_ODBC" != "no"; then
 
   if test -n "$pdo_odbc_dir"; then
     PDO_ODBC_INCDIR="$pdo_odbc_dir/include"
-    PDO_ODBC_LIBDIR="$pdo_odbc_dir/lib"
+    PDO_ODBC_LIBDIR="$pdo_odbc_dir/$PHP_LIBDIR"
   else
     PDO_ODBC_INCDIR="$pdo_odbc_def_incdir"
     PDO_ODBC_LIBDIR="$pdo_odbc_def_libdir"

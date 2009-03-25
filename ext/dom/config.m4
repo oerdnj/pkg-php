@@ -1,9 +1,9 @@
 dnl
-dnl $Id: config.m4,v 1.20 2005/05/29 23:16:40 sniper Exp $
+dnl $Id: config.m4,v 1.20.4.1 2007/07/03 17:25:33 sniper Exp $
 dnl
 
 PHP_ARG_ENABLE(dom, whether to enable DOM support,
-[  --disable-dom           Disable new DOM support], yes)
+[  --disable-dom           Disable DOM support], yes)
 
 if test -z "$PHP_LIBXML_DIR"; then
   PHP_ARG_WITH(libxml-dir, libxml2 install dir,

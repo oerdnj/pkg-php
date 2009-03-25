@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: mail.c,v 1.87.2.1.2.5 2007/03/30 00:28:58 iliaa Exp $ */
+/* $Id: mail.c,v 1.87.2.1.2.7 2007/07/11 17:36:56 johannes Exp $ */
 
 #include <stdlib.h>
 #include <ctype.h>
@@ -36,7 +36,6 @@
 #include "safe_mode.h"
 #include "exec.h"
 
-#if HAVE_SENDMAIL
 #ifdef PHP_WIN32
 #include "win32/sendmail.h"
 #endif
@@ -166,7 +165,7 @@ PHP_FUNCTION(mail)
 	}
 
 	if (force_extra_parameters) {
-		extra_cmd = estrdup(force_extra_parameters);
+		extra_cmd = php_escape_shell_cmd(force_extra_parameters);
 	} else if (extra_cmd) {
 		extra_cmd = php_escape_shell_cmd(extra_cmd);
 	}
@@ -294,13 +293,6 @@ PHP_MINFO_FUNCTION(mail)
 #endif
 }
 /* }}} */
-
-#else
-
-PHP_FUNCTION(mail) {}
-PHP_MINFO_FUNCTION(mail) {}
-
-#endif
 
 /*
  * Local variables:

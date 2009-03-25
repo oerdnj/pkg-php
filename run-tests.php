@@ -23,7 +23,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: run-tests.php,v 1.226.2.37.2.29 2007/05/27 19:23:09 tony2001 Exp $ */
+/* $Id: run-tests.php,v 1.226.2.37.2.34 2007/07/31 21:29:21 jani Exp $ */
 
 /* Sanity check to ensure that pcre extension needed by this script is available.
  * In the event it is not, print a nice error message indicating that this script will
@@ -160,6 +160,7 @@ $ini_overwrites = array(
 		'output_buffering=Off',
 		'error_reporting=8191',
 		'display_errors=1',
+		'display_startup_errors=1',
 		'log_errors=0',
 		'html_errors=0',
 		'track_errors=1',
@@ -398,14 +399,16 @@ if (isset($argc) && $argc > 1) {
 					$html_output = is_resource($html_file);
 					break;
 				case '--version':
-					echo '$Revision: 1.226.2.37.2.29 $'."\n";
+					echo '$Revision: 1.226.2.37.2.34 $'."\n";
 					exit(1);
+
+				case 'u':
+				case 'U':
+					// Allow using u or U for forward compatibility
+					break;
+					
 				default:
 					echo "Illegal switch '$switch' specified!\n";
-					if ($switch == 'u' || $switch == 'U') {
-						break;
-					}
-					// break
 				case 'h':
 				case '-help':
 				case '--help':
@@ -471,7 +474,18 @@ HELP;
 		}
 		if (!$is_switch) {
 			$testfile = realpath($argv[$i]);
-			if (is_dir($testfile)) {
+			if (!$testfile && strpos($argv[$i], '*') !== false && function_exists('glob')) {
+				if (preg_match("/\.phpt$/", $argv[$i])) {
+					$pattern_match = glob($argv[$i]);
+				} else if (preg_match("/\*$/", $argv[$i])) {
+					$pattern_match = glob($argv[$i] . '.phpt');
+				} else {
+					die("bogus test name " . $argv[$i] . "\n");
+				}
+				if (is_array($pattern_match)) {
+					$test_files = array_merge($test_files, $pattern_match);
+				}
+			} else if (is_dir($testfile)) {
 				find_files($testfile);
 			} else if (preg_match("/\.phpt$/", $testfile)) {
 				$test_files[] = $testfile;
@@ -1051,12 +1065,17 @@ TEST $file
 		} elseif (!strncasecmp(PHP_OS, "win", 3) && file_exists(dirname($php) ."/php-cgi.exe")) {
 			$old_php = $php;
 			$php = realpath(dirname($php) ."/php-cgi.exe") .' -C ';
-		} elseif (file_exists("./sapi/cgi/php-cgi")) {
-			$old_php = $php;
-			$php = realpath("./sapi/cgi/php-cgi") . ' -C ';
 		} else {
-			show_result("SKIP", $tested, $tested_file, "reason: CGI not available");
-			return 'SKIPPED';
+			if (file_exists(dirname($php)."/../../sapi/cgi/php-cgi")) {
+				$old_php = $php;
+				$php = realpath(dirname($php)."/../../sapi/cgi/php-cgi") . ' -C ';
+			} else if (file_exists("./sapi/cgi/php-cgi")) {
+				$old_php = $php;
+				$php = realpath("./sapi/cgi/php-cgi") . ' -C ';
+			} else {
+				show_result("SKIP", $tested, $tested_file, "reason: CGI not available");
+				return 'SKIPPED';
+			}
 		}
 	}
 
@@ -1182,7 +1201,7 @@ TEST $file
 			} else {
 				$env['USE_ZEND_ALLOC'] = '1';
 			}
-			$output = system_with_timeout("$extra $php -q $ini_settings $test_skipif", $env);
+			$output = system_with_timeout("$extra $php $pass_options -q $ini_settings $test_skipif", $env);
 			if (!$cfg['keep']['skip']) {
 				@unlink($test_skipif);
 			}
@@ -1390,7 +1409,7 @@ COMMAND $cmd
 				settings2params($clean_params);
 				$extra = substr(PHP_OS, 0, 3) !== "WIN" ?
 					"unset REQUEST_METHOD; unset QUERY_STRING; unset PATH_TRANSLATED; unset SCRIPT_FILENAME; unset REQUEST_METHOD;": "";
-				system_with_timeout("$extra $php -q $clean_params $test_clean", $env);
+				system_with_timeout("$extra $php $pass_options -q $clean_params $test_clean", $env);
 			}
 			if (!$cfg['keep']['clean']) {
 				@unlink($test_clean);

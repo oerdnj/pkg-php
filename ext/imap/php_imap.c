@@ -26,7 +26,7 @@
    | PHP 4.0 updates:  Zeev Suraski <zeev@zend.com>                       |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_imap.c,v 1.208.2.7.2.24 2007/03/19 22:56:57 iliaa Exp $ */
+/* $Id: php_imap.c,v 1.208.2.7.2.26 2007/07/31 00:31:10 stas Exp $ */
 
 #define IMAP41
 
@@ -2377,7 +2377,7 @@ PHP_FUNCTION(imap_utf7_decode)
 #if PHP_DEBUG
 	/* warn if we computed outlen incorrectly */
 	if (outp - out != outlen) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "outp - out [%d] != outlen [%d]", outp - out, outlen);
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "outp - out [%ld] != outlen [%d]", outp - out, outlen);
 	}
 #endif
 
@@ -2496,7 +2496,7 @@ PHP_FUNCTION(imap_utf7_encode)
 #if PHP_DEBUG
 	/* warn if we computed outlen incorrectly */
 	if (outp - out != outlen) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "outp - out [%d] != outlen [%d]", outp - out, outlen);
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "outp - out [%ld] != outlen [%d]", outp - out, outlen);
 	}
 #endif
 
@@ -3407,7 +3407,7 @@ int _php_imap_mail(char *to, char *subject, char *message, char *headers, char *
 		addr = NULL;
 		rfc822_parse_adrlist(&addr, tempMailTo, NULL);
 		while (addr) {
-			if (strcmp(addr->host, ERRHOST) == 0) {
+			if (addr->host == NULL || strcmp(addr->host, ERRHOST) == 0) {
 				PHP_IMAP_BAD_DEST;
 			} else {
 				bufferTo = safe_erealloc(bufferTo, bt_len, 1, strlen(addr->mailbox));
@@ -3436,7 +3436,7 @@ int _php_imap_mail(char *to, char *subject, char *message, char *headers, char *
 		addr = NULL;
 		rfc822_parse_adrlist(&addr, tempMailTo, NULL);
 		while (addr) {
-			if (strcmp(addr->host, ERRHOST) == 0) {
+			if (addr->host == NULL || strcmp(addr->host, ERRHOST) == 0) {
 				PHP_IMAP_BAD_DEST;
 			} else {
 				bufferCc = safe_erealloc(bufferCc, bt_len, 1, strlen(addr->mailbox));
@@ -3462,7 +3462,7 @@ int _php_imap_mail(char *to, char *subject, char *message, char *headers, char *
 		addr = NULL;
 		rfc822_parse_adrlist(&addr, tempMailTo, NULL);
 		while (addr) {
-			if (strcmp(addr->host, ERRHOST) == 0) {
+			if (addr->host == NULL || strcmp(addr->host, ERRHOST) == 0) {
 				PHP_IMAP_BAD_DEST;
 			} else {
 				bufferBcc = safe_erealloc(bufferBcc, bt_len, 1, strlen(addr->mailbox));

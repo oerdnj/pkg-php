@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: versioning.c,v 1.19.2.1.2.2 2007/01/01 09:36:09 sebastian Exp $ */
+/* $Id: versioning.c,v 1.19.2.1.2.3 2007/08/23 18:38:42 derick Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -90,13 +90,14 @@ static int
 compare_special_version_forms(char *form1, char *form2)
 {
 	int found1 = -1, found2 = -1;
-	special_forms_t special_forms[10] = {
+	special_forms_t special_forms[11] = {
 		{"dev", 0},
 		{"alpha", 1},
 		{"a", 1},
 		{"beta", 2},
 		{"b", 2},
 		{"RC", 3},
+		{"rc", 3},
 		{"#", 4},
 		{"pl", 5},
 		{"p", 5},

@@ -1,20 +1,24 @@
 dnl
-dnl $Id: config.m4,v 1.23 2004/01/17 13:00:16 sniper Exp $
+dnl $Id: config.m4,v 1.23.6.2 2007/07/11 23:20:37 jani Exp $
 dnl
 
-AC_ARG_WITH(thttpd,
-[  --with-thttpd=SRCDIR    Build PHP as thttpd module],[
-  if test ! -d $withval; then
-    AC_MSG_RESULT(thttpd directory does not exist ($withval))
+PHP_ARG_WITH(thttpd,,
+[  --with-thttpd=SRCDIR    Build PHP as thttpd module], no, no)
+
+AC_MSG_CHECKING([for thttpd])
+
+if test "$PHP_THTTPD" != "no"; then
+  if test ! -d $PHP_THTTPD; then
+    AC_MSG_RESULT(thttpd directory does not exist ($PHP_THTTPD))
   fi
 
-  PHP_EXPAND_PATH($withval, THTTPD)
+  PHP_EXPAND_PATH($PHP_THTTPD, THTTPD)
   
-  if grep thttpd.2.21b $withval/version.h >/dev/null; then
+  if grep thttpd.2.21b $PHP_THTTPD/version.h >/dev/null; then
     patch="test -f $THTTPD/php_patched || \
     (cd $THTTPD && patch -p1 < $abs_srcdir/sapi/thttpd/thttpd_patch && touch php_patched)"
 
-  elif grep Premium $withval/version.h >/dev/null; then
+  elif grep Premium $PHP_THTTPD/version.h >/dev/null; then
     patch=
   else
     AC_MSG_ERROR([This version only supports thttpd-2.21b and Premium thttpd])
@@ -31,9 +35,5 @@ AC_ARG_WITH(thttpd,
   PHP_THTTPD="yes, using $THTTPD"
   PHP_ADD_INCLUDE($THTTPD)
   PHP_SELECT_SAPI(thttpd, static)
-],[
-  PHP_THTTPD=no
-])
-
-AC_MSG_CHECKING(for thttpd)
+fi
 AC_MSG_RESULT($PHP_THTTPD)

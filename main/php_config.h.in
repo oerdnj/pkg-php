@@ -128,9 +128,6 @@
 /* The number of bytes in a int.  */
 #undef SIZEOF_INT
 
-/* The number of bytes in a intmax_t.  */
-#undef SIZEOF_INTMAX_T
-
 /* The number of bytes in a long.  */
 #undef SIZEOF_LONG
 
@@ -143,17 +140,11 @@
 /* The number of bytes in a long long int.  */
 #undef SIZEOF_LONG_LONG_INT
 
-/* The number of bytes in a ptrdiff_t.  */
-#undef SIZEOF_PTRDIFF_T
-
 /* The number of bytes in a short.  */
 #undef SIZEOF_SHORT
 
 /* The number of bytes in a size_t.  */
 #undef SIZEOF_SIZE_T
-
-/* The number of bytes in a ssize_t.  */
-#undef SIZEOF_SSIZE_T
 
 /* Define if you have the CreateProcess function.  */
 #undef HAVE_CREATEPROCESS
@@ -488,6 +479,9 @@
 /* Define if you have the snprintf function.  */
 #undef HAVE_SNPRINTF
 
+/* Define if you have the socketpair function.  */
+#undef HAVE_SOCKETPAIR
+
 /* Define if you have the srand48 function.  */
 #undef HAVE_SRAND48
 
@@ -731,6 +725,9 @@
 /* Define if you have the <sys/socket.h> header file.  */
 #undef HAVE_SYS_SOCKET_H
 
+/* Define if you have the <sys/stat.h> header file.  */
+#undef HAVE_SYS_STAT_H
+
 /* Define if you have the <sys/statfs.h> header file.  */
 #undef HAVE_SYS_STATFS_H
 
@@ -867,7 +864,7 @@
 #undef HAVE_APACHE_HOOKS
 
 /*   */
-#undef HAVE_APACHE_HOOKS
+#undef HAVE_APACHE
 
 /*   */
 #undef HAVE_AP_CONFIG_H
@@ -930,6 +927,9 @@
 #undef ROXEN_USE_ZTS
 
 /*   */
+#undef PHP_FASTCGI
+
+/*   */
 #undef FORCE_CGI_REDIRECT
 
 /*   */
@@ -937,12 +937,6 @@
 
 /*   */
 #undef ENABLE_PATHINFO_CHECK
-
-/*   */
-#undef PHP_FASTCGI
-
-/* whether you have sendmail */
-#undef HAVE_SENDMAIL
 
 /* Define if system uses EBCDIC */
 #undef CHARSET_EBCDIC
@@ -1115,6 +1109,24 @@
 /* Whether you have socklen_t */
 #undef HAVE_SOCKLEN_T
 
+/* Size of intmax_t */
+#undef SIZEOF_INTMAX_T
+
+/* Whether intmax_t is available */
+#undef HAVE_INTMAX_T
+
+/* Size of ssize_t */
+#undef SIZEOF_SSIZE_T
+
+/* Whether ssize_t is available */
+#undef HAVE_SSIZE_T
+
+/* Size of ptrdiff_t */
+#undef SIZEOF_PTRDIFF_T
+
+/* Whether ptrdiff_t is available */
+#undef HAVE_PTRDIFF_T
+
 /* Whether you have struct sockaddr_storage */
 #undef HAVE_SOCKADDR_STORAGE
 
@@ -1159,12 +1171,6 @@
 
 /*   */
 #undef PHP_SAFE_MODE
-
-/*   */
-#undef PHP_SAFE_MODE_EXEC_DIR
-
-/*   */
-#undef PHP_SAFE_MODE_EXEC_DIR
 
 /*   */
 #undef PHP_SAFE_MODE_EXEC_DIR
@@ -1368,22 +1374,7 @@
 #undef DBA_CDB
 
 /*   */
-#undef DBA_CDB_BUILTIN
-
-/*   */
-#undef DBA_CDB_MAKE
-
-/*   */
-#undef DBA_CDB
-
-/*   */
 #undef DBA_INIFILE
-
-/*   */
-#undef DBA_INIFILE
-
-/*   */
-#undef DBA_FLATFILE
 
 /*   */
 #undef DBA_FLATFILE
@@ -2489,11 +2480,11 @@
 /*   */
 #undef HAVE_SNMP
 
-/* Whether to build snmp as dynamic module */
-#undef COMPILE_DL_SNMP
-
 /*   */
 #undef UCD_SNMP_HACK
+
+/* Whether to build snmp as dynamic module */
+#undef COMPILE_DL_SNMP
 
 /*   */
 #undef HAVE_LIBXML
@@ -2516,12 +2507,6 @@
 /* Whether to build sockets as dynamic module */
 #undef COMPILE_DL_SOCKETS
 
-/*   */
-#undef HAVE_SOCKETPAIR
-
-/*   */
-#undef HAVE_GETHOSTBYNAME2
-
 /* Whether struct _zend_object_value is packed */
 #undef HAVE_PACKED_OBJECT_VALUE
 
@@ -2543,6 +2528,9 @@
 /*   */
 #undef SQLITE_UTF8
 
+/* Define if flush should be called explicitly after a buffered io. */
+#undef HAVE_FLUSHIO
+
 /*   */
 #undef HAVE_CRYPT
 
@@ -2557,9 +2545,6 @@
 
 /* Whether the system supports BlowFish salt */
 #undef PHP_BLOWFISH_CRYPT
-
-/* Define if flush should be called explicitly after a buffered io. */
-#undef HAVE_FLUSHIO
 
 /*   */
 #undef HAVE_REGEX_T_RE_MAGIC

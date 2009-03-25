@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: dir.c,v 1.147.2.3.2.4 2007/02/24 17:16:23 iliaa Exp $ */
+/* $Id: dir.c,v 1.147.2.3.2.10 2007/08/22 14:59:44 jani Exp $ */
 
 /* {{{ includes/startup/misc */
 
@@ -24,6 +24,7 @@
 #include "fopen_wrappers.h"
 #include "file.h"
 #include "php_dir.h"
+#include "php_string.h"
 #include "php_scandir.h"
 
 #ifdef HAVE_DIRENT_H
@@ -140,34 +141,56 @@ PHP_MINIT_FUNCTION(dir)
 	REGISTER_STRING_CONSTANT("PATH_SEPARATOR", pathsep_str, CONST_CS|CONST_PERSISTENT);
 
 #ifdef HAVE_GLOB
+
 #ifdef GLOB_BRACE
 	REGISTER_LONG_CONSTANT("GLOB_BRACE", GLOB_BRACE, CONST_CS | CONST_PERSISTENT);
+#else
+# define GLOB_BRACE 0
 #endif
+
 #ifdef GLOB_MARK
 	REGISTER_LONG_CONSTANT("GLOB_MARK", GLOB_MARK, CONST_CS | CONST_PERSISTENT);
+#else
+# define GLOB_MARK 0
 #endif
+
 #ifdef GLOB_NOSORT
 	REGISTER_LONG_CONSTANT("GLOB_NOSORT", GLOB_NOSORT, CONST_CS | CONST_PERSISTENT);
+#else 
+# define GLOB_NOSORT 0
 #endif
+
 #ifdef GLOB_NOCHECK
 	REGISTER_LONG_CONSTANT("GLOB_NOCHECK", GLOB_NOCHECK, CONST_CS | CONST_PERSISTENT);
+#else 
+# define GLOB_NOCHECK 0
 #endif
+
 #ifdef GLOB_NOESCAPE
 	REGISTER_LONG_CONSTANT("GLOB_NOESCAPE", GLOB_NOESCAPE, CONST_CS | CONST_PERSISTENT);
+#else 
+# define GLOB_NOESCAPE 0
 #endif
+
 #ifdef GLOB_ERR
 	REGISTER_LONG_CONSTANT("GLOB_ERR", GLOB_ERR, CONST_CS | CONST_PERSISTENT);
+#else 
+# define GLOB_ERR 0
 #endif
 
 #ifndef GLOB_ONLYDIR
-#define GLOB_ONLYDIR (1<<30)
-#define GLOB_EMULATE_ONLYDIR
-#define GLOB_FLAGMASK (~GLOB_ONLYDIR)
+# define GLOB_ONLYDIR (1<<30)
+# define GLOB_EMULATE_ONLYDIR
+# define GLOB_FLAGMASK (~GLOB_ONLYDIR)
 #else
-#define GLOB_FLAGMASK (~0)
+# define GLOB_FLAGMASK (~0)
 #endif
 
+/* This is used for checking validity of passed flags (passing invalid flags causes segfault in glob()!! */
+#define GLOB_AVAILABLE_FLAGS (0 | GLOB_BRACE | GLOB_MARK | GLOB_NOSORT | GLOB_NOCHECK | GLOB_NOESCAPE | GLOB_ERR | GLOB_ONLYDIR)
+
 	REGISTER_LONG_CONSTANT("GLOB_ONLYDIR", GLOB_ONLYDIR, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("GLOB_AVAILABLE_FLAGS", GLOB_AVAILABLE_FLAGS, CONST_CS | CONST_PERSISTENT);
 
 #endif /* HAVE_GLOB */
 
@@ -361,9 +384,9 @@ PHP_NAMED_FUNCTION(php_if_readdir)
    Find pathnames matching a pattern */
 PHP_FUNCTION(glob)
 {
-	char cwd[MAXPATHLEN];
 	int cwd_skip = 0;
 #ifdef ZTS
+	char cwd[MAXPATHLEN];
 	char work_pattern[MAXPATHLEN];
 	char *result;
 #endif
@@ -374,8 +397,14 @@ PHP_FUNCTION(glob)
 	int n;
 	int ret;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l", &pattern, &pattern_len, &flags) == FAILURE) 
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l", &pattern, &pattern_len, &flags) == FAILURE) {
 		return;
+	}
+
+	if ((GLOB_AVAILABLE_FLAGS & flags) != flags) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "At least one of the passed flags is invalid or not supported on this platform");
+		RETURN_FALSE;
+	}
 
 #ifdef ZTS 
 	if (!IS_ABSOLUTE_PATH(pattern, pattern_len)) {
@@ -395,6 +424,23 @@ PHP_FUNCTION(glob)
 	} 
 #endif
 
+	if (PG(safe_mode) || (PG(open_basedir) && *PG(open_basedir))) {
+		int pattern_len = strlen(pattern);
+		char *basename = estrndup(pattern, pattern_len);
+		
+		php_dirname(basename, pattern_len);
+		if (PG(safe_mode) && (!php_checkuid(basename, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
+			efree(basename);
+			RETURN_FALSE;
+		}
+		if (php_check_open_basedir(basename TSRMLS_CC)) {
+			efree(basename);
+			RETURN_FALSE;
+		}
+		efree(basename);
+	}
+
+	memset(&globbuf, 0, sizeof(glob_t));
 	globbuf.gl_offs = 0;
 	if (0 != (ret = glob(pattern, flags & GLOB_FLAGMASK, NULL, &globbuf))) {
 #ifdef GLOB_NOMATCH
@@ -418,16 +464,6 @@ PHP_FUNCTION(glob)
 	if (!globbuf.gl_pathc || !globbuf.gl_pathv) {
 		array_init(return_value);
 		return;
-	}
-
-	/* we assume that any glob pattern will match files from one directory only
-	   so checking the dirname of the first match should be sufficient */
-	strlcpy(cwd, globbuf.gl_pathv[0], MAXPATHLEN);
-	if (PG(safe_mode) && (!php_checkuid(cwd, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
-		RETURN_FALSE;
-	}
-	if (php_check_open_basedir(cwd TSRMLS_CC)) {
-		RETURN_FALSE;
 	}
 
 	array_init(return_value);
@@ -473,6 +509,11 @@ PHP_FUNCTION(scandir)
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|lr", &dirn, &dirn_len, &flags, &zcontext) == FAILURE) {
 		return;
+	}
+
+	if (dirn_len < 1) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Directory name cannot be empty");
+		RETURN_FALSE;
 	}
 
 	if (zcontext) {

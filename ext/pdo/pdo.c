@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo.c,v 1.57.2.17.2.8 2007/01/01 09:36:04 sebastian Exp $ */
+/* $Id: pdo.c,v 1.57.2.17.2.9 2007/07/23 11:53:58 jani Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -54,12 +54,12 @@ int php_pdo_list_entry(void)
 /* for exceptional circumstances */
 zend_class_entry *pdo_exception_ce;
 
-PDO_API zend_class_entry *php_pdo_get_dbh_ce()
+PDO_API zend_class_entry *php_pdo_get_dbh_ce(void)
 {
 	return pdo_dbh_ce;
 }
 
-PDO_API zend_class_entry *php_pdo_get_exception()
+PDO_API zend_class_entry *php_pdo_get_exception(void)
 {
 	return pdo_exception_ce;
 }

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: safe_mode.c,v 1.62.2.1.2.8 2007/01/12 12:11:18 bjori Exp $ */
+/* $Id: safe_mode.c,v 1.62.2.1.2.9 2007/07/21 01:43:33 jani Exp $ */
 
 #include "php.h"
 
@@ -188,7 +188,8 @@ PHPAPI int php_checkuid_ex(const char *filename, const char *fopen_mode, int mod
 	return 0;
 }
 
-PHPAPI int php_checkuid(const char *filename, const char *fopen_mode, int mode) {
+PHPAPI int php_checkuid(const char *filename, const char *fopen_mode, int mode)
+{
 #ifdef NETWARE
 /* NetWare don't have uid*/
 	return 1;
@@ -197,7 +198,7 @@ PHPAPI int php_checkuid(const char *filename, const char *fopen_mode, int mode) 
 #endif
 }
 
-PHPAPI char *php_get_current_user()
+PHPAPI char *php_get_current_user(void)
 {
 	struct stat *pstat;
 	TSRMLS_FETCH();

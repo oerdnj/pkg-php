@@ -1,11 +1,8 @@
 dnl
-dnl $Id: config.m4,v 1.13.4.2 2006/10/06 22:34:16 iliaa Exp $
+dnl $Id: config.m4,v 1.13.4.6 2007/07/31 13:02:00 jani Exp $
 dnl
 
 if test "$PHP_PDO" != "no"; then
-
-AC_DEFUN([PHP_PGSQL_CHECK_FUNCTIONS],[
-])
 
 PHP_ARG_WITH(pdo-pgsql,for PostgreSQL support for PDO,
 [  --with-pdo-pgsql[=DIR]    PDO: PostgreSQL support.  DIR is the PostgreSQL base
@@ -16,7 +13,7 @@ if test "$PHP_PDO_PGSQL" != "no"; then
 
   AC_MSG_CHECKING(for pg_config)
   for i in $PHP_PDO_PGSQL $PHP_PDO_PGSQL/bin /usr/local/pgsql/bin /usr/local/bin /usr/bin ""; do
-	if test -x $i/pg_config; then
+    if test -x $i/pg_config; then
       PG_CONFIG="$i/pg_config"
       break;
     fi
@@ -46,7 +43,7 @@ if test "$PHP_PDO_PGSQL" != "no"; then
         fi
       done
 
-      for j in lib lib/pgsql lib/postgres lib/postgresql ""; do
+      for j in $PHP_LIBDIR $PHP_LIBDIR/pgsql $PHP_LIBDIR/postgres $PHP_LIBDIR/postgresql ""; do
         if test -f "$i/$j/libpq.so" || test -f "$i/$j/libpq.a"; then 
           PGSQL_LIBDIR=$i/$j
         fi
@@ -63,19 +60,21 @@ if test "$PHP_PDO_PGSQL" != "no"; then
   fi
 
   if test -z "$PGSQL_INCLUDE" -a -z "$PGSQL_LIBDIR" ; then
-    AC_MSG_ERROR([Unable to find libpq anywhere under $withval])
+    AC_MSG_ERROR([Unable to find libpq anywhere under $PGSQL_SEARCH_PATHS])
   fi
 
   AC_DEFINE(HAVE_PDO_PGSQL,1,[Whether to build PostgreSQL for PDO support or not])
 
   AC_MSG_CHECKING([for openssl dependencies])
   if grep -q openssl $PGSQL_INCLUDE/libpq-fe.h ; then
-	 AC_MSG_RESULT([yes])
-	 if pkg-config openssl ; then
-      PDO_PGSQL_CFLAGS="`pkg-config openssl --cflags`"
+    AC_MSG_RESULT([yes])
+    dnl First try to find pkg-config
+    AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+    if test -x "$PKG_CONFIG" && $PKG_CONFIG --exists openssl; then
+      PDO_PGSQL_CFLAGS=`$PKG_CONFIG openssl --cflags`
     fi
   else
-	 AC_MSG_RESULT([no])
+    AC_MSG_RESULT([no])
   fi
 
   old_LIBS=$LIBS
@@ -108,7 +107,7 @@ if test "$PHP_PDO_PGSQL" != "no"; then
 
   ifdef([PHP_CHECK_PDO_INCLUDES],
   [
-  	PHP_CHECK_PDO_INCLUDES
+    PHP_CHECK_PDO_INCLUDES
   ],[
     AC_MSG_CHECKING([for PDO includes])
     if test -f $abs_srcdir/include/php/ext/pdo/php_pdo_driver.h; then

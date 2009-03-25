@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.39.2.6.2.1 2006/10/18 20:58:23 tony2001 Exp $
+dnl $Id: config.m4,v 1.39.2.6.2.2 2007/08/08 11:37:44 nlopess Exp $
 dnl
 
 AC_DEFUN([PHP_LDAP_CHECKS], [
@@ -159,9 +159,9 @@ if test "$PHP_LDAP" != "no"; then
   
   dnl Save original values
   _SAVE_CPPFLAGS=$CPPFLAGS
-  _SAVE_LDFLAGS=$LDFLAGS
+  _SAVE_LIBS=$LIBS
   CPPFLAGS="$CPPFLAGS -I$LDAP_INCDIR"
-  LDFLAGS="$LDFLAGS $LDAP_SHARED_LIBADD"
+  LIBS="$LIBS $LDAP_SHARED_LIBADD"
 
   dnl Check for 3 arg ldap_set_rebind_proc
   AC_CACHE_CHECK([for 3 arg ldap_set_rebind_proc], ac_cv_3arg_setrebindproc,
@@ -191,5 +191,5 @@ if test "$PHP_LDAP" != "no"; then
   
   dnl Restore original values
   CPPFLAGS=$_SAVE_CPPFLAGS
-  LDFLAGS=$_SAVE_LDFLAGS
+  LIBS=$_SAVE_LIBS
 fi 

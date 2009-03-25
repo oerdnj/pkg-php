@@ -26,7 +26,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: oci8.c,v 1.269.2.16.2.32 2007/02/24 02:17:25 helly Exp $ */
+/* $Id: oci8.c,v 1.269.2.16.2.37 2007/08/06 20:32:54 sixd Exp $ */
 /* TODO
  *
  * file://localhost/www/docs/oci10/ociaahan.htm#423823 - implement lob_empty() with OCI_ATTR_LOBEMPTY
@@ -433,7 +433,7 @@ oci_error:
 	OCIErrorGet(OCI_G(env), (ub4)1, NULL, &error_code, tmp_buf, (ub4)PHP_OCI_ERRBUF_LEN, (ub4)OCI_HTYPE_ERROR);
 
 	if (error_code) {
-		int tmp_buf_len = strlen(tmp_buf);
+		int tmp_buf_len = strlen((char *)tmp_buf);
 
 		if (tmp_buf_len > 0 && tmp_buf[tmp_buf_len - 1] == '\n') {
 			tmp_buf[tmp_buf_len - 1] = '\0';
@@ -674,7 +674,7 @@ PHP_MINFO_FUNCTION(oci)
 	php_info_print_table_start();
 	php_info_print_table_row(2, "OCI8 Support", "enabled");
 	php_info_print_table_row(2, "Version", "1.2.3");
-	php_info_print_table_row(2, "Revision", "$Revision: 1.269.2.16.2.32 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 1.269.2.16.2.37 $");
 
 	snprintf(buf, sizeof(buf), "%ld", OCI_G(num_persistent));
 	php_info_print_table_row(2, "Active Persistent Connections", buf);
@@ -922,14 +922,14 @@ sb4 php_oci_fetch_errmsg(OCIError *error_handle, text **error_buf TSRMLS_DC)
 	PHP_OCI_CALL(OCIErrorGet, (error_handle, (ub4)1, NULL, &error_code, tmp_buf, (ub4)PHP_OCI_ERRBUF_LEN, (ub4)OCI_HTYPE_ERROR));
 	
 	if (error_code) {
-		int tmp_buf_len = strlen(tmp_buf);
+		int tmp_buf_len = strlen((char *)tmp_buf);
 		
 		if (tmp_buf_len && tmp_buf[tmp_buf_len - 1] == '\n') {
 			tmp_buf[tmp_buf_len - 1] = '\0';
 		}
 		if (tmp_buf_len && error_buf) {
 			*error_buf = NULL;
-			*error_buf = estrndup(tmp_buf, tmp_buf_len);
+			*error_buf = (text *)estrndup((char *)tmp_buf, tmp_buf_len);
 		}
 	}
 	return error_code;
@@ -1012,6 +1012,16 @@ php_oci_connection *php_oci_do_connect_ex(char *username, int username_len, char
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Privileged connect is disabled. Enable oci8.privileged_connect to be able to connect as SYSOPER or SYSDBA");
 				return NULL;
 			}
+			/*  Disable privileged connections in Safe Mode (N.b. safe mode has been removed in PHP 6 anyway) */
+			if (PG(safe_mode)) {
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Privileged connect is disabled in Safe Mode");
+				return NULL;
+			}
+			/* Increase security by not caching privileged
+			 * oci_pconnect() connections. The connection becomes
+			 * equivalent to oci_connect() or oci_new_connect().
+			 */
+			persistent = 0;
 			break;
 		default:
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid session mode specified (%ld)", session_mode);
@@ -1041,7 +1051,7 @@ php_oci_connection *php_oci_do_connect_ex(char *username, int username_len, char
 
 #if HAVE_OCI_ENV_NLS_CREATE
 	if (charset && *charset) {
-		PHP_OCI_CALL_RETURN(charsetid, OCINlsCharSetNameToId, (OCI_G(env), charset));
+		PHP_OCI_CALL_RETURN(charsetid, OCINlsCharSetNameToId, (OCI_G(env), (CONST oratext *)charset));
 		if (!charsetid) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid character set name: %s", charset);
 		} else {
@@ -1193,6 +1203,9 @@ open:
 		/* -1 means "Off" */
 		connection->next_ping = 0;
 	}
+
+	/* mark password as unchanged by PHP during the duration of the database session */
+	connection->passwd_changed = 0;
 	
 	smart_str_free_ex(&hashed_details, 0);
 
@@ -1374,7 +1387,7 @@ open:
 	}
 
 #if HAVE_OCI_STMT_PREPARE2
-	if (connection->is_persistent) {
+	{
 		ub4 statement_cache_size = (OCI_G(statement_cache_size) > 0) ? OCI_G(statement_cache_size) : 0;
 
 		PHP_OCI_CALL_RETURN(OCI_G(errcode), OCIAttrSet, ((dvoid *) connection->svc, (ub4) OCI_HTYPE_SVCCTX, (ub4 *) &statement_cache_size, 0, (ub4) OCI_ATTR_STMTCACHESIZE, OCI_G(err)));
@@ -1389,7 +1402,7 @@ open:
 	
 	/* mark it as open */
 	connection->is_open = 1;
-
+	
 	/* add to the appropriate hash */
 	if (connection->is_persistent) {
 		new_le.ptr = connection;
@@ -1561,6 +1574,7 @@ int php_oci_password_change(php_oci_connection *connection, char *user, int user
 		PHP_OCI_HANDLE_ERROR(connection, connection->errcode);
 		return 1;
 	}
+	connection->passwd_changed = 1;
 	return 0;
 } /* }}} */
 
@@ -1780,7 +1794,7 @@ static int php_oci_persistent_helper(zend_rsrc_list_entry *le TSRMLS_DC)
 
 		if (connection->used_this_request) {
 			if ((PG(connection_status) & PHP_CONNECTION_TIMEOUT) || OCI_G(in_call)) {
-				return 1;
+				return ZEND_HASH_APPLY_REMOVE;
 			}
 
 			if (connection->descriptors) {
@@ -1793,6 +1807,18 @@ static int php_oci_persistent_helper(zend_rsrc_list_entry *le TSRMLS_DC)
 				php_oci_connection_rollback(connection TSRMLS_CC);
 			}
 			
+			/* If oci_password_change() changed the password of a
+			 * persistent connection, close the connection and remove
+			 * it from the persistent connection cache.  This means
+			 * subsequent scripts will be prevented from being able to
+			 * present the old (now invalid) password to a usable
+			 * connection to the database; they must use the new
+			 * password.
+			 */
+			if (connection->passwd_changed) {
+				return ZEND_HASH_APPLY_REMOVE;
+			}
+
 			if (OCI_G(persistent_timeout) > 0) {
 				connection->idle_expiry = timestamp + OCI_G(persistent_timeout);
 			}
@@ -1805,14 +1831,15 @@ static int php_oci_persistent_helper(zend_rsrc_list_entry *le TSRMLS_DC)
 			}
 
 			connection->used_this_request = 0;
+
 		} else if (OCI_G(persistent_timeout) != -1) {
 			if (connection->idle_expiry < timestamp) {
 				/* connection has timed out */
-				return 1;
+				return ZEND_HASH_APPLY_REMOVE;
 			}
 		}
 	}
-	return 0;
+	return ZEND_HASH_APPLY_KEEP;
 } /* }}} */
 
 #ifdef ZTS
@@ -1832,3 +1859,12 @@ static int php_oci_list_helper(zend_rsrc_list_entry *le, void *le_type TSRMLS_DC
 #endif
 
 #endif /* HAVE_OCI8 */
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

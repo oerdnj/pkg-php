@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysql_driver.c,v 1.59.2.13.2.4 2007/01/01 09:36:05 sebastian Exp $ */
+/* $Id: mysql_driver.c,v 1.59.2.13.2.5 2007/06/18 21:51:32 stas Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -492,7 +492,11 @@ static int pdo_mysql_handle_factory(pdo_dbh_t *dbh, zval *driver_options TSRMLS_
 			pdo_mysql_error(dbh);
 			goto cleanup;
 		}
-		
+
+		if ((PG(open_basedir) && PG(open_basedir)[0] != '\0') || PG(safe_mode)) {
+			local_infile = 0;
+		}
+
 		if (mysql_options(H->server, MYSQL_OPT_LOCAL_INFILE, (const char *)&local_infile)) {
 			pdo_mysql_error(dbh);
 			goto cleanup;

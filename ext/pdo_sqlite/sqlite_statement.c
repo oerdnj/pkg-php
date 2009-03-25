@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: sqlite_statement.c,v 1.18.2.4.2.2 2007/01/01 09:36:05 sebastian Exp $ */
+/* $Id: sqlite_statement.c,v 1.18.2.4.2.3 2007/08/01 22:45:31 iliaa Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -109,7 +109,7 @@ static int pdo_sqlite_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_d
 							php_stream *stm;
 							php_stream_from_zval_no_verify(stm, &param->parameter);
 							if (stm) {
-								SEPARATE_ZVAL_IF_NOT_REF(&param->parameter);
+								SEPARATE_ZVAL(&param->parameter);
 								Z_TYPE_P(param->parameter) = IS_STRING;
 								Z_STRLEN_P(param->parameter) = php_stream_copy_to_mem(stm,
 									&Z_STRVAL_P(param->parameter), PHP_STREAM_COPY_ALL, 0);

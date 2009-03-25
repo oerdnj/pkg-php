@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: streamsfuncs.c,v 1.58.2.6.2.14 2007/04/09 15:38:58 dmitry Exp $ */
+/* $Id: streamsfuncs.c,v 1.58.2.6.2.15 2007/07/09 17:27:24 dmitry Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -1338,6 +1338,37 @@ PHP_FUNCTION(stream_socket_enable_crypto)
 		default:
 			RETURN_TRUE;
 	}
+}
+/* }}} */
+
+/* {{{ proto bool stream_is_local(resource stream|string url) U
+*/
+PHP_FUNCTION(stream_is_local)
+{
+	zval *zstream;
+	php_stream *stream = NULL;
+	php_stream_wrapper *wrapper = NULL;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &zstream) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	if(Z_TYPE_P(zstream) == IS_RESOURCE) {
+		php_stream_from_zval(stream, &zstream);
+		if(stream == NULL) {
+			RETURN_FALSE;
+		}
+		wrapper = stream->wrapper;
+	} else {
+		convert_to_string_ex(&zstream);
+		wrapper = php_stream_locate_url_wrapper(Z_STRVAL_P(zstream), NULL, STREAM_LOCATE_WRAPPERS_ONLY TSRMLS_CC);
+	}
+
+	if(!wrapper) {
+		RETURN_FALSE;
+	}
+
+	RETURN_BOOL(wrapper->is_url==0);
 }
 /* }}} */
 

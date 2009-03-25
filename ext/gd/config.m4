@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.154.2.1.2.4 2007/05/04 21:57:47 sniper Exp $
+dnl $Id: config.m4,v 1.154.2.1.2.6 2007/07/03 17:25:33 sniper Exp $
 dnl
 
 dnl
@@ -7,8 +7,8 @@ dnl Configure options
 dnl
 
 PHP_ARG_WITH(gd, for GD support,
-[  --with-gd[=DIR]         Include GD support where DIR is GD install prefix.
-                          If DIR is not set, the bundled GD library will be used])
+[  --with-gd[=DIR]         Include GD support.  DIR is the GD library base
+                          install directory [BUNDLED]])
 
 if test -z "$PHP_JPEG_DIR"; then
   PHP_ARG_WITH(jpeg-dir, for the location of libjpeg,
@@ -450,7 +450,7 @@ if test "$PHP_GD" != "no"; then
 
     PHP_TEST_BUILD(foobar, [], [
       AC_MSG_ERROR([GD build test failed. Please check the config.log for details.])
-    ], [ -L$GD_LIB $GD_SHARED_LIBADD ], [char foobar () {}])
+    ], [ $GD_SHARED_LIBADD ], [char foobar () {}])
   else
     GD_HEADER_DIRS="ext/gd/"
     GDLIB_CFLAGS="-I$GD_INCLUDE $GDLIB_CFLAGS"

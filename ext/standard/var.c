@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: var.c,v 1.203.2.7.2.16 2007/04/23 09:56:56 dmitry Exp $ */
+/* $Id: var.c,v 1.203.2.7.2.18 2007/06/26 11:51:14 tony2001 Exp $ */
 
 
 
@@ -39,6 +39,7 @@
 #define Z_REFCOUNT_PP(a) ((*a)->refcount)
 
 /* }}} */
+
 /* {{{ php_var_dump */
 
 static int php_array_element_dump(zval **zv, int num_args, va_list args, zend_hash_key *hash_key)
@@ -164,8 +165,6 @@ head_done:
 }
 
 /* }}} */
-
-
 
 /* {{{ proto void var_dump(mixed var)
    Dumps a string representation of variable to output */
@@ -344,7 +343,6 @@ PHP_FUNCTION(debug_zval_dump)
 }
 /* }}} */
 
-
 /* {{{ php_var_export */
 
 static int php_array_element_export(zval **zv, int num_args, va_list args, zend_hash_key *hash_key)
@@ -407,7 +405,7 @@ PHPAPI void php_var_export(zval **struc, int level TSRMLS_DC)
 		php_printf("%ld", Z_LVAL_PP(struc));
 		break;
 	case IS_DOUBLE:
-		php_printf("%.*G", (int) EG(precision), Z_DVAL_PP(struc));
+		php_printf("%.*H", (int) EG(precision), Z_DVAL_PP(struc));
 		break;
 	case IS_STRING:
 		tmp_str = php_addcslashes(Z_STRVAL_PP(struc), Z_STRLEN_PP(struc), &tmp_len, 0, "'\\\0", 3 TSRMLS_CC);
@@ -452,7 +450,6 @@ PHPAPI void php_var_export(zval **struc, int level TSRMLS_DC)
 
 /* }}} */
 
-
 /* {{{ proto mixed var_export(mixed var [, bool return])
    Outputs or returns a string representation of a variable */
 PHP_FUNCTION(var_export)
@@ -476,8 +473,6 @@ PHP_FUNCTION(var_export)
 	}
 }
 /* }}} */
-
-
 
 /* {{{ php_var_serialize */
 
@@ -872,6 +867,7 @@ PHP_FUNCTION(serialize)
 }
 
 /* }}} */
+
 /* {{{ proto mixed unserialize(string variable_representation)
    Takes a string representation of variable and recreates it */
 

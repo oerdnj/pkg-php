@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: spprintf.c,v 1.25.2.2.2.5 2007/01/01 09:36:11 sebastian Exp $ */
+/* $Id: spprintf.c,v 1.25.2.2.2.10 2007/08/03 14:31:28 tony2001 Exp $ */
 
 /* This is the spprintf implementation.
  * It has emerged from apache snprintf. See original header:
@@ -112,6 +112,8 @@
 
 #include "ext/standard/php_smart_str.h"
 
+/* {{{ macros */
+
 /*
  * NUM_BUF_SIZE is the size of the buffer used for arithmetic conversions
  *
@@ -176,12 +178,12 @@
 		}												\
 } while (0)
 
-
+/* }}} */
 
 /*
  * Do format conversion placing the output in buffer
  */
-static void xbuf_format_converter(smart_str *xbuf, const char *fmt, va_list ap)
+static void xbuf_format_converter(smart_str *xbuf, const char *fmt, va_list ap) /* {{{ */
 {
 	register char *s = NULL;
 	char *q;
@@ -301,6 +303,25 @@ static void xbuf_format_converter(smart_str *xbuf, const char *fmt, va_list ap)
 				case 'L':
 					fmt++;
 					modifier = LM_LONG_DOUBLE;
+					break;
+				case 'I':
+					fmt++;
+#if SIZEOF_LONG_LONG
+					if (*fmt == '6' && *(fmt+1) == '4') {
+						fmt += 2;
+						modifier = LM_LONG_LONG;
+					} else
+#endif
+						if (*fmt == '3' && *(fmt+1) == '2') {
+							fmt += 2;
+							modifier = LM_LONG;
+						} else {
+#ifdef _WIN64
+							modifier = LM_LONG_LONG;
+#else
+							modifier = LM_LONG;
+#endif
+						}
 					break;
 				case 'l':
 					fmt++;
@@ -566,7 +587,7 @@ static void xbuf_format_converter(smart_str *xbuf, const char *fmt, va_list ap)
 #endif
 						s = php_conv_fp((*fmt == 'f')?'F':*fmt, fp_num, alternate_form,
 						 (adjust_precision == NO) ? FLOAT_DIGITS : precision,
-						 (*fmt == 'f')?(*lconv->decimal_point):'.',
+						 (*fmt == 'f')?LCONV_DECIMAL_POINT:'.',
 									&is_negative, &num_buf[1], &s_len);
 						if (is_negative)
 							prefix_char = '-';
@@ -580,6 +601,7 @@ static void xbuf_format_converter(smart_str *xbuf, const char *fmt, va_list ap)
 
 				case 'g':
 				case 'G':
+				case 'H':
 					switch(modifier) {
 						case LM_LONG_DOUBLE:
 							fp_num = (double) va_arg(ap, long double);
@@ -618,7 +640,7 @@ static void xbuf_format_converter(smart_str *xbuf, const char *fmt, va_list ap)
 						lconv = localeconv();
 					}
 #endif
-					s = php_gcvt(fp_num, precision, *lconv->decimal_point, (*fmt == 'G')?'E':'e', &num_buf[1]);
+					s = php_gcvt(fp_num, precision, *fmt=='H' ? '.' : LCONV_DECIMAL_POINT, (*fmt == 'G' || *fmt == 'H')?'E':'e', &num_buf[1]);
 					if (*s == '-')
 						prefix_char = *s++;
 					else if (print_sign)
@@ -734,12 +756,12 @@ skip_output:
 	}
 	return;
 }
-
+/* }}} */
 
 /*
  * This is the general purpose conversion function.
  */
-PHPAPI int vspprintf(char **pbuf, size_t max_len, const char *format, va_list ap)
+PHPAPI int vspprintf(char **pbuf, size_t max_len, const char *format, va_list ap) /* {{{ */
 {
 	smart_str xbuf = {0};
 
@@ -754,9 +776,9 @@ PHPAPI int vspprintf(char **pbuf, size_t max_len, const char *format, va_list ap
 	
 	return xbuf.len;
 }
+/* }}} */
 
-
-PHPAPI int spprintf(char **pbuf, size_t max_len, const char *format, ...)
+PHPAPI int spprintf(char **pbuf, size_t max_len, const char *format, ...) /* {{{ */
 {
 	int cc;
 	va_list ap;
@@ -766,6 +788,8 @@ PHPAPI int spprintf(char **pbuf, size_t max_len, const char *format, ...)
 	va_end(ap);
 	return (cc);
 }
+/* }}} */
+
 /*
  * Local variables:
  * tab-width: 4

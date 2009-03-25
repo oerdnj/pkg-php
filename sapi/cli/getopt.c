@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: getopt.c,v 1.8.2.1.2.5 2007/04/23 11:05:16 tony2001 Exp $ */
+/* $Id: getopt.c,v 1.8.2.1.2.6 2007/06/04 09:47:54 tony2001 Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -28,7 +28,7 @@
 #define OPTERRARG (3)
 
 
-static int php_opt_error(int argc, char * const *argv, int oint, int optchr, int err, int show_err)
+static int php_opt_error(int argc, char * const *argv, int oint, int optchr, int err, int show_err) /* {{{ */
 {
 	if (show_err)
 	{
@@ -51,8 +51,9 @@ static int php_opt_error(int argc, char * const *argv, int oint, int optchr, int
 	}
 	return('?');
 }
+/* }}} */
 
-int php_getopt(int argc, char* const *argv, const opt_struct opts[], char **optarg, int *optind, int show_err)
+int php_getopt(int argc, char* const *argv, const opt_struct opts[], char **optarg, int *optind, int show_err) /* {{{ */
 {
 	static int optchr = 0;
 	static int dash = 0; /* have already seen the - */
@@ -162,3 +163,13 @@ int php_getopt(int argc, char* const *argv, const opt_struct opts[], char **opta
 	assert(0);
 	return(0);	/* never reached */
 }
+/* }}} */
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: sw=4 ts=4 fdm=marker
+ * vim<600: sw=4 ts=4
+ */

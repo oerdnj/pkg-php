@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: session.c,v 1.417.2.8.2.34 2007/05/16 01:18:14 stas Exp $ */
+/* $Id: session.c,v 1.417.2.8.2.40 2007/08/03 01:16:40 stas Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -46,6 +46,7 @@
 #include "ext/standard/php_rand.h"                   /* for RAND_MAX */
 #include "ext/standard/info.h"
 #include "ext/standard/php_smart_str.h"
+#include "ext/standard/url.h"
 
 #include "mod_files.h"
 #include "mod_user.h"
@@ -150,7 +151,7 @@ static PHP_INI_MH(OnUpdateSerializer)
 static PHP_INI_MH(OnUpdateSaveDir)
 {
 	/* Only do the safemode/open_basedir check at runtime */
-	if (stage == PHP_INI_STAGE_RUNTIME) {
+	if (stage == PHP_INI_STAGE_RUNTIME || stage == PHP_INI_STAGE_HTACCESS) {
 		char *p;
 
 		if (memchr(new_value, '\0', new_value_length) != NULL) {
@@ -167,7 +168,7 @@ static PHP_INI_MH(OnUpdateSaveDir)
 			return FAILURE;
 		}
 
-		if (php_check_open_basedir(p TSRMLS_CC)) {
+		if (PG(open_basedir) && php_check_open_basedir(p TSRMLS_CC)) {
 			return FAILURE;
 		}
 	}
@@ -946,10 +947,15 @@ static char *week_days[] = {
 static void strcpy_gmt(char *ubuf, time_t *when)
 {
 	char buf[MAX_STR];
-	struct tm tm;
+	struct tm tm, *res;
 	int n;
 	
-	php_gmtime_r(when, &tm);
+	res = php_gmtime_r(when, &tm);
+
+	if (!res) {
+		buf[0] = '\0';
+		return;
+	}
 	
 	n = slprintf(buf, sizeof(buf), "%s, %02d %s %d %02d:%02d:%02d GMT", /* SAFE */
 				week_days[tm.tm_wday], tm.tm_mday, 
@@ -1075,6 +1081,7 @@ static void php_session_send_cookie(TSRMLS_D)
 {
 	smart_str ncookie = {0};
 	char *date_fmt = NULL;
+	char *e_session_name, *e_id;
 
 	if (SG(headers_sent)) {
 		char *output_start_filename = php_get_output_start_filename(TSRMLS_C);
@@ -1088,11 +1095,18 @@ static void php_session_send_cookie(TSRMLS_D)
 		}	
 		return;
 	}
+	
+	/* URL encode session_name and id because they might be user supplied */
+	e_session_name = php_url_encode(PS(session_name), strlen(PS(session_name)), NULL);
+	e_id = php_url_encode(PS(id), strlen(PS(id)), NULL);
 
 	smart_str_appends(&ncookie, COOKIE_SET_COOKIE);
-	smart_str_appends(&ncookie, PS(session_name));
+	smart_str_appends(&ncookie, e_session_name);
 	smart_str_appendc(&ncookie, '=');
-	smart_str_appends(&ncookie, PS(id));
+	smart_str_appends(&ncookie, e_id);
+	
+	efree(e_session_name);
+	efree(e_id);
 	
 	if (PS(cookie_lifetime) > 0) {
 		struct timeval tv;
@@ -1207,10 +1221,7 @@ PHPAPI void php_session_start(TSRMLS_D)
 
 	PS(apply_trans_sid) = PS(use_trans_sid);
 
-	PS(define_sid) = 1;
-	PS(send_cookie) = 1;
 	if (PS(session_status) != php_session_none) {
-		
 		if (PS(session_status) == php_session_disabled) {
 			char *value;
 
@@ -1227,6 +1238,9 @@ PHPAPI void php_session_start(TSRMLS_D)
 		
 		php_error(E_NOTICE, "A session had already been started - ignoring session_start()");
 		return;
+	} else {
+		PS(define_sid) = 1;
+		PS(send_cookie) = 1;
 	}
 
 	lensess = strlen(PS(session_name));

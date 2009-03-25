@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: filestat.c,v 1.136.2.8.2.12 2007/04/06 22:10:56 tony2001 Exp $ */
+/* $Id: filestat.c,v 1.136.2.8.2.13 2007/07/23 23:03:09 iliaa Exp $ */
 
 #include "php.h"
 #include "safe_mode.h"
@@ -702,6 +702,10 @@ PHP_FUNCTION(touch)
    Clear file stat cache */
 PHP_FUNCTION(clearstatcache)
 {
+	if (ZEND_NUM_ARGS()) {
+		WRONG_PARAM_COUNT;
+	}
+
 	if (BG(CurrentStatFile)) {
 		efree(BG(CurrentStatFile));
 		BG(CurrentStatFile) = NULL;

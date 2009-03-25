@@ -16,12 +16,12 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_vm.h,v 1.7.2.1.2.1 2007/01/01 09:35:47 sebastian Exp $ */
+/* $Id: zend_vm.h,v 1.7.2.1.2.2 2007/07/21 00:35:14 jani Exp $ */
 
 #ifndef ZEND_VM_H
 #define ZEND_VM_H
 
-ZEND_API void zend_vm_use_old_executor();
+ZEND_API void zend_vm_use_old_executor(void);
 ZEND_API void zend_vm_set_opcode_handler(zend_op* opcode);
 
 #define ZEND_VM_SET_OPCODE_HANDLER(opline) zend_vm_set_opcode_handler(opline)

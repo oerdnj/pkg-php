@@ -15,7 +15,7 @@
    | Author: Jim Winstead <jimw@php.net>                                  |
    +----------------------------------------------------------------------+
  */
-/* $Id: base64.c,v 1.43.2.2.2.2 2007/01/01 09:36:08 sebastian Exp $ */
+/* $Id: base64.c,v 1.43.2.2.2.3 2007/07/21 01:24:26 jani Exp $ */
 
 #include <string.h>
 
@@ -105,7 +105,7 @@ PHPAPI unsigned char *php_base64_encode(const unsigned char *str, int length, in
 /* generate reverse table (do not set index 0 to 64)
 static unsigned short base64_reverse_table[256];
 #define rt base64_reverse_table
-void php_base64_init()
+void php_base64_init(void)
 {
 	char *s = emalloc(10240), *sp;
 	char *chp;

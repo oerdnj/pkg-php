@@ -25,7 +25,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: oci8_collection.c,v 1.5.2.3.2.5 2007/01/01 09:36:03 sebastian Exp $ */
+/* $Id: oci8_collection.c,v 1.5.2.3.2.7 2007/07/31 19:21:08 tony2001 Exp $ */
 
 
 
@@ -55,7 +55,8 @@ php_oci_collection * php_oci_collection_create(php_oci_connection* connection, c
 
 	collection->connection = connection;
 	collection->collection = NULL;
-	
+	zend_list_addref(collection->connection->rsrc_id);
+
 	/* get type handle by name */
 	PHP_OCI_CALL_RETURN(connection->errcode, OCITypeByName,
 			(
@@ -296,7 +297,7 @@ int php_oci_collection_append_date(php_oci_collection *collection, char *date, i
 	php_oci_connection *connection = collection->connection;
 
 	/* format and language are NULLs, so format is "DD-MON-YY" and language is the default language of the session */
-	PHP_OCI_CALL_RETURN(connection->errcode, OCIDateFromText, (connection->err, date, date_len, NULL, 0, NULL, 0, &oci_date));
+	PHP_OCI_CALL_RETURN(connection->errcode, OCIDateFromText, (connection->err, (CONST text *)date, date_len, NULL, 0, NULL, 0, &oci_date));
 
 	if (connection->errcode != OCI_SUCCESS) {
 		/* failed to convert string to date */
@@ -366,7 +367,7 @@ int php_oci_collection_append_string(php_oci_collection *collection, char *eleme
 	OCIString *ocistr = (OCIString *)0;
 	php_oci_connection *connection = collection->connection;
 			
-	PHP_OCI_CALL_RETURN(connection->errcode, OCIStringAssignText, (connection->env, connection->err, element, element_len, &ocistr));
+	PHP_OCI_CALL_RETURN(connection->errcode, OCIStringAssignText, (connection->env, connection->err, (CONST oratext *)element, element_len, &ocistr));
 
 	if (connection->errcode != OCI_SUCCESS) {
 		php_oci_error(connection->err, connection->errcode TSRMLS_CC);
@@ -439,8 +440,8 @@ int php_oci_collection_element_get(php_oci_collection *collection, long index, z
 	dvoid *element;
 	OCIInd *element_index;
 	boolean exists;
-	char buff[1024];
-	int buff_len = 1024;
+	oratext buff[1024];
+	ub4 buff_len = 1024;
 	
 	MAKE_STD_ZVAL(*result_element);
 	ZVAL_NULL(*result_element);
@@ -484,7 +485,7 @@ int php_oci_collection_element_get(php_oci_collection *collection, long index, z
 				return 1;
 			}
 
-			ZVAL_STRINGL(*result_element, buff, buff_len, 1);
+			ZVAL_STRINGL(*result_element, (char *)buff, buff_len, 1);
 			Z_STRVAL_P(*result_element)[buff_len] = '\0';
 			
 			return 0;
@@ -498,7 +499,7 @@ int php_oci_collection_element_get(php_oci_collection *collection, long index, z
 			PHP_OCI_CALL_RETURN(str, OCIStringPtr, (connection->env, oci_string));
 			
 			if (str) {
-				ZVAL_STRING(*result_element, str, 1);
+				ZVAL_STRING(*result_element, (char *)str, 1);
 			}
 			return 0;
 		}
@@ -567,7 +568,7 @@ int php_oci_collection_element_set_date(php_oci_collection *collection, long ind
 	php_oci_connection *connection = collection->connection;
 
 	/* format and language are NULLs, so format is "DD-MON-YY" and language is the default language of the session */
-	PHP_OCI_CALL_RETURN(connection->errcode, OCIDateFromText, (connection->err, date, date_len, NULL, 0, NULL, 0, &oci_date));
+	PHP_OCI_CALL_RETURN(connection->errcode, OCIDateFromText, (connection->err, (CONST text *)date, date_len, NULL, 0, NULL, 0, &oci_date));
 
 	if (connection->errcode != OCI_SUCCESS) {
 		/* failed to convert string to date */
@@ -639,7 +640,7 @@ int php_oci_collection_element_set_string(php_oci_collection *collection, long i
 	OCIString *ocistr = (OCIString *)0;
 	php_oci_connection *connection = collection->connection;
 			
-	PHP_OCI_CALL_RETURN(connection->errcode, OCIStringAssignText, (connection->env, connection->err, element, element_len, &ocistr));
+	PHP_OCI_CALL_RETURN(connection->errcode, OCIStringAssignText, (connection->env, connection->err, (CONST oratext *)element, element_len, &ocistr));
 
 	if (connection->errcode != OCI_SUCCESS) {
 		php_oci_error(connection->err, connection->errcode TSRMLS_CC);
@@ -741,3 +742,12 @@ void php_oci_collection_close(php_oci_collection *collection TSRMLS_DC)
 } /* }}} */
 
 #endif /* HAVE_OCI8 */
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

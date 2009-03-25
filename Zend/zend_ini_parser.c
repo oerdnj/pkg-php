@@ -102,7 +102,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2007 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -116,7 +116,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_ini_parser.y,v 1.41.2.2.2.1 2006/09/19 20:33:12 dmitry Exp $ */
+/* $Id: zend_ini_parser.y,v 1.41.2.2.2.2 2007/07/23 16:17:10 jani Exp $ */
 
 #define DEBUG_CFG_PARSER 0
 #include "zend.h"
@@ -157,11 +157,11 @@ void zend_ini_do_op(char type, zval *result, zval *op1, zval *op2)
 	int i_op1, i_op2;
 	char str_result[MAX_LENGTH_OF_LONG];
 
-	i_op1 = atoi(op1->value.str.val);
-	free(op1->value.str.val);
+	i_op1 = atoi(Z_STRVAL_P(op1));
+	free(Z_STRVAL_P(op1));
 	if (op2) {
-		i_op2 = atoi(op2->value.str.val);
-		free(op2->value.str.val);
+		i_op2 = atoi(Z_STRVAL_P(op2));
+		free(Z_STRVAL_P(op2));
 	} else {
 		i_op2 = 0;
 	}
@@ -184,30 +184,30 @@ void zend_ini_do_op(char type, zval *result, zval *op1, zval *op2)
 			break;
 	}
 
-	result->value.str.len = zend_sprintf(str_result, "%d", i_result);
-	result->value.str.val = (char *) malloc(result->value.str.len+1);
-	memcpy(result->value.str.val, str_result, result->value.str.len);
-	result->value.str.val[result->value.str.len] = 0;
-	result->type = IS_STRING;
+	Z_STRLEN_P(result) = zend_sprintf(str_result, "%d", i_result);
+	Z_STRVAL_P(result) = (char *) malloc(Z_STRLEN_P(result)+1);
+	memcpy(Z_STRVAL_P(result), str_result, Z_STRLEN_P(result));
+	Z_STRVAL_P(result)[Z_STRLEN_P(result)] = 0;
+	Z_TYPE_P(result) = IS_STRING;
 }
 
 void zend_ini_init_string(zval *result)
 {
-	result->value.str.val = malloc(1);
-	result->value.str.val[0] = 0;
-	result->value.str.len = 0;
-	result->type = IS_STRING;
+	Z_STRVAL_P(result) = malloc(1);
+	Z_STRVAL_P(result)[0] = 0;
+	Z_STRLEN_P(result) = 0;
+	Z_TYPE_P(result) = IS_STRING;
 }
 
 void zend_ini_add_string(zval *result, zval *op1, zval *op2)
-{           
-    int length = op1->value.str.len + op2->value.str.len;
+{
+	int length = Z_STRLEN_P(op1) + Z_STRLEN_P(op2);
 
-	result->value.str.val = (char *) realloc(op1->value.str.val, length+1);
-    memcpy(result->value.str.val+op1->value.str.len, op2->value.str.val, op2->value.str.len);
-    result->value.str.val[length] = 0;
-    result->value.str.len = length;
-    result->type = IS_STRING;
+	Z_STRVAL_P(result) = (char *) realloc(Z_STRVAL_P(op1), length+1);
+	memcpy(Z_STRVAL_P(result)+Z_STRLEN_P(op1), Z_STRVAL_P(op2), Z_STRLEN_P(op2));
+	Z_STRVAL_P(result)[length] = 0;
+	Z_STRLEN_P(result) = length;
+	Z_TYPE_P(result) = IS_STRING;
 }
 
 void zend_ini_get_constant(zval *result, zval *name)
@@ -215,15 +215,15 @@ void zend_ini_get_constant(zval *result, zval *name)
 	zval z_constant;
 	TSRMLS_FETCH();
 
-	if (!memchr(name->value.str.val, ':', name->value.str.len)
-		   	&& zend_get_constant(name->value.str.val, name->value.str.len, &z_constant TSRMLS_CC)) {
+	if (!memchr(Z_STRVAL_P(name), ':', Z_STRLEN_P(name))
+		   	&& zend_get_constant(Z_STRVAL_P(name), Z_STRLEN_P(name), &z_constant TSRMLS_CC)) {
 		/* z_constant is emalloc()'d */
 		convert_to_string(&z_constant);
-		result->value.str.val = zend_strndup(z_constant.value.str.val, z_constant.value.str.len);
-		result->value.str.len = z_constant.value.str.len;
-		result->type = z_constant.type;
+		Z_STRVAL_P(result) = zend_strndup(Z_STRVAL(z_constant), Z_STRLEN(z_constant));
+		Z_STRLEN_P(result) = Z_STRLEN(z_constant);
+		Z_TYPE_P(result) = Z_TYPE(z_constant);
 		zval_dtor(&z_constant);
-		free(name->value.str.val);	
+		free(Z_STRVAL_P(name));
 	} else {
 		*result = *name;
 	}
@@ -235,13 +235,13 @@ void zend_ini_get_var(zval *result, zval *name)
 	char *envvar;
 	TSRMLS_FETCH();
 
-	if (zend_get_configuration_directive(name->value.str.val, name->value.str.len+1, &curval) == SUCCESS) {
-		result->value.str.val = zend_strndup(curval.value.str.val, curval.value.str.len);
-		result->value.str.len = curval.value.str.len;
-	} else if ((envvar = zend_getenv(name->value.str.val, name->value.str.len TSRMLS_CC)) != NULL ||
-			   (envvar = getenv(name->value.str.val)) != NULL) {
-		result->value.str.val = strdup(envvar);
-		result->value.str.len = strlen(envvar);
+	if (zend_get_configuration_directive(Z_STRVAL_P(name), Z_STRLEN_P(name)+1, &curval) == SUCCESS) {
+		Z_STRVAL_P(result) = zend_strndup(Z_STRVAL(curval), Z_STRLEN(curval));
+		Z_STRLEN_P(result) = Z_STRLEN(curval);
+	} else if ((envvar = zend_getenv(Z_STRVAL_P(name), Z_STRLEN_P(name) TSRMLS_CC)) != NULL ||
+			   (envvar = getenv(Z_STRVAL_P(name))) != NULL) {
+		Z_STRVAL_P(result) = strdup(envvar);
+		Z_STRLEN_P(result) = strlen(envvar);
 	} else {
 		zend_ini_init_string(result);
 	}
@@ -1579,11 +1579,11 @@ yyreduce:
 
     {
 #if DEBUG_CFG_PARSER
-			printf("'%s' = '%s'\n", (yyvsp[(1) - (3)]).value.str.val, (yyvsp[(3) - (3)]).value.str.val);
+			printf("'%s' = '%s'\n", Z_STRVAL((yyvsp[(1) - (3)])), Z_STRVAL((yyvsp[(3) - (3)])));
 #endif
 			ZEND_INI_PARSER_CB(&(yyvsp[(1) - (3)]), &(yyvsp[(3) - (3)]), ZEND_INI_PARSER_ENTRY, ZEND_INI_PARSER_ARG);
-			free((yyvsp[(1) - (3)]).value.str.val);
-			free((yyvsp[(3) - (3)]).value.str.val);
+			free(Z_STRVAL((yyvsp[(1) - (3)])));
+			free(Z_STRVAL((yyvsp[(3) - (3)])));
 		}
     break;
 
@@ -1591,22 +1591,22 @@ yyreduce:
 
     {
 #if DEBUG_CFG_PARSER
-			printf("'%s'[ ] = '%s'\n", (yyvsp[(1) - (4)]).value.str.val, (yyvsp[(4) - (4)]).value.str.val);
+			printf("'%s'[ ] = '%s'\n", Z_STRVAL((yyvsp[(1) - (4)])), Z_STRVAL((yyvsp[(4) - (4)])));
 #endif
 			ZEND_INI_PARSER_CB(&(yyvsp[(1) - (4)]), &(yyvsp[(4) - (4)]), ZEND_INI_PARSER_POP_ENTRY, ZEND_INI_PARSER_ARG);
-			free((yyvsp[(1) - (4)]).value.str.val);
-			free((yyvsp[(4) - (4)]).value.str.val);
+			free(Z_STRVAL((yyvsp[(1) - (4)])));
+			free(Z_STRVAL((yyvsp[(4) - (4)])));
 		}
     break;
 
   case 6:
 
-    { ZEND_INI_PARSER_CB(&(yyvsp[(1) - (1)]), NULL, ZEND_INI_PARSER_ENTRY, ZEND_INI_PARSER_ARG); free((yyvsp[(1) - (1)]).value.str.val); }
+    { ZEND_INI_PARSER_CB(&(yyvsp[(1) - (1)]), NULL, ZEND_INI_PARSER_ENTRY, ZEND_INI_PARSER_ARG); free(Z_STRVAL((yyvsp[(1) - (1)]))); }
     break;
 
   case 7:
 
-    { ZEND_INI_PARSER_CB(&(yyvsp[(1) - (1)]), NULL, ZEND_INI_PARSER_SECTION, ZEND_INI_PARSER_ARG); free((yyvsp[(1) - (1)]).value.str.val); }
+    { ZEND_INI_PARSER_CB(&(yyvsp[(1) - (1)]), NULL, ZEND_INI_PARSER_SECTION, ZEND_INI_PARSER_ARG); free(Z_STRVAL((yyvsp[(1) - (1)]))); }
     break;
 
   case 9:
@@ -1656,7 +1656,7 @@ yyreduce:
 
   case 18:
 
-    { zend_ini_add_string(&(yyval), &(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)])); free((yyvsp[(2) - (2)]).value.str.val); }
+    { zend_ini_add_string(&(yyval), &(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)])); free(Z_STRVAL((yyvsp[(2) - (2)]))); }
     break;
 
   case 19:

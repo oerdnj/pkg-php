@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend.h,v 1.293.2.11.2.8 2007/04/26 19:08:58 tony2001 Exp $ */
+/* $Id: zend.h,v 1.293.2.11.2.9 2007/07/23 16:17:10 jani Exp $ */
 
 #ifndef ZEND_H
 #define ZEND_H
@@ -648,6 +648,7 @@ END_EXTERN_C()
 
 #define ZEND_MAX_RESERVED_RESOURCES	4
 
+#include "zend_operators.h"
 #include "zend_variables.h"
 
 #endif /* ZEND_H */

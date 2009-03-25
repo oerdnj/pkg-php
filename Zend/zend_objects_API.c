@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_objects_API.c,v 1.47.2.6.2.5 2007/01/01 09:35:47 sebastian Exp $ */
+/* $Id: zend_objects_API.c,v 1.47.2.6.2.6 2007/07/21 00:35:14 jani Exp $ */
 
 #include "zend.h"
 #include "zend_globals.h"
@@ -353,7 +353,7 @@ ZEND_API zval* zend_object_proxy_get(zval *property TSRMLS_DC)
 	return NULL;
 }
 
-ZEND_API zend_object_handlers *zend_get_std_object_handlers()
+ZEND_API zend_object_handlers *zend_get_std_object_handlers(void)
 {
 	return &std_object_handlers;
 }

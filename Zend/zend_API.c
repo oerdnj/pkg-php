@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_API.c,v 1.296.2.27.2.31 2007/05/30 10:17:43 tony2001 Exp $ */
+/* $Id: zend_API.c,v 1.296.2.27.2.33 2007/08/01 10:56:45 dmitry Exp $ */
 
 #include "zend.h"
 #include "zend_execute.h"
@@ -154,7 +154,9 @@ ZEND_API int _zend_get_parameters_array_ex(int param_count, zval ***argument_arr
 	while (param_count-->0) {
 		zval **value = (zval**)(p-arg_count);
 
-		if (EG(ze1_compatibility_mode) && Z_TYPE_PP(value) == IS_OBJECT) {
+		if (EG(ze1_compatibility_mode) &&
+		    Z_TYPE_PP(value) == IS_OBJECT &&
+		    !(*value)->is_ref) {
 			zval *value_ptr;
 			char *class_name;
 			zend_uint class_name_len;
@@ -1488,17 +1490,17 @@ try_again:
 				if (dep->type == MODULE_DEP_REQUIRED || dep->type == MODULE_DEP_OPTIONAL) {
 					b2 = b1 + 1;
 					while (b2 < end) {
-				  	r = (zend_module_entry*)(*b2)->pData;
-				  	if (strcasecmp(dep->name, r->name) == 0) {
-				  		tmp  = *b1;
-				  		*b1 = *b2;
-				  		*b2 = tmp;
-				  	  goto try_again;
-				  	}
-				  	b2++;
-				  }
-			  }
-			  dep++;
+						r = (zend_module_entry*)(*b2)->pData;
+						if (strcasecmp(dep->name, r->name) == 0) {
+							tmp  = *b1;
+							*b1 = *b2;
+							*b2 = tmp;
+							goto try_again;
+						}
+						b2++;
+					}
+				}
+				dep++;
 			}
 		}
 		b1++;

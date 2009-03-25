@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pgsql_driver.c,v 1.53.2.14.2.7 2007/01/01 09:36:05 sebastian Exp $ */
+/* $Id: pgsql_driver.c,v 1.53.2.14.2.9 2007/06/28 03:13:29 iliaa Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -476,6 +476,17 @@ static int pdo_pgsql_get_attribute(pdo_dbh_t *dbh, long attr, zval *return_value
 	return 1;
 }
 
+/* {{{ */
+static int pdo_pgsql_check_liveness(pdo_dbh_t *dbh TSRMLS_DC)
+{
+	pdo_pgsql_db_handle *H = (pdo_pgsql_db_handle *)dbh->driver_data;
+	if (PQstatus(H->server) == CONNECTION_BAD) {
+		PQreset(H->server);
+	}
+	return (PQstatus(H->server) == CONNECTION_OK) ? SUCCESS : FAILURE;
+}
+/* }}} */
+
 static int pdo_pgsql_transaction_cmd(const char *cmd, pdo_dbh_t *dbh TSRMLS_DC)
 {
 	pdo_pgsql_db_handle *H = (pdo_pgsql_db_handle *)dbh->driver_data;
@@ -650,7 +661,7 @@ static struct pdo_dbh_methods pgsql_methods = {
 	pdo_pgsql_last_insert_id,
 	pdo_pgsql_fetch_error_func,
 	pdo_pgsql_get_attribute,
-	NULL,	/* check_liveness */
+	pdo_pgsql_check_liveness,	/* check_liveness */
 	pdo_pgsql_get_driver_methods  /* get_driver_methods */
 };
 
@@ -659,6 +670,7 @@ static int pdo_pgsql_handle_factory(pdo_dbh_t *dbh, zval *driver_options TSRMLS_
 	pdo_pgsql_db_handle *H;
 	int ret = 0;
 	char *conn_str, *p, *e;
+	long connect_timeout = 30;
 
 	H = pecalloc(1, sizeof(pdo_pgsql_db_handle), dbh->is_persistent);
 	dbh->driver_data = H;
@@ -675,23 +687,25 @@ static int pdo_pgsql_handle_factory(pdo_dbh_t *dbh, zval *driver_options TSRMLS_
 		*p = ' ';
 	}
 
+	if (driver_options) {
+		connect_timeout = pdo_attr_lval(driver_options, PDO_ATTR_TIMEOUT, 30 TSRMLS_CC);
+	}
+
 	/* support both full connection string & connection string + login and/or password */
 	if (!dbh->username || !dbh->password) {
-		conn_str = (char *) dbh->data_source;
+		spprintf(&conn_str, 0, "%s connect_timeout=%ld", (char *) dbh->data_source, connect_timeout);
 	} else if (dbh->username && dbh->password) {
-		spprintf(&conn_str, 0, "%s user=%s password=%s", dbh->data_source, dbh->username, dbh->password);
+		spprintf(&conn_str, 0, "%s user=%s password=%s connect_timeout=%ld", dbh->data_source, dbh->username, dbh->password, connect_timeout);
 	} else if (dbh->username) {
-		spprintf(&conn_str, 0, "%s user=%s", dbh->data_source, dbh->username);
+		spprintf(&conn_str, 0, "%s user=%s connect_timeout=%ld", dbh->data_source, dbh->username, connect_timeout);
 	} else {
-		spprintf(&conn_str, 0, "%s password=%s", dbh->data_source, dbh->password);
+		spprintf(&conn_str, 0, "%s password=%s connect_timeout=%ld", dbh->data_source, dbh->password, connect_timeout);
 	}
 
 	H->server = PQconnectdb(conn_str);
-	
-	if (conn_str != dbh->data_source) {
-		efree(conn_str);
-	}
-	
+
+	efree(conn_str);
+
 	if (PQstatus(H->server) != CONNECTION_OK) {
 		pdo_pgsql_error(dbh, PGRES_FATAL_ERROR, PHP_PDO_PGSQL_CONNECTION_FAILURE_SQLSTATE);
 		goto cleanup;

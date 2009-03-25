@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_stmt.c,v 1.118.2.38.2.18 2007/05/16 20:04:32 tony2001 Exp $ */
+/* $Id: pdo_stmt.c,v 1.118.2.38.2.22 2007/07/31 22:48:42 iliaa Exp $ */
 
 /* The PDO Statement Handle Class */
 
@@ -280,7 +280,13 @@ static int really_register_bound_param(struct pdo_bound_param_data *param, pdo_s
 	}
 
 	if (PDO_PARAM_TYPE(param->param_type) == PDO_PARAM_STR && param->max_value_len <= 0 && ! ZVAL_IS_NULL(param->parameter)) {
-		convert_to_string(param->parameter);
+		if (Z_TYPE_P(param->parameter) == IS_DOUBLE) {
+			char *p;
+			int len = spprintf(&p, 0, "%F", Z_DVAL_P(param->parameter));
+			ZVAL_STRINGL(param->parameter, p, len, 0);
+		} else {
+			convert_to_string(param->parameter);
+		}
 	} else if (PDO_PARAM_TYPE(param->param_type) == PDO_PARAM_INT && Z_TYPE_P(param->parameter) == IS_BOOL) {
 		convert_to_long(param->parameter);
 	} else if (PDO_PARAM_TYPE(param->param_type) == PDO_PARAM_BOOL && Z_TYPE_P(param->parameter) == IS_LONG) {
@@ -861,10 +867,10 @@ static int do_fetch(pdo_stmt_t *stmt, int do_bind, zval *return_value,
 	zend_class_entry *ce = NULL, *old_ce = NULL;
 	zval grp_val, *grp, **pgrp, *retval, *old_ctor_args = NULL;
 
-	how = how & ~PDO_FETCH_FLAGS;
 	if (how == PDO_FETCH_USE_DEFAULT) {
 		how = stmt->default_fetch_type;
 	}
+	how = how & ~PDO_FETCH_FLAGS;
 
 	if (!do_fetch_common(stmt, ori, offset, do_bind TSRMLS_CC)) {
 		return 0;
@@ -905,8 +911,9 @@ static int do_fetch(pdo_stmt_t *stmt, int do_bind, zval *return_value,
 					pdo_raise_impl_error(stmt->dbh, stmt, "HY000", "PDO::FETCH_KEY_PAIR fetch mode requires the result set to contain extactly 2 columns." TSRMLS_CC);
 					return 0;
 				}
-
-				array_init(return_value);
+				if (!return_all) {
+					array_init(return_value);
+				}
 				break;
 
 			case PDO_FETCH_COLUMN:
@@ -1012,7 +1019,7 @@ static int do_fetch(pdo_stmt_t *stmt, int do_bind, zval *return_value,
 				return 0;
 		}
 		
-		if (return_all) {
+		if (return_all && how != PDO_FETCH_KEY_PAIR) {
 			INIT_PZVAL(&grp_val);
 			fetch_value(stmt, &grp_val, i, NULL TSRMLS_CC);
 			convert_to_string(&grp_val);
@@ -1038,17 +1045,15 @@ static int do_fetch(pdo_stmt_t *stmt, int do_bind, zval *return_value,
 						zval *tmp;
 						MAKE_STD_ZVAL(tmp);
 						fetch_value(stmt, tmp, ++i, NULL TSRMLS_CC);
-						
-						if (Z_TYPE_P(val) == IS_STRING) {
-							zend_symtable_update(Z_ARRVAL_P(return_value), Z_STRVAL_P(val), Z_STRLEN_P(val) + 1, &tmp, sizeof(zval *), NULL);
-						} else if (Z_TYPE_P(val) == IS_LONG) {
-							zend_hash_index_update(Z_ARRVAL_P(return_value), Z_LVAL_P(val), tmp, sizeof(tmp), NULL);
+
+						if (Z_TYPE_P(val) == IS_LONG) {
+							zend_hash_index_update((return_all ? Z_ARRVAL_P(return_all) : Z_ARRVAL_P(return_value)), Z_LVAL_P(val), &tmp, sizeof(zval *), NULL);
 						} else {
 							convert_to_string(val);
-							zend_symtable_update(Z_ARRVAL_P(return_value), Z_STRVAL_P(val), Z_STRLEN_P(val) + 1, &tmp, sizeof(zval *), NULL);
+							zend_symtable_update((return_all ? Z_ARRVAL_P(return_all) : Z_ARRVAL_P(return_value)), Z_STRVAL_P(val), Z_STRLEN_P(val) + 1, &tmp, sizeof(zval *), NULL);
 						}
-						zval_dtor(val);
-						FREE_ZVAL(val);
+						zval_ptr_dtor(&val);
+						return 1;
 					}
 					break;
 
@@ -1516,7 +1521,7 @@ static PHP_METHOD(PDOStatement, fetchAll)
 	if (!error)	{
 		PDO_STMT_CLEAR_ERR();
 		MAKE_STD_ZVAL(data);
-		if (how & PDO_FETCH_GROUP) {
+		if ((how & PDO_FETCH_GROUP) || how == PDO_FETCH_KEY_PAIR) {
 			array_init(return_value);
 			return_all = return_value;
 		} else {
@@ -1532,6 +1537,8 @@ static PHP_METHOD(PDOStatement, fetchAll)
 			do {
 				MAKE_STD_ZVAL(data);
 			} while (do_fetch(stmt, TRUE, data, how, PDO_FETCH_ORI_NEXT, 0, return_all TSRMLS_CC));
+		} else if (how == PDO_FETCH_KEY_PAIR) {
+			while (do_fetch(stmt, TRUE, data, how, PDO_FETCH_ORI_NEXT, 0, return_all TSRMLS_CC));
 		} else {
 			array_init(return_value);
 			do {

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_open_temporary_file.c,v 1.34.2.1.2.7 2007/02/07 21:07:31 tony2001 Exp $ */
+/* $Id: php_open_temporary_file.c,v 1.34.2.1.2.10 2007/08/10 10:13:15 tony2001 Exp $ */
 
 #include "php.h"
 
@@ -98,7 +98,8 @@ static int php_do_open_temporary_file(const char *path, const char *pfx, char **
 {
 	char *trailing_slash;
 	char *opened_path;
-	int path_len = 0;
+	char cwd[MAXPATHLEN];
+	cwd_state new_state;
 	int fd = -1;
 #ifndef HAVE_MKSTEMP
 	int open_flags = O_CREAT | O_TRUNC | O_RDWR
@@ -108,25 +109,36 @@ static int php_do_open_temporary_file(const char *path, const char *pfx, char **
 		;
 #endif
 
-	if (!path) {
+	if (!path || !path[0]) {
 		return -1;
 	}
 
-	path_len = strlen(path);
+	if (!VCWD_GETCWD(cwd, MAXPATHLEN)) {
+		cwd[0] = '\0';
+	}
 
-	if (!path_len || IS_SLASH(path[path_len - 1])) {
+	new_state.cwd = strdup(cwd);
+	new_state.cwd_length = strlen(cwd);
+
+	if (virtual_file_ex(&new_state, path, NULL, CWD_REALPATH)) {
+		free(new_state.cwd);
+		return -1;
+	}
+
+	if (IS_SLASH(new_state.cwd[new_state.cwd_length - 1])) {
 		trailing_slash = "";
 	} else {
 		trailing_slash = "/";
 	}
 
-	if (spprintf(&opened_path, 0, "%s%s%sXXXXXX", path, trailing_slash, pfx) >= MAXPATHLEN) {
+	if (spprintf(&opened_path, 0, "%s%s%sXXXXXX", new_state.cwd, trailing_slash, pfx) >= MAXPATHLEN) {
 		efree(opened_path);
+		free(new_state.cwd);
 		return -1;
 	}
 
 #ifdef PHP_WIN32
-	if (GetTempFileName(path, pfx, 0, opened_path)) {
+	if (GetTempFileName(new_state.cwd, pfx, 0, opened_path)) {
 		/* Some versions of windows set the temp file to be read-only,
 		 * which means that opening it will fail... */
 		VCWD_CHMOD(opened_path, 0600);
@@ -144,6 +156,7 @@ static int php_do_open_temporary_file(const char *path, const char *pfx, char **
 	} else {
 		*opened_path_p = opened_path;
 	}
+	free(new_state.cwd);
 	return fd;
 }
 /* }}} */
@@ -151,7 +164,7 @@ static int php_do_open_temporary_file(const char *path, const char *pfx, char **
 /* Cache the chosen temporary directory. */
 static char* temporary_directory;
 
-PHPAPI void php_shutdown_temporary_directory()
+PHPAPI void php_shutdown_temporary_directory(void)
 {
 	if (temporary_directory) {
 		free(temporary_directory);
@@ -211,7 +224,7 @@ PHPAPI const char* php_get_temporary_directory(void)
  * This function should do its best to return a file pointer to a newly created
  * unique file, on every platform.
  */
-PHPAPI int php_open_temporary_fd(const char *dir, const char *pfx, char **opened_path_p TSRMLS_DC)
+PHPAPI int php_open_temporary_fd_ex(const char *dir, const char *pfx, char **opened_path_p, zend_bool open_basedir_check TSRMLS_DC)
 {
 	int fd;
 	const char *temp_dir;
@@ -227,7 +240,7 @@ PHPAPI int php_open_temporary_fd(const char *dir, const char *pfx, char **opened
 def_tmp:
 		temp_dir = php_get_temporary_directory();
 
-		if (temp_dir && *temp_dir != '\0' && !php_check_open_basedir(temp_dir TSRMLS_CC)) {
+		if (temp_dir && *temp_dir != '\0' && (!open_basedir_check || !php_check_open_basedir(temp_dir TSRMLS_CC))) {
 			return php_do_open_temporary_file(temp_dir, pfx, opened_path_p TSRMLS_CC);
 		} else {
 			return -1;
@@ -241,6 +254,11 @@ def_tmp:
 		goto def_tmp;
 	}
 	return fd;
+}
+
+PHPAPI int php_open_temporary_fd(const char *dir, const char *pfx, char **opened_path_p TSRMLS_DC)
+{
+	return php_open_temporary_fd_ex(dir, pfx, opened_path_p, 0 TSRMLS_CC);
 }
 
 PHPAPI FILE *php_open_temporary_file(const char *dir, const char *pfx, char **opened_path_p TSRMLS_DC)

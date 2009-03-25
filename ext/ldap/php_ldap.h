@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_ldap.h,v 1.32.2.1.2.1 2007/01/01 09:36:02 sebastian Exp $ */
+/* $Id: php_ldap.h,v 1.32.2.1.2.2 2007/07/13 01:24:16 jani Exp $ */
 
 #ifndef PHP_LDAP_H
 #define PHP_LDAP_H
@@ -55,7 +55,6 @@ PHP_FUNCTION(ldap_next_attribute);
 PHP_FUNCTION(ldap_get_attributes);
 PHP_FUNCTION(ldap_get_values);
 PHP_FUNCTION(ldap_get_values_len);
-PHP_FUNCTION(ber_free);
 PHP_FUNCTION(ldap_get_dn);
 PHP_FUNCTION(ldap_explode_dn);
 PHP_FUNCTION(ldap_dn2ufn);

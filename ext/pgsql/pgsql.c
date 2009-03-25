@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: pgsql.c,v 1.331.2.13.2.20 2007/02/24 02:17:25 helly Exp $ */
+/* $Id: pgsql.c,v 1.331.2.13.2.22 2007/08/22 22:40:29 iliaa Exp $ */
 
 #include <stdlib.h>
 
@@ -80,6 +80,10 @@
 #endif
 
 #define CHECK_DEFAULT_LINK(x) if ((x) == -1) { php_error_docref(NULL TSRMLS_CC, E_WARNING, "No PostgreSQL link opened yet"); }
+
+#ifndef HAVE_PQFREEMEM
+#define PGfreemem free
+#endif
 
 ZEND_DECLARE_MODULE_GLOBALS(pgsql)
 static PHP_GINIT_FUNCTION(pgsql);
@@ -3567,11 +3571,20 @@ PHP_FUNCTION(pg_escape_string)
 	int from_len;
 	int id = -1;
 
-	if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "s", &from, &from_len) == SUCCESS) {
-		pgsql_link = NULL;
-		id = PGG(default_link);
-	} else if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &pgsql_link, &from, &from_len) == FAILURE) {
-		return;
+	switch (ZEND_NUM_ARGS()) {
+		case 1:
+			if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &from, &from_len) == FAILURE) {
+				return;
+			}
+			pgsql_link = NULL;
+			id = PGG(default_link);
+			break;
+
+		default:
+			if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &pgsql_link, &from, &from_len) == FAILURE) {
+				return;
+			}
+			break;
 	}
 
 	to = (char *) safe_emalloc(from_len, 2, 1);
@@ -3600,11 +3613,20 @@ PHP_FUNCTION(pg_escape_bytea)
 #endif
 	zval *pgsql_link;
 
-	if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "s", &from, &from_len) == SUCCESS) {
-		pgsql_link = NULL;
-		id = PGG(default_link);
-	} else if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &pgsql_link, &from, &from_len) == FAILURE) {
-		return;
+	switch (ZEND_NUM_ARGS()) {
+		case 1:
+			if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &from, &from_len) == FAILURE) {
+				return;
+			}
+			pgsql_link = NULL;
+			id = PGG(default_link);
+			break;
+
+		default:
+			if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &pgsql_link, &from, &from_len) == FAILURE) {
+				return;
+			}
+			break;
 	}
 
 #ifdef HAVE_PQESCAPE_BYTEA_CONN
