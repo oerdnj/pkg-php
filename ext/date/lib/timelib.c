@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: timelib.c,v 1.7.2.4.2.2 2007/01/01 09:35:59 sebastian Exp $ */
+/* $Id: timelib.c,v 1.7.2.4.2.6 2007/07/20 23:53:40 jani Exp $ */
 
 #include "timelib.h"
 #include <ctype.h>
@@ -28,7 +28,9 @@
 		m = NULL;	\
 	}			\
 
-timelib_time* timelib_time_ctor()
+#define TIMELIB_LLABS(y) (y < 0 ? (y * -1) : y)
+
+timelib_time* timelib_time_ctor(void)
 {
 	timelib_time *t;
 	t = calloc(1, sizeof(timelib_time));
@@ -53,7 +55,7 @@ void timelib_time_dtor(timelib_time* t)
 	TIMELIB_TIME_FREE(t);
 }
 
-timelib_time_offset* timelib_time_offset_ctor()
+timelib_time_offset* timelib_time_offset_ctor(void)
 {
 	timelib_time_offset *t;
 	t = calloc(1, sizeof(timelib_time_offset));
@@ -167,8 +169,8 @@ void timelib_dump_date(timelib_time *d, int options)
 	if ((options & 2) == 2) {
 		printf("TYPE: %d ", d->zone_type);
 	}
-	printf("TS: %lld | %04lld-%02lld-%02lld %02lld:%02lld:%02lld",
-		d->sse, d->y, d->m, d->d, d->h, d->i, d->s);
+	printf("TS: %lld | %s%04lld-%02lld-%02lld %02lld:%02lld:%02lld",
+		d->sse, d->y < 0 ? "-" : "", TIMELIB_LLABS(d->y), d->m, d->d, d->h, d->i, d->s);
 	if (d->f > +0.0) {
 		printf(" %.5f", d->f);
 	}

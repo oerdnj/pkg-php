@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute.h,v 1.84.2.4.2.7 2007/04/16 08:09:54 dmitry Exp $ */
+/* $Id: zend_execute.h,v 1.84.2.4.2.8 2007/07/21 00:35:14 jani Exp $ */
 
 #ifndef ZEND_EXECUTE_H
 #define ZEND_EXECUTE_H
@@ -186,8 +186,8 @@ ZEND_API zend_class_entry *zend_fetch_class(char *class_name, uint class_name_le
 void zend_verify_abstract_class(zend_class_entry *ce TSRMLS_DC);
 
 #ifdef ZEND_WIN32
-void zend_init_timeout_thread();
-void zend_shutdown_timeout_thread();
+void zend_init_timeout_thread(void);
+void zend_shutdown_timeout_thread(void);
 #define WM_REGISTER_ZEND_TIMEOUT		(WM_USER+1)
 #define WM_UNREGISTER_ZEND_TIMEOUT		(WM_USER+2)
 #endif

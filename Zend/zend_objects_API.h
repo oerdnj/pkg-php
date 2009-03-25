@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_objects_API.h,v 1.20.2.1.2.3 2007/01/01 09:35:47 sebastian Exp $ */
+/* $Id: zend_objects_API.h,v 1.20.2.1.2.4 2007/07/21 00:35:14 jani Exp $ */
 
 #ifndef ZEND_OBJECTS_API_H
 #define ZEND_OBJECTS_API_H
@@ -80,7 +80,7 @@ ZEND_API void zend_objects_store_free_object_storage(zend_objects_store *objects
 
 ZEND_API zval *zend_object_create_proxy(zval *object, zval *member TSRMLS_DC);
 
-ZEND_API zend_object_handlers *zend_get_std_object_handlers();
+ZEND_API zend_object_handlers *zend_get_std_object_handlers(void);
 END_EXTERN_C()
 
 #endif /* ZEND_OBJECTS_H */

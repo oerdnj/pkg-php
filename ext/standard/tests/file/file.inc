@@ -6,7 +6,12 @@
        create_links() : crate links of different types
        delete_links() : delete links 
        fill_files()   : fill file with specified contents 
-       change_file_perms : Change permission of files 
+       change_file_perms() : Change permission of files 
+       fill_buffer()  : fills buffer with specified contents
+       compare_self_stat() : compares the first 13 elements of the 
+                            stat with the corresponding named key values of
+                            the same stat.
+       compare_stats() : Compares two stat values
 
 */ 
 
@@ -26,6 +31,51 @@ function create_file($filename, $mode = "w") {
   if ( $file_handle == false )
     return false;
   fclose($file_handle);
+  return true;
+}
+
+/*
+ Function : bool fill_buffer(string &$buffer, string $fill_type, int $fill_size);
+ Description: Fills the $buffer with data as specified with requested size.
+   $buffer = buffer to be filled
+   $fill_type:
+       "text" = fills with string of size $file_size
+       "numeric" = fills with numeric value of size $file_size
+       "text_with_new_line" = similar to "text" fill type but writes with new line
+       "alphanumeric" = fills with alphnumeric values
+ Returns: true on success, false on invalid fill type
+*/
+function fill_buffer(&$buffer, $fill_type, $fill_size) {
+
+  if ( $fill_type == "text" ) {
+    $data = "text ";
+    $size_divider = strlen($data);
+    $add_value = strlen($data);
+  } else if ( $fill_type == "text_with_new_line" ) {
+    $data = "line\nline of text\n";
+    $size_divider = strlen($data);
+    $add_value = strlen($data);
+  } else if ( $fill_type == "alphanumeric" ) {
+    $data = "ab12 ";
+    $size_divider = strlen($data);
+    $add_value = strlen($data);
+  } else if ( $fill_type == "numeric" ) {
+    $data = 2;
+    $size_divider = 1;
+    $add_value = 0;
+  } else {
+    // invalid fill type;
+    return false;
+  }
+
+  $tmp_buff = str_repeat($data, ($fill_size/$size_divider) + $add_value );
+
+  if ( strlen($tmp_buff) > $fill_size ) {
+    $buffer = substr($tmp_buff, 0, $fill_size);
+  } else {
+    $buffer = $tmp_buff;
+  }
+
   return true;
 }
 
@@ -88,7 +138,7 @@ function fill_file($file_handle, $fill_type, $file_size) {
   } else {
     $num_values = str_repeat($data, ($chunk_size/$size_divider) + $add_value );
     $bytes_written = fwrite($file_handle, $num_values, $file_size);
-    if ( $bytes_written != $chunk_size ) {
+    if ( $bytes_written != $file_size ) {
       return false;
     }
   }
@@ -228,27 +278,26 @@ function create_files( $file_path,
 
   if ( $content_type == "empty" ) {
     $return_value['filled'] = $count;
-    return $return_value;
-  }
-
-  // fill the file with specifiec type of data and size
-  $tmp_name_suffix = $name_suffix;
-  for($loop_counter = 1; $loop_counter <= $count; $loop_counter ++) {
-    $filename = $file_path."/".$name_prefix.$tmp_name_suffix.$file_extension;
-    $file_handle = fopen($filename, $mode);
-    if($file_handle == false) {
-      fclose($file_handle);
-      return $return_value;
-    } // end of if
+  } else {
+    // fill the file with specifiec type of data and size
+    $tmp_name_suffix = $name_suffix;
+    for($loop_counter = 1; $loop_counter <= $count; $loop_counter ++) {
+      $filename = $file_path."/".$name_prefix.$tmp_name_suffix.$file_extension;
+      $file_handle = fopen($filename, $mode);
+      if($file_handle == false) {
+        fclose($file_handle);
+        return $return_value;
+      } // end of if
  
-    // call fill_file() to fill the file 
-    if( fill_file($file_handle, $content_type, $file_size) )
-      $return_value['filled']++;
+      // call fill_file() to fill the file 
+      if( fill_file($file_handle, $content_type, $file_size) )
+        $return_value['filled']++;
     
-    fclose($file_handle);
+      fclose($file_handle);
 
-    $tmp_name_suffix++;
-  } // end of for
+      $tmp_name_suffix++;
+    } // end of for
+  }
 
   // change all file's permissions
   $return_value['perms_changed'] = change_file_perms($file_path, $count, $permission, $name_prefix, 
@@ -470,3 +519,132 @@ function delete_links($file_path,
 }
 
 
+
+/*
+ Prototype:
+  function compare_self_stat( array $stat );
+ Description:
+  Compares the each of the first 13 values of the stat array with the 
+  corresponding next 13 values of the same stat for equality
+  $stat = stat array
+
+ Retuns: true when all of them match, false otherwise
+*/
+function compare_self_stat( array $stat )
+{
+  //return value
+  $return_value = true;
+
+  // named keys present in a stat
+  $string_keys = array("dev", "ino", "mode", "nlink", "uid", "gid", 
+                       "rdev", "size", "atime", "mtime", "ctime",
+                       "blksize", "blocks");
+
+  // first numeric key
+  $key = 0;
+
+  // compare the values in the stat, which are accessed using numeric key with
+  // values accessed using string keys
+  foreach($string_keys as $str_key)
+  {
+    if($stat[$key] != $stat[$str_key]) {
+      echo "Error: stat[$key] doesn't match with stat[$str_key]\n";
+      $flag = false;
+      $key++;
+    }
+    else {
+      $key++;
+    }
+  } // end of foreach
+
+  // if the $return_value is false, i.e all the element do not match then 
+  // dump the stat array so that its easy to figure out the error
+  if ($return_value == false ) {
+    echo "\n Dumping stat array ...\n";
+    var_dump($stat);
+  }
+
+  return $return_value;
+}// end of compare_self_stat
+
+/*
+Prototype:
+  function compare_stats( array $stat1, array $stat2, array $fields, 
+                          [string $op = "==", [ bool $flag = false] ]);
+Description:
+  Compares two stat values, stat value should be obtained by stat/lstat
+  $stat1 = first stat array
+  $stat2 = second stat array
+  $op = type of the comparision to be perform between elements of stat1 and stat2
+    "!=" compare for not equal
+    "==" compare for equality
+    ">"  if each element of stat1 is > than stat2
+    "<"  if each element of stat1 is < than stat2
+  $fields = contains the key of the elements that needs to be compared. 
+            type of the comparision is based on $op argument value
+  $flag = specify true to dump the stat1 and stat2 
+*/
+
+$all_stat_keys = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 
+                       "dev", "ino", "mode", "nlink", "uid", "gid",
+                       "rdev", "size", "atime", "mtime", "ctime",
+                       "blksize", "blocks");
+
+function compare_stats($stat1, $stat2, $fields, $op = "==", $flag = false ) {
+  // dump the stat if requested
+  if ( $flag == true ) {
+    var_dump($stat1);
+    var_dump($stat2);
+  }
+
+  $result = true;
+
+  // compare values of given key from each stat array 
+  for($index = 0; $index < count($fields); $index++) 
+  {
+    switch( $op )
+    {
+       case "==":
+         if ( $stat1[ $fields[$index] ] != $stat2[ $fields[$index] ] ) {
+           $result = false;
+           echo "Error: stat1 do not match with stat2 at key value: $fields[$index]\n";
+         }
+         break;
+
+       case "!=":
+         if ( $stat1[ $fields[$index] ] != $stat2[ $fields[$index] ] ) {
+           // do nothing as its not equal, else will take care of if equal
+         } else {
+           $result = false;
+           echo "Error: stat1 equals stat2 at key value: $fields[$index]\n";
+         }
+         break;
+
+       case ">":
+         if ( $stat1[ $fields[$index] ] <= $stat2[ $fields[$index] ] ) {
+           $result = false;
+           echo "Error: stat1 is not greater than stat2 at key value: $fields[$index]\n";
+         }
+         break;
+
+       case "<":
+         if ( $stat1[ $fields[$index] ] >= $stat2[ $fields[$index] ] ) {
+           $result = false;
+           echo "Error: stat1 is not lesser than stat2 at key value: $fields[$index]\n";
+         }
+         break;
+    }
+  }
+  // if the result is false(i.e values are not as expected), 
+  // dump the stat array so that easy to figure out the error
+  if ( $result == false ) {
+    echo "\n Dumping stat array 1...\n";
+    var_dump($stat1);
+    echo "\n Dumping stat array 2...\n";
+    var_dump($stat2);
+  }
+
+  return $result;
+}
+
+?>

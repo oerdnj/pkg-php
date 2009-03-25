@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.32.2.1 2005/11/29 18:26:00 tony2001 Exp $
+dnl $Id: config.m4,v 1.32.2.1.2.3 2007/07/31 13:02:00 jani Exp $
 dnl
 
 PHP_ARG_WITH(snmp,for SNMP support,
@@ -7,6 +7,9 @@ PHP_ARG_WITH(snmp,for SNMP support,
 
 PHP_ARG_WITH(openssl-dir,OpenSSL dir for SNMP,
 [  --with-openssl-dir[=DIR]  SNMP: openssl install prefix], no, no)
+
+PHP_ARG_ENABLE(ucd-snmp-hack, whether to enable UCD SNMP hack, 
+[  --enable-ucd-snmp-hack    SNMP: Enable UCD SNMP hack], no, no)
 
 if test "$PHP_SNMP" != "no"; then
 
@@ -45,8 +48,8 @@ if test "$PHP_SNMP" != "no"; then
         test -f $i/snmp/snmp.h                  && SNMP_INCDIR=$i/snmp
         test -f $i/snmp/include/ucd-snmp/snmp.h && SNMP_INCDIR=$i/snmp/include/ucd-snmp
       done
-      for i in /usr /usr/snmp /usr/local /usr/local/snmp; do
-        test -f $i/lib/libsnmp.a || test -f $i/lib/libsnmp.$SHLIB_SUFFIX_NAME && SNMP_LIBDIR=$i/lib
+      for i in /usr/$PHP_LIBDIR /usr/snmp/lib /usr/local/$PHP_LIBDIR /usr/local/lib /usr/local/snmp/lib; do
+        test -f $i/libsnmp.a || test -f $i/libsnmp.$SHLIB_SUFFIX_NAME && SNMP_LIBDIR=$i
       done
     else
       SNMP_INCDIR=$PHP_SNMP/include
@@ -119,19 +122,10 @@ if test "$PHP_SNMP" != "no"; then
     $SNMP_SHARED_LIBADD
   ])
 
+  if test "$PHP_UCD_SNMP_HACK" = "yes" ; then
+    AC_DEFINE(UCD_SNMP_HACK, 1, [ ])
+  fi
+  
   PHP_NEW_EXTENSION(snmp, snmp.c, $ext_shared)
   PHP_SUBST(SNMP_SHARED_LIBADD)
 fi
-
-AC_MSG_CHECKING(whether to enable UCD SNMP hack)
-AC_ARG_ENABLE(ucd-snmp-hack,
-[  --enable-ucd-snmp-hack  SNMP: Enable UCD SNMP hack],[
-  if test "$enableval" = "yes" ; then
-    AC_DEFINE(UCD_SNMP_HACK, 1, [ ])
-    AC_MSG_RESULT(yes)
-  else
-    AC_MSG_RESULT(no)
-  fi
-],[
-  AC_MSG_RESULT(no)
-])

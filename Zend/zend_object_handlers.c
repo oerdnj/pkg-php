@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_object_handlers.c,v 1.135.2.6.2.20 2007/03/23 17:16:55 stas Exp $ */
+/* $Id: zend_object_handlers.c,v 1.135.2.6.2.22 2007/07/24 11:39:55 dmitry Exp $ */
 
 #include "zend.h"
 #include "zend_globals.h"
@@ -152,7 +152,7 @@ static int zend_verify_property_access(zend_property_info *property_info, zend_c
 		case ZEND_ACC_PROTECTED:
 			return zend_check_protected(property_info->ce, EG(scope));
 		case ZEND_ACC_PRIVATE:
-			if (ce==EG(scope) && EG(scope)) {
+			if ((ce==EG(scope) || property_info->ce == EG(scope)) && EG(scope)) {
 				return 1;
 			} else {
 				return 0;
@@ -800,7 +800,9 @@ static union _zend_function *zend_std_get_method(zval **object_ptr, char *method
 		/* Ensure that we haven't overridden a private function and end up calling
 		 * the overriding public function...
 		 */
-		if (EG(scope) && fbc->op_array.fn_flags & ZEND_ACC_CHANGED) {
+		if (EG(scope) &&
+		    is_derived_class(fbc->common.scope, EG(scope)) &&
+		    fbc->op_array.fn_flags & ZEND_ACC_CHANGED) {
 			zend_function *priv_fbc;
 
 			if (zend_hash_find(&EG(scope)->function_table, lc_method_name, method_len+1, (void **) &priv_fbc)==SUCCESS

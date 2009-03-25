@@ -25,7 +25,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: oci8_interface.c,v 1.8.2.7.2.9 2007/01/11 12:01:08 tony2001 Exp $ */
+/* $Id: oci8_interface.c,v 1.8.2.7.2.13 2007/08/02 19:04:37 sixd Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1183,7 +1183,22 @@ PHP_FUNCTION(oci_field_type)
 #endif
 #ifdef SQLT_TIMESTAMP_TZ
 		case SQLT_TIMESTAMP_TZ:
-			RETVAL_STRING("TIMESTAMP_TZ",1);
+			RETVAL_STRING("TIMESTAMP WITH TIMEZONE",1);
+			break;
+#endif
+#ifdef SQLT_TIMESTAMP_LTZ
+		case SQLT_TIMESTAMP_LTZ:
+			RETVAL_STRING("TIMESTAMP WITH LOCAL TIMEZONE",1);
+			break;
+#endif
+#ifdef SQLT_INTERVAL_YM
+		case SQLT_INTERVAL_YM:
+			RETVAL_STRING("INTERVAL YEAR TO MONTH",1);
+			break;
+#endif
+#ifdef SQLT_INTERVAL_DS
+		case SQLT_INTERVAL_DS:
+			RETVAL_STRING("INTERVAL DAY TO SECOND",1);
 			break;
 #endif
 		case SQLT_DAT:
@@ -1583,19 +1598,28 @@ PHP_FUNCTION(oci_error)
 				RETURN_FALSE;
 			}
 #endif
-		} else {
-			connection = (php_oci_connection *) zend_fetch_resource(&arg TSRMLS_CC, -1, NULL, NULL, 1, le_connection);
-			
-			if (connection) {
-				errh = connection->err;
-				error = connection->errcode;
-			}
+			goto go_out;
+		}
+
+		connection = (php_oci_connection *) zend_fetch_resource(&arg TSRMLS_CC, -1, NULL, NULL, 1, le_connection);
+		if (connection) {
+			errh = connection->err;
+			error = connection->errcode;
+			goto go_out;
+		}
+
+		connection = (php_oci_connection *) zend_fetch_resource(&arg TSRMLS_CC, -1, NULL, NULL, 1, le_pconnection);
+		if (connection) {
+			errh = connection->err;
+			error = connection->errcode;
+			goto go_out;
 		}
 	} else {
 		errh = OCI_G(err);
 		error = OCI_G(errcode);
 	}
 
+go_out:
 	if (error == OCI_SUCCESS) { /* no error set in the handle */
 		RETURN_FALSE;
 	}
@@ -1715,7 +1739,7 @@ PHP_FUNCTION(oci_password_change)
 			RETURN_FALSE;
 		}
 
-		if (php_oci_password_change(connection, user, user_len, pass_old, pass_old_len, pass_new, pass_new_len TSRMLS_CC)) {
+		if (php_oci_password_change(connection, (char *)user, user_len, (char *)pass_old, pass_old_len, (char *)pass_new, pass_new_len TSRMLS_CC)) {
 			RETURN_FALSE;
 		}
 		RETURN_TRUE;
@@ -1734,7 +1758,7 @@ PHP_FUNCTION(oci_password_change)
 			RETURN_FALSE;
 		}
 
-		connection = php_oci_do_connect_ex(user, user_len, pass_old, pass_old_len, pass_new, pass_new_len, dbname, dbname_len, NULL, OCI_DEFAULT, 0, 0 TSRMLS_CC);
+		connection = php_oci_do_connect_ex((char *)user, user_len, (char *)pass_old, pass_old_len, (char *)pass_new, pass_new_len, (char *)dbname, dbname_len, NULL, OCI_DEFAULT, 0, 0 TSRMLS_CC);
 		if (!connection) {
 			RETURN_FALSE;
 		}
@@ -2169,3 +2193,12 @@ PHP_FUNCTION(oci_new_collection)
 #endif
 
 #endif /* HAVE_OCI8 */
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

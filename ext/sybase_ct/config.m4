@@ -1,10 +1,10 @@
 dnl
-dnl $Id: config.m4,v 1.15 2005/05/29 23:16:44 sniper Exp $
+dnl $Id: config.m4,v 1.15.4.1 2007/07/03 17:25:35 sniper Exp $
 dnl
 
 PHP_ARG_WITH(sybase-ct, for Sybase-CT support,
 [  --with-sybase-ct[=DIR]  Include Sybase-CT support.  DIR is the Sybase home
-                          directory. Defaults to /home/sybase])
+                          directory [/home/sybase]])
 
 if test "$PHP_SYBASE_CT" != "no"; then
 

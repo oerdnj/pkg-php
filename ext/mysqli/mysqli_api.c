@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_api.c,v 1.118.2.22.2.11 2007/03/08 22:49:53 stas Exp $ 
+  $Id: mysqli_api.c,v 1.118.2.22.2.14 2007/07/24 09:22:16 andrey Exp $ 
 */
 
 #ifdef HAVE_CONFIG_H
@@ -141,13 +141,13 @@ PHP_FUNCTION(mysqli_stmt_bind_param)
 		switch (types[ofs]) {
 			case 'd': /* Double */
 				bind[ofs].buffer_type = MYSQL_TYPE_DOUBLE;
-				bind[ofs].buffer = (gptr)&Z_DVAL_PP(args[i]);
+				bind[ofs].buffer = (char*)&Z_DVAL_PP(args[i]);
 				bind[ofs].is_null = &stmt->param.is_null[ofs];
 				break;
 
 			case 'i': /* Integer */
 				bind[ofs].buffer_type = MYSQL_TYPE_LONG;
-				bind[ofs].buffer = (gptr)&Z_LVAL_PP(args[i]);
+				bind[ofs].buffer = (char*)&Z_LVAL_PP(args[i]);
 				bind[ofs].is_null = &stmt->param.is_null[ofs];
 				break;
 
@@ -239,7 +239,7 @@ PHP_FUNCTION(mysqli_stmt_bind_result)
 	var_cnt = argc - start;
 
 	if (var_cnt != mysql_stmt_field_count(stmt->stmt)) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Number of bind variables doesn't match number of fields in prepared statement.");
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Number of bind variables doesn't match number of fields in prepared statement");
 		efree(args);
 		RETURN_FALSE;
 	}
@@ -600,11 +600,11 @@ PHP_FUNCTION(mysqli_stmt_execute)
 						break;
 					case MYSQL_TYPE_DOUBLE:
 						convert_to_double_ex(&stmt->param.vars[i]);
-						stmt->stmt->params[i].buffer = (gptr)&Z_LVAL_PP(&stmt->param.vars[i]);
+						stmt->stmt->params[i].buffer = (char*)&Z_LVAL_PP(&stmt->param.vars[i]);
 						break;
 					case MYSQL_TYPE_LONG:
 						convert_to_long_ex(&stmt->param.vars[i]);
-						stmt->stmt->params[i].buffer = (gptr)&Z_LVAL_PP(&stmt->param.vars[i]);
+						stmt->stmt->params[i].buffer = (char*)&Z_LVAL_PP(&stmt->param.vars[i]);
 						break;
 					default:
 						break;
@@ -1289,6 +1289,12 @@ PHP_FUNCTION(mysqli_options)
 	}
 	MYSQLI_FETCH_RESOURCE(mysql, MY_MYSQL *, &mysql_link, "mysqli_link", MYSQLI_STATUS_INITIALIZED);
 
+	if ((PG(open_basedir) && PG(open_basedir)[0] != '\0') || PG(safe_mode)) {
+		if(mysql_option == MYSQL_OPT_LOCAL_INFILE) {
+			RETURN_FALSE;
+		}
+	}
+
 	switch (Z_TYPE_PP(&mysql_value)) {
 		case IS_STRING:
 			ret = mysql_options(mysql->mysql, mysql_option, Z_STRVAL_PP(&mysql_value));
@@ -1427,9 +1433,9 @@ PHP_FUNCTION(mysqli_real_connect)
 	MYSQLI_FETCH_RESOURCE(mysql, MY_MYSQL *, &mysql_link, "mysqli_link", MYSQLI_STATUS_INITIALIZED);
 
 	/* remove some insecure options */
-	flags ^= CLIENT_MULTI_STATEMENTS;   /* don't allow multi_queries via connect parameter */
-	if (PG(open_basedir) && strlen(PG(open_basedir))) {
-		flags ^= CLIENT_LOCAL_FILES;
+	flags &= ~CLIENT_MULTI_STATEMENTS;   /* don't allow multi_queries via connect parameter */
+	if ((PG(open_basedir) && PG(open_basedir)[0] != '\0') || PG(safe_mode)) {
+		flags &= ~CLIENT_LOCAL_FILES;
 	}
 
 	if (!socket) {

@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.7 2005/05/29 23:16:46 sniper Exp $
+dnl $Id: config.m4,v 1.7.4.2 2007/07/11 23:20:36 jani Exp $
 dnl
 AC_DEFUN([PHP_APACHE_FD_CHECK], [
 AC_CACHE_CHECK([for member fd in BUFF *],ac_cv_php_fd_in_buff,[
@@ -18,19 +18,23 @@ if test "$ac_cv_php_fd_in_buff" = "yes"; then
 fi
 ])
 
-AC_MSG_CHECKING(for Apache 1.x (hooks) module support via DSO through APXS)
-AC_ARG_WITH(apache-hooks,
+dnl Apache 1.x shared module
+PHP_ARG_WITH(apache-hooks,,
 [  --with-apache-hooks[=FILE]      
                           EXPERIMENTAL: Build shared Apache 1.x module. FILE is the optional
-                          pathname to the Apache apxs tool [apxs]],[
-  if test "$withval" = "yes"; then
+                          pathname to the Apache apxs tool [apxs]], no, no)
+
+AC_MSG_CHECKING([for Apache 1.x (hooks) module support via DSO through APXS])
+
+if test "$PHP_APACHE_HOOKS" != "no"; then
+  if test "$PHP_APACHE_HOOKS" = "yes"; then
     APXS=apxs
     $APXS -q CFLAGS >/dev/null 2>&1
     if test "$?" != "0" && test -x /usr/sbin/apxs; then #SUSE 6.x 
       APXS=/usr/sbin/apxs
     fi
   else
-    PHP_EXPAND_PATH($withval, APXS)
+    PHP_EXPAND_PATH($PHP_APACHE_HOOKS, APXS)
   fi
 
   $APXS -q CFLAGS >/dev/null 2>&1
@@ -114,142 +118,135 @@ AC_ARG_WITH(apache-hooks,
   AC_DEFINE(HAVE_AP_COMPAT_H,1,[ ])
   AC_DEFINE(HAVE_APACHE_HOOKS,1,[ ])
   AC_MSG_RESULT(yes)
-],[
+else
   AC_MSG_RESULT(no)
-])
+fi
 
-if test "$PHP_SAPI" != "apache_hooks"; then
-AC_MSG_CHECKING(for Apache 1.x (hooks) module support)
-AC_ARG_WITH(apache-hooks-static,
-[  --with-apache-hooks-static[=DIR]     
+dnl Apache 1.x static module
+PHP_ARG_WITH(apache-hooks-static,,
+[  --with-apache-hooks-static[=DIR]
                           EXPERIMENTAL: Build Apache 1.x module. DIR is the top-level Apache
-                          build directory [/usr/local/apache]],[
+                          build directory [/usr/local/apache]], no, no)
 
-  APACHE_INSTALL_FILES="\$(srcdir)/sapi/apache_hooks/mod_php5.* sapi/apache_hooks/libphp5.module"
+AC_MSG_CHECKING(for Apache 1.x (hooks) module support)
 
-  if test "$withval" = "yes"; then
+if test "$PHP_SAPI" != "apache" && test "$PHP_SAPI" != "apache_hooks" && test "$PHP_APACHE_HOOKS_STATIC" != "no"; then
+
+  if test "$PHP_APACHE_HOOKS_STATIC" = "yes"; then
     # Apache's default directory
-    withval=/usr/local/apache
+    PHP_APACHE_HOOKS_STATIC=/usr/local/apache
   fi
-  if test "$withval" != "no"; then
-    AC_DEFINE(HAVE_APACHE_HOOKS,1,[ ])
-    APACHE_HOOKS_MODULE=yes
-    PHP_EXPAND_PATH($withval, withval)
-    # For Apache 1.2.x
-    if test -f $withval/src/httpd.h; then 
-      APACHE_INCLUDE=-I$withval/src
-      APACHE_TARGET=$withval/src
-      PHP_SELECT_SAPI(apache_hooks, static, sapi_apache.c mod_php5.c php_apache.c, $APACHE_INCLUDE)
-      APACHE_HOOKS_INSTALL="mkdir -p $APACHE_TARGET; cp $SAPI_STATIC $APACHE_INSTALL_FILES $APACHE_TARGET"
-      PHP_LIBS="-L. -lphp3"
-      AC_MSG_RESULT(yes - Apache 1.2.x)
-      STRONGHOLD=
-      if test -f $withval/src/ap_config.h; then
-        AC_DEFINE(HAVE_AP_CONFIG_H,1,[ ])
+
+  APACHE_HOOKS_INSTALL_FILES="\$(srcdir)/sapi/apache_hooks/mod_php5.* sapi/apache_hooks/libphp5.module"
+
+  AC_DEFINE(HAVE_APACHE,1,[ ])
+  APACHE_HOOKS_MODULE=yes
+  PHP_EXPAND_PATH($PHP_APACHE_HOOKS_STATIC, PHP_APACHE_HOOKS_STATIC)
+  # For Apache 1.2.x
+  if test -f $PHP_APACHE_HOOKS_STATIC/src/httpd.h; then 
+    APACHE_INCLUDE=-I$PHP_APACHE_HOOKS_STATIC/src
+    APACHE_TARGET=$PHP_APACHE_HOOKS_STATIC/src
+    PHP_SELECT_SAPI(apache_hooks, static, sapi_apache.c mod_php5.c php_apache.c, $APACHE_INCLUDE)
+    APACHE_HOOKS_INSTALL="mkdir -p $APACHE_TARGET; cp $SAPI_STATIC $APACHE_HOOKS_INSTALL_FILES $APACHE_TARGET"
+    PHP_LIBS="-L. -lphp3"
+    AC_MSG_RESULT([yes - Apache 1.2.x])
+    STRONGHOLD=
+    if test -f $PHP_APACHE_HOOKS_STATIC/src/ap_config.h; then
+      AC_DEFINE(HAVE_AP_CONFIG_H,1,[ ])
+    fi
+  # For Apache 2.0.x
+  elif test -f $PHP_APACHE_HOOKS_STATIC/include/httpd.h && test -f $PHP_APACHE_HOOKS_STATIC/srclib/apr/include/apr_general.h ; then
+    AC_MSG_ERROR([Use --with-apxs2 with Apache 2.x!])
+  # For Apache 1.3.x
+  elif test -f $PHP_APACHE_HOOKS_STATIC/src/main/httpd.h; then
+    APACHE_HAS_REGEX=1
+    APACHE_INCLUDE="-I$PHP_APACHE_HOOKS_STATIC/src/main -I$PHP_APACHE_HOOKS_STATIC/src/os/unix -I$PHP_APACHE_HOOKS_STATIC/src/ap"
+    APACHE_TARGET=$PHP_APACHE_HOOKS_STATIC/src/modules/php5
+    if test ! -d $APACHE_TARGET; then
+      mkdir $APACHE_TARGET
+    fi
+    PHP_SELECT_SAPI(apache_hooks, static, sapi_apache.c mod_php5.c php_apache.c, $APACHE_INCLUDE)
+    APACHE_HOOKS_INSTALL="mkdir -p $APACHE_TARGET; cp $SAPI_STATIC $APACHE_TARGET/libmodphp5.a; cp $APACHE_HOOKS_INSTALL_FILES $APACHE_TARGET; cp $srcdir/sapi/apache_hooks/apMakefile.tmpl $APACHE_TARGET/Makefile.tmpl; cp $srcdir/sapi/apache_hooks/apMakefile.libdir $APACHE_TARGET/Makefile.libdir"
+    PHP_LIBS="-Lmodules/php5 -L../modules/php5 -L../../modules/php5 -lmodphp5"
+    AC_MSG_RESULT([yes - Apache 1.3.x])
+    STRONGHOLD=
+    if test -f $PHP_APACHE_HOOKS_STATIC/src/include/ap_config.h; then
+      AC_DEFINE(HAVE_AP_CONFIG_H, 1, [ ])
+    fi
+    if test -f $PHP_APACHE_HOOKS_STATIC/src/include/ap_compat.h; then
+      AC_DEFINE(HAVE_AP_COMPAT_H, 1, [ ])
+      if test ! -f $PHP_APACHE_HOOKS_STATIC/src/include/ap_config_auto.h; then
+        AC_MSG_ERROR([Please run Apache\'s configure or src/Configure program once and try again])
       fi
-    # For Apache 2.0.x
-    elif test -f $withval/include/httpd.h &&
-         test -f $withval/srclib/apr/include/apr_general.h ; then
-      AC_MSG_ERROR([Use --with-apxs2 with Apache 2.x!])
-    # For Apache 1.3.x
-    elif test -f $withval/src/main/httpd.h; then
-      APACHE_HAS_REGEX=1
-      APACHE_INCLUDE="-I$withval/src/main -I$withval/src/os/unix -I$withval/src/ap"
-      APACHE_TARGET=$withval/src/modules/php5
-      if test ! -d $APACHE_TARGET; then
-        mkdir $APACHE_TARGET
+    elif test -f $PHP_APACHE_HOOKS_STATIC/src/include/compat.h; then
+      AC_DEFINE(HAVE_OLD_COMPAT_H, 1, [ ])
+    fi
+  # Also for Apache 1.3.x
+  elif test -f $PHP_APACHE_HOOKS_STATIC/src/include/httpd.h; then
+    APACHE_HAS_REGEX=1
+    APACHE_INCLUDE="-I$PHP_APACHE_HOOKS_STATIC/src/include -I$PHP_APACHE_HOOKS_STATIC/src/os/unix"
+    APACHE_TARGET=$PHP_APACHE_HOOKS_STATIC/src/modules/php5
+    if test ! -d $APACHE_TARGET; then
+      mkdir $APACHE_TARGET
+    fi
+    PHP_SELECT_SAPI(apache_hooks, static, sapi_apache.c mod_php5.c php_apache.c, $APACHE_INCLUDE)
+    PHP_LIBS="-Lmodules/php5 -L../modules/php5 -L../../modules/php5 -lmodphp5"
+    APACHE_HOOKS_INSTALL="mkdir -p $APACHE_TARGET; cp $SAPI_STATIC $APACHE_TARGET/libmodphp5.a; cp $APACHE_HOOKS_INSTALL_FILES $APACHE_TARGET; cp $srcdir/sapi/apache_hooks/apMakefile.tmpl $APACHE_TARGET/Makefile.tmpl; cp $srcdir/sapi/apache_hooks/apMakefile.libdir $APACHE_TARGET/Makefile.libdir"
+    AC_MSG_RESULT([yes - Apache 1.3.x])
+    STRONGHOLD=
+    if test -f $PHP_APACHE_HOOKS_STATIC/src/include/ap_config.h; then
+      AC_DEFINE(HAVE_AP_CONFIG_H, 1, [ ])
+    fi
+    if test -f $PHP_APACHE_HOOKS_STATIC/src/include/ap_compat.h; then
+      AC_DEFINE(HAVE_AP_COMPAT_H, 1, [ ])
+      if test ! -f $PHP_APACHE_HOOKS_STATIC/src/include/ap_config_auto.h; then
+        AC_MSG_ERROR([Please run Apache\'s configure or src/Configure program once and try again])
       fi
-      PHP_SELECT_SAPI(apache_hooks, static, sapi_apache.c mod_php5.c php_apache.c, $APACHE_INCLUDE)
-      APACHE_INSTALL="mkdir -p $APACHE_TARGET; cp $SAPI_STATIC $APACHE_TARGET/libmodphp5.a; cp $APACHE_INSTALL_FILES $APACHE_TARGET; cp $srcdir/sapi/apache_hooks/apMakefile.tmpl $APACHE_TARGET/Makefile.tmpl; cp $srcdir/sapi/apache_hooks/apMakefile.libdir $APACHE_TARGET/Makefile.libdir"
-      PHP_LIBS="-Lmodules/php5 -L../modules/php5 -L../../modules/php5 -lmodphp5"
-      AC_MSG_RESULT(yes - Apache 1.3.x)
-      STRONGHOLD=
-      if test -f $withval/src/include/ap_config.h; then
-        AC_DEFINE(HAVE_AP_CONFIG_H,1,[ ])
+    elif test -f $PHP_APACHE_HOOKS_STATIC/src/include/compat.h; then
+      AC_DEFINE(HAVE_OLD_COMPAT_H, 1, [ ])
+    fi
+  # For StrongHold 2.2
+  elif test -f $PHP_APACHE_HOOKS_STATIC/apache/httpd.h; then
+    APACHE_INCLUDE="-I$PHP_APACHE_HOOKS_STATIC/apache -I$PHP_APACHE_HOOKS_STATIC/ssl/include"
+    APACHE_TARGET=$PHP_APACHE_HOOKS_STATIC/apache
+    PHP_SELECT_SAPI(apache_hooks, static, sapi_apache.c mod_php5.c php_apache.c, $APACHE_INCLUDE)
+    PHP_LIBS="-Lmodules/php5 -L../modules/php5 -L../../modules/php5 -lmodphp5"
+    APACHE_HOOKS_INSTALL="mkdir -p $APACHE_TARGET; cp $SAPI_STATIC $APACHE_TARGET/libmodphp5.a; cp $APACHE_HOOKS_INSTALL_FILES $APACHE_TARGET"
+    STRONGHOLD=-DSTRONGHOLD=1
+    AC_MSG_RESULT([yes - StrongHold])
+    if test -f $PHP_APACHE_HOOKS_STATIC/apache/ap_config.h; then
+      AC_DEFINE(HAVE_AP_CONFIG_H, 1, [ ])
+    fi
+    if test -f $PHP_APACHE_HOOKS_STATIC/src/ap_compat.h; then
+      AC_DEFINE(HAVE_AP_COMPAT_H, 1, [ ])
+      if test ! -f $PHP_APACHE_HOOKS_STATIC/src/include/ap_config_auto.h; then
+        AC_MSG_ERROR([Please run Apache\'s configure or src/Configure program once and try again])
       fi
-      if test -f $withval/src/include/ap_compat.h; then
-        AC_DEFINE(HAVE_AP_COMPAT_H,1,[ ])
-        if test ! -f $withval/src/include/ap_config_auto.h; then
-          AC_MSG_ERROR(Please run Apache\'s configure or src/Configure program once and try again)
-        fi
-      else
-        if test -f $withval/src/include/compat.h; then
-          AC_DEFINE(HAVE_OLD_COMPAT_H,1,[ ])
-        fi
-      fi
-    # Also for Apache 1.3.x
-    elif test -f $withval/src/include/httpd.h; then
-      APACHE_HAS_REGEX=1
-      APACHE_INCLUDE="-I$withval/src/include -I$withval/src/os/unix"
-      APACHE_TARGET=$withval/src/modules/php5
-      if test ! -d $APACHE_TARGET; then
-        mkdir $APACHE_TARGET
-      fi
-      PHP_SELECT_SAPI(apache_hooks, static, sapi_apache.c mod_php5.c php_apache.c, $APACHE_INCLUDE)
-      PHP_LIBS="-Lmodules/php5 -L../modules/php5 -L../../modules/php5 -lmodphp5"
-      APACHE_INSTALL="mkdir -p $APACHE_TARGET; cp $SAPI_STATIC $APACHE_TARGET/libmodphp5.a; cp $APACHE_INSTALL_FILES $APACHE_TARGET; cp $srcdir/sapi/apache_hooks/apMakefile.tmpl $APACHE_TARGET/Makefile.tmpl; cp $srcdir/sapi/apache_hooks/apMakefile.libdir $APACHE_TARGET/Makefile.libdir"
-      AC_MSG_RESULT(yes - Apache 1.3.x)
-      STRONGHOLD=
-      if test -f $withval/src/include/ap_config.h; then
-        AC_DEFINE(HAVE_AP_CONFIG_H,1,[ ])
-      fi
-      if test -f $withval/src/include/ap_compat.h; then
-        AC_DEFINE(HAVE_AP_COMPAT_H,1,[ ])
-        if test ! -f $withval/src/include/ap_config_auto.h; then
-          AC_MSG_ERROR(Please run Apache\'s configure or src/Configure program once and try again)
-        fi
-      else
-        if test -f $withval/src/include/compat.h; then
-          AC_DEFINE(HAVE_OLD_COMPAT_H,1,[ ])
-        fi
-      fi
-    # For StrongHold 2.2
-    elif test -f $withval/apache/httpd.h; then
-      APACHE_INCLUDE="-I$withval/apache -I$withval/ssl/include"
-      APACHE_TARGET=$withval/apache
-      PHP_SELECT_SAPI(apache_hooks, static, sapi_apache.c mod_php5.c php_apache.c, $APACHE_INCLUDE)
-      PHP_LIBS="-Lmodules/php5 -L../modules/php5 -L../../modules/php5 -lmodphp5"
-      APACHE_INSTALL="mkdir -p $APACHE_TARGET; cp $SAPI_STATIC $APACHE_TARGET/libmodphp5.a; cp $APACHE_INSTALL_FILES $APACHE_TARGET"
-      STRONGHOLD=-DSTRONGHOLD=1
-      AC_MSG_RESULT(yes - StrongHold)
-      if test -f $withval/apache/ap_config.h; then
-        AC_DEFINE(HAVE_AP_CONFIG_H,1,[ ])
-      fi
-      if test -f $withval/src/ap_compat.h; then
-        AC_DEFINE(HAVE_AP_COMPAT_H,1,[ ])
-        if test ! -f $withval/src/include/ap_config_auto.h; then
-          AC_MSG_ERROR(Please run Apache\'s configure or src/Configure program once and try again)
-        fi
-      else
-        if test -f $withval/src/compat.h; then
-          AC_DEFINE(HAVE_OLD_COMPAT_H,1,[ ])
-        fi
-      fi
-    else
-      AC_MSG_RESULT(no)
-      AC_MSG_ERROR(Invalid Apache directory - unable to find httpd.h under $withval)
+    elif test -f $PHP_APACHE_HOOKS_STATIC/src/compat.h; then
+      AC_DEFINE(HAVE_OLD_COMPAT_H, 1, [ ])
     fi
   else
     AC_MSG_RESULT(no)
+    AC_MSG_ERROR([Invalid Apache directory - unable to find httpd.h under $PHP_APACHE_HOOKS_STATIC])
   fi
-],[
+else
   AC_MSG_RESULT(no)
-])
-
 fi
 
-AC_MSG_CHECKING(for mod_charset compatibility option)
-AC_ARG_WITH(mod_charset,
-[  --with-mod_charset      Enable transfer tables for mod_charset (Rus Apache)],
-[
-  AC_MSG_RESULT(yes)
-  AC_DEFINE(USE_TRANSFER_TABLES,1,[ ])
-],[
-  AC_MSG_RESULT(no)
-])
+# compatibility
+if test -z "$enable_mod_charset" && test "$with_mod_charset"; then
+  enable_mod_charset=$with_mod_charset
+fi
+
+PHP_ARG_ENABLE(mod-charset, whether to enable Apache charset compatibility option,
+[  --enable-mod-charset      APACHE (hooks): Enable transfer tables for mod_charset (Rus Apache)], no, no)
+
+if test "$PHP_MOD_CHARSET" = "yes"; then
+  AC_DEFINE(USE_TRANSFER_TABLES, 1, [ ])
+fi
 
 dnl Build as static module
-if test -n "$APACHE_HOOKS_MODULE"; then
+if test "$APACHE_HOOKS_MODULE" = "yes"; then
   PHP_TARGET_RDYNAMIC
   $php_shtool mkdir -p sapi/apache_hooks
   PHP_OUTPUT(sapi/apache_hooks/libphp5.module)
@@ -262,7 +259,7 @@ if test -n "$APACHE_HOOKS_INSTALL"; then
   fi
 
   PHP_APACHE_FD_CHECK
-  INSTALL_IT=$APACHE_INSTALL
+  INSTALL_IT=$APACHE_HOOKS_INSTALL
 
   PHP_SUBST(APXS_EXP)
   PHP_SUBST(APACHE_INCLUDE)

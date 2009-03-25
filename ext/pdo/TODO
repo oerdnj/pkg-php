@@ -1,4 +1,4 @@
-$Id: TODO,v 1.6.2.2 2005/11/26 21:29:31 wez Exp $
+$Id: TODO,v 1.6.2.2.2.1 2007/07/25 22:26:14 iliaa Exp $
 
 Roadmap for PDO
 
@@ -80,11 +80,6 @@ Oracle:
 =======
 
  - Support for array types and collections.
-
-Userspace PDO Driver:
-=====================
-
- - Will be hard.
 
 PDO Session module:
 ===================

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: ftp.c,v 1.112.2.4.2.8 2007/03/24 16:25:42 iliaa Exp $ */
+/* $Id: ftp.c,v 1.112.2.4.2.9 2007/06/07 08:59:00 tony2001 Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1012,6 +1012,9 @@ ftp_mdtm(ftpbuf_t *ftp, const char *path)
 	/* figure out the GMT offset */
 	stamp = time(NULL);
 	gmt = php_gmtime_r(&stamp, &tmbuf);
+	if (!gmt) {
+		return -1;
+	}
 	gmt->tm_isdst = -1;
 
 	/* apply the GMT offset */

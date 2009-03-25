@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_zip.c,v 1.1.2.33 2007/05/19 22:25:11 pajoye Exp $ */
+/* $Id: php_zip.c,v 1.1.2.38 2007/08/06 22:02:32 bjori Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -120,7 +120,7 @@ static int php_zip_extract_file(struct zip * za, char *dest, char *file, int fil
 			len = spprintf(&file_dirname_fullpath, 0, "%s", dest);
 		}
 
-		php_basename(file, file_len, NULL, 0, &file_basename, (unsigned int *)&file_basename_len TSRMLS_CC);
+		php_basename(file, file_len, NULL, 0, &file_basename, (size_t *)&file_basename_len TSRMLS_CC);
 
 		if (OPENBASEDIR_CHECKPATH(file_dirname_fullpath)) {
 			efree(file_dirname_fullpath);
@@ -440,6 +440,55 @@ static zval* php_zip_read_property(zval *object, zval *member, int type TSRMLS_D
 	} else {
 		std_hnd = zend_get_std_object_handlers();
 		retval = std_hnd->read_property(object, member, type TSRMLS_CC);
+	}
+
+	if (member == &tmp_member) {
+		zval_dtor(member);
+	}
+	return retval;
+}
+/* }}} */
+
+static int php_zip_has_property(zval *object, zval *member, int type TSRMLS_DC) /* {{{ */
+{
+	ze_zip_object *obj;
+	zval tmp_member;
+	zip_prop_handler *hnd;
+	zend_object_handlers *std_hnd;
+	int ret, retval = 0;
+
+	if (member->type != IS_STRING) {
+		tmp_member = *member;
+		zval_copy_ctor(&tmp_member);
+		convert_to_string(&tmp_member);
+		member = &tmp_member;
+	}
+
+	ret = FAILURE;
+	obj = (ze_zip_object *)zend_objects_get_address(object TSRMLS_CC);
+
+	if (obj->prop_handler != NULL) {
+		ret = zend_hash_find(obj->prop_handler, Z_STRVAL_P(member), Z_STRLEN_P(member)+1, (void **) &hnd);
+	}
+
+	if (ret == SUCCESS) {
+		zval *tmp;
+
+		if (type == 2) {
+			retval = 1;
+		} else if (php_zip_property_reader(obj, hnd, &tmp, 1 TSRMLS_CC) == SUCCESS) {
+			tmp->refcount = 1;
+			tmp->is_ref = 0;
+			if (type == 1) {
+				retval = zend_is_true(tmp);
+			} else if (type == 0) {
+				retval = (Z_TYPE_P(tmp) != IS_NULL);
+			}
+			zval_ptr_dtor(&tmp);
+		}
+	} else {
+		std_hnd = zend_get_std_object_handlers();
+		retval = std_hnd->has_property(object, member, type TSRMLS_CC);
 	}
 
 	if (member == &tmp_member) {
@@ -985,6 +1034,9 @@ static ZIPARCHIVE_METHOD(addEmptyDir)
 	zval *this = getThis();
 	char *dirname;
 	int   dirname_len;
+	int idx;
+	struct zip_stat sb;
+	char *s;
 
 	if (!this) {
 		RETURN_FALSE;
@@ -996,14 +1048,40 @@ static ZIPARCHIVE_METHOD(addEmptyDir)
 			&dirname, &dirname_len) == FAILURE) {
 		return;
 	}
+
 	if (dirname_len<1) {
 		RETURN_FALSE;
 	}
 
-	if (zip_add_dir(intern, (const char *)dirname) < 0) {
-		RETURN_FALSE;
+	if (dirname[dirname_len-1] != '/') {
+		s=(char *)emalloc(dirname_len+2);
+		strcpy(s, dirname);
+		s[dirname_len] = '/';
+		s[dirname_len+1] = '\0';
+	} else {
+		s = dirname;
 	}
-	RETURN_TRUE;
+
+	idx = zip_stat(intern, s, 0, &sb);
+	if (idx >= 0) {
+		RETVAL_FALSE;
+	} else {
+		/* reset the error */
+		if (intern->error.str) {
+			_zip_error_fini(&intern->error);
+		}
+		_zip_error_init(&intern->error);
+
+		if (zip_add_dir(intern, (const char *)s) == -1) {
+			RETVAL_FALSE;
+		} else {
+			RETVAL_TRUE;
+		}
+	}
+
+	if (s != dirname) {
+		efree(s);
+	}
 }
 /* }}} */
 
@@ -1936,6 +2014,7 @@ static PHP_MINIT_FUNCTION(zip)
 
 	zip_object_handlers.get_properties = php_zip_get_properties;
 	zip_object_handlers.read_property	= php_zip_read_property;
+	zip_object_handlers.has_property	= php_zip_has_property;
 
 	INIT_CLASS_ENTRY(ce, "ZipArchive", zip_class_functions);
 	ce.create_object = php_zip_object_new;
@@ -2022,7 +2101,7 @@ static PHP_MINFO_FUNCTION(zip)
 	php_info_print_table_start();
 
 	php_info_print_table_row(2, "Zip", "enabled");
-	php_info_print_table_row(2, "Extension Version","$Id: php_zip.c,v 1.1.2.33 2007/05/19 22:25:11 pajoye Exp $");
+	php_info_print_table_row(2, "Extension Version","$Id: php_zip.c,v 1.1.2.38 2007/08/06 22:02:32 bjori Exp $");
 	php_info_print_table_row(2, "Zip version", "2.0.0");
 	php_info_print_table_row(2, "Libzip version", "0.7.1");
 

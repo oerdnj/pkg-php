@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_dbh.c,v 1.82.2.31.2.11 2007/05/16 19:33:57 iliaa Exp $ */
+/* $Id: pdo_dbh.c,v 1.82.2.31.2.15 2007/07/16 18:00:18 iliaa Exp $ */
 
 /* The PDO Database Handle Class */
 
@@ -280,7 +280,7 @@ static PHP_METHOD(PDO, dbh_constructor)
 		pdo_dbh_t *pdbh = NULL;
 
 		if (SUCCESS == zend_hash_index_find(Z_ARRVAL_P(options), PDO_ATTR_PERSISTENT, (void**)&v)) {
-			if (Z_TYPE_PP(v) == IS_STRING) {
+			if (Z_TYPE_PP(v) == IS_STRING && !is_numeric_string(Z_STRVAL_PP(v), Z_STRLEN_PP(v), NULL, NULL, 0) && Z_STRLEN_PP(v) > 0) {
 				/* user specified key */
 				plen = spprintf(&hashkey, 0, "PDO:DBH:DSN=%s:%s:%s:%s", data_source,
 						username ? username : "",
@@ -366,7 +366,7 @@ static PHP_METHOD(PDO, dbh_constructor)
 
 	if (!call_factory) {
 		/* we got a persistent guy from our cache */
-		return;
+		goto options;
 	}
 
 	if (driver->db_handle_factory(dbh, options TSRMLS_CC)) {
@@ -390,7 +390,7 @@ static PHP_METHOD(PDO, dbh_constructor)
 		}
 
 		dbh->driver = driver;
-
+options:
 		if (options) {
 			zval **attr_value;
 			char *str_key;
@@ -398,14 +398,14 @@ static PHP_METHOD(PDO, dbh_constructor)
 			
 			zend_hash_internal_pointer_reset(Z_ARRVAL_P(options));
 			while (SUCCESS == zend_hash_get_current_data(Z_ARRVAL_P(options), (void**)&attr_value) 
-				  && HASH_KEY_IS_LONG == zend_hash_get_current_key(Z_ARRVAL_P(options), &str_key, &long_key, 0)) {
+				&& HASH_KEY_IS_LONG == zend_hash_get_current_key(Z_ARRVAL_P(options), &str_key, &long_key, 0)) {
 				
 				pdo_dbh_attribute_set(dbh, long_key, *attr_value TSRMLS_CC);
 				zend_hash_move_forward(Z_ARRVAL_P(options));
 			}
 		}
 
-		return;	
+		return;
 	}
 
 	/* the connection failed; things will tidy up in free_storage */
@@ -1423,6 +1423,12 @@ static void dbh_free(pdo_dbh_t *dbh TSRMLS_DC)
 		}
 	}
 
+	if (dbh->properties) {
+		zend_hash_destroy(dbh->properties);
+		efree(dbh->properties);
+		dbh->properties = NULL;
+	}
+
 	pefree(dbh, dbh->is_persistent);
 }
 
@@ -1443,12 +1449,6 @@ static void pdo_dbh_free_storage(pdo_dbh_t *dbh TSRMLS_DC)
 		dbh->in_txn = 0;
 	}
 	
-	if (dbh->properties) {
-		zend_hash_destroy(dbh->properties);
-		efree(dbh->properties);
-		dbh->properties = NULL;
-	}
-
 	if (!dbh->is_persistent) {
 		dbh_free(dbh TSRMLS_CC);
 	} else if (dbh->methods && dbh->methods->persistent_shutdown) {

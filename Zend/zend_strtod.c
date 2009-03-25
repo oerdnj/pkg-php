@@ -89,8 +89,9 @@
  *	directly -- and assumed always to succeed.
  */
 
-/* $Id: zend_strtod.c,v 1.17.2.2.2.11 2007/05/04 16:19:57 tony2001 Exp $ */
+/* $Id: zend_strtod.c,v 1.17.2.2.2.12 2007/07/23 16:17:10 jani Exp $ */
 
+#include <zend_operators.h>
 #include <zend_strtod.h>
 
 #ifdef ZTS

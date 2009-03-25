@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-// $Id: confutils.js,v 1.60.2.1.2.6 2007/03/19 03:15:48 edink Exp $
+// $Id: confutils.js,v 1.60.2.1.2.8 2007/07/26 22:45:59 jani Exp $
 
 var STDOUT = WScript.StdOut;
 var STDERR = WScript.StdErr;
@@ -53,18 +53,18 @@ function get_version_numbers()
 {
 	var cin = file_get_contents("configure.in");
 	
-	if (cin.match(new RegExp("MAJOR_VERSION=(\\d+)"))) {
+	if (cin.match(new RegExp("PHP_MAJOR_VERSION=(\\d+)"))) {
 		PHP_VERSION = RegExp.$1;
 	}
-	if (cin.match(new RegExp("MINOR_VERSION=(\\d+)"))) {
+	if (cin.match(new RegExp("PHP_MINOR_VERSION=(\\d+)"))) {
 		PHP_MINOR_VERSION = RegExp.$1;
 	}
-	if (cin.match(new RegExp("RELEASE_VERSION=(\\d+)"))) {
+	if (cin.match(new RegExp("PHP_RELEASE_VERSION=(\\d+)"))) {
 		PHP_RELEASE_VERSION = RegExp.$1;
 	}
 	PHP_VERSION_STRING = PHP_VERSION + "." + PHP_MINOR_VERSION + "." + PHP_RELEASE_VERSION;
 
-	if (cin.match(new RegExp("EXTRA_VERSION=\"([^\"]+)\""))) {
+	if (cin.match(new RegExp("PHP_EXTRA_VERSION=\"([^\"]+)\""))) {
 		PHP_EXTRA_VERSION = RegExp.$1;
 		if (PHP_EXTRA_VERSION.length) {
 			PHP_VERSION_STRING += PHP_EXTRA_VERSION;
@@ -860,7 +860,19 @@ function generate_version_info_resource(makefiletarget, creditspath)
 	if (makefiletarget.match(new RegExp("\\.exe$"))) {
 		logo = " /D WANT_LOGO ";
 	}
-	
+
+	/**
+	 * Use user supplied template.rc if it exists
+	 */
+	if (FSO.FileExists(creditspath + '\\template.rc')) {
+		MFO.WriteLine("$(BUILD_DIR)\\" + resname + ": " + creditspath + "\\template.rc");
+		MFO.WriteLine("\t$(RC) /fo $(BUILD_DIR)\\" + resname + logo +
+		   	' /d FILE_DESCRIPTION="\\"' + res_desc + '\\"" /d FILE_NAME="\\"' + makefiletarget +
+	   		'\\"" /d PRODUCT_NAME="\\"' + res_prod_name + '\\"" /d THANKS_GUYS="\\"' +
+			thanks + '\\"" ' + creditspath + '\\template.rc');
+		return resname;
+	}
+
 	MFO.WriteLine("$(BUILD_DIR)\\" + resname + ": win32\\build\\template.rc");
 	MFO.WriteLine("\t$(RC) /fo $(BUILD_DIR)\\" + resname + logo +
 	   	' /d FILE_DESCRIPTION="\\"' + res_desc + '\\"" /d FILE_NAME="\\"' + makefiletarget +

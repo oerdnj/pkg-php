@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_globals.h,v 1.98.2.1.2.5 2007/03/02 21:58:05 stas Exp $ */
+/* $Id: php_globals.h,v 1.98.2.1.2.7 2007/07/24 14:21:36 jani Exp $ */
 
 #ifndef PHP_GLOBALS_H
 #define PHP_GLOBALS_H
@@ -33,7 +33,11 @@ extern PHPAPI int core_globals_id;
 extern ZEND_API struct _php_core_globals core_globals;
 #endif
 
+/* Error display modes */
+#define PHP_DISPLAY_ERRORS_STDOUT	1
+#define PHP_DISPLAY_ERRORS_STDERR	2
 
+/* Track vars */
 #define TRACK_VARS_POST		0
 #define TRACK_VARS_GET		1
 #define TRACK_VARS_COOKIE	2
@@ -156,6 +160,7 @@ struct _php_core_globals {
 	zend_bool com_initialized;
 #endif
 	long max_input_nesting_level;
+	zend_bool in_user_include;
 };
 
 

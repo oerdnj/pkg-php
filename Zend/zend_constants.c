@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_constants.c,v 1.71.2.5.2.5 2007/04/04 00:42:42 iliaa Exp $ */
+/* $Id: zend_constants.c,v 1.71.2.5.2.7 2007/07/27 16:29:11 dmitry Exp $ */
 
 #include "zend.h"
 #include "zend_constants.h"
@@ -259,18 +259,19 @@ ZEND_API int zend_get_constant_ex(char *name, uint name_len, zval *result, zend_
 				retval = 0;
 			}
 		}
-		efree(class_name);
 
 		if (retval && ce) {
 			if (zend_hash_find(&((*ce)->constants_table), constant_name, const_name_len+1, (void **) &ret_constant) != SUCCESS) {
 				retval = 0;
 			}
 		} else {
+			zend_error(E_ERROR, "Class '%s' not found", class_name);
 			retval = 0;
 		}
+		efree(class_name);
 
 		if (retval) {
-			zval_update_constant(ret_constant, (void*)1 TSRMLS_CC);
+			zval_update_constant_ex(ret_constant, (void*)1, *ce TSRMLS_CC);
 			*result = **ret_constant;
 			zval_copy_ctor(result);
 		}

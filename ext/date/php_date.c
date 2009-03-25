@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_date.c,v 1.43.2.45.2.45 2007/04/13 14:09:20 derick Exp $ */
+/* $Id: php_date.c,v 1.43.2.45.2.51 2007/07/12 18:59:05 derick Exp $ */
 
 #include "php.h"
 #include "php_streams.h"
@@ -578,16 +578,18 @@ static char* guess_timezone(const timelib_tzdb *tzdb TSRMLS_DC)
 	{
 		struct tm *ta, tmbuf;
 		time_t     the_time;
-		char      *tzid;
+		char      *tzid = NULL;
 		
 		the_time = time(NULL);
 		ta = php_localtime_r(&the_time, &tmbuf);
-		tzid = timelib_timezone_id_from_abbr(ta->tm_zone, ta->tm_gmtoff, ta->tm_isdst);
+		if (ta) {
+			tzid = timelib_timezone_id_from_abbr(ta->tm_zone, ta->tm_gmtoff, ta->tm_isdst);
+		}
 		if (! tzid) {
 			tzid = "UTC";
 		}
 		
-		php_error_docref(NULL TSRMLS_CC, E_STRICT, DATE_TZ_ERRMSG "We selected '%s' for '%s/%.1f/%s' instead", tzid, ta->tm_zone, (float) (ta->tm_gmtoff / 3600), ta->tm_isdst ? "DST" : "no DST");
+		php_error_docref(NULL TSRMLS_CC, E_STRICT, DATE_TZ_ERRMSG "We selected '%s' for '%s/%.1f/%s' instead", tzid, ta ? ta->tm_zone : "Unknown", ta ? (float) (ta->tm_gmtoff / 3600) : 0, ta ? (ta->tm_isdst ? "DST" : "no DST") : "Unknown");
 		return tzid;
 	}
 #endif
@@ -773,7 +775,7 @@ static char *date_format(char *format, int format_len, timelib_time *t, int loca
 			/* year */
 			case 'L': length = slprintf(buffer, 32, "%d", timelib_is_leap((int) t->y)); break;
 			case 'y': length = slprintf(buffer, 32, "%02d", (int) t->y % 100); break;
-			case 'Y': length = slprintf(buffer, 32, "%04d", (int) t->y); break;
+			case 'Y': length = slprintf(buffer, 32, "%s%04d", t->y < 0 ? "-" : "", abs((int) t->y)); break;
 
 			/* time */
 			case 'a': length = slprintf(buffer, 32, "%s", t->h >= 12 ? "pm" : "am"); break;
@@ -1738,7 +1740,7 @@ PHP_FUNCTION(date_parse)
 	parsed_time = timelib_strtotime(date, date_len, &error, DATE_TIMEZONEDB);
 	array_init(return_value);
 #define PHP_DATE_PARSE_DATE_SET_TIME_ELEMENT(name, elem) \
-	if (parsed_time->elem == -1) {               \
+	if (parsed_time->elem == -99999) {               \
 		add_assoc_bool(return_value, #name, 0); \
 	} else {                                       \
 		add_assoc_long(return_value, #name, parsed_time->elem); \
@@ -1750,7 +1752,7 @@ PHP_FUNCTION(date_parse)
 	PHP_DATE_PARSE_DATE_SET_TIME_ELEMENT(minute,    i);
 	PHP_DATE_PARSE_DATE_SET_TIME_ELEMENT(second,    s);
 	
-	if (parsed_time->f == -1) {
+	if (parsed_time->f == -99999) {
 		add_assoc_bool(return_value, "fraction", 0);
 	} else {
 		add_assoc_double(return_value, "fraction", parsed_time->f);
@@ -2327,12 +2329,11 @@ static void php_do_date_sunrise_sunset(INTERNAL_FUNCTION_PARAMETERS, int calc_su
 		RETURN_LONG(calc_sunset ? set : rise);
 	}
 	N = (calc_sunset ? h_set : h_rise) + gmt_offset;
-	while (N > 24) {
-		N -= 24;
+
+	if (N > 24 || N < 0) {
+		N -= floor(N / 24) * 24;
 	}
-	while (N < 0) {
-		N += 24;
-	}
+
 	switch (retformat) {
 		case SUNFUNCS_RET_STRING:
 			spprintf(&retstr, 0, "%02d:%02d", (int) N, (int) (60 * (N - (int) N)));

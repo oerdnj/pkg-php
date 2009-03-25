@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: string.c,v 1.445.2.14.2.58 2007/05/30 00:33:13 iliaa Exp $ */
+/* $Id: string.c,v 1.445.2.14.2.67 2007/08/05 14:47:42 iliaa Exp $ */
 
 /* Synced with php 3.0 revision 1.193 1999-06-16 [ssb] */
 
@@ -204,7 +204,7 @@ PHP_FUNCTION(bin2hex)
 }
 /* }}} */
 
-static void php_spn_common_handler(INTERNAL_FUNCTION_PARAMETERS, int behavior)
+static void php_spn_common_handler(INTERNAL_FUNCTION_PARAMETERS, int behavior) /* {{{ */
 {
 	char *s11, *s22;
 	int len1, len2;
@@ -239,8 +239,12 @@ static void php_spn_common_handler(INTERNAL_FUNCTION_PARAMETERS, int behavior)
 		}
 	}
 	
-	if ((start + len) > len1) {
+	if (len > len1 - start) {
 		len = len1 - start;
+	}
+
+	if(len == 0) {
+		RETURN_LONG(0);
 	}
 
 	if (behavior == STR_STRSPN) {
@@ -256,6 +260,7 @@ static void php_spn_common_handler(INTERNAL_FUNCTION_PARAMETERS, int behavior)
 	}
 	
 }
+/* }}} */
 
 /* {{{ proto int strspn(string str, string mask [, start [, len]])
    Finds length of initial segment consisting entirely of characters found in mask. If start or/and length is provided works like strspn(substr($s,$start,$len),$good_chars) */
@@ -648,6 +653,11 @@ PHP_FUNCTION(wordwrap)
 		RETURN_EMPTY_STRING();
 	}
 
+	if (breakcharlen == 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Break string cannot be empty");
+		RETURN_FALSE;
+	}
+
 	if (linelength == 0 && docut) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Can't force cut when width is zero.");
 		RETURN_FALSE;
@@ -830,7 +840,6 @@ PHPAPI void php_explode_negative_limit(zval *delim, zval *str, zval *return_valu
 #undef EXPLODE_ALLOC_STEP
 }
 /* }}} */
-
 
 /* {{{ proto array explode(string separator, string str [, int limit])
    Splits a string on string separator and return array of components. If limit is positive only limit number of components is returned. If limit is negative all components except the last abs(limit) are returned. */
@@ -1856,12 +1865,11 @@ PHP_FUNCTION(strripos)
 			e = haystack + haystack_len - 1;
 		} else {
 			p = haystack;
-			if (-offset > haystack_len || -offset < 0) {
+			if (-offset > haystack_len || offset < -INT_MAX) {
 				php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Offset is greater than the length of haystack string");
 				RETURN_FALSE;
-			} else {
-				e = haystack + haystack_len + offset;
 			}
+			e = haystack + haystack_len + offset;
 		}
 		/* Borrow that ord_needle buffer to avoid repeatedly tolower()ing needle */
 		*ord_needle = tolower(*needle);
@@ -1889,7 +1897,7 @@ PHP_FUNCTION(strripos)
 		p = haystack_dup + offset;
 		e = haystack_dup + haystack_len - needle_len;
 	} else {
-		if (-offset > haystack_len || -offset < 0) {
+		if (-offset > haystack_len || offset < -INT_MAX) {
 			efree(needle_dup);
 			efree(haystack_dup);
 			php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Offset is greater than the length of haystack string");
@@ -1961,13 +1969,20 @@ static char *php_chunk_split(char *src, int srclen, char *end, int endlen, int c
 	chunks = srclen / chunklen;
 	restlen = srclen - chunks * chunklen; /* srclen % chunklen */
 
-	out_len = (srclen + (chunks + 1) * endlen + 1);
-
-	if (out_len > INT_MAX || out_len <= 0) {
+	if(chunks > INT_MAX - 1) {
 		return NULL;
 	}
+	out_len = chunks + 1;
+	if(endlen !=0 && out_len > INT_MAX/endlen) {
+		return NULL;
+	}
+	out_len *= endlen;
+	if(out_len > INT_MAX - srclen - 1) {
+		return NULL;
+	}
+	out_len += srclen + 1;
 
-	dest = safe_emalloc(out_len, sizeof(char), 0);
+	dest = safe_emalloc((int)out_len, sizeof(char), 0);
 
 	for (p = src, q = dest; p < (src + srclen - chunklen + 1); ) {
 		memcpy(q, p, chunklen);
@@ -2120,7 +2135,6 @@ PHP_FUNCTION(substr)
 }
 /* }}} */
 
-
 /* {{{ proto mixed substr_replace(mixed str, mixed repl, mixed start [, mixed length])
    Replaces part of a string with another string */
 PHP_FUNCTION(substr_replace)
@@ -2154,6 +2168,7 @@ PHP_FUNCTION(substr_replace)
 	}
 
 	if (argc > 3) {
+		SEPARATE_ZVAL(len);
 		if (Z_TYPE_PP(len) != IS_ARRAY) {
 			convert_to_long_ex(len);
 			l = Z_LVAL_PP(len);
@@ -2212,7 +2227,7 @@ PHP_FUNCTION(substr_replace)
 			if (f > Z_STRLEN_PP(str) || (f < 0 && -f > Z_STRLEN_PP(str))) {
 				RETURN_FALSE;
 			} else if (l > Z_STRLEN_PP(str) || (l < 0 && -l > Z_STRLEN_PP(str))) {
-				RETURN_FALSE;
+				l = Z_STRLEN_PP(str);
 			}
 
 			if ((f + l) > Z_STRLEN_PP(str)) {
@@ -2351,9 +2366,6 @@ PHP_FUNCTION(substr_replace)
 	} /* if */
 }
 /* }}} */
-
-
-
 
 /* {{{ proto string quotemeta(string str)
    Quotes meta characters */
@@ -3400,8 +3412,7 @@ PHPAPI char *php_str_to_str(char *haystack, int length,
 {
 	return php_str_to_str_ex(haystack, length, needle, needle_len, str, str_len, _new_length, 1, NULL);
 } 
-/* }}}
- */
+/* }}} */
 
 /* {{{ php_str_replace_in_subject
  */
@@ -3810,7 +3821,6 @@ PHP_FUNCTION(hebrevc)
 }
 /* }}} */
 
-
 /* {{{ proto string nl2br(string str)
    Converts newlines to HTML line breaks */
 PHP_FUNCTION(nl2br)
@@ -3885,7 +3895,6 @@ PHP_FUNCTION(nl2br)
 	RETURN_STRINGL(tmp, new_length, 0);
 }
 /* }}} */
-
 
 /* {{{ proto string strip_tags(string str [, string allowable_tags])
    Strips HTML and PHP tags from a string */
@@ -4125,10 +4134,11 @@ int php_tag_find(char *tag, int len, char *set) {
 }
 /* }}} */
 
-PHPAPI size_t php_strip_tags(char *rbuf, int len, int *stateptr, char *allow, int allow_len)
+PHPAPI size_t php_strip_tags(char *rbuf, int len, int *stateptr, char *allow, int allow_len) /* {{{ */
 {
 	return php_strip_tags_ex(rbuf, len, stateptr, allow, allow_len, 0);
 }
+/* }}} */
 
 /* {{{ php_strip_tags
  
@@ -4737,7 +4747,7 @@ PHP_FUNCTION(str_pad)
 
 	/* If resulting string turns out to be shorter than input string,
 	   we simply copy the input and return. */
-	if (num_pad_chars < 0) {
+	if (Z_LVAL_PP(pad_length) < 0 || num_pad_chars < 0) {
 		RETURN_ZVAL(*input, 1, 0);
 	}
 
@@ -4852,8 +4862,7 @@ PHP_FUNCTION(str_rot13)
 }
 /* }}} */
 
-
-static void php_string_shuffle(char *str, long len TSRMLS_DC)
+static void php_string_shuffle(char *str, long len TSRMLS_DC) /* {{{ */
 {
 	long n_elems, rnd_idx, n_left;
 	char temp;
@@ -4877,7 +4886,7 @@ static void php_string_shuffle(char *str, long len TSRMLS_DC)
 		}
 	}
 }
-
+/* }}} */
 
 /* {{{ proto void str_shuffle(string str)
    Shuffles string. One permutation of all possible is created */
@@ -4990,11 +4999,26 @@ PHP_FUNCTION(str_word_count)
 PHP_FUNCTION(money_format)
 {
 	int format_len = 0, str_len;
-	char *format, *str;
+	char *format, *str, *p, *e;
 	double value;
+	zend_bool check = 0;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sd", &format, &format_len, &value) == FAILURE) {
 		return;
+	}
+
+	p = format;
+	e = p + format_len;
+	while ((p = memchr(p, '%', (e - p)))) {
+		if (*(p + 1) == '%') {
+			p += 2;	
+		} else if (!check) {
+			check = 1;
+			p++;
+		} else {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Only a single %%i or %%n token can be used");
+			RETURN_FALSE;
+		}
 	}
 
 	str_len = format_len + 1024;

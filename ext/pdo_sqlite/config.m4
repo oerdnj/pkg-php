@@ -1,11 +1,13 @@
-dnl $Id: config.m4,v 1.26.2.9.2.5 2007/04/10 11:32:48 tony2001 Exp $
+dnl $Id: config.m4,v 1.26.2.9.2.7 2007/07/03 17:25:35 sniper Exp $
 dnl config.m4 for extension pdo_sqlite
 dnl vim:et:sw=2:ts=2:
 
 if test "$PHP_PDO" != "no"; then
 
 PHP_ARG_WITH(pdo-sqlite, for sqlite 3 support for PDO,
-[  --without-pdo-sqlite[=DIR]   PDO: sqlite support. DIR is the sqlite base directory, the bundled sqlite is used by default],yes)
+[  --without-pdo-sqlite[=DIR]
+                            PDO: sqlite 3 support.  DIR is the sqlite base
+                            install directory [BUNDLED]], yes)
 
 if test "$PHP_PDO_SQLITE" != "no"; then
 
@@ -118,10 +120,10 @@ if test "$PHP_PDO_SQLITE" != "no"; then
 EOF
       AC_CHECK_FUNCS(usleep nanosleep)
       AC_CHECK_HEADERS(time.h)
-      
-      dnl Solaris fix
-      PHP_CHECK_LIBRARY(rt, fdatasync, [PHP_ADD_LIBRARY(rt,, PDO_SQLITE_SHARED_LIBADD)])
   fi
+      
+  dnl Solaris fix
+  PHP_CHECK_LIBRARY(rt, fdatasync, [PHP_ADD_LIBRARY(rt,, PDO_SQLITE_SHARED_LIBADD)])
 
   ifdef([PHP_ADD_EXTENSION_DEP],
   [

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: libxml.c,v 1.32.2.7.2.11 2007/02/23 11:12:49 rrichards Exp $ */
+/* $Id: libxml.c,v 1.32.2.7.2.15 2007/08/01 11:43:05 tony2001 Exp $ */
 
 #define IS_EXT_MODULE
 
@@ -122,7 +122,7 @@ static zend_function_entry libxml_functions[] = {
 };
 
 zend_module_entry libxml_module_entry = {
-    STANDARD_MODULE_HEADER,
+	STANDARD_MODULE_HEADER,
 	"libxml",                /* extension name */
 	libxml_functions,        /* extension function list */
 	PHP_MINIT(libxml),       /* extension-wide startup function */
@@ -130,11 +130,11 @@ zend_module_entry libxml_module_entry = {
 	PHP_RINIT(libxml),       /* per-request startup function */
 	PHP_RSHUTDOWN(libxml),   /* per-request shutdown function */
 	PHP_MINFO(libxml),       /* information function */
-    NO_VERSION_YET,
-    PHP_MODULE_GLOBALS(libxml), /* globals descriptor */
-    PHP_GINIT(libxml),          /* globals ctor */
-    NULL,                       /* globals dtor */
-    NULL,                       /* post deactivate */
+	NO_VERSION_YET,
+	PHP_MODULE_GLOBALS(libxml), /* globals descriptor */
+	PHP_GINIT(libxml),          /* globals ctor */
+	NULL,                       /* globals dtor */
+	NULL,                       /* post deactivate */
 	STANDARD_MODULE_PROPERTIES_EX
 };
 
@@ -240,11 +240,14 @@ static void php_libxml_node_free_list(xmlNodePtr node TSRMLS_DC)
 				case XML_ENTITY_REF_NODE:
 					php_libxml_node_free_list((xmlNodePtr) node->properties TSRMLS_CC);
 					break;
+				case XML_ATTRIBUTE_NODE:
+    					if ((node->doc != NULL) && (((xmlAttrPtr) node)->atype == XML_ATTRIBUTE_ID)) {
+	    					xmlRemoveID(node->doc, (xmlAttrPtr) node);
+    					}
 				case XML_ATTRIBUTE_DECL:
 				case XML_DTD_NODE:
 				case XML_DOCUMENT_TYPE_NODE:
 				case XML_ENTITY_DECL:
-				case XML_ATTRIBUTE_NODE:
 				case XML_NAMESPACE_DECL:
 				case XML_TEXT_NODE:
 					php_libxml_node_free_list(node->children TSRMLS_CC);
@@ -363,10 +366,10 @@ static int php_libxml_streams_IO_close(void *context)
 static xmlParserInputBufferPtr
 php_libxml_input_buffer_create_filename(const char *URI, xmlCharEncoding enc)
 {
-    xmlParserInputBufferPtr ret;
-    void *context = NULL;
+	xmlParserInputBufferPtr ret;
+	void *context = NULL;
 
-    if (URI == NULL)
+	if (URI == NULL)
 		return(NULL);
 
 	context = php_libxml_streams_IO_open_read_wrapper(URI);
@@ -392,10 +395,10 @@ php_libxml_output_buffer_create_filename(const char *URI,
                               xmlCharEncodingHandlerPtr encoder,
                               int compression ATTRIBUTE_UNUSED)
 {
-    xmlOutputBufferPtr ret;
-    xmlURIPtr puri;
-    void *context = NULL;
-    char *unescaped = NULL;
+	xmlOutputBufferPtr ret;
+	xmlURIPtr puri;
+	void *context = NULL;
+	char *unescaped = NULL;
 
 	if (URI == NULL)
 		return(NULL);
@@ -432,7 +435,8 @@ php_libxml_output_buffer_create_filename(const char *URI,
 	return(ret);
 }
 
-static int _php_libxml_free_error(xmlErrorPtr error) {
+static int _php_libxml_free_error(xmlErrorPtr error)
+{
 	/* This will free the libxml alloc'd memory */
 	xmlResetError(error);
 	return 1;
@@ -566,7 +570,8 @@ PHP_LIBXML_API void php_libxml_error_handler(void *ctx, const char *msg, ...)
 }
 
 
-PHP_LIBXML_API void php_libxml_initialize() {
+PHP_LIBXML_API void php_libxml_initialize(void)
+{
 	if (!_php_libxml_initialized) {
 		/* we should be the only one's to ever init!! */
 		xmlInitParser();
@@ -577,7 +582,8 @@ PHP_LIBXML_API void php_libxml_initialize() {
 	}
 }
 
-PHP_LIBXML_API void php_libxml_shutdown() {
+PHP_LIBXML_API void php_libxml_shutdown(void)
+{
 	if (_php_libxml_initialized) {
 #if defined(LIBXML_SCHEMAS_ENABLED)
 		xmlRelaxNGCleanupTypes();
@@ -588,7 +594,8 @@ PHP_LIBXML_API void php_libxml_shutdown() {
 	}
 }
 
-PHP_LIBXML_API zval *php_libxml_switch_context(zval *context TSRMLS_DC) {
+PHP_LIBXML_API zval *php_libxml_switch_context(zval *context TSRMLS_DC)
+{
 	zval *oldcontext;
 
 	oldcontext = LIBXML(stream_context);
@@ -643,7 +650,7 @@ static PHP_RINIT_FUNCTION(libxml)
 	xmlSetGenericErrorFunc(NULL, php_libxml_error_handler);
 	xmlParserInputBufferCreateFilenameDefault(php_libxml_input_buffer_create_filename);
 	xmlOutputBufferCreateFilenameDefault(php_libxml_output_buffer_create_filename);
-    return SUCCESS;
+	return SUCCESS;
 }
 
 
@@ -674,6 +681,7 @@ static PHP_RSHUTDOWN_FUNCTION(libxml)
 		efree(LIBXML(error_list));
 		LIBXML(error_list) = NULL;
 	}
+	xmlResetLastError();
 
 	return SUCCESS;
 }
@@ -820,7 +828,7 @@ static PHP_FUNCTION(libxml_get_errors)
 /* }}} */
 
 /* {{{ proto void libxml_clear_errors() 
-    Clear last error from libxml */
+   Clear last error from libxml */
 static PHP_FUNCTION(libxml_clear_errors)
 {
 	xmlResetLastError();
@@ -865,7 +873,7 @@ int php_libxml_register_export(zend_class_entry *ce, php_libxml_export_node expo
 	php_libxml_initialize();
 	export_hnd.export_func = export_function;
 
-    return zend_hash_add(&php_libxml_exports, ce->name, ce->name_length + 1, &export_hnd, sizeof(export_hnd), NULL);
+	return zend_hash_add(&php_libxml_exports, ce->name, ce->name_length + 1, &export_hnd, sizeof(export_hnd), NULL);
 }
 
 PHP_LIBXML_API xmlNodePtr php_libxml_import_node(zval *object TSRMLS_DC)
@@ -882,13 +890,11 @@ PHP_LIBXML_API xmlNodePtr php_libxml_import_node(zval *object TSRMLS_DC)
 		if (zend_hash_find(&php_libxml_exports, ce->name, ce->name_length + 1, (void **) &export_hnd)  == SUCCESS) {
 			node = export_hnd->export_func(object TSRMLS_CC);
 		}
-    }
-
+	}
 	return node;
-
 }
 
-int php_libxml_increment_node_ptr(php_libxml_node_object *object, xmlNodePtr node, void *private_data TSRMLS_DC)
+PHP_LIBXML_API int php_libxml_increment_node_ptr(php_libxml_node_object *object, xmlNodePtr node, void *private_data TSRMLS_DC)
 {
 	int ret_refcount = -1;
 
@@ -920,7 +926,8 @@ int php_libxml_increment_node_ptr(php_libxml_node_object *object, xmlNodePtr nod
 	return ret_refcount;
 }
 
-int php_libxml_decrement_node_ptr(php_libxml_node_object *object TSRMLS_DC) {
+PHP_LIBXML_API int php_libxml_decrement_node_ptr(php_libxml_node_object *object TSRMLS_DC)
+{
 	int ret_refcount = -1;
 	php_libxml_node_ptr *obj_node;
 
@@ -939,7 +946,8 @@ int php_libxml_decrement_node_ptr(php_libxml_node_object *object TSRMLS_DC) {
 	return ret_refcount;
 }
 
-int php_libxml_increment_doc_ref(php_libxml_node_object *object, xmlDocPtr docp TSRMLS_DC) {
+PHP_LIBXML_API int php_libxml_increment_doc_ref(php_libxml_node_object *object, xmlDocPtr docp TSRMLS_DC)
+{
 	int ret_refcount = -1;
 
 	if (object->document != NULL) {
@@ -956,7 +964,8 @@ int php_libxml_increment_doc_ref(php_libxml_node_object *object, xmlDocPtr docp 
 	return ret_refcount;
 }
 
-int php_libxml_decrement_doc_ref(php_libxml_node_object *object TSRMLS_DC) {
+PHP_LIBXML_API int php_libxml_decrement_doc_ref(php_libxml_node_object *object TSRMLS_DC)
+{
 	int ret_refcount = -1;
 
 	if (object != NULL && object->document != NULL) {

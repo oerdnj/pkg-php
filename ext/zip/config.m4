@@ -1,13 +1,13 @@
 dnl
-dnl $Id: config.m4,v 1.8.2.2 2006/12/26 09:52:05 pajoye Exp $
+dnl $Id: config.m4,v 1.8.2.3 2007/07/03 17:25:35 sniper Exp $
 dnl
 
 PHP_ARG_ENABLE(zip, for zip archive read/writesupport,
-[  --enable-zip        Include Zip read/write support.])
+[  --enable-zip            Include Zip read/write support])
 
 if test -z "$PHP_ZLIB_DIR"; then
 PHP_ARG_WITH(zlib-dir, for the location of libz,
-[  --with-zlib-dir[=DIR]   zip: Set the path to libz install prefix.], no, no)
+[  --with-zlib-dir[=DIR]     ZIP: Set the path to libz install prefix], no, no)
 fi
 
 if test "$PHP_ZIP" != "no"; then

@@ -1,5 +1,5 @@
 dnl
-dnl $Id: acinclude.m4,v 1.332.2.14.2.15 2007/05/24 21:40:41 sniper Exp $
+dnl $Id: acinclude.m4,v 1.332.2.14.2.26 2007/08/20 14:28:45 jani Exp $
 dnl
 dnl This file contains local autoconf functions.
 dnl
@@ -323,6 +323,9 @@ else
     ld_runpath_switch=-L
   fi
 fi
+if test "$PHP_RPATH" = "no"; then
+  ld_runpath_switch=
+fi
 ])
 
 dnl
@@ -447,7 +450,8 @@ AC_DEFUN([PHP_ADD_LIBPATH],[
       _PHP_ADD_LIBPATH_GLOBAL([$ai_p])
     ],[
       if test "$ext_shared" = "yes"; then
-        $2="$ld_runpath_switch$ai_p -L$ai_p [$]$2"
+        $2="-L$ai_p [$]$2"
+        test -n "$ld_runpath_switch" && $2="$ld_runpath_switch$ai_p [$]$2"
       else
         _PHP_ADD_LIBPATH_GLOBAL([$ai_p])
       fi
@@ -696,6 +700,7 @@ dnl If extension-or-not is yes (default), then do the ENABLE_ALL check and run
 dnl the PHP_ARG_ANALYZE_EX.
 dnl
 AC_DEFUN([PHP_ARG_WITH],[
+php_with_[]translit($1,A-Z0-9-,a-z0-9_)=ifelse($4,,no,$4)
 PHP_REAL_ARG_WITH([$1],[$2],[$3],[$4],PHP_[]translit($1,a-z0-9-,A-Z0-9_),[ifelse($5,,yes,$5)])
 ])
 
@@ -723,7 +728,8 @@ dnl If extension-or-not is yes (default), then do the ENABLE_ALL check and run
 dnl the PHP_ARG_ANALYZE_EX.
 dnl
 AC_DEFUN([PHP_ARG_ENABLE],[
-PHP_REAL_ARG_ENABLE([$1],[$2],[$3],[$4],PHP_[]translit($1,a-z-,A-Z_),[ifelse($5,,yes,$5)])
+php_enable_[]translit($1,A-Z0-9-,a-z0-9_)=ifelse($4,,no,$4)
+PHP_REAL_ARG_ENABLE([$1],[$2],[$3],[$4],PHP_[]translit($1,a-z0-9-,A-Z0-9_),[ifelse($5,,yes,$5)])
 ])
 
 dnl PHP_REAL_ARG_ENABLE
@@ -744,16 +750,6 @@ PHP_ARG_ANALYZE($5,[$2],$6)
 dnl -------------------------------------------------------------------------
 dnl Build macros
 dnl -------------------------------------------------------------------------
-
-dnl
-dnl PHP_SET_SYM_FILE(path)
-dnl
-dnl set the path of the file which contains the symbol export list
-dnl
-AC_DEFUN([PHP_SET_SYM_FILE],
-[
-  PHP_SYM_FILE=$1
-])
 
 dnl
 dnl PHP_BUILD_THREAD_SAFE
@@ -781,7 +777,7 @@ dnl PHP_BUILD_SHARED
 dnl
 AC_DEFUN([PHP_BUILD_SHARED],[
   PHP_BUILD_PROGRAM
-  OVERALL_TARGET=libphp5.la
+  OVERALL_TARGET=libphp[]$PHP_MAJOR_VERSION[.la]
   php_build_target=shared
   
   php_c_pre=$shared_c_pre
@@ -798,7 +794,7 @@ dnl PHP_BUILD_STATIC
 dnl
 AC_DEFUN([PHP_BUILD_STATIC],[
   PHP_BUILD_PROGRAM
-  OVERALL_TARGET=libphp5.la
+  OVERALL_TARGET=libphp[]$PHP_MAJOR_VERSION[.la]
   php_build_target=static
 ])
 
@@ -807,7 +803,7 @@ dnl PHP_BUILD_BUNDLE
 dnl
 AC_DEFUN([PHP_BUILD_BUNDLE],[
   PHP_BUILD_PROGRAM
-  OVERALL_TARGET=libs/libphp5.bundle
+  OVERALL_TARGET=libs/libphp[]$PHP_MAJOR_VERSION[.bundle]
   php_build_target=static
 ])
 
@@ -1033,6 +1029,86 @@ but you've either not enabled $2, or have disabled it.
 dnl -------------------------------------------------------------------------
 dnl Checks for structures, typedefs, broken functions, etc.
 dnl -------------------------------------------------------------------------
+
+dnl Internal helper macros
+dnl
+dnl _PHP_DEF_HAVE_FILE(what, filename)
+AC_DEFUN([_PHP_DEF_HAVE_FILE], [
+  php_def_have_what=HAVE_[]`echo $1 | tr 'abcdefghijklmnopqrstuvwxyz-' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ_' `
+  echo "#define $php_def_have_what 1" >> $2
+])
+dnl
+dnl _PHP_CHECK_SIZEOF(type, cross-value, extra-headers [, found-action [, not-found-action]])
+dnl
+AC_DEFUN([_PHP_CHECK_SIZEOF], [
+  php_cache_value=php_cv_sizeof_[]$1
+  AC_CACHE_VAL(php_cv_sizeof_[]$1, [
+    old_LIBS=$LIBS
+    LIBS=
+    old_LDFLAGS=$LDFLAGS
+    LDFLAGS=
+    AC_TRY_RUN([#include <stdio.h>
+#if STDC_HEADERS
+#include <stdlib.h>
+#include <stddef.h>
+#endif
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+$3
+
+int main()
+{
+	FILE *fp = fopen("conftestval", "w");
+	if (!fp) return(1);
+	fprintf(fp, "%d\n", sizeof($1));
+	return(0);
+}
+  ], [
+    eval $php_cache_value=`cat conftestval`
+  ], [
+    eval $php_cache_value=0
+  ], [
+    ifelse([$2],,[eval $php_cache_value=0], [eval $php_cache_value=$2])
+])
+  LDFLAGS=$old_LDFLAGS
+  LIBS=$old_LIBS
+])
+  if eval test "\$$php_cache_value" != "0"; then
+ifelse([$4],[],:,[$4])
+ifelse([$5],[],,[else $5])
+  fi
+])
+
+dnl
+dnl PHP_CHECK_SIZEOF(type, cross-value, extra-headers)
+dnl
+AC_DEFUN(PHP_CHECK_SIZEOF, [
+  AC_MSG_CHECKING([size of $1])
+  _PHP_CHECK_SIZEOF($1, $2, $3, [
+    AC_DEFINE_UNQUOTED([SIZEOF_]translit($1,a-z,A-Z_), [$]php_cv_sizeof_[]$1, [Size of $1])
+    AC_DEFINE_UNQUOTED([HAVE_]translit($1,a-z,A-Z_), 1, [Whether $1 is available])
+  ])
+  AC_MSG_RESULT([[$][php_cv_sizeof_]translit($1, ,_)])
+])
+
+dnl
+dnl PHP_CHECK_TYPES(type-list, include-file [, extra-headers])
+dnl
+AC_DEFUN([PHP_CHECK_TYPES], [
+  for php_typename in $1; do
+    AC_MSG_CHECKING([whether $php_typename exists])
+    _PHP_CHECK_SIZEOF($php_typename, 0, $3, [
+      _PHP_DEF_HAVE_FILE($php_typename, $2)
+      AC_MSG_RESULT([yes])
+    ], [
+      AC_MSG_RESULT([no])
+    ])
+  done
+])
 
 dnl
 dnl PHP_CHECK_IN_ADDR_T
@@ -1963,9 +2039,6 @@ dnl
 AC_DEFUN([PHP_PROG_SENDMAIL], [
   PHP_ALT_PATH=/usr/bin:/usr/sbin:/usr/etc:/etc:/usr/ucblib:/usr/lib
   AC_PATH_PROG(PROG_SENDMAIL, sendmail,[], $PATH:$PHP_ALT_PATH)
-  if test -n "$PROG_SENDMAIL"; then
-    AC_DEFINE(HAVE_SENDMAIL,1,[whether you have sendmail])
-  fi
   PHP_SUBST(PROG_SENDMAIL)
 ])
 
@@ -2015,11 +2088,14 @@ dnl
 dnl Search for (f)lex and check it's version
 dnl
 AC_DEFUN([PHP_PROG_LEX], [
-  # we only support certain flex versions
+dnl we only support certain flex versions
   flex_version_list="2.5.4"
    
   AC_PROG_LEX
   if test "$LEX" = "flex"; then
+dnl AC_DECL_YYTEXT is obsolete since autoconf 2.50 and merged into AC_PROG_LEX
+dnl this is what causes that annoying "PHP_PROG_LEX is expanded from" warning with autoconf 2.50+
+dnl it should be removed once we drop support of autoconf 2.13 (if ever)
     AC_DECL_YYTEXT
     :
   fi
@@ -2047,8 +2123,17 @@ AC_DEFUN([PHP_PROG_LEX], [
   
   case $php_cv_flex_version in
     ""|invalid[)]
-      flex_msg="flex versions supported for regeneration of the Zend/PHP parsers: $flex_version_list  (found: $flex_version)."
-      AC_MSG_WARN([$flex_msg])
+      if test -f "$abs_srcdir/Zend/zend_language_scanner.c" && test -f "$abs_srcdir/Zend/zend_ini_scanner.c"; then
+        AC_MSG_WARN([flex versions supported for regeneration of the Zend/PHP parsers: $flex_version_list  (found: $flex_version)])
+      else
+        flex_msg="Supported flex versions are: $flex_version_list"
+        if test "$flex_version" = "none"; then
+          flex_msg="flex not found. flex is required to generate the Zend/PHP parsers! $flex_msg"
+        else
+          flex_msg="Found invalid flex version: $flex_version. $flex_msg"
+        fi
+        AC_MSG_ERROR([$flex_msg])
+      fi
       LEX="exit 0;"
       ;;
   esac
@@ -2064,17 +2149,17 @@ AC_DEFUN([PHP_PROG_RE2C],[
   AC_CHECK_PROG(RE2C, re2c, re2c)
   if test -n "$RE2C"; then
     AC_CACHE_CHECK([for re2c version], php_cv_re2c_version, [
-      re2c_vernum=`echo "" | re2c --vernum 2>/dev/null`
-      if test -z "$re2c_vernum" || test "$re2c_vernum" -lt "911"; then
+      re2c_vernum=`re2c --vernum 2>/dev/null`
+      if test -z "$re2c_vernum" || test "$re2c_vernum" -lt "1200"; then
         php_cv_re2c_version=invalid
       else
-        php_cv_re2c_version="`echo "" | re2c --version | cut -d ' ' -f 2  2>/dev/null` (ok)"
+        php_cv_re2c_version="`re2c --version | cut -d ' ' -f 2  2>/dev/null` (ok)"
       fi 
     ])
   fi
   case $php_cv_re2c_version in
     ""|invalid[)]
-      AC_MSG_WARN([You will need re2c 0.9.11 or later if you want to regenerate PHP parsers.])
+      AC_MSG_WARN([You will need re2c 0.12.0 or later if you want to regenerate PHP parsers.])
       RE2C="exit 0;"
       ;;
   esac
@@ -2084,6 +2169,57 @@ AC_DEFUN([PHP_PROG_RE2C],[
 dnl -------------------------------------------------------------------------
 dnl Common setup macros: PHP_SETUP_<what>
 dnl -------------------------------------------------------------------------
+
+dnl
+dnl PHP_SETUP_ICU([shared-add])
+dnl
+dnl Common setup macro for ICU
+dnl
+AC_DEFUN([PHP_SETUP_ICU],[
+  PHP_ARG_WITH(icu-dir,,
+  [  --with-icu-dir=DIR      Specify where ICU libraries and headers can be found], DEFAULT, no)
+
+  if test "$PHP_ICU_DIR" = "no"; then
+    PHP_ICU_DIR=DEFAULT
+  fi
+
+  if test "$PHP_ICU_DIR" = "DEFAULT"; then
+    dnl Try to find icu-config
+    AC_PATH_PROG(ICU_CONFIG, icu-config, no, [$PATH:/usr/local/bin])
+  else
+    ICU_CONFIG="$PHP_ICU_DIR/bin/icu-config"
+  fi
+
+  AC_MSG_CHECKING([for location of ICU headers and libraries])
+
+  dnl Trust icu-config to know better what the install prefix is..
+  icu_install_prefix=`$ICU_CONFIG --prefix 2> /dev/null`
+  if test "$?" != "0" || test -z "$icu_install_prefix"; then
+    AC_MSG_RESULT([not found])
+    AC_MSG_ERROR([Unable to detect ICU prefix or $ICU_CONFIG failed. Please verify ICU install prefix and make sure icu-config works.])
+  else
+    AC_MSG_RESULT([$icu_install_prefix])
+
+    dnl Check ICU version
+    AC_MSG_CHECKING([for ICU 3.4 or greater])
+    icu_version_full=`$ICU_CONFIG --version`
+    ac_IFS=$IFS
+    IFS="."
+    set $icu_version_full
+    IFS=$ac_IFS
+    icu_version=`expr [$]1 \* 1000 + [$]2`
+    AC_MSG_RESULT([found $icu_version_full])
+
+    if test "$icu_version" -lt "3004"; then
+      AC_MSG_ERROR([ICU version 3.4 or later is required])
+    fi
+
+    ICU_INCS=`$ICU_CONFIG --cppflags-searchpath`
+    ICU_LIBS=`$ICU_CONFIG --ldflags --ldflags-icuio`
+    PHP_EVAL_INCLINE($ICU_INCS)
+    PHP_EVAL_LIBLINE($ICU_LIBS, $1)
+  fi
+])
 
 dnl
 dnl PHP_SETUP_KERBEROS(shared-add [, action-found [, action-not-found]])
@@ -2485,8 +2621,8 @@ dnl
 AC_DEFUN([PHP_CONFIG_NICE],[
   AC_REQUIRE([AC_PROG_EGREP])
   AC_REQUIRE([LT_AC_PROG_SED])
-  PHP_SUBST(EGREP)
-  PHP_SUBST(SED)
+  PHP_SUBST_OLD(EGREP)
+  PHP_SUBST_OLD(SED)
   test -f $1 && mv $1 $1.old
   rm -f $1.old
   cat >$1<<EOF
@@ -2515,43 +2651,74 @@ EOF
        	  break;
         fi
         echo "'[$]arg' \\" >> $1
-        CONFIGURE_COMMAND="$CONFIGURE_COMMAND '[$]arg'"
+        CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS '[$]arg'"
      else
         if test `expr -- $arg : "'--.*"` = 0; then
        	  break;
         fi
         echo "[$]arg \\" >> $1
-        CONFIGURE_COMMAND="$CONFIGURE_COMMAND [$]arg"
+        CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS [$]arg"
      fi
   done
   echo '"[$]@"' >> $1
   chmod +x $1
+  CONFIGURE_COMMAND="$CONFIGURE_COMMAND $CONFIGURE_OPTIONS"
   PHP_SUBST_OLD(CONFIGURE_COMMAND)
+  PHP_SUBST_OLD(CONFIGURE_OPTIONS)
 ])
 
 dnl
-dnl PHP_REGEX
+dnl PHP_CHECK_CONFIGURE_OPTIONS
 dnl
-AC_DEFUN([PHP_REGEX],[
-  if test "$REGEX_TYPE" = "php"; then
-    AC_DEFINE(HAVE_REGEX_T_RE_MAGIC, 1, [ ])
-    AC_DEFINE(HSREGEX,1,[ ])
-    AC_DEFINE(REGEX,1,[ ])
-    PHP_ADD_SOURCES(regex, regcomp.c regexec.c regerror.c regfree.c)
-  elif test "$REGEX_TYPE" = "system"; then
-    AC_DEFINE(REGEX,0,[ ])
-    dnl Check if field re_magic exists in struct regex_t
-    AC_CACHE_CHECK([whether field re_magic exists in struct regex_t], ac_cv_regex_t_re_magic, [
-      AC_TRY_COMPILE([#include <sys/types.h>
-#include <regex.h>], [regex_t rt; rt.re_magic;],
-      [ac_cv_regex_t_re_magic=yes], [ac_cv_regex_t_re_magic=no])
-    ])
-    if test "$ac_cv_regex_t_re_magic" = "yes"; then
-      AC_DEFINE([HAVE_REGEX_T_RE_MAGIC], [ ], 1)
-    fi 
-  fi
-  AC_MSG_CHECKING([which regex library to use])
-  AC_MSG_RESULT([$REGEX_TYPE])
+AC_DEFUN([PHP_CHECK_CONFIGURE_OPTIONS],[
+  for arg in $ac_configure_args; do
+    case $arg in
+      --with-*[)]
+      	arg_name="`echo [$]arg | $SED -e 's/--with-/with-/g' -e 's/=.*//g'`"
+        ;;
+      --without-*[)]
+      	arg_name="`echo [$]arg | $SED -e 's/--without-/with-/g' -e 's/=.*//g'`"
+        ;;
+      --enable-*[)]
+      	arg_name="`echo [$]arg | $SED -e 's/--enable-/enable-/g' -e 's/=.*//g'`"
+        ;;
+      --disable-*[)]
+      	arg_name="`echo [$]arg | $SED -e 's/--disable-/enable-/g' -e 's/=.*//g'`"
+        ;;
+      *[)]
+      	continue
+        ;;
+    esac
+    case $arg_name in
+      # Allow --disable-all / --enable-all
+      enable-all[)];;
+
+      # Allow certain libtool options
+      enable-libtool-lock | with-pic | with-tags | enable-shared | enable-static | enable-fast-install | with-gnu-ld[)];;
+
+      # Allow certain TSRM options
+      with-tsrm-pth | with-tsrm-st | with-tsrm-pthreads[)];;
+
+      # Allow certain Zend options
+      with-zend-vm | enable-maintainer-zts | enable-inline-optimization[)];;
+
+      # All the rest must be set using the PHP_ARG_* macros
+      # PHP_ARG_* macros set php_enable_<arg_name> or php_with_<arg_name>
+      *[)]
+        # Options that exist before PHP 6
+        if test "$PHP_MAJOR_VERSION" -lt "6"; then
+          case $arg_name in
+            enable-zend-multibyte[)] continue;;
+          esac 
+        fi
+        is_arg_set=php_[]`echo [$]arg_name | tr 'ABCDEFGHIJKLMNOPQRSTUVWXYZ-' 'abcdefghijklmnopqrstuvwxyz_'`
+        if eval test "x\$$is_arg_set" = "x"; then
+          PHP_UNKNOWN_CONFIGURE_OPTIONS="$PHP_UNKNOWN_CONFIGURE_OPTIONS
+[$]arg"
+        fi
+        ;;
+    esac
+  done
 ])
 
 dnl
@@ -2646,6 +2813,9 @@ php_cv_crypt_r_style=struct_crypt_data_gnu_source)
   fi
 ])
 
+dnl
+dnl PHP_TEST_WRITE_STDOUT
+dnl
 AC_DEFUN([PHP_TEST_WRITE_STDOUT],[
   AC_CACHE_CHECK(whether writing to stdout works,ac_cv_write_stdout,[
     AC_TRY_RUN([

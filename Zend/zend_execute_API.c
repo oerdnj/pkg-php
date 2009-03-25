@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute_API.c,v 1.331.2.20.2.21 2007/05/21 07:12:41 tony2001 Exp $ */
+/* $Id: zend_execute_API.c,v 1.331.2.20.2.24 2007/07/21 00:35:14 jani Exp $ */
 
 #include <stdio.h>
 #include <signal.h>
@@ -448,23 +448,35 @@ ZEND_API int zend_is_true(zval *op)
 
 #include "../TSRM/tsrm_strtok_r.h"
 
+#define IS_VISITED_CONSTANT       IS_CONSTANT_INDEX
+#define IS_CONSTANT_VISITED(p)    (Z_TYPE_P(p) & IS_VISITED_CONSTANT)
+#define MARK_CONSTANT_VISITED(p)  Z_TYPE_P(p) |= IS_VISITED_CONSTANT
+
 ZEND_API int zval_update_constant_ex(zval **pp, void *arg, zend_class_entry *scope TSRMLS_DC)
 {
 	zval *p = *pp;
 	zend_bool inline_change = (zend_bool) (zend_uintptr_t) arg;
 	zval const_value;
+	char *colon;
 
-	if (Z_TYPE_P(p) == IS_CONSTANT) {
+	if (IS_CONSTANT_VISITED(p)) {
+		zend_error(E_ERROR, "Cannot declare self-referencing constant '%s'", Z_STRVAL_P(p));
+	} else if (Z_TYPE_P(p) == IS_CONSTANT) {
 		int refcount;
 		zend_uchar is_ref;
 
 		SEPARATE_ZVAL_IF_NOT_REF(pp);
 		p = *pp;
 
+		MARK_CONSTANT_VISITED(p);
+
 		refcount = p->refcount;
 		is_ref = p->is_ref;
 
 		if (!zend_get_constant_ex(p->value.str.val, p->value.str.len, &const_value, scope TSRMLS_CC)) {
+			if ((colon = memchr(Z_STRVAL_P(p), ':', Z_STRLEN_P(p))) && colon[1] == ':') {
+				zend_error(E_ERROR, "Undefined class constant '%s'", Z_STRVAL_P(p));
+			}
 			zend_error(E_NOTICE, "Use of undefined constant %s - assumed '%s'",
 					   p->value.str.val,
 					   p->value.str.val);
@@ -504,6 +516,9 @@ ZEND_API int zval_update_constant_ex(zval **pp, void *arg, zend_class_entry *sco
 				continue;
 			}
 			if (!zend_get_constant_ex(str_index, str_index_len-1, &const_value, scope TSRMLS_CC)) {
+				if ((colon = memchr(str_index, ':', str_index_len-1)) && colon[1] == ':') {
+					zend_error(E_ERROR, "Undefined class constant '%s'", str_index);
+				}
 				zend_error(E_NOTICE, "Use of undefined constant %s - assumed '%s'",	str_index, str_index);
 				zend_hash_move_forward(Z_ARRVAL_P(p));
 				continue;
@@ -1360,7 +1375,7 @@ static unsigned __stdcall timeout_thread_proc(void *pArgs)
 }
 
 
-void zend_init_timeout_thread()
+void zend_init_timeout_thread(void)
 {
 	timeout_thread_event = CreateEvent(NULL, FALSE, FALSE, NULL);
 	timeout_thread_handle = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -1369,7 +1384,7 @@ void zend_init_timeout_thread()
 }
 
 
-void zend_shutdown_timeout_thread()
+void zend_shutdown_timeout_thread(void)
 {
 	if (!timeout_thread_initialized) {
 		return;

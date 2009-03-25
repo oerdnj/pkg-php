@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_http.c,v 1.77.2.11.2.10 2007/05/10 21:52:10 tony2001 Exp $ */
+/* $Id: php_http.c,v 1.77.2.11.2.12 2007/07/24 09:27:46 dmitry Exp $ */
 
 #include "php_soap.h"
 #include "ext/standard/base64.h"
@@ -288,6 +288,7 @@ int make_http_soap_request(zval  *this_ptr,
 				request_size = Z_STRLEN(retval);
 			} else {
 				if (request != buf) {efree(request);}
+				smart_str_free(&soap_headers_z);
 				return FALSE;
 			}
 	  }
@@ -311,6 +312,7 @@ try_again:
 	  if (phpurl != NULL) {php_url_free(phpurl);}
 		if (request != buf) {efree(request);}
 		add_soap_fault(this_ptr, "HTTP", "Unable to parse URL", NULL, NULL TSRMLS_CC);
+		smart_str_free(&soap_headers_z);
 		return FALSE;
 	}
 
@@ -321,6 +323,7 @@ try_again:
 		php_url_free(phpurl);
 		if (request != buf) {efree(request);}
 		add_soap_fault(this_ptr, "HTTP", "Unknown protocol. Only http and https are allowed.", NULL, NULL TSRMLS_CC);
+		smart_str_free(&soap_headers_z);
 		return FALSE;
 	}
 
@@ -331,6 +334,7 @@ try_again:
 		if (request != buf) {efree(request);}
 		add_soap_fault(this_ptr, "HTTP", "SSL support is not available in this build", NULL, NULL TSRMLS_CC);
 		PG(allow_url_fopen) = old_allow_url_fopen;
+		smart_str_free(&soap_headers_z);
 		return FALSE;
 	}
 
@@ -380,6 +384,7 @@ try_again:
 			if (request != buf) {efree(request);}
 			add_soap_fault(this_ptr, "HTTP", "Could not connect to host", NULL, NULL TSRMLS_CC);
 			PG(allow_url_fopen) = old_allow_url_fopen;
+			smart_str_free(&soap_headers_z);
 			return FALSE;
 		}
 	}
@@ -438,7 +443,6 @@ try_again:
 		}
 
 		smart_str_append(&soap_headers, &soap_headers_z);
-		smart_str_free(&soap_headers_z);
 
 		if (soap_version == SOAP_1_2) {
 			smart_str_append_const(&soap_headers,"Content-Type: application/soap+xml; charset=utf-8");
@@ -695,6 +699,7 @@ try_again:
 
 	} else {
 		add_soap_fault(this_ptr, "HTTP", "Failed to create stream??", NULL, NULL TSRMLS_CC);
+		smart_str_free(&soap_headers_z);
 		return FALSE;
 	}
 
@@ -702,6 +707,7 @@ try_again:
 		php_stream_close(stream);
 		zend_hash_del(Z_OBJPROP_P(this_ptr), "httpsocket", sizeof("httpsocket"));
 		zend_hash_del(Z_OBJPROP_P(this_ptr), "_use_proxy", sizeof("_use_proxy"));
+		smart_str_free(&soap_headers_z);
 		return TRUE;
 	}
 
@@ -713,6 +719,7 @@ try_again:
 			zend_hash_del(Z_OBJPROP_P(this_ptr), "httpsocket", sizeof("httpsocket"));
 			zend_hash_del(Z_OBJPROP_P(this_ptr), "_use_proxy", sizeof("_use_proxy"));
 			add_soap_fault(this_ptr, "HTTP", "Error Fetching http headers", NULL, NULL TSRMLS_CC);
+			smart_str_free(&soap_headers_z);
 			return FALSE;
 		}
 
@@ -861,6 +868,7 @@ try_again:
 		if (http_msg) {
 			efree(http_msg);
 		}
+		smart_str_free(&soap_headers_z);
 		return FALSE;
 	}
 
@@ -1008,6 +1016,7 @@ try_again:
 		}
 		if (auth) efree(auth);
 	}
+	smart_str_free(&soap_headers_z);
 
 	/* Check and see if the server even sent a xml document */
 	content_type = get_http_header_value(http_headers,"Content-Type: ");
@@ -1144,17 +1153,19 @@ static char *get_http_header_value(char *headers, char *type)
 
 			/* match */
 			tmp = pos + typelen;
-			eol = strstr(tmp, "\r\n");
+			eol = strchr(tmp, '\n');
 			if (eol == NULL) {
 				eol = headers + headerslen;
+			} else if (eol > tmp && *(eol-1) == '\r') {
+				eol--;
 			}
 			return estrndup(tmp, eol - tmp);
 		}
 
 		/* find next line */
-		pos = strstr(pos, "\r\n");
+		pos = strchr(pos, '\n');
 		if (pos) {
-			pos += 2;
+			pos++;
 		}
 
 	} while (pos);
@@ -1194,7 +1205,7 @@ static int get_http_body(php_stream *stream, int close, char *headers,  char **r
 	}
 
 	if (header_chunked) {
-		char done, chunk_size[10];
+		char ch, done, chunk_size[10], headerbuf[8192];
 
 		done = FALSE;
 
@@ -1222,11 +1233,20 @@ static int get_http_body(php_stream *stream, int close, char *headers,  char **r
 						len_size += len_read;
 	 					http_buf_size += len_read;
  					}
- 				}
 
-				/* Eat up '\r' '\n' */
-				php_stream_getc(stream);
-				php_stream_getc(stream);
+					/* Eat up '\r' '\n' */
+					ch = php_stream_getc(stream);
+					if (ch == '\r') {
+						ch = php_stream_getc(stream);
+					}
+					if (ch != '\n') {
+						/* Somthing wrong in chunked encoding */
+						if (http_buf) {
+							efree(http_buf);
+						}
+						return FALSE;
+					}
+ 				}
 			} else {
 				/* Somthing wrong in chunked encoding */
 				if (http_buf) {
@@ -1236,6 +1256,19 @@ static int get_http_body(php_stream *stream, int close, char *headers,  char **r
 			}
 			if (buf_size == 0) {
 				done = TRUE;
+			}
+		}
+
+		/* Ignore trailer headers */
+		while (1) {
+			if (!php_stream_gets(stream, headerbuf, sizeof(headerbuf))) {
+				break;
+			}
+
+			if ((headerbuf[0] == '\r' && headerbuf[1] == '\n') ||
+			    (headerbuf[0] == '\n')) {
+				/* empty line marks end of headers */
+				break;
 			}
 		}
 
@@ -1285,7 +1318,8 @@ static int get_http_headers(php_stream *stream, char **response, int *out_size T
 			break;
 		}
 
-		if (strcmp(headerbuf, "\r\n") == 0) {
+		if ((headerbuf[0] == '\r' && headerbuf[1] == '\n') ||
+		    (headerbuf[0] == '\n')) {
 			/* empty line marks end of headers */
 			done = TRUE;
 			break;

@@ -17,7 +17,7 @@
    |          Hartmut Holzgraefe <hholzgra@php.net>                       |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_fopen_wrapper.c,v 1.45.2.4.2.6 2007/01/01 09:36:08 sebastian Exp $ */
+/* $Id: php_fopen_wrapper.c,v 1.45.2.4.2.7 2007/06/21 12:42:36 dmitry Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -159,6 +159,7 @@ php_stream * php_stream_url_wrap_php(php_stream_wrapper *wrapper, char *path, ch
 	php_stream * stream = NULL;
 	char *p, *token, *pathdup;
 	long max_memory;
+	FILE *file = NULL;
 
 	if (!strncasecmp(path, "php://", 6)) {
 		path += 6;
@@ -210,6 +211,7 @@ php_stream * php_stream_url_wrap_php(php_stream_wrapper *wrapper, char *path, ch
 				fd = dup(fd);
 			} else {
 				cli_in = 1;
+				file = stdin;
 			}
 		} else {
 			fd = dup(STDIN_FILENO);
@@ -222,6 +224,7 @@ php_stream * php_stream_url_wrap_php(php_stream_wrapper *wrapper, char *path, ch
 				fd = dup(fd);
 			} else {
 				cli_out = 1;
+				file = stdout;
 			}
 		} else {
 			fd = dup(STDOUT_FILENO);
@@ -234,6 +237,7 @@ php_stream * php_stream_url_wrap_php(php_stream_wrapper *wrapper, char *path, ch
 				fd = dup(fd);
 			} else {
 				cli_err = 1;
+				file = stderr;
 			}
 		} else {
 			fd = dup(STDERR_FILENO);
@@ -285,10 +289,14 @@ php_stream * php_stream_url_wrap_php(php_stream_wrapper *wrapper, char *path, ch
 		/* failed to dup */
 		return NULL;
 	}
-	
-	stream = php_stream_fopen_from_fd(fd, mode, NULL);
-	if (stream == NULL) {
-		close(fd);
+
+	if (file) {
+		stream = php_stream_fopen_from_file(file, mode);
+	} else {	
+		stream = php_stream_fopen_from_fd(fd, mode, NULL);
+		if (stream == NULL) {
+			close(fd);
+		}
 	}
  
 	return stream;

@@ -1,13 +1,13 @@
 dnl
-dnl $Id: config0.m4,v 1.3 2005/05/29 23:16:41 sniper Exp $
+dnl $Id: config0.m4,v 1.3.4.1 2007/07/03 17:25:33 sniper Exp $
 dnl
 
 PHP_ARG_ENABLE(libxml, whether to enable LIBXML support,
-[  --disable-libxml        Disable new LIBXML support], yes)
+[  --disable-libxml        Disable LIBXML support], yes)
 
 if test -z "$PHP_LIBXML_DIR"; then
   PHP_ARG_WITH(libxml-dir, libxml2 install dir,
-  [  --with-libxml-dir[=DIR]   libxml2 install prefix], no, no)
+  [  --with-libxml-dir[=DIR]   LIBXML: libxml2 install prefix], no, no)
 fi
 
 if test "$PHP_LIBXML" != "no"; then

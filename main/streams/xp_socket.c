@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: xp_socket.c,v 1.33.2.2.2.4 2007/01/01 09:36:12 sebastian Exp $ */
+/* $Id: xp_socket.c,v 1.33.2.2.2.6 2007/07/24 14:24:44 dmitry Exp $ */
 
 #include "php.h"
 #include "ext/standard/file.h"
@@ -29,6 +29,10 @@
 
 #if defined(AF_UNIX)
 #include <sys/un.h>
+#endif
+
+#ifndef MSG_DONTWAIT
+# define MSG_DONTWAIT 0
 #endif
 
 php_stream_ops php_stream_generic_socket_ops;
@@ -59,7 +63,7 @@ static size_t php_sockop_write(php_stream *stream, const char *buf, size_t count
 		ptimeout = &sock->timeout;
 
 retry:
-	didwrite = send(sock->socket, buf, count, 0);
+	didwrite = send(sock->socket, buf, count, (sock->is_blocked && ptimeout) ? MSG_DONTWAIT : 0);
 
 	if (didwrite <= 0) {
 		long err = php_socket_errno();
@@ -148,7 +152,7 @@ static size_t php_sockop_read(php_stream *stream, char *buf, size_t count TSRMLS
 			return 0;
 	}
 
-	nr_bytes = recv(sock->socket, buf, count, 0);
+	nr_bytes = recv(sock->socket, buf, count, (sock->is_blocked && sock->timeout.tv_sec != -1) ? MSG_DONTWAIT : 0);
 
 	stream->eof = (nr_bytes == 0 || (nr_bytes == -1 && php_socket_errno() != EWOULDBLOCK));
 
@@ -281,18 +285,11 @@ static int php_sockop_set_option(php_stream *stream, int option, int value, void
 			}
 			
 		case PHP_STREAM_OPTION_BLOCKING:
-	
 			oldmode = sock->is_blocked;
-	
-			/* no need to change anything */
-			if (value == oldmode)
-				return oldmode;
-	
 			if (SUCCESS == php_set_sock_blocking(sock->socket, value TSRMLS_CC)) {
 				sock->is_blocked = value;
 				return oldmode;
 			}
-
 			return PHP_STREAM_OPTION_RETURN_ERR;
 
 		case PHP_STREAM_OPTION_READ_TIMEOUT:
@@ -751,11 +748,8 @@ static int php_tcp_sockop_set_option(php_stream *stream, int option, int value, 
 					/* fall through */
 					;
 			}
-			
-			/* fall through */
-		default:
-			return php_sockop_set_option(stream, option, value, ptrparam TSRMLS_CC);
 	}
+	return php_sockop_set_option(stream, option, value, ptrparam TSRMLS_CC);
 }
 
 

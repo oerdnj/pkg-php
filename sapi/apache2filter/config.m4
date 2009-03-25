@@ -1,20 +1,23 @@
 dnl
-dnl $Id: config.m4,v 1.41.2.1 2005/09/01 14:33:47 sniper Exp $
+dnl $Id: config.m4,v 1.41.2.1.2.2 2007/07/11 23:20:36 jani Exp $
 dnl
 
-AC_MSG_CHECKING(for Apache 2.0 filter-module support via DSO through APXS)
-AC_ARG_WITH(apxs2filter,
+PHP_ARG_WITH(apxs2filter,,
 [  --with-apxs2filter[=FILE]   
                           EXPERIMENTAL: Build shared Apache 2.0 Filter module. FILE is the optional
-                          pathname to the Apache apxs tool [apxs]],[
-  if test "$withval" = "yes"; then
+                          pathname to the Apache apxs tool [apxs]], no, no)
+
+AC_MSG_CHECKING([for Apache 2.0 filter-module support via DSO through APXS])
+
+if test "$PHP_APXS2FILTER" != "no"; then
+  if test "$PHP_APXS2FILTER" = "yes"; then
     APXS=apxs
     $APXS -q CFLAGS >/dev/null 2>&1
     if test "$?" != "0" && test -x /usr/sbin/apxs; then
       APXS=/usr/sbin/apxs
     fi
   else
-    PHP_EXPAND_PATH($withval, APXS)
+    PHP_EXPAND_PATH($PHP_APXS2FILTER, APXS)
   fi
 
   $APXS -q CFLAGS >/dev/null 2>&1
@@ -119,11 +122,10 @@ AC_ARG_WITH(apxs2filter,
     PHP_BUILD_THREAD_SAFE
   fi
   AC_MSG_RESULT(yes)
-  
   PHP_SUBST(APXS)
-],[
+else
   AC_MSG_RESULT(no)
-])
+fi
 
 dnl ## Local Variables:
 dnl ## tab-width: 4

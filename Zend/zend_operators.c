@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_operators.c,v 1.208.2.4.2.21 2007/04/23 09:56:30 dmitry Exp $ */
+/* $Id: zend_operators.c,v 1.208.2.4.2.23 2007/07/21 00:35:14 jani Exp $ */
 
 #include <ctype.h>
 
@@ -1402,6 +1402,11 @@ ZEND_API int compare_function(zval *result, zval *op1, zval *op2 TSRMLS_DC)
 
 	/* If both are objects sharing the same comparision handler then use is */
 	if (eq_comp) {
+		if (Z_OBJ_HANDLE_P(op1) == Z_OBJ_HANDLE_P(op2)) {
+			/* object handles are identical, apprently this is the same object */
+			ZVAL_LONG(result, 0);
+			COMPARE_RETURN_AND_FREE(SUCCESS);
+		}
 		ZVAL_LONG(result, Z_OBJ_HT_P(op1)->compare_objects(op1, op2 TSRMLS_CC));
 		COMPARE_RETURN_AND_FREE(SUCCESS);
 	}
@@ -1837,7 +1842,7 @@ ZEND_API int zval_is_true(zval *op)
 }
 
 #ifdef ZEND_USE_TOLOWER_L
-ZEND_API void zend_update_current_locale()
+ZEND_API void zend_update_current_locale(void)
 {
 	current_locale = _get_current_locale();
 }

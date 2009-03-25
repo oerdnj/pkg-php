@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_ini.h,v 1.34.2.1.2.3 2007/01/01 09:35:46 sebastian Exp $ */
+/* $Id: zend_ini.h,v 1.34.2.1.2.4 2007/08/02 23:57:21 stas Exp $ */
 
 #ifndef ZEND_INI_H
 #define ZEND_INI_H
@@ -189,6 +189,7 @@ END_EXTERN_C()
 #define ZEND_INI_STAGE_ACTIVATE		(1<<2)
 #define ZEND_INI_STAGE_DEACTIVATE	(1<<3)
 #define ZEND_INI_STAGE_RUNTIME		(1<<4)
+#define ZEND_INI_STAGE_HTACCESS		(1<<5)
 
 /* INI parsing engine */
 typedef void (*zend_ini_parser_cb_t)(zval *arg1, zval *arg2, int callback_type, void *arg);

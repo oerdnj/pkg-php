@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: streams.c,v 1.82.2.6.2.13 2007/05/08 12:08:17 dmitry Exp $ */
+/* $Id: streams.c,v 1.82.2.6.2.18 2007/08/08 07:01:49 jani Exp $ */
 
 #define _GNU_SOURCE
 #include "php.h"
@@ -1313,7 +1313,7 @@ PHPAPI size_t _php_stream_copy_to_stream(php_stream *src, php_stream *dest, size
 		p = php_stream_mmap_range(src, php_stream_tell(src), maxlen, PHP_STREAM_MAP_MODE_SHARED_READONLY, &mapped);
 
 		if (p) {
-			haveread = php_stream_write(dest, p, mapped);
+			mapped = php_stream_write(dest, p, mapped);
 
 			php_stream_mmap_unmap(src);
 
@@ -1557,7 +1557,7 @@ PHPAPI php_stream_wrapper *php_stream_locate_url_wrapper(const char *path, char 
 #ifdef PHP_WIN32
 			if (localhost == 0 && path[n+3] != '\0' && path[n+3] != '/' && path[n+4] != ':')	{
 #else
-			if (localhost == 0 && path[n+3] != '/')	{
+			if (localhost == 0 && path[n+3] != '\0' && path[n+3] != '/') {
 #endif
 				if (options & REPORT_ERRORS) {
 					php_error_docref(NULL TSRMLS_CC, E_WARNING, "remote host file access not supported, %s", path);
@@ -1606,7 +1606,11 @@ PHPAPI php_stream_wrapper *php_stream_locate_url_wrapper(const char *path, char 
 		return &php_plain_files_wrapper;
 	}
 
-	if ((wrapperpp && (*wrapperpp)->is_url) && (!PG(allow_url_fopen) || ((options & STREAM_OPEN_FOR_INCLUDE) && !PG(allow_url_include))) ) {
+	if (wrapperpp && (*wrapperpp)->is_url && 	    
+        (options & STREAM_DISABLE_URL_PROTECTION) == 0 &&
+	    (!PG(allow_url_fopen) || 
+	     (((options & STREAM_OPEN_FOR_INCLUDE) ||
+	       PG(in_user_include)) && !PG(allow_url_include)))) {
 		if (options & REPORT_ERRORS) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "URL file-access is disabled in the server configuration");
 		}

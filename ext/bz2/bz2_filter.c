@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: bz2_filter.c,v 1.3.2.2.2.4 2007/01/25 12:22:21 tony2001 Exp $ */
+/* $Id: bz2_filter.c,v 1.3.2.2.2.5 2007/08/09 23:27:22 iliaa Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -228,8 +228,8 @@ static php_stream_filter_status_t php_bz2_compress_filter(
 
 	if (flags & PSFS_FLAG_FLUSH_CLOSE) {
 		/* Spit it out! */
-		status = BZ_OUTBUFF_FULL;
-		while (status == BZ_OUTBUFF_FULL) {
+		status = BZ_FINISH_OK;
+		while (status == BZ_FINISH_OK) {
 			status = BZ2_bzCompress(&(data->strm), BZ_FINISH);
 			if (data->strm.avail_out < data->outbuf_len) {
 				size_t bucketlen = data->outbuf_len - data->strm.avail_out;

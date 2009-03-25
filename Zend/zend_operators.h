@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_operators.h,v 1.94.2.4.2.9 2007/01/01 09:35:47 sebastian Exp $ */
+/* $Id: zend_operators.h,v 1.94.2.4.2.10 2007/07/21 00:35:14 jani Exp $ */
 
 #ifndef ZEND_OPERATORS_H
 #define ZEND_OPERATORS_H
@@ -428,7 +428,7 @@ END_EXTERN_C()
 #endif
 
 #ifdef ZEND_USE_TOLOWER_L
-ZEND_API void zend_update_current_locale();
+ZEND_API void zend_update_current_locale(void);
 #else
 #define zend_update_current_locale()
 #endif

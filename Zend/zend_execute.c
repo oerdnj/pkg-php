@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute.c,v 1.716.2.12.2.19 2007/04/16 08:09:54 dmitry Exp $ */
+/* $Id: zend_execute.c,v 1.716.2.12.2.24 2007/07/19 15:29:30 jani Exp $ */
 
 #define ZEND_INTENSIVE_DEBUGGING 0
 
@@ -366,7 +366,7 @@ static inline void zend_switch_free(zend_op *opline, temp_variable *Ts TSRMLS_DC
 				 * quick & silent get_zval_ptr, and FREE_OP
 				 */
 				PZVAL_UNLOCK_FREE(T->str_offset.str);
-			} else {
+			} else if (T(opline->op1.u.var).var.ptr) {
 				zval_ptr_dtor(&T(opline->op1.u.var).var.ptr);
 				if (opline->extended_value & ZEND_FE_RESET_VARIABLE) { /* foreach() free */
 					zval_ptr_dtor(&T(opline->op1.u.var).var.ptr);
@@ -430,17 +430,16 @@ static void zend_assign_to_variable_reference(zval **variable_ptr_ptr, zval **va
 	}
 }
 
+/* this should modify object only if it's empty */
 static inline void make_real_object(zval **object_ptr TSRMLS_DC)
 {
-/* this should modify object only if it's empty */
 	if (Z_TYPE_PP(object_ptr) == IS_NULL
-		|| (Z_TYPE_PP(object_ptr) == IS_BOOL && Z_LVAL_PP(object_ptr)==0)
-		|| (Z_TYPE_PP(object_ptr) == IS_STRING && Z_STRLEN_PP(object_ptr) == 0)) {
-
-		if (!PZVAL_IS_REF(*object_ptr)) {
-			SEPARATE_ZVAL(object_ptr);
-		}
+		|| (Z_TYPE_PP(object_ptr) == IS_BOOL && Z_LVAL_PP(object_ptr) == 0)
+		|| (Z_TYPE_PP(object_ptr) == IS_STRING && Z_STRLEN_PP(object_ptr) == 0)
+	) {
 		zend_error(E_STRICT, "Creating default object from empty value");
+
+		SEPARATE_ZVAL_IF_NOT_REF(object_ptr);
 		zval_dtor(*object_ptr);
 		object_init(*object_ptr);
 	}
@@ -529,6 +528,10 @@ static inline void zend_assign_to_object(znode *result, zval **object_ptr, znode
 	zval *property_name = get_zval_ptr(op2, Ts, &free_op2, BP_VAR_R);
 	zval *value = get_zval_ptr(value_op, Ts, &free_value, BP_VAR_R);
 	zval **retval = &T(result->u.var).var.ptr;
+
+	if (!object_ptr) {
+		zend_error_noreturn(E_ERROR, "Cannot use string offset as an array");
+	}
 
 	if (*object_ptr == EG(error_zval_ptr)) {
 		FREE_OP(free_op2);
@@ -1229,6 +1232,15 @@ static void zend_fetch_dimension_address(temp_variable *result, zval **container
 static void zend_fetch_property_address(temp_variable *result, zval **container_ptr, zval *prop_ptr, int type TSRMLS_DC)
 {
 	zval *container;
+
+	if (!container_ptr) {
+		zend_error(E_WARNING, "Cannot use string offset as an array");
+		if (result) {
+			result->var.ptr_ptr = &EG(error_zval_ptr);
+			PZVAL_LOCK(*result->var.ptr_ptr);
+		}
+		return;
+	}
 
 	container = *container_ptr;
 	if (container == EG(error_zval_ptr)) {

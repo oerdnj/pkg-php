@@ -3,11 +3,11 @@ XMLWriter: libxml2 XML Writer, Elements & Attributes
 --SKIPIF--
 <?php 
 if (!extension_loaded("xmlwriter")) die("skip"); 
-if (!function_exists("xmlwriter_start_attribute_ns")) die("skip: libxml2 2.6.17+ required");
+if (LIBXML_VERSION < 20629) die("skip: libxml2 2.6.29+ required");
 ?>
 --FILE--
 <?php 
-/* $Id: 007.phpt,v 1.1.2.3 2005/12/12 21:21:11 tony2001 Exp $ */
+/* $Id: 007.phpt,v 1.1.2.3.2.2 2007/06/26 12:12:31 tony2001 Exp $ */
 
 $xw = xmlwriter_open_memory();
 xmlwriter_set_indent($xw, TRUE);
@@ -32,7 +32,7 @@ print $output;
 --EXPECT--
 <?xml version="1.0" encoding="UTF-8"?>
 <root>
-   <ns1:child1 xmlns:ns1="urn:ns1" ns1:att1="a&amp;b" xmlns:ns1="urn:ns1" att2="double&quot; single'" ns1:att2="&lt;&gt;&quot;'&amp;" xmlns:ns1="urn:ns1">
+   <ns1:child1 ns1:att1="a&amp;b" att2="double&quot; single'" ns1:att2="&lt;&gt;&quot;'&amp;" xmlns:ns1="urn:ns1">
       <chars>special characters: &lt;&gt;&quot;'&amp;</chars>
    </ns1:child1>
 </root>

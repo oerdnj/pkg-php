@@ -22,7 +22,7 @@
 #ifndef PHP_SOCKETS_H
 #define PHP_SOCKETS_H
 
-/* $Id: php_sockets.h,v 1.36.2.1.2.3 2007/05/19 17:58:22 iliaa Exp $ */
+/* $Id: php_sockets.h,v 1.36.2.1.2.4 2007/07/22 23:01:20 jani Exp $ */
 
 #if HAVE_SOCKETS
 
@@ -45,7 +45,9 @@ PHP_RSHUTDOWN_FUNCTION(sockets);
 
 PHP_FUNCTION(socket_select);
 PHP_FUNCTION(socket_create_listen);
+#ifdef HAVE_SOCKETPAIR
 PHP_FUNCTION(socket_create_pair);
+#endif
 PHP_FUNCTION(socket_accept);
 PHP_FUNCTION(socket_set_nonblock);
 PHP_FUNCTION(socket_set_block);
@@ -81,13 +83,14 @@ typedef struct {
 	PHP_SOCKET bsd_socket;
 	int		type;
 	int		error;
+	int		blocking;
 } php_socket;
 
 /* Prototypes */
 #ifdef ilia_0 /* not needed, only causes a compiler warning */
 static int php_open_listen_sock(php_socket **php_sock, int port, int backlog TSRMLS_DC);
 static int php_accept_connect(php_socket *in_sock, php_socket **new_sock, struct sockaddr *la TSRMLS_DC);
-static int php_read(int bsd_socket, void *buf, size_t maxlen, int flags);
+static int php_read(php_socket *sock, void *buf, size_t maxlen, int flags);
 static char *php_strerror(int error TSRMLS_DC);
 #endif
 

@@ -25,7 +25,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_oci8_int.h,v 1.11.2.6.2.18 2007/03/29 09:33:03 tony2001 Exp $ */
+/* $Id: php_oci8_int.h,v 1.11.2.6.2.21 2007/08/06 20:32:55 sixd Exp $ */
 
 #if HAVE_OCI8
 # ifndef PHP_OCI8_INT_H
@@ -112,6 +112,7 @@ typedef struct { /* php_oci_connection {{{ */
 	unsigned is_persistent:1;	/* self-descriptive */
 	unsigned used_this_request:1; /* helps to determine if we should reset connection's next ping time and check its timeout */
 	unsigned needs_commit:1;	/* helps to determine if we should rollback this connection on close/shutdown */
+	unsigned passwd_changed:1;	/* helps determine if a persistent connection hash should be invalidated after a password change */
 	int rsrc_id;				/* resource ID */
 	time_t idle_expiry;			/* time when the connection will be considered as expired */
 	time_t next_ping;			/* time of the next ping */
@@ -215,8 +216,8 @@ typedef struct { /* php_oci_out_column {{{ */
 	php_oci_define *define;			/* define handle */
 	int piecewise;					/* column is fetched piece-by-piece */
 	ub4 cb_retlen;					/* */
-	ub2 scale;						/* column scale */
-	ub2 precision;					/* column precision */
+	sb1 scale;						/* column scale */
+	sb2 precision;					/* column precision */
 	ub1 charset_form;				/* charset form, required for NCLOBs */
 	ub2 charset_id;					/* charset ID */
 } php_oci_out_column; /* }}} */
@@ -263,7 +264,6 @@ typedef struct { /* php_oci_out_column {{{ */
 #define PHP_OCI_REGISTER_RESOURCE(resource, le_resource) \
 	do { \
 		resource->id = ZEND_REGISTER_RESOURCE(NULL, resource, le_resource); \
-		zend_list_addref(resource->connection->rsrc_id); \
 	} while (0)
 
 #define PHP_OCI_ZVAL_TO_CONNECTION(zval, connection) \

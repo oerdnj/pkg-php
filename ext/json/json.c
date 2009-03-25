@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: json.c,v 1.9.2.15 2007/05/25 13:24:50 bjori Exp $ */
+/* $Id: json.c,v 1.9.2.19 2007/07/24 22:57:13 bjori Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -86,7 +86,8 @@ static PHP_MINFO_FUNCTION(json)
 static void json_encode_r(smart_str *buf, zval *val TSRMLS_DC);
 static void json_escape_string(smart_str *buf, char *s, int len);
 
-static int json_determine_array_type(zval **val TSRMLS_DC) {
+static int json_determine_array_type(zval **val TSRMLS_DC)  /* {{{ */
+{
     int i;
     HashTable *myht = HASH_OF(*val);
 
@@ -117,8 +118,9 @@ static int json_determine_array_type(zval **val TSRMLS_DC) {
 
     return 0;
 }
+/* }}} */
 
-static void json_encode_array(smart_str *buf, zval **val TSRMLS_DC) {
+static void json_encode_array(smart_str *buf, zval **val TSRMLS_DC) { /* {{{ */
     int i, r;
     HashTable *myht;
 
@@ -224,10 +226,11 @@ static void json_encode_array(smart_str *buf, zval **val TSRMLS_DC) {
         smart_str_appendc(buf, '}');
     }
 }
+/* }}} */
 
 #define REVERSE16(us) (((us & 0xf) << 12) | (((us >> 4) & 0xf) << 8) | (((us >> 8) & 0xf) << 4) | ((us >> 12) & 0xf))
 
-static void json_escape_string(smart_str *buf, char *s, int len)
+static void json_escape_string(smart_str *buf, char *s, int len) /* {{{ */
 {
     int pos = 0;
     unsigned short us;
@@ -328,8 +331,10 @@ static void json_escape_string(smart_str *buf, char *s, int len)
     smart_str_appendc(buf, '"');
     efree(utf16);
 }
+/* }}} */
 
-static void json_encode_r(smart_str *buf, zval *val TSRMLS_DC) {
+static void json_encode_r(smart_str *buf, zval *val TSRMLS_DC) /* {{{ */
+{
     switch (Z_TYPE_P(val)) {
         case IS_NULL:
             smart_str_appendl(buf, "null", 4);
@@ -354,18 +359,10 @@ static void json_encode_r(smart_str *buf, zval *val TSRMLS_DC) {
                 double dbl = Z_DVAL_P(val);
 
                 if (!zend_isinf(dbl) && !zend_isnan(dbl)) {
-			len = spprintf(&d, 0, "%.9g", dbl);
-			if (d) {
-				if (dbl > LONG_MAX && !memchr(d, '.', len)) {
-					smart_str_append_unsigned(buf, (unsigned long)Z_DVAL_P(val));
-				} else {
-					smart_str_appendl(buf, d, len);
-				}
-				efree(d);
-			}
-                }
-                else
-                {
+			len = spprintf(&d, 0, "%.*g", (int) EG(precision), dbl);
+			smart_str_appendl(buf, d, len);
+			efree(d);
+                } else {
                     zend_error(E_WARNING, "[json] (json_encode_r) double %.9g does not conform to the JSON spec, encoded as 0.", dbl);
                     smart_str_appendc(buf, '0');
                 }
@@ -386,6 +383,7 @@ static void json_encode_r(smart_str *buf, zval *val TSRMLS_DC) {
 
     return;
 }
+/* }}} */
 
 /* {{{ proto string json_encode(mixed data)
    Returns the JSON representation of a value */
@@ -472,7 +470,7 @@ static PHP_FUNCTION(json_decode)
 			RETURN_DOUBLE(d);
 		}
 	}
-	if (*parameter == '"' && parameter[parameter_len-1] == '"') {
+	if (parameter_len > 1 && *parameter == '"' && parameter[parameter_len-1] == '"') {
 	        RETURN_STRINGL(parameter+1, parameter_len-2, 1);
 	} else if (*parameter == '{' || *parameter == '[') { /* invalid JSON string */
 		RETURN_NULL();

@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: file.c,v 1.409.2.6.2.20 2007/05/27 17:33:39 iliaa Exp $ */
+/* $Id: file.c,v 1.409.2.6.2.26 2007/08/12 17:09:59 iliaa Exp $ */
 
 /* Synced with php 3.0 revision 1.218 1999-06-16 [ssb] */
 
@@ -127,6 +127,9 @@ php_file_globals file_globals;
 #include <wchar.h>
 #endif
 
+#ifndef S_ISDIR
+#define S_ISDIR(mode)	(((mode)&S_IFMT) == S_IFDIR)
+#endif
 /* }}} */
 
 #define PHP_STREAM_TO_ZVAL(stream, arg) \
@@ -146,6 +149,7 @@ PHPAPI int php_le_stream_context(void)
 }
 
 /* }}} */
+
 /* {{{ Module-Stuff */
 
 static ZEND_RSRC_DTOR_FUNC(file_context_dtor)
@@ -302,15 +306,14 @@ PHP_MINIT_FUNCTION(file)
 
 /* }}} */
 
-PHP_MSHUTDOWN_FUNCTION(file)
+PHP_MSHUTDOWN_FUNCTION(file) /* {{{ */
 {
 #ifndef ZTS
 	file_globals_dtor(&file_globals TSRMLS_CC);
 #endif
 	return SUCCESS;
 }
-
-
+/* }}} */
 
 /* {{{ proto bool flock(resource fp, int operation [, int &wouldblock])
    Portable file locking */
@@ -1387,10 +1390,7 @@ PHPAPI PHP_FUNCTION(fseek)
 
 /* }}} */
 
-/* {{{ proto int mkdir(char *dir int mode)
-*/
-
-PHPAPI int php_mkdir_ex(char *dir, long mode, int options TSRMLS_DC)
+PHPAPI int php_mkdir_ex(char *dir, long mode, int options TSRMLS_DC) /* {{{ */
 {
 	int ret;
 
@@ -1741,10 +1741,11 @@ PHP_FUNCTION(copy)
 }
 /* }}} */
 
-PHPAPI int php_copy_file(char *src, char *dest TSRMLS_DC)
+PHPAPI int php_copy_file(char *src, char *dest TSRMLS_DC) /* {{{ */
 {
 	return php_copy_file_ex(src, dest, ENFORCE_SAFE_MODE TSRMLS_CC);
 }
+/* }}} */
 
 /* {{{ php_copy_file
  */
@@ -1763,6 +1764,10 @@ PHPAPI int php_copy_file_ex(char *src, char *dest, int src_chk TSRMLS_DC)
 			break;
 		default: /* failed to stat file, does not exist? */
 			return ret;
+	}
+	if (S_ISDIR(src_s.sb.st_mode)) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "The first argument to copy() function cannot be a directory");
+		return FAILURE;
 	}
 	if (php_stream_stat_path_ex(dest, PHP_STREAM_URL_STAT_QUIET, &dest_s, NULL) != 0) {
 		goto safe_to_copy;
@@ -1859,7 +1864,7 @@ PHPAPI PHP_FUNCTION(fread)
 }
 /* }}} */
 
-static const char *php_fgetcsv_lookup_trailing_spaces(const char *ptr, size_t len, const char delimiter TSRMLS_DC)
+static const char *php_fgetcsv_lookup_trailing_spaces(const char *ptr, size_t len, const char delimiter TSRMLS_DC) /* {{{ */
 {
 	int inc_len;
 	unsigned char last_chars[2] = { 0, 0 };
@@ -1895,6 +1900,7 @@ quit_loop:
 	}
 	return ptr;
 }
+/* }}} */
 
 #define FPUTCSV_FLD_CHK(c) memchr(Z_STRVAL_PP(field), c, Z_STRLEN_PP(field))
 
@@ -1914,7 +1920,7 @@ PHP_FUNCTION(fputcsv)
 	int count, i = 0;
 	smart_str csvline = {0};
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r|ass",
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ra|ss",
 			&fp, &fields, &delimiter_str, &delimiter_str_len,
 			&enclosure_str, &enclosure_str_len) == FAILURE) {
 		return;
@@ -2090,11 +2096,7 @@ PHP_FUNCTION(fgetcsv)
 }
 /* }}} */
 
-
-PHPAPI void php_fgetcsv(php_stream *stream, /* {{{ */
-		char delimiter, char enclosure, 
-		size_t buf_len, char *buf,
-		zval *return_value TSRMLS_DC)
+PHPAPI void php_fgetcsv(php_stream *stream, char delimiter, char enclosure, size_t buf_len, char *buf, zval *return_value TSRMLS_DC) /* {{{ */
 {
 	char *temp, *tptr, *bptr, *line_end, *limit;
 	const char escape_char = '\\';

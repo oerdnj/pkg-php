@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: basic_functions.c,v 1.725.2.31.2.53 2007/05/22 15:38:27 bjori Exp $ */
+/* $Id: basic_functions.c,v 1.725.2.31.2.61 2007/08/16 23:05:43 jani Exp $ */
 
 #include "php.h"
 #include "php_streams.h"
@@ -207,9 +207,10 @@ ZEND_END_ARG_INFO()
 /* }}} */
 /* {{{ main/streams/userspace.c */
 static
-ZEND_BEGIN_ARG_INFO(arginfo_stream_wrapper_register, 0)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_stream_wrapper_register, 0, 0, 2)
 	ZEND_ARG_INFO(0, protocol)
 	ZEND_ARG_INFO(0, classname)
+	ZEND_ARG_INFO(0, flags)
 ZEND_END_ARG_INFO()
 
 static
@@ -220,6 +221,11 @@ ZEND_END_ARG_INFO()
 static
 ZEND_BEGIN_ARG_INFO(arginfo_stream_wrapper_restore, 0)
 	ZEND_ARG_INFO(0, protocol)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_stream_is_local, 0)
+	ZEND_ARG_INFO(0, stream)
 ZEND_END_ARG_INFO()
 /* }}} */
 /* {{{ array.c */
@@ -1765,6 +1771,10 @@ ZEND_END_ARG_INFO()
 static
 ZEND_BEGIN_ARG_INFO(arginfo_php_ini_scanned_files, 0)
 ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_php_ini_loaded_file, 0)
+ZEND_END_ARG_INFO()
 /* }}} */
 /* {{{ iptc.c */
 static
@@ -1820,7 +1830,6 @@ ZEND_END_ARG_INFO()
 #endif
 /* }}} */
 /* {{{ mail.c */
-#ifdef HAVE_SENDMAIL
 static
 ZEND_BEGIN_ARG_INFO(arginfo_ezmlm_hash, 0)
 	ZEND_ARG_INFO(0, addr)
@@ -1834,7 +1843,6 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_mail, 0, 0, 3)
 	ZEND_ARG_INFO(0, additional_headers)
 	ZEND_ARG_INFO(0, additional_parameters)
 ZEND_END_ARG_INFO()
-#endif
 /* }}} */
 /* {{{ math.c */
 static
@@ -3132,6 +3140,7 @@ zend_function_entry basic_functions[] = {
 	PHP_FE(php_sapi_name,													arginfo_php_sapi_name)
 	PHP_FE(php_uname,														arginfo_php_uname)
 	PHP_FE(php_ini_scanned_files,											arginfo_php_ini_scanned_files)
+	PHP_FE(php_ini_loaded_file,												arginfo_php_ini_loaded_file)
 
 	PHP_FE(strnatcmp,														arginfo_strnatcmp)
 	PHP_FE(strnatcasecmp,													arginfo_strnatcasecmp)
@@ -3550,6 +3559,7 @@ zend_function_entry basic_functions[] = {
 	PHP_FE(stream_wrapper_restore,											arginfo_stream_wrapper_restore)
 	PHP_FE(stream_get_wrappers,												arginfo_stream_get_wrappers)
 	PHP_FE(stream_get_transports,											arginfo_stream_get_transports)
+	PHP_FE(stream_is_local,												arginfo_stream_is_local)
 	PHP_FE(get_headers,														arginfo_get_headers)
 
 #if HAVE_SYS_TIME_H || defined(PHP_WIN32)
@@ -3638,10 +3648,8 @@ zend_function_entry basic_functions[] = {
 	PHP_FALIAS(diskfreespace,		disk_free_space,						arginfo_disk_free_space)
 
 	/* functions from mail.c */
-#ifdef HAVE_SENDMAIL
 	PHP_FE(mail,															arginfo_mail)
 	PHP_FE(ezmlm_hash,														arginfo_ezmlm_hash)
-#endif
 
 	/* functions from syslog.c */
 #ifdef HAVE_SYSLOG_H
@@ -4330,7 +4338,8 @@ PHP_FUNCTION(ip2long)
 		/* the only special case when we should return -1 ourselves,
 		 * because inet_addr() considers it wrong.
 		 */
-		if (!memcmp(Z_STRVAL_PP(str), "255.255.255.255", Z_STRLEN_PP(str))) {
+		if (Z_STRLEN_PP(str) == sizeof("255.255.255.255") - 1 &&
+			!memcmp(Z_STRVAL_PP(str), "255.255.255.255", sizeof("255.255.255.255") - 1)) {
 			RETURN_LONG(-1);
 		}
 		
@@ -4985,14 +4994,9 @@ PHPAPI int _php_error_log(int opt_err, char *message, char *opt, char *headers T
 
 		case 1:		/*send an email */
 			{
-#if HAVE_SENDMAIL
 				if (!php_mail(opt, "PHP error_log message", message, headers, NULL TSRMLS_CC)) {
 					return FAILURE;
 				}
-#else
-				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Mail option not available!");
-				return FAILURE;
-#endif
 			}
 			break;
 
@@ -5450,7 +5454,18 @@ PHP_FUNCTION(highlight_file)
 
 	if (highlight_file(filename, &syntax_highlighter_ini TSRMLS_CC) == FAILURE) {
 		if (i) { 
-			php_end_ob_buffer (1, 0 TSRMLS_CC); 
+			int res = php_ob_get_buffer(return_value TSRMLS_CC);
+
+			/* flush the buffer only if there is something to flush */
+			if (res == SUCCESS && Z_STRLEN_P(return_value) > 0) {
+				php_end_ob_buffer (1, 0 TSRMLS_CC);
+				zval_dtor(return_value);
+			} else {
+				php_end_ob_buffer (0, 0 TSRMLS_CC);
+				if (res == SUCCESS) {
+					zval_dtor(return_value);
+				}
+			}
 		}
 		RETURN_FALSE;
 	}
@@ -5477,8 +5492,6 @@ PHP_FUNCTION(php_strip_whitespace)
 		RETURN_FALSE;
 	}
 
-	php_start_ob_buffer(NULL, 0, 1 TSRMLS_CC);
-
 	file_handle.type = ZEND_HANDLE_FILENAME;
 	file_handle.filename = filename;
 	file_handle.free_filename = 0;
@@ -5486,9 +5499,10 @@ PHP_FUNCTION(php_strip_whitespace)
 	zend_save_lexical_state(&original_lex_state TSRMLS_CC);
 	if (open_file_for_scanning(&file_handle TSRMLS_CC)==FAILURE) {
 		zend_restore_lexical_state(&original_lex_state TSRMLS_CC);
-		php_end_ob_buffer(1, 0 TSRMLS_CC);
 		RETURN_EMPTY_STRING();
 	}
+
+	php_start_ob_buffer(NULL, 0, 1 TSRMLS_CC);
 
 	zend_strip(TSRMLS_C);
 	
@@ -6083,7 +6097,7 @@ PHP_FUNCTION(move_uploaded_file)
 	}
 
 	VCWD_UNLINK(Z_STRVAL_PP(new_path));
-	if (rename(Z_STRVAL_PP(path), Z_STRVAL_PP(new_path)) == 0) {
+	if (VCWD_RENAME(Z_STRVAL_PP(path), Z_STRVAL_PP(new_path)) == 0) {
 		successful = 1;
 	} else if (php_copy_file_ex(Z_STRVAL_PP(path), Z_STRVAL_PP(new_path), STREAM_DISABLE_OPEN_BASEDIR TSRMLS_CC) == SUCCESS) {
 		VCWD_UNLINK(Z_STRVAL_PP(path));
@@ -6115,12 +6129,7 @@ static void php_simple_ini_parser_cb(zval *arg1, zval *arg2, int callback_type, 
 			*element = *arg2;
 			zval_copy_ctor(element);
 			INIT_PZVAL(element);
-			if (is_numeric_string(Z_STRVAL_P(arg1), Z_STRLEN_P(arg1), NULL, NULL, 0) != IS_LONG) { 
-				zend_hash_update(Z_ARRVAL_P(arr), Z_STRVAL_P(arg1), Z_STRLEN_P(arg1)+1, &element, sizeof(zval *), NULL);
-			} else {
-				ulong key = (ulong) zend_atoi(Z_STRVAL_P(arg1), Z_STRLEN_P(arg1));
-				zend_hash_index_update(Z_ARRVAL_P(arr), key, &element, sizeof(zval *), NULL);
-			}
+			zend_symtable_update(Z_ARRVAL_P(arr), Z_STRVAL_P(arg1), Z_STRLEN_P(arg1)+1, &element, sizeof(zval *), NULL);
 			break;
 
 		case ZEND_INI_PARSER_POP_ENTRY:
@@ -6132,17 +6141,7 @@ static void php_simple_ini_parser_cb(zval *arg1, zval *arg2, int callback_type, 
 				break;
 			}
 
-			if (is_numeric_string(Z_STRVAL_P(arg1), Z_STRLEN_P(arg1), NULL, NULL, 0) != IS_LONG) {
-				if (zend_hash_find(Z_ARRVAL_P(arr), Z_STRVAL_P(arg1), Z_STRLEN_P(arg1)+1, (void **) &find_hash) == FAILURE) {
-					ALLOC_ZVAL(hash);
-					INIT_PZVAL(hash);
-					array_init(hash);
-
-					zend_hash_update(Z_ARRVAL_P(arr), Z_STRVAL_P(arg1), Z_STRLEN_P(arg1)+1, &hash, sizeof(zval *), NULL);
-				} else {
-					hash = *find_hash;
-				}
-			} else {
+			if (!(Z_STRLEN_P(arg1) > 1 && Z_STRVAL_P(arg1)[0]=='0') && is_numeric_string(Z_STRVAL_P(arg1), Z_STRLEN_P(arg1), NULL, NULL, 0) == IS_LONG) {
 				ulong key = (ulong) zend_atoi(Z_STRVAL_P(arg1), Z_STRLEN_P(arg1));
 				if (zend_hash_index_find(Z_ARRVAL_P(arr), key, (void **) &find_hash) == FAILURE) {
 						ALLOC_ZVAL(hash);
@@ -6150,6 +6149,16 @@ static void php_simple_ini_parser_cb(zval *arg1, zval *arg2, int callback_type, 
 					        array_init(hash);
 
 					        zend_hash_index_update(Z_ARRVAL_P(arr), key, &hash, sizeof(zval *), NULL);
+				} else {
+					hash = *find_hash;
+				}
+			} else {
+				if (zend_hash_find(Z_ARRVAL_P(arr), Z_STRVAL_P(arg1), Z_STRLEN_P(arg1)+1, (void **) &find_hash) == FAILURE) {
+					ALLOC_ZVAL(hash);
+					INIT_PZVAL(hash);
+					array_init(hash);
+
+					zend_hash_update(Z_ARRVAL_P(arr), Z_STRVAL_P(arg1), Z_STRLEN_P(arg1)+1, &hash, sizeof(zval *), NULL);
 				} else {
 					hash = *find_hash;
 				}
@@ -6181,12 +6190,7 @@ static void php_ini_parser_cb_with_sections(zval *arg1, zval *arg2, int callback
 	if (callback_type == ZEND_INI_PARSER_SECTION) {
 		MAKE_STD_ZVAL(BG(active_ini_file_section));
 		array_init(BG(active_ini_file_section));
-		if (is_numeric_string(Z_STRVAL_P(arg1), Z_STRLEN_P(arg1), NULL, NULL, 0) != IS_LONG) {
-			zend_hash_update(Z_ARRVAL_P(arr), Z_STRVAL_P(arg1), Z_STRLEN_P(arg1)+1, &BG(active_ini_file_section), sizeof(zval *), NULL);
-		} else {
-			ulong key = (ulong) zend_atoi(Z_STRVAL_P(arg1), Z_STRLEN_P(arg1));
-			zend_hash_index_update(Z_ARRVAL_P(arr), key, &BG(active_ini_file_section), sizeof(zval *), NULL);
-		}
+		zend_symtable_update(Z_ARRVAL_P(arr), Z_STRVAL_P(arg1), Z_STRLEN_P(arg1)+1, &BG(active_ini_file_section), sizeof(zval *), NULL);
 	} else if (arg2) {
 		zval *active_arr;
 

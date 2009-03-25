@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: network.c,v 1.118.2.2.2.4 2007/01/11 15:51:37 tony2001 Exp $ */
+/* $Id: network.c,v 1.118.2.2.2.6 2007/07/18 09:04:58 jani Exp $ */
 
 /*#define DEBUG_MAIN_NETWORK 1*/
 
@@ -1026,32 +1026,32 @@ PHPAPI php_stream *_php_stream_sock_open_host(const char *host, unsigned short p
 
 PHPAPI int php_set_sock_blocking(int socketd, int block TSRMLS_DC)
 {
-      int ret = SUCCESS;
-      int flags;
-      int myflag = 0;
+	int ret = SUCCESS;
+	int flags;
+	int myflag = 0;
 
 #ifdef PHP_WIN32
-      /* with ioctlsocket, a non-zero sets nonblocking, a zero sets blocking */
-	  flags = !block;
-	  if (ioctlsocket(socketd, FIONBIO, &flags)==SOCKET_ERROR){
-		  php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", WSAGetLastError());
-		  ret = FALSE;
-      }
+	/* with ioctlsocket, a non-zero sets nonblocking, a zero sets blocking */
+	flags = !block;
+	if (ioctlsocket(socketd, FIONBIO, &flags) == SOCKET_ERROR) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", WSAGetLastError());
+		ret = FAILURE;
+	}
 #else
-      flags = fcntl(socketd, F_GETFL);
+	flags = fcntl(socketd, F_GETFL);
 #ifdef O_NONBLOCK
-      myflag = O_NONBLOCK; /* POSIX version */
+	myflag = O_NONBLOCK; /* POSIX version */
 #elif defined(O_NDELAY)
-      myflag = O_NDELAY;   /* old non-POSIX version */
+	myflag = O_NDELAY;   /* old non-POSIX version */
 #endif
-      if (!block) {
-              flags |= myflag;
-      } else {
+	if (!block) {
+		flags |= myflag;
+	} else {
 		flags &= ~myflag;
-      }
-      fcntl(socketd, F_SETFL, flags);
+	}
+	fcntl(socketd, F_SETFL, flags);
 #endif
-      return ret;
+	return ret;
 }
 
 PHPAPI void _php_emit_fd_setsize_warning(int max_fd)

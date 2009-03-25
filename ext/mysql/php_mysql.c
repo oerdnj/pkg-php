@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
  
-/* $Id: php_mysql.c,v 1.213.2.6.2.12 2007/05/14 18:09:20 scottmac Exp $ */
+/* $Id: php_mysql.c,v 1.213.2.6.2.15 2007/06/25 16:01:30 scottmac Exp $ */
 
 /* TODO:
  *
@@ -401,6 +401,10 @@ ZEND_MODULE_STARTUP_D(mysql)
 	REGISTER_LONG_CONSTANT("MYSQL_CLIENT_INTERACTIVE", CLIENT_INTERACTIVE, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("MYSQL_CLIENT_IGNORE_SPACE", CLIENT_IGNORE_SPACE, CONST_CS | CONST_PERSISTENT); 
 
+	if (mysql_server_init(0, NULL, NULL)) {
+		return FAILURE;
+	}
+
 	return SUCCESS;
 }
 /* }}} */
@@ -409,6 +413,16 @@ ZEND_MODULE_STARTUP_D(mysql)
  */
 PHP_MSHUTDOWN_FUNCTION(mysql)
 {
+#ifdef PHP_WIN32
+	unsigned long client_ver = mysql_get_client_version;
+	/* Can't call mysql_server_end() multiple times prior to 5.0.42 on Windows */
+	if ((client_ver > 50042 && client_ver < 50100) || client_ver > 50122) {
+		mysql_server_end();
+	}
+#else
+	mysql_server_end();
+#endif
+
 	UNREGISTER_INI_ENTRIES();
 	return SUCCESS;
 }
@@ -418,12 +432,18 @@ PHP_MSHUTDOWN_FUNCTION(mysql)
  */
 PHP_RINIT_FUNCTION(mysql)
 {
+#ifdef ZTS
+	if (mysql_thread_init()) {
+		return FAILURE;
+	}
+#endif
 	MySG(default_link)=-1;
 	MySG(num_links) = MySG(num_persistent);
 	/* Reset connect error/errno on every request */
 	MySG(connect_error) = NULL;
 	MySG(connect_errno) =0;
 	MySG(result_allocated) = 0;
+
 	return SUCCESS;
 }
 /* }}} */
@@ -432,6 +452,10 @@ PHP_RINIT_FUNCTION(mysql)
  */
 PHP_RSHUTDOWN_FUNCTION(mysql)
 {
+#ifdef ZTS
+	mysql_thread_end();
+#endif
+
 	if (MySG(trace_mode)) {
 		if (MySG(result_allocated)){
 			php_error_docref("function.mysql-free-result" TSRMLS_CC, E_WARNING, "%lu result set(s) not freed. Use mysql_free_result to free result sets which were requested using mysql_query()", MySG(result_allocated));
@@ -603,7 +627,7 @@ static void php_mysql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 				break;
 		}
 		/* disable local infile option for open_basedir */
-                if (PG(open_basedir) && strlen(PG(open_basedir)) && (client_flags & CLIENT_LOCAL_FILES)) {
+		if (((PG(open_basedir) && PG(open_basedir)[0] != '\0') || PG(safe_mode)) && (client_flags & CLIENT_LOCAL_FILES)) {
                 	client_flags ^= CLIENT_LOCAL_FILES;
 		}
 
@@ -738,6 +762,7 @@ static void php_mysql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 #endif
 
 			mysql = (php_mysql_conn *) le->ptr;
+			mysql->active_result_id = 0;
 		}
 		ZEND_REGISTER_RESOURCE(return_value, mysql, le_plink);
 	} else { /* non persistent */

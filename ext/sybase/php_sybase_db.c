@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: php_sybase_db.c,v 1.66.2.5.2.5 2007/03/16 21:59:17 stas Exp $ */
+/* $Id: php_sybase_db.c,v 1.66.2.5.2.7 2007/08/10 13:24:59 jani Exp $ */
 
 
 #ifdef HAVE_CONFIG_H
@@ -355,7 +355,7 @@ static void php_sybase_do_connect(INTERNAL_FUNCTION_PARAMETERS,int persistent)
 				host = Z_STRVAL_PP(yyhost);
 				user = Z_STRVAL_PP(yyuser);
 				passwd = Z_STRVAL_PP(yypasswd);
-				spprintf(&hashed_details, 0, "sybase_%s_%s_%s__", Z_STRVAL_PP(yyhost), Z_STRVAL_PP(yyuser), Z_STRVAL_PP(yypasswd));
+				hashed_details_length = spprintf(&hashed_details, 0, "sybase_%s_%s_%s__", Z_STRVAL_PP(yyhost), Z_STRVAL_PP(yyuser), Z_STRVAL_PP(yypasswd));
 			}
 			break;
 		case 4: {
@@ -928,7 +928,7 @@ PHP_FUNCTION(sybase_query)
 		/* Check assumption that dbnextrow returns NO_MORE_ROWS */
 		retvalue = dbnextrow(sybase_ptr->link);
 		if (retvalue != NO_MORE_ROWS) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING,"Expected dbnextrow() to return NO_MORE_ROWS.");
+			php_error_docref(NULL TSRMLS_CC, E_WARNING,"Expected dbnextrow() to return NO_MORE_ROWS");
 		}
 	}
 }

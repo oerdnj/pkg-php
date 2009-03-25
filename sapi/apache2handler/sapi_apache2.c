@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: sapi_apache2.c,v 1.57.2.10.2.13 2007/01/01 09:36:12 sebastian Exp $ */
+/* $Id: sapi_apache2.c,v 1.57.2.10.2.15 2007/06/28 17:23:07 tony2001 Exp $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 
@@ -349,12 +349,20 @@ static sapi_module_struct apache2_sapi_module = {
 	STANDARD_SAPI_MODULE_PROPERTIES
 };
 
-static apr_status_t
-php_apache_server_shutdown(void *tmp)
+static apr_status_t php_apache_server_shutdown(void *tmp)
 {
 	apache2_sapi_module.shutdown(&apache2_sapi_module);
 	sapi_shutdown();
 #ifdef ZTS
+	tsrm_shutdown();
+#endif
+	return APR_SUCCESS;
+}
+
+static apr_status_t php_apache_child_shutdown(void *tmp)
+{
+	apache2_sapi_module.shutdown(&apache2_sapi_module);
+#if defined(ZTS) && !defined(PHP_WIN32)
 	tsrm_shutdown();
 #endif
 	return APR_SUCCESS;
@@ -651,11 +659,17 @@ zend_first_try {
 	return OK;
 }
 
+static void php_apache_child_init(apr_pool_t *pchild, server_rec *s)
+{
+	apr_pool_cleanup_register(pchild, NULL, php_apache_child_shutdown, apr_pool_cleanup_null);
+}
+
 void php_ap2_register_hook(apr_pool_t *p)
 {
 	ap_hook_pre_config(php_pre_config, NULL, NULL, APR_HOOK_MIDDLE);
 	ap_hook_post_config(php_apache_server_startup, NULL, NULL, APR_HOOK_MIDDLE);
 	ap_hook_handler(php_handler, NULL, NULL, APR_HOOK_MIDDLE);
+	ap_hook_child_init(php_apache_child_init, NULL, NULL, APR_HOOK_MIDDLE);
 }
 
 /*

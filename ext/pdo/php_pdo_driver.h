@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_driver.h,v 1.66.2.11.2.5 2007/05/16 19:33:57 iliaa Exp $ */
+/* $Id: php_pdo_driver.h,v 1.66.2.11.2.6 2007/07/23 11:53:58 jani Exp $ */
 
 #ifndef PHP_PDO_DRIVER_H
 #define PHP_PDO_DRIVER_H
@@ -646,8 +646,8 @@ PDO_API int php_pdo_parse_data_source(const char *data_source,
 		unsigned long data_source_len, struct pdo_data_src_parser *parsed,
 		int nparams);
 
-PDO_API zend_class_entry *php_pdo_get_dbh_ce();
-PDO_API zend_class_entry *php_pdo_get_exception();
+PDO_API zend_class_entry *php_pdo_get_dbh_ce(void);
+PDO_API zend_class_entry *php_pdo_get_exception(void);
 
 PDO_API int pdo_parse_params(pdo_stmt_t *stmt, char *inquery, int inquery_len, 
 	char **outquery, int *outquery_len TSRMLS_DC);

@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: soap.c,v 1.156.2.28.2.25 2007/05/27 17:46:46 iliaa Exp $ */
+/* $Id: soap.c,v 1.156.2.28.2.27 2007/08/01 10:39:33 dmitry Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1848,8 +1848,6 @@ PHP_METHOD(SoapServer, handle)
 			php_error_docref(NULL TSRMLS_CC, E_ERROR, "Dump memory failed");
 		} 	
 
-		snprintf(cont_len, sizeof(cont_len), "Content-Length: %d", size);
-		sapi_add_header(cont_len, strlen(cont_len), 1);
 		if (soap_version == SOAP_1_2) {
 			sapi_add_header("Content-Type: application/soap+xml; charset=utf-8", sizeof("Content-Type: application/soap+xml; charset=utf-8")-1, 1);
 		} else {
@@ -1857,8 +1855,38 @@ PHP_METHOD(SoapServer, handle)
 		}
 
 		xmlFreeDoc(doc_return);
-		php_write(buf, size TSRMLS_CC);
-		xmlFree(buf);
+
+		if (zend_ini_long("zlib.output_compression", sizeof("zlib.output_compression"), 0) &&				
+		    zend_hash_exists(EG(function_table), "ob_gzhandler", sizeof("ob_gzhandler"))) {
+			zval nm_ob_gzhandler;
+			zval str;
+			zval mode;
+			zval result;
+			zval *params[2];
+
+			INIT_ZVAL(result);
+			ZVAL_STRINGL(&nm_ob_gzhandler, "ob_gzhandler", sizeof("ob_gzhandler") - 1, 0);
+			ZVAL_STRINGL(&str, (char*)buf, size, 0);
+			params[0] = &str;
+			ZVAL_LONG(&mode, PHP_OUTPUT_HANDLER_START | PHP_OUTPUT_HANDLER_END);
+			params[1] = &mode;
+			if (call_user_function(CG(function_table), NULL, &nm_ob_gzhandler, &result, 2, params TSRMLS_CC) != FAILURE &&
+			    Z_TYPE(result) == IS_STRING &&
+				zend_alter_ini_entry("zlib.output_compression", sizeof("zlib.output_compression"), "0", sizeof("0")-1, PHP_INI_USER, PHP_INI_STAGE_RUNTIME) == SUCCESS) {
+				xmlFree(buf);
+				buf = NULL;
+				snprintf(cont_len, sizeof(cont_len), "Content-Length: %d", Z_STRLEN(result));
+				sapi_add_header(cont_len, strlen(cont_len), 1);
+				php_write(Z_STRVAL(result), Z_STRLEN(result) TSRMLS_CC);
+			}
+			zval_dtor(&result);
+		}
+		if (buf) {
+			snprintf(cont_len, sizeof(cont_len), "Content-Length: %d", size);
+			sapi_add_header(cont_len, strlen(cont_len), 1);
+			php_write(buf, size TSRMLS_CC);
+			xmlFree(buf);
+		}
 	} else {
 		sapi_add_header("HTTP/1.1 202 Accepted", sizeof("HTTP/1.1 202 Accepted")-1, 1);
 		sapi_add_header("Content-Length: 0", sizeof("Content-Length: 0")-1, 1);
@@ -2039,6 +2067,7 @@ static void soap_error_handler(int error_num, const char *error_filename, const 
 #ifdef va_copy
 			va_list argcopy;
 #endif
+			zend_object_store_bucket *old_objects;
 			int old = PG(display_errors);
 
 			INIT_ZVAL(outbuf);
@@ -2065,6 +2094,8 @@ static void soap_error_handler(int error_num, const char *error_filename, const 
 			INIT_PZVAL(exception);
 			zend_throw_exception_object(exception TSRMLS_CC);
 
+			old_objects = EG(objects_store).object_buckets;
+			EG(objects_store).object_buckets = NULL;
 			PG(display_errors) = 0;
 			zend_try {
 				call_old_error_handler(error_num, error_filename, error_lineno, format, args);
@@ -2073,6 +2104,7 @@ static void soap_error_handler(int error_num, const char *error_filename, const 
 				EG(in_execution) = _old_in_execution;
 				EG(current_execute_data) = _old_current_execute_data;
 			} zend_end_try();
+			EG(objects_store).object_buckets = old_objects;
 			PG(display_errors) = old;
 			zend_bailout();
 		} else {

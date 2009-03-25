@@ -25,7 +25,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: oci8_statement.c,v 1.7.2.14.2.23 2007/03/01 22:27:44 tony2001 Exp $ */
+/* $Id: oci8_statement.c,v 1.7.2.14.2.28 2007/08/02 19:04:37 sixd Exp $ */
 
 
 #ifdef HAVE_CONFIG_H
@@ -82,7 +82,7 @@ php_oci_statement *php_oci_statement_create (php_oci_connection *connection, cha
 			php_oci_error(connection->err, connection->errcode TSRMLS_CC);
 
 #if HAVE_OCI_STMT_PREPARE2
-			PHP_OCI_CALL(OCIStmtRelease, (statement->stmt, statement->err, NULL, 0, OCI_STRLS_CACHE_DELETE));
+			PHP_OCI_CALL(OCIStmtRelease, (statement->stmt, statement->err, NULL, 0, statement->errcode ? OCI_STRLS_CACHE_DELETE : OCI_DEFAULT));
 			PHP_OCI_CALL(OCIHandleFree,(statement->err, OCI_HTYPE_ERROR));
 #else
 			PHP_OCI_CALL(OCIHandleFree,(statement->stmt, OCI_HTYPE_STMT));
@@ -107,6 +107,7 @@ php_oci_statement *php_oci_statement_create (php_oci_connection *connection, cha
 	statement->connection = connection;
 	statement->has_data = 0;
 	statement->nested = 0;
+	zend_list_addref(statement->connection->rsrc_id);
 
 	if (OCI_G(default_prefetch) > 0) {
 		php_oci_statement_set_prefetch(statement, OCI_G(default_prefetch) TSRMLS_CC);
@@ -629,6 +630,15 @@ int php_oci_statement_execute(php_oci_statement *statement, ub4 mode TSRMLS_DC)
 #ifdef SQLT_TIMESTAMP_TZ
 						|| (outcol->data_type == SQLT_TIMESTAMP_TZ)
 #endif
+#ifdef SQLT_TIMESTAMP_LTZ
+						|| (outcol->data_type == SQLT_TIMESTAMP_LTZ)
+#endif
+#ifdef SQLT_INTERVAL_YM
+						|| (outcol->data_type == SQLT_INTERVAL_YM)
+#endif
+#ifdef SQLT_INTERVAL_DS
+						|| (outcol->data_type == SQLT_INTERVAL_DS)
+#endif
 						) {
 						outcol->storage_size4 = 512; /* XXX this should fit "most" NLS date-formats and Numbers */
 #if defined(SQLT_IBFLOAT) && defined(SQLT_IBDOUBLE)
@@ -733,7 +743,7 @@ void php_oci_statement_free(php_oci_statement *statement TSRMLS_DC)
  	if (statement->stmt) {
 #if HAVE_OCI_STMT_PREPARE2
 		if (statement->last_query_len) { /* FIXME: magical */
-			PHP_OCI_CALL(OCIStmtRelease, (statement->stmt, statement->err, NULL, 0, OCI_STRLS_CACHE_DELETE));
+			PHP_OCI_CALL(OCIStmtRelease, (statement->stmt, statement->err, NULL, 0, statement->errcode ? OCI_STRLS_CACHE_DELETE : OCI_DEFAULT));
 		} else {
 			PHP_OCI_CALL(OCIHandleFree, (statement->stmt, OCI_HTYPE_STMT));
 		}
@@ -838,8 +848,8 @@ int php_oci_bind_post_exec(void *data TSRMLS_DC)
 				break;
 			case SQLT_ODT:
 				for (i = 0; i < bind->array.current_length; i++) {
-					char buff[1024];
-					int buff_len = 1024;
+					oratext buff[1024];
+					ub4 buff_len = 1024;
 
 					memset((void*)buff,0,sizeof(buff));
 							
@@ -851,7 +861,7 @@ int php_oci_bind_post_exec(void *data TSRMLS_DC)
 							php_oci_error(connection->err, connection->errcode TSRMLS_CC);
 							ZVAL_NULL(*entry);
 						} else {
-							ZVAL_STRINGL(*entry, buff, buff_len, 1);
+							ZVAL_STRINGL(*entry, (char *)buff, buff_len, 1);
 						}
 						zend_hash_move_forward(hash);
 					} else {
@@ -860,7 +870,7 @@ int php_oci_bind_post_exec(void *data TSRMLS_DC)
 							php_oci_error(connection->err, connection->errcode TSRMLS_CC);
 							add_next_index_null(bind->zval);
 						} else {
-							add_next_index_stringl(bind->zval, buff, buff_len, 1);
+							add_next_index_stringl(bind->zval, (char *)buff, buff_len, 1);
 						}
 					}
 				}
@@ -877,10 +887,10 @@ int php_oci_bind_post_exec(void *data TSRMLS_DC)
 					int curr_element_length = bind->array.element_lengths[i];
 					if ((i < bind->array.old_length) && (zend_hash_get_current_data(hash, (void **) &entry) != FAILURE)) {
 						zval_dtor(*entry);
-						ZVAL_STRINGL(*entry, ((text *)bind->array.elements)+i*bind->array.max_length, curr_element_length, 1);
+						ZVAL_STRINGL(*entry, (char *)(((text *)bind->array.elements)+i*bind->array.max_length), curr_element_length, 1);
 						zend_hash_move_forward(hash);
 					} else {
-						add_next_index_stringl(bind->zval, ((text *)bind->array.elements)+i*bind->array.max_length, curr_element_length, 1);
+						add_next_index_stringl(bind->zval, (char *)(((text *)bind->array.elements)+i*bind->array.max_length), curr_element_length, 1);
 					}
 				}
 				break;
@@ -1553,7 +1563,7 @@ php_oci_bind *php_oci_bind_array_helper_date(zval* var, long max_table_length, p
 		if ((i < bind->array.current_length) && (zend_hash_get_current_data(hash, (void **) &entry) != FAILURE)) {
 			
 			convert_to_string_ex(entry);
-			PHP_OCI_CALL_RETURN(connection->errcode, OCIDateFromText, (connection->err, Z_STRVAL_PP(entry), Z_STRLEN_PP(entry), NULL, 0, NULL, 0, &oci_date));
+			PHP_OCI_CALL_RETURN(connection->errcode, OCIDateFromText, (connection->err, (CONST text *)Z_STRVAL_PP(entry), Z_STRLEN_PP(entry), NULL, 0, NULL, 0, &oci_date));
 
 			if (connection->errcode != OCI_SUCCESS) {
 				/* failed to convert string to date */
@@ -1567,7 +1577,7 @@ php_oci_bind *php_oci_bind_array_helper_date(zval* var, long max_table_length, p
 			((OCIDate *)bind->array.elements)[i] = oci_date;
 			zend_hash_move_forward(hash);
 		} else {
-			PHP_OCI_CALL_RETURN(connection->errcode, OCIDateFromText, (connection->err, "01-JAN-00", sizeof("01-JAN-00")-1, NULL, 0, NULL, 0, &oci_date));
+			PHP_OCI_CALL_RETURN(connection->errcode, OCIDateFromText, (connection->err, (CONST text *)"01-JAN-00", sizeof("01-JAN-00")-1, NULL, 0, NULL, 0, &oci_date));
 
 			if (connection->errcode != OCI_SUCCESS) {
 				/* failed to convert string to date */
@@ -1587,3 +1597,12 @@ php_oci_bind *php_oci_bind_array_helper_date(zval* var, long max_table_length, p
 } /* }}} */
 
 #endif /* HAVE_OCI8 */
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

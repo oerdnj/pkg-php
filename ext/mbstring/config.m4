@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.58.2.4.2.8 2007/01/29 22:53:47 hirokawa Exp $
+dnl $Id: config.m4,v 1.58.2.4.2.10 2007/07/31 12:23:50 tony2001 Exp $
 dnl
 
 AC_DEFUN([PHP_MBSTRING_ADD_SOURCES], [
@@ -270,7 +270,7 @@ AC_DEFUN([PHP_MBSTRING_SETUP_LIBMBFL], [
     ],[
       AC_MSG_ERROR([Problem with libmbfl. Please check config.log for more information.])
     ], [
-      -LPHP_LIBMBFL/$PHP_LIBDIR
+      -L$PHP_LIBMBFL/$PHP_LIBDIR
     ])
   fi
 ])
@@ -286,11 +286,12 @@ PHP_ARG_ENABLE([mbregex], [whether to enable multibyte regex support],
 [  --disable-mbregex         MBSTRING: Disable multibyte regex support], yes, no)
 
 PHP_ARG_ENABLE([mbregex_backtrack], [whether to check multibyte regex backtrack],
-[  --disable-mbregex-backtrack         MBSTRING: Disable multibyte regex backtrack check], yes, no)
+[  --disable-mbregex-backtrack
+                            MBSTRING: Disable multibyte regex backtrack check], yes, no)
 
 PHP_ARG_WITH(libmbfl, [for external libmbfl],
-[  --with-libmbfl[=DIR]      MBSTRING: Use external libmbfl. DIR is the libmbfl install prefix.
-                            If DIR is not set, the bundled libmbfl will be used], no, no)
+[  --with-libmbfl[=DIR]      MBSTRING: Use external libmbfl.  DIR is the libmbfl base
+                            install directory [BUNDLED]], no, no)
 
 if test "$PHP_MBSTRING" != "no"; then  
   AC_DEFINE([HAVE_MBSTRING],1,[whether to have multibyte string support])

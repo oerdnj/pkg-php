@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_virtual_cwd.c,v 1.74.2.9.2.29 2007/05/30 10:50:47 tony2001 Exp $ */
+/* $Id: tsrm_virtual_cwd.c,v 1.74.2.9.2.35 2007/08/10 09:09:46 tony2001 Exp $ */
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -136,7 +136,7 @@ static int php_check_dots(const char *element, int n)
 	free((s)->cwd);
 	
 #ifdef TSRM_WIN32
-CWD_API int php_sys_stat(const char *path, struct stat *buf)
+CWD_API int php_sys_stat(const char *path, struct stat *buf) /* {{{ */
 {
 	WIN32_FILE_ATTRIBUTE_DATA data;
 	__int64 t;
@@ -215,9 +215,10 @@ CWD_API int php_sys_stat(const char *path, struct stat *buf)
 	buf->st_mtime = (unsigned long)((t / 10000000) - 11644473600);
 	return 0;
 }
+/* }}} */
 #endif
 
-static int php_is_dir_ok(const cwd_state *state) 
+static int php_is_dir_ok(const cwd_state *state)  /* {{{ */
 {
 	struct stat buf;
 
@@ -226,8 +227,9 @@ static int php_is_dir_ok(const cwd_state *state)
 
 	return (1);
 }
+/* }}} */
 
-static int php_is_file_ok(const cwd_state *state) 
+static int php_is_file_ok(const cwd_state *state)  /* {{{ */
 {
 	struct stat buf;
 
@@ -236,8 +238,9 @@ static int php_is_file_ok(const cwd_state *state)
 
 	return (1);
 }
+/* }}} */
 
-static void cwd_globals_ctor(virtual_cwd_globals *cwd_globals TSRMLS_DC)
+static void cwd_globals_ctor(virtual_cwd_globals *cwd_globals TSRMLS_DC) /* {{{ */
 {
 	CWD_STATE_COPY(&cwd_globals->cwd, &main_cwd_state);
 	cwd_globals->realpath_cache_size = 0;
@@ -245,14 +248,16 @@ static void cwd_globals_ctor(virtual_cwd_globals *cwd_globals TSRMLS_DC)
 	cwd_globals->realpath_cache_ttl = REALPATH_CACHE_TTL;
 	memset(cwd_globals->realpath_cache, 0, sizeof(cwd_globals->realpath_cache));
 }
+/* }}} */
 
-static void cwd_globals_dtor(virtual_cwd_globals *cwd_globals TSRMLS_DC)
+static void cwd_globals_dtor(virtual_cwd_globals *cwd_globals TSRMLS_DC) /* {{{ */
 {
 	CWD_STATE_FREE(&cwd_globals->cwd);
 	realpath_cache_clean(TSRMLS_C);
 }
+/* }}} */
 
-static char *tsrm_strndup(const char *s, size_t length)
+static char *tsrm_strndup(const char *s, size_t length) /* {{{ */
 {
     char *p;
 
@@ -266,8 +271,9 @@ static char *tsrm_strndup(const char *s, size_t length)
     p[length]=0;
     return p;
 }
+/* }}} */
 
-CWD_API void virtual_cwd_startup(void)
+CWD_API void virtual_cwd_startup(void) /* {{{ */
 {
 	char cwd[MAXPATHLEN];
 	char *result;
@@ -302,8 +308,9 @@ CWD_API void virtual_cwd_startup(void)
 	cwd_mutex = tsrm_mutex_alloc();
 #endif
 }
+/* }}} */
 
-CWD_API void virtual_cwd_shutdown(void)
+CWD_API void virtual_cwd_shutdown(void) /* {{{ */
 {
 #ifndef ZTS
 	cwd_globals_dtor(&cwd_globals TSRMLS_CC);
@@ -314,8 +321,9 @@ CWD_API void virtual_cwd_shutdown(void)
 
 	free(main_cwd_state.cwd); /* Don't use CWD_STATE_FREE because the non global states will probably use emalloc()/efree() */
 }
+/* }}} */
 
-CWD_API char *virtual_getcwd_ex(size_t *length TSRMLS_DC)
+CWD_API char *virtual_getcwd_ex(size_t *length TSRMLS_DC) /* {{{ */
 {
 	cwd_state *state;
 
@@ -347,10 +355,10 @@ CWD_API char *virtual_getcwd_ex(size_t *length TSRMLS_DC)
 	*length = state->cwd_length;
 	return strdup(state->cwd);
 }
-
+/* }}} */
 
 /* Same semantics as UNIX getcwd() */
-CWD_API char *virtual_getcwd(char *buf, size_t size TSRMLS_DC)
+CWD_API char *virtual_getcwd(char *buf, size_t size TSRMLS_DC) /* {{{ */
 {
 	size_t length;
 	char *cwd;
@@ -369,8 +377,9 @@ CWD_API char *virtual_getcwd(char *buf, size_t size TSRMLS_DC)
 	free(cwd);
 	return buf;
 }
+/* }}} */
 
-static inline unsigned long realpath_cache_key(const char *path, int path_len)
+static inline unsigned long realpath_cache_key(const char *path, int path_len) /* {{{ */
 {
 	register unsigned long h;
 	const char *e = path + path_len;
@@ -382,8 +391,9 @@ static inline unsigned long realpath_cache_key(const char *path, int path_len)
 
 	return h;
 }
+/* }}} */
 
-CWD_API void realpath_cache_clean(TSRMLS_D)
+CWD_API void realpath_cache_clean(TSRMLS_D) /* {{{ */
 {
 	int i;
 
@@ -398,8 +408,9 @@ CWD_API void realpath_cache_clean(TSRMLS_D)
 	}
 	CWDG(realpath_cache_size) = 0;
 }
+/* }}} */
 
-CWD_API void realpath_cache_del(const char *path, int path_len TSRMLS_DC)
+CWD_API void realpath_cache_del(const char *path, int path_len TSRMLS_DC) /* {{{ */
 {
 	unsigned long key = realpath_cache_key(path, path_len);
 	unsigned long n = key % (sizeof(CWDG(realpath_cache)) / sizeof(CWDG(realpath_cache)[0]));
@@ -418,8 +429,9 @@ CWD_API void realpath_cache_del(const char *path, int path_len TSRMLS_DC)
 		}
 	}
 }
+/* }}} */
 
-static inline void realpath_cache_add(const char *path, int path_len, const char *realpath, int realpath_len, time_t t TSRMLS_DC)
+static inline void realpath_cache_add(const char *path, int path_len, const char *realpath, int realpath_len, time_t t TSRMLS_DC) /* {{{ */
 {
 	long size = sizeof(realpath_cache_bucket) + path_len + 1 + realpath_len + 1;
 	if (CWDG(realpath_cache_size) + size <= CWDG(realpath_cache_size_limit)) {
@@ -440,8 +452,9 @@ static inline void realpath_cache_add(const char *path, int path_len, const char
 		CWDG(realpath_cache_size) += size;
 	}
 }
+/* }}} */
 
-static inline realpath_cache_bucket* realpath_cache_find(const char *path, int path_len, time_t t TSRMLS_DC)
+static inline realpath_cache_bucket* realpath_cache_find(const char *path, int path_len, time_t t TSRMLS_DC) /* {{{ */
 {
 	unsigned long key = realpath_cache_key(path, path_len);
 	unsigned long n = key % (sizeof(CWDG(realpath_cache)) / sizeof(CWDG(realpath_cache)[0]));
@@ -462,11 +475,11 @@ static inline realpath_cache_bucket* realpath_cache_find(const char *path, int p
 	}
 	return NULL;
 }
-
+/* }}} */
 
 /* Resolve path relatively to state and put the real path into state */
 /* returns 0 for ok, 1 for error */
-CWD_API int virtual_file_ex(cwd_state *state, const char *path, verify_path_func verify_path, int use_realpath)
+CWD_API int virtual_file_ex(cwd_state *state, const char *path, verify_path_func verify_path, int use_realpath) /* {{{ */
 {
 	int path_length = strlen(path);
 	cwd_state old_state;
@@ -477,11 +490,11 @@ CWD_API int virtual_file_ex(cwd_state *state, const char *path, verify_path_func
 	int use_cache;
 	int use_relative_path = 0;
 	TSRMLS_FETCH();
-	
+
 	use_cache = ((use_realpath != CWD_EXPAND) && CWDG(realpath_cache_size_limit));
 
 	if (path_length == 0) 
-		return (0);
+		return (1);
 	if (path_length >= MAXPATHLEN)
 		return (1);
 
@@ -547,6 +560,7 @@ CWD_API int virtual_file_ex(cwd_state *state, const char *path, verify_path_func
 			}
 			goto no_realpath;
 		}
+		use_realpath = CWD_REALPATH;
 		CWD_STATE_COPY(&old_state, state);
 
 		state->cwd_length = strlen(resolved_path);
@@ -563,6 +577,13 @@ CWD_API int virtual_file_ex(cwd_state *state, const char *path, verify_path_func
 		int is_unc;
 #endif
 no_realpath:
+
+#ifdef TSRM_WIN32
+		if (memchr(path, '*', path_length) ||
+		    memchr(path, '?', path_length)) {
+			return 1;
+		}
+#endif
 
 		free_path = path_copy = tsrm_strndup(path, path_length);
 		CWD_STATE_COPY(&old_state, state);
@@ -691,6 +712,15 @@ no_realpath:
 			}
 			ptr = tsrm_strtok_r(NULL, TOKENIZER_STRING, &tok);
 		}
+#if defined(TSRM_WIN32) || defined(NETWARE)
+		if (path[path_length-1] == '\\' || path[path_length-1] == '/') {
+#else 
+		if (path[path_length-1] == '/') {
+#endif
+			state->cwd = (char*)realloc(state->cwd, state->cwd_length + 2);
+			state->cwd[state->cwd_length++] = DEFAULT_SLASH;
+			state->cwd[state->cwd_length] = 0;
+		}
 
 		free(free_path);
 
@@ -708,7 +738,7 @@ no_realpath:
 		}
 	}
 
-	if (use_cache) {
+	if (use_cache && (use_realpath == CWD_REALPATH)) {
 		realpath_cache_add(path, path_length, state->cwd, state->cwd_length, t TSRMLS_CC);
 	}
 
@@ -726,13 +756,15 @@ no_realpath:
 #endif
 	return (ret);
 }
+/* }}} */
 
-CWD_API int virtual_chdir(const char *path TSRMLS_DC)
+CWD_API int virtual_chdir(const char *path TSRMLS_DC) /* {{{ */
 {
 	return virtual_file_ex(&CWDG(cwd), path, php_is_dir_ok, CWD_REALPATH)?-1:0;
 }
+/* }}} */
 
-CWD_API int virtual_chdir_file(const char *path, int (*p_chdir)(const char *path TSRMLS_DC) TSRMLS_DC)
+CWD_API int virtual_chdir_file(const char *path, int (*p_chdir)(const char *path TSRMLS_DC) TSRMLS_DC) /* {{{ */
 {
 	int length = strlen(path);
 	char *temp;
@@ -763,13 +795,29 @@ CWD_API int virtual_chdir_file(const char *path, int (*p_chdir)(const char *path
 	tsrm_free_alloca(temp);
 	return retval;
 }
+/* }}} */
 
-CWD_API char *virtual_realpath(const char *path, char *real_path TSRMLS_DC)
+CWD_API char *virtual_realpath(const char *path, char *real_path TSRMLS_DC) /* {{{ */
 {
 	cwd_state new_state;
 	char *retval;
+	char cwd[MAXPATHLEN];
 
-	CWD_STATE_COPY(&new_state, &CWDG(cwd));
+	/* realpath("") returns CWD */
+	if (!*path) {
+		new_state.cwd = (char*)malloc(1);
+		new_state.cwd[0] = '\0';
+		new_state.cwd_length = 0;		
+	    if (VCWD_GETCWD(cwd, MAXPATHLEN)) {
+		    path = cwd;
+		}
+	} else if (!IS_ABSOLUTE_PATH(path, strlen(path))) {
+		CWD_STATE_COPY(&new_state, &CWDG(cwd));
+	} else {
+		new_state.cwd = (char*)malloc(1);
+		new_state.cwd[0] = '\0';
+		new_state.cwd_length = 0;		
+	}
 	
 	if (virtual_file_ex(&new_state, path, NULL, CWD_REALPATH)==0) {
 		int len = new_state.cwd_length>MAXPATHLEN-1?MAXPATHLEN-1:new_state.cwd_length;
@@ -785,8 +833,9 @@ CWD_API char *virtual_realpath(const char *path, char *real_path TSRMLS_DC)
 
 	return retval;
 }
+/* }}} */
 
-CWD_API int virtual_filepath_ex(const char *path, char **filepath, verify_path_func verify_path TSRMLS_DC)
+CWD_API int virtual_filepath_ex(const char *path, char **filepath, verify_path_func verify_path TSRMLS_DC) /* {{{ */
 {
 	cwd_state new_state;
 	int retval;
@@ -799,13 +848,15 @@ CWD_API int virtual_filepath_ex(const char *path, char **filepath, verify_path_f
 	return retval;
 
 }
+/* }}} */
 
-CWD_API int virtual_filepath(const char *path, char **filepath TSRMLS_DC)
+CWD_API int virtual_filepath(const char *path, char **filepath TSRMLS_DC) /* {{{ */
 {
 	return virtual_filepath_ex(path, filepath, php_is_file_ok TSRMLS_CC);
 }
+/* }}} */
 
-CWD_API FILE *virtual_fopen(const char *path, const char *mode TSRMLS_DC)
+CWD_API FILE *virtual_fopen(const char *path, const char *mode TSRMLS_DC) /* {{{ */
 {
 	cwd_state new_state;
 	FILE *f;
@@ -825,8 +876,9 @@ CWD_API FILE *virtual_fopen(const char *path, const char *mode TSRMLS_DC)
 	CWD_STATE_FREE(&new_state);
 	return f;
 }
+/* }}} */
 
-CWD_API int virtual_access(const char *pathname, int mode TSRMLS_DC)
+CWD_API int virtual_access(const char *pathname, int mode TSRMLS_DC) /* {{{ */
 {
 	cwd_state new_state;
 	int ret;
@@ -847,10 +899,10 @@ CWD_API int virtual_access(const char *pathname, int mode TSRMLS_DC)
 	
 	return ret;
 }
-
+/* }}} */
 
 #if HAVE_UTIME
-CWD_API int virtual_utime(const char *filename, struct utimbuf *buf TSRMLS_DC)
+CWD_API int virtual_utime(const char *filename, struct utimbuf *buf TSRMLS_DC) /* {{{ */
 {
 	cwd_state new_state;
 	int ret;
@@ -866,9 +918,10 @@ CWD_API int virtual_utime(const char *filename, struct utimbuf *buf TSRMLS_DC)
 	CWD_STATE_FREE(&new_state);
 	return ret;
 }
+/* }}} */
 #endif
 
-CWD_API int virtual_chmod(const char *filename, mode_t mode TSRMLS_DC)
+CWD_API int virtual_chmod(const char *filename, mode_t mode TSRMLS_DC) /* {{{ */
 {
 	cwd_state new_state;
 	int ret;
@@ -884,9 +937,10 @@ CWD_API int virtual_chmod(const char *filename, mode_t mode TSRMLS_DC)
 	CWD_STATE_FREE(&new_state);
 	return ret;
 }
+/* }}} */
 
 #if !defined(TSRM_WIN32) && !defined(NETWARE)
-CWD_API int virtual_chown(const char *filename, uid_t owner, gid_t group, int link TSRMLS_DC)
+CWD_API int virtual_chown(const char *filename, uid_t owner, gid_t group, int link TSRMLS_DC) /* {{{ */
 {
 	cwd_state new_state;
 	int ret;
@@ -910,9 +964,10 @@ CWD_API int virtual_chown(const char *filename, uid_t owner, gid_t group, int li
 	CWD_STATE_FREE(&new_state);
 	return ret;
 }
+/* }}} */
 #endif
 
-CWD_API int virtual_open(const char *path TSRMLS_DC, int flags, ...)
+CWD_API int virtual_open(const char *path TSRMLS_DC, int flags, ...) /* {{{ */
 {
 	cwd_state new_state;
 	int f;
@@ -938,8 +993,9 @@ CWD_API int virtual_open(const char *path TSRMLS_DC, int flags, ...)
 	CWD_STATE_FREE(&new_state);
 	return f;
 }
+/* }}} */
 
-CWD_API int virtual_creat(const char *path, mode_t mode TSRMLS_DC)
+CWD_API int virtual_creat(const char *path, mode_t mode TSRMLS_DC) /* {{{ */
 {
 	cwd_state new_state;
 	int f;
@@ -955,22 +1011,23 @@ CWD_API int virtual_creat(const char *path, mode_t mode TSRMLS_DC)
 	CWD_STATE_FREE(&new_state);
 	return f;
 }
+/* }}} */
 
-CWD_API int virtual_rename(char *oldname, char *newname TSRMLS_DC)
+CWD_API int virtual_rename(char *oldname, char *newname TSRMLS_DC) /* {{{ */
 {
 	cwd_state old_state;
 	cwd_state new_state;
 	int retval;
 
 	CWD_STATE_COPY(&old_state, &CWDG(cwd));
-	if (virtual_file_ex(&old_state, oldname, NULL, CWD_REALPATH)) {
+	if (virtual_file_ex(&old_state, oldname, NULL, CWD_EXPAND)) {
 		CWD_STATE_FREE(&old_state);
 		return -1;
 	}
 	oldname = old_state.cwd;
 
 	CWD_STATE_COPY(&new_state, &CWDG(cwd));
-	if (virtual_file_ex(&new_state, newname, NULL, CWD_FILEPATH)) {
+	if (virtual_file_ex(&new_state, newname, NULL, CWD_EXPAND)) {
 		CWD_STATE_FREE(&old_state);
 		CWD_STATE_FREE(&new_state);
 		return -1;
@@ -984,8 +1041,9 @@ CWD_API int virtual_rename(char *oldname, char *newname TSRMLS_DC)
 
 	return retval;
 }
+/* }}} */
 
-CWD_API int virtual_stat(const char *path, struct stat *buf TSRMLS_DC)
+CWD_API int virtual_stat(const char *path, struct stat *buf TSRMLS_DC) /* {{{ */
 {
 	cwd_state new_state;
 	int retval;
@@ -1001,9 +1059,10 @@ CWD_API int virtual_stat(const char *path, struct stat *buf TSRMLS_DC)
 	CWD_STATE_FREE(&new_state);
 	return retval;
 }
+/* }}} */
 
 #if !defined(TSRM_WIN32)
-CWD_API int virtual_lstat(const char *path, struct stat *buf TSRMLS_DC)
+CWD_API int virtual_lstat(const char *path, struct stat *buf TSRMLS_DC) /* {{{ */
 {
 	cwd_state new_state;
 	int retval;
@@ -1019,9 +1078,10 @@ CWD_API int virtual_lstat(const char *path, struct stat *buf TSRMLS_DC)
 	CWD_STATE_FREE(&new_state);
 	return retval;
 }
+/* }}} */
 #endif
 
-CWD_API int virtual_unlink(const char *path TSRMLS_DC)
+CWD_API int virtual_unlink(const char *path TSRMLS_DC) /* {{{ */
 {
 	cwd_state new_state;
 	int retval;
@@ -1037,8 +1097,9 @@ CWD_API int virtual_unlink(const char *path TSRMLS_DC)
 	CWD_STATE_FREE(&new_state);
 	return retval;
 }
+/* }}} */
 
-CWD_API int virtual_mkdir(const char *pathname, mode_t mode TSRMLS_DC)
+CWD_API int virtual_mkdir(const char *pathname, mode_t mode TSRMLS_DC) /* {{{ */
 {
 	cwd_state new_state;
 	int retval;
@@ -1057,8 +1118,9 @@ CWD_API int virtual_mkdir(const char *pathname, mode_t mode TSRMLS_DC)
 	CWD_STATE_FREE(&new_state);
 	return retval;
 }
+/* }}} */
 
-CWD_API int virtual_rmdir(const char *pathname TSRMLS_DC)
+CWD_API int virtual_rmdir(const char *pathname TSRMLS_DC) /* {{{ */
 {
 	cwd_state new_state;
 	int retval;
@@ -1074,12 +1136,13 @@ CWD_API int virtual_rmdir(const char *pathname TSRMLS_DC)
 	CWD_STATE_FREE(&new_state);
 	return retval;
 }
+/* }}} */
 
 #ifdef TSRM_WIN32
 DIR *opendir(const char *name);
 #endif
 
-CWD_API DIR *virtual_opendir(const char *pathname TSRMLS_DC)
+CWD_API DIR *virtual_opendir(const char *pathname TSRMLS_DC) /* {{{ */
 {
 	cwd_state new_state;
 	DIR *retval;
@@ -1095,20 +1158,19 @@ CWD_API DIR *virtual_opendir(const char *pathname TSRMLS_DC)
 	CWD_STATE_FREE(&new_state);
 	return retval;
 }
+/* }}} */
 
 #ifdef TSRM_WIN32
-
-CWD_API FILE *virtual_popen(const char *command, const char *type TSRMLS_DC)
+CWD_API FILE *virtual_popen(const char *command, const char *type TSRMLS_DC) /* {{{ */
 {
 	return popen_ex(command, type, CWDG(cwd).cwd, NULL);
 }
-
+/* }}} */
 #elif defined(NETWARE)
-
 /* On NetWare, the trick of prepending "cd cwd; " doesn't work so we need to perform
    a VCWD_CHDIR() and mutex it
  */
-CWD_API FILE *virtual_popen(const char *command, const char *type TSRMLS_DC)
+CWD_API FILE *virtual_popen(const char *command, const char *type TSRMLS_DC) /* {{{ */
 {
 	char prev_cwd[MAXPATHLEN];
 	char *getcwd_result;
@@ -1133,10 +1195,9 @@ CWD_API FILE *virtual_popen(const char *command, const char *type TSRMLS_DC)
 
 	return retval;
 }
-
+/* }}} */
 #else /* Unix */
-
-CWD_API FILE *virtual_popen(const char *command, const char *type TSRMLS_DC)
+CWD_API FILE *virtual_popen(const char *command, const char *type TSRMLS_DC) /* {{{ */
 {
 	int command_length;
 	int dir_length, extra = 0;
@@ -1193,15 +1254,23 @@ CWD_API FILE *virtual_popen(const char *command, const char *type TSRMLS_DC)
 	free(command_line);
 	return retval;
 }
-
+/* }}} */
 #endif
 
-CWD_API char *tsrm_realpath(const char *path, char *real_path TSRMLS_DC)
+CWD_API char *tsrm_realpath(const char *path, char *real_path TSRMLS_DC) /* {{{ */
 {
 	cwd_state new_state;
 	char cwd[MAXPATHLEN];
 
-	if (!IS_ABSOLUTE_PATH(path, strlen(path)) &&
+	/* realpath("") returns CWD */
+	if (!*path) {
+		new_state.cwd = (char*)malloc(1);
+		new_state.cwd[0] = '\0';
+		new_state.cwd_length = 0;		
+	    if (VCWD_GETCWD(cwd, MAXPATHLEN)) {
+		    path = cwd;
+		}
+	} else if (!IS_ABSOLUTE_PATH(path, strlen(path)) &&
 	    VCWD_GETCWD(cwd, MAXPATHLEN)) {
 		new_state.cwd = strdup(cwd);
 		new_state.cwd_length = strlen(cwd);
@@ -1226,7 +1295,7 @@ CWD_API char *tsrm_realpath(const char *path, char *real_path TSRMLS_DC)
 		return new_state.cwd;
 	}
 }
-
+/* }}} */
 
 /*
  * Local variables:
