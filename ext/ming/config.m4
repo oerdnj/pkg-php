@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.22.2.3 2005/11/24 00:51:42 helly Exp $
+dnl $Id: config.m4,v 1.22.2.6 2005/12/21 21:44:13 sniper Exp $
 dnl
 
 PHP_ARG_WITH(ming, for MING support,
@@ -9,7 +9,7 @@ if test "$PHP_MING" != "no"; then
   AC_CHECK_LIB(m, sin)
 
   for i in $PHP_MING /usr/local /usr; do
-    if test -f $i/$PHP_LIBDIR/libming.$SHLIB_SUFFIX_NAME -o -f $i/$PHP_LIBDIR/libming.a; then
+    if test -f $i/$PHP_LIBDIR/libming.$SHLIB_SUFFIX_NAME || test -f $i/$PHP_LIBDIR/libming.a; then
       MING_DIR=$i
       break
     fi
@@ -40,6 +40,10 @@ if test "$PHP_MING" != "no"; then
   PHP_ADD_INCLUDE($MING_INC_DIR)
   PHP_ADD_LIBRARY_WITH_PATH(ming, $MING_DIR/$PHP_LIBDIR, MING_SHARED_LIBADD)
 
+  PHP_CHECK_LIBRARY(ming, SWFPrebuiltClip, [ AC_DEFINE(HAVE_SWFPREBUILTCLIP, 1, [ ]) ], [], []) 
+
+  old_CPPFLAGS=$CPPFLAGS
+  CPPFLAGS=-I$MING_INC_DIR
   AC_MSG_CHECKING([for destroySWFBlock])
   AC_TRY_RUN([
 #include "ming.h"
@@ -58,11 +62,7 @@ int main() {
     AC_MSG_RESULT([unknown])
   ]) 
 
-  PHP_CHECK_LIBRARY(ming, SWFPrebuiltClip, [ AC_DEFINE(HAVE_SWFPREBUILTCLIP, 1, [ ]) ], [], []) 
-
 dnl Check Ming version (FIXME: if/when ming has some better way to detect the version..)
-  old_CPPFLAGS=$CPPFLAGS
-  CPPFLAGS=-I$MING_INC_DIR
   AC_EGREP_CPP(yes, [
 #include <ming.h>
 #ifdef SWF_SOUND_COMPRESSION
@@ -72,14 +72,16 @@ yes
     AC_DEFINE(HAVE_NEW_MING,  1, [ ]) 
     dnl FIXME: This is now unconditional..better check coming later.
     AC_DEFINE(HAVE_MING_ZLIB, 1, [ ])
-    AC_TRY_COMPILE([
-#include <ming.h>
-int main(int,void) {
-  SWFMovie_output(NULL, NULL, NULL, 0));
-  return 0;
-}
-	], [ AC_DEFINE(HAVE_MING_MOVIE_LEVEL, 1, []) ])
   ])
+
+  dnl Check if SWFMovie_output() accepts the 4th parameter
+  AC_TRY_COMPILE([
+#include <ming.h>
+  ], [
+int main(void) { SWFMovie_output(NULL, NULL, NULL, 0); return 0; }
+  ], [
+    AC_DEFINE(HAVE_MING_MOVIE_LEVEL, 1, [ ])
+  ], [])
   CPPFLAGS=$old_CPPFLAGS
 
   PHP_NEW_EXTENSION(ming, ming.c, $ext_shared)

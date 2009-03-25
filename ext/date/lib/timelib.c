@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -16,10 +16,11 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: timelib.c,v 1.7.2.1 2005/10/19 21:08:32 derick Exp $ */
+/* $Id: timelib.c,v 1.7.2.3 2006/01/01 12:50:05 sniper Exp $ */
 
 #include "timelib.h"
 #include <ctype.h>
+#include <math.h>
 
 #define TIMELIB_TIME_FREE(m) 	\
 	if (m) {		\
@@ -137,6 +138,13 @@ signed long timelib_date_to_int(timelib_time *d, int *error)
 		*error = 0;
 	}
 	return (signed long) d->sse;
+}
+
+void timelib_decimal_hour_to_hms(double h, int *hour, int *min, int *sec)
+{
+	*hour = floor(h);
+	*min =  floor((h - *hour) * 60);
+	*sec =  (h - *hour - ((float) *min / 60)) * 3600;
 }
 
 void timelib_dump_date(timelib_time *d, int options)

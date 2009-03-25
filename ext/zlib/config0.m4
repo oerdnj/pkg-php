@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config0.m4,v 1.17 2005/05/29 23:16:45 sniper Exp $
+dnl $Id: config0.m4,v 1.17.2.1 2005/11/29 18:35:26 tony2001 Exp $
 dnl
 
 PHP_ARG_WITH(zlib,for ZLIB support,
@@ -8,7 +8,7 @@ PHP_ARG_WITH(zlib,for ZLIB support,
 PHP_ARG_WITH(zlib-dir,if the location of ZLIB install directory is defined,
 [  --with-zlib-dir=<DIR>   Define the location of zlib install directory], no, no)
 
-if test "$PHP_ZLIB" != "no" -o "$PHP_ZLIB_DIR" != "no"; then
+if test "$PHP_ZLIB" != "no" || test "$PHP_ZLIB_DIR" != "no"; then
   PHP_NEW_EXTENSION(zlib, zlib.c zlib_fopen_wrapper.c zlib_filter.c, $ext_shared)
   PHP_SUBST(ZLIB_SHARED_LIBADD)
   

@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: timelib.h,v 1.10.2.4 2005/10/03 11:17:24 derick Exp $ */
+/* $Id: timelib.h,v 1.10.2.10 2006/01/04 21:31:34 derick Exp $ */
 
 #ifndef __TIMELIB_H__
 #define __TIMELIB_H__
@@ -38,6 +38,10 @@
 #define strcasecmp stricmp
 #endif
 
+#if defined(_MSC_VER) && !defined(strncasecmp)
+#define strncasecmp strnicmp
+#endif
+
 /* From dow.c */
 timelib_sll timelib_day_of_week(timelib_sll y, timelib_sll m, timelib_sll d);
 timelib_sll timelib_iso_day_of_week(timelib_sll y, timelib_sll m, timelib_sll d);
@@ -47,7 +51,7 @@ timelib_sll timelib_days_in_month(timelib_sll y, timelib_sll m);
 void timelib_isoweek_from_date(timelib_sll y, timelib_sll m, timelib_sll d, timelib_sll *iw, timelib_sll *iy);
 
 /* From parse_date.re */
-timelib_time *timelib_strtotime(char *s, int *errors, timelib_tzdb *tzdb);
+timelib_time *timelib_strtotime(char *s, int len, int *errors, timelib_tzdb *tzdb);
 void timelib_fill_holes(timelib_time *parsed, timelib_time *now, int options);
 char *timelib_timezone_id_from_abbr(const char *abbr, long gmtoffset, int isdst);
 timelib_tz_lookup_table *timelib_timezone_abbreviations_list(void);
@@ -58,14 +62,16 @@ void timelib_update_ts(timelib_time* time, timelib_tzinfo* tzi);
 /* From unixtime2tm.c */
 int timelib_apply_localtime(timelib_time *t, unsigned int localtime);
 void timelib_unixtime2gmt(timelib_time* tm, timelib_sll ts);
-void timelib_unixtime2local(timelib_time *tm, timelib_sll ts, timelib_tzinfo* tz);
+void timelib_unixtime2local(timelib_time *tm, timelib_sll ts);
 void timelib_update_from_sse(timelib_time *tm);
 void timelib_set_timezone(timelib_time *t, timelib_tzinfo *tz);
 
 /* From parse_tz.c */
+int timelib_timezone_id_is_valid(char *timezone, timelib_tzdb *tzdb);
 timelib_tzinfo *timelib_parse_tzfile(char *timezone, timelib_tzdb *tzdb);
 int timelib_timestamp_is_in_dst(timelib_sll ts, timelib_tzinfo *tz);
 timelib_time_offset *timelib_get_time_zone_info(timelib_sll ts, timelib_tzinfo *tz);
+timelib_sll timelib_get_current_offset(timelib_time *t);
 void timelib_dump_tzinfo(timelib_tzinfo *tz);
 timelib_tzdb *timelib_builtin_db(void);
 timelib_tzdb_index_entry *timelib_timezone_builtin_identifiers_list(int *count);
@@ -86,5 +92,11 @@ void timelib_time_offset_dtor(timelib_time_offset* t);
 
 signed long timelib_date_to_int(timelib_time *d, int *error);
 void timelib_dump_date(timelib_time *d, int options);
+
+void timelib_decimal_hour_to_hms(double h, int *hour, int *min, int *sec);
+
+/* from astro.c */
+double timelib_ts_to_juliandate(timelib_sll ts);
+int timelib_astro_rise_set_altitude(timelib_time *time, double lon, double lat, double altit, int upper_limb, double *h_rise, double *h_set, timelib_sll *ts_rise, timelib_sll *ts_set, timelib_sll *ts_transit);
 
 #endif

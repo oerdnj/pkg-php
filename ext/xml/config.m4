@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.54 2005/06/20 00:52:59 sniper Exp $
+dnl $Id: config.m4,v 1.54.2.1 2005/12/22 08:57:38 helly Exp $
 dnl
 
 PHP_ARG_ENABLE(xml,whether to enable XML support,
@@ -36,7 +36,7 @@ if test "$PHP_XML" != "no"; then
   dnl Check for expat only if --with-libexpat-dir is used.
   dnl
   if test "$PHP_LIBEXPAT_DIR" != "no"; then
-    for i in $PHP_XML $PHP_LIBEXPAT_DIR; do
+    for i in $PHP_XML $PHP_LIBEXPAT_DIR /usr /usr/local; do
       if test -f "$i/$PHP_LIBDIR/libexpat.a" || test -f "$i/$PHP_LIBDIR/libexpat.$SHLIB_SUFFIX_NAME"; then
         EXPAT_DIR=$i
         break

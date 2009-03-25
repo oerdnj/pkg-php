@@ -4,7 +4,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: acconfig.h,v 1.40 2005/08/03 13:30:45 sniper Exp $ */
+/* $Id: acconfig.h,v 1.40.2.1 2006/01/04 23:53:03 andi Exp $ */
 
 #define ZEND_API
 #define ZEND_DLEXPORT
@@ -412,6 +412,9 @@
 
 /* Define if you have the res_search function.  */
 #undef HAVE_RES_SEARCH
+
+/* Define if you have the rl_completion_matches function.  */
+#undef HAVE_RL_COMPLETION_MATCHES
 
 /* Define if you have the scandir function.  */
 #undef HAVE_SCANDIR
@@ -1140,6 +1143,9 @@
 /*   */
 #undef in_addr_t
 
+/* Whether you have gcov */
+#undef HAVE_GCOV
+
 /*   */
 #undef PHP_SAFE_MODE
 
@@ -1629,6 +1635,12 @@
 /*   */
 #undef HAVE_GMP
 
+/* Have HASH Extension */
+#undef HAVE_HASH_EXT
+
+/* Whether to build hash as dynamic module */
+#undef COMPILE_DL_HASH
+
 /*   */
 #undef HAVE_HWAPI
 
@@ -1813,16 +1825,19 @@
 #undef HAVE_MING
 
 /*   */
-#undef HAVE_DESTROY_SWF_BLOCK
+#undef HAVE_SWFPREBUILTCLIP
 
 /*   */
-#undef HAVE_SWFPREBUILTCLIP
+#undef HAVE_DESTROY_SWF_BLOCK
 
 /*   */
 #undef HAVE_NEW_MING
 
 /*   */
 #undef HAVE_MING_ZLIB
+
+/*   */
+#undef HAVE_MING_MOVIE_LEVEL
 
 /* Whether to build ming as dynamic module */
 #undef COMPILE_DL_MING
@@ -1903,19 +1918,43 @@
 #undef COMPILE_DL_NCURSES
 
 /*   */
-#undef HAVE_OCI8_ATTR_STATEMENT
+#undef HAVE_OCI_ENV_CREATE
+
+/*   */
+#undef HAVE_OCI_STMT_PREPARE2
+
+/*   */
+#undef HAVE_OCI_ENV_CREATE
+
+/*   */
+#undef HAVE_OCI_STMT_PREPARE2
 
 /*   */
 #undef HAVE_OCI8_ATTR_STATEMENT
 
 /*   */
-#undef HAVE_OCI_9_2
+#undef HAVE_OCI8_ATTR_STATEMENT
+
+/*   */
+#undef HAVE_OCI_ENV_NLS_CREATE
+
+/*   */
+#undef HAVE_OCI_ENV_CREATE
+
+/*   */
+#undef HAVE_OCI_STMT_PREPARE2
 
 /*   */
 #undef HAVE_OCI8_ATTR_STATEMENT
 
 /*   */
-#undef HAVE_OCI_9_2
+#undef HAVE_OCI_ENV_NLS_CREATE
+
+/*   */
+#undef HAVE_OCI_ENV_CREATE
+
+/*   */
+#undef HAVE_OCI_STMT_PREPARE2
 
 /*   */
 #undef HAVE_OCI8_TEMP_LOB
@@ -1935,23 +1974,32 @@
 /* Whether to build oci8 as dynamic module */
 #undef COMPILE_DL_OCI8
 
+/* Whether to build oci8 as dynamic module */
+#undef COMPILE_DL_OCI8
+
 /*   */
 #undef HAVE_OCI8
+
+/*   */
+#undef HAVE_OCI_INSTANT_CLIENT
 
 /*   */
 #undef HAVE_OCI8_ATTR_STATEMENT
 
 /*   */
-#undef HAVE_OCI_9_2
+#undef HAVE_OCI_ENV_NLS_CREATE
+
+/*   */
+#undef HAVE_OCI_ENV_CREATE
+
+/*   */
+#undef HAVE_OCI_STMT_PREPARE2
 
 /*   */
 #undef HAVE_OCI8_TEMP_LOB
 
 /*   */
 #undef PHP_OCI8_HAVE_COLLECTIONS
-
-/*   */
-#undef HAVE_OCI_INSTANT_CLIENT
 
 /* Whether to build oci8 as dynamic module */
 #undef COMPILE_DL_OCI8
@@ -2325,17 +2373,14 @@
 /*   */
 #undef HAVE_RL_CALLBACK_READ_CHAR
 
-/* Whether to build readline as dynamic module */
-#undef COMPILE_DL_READLINE
-
 /*   */
 #undef HAVE_LIBREADLINE
 
-/* Whether to build readline as dynamic module */
-#undef COMPILE_DL_READLINE
-
 /*   */
 #undef HAVE_LIBEDIT
+
+/* Whether to build readline as dynamic module */
+#undef COMPILE_DL_READLINE
 
 /* Whether we have librecode 3.5 */
 #undef HAVE_BROKEN_RECODE
@@ -2345,6 +2390,12 @@
 
 /* Whether to build recode as dynamic module */
 #undef COMPILE_DL_RECODE
+
+/* Whether Reflection is enabled */
+#undef HAVE_REFLECTION
+
+/* Whether to build reflection as dynamic module */
+#undef COMPILE_DL_REFLECTION
 
 /*   */
 #undef HAVE_PWRITE
@@ -2423,6 +2474,9 @@
 
 /*   */
 #undef HAVE_GETHOSTBYNAME2
+
+/* Whether struct _zend_object_value is packed */
+#undef HAVE_PACKED_OBJECT_VALUE
 
 /* Whether you want SPL (Standard PHP Library) support */
 #undef HAVE_SPL
@@ -2681,6 +2735,15 @@
 
 /* Whether to build xmlrpc as dynamic module */
 #undef COMPILE_DL_XMLRPC
+
+/*   */
+#undef HAVE_LIBXML
+
+/*   */
+#undef HAVE_XMLWRITER
+
+/* Whether to build xmlwriter as dynamic module */
+#undef COMPILE_DL_XMLWRITER
 
 /*   */
 #undef HAVE_XSL_EXSLT

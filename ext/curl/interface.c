@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: interface.c,v 1.62.2.7 2005/11/27 20:07:36 iliaa Exp $ */
+/* $Id: interface.c,v 1.62.2.11 2006/01/05 18:07:55 iliaa Exp $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 
@@ -130,7 +130,7 @@ static void _php_curl_close(zend_rsrc_list_entry *rsrc TSRMLS_DC);
 
 /* {{{ curl_functions[]
  */
-function_entry curl_functions[] = {
+zend_function_entry curl_functions[] = {
 	PHP_FE(curl_init,                NULL)
 	PHP_FE(curl_copy_handle,         NULL)
 	PHP_FE(curl_version,             NULL)
@@ -1673,7 +1673,7 @@ static int php_curl_ssl_mutex_unlock(void **m)
 }
 
 static struct gcry_thread_cbs php_curl_gnutls_tsl = {
-	GCRY_THREAD_OPTIONS_USER,
+	GCRY_THREAD_OPTION_USER,
 	NULL,
 	php_curl_ssl_mutex_create,
 	php_curl_ssl_mutex_destroy,

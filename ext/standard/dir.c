@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: dir.c,v 1.147 2005/08/03 14:07:58 sniper Exp $ */
+/* $Id: dir.c,v 1.147.2.2 2006/01/01 12:50:14 sniper Exp $ */
 
 /* {{{ includes/startup/misc */
 
@@ -231,7 +231,7 @@ PHP_FUNCTION(getdir)
    Close directory connection identified by the dir_handle */
 PHP_FUNCTION(closedir)
 {
-	pval **id, **tmp, *myself;
+	zval **id, **tmp, *myself;
 	php_stream *dirp;
 
 	FETCH_DIRP();
@@ -329,7 +329,7 @@ PHP_FUNCTION(getcwd)
    Rewind dir_handle back to the start */
 PHP_FUNCTION(rewinddir)
 {
-	pval **id, **tmp, *myself;
+	zval **id, **tmp, *myself;
 	php_stream *dirp;
 	
 	FETCH_DIRP();
@@ -342,7 +342,7 @@ PHP_FUNCTION(rewinddir)
    Read directory entry from dir_handle */
 PHP_NAMED_FUNCTION(php_if_readdir)
 {
-	pval **id, **tmp, *myself;
+	zval **id, **tmp, *myself;
 	php_stream *dirp;
 	php_stream_dirent entry;
 

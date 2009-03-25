@@ -2,12 +2,12 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2005 The PHP Group                                |
+  | Copyright (c) 1997-2006 The PHP Group                                |
   +----------------------------------------------------------------------+
-  | This source file is subject to version 3.0 of the PHP license,       |
+  | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
   | available through the world-wide-web at the following url:           |
-  | http://www.php.net/license/3_0.txt.                                  |
+  | http://www.php.net/license/3_01.txt                                  |
   | If you did not receive a copy of the PHP license and are unable to   |
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_api.c,v 1.118.2.6 2005/11/08 13:50:50 andrey Exp $ 
+  $Id: mysqli_api.c,v 1.118.2.16 2006/01/01 16:55:01 andrey Exp $ 
 */
 
 #ifdef HAVE_CONFIG_H
@@ -285,7 +285,7 @@ PHP_FUNCTION(mysqli_stmt_bind_result)
 				bind[ofs].buffer = 0;
 				bind[ofs].is_null = &stmt->result.is_null[ofs];
 				bind[ofs].buffer_length = 0;
-			break;
+				break;
 
 			case MYSQL_TYPE_SHORT:
 			case MYSQL_TYPE_TINY:
@@ -299,6 +299,7 @@ PHP_FUNCTION(mysqli_stmt_bind_result)
 				bind[ofs].buffer_type = MYSQL_TYPE_LONG;
 				bind[ofs].buffer = stmt->result.buf[ofs].val;
 				bind[ofs].is_null = &stmt->result.is_null[ofs];
+				bind[ofs].is_unsigned = (stmt->stmt->fields[ofs].flags & UNSIGNED_FLAG) ? 1 : 0;
 				break;
 
 			case MYSQL_TYPE_LONGLONG:
@@ -309,6 +310,7 @@ PHP_FUNCTION(mysqli_stmt_bind_result)
 				bind[ofs].buffer = stmt->result.buf[ofs].val;
 				bind[ofs].is_null = &stmt->result.is_null[ofs];
 				bind[ofs].buffer_length = stmt->result.buf[ofs].buflen;
+				bind[ofs].is_unsigned = (stmt->stmt->fields[ofs].flags & UNSIGNED_FLAG) ? 1 : 0;
 				break;
 
 			case MYSQL_TYPE_DATE:
@@ -323,20 +325,26 @@ PHP_FUNCTION(mysqli_stmt_bind_result)
 #ifdef FIELD_TYPE_NEWDECIMAL
 			case MYSQL_TYPE_NEWDECIMAL:
 #endif
+			{
+				ulong tmp;
 				stmt->result.buf[ofs].type = IS_STRING;
 				/*
 					If the user has called $stmt->store_result() then we have asked
 					max_length to be updated. this is done only for BLOBS because we don't want to allocate
 					big chunkgs of memory 2^16 or 2^24 
 				*/
-				if (stmt->stmt->fields[ofs].max_length == 0) {
+				if (stmt->stmt->fields[ofs].max_length == 0 &&
+					!mysql_stmt_attr_get(stmt->stmt, STMT_ATTR_UPDATE_MAX_LENGTH, &tmp) && !tmp)
+				{
 					stmt->result.buf[ofs].buflen =
 						(stmt->stmt->fields) ? (stmt->stmt->fields[ofs].length) ? stmt->stmt->fields[ofs].length + 1: 256: 256;
 				} else {
 					/*
 						the user has called store_result(). if he does not there is no way to determine the
+						libmysql does not allow us to allocate 0 bytes for a buffer so we try 1
 					*/
-					stmt->result.buf[ofs].buflen = stmt->stmt->fields[ofs].max_length;
+					if (!(stmt->result.buf[ofs].buflen = stmt->stmt->fields[ofs].max_length))
+						++stmt->result.buf[ofs].buflen;
 				}
 				stmt->result.buf[ofs].val = (char *)emalloc(stmt->result.buf[ofs].buflen);
 				bind[ofs].buffer_type = MYSQL_TYPE_STRING;
@@ -344,6 +352,10 @@ PHP_FUNCTION(mysqli_stmt_bind_result)
 				bind[ofs].is_null = &stmt->result.is_null[ofs];
 				bind[ofs].buffer_length = stmt->result.buf[ofs].buflen;
 				bind[ofs].length = &stmt->result.buf[ofs].buflen;
+				break;
+			}
+			default:
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Server returned unknown type %ld. Probably your client library is incompatible with the server version you use!", col_type);
 				break;
 		}
 	}
@@ -354,7 +366,13 @@ PHP_FUNCTION(mysqli_stmt_bind_result)
 	if (rc) {
 		efree(bind);
 		efree(args);
-		php_clear_stmt_bind(stmt);
+		/* dont close the statement or subsequent usage (for example ->execute()) will lead to crash */
+		for (i=0; i < var_cnt ; i++) {
+			if (stmt->result.buf[i].val)        
+				efree(stmt->result.buf[i].val);
+		}
+		efree(stmt->result.buf);
+		efree(stmt->result.is_null);
 		RETURN_FALSE;
 	}
 
@@ -608,8 +626,7 @@ PHP_FUNCTION(mysqli_stmt_fetch)
 	zval 			*mysql_stmt;
 	unsigned int 	i;
 	ulong 			ret;
-	int				lval;
-	unsigned int    ulval;
+	unsigned int    uval;
 	double			dval;
 	my_ulonglong	llval;
 	
@@ -634,8 +651,9 @@ PHP_FUNCTION(mysqli_stmt_fetch)
 	if (!ret) {
 #endif
 		for (i = 0; i < stmt->result.var_cnt; i++) {
-			if (stmt->result.vars[i]->type == IS_STRING && stmt->result.vars[i]->value.str.len) {
-		        efree(stmt->result.vars[i]->value.str.val);
+			/* Even if the string is of length zero there is one byte alloced so efree() in all cases */
+			if (Z_TYPE_P(stmt->result.vars[i]) == IS_STRING) {
+				efree(stmt->result.vars[i]->value.str.val);
 			}
 			if (!stmt->result.is_null[i]) {
 				switch (stmt->result.buf[i].type) {
@@ -644,19 +662,24 @@ PHP_FUNCTION(mysqli_stmt_fetch)
 						    && (stmt->stmt->fields[i].flags & UNSIGNED_FLAG)) 
 						{
 							/* unsigned int (11) */
-							char tmp[12];
-							memcpy (&ulval, stmt->result.buf[i].val, sizeof(lval));
-							if (ulval > INT_MAX) {
-								sprintf((char *)&tmp, "%u", ulval);
-								ZVAL_STRING(stmt->result.vars[i], tmp, 1);
-							} else {
-								memcpy(&lval, stmt->result.buf[i].val, sizeof(lval));
-								ZVAL_LONG(stmt->result.vars[i], lval);					
+							uval= *(unsigned int *) stmt->result.buf[i].val;
+
+							if (uval > INT_MAX) {
+								char *tmp, *p;
+								int j=10;
+								tmp= emalloc(11);
+								p= &tmp[9];
+								do { 
+									*p-- = (uval % 10) + 48;
+									uval = uval / 10;							
+								} while (--j > 0);
+								tmp[10]= '\0';
+								/* unsigned int > INT_MAX is 10 digis - ALWAYS */
+								ZVAL_STRINGL(stmt->result.vars[i], tmp, 10, 0);
+								break;
 							}
-						} else {
-							memcpy(&lval, stmt->result.buf[i].val, sizeof(lval));
-							ZVAL_LONG(stmt->result.vars[i], lval);
 						}
+						ZVAL_LONG(stmt->result.vars[i], *(int *)stmt->result.buf[i].val);
 						break;
 					case IS_DOUBLE:
 						memcpy(&dval, stmt->result.buf[i].val, sizeof(dval));
@@ -664,27 +687,34 @@ PHP_FUNCTION(mysqli_stmt_fetch)
 						break;
 					case IS_STRING:
 						if (stmt->stmt->bind[i].buffer_type == MYSQL_TYPE_LONGLONG) {
-							char tmp[50];
-							memcpy (&llval, stmt->result.buf[i].val, sizeof(my_ulonglong));
-							if (llval != (long)llval) {
+							my_bool uns= (stmt->stmt->fields[i].flags & UNSIGNED_FLAG)? 1:0;
+							llval= *(my_ulonglong *) stmt->result.buf[i].val;
+#if SIZEOF_LONG==8  
+							if (uns && llval > 9223372036854775807L) {
+#elif SIZEOF_LONG==4
+							if ((uns && llval > L64(2147483647)) || 
+							    (!uns && (( L64(2147483647) < (my_longlong) llval) || (L64(-2147483648) > (my_longlong) llval))))
+							{
+#endif
+								char tmp[22];
 								/* even though lval is declared as unsigned, the value
 								 * may be negative. Therefor we cannot use %llu and must
 								 * use %lld.
 								 */
-								sprintf((char *)&tmp, "%lld", llval);
+								sprintf((char *)&tmp, (stmt->stmt->fields[i].flags & UNSIGNED_FLAG)? "%llu":"%lld", llval);
 								ZVAL_STRING(stmt->result.vars[i], tmp, 1);
 							} else {
 								ZVAL_LONG(stmt->result.vars[i], llval);
 							}
 						} else {
-							ZVAL_STRINGL(stmt->result.vars[i], stmt->result.buf[i].val, stmt->result.buf[i].buflen, 1); 
+							ZVAL_STRINGL(stmt->result.vars[i], stmt->result.buf[i].val, stmt->result.buf[i].buflen, 1);
 						}
 						break;
 					default:
 						break;	
 				}
 			} else {
-				stmt->result.vars[i]->type = IS_NULL;
+				ZVAL_NULL(stmt->result.vars[i]);
 			}
 		}
 	} else {
@@ -693,6 +723,13 @@ PHP_FUNCTION(mysqli_stmt_fetch)
 
 	switch (ret) {
 		case 0:
+#ifdef MYSQL_DATA_TRUNCATED
+		/* according to SQL standard truncation (e.g. loss of precision is
+		   not an error) - for detecting possible truncation you have to 
+		   check mysqli_stmt_warning
+		*/
+		case MYSQL_DATA_TRUNCATED:
+#endif
 			RETURN_TRUE;
 		break;
 		case 1:
@@ -1382,7 +1419,7 @@ PHP_FUNCTION(mysqli_real_connect)
 		
 		php_mysqli_set_error(mysql_errno(mysql->mysql), (char *) mysql_error(mysql->mysql) TSRMLS_CC);
 		php_mysqli_throw_sql_exception( mysql->mysql->net.sqlstate, mysql->mysql->net.last_errno TSRMLS_CC,
-										mysql->mysql->net.last_error);
+										"%s", mysql->mysql->net.last_error);
 
 		RETURN_FALSE;
 	}

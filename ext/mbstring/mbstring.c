@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: mbstring.c,v 1.224.2.5 2005/11/25 21:55:25 hirokawa Exp $ */
+/* $Id: mbstring.c,v 1.224.2.12 2006/01/01 12:50:08 sniper Exp $ */
 
 /*
  * PHP 4 Multibyte String module "mbstring"
@@ -135,6 +135,12 @@ static const enum mbfl_no_encoding php_mb_default_identify_list_hy[] = {
 	mbfl_no_encoding_armscii8
 };
 
+static const enum mbfl_no_encoding php_mb_default_identify_list_tr[] = {
+	mbfl_no_encoding_ascii,
+	mbfl_no_encoding_utf8,
+	mbfl_no_encoding_8859_9
+};
+
 static const enum mbfl_no_encoding php_mb_default_identify_list_neut[] = {
 	mbfl_no_encoding_ascii,
 	mbfl_no_encoding_utf8
@@ -148,6 +154,7 @@ static const php_mb_nls_ident_list php_mb_default_identify_list[] = {
 	{ mbfl_no_language_simplified_chinese, php_mb_default_identify_list_cn, sizeof(php_mb_default_identify_list_cn) / sizeof(php_mb_default_identify_list_cn[0]) },
 	{ mbfl_no_language_russian, php_mb_default_identify_list_ru, sizeof(php_mb_default_identify_list_ru) / sizeof(php_mb_default_identify_list_ru[0]) },
 	{ mbfl_no_language_armenian, php_mb_default_identify_list_hy, sizeof(php_mb_default_identify_list_hy) / sizeof(php_mb_default_identify_list_hy[0]) },
+	{ mbfl_no_language_turkish, php_mb_default_identify_list_tr, sizeof(php_mb_default_identify_list_tr) / sizeof(php_mb_default_identify_list_tr[0]) },
 	{ mbfl_no_language_neutral, php_mb_default_identify_list_neut, sizeof(php_mb_default_identify_list_neut) / sizeof(php_mb_default_identify_list_neut[0]) }
 };
 
@@ -180,8 +187,8 @@ static const struct mb_overload_def mb_ovld[] = {
 }; 
 /* }}} */
 
-/* {{{ function_entry mbstring_functions[] */
-function_entry mbstring_functions[] = {
+/* {{{ zend_function_entry mbstring_functions[] */
+zend_function_entry mbstring_functions[] = {
 	PHP_FE(mb_convert_case,			NULL)
 	PHP_FE(mb_strtoupper,			NULL)
 	PHP_FE(mb_strtolower,			NULL)
@@ -734,6 +741,9 @@ PHP_INI_BEGIN()
 	 STD_PHP_INI_BOOLEAN("mbstring.encoding_translation", "0",
 	 PHP_INI_SYSTEM | PHP_INI_PERDIR, OnUpdate_mbstring_encoding_translation, 
 	 encoding_translation, zend_mbstring_globals, mbstring_globals)					 
+
+	 STD_PHP_INI_BOOLEAN("mbstring.strict_detection", "0",
+	 PHP_INI_ALL, OnUpdateLong, strict_detection, zend_mbstring_globals, mbstring_globals)
 PHP_INI_END()
 /* }}} */
 
@@ -769,6 +779,7 @@ static void _php_mb_globals_ctor(zend_mbstring_globals *pglobals TSRMLS_DC)
 	MBSTRG(current_filter_illegal_substchar) = 0x3f;	/* '?' */
 	MBSTRG(func_overload) = 0;
 	MBSTRG(encoding_translation) = 0;
+	MBSTRG(strict_detection) = 0;
 	pglobals->outconv = NULL;
 #if HAVE_MBREGEX
 	_php_mb_regex_globals_ctor(pglobals TSRMLS_CC);
@@ -887,6 +898,9 @@ PHP_RINIT_FUNCTION(mbstring)
 				break;
 			case mbfl_no_language_armenian:
 				default_enc = "ArmSCII-8";
+				break;
+			case mbfl_no_language_turkish:
+				default_enc = "ISO-8859-9";
 				break;
 			case mbfl_no_language_english:
 			default:
@@ -1763,6 +1777,11 @@ PHP_FUNCTION(mb_substr)
 		}
 	}
 
+	if (((MBSTRG(func_overload) & MB_OVERLOAD_STRING) == MB_OVERLOAD_STRING)
+		&& (from >= mbfl_strlen(&string))) {
+		RETURN_FALSE;
+	}
+
 	ret = mbfl_substr(&string, &result, from, len);
 	if (ret != NULL) {
 		RETVAL_STRINGL((char *)ret->val, ret->len, 0);		/* the string is already strdup()'ed */
@@ -1776,7 +1795,7 @@ PHP_FUNCTION(mb_substr)
    Returns part of a string */
 PHP_FUNCTION(mb_strcut)
 {
-	pval **arg1, **arg2, **arg3, **arg4;
+	zval **arg1, **arg2, **arg3, **arg4;
 	int argc, from, len;
 	mbfl_string string, result, *ret;
 
@@ -1844,6 +1863,13 @@ PHP_FUNCTION(mb_strcut)
 		}
 	}
 
+	if (from > Z_STRLEN_PP(arg1)) {
+		RETURN_FALSE;
+	}
+	if (((unsigned) from + (unsigned) len) > Z_STRLEN_PP(arg1)) {
+		len = Z_STRLEN_PP(arg1) - from;
+	}
+
 	ret = mbfl_strcut(&string, &result, from, len);
 	if (ret != NULL) {
 		RETVAL_STRINGL(ret->val, ret->len, 0);		/* the string is already strdup()'ed */
@@ -1892,7 +1918,7 @@ PHP_FUNCTION(mb_strwidth)
    Trim the string in terminal width */
 PHP_FUNCTION(mb_strimwidth)
 {
-	pval **arg1, **arg2, **arg3, **arg4, **arg5;
+	zval **arg1, **arg2, **arg3, **arg4, **arg5;
 	int from, width;
 	mbfl_string string, result, marker, *ret;
 
@@ -2010,7 +2036,7 @@ MBSTRING_API char * php_mb_convert_encoding(char *input, size_t length, char *_t
 			string.no_encoding = from_encoding;
 		} else if (size > 1) {
 			/* auto detect */
-			from_encoding = mbfl_identify_encoding_no(&string, list, size);
+			from_encoding = mbfl_identify_encoding_no(&string, list, size, MBSTRG(strict_detection));
 			if (from_encoding != mbfl_no_encoding_invalid) {
 				string.no_encoding = from_encoding;
 			} else {
@@ -2054,7 +2080,7 @@ MBSTRING_API char * php_mb_convert_encoding(char *input, size_t length, char *_t
    Returns converted string in desired encoding */
 PHP_FUNCTION(mb_convert_encoding)
 {
-	pval **arg_str, **arg_new, **arg_old;
+	zval **arg_str, **arg_new, **arg_old;
 	int i;
 	size_t size, l, n;
 	char *_from_encodings, *ret, *s_free = NULL;
@@ -2198,7 +2224,7 @@ PHP_FUNCTION(mb_strtolower)
    Encodings of the given string is returned (as a string) */
 PHP_FUNCTION(mb_detect_encoding)
 {
-	pval **arg_str, **arg_list, **arg_strict;
+	zval **arg_str, **arg_list, **arg_strict;
 	mbfl_string string;
 	const char *ret;
 	enum mbfl_no_encoding *elist;
@@ -2251,6 +2277,9 @@ PHP_FUNCTION(mb_detect_encoding)
 	if (ZEND_NUM_ARGS() == 3) {
 		convert_to_long_ex(arg_strict);
 		strict = Z_LVAL_PP(arg_strict);
+	}
+	else {
+		strict = MBSTRG(strict_detection);
 	}
 
 	if (size > 0 && list != NULL) {
@@ -2484,7 +2513,7 @@ PHP_FUNCTION(mb_convert_kana)
    Converts the string resource in variables to desired encoding */
 PHP_FUNCTION(mb_convert_variables)
 {
-	pval ***args, ***stack, **var, **hash_entry;
+	zval ***args, ***stack, **var, **hash_entry;
 	HashTable *target_hash;
 	mbfl_string string, result, *ret;
 	enum mbfl_no_encoding from_encoding, to_encoding;
@@ -2499,7 +2528,7 @@ PHP_FUNCTION(mb_convert_variables)
 	if (argc < 3) {
 		WRONG_PARAM_COUNT;
 	}
-	args = (pval ***)ecalloc(argc, sizeof(pval **));
+	args = (zval ***)ecalloc(argc, sizeof(zval **));
 	if (zend_get_parameters_array_ex(argc, args) == FAILURE) {
 		efree((void *)args);
 		WRONG_PARAM_COUNT;
@@ -2541,9 +2570,9 @@ PHP_FUNCTION(mb_convert_variables)
 		/* auto detect */
 		from_encoding = mbfl_no_encoding_invalid;
 		stack_max = PHP_MBSTR_STACK_BLOCK_SIZE;
-		stack = (pval ***)safe_emalloc(stack_max, sizeof(pval **), 0);
+		stack = (zval ***)safe_emalloc(stack_max, sizeof(zval **), 0);
 		stack_level = 0;
-		identd = mbfl_encoding_detector_new(elist, elistsz);
+		identd = mbfl_encoding_detector_new(elist, elistsz, MBSTRG(strict_detection));
 		if (identd != NULL) {
 			n = 2;
 			while (n < argc || stack_level > 0) {
@@ -2567,8 +2596,8 @@ PHP_FUNCTION(mb_convert_variables)
 							if (Z_TYPE_PP(hash_entry) == IS_ARRAY || Z_TYPE_PP(hash_entry) == IS_OBJECT) {
 								if (stack_level >= stack_max) {
 									stack_max += PHP_MBSTR_STACK_BLOCK_SIZE;
-									ptmp = erealloc(stack, sizeof(pval **)*stack_max);
-									stack = (pval ***)ptmp;
+									ptmp = erealloc(stack, sizeof(zval **)*stack_max);
+									stack = (zval ***)ptmp;
 								}
 								stack[stack_level] = var;
 								stack_level++;
@@ -2624,7 +2653,7 @@ detect_end:
 	/* convert */
 	if (convd != NULL) {
 		stack_max = PHP_MBSTR_STACK_BLOCK_SIZE;
-		stack = (pval ***)safe_emalloc(stack_max, sizeof(pval **), 0);
+		stack = (zval ***)safe_emalloc(stack_max, sizeof(zval **), 0);
 		stack_level = 0;
 		n = 2;
 		while (n < argc || stack_level > 0) {
@@ -2648,8 +2677,8 @@ detect_end:
 						if (Z_TYPE_PP(hash_entry) == IS_ARRAY || Z_TYPE_PP(hash_entry) == IS_OBJECT) {
 							if (stack_level >= stack_max) {
 								stack_max += PHP_MBSTR_STACK_BLOCK_SIZE;
-								ptmp = erealloc(stack, sizeof(pval **)*stack_max);
-								stack = (pval ***)ptmp;
+								ptmp = erealloc(stack, sizeof(zval **)*stack_max);
+								stack = (zval ***)ptmp;
 							}
 							stack[stack_level] = var;
 							stack_level++;
@@ -2707,7 +2736,7 @@ detect_end:
 static void
 php_mb_numericentity_exec(INTERNAL_FUNCTION_PARAMETERS, int type)
 {
-	pval **arg1, **arg2, **arg3, **hash_entry;
+	zval **arg1, **arg2, **arg3, **hash_entry;
 	HashTable *target_hash;
 	int argc, i, *convmap, *mapelm, mapsize=0;
 	mbfl_string string, result, *ret;
@@ -3162,7 +3191,7 @@ PHP_FUNCTION(mb_send_mail)
 		orig_str.no_encoding = MBSTRG(current_internal_encoding);
 		if (orig_str.no_encoding == mbfl_no_encoding_invalid
 		    || orig_str.no_encoding == mbfl_no_encoding_pass) {
-			orig_str.no_encoding = mbfl_identify_encoding_no(&orig_str, MBSTRG(current_detect_order_list), MBSTRG(current_detect_order_list_size));
+			orig_str.no_encoding = mbfl_identify_encoding_no(&orig_str, MBSTRG(current_detect_order_list), MBSTRG(current_detect_order_list_size), MBSTRG(strict_detection));
 		}
 		pstr = mbfl_mime_header_encode(&orig_str, &conv_str, tran_cs, head_enc, "\n", sizeof("Subject: [PHP-jp nnnnnnnn]"));
 		if (pstr != NULL) {
@@ -3182,7 +3211,7 @@ PHP_FUNCTION(mb_send_mail)
 
 		if (orig_str.no_encoding == mbfl_no_encoding_invalid
 		    || orig_str.no_encoding == mbfl_no_encoding_pass) {
-			orig_str.no_encoding = mbfl_identify_encoding_no(&orig_str, MBSTRG(current_detect_order_list), MBSTRG(current_detect_order_list_size));
+			orig_str.no_encoding = mbfl_identify_encoding_no(&orig_str, MBSTRG(current_detect_order_list), MBSTRG(current_detect_order_list_size), MBSTRG(strict_detection));
 		}
 
 		pstr = NULL;
@@ -3559,7 +3588,7 @@ MBSTRING_API int php_mb_gpc_encoding_detector(char **arg_string, int *arg_length
 	mbfl_string_init(&string);
 	string.no_language = MBSTRG(current_language);
 
-	identd = mbfl_encoding_detector_new(elist, size);
+	identd = mbfl_encoding_detector_new(elist, size, MBSTRG(strict_detection));
 
 	if (identd) {
 		int n = 0;

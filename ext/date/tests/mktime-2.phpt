@@ -3,7 +3,7 @@ mktime() [2]
 --INI--
 error_reporting=2047
 --FILE--
-<?php /* $Id: mktime-2.phpt,v 1.1.2.1 2005/08/09 21:10:22 derick Exp $ */
+<?php
 $timezones = array(
     'GMT0',
     'Europe/London'

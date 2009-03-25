@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.58.2.2 2005/10/28 07:52:58 hyanantha Exp $
+dnl $Id: config.m4,v 1.58.2.3 2005/12/23 15:18:52 hirokawa Exp $
 dnl
 
 AC_DEFUN([PHP_MBSTRING_ADD_SOURCES], [
@@ -237,6 +237,7 @@ AC_DEFUN([PHP_MBSTRING_SETUP_LIBMBFL], [
      libmbfl/nls/nls_uni.c
      libmbfl/nls/nls_zh.c
      libmbfl/nls/nls_hy.c
+     libmbfl/nls/nls_tr.c
     ])
     PHP_MBSTRING_ADD_CFLAG([-DHAVE_CONFIG_H])
   else

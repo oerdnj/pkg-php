@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
  
-/* $Id: php_mysql.c,v 1.213.2.2 2005/09/04 17:10:56 wez Exp $ */
+/* $Id: php_mysql.c,v 1.213.2.6 2006/01/01 12:50:09 sniper Exp $ */
 
 /* TODO:
  *
@@ -123,7 +123,7 @@ typedef struct _php_mysql_conn {
 
 /* {{{ mysql_functions[]
  */
-function_entry mysql_functions[] = {
+zend_function_entry mysql_functions[] = {
 	PHP_FE(mysql_connect,								NULL)
 	PHP_FE(mysql_pconnect,								NULL)
 	PHP_FE(mysql_close,									NULL)
@@ -661,11 +661,11 @@ static void php_mysql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 		persistent=0;
 	}
 	if (persistent) {
-		list_entry *le;
+		zend_rsrc_list_entry *le;
 
 		/* try to find if we already have this link in our persistent list */
 		if (zend_hash_find(&EG(persistent_list), hashed_details, hashed_details_length+1, (void **) &le)==FAILURE) {  /* we don't */
-			list_entry new_le;
+			zend_rsrc_list_entry new_le;
 
 			if (MySG(max_links)!=-1 && MySG(num_links)>=MySG(max_links)) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Too many open links (%ld)", MySG(num_links));
@@ -705,7 +705,7 @@ static void php_mysql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 			/* hash it up */
 			Z_TYPE(new_le) = le_plink;
 			new_le.ptr = mysql;
-			if (zend_hash_update(&EG(persistent_list), hashed_details, hashed_details_length+1, (void *) &new_le, sizeof(list_entry), NULL)==FAILURE) {
+			if (zend_hash_update(&EG(persistent_list), hashed_details, hashed_details_length+1, (void *) &new_le, sizeof(zend_rsrc_list_entry), NULL)==FAILURE) {
 				free(mysql);
 				efree(hashed_details);
 				MYSQL_DO_CONNECT_RETURN_FALSE();
@@ -748,7 +748,7 @@ static void php_mysql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 		}
 		ZEND_REGISTER_RESOURCE(return_value, mysql, le_plink);
 	} else { /* non persistent */
-		list_entry *index_ptr, new_index_ptr;
+		zend_rsrc_list_entry *index_ptr, new_index_ptr;
 		
 		/* first we check the hash for the hashed_details key.  if it exists,
 		 * it should point us to the right offset where the actual mysql link sits.
@@ -813,7 +813,7 @@ static void php_mysql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 		/* add it to the hash */
 		new_index_ptr.ptr = (void *) Z_LVAL_P(return_value);
 		Z_TYPE(new_index_ptr) = le_index_ptr;
-		if (zend_hash_update(&EG(regular_list), hashed_details, hashed_details_length+1,(void *) &new_index_ptr, sizeof(list_entry), NULL)==FAILURE) {
+		if (zend_hash_update(&EG(regular_list), hashed_details, hashed_details_length+1,(void *) &new_index_ptr, sizeof(zend_rsrc_list_entry), NULL)==FAILURE) {
 			efree(hashed_details);
 			MYSQL_DO_CONNECT_RETURN_FALSE();
 		}
@@ -2188,6 +2188,9 @@ static char *php_mysql_get_field_name(int field_type)
 		case FIELD_TYPE_FLOAT:
 		case FIELD_TYPE_DOUBLE:
 		case FIELD_TYPE_DECIMAL:
+#ifdef FIELD_TYPE_NEWDECIMAL
+		case FIELD_TYPE_NEWDECIMAL:
+#endif
 			return "real";
 			break;
 		case FIELD_TYPE_TIMESTAMP:
@@ -2199,11 +2202,25 @@ static char *php_mysql_get_field_name(int field_type)
 			break;
 #endif
 		case FIELD_TYPE_DATE:
+#ifdef FIELD_TYPE_NEWDATE
+		case FIELD_TYPE_NEWDATE:
+#endif
 			return "date";
 			break;
 		case FIELD_TYPE_TIME:
 			return "time";
 			break;
+		case FIELD_TYPE_SET:
+			return "set";
+			break;
+		case FIELD_TYPE_ENUM:
+			return "enum";
+			break;
+#ifdef FIELD_TYPE_GEOMETRY
+		case FIELD_TYPE_GEOMETRY:
+			return "geometry";
+			break;
+#endif
 		case FIELD_TYPE_DATETIME:
 			return "datetime";
 			break;

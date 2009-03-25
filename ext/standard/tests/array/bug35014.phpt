@@ -1,5 +1,7 @@
 --TEST--
-Bug #35014 (array_product() always returns 0)
+Bug #35014 (array_product() always returns 0) (32bit)
+--SKIPIF--
+<?php if (PHP_INT_SIZE != 4) die("skip this test is for 32bit platform only"); ?>
 --INI--
 precision=14
 --FILE--
@@ -22,7 +24,7 @@ foreach ($tests as $v) {
 ?>
 --EXPECTF--	
 
-Warning: array_product(): The argument should be an array in %s/bug35014.php on line 15
+Warning: array_product(): The argument should be an array in %s on line %d
 NULL
 int(0)
 int(0)

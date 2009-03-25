@@ -2,12 +2,12 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2005 The PHP Group                                |
+  | Copyright (c) 1997-2006 The PHP Group                                |
   +----------------------------------------------------------------------+
-  | This source file is subject to version 3.0 of the PHP license,       |
+  | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
   | available through the world-wide-web at the following url:           |
-  | http://www.php.net/license/3_0.txt.                                  |
+  | http://www.php.net/license/3_01.txt                                  |
   | If you did not receive a copy of the PHP license and are unable to   |
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: php_mysqli.h,v 1.54.2.2 2005/10/18 13:51:50 tony2001 Exp $ 
+  $Id: php_mysqli.h,v 1.54.2.5 2006/01/01 12:50:09 sniper Exp $ 
 */
 
 /* A little hack to prevent build break, when mysql is used together with
@@ -121,13 +121,13 @@ typedef struct {
 #define PHP_MYSQLI_EXPORT(__type) PHP_MYSQLI_API __type
 
 extern zend_module_entry mysqli_module_entry;
-extern function_entry mysqli_functions[];
-extern function_entry mysqli_link_methods[];
-extern function_entry mysqli_stmt_methods[];
-extern function_entry mysqli_result_methods[];
-extern function_entry mysqli_driver_methods[];
-extern function_entry mysqli_warning_methods[];
-extern function_entry mysqli_exception_methods[];
+extern zend_function_entry mysqli_functions[];
+extern zend_function_entry mysqli_link_methods[];
+extern zend_function_entry mysqli_stmt_methods[];
+extern zend_function_entry mysqli_result_methods[];
+extern zend_function_entry mysqli_driver_methods[];
+extern zend_function_entry mysqli_warning_methods[];
+extern zend_function_entry mysqli_exception_methods[];
 
 extern mysqli_property_entry mysqli_link_property_entries[];
 extern mysqli_property_entry mysqli_result_property_entries[];
@@ -445,6 +445,15 @@ MYSQLI_PROPERTY(my_prop_link_host);
 
 #define my_estrdup(x) (x) ? estrdup(x) : NULL
 #define my_efree(x) if (x) efree(x)
+
+#ifdef PHP_WIN32
+#define L64(x) x##i64
+typedef __int64 my_longlong;
+#else
+#define L64(x) x##LL
+typedef long long my_longlong;
+#endif
+
 
 ZEND_EXTERN_MODULE_GLOBALS(mysqli)
 

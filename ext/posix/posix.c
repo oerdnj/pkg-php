@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: posix.c,v 1.70.2.1 2005/11/02 15:53:49 derick Exp $ */
+/* $Id: posix.c,v 1.70.2.3 2006/01/01 12:50:12 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -52,7 +52,7 @@ ZEND_DECLARE_MODULE_GLOBALS(posix)
 
 /* {{{ posix_functions[]
  */
-function_entry posix_functions[] = {
+zend_function_entry posix_functions[] = {
     /* POSIX.1, 3.3 */
 	PHP_FE(posix_kill,		NULL)
 
@@ -143,7 +143,7 @@ function_entry posix_functions[] = {
 static PHP_MINFO_FUNCTION(posix)
 {
 	php_info_print_table_start();
-	php_info_print_table_row(2, "Revision", "$Revision: 1.70.2.1 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 1.70.2.3 $");
 	php_info_print_table_end();
 }
 /* }}} */

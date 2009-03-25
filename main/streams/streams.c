@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: streams.c,v 1.82 2005/08/03 14:08:43 sniper Exp $ */
+/* $Id: streams.c,v 1.82.2.4 2006/01/01 12:50:18 sniper Exp $ */
 
 #define _GNU_SOURCE
 #include "php.h"
@@ -65,7 +65,7 @@ PHPAPI HashTable *php_stream_get_url_stream_wrappers_hash_global(void)
 	return &url_stream_wrappers_hash;
 }
 
-static int _php_stream_release_context(list_entry *le, void *pContext TSRMLS_DC)
+static int _php_stream_release_context(zend_rsrc_list_entry *le, void *pContext TSRMLS_DC)
 {
 	if (le->ptr == pContext) {
 		return --le->refcount == 0;
@@ -267,7 +267,7 @@ fprintf(stderr, "stream_alloc: %s:%p persistent=%s\n", ops->label, ret, persiste
 }
 /* }}} */
 
-static int _php_stream_free_persistent(list_entry *le, void *pStream TSRMLS_DC)
+static int _php_stream_free_persistent(zend_rsrc_list_entry *le, void *pStream TSRMLS_DC)
 {
 	return le->ptr == pStream;
 }
@@ -442,7 +442,7 @@ static void php_stream_fill_read_buffer(php_stream *stream, size_t size TSRMLS_D
 
 			/* read a chunk into a bucket */
 			justread = stream->ops->read(stream, chunk_buf, stream->chunk_size TSRMLS_CC);
-			if (justread > 0) {
+			if (justread != (size_t)-1) {
 				bucket = php_stream_bucket_new(stream, chunk_buf, justread, 0, 0 TSRMLS_CC);
 
 				/* after this call, bucket is owned by the brigade */
@@ -511,7 +511,7 @@ static void php_stream_fill_read_buffer(php_stream *stream, size_t size TSRMLS_D
 					break;
 			}
 
-			if (justread == 0) {
+			if (justread == 0 || justread == (size_t)-1) {
 				break;
 			}
 		}
@@ -1831,6 +1831,10 @@ PHPAPI php_stream *_php_stream_open_wrapper_ex(char *path, char *mode, int optio
 
 	if (stream == NULL && (options & REPORT_ERRORS)) {
 		php_stream_display_wrapper_errors(wrapper, path, "failed to open stream" TSRMLS_CC);
+		if (opened_path && *opened_path) {
+			efree(*opened_path);
+			*opened_path = NULL;
+		}
 	}
 	php_stream_tidy_wrapper_error_log(wrapper TSRMLS_CC);
 #if ZEND_DEBUG

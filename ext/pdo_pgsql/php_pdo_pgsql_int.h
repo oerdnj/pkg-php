@@ -2,26 +2,29 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2005 The PHP Group                                |
+  | Copyright (c) 1997-2006 The PHP Group                                |
   +----------------------------------------------------------------------+
-  | This source file is subject to version 3.0 of the PHP license,       |
+  | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
   | available through the world-wide-web at the following url:           |
-  | http://www.php.net/license/3_0.txt.                                  |
+  | http://www.php.net/license/3_01.txt                                  |
   | If you did not receive a copy of the PHP license and are unable to   |
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
   +----------------------------------------------------------------------+
-  | Author: Edin Kadribasic <edink@emini.dk>                             |
+  | Authors: Edin Kadribasic <edink@emini.dk>                            |
+  |          Ilia Alshanestsky <ilia@prohost.org>                        |
+  |          Wez Furlong <wez@php.net>                                   |
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_pgsql_int.h,v 1.13.2.1 2005/11/25 03:35:04 wez Exp $ */
+/* $Id: php_pdo_pgsql_int.h,v 1.13.2.4 2006/01/01 12:50:12 sniper Exp $ */
 
 #ifndef PHP_PDO_PGSQL_INT_H
 #define PHP_PDO_PGSQL_INT_H
 
 #include <libpq-fe.h>
+#include <libpq/libpq-fs.h>
 #include <php.h>
 
 #define PHP_PDO_PGSQL_CONNECTION_FAILURE_SQLSTATE "08006"
@@ -62,14 +65,12 @@ typedef struct {
 	int *param_lengths;
 	int *param_formats;
 	Oid *param_types;
+	zend_bool is_prepared;
 #endif
 } pdo_pgsql_stmt;
 
 typedef struct {
-	char		*repr;
-	long		repr_len;
-	int		pgsql_type;
-	void		*thing;	/* for LOBS, REFCURSORS etc. */
+	Oid     oid;
 } pdo_pgsql_bound_param;
 
 extern pdo_driver_t pdo_pgsql_driver;
@@ -89,6 +90,17 @@ extern struct pdo_stmt_methods pgsql_stmt_methods;
 enum {
 	PDO_PGSQL_ATTR_DISABLE_NATIVE_PREPARED_STATEMENT = PDO_ATTR_DRIVER_SPECIFIC,
 };
+
+struct pdo_pgsql_lob_self {
+	pdo_dbh_t *dbh;
+	PGconn *conn;
+	int lfd;
+	Oid oid;
+};
+
+
+php_stream *pdo_pgsql_create_lob_stream(pdo_dbh_t *stmt, int lfd, Oid oid TSRMLS_DC);
+extern php_stream_ops pdo_pgsql_lob_stream_ops;
 
 #endif /* PHP_PDO_PGSQL_INT_H */
 

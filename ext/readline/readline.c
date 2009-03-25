@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: readline.c,v 1.42 2005/08/03 14:07:42 sniper Exp $ */
+/* $Id: readline.c,v 1.42.2.3 2006/01/01 12:50:12 sniper Exp $ */
 
 /* {{{ includes & prototypes */
 
@@ -28,6 +28,10 @@
 #include "php_readline.h"
 
 #if HAVE_LIBREADLINE || HAVE_LIBEDIT
+
+#ifndef HAVE_RL_COMPLETION_MATCHES
+#define rl_completion_matches completion_matches
+#endif
 
 #include <readline/readline.h>
 #ifndef HAVE_LIBEDIT
@@ -249,7 +253,7 @@ PHP_FUNCTION(readline_info)
    Adds a line to the history */
 PHP_FUNCTION(readline_add_history)
 {
-	pval **arg;
+	zval **arg;
 	int ac = ZEND_NUM_ARGS();
 
 	if (ac != 1 || zend_get_parameters_ex(ac, &arg) == FAILURE) {
@@ -308,7 +312,7 @@ PHP_FUNCTION(readline_list_history)
    Reads the history */
 PHP_FUNCTION(readline_read_history)
 {
-	pval **arg;
+	zval **arg;
 	char *filename = NULL;
 	int ac = ZEND_NUM_ARGS();
 
@@ -335,7 +339,7 @@ PHP_FUNCTION(readline_read_history)
    Writes the history */
 PHP_FUNCTION(readline_write_history)
 {
-	pval **arg;
+	zval **arg;
 	char *filename = NULL;
 	int ac = ZEND_NUM_ARGS();
 
@@ -421,7 +425,7 @@ static char **_readline_completion_cb(const char *text, int start, int end)
 	if (call_user_function(CG(function_table), NULL, _readline_completion, &_readline_array, 3, params TSRMLS_CC) == SUCCESS) {
 		if (Z_TYPE(_readline_array) == IS_ARRAY) {
 			if (zend_hash_num_elements(Z_ARRVAL(_readline_array))) {
-				matches = completion_matches(text,_readline_command_generator);
+				matches = rl_completion_matches(text,_readline_command_generator);
 			} else {
 				matches = malloc(sizeof(char *) * 2);
 				matches[0] = strdup("");

@@ -2,11 +2,11 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
-   | available at through the world-wide-web at                           |
+   | available through the world-wide-web at                              |
    | http://www.zend.com/license/2_00.txt.                                |
    | If you did not receive a copy of the Zend license and are unable to  |
    | obtain it through the world-wide-web, please send a note to          |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_multibyte.h,v 1.3 2005/08/03 13:30:55 sniper Exp $ */
+/* $Id: zend_multibyte.h,v 1.3.2.3 2006/01/04 23:53:04 andi Exp $ */
 
 #ifndef ZEND_MULTIBYTE_H
 #define ZEND_MULTIBYTE_H

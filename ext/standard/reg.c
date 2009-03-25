@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -17,7 +17,7 @@
    |          Jaakko Hyvätti <jaakko@hyvatti.iki.fi>                      | 
    +----------------------------------------------------------------------+
  */
-/* $Id: reg.c,v 1.82 2005/08/03 14:08:12 sniper Exp $ */
+/* $Id: reg.c,v 1.82.2.2 2006/01/01 12:50:15 sniper Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -184,7 +184,7 @@ static void php_reg_eprint(int err, regex_t *re) {
  */
 static void php_ereg(INTERNAL_FUNCTION_PARAMETERS, int icase)
 {
-	pval **regex,			/* Regular expression */
+	zval **regex,			/* Regular expression */
 		**findin,		/* String to apply expression to */
 		**array = NULL;		/* Optional register array */
 	regex_t re;
@@ -442,7 +442,7 @@ PHPAPI char *php_reg_replace(const char *pattern, const char *replace, const cha
  */
 static void php_ereg_replace(INTERNAL_FUNCTION_PARAMETERS, int icase)
 {
-	pval **arg_pattern,
+	zval **arg_pattern,
 		**arg_replace,
 		**arg_string;
 	char *pattern;

@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: basic_functions.c,v 1.725.2.7 2005/11/20 18:07:27 sniper Exp $ */
+/* $Id: basic_functions.c,v 1.725.2.17 2006/01/04 21:31:29 derick Exp $ */
 
 #include "php.h"
 #include "php_streams.h"
@@ -107,6 +107,8 @@ php_basic_globals basic_globals;
 #include "php_fopen_wrappers.h"
 #include "streamsfuncs.h"
 
+static zend_class_entry *incomplete_class_entry = NULL;
+
 static
 	ZEND_BEGIN_ARG_INFO(first_and_second__args_force_ref, 0)
 		ZEND_ARG_PASS_INFO(1)
@@ -163,7 +165,7 @@ static void user_tick_function_dtor(user_tick_function_entry *tick_function_entr
 
 #undef sprintf
 
-function_entry basic_functions[] = {
+zend_function_entry basic_functions[] = {
 	PHP_FE(constant,														NULL)
 	PHP_FE(bin2hex,															NULL)
 	PHP_FE(sleep,															NULL)
@@ -176,8 +178,6 @@ function_entry basic_functions[] = {
 #if HAVE_STRPTIME
 	PHP_FE(strptime,														NULL)
 #endif
-
-	PHP_FE(idate,															NULL)
 
 	PHP_FE(flush,															NULL)
 	PHP_FE(wordwrap,														NULL)
@@ -692,6 +692,12 @@ function_entry basic_functions[] = {
 	PHP_FE(chown,															NULL)
 	PHP_FE(chgrp,															NULL)
 #endif
+#if HAVE_LCHOWN
+	PHP_FE(lchown,															NULL)
+#endif
+#if HAVE_LCHOWN
+	PHP_FE(lchgrp,															NULL)
+#endif
 	PHP_FE(chmod,															NULL)
 #if HAVE_UTIME
 	PHP_FE(touch,															NULL)
@@ -836,8 +842,6 @@ function_entry basic_functions[] = {
 
 	PHP_FE(output_add_rewrite_var,											NULL)
 	PHP_FE(output_reset_rewrite_vars,										NULL)
-	PHP_FE(date_sunrise,														NULL)
-	PHP_FE(date_sunset,															NULL)
 
 	{NULL, NULL, NULL}
 };
@@ -875,10 +879,6 @@ static PHP_INI_MH(OnUpdateSafeModeAllowedEnvVars)
 PHP_INI_BEGIN()
 	PHP_INI_ENTRY_EX("safe_mode_protected_env_vars", SAFE_MODE_PROTECTED_ENV_VARS, PHP_INI_SYSTEM, OnUpdateSafeModeProtectedEnvVars, NULL)
 	PHP_INI_ENTRY_EX("safe_mode_allowed_env_vars",   SAFE_MODE_ALLOWED_ENV_VARS,   PHP_INI_SYSTEM, OnUpdateSafeModeAllowedEnvVars,   NULL)
-	PHP_INI_ENTRY("date.default_latitude",           DATE_DEFAULT_LATITUDE,        PHP_INI_ALL, NULL)
-	PHP_INI_ENTRY("date.default_longitude",          DATE_DEFAULT_LONGITUDE,       PHP_INI_ALL, NULL)
-	PHP_INI_ENTRY("date.sunset_zenith",              DATE_SUNSET_ZENITH,           PHP_INI_ALL, NULL)
-	PHP_INI_ENTRY("date.sunrise_zenith",             DATE_SUNRISE_ZENITH,          PHP_INI_ALL, NULL)
 PHP_INI_END()
 
 
@@ -957,8 +957,7 @@ static void basic_globals_ctor(php_basic_globals *basic_globals_p TSRMLS_DC)
 #if defined(_REENTRANT) && defined(HAVE_MBRLEN) && defined(HAVE_MBSTATE_T)
 	memset(&BG(mblen_state), 0, sizeof(BG(mblen_state)));
 #endif
-
-	BG(incomplete_class) = php_create_incomplete_class(TSRMLS_C);
+	BG(incomplete_class) = incomplete_class_entry;
 }
 
 
@@ -1024,6 +1023,8 @@ PHP_MINIT_FUNCTION(basic)
 #endif
 #endif
 
+	BG(incomplete_class) = incomplete_class_entry = php_create_incomplete_class(TSRMLS_C);
+
 	REGISTER_LONG_CONSTANT("CONNECTION_ABORTED", PHP_CONNECTION_ABORTED, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("CONNECTION_NORMAL",  PHP_CONNECTION_NORMAL,  CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("CONNECTION_TIMEOUT", PHP_CONNECTION_TIMEOUT, CONST_CS | CONST_PERSISTENT);
@@ -1033,9 +1034,14 @@ PHP_MINIT_FUNCTION(basic)
 	REGISTER_LONG_CONSTANT("INI_SYSTEM", ZEND_INI_SYSTEM, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("INI_ALL",    ZEND_INI_ALL,    CONST_CS | CONST_PERSISTENT);
 
-	REGISTER_LONG_CONSTANT("SUNFUNCS_RET_TIMESTAMP", SUNFUNCS_RET_TIMESTAMP, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("SUNFUNCS_RET_STRING", SUNFUNCS_RET_STRING, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("SUNFUNCS_RET_DOUBLE", SUNFUNCS_RET_DOUBLE, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("PHP_URL_SCHEME", PHP_URL_SCHEME, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("PHP_URL_HOST", PHP_URL_HOST, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("PHP_URL_PORT", PHP_URL_PORT, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("PHP_URL_USER", PHP_URL_USER, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("PHP_URL_PASS", PHP_URL_PASS, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("PHP_URL_PATH", PHP_URL_PATH, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("PHP_URL_QUERY", PHP_URL_QUERY, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("PHP_URL_FRAGMENT", PHP_URL_FRAGMENT, CONST_CS | CONST_PERSISTENT);
 
 #define REGISTER_MATH_CONSTANT(x)  REGISTER_DOUBLE_CONSTANT(#x, x, CONST_CS | CONST_PERSISTENT)
 	REGISTER_MATH_CONSTANT(M_E);
@@ -1423,7 +1429,7 @@ PHP_FUNCTION(getenv)
    Set the value of an environment variable */
 PHP_FUNCTION(putenv)
 {
-	pval **str;
+	zval **str;
 
 	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &str) == FAILURE) {
 		WRONG_PARAM_COUNT;
@@ -1558,6 +1564,7 @@ PHP_FUNCTION(getopt)
 	char *optname;
 	int argc = 0, options_len = 0, o;
 	zval *val, **args = NULL, *p_longopts = NULL;
+	int optname_len = 0;
 #ifdef HARTMUT_0
 	struct option *longopts = NULL;
 	int longindex = 0;
@@ -1655,6 +1662,9 @@ PHP_FUNCTION(getopt)
 	/* Disable getopt()'s error messages. */
 	opterr = 0;
 
+	/* Force reinitialization of getopt() (via optind reset) on every call. */
+	optind = 0;
+
 	/* Invoke getopt(3) on the argument array. */
 #ifdef HARTMUT_0
 	while ((o = getopt_long(argc, argv, options, longopts, &longindex)) != -1) {
@@ -1688,14 +1698,28 @@ PHP_FUNCTION(getopt)
 		}
 
 		/* Add this option / argument pair to the result hash. */
-		if(zend_hash_find(HASH_OF(return_value), optname, strlen(optname)+1, (void **)&args) != FAILURE) {
-			if(Z_TYPE_PP(args) != IS_ARRAY) {
-				convert_to_array_ex(args);
-			} 
- 			zend_hash_next_index_insert(HASH_OF(*args),  (void *)&val, sizeof(zval *), NULL);
+		optname_len = strlen(optname);
+		if (!(optname_len > 1 && optname[0] == '0') && is_numeric_string(optname, optname_len, NULL, NULL, 0) == IS_LONG) {
+			/* numeric string */
+			int optname_int = atoi(optname);
+			if(zend_hash_index_find(HASH_OF(return_value), optname_int, (void **)&args) != FAILURE) {
+				if(Z_TYPE_PP(args) != IS_ARRAY) {
+					convert_to_array_ex(args);
+				} 
+				zend_hash_next_index_insert(HASH_OF(*args),  (void *)&val, sizeof(zval *), NULL);
+			} else {
+				zend_hash_index_update(HASH_OF(return_value), optname_int, &val, sizeof(zval *), NULL);
+			}
 		} else {
-			zend_hash_add(HASH_OF(return_value), optname, strlen(optname)+1, (void *)&val,
-						  sizeof(zval *), NULL);
+			/* other strings */
+			if(zend_hash_find(HASH_OF(return_value), optname, strlen(optname)+1, (void **)&args) != FAILURE) {
+				if(Z_TYPE_PP(args) != IS_ARRAY) {
+					convert_to_array_ex(args);
+				} 
+				zend_hash_next_index_insert(HASH_OF(*args),  (void *)&val, sizeof(zval *), NULL);
+			} else {
+				zend_hash_add(HASH_OF(return_value), optname, strlen(optname)+1, (void *)&val, sizeof(zval *), NULL);
+			}
 		}
 	}
 
@@ -1719,7 +1743,7 @@ PHP_FUNCTION(flush)
    Delay for a given number of seconds */
 PHP_FUNCTION(sleep)
 {
-	pval **num;
+	zval **num;
 
 	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &num) == FAILURE) {
 		WRONG_PARAM_COUNT;
@@ -1740,7 +1764,7 @@ PHP_FUNCTION(sleep)
 PHP_FUNCTION(usleep)
 {
 #if HAVE_USLEEP
-	pval **num;
+	zval **num;
 
 	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &num) == FAILURE) {
 		WRONG_PARAM_COUNT;
@@ -1839,7 +1863,7 @@ PHP_FUNCTION(get_current_user)
    Get the value of a PHP configuration option */
 PHP_FUNCTION(get_cfg_var)
 {
-	pval **varname;
+	zval **varname;
 	char *value;
 
 	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &varname) == FAILURE) {
@@ -1859,7 +1883,7 @@ PHP_FUNCTION(get_cfg_var)
    Set the current active configuration setting of magic_quotes_runtime and return previous */
 PHP_FUNCTION(set_magic_quotes_runtime)
 {
-	pval **new_setting;
+	zval **new_setting;
 
 	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &new_setting) == FAILURE) {
 		RETURN_FALSE;
@@ -1905,7 +1929,7 @@ error options:
    Send an error message somewhere */
 PHP_FUNCTION(error_log)
 {
-	pval **string, **erropt = NULL, **option = NULL, **emailhead = NULL;
+	zval **string, **erropt = NULL, **option = NULL, **emailhead = NULL;
 	int opt_err = 0;
 	char *message, *opt = NULL, *headers = NULL;
 
@@ -2039,7 +2063,7 @@ PHP_FUNCTION(call_user_func)
 		convert_to_string_ex(params[0]);
 	}
 
-	if (!zend_is_callable(*params[0], IS_CALLABLE_CHECK_NO_ACCESS, &name)) {
+	if (!zend_is_callable(*params[0], 0, &name)) {
 		php_error_docref1(NULL TSRMLS_CC, name, E_WARNING, "First argument is expected to be a valid callback");
 		efree(name);
 		efree(params);
@@ -2099,7 +2123,7 @@ PHP_FUNCTION(call_user_func_array)
 		convert_to_string_ex(func);
 	}
 
-	if (!zend_is_callable(*func, IS_CALLABLE_CHECK_NO_ACCESS, &name)) {
+	if (!zend_is_callable(*func, 0, &name)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "First argument is expected to be a valid callback, '%s' was given", name);
 		efree(name);
 		RETURN_NULL();
@@ -2367,7 +2391,7 @@ PHP_FUNCTION(register_shutdown_function)
 	}
 	
 	/* Prevent entering of anything but valid callback (syntax check only!) */
-	if (!zend_is_callable(shutdown_function_entry.arguments[0], 1, &function_name)) {
+	if (!zend_is_callable(shutdown_function_entry.arguments[0], 0, &function_name)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid shutdown callback '%s' passed", function_name);
 		efree(shutdown_function_entry.arguments);
 		RETVAL_FALSE;
@@ -2520,7 +2544,7 @@ PHP_FUNCTION(highlight_string)
    Get a configuration option */
 PHP_FUNCTION(ini_get)
 {
-	pval **varname;
+	zval **varname;
 	char *str;
 
 	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &varname) == FAILURE) {
@@ -2616,7 +2640,7 @@ static int php_ini_check_path(char *option_name, int option_len, char *new_optio
    Set a configuration option, returns false on error and the old value of the configuration option on success */
 PHP_FUNCTION(ini_set)
 {
-	pval **varname, **new_value;
+	zval **varname, **new_value;
 	char *old_value;
 
 	if (ZEND_NUM_ARGS() != 2 || zend_get_parameters_ex(2, &varname, &new_value) == FAILURE) {
@@ -2679,7 +2703,7 @@ PHP_FUNCTION(ini_set)
    Restore the value of a configuration option specified by varname */
 PHP_FUNCTION(ini_restore)
 {
-	pval **varname;
+	zval **varname;
 
 	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &varname) == FAILURE) {
 		WRONG_PARAM_COUNT;
@@ -2696,7 +2720,7 @@ PHP_FUNCTION(ini_restore)
 
 PHP_FUNCTION(set_include_path)
 {
-	pval **new_value;
+	zval **new_value;
 	char *old_value;
 
 	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &new_value) == FAILURE) {
@@ -2801,7 +2825,7 @@ PHP_FUNCTION(connection_status)
    Set whether we want to ignore a user abort event or not */
 PHP_FUNCTION(ignore_user_abort)
 {
-	pval **arg;
+	zval **arg;
 	int old_setting;
 
 	old_setting = PG(ignore_user_abort);
@@ -2831,7 +2855,7 @@ PHP_FUNCTION(ignore_user_abort)
    Returns port associated with service. Protocol must be "tcp" or "udp" */
 PHP_FUNCTION(getservbyname)
 {
-	pval **name, **proto;
+	zval **name, **proto;
 	struct servent *serv;
 
 	if (ZEND_NUM_ARGS() != 2 || zend_get_parameters_ex(2, &name, &proto) == FAILURE) {
@@ -2856,7 +2880,7 @@ PHP_FUNCTION(getservbyname)
    Returns service name associated with port. Protocol must be "tcp" or "udp" */
 PHP_FUNCTION(getservbyport)
 {
-	pval **port, **proto;
+	zval **port, **proto;
 	struct servent *serv;
 
 	if (ZEND_NUM_ARGS() != 2 || zend_get_parameters_ex(2, &port, &proto) == FAILURE) {
@@ -2881,7 +2905,7 @@ PHP_FUNCTION(getservbyport)
    Returns protocol number associated with name as per /etc/protocols */
 PHP_FUNCTION(getprotobyname)
 {
-	pval **name;
+	zval **name;
 	struct protoent *ent;
 
 	if (ZEND_NUM_ARGS() != 1
@@ -2909,7 +2933,7 @@ PHP_FUNCTION(getprotobyname)
    Returns protocol name associated with protocol number proto */
 PHP_FUNCTION(getprotobynumber)
 {
-	pval **proto;
+	zval **proto;
 	struct protoent *ent;
 
 	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &proto) == FAILURE) {

@@ -2,12 +2,12 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2005 The PHP Group                                |
+  | Copyright (c) 1997-2006 The PHP Group                                |
   +----------------------------------------------------------------------+
-  | This source file is subject to version 3.0 of the PHP license,       |
+  | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
   | available through the world-wide-web at the following url:           |
-  | http://www.php.net/license/3_0.txt.                                  |
+  | http://www.php.net/license/3_01.txt                                  |
   | If you did not receive a copy of the PHP license and are unable to   |
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: sqlite_driver.c,v 1.20.2.1 2005/09/20 19:52:24 iliaa Exp $ */
+/* $Id: sqlite_driver.c,v 1.20.2.5 2006/01/01 12:50:12 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -42,7 +42,10 @@ int _pdo_sqlite_error(pdo_dbh_t *dbh, pdo_stmt_t *stmt, const char *file, int li
 	einfo->line = line;
 
 	if (einfo->errcode != SQLITE_OK) {
-		einfo->errmsg = (char*)sqlite3_errmsg(H->db);
+		if (einfo->errmsg) {
+			pefree(einfo->errmsg, dbh->is_persistent);
+		}
+		einfo->errmsg = pestrdup((char*)sqlite3_errmsg(H->db), dbh->is_persistent);
 	} else { /* no error */
 		strcpy(*pdo_err, PDO_ERR_NONE);
 		return 0;
@@ -133,10 +136,16 @@ static int sqlite_handle_closer(pdo_dbh_t *dbh TSRMLS_DC) /* {{{ */
 	pdo_sqlite_db_handle *H = (pdo_sqlite_db_handle *)dbh->driver_data;
 	
 	if (H) {
+		pdo_sqlite_error_info *einfo = &H->einfo;
+
 		pdo_sqlite_cleanup_callbacks(H TSRMLS_CC);
 		if (H->db) {
 			sqlite3_close(H->db);
 			H->db = NULL;
+		}
+		if (einfo->errmsg) {
+			pefree(einfo->errmsg, dbh->is_persistent);
+			einfo->errmsg = NULL;
 		}
 		pefree(H, dbh->is_persistent);
 		dbh->driver_data = NULL;
@@ -584,13 +593,13 @@ static PHP_METHOD(SQLite, sqliteCreateAggregate)
 	RETURN_FALSE;
 }
 /* }}} */
-static function_entry dbh_methods[] = {
+static zend_function_entry dbh_methods[] = {
 	PHP_ME(SQLite, sqliteCreateFunction, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(SQLite, sqliteCreateAggregate, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 
-static function_entry *get_driver_methods(pdo_dbh_t *dbh, int kind TSRMLS_DC)
+static zend_function_entry *get_driver_methods(pdo_dbh_t *dbh, int kind TSRMLS_DC)
 {
 	switch (kind) {
 		case PDO_DBH_DRIVER_METHOD_KIND_DBH:

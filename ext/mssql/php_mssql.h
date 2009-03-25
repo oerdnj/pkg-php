@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -17,7 +17,7 @@
  */
 
 
-/* $Id: php_mssql.h,v 1.42 2005/08/08 21:32:18 fmk Exp $ */
+/* $Id: php_mssql.h,v 1.42.2.3 2006/01/01 12:50:09 sniper Exp $ */
 
 #ifndef PHP_MSSQL_H
 #define PHP_MSSQL_H
@@ -158,11 +158,14 @@ ZEND_BEGIN_MODULE_GLOBALS(mssql)
 	zend_bool allow_persistent;
 	char *appname;
 	char *server_message;
+#ifdef HAVE_FREETDS
+	char *charset;
+#endif
 	long min_error_severity, min_message_severity;
 	long cfg_min_error_severity, cfg_min_message_severity;
 	long connect_timeout, timeout;
 	zend_bool compatability_mode;
-	void (*get_column_content)(mssql_link *mssql_ptr,int offset,pval *result,int column_type  TSRMLS_DC);
+	void (*get_column_content)(mssql_link *mssql_ptr,int offset,zval *result,int column_type  TSRMLS_DC);
 	long textsize, textlimit, batchsize;
 	zend_bool datetimeconvert;
 	HashTable *resource_list, *resource_plist;
@@ -180,7 +183,7 @@ typedef struct mssql_field {
 } mssql_field;
 
 typedef struct mssql_result {
-	pval **data;
+	zval **data;
 	mssql_field *fields;
 	mssql_link *mssql_ptr;
 	mssql_statement * statement;

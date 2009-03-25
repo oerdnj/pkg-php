@@ -2,12 +2,12 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2005 The PHP Group                                |
+  | Copyright (c) 1997-2006 The PHP Group                                |
   +----------------------------------------------------------------------+
-  | This source file is subject to version 3.0 of the PHP license,       |
+  | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
   | available through the world-wide-web at the following url:           |
-  | http://www.php.net/license/3_0.txt.                                  |
+  | http://www.php.net/license/3_01.txt                                  |
   | If you did not receive a copy of the PHP license and are unable to   |
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_stmt.c,v 1.118.2.21 2005/11/26 21:20:52 wez Exp $ */
+/* $Id: pdo_stmt.c,v 1.118.2.30 2006/01/01 20:07:41 iliaa Exp $ */
 
 /* The PDO Statement Handle Class */
 
@@ -228,7 +228,7 @@ static void get_lazy_object(pdo_stmt_t *stmt, zval *return_value TSRMLS_DC) /* {
 		Z_TYPE(stmt->lazy_object_ref) = IS_OBJECT;
 		Z_OBJ_HANDLE(stmt->lazy_object_ref) = zend_objects_store_put(stmt, (zend_objects_store_dtor_t)zend_objects_destroy_object, (zend_objects_free_object_storage_t)pdo_row_free_storage, NULL TSRMLS_CC);
 		Z_OBJ_HT(stmt->lazy_object_ref) = &pdo_row_object_handlers;
-		/* stmt->refcount++; */
+		stmt->refcount++;
 	}
 	Z_TYPE_P(return_value) = IS_OBJECT;
 	Z_OBJ_HANDLE_P(return_value) = Z_OBJ_HANDLE(stmt->lazy_object_ref);
@@ -1116,9 +1116,14 @@ static int do_fetch(pdo_stmt_t *stmt, int do_bind, zval *return_value,
 static int pdo_stmt_verify_mode(pdo_stmt_t *stmt, int mode, int fetch_all TSRMLS_DC) /* {{{ */
 {
 	int flags = mode & PDO_FETCH_FLAGS;
-	
+
 	mode = mode & ~PDO_FETCH_FLAGS;
 
+	if (mode < 0 || mode > PDO_FETCH__MAX) {
+		pdo_raise_impl_error(stmt->dbh, stmt, "HY000", "invalid fetch mode" TSRMLS_CC);
+		return 0;
+	}
+	
 	if (mode == PDO_FETCH_USE_DEFAULT) {
 		flags = stmt->default_fetch_type & PDO_FETCH_FLAGS;
 		mode = stmt->default_fetch_type & ~PDO_FETCH_FLAGS;
@@ -1138,6 +1143,13 @@ static int pdo_stmt_verify_mode(pdo_stmt_t *stmt, int mode, int fetch_all TSRMLS
 			return 0;
 		}
 		return 1;
+
+	case PDO_FETCH_LAZY:
+		if (fetch_all) {
+			pdo_raise_impl_error(stmt->dbh, stmt, "HY000", "PDO::FETCH_LAZY can't be used with PDOStatement::fetchAll()" TSRMLS_CC);
+			return 0;
+		}
+		/* fall through */
 	
 	default:
 		if ((flags & PDO_FETCH_SERIALIZE) == PDO_FETCH_SERIALIZE) {
@@ -1353,13 +1365,15 @@ static PHP_METHOD(PDOStatement, fetchAll)
 		switch(ZEND_NUM_ARGS()) {
 		case 0:
 		case 1:
+			pdo_raise_impl_error(stmt->dbh, stmt, "HY000", "no fetch function specified" TSRMLS_CC);
+			error = 1;
 			break;
 		case 3:
 		case 2:
 			stmt->fetch.func.function = arg2;
+			do_fetch_func_prepare(stmt TSRMLS_CC);
 			break;
 		}
-		do_fetch_func_prepare(stmt TSRMLS_CC);
 		break;
 	
 	case PDO_FETCH_COLUMN:
@@ -1704,10 +1718,12 @@ fail_out:
 	mode = Z_LVAL_PP(args[skip]);
 	
 	if (!pdo_stmt_verify_mode(stmt, mode, 0 TSRMLS_CC)) {
+		efree(args);
 		return FAILURE;
 	}
 
 	switch (mode & ~PDO_FETCH_FLAGS) {
+		case PDO_FETCH_USE_DEFAULT:
 		case PDO_FETCH_LAZY:
 		case PDO_FETCH_ASSOC:
 		case PDO_FETCH_NUM:
@@ -1782,12 +1798,8 @@ fail_out:
 			break;
 		
 		default:
-			if ((mode & ~PDO_FETCH_FLAGS) < PDO_FETCH__MAX && (mode & ~PDO_FETCH_FLAGS) >= 0) {
-				pdo_raise_impl_error(stmt->dbh, stmt, "22003", "unhandled mode; this is a PDO bug, please report it" TSRMLS_CC);
-			} else {
-				pdo_raise_impl_error(stmt->dbh, stmt, "22003", "mode is out of range" TSRMLS_CC);
-			}
-			return FAILURE;
+			pdo_raise_impl_error(stmt->dbh, stmt, "22003", "Invalid fetch mode specified" TSRMLS_CC);
+			goto fail_out;
 	}
 
 	stmt->default_fetch_type = mode;
@@ -1948,7 +1960,7 @@ static PHP_METHOD(PDOStatement, __sleep)
 }
 /* }}} */
 
-function_entry pdo_dbstmt_functions[] = {
+zend_function_entry pdo_dbstmt_functions[] = {
 	PHP_ME(PDOStatement, execute,		NULL,					ZEND_ACC_PUBLIC)
 	PHP_ME(PDOStatement, fetch,			NULL,					ZEND_ACC_PUBLIC)
 	PHP_ME(PDOStatement, bindParam,		second_arg_force_ref,	ZEND_ACC_PUBLIC)
@@ -2048,6 +2060,34 @@ static int dbstmt_compare(zval *object1, zval *object2 TSRMLS_DC)
 	return -1;
 }
 
+static zend_object_value dbstmt_clone_obj(zval *zobject TSRMLS_DC)
+{
+	zend_object_value retval;
+	zval *tmp;
+	pdo_stmt_t *stmt;
+	pdo_stmt_t *old_stmt;
+	zend_object_handle handle = Z_OBJ_HANDLE_P(zobject);
+
+	stmt = ecalloc(1, sizeof(*stmt));
+	stmt->ce = Z_OBJCE_P(zobject);
+	stmt->refcount = 1;
+	ALLOC_HASHTABLE(stmt->properties);
+	zend_hash_init(stmt->properties, 0, NULL, ZVAL_PTR_DTOR, 0);
+	zend_hash_copy(stmt->properties, &stmt->ce->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
+
+	old_stmt = (pdo_stmt_t *)zend_object_store_get_object(zobject TSRMLS_CC);
+	
+	retval.handle = zend_objects_store_put(stmt, (zend_objects_store_dtor_t)zend_objects_destroy_object, (zend_objects_free_object_storage_t)pdo_dbstmt_free_storage, (zend_objects_store_clone_t)dbstmt_clone_obj TSRMLS_CC);
+	retval.handlers = Z_OBJ_HT_P(zobject);
+
+	zend_objects_clone_members((zend_object *)stmt, retval, (zend_object *)old_stmt, handle TSRMLS_CC);
+	
+	zend_objects_store_add_ref(&old_stmt->database_object_handle TSRMLS_CC);
+	stmt->database_object_handle = old_stmt->database_object_handle;
+			
+	return retval;
+}
+
 zend_object_handlers pdo_dbstmt_object_handlers;
 
 void pdo_stmt_init(TSRMLS_D)
@@ -2066,6 +2106,7 @@ void pdo_stmt_init(TSRMLS_D)
 	pdo_dbstmt_object_handlers.unset_property = dbstmt_prop_delete;
 	pdo_dbstmt_object_handlers.get_method = dbstmt_method_get;
 	pdo_dbstmt_object_handlers.compare_objects = dbstmt_compare;
+	pdo_dbstmt_object_handlers.clone_obj = dbstmt_clone_obj;
 
 	INIT_CLASS_ENTRY(ce, "PDORow", pdo_row_functions);
 	pdo_row_ce = zend_register_internal_class(&ce TSRMLS_CC);
@@ -2160,7 +2201,7 @@ zend_object_value pdo_dbstmt_new(zend_class_entry *ce TSRMLS_DC)
 	zend_hash_init(stmt->properties, 0, NULL, ZVAL_PTR_DTOR, 0);
 	zend_hash_copy(stmt->properties, &ce->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
 
-	retval.handle = zend_objects_store_put(stmt, (zend_objects_store_dtor_t)zend_objects_destroy_object, (zend_objects_free_object_storage_t)pdo_dbstmt_free_storage, NULL TSRMLS_CC);
+	retval.handle = zend_objects_store_put(stmt, (zend_objects_store_dtor_t)zend_objects_destroy_object, (zend_objects_free_object_storage_t)pdo_dbstmt_free_storage, (zend_objects_store_clone_t)dbstmt_clone_obj TSRMLS_CC);
 	retval.handlers = &pdo_dbstmt_object_handlers;
 
 	return retval;
@@ -2285,7 +2326,7 @@ zend_object_iterator *pdo_stmt_iter_get(zend_class_entry *ce, zval *object TSRML
 
 /* {{{ overloaded handlers for PDORow class (used by PDO_FETCH_LAZY) */
 
-function_entry pdo_row_functions[] = {
+zend_function_entry pdo_row_functions[] = {
 	{NULL, NULL, NULL}
 };
 
@@ -2460,13 +2501,11 @@ zend_object_handlers pdo_row_object_handlers = {
 
 void pdo_row_free_storage(pdo_stmt_t *stmt TSRMLS_DC)
 {
-#if 0
 	ZVAL_NULL(&stmt->lazy_object_ref);
 	
 	if (--stmt->refcount == 0) {
 		free_statement(stmt TSRMLS_CC);
 	}
-#endif
 }
 
 zend_object_value pdo_row_new(zend_class_entry *ce TSRMLS_DC)

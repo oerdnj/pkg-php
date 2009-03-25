@@ -2,12 +2,12 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2005 The PHP Group                                |
+  | Copyright (c) 1997-2006 The PHP Group                                |
   +----------------------------------------------------------------------+
-  | This source file is subject to version 3.0 of the PHP license,       |
+  | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
   | available through the world-wide-web at the following url:           |
-  | http://www.php.net/license/3_0.txt.                                  |
+  | http://www.php.net/license/3_01.txt                                  |
   | If you did not receive a copy of the PHP license and are unable to   |
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: soap.c,v 1.156.2.8 2005/11/07 10:05:35 dmitry Exp $ */
+/* $Id: soap.c,v 1.156.2.11 2006/01/01 12:50:13 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1108,7 +1108,7 @@ PHP_FUNCTION(PHP_SOAP_SERVER_CLASS, map)
 #endif
 
 
-/* {{{ proto object SoapServer::SoapServer ( mixed wsdl [, array options])
+/* {{{ proto object SoapServer::setPersistence ( int mode )
    Sets persistence mode of SoapServer */
 PHP_METHOD(SoapServer, setPersistence)
 {
@@ -1805,8 +1805,8 @@ fail:
 /* }}} */
 
 
-/* {{{ proto SoapServer::fault
-   SoapServer::fault */
+/* {{{ proto SoapServer::fault ( staring code, string string [, string actor [, mixed details [, string name]]] )
+   Issue SoapFault indicating an error */
 PHP_METHOD(SoapServer, fault)
 {
 	char *code, *string, *actor=NULL, *name=NULL;
@@ -2781,25 +2781,25 @@ PHP_METHOD(SoapClient, __setSoapHeaders)
 	  RETURN_NULL();
 	}
 
-    if (headers == NULL || Z_TYPE_P(headers) == IS_NULL) {
+	if (headers == NULL || Z_TYPE_P(headers) == IS_NULL) {
 		zend_hash_del(Z_OBJPROP_P(this_ptr), "__default_headers", sizeof("__default_headers"));
-    } else if (Z_TYPE_P(headers) == IS_ARRAY || Z_TYPE_P(headers) == IS_OBJECT) {
+	} else if (Z_TYPE_P(headers) == IS_ARRAY) {
 		zval *default_headers;
 
 		verify_soap_headers_array(Z_ARRVAL_P(headers) TSRMLS_CC);
 		if (zend_hash_find(Z_OBJPROP_P(this_ptr), "__default_headers", sizeof("__default_headers"), (void **) &default_headers)==FAILURE) {
 			add_property_zval(this_ptr, "__default_headers", headers);
 		}
-    } else if (Z_TYPE_P(headers) == IS_OBJECT &&
-               Z_OBJCE_P(headers) == soap_header_class_entry) {
+	} else if (Z_TYPE_P(headers) == IS_OBJECT &&
+	           Z_OBJCE_P(headers) == soap_header_class_entry) {
 		zval *default_headers;
 		ALLOC_INIT_ZVAL(default_headers);
 		array_init(default_headers);
 		add_next_index_zval(default_headers, headers);
 		add_property_zval(this_ptr, "__default_headers", default_headers);
-    } else{
-        php_error_docref(NULL TSRMLS_CC, E_ERROR, "Invalid SOAP header");
-    }
+	} else{
+		php_error_docref(NULL TSRMLS_CC, E_ERROR, "Invalid SOAP header");
+	}
 	RETURN_TRUE;
 }
 /* }}} */
@@ -2840,7 +2840,7 @@ PHP_METHOD(SoapClient, __setLocation)
 #ifndef ZEND_ENGINE_2
 static void soap_call_function_handler(INTERNAL_FUNCTION_PARAMETERS, zend_property_reference *property_reference)
 {
-	pval *object = property_reference->object;
+	zval *object = property_reference->object;
 	zend_overloaded_element *function_name = (zend_overloaded_element *)property_reference->elements_list->tail->data;
 	char *function = Z_STRVAL(function_name->element);
 	zend_function *builtin_function;

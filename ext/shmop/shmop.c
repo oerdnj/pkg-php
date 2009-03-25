@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP version 4                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -16,7 +16,7 @@
    |          Ilia Alshanetsky <ilia@prohost.org>                         |
    +----------------------------------------------------------------------+
  */
-/* $Id: shmop.c,v 1.31 2005/08/03 14:07:45 sniper Exp $ */
+/* $Id: shmop.c,v 1.31.2.2 2006/01/01 12:50:13 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -47,7 +47,7 @@ int shm_type;
 
 /* {{{ shmop_functions[] 
  */
-function_entry shmop_functions[] = {
+zend_function_entry shmop_functions[] = {
 	PHP_FE(shmop_open, NULL)
 	PHP_FE(shmop_read, NULL)
 	PHP_FE(shmop_close, NULL)

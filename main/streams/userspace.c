@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: userspace.c,v 1.31 2005/08/03 14:08:43 sniper Exp $ */
+/* $Id: userspace.c,v 1.31.2.2 2006/01/01 12:50:18 sniper Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -437,7 +437,7 @@ PHP_FUNCTION(stream_wrapper_register)
 }
 /* }}} */
 
-/* {{{ bool stream_wrapper_unregister(string protocol)
+/* {{{ proto bool stream_wrapper_unregister(string protocol)
 	Unregister a wrapper for the life of the current request. */
 PHP_FUNCTION(stream_wrapper_unregister)
 {
@@ -458,7 +458,7 @@ PHP_FUNCTION(stream_wrapper_unregister)
 }
 /* }}} */
 
-/* {{{ bool stream_wrapper_restore(string protocol)
+/* {{{ proto bool stream_wrapper_restore(string protocol)
 	Restore the original protocol handler, overriding if necessary */
 PHP_FUNCTION(stream_wrapper_restore)
 {

@@ -1,6 +1,6 @@
 /*
 	Build Configuration Template for Win32.
-	$Id: config.w32.h.in,v 1.7.2.1 2005/09/21 08:41:16 derick Exp $
+	$Id: config.w32.h.in,v 1.7.2.2 2005/12/14 02:01:13 wez Exp $
 */
 
 /* Default PHP / PEAR directories */
@@ -142,3 +142,10 @@
 #undef HAVE_ATOF_ACCEPTS_NAN
 #undef HAVE_ATOF_ACCEPTS_INF
 #define HAVE_HUGE_VAL_NAN 1
+
+/* vs.net 2005 has a 64-bit time_t.  This will likely break
+ * 3rdParty libs that were built with older compilers; switch
+ * back to 32-bit */
+#define _USE_32BIT_TIME_T 1
+#define HAVE_STDLIB_H 1
+

@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: iconv.c,v 1.124.2.2 2005/10/20 16:51:03 tony2001 Exp $ */
+/* $Id: iconv.c,v 1.124.2.5 2006/01/01 12:50:08 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -64,7 +64,7 @@
 
 /* {{{ iconv_functions[]
  */
-function_entry iconv_functions[] = {
+zend_function_entry iconv_functions[] = {
 	PHP_NAMED_FE(iconv,php_if_iconv,				NULL)
 	PHP_FE(ob_iconv_handler,						NULL)
 	PHP_FE(iconv_get_encoding,						NULL)
@@ -1366,7 +1366,7 @@ static php_iconv_err_t _php_iconv_mime_decode(smart_str *pretval, const char *st
 
 					if (cd == (iconv_t)(-1)) {
 						if ((mode & PHP_ICONV_MIME_DECODE_CONTINUE_ON_ERROR)) {
-							err = _php_iconv_appendl(pretval, encoded_word, (size_t)((p1 + 1) - encoded_word), cd); 
+							err = _php_iconv_appendl(pretval, encoded_word, (size_t)((p1 + 1) - encoded_word), cd_pl); 
 							if (err != PHP_ICONV_ERR_SUCCESS) {
 								goto out;
 							}

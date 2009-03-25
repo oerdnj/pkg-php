@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: pgsql.c,v 1.331.2.4 2005/11/07 12:57:49 helly Exp $ */
+/* $Id: pgsql.c,v 1.331.2.8 2006/01/01 12:50:12 sniper Exp $ */
 
 #include <stdlib.h>
 
@@ -36,6 +36,12 @@
 #include "php_ini.h"
 #include "ext/standard/php_standard.h"
 #include "ext/standard/php_smart_str.h"
+
+#undef PACKAGE_BUGREPORT
+#undef PACKAGE_NAME
+#undef PACKAGE_STRING
+#undef PACKAGE_TARNAME
+#undef PACKAGE_VERSION
 #include "php_pgsql.h"
 #include "php_globals.h"
 #include "zend_exceptions.h"
@@ -77,7 +83,7 @@
 
 /* {{{ pgsql_functions[]
  */
-function_entry pgsql_functions[] = {
+zend_function_entry pgsql_functions[] = {
 	/* connection functions */
 	PHP_FE(pg_connect,		NULL)
 	PHP_FE(pg_pconnect,		NULL)
@@ -646,11 +652,11 @@ static void php_pgsql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 	}
 	
 	if (persistent && PGG(allow_persistent)) {
-		list_entry *le;
+		zend_rsrc_list_entry *le;
 		
 		/* try to find if we already have this link in our persistent list */
 		if (zend_hash_find(&EG(persistent_list), str.c, str.len+1, (void **) &le)==FAILURE) {  /* we don't */
-			list_entry new_le;
+			zend_rsrc_list_entry new_le;
 			
 			if (PGG(max_links)!=-1 && PGG(num_links)>=PGG(max_links)) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING,
@@ -680,7 +686,7 @@ static void php_pgsql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 			/* hash it up */
 			Z_TYPE(new_le) = le_plink;
 			new_le.ptr = pgsql;
-			if (zend_hash_update(&EG(persistent_list), str.c, str.len+1, (void *) &new_le, sizeof(list_entry), NULL)==FAILURE) {
+			if (zend_hash_update(&EG(persistent_list), str.c, str.len+1, (void *) &new_le, sizeof(zend_rsrc_list_entry), NULL)==FAILURE) {
 				goto err;
 			}
 			PGG(num_links)++;
@@ -726,7 +732,7 @@ static void php_pgsql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 		}
 		ZEND_REGISTER_RESOURCE(return_value, pgsql, le_plink);
 	} else { /* Non persistent connection */
-		list_entry *index_ptr,new_index_ptr;
+		zend_rsrc_list_entry *index_ptr,new_index_ptr;
 		
 		/* first we check the hash for the hashed_details key.  if it exists,
 		 * it should point us to the right offset where the actual pgsql link sits.
@@ -776,7 +782,7 @@ static void php_pgsql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 		/* add it to the hash */
 		new_index_ptr.ptr = (void *) Z_LVAL_P(return_value);
 		Z_TYPE(new_index_ptr) = le_index_ptr;
-		if (zend_hash_update(&EG(regular_list),str.c,str.len+1,(void *) &new_index_ptr, sizeof(list_entry), NULL)==FAILURE) {
+		if (zend_hash_update(&EG(regular_list),str.c,str.len+1,(void *) &new_index_ptr, sizeof(zend_rsrc_list_entry), NULL)==FAILURE) {
 			goto err;
 		}
 		PGG(num_links)++;
@@ -1633,7 +1639,7 @@ static char *get_field_name(PGconn *pgsql, Oid oid, HashTable *list TSRMLS_DC)
 {
 	PGresult *result;
 	smart_str str = {0};
-	list_entry *field_type;
+	zend_rsrc_list_entry *field_type;
 	char *ret=NULL;
 
 	/* try to lookup the type in the resource list */
@@ -1647,7 +1653,7 @@ static char *get_field_name(PGconn *pgsql, Oid oid, HashTable *list TSRMLS_DC)
 		int i,num_rows;
 		int oid_offset,name_offset;
 		char *tmp_oid, *end_ptr, *tmp_name;
-		list_entry new_oid_entry;
+		zend_rsrc_list_entry new_oid_entry;
 
 		if ((result = PQexec(pgsql,"select oid,typname from pg_type")) == NULL || PQresultStatus(result) != PGRES_TUPLES_OK) {
 			if (result) {
@@ -1675,7 +1681,7 @@ static char *get_field_name(PGconn *pgsql, Oid oid, HashTable *list TSRMLS_DC)
 			}
 			Z_TYPE(new_oid_entry) = le_string;
 			new_oid_entry.ptr = estrdup(tmp_name);
-			zend_hash_update(list,str.c,str.len+1,(void *) &new_oid_entry, sizeof(list_entry), NULL);
+			zend_hash_update(list,str.c,str.len+1,(void *) &new_oid_entry, sizeof(zend_rsrc_list_entry), NULL);
 			if (!ret && strtoul(tmp_oid, &end_ptr, 10)==oid) {
 				ret = estrdup(tmp_name);
 			}

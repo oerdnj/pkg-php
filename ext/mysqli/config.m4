@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.22 2005/06/07 12:39:02 sniper Exp $
+dnl $Id: config.m4,v 1.22.2.1 2005/11/29 17:32:40 sniper Exp $
 dnl config.m4 for extension mysqli
 
 PHP_ARG_WITH(mysqli, for MySQLi support,
@@ -30,8 +30,8 @@ dnl  fi
   fi
   
   if test -x "$MYSQL_CONFIG" && $MYSQL_CONFIG $MYSQL_LIB_CFG > /dev/null 2>&1; then
-    MYSQLI_INCLINE=`$MYSQL_CONFIG --cflags | sed -e "s/'//g"`
-    MYSQLI_LIBLINE=`$MYSQL_CONFIG $MYSQL_LIB_CFG | sed -e "s/'//g"`
+    MYSQLI_INCLINE=`$MYSQL_CONFIG --cflags | $SED -e "s/'//g"`
+    MYSQLI_LIBLINE=`$MYSQL_CONFIG $MYSQL_LIB_CFG | $SED -e "s/'//g"`
   else
     AC_MSG_RESULT([mysql_config not found])
     AC_MSG_ERROR([Please reinstall the mysql distribution])

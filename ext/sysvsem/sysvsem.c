@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: sysvsem.c,v 1.51 2005/08/03 14:08:18 sniper Exp $ */
+/* $Id: sysvsem.c,v 1.51.2.3 2006/01/01 12:50:16 sniper Exp $ */
 
 /* Latest update build anc tested on Linux 2.2.14
  *
@@ -58,7 +58,7 @@ union semun {
 
 /* {{{ sysvsem_functions[]
  */
-function_entry sysvsem_functions[] = {
+zend_function_entry sysvsem_functions[] = {
 	PHP_FE(sem_get,			NULL)
 	PHP_FE(sem_acquire,		NULL)
 	PHP_FE(sem_release,		NULL)
@@ -169,17 +169,11 @@ PHP_MINIT_FUNCTION(sysvsem)
    Return an id for the semaphore with the given key, and allow max_acquire (default 1) processes to acquire it simultaneously */
 PHP_FUNCTION(sem_get)
 {
-	long key, max_acquire, perm, auto_release = 1;
+	long key, max_acquire = 1, perm = 0666, auto_release = 1;
 	int semid;
 	struct sembuf sop[3];
 	int count;
 	sysvsem_sem *sem_ptr;
-#if HAVE_SEMUN
-	union semun un;
-#endif
-
-	max_acquire = 1;
-	perm = 0666;
 
 	if (FAILURE == zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l|lll", &key, &max_acquire, &perm, &auto_release)) {
 		RETURN_FALSE;
@@ -231,11 +225,7 @@ PHP_FUNCTION(sem_get)
 	}
 
 	/* Get the usage count. */
-#if HAVE_SEMUN
-	count = semctl(semid, SYSVSEM_USAGE, GETVAL, un);
-#else
 	count = semctl(semid, SYSVSEM_USAGE, GETVAL, NULL);
-#endif
 	if (count == -1) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "failed for key 0x%lx: %s", key, strerror(errno));
 	}

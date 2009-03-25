@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_date.h,v 1.17.2.5 2005/11/20 20:14:24 derick Exp $ */
+/* $Id: php_date.h,v 1.17.2.9 2006/01/04 21:31:29 derick Exp $ */
 
 #ifndef PHP_DATE_H
 #define PHP_DATE_H
@@ -28,6 +28,7 @@ extern zend_module_entry date_module_entry;
 #define phpext_date_ptr &date_module_entry
 
 PHP_FUNCTION(date);
+PHP_FUNCTION(idate);
 PHP_FUNCTION(gmdate);
 PHP_FUNCTION(strtotime);
 
@@ -70,6 +71,11 @@ PHP_FUNCTION(timezone_abbreviations_list);
 PHP_FUNCTION(date_default_timezone_set);
 PHP_FUNCTION(date_default_timezone_get);
 
+/* Astro functions */
+PHP_FUNCTION(date_sunrise);
+PHP_FUNCTION(date_sunset);
+PHP_FUNCTION(date_sun_info);
+
 PHP_RINIT_FUNCTION(date);
 PHP_RSHUTDOWN_FUNCTION(date);
 PHP_MINIT_FUNCTION(date);
@@ -91,6 +97,7 @@ ZEND_END_MODULE_GLOBALS(date)
 /* Backwards compability wrapper */
 signed long php_parse_date(char *string, signed long *now);
 PHPAPI void php_mktime(INTERNAL_FUNCTION_PARAMETERS, int gmt);
+PHPAPI int php_idate(char format, time_t ts, int localtime);
 #if HAVE_STRFTIME
 #define _php_strftime php_strftime
 PHPAPI void php_strftime(INTERNAL_FUNCTION_PARAMETERS, int gm);

@@ -1,0 +1,9 @@
+// $Id: config.w32,v 1.2.2.2 2005/11/30 21:52:38 helly Exp $
+// vim:ft=javascript
+
+ARG_ENABLE("reflection", "disable reflection support", "yes");
+
+if (PHP_REFLECTION != "no") {
+	EXTENSION("reflection", "php_reflection.c");
+}
+

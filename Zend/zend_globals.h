@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_globals.h,v 1.141.2.1 2005/11/15 13:29:28 dmitry Exp $ */
+/* $Id: zend_globals.h,v 1.141.2.3 2006/01/04 23:53:04 andi Exp $ */
 
 #ifndef ZEND_GLOBALS_H
 #define ZEND_GLOBALS_H
@@ -144,6 +144,11 @@ struct _zend_compiler_globals {
 	zend_encoding_converter encoding_converter;
 	zend_encoding_oddlen encoding_oddlen;
 #endif /* ZEND_MULTIBYTE */
+
+#ifdef ZTS
+	HashTable **static_members;
+	int last_static_member;
+#endif
 };
 
 

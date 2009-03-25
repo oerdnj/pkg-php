@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_builtin_functions.c,v 1.277.2.6 2005/11/24 05:07:27 sebastian Exp $ */
+/* $Id: zend_builtin_functions.c,v 1.277.2.8 2006/01/04 23:53:04 andi Exp $ */
 
 #include "zend.h"
 #include "zend_API.h"
@@ -738,7 +738,7 @@ ZEND_FUNCTION(get_class_vars)
 		array_init(return_value);
 		add_class_vars(*pce, &(*pce)->default_properties, return_value TSRMLS_CC);
 		zend_update_class_constants(*pce TSRMLS_CC);
-		add_class_vars(*pce, (*pce)->static_members, return_value TSRMLS_CC);
+		add_class_vars(*pce, CE_STATIC_MEMBERS(*pce), return_value TSRMLS_CC);
 	}
 }
 /* }}} */

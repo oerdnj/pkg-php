@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -16,11 +16,12 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: parse_date.re,v 1.26.2.9 2005/11/17 13:04:29 derick Exp $ */
+/* $Id: parse_date.re,v 1.26.2.21 2006/01/04 21:31:34 derick Exp $ */
 
 #include "timelib.h"
 
 #include <stdio.h>
+#include <ctype.h>
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
@@ -170,6 +171,10 @@ static timelib_tz_lookup_table timelib_timezone_fallbackmap[] = {
 	{ NULL, 0, 0, NULL },
 };
 
+static timelib_tz_lookup_table timelib_timezone_utc[] = {
+	{ "utc", 0, 0, "UTC" },
+};
+
 static timelib_relunit const timelib_relunit_lookup[] = {
 	{ "sec",         TIMELIB_SECOND,  1 },
 	{ "secs",        TIMELIB_SECOND,  1 },
@@ -195,12 +200,19 @@ static timelib_relunit const timelib_relunit_lookup[] = {
 	{ "years",       TIMELIB_YEAR,    1 },
 
 	{ "monday",      TIMELIB_WEEKDAY, 1 },
+	{ "mon",         TIMELIB_WEEKDAY, 1 },
 	{ "tuesday",     TIMELIB_WEEKDAY, 2 },
+	{ "tue",         TIMELIB_WEEKDAY, 2 },
 	{ "wednesday",   TIMELIB_WEEKDAY, 3 },
+	{ "wed",         TIMELIB_WEEKDAY, 3 },
 	{ "thursday",    TIMELIB_WEEKDAY, 4 },
+	{ "thu",         TIMELIB_WEEKDAY, 4 },
 	{ "friday",      TIMELIB_WEEKDAY, 5 },
+	{ "fri",         TIMELIB_WEEKDAY, 5 },
 	{ "saturday",    TIMELIB_WEEKDAY, 6 },
+	{ "sat",         TIMELIB_WEEKDAY, 6 },
 	{ "sunday",      TIMELIB_WEEKDAY, 0 },
+	{ "sun",         TIMELIB_WEEKDAY, 0 },
 
 	{ NULL,          0,          0 }
 };
@@ -369,6 +381,16 @@ static timelib_sll timelib_get_nr(char **ptr, int max_length)
 	return tmp_nr;
 }
 
+static void timelib_skip_day_suffix(char **ptr)
+{
+	if (isspace(**ptr)) {
+		return;
+	}
+	if (!strncasecmp(*ptr, "nd", 2) || !strncasecmp(*ptr, "rd", 2) ||!strncasecmp(*ptr, "st", 2) || !strncasecmp(*ptr, "th", 2)) {
+		*ptr += 2;
+	}
+}
+
 static double timelib_get_frac_nr(char **ptr, int max_length)
 {
 	char *begin, *end, *str;
@@ -429,11 +451,18 @@ static long timelib_parse_tz_cor(char **ptr)
 			break;
 		case 3:
 		case 4:
-			tmp = strtol(begin, NULL, 10);
-			return HOUR(tmp / 100) + tmp % 100;
+			if (begin[1] == ':') {
+				tmp = HOUR(strtol(begin, NULL, 10)) + strtol(begin + 2, NULL, 10);
+				return tmp;
+			} else if (begin[2] == ':') {
+				tmp = HOUR(strtol(begin, NULL, 10)) + strtol(begin + 3, NULL, 10);
+				return tmp;
+			} else {
+				tmp = strtol(begin, NULL, 10);
+				return HOUR(tmp / 100) + tmp % 100;
+			}
 		case 5:
-			tmp = HOUR(strtol(begin, NULL, 10)) +
-				strtol(begin + 3, NULL, 10);
+			tmp = HOUR(strtol(begin, NULL, 10)) + strtol(begin + 3, NULL, 10);
 			return tmp;
 	}
 	return 0;
@@ -563,6 +592,10 @@ static timelib_tz_lookup_table* zone_search(const char *word, long gmtoffset, in
 	int first_found = 0;
 	timelib_tz_lookup_table  *tp, *first_found_elem;
 	timelib_tz_lookup_table  *fmp;
+
+	if (strcasecmp("utc", word) == 0 || strcasecmp("gmt", word) == 0) {
+		return timelib_timezone_utc;
+	}
 	
 	for (tp = timelib_timezone_lookup; tp->name; tp++) {
 		if (strcasecmp(word, tp->name) == 0) {
@@ -581,6 +614,7 @@ static timelib_tz_lookup_table* zone_search(const char *word, long gmtoffset, in
 	if (first_found) {
 		return first_found_elem;
 	}
+
 	/* Still didn't find anything, let's find the zone solely based on
 	 * offset/isdst then */
 	for (fmp = timelib_timezone_fallbackmap; fmp->name; fmp++) {
@@ -716,10 +750,12 @@ second = minute | "60";
 secondlz = minutelz | "60";
 meridian = [AaPp] "."? [Mm] "."?;
 tz = "("? [A-Za-z]{1,4} ")"? | [A-Z][a-z]+([_/][A-Z][a-z]+)+;
-tzcorrection = [+-] hour24 ":"? minutelz?;
+tzcorrection = [+-] hour24 ":"? minute?;
+
+daysuf = "st" | "nd" | "rd" | "th";
 
 month = "0"? [0-9] | "1"[0-2];
-day   = [0-2]?[0-9] | "3"[01];
+day   = ([0-2]?[0-9] | "3"[01]) daysuf?;
 year  = [0-9]{1,4};
 year2 = [0-9]{2};
 year4 = [0-9]{4};
@@ -774,10 +810,10 @@ datenoyearrev    = day ([ -.])* monthtext;
 datenocolon      = year4 monthlz daylz;
 
 /* Special formats */
-soap             = year4 "-" monthlz "-" daylz "T" hour24lz ":" minutelz ":" secondlz frac tzcorrection;
+soap             = year4 "-" monthlz "-" daylz "T" hour24lz ":" minutelz ":" secondlz frac tzcorrection?;
 xmlrpc           = year4 monthlz daylz "T" hour24 ":" minutelz ":" secondlz;
 xmlrpcnocolon    = year4 monthlz daylz 't' hour24 minutelz secondlz;
-wddx             = year4 "-" monthlz "-" daylz "T" hour24 ":" minutelz ":" secondlz;
+wddx             = year4 "-" month "-" day "T" hour24 ":" minute ":" second;
 pgydotd          = year4 "."? dayofyear;
 pgtextshort      = monthabbr "-" daylz "-" year;
 pgtextreverse    = year "-" monthabbr "-" daylz;
@@ -799,17 +835,17 @@ dateshortwithtimelongtz = datenoyear iso8601normtz;
  * Relative regexps
  */
 reltextnumber = 'first'|'next'|'second'|'third'|'fourth'|'fifth'|'sixth'|'seventh'|'eight'|'ninth'|'tenth'|'eleventh'|'twelfth'|'last'|'previous'|'this';
-reltextunit = (('sec'|'second'|'min'|'minute'|'hour'|'day'|'week'|'fortnight'|'forthnight'|'month'|'year') 's'?) | dayfull;
+reltextunit = (('sec'|'second'|'min'|'minute'|'hour'|'day'|'week'|'fortnight'|'forthnight'|'month'|'year') 's'?) | daytext;
 
-relnumber = ([+-]?[0-9]+);
-relative = (relnumber space? reltextunit)+;
-relativetext = (reltextnumber space? reltextunit)+;
+relnumber = ([+-]?[ ]*[0-9]+);
+relative = relnumber space? reltextunit;
+relativetext = reltextnumber space? reltextunit;
 
 */
 
 /*!re2c
 	/* so that vim highlights correctly */
-	"yesterday"
+	'yesterday'
 	{
 		DEBUG_OUTPUT("yesterday");
 		TIMELIB_INIT;
@@ -821,7 +857,7 @@ relativetext = (reltextnumber space? reltextunit)+;
 		return TIMELIB_RELATIVE;
 	}
 
-	"now"
+	'now'
 	{
 		DEBUG_OUTPUT("now");
 		TIMELIB_INIT;
@@ -830,7 +866,7 @@ relativetext = (reltextnumber space? reltextunit)+;
 		return TIMELIB_RELATIVE;
 	}
 
-	"noon"
+	'noon'
 	{
 		DEBUG_OUTPUT("noon");
 		TIMELIB_INIT;
@@ -842,7 +878,7 @@ relativetext = (reltextnumber space? reltextunit)+;
 		return TIMELIB_RELATIVE;
 	}
 
-	"midnight" | "today"
+	'midnight' | 'today'
 	{
 		DEBUG_OUTPUT("midnight | today");
 		TIMELIB_INIT;
@@ -852,7 +888,7 @@ relativetext = (reltextnumber space? reltextunit)+;
 		return TIMELIB_RELATIVE;
 	}
 
-	"tomorrow"
+	'tomorrow'
 	{
 		DEBUG_OUTPUT("tomorrow");
 		TIMELIB_INIT;
@@ -1038,6 +1074,7 @@ relativetext = (reltextnumber space? reltextunit)+;
 		TIMELIB_INIT;
 		TIMELIB_HAVE_DATE();
 		s->time->d = timelib_get_nr((char **) &ptr, 2);
+		timelib_skip_day_suffix((char **) &ptr);
 		s->time->m = timelib_get_month((char **) &ptr);
 		s->time->y = timelib_get_nr((char **) &ptr, 4);
 		TIMELIB_PROCESS_YEAR(s->time->y);
@@ -1103,6 +1140,7 @@ relativetext = (reltextnumber space? reltextunit)+;
 		TIMELIB_INIT;
 		TIMELIB_HAVE_DATE();
 		s->time->d = timelib_get_nr((char **) &ptr, 2);
+		timelib_skip_day_suffix((char **) &ptr);
 		s->time->m = timelib_get_month((char **) &ptr);
 		TIMELIB_DEINIT;
 		return TIMELIB_DATE_TEXT;
@@ -1135,8 +1173,10 @@ relativetext = (reltextnumber space? reltextunit)+;
 		s->time->s = timelib_get_nr((char **) &ptr, 2);
 		if (*ptr == '.') {
 			s->time->f = timelib_get_frac_nr((char **) &ptr, 9);
-			s->time->z = timelib_get_zone((char **) &ptr, &s->time->dst, s->time, &tz_not_found, s->tzdb);
-			s->errors += tz_not_found;
+			if (*ptr) { /* timezone is optional */
+				s->time->z = timelib_get_zone((char **) &ptr, &s->time->dst, s->time, &tz_not_found, s->tzdb);
+				s->errors += tz_not_found;
+			}
 		}
 		TIMELIB_DEINIT;
 		return TIMELIB_XMLRPC_SOAP;
@@ -1262,6 +1302,22 @@ relativetext = (reltextnumber space? reltextunit)+;
 		return TIMELIB_AGO;
 	}
 
+	daytext
+	{
+		const timelib_relunit* relunit;
+		DEBUG_OUTPUT("daytext");
+		TIMELIB_INIT;
+		TIMELIB_HAVE_RELATIVE();
+		TIMELIB_HAVE_WEEKDAY_RELATIVE();
+		TIMELIB_UNHAVE_TIME();
+		relunit = timelib_lookup_relunit((char**) &ptr);
+		s->time->relative.weekday = relunit->multiplier;
+		s->time->relative.weekday_behavior = 1;
+		
+		TIMELIB_DEINIT;
+		return TIMELIB_WEEKDAY;
+	}
+
 	relativetext
 	{
 		timelib_sll i;
@@ -1277,29 +1333,6 @@ relativetext = (reltextnumber space? reltextunit)+;
 		}
 		TIMELIB_DEINIT;
 		return TIMELIB_RELATIVE;
-	}
-
-	dayfull
-	{
-		const timelib_relunit* relunit;
-		DEBUG_OUTPUT("dayfull");
-		TIMELIB_INIT;
-		TIMELIB_HAVE_RELATIVE();
-		TIMELIB_HAVE_WEEKDAY_RELATIVE();
-		TIMELIB_UNHAVE_TIME();
-
-		relunit = timelib_lookup_relunit((char**) &ptr);
-		s->time->relative.weekday = relunit->multiplier;
-		s->time->relative.weekday_behavior = 1;
-		
-		TIMELIB_DEINIT;
-		return TIMELIB_RELATIVE;
-	}
-
-	dayabbr
-	{
-		DEBUG_OUTPUT("dayabbr");
-		goto std;
 	}
 
 	tzcorrection | tz
@@ -1379,16 +1412,32 @@ relativetext = (reltextnumber space? reltextunit)+;
 
 /*!max:re2c */
 
-timelib_time* timelib_strtotime(char *s, int *errors, timelib_tzdb *tzdb)
+timelib_time* timelib_strtotime(char *s, int len, int *errors, timelib_tzdb *tzdb)
 {
 	Scanner in;
 	int t;
+	char *e = s + len - 1;
+
+	while (isspace(*s) && s < e) {
+		s++;
+	}
+	while (isspace(*e) && e > s) {
+		e--;
+	}
+	if (e - s < 1) {
+		*errors = 1;
+		in.time = timelib_time_ctor();
+		in.time->y = in.time->d = in.time->m = in.time->h = in.time->i = in.time->s = in.time->f = in.time->z = in.time->dst = -1;
+		in.time->is_localtime = in.time->zone_type = 0;
+		return in.time;
+	}
+	e++;
 
 	memset(&in, 0, sizeof(in));
-	in.str = malloc(strlen(s) + YYMAXFILL);
-	memset(in.str, 0, strlen(s) + YYMAXFILL);
-	memcpy(in.str, s, strlen(s));
-	in.lim = in.str + strlen(s) + YYMAXFILL;
+	in.str = malloc((e - s) + YYMAXFILL);
+	memset(in.str, 0, (e - s) + YYMAXFILL);
+	memcpy(in.str, s, (e - s));
+	in.lim = in.str + (e - s) + YYMAXFILL;
 	in.cur = in.str;
 	in.time = timelib_time_ctor();
 	in.time->y = -1;

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_ptr_stack.h,v 1.22.2.1 2005/10/20 07:23:22 dmitry Exp $ */
+/* $Id: zend_ptr_stack.h,v 1.22.2.2 2006/01/04 23:53:04 andi Exp $ */
 
 #ifndef ZEND_PTR_STACK_H
 #define ZEND_PTR_STACK_H

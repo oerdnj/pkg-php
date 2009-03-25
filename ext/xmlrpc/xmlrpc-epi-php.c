@@ -37,12 +37,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -51,7 +51,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: xmlrpc-epi-php.c,v 1.39.2.2 2005/10/05 16:40:21 rrichards Exp $ */
+/* $Id: xmlrpc-epi-php.c,v 1.39.2.4 2006/01/01 12:50:16 sniper Exp $ */
 
 /**********************************************************************
 * BUGS:                                                               *
@@ -80,7 +80,7 @@ ZEND_DECLARE_MODULE_GLOBALS(xmlrpc)
 
 static int le_xmlrpc_server;
 
-function_entry xmlrpc_functions[] = {
+zend_function_entry xmlrpc_functions[] = {
 	PHP_FE(xmlrpc_encode,									NULL) 
 	PHP_FE(xmlrpc_decode,									NULL)
 	PHP_FE(xmlrpc_decode_request,							second_arg_force_ref)
@@ -1330,7 +1330,7 @@ int set_zval_xmlrpc_type(zval* value, XMLRPC_VALUE_TYPE newtype)
             if(v) {
                time_t timestamp = XMLRPC_GetValueDateTime(v);
                if(timestamp) {
-                  pval* ztimestamp;
+                  zval* ztimestamp;
 
                   MAKE_STD_ZVAL(ztimestamp);
 

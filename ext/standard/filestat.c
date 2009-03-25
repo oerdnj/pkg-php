@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: filestat.c,v 1.136.2.1 2005/10/22 17:02:06 wez Exp $ */
+/* $Id: filestat.c,v 1.136.2.3 2006/01/01 12:50:14 sniper Exp $ */
 
 #include "php.h"
 #include "safe_mode.h"
@@ -118,7 +118,7 @@ PHP_RSHUTDOWN_FUNCTION(filestat)
    Get total disk space for filesystem that path is on */
 PHP_FUNCTION(disk_total_space)
 {
-	pval **path;
+	zval **path;
 #ifdef WINDOWS
 	double bytestotal;
 
@@ -221,7 +221,7 @@ PHP_FUNCTION(disk_total_space)
    Get free disk space for filesystem that path is on */
 PHP_FUNCTION(disk_free_space)
 {
-	pval **path;
+	zval **path;
 #ifdef WINDOWS
 	double bytesfree;
 
@@ -329,7 +329,7 @@ PHP_FUNCTION(disk_free_space)
 PHP_FUNCTION(chgrp)
 {
 #if !defined(WINDOWS)
-	pval **filename, **group;
+	zval **filename, **group;
 	gid_t gid;
 	struct group *gr=NULL;
 	int ret;
@@ -379,7 +379,7 @@ PHP_FUNCTION(chgrp)
 PHP_FUNCTION(chown)
 {
 #if !defined(WINDOWS)
-	pval **filename, **user;
+	zval **filename, **user;
 	int ret;
 	uid_t uid;
 	struct passwd *pw = NULL;
@@ -425,7 +425,7 @@ PHP_FUNCTION(chown)
    Change file mode */
 PHP_FUNCTION(chmod)
 {
-	pval **filename, **mode;
+	zval **filename, **mode;
 	int ret;
 	mode_t imode;
 
@@ -466,7 +466,7 @@ PHP_FUNCTION(chmod)
    Set modification time of file */
 PHP_FUNCTION(touch)
 {
-	pval **filename, **filetime, **fileatime;
+	zval **filename, **filetime, **fileatime;
 	int ret;
 	struct stat sb;
 	FILE *file;
@@ -547,7 +547,7 @@ PHP_FUNCTION(clearstatcache)
 
 /* {{{ php_stat
  */
-PHPAPI void php_stat(const char *filename, php_stat_len filename_length, int type, pval *return_value TSRMLS_DC)
+PHPAPI void php_stat(const char *filename, php_stat_len filename_length, int type, zval *return_value TSRMLS_DC)
 {
 	zval *stat_dev, *stat_ino, *stat_mode, *stat_nlink, *stat_uid, *stat_gid, *stat_rdev,
 	 	*stat_size, *stat_atime, *stat_mtime, *stat_ctime, *stat_blksize, *stat_blocks;
@@ -793,7 +793,7 @@ PHPAPI void php_stat(const char *filename, php_stat_len filename_length, int typ
 /* another quickie macro to make defining similar functions easier */
 #define FileFunction(name, funcnum) \
 void name(INTERNAL_FUNCTION_PARAMETERS) { \
-	pval **filename; \
+	zval **filename; \
 	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &filename) == FAILURE) { \
 		WRONG_PARAM_COUNT; \
 	} \

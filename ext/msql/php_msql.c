@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: php_msql.c,v 1.60 2005/08/03 14:07:28 sniper Exp $ */
+/* $Id: php_msql.c,v 1.60.2.4 2006/01/01 12:50:09 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -46,7 +46,7 @@ static php_msql_globals msql_globals;
 
 /* {{{ msql_functions[]
  */
-function_entry msql_functions[] = {
+zend_function_entry msql_functions[] = {
 	PHP_FE(msql_connect,							NULL)
 	PHP_FE(msql_pconnect,							NULL)
 	PHP_FE(msql_close,								NULL)
@@ -243,9 +243,9 @@ static void php_msql_do_connect(INTERNAL_FUNCTION_PARAMETERS,int persistent)
 			hashed_details_length=4+1;
 			break;
 		case 1: {
-				pval *yyhost;
+				zval *yyhost;
 			
-				if (getParameters(ht, 1, &yyhost) == FAILURE) {
+				if (zend_get_parameters(ht, 1, &yyhost) == FAILURE) {
 					RETURN_FALSE;
 				}
 				convert_to_string(yyhost);
@@ -264,7 +264,7 @@ static void php_msql_do_connect(INTERNAL_FUNCTION_PARAMETERS,int persistent)
 		persistent=0;
 	}
 	if (persistent) {
-		list_entry *le;
+		zend_rsrc_list_entry *le;
 		
 		if (msql_globals.max_links!=-1 && msql_globals.num_links>=msql_globals.max_links) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Too many open links (%d)", msql_globals.num_links);
@@ -279,7 +279,7 @@ static void php_msql_do_connect(INTERNAL_FUNCTION_PARAMETERS,int persistent)
 		
 		/* try to find if we already have this link in our persistent list */
 		if (zend_hash_find(&EG(persistent_list), hashed_details, hashed_details_length+1, (void **) &le)==FAILURE) {  /* we don't */
-			list_entry new_le;
+			zend_rsrc_list_entry new_le;
 			
 			/* create the link */
 			if ((msql=msqlConnect(host))==-1) {
@@ -290,7 +290,7 @@ static void php_msql_do_connect(INTERNAL_FUNCTION_PARAMETERS,int persistent)
 			/* hash it up */
 			Z_TYPE(new_le) = msql_globals.le_plink;
 			new_le.ptr = (void *) msql;
-			if (zend_hash_update(&EG(persistent_list), hashed_details, hashed_details_length+1, (void *) &new_le, sizeof(list_entry), NULL)==FAILURE) {
+			if (zend_hash_update(&EG(persistent_list), hashed_details, hashed_details_length+1, (void *) &new_le, sizeof(zend_rsrc_list_entry), NULL)==FAILURE) {
 				efree(hashed_details);
 				RETURN_FALSE;
 			}
@@ -317,7 +317,7 @@ static void php_msql_do_connect(INTERNAL_FUNCTION_PARAMETERS,int persistent)
 		}
 		ZEND_REGISTER_RESOURCE(return_value, (void *) msql, msql_globals.le_plink);
 	} else {
-		list_entry *index_ptr,new_index_ptr;
+		zend_rsrc_list_entry *index_ptr,new_index_ptr;
 		
 		/* first we check the hash for the hashed_details key.  if it exists,
 		 * it should point us to the right offset where the actual msql link sits.
@@ -358,7 +358,7 @@ static void php_msql_do_connect(INTERNAL_FUNCTION_PARAMETERS,int persistent)
 		/* add it to the hash */
 		new_index_ptr.ptr = (void *) Z_LVAL_P(return_value);
 		Z_TYPE(new_index_ptr) = le_index_ptr;
-		if (zend_hash_update(&EG(regular_list),hashed_details,hashed_details_length+1,(void *) &new_index_ptr, sizeof(list_entry), NULL)==FAILURE) {
+		if (zend_hash_update(&EG(regular_list),hashed_details,hashed_details_length+1,(void *) &new_index_ptr, sizeof(zend_rsrc_list_entry), NULL)==FAILURE) {
 			efree(hashed_details);
 			RETURN_FALSE;
 		}
@@ -401,7 +401,7 @@ PHP_FUNCTION(msql_pconnect)
    Close an mSQL connection */
 PHP_FUNCTION(msql_close)
 {
-	pval *msql_link;
+	zval *msql_link;
 	int id;
 	int msql;
 	
@@ -410,7 +410,7 @@ PHP_FUNCTION(msql_close)
 			id = msql_globals.default_link;
 			break;
 		case 1:
-			if (getParameters(ht, 1, &msql_link)==FAILURE) {
+			if (zend_get_parameters(ht, 1, &msql_link)==FAILURE) {
 				RETURN_FALSE;
 			}
 			id = -1;
@@ -440,19 +440,19 @@ PHP_FUNCTION(msql_close)
    Select an mSQL database */
 PHP_FUNCTION(msql_select_db)
 {
-	pval *db,*msql_link;
+	zval *db,*msql_link;
 	int id;
 	int msql;
 	
 	switch(ZEND_NUM_ARGS()) {
 		case 1:
-			if (getParameters(ht, 1, &db)==FAILURE) {
+			if (zend_get_parameters(ht, 1, &db)==FAILURE) {
 				RETURN_FALSE;
 			}
 			id = php_msql_get_default_link(INTERNAL_FUNCTION_PARAM_PASSTHRU);
 			break;
 		case 2:
-			if (getParameters(ht, 2, &db, &msql_link)==FAILURE) {
+			if (zend_get_parameters(ht, 2, &db, &msql_link)==FAILURE) {
 				RETURN_FALSE;
 			}
 			id = -1;
@@ -479,19 +479,19 @@ PHP_FUNCTION(msql_select_db)
    Create an mSQL database */
 PHP_FUNCTION(msql_create_db)
 {
-	pval *db,*msql_link;
+	zval *db,*msql_link;
 	int id;
 	int msql;
 	
 	switch(ZEND_NUM_ARGS()) {
 		case 1:
-			if (getParameters(ht, 1, &db)==FAILURE) {
+			if (zend_get_parameters(ht, 1, &db)==FAILURE) {
 				WRONG_PARAM_COUNT;
 			}
 			id = php_msql_get_default_link(INTERNAL_FUNCTION_PARAM_PASSTHRU);
 			break;
 		case 2:
-			if (getParameters(ht, 2, &db, &msql_link)==FAILURE) {
+			if (zend_get_parameters(ht, 2, &db, &msql_link)==FAILURE) {
 				WRONG_PARAM_COUNT;
 			}
 			id = -1;
@@ -516,19 +516,19 @@ PHP_FUNCTION(msql_create_db)
    Drop (delete) an mSQL database */
 PHP_FUNCTION(msql_drop_db)
 {
-	pval *db,*msql_link;
+	zval *db,*msql_link;
 	int id;
 	int msql;
 	
 	switch(ZEND_NUM_ARGS()) {
 		case 1:
-			if (getParameters(ht, 1, &db)==FAILURE) {
+			if (zend_get_parameters(ht, 1, &db)==FAILURE) {
 				WRONG_PARAM_COUNT;
 			}
 			id = php_msql_get_default_link(INTERNAL_FUNCTION_PARAM_PASSTHRU);
 			break;
 		case 2:
-			if (getParameters(ht, 2, &db, &msql_link)==FAILURE) {
+			if (zend_get_parameters(ht, 2, &db, &msql_link)==FAILURE) {
 				WRONG_PARAM_COUNT;
 			}
 			id = -1;
@@ -553,20 +553,20 @@ PHP_FUNCTION(msql_drop_db)
    Send an SQL query to mSQL */
 PHP_FUNCTION(msql_query)
 {
-	pval *query,*msql_link;
+	zval *query,*msql_link;
 	int id;
 	int msql;
 	int af_rows;
 	
 	switch(ZEND_NUM_ARGS()) {
 		case 1:
-			if (getParameters(ht, 1, &query)==FAILURE) {
+			if (zend_get_parameters(ht, 1, &query)==FAILURE) {
 				WRONG_PARAM_COUNT;
 			}
 			id = msql_globals.default_link;
 			break;
 		case 2:
-			if (getParameters(ht, 2, &query, &msql_link)==FAILURE) {
+			if (zend_get_parameters(ht, 2, &query, &msql_link)==FAILURE) {
 				WRONG_PARAM_COUNT;
 			}
 			id = -1;
@@ -590,20 +590,20 @@ PHP_FUNCTION(msql_query)
    Send an SQL query to mSQL */
 PHP_FUNCTION(msql_db_query)
 {
-	pval *db,*query,*msql_link;
+	zval *db,*query,*msql_link;
 	int id;
 	int msql;
 	int af_rows;
 	
 	switch(ZEND_NUM_ARGS()) {
 		case 2:
-			if (getParameters(ht, 2, &db, &query)==FAILURE) {
+			if (zend_get_parameters(ht, 2, &db, &query)==FAILURE) {
 				RETURN_FALSE;
 			}
 			id = php_msql_get_default_link(INTERNAL_FUNCTION_PARAM_PASSTHRU);
 			break;
 		case 3:
-			if (getParameters(ht, 3, &db, &query, &msql_link)==FAILURE) {
+			if (zend_get_parameters(ht, 3, &db, &query, &msql_link)==FAILURE) {
 				RETURN_FALSE;
 			}
 			id = -1;
@@ -632,7 +632,7 @@ PHP_FUNCTION(msql_db_query)
    List databases available on an mSQL server */
 PHP_FUNCTION(msql_list_dbs)
 {
-	pval *msql_link;
+	zval *msql_link;
 	int id;
 	int msql;
 	m_result *msql_result;
@@ -642,7 +642,7 @@ PHP_FUNCTION(msql_list_dbs)
 			id = php_msql_get_default_link(INTERNAL_FUNCTION_PARAM_PASSTHRU);
 			break;
 		case 1:
-			if (getParameters(ht, 1, &msql_link)==FAILURE) {
+			if (zend_get_parameters(ht, 1, &msql_link)==FAILURE) {
 				RETURN_FALSE;
 			}
 			id = -1;
@@ -666,20 +666,20 @@ PHP_FUNCTION(msql_list_dbs)
    List tables in an mSQL database */
 PHP_FUNCTION(msql_list_tables)
 {
-	pval *db,*msql_link;
+	zval *db,*msql_link;
 	int id;
 	int msql;
 	m_result *msql_result;
 	
 	switch(ZEND_NUM_ARGS()) {
 		case 1:
-			if (getParameters(ht, 1, &db)==FAILURE) {
+			if (zend_get_parameters(ht, 1, &db)==FAILURE) {
 				RETURN_FALSE;
 			}
 			id = php_msql_get_default_link(INTERNAL_FUNCTION_PARAM_PASSTHRU);
 			break;
 		case 2:
-			if (getParameters(ht, 2, &db, &msql_link)==FAILURE) {
+			if (zend_get_parameters(ht, 2, &db, &msql_link)==FAILURE) {
 				RETURN_FALSE;
 			}
 			id = -1;
@@ -707,20 +707,20 @@ PHP_FUNCTION(msql_list_tables)
    List mSQL result fields */
 PHP_FUNCTION(msql_list_fields)
 {
-	pval *db,*table,*msql_link;
+	zval *db,*table,*msql_link;
 	int id;
 	int msql;
 	m_result *msql_result;
 	
 	switch(ZEND_NUM_ARGS()) {
 		case 2:
-			if (getParameters(ht, 2, &db, &table)==FAILURE) {
+			if (zend_get_parameters(ht, 2, &db, &table)==FAILURE) {
 				RETURN_FALSE;
 			}
 			id = php_msql_get_default_link(INTERNAL_FUNCTION_PARAM_PASSTHRU);
 			break;
 		case 3:
-			if (getParameters(ht, 3, &db, &table, &msql_link)==FAILURE) {
+			if (zend_get_parameters(ht, 3, &db, &table, &msql_link)==FAILURE) {
 				RETURN_FALSE;
 			}
 			id = -1;
@@ -760,7 +760,7 @@ PHP_FUNCTION(msql_error)
    Get result data */
 PHP_FUNCTION(msql_result)
 {
-	pval *result, *row, *field=NULL;
+	zval *result, *row, *field=NULL;
 	m_result *msql_result;
 	m_query *msql_query;
 	m_row sql_row;
@@ -768,12 +768,12 @@ PHP_FUNCTION(msql_result)
 	
 	switch (ZEND_NUM_ARGS()) {
 		case 2:
-			if (getParameters(ht, 2, &result, &row)==FAILURE) {
+			if (zend_get_parameters(ht, 2, &result, &row)==FAILURE) {
 				RETURN_FALSE;
 			}
 			break;
 		case 3:
-			if (getParameters(ht, 3, &result, &row, &field)==FAILURE) {
+			if (zend_get_parameters(ht, 3, &result, &row, &field)==FAILURE) {
 				RETURN_FALSE;
 			}
 			break;
@@ -861,11 +861,11 @@ PHP_FUNCTION(msql_result)
    Get number of rows in a result */
 PHP_FUNCTION(msql_num_rows)
 {
-	pval *result;
+	zval *result;
 	m_result *msql_result;
 	m_query *msql_query;
 	
-	if (ZEND_NUM_ARGS()!=1 || getParameters(ht, 1, &result)==FAILURE) {
+	if (ZEND_NUM_ARGS()!=1 || zend_get_parameters(ht, 1, &result)==FAILURE) {
 		WRONG_PARAM_COUNT;
 	}
 	
@@ -878,11 +878,11 @@ PHP_FUNCTION(msql_num_rows)
    Get number of fields in a result */
 PHP_FUNCTION(msql_num_fields)
 {
-	pval *result;
+	zval *result;
 	m_result *msql_result;
 	m_query *msql_query;
 	
-	if (ZEND_NUM_ARGS()!=1 || getParameters(ht, 1, &result)==FAILURE) {
+	if (ZEND_NUM_ARGS()!=1 || zend_get_parameters(ht, 1, &result)==FAILURE) {
 		WRONG_PARAM_COUNT;
 	}
 	
@@ -895,7 +895,7 @@ PHP_FUNCTION(msql_num_fields)
  */
 static void php_msql_fetch_hash(INTERNAL_FUNCTION_PARAMETERS, int result_type)
 {
-	pval *result, *arg2;
+	zval *result, *arg2;
 	m_result *msql_result;
 	m_row msql_row;
 	m_field *msql_field;
@@ -905,7 +905,7 @@ static void php_msql_fetch_hash(INTERNAL_FUNCTION_PARAMETERS, int result_type)
 	
 	switch (ZEND_NUM_ARGS()) {
 		case 1:
-			if (getParameters(ht, 1, &result)==FAILURE) {
+			if (zend_get_parameters(ht, 1, &result)==FAILURE) {
 				RETURN_FALSE;
 			}
 			if (!result_type) {
@@ -913,7 +913,7 @@ static void php_msql_fetch_hash(INTERNAL_FUNCTION_PARAMETERS, int result_type)
 			}
 			break;
 		case 2:
-			if (getParameters(ht, 2, &result, &arg2)==FAILURE) {
+			if (zend_get_parameters(ht, 2, &result, &arg2)==FAILURE) {
 				RETURN_FALSE;
 			}
 			convert_to_long(arg2);
@@ -1002,11 +1002,11 @@ PHP_FUNCTION(msql_fetch_array)
    Move internal result pointer */
 PHP_FUNCTION(msql_data_seek)
 {
-	pval *result,*offset;
+	zval *result,*offset;
 	m_result *msql_result;
 	m_query *msql_query;
 	
-	if (ZEND_NUM_ARGS()!=2 || getParameters(ht, 2, &result, &offset)==FAILURE) {
+	if (ZEND_NUM_ARGS()!=2 || zend_get_parameters(ht, 2, &result, &offset)==FAILURE) {
 		WRONG_PARAM_COUNT;
 	}
 	
@@ -1068,19 +1068,19 @@ static char *php_msql_get_field_name(int field_type)
    Get column information from a result and return as an object */
 PHP_FUNCTION(msql_fetch_field)
 {
-	pval *result, *field=NULL;
+	zval *result, *field=NULL;
 	m_result *msql_result;
 	m_field *msql_field;
 	m_query *msql_query;
 	
 	switch (ZEND_NUM_ARGS()) {
 		case 1:
-			if (getParameters(ht, 1, &result)==FAILURE) {
+			if (zend_get_parameters(ht, 1, &result)==FAILURE) {
 				RETURN_FALSE;
 			}
 			break;
 		case 2:
-			if (getParameters(ht, 2, &result, &field)==FAILURE) {
+			if (zend_get_parameters(ht, 2, &result, &field)==FAILURE) {
 				RETURN_FALSE;
 			}
 			convert_to_long(field);
@@ -1119,11 +1119,11 @@ PHP_FUNCTION(msql_fetch_field)
    Set result pointer to a specific field offset */
 PHP_FUNCTION(msql_field_seek)
 {
-	pval *result, *offset;
+	zval *result, *offset;
 	m_result *msql_result;
 	m_query *msql_query;
 	
-	if (ZEND_NUM_ARGS()!=2 || getParameters(ht, 2, &result, &offset)==FAILURE) {
+	if (ZEND_NUM_ARGS()!=2 || zend_get_parameters(ht, 2, &result, &offset)==FAILURE) {
 		WRONG_PARAM_COUNT;
 	}
 	
@@ -1152,12 +1152,12 @@ PHP_FUNCTION(msql_field_seek)
  */
 static void php_msql_field_info(INTERNAL_FUNCTION_PARAMETERS, int entry_type)
 {
-	pval *result, *field;
+	zval *result, *field;
 	m_result *msql_result;
 	m_field *msql_field;
 	m_query *msql_query;
 	
-	if (ZEND_NUM_ARGS()!=2 || getParameters(ht, 2, &result, &field)==FAILURE) {
+	if (ZEND_NUM_ARGS()!=2 || zend_get_parameters(ht, 2, &result, &field)==FAILURE) {
 		WRONG_PARAM_COUNT;
 	}
 	
@@ -1280,11 +1280,11 @@ PHP_FUNCTION(msql_field_flags)
    Free result memory */
 PHP_FUNCTION(msql_free_result)
 {
-	pval *result;
+	zval *result;
 	m_result *msql_result;
 	m_query *msql_query;
 	
-	if (ZEND_NUM_ARGS()!=1 || getParameters(ht, 1, &result)==FAILURE) {
+	if (ZEND_NUM_ARGS()!=1 || zend_get_parameters(ht, 1, &result)==FAILURE) {
 		WRONG_PARAM_COUNT;
 	}
 
@@ -1298,11 +1298,11 @@ PHP_FUNCTION(msql_free_result)
    Return number of affected rows */
 PHP_FUNCTION(msql_affected_rows) 
 {
-	pval *result;
+	zval *result;
 	m_result *msql_result;
 	m_query *msql_query;
 
-	if(ZEND_NUM_ARGS() != 1 || getParameters(ht, 1, &result) == FAILURE) {
+	if(ZEND_NUM_ARGS() != 1 || zend_get_parameters(ht, 1, &result) == FAILURE) {
 		WRONG_PARAM_COUNT;
 	}
 	MSQL_GET_QUERY(result);

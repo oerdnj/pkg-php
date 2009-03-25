@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend.h,v 1.293.2.6 2005/11/26 21:03:44 iliaa Exp $ */
+/* $Id: zend.h,v 1.293.2.9 2006/01/04 23:53:03 andi Exp $ */
 
 #ifndef ZEND_H
 #define ZEND_H
@@ -250,7 +250,7 @@ char *alloca ();
 #define INTERNAL_FUNCTION_PARAMETERS int ht, zval *return_value, zval **return_value_ptr, zval *this_ptr, int return_value_used TSRMLS_DC
 #define INTERNAL_FUNCTION_PARAM_PASSTHRU ht, return_value, return_value_ptr, this_ptr, return_value_used TSRMLS_CC
 
-#if defined(__GNUC__) && !defined(__INTEL_COMPILER) && !defined(DARWIN)
+#if defined(__GNUC__) && !defined(__INTEL_COMPILER) && !defined(DARWIN) && !defined(__hpux)
 #  define ZEND_VM_ALWAYS_INLINE  __attribute__ ((always_inline))
 void zend_error_noreturn(int type, const char *format, ...) __attribute__ ((noreturn));
 #else
@@ -279,15 +279,7 @@ typedef struct _zend_object {
 	HashTable *guards; /* protects from __get/__set ... recursion */
 } zend_object;
 
-typedef unsigned int zend_object_handle;
-typedef	struct _zend_object_value zend_object_value;
-
 #include "zend_object_handlers.h"
-
-struct _zend_object_value {
-	zend_object_handle handle;
-	zend_object_handlers *handlers;
-};
 
 typedef union _zvalue_value {
 	long lval;					/* long value */

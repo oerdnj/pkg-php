@@ -1,5 +1,7 @@
 --TEST--
 SPL: RecursiveIteratorIterator and setMaxDepth()
+--SKIPIF--
+<?php if (!extension_loaded("spl")) print "skip"; ?>
 --FILE--
 <?php
 
@@ -108,63 +110,5 @@ int(0)
 ===-1===
 bool(false)
 string(33) "Parameter max_depth must be >= -1"
-int(4)
-===DONE===
---UEXPECT--
-===?===
-bool(false)
-0: 1
-0: 2
-1: 31
-1: 32
-2: 331
-3: 3321
-4: 33221
-0: 4
-===2===
-int(2)
-0: 1
-0: 2
-1: 31
-1: 32
-2: 331
-0: 4
-===X===
-bool(false)
-0: 1
-0: 2
-1: 31
-1: 32
-2: 331
-3: 3321
-4: 33221
-0: 4
-===3===
-int(3)
-0: 1
-0: 2
-1: 31
-1: 32
-2: 331
-3: 3321
-0: 4
-===5===
-int(5)
-0: 1
-0: 2
-1: 31
-1: 32
-2: 331
-3: 3321
-4: 33221
-0: 4
-===0===
-int(0)
-0: 1
-0: 2
-0: 4
-===-1===
-bool(false)
-unicode(33) "Parameter max_depth must be >= -1"
 int(4)
 ===DONE===

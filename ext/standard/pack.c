@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -15,7 +15,7 @@
    | Author: Chris Schneider <cschneid@relog.ch>                          |
    +----------------------------------------------------------------------+
  */
-/* $Id: pack.c,v 1.57 2005/08/03 14:08:09 sniper Exp $ */
+/* $Id: pack.c,v 1.57.2.3 2006/01/01 12:50:15 sniper Exp $ */
 
 #include "php.h"
 
@@ -184,6 +184,7 @@ PHP_FUNCTION(pack)
 				}
 
 				if (arg < 0) {
+					convert_to_string_ex(argv[currentarg]);
 					arg = Z_STRLEN_PP(argv[currentarg]);
 				}
 
@@ -244,7 +245,7 @@ PHP_FUNCTION(pack)
 		switch ((int) code) {
 			case 'h': 
 			case 'H': 
-				INC_OUTPUTPOS((arg + 1) / 2,1)	/* 4 bit per arg */
+				INC_OUTPUTPOS((arg + (arg % 2)) / 2,1)	/* 4 bit per arg */
 				break;
 
 			case 'a': 
@@ -537,7 +538,7 @@ PHP_FUNCTION(unpack)
 	while (formatlen-- > 0) {
 		char type = *(format++);
 		char c;
-		int arg = 1;
+		int arg = 1, argb;
 		char *name;
 		int namelen;
 		int size=0;
@@ -562,6 +563,7 @@ PHP_FUNCTION(unpack)
 
 		/* Get of new value in array */
 		name = format;
+		argb = arg;
 
 		while (formatlen > 0 && *format != '/') {
 			formatlen--;
@@ -591,7 +593,7 @@ PHP_FUNCTION(unpack)
 
 			case 'h': 
 			case 'H': 
-				size = (arg > 0) ? arg / 2 : arg;
+				size = (arg > 0) ? (arg + (arg % 2)) / 2 : arg;
 				arg = 1;
 				break;
 
@@ -689,6 +691,8 @@ PHP_FUNCTION(unpack)
 						if (size >= 0 && len > (size * 2)) {
 							len = size * 2;
 						} 
+
+						len -= argb % 2;
 
 						buf = emalloc(len + 1);
 

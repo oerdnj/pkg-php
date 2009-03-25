@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_object_handlers.c,v 1.135.2.4 2005/11/16 11:52:27 dmitry Exp $ */
+/* $Id: zend_object_handlers.c,v 1.135.2.6 2006/01/04 23:53:04 andi Exp $ */
 
 #include "zend.h"
 #include "zend_globals.h"
@@ -857,7 +857,7 @@ ZEND_API zval **zend_std_get_static_property(zend_class_entry *ce, char *propert
 
 	zend_update_class_constants(tmp_ce TSRMLS_CC);
 
-	zend_hash_quick_find(tmp_ce->static_members, property_info->name, property_info->name_length+1, property_info->h, (void **) &retval);
+	zend_hash_quick_find(CE_STATIC_MEMBERS(tmp_ce), property_info->name, property_info->name_length+1, property_info->h, (void **) &retval);
 
 	if (!retval) {
 		if (silent) {

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute_API.c,v 1.331.2.5 2005/11/24 11:33:11 dmitry Exp $ */
+/* $Id: zend_execute_API.c,v 1.331.2.11 2006/01/04 23:53:04 andi Exp $ */
 
 #include <stdio.h>
 #include <signal.h>
@@ -46,6 +46,7 @@ ZEND_API zend_fcall_info_cache empty_fcall_info_cache = { 0, NULL, NULL, NULL };
 static WNDCLASS wc;
 static HWND timeout_window;
 static HANDLE timeout_thread_event;
+static HANDLE timeout_thread_handle;
 static DWORD timeout_thread_id;
 static int timeout_thread_initialized=0;
 #endif
@@ -501,17 +502,9 @@ ZEND_API int zval_update_constant(zval **pp, void *arg TSRMLS_DC)
 			*element = new_val;
 
 			switch (const_value.type) {
-				case IS_STRING: {
-					long lval;
-					double dval;
-
-					if (is_numeric_string(const_value.value.str.val, const_value.value.str.len, &lval, &dval, 0) == IS_LONG) {
-						zend_hash_update_current_key(p->value.ht, HASH_KEY_IS_LONG, NULL, 0, lval);
-					} else {
-						zend_hash_update_current_key(p->value.ht, HASH_KEY_IS_STRING, const_value.value.str.val, const_value.value.str.len+1, 0);
-					}
+				case IS_STRING:
+					zend_symtable_update_current_key(p->value.ht, const_value.value.str.val, const_value.value.str.len+1);
 					break;
-				}
 				case IS_BOOL:
 				case IS_LONG:
 					zend_hash_update_current_key(p->value.ht, HASH_KEY_IS_LONG, NULL, 0, const_value.value.lval);
@@ -594,6 +587,8 @@ int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci_cache TS
 	zval *method_name;
 	zval *params_array;
 	int call_via_handler = 0;
+	char *fname, *colon;
+	int fname_len;
 
 	if (EG(exception)) {
 		return FAILURE; /* we would result in an instable executor otherwise */
@@ -713,30 +708,62 @@ int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci_cache TS
 			return FAILURE;
 		}
 
+		fname = Z_STRVAL_P(fci->function_name);
+		fname_len = Z_STRLEN_P(fci->function_name);
+		if (calling_scope && (colon = strstr(fname, "::")) != NULL) {
+			int clen = colon - fname;
+			int mlen = fname_len - clen - 2;
+			zend_class_entry **pce, *ce_child;
+			if (zend_lookup_class(fname, clen, &pce TSRMLS_CC) == SUCCESS) {
+				ce_child = *pce;
+			} else {
+				char *lcname = zend_str_tolower_dup(fname, clen);
+				/* caution: lcname is not '\0' terminated */
+				if (clen == sizeof("self") - 1 && memcmp(lcname, "self", sizeof("self") - 1) == 0) {
+					ce_child = EG(active_op_array) ? EG(active_op_array)->scope : NULL;
+				} else if (clen == sizeof("parent") - 1 && memcmp(lcname, "parent", sizeof("parent") - 1) == 0 && EG(active_op_array)->scope) {
+					ce_child = EG(active_op_array) && EG(active_op_array)->scope ? EG(scope)->parent : NULL;
+				}
+				efree(lcname);
+			}
+			if (!ce_child) {
+				zend_error(E_ERROR, "Cannot call method %s() or method does not exist", fname);
+				return FAILURE;
+			}
+			if (!instanceof_function(calling_scope, ce_child TSRMLS_CC)) {
+				zend_error(E_ERROR, "Cannot call method %s() of class %s which is not a derived from %s", fname, ce_child->name, calling_scope->name);
+				return 0;
+			}
+			fci->function_table = &ce_child->function_table;
+			calling_scope = ce_child;
+			fname = fname + clen + 2;
+			fname_len = mlen;
+		}
+
 		if (fci->object_pp) {
 			if (Z_OBJ_HT_PP(fci->object_pp)->get_method == NULL) {
 				zend_error(E_ERROR, "Object does not support method calls");
 			}
 			EX(function_state).function = 
-			  Z_OBJ_HT_PP(fci->object_pp)->get_method(fci->object_pp, Z_STRVAL_P(fci->function_name), Z_STRLEN_P(fci->function_name) TSRMLS_CC);
+			  Z_OBJ_HT_PP(fci->object_pp)->get_method(fci->object_pp, fname, fname_len TSRMLS_CC);
 			if (EX(function_state).function && calling_scope != EX(function_state).function->common.scope) {
-				char *function_name_lc = zend_str_tolower_dup(Z_STRVAL_P(fci->function_name), Z_STRLEN_P(fci->function_name));
-				if (zend_hash_find(&calling_scope->function_table, function_name_lc, fci->function_name->value.str.len+1, (void **) &EX(function_state).function)==FAILURE) {
+				char *function_name_lc = zend_str_tolower_dup(fname, fname_len);
+				if (zend_hash_find(&calling_scope->function_table, function_name_lc, fname_len+1, (void **) &EX(function_state).function)==FAILURE) {
 					efree(function_name_lc);
-					zend_error(E_ERROR, "Cannot call method %s::%s() or method does not exist", calling_scope->name, Z_STRVAL_P(fci->function_name));
+					zend_error(E_ERROR, "Cannot call method %s::%s() or method does not exist", calling_scope->name, fname);
 				}
 				efree(function_name_lc);
 			}
 		} else if (calling_scope) {
-			char *function_name_lc = zend_str_tolower_dup(Z_STRVAL_P(fci->function_name), Z_STRLEN_P(fci->function_name));
+			char *function_name_lc = zend_str_tolower_dup(fname, fname_len);
 
 			EX(function_state).function = 
-				zend_std_get_static_method(calling_scope, function_name_lc, Z_STRLEN_P(fci->function_name) TSRMLS_CC);
+				zend_std_get_static_method(calling_scope, function_name_lc, fname_len TSRMLS_CC);
 			efree(function_name_lc);
 		} else {
-			char *function_name_lc = zend_str_tolower_dup(Z_STRVAL_P(fci->function_name), Z_STRLEN_P(fci->function_name));
+			char *function_name_lc = zend_str_tolower_dup(fname, fname_len);
 
-			if (zend_hash_find(fci->function_table, function_name_lc, fci->function_name->value.str.len+1, (void **) &EX(function_state).function)==FAILURE) {
+			if (zend_hash_find(fci->function_table, function_name_lc, fname_len+1, (void **) &EX(function_state).function)==FAILURE) {
 			  EX(function_state).function = NULL;
 			}
 			efree(function_name_lc);
@@ -920,7 +947,7 @@ ZEND_API int zend_lookup_class_ex(char *name, int name_length, int use_autoload,
 	zval **args[1];
 	zval autoload_function;
 	zval *class_name_ptr;
-	zval *retval_ptr;
+	zval *retval_ptr = NULL;
 	int retval;
 	char *lc_name;
 	zval *exception;
@@ -1003,6 +1030,8 @@ ZEND_API int zend_lookup_class_ex(char *name, int name_length, int use_autoload,
 	}
 	if (!EG(exception)) {
 		EG(exception) = exception;
+	}
+	if (retval_ptr) {
 		zval_ptr_dtor(&retval_ptr);
 	}
 
@@ -1255,6 +1284,7 @@ static unsigned __stdcall timeout_thread_proc(void *pArgs)
 	}
 	DestroyWindow(timeout_window);
 	UnregisterClass(wc.lpszClassName, NULL);
+	SetEvent(timeout_thread_handle);
 	return 0;
 }
 
@@ -1262,6 +1292,7 @@ static unsigned __stdcall timeout_thread_proc(void *pArgs)
 void zend_init_timeout_thread()
 {
 	timeout_thread_event = CreateEvent(NULL, FALSE, FALSE, NULL);
+	timeout_thread_handle = CreateEvent(NULL, FALSE, FALSE, NULL);
 	_beginthreadex(NULL, 0, timeout_thread_proc, NULL, 0, &timeout_thread_id);
 	WaitForSingleObject(timeout_thread_event, INFINITE);
 }
@@ -1273,6 +1304,10 @@ void zend_shutdown_timeout_thread()
 		return;
 	}
 	PostThreadMessage(timeout_thread_id, WM_QUIT, 0, 0);
+
+	/* Wait for thread termination */
+	WaitForSingleObject(timeout_thread_handle, 5000);
+	CloseHandle(timeout_thread_handle);
 }
 
 #endif

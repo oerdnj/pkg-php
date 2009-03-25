@@ -1,5 +1,5 @@
 // vim:ft=javascript
-// $Id: config.w32,v 1.4.2.1 2005/10/06 13:03:43 derick Exp $
+// $Id: config.w32,v 1.4.2.2 2006/01/04 21:31:29 derick Exp $
 
 ARG_WITH("config-file-scan-dir", "Dir to check for additional php ini files", "");
 AC_DEFINE("PHP_CONFIG_FILE_SCAN_DIR", PHP_CONFIG_FILE_SCAN_DIR);
@@ -15,6 +15,6 @@ EXTENSION("standard", "array.c base64.c basic_functions.c browscap.c \
 	versioning.c assert.c strnatcmp.c levenshtein.c incomplete_class.c \
 	url_scanner_ex.c ftp_fopen_wrapper.c http_fopen_wrapper.c \
 	php_fopen_wrapper.c credits.c css.c var_unserializer.c ftok.c sha1.c \
-	user_filters.c uuencode.c filters.c proc_open.c sunfuncs.c \
+	user_filters.c uuencode.c filters.c proc_open.c \
 	streamsfuncs.c http.c", false /* never shared */);
 

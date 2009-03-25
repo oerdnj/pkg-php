@@ -2,12 +2,12 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2005 The PHP Group                                |
+  | Copyright (c) 1997-2006 The PHP Group                                |
   +----------------------------------------------------------------------+
-  | This source file is subject to version 3.0 of the PHP license,       |
+  | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
   | available through the world-wide-web at the following url:           |
-  | http://www.php.net/license/3_0.txt.                                  |
+  | http://www.php.net/license/3_01.txt                                  |
   | If you did not receive a copy of the PHP license and are unable to   |
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_nonapi.c,v 1.54.2.2 2005/10/10 20:06:35 tony2001 Exp $ 
+  $Id: mysqli_nonapi.c,v 1.54.2.5 2006/01/01 12:50:09 sniper Exp $ 
 */
 
 #ifdef HAVE_CONFIG_H
@@ -91,7 +91,7 @@ PHP_FUNCTION(mysqli_connect)
 		/* Save error messages */
 
 		php_mysqli_throw_sql_exception( mysql->mysql->net.sqlstate, mysql->mysql->net.last_errno TSRMLS_CC,
-										mysql->mysql->net.last_error);
+										"%s", mysql->mysql->net.last_error);
 
 		php_mysqli_set_error(mysql_errno(mysql->mysql), (char *) mysql_error(mysql->mysql) TSRMLS_CC);
 
@@ -249,7 +249,7 @@ PHP_FUNCTION(mysqli_query)
 
 	if (!result) {
 		php_mysqli_throw_sql_exception(mysql->mysql->net.sqlstate, mysql->mysql->net.last_errno TSRMLS_CC,
-										mysql->mysql->net.last_error); 
+										"%s", mysql->mysql->net.last_error); 
 		RETURN_FALSE;
 	}
 
@@ -335,7 +335,7 @@ PHP_FUNCTION(mysqli_set_charset)
 #endif
 
 #ifdef HAVE_MYSQLI_GET_CHARSET 
-/* {{{ object mysqli_get_charset(object link) 
+/* {{{ proto object mysqli_get_charset(object link) 
    returns a character set object */
 PHP_FUNCTION(mysqli_get_charset)
 {

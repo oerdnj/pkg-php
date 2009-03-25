@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.17 2005/05/29 23:16:46 sniper Exp $
+dnl $Id: config.m4,v 1.17.2.1 2005/11/29 18:26:02 tony2001 Exp $
 dnl
 
 RESULT=no
@@ -21,7 +21,7 @@ AC_ARG_WITH(roxen,
     if $PIKE -e 'float v; catch(v = __VERSION__ + (__BUILD__/10000.0)); if(v < 0.7079) exit(1); exit(0);'; then
 		PIKE_MODULE_DIR=`$PIKE --show-paths 2>&1| grep '^Module' | sed -e 's/.*: //'`
 	    PIKE_INCLUDE_DIR=`echo $PIKE_MODULE_DIR | sed -e 's,lib/pike/modules,include/pike,' -e 's,lib/modules,include/pike,'`
-		if test -z "$PIKE_INCLUDE_DIR" -o -z "$PIKE_MODULE_DIR"; then
+		if test -z "$PIKE_INCLUDE_DIR" || test -z "$PIKE_MODULE_DIR"; then
 			AC_MSG_ERROR(Failed to figure out Pike module and include directories)
 		fi
 	else

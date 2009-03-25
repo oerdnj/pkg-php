@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: dns.c,v 1.70.2.5 2005/10/25 14:57:14 tony2001 Exp $ */
+/* $Id: dns.c,v 1.70.2.7 2006/01/01 12:50:14 sniper Exp $ */
 
 /* {{{ includes */
 #include "php.h"
@@ -655,7 +655,7 @@ static u_char *php_parserr(u_char *cp, querybuf *answer, int type_to_fetch, int 
    Get any Resource Record corresponding to a given Internet host name */
 PHP_FUNCTION(dns_get_record)
 {
-	pval *addtl, *host, *authns, *fetch_type;
+	zval *addtl, *host, *authns, *fetch_type;
 	int addtl_recs = 0;
 	int type_to_fetch, type_param = PHP_DNS_ANY;
 	struct __res_state res;
@@ -684,10 +684,10 @@ PHP_FUNCTION(dns_get_record)
 			}
 			convert_to_long(fetch_type);
 			type_param = Z_LVAL_P(fetch_type);
-			pval_destructor(authns);
+			zval_dtor(authns);
 			addtl_recs = 1;		/* We want the additional Records */
 			array_init(authns);
-			pval_destructor(addtl);
+			zval_dtor(addtl);
 			array_init(addtl);
 			break;
 		default:
@@ -845,7 +845,7 @@ PHP_FUNCTION(dns_get_record)
    Get MX records corresponding to a given Internet host name */
 PHP_FUNCTION(dns_get_mx)
 {
-	pval *host, *mx_list, *weight_list;
+	zval *host, *mx_list, *weight_list;
 	int need_weight = 0;
 	int count, qdc;
 	u_short type, weight;
@@ -867,7 +867,7 @@ PHP_FUNCTION(dns_get_mx)
 				WRONG_PARAM_COUNT;
 			}
 			need_weight = 1;
-			pval_destructor(weight_list); /* start with clean array */
+			zval_dtor(weight_list); /* start with clean array */
 			array_init(weight_list);
 			break;
 
@@ -876,7 +876,7 @@ PHP_FUNCTION(dns_get_mx)
 	}
 
 	convert_to_string(host);
-	pval_destructor(mx_list); /* start with clean array */
+	zval_dtor(mx_list); /* start with clean array */
 	array_init(mx_list);
 
 	/* Go! */

@@ -2,12 +2,12 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2005 The PHP Group                                |
+  | Copyright (c) 1997-2006 The PHP Group                                |
   +----------------------------------------------------------------------+
-  | This source file is subject to version 3.0 of the PHP license,       |
+  | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
   | available through the world-wide-web at the following url:           |
-  | http://www.php.net/license/3_0.txt.                                  |
+  | http://www.php.net/license/3_01.txt                                  |
   | If you did not receive a copy of the PHP license and are unable to   |
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: tidy.c,v 1.66.2.3 2005/11/14 22:03:02 tony2001 Exp $ */
+/* $Id: tidy.c,v 1.66.2.5 2006/01/01 12:50:16 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -237,7 +237,7 @@ STD_PHP_INI_ENTRY("tidy.default_config",	"",	PHP_INI_SYSTEM,		OnUpdateString,		d
 PHP_INI_ENTRY("tidy.clean_output",     "0",    PHP_INI_PERDIR,         NULL)
 PHP_INI_END()
 
-function_entry tidy_functions[] = {
+zend_function_entry tidy_functions[] = {
 	PHP_FE(tidy_getopt,             NULL)
 	PHP_FE(tidy_parse_string,       NULL)
 	PHP_FE(tidy_parse_file,         NULL)
@@ -268,7 +268,7 @@ function_entry tidy_functions[] = {
 	{NULL, NULL, NULL}
 };
 
-function_entry tidy_funcs_doc[] = {
+zend_function_entry tidy_funcs_doc[] = {
 	TIDY_METHOD_MAP(getOpt, tidy_getopt, NULL)
 	TIDY_METHOD_MAP(cleanRepair, tidy_clean_repair, NULL)
 	TIDY_DOC_ME(parseFile, NULL)
@@ -293,7 +293,7 @@ function_entry tidy_funcs_doc[] = {
 	{NULL, NULL, NULL}
 };
 
-function_entry tidy_funcs_node[] = {
+zend_function_entry tidy_funcs_node[] = {
 	TIDY_NODE_ME(__construct, NULL)
 	TIDY_NODE_ME(hasChildren, NULL)
 	TIDY_NODE_ME(hasSiblings, NULL)
@@ -306,7 +306,7 @@ function_entry tidy_funcs_node[] = {
 	{NULL, NULL, NULL}
 };
 
-function_entry tidy_funcs_exception[] = {
+zend_function_entry tidy_funcs_exception[] = {
 	{NULL, NULL, NULL}
 };
 
@@ -983,7 +983,7 @@ PHP_MINFO_FUNCTION(tidy)
 	php_info_print_table_start();
 	php_info_print_table_header(2, "Tidy support", "enabled");
 	php_info_print_table_row(2, "libTidy Release", (char *)tidyReleaseDate());
-	php_info_print_table_row(2, "Extension Version", PHP_TIDY_MODULE_VERSION " ($Id: tidy.c,v 1.66.2.3 2005/11/14 22:03:02 tony2001 Exp $)");
+	php_info_print_table_row(2, "Extension Version", PHP_TIDY_MODULE_VERSION " ($Id: tidy.c,v 1.66.2.5 2006/01/01 12:50:16 sniper Exp $)");
 	php_info_print_table_end();
 
 	DISPLAY_INI_ENTRIES();

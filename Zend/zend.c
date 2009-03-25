@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend.c,v 1.308.2.4 2005/11/15 13:29:28 dmitry Exp $ */
+/* $Id: zend.c,v 1.308.2.7 2006/01/04 23:53:03 andi Exp $ */
 
 #include "zend.h"
 #include "zend_extensions.h"
@@ -102,7 +102,7 @@ ZEND_API zval zval_used_for_init; /* True global variable */
 /* version information */
 static char *zend_version_info;
 static uint zend_version_info_length;
-#define ZEND_CORE_VERSION_INFO	"Zend Engine v" ZEND_VERSION ", Copyright (c) 1998-2005 Zend Technologies\n"
+#define ZEND_CORE_VERSION_INFO	"Zend Engine v" ZEND_VERSION ", Copyright (c) 1998-2006 Zend Technologies\n"
 
 
 #define PRINT_ZVAL_INDENT 4
@@ -453,6 +453,13 @@ static void compiler_globals_ctor(zend_compiler_globals *compiler_globals TSRMLS
 	compiler_globals->auto_globals = (HashTable *) malloc(sizeof(HashTable));
 	zend_hash_init_ex(compiler_globals->auto_globals, 8, NULL, NULL, 1, 0);
 	zend_hash_copy(compiler_globals->auto_globals, global_auto_globals_table, NULL, NULL, sizeof(zend_auto_global) /* empty element */);
+
+	compiler_globals->last_static_member = zend_hash_num_elements(compiler_globals->class_table);
+	if (compiler_globals->last_static_member) {
+		compiler_globals->static_members = (HashTable**)calloc(compiler_globals->last_static_member, sizeof(HashTable*));
+	} else {
+		compiler_globals->static_members = NULL;
+	}
 }
 
 
@@ -470,6 +477,10 @@ static void compiler_globals_dtor(zend_compiler_globals *compiler_globals TSRMLS
 		zend_hash_destroy(compiler_globals->auto_globals);
 		free(compiler_globals->auto_globals);
 	}
+	if (compiler_globals->static_members) {
+		free(compiler_globals->static_members);
+	}
+	compiler_globals->last_static_member = 0;
 }
 
 
@@ -1035,7 +1046,7 @@ ZEND_API void zend_error(int type, const char *format, ...)
 	}
 }
 
-#if defined(__GNUC__) && !defined(__INTEL_COMPILER) && !defined(DARWIN)
+#if defined(__GNUC__) && !defined(__INTEL_COMPILER) && !defined(DARWIN) && !defined(__hpux)
 void zend_error_noreturn(int type, const char *format, ...) __attribute__ ((alias("zend_error"),noreturn));
 #endif
 

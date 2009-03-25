@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_ftp.c,v 1.103 2005/08/03 14:07:11 sniper Exp $ */
+/* $Id: php_ftp.c,v 1.103.2.2 2006/01/01 12:50:06 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -51,7 +51,7 @@ static
         ZEND_ARG_PASS_INFO(1)
     ZEND_END_ARG_INFO()
 
-function_entry php_ftp_functions[] = {
+zend_function_entry php_ftp_functions[] = {
 	PHP_FE(ftp_connect,			NULL)
 #if HAVE_OPENSSL_EXT
 	PHP_FE(ftp_ssl_connect,		NULL)
@@ -316,7 +316,7 @@ PHP_FUNCTION(ftp_chdir)
    Requests execution of a program on the FTP server */
 PHP_FUNCTION(ftp_exec)
 {
-	pval		*z_ftp;
+	zval		*z_ftp;
 	ftpbuf_t	*ftp;
 	char		*cmd;
 	int			cmd_len;

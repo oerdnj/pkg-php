@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_functions.c,v 1.18 2005/08/03 14:08:48 sniper Exp $ */
+/* $Id: php_functions.c,v 1.18.2.6 2006/01/03 20:13:07 iliaa Exp $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 
@@ -58,13 +58,11 @@ php_apache2_info_struct php_apache2_info;
 
 static request_rec *php_apache_lookup_uri(char *filename TSRMLS_DC)
 {
-	php_struct *ctx;
+	php_struct *ctx = SG(server_context);
 	
-	if (!filename) {
+	if (!filename || !ctx || !ctx->r) {
 		return NULL;
 	}
-	
-	ctx = SG(server_context);
 
 	return ap_sub_req_lookup_uri(filename, ctx->r, ctx->r->output_filters);
 }
@@ -181,6 +179,10 @@ PHP_FUNCTION(apache_request_headers)
 	const apr_array_header_t *arr;
 	char *key, *val;
 
+	if (ZEND_NUM_ARGS()) {
+		WRONG_PARAM_COUNT;
+	}
+
 	array_init(return_value);
 	
 	ctx = SG(server_context);
@@ -200,6 +202,10 @@ PHP_FUNCTION(apache_response_headers)
 	php_struct *ctx;
 	const apr_array_header_t *arr;
 	char *key, *val;
+
+	if (ZEND_NUM_ARGS()) {
+		WRONG_PARAM_COUNT;
+	}
 
 	array_init(return_value);
 	
@@ -258,7 +264,7 @@ PHP_FUNCTION(apache_setenv)
 	int arg_count = ZEND_NUM_ARGS();
 	request_rec *r;
 
-	if (arg_count<1 || arg_count>3 ||
+	if (arg_count < 2 || arg_count > 3 ||
 		zend_get_parameters_ex(arg_count, &variable, &string_val, &walk_to_top) == FAILURE) {
 		WRONG_PARAM_COUNT;
 	}
@@ -266,10 +272,13 @@ PHP_FUNCTION(apache_setenv)
 	ctx = SG(server_context);
 
 	r = ctx->r;
-	if (arg_count == 3 && Z_STRVAL_PP(walk_to_top)) {
-		while(r->prev) {
-			r = r->prev;
-		}	
+	if (arg_count == 3) {
+		convert_to_boolean_ex(walk_to_top);
+		if (Z_LVAL_PP(walk_to_top)) {
+			while(r->prev) {
+				r = r->prev;
+			}
+		}
 	}
 
 	convert_to_string_ex(variable);
@@ -302,10 +311,13 @@ PHP_FUNCTION(apache_getenv)
 	ctx = SG(server_context);
 
 	r = ctx->r;
-	if (arg_count == 2 && Z_STRVAL_PP(walk_to_top)) {
-		while(r->prev) {
-			r = r->prev;
-		}	
+	if (arg_count == 2) {
+		convert_to_boolean_ex(walk_to_top);
+		if (Z_LVAL_PP(walk_to_top)) {
+			while(r->prev) {
+				r = r->prev;
+			}
+		}
 	}
 
 	convert_to_string_ex(variable);
@@ -462,7 +474,7 @@ PHP_MINFO_FUNCTION(apache)
 	}
 }
 
-static function_entry apache_functions[] = {
+static zend_function_entry apache_functions[] = {
 	PHP_FE(apache_lookup_uri, NULL)
 	PHP_FE(virtual, NULL) 
 	PHP_FE(apache_request_headers, NULL)

@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.32 2005/05/29 23:16:44 sniper Exp $
+dnl $Id: config.m4,v 1.32.2.1 2005/11/29 18:26:00 tony2001 Exp $
 dnl
 
 PHP_ARG_WITH(snmp,for SNMP support,
@@ -46,7 +46,7 @@ if test "$PHP_SNMP" != "no"; then
         test -f $i/snmp/include/ucd-snmp/snmp.h && SNMP_INCDIR=$i/snmp/include/ucd-snmp
       done
       for i in /usr /usr/snmp /usr/local /usr/local/snmp; do
-        test -f $i/lib/libsnmp.a -o -f $i/lib/libsnmp.$SHLIB_SUFFIX_NAME && SNMP_LIBDIR=$i/lib
+        test -f $i/lib/libsnmp.a || test -f $i/lib/libsnmp.$SHLIB_SUFFIX_NAME && SNMP_LIBDIR=$i/lib
       done
     else
       SNMP_INCDIR=$PHP_SNMP/include

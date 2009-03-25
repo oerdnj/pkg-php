@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_dom.c,v 1.73.2.6 2005/11/23 03:12:45 rrichards Exp $ */
+/* $Id: php_dom.c,v 1.73.2.8 2006/01/01 12:50:06 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -186,7 +186,7 @@ int dom_get_strict_error(php_libxml_ref_obj *document) {
 /* }}} */
 
 /* {{{ xmlNodePtr dom_object_get_node(dom_object *obj) */
-xmlNodePtr dom_object_get_node(dom_object *obj)
+PHP_DOM_EXPORT xmlNodePtr dom_object_get_node(dom_object *obj)
 {
 	if (obj->ptr != NULL) {
 		return ((php_libxml_node_ptr *)obj->ptr)->node;
@@ -197,7 +197,7 @@ xmlNodePtr dom_object_get_node(dom_object *obj)
 /* }}} end dom_object_get_node */
 
 /* {{{ dom_object *php_dom_object_get_data(xmlNodePtr obj) */
-dom_object *php_dom_object_get_data(xmlNodePtr obj)
+PHP_DOM_EXPORT dom_object *php_dom_object_get_data(xmlNodePtr obj)
 {
 	if (obj->_private != NULL) {
 		return (dom_object *) ((php_libxml_node_ptr *) obj->_private)->_private;
@@ -1132,7 +1132,7 @@ void php_dom_create_interator(zval *return_value, int ce_type TSRMLS_DC)
 }
 
 /* {{{ php_dom_create_object */
-zval *php_dom_create_object(xmlNodePtr obj, int *found, zval *wrapper_in, zval *return_value, dom_object *domobj TSRMLS_DC)
+PHP_DOM_EXPORT zval *php_dom_create_object(xmlNodePtr obj, int *found, zval *wrapper_in, zval *return_value, dom_object *domobj TSRMLS_DC)
 {
 	zval *wrapper;
 	zend_class_entry *ce;

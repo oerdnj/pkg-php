@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.78.2.1 2005/11/21 19:06:02 sniper Exp $
+dnl $Id: config.m4,v 1.78.2.2 2006/01/10 14:15:35 tony2001 Exp $
 dnl
 
 AC_DEFUN([PHP_ODBC_CHECK_HEADER],[
@@ -578,7 +578,7 @@ if test -n "$ODBC_TYPE"; then
   if test "$ODBC_TYPE" != "dbmaker"; then
     ext_shared=$shared
     PHP_EVAL_LIBLINE([$ODBC_LFLAGS $ODBC_LIBS], ODBC_SHARED_LIBADD)
-    if test "$ODBC_TYPE" != "birdstep"; then
+    if test "$ODBC_TYPE" != "birdstep" && test "$ODBC_TYPE" != "solid"; then
       AC_DEFINE(HAVE_SQLDATASOURCES,1,[ ])
     fi
   fi

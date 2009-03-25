@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_functions.c,v 1.28 2005/08/03 14:07:53 sniper Exp $ */
+/* $Id: spl_functions.c,v 1.28.2.2 2006/01/01 12:50:13 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 	#include "config.h"
@@ -50,7 +50,7 @@ void spl_register_interface(zend_class_entry ** ppce, char * class_name, zend_fu
 /* }}} */
 
 /* {{{ spl_register_std_class */
-void spl_register_std_class(zend_class_entry ** ppce, char * class_name, void * obj_ctor, function_entry * function_list TSRMLS_DC)
+void spl_register_std_class(zend_class_entry ** ppce, char * class_name, void * obj_ctor, zend_function_entry * function_list TSRMLS_DC)
 {
 	zend_class_entry ce;
 	
@@ -66,7 +66,7 @@ void spl_register_std_class(zend_class_entry ** ppce, char * class_name, void * 
 /* }}} */
 
 /* {{{ spl_register_sub_class */
-void spl_register_sub_class(zend_class_entry ** ppce, zend_class_entry * parent_ce, char * class_name, void *obj_ctor, function_entry * function_list TSRMLS_DC)
+void spl_register_sub_class(zend_class_entry ** ppce, zend_class_entry * parent_ce, char * class_name, void *obj_ctor, zend_function_entry * function_list TSRMLS_DC)
 {
 	zend_class_entry ce;
 	
@@ -91,7 +91,7 @@ void spl_register_parent_ce(zend_class_entry * class_entry, zend_class_entry * p
 /* }}} */
 
 /* {{{ spl_register_functions */
-void spl_register_functions(zend_class_entry * class_entry, function_entry * function_list TSRMLS_DC)
+void spl_register_functions(zend_class_entry * class_entry, zend_function_entry * function_list TSRMLS_DC)
 {
 	zend_register_functions(class_entry, function_list, &class_entry->function_table, MODULE_PERSISTENT TSRMLS_CC);
 }

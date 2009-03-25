@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_spl.c,v 1.52.2.15 2005/11/07 13:08:24 helly Exp $ */
+/* $Id: php_spl.c,v 1.52.2.25 2006/01/01 12:50:13 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 	#include "config.h"
@@ -45,7 +45,7 @@ ZEND_DECLARE_MODULE_GLOBALS(spl)
 
 /* {{{ spl_functions_none
  */
-function_entry spl_functions_none[] = {
+zend_function_entry spl_functions_none[] = {
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -83,7 +83,7 @@ static zend_class_entry * spl_find_ce_by_name(char *name, int len, zend_bool aut
 	return *ce;
 }
 
-/* {{{ array class_parents(object instance)
+/* {{{ proto array class_parents(object instance)
  Return an array containing the names of all parent classes */
 PHP_FUNCTION(class_parents)
 {
@@ -183,10 +183,12 @@ PHP_FUNCTION(class_implements)
 	SPL_ADD_CLASS(RuntimeException, z_list, sub, allow, ce_flags); \
 	SPL_ADD_CLASS(SeekableIterator, z_list, sub, allow, ce_flags); \
 	SPL_ADD_CLASS(SimpleXMLIterator, z_list, sub, allow, ce_flags); \
+	SPL_ADD_CLASS(SplFileInfo, z_list, sub, allow, ce_flags); \
 	SPL_ADD_CLASS(SplFileObject, z_list, sub, allow, ce_flags); \
 	SPL_ADD_CLASS(SplObjectStorage, z_list, sub, allow, ce_flags); \
 	SPL_ADD_CLASS(SplObserver, z_list, sub, allow, ce_flags); \
 	SPL_ADD_CLASS(SplSubject, z_list, sub, allow, ce_flags); \
+	SPL_ADD_CLASS(SplTempFileObject, z_list, sub, allow, ce_flags); \
 	SPL_ADD_CLASS(UnderflowException, z_list, sub, allow, ce_flags); \
 	SPL_ADD_CLASS(UnexpectedValueException, z_list, sub, allow, ce_flags); \
 
@@ -244,7 +246,7 @@ int spl_autoload(const char *class_name, const char * lc_name, int class_name_le
 	return 0;
 } /* }}} */
 
-/* {{{ void spl_autoload(string class_name [, string file_extensions])
+/* {{{ proto void spl_autoload(string class_name [, string file_extensions])
  Default implementation for __autoload() */
 PHP_FUNCTION(spl_autoload)
 {
@@ -300,7 +302,7 @@ PHP_FUNCTION(spl_autoload)
 	}
 } /* }}} */
 
-/* {{{ void string spl_autoload_extensions([string file_extensions])
+/* {{{ proto string spl_autoload_extensions([string file_extensions])
  Register and return default file extensions for spl_autoload */
 PHP_FUNCTION(spl_autoload_extensions)
 {
@@ -334,11 +336,12 @@ static void autoload_func_info_dtor(autoload_func_info *alfi)
 	}
 }
 
-/* {{{ void spl_autoload_call(string class_name)
+/* {{{ proto void spl_autoload_call(string class_name)
  Try all registerd autoload function to load the requested class */
 PHP_FUNCTION(spl_autoload_call)
 {
 	zval **class_name, *retval = NULL;
+	int class_name_len;
 	char *func_name, *lc_name;
 	uint func_name_len;
 	ulong dummy;
@@ -350,7 +353,8 @@ PHP_FUNCTION(spl_autoload_call)
 	}
 
 	if (SPL_G(autoload_functions)) {
-		lc_name = zend_str_tolower_dup(Z_STRVAL_PP(class_name), Z_STRLEN_PP(class_name));
+		class_name_len = Z_STRLEN_PP(class_name);
+		lc_name = zend_str_tolower_dup(Z_STRVAL_PP(class_name), class_name_len);
 		zend_hash_internal_pointer_reset_ex(SPL_G(autoload_functions), &function_pos);
 		while(zend_hash_has_more_elements_ex(SPL_G(autoload_functions), &function_pos) == SUCCESS && !EG(exception)) {
 			zend_hash_get_current_key_ex(SPL_G(autoload_functions), &func_name, &func_name_len, &dummy, 0, &function_pos);
@@ -359,7 +363,7 @@ PHP_FUNCTION(spl_autoload_call)
 			if (retval) {
 				zval_ptr_dtor(&retval);					
 			}
-			if (zend_hash_exists(EG(class_table), lc_name, Z_STRLEN_PP(class_name)+1)) {
+			if (zend_hash_exists(EG(class_table), lc_name, class_name_len + 1)) {
 				break;
 			}
 			zend_hash_move_forward_ex(SPL_G(autoload_functions), &function_pos);
@@ -371,7 +375,7 @@ PHP_FUNCTION(spl_autoload_call)
 	}
 } /* }}} */
 
-/* {{{ void spl_autoload_register([string autoload_function = "spl_autoload" [, throw = true]])
+/* {{{ proto void spl_autoload_register([string autoload_function = "spl_autoload" [, throw = true]])
  Register given function as __autoload() implementation */
 PHP_FUNCTION(spl_autoload_register)
 {
@@ -391,9 +395,7 @@ PHP_FUNCTION(spl_autoload_register)
 	if (ZEND_NUM_ARGS()) {
 		if (Z_TYPE_P(zcallable) == IS_STRING) {
 			if (Z_STRLEN_P(zcallable) == sizeof("spl_autoload_call") - 1) {
-				char tmp_name[sizeof("spl_autoload_call")];
-				zend_str_tolower_copy(tmp_name, Z_STRVAL_P(zcallable), Z_STRLEN_P(zcallable));
-				if (!strcmp(tmp_name, "spl_autoload_call")) {
+				if (!zend_binary_strcasecmp(Z_STRVAL_P(zcallable), sizeof("spl_autoload_call"), "spl_autoload_call", sizeof("spl_autoload_call"))) {
 					if (do_throw) {
 						zend_throw_exception_ex(spl_ce_LogicException, 0 TSRMLS_CC, "Function spl_autoload_call() cannot be registered");
 					}
@@ -402,7 +404,7 @@ PHP_FUNCTION(spl_autoload_register)
 			}
 		}
 	
-		if (!zend_is_callable_ex(zcallable, IS_CALLABLE_CHECK_IS_STATIC, &func_name, &func_name_len, &alfi.ce, &alfi.func_ptr, &obj_ptr TSRMLS_CC)) {
+		if (!zend_is_callable_ex(zcallable, IS_CALLABLE_STRICT, &func_name, &func_name_len, &alfi.ce, &alfi.func_ptr, &obj_ptr TSRMLS_CC)) {
 			if (Z_TYPE_P(zcallable) == IS_ARRAY) {
 				if (!obj_ptr && alfi.func_ptr && !(alfi.func_ptr->common.fn_flags & ZEND_ACC_STATIC)) {
 					if (do_throw) {
@@ -412,19 +414,19 @@ PHP_FUNCTION(spl_autoload_register)
 					return;
 				}
 				else if (do_throw) {
-					zend_throw_exception_ex(spl_ce_LogicException, 0 TSRMLS_CC, "Passed array does not specify a callable %smethod", !obj_ptr ? "static " : "");
+					zend_throw_exception_ex(spl_ce_LogicException, 0 TSRMLS_CC, "Passed array does not specify %s %smethod", alfi.func_ptr ? "a callable" : "an existing", !obj_ptr ? "static " : "");
 				}
 				efree(func_name);
 				return;
 			} else if (Z_TYPE_P(zcallable) == IS_STRING) {
 				if (do_throw) {
-					zend_throw_exception_ex(spl_ce_LogicException, 0 TSRMLS_CC, "Function '%s' not found", func_name);
+					zend_throw_exception_ex(spl_ce_LogicException, 0 TSRMLS_CC, "Function '%s' not %s", func_name, alfi.func_ptr ? "callable" : "found");
 				}
 				efree(func_name);
 				return;
 			} else {
 				if (do_throw) {
-					zend_throw_exception_ex(spl_ce_LogicException, 0 TSRMLS_CC, "Illegal value passed", func_name);
+					zend_throw_exception_ex(spl_ce_LogicException, 0 TSRMLS_CC, "Illegal value passed");
 				}
 				efree(func_name);
 				return;
@@ -469,7 +471,7 @@ PHP_FUNCTION(spl_autoload_register)
 	}
 } /* }}} */
 
-/* {{{ bool spl_autoload_unregister(string autoload_function)
+/* {{{ proto bool spl_autoload_unregister(string autoload_function)
  Unregister given function as __autoload() implementation */
 PHP_FUNCTION(spl_autoload_unregister)
 {
@@ -511,7 +513,7 @@ PHP_FUNCTION(spl_autoload_unregister)
 	RETURN_BOOL(success == SUCCESS);
 } /* }}} */
 
-/* {{{ false|array spl_autoload_functions()
+/* {{{ proto false|array spl_autoload_functions()
  Return all registered __autoload() functionns */
 PHP_FUNCTION(spl_autoload_functions)
 {
@@ -598,7 +600,7 @@ PHP_MINFO_FUNCTION(spl)
 
 /* {{{ spl_functions
  */
-function_entry spl_functions[] = {
+zend_function_entry spl_functions[] = {
 	PHP_FE(spl_classes,             NULL)
 	PHP_FE(spl_autoload,            NULL)
 	PHP_FE(spl_autoload_extensions, NULL)

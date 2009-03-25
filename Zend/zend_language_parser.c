@@ -311,7 +311,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -326,7 +326,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_language_parser.y,v 1.160.2.2 2005/10/17 07:57:00 dmitry Exp $ */
+/* $Id: zend_language_parser.y,v 1.160.2.3 2006/01/04 23:53:04 andi Exp $ */
 
 /* 
  * LALR shift/reduce conflicts and how they are resolved:

@@ -2,12 +2,12 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2005 The PHP Group                                |
+  | Copyright (c) 1997-2006 The PHP Group                                |
   +----------------------------------------------------------------------+
-  | This source file is subject to version 3.0 of the PHP license,       |
+  | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
   | available through the world-wide-web at the following url:           |
-  | http://www.php.net/license/3_0.txt.                                  |
+  | http://www.php.net/license/3_01.txt                                  |
   | If you did not receive a copy of the PHP license and are unable to   |
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_sqlite2.c,v 1.6 2005/06/17 13:12:31 sniper Exp $ */
+/* $Id: pdo_sqlite2.c,v 1.6.2.3 2006/01/01 12:50:14 sniper Exp $ */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -326,6 +326,10 @@ static int sqlite2_handle_closer(pdo_dbh_t *dbh TSRMLS_DC) /* {{{ */
 			sqlite_close(H->db);
 			H->db = NULL;
 		}
+		if (H->einfo.errmsg) {
+			pefree(H->einfo.errmsg, dbh->is_persistent);
+			H->einfo.errmsg = NULL;
+		}
 		pefree(H, dbh->is_persistent);
 		dbh->driver_data = NULL;
 	}
@@ -357,7 +361,7 @@ static long sqlite2_handle_doer(pdo_dbh_t *dbh, const char *sql, long sql_len TS
 	pdo_sqlite2_db_handle *H = (pdo_sqlite2_db_handle *)dbh->driver_data;
 	char *errmsg = NULL;
 
-	if (sqlite_exec(H->db, sql, NULL, NULL, &errmsg) != SQLITE_OK) {
+	if ((H->einfo.errcode = sqlite_exec(H->db, sql, NULL, NULL, &errmsg)) != SQLITE_OK) {
 		pdo_sqlite2_error(errmsg, dbh);
 		return -1;
 	} else {
@@ -477,12 +481,12 @@ static PHP_FUNCTION(sqlite2_create_function)
 	/* TODO: implement this stuff */
 }
 
-static function_entry dbh_methods[] = {
+static zend_function_entry dbh_methods[] = {
 	PHP_FE(sqlite2_create_function, NULL)
 	{NULL, NULL, NULL}
 };
 
-static function_entry *get_driver_methods(pdo_dbh_t *dbh, int kind TSRMLS_DC)
+static zend_function_entry *get_driver_methods(pdo_dbh_t *dbh, int kind TSRMLS_DC)
 {
 	switch (kind) {
 		case PDO_DBH_DRIVER_METHOD_KIND_DBH:

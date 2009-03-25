@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_mssql.c,v 1.152.2.7 2005/11/18 21:23:20 fmk Exp $ */
+/* $Id: php_mssql.c,v 1.152.2.12 2006/01/01 12:50:09 sniper Exp $ */
 
 #ifdef COMPILE_DL_MSSQL
 #define HAVE_MSSQL 1
@@ -47,7 +47,7 @@ static void php_mssql_get_column_content_without_type(mssql_link *mssql_ptr,int 
 
 static void _mssql_bind_hash_dtor(void *data);
 
-function_entry mssql_functions[] = {
+zend_function_entry mssql_functions[] = {
 	PHP_FE(mssql_connect,				NULL)
 	PHP_FE(mssql_pconnect,				NULL)
 	PHP_FE(mssql_close,					NULL)
@@ -141,6 +141,9 @@ PHP_INI_BEGIN()
 	STD_PHP_INI_BOOLEAN("mssql.datetimeconvert",  		"1",	PHP_INI_ALL,	OnUpdateBool,	datetimeconvert,			zend_mssql_globals,		mssql_globals)
 	STD_PHP_INI_BOOLEAN("mssql.secure_connection",		"0",	PHP_INI_SYSTEM, OnUpdateBool,	secure_connection,			zend_mssql_globals,		mssql_globals)
 	STD_PHP_INI_ENTRY_EX("mssql.max_procs",				"-1",	PHP_INI_ALL,	OnUpdateLong,	max_procs,					zend_mssql_globals,		mssql_globals,	display_link_numbers)
+#ifdef HAVE_FREETDS
+	STD_PHP_INI_ENTRY("mssql.charset",					"",		PHP_INI_ALL,	OnUpdateString,	charset,					zend_mssql_globals,		mssql_globals)
+#endif
 PHP_INI_END()
 
 /* error handler */
@@ -170,7 +173,7 @@ static int php_mssql_message_handler(DBPROCESS *dbproc, DBINT msgno,int msgstate
 	return 0;
 }
 
-static int _clean_invalid_results(list_entry *le TSRMLS_DC)
+static int _clean_invalid_results(zend_rsrc_list_entry *le TSRMLS_DC)
 {
 	if (Z_TYPE_P(le) == le_result) {
 		mssql_link *mssql_ptr = ((mssql_result *) le->ptr)->mssql_ptr;
@@ -495,7 +498,9 @@ static void php_mssql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 #endif
 
 #ifdef HAVE_FREETDS
-		DBSETLCHARSET(mssql.login, "ISO-8859-1");
+		if (MS_SQL_G(charset) && strlen(MS_SQL_G(charset))) {
+			DBSETLCHARSET(mssql.login, MS_SQL_G(charset));
+		}
 #endif
 
 	DBSETLAPP(mssql.login,MS_SQL_G(appname));
@@ -510,11 +515,11 @@ static void php_mssql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 		persistent=0;
 	}
 	if (persistent) {
-		list_entry *le;
+		zend_rsrc_list_entry *le;
 
 		/* try to find if we already have this link in our persistent list */
 		if (new_link || zend_hash_find(&EG(persistent_list), hashed_details, hashed_details_length + 1, (void **) &le)==FAILURE) {  /* we don't */
-			list_entry new_le;
+			zend_rsrc_list_entry new_le;
 
 			if (MS_SQL_G(max_links) != -1 && MS_SQL_G(num_links) >= MS_SQL_G(max_links)) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Too many open links (%ld)", MS_SQL_G(num_links));
@@ -566,7 +571,7 @@ static void php_mssql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 			memcpy(mssql_ptr, &mssql, sizeof(mssql_link));
 			Z_TYPE(new_le) = le_plink;
 			new_le.ptr = mssql_ptr;
-			if (zend_hash_update(&EG(persistent_list), hashed_details, hashed_details_length + 1, &new_le, sizeof(list_entry), NULL)==FAILURE) {
+			if (zend_hash_update(&EG(persistent_list), hashed_details, hashed_details_length + 1, &new_le, sizeof(zend_rsrc_list_entry), NULL)==FAILURE) {
 				free(mssql_ptr);
 				efree(hashed_details);
 				dbfreelogin(mssql.login);
@@ -619,7 +624,7 @@ static void php_mssql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 		}
 		ZEND_REGISTER_RESOURCE(return_value, mssql_ptr, le_plink);
 	} else { /* non persistent */
-		list_entry *index_ptr, new_index_ptr;
+		zend_rsrc_list_entry *index_ptr, new_index_ptr;
 		
 		/* first we check the hash for the hashed_details key.  if it exists,
 		 * it should point us to the right offset where the actual mssql link sits.
@@ -696,7 +701,7 @@ static void php_mssql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 		/* add it to the hash */
 		new_index_ptr.ptr = (void *) Z_LVAL_P(return_value);
 		Z_TYPE(new_index_ptr) = le_index_ptr;
-		if (zend_hash_update(&EG(regular_list), hashed_details, hashed_details_length + 1,(void *) &new_index_ptr, sizeof(list_entry),NULL)==FAILURE) {
+		if (zend_hash_update(&EG(regular_list), hashed_details, hashed_details_length + 1,(void *) &new_index_ptr, sizeof(zend_rsrc_list_entry),NULL)==FAILURE) {
 			efree(hashed_details);
 			RETURN_FALSE;
 		}
@@ -1009,7 +1014,7 @@ static void _mssql_get_sp_result(mssql_link *mssql_ptr, mssql_statement *stateme
 
 	/* Now to fetch RETVAL and OUTPUT values*/
 	num_rets = dbnumrets(mssql_ptr->link);
-	
+
 	if (num_rets!=0) {
 		for (i = 1; i <= num_rets; i++) {
 			parameter = (char*)dbretname(mssql_ptr->link, i);
