@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: pgsql.c,v 1.331.2.8 2006/01/01 12:50:12 sniper Exp $ */
+/* $Id: pgsql.c,v 1.331.2.13 2006/04/10 19:51:55 helly Exp $ */
 
 #include <stdlib.h>
 
@@ -257,7 +257,7 @@ ZEND_GET_MODULE(pgsql)
 
 static int le_link, le_plink, le_result, le_lofp, le_string;
 
-ZEND_DECLARE_MODULE_GLOBALS(pgsql);
+ZEND_DECLARE_MODULE_GLOBALS(pgsql)
 
 /* {{{ _php_pgsql_trim_message */
 static char * _php_pgsql_trim_message(const char *message, int *len)
@@ -1257,7 +1257,7 @@ PHP_FUNCTION(pg_query_params)
 			}
 
 			otype = (*tmp)->type;
-			convert_to_string(*tmp);
+			convert_to_string_ex(tmp);
 			if (Z_TYPE_PP(tmp) != IS_STRING) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING,"Error converting parameter");
 				_php_pgsql_free_params(params, num_params);
@@ -2360,7 +2360,7 @@ PHP_FUNCTION(pg_trace)
 		RETURN_FALSE;
 	}
 
-	if (FAILURE == php_stream_cast(stream, PHP_STREAM_AS_STDIO, (void**)fp, REPORT_ERRORS))	{
+	if (FAILURE == php_stream_cast(stream, PHP_STREAM_AS_STDIO, (void**)&fp, REPORT_ERRORS))	{
 		php_stream_close(stream);
 		RETURN_FALSE;
 	}
@@ -4531,6 +4531,7 @@ PHP_PGSQL_API int php_pgsql_convert(PGconn *pg_link, const char *table_name, con
 		 zend_hash_get_current_data_ex(Z_ARRVAL_P(values), (void **)&val, &pos) == SUCCESS;
 		 zend_hash_move_forward_ex(Z_ARRVAL_P(values), &pos)) {
 		skip_field = 0;
+		new_val = NULL;
 		
 		if ((key_type = zend_hash_get_current_key_ex(Z_ARRVAL_P(values), &field, &field_len, &num_idx, 0, &pos)) == HASH_KEY_NON_EXISTANT) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to get array key type");
@@ -4569,7 +4570,7 @@ PHP_PGSQL_API int php_pgsql_convert(PGconn *pg_link, const char *table_name, con
 		if (err) {
 			break; /* break out for() */
 		}
-		MAKE_STD_ZVAL(new_val);
+		ALLOC_INIT_ZVAL(new_val);
 		switch(php_pgsql_get_data_type(Z_STRVAL_PP(type), Z_STRLEN_PP(type)))
 		{
 			case PG_BOOL:

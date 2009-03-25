@@ -495,7 +495,7 @@ char *yytext;
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_ini_scanner.l,v 1.41.2.1 2006/01/04 23:53:04 andi Exp $ */
+/* $Id: zend_ini_scanner.l,v 1.41.2.2 2006/01/17 19:56:25 iliaa Exp $ */
 
 #define yyleng SCNG(yy_leng)
 #define yytext SCNG(yy_text)
@@ -887,7 +887,17 @@ YY_RULE_SETUP
 case 5:
 YY_RULE_SETUP
 {
+	char *p = yytext;
+
 	/* ENCAPSULATED TC_STRING */
+
+	while ((p = strpbrk(p, "\r\n"))) {
+		if (*p == '\r' && *(p + 1) == '\n') {
+			p++;
+		}
+		SCNG(lineno)++;
+		p++;
+	}
 
 	/* eat trailing " */
 	yytext[yyleng-1]=0;

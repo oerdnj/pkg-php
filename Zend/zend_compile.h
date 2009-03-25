@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_compile.h,v 1.316.2.6 2006/01/04 23:53:04 andi Exp $ */
+/* $Id: zend_compile.h,v 1.316.2.8 2006/03/13 11:13:42 dmitry Exp $ */
 
 #ifndef ZEND_COMPILE_H
 #define ZEND_COMPILE_H
@@ -135,6 +135,9 @@ typedef struct _zend_try_catch_element {
 
 /* shadow of parent's private method/property */
 #define ZEND_ACC_SHADOW 0x20000
+
+/* deprecation flag */
+#define ZEND_ACC_DEPRECATED 0x40000
 
 char *zend_visibility_string(zend_uint fn_flags);
 
@@ -514,6 +517,7 @@ ZEND_API void zend_destroy_file_handle(zend_file_handle *file_handle TSRMLS_DC);
 ZEND_API void zend_file_handle_dtor(zend_file_handle *fh);
 ZEND_API int zend_cleanup_class_data(zend_class_entry **pce TSRMLS_DC);
 ZEND_API int zend_cleanup_function_data(zend_function *function TSRMLS_DC);
+ZEND_API int zend_cleanup_function_data_full(zend_function *function TSRMLS_DC);
 
 ZEND_API void destroy_zend_function(zend_function *function TSRMLS_DC);
 ZEND_API void zend_function_dtor(zend_function *function);

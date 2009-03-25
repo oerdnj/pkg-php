@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_mysql_int.h,v 1.16.2.2 2006/01/01 12:50:11 sniper Exp $ */
+/* $Id: php_pdo_mysql_int.h,v 1.16.2.4 2006/03/05 17:18:01 iliaa Exp $ */
 
 #ifndef PHP_PDO_MYSQL_INT_H
 #define PHP_PDO_MYSQL_INT_H
@@ -37,7 +37,9 @@ typedef struct {
 
 	unsigned attached:1;
 	unsigned buffered:1;
+	unsigned emulate_prepare:1;
 	unsigned _reserved:31;
+	unsigned long max_buffer_size;
 
 	pdo_mysql_error_info einfo;
 } pdo_mysql_db_handle;
@@ -82,5 +84,7 @@ enum {
 	PDO_MYSQL_ATTR_INIT_COMMAND,
 	PDO_MYSQL_ATTR_READ_DEFAULT_FILE,
 	PDO_MYSQL_ATTR_READ_DEFAULT_GROUP,
+	PDO_MYSQL_ATTR_MAX_BUFFER_SIZE,
+	PDO_MYSQL_ATTR_DIRECT_QUERY,
 };
 #endif

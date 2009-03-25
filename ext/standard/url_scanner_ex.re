@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: url_scanner_ex.re,v 1.76.2.1 2006/01/01 12:26:08 sniper Exp $ */
+/* $Id: url_scanner_ex.re,v 1.76.2.2 2006/02/28 14:45:18 iliaa Exp $ */
 
 #include "php.h"
 
@@ -302,7 +302,7 @@ state_next_arg:
 	start = YYCURSOR;
 /*!re2c
   ">"		{ passthru(STD_ARGS); handle_form(STD_ARGS); goto state_plain_begin; }
-  [ \v\t\n]+	{ passthru(STD_ARGS); goto state_next_arg; }
+  [ \v\r\t\n]+	{ passthru(STD_ARGS); goto state_next_arg; }
   alpha		{ --YYCURSOR; STATE = STATE_ARG; goto state_arg; }
   any		{ passthru(STD_ARGS); goto state_plain_begin; }
 */
@@ -327,7 +327,7 @@ state_val:
 /*!re2c
   ["] (any\[">])* ["]	{ handle_val(STD_ARGS, 1, '"'); goto state_next_arg_begin; }
   ['] (any\['>])* [']	{ handle_val(STD_ARGS, 1, '\''); goto state_next_arg_begin; }
-  (any\[ \t\n>])+	{ handle_val(STD_ARGS, 0, '\0'); goto state_next_arg_begin; }
+  (any\[ \r\t\n>])+	{ handle_val(STD_ARGS, 0, ' '); goto state_next_arg_begin; }
   any					{ passthru(STD_ARGS); goto state_next_arg_begin; }
 */
 

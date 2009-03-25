@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.55.2.1 2005/12/01 13:39:42 tony2001 Exp $
+dnl $Id: config.m4,v 1.55.2.3 2006/04/05 14:06:00 tony2001 Exp $
 dnl
 
 if test -z "$SED"; then
@@ -69,7 +69,7 @@ AC_DEFUN([AC_OCI8IC_VERSION],[
 AC_DEFUN([AC_OCI8_VERSION],[
   AC_MSG_CHECKING([Oracle version])
   if test -s "$OCI8_DIR/orainst/unix.rgs"; then
-    OCI8_VERSION=`grep '"ocommon"' $OCI8_DIR/orainst/unix.rgs | $PHP_OCI_SED 's/[ ][ ]*/:/g' | cut -d: -f 6 | cut -c 2-4`
+    OCI8_VERSION=`grep '"ocommon"' $OCI8_DIR/orainst/unix.rgs | $PHP_OCI8_SED 's/[ ][ ]*/:/g' | cut -d: -f 6 | cut -c 2-4`
     test -z "$OCI8_VERSION" && OCI8_VERSION=7.3
   elif test -f $OCI8_DIR/$OCI8_LIB_DIR/libclntsh.$SHLIB_SUFFIX_NAME.10.1; then
     OCI8_VERSION=10.1    
@@ -232,6 +232,13 @@ if test "$PHP_OCI8" != "no" && test "$PHP_OCI8_INSTANT_CLIENT" = "no"; then
       ], [], [
         -L$OCI8_DIR/$OCI8_LIB_DIR $OCI8_SHARED_LIBADD
       ])
+
+      PHP_CHECK_LIBRARY(clntsh, OCILobRead2,
+      [
+        AC_DEFINE(HAVE_OCI_LOB_READ2,1,[ ])
+      ], [], [
+        -L$OCI8_DIR/$OCI8_LIB_DIR $OCI8_SHARED_LIBADD
+      ])
  
       ;;
       
@@ -242,6 +249,7 @@ if test "$PHP_OCI8" != "no" && test "$PHP_OCI8_INSTANT_CLIENT" = "no"; then
       AC_DEFINE(HAVE_OCI_ENV_NLS_CREATE,1,[ ])
       AC_DEFINE(HAVE_OCI_ENV_CREATE,1,[ ])
       AC_DEFINE(HAVE_OCI_STMT_PREPARE2,1,[ ])
+      AC_DEFINE(HAVE_OCI_LOB_READ2,1,[ ])
       AC_DEFINE(HAVE_OCI8_TEMP_LOB,1,[ ])
       AC_DEFINE(PHP_OCI8_HAVE_COLLECTIONS,1,[ ])
       ;;
@@ -332,7 +340,7 @@ dnl Header directory for manual installation
     AC_MSG_ERROR([Oracle Instant Client SDK header files not found])
   fi
 
-  OCISYSLIBLIST=`echo "$OCI8INCDIR" | $PHP_OCI_SED -e 's!\(.*\)/include$!\1/demo/sysliblist!'`
+  OCISYSLIBLIST=`echo "$OCI8INCDIR" | $PHP_OCI8_SED -e 's!\(.*\)/include$!\1/demo/sysliblist!'`
   if test -f "$OCISYSLIBLIST"; then
     PHP_EVAL_LIBLINE(`cat $OCISYSLIBLIST`, OCI8_SYSLIB)
   fi
@@ -354,6 +362,7 @@ dnl Header directory for manual installation
   AC_DEFINE(HAVE_OCI_ENV_NLS_CREATE,1,[ ])
   AC_DEFINE(HAVE_OCI_ENV_CREATE,1,[ ])
   AC_DEFINE(HAVE_OCI_STMT_PREPARE2,1,[ ])
+  AC_DEFINE(HAVE_OCI_LOB_READ2,1,[ ])
   AC_DEFINE(HAVE_OCI8_TEMP_LOB,1,[ ])
   AC_DEFINE(PHP_OCI8_HAVE_COLLECTIONS,1,[ ])
 

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_objects.h,v 1.25.2.1 2006/01/04 23:53:04 andi Exp $ */
+/* $Id: zend_objects.h,v 1.25.2.2 2006/03/29 14:28:40 tony2001 Exp $ */
 
 #ifndef ZEND_OBJECTS_H
 #define ZEND_OBJECTS_H
@@ -25,6 +25,8 @@
 #include "zend.h"
 
 BEGIN_EXTERN_C()
+ZEND_API void zend_object_std_init(zend_object *object, zend_class_entry *ce TSRMLS_DC);
+ZEND_API void zend_object_std_dtor(zend_object *object TSRMLS_DC);
 ZEND_API zend_object_value zend_objects_new(zend_object **object, zend_class_entry *class_type TSRMLS_DC);
 ZEND_API void zend_objects_destroy_object(zend_object *object, zend_object_handle handle TSRMLS_DC);
 ZEND_API zend_object *zend_objects_get_address(zval *object TSRMLS_DC);

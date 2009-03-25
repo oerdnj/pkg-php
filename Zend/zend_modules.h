@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_modules.h,v 1.67.2.2 2006/01/04 23:53:04 andi Exp $ */
+/* $Id: zend_modules.h,v 1.67.2.3 2006/04/06 21:10:45 andrei Exp $ */
 
 #ifndef MODULES_H
 #define MODULES_H
@@ -36,6 +36,7 @@ extern struct _zend_arg_info first_arg_force_ref[2];
 extern struct _zend_arg_info second_arg_force_ref[3];
 extern struct _zend_arg_info third_arg_force_ref[4];
 extern struct _zend_arg_info fourth_arg_force_ref[5];
+extern struct _zend_arg_info fifth_arg_force_ref[6];
 extern struct _zend_arg_info all_args_by_ref[1];
 
 #define ZEND_MODULE_API_NO 20050922

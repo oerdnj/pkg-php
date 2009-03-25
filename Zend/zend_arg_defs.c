@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_arg_defs.c,v 1.2.2.1 2006/01/04 23:53:04 andi Exp $ */
+/* $Id: zend_arg_defs.c,v 1.2.2.2 2006/04/06 21:10:45 andrei Exp $ */
 
 ZEND_BEGIN_ARG_INFO(first_arg_force_ref, 0)
 	ZEND_ARG_PASS_INFO(1)
@@ -34,6 +34,14 @@ ZEND_BEGIN_ARG_INFO(third_arg_force_ref, 0)
 ZEND_END_ARG_INFO();
 
 ZEND_BEGIN_ARG_INFO(fourth_arg_force_ref, 0)
+	ZEND_ARG_PASS_INFO(0)
+	ZEND_ARG_PASS_INFO(0)
+	ZEND_ARG_PASS_INFO(0)
+	ZEND_ARG_PASS_INFO(1)
+ZEND_END_ARG_INFO();
+
+ZEND_BEGIN_ARG_INFO(fifth_arg_force_ref, 0)
+	ZEND_ARG_PASS_INFO(0)
 	ZEND_ARG_PASS_INFO(0)
 	ZEND_ARG_PASS_INFO(0)
 	ZEND_ARG_PASS_INFO(0)

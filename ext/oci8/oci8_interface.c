@@ -25,7 +25,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: oci8_interface.c,v 1.8.2.4 2006/01/05 13:42:35 tony2001 Exp $ */
+/* $Id: oci8_interface.c,v 1.8.2.7 2006/03/28 09:12:18 tony2001 Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1102,7 +1102,7 @@ PHP_FUNCTION(oci_field_name)
 {
 	php_oci_out_column *column;
 
-	if ( ( column = php_oci_statement_get_column_helper(INTERNAL_FUNCTION_PARAM_PASSTHRU) ) ) {
+	if ( ( column = php_oci_statement_get_column_helper(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0) ) ) {
 		RETURN_STRINGL(column->name, column->name_len, 1);
 	}
 	RETURN_FALSE;
@@ -1115,7 +1115,7 @@ PHP_FUNCTION(oci_field_size)
 {
 	php_oci_out_column *column;
 
-	if ( ( column = php_oci_statement_get_column_helper(INTERNAL_FUNCTION_PARAM_PASSTHRU) ) ) {
+	if ( ( column = php_oci_statement_get_column_helper(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0) ) ) {
 		/* Handle data type of LONG */
 		if (column->data_type == SQLT_LNG){
 			RETURN_LONG(column->storage_size4);
@@ -1132,7 +1132,7 @@ PHP_FUNCTION(oci_field_scale)
 {
 	php_oci_out_column *column;
 
-	if ( ( column = php_oci_statement_get_column_helper(INTERNAL_FUNCTION_PARAM_PASSTHRU) ) ) {
+	if ( ( column = php_oci_statement_get_column_helper(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0) ) ) {
 		RETURN_LONG(column->scale);
 	}
 	RETURN_FALSE;
@@ -1145,7 +1145,7 @@ PHP_FUNCTION(oci_field_precision)
 {
 	php_oci_out_column *column;
 
-	if ( ( column = php_oci_statement_get_column_helper(INTERNAL_FUNCTION_PARAM_PASSTHRU) ) ) {
+	if ( ( column = php_oci_statement_get_column_helper(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0) ) ) {
 		RETURN_LONG(column->precision);
 	}
 	RETURN_FALSE;
@@ -1158,7 +1158,7 @@ PHP_FUNCTION(oci_field_type)
 {
 	php_oci_out_column *column;
 
-	column = php_oci_statement_get_column_helper(INTERNAL_FUNCTION_PARAM_PASSTHRU);
+	column = php_oci_statement_get_column_helper(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
 
 	if (!column) {
 		RETURN_FALSE;
@@ -1191,7 +1191,7 @@ PHP_FUNCTION(oci_field_type)
 			RETVAL_STRING("LONG RAW",1);
 			break;
 		case SQLT_CHR:
-			RETVAL_STRING("VARCHAR",1);
+			RETVAL_STRING("VARCHAR2",1);
 			break;
 		case SQLT_RSET:
 			RETVAL_STRING("REFCURSOR",1);
@@ -1223,7 +1223,7 @@ PHP_FUNCTION(oci_field_type_raw)
 {
 	php_oci_out_column *column;
 
-	column = php_oci_statement_get_column_helper(INTERNAL_FUNCTION_PARAM_PASSTHRU); 
+	column = php_oci_statement_get_column_helper(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0); 
 	if (column) {
 		RETURN_LONG(column->data_type);
 	}
@@ -1237,7 +1237,7 @@ PHP_FUNCTION(oci_field_is_null)
 {
 	php_oci_out_column *column;
 
-	if ( ( column = php_oci_statement_get_column_helper(INTERNAL_FUNCTION_PARAM_PASSTHRU) ) ) {
+	if ( ( column = php_oci_statement_get_column_helper(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0) ) ) {
 		if (column->indicator == -1) {
 			RETURN_TRUE;
 		}
@@ -1439,7 +1439,7 @@ PHP_FUNCTION(oci_fetch_all)
    Fetch a result row as an object */
 PHP_FUNCTION(oci_fetch_object)
 {
-	php_oci_fetch_row(INTERNAL_FUNCTION_PARAM_PASSTHRU, PHP_OCI_ASSOC, 2);
+	php_oci_fetch_row(INTERNAL_FUNCTION_PARAM_PASSTHRU, PHP_OCI_ASSOC | PHP_OCI_RETURN_NULLS, 2);
 
 	if (Z_TYPE_P(return_value) == IS_ARRAY) {
 		object_and_properties_init(return_value, ZEND_STANDARD_CLASS_DEF_PTR, Z_ARRVAL_P(return_value));
@@ -1451,7 +1451,7 @@ PHP_FUNCTION(oci_fetch_object)
    Fetch a result row as an enumerated array */
 PHP_FUNCTION(oci_fetch_row)
 {
-	php_oci_fetch_row(INTERNAL_FUNCTION_PARAM_PASSTHRU, PHP_OCI_NUM, 1);
+	php_oci_fetch_row(INTERNAL_FUNCTION_PARAM_PASSTHRU, PHP_OCI_NUM | PHP_OCI_RETURN_NULLS, 1);
 }
 /* }}} */
 
@@ -1459,7 +1459,7 @@ PHP_FUNCTION(oci_fetch_row)
    Fetch a result row as an associative array */
 PHP_FUNCTION(oci_fetch_assoc)
 {
-	php_oci_fetch_row(INTERNAL_FUNCTION_PARAM_PASSTHRU, PHP_OCI_ASSOC, 1);
+	php_oci_fetch_row(INTERNAL_FUNCTION_PARAM_PASSTHRU, PHP_OCI_ASSOC | PHP_OCI_RETURN_NULLS, 1);
 }
 /* }}} */
 
@@ -1467,7 +1467,7 @@ PHP_FUNCTION(oci_fetch_assoc)
    Fetch a result row as an array */
 PHP_FUNCTION(oci_fetch_array)
 {
-	php_oci_fetch_row(INTERNAL_FUNCTION_PARAM_PASSTHRU, PHP_OCI_BOTH, 2);
+	php_oci_fetch_row(INTERNAL_FUNCTION_PARAM_PASSTHRU, PHP_OCI_BOTH | PHP_OCI_RETURN_NULLS, 2);
 }
 /* }}} */
 
@@ -1521,7 +1521,7 @@ PHP_FUNCTION(oci_new_connect)
 }
 /* }}} */
 
-/* {{{ proto resource oci_connect(string user, string pass [, string db])
+/* {{{ proto resource oci_connect(string user, string pass [, string db [, string charset [, int session_mode ]])
    Connect to an Oracle database and log on. Returns a new session. */
 PHP_FUNCTION(oci_connect)
 {
@@ -1529,7 +1529,7 @@ PHP_FUNCTION(oci_connect)
 }
 /* }}} */
 
-/* {{{ proto resource oci_pconnect(string user, string pass [, string db])
+/* {{{ proto resource oci_pconnect(string user, string pass [, string db [, string charset ]])
    Connect to an Oracle database using a persistent connection and log on. Returns a new session. */
 PHP_FUNCTION(oci_pconnect)
 {
@@ -1734,7 +1734,7 @@ PHP_FUNCTION(oci_result)
 {
 	php_oci_out_column *column;
 	
-	column = php_oci_statement_get_column_helper(INTERNAL_FUNCTION_PARAM_PASSTHRU);
+	column = php_oci_statement_get_column_helper(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1);
 	if(column) {
 		php_oci_column_to_zval(column, return_value, 0 TSRMLS_CC);
 	}

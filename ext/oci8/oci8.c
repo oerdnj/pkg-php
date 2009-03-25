@@ -26,7 +26,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: oci8.c,v 1.269.2.8 2006/01/10 08:34:28 tony2001 Exp $ */
+/* $Id: oci8.c,v 1.269.2.18 2006/05/18 13:21:45 tony2001 Exp $ */
 /* TODO
  *
  * file://localhost/www/docs/oci10/ociaahan.htm#423823 - implement lob_empty() with OCI_ATTR_LOBEMPTY
@@ -89,7 +89,7 @@ static void php_oci_collection_list_dtor (zend_rsrc_list_entry * TSRMLS_DC);
 
 static int php_oci_persistent_helper(zend_rsrc_list_entry *le TSRMLS_DC);
 #ifdef ZTS
-static int php_oci_regular_helper(zend_rsrc_list_entry *le TSRMLS_DC);
+static int php_oci_list_helper(zend_rsrc_list_entry *le, void *le_type TSRMLS_DC);
 #endif
 static int php_oci_connection_ping(php_oci_connection * TSRMLS_DC);
 static int php_oci_connection_status(php_oci_connection * TSRMLS_DC);
@@ -541,6 +541,8 @@ PHP_MINIT_FUNCTION(oci)
 	REGISTER_LONG_CONSTANT("SQLT_FLT",SQLT_FLT, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("SQLT_UIN",SQLT_UIN, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("SQLT_LNG",SQLT_LNG, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("SQLT_LBI",SQLT_LBI, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("SQLT_BIN",SQLT_BIN, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("SQLT_ODT",SQLT_ODT, CONST_CS | CONST_PERSISTENT);
 #if defined(HAVE_OCI_INSTANT_CLIENT) || (defined(OCI_MAJOR_VERSION) && OCI_MAJOR_VERSION > 10)
 	REGISTER_LONG_CONSTANT("SQLT_BDOUBLE",SQLT_BDOUBLE, CONST_CS | CONST_PERSISTENT);
@@ -622,11 +624,17 @@ PHP_MSHUTDOWN_FUNCTION(oci)
 
 PHP_RSHUTDOWN_FUNCTION(oci)
 {
+#ifdef ZTS
+	zend_hash_apply_with_argument(&EG(regular_list), (apply_func_arg_t) php_oci_list_helper, (void *)le_descriptor TSRMLS_CC);
+	zend_hash_apply_with_argument(&EG(regular_list), (apply_func_arg_t) php_oci_list_helper, (void *)le_collection TSRMLS_CC);
+	zend_hash_apply_with_argument(&EG(regular_list), (apply_func_arg_t) php_oci_list_helper, (void *)le_statement TSRMLS_CC);
+#endif
+
 	/* check persistent connections and do the necessary actions if needed */
 	zend_hash_apply(&EG(persistent_list), (apply_func_t) php_oci_persistent_helper TSRMLS_CC);
 
 #ifdef ZTS
-	zend_hash_apply(&EG(regular_list), (apply_func_t) php_oci_regular_helper TSRMLS_CC);
+	zend_hash_apply_with_argument(&EG(regular_list), (apply_func_arg_t) php_oci_list_helper, (void *)le_connection TSRMLS_CC);
 	php_oci_cleanup_global_handles(TSRMLS_C);
 #endif
 
@@ -639,7 +647,7 @@ PHP_MINFO_FUNCTION(oci)
 
 	php_info_print_table_start();
 	php_info_print_table_row(2, "OCI8 Support", "enabled");
-	php_info_print_table_row(2, "Revision", "$Revision: 1.269.2.8 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 1.269.2.18 $");
 
 	sprintf(buf, "%ld", OCI_G(num_persistent));
 	php_info_print_table_row(2, "Active Persistent Connections", buf);
@@ -982,7 +990,7 @@ php_oci_connection *php_oci_do_connect_ex(char *username, int username_len, char
 		smart_str_appends_ex(&hashed_details, charset, 1);
 	}
 	else {
-		size_t rsize;
+		size_t rsize = 0;
 
 		PHP_OCI_CALL(OCINlsEnvironmentVariableGet, (&charsetid, 2, OCI_NLS_CHARSET_ID, 0, &rsize));
 		smart_str_append_unsigned_ex(&hashed_details, charsetid, 0);
@@ -1050,7 +1058,9 @@ php_oci_connection *php_oci_do_connect_ex(char *username, int username_len, char
 							/* okay, the connection is open and the server is still alive */
 							connection->used_this_request = 1;
 							smart_str_free_ex(&hashed_details, 0);
-							connection->rsrc_id = zend_list_insert(connection, le_pconnection);
+							if (zend_list_addref(connection->rsrc_id) == FAILURE) {
+								connection->rsrc_id = zend_list_insert(connection, le_pconnection);
+							}
 							return connection;
 						}
 					}
@@ -1280,7 +1290,11 @@ open:
 			case OCI_SYSDBA:
 			case OCI_SYSOPER:
 			default:
-				OCI_G(errcode) = PHP_OCI_CALL(OCISessionBegin, (connection->svc, OCI_G(err), connection->session, (ub4) OCI_CRED_EXT, (ub4) session_mode));
+				if (username_len == 1 && username[0] == '/' && password_len == 0) {
+					OCI_G(errcode) = PHP_OCI_CALL(OCISessionBegin, (connection->svc, OCI_G(err), connection->session, (ub4) OCI_CRED_EXT, (ub4) session_mode));
+				} else {
+					OCI_G(errcode) = PHP_OCI_CALL(OCISessionBegin, (connection->svc, OCI_G(err), connection->session, (ub4) OCI_CRED_RDBMS, (ub4) session_mode));
+				}
 				break;
 		}
 
@@ -1341,8 +1355,8 @@ open:
  * Ping connection. Uses OCIPing() or OCIServerVersion() depending on the Oracle Client version */
 static int php_oci_connection_ping(php_oci_connection *connection TSRMLS_DC)
 {
-#if OCI_MAJOR_VERSION >= 10 && OCI_MINOR_VERSION >= 2
-	/* OCIPing() is usable only in 10.2 */
+	/* OCIPing() crashes Oracle servers older than 10.2 */
+#if 0
 	OCI_G(errcode) = PHP_OCI_CALL(OCIPing, (connection->svc, OCI_G(err), OCI_DEFAULT));
 #else
 	char version[256];
@@ -1629,6 +1643,16 @@ void php_oci_fetch_row (INTERNAL_FUNCTION_PARAMETERS, int mode, int expected_arg
 		fetch_mode = mode;
 	}
 
+	if (!(fetch_mode & PHP_OCI_NUM) && !(fetch_mode & PHP_OCI_ASSOC)) {
+		/* none of the modes present, use the default one */
+		if (mode & PHP_OCI_ASSOC) {
+			fetch_mode |= PHP_OCI_ASSOC;
+		} 
+		if (mode & PHP_OCI_NUM) {
+			fetch_mode |= PHP_OCI_NUM;
+		}
+	}
+
 	PHP_OCI_ZVAL_TO_STATEMENT(z_statement, statement);
 
 	if (php_oci_statement_fetch(statement, nrows TSRMLS_CC)) {
@@ -1704,7 +1728,9 @@ static int php_oci_persistent_helper(zend_rsrc_list_entry *le TSRMLS_DC)
 				connection->descriptors = NULL;
 			}
 			
-			php_oci_connection_rollback(connection TSRMLS_CC);
+			if (connection->needs_commit) {
+				php_oci_connection_rollback(connection TSRMLS_CC);
+			}
 			
 			if (OCI_G(persistent_timeout) > 0) {
 				connection->idle_expiry = timestamp + OCI_G(persistent_timeout);
@@ -1731,15 +1757,14 @@ static int php_oci_persistent_helper(zend_rsrc_list_entry *le TSRMLS_DC)
 } /* }}} */
 
 #ifdef ZTS
-/* {{{ php_oci_regular_helper() 
- Helper function to close non-persistent connections at the end of request in ZTS mode */
-static int php_oci_regular_helper(zend_rsrc_list_entry *le TSRMLS_DC)
+/* {{{ php_oci_list_helper() 
+ Helper function to destroy data on thread shutdown in ZTS mode */
+static int php_oci_list_helper(zend_rsrc_list_entry *le, void *le_type TSRMLS_DC)
 {
-	php_oci_connection *connection;
-
-	if (le->type == le_connection) {
-		connection = (php_oci_connection *)le->ptr;
-		if (connection) {
+	int type = (int) le_type;
+		
+	if (le->type == type) {
+		if (le->ptr != NULL) {
 			return 1;
 		}
 	}

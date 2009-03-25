@@ -1,5 +1,5 @@
 dnl
-dnl $Id: acinclude.m4,v 1.332.2.9 2005/12/24 11:38:05 helly Exp $
+dnl $Id: acinclude.m4,v 1.332.2.14 2006/04/10 12:17:36 sniper Exp $
 dnl
 dnl This file contains local autoconf functions.
 dnl
@@ -1000,8 +1000,7 @@ AC_DEFUN([PHP_WITH_SHARED],[
 dnl
 dnl PHP_ADD_EXTENSION_DEP(extname, depends [, depconf])
 dnl
-dnl This macro is currently a placeholder in the config.m4 file
-dnl it is scanned by genif.sh when it builds the internal functions
+dnl This macro is scanned by genif.sh when it builds the internal functions
 dnl list, so that modules can be init'd in the correct order
 dnl $1 = name of extension, $2 = extension upon which it depends
 dnl $3 = optional: if true, it's ok for $2 to have not been configured
@@ -1013,6 +1012,7 @@ dnl
 AC_DEFUN([PHP_ADD_EXTENSION_DEP], [
   am_i_shared=$[PHP_]translit($1,a-z_-,A-Z__)[_SHARED]
   is_it_shared=$[PHP_]translit($2,a-z_-,A-Z__)[_SHARED]
+  is_it_enabled=$[PHP_]translit($2,a-z_-,A-Z__)
   if test "$am_i_shared" = "no" && test "$is_it_shared" = "yes" ; then
     AC_MSG_ERROR([
 You've configured extension $1 to build statically, but it
@@ -1021,7 +1021,7 @@ You either need to build $1 shared or build $2 statically for the
 build to be successful.
 ])
   fi
-  if test "x$is_it_shared" = "x" && test "x$3" != "xtrue"; then
+  if test "x$is_it_enabled" = "xno" && test "x$3" != "xtrue"; then
     AC_MSG_ERROR([
 You've configured extension $1, which depends on extension $2,
 but you've either not enabled $2, or have disabled it.
@@ -1877,23 +1877,30 @@ dnl Platform characteristics checks
 dnl -------------------------------------------------------------------------
 
 dnl
-dnl PHP_SHLIB_SUFFIX_NAME
+dnl PHP_SHLIB_SUFFIX_NAMES
 dnl
-dnl Determines shared library suffix 
-dnl suffix can be: .so, .sl or .dylib
+dnl Determines link library suffix SHLIB_SUFFIX_NAME
+dnl which can be: .so, .sl or .dylib
 dnl
-AC_DEFUN([PHP_SHLIB_SUFFIX_NAME],[
-  AC_REQUIRE([PHP_CANONICAL_HOST_TARGET])dnl
-  PHP_SUBST(SHLIB_SUFFIX_NAME)
-  SHLIB_SUFFIX_NAME=so
-  case $host_alias in
-  *hpux*[)]
-    SHLIB_SUFFIX_NAME=sl
-    ;;
-  *darwin*[)]
-    SHLIB_SUFFIX_NAME=dylib
-    ;;
-  esac
+dnl Determines shared library suffix SHLIB_DL_SUFFIX_NAME
+dnl suffix can be: .so or .sl
+dnl
+AC_DEFUN([PHP_SHLIB_SUFFIX_NAMES],[
+ AC_REQUIRE([PHP_CANONICAL_HOST_TARGET])dnl
+ PHP_SUBST_OLD(SHLIB_SUFFIX_NAME)
+ PHP_SUBST_OLD(SHLIB_DL_SUFFIX_NAME)
+ SHLIB_SUFFIX_NAME=so
+ SHLIB_DL_SUFFIX_NAME=$SHLIB_SUFFIX_NAME
+ case $host_alias in
+ *hpux*[)]
+   SHLIB_SUFFIX_NAME=sl
+   SHLIB_DL_SUFFIX_NAME=sl
+   ;;
+ *darwin*[)]
+   SHLIB_SUFFIX_NAME=dylib
+   SHLIB_DL_SUFFIX_NAME=so
+   ;;
+ esac
 ])
 
 dnl

@@ -17,7 +17,7 @@
    |          David Sklar <sklar@student.net>                             |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_apache.c,v 1.89.2.3 2006/01/01 12:50:18 sniper Exp $ */
+/* $Id: php_apache.c,v 1.89.2.4 2006/04/26 09:31:23 edink Exp $ */
 
 #include "php_apache_http.h"
 
@@ -34,8 +34,13 @@ php_apache_info_struct php_apache_info;
 
 #define SECTION(name)  PUTS("<h2>" name "</h2>\n")
 
+#ifndef PHP_WIN32
 extern module *top_module;
 extern module **ap_loaded_modules;
+#else
+extern  __declspec(dllimport) module *top_module;
+extern  __declspec(dllimport) module **ap_loaded_modules;
+#endif
 
 PHP_FUNCTION(virtual);
 PHP_FUNCTION(apache_request_headers);

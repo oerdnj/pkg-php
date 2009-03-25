@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_observer.c,v 1.2.2.5 2006/01/01 12:50:14 sniper Exp $ */
+/* $Id: spl_observer.c,v 1.2.2.6 2006/03/29 14:28:42 tony2001 Exp $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -85,9 +85,8 @@ void spl_SplOjectStorage_free_storage(void *object TSRMLS_DC) /* {{{ */
 {
 	spl_SplObjectStorage *intern = (spl_SplObjectStorage *)object;
 
-	zend_hash_destroy(intern->std.properties);
-	FREE_HASHTABLE(intern->std.properties);
-
+	zend_object_std_dtor(&intern->std TSRMLS_CC);
+	
 	zend_hash_destroy(&intern->storage);
 
 	efree(object);
@@ -101,11 +100,9 @@ static zend_object_value spl_object_storage_new_ex(zend_class_entry *class_type,
 
 	intern = emalloc(sizeof(spl_SplObjectStorage));
 	memset(intern, 0, sizeof(spl_SplObjectStorage));
-	intern->std.ce = class_type;
 	*obj = intern;
 
-	ALLOC_HASHTABLE(intern->std.properties);
-	zend_hash_init(intern->std.properties, 0, NULL, ZVAL_PTR_DTOR, 0);
+	zend_object_std_init(&intern->std, class_type TSRMLS_CC);
 	zend_hash_copy(intern->std.properties, &class_type->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
 
 	zend_hash_init(&intern->storage, 0, NULL, ZVAL_PTR_DTOR, 0);

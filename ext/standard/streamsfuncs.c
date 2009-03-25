@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: streamsfuncs.c,v 1.58.2.1 2006/01/01 12:50:15 sniper Exp $ */
+/* $Id: streamsfuncs.c,v 1.58.2.6 2006/04/19 08:43:29 tony2001 Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -207,6 +207,8 @@ PHP_FUNCTION(stream_socket_server)
 			/* no need to dup; we need to efree buf anyway */
 			zval_dtor(zerrstr);
 			ZVAL_STRING(zerrstr, errstr, 0);
+		} else if (errstr) {
+			efree(errstr);
 		}
 		RETURN_FALSE;
 	}
@@ -750,7 +752,15 @@ PHP_FUNCTION(stream_select)
 
 	/* If seconds is not set to null, build the timeval, else we wait indefinitely */
 	if (sec != NULL) {
-		convert_to_long_ex(&sec);
+		convert_to_long(sec);
+
+		if (Z_LVAL_P(sec) < 0) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "The seconds parameter must be greater than 0.");
+			RETURN_FALSE;
+		} else if (usec < 0) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "The microseconds parameter must be greater than 0.");
+			RETURN_FALSE;
+		}
 
 		/* Solaris + BSD do not like microsecond values which are >= 1 sec */
 		if (usec > 999999) {
@@ -1173,7 +1183,7 @@ PHP_FUNCTION(stream_get_line)
 	}
 
 	if (max_length < 0) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "The maximum allowed length must be greater then or equal to zero.");
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "The maximum allowed length must be greater than or equal to zero.");
 		RETURN_FALSE;
 	}
 	if (!max_length) {

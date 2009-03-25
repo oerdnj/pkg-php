@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: node.c,v 1.37.2.2 2006/01/01 12:50:06 sniper Exp $ */
+/* $Id: node.c,v 1.37.2.3 2006/01/25 17:34:05 rrichards Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -840,10 +840,10 @@ int dom_node_text_content_read(dom_object *obj, zval **retval TSRMLS_DC)
 
 	if(str != NULL) {
 		ZVAL_STRING(*retval, str, 1);
+		xmlFree(str);
 	} else {
 		ZVAL_EMPTY_STRING(*retval);
 	}
-	xmlFree(str);
 
 	return SUCCESS;
 }

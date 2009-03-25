@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_sql_parser.re,v 1.28.2.3 2006/01/01 12:26:08 sniper Exp $ */
+/* $Id: pdo_sql_parser.re,v 1.28.2.4 2006/01/25 16:35:23 iliaa Exp $ */
 
 #include "php.h"
 #include "php_pdo_driver.h"
@@ -287,15 +287,25 @@ rewrite:
 		}
 
 		for (plc = placeholders; plc; plc = plc->next) {
-			snprintf(idxbuf, sizeof(idxbuf), tmpl, plc->bindno + 1);
+			int skip_map = 0;
+			char *p;
+			name = estrndup(plc->pos, plc->len);
+
+			/* check if bound parameter is already available */
+			if (!strcmp(name, "?") || zend_hash_find(stmt->bound_param_map, name, plc->len + 1, (void**) &p) == FAILURE) {
+				snprintf(idxbuf, sizeof(idxbuf), tmpl, plc->bindno + 1);
+			} else {
+				memset(idxbuf, 0, sizeof(idxbuf));
+				memcpy(idxbuf, p, sizeof(idxbuf));
+				skip_map = 1;
+			}
+
 			plc->quoted = estrdup(idxbuf);
 			plc->qlen = strlen(plc->quoted);
 			plc->freeq = 1;
 			newbuffer_len += plc->qlen;
 
-			name = estrndup(plc->pos, plc->len);
-
-			if (stmt->named_rewrite_template) {
+			if (!skip_map && stmt->named_rewrite_template) {
 				/* create a mapping */
 				
 				zend_hash_update(stmt->bound_param_map, name, plc->len + 1, idxbuf, plc->qlen + 1, NULL);

@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pgsql_driver.c,v 1.53.2.10 2006/01/01 12:50:12 sniper Exp $ */
+/* $Id: pgsql_driver.c,v 1.53.2.14 2006/04/09 08:17:50 wez Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -218,6 +218,7 @@ static int pgsql_handle_preparer(pdo_dbh_t *dbh, const char *sql, long sql_len, 
 	int ret;
 	char *nsql = NULL;
 	int nsql_len = 0;
+	int emulate = 0;
 #endif
 
 	S->H = H;
@@ -233,9 +234,18 @@ static int pgsql_handle_preparer(pdo_dbh_t *dbh, const char *sql, long sql_len, 
 	}
 
 #if HAVE_PQPREPARE
-	if ((!driver_options || pdo_attr_lval(driver_options,
-			PDO_PGSQL_ATTR_DISABLE_NATIVE_PREPARED_STATEMENT, 0 TSRMLS_CC) == 0)
-			&& PQprotocolVersion(H->server) > 2) {
+
+	if (driver_options) {
+		if (pdo_attr_lval(driver_options,
+				PDO_PGSQL_ATTR_DISABLE_NATIVE_PREPARED_STATEMENT, 0 TSRMLS_CC) == 1) {
+			emulate = 1;
+		} else if (pdo_attr_lval(driver_options, PDO_ATTR_EMULATE_PREPARES,
+				0 TSRMLS_CC) == 1) {
+			emulate = 1;
+		}
+	}
+
+	if (!emulate && PQprotocolVersion(H->server) > 2) {
 		stmt->supports_placeholders = PDO_PLACEHOLDER_NAMED;
 		stmt->named_rewrite_template = "$%d";
 		ret = pdo_parse_params(stmt, (char*)sql, sql_len, &nsql, &nsql_len TSRMLS_CC);
@@ -270,23 +280,27 @@ static long pgsql_handle_doer(pdo_dbh_t *dbh, const char *sql, long sql_len TSRM
 {
 	pdo_pgsql_db_handle *H = (pdo_pgsql_db_handle *)dbh->driver_data;
 	PGresult *res;
+	long ret = 1;
+	ExecStatusType qs;
 	
 	if (!(res = PQexec(H->server, sql))) {
 		/* fatal error */
 		pdo_pgsql_error(dbh, PGRES_FATAL_ERROR, NULL);
 		return -1;
-	} else {
-		ExecStatusType qs = PQresultStatus(res);
-		if (qs != PGRES_COMMAND_OK && qs != PGRES_TUPLES_OK) {
-			pdo_pgsql_error(dbh, qs, pdo_pgsql_sqlstate(res));
-			PQclear(res);
-			return -1;
-		}
-		H->pgoid = PQoidValue(res);
-		PQclear(res);
 	}
+	qs = PQresultStatus(res);
+	if (qs != PGRES_COMMAND_OK && qs != PGRES_TUPLES_OK) {
+		pdo_pgsql_error(dbh, qs, pdo_pgsql_sqlstate(res));
+		PQclear(res);
+		return -1;
+	}
+	H->pgoid = PQoidValue(res);
+#if HAVE_PQCMDTUPLES
+	ret = atol(PQcmdTuples(res));
+#endif
+	PQclear(res);
 
-	return 1;
+	return ret;
 }
 
 static int pgsql_handle_quoter(pdo_dbh_t *dbh, const char *unquoted, int unquotedlen, char **quoted, int *quotedlen, enum pdo_param_type paramtype TSRMLS_DC)
@@ -667,7 +681,7 @@ static int pdo_pgsql_handle_factory(pdo_dbh_t *dbh, zval *driver_options TSRMLS_
 	H->pgoid = -1;
 
 	dbh->methods = &pgsql_methods;
-	dbh->alloc_own_columns = 0;
+	dbh->alloc_own_columns = 1;
 	dbh->max_escaped_char_length = 2;
 
 	ret = 1;

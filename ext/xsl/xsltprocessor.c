@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: xsltprocessor.c,v 1.39.2.2 2006/01/01 12:50:17 sniper Exp $ */
+/* $Id: xsltprocessor.c,v 1.39.2.3 2006/06/14 09:43:22 chregu Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -231,8 +231,7 @@ static void xsl_ext_function_php(xmlXPathParserContextPtr ctxt, int nargs, int t
 				}
 				break;
 			default:
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "php:function object type %d is not supported yet", obj->type);
-			ZVAL_STRING(args[i], "", 0);
+			ZVAL_STRING(args[i], xmlXPathCastToString(obj), 1);
 		}
 		xmlXPathFreeObject(obj);
 		fci.params[i] = &args[i];

@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.34 2005/07/29 19:41:00 sniper Exp $
+dnl $Id: config.m4,v 1.34.2.1 2006/05/04 19:00:10 tony2001 Exp $
 dnl
 
 PHP_ARG_WITH(informix,for Informix support,
@@ -60,7 +60,7 @@ if test "$PHP_INFORMIX" != "no"; then
 
   AC_DEFINE_UNQUOTED(IFX_VERSION, $IFX_VERSION, [ ])
 
-  if test $IFX_VERSION -ge "900"; then
+  if test $IFX_VERSION -ge 900; then
     AC_DEFINE(HAVE_IFX_IUS,1,[ ])
     IFX_ESQL_FLAGS="$IFX_ESQL_FLAGS -EDHAVE_IFX_IUS"
   else

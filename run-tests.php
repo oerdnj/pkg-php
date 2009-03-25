@@ -23,7 +23,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: run-tests.php,v 1.226.2.27 2006/01/04 15:17:41 helly Exp $ */
+/* $Id: run-tests.php,v 1.226.2.37 2006/05/03 21:37:16 pajoye Exp $ */
 
 /* Sanity check to ensure that pcre extension needed by this script is available.
  * In the event it is not, print a nice error message indicating that this script will
@@ -112,6 +112,15 @@ if (getenv('TEST_PHP_EXECUTABLE')) {
 	$environment['TEST_PHP_EXECUTABLE'] = $php;
 }
 
+if (getenv('TEST_PHP_CGI_EXECUTABLE')) {
+	$php_cgi = getenv('TEST_PHP_CGI_EXECUTABLE');
+	if ($php_cgi=='auto') {
+		$php_cgi = $cwd.'/sapi/cgi/php';
+		putenv("TEST_PHP_CGI_EXECUTABLE=$php_cgi");
+	}
+	$environment['TEST_PHP_CGI_EXECUTABLE'] = $php_cgi;
+}
+
 if ($argc !=2 || ($argv[1] != '-h' && $argv[1] != '-help' && $argv != '--help'))
 {
 	if (empty($php) || !file_exists($php)) {
@@ -142,6 +151,7 @@ if (getenv('TEST_PHP_USER')) {
 	$user_tests = array();
 }
 
+$exts_to_test = array();
 $ini_overwrites = array(
 		'output_handler=',
 		'open_basedir=',
@@ -166,7 +176,7 @@ $ini_overwrites = array(
 
 function write_information($show_html)
 {
-	global $cwd, $php, $php_info, $user_tests, $ini_overwrites, $pass_options;
+	global $cwd, $php, $php_info, $user_tests, $ini_overwrites, $pass_options, $exts_to_test;
 
 	// Get info from php
 	$info_file = realpath(dirname(__FILE__)) . '/run-test-info.php';
@@ -186,17 +196,17 @@ More .INIs  : " . (function_exists(\'php_ini_scanned_files\') ? str_replace("\n"
 	@unlink($info_file);
 	define('TESTED_PHP_VERSION', `$php -r 'echo PHP_VERSION;'`);
 
+	// load list of enabled extensions
+	save_text($info_file, '<?php echo join(",",get_loaded_extensions()); ?>');
+	$exts_to_test = explode(',',`$php $pass_options $info_params $info_file`);
 	// check for extensions that need special handling and regenerate
-	$php_extensions = '<?php echo join(",",get_loaded_extensions()); ?>'; 
-	save_text($info_file, $php_extensions);
-	$php_extensions = explode(',',`$php $pass_options $info_params $info_file`);
 	$info_params_ex = array(
 		'session' => array('session.auto_start=0'),
 		'zlib' => array('zlib.output_compression=Off'),
 		'xdebug' => array('xdebug.default_enable=0'),
 	);
 	foreach($info_params_ex as $ext => $ini_overwrites_ex) {
-		if (in_array($ext, $php_extensions)) {
+		if (in_array($ext, $exts_to_test)) {
 			$ini_overwrites = array_merge($ini_overwrites, $ini_overwrites_ex);
 		}
 	}
@@ -330,6 +340,9 @@ if (isset($argc) && $argc > 1) {
 					}
 					$pass_option_n = true;
 					break;
+				case 'N':
+					// this is always native
+					break;
 				case '--no-clean':
 					$no_clean = true;
 					break;
@@ -384,7 +397,7 @@ if (isset($argc) && $argc > 1) {
 					$html_output = is_resource($html_file);
 					break;
 				case '--version':
-					echo '$Revision: 1.226.2.27 $'."\n";
+					echo '$Revision: 1.226.2.37 $'."\n";
 					exit(1);
 				default:
 					echo "Illegal switch '$switch' specified!\n";
@@ -420,9 +433,11 @@ Options:
 
     -m          Test for memory leaks with Valgrind.
     
+    -N          Always set (Test with unicode_semantics set off in PHP 6).
+    
     -s <file>   Write output to <file>.
 
-    -q          Quite, no user interaction (same as environment NO_INTERACTION).
+    -q          Quiet, no user interaction (same as environment NO_INTERACTION).
 
     --verbose
     -v          Verbose mode.
@@ -513,13 +528,12 @@ write_information($html_output);
 
 // Compile a list of all test files (*.phpt).
 $test_files = array();
-$exts_to_test = get_loaded_extensions();
 $exts_tested = count($exts_to_test);
 $exts_skipped = 0;
 $ignored_by_ext = 0;
 sort($exts_to_test);
-$test_dirs = array('tests', 'ext');
-$optionals = array('Zend', 'ZendEngine2');
+$test_dirs = array();
+$optionals = array('tests', 'ext', 'Zend', 'ZendEngine2');
 foreach($optionals as $dir) {
 	if (@filetype($dir) == 'dir') {
 		$test_dirs[] = $dir;
@@ -714,7 +728,7 @@ if ($just_save_results || !getenv('NO_INTERACTION')) {
 		$failed_tests_data .= "Bundled Libtool:\n$libtool\n";
 		$failed_tests_data .= "System Libtool:\n$sys_libtool\n";
 		$failed_tests_data .= "Compiler:\n$compiler\n";
-		$failed_tests_data .= "Bison:\n". @shell_exec('bison --version'). "\n";
+		$failed_tests_data .= "Bison:\n". @shell_exec('bison --version 2>/dev/null'). "\n";
 		$failed_tests_data .= "Libraries:\n$ldd\n";
 		$failed_tests_data .= "\n";
 		
@@ -871,9 +885,24 @@ function run_all_tests($test_files, $env, $redir_tested = NULL)
 {
 	global $test_results, $failed_tests_file, $php, $test_cnt, $test_idx;
 
-	foreach($test_files AS $name)
+	foreach($test_files as $name)
 	{
-		$index = is_array($name) ? $name[0] : $name;
+		if (is_array($name))
+		{
+			$index = "# $name[1]: $name[0]";
+			if ($redir_tested)
+			{
+				$name = $name[0];
+			}
+		}
+		else if ($redir_tested)
+		{
+			$index = "# $redir_tested: $name";
+		}
+		else
+		{
+			$index = $name;
+		}
 		$test_idx++;
 		$result = run_test($php, $name, $env);
 		if (!is_array($name) && $result != 'REDIR')
@@ -881,12 +910,7 @@ function run_all_tests($test_files, $env, $redir_tested = NULL)
 			$test_results[$index] = $result;
 			if ($failed_tests_file && ($result == 'FAILED' || $result == 'WARNED' || $result == 'LEAKED'))
 			{
-				if ($redir_tested)
-				{
-					fwrite($failed_tests_file, "# $redir_tested: $name\n");
-				} else {
-					fwrite($failed_tests_file, "$name\n");
-				}
+				fwrite($failed_tests_file, "$index\n");
 			}
 		}
 	}
@@ -904,7 +928,11 @@ function run_test($php, $file, $env)
 
 	$temp_filenames = null;
 	$org_file = $file;
-	
+
+	if (isset($env['TEST_PHP_CGI_EXECUTABLE'])) {
+		$php_cgi = $env['TEST_PHP_CGI_EXECUTABLE'];
+	}
+
 	if (is_array($file)) $file = $file[0];
 
 	if ($DETAILED) echo "
@@ -917,7 +945,9 @@ TEST $file
 		'TEST'   => '',
 		'SKIPIF' => '',
 		'GET'    => '',
+		'POST_RAW' => '',
 		'POST'   => '',
+		'UPLOAD' => '',
 		'ARGS'   => '',
 	);
 
@@ -942,7 +972,7 @@ TEST $file
 		$line = fgets($fp);
 
 		// Match the beginning of a section.
-		if (preg_match('/^--([A-Z]+)--/', $line, $r)) {
+		if (preg_match('/^--([A-Z_]+)--/', $line, $r)) {
 			$section = $r[1];
 			$section_text[$section] = '';
 			$secfile = $section == 'FILE' || $section == 'FILEEOF';
@@ -1004,8 +1034,14 @@ TEST $file
 	$tested = trim($section_text['TEST']);
 
 	/* For GET/POST tests, check if cgi sapi is available and if it is, use it. */
-	if ((!empty($section_text['GET']) || !empty($section_text['POST']))) {
-		if (file_exists("./sapi/cgi/php")) {
+	if (!empty($section_text['GET']) || !empty($section_text['POST']) || !empty($section_text['POST_RAW'])) {
+		if (isset($php_cgi)) {
+			$old_php = $php;
+			$php = $php_cgi .' -C ';
+		} elseif (!strncasecmp(PHP_OS, "win", 3) && file_exists(dirname($php) ."/php-cgi.exe")) {
+			$old_php = $php;
+			$php = realpath(dirname($php) ."/php-cgi.exe") .' -C ';
+		} elseif (file_exists("./sapi/cgi/php")) {
 			$old_php = $php;
 			$php = realpath("./sapi/cgi/php") . ' -C ';
 		} else {
@@ -1025,17 +1061,19 @@ TEST $file
 		$temp_dir = str_replace($temp_source, $temp_target, $temp_dir);
 	}
 
-	$diff_filename     = $temp_dir . DIRECTORY_SEPARATOR . basename($file,'phpt').'diff';
-	$log_filename      = $temp_dir . DIRECTORY_SEPARATOR . basename($file,'phpt').'log';
-	$exp_filename      = $temp_dir . DIRECTORY_SEPARATOR . basename($file,'phpt').'exp';
-	$output_filename   = $temp_dir . DIRECTORY_SEPARATOR . basename($file,'phpt').'out';
-	$memcheck_filename = $temp_dir . DIRECTORY_SEPARATOR . basename($file,'phpt').'mem';
-	$temp_file         = $temp_dir . DIRECTORY_SEPARATOR . basename($file,'phpt').'php';
-	$test_file         = $test_dir . DIRECTORY_SEPARATOR . basename($file,'phpt').'php';
-	$temp_skipif       = $temp_dir . DIRECTORY_SEPARATOR . basename($file,'phpt').'skip.php';
-	$test_skipif       = $test_dir . DIRECTORY_SEPARATOR . basename($file,'phpt').'skip.php';
-	$temp_clean        = $temp_dir . DIRECTORY_SEPARATOR . basename($file,'phpt').'clean.php';
-	$test_clean        = $test_dir . DIRECTORY_SEPARATOR . basename($file,'phpt').'clean.php';
+	$main_file_name = basename($file,'phpt');
+
+	$diff_filename     = $temp_dir . DIRECTORY_SEPARATOR . $main_file_name.'diff';
+	$log_filename      = $temp_dir . DIRECTORY_SEPARATOR . $main_file_name.'log';
+	$exp_filename      = $temp_dir . DIRECTORY_SEPARATOR . $main_file_name.'exp';
+	$output_filename   = $temp_dir . DIRECTORY_SEPARATOR . $main_file_name.'out';
+	$memcheck_filename = $temp_dir . DIRECTORY_SEPARATOR . $main_file_name.'mem';
+	$temp_file         = $temp_dir . DIRECTORY_SEPARATOR . $main_file_name.'php';
+	$test_file         = $test_dir . DIRECTORY_SEPARATOR . $main_file_name.'php';
+	$temp_skipif       = $temp_dir . DIRECTORY_SEPARATOR . $main_file_name.'skip.php';
+	$test_skipif       = $test_dir . DIRECTORY_SEPARATOR . $main_file_name.'skip.php';
+	$temp_clean        = $temp_dir . DIRECTORY_SEPARATOR . $main_file_name.'clean.php';
+	$test_clean        = $test_dir . DIRECTORY_SEPARATOR . $main_file_name.'clean.php';
 	$tmp_post          = $temp_dir . DIRECTORY_SEPARATOR . uniqid('/phpt.');
 	$tmp_relative_file = str_replace(dirname(__FILE__).DIRECTORY_SEPARATOR, '', $test_file) . 't';
 
@@ -1099,15 +1137,27 @@ TEST $file
 		}
 	}
 
+	// Default ini settings
+	$ini_settings = array();
+	// additional ini overwrites
+	//$ini_overwrites[] = 'setting=value';
+	settings2array($ini_overwrites, $ini_settings);
+
+	// Any special ini settings
+	// these may overwrite the test defaults...
+	if (array_key_exists('INI', $section_text)) {
+		if (strpos($section_text['INI'], '{PWD}') !== false) {
+			$section_text['INI'] = str_replace('{PWD}', dirname($file), $section_text['INI']);
+		}
+		settings2array(preg_split( "/[\n\r]+/", $section_text['INI']), $ini_settings);
+	}
+	settings2params($ini_settings);
+
 	// Check if test should be skipped.
 	$info = '';
 	$warn = false;
 	if (array_key_exists('SKIPIF', $section_text)) {
 		if (trim($section_text['SKIPIF'])) {
-			$skipif_params = array();
-			settings2array($ini_overwrites,$skipif_params);
-			settings2params($skipif_params);
-
 			if ($cfg['show']['skip']) {
 				echo "\n========SKIP========\n";
 				echo $section_text['SKIPIF'];
@@ -1116,7 +1166,7 @@ TEST $file
 			save_text($test_skipif, $section_text['SKIPIF'], $temp_skipif);
 			$extra = substr(PHP_OS, 0, 3) !== "WIN" ?
 				"unset REQUEST_METHOD; unset QUERY_STRING; unset PATH_TRANSLATED; unset SCRIPT_FILENAME; unset REQUEST_METHOD;": "";
-			$output = system_with_timeout("$extra $php -q $skipif_params $test_skipif", $env);
+			$output = system_with_timeout("$extra $php -q $ini_settings $test_skipif", $env);
 			if (!$cfg['keep']['skip']) {
 				@unlink($test_skipif);
 			}
@@ -1165,7 +1215,9 @@ TEST $file
 			} else {
 				$GLOBALS['test_files'] = $test_files;
 				find_files($IN_REDIRECT['TESTS']);
-				$test_files = $GLOBALS['test_files'];
+				foreach($GLOBALS['test_files'] as $f) {
+					$test_files[] = array($f, $file);
+				}
 			}
 			$test_cnt += count($test_files) - 1;
 			$test_idx--;
@@ -1202,23 +1254,6 @@ TEST $file
 		return 'BORKED';
 	}
 	
-
-	// Default ini settings
-	$ini_settings = array();
-	// additional ini overwrites
-	//$ini_overwrites[] = 'setting=value';
-	settings2array($ini_overwrites, $ini_settings);
-
-	// Any special ini settings
-	// these may overwrite the test defaults...
-	if (array_key_exists('INI', $section_text)) {
-		if (strpos($section_text['INI'], '{PWD}') !== false) {
-			$section_text['INI'] = str_replace('{PWD}', dirname($file), $section_text['INI']);
-		}
-		settings2array(preg_split( "/[\n\r]+/", $section_text['INI']), $ini_settings);
-	}
-	settings2params($ini_settings);
-
 	// We've satisfied the preconditions - run the test!
 	if ($cfg['show']['php']) {
 		echo "\n========TEST========\n";
@@ -1239,18 +1274,38 @@ TEST $file
 
 	$args = $section_text['ARGS'] ? ' -- '.$section_text['ARGS'] : '';
 
-	if (array_key_exists('POST', $section_text) && !empty($section_text['POST'])) {
+	if (array_key_exists('POST_RAW', $section_text) && !empty($section_text['POST_RAW'])) {
+		$post = trim($section_text['POST_RAW']);
+		$raw_lines = explode("\n", $post);
+
+		$request = '';
+		foreach ($raw_lines as $line) {
+			if (empty($env['CONTENT_TYPE']) && eregi('^(Content-Type:)(.*)', $line, $res)) {
+				$env['CONTENT_TYPE'] = trim(str_replace("\r", '', $res[2]));
+				continue;
+			}
+			$request .= $line . "\n";
+		}
+
+		$env['CONTENT_LENGTH'] = strlen($request);
+		$env['REQUEST_METHOD'] = 'POST';
+
+		if (empty($request)) {
+			return 'BORKED';
+		}
+		save_text($tmp_post, $request);
+		$cmd = "$php$pass_options$ini_settings -f \"$test_file\" 2>&1 < $tmp_post";
+	} elseif (array_key_exists('POST', $section_text) && !empty($section_text['POST'])) {
 
 		$post = trim($section_text['POST']);
 		save_text($tmp_post, $post);
-		$content_length = strlen($post);
 
+		$content_length = strlen($post);
 		$env['REQUEST_METHOD'] = 'POST';
 		$env['CONTENT_TYPE']   = 'application/x-www-form-urlencoded';
 		$env['CONTENT_LENGTH'] = $content_length;
 
 		$cmd = "$php$pass_options$ini_settings -f \"$test_file\" 2>&1 < $tmp_post";
-
 	} else {
 
 		$env['REQUEST_METHOD'] = 'GET';

@@ -17,7 +17,7 @@
  */
 
 
-/* $Id: incomplete_class.c,v 1.28.2.1 2006/01/01 12:50:15 sniper Exp $ */
+/* $Id: incomplete_class.c,v 1.28.2.2 2006/01/28 06:14:34 fmk Exp $ */
 
 #include "php.h"
 #include "basic_functions.h"
@@ -122,7 +122,7 @@ zend_class_entry *php_create_incomplete_class(TSRMLS_D)
 
 /* {{{ php_lookup_class_name
  */
-char *php_lookup_class_name(zval *object, zend_uint *nlen)
+PHPAPI char *php_lookup_class_name(zval *object, zend_uint *nlen)
 {
 	zval **val;
 	char *retval = NULL;
@@ -144,7 +144,7 @@ char *php_lookup_class_name(zval *object, zend_uint *nlen)
 
 /* {{{ php_store_class_name
  */
-void php_store_class_name(zval *object, const char *name, zend_uint len)
+PHPAPI void php_store_class_name(zval *object, const char *name, zend_uint len)
 {
 	zval *val;
 	TSRMLS_FETCH();

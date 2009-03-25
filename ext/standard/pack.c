@@ -15,7 +15,7 @@
    | Author: Chris Schneider <cschneid@relog.ch>                          |
    +----------------------------------------------------------------------+
  */
-/* $Id: pack.c,v 1.57.2.3 2006/01/01 12:50:15 sniper Exp $ */
+/* $Id: pack.c,v 1.57.2.5 2006/02/26 10:49:50 helly Exp $ */
 
 #include "php.h"
 
@@ -55,7 +55,7 @@
 #endif
 
 #define INC_OUTPUTPOS(a,b) \
-	if ((a) < 0 || ((INT_MAX - outputpos)/(b)) < (a)) { \
+	if ((a) < 0 || ((INT_MAX - outputpos)/((int)b)) < (a)) { \
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Type %c: integer overflow in format string", code); \
 		RETURN_FALSE; \
 	} \
@@ -692,7 +692,9 @@ PHP_FUNCTION(unpack)
 							len = size * 2;
 						} 
 
-						len -= argb % 2;
+						if (argb > 0) {	
+							len -= argb % 2;
+						}
 
 						buf = emalloc(len + 1);
 

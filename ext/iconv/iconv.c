@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: iconv.c,v 1.124.2.5 2006/01/01 12:50:08 sniper Exp $ */
+/* $Id: iconv.c,v 1.124.2.8 2006/04/27 00:50:54 moriyoshi Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -583,7 +583,7 @@ static php_iconv_err_t _php_iconv_substr(smart_str *pretval,
 	size_t out_left;
 
 	unsigned int cnt;
-	unsigned int total_len;
+	int total_len;
 	
 	err = _php_iconv_strlen(&total_len, str, nbytes, enc);
 	if (err != PHP_ICONV_ERR_SUCCESS) {
@@ -822,18 +822,16 @@ static php_iconv_err_t _php_iconv_strpos(unsigned int *pretval,
 						j += GENERIC_SUPERSET_NBYTES;
 					}
 
-					if (!_php_iconv_memequal(buf, &ndl_buf[i], sizeof(buf))) {
-						i = 0;
-					}
-
-					if (i == 0) {
-						match_ofs = (unsigned int)-1;
-					} else {
+					if (_php_iconv_memequal(buf, &ndl_buf[i], sizeof(buf))) {
 						match_ofs += (lim - i) / GENERIC_SUPERSET_NBYTES;
 						i += GENERIC_SUPERSET_NBYTES;
+						ndl_buf_p = &ndl_buf[i];
+						ndl_buf_left = ndl_buf_len - i;
+					} else {
+						match_ofs = (unsigned int)-1;
+						ndl_buf_p = ndl_buf;
+						ndl_buf_left = ndl_buf_len;
 					}
-					ndl_buf_p = &ndl_buf[i];
-					ndl_buf_left = ndl_buf_len - i;
 				}
 			}
 		} else {
@@ -867,18 +865,16 @@ static php_iconv_err_t _php_iconv_strpos(unsigned int *pretval,
 					j += GENERIC_SUPERSET_NBYTES;
 				}
 
-				if (!_php_iconv_memequal(buf, &ndl_buf[i], sizeof(buf))) {
-					i = 0;
-				}
-
-				if (i == 0) {
-					match_ofs = (unsigned int)-1;
-				} else {
+				if (_php_iconv_memequal(buf, &ndl_buf[i], sizeof(buf))) {
 					match_ofs += (lim - i) / GENERIC_SUPERSET_NBYTES;
 					i += GENERIC_SUPERSET_NBYTES;
+					ndl_buf_p = &ndl_buf[i];
+					ndl_buf_left = ndl_buf_len - i;
+				} else {
+					match_ofs = (unsigned int)-1;
+					ndl_buf_p = ndl_buf;
+					ndl_buf_left = ndl_buf_len;
 				}
-				ndl_buf_p = &ndl_buf[i];
-				ndl_buf_left = ndl_buf_len - i;
 			}
 		}
 	}
@@ -1395,11 +1391,13 @@ static php_iconv_err_t _php_iconv_mime_decode(smart_str *pretval, const char *st
 
 			case 3: /* expecting a encoding scheme specifier */
 				switch (*p1) {
+					case 'b':
 					case 'B':
 						enc_scheme = PHP_ICONV_ENC_SCHEME_BASE64;
 						scan_stat = 4;
 						break;
 
+					case 'q':
 					case 'Q':
 						enc_scheme = PHP_ICONV_ENC_SCHEME_QPRINT;
 						scan_stat = 4;

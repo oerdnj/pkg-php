@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_builtin_functions.c,v 1.277.2.8 2006/01/04 23:53:04 andi Exp $ */
+/* $Id: zend_builtin_functions.c,v 1.277.2.12 2006/04/05 11:36:13 tony2001 Exp $ */
 
 #include "zend.h"
 #include "zend_API.h"
@@ -314,6 +314,12 @@ ZEND_FUNCTION(strncmp)
 	convert_to_string_ex(s1);
 	convert_to_string_ex(s2);
 	convert_to_long_ex(s3);
+
+	if (Z_LVAL_PP(s3) < 0) {
+		zend_error(E_WARNING, "Length must be greater than or equal to 0");
+		RETURN_FALSE;
+	}
+	
 	RETURN_LONG(zend_binary_zval_strncmp(*s1, *s2, *s3));
 }
 /* }}} */
@@ -347,6 +353,12 @@ ZEND_FUNCTION(strncasecmp)
 	convert_to_string_ex(s1);
 	convert_to_string_ex(s2);
 	convert_to_long_ex(s3);
+
+	if (Z_LVAL_PP(s3) < 0) {
+		zend_error(E_WARNING, "Length must be greater than or equal to 0");
+		RETURN_FALSE;
+	}
+
 	RETURN_LONG(zend_binary_zval_strncasecmp(*s1, *s2, *s3));
 }
 /* }}} */
@@ -768,11 +780,16 @@ ZEND_FUNCTION(get_object_vars)
 		RETURN_FALSE;
 	}
 
+	properties = Z_OBJ_HT_PP(obj)->get_properties(*obj TSRMLS_CC);
+
+	if (properties == NULL) {
+		RETURN_FALSE;
+	}
+
 	instanceof = EG(This) && instanceof_function(Z_OBJCE_P(EG(This)), Z_OBJCE_PP(obj) TSRMLS_CC);
 
 	array_init(return_value);
 
-	properties = Z_OBJ_HT_PP(obj)->get_properties(*obj TSRMLS_CC);
 	zend_hash_internal_pointer_reset_ex(properties, &pos);
 
 	while (zend_hash_get_current_data_ex(properties, (void **) &value, &pos) == SUCCESS) {
@@ -1693,8 +1710,6 @@ ZEND_FUNCTION(debug_print_backtrace)
 		}
 	}
 
-	array_init(return_value);
-
 	while (ptr) {
 		char *free_class_name = NULL;
 
@@ -1801,7 +1816,11 @@ ZEND_FUNCTION(debug_print_backtrace)
 			debug_print_backtrace_args(arg_array TSRMLS_CC);
 			zval_ptr_dtor(&arg_array);
 		}
-		zend_printf(") called at [%s:%d]\n", filename, lineno);
+		if (filename) {
+			zend_printf(") called at [%s:%d]\n", filename, lineno);
+		} else {
+			ZEND_PUTS(")\n");
+		}
 		include_filename = filename;
 		ptr = skip->prev_execute_data;
 		++indent;

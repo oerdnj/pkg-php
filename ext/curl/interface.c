@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: interface.c,v 1.62.2.11 2006/01/05 18:07:55 iliaa Exp $ */
+/* $Id: interface.c,v 1.62.2.16 2006/08/10 17:16:35 iliaa Exp $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 
@@ -47,13 +47,11 @@
 /* {{{ cruft for thread safe SSL crypto locks */
 #if defined(ZTS) && defined(HAVE_CURL_SSL)
 # ifdef PHP_WIN32
-#  define PHP_CURL_NEED_SSL_TSL
 #  define PHP_CURL_NEED_OPENSSL_TSL
 #  include <openssl/crypto.h>
 # else /* !PHP_WIN32 */
 #  if defined(HAVE_CURL_OPENSSL)
 #   if defined(HAVE_OPENSSL_CRYPTO_H)
-#    define PHP_CURL_NEED_SSL_TSL
 #    define PHP_CURL_NEED_OPENSSL_TSL
 #    include <openssl/crypto.h>
 #   else
@@ -64,7 +62,6 @@
 #   endif
 #  elif defined(HAVE_CURL_GNUTLS)
 #   if defined(HAVE_GCRYPT_H)
-#    define PHP_CURL_NEED_SSL_TSL
 #    define PHP_CURL_NEED_GNUTLS_TSL
 #    include <gcrypt.h>
 #   else
@@ -94,10 +91,61 @@
 int  le_curl;
 int  le_curl_multi_handle;
 
-#ifdef PHP_CURL_NEED_SSL_TSL
-static inline void php_curl_ssl_init(void);
-static inline void php_curl_ssl_cleanup(void);
+#ifdef PHP_CURL_NEED_OPENSSL_TSL /* {{{ */
+static MUTEX_T *php_curl_openssl_tsl = NULL;
+
+static void php_curl_ssl_lock(int mode, int n, const char * file, int line)
+{
+	if (mode & CRYPTO_LOCK) {
+		tsrm_mutex_lock(php_curl_openssl_tsl[n]);
+	} else {
+		tsrm_mutex_unlock(php_curl_openssl_tsl[n]);
+	}
+}
+
+static unsigned long php_curl_ssl_id(void)
+{
+	return (unsigned long) tsrm_thread_id();
+}
 #endif
+/* }}} */
+
+#ifdef PHP_CURL_NEED_GNUTLS_TSL /* {{{ */
+static int php_curl_ssl_mutex_create(void **m)
+{
+	if (*((MUTEX_T *) m) = tsrm_mutex_alloc()) {
+		return SUCCESS;
+	} else {
+		return FAILURE;
+	}
+}
+
+static int php_curl_ssl_mutex_destroy(void **m)
+{
+	tsrm_mutex_free(*((MUTEX_T *) m));
+	return SUCCESS;
+}
+
+static int php_curl_ssl_mutex_lock(void **m)
+{
+	return tsrm_mutex_lock(*((MUTEX_T *) m));
+}
+
+static int php_curl_ssl_mutex_unlock(void **m)
+{
+	return tsrm_mutex_unlock(*((MUTEX_T *) m));
+}
+
+static struct gcry_thread_cbs php_curl_gnutls_tsl = {
+	GCRY_THREAD_OPTION_USER,
+	NULL,
+	php_curl_ssl_mutex_create,
+	php_curl_ssl_mutex_destroy,
+	php_curl_ssl_mutex_lock,
+	php_curl_ssl_mutex_unlock
+};
+#endif
+/* }}} */
 
 static void _php_curl_close(zend_rsrc_list_entry *rsrc TSRMLS_DC);
 
@@ -113,11 +161,16 @@ static void _php_curl_close(zend_rsrc_list_entry *rsrc TSRMLS_DC);
 	    strncasecmp(str, "file:", sizeof("file:") - 1) == 0)								\
 	{ 																							\
 		php_url *tmp_url; 																		\
-																								\
+															\
 		if (!(tmp_url = php_url_parse_ex(str, len))) {											\
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid url '%s'", str);				\
 			RETURN_FALSE; 																		\
 		} 																						\
+															\
+		if (php_memnstr(str, tmp_url->path, strlen(tmp_url->path), str + len)) {				\
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Url '%s' contains unencoded control characters.", str);	\
+			RETURN_FALSE;											\
+		}													\
 																								\
 		if (tmp_url->query || tmp_url->fragment || php_check_open_basedir(tmp_url->path TSRMLS_CC) || 									\
 			(PG(safe_mode) && !php_checkuid(tmp_url->path, "rb+", CHECKUID_CHECK_MODE_PARAM))	\
@@ -135,6 +188,7 @@ zend_function_entry curl_functions[] = {
 	PHP_FE(curl_copy_handle,         NULL)
 	PHP_FE(curl_version,             NULL)
 	PHP_FE(curl_setopt,              NULL)
+	PHP_FE(curl_setopt_array,        NULL)
 	PHP_FE(curl_exec,                NULL)
 	PHP_FE(curl_getinfo,             NULL)
 	PHP_FE(curl_error,               NULL)
@@ -337,6 +391,7 @@ PHP_MINIT_FUNCTION(curl)
 	REGISTER_CURL_CONSTANT(CURLINFO_CONTENT_TYPE);
 	REGISTER_CURL_CONSTANT(CURLINFO_REDIRECT_TIME);
 	REGISTER_CURL_CONSTANT(CURLINFO_REDIRECT_COUNT);
+	REGISTER_CURL_CONSTANT(CURLINFO_HEADER_OUT);
 
 	/* cURL protocol constants (curl_version) */
 	REGISTER_CURL_CONSTANT(CURL_VERSION_IPV6);
@@ -447,9 +502,24 @@ PHP_MINIT_FUNCTION(curl)
 	REGISTER_CURL_CONSTANT(CURLFTPAUTH_TLS);
 #endif
 
-#ifdef PHP_CURL_NEED_SSL_TSL
-	php_curl_ssl_init();
+#ifdef PHP_CURL_NEED_OPENSSL_TSL
+	{
+		int i, c = CRYPTO_num_locks();
+		
+		php_curl_openssl_tsl = malloc(c * sizeof(MUTEX_T));
+		
+		for (i = 0; i < c; ++i) {
+			php_curl_openssl_tsl[i] = tsrm_mutex_alloc();
+		}
+		
+		CRYPTO_set_id_callback(php_curl_ssl_id);
+		CRYPTO_set_locking_callback(php_curl_ssl_lock);
+	}
 #endif
+#ifdef PHP_CURL_NEED_GNUTLS_TSL
+	gcry_control(GCRYCTL_SET_THREAD_CBS, &php_curl_gnutls_tsl);
+#endif
+	
 	if (curl_global_init(CURL_GLOBAL_SSL) != CURLE_OK) {
 		return FAILURE;
 	}
@@ -486,9 +556,26 @@ PHP_MSHUTDOWN_FUNCTION(curl)
 	php_unregister_url_stream_wrapper("ftp" TSRMLS_CC);
 	php_unregister_url_stream_wrapper("ldap" TSRMLS_CC);
 #endif
+#ifdef PHP_CURL_NEED_OPENSSL_TSL
+	/* ensure there are valid callbacks set */
+	CRYPTO_set_id_callback(php_curl_ssl_id);
+	CRYPTO_set_locking_callback(php_curl_ssl_lock);
+#endif
 	curl_global_cleanup();
-#ifdef PHP_CURL_NEED_SSL_TSL
-	php_curl_ssl_cleanup();
+#ifdef PHP_CURL_NEED_OPENSSL_TSL
+	if (php_curl_openssl_tsl) {
+		int i, c = CRYPTO_num_locks();
+			
+		CRYPTO_set_id_callback(NULL);
+		CRYPTO_set_locking_callback(NULL);
+			
+		for (i = 0; i < c; ++i) {
+			tsrm_mutex_free(php_curl_openssl_tsl[i]);
+		}
+			
+		free(php_curl_openssl_tsl);
+		php_curl_openssl_tsl = NULL;
+	}
 #endif
 	return SUCCESS;
 }
@@ -719,6 +806,23 @@ static size_t curl_write_header(char *data, size_t size, size_t nmemb, void *ctx
 }
 /* }}} */
 
+static int curl_debug(CURL *cp, curl_infotype type, char *buf, size_t buf_len, void *ctx)
+{
+	php_curl    *ch   = (php_curl *) ctx;
+
+	if (type == CURLINFO_HEADER_OUT) {
+		if (ch->header.str_len) {
+			efree(ch->header.str);		
+		}
+		if (buf_len > 0) {
+			ch->header.str = estrndup(buf, buf_len);
+			ch->header.str_len = buf_len;
+		}
+	}
+
+	return 0;
+}
+
 #if CURLOPT_PASSWDFUNCTION != 0
 /* {{{ curl_passwd
  */
@@ -841,6 +945,7 @@ static void alloc_curl_handle(php_curl **ch)
 	(*ch)->handlers->read         = ecalloc(1, sizeof(php_curl_read));
 
 	(*ch)->in_callback = 0;
+	(*ch)->header.str_len = 0;
 		
 	memset(&(*ch)->err, 0, sizeof((*ch)->err));
 	
@@ -949,24 +1054,10 @@ PHP_FUNCTION(curl_copy_handle)
 }
 /* }}} */
 
-/* {{{ proto bool curl_setopt(resource ch, int option, mixed value)
-   Set an option for a CURL transfer */
-PHP_FUNCTION(curl_setopt)
+static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *return_value TSRMLS_DC)
 {
-	zval       **zid, **zoption, **zvalue;
-	php_curl    *ch;
 	CURLcode     error=CURLE_OK;
-	int          option;
 
-	if (ZEND_NUM_ARGS() != 3 || zend_get_parameters_ex(3, &zid, &zoption, &zvalue) == FAILURE) {
-		WRONG_PARAM_COUNT;
-	}
-
-	ZEND_FETCH_RESOURCE(ch, php_curl *, zid, -1, le_curl_name, le_curl);
-
-	convert_to_long_ex(zoption);
-
-	option = Z_LVAL_PP(zoption);
 	switch (option) {
 		case CURLOPT_INFILESIZE:
 		case CURLOPT_VERBOSE:
@@ -979,7 +1070,6 @@ PHP_FUNCTION(curl_setopt)
 		case CURLOPT_FTPLISTONLY:
 		case CURLOPT_FTPAPPEND:
 		case CURLOPT_NETRC:
-		case CURLOPT_FOLLOWLOCATION:
 		case CURLOPT_PUT:
 #if CURLOPT_MUTE != 0
 		 case CURLOPT_MUTE:
@@ -1028,6 +1118,16 @@ PHP_FUNCTION(curl_setopt)
 		case CURLOPT_AUTOREFERER:
 		case CURLOPT_COOKIESESSION:
 			convert_to_long_ex(zvalue);
+			error = curl_easy_setopt(ch->cp, option, Z_LVAL_PP(zvalue));
+			break;
+		case CURLOPT_FOLLOWLOCATION:
+			convert_to_long_ex(zvalue);
+			if ((PG(open_basedir) && *PG(open_basedir)) || PG(safe_mode)) {
+				if (Z_LVAL_PP(zvalue) != 0) {
+					php_error_docref(NULL TSRMLS_CC, E_WARNING, "CURLOPT_FOLLOWLOCATION cannot be activated when in safe_mode or an open_basedir is set");
+					RETURN_FALSE;
+				}
+			}
 			error = curl_easy_setopt(ch->cp, option, Z_LVAL_PP(zvalue));
 			break;
 		case CURLOPT_URL:
@@ -1122,6 +1222,8 @@ PHP_FUNCTION(curl_setopt)
 
 			if (Z_LVAL_PP(zvalue)) {
 				ch->handlers->write->type = PHP_CURL_BINARY;
+			} else {
+				ch->handlers->write->type = PHP_CURL_ASCII;
 			}
 			break;
 		case CURLOPT_WRITEFUNCTION:
@@ -1294,14 +1396,80 @@ PHP_FUNCTION(curl_setopt)
 
 			break;
 		}
+		case CURLINFO_HEADER_OUT:
+			convert_to_long_ex(zvalue);
+			if (Z_LVAL_PP(zvalue) == 1) {
+				curl_easy_setopt(ch->cp, CURLOPT_DEBUGFUNCTION, curl_debug);
+				curl_easy_setopt(ch->cp, CURLOPT_DEBUGDATA, (void *)ch);
+				curl_easy_setopt(ch->cp, CURLOPT_VERBOSE, 1);
+			} else {
+				curl_easy_setopt(ch->cp, CURLOPT_DEBUGFUNCTION, NULL);
+				curl_easy_setopt(ch->cp, CURLOPT_DEBUGDATA, NULL);
+				curl_easy_setopt(ch->cp, CURLOPT_VERBOSE, 0);
+			}
+			break;
 	}
 
 	SAVE_CURL_ERROR(ch, error);
 	if (error != CURLE_OK) {
-		RETURN_FALSE;
+		return 1;
 	} else {
-		RETURN_TRUE;
+		return 0;
 	}
+}
+
+/* {{{ proto bool curl_setopt(resource ch, int option, mixed value)
+   Set an option for a CURL transfer */
+PHP_FUNCTION(curl_setopt)
+{
+	zval       **zid, **zoption, **zvalue;
+	php_curl    *ch;
+
+	if (ZEND_NUM_ARGS() != 3 || zend_get_parameters_ex(3, &zid, &zoption, &zvalue) == FAILURE) {
+		WRONG_PARAM_COUNT;
+	}
+
+	ZEND_FETCH_RESOURCE(ch, php_curl *, zid, -1, le_curl_name, le_curl);
+
+	convert_to_long_ex(zoption);
+
+	if (!_php_curl_setopt(ch, Z_LVAL_PP(zoption), zvalue, return_value TSRMLS_CC)) {
+		RETURN_TRUE;
+	} else {
+		RETURN_FALSE;
+	}
+}
+/* }}} */
+
+/* {{{ proto bool curl_setopt_array(resource ch, array options)
+   Set an array of option for a CURL transfer */
+PHP_FUNCTION(curl_setopt_array)
+{
+	zval		*zid, *arr, **entry;
+	php_curl	*ch;
+	long		option;
+	HashPosition	pos;
+	char 		*string_key;
+	int 		str_key_len;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "za", &zid, &arr) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	ZEND_FETCH_RESOURCE(ch, php_curl *, &zid, -1, le_curl_name, le_curl);
+
+	zend_hash_internal_pointer_reset_ex(Z_ARRVAL_P(arr), &pos);
+	while (zend_hash_get_current_data_ex(Z_ARRVAL_P(arr), (void **)&entry, &pos) == SUCCESS) {
+		if (zend_hash_get_current_key_ex(Z_ARRVAL_P(arr), &string_key, &str_key_len, &option, 0, &pos) == HASH_KEY_IS_STRING) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Array keys must be CURLOPT constants or equivalent interger values."); 
+			RETURN_FALSE;
+		}
+		if (_php_curl_setopt(ch, option, entry, return_value TSRMLS_CC)) {
+			RETURN_FALSE;
+		}
+		zend_hash_move_forward_ex(Z_ARRVAL_P(arr), &pos);
+	}
+	RETURN_TRUE;
 }
 /* }}} */
 
@@ -1310,7 +1478,11 @@ PHP_FUNCTION(curl_setopt)
 void _php_curl_cleanup_handle(php_curl *ch)
 {
 	if (ch->handlers->write->buf.len > 0) {
-		memset(&ch->handlers->write->buf, 0, sizeof(smart_str));
+		smart_str_free(&ch->handlers->write->buf);
+	}
+	if (ch->header.str_len) {
+		efree(ch->header.str);
+		ch->header.str_len = 0;
 	}
 
 	memset(ch->err.str, 0, CURL_ERROR_SIZE + 1);
@@ -1341,7 +1513,6 @@ PHP_FUNCTION(curl_exec)
 		if (ch->handlers->write->buf.len > 0) {
 			smart_str_free(&ch->handlers->write->buf);
 		}
-
 		RETURN_FALSE;
 	}
 
@@ -1349,10 +1520,8 @@ PHP_FUNCTION(curl_exec)
 
 	if (ch->handlers->write->method == PHP_CURL_RETURN && ch->handlers->write->buf.len > 0) {
 		--ch->uses;
-		if (ch->handlers->write->type != PHP_CURL_BINARY)  {
-			smart_str_0(&ch->handlers->write->buf);
-		}
-		RETURN_STRINGL(ch->handlers->write->buf.c, ch->handlers->write->buf.len, 0);
+		smart_str_0(&ch->handlers->write->buf);
+		RETURN_STRINGL(ch->handlers->write->buf.c, ch->handlers->write->buf.len, 1);
 	}
 	--ch->uses;
 	RETURN_TRUE;
@@ -1443,6 +1612,9 @@ PHP_FUNCTION(curl_getinfo)
 		if (curl_easy_getinfo(ch->cp, CURLINFO_REDIRECT_TIME, &d_code) == CURLE_OK) {
 			CAAD("redirect_time", d_code);
 		}
+		if (ch->header.str_len > 0) {
+			CAAS("request_header", ch->header.str);
+		}
 	} else {
 		option = Z_LVAL_PP(zoption);
 		switch (option) {
@@ -1493,6 +1665,12 @@ PHP_FUNCTION(curl_getinfo)
 				}
 				break;
 			}
+			case CURLINFO_HEADER_OUT:
+				if (ch->header.str_len > 0) {
+					RETURN_STRINGL(ch->header.str, ch->header.str_len, 1);
+				} else {
+					RETURN_FALSE;
+				}
 		}
 	}
 }
@@ -1574,6 +1752,9 @@ static void _php_curl_close(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	zend_llist_clean(&ch->to_free.slist);
 	zend_llist_clean(&ch->to_free.post);
 
+	if (ch->handlers->write->buf.len > 0) {
+		smart_str_free(&ch->handlers->write->buf);
+	}
 	if (ch->handlers->write->func_name) {
 		zval_ptr_dtor(&ch->handlers->write->func_name);
 	}
@@ -1586,111 +1767,16 @@ static void _php_curl_close(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	if (ch->handlers->passwd) {
 		zval_ptr_dtor(&ch->handlers->passwd);
 	}
+	if (ch->header.str_len > 0) {
+		efree(ch->header.str);
+	}
+	
 	efree(ch->handlers->write);
 	efree(ch->handlers->write_header);
 	efree(ch->handlers->read);
 	efree(ch->handlers);
 	efree(ch);
 }	
-/* }}} */
-
-#ifdef PHP_CURL_NEED_OPENSSL_TSL
-/* {{{ */
-static MUTEX_T *php_curl_openssl_tsl = NULL;
-
-static void php_curl_ssl_lock(int mode, int n, const char * file, int line)
-{
-	if (mode & CRYPTO_LOCK) {
-		tsrm_mutex_lock(php_curl_openssl_tsl[n]);
-	} else {
-		tsrm_mutex_unlock(php_curl_openssl_tsl[n]);
-	}
-}
-
-static unsigned long php_curl_ssl_id(void)
-{
-	return (unsigned long) tsrm_thread_id();
-}
-
-static inline void php_curl_ssl_init(void)
-{
-	int i, c = CRYPTO_num_locks();
-	
-	php_curl_openssl_tsl = malloc(c * sizeof(MUTEX_T));
-	
-	for (i = 0; i < c; ++i) {
-		php_curl_openssl_tsl[i] = tsrm_mutex_alloc();
-	}
-	
-	CRYPTO_set_id_callback(php_curl_ssl_id);
-	CRYPTO_set_locking_callback(php_curl_ssl_lock);
-}
-
-static inline void php_curl_ssl_cleanup(void)
-{
-	if (php_curl_openssl_tsl) {
-		int i, c = CRYPTO_num_locks();
-		
-		CRYPTO_set_id_callback(NULL);
-		CRYPTO_set_locking_callback(NULL);
-		
-		for (i = 0; i < c; ++i) {
-			tsrm_mutex_free(php_curl_openssl_tsl[i]);
-		}
-		
-		free(php_curl_openssl_tsl);
-		php_curl_openssl_tsl = NULL;
-	}
-}
-#endif /* PHP_CURL_NEED_OPENSSL_TSL */
-/* }}} */
-
-#ifdef PHP_CURL_NEED_GNUTLS_TSL
-/* {{{ */
-static int php_curl_ssl_mutex_create(void **m)
-{
-	if (*((MUTEX_T *) m) = tsrm_mutex_alloc()) {
-		return SUCCESS;
-	} else {
-		return FAILURE;
-	}
-}
-
-static int php_curl_ssl_mutex_destroy(void **m)
-{
-	tsrm_mutex_free(*((MUTEX_T *) m));
-	return SUCCESS;
-}
-
-static int php_curl_ssl_mutex_lock(void **m)
-{
-	return tsrm_mutex_lock(*((MUTEX_T *) m));
-}
-
-static int php_curl_ssl_mutex_unlock(void **m)
-{
-	return tsrm_mutex_unlock(*((MUTEX_T *) m));
-}
-
-static struct gcry_thread_cbs php_curl_gnutls_tsl = {
-	GCRY_THREAD_OPTION_USER,
-	NULL,
-	php_curl_ssl_mutex_create,
-	php_curl_ssl_mutex_destroy,
-	php_curl_ssl_mutex_lock,
-	php_curl_ssl_mutex_unlock
-};
-
-static inline void php_curl_ssl_init(void)
-{
-	gcry_control(GCRYCTL_SET_THREAD_CBS, &php_curl_gnutls_tsl);
-}
-
-static inline void php_curl_ssl_cleanup(void)
-{
-	return;
-}
-#endif /* PHP_CURL_NEED_GNUTLS_TSL */
 /* }}} */
 
 #endif /* HAVE_CURL */

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: basic_functions.h,v 1.139.2.1 2006/01/01 12:50:14 sniper Exp $ */
+/* $Id: basic_functions.h,v 1.139.2.4 2006/02/18 05:41:59 rasmus Exp $ */
 
 #ifndef BASIC_FUNCTIONS_H
 #define BASIC_FUNCTIONS_H
@@ -116,6 +116,9 @@ PHP_NAMED_FUNCTION(php_if_crc32);
 
 PHP_FUNCTION(register_tick_function);
 PHP_FUNCTION(unregister_tick_function);
+#ifdef HAVE_GETLOADAVG
+PHP_FUNCTION(sys_getloadavg);
+#endif
 
 PHP_FUNCTION(is_uploaded_file);
 PHP_FUNCTION(move_uploaded_file);
@@ -216,10 +219,10 @@ typedef struct _php_basic_globals {
 
 #ifdef ZTS
 #define BG(v) TSRMG(basic_globals_id, php_basic_globals *, v)
-extern int basic_globals_id;
+PHPAPI extern int basic_globals_id;
 #else
 #define BG(v) (basic_globals.v)
-extern php_basic_globals basic_globals;
+PHPAPI extern php_basic_globals basic_globals;
 #endif
 
 #if HAVE_PUTENV

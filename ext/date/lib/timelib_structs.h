@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: timelib_structs.h,v 1.13.2.5 2006/01/01 12:50:05 sniper Exp $ */
+/* $Id: timelib_structs.h,v 1.13.2.6 2006/04/11 18:03:52 derick Exp $ */
 
 #ifndef __TIMELIB_STRUCTS_H__
 #define __TIMELIB_STRUCTS_H__
@@ -147,6 +147,19 @@ typedef struct timelib_time {
 	                              *  2 TimeZone abbreviation */
 } timelib_time;
 
+typedef struct timelib_error_message {
+	int         position;
+	char        character;
+	char       *message;
+} timelib_error_message;
+
+typedef struct timelib_error_container {
+	int                           warning_count;
+	struct timelib_error_message *warning_messages;
+	int                           error_count;
+	struct timelib_error_message *error_messages;
+} timelib_error_container;
+
 typedef struct _timelib_tz_lookup_table {
 	char       *name;
 	int         type;
@@ -170,9 +183,10 @@ typedef struct _timelib_tzdb {
 #define TIMELIB_ZONETYPE_ABBR   2
 #define TIMELIB_ZONETYPE_ID     3
 
-#define SECS_PER_DAY   86400
-#define DAYS_PER_YEAR    365
-#define DAYS_PER_LYEAR   366
+#define SECS_PER_ERA 12622780800L
+#define SECS_PER_DAY       86400
+#define DAYS_PER_YEAR        365
+#define DAYS_PER_LYEAR       366
 
 #define timelib_is_leap(y) ((y) % 4 == 0 && ((y) % 100 != 0 || (y) % 400 == 0))
 

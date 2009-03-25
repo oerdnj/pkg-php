@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_driver.h,v 1.66.2.9 2006/01/01 12:50:11 sniper Exp $ */
+/* $Id: php_pdo_driver.h,v 1.66.2.11 2006/04/09 08:05:01 wez Exp $ */
 
 #ifndef PHP_PDO_DRIVER_H
 #define PHP_PDO_DRIVER_H
@@ -44,7 +44,7 @@ PDO_API char *php_pdo_int64_to_str(pdo_int64_t i64 TSRMLS_DC);
 # define FALSE 0
 #endif
 
-#define PDO_DRIVER_API	20051128
+#define PDO_DRIVER_API	20060409
 
 enum pdo_param_type {
 	PDO_PARAM_NULL,
@@ -129,6 +129,7 @@ enum pdo_attribute_type {
 	PDO_ATTR_DRIVER_NAME,		  /* name of the driver (as used in the constructor) */
 	PDO_ATTR_STRINGIFY_FETCHES,	/* converts integer/float types to strings during fetch */
 	PDO_ATTR_MAX_COLUMN_LEN,	/* make database calculate maximum length of data found in a column */
+	PDO_ATTR_EMULATE_PREPARES,  /* use query emulation rather than native */
 
 	/* this defines the start of the range for driver specific options.
 	 * Drivers should define their own attribute constants beginning with this
@@ -338,7 +339,8 @@ enum pdo_param_event {
 	PDO_PARAM_EVT_EXEC_PRE,
 	PDO_PARAM_EVT_EXEC_POST,
 	PDO_PARAM_EVT_FETCH_PRE,
-	PDO_PARAM_EVT_FETCH_POST
+	PDO_PARAM_EVT_FETCH_POST,
+	PDO_PARAM_EVT_NORMALIZE
 };
 
 typedef int (*pdo_stmt_param_hook_func)(pdo_stmt_t *stmt, struct pdo_bound_param_data *param, enum pdo_param_event event_type TSRMLS_DC);

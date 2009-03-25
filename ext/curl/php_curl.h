@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_curl.h,v 1.44.2.1 2006/01/01 12:50:01 sniper Exp $ */
+/* $Id: php_curl.h,v 1.44.2.2 2006/01/24 20:11:14 iliaa Exp $ */
 
 #ifndef _PHP_CURL_H
 #define _PHP_CURL_H
@@ -63,6 +63,7 @@ PHP_FUNCTION(curl_version);
 PHP_FUNCTION(curl_init);
 PHP_FUNCTION(curl_copy_handle);
 PHP_FUNCTION(curl_setopt);
+PHP_FUNCTION(curl_setopt_array);
 PHP_FUNCTION(curl_exec);
 PHP_FUNCTION(curl_getinfo);
 PHP_FUNCTION(curl_error);
@@ -107,6 +108,11 @@ struct _php_curl_error  {
 	int  no;
 };
 
+struct _php_curl_send_headers {
+	char *str;
+	size_t str_len;
+};
+
 struct _php_curl_free {
 	zend_llist str;
 	zend_llist post;
@@ -116,6 +122,7 @@ struct _php_curl_free {
 typedef struct {
 	struct _php_curl_error   err;
 	struct _php_curl_free    to_free;
+	struct _php_curl_send_headers header;
 	void ***thread_ctx;
 	CURL                    *cp;
 	php_curl_handlers       *handlers;

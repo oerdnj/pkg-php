@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_smart_str.h,v 1.30.2.1 2006/01/01 12:50:15 sniper Exp $ */
+/* $Id: php_smart_str.h,v 1.30.2.3 2006/05/03 13:32:10 iliaa Exp $ */
 
 #ifndef PHP_SMART_STR_H
 #define PHP_SMART_STR_H

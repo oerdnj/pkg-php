@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_handlers.c,v 1.30.2.2 2006/01/01 12:50:00 sniper Exp $ */
+/* $Id: com_handlers.c,v 1.30.2.5 2006/02/07 11:50:54 rrichards Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -101,7 +101,7 @@ static zval *com_read_dimension(zval *object, zval *offset, int type TSRMLS_DC)
 		VariantInit(&v);
 
 		if (SUCCESS == php_com_do_invoke_by_id(obj, DISPID_VALUE,
-				DISPATCH_METHOD|DISPATCH_PROPERTYGET, &v, 1, &offset TSRMLS_CC)) {
+				DISPATCH_METHOD|DISPATCH_PROPERTYGET, &v, 1, &offset, 0 TSRMLS_CC)) {
 			php_com_zval_from_variant(return_value, &v, obj->code_page TSRMLS_CC);
 			VariantClear(&v);
 		}
@@ -140,7 +140,7 @@ static void com_write_dimension(zval *object, zval *offset, zval *value TSRMLS_D
 		VariantInit(&v);
 
 		if (SUCCESS == php_com_do_invoke_by_id(obj, DISPID_VALUE,
-				DISPATCH_METHOD|DISPATCH_PROPERTYPUT, &v, 2, args TSRMLS_CC)) {
+				DISPATCH_METHOD|DISPATCH_PROPERTYPUT, &v, 2, args, 0 TSRMLS_CC)) {
 			VariantClear(&v);
 		}
 	} else if (V_ISARRAY(&obj->v)) {
@@ -503,9 +503,9 @@ static int com_object_cast(zval *readobj, zval *writeobj, int type, int should_f
 	VariantInit(&v);
 
 	if (V_VT(&obj->v) == VT_DISPATCH) {
-		if (FAILURE == php_com_do_invoke_by_id(obj, DISPID_VALUE,
-				DISPATCH_METHOD|DISPATCH_PROPERTYGET, &v, 0, NULL TSRMLS_CC)) {
-			return FAILURE;
+		if (SUCCESS != php_com_do_invoke_by_id(obj, DISPID_VALUE,
+				DISPATCH_METHOD|DISPATCH_PROPERTYGET, &v, 0, NULL, 1 TSRMLS_CC)) {
+			VariantCopy(&v, &obj->v);
 		}
 	} else {
 		VariantCopy(&v, &obj->v);
@@ -634,9 +634,11 @@ void php_com_object_free_storage(void *object TSRMLS_DC)
 	VariantClear(&obj->v);
 
 	if (obj->method_cache) {
+		zend_hash_destroy(obj->method_cache);
 		FREE_HASHTABLE(obj->method_cache);
 	}
 	if (obj->id_of_name_cache) {
+		zend_hash_destroy(obj->id_of_name_cache);
 		FREE_HASHTABLE(obj->id_of_name_cache);
 	}
 	efree(obj);

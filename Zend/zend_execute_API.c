@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute_API.c,v 1.331.2.11 2006/01/04 23:53:04 andi Exp $ */
+/* $Id: zend_execute_API.c,v 1.331.2.19 2006/03/17 08:47:41 dmitry Exp $ */
 
 #include <stdio.h>
 #include <signal.h>
@@ -51,7 +51,7 @@ static DWORD timeout_thread_id;
 static int timeout_thread_initialized=0;
 #endif
 
-#if ZEND_DEBUG
+#if 0&&ZEND_DEBUG
 static void (*original_sigsegv_handler)(int);
 static void zend_handle_sigsegv(int dummy)
 {
@@ -95,23 +95,27 @@ static void zend_extension_deactivator(zend_extension *extension TSRMLS_DC)
 }
 
 
-static int is_not_internal_function(zend_function *function TSRMLS_DC)
+static int clean_non_persistent_function(zend_function *function TSRMLS_DC)
 {
-	if (function->type == ZEND_INTERNAL_FUNCTION) {
-		return EG(full_tables_cleanup) ? 0 : ZEND_HASH_APPLY_STOP;
-	} else {
-		return EG(full_tables_cleanup) ? 1 : ZEND_HASH_APPLY_REMOVE;
-	}
+	return (function->type == ZEND_INTERNAL_FUNCTION) ? ZEND_HASH_APPLY_STOP : ZEND_HASH_APPLY_REMOVE;
 }
 
 
-static int is_not_internal_class(zend_class_entry **ce TSRMLS_DC)
+static int clean_non_persistent_function_full(zend_function *function TSRMLS_DC)
 {
-	if ((*ce)->type == ZEND_INTERNAL_CLASS) {
-		return EG(full_tables_cleanup) ? 0 : ZEND_HASH_APPLY_STOP;
-	} else {
-		return EG(full_tables_cleanup) ? 1 : ZEND_HASH_APPLY_REMOVE;
-	}
+	return (function->type != ZEND_INTERNAL_FUNCTION);
+}
+
+
+static int clean_non_persistent_class(zend_class_entry **ce TSRMLS_DC)
+{
+	return ((*ce)->type == ZEND_INTERNAL_CLASS) ? ZEND_HASH_APPLY_STOP : ZEND_HASH_APPLY_REMOVE;
+}
+
+
+static int clean_non_persistent_class_full(zend_class_entry **ce TSRMLS_DC)
+{
+	return ((*ce)->type != ZEND_INTERNAL_CLASS);
 }
 
 
@@ -251,18 +255,22 @@ void shutdown_executor(TSRMLS_D)
 		   So we want first of all to clean up all data and then move to tables destruction.
 		   Note that only run-time accessed data need to be cleaned up, pre-defined data can
 		   not contain objects and thus are not probelmatic */
-		zend_hash_apply(EG(function_table), (apply_func_t) zend_cleanup_function_data TSRMLS_CC);
+		if (EG(full_tables_cleanup)) {
+			zend_hash_apply(EG(function_table), (apply_func_t) zend_cleanup_function_data_full TSRMLS_CC);
+		} else {
+			zend_hash_reverse_apply(EG(function_table), (apply_func_t) zend_cleanup_function_data TSRMLS_CC);
+		}
 		zend_hash_apply(EG(class_table), (apply_func_t) zend_cleanup_class_data TSRMLS_CC);
 
 		zend_ptr_stack_destroy(&EG(argument_stack));
 
 		/* Destroy all op arrays */
 		if (EG(full_tables_cleanup)) {
-			zend_hash_apply(EG(function_table), (apply_func_t) is_not_internal_function TSRMLS_CC);
-			zend_hash_apply(EG(class_table), (apply_func_t) is_not_internal_class TSRMLS_CC);
+			zend_hash_apply(EG(function_table), (apply_func_t) clean_non_persistent_function_full TSRMLS_CC);
+			zend_hash_apply(EG(class_table), (apply_func_t) clean_non_persistent_class_full TSRMLS_CC);
 		} else {
-			zend_hash_reverse_apply(EG(function_table), (apply_func_t) is_not_internal_function TSRMLS_CC);
-			zend_hash_reverse_apply(EG(class_table), (apply_func_t) is_not_internal_class TSRMLS_CC);
+			zend_hash_reverse_apply(EG(function_table), (apply_func_t) clean_non_persistent_function TSRMLS_CC);
+			zend_hash_reverse_apply(EG(class_table), (apply_func_t) clean_non_persistent_class TSRMLS_CC);
 		}
 
 		while (EG(symtable_cache_ptr)>=EG(symtable_cache)) {
@@ -278,7 +286,7 @@ void shutdown_executor(TSRMLS_D)
 	} zend_end_try();
 
 	zend_try {
-#if ZEND_DEBUG
+#if 0&&ZEND_DEBUG
 	signal(SIGSEGV, original_sigsegv_handler);
 #endif
 
@@ -482,7 +490,7 @@ ZEND_API int zval_update_constant(zval **pp, void *arg TSRMLS_DC)
 				continue;
 			}
 
-			if (const_value.type == IS_STRING && const_value.value.str.len == str_index_len-1 &&
+			if (const_value.type == IS_STRING && const_value.value.str.len == (int)str_index_len-1 &&
 			   !strncmp(const_value.value.str.val, str_index, str_index_len)) {
 				/* constant value is the same as its name */
 				zval_dtor(&const_value);
@@ -582,6 +590,7 @@ int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci_cache TS
 	zend_op **original_opline_ptr;
 	zend_class_entry *current_scope;
 	zend_class_entry *calling_scope = NULL;
+	zend_class_entry *check_scope_or_static = NULL;
 	zval *current_this;
 	zend_execute_data execute_data;
 	zval *method_name;
@@ -607,6 +616,7 @@ int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci_cache TS
 		execute_data = *EG(current_execute_data);
 		EX(op_array) = NULL;
 		EX(opline) = NULL;
+		EX(object) =  NULL;
 	} else {
 		/* This only happens when we're called outside any execute()'s
 		 * It shouldn't be strictly necessary to NULL execute_data out,
@@ -662,6 +672,7 @@ int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci_cache TS
 					ce = &(EG(active_op_array)->scope);
 					found = (*ce != NULL?SUCCESS:FAILURE);
 					fci->object_pp = EG(This)?&EG(This):NULL;
+					EX(object) = EG(This);
 				} else if (strcmp(Z_STRVAL_PP(fci->object_pp), "parent") == 0 && EG(active_op_array)) {
 
 					if (!EG(active_op_array)->scope) {
@@ -673,6 +684,7 @@ int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci_cache TS
 					ce = &(EG(active_op_array)->scope->parent);
 					found = (*ce != NULL?SUCCESS:FAILURE);
 					fci->object_pp = EG(This)?&EG(This):NULL;
+					EX(object) = EG(This);
 				} else {
 					zend_class_entry *scope;
 					scope = EG(active_op_array) ? EG(active_op_array)->scope : NULL;
@@ -685,6 +697,7 @@ int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci_cache TS
 						instanceof_function(Z_OBJCE_P(EG(This)), scope TSRMLS_CC) &&
 						instanceof_function(scope, *ce TSRMLS_CC)) {
 						fci->object_pp = &EG(This);
+						EX(object) = EG(This);
 					} else {
 						fci->object_pp = NULL;
 					}
@@ -713,16 +726,18 @@ int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci_cache TS
 		if (calling_scope && (colon = strstr(fname, "::")) != NULL) {
 			int clen = colon - fname;
 			int mlen = fname_len - clen - 2;
-			zend_class_entry **pce, *ce_child;
+			zend_class_entry **pce, *ce_child = NULL;
 			if (zend_lookup_class(fname, clen, &pce TSRMLS_CC) == SUCCESS) {
 				ce_child = *pce;
 			} else {
 				char *lcname = zend_str_tolower_dup(fname, clen);
 				/* caution: lcname is not '\0' terminated */
-				if (clen == sizeof("self") - 1 && memcmp(lcname, "self", sizeof("self") - 1) == 0) {
-					ce_child = EG(active_op_array) ? EG(active_op_array)->scope : NULL;
-				} else if (clen == sizeof("parent") - 1 && memcmp(lcname, "parent", sizeof("parent") - 1) == 0 && EG(active_op_array)->scope) {
-					ce_child = EG(active_op_array) && EG(active_op_array)->scope ? EG(scope)->parent : NULL;
+				if (calling_scope) {
+					if (clen == sizeof("self") - 1 && memcmp(lcname, "self", sizeof("self") - 1) == 0) {
+						ce_child = EG(active_op_array) ? EG(active_op_array)->scope : NULL;
+					} else if (clen == sizeof("parent") - 1 && memcmp(lcname, "parent", sizeof("parent") - 1) == 0 && EG(active_op_array)->scope) {
+						ce_child = EG(active_op_array) && EG(active_op_array)->scope ? EG(scope)->parent : NULL;
+					}
 				}
 				efree(lcname);
 			}
@@ -730,10 +745,7 @@ int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci_cache TS
 				zend_error(E_ERROR, "Cannot call method %s() or method does not exist", fname);
 				return FAILURE;
 			}
-			if (!instanceof_function(calling_scope, ce_child TSRMLS_CC)) {
-				zend_error(E_ERROR, "Cannot call method %s() of class %s which is not a derived from %s", fname, ce_child->name, calling_scope->name);
-				return 0;
-			}
+			check_scope_or_static = calling_scope;
 			fci->function_table = &ce_child->function_table;
 			calling_scope = ce_child;
 			fname = fname + clen + 2;
@@ -760,6 +772,12 @@ int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci_cache TS
 			EX(function_state).function = 
 				zend_std_get_static_method(calling_scope, function_name_lc, fname_len TSRMLS_CC);
 			efree(function_name_lc);
+			if (check_scope_or_static && EX(function_state).function
+			&& !(EX(function_state).function->common.fn_flags & ZEND_ACC_STATIC)
+			&& !instanceof_function(check_scope_or_static, calling_scope TSRMLS_CC)) {
+				zend_error(E_ERROR, "Cannot call method %s() of class %s which is not a derived from %s", fname, calling_scope->name, check_scope_or_static->name);
+				return 0;
+			}
 		} else {
 			char *function_name_lc = zend_str_tolower_dup(fname, fname_len);
 
@@ -796,6 +814,19 @@ int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci_cache TS
 		EX(function_state).function = fci_cache->function_handler;
 		calling_scope = fci_cache->calling_scope;
 		fci->object_pp = fci_cache->object_pp;
+		EX(object) = fci->object_pp ? *fci->object_pp : NULL;
+	}
+	
+	if (EX(function_state).function->common.fn_flags & (ZEND_ACC_ABSTRACT|ZEND_ACC_DEPRECATED)) {
+		if (EX(function_state).function->common.fn_flags & ZEND_ACC_ABSTRACT) {
+			zend_error_noreturn(E_ERROR, "Cannot call abstract method %v::%v()", EX(function_state).function->common.scope->name, EX(function_state).function->common.function_name);
+		}
+		if (EX(function_state).function->common.fn_flags & ZEND_ACC_DEPRECATED) {
+			zend_error(E_STRICT, "Function %s%s%s() is deprecated",
+				EX(function_state).function->common.scope ? EX(function_state).function->common.scope->name : "",
+				EX(function_state).function->common.scope ? "::" : "",
+				EX(function_state).function->common.function_name);
+		}
 	}
 
 	for (i=0; i<fci->param_count; i++) {

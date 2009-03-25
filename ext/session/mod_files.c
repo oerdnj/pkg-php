@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: mod_files.c,v 1.100.2.2 2006/01/01 12:50:12 sniper Exp $ */
+/* $Id: mod_files.c,v 1.100.2.3 2006/04/18 00:31:45 iliaa Exp $ */
 
 #include "php.h"
 
@@ -397,10 +397,12 @@ PS_DESTROY_FUNC(files)
 	if (!ps_files_path_create(buf, sizeof(buf), data, key))
 		return FAILURE;
 	
-	ps_files_close(data);
+	if (data->fd != -1) {
+		ps_files_close(data);
 	
-	if (VCWD_UNLINK(buf) == -1) {
-		return FAILURE;
+		if (VCWD_UNLINK(buf) == -1) {
+			return FAILURE;
+		}
 	}
 
 	return SUCCESS;

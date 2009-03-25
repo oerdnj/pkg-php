@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: openssl.c,v 1.98.2.4 2006/01/01 12:50:10 sniper Exp $ */
+/* $Id: openssl.c,v 1.98.2.5 2006/04/30 23:43:40 wez Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -155,6 +155,11 @@ static int le_key;
 static int le_x509;
 static int le_csr;
 static int ssl_stream_data_index;
+
+int php_openssl_get_x509_list_id(void)
+{
+	return le_x509;
+}
 
 /* {{{ resource destructors */
 static void php_pkey_free(zend_rsrc_list_entry *rsrc TSRMLS_DC)

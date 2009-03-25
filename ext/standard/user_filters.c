@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: user_filters.c,v 1.31.2.1 2006/01/01 12:50:15 sniper Exp $ */
+/* $Id: user_filters.c,v 1.31.2.4 2006/03/30 21:10:23 tony2001 Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -64,6 +64,15 @@ static zend_function_entry user_filter_class_funcs[] = {
 
 static zend_class_entry user_filter_class_entry;
 
+static ZEND_RSRC_DTOR_FUNC(php_bucket_dtor)
+{
+	php_stream_bucket *bucket = (php_stream_bucket *)rsrc->ptr;
+	if (bucket) {
+		php_stream_bucket_delref(bucket TSRMLS_CC);
+		bucket = NULL;
+	}
+}
+
 PHP_MINIT_FUNCTION(user_filters)
 {
 	/* init the filter class ancestor */
@@ -83,7 +92,7 @@ PHP_MINIT_FUNCTION(user_filters)
 	/* Filters will dispose of their brigades */
 	le_bucket_brigade = zend_register_list_destructors_ex(NULL, NULL, PHP_STREAM_BRIGADE_RES_NAME, module_number);
 	/* Brigades will dispose of their buckets */
-	le_bucket = zend_register_list_destructors_ex(NULL, NULL, PHP_STREAM_BUCKET_RES_NAME, module_number);
+	le_bucket = zend_register_list_destructors_ex(php_bucket_dtor, NULL, PHP_STREAM_BUCKET_RES_NAME, module_number);
 	
 	if (le_bucket_brigade == FAILURE) {
 		return FAILURE;
@@ -406,7 +415,7 @@ static void php_stream_bucket_attach(int append, INTERNAL_FUNCTION_PARAMETERS)
 		if (!bucket->own_buf) {
 			bucket = php_stream_bucket_make_writeable(bucket TSRMLS_CC);
 		}
-		if (bucket->buflen != Z_STRLEN_PP(pzdata)) {
+		if ((int)bucket->buflen != Z_STRLEN_PP(pzdata)) {
 			bucket->buf = perealloc(bucket->buf, Z_STRLEN_PP(pzdata), bucket->is_persistent);
 			bucket->buflen = Z_STRLEN_PP(pzdata);
 		}
@@ -417,6 +426,12 @@ static void php_stream_bucket_attach(int append, INTERNAL_FUNCTION_PARAMETERS)
 		php_stream_bucket_append(brigade, bucket TSRMLS_CC);
 	} else {
 		php_stream_bucket_prepend(brigade, bucket TSRMLS_CC);
+	}
+	/* This is a hack necessary to accomodate situations where bucket is appended to the stream
+ 	 * multiple times. See bug35916.phpt for reference.
+	 */
+	if (bucket->refcount == 1) {
+		bucket->refcount++;
 	}
 }
 /* }}} */

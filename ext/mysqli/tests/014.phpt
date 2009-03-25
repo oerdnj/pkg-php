@@ -2,19 +2,18 @@
 mysqli autocommit/commit/rollback 
 --SKIPIF--
 <?php
+	require_once('skipif.inc');
 	include "connect.inc";
 	$link = mysqli_connect($host, $user, $passwd);
 	$result = mysqli_query($link, "SHOW VARIABLES LIKE 'have_innodb'");
 	$row = mysqli_fetch_row($result);
 	mysqli_free_result($result);
 	mysqli_close($link);
-	
 	if ($row[1] == "DISABLED" || $row[1] == "NO") {
 		printf ("skip innodb support is not installed or enabled.");
+		exit;
 	}
 ?>
---SKIPIF--
-<?php require_once('skipif.inc'); ?>
 --FILE--
 <?php
 	include "connect.inc";

@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_stmt.c,v 1.118.2.30 2006/01/01 20:07:41 iliaa Exp $ */
+/* $Id: pdo_stmt.c,v 1.118.2.38 2006/04/22 19:10:53 tony2001 Exp $ */
 
 /* The PDO Statement Handle Class */
 
@@ -42,19 +42,19 @@
  * since it is a .c file, it won't be installed for use by PECL extensions, so we include it here. */
 ZEND_BEGIN_ARG_INFO(first_arg_force_ref, 0)
 	ZEND_ARG_PASS_INFO(1)
-ZEND_END_ARG_INFO();
+ZEND_END_ARG_INFO()
 
 
 ZEND_BEGIN_ARG_INFO(second_arg_force_ref, 0)
 	ZEND_ARG_PASS_INFO(0)
 	ZEND_ARG_PASS_INFO(1)
-ZEND_END_ARG_INFO();
+ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO(third_arg_force_ref, 0)
 	ZEND_ARG_PASS_INFO(0)
 	ZEND_ARG_PASS_INFO(0)
 	ZEND_ARG_PASS_INFO(1)
-ZEND_END_ARG_INFO();
+ZEND_END_ARG_INFO()
 
 
 ZEND_BEGIN_ARG_INFO(fourth_arg_force_ref, 0)
@@ -62,10 +62,10 @@ ZEND_BEGIN_ARG_INFO(fourth_arg_force_ref, 0)
 	ZEND_ARG_PASS_INFO(0)
 	ZEND_ARG_PASS_INFO(0)
 	ZEND_ARG_PASS_INFO(1)
-ZEND_END_ARG_INFO();
+ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO(all_args_by_ref, 1)
-ZEND_END_ARG_INFO();
+ZEND_END_ARG_INFO()
 /* }}} */
 #endif
 
@@ -283,7 +283,6 @@ static int really_register_bound_param(struct pdo_bound_param_data *param, pdo_s
 	param->stmt = stmt;
 	param->is_param = is_param;
 
-	ZVAL_ADDREF(param->parameter);
 	if (param->driver_params) {
 		ZVAL_ADDREF(param->driver_params);
 	}
@@ -324,25 +323,52 @@ static int really_register_bound_param(struct pdo_bound_param_data *param, pdo_s
 		}
 		return 0;
 	}
-	
-	/* tell the driver we just created a parameter */
+
+	/* ask the driver to perform any normalization it needs on the
+	 * parameter name.  Note that it is illegal for the driver to take
+	 * a reference to param, as it resides in transient storage only
+	 * at this time. */
 	if (stmt->methods->param_hook) {
-		if (!stmt->methods->param_hook(stmt, param,
-				PDO_PARAM_EVT_ALLOC TSRMLS_CC)) {
+		if (!stmt->methods->param_hook(stmt, param, PDO_PARAM_EVT_NORMALIZE
+				TSRMLS_CC)) {
+			if (param->name) {
+				efree(param->name);
+				param->name = NULL;
+			}
 			return 0;
 		}
 	}
 
+	/* delete any other parameter registered with this number.
+	 * If the parameter is named, it will be removed and correctly
+	 * disposed of by the hash_update call that follows */
 	if (param->paramno >= 0) {
 		zend_hash_index_del(hash, param->paramno);
 	}
-	
+
+	/* allocate storage for the parameter, keyed by its "canonical" name */
 	if (param->name) {
-		zend_hash_update(hash, param->name, param->namelen, param, sizeof(*param), (void**)&pparam);
+		zend_hash_update(hash, param->name, param->namelen, param,
+			sizeof(*param), (void**)&pparam);
 	} else {
-		zend_hash_index_update(hash, param->paramno, param, sizeof(*param), (void**)&pparam);
+		zend_hash_index_update(hash, param->paramno, param, sizeof(*param),
+			(void**)&pparam);
 	}
 
+	/* tell the driver we just created a parameter */
+	if (stmt->methods->param_hook) {
+		if (!stmt->methods->param_hook(stmt, pparam, PDO_PARAM_EVT_ALLOC
+					TSRMLS_CC)) {
+			/* undo storage allocation; the hash will free the parameter
+			 * name if required */
+			if (pparam->name) {
+				zend_hash_del(hash, pparam->name, pparam->namelen);
+			} else {
+				zend_hash_index_del(hash, pparam->paramno);
+			}
+			return 0;
+		}
+	}
 	return 1;
 }
 /* }}} */
@@ -395,7 +421,6 @@ static PHP_METHOD(PDOStatement, execute)
 				zval_ptr_dtor(&param.parameter);
 				RETURN_FALSE;
 			}
-			zval_ptr_dtor(&param.parameter);
 
 			zend_hash_move_forward(Z_ARRVAL_P(input_params));
 		}
@@ -638,6 +663,7 @@ static int do_fetch_class_prepare(pdo_stmt_t *stmt TSRMLS_DC) /* {{{ */
 
 	if (!ce) {
 		stmt->fetch.cls.ce = ZEND_STANDARD_CLASS_DEF_PTR;
+		ce = ZEND_STANDARD_CLASS_DEF_PTR;
 	}
 	
 	if (ce->constructor) {
@@ -832,7 +858,13 @@ static int do_fetch(pdo_stmt_t *stmt, int do_bind, zval *return_value,
 			case PDO_FETCH_BOTH:
 			case PDO_FETCH_NUM:
 			case PDO_FETCH_NAMED:
-				array_init(return_value);
+				if (!return_all) {
+					ALLOC_HASHTABLE(return_value->value.ht);
+					zend_hash_init(return_value->value.ht, stmt->column_count, NULL, ZVAL_PTR_DTOR, 0);			
+					Z_TYPE_P(return_value) = IS_ARRAY;
+				} else {
+					array_init(return_value);
+				}
 				break;
 
 			case PDO_FETCH_COLUMN:
@@ -1075,7 +1107,7 @@ static int do_fetch(pdo_stmt_t *stmt, int do_bind, zval *return_value,
 					if (return_all) {
 						zval_ptr_dtor(&return_value); /* we don't need that */
 						return_value = retval;
-					} else {
+					} else if (retval) {
 						*return_value = *retval;
 						zval_copy_ctor(return_value);
 						INIT_PZVAL(return_value);
@@ -1472,6 +1504,7 @@ static int register_bound_param(INTERNAL_FUNCTION_PARAMETERS, pdo_stmt_t *stmt, 
 		return 0;
 	}
 
+	ZVAL_ADDREF(param.parameter);
 	return really_register_bound_param(&param, stmt, is_param TSRMLS_CC);
 } /* }}} */
 
@@ -1490,16 +1523,17 @@ static PHP_METHOD(PDOStatement, bindValue)
 		if (FAILURE == zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sz/|l", &param.name,
 				&param.namelen, &param.parameter, &param.param_type)) {
 			RETURN_FALSE;
-		}	
+		}
 	}
-
+	
 	if (param.paramno > 0) {
 		--param.paramno; /* make it zero-based internally */
 	} else if (!param.name) {
 		pdo_raise_impl_error(stmt->dbh, stmt, "HY093", "Columns/Parameters are 1-based" TSRMLS_CC);
 		RETURN_FALSE;
 	}
-
+	
+	ZVAL_ADDREF(param.parameter);
 	RETURN_BOOL(really_register_bound_param(&param, stmt, TRUE TSRMLS_CC));
 }
 /* }}} */
@@ -1599,6 +1633,17 @@ fail:
 
 /* {{{ proto mixed PDOStatement::getAttribute(long attribute)
    Get an attribute */
+
+static int generic_stmt_attr_get(pdo_stmt_t *stmt, zval *return_value, long attr)
+{
+	switch (attr) {
+		case PDO_ATTR_EMULATE_PREPARES:
+			RETVAL_BOOL(stmt->supports_placeholders == PDO_PLACEHOLDER_NONE);
+			return 1;
+	}
+	return 0;
+}
+   
 static PHP_METHOD(PDOStatement, getAttribute)
 {
 	long attr;
@@ -1609,8 +1654,12 @@ static PHP_METHOD(PDOStatement, getAttribute)
 	}
 
 	if (!stmt->methods->get_attribute) {
-		pdo_raise_impl_error(stmt->dbh, stmt, "IM001", "This driver doesn't support getting attributes" TSRMLS_CC);
-		RETURN_FALSE;
+		if (!generic_stmt_attr_get(stmt, return_value, attr)) {
+			pdo_raise_impl_error(stmt->dbh, stmt, "IM001",
+				"This driver doesn't support getting attributes" TSRMLS_CC);
+			RETURN_FALSE;
+		}
+		return;
 	}
 
 	PDO_STMT_CLEAR_ERR();
@@ -1620,9 +1669,13 @@ static PHP_METHOD(PDOStatement, getAttribute)
 			RETURN_FALSE;
 
 		case 0:
-			/* XXX: should do something better here */
-			pdo_raise_impl_error(stmt->dbh, stmt, "IM001", "driver doesn't support getting that attribute" TSRMLS_CC);
-			RETURN_FALSE;
+			if (!generic_stmt_attr_get(stmt, return_value, attr)) {
+				/* XXX: should do something better here */
+				pdo_raise_impl_error(stmt->dbh, stmt, "IM001",
+					"driver doesn't support getting that attribute" TSRMLS_CC);
+				RETURN_FALSE;
+			}
+			return;
 
 		default:
 			return;
@@ -1657,6 +1710,7 @@ static PHP_METHOD(PDOStatement, getColumnMeta)
 		pdo_raise_impl_error(stmt->dbh, stmt, "42P10", "column number must be non-negative" TSRMLS_CC);
 		RETURN_FALSE;
 	}
+
 	if (!stmt->methods->get_column_meta) {
 		pdo_raise_impl_error(stmt->dbh, stmt, "IM001", "driver doesn't support meta data" TSRMLS_CC);
 		RETURN_FALSE;
@@ -1911,6 +1965,10 @@ static PHP_METHOD(PDOStatement, debugDumpParams)
 	struct pdo_bound_param_data *param;
 	PHP_STMT_GET_OBJ;
 
+	if (out == NULL) {
+		RETURN_FALSE;
+	}
+	
 	php_stream_printf(out TSRMLS_CC, "SQL: [%d] %.*s\n",
 		stmt->query_stringlen,
 		stmt->query_stringlen, stmt->query_string);

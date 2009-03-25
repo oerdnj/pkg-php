@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: sapi_apache2.c,v 1.57.2.9 2006/01/01 12:50:18 sniper Exp $ */
+/* $Id: sapi_apache2.c,v 1.57.2.11 2006/08/08 13:11:39 stas Exp $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 
@@ -86,7 +86,7 @@ static int
 php_apache_sapi_header_handler(sapi_header_struct *sapi_header,sapi_headers_struct *sapi_headers TSRMLS_DC)
 {
 	php_struct *ctx;
-	char *val;
+	char *val, *ptr;
 
 	ctx = SG(server_context);
 
@@ -96,6 +96,7 @@ php_apache_sapi_header_handler(sapi_header_struct *sapi_header,sapi_headers_stru
 		sapi_free_header(sapi_header);
 		return 0;
 	}
+	ptr = val;
 
 	*val = '\0';
 	
@@ -111,6 +112,7 @@ php_apache_sapi_header_handler(sapi_header_struct *sapi_header,sapi_headers_stru
 	} else {
 		apr_table_add(ctx->r->headers_out, sapi_header->header, val);
 	}
+	*ptr = ':';
 	
 	return SAPI_HEADER_ADD;
 }
@@ -457,12 +459,12 @@ static void php_apache_ini_dtor(request_rec *r, request_rec *p TSRMLS_DC)
 
 static int php_handler(request_rec *r)
 {
-	php_struct *ctx;
+	php_struct * volatile ctx;
 	void *conf;
-	apr_bucket_brigade *brigade;
+	apr_bucket_brigade * volatile brigade;
 	apr_bucket *bucket;
 	apr_status_t rv;
-	request_rec *parent_req = NULL;
+	request_rec * volatile parent_req = NULL;
 	TSRMLS_FETCH();
 
 #define PHPAP_INI_OFF php_apache_ini_dtor(r, parent_req TSRMLS_CC);

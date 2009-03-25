@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_streams_int.h,v 1.7.2.1 2006/01/01 12:50:18 sniper Exp $ */
+/* $Id: php_streams_int.h,v 1.7.2.2 2006/04/22 17:17:40 wez Exp $ */
 
 
 #if ZEND_DEBUG
@@ -46,7 +46,6 @@
 
 #define STREAM_DEBUG 0
 #define STREAM_WRAPPER_PLAIN_FILES	((php_stream_wrapper*)-1)
-extern php_stream_wrapper php_plain_files_wrapper;
 
 #ifndef MAP_FAILED
 #define MAP_FAILED ((void *) -1)

@@ -25,7 +25,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: oci8_statement.c,v 1.7.2.8 2006/01/01 12:50:10 sniper Exp $ */
+/* $Id: oci8_statement.c,v 1.7.2.14 2006/04/12 19:21:35 tony2001 Exp $ */
 
 
 #ifdef HAVE_CONFIG_H
@@ -70,7 +70,7 @@ php_oci_statement *php_oci_statement_create (php_oci_connection *connection, cha
 			php_oci_error(connection->err, connection->errcode TSRMLS_CC);
 
 #if HAVE_OCI_STMT_PREPARE2
-			PHP_OCI_CALL(OCIStmtRelease, (statement->stmt, statement->err, NULL, 0, OCI_DEFAULT));
+			PHP_OCI_CALL(OCIStmtRelease, (statement->stmt, statement->err, NULL, 0, OCI_STRLS_CACHE_DELETE));
 			PHP_OCI_CALL(OCIHandleFree,(statement->err, OCI_HTYPE_ERROR));
 #else
 			PHP_OCI_CALL(OCIHandleFree,(statement->stmt, OCI_HTYPE_STMT));
@@ -165,7 +165,6 @@ int php_oci_statement_fetch(php_oci_statement *statement, ub4 nrows TSRMLS_DC)
 			/* this is exactly what we requested */
 			return 0;
 		}
-		
 		return 1;
 	}
 
@@ -283,8 +282,9 @@ int php_oci_statement_execute(php_oci_statement *statement, ub4 mode TSRMLS_DC)
 
 	switch (mode) {
 		case OCI_COMMIT_ON_SUCCESS:
+		case OCI_DESCRIBE_ONLY:
 		case OCI_DEFAULT:
-			/* only these two are allowed */
+			/* only these are allowed */
 			break;
 		default:
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid execute mode given: %d", mode);
@@ -493,6 +493,9 @@ int php_oci_statement_execute(php_oci_statement *statement, ub4 mode TSRMLS_DC)
 				case SQLT_BIN:
 				default:
 					define_type = SQLT_CHR;
+					if (outcol->data_type == SQLT_BIN) {
+						define_type = SQLT_BIN;
+					}
 					if ((outcol->data_type == SQLT_DAT) || (outcol->data_type == SQLT_NUM)
 #ifdef SQLT_TIMESTAMP
 						|| (outcol->data_type == SQLT_TIMESTAMP)
@@ -502,6 +505,10 @@ int php_oci_statement_execute(php_oci_statement *statement, ub4 mode TSRMLS_DC)
 #endif
 						) {
 						outcol->storage_size4 = 512; /* XXX this should fit "most" NLS date-formats and Numbers */
+#if defined(SQLT_IBFLOAT) && defined(SQLT_IBDOUBLE)
+					} else if (outcol->data_type == SQLT_IBFLOAT || outcol->data_type == SQLT_IBDOUBLE) {
+						outcol->storage_size4 = 1024;
+#endif
 					} else {
 						outcol->storage_size4++; /* add one for string terminator */
 					}
@@ -509,7 +516,7 @@ int php_oci_statement_execute(php_oci_statement *statement, ub4 mode TSRMLS_DC)
 					outcol->storage_size4 *= 3;
 					
 					dynamic = OCI_DEFAULT;
-					buf = outcol->data = (text *) emalloc(outcol->storage_size4);
+					buf = outcol->data = (text *) ecalloc(1, outcol->storage_size4);
 					break;
 			}
 
@@ -579,7 +586,7 @@ void php_oci_statement_free(php_oci_statement *statement TSRMLS_DC)
  	if (statement->stmt) {
 #if HAVE_OCI_STMT_PREPARE2
 		if (statement->last_query_len) { /* FIXME: magical */
-			PHP_OCI_CALL(OCIStmtRelease, (statement->stmt, statement->err, NULL, 0, OCI_DEFAULT));
+			PHP_OCI_CALL(OCIStmtRelease, (statement->stmt, statement->err, NULL, 0, OCI_STRLS_CACHE_DELETE));
 		}
 		else {
 			PHP_OCI_CALL(OCIHandleFree, (statement->stmt, OCI_HTYPE_STMT));
@@ -809,6 +816,9 @@ int php_oci_bind_by_name(php_oci_statement *statement, char *name, int name_len,
 			mode = OCI_DEFAULT;
 			break;
 			
+		case SQLT_LBI:
+		case SQLT_BIN:
+		case SQLT_LNG:
 		case SQLT_CHR:
 			/* this is the default case when type was not specified */
 			convert_to_string(var);
@@ -1005,7 +1015,7 @@ sb4 php_oci_bind_out_callback(
 
 /* {{{ php_oci_statement_get_column_helper() 
  Helper function to get column by name and index */
-php_oci_out_column *php_oci_statement_get_column_helper(INTERNAL_FUNCTION_PARAMETERS)
+php_oci_out_column *php_oci_statement_get_column_helper(INTERNAL_FUNCTION_PARAMETERS, int need_data)
 {
 	zval *z_statement, *column_index;
 	php_oci_statement *statement;
@@ -1018,6 +1028,10 @@ php_oci_out_column *php_oci_statement_get_column_helper(INTERNAL_FUNCTION_PARAME
 	statement = (php_oci_statement *) zend_fetch_resource(&z_statement TSRMLS_CC, -1, "oci8 statement", NULL, 1, le_statement);
 
 	if (!statement) {
+		return NULL;
+	}
+
+	if (need_data && !statement->has_data) {
 		return NULL;
 	}
 	

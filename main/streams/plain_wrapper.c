@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: plain_wrapper.c,v 1.52.2.4 2006/01/01 12:50:18 sniper Exp $ */
+/* $Id: plain_wrapper.c,v 1.52.2.6 2006/01/17 02:32:09 iliaa Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -1095,12 +1095,17 @@ static int php_plain_files_mkdir(php_stream_wrapper *wrapper, char *dir, int mod
 			offset = p - buf + 1;
 		}
 
-		/* find a top level directory we need to create */
-		while ((p = strrchr(buf + offset, DEFAULT_SLASH))) {
-			*p = '\0';
-			if (VCWD_STAT(buf, &sb) == 0) {
-				*p = DEFAULT_SLASH;
-				break;
+		if (p && dir_len == 1) {
+			/* buf == "DEFAULT_SLASH" */	
+		}
+		else {
+			/* find a top level directory we need to create */
+			while ( (p = strrchr(buf + offset, DEFAULT_SLASH)) || (p = strrchr(buf, DEFAULT_SLASH)) ) {
+				*p = '\0';
+				if (VCWD_STAT(buf, &sb) == 0) {
+					*p = DEFAULT_SLASH;
+					break;
+				}
 			}
 		}
 
@@ -1115,7 +1120,9 @@ static int php_plain_files_mkdir(php_stream_wrapper *wrapper, char *dir, int mod
 				if (*p == '\0' && *(p + 1) != '\0') {
 					*p = DEFAULT_SLASH;
 					if ((ret = VCWD_MKDIR(buf, (mode_t)mode)) < 0) {
-						php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", strerror(errno));
+						if (options & REPORT_ERRORS) {
+							php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", strerror(errno));
+						}
 						break;
 					}
 				}

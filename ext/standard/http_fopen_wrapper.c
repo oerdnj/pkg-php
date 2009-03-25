@@ -19,7 +19,7 @@
    |          Sara Golemon <pollita@php.net>                              |
    +----------------------------------------------------------------------+
  */
-/* $Id: http_fopen_wrapper.c,v 1.99.2.8 2006/01/01 12:50:14 sniper Exp $ */ 
+/* $Id: http_fopen_wrapper.c,v 1.99.2.12 2006/04/16 17:40:33 iliaa Exp $ */ 
 
 #include "php.h"
 #include "php_globals.h"
@@ -487,8 +487,13 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 			} else {
 				response_code = 0;
 			}
+			/* when we request only the header, don't fail even on error codes */
+			if (options & STREAM_ONLY_GET_HEADERS) {
+				reqok = 1;
+			}
 			switch(response_code) {
 				case 200:
+				case 206: /* partial content */
 				case 302:
 				case 303:
 				case 301:
@@ -634,10 +639,11 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 	}	\
 }	\
 			/* check for control characters in login, password & path */
-			CHECK_FOR_CNTRL_CHARS(resource->user)
-			CHECK_FOR_CNTRL_CHARS(resource->pass)
-			CHECK_FOR_CNTRL_CHARS(resource->path)
-
+			if (strncasecmp(new_path, "http://", sizeof("http://") - 1) || strncasecmp(new_path, "https://", sizeof("https://") - 1)) {
+				CHECK_FOR_CNTRL_CHARS(resource->user)
+				CHECK_FOR_CNTRL_CHARS(resource->pass)
+				CHECK_FOR_CNTRL_CHARS(resource->path)
+			}
 			stream = php_stream_url_wrap_http_ex(wrapper, new_path, mode, options, opened_path, context, --redirect_max, 0 STREAMS_CC TSRMLS_CC);
 		} else {
 			php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "HTTP request failed! %s", tmp_line);

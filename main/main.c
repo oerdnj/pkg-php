@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: main.c,v 1.640.2.13 2006/01/01 12:50:17 sniper Exp $ */
+/* $Id: main.c,v 1.640.2.25 2006/08/10 21:49:56 iliaa Exp $ */
 
 /* {{{ includes
  */
@@ -322,10 +322,8 @@ PHP_INI_BEGIN()
 
 	STD_PHP_INI_BOOLEAN("allow_url_fopen",		"1",		PHP_INI_SYSTEM,		OnUpdateBool,			allow_url_fopen,			php_core_globals,	core_globals)
 	STD_PHP_INI_BOOLEAN("always_populate_raw_post_data",		"0",		PHP_INI_SYSTEM|PHP_INI_PERDIR,		OnUpdateBool,			always_populate_raw_post_data,			php_core_globals,	core_globals)
-#ifdef REALPATH_CACHE
 	STD_PHP_INI_ENTRY("realpath_cache_size", "16K", PHP_INI_SYSTEM, OnUpdateLong, realpath_cache_size_limit, virtual_cwd_globals, cwd_globals)
 	STD_PHP_INI_ENTRY("realpath_cache_ttl", "120", PHP_INI_SYSTEM, OnUpdateLong, realpath_cache_ttl, virtual_cwd_globals, cwd_globals)
-#endif
 PHP_INI_END()
 /* }}} */
 
@@ -511,7 +509,11 @@ PHPAPI void php_verror(const char *docref, const char *params, int type, const c
 
 	/* no docref given but function is known (the default) */
 	if (!docref && is_function) {
-		spprintf(&docref_buf, 0, "function.%s", function);
+		if (space[0] == '\0') {
+			spprintf(&docref_buf, 0, "function.%s", function);
+		} else {
+			spprintf(&docref_buf, 0, "function.%s-%s", class_name, function);
+		}
 		while((p = strchr(docref_buf, '_')) != NULL) {
 			*p = '-';
 		}
@@ -661,7 +663,7 @@ static void php_error_cb(int type, const char *error_filename, const uint error_
 		 * be NULL if PG(last_error_message) is not NULL */
 		if (strcmp(PG(last_error_message), buffer)
 			|| (!PG(ignore_repeated_source)
-				&& ((PG(last_error_lineno) != error_lineno)
+				&& ((PG(last_error_lineno) != (int)error_lineno)
 					|| strcmp(PG(last_error_file), error_filename)))) {
 			display = 1;
 		} else {
@@ -822,6 +824,7 @@ static void php_error_cb(int type, const char *error_filename, const uint error_
 				AG(memory_limit) = PG(memory_limit); 
 #endif
 				efree(buffer);
+				zend_objects_store_mark_destructed(&EG(objects_store) TSRMLS_CC);
 				zend_bailout();
 				return;
 			}
@@ -1086,6 +1089,11 @@ int php_request_startup(TSRMLS_D)
 			zend_set_timeout(EG(timeout_seconds));
 		} else {
 			zend_set_timeout(PG(max_input_time));
+		}
+
+		/* Disable realpath cache if safe_mode or open_basedir are set */
+		if (PG(safe_mode) || (PG(open_basedir) && *PG(open_basedir))) {
+			CWDG(realpath_cache_size_limit) = 0;
 		}
 
 		if (PG(expose_php)) {
@@ -1595,6 +1603,10 @@ void php_module_shutdown(TSRMLS_D)
 		return;
 	}
 
+#ifdef ZTS
+	ts_free_worker_threads();
+#endif
+
 #if defined(PHP_WIN32) || (defined(NETWARE) && defined(USE_WINSOCK))
 	/*close winsock */
 	WSACleanup();
@@ -1648,7 +1660,6 @@ PHPAPI int php_execute_script(zend_file_handle *primary_file TSRMLS_DC)
 #else
 	char *old_cwd;
 #endif
-	char *old_primary_file_path = NULL;
 	int retval = 0;
 
 	EG(exit_status) = 0;
@@ -1663,6 +1674,8 @@ PHPAPI int php_execute_script(zend_file_handle *primary_file TSRMLS_DC)
 #endif
 
 	zend_try {
+		char realfile[MAXPATHLEN];
+
 #ifdef PHP_WIN32
 		UpdateIniFromRegistry(primary_file->filename TSRMLS_CC);
 #endif
@@ -1680,17 +1693,19 @@ PHPAPI int php_execute_script(zend_file_handle *primary_file TSRMLS_DC)
 			VCWD_CHDIR_FILE(primary_file->filename);
 		}
 
-		if (primary_file->filename) {			
-			char realfile[MAXPATHLEN];
+ 		/* Only lookup the real file path and add it to the included_files list if already opened
+		 *   otherwise it will get opened and added to the included_files list in zend_execute_scripts
+		 */
+ 		if (primary_file->filename &&
+ 		    primary_file->opened_path == NULL &&
+ 		    primary_file->type != ZEND_HANDLE_FILENAME) {			
 			int realfile_len;
 			int dummy = 1;
-			if (VCWD_REALPATH(primary_file->filename, realfile)) {
+
+			if (expand_filepath(primary_file->filename, realfile TSRMLS_CC)) {
 				realfile_len =  strlen(realfile);
 				zend_hash_add(&EG(included_files), realfile, realfile_len+1, (void *)&dummy, sizeof(int), NULL);
-				if (strncmp(realfile, primary_file->filename, realfile_len)) {
-					old_primary_file_path = primary_file->filename;
-					primary_file->filename = realfile;
-				}	
+				primary_file->opened_path = estrndup(realfile, realfile_len);
 			}
 		}
 
@@ -1713,15 +1728,13 @@ PHPAPI int php_execute_script(zend_file_handle *primary_file TSRMLS_DC)
 		} else {
 			append_file_p = NULL;
 		}
+		if (PG(max_input_time) != -1) {
 #ifdef PHP_WIN32
-		zend_unset_timeout(TSRMLS_C);
+			zend_unset_timeout(TSRMLS_C);
 #endif
-		zend_set_timeout(INI_INT("max_execution_time"));
-		retval = (zend_execute_scripts(ZEND_REQUIRE TSRMLS_CC, NULL, 3, prepend_file_p, primary_file, append_file_p) == SUCCESS);
-		
-		if (old_primary_file_path) {
-			primary_file->filename = old_primary_file_path;
+			zend_set_timeout(INI_INT("max_execution_time"));
 		}
+		retval = (zend_execute_scripts(ZEND_REQUIRE TSRMLS_CC, NULL, 3, prepend_file_p, primary_file, append_file_p) == SUCCESS);
 		
 	} zend_end_try();
 

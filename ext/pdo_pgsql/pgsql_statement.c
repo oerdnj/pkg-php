@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pgsql_statement.c,v 1.31.2.10 2006/01/01 12:50:12 sniper Exp $ */
+/* $Id: pgsql_statement.c,v 1.31.2.12 2006/03/27 20:51:01 wez Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -221,7 +221,7 @@ static int pgsql_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_data *
 				}
 				break;
 
-			case PDO_PARAM_EVT_ALLOC:
+			case PDO_PARAM_EVT_NORMALIZE:
 				/* decode name from $1, $2 into 0, 1 etc. */
 				if (param->name) {
 					if (param->name[0] == '$') {
@@ -229,7 +229,7 @@ static int pgsql_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_data *
 					} else {
 						/* resolve parameter name to rewritten name */
 						char *nameptr;
-						if (SUCCESS == zend_hash_find(stmt->bound_param_map,
+						if (stmt->bound_param_map && SUCCESS == zend_hash_find(stmt->bound_param_map,
 								param->name, param->namelen + 1, (void**)&nameptr)) {
 							param->paramno = atoi(nameptr + 1) - 1;
 						} else {
@@ -239,6 +239,10 @@ static int pgsql_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_data *
 					}
 				}
 				break;
+
+			case PDO_PARAM_EVT_ALLOC:
+				/* work is handled by EVT_NORMALIZE */
+				return 1;
 
 			case PDO_PARAM_EVT_EXEC_PRE:
 				if (!S->param_values) {

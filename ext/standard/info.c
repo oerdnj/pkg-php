@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: info.c,v 1.249.2.7 2006/01/01 12:50:15 sniper Exp $ */
+/* $Id: info.c,v 1.249.2.10 2006/03/31 11:11:12 tony2001 Exp $ */
 
 #include "php.h"
 #include "php_ini.h"
@@ -58,6 +58,23 @@ ZEND_EXTERN_MODULE_GLOBALS(iconv)
 
 PHPAPI extern char *php_ini_opened_path;
 PHPAPI extern char *php_ini_scanned_files;
+	
+static int php_info_write_wrapper(const char *str, uint str_length)
+{
+	int new_len, written;
+	char *elem_esc;
+
+	TSRMLS_FETCH();
+
+	elem_esc = php_escape_html_entities((char *)str, str_length, &new_len, 0, ENT_QUOTES, NULL TSRMLS_CC);
+
+	written = php_body_write(elem_esc, new_len TSRMLS_CC);
+
+	efree(elem_esc);
+
+	return written;
+}
+
 
 /* {{{ _display_module_info
  */
@@ -135,30 +152,13 @@ static void php_print_gpcse_array(char *name, uint name_length TSRMLS_DC)
 				PUTS(" => ");
 			}
 			if (Z_TYPE_PP(tmp) == IS_ARRAY) {
-				zval *tmp3;
-
-				MAKE_STD_ZVAL(tmp3);
-
 				if (!sapi_module.phpinfo_as_text) {
 					PUTS("<pre>");
-				}
-				php_start_ob_buffer(NULL, 4096, 1 TSRMLS_CC);
-				
-				zend_print_zval_r(*tmp, 0 TSRMLS_CC);
-				
-				php_ob_get_buffer(tmp3 TSRMLS_CC);
-				php_end_ob_buffer(0, 0 TSRMLS_CC);
-				
-				if (!sapi_module.phpinfo_as_text) {
-					elem_esc = php_info_html_esc(Z_STRVAL_P(tmp3) TSRMLS_CC);
-					PUTS(elem_esc);
-					efree(elem_esc);
+					zend_print_zval_ex((zend_write_func_t) php_info_write_wrapper, *tmp, 0);
 					PUTS("</pre>");
 				} else {
-					PUTS(Z_STRVAL_P(tmp3));
+					zend_print_zval_r(*tmp, 0 TSRMLS_CC);
 				}
-				zval_ptr_dtor(&tmp3);
-
 			} else if (Z_TYPE_PP(tmp) != IS_STRING) {
 				tmp2 = **tmp;
 				zval_copy_ctor(&tmp2);

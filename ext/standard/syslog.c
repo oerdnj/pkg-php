@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: syslog.c,v 1.49.2.1 2006/01/01 12:50:15 sniper Exp $ */
+/* $Id: syslog.c,v 1.49.2.3 2006/03/21 00:59:08 iliaa Exp $ */
 
 #include "php.h"
 
@@ -97,6 +97,7 @@ PHP_MINIT_FUNCTION(syslog)
 	/* AIX doesn't have LOG_PERROR */
 	REGISTER_LONG_CONSTANT("LOG_PERROR", LOG_PERROR, CONST_CS | CONST_PERSISTENT); /*log to stderr*/
 #endif
+	BG(syslog_device)=NULL;
 
 	return SUCCESS;
 }
@@ -109,19 +110,23 @@ PHP_RINIT_FUNCTION(syslog)
 	} else {
 		BG(syslog_started)=0;
 	}
-	BG(syslog_device)=NULL;
 	return SUCCESS;
 }
 
 
 PHP_RSHUTDOWN_FUNCTION(syslog)
 {
-	if (BG(syslog_device)) {
-		efree(BG(syslog_device));
-	}
 #ifdef PHP_WIN32
 	closelog();
 #endif
+	return SUCCESS;
+}
+
+PHP_MSHUTDOWN_FUNCTION(syslog)
+{
+	if (BG(syslog_device)) {
+		free(BG(syslog_device));
+	}
 	return SUCCESS;
 }
 
@@ -224,9 +229,9 @@ PHP_FUNCTION(openlog)
 		return;
 	}
 	if (BG(syslog_device)) {
-		efree(BG(syslog_device));
+		free(BG(syslog_device));
 	}
-	BG(syslog_device) = estrndup(ident, ident_len);
+	BG(syslog_device) = zend_strndup(ident, ident_len);
 	openlog(BG(syslog_device), option, facility);
 	RETURN_TRUE;
 }
@@ -242,7 +247,7 @@ PHP_FUNCTION(closelog)
 
 	closelog();
 	if (BG(syslog_device)) {
-		efree(BG(syslog_device));
+		free(BG(syslog_device));
 		BG(syslog_device)=NULL;
 	}
 	RETURN_TRUE;
@@ -262,12 +267,7 @@ PHP_FUNCTION(syslog)
 		return;
 	}
 
-	/*
-	 * CAVEAT: if the message contains patterns such as "%s",
-	 * this will cause problems.
-	 */
-
-	php_syslog(priority, "%.500s", message);
+	php_syslog(priority, "%s", message);
 	RETURN_TRUE;
 }
 /* }}} */

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: attr.c,v 1.18.2.1 2006/01/01 12:50:06 sniper Exp $ */
+/* $Id: attr.c,v 1.18.2.2 2006/05/03 08:43:04 rrichards Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -77,7 +77,7 @@ PHP_METHOD(domattr, __construct)
 	}
 
 	if (intern != NULL) {
-		oldnode = (xmlNodePtr)intern->ptr;
+		oldnode = dom_object_get_node(intern);
 		if (oldnode != NULL) {
 			php_libxml_node_free_resource(oldnode  TSRMLS_CC);
 		}

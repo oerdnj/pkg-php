@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_cli.c,v 1.129.2.10 2006/01/01 12:50:19 sniper Exp $ */
+/* $Id: php_cli.c,v 1.129.2.14 2006/05/11 22:11:17 dmitry Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -434,10 +434,12 @@ static void php_cli_usage(char *argv0)
 				"  args...          Arguments passed to script. Use -- args when first argument\n"
 				"                   starts with - or script is read from stdin\n"
 				"\n"
+#if (HAVE_REFLECTION)
 				"  --rf <name>      Show information about function <name>.\n"
 				"  --rc <name>      Show information about class <name>.\n"
 				"  --re <name>      Show information about extension <name>.\n"
 				"\n"
+#endif
 				, prog, prog, prog, prog, prog, prog);
 }
 /* }}} */
@@ -706,6 +708,7 @@ int main(int argc, char *argv[])
 		INI_HARDCODED("implicit_flush", "1");
 		INI_HARDCODED("output_buffering", "0");
 		INI_HARDCODED("max_execution_time", "0");
+		INI_HARDCODED("max_input_time", "-1");
 
 		while ((c = php_getopt(argc, argv, OPTIONS, &php_optarg, &php_optind, 0)) != -1) {
 			switch (c) {
@@ -747,14 +750,23 @@ int main(int argc, char *argv[])
 				goto out;
 
 			case 'v': /* show php version & quit */
-				if (php_request_startup(TSRMLS_C)==FAILURE) {
+				if (php_request_startup(TSRMLS_C) == FAILURE) {
 					goto err;
 				}
-#if ZEND_DEBUG
-				php_printf("PHP %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2006 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
+
+				php_printf("PHP %s (%s) (built: %s %s) %s\nCopyright (c) 1997-2006 The PHP Group\n%s",
+					PHP_VERSION, sapi_module.name, __DATE__, __TIME__,
+#if ZEND_DEBUG && defined(HAVE_GCOV)
+					"(DEBUG GCOV)",
+#elif ZEND_DEBUG
+					"(DEBUG)",
+#elif defined(HAVE_GCOV)
+					"(GCOV)",
 #else
-				php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2006 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
+					"",
 #endif
+					get_zend_version()
+				);
 				php_end_ob_buffers(1 TSRMLS_CC);
 				exit_status=0;
 				goto out;
@@ -774,7 +786,11 @@ int main(int argc, char *argv[])
 
 			case 'a':	/* interactive mode */
 				if (!interactive) {
+#if (HAVE_LIBREADLINE || HAVE_LIBEDIT) && !defined(COMPILE_DL_READLINE)
+					printf("Interactive shell\n\n");
+#else
 					printf("Interactive mode enabled\n\n");
+#endif
 					fflush(stdout);
 					interactive=1;
 				}

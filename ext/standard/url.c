@@ -15,7 +15,7 @@
    | Author: Jim Winstead <jimw@php.net>                                  |
    +----------------------------------------------------------------------+
  */
-/* $Id: url.c,v 1.86.2.3 2006/01/01 12:50:15 sniper Exp $ */
+/* $Id: url.c,v 1.86.2.5 2006/02/12 16:39:44 iliaa Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -25,6 +25,7 @@
 #include "php.h"
 
 #include "url.h"
+#include "file.h"
 #ifdef _OSD_POSIX
 #ifndef APACHE
 #error On this EBCDIC platform, PHP is only supported as an Apache module.
@@ -137,7 +138,7 @@ PHPAPI php_url *php_url_parse_ex(char const *str, int length)
 				p++;
 			}
 			
-			if ((*p) == '\0' || *p == '/') {
+			if ((*p == '\0' || *p == '/') && (p - e) < 7) {
 				goto parse_port;
 			}
 			
@@ -658,7 +659,7 @@ PHP_FUNCTION(get_headers)
 {
 	char *url;
 	int url_len;
-	php_stream_context *context = NULL;
+	php_stream_context *context;
 	php_stream *stream;
 	zval **prev_val, **hdr = NULL;
 	HashPosition pos;
@@ -667,6 +668,7 @@ PHP_FUNCTION(get_headers)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l", &url, &url_len, &format) == FAILURE) {
 		return;
 	}
+	context = FG(default_context) ? FG(default_context) : (FG(default_context) = php_stream_context_alloc());
 
 	if (!(stream = php_stream_open_wrapper_ex(url, "r", REPORT_ERRORS | STREAM_USE_URL | STREAM_ONLY_GET_HEADERS, NULL, context))) {
 		RETURN_FALSE;

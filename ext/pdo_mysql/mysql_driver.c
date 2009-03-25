@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysql_driver.c,v 1.59.2.8 2006/01/01 12:50:11 sniper Exp $ */
+/* $Id: mysql_driver.c,v 1.59.2.13 2006/04/09 08:11:31 wez Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -163,17 +163,22 @@ static int mysql_handle_preparer(pdo_dbh_t *dbh, const char *sql, long sql_len, 
 	char *nsql = NULL;
 	int nsql_len = 0;
 	int ret;
+	int server_version;
 #endif
 	
 	S->H = H;
 	stmt->driver_data = S;
 	stmt->methods = &mysql_stmt_methods;
 
-	/* TODO: add runtime check to determine if the server we are talking to supports
-	 * prepared statements; if it doesn't, we should set stmt->supports_placeholders
-	 * to PDO_PLACEHOLDER_NONE, and have the rest of the code look at S->stmt to
-	 * determine if we're using real prepared statements or the PDO emulated version */
+	if (H->emulate_prepare) {
+		goto end;
+	}
+
 #if HAVE_MYSQL_STMT_PREPARE
+	server_version = mysql_get_server_version(H->server);
+	if (server_version < 40100) {
+		goto fallback;
+	}
 	stmt->supports_placeholders = PDO_PLACEHOLDER_POSITIONAL;
 	ret = pdo_parse_params(stmt, (char*)sql, sql_len, &nsql, &nsql_len TSRMLS_CC);
 
@@ -230,6 +235,7 @@ static int mysql_handle_preparer(pdo_dbh_t *dbh, const char *sql, long sql_len, 
 
 fallback:
 #endif
+end:
 	stmt->supports_placeholders = PDO_PLACEHOLDER_NONE;
 	
 	return 1;
@@ -312,7 +318,10 @@ static int pdo_mysql_set_attribute(pdo_dbh_t *dbh, long attr, zval *val TSRMLS_D
 	case PDO_MYSQL_ATTR_USE_BUFFERED_QUERY:
 		((pdo_mysql_db_handle *)dbh->driver_data)->buffered = Z_BVAL_P(val);
 		return 1;
-		
+	case PDO_MYSQL_ATTR_DIRECT_QUERY:
+	case PDO_ATTR_EMULATE_PREPARES:
+		((pdo_mysql_db_handle *)dbh->driver_data)->emulate_prepare = Z_BVAL_P(val);
+		return 1;
 	default:
 		return 0;
 	}
@@ -353,6 +362,14 @@ static int pdo_mysql_get_attribute(pdo_dbh_t *dbh, long attr, zval *return_value
 			
 		case PDO_MYSQL_ATTR_USE_BUFFERED_QUERY:
 			ZVAL_LONG(return_value, H->buffered);
+			return 1;
+
+		case PDO_MYSQL_ATTR_DIRECT_QUERY:
+			ZVAL_LONG(return_value, H->emulate_prepare);
+			return 1;
+
+		case PDO_MYSQL_ATTR_MAX_BUFFER_SIZE:
+			ZVAL_LONG(return_value, H->max_buffer_size);
 			return 1;
 
 		default:
@@ -416,6 +433,17 @@ static int pdo_mysql_handle_factory(pdo_dbh_t *dbh, zval *driver_options TSRMLS_
 	H->einfo.errcode = 0;
 	H->einfo.errmsg = NULL;
 
+	/* at the time of writing, the mysql documentation states:
+	 *	http://mysql.localhost.net.ar/doc/refman/5.0/en/query-cache-how.html
+	 *	"A query also is not cached under these conditions:
+	 *	...
+	 *	It was issued as a prepared statement, even if no placeholders were employed."
+	 *
+	 * We default to emulating prepared statements
+	 * in order to take advantage of the query cache
+FIXME:	H->emulate_prepare = 1;   a bit risky to do this so late in the RC, so defer it.
+	*/
+
 	/* allocate an environment */
 	
 	/* handle for the server */
@@ -425,6 +453,7 @@ static int pdo_mysql_handle_factory(pdo_dbh_t *dbh, zval *driver_options TSRMLS_
 	}
 	
 	dbh->driver_data = H;
+	H->max_buffer_size = 1024*1024;
 
 	/* handle MySQL options */
 	if (driver_options) {
@@ -433,6 +462,13 @@ static int pdo_mysql_handle_factory(pdo_dbh_t *dbh, zval *driver_options TSRMLS_
 		char *init_cmd = NULL, *default_file = NULL, *default_group = NULL;
 
 		H->buffered = pdo_attr_lval(driver_options, PDO_MYSQL_ATTR_USE_BUFFERED_QUERY, 0 TSRMLS_CC);
+
+		H->emulate_prepare = pdo_attr_lval(driver_options,
+			PDO_MYSQL_ATTR_DIRECT_QUERY, H->emulate_prepare TSRMLS_CC);
+		H->emulate_prepare = pdo_attr_lval(driver_options, 
+			PDO_ATTR_EMULATE_PREPARES, H->emulate_prepare TSRMLS_CC);
+
+		H->max_buffer_size = pdo_attr_lval(driver_options, PDO_MYSQL_ATTR_MAX_BUFFER_SIZE, H->max_buffer_size TSRMLS_CC);
 
 		if (mysql_options(H->server, MYSQL_OPT_CONNECT_TIMEOUT, (const char *)&connect_timeout)) {
 			pdo_mysql_error(dbh);
@@ -443,6 +479,15 @@ static int pdo_mysql_handle_factory(pdo_dbh_t *dbh, zval *driver_options TSRMLS_
 			pdo_mysql_error(dbh);
 			goto cleanup;
 		}
+
+#ifdef MYSQL_OPT_RECONNECT
+		/* since 5.0.3, the default for this option is 0 if not specified.
+		 * we want the old behaviour */
+		{
+			long reconnect = 1;
+			mysql_options(H->server, MYSQL_OPT_RECONNECT, (const char*)&reconnect);
+		}
+#endif
 
 		init_cmd = pdo_attr_strval(driver_options, PDO_MYSQL_ATTR_INIT_COMMAND, NULL TSRMLS_CC);
 		if (init_cmd) {
@@ -488,7 +533,9 @@ static int pdo_mysql_handle_factory(pdo_dbh_t *dbh, zval *driver_options TSRMLS_
 		goto cleanup;
 	}
 
-	mysql_handle_autocommit(dbh TSRMLS_CC);
+	if (!dbh->auto_commit) {
+		mysql_handle_autocommit(dbh TSRMLS_CC);
+	}
 
 	H->attached = 1;
 

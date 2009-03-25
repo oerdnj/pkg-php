@@ -18,7 +18,7 @@
    |          Sara Golemon <pollita@php.net>                              |
    +----------------------------------------------------------------------+
  */
-/* $Id: ftp_fopen_wrapper.c,v 1.85.2.3 2006/01/01 12:50:14 sniper Exp $ */
+/* $Id: ftp_fopen_wrapper.c,v 1.85.2.4 2006/03/20 14:10:35 tony2001 Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -611,7 +611,7 @@ static size_t php_ftp_dirstream_read(php_stream *stream, char *buf, size_t count
 
 	tmp_len = MIN(sizeof(ent->d_name), basename_len - 1);
 	memcpy(ent->d_name, basename, tmp_len);
-	ent->d_name[tmp_len] = '\0';
+	ent->d_name[tmp_len - 1] = '\0';
 	efree(basename);
 
 	/* Trim off trailing whitespace characters */

@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.58.2.3 2005/12/23 15:18:52 hirokawa Exp $
+dnl $Id: config.m4,v 1.58.2.4 2006/04/17 22:13:56 sniper Exp $
 dnl
 
 AC_DEFUN([PHP_MBSTRING_ADD_SOURCES], [
@@ -293,7 +293,7 @@ if test "$PHP_MBSTRING" != "no"; then
   dnl libmbfl is required
   PHP_MBSTRING_SETUP_LIBMBFL
   PHP_MBSTRING_EXTENSION
-  PHP_INSTALL_HEADERS([ext/mbstring], [libmbfl libmbfl/mbfl])
+  PHP_INSTALL_HEADERS([ext/mbstring], [libmbfl/ libmbfl/mbfl])
 fi
 
 # vim600: sts=2 sw=2 et

@@ -77,7 +77,7 @@ require dirname(__FILE__).'/drop_table.inc';
 echo "Done\n";
 ?>
 --EXPECT--
-array(4) {
+array(10) {
   [0]=>
   string(1) "1"
   ["ID"]=>
@@ -85,146 +85,224 @@ array(4) {
   [1]=>
   string(1) "1"
   ["VALUE"]=>
-  string(1) "1"
-}
-array(4) {
-  [0]=>
-  string(1) "1"
-  ["ID"]=>
-  string(1) "1"
-  [1]=>
-  string(1) "1"
-  ["VALUE"]=>
-  string(1) "1"
-}
-array(4) {
-  [0]=>
-  string(1) "1"
-  ["ID"]=>
-  string(1) "1"
-  [1]=>
-  string(1) "1"
-  ["VALUE"]=>
-  string(1) "1"
-}
-array(2) {
-  [0]=>
-  string(1) "1"
-  [1]=>
-  string(1) "1"
-}
-array(2) {
-  [0]=>
-  string(1) "1"
-  [1]=>
-  string(1) "1"
-}
-array(2) {
-  [0]=>
-  string(1) "1"
-  [1]=>
-  string(1) "1"
-}
-array(2) {
-  ["ID"]=>
-  string(1) "1"
-  ["VALUE"]=>
-  string(1) "1"
-}
-array(2) {
-  ["ID"]=>
-  string(1) "1"
-  ["VALUE"]=>
-  string(1) "1"
-}
-array(2) {
-  ["ID"]=>
-  string(1) "1"
-  ["VALUE"]=>
-  string(1) "1"
-}
-array(4) {
-  [0]=>
-  string(1) "1"
-  ["ID"]=>
-  string(1) "1"
-  [1]=>
-  string(1) "1"
-  ["VALUE"]=>
-  string(1) "1"
-}
-array(4) {
-  [0]=>
-  string(1) "1"
-  ["ID"]=>
-  string(1) "1"
-  [1]=>
-  string(1) "1"
-  ["VALUE"]=>
-  string(1) "1"
-}
-array(4) {
-  [0]=>
-  string(1) "1"
-  ["ID"]=>
-  string(1) "1"
-  [1]=>
-  string(1) "1"
-  ["VALUE"]=>
-  string(1) "1"
-}
-array(2) {
-  [0]=>
-  string(1) "1"
-  [1]=>
-  string(1) "1"
-}
-array(2) {
-  [0]=>
-  string(1) "1"
-  [1]=>
-  string(1) "1"
-}
-array(2) {
-  [0]=>
-  string(1) "1"
-  [1]=>
-  string(1) "1"
-}
-array(5) {
-  [0]=>
-  string(1) "1"
-  [1]=>
   string(1) "1"
   [2]=>
   NULL
+  ["BLOB"]=>
+  NULL
   [3]=>
+  NULL
+  ["CLOB"]=>
   NULL
   [4]=>
   NULL
+  ["STRING"]=>
+  NULL
 }
-array(5) {
+array(10) {
+  [0]=>
+  string(1) "1"
+  ["ID"]=>
+  string(1) "1"
+  [1]=>
+  string(1) "1"
+  ["VALUE"]=>
+  string(1) "1"
+  [2]=>
+  NULL
+  ["BLOB"]=>
+  NULL
+  [3]=>
+  NULL
+  ["CLOB"]=>
+  NULL
+  [4]=>
+  NULL
+  ["STRING"]=>
+  NULL
+}
+array(10) {
+  [0]=>
+  string(1) "1"
+  ["ID"]=>
+  string(1) "1"
+  [1]=>
+  string(1) "1"
+  ["VALUE"]=>
+  string(1) "1"
+  [2]=>
+  NULL
+  ["BLOB"]=>
+  NULL
+  [3]=>
+  NULL
+  ["CLOB"]=>
+  NULL
+  [4]=>
+  NULL
+  ["STRING"]=>
+  NULL
+}
+array(2) {
   [0]=>
   string(1) "1"
   [1]=>
   string(1) "1"
-  [2]=>
-  NULL
-  [3]=>
-  NULL
-  [4]=>
-  NULL
 }
-array(5) {
+array(2) {
   [0]=>
   string(1) "1"
   [1]=>
   string(1) "1"
+}
+array(2) {
+  [0]=>
+  string(1) "1"
+  [1]=>
+  string(1) "1"
+}
+array(2) {
+  ["ID"]=>
+  string(1) "1"
+  ["VALUE"]=>
+  string(1) "1"
+}
+array(2) {
+  ["ID"]=>
+  string(1) "1"
+  ["VALUE"]=>
+  string(1) "1"
+}
+array(2) {
+  ["ID"]=>
+  string(1) "1"
+  ["VALUE"]=>
+  string(1) "1"
+}
+array(4) {
+  [0]=>
+  string(1) "1"
+  ["ID"]=>
+  string(1) "1"
+  [1]=>
+  string(1) "1"
+  ["VALUE"]=>
+  string(1) "1"
+}
+array(4) {
+  [0]=>
+  string(1) "1"
+  ["ID"]=>
+  string(1) "1"
+  [1]=>
+  string(1) "1"
+  ["VALUE"]=>
+  string(1) "1"
+}
+array(4) {
+  [0]=>
+  string(1) "1"
+  ["ID"]=>
+  string(1) "1"
+  [1]=>
+  string(1) "1"
+  ["VALUE"]=>
+  string(1) "1"
+}
+array(4) {
+  [0]=>
+  string(1) "1"
+  ["ID"]=>
+  string(1) "1"
+  [1]=>
+  string(1) "1"
+  ["VALUE"]=>
+  string(1) "1"
+}
+array(4) {
+  [0]=>
+  string(1) "1"
+  ["ID"]=>
+  string(1) "1"
+  [1]=>
+  string(1) "1"
+  ["VALUE"]=>
+  string(1) "1"
+}
+array(4) {
+  [0]=>
+  string(1) "1"
+  ["ID"]=>
+  string(1) "1"
+  [1]=>
+  string(1) "1"
+  ["VALUE"]=>
+  string(1) "1"
+}
+array(10) {
+  [0]=>
+  string(1) "1"
+  ["ID"]=>
+  string(1) "1"
+  [1]=>
+  string(1) "1"
+  ["VALUE"]=>
+  string(1) "1"
   [2]=>
+  NULL
+  ["BLOB"]=>
   NULL
   [3]=>
   NULL
+  ["CLOB"]=>
+  NULL
   [4]=>
+  NULL
+  ["STRING"]=>
+  NULL
+}
+array(10) {
+  [0]=>
+  string(1) "1"
+  ["ID"]=>
+  string(1) "1"
+  [1]=>
+  string(1) "1"
+  ["VALUE"]=>
+  string(1) "1"
+  [2]=>
+  NULL
+  ["BLOB"]=>
+  NULL
+  [3]=>
+  NULL
+  ["CLOB"]=>
+  NULL
+  [4]=>
+  NULL
+  ["STRING"]=>
+  NULL
+}
+array(10) {
+  [0]=>
+  string(1) "1"
+  ["ID"]=>
+  string(1) "1"
+  [1]=>
+  string(1) "1"
+  ["VALUE"]=>
+  string(1) "1"
+  [2]=>
+  NULL
+  ["BLOB"]=>
+  NULL
+  [3]=>
+  NULL
+  ["CLOB"]=>
+  NULL
+  [4]=>
+  NULL
+  ["STRING"]=>
   NULL
 }
 Done
