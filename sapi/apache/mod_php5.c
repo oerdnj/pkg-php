@@ -17,7 +17,7 @@
    | PHP 4.0 patches by Zeev Suraski <zeev@zend.com>                      |
    +----------------------------------------------------------------------+
  */
-/* $Id: mod_php5.c,v 1.19.2.9 2006/05/13 22:03:51 rasmus Exp $ */
+/* $Id: mod_php5.c,v 1.19.2.7.2.6 2006/10/12 20:02:58 bfrance Exp $ */
 
 #include "php_apache_http.h"
 #include "http_conf_globals.h"
@@ -209,7 +209,6 @@ static int sapi_apache_header_handler(sapi_header_struct *sapi_header, sapi_head
 static int sapi_apache_send_headers(sapi_headers_struct *sapi_headers TSRMLS_DC)
 {
 	request_rec *r = SG(server_context);
-	char *status_buf = NULL;
 	const char *sline = SG(sapi_headers).http_status_line;
 	int sline_len;
 
@@ -223,20 +222,16 @@ static int sapi_apache_send_headers(sapi_headers_struct *sapi_headers TSRMLS_DC)
 	 * the status-code: */
 	if (sline && ((sline_len = strlen(sline)) > 12) && strncmp(sline, "HTTP/1.", 7) == 0 && sline[8] == ' ' && sline[12] == ' ') {
 		if ((sline_len - 9) > MAX_STATUS_LENGTH) {
-			status_buf = estrndup(sline + 9, MAX_STATUS_LENGTH);
+			r->status_line = ap_pstrndup(r->pool, sline + 9, MAX_STATUS_LENGTH);
 		} else {
-			status_buf = estrndup(sline + 9, sline_len - 9);
+			r->status_line = ap_pstrndup(r->pool, sline + 9, sline_len - 9);
 		}
-		r->status_line = status_buf;
 	}
 
 	if(r->status==304) {
 		send_error_response(r,0);
 	} else {
 		send_http_header(r);
-	}
-	if (status_buf) {
-		efree(status_buf);
 	}
 	return SAPI_HEADER_SENT_SUCCESSFULLY;
 }
@@ -254,13 +249,17 @@ static void sapi_apache_register_server_variables(zval *track_vars_array TSRMLS_
 
 	for (i = 0; i < arr->nelts; i++) {
 		char *val;
+		int val_len, new_val_len;
 
 		if (elts[i].val) {
 			val = elts[i].val;
 		} else {
 			val = "";
 		}
-		php_register_variable(elts[i].key, val, track_vars_array  TSRMLS_CC);
+		val_len = strlen(val);
+		if (sapi_module.input_filter(PARSE_SERVER, elts[i].key, &val, val_len, &new_val_len TSRMLS_CC)) {
+			php_register_variable_safe(elts[i].key, val, new_val_len, track_vars_array TSRMLS_CC);
+		}
 	}
 
 	/* If PATH_TRANSLATED doesn't exist, copy it from SCRIPT_FILENAME */
@@ -680,8 +679,7 @@ static int send_parsed_php(request_rec * r)
 		char *mem_usage;
 		TSRMLS_FETCH();
  
-		mem_usage = ap_psprintf(r->pool, "%u", AG(allocated_memory_peak));
-		AG(allocated_memory_peak) = 0;
+		mem_usage = ap_psprintf(r->pool, "%u", zend_memory_peak_usage(1 TSRMLS_CC));
 		ap_table_setn(r->notes, "mod_php_memory_usage", mem_usage);
 	}
 #endif
@@ -860,6 +858,18 @@ static CONST_PREFIX char *php_apache_admin_flag_handler(cmd_parms *cmd, HashTabl
 }
 /* }}} */
 
+/* {{{ php_apache_phpini_set
+ */
+static CONST_PREFIX char *php_apache_phpini_set(cmd_parms *cmd, HashTable *conf, char *arg)
+{
+	if (apache_sapi_module.php_ini_path_override) {
+		return "Only first PHPINIDir directive honored per configuration tree - subsequent ones ignored";
+	}
+	apache_sapi_module.php_ini_path_override = ap_server_root_relative(cmd->pool, arg);
+	return NULL;
+}
+/* }}} */
+
 /* {{{ int php_xbithack_handler(request_rec * r)
  */
 static int php_xbithack_handler(request_rec * r)
@@ -962,6 +972,7 @@ command_rec php_commands[] =
 	{"php_flag",		php_apache_flag_handler, NULL, OR_OPTIONS, TAKE2, "PHP Flag Modifier"},
 	{"php_admin_value",	php_apache_admin_value_handler, NULL, ACCESS_CONF|RSRC_CONF, TAKE2, "PHP Value Modifier (Admin)"},
 	{"php_admin_flag",	php_apache_admin_flag_handler, NULL, ACCESS_CONF|RSRC_CONF, TAKE2, "PHP Flag Modifier (Admin)"},
+	{"PHPINIDir",       php_apache_phpini_set, NULL, RSRC_CONF, TAKE1, "Directory containing the php.ini file"},
 	{NULL}
 };
 /* }}} */

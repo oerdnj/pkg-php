@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: entityreference.c,v 1.12.2.1 2006/01/01 12:50:06 sniper Exp $ */
+/* $Id: entityreference.c,v 1.12.2.1.2.1 2006/09/14 13:35:02 rrichards Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -73,7 +73,7 @@ PHP_METHOD(domentityreference, __construct)
 
 	intern = (dom_object *)zend_object_store_get_object(id TSRMLS_CC);
 	if (intern != NULL) {
-		oldnode = (xmlNodePtr)intern->ptr;
+		oldnode = dom_object_get_node(intern);
 		if (oldnode != NULL) {
 			php_libxml_node_free_resource(oldnode  TSRMLS_CC);
 		}

@@ -1,4 +1,4 @@
-/* 
+/*
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
@@ -17,13 +17,14 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_objects.c,v 1.56.2.3 2006/03/29 14:28:40 tony2001 Exp $ */
+/* $Id: zend_objects.c,v 1.56.2.3.2.5 2006/07/26 15:29:27 dmitry Exp $ */
 
 #include "zend.h"
 #include "zend_globals.h"
 #include "zend_variables.h"
 #include "zend_API.h"
 #include "zend_interfaces.h"
+#include "zend_exceptions.h"
 
 ZEND_API void zend_object_std_init(zend_object *object, zend_class_entry *ce TSRMLS_DC)
 {
@@ -51,9 +52,9 @@ ZEND_API void zend_objects_destroy_object(zend_object *object, zend_object_handl
 	zend_function *destructor = object->ce->destructor;
 
 	if (destructor) {
-		zval zobj, *obj = &zobj;
+		zval *obj;
 		zval *old_exception;
-		
+
 		if (destructor->op_array.fn_flags & (ZEND_ACC_PRIVATE|ZEND_ACC_PROTECTED)) {
 			if (destructor->op_array.fn_flags & ZEND_ACC_PRIVATE) {
 				/* Ensure that if we're calling a private function, we're allowed to do so.
@@ -84,10 +85,12 @@ ZEND_API void zend_objects_destroy_object(zend_object *object, zend_object_handl
 			}
 		}
 
-		zobj.type = IS_OBJECT;
-		zobj.value.obj.handle = handle;
-		zobj.value.obj.handlers = &std_object_handlers;
-		INIT_PZVAL(obj);
+		MAKE_STD_ZVAL(obj);
+		Z_TYPE_P(obj) = IS_OBJECT;
+		Z_OBJ_HANDLE_P(obj) = handle;
+		/* TODO: We cannot set proper handlers. */
+		Z_OBJ_HT_P(obj) = &std_object_handlers; 
+		zval_copy_ctor(obj);
 
 		/* Make sure that destructors are protected from previously thrown exceptions.
 		 * For example, if an exception was thrown in a function and when the function's
@@ -95,14 +98,22 @@ ZEND_API void zend_objects_destroy_object(zend_object *object, zend_object_handl
 		 */
 		old_exception = EG(exception);
 		EG(exception) = NULL;
-		zend_call_method_with_0_params(&obj, object->ce, &object->ce->destructor, ZEND_DESTRUCTOR_FUNC_NAME, NULL);
+		zend_call_method_with_0_params(&obj, object->ce, &destructor, ZEND_DESTRUCTOR_FUNC_NAME, NULL);
 		if (old_exception) {
 			if (EG(exception)) {
-				zend_error(E_ERROR, "Ignoring exception from %s::__destruct() while an exception is already active", object->ce->name);
+				zend_class_entry *default_exception_ce = zend_exception_get_default(TSRMLS_C);
+				zval *file = zend_read_property(default_exception_ce, old_exception, "file", sizeof("file")-1, 1 TSRMLS_CC);
+				zval *line = zend_read_property(default_exception_ce, old_exception, "line", sizeof("line")-1, 1 TSRMLS_CC);
+
+				zval_ptr_dtor(&obj);
 				zval_ptr_dtor(&EG(exception));
+				EG(exception) = old_exception;
+				zend_error(E_ERROR, "Ignoring exception from %s::__destruct() while an exception is already active (Uncaught %s in %s on line %ld)", 
+					object->ce->name, Z_OBJCE_P(old_exception)->name, Z_STRVAL_P(file), Z_LVAL_P(line));
 			}
 			EG(exception) = old_exception;
 		}
+		zval_ptr_dtor(&obj);
 	}
 }
 

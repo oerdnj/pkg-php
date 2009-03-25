@@ -24,7 +24,7 @@
 #
 # Written by Stig Bakken <ssb@guardian.no> 1997-05-28.
 #
-# $Id: makedist,v 1.31.4.1 2006/05/12 14:53:58 iliaa Exp $
+# $Id: makedist,v 1.31.6.1 2006/05/12 14:54:10 iliaa Exp $
 #
 
 if test "$#" != "2"; then

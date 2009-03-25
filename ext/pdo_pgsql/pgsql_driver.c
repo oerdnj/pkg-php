@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pgsql_driver.c,v 1.53.2.14 2006/04/09 08:17:50 wez Exp $ */
+/* $Id: pgsql_driver.c,v 1.53.2.14.2.4 2006/10/06 22:34:16 iliaa Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -229,6 +229,9 @@ static int pgsql_handle_preparer(pdo_dbh_t *dbh, const char *sql, long sql_len, 
 		PDO_CURSOR_FWDONLY TSRMLS_CC) == PDO_CURSOR_SCROLL;
 
 	if (scrollable) {
+		if (S->cursor_name) {
+			efree(S->cursor_name);
+		}
 		/* TODO: check how scrollable cursors related to prepared statements */
 		spprintf(&S->cursor_name, 0, "pdo_pgsql_cursor_%08x", (unsigned int) stmt);
 	}
@@ -306,11 +309,16 @@ static long pgsql_handle_doer(pdo_dbh_t *dbh, const char *sql, long sql_len TSRM
 static int pgsql_handle_quoter(pdo_dbh_t *dbh, const char *unquoted, int unquotedlen, char **quoted, int *quotedlen, enum pdo_param_type paramtype TSRMLS_DC)
 {
 	unsigned char *escaped;
+	pdo_pgsql_db_handle *H = (pdo_pgsql_db_handle *)dbh->driver_data;
 	
 	switch (paramtype) {
 		case PDO_PARAM_LOB:
 			/* escapedlen returned by PQescapeBytea() accounts for trailing 0 */
+#ifdef HAVE_PQESCAPE_BYTEA_CONN
+			escaped = PQescapeByteaConn(H->server, unquoted, unquotedlen, quotedlen);
+#else
 			escaped = PQescapeBytea(unquoted, unquotedlen, quotedlen);
+#endif
 			*quotedlen += 1;
 			*quoted = emalloc(*quotedlen + 1);
 			memcpy((*quoted)+1, escaped, *quotedlen-2);
@@ -320,9 +328,13 @@ static int pgsql_handle_quoter(pdo_dbh_t *dbh, const char *unquoted, int unquote
 			free(escaped);
 			break;
 		default:
-			*quoted = emalloc(2*unquotedlen + 3);
+			*quoted = safe_emalloc(2, unquotedlen, 3);
 			(*quoted)[0] = '\'';
+#ifndef HAVE_PQESCAPE_CONN
 			*quotedlen = PQescapeString(*quoted + 1, unquoted, unquotedlen);
+#else
+			*quotedlen = PQescapeStringConn(H->server, *quoted + 1, unquoted, unquotedlen, NULL);
+#endif
 			(*quoted)[*quotedlen + 1] = '\'';
 			(*quoted)[*quotedlen + 2] = '\0';
 			*quotedlen += 2;
@@ -352,7 +364,11 @@ static char *pdo_pgsql_last_insert_id(pdo_dbh_t *dbh, const char *name, unsigned
 		size_t l = strlen(name);
         
 		name_escaped = safe_emalloc(l, 2, 1);
+#ifndef HAVE_PQESCAPE_CONN
 		PQescapeString(name_escaped, name, l);
+#else
+		PQescapeStringConn(H->server, name_escaped, name, l, NULL);
+#endif
 		spprintf(&q, 0, "SELECT CURRVAL('%s')", name_escaped);
 		res = PQexec(H->server, q);
 		efree(name_escaped); 
@@ -469,6 +485,7 @@ static int pdo_pgsql_transaction_cmd(const char *cmd, pdo_dbh_t *dbh TSRMLS_DC)
 	res = PQexec(H->server, cmd);
 
 	if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+		pdo_pgsql_error(dbh, PQresultStatus(res), pdo_pgsql_sqlstate(res));
 		ret = 0;
 	}
 

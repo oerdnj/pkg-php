@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_functions.c,v 1.28.2.3 2006/03/09 11:43:45 sebastian Exp $ */
+/* $Id: spl_functions.c,v 1.28.2.3.2.2 2006/07/20 22:54:21 helly Exp $ */
 
 #ifdef HAVE_CONFIG_H
 	#include "config.h"
@@ -36,16 +36,13 @@ void spl_destroy_class(zend_class_entry ** ppce)
 /* }}} */
 
 /* {{{ spl_register_interface */
-void spl_register_interface(zend_class_entry ** ppce, char * class_name, zend_function_entry *functions TSRMLS_DC)
+void spl_register_interface(zend_class_entry ** ppce, char * class_name, zend_function_entry * functions TSRMLS_DC)
 {
 	zend_class_entry ce;
 	
 	INIT_CLASS_ENTRY(ce, class_name, functions);
 	ce.name_length = strlen(class_name);
-	*ppce = zend_register_internal_class(&ce TSRMLS_CC);
-
-	/* entries changed by initialize */
-	(*ppce)->ce_flags = ZEND_ACC_INTERFACE;
+	*ppce = zend_register_internal_interface(&ce TSRMLS_CC);
 }
 /* }}} */
 
@@ -98,14 +95,9 @@ void spl_register_functions(zend_class_entry * class_entry, zend_function_entry 
 /* }}} */
 
 /* {{{ spl_register_property */
-void spl_register_property( zend_class_entry * class_entry, char *prop_name, zval *prop_val, int prop_flags TSRMLS_DC)
+void spl_register_property( zend_class_entry * class_entry, char *prop_name, int prop_name_len, int prop_flags TSRMLS_DC)
 {
-	if (!prop_val) {
-		INIT_PZVAL(prop_val);
-		prop_val->type = IS_NULL;
-	}
-
-	zend_declare_property(class_entry, prop_name, strlen(prop_name), prop_val, prop_flags TSRMLS_CC);
+	zend_declare_property_null(class_entry, prop_name, prop_name_len, prop_flags TSRMLS_CC);
 }
 /* }}} */
 

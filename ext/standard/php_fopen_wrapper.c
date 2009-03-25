@@ -17,7 +17,7 @@
    |          Hartmut Holzgraefe <hholzgra@php.net>                       |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_fopen_wrapper.c,v 1.45.2.4 2006/05/01 16:02:07 helly Exp $ */
+/* $Id: php_fopen_wrapper.c,v 1.45.2.4.2.2 2006/07/05 17:38:14 iliaa Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -171,7 +171,7 @@ php_stream * php_stream_url_wrap_php(php_stream_wrapper *wrapper, char *path, ch
 			path += 11;
 			max_memory = strtol(path, NULL, 10);
 			if (max_memory < 0) {
-				php_error_docref(NULL TSRMLS_CC, E_ERROR, "Max memory must be >= 0");
+				php_error_docref(NULL TSRMLS_CC, E_RECOVERABLE_ERROR, "Max memory must be >= 0");
 				return NULL;
 			}
 		}
@@ -207,7 +207,7 @@ php_stream * php_stream_url_wrap_php(php_stream_wrapper *wrapper, char *path, ch
 		pathdup = estrndup(path + 6, strlen(path + 6));
 		p = strstr(pathdup, "/resource=");
 		if (!p) {
-			php_error_docref(NULL TSRMLS_CC, E_ERROR, "No URL resource specified.");
+			php_error_docref(NULL TSRMLS_CC, E_RECOVERABLE_ERROR, "No URL resource specified.");
 			efree(pathdup);
 			return NULL;
 		}

@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
  
-/* $Id: php_mysql.c,v 1.213.2.6 2006/01/01 12:50:09 sniper Exp $ */
+/* $Id: php_mysql.c,v 1.213.2.6.2.5 2006/08/02 10:04:11 tony2001 Exp $ */
 
 /* TODO:
  *
@@ -116,6 +116,9 @@ static int le_result, le_link, le_plink;
 	(mysql_field_count(mysql)>0)
 #endif
 
+ZEND_DECLARE_MODULE_GLOBALS(mysql)
+static PHP_GINIT_FUNCTION(mysql);
+
 typedef struct _php_mysql_conn {
 	MYSQL conn;
 	int active_result_id;
@@ -130,15 +133,15 @@ zend_function_entry mysql_functions[] = {
 	PHP_FE(mysql_select_db,								NULL)
 #ifndef NETWARE		/* The below two functions not supported on NetWare */
 #if MYSQL_VERSION_ID < 40000
-	PHP_FE(mysql_create_db,								NULL)
-	PHP_FE(mysql_drop_db,								NULL)
+	PHP_DEP_FE(mysql_create_db,							NULL)
+	PHP_DEP_FE(mysql_drop_db,							NULL)
 #endif
 #endif	/* NETWARE */
 	PHP_FE(mysql_query,									NULL)
 	PHP_FE(mysql_unbuffered_query,						NULL)
 	PHP_FE(mysql_db_query,								NULL)
 	PHP_FE(mysql_list_dbs,								NULL)
-	PHP_FE(mysql_list_tables,							NULL)
+	PHP_DEP_FE(mysql_list_tables,						NULL)
 	PHP_FE(mysql_list_fields,							NULL)
 	PHP_FE(mysql_list_processes,						NULL)
 	PHP_FE(mysql_error,									NULL)
@@ -189,15 +192,15 @@ zend_function_entry mysql_functions[] = {
 	PHP_FALIAS(mysql_selectdb,		mysql_select_db,	NULL)
 #ifndef NETWARE		/* The below two functions not supported on NetWare */
 #if MYSQL_VERSION_ID < 40000
-	PHP_FALIAS(mysql_createdb,		mysql_create_db,	NULL)
-	PHP_FALIAS(mysql_dropdb,		mysql_drop_db,		NULL)
+	PHP_DEP_FALIAS(mysql_createdb,	mysql_create_db,	NULL)
+	PHP_DEP_FALIAS(mysql_dropdb,	mysql_drop_db,		NULL)
 #endif
 #endif	/* NETWARE */
 	PHP_FALIAS(mysql_freeresult,	mysql_free_result,	NULL)
 	PHP_FALIAS(mysql_numfields,		mysql_num_fields,	NULL)
 	PHP_FALIAS(mysql_numrows,		mysql_num_rows,		NULL)
 	PHP_FALIAS(mysql_listdbs,		mysql_list_dbs,		NULL)
-	PHP_FALIAS(mysql_listtables,	mysql_list_tables,	NULL)
+	PHP_DEP_FALIAS(mysql_listtables,mysql_list_tables,	NULL)
 	PHP_FALIAS(mysql_listfields,	mysql_list_fields,	NULL)
 	PHP_FALIAS(mysql_db_name,		mysql_result,		NULL)
 	PHP_FALIAS(mysql_dbname,		mysql_result,		NULL)
@@ -219,11 +222,13 @@ zend_module_entry mysql_module_entry = {
 	PHP_RSHUTDOWN(mysql),
 	PHP_MINFO(mysql),
 	"1.0",
-	STANDARD_MODULE_PROPERTIES
+	PHP_MODULE_GLOBALS(mysql),
+	PHP_GINIT(mysql),
+	NULL,
+	NULL,
+	STANDARD_MODULE_PROPERTIES_EX
 };
 /* }}} */
-
-ZEND_DECLARE_MODULE_GLOBALS(mysql)
 
 #ifdef COMPILE_DL_MYSQL
 ZEND_GET_MODULE(mysql)
@@ -353,9 +358,9 @@ PHP_INI_BEGIN()
 PHP_INI_END()
 /* }}} */
 
-/* {{{ php_mysql_init_globals
+/* {{{ PHP_GINIT_FUNCTION
  */
-static void php_mysql_init_globals(zend_mysql_globals *mysql_globals)
+static PHP_GINIT_FUNCTION(mysql)
 {
 	mysql_globals->num_persistent = 0;
 	mysql_globals->default_socket = NULL;
@@ -374,8 +379,6 @@ static void php_mysql_init_globals(zend_mysql_globals *mysql_globals)
  */
 ZEND_MODULE_STARTUP_D(mysql)
 {
-	ZEND_INIT_MODULE_GLOBALS(mysql, php_mysql_init_globals, NULL);
-
 	REGISTER_INI_ENTRIES();
 	le_result = zend_register_list_destructors_ex(_free_mysql_result, NULL, "mysql result", module_number);
 	le_link = zend_register_list_destructors_ex(_close_mysql_link, NULL, "mysql link", module_number);
@@ -392,13 +395,6 @@ ZEND_MODULE_STARTUP_D(mysql)
 	REGISTER_LONG_CONSTANT("MYSQL_CLIENT_INTERACTIVE", CLIENT_INTERACTIVE, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("MYSQL_CLIENT_IGNORE_SPACE", CLIENT_IGNORE_SPACE, CONST_CS | CONST_PERSISTENT); 
 
-
-#ifdef ZTS
-# if MYSQL_VERSION_ID >= 40000
-	mysql_thread_init();
-# endif
-#endif
-
 	return SUCCESS;
 }
 /* }}} */
@@ -407,12 +403,6 @@ ZEND_MODULE_STARTUP_D(mysql)
  */
 PHP_MSHUTDOWN_FUNCTION(mysql)
 {
-#ifdef ZTS
-# if MYSQL_VERSION_ID >= 40000
-	mysql_thread_end();
-# endif
-#endif
-
 	UNREGISTER_INI_ENTRIES();
 	return SUCCESS;
 }
@@ -1165,8 +1155,6 @@ PHP_FUNCTION(mysql_create_db)
 			break;
 	}
 
-	php_error_docref(NULL TSRMLS_CC, E_NOTICE, "This function is deprecated, please use mysql_query() to issue a SQL CREATE DATABASE statement instead.");
-	
 	ZEND_FETCH_RESOURCE2(mysql, php_mysql_conn *, mysql_link, id, "MySQL-Link", le_link, le_plink);
 
 	PHPMY_UNBUFFERED_QUERY_CHECK();
@@ -1208,9 +1196,6 @@ PHP_FUNCTION(mysql_drop_db)
 			break;
 	}
 
-	php_error_docref(NULL TSRMLS_CC, E_NOTICE, "This function is deprecated, please use mysql_query() to issue a SQL DROP DATABASE statement instead.");
-
-	
 	ZEND_FETCH_RESOURCE2(mysql, php_mysql_conn *, mysql_link, id, "MySQL-Link", le_link, le_plink);
 	
 	convert_to_string_ex(db);
@@ -1462,7 +1447,6 @@ PHP_FUNCTION(mysql_list_tables)
 			WRONG_PARAM_COUNT;
 			break;
 	}
-	php_error_docref(NULL TSRMLS_CC, E_STRICT, "mysql_list_tables() is deprecated");
 	ZEND_FETCH_RESOURCE2(mysql, php_mysql_conn *, mysql_link, id, "MySQL-Link", le_link, le_plink);
 
 	convert_to_string_ex(db);
@@ -1909,7 +1893,7 @@ static void php_mysql_fetch_hash(INTERNAL_FUNCTION_PARAMETERS, int result_type, 
 	mysql_row_length_type *mysql_row_lengths;
 	int i;
 	zval            *res, *ctor_params = NULL;
-	zend_class_entry *ce;
+	zend_class_entry *ce = NULL;
 
 #ifdef ZEND_ENGINE_2
 	if (into_object) {
@@ -2043,7 +2027,7 @@ static void php_mysql_fetch_hash(INTERNAL_FUNCTION_PARAMETERS, int result_type, 
 					 * single value is an array. Also we'd have to make that one
 					 * argument passed by reference.
 					 */
-					zend_throw_exception(zend_exception_get_default(), "Parameter ctor_params must be an array", 0 TSRMLS_CC);
+					zend_throw_exception(zend_exception_get_default(TSRMLS_C), "Parameter ctor_params must be an array", 0 TSRMLS_CC);
 					return;
 				}
 			} else {
@@ -2058,7 +2042,7 @@ static void php_mysql_fetch_hash(INTERNAL_FUNCTION_PARAMETERS, int result_type, 
 			fcc.object_pp = &return_value;
 		
 			if (zend_call_function(&fci, &fcc TSRMLS_CC) == FAILURE) {
-				zend_throw_exception_ex(zend_exception_get_default(), 0 TSRMLS_CC, "Could not execute %s::%s()", ce->name, ce->constructor->common.function_name);
+				zend_throw_exception_ex(zend_exception_get_default(TSRMLS_C), 0 TSRMLS_CC, "Could not execute %s::%s()", ce->name, ce->constructor->common.function_name);
 			} else {
 				if (retval_ptr) {
 					zval_ptr_dtor(&retval_ptr);
@@ -2068,7 +2052,7 @@ static void php_mysql_fetch_hash(INTERNAL_FUNCTION_PARAMETERS, int result_type, 
 				efree(fci.params);
 			}
 		} else if (ctor_params) {
-			zend_throw_exception_ex(zend_exception_get_default(), 0 TSRMLS_CC, "Class %s does not have a constructor hence you cannot use ctor_params", ce->name);
+			zend_throw_exception_ex(zend_exception_get_default(TSRMLS_C), 0 TSRMLS_CC, "Class %s does not have a constructor hence you cannot use ctor_params", ce->name);
 		}
 	}
 #endif

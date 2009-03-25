@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: fastcgi.h,v 1.2.2.6 2006/05/25 07:06:04 dmitry Exp $ */
+/* $Id: fastcgi.h,v 1.2.2.4.2.1 2006/05/15 14:30:31 dmitry Exp $ */
 
 /* FastCGI protocol */
 
@@ -25,8 +25,6 @@
 #define FCGI_MAX_LENGTH 0xffff
 
 #define FCGI_KEEP_CONN  1
-
-#define FCGI_MAX_ENV_VARS 256
 
 typedef enum _fcgi_role {
 	FCGI_RESPONDER	= 1,
@@ -107,7 +105,7 @@ typedef struct _fcgi_request {
 	unsigned char  out_buf[1024*8];
 	unsigned char  reserved[sizeof(fcgi_end_request_rec)];
 
-	char          *env[FCGI_MAX_ENV_VARS];
+	HashTable      env;
 } fcgi_request;
 
 int fcgi_init(void);
@@ -118,63 +116,16 @@ int fcgi_accept_request(fcgi_request *req);
 int fcgi_finish_request(fcgi_request *req);
 
 char* fcgi_getenv(fcgi_request *req, const char* var, int var_len);
-void fcgi_putenv(fcgi_request *req, char* var, int var_len);
+char* fcgi_putenv(fcgi_request *req, char* var, int var_len, char* val);
 
 int fcgi_read(fcgi_request *req, char *str, int len);
 
 int fcgi_write(fcgi_request *req, fcgi_request_type type, const char *str, int len);
 int fcgi_flush(fcgi_request *req, int close);
 
-/* Some defines for limited libfcgi comatibility */
-
-typedef struct _FCGX_Stream {
-	fcgi_request      *req;
-	fcgi_request_type  type;
-} FCGX_Stream;
-
-typedef struct _FCGX_Request {
-	fcgi_request req;
-	FCGX_Stream  in;
-	FCGX_Stream  out;
-	FCGX_Stream  err;
-	char **envp;
-} FCGX_Request;
-
-#define FCGX_Init()
-#define FCGX_IsCGI()						(!fcgi_is_fastcgi())
-#define FCGX_OpenSocket(path, backlog)		fcgi_listen(path, backlog)
-
-#define FCGX_InitRequest(r, sock, flags)	\
-	do {									\
-		fcgi_init_request(&(r)->req, sock);	\
-		(r)->in.req = &(r)->req;			\
-		(r)->out.req = &(r)->req;			\
-		(r)->err.req = &(r)->req;			\
-		(r)->in.type = FCGI_STDIN;			\
-		(r)->out.type = FCGI_STDOUT;		\
-		(r)->err.type = FCGI_STDERR;		\
-		(r)->envp = (r)->req.env;			\
-	} while (0);
-
-
-#define FCGX_Accept_r(r)					fcgi_accept_request(&(r)->req)
-#define FCGX_Finish_r(r)					fcgi_finish_request(&(r)->req)
-
-#define FCGX_PutStr(str, len, stream)		fcgi_write((stream).req, (stream).type, str, len)
-#define FCGX_PutS(str, len, stream)			fcgi_write((stream).req, (stream).type, str, len)
-#define FCGX_FFlush(stream)                 (fcgi_flush((stream).req, 0)?0:-1)
-#define FCGX_GetStr(str, len, stream)       fcgi_read((stream).req, str, len)
-
-#define FCGX_GetParam(var, envp)			fcgi_getenv_helper(envp, var, strlen(var));
-
-#define FCGX_PutEnv(r, var)					fcgi_putenv(&(r)->req, var, strlen(var));
-
-int FCGX_FPrintF(FCGX_Stream stream, const char *format, ...);
-
-/* Internal helper functions. They shouldn't be used directly. */
-
-char* fcgi_getenv_helper(char** env, const char *name, int len);
-
+#ifdef PHP_WIN32
+void fcgi_impersonate(void);
+#endif
 /*
  * Local variables:
  * tab-width: 4

@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config9.m4,v 1.17.2.2 2006/02/02 09:59:23 dmitry Exp $
+dnl $Id: config9.m4,v 1.17.2.2.2.1 2006/09/28 09:37:52 dmitry Exp $
 dnl
 
 AC_ARG_ENABLE(cgi,
@@ -127,11 +127,6 @@ if test "$PHP_SAPI" = "default"; then
     AC_MSG_RESULT($PHP_ENABLE_PATHINFO_CHECK)
 
     AC_MSG_CHECKING(whether to enable fastcgi support)
-    PHP_LIBFCGI_DIR="$abs_srcdir/sapi/cgi/libfcgi"
-    if test -z $PHP_LIBFCGI_DIR; then
-      echo "$PHP_LIBFCGI_DIR does not exist"
-      exit 1
-    fi
     if test "$PHP_ENABLE_FASTCGI" = "yes"; then
       PHP_FASTCGI=1
       PHP_FCGI_FILES="fastcgi.c"

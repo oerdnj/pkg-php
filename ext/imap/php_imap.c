@@ -26,7 +26,7 @@
    | PHP 4.0 updates:  Zeev Suraski <zeev@zend.com>                       |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_imap.c,v 1.208.2.9 2006/08/11 15:07:13 iliaa Exp $ */
+/* $Id: php_imap.c,v 1.208.2.7.2.7 2006/10/05 14:25:41 tony2001 Exp $ */
 
 #define IMAP41
 
@@ -75,11 +75,17 @@ static char *php_mail_gets(readfn_t f, void *stream, unsigned long size, GETS_DA
 void rfc822_date(char *date);
 char *cpystr(const char *str);
 char *cpytxt(SIZEDTEXT *dst, char *text, unsigned long size);
+#ifndef HAVE_NEW_MIME2TEXT
 long utf8_mime2text(SIZEDTEXT *src, SIZEDTEXT *dst);
+#else
+long utf8_mime2text (SIZEDTEXT *src, SIZEDTEXT *dst, long flags);
+#endif
 unsigned long find_rightmost_bit(unsigned long *valptr);
 void fs_give(void **block);
 void *fs_get(size_t size);
 
+ZEND_DECLARE_MODULE_GLOBALS(imap)
+static PHP_GINIT_FUNCTION(imap);
 
 /* {{{ imap_functions[]
  */
@@ -175,11 +181,13 @@ zend_module_entry imap_module_entry = {
 	PHP_RSHUTDOWN(imap),
 	PHP_MINFO(imap),
 	NO_VERSION_YET,
-	STANDARD_MODULE_PROPERTIES
+	PHP_MODULE_GLOBALS(imap),
+	PHP_GINIT(imap),
+	NULL,
+	NULL,
+	STANDARD_MODULE_PROPERTIES_EX
 };
 /* }}} */
-
-ZEND_DECLARE_MODULE_GLOBALS(imap)
 
 #ifdef COMPILE_DL_IMAP
 ZEND_GET_MODULE(imap)
@@ -397,9 +405,9 @@ void mail_getacl(MAILSTREAM *stream, char *mailbox, ACLLIST *alist)
 #endif
 
 
-/* {{{ php_imap_init_globals
+/* {{{ PHP_GINIT_FUNCTION
  */
-static void php_imap_init_globals(zend_imap_globals *imap_globals)
+static PHP_GINIT_FUNCTION(imap)
 {
 	imap_globals->imap_user = NIL;
 	imap_globals->imap_password = NIL;
@@ -432,8 +440,6 @@ static void php_imap_init_globals(zend_imap_globals *imap_globals)
 PHP_MINIT_FUNCTION(imap)
 {
 	unsigned long sa_all =	SA_MESSAGES | SA_RECENT | SA_UNSEEN | SA_UIDNEXT | SA_UIDVALIDITY;
-
-	ZEND_INIT_MODULE_GLOBALS(imap, php_imap_init_globals, NULL)
 
 #ifndef PHP_WIN32
 	mail_link(&unixdriver);		/* link in the unix driver */
@@ -1874,14 +1880,14 @@ PHP_FUNCTION(imap_fetchbody)
 	Save a specific body section to a file */
 PHP_FUNCTION(imap_savebody)
 {
-	zval *stream, *out;
+	zval *stream, **out;
 	pils *imap_ptr = NULL;
 	php_stream *writer = NULL;
 	char *section = "";
 	int section_len = 0, close_stream = 1;
 	long msgno, flags = 0;
 	
-	if (SUCCESS != zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rzl|sl", &stream, &out, &msgno, &section, &section_len, &flags)) {
+	if (SUCCESS != zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rZl|sl", &stream, &out, &msgno, &section, &section_len, &flags)) {
 		RETURN_FALSE;
 	}
 	
@@ -1891,17 +1897,17 @@ PHP_FUNCTION(imap_savebody)
 		RETURN_FALSE;
 	}
 	
-	switch (Z_TYPE_P(out))
+	switch (Z_TYPE_PP(out))
 	{
 		case IS_LONG:
 		case IS_RESOURCE:
 			close_stream = 0;
-			php_stream_from_zval(writer, &out);
+			php_stream_from_zval(writer, out);
 		break;
 
 		default:
-			convert_to_string_ex(&out);
-			writer = php_stream_open_wrapper(Z_STRVAL_P(out), "wb", REPORT_ERRORS|ENFORCE_SAFE_MODE, NULL);
+			convert_to_string_ex(out);
+			writer = php_stream_open_wrapper(Z_STRVAL_PP(out), "wb", REPORT_ERRORS|ENFORCE_SAFE_MODE, NULL);
 		break;
 	}
 	
@@ -2175,8 +2181,16 @@ PHP_FUNCTION(imap_utf8)
 	dest.size = 0;
 
 	cpytxt(&src, Z_STRVAL_PP(str), Z_STRLEN_PP(str));
+
+#ifndef HAVE_NEW_MIME2TEXT
 	utf8_mime2text(&src, &dest);
-	RETURN_STRINGL(dest.data, strlen(dest.data), 1);
+#else
+	utf8_mime2text(&src, &dest, U8T_CANONICAL);
+#endif
+	RETVAL_STRINGL(dest.data, dest.size, 1);
+	if (dest.data) {
+		free(dest.data);
+	}
 }
 /* }}} */
 

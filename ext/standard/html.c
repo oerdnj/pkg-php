@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: html.c,v 1.111.2.2 2006/02/25 21:32:11 rasmus Exp $ */
+/* $Id: html.c,v 1.111.2.2.2.3 2006/11/01 01:55:11 iliaa Exp $ */
 
 /*
  * HTML entity resources:
@@ -756,6 +756,15 @@ static enum entity_charset determine_charset(char *charset_hint TSRMLS_DC)
 			charset_hint = Z_STRVAL_P(uf_result);
 			len = Z_STRLEN_P(uf_result);
 			
+			if (len == 4) { /* sizeof(none|auto|pass)-1 */
+				if (!memcmp("pass", charset_hint, sizeof("pass") - 1) || 
+				    !memcmp("auto", charset_hint, sizeof("auto") - 1) || 
+				    !memcmp("none", charset_hint, sizeof("none") - 1)) {
+					
+					charset_hint = NULL;
+					len = 0;
+				}
+			}
 			goto det_charset;
 		}
 	}
@@ -1096,7 +1105,7 @@ PHPAPI char *php_escape_html_entities(unsigned char *old, int oldlen, int *newle
 
 		matches_map = 0;
 
-		if (len + 9 > maxlen)
+		if (len + 16 > maxlen)
 			replaced = erealloc (replaced, maxlen += 128);
 
 		if (all) {
@@ -1121,9 +1130,15 @@ PHPAPI char *php_escape_html_entities(unsigned char *old, int oldlen, int *newle
 			}
 
 			if (matches_map) {
+				int l = strlen(rep);
+				/* increase the buffer size */
+				if (len + 2 + l >= maxlen) {
+					replaced = erealloc(replaced, maxlen += 128);
+				}
+
 				replaced[len++] = '&';
 				strcpy(replaced + len, rep);
-				len += strlen(rep);
+				len += l;
 				replaced[len++] = ';';
 			}
 		}
@@ -1212,7 +1227,7 @@ PHP_FUNCTION(htmlspecialchars)
 }
 /* }}} */
 
-/* {{{ proto string htmlspecialchars(string string [, int quote_style])
+/* {{{ proto string htmlspecialchars_decode(string string [, int quote_style])
    Convert special HTML entities back to characters */
 PHP_FUNCTION(htmlspecialchars_decode)
 {

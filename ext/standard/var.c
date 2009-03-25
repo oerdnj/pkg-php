@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: var.c,v 1.203.2.7 2006/04/05 02:28:06 iliaa Exp $ */
+/* $Id: var.c,v 1.203.2.7.2.8 2006/10/09 18:08:34 iliaa Exp $ */
 
 
 
@@ -76,8 +76,8 @@ static int php_object_property_dump(zval **zv, int num_args, va_list args, zend_
 	if (hash_key->nKeyLength ==0 ) { /* numeric key */
 		php_printf("%*c[%ld]=>\n", level + 1, ' ', hash_key->h);
 	} else { /* string key */
-		zend_unmangle_property_name_ex(hash_key->arKey, hash_key->nKeyLength, &class_name, &prop_name);
-		if (class_name) {
+		int unmangle = zend_unmangle_property_name(hash_key->arKey, hash_key->nKeyLength-1, &class_name, &prop_name);
+		if (class_name && unmangle == SUCCESS) {
 			php_printf("%*c[\"%s", level + 1, ' ', prop_name);
 			if (class_name[0]=='*') {
 				ZEND_PUTS(":protected");
@@ -85,7 +85,8 @@ static int php_object_property_dump(zval **zv, int num_args, va_list args, zend_
 				ZEND_PUTS(":private");
 			}
 		} else {
-			php_printf("%*c[\"%s", level + 1, ' ', hash_key->arKey);
+			php_printf("%*c[\"", level + 1, ' ');
+			PHPWRITE(hash_key->arKey, hash_key->nKeyLength - 1);
 #ifdef ANDREY_0
 			ZEND_PUTS(":public");
 #endif
@@ -232,7 +233,7 @@ static int zval_object_property_dump(zval **zv, int num_args, va_list args, zend
 	if (hash_key->nKeyLength ==0 ) { /* numeric key */
 		php_printf("%*c[%ld]=>\n", level + 1, ' ', hash_key->h);
 	} else { /* string key */
-		zend_unmangle_property_name_ex(hash_key->arKey, hash_key->nKeyLength, &class_name, &prop_name);
+		zend_unmangle_property_name(hash_key->arKey, hash_key->nKeyLength-1, &class_name, &prop_name);
 		if (class_name) {
 			php_printf("%*c[\"%s", level + 1, ' ', prop_name);
 			if (class_name[0]=='*') {
@@ -385,7 +386,7 @@ static int php_object_element_export(zval **zv, int num_args, va_list args, zend
 
 	if (hash_key->nKeyLength != 0) {
 		php_printf("%*c", level + 1, ' ');
-		zend_unmangle_property_name_ex(hash_key->arKey, hash_key->nKeyLength, &class_name, &prop_name);
+		zend_unmangle_property_name(hash_key->arKey, hash_key->nKeyLength-1, &class_name, &prop_name);
 		php_printf(" '%s' => ", prop_name);
 		php_var_export(zv, level + 2 TSRMLS_CC);
 		PUTS (",\n");
@@ -415,7 +416,7 @@ PHPAPI void php_var_export(zval **struc, int level TSRMLS_DC)
 		php_printf("%.*G", (int) EG(precision), Z_DVAL_PP(struc));
 		break;
 	case IS_STRING:
-		tmp_str = php_addcslashes(Z_STRVAL_PP(struc), Z_STRLEN_PP(struc), &tmp_len, 0, "'\\", 2 TSRMLS_CC);
+		tmp_str = php_addcslashes(Z_STRVAL_PP(struc), Z_STRLEN_PP(struc), &tmp_len, 0, "'\\\0", 3 TSRMLS_CC);
 		PUTS ("'");
 		PHPWRITE(tmp_str, tmp_len);
 		PUTS ("'");
@@ -881,41 +882,55 @@ PHP_FUNCTION(serialize)
 
 PHP_FUNCTION(unserialize)
 {
-	zval **buf;
+	char *buf;
+	int buf_len;
+	const unsigned char *p;
 	php_unserialize_data_t var_hash;
 	
-	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &buf) == FAILURE) {
-		WRONG_PARAM_COUNT;
-	}
-
-	if (Z_TYPE_PP(buf) == IS_STRING) {
-		const unsigned char *p = (unsigned char*)Z_STRVAL_PP(buf);
-
-		if (Z_STRLEN_PP(buf) == 0) {
-			RETURN_FALSE;
-		}
-
-		PHP_VAR_UNSERIALIZE_INIT(var_hash);
-		if (!php_var_unserialize(&return_value, &p, p + Z_STRLEN_PP(buf),  &var_hash TSRMLS_CC)) {
-			PHP_VAR_UNSERIALIZE_DESTROY(var_hash);
-			zval_dtor(return_value);
-			php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Error at offset %ld of %d bytes", (long)((char*)p - Z_STRVAL_PP(buf)), Z_STRLEN_PP(buf));
-			RETURN_FALSE;
-		}
-		PHP_VAR_UNSERIALIZE_DESTROY(var_hash);
-	} else {
-		php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Argument is not a string");
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &buf, &buf_len) == FAILURE) {
 		RETURN_FALSE;
 	}
+
+	if (buf_len == 0) {
+		RETURN_FALSE;
+	}
+
+	p = (const unsigned char*)buf;
+	PHP_VAR_UNSERIALIZE_INIT(var_hash);
+	if (!php_var_unserialize(&return_value, &p, p + buf_len,  &var_hash TSRMLS_CC)) {
+		PHP_VAR_UNSERIALIZE_DESTROY(var_hash);
+		zval_dtor(return_value);
+		php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Error at offset %ld of %d bytes", (long)((char*)p - buf), buf_len);
+		RETURN_FALSE;
+	}
+	PHP_VAR_UNSERIALIZE_DESTROY(var_hash);
 }
 
 /* }}} */
 
 #if MEMORY_LIMIT
-/* {{{ proto int memory_get_usage()
+/* {{{ proto int memory_get_usage([real_usage])
     Returns the allocated by PHP memory */
 PHP_FUNCTION(memory_get_usage) {
-	RETURN_LONG(AG(allocated_memory));
+	zend_bool real_usage = 0;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|b", &real_usage) == FAILURE) {
+		RETURN_FALSE;
+	}
+	
+	RETURN_LONG(zend_memory_usage(real_usage TSRMLS_CC));
+}
+/* }}} */
+/* {{{ proto int memory_get_peak_usage([real_usage])
+    Returns the peak allocated by PHP memory */
+PHP_FUNCTION(memory_get_peak_usage) {
+	zend_bool real_usage = 0;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|b", &real_usage) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	RETURN_LONG(zend_memory_peak_usage(real_usage TSRMLS_CC));
 }
 /* }}} */
 #endif

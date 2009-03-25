@@ -296,6 +296,9 @@
 /* Define if you have the inet_pton function.  */
 #undef HAVE_INET_PTON
 
+/* Define if you have the initgroups function.  */
+#undef HAVE_INITGROUPS
+
 /* Define if you have the isascii function.  */
 #undef HAVE_ISASCII
 
@@ -371,6 +374,9 @@
 /* Define if you have the mmap function.  */
 #undef HAVE_MMAP
 
+/* Define if you have the mremap function.  */
+#undef HAVE_MREMAP
+
 /* Define if you have the mysql_commit function.  */
 #undef HAVE_MYSQL_COMMIT
 
@@ -427,6 +433,9 @@
 
 /* Define if you have the setegid function.  */
 #undef HAVE_SETEGID
+
+/* Define if you have the setenv function.  */
+#undef HAVE_SETENV
 
 /* Define if you have the seteuid function.  */
 #undef HAVE_SETEUID
@@ -683,6 +692,9 @@
 /* Define if you have the <sys/ipc.h> header file.  */
 #undef HAVE_SYS_IPC_H
 
+/* Define if you have the <sys/loadavg.h> header file.  */
+#undef HAVE_SYS_LOADAVG_H
+
 /* Define if you have the <sys/mkdev.h> header file.  */
 #undef HAVE_SYS_MKDEV_H
 
@@ -778,12 +790,6 @@
 
 /* Define if you have the m library (-lm).  */
 #undef HAVE_LIBM
-
-/* Define if you have the nsl library (-lnsl).  */
-#undef HAVE_LIBNSL
-
-/* Define if you have the socket library (-lsocket).  */
-#undef HAVE_LIBSOCKET
 
 /* Enabling BIND8 compatibility for Panther */
 #undef BIND_8_COMPAT
@@ -896,7 +902,7 @@
 /*   */
 #undef WITH_ZEUS
 
-/* Whether you have a Netscape/iPlanet/SunONE Server */
+/* Whether you have a Netscape/iPlanet/Sun Webserver */
 #undef HAVE_NSAPI
 
 /* Whether you have phttpd */
@@ -928,28 +934,6 @@
 
 /*   */
 #undef PHP_FCGI_STATIC
-
-/* Define to the necessary symbol if this constant
-                           uses a non-standard name on your system. */
-#undef PTHREAD_CREATE_JOINABLE
-
-/* Define if sockaddr_un in sys/un.h contains a sun_len component */
-#undef HAVE_SOCKADDR_UN_SUN_LEN
-
-/* Define if the fpos_t typedef is in stdio.h */
-#undef HAVE_FPOS
-
-/* Define if there's a fileno() prototype in stdio.h */
-#undef HAVE_FILENO_PROTO
-
-/* Define if the socklen_t typedef is in sys/socket.h */
-#undef HAVE_SOCKLEN
-
-/* Define if cross-process locking is required by accept() */
-#undef USE_LOCKING
-
-/* Define if va_arg(arg, long double) crashes the compiler */
-#undef HAVE_VA_ARG_LONG_DOUBLE_BUG
 
 /* whether you have sendmail */
 #undef HAVE_SENDMAIL
@@ -1267,6 +1251,12 @@
 #undef HAVE_CURL_VERSION_INFO
 
 /*   */
+#undef HAVE_CURL_EASY_STRERROR
+
+/*   */
+#undef HAVE_CURL_MULTI_STRERROR
+
+/*   */
 #undef PHP_CURL_URL_WRAPPERS
 
 /* Whether to build curl as dynamic module */
@@ -1422,11 +1412,8 @@
 /*   */
 #undef HAVE_FDFLIB
 
-/*   */
-#undef HAVE_FILEPRO
-
-/* Whether to build filepro as dynamic module */
-#undef COMPILE_DL_FILEPRO
+/* Whether to build filter as dynamic module */
+#undef COMPILE_DL_FILTER
 
 /* Whether you want FTP support */
 #undef HAVE_FTP
@@ -1651,12 +1638,6 @@
 #undef COMPILE_DL_HASH
 
 /*   */
-#undef HAVE_HWAPI
-
-/* Whether to build hwapi as dynamic module */
-#undef COMPILE_DL_HWAPI
-
-/*   */
 #undef HAVE_LIBICONV
 
 /*   */
@@ -1726,6 +1707,9 @@
 #undef HAVE_IMAP2004
 
 /*   */
+#undef HAVE_NEW_MIME2TEXT
+
+/*   */
 #undef HAVE_IMAP2001
 
 /*   */
@@ -1760,6 +1744,12 @@
 
 /* Whether to build interbase as dynamic module */
 #undef COMPILE_DL_INTERBASE
+
+/* whether to enable JavaScript Object Serialization support */
+#undef HAVE_JSON
+
+/* Whether to build json as dynamic module */
+#undef COMPILE_DL_JSON
 
 /* Whether to build ldap as dynamic module */
 #undef COMPILE_DL_LDAP
@@ -1805,6 +1795,9 @@
 
 /* whether to have multibyte regex support */
 #undef HAVE_MBREGEX
+
+/* whether to check multibyte regex backtrack */
+#undef USE_COMBINATION_EXPLOSION_CHECK
 
 /* Whether to build mbstring as dynamic module */
 #undef COMPILE_DL_MBSTRING
@@ -2241,6 +2234,12 @@
 /* PostgreSQL 7.2.0 or later */
 #undef HAVE_PQESCAPE
 
+/* PostgreSQL 8.1.4 or later */
+#undef HAVE_PQESCAPE_CONN
+
+/* PostgreSQL 8.1.4 or later */
+#undef HAVE_PQESCAPE_BYTEA_CONN
+
 /* PostgreSQL 7.0.x or later */
 #undef HAVE_PQSETNONBLOCKING
 
@@ -2363,6 +2362,15 @@
 
 /* PostgreSQL 7.4 or later */
 #undef HAVE_PQSETERRORVERBOSITY
+
+/* PostgreSQL 7.4 or later */
+#undef HAVE_PQFTABLE
+
+/* PostgreSQL 8.1.4 or later */
+#undef HAVE_PQESCAPE_CONN
+
+/* PostgreSQL 8.1.4 or later */
+#undef HAVE_PQESCAPE_BYTEA_CONN
 
 /* Whether libpq is compiled with --enable-multibyte */
 #undef HAVE_PGSQL_WITH_MULTIBYTE_SUPPORT
@@ -2625,6 +2633,9 @@
 /* whether HUGE_VAL + -HUGEVAL == NAN */
 #undef HAVE_HUGE_VAL_NAN
 
+/* whether strptime() declaration fails */
+#undef HAVE_STRPTIME_DECL_FAILS
+
 /* Define if your system has mbstate_t in wchar.h */
 #undef HAVE_MBSTATE_T
 
@@ -2690,6 +2701,12 @@
 
 /* Whether to build tokenizer as dynamic module */
 #undef COMPILE_DL_TOKENIZER
+
+/*   */
+#undef HAVE_LIBXML
+
+/*   */
+#undef HAVE_LIBEXPAT
 
 /*   */
 #undef HAVE_WDDX
@@ -2766,6 +2783,12 @@
 /* Whether to build xsl as dynamic module */
 #undef COMPILE_DL_XSL
 
+/*   */
+#undef HAVE_ZIP
+
+/* Whether to build zip as dynamic module */
+#undef COMPILE_DL_ZIP
+
 /* Define if int32_t type is present.  */
 #undef HAVE_INT32_T
 
@@ -2796,12 +2819,6 @@
 /*   */
 #undef ZEND_DEBUG
 
-/* Use Zend memory manager */
-#undef USE_ZEND_ALLOC
-
-/* Use Zend memory manager */
-#undef USE_ZEND_ALLOC
-
 /*   */
 #undef ZTS
 
@@ -2822,6 +2839,12 @@
 
 /*   */
 #undef ZEND_MM_ALIGNMENT_LOG2
+
+/* Define if the target system has support for memory allocation using mmap(MAP_ANON) */
+#undef HAVE_MEM_MMAP_ANON
+
+/* Define if the target system has support for memory allocation using mmap(/dev/zero) */
+#undef HAVE_MEM_MMAP_ZERO
 
 /*   */
 #undef ZTS

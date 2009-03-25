@@ -1,4 +1,4 @@
-/* 
+/*
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_object_handlers.h,v 1.47.2.2 2006/01/04 23:53:04 andi Exp $ */
+/* $Id: zend_object_handlers.h,v 1.47.2.2.2.4 2006/07/24 17:58:32 helly Exp $ */
 
 #ifndef ZEND_OBJECT_HANDLERS_H
 #define ZEND_OBJECT_HANDLERS_H
@@ -53,12 +53,12 @@ typedef zval **(*zend_object_get_property_ptr_ptr_t)(zval *object, zval *member 
 
 /* Used to set object value. Can be used to override assignments and scalar
    write ops (like ++, +=) on the object */
-typedef void (*zend_object_set_t)(zval **property, zval *value TSRMLS_DC);
+typedef void (*zend_object_set_t)(zval **object, zval *value TSRMLS_DC);
 
 /* Used to get object value. Can be used when converting object value to
  * one of the basic types and when using scalar ops (like ++, +=) on the object
  */
-typedef zval* (*zend_object_get_t)(zval *property TSRMLS_DC);
+typedef zval* (*zend_object_get_t)(zval *object TSRMLS_DC);
 
 /* Used to check if a property of the object exists */
 /* param has_set_exists:
@@ -97,7 +97,10 @@ typedef zend_object_value (*zend_object_clone_obj_t)(zval *object TSRMLS_DC);
 typedef zend_class_entry *(*zend_object_get_class_entry_t)(zval *object TSRMLS_DC);
 typedef int (*zend_object_get_class_name_t)(zval *object, char **class_name, zend_uint *class_name_len, int parent TSRMLS_DC);
 typedef int (*zend_object_compare_t)(zval *object1, zval *object2 TSRMLS_DC);
-typedef int (*zend_object_cast_t)(zval *readobj, zval *writeobj, int type, int should_free TSRMLS_DC);
+
+/* Cast an object to some other type
+ */
+typedef int (*zend_object_cast_t)(zval *readobj, zval *retval, int type TSRMLS_DC);
 
 /* updates *count to hold the number of elements present and returns SUCCESS.
  * Returns FAILURE if the object does not have any sense of overloaded dimensions */
@@ -137,19 +140,20 @@ BEGIN_EXTERN_C()
 ZEND_API union _zend_function *zend_std_get_static_method(zend_class_entry *ce, char *function_name_strval, int function_name_strlen TSRMLS_DC);
 ZEND_API zval **zend_std_get_static_property(zend_class_entry *ce, char *property_name, int property_name_len, zend_bool silent TSRMLS_DC);
 ZEND_API zend_bool zend_std_unset_static_property(zend_class_entry *ce, char *property_name, int property_name_len TSRMLS_DC);
+ZEND_API union _zend_function *zend_std_get_constructor(zval *object TSRMLS_DC);
 ZEND_API struct _zend_property_info *zend_get_property_info(zend_class_entry *ce, zval *member, int silent TSRMLS_DC);
 
-ZEND_API int zend_std_cast_object_tostring(zval *readobj, zval *writeobj, int type, int should_free TSRMLS_DC);
+ZEND_API int zend_std_cast_object_tostring(zval *readobj, zval *writeobj, int type TSRMLS_DC);
 
 
-#define IS_ZEND_STD_OBJECT(z)  ((z).type == IS_OBJECT && (Z_OBJ_HT((z))->get_class_entry != NULL))
+#define IS_ZEND_STD_OBJECT(z)  (Z_TYPE(z) == IS_OBJECT && (Z_OBJ_HT((z))->get_class_entry != NULL))
 #define HAS_CLASS_ENTRY(z) (Z_OBJ_HT(z)->get_class_entry != NULL)
 
 ZEND_API int zend_check_private(union _zend_function *fbc, zend_class_entry *ce, char *function_name_strval, int function_name_strlen TSRMLS_DC);
 
 ZEND_API int zend_check_protected(zend_class_entry *ce, zend_class_entry *scope);
 
-ZEND_API int zend_check_property_access(zend_object *zobj, char *prop_info_name TSRMLS_DC);
+ZEND_API int zend_check_property_access(zend_object *zobj, char *prop_info_name, int prop_info_name_len TSRMLS_DC);
 
 ZEND_API void zend_std_call_user_call(INTERNAL_FUNCTION_PARAMETERS);
 END_EXTERN_C()

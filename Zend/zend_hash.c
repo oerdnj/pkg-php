@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_hash.c,v 1.121.2.4 2006/04/07 10:06:21 dmitry Exp $ */
+/* $Id: zend_hash.c,v 1.121.2.4.2.1 2006/08/24 09:42:35 dmitry Exp $ */
 
 #include "zend.h"
 
@@ -571,15 +571,6 @@ static Bucket *zend_hash_apply_deleter(HashTable *ht, Bucket *p)
 	Bucket *retval;
 
 	HANDLE_BLOCK_INTERRUPTIONS();
-
-	if (ht->pDestructor) {
-		ht->pDestructor(p->pData);
-	}
-	if (p->pData != &p->pDataPtr) {
-		pefree(p->pData, ht->persistent);
-	}
-	retval = p->pListNext;
-
 	if (p->pLast) {
 		p->pLast->pNext = p->pNext;
 	} else {
@@ -608,9 +599,17 @@ static Bucket *zend_hash_apply_deleter(HashTable *ht, Bucket *p)
 	if (ht->pInternalPointer == p) {
 		ht->pInternalPointer = p->pListNext;
 	}
-	pefree(p, ht->persistent);
-	HANDLE_UNBLOCK_INTERRUPTIONS();
 	ht->nNumOfElements--;
+	HANDLE_UNBLOCK_INTERRUPTIONS();
+
+	if (ht->pDestructor) {
+		ht->pDestructor(p->pData);
+	}
+	if (p->pData != &p->pDataPtr) {
+		pefree(p->pData, ht->persistent);
+	}
+	retval = p->pListNext;
+	pefree(p, ht->persistent);
 
 	return retval;
 }

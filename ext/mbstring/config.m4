@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.58.2.4 2006/04/17 22:13:56 sniper Exp $
+dnl $Id: config.m4,v 1.58.2.4.2.6 2006/10/01 08:34:39 hirokawa Exp $
 dnl
 
 AC_DEFUN([PHP_MBSTRING_ADD_SOURCES], [
@@ -101,6 +101,11 @@ esac
     fi
     AC_DEFINE([HAVE_MBREGEX], 1, [whether to have multibyte regex support])
 
+
+    if test "$PHP_MBREGEX_BACKTRACK" != "no"; then
+      AC_DEFINE([USE_COMBINATION_EXPLOSION_CHECK],1,[whether to check multibyte regex backtrack])
+    fi
+
     PHP_MBSTRING_ADD_CFLAG([-DNOT_RUBY])
     PHP_MBSTRING_ADD_BUILD_DIR([oniguruma])
     PHP_MBSTRING_ADD_BUILD_DIR([oniguruma/enc])
@@ -149,6 +154,7 @@ esac
       oniguruma/enc/utf16_le.c
       oniguruma/enc/utf32_be.c
       oniguruma/enc/utf32_le.c
+      oniguruma/enc/gb18030.c
     ])
   fi
 ])
@@ -277,6 +283,9 @@ PHP_ARG_ENABLE(mbstring, whether to enable multibyte string support,
 PHP_ARG_ENABLE([mbregex], [whether to enable multibyte regex support],
 [  --disable-mbregex         MBSTRING: Disable multibyte regex support], yes, no)
 
+PHP_ARG_ENABLE([mbregex_backtrack], [whether to check multibyte regex backtrack],
+[  --disable-mbregex-backtrack         MBSTRING: Disable multibyte regex backtrack check], yes, no)
+
 PHP_ARG_WITH(libmbfl, [for external libmbfl],
 [  --with-libmbfl[=DIR]      MBSTRING: Use external libmbfl. DIR is the libmbfl install prefix.
                             If DIR is not set, the bundled libmbfl will be used], no, no)
@@ -293,7 +302,7 @@ if test "$PHP_MBSTRING" != "no"; then
   dnl libmbfl is required
   PHP_MBSTRING_SETUP_LIBMBFL
   PHP_MBSTRING_EXTENSION
-  PHP_INSTALL_HEADERS([ext/mbstring], [libmbfl/ libmbfl/mbfl])
+  PHP_INSTALL_HEADERS([ext/mbstring], [mbstring.h php_mbregex.h libmbfl/config.h libmbfl/mbfl/eaw_table.h libmbfl/mbfl/mbfilter.h libmbfl/mbfl/mbfilter_8bit.h libmbfl/mbfl/mbfilter_pass.h libmbfl/mbfl/mbfilter_wchar.h libmbfl/mbfl/mbfl_allocators.h libmbfl/mbfl/mbfl_consts.h libmbfl/mbfl/mbfl_convert.h libmbfl/mbfl/mbfl_defs.h libmbfl/mbfl/mbfl_encoding.h libmbfl/mbfl/mbfl_filter_output.h libmbfl/mbfl/mbfl_ident.h libmbfl/mbfl/mbfl_language.h libmbfl/mbfl/mbfl_memory_device.h libmbfl/mbfl/mbfl_string.h oniguruma/oniguruma.h oniguruma/php_onig_compat.h])
 fi
 
 # vim600: sts=2 sw=2 et

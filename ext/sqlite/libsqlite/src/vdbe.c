@@ -43,7 +43,7 @@
 ** in this file for details.  If in doubt, do not deviate from existing
 ** commenting and indentation practices when changing or adding code.
 **
-** $Id: vdbe.c,v 1.7.4.1 2005/09/07 15:11:33 iliaa Exp $
+** $Id: vdbe.c,v 1.7.4.1.2.1 2006/09/09 10:59:05 tony2001 Exp $
 */
 #include "sqliteInt.h"
 #include "os.h"
@@ -114,7 +114,7 @@ int sqlite_step(
   sqlite *db;
   int rc;
 
-  if( p->magic!=VDBE_MAGIC_RUN ){
+  if( !p || p->magic!=VDBE_MAGIC_RUN ){
     return SQLITE_MISUSE;
   }
   db = p->db;

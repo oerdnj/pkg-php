@@ -1,5 +1,5 @@
 // vim:ft=javascript
-// $Id: config.w32,v 1.2.4.1 2006/02/02 08:17:23 dmitry Exp $
+// $Id: config.w32,v 1.2.4.1.2.2 2006/09/28 09:37:52 dmitry Exp $
 
 ARG_ENABLE('cgi', 'Build CGI version of PHP', 'yes');
 ARG_ENABLE('fastcgi', 'Build FastCGI support into CGI binary', 'yes');
@@ -15,8 +15,10 @@ AC_DEFINE("ENABLE_PATHINFO_CHECK", PHP_PATH_INFO_CHECK == "yes" ? 1 : 0, "Pathin
 
 if (PHP_CGI == "yes") {
 	AC_DEFINE('PHP_FASTCGI', PHP_FASTCGI == "yes" ? 1 : 0);
+	ADD_FLAG("LDFLAGS_CGI", "/stack:8388608");
+
 	if (PHP_FASTCGI == "yes") {
-		SAPI('cgi', 'cgi_main.c getopt.c fastcgi.c', 'php-cgi.exe', '/I sapi/cgi/libfcgi/include /D FCGI_STATIC');
+		SAPI('cgi', 'cgi_main.c getopt.c fastcgi.c', 'php-cgi.exe');
 		ADD_FLAG('LIBS_CGI', 'ws2_32.lib kernel32.lib advapi32.lib');
 	} else {
 		SAPI('cgi', 'cgi_main.c getopt.c', 'php-cgi.exe');

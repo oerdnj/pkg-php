@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: file.h,v 1.94.2.2 2006/01/13 04:05:59 pajoye Exp $ */
+/* $Id: file.h,v 1.94.2.2.2.2 2006/10/13 09:34:34 bjori Exp $ */
 
 /* Synced with php 3.0 revision 1.30 1999-06-16 [ssb] */
 
@@ -72,8 +72,10 @@ PHP_MINIT_FUNCTION(user_streams);
 PHPAPI int php_le_stream_context(void);
 PHPAPI int php_set_sock_blocking(int socketd, int block TSRMLS_DC);
 PHPAPI int php_copy_file(char *src, char *dest TSRMLS_DC);
+PHPAPI int php_copy_file_ex(char *src, char *dest, int src_chk TSRMLS_DC);
 PHPAPI int php_mkdir_ex(char *dir, long mode, int options TSRMLS_DC);
 PHPAPI int php_mkdir(char *dir, long mode TSRMLS_DC);
+PHPAPI void php_fgetcsv(php_stream *stream, char delimiter, char enclosure, size_t buf_len, char *buf, zval *return_value TSRMLS_DC);
 
 #define META_DEF_BUFSIZE 8192
 

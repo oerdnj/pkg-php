@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_nonapi.c,v 1.54.2.7 2006/03/24 09:32:24 georg Exp $ 
+  $Id: mysqli_nonapi.c,v 1.54.2.7.2.1 2006/10/02 07:44:34 bjori Exp $ 
 */
 
 #ifdef HAVE_CONFIG_H
@@ -289,7 +289,7 @@ PHP_FUNCTION(mysqli_get_warnings)
 }
 /* }}} */
 
-/* {{{ proto object mysqli_get_warnings(object link) */
+/* {{{ proto object mysqli_stmt_get_warnings(object link) */
 PHP_FUNCTION(mysqli_stmt_get_warnings)
 {
 	MY_STMT				*stmt;

@@ -1,5 +1,5 @@
 dnl
-dnl $Id: Zend.m4,v 1.58 2005/06/14 12:23:26 sniper Exp $
+dnl $Id: Zend.m4,v 1.58.4.2 2006/09/14 09:58:27 dmitry Exp $
 dnl
 dnl This file contains Zend specific autoconf functions.
 dnl
@@ -129,13 +129,11 @@ AC_ARG_WITH(zend-vm,
   PHP_ZEND_VM=CALL
 ])
 
-AC_ARG_ENABLE(zend-memory-manager,
-[  --disable-zend-memory-manager
-                          Disable the Zend memory manager - FOR DEVELOPERS ONLY!!],
+AC_ARG_ENABLE(malloc-mm,
+[  --enable-malloc-mm      Use environment variable for run-time malloc/emalloc
+                          selection - FOR DEVELOPERS ONLY!!],
 [
-  ZEND_USE_ZEND_ALLOC=$enableval
-], [
-  ZEND_USE_ZEND_ALLOC=yes
+  ZEND_USE_MALLOC_MM=$enableval
 ])
 
 AC_ARG_ENABLE(maintainer-zts,
@@ -169,9 +167,6 @@ AC_ARG_ENABLE(zend-multibyte,
 
 AC_MSG_CHECKING([virtual machine dispatch method])
 AC_MSG_RESULT($PHP_ZEND_VM)
-
-AC_MSG_CHECKING(whether to enable the Zend memory manager)
-AC_MSG_RESULT($ZEND_USE_ZEND_ALLOC)
 
 AC_MSG_CHECKING(whether to enable thread-safety)
 AC_MSG_RESULT($ZEND_MAINTAINER_ZTS)
@@ -215,12 +210,6 @@ else
 fi
 
 test -n "$DEBUG_CFLAGS" && CFLAGS="$CFLAGS $DEBUG_CFLAGS"
-
-if test "$ZEND_USE_ZEND_ALLOC" = "yes"; then
-  AC_DEFINE(USE_ZEND_ALLOC,1,[Use Zend memory manager])
-else
-  AC_DEFINE(USE_ZEND_ALLOC,0,[Use Zend memory manager])
-fi
 
 if test "$ZEND_MAINTAINER_ZTS" = "yes"; then
   AC_DEFINE(ZTS,1,[ ])
@@ -305,6 +294,108 @@ int main()
 ])
 
 AC_MSG_RESULT(done)
+
+dnl test for memory allocation using mmap(MAP_ANON)
+AC_MSG_CHECKING(for memory allocation using mmap(MAP_ANON))
+
+AC_TRY_RUN([
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <stdlib.h>
+#include <stdio.h>
+#ifndef MAP_ANON
+# ifdef MAP_ANONYMOUS
+#  define MAP_ANON MAP_ANONYMOUS
+# endif
+#endif
+#ifndef MREMAP_MAYMOVE
+# define MREMAP_MAYMOVE 0
+#endif
+#ifndef MAP_FAILED
+# define MAP_FAILED ((void*)-1)
+#endif
+
+#define SEG_SIZE (256*1024)
+
+int main()
+{
+	void *seg = mmap(NULL, SEG_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
+	if (seg == MAP_FAILED) {
+		return 1;
+	}
+	if (munmap(seg, SEG_SIZE) != 0) {
+		return 2;
+	}
+	return 0;
+}
+], [
+  AC_DEFINE([HAVE_MEM_MMAP_ANON], 1, [Define if the target system has support for memory allocation using mmap(MAP_ANON)])
+  AC_MSG_RESULT(yes)
+], [
+  AC_MSG_RESULT(no)
+], [
+  dnl cross-compile needs something here
+  AC_MSG_RESULT(no)
+])
+
+dnl test for memory allocation using mmap("/dev/zero")
+AC_MSG_CHECKING(for memory allocation using mmap("/dev/zero"))
+
+AC_TRY_RUN([
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <stdlib.h>
+#include <stdio.h>
+#ifndef MAP_ANON
+# ifdef MAP_ANONYMOUS
+#  define MAP_ANON MAP_ANONYMOUS
+# endif
+#endif
+#ifndef MREMAP_MAYMOVE
+# define MREMAP_MAYMOVE 0
+#endif
+#ifndef MAP_FAILED
+# define MAP_FAILED ((void*)-1)
+#endif
+
+#define SEG_SIZE (256*1024)
+
+int main()
+{
+	int fd;
+	void *seg;
+
+	fd = open("/dev/zero", O_RDWR, S_IRUSR | S_IWUSR);
+	if (fd < 0) {
+		return 1;
+	}
+	seg = mmap(NULL, SEG_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+	if (seg == MAP_FAILED) {
+		return 2;
+	}
+	if (munmap(seg, SEG_SIZE) != 0) {
+		return 3;
+	}
+	if (close(fd) != 0) {
+		return 4;
+	}
+	return 0;
+}
+], [
+  AC_DEFINE([HAVE_MEM_MMAP_ZERO], 1, [Define if the target system has support for memory allocation using mmap("/dev/zero")])
+  AC_MSG_RESULT(yes)
+], [
+  AC_MSG_RESULT(no)
+], [
+  dnl cross-compile needs something here
+  AC_MSG_RESULT(no)
+])
+
+AC_CHECK_FUNCS(mremap)
 
 ])
 

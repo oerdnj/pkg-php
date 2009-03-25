@@ -16,7 +16,7 @@
    |          Derick Rethans <derick@derickrethans.nl>                    |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_mcrypt.h,v 1.26.2.1 2006/01/01 12:50:08 sniper Exp $ */
+/* $Id: php_mcrypt.h,v 1.26.2.1.2.1 2006/06/26 16:33:38 bjori Exp $ */
 
 #ifndef PHP_MCRYPT_H
 #define PHP_MCRYPT_H
@@ -52,7 +52,6 @@ PHP_FUNCTION(mcrypt_module_open);
 PHP_FUNCTION(mcrypt_generic_init);
 PHP_FUNCTION(mcrypt_generic);
 PHP_FUNCTION(mdecrypt_generic);
-PHP_FUNCTION(mcrypt_generic_end);
 PHP_FUNCTION(mcrypt_generic_deinit);
 
 PHP_FUNCTION(mcrypt_enc_self_test);

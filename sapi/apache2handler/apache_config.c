@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: apache_config.c,v 1.7.2.2 2006/06/09 15:13:58 mike Exp $ */
+/* $Id: apache_config.c,v 1.7.2.1.2.1 2006/06/09 15:13:39 mike Exp $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 

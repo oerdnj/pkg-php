@@ -23,7 +23,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: run-tests.php,v 1.226.2.38 2006/08/23 12:43:53 tony2001 Exp $ */
+/* $Id: run-tests.php,v 1.226.2.37.2.15 2006/09/14 16:58:52 nlopess Exp $ */
 
 /* Sanity check to ensure that pcre extension needed by this script is available.
  * In the event it is not, print a nice error message indicating that this script will
@@ -158,7 +158,7 @@ $ini_overwrites = array(
 		'safe_mode=0',
 		'disable_functions=',
 		'output_buffering=Off',
-		'error_reporting=4095',
+		'error_reporting=8191',
 		'display_errors=1',
 		'log_errors=0',
 		'html_errors=0',
@@ -239,7 +239,7 @@ $pass_option_n = false;
 $pass_options = '';
 
 $compression = 0;
-$output_file = $CUR_DIR . '/php_test_results_' . date('Ymd_Hi') . '.txt';
+$output_file = $CUR_DIR . '/php_test_results_' . @date('Ymd_Hi') . '.txt';
 if ($compression) {
 	$output_file = 'compress.zlib://' . $output_file . '.gz';
 }
@@ -397,7 +397,7 @@ if (isset($argc) && $argc > 1) {
 					$html_output = is_resource($html_file);
 					break;
 				case '--version':
-					echo '$Revision: 1.226.2.38 $'."\n";
+					echo '$Revision: 1.226.2.37.2.15 $'."\n";
 					exit(1);
 				default:
 					echo "Illegal switch '$switch' specified!\n";
@@ -710,7 +710,9 @@ if ($just_save_results || !getenv('NO_INTERACTION')) {
 
 			/* Use shtool to find out if there is glibtool present (MacOSX) */
 			$sys_libtool_path = shell_exec(dirname(__FILE__) . '/build/shtool path glibtool libtool');
-			$sys_libtool = shell_exec(str_replace("\n", "", $sys_libtool_path) . ' --version');
+			if ($sys_libtool_path) {
+				$sys_libtool = shell_exec(str_replace("\n", "", $sys_libtool_path) . ' --version');
+			}
 
 			/* Try the most common flags for 'version' */
 			$flags = array('-v', '-V', '--version');
@@ -768,7 +770,7 @@ function mail_qa_team($data, $compression, $status = FALSE)
 	$url_bits = parse_url(QA_SUBMISSION_PAGE);
 	if (empty($url_bits['port'])) $url_bits['port'] = 80;
 	
-	$data = "php_test_data=" . urlencode(base64_encode(preg_replace("/[\\x00]/", "[0x0]", $data)));
+	$data = "php_test_data=" . urlencode(base64_encode(str_replace("\00", '[0x0]', $data)));
 	$data_length = strlen($data);
 	
 	$fs = fsockopen($url_bits['host'], $url_bits['port'], $errno, $errstr, 10);
@@ -835,7 +837,7 @@ function error_report($testname, $logname, $tested)
 	}
 }
 
-function system_with_timeout($commandline, $env = null)
+function system_with_timeout($commandline, $env = null, $stdin = null)
 {
 	global $leak_check;
 
@@ -850,6 +852,9 @@ function system_with_timeout($commandline, $env = null)
 	if (!$proc)
 		return false;
 
+	if (is_string($stdin)) {
+		fwrite($pipes[0], $stdin);
+	}
 	fclose($pipes[0]);
 
 	while (true) {
@@ -972,7 +977,7 @@ TEST $file
 		$line = fgets($fp);
 
 		// Match the beginning of a section.
-		if (preg_match('/^--([A-Z_]+)--/', $line, $r)) {
+		if (preg_match('/^--([_A-Z]+)--/', $line, $r)) {
 			$section = $r[1];
 			$section_text[$section] = '';
 			$secfile = $section == 'FILE' || $section == 'FILEEOF';
@@ -1236,6 +1241,17 @@ TEST $file
 			// a redirected test never fails
 			$IN_REDIRECT = false;
 			return 'REDIR';
+		} else {
+			$bork_info = "Redirect info must contain exactly one TEST string to be used as redirect directory.";
+			show_result("BORK", $bork_info, '', $temp_filenames);
+			$PHP_FAILED_TESTS['BORKED'][] = array (
+									'name' => $file,
+									'test_name' => '',
+									'output' => '',
+									'diff'   => '',
+									'info'   => "$bork_info [$file]",
+									'unicode'=> $unicode_semantics,
+			);
 		}
 	}
 	if (is_array($org_file) || @count($section_text['REDIRECTTEST']) == 1) {
@@ -1299,13 +1315,14 @@ TEST $file
 
 		$post = trim($section_text['POST']);
 		save_text($tmp_post, $post);
-
 		$content_length = strlen($post);
+
 		$env['REQUEST_METHOD'] = 'POST';
 		$env['CONTENT_TYPE']   = 'application/x-www-form-urlencoded';
 		$env['CONTENT_LENGTH'] = $content_length;
 
 		$cmd = "$php$pass_options$ini_settings -f \"$test_file\" 2>&1 < $tmp_post";
+
 	} else {
 
 		$env['REQUEST_METHOD'] = 'GET';
@@ -1316,7 +1333,10 @@ TEST $file
 	}
 
 	if ($leak_check) {
-		$cmd = "valgrind -q --tool=memcheck --log-file-exactly=$memcheck_filename $cmd";
+		$env['USE_ZEND_ALLOC'] = '0';
+		$cmd = "valgrind -q --tool=memcheck --trace-children=yes --log-file-exactly=$memcheck_filename $cmd";
+	} else {
+		$env['USE_ZEND_ALLOC'] = '1';
 	}
 
 	if ($DETAILED) echo "
@@ -1330,7 +1350,7 @@ SCRIPT_FILENAME = " . $env['SCRIPT_FILENAME'] . "
 COMMAND $cmd
 ";
 
-	$out = system_with_timeout($cmd, $env);
+	$out = system_with_timeout($cmd, $env, isset($section_text['STDIN']) ? $section_text['STDIN'] : null);
 
 	if (array_key_exists('CLEAN', $section_text) && (!$no_clean || $cfg['keep']['clean'])) {
 		if (trim($section_text['CLEAN'])) {
@@ -1370,8 +1390,47 @@ COMMAND $cmd
 	$output = str_replace("\r\n", "\n", trim($out));
 
 	/* when using CGI, strip the headers from the output */
-	if (isset($old_php) && ($pos = strpos($output, "\n\n")) !== FALSE) {
-		$output = substr($output, ($pos + 2));
+	$headers = "";
+	if (isset($old_php) && preg_match("/^(.*?)\r?\n\r?\n(.*)/s", $out, $match)) {
+		$output = trim($match[2]);
+		$rh = preg_split("/[\n\r]+/",$match[1]);
+		$headers = array();
+		foreach ($rh as $line) {
+			if (strpos($line, ':')!==false) {
+				$line = explode(':', $line, 2);
+				$headers[trim($line[0])] = trim($line[1]);
+			}
+		}
+	}
+
+	$failed_headers = false;
+	if (isset($section_text['EXPECTHEADERS'])) {
+		$want = array();
+		$wanted_headers = array();
+		$lines = preg_split("/[\n\r]+/",$section_text['EXPECTHEADERS']);
+		foreach($lines as $line) {
+			if (strpos($line, ':') !== false) {
+				$line = explode(':', $line, 2);
+				$want[trim($line[0])] = trim($line[1]);
+				$wanted_headers[] = trim($line[0]) . ': ' . trim($line[1]);
+			}
+		}
+		$org_headers = $headers;
+		$headers = array();
+		$output_headers = array();
+		foreach($want as $k => $v) {
+			if (isset($org_headers[$k])) {
+				$headers = $org_headers[$k];
+				$output_headers[] = $k . ': ' . $org_headers[$k];
+			}
+			if (!isset($org_headers[$k]) || $org_headers[$k] != $v) {
+				$failed_headers = true;
+			}
+		}
+		ksort($wanted_headers);
+		$wanted_headers = join("\n", $wanted_headers);
+		ksort($output_headers);
+		$output_headers = join("\n", $output_headers);
 	}
 
 	if (isset($section_text['EXPECTF']) || isset($section_text['EXPECTREGEX'])) {
@@ -1407,7 +1466,7 @@ COMMAND $cmd
 			if (isset($old_php)) {
 				$php = $old_php;
 			}
-			if (!$leaked) {
+			if (!$leaked && !$failed_headers) {
 				show_result("PASS", $tested, $tested_file, '', $temp_filenames);
 				return 'PASSED';
 			}
@@ -1424,7 +1483,7 @@ COMMAND $cmd
 			if (isset($old_php)) {
 				$php = $old_php;
 			}
-			if (!$leaked) {
+			if (!$leaked && !$failed_headers) {
 				show_result("PASS", $tested, $tested_file, '', $temp_filenames);
 				return 'PASSED';
 			}
@@ -1433,7 +1492,15 @@ COMMAND $cmd
 	}
 
 	// Test failed so we need to report details.
-	
+	if ($failed_headers) {
+		$passed = false;
+		$wanted = $wanted_headers . "\n--HEADERS--\n" . $wanted;
+		$output = $output_headers . "\n--HEADERS--\n" . $output;
+		if (isset($wanted_re)) {
+			$wanted_re = $wanted_headers . "\n--HEADERS--\n" . $wanted_re;
+		}
+	}
+
 	if ($leaked) {
 		$restype = 'LEAK';
 	} else if ($warn) {
@@ -1478,7 +1545,7 @@ $output
 						'test_name' => (is_array($IN_REDIRECT) ? $IN_REDIRECT['via'] : '') . $tested . " [$tested_file]",
 						'output' => $output_filename,
 						'diff'   => $diff_filename,
-						'info'   => $info
+						'info'   => $info,
 						);
 
 	if (isset($old_php)) {
@@ -1743,10 +1810,10 @@ function show_start($start_time)
 
 	if ($html_output)
 	{
-		fwrite($html_file, "<h2>Time Start: " . date('Y-m-d H:i:s', $start_time) . "</h2>\n");
+		fwrite($html_file, "<h2>Time Start: " . @date('Y-m-d H:i:s', $start_time) . "</h2>\n");
 		fwrite($html_file, "<table>\n");
 	}
-	echo "TIME START " . date('Y-m-d H:i:s', $start_time) . "\n=====================================================================\n";
+	echo "TIME START " . @date('Y-m-d H:i:s', $start_time) . "\n=====================================================================\n";
 }
 
 function show_end($end_time)
@@ -1756,9 +1823,9 @@ function show_end($end_time)
 	if ($html_output)
 	{
 		fwrite($html_file, "</table>\n");
-		fwrite($html_file, "<h2>Time End: " . date('Y-m-d H:i:s', $end_time) . "</h2>\n");
+		fwrite($html_file, "<h2>Time End: " . @date('Y-m-d H:i:s', $end_time) . "</h2>\n");
 	}
-	echo "=====================================================================\nTIME END " . date('Y-m-d H:i:s', $end_time) . "\n";
+	echo "=====================================================================\nTIME END " . @date('Y-m-d H:i:s', $end_time) . "\n";
 }
 
 function show_summary()

@@ -25,7 +25,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: oci8_interface.c,v 1.8.2.7 2006/03/28 09:12:18 tony2001 Exp $ */
+/* $Id: oci8_interface.c,v 1.8.2.7.2.3 2006/08/22 11:09:12 tony2001 Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1483,7 +1483,10 @@ PHP_FUNCTION(oci_free_statement)
 	}
 
 	PHP_OCI_ZVAL_TO_STATEMENT(z_statement, statement);
-	zend_list_delete(statement->id);
+	if (!statement->nested) {
+		/* nested cursors cannot be freed, they are allocated once and used during the fetch */
+		zend_list_delete(statement->id);
+	}
 	
 	RETURN_TRUE;
 }
@@ -1633,15 +1636,14 @@ PHP_FUNCTION(oci_parse)
 	php_oci_statement *statement;
 	char *query;
 	int query_len;
-	zend_bool cached = 0;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs|b", &z_connection, &query, &query_len, &cached) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &z_connection, &query, &query_len) == FAILURE) {
 		return;
 	}
 
 	PHP_OCI_ZVAL_TO_CONNECTION(z_connection, connection);
 
-	statement = php_oci_statement_create(connection, query, query_len, cached TSRMLS_CC);
+	statement = php_oci_statement_create(connection, query, query_len TSRMLS_CC);
 
 	if (statement) {
 		RETURN_RESOURCE(statement->id);
@@ -1689,11 +1691,37 @@ PHP_FUNCTION(oci_password_change)
 	if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "rsss", &z_connection, &user, &user_len, &pass_old, &pass_old_len, &pass_new, &pass_new_len) == SUCCESS) {
 		PHP_OCI_ZVAL_TO_CONNECTION(z_connection, connection);
 
+		if (!user_len) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "username cannot be empty");
+			RETURN_FALSE;
+		}
+		if (!pass_old_len) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "old password cannot be empty");
+			RETURN_FALSE;
+		}
+		if (!pass_new_len) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "new password cannot be empty");
+			RETURN_FALSE;
+		}
+
 		if (php_oci_password_change(connection, user, user_len, pass_old, pass_old_len, pass_new, pass_new_len TSRMLS_CC)) {
 			RETURN_FALSE;
 		}
 		RETURN_TRUE;
 	} else if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "ssss", &dbname, &dbname_len, &user, &user_len, &pass_old, &pass_old_len, &pass_new, &pass_new_len) == SUCCESS) {
+
+		if (!user_len) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "username cannot be empty");
+			RETURN_FALSE;
+		}
+		if (!pass_old_len) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "old password cannot be empty");
+			RETURN_FALSE;
+		}
+		if (!pass_new_len) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "new password cannot be empty");
+			RETURN_FALSE;
+		}
 
 		connection = php_oci_do_connect_ex(user, user_len, pass_old, pass_old_len, pass_new, pass_new_len, dbname, dbname_len, NULL, OCI_DEFAULT, 0, 0 TSRMLS_CC);
 		if (!connection) {
@@ -1719,7 +1747,7 @@ PHP_FUNCTION(oci_new_cursor)
 
 	PHP_OCI_ZVAL_TO_CONNECTION(z_connection, connection);
 
-	statement = php_oci_statement_create(connection, NULL, 0, 0 TSRMLS_CC);
+	statement = php_oci_statement_create(connection, NULL, 0 TSRMLS_CC);
 	
 	if (statement) {
 		RETURN_RESOURCE(statement->id);

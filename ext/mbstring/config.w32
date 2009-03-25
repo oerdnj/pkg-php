@@ -1,8 +1,9 @@
-// $Id: config.w32,v 1.10.2.1 2005/12/23 15:18:52 hirokawa Exp $
+// $Id: config.w32,v 1.10.2.1.2.2 2006/09/21 16:37:20 masugata Exp $
 // vim:ft=javascript
 
 ARG_ENABLE("mbstring", "multibyte string functions", "no");
 ARG_ENABLE("mbregex", "multibyte regex support", "no");
+ARG_ENABLE("mbregex-backtrack", "check multibyte regex backtrack", "yes");
 
 if (PHP_MBSTRING == "yes") {
 
@@ -52,6 +53,9 @@ if (PHP_MBSTRING == "yes") {
 	if (PHP_MBREGEX != "no") {
 		AC_DEFINE('HAVE_STDARG_PROTOTYPES', 1, 'have stdarg.h');
 		AC_DEFINE('HAVE_MBREGEX', 1);
+		if (PHP_MBREGEX_BACKTRACK != "no") {
+			AC_DEFINE('USE_COMBINATION_EXPLOSION_CHECK', 1);
+		}
 		ADD_SOURCES("ext/mbstring/oniguruma", "regcomp.c regerror.c \
 			regenc.c regexec.c reggnu.c regparse.c regposerr.c \
 			regext.c regsyntax.c regtrav.c regversion.c st.c", "mbstring");
@@ -61,7 +65,7 @@ if (PHP_MBSTRING == "yes") {
 			iso8859_7.c iso8859_8.c iso8859_9.c iso8859_10.c \
 			iso8859_11.c iso8859_13.c iso8859_14.c iso8859_15.c iso8859_16.c \
 			koi8.c koi8_r.c sjis.c utf8.c unicode.c utf16_be.c utf16_le.c \
-			utf32_be.c utf32_le.c", "mbstring");
+			utf32_be.c utf32_le.c gb18030.c", "mbstring");
 		ADD_SOURCES("ext/mbstring", "php_mbregex.c", "mbstring");
 	}
 }

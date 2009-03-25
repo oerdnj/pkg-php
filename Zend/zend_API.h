@@ -18,14 +18,13 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_API.h,v 1.207.2.8 2006/03/05 16:12:24 helly Exp $ */
+/* $Id: zend_API.h,v 1.207.2.8.2.5 2006/07/18 09:06:32 dmitry Exp $ */
 
 #ifndef ZEND_API_H
 #define ZEND_API_H
 
 #include "zend_modules.h"
 #include "zend_list.h"
-#include "zend_fast_cache.h"
 #include "zend_operators.h"
 #include "zend_variables.h"
 #include "zend_execute.h"
@@ -42,9 +41,10 @@ typedef struct _zend_function_entry {
 } zend_function_entry;
 
 #define ZEND_FN(name) zif_##name
+#define ZEND_MN(name) zim_##name
 #define ZEND_NAMED_FUNCTION(name)		void name(INTERNAL_FUNCTION_PARAMETERS)
 #define ZEND_FUNCTION(name)				ZEND_NAMED_FUNCTION(ZEND_FN(name))
-#define ZEND_METHOD(classname, name)	ZEND_NAMED_FUNCTION(ZEND_FN(classname##_##name))
+#define ZEND_METHOD(classname, name)	ZEND_NAMED_FUNCTION(ZEND_MN(classname##_##name))
 
 #define ZEND_FENTRY(zend_name, name, arg_info, flags)	{ #zend_name, name, arg_info, (zend_uint) (sizeof(arg_info)/sizeof(struct _zend_arg_info)-1), flags },
 
@@ -53,11 +53,12 @@ typedef struct _zend_function_entry {
 #define ZEND_DEP_FE(name, arg_info)                 ZEND_FENTRY(name, ZEND_FN(name), arg_info, ZEND_ACC_DEPRECATED)
 #define ZEND_FALIAS(name, alias, arg_info)			ZEND_FENTRY(name, ZEND_FN(alias), arg_info, 0)
 #define ZEND_DEP_FALIAS(name, alias, arg_info)		ZEND_FENTRY(name, ZEND_FN(alias), arg_info, ZEND_ACC_DEPRECATED)
-#define ZEND_ME(classname, name, arg_info, flags)	ZEND_FENTRY(name, ZEND_FN(classname##_##name), arg_info, flags)
+#define ZEND_NAMED_ME(zend_name, name, arg_info, flags)	ZEND_FENTRY(zend_name, name, arg_info, flags)
+#define ZEND_ME(classname, name, arg_info, flags)	ZEND_FENTRY(name, ZEND_MN(classname##_##name), arg_info, flags)
 #define ZEND_ABSTRACT_ME(classname, name, arg_info)	ZEND_FENTRY(name, NULL, arg_info, ZEND_ACC_PUBLIC|ZEND_ACC_ABSTRACT)
 #define ZEND_MALIAS(classname, name, alias, arg_info, flags) \
-                                                    ZEND_FENTRY(name, ZEND_FN(classname##_##alias), arg_info, flags)
-#define ZEND_ME_MAPPING(name, func_name, arg_types) ZEND_NAMED_FE(name, ZEND_FN(func_name), arg_types)
+                                                    ZEND_FENTRY(name, ZEND_MN(classname##_##alias), arg_info, flags)
+#define ZEND_ME_MAPPING(name, func_name, arg_types, flags) ZEND_NAMED_ME(name, ZEND_FN(func_name), arg_types, flags)
 
 #define ZEND_ARG_INFO(pass_by_ref, name)							{ #name, sizeof(#name)-1, NULL, 0, 0, 0, pass_by_ref, 0, 0 },
 #define ZEND_ARG_PASS_INFO(pass_by_ref)								{ NULL, 0, NULL, 0, 0, 0, pass_by_ref, 0, 0 },
@@ -77,6 +78,8 @@ typedef struct _zend_function_entry {
 #define ZEND_MODULE_DEACTIVATE_N(module)	zm_deactivate_##module
 #define ZEND_MODULE_POST_ZEND_DEACTIVATE_N(module)	zm_post_zend_deactivate_##module
 #define ZEND_MODULE_INFO_N(module)			zm_info_##module
+#define ZEND_MODULE_GLOBALS_CTOR_N(module)  zm_globals_ctor_##module
+#define ZEND_MODULE_GLOBALS_DTOR_N(module)  zm_globals_dtor_##module
 
 /* Declaration macros */
 #define ZEND_MODULE_STARTUP_D(module)		int ZEND_MODULE_STARTUP_N(module)(INIT_FUNC_ARGS)
@@ -85,6 +88,8 @@ typedef struct _zend_function_entry {
 #define ZEND_MODULE_DEACTIVATE_D(module)	int ZEND_MODULE_DEACTIVATE_N(module)(SHUTDOWN_FUNC_ARGS)
 #define ZEND_MODULE_POST_ZEND_DEACTIVATE_D(module)	int ZEND_MODULE_POST_ZEND_DEACTIVATE_N(module)(void)
 #define ZEND_MODULE_INFO_D(module)			void ZEND_MODULE_INFO_N(module)(ZEND_MODULE_INFO_FUNC_ARGS)
+#define ZEND_MODULE_GLOBALS_CTOR_D(module)  void ZEND_MODULE_GLOBALS_CTOR_N(module)(zend_##module##_globals *module##_globals TSRMLS_DC)
+#define ZEND_MODULE_GLOBALS_DTOR_D(module)  void ZEND_MODULE_GLOBALS_DTOR_N(module)(zend_##module##_globals *module##_globals TSRMLS_DC)
 
 #define ZEND_GET_MODULE(name) \
     BEGIN_EXTERN_C()\
@@ -116,8 +121,6 @@ typedef struct _zend_function_entry {
 
 #endif
 
-
-
 #define INIT_CLASS_ENTRY(class_container, class_name, functions) INIT_OVERLOADED_CLASS_ENTRY(class_container, class_name, functions, NULL, NULL, NULL)
 
 #define INIT_OVERLOADED_CLASS_ENTRY_EX(class_container, class_name, functions, handle_fcall, handle_propget, handle_propset, handle_propunset, handle_propisset) \
@@ -128,21 +131,26 @@ typedef struct _zend_function_entry {
 		class_container.constructor = NULL;						\
 		class_container.destructor = NULL;						\
 		class_container.clone = NULL;							\
-		class_container.create_object = NULL;	 				\
+		class_container.serialize = NULL;						\
+		class_container.unserialize = NULL;						\
+		class_container.create_object = NULL;					\
 		class_container.interface_gets_implemented = NULL;		\
-		class_container.__call = handle_fcall;	\
-		class_container.__get = handle_propget;	\
-		class_container.__set = handle_propset;	\
-		class_container.__unset = handle_propunset;	\
-		class_container.__isset = handle_propisset;	\
-		class_container.serialize = NULL;	\
-		class_container.unserialize = NULL;	\
-		class_container.parent = NULL;          \
-		class_container.num_interfaces = 0;     \
-		class_container.interfaces = NULL;      \
-		class_container.get_iterator = NULL;    \
-		class_container.iterator_funcs.funcs = NULL;  \
-		class_container.module = NULL;          \
+		class_container.__call = handle_fcall;					\
+		class_container.__tostring = NULL;						\
+		class_container.__get = handle_propget;					\
+		class_container.__set = handle_propset;					\
+		class_container.__unset = handle_propunset;				\
+		class_container.__isset = handle_propisset;				\
+		class_container.serialize_func = NULL;					\
+		class_container.unserialize_func = NULL;				\
+		class_container.serialize = NULL;						\
+		class_container.unserialize = NULL;						\
+		class_container.parent = NULL;							\
+		class_container.num_interfaces = 0;						\
+		class_container.interfaces = NULL;						\
+		class_container.get_iterator = NULL;					\
+		class_container.iterator_funcs.funcs = NULL;			\
+		class_container.module = NULL;							\
 	}
 
 #define INIT_OVERLOADED_CLASS_ENTRY(class_container, class_name, functions, handle_fcall, handle_propget, handle_propset) \
@@ -253,6 +261,7 @@ ZEND_API zval *zend_read_static_property(zend_class_entry *scope, char *name, in
 
 ZEND_API zend_class_entry *zend_get_class_entry(zval *zobject TSRMLS_DC);
 ZEND_API int zend_get_object_classname(zval *object, char **class_name, zend_uint *class_name_len TSRMLS_DC);
+ZEND_API char *zend_get_type_by_const(int type);
 
 #define getThis() (this_ptr)
 
@@ -347,7 +356,7 @@ ZEND_API int add_property_zval_ex(zval *arg, char *key, uint key_len, zval *valu
 #define add_property_null(__arg, __key) add_property_null_ex(__arg, __key, strlen(__key) + 1 TSRMLS_CC)
 #define add_property_bool(__arg, __key, __b) add_property_bool_ex(__arg, __key, strlen(__key)+1, __b TSRMLS_CC)
 #define add_property_resource(__arg, __key, __r) add_property_resource_ex(__arg, __key, strlen(__key)+1, __r TSRMLS_CC)
-#define add_property_double(__arg, __key, __d) add_property_double_ex(__arg, __key, strlen(__key)+1, __d TSRMLS_CC) 
+#define add_property_double(__arg, __key, __d) add_property_double_ex(__arg, __key, strlen(__key)+1, __d TSRMLS_CC)
 #define add_property_string(__arg, __key, __str, __duplicate) add_property_string_ex(__arg, __key, strlen(__key)+1, __str, __duplicate TSRMLS_CC)
 #define add_property_stringl(__arg, __key, __str, __length, __duplicate) add_property_stringl_ex(__arg, __key, strlen(__key)+1, __str, __length, __duplicate TSRMLS_CC)
 #define add_property_zval(__arg, __key, __value) add_property_zval_ex(__arg, __key, strlen(__key)+1, __value TSRMLS_CC)       
@@ -379,6 +388,26 @@ typedef struct _zend_fcall_info_cache {
 BEGIN_EXTERN_C()
 ZEND_API extern zend_fcall_info_cache empty_fcall_info_cache;
 
+/** Build zend_call_info/cache from a zval*
+ *
+ * Caller is responsible to provide a return value, otherwise the we will crash. 
+ * fci->retval_ptr_ptr = NULL;
+ * In order to pass parameters the following members need to be set:
+ * fci->param_count = 0;
+ * fci->params = NULL;
+ */
+ZEND_API int zend_fcall_info_init(zval *callable, zend_fcall_info *fci, zend_fcall_info_cache *fcc TSRMLS_DC);
+
+/** Set or clear the arguments in the zend_call_info struct taking care of
+ * refcount. If args is NULL and arguments are set then those are cleared.
+ */
+ZEND_API int zend_fcall_info_args(zend_fcall_info *fci, zval *args TSRMLS_DC);
+
+/** Call a function using information created by zend_fcall_info_init()/args().
+ * If args is given then those replace the arguement info in fci is temporarily.
+ */
+ZEND_API int zend_fcall_info_call(zend_fcall_info *fci, zend_fcall_info_cache *fcc, zval **retval, zval *args TSRMLS_DC);
+
 ZEND_API int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci_cache TSRMLS_DC);
 
 
@@ -405,28 +434,28 @@ END_EXTERN_C()
 #define CHECK_ZVAL_STRING_REL(z)
 #endif
 
-#define ZVAL_RESOURCE(z, l) {			\
-		(z)->type = IS_RESOURCE;        \
-		(z)->value.lval = l;	        \
+#define ZVAL_RESOURCE(z, l) {		\
+		Z_TYPE_P(z) = IS_RESOURCE;	\
+		Z_LVAL_P(z) = l;			\
 	}
 
-#define ZVAL_BOOL(z, b) {				\
-		(z)->type = IS_BOOL;	        \
-		(z)->value.lval = ((b) != 0);   \
+#define ZVAL_BOOL(z, b) {			\
+		Z_TYPE_P(z) = IS_BOOL;		\
+		Z_LVAL_P(z) = ((b) != 0);   \
 	}
 
-#define ZVAL_NULL(z) {					\
-		(z)->type = IS_NULL;	        \
+#define ZVAL_NULL(z) {				\
+		Z_TYPE_P(z) = IS_NULL;		\
 	}
 
-#define ZVAL_LONG(z, l) {				\
-		(z)->type = IS_LONG;	        \
-		(z)->value.lval = l;	        \
+#define ZVAL_LONG(z, l) {			\
+		Z_TYPE_P(z) = IS_LONG;		\
+		Z_LVAL_P(z) = l;			\
 	}
 
-#define ZVAL_DOUBLE(z, d) {				\
-		(z)->type = IS_DOUBLE;	        \
-		(z)->value.dval = d;	        \
+#define ZVAL_DOUBLE(z, d) {			\
+		Z_TYPE_P(z) = IS_DOUBLE;	\
+		Z_DVAL_P(z) = d;			\
 	}
 
 #define ZVAL_STRING(z, s, duplicate) {	\
@@ -576,8 +605,8 @@ END_EXTERN_C()
 	zend_declare_property(class_ptr, _name, namelen, value, mask TSRMLS_CC);		\
 }
 
-#define HASH_OF(p) ((p)->type==IS_ARRAY ? (p)->value.ht : (((p)->type==IS_OBJECT ? Z_OBJ_HT_P(p)->get_properties((p) TSRMLS_CC) : NULL)))
-#define ZVAL_IS_NULL(z) ((z)->type==IS_NULL)
+#define HASH_OF(p) (Z_TYPE_P(p)==IS_ARRAY ? Z_ARRVAL_P(p) : ((Z_TYPE_P(p)==IS_OBJECT ? Z_OBJ_HT_P(p)->get_properties((p) TSRMLS_CC) : NULL)))
+#define ZVAL_IS_NULL(z) (Z_TYPE_P(z)==IS_NULL)
 
 /* For compatibility */
 #define ZEND_MINIT			ZEND_MODULE_STARTUP_N
@@ -585,15 +614,19 @@ END_EXTERN_C()
 #define ZEND_RINIT			ZEND_MODULE_ACTIVATE_N
 #define ZEND_RSHUTDOWN		ZEND_MODULE_DEACTIVATE_N
 #define ZEND_MINFO			ZEND_MODULE_INFO_N
+#define ZEND_GINIT(module)		((void (*)(void* TSRMLS_DC))(ZEND_MODULE_GLOBALS_CTOR_N(module)))
+#define ZEND_GSHUTDOWN(module)	((void (*)(void* TSRMLS_DC))(ZEND_MODULE_GLOBALS_DTOR_N(module)))
 
 #define ZEND_MINIT_FUNCTION			ZEND_MODULE_STARTUP_D
 #define ZEND_MSHUTDOWN_FUNCTION		ZEND_MODULE_SHUTDOWN_D
 #define ZEND_RINIT_FUNCTION			ZEND_MODULE_ACTIVATE_D
 #define ZEND_RSHUTDOWN_FUNCTION		ZEND_MODULE_DEACTIVATE_D
 #define ZEND_MINFO_FUNCTION			ZEND_MODULE_INFO_D
+#define ZEND_GINIT_FUNCTION			ZEND_MODULE_GLOBALS_CTOR_D
+#define ZEND_GSHUTDOWN_FUNCTION		ZEND_MODULE_GLOBALS_DTOR_D
 
 END_EXTERN_C()
-	
+
 #endif /* ZEND_API_H */
 
 

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: posix.c,v 1.70.2.3 2006/01/01 12:50:12 sniper Exp $ */
+/* $Id: posix.c,v 1.70.2.3.2.6 2006/10/02 07:58:13 bjori Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -49,6 +49,7 @@
 #endif
 
 ZEND_DECLARE_MODULE_GLOBALS(posix)
+static PHP_MINFO_FUNCTION(posix);
 
 /* {{{ posix_functions[]
  */
@@ -133,6 +134,9 @@ zend_function_entry posix_functions[] = {
 	PHP_FE(posix_get_last_error,					NULL)
 	PHP_FALIAS(posix_errno, posix_get_last_error,	NULL)
 	PHP_FE(posix_strerror,							NULL)
+#ifdef HAVE_INITGROUPS
+	PHP_FE(posix_initgroups,	NULL)
+#endif
 
 	{NULL, NULL, NULL}
 };
@@ -143,12 +147,12 @@ zend_function_entry posix_functions[] = {
 static PHP_MINFO_FUNCTION(posix)
 {
 	php_info_print_table_start();
-	php_info_print_table_row(2, "Revision", "$Revision: 1.70.2.3 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 1.70.2.3.2.6 $");
 	php_info_print_table_end();
 }
 /* }}} */
 
-static void php_posix_init_globals(zend_posix_globals *posix_globals TSRMLS_DC)
+static PHP_GINIT_FUNCTION(posix)
 {
 	posix_globals->last_error = 0;
 }
@@ -157,7 +161,6 @@ static void php_posix_init_globals(zend_posix_globals *posix_globals TSRMLS_DC)
  */
 static PHP_MINIT_FUNCTION(posix)
 {
-	ZEND_INIT_MODULE_GLOBALS(posix, php_posix_init_globals, NULL);
 	REGISTER_LONG_CONSTANT("POSIX_F_OK", F_OK, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("POSIX_X_OK", X_OK, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("POSIX_W_OK", W_OK, CONST_CS | CONST_PERSISTENT);
@@ -182,8 +185,6 @@ static PHP_MINIT_FUNCTION(posix)
 }
 /* }}} */
 
-static PHP_MINFO_FUNCTION(posix);
-
 /* {{{ posix_module_entry
  */
 zend_module_entry posix_module_entry = {
@@ -195,8 +196,12 @@ zend_module_entry posix_module_entry = {
 	NULL,
 	NULL, 
 	PHP_MINFO(posix),
-    NO_VERSION_YET,
-	STANDARD_MODULE_PROPERTIES
+	NO_VERSION_YET,
+	PHP_MODULE_GLOBALS(posix),
+	PHP_GINIT(posix),
+	NULL,
+	NULL,
+	STANDARD_MODULE_PROPERTIES_EX
 };
 /* }}} */
 
@@ -547,23 +552,23 @@ static int php_posix_stream_get_fd(zval *zfp, int *fd TSRMLS_DC)
    Determine terminal device name (POSIX.1, 4.7.2) */
 PHP_FUNCTION(posix_ttyname)
 {
-	zval *z_fd;
+	zval **z_fd;
 	char *p;
 	int fd;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &z_fd) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "Z", &z_fd) == FAILURE) {
 		RETURN_FALSE;
 	}
 
-	switch (Z_TYPE_P(z_fd)) {
+	switch (Z_TYPE_PP(z_fd)) {
 		case IS_RESOURCE:
-			if (!php_posix_stream_get_fd(z_fd, &fd TSRMLS_CC)) {
+			if (!php_posix_stream_get_fd(*z_fd, &fd TSRMLS_CC)) {
 				RETURN_FALSE;
 			}
 			break;
 		default:
-			convert_to_long(z_fd);
-			fd = Z_LVAL_P(z_fd);
+			convert_to_long_ex(z_fd);
+			fd = Z_LVAL_PP(z_fd);
 	}
 
 	if (NULL == (p = ttyname(fd))) {
@@ -579,22 +584,22 @@ PHP_FUNCTION(posix_ttyname)
    Determine if filedesc is a tty (POSIX.1, 4.7.1) */
 PHP_FUNCTION(posix_isatty)
 {
-	zval *z_fd;
+	zval **z_fd;
 	int fd;
 	
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &z_fd) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "Z", &z_fd) == FAILURE) {
 		RETURN_FALSE;
 	}
 	
-	switch (Z_TYPE_P(z_fd)) {
+	switch (Z_TYPE_PP(z_fd)) {
 		case IS_RESOURCE:
-			if (!php_posix_stream_get_fd(z_fd, &fd TSRMLS_CC)) {
+			if (!php_posix_stream_get_fd(*z_fd, &fd TSRMLS_CC)) {
 				RETURN_FALSE;
 			}
 			break;
 		default:
-			convert_to_long(z_fd);
-			fd = Z_LVAL_P(z_fd);
+			convert_to_long_ex(z_fd);
+			fd = Z_LVAL_PP(z_fd);
 	}
 
 	if (isatty(fd)) {
@@ -766,6 +771,10 @@ PHP_FUNCTION(posix_access)
 	}
 
 	path = expand_filepath(filename, NULL TSRMLS_CC);
+	if (!path) {
+		POSIX_G(last_error) = EIO;
+		RETURN_FALSE;
+	}
 
 	if (php_check_open_basedir_ex(path, 0 TSRMLS_CC) ||
 			(PG(safe_mode) && (!php_checkuid_ex(filename, NULL, CHECKUID_CHECK_FILE_AND_DIR, CHECKUID_NO_ERRORS)))) {
@@ -1052,6 +1061,24 @@ PHP_FUNCTION(posix_strerror)
 }
 /* }}} */
 
+#endif
+
+#ifdef HAVE_INITGROUPS
+/* {{{ proto bool posix_initgroups(string name, int base_group_id)
+   Calculate the group access list for the user specified in name. */
+PHP_FUNCTION(posix_initgroups)
+{
+	long basegid;
+	char *name;
+	int name_len;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sl", &name, &name_len, &basegid) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	RETURN_BOOL(!initgroups((const char *)name, basegid));
+}
+/* }}} */
 #endif
 
 /*

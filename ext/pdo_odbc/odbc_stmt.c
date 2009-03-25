@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2005 The PHP Group                                |
+  | Copyright (c) 1997-2006 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: odbc_stmt.c,v 1.26.2.2 2006/03/27 21:04:12 wez Exp $ */
+/* $Id: odbc_stmt.c,v 1.26.2.2.2.2 2006/10/11 03:07:28 wez Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -359,7 +359,10 @@ static int odbc_stmt_fetch(pdo_stmt_t *stmt,
 	}
 	rc = SQLFetchScroll(S->stmt, odbcori, offset);
 
-	if (rc == SQL_SUCCESS || rc == SQL_SUCCESS_WITH_INFO) {
+	if (rc == SQL_SUCCESS) {
+		return 1;
+	}
+	if (rc == SQL_SUCCESS_WITH_INFO) {
 		pdo_odbc_stmt_error("SQLFetchScroll");
 		return 1;
 	}
@@ -381,16 +384,30 @@ static int odbc_stmt_describe(pdo_stmt_t *stmt, int colno TSRMLS_DC)
 	zend_bool dyn = FALSE;
 	RETCODE rc;
 	SWORD	colnamelen;
-	SDWORD	colsize;
+	SDWORD	colsize, displaysize;
 
 	rc = SQLDescribeCol(S->stmt, colno+1, S->cols[colno].colname,
 			sizeof(S->cols[colno].colname)-1, &colnamelen,
 			&S->cols[colno].coltype, &colsize, NULL, NULL);
 
 	if (rc != SQL_SUCCESS) {
-		pdo_odbc_stmt_error("SQLBindCol");
-		return 0;
+		pdo_odbc_stmt_error("SQLDescribeCol");
+		if (rc != SQL_SUCCESS_WITH_INFO) {
+			return 0;
+		}
 	}
+
+	rc = SQLColAttribute(S->stmt, colno+1,
+			SQL_DESC_DISPLAY_SIZE,
+			NULL, 0, NULL, &displaysize);
+
+	if (rc != SQL_SUCCESS) {
+		pdo_odbc_stmt_error("SQLColAttribute");
+		if (rc != SQL_SUCCESS_WITH_INFO) {
+			return 0;
+		}
+	}
+	colsize = displaysize;
 
 	col->maxlen = S->cols[colno].datalen = colsize;
 	col->namelen = colnamelen;
@@ -404,6 +421,7 @@ static int odbc_stmt_describe(pdo_stmt_t *stmt, int colno TSRMLS_DC)
 	 * column. */
 	if (colsize < 256 && !S->going_long) {
 		S->cols[colno].data = emalloc(colsize+1);
+		S->cols[colno].is_long = 0;
 
 		rc = SQLBindCol(S->stmt, colno+1, SQL_C_CHAR, S->cols[colno].data,
 			S->cols[colno].datalen+1, &S->cols[colno].fetched_len);
@@ -417,6 +435,7 @@ static int odbc_stmt_describe(pdo_stmt_t *stmt, int colno TSRMLS_DC)
 		 * "long" columns */
 		S->cols[colno].data = emalloc(256);
 		S->going_long = 1;
+		S->cols[colno].is_long = 1;
 	}
 
 	return 1;
@@ -428,7 +447,7 @@ static int odbc_stmt_get_col(pdo_stmt_t *stmt, int colno, char **ptr, unsigned l
 	pdo_odbc_column *C = &S->cols[colno];
 
 	/* if it is a column containing "long" data, perform late binding now */
-	if (C->datalen > 255) {
+	if (C->is_long) {
 		unsigned long alloced = 4096;
 		unsigned long used = 0;
 		char *buf;
@@ -468,12 +487,22 @@ static int odbc_stmt_get_col(pdo_stmt_t *stmt, int colno, char **ptr, unsigned l
 				if (rc == SQL_NO_DATA) {
 					/* we got the lot */
 					break;
+				} else if (rc != SQL_SUCCESS) {
+					pdo_odbc_stmt_error("SQLGetData");
+					if (rc != SQL_SUCCESS_WITH_INFO) {
+						break;
+					}
 				}
 
 				if (C->fetched_len == SQL_NO_TOTAL) {
 					used += alloced - used;
 				} else {
 					used += C->fetched_len;
+				}
+
+				if (rc == SQL_SUCCESS) {
+					/* this was the final fetch */
+					break;
 				}
 
 				/* we need to fetch another chunk; resize the

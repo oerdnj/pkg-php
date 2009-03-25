@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: timelib_structs.h,v 1.13.2.6 2006/04/11 18:03:52 derick Exp $ */
+/* $Id: timelib_structs.h,v 1.13.2.6.2.2 2006/05/15 08:54:16 derick Exp $ */
 
 #ifndef __TIMELIB_STRUCTS_H__
 #define __TIMELIB_STRUCTS_H__
@@ -74,6 +74,13 @@ typedef signed long long timelib_sll;
 #define uint32_t unsigned __int32
 #endif
 
+#if defined(_MSC_VER)
+#define TIMELIB_LL_CONST(n) n ## i64
+#else
+#define TIMELIB_LL_CONST(n) n ## ll
+#endif
+
+
 typedef struct ttinfo
 {
 	int32_t      offset;
@@ -125,6 +132,11 @@ typedef struct timelib_time_offset {
 	timelib_sll  transistion_time;
 } timelib_time_offset;
 
+typedef struct timelib_special {
+	unsigned int type;
+	timelib_sll amount;
+} timelib_special;
+
 typedef struct timelib_time {
 	timelib_sll      y, m, d;     /* Year, Month, Day */
 	timelib_sll      h, i, s;     /* Hour, mInute, Second */
@@ -134,10 +146,11 @@ typedef struct timelib_time {
 	timelib_tzinfo  *tz_info;     /* Timezone structure */
 	signed int       dst;         /* Flag if we were parsing a DST zone */
 	timelib_rel_time relative;
+	timelib_special  special;
 
 	timelib_sll      sse;         /* Seconds since epoch */
 
-	unsigned int   have_time, have_date, have_zone, have_relative, have_weekday_relative, have_weeknr_day;
+	unsigned int   have_time, have_date, have_zone, have_relative, have_weekday_relative, have_special_relative, have_weeknr_day;
 
 	unsigned int   sse_uptodate; /* !0 if the sse member is up to date with the date/time members */
 	unsigned int   tim_uptodate; /* !0 if the date/time members are up to date with the sse member */
@@ -173,20 +186,20 @@ typedef struct _timelib_tzdb_index_entry {
 } timelib_tzdb_index_entry;
 
 typedef struct _timelib_tzdb {
-	char                     *version;
-	int                       index_size;
-	timelib_tzdb_index_entry *index;
-	char                     *data;
+	char                           *version;
+	int                             index_size;
+	const timelib_tzdb_index_entry *index;
+	const unsigned char            *data;
 } timelib_tzdb;
 
 #define TIMELIB_ZONETYPE_OFFSET 1
 #define TIMELIB_ZONETYPE_ABBR   2
 #define TIMELIB_ZONETYPE_ID     3
 
-#define SECS_PER_ERA 12622780800L
-#define SECS_PER_DAY       86400
-#define DAYS_PER_YEAR        365
-#define DAYS_PER_LYEAR       366
+#define SECS_PER_ERA   TIMELIB_LL_CONST(12622780800)
+#define SECS_PER_DAY   86400
+#define DAYS_PER_YEAR    365
+#define DAYS_PER_LYEAR   366
 
 #define timelib_is_leap(y) ((y) % 4 == 0 && ((y) % 100 != 0 || (y) % 400 == 0))
 

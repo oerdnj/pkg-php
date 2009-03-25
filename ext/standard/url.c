@@ -15,7 +15,7 @@
    | Author: Jim Winstead <jimw@php.net>                                  |
    +----------------------------------------------------------------------+
  */
-/* $Id: url.c,v 1.86.2.5 2006/02/12 16:39:44 iliaa Exp $ */
+/* $Id: url.c,v 1.86.2.5.2.6 2006/09/28 14:52:30 iliaa Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -211,7 +211,7 @@ PHPAPI php_url *php_url_parse_ex(char const *str, int length)
 	}	
 		
 	/* check for login and password */
-	if ((p = memchr(s, '@', (e-s)))) {
+	if ((p = zend_memrchr(s, '@', (e-s)))) {
 		if ((pp = memchr(s, ':', (p-s)))) {
 			if ((pp-s) > 0) {
 				ret->user = estrndup(s, (pp-s));
@@ -344,7 +344,7 @@ PHP_FUNCTION(parse_url)
 
 	resource = php_url_parse_ex(str, str_len);
 	if (resource == NULL) {
-		php_error_docref1(NULL TSRMLS_CC, str, E_WARNING, "Unable to parse url");
+		php_error_docref1(NULL TSRMLS_CC, str, E_WARNING, "Unable to parse URL");
 		RETURN_FALSE;
 	}
 
@@ -375,7 +375,7 @@ PHP_FUNCTION(parse_url)
 				if (resource->fragment != NULL) RETVAL_STRING(resource->fragment, 1);
 				break;
 			default:
-				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid url component identifier %ld.", key);
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid URL component identifier %ld.", key);
 				RETVAL_FALSE;
 		}
 		goto done;
@@ -653,7 +653,7 @@ PHPAPI int php_raw_url_decode(char *str, int len)
 }
 /* }}} */
 
-/* {{{ proto array get_headers(string url)
+/* {{{ proto array get_headers(string url[, int format])
    fetches all the headers sent by the server in response to a HTTP request */
 PHP_FUNCTION(get_headers)
 {
@@ -661,8 +661,9 @@ PHP_FUNCTION(get_headers)
 	int url_len;
 	php_stream_context *context;
 	php_stream *stream;
-	zval **prev_val, **hdr = NULL;
+	zval **prev_val, **hdr = NULL, **h;
 	HashPosition pos;
+	HashTable *hashT;
 	long format = 0;
                 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l", &url, &url_len, &format) == FAILURE) {
@@ -674,10 +675,31 @@ PHP_FUNCTION(get_headers)
 		RETURN_FALSE;
 	}
 
+	if (!stream->wrapperdata || Z_TYPE_P(stream->wrapperdata) != IS_ARRAY) {
+		php_stream_close(stream);
+		RETURN_FALSE;
+	}
+
 	array_init(return_value);
 
-	zend_hash_internal_pointer_reset_ex(HASH_OF(stream->wrapperdata), &pos);
-	while (zend_hash_get_current_data_ex(HASH_OF(stream->wrapperdata), (void**)&hdr, &pos) != FAILURE) {
+	/* check for curl-wrappers that provide headers via a special "headers" element */
+	if (zend_hash_find(HASH_OF(stream->wrapperdata), "headers", sizeof("headers"), (void **)&h) != FAILURE && Z_TYPE_PP(h) == IS_ARRAY) {
+		/* curl-wrappers don't load data until the 1st read */ 
+		if (!Z_ARRVAL_PP(h)->nNumOfElements) {
+			php_stream_getc(stream);
+		}
+		zend_hash_find(HASH_OF(stream->wrapperdata), "headers", sizeof("headers"), (void **)&h);
+		hashT = Z_ARRVAL_PP(h);	
+	} else {
+		hashT = HASH_OF(stream->wrapperdata);
+	}
+
+	zend_hash_internal_pointer_reset_ex(hashT, &pos);
+	while (zend_hash_get_current_data_ex(hashT, (void**)&hdr, &pos) != FAILURE) {
+		if (!hdr || Z_TYPE_PP(hdr) != IS_STRING) {
+			zend_hash_move_forward_ex(hashT, &pos);
+			continue;
+		}
 		if (!format) {
 no_name_header:
 			add_next_index_stringl(return_value, Z_STRVAL_PP(hdr), Z_STRLEN_PP(hdr), 1);
@@ -705,7 +727,7 @@ no_name_header:
 				goto no_name_header;
 			}
 		}
-		zend_hash_move_forward_ex(HASH_OF(stream->wrapperdata), &pos);
+		zend_hash_move_forward_ex(hashT, &pos);
 	}
 
 	php_stream_close(stream);

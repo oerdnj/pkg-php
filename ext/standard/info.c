@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: info.c,v 1.249.2.10 2006/03/31 11:11:12 tony2001 Exp $ */
+/* $Id: info.c,v 1.249.2.10.2.6 2006/09/14 08:01:48 dmitry Exp $ */
 
 #include "php.h"
 #include "php_ini.h"
@@ -66,7 +66,7 @@ static int php_info_write_wrapper(const char *str, uint str_length)
 
 	TSRMLS_FETCH();
 
-	elem_esc = php_escape_html_entities((char *)str, str_length, &new_len, 0, ENT_QUOTES, NULL TSRMLS_CC);
+	elem_esc = php_escape_html_entities((unsigned char *)str, str_length, &new_len, 0, ENT_QUOTES, NULL TSRMLS_CC);
 
 	written = php_body_write(elem_esc, new_len TSRMLS_CC);
 
@@ -114,7 +114,6 @@ static void php_print_gpcse_array(char *name, uint name_length TSRMLS_DC)
 	char *string_key;
 	uint string_len;
 	ulong num_key;
-	char *elem_esc = NULL;
 
 	zend_is_auto_global(name, name_length TSRMLS_CC);
 
@@ -134,11 +133,9 @@ static void php_print_gpcse_array(char *name, uint name_length TSRMLS_DC)
 			switch (zend_hash_get_current_key_ex(Z_ARRVAL_PP(data), &string_key, &string_len, &num_key, 0, NULL)) {
 				case HASH_KEY_IS_STRING:
 					if (!sapi_module.phpinfo_as_text) {
-						elem_esc = php_info_html_esc(string_key TSRMLS_CC);
-						PUTS(elem_esc);
-						efree(elem_esc);
+						php_info_html_esc_write(string_key, string_len - 1 TSRMLS_CC);
 					} else {
-						PUTS(string_key);
+						PHPWRITE(string_key, string_len - 1);
 					}	
 					break;
 				case HASH_KEY_IS_LONG:
@@ -154,7 +151,7 @@ static void php_print_gpcse_array(char *name, uint name_length TSRMLS_DC)
 			if (Z_TYPE_PP(tmp) == IS_ARRAY) {
 				if (!sapi_module.phpinfo_as_text) {
 					PUTS("<pre>");
-					zend_print_zval_ex((zend_write_func_t) php_info_write_wrapper, *tmp, 0);
+					zend_print_zval_r_ex((zend_write_func_t) php_info_write_wrapper, *tmp, 0 TSRMLS_CC);
 					PUTS("</pre>");
 				} else {
 					zend_print_zval_r(*tmp, 0 TSRMLS_CC);
@@ -167,12 +164,10 @@ static void php_print_gpcse_array(char *name, uint name_length TSRMLS_DC)
 					if (Z_STRLEN(tmp2) == 0) {
 						PUTS("<i>no value</i>");
 					} else {
-						elem_esc = php_info_html_esc(Z_STRVAL(tmp2) TSRMLS_CC);
-						PUTS(elem_esc);
-						efree(elem_esc);
+						php_info_html_esc_write(Z_STRVAL(tmp2), Z_STRLEN(tmp2) TSRMLS_CC);
 					} 
 				} else {
-					PUTS(Z_STRVAL(tmp2));
+					PHPWRITE(Z_STRVAL(tmp2), Z_STRLEN(tmp2));
 				}	
 				zval_dtor(&tmp2);
 			} else {
@@ -180,12 +175,10 @@ static void php_print_gpcse_array(char *name, uint name_length TSRMLS_DC)
 					if (Z_STRLEN_PP(tmp) == 0) {
 						PUTS("<i>no value</i>");
 					} else {
-						elem_esc = php_info_html_esc(Z_STRVAL_PP(tmp) TSRMLS_CC);
-						PUTS(elem_esc);
-						efree(elem_esc);
+						php_info_html_esc_write(Z_STRVAL_PP(tmp), Z_STRLEN_PP(tmp) TSRMLS_CC);
 					}
 				} else {
-					PUTS(Z_STRVAL_PP(tmp));
+					PHPWRITE(Z_STRVAL_PP(tmp), Z_STRLEN_PP(tmp));
 				}	
 			}
 			if (!sapi_module.phpinfo_as_text) {
@@ -209,13 +202,24 @@ void php_info_print_style(TSRMLS_D)
 }
 /* }}} */
 
+/* {{{ php_info_html_esc_write
+ */
+PHPAPI void php_info_html_esc_write(char *string, int str_len TSRMLS_DC)
+{
+	int new_len;
+	char *ret = php_escape_html_entities((unsigned char *)string, str_len, &new_len, 0, ENT_QUOTES, NULL TSRMLS_CC);
+
+	PHPWRITE(ret, new_len);
+	efree(ret);
+}
+/* }}} */
 
 /* {{{ php_info_html_esc
  */
 PHPAPI char *php_info_html_esc(char *string TSRMLS_DC)
 {
 	int new_len;
-	return php_escape_html_entities(string, strlen(string), &new_len, 0, ENT_QUOTES, NULL TSRMLS_CC);
+	return php_escape_html_entities((unsigned char *)string, strlen(string), &new_len, 0, ENT_QUOTES, NULL TSRMLS_CC);
 }
 /* }}} */
 
@@ -486,11 +490,7 @@ PHPAPI void php_print_info(int flag TSRMLS_DC)
 		php_info_print_table_row(2, "Thread Safety", "disabled" );
 #endif
 
-#if USE_ZEND_ALLOC
-		php_info_print_table_row(2, "Zend Memory Manager", "enabled" );
-#else
-		php_info_print_table_row(2, "Zend Memory Manager", "disabled" );
-#endif
+		php_info_print_table_row(2, "Zend Memory Manager", is_zend_mm(TSRMLS_C) ? "enabled" : "disabled" );
 
 #if HAVE_IPV6
 		php_info_print_table_row(2, "IPv6 Support", "enabled" );
@@ -505,7 +505,7 @@ PHPAPI void php_print_info(int flag TSRMLS_DC)
 
 			if ((url_stream_wrappers_hash = php_stream_get_url_stream_wrappers_hash())) {
 				for (zend_hash_internal_pointer_reset(url_stream_wrappers_hash);
-						zend_hash_get_current_key_ex(url_stream_wrappers_hash, &stream_protocol, &stream_protocol_len, &num_key, 0, NULL) == HASH_KEY_IS_STRING;
+						zend_hash_get_current_key_ex(url_stream_wrappers_hash, &stream_protocol, (uint *)&stream_protocol_len, &num_key, 0, NULL) == HASH_KEY_IS_STRING;
 						zend_hash_move_forward(url_stream_wrappers_hash)) {
 					stream_protocols_buf = erealloc(stream_protocols_buf, stream_protocols_buf_len + stream_protocol_len + 2 + 1);
 					memcpy(stream_protocols_buf + stream_protocols_buf_len, stream_protocol, stream_protocol_len);
@@ -536,7 +536,7 @@ PHPAPI void php_print_info(int flag TSRMLS_DC)
 
 			if ((stream_xport_hash = php_stream_xport_get_hash())) {
 				for(zend_hash_internal_pointer_reset(stream_xport_hash);
-					zend_hash_get_current_key_ex(stream_xport_hash, &xport_name, &xport_name_len, &num_key, 0, NULL) == HASH_KEY_IS_STRING;
+					zend_hash_get_current_key_ex(stream_xport_hash, &xport_name, (uint *)&xport_name_len, &num_key, 0, NULL) == HASH_KEY_IS_STRING;
 					zend_hash_move_forward(stream_xport_hash)) {
 					if (xport_buf_len + xport_name_len + 3 > xport_buf_size) {
 						while (xport_buf_len + xport_name_len + 3 > xport_buf_size) {
@@ -577,7 +577,7 @@ PHPAPI void php_print_info(int flag TSRMLS_DC)
 
 			if ((stream_filter_hash = php_get_stream_filters_hash())) {
 				for(zend_hash_internal_pointer_reset(stream_filter_hash);
-					zend_hash_get_current_key_ex(stream_filter_hash, &filter_name, &filter_name_len, &num_key, 0, NULL) == HASH_KEY_IS_STRING;
+					zend_hash_get_current_key_ex(stream_filter_hash, &filter_name, (uint *)&filter_name_len, &num_key, 0, NULL) == HASH_KEY_IS_STRING;
 					zend_hash_move_forward(stream_filter_hash)) {
 					if (filter_buf_len + filter_name_len + 3 > filter_buf_size) {
 						while (filter_buf_len + filter_name_len + 3 > filter_buf_size) {

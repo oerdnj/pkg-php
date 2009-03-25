@@ -4,7 +4,7 @@
   regint.h -  Oniguruma (regular expression library)
 **********************************************************************/
 /*-
- * Copyright (c) 2002-2005  K.Kosako  <sndgk393 AT ybb DOT ne DOT jp>
+ * Copyright (c) 2002-2006  K.Kosako  <sndgk393 AT ybb DOT ne DOT jp>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,6 +62,12 @@
 #define USE_INFINITE_REPEAT_MONOMANIAC_MEM_STATUS_CHECK /* /(?:()|())*\2/ */
 #define USE_NEWLINE_AT_END_OF_STRING_HAS_EMPTY_LINE     /* /\n$/ =~ "\n" */
 #define USE_WARNING_REDUNDANT_NESTED_REPEAT_OPERATOR
+/* #define USE_RECOMPILE_API */
+/* treat \r\n as line terminator.
+   !!! NO SUPPORT !!!
+   use this configuration on your own responsibility */
+/* #define USE_CRNL_AS_LINE_TERMINATOR */
+
 /* internal config */
 #define USE_RECYCLE_NODE
 #define USE_OP_PUSH_OR_JUMP_EXACT
@@ -75,10 +81,12 @@
 /* interface to external system */
 #ifdef NOT_RUBY      /* given from Makefile */
 #include "config.h"
+#define USE_BACKREF_AT_LEVEL
 #define USE_CAPTURE_HISTORY
 #define USE_VARIABLE_META_CHARS
 #define USE_WORD_BEGIN_END          /* "\<": word-begin, "\>": word-end */
 #define USE_POSIX_REGION_OPTION     /* needed for POSIX API support */
+/* #define USE_COMBINATION_EXPLOSION_CHECK */     /* (X*)* */
 /* #define USE_MULTI_THREAD_SYSTEM */
 #define THREAD_ATOMIC_START         /* depend on thread system */
 #define THREAD_ATOMIC_END           /* depend on thread system */
@@ -93,7 +101,9 @@
 #include "version.h"
 #include "rubysig.h"      /* for DEFER_INTS, ENABLE_INTS */
 
+#define USE_COMBINATION_EXPLOSION_CHECK        /* (X*)* */
 #define USE_MULTI_THREAD_SYSTEM
+
 #define THREAD_ATOMIC_START          DEFER_INTS
 #define THREAD_ATOMIC_END            ENABLE_INTS
 #define THREAD_PASS                  rb_thread_schedule()
@@ -105,10 +115,13 @@
   }\
 } while (0)
 
-#define DEFAULT_WARN_FUNCTION        rb_warn
-#define DEFAULT_VERB_WARN_FUNCTION   rb_warning
+#define DEFAULT_WARN_FUNCTION        onig_rb_warn
+#define DEFAULT_VERB_WARN_FUNCTION   onig_rb_warning
 
 #endif /* else NOT_RUBY */
+
+#define STATE_CHECK_STRING_THRESHOLD_LEN             7
+#define STATE_CHECK_BUFF_MAX_SIZE           0x08000000
 
 #define THREAD_PASS_LIMIT_COUNT     8
 #define xmemset     memset
@@ -124,13 +137,26 @@
 #endif
 
 
-#ifdef USE_MULTI_THREAD_SYSTEM
-#define ONIG_STATE_INC(reg)    (reg)->state++
-#define ONIG_STATE_DEC(reg)    (reg)->state--
+#if defined(USE_RECOMPILE_API) && defined(USE_MULTI_THREAD_SYSTEM)
+#define ONIG_STATE_INC(reg) (reg)->state++
+#define ONIG_STATE_DEC(reg) (reg)->state--
+
+#define ONIG_STATE_INC_THREAD(reg) do {\
+  THREAD_ATOMIC_START;\
+  (reg)->state++;\
+  THREAD_ATOMIC_END;\
+} while(0)
+#define ONIG_STATE_DEC_THREAD(reg) do {\
+  THREAD_ATOMIC_START;\
+  (reg)->state--;\
+  THREAD_ATOMIC_END;\
+} while(0)
 #else
-#define ONIG_STATE_INC(reg)    /* Nothing */
-#define ONIG_STATE_DEC(reg)    /* Nothing */
-#endif /* USE_MULTI_THREAD_SYSTEM */
+#define ONIG_STATE_INC(reg)         /* Nothing */
+#define ONIG_STATE_DEC(reg)         /* Nothing */
+#define ONIG_STATE_INC_THREAD(reg)  /* Nothing */
+#define ONIG_STATE_DEC_THREAD(reg)  /* Nothing */
+#endif /* USE_RECOMPILE_API && USE_MULTI_THREAD_SYSTEM */
 
 
 #define onig_st_is_member              st_is_member
@@ -518,7 +544,7 @@ typedef struct _BBuf {
 #define ANCHOR_LOOK_BEHIND_NOT  (1<<13)
 
 #define ANCHOR_ANYCHAR_STAR     (1<<14)   /* ".*" optimize info */
-#define ANCHOR_ANYCHAR_STAR_PL  (1<<15)   /* ".*" optimize info (posix-line) */
+#define ANCHOR_ANYCHAR_STAR_ML  (1<<15)   /* ".*" optimize info (multi-line) */
 
 /* operation code */
 enum OpCode {
@@ -574,11 +600,11 @@ enum OpCode {
 
   OP_BACKREF1,
   OP_BACKREF2,
-  OP_BACKREF3,
   OP_BACKREFN,
   OP_BACKREFN_IC,
   OP_BACKREF_MULTI,
   OP_BACKREF_MULTI_IC,
+  OP_BACKREF_AT_LEVEL,    /* \k<xxx+n>, \k<xxx-n> */
 
   OP_MEMORY_START,
   OP_MEMORY_START_PUSH,   /* push back-tracker to stack */
@@ -618,34 +644,33 @@ enum OpCode {
   OP_FAIL_LOOK_BEHIND_NOT, /* (?<!...) end   */
 
   OP_CALL,                 /* \g<name> */
-  OP_RETURN
-};
+  OP_RETURN,
 
-/* arguments type */
-#define ARG_SPECIAL     -1
-#define ARG_NON          0
-#define ARG_RELADDR      1
-#define ARG_ABSADDR      2
-#define ARG_LENGTH       3
-#define ARG_MEMNUM       4
-#define ARG_OPTION       5
+  OP_STATE_CHECK_PUSH,         /* combination explosion check and push */
+  OP_STATE_CHECK_PUSH_OR_JUMP, /* check ok -> push, else jump  */
+  OP_STATE_CHECK,              /* check only */
+  OP_STATE_CHECK_ANYCHAR_STAR,
+  OP_STATE_CHECK_ANYCHAR_ML_STAR
+};
 
 typedef int RelAddrType;
 typedef int AbsAddrType;
 typedef int LengthType;
 typedef int RepeatNumType;
 typedef short int MemNumType;
+typedef short int StateCheckNumType;
 typedef void* PointerType;
 
-#define SIZE_OPCODE        1
-#define SIZE_RELADDR       sizeof(RelAddrType)
-#define SIZE_ABSADDR       sizeof(AbsAddrType)
-#define SIZE_LENGTH        sizeof(LengthType)
-#define SIZE_MEMNUM        sizeof(MemNumType)
-#define SIZE_REPEATNUM     sizeof(RepeatNumType)
-#define SIZE_OPTION        sizeof(OnigOptionType)
-#define SIZE_CODE_POINT    sizeof(OnigCodePoint)
-#define SIZE_POINTER       sizeof(PointerType)
+#define SIZE_OPCODE           1
+#define SIZE_RELADDR          sizeof(RelAddrType)
+#define SIZE_ABSADDR          sizeof(AbsAddrType)
+#define SIZE_LENGTH           sizeof(LengthType)
+#define SIZE_MEMNUM           sizeof(MemNumType)
+#define SIZE_STATE_CHECK_NUM  sizeof(StateCheckNumType)
+#define SIZE_REPEATNUM        sizeof(RepeatNumType)
+#define SIZE_OPTION           sizeof(OnigOptionType)
+#define SIZE_CODE_POINT       sizeof(OnigCodePoint)
+#define SIZE_POINTER          sizeof(PointerType)
 
 
 #ifdef PLATFORM_UNALIGNED_WORD_ACCESS
@@ -671,6 +696,7 @@ typedef void* PointerType;
 #define GET_REPEATNUM_INC(num,p)   PLATFORM_GET_INC(num,    p, RepeatNumType)
 #define GET_OPTION_INC(option,p)   PLATFORM_GET_INC(option, p, OnigOptionType)
 #define GET_POINTER_INC(ptr,p)     PLATFORM_GET_INC(ptr,    p, PointerType)
+#define GET_STATE_CHECK_NUM_INC(num,p)  PLATFORM_GET_INC(num, p, StateCheckNumType)
 
 /* code point's address must be aligned address. */
 #define GET_CODE_POINT(code,p)   code = *((OnigCodePoint* )(p))
@@ -713,6 +739,12 @@ typedef void* PointerType;
 #define SIZE_OP_CALL                   (SIZE_OPCODE + SIZE_ABSADDR)
 #define SIZE_OP_RETURN                  SIZE_OPCODE
 
+#ifdef USE_COMBINATION_EXPLOSION_CHECK
+#define SIZE_OP_STATE_CHECK            (SIZE_OPCODE + SIZE_STATE_CHECK_NUM)
+#define SIZE_OP_STATE_CHECK_PUSH       (SIZE_OPCODE + SIZE_STATE_CHECK_NUM + SIZE_RELADDR)
+#define SIZE_OP_STATE_CHECK_PUSH_OR_JUMP (SIZE_OPCODE + SIZE_STATE_CHECK_NUM + SIZE_RELADDR)
+#define SIZE_OP_STATE_CHECK_ANYCHAR_STAR (SIZE_OPCODE + SIZE_STATE_CHECK_NUM)
+#endif
 
 #define MC_ESC(enc)               (enc)->meta_char_table.esc
 #define MC_ANYCHAR(enc)           (enc)->meta_char_table.anychar
@@ -720,6 +752,11 @@ typedef void* PointerType;
 #define MC_ZERO_OR_ONE_TIME(enc)  (enc)->meta_char_table.zero_or_one_time
 #define MC_ONE_OR_MORE_TIME(enc)  (enc)->meta_char_table.one_or_more_time
 #define MC_ANYCHAR_ANYTIME(enc)   (enc)->meta_char_table.anychar_anytime
+
+#define IS_MC_ESC_CODE(code, enc, syn) \
+  ((code) == MC_ESC(enc) && \
+   !IS_SYNTAX_OP2((syn), ONIG_SYN_OP2_INEFFECTIVE_ESCAPE))
+
 
 #define SYN_POSIX_COMMON_OP \
  ( ONIG_SYN_OP_DOT_ANYCHAR | ONIG_SYN_OP_POSIX_BRACKET | \
@@ -781,13 +818,14 @@ extern void onig_print_statistics P_((FILE* f));
 #endif
 #endif
 
-extern char* onig_error_code_to_format P_((int code));
-extern void  onig_snprintf_with_pattern PV_((char buf[], int bufsize, OnigEncoding enc, char* pat, char* pat_end, char *fmt, ...));
+extern UChar* onig_error_code_to_format P_((int code));
+extern void  onig_snprintf_with_pattern PV_((UChar buf[], int bufsize, OnigEncoding enc, UChar* pat, UChar* pat_end, const UChar *fmt, ...));
 extern int  onig_bbuf_init P_((BBuf* buf, int size));
 extern int  onig_alloc_init P_((regex_t** reg, OnigOptionType option, OnigAmbigType ambig_flag, OnigEncoding enc, OnigSyntaxType* syntax));
 extern int  onig_compile P_((regex_t* reg, const UChar* pattern, const UChar* pattern_end, OnigErrorInfo* einfo));
 extern void onig_chain_reduce P_((regex_t* reg));
 extern void onig_chain_link_add P_((regex_t* to, regex_t* add));
 extern void onig_transfer P_((regex_t* to, regex_t* from));
+extern int  onig_is_code_in_cc P_((OnigEncoding enc, OnigCodePoint code, CClassNode* cc));
 
 #endif /* REGINT_H */

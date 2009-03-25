@@ -16,7 +16,7 @@
    | Authors: Dmitry Stogov <dmitry@zend.com>                             |
    +----------------------------------------------------------------------+
 
-	 $Id: zend_vm_gen.php,v 1.12.2.5 2006/03/15 08:06:28 dmitry Exp $
+	 $Id: zend_vm_gen.php,v 1.12.2.5.2.3 2006/09/18 12:03:10 dmitry Exp $
 */
 
 $header_text = <<< DATA
@@ -338,8 +338,12 @@ function gen_code($f, $spec, $kind, $code, $op1, $op2) {
 			"/FREE_OP2_VAR_PTR\(\)/",
 			"/^#ifdef\s+ZEND_VM_SPEC\s*\n/m",
 			"/^#ifndef\s+ZEND_VM_SPEC\s*\n/m",
+			"/\!defined\(ZEND_VM_SPEC\)/m",
+			"/defined\(ZEND_VM_SPEC\)/m",
 			"/ZEND_VM_C_LABEL\(\s*([A-Za-z_]*)\s*\)/m",
 			"/ZEND_VM_C_GOTO\(\s*([A-Za-z_]*)\s*\)/m",
+			"/^#if\s+1\s*\\|\\|.*[^\\\\]$/m",
+			"/^#if\s+0\s*&&.*[^\\\\]$/m"
 		),
 		array(
 			$op1_type[$op1],
@@ -364,8 +368,12 @@ function gen_code($f, $spec, $kind, $code, $op1, $op2) {
 			$op2_free_op_var_ptr[$op2],
 			($op1!="ANY"||$op2!="ANY")?"#if 1\n":"#if 0\n",
 			($op1!="ANY"||$op2!="ANY")?"#if 0\n":"#if 1\n",
+			($op1!="ANY"||$op2!="ANY")?"0":"1",
+			($op1!="ANY"||$op2!="ANY")?"1":"0",
 			"\\1".(($spec && $kind != ZEND_VM_KIND_CALL)?("_SPEC".$prefix[$op1].$prefix[$op2]):""),
 			"goto \\1".(($spec && $kind != ZEND_VM_KIND_CALL)?("_SPEC".$prefix[$op1].$prefix[$op2]):""),
+			"#if 1",
+			"#if 0",
 		),
 		$code);
 
@@ -455,6 +463,9 @@ function gen_code($f, $spec, $kind, $code, $op1, $op2) {
 
 	/* Remove unnecessary ';' */
 	$code = preg_replace('/^\s*;\s*$/m', '', $code);
+
+	/* Remove WS */
+	$code = preg_replace('/[ \t]+\n/m', "\n", $code);
 
 	out($f, $code);
 }
@@ -581,7 +592,7 @@ function gen_labels($f, $spec, $kind, $prolog) {
 								// Try to use unspecialized handler
 								$op2 = "ANY";
 							}
-							// Check if specialized handler is defined 
+							// Check if specialized handler is defined
 							if (isset($dsc["op1"][$op1]) &&
 							    isset($dsc["op2"][$op2])) {
 							  // Emit pointer to specialized handler
@@ -670,7 +681,7 @@ function gen_labels($f, $spec, $kind, $prolog) {
 function gen_null_handler($f) {
 	static $done = 0;
 
-	// New and all executors with CALL threading model can use the same handler 
+	// New and all executors with CALL threading model can use the same handler
 	// for undefined opcodes, do we emit code for it only once
 	if (!$done) {
 		$done = 1;
@@ -689,10 +700,10 @@ function gen_executor_code($f, $spec, $kind, $prolog) {
 	if ($spec) {
 		// Produce specialized executor
 		$op1t = $op_types;
-		// for each op1.op_type 
+		// for each op1.op_type
 		foreach($op1t as $op1) {
 			$op2t = $op_types;
-			// for each op2.op_type 
+			// for each op2.op_type
 			foreach($op2t as $op2) {
 				// for each handlers in helpers in original order
 				foreach ($list as $lineno => $dsc) {
@@ -1068,7 +1079,7 @@ function gen_vm($def, $skel) {
 	$code_len = strlen((string)$max_opcode);
 	$f = fopen("zend_vm_opcodes.h", "w+") or die("ERROR: Cannot create zend_vm_opcodes.h\n");
 
-	// Insert header 
+	// Insert header
 	out($f, $GLOBALS['header_text']);
 
 	foreach ($opcodes as $code => $dsc) {
@@ -1083,7 +1094,7 @@ function gen_vm($def, $skel) {
 	$f = fopen("zend_vm_execute.h", "w+") or die("ERROR: Cannot create zend_vm_execute.h\n");
 	$executor_file = realpath("zend_vm_execute.h");
 
-	// Insert header 
+	// Insert header
 	out($f, $GLOBALS['header_text']);
 
 	// Support for ZEND_USER_OPCODE
@@ -1158,8 +1169,8 @@ function gen_vm($def, $skel) {
 	out($f, "}\n\n");
 
 	// Export handlers and helpers
-	if (count($export) > 0 && 
-	    !ZEND_VM_OLD_EXECUTOR && 
+	if (count($export) > 0 &&
+	    !ZEND_VM_OLD_EXECUTOR &&
 	    ZEND_VM_KIND != ZEND_VM_KIND_CALL) {
 		out($f,"#undef EX\n");
 		out($f,"#define EX(element) execute_data->element\n\n");

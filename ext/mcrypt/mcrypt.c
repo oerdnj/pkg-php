@@ -16,7 +16,7 @@
    |          Derick Rethans <derick@derickrethans.nl>                    |
    +----------------------------------------------------------------------+
  */
-/* $Id: mcrypt.c,v 1.91.2.3 2006/01/01 12:50:08 sniper Exp $ */
+/* $Id: mcrypt.c,v 1.91.2.3.2.5 2006/06/26 16:33:38 bjori Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -63,7 +63,7 @@ zend_function_entry mcrypt_functions[] = {
 	PHP_FE(mcrypt_generic_init, NULL)
 	PHP_FE(mcrypt_generic, NULL)
 	PHP_FE(mdecrypt_generic, NULL)
-	PHP_FE(mcrypt_generic_end, NULL)
+	PHP_DEP_FALIAS(mcrypt_generic_end, mcrypt_generic_deinit, NULL)
 	PHP_FE(mcrypt_generic_deinit, NULL)
 
 	PHP_FE(mcrypt_enc_self_test, NULL)
@@ -93,6 +93,8 @@ static PHP_MINFO_FUNCTION(mcrypt);
 static PHP_MINIT_FUNCTION(mcrypt);
 static PHP_MSHUTDOWN_FUNCTION(mcrypt);
 
+ZEND_DECLARE_MODULE_GLOBALS(mcrypt)
+
 zend_module_entry mcrypt_module_entry = {
 	STANDARD_MODULE_HEADER,
 	"mcrypt", 
@@ -101,10 +103,12 @@ zend_module_entry mcrypt_module_entry = {
 	NULL, NULL,
 	PHP_MINFO(mcrypt),
 	NO_VERSION_YET,
-	STANDARD_MODULE_PROPERTIES,
+	PHP_MODULE_GLOBALS(mcrypt),
+	NULL,
+	NULL,
+	NULL,
+	STANDARD_MODULE_PROPERTIES_EX
 };
-
-ZEND_DECLARE_MODULE_GLOBALS(mcrypt)
 
 #ifdef COMPILE_DL_MCRYPT
 ZEND_GET_MODULE(mcrypt)
@@ -245,11 +249,6 @@ static void php_mcrypt_module_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
     
 static PHP_MINIT_FUNCTION(mcrypt)
 {
-#if defined(ZTS)
-    ZEND_INIT_MODULE_GLOBALS(mcrypt, NULL, NULL);
-    Z_TYPE(mcrypt_module_entry) = type;
-#endif
-	
 	le_mcrypt = zend_register_list_destructors_ex(php_mcrypt_module_dtor, NULL, "mcrypt", module_number);
     
 	/* modes for mcrypt_??? routines */
@@ -492,6 +491,10 @@ PHP_FUNCTION(mcrypt_generic)
 	ZEND_FETCH_RESOURCE(pm, php_mcrypt *, mcryptind, -1, "MCrypt", le_mcrypt);
 	PHP_MCRYPT_INIT_CHECK
 	convert_to_string_ex(data);
+	if (Z_STRLEN_PP(data) == 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "An empty string was passed");
+		RETURN_FALSE
+	}
 
 	/* Check blocksize */
 	if (mcrypt_enc_is_block_mode(pm->td) == 1) { /* It's a block algorithm */
@@ -533,6 +536,10 @@ PHP_FUNCTION(mdecrypt_generic)
 	ZEND_FETCH_RESOURCE(pm, php_mcrypt * , mcryptind, -1, "MCrypt", le_mcrypt);
 	PHP_MCRYPT_INIT_CHECK
 	convert_to_string_ex(data);
+	if (Z_STRLEN_PP(data) == 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "An empty string was passed");
+		RETURN_FALSE
+	}
 
 	/* Check blocksize */
 	if (mcrypt_enc_is_block_mode(pm->td) == 1) { /* It's a block algorithm */
@@ -593,16 +600,6 @@ PHP_FUNCTION(mcrypt_module_close)
 	MCRYPT_GET_TD_ARG
 	zend_list_delete(Z_LVAL_PP(mcryptind));
 	RETURN_TRUE;
-}
-/* }}} */
-
-
-/* {{{ proto bool mcrypt_generic_end(resource td)
-   This function terminates encrypt specified by the descriptor td */
-PHP_FUNCTION(mcrypt_generic_end)
-{
-	php_error_docref(NULL TSRMLS_CC, E_WARNING, "This function is deprecated, please use mcrypt_generic_deinit()");
-	zif_mcrypt_generic_deinit(INTERNAL_FUNCTION_PARAM_PASSTHRU);
 }
 /* }}} */
 
@@ -1097,7 +1094,8 @@ static void php_mcrypt_do_crypt (char* cipher, zval **key, zval **data, char *mo
 	}
 
 	if (mcrypt_generic_init(td, key_s, use_key_length, iv_s) < 0) {
-		php_error_docref(NULL TSRMLS_CC, E_ERROR, "Mcrypt initialisation failed");
+		php_error_docref(NULL TSRMLS_CC, E_RECOVERABLE_ERROR, "Mcrypt initialisation failed");
+		RETURN_FALSE;
 	}
 	if (dencrypt == MCRYPT_ENCRYPT) {
 		mcrypt_generic(td, data_s, data_size);

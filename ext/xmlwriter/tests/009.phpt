@@ -7,8 +7,10 @@ if (!function_exists("xmlwriter_start_comment")) die("skip: libxml2 2.6.7+ requi
 ?>
 --FILE--
 <?php 
-/* $Id: 009.phpt,v 1.1.2.3 2005/12/09 20:52:15 rrichards Exp $ */
-
+/* $Id: 009.phpt,v 1.1.2.3.2.1 2006/07/19 18:50:51 pajoye Exp $ */
+/*
+Libxml 2.6.24 and up adds a new line after a processing instruction (PI)
+*/
 $xw = xmlwriter_open_memory();
 xmlwriter_set_indent($xw, TRUE);
 xmlwriter_start_document($xw, NULL, "UTF-8");
@@ -32,12 +34,12 @@ xmlwriter_end_document($xw);
 $output = xmlwriter_flush($xw, true);
 print $output;
 ?>
---EXPECT--
+--EXPECTF--
 <?xml version="1.0" encoding="UTF-8"?>
 <root id="elem1">
  <elem1 attr1="first">
   <!--start PI-->
-  <pi><?php echo "hello world"; ?></pi>
+  <pi><?php echo "hello world"; ?>%w</pi>
   <cdata><![CDATA[<>&"]]></cdata>
  </elem1>
 </root>

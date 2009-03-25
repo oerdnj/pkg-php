@@ -17,7 +17,7 @@
    |          David Sklar <sklar@student.net>                             |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_apache.c,v 1.89.2.4 2006/04/26 09:31:23 edink Exp $ */
+/* $Id: php_apache.c,v 1.89.2.4.2.1 2006/09/06 11:54:28 nlopess Exp $ */
 
 #include "php_apache_http.h"
 
@@ -394,7 +394,8 @@ PHP_FUNCTION(apache_response_headers)
    Set an Apache subprocess_env variable */
 PHP_FUNCTION(apache_setenv)
 {
-	int var_len, val_len, top=0;
+	int var_len, val_len;
+	zend_bool top=0;
 	char *var = NULL, *val = NULL;
 	request_rec *r = (request_rec *) SG(server_context);
 

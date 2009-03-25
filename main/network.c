@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: network.c,v 1.118.2.2 2006/03/19 22:33:10 tony2001 Exp $ */
+/* $Id: network.c,v 1.118.2.2.2.2 2006/09/11 19:18:07 pollita Exp $ */
 
 /*#define DEBUG_MAIN_NETWORK 1*/
 
@@ -103,7 +103,7 @@ int inet_aton(const char *, struct in_addr *);
 #  define PHP_GAI_STRERROR(x) (php_gai_strerror(x))
 /* {{{ php_gai_strerror
  */
-static char *php_gai_strerror(int code)
+static const char *php_gai_strerror(int code)
 {
         static struct {
                 int code;
@@ -787,37 +787,46 @@ php_socket_t php_network_connect_socket_to_host(const char *host, unsigned short
 			/* make a connection attempt */
 
 			if (bindto) {
-				struct sockaddr local_address;
+				struct sockaddr *local_address = NULL;
+				int local_address_len = 0;
 			
 				if (sa->sa_family == AF_INET) {
-					struct sockaddr_in *in4 = (struct sockaddr_in*)&local_address;
+					struct sockaddr_in *in4 = emalloc(sizeof(struct sockaddr_in));
+
+					local_address = (struct sockaddr*)in4;
+					local_address_len = sizeof(struct sockaddr_in);
 				
 					in4->sin_family = sa->sa_family;
 					in4->sin_port = htons(bindport);
 					if (!inet_aton(bindto, &in4->sin_addr)) {
-						goto bad_ip;
+						php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid IP Address: %s", bindto);
+						goto skip_bind;
 					}
 					memset(&(in4->sin_zero), 0, sizeof(in4->sin_zero));
 				}
 #if HAVE_IPV6 && HAVE_INET_PTON
 				 else { /* IPV6 */
-					struct sockaddr_in6 *in6 = (struct sockaddr_in6*)&local_address;
+					struct sockaddr_in6 *in6 = emalloc(sizeof(struct sockaddr_in6));
+
+					local_address = (struct sockaddr*)in6;
+					local_address_len = sizeof(struct sockaddr_in6);
 				
 					in6->sin6_family = sa->sa_family;
 					in6->sin6_port = htons(bindport);
 					if (inet_pton(AF_INET6, bindto, &in6->sin6_addr) < 1) {
-						goto bad_ip;
+						php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid IP Address: %s", bindto);
+						goto skip_bind;
 					}
 				}
 #endif
-				if (bind(sock, &local_address, sizeof(struct sockaddr))) {
+				if (!local_address || bind(sock, local_address, local_address_len)) {
 					php_error_docref(NULL TSRMLS_CC, E_WARNING, "failed to bind to '%s:%d', system said: %s", bindto, bindport, strerror(errno));
 				}
-				goto bind_done;
-bad_ip:
-				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid IP Address: %s", bindto);
+skip_bind:
+				if (local_address) {
+					efree(local_address);
+				}
 			}
-bind_done:
 			/* free error string recieved during previous iteration (if any) */
 			if (error_string && *error_string) {
 				efree(*error_string);

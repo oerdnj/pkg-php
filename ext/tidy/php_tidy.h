@@ -16,19 +16,13 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_tidy.h,v 1.26.2.1 2006/01/01 12:50:16 sniper Exp $ */
+/* $Id: php_tidy.h,v 1.26.2.1.2.4 2006/09/15 14:33:34 nlopess Exp $ */
 
 #ifndef PHP_TIDY_H
 #define PHP_TIDY_H
 
 extern zend_module_entry tidy_module_entry;
 #define phpext_tidy_ptr &tidy_module_entry
-
-#ifdef PHP_WIN32
-#define PHP_TIDY_API __declspec(dllexport)
-#else
-#define PHP_TIDY_API
-#endif
 
 #define TIDY_METHOD_MAP(name, func_name, arg_types) \
 	ZEND_NAMED_FE(name, ZEND_FN(func_name), arg_types)
@@ -39,60 +33,8 @@ extern zend_module_entry tidy_module_entry;
 #define TIDY_ATTR_METHOD(name)    PHP_FUNCTION(tam_ ##name)
 #define TIDY_ATTR_ME(name, param) TIDY_METHOD_MAP(name, tam_ ##name, param)
 
-PHP_MINIT_FUNCTION(tidy);
-PHP_RINIT_FUNCTION(tidy);
-PHP_MINFO_FUNCTION(tidy);
-
-PHP_FUNCTION(tidy_getopt);
-PHP_FUNCTION(tidy_parse_string);
-PHP_FUNCTION(tidy_parse_file);
-PHP_FUNCTION(tidy_clean_repair);
-PHP_FUNCTION(tidy_repair_string);
-PHP_FUNCTION(tidy_repair_file);
-PHP_FUNCTION(tidy_diagnose);
-PHP_FUNCTION(tidy_get_output);
-PHP_FUNCTION(tidy_get_error_buffer);
-PHP_FUNCTION(tidy_get_release);
-PHP_FUNCTION(tidy_reset_config);
-PHP_FUNCTION(tidy_get_config);
-PHP_FUNCTION(tidy_get_status);
-PHP_FUNCTION(tidy_get_html_ver);
-#if HAVE_TIDYOPTGETDOC
-PHP_FUNCTION(tidy_get_opt_doc);
-#endif
-PHP_FUNCTION(tidy_is_xhtml);
-PHP_FUNCTION(tidy_is_xml);
-PHP_FUNCTION(tidy_error_count);
-PHP_FUNCTION(tidy_warning_count);
-PHP_FUNCTION(tidy_access_count);
-PHP_FUNCTION(tidy_config_count);
-
-PHP_FUNCTION(ob_tidyhandler);
-
-PHP_FUNCTION(tidy_get_root);
-PHP_FUNCTION(tidy_get_html);
-PHP_FUNCTION(tidy_get_head);
-PHP_FUNCTION(tidy_get_body);
-
-TIDY_DOC_METHOD(__construct);
-TIDY_DOC_METHOD(parseFile);
-TIDY_DOC_METHOD(parseString);
-
-TIDY_NODE_METHOD(__construct);
-TIDY_NODE_METHOD(hasChildren);
-TIDY_NODE_METHOD(hasSiblings);
-TIDY_NODE_METHOD(isComment);
-TIDY_NODE_METHOD(isHtml);
-TIDY_NODE_METHOD(isXhtml);
-TIDY_NODE_METHOD(isXml);
-TIDY_NODE_METHOD(isText);
-TIDY_NODE_METHOD(isJste);
-TIDY_NODE_METHOD(isAsp);
-TIDY_NODE_METHOD(isPhp);
-
 ZEND_BEGIN_MODULE_GLOBALS(tidy)
 	char *default_config;
-    zval *inst;
 ZEND_END_MODULE_GLOBALS(tidy)
 
 #ifdef ZTS
@@ -102,7 +44,6 @@ ZEND_END_MODULE_GLOBALS(tidy)
 #endif
 
 #endif
-
 
 /*
  * Local variables:

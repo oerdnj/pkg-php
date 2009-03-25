@@ -1,5 +1,5 @@
 dnl
-dnl $Id: acinclude.m4,v 1.332.2.14 2006/04/10 12:17:36 sniper Exp $
+dnl $Id: acinclude.m4,v 1.332.2.14.2.5 2006/10/02 20:49:23 tony2001 Exp $
 dnl
 dnl This file contains local autoconf functions.
 dnl
@@ -2049,7 +2049,7 @@ AC_DEFUN([PHP_PROG_LEX], [
     ""|invalid[)]
       flex_msg="flex versions supported for regeneration of the Zend/PHP parsers: $flex_version_list  (found: $flex_version)."
       AC_MSG_WARN([$flex_msg])
-      LEX="exit 0;"
+      LEX="echo \"error: $flex_msg\" 1>&2 ; exit 1;"
       ;;
   esac
   PHP_SUBST(LEX)
@@ -2503,9 +2503,26 @@ EOF
     fi
   done
 
-  for arg in [$]0 "[$]@"; do
-    echo "'[$]arg' \\" >> $1
-    CONFIGURE_COMMAND="$CONFIGURE_COMMAND '[$]arg'"
+  echo "'[$]0' \\" >> $1
+  if test `expr -- [$]0 : "'.*"` = 0; then
+    CONFIGURE_COMMAND="$CONFIGURE_COMMAND '[$]0'"
+  else 
+    CONFIGURE_COMMAND="$CONFIGURE_COMMAND [$]0"
+  fi
+  for arg in $ac_configure_args; do
+     if test `expr -- $arg : "'.*"` = 0; then
+        if test `expr -- $arg : "--.*"` = 0; then
+       	  break;
+        fi
+        echo "'[$]arg' \\" >> $1
+        CONFIGURE_COMMAND="$CONFIGURE_COMMAND '[$]arg'"
+     else
+        if test `expr -- $arg : "'--.*"` = 0; then
+       	  break;
+        fi
+        echo "[$]arg \\" >> $1
+        CONFIGURE_COMMAND="$CONFIGURE_COMMAND [$]arg"
+     fi
   done
   echo '"[$]@"' >> $1
   chmod +x $1

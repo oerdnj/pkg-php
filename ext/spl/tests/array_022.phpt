@@ -1,5 +1,7 @@
 --TEST--
 SPL: ArrayObject/Iterator and reference to self
+--SKIPIF--
+<?php if (!extension_loaded("spl")) print "skip"; ?>
 --FILE--
 ==ArrayObject===
 <?php
@@ -66,29 +68,5 @@ object(MyArrayIterator)#%d (2) {
   string(3) "baz"
   ["baz"]=>
   string(3) "Foo"
-}
-===DONE===
---UEXPECTF--
-==ArrayObject===
-object(MyArrayObject)#%d (1) {
-  [u"bar"]=>
-  unicode(3) "baz"
-}
-object(MyArrayObject)#%d (2) {
-  [u"bar"]=>
-  unicode(3) "baz"
-  [u"baz"]=>
-  unicode(3) "Foo"
-}
-==ArrayIterator===
-object(MyArrayIterator)#%d (1) {
-  [u"bar"]=>
-  unicode(3) "baz"
-}
-object(MyArrayIterator)#%d (2) {
-  [u"bar"]=>
-  unicode(3) "baz"
-  [u"baz"]=>
-  unicode(3) "Foo"
 }
 ===DONE===

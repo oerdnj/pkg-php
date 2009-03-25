@@ -1,13 +1,10 @@
-dnl $Id: config.m4,v 1.13.2.4 2006/01/06 14:03:37 sniper Exp $
+dnl $Id: config.m4,v 1.13.2.4.2.1 2006/08/23 09:47:21 tony2001 Exp $
 dnl config.m4 for extension SPL
 
 PHP_ARG_ENABLE(spl, enable SPL suppport,
 [  --disable-spl           Disable Standard PHP Library], yes)
 
 if test "$PHP_SPL" != "no"; then
-  if test "$ext_shared" = "yes"; then
-    AC_MSG_ERROR(Cannot build SPL as a shared module)
-  fi
   AC_MSG_CHECKING(whether zend_object_value is packed)
   old_CPPFLAGS=$CPPFLAGS
   CPPFLAGS="$INCLUDES -I$abs_srcdir $CPPFLAGS"
@@ -29,5 +26,5 @@ int main(int argc, char **argv) {
   CPPFLAGS=$old_CPPFLAGS
   AC_DEFINE_UNQUOTED(HAVE_PACKED_OBJECT_VALUE, $ac_result, [Whether struct _zend_object_value is packed])
   AC_DEFINE(HAVE_SPL, 1, [Whether you want SPL (Standard PHP Library) support]) 
-  PHP_NEW_EXTENSION(spl, php_spl.c spl_functions.c spl_engine.c spl_iterators.c spl_array.c spl_directory.c spl_sxe.c spl_exceptions.c spl_observer.c, $ext_shared)
+  PHP_NEW_EXTENSION(spl, php_spl.c spl_functions.c spl_engine.c spl_iterators.c spl_array.c spl_directory.c spl_sxe.c spl_exceptions.c spl_observer.c, no)
 fi

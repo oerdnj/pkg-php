@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_ini_scanner.l,v 1.41.2.2 2006/01/17 19:56:25 iliaa Exp $ */
+/* $Id: zend_ini_scanner.l,v 1.41.2.2.2.1 2006/09/19 20:33:12 dmitry Exp $ */
 
 #define yyleng SCNG(yy_leng)
 #define yytext SCNG(yy_text)
@@ -79,6 +79,17 @@ int zend_ini_open_file_for_scanning(zend_file_handle *fh TSRMLS_DC)
 	yyin = fh;
 	yy_switch_to_buffer(yy_create_buffer(yyin, YY_BUF_SIZE TSRMLS_CC) TSRMLS_CC);
 	ini_filename = fh->filename;
+	return SUCCESS;
+}
+
+
+int zend_ini_prepare_string_for_scanning(char *str TSRMLS_DC)
+{
+	int len = strlen(str);
+
+	yyin = NULL;
+	yy_scan_buffer(str, len + 2 TSRMLS_CC);
+	ini_filename = NULL;
 	return SUCCESS;
 }
 

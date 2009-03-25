@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_dom.c,v 1.73.2.12 2006/05/03 08:43:04 rrichards Exp $ */
+/* $Id: php_dom.c,v 1.73.2.12.2.8 2006/10/04 12:02:49 rrichards Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -149,12 +149,12 @@ int dom_node_children_valid(xmlNodePtr node) {
 /* {{{ dom_get_doc_props() */
 dom_doc_propsptr dom_get_doc_props(php_libxml_ref_obj *document)
 {
-	dom_doc_props *doc_props;
+	dom_doc_propsptr doc_props;
 
 	if (document && document->doc_props) {
 		return document->doc_props;
 	} else {
-		doc_props = emalloc(sizeof(dom_doc_props));
+		doc_props = emalloc(sizeof(libxml_doc_props));
 		doc_props->formatoutput = 0;
 		doc_props->validateonparse = 0;
 		doc_props->resolveexternals = 0;
@@ -162,18 +162,58 @@ dom_doc_propsptr dom_get_doc_props(php_libxml_ref_obj *document)
 		doc_props->substituteentities = 0;
 		doc_props->stricterror = 1;
 		doc_props->recover = 0;
+		doc_props->classmap = NULL;
 		if (document) {
 			document->doc_props = doc_props;
 		}
 		return doc_props;
 	}
 }
+
+int dom_set_doc_classmap(php_libxml_ref_obj *document, zend_class_entry *basece, zend_class_entry *ce TSRMLS_DC)
+{
+	dom_doc_propsptr doc_props;
+
+	if (document) {
+		doc_props = dom_get_doc_props(document);
+		if (doc_props->classmap == NULL) {
+			if (ce == NULL) {
+				return SUCCESS;
+			}
+			ALLOC_HASHTABLE(doc_props->classmap);
+			zend_hash_init(doc_props->classmap, 0, NULL, NULL, 0);
+		}
+		if (ce) {
+			return zend_hash_add(doc_props->classmap, basece->name, basece->name_length + 1, &ce, sizeof(ce), NULL);
+		} else {
+			return zend_hash_del(doc_props->classmap, basece->name, basece->name_length + 1);
+		}
+	}
+	return SUCCESS;
+}
+
+zend_class_entry *dom_get_doc_classmap(php_libxml_ref_obj *document, zend_class_entry *basece TSRMLS_DC)
+{
+	dom_doc_propsptr doc_props;
+	zend_class_entry **ce = NULL;
+	
+	if (document) {
+		doc_props = dom_get_doc_props(document);
+		if (doc_props->classmap) {
+			if (zend_hash_find(doc_props->classmap, basece->name, basece->name_length + 1,  (void**) &ce) == SUCCESS) {
+				return *ce;
+			}
+		}
+	}
+
+	return basece;
+}
 /* }}} */
 
 /* {{{ dom_get_strict_error() */
 int dom_get_strict_error(php_libxml_ref_obj *document) {
 	int stricterror;
-	dom_doc_props *doc_props;
+	dom_doc_propsptr doc_props;
 
 	doc_props = dom_get_doc_props(document);
 	stricterror = doc_props->stricterror;
@@ -188,7 +228,7 @@ int dom_get_strict_error(php_libxml_ref_obj *document) {
 /* {{{ xmlNodePtr dom_object_get_node(dom_object *obj) */
 PHP_DOM_EXPORT xmlNodePtr dom_object_get_node(dom_object *obj)
 {
-	if (obj->ptr != NULL) {
+	if (obj && obj->ptr != NULL) {
 		return ((php_libxml_node_ptr *)obj->ptr)->node;
 	} else {
 		return NULL;
@@ -199,7 +239,7 @@ PHP_DOM_EXPORT xmlNodePtr dom_object_get_node(dom_object *obj)
 /* {{{ dom_object *php_dom_object_get_data(xmlNodePtr obj) */
 PHP_DOM_EXPORT dom_object *php_dom_object_get_data(xmlNodePtr obj)
 {
-	if (obj->_private != NULL) {
+	if (obj && obj->_private != NULL) {
 		return (dom_object *) ((php_libxml_node_ptr *) obj->_private)->_private;
 	} else {
 		return NULL;
@@ -451,6 +491,7 @@ zend_object_value dom_objects_store_clone_obj(zval *zobject TSRMLS_DC)
 	return retval;
 }
 
+
 zend_object_value dom_objects_ze1_clone_obj(zval *zobject TSRMLS_DC)
 {
 	php_error(E_ERROR, "Cannot clone object of class %s due to 'zend.ze1_compatibility_mode'", Z_OBJCE_P(zobject)->name);
@@ -510,14 +551,14 @@ PHP_MINIT_FUNCTION(dom)
 	memcpy(&dom_ze1_object_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	dom_ze1_object_handlers.read_property = dom_read_property;
 	dom_ze1_object_handlers.write_property = dom_write_property;
-	dom_object_handlers.get_property_ptr_ptr = dom_get_property_ptr_ptr;
+	dom_ze1_object_handlers.get_property_ptr_ptr = dom_get_property_ptr_ptr;
 	dom_ze1_object_handlers.clone_obj = dom_objects_ze1_clone_obj;
 	dom_ze1_object_handlers.has_property = dom_property_exists;
 
 	zend_hash_init(&classes, 0, NULL, NULL, 1);
 
 	INIT_CLASS_ENTRY(ce, "DOMException", php_dom_domexception_class_functions);
-	dom_domexception_class_entry = zend_register_internal_class_ex(&ce, zend_exception_get_default(), NULL TSRMLS_CC);
+	dom_domexception_class_entry = zend_register_internal_class_ex(&ce, zend_exception_get_default(TSRMLS_C), NULL TSRMLS_CC);
 	dom_domexception_class_entry->ce_flags |= ZEND_ACC_FINAL;
 	zend_declare_property_long(dom_domexception_class_entry, "code", sizeof("code")-1, 0, ZEND_ACC_PUBLIC TSRMLS_CC);
 
@@ -879,6 +920,8 @@ void node_list_unlink(xmlNodePtr node TSRMLS_DC)
 		if (wrapper != NULL ) {
 			xmlUnlinkNode(node);
 		} else {
+			if (node->type == XML_ENTITY_REF_NODE)
+				break;
 			node_list_unlink(node->children TSRMLS_CC);
 
 			switch (node->type) {
@@ -1229,6 +1272,9 @@ PHP_DOM_EXPORT zval *php_dom_create_object(xmlNodePtr obj, int *found, zval *wra
 			return wrapper;
 	}
 
+	if (domobj && domobj->document) {
+		ce = dom_get_doc_classmap(domobj->document, ce TSRMLS_CC);
+	}
 	object_init_ex(wrapper, ce);
 
 	intern = (dom_object *)zend_objects_get_address(wrapper TSRMLS_CC);

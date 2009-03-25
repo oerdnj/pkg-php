@@ -17,8 +17,8 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_mm.c,v 1.31.2.1 2006/01/04 23:53:04 andi Exp $ */
-
+/* $Id: zend_mm.c,v 1.31.2.1.2.1 2006/07/18 09:06:33 dmitry Exp $ */
+#if 0
 #include "zend.h"
 #include "zend_mm.h"
 
@@ -465,7 +465,7 @@ void *zend_mm_realloc(zend_mm_heap *heap, void *p, size_t size)
 
 	return p;
 }
-
+#endif
 /*
  * Local variables:
  * tab-width: 4

@@ -22,7 +22,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: ldap.c,v 1.161.2.3 2006/01/01 12:50:08 sniper Exp $ */
+/* $Id: ldap.c,v 1.161.2.3.2.1 2006/06/15 18:33:07 dmitry Exp $ */
 #define IS_EXT_MODULE
 
 #ifdef HAVE_CONFIG_H
@@ -78,6 +78,7 @@ typedef struct {
 } ldap_resultentry;
 
 ZEND_DECLARE_MODULE_GLOBALS(ldap)
+static PHP_GINIT_FUNCTION(ldap);
 
 static
 	ZEND_BEGIN_ARG_INFO(arg3to6of6_force_ref, 0)
@@ -177,7 +178,11 @@ zend_module_entry ldap_module_entry = {
 	NULL,
 	PHP_MINFO(ldap), 
 	NO_VERSION_YET,
-	STANDARD_MODULE_PROPERTIES
+	PHP_MODULE_GLOBALS(ldap),
+	PHP_GINIT(ldap),
+	NULL,
+	NULL,
+	STANDARD_MODULE_PROPERTIES_EX
 };
 
 #ifdef COMPILE_DL_LDAP
@@ -222,9 +227,9 @@ PHP_INI_BEGIN()
 PHP_INI_END()
 /* }}} */
 
-/* {{{ php_ldap_init_globals
+/* {{{ PHP_GINIT_FUNCTION
  */
-static void php_ldap_init_globals(zend_ldap_globals *ldap_globals)
+static PHP_GINIT_FUNCTION(ldap)
 {
 	ldap_globals->num_links = 0;
 }
@@ -234,8 +239,6 @@ static void php_ldap_init_globals(zend_ldap_globals *ldap_globals)
  */
 PHP_MINIT_FUNCTION(ldap)
 {
-	ZEND_INIT_MODULE_GLOBALS(ldap, php_ldap_init_globals, NULL);
-
 	REGISTER_INI_ENTRIES();
 
 	/* Constants to be used with deref-parameter in php_ldap_do_search() */
@@ -314,7 +317,7 @@ PHP_MINFO_FUNCTION(ldap)
 
 	php_info_print_table_start();
 	php_info_print_table_row(2, "LDAP Support", "enabled");
-	php_info_print_table_row(2, "RCS Version", "$Id: ldap.c,v 1.161.2.3 2006/01/01 12:50:08 sniper Exp $");
+	php_info_print_table_row(2, "RCS Version", "$Id: ldap.c,v 1.161.2.3.2.1 2006/06/15 18:33:07 dmitry Exp $");
 
 	if (LDAPG(max_links) == -1) {
 		snprintf(tmp, 31, "%ld/unlimited", LDAPG(num_links));

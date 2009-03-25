@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: streams.c,v 1.82.2.6 2006/04/22 17:17:40 wez Exp $ */
+/* $Id: streams.c,v 1.82.2.6.2.8 2006/10/03 19:51:01 iliaa Exp $ */
 
 #define _GNU_SOURCE
 #include "php.h"
@@ -1198,10 +1198,6 @@ PHPAPI size_t _php_stream_copy_to_mem(php_stream *src, char **buf, size_t maxlen
 	int min_room = CHUNK_SIZE / 4;
 	php_stream_statbuf ssbuf;
 
-	if (buf) { 
-		*buf = NULL;
-	}
-
 	if (maxlen == 0) { 
 		return 0;
 	}
@@ -1216,7 +1212,7 @@ PHPAPI size_t _php_stream_copy_to_mem(php_stream *src, char **buf, size_t maxlen
 
 		p = php_stream_mmap_range(src, php_stream_tell(src), maxlen, PHP_STREAM_MAP_MODE_SHARED_READONLY, &mapped);
 
-		if (p) {
+		if (p && mapped) {
 			*buf = pemalloc_rel_orig(mapped + 1, persistent);
 
 			if (*buf) {
@@ -1348,11 +1344,7 @@ PHPAPI size_t _php_stream_copy_to_stream(php_stream *src, php_stream *dest, size
 				writeptr += didwrite;
 			}
 		} else {
-			if (maxlen == 0) {
-				return haveread;
-			} else {
-				return 0; /* error */
-			}
+			return haveread;
 		}
 
 		if (maxlen - haveread == 0) {
@@ -1470,7 +1462,7 @@ static void clone_wrapper_hash(TSRMLS_D)
 	php_stream_wrapper *tmp;
 
 	ALLOC_HASHTABLE(FG(stream_wrappers));
-	zend_hash_init(FG(stream_wrappers), 0, NULL, NULL, 1);
+	zend_hash_init(FG(stream_wrappers), zend_hash_num_elements(&url_stream_wrappers_hash), NULL, NULL, 1);
 	zend_hash_copy(FG(stream_wrappers), &url_stream_wrappers_hash, NULL, &tmp, sizeof(tmp));
 }
 
@@ -1520,9 +1512,9 @@ PHPAPI php_stream_wrapper *php_stream_locate_url_wrapper(const char *path, char 
 		n++;
 	}
 
-	if ((*p == ':') && (n > 1) && !strncmp("://", p, 3)) {
+	if ((*p == ':') && (n > 1) && (!strncmp("//", p+1, 2) || !memcmp("data", path, 4))) {
 		protocol = path;
-	} else if (strncasecmp(path, "zlib:", 5) == 0) {
+	} else if (n == 5 && strncasecmp(path, "zlib:", 5) == 0) {
 		/* BC with older php scripts and zlib wrapper */
 		protocol = "compress.zlib";
 		n = 13;
@@ -1530,18 +1522,23 @@ PHPAPI php_stream_wrapper *php_stream_locate_url_wrapper(const char *path, char 
 	}
 
 	if (protocol)	{
-		if (FAILURE == zend_hash_find(wrapper_hash, (char*)protocol, n, (void**)&wrapperpp))	{
-			char wrapper_name[32];
+		if (FAILURE == zend_hash_find(wrapper_hash, (char*)protocol, n, (void**)&wrapperpp)) {
+			char *tmp = estrndup(protocol, n);
+			php_strtolower(tmp, n);
+			if (FAILURE == zend_hash_find(wrapper_hash, (char*)tmp, n, (void**)&wrapperpp)) {
+				char wrapper_name[32];
 
-			if (n >= sizeof(wrapper_name))
-				n = sizeof(wrapper_name) - 1;
-			PHP_STRLCPY(wrapper_name, protocol, sizeof(wrapper_name), n);
+				if (n >= sizeof(wrapper_name)) {
+					n = sizeof(wrapper_name) - 1;
+				}
+				PHP_STRLCPY(wrapper_name, protocol, sizeof(wrapper_name), n);
 			
-			php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Unable to find the wrapper \"%s\" - did you forget to enable it when you configured PHP?",
-					wrapper_name);
+				php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Unable to find the wrapper \"%s\" - did you forget to enable it when you configured PHP?", wrapper_name);
 
-			wrapperpp = NULL;
-			protocol = NULL;
+				wrapperpp = NULL;
+				protocol = NULL;
+			}
+			efree(tmp);
 		}
 	}
 	/* TODO: curl based streams probably support file:// properly */
@@ -1605,7 +1602,7 @@ PHPAPI php_stream_wrapper *php_stream_locate_url_wrapper(const char *path, char 
 		return &php_plain_files_wrapper;
 	}
 
-	if (wrapperpp && (*wrapperpp)->is_url && !PG(allow_url_fopen)) {
+	if ((wrapperpp && (*wrapperpp)->is_url) && (!PG(allow_url_fopen) || ((options & STREAM_OPEN_FOR_INCLUDE) && !PG(allow_url_include))) ) {
 		if (options & REPORT_ERRORS) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "URL file-access is disabled in the server configuration");
 		}

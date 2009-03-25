@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_observer.c,v 1.2.2.6 2006/03/29 14:28:42 tony2001 Exp $ */
+/* $Id: spl_observer.c,v 1.2.2.6.2.1 2006/08/23 09:32:24 bjori Exp $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -261,7 +261,7 @@ SPL_METHOD(SplObjectStorage, next)
 
 static
 ZEND_BEGIN_ARG_INFO(arginfo_Object, 0)
-	ZEND_ARG_INFO(0, object 0)
+	ZEND_ARG_INFO(0, object)
 ZEND_END_ARG_INFO();
 
 static zend_function_entry spl_funcs_SplObjectStorage[] = {

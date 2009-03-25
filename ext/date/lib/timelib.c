@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: timelib.c,v 1.7.2.4 2006/04/11 18:03:52 derick Exp $ */
+/* $Id: timelib.c,v 1.7.2.4.2.1 2006/05/14 17:36:04 derick Exp $ */
 
 #include "timelib.h"
 #include <ctype.h>
@@ -204,6 +204,13 @@ void timelib_dump_date(timelib_time *d, int options)
 		}
 		if (d->have_weekday_relative) {
 			printf(" / %d.%d", d->relative.weekday, d->relative.weekday_behavior);
+		}
+		if (d->have_special_relative) {
+			switch (d->special.type) {
+				case TIMELIB_SPECIAL_WEEKDAY:
+					printf(" / %lld weekday", d->special.amount);
+					break;
+			}
 		}
 	}
 	printf("\n");

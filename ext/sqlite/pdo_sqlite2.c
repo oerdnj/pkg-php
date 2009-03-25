@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_sqlite2.c,v 1.6.2.3 2006/01/01 12:50:14 sniper Exp $ */
+/* $Id: pdo_sqlite2.c,v 1.6.2.3.2.1 2006/09/16 18:10:32 iliaa Exp $ */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -517,6 +517,10 @@ static char *make_filename_safe(const char *filename TSRMLS_DC)
 {
 	if (strncmp(filename, ":memory:", sizeof(":memory:")-1)) {
 		char *fullpath = expand_filepath(filename, NULL TSRMLS_CC);
+
+		if (!fullpath) {
+			return NULL;
+		}
 
 		if (PG(safe_mode) && (!php_checkuid(fullpath, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
 			efree(fullpath);

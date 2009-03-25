@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: gd_ctx.c,v 1.22.2.5 2006/01/27 13:36:29 pajoye Exp $ */
+/* $Id: gd_ctx.c,v 1.22.2.5.2.2 2006/10/08 17:36:10 pajoye Exp $ */
 
 #include "php_gd.h"
 
@@ -75,7 +75,9 @@ static void _php_image_output_ctx(INTERNAL_FUNCTION_PARAMETERS, int image_type, 
 	ZEND_FETCH_RESOURCE(im, gdImagePtr, imgind, -1, "Image", phpi_get_le_gd());
 
 	if (argc > 1) {
-		convert_to_string_ex(file);
+		if (argc >= 2 && Z_TYPE_PP(file) != IS_NULL) {
+			convert_to_string_ex(file);
+		}
 		fn = Z_STRVAL_PP(file);
 		if (argc >= 3) {
 			convert_to_long_ex(quality);
@@ -87,13 +89,13 @@ static void _php_image_output_ctx(INTERNAL_FUNCTION_PARAMETERS, int image_type, 
 		}
 	}
 
-	if ((argc == 2) || (argc > 2 && Z_STRLEN_PP(file))) {
+	if (argc > 1 && (Z_TYPE_PP(file) != IS_NULL && ((argc == 2) || (argc > 2 && Z_STRLEN_PP(file))))) {
 
 		PHP_GD_CHECK_OPEN_BASEDIR(fn, "Invalid filename");
 
 		fp = VCWD_FOPEN(fn, "wb");
 		if (!fp) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to open '%s' for writing", fn);
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to open '%s' for writing: %s", fn, strerror(errno));
 			RETURN_FALSE;
 		}
 

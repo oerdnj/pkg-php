@@ -1,11 +1,11 @@
 dnl
-dnl $Id: config.m4,v 1.25.2.7 2006/05/02 00:59:22 wez Exp $
+dnl $Id: config.m4,v 1.25.2.7.2.3 2006/08/14 20:11:31 tony2001 Exp $
 dnl
 
 if test "$PHP_PDO" != "no"; then
 
 AC_DEFUN([PDO_MYSQL_LIB_CHK], [
-  str="$PDO_MYSQL_DIR/$1/libmysqlclient.*"
+  str="$PDO_MYSQL_DIR/$1/libmysqlclient*"
   for j in `echo $str`; do
     if test -r $j; then
       PDO_MYSQL_LIB_DIR=$MYSQL_DIR/$1
@@ -53,8 +53,14 @@ if test "$PHP_PDO_MYSQL" != "no"; then
     if test "x$SED" = "x"; then
       AC_PATH_PROG(SED, sed)
     fi
+    if test "$enable_maintainer_zts" = "yes"; then
+      PDO_MYSQL_LIBNAME=mysqlclient_r
+      PDO_MYSQL_LIBS=`$PDO_MYSQL_CONFIG --libs_r | $SED -e "s/'//g"`
+    else
+      PDO_MYSQL_LIBNAME=mysqlclient
+      PDO_MYSQL_LIBS=`$PDO_MYSQL_CONFIG --libs | $SED -e "s/'//g"`
+    fi
     PDO_MYSQL_INCLUDE=`$PDO_MYSQL_CONFIG --cflags | $SED -e "s/'//g"`
-    PDO_MYSQL_LIBS=`$PDO_MYSQL_CONFIG --libs | $SED -e "s/'//g"`
     PDO_MYSQL_SOCKET=`$PDO_MYSQL_CONFIG --socket` 
   elif test -z "$PDO_MYSQL_DIR"; then
     AC_MSG_RESULT([not found])
@@ -66,7 +72,7 @@ if test "$PHP_PDO_MYSQL" != "no"; then
       PDO_MYSQL_INC_DIR=$PDO_MYSQL_DIR/include/mysql
     else
       PDO_MYSQL_INC_DIR=$PDO_MYSQL_DIR/include
-    fi      
+    fi
     if test -r $PDO_MYSQL_DIR/lib/mysql; then
       PDO_MYSQL_LIB_DIR=$PDO_MYSQL_DIR/lib/mysql
     else
@@ -80,24 +86,25 @@ if test "$PHP_PDO_MYSQL" != "no"; then
       AC_MSG_ERROR([Unable to find your mysql installation])
     fi
 
-    PHP_ADD_LIBRARY_WITH_PATH(mysqlclient, $PDO_MYSQL_LIB_DIR, PDO_MYSQL_SHARED_LIBADD)
+    PHP_ADD_LIBRARY_WITH_PATH($PDO_MYSQL_LIBNAME, $PDO_MYSQL_LIB_DIR, PDO_MYSQL_SHARED_LIBADD)
     PHP_ADD_INCLUDE($PDO_MYSQL_INC_DIR)
     PDO_MYSQL_INCLUDE=-I$PDO_MYSQL_INC_DIR
   fi
 
   AC_DEFINE_UNQUOTED(PDO_MYSQL_UNIX_ADDR, "$PDO_MYSQL_SOCKET", [ ])
 
-  
-  _SAVE_LIBS=$LIBS
-  LIBS="$LIBS $PDO_MYSQL_LIBS"
-  PHP_CHECK_LIBRARY(mysqlclient, mysql_query,
+
+  PHP_CHECK_LIBRARY($PDO_MYSQL_LIBNAME, mysql_query,
   [
+    PHP_EVAL_INCLINE($PDO_MYSQL_INCLUDE)
     PHP_EVAL_LIBLINE($PDO_MYSQL_LIBS, PDO_MYSQL_SHARED_LIBADD)
   ],[
     AC_MSG_ERROR([mysql_query missing!?])
   ],[
     $PDO_MYSQL_LIBS
   ])
+  _SAVE_LIBS=$LIBS
+  LIBS="$LIBS $PDO_MYSQL_LIBS"
   AC_CHECK_FUNCS([mysql_commit mysql_stmt_prepare mysql_next_result mysql_sqlstate]) 
   LIBS=$_SAVE_LIBS
 
@@ -118,14 +125,13 @@ if test "$PHP_PDO_MYSQL" != "no"; then
     AC_MSG_RESULT($pdo_inc_path)
   ])
 
-  PHP_NEW_EXTENSION(pdo_mysql, pdo_mysql.c mysql_driver.c mysql_statement.c, $ext_shared,,-I$pdo_inc_path $PDO_MYSQL_INCLUDE)
+  PHP_NEW_EXTENSION(pdo_mysql, pdo_mysql.c mysql_driver.c mysql_statement.c, $ext_shared,,-I$pdo_inc_path)
   ifdef([PHP_ADD_EXTENSION_DEP],
   [
     PHP_ADD_EXTENSION_DEP(pdo_mysql, pdo)
   ])
   PDO_MYSQL_MODULE_TYPE=external
- 
-  PDO_MYSQL_SHARED_LIBADD=$PDO_MYSQL_LIBS
+
   PHP_SUBST(PDO_MYSQL_SHARED_LIBADD)
   PHP_SUBST_OLD(PDO_MYSQL_MODULE_TYPE)
 fi

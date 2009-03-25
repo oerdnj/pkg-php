@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: snmp.c,v 1.106.2.2 2006/01/01 12:50:13 sniper Exp $ */
+/* $Id: snmp.c,v 1.106.2.2.2.3 2006/07/27 05:17:34 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -107,6 +107,7 @@
 #define SNMP_VALUE_OBJECT	2
 
 ZEND_DECLARE_MODULE_GLOBALS(snmp)
+static PHP_GINIT_FUNCTION(snmp);
 
 /* constant - can be shared among threads */
 static oid objid_mib[] = {1, 3, 6, 1, 2, 1};
@@ -123,7 +124,8 @@ zend_function_entry snmp_functions[] = {
 	PHP_FE(snmp_set_quick_print, NULL)
 #ifdef HAVE_NET_SNMP
 	PHP_FE(snmp_set_enum_print, NULL)
-	PHP_FE(snmp_set_oid_numeric_print, NULL)
+	PHP_FE(snmp_set_oid_output_format, NULL)
+	PHP_FALIAS(snmp_set_oid_numeric_print, snmp_set_oid_output_format, NULL)
 #endif
 	PHP_FE(snmpset, NULL)
 
@@ -164,7 +166,11 @@ zend_module_entry snmp_module_entry = {
 	NULL,
 	PHP_MINFO(snmp),
 	NO_VERSION_YET,
-	STANDARD_MODULE_PROPERTIES
+	PHP_MODULE_GLOBALS(snmp),
+	PHP_GINIT(snmp),
+	NULL,
+	NULL,
+	STANDARD_MODULE_PROPERTIES_EX
 };
 /* }}} */
 
@@ -174,9 +180,9 @@ ZEND_GET_MODULE(snmp)
 
 /* THREAD_LS snmp_module php_snmp_module; - may need one of these at some point */
 
-/* {{{ php_snmp_init_globals
+/* {{{ PHP_GINIT_FUNCTION
  */
-static void php_snmp_init_globals(zend_snmp_globals *snmp_globals)
+static PHP_GINIT_FUNCTION(snmp)
 {
 	snmp_globals->valueretrieval = 0;
 }
@@ -193,7 +199,10 @@ PHP_MINIT_FUNCTION(snmp)
 	netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_DONT_PERSIST_STATE, 1);
 #endif
 
-	ZEND_INIT_MODULE_GLOBALS(snmp, php_snmp_init_globals, NULL);
+#ifdef HAVE_NET_SNMP
+	REGISTER_LONG_CONSTANT("SNMP_OID_OUTPUT_FULL", NETSNMP_OID_OUTPUT_FULL, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("SNMP_OID_OUTPUT_NUMERIC", NETSNMP_OID_OUTPUT_NUMERIC, CONST_CS | CONST_PERSISTENT);
+#endif
 
 	REGISTER_LONG_CONSTANT("SNMP_VALUE_LIBRARY", SNMP_VALUE_LIBRARY, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("SNMP_VALUE_PLAIN", SNMP_VALUE_PLAIN, CONST_CS | CONST_PERSISTENT);
@@ -429,13 +438,13 @@ static void php_snmp_internal(INTERNAL_FUNCTION_PARAMETERS, int st,
 				RETURN_FALSE;
 			}
 		} else if (st >= SNMP_CMD_WALK) {
-                        if (session->version == SNMP_VERSION_1) {
+			if (session->version == SNMP_VERSION_1) {
 				pdu = snmp_pdu_create(SNMP_MSG_GETNEXT);
 			} else {
 				pdu = snmp_pdu_create(SNMP_MSG_GETBULK);
 				pdu->non_repeaters = 0;
 				pdu->max_repetitions = 20;
-                        }
+			}
 			snmp_add_null_var(pdu, name, name_length);
 		}
 
@@ -519,6 +528,9 @@ retry:
 						}
 					}
 					snmp_close(ss);
+					if (st == SNMP_CMD_WALK || st == SNMP_CMD_REALWALK) {
+						zval_dtor(return_value);
+					}
 					RETURN_FALSE;
 				}
 			}
@@ -728,9 +740,9 @@ PHP_FUNCTION(snmp_set_enum_print)
 } 
 /* }}} */
 
-/* {{{ proto void snmp_set_oid_numeric_print(int oid_numeric_print)
-   Return all objects including their respective object id withing the specified one */
-PHP_FUNCTION(snmp_set_oid_numeric_print)
+/* {{{ proto void snmp_set_oid_output_format(int oid_format)
+   Set the OID output format. */
+PHP_FUNCTION(snmp_set_oid_output_format)
 {
 	int argc = ZEND_NUM_ARGS();
 	long a1;
@@ -738,11 +750,20 @@ PHP_FUNCTION(snmp_set_oid_numeric_print)
 	if (zend_parse_parameters(argc TSRMLS_CC, "l", &a1) == FAILURE) {
 		return;
 	}
-	if ((int) a1 != 0) {
-		netsnmp_ds_set_int(NETSNMP_DS_LIBRARY_ID,
-			NETSNMP_DS_LIB_OID_OUTPUT_FORMAT,
-			NETSNMP_OID_OUTPUT_NUMERIC);
+
+	switch ((int) a1) {
+		case 0:
+		case NETSNMP_OID_OUTPUT_FULL:
+			a1 = NETSNMP_OID_OUTPUT_FULL;
+			break;
+
+		default:
+		case NETSNMP_OID_OUTPUT_NUMERIC:
+			a1 = NETSNMP_OID_OUTPUT_NUMERIC;
+			break;
 	}
+
+	netsnmp_ds_set_int(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_OID_OUTPUT_FORMAT, a1);
 } 
 /* }}} */
 #endif
@@ -831,10 +852,14 @@ static int netsnmp_session_set_sec_protocol(struct snmp_session *s, char *prot T
 * 
 * As we want this extension to compile on both versions, we use the latter
 * symbol on purpose, as it's defined to be the same as the former.
+*
+* However, in 5.2 the type of usmAES128PrivProtocol is a pointer, not an
+* array, so we cannot use the OIDSIZE macro because it uses sizeof().
+*
 */
 			|| !strcasecmp(prot, "AES")) {
 			s->securityPrivProto = usmAES128PrivProtocol;
-			s->securityPrivProtoLen = OIDSIZE(usmAES128PrivProtocol);
+			s->securityPrivProtoLen = USM_PRIV_PROTO_AES128_LEN;
 			return (0);
 #else			
 		) {

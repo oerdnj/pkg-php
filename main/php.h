@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php.h,v 1.221.2.4 2006/03/07 22:37:53 alexwaugh Exp $ */
+/* $Id: php.h,v 1.221.2.4.2.3 2006/09/04 08:18:15 dmitry Exp $ */
 
 #ifndef PHP_H
 #define PHP_H
@@ -334,6 +334,7 @@ END_EXTERN_C()
 
 /* PHP-named Zend macro wrappers */
 #define PHP_FN					ZEND_FN
+#define PHP_MN					ZEND_MN
 #define PHP_NAMED_FUNCTION		ZEND_NAMED_FUNCTION
 #define PHP_FUNCTION			ZEND_FUNCTION
 #define PHP_METHOD  			ZEND_METHOD
@@ -366,12 +367,18 @@ END_EXTERN_C()
 #define PHP_RINIT		ZEND_MODULE_ACTIVATE_N
 #define PHP_RSHUTDOWN	ZEND_MODULE_DEACTIVATE_N
 #define PHP_MINFO		ZEND_MODULE_INFO_N
+#define PHP_GINIT		ZEND_GINIT
+#define PHP_GSHUTDOWN	ZEND_GSHUTDOWN
 
 #define PHP_MINIT_FUNCTION		ZEND_MODULE_STARTUP_D
 #define PHP_MSHUTDOWN_FUNCTION	ZEND_MODULE_SHUTDOWN_D
 #define PHP_RINIT_FUNCTION		ZEND_MODULE_ACTIVATE_D
 #define PHP_RSHUTDOWN_FUNCTION	ZEND_MODULE_DEACTIVATE_D
 #define PHP_MINFO_FUNCTION		ZEND_MODULE_INFO_D
+#define PHP_GINIT_FUNCTION		ZEND_GINIT_FUNCTION
+#define PHP_GSHUTDOWN_FUNCTION	ZEND_GSHUTDOWN_FUNCTION
+ 
+#define PHP_MODULE_GLOBALS		ZEND_MODULE_GLOBALS
 
 
 /* Output support */
@@ -390,10 +397,6 @@ END_EXTERN_C()
 } while (0)
 
 #define PUTC_H(c)					(php_header_write(&(c), 1 TSRMLS_CC), (c))
-
-#ifdef ZTS
-#define VIRTUAL_DIR
-#endif
 
 #include "php_streams.h"
 #include "php_memory_streams.h"
