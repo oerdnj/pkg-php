@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_xml.h,v 1.26 2004/01/08 17:32:59 sniper Exp $ */
+/* $Id: php_xml.h,v 1.26.2.1 2005/04/28 12:17:18 rrichards Exp $ */
 
 #ifndef PHP_XML_H
 #define PHP_XML_H
@@ -90,6 +90,7 @@ typedef struct {
 	char **ltags;
 	int lastwasopen;
 	int skipwhite;
+	int isparsing;
 	
 	XML_Char *baseURI;
 } xml_parser;

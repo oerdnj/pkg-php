@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_hash.c,v 1.115 2004/07/10 07:45:49 andi Exp $ */
+/* $Id: zend_hash.c,v 1.115.2.1 2005/04/25 06:11:00 dmitry Exp $ */
 
 #include "zend.h"
 
@@ -1054,7 +1054,7 @@ ZEND_API int zend_hash_get_current_key_ex(HashTable *ht, char **str_index, uint 
 	if (p) {
 		if (p->nKeyLength) {
 			if (duplicate) {
-				*str_index = estrndup(p->arKey, p->nKeyLength);
+				*str_index = estrndup(p->arKey, p->nKeyLength-1);
 			} else {
 				*str_index = p->arKey;
 			}

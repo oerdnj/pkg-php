@@ -1,6 +1,6 @@
 /*
 	Build Configuration Template for Win32.
-	$Id: config.w32.h.in,v 1.5 2004/04/29 00:17:09 wez Exp $
+	$Id: config.w32.h.in,v 1.5.2.1 2005/07/22 18:09:33 wez Exp $
 */
 
 /* Default PHP / PEAR directories */

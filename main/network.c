@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: network.c,v 1.109.2.3 2005/03/11 08:11:28 hyanantha Exp $ */
+/* $Id: network.c,v 1.109.2.5 2005/07/27 12:43:06 hyanantha Exp $ */
 
 /*#define DEBUG_MAIN_NETWORK 1*/
 
@@ -28,9 +28,6 @@
 #ifdef PHP_WIN32
 #define O_RDONLY _O_RDONLY
 #include "win32/param.h"
-#elif defined(NETWARE)
-#include <sys/timeval.h>
-#include <sys/param.h>
 #else
 #include <sys/param.h>
 #endif
@@ -783,8 +780,13 @@ php_socket_t php_network_connect_socket_to_host(const char *host, unsigned short
 		}
 
 		if (sa) {
+			/* free error string recieved during previous iteration (if any) */
+			if (error_string && *error_string) {
+				efree(*error_string);
+				*error_string = NULL;
+			}
+
 			/* make a connection attempt */
-			
 			n = php_network_connect_socket(sock, sa, socklen, asynchronous,
 					timeout ? &working_timeout : NULL,
 					error_string, error_code);

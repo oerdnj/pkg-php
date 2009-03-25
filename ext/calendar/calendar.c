@@ -18,7 +18,7 @@
    |          Wez Furlong               <wez@thebrainroom.com>            |
    +----------------------------------------------------------------------+
  */
-/* $Id: calendar.c,v 1.40.2.1 2004/10/11 06:40:20 iliaa Exp $ */
+/* $Id: calendar.c,v 1.40.2.4 2005/04/14 15:36:45 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -246,6 +246,11 @@ PHP_FUNCTION(cal_days_in_month)
 
 	sdn_start = calendar->to_jd(year, month, 1);
 
+	if (sdn_start == 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "invalid date.");
+		RETURN_FALSE;
+	}
+
 	sdn_next = calendar->to_jd(year, 1 + month, 1);
 
 	if (sdn_next == 0) {
@@ -261,7 +266,7 @@ PHP_FUNCTION(cal_days_in_month)
    Converts from a supported calendar to Julian Day Count */
 PHP_FUNCTION(cal_to_jd)
 {
-	long cal, month, day, year, jdate;
+	long cal, month, day, year;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "llll", &cal, &month, &day, &year) != SUCCESS) {
 		RETURN_FALSE;
@@ -272,8 +277,7 @@ PHP_FUNCTION(cal_to_jd)
 		RETURN_FALSE;
 	}
 
-	jdate = cal_conversion_table[cal].to_jd(year, month, day);
-	RETURN_LONG(jdate);
+	RETURN_LONG(cal_conversion_table[cal].to_jd(year, month, day));
 }
 /* }}} */
 
@@ -342,15 +346,12 @@ PHP_FUNCTION(jdtogregorian)
 PHP_FUNCTION(gregoriantojd)
 {
 	long year, month, day;
-	int jdate;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "lll", &month, &day, &year) == FAILURE) {
 		RETURN_FALSE;
 	}
 
-	jdate = GregorianToSdn(year, month, day);
-
-	RETURN_LONG(jdate);
+	RETURN_LONG(GregorianToSdn(year, month, day));
 }
 /* }}} */
 
@@ -378,15 +379,12 @@ PHP_FUNCTION(jdtojulian)
 PHP_FUNCTION(juliantojd)
 {
 	long year, month, day;
-	int jdate;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "lll", &month, &day, &year) == FAILURE) {
 		RETURN_FALSE;
 	}
 
-	jdate = JulianToSdn(year, month, day);
-
-	RETURN_LONG(jdate);
+	RETURN_LONG(JulianToSdn(year, month, day));
 }
 /* }}} */
 
@@ -529,15 +527,12 @@ PHP_FUNCTION(jdtojewish)
 PHP_FUNCTION(jewishtojd)
 {
 	long year, month, day;
-	int jdate;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "lll", &month, &day, &year) == FAILURE) {
 		RETURN_FALSE;
 	}
 
-	jdate = JewishToSdn(year, month, day);
-
-	RETURN_LONG(jdate);
+	RETURN_LONG(JewishToSdn(year, month, day));
 }
 /* }}} */
 
@@ -565,15 +560,12 @@ PHP_FUNCTION(jdtofrench)
 PHP_FUNCTION(frenchtojd)
 {
 	long year, month, day;
-	int jdate;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "lll", &month, &day, &year) == FAILURE) {
 		RETURN_FALSE;
 	}
 
-	jdate = FrenchToSdn(year, month, day);
-
-	RETURN_LONG(jdate);
+	RETURN_LONG(FrenchToSdn(year, month, day));
 }
 /* }}} */
 

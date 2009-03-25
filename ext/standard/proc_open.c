@@ -15,7 +15,7 @@
    | Author: Wez Furlong <wez@thebrainroom.com>                           |
    +----------------------------------------------------------------------+
  */
-/* $Id: proc_open.c,v 1.28.2.3 2005/03/11 09:01:52 hyanantha Exp $ */
+/* $Id: proc_open.c,v 1.28.2.5 2005/07/01 05:53:06 hyanantha Exp $ */
 
 #if 0 && (defined(__linux__) || defined(sun) || defined(__IRIX__))
 # define _BSD_SOURCE 		/* linux wants this when XOPEN mode is on */
@@ -34,6 +34,11 @@
 #include "exec.h"
 #include "php_globals.h"
 #include "SAPI.h"
+
+#ifdef NETWARE
+#include <proc.h>
+#include <library.h>
+#endif
 
 #if HAVE_SYS_WAIT_H
 #include <sys/wait.h>
@@ -397,6 +402,7 @@ PHP_FUNCTION(proc_get_status)
 			exitcode = WEXITSTATUS(wstatus);
 		}
 		if (WIFSIGNALED(wstatus)) {
+			running = 0;
 			signaled = 1;
 #ifdef NETWARE
 			termsig = WIFTERMSIG(wstatus);
@@ -408,7 +414,7 @@ PHP_FUNCTION(proc_get_status)
 			stopped = 1;
 			stopsig = WSTOPSIG(wstatus);
 		}
-	} else {
+	} else if (wait_pid == -1) {
 		running = 0;
 	}
 #endif
@@ -484,6 +490,13 @@ PHP_FUNCTION(proc_open)
 	SECURITY_ATTRIBUTES security;
 	char *command_with_cmd;
 	UINT old_error_mode;
+#endif
+#ifdef NETWARE
+	char** child_argv = NULL;
+	char* command_dup = NULL;
+	char* orig_cwd = NULL;
+	int command_num_args = 0;
+	wiring_t channel;
 #endif
 	php_process_id_t child;
 	struct php_process_handle *proc;
@@ -748,6 +761,46 @@ PHP_FUNCTION(proc_open)
 	child = pi.hProcess;
 	CloseHandle(pi.hThread);
 
+#elif defined(NETWARE)
+	if (cwd) {
+		orig_cwd = getcwd(NULL, PATH_MAX);
+		chdir2(cwd);
+	}
+	channel.infd = descriptors[0].childend;
+	channel.outfd = descriptors[1].childend;
+	channel.errfd = -1;
+	/* Duplicate the command as processing downwards will modify it*/
+	command_dup = strdup(command);
+	/* get a number of args */
+	construct_argc_argv(command_dup, NULL, &command_num_args, NULL);
+	child_argv = (char**) malloc((command_num_args + 1) * sizeof(char*));
+	if(!child_argv) {
+		free(command_dup);
+		if (cwd && orig_cwd) {
+			chdir2(orig_cwd);
+			free(orig_cwd);
+		}
+	}
+	/* fill the child arg vector */
+	construct_argc_argv(command_dup, NULL, &command_num_args, child_argv);
+	child_argv[command_num_args] = NULL;
+	child = procve(child_argv[0], PROC_DETACHED|PROC_INHERIT_CWD, NULL, &channel, NULL, NULL, 0, NULL, (const char**)child_argv);
+	free(child_argv);
+	free(command_dup);
+	if (cwd && orig_cwd) {
+		chdir2(orig_cwd);
+		free(orig_cwd);
+	}
+	if (child < 0) {
+		/* failed to fork() */
+		/* clean up all the descriptors */
+		for (i = 0; i < ndesc; i++) {
+			close(descriptors[i].childend);
+			close(descriptors[i].parentend);
+		}
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "procve failed - %s", strerror(errno));
+		goto exit_fail;
+	}
 #elif HAVE_FORK
 	/* the unix way */
 	child = fork();

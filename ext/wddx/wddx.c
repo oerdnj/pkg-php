@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: wddx.c,v 1.111 2004/06/30 01:12:03 iliaa Exp $ */
+/* $Id: wddx.c,v 1.111.2.3 2005/05/30 15:13:57 sniper Exp $ */
 
 #include "php.h"
 
@@ -223,7 +223,7 @@ static void release_wddx_packet_rsrc(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 
 #include "ext/session/php_session.h"
 
-#if HAVE_PHP_SESSION
+#if HAVE_PHP_SESSION && !defined(COMPILE_DL_SESSION)
 /* {{{ PS_SERIALIZER_ENCODE_FUNC
  */
 PS_SERIALIZER_ENCODE_FUNC(wddx)
@@ -302,7 +302,7 @@ PHP_MINIT_FUNCTION(wddx)
 {
 	le_wddx = zend_register_list_destructors_ex(release_wddx_packet_rsrc, NULL, "wddx", module_number);
 
-#if HAVE_PHP_SESSION
+#if HAVE_PHP_SESSION && !defined(COMPILE_DL_SESSION)
 	php_session_register_serializer("wddx",
 									PS_SERIALIZER_ENCODE_NAME(wddx),
 									PS_SERIALIZER_DECODE_NAME(wddx));
@@ -317,7 +317,7 @@ PHP_MINIT_FUNCTION(wddx)
 PHP_MINFO_FUNCTION(wddx)
 {
 	php_info_print_table_start();
-#if HAVE_PHP_SESSION
+#if HAVE_PHP_SESSION && !defined(COMPILE_DL_SESSION)
 	php_info_print_table_header(2, "WDDX Support", "enabled" );
 	php_info_print_table_row(2, "WDDX Session Serializer", "enabled" );
 #else
@@ -522,7 +522,10 @@ static void php_wddx_serialize_object(wddx_packet *packet, zval *obj)
 				continue;
 
 			if (zend_hash_get_current_key_ex(HASH_OF(obj), &key, &key_len, &idx, 0, NULL) == HASH_KEY_IS_STRING) {
-				php_wddx_serialize_var(packet, *ent, key, key_len TSRMLS_CC);
+				char *class_name, *prop_name;
+				
+				zend_unmangle_property_name(key, &class_name, &prop_name);
+				php_wddx_serialize_var(packet, *ent, prop_name, strlen(prop_name)+1 TSRMLS_CC);
 			} else {
 				key_len = sprintf(tmp_buf, "%ld", idx);
 				php_wddx_serialize_var(packet, *ent, tmp_buf, key_len TSRMLS_CC);
@@ -617,6 +620,7 @@ void php_wddx_serialize_var(wddx_packet *packet, zval *var, char *name, int name
 	char tmp_buf[WDDX_BUF_LEN];
 	char *name_esc;
 	int name_esc_len;
+	HashTable *ht;
 
 	if (name) {
 		name_esc = php_escape_html_entities(name, name_len, &name_esc_len, 0, ENT_QUOTES, NULL TSRMLS_CC);
@@ -644,11 +648,25 @@ void php_wddx_serialize_var(wddx_packet *packet, zval *var, char *name, int name
 			break;
 		
 		case IS_ARRAY:
+			ht = Z_ARRVAL_P(var);
+			if (ht->nApplyCount > 1) {
+				php_error_docref(NULL TSRMLS_CC, E_ERROR, "WDDX doesn't support circular references");
+				return;
+			}
+			ht->nApplyCount++;															
 			php_wddx_serialize_array(packet, var);
+			ht->nApplyCount--;
 			break;
 
 		case IS_OBJECT:
-			php_wddx_serialize_object(packet, var);
+			ht = Z_OBJPROP_P(var);
+			if (ht->nApplyCount > 1) {
+				php_error_docref(NULL TSRMLS_CC, E_ERROR, "WDDX doesn't support circular references");
+				return;
+			}
+			ht->nApplyCount++;
+ 			php_wddx_serialize_object(packet, var);
+			ht->nApplyCount--;
 			break;
 	}
 	
@@ -972,6 +990,13 @@ static void php_wddx_pop_element(void *user_data, const XML_Char *name)
 						
 						/* Clean up class name var entry */
 						zval_ptr_dtor(&ent1->data);
+					} else if (Z_TYPE_P(ent2->data) == IS_OBJECT) {
+						zend_class_entry *old_scope = EG(scope);
+	
+		    				EG(scope) = Z_OBJCE_P(ent2->data);
+						ent1->data->refcount--;
+						add_property_zval(ent2->data, ent1->varname, ent1->data);
+						EG(scope) = old_scope;
 					} else
 						zend_hash_update(target_hash,
 										 ent1->varname, strlen(ent1->varname)+1,

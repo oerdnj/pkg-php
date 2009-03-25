@@ -22,7 +22,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: ldap.c,v 1.154.2.2 2005/01/19 00:27:42 sniper Exp $ */
+/* $Id: ldap.c,v 1.154.2.7 2005/07/09 01:00:11 sniper Exp $ */
 #define IS_EXT_MODULE
 
 #ifdef HAVE_CONFIG_H
@@ -137,16 +137,18 @@ function_entry ldap_functions[] = {
 	PHP_FE(ldap_compare,								NULL)
 	PHP_FE(ldap_sort,									NULL)
 
-#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP
+#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP || HAVE_ORALDAP_10
+	PHP_FE(ldap_rename,									NULL)
 	PHP_FE(ldap_get_option,			third_arg_force_ref)
 	PHP_FE(ldap_set_option,								NULL)
-	PHP_FE(ldap_parse_result,			arg3to6of6_force_ref)
 	PHP_FE(ldap_first_reference,						NULL)
 	PHP_FE(ldap_next_reference,							NULL)
 #ifdef HAVE_LDAP_PARSE_REFERENCE
 	PHP_FE(ldap_parse_reference,	third_arg_force_ref)
 #endif
-	PHP_FE(ldap_rename,									NULL)
+#ifdef HAVE_LDAP_PARSE_RESULT
+	PHP_FE(ldap_parse_result,			arg3to6of6_force_ref)
+#endif
 #ifdef HAVE_LDAP_START_TLS_S
 	PHP_FE(ldap_start_tls,								NULL)
 #endif
@@ -242,7 +244,7 @@ PHP_MINIT_FUNCTION(ldap)
 	REGISTER_LONG_CONSTANT("LDAP_DEREF_FINDING", LDAP_DEREF_FINDING, CONST_PERSISTENT | CONST_CS);
 	REGISTER_LONG_CONSTANT("LDAP_DEREF_ALWAYS", LDAP_DEREF_ALWAYS, CONST_PERSISTENT | CONST_CS);
 
-#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP
+#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP || HAVE_ORALDAP_10
 	/* LDAP options */
 	REGISTER_LONG_CONSTANT("LDAP_OPT_DEREF", LDAP_OPT_DEREF, CONST_PERSISTENT | CONST_CS);
 	REGISTER_LONG_CONSTANT("LDAP_OPT_SIZELIMIT", LDAP_OPT_SIZELIMIT, CONST_PERSISTENT | CONST_CS);
@@ -253,7 +255,9 @@ PHP_MINIT_FUNCTION(ldap)
 #ifdef LDAP_OPT_RESTART
 	REGISTER_LONG_CONSTANT("LDAP_OPT_RESTART", LDAP_OPT_RESTART, CONST_PERSISTENT | CONST_CS);
 #endif
+#ifdef LDAP_OPT_HOST_NAME
 	REGISTER_LONG_CONSTANT("LDAP_OPT_HOST_NAME", LDAP_OPT_HOST_NAME, CONST_PERSISTENT | CONST_CS);
+#endif
 	REGISTER_LONG_CONSTANT("LDAP_OPT_ERROR_STRING", LDAP_OPT_ERROR_STRING, CONST_PERSISTENT | CONST_CS);
 #ifdef LDAP_OPT_MATCHED_DN
 	REGISTER_LONG_CONSTANT("LDAP_OPT_MATCHED_DN", LDAP_OPT_MATCHED_DN, CONST_PERSISTENT | CONST_CS);
@@ -263,6 +267,13 @@ PHP_MINIT_FUNCTION(ldap)
 #endif
 #ifdef LDAP_OPT_DEBUG_LEVEL
 	REGISTER_LONG_CONSTANT("LDAP_OPT_DEBUG_LEVEL", LDAP_OPT_DEBUG_LEVEL, CONST_PERSISTENT | CONST_CS);
+#endif
+
+#ifdef HAVE_LDAP_SASL
+	REGISTER_LONG_CONSTANT("LDAP_OPT_X_SASL_MECH", LDAP_OPT_X_SASL_MECH, CONST_PERSISTENT | CONST_CS);
+	REGISTER_LONG_CONSTANT("LDAP_OPT_X_SASL_REALM", LDAP_OPT_X_SASL_REALM, CONST_PERSISTENT | CONST_CS);
+	REGISTER_LONG_CONSTANT("LDAP_OPT_X_SASL_AUTHCID", LDAP_OPT_X_SASL_AUTHCID, CONST_PERSISTENT | CONST_CS);
+	REGISTER_LONG_CONSTANT("LDAP_OPT_X_SASL_AUTHZID", LDAP_OPT_X_SASL_AUTHZID, CONST_PERSISTENT | CONST_CS);
 #endif
 
 #ifdef ORALDAP
@@ -303,7 +314,7 @@ PHP_MINFO_FUNCTION(ldap)
 
 	php_info_print_table_start();
 	php_info_print_table_row(2, "LDAP Support", "enabled");
-	php_info_print_table_row(2, "RCS Version", "$Id: ldap.c,v 1.154.2.2 2005/01/19 00:27:42 sniper Exp $");
+	php_info_print_table_row(2, "RCS Version", "$Id: ldap.c,v 1.154.2.7 2005/07/09 01:00:11 sniper Exp $");
 
 	if (LDAPG(max_links) == -1) {
 		snprintf(tmp, 31, "%ld/unlimited", LDAPG(num_links));
@@ -437,7 +448,7 @@ PHP_FUNCTION(ldap_connect)
 static int _get_lderrno(LDAP *ldap)
 {
 #if !HAVE_NSLDAP
-#if LDAP_API_VERSION > 2000
+#if LDAP_API_VERSION > 2000 || HAVE_ORALDAP_10
 	int lderr;
 
 	/* New versions of OpenLDAP do it this way */
@@ -478,42 +489,122 @@ PHP_FUNCTION(ldap_bind)
 /* }}} */
 
 #ifdef HAVE_LDAP_SASL
+typedef struct {
+	char *mech;
+	char *realm;
+	char *authcid;
+	char *passwd;
+	char *authzid;
+} php_ldap_bictx;
+
+/* {{{ _php_sasl_setdefs
+ */
+static php_ldap_bictx *_php_sasl_setdefs(LDAP *ld, char *sasl_mech, char *sasl_realm, char *binddn, char *pass, char *sasl_authz_id)
+{
+	php_ldap_bictx *ctx;
+
+	ctx = ber_memalloc(sizeof(php_ldap_bictx));	
+	ctx->mech    = (sasl_mech) ? ber_strdup(sasl_mech) : NULL;
+	ctx->realm   = (sasl_realm) ? ber_strdup(sasl_realm) : NULL;
+	ctx->authcid = (binddn) ? ber_strdup(binddn) : NULL;
+	ctx->passwd  = (pass) ? ber_strdup(pass) : NULL;
+	ctx->authzid = (sasl_authz_id) ? ber_strdup(sasl_authz_id) : NULL;
+
+	if (ctx->mech == NULL) {
+		ldap_get_option(ld, LDAP_OPT_X_SASL_MECH, &ctx->mech);
+	}
+	if (ctx->realm == NULL) {
+		ldap_get_option(ld, LDAP_OPT_X_SASL_REALM, &ctx->realm);
+	}
+	if (ctx->authcid == NULL) {
+		ldap_get_option(ld, LDAP_OPT_X_SASL_AUTHCID, &ctx->authcid);
+	}
+	if (ctx->authzid == NULL) {
+		ldap_get_option(ld, LDAP_OPT_X_SASL_AUTHZID, &ctx->authzid);
+	}
+
+	return ctx;
+}
+
+/* {{{ _php_sasl_setdefs
+ */
+static void _php_sasl_freedefs(php_ldap_bictx *ctx)
+{
+	if (ctx->mech) ber_memfree(ctx->mech);
+	if (ctx->realm) ber_memfree(ctx->realm);
+	if (ctx->authcid) ber_memfree(ctx->authcid);
+	if (ctx->passwd) ber_memfree(ctx->passwd);
+	if (ctx->authzid) ber_memfree(ctx->authzid);
+	ber_memfree(ctx);
+}
+
 /* {{{ _php_sasl_interact
-   Interact function for SASL */
+   Internal interact function for SASL */
 static int _php_sasl_interact(LDAP *ld, unsigned flags, void *defaults, void *in)
 {
 	sasl_interact_t *interact = in;
+	const char *p;
+	php_ldap_bictx *ctx = defaults;
 
-	while (interact->id != SASL_CB_LIST_END) {
-		const char *dflt = interact->defresult;
-
-		interact->result = strdup((dflt && *dflt) ? dflt : "");
-		interact->len = interact->result ? strlen(interact->result) : 0;
-		interact++;
-	};
+	for (;interact->id != SASL_CB_LIST_END;interact++) {
+		p = NULL;
+		switch(interact->id) {
+			case SASL_CB_GETREALM:
+				p = ctx->realm;
+				break;
+			case SASL_CB_AUTHNAME:
+				p = ctx->authcid;
+				break;
+			case SASL_CB_USER:
+				p = ctx->authzid;
+				break;
+			case SASL_CB_PASS:
+				p = ctx->passwd;
+				break;
+		}
+		if (p) {
+			interact->result = p;
+			interact->len = strlen(interact->result);
+		}
+	}
 	return LDAP_SUCCESS;
 }
 
-/* {{{ proto bool ldap_sasl_bind(resource link)
+/* {{{ proto bool ldap_sasl_bind(resource link [, string binddn, string password, string sasl_mech, string sasl_realm, string sasl_authz_id, string props])
    Bind to LDAP directory using SASL */
 PHP_FUNCTION(ldap_sasl_bind)
 {
 	zval *link;
 	ldap_linkdata *ld;
-	int rc;
+	char *binddn = NULL;
+	char *pass = NULL;
+	char *sasl_mech = NULL;
+	char *sasl_realm = NULL;
+	char *sasl_authz_id = NULL;
+	char *props = NULL;
+	int rc, dn_len, pass_len, mech_len, realm_len, authz_id_len, props_len;
+	php_ldap_bictx *ctx;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &link) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r|ssssss", &link, &binddn, &dn_len, &pass, &pass_len, &sasl_mech, &mech_len, &sasl_realm, &realm_len, &sasl_authz_id, &authz_id_len, &props, &props_len) == FAILURE) {
 		RETURN_FALSE;
 	}
 
 	ZEND_FETCH_RESOURCE(ld, ldap_linkdata *, &link, -1, "ldap link", le_link);
 
-	if ((rc = ldap_sasl_interactive_bind_s(ld->link, NULL, NULL, NULL, NULL, LDAP_SASL_QUIET, _php_sasl_interact, NULL)) != LDAP_SUCCESS) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to bind to server: %s", ldap_err2string(rc));
-		RETURN_FALSE;
-	} else {
-		RETURN_TRUE;
+	ctx = _php_sasl_setdefs(ld->link, sasl_mech, sasl_realm, binddn, pass, sasl_authz_id);
+
+	if (props) {
+		ldap_set_option(ld->link, LDAP_OPT_X_SASL_SECPROPS, props);
 	}
+
+	rc = ldap_sasl_interactive_bind_s(ld->link, binddn, ctx->mech, NULL, NULL, LDAP_SASL_QUIET, _php_sasl_interact, ctx);
+	if (rc != LDAP_SUCCESS) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to bind to server: %s", ldap_err2string(rc));
+		RETVAL_FALSE;
+	} else {
+		RETVAL_TRUE;
+	}
+	_php_sasl_freedefs(ctx);
 }
 /* }}} */
 #endif /* HAVE_LDAP_SASL */
@@ -542,7 +633,7 @@ static void php_set_opts(LDAP *ldap, int sizelimit, int timelimit, int deref)
 {
 	/* sizelimit */
 	if (sizelimit > -1) {
-#if (LDAP_API_VERSION >= 2004) || HAVE_NSLDAP
+#if (LDAP_API_VERSION >= 2004) || HAVE_NSLDAP || HAVE_ORALDAP_10
 		ldap_set_option(ldap, LDAP_OPT_SIZELIMIT, &sizelimit);
 #else
 		ldap->ld_sizelimit = sizelimit; 
@@ -551,7 +642,7 @@ static void php_set_opts(LDAP *ldap, int sizelimit, int timelimit, int deref)
 
 	/* timelimit */
 	if (timelimit > -1) {
-#if (LDAP_API_VERSION >= 2004) || HAVE_NSLDAP
+#if (LDAP_API_VERSION >= 2004) || HAVE_NSLDAP || HAVE_ORALDAP_10
 		ldap_set_option(ldap, LDAP_OPT_TIMELIMIT, &timelimit);
 #else
 		ldap->ld_timelimit = timelimit; 
@@ -560,7 +651,7 @@ static void php_set_opts(LDAP *ldap, int sizelimit, int timelimit, int deref)
 
 	/* deref */
 	if (deref > -1) {
-#if (LDAP_API_VERSION >= 2004) || HAVE_NSLDAP
+#if (LDAP_API_VERSION >= 2004) || HAVE_NSLDAP || HAVE_ORALDAP_10
 		ldap_set_option(ldap, LDAP_OPT_DEREF, &deref);
 #else
 		ldap->ld_deref = deref; 
@@ -636,8 +727,11 @@ static void php_ldap_do_search(INTERNAL_FUNCTION_PARAMETERS, int scope)
 			if (Z_TYPE_PP(link) != IS_ARRAY) {
 				convert_to_string_ex(filter);
 				ldap_filter = Z_STRVAL_PP(filter);
-				convert_to_string_ex(base_dn);
-				ldap_base_dn = Z_STRVAL_PP(base_dn);
+
+				/* If anything else than string is passed, ldap_base_dn = NULL */
+				if (Z_TYPE_PP(base_dn) == IS_STRING) {
+					ldap_base_dn = Z_STRVAL_PP(base_dn);
+				}
 			}
 		break;
 
@@ -673,8 +767,12 @@ static void php_ldap_do_search(INTERNAL_FUNCTION_PARAMETERS, int scope)
 			zend_hash_internal_pointer_reset(Z_ARRVAL_PP(base_dn));
 		} else {
 			nbases = 0; /* this means string, not array */
-			convert_to_string_ex(base_dn);
-			ldap_base_dn = Z_STRLEN_PP(base_dn) < 1 ? NULL : Z_STRVAL_PP(base_dn);
+			/* If anything else than string is passed, ldap_base_dn = NULL */
+			if (Z_TYPE_PP(base_dn) == IS_STRING) {
+				ldap_base_dn = Z_STRVAL_PP(base_dn);
+			} else {
+				ldap_base_dn = NULL;
+			}
 		}
 
 		if (Z_TYPE_PP(filter) == IS_ARRAY) {
@@ -712,8 +810,13 @@ static void php_ldap_do_search(INTERNAL_FUNCTION_PARAMETERS, int scope)
 			if (nbases != 0) { /* base_dn an array? */
 				zend_hash_get_current_data(Z_ARRVAL_PP(base_dn), (void **)&entry);
 				zend_hash_move_forward(Z_ARRVAL_PP(base_dn));
-				convert_to_string_ex(entry);
-				ldap_base_dn = Z_STRLEN_PP(entry) < 1 ? NULL : Z_STRVAL_PP(entry);
+
+				/* If anything else than string is passed, ldap_base_dn = NULL */
+				if (Z_TYPE_PP(entry) == IS_STRING) {
+					ldap_base_dn = Z_STRVAL_PP(entry);
+				} else {
+					ldap_base_dn = NULL;
+				}
 			}
 			if (nfilters != 0) { /* filter an array? */
 				zend_hash_get_current_data(Z_ARRVAL_PP(filter), (void **)&entry);
@@ -752,11 +855,6 @@ static void php_ldap_do_search(INTERNAL_FUNCTION_PARAMETERS, int scope)
 		efree(lds);
 		efree(rcs);
 		return;
-	}
-
-	/* fix to make null base_dn's work */
-	if (strlen(ldap_base_dn) < 1) {
-		ldap_base_dn = NULL;
 	}
 
 	ld = (ldap_linkdata *) zend_fetch_resource(link TSRMLS_CC, -1, "ldap link", NULL, 1, le_link);
@@ -979,12 +1077,12 @@ PHP_FUNCTION(ldap_get_entries)
 			add_index_string(tmp1, num_attrib, attribute, 1);
 
 			num_attrib++;
-#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP || WINDOWS
+#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP || HAVE_ORALDAP_10 || WINDOWS
 			ldap_memfree(attribute);
 #endif
 			attribute = ldap_next_attribute(ldap, ldap_result_entry, ber);
 		}
-#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP || WINDOWS
+#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP || HAVE_ORALDAP_10 || WINDOWS
 		if (ber != NULL)
 			ber_free(ber, 0);
 #endif
@@ -992,7 +1090,7 @@ PHP_FUNCTION(ldap_get_entries)
 		add_assoc_long(tmp1, "count", num_attrib);
 		dn = ldap_get_dn(ldap, ldap_result_entry);
 		add_assoc_string(tmp1, "dn", dn, 1);
-#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP || WINDOWS
+#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP || HAVE_ORALDAP_10 || WINDOWS
 		ldap_memfree(dn);
 #else
 		free(dn);
@@ -1032,7 +1130,7 @@ PHP_FUNCTION(ldap_first_attribute)
 		ZEND_REGISTER_RESOURCE(*berp, ber, le_ber_entry);
 
 		RETVAL_STRING(attribute, 1);
-#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP || WINDOWS
+#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP || HAVE_ORALDAP_10 || WINDOWS
 		ldap_memfree(attribute);
 #endif
 	}
@@ -1063,7 +1161,7 @@ PHP_FUNCTION(ldap_next_attribute)
 		ZEND_REGISTER_RESOURCE(*berp, ber, le_ber_entry);
 
 		RETVAL_STRING(attribute, 1);
-#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP || WINDOWS
+#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP || HAVE_ORALDAP_10 || WINDOWS
 		ldap_memfree(attribute);
 #endif
 	}
@@ -1110,12 +1208,12 @@ PHP_FUNCTION(ldap_get_attributes)
 		add_index_string(return_value, num_attrib, attribute, 1);
 
 		num_attrib++;
-#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP || WINDOWS
+#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP || HAVE_ORALDAP_10 || WINDOWS
 		ldap_memfree(attribute);
 #endif
 		attribute = ldap_next_attribute(ld->link, resultentry->data, ber);
 	}
-#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP || WINDOWS
+#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP || HAVE_ORALDAP_10 || WINDOWS
 		if (ber != NULL) {
 			ber_free(ber, 0);
 		}
@@ -1223,7 +1321,7 @@ PHP_FUNCTION(ldap_get_dn)
 	text = ldap_get_dn(ld->link, resultentry->data);
 	if (text != NULL) {
 		RETVAL_STRING(text, 1);
-#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP || WINDOWS
+#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP || HAVE_ORALDAP_10 || WINDOWS
 		ldap_memfree(text);
 #else
 		free(text);
@@ -1286,7 +1384,7 @@ PHP_FUNCTION(ldap_dn2ufn)
 	
 	if (ufn !=NULL) {
 		RETVAL_STRING(ufn, 1);
-#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP || WINDOWS
+#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP || HAVE_ORALDAP_10 || WINDOWS
 		ldap_memfree(ufn);
 #endif
 	} else {
@@ -1606,8 +1704,7 @@ PHP_FUNCTION(ldap_sort)
 }
 /* }}} */
 
-
-#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP
+#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP || HAVE_ORALDAP_10
 /* {{{ proto bool ldap_get_option(resource link, int option, mixed retval)
    Get the current value of various session-wide parameters */
 PHP_FUNCTION(ldap_get_option) 
@@ -1645,8 +1742,16 @@ PHP_FUNCTION(ldap_get_option)
 			ZVAL_LONG(*retval, val);
 		} break;
 	/* options with string value */
-	case LDAP_OPT_HOST_NAME:
 	case LDAP_OPT_ERROR_STRING:
+#ifdef LDAP_OPT_HOST_NAME
+	case LDAP_OPT_HOST_NAME:
+#endif
+#ifdef HAVE_LDAP_SASL
+	case LDAP_OPT_X_SASL_MECH:   
+	case LDAP_OPT_X_SASL_REALM:
+	case LDAP_OPT_X_SASL_AUTHCID:
+	case LDAP_OPT_X_SASL_AUTHZID:
+#endif
 #ifdef LDAP_OPT_MATCHED_DN
 	case LDAP_OPT_MATCHED_DN:
 #endif
@@ -1700,7 +1805,7 @@ PHP_FUNCTION(ldap_set_option)
 	opt = Z_LVAL_PP(option);
 
 	switch (opt) {
-		/* options with int value */
+	/* options with int value */
 	case LDAP_OPT_DEREF:
 	case LDAP_OPT_SIZELIMIT:
 	case LDAP_OPT_TIMELIMIT:
@@ -1718,8 +1823,16 @@ PHP_FUNCTION(ldap_set_option)
 			}
 		} break;
 		/* options with string value */
-	case LDAP_OPT_HOST_NAME:
 	case LDAP_OPT_ERROR_STRING:
+#ifdef LDAP_OPT_HOST_NAME
+	case LDAP_OPT_HOST_NAME:
+#endif
+#ifdef HAVE_LDAP_SASL
+	case LDAP_OPT_X_SASL_MECH:   
+	case LDAP_OPT_X_SASL_REALM:
+	case LDAP_OPT_X_SASL_AUTHCID:
+	case LDAP_OPT_X_SASL_AUTHZID:
+#endif
 #ifdef LDAP_OPT_MATCHED_DN
 	case LDAP_OPT_MATCHED_DN:
 #endif
@@ -1815,6 +1928,7 @@ PHP_FUNCTION(ldap_set_option)
 }
 /* }}} */
 
+#ifdef HAVE_LDAP_PARSE_RESULT
 /* {{{ proto bool ldap_parse_result(resource link, resource result, int errcode, string matcheddn, string errmsg, array referrals)
    Extract information from result */
 PHP_FUNCTION(ldap_parse_result) 
@@ -1880,6 +1994,7 @@ PHP_FUNCTION(ldap_parse_result)
 	RETURN_TRUE;
 }
 /* }}} */
+#endif
 
 /* {{{ proto resource ldap_first_reference(resource link, resource result)
    Return first reference */
@@ -1992,7 +2107,7 @@ PHP_FUNCTION(ldap_rename)
 	convert_to_string_ex(newparent);
 	convert_to_boolean_ex(deleteoldrdn);
 
-#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP	
+#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP || HAVE_ORALDAP_10
 	rc = ldap_rename_s(ld->link, Z_STRVAL_PP(dn), Z_STRVAL_PP(newrdn), Z_STRVAL_PP(newparent), Z_BVAL_PP(deleteoldrdn), NULL, NULL);
 #else
 	if (Z_STRLEN_PP(newparent) != 0) {
@@ -2036,10 +2151,10 @@ PHP_FUNCTION(ldap_start_tls)
 }
 /* }}} */
 #endif
-#endif /* (LDAP_API_VERSION > 2000) || HAVE_NSLDAP */
+#endif /* (LDAP_API_VERSION > 2000) || HAVE_NSLDAP || HAVE_ORALDAP_10 */
 
 #if defined(LDAP_API_FEATURE_X_OPENLDAP) && defined(HAVE_3ARG_SETREBINDPROC)
-/* {{{ proto _ldap_rebind_proc()
+/* {{{ _ldap_rebind_proc()
 */
 int _ldap_rebind_proc(LDAP *ldap, const char *url, ber_tag_t req, ber_int_t msgid, void *params)
 {

@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_http.c,v 1.55.2.14 2005/03/23 08:08:34 dmitry Exp $ */
+/* $Id: php_http.c,v 1.55.2.19 2005/07/08 09:36:42 dmitry Exp $ */
 
 #include "php_soap.h"
 #include "ext/standard/base64.h"
@@ -55,7 +55,7 @@ static int stream_alive(php_stream *stream  TSRMLS_DC)
 }
 
 /* Proxy HTTP Authentication */
-static void proxy_authentication(zval* this_ptr, smart_str* soap_headers TSRMLS_DC)
+void proxy_authentication(zval* this_ptr, smart_str* soap_headers TSRMLS_DC)
 {
 	zval **login, **password;
 
@@ -72,6 +72,32 @@ static void proxy_authentication(zval* this_ptr, smart_str* soap_headers TSRMLS_
 		smart_str_0(&auth);
 		buf = php_base64_encode(auth.c, auth.len, &len);
 		smart_str_append_const(soap_headers, "Proxy-Authorization: Basic ");
+		smart_str_appendl(soap_headers, buf, len);
+		smart_str_append_const(soap_headers, "\r\n");
+		efree(buf);
+		smart_str_free(&auth);
+	}
+}
+
+/* HTTP Authentication */
+void basic_authentication(zval* this_ptr, smart_str* soap_headers TSRMLS_DC)
+{
+	zval **login, **password;
+
+	if (zend_hash_find(Z_OBJPROP_P(this_ptr), "_login", sizeof("_login"), (void **)&login) == SUCCESS &&
+			!zend_hash_exists(Z_OBJPROP_P(this_ptr), "_digest", sizeof("_digest"))) {
+		char* buf;
+		int len;
+		smart_str auth = {0};
+
+		smart_str_appendl(&auth, Z_STRVAL_PP(login), Z_STRLEN_PP(login));
+		smart_str_appendc(&auth, ':');
+		if (zend_hash_find(Z_OBJPROP_P(this_ptr), "_password", sizeof("_password"), (void **)&password) == SUCCESS) {
+			smart_str_appendl(&auth, Z_STRVAL_PP(password), Z_STRLEN_PP(password));
+		}
+		smart_str_0(&auth);
+		buf = php_base64_encode(auth.c, auth.len, &len);
+		smart_str_append_const(soap_headers, "Authorization: Basic ");
 		smart_str_appendl(soap_headers, buf, len);
 		smart_str_append_const(soap_headers, "\r\n");
 		efree(buf);
@@ -230,6 +256,7 @@ int make_http_soap_request(zval  *this_ptr,
 	char *connection;
 	int http_1_1;
 	int http_status;
+	int content_type_xml = 0;
 	char *content_encoding;
 
 	if (this_ptr == NULL || Z_TYPE_P(this_ptr) != IS_OBJECT) {
@@ -664,7 +691,7 @@ try_again:
 
 	do {
 		if (!get_http_headers(stream, &http_headers, &http_header_size TSRMLS_CC)) {
-			efree(http_headers);
+			if (http_headers) {efree(http_headers);}
 			if (request != buf) {efree(request);}
 			php_stream_close(stream);
 			zend_hash_del(Z_OBJPROP_P(this_ptr), "httpsocket", sizeof("httpsocket"));
@@ -685,7 +712,7 @@ try_again:
 		if (http_version) {
 			char *tmp;
 
-			if (strncmp(http_version,"1.1", 3)) {
+			if (!strncmp(http_version,"1.1", 3)) {
 				http_1_1 = 1;
 			}
 
@@ -962,6 +989,7 @@ try_again:
 		}
 		if (strncmp(content_type, "text/xml", cmplen) == 0 ||
 		    strncmp(content_type, "application/soap+xml", cmplen) == 0) {
+			content_type_xml = 1;
 /*
 			if (strncmp(http_body, "<?xml", 5)) {
 				zval *err;
@@ -1032,13 +1060,15 @@ try_again:
 		if (*buffer_len == 0) {
 			error = 1;
 		} else if (*buffer_len > 0) {
-			char *s = *buffer;
+			if (!content_type_xml) {
+				char *s = *buffer;
 
-			while (*s != '\0' && *s < ' ') {
-			  s++;
-			}
-			if (strncmp(s, "<?xml", 5)) {
-			  error = 1;
+				while (*s != '\0' && *s < ' ') {
+					s++;
+				}
+				if (strncmp(s, "<?xml", 5)) {
+					error = 1;
+				}
 			}
 		}
 
@@ -1125,6 +1155,14 @@ static int get_http_body(php_stream *stream, int close, char *headers,  char **r
 	if (header) {
 		header_length = atoi(header);
 		efree(header);
+		if (!header_length && !header_chunked) {
+			/* Empty response */
+			http_buf = emalloc(1);
+			http_buf[0] = '\0';
+			(*response) = http_buf;
+			(*out_size) = 0;
+			return TRUE;
+		}
 	}
 
 	if (header_chunked) {

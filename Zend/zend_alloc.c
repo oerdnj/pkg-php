@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_alloc.c,v 1.137.2.1 2004/08/27 16:49:54 andi Exp $ */
+/* $Id: zend_alloc.c,v 1.137.2.4 2005/08/18 15:14:23 iliaa Exp $ */
 
 #include "zend.h"
 #include "zend_alloc.h"
@@ -75,7 +75,8 @@ static long mem_block_end_magic = MEM_BLOCK_END_MAGIC;
 #define _CHECK_MEMORY_LIMIT(s, rs, file, lineno) { AG(allocated_memory) += rs;\
 								if (AG(memory_limit)<AG(allocated_memory)) {\
 									int php_mem_limit = AG(memory_limit); \
-									if (EG(in_execution) && AG(memory_limit)+1048576 > AG(allocated_memory) - rs) { \
+									AG(allocated_memory) -= rs; \
+									if (EG(in_execution) && AG(memory_limit)+1048576 > AG(allocated_memory)) { \
 										AG(memory_limit) = AG(allocated_memory) + 1048576; \
 										if (file) { \
 											zend_error(E_ERROR,"Allowed memory size of %d bytes exhausted at %s:%d (tried to allocate %d bytes)", php_mem_limit, file, lineno, s); \
@@ -387,7 +388,6 @@ ZEND_API char *_estrdup(const char *s ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_DC)
 	memcpy(p, s, length);
 	return p;
 }
-
 
 ZEND_API char *_estrndup(const char *s, uint length ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_DC)
 {

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: xsltprocessor.c,v 1.29.2.5 2005/01/17 16:01:35 chregu Exp $ */
+/* $Id: xsltprocessor.c,v 1.29.2.6 2005/06/14 19:40:33 rrichards Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -200,7 +200,7 @@ static void xsl_ext_function_php(xmlXPathParserContextPtr ctxt, int nargs, int t
 					int j;
 					dom_object *domintern;
 					array_init(args[i]);
-					if (obj->nodesetval->nodeNr > 0) {
+					if (obj->nodesetval && obj->nodesetval->nodeNr > 0) {
 						domintern = (dom_object *) php_dom_object_get_data((void *) obj->nodesetval->nodeTab[0]->doc);
 						for (j = 0; j < obj->nodesetval->nodeNr; j++) {
 							xmlNodePtr node = obj->nodesetval->nodeTab[j];

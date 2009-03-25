@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: string.c,v 1.420.2.6 2005/03/01 15:01:08 hyanantha Exp $ */
+/* $Id: string.c,v 1.420.2.12 2005/07/16 11:18:35 hyanantha Exp $ */
 
 /* Synced with php 3.0 revision 1.193 1999-06-16 [ssb] */
 
@@ -1175,6 +1175,22 @@ PHPAPI size_t php_dirname(char *path, size_t len)
 			return len;
 		}
 	}
+#elif defined(NETWARE)
+	/*
+	 * Find the first occurence of : from the left 
+	 * move the path pointer to the position just after :
+	 * increment the len_adjust to the length of path till colon character(inclusive)
+	 * If there is no character beyond : simple return len
+	 */
+	char *colonpos = NULL;
+	colonpos = strchr(path, ':');
+	if(colonpos != NULL) {
+		len_adjust = ((colonpos - path) + 1);
+		path += len_adjust;
+		if(len_adjust == len) {
+			return len;
+		}
+	}
 #endif
 
 	if (len == 0) {
@@ -1199,9 +1215,21 @@ PHPAPI size_t php_dirname(char *path, size_t len)
 	}
 	if (end < path) {
 		/* No slash found, therefore return '.' */
+#ifdef NETWARE
+		if(len_adjust == 0) {
+			path[0] = '.';
+			path[1] = '\0';
+			return 1; //only one character
+		} 
+		else {
+			path[0] = '\0';
+			return len_adjust;
+		}
+#else
 		path[0] = '.';
 		path[1] = '\0';
 		return 1 + len_adjust;
+#endif
 	}
 
 	/* Strip slashes which came before the file name */
@@ -1382,8 +1410,6 @@ PHP_FUNCTION(stristr)
 		if (!Z_STRLEN_PP(needle)) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Empty delimiter.");
 			efree(haystack_orig);
-			zval_ptr_dtor(haystack);
-			zval_ptr_dtor(needle);
 			RETURN_FALSE;
 		}
 
@@ -1409,8 +1435,6 @@ PHP_FUNCTION(stristr)
 		RETVAL_FALSE;
 	}
 
-	zval_ptr_dtor(haystack);
-	zval_ptr_dtor(needle);
 	efree(haystack_orig);
 }
 /* }}} */
@@ -1839,7 +1863,13 @@ PHP_FUNCTION(chunk_split)
 	}
 
 	if (chunklen > Z_STRLEN_PP(p_str)) {
-		RETURN_STRINGL(Z_STRVAL_PP(p_str), Z_STRLEN_PP(p_str), 1);	
+		/* to maintain BC, we must return original string + ending */
+		result_len = endlen + Z_STRLEN_PP(p_str);
+		result = emalloc(result_len + 1);
+		memcpy(result, Z_STRVAL_PP(p_str), Z_STRLEN_PP(p_str));
+		memcpy(result + Z_STRLEN_PP(p_str), end, endlen);
+		result[result_len] = '\0'; 
+		RETURN_STRINGL(result, result_len, 0);	
 	}
 
 	if (!Z_STRLEN_PP(p_str)) {
@@ -2856,6 +2886,14 @@ PHPAPI char *php_addcslashes(char *str, int length, int *new_length, int should_
  */
 PHPAPI char *php_addslashes(char *str, int length, int *new_length, int should_free TSRMLS_DC)
 {
+	return php_addslashes_ex(str, length, new_length, should_free, 0 TSRMLS_CC);
+}
+/* }}} */
+
+/* {{{ php_addslashes_ex
+ */
+PHPAPI char *php_addslashes_ex(char *str, int length, int *new_length, int should_free, int ignore_sybase TSRMLS_DC)
+{
 	/* maximum string length, worst case situation */
 	char *new_str;
 	char *source, *target;
@@ -2874,7 +2912,7 @@ PHPAPI char *php_addslashes(char *str, int length, int *new_length, int should_f
 	end = source + length;
 	target = new_str;
 	
-	if (PG(magic_quotes_sybase)) {
+	if (!ignore_sybase && PG(magic_quotes_sybase)) {
 		while (source < end) {
 			switch (*source) {
 				case '\0':
@@ -2937,7 +2975,7 @@ PHPAPI int php_char_to_str_ex(char *str, uint len, char from, char *to, int to_l
 	char *source, *target, *tmp, *source_end=str+len, *tmp_end = NULL;
 	
 	for (source = str; source < source_end; source++) {
-		if (*source == from) {
+		if ((case_sensitivity && *source == from) || (!case_sensitivity && tolower(*source) == tolower(from))) {
 			char_count++;
 		}
 	}

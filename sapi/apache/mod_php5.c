@@ -17,7 +17,7 @@
    | PHP 4.0 patches by Zeev Suraski <zeev@zend.com>                      |
    +----------------------------------------------------------------------+
  */
-/* $Id: mod_php5.c,v 1.10 2004/07/14 09:43:26 sesser Exp $ */
+/* $Id: mod_php5.c,v 1.10.2.4 2005/08/01 08:12:42 dmitry Exp $ */
 
 #include "php_apache_http.h"
 #include "http_conf_globals.h"
@@ -199,9 +199,7 @@ static int sapi_apache_header_handler(sapi_header_struct *sapi_header, sapi_head
 
 	*p = ':';  /* a well behaved header handler shouldn't change its original arguments */
 
-	efree(sapi_header->header);
-	
-	return 0;  /* don't use the default SAPI mechanism, Apache duplicates this functionality */
+	return SAPI_HEADER_ADD;
 }
 /* }}} */
 
@@ -209,14 +207,20 @@ static int sapi_apache_header_handler(sapi_header_struct *sapi_header, sapi_head
  */
 static int sapi_apache_send_headers(sapi_headers_struct *sapi_headers TSRMLS_DC)
 {
-	if(SG(server_context) == NULL) { /* server_context is not here anymore */
+	request_rec *r = SG(server_context);
+
+	if(r == NULL) { /* server_context is not here anymore */
 		return SAPI_HEADER_SEND_FAILED;
 	}
 
-	((request_rec *) SG(server_context))->status = SG(sapi_headers).http_response_code;
-	send_http_header((request_rec *) SG(server_context));
+	r->status = SG(sapi_headers).http_response_code;
+	if(r->status==304) {
+		send_error_response(r,0);
+	} else {
+		send_http_header(r);
+	}   
 	return SAPI_HEADER_SENT_SUCCESSFULLY;
-}
+} 
 /* }}} */
 
 /* {{{ sapi_apache_register_server_variables
@@ -348,6 +352,10 @@ static struct stat *php_apache_get_stat(TSRMLS_D)
  */
 static char *php_apache_getenv(char *name, size_t name_len TSRMLS_DC)
 {
+	if (SG(server_context) == NULL) {
+		return NULL;
+	}
+
 	return (char *) table_get(((request_rec *) SG(server_context))->subprocess_env, name);
 }
 /* }}} */
@@ -686,11 +694,11 @@ static void copy_per_dir_entry(php_per_dir_entry *per_dir_entry)
 
 /* {{{ should_overwrite_per_dir_entry
  */
-static zend_bool should_overwrite_per_dir_entry(HashTable *target_ht, php_per_dir_entry *orig_per_dir_entry, zend_hash_key *hash_key, void *pData)
+static zend_bool should_overwrite_per_dir_entry(HashTable *target_ht, php_per_dir_entry *new_per_dir_entry, zend_hash_key *hash_key, void *pData)
 {
-	php_per_dir_entry *new_per_dir_entry;
+	php_per_dir_entry *orig_per_dir_entry;
 
-	if (zend_hash_find(target_ht, hash_key->arKey, hash_key->nKeyLength, (void **) &new_per_dir_entry)==FAILURE) {
+	if (zend_hash_find(target_ht, hash_key->arKey, hash_key->nKeyLength, (void **) &orig_per_dir_entry)==FAILURE) {
 		return 1; /* does not exist in dest, copy from source */
 	}
 

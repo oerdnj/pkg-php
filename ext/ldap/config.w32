@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.1.2.1 2005/01/20 22:50:29 edink Exp $
+// $Id: config.w32,v 1.1.2.2 2005/04/17 16:26:30 sniper Exp $
 // vim:ft=javascript
 
 ARG_WITH("ldap", "LDAP support", "no");
@@ -12,8 +12,8 @@ if (PHP_LDAP != "no") {
 			CHECK_LIB("olber32.lib", "ldap", PHP_LDAP)) {
 		EXTENSION('ldap', 'ldap.c');
 
-		AC_DEFINE('HAVE_LDAP_START_TLS_S', 1);
 		AC_DEFINE('HAVE_LDAP_PARSE_REFERENCE', 1);
+		AC_DEFINE('HAVE_LDAP_START_TLS_S', 1);
 		AC_DEFINE('HAVE_LDAP', 1);
 
 	} else {

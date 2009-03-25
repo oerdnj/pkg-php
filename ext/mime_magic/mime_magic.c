@@ -15,7 +15,7 @@
   | Author: Hartmut Holzgraefe  <hholzgra@php.net>                       |
   +----------------------------------------------------------------------+
 
-  $Id: mime_magic.c,v 1.37.2.1 2004/12/16 12:35:42 sniper Exp $ 
+  $Id: mime_magic.c,v 1.37.2.2 2005/05/25 03:06:07 iliaa Exp $ 
 
   This module contains a lot of stuff taken from Apache mod_mime_magic,
   so the license section is a little bit longer than usual:
@@ -345,6 +345,7 @@ PHP_FUNCTION(mime_content_type)
 		/* fallthru if not a stream resource */
 	default:
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "can only process string or stream arguments");
+		RETURN_FALSE;
 		break;
 	}
 

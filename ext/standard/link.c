@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: link.c,v 1.48.2.2 2005/03/11 08:51:08 hyanantha Exp $ */
+/* $Id: link.c,v 1.48.2.3 2005/07/15 09:29:19 hyanantha Exp $ */
 
 #include "php.h"
 #include "php_filestat.h"
@@ -89,11 +89,7 @@ PHP_FUNCTION(readlink)
 PHP_FUNCTION(linkinfo)
 {
 	zval **filename;
-#if defined(NETWARE) && defined(CLIB_STAT_PATCH)
-	struct stat_libc sb;
-#else
 	struct stat sb;
-#endif
 	int ret;
 
 	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &filename) == FAILURE) {

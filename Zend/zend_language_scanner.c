@@ -2780,7 +2780,7 @@ char *yytext;
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_language_scanner.l,v 1.111.2.8 2005/03/07 16:48:12 zeev Exp $ */
+/* $Id: zend_language_scanner.l,v 1.111.2.10 2005/06/09 08:54:24 dmitry Exp $ */
 
 #define yyleng SCNG(yy_leng)
 #define yytext SCNG(yy_text)
@@ -2892,7 +2892,8 @@ void startup_scanner(TSRMLS_D)
 {
 	CG(heredoc) = NULL;
 	CG(heredoc_len)=0;
-	RESET_DOC_COMMENT();
+	CG(doc_comment) = NULL;
+	CG(doc_comment_len) = 0;
 	SCNG(yy_start_stack_ptr) = 0;
 	SCNG(yy_start_stack_depth) = 0;
 	SCNG(current_buffer) = NULL;
@@ -4729,6 +4730,7 @@ case 124:
 YY_RULE_SETUP
 {
 	CG(comment_start_line) = CG(zend_lineno);
+	RESET_DOC_COMMENT();
 	BEGIN(ST_DOC_COMMENT);
 	yymore();
 }
@@ -4750,7 +4752,7 @@ YY_RULE_SETUP
 case 127:
 YY_RULE_SETUP
 {
-	CG(doc_comment) = yytext;     /* no copying - intentional */
+	CG(doc_comment) = estrndup(yytext, yyleng);
 	CG(doc_comment_len) = yyleng;
 	HANDLE_NEWLINES(yytext, yyleng);
 	BEGIN(ST_IN_SCRIPTING);

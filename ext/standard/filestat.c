@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: filestat.c,v 1.130.2.2 2005/03/11 11:20:24 hyanantha Exp $ */
+/* $Id: filestat.c,v 1.130.2.4 2005/07/15 09:29:18 hyanantha Exp $ */
 
 #include "php.h"
 #include "safe_mode.h"
@@ -464,11 +464,7 @@ PHP_FUNCTION(touch)
 {
 	pval **filename, **filetime, **fileatime;
 	int ret;
-#if defined(NETWARE) && defined(CLIB_STAT_PATCH)
-	struct stat_libc sb;
-#else
 	struct stat sb;
-#endif
 	FILE *file;
 	struct utimbuf newtimebuf;
 	struct utimbuf *newtime = NULL;
@@ -550,11 +546,7 @@ PHPAPI void php_stat(const char *filename, php_stat_len filename_length, int typ
 {
 	zval *stat_dev, *stat_ino, *stat_mode, *stat_nlink, *stat_uid, *stat_gid, *stat_rdev,
 	 	*stat_size, *stat_atime, *stat_mtime, *stat_ctime, *stat_blksize, *stat_blocks;
-#if defined(NETWARE) && defined(CLIB_STAT_PATCH)
-	struct stat_libc *stat_sb;
-#else
 	struct stat *stat_sb;
-#endif
 	php_stream_statbuf ssb;
 	int flags = 0, rmask=S_IROTH, wmask=S_IWOTH, xmask=S_IXOTH; /* access rights defaults to other */
 	char *stat_sb_names[13]={"dev", "ino", "mode", "nlink", "uid", "gid", "rdev",
@@ -637,30 +629,26 @@ PHPAPI void php_stat(const char *filename, php_stat_len filename_length, int typ
 	case FS_INODE:
 		RETURN_LONG((long)ssb.sb.st_ino);
 	case FS_SIZE:
-#if defined(NETWARE) && defined(NEW_LIBC)
-		RETURN_LONG((long)(stat_sb->st_size));
-#else
 		RETURN_LONG((long)ssb.sb.st_size);
-#endif
 	case FS_OWNER:
 		RETURN_LONG((long)ssb.sb.st_uid);
 	case FS_GROUP:
 		RETURN_LONG((long)ssb.sb.st_gid);
 	case FS_ATIME:
 #ifdef NETWARE
-		RETURN_LONG((long)((stat_sb->st_atime).tv_sec));
+		RETURN_LONG((long)ssb.sb.st_atime.tv_sec);
 #else
 		RETURN_LONG((long)ssb.sb.st_atime);
 #endif
 	case FS_MTIME:
 #ifdef NETWARE
-		RETURN_LONG((long)((stat_sb->st_mtime).tv_sec));
+		RETURN_LONG((long)ssb.sb.st_mtime.tv_sec);
 #else
 		RETURN_LONG((long)ssb.sb.st_mtime);
 #endif
 	case FS_CTIME:
 #ifdef NETWARE
-		RETURN_LONG((long)((stat_sb->st_ctime).tv_sec));
+		RETURN_LONG((long)ssb.sb.st_ctime.tv_sec);
 #else
 		RETURN_LONG((long)ssb.sb.st_ctime);
 #endif

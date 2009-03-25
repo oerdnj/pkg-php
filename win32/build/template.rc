@@ -1,5 +1,5 @@
 /* This is a template RC file.
- * $Id: template.rc,v 1.5 2004/01/08 10:58:27 wez Exp $
+ * $Id: template.rc,v 1.5.2.1 2005/07/22 18:09:34 wez Exp $
  * Do not edit with MSVC */
 #ifdef APSTUDIO_INVOKED
 # error dont edit with MSVC
@@ -62,3 +62,8 @@ BEGIN
         VALUE "Translation", 0x409, 1200
     END
 END
+
+#ifdef MC_INCLUDE
+#include MC_INCLUDE
+#endif
+

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute.h,v 1.72 2004/03/16 10:14:52 helly Exp $ */
+/* $Id: zend_execute.h,v 1.72.2.1 2005/04/24 14:49:00 sniper Exp $ */
 
 #ifndef ZEND_EXECUTE_H
 #define ZEND_EXECUTE_H
@@ -49,6 +49,7 @@ ZEND_API extern void (*zend_execute_internal)(zend_execute_data *execute_data_pt
 
 void init_executor(TSRMLS_D);
 void shutdown_executor(TSRMLS_D);
+void shutdown_destructors(TSRMLS_D);
 ZEND_API void execute(zend_op_array *op_array TSRMLS_DC);
 ZEND_API void execute_internal(zend_execute_data *execute_data_ptr, int return_value_used TSRMLS_DC);
 ZEND_API int zend_is_true(zval *op);

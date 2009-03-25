@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_com.c,v 1.14 2004/06/16 23:57:25 abies Exp $ */
+/* $Id: com_com.c,v 1.14.2.1 2005/04/19 05:57:21 wez Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -398,7 +398,7 @@ HRESULT php_com_invoke_helper(php_com_dotnet_object *obj, DISPID id_member,
 				
 			default:
 				desc = php_win_err(hr);
-				spprintf(&msg, 0, "Error %s", desc);
+				spprintf(&msg, 0, "Error [0x%08x] %s", hr, desc);
 				LocalFree(desc);
 				break;
 		}
@@ -620,7 +620,7 @@ int php_com_do_invoke_by_id(php_com_dotnet_object *obj, DISPID dispid,
 		efree(vargs);
 	}
 
-	/* a bit strange this, but... */
+	/* a bit of a hack this, but it's needed for COM array access. */
 	if (hr == DISP_E_BADPARAMCOUNT)
 		return hr;
 	

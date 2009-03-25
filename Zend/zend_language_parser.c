@@ -148,7 +148,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_language_parser.y,v 1.144.2.2 2004/09/16 05:44:39 sebastian Exp $ */
+/* $Id: zend_language_parser.y,v 1.144.2.3 2005/06/08 06:48:38 dmitry Exp $ */
 
 /* 
  * LALR shift/reduce conflicts and how they are resolved:
@@ -2566,13 +2566,13 @@ case 86:
 { zend_do_end_class_declaration(&yyvsp[-6], &yyvsp[-5] TSRMLS_CC); }
     break;
 case 87:
-{  yyval.u.constant.value.lval = 0; }
+{ yyval.u.opline_num = CG(zend_lineno); yyval.u.EA.type = 0; }
     break;
 case 88:
-{ yyval.u.constant.value.lval = ZEND_ACC_EXPLICIT_ABSTRACT_CLASS; }
+{ yyval.u.opline_num = CG(zend_lineno); yyval.u.EA.type = ZEND_ACC_EXPLICIT_ABSTRACT_CLASS; }
     break;
 case 89:
-{ yyval.u.constant.value.lval = ZEND_ACC_FINAL_CLASS; }
+{ yyval.u.opline_num = CG(zend_lineno); yyval.u.EA.type = ZEND_ACC_FINAL_CLASS; }
     break;
 case 90:
 { yyval.op_type = IS_UNUSED; }
@@ -2581,7 +2581,7 @@ case 91:
 { yyval = yyvsp[0]; }
     break;
 case 92:
-{ yyval.u.constant.value.lval = ZEND_ACC_INTERFACE; }
+{ yyval.u.opline_num = CG(zend_lineno); yyval.u.EA.type = ZEND_ACC_INTERFACE; }
     break;
 case 97:
 { zend_do_implements_interface(&yyvsp[0] TSRMLS_CC); }

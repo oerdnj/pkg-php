@@ -17,13 +17,10 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: image.c,v 1.98.2.8 2005/03/06 17:04:22 iliaa Exp $ */
+/* $Id: image.c,v 1.98.2.10 2005/06/28 15:22:39 hyanantha Exp $ */
 
 #include "php.h"
 #include <stdio.h>
-#if defined(NETWARE) && !defined(NEW_LIBC)
-#include <sys/socket.h>
-#endif
 #if HAVE_FCNTL_H
 #include <fcntl.h>
 #endif
@@ -401,7 +398,7 @@ static unsigned int php_next_marker(php_stream * stream, int last_marker, int co
 				last_marker = M_PSEUDO; /* stop skipping non 0xff for M_COM */
 			}
 		}
-		if (++a > 10)
+		if (++a > 25)
 		{
 			/* who knows the maxim amount of 0xff? though 7 */
 			/* but found other implementations              */

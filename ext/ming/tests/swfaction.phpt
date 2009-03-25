@@ -1,9 +1,12 @@
 --TEST--
 Ming: Simple SWFAction() test
 --SKIPIF--
-<?php if (!extension_loaded("ming")) print "skip"; ?>
+<?php
+if (!extension_loaded("ming")) die("skip"); 
+if (MING_NEW || MING_ZLIB) die("skip new ming");
+?>
 --FILE--
-<?php /* $Id: swfaction.phpt,v 1.1 2003/09/05 14:46:37 sniper Exp $ */
+<?php /* $Id: swfaction.phpt,v 1.1.2.1 2005/07/25 21:03:29 helly Exp $ */
 
   $s = new SWFShape();
   $f = $s->addFill(0xff, 0, 0);
@@ -40,9 +43,9 @@ Ming: Simple SWFAction() test
   $m->add(new SWFAction("gotoFrame(0); play();"));
   $m->nextFrame();
 
-  $m->save('./test.swf');
-  echo md5_file('./test.swf'), "\n";
-  unlink('./test.swf');
+  $m->save(dirname(__FILE__).'/test.swf');
+  echo md5_file(dirname(__FILE__).'/test.swf'), "\n";
+  unlink(dirname(__FILE__).'/test.swf');
 ?>
 --EXPECT--
 9e47538692393b9915faf3fc7e686cd5

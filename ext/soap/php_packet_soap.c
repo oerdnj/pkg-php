@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_packet_soap.c,v 1.36.2.4 2005/03/22 10:18:47 dmitry Exp $ */
+/* $Id: php_packet_soap.c,v 1.36.2.5 2005/04/20 10:58:37 dmitry Exp $ */
 
 #include "php_soap.h"
 
@@ -33,6 +33,11 @@ int parse_packet_soap(zval *this_ptr, char *buffer, int buffer_size, sdlFunction
 	HashTable *hdrs = NULL;
 
 	ZVAL_NULL(return_value);
+
+	/* Response for one-way opearation */
+	if (buffer_size == 0) {
+		return TRUE;
+	}
 
 	/* Parse XML packet */
 	response = soap_xmlParseMemory(buffer, buffer_size);

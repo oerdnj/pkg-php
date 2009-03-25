@@ -22,7 +22,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: oci8.c,v 1.257.2.6 2005/01/20 18:42:40 tony2001 Exp $ */
+/* $Id: oci8.c,v 1.257.2.8 2005/06/13 09:31:03 tony2001 Exp $ */
 
 /* TODO list:
  *
@@ -786,7 +786,7 @@ PHP_MINFO_FUNCTION(oci)
 
 	php_info_print_table_start();
 	php_info_print_table_row(2, "OCI8 Support", "enabled");
-	php_info_print_table_row(2, "Revision", "$Revision: 1.257.2.6 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 1.257.2.8 $");
 
 	sprintf(buf, "%ld", num_persistent);
 	php_info_print_table_row(2, "Active Persistent Links", buf);
@@ -1016,6 +1016,15 @@ static void _oci_conn_list_dtor(oci_connection *connection TSRMLS_DC)
 		);
 	}
 
+	if (connection->pError) {
+		CALL_OCI(
+			OCIHandleFree(
+				(dvoid *) connection->pError, 
+				(ub4) OCI_HTYPE_ERROR
+			)
+		);
+	}
+
 	if (connection->session && connection->session->exclusive) {
 		/* close associated session when destructed */
 		zend_list_delete(connection->session->num);
@@ -1024,15 +1033,6 @@ static void _oci_conn_list_dtor(oci_connection *connection TSRMLS_DC)
 	if (connection->descriptors) {
 		zend_hash_destroy(connection->descriptors);
 		efree(connection->descriptors);
-	}
-
-	if (connection->pError) {
-		CALL_OCI(
-			OCIHandleFree(
-				(dvoid *) connection->pError, 
-				(ub4) OCI_HTYPE_ERROR
-			)
-		);
 	}
 
 	oci_debug("END   _oci_conn_list_dtor: id=%d",connection->id);
@@ -3694,6 +3694,12 @@ break;
 				RETURN_FALSE;
 			}
 			value_sz = sizeof(void*);
+			break;
+		case SQLT_CHR:
+			break;
+		default:
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unknown or unsupported datatype given: %u", ocitype);
+			RETURN_FALSE;
 			break;
 	}
 	

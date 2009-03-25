@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_API.h,v 1.185.2.2 2005/01/22 12:29:13 helly Exp $ */
+/* $Id: zend_API.h,v 1.185.2.4 2005/06/27 17:42:06 stas Exp $ */
 
 #ifndef ZEND_API_H
 #define ZEND_API_H
@@ -179,7 +179,11 @@ ZEND_API int zend_disable_function(char *function_name, uint function_name_lengt
 ZEND_API int zend_disable_class(char *class_name, uint class_name_length TSRMLS_DC);
 
 ZEND_API void zend_wrong_param_count(TSRMLS_D);
-ZEND_API zend_bool zend_is_callable(zval *callable, zend_bool syntax_only, char **callable_name);
+
+#define IS_CALLABLE_CHECK_SYNTAX_ONLY (1<<0)
+#define IS_CALLABLE_CHECK_NO_ACCESS   (1<<1)
+
+ZEND_API zend_bool zend_is_callable(zval *callable, uint check_flags, char **callable_name);
 ZEND_API zend_bool zend_make_callable(zval *callable, char **callable_name TSRMLS_DC);
 ZEND_API char *zend_get_module_version(char *module_name);
 ZEND_API int zend_get_module_started(char *module_name);
@@ -197,6 +201,7 @@ ZEND_API void zend_update_property_string(zend_class_entry *scope, zval *object,
 ZEND_API zval *zend_read_property(zend_class_entry *scope, zval *object, char *name, int name_length, zend_bool silent TSRMLS_DC);
 
 ZEND_API zend_class_entry *zend_get_class_entry(zval *zobject TSRMLS_DC);
+ZEND_API int zend_get_object_classname(zval *object, char **class_name, zend_uint *class_name_len TSRMLS_DC);
 
 #define getThis() (this_ptr)
 

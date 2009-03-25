@@ -12,7 +12,7 @@
 ** This header file defines the interface that the SQLite library
 ** presents to client programs.
 **
-** @(#) $Id: sqlite.w32.h,v 1.5 2004/01/16 23:48:39 wez Exp $
+** @(#) $Id: sqlite.w32.h,v 1.5.2.1 2005/05/09 16:01:12 zeev Exp $
 */
 #ifndef _SQLITE_H_
 #define _SQLITE_H_
@@ -167,6 +167,7 @@ int sqlite_exec(
 #define SQLITE_AUTH        23   /* Authorization denied */
 #define SQLITE_FORMAT      24   /* Auxiliary database format error */
 #define SQLITE_RANGE       25   /* 2nd parameter to sqlite_bind out of range */
+#define SQLITE_NOTADB      26   /* File opened that is not a database file */
 #define SQLITE_ROW         100  /* sqlite_step() has another row ready */
 #define SQLITE_DONE        101  /* sqlite_step() has finished executing */
 

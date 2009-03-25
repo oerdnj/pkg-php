@@ -17,11 +17,11 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: sess_sqlite.c,v 1.16 2004/03/07 22:35:26 sas Exp $ */
+/* $Id: sess_sqlite.c,v 1.16.2.1 2005/05/30 15:13:57 sniper Exp $ */
 
 #include "php.h"
 
-#if HAVE_PHP_SESSION
+#if HAVE_PHP_SESSION && !defined(COMPILE_DL_SESSION)
 
 #include "ext/session/php_session.h"
 #include "ext/standard/php_lcg.h"
@@ -185,7 +185,7 @@ PS_GC_FUNC(sqlite)
 	return SQLITE_RETVAL(rv);
 }
 
-#endif /* HAVE_PHP_SESSION */
+#endif /* HAVE_PHP_SESSION && !defined(COMPILE_DL_SESSION) */
 
 /*
  * Local variables:

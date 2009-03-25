@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: apache_config.c,v 1.5 2004/01/08 08:18:05 andi Exp $ */
+/* $Id: apache_config.c,v 1.5.2.1 2005/07/04 12:47:26 dmitry Exp $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 
@@ -166,7 +166,7 @@ void apply_config(void *dummy)
 			zend_hash_move_forward(&d->config)) {
 		zend_hash_get_current_data(&d->config, (void **) &data);
 		phpapdebug((stderr, "APPLYING (%s)(%s)\n", str, data->value));
-		if (zend_alter_ini_entry(str, str_len, data->value, data->value_len, data->status, PHP_INI_STAGE_RUNTIME) == FAILURE) {
+		if (zend_alter_ini_entry(str, str_len, data->value, data->value_len, data->status, PHP_INI_STAGE_ACTIVATE) == FAILURE) {
 			phpapdebug((stderr, "..FAILED\n"));
 		}	
 	}

@@ -1,16 +1,20 @@
 dnl
-dnl $Id: config.m4,v 1.7 2003/11/19 12:07:59 chregu Exp $
+dnl $Id: config.m4,v 1.7.2.1 2005/04/27 13:13:38 sniper Exp $
 dnl
 
 PHP_ARG_WITH(xsl, for XSL support,
 [  --with-xsl[=DIR]        Include new XSL support (requires libxslt >= 1.0.18).
                           DIR is the libxslt install directory.])
 
-if test "$PHP_XSL" != "no" -a "$PHP_DOM" = "no"; then
-  AC_MSG_ERROR([XSL extension requires DOM extension, add --enable-dom.])
-fi
-
 if test "$PHP_XSL" != "no"; then
+
+  if test "$PHP_LIBXML" = "no"; then
+    AC_MSG_ERROR([XSL extension requires LIBXML extension, add --enable-libxml])
+  fi
+  
+  if test "$PHP_DOM" = "no"; then
+    AC_MSG_ERROR([XSL extension requires DOM extension, add --enable-dom])
+  fi
 
   for i in $PHP_XSL /usr/local /usr; do
     if test -x "$i/bin/xslt-config"; then

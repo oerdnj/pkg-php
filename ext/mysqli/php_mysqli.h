@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: php_mysqli.h,v 1.38.2.2 2004/09/04 14:19:20 georg Exp $ 
+  $Id: php_mysqli.h,v 1.38.2.6 2005/05/21 08:54:56 georg Exp $ 
 */
 
 /* A little hack to prevent build break, when mysql is used together with
@@ -55,6 +55,7 @@ typedef struct {
 	MYSQL		*mysql;
 	zval		*li_read;
 	php_stream	*li_stream;
+	unsigned int multi_query;	
 } MY_MYSQL;
 
 typedef struct {
@@ -94,6 +95,10 @@ typedef struct {
 #define PHP_MYSQLI_API
 #endif
 
+#if (MYSQL_VERSION_ID > 40112 && MYSQL_VERSION_ID < 50000) || MYSQL_VERSION_ID > 50005
+#define HAVE_MYSQLI_SET_CHARSET
+#endif
+
 #ifdef ZTS
 #include "TSRM.h"
 #endif
@@ -131,14 +136,14 @@ zend_class_entry _mysqli_result_class_entry;
 
 PHP_MYSQLI_EXPORT(zend_object_value) mysqli_objects_new(zend_class_entry * TSRMLS_DC);
 
-#define MYSQLI_DISABLE_MQ if (MyG(multi_query)) { \
+#define MYSQLI_DISABLE_MQ if (mysql->multi_query) { \
 	mysql_set_server_option(mysql->mysql, MYSQL_OPTION_MULTI_STATEMENTS_OFF); \
-	MyG(multi_query) = 0; \
+	mysql->multi_query = 0; \
 } 
 
-#define MYSQLI_ENABLE_MQ if (!MyG(multi_query)) { \
+#define MYSQLI_ENABLE_MQ if (!mysql->multi_query) { \
 	mysql_set_server_option(mysql->mysql, MYSQL_OPTION_MULTI_STATEMENTS_ON); \
-	MyG(multi_query) = 1; \
+	mysql->multi_query = 1; \
 } 
 
 #define REGISTER_MYSQLI_CLASS_ENTRY(name, mysqli_entry, class_functions) { \
@@ -272,6 +277,9 @@ PHP_FUNCTION(mysqli_affected_rows);
 PHP_FUNCTION(mysqli_autocommit);
 PHP_FUNCTION(mysqli_change_user);
 PHP_FUNCTION(mysqli_character_set_name);
+#ifdef HAVE_MYSQLI_SET_CHARSET
+PHP_FUNCTION(mysqli_set_charset);
+#endif
 PHP_FUNCTION(mysqli_close);
 PHP_FUNCTION(mysqli_commit);
 PHP_FUNCTION(mysqli_connect);
@@ -386,7 +394,6 @@ ZEND_BEGIN_MODULE_GLOBALS(mysqli)
 	char			*error_msg;
 	int				report_mode;
 	HashTable		*report_ht;
-	unsigned int	multi_query;
 #ifdef HAVE_EMBEDDED_MYSQLI
 	unsigned int	embedded;
 #endif

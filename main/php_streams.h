@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_streams.h,v 1.95.2.2 2005/02/22 00:24:50 iliaa Exp $ */
+/* $Id: php_streams.h,v 1.95.2.5 2005/07/16 12:14:45 hyanantha Exp $ */
 
 #ifndef PHP_STREAMS_H
 #define PHP_STREAMS_H
@@ -103,11 +103,7 @@ typedef struct _php_stream_filter php_stream_filter;
 #include "streams/php_stream_filter_api.h"
 
 typedef struct _php_stream_statbuf {
-#if defined(NETWARE) && defined(CLIB_STAT_PATCH)
-	struct stat_libc sb; /* regular info */
-#else
 	struct stat sb; /* regular info */
-#endif
 	/* extended info to go here some day: content-type etc. etc. */
 } php_stream_statbuf;
 
@@ -410,10 +406,8 @@ END_EXTERN_C()
 #define PHP_STREAM_OPTION_RETURN_NOTIMPL	-2 /* underlying stream does not implement; streams can handle it instead */
 
 /* copy up to maxlen bytes from src to dest.  If maxlen is PHP_STREAM_COPY_ALL, copy until eof(src).
- * Uses mmap if the src is a plain file and at offset 0 
- * To ensure we don't take up too much memory when reading large files, set the default mmap length
- * at this many bytes */
-#define PHP_STREAM_COPY_ALL		2000000
+ * Uses mmap if the src is a plain file and at offset 0 */
+#define PHP_STREAM_COPY_ALL			((size_t)-1)
 
 BEGIN_EXTERN_C()
 PHPAPI size_t _php_stream_copy_to_stream(php_stream *src, php_stream *dest, size_t maxlen STREAMS_DC TSRMLS_DC);
@@ -507,6 +501,7 @@ END_EXTERN_C()
 
 int php_init_stream_wrappers(int module_number TSRMLS_DC);
 int php_shutdown_stream_wrappers(int module_number TSRMLS_DC);
+void php_shutdown_stream_hashes(TSRMLS_D);
 PHP_RSHUTDOWN_FUNCTION(streams);
 
 BEGIN_EXTERN_C()

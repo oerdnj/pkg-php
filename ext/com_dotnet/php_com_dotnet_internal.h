@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_com_dotnet_internal.h,v 1.12 2004/06/16 23:57:25 abies Exp $ */
+/* $Id: php_com_dotnet_internal.h,v 1.12.2.1 2005/04/19 05:57:21 wez Exp $ */
 
 #ifndef PHP_COM_DOTNET_INTERNAL_H
 #define PHP_COM_DOTNET_INTERNAL_H
@@ -37,10 +37,8 @@ typedef struct _php_com_dotnet_object {
 
 	ITypeInfo *typeinfo;
 	long code_page;
-	unsigned int have_default_bind:1;
 
 	zend_class_entry *ce;
-	DISPID default_bind; /* default property for array accesses */
 
    	/* associated event sink */
 	IDispatch *sink_dispatch;

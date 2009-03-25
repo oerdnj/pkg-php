@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: sapi_apache2.c,v 1.40.2.7 2005/03/10 11:23:57 jorton Exp $ */
+/* $Id: sapi_apache2.c,v 1.40.2.11 2005/09/02 13:51:26 sniper Exp $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 
@@ -112,9 +112,7 @@ php_apache_sapi_header_handler(sapi_header_struct *sapi_header,sapi_headers_stru
 		apr_table_add(ctx->r->headers_out, sapi_header->header, val);
 	}
 	
-	sapi_free_header(sapi_header);
-
-	return 0;
+	return SAPI_HEADER_ADD;
 }
 
 static int
@@ -264,22 +262,17 @@ static void php_apache_sapi_log_message(char *msg)
 
 	ctx = SG(server_context);
 
-	/* We use APLOG_STARTUP because it keeps us from printing the
-	 * data and time information at the beginning of the error log
-	 * line.  Not sure if this is correct, but it mirrors what happens
-	 * with Apache 1.3 -- rbb
-	 */
 	if (ctx == NULL) { /* we haven't initialized our ctx yet, oh well */
 		ap_log_error(APLOG_MARK, APLOG_ERR | APLOG_STARTUP, 0, NULL, "%s", msg);
 	} else {
-		ap_log_rerror(APLOG_MARK, APLOG_ERR | APLOG_STARTUP, 0, ctx->r, "%s", msg);
+		ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, ctx->r, "%s", msg);
 	}
 }
 
 static void php_apache_sapi_log_message_ex(char *msg, request_rec *r)
 {
 	if (r) {
-		ap_log_rerror(APLOG_MARK, APLOG_ERR | APLOG_STARTUP, 0, r, msg, r->filename);
+		ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r, msg, r->filename);
 	} else {
 		php_apache_sapi_log_message(msg);
 	}
@@ -513,6 +506,7 @@ zend_first_try {
 
 	ctx = SG(server_context);
 	if (ctx == NULL) {
+normal:
 		ctx = SG(server_context) = apr_pcalloc(r->pool, sizeof(*ctx));
 		/* register a cleanup so we clear out the SG(server_context)
 		 * after each request. Note: We pass in the pointer to the
@@ -529,6 +523,11 @@ zend_first_try {
 		}
 	} else {
 		parent_req = ctx->r;
+		/* check if comming due to ErrorDocument */
+		if (parent_req && parent_req->status != HTTP_OK) {
+			parent_req = NULL;
+			goto normal;
+		}
 		ctx->r = r;
 		brigade = ctx->brigade;
 	}

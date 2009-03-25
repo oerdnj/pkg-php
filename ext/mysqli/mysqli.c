@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli.c,v 1.43.2.12 2005/03/06 21:41:38 helly Exp $ 
+  $Id: mysqli.c,v 1.43.2.17 2005/06/27 18:22:00 tony2001 Exp $ 
 */
 
 #ifdef HAVE_CONFIG_H
@@ -66,7 +66,7 @@ void php_free_stmt_bind_buffer(BIND_BUFFER bbuf, int type)
 	for (i=0; i < bbuf.var_cnt; i++) {
 
 		/* free temporary bind buffer */
-		if (type == FETCH_RESULT) {
+		if (type == FETCH_RESULT && bbuf.buf[i].val) {
 			efree(bbuf.buf[i].val);
 		}
 
@@ -120,19 +120,33 @@ void php_clear_mysql(MY_MYSQL *mysql) {
 static void mysqli_objects_free_storage(zend_object *object TSRMLS_DC)
 {
 	mysqli_object 	*intern = (mysqli_object *)object;
+	
+	zend_objects_free_object_storage(&(intern->zo) TSRMLS_CC);
+}
+/* }}} */
+
+/* {{{ mysqli_objects_destroy_object
+ */
+static void mysqli_objects_destroy_object(void *object, zend_object_handle handle TSRMLS_DC)
+{
+	mysqli_object 	*intern = (mysqli_object *)object;
 	MYSQLI_RESOURCE	*my_res = (MYSQLI_RESOURCE *)intern->ptr;
 
-	zend_hash_destroy(intern->zo.properties);
-	FREE_HASHTABLE(intern->zo.properties);
+	zend_objects_destroy_object(object, handle TSRMLS_CC);
 
 	/* link object */
 	if (instanceof_function(intern->zo.ce, mysqli_link_class_entry TSRMLS_CC)) {
 		if (my_res && my_res->ptr) {
 			MY_MYSQL *mysql = (MY_MYSQL *)my_res->ptr;
 		
-			mysql_close(mysql->mysql);
+			if (mysql->mysql) {
+				mysql_close(mysql->mysql);
+			}
 
-			php_clear_mysql(mysql);		
+			php_clear_mysql(mysql);
+			efree(mysql);
+
+			my_res->ptr = NULL;
 		}
 	} else if (intern->zo.ce == mysqli_stmt_class_entry) { /* stmt object */
 		if (my_res && my_res->ptr) {
@@ -143,8 +157,8 @@ static void mysqli_objects_free_storage(zend_object *object TSRMLS_DC)
 			mysql_free_result(my_res->ptr);
 		}
 	}
+	intern->ptr = NULL;
 	my_efree(my_res);
-	efree(object);
 }
 /* }}} */
 
@@ -328,7 +342,7 @@ PHP_MYSQLI_EXPORT(zend_object_value) mysqli_objects_new(zend_class_entry *class_
 	zend_hash_copy(intern->zo.properties, &class_type->default_properties, (copy_ctor_func_t) zval_add_ref,
 					(void *) &tmp, sizeof(zval *));
 
-	retval.handle = zend_objects_store_put(intern, (zend_objects_store_dtor_t) zend_objects_destroy_object, (zend_objects_free_object_storage_t) mysqli_objects_free_storage, NULL TSRMLS_CC);
+	retval.handle = zend_objects_store_put(intern, (zend_objects_store_dtor_t) mysqli_objects_destroy_object, (zend_objects_free_object_storage_t) mysqli_objects_free_storage, NULL TSRMLS_CC);
 	retval.handlers = &mysqli_object_handlers;
 
 	return retval;
@@ -387,7 +401,6 @@ static void php_mysqli_init_globals(zend_mysqli_globals *mysqli_globals)
 	mysqli_globals->reconnect = 0;
 	mysqli_globals->report_mode = 0;
 	mysqli_globals->report_ht = 0;
-	mysqli_globals->multi_query = 0;
 }
 /* }}} */
 
@@ -456,7 +469,7 @@ PHP_MINIT_FUNCTION(mysqli)
 	/* for mysqli_stmt_set_attr */
 	REGISTER_LONG_CONSTANT("MYSQLI_STMT_ATTR_UPDATE_MAX_LENGTH", STMT_ATTR_UPDATE_MAX_LENGTH, CONST_CS | CONST_PERSISTENT);
 
-#ifdef STMT_ATTR_CURSOR_TYPE
+#if MYSQL_VERSION_ID > 50003
 	REGISTER_LONG_CONSTANT("MYSQLI_STMT_ATTR_CURSOR_TYPE", STMT_ATTR_CURSOR_TYPE, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("MYSQLI_CURSOR_TYPE_NO_CURSOR", CURSOR_TYPE_NO_CURSOR, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("MYSQLI_CURSOR_TYPE_READ_ONLY", CURSOR_TYPE_READ_ONLY, CONST_CS | CONST_PERSISTENT);
@@ -513,6 +526,9 @@ PHP_MINIT_FUNCTION(mysqli)
 	
 	/* bind blob support */
 	REGISTER_LONG_CONSTANT("MYSQLI_NO_DATA", MYSQL_NO_DATA, CONST_CS | CONST_PERSISTENT);
+#ifdef MYSQL_DATA_TRUNCATED
+	REGISTER_LONG_CONSTANT("MYSQLI_DATA_TRUNCATED", MYSQL_DATA_TRUNCATED, CONST_CS | CONST_PERSISTENT);
+#endif
 
 	/* reporting */
 	REGISTER_LONG_CONSTANT("MYSQLI_REPORT_INDEX", MYSQLI_REPORT_INDEX, CONST_CS | CONST_PERSISTENT);
@@ -582,7 +598,7 @@ void php_mysqli_fetch_into_hash(INTERNAL_FUNCTION_PARAMETERS, int override_flags
 {
 	MYSQL_RES		*result;
 	zval			*mysql_result;
-	int				fetchtype;
+	long			fetchtype;
 	unsigned int	i;
 	MYSQL_FIELD		*fields;
 	MYSQL_ROW		row;

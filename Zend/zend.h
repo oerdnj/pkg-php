@@ -17,12 +17,12 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend.h,v 1.257.2.23 2005/03/10 11:30:44 hyanantha Exp $ */
+/* $Id: zend.h,v 1.257.2.25 2005/08/25 17:41:08 zeev Exp $ */
 
 #ifndef ZEND_H
 #define ZEND_H
 
-#define ZEND_VERSION "2.0.4-dev"
+#define ZEND_VERSION "2.0.5"
 
 #define ZEND_ENGINE_2
 
@@ -452,6 +452,7 @@ END_EXTERN_C()
 
 void zend_activate(TSRMLS_D);
 void zend_deactivate(TSRMLS_D);
+void zend_call_destructors(TSRMLS_D);
 void zend_activate_modules(TSRMLS_D);
 void zend_deactivate_modules(TSRMLS_D);
 void zend_post_deactivate_modules(TSRMLS_D);

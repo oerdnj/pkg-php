@@ -4,7 +4,7 @@
 #
 
 phpincludedir = $(includedir)/php
-phpbuilddir = $(prefix)/lib/php/build
+phpbuilddir = $(libdir)/build
 
 BUILD_FILES = \
 	scripts/phpize.m4 \
@@ -21,7 +21,7 @@ BUILD_FILES_EXEC = \
 	config.sub
 
 bin_SCRIPTS = phpize php-config
-bin_src_SCRIPTS = phpextdist
+man_PAGES = phpize.1 php-config.1
 
 install-build:
 	@echo "Installing build environment:     $(INSTALL_ROOT)$(phpbuilddir)/"
@@ -47,7 +47,7 @@ HEADER_DIRS = \
 	ext/xml/expat/ \
 	ext/mbstring/ \
 	ext/mbstring/libmbfl/ \
-    ext/mbstring/libmbfl/mbfl/ \
+	ext/mbstring/libmbfl/mbfl/ \
 	ext/sqlite/libsqlite/src/sqlite.h
 
 install-headers:
@@ -75,11 +75,13 @@ install-programs: $(builddir)/phpize $(builddir)/php-config
 		echo "  program: $(program_prefix)$$prog$(program_suffix)"; \
 		$(INSTALL) -m 755 $(builddir)/$$prog $(INSTALL_ROOT)$(bindir)/$(program_prefix)$$prog$(program_suffix); \
 	done
-	@for prog in $(bin_src_SCRIPTS); do \
-		echo "  program: $(program_prefix)$$prog$(program_suffix)"; \
-		$(INSTALL) -m 755 $(top_srcdir)/scripts/$$prog $(INSTALL_ROOT)$(bindir)/$(program_prefix)$$prog$(program_suffix); \
+	@echo "Installing man pages:             $(INSTALL_ROOT)$(mandir)/man1/"
+	@$(mkinstalldirs) $(INSTALL_ROOT)$(mandir)/man1
+	@for page in $(man_PAGES); do \
+		echo "  page: $$page"; \
+		$(INSTALL_DATA) $(builddir)/man1/$$page $(INSTALL_ROOT)$(mandir)/man1/$$page; \
 	done
-
+	
 $(builddir)/phpize: $(srcdir)/phpize.in $(top_builddir)/config.status
 	(CONFIG_FILES=$@ CONFIG_HEADERS= $(top_builddir)/config.status)
 

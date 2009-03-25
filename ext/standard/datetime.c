@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: datetime.c,v 1.121.2.4 2005/03/11 09:07:34 hyanantha Exp $ */
+/* $Id: datetime.c,v 1.121.2.6 2005/08/30 09:15:58 derick Exp $ */
 
 #include "php.h"
 #include "zend_operators.h"
@@ -657,7 +657,7 @@ static void php_date(INTERNAL_FUNCTION_PARAMETERS, int gm)
 					wk = (yd + 6 - wd + fd) / 7 - (fd > 3);
 				}
 
-				sprintf(tmp_buff, "%d", wk);  /* SAFE */
+				sprintf(tmp_buff, "%02d", wk);  /* SAFE */
 				strcat(Z_STRVAL_P(return_value), tmp_buff);
 				break;
 
@@ -953,7 +953,7 @@ char *php_std_date(time_t t TSRMLS_DC)
 				tm1->tm_hour, tm1->tm_min, tm1->tm_sec);
 	} else {
 		snprintf(str, 80, "%s, %02d-%s-%02d %02d:%02d:%02d GMT",
-				day_short_names[tm1->tm_wday],
+				day_full_names[tm1->tm_wday],
 				tm1->tm_mday,
 				mon_short_names[tm1->tm_mon],
 				((tm1->tm_year) % 100),

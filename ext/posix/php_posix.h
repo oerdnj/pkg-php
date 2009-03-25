@@ -17,7 +17,7 @@
  */
 
 
-/* $Id: php_posix.h,v 1.14 2004/01/08 17:32:41 sniper Exp $ */
+/* $Id: php_posix.h,v 1.14.2.1 2005/05/09 12:16:11 sniper Exp $ */
 
 #ifndef PHP_POSIX_H
 #define PHP_POSIX_H
@@ -54,8 +54,12 @@ PHP_FUNCTION(posix_seteuid);
 #ifdef HAVE_SETEGID
 PHP_FUNCTION(posix_setegid);
 #endif
+#ifdef HAVE_GETGROUPS
 PHP_FUNCTION(posix_getgroups);
+#endif
+#ifdef HAVE_GETLOGIN
 PHP_FUNCTION(posix_getlogin);
+#endif
 
 /* POSIX.1, 4.3 */
 PHP_FUNCTION(posix_getpgrp);

@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_sdl.c,v 1.70.2.8 2005/03/29 13:14:57 zeev Exp $ */
+/* $Id: php_sdl.c,v 1.70.2.12 2005/07/08 09:36:42 dmitry Exp $ */
 
 #include "php_soap.h"
 #include "ext/libxml/php_libxml.h"
@@ -50,21 +50,10 @@ encodePtr get_encoder_from_prefix(sdlPtr sdl, xmlNodePtr node, const char *type)
 	parse_namespace(type, &cptype, &ns);
 	nsptr = xmlSearchNs(node->doc, node, ns);
 	if (nsptr != NULL) {
-		int ns_len = strlen(nsptr->href);
-		int type_len = strlen(cptype);
-		int len = ns_len + type_len + 1;
-		char *nscat = emalloc(len + 1);
-
-		memcpy(nscat, nsptr->href, ns_len);
-		nscat[ns_len] = ':';
-		memcpy(nscat+ns_len+1, cptype, type_len);
-		nscat[len] = '\0';
-
-		enc = get_encoder_ex(sdl, nscat, len);
+		enc = get_encoder(sdl, nsptr->href, cptype);
 		if (enc == NULL) {
-			enc = get_encoder_ex(sdl, type, type_len);
+			enc = get_encoder_ex(sdl, cptype, strlen(cptype));
 		}
-		efree(nscat);
 	} else {
 		enc = get_encoder_ex(sdl, type, strlen(type));
 	}
@@ -128,8 +117,24 @@ encodePtr get_encoder(sdlPtr sdl, const char *ns, const char *type)
 	nscat[len] = '\0';
 
 	enc = get_encoder_ex(sdl, nscat, len);
-
 	efree(nscat);
+
+	if (enc == NULL &&
+	    ((ns_len == sizeof(SOAP_1_1_ENC_NAMESPACE)-1 &&
+	      memcmp(ns, SOAP_1_1_ENC_NAMESPACE, sizeof(SOAP_1_1_ENC_NAMESPACE)-1) == 0) ||
+	     (ns_len == sizeof(SOAP_1_2_ENC_NAMESPACE)-1 &&
+	      memcmp(ns, SOAP_1_2_ENC_NAMESPACE, sizeof(SOAP_1_2_ENC_NAMESPACE)-1) == 0))) {
+		ns_len = sizeof(XSD_NAMESPACE)-1;
+		len = ns_len + type_len + 1;
+		nscat = emalloc(len + 1);
+		memcpy(nscat, XSD_NAMESPACE, sizeof(XSD_NAMESPACE)-1);
+		nscat[ns_len] = ':';
+		memcpy(nscat+ns_len+1, type, type_len);
+		nscat[len] = '\0';
+
+		enc = get_encoder_ex(sdl, nscat, len);
+		efree(nscat);
+	}
 	return enc;
 }
 
@@ -201,46 +206,13 @@ static void load_wsdl_ex(zval *this_ptr, char *struri, sdlCtx *ctx, int include 
 	xmlDocPtr wsdl;
 	xmlNodePtr root, definitions, trav;
 	xmlAttrPtr targetNamespace;
-	php_stream_context *context=NULL;
-	zval **proxy_host, **proxy_port, *orig_context, *new_context;
 
 	if (zend_hash_exists(&ctx->docs, struri, strlen(struri)+1)) {
 		return;
 	}
-
-	if (zend_hash_find(Z_OBJPROP_P(this_ptr), "_proxy_host", sizeof("_proxy_host"), (void **) &proxy_host) == SUCCESS &&
-	    Z_TYPE_PP(proxy_host) == IS_STRING &&
-	    zend_hash_find(Z_OBJPROP_P(this_ptr), "_proxy_port", sizeof("_proxy_port"), (void **) &proxy_port) == SUCCESS &&
-	    Z_TYPE_PP(proxy_port) == IS_LONG) {
-	    	zval str_port, *str_proxy;
-	    	smart_str proxy = {0};
-		str_port = **proxy_port;
-		zval_copy_ctor(&str_port);
-		convert_to_string(&str_port);
-		smart_str_appends(&proxy,"tcp://");
-		smart_str_appends(&proxy,Z_STRVAL_PP(proxy_host));
-		smart_str_appends(&proxy,":");
-		smart_str_appends(&proxy,Z_STRVAL(str_port));
-		zval_dtor(&str_port);
-		MAKE_STD_ZVAL(str_proxy);
-		ZVAL_STRING(str_proxy, proxy.c, 1);
-		smart_str_free(&proxy);
-		
-		context = php_stream_context_alloc();
-		php_stream_context_set_option(context, "http", "proxy", str_proxy);
-		zval_ptr_dtor(&str_proxy);
-		MAKE_STD_ZVAL(new_context);
-		php_stream_context_to_zval(context, new_context);
-		orig_context = php_libxml_switch_context(new_context TSRMLS_CC);
-	}
 	
 	wsdl = soap_xmlParseFile(struri);
 	
-	if (context) {
-		php_libxml_switch_context(orig_context TSRMLS_CC);
-		zval_ptr_dtor(&new_context);
-	}
-
 	if (!wsdl) {
 		soap_error1(E_ERROR, "Parsing WSDL: Couldn't load from '%s'", struri);
 	}
@@ -1065,7 +1037,7 @@ static sdlPtr load_wsdl(zval *this_ptr, char *struri TSRMLS_DC)
 	return ctx.sdl;
 }
 
-#define WSDL_CACHE_VERSION 0x0c
+#define WSDL_CACHE_VERSION 0x0e
 
 #define WSDL_CACHE_GET(ret,type,buf)   memcpy(&ret,*buf,sizeof(type)); *buf += sizeof(type);
 #define WSDL_CACHE_GET_INT(ret,buf)    ret = ((unsigned char)(*buf)[0])|((unsigned char)(*buf)[1]<<8)|((unsigned char)(*buf)[2]<<16)|((int)(*buf)[3]<<24); *buf += 4;
@@ -1214,6 +1186,7 @@ static void sdl_deserialize_type(sdlTypePtr type, sdlTypePtr *types, encodePtr *
 	type->fixed = sdl_deserialize_string(in);
 	type->ref = sdl_deserialize_string(in);
 	WSDL_CACHE_GET_1(type->nillable, char, in);
+	WSDL_CACHE_GET_1(type->form, sdlForm, in);
 
 	WSDL_CACHE_GET_INT(i, in);
 	type->encode = encoders[i];
@@ -1351,9 +1324,9 @@ static void sdl_deserialize_soap_body(sdlSoapBindingFunctionBodyPtr body, encode
 					tmp2->name = sdl_deserialize_string(in);
 					tmp2->ns = sdl_deserialize_string(in);
 					WSDL_CACHE_GET_INT(n, in);
-					tmp->encode = encoders[n];
+					tmp2->encode = encoders[n];
 					WSDL_CACHE_GET_INT(n, in);
-					tmp->element = types[n];
+					tmp2->element = types[n];
 					--j;
 				}
 			}
@@ -1788,6 +1761,7 @@ static void sdl_serialize_type(sdlTypePtr type, HashTable *tmp_encoders, HashTab
 	sdl_serialize_string(type->fixed, out);
 	sdl_serialize_string(type->ref, out);
 	WSDL_CACHE_PUT_1(type->nillable, out);
+	WSDL_CACHE_PUT_1(type->form, out);
 	sdl_serialize_encoder_ref(type->encode, tmp_encoders, out);
 
 	if (type->restrictions) {
@@ -2239,6 +2213,57 @@ sdlPtr get_sdl(zval *this_ptr, char *uri TSRMLS_DC)
 	sdlPtr sdl = NULL;
 	char* old_error_code = SOAP_GLOBAL(error_code);
 	int uri_len;
+	php_stream_context *context=NULL;
+	zval **proxy_host, **proxy_port, *orig_context, *new_context;
+	smart_str headers = {0};
+
+	if (zend_hash_find(Z_OBJPROP_P(this_ptr), "_proxy_host", sizeof("_proxy_host"), (void **) &proxy_host) == SUCCESS &&
+	    Z_TYPE_PP(proxy_host) == IS_STRING &&
+	    zend_hash_find(Z_OBJPROP_P(this_ptr), "_proxy_port", sizeof("_proxy_port"), (void **) &proxy_port) == SUCCESS &&
+	    Z_TYPE_PP(proxy_port) == IS_LONG) {
+	    	zval str_port, *str_proxy;
+	    	smart_str proxy = {0};
+		str_port = **proxy_port;
+		zval_copy_ctor(&str_port);
+		convert_to_string(&str_port);
+		smart_str_appends(&proxy,"tcp://");
+		smart_str_appends(&proxy,Z_STRVAL_PP(proxy_host));
+		smart_str_appends(&proxy,":");
+		smart_str_appends(&proxy,Z_STRVAL(str_port));
+		zval_dtor(&str_port);
+		MAKE_STD_ZVAL(str_proxy);
+		ZVAL_STRING(str_proxy, proxy.c, 1);
+		smart_str_free(&proxy);
+		
+		context = php_stream_context_alloc();
+		php_stream_context_set_option(context, "http", "proxy", str_proxy);
+		zval_ptr_dtor(&str_proxy);
+
+		proxy_authentication(this_ptr, &headers TSRMLS_CC);
+	}
+
+	basic_authentication(this_ptr, &headers TSRMLS_CC);
+
+	if (headers.len > 0) {
+		zval *str_headers;
+
+		if (!context) {
+			context = php_stream_context_alloc();
+		}
+
+		smart_str_0(&headers);
+		MAKE_STD_ZVAL(str_headers);
+		ZVAL_STRING(str_headers, headers.c, 1);
+		php_stream_context_set_option(context, "http", "header", str_headers);
+		smart_str_free(&headers);
+		zval_ptr_dtor(&str_headers);
+	}
+
+	if (context) {
+		MAKE_STD_ZVAL(new_context);
+		php_stream_context_to_zval(context, new_context);
+		orig_context = php_libxml_switch_context(new_context TSRMLS_CC);
+	}
 
 	SOAP_GLOBAL(error_code) = "WSDL";
 
@@ -2279,7 +2304,14 @@ sdlPtr get_sdl(zval *this_ptr, char *uri TSRMLS_DC)
 	} else {
 		sdl = load_wsdl(this_ptr, uri TSRMLS_CC);
 	}
+
 	SOAP_GLOBAL(error_code) = old_error_code;
+
+	if (context) {
+		php_libxml_switch_context(orig_context TSRMLS_CC);
+		zval_ptr_dtor(&new_context);
+	}
+
 	return sdl;
 }
 

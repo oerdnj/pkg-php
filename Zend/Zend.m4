@@ -1,5 +1,5 @@
 dnl
-dnl $Id: Zend.m4,v 1.43.2.4 2005/03/10 09:50:37 hyanantha Exp $
+dnl $Id: Zend.m4,v 1.43.2.5 2005/06/07 17:22:56 sniper Exp $
 dnl
 dnl This file contains Zend specific autoconf functions.
 dnl
@@ -136,6 +136,15 @@ AC_ARG_ENABLE(debug,
 
 AC_DEFUN([LIBZEND_OTHER_CHECKS],[
 
+AC_ARG_ENABLE(zend-memory-manager,
+[  --disable-zend-memory-manager
+                          Disable the Zend memory manager - FOR DEVELOPERS ONLY!!],
+[
+  ZEND_USE_ZEND_ALLOC=$enableval
+], [
+  ZEND_USE_ZEND_ALLOC=yes
+])
+
 AC_ARG_ENABLE(maintainer-zts,
 [  --enable-maintainer-zts Enable thread safety - for code maintainers only],[
   ZEND_MAINTAINER_ZTS=$enableval
@@ -164,6 +173,9 @@ AC_ARG_ENABLE(zend-multibyte,
 ],[
   ZEND_MULTIBYTE=no
 ])
+
+AC_MSG_CHECKING(whether to enable the Zend memory manager)
+AC_MSG_RESULT($ZEND_USE_ZEND_ALLOC)
 
 AC_MSG_CHECKING(whether to enable thread-safety)
 AC_MSG_RESULT($ZEND_MAINTAINER_ZTS)
@@ -194,6 +206,12 @@ else
 fi
 
 test -n "$DEBUG_CFLAGS" && CFLAGS="$CFLAGS $DEBUG_CFLAGS"
+
+if test "$ZEND_USE_ZEND_ALLOC" = "yes"; then
+  AC_DEFINE(USE_ZEND_ALLOC,1,[Use Zend memory manager])
+else
+  AC_DEFINE(USE_ZEND_ALLOC,0,[Use Zend memory manager])
+fi
 
 if test "$ZEND_MAINTAINER_ZTS" = "yes"; then
   AC_DEFINE(ZTS,1,[ ])
