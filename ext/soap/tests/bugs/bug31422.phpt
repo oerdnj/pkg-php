@@ -1,5 +1,5 @@
 --TEST--
-Bug #31422 No Error-Logging on SoapServer-Side
+Bug #31422 (No Error-Logging on SoapServer-Side)
 --SKIPIF--
 <?php require_once('skipif.inc'); ?>
 --INI--
@@ -32,7 +32,7 @@ $HTTP_RAW_POST_DATA = <<<EOF
 </SOAP-ENV:Envelope>
 EOF;
 
-$server->handle();
+$server->handle($HTTP_RAW_POST_DATA);
 echo "ok\n";
 ?>
 --EXPECTF--

@@ -23,7 +23,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: run-tests.php,v 1.226.2.37.2.27 2007/05/02 15:41:06 tony2001 Exp $ */
+/* $Id: run-tests.php,v 1.226.2.37.2.29 2007/05/27 19:23:09 tony2001 Exp $ */
 
 /* Sanity check to ensure that pcre extension needed by this script is available.
  * In the event it is not, print a nice error message indicating that this script will
@@ -115,7 +115,7 @@ if (getenv('TEST_PHP_EXECUTABLE')) {
 if (getenv('TEST_PHP_CGI_EXECUTABLE')) {
 	$php_cgi = getenv('TEST_PHP_CGI_EXECUTABLE');
 	if ($php_cgi=='auto') {
-		$php_cgi = $cwd.'/sapi/cgi/php';
+		$php_cgi = $cwd.'/sapi/cgi/php-cgi';
 		putenv("TEST_PHP_CGI_EXECUTABLE=$php_cgi");
 	}
 	$environment['TEST_PHP_CGI_EXECUTABLE'] = $php_cgi;
@@ -398,7 +398,7 @@ if (isset($argc) && $argc > 1) {
 					$html_output = is_resource($html_file);
 					break;
 				case '--version':
-					echo '$Revision: 1.226.2.37.2.27 $'."\n";
+					echo '$Revision: 1.226.2.37.2.29 $'."\n";
 					exit(1);
 				default:
 					echo "Illegal switch '$switch' specified!\n";
@@ -1051,9 +1051,9 @@ TEST $file
 		} elseif (!strncasecmp(PHP_OS, "win", 3) && file_exists(dirname($php) ."/php-cgi.exe")) {
 			$old_php = $php;
 			$php = realpath(dirname($php) ."/php-cgi.exe") .' -C ';
-		} elseif (file_exists("./sapi/cgi/php")) {
+		} elseif (file_exists("./sapi/cgi/php-cgi")) {
 			$old_php = $php;
-			$php = realpath("./sapi/cgi/php") . ' -C ';
+			$php = realpath("./sapi/cgi/php-cgi") . ' -C ';
 		} else {
 			show_result("SKIP", $tested, $tested_file, "reason: CGI not available");
 			return 'SKIPPED';
@@ -1328,6 +1328,15 @@ TEST $file
 	} elseif (array_key_exists('POST', $section_text) && !empty($section_text['POST'])) {
 
 		$post = trim($section_text['POST']);
+
+		if (array_key_exists('GZIP_POST', $section_text) && function_exists('gzencode')) {
+			$post = gzencode($post, 9, FORCE_GZIP);
+			$env['HTTP_CONTENT_ENCODING'] = 'gzip';
+		} else if (array_key_exists('DEFLATE_POST', $section_text) && function_exists('gzcompress')) {
+			$post = gzcompress($post, 9);
+			$env['HTTP_CONTENT_ENCODING'] = 'deflate';
+		}
+
 		save_text($tmp_post, $post);
 		$content_length = strlen($post);
 

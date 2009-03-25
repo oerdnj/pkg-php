@@ -6,7 +6,7 @@ Sybase-CT select LONG_MAX / LONG_MIN
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: test_long.phpt,v 1.1 2004/05/16 20:28:31 thekid Exp $ 
+ * $Id: test_long.phpt,v 1.1.6.1 2007/05/22 12:16:32 thekid Exp $ 
  */
 
   require('test.inc');
@@ -15,7 +15,7 @@ Sybase-CT select LONG_MAX / LONG_MIN
   define('LONG_MIN', -LONG_MAX - 1);
 
   $db= sybase_connect_ex();
-  var_dump(sybase_select_db('tempdb', $db));
+  var_dump(sybase_select_db(TEMPDB, $db));
   
   // Create table and insert some values
   var_dump(sybase_query('create table test_long (value numeric(20, 0))'));

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: syslog.c,v 1.49.2.3.2.1 2007/01/01 09:36:09 sebastian Exp $ */
+/* $Id: syslog.c,v 1.49.2.3.2.2 2007/05/17 06:38:13 rasmus Exp $ */
 
 #include "php.h"
 
@@ -114,13 +114,13 @@ PHP_RINIT_FUNCTION(syslog)
 }
 
 
+#ifdef PHP_WIN32
 PHP_RSHUTDOWN_FUNCTION(syslog)
 {
-#ifdef PHP_WIN32
 	closelog();
-#endif
 	return SUCCESS;
 }
+#endif
 
 PHP_MSHUTDOWN_FUNCTION(syslog)
 {

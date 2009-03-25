@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: text.c,v 1.23.2.1.2.2 2007/01/01 09:36:00 sebastian Exp $ */
+/* $Id: text.c,v 1.23.2.1.2.4 2007/05/14 11:52:35 rrichards Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -87,7 +87,7 @@ Since: DOM Level 3
 int dom_text_whole_text_read(dom_object *obj, zval **retval TSRMLS_DC)
 {
 	xmlNodePtr node;
-	xmlChar *wholetext;
+	xmlChar *wholetext = NULL;
 
 	node = dom_object_get_node(obj);
 
@@ -96,11 +96,24 @@ int dom_text_whole_text_read(dom_object *obj, zval **retval TSRMLS_DC)
 		return FAILURE;
 	}
 
-	ALLOC_ZVAL(*retval);
-	wholetext = xmlNodeListGetString(node->doc, node, 1);
-	ZVAL_STRING(*retval, wholetext, 1);
+	/* Find starting text node */
+	while (node->prev && ((node->prev->type == XML_TEXT_NODE) || (node->prev->type == XML_CDATA_SECTION_NODE))) {
+		node = node->prev;
+	}
 
-	xmlFree(wholetext);
+	/* concatenate all adjacent text and cdata nodes */
+	while (node && ((node->type == XML_TEXT_NODE) || (node->type == XML_CDATA_SECTION_NODE))) {
+		wholetext = xmlStrcat(wholetext, node->content);
+		node = node->next;
+	}
+
+	ALLOC_ZVAL(*retval);
+	if (wholetext != NULL) {
+		ZVAL_STRING(*retval, wholetext, 1);
+		xmlFree(wholetext);
+	} else {
+		ZVAL_EMPTY_STRING(*retval);
+	}
 
 	return SUCCESS;
 }

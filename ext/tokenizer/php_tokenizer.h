@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_tokenizer.h,v 1.9.2.1.2.2 2007/01/01 09:36:09 sebastian Exp $ */
+/* $Id: php_tokenizer.h,v 1.9.2.1.2.3 2007/05/28 12:19:41 bjori Exp $ */
 
 #ifndef PHP_TOKENIZER_H
 #define PHP_TOKENIZER_H
@@ -37,7 +37,6 @@ extern zend_module_entry tokenizer_module_entry;
 PHP_MINIT_FUNCTION(tokenizer);
 PHP_MINFO_FUNCTION(tokenizer);
 
-PHP_FUNCTION(confirm_tokenizer_compiled);	/* For testing, remove later. */
 PHP_FUNCTION(token_get_all);
 PHP_FUNCTION(token_name);
 

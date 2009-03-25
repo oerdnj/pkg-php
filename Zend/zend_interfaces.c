@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_interfaces.c,v 1.33.2.4.2.5 2007/01/01 09:35:46 sebastian Exp $ */
+/* $Id: zend_interfaces.c,v 1.33.2.4.2.6 2007/05/30 16:32:02 tony2001 Exp $ */
 
 #include "zend.h"
 #include "zend_API.h"
@@ -496,18 +496,18 @@ zend_function_entry *zend_funcs_traversable    = NULL;
 static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_arrayaccess_offset, 0, 0, 1)
 	ZEND_ARG_INFO(0, offset)
-ZEND_END_ARG_INFO();
+ZEND_END_ARG_INFO()
 
 static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_arrayaccess_offset_get, 0, 0, 1) /* actually this should be return by ref but atm cannot be */
 	ZEND_ARG_INFO(0, offset)
-ZEND_END_ARG_INFO();
+ZEND_END_ARG_INFO()
 
 static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_arrayaccess_offset_value, 0, 0, 2)
 	ZEND_ARG_INFO(0, offset)
 	ZEND_ARG_INFO(0, value)
-ZEND_END_ARG_INFO();
+ZEND_END_ARG_INFO()
 
 zend_function_entry zend_funcs_arrayaccess[] = {
 	ZEND_ABSTRACT_ME(arrayaccess, offsetExists, arginfo_arrayaccess_offset)
@@ -520,7 +520,7 @@ zend_function_entry zend_funcs_arrayaccess[] = {
 static
 ZEND_BEGIN_ARG_INFO(arginfo_serializable_serialize, 0)
 	ZEND_ARG_INFO(0, serialized)
-ZEND_END_ARG_INFO();
+ZEND_END_ARG_INFO()
 
 zend_function_entry zend_funcs_serializable[] = {
 	ZEND_ABSTRACT_ME(serializable, serialize,   NULL)

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_compile.h,v 1.316.2.8.2.11 2007/04/04 00:42:42 iliaa Exp $ */
+/* $Id: zend_compile.h,v 1.316.2.8.2.12 2007/05/18 13:12:04 dmitry Exp $ */
 
 #ifndef ZEND_COMPILE_H
 #define ZEND_COMPILE_H
@@ -392,7 +392,6 @@ void zend_check_writable_variable(znode *variable);
 void zend_do_free(znode *op1 TSRMLS_DC);
 
 void zend_do_init_string(znode *result TSRMLS_DC);
-void zend_do_add_char(znode *result, znode *op1, znode *op2 TSRMLS_DC);
 void zend_do_add_string(znode *result, znode *op1, znode *op2 TSRMLS_DC);
 void zend_do_add_variable(znode *result, znode *op1, znode *op2 TSRMLS_DC);
 
@@ -487,8 +486,6 @@ void zend_do_foreach_end(znode *foreach_token, znode *as_token TSRMLS_DC);
 void zend_do_declare_begin(TSRMLS_D);
 void zend_do_declare_stmt(znode *var, znode *val TSRMLS_DC);
 void zend_do_declare_end(znode *declare_token TSRMLS_DC);
-
-void zend_do_end_heredoc(TSRMLS_D);
 
 void zend_do_exit(znode *result, znode *message TSRMLS_DC);
 

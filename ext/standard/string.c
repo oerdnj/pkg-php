@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: string.c,v 1.445.2.14.2.54 2007/03/26 10:25:41 tony2001 Exp $ */
+/* $Id: string.c,v 1.445.2.14.2.58 2007/05/30 00:33:13 iliaa Exp $ */
 
 /* Synced with php 3.0 revision 1.193 1999-06-16 [ssb] */
 
@@ -1856,7 +1856,7 @@ PHP_FUNCTION(strripos)
 			e = haystack + haystack_len - 1;
 		} else {
 			p = haystack;
-			if (-offset > haystack_len) {
+			if (-offset > haystack_len || -offset < 0) {
 				php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Offset is greater than the length of haystack string");
 				RETURN_FALSE;
 			} else {
@@ -1889,7 +1889,7 @@ PHP_FUNCTION(strripos)
 		p = haystack_dup + offset;
 		e = haystack_dup + haystack_len - needle_len;
 	} else {
-		if (-offset > haystack_len) {
+		if (-offset > haystack_len || -offset < 0) {
 			efree(needle_dup);
 			efree(haystack_dup);
 			php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Offset is greater than the length of haystack string");
@@ -1956,11 +1956,18 @@ static char *php_chunk_split(char *src, int srclen, char *end, int endlen, int c
 	char *p, *q;
 	int chunks; /* complete chunks! */
 	int restlen;
+	int out_len; 
 
 	chunks = srclen / chunklen;
 	restlen = srclen - chunks * chunklen; /* srclen % chunklen */
 
-	dest = safe_emalloc((srclen + (chunks + 1) * endlen + 1), sizeof(char), 0);
+	out_len = (srclen + (chunks + 1) * endlen + 1);
+
+	if (out_len > INT_MAX || out_len <= 0) {
+		return NULL;
+	}
+
+	dest = safe_emalloc(out_len, sizeof(char), 0);
 
 	for (p = src, q = dest; p < (src + srclen - chunklen + 1); ) {
 		memcpy(q, p, chunklen);
@@ -3016,7 +3023,8 @@ PHPAPI char *php_addcslashes(char *str, int length, int *new_length, int should_
 
 	php_charmask(what, wlength, flags TSRMLS_CC);
 
-	for (source = str, end = source + length, target = new_str; (c = *source) || (source < end); source++) {
+	for (source = str, end = source + length, target = new_str; source < end; source++) {
+		c = *source; 
 		if (flags[(unsigned char)c]) {
 			if ((unsigned char) c < 32 || (unsigned char) c > 126) {
 				*target++ = '\\';

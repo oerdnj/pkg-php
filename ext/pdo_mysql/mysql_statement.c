@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysql_statement.c,v 1.48.2.14.2.5 2007/04/15 16:50:42 iliaa Exp $ */
+/* $Id: mysql_statement.c,v 1.48.2.14.2.6 2007/05/17 15:12:23 tony2001 Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -590,6 +590,7 @@ static int pdo_mysql_stmt_col_meta(pdo_stmt_t *stmt, long colno, zval *return_va
 	}
 
 	add_assoc_zval(return_value, "flags", flags);
+	add_assoc_string(return_value, "table",(F->table?F->table:""), 1);
 	return SUCCESS;
 }
 

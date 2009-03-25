@@ -620,9 +620,6 @@
 /* Define if you have the <fcntl.h> header file.  */
 #undef HAVE_FCNTL_H
 
-/* Define if you have the <gcrypt.h> header file.  */
-#undef HAVE_GCRYPT_H
-
 /* Define if you have the <grp.h> header file.  */
 #undef HAVE_GRP_H
 
@@ -661,9 +658,6 @@
 
 /* Define if you have the <netinet/tcp.h> header file.  */
 #undef HAVE_NETINET_TCP_H
-
-/* Define if you have the <openssl/crypto.h> header file.  */
-#undef HAVE_OPENSSL_CRYPTO_H
 
 /* Define if you have the <pwd.h> header file.  */
 #undef HAVE_PWD_H
@@ -946,9 +940,6 @@
 
 /*   */
 #undef PHP_FASTCGI
-
-/*   */
-#undef PHP_FCGI_STATIC
 
 /* whether you have sendmail */
 #undef HAVE_SENDMAIL

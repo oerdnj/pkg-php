@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: sess_sqlite.c,v 1.18.2.1.2.1 2007/01/01 09:36:07 sebastian Exp $ */
+/* $Id: sess_sqlite.c,v 1.18.2.1.2.2 2007/05/05 15:36:15 iliaa Exp $ */
 
 #include "php.h"
 
@@ -110,9 +110,13 @@ PS_READ_FUNC(sqlite)
 		case SQLITE_ROW:
 			if (rowdata[0] != NULL) {
 				*vallen = strlen(rowdata[0]);
-				*val = emalloc(*vallen);
-				*vallen = sqlite_decode_binary(rowdata[0], *val);
-				(*val)[*vallen] = '\0';
+				if (*vallen) {
+					*val = emalloc(*vallen);
+					*vallen = sqlite_decode_binary(rowdata[0], *val);
+					(*val)[*vallen] = '\0';
+				} else {
+					*val = STR_EMPTY_ALLOC();
+				}
 			}
 			break;
 		default:

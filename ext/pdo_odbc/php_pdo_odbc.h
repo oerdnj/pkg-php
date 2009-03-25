@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_odbc.h,v 1.2.4.2 2007/01/01 09:36:05 sebastian Exp $ */
+/* $Id: php_pdo_odbc.h,v 1.2.4.3 2007/05/28 12:19:41 bjori Exp $ */
 
 #ifndef PHP_PDO_ODBC_H
 #define PHP_PDO_ODBC_H
@@ -39,8 +39,6 @@ PHP_MSHUTDOWN_FUNCTION(pdo_odbc);
 PHP_RINIT_FUNCTION(pdo_odbc);
 PHP_RSHUTDOWN_FUNCTION(pdo_odbc);
 PHP_MINFO_FUNCTION(pdo_odbc);
-
-PHP_FUNCTION(confirm_pdo_odbc_compiled);	/* For testing, remove later. */
 
 /* 
   	Declare any global variables you may need between the BEGIN

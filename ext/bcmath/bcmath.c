@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: bcmath.c,v 1.62.2.2.2.5 2007/01/01 09:35:48 sebastian Exp $ */
+/* $Id: bcmath.c,v 1.62.2.2.2.6 2007/05/10 09:53:36 tony2001 Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -142,7 +142,7 @@ ZEND_GET_MODULE(bcmath)
 
 /* {{{ PHP_INI */
 PHP_INI_BEGIN()
-	STD_PHP_INI_ENTRY("bcmath.scale", "0", PHP_INI_ALL, OnUpdateLong, bc_precision, zend_bcmath_globals, bcmath_globals)
+	STD_PHP_INI_ENTRY("bcmath.scale", "0", PHP_INI_ALL, OnUpdateLongGEZero, bc_precision, zend_bcmath_globals, bcmath_globals)
 PHP_INI_END()
 /* }}} */
 

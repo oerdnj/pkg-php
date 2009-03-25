@@ -1958,22 +1958,19 @@ static int ZEND_INCLUDE_OR_EVAL_SPEC_CONST_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 		case ZEND_INCLUDE_ONCE:
 		case ZEND_REQUIRE_ONCE: {
 				zend_file_handle file_handle;
-				char cwd[MAXPATHLEN];
-				cwd_state state;
 
 				if (IS_ABSOLUTE_PATH(Z_STRVAL_P(inc_filename), Z_STRLEN_P(inc_filename))) {
-					cwd[0] = '\0';
-				} else if (!VCWD_GETCWD(cwd, MAXPATHLEN)) {
-					cwd[0] = '\0';
+					cwd_state state;
+
+					state.cwd_length = 0;
+					state.cwd = malloc(1);
+					state.cwd[0] = 0;
+
+					failure_retval = (!virtual_file_ex(&state, Z_STRVAL_P(inc_filename), NULL, 1) &&
+						zend_hash_exists(&EG(included_files), state.cwd, state.cwd_length+1));
+
+					free(state.cwd);
 				}
-
-				state.cwd_length = strlen(cwd);
-				state.cwd = zend_strndup(cwd, state.cwd_length);
-
-				failure_retval = (!virtual_file_ex(&state, Z_STRVAL_P(inc_filename), NULL, 1) &&
-					zend_hash_exists(&EG(included_files), state.cwd, state.cwd_length+1));
-
-				free(state.cwd);
 
 				if (failure_retval) {
 					/* do nothing */
@@ -4525,22 +4522,19 @@ static int ZEND_INCLUDE_OR_EVAL_SPEC_TMP_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 		case ZEND_INCLUDE_ONCE:
 		case ZEND_REQUIRE_ONCE: {
 				zend_file_handle file_handle;
-				char cwd[MAXPATHLEN];
-				cwd_state state;
 
 				if (IS_ABSOLUTE_PATH(Z_STRVAL_P(inc_filename), Z_STRLEN_P(inc_filename))) {
-					cwd[0] = '\0';
-				} else if (!VCWD_GETCWD(cwd, MAXPATHLEN)) {
-					cwd[0] = '\0';
+					cwd_state state;
+
+					state.cwd_length = 0;
+					state.cwd = malloc(1);
+					state.cwd[0] = 0;
+
+					failure_retval = (!virtual_file_ex(&state, Z_STRVAL_P(inc_filename), NULL, 1) &&
+						zend_hash_exists(&EG(included_files), state.cwd, state.cwd_length+1));
+
+					free(state.cwd);
 				}
-
-				state.cwd_length = strlen(cwd);
-				state.cwd = zend_strndup(cwd, state.cwd_length);
-
-				failure_retval = (!virtual_file_ex(&state, Z_STRVAL_P(inc_filename), NULL, 1) &&
-					zend_hash_exists(&EG(included_files), state.cwd, state.cwd_length+1));
-
-				free(state.cwd);
 
 				if (failure_retval) {
 					/* do nothing */
@@ -5666,11 +5660,14 @@ static int ZEND_ADD_VAR_SPEC_TMP_TMP_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 	zend_free_op free_op1, free_op2;
 	zval *var = _get_zval_ptr_tmp(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
 	zval var_copy;
-	int use_copy;
+	int use_copy = 0;
 
-	zend_make_printable_zval(var, &var_copy, &use_copy);
-	if (use_copy) {
-		var = &var_copy;
+	if (Z_TYPE_P(var) != IS_STRING) {
+		zend_make_printable_zval(var, &var_copy, &use_copy);
+
+		if (use_copy) {
+			var = &var_copy;
+		}
 	}
 	add_string_to_string(	&EX_T(opline->result.u.var).tmp_var,
 							_get_zval_ptr_tmp(&opline->op1, EX(Ts), &free_op1 TSRMLS_CC),
@@ -6108,11 +6105,14 @@ static int ZEND_ADD_VAR_SPEC_TMP_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 	zend_free_op free_op1, free_op2;
 	zval *var = _get_zval_ptr_var(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
 	zval var_copy;
-	int use_copy;
+	int use_copy = 0;
 
-	zend_make_printable_zval(var, &var_copy, &use_copy);
-	if (use_copy) {
-		var = &var_copy;
+	if (Z_TYPE_P(var) != IS_STRING) {
+		zend_make_printable_zval(var, &var_copy, &use_copy);
+
+		if (use_copy) {
+			var = &var_copy;
+		}
 	}
 	add_string_to_string(	&EX_T(opline->result.u.var).tmp_var,
 							_get_zval_ptr_tmp(&opline->op1, EX(Ts), &free_op1 TSRMLS_CC),
@@ -6643,11 +6643,14 @@ static int ZEND_ADD_VAR_SPEC_TMP_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 	zend_free_op free_op1;
 	zval *var = _get_zval_ptr_cv(&opline->op2, EX(Ts), BP_VAR_R TSRMLS_CC);
 	zval var_copy;
-	int use_copy;
+	int use_copy = 0;
 
-	zend_make_printable_zval(var, &var_copy, &use_copy);
-	if (use_copy) {
-		var = &var_copy;
+	if (Z_TYPE_P(var) != IS_STRING) {
+		zend_make_printable_zval(var, &var_copy, &use_copy);
+
+		if (use_copy) {
+			var = &var_copy;
+		}
 	}
 	add_string_to_string(	&EX_T(opline->result.u.var).tmp_var,
 							_get_zval_ptr_tmp(&opline->op1, EX(Ts), &free_op1 TSRMLS_CC),
@@ -7659,22 +7662,19 @@ static int ZEND_INCLUDE_OR_EVAL_SPEC_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 		case ZEND_INCLUDE_ONCE:
 		case ZEND_REQUIRE_ONCE: {
 				zend_file_handle file_handle;
-				char cwd[MAXPATHLEN];
-				cwd_state state;
 
 				if (IS_ABSOLUTE_PATH(Z_STRVAL_P(inc_filename), Z_STRLEN_P(inc_filename))) {
-					cwd[0] = '\0';
-				} else if (!VCWD_GETCWD(cwd, MAXPATHLEN)) {
-					cwd[0] = '\0';
+					cwd_state state;
+
+					state.cwd_length = 0;
+					state.cwd = malloc(1);
+					state.cwd[0] = 0;
+
+					failure_retval = (!virtual_file_ex(&state, Z_STRVAL_P(inc_filename), NULL, 1) &&
+						zend_hash_exists(&EG(included_files), state.cwd, state.cwd_length+1));
+
+					free(state.cwd);
 				}
-
-				state.cwd_length = strlen(cwd);
-				state.cwd = zend_strndup(cwd, state.cwd_length);
-
-				failure_retval = (!virtual_file_ex(&state, Z_STRVAL_P(inc_filename), NULL, 1) &&
-					zend_hash_exists(&EG(included_files), state.cwd, state.cwd_length+1));
-
-				free(state.cwd);
 
 				if (failure_retval) {
 					/* do nothing */
@@ -19723,22 +19723,19 @@ static int ZEND_INCLUDE_OR_EVAL_SPEC_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 		case ZEND_INCLUDE_ONCE:
 		case ZEND_REQUIRE_ONCE: {
 				zend_file_handle file_handle;
-				char cwd[MAXPATHLEN];
-				cwd_state state;
 
 				if (IS_ABSOLUTE_PATH(Z_STRVAL_P(inc_filename), Z_STRLEN_P(inc_filename))) {
-					cwd[0] = '\0';
-				} else if (!VCWD_GETCWD(cwd, MAXPATHLEN)) {
-					cwd[0] = '\0';
+					cwd_state state;
+
+					state.cwd_length = 0;
+					state.cwd = malloc(1);
+					state.cwd[0] = 0;
+
+					failure_retval = (!virtual_file_ex(&state, Z_STRVAL_P(inc_filename), NULL, 1) &&
+						zend_hash_exists(&EG(included_files), state.cwd, state.cwd_length+1));
+
+					free(state.cwd);
 				}
-
-				state.cwd_length = strlen(cwd);
-				state.cwd = zend_strndup(cwd, state.cwd_length);
-
-				failure_retval = (!virtual_file_ex(&state, Z_STRVAL_P(inc_filename), NULL, 1) &&
-					zend_hash_exists(&EG(included_files), state.cwd, state.cwd_length+1));
-
-				free(state.cwd);
 
 				if (failure_retval) {
 					/* do nothing */

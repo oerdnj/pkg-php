@@ -1,5 +1,96 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+31 May 2007, PHP 5.2.3
+- Changed CGI install target to php-cgi and 'make install' to install CLI
+  when CGI is selected. (Jani)
+- Changed JSON maximum nesting depth from 20 to 128. (Rasmus)
+
+- Improved compilation of heredocs and interpolated strings. (Matt, Dmitry)
+- Optimized out a couple of per-request syscalls. (Rasmus)
+- Optimized digest generation in md5() and sha1() functions. (Ilia)
+- Upgraded bundled SQLite 3 to version 3.3.17. (Ilia)
+
+- Addded "max_input_nesting_level" php.ini option to limit nesting level of 
+  input variables. Fix for MOPB-03-2007. (Stas)
+- Added a 4th parameter flag to htmlspecialchars() and htmlentities() that 
+  makes the function not encode existing html entities. (Ilia)
+- Added PDO::FETCH_KEY_PAIR mode that will fetch a 2 column result set into 
+  an associated array. (Ilia)
+- Added CURLOPT_TIMEOUT_MS and CURLOPT_CONNECTTIMEOUT_MS cURL constants. (Sara)
+- Added --ini switch to CLI that prints out configuration file names. (Marcus)
+- Added mysql_set_charset() to allow runtime altering of connection encoding.
+  (Scott)
+
+- Implemented FR #41416 (getColumnMeta() should also return table name). (Tony)
+
+- Fixed an interger overflow inside chunk_split(), identified by Gerhard
+  Wagner (Ilia) 
+- Fixed SOAP extension's handler() to work even when
+  "always_populate_raw_post_data" is off. (Ilia)
+- Fixed possible infinite loop in imagecreatefrompng. (libgd #86) 
+  (by Xavier Roche, CVE-2007-2756). (Pierre)
+- Fixed ext/filter Email Validation Vulnerability (MOPB-45 by Stefan Esser).
+  (Ilia)
+- Fixed altering $this via argument named "this". (Dmitry)
+- Fixed PHP CLI usage of php.ini from the binary location. (Hannes)
+- Fixed segfault in strripos(). (Tony, Joxean Koret)
+- Fixed bug #41525 (ReflectionParameter::getPosition() not available). (Marcus)
+- Fixed bug #41511 (Compile failure under IRIX 6.5.30 building md5.c). (Jani)
+- Fixed bug #41504 (json_decode() incorrectly decodes JSON arrays with empty
+  string keys). (Ilia)
+- Fixed bug #41492 (open_basedir/safe_mode bypass inside realpath()). (Ilia)
+- Fixed bug #41477 (no arginfo about SoapClient::__soapCall()). (Ilia)
+- Fixed bug #41455 (ext/dba/config.m4 pollutes global $LIBS and $LDFLAGS). 
+  (mmarek at suse dot cz, Tony)
+- Fixed bug #41442 (imagegd2() under output control). (Tony)
+- Fixed bug #41430 (Fatal error with negative values of maxlen parameter of 
+  file_get_contents()). (Tony)
+- Fixed bug #41423 (PHP assumes wrongly that certain ciphers are enabled in 
+  OpenSSL). (Pierre)
+- Fixed bug #41421 (Uncaught exception from a stream wrapper segfaults). 
+  (Tony, Dmitry)
+- Fixed bug #41403 (json_decode cannot decode floats if localeconv 
+  decimal_point is not '.'). (Tony)
+- Fixed bug #41401 (wrong unary operator precedence). (Stas)
+- Fixed bug #41394 (dbase_create creates file with corrupted header). (Tony)
+- Fixed bug #41390 (Clarify error message with invalid protocol scheme).
+  (Scott)
+- Fixed bug #41378 (fastcgi protocol lacks support for Reason-Phrase in 
+  "Status:" header). (anight at eyelinkmedia dot com, Dmitry)
+- Fixed bug #41374 (whole text concats values of wrong nodes). (Rob)
+- Fixed bug #41358 (configure cannot determine SSL lib with libcurl >= 7.16.2).
+  (Mike)
+- Fixed bug #41353 (crash in openssl_pkcs12_read() on invalid input). (Ilia)
+- Fixed bug #41351 (Invalid opcode with foreach ($a[] as $b)). (Dmitry, Tony)
+- Fixed bug #41347 (checkdnsrr() segfaults on empty hostname). (Scott)
+- Fixed bug #41337 (WSDL parsing doesn't ignore non soap bindings). (Dmitry)
+- Fixed bug #41326 (Writing empty tags with Xmlwriter::WriteElement[ns])
+  (Pierre)
+- Fixed bug #41321 (downgrade read errors in getimagesize() to E_NOTICE).
+  (Ilia)
+- Fixed bug #41304 (compress.zlib temp files left). (Dmitry)
+- Fixed bug #41293 (Fixed creation of HTTP_RAW_POST_DATA when there is no
+  default post handler). (Ilia)
+- Fixed bug #41291 (FastCGI does not set SO_REUSEADDR). 
+  (fmajid at kefta dot com, Dmitry)
+- Fixed gd build when used with freetype 1.x (Pierre, Tony)
+- Fixed bug #41287 (Namespace functions don't allow xmlns definition to be 
+  optional). (Rob)
+- Fixed bug #41285 (Improved fix for CVE-2007-1887 to work with non-bundled
+  sqlite2 lib). (Ilia)
+- Fixed bug #41283 (Bug with deserializing array key that are doubles or
+  floats in wddx). (Ilia)
+- Fixed bug #41257 (lookupNamespaceURI does not work as expected). (Rob)
+- Fixed bug #41236 (Regression in timeout handling of non-blocking SSL
+  connections during reads and writes). (Ilia)
+- Fixed bug #41134 (zend_ts_hash_clean not thread-safe). 
+  (marco dot cova at gmail dot com, Tony)
+- Fixed bug #41097 (ext/soap returning associative array as indexed without
+  using WSDL). (Dmitry)
+- Fixed bug #41004 (minOccurs="0" and null class member variable). (Dmitry)
+- Fixed bug #39542 (Behavior of require/include different to < 5.2.0).
+  (Dmitry)
+
 03 May 2007, PHP 5.2.2
 - Improved bundled GD
   . Sync to 2.0.35
@@ -211,8 +302,6 @@ PHP                                                                        NEWS
   (jdolecek at netbsd dot org, Nuno)
 - Fixed PECL bug #10194 (crash in Oracle client when memory limit reached in 
   the callback). (Tony)
-- Limit nesting level of input variables with max_input_nesting_level 
-  as fix for MOPB-03-2007 (Stas)
 - Fixed substr_compare and substr_count information leak (MOPB-14) (Stas, Ilia)
 - Fixed crash on op-assign where argument is string offset (Brian, Stas)
 - Fixed bug #38710 (data leakage because of nonexisting boundary checking in 

@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_sdl.c,v 1.88.2.12.2.7 2007/02/23 20:40:55 stas Exp $ */
+/* $Id: php_sdl.c,v 1.88.2.12.2.9 2007/05/21 13:13:50 dmitry Exp $ */
 
 #include "php_soap.h"
 #include "ext/libxml/php_libxml.h"
@@ -654,6 +654,7 @@ static sdlPtr load_wsdl(zval *this_ptr, char *struri TSRMLS_DC)
 		for (i = 0; i < n; i++) {
 			xmlNodePtr *tmp, service;
 			xmlNodePtr trav, port;
+			int has_soap_port = 0;
 
 			zend_hash_get_current_data(&ctx.services, (void **)&tmp);
 			service = *tmp;
@@ -716,8 +717,15 @@ static sdlPtr load_wsdl(zval *this_ptr, char *struri TSRMLS_DC)
 				  trav2 = trav2->next;
 				}
 				if (!address) {
-					soap_error0(E_ERROR, "Parsing WSDL: No address associated with <port>");
+					if (has_soap_port || trav->next || i < n-1) {
+						efree(tmpbinding);
+						trav = trav->next;
+						continue;
+					} else {
+						soap_error0(E_ERROR, "Parsing WSDL: No address associated with <port>");
+					}
 				}
+				has_soap_port = 1;
 
 				location = get_attribute(address->properties, "location");
 				if (!location) {

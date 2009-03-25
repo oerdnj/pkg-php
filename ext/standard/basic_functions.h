@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: basic_functions.h,v 1.139.2.4.2.4 2007/01/01 09:36:08 sebastian Exp $ */
+/* $Id: basic_functions.h,v 1.139.2.4.2.5 2007/05/28 12:19:41 bjori Exp $ */
 
 #ifndef BASIC_FUNCTIONS_H
 #define BASIC_FUNCTIONS_H
@@ -45,7 +45,6 @@ PHP_RSHUTDOWN_FUNCTION(basic);
 PHP_MINFO_FUNCTION(basic);
 
 PHP_FUNCTION(constant);
-PHP_FUNCTION(toggle_short_open_tag);
 PHP_FUNCTION(sleep);
 PHP_FUNCTION(usleep);
 #if HAVE_NANOSLEEP

@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_exceptions.c,v 1.79.2.6.2.8 2007/01/18 12:20:15 tony2001 Exp $ */
+/* $Id: zend_exceptions.c,v 1.79.2.6.2.9 2007/05/30 16:32:02 tony2001 Exp $ */
 
 #include "zend.h"
 #include "zend_API.h"
@@ -532,7 +532,7 @@ static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_exception___construct, 0, 0, 0)
 	ZEND_ARG_INFO(0, message)
 	ZEND_ARG_INFO(0, code)
-ZEND_END_ARG_INFO();
+ZEND_END_ARG_INFO()
 
 static zend_function_entry default_exception_functions[] = {
 	ZEND_ME(exception, __clone, NULL, ZEND_ACC_PRIVATE|ZEND_ACC_FINAL)
@@ -554,7 +554,7 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_error_exception___construct, 0, 0, 0)
 	ZEND_ARG_INFO(0, severity)
 	ZEND_ARG_INFO(0, filename)
 	ZEND_ARG_INFO(0, lineno)
-ZEND_END_ARG_INFO();
+ZEND_END_ARG_INFO()
 
 static zend_function_entry error_exception_functions[] = {
 	ZEND_ME(error_exception, __construct, arginfo_error_exception___construct, ZEND_ACC_PUBLIC)

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: md5.h,v 1.17.2.1.2.1 2007/01/01 09:36:08 sebastian Exp $ */
+/* $Id: md5.h,v 1.17.2.1.2.2 2007/05/19 20:30:35 iliaa Exp $ */
 
 #ifndef MD5_H
 #define MD5_H
@@ -55,6 +55,7 @@ typedef struct {
 } PHP_MD5_CTX;
 
 PHPAPI void make_digest(char *md5str, unsigned char *digest);
+PHPAPI void make_digest_ex(char *md5str, unsigned char *digest, int len);
 PHPAPI void PHP_MD5Init(PHP_MD5_CTX *);
 PHPAPI void PHP_MD5Update(PHP_MD5_CTX *, const unsigned char *, unsigned int);
 PHPAPI void PHP_MD5Final(unsigned char[16], PHP_MD5_CTX *);

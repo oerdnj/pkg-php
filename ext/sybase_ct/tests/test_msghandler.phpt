@@ -6,7 +6,7 @@ Sybase-CT server message handler
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: test_msghandler.phpt,v 1.2 2004/01/25 20:04:08 thekid Exp $ 
+ * $Id: test_msghandler.phpt,v 1.2.6.1 2007/05/22 11:33:36 thekid Exp $ 
  */
 
   require('test.inc');
@@ -26,14 +26,14 @@ Sybase-CT server message handler
 ?>
 --EXPECTF--
 Nonexistant:     
-Warning: sybase_set_message_handler(): First argumented is expected to be a valid callback, 'function_does_not_exist' was given in %s/test.inc on line %d
+Warning: sybase_set_message_handler(): First argumented is expected to be a valid callback, 'function_does_not_exist' was given in %stest.inc on line %d
 bool(false)
 Static method:   bool(true)
 Instance method: bool(true)
 Lambda function: bool(true)
 Unset:           bool(true)
 Incorrect type:  
-Warning: sybase_set_message_handler(): First argumented is expected to be either NULL, an array or string, integer given in %s/test.inc on line %d
+Warning: sybase_set_message_handler(): First argumented is expected to be either NULL, an array or string, integer given in %stest.inc on line %d
 bool(false)
 Function:        bool(true)
 >>> Query: select getdate(NULL)

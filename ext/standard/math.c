@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: math.c,v 1.131.2.2.2.5 2007/01/01 09:36:08 sebastian Exp $ */
+/* $Id: math.c,v 1.131.2.2.2.6 2007/05/23 15:01:00 iliaa Exp $ */
 
 #include "php.h"
 #include "php_math.h"
@@ -880,9 +880,7 @@ PHP_FUNCTION(decbin)
 	convert_to_long_ex(arg);
 
 	result = _php_math_longtobase(*arg, 2);
-	Z_TYPE_P(return_value) = IS_STRING;
-	Z_STRLEN_P(return_value) = strlen(result);
-	Z_STRVAL_P(return_value) = result;
+	RETURN_STRING(result, 0);
 }
 /* }}} */
 
@@ -900,9 +898,7 @@ PHP_FUNCTION(decoct)
 	convert_to_long_ex(arg);
 
 	result = _php_math_longtobase(*arg, 8);
-	Z_TYPE_P(return_value) = IS_STRING;
-	Z_STRLEN_P(return_value) = strlen(result);
-	Z_STRVAL_P(return_value) = result;
+	RETURN_STRING(result, 0);
 }
 /* }}} */
 
@@ -920,9 +916,7 @@ PHP_FUNCTION(dechex)
 	convert_to_long_ex(arg);
 
 	result = _php_math_longtobase(*arg, 16);
-	Z_TYPE_P(return_value) = IS_STRING;
-	Z_STRLEN_P(return_value) = strlen(result);
-	Z_STRVAL_P(return_value) = result;
+	RETURN_STRING(result, 0);
 }
 /* }}} */
 

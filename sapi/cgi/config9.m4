@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config9.m4,v 1.17.2.2.2.2 2007/02/20 20:11:11 tony2001 Exp $
+dnl $Id: config9.m4,v 1.17.2.2.2.4 2007/05/24 23:29:59 sniper Exp $
 dnl
 
 AC_ARG_ENABLE(cgi,
@@ -58,10 +58,10 @@ if test "$PHP_SAPI" = "default"; then
     PHP_ADD_MAKEFILE_FRAGMENT($abs_srcdir/sapi/cgi/Makefile.frag)
     case $host_alias in
       *cygwin* )
-        SAPI_CGI_PATH=sapi/cgi/php.exe
+        SAPI_CGI_PATH=sapi/cgi/php-cgi.exe
         ;;
       * )
-        SAPI_CGI_PATH=sapi/cgi/php
+        SAPI_CGI_PATH=sapi/cgi/php-cgi
         ;;
     esac
     PHP_SUBST(SAPI_CGI_PATH)
@@ -98,17 +98,14 @@ if test "$PHP_SAPI" = "default"; then
     if test "$PHP_ENABLE_FASTCGI" = "yes"; then
       PHP_FASTCGI=1
       PHP_FCGI_FILES="fastcgi.c"
-      PHP_FCGI_STATIC=1
     else
       PHP_FASTCGI=0
       PHP_FCGI_FILES=""
-      PHP_FCGI_STATIC=0
     fi
     AC_DEFINE_UNQUOTED(PHP_FASTCGI, $PHP_FASTCGI, [ ])
-    AC_DEFINE_UNQUOTED(PHP_FCGI_STATIC, $PHP_FCGI_STATIC, [ ])
     AC_MSG_RESULT($PHP_ENABLE_FASTCGI)
 
-    INSTALL_IT="@echo \"Installing PHP CGI into: \$(INSTALL_ROOT)\$(bindir)/\"; \$(INSTALL) -m 0755 \$(SAPI_CGI_PATH) \$(INSTALL_ROOT)\$(bindir)/\$(program_prefix)php\$(program_suffix)\$(EXEEXT)"
+    INSTALL_IT="@echo \"Installing PHP CGI binary: \$(INSTALL_ROOT)\$(bindir)/\"; \$(INSTALL) -m 0755 \$(SAPI_CGI_PATH) \$(INSTALL_ROOT)\$(bindir)/\$(program_prefix)php-cgi\$(program_suffix)\$(EXEEXT)"
     PHP_SELECT_SAPI(cgi, program, $PHP_FCGI_FILES cgi_main.c getopt.c, , '$(SAPI_CGI_PATH)')
 
     case $host_alias in

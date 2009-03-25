@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: md5.c,v 1.39.2.1.2.1 2007/01/01 09:36:08 sebastian Exp $ */
+/* $Id: md5.c,v 1.39.2.1.2.4 2007/05/27 15:29:38 nlopess Exp $ */
 
 /* 
  * md5.c - Copyright 1997 Lachlan Roche 
@@ -28,14 +28,19 @@
 
 PHPAPI void make_digest(char *md5str, unsigned char *digest)
 {
+	make_digest_ex(md5str, digest, 16);
+}
+
+PHPAPI void make_digest_ex(char *md5str, unsigned char *digest, int len)
+{
+	static const char hexits[17] = "0123456789abcdef";
 	int i;
 
-	for (i = 0; i < 16; i++) {
-		sprintf(md5str, "%02x", digest[i]);
-		md5str += 2;
+	for (i = 0; i < len; i++) {
+		md5str[i * 2]       = hexits[digest[i] >> 4];
+		md5str[(i * 2) + 1] = hexits[digest[i] &  0x0F];
 	}
-
-	*md5str = '\0';
+	md5str[len * 2] = '\0';
 }
 
 /* {{{ proto string md5(string str, [ bool raw_output])
@@ -60,7 +65,7 @@ PHP_NAMED_FUNCTION(php_if_md5)
 	if (raw_output) {
 		RETURN_STRINGL(digest, 16, 1);
 	} else {
-		make_digest(md5str, digest);
+		make_digest_ex(md5str, digest, 16);
 		RETVAL_STRING(md5str, 1);
 	}
 
@@ -107,7 +112,7 @@ PHP_NAMED_FUNCTION(php_if_md5_file)
 	if (raw_output) {
 		RETURN_STRINGL(digest, 16, 1);
 	} else {
-		make_digest(md5str, digest);
+		make_digest_ex(md5str, digest, 16);
 		RETVAL_STRING(md5str, 1);
 	}
 }
