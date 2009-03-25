@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.22.2.6 2005/12/21 21:44:13 sniper Exp $
+dnl $Id: config.m4,v 1.22.2.6.2.4 2007/03/06 10:13:40 tony2001 Exp $
 dnl
 
 PHP_ARG_WITH(ming, for MING support,
@@ -41,6 +41,8 @@ if test "$PHP_MING" != "no"; then
   PHP_ADD_LIBRARY_WITH_PATH(ming, $MING_DIR/$PHP_LIBDIR, MING_SHARED_LIBADD)
 
   PHP_CHECK_LIBRARY(ming, SWFPrebuiltClip, [ AC_DEFINE(HAVE_SWFPREBUILTCLIP, 1, [ ]) ], [], []) 
+  PHP_CHECK_LIBRARY(ming, SWFMovie_namedAnchor, [ AC_DEFINE(HAVE_SWFMOVIE_NAMEDANCHOR, 1, [ ]) ], [], []) 
+  PHP_CHECK_LIBRARY(ming, Ming_setSWFCompression, [ AC_DEFINE(HAVE_MING_SETSWFCOMPRESSION, 1, [ ]) ], [], []) 
 
   old_CPPFLAGS=$CPPFLAGS
   CPPFLAGS=-I$MING_INC_DIR
@@ -78,7 +80,7 @@ yes
   AC_TRY_COMPILE([
 #include <ming.h>
   ], [
-int main(void) { SWFMovie_output(NULL, NULL, NULL, 0); return 0; }
+SWFMovie_output(NULL, NULL, NULL, 0);
   ], [
     AC_DEFINE(HAVE_MING_MOVIE_LEVEL, 1, [ ])
   ], [])

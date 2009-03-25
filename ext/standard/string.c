@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: string.c,v 1.445.2.14.2.27 2006/10/11 14:19:55 iliaa Exp $ */
+/* $Id: string.c,v 1.445.2.14.2.54 2007/03/26 10:25:41 tony2001 Exp $ */
 
 /* Synced with php 3.0 revision 1.193 1999-06-16 [ssb] */
 
@@ -905,7 +905,7 @@ PHPAPI void php_implode(zval *delim, zval *arr, zval *return_value TSRMLS_DC)
 
 			case IS_LONG: {
 				char stmp[MAX_LENGTH_OF_LONG + 1];
-				str_len = sprintf(stmp, "%ld", Z_LVAL_PP(tmp));
+				str_len = slprintf(stmp, sizeof(stmp), "%ld", Z_LVAL_PP(tmp));
 				smart_str_appendl(&implstr, stmp, str_len);
 			}
 				break;
@@ -955,7 +955,12 @@ PHPAPI void php_implode(zval *delim, zval *arr, zval *return_value TSRMLS_DC)
 	}
 	smart_str_0(&implstr);
 
-	RETURN_STRINGL(implstr.c, implstr.len, 0);
+	if (implstr.len) {
+		RETURN_STRINGL(implstr.c, implstr.len, 0);
+	} else {
+		smart_str_free(&implstr);
+		RETURN_EMPTY_STRING();
+	}
 }
 /* }}} */
 
@@ -1230,11 +1235,11 @@ quit_loop:
 	}
 
 	len = cend - comp;
-	ret = emalloc(len + 1);
-	memcpy(ret, comp, len);
-	ret[len] = '\0';
 
 	if (p_ret) {
+		ret = emalloc(len + 1);
+		memcpy(ret, comp, len);
+		ret[len] = '\0';
 		*p_ret = ret;
 	}
 	if (p_len) {
@@ -1876,6 +1881,8 @@ PHP_FUNCTION(strripos)
 
 	if (offset >= 0) {
 		if (offset > haystack_len) {
+			efree(needle_dup);
+			efree(haystack_dup);
 			php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Offset is greater than the length of haystack string");
 			RETURN_FALSE;
 		}
@@ -1883,6 +1890,8 @@ PHP_FUNCTION(strripos)
 		e = haystack_dup + haystack_len - needle_len;
 	} else {
 		if (-offset > haystack_len) {
+			efree(needle_dup);
+			efree(haystack_dup);
 			php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Offset is greater than the length of haystack string");
 			RETURN_FALSE;
 		}
@@ -2054,11 +2063,23 @@ PHP_FUNCTION(substr)
 	if (argc > 2) {
 		convert_to_long_ex(len);
 		l = Z_LVAL_PP(len);
+		if ((l < 0 && -l > Z_STRLEN_PP(str))) {
+			RETURN_FALSE;
+		} else if (l > Z_STRLEN_PP(str)) {
+			l = Z_STRLEN_PP(str);
+		}
 	} else {
 		l = Z_STRLEN_PP(str);
 	}
 	
 	f = Z_LVAL_PP(from);
+	if (f > Z_STRLEN_PP(str) || (f < 0 && -f > Z_STRLEN_PP(str))) {
+		RETURN_FALSE;
+	}
+
+	if (l < 0 && (l + Z_STRLEN_PP(str) - f) < 0) {
+		RETURN_FALSE;
+	}
 
 	/* if "from" position is negative, count start position from the end
 	 * of the string
@@ -2179,6 +2200,12 @@ PHP_FUNCTION(substr_replace)
 				if (l < 0) {
 					l = 0;
 				}
+			}
+
+			if (f > Z_STRLEN_PP(str) || (f < 0 && -f > Z_STRLEN_PP(str))) {
+				RETURN_FALSE;
+			} else if (l > Z_STRLEN_PP(str) || (l < 0 && -l > Z_STRLEN_PP(str))) {
+				RETURN_FALSE;
 			}
 
 			if ((f + l) > Z_STRLEN_PP(str)) {
@@ -2831,11 +2858,8 @@ PHP_FUNCTION(addcslashes)
 		RETURN_STRINGL(Z_STRVAL_PP(str), Z_STRLEN_PP(str), 1);
 	}
 
-	RETURN_STRING(php_addcslashes(Z_STRVAL_PP(str), 
-	                              Z_STRLEN_PP(str), 
-	                              &Z_STRLEN_P(return_value), 0, 
-	                              Z_STRVAL_PP(what),
-	                              Z_STRLEN_PP(what) TSRMLS_CC), 0);
+	Z_STRVAL_P(return_value) = php_addcslashes(Z_STRVAL_PP(str), Z_STRLEN_PP(str), &Z_STRLEN_P(return_value), 0, Z_STRVAL_PP(what), Z_STRLEN_PP(what) TSRMLS_CC);
+	RETURN_STRINGL(Z_STRVAL_P(return_value), Z_STRLEN_P(return_value), 0);
 }
 /* }}} */
 
@@ -2906,7 +2930,7 @@ char *php_strerror(int errnum)
 		return(sys_errlist[errnum]);
 	}
 
-	(void) sprintf(BG(str_ebuf), "Unknown error: %d", errnum);
+	(void) snprintf(BG(str_ebuf), sizeof(php_basic_globals.str_ebuf), "Unknown error: %d", errnum);
 	return(BG(str_ebuf));
 }
 /* }}} */
@@ -2988,10 +3012,6 @@ PHPAPI char *php_addcslashes(char *str, int length, int *new_length, int should_
 
 	if (!wlength) {
 		wlength = strlen(what);
-	}
-
-	if (!length) {
-		length = strlen(str);
 	}
 
 	php_charmask(what, wlength, flags TSRMLS_CC);
@@ -3143,7 +3163,7 @@ PHPAPI int php_char_to_str_ex(char *str, uint len, char from, char *to, int to_l
 	}
 	
 	Z_STRLEN_P(result) = len + (char_count * (to_len - 1));
-	Z_STRVAL_P(result) = target = emalloc(Z_STRLEN_P(result) + 1);
+	Z_STRVAL_P(result) = target = safe_emalloc(char_count, to_len, len + 1);
 	Z_TYPE_P(result) = IS_STRING;
 
 	if (case_sensitivity) {
@@ -3333,16 +3353,33 @@ nothing_todo:
 		new_str = estrndup(haystack, length);
 		return new_str;
 	} else {
-		if (case_sensitivity ? strncmp(haystack, needle, length) : strncasecmp(haystack, needle, length)) {
+		if (case_sensitivity && memcmp(haystack, needle, length)) {
 			goto nothing_todo;
-		} else {
-			*_new_length = str_len;
-			new_str = estrndup(str, str_len);
-			if (replace_count) {
-				(*replace_count)++;
+		} else if (!case_sensitivity) {
+			char *l_haystack, *l_needle;
+
+			l_haystack = estrndup(haystack, length);
+			l_needle = estrndup(needle, length);
+
+			php_strtolower(l_haystack, length);
+			php_strtolower(l_needle, length);
+
+			if (memcmp(l_haystack, l_needle, length)) {
+				efree(l_haystack);
+				efree(l_needle);
+				goto nothing_todo;
 			}
-			return new_str;
+			efree(l_haystack);
+			efree(l_needle);
 		}
+
+		*_new_length = str_len;
+		new_str = estrndup(str, str_len);
+
+		if (replace_count) {
+			(*replace_count)++;
+		}
+		return new_str;
 	}
 
 }
@@ -3872,7 +3909,7 @@ PHP_FUNCTION(strip_tags)
 	}
 	convert_to_string_ex(str);
 	buf = estrndup(Z_STRVAL_PP(str), Z_STRLEN_PP(str));
-	retval_len = php_strip_tags(buf, Z_STRLEN_PP(str), NULL, allowed_tags, allowed_tags_len);
+	retval_len = php_strip_tags_ex(buf, Z_STRLEN_PP(str), NULL, allowed_tags, allowed_tags_len, 0);
 	RETURN_STRINGL(buf, retval_len, 0);
 }
 /* }}} */
@@ -3949,6 +3986,7 @@ PHP_FUNCTION(setlocale)
 		}
 		
 		retval = setlocale (cat, loc);
+		zend_update_current_locale();
 		if (retval) {
 			/* Remember if locale was changed */
 			if (loc) {
@@ -4026,7 +4064,13 @@ PHP_FUNCTION(parse_str)
 int php_tag_find(char *tag, int len, char *set) {
 	char c, *n, *t;
 	int state=0, done=0;
-	char *norm = emalloc(len+1);
+	char *norm;
+
+	if (len <= 0) {
+		return 0;
+	}
+	
+	norm = emalloc(len+1);
 
 	n = norm;
 	t = tag;
@@ -4036,9 +4080,6 @@ int php_tag_find(char *tag, int len, char *set) {
 	   and turn any <a whatever...> into just <a> and any </tag>
 	   into <tag>
 	*/
-	if (!len) {
-		return 0;
-	}
 	while (!done) {
 		switch (c) {
 			case '<':
@@ -4076,6 +4117,11 @@ int php_tag_find(char *tag, int len, char *set) {
 }
 /* }}} */
 
+PHPAPI size_t php_strip_tags(char *rbuf, int len, int *stateptr, char *allow, int allow_len)
+{
+	return php_strip_tags_ex(rbuf, len, stateptr, allow, allow_len, 0);
+}
+
 /* {{{ php_strip_tags
  
 	A simple little state-machine to strip out html and php tags 
@@ -4096,10 +4142,10 @@ int php_tag_find(char *tag, int len, char *set) {
 	swm: Added ability to strip <?xml tags without assuming it PHP
 	code.
 */
-PHPAPI size_t php_strip_tags(char *rbuf, int len, int *stateptr, char *allow, int allow_len)
+PHPAPI size_t php_strip_tags_ex(char *rbuf, int len, int *stateptr, char *allow, int allow_len, zend_bool allow_tag_spaces)
 {
 	char *tbuf, *buf, *p, *tp, *rp, c, lc;
-	int br, i=0, depth=0;
+	int br, i=0, depth=0, in_q = 0;
 	int state = 0;
 
 	if (stateptr)
@@ -4124,7 +4170,7 @@ PHPAPI size_t php_strip_tags(char *rbuf, int len, int *stateptr, char *allow, in
 			case '\0':
 				break;
 			case '<':
-				if (isspace(*(p + 1))) {
+				if (isspace(*(p + 1)) && !allow_tag_spaces) {
 					goto reg_char;
 				}
 				if (state == 0) {
@@ -4133,7 +4179,7 @@ PHPAPI size_t php_strip_tags(char *rbuf, int len, int *stateptr, char *allow, in
 					if (allow) {
 						tp = ((tp-tbuf) >= PHP_TAG_BUF_SIZE ? tbuf: tp);
 						*(tp++) = '<';
-					}
+				 	}
 				} else if (state == 1) {
 					depth++;
 				}
@@ -4172,11 +4218,15 @@ PHPAPI size_t php_strip_tags(char *rbuf, int len, int *stateptr, char *allow, in
 					depth--;
 					break;
 				}
-			
+
+				if (in_q) {
+					break;
+				}
+
 				switch (state) {
 					case 1: /* HTML/XML */
 						lc = '>';
-						state = 0;
+						in_q = state = 0;
 						if (allow) {
 							tp = ((tp-tbuf) >= PHP_TAG_BUF_SIZE ? tbuf: tp);
 							*(tp++) = '>';
@@ -4191,19 +4241,19 @@ PHPAPI size_t php_strip_tags(char *rbuf, int len, int *stateptr, char *allow, in
 						
 					case 2: /* PHP */
 						if (!br && lc != '\"' && *(p-1) == '?') {
-							state = 0;
+							in_q = state = 0;
 							tp = tbuf;
 						}
 						break;
 						
 					case 3:
-						state = 0;
+						in_q = state = 0;
 						tp = tbuf;
 						break;
 
 					case 4: /* JavaScript/CSS/etc... */
 						if (p >= buf + 2 && *(p-1) == '-' && *(p-2) == '-') {
-							state = 0;
+							in_q = state = 0;
 							tp = tbuf;
 						}
 						break;
@@ -4227,6 +4277,13 @@ PHPAPI size_t php_strip_tags(char *rbuf, int len, int *stateptr, char *allow, in
 				} else if (allow && state == 1) {
 					tp = ((tp-tbuf) >= PHP_TAG_BUF_SIZE ? tbuf: tp);
 					*(tp++) = c;
+				}
+				if (state && p != buf && *(p-1) != '\\' && (!in_q || *p == in_q)) {
+					if (in_q) {
+						in_q = 0;
+					} else {
+						in_q = *p;
+					}
 				}
 				break;
 			
@@ -4600,18 +4657,20 @@ PHP_FUNCTION(substr_count)
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Offset should be greater than or equal to 0.");
 			RETURN_FALSE;		
 		}
-		p += Z_LVAL_PP(offset);
-		if (p > endp) {
+
+		if (Z_LVAL_PP(offset) > Z_STRLEN_PP(haystack)) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Offset value %ld exceeds string length.", Z_LVAL_PP(offset));
 			RETURN_FALSE;		
 		}
+		p += Z_LVAL_PP(offset);
+
 		if (ac == 4) {
 			convert_to_long_ex(length);
 			if (Z_LVAL_PP(length) <= 0) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Length should be greater than 0.");
 				RETURN_FALSE;		
 			}
-			if ((p + Z_LVAL_PP(length)) > endp) {
+			if (Z_LVAL_PP(length) > (Z_STRLEN_PP(haystack) - Z_LVAL_PP(offset))) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Length value %ld exceeds string length.", Z_LVAL_PP(length));
 				RETURN_FALSE;
 			}
@@ -5032,8 +5091,13 @@ PHP_FUNCTION(substr_compare)
 		offset = (offset < 0) ? 0 : offset;
 	}
 
-	if ((offset + len) > s1_len) {
+	if(offset > s1_len) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "The start position cannot exceed initial string length");
+		RETURN_FALSE;
+	}
+
+	if(len > s1_len - offset) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "The length cannot exceed initial string length");
 		RETURN_FALSE;
 	}
 

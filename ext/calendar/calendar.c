@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    |          Wez Furlong               <wez@thebrainroom.com>            |
    +----------------------------------------------------------------------+
  */
-/* $Id: calendar.c,v 1.46.2.2.2.1 2006/06/11 01:42:16 bjori Exp $ */
+/* $Id: calendar.c,v 1.46.2.2.2.4 2007/02/16 18:32:38 stas Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -416,7 +416,7 @@ PHP_FUNCTION(cal_from_jd)
 
 	calendar->from_jd(jd, &year, &month, &day);
 
-	sprintf(date, "%i/%i/%i", month, day, year);
+	snprintf(date, sizeof(date), "%i/%i/%i", month, day, year);
 	add_assoc_string(return_value, "date", date, 1);
 
 	add_assoc_long(return_value, "month", month);
@@ -447,7 +447,7 @@ PHP_FUNCTION(jdtogregorian)
 	}
 
 	SdnToGregorian(julday, &year, &month, &day);
-	sprintf(date, "%i/%i/%i", month, day, year);
+	snprintf(date, sizeof(date), "%i/%i/%i", month, day, year);
 
 	RETURN_STRING(date, 1);
 }
@@ -480,7 +480,7 @@ PHP_FUNCTION(jdtojulian)
 	}
 
 	SdnToJulian(julday, &year, &month, &day);
-	sprintf(date, "%i/%i/%i", month, day, year);
+	snprintf(date, sizeof(date), "%i/%i/%i", month, day, year);
 
 	RETURN_STRING(date, 1);
 }
@@ -602,7 +602,7 @@ PHP_FUNCTION(jdtojewish)
 	long julday, fl = 0;
 	zend_bool heb   = 0;
 	int year, month, day;
-	char date[16], hebdate[25];
+	char date[16], hebdate[32];
 	char *dayp, *yearp;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l|bl", &julday, &heb, &fl) == FAILURE) {
@@ -611,7 +611,7 @@ PHP_FUNCTION(jdtojewish)
 
 	SdnToJewish(julday, &year, &month, &day);
 	if (!heb) {
-		sprintf(date, "%i/%i/%i", month, day, year);
+		snprintf(date, sizeof(date), "%i/%i/%i", month, day, year);
 		RETURN_STRING(date, 1);
 	} else {
 		if (year <= 0 || year > 9999) {
@@ -619,7 +619,7 @@ PHP_FUNCTION(jdtojewish)
 			RETURN_FALSE;
 		}
 
-		sprintf(hebdate, "%s %s %s", heb_number_to_chars(day, fl, &dayp), JewishMonthHebName[month], heb_number_to_chars(year, fl, &yearp));
+		snprintf(hebdate, sizeof(hebdate), "%s %s %s", heb_number_to_chars(day, fl, &dayp), JewishMonthHebName[month], heb_number_to_chars(year, fl, &yearp));
 
 		if (dayp) {
 			efree(dayp);
@@ -661,7 +661,7 @@ PHP_FUNCTION(jdtofrench)
 	}
 
 	SdnToFrench(julday, &year, &month, &day);
-	sprintf(date, "%i/%i/%i", month, day, year);
+	snprintf(date, sizeof(date), "%i/%i/%i", month, day, year);
 
 	RETURN_STRING(date, 1);
 }

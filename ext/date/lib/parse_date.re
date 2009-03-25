@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: parse_date.re,v 1.26.2.27.2.6 2006/09/09 12:26:33 derick Exp $ */
+/* $Id: parse_date.re,v 1.26.2.27.2.11 2007/04/13 08:11:07 derick Exp $ */
 
 #include "timelib.h"
 
@@ -448,10 +448,12 @@ static timelib_ull timelib_get_unsigned_nr(char **ptr, int max_length)
 		}
 		++*ptr;
 	}
-	if (**ptr == '+') {
-		++*ptr;
-	} else if (**ptr == '-') {
-		dir = -1;
+
+	while (**ptr == '+' || **ptr == '-')
+	{
+		if (**ptr == '-') {
+			dir *= -1;
+		}
 		++*ptr;
 	}
 	return dir * timelib_get_nr(ptr, max_length);
@@ -590,7 +592,10 @@ static void timelib_set_relative(char **ptr, timelib_sll amount, int behavior, S
 {
 	const timelib_relunit* relunit;
 
-	relunit = timelib_lookup_relunit(ptr);
+	if (!(relunit = timelib_lookup_relunit(ptr))) {
+		return;
+	}
+
 	switch (relunit->unit) {
 		case TIMELIB_SECOND: s->time->relative.s += amount * relunit->multiplier; break;
 		case TIMELIB_MINUTE: s->time->relative.i += amount * relunit->multiplier; break;
@@ -872,7 +877,7 @@ dateshortwithtimelongtz = datenoyear iso8601normtz;
 reltextnumber = 'first'|'next'|'second'|'third'|'fourth'|'fifth'|'sixth'|'seventh'|'eight'|'ninth'|'tenth'|'eleventh'|'twelfth'|'last'|'previous'|'this';
 reltextunit = (('sec'|'second'|'min'|'minute'|'hour'|'day'|'week'|'fortnight'|'forthnight'|'month'|'year') 's'?) | daytext;
 
-relnumber = ([+-]?[ \t]*[0-9]+);
+relnumber = ([+-]*[ \t]*[0-9]+);
 relative = relnumber space? reltextunit;
 relativetext = reltextnumber space reltextunit;
 
@@ -1538,7 +1543,8 @@ timelib_time* timelib_strtotime(char *s, int len, struct timelib_error_container
 		} else {
 			timelib_error_container_dtor(in.errors);
 		}
-		in.time->y = in.time->d = in.time->m = in.time->h = in.time->i = in.time->s = in.time->f = in.time->z = in.time->dst = -1;
+		in.time->y = in.time->d = in.time->m = in.time->h = in.time->i = in.time->s = in.time->f = in.time->dst = -1;
+		in.time->z = -999999;
 		in.time->is_localtime = in.time->zone_type = 0;
 		return in.time;
 	}
@@ -1557,7 +1563,7 @@ timelib_time* timelib_strtotime(char *s, int len, struct timelib_error_container
 	in.time->i = -1;
 	in.time->s = -1;
 	in.time->f = -1;
-	in.time->z = -1;
+	in.time->z = -999999;
 	in.time->dst = -1;
 	in.tzdb = tzdb;
 	in.time->is_localtime = 0;
@@ -1594,7 +1600,7 @@ void timelib_fill_holes(timelib_time *parsed, timelib_time *now, int options)
 	if (parsed->i == -1) parsed->i = now->i != -1 ? now->i : 0;
 	if (parsed->s == -1) parsed->s = now->s != -1 ? now->s : 0;
 	if (parsed->f == -1) parsed->f = now->f != -1 ? now->f : 0;
-	if (parsed->z == -1) parsed->z = now->z != -1 ? now->z : 0;
+	if (parsed->z == -999999) parsed->z = now->z != -999999 ? now->z : 0;
 	if (parsed->dst == -1) parsed->dst = now->dst != -1 ? now->dst : 0;
 
 	if (!parsed->tz_abbr) {

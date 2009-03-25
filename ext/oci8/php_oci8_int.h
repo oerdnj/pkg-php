@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -25,7 +25,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_oci8_int.h,v 1.11.2.6.2.7 2006/08/22 11:09:12 tony2001 Exp $ */
+/* $Id: php_oci8_int.h,v 1.11.2.6.2.18 2007/03/29 09:33:03 tony2001 Exp $ */
 
 #if HAVE_OCI8
 # ifndef PHP_OCI8_INT_H
@@ -134,6 +134,7 @@ typedef struct { /* php_oci_descriptor {{{ */
 typedef struct { /* php_oci_lob_ctx {{{ */
 	char **lob_data;            /* address of pointer to LOB data */
 	ub4 *lob_len;               /* address of LOB length variable (bytes) */
+	ub4 alloc_len;
 } php_oci_lob_ctx; /* }}} */
 
 typedef struct { /* php_oci_collection {{{ */
@@ -180,20 +181,22 @@ typedef struct { /* php_oci_bind {{{ */
 	php_oci_statement *parent_statement;     /* pointer to the parent statement */
 	struct {
 		void *elements;
-/*		ub2 *indicators; */
+		sb2 *indicators;
 		ub2 *element_lengths;
 /*		ub2 *retcodes;		*/
-		long current_length;
-		long old_length;
-		long max_length;
+		ub4 current_length;
+		ub4 old_length;
+		ub4 max_length;
 		long type;
 	} array;
 	sb2 indicator;			/* -1 means NULL */
 	ub2 retcode;			/*  */
+	ub4 dummy_len;          /* a dummy var to store alenpp value in bind OUT callback */
 } php_oci_bind; /* }}} */
 
 typedef struct { /* php_oci_out_column {{{ */
-	php_oci_statement *statement;	/* statement handle. used when fetching REFCURSORS */
+	php_oci_statement *statement;			/* statement handle. used when fetching REFCURSORS */
+	php_oci_statement *nested_statement;	/* statement handle. used when fetching REFCURSORS */
 	OCIDefine *oci_define;			/* define handle */
 	char *name;						/* column name */
 	ub4 name_len;					/* column name length */
@@ -221,41 +224,47 @@ typedef struct { /* php_oci_out_column {{{ */
 /* {{{ macros */
 
 #define PHP_OCI_CALL(func, params) \
-	OCI_G(in_call) = 1; \
-	func params; \
-	OCI_G(in_call) = 0; \
-	if (OCI_G(debug_mode)) { \
-		php_printf ("OCI8 DEBUG: " #func " at (%s:%d) \n", __FILE__, __LINE__); \
-	}
+	do { \
+		if (OCI_G(debug_mode)) { \
+			php_printf ("OCI8 DEBUG: " #func " at (%s:%d) \n", __FILE__, __LINE__); \
+		} \
+		OCI_G(in_call) = 1; \
+		func params; \
+		OCI_G(in_call) = 0; \
+	} while (0)
 
 #define PHP_OCI_CALL_RETURN(__retval, func, params) \
-	OCI_G(in_call) = 1; \
-	__retval = func params; \
-	OCI_G(in_call) = 0; \
-	if (OCI_G(debug_mode)) { \
-		php_printf ("OCI8 DEBUG: " #func " at (%s:%d) \n", __FILE__, __LINE__); \
-	}
+	do { \
+		if (OCI_G(debug_mode)) { \
+			php_printf ("OCI8 DEBUG: " #func " at (%s:%d) \n", __FILE__, __LINE__); \
+		} \
+		OCI_G(in_call) = 1; \
+		__retval = func params; \
+		OCI_G(in_call) = 0; \
+	} while (0)
 
 #define PHP_OCI_HANDLE_ERROR(connection, errcode) \
-{ \
-	switch (errcode) { \
-		case 1013: \
-			zend_bailout(); \
+	do { \
+		switch (errcode) { \
+			case 1013: \
+					   zend_bailout(); \
 			break; \
-		case 22: \
-		case 1012: \
-		case 3113: \
-		case 604: \
-		case 1041: \
-		case 3114: \
-			connection->is_open = 0; \
+			case 22: \
+			case 1012: \
+			case 3113: \
+			case 604: \
+			case 1041: \
+			case 3114: \
+					   connection->is_open = 0; \
 			break; \
-	} \
-} \
+		} \
+	} while (0)
 
 #define PHP_OCI_REGISTER_RESOURCE(resource, le_resource) \
-	resource->id = ZEND_REGISTER_RESOURCE(NULL, resource, le_resource); \
-	zend_list_addref(resource->connection->rsrc_id);
+	do { \
+		resource->id = ZEND_REGISTER_RESOURCE(NULL, resource, le_resource); \
+		zend_list_addref(resource->connection->rsrc_id); \
+	} while (0)
 
 #define PHP_OCI_ZVAL_TO_CONNECTION(zval, connection) \
 	ZEND_FETCH_RESOURCE2(connection, php_oci_connection *, &zval, -1, "oci8 connection", le_connection, le_pconnection);
@@ -270,10 +279,12 @@ typedef struct { /* php_oci_out_column {{{ */
 	ZEND_FETCH_RESOURCE(collection, php_oci_collection *, &zval, -1, "oci8 collection", le_collection)
 
 #define PHP_OCI_FETCH_RESOURCE_EX(zval, var, type, name, resource_type)                      \
-	var = (type) zend_fetch_resource(&zval TSRMLS_CC, -1, name, NULL, 1, resource_type); \
-	if (!var) {                                                                          \
-		return 1;                                                                        \
-	}
+	do { \
+		var = (type) zend_fetch_resource(&zval TSRMLS_CC, -1, name, NULL, 1, resource_type); \
+		if (!var) {                                                                          \
+			return 1;                                                                        \
+		} \
+	} while (0)
 	
 #define PHP_OCI_ZVAL_TO_CONNECTION_EX(zval, connection) \
 	PHP_OCI_FETCH_RESOURCE_EX(zval, connection, php_oci_connection *, "oci8 connection", le_connection)
@@ -325,7 +336,7 @@ php_oci_descriptor * php_oci_lob_create (php_oci_connection *, long TSRMLS_DC);
 int php_oci_lob_get_length (php_oci_descriptor *, ub4 * TSRMLS_DC);
 int php_oci_lob_read (php_oci_descriptor *, long, long, char **, ub4 * TSRMLS_DC);
 int php_oci_lob_write (php_oci_descriptor *, ub4, char *, int, ub4 * TSRMLS_DC);
-int php_oci_lob_flush (php_oci_descriptor *, int TSRMLS_DC);
+int php_oci_lob_flush (php_oci_descriptor *, long TSRMLS_DC);
 int php_oci_lob_set_buffering (php_oci_descriptor *, int TSRMLS_DC);
 int php_oci_lob_get_buffering (php_oci_descriptor *);
 int php_oci_lob_copy (php_oci_descriptor *, php_oci_descriptor *, long TSRMLS_DC);
@@ -337,7 +348,7 @@ void php_oci_lob_free(php_oci_descriptor * TSRMLS_DC);
 int php_oci_lob_import(php_oci_descriptor *descriptor, char * TSRMLS_DC);
 int php_oci_lob_append (php_oci_descriptor *, php_oci_descriptor * TSRMLS_DC);
 int php_oci_lob_truncate (php_oci_descriptor *, long TSRMLS_DC);
-int php_oci_lob_erase (php_oci_descriptor *, long, long, ub4 * TSRMLS_DC);
+int php_oci_lob_erase (php_oci_descriptor *, long, ub4, ub4 * TSRMLS_DC);
 int php_oci_lob_is_equal (php_oci_descriptor *, php_oci_descriptor *, boolean * TSRMLS_DC);
 #if defined(HAVE_OCI_LOB_READ2)
 sb4 php_oci_lob_callback (dvoid *ctxp, CONST dvoid *bufxp, oraub8 len, ub1 piece, dvoid **changed_bufpp, oraub8 *changed_lenp);
@@ -373,7 +384,7 @@ int php_oci_collection_append_string(php_oci_collection *, char *, int TSRMLS_DC
 /* statement related prototypes {{{ */
 
 php_oci_statement * php_oci_statement_create (php_oci_connection *, char *, int TSRMLS_DC);
-int php_oci_statement_set_prefetch (php_oci_statement *, ub4 TSRMLS_DC);
+int php_oci_statement_set_prefetch (php_oci_statement *, long TSRMLS_DC);
 int php_oci_statement_fetch (php_oci_statement *, ub4 TSRMLS_DC);
 php_oci_out_column * php_oci_statement_get_column (php_oci_statement *, long, char*, int TSRMLS_DC);
 int php_oci_statement_execute (php_oci_statement *, ub4 TSRMLS_DC);
@@ -411,6 +422,7 @@ ZEND_BEGIN_MODULE_GLOBALS(oci) /* {{{ */
 	long max_persistent;	/* maximum number of persistent connections per process */
 	long num_persistent;	/* number of existing persistent connections */
 	long num_links;			/* non-persistent + persistent connections */
+	long num_statements;	/* number of statements open */
 	long ping_interval;		/* time interval between pings */
 	long persistent_timeout;	/* time period after which idle persistent connection is considered expired */
 	long statement_cache_size;	/* statement cache size. used with 9i+ clients only*/

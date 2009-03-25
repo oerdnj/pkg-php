@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: nsapi.c,v 1.69.2.3 2006/01/01 12:50:19 sniper Exp $ */
+/* $Id: nsapi.c,v 1.69.2.3.2.6 2007/04/27 00:29:26 thetaphi Exp $ */
 
 /*
  * PHP includes
@@ -72,8 +72,6 @@
 #define NSLS_C		request_context
 #define NSLS_CC		, NSLS_C
 #define NSG(v)		(request_context->v)
-
-#define NS_BUF_SIZE 2048
 
 /*
  * ZTS needs to be defined for NSAPI to work
@@ -310,7 +308,7 @@ PHP_MSHUTDOWN_FUNCTION(nsapi)
 PHP_MINFO_FUNCTION(nsapi)
 {
 	php_info_print_table_start();
-	php_info_print_table_row(2, "NSAPI Module Revision", "$Revision: 1.69.2.3 $");
+	php_info_print_table_row(2, "NSAPI Module Revision", "$Revision: 1.69.2.3.2.6 $");
 	php_info_print_table_row(2, "Server Software", system_version());
 	php_info_print_table_row(2, "Sub-requests with nsapi_virtual()",
 	 (nsapi_servact_service)?((zend_ini_long("zlib.output_compression", sizeof("zlib.output_compression"), 0))?"not supported with zlib.output_compression":"enabled"):"not supported on this platform" );
@@ -589,7 +587,7 @@ static void sapi_nsapi_register_server_variables(zval *track_vars_array TSRMLS_D
 	register size_t i;
 	int pos;
 	char *value,*p;
-	char buf[NS_BUF_SIZE + 1];
+	char buf[32];
 	struct pb_entry *entry;
 
 	for (i = 0; i < nsapi_reqpb_size; i++) {
@@ -604,20 +602,22 @@ static void sapi_nsapi_register_server_variables(zval *track_vars_array TSRMLS_D
 		while (entry) {
 			if (!PG(safe_mode) || strncasecmp(entry->param->name, "authorization", 13)) {
 				if (strcasecmp(entry->param->name, "content-length")==0 || strcasecmp(entry->param->name, "content-type")==0) {
-					strlcpy(buf, entry->param->name, NS_BUF_SIZE);
+					value=estrdup(entry->param->name);
 					pos = 0;
 				} else {
-					snprintf(buf, NS_BUF_SIZE, "HTTP_%s", entry->param->name);
+					spprintf(&value, 0, "HTTP_%s", entry->param->name);
 					pos = 5;
 				}
-				buf[NS_BUF_SIZE]='\0';
-				for(p = buf + pos; *p; p++) {
-					*p = toupper(*p);
-					if (*p < 'A' || *p > 'Z') {
-						*p = '_';
+				if (value) {
+					for(p = value + pos; *p; p++) {
+						*p = toupper(*p);
+						if (*p < 'A' || *p > 'Z') {
+							*p = '_';
+						}
 					}
+					php_register_variable(value, entry->param->value, track_vars_array TSRMLS_CC);
+					efree(value);
 				}
-				php_register_variable(buf, entry->param->value, track_vars_array TSRMLS_CC);
 			}
 			entry=entry->next;
 		}
@@ -642,7 +642,7 @@ static void sapi_nsapi_register_server_variables(zval *track_vars_array TSRMLS_D
 		nsapi_free(value);
 	}
 
-	sprintf(buf, "%d", conf_getglobals()->Vport);
+	slprintf(buf, sizeof(buf), "%d", conf_getglobals()->Vport);
 	php_register_variable("SERVER_PORT", buf, track_vars_array TSRMLS_CC);
 	php_register_variable("SERVER_NAME", conf_getglobals()->Vserver_hostname, track_vars_array TSRMLS_CC);
 
@@ -672,30 +672,34 @@ static void sapi_nsapi_register_server_variables(zval *track_vars_array TSRMLS_D
 
 	/* Create full Request-URI & Script-Name */
 	if (SG(request_info).request_uri) {
-		strlcpy(buf, SG(request_info).request_uri, NS_BUF_SIZE);
 		if (SG(request_info).query_string) {
-		  	p = strchr(buf, 0);
-			snprintf(p, NS_BUF_SIZE-(p-buf), "?%s", SG(request_info).query_string);
-			buf[NS_BUF_SIZE]='\0';
-		}
-		php_register_variable("REQUEST_URI", buf, track_vars_array TSRMLS_CC);
-
-		strlcpy(buf, SG(request_info).request_uri, NS_BUF_SIZE);
-		if (rc->path_info) {
-			pos = strlen(SG(request_info).request_uri) - strlen(rc->path_info);
-			if (pos>=0 && pos<=NS_BUF_SIZE && rc->path_info) {
-				buf[pos] = '\0';
-			} else {
-				buf[0]='\0';
+			spprintf(&value, 0, "%s?%s", SG(request_info).request_uri, SG(request_info).query_string);
+			if (value) {
+				php_register_variable("REQUEST_URI", value, track_vars_array TSRMLS_CC);
+				efree(value);
 			}
+		} else {
+			php_register_variable("REQUEST_URI", SG(request_info).request_uri, track_vars_array TSRMLS_CC);
 		}
-		php_register_variable("SCRIPT_NAME", buf, track_vars_array TSRMLS_CC);
+
+		if (value = nsapi_strdup(SG(request_info).request_uri)) {
+			if (rc->path_info) {
+				pos = strlen(SG(request_info).request_uri) - strlen(rc->path_info);
+				if (pos>=0) {
+					value[pos] = '\0';
+				} else {
+					value[0]='\0';
+				}
+			}
+			php_register_variable("SCRIPT_NAME", value, track_vars_array TSRMLS_CC);
+			nsapi_free(value);
+		}
 	}
 	php_register_variable("SCRIPT_FILENAME", SG(request_info).path_translated, track_vars_array TSRMLS_CC);
 
 	/* special variables in error mode */
 	if (rc->http_error) {
-		sprintf(buf, "%d", rc->http_error);
+		slprintf(buf, sizeof(buf), "%d", rc->http_error);
 		php_register_variable("ERROR_TYPE", buf, track_vars_array TSRMLS_CC);
 	}
 }
@@ -705,7 +709,11 @@ static void nsapi_log_message(char *message)
 	TSRMLS_FETCH();
 	nsapi_request_context *rc = (nsapi_request_context *)SG(server_context);
 
-	log_error(LOG_INFORM, pblock_findval("fn", rc->pb), rc->sn, rc->rq, "%s", message);
+	if (rc) {
+		log_error(LOG_INFORM, pblock_findval("fn", rc->pb), rc->sn, rc->rq, "%s", message);
+	} else {
+		log_error(LOG_INFORM, "php5", NULL, NULL, "%s", message);
+	}
 }
 
 static time_t sapi_nsapi_get_request_time(TSRMLS_D)

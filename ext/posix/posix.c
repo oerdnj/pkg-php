@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: posix.c,v 1.70.2.3.2.6 2006/10/02 07:58:13 bjori Exp $ */
+/* $Id: posix.c,v 1.70.2.3.2.15 2007/02/22 23:40:39 tony2001 Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -147,7 +147,7 @@ zend_function_entry posix_functions[] = {
 static PHP_MINFO_FUNCTION(posix)
 {
 	php_info_print_table_start();
-	php_info_print_table_row(2, "Revision", "$Revision: 1.70.2.3.2.6 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 1.70.2.3.2.15 $");
 	php_info_print_table_end();
 }
 /* }}} */
@@ -555,6 +555,9 @@ PHP_FUNCTION(posix_ttyname)
 	zval **z_fd;
 	char *p;
 	int fd;
+#if defined(ZTS) && defined(HAVE_TTYNAME_R) && defined(_SC_TTY_NAME_MAX)
+	long buflen;
+#endif
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "Z", &z_fd) == FAILURE) {
 		RETURN_FALSE;
@@ -570,12 +573,25 @@ PHP_FUNCTION(posix_ttyname)
 			convert_to_long_ex(z_fd);
 			fd = Z_LVAL_PP(z_fd);
 	}
+#if defined(ZTS) && defined(HAVE_TTYNAME_R) && defined(_SC_TTY_NAME_MAX)
+	buflen = sysconf(_SC_TTY_NAME_MAX);
+	if (buflen < 1) {
+		RETURN_FALSE;
+	}
+	p = emalloc(buflen);
 
+	if (ttyname_r(fd, p, buflen)) {
+		POSIX_G(last_error) = errno;
+		efree(p);
+		RETURN_FALSE;
+	}
+	RETURN_STRING(p, 0);
+#else
 	if (NULL == (p = ttyname(fd))) {
 		POSIX_G(last_error) = errno;
 		RETURN_FALSE;
 	}
-	
+#endif	
 	RETURN_STRING(p, 1);
 }
 /* }}} */
@@ -809,22 +825,45 @@ PHP_FUNCTION(posix_getgrnam)
 	char *name;
 	struct group *g;
 	int name_len;
+#if defined(ZTS) && defined(HAVE_GETGRNAM_R) && defined(_SC_GETGR_R_SIZE_MAX)
+	struct group gbuf;
+	long buflen;
+	char *buf;
+#endif
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name, &name_len) == FAILURE) {
 		RETURN_FALSE;
 	}
 
+#if defined(ZTS) && defined(HAVE_GETGRNAM_R) && defined(_SC_GETGR_R_SIZE_MAX)
+	buflen = sysconf(_SC_GETGR_R_SIZE_MAX);
+	if (buflen < 1) {
+		RETURN_FALSE;
+	}
+	buf = emalloc(buflen);
+	g = &gbuf;
+
+	if (getgrnam_r(name, g, buf, buflen, &g) || g == NULL) {
+		POSIX_G(last_error) = errno;
+		efree(buf);
+		RETURN_FALSE;
+	}
+#else
 	if (NULL == (g = getgrnam(name))) {
 		POSIX_G(last_error) = errno;
 		RETURN_FALSE;
 	}
-	
+#endif
 	array_init(return_value);
 
 	if (!php_posix_group_to_array(g, return_value)) {
+		zval_dtor(return_value);
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "unable to convert posix group to array");
-		RETURN_FALSE;
+		RETVAL_FALSE;
 	}
+#if defined(ZTS) && defined(HAVE_GETGRNAM_R) && defined(_SC_GETGR_R_SIZE_MAX)
+	efree(buf);
+#endif
 }
 /* }}} */
 
@@ -833,23 +872,50 @@ PHP_FUNCTION(posix_getgrnam)
 PHP_FUNCTION(posix_getgrgid)
 {
 	long gid;
+#if defined(ZTS) && defined(HAVE_GETGRGID_R) && defined(_SC_GETGR_R_SIZE_MAX)
+	int ret;
+	struct group _g;
+	struct group *retgrptr;
+	long grbuflen;
+	char *grbuf;
+#endif
 	struct group *g;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &gid) == FAILURE) {
 		RETURN_FALSE;
 	}
+#if defined(ZTS) && defined(HAVE_GETGRGID_R) && defined(_SC_GETGR_R_SIZE_MAX)
+	
+	grbuflen = sysconf(_SC_GETGR_R_SIZE_MAX);
+	if (grbuflen < 1) {
+		RETURN_FALSE;
+	}
 
+	grbuf = emalloc(grbuflen);
+
+	ret = getgrgid_r(gid, &_g, grbuf, grbuflen, &retgrptr);
+	if (ret) {
+		POSIX_G(last_error) = ret;
+		efree(grbuf);
+		RETURN_FALSE;
+	}
+	g = &_g;
+#else
 	if (NULL == (g = getgrgid(gid))) {
 		POSIX_G(last_error) = errno;
 		RETURN_FALSE;
 	}
-
+#endif
 	array_init(return_value);
 
 	if (!php_posix_group_to_array(g, return_value)) {
+		zval_dtor(return_value);
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "unable to convert posix group struct to array");
-		RETURN_FALSE;
+		RETVAL_FALSE;
 	}
+#if defined(ZTS) && defined(HAVE_GETGRGID_R) && defined(_SC_GETGR_R_SIZE_MAX)
+	efree(grbuf);
+#endif
 }
 /* }}} */
 
@@ -876,23 +942,45 @@ PHP_FUNCTION(posix_getpwnam)
 	struct passwd *pw;
 	char *name;
 	int name_len;
-	
+#if defined(ZTS) && defined(_SC_GETPW_R_SIZE_MAX) && defined(HAVE_GETPWNAM_R)
+	struct passwd pwbuf;
+	long buflen;
+	char *buf;
+#endif
+
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name, &name_len) == FAILURE) {
 		RETURN_FALSE;
 	}
 
+#if defined(ZTS) && defined(_SC_GETPW_R_SIZE_MAX) && defined(HAVE_GETPWNAM_R)
+	buflen = sysconf(_SC_GETPW_R_SIZE_MAX);
+	if (buflen < 1) {
+		RETURN_FALSE;
+	}
+	buf = emalloc(buflen);
+	pw = &pwbuf;
+
+	if (getpwnam_r(name, pw, buf, buflen, &pw) || pw == NULL) {
+		efree(buf);
+		POSIX_G(last_error) = errno;
+		RETURN_FALSE;
+	}
+#else
 	if (NULL == (pw = getpwnam(name))) {
 		POSIX_G(last_error) = errno;
 		RETURN_FALSE;
 	}
-	
+#endif	
 	array_init(return_value);
 
 	if (!php_posix_passwd_to_array(pw, return_value)) {
+		zval_dtor(return_value);
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "unable to convert posix passwd struct to array");
-		RETURN_FALSE;
+		RETVAL_FALSE;
 	}
-
+#if defined(ZTS) && defined(_SC_GETPW_R_SIZE_MAX) && defined(HAVE_GETPWNAM_R)
+	efree(buf);
+#endif
 }
 /* }}} */
 
@@ -901,23 +989,48 @@ PHP_FUNCTION(posix_getpwnam)
 PHP_FUNCTION(posix_getpwuid)
 {
 	long uid;
+#if defined(ZTS) && defined(_SC_GETPW_R_SIZE_MAX) && defined(HAVE_GETPWUID_R)
+	struct passwd _pw;
+	struct passwd *retpwptr = NULL;
+	long pwbuflen;
+	char *pwbuf;
+	int ret;
+#endif
 	struct passwd *pw;
-	
+
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &uid) == FAILURE) {
 		RETURN_FALSE;
 	}
+#if defined(ZTS) && defined(_SC_GETPW_R_SIZE_MAX) && defined(HAVE_GETPWUID_R)
+	pwbuflen = sysconf(_SC_GETPW_R_SIZE_MAX);
+	if (pwbuflen < 1) {
+		RETURN_FALSE;
+	}
+	pwbuf = emalloc(pwbuflen);
 
+	ret = getpwuid_r(uid, &_pw, pwbuf, pwbuflen, &retpwptr);
+	if (ret) {
+		POSIX_G(last_error) = ret;
+		efree(pwbuf);
+		RETURN_FALSE;
+	}
+	pw = &_pw;
+#else
 	if (NULL == (pw = getpwuid(uid))) {
 		POSIX_G(last_error) = errno;
 		RETURN_FALSE;
 	}
-
+#endif
 	array_init(return_value);
 
 	if (!php_posix_passwd_to_array(pw, return_value)) {
+		zval_dtor(return_value);
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "unable to convert posix passwd struct to array");
-		RETURN_FALSE;
+		RETVAL_FALSE;
 	}
+#if defined(ZTS) && defined(_SC_GETPW_R_SIZE_MAX) && defined(HAVE_GETPWUID_R)
+	efree(pwbuf);
+#endif
 }
 /* }}} */
 
@@ -1029,8 +1142,10 @@ PHP_FUNCTION(posix_getrlimit)
 	array_init(return_value);
 
 	for (l=limits; l->name; l++) {
-		if (posix_addlimit(l->limit, l->name, return_value TSRMLS_CC) == FAILURE)
+		if (posix_addlimit(l->limit, l->name, return_value TSRMLS_CC) == FAILURE) {
+			zval_dtor(return_value);
 			RETURN_FALSE;
+		}
 	}
 }
 /* }}} */

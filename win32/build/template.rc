@@ -1,5 +1,5 @@
 /* This is a template RC file.
- * $Id: template.rc,v 1.7.2.2 2006/02/08 21:09:18 johannes Exp $
+ * $Id: template.rc,v 1.7.2.2.2.1 2007/01/01 19:32:09 iliaa Exp $
  * Do not edit with MSVC */
 #ifdef APSTUDIO_INVOKED
 # error dont edit with MSVC
@@ -47,7 +47,7 @@ BEGIN
             VALUE "FileDescription", FILE_DESCRIPTION "\0"
             VALUE "FileVersion", STRVER4(PHP_MAJOR_VERSION, PHP_MINOR_VERSION, PHP_RELEASE_VERSION, PHP_RELEASE_VERSION)
             VALUE "InternalName", FILE_NAME "\0"
-            VALUE "LegalCopyright", "Copyright © 1997-2006 The PHP Group\0"
+            VALUE "LegalCopyright", "Copyright © 1997-2007 The PHP Group\0"
             VALUE "LegalTrademarks", "PHP\0"
             VALUE "OriginalFilename", FILE_NAME "\0"
             VALUE "PrivateBuild", "\0"

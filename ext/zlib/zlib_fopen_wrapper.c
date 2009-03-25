@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: zlib_fopen_wrapper.c,v 1.46.2.1.2.1 2006/08/14 20:08:18 nlopess Exp $ */
+/* $Id: zlib_fopen_wrapper.c,v 1.46.2.1.2.3 2007/04/26 12:52:58 dmitry Exp $ */
 
 #define _GNU_SOURCE
 
@@ -76,7 +76,7 @@ static int php_gziop_close(php_stream *stream, int close_handle TSRMLS_DC)
 			self->gz_file = NULL;
 		}
 		if (self->stream) {
-			php_stream_close(self->stream);
+			php_stream_free(self->stream, PHP_STREAM_FREE_CLOSE | PHP_STREAM_FREE_PRESERVE_HANDLE);
 			self->stream = NULL;
 		}
 	}

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2007 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_vm_def.h,v 1.59.2.29.2.32 2006/10/30 11:04:31 dmitry Exp $ */
+/* $Id: zend_vm_def.h,v 1.59.2.29.2.43 2007/04/16 08:09:55 dmitry Exp $ */
 
 /* If you change this file, please regenerate the zend_vm_execute.h and
  * zend_vm_opcodes.h files by running:
@@ -408,11 +408,11 @@ ZEND_VM_HELPER_EX(zend_binary_assign_op_helper, VAR|UNUSED|CV, CONST|TMP|VAR|UNU
 		case ZEND_ASSIGN_DIM: {
 				zval **object_ptr = GET_OP1_OBJ_ZVAL_PTR_PTR(BP_VAR_W);
 
-				if (OP1_TYPE != IS_CV && !OP1_FREE) {
+				if (object_ptr && OP1_TYPE != IS_CV && !OP1_FREE) {
 					(*object_ptr)->refcount++;  /* undo the effect of get_obj_zval_ptr_ptr() */
 				}
 
-				if (Z_TYPE_PP(object_ptr) == IS_OBJECT) {
+				if (object_ptr && Z_TYPE_PP(object_ptr) == IS_OBJECT) {
 					ZEND_VM_DISPATCH_TO_HELPER_EX(zend_binary_assign_op_obj_helper, binary_op, binary_op);
 				} else {
 					zend_op *op_data = opline+1;
@@ -1328,7 +1328,7 @@ ZEND_VM_HANDLER(97, ZEND_FETCH_OBJ_UNSET, VAR|UNUSED|CV, CONST|TMP|VAR|CV)
 	if (IS_OP2_TMP_FREE()) {
 		MAKE_REAL_ZVAL_PTR(property);
 	}
-	zend_fetch_property_address(RETURN_VALUE_UNUSED(&opline->result)?NULL:&EX_T(opline->result.u.var), container, property, BP_VAR_R TSRMLS_CC);
+	zend_fetch_property_address(RETURN_VALUE_UNUSED(&opline->result)?NULL:&EX_T(opline->result.u.var), container, property, BP_VAR_UNSET TSRMLS_CC);
 	if (IS_OP2_TMP_FREE()) {
 		zval_ptr_dtor(&property);
 	} else {
@@ -1350,7 +1350,7 @@ ZEND_VM_HANDLER(97, ZEND_FETCH_OBJ_UNSET, VAR|UNUSED|CV, CONST|TMP|VAR|CV)
 	ZEND_VM_NEXT_OPCODE();
 }
 
-ZEND_VM_HANDLER(98, ZEND_FETCH_DIM_TMP_VAR, TMP, CONST)
+ZEND_VM_HANDLER(98, ZEND_FETCH_DIM_TMP_VAR, CONST|TMP, CONST)
 {
 	zend_op *opline = EX(opline);
 	zend_free_op free_op1;
@@ -1765,7 +1765,7 @@ ZEND_VM_HANDLER(113, ZEND_INIT_STATIC_METHOD_CALL, ANY, CONST|TMP|VAR|UNUSED|CV)
 		if(!ce->constructor) {
 			zend_error_noreturn(E_ERROR, "Can not call constructor");
 		}
-		if (Z_OBJCE_P(EG(This)) != ce->constructor->common.scope && (ce->constructor->common.fn_flags & ZEND_ACC_PRIVATE)) {
+		if (EG(This) && Z_OBJCE_P(EG(This)) != ce->constructor->common.scope && (ce->constructor->common.fn_flags & ZEND_ACC_PRIVATE)) {
 			zend_error(E_COMPILE_ERROR, "Cannot call private %s::__construct()", ce->name);
 		}
 		EX(fbc) = ce->constructor;
@@ -1857,7 +1857,7 @@ ZEND_VM_HELPER(zend_do_fcall_common_helper, ANY, ANY)
 		}
 	}
 
-	zend_ptr_stack_2_push(&EG(argument_stack), (void *) opline->extended_value, NULL);
+	zend_ptr_stack_2_push(&EG(argument_stack), (void *)(zend_uintptr_t)opline->extended_value, NULL);
 
 	EX_T(opline->result.u.var).var.ptr_ptr = &EX_T(opline->result.u.var).var.ptr;
 
@@ -1900,7 +1900,7 @@ ZEND_VM_HELPER(zend_do_fcall_common_helper, ANY, ANY)
 			ulong arg_count;
 
 			p = (zval **) EG(argument_stack).top_element-2;
-			arg_count = (ulong) *p;
+			arg_count = (ulong)(zend_uintptr_t) *p;
 
 			while (arg_count>0) {
 				zend_verify_arg_type(EX(function_state).function, ++i, *(p-arg_count) TSRMLS_CC);
@@ -2255,7 +2255,15 @@ ZEND_VM_HANDLER(106, ZEND_SEND_VAR_NO_REF, VAR|CV, ANY)
 		ZEND_VM_DISPATCH_TO_HELPER(zend_send_by_var_helper);
 	}
 
-	varptr = GET_OP1_ZVAL_PTR(BP_VAR_R);
+	if (OP1_TYPE == IS_VAR &&
+		(opline->extended_value & ZEND_ARG_SEND_FUNCTION) &&
+		EX_T(opline->op1.u.var).var.fcall_returned_reference &&
+		EX_T(opline->op1.u.var).var.ptr) {
+		varptr = EX_T(opline->op1.u.var).var.ptr;
+		PZVAL_UNLOCK_EX(varptr, &free_op1, 0);
+	} else {
+		varptr = GET_OP1_ZVAL_PTR(BP_VAR_R);
+	}
 	if ((!(opline->extended_value & ZEND_ARG_SEND_FUNCTION) ||
 	     EX_T(opline->op1.u.var).var.fcall_returned_reference) &&
 	    varptr != &EG(uninitialized_zval) &&
@@ -3094,6 +3102,9 @@ ZEND_VM_HANDLER(77, ZEND_FE_RESET, CONST|TMP|VAR|CV, ANY)
 		} else {
 			if (Z_TYPE_PP(array_ptr_ptr) == IS_ARRAY) {
 				SEPARATE_ZVAL_IF_NOT_REF(array_ptr_ptr);
+				if (opline->extended_value & ZEND_FE_FETCH_BYREF) {
+					(*array_ptr_ptr)->is_ref = 1;
+				}
 			}
 			array_ptr = *array_ptr_ptr;
 			array_ptr->refcount++;
@@ -3129,7 +3140,7 @@ ZEND_VM_HANDLER(77, ZEND_FE_RESET, CONST|TMP|VAR|CV, ANY)
 		}
 	}
 
-	if (ce && ce->get_iterator) {
+	if (OP1_TYPE != IS_TMP_VAR && ce && ce->get_iterator) {
 		iter = ce->get_iterator(ce, array_ptr, opline->extended_value & ZEND_FE_RESET_REFERENCE TSRMLS_CC);
 
 		if (iter && !EG(exception)) {
@@ -3191,13 +3202,15 @@ ZEND_VM_HANDLER(77, ZEND_FE_RESET, CONST|TMP|VAR|CV, ANY)
 
 				key_type = zend_hash_get_current_key_ex(fe_ht, &str_key, &str_key_len, &int_key, 0, NULL);
 				if (key_type != HASH_KEY_NON_EXISTANT &&
-				    zend_check_property_access(zobj, str_key, str_key_len-1 TSRMLS_CC) == SUCCESS) {
+					(key_type == HASH_KEY_IS_LONG ||
+				     zend_check_property_access(zobj, str_key, str_key_len-1 TSRMLS_CC) == SUCCESS)) {
 					break;
 				}
 				zend_hash_move_forward(fe_ht);
 			}
 		}
 		is_empty = zend_hash_has_more_elements(fe_ht) != SUCCESS;
+		zend_hash_get_pointer(fe_ht, &EX_T(opline->result.u.var).fe.fe_pos);
 	} else {
 		zend_error(E_WARNING, "Invalid argument supplied for foreach()");
 		is_empty = 1;
@@ -3242,6 +3255,7 @@ ZEND_VM_HANDLER(78, ZEND_FE_FETCH, VAR, ANY)
 			zend_object *zobj = zend_objects_get_address(array TSRMLS_CC);
 
 			fe_ht = HASH_OF(array);
+			zend_hash_set_pointer(fe_ht, &EX_T(opline->op1.u.var).fe.fe_pos);
 			do {
 				if (zend_hash_get_current_data(fe_ht, (void **) &value)==FAILURE) {
 					/* reached end of iteration */
@@ -3250,8 +3264,11 @@ ZEND_VM_HANDLER(78, ZEND_FE_FETCH, VAR, ANY)
 				key_type = zend_hash_get_current_key_ex(fe_ht, &str_key, &str_key_len, &int_key, 0, NULL);
 
 				zend_hash_move_forward(fe_ht);
-			} while (key_type == HASH_KEY_NON_EXISTANT || zend_check_property_access(zobj, str_key, str_key_len-1 TSRMLS_CC) != SUCCESS);
-			if (use_key) {
+			} while (key_type == HASH_KEY_NON_EXISTANT ||
+			         (key_type != HASH_KEY_IS_LONG &&
+			          zend_check_property_access(zobj, str_key, str_key_len-1 TSRMLS_CC) != SUCCESS));
+			zend_hash_get_pointer(fe_ht, &EX_T(opline->op1.u.var).fe.fe_pos);
+			if (use_key && key_type != HASH_KEY_IS_LONG) {
 				zend_unmangle_property_name(str_key, str_key_len-1, &class_name, &prop_name);
 				str_key_len = strlen(prop_name);
 				str_key = estrndup(prop_name, str_key_len);
@@ -3262,6 +3279,7 @@ ZEND_VM_HANDLER(78, ZEND_FE_FETCH, VAR, ANY)
 
 		case ZEND_ITER_PLAIN_ARRAY:
 			fe_ht = HASH_OF(array);
+			zend_hash_set_pointer(fe_ht, &EX_T(opline->op1.u.var).fe.fe_pos);
 			if (zend_hash_get_current_data(fe_ht, (void **) &value)==FAILURE) {
 				/* reached end of iteration */
 				ZEND_VM_JMP(EX(op_array)->opcodes+opline->op2.u.opline_num);
@@ -3270,6 +3288,7 @@ ZEND_VM_HANDLER(78, ZEND_FE_FETCH, VAR, ANY)
 				key_type = zend_hash_get_current_key_ex(fe_ht, &str_key, &str_key_len, &int_key, 1, NULL);
 			}
 			zend_hash_move_forward(fe_ht);
+			zend_hash_get_pointer(fe_ht, &EX_T(opline->op1.u.var).fe.fe_pos);
 			break;
 
 		case ZEND_ITER_OBJECT:

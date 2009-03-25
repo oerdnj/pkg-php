@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: xml.c,v 1.157.2.4.2.3 2006/08/15 22:47:10 rrichards Exp $ */
+/* $Id: xml.c,v 1.157.2.4.2.5 2007/01/01 09:36:09 sebastian Exp $ */
 
 #define IS_EXT_MODULE
 
@@ -1097,7 +1097,7 @@ static void php_xml_parser_create_impl(INTERNAL_FUNCTION_PARAMETERS, int ns_supp
 		ns_param = ":";
 	}
 
-	parser = ecalloc(sizeof(xml_parser), 1);
+	parser = ecalloc(1, sizeof(xml_parser));
 	parser->parser = XML_ParserCreate_MM((auto_detect ? NULL : encoding),
                                          &php_xml_mem_hdlrs, ns_param);
 

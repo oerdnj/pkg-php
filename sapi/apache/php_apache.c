@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    |          David Sklar <sklar@student.net>                             |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_apache.c,v 1.89.2.4.2.1 2006/09/06 11:54:28 nlopess Exp $ */
+/* $Id: php_apache.c,v 1.89.2.4.2.5 2007/02/24 02:17:28 helly Exp $ */
 
 #include "php_apache_http.h"
 
@@ -207,20 +207,20 @@ PHP_MINFO_FUNCTION(apache)
 	} 
 
 #ifdef APACHE_RELEASE
-	sprintf(output_buf, "%d", APACHE_RELEASE);
+	snprintf(output_buf, sizeof(output_buf), "%d", APACHE_RELEASE);
 	php_info_print_table_row(2, "Apache Release", output_buf);
 #endif
-	sprintf(output_buf, "%d", MODULE_MAGIC_NUMBER);
+	snprintf(output_buf, sizeof(output_buf), "%d", MODULE_MAGIC_NUMBER);
 	php_info_print_table_row(2, "Apache API Version", output_buf);
-	sprintf(output_buf, "%s:%u", serv->server_hostname, serv->port);
+	snprintf(output_buf, sizeof(output_buf), "%s:%u", serv->server_hostname, serv->port);
 	php_info_print_table_row(2, "Hostname:Port", output_buf);
 #if !defined(WIN32) && !defined(WINNT)
-	sprintf(output_buf, "%s(%d)/%d", user_name, (int)user_id, (int)group_id);
+	snprintf(output_buf, sizeof(output_buf), "%s(%d)/%d", user_name, (int)user_id, (int)group_id);
 	php_info_print_table_row(2, "User/Group", output_buf);
-	sprintf(output_buf, "Per Child: %d - Keep Alive: %s - Max Per Connection: %d", max_requests_per_child, serv->keep_alive ? "on":"off", serv->keep_alive_max);
+	snprintf(output_buf, sizeof(output_buf), "Per Child: %d - Keep Alive: %s - Max Per Connection: %d", max_requests_per_child, serv->keep_alive ? "on":"off", serv->keep_alive_max);
 	php_info_print_table_row(2, "Max Requests", output_buf);
 #endif
-	sprintf(output_buf, "Connection: %d - Keep-Alive: %d", serv->timeout, serv->keep_alive_timeout);
+	snprintf(output_buf, sizeof(output_buf), "Connection: %d - Keep-Alive: %d", serv->timeout, serv->keep_alive_timeout);
 	php_info_print_table_row(2, "Timeouts", output_buf);
 #if !defined(WIN32) && !defined(WINNT)
 /*
@@ -235,9 +235,9 @@ PHP_MINFO_FUNCTION(apache)
 		if ((p = strrchr(name, '.'))) {
 			*p='\0'; /* Cut off ugly .c extensions on module names */
 		}
-		strcat(modulenames, name);
+		strlcat(modulenames, name, sizeof(modulenames));
 		if (modp->next) {
-			strcat(modulenames, ", ");
+			strlcat(modulenames, ", ", sizeof(modulenames));
 		}
 	}
 	php_info_print_table_row(2, "Loaded Modules", modulenames);

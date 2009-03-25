@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2007 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_globals_macros.h,v 1.22.2.1.2.2 2006/07/18 09:06:33 dmitry Exp $ */
+/* $Id: zend_globals_macros.h,v 1.22.2.1.2.4 2007/02/16 08:54:17 dmitry Exp $ */
 
 #ifndef ZEND_GLOBALS_MACROS_H
 #define ZEND_GLOBALS_MACROS_H
@@ -26,12 +26,12 @@ typedef struct _zend_compiler_globals zend_compiler_globals;
 typedef struct _zend_executor_globals zend_executor_globals;
 typedef struct _zend_scanner_globals zend_scanner_globals;
 
+BEGIN_EXTERN_C()
+
 /* Compiler */
 #ifdef ZTS
 # define CG(v) TSRMG(compiler_globals_id, zend_compiler_globals *, v)
-BEGIN_EXTERN_C()
 int zendparse(void *compiler_globals);
-END_EXTERN_C()
 #else
 # define CG(v) (compiler_globals.v)
 extern ZEND_API struct _zend_compiler_globals compiler_globals;
@@ -66,6 +66,7 @@ extern ZEND_API ts_rsrc_id ini_scanner_globals_id;
 extern ZEND_API zend_scanner_globals ini_scanner_globals;
 #endif
 
+END_EXTERN_C()
 
 /* For limited downwards source compatibility */
 #define CLS_FETCH()

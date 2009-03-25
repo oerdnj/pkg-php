@@ -1,4 +1,4 @@
- ## $Id: configure.in,v 1.579.2.52.2.24 2006/10/30 23:06:22 iliaa Exp $ -*- autoconf -*-
+ ## $Id: configure.in,v 1.579.2.52.2.49 2007/05/02 23:05:13 iliaa Exp $ -*- autoconf -*-
 dnl ## Process this file with autoconf to produce a configure script.
 
 divert(1)
@@ -43,7 +43,7 @@ AC_CONFIG_HEADER(main/php_config.h)
 
 MAJOR_VERSION=5
 MINOR_VERSION=2
-RELEASE_VERSION=0
+RELEASE_VERSION=2
 EXTRA_VERSION=""
 PHP_VERSION="$MAJOR_VERSION.$MINOR_VERSION.$RELEASE_VERSION$EXTRA_VERSION"
 PHP_VERSION_ID=`expr [$]MAJOR_VERSION \* 10000 + [$]MINOR_VERSION \* 100 + [$]RELEASE_VERSION`
@@ -122,6 +122,7 @@ dnl Checks for programs.
 dnl -------------------------------------------------------------------------
 
 AC_PROG_CC
+PHP_DETECT_ICC
 AC_PROG_CC_C_O
 dnl Change to AC_PROG_CC_STDC when we start requiring a post-2.13 autoconf
 dnl AC_PROG_CC_STDC
@@ -167,7 +168,12 @@ case $host_alias in
 *dgux*)
     CPPFLAGS="$CPPFLAGS -D_BSD_TIMEOFDAY_FLAVOR";;
 *darwin*|*rhapsody*)
-    CPPFLAGS="$CPPFLAGS -no-cpp-precomp"
+    if test -n "$GCC"; then
+      PHP_CHECK_GCC_ARG(-no-cpp-precomp, gcc_no_cpp_precomp=yes)
+      if test "$gcc_no_cpp_precomp" = "yes"; then
+        CPPFLAGS="$CPPFLAGS -no-cpp-precomp"
+      fi
+    fi
     AC_DEFINE(BIND_8_COMPAT, 1, [Enabling BIND8 compatibility for Panther])
     php_multiple_shlib_versions_ok=yes;;
 *beos*)
@@ -281,6 +287,9 @@ PHP_EBCDIC
 
 dnl Check whether the system byte ordering is bigendian
 PHP_C_BIGENDIAN
+
+dnl Check whether writing to stdout works
+PHP_TEST_WRITE_STDOUT
 
 dnl Check for /usr/pkg/{lib,include} which is where NetBSD puts binary
 dnl and source packages.  This should be harmless on other OSs.
@@ -480,6 +489,9 @@ getservbyport \
 getrusage \
 gettimeofday \
 gmtime_r \
+getpwnam_r \
+getgrnam_r \
+getpwuid_r \
 grantpt \
 inet_ntoa \
 inet_ntop \
@@ -596,6 +608,11 @@ PHP_TIME_R_TYPE
 PHP_READDIR_R_TYPE
 PHP_CHECK_IN_ADDR_T
 
+AC_CHECK_FUNCS(crypt_r, [ php_crypt_r="1" ], [ php_crypt_r="0" ])
+if test "x$php_crypt_r" = "x1"; then
+  PHP_CRYPT_R_STYLE
+fi
+
 divert(4)
 
 dnl ## In diversion 4 we check user-configurable general settings.
@@ -683,8 +700,11 @@ if test "$PHP_DEBUG" = "yes"; then
   CFLAGS=`echo "$CFLAGS" | $SED -e 's/-O[0-9]*//g'`
   CXXFLAGS=`echo "$CXXFLAGS" | $SED -e 's/-O[0-9]*//g'`
   changequote([,])
-  CFLAGS="$CFLAGS -O0"
-  CXXFLAGS="$CXXFLAGS -O0"
+  dnl add -O0 only if GCC or ICC is used
+  if test "$GCC" = "yes" || test "$ICC" = "yes"; then
+    CFLAGS="$CFLAGS -O0"
+    CXXFLAGS="$CXXFLAGS -O0"
+  fi
 else
   PHP_DEBUG=0
   ZEND_DEBUG=no
@@ -1089,6 +1109,15 @@ if test -z "$EXTENSION_DIR"; then
   fi
 fi
 
+case $PHP_LAYOUT in
+  GNU)
+    datarootdir=$prefix/share
+    ;;
+  *)
+    datarootdir=$prefix/php
+    ;;
+esac
+
 dnl Expand all directory names for use in macros/constants
 EXPANDED_PEAR_INSTALLDIR=`eval echo $PEAR_INSTALLDIR`
 EXPANDED_EXTENSION_DIR=`eval echo $EXTENSION_DIR`
@@ -1180,6 +1209,7 @@ PHP_SUBST(phptempdir)
 PHP_SUBST(prefix)
 PHP_SUBST(localstatedir)
 PHP_SUBST(datadir)
+PHP_SUBST(datarootdir)
 PHP_SUBST(sysconfdir)
 
 PHP_SUBST(EXEEXT)
@@ -1327,7 +1357,7 @@ PHP_ADD_SOURCES(Zend, \
     zend_iterators.c zend_interfaces.c zend_exceptions.c zend_strtod.c)
 
 if test -r "$abs_srcdir/Zend/zend_objects.c"; then
-  PHP_ADD_SOURCES(Zend, zend_objects.c zend_object_handlers.c zend_objects_API.c zend_mm.c \
+  PHP_ADD_SOURCES(Zend, zend_objects.c zend_object_handlers.c zend_objects_API.c \
     zend_default_classes.c)
 fi
 

@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: xp_socket.c,v 1.33.2.2.2.1 2006/10/11 12:53:56 tony2001 Exp $ */
+/* $Id: xp_socket.c,v 1.33.2.2.2.4 2007/01/01 09:36:12 sebastian Exp $ */
 
 #include "php.h"
 #include "ext/standard/file.h"
@@ -369,6 +369,24 @@ static int php_sockop_set_option(php_stream *stream, int option, int value, void
 					return PHP_STREAM_OPTION_RETURN_OK;
 
 
+#ifdef HAVE_SHUTDOWN
+# ifndef SHUT_RD
+#  define SHUT_RD 0
+# endif
+# ifndef SHUT_WR
+#  define SHUT_WR 1
+# endif
+# ifndef SHUT_RDWR
+#  define SHUT_RDWR 2
+# endif
+				case STREAM_XPORT_OP_SHUTDOWN: {
+					static const int shutdown_how[] = {SHUT_RD, SHUT_WR, SHUT_RDWR};
+
+					xparam->outputs.returncode = shutdown(sock->socket, shutdown_how[xparam->how]);
+					return PHP_STREAM_OPTION_RETURN_OK;
+				}
+#endif
+				
 				default:
 					return PHP_STREAM_OPTION_RETURN_NOTIMPL;
 			}
@@ -624,6 +642,7 @@ static inline int php_tcp_sockop_connect(php_stream *stream, php_netstream_data_
 			if (xparam->want_errortext) {
 				spprintf(&xparam->outputs.error_text, 0, "local_addr context option is not a string.");
 			}
+			efree(host);
 			return -1;
 		}
 		bindto = parse_ip_address_ex(Z_STRVAL_PP(tmpzval), Z_STRLEN_PP(tmpzval), &bindport, xparam->want_errortext, &xparam->outputs.error_text TSRMLS_CC);

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: interbase.c,v 1.225.2.4.2.1 2006/06/15 18:33:07 dmitry Exp $ */
+/* $Id: interbase.c,v 1.225.2.4.2.7 2007/02/28 10:37:07 bjori Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -542,7 +542,7 @@ PHP_MINFO_FUNCTION(ibase)
 #endif
 
 #ifdef FB_API_VER
-	sprintf( (s = tmp), "Firebird API version %d", FB_API_VER);
+	snprintf( (s = tmp), sizeof(tmp), "Firebird API version %d", FB_API_VER);
 #elif (SQLDA_CURRENT_VERSION > 1)
 	s =  "Interbase 7.0 and up";
 #elif !defined(DSC_null)
@@ -588,22 +588,28 @@ static char const dpb_args[] = {
 	
 int _php_ibase_attach_db(char **args, int *len, long *largs, isc_db_handle *db TSRMLS_DC)
 {
-	short i;
+	short i, dpb_len, buf_len = 256;
 	char dpb_buffer[256] = { isc_dpb_version1 }, *dpb;
 
 	dpb = dpb_buffer + 1;
 
 	for (i = 0; i < sizeof(dpb_args); ++i) {
-		if (dpb_args[i] && args[i] && len[i]) {
-			dpb += sprintf(dpb, "%c%c%s", dpb_args[i],(unsigned char)len[i],args[i]);
+		if (dpb_args[i] && args[i] && len[i] && buf_len > 0) {
+			dpb_len = slprintf(dpb, buf_len, "%c%c%s", dpb_args[i],(unsigned char)len[i],args[i]);
+			dpb += dpb_len;
+			buf_len -= dpb_len;
 		}
 	}
-	if (largs[BUF]) {
-		dpb += sprintf(dpb, "%c\2%c%c", isc_dpb_num_buffers, 
+	if (largs[BUF] && buf_len > 0) {
+		dpb_len = slprintf(dpb, buf_len, "%c\2%c%c", isc_dpb_num_buffers, 
 			(char)(largs[BUF] >> 8), (char)(largs[BUF] & 0xff));
+		dpb += dpb_len;
+		buf_len -= dpb_len;
 	}
-	if (largs[SYNC]) {
-		dpb += sprintf(dpb, "%c\1%c", isc_dpb_force_write, largs[SYNC] == isc_spb_prp_wm_sync ? 1 : 0);
+	if (largs[SYNC] && buf_len > 0) {
+		dpb_len = slprintf(dpb, buf_len, "%c\1%c", isc_dpb_force_write, largs[SYNC] == isc_spb_prp_wm_sync ? 1 : 0);
+		dpb += dpb_len;
+		buf_len -= dpb_len;
 	}
 	if (isc_attach_database(IB_STATUS, (short)len[DB], args[DB], db, (short)(dpb-dpb_buffer), dpb_buffer)) {
 		_php_ibase_error(TSRMLS_C);
@@ -1164,7 +1170,7 @@ PHP_FUNCTION(ibase_gen_id)
 
 	PHP_IBASE_LINK_TRANS(link, ib_link, trans);
 	
-	sprintf(query, "SELECT GEN_ID(%s,%ld) FROM rdb$database", generator, inc);
+	snprintf(query, sizeof(query), "SELECT GEN_ID(%s,%ld) FROM rdb$database", generator, inc);
 
 	/* allocate a minimal descriptor area */
 	out_sqlda.sqln = out_sqlda.sqld = 1;
@@ -1186,10 +1192,11 @@ PHP_FUNCTION(ibase_gen_id)
 	/* don't return the generator value as a string unless it doesn't fit in a long */
 #if SIZEOF_LONG < 8
 	if (result < LONG_MIN || result > LONG_MAX) {
-		char res[24];
+		char *res;
+		int l;
 
-		sprintf(res, "%" LL_MASK "d", result);
-		RETURN_STRING(res,1);
+		l = spprintf(&res, 0, "%" LL_MASK "d", result);
+		RETURN_STRINGL(res, l, 0);
 	}
 #endif
 	RETURN_LONG((long)result);

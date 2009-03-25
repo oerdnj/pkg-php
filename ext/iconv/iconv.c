@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: iconv.c,v 1.124.2.8.2.7 2006/09/12 17:26:34 tony2001 Exp $ */
+/* $Id: iconv.c,v 1.124.2.8.2.15 2007/03/12 19:34:26 tony2001 Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -142,7 +142,7 @@ ZEND_END_ARG_INFO()
 /* {{{ iconv_functions[]
  */
 zend_function_entry iconv_functions[] = {
-	PHP_NAMED_FE(iconv,php_if_iconv,				arginfo_iconv)
+	PHP_RAW_NAMED_FE(iconv,php_if_iconv,				arginfo_iconv)
 	PHP_FE(ob_iconv_handler,						arginfo_ob_iconv_handler)
 	PHP_FE(iconv_get_encoding,						arginfo_iconv_get_encoding)
 	PHP_FE(iconv_set_encoding,						arginfo_iconv_set_encoding)
@@ -258,12 +258,16 @@ PHP_MINIT_FUNCTION(miconv)
 	}
 #elif HAVE_GLIBC_ICONV
 	version = (char *)gnu_get_libc_version();
+#elif defined(NETWARE)
+	version = "OS built-in";
 #endif
 
 #ifdef PHP_ICONV_IMPL
 	REGISTER_STRING_CONSTANT("ICONV_IMPL", PHP_ICONV_IMPL, CONST_CS | CONST_PERSISTENT);
 #elif HAVE_LIBICONV
 	REGISTER_STRING_CONSTANT("ICONV_IMPL", "libiconv", CONST_CS | CONST_PERSISTENT);
+#elif defined(NETWARE)
+	REGISTER_STRING_CONSTANT("ICONV_IMPL", "Novell", CONST_CS | CONST_PERSISTENT);
 #else
 	REGISTER_STRING_CONSTANT("ICONV_IMPL", "unknown", CONST_CS | CONST_PERSISTENT);
 #endif
@@ -434,7 +438,11 @@ PHP_ICONV_API php_iconv_err_t php_iconv_string(const char *in_p, size_t in_len,
 	out_buffer = (char *) emalloc(out_size + 1);
 	out_p = out_buffer;
 	
+#ifdef NETWARE
+	result = iconv(cd, (char **) &in_p, &in_size, (char **)
+#else
 	result = iconv(cd, (const char **) &in_p, &in_size, (char **)
+#endif
 				&out_p, &out_left);
 	
 	if (result == (size_t)(-1)) {
@@ -671,28 +679,30 @@ static php_iconv_err_t _php_iconv_substr(smart_str *pretval,
 		return err;
 	}
 	
-	/* normalize the offset and the length */
-	if (offset < 0) {
-		if ((offset += total_len) < 0) {
-			offset = 0;
-		}
-	}
 	if (len < 0) {
 		if ((len += (total_len - offset)) < 0) {
-			len = 0;
+			return PHP_ICONV_ERR_SUCCESS;
+		}
+	}
+
+	if (offset < 0) {
+		if ((offset += total_len) < 0) {
+			return PHP_ICONV_ERR_SUCCESS;
 		}
 	}
 
 	if (offset >= total_len) {
 		return PHP_ICONV_ERR_SUCCESS;
 	}
-	
+
 	if ((offset + len) > total_len) {
 		/* trying to compute the length */
 		len = total_len - offset;
 	}
 
 	if (len == 0) {
+		smart_str_appendl(pretval, "", 0);
+		smart_str_0(pretval);
 		return PHP_ICONV_ERR_SUCCESS;
 	}
 	
@@ -710,7 +720,8 @@ static php_iconv_err_t _php_iconv_substr(smart_str *pretval,
 #endif
 	}
 
-	cd2 = NULL;
+	cd2 = (iconv_t)NULL;
+	errno = 0;
 
 	for (in_p = str, in_left = nbytes, cnt = 0; in_left > 0 && len > 0; ++cnt) {
 		size_t prev_in_left;
@@ -726,11 +737,11 @@ static php_iconv_err_t _php_iconv_substr(smart_str *pretval,
 		}
 
 		if (cnt >= (unsigned int)offset) {
-			if (cd2 == NULL) {
+			if (cd2 == (iconv_t)NULL) {
 				cd2 = iconv_open(enc, GENERIC_SUPERSET_NAME);
 
 				if (cd2 == (iconv_t)(-1)) {
-					cd2 = NULL;
+					cd2 = (iconv_t)NULL;
 #if ICONV_SUPPORTS_ERRNO
 					if (errno == EINVAL) {
 						err = PHP_ICONV_ERR_WRONG_CHARSET;
@@ -744,7 +755,9 @@ static php_iconv_err_t _php_iconv_substr(smart_str *pretval,
 				}
 			}
 
-			_php_iconv_appendl(pretval, buf, sizeof(buf), cd2);
+			if (_php_iconv_appendl(pretval, buf, sizeof(buf), cd2) != PHP_ICONV_ERR_SUCCESS) {
+				break;
+			}
 			--len;
 		}
 
@@ -762,24 +775,20 @@ static php_iconv_err_t _php_iconv_substr(smart_str *pretval,
 
 		case E2BIG:
 			break;
-
-		default:
-			err = PHP_ICONV_ERR_UNKNOWN;
-			break;
 	}
 #endif
 	if (err == PHP_ICONV_ERR_SUCCESS) {
-		if (cd2 != NULL) {
+		if (cd2 != (iconv_t)NULL) {
 			_php_iconv_appendl(pretval, NULL, 0, cd2);
 		}
 		smart_str_0(pretval);
 	}
 
-	if (cd1 != NULL) {
+	if (cd1 != (iconv_t)NULL) {
 		iconv_close(cd1);
 	}
 
-	if (cd2 != NULL) {
+	if (cd2 != (iconv_t)NULL) {
 		iconv_close(cd2);
 	}	
 	return err;
@@ -1042,7 +1051,7 @@ static php_iconv_err_t _php_iconv_mime_encode(smart_str *pretval, const char *fn
 		goto out;
 	}
 
-	buf = emalloc(max_line_len + 5);
+	buf = safe_emalloc(1, max_line_len, 5);
 
 	char_cnt = max_line_len;
 
@@ -1903,16 +1912,11 @@ PHP_FUNCTION(iconv_substr)
 	err = _php_iconv_substr(&retval, str, str_len, offset, length, charset); 
 	_php_iconv_show_error(err, GENERIC_SUPERSET_NAME, charset TSRMLS_CC);
 
-	if (err == PHP_ICONV_ERR_SUCCESS && str != NULL) {
-		if (retval.c != NULL) {
-			RETVAL_STRINGL(retval.c, retval.len, 0);
-		} else {
-			RETVAL_EMPTY_STRING();
-		}
-	} else {
-		smart_str_free(&retval);
-		RETVAL_FALSE;
+	if (err == PHP_ICONV_ERR_SUCCESS && str != NULL && retval.c != NULL) {
+		RETURN_STRINGL(retval.c, retval.len, 0);
 	}
+	smart_str_free(&retval);
+	RETURN_FALSE;
 }
 /* }}} */
 
@@ -2304,6 +2308,9 @@ PHP_FUNCTION(ob_iconv_handler)
 			spprintf(&content_type, 0, "Content-Type:%s; charset=%s", mimetype, ICONVG(output_encoding));
 			if (content_type && sapi_add_header(content_type, strlen(content_type), 0) != FAILURE) {
 				SG(sapi_headers).send_default_content_type = 0;
+			}
+			if (mimetype_alloced) {
+				efree(mimetype);
 			}
 			RETURN_STRINGL(out_buffer, out_len, 0);
 		}

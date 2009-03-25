@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -22,7 +22,7 @@
 #ifndef PHP_SOCKETS_H
 #define PHP_SOCKETS_H
 
-/* $Id: php_sockets.h,v 1.36.2.1 2006/01/01 12:50:13 sniper Exp $ */
+/* $Id: php_sockets.h,v 1.36.2.1.2.2 2007/01/10 15:25:07 bjori Exp $ */
 
 #if HAVE_SOCKETS
 
@@ -66,7 +66,9 @@ PHP_FUNCTION(socket_recvfrom);
 PHP_FUNCTION(socket_sendto);
 PHP_FUNCTION(socket_get_option);
 PHP_FUNCTION(socket_set_option);
+#ifdef HAVE_SHUTDOWN
 PHP_FUNCTION(socket_shutdown);
+#endif
 PHP_FUNCTION(socket_last_error);
 PHP_FUNCTION(socket_clear_error);
 

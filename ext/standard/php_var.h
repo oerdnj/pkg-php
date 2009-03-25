@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_var.h,v 1.30.2.1.2.1 2006/05/30 14:51:20 iliaa Exp $ */
+/* $Id: php_var.h,v 1.30.2.1.2.5 2007/01/01 09:36:08 sebastian Exp $ */
 
 #ifndef PHP_VAR_H
 #define PHP_VAR_H
@@ -28,10 +28,8 @@ PHP_FUNCTION(var_export);
 PHP_FUNCTION(debug_zval_dump);
 PHP_FUNCTION(serialize);
 PHP_FUNCTION(unserialize);
-#if MEMORY_LIMIT 
 PHP_FUNCTION(memory_get_usage);
 PHP_FUNCTION(memory_get_peak_usage);
-#endif
 
 PHPAPI void php_var_dump(zval **struc, int level TSRMLS_DC);
 PHPAPI void php_var_export(zval **struc, int level TSRMLS_DC);

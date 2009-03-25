@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2007 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_compile.h,v 1.316.2.8.2.7 2006/09/26 10:30:50 dmitry Exp $ */
+/* $Id: zend_compile.h,v 1.316.2.8.2.11 2007/04/04 00:42:42 iliaa Exp $ */
 
 #ifndef ZEND_COMPILE_H
 #define ZEND_COMPILE_H
@@ -36,9 +36,9 @@
 
 #define SET_UNUSED(op)  (op).op_type = IS_UNUSED
 
-#define INC_BPC(op_array)	if (CG(interactive)) { ((op_array)->backpatch_count++); }
-#define DEC_BPC(op_array)	if (CG(interactive)) { ((op_array)->backpatch_count--); }
-#define HANDLE_INTERACTIVE()  if (CG(interactive)) { execute_new_code(TSRMLS_C); }
+#define INC_BPC(op_array)	if (op_array->fn_flags & ZEND_ACC_INTERACTIVE) { ((op_array)->backpatch_count++); }
+#define DEC_BPC(op_array)	if (op_array->fn_flags & ZEND_ACC_INTERACTIVE) { ((op_array)->backpatch_count--); }
+#define HANDLE_INTERACTIVE()  if (CG(active_op_array)->fn_flags & ZEND_ACC_INTERACTIVE) { execute_new_code(TSRMLS_C); }
 
 #define RESET_DOC_COMMENT()        \
     {                              \
@@ -115,6 +115,9 @@ typedef struct _zend_try_catch_element {
 #define ZEND_ACC_EXPLICIT_ABSTRACT_CLASS	0x20
 #define ZEND_ACC_FINAL_CLASS	            0x40
 #define ZEND_ACC_INTERFACE		            0x80
+
+/* op_array flags */
+#define ZEND_ACC_INTERACTIVE				0x10
 
 /* method flags (visibility) */
 /* The order of those must be kept - public < protected < private */
@@ -447,6 +450,7 @@ void zend_do_declare_class_constant(znode *var_name, znode *value TSRMLS_DC);
 
 void zend_do_fetch_property(znode *result, znode *object, znode *property TSRMLS_DC);
 
+void zend_do_halt_compiler_register(TSRMLS_D);
 
 void zend_do_push_object(znode *object TSRMLS_DC);
 void zend_do_pop_object(znode *object TSRMLS_DC);
@@ -476,9 +480,8 @@ void zend_do_isset_or_isempty(int type, znode *result, znode *variable TSRMLS_DC
 
 void zend_do_instanceof(znode *result, znode *expr, znode *class_znode, int type TSRMLS_DC);
 
-void zend_do_foreach_begin(znode *foreach_token, znode *open_brackets_token, znode *array, int variable TSRMLS_DC);
-void zend_do_foreach_fetch(znode *foreach_token, znode *open_brackets_token, znode *as_token TSRMLS_DC);
-void zend_do_foreach_cont(znode *foreach_token, znode *as_token, znode *value, znode *key TSRMLS_DC);
+void zend_do_foreach_begin(znode *foreach_token, znode *open_brackets_token, znode *array, znode *as_token, int variable TSRMLS_DC);
+void zend_do_foreach_cont(znode *foreach_token, znode *open_brackets_token, znode *as_token, znode *value, znode *key TSRMLS_DC);
 void zend_do_foreach_end(znode *foreach_token, znode *as_token TSRMLS_DC);
 
 void zend_do_declare_begin(TSRMLS_D);

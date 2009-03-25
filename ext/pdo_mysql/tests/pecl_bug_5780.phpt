@@ -5,7 +5,6 @@ PDO MySQL PECL Bug #5780
 if (!extension_loaded('pdo') || !extension_loaded('pdo_mysql')) die('skip not loaded');
 require dirname(__FILE__) . '/config.inc';
 require dirname(__FILE__) . '/../../../ext/pdo/tests/pdo_test.inc';
-$db = PDOTest::test_factory(dirname(__FILE__) . '/common.phpt');
 PDOTest::skip();
 ?>
 --FILE--
@@ -33,10 +32,8 @@ array(2) {
   [1]=>
   string(7) "testing"
 }
-bool(false)
-array(2) {
+bool(true)
+array(1) {
   [0]=>
-  string(5) "HY000"
-  [1]=>
-  int(2014)
+  string(5) "00000"
 }

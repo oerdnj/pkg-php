@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.33.2.4 2006/01/03 13:25:06 sniper Exp $
+dnl $Id: config.m4,v 1.33.2.4.2.1 2007/03/01 11:29:43 tony2001 Exp $
 dnl
 
 PHP_ARG_WITH(iconv, for iconv support,
@@ -61,6 +61,9 @@ int main() {
         iconv_impl_name="gnu_libiconv"
       ],[
         AC_MSG_RESULT(no)
+        LDFLAGS="$php_iconv_old_ld"
+      ],[
+        AC_MSG_RESULT(no, cross-compiling)
         LDFLAGS="$php_iconv_old_ld"
       ])
     fi

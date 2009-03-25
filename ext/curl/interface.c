@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: interface.c,v 1.62.2.14.2.12 2006/10/10 23:12:59 iliaa Exp $ */
+/* $Id: interface.c,v 1.62.2.14.2.25 2007/04/23 14:36:56 tony2001 Exp $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 
@@ -156,7 +156,13 @@ static void _php_curl_close(zend_rsrc_list_entry *rsrc TSRMLS_DC);
 #define CAAS(s, v) add_assoc_string_ex(return_value, s, sizeof(s), (char *) v, 1);
 #define CAAZ(s, v) add_assoc_zval_ex(return_value, s, sizeof(s), (zval *) v);
 
-#define PHP_CURL_CHECK_OPEN_BASEDIR(str, len)													\
+#if defined(PHP_WIN32) || defined(__GNUC__)
+ #define php_curl_ret(__ret) RETVAL_FALSE; return __ret;
+#else
+ #define php_curl_ret(__ret) RETVAL_FALSE; return;
+#endif
+
+#define PHP_CURL_CHECK_OPEN_BASEDIR(str, len, __ret)													\
 	if (((PG(open_basedir) && *PG(open_basedir)) || PG(safe_mode)) &&                                                \
 	    strncasecmp(str, "file:", sizeof("file:") - 1) == 0)								\
 	{ 																							\
@@ -164,19 +170,20 @@ static void _php_curl_close(zend_rsrc_list_entry *rsrc TSRMLS_DC);
 															\
 		if (!(tmp_url = php_url_parse_ex(str, len))) {											\
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid URL '%s'", str);				\
-			RETURN_FALSE; 																		\
-		} 																						\
+			php_curl_ret(__ret);											\
+		} 													\
 															\
-		if (php_memnstr(str, tmp_url->path, strlen(tmp_url->path), str + len)) {				\
+		if (!php_memnstr(str, tmp_url->path, strlen(tmp_url->path), str + len)) {				\
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "URL '%s' contains unencoded control characters.", str);	\
-			RETURN_FALSE;											\
+			php_url_free(tmp_url); 																\
+			php_curl_ret(__ret);											\
 		}													\
 																								\
 		if (tmp_url->query || tmp_url->fragment || php_check_open_basedir(tmp_url->path TSRMLS_CC) || 									\
 			(PG(safe_mode) && !php_checkuid(tmp_url->path, "rb+", CHECKUID_CHECK_MODE_PARAM))	\
 		) { 																					\
 			php_url_free(tmp_url); 																\
-			RETURN_FALSE; 																		\
+			php_curl_ret(__ret);											\
 		} 																						\
 		php_url_free(tmp_url); 																	\
 	}
@@ -369,7 +376,9 @@ PHP_MINIT_FUNCTION(curl)
 	REGISTER_CURL_CONSTANT(CURLOPT_FTPAPPEND);
 	REGISTER_CURL_CONSTANT(CURLOPT_NETRC);
 	REGISTER_CURL_CONSTANT(CURLOPT_FOLLOWLOCATION);
+#if CURLOPT_FTPASCII != 0
 	REGISTER_CURL_CONSTANT(CURLOPT_FTPASCII);
+#endif
 	REGISTER_CURL_CONSTANT(CURLOPT_PUT);
 #if CURLOPT_MUTE != 0
 	REGISTER_CURL_CONSTANT(CURLOPT_MUTE);
@@ -409,7 +418,9 @@ PHP_MINIT_FUNCTION(curl)
 	REGISTER_CURL_CONSTANT(CURLOPT_FILETIME);
 	REGISTER_CURL_CONSTANT(CURLOPT_WRITEFUNCTION);
 	REGISTER_CURL_CONSTANT(CURLOPT_READFUNCTION);
+#if CURLOPT_PASSWDFUNCTION != 0 
 	REGISTER_CURL_CONSTANT(CURLOPT_PASSWDFUNCTION);
+#endif
 	REGISTER_CURL_CONSTANT(CURLOPT_HEADERFUNCTION);
 	REGISTER_CURL_CONSTANT(CURLOPT_MAXREDIRS);
 	REGISTER_CURL_CONSTANT(CURLOPT_MAXCONNECTS);
@@ -441,6 +452,9 @@ PHP_MINIT_FUNCTION(curl)
 	REGISTER_CURL_CONSTANT(CURLOPT_PROXYPORT);
 	REGISTER_CURL_CONSTANT(CURLOPT_UNRESTRICTED_AUTH);
 	REGISTER_CURL_CONSTANT(CURLOPT_FTP_USE_EPRT);
+#if LIBCURL_VERSION_NUM > 0x070b01 /* CURLOPT_TCP_NODELAY is available since curl 7.11.2 */
+	REGISTER_CURL_CONSTANT(CURLOPT_TCP_NODELAY);
+#endif
 	REGISTER_CURL_CONSTANT(CURLOPT_HTTP200ALIASES);
 	REGISTER_CURL_CONSTANT(CURL_TIMECOND_IFMODSINCE);
 	REGISTER_CURL_CONSTANT(CURL_TIMECOND_IFUNMODSINCE);
@@ -457,8 +471,9 @@ PHP_MINIT_FUNCTION(curl)
  	REGISTER_CURL_CONSTANT(CURLAUTH_ANYSAFE);
 #endif
 
-#if LIBCURL_VERSION_NUM > 0x070a06 /* CURLOPT_PROXYAUTH is available since curl 7.10.7 */
+#if LIBCURL_VERSION_NUM > 0x070a06 /* CURLOPT_PROXYAUTH & CURLOPT_FTP_CREATE_MISSING_DIRS are available since curl 7.10.7 */
 	REGISTER_CURL_CONSTANT(CURLOPT_PROXYAUTH);
+	REGISTER_CURL_CONSTANT(CURLOPT_FTP_CREATE_MISSING_DIRS);
 #endif
 
 	/* Constants effecting the way CURLOPT_CLOSEPOLICY works */
@@ -607,7 +622,7 @@ PHP_MINIT_FUNCTION(curl)
 #endif
 
 #ifdef PHP_CURL_NEED_OPENSSL_TSL
-	{
+	if (!CRYPTO_get_id_callback()) {
 		int i, c = CRYPTO_num_locks();
 		
 		php_curl_openssl_tsl = malloc(c * sizeof(MUTEX_T));
@@ -660,16 +675,11 @@ PHP_MSHUTDOWN_FUNCTION(curl)
 	php_unregister_url_stream_wrapper("ftp" TSRMLS_CC);
 	php_unregister_url_stream_wrapper("ldap" TSRMLS_CC);
 #endif
-#ifdef PHP_CURL_NEED_OPENSSL_TSL
-	/* ensure there are valid callbacks set */
-	CRYPTO_set_id_callback(php_curl_ssl_id);
-	CRYPTO_set_locking_callback(php_curl_ssl_lock);
-#endif
 	curl_global_cleanup();
 #ifdef PHP_CURL_NEED_OPENSSL_TSL
 	if (php_curl_openssl_tsl) {
 		int i, c = CRYPTO_num_locks();
-			
+		
 		CRYPTO_set_id_callback(NULL);
 		CRYPTO_set_locking_callback(NULL);
 			
@@ -706,7 +716,9 @@ static size_t curl_write(char *data, size_t size, size_t nmemb, void *ctx)
 		case PHP_CURL_FILE:
 			return fwrite(data, size, nmemb, t->fp);
 		case PHP_CURL_RETURN:
-			smart_str_appendl(&t->buf, data, (int) length);
+			if (length > 0) {
+				smart_str_appendl(&t->buf, data, (int) length);
+			}
 			break;
 		case PHP_CURL_USER: {
 			zval **argv[2];
@@ -845,7 +857,7 @@ static size_t curl_write_header(char *data, size_t size, size_t nmemb, void *ctx
 		case PHP_CURL_STDOUT:
 			/* Handle special case write when we're returning the entire transfer
 			 */
-			if (ch->handlers->write->method == PHP_CURL_RETURN) {
+			if (ch->handlers->write->method == PHP_CURL_RETURN && length > 0) {
 				smart_str_appendl(&ch->handlers->write->buf, data, (int) length);
 			} else {
 				PHPWRITE(data, length);
@@ -1074,7 +1086,7 @@ PHP_FUNCTION(curl_init)
 
 	if (argc > 0) {
 		convert_to_string_ex(url);
-		PHP_CURL_CHECK_OPEN_BASEDIR(Z_STRVAL_PP(url), Z_STRLEN_PP(url));
+		PHP_CURL_CHECK_OPEN_BASEDIR(Z_STRVAL_PP(url), Z_STRLEN_PP(url), (void) NULL);
 	}
 
 	cp = curl_easy_init();
@@ -1157,12 +1169,13 @@ PHP_FUNCTION(curl_copy_handle)
 	dupch->handlers->write_header->fp = ch->handlers->write_header->fp;
 	dupch->handlers->read->fp = ch->handlers->read->fp;
 	dupch->handlers->read->fd = ch->handlers->read->fd;
-
+#if CURLOPT_PASSWDDATA != 0
 	if (ch->handlers->passwd) {
 		zval_add_ref(&ch->handlers->passwd);
 		dupch->handlers->passwd = ch->handlers->passwd;
 		curl_easy_setopt(ch->cp, CURLOPT_PASSWDDATA, (void *) dupch);
 	}
+#endif
 	if (ch->handlers->write->func_name) {
 		zval_add_ref(&ch->handlers->write->func_name);
 		dupch->handlers->write->func_name = ch->handlers->write->func_name;
@@ -1242,8 +1255,9 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 #if LIBCURL_VERSION_NUM > 0x070a05 /* CURLOPT_HTTPAUTH is available since curl 7.10.6 */
 		case CURLOPT_HTTPAUTH:
 #endif
-#if LIBCURL_VERSION_NUM > 0x070a06 /* CURLOPT_PROXYAUTH is available since curl 7.10.7 */
+#if LIBCURL_VERSION_NUM > 0x070a06 /* CURLOPT_PROXYAUTH & CURLOPT_FTP_CREATE_MISSING_DIRS are available since curl 7.10.7 */
 		case CURLOPT_PROXYAUTH:
+		case CURLOPT_FTP_CREATE_MISSING_DIRS:
 #endif
 
 #if LIBCURL_VERSION_NUM >= 0x070c02
@@ -1256,6 +1270,9 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 		case CURLOPT_PORT:
 		case CURLOPT_AUTOREFERER:
 		case CURLOPT_COOKIESESSION:
+#if LIBCURL_VERSION_NUM > 0x070b01 /* CURLOPT_TCP_NODELAY is available since curl 7.11.2 */
+		case CURLOPT_TCP_NODELAY:
+#endif
 			convert_to_long_ex(zvalue);
 			error = curl_easy_setopt(ch->cp, option, Z_LVAL_PP(zvalue));
 			break;
@@ -1264,7 +1281,8 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 			if ((PG(open_basedir) && *PG(open_basedir)) || PG(safe_mode)) {
 				if (Z_LVAL_PP(zvalue) != 0) {
 					php_error_docref(NULL TSRMLS_CC, E_WARNING, "CURLOPT_FOLLOWLOCATION cannot be activated when in safe_mode or an open_basedir is set");
-					RETURN_FALSE;
+					RETVAL_FALSE;
+					return 1;
 				}
 			}
 			error = curl_easy_setopt(ch->cp, option, Z_LVAL_PP(zvalue));
@@ -1297,7 +1315,7 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 			convert_to_string_ex(zvalue);
 
 			if (option == CURLOPT_URL) {
-				PHP_CURL_CHECK_OPEN_BASEDIR(Z_STRVAL_PP(zvalue), Z_STRLEN_PP(zvalue));
+				PHP_CURL_CHECK_OPEN_BASEDIR(Z_STRVAL_PP(zvalue), Z_STRLEN_PP(zvalue), 1);
 			}
 
 			copystr = estrndup(Z_STRVAL_PP(zvalue), Z_STRLEN_PP(zvalue));
@@ -1315,7 +1333,10 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 			void * what;
 		
 			what = zend_fetch_resource(zvalue TSRMLS_CC, -1, "File-Handle", &type, 1, php_file_le_stream());
-			ZEND_VERIFY_RESOURCE(what);
+			if (!what) {
+				RETVAL_FALSE;
+				return 1;
+			}
 
 			if (FAILURE == php_stream_cast((php_stream *) what, PHP_STREAM_AS_STDIO, (void *) &fp, REPORT_ERRORS)) {
 				RETVAL_FALSE;

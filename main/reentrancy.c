@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,17 +16,13 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: reentrancy.c,v 1.43.2.1 2006/01/01 12:50:17 sniper Exp $ */
+/* $Id: reentrancy.c,v 1.43.2.1.2.2 2007/01/01 09:36:11 sebastian Exp $ */
 
 #include <sys/types.h>
 #include <string.h>
 #include <errno.h>
 #ifdef HAVE_DIRENT_H
 #include <dirent.h>
-#endif
-
-#ifdef PHP_WIN32
-#include "win32/readdir.h"
 #endif
 
 #include "php_reentrancy.h"

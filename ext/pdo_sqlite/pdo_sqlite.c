@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_sqlite.c,v 1.10.2.6 2006/01/01 12:50:12 sniper Exp $ */
+/* $Id: pdo_sqlite.c,v 1.10.2.6.2.2 2007/03/23 14:30:00 wez Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -70,7 +70,7 @@ zend_module_entry pdo_sqlite_module_entry = {
 };
 /* }}} */
 
-#ifdef COMPILE_DL_PDO_SQLITE
+#if defined(COMPILE_DL_PDO_SQLITE) || defined(COMPILE_DL_PDO_SQLITE_EXTERNAL)
 ZEND_GET_MODULE(pdo_sqlite)
 #endif
 
@@ -100,7 +100,7 @@ PHP_MINFO_FUNCTION(pdo_sqlite)
 	"(bundled) "
 #endif
 		PHP_PDO_SQLITE_MODULE_VERSION 
-		" $Id: pdo_sqlite.c,v 1.10.2.6 2006/01/01 12:50:12 sniper Exp $");
+		" $Id: pdo_sqlite.c,v 1.10.2.6.2.2 2007/03/23 14:30:00 wez Exp $");
 	php_info_print_table_row(2, "SQLite Library", sqlite3_libversion());
 	php_info_print_table_end();
 }

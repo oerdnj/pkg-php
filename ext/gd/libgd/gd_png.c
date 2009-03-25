@@ -58,7 +58,7 @@ static void gdPngErrorHandler (png_structp png_ptr, png_const_charp msg)
 	 * been defined.
 	 */
 
-	php_gd_error_ex(E_ERROR, "gd-png:  fatal libpng error: %s", msg);
+	php_gd_error_ex(E_WARNING, "gd-png:  fatal libpng error: %s", msg);
 
 	jmpbuf_ptr = png_get_error_ptr (png_ptr);
 	if (jmpbuf_ptr == NULL) { /* we are completely hosed now */
@@ -126,7 +126,7 @@ gdImagePtr gdImageCreateFromPngCtx (gdIOCtx * infile)
 
 	/* Make sure the signature can't match by dumb luck -- TBB */
 	/* GRR: isn't sizeof(infile) equal to the size of the pointer? */
-	memset (infile, 0, sizeof(infile));
+	memset (sig, 0, sizeof(sig));
 
 	  /* first do a quick check that the file really is a PNG image; could
 	   * have used slightly more general png_sig_cmp() function instead
@@ -199,6 +199,23 @@ gdImagePtr gdImageCreateFromPngCtx (gdIOCtx * infile)
 	} else if (bit_depth < 8) {
 		png_set_packing (png_ptr); /* expand to 1 byte per pixel */
 	}
+
+	/* setjmp() must be called in every non-callback function that calls a
+	 * PNG-reading libpng function
+	 */
+#ifndef PNG_SETJMP_NOT_SUPPORTED
+	if (setjmp(gdPngJmpbufStruct.jmpbuf)) {
+		php_gd_error("gd-png error: setjmp returns error condition");
+		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+		gdFree(image_data);
+		gdFree(row_pointers);
+		if (im) {
+			gdImageDestroy(im);
+		}
+		return NULL;
+	}
+#endif
+
 
 	switch (color_type) {
 		case PNG_COLOR_TYPE_PALETTE:
@@ -490,7 +507,7 @@ void gdImagePngCtxEx (gdImagePtr im, gdIOCtx * outfile, int level, int basefilte
 	if (basefilter >= 0) {
 		png_set_filter(png_ptr, PNG_FILTER_TYPE_BASE, basefilter);
 	}
-	
+
 	/* can set this to a smaller value without compromising compression if all
 	 * image data is 16K or less; will save some decoder memory [min == 8]
 	 */

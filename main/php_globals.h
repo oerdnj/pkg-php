@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_globals.h,v 1.98.2.1.2.2 2006/07/19 12:25:46 mike Exp $ */
+/* $Id: php_globals.h,v 1.98.2.1.2.5 2007/03/02 21:58:05 stas Exp $ */
 
 #ifndef PHP_GLOBALS_H
 #define PHP_GLOBALS_H
@@ -152,6 +152,10 @@ struct _php_core_globals {
 	char *disable_functions;
 	char *disable_classes;
 	zend_bool allow_url_include;
+#ifdef PHP_WIN32
+	zend_bool com_initialized;
+#endif
+	long max_input_nesting_level;
 };
 
 

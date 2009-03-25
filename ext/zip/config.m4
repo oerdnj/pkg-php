@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.8 2006/07/24 16:58:58 pajoye Exp $
+dnl $Id: config.m4,v 1.8.2.2 2006/12/26 09:52:05 pajoye Exp $
 dnl
 
 PHP_ARG_ENABLE(zip, for zip archive read/writesupport,
@@ -40,7 +40,7 @@ if test "$PHP_ZIP" != "no"; then
 		AC_MSG_ERROR([zip support requires ZLIB. Use --with-zlib-dir=<DIR> to specify prefix where ZLIB include and library are located])
 	else
 		AC_MSG_RESULT([$PHP_ZLIB_DIR])
-		PHP_ADD_LIBRARY_WITH_PATH(z, $PHP_ZLIB_DIR/lib, ZIP_SHARED_LIBADD)
+		PHP_ADD_LIBRARY_WITH_PATH(z, $PHP_ZLIB_DIR/$PHP_LIBDIR, ZIP_SHARED_LIBADD)
 		PHP_ADD_INCLUDE($PHP_ZLIB_INCDIR)
 	fi
 
@@ -59,7 +59,8 @@ if test "$PHP_ZIP" != "no"; then
                          lib/zip_entry_new.c lib/zip_err_str.c lib/zip_fopen_index.c \
                          lib/zip_new.c lib/zip_source_file.c lib/zip_stat_index.c lib/zip_get_archive_comment.c \
                          lib/zip_get_file_comment.c lib/zip_set_archive_comment.c lib/zip_set_file_comment.c \
-                         lib/zip_unchange_archive.c lib/zip_memdup.c"
+                         lib/zip_unchange_archive.c lib/zip_memdup.c lib/zip_stat_init.c lib/zip_add_dir.c \
+                         lib/zip_error_clear.c lib/zip_file_error_clear.c"
 
 	AC_DEFINE(HAVE_ZIP,1,[ ])
 	PHP_NEW_EXTENSION(zip, php_zip.c zip_stream.c $PHP_ZIP_SOURCES, $ext_shared)

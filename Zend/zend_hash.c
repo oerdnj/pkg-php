@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2007 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_hash.c,v 1.121.2.4.2.1 2006/08/24 09:42:35 dmitry Exp $ */
+/* $Id: zend_hash.c,v 1.121.2.4.2.7 2007/02/21 14:11:00 dmitry Exp $ */
 
 #include "zend.h"
 
@@ -141,11 +141,16 @@ ZEND_API int _zend_hash_init(HashTable *ht, uint nSize, hash_func_t pHashFunctio
 
 	SET_INCONSISTENT(HT_OK);
 
-	while ((1U << i) < nSize) {
-		i++;
+	if (nSize >= 0x80000000) {
+		/* prevent overflow */
+		ht->nTableSize = 0x80000000;
+	} else {
+		while ((1U << i) < nSize) {
+			i++;
+		}
+		ht->nTableSize = 1 << i;
 	}
 
-	ht->nTableSize = 1 << i;
 	ht->nTableMask = ht->nTableSize - 1;
 	ht->pDestructor = pDestructor;
 	ht->arBuckets = NULL;
@@ -647,11 +652,14 @@ ZEND_API void zend_hash_graceful_reverse_destroy(HashTable *ht)
 	SET_INCONSISTENT(HT_DESTROYED);
 }
 
-/* This is used to selectively delete certain entries from a hashtable.
- * destruct() receives the data and decides if the entry should be deleted 
- * or not
+/* This is used to recurse elements and selectively delete certain entries 
+ * from a hashtable. apply_func() receives the data and decides if the entry 
+ * should be deleted or recursion should be stopped. The following three 
+ * return codes are possible:
+ * ZEND_HASH_APPLY_KEEP   - continue
+ * ZEND_HASH_APPLY_STOP   - stop iteration
+ * ZEND_HASH_APPLY_REMOVE - delete the element, combineable with the former
  */
-
 
 ZEND_API void zend_hash_apply(HashTable *ht, apply_func_t apply_func TSRMLS_DC)
 {
@@ -662,10 +670,15 @@ ZEND_API void zend_hash_apply(HashTable *ht, apply_func_t apply_func TSRMLS_DC)
 	HASH_PROTECT_RECURSION(ht);
 	p = ht->pListHead;
 	while (p != NULL) {
-		if (apply_func(p->pData TSRMLS_CC)) {
+		int result = apply_func(p->pData TSRMLS_CC);
+		
+		if (result & ZEND_HASH_APPLY_REMOVE) {
 			p = zend_hash_apply_deleter(ht, p);
 		} else {
 			p = p->pListNext;
+		}
+		if (result & ZEND_HASH_APPLY_STOP) {
+			break;
 		}
 	}
 	HASH_UNPROTECT_RECURSION(ht);
@@ -681,17 +694,22 @@ ZEND_API void zend_hash_apply_with_argument(HashTable *ht, apply_func_arg_t appl
 	HASH_PROTECT_RECURSION(ht);
 	p = ht->pListHead;
 	while (p != NULL) {
-		if (apply_func(p->pData, argument TSRMLS_CC)) {
+		int result = apply_func(p->pData, argument TSRMLS_CC);
+		
+		if (result & ZEND_HASH_APPLY_REMOVE) {
 			p = zend_hash_apply_deleter(ht, p);
 		} else {
 			p = p->pListNext;
+		}
+		if (result & ZEND_HASH_APPLY_STOP) {
+			break;
 		}
 	}
 	HASH_UNPROTECT_RECURSION(ht);
 }
 
 
-ZEND_API void zend_hash_apply_with_arguments(HashTable *ht, apply_func_args_t destruct, int num_args, ...)
+ZEND_API void zend_hash_apply_with_arguments(HashTable *ht, apply_func_args_t apply_func, int num_args, ...)
 {
 	Bucket *p;
 	va_list args;
@@ -703,14 +721,20 @@ ZEND_API void zend_hash_apply_with_arguments(HashTable *ht, apply_func_args_t de
 
 	p = ht->pListHead;
 	while (p != NULL) {
+		int result;
 		va_start(args, num_args);
 		hash_key.arKey = p->arKey;
 		hash_key.nKeyLength = p->nKeyLength;
 		hash_key.h = p->h;
-		if (destruct(p->pData, num_args, args, &hash_key)) {
+		result = apply_func(p->pData, num_args, args, &hash_key);
+
+		if (result & ZEND_HASH_APPLY_REMOVE) {
 			p = zend_hash_apply_deleter(ht, p);
 		} else {
 			p = p->pListNext;
+		}
+		if (result & ZEND_HASH_APPLY_STOP) {
+			break;
 		}
 		va_end(args);
 	}
@@ -754,7 +778,7 @@ ZEND_API void zend_hash_copy(HashTable *target, HashTable *source, copy_ctor_fun
 	p = source->pListHead;
 	while (p) {
 		if (p->nKeyLength) {
-			zend_hash_update(target, p->arKey, p->nKeyLength, p->pData, size, &new_entry);
+			zend_hash_quick_update(target, p->arKey, p->nKeyLength, p->h, p->pData, size, &new_entry);
 		} else {
 			zend_hash_index_update(target, p->h, p->pData, size, &new_entry);
 		}
@@ -779,7 +803,7 @@ ZEND_API void _zend_hash_merge(HashTable *target, HashTable *source, copy_ctor_f
 	p = source->pListHead;
 	while (p) {
 		if (p->nKeyLength>0) {
-			if (_zend_hash_add_or_update(target, p->arKey, p->nKeyLength, p->pData, size, &t, mode ZEND_FILE_LINE_RELAY_CC)==SUCCESS && pCopyConstructor) {
+			if (_zend_hash_quick_add_or_update(target, p->arKey, p->nKeyLength, p->h, p->pData, size, &t, mode ZEND_FILE_LINE_RELAY_CC)==SUCCESS && pCopyConstructor) {
 				pCopyConstructor(t);
 			}
 		} else {
@@ -986,6 +1010,39 @@ ZEND_API int zend_hash_num_elements(HashTable *ht)
 	return ht->nNumOfElements;
 }
 
+
+ZEND_API int zend_hash_get_pointer(HashTable *ht, HashPointer *ptr)
+{
+	ptr->pos = ht->pInternalPointer;
+	if (ht->pInternalPointer) {
+		ptr->h = ht->pInternalPointer->h;
+		return 1;
+	} else {
+		ptr->h = 0;
+		return 0;
+	}
+}
+
+ZEND_API int zend_hash_set_pointer(HashTable *ht, const HashPointer *ptr)
+{
+	if (ptr->pos == NULL) {
+		ht->pInternalPointer = NULL;
+	} else if (ht->pInternalPointer != ptr->pos) {
+		Bucket *p;
+
+		IS_CONSISTENT(ht);
+		p = ht->arBuckets[ptr->h & ht->nTableMask];
+		while (p != NULL) {
+			if (p == ptr->pos) {
+				ht->pInternalPointer = p;
+				return 1;
+			}
+			p = p->pNext;
+		}
+		return 0;
+	}
+	return 1;
+}
 
 ZEND_API void zend_hash_internal_pointer_reset_ex(HashTable *ht, HashPosition *pos)
 {

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2007 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_objects.c,v 1.56.2.3.2.5 2006/07/26 15:29:27 dmitry Exp $ */
+/* $Id: zend_objects.c,v 1.56.2.3.2.6 2007/01/01 09:35:47 sebastian Exp $ */
 
 #include "zend.h"
 #include "zend_globals.h"

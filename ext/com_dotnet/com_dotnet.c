@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_dotnet.c,v 1.14.2.1 2006/01/01 12:50:00 sniper Exp $ */
+/* $Id: com_dotnet.c,v 1.14.2.1.2.4 2007/02/21 01:11:11 stas Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -188,11 +188,13 @@ PHP_FUNCTION(com_dotnet_create_instance)
 	int assembly_name_len, datatype_name_len;
 	struct dotnet_runtime_stuff *stuff;
 	OLECHAR *oleassembly, *oletype;
+	BSTR oleassembly_sys, oletype_sys;
 	HRESULT hr;
 	int ret = FAILURE;
 	char *where = "";
 	IUnknown *unk = NULL;
 
+	php_com_initialize(TSRMLS_C);
 	if (COMG(dotnet_runtime_stuff) == NULL) {
 		hr = dotnet_init(&where TSRMLS_CC);
 		if (FAILED(hr)) {
@@ -222,10 +224,14 @@ PHP_FUNCTION(com_dotnet_create_instance)
 
 	oletype = php_com_string_to_olestring(datatype_name, datatype_name_len, obj->code_page TSRMLS_CC);
 	oleassembly = php_com_string_to_olestring(assembly_name, assembly_name_len, obj->code_page TSRMLS_CC);
+	oletype_sys = SysAllocString(oletype);
+	oleassembly_sys = SysAllocString(oleassembly);
 	where = "CreateInstance";
-	hr = stuff->dotnet_domain->lpVtbl->CreateInstance(stuff->dotnet_domain, oleassembly, oletype, &unk);
+	hr = stuff->dotnet_domain->lpVtbl->CreateInstance(stuff->dotnet_domain, oleassembly_sys, oletype_sys, &unk);
 	efree(oletype);
 	efree(oleassembly);
+	SysFreeString(oletype_sys);
+	SysFreeString(oleassembly_sys);
 
 	if (SUCCEEDED(hr)) {
 		VARIANT unwrapped;
@@ -274,8 +280,9 @@ PHP_FUNCTION(com_dotnet_create_instance)
 		char buf[1024];
 		char *err = php_win_err(hr);
 		snprintf(buf, sizeof(buf), "Failed to instantiate .Net object [%s] [0x%08x] %s", where, hr, err);
-		if (err)
+		if (err && err[0]) {
 			LocalFree(err);
+		}
 		php_com_throw_exception(hr, buf TSRMLS_CC);
 		ZVAL_NULL(object);
 		return;

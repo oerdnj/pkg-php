@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: dir.c,v 1.147.2.3.2.1 2006/10/04 23:19:25 iliaa Exp $ */
+/* $Id: dir.c,v 1.147.2.3.2.4 2007/02/24 17:16:23 iliaa Exp $ */
 
 /* {{{ includes/startup/misc */
 
@@ -257,12 +257,13 @@ PHP_FUNCTION(chroot)
 	}
 	
 	ret = chroot(str);
-	
 	if (ret != 0) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s (errno %d)", strerror(errno), errno);
 		RETURN_FALSE;
 	}
 
+	realpath_cache_clean(TSRMLS_C);
+	
 	ret = chdir("/");
 	
 	if (ret != 0) {
@@ -421,7 +422,7 @@ PHP_FUNCTION(glob)
 
 	/* we assume that any glob pattern will match files from one directory only
 	   so checking the dirname of the first match should be sufficient */
-	strncpy(cwd, globbuf.gl_pathv[0], MAXPATHLEN);
+	strlcpy(cwd, globbuf.gl_pathv[0], MAXPATHLEN);
 	if (PG(safe_mode) && (!php_checkuid(cwd, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
 		RETURN_FALSE;
 	}

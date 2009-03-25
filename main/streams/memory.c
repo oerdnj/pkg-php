@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: memory.c,v 1.8.2.6.2.8 2006/06/29 14:40:49 bjori Exp $ */
+/* $Id: memory.c,v 1.8.2.6.2.17 2007/02/22 23:26:03 helly Exp $ */
 
 #define _GNU_SOURCE
 #include "php.h"
@@ -241,14 +241,48 @@ static int php_stream_memory_stat(php_stream *stream, php_stream_statbuf *ssb TS
 }
 /* }}} */
 
-php_stream_ops	php_stream_memory_ops = {
+static int php_stream_memory_set_option(php_stream *stream, int option, int value, void *ptrparam TSRMLS_DC) /* {{{ */
+{
+	php_stream_memory_data *ms = (php_stream_memory_data*)stream->abstract;
+	size_t newsize;
+	
+	switch(option) {
+		case PHP_STREAM_OPTION_TRUNCATE_API:
+			switch (value) {
+				case PHP_STREAM_TRUNCATE_SUPPORTED:
+					return PHP_STREAM_OPTION_RETURN_OK;
+
+				case PHP_STREAM_TRUNCATE_SET_SIZE:
+					if (ms->mode & TEMP_STREAM_READONLY) {
+						return PHP_STREAM_OPTION_RETURN_ERR;
+					}
+					newsize = *(size_t*)ptrparam;
+					if (newsize <= ms->fsize) {
+						if (newsize < ms->fpos) {
+							ms->fpos = newsize;
+						}
+					} else {
+						ms->data = erealloc(ms->data, newsize);
+						memset(ms->data+ms->fsize, 0, newsize - ms->fsize);
+						ms->fsize = newsize;
+					}
+					ms->fsize = newsize;
+					return PHP_STREAM_OPTION_RETURN_OK;
+			}
+		default:
+			return PHP_STREAM_OPTION_RETURN_NOTIMPL;
+	}
+}
+/* }}} */
+	
+PHPAPI php_stream_ops	php_stream_memory_ops = {
 	php_stream_memory_write, php_stream_memory_read,
 	php_stream_memory_close, php_stream_memory_flush,
 	"MEMORY",
 	php_stream_memory_seek,
 	php_stream_memory_cast,
 	php_stream_memory_stat,
-	NULL  /* set_option */
+	php_stream_memory_set_option
 };
 
 
@@ -266,7 +300,7 @@ PHPAPI php_stream *_php_stream_memory_create(int mode STREAMS_DC TSRMLS_DC)
 	self->mode = mode;
 	self->owner_ptr = NULL;
 	
-	stream = php_stream_alloc(&php_stream_memory_ops, self, 0, mode & TEMP_STREAM_READONLY ? "r+b" : "w+b");
+	stream = php_stream_alloc_rel(&php_stream_memory_ops, self, 0, mode & TEMP_STREAM_READONLY ? "rb" : "w+b");
 	stream->flags |= PHP_STREAM_FLAG_NO_BUFFER;
 	return stream;
 }
@@ -493,12 +527,15 @@ static int php_stream_temp_set_option(php_stream *stream, int option, int value,
 			}
 			return PHP_STREAM_OPTION_RETURN_OK;
 		default:
+			if (ts->innerstream) {
+				return php_stream_set_option(ts->innerstream, option, value, ptrparam);
+			}
 			return PHP_STREAM_OPTION_RETURN_NOTIMPL;
 	}
 }
 /* }}} */
 
-php_stream_ops	php_stream_temp_ops = {
+PHPAPI php_stream_ops	php_stream_temp_ops = {
 	php_stream_temp_write, php_stream_temp_read,
 	php_stream_temp_close, php_stream_temp_flush,
 	"TEMP",
@@ -520,9 +557,9 @@ PHPAPI php_stream *_php_stream_temp_create(int mode, size_t max_memory_usage STR
 	self->smax = max_memory_usage;
 	self->mode = mode;
 	self->meta = NULL;
-	stream = php_stream_alloc(&php_stream_temp_ops, self, 0, mode & TEMP_STREAM_READONLY ? "r+b" : "w+b");
+	stream = php_stream_alloc_rel(&php_stream_temp_ops, self, 0, mode & TEMP_STREAM_READONLY ? "rb" : "w+b");
 	stream->flags |= PHP_STREAM_FLAG_NO_BUFFER;
-	self->innerstream = php_stream_memory_create(mode);
+	self->innerstream = php_stream_memory_create_rel(mode);
 	((php_stream_memory_data*)self->innerstream->abstract)->owner_ptr = &self->innerstream;
 
 	return stream;
@@ -551,7 +588,7 @@ PHPAPI php_stream *_php_stream_temp_open(int mode, size_t max_memory_usage, char
 }
 /* }}} */
 
-php_stream_ops php_stream_rfc2397_ops = {
+PHPAPI php_stream_ops php_stream_rfc2397_ops = {
 	php_stream_temp_write, php_stream_temp_read,
 	php_stream_temp_close, php_stream_temp_flush,
 	"RFC2397",
@@ -673,7 +710,6 @@ static php_stream * php_stream_url_wrap_rfc2397(php_stream_wrapper *wrapper, cha
 	if ((stream = php_stream_temp_create_rel(0, ~0u)) != NULL) {
 		/* store data */
 		php_stream_temp_write(stream, comma, ilen TSRMLS_CC);
-		efree(comma);
 		php_stream_temp_seek(stream, 0, SEEK_SET, &newoffs TSRMLS_CC);
 		/* set special stream stuff (enforce exact mode) */
 		vlen = strlen(mode);
@@ -685,14 +721,15 @@ static php_stream * php_stream_url_wrap_rfc2397(php_stream_wrapper *wrapper, cha
 		stream->ops = &php_stream_rfc2397_ops;
 		ts = (php_stream_temp_data*)stream->abstract;
 		assert(ts != NULL);
-		ts->mode = mode && mode[0] == 'r' ? TEMP_STREAM_READONLY : 0;
+		ts->mode = mode && mode[0] == 'r' && mode[1] != '+' ? TEMP_STREAM_READONLY : 0;
 		ts->meta = meta;
 	}
+	efree(comma);
 
 	return stream;
 }
 
-static php_stream_wrapper_ops php_stream_rfc2397_wops = {
+PHPAPI php_stream_wrapper_ops php_stream_rfc2397_wops = {
 	php_stream_url_wrap_rfc2397,
 	NULL, /* close */
 	NULL, /* fstat */
@@ -705,10 +742,10 @@ static php_stream_wrapper_ops php_stream_rfc2397_wops = {
 	NULL  /* rmdir */
 };
 
-php_stream_wrapper php_stream_rfc2397_wrapper =	{
+PHPAPI php_stream_wrapper php_stream_rfc2397_wrapper =	{
 	&php_stream_rfc2397_wops,
 	NULL,
-	0, /* is_url */
+	1, /* is_url */
 };
 
 /*

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: cdb.c,v 1.10.2.1 2006/01/01 12:50:05 sniper Exp $ */
+/* $Id: cdb.c,v 1.10.2.1.2.3 2007/04/14 11:15:13 helly Exp $ */
 
 /* incorporated from D.J.Bernstein's cdb-0.75 (http://cr.yp.to/cdb.html)*/
 
@@ -68,10 +68,11 @@ static int cdb_match(struct cdb *c, char *key, unsigned int len, uint32 pos TSRM
 uint32 cdb_hash(char *buf, unsigned int len)
 {
 	uint32 h;
+	const unsigned char * b = (unsigned char *)buf;
 
 	h = CDB_HASHSTART;
 	while (len--) {
-		h = ( h + (h << 5)) ^ (*buf++);
+		h = ( h + (h << 5)) ^ (*b++);
 	}
 	return h;
 }
@@ -188,6 +189,6 @@ int cdb_find(struct cdb *c, char *key, unsigned int len TSRMLS_DC)
 /* {{{ cdb_version */
 char *cdb_version() 
 {
-	return "0.75, $Revision: 1.10.2.1 $";
+	return "0.75, $Revision: 1.10.2.1.2.3 $";
 }
 /* }}} */

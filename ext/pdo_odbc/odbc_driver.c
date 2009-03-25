@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: odbc_driver.c,v 1.27.2.4.2.1 2006/10/11 02:10:55 wez Exp $ */
+/* $Id: odbc_driver.c,v 1.27.2.4.2.3 2007/02/24 02:17:25 helly Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -427,8 +427,8 @@ static int pdo_odbc_handle_factory(pdo_dbh_t *dbh, zval *driver_options TSRMLS_D
 		/* Force UID and PWD to be set in the DSN */
 		if (dbh->username && *dbh->username && !strstr(dbh->data_source, "uid")
 				&& !strstr(dbh->data_source, "UID")) {
-			char *dsn = pemalloc(strlen(dbh->data_source) + strlen(dbh->username) + strlen(dbh->password) + sizeof(";UID=;PWD="), dbh->is_persistent);
-			sprintf(dsn, "%s;UID=%s;PWD=%s", dbh->data_source, dbh->username, dbh->password);
+			char *dsn;
+			spprintf(&dsn, 0, "%s;UID=%s;PWD=%s", dbh->data_source, dbh->username, dbh->password);
 			pefree((char*)dbh->data_source, dbh->is_persistent);
 			dbh->data_source = dsn;
 		}

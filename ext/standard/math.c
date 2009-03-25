@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: math.c,v 1.131.2.2.2.2 2006/08/27 19:14:43 bjori Exp $ */
+/* $Id: math.c,v 1.131.2.2.2.5 2007/01/01 09:36:08 sebastian Exp $ */
 
 #include "php.h"
 #include "php_math.h"
@@ -976,14 +976,18 @@ PHPAPI char *_php_math_number_format(double d, int dec, char dec_point, char tho
 	dec = MAX(0, dec);
 	PHP_ROUND_WITH_FUZZ(d, dec);
 
-	tmplen = spprintf(&tmpbuf, 0, "%.*f", dec, d);
+	tmplen = spprintf(&tmpbuf, 0, "%.*F", dec, d);
 
 	if (tmpbuf == NULL || !isdigit((int)tmpbuf[0])) {
 		return tmpbuf;
 	}
 
 	/* find decimal point, if expected */
-	dp = dec ? strchr(tmpbuf, '.') : NULL;
+	if (dec) {
+		dp = strpbrk(tmpbuf, ".,");
+	} else {
+		dp = NULL;
+	}
 
 	/* calculate the length of the return buffer */
 	if (dp) {

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2007 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_hash.h,v 1.78.2.2 2006/01/04 23:53:04 andi Exp $ */
+/* $Id: zend_hash.h,v 1.78.2.2.2.2 2007/01/10 15:58:07 dmitry Exp $ */
 
 #ifndef ZEND_HASH_H
 #define ZEND_HASH_H
@@ -175,6 +175,14 @@ ZEND_API int zend_hash_get_current_data_ex(HashTable *ht, void **pData, HashPosi
 ZEND_API void zend_hash_internal_pointer_reset_ex(HashTable *ht, HashPosition *pos);
 ZEND_API void zend_hash_internal_pointer_end_ex(HashTable *ht, HashPosition *pos);
 ZEND_API int zend_hash_update_current_key_ex(HashTable *ht, int key_type, char *str_index, uint str_length, ulong num_index, HashPosition *pos);
+
+typedef struct _HashPointer {
+	HashPosition pos;
+	ulong h;
+} HashPointer;
+
+ZEND_API int zend_hash_get_pointer(HashTable *ht, HashPointer *ptr);
+ZEND_API int zend_hash_set_pointer(HashTable *ht, const HashPointer *ptr);
 
 #define zend_hash_has_more_elements(ht) \
 	zend_hash_has_more_elements_ex(ht, NULL)

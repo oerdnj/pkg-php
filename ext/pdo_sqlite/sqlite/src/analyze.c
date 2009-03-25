@@ -11,7 +11,7 @@
 *************************************************************************
 ** This file contains code associated with the ANALYZE command.
 **
-** @(#) $Id: analyze.c,v 1.1.2.2.2.1 2006/08/14 16:15:28 iliaa Exp $
+** @(#) $Id: analyze.c,v 1.1.2.2.2.2 2007/04/09 16:35:11 iliaa Exp $
 */
 #ifndef SQLITE_OMIT_ANALYZE
 #include "sqliteInt.h"
@@ -211,7 +211,7 @@ static void analyzeOneTable(
       }
     }
     sqlite3VdbeOp3(v, OP_MakeRecord, 3, 0, "aaa", 0);
-    sqlite3VdbeAddOp(v, OP_Insert, iStatCur, 0);
+    sqlite3VdbeAddOp(v, OP_Insert, iStatCur, OPFLAG_APPEND);
     sqlite3VdbeJumpHere(v, addr);
   }
 }

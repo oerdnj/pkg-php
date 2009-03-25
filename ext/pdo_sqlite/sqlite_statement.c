@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: sqlite_statement.c,v 1.18.2.4 2006/01/01 12:50:12 sniper Exp $ */
+/* $Id: sqlite_statement.c,v 1.18.2.4.2.2 2007/01/01 09:36:05 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -66,6 +66,7 @@ static int pdo_sqlite_stmt_execute(pdo_stmt_t *stmt TSRMLS_DC)
 			return 1;
 
 		case SQLITE_ERROR:
+			sqlite3_reset(S->stmt);
 		case SQLITE_MISUSE:
 		case SQLITE_BUSY:
 		default:
@@ -171,6 +172,8 @@ static int pdo_sqlite_stmt_fetch(pdo_stmt_t *stmt,
 			sqlite3_reset(S->stmt);
 			return 0;
 
+		case SQLITE_ERROR:
+			sqlite3_reset(S->stmt);
 		default:
 			pdo_sqlite_error_stmt(stmt);
 			return 0;

@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: transports.c,v 1.16.2.1 2006/01/01 12:50:18 sniper Exp $ */
+/* $Id: transports.c,v 1.16.2.1.2.4 2007/02/24 15:48:40 iliaa Exp $ */
 
 #include "php.h"
 #include "php_streams_int.h"
@@ -31,12 +31,12 @@ PHPAPI HashTable *php_stream_xport_get_hash(void)
 
 PHPAPI int php_stream_xport_register(char *protocol, php_stream_transport_factory factory TSRMLS_DC)
 {
-	return zend_hash_update(&xport_hash, protocol, strlen(protocol), &factory, sizeof(factory), NULL);
+	return zend_hash_update(&xport_hash, protocol, strlen(protocol) + 1, &factory, sizeof(factory), NULL);
 }
 
 PHPAPI int php_stream_xport_unregister(char *protocol TSRMLS_DC)
 {
-	return zend_hash_del(&xport_hash, protocol, strlen(protocol));
+	return zend_hash_del(&xport_hash, protocol, strlen(protocol) + 1);
 }
 
 #define ERR_REPORT(out_err, fmt, arg) \
@@ -106,7 +106,8 @@ PHPAPI php_stream *_php_stream_xport_create(const char *name, long namelen, int 
 	}
 
 	if (protocol) {
-		if (FAILURE == zend_hash_find(&xport_hash, (char*)protocol, n, (void**)&factory)) {
+		char *tmp = estrndup(protocol, n);
+		if (FAILURE == zend_hash_find(&xport_hash, (char*)tmp, n + 1, (void**)&factory)) {
 			char wrapper_name[32];
 
 			if (n >= sizeof(wrapper_name))
@@ -116,8 +117,10 @@ PHPAPI php_stream *_php_stream_xport_create(const char *name, long namelen, int 
 			ERR_REPORT(error_string, "Unable to find the socket transport \"%s\" - did you forget to enable it when you configured PHP?",
 					wrapper_name);
 
+			efree(tmp);
 			return NULL;
 		}
+		efree(tmp);
 	}
 
 	if (factory == NULL) {
@@ -136,7 +139,7 @@ PHPAPI php_stream *_php_stream_xport_create(const char *name, long namelen, int 
 		if ((flags & STREAM_XPORT_SERVER) == 0) {
 			/* client */
 
-			if (flags & STREAM_XPORT_CONNECT) {
+			if (flags & (STREAM_XPORT_CONNECT|STREAM_XPORT_CONNECT_ASYNC)) {
 				if (-1 == php_stream_xport_connect(stream, name, namelen,
 							flags & STREAM_XPORT_CONNECT_ASYNC ? 1 : 0,
 							timeout, &error_text, error_code TSRMLS_CC)) {
@@ -486,6 +489,25 @@ PHPAPI int php_stream_xport_sendto(php_stream *stream, const char *buf, size_t b
 	return -1;
 }
 
+/* Similar to shutdown() system call; shut down part of a full-duplex
+ * connection */
+PHPAPI int php_stream_xport_shutdown(php_stream *stream, stream_shutdown_t how TSRMLS_DC)
+{
+	php_stream_xport_param param;
+	int ret = 0;
+
+	memset(&param, 0, sizeof(param));
+
+	param.op = STREAM_XPORT_OP_SHUTDOWN;
+	param.how = how;
+	
+	ret = php_stream_set_option(stream, PHP_STREAM_OPTION_XPORT_API, 0, &param);
+
+	if (ret == PHP_STREAM_OPTION_RETURN_OK) {
+		return param.outputs.returncode;
+	}
+	return -1;
+}
 
 /*
  * Local variables:

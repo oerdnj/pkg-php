@@ -12,7 +12,7 @@
 ** This file contains C code routines that used to generate VDBE code
 ** that implements the ALTER TABLE command.
 **
-** $Id: alter.c,v 1.2.2.2.2.1 2006/08/14 16:15:28 iliaa Exp $
+** $Id: alter.c,v 1.2.2.2.2.2 2007/02/09 03:17:46 iliaa Exp $
 */
 #include "sqliteInt.h"
 #include <ctype.h>
@@ -28,7 +28,7 @@
 ** This function is used by SQL generated to implement the 
 ** ALTER TABLE command. The first argument is the text of a CREATE TABLE or
 ** CREATE INDEX command. The second is a table name. The table name in 
-** the CREATE TABLE or CREATE INDEX statement is replaced with the second
+** the CREATE TABLE or CREATE INDEX statement is replaced with the third
 ** argument and the result returned. Examples:
 **
 ** sqlite_rename_table('CREATE TABLE abc(a, b, c)', 'def')
@@ -78,10 +78,10 @@ static void renameTableFunc(
 }
 
 #ifndef SQLITE_OMIT_TRIGGER
-/* This function is used by SQL generated to implement the ALTER TABLE
+/* This function is used by SQL generated to implement the
 ** ALTER TABLE command. The first argument is the text of a CREATE TRIGGER 
 ** statement. The second is a table name. The table name in the CREATE 
-** TRIGGER statement is replaced with the second argument and the result 
+** TRIGGER statement is replaced with the third argument and the result 
 ** returned. This is analagous to renameTableFunc() above, except for CREATE
 ** TRIGGER, not CREATE INDEX and CREATE TABLE.
 */

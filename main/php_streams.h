@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_streams.h,v 1.103.2.1 2006/01/01 12:50:17 sniper Exp $ */
+/* $Id: php_streams.h,v 1.103.2.1.2.2 2007/02/21 21:57:21 tony2001 Exp $ */
 
 #ifndef PHP_STREAMS_H
 #define PHP_STREAMS_H
@@ -178,6 +178,8 @@ struct _php_stream_wrapper	{
  * might otherwise cause the read to block for much longer than
  * is strictly required. */
 #define PHP_STREAM_FLAG_AVOID_BLOCKING				16
+
+#define PHP_STREAM_FLAG_NO_CLOSE					32
 	
 struct _php_stream  {
 	php_stream_ops *ops;

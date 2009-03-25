@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_open_temporary_file.c,v 1.34.2.1.2.4 2006/10/13 01:11:30 iliaa Exp $ */
+/* $Id: php_open_temporary_file.c,v 1.34.2.1.2.7 2007/02/07 21:07:31 tony2001 Exp $ */
 
 #include "php.h"
 
@@ -148,14 +148,22 @@ static int php_do_open_temporary_file(const char *path, const char *pfx, char **
 }
 /* }}} */
 
+/* Cache the chosen temporary directory. */
+static char* temporary_directory;
+
+PHPAPI void php_shutdown_temporary_directory()
+{
+	if (temporary_directory) {
+		free(temporary_directory);
+		temporary_directory = NULL;
+	}
+}
+
 /*
  *  Determine where to place temporary files.
  */
 PHPAPI const char* php_get_temporary_directory(void)
 {
-	/* Cache the chosen temporary directory. */
-	static char* temporary_directory;
-
 	/* Did we determine the temporary directory already? */
 	if (temporary_directory) {
 		return temporary_directory;
@@ -186,12 +194,12 @@ PHPAPI const char* php_get_temporary_directory(void)
 #ifdef P_tmpdir
 	/* Use the standard default temporary directory. */
 	if (P_tmpdir) {
-		temporary_directory = P_tmpdir;
+		temporary_directory = strdup(P_tmpdir);
 		return temporary_directory;
 	}
 #endif
 	/* Shouldn't ever(!) end up here ... last ditch default. */
-	temporary_directory = "/tmp";
+	temporary_directory = strdup("/tmp");
 	return temporary_directory;
 #endif
 }

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: sockets.c,v 1.171.2.9.2.4 2006/10/03 19:51:01 iliaa Exp $ */
+/* $Id: sockets.c,v 1.171.2.9.2.8 2007/02/25 22:59:32 tony2001 Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -138,7 +138,9 @@ zend_function_entry sockets_functions[] = {
 	PHP_FE(socket_sendto,			NULL)
 	PHP_FE(socket_get_option,		NULL)
 	PHP_FE(socket_set_option,		NULL)
+#ifdef HAVE_SHUTDOWN
 	PHP_FE(socket_shutdown,			NULL)
+#endif
 	PHP_FE(socket_last_error,		NULL)
 	PHP_FE(socket_clear_error,		NULL)
 	
@@ -1116,6 +1118,8 @@ PHP_FUNCTION(socket_connect)
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Socket of type AF_INET6 requires 3 arguments");
 				RETURN_FALSE;
 			}
+			
+			memset(&sin6, 0, sizeof(struct sockaddr_in6));
 
 			sin6.sin6_family = AF_INET6;
 			sin6.sin6_port   = htons((unsigned short int)port);
@@ -1132,6 +1136,8 @@ PHP_FUNCTION(socket_connect)
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Socket of type AF_INET requires 3 arguments");
 				RETURN_FALSE;
 			}
+			
+			memset(&sin, 0, sizeof(struct sockaddr_in));
 
 			sin.sin_family = AF_INET;
 			sin.sin_port   = htons((unsigned short int)port);
@@ -1144,6 +1150,8 @@ PHP_FUNCTION(socket_connect)
 			break;
 
 		case AF_UNIX:
+			memset(&s_un, 0, sizeof(struct sockaddr_un));
+			
 			s_un.sun_family = AF_UNIX;
 			snprintf(s_un.sun_path, 108, "%s", addr);
 			retval = connect(php_sock->bsd_socket, (struct sockaddr *) &s_un, SUN_LEN(&s_un));
@@ -1600,11 +1608,12 @@ PHP_FUNCTION(socket_set_option)
 {
 	zval			*arg1, **arg4;
 	struct linger	lv;
-	struct timeval tv;
 	php_socket		*php_sock;
 	int				ov, optlen, retval; 
 #ifdef PHP_WIN32
 	int				timeout;
+#else 
+	struct timeval tv;
 #endif
 	long				level, optname;
 	void 			*opt_ptr;
@@ -1758,6 +1767,7 @@ PHP_FUNCTION(socket_create_pair)
 /* }}} */
 #endif
 
+#ifdef HAVE_SHUTDOWN
 /* {{{ proto bool socket_shutdown(resource socket[, int how])
    Shuts down a socket for receiving, sending, or both. */
 PHP_FUNCTION(socket_shutdown)
@@ -1779,6 +1789,7 @@ PHP_FUNCTION(socket_shutdown)
 	RETURN_TRUE;
 }
 /* }}} */
+#endif
 
 /* {{{ proto int socket_last_error([resource socket])
    Returns the last socket error (either the last used or the provided socket resource) */

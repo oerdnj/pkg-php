@@ -21,17 +21,29 @@
 #include <ctype.h>
 
 /*
-** The following constant value is used by the SQLITE_BIGENDIAN and
-** SQLITE_LITTLEENDIAN macros.
-*/
-const int sqlite3one = 1;
-
-/*
 ** The version of the library
 */
 const char sqlite3_version[] = SQLITE_VERSION;
 const char *sqlite3_libversion(void){ return sqlite3_version; }
 int sqlite3_libversion_number(void){ return SQLITE_VERSION_NUMBER; }
+
+/*
+** If the following function pointer is not NULL and if
+** SQLITE_ENABLE_IOTRACE is enabled, then messages describing
+** I/O active are written using this function.  These messages
+** are intended for debugging activity only.
+*/
+void (*sqlite3_io_trace)(const char*, ...) = 0;
+
+/*
+** If the following global variable points to a string which is the
+** name of a directory, then that directory will be used to store
+** temporary files.
+**
+** See also the "PRAGMA temp_store_directory" SQL command.
+*/
+char *sqlite3_temp_directory = 0;
+
 
 /*
 ** This is the default collating function named "BINARY" which is always
@@ -115,8 +127,18 @@ int sqlite3_close(sqlite3 *db){
   }
 #endif 
 
-  /* If there are any outstanding VMs, return SQLITE_BUSY. */
   sqlite3ResetInternalSchema(db, 0);
+
+  /* If a transaction is open, the ResetInternalSchema() call above
+  ** will not have called the xDisconnect() method on any virtual
+  ** tables in the db->aVTrans[] array. The following sqlite3VtabRollback()
+  ** call will do so. We need to do this before the check for active
+  ** SQL statements below, as the v-table implementation may be storing
+  ** some prepared statements internally.
+  */
+  sqlite3VtabRollback(db);
+
+  /* If there are any outstanding VMs, return SQLITE_BUSY. */
   if( db->pVdbe ){
     sqlite3Error(db, SQLITE_BUSY, 
         "Unable to close due to unfinalised statements");
@@ -128,13 +150,14 @@ int sqlite3_close(sqlite3 *db){
   ** cannot be opened for some reason. So this routine needs to run in
   ** that case. But maybe there should be an extra magic value for the
   ** "failed to open" state.
+  **
+  ** TODO: Coverage tests do not test the case where this condition is
+  ** true. It's hard to see how to cause it without messing with threads.
   */
   if( db->magic!=SQLITE_MAGIC_CLOSED && sqlite3SafetyOn(db) ){
     /* printf("DID NOT CLOSE\n"); fflush(stdout); */
     return SQLITE_ERROR;
   }
-
-  sqlite3VtabRollback(db);
 
   for(j=0; j<db->nDb; j++){
     struct Db *pDb = &db->aDb[j];
@@ -223,7 +246,7 @@ void sqlite3RollbackAll(sqlite3 *db){
 */
 const char *sqlite3ErrStr(int rc){
   const char *z;
-  switch( rc ){
+  switch( rc & 0xff ){
     case SQLITE_ROW:
     case SQLITE_DONE:
     case SQLITE_OK:         z = "not an error";                          break;
@@ -239,7 +262,6 @@ const char *sqlite3ErrStr(int rc){
     case SQLITE_CORRUPT:    z = "database disk image is malformed";      break;
     case SQLITE_FULL:       z = "database or disk is full";              break;
     case SQLITE_CANTOPEN:   z = "unable to open database file";          break;
-    case SQLITE_PROTOCOL:   z = "database locking protocol failure";     break;
     case SQLITE_EMPTY:      z = "table contains no data";                break;
     case SQLITE_SCHEMA:     z = "database schema has changed";           break;
     case SQLITE_CONSTRAINT: z = "constraint failed";                     break;
@@ -541,6 +563,32 @@ int sqlite3_create_function16(
 }
 #endif
 
+
+/*
+** Declare that a function has been overloaded by a virtual table.
+**
+** If the function already exists as a regular global function, then
+** this routine is a no-op.  If the function does not exist, then create
+** a new one that always throws a run-time error.  
+**
+** When virtual tables intend to provide an overloaded function, they
+** should call this routine to make sure the global function exists.
+** A global function must exist in order for name resolution to work
+** properly.
+*/
+int sqlite3_overload_function(
+  sqlite3 *db,
+  const char *zName,
+  int nArg
+){
+  int nName = strlen(zName);
+  if( sqlite3FindFunction(db, zName, nName, nArg, SQLITE_UTF8, 0)==0 ){
+    sqlite3CreateFunc(db, zName, nArg, SQLITE_UTF8,
+                      0, sqlite3InvalidFunction, 0, 0);
+  }
+  return sqlite3ApiExit(db, SQLITE_OK);
+}
+
 #ifndef SQLITE_OMIT_TRACE
 /*
 ** Register a trace function.  The pArg from the previously registered trace
@@ -696,7 +744,8 @@ int sqlite3BtreeFactory(
 */
 const char *sqlite3_errmsg(sqlite3 *db){
   const char *z;
-  if( !db || sqlite3MallocFailed() ){
+  assert( !sqlite3MallocFailed() );
+  if( !db ){
     return sqlite3ErrStr(SQLITE_NOMEM);
   }
   if( sqlite3SafetyCheck(db) || db->errCode==SQLITE_MISUSE ){
@@ -735,7 +784,8 @@ const void *sqlite3_errmsg16(sqlite3 *db){
   };
 
   const void *z;
-  if( sqlite3MallocFailed() ){
+  assert( !sqlite3MallocFailed() );
+  if( !db ){
     return (void *)(&outOfMemBe[SQLITE_UTF16NATIVE==SQLITE_UTF16LE?1:0]);
   }
   if( sqlite3SafetyCheck(db) || db->errCode==SQLITE_MISUSE ){
@@ -763,7 +813,7 @@ int sqlite3_errcode(sqlite3 *db){
   if( sqlite3SafetyCheck(db) ){
     return SQLITE_MISUSE;
   }
-  return db->errCode;
+  return db->errCode & db->errMask;
 }
 
 /*
@@ -841,6 +891,7 @@ static int openDatabase(
   /* Allocate the sqlite data structure */
   db = sqliteMalloc( sizeof(sqlite3) );
   if( db==0 ) goto opendb_out;
+  db->errMask = 0xff;
   db->priorNewRowid = 0;
   db->magic = SQLITE_MAGIC_BUSY;
   db->nDb = 2;
@@ -849,6 +900,9 @@ static int openDatabase(
   db->flags |= SQLITE_ShortColNames
 #if SQLITE_DEFAULT_FILE_FORMAT<4
                  | SQLITE_LegacyFileFmt
+#endif
+#ifdef SQLITE_ENABLE_LOAD_EXTENSION
+                 | SQLITE_LoadExtension
 #endif
       ;
   sqlite3HashInit(&db->aFunc, SQLITE_HASH_STRING, 0);
@@ -907,10 +961,39 @@ static int openDatabase(
   ** is accessed.
   */
   if( !sqlite3MallocFailed() ){
-    sqlite3RegisterBuiltinFunctions(db);
     sqlite3Error(db, SQLITE_OK, 0);
+    sqlite3RegisterBuiltinFunctions(db);
   }
   db->magic = SQLITE_MAGIC_OPEN;
+
+  /* Load automatic extensions - extensions that have been registered
+  ** using the sqlite3_automatic_extension() API.
+  */
+  (void)sqlite3AutoLoadExtensions(db);
+
+#ifdef SQLITE_ENABLE_FTS1
+  {
+    extern int sqlite3Fts1Init(sqlite3*);
+    sqlite3Fts1Init(db);
+  }
+#endif
+
+#ifdef SQLITE_ENABLE_FTS2
+  {
+    extern int sqlite3Fts2Init(sqlite3*);
+    sqlite3Fts2Init(db);
+  }
+#endif
+
+  /* -DSQLITE_DEFAULT_LOCKING_MODE=1 makes EXCLUSIVE the default locking
+  ** mode.  -DSQLITE_DEFAULT_LOCKING_MODE=0 make NORMAL the default locking
+  ** mode.  Doing nothing at all also makes NORMAL the default.
+  */
+#ifdef SQLITE_DEFAULT_LOCKING_MODE
+  db->dfltLockMode = SQLITE_DEFAULT_LOCKING_MODE;
+  sqlite3PagerLockingMode(sqlite3BtreePager(db->aDb[0].pBt),
+                          SQLITE_DEFAULT_LOCKING_MODE);
+#endif
 
 opendb_out:
   if( SQLITE_NOMEM==(rc = sqlite3_errcode(db)) ){
@@ -999,6 +1082,7 @@ int sqlite3_reset(sqlite3_stmt *pStmt){
   }else{
     rc = sqlite3VdbeReset((Vdbe*)pStmt);
     sqlite3VdbeMakeReady((Vdbe*)pStmt, -1, 0, 0, 0);
+    assert( (rc & (sqlite3_db_handle(pStmt)->errMask))==rc );
   }
   return rc;
 }
@@ -1284,4 +1368,12 @@ int sqlite3_clear_bindings(sqlite3_stmt *pStmt){
 */
 int sqlite3_sleep(int ms){
   return sqlite3OsSleep(ms);
+}
+
+/*
+** Enable or disable the extended result codes.
+*/
+int sqlite3_extended_result_codes(sqlite3 *db, int onoff){
+  db->errMask = onoff ? 0xffffffff : 0xff;
+  return SQLITE_OK;
 }

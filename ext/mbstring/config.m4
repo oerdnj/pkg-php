@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.58.2.4.2.6 2006/10/01 08:34:39 hirokawa Exp $
+dnl $Id: config.m4,v 1.58.2.4.2.8 2007/01/29 22:53:47 hirokawa Exp $
 dnl
 
 AC_DEFUN([PHP_MBSTRING_ADD_SOURCES], [
@@ -189,6 +189,7 @@ AC_DEFUN([PHP_MBSTRING_SETUP_LIBMBFL], [
      libmbfl/filters/mbfilter_euc_cn.c
      libmbfl/filters/mbfilter_euc_jp.c
      libmbfl/filters/mbfilter_euc_jp_win.c
+     libmbfl/filters/mbfilter_cp51932.c
      libmbfl/filters/mbfilter_euc_kr.c
      libmbfl/filters/mbfilter_euc_tw.c
      libmbfl/filters/mbfilter_htmlent.c
@@ -209,6 +210,7 @@ AC_DEFUN([PHP_MBSTRING_SETUP_LIBMBFL], [
      libmbfl/filters/mbfilter_iso8859_8.c
      libmbfl/filters/mbfilter_iso8859_9.c
      libmbfl/filters/mbfilter_jis.c
+     libmbfl/filters/mbfilter_iso2022_jp_ms.c
      libmbfl/filters/mbfilter_koi8r.c
      libmbfl/filters/mbfilter_armscii8.c
      libmbfl/filters/mbfilter_qprint.c

@@ -1,4 +1,4 @@
-dnl $Id: config.m4,v 1.13.2.4.2.1 2006/08/23 09:47:21 tony2001 Exp $
+dnl $Id: config.m4,v 1.13.2.4.2.3 2006/12/04 18:01:53 tony2001 Exp $
 dnl config.m4 for extension SPL
 
 PHP_ARG_ENABLE(spl, enable SPL suppport,
@@ -27,4 +27,6 @@ int main(int argc, char **argv) {
   AC_DEFINE_UNQUOTED(HAVE_PACKED_OBJECT_VALUE, $ac_result, [Whether struct _zend_object_value is packed])
   AC_DEFINE(HAVE_SPL, 1, [Whether you want SPL (Standard PHP Library) support]) 
   PHP_NEW_EXTENSION(spl, php_spl.c spl_functions.c spl_engine.c spl_iterators.c spl_array.c spl_directory.c spl_sxe.c spl_exceptions.c spl_observer.c, no)
+  PHP_INSTALL_HEADERS([ext/spl], [php_spl.h spl_array.h spl_directory.h spl_engine.h spl_exceptions.h spl_functions.h spl_iterators.h spl_observer.h spl_sxe.h])
+  PHP_ADD_EXTENSION_DEP(spl, pcre, true)
 fi

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: domimplementation.c,v 1.15.2.2 2006/02/24 10:19:54 mike Exp $ */
+/* $Id: domimplementation.c,v 1.15.2.2.2.2 2007/01/01 09:36:00 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -114,6 +114,11 @@ PHP_METHOD(domimplementation, createDocumentType)
 
 	doctype = xmlCreateIntSubset(NULL, localname, pch1, pch2);
 	xmlFree(localname);
+
+	if (doctype == NULL) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to create DocumentType");
+		RETURN_FALSE;
+	}
 
 	DOM_RET_OBJ(rv, (xmlNodePtr) doctype, &ret, NULL);
 }

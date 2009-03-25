@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -15,7 +15,7 @@
    | Author: Chris Schneider <cschneid@relog.ch>                          |
    +----------------------------------------------------------------------+
  */
-/* $Id: pack.c,v 1.57.2.5 2006/02/26 10:49:50 helly Exp $ */
+/* $Id: pack.c,v 1.57.2.5.2.4 2007/04/03 19:50:40 shire Exp $ */
 
 #include "php.h"
 
@@ -644,10 +644,10 @@ PHP_FUNCTION(unpack)
 
 			if (arg != 1 || namelen == 0) {
 				/* Need to add element number to name */
-				sprintf(n, "%.*s%d", namelen, name, i + 1);
+				snprintf(n, sizeof(n), "%.*s%d", namelen, name, i + 1);
 			} else {
 				/* Truncate name to next format code or end of string */
-				sprintf(n, "%.*s", namelen, name);
+				snprintf(n, sizeof(n), "%.*s", namelen, name);
 			}
 
 			if (size != 0 && size != -1 && INT_MAX - size + 1 < inputpos) {
@@ -753,14 +753,16 @@ PHP_FUNCTION(unpack)
 
 					case 'i': 
 					case 'I': {
-						long v;
+						long v = 0;
 						int issigned = 0;
 
 						if (type == 'i') {
 							issigned = input[inputpos + (machine_little_endian ? (sizeof(int) - 1) : 0)] & 0x80;
+						} else if (sizeof(long) > 4 && (input[inputpos + machine_endian_long_map[3]] & 0x80) == 0x80) {
+							v = ~INT_MAX;
 						}
 
-						v = php_unpack(&input[inputpos], sizeof(int), issigned, int_map);
+						v |= php_unpack(&input[inputpos], sizeof(int), issigned, int_map);
 						add_assoc_long(return_value, n, v);
 						break;
 					}
@@ -771,17 +773,23 @@ PHP_FUNCTION(unpack)
 					case 'V': {
 						int issigned = 0;
 						int *map = machine_endian_long_map;
-						long v;
+						long v = 0;
 
-						if (type == 'l') {
+						if (type == 'l' || type == 'L') {
 							issigned = input[inputpos + (machine_little_endian ? 3 : 0)] & 0x80;
 						} else if (type == 'N') {
+							issigned = input[inputpos] & 0x80;
 							map = big_endian_long_map;
 						} else if (type == 'V') {
+							issigned = input[inputpos + 3] & 0x80;
 							map = little_endian_long_map;
 						}
 
-						v = php_unpack(&input[inputpos], 4, issigned, map);
+						if (sizeof(long) > 4 && issigned) {
+							v = ~INT_MAX;
+						}
+
+						v |= php_unpack(&input[inputpos], 4, issigned, map);
 						add_assoc_long(return_value, n, v);
 						break;
 					}

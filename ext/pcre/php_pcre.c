@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_pcre.c,v 1.168.2.9.2.12 2006/10/10 12:44:02 tony2001 Exp $ */
+/* $Id: php_pcre.c,v 1.168.2.9.2.17 2007/04/23 10:05:33 tony2001 Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -59,7 +59,7 @@ enum {
 ZEND_DECLARE_MODULE_GLOBALS(pcre);
 
 
-static void pcre_handle_exec_error(int pcre_code TSRMLS_DC)
+static void pcre_handle_exec_error(int pcre_code TSRMLS_DC) /* {{{ */
 {
 	int preg_code = 0;
 
@@ -83,9 +83,9 @@ static void pcre_handle_exec_error(int pcre_code TSRMLS_DC)
 
 	PCRE_G(error_code) = preg_code;
 }
+/* }}} */
 
-
-static void php_free_pcre_cache(void *data)
+static void php_free_pcre_cache(void *data) /* {{{ */
 {
 	pcre_cache_entry *pce = (pcre_cache_entry *) data;
 	if (!pce) return;
@@ -96,20 +96,22 @@ static void php_free_pcre_cache(void *data)
 	pefree(pce->locale, 1);
 #endif
 }
+/* }}} */
 
-
-static PHP_GINIT_FUNCTION(pcre)
+static PHP_GINIT_FUNCTION(pcre) /* {{{ */
 {
 	zend_hash_init(&pcre_globals->pcre_cache, 0, NULL, php_free_pcre_cache, 1);
 	pcre_globals->backtrack_limit = 0;
 	pcre_globals->recursion_limit = 0;
 	pcre_globals->error_code      = PHP_PCRE_NO_ERROR;
 }
+/* }}} */
 
-static PHP_GSHUTDOWN_FUNCTION(pcre)
+static PHP_GSHUTDOWN_FUNCTION(pcre) /* {{{ */
 {
 	zend_hash_destroy(&pcre_globals->pcre_cache);
 }
+/* }}} */
 
 PHP_INI_BEGIN()
 	STD_PHP_INI_ENTRY("pcre.backtrack_limit", "100000", PHP_INI_ALL, OnUpdateLong, backtrack_limit, zend_pcre_globals, pcre_globals)
@@ -214,8 +216,8 @@ PHPAPI pcre_cache_entry* pcre_get_compiled_regex_cache(char *regex, int regex_le
 				return pce;
 #if HAVE_SETLOCALE
 			}
-		}
 #endif
+		}
 	}
 	
 	p = regex;
@@ -462,7 +464,9 @@ static void php_do_pcre_match(INTERNAL_FUNCTION_PARAMETERS, int global) /* {{{ *
 	php_pcre_match_impl(pce, subject, subject_len, return_value, subpats, 
 		global, ZEND_NUM_ARGS() >= 4, flags, start_offset TSRMLS_CC);
 }
+/* }}} */
 
+/* {{{ php_pcre_match_impl() */
 PHPAPI void php_pcre_match_impl(pcre_cache_entry *pce, char *subject, int subject_len, zval *return_value,
 	zval *subpats, int global, int use_flags, long flags, long start_offset TSRMLS_DC)
 {
@@ -559,8 +563,7 @@ PHPAPI void php_pcre_match_impl(pcre_cache_entry *pce, char *subject, int subjec
 		}
 		if (name_cnt > 0) {
 			int rc1, rc2;
-			long dummy_l;
-			double dummy_d;
+
 			rc1 = pcre_fullinfo(pce->re, extra, PCRE_INFO_NAMETABLE, &name_table);
 			rc2 = pcre_fullinfo(pce->re, extra, PCRE_INFO_NAMEENTRYSIZE, &name_size);
 			rc = rc2 ? rc2 : rc1;
@@ -574,7 +577,7 @@ PHPAPI void php_pcre_match_impl(pcre_cache_entry *pce, char *subject, int subjec
 			while (ni++ < name_cnt) {
 				name_idx = 0xff * name_table[0] + name_table[1];
 				subpat_names[name_idx] = name_table + 2;
-				if (is_numeric_string(subpat_names[name_idx], strlen(subpat_names[name_idx]), &dummy_l, &dummy_d, 0) > 0) {
+				if (is_numeric_string(subpat_names[name_idx], strlen(subpat_names[name_idx]), NULL, NULL, 0) > 0) {
 					php_error_docref(NULL TSRMLS_CC, E_WARNING, "Numeric named subpatterns are not allowed");
 					efree(offsets);
 					efree(subpat_names);
@@ -812,7 +815,9 @@ static int preg_do_repl_func(zval *function, char *subject, int *offsets, int co
 		result_len = Z_STRLEN_P(retval_ptr);
 		zval_ptr_dtor(&retval_ptr);
 	} else {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to call custom replacement function");
+		if (!EG(exception)) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to call custom replacement function");
+		}
 		result_len = offsets[1] - offsets[0];
 		*result = estrndup(&subject[offsets[0]], result_len);
 	}
@@ -929,7 +934,9 @@ PHPAPI char *php_pcre_replace(char *regex,   int regex_len,
 	return php_pcre_replace_impl(pce, subject, subject_len, replace_val, 
 		is_callable_replace, result_len, limit, replace_count TSRMLS_CC);
 }
+/* }}} */
 
+/* {{{ php_pcre_replace_impl() */
 PHPAPI char *php_pcre_replace_impl(pcre_cache_entry *pce, char *subject, int subject_len, zval *replace_val, 
 	int is_callable_replace, int *result_len, int limit, int *replace_count TSRMLS_DC)
 {
@@ -1372,6 +1379,7 @@ PHP_FUNCTION(preg_split)
 
 	php_pcre_split_impl(pce, subject, subject_len, return_value, limit_val, flags TSRMLS_CC);
 }
+/* }}} */
 
 /* {{{ php_pcre_split
  */
@@ -1651,9 +1659,9 @@ PHP_FUNCTION(preg_grep)
 	
 	php_pcre_grep_impl(pce, input, return_value, flags TSRMLS_CC);
 }
+/* }}} */
 
-PHPAPI void  php_pcre_grep_impl(pcre_cache_entry *pce, zval *input, zval *return_value,
-	long flags TSRMLS_DC)
+PHPAPI void  php_pcre_grep_impl(pcre_cache_entry *pce, zval *input, zval *return_value, long flags TSRMLS_DC) /* {{{ */
 {
 	zval		   **entry;				/* An entry in the input array */
 	pcre_extra		*extra = pce->extra;/* Holds results of studying */

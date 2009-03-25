@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: hash_snefru.c,v 1.3.2.3 2006/01/01 12:50:07 sniper Exp $ */
+/* $Id: hash_snefru.c,v 1.3.2.3.2.2 2007/01/08 22:29:25 nlopess Exp $ */
 
 #include "php_hash.h"
 #include "php_hash_snefru.h"
@@ -193,7 +193,7 @@ PHP_HASH_API void PHP_SNEFRUFinal(unsigned char digest[32], PHP_SNEFRU_CTX *cont
 	memset(context, 0, sizeof(*context));
 }
 
-php_hash_ops php_hash_snefru_ops = {
+const php_hash_ops php_hash_snefru_ops = {
 	(php_hash_init_func_t) PHP_SNEFRUInit,
 	(php_hash_update_func_t) PHP_SNEFRUUpdate,
 	(php_hash_final_func_t) PHP_SNEFRUFinal,

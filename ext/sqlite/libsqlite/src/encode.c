@@ -15,7 +15,7 @@
 ** data in an SQLite database.  The code in this file is not used by any other
 ** part of the SQLite library.
 **
-** $Id: encode.c,v 1.5.4.1 2005/09/07 15:11:32 iliaa Exp $
+** $Id: encode.c,v 1.5.4.1.2.1 2006/12/24 20:50:02 iliaa Exp $
 */
 #include <string.h>
 #include <assert.h>
@@ -176,9 +176,12 @@ int sqlite_decode_binary(const unsigned char *in, unsigned char *out){
   int i, e;
   unsigned char c;
   e = *(in++);
+  if (e == 0) {
+    return 0;
+  }
   i = 0;
   while( (c = *(in++))!=0 ){
-    if( c==1 ){
+    if (c == 1) {
       c = *(in++) - 1;
     }
     out[i++] = c + e;

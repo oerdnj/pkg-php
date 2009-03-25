@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: network.c,v 1.118.2.2.2.2 2006/09/11 19:18:07 pollita Exp $ */
+/* $Id: network.c,v 1.118.2.2.2.4 2007/01/11 15:51:37 tony2001 Exp $ */
 
 /*#define DEBUG_MAIN_NETWORK 1*/
 
@@ -441,7 +441,7 @@ php_socket_t php_network_bind_socket_to_local_addr(const char *host, unsigned po
 			err = php_socket_errno();
 		}
 
-		close(sock);
+		closesocket(sock);
 	}
 	sock = -1;
 
@@ -870,7 +870,7 @@ skip_bind:
 #endif
 		}
 
-		close(sock);
+		closesocket(sock);
 	}
 	sock = -1;
 

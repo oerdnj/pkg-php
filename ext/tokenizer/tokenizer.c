@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tokenizer.c,v 1.31.2.5.2.2 2006/06/20 22:39:15 iliaa Exp $ */
+/* $Id: tokenizer.c,v 1.31.2.5.2.5 2007/04/08 00:18:38 johannes Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -92,12 +92,6 @@ struct yy_buffer_state
 
 #define zendtext LANG_SCNG(yy_text)
 #define zendleng LANG_SCNG(yy_leng)
-/* If you declare any globals in php_tokenizer.h uncomment this:
-ZEND_DECLARE_MODULE_GLOBALS(tokenizer)
-*/
-
-/* True global resources - no need for thread safety here */
-/* static int le_tokenizer; */
 
 /* {{{ tokenizer_functions[]
  *
@@ -134,35 +128,10 @@ zend_module_entry tokenizer_module_entry = {
 ZEND_GET_MODULE(tokenizer)
 #endif
 
-/* {{{ PHP_INI
- */
-/* Remove comments and fill if you need to have entries in php.ini
-PHP_INI_BEGIN()
-	STD_PHP_INI_ENTRY("tokenizer.global_value",      "42", PHP_INI_ALL, OnUpdateLong, global_value, zend_tokenizer_globals, tokenizer_globals)
-	STD_PHP_INI_ENTRY("tokenizer.global_string", "foobar", PHP_INI_ALL, OnUpdateString, global_string, zend_tokenizer_globals, tokenizer_globals)
-PHP_INI_END()
-*/
-/* }}} */
-
-/* {{{ PHP_GINIT_FUNCTION
- */
-/* Uncomment this function if you have INI entries
-static PHP_GINIT_FUNCTION(tokenizer)
-{
-	tokenizer_globals->global_value = 0;
-	tokenizer_globals->global_string = NULL;
-}
-*/
-/* }}} */
-
 /* {{{ PHP_MINIT_FUNCTION
  */
 PHP_MINIT_FUNCTION(tokenizer)
 {
-	/* If you have INI entries, uncomment these lines 
-	REGISTER_INI_ENTRIES();
-	*/
-
 	REGISTER_LONG_CONSTANT("T_INCLUDE", T_INCLUDE, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("T_INCLUDE_ONCE", T_INCLUDE_ONCE, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("T_EVAL", T_EVAL, CONST_CS | CONST_PERSISTENT);
@@ -294,10 +263,6 @@ PHP_MINFO_FUNCTION(tokenizer)
 	php_info_print_table_start();
 	php_info_print_table_row(2, "Tokenizer Support", "enabled");
 	php_info_print_table_end();
-
-	/* Remove comments if you have entries in php.ini
-	DISPLAY_INI_ENTRIES();
-	*/
 }
 /* }}} */
 
@@ -307,6 +272,7 @@ static void tokenize(zval *return_value TSRMLS_DC)
 	zval *keyword;
 	int token_type;
 	zend_bool destroy;
+	int token_line = 1;
 
 	array_init(return_value);
 
@@ -336,6 +302,7 @@ static void tokenize(zval *return_value TSRMLS_DC)
 			} else {
 				add_next_index_stringl(keyword, zendtext, zendleng, 1);
 			}
+			add_next_index_long(keyword, token_line);
 			add_next_index_zval(return_value, keyword);
 		} else {
 			add_next_index_stringl(return_value, zendtext, zendleng, 1);
@@ -344,6 +311,8 @@ static void tokenize(zval *return_value TSRMLS_DC)
 			zval_dtor(&token);
 		}
 		ZVAL_NULL(&token);
+
+		token_line = CG(zend_lineno);
 	}
 }
 

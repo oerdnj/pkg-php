@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: microtime.c,v 1.53.2.2 2006/01/01 12:50:15 sniper Exp $ */
+/* $Id: microtime.c,v 1.53.2.2.2.3 2007/01/01 09:36:08 sebastian Exp $ */
 
 #include "php.h"
 
@@ -84,7 +84,7 @@ static void _php_gettimeofday(INTERNAL_FUNCTION_PARAMETERS, int mode)
 	} else {
 		char ret[100];
 
-		snprintf(ret, 100, "%.8f %ld", tp.tv_usec / MICRO_IN_SEC, tp.tv_sec);
+		snprintf(ret, 100, "%.8F %ld", tp.tv_usec / MICRO_IN_SEC, tp.tv_sec);
 		RETURN_STRING(ret, 1);
 	}
 }
@@ -115,7 +115,11 @@ PHP_FUNCTION(getrusage)
 	long pwho = 0;
 	int who = RUSAGE_SELF;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &pwho) != FAILURE && pwho == 1) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &pwho) == FAILURE) {
+		return;
+	}
+	
+	if (pwho == 1) {
 		who = RUSAGE_CHILDREN;
 	}
 

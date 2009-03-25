@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -28,17 +28,7 @@
 
 #include <ctype.h>
 
-/* You should tweak config.m4 so this symbol (or some else suitable)
-   gets defined.
-*/
 #if HAVE_CTYPE
-
-/* If you declare any globals in php_ctype.h uncomment this:
-ZEND_DECLARE_MODULE_GLOBALS(ctype)
-*/
-
-/* True global resources - no need for thread safety here */
-/* static int le_ctype; */
 
 static PHP_MINFO_FUNCTION(ctype);
 

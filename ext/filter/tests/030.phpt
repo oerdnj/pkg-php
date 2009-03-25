@@ -1,5 +1,7 @@
 --TEST--
 filter_var() and IPv6 
+--SKIPIF--
+<?php if (!extension_loaded("filter")) die("skip"); ?>
 --FILE--
 <?php
 $ipv6_test = array(
@@ -19,7 +21,13 @@ $ipv6_test = array(
 	"0:0:0:0:0:FFFF:129.144.52.38" => true,
 	"0:0:0:0:0:0:13.1.68.3"		=> true,
 	"::13.1.68.3"				=> true,
-    "::FFFF:129.144.52.38"		=> true
+    "::FFFF:129.144.52.38"		=> true,
+    "1:2:3:4:5:6::129.144.52.38"	=> false,
+    "::1:2:3:4:5:6:129.144.52.38"	=> false,
+    "1:2:3::4:5:6:129.144.52.38"	=> false,
+    "1:2:3:4:5:6:7:8::"				=> false,
+    "::1:2:3:4:5:6:7:8"				=> false,
+    "1:2:3:4::5:6:7:8"				=> false,
 );
 foreach ($ipv6_test as $ip => $exp) {
 	$out = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);

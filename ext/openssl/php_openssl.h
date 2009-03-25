@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_openssl.h,v 1.16.2.1.2.2 2006/08/15 20:27:20 pajoye Exp $ */
+/* $Id: php_openssl.h,v 1.16.2.1.2.4 2007/04/04 21:24:01 pajoye Exp $ */
 
 #ifndef PHP_OPENSSL_H
 #define PHP_OPENSSL_H
@@ -63,6 +63,11 @@ PHP_FUNCTION(openssl_x509_checkpurpose);
 PHP_FUNCTION(openssl_x509_export);
 PHP_FUNCTION(openssl_x509_export_to_file);
 PHP_FUNCTION(openssl_x509_check_private_key);
+
+PHP_FUNCTION(openssl_pkcs12_export);
+PHP_FUNCTION(openssl_pkcs12_export_to_file);
+PHP_FUNCTION(openssl_pkcs12_read);
+
 PHP_FUNCTION(openssl_csr_new);
 PHP_FUNCTION(openssl_csr_export);
 PHP_FUNCTION(openssl_csr_export_to_file);

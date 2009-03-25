@@ -8,7 +8,7 @@ Sybase-CT sybase_fetch_object
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: test_fetch_object.phpt,v 1.1 2004/07/11 16:10:03 thekid Exp $
+ * $Id: test_fetch_object.phpt,v 1.1.6.1 2007/03/14 11:44:24 thekid Exp $
  */
 
   require('test.inc');
@@ -46,29 +46,29 @@ Sybase-CT sybase_fetch_object
   sybase_close($db);
 ?>
 --EXPECTF--
-class stdClass {
-  %s $id = 1;
-  %s $caption = 'Hello';
-  %s $author = 'timm';
-  %s $lastchange = '%s';
-}
-class article {
-  %s $id = 1;
-  %s $caption = 'Hello';
-  %s $author = 'timm';
-  %s $lastchange = '%s';
-}
-class article {
-  %s $id = 1;
-  %s $caption = 'Hello';
-  %s $author = 'timm';
-  %s $lastchange = '%s';
-}
+stdClass::__set_state(array(
+   'id' => 1,
+   'caption' => 'Hello',
+   'author' => 'timm',
+   'lastchange' => '%s',
+))
+article::__set_state(array(
+   'id' => 1,
+   'caption' => 'Hello',
+   'author' => 'timm',
+   'lastchange' => '%s',
+))
+article::__set_state(array(
+   'id' => 1,
+   'caption' => 'Hello',
+   'author' => 'timm',
+   'lastchange' => '%s',
+))
 
 Notice: sybase_fetch_object(): Sybase:  Class *** has not been declared in %s/test_fetch_object.php on line %d
-class stdClass {
-  %s $id = 1;
-  %s $caption = 'Hello';
-  %s $author = 'timm';
-  %s $lastchange = '%s';
-}
+stdClass::__set_state(array(
+   'id' => 1,
+   'caption' => 'Hello',
+   'author' => 'timm',
+   'lastchange' => '%s',
+))

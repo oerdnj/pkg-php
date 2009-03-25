@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_soap.h,v 1.38.2.6.2.2 2006/09/20 13:42:50 dmitry Exp $ */
+/* $Id: php_soap.h,v 1.38.2.6.2.5 2007/04/02 13:43:08 dmitry Exp $ */
 
 #ifndef PHP_SOAP_H
 #define PHP_SOAP_H
@@ -140,7 +140,8 @@ struct _soapService {
 #define SOAP_AUTHENTICATION_DIGEST  1
 
 #define SOAP_SINGLE_ELEMENT_ARRAYS  (1<<0)
-#define SOAP_WAIT_ONE_WAY_CALLS     (2<<0)
+#define SOAP_WAIT_ONE_WAY_CALLS     (1<<1)
+#define SOAP_USE_XSI_ARRAY_TYPE     (1<<2)
 
 #define WSDL_CACHE_NONE     0x0
 #define WSDL_CACHE_DISK     0x1
@@ -167,6 +168,8 @@ ZEND_BEGIN_MODULE_GLOBALS(soap)
 	HashTable *class_map;
 	int        features;
 	HashTable  wsdl_cache;
+	int        cur_uniq_ref;
+	HashTable *ref_map;
 ZEND_END_MODULE_GLOBALS(soap)
 
 #ifdef PHP_WIN32

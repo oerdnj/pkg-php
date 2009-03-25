@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -15,7 +15,7 @@
    | Author: Rasmus Lerdorf <rasmus@lerdorf.on.ca>                        |
    +----------------------------------------------------------------------+
  */
-/* $Id: head.c,v 1.84.2.1.2.2 2006/10/16 19:27:57 tony2001 Exp $ */
+/* $Id: head.c,v 1.84.2.1.2.7 2007/02/26 02:12:36 iliaa Exp $ */
 
 #include <stdio.h>
 #include "php.h"
@@ -94,6 +94,7 @@ PHPAPI int php_setcookie(char *name, int name_len, char *value, int value_len, t
 	if (domain) {
 		len += domain_len;
 	}
+
 	cookie = emalloc(len + 100);
 
 	if (value && value_len == 0) {
@@ -104,14 +105,14 @@ PHPAPI int php_setcookie(char *name, int name_len, char *value, int value_len, t
 		 */
 		time_t t = time(NULL) - 31536001;
 		dt = php_format_date("D, d-M-Y H:i:s T", sizeof("D, d-M-Y H:i:s T")-1, t, 0 TSRMLS_CC);
-		sprintf(cookie, "Set-Cookie: %s=deleted; expires=%s", name, dt);
+		snprintf(cookie, len + 100, "Set-Cookie: %s=deleted; expires=%s", name, dt);
 		efree(dt);
 	} else {
-		sprintf(cookie, "Set-Cookie: %s=%s", name, value ? encoded_value : "");
+		snprintf(cookie, len + 100, "Set-Cookie: %s=%s", name, value ? encoded_value : "");
 		if (expires > 0) {
-			strcat(cookie, "; expires=");
+			strlcat(cookie, "; expires=", len + 100);
 			dt = php_format_date("D, d-M-Y H:i:s T", sizeof("D, d-M-Y H:i:s T")-1, expires, 0 TSRMLS_CC);
-			strcat(cookie, dt);
+			strlcat(cookie, dt, len + 100);
 			efree(dt);
 		}
 	}
@@ -121,18 +122,18 @@ PHPAPI int php_setcookie(char *name, int name_len, char *value, int value_len, t
 	}
 
 	if (path && path_len > 0) {
-		strcat(cookie, "; path=");
-		strcat(cookie, path);
+		strlcat(cookie, "; path=", len + 100);
+		strlcat(cookie, path, len + 100);
 	}
 	if (domain && domain_len > 0) {
-		strcat(cookie, "; domain=");
-		strcat(cookie, domain);
+		strlcat(cookie, "; domain=", len + 100);
+		strlcat(cookie, domain, len + 100);
 	}
 	if (secure) {
-		strcat(cookie, "; secure");
+		strlcat(cookie, "; secure", len + 100);
 	}
 	if (httponly) {
-		strcat(cookie, "; httponly");
+		strlcat(cookie, "; httponly", len + 100);
 	}
 
 	ctr.line = cookie;

@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: hash.c,v 1.18.2.5.2.3 2006/07/28 14:27:03 iliaa Exp $ */
+/* $Id: hash.c,v 1.18.2.5.2.7 2007/02/27 03:28:16 iliaa Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -37,7 +37,7 @@ HashTable php_hash_hashtable;
 
 /* Hash Registry Access */
 
-PHP_HASH_API php_hash_ops *php_hash_fetch_ops(const char *algo, int algo_len)
+PHP_HASH_API const php_hash_ops *php_hash_fetch_ops(const char *algo, int algo_len)
 {
 	php_hash_ops *ops;
 	char *lower = estrndup(algo, algo_len);
@@ -51,13 +51,13 @@ PHP_HASH_API php_hash_ops *php_hash_fetch_ops(const char *algo, int algo_len)
 	return ops;
 }
 
-PHP_HASH_API void php_hash_register_algo(const char *algo, php_hash_ops *ops)
+PHP_HASH_API void php_hash_register_algo(const char *algo, const php_hash_ops *ops)
 {
 	int algo_len = strlen(algo);
 	char *lower = estrndup(algo, algo_len);
 	
 	zend_str_tolower(lower, algo_len);
-	zend_hash_add(&php_hash_hashtable, lower, algo_len + 1, ops, sizeof(php_hash_ops), NULL);
+	zend_hash_add(&php_hash_hashtable, lower, algo_len + 1, (void*)ops, sizeof(php_hash_ops), NULL);
 	efree(lower);
 }
 
@@ -68,7 +68,7 @@ static void php_hash_do_hash(INTERNAL_FUNCTION_PARAMETERS, int isfilename)
 	char *algo, *data, *digest;
 	int algo_len, data_len;
 	zend_bool raw_output = 0;
-	php_hash_ops *ops;
+	const php_hash_ops *ops;
 	void *context;
 	php_stream *stream = NULL;
 
@@ -142,7 +142,7 @@ static void php_hash_do_hash_hmac(INTERNAL_FUNCTION_PARAMETERS, int isfilename)
 	char *algo, *data, *digest, *key, *K;
 	int algo_len, data_len, key_len, i;
 	zend_bool raw_output = 0;
-	php_hash_ops *ops;
+	const php_hash_ops *ops;
 	void *context;
 	php_stream *stream = NULL;
 
@@ -255,7 +255,7 @@ PHP_FUNCTION(hash_init)
 	int algo_len, key_len = 0, argc = ZEND_NUM_ARGS();
 	long options = 0;
 	void *context;
-	php_hash_ops *ops;
+	const php_hash_ops *ops;
 	php_hash_data *hash;
 
 	if (zend_parse_parameters(argc TSRMLS_CC, "s|ls", &algo, &algo_len, &options, &key, &key_len) == FAILURE) {
@@ -517,6 +517,7 @@ PHP_MINIT_FUNCTION(hash)
 
 	zend_hash_init(&php_hash_hashtable, 35, NULL, NULL, 1);
 
+	php_hash_register_algo("md2",			&php_hash_md2_ops);
 	php_hash_register_algo("md4",			&php_hash_md4_ops);
 	php_hash_register_algo("md5",			&php_hash_md5_ops);
 	php_hash_register_algo("sha1",			&php_hash_sha1_ops);
@@ -525,6 +526,8 @@ PHP_MINIT_FUNCTION(hash)
 	php_hash_register_algo("sha512",		&php_hash_sha512_ops);
 	php_hash_register_algo("ripemd128",		&php_hash_ripemd128_ops);
 	php_hash_register_algo("ripemd160",		&php_hash_ripemd160_ops);
+	php_hash_register_algo("ripemd256",		&php_hash_ripemd256_ops);
+	php_hash_register_algo("ripemd320",		&php_hash_ripemd320_ops);
 	php_hash_register_algo("whirlpool",		&php_hash_whirlpool_ops);
 	php_hash_register_algo("tiger128,3",	&php_hash_3tiger128_ops);
 	php_hash_register_algo("tiger160,3",	&php_hash_3tiger160_ops);
@@ -585,7 +588,7 @@ PHP_MINFO_FUNCTION(hash)
 	for(zend_hash_internal_pointer_reset_ex(&php_hash_hashtable, &pos);
 		(type = zend_hash_get_current_key_ex(&php_hash_hashtable, &str, NULL, &idx, 0, &pos)) != HASH_KEY_NON_EXISTANT;
 		zend_hash_move_forward_ex(&php_hash_hashtable, &pos)) {
-		s += snprintf(s, e - s, "%s ", str);
+		s += slprintf(s, e - s, "%s ", str);
 	}
 	*s = 0;
 

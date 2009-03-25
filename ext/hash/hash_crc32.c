@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: hash_crc32.c,v 1.2.2.3 2006/01/01 12:50:07 sniper Exp $ */
+/* $Id: hash_crc32.c,v 1.2.2.3.2.2 2007/01/08 22:29:25 nlopess Exp $ */
 
 #include "php_hash.h"
 #include "php_hash_crc32.h"
@@ -56,7 +56,7 @@ PHP_HASH_API void PHP_CRC32Final(unsigned char digest[4], PHP_CRC32_CTX *context
 	context->state = 0;
 }
 
-php_hash_ops php_hash_crc32_ops = {
+const php_hash_ops php_hash_crc32_ops = {
 	(php_hash_init_func_t) PHP_CRC32Init,
 	(php_hash_update_func_t) PHP_CRC32Update,
 	(php_hash_final_func_t) PHP_CRC32Final,
@@ -65,7 +65,7 @@ php_hash_ops php_hash_crc32_ops = {
 	sizeof(PHP_CRC32_CTX)
 };
 
-php_hash_ops php_hash_crc32b_ops = {
+const php_hash_ops php_hash_crc32b_ops = {
 	(php_hash_init_func_t) PHP_CRC32Init,
 	(php_hash_update_func_t) PHP_CRC32BUpdate,
 	(php_hash_final_func_t) PHP_CRC32Final,

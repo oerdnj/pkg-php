@@ -31,11 +31,13 @@
 */
 
 
-static const char rcsid[] = "#(@) $Id: xml_to_xmlrpc.c,v 1.5 2004/04/27 17:33:59 iliaa Exp $";
+static const char rcsid[] = "#(@) $Id: xml_to_xmlrpc.c,v 1.5.6.2 2007/03/04 18:24:49 iliaa Exp $";
 
 #ifdef _WIN32
 #include "xmlrpc_win32.h"
 #endif
+#include "php.h"
+#include "main/snprintf.h"
 #include <string.h>
 #include <stdlib.h>
 #include "xml_to_xmlrpc.h"
@@ -137,7 +139,7 @@ XMLRPC_VALUE xml_element_to_XMLRPC_REQUEST_worker(XMLRPC_REQUEST request, XMLRPC
 		}
 		else if (!strcmp(el->name, ELEM_BASE64)) {
          struct buffer_st buf;
-         base64_decode(&buf, el->text.str, el->text.len);
+         base64_decode_xmlrpc(&buf, el->text.str, el->text.len);
          XMLRPC_SetValueBase64(current_val, buf.data, buf.offset);
          buffer_delete(&buf);
 		}
@@ -225,9 +227,12 @@ xml_element* XMLRPC_to_xml_element_worker(XMLRPC_VALUE current_vector, XMLRPC_VA
             simplestring_add(&elem_val->text, buf);
             break;
          case xmlrpc_double:
-            elem_val->name = strdup(ELEM_DOUBLE);
-            snprintf(buf, BUF_SIZE, "%f", XMLRPC_GetValueDouble(node));
-            simplestring_add(&elem_val->text, buf);
+            {
+                TSRMLS_FETCH();
+                elem_val->name = strdup(ELEM_DOUBLE);
+                ap_php_snprintf(buf, BUF_SIZE, "%.*G", (int) EG(precision), XMLRPC_GetValueDouble(node));
+                simplestring_add(&elem_val->text, buf);
+            }
             break;
          case xmlrpc_datetime:
             elem_val->name = strdup(ELEM_DATETIME);
@@ -237,7 +242,7 @@ xml_element* XMLRPC_to_xml_element_worker(XMLRPC_VALUE current_vector, XMLRPC_VA
             {
                struct buffer_st buf;
                elem_val->name = strdup(ELEM_BASE64);
-               base64_encode(&buf, XMLRPC_GetValueBase64(node), XMLRPC_GetValueStringLen(node));
+               base64_encode_xmlrpc(&buf, XMLRPC_GetValueBase64(node), XMLRPC_GetValueStringLen(node));
                simplestring_addn(&elem_val->text, buf.data, buf.offset );
                buffer_delete(&buf);
             }

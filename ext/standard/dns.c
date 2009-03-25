@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: dns.c,v 1.70.2.7 2006/01/01 12:50:14 sniper Exp $ */
+/* $Id: dns.c,v 1.70.2.7.2.2 2007/02/24 02:17:27 helly Exp $ */
 
 /* {{{ includes */
 #include "php.h"
@@ -422,7 +422,7 @@ static u_char *php_parserr(u_char *cp, querybuf *answer, int type_to_fetch, int 
 	switch (type) {
 		case DNS_T_A:
 			add_assoc_string(*subarray, "type", "A", 1);
-			sprintf(name, "%d.%d.%d.%d", cp[0], cp[1], cp[2], cp[3]);
+			snprintf(name, sizeof(name), "%d.%d.%d.%d", cp[0], cp[1], cp[2], cp[3]);
 			add_assoc_string(*subarray, "ip", name, 1);
 			cp += dlen;
 			break;

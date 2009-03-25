@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -25,7 +25,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: oci8_collection.c,v 1.5.2.3.2.3 2006/08/21 16:41:13 tony2001 Exp $ */
+/* $Id: oci8_collection.c,v 1.5.2.3.2.5 2007/01/01 09:36:03 sebastian Exp $ */
 
 
 
@@ -74,14 +74,14 @@ php_oci_collection * php_oci_collection_create(php_oci_connection* connection, c
 			)
 	);
 
-	if (connection->errcode) {
+	if (connection->errcode != OCI_SUCCESS) {
 		goto CLEANUP;
 	}
 
 	/* allocate describe handle */
 	PHP_OCI_CALL_RETURN(connection->errcode, OCIHandleAlloc, (connection->env, (dvoid **) &dschp1, (ub4) OCI_HTYPE_DESCRIBE, (size_t) 0, (dvoid **) 0));
 
-	if (connection->errcode) {
+	if (connection->errcode != OCI_SUCCESS) {
 		goto CLEANUP;
 	}
 
@@ -99,14 +99,14 @@ php_oci_collection * php_oci_collection_create(php_oci_connection* connection, c
 			)
 	);
 
-	if (connection->errcode) {
+	if (connection->errcode != OCI_SUCCESS) {
 		goto CLEANUP;
 	}
 
 	/* get first parameter handle */
 	PHP_OCI_CALL_RETURN(connection->errcode, OCIAttrGet, ((dvoid *) dschp1, (ub4) OCI_HTYPE_DESCRIBE, (dvoid *)&parmp1, (ub4 *)0, (ub4)OCI_ATTR_PARAM,	connection->err));
 
-	if (connection->errcode) {
+	if (connection->errcode != OCI_SUCCESS) {
 		goto CLEANUP;
 	}
 
@@ -122,7 +122,7 @@ php_oci_collection * php_oci_collection_create(php_oci_connection* connection, c
 			)
 	);
 
-	if (connection->errcode) {
+	if (connection->errcode != OCI_SUCCESS) {
 		goto CLEANUP;
 	}
 
@@ -141,7 +141,7 @@ php_oci_collection * php_oci_collection_create(php_oci_connection* connection, c
 					)
 			);
 
-			if (connection->errcode) {
+			if (connection->errcode != OCI_SUCCESS) {
 				goto CLEANUP;
 			}
 
@@ -157,7 +157,7 @@ php_oci_collection * php_oci_collection_create(php_oci_connection* connection, c
 					)
 			);
 
-			if (connection->errcode) {
+			if (connection->errcode != OCI_SUCCESS) {
 				goto CLEANUP;
 			}
 
@@ -173,7 +173,7 @@ php_oci_collection * php_oci_collection_create(php_oci_connection* connection, c
 					)
 			);
 
-			if (connection->errcode) {
+			if (connection->errcode != OCI_SUCCESS) {
 				goto CLEANUP;
 			}
 
@@ -189,13 +189,13 @@ php_oci_collection * php_oci_collection_create(php_oci_connection* connection, c
 					)
 			);
 
-			if (connection->errcode) {
+			if (connection->errcode != OCI_SUCCESS) {
 				goto CLEANUP;
 			}
 			break;
 			/* we only support VARRAYs and TABLEs */
 		default:
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "OCINewCollection - Unknown Type %d", collection->coll_typecode);
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "unknown collection type %d", collection->coll_typecode);
 			break;
 	}	
 
@@ -214,7 +214,7 @@ php_oci_collection * php_oci_collection_create(php_oci_connection* connection, c
 		)
 	);
 
-	if (connection->errcode) {
+	if (connection->errcode != OCI_SUCCESS) {
 		goto CLEANUP;
 	}
 

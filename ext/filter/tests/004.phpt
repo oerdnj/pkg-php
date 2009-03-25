@@ -1,11 +1,7 @@
 --TEST--
 GET/POST/REQUEST Test with filtered data
 --SKIPIF--
-<?php
-/* CGI doesn't read commandline options when it sees REQUES_METHOD */
-die("skip");
-die("not possible to set ini setting using -d and CGI");
-?>
+<?php if (!extension_loaded("filter")) die("skip"); ?>
 --INI--
 filter.default=special_chars
 --POST--
@@ -26,5 +22,5 @@ echo $_REQUEST['d'];
 echo $_REQUEST['e'];
 ?>
 --EXPECT--
-O&#39;HenryBold&quot;quotes&quot;\slash
-O&#39;HenryBold&quot;quotes&quot;\slash
+O&#39;Henry&#60;b&#62;Bold&#60;/b&#62;&#34;quotes&#34;\slash
+O&#39;Henry&#60;b&#62;Bold&#60;/b&#62;&#34;quotes&#34;\slash

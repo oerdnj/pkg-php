@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: filter_private.h,v 1.12.2.5 2006/10/17 15:26:14 iliaa Exp $ */
+/* $Id: filter_private.h,v 1.12.2.9 2007/01/01 09:36:00 sebastian Exp $ */
 
 #ifndef FILTER_PRIVATE_H
 #define FILTER_PRIVATE_H
@@ -62,6 +62,7 @@
 #define FILTER_VALIDATE_URL           0x0111
 #define FILTER_VALIDATE_EMAIL         0x0112
 #define FILTER_VALIDATE_IP            0x0113
+#define FILTER_VALIDATE_LAST          0x0113
 
 #define FILTER_VALIDATE_ALL           0x0100
 
@@ -76,32 +77,49 @@
 #define FILTER_SANITIZE_NUMBER_INT    0x0207
 #define FILTER_SANITIZE_NUMBER_FLOAT  0x0208
 #define FILTER_SANITIZE_MAGIC_QUOTES  0x0209
+#define FILTER_SANITIZE_LAST          0x0209
 
 #define FILTER_SANITIZE_ALL           0x0200
 
 #define FILTER_CALLBACK               0x0400
 
-#define PHP_FILTER_TRIM_DEFAULT(p, len, end) { \
-	while (*p == ' ' || *p == '\t' || *p == '\r' || *p == '\v') { \
+#define PHP_FILTER_ID_EXISTS(id) \
+((id >= FILTER_SANITIZE_ALL && id <= FILTER_SANITIZE_LAST) \
+|| (id >= FILTER_VALIDATE_ALL && id <= FILTER_VALIDATE_LAST) \
+|| id == FILTER_CALLBACK)
+
+#define RETURN_VALIDATION_FAILED	\
+	zval_dtor(value);	\
+	if (flags & FILTER_NULL_ON_FAILURE) {	\
+		ZVAL_NULL(value);	\
+	} else {	\
+		ZVAL_FALSE(value);	\
+	}	\
+	return;	\
+
+#define PHP_FILTER_TRIM_DEFAULT(p, len) { \
+	while ((len > 0)  && (*p == ' ' || *p == '\t' || *p == '\r' || *p == '\v' || *p == '\n')) { \
 		p++; \
 		len--; \
 	} \
-	start = p; \
-	end = p + len - 1; \
-	if (*end == ' ' || *end == '\t' || *end == '\r' || *end == '\v') { \
-		unsigned int i; \
-		for (i = len - 1; i >= 0; i--) { \
-			if (!(p[i] == ' ' || p[i] == '\t' || p[i] == '\r' || p[i] == '\v')) { \
-				break; \
-			} \
-		} \
-		i++; \
-		p[i] = '\0'; \
-		end = p + i - 1; \
-		len = (int) (end - p) + 1; \
+	if (len < 1) { \
+		RETURN_VALIDATION_FAILED \
+	} \
+	while (p[len-1] == ' ' || p[len-1] == '\t' || p[len-1] == '\r' || p[len-1] == '\v' || p[len-1] == '\n') { \
+		len--; \
 	} \
 }
 
+#define PHP_FILTER_GET_LONG_OPT(zv, opt) { \
+	if (Z_TYPE_PP(zv) != IS_LONG) {                                                                      \
+		zval tmp = **zv;                                                                                 \
+		zval_copy_ctor(&tmp);                                                                                    \
+		convert_to_long(&tmp);                                                                                   \
+		opt = Z_LVAL(tmp);                                                                                  \
+	} else {                                                                                                     \
+		opt = Z_LVAL_PP(zv);                                                                        \
+	}                                                                                                            \
+}
 
 #endif /* FILTER_PRIVATE_H */
 

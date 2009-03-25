@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_functions.c,v 1.18.2.6 2006/01/03 20:13:07 iliaa Exp $ */
+/* $Id: php_functions.c,v 1.18.2.6.2.5 2007/02/24 02:17:28 helly Exp $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 
@@ -42,7 +42,7 @@
 #include "util_script.h"
 #include "http_core.h"
 #include "ap_mpm.h"
-#if !defined(WIN32) && !defined(WINNT)
+#if !defined(WIN32) && !defined(WINNT) && !defined(NETWARE)
 #include "unixd.h"
 #endif
 
@@ -333,7 +333,11 @@ PHP_FUNCTION(apache_getenv)
 
 static char *php_apache_get_version()
 {
+#if MODULE_MAGIC_NUMBER_MAJOR >= 20060905
+	return (char *) ap_get_server_banner();
+#else
 	return (char *) ap_get_server_version();
+#endif
 }
 
 /* {{{ proto string apache_get_version(void)
@@ -378,7 +382,7 @@ PHP_MINFO_FUNCTION(apache)
 	int n, max_requests;
 	char *p;
 	server_rec *serv = ((php_struct *) SG(server_context))->r->server;
-#if !defined(WIN32) && !defined(WINNT)
+#if !defined(WIN32) && !defined(WINNT) && !defined(NETWARE)
 	AP_DECLARE_DATA extern unixd_config_rec unixd_config;
 #endif
 	
@@ -399,23 +403,23 @@ PHP_MINFO_FUNCTION(apache)
 	if (apv && *apv) {
 		php_info_print_table_row(2, "Apache Version", apv);
 	}
-	sprintf(tmp, "%d", MODULE_MAGIC_NUMBER);
+	snprintf(tmp, sizeof(tmp), "%d", MODULE_MAGIC_NUMBER);
 	php_info_print_table_row(2, "Apache API Version", tmp);
 	
 	if (serv->server_admin && *(serv->server_admin)) {
 		php_info_print_table_row(2, "Server Administrator", serv->server_admin);
 	}
 	
-	sprintf(tmp, "%s:%u", serv->server_hostname, serv->port);
+	snprintf(tmp, sizeof(tmp), "%s:%u", serv->server_hostname, serv->port);
 	php_info_print_table_row(2, "Hostname:Port", tmp);
 	
-#if !defined(WIN32) && !defined(WINNT)
-	sprintf(tmp, "%s(%d)/%d", unixd_config.user_name, unixd_config.user_id, unixd_config.group_id);
+#if !defined(WIN32) && !defined(WINNT) && !defined(NETWARE)
+	snprintf(tmp, sizeof(tmp), "%s(%d)/%d", unixd_config.user_name, unixd_config.user_id, unixd_config.group_id);
 	php_info_print_table_row(2, "User/Group", tmp);
 #endif
 
 	ap_mpm_query(AP_MPMQ_MAX_REQUESTS_DAEMON, &max_requests);
-	sprintf(tmp, "Per Child: %d - Keep Alive: %s - Max Per Connection: %d", max_requests, (serv->keep_alive ? "on":"off"), serv->keep_alive_max);
+	snprintf(tmp, sizeof(tmp), "Per Child: %d - Keep Alive: %s - Max Per Connection: %d", max_requests, (serv->keep_alive ? "on":"off"), serv->keep_alive_max);
 	php_info_print_table_row(2, "Max Requests", tmp);
 
 	apr_snprintf(tmp, sizeof tmp,

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2007 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_types.h,v 1.6.2.2 2006/01/04 23:53:04 andi Exp $ */
+/* $Id: zend_types.h,v 1.6.2.2.2.3 2007/04/17 06:26:31 dmitry Exp $ */
 
 #ifndef ZEND_TYPES_H
 #define ZEND_TYPES_H
@@ -27,6 +27,14 @@ typedef unsigned char zend_uchar;
 typedef unsigned int zend_uint;
 typedef unsigned long zend_ulong;
 typedef unsigned short zend_ushort;
+
+#ifdef _WIN64
+typedef __int64 zend_intptr_t;
+typedef unsigned __int64 zend_uintptr_t;
+#else
+typedef long zend_intptr_t;
+typedef unsigned long zend_uintptr_t;
+#endif
 
 typedef unsigned int zend_object_handle;
 typedef struct _zend_object_handlers zend_object_handlers;

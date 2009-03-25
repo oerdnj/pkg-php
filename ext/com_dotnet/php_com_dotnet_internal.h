@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_com_dotnet_internal.h,v 1.14.2.3.2.1 2006/05/10 14:39:10 rrichards Exp $ */
+/* $Id: php_com_dotnet_internal.h,v 1.14.2.3.2.4 2007/02/02 15:27:35 wharmby Exp $ */
 
 #ifndef PHP_COM_DOTNET_INTERNAL_H
 #define PHP_COM_DOTNET_INTERNAL_H
@@ -36,6 +36,7 @@ typedef struct _php_com_dotnet_object {
 	zend_object zo;
 
 	VARIANT v;
+	int modified;
 
 	ITypeInfo *typeinfo;
 	long code_page;
@@ -102,13 +103,13 @@ PHP_FUNCTION(com_load_typelib);
 PHP_FUNCTION(com_get_active_object);
 
 HRESULT php_com_invoke_helper(php_com_dotnet_object *obj, DISPID id_member,
-		WORD flags, DISPPARAMS *disp_params, VARIANT *v, int silent TSRMLS_DC);
+		WORD flags, DISPPARAMS *disp_params, VARIANT *v, int silent, int allow_noarg TSRMLS_DC);
 HRESULT php_com_get_id_of_name(php_com_dotnet_object *obj, char *name,
 		int namelen, DISPID *dispid TSRMLS_DC);
 int php_com_do_invoke_by_id(php_com_dotnet_object *obj, DISPID dispid,
-		WORD flags,	VARIANT *v, int nargs, zval **args, int silent TSRMLS_DC);
+		WORD flags,	VARIANT *v, int nargs, zval **args, int silent, int allow_noarg TSRMLS_DC);
 int php_com_do_invoke(php_com_dotnet_object *obj, char *name, int namelen,
-		WORD flags,	VARIANT *v, int nargs, zval **args TSRMLS_DC);
+		WORD flags,	VARIANT *v, int nargs, zval **args, int allow_noarg TSRMLS_DC);
 int php_com_do_invoke_byref(php_com_dotnet_object *obj, char *name, int namelen,
 		WORD flags,	VARIANT *v, int nargs, zval ***args TSRMLS_DC);
 
@@ -152,6 +153,7 @@ PHP_FUNCTION(variant_cast);
 PHPAPI void php_com_variant_from_zval_with_type(VARIANT *v, zval *z, VARTYPE type, int codepage TSRMLS_DC);
 PHPAPI void php_com_variant_from_zval(VARIANT *v, zval *z, int codepage TSRMLS_DC);
 PHPAPI int php_com_zval_from_variant(zval *z, VARIANT *v, int codepage TSRMLS_DC);
+PHPAPI int php_com_copy_variant(VARIANT *dst, VARIANT *src TSRMLS_DC);
 
 /* com_dotnet.c */
 PHP_FUNCTION(com_dotnet_create_instance);

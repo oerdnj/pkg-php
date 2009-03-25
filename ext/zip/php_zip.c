@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_zip.c,v 1.1.2.15 2006/09/24 22:27:57 pajoye Exp $ */
+/* $Id: php_zip.c,v 1.1.2.31 2007/03/14 15:02:20 iliaa Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -31,16 +31,22 @@
 #include "lib/zip.h"
 #include "lib/zipint.h"
 
+static PHP_FUNCTION(zip_open);
+static PHP_FUNCTION(zip_read);
+static PHP_FUNCTION(zip_close);
+static PHP_FUNCTION(zip_entry_read);
+static PHP_FUNCTION(zip_entry_filesize);
+static PHP_FUNCTION(zip_entry_name);
+static PHP_FUNCTION(zip_entry_compressedsize);
+static PHP_FUNCTION(zip_entry_compressionmethod);
+static PHP_FUNCTION(zip_entry_open);
+static PHP_FUNCTION(zip_entry_close);
+
 /* {{{ Resource le */
 static int le_zip_dir;
 #define le_zip_dir_name "Zip Directory"
 static int le_zip_entry;
 #define le_zip_entry_name "Zip Entry"
-/* }}} */
-
-/* {{{ SAFEMODE_CHECKFILE(filename) */
-#define SAFEMODE_CHECKFILE(filename) \
-	(PG(safe_mode) && (!php_checkuid(filename, NULL, CHECKUID_CHECK_FILE_AND_DIR))) || php_check_open_basedir(filename TSRMLS_CC)
 /* }}} */
 
 /* {{{ PHP_ZIP_STAT_INDEX(za, index, flags, sb) */
@@ -70,53 +76,57 @@ static int le_zip_entry;
 		} \
 	} else if (zip_set_file_comment(intern, index, comment, comment_len) < 0) { \
 		RETURN_FALSE; \
-	}
+	} \
+	RETURN_TRUE;
 
 /* }}} */
 
-#ifdef ZEND_ENGINE_2_1
 /* {{{ php_zip_extract_file */
 /* TODO: Simplify it */
-static int php_zip_extract_file(struct zip * za, char *dest, char *file TSRMLS_DC)
+static int php_zip_extract_file(struct zip * za, char *dest, char *file, int file_len TSRMLS_DC)
 {
 	php_stream_statbuf ssb;
 	struct zip_file *zf;
 	struct zip_stat sb;
-    char b[8192];
+	char b[8192];
 
-	int n, len, ret, file_len;
+	int n, len, ret;
 
 	php_stream *stream;
 
 	char *fullpath;
 	char *file_dirname_fullpath;
-	char file_dirname[MAXPATHLEN + 1];
+	char file_dirname[MAXPATHLEN];
 	size_t dir_len;
 
 	char *file_basename;
 	size_t file_basename_len;
+	int is_dir_only = 0;
 
-	if (zip_stat(za, file, 0, &sb)) {
+	if (file_len >= MAXPATHLEN || zip_stat(za, file, 0, &sb)) {
 		return 0;
 	}
 
-	file_len = strlen(file);
-	memcpy(file_dirname, file, file_len);
-
-	dir_len = php_dirname(file_dirname, file_len);
-
-	if (dir_len > 0) {
-		len = spprintf(&file_dirname_fullpath, 0, "%s/%s", dest, file_dirname);
+	if (file_len > 1 && file[file_len - 1] == '/') {
+		len = spprintf(&file_dirname_fullpath, 0, "%s/%s", dest, file);
+		is_dir_only = 1;
 	} else {
-		len = spprintf(&file_dirname_fullpath, 0, "%s", dest);
-	}
+		memcpy(file_dirname, file, file_len);
+		dir_len = php_dirname(file_dirname, file_len);
 
-	php_basename(file, file_len, NULL, 0, &file_basename, &file_basename_len TSRMLS_CC);
+		if (dir_len > 0) {
+			len = spprintf(&file_dirname_fullpath, 0, "%s/%s", dest, file_dirname);
+		} else {
+			len = spprintf(&file_dirname_fullpath, 0, "%s", dest);
+		}
 
-	if (SAFEMODE_CHECKFILE(file_dirname_fullpath)) {
-		efree(file_dirname_fullpath);
-		efree(file_basename);
-		return 0;
+		php_basename(file, file_len, NULL, 0, &file_basename, (unsigned int *)&file_basename_len TSRMLS_CC);
+
+		if (OPENBASEDIR_CHECKPATH(file_dirname_fullpath)) {
+			efree(file_dirname_fullpath);
+			efree(file_basename);
+			return 0;
+		}
 	}
 
 	/* let see if the path already exists */
@@ -132,7 +142,9 @@ static int php_zip_extract_file(struct zip * za, char *dest, char *file TSRMLS_D
 	/* it is a standalone directory, job done */
 	if (file[file_len - 1] == '/') {
 		efree(file_dirname_fullpath);
-		efree(file_basename);
+		if (!is_dir_only) {
+			efree(file_basename);
+		}
 		return 1;
 	}
 
@@ -147,7 +159,8 @@ static int php_zip_extract_file(struct zip * za, char *dest, char *file TSRMLS_D
 	 * is required, does a file can have a different
 	 * safemode status as its parent folder?
 	 */
-	if (SAFEMODE_CHECKFILE(fullpath)) {
+	if (OPENBASEDIR_CHECKPATH(fullpath)) {
+		efree(fullpath);
 		efree(file_dirname_fullpath);
 		efree(file_basename);
 		return 0;
@@ -202,7 +215,7 @@ static int php_zip_extract_file(struct zip * za, char *dest, char *file TSRMLS_D
 #define RETURN_SB(sb) \
 	{ \
 		array_init(return_value); \
-		add_assoc_string(return_value, "name", estrdup((sb)->name), 0); \
+		add_assoc_string(return_value, "name", (char *)(sb)->name, 1); \
 		add_assoc_long(return_value, "index", (long) (sb)->index); \
 		add_assoc_long(return_value, "crc", (long) (sb)->crc); \
 		add_assoc_long(return_value, "size", (long) (sb)->size); \
@@ -258,8 +271,6 @@ static char * php_zipobj_get_zip_comment(struct zip *za, int *len TSRMLS_DC) /* 
 }
 /* }}} */
 
-#endif
-
 /* {{{ zend_function_entry */
 static zend_function_entry zip_functions[] = {
 	PHP_FE(zip_open,			NULL)
@@ -278,8 +289,7 @@ static zend_function_entry zip_functions[] = {
 /* }}} */
 
 /* {{{ ZE2 OO definitions */
-#ifdef ZEND_ENGINE_2_1
-zend_class_entry *zip_class_entry;
+static zend_class_entry *zip_class_entry;
 static zend_object_handlers zip_object_handlers;
 
 static HashTable zip_prop_handlers;
@@ -295,10 +305,8 @@ typedef struct _zip_prop_handler {
 
 	int type;
 } zip_prop_handler;
-#endif
 /* }}} */
 
-#ifdef ZEND_ENGINE_2_1
 static void php_zip_register_prop_handler(HashTable *prop_handler, char *name, zip_read_int_t read_int_func, zip_read_const_char_t read_char_func, zip_read_const_char_from_ze_t read_char_from_obj_func, int rettype TSRMLS_DC) /* {{{ */
 {
 	zip_prop_handler hnd;
@@ -361,7 +369,7 @@ static int php_zip_property_reader(ze_zip_object *obj, zip_prop_handler *hnd, zv
 }
 /* }}} */
 
-zval **php_zip_get_property_ptr_ptr(zval *object, zval *member TSRMLS_DC) /* {{{ */
+static zval **php_zip_get_property_ptr_ptr(zval *object, zval *member TSRMLS_DC) /* {{{ */
 {
 	ze_zip_object *obj;
 	zval tmp_member;
@@ -398,7 +406,7 @@ zval **php_zip_get_property_ptr_ptr(zval *object, zval *member TSRMLS_DC) /* {{{
 }
 /* }}} */
 
-zval* php_zip_read_property(zval *object, zval *member, int type TSRMLS_DC) /* {{{ */
+static zval* php_zip_read_property(zval *object, zval *member, int type TSRMLS_DC) /* {{{ */
 {
 	ze_zip_object *obj;
 	zval tmp_member;
@@ -484,7 +492,9 @@ static void php_zip_object_free_storage(void *object TSRMLS_DC) /* {{{ */
 		return;
 	}
 	if (intern->za) {
- 		zip_close(intern->za);
+		if (zip_close(intern->za) != 0) {
+			_zip_free(intern->za);
+		}
 		intern->za = NULL;
 	}
 
@@ -496,20 +506,7 @@ static void php_zip_object_free_storage(void *object TSRMLS_DC) /* {{{ */
 	}
 
 	intern->za = NULL;
-
-#if (PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION == 1 && PHP_RELEASE_VERSION > 2) || (PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION > 1) || (PHP_MAJOR_VERSION > 5)
 	zend_object_std_dtor(&intern->zo TSRMLS_CC);
-#else
-	if (intern->zo.guards) {
-		zend_hash_destroy(intern->zo.guards);
-		FREE_HASHTABLE(intern->zo.guards);
-	}
-
-	if (intern->zo.properties) {
-		zend_hash_destroy(intern->zo.properties);
-		FREE_HASHTABLE(intern->zo.properties);
-	}
-#endif
 
 	if (intern->filename) {
 		efree(intern->filename);
@@ -518,7 +515,7 @@ static void php_zip_object_free_storage(void *object TSRMLS_DC) /* {{{ */
 }
 /* }}} */
 
-PHP_ZIP_API zend_object_value php_zip_object_new(zend_class_entry *class_type TSRMLS_DC) /* {{{ */
+static zend_object_value php_zip_object_new(zend_class_entry *class_type TSRMLS_DC) /* {{{ */
 {
 	ze_zip_object *intern;
 	zval *tmp;
@@ -547,7 +544,6 @@ PHP_ZIP_API zend_object_value php_zip_object_new(zend_class_entry *class_type TS
 	return retval;
 }
 /* }}} */
-#endif
 
 /* {{{ Resource dtors */
 
@@ -558,7 +554,10 @@ static void php_zip_free_dir(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 
 	if (zip_int) {
 		if (zip_int->za) {
-			zip_close(zip_int->za);
+			if (zip_close(zip_int->za) != 0) {
+				_zip_free(zip_int->za);
+			}
+			zip_int->za = NULL;
 		}
 
 		efree(rsrc->ptr);
@@ -573,17 +572,23 @@ static void php_zip_free_entry(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 {
 	zip_read_rsrc *zr_rsrc = (zip_read_rsrc *) rsrc->ptr;
 
-	efree(zr_rsrc);
-	rsrc->ptr = NULL;
+	if (zr_rsrc) {
+		if (zr_rsrc->zf) {
+			zip_fclose(zr_rsrc->zf);
+			zr_rsrc->zf = NULL;
+		}
+		efree(zr_rsrc);
+		rsrc->ptr = NULL;
+	}
 }
 /* }}} */
 
 /* }}}*/
 
 /* {{{ function prototypes */
-PHP_MINIT_FUNCTION(zip);
-PHP_MSHUTDOWN_FUNCTION(zip);
-PHP_MINFO_FUNCTION(zip);
+static PHP_MINIT_FUNCTION(zip);
+static PHP_MSHUTDOWN_FUNCTION(zip);
+static PHP_MINFO_FUNCTION(zip);
 /* }}} */
 
 /* {{{ zip_module_entry
@@ -608,17 +613,28 @@ ZEND_GET_MODULE(zip)
 
 /* {{{ proto resource zip_open(string filename)
 Create new zip using source uri for output */
-PHP_FUNCTION(zip_open)
+static PHP_FUNCTION(zip_open)
 {
 	char     *filename;
 	int       filename_len;
+	char resolved_path[MAXPATHLEN + 1];
 	zip_rsrc *rsrc_int;
 	int err = 0;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &filename, &filename_len) == FAILURE) {
 		return;
 	}
-	if (SAFEMODE_CHECKFILE(filename)) {
+
+	if (filename_len == 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Empty string as source");
+		RETURN_FALSE;
+	}
+
+	if (OPENBASEDIR_CHECKPATH(filename)) {
+		RETURN_FALSE;
+	}
+
+	if(!expand_filepath(filename, resolved_path TSRMLS_CC)) {
 		RETURN_FALSE;
 	}
 
@@ -639,7 +655,7 @@ PHP_FUNCTION(zip_open)
 
 /* {{{ proto void zip_close(resource zip)
    Close a Zip archive */
-PHP_FUNCTION(zip_close)
+static PHP_FUNCTION(zip_close)
 {
 	zval * zip;
 	zip_rsrc *z_rsrc = NULL;
@@ -656,7 +672,7 @@ PHP_FUNCTION(zip_close)
 
 /* {{{ proto resource zip_read(resource zip)
    Returns the next file in the archive */
-PHP_FUNCTION(zip_read)
+static PHP_FUNCTION(zip_read)
 {
 	zval *zip_dp;
 	zip_read_rsrc *zr_rsrc;
@@ -687,6 +703,7 @@ PHP_FUNCTION(zip_read)
 			rsrc_int->index_current++;
 			ZEND_REGISTER_RESOURCE(return_value, zr_rsrc, le_zip_entry);
 		} else {
+			efree(zr_rsrc);
 			RETURN_FALSE;
 		}
 
@@ -699,7 +716,7 @@ PHP_FUNCTION(zip_read)
 /* {{{ proto bool zip_entry_open(resource zip_dp, resource zip_entry [, string mode])
    Open a Zip File, pointed by the resource entry */
 /* Dummy function to follow the old API */
-PHP_FUNCTION(zip_entry_open)
+static PHP_FUNCTION(zip_entry_open)
 {
 	zval * zip;
 	zval * zip_entry;
@@ -726,7 +743,7 @@ PHP_FUNCTION(zip_entry_open)
 /* {{{ proto void zip_entry_close(resource zip_ent)
    Close a zip entry */
 /* another dummy function to fit in the old api*/
-PHP_FUNCTION(zip_entry_close)
+static PHP_FUNCTION(zip_entry_close)
 {
 	zval * zip_entry;
 	zip_read_rsrc * zr_rsrc;
@@ -743,7 +760,7 @@ PHP_FUNCTION(zip_entry_close)
 
 /* {{{ proto mixed zip_entry_read(resource zip_entry [, int len])
    Read from an open directory entry */
-PHP_FUNCTION(zip_entry_read)
+static PHP_FUNCTION(zip_entry_read)
 {
 	zval * zip_entry;
 	long len = 0;
@@ -768,6 +785,7 @@ PHP_FUNCTION(zip_entry_read)
 			buffer[n] = 0;
 			RETURN_STRINGL(buffer, n, 0);
 		} else {
+			efree(buffer);
 			RETURN_EMPTY_STRING()
 		}
 	} else {
@@ -842,7 +860,7 @@ static void php_zip_entry_get_info(INTERNAL_FUNCTION_PARAMETERS, int opt) /* {{{
 
 /* {{{ proto string zip_entry_name(resource zip_entry)
    Return the name given a ZZip entry */
-PHP_FUNCTION(zip_entry_name)
+static PHP_FUNCTION(zip_entry_name)
 {
 	php_zip_entry_get_info(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
 }
@@ -850,7 +868,7 @@ PHP_FUNCTION(zip_entry_name)
 
 /* {{{ proto int zip_entry_compressedsize(resource zip_entry)
    Return the compressed size of a ZZip entry */
-PHP_FUNCTION(zip_entry_compressedsize)
+static PHP_FUNCTION(zip_entry_compressedsize)
 {
 	php_zip_entry_get_info(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1);
 }
@@ -858,7 +876,7 @@ PHP_FUNCTION(zip_entry_compressedsize)
 
 /* {{{ proto int zip_entry_filesize(resource zip_entry)
    Return the actual filesize of a ZZip entry */
-PHP_FUNCTION(zip_entry_filesize)
+static PHP_FUNCTION(zip_entry_filesize)
 {
 	php_zip_entry_get_info(INTERNAL_FUNCTION_PARAM_PASSTHRU, 2);
 }
@@ -866,29 +884,27 @@ PHP_FUNCTION(zip_entry_filesize)
 
 /* {{{ proto string zip_entry_compressionmethod(resource zip_entry)
    Return a string containing the compression method used on a particular entry */
-PHP_FUNCTION(zip_entry_compressionmethod)
+static PHP_FUNCTION(zip_entry_compressionmethod)
 {
 	php_zip_entry_get_info(INTERNAL_FUNCTION_PARAM_PASSTHRU, 3);
 }
 /* }}} */
 
-#ifdef ZEND_ENGINE_2_1
 /* {{{ proto mixed open(string source [, int flags])
 Create new zip using source uri for output, return TRUE on success or the error code */
-ZIPARCHIVE_METHOD(open)
+static ZIPARCHIVE_METHOD(open)
 {
 	struct zip *intern;
 	char *filename;
 	int filename_len;
 	int err = 0;
 	long flags = 0;
-	char resolved_path[MAXPATHLEN + 1];
+	char resolved_path[MAXPATHLEN];
 
 	zval *this = getThis();
 	ze_zip_object *ze_obj = NULL;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l", &filename, &filename_len, &flags) == FAILURE) {
-		WRONG_PARAM_COUNT;
 		return;
 	}
 
@@ -902,31 +918,39 @@ ZIPARCHIVE_METHOD(open)
 		RETURN_FALSE;
 	}
 
+	if (OPENBASEDIR_CHECKPATH(filename)) {
+		RETURN_FALSE;
+	}
+
 	if (!expand_filepath(filename, resolved_path TSRMLS_CC)) {
 		RETURN_FALSE;
 	}
 
 	if (ze_obj->za) {
 		/* we already have an opened zip, free it */
-		zip_close(ze_obj->za);
+		if (zip_close(ze_obj->za) != 0) {
+			_zip_free(ze_obj->za);
+		}
+		ze_obj->za = NULL;
 	}
 	if (ze_obj->filename) {
 		efree(ze_obj->filename);
+		ze_obj->filename = NULL;
 	}
 	intern = zip_open(resolved_path, flags, &err);
 	if (!intern || err) {
 		RETURN_LONG((long)err);
 	}
-	ze_obj->filename = estrndup(resolved_path, strlen(resolved_path));
+	ze_obj->filename = estrdup(resolved_path);
 	ze_obj->filename_len = filename_len;
 	ze_obj->za = intern;
 	RETURN_TRUE;
 }
 /* }}} */
 
-/* {{{ proto resource close()
+/* {{{ proto bool close()
 close the zip archive */
-ZIPARCHIVE_METHOD(close)
+static ZIPARCHIVE_METHOD(close)
 {
 	struct zip *intern;
 	zval *this = getThis();
@@ -953,9 +977,39 @@ ZIPARCHIVE_METHOD(close)
 }
 /* }}} */
 
+/* {{{ proto bool createEmptyDir(string dirname) U
+Returns the index of the entry named filename in the archive */
+static ZIPARCHIVE_METHOD(addEmptyDir)
+{
+	struct zip *intern;
+	zval *this = getThis();
+	char *dirname;
+	int   dirname_len;
+
+	if (!this) {
+		RETURN_FALSE;
+	}
+
+	ZIP_FROM_OBJECT(intern, this);
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s",
+			&dirname, &dirname_len) == FAILURE) {
+		return;
+	}
+	if (dirname_len<1) {
+		RETURN_FALSE;
+	}
+
+	if (zip_add_dir(intern, (const char *)dirname) < 0) {
+		RETURN_FALSE;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+
 /* {{{ proto bool addFile(string filepath[, string entryname[, int start [, int length]]])
 Add a file in a Zip archive using its path and the name to use. */
-ZIPARCHIVE_METHOD(addFile)
+static ZIPARCHIVE_METHOD(addFile)
 {
 	struct zip *intern;
 	zval *this = getThis();
@@ -966,7 +1020,7 @@ ZIPARCHIVE_METHOD(addFile)
 	struct zip_source *zs;
 	long offset_start = 0, offset_len = 0;
 	int cur_idx;
-	char resolved_path[MAXPATHLEN + 1];
+	char resolved_path[MAXPATHLEN];
 
 	if (!this) {
 		RETURN_FALSE;
@@ -976,7 +1030,6 @@ ZIPARCHIVE_METHOD(addFile)
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|sll",
 			&filename, &filename_len, &entry_name, &entry_name_len, &offset_start, &offset_len) == FAILURE) {
-		WRONG_PARAM_COUNT;
 		return;
 	}
 
@@ -990,7 +1043,7 @@ ZIPARCHIVE_METHOD(addFile)
 		entry_name_len = filename_len;
 	}
 
-	if (SAFEMODE_CHECKFILE(filename)) {
+	if (OPENBASEDIR_CHECKPATH(filename)) {
 		RETURN_FALSE;
 	}
 
@@ -1026,9 +1079,9 @@ ZIPARCHIVE_METHOD(addFile)
 }
 /* }}} */
 
-/* {{{ proto resource addFromString(string name, string content)
+/* {{{ proto bool addFromString(string name, string content)
 Add a file using content and the entry name */
-ZIPARCHIVE_METHOD(addFromString)
+static ZIPARCHIVE_METHOD(addFromString)
 {
 	struct zip *intern;
 	zval *this = getThis();
@@ -1047,7 +1100,6 @@ ZIPARCHIVE_METHOD(addFromString)
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss",
 			&name, &name_len, &buffer, &buffer_len) == FAILURE) {
-		WRONG_PARAM_COUNT;
 		return;
 	}
 
@@ -1060,8 +1112,8 @@ ZIPARCHIVE_METHOD(addFromString)
 		ze_obj->buffers_cnt++;
 		pos = 0;
 	}
-	ze_obj->buffers[pos] = (char *)emalloc(buffer_len);
-	memcpy(ze_obj->buffers[pos], buffer, buffer_len);
+	ze_obj->buffers[pos] = (char *)emalloc(buffer_len + 1);
+	memcpy(ze_obj->buffers[pos], buffer, buffer_len + 1);
 
 	zs = zip_source_buffer(intern, ze_obj->buffers[pos], buffer_len, 0);
 
@@ -1092,9 +1144,9 @@ ZIPARCHIVE_METHOD(addFromString)
 }
 /* }}} */
 
-/* {{{ proto resource statName(string filename[, int flags])
+/* {{{ proto array statName(string filename[, int flags])
 Returns the information about a the zip entry filename */
-ZIPARCHIVE_METHOD(statName)
+static ZIPARCHIVE_METHOD(statName)
 {
 	struct zip *intern;
 	zval *this = getThis();
@@ -1111,7 +1163,6 @@ ZIPARCHIVE_METHOD(statName)
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l",
 			&name, &name_len, &flags) == FAILURE) {
-		WRONG_PARAM_COUNT;
 		return;
 	}
 
@@ -1123,7 +1174,7 @@ ZIPARCHIVE_METHOD(statName)
 
 /* {{{ proto resource statIndex(int index[, int flags])
 Returns the zip entry informations using its index */
-ZIPARCHIVE_METHOD(statIndex)
+static ZIPARCHIVE_METHOD(statIndex)
 {
 	struct zip *intern;
 	zval *this = getThis();
@@ -1139,7 +1190,6 @@ ZIPARCHIVE_METHOD(statIndex)
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l|l",
 			&index, &flags) == FAILURE) {
-		WRONG_PARAM_COUNT;
 		return;
 	}
 
@@ -1150,9 +1200,9 @@ ZIPARCHIVE_METHOD(statIndex)
 }
 /* }}} */
 
-/* {{{ proto resource locateName(string filename[, int flags])
+/* {{{ proto int locateName(string filename[, int flags])
 Returns the index of the entry named filename in the archive */
-ZIPARCHIVE_METHOD(locateName)
+static ZIPARCHIVE_METHOD(locateName)
 {
 	struct zip *intern;
 	zval *this = getThis();
@@ -1169,7 +1219,6 @@ ZIPARCHIVE_METHOD(locateName)
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l",
 			&name, &name_len, &flags) == FAILURE) {
-		WRONG_PARAM_COUNT;
 		return;
 	}
 	if (name_len<1) {
@@ -1191,9 +1240,9 @@ ZIPARCHIVE_METHOD(locateName)
 }
 /* }}} */
 
-/* {{{ proto resource getNameIndex(int index [, int flags])
+/* {{{ proto string getNameIndex(int index [, int flags])
 Returns the name of the file at position index */
-ZIPARCHIVE_METHOD(getNameIndex)
+static ZIPARCHIVE_METHOD(getNameIndex)
 {
 	struct zip *intern;
 	zval *this = getThis();
@@ -1208,7 +1257,6 @@ ZIPARCHIVE_METHOD(getNameIndex)
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l|l",
 			&index, &flags) == FAILURE) {
-		WRONG_PARAM_COUNT;
 		return;
 	}
 
@@ -1222,9 +1270,9 @@ ZIPARCHIVE_METHOD(getNameIndex)
 }
 /* }}} */
 
-/* {{{ proto resource setArchiveComment(string name, string comment)
+/* {{{ proto bool setArchiveComment(string name, string comment)
 Set or remove (NULL/'') the comment of the archive */
-ZIPARCHIVE_METHOD(setArchiveComment)
+static ZIPARCHIVE_METHOD(setArchiveComment)
 {
 	struct zip *intern;
 	zval *this = getThis();
@@ -1238,7 +1286,6 @@ ZIPARCHIVE_METHOD(setArchiveComment)
 	ZIP_FROM_OBJECT(intern, this);
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &comment, &comment_len) == FAILURE) {
-		WRONG_PARAM_COUNT;
 		return;
 	}
 	if (zip_set_archive_comment(intern, (const char *)comment, (int)comment_len)) {
@@ -1249,9 +1296,9 @@ ZIPARCHIVE_METHOD(setArchiveComment)
 }
 /* }}} */
 
-/* {{{ proto resource getArchiveComment()
+/* {{{ proto string getArchiveComment()
 Returns the comment of an entry using its index */
-ZIPARCHIVE_METHOD(getArchiveComment)
+static ZIPARCHIVE_METHOD(getArchiveComment)
 {
 	struct zip *intern;
 	zval *this = getThis();
@@ -1266,24 +1313,23 @@ ZIPARCHIVE_METHOD(getArchiveComment)
 	ZIP_FROM_OBJECT(intern, this);
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &flags) == FAILURE) {
-		WRONG_PARAM_COUNT;
 		return;
 	}
 
 	comment = zip_get_archive_comment(intern, &comment_len, (int)flags);
-	RETURN_STRINGL((char *)comment, comment_len, 1);
+	RETURN_STRINGL((char *)comment, (long)comment_len, 1);
 }
 /* }}} */
 
-/* {{{ proto resource setCommentName(string name, string comment)
+/* {{{ proto bool setCommentName(string name, string comment)
 Set or remove (NULL/'') the comment of an entry using its Name */
-ZIPARCHIVE_METHOD(setCommentName)
+static ZIPARCHIVE_METHOD(setCommentName)
 {
 	struct zip *intern;
 	zval *this = getThis();
 	int comment_len, name_len;
 	char * comment, *name;
-	struct zip_stat sb;
+	int idx;
 
 	if (!this) {
 		RETURN_FALSE;
@@ -1293,19 +1339,24 @@ ZIPARCHIVE_METHOD(setCommentName)
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss",
 			&name, &name_len, &comment, &comment_len) == FAILURE) {
-		WRONG_PARAM_COUNT;
 		return;
 	}
 
+	if (name_len < 1) {
+		php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Empty string as entry name");
+	}
 
-	PHP_ZIP_STAT_PATH(intern, name, name_len, 0, sb);
-	PHP_ZIP_SET_FILE_COMMENT(intern, sb.index, comment, comment_len);
+	idx = zip_name_locate(intern, name, 0);
+	if (idx < 0) {
+		RETURN_FALSE;
+	}
+	PHP_ZIP_SET_FILE_COMMENT(intern, idx, comment, comment_len);
 }
 /* }}} */
 
-/* {{{ proto resource setCommentIndex(int index, string comment)
+/* {{{ proto bool setCommentIndex(int index, string comment)
 Set or remove (NULL/'') the comment of an entry using its index */
-ZIPARCHIVE_METHOD(setCommentIndex)
+static ZIPARCHIVE_METHOD(setCommentIndex)
 {
 	struct zip *intern;
 	zval *this = getThis();
@@ -1322,7 +1373,6 @@ ZIPARCHIVE_METHOD(setCommentIndex)
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ls",
 			&index, &comment, &comment_len) == FAILURE) {
-		WRONG_PARAM_COUNT;
 		return;
 	}
 
@@ -1331,18 +1381,17 @@ ZIPARCHIVE_METHOD(setCommentIndex)
 }
 /* }}} */
 
-/* {{{ proto resource getCommentName(string name)
+/* {{{ proto string getCommentName(string name)
 Returns the comment of an entry using its name */
-ZIPARCHIVE_METHOD(getCommentName)
+static ZIPARCHIVE_METHOD(getCommentName)
 {
 	struct zip *intern;
 	zval *this = getThis();
-	int name_len;
+	int name_len, idx;
 	long flags = 0;
 	int comment_len = 0;
 	const char * comment;
 	char *name;
-	struct zip_stat sb;
 
 	if (!this) {
 		RETURN_FALSE;
@@ -1352,19 +1401,26 @@ ZIPARCHIVE_METHOD(getCommentName)
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l",
 			&name, &name_len, &flags) == FAILURE) {
-		WRONG_PARAM_COUNT;
 		return;
 	}
+	if (name_len < 1) {
+		php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Empty string as entry name");
+		RETURN_FALSE;
+	}
 
-	PHP_ZIP_STAT_PATH(intern, name, name_len, 0, sb);
-	comment = zip_get_file_comment(intern, sb.index, &comment_len, (int)flags);
-	RETURN_STRINGL((char *)comment, comment_len, 1);
+	idx = zip_name_locate(intern, name, 0);
+	if (idx < 0) {
+		RETURN_FALSE;
+	}
+
+	comment = zip_get_file_comment(intern, idx, &comment_len, (int)flags);
+	RETURN_STRINGL((char *)comment, (long)comment_len, 1);
 }
 /* }}} */
 
-/* {{{ proto resource getCommentIndex(int index)
+/* {{{ proto string getCommentIndex(int index)
 Returns the comment of an entry using its index */
-ZIPARCHIVE_METHOD(getCommentIndex)
+static ZIPARCHIVE_METHOD(getCommentIndex)
 {
 	struct zip *intern;
 	zval *this = getThis();
@@ -1381,19 +1437,18 @@ ZIPARCHIVE_METHOD(getCommentIndex)
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l|l",
 				&index, &flags) == FAILURE) {
-		WRONG_PARAM_COUNT;
 		return;
 	}
 
 	PHP_ZIP_STAT_INDEX(intern, index, 0, sb);
 	comment = zip_get_file_comment(intern, index, &comment_len, (int)flags);
-	RETURN_STRINGL((char *)comment, comment_len, 1);
+	RETURN_STRINGL((char *)comment, (long)comment_len, 1);
 }
 /* }}} */
 
-/* {{{ proto resource deleteIndex(int index)
+/* {{{ proto bool deleteIndex(int index)
 Delete a file using its index */
-ZIPARCHIVE_METHOD(deleteIndex)
+static ZIPARCHIVE_METHOD(deleteIndex)
 {
 	struct zip *intern;
 	zval *this = getThis();
@@ -1406,7 +1461,6 @@ ZIPARCHIVE_METHOD(deleteIndex)
 	ZIP_FROM_OBJECT(intern, this);
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &index) == FAILURE) {
-		WRONG_PARAM_COUNT;
 		return;
 	}
 
@@ -1422,9 +1476,9 @@ ZIPARCHIVE_METHOD(deleteIndex)
 }
 /* }}} */
 
-/* {{{ proto resource deleteName(string name)
+/* {{{ proto bool deleteName(string name)
 Delete a file using its index */
-ZIPARCHIVE_METHOD(deleteName)
+static ZIPARCHIVE_METHOD(deleteName)
 {
 	struct zip *intern;
 	zval *this = getThis();
@@ -1439,7 +1493,6 @@ ZIPARCHIVE_METHOD(deleteName)
 	ZIP_FROM_OBJECT(intern, this);
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name, &name_len) == FAILURE) {
-		WRONG_PARAM_COUNT;
 		return;
 	}
 	if (name_len < 1) {
@@ -1454,9 +1507,9 @@ ZIPARCHIVE_METHOD(deleteName)
 }
 /* }}} */
 
-/* {{{ proto resource renameIndex(int index, string new_name)
+/* {{{ proto bool renameIndex(int index, string new_name)
 Rename an entry selected by its index to new_name */
-ZIPARCHIVE_METHOD(renameIndex)
+static ZIPARCHIVE_METHOD(renameIndex)
 {
 	struct zip *intern;
 	zval *this = getThis();
@@ -1472,7 +1525,6 @@ ZIPARCHIVE_METHOD(renameIndex)
 	ZIP_FROM_OBJECT(intern, this);
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ls", &index, &new_name, &new_name_len) == FAILURE) {
-		WRONG_PARAM_COUNT;
 		return;
 	}
 
@@ -1491,9 +1543,9 @@ ZIPARCHIVE_METHOD(renameIndex)
 }
 /* }}} */
 
-/* {{{ proto resource renameName(string name, string new_name)
+/* {{{ proto bool renameName(string name, string new_name)
 Rename an entry selected by its name to new_name */
-ZIPARCHIVE_METHOD(renameName)
+static ZIPARCHIVE_METHOD(renameName)
 {
 	struct zip *intern;
 	zval *this = getThis();
@@ -1508,7 +1560,6 @@ ZIPARCHIVE_METHOD(renameName)
 	ZIP_FROM_OBJECT(intern, this);
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &name, &name_len, &new_name, &new_name_len) == FAILURE) {
-		WRONG_PARAM_COUNT;
 		return;
 	}
 
@@ -1526,9 +1577,9 @@ ZIPARCHIVE_METHOD(renameName)
 }
 /* }}} */
 
-/* {{{ proto resource unchangeIndex(int index)
+/* {{{ proto bool unchangeIndex(int index)
 Changes to the file at position index are reverted */
-ZIPARCHIVE_METHOD(unchangeIndex)
+static ZIPARCHIVE_METHOD(unchangeIndex)
 {
 	struct zip *intern;
 	zval *this = getThis();
@@ -1541,7 +1592,6 @@ ZIPARCHIVE_METHOD(unchangeIndex)
 	ZIP_FROM_OBJECT(intern, this);
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &index) == FAILURE) {
-		WRONG_PARAM_COUNT;
 		return;
 	}
 
@@ -1557,9 +1607,9 @@ ZIPARCHIVE_METHOD(unchangeIndex)
 }
 /* }}} */
 
-/* {{{ proto resource unchangeName(string name)
+/* {{{ proto bool unchangeName(string name)
 Changes to the file named 'name' are reverted */
-ZIPARCHIVE_METHOD(unchangeName)
+static ZIPARCHIVE_METHOD(unchangeName)
 {
 	struct zip *intern;
 	zval *this = getThis();
@@ -1574,7 +1624,6 @@ ZIPARCHIVE_METHOD(unchangeName)
 	ZIP_FROM_OBJECT(intern, this);
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name, &name_len) == FAILURE) {
-		WRONG_PARAM_COUNT;
 		return;
 	}
 
@@ -1592,9 +1641,9 @@ ZIPARCHIVE_METHOD(unchangeName)
 }
 /* }}} */
 
-/* {{{ proto resource unchangeAll()
+/* {{{ proto bool unchangeAll()
 All changes to files and global information in archive are reverted */
-ZIPARCHIVE_METHOD(unchangeAll)
+static ZIPARCHIVE_METHOD(unchangeAll)
 {
 	struct zip *intern;
 	zval *this = getThis();
@@ -1613,9 +1662,9 @@ ZIPARCHIVE_METHOD(unchangeAll)
 }
 /* }}} */
 
-/* {{{ proto resource unchangeAll()
+/* {{{ proto bool unchangeAll()
 Revert all global changes to the archive archive.  For now, this only reverts archive comment changes. */
-ZIPARCHIVE_METHOD(unchangeArchive)
+static ZIPARCHIVE_METHOD(unchangeArchive)
 {
 	struct zip *intern;
 	zval *this = getThis();
@@ -1634,14 +1683,14 @@ ZIPARCHIVE_METHOD(unchangeArchive)
 }
 /* }}} */
 
-/* {{{ array resource extractTo(string pathto[, mixed files])
+/* {{{ array bool extractTo(string pathto[, mixed files])
 Extract one or more file from a zip archive */
 /* TODO:
  * - allow index or array of indeces
  * - replace path
  * - patterns
  */
-ZIPARCHIVE_METHOD(extractTo)
+static ZIPARCHIVE_METHOD(extractTo)
 {
 	struct zip *intern;
 
@@ -1661,7 +1710,6 @@ ZIPARCHIVE_METHOD(extractTo)
 	}
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|z", &pathto, &pathto_len, &zval_files) == FAILURE) {
-		WRONG_PARAM_COUNT;
 		return;
 	}
 
@@ -1682,7 +1730,7 @@ ZIPARCHIVE_METHOD(extractTo)
 		switch (Z_TYPE_P(zval_files)) {
 			case IS_STRING:
 				file = Z_STRVAL_P(zval_files);
-				if (!php_zip_extract_file(intern, pathto, file TSRMLS_CC)) {
+				if (!php_zip_extract_file(intern, pathto, file, Z_STRLEN_P(zval_files) TSRMLS_CC)) {
 					RETURN_FALSE;
 				}
 				break;
@@ -1698,7 +1746,7 @@ ZIPARCHIVE_METHOD(extractTo)
 								break;
 							case IS_STRING:
 								file = Z_STRVAL_PP(zval_file);
-								if (!php_zip_extract_file(intern, pathto, file TSRMLS_CC)) {
+								if (!php_zip_extract_file(intern, pathto, file, Z_STRLEN_PP(zval_file) TSRMLS_CC)) {
 									RETURN_FALSE;
 								}
 								break;
@@ -1722,7 +1770,7 @@ ZIPARCHIVE_METHOD(extractTo)
 
         for (i = 0; i < filecount; i++) {
             file = (char*)zip_get_name(intern, i, ZIP_FL_UNCHANGED);
-            if (!php_zip_extract_file(intern, pathto, file TSRMLS_CC)) {
+            if (!php_zip_extract_file(intern, pathto, file, strlen(file) TSRMLS_CC)) {
                 RETURN_FALSE;
             }
         }
@@ -1757,13 +1805,11 @@ static void php_zip_get_from(INTERNAL_FUNCTION_PARAMETERS, int type) /* {{{ */
 
 	if (type == 1) {
 		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|ll", &filename, &filename_len, &len, &flags) == FAILURE) {
-			WRONG_PARAM_COUNT;
 			return;
 		}
 		PHP_ZIP_STAT_PATH(intern, filename, filename_len, flags, sb);
 	} else {
 		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l|ll", &index, &len, &flags) == FAILURE) {
-			WRONG_PARAM_COUNT;
 			return;
 		}
 		PHP_ZIP_STAT_INDEX(intern, index, 0, sb);
@@ -1786,9 +1832,10 @@ static void php_zip_get_from(INTERNAL_FUNCTION_PARAMETERS, int type) /* {{{ */
 		RETURN_FALSE;
 	}
 
-	buffer = safe_emalloc(len + 1, 1, 1);
+	buffer = safe_emalloc(len, 1, 2);
 	n = zip_fread(zf, buffer, len);
 	if (n < 1) {
+		efree(buffer);
 		RETURN_EMPTY_STRING();
 	}
 
@@ -1798,17 +1845,17 @@ static void php_zip_get_from(INTERNAL_FUNCTION_PARAMETERS, int type) /* {{{ */
 }
 /* }}} */
 
-/* {{{ proto resource getFromName(string entryname[, int len [, int flags]])
+/* {{{ proto string getFromName(string entryname[, int len [, int flags]])
 get the contents of an entry using its name */
-ZIPARCHIVE_METHOD(getFromName)
+static ZIPARCHIVE_METHOD(getFromName)
 {
 	php_zip_get_from(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1);
 }
 /* }}} */
 
-/* {{{ proto resource getFromIndex(string entryname[, int len [, int flags]])
+/* {{{ proto string getFromIndex(string entryname[, int len [, int flags]])
 get the contents of an entry using its index */
-ZIPARCHIVE_METHOD(getFromIndex)
+static ZIPARCHIVE_METHOD(getFromIndex)
 {
 	php_zip_get_from(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
 }
@@ -1816,7 +1863,7 @@ ZIPARCHIVE_METHOD(getFromIndex)
 
 /* {{{ proto resource getStream(string entryname)
 get a stream for an entry using its name */
-ZIPARCHIVE_METHOD(getStream)
+static ZIPARCHIVE_METHOD(getStream)
 {
 	struct zip *intern;
 	zval *this = getThis();
@@ -1834,7 +1881,6 @@ ZIPARCHIVE_METHOD(getStream)
 	ZIP_FROM_OBJECT(intern, this);
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &filename, &filename_len) == FAILURE) {
-		WRONG_PARAM_COUNT;
 		return;
 	}
 
@@ -1855,6 +1901,7 @@ ZIPARCHIVE_METHOD(getStream)
 static zend_function_entry zip_class_functions[] = {
 	ZIPARCHIVE_ME(open,				NULL, ZEND_ACC_PUBLIC)
 	ZIPARCHIVE_ME(close,				NULL, ZEND_ACC_PUBLIC)
+	ZIPARCHIVE_ME(addEmptyDir,			NULL, ZEND_ACC_PUBLIC)
 	ZIPARCHIVE_ME(addFromString,		NULL, ZEND_ACC_PUBLIC)
 	ZIPARCHIVE_ME(addFile,			NULL, ZEND_ACC_PUBLIC)
 	ZIPARCHIVE_ME(renameIndex,		NULL, ZEND_ACC_PUBLIC)
@@ -1882,17 +1929,15 @@ static zend_function_entry zip_class_functions[] = {
 	{NULL, NULL, NULL}
 };
 /* }}} */
-#endif
 
 /* {{{ PHP_MINIT_FUNCTION */
-PHP_MINIT_FUNCTION(zip)
+static PHP_MINIT_FUNCTION(zip)
 {
-#ifdef ZEND_ENGINE_2_1
 	zend_class_entry ce;
 
 	memcpy(&zip_object_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	zip_object_handlers.clone_obj		= NULL;
-    zip_object_handlers.get_property_ptr_ptr = php_zip_get_property_ptr_ptr;
+	zip_object_handlers.get_property_ptr_ptr = php_zip_get_property_ptr_ptr;
 
 	zip_object_handlers.get_properties = php_zip_get_properties;
 	zip_object_handlers.read_property	= php_zip_read_property;
@@ -1956,7 +2001,6 @@ PHP_MINIT_FUNCTION(zip)
 	REGISTER_ZIP_CLASS_CONST_LONG("ER_DELETED",  	ZIP_ER_DELETED);	/* N Entry has been deleted */
 
 	php_register_url_stream_wrapper("zip", &php_stream_zip_wrapper TSRMLS_CC);
-#endif
 
 	le_zip_dir   = zend_register_list_destructors_ex(php_zip_free_dir,   NULL, le_zip_dir_name,   module_number);
 	le_zip_entry = zend_register_list_destructors_ex(php_zip_free_entry, NULL, le_zip_entry_name, module_number);
@@ -1967,24 +2011,23 @@ PHP_MINIT_FUNCTION(zip)
 
 /* {{{ PHP_MSHUTDOWN_FUNCTION
  */
-PHP_MSHUTDOWN_FUNCTION(zip)
+static PHP_MSHUTDOWN_FUNCTION(zip)
 {
-#ifdef ZEND_ENGINE_2_1
 	zend_hash_destroy(&zip_prop_handlers);
 	php_unregister_url_stream_wrapper("zip" TSRMLS_CC);
-#endif
+
 	return SUCCESS;
 }
 /* }}} */
 
 /* {{{ PHP_MINFO_FUNCTION
  */
-PHP_MINFO_FUNCTION(zip)
+static PHP_MINFO_FUNCTION(zip)
 {
 	php_info_print_table_start();
 
 	php_info_print_table_row(2, "Zip", "enabled");
-	php_info_print_table_row(2, "Extension Version","$Id: php_zip.c,v 1.1.2.15 2006/09/24 22:27:57 pajoye Exp $");
+	php_info_print_table_row(2, "Extension Version","$Id: php_zip.c,v 1.1.2.31 2007/03/14 15:02:20 iliaa Exp $");
 	php_info_print_table_row(2, "Zip version", "2.0.0");
 	php_info_print_table_row(2, "Libzip version", "0.7.1");
 

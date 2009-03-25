@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2007 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_errors.h,v 1.18.2.1.2.4 2006/05/17 19:07:45 helly Exp $ */
+/* $Id: zend_errors.h,v 1.18.2.1.2.5 2007/01/01 09:35:46 sebastian Exp $ */
 
 #ifndef ZEND_ERRORS_H
 #define ZEND_ERRORS_H

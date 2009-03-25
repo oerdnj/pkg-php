@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Thread Safe Resource Manager                                         |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1999-2006, Andi Gutmans, Sascha Schumann, Zeev Suraski |
+   | Copyright (c) 1999-2007, Andi Gutmans, Sascha Schumann, Zeev Suraski |
    | This source file is subject to the TSRM license, that is bundled     |
    | with this package in the file LICENSE                                |
    +----------------------------------------------------------------------+
@@ -13,14 +13,11 @@
 #ifndef TSRM_H
 #define TSRM_H
 
-/* #ifndef WIN32 */
-#ifndef WIN32
-# include <tsrm_config.h>
-#endif
-
-#ifdef WIN32
+#if !defined(__CYGWIN__) && defined(WIN32)
 # define TSRM_WIN32
 # include "tsrm_config.w32.h"
+#else
+# include <tsrm_config.h>
 #endif
 
 #ifdef TSRM_WIN32
@@ -31,6 +28,14 @@
 #	endif
 #else
 #	define TSRM_API
+#endif
+
+#ifdef _WIN64
+typedef __int64 tsrm_intptr_t;
+typedef unsigned __int64 tsrm_uintptr_t;
+#else
+typedef long tsrm_intptr_t;
+typedef unsigned long tsrm_uintptr_t;
 #endif
 
 /* Only compile multi-threading functions if we're in ZTS mode */

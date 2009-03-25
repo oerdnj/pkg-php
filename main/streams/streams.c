@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: streams.c,v 1.82.2.6.2.8 2006/10/03 19:51:01 iliaa Exp $ */
+/* $Id: streams.c,v 1.82.2.6.2.12 2007/03/03 19:01:34 helly Exp $ */
 
 #define _GNU_SOURCE
 #include "php.h"
@@ -278,6 +278,10 @@ PHPAPI int _php_stream_free(php_stream *stream, int close_options TSRMLS_DC) /* 
 	int remove_rsrc = 1;
 	int preserve_handle = close_options & PHP_STREAM_FREE_PRESERVE_HANDLE ? 1 : 0;
 	int release_cast = 1;
+
+	if (stream->flags & PHP_STREAM_FLAG_NO_CLOSE) {
+		preserve_handle = 1;
+	}
 
 #if STREAM_DEBUG
 fprintf(stderr, "stream_free: %s:%p[%s] in_free=%d opts=%08x\n", stream->ops->label, stream, stream->orig_path, stream->in_free, close_options);
@@ -1449,12 +1453,12 @@ PHPAPI int php_register_url_stream_wrapper(char *protocol, php_stream_wrapper *w
 		return FAILURE;
 	}
 
-	return zend_hash_add(&url_stream_wrappers_hash, protocol, protocol_len, &wrapper, sizeof(wrapper), NULL);
+	return zend_hash_add(&url_stream_wrappers_hash, protocol, protocol_len + 1, &wrapper, sizeof(wrapper), NULL);
 }
 
 PHPAPI int php_unregister_url_stream_wrapper(char *protocol TSRMLS_DC)
 {
-	return zend_hash_del(&url_stream_wrappers_hash, protocol, strlen(protocol));
+	return zend_hash_del(&url_stream_wrappers_hash, protocol, strlen(protocol) + 1);
 }
 
 static void clone_wrapper_hash(TSRMLS_D)
@@ -1479,7 +1483,7 @@ PHPAPI int php_register_url_stream_wrapper_volatile(char *protocol, php_stream_w
 		clone_wrapper_hash(TSRMLS_C);
 	}
 
-	return zend_hash_add(FG(stream_wrappers), protocol, protocol_len, &wrapper, sizeof(wrapper), NULL);
+	return zend_hash_add(FG(stream_wrappers), protocol, protocol_len + 1, &wrapper, sizeof(wrapper), NULL);
 }
 
 PHPAPI int php_unregister_url_stream_wrapper_volatile(char *protocol TSRMLS_DC)
@@ -1488,7 +1492,7 @@ PHPAPI int php_unregister_url_stream_wrapper_volatile(char *protocol TSRMLS_DC)
 		clone_wrapper_hash(TSRMLS_C);
 	}
 
-	return zend_hash_del(FG(stream_wrappers), protocol, strlen(protocol));
+	return zend_hash_del(FG(stream_wrappers), protocol, strlen(protocol) + 1);
 }
 /* }}} */
 
@@ -1521,11 +1525,11 @@ PHPAPI php_stream_wrapper *php_stream_locate_url_wrapper(const char *path, char 
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Use of \"zlib:\" wrapper is deprecated; please use \"compress.zlib://\" instead.");
 	}
 
-	if (protocol)	{
-		if (FAILURE == zend_hash_find(wrapper_hash, (char*)protocol, n, (void**)&wrapperpp)) {
-			char *tmp = estrndup(protocol, n);
+	if (protocol) {
+		char *tmp = estrndup(protocol, n);
+		if (FAILURE == zend_hash_find(wrapper_hash, (char*)tmp, n + 1, (void**)&wrapperpp)) {
 			php_strtolower(tmp, n);
-			if (FAILURE == zend_hash_find(wrapper_hash, (char*)tmp, n, (void**)&wrapperpp)) {
+			if (FAILURE == zend_hash_find(wrapper_hash, (char*)tmp, n + 1, (void**)&wrapperpp)) {
 				char wrapper_name[32];
 
 				if (n >= sizeof(wrapper_name)) {
@@ -1538,8 +1542,8 @@ PHPAPI php_stream_wrapper *php_stream_locate_url_wrapper(const char *path, char 
 				wrapperpp = NULL;
 				protocol = NULL;
 			}
-			efree(tmp);
 		}
+		efree(tmp);
 	}
 	/* TODO: curl based streams probably support file:// properly */
 	if (!protocol || !strncasecmp(protocol, "file", n))	{
@@ -1588,7 +1592,7 @@ PHPAPI php_stream_wrapper *php_stream_locate_url_wrapper(const char *path, char 
 			}
 			
 			/* Check again, the original check might have not known the protocol name */
-			if (zend_hash_find(wrapper_hash, "file", sizeof("file")-1, (void**)&wrapperpp) == SUCCESS) {
+			if (zend_hash_find(wrapper_hash, "file", sizeof("file"), (void**)&wrapperpp) == SUCCESS) {
 				return *wrapperpp;
 			}
 
@@ -1765,10 +1769,14 @@ PHPAPI php_stream *_php_stream_open_wrapper_ex(char *path, char *mode, int optio
 	}
 
 	if (wrapper) {
-
-		stream = wrapper->wops->stream_opener(wrapper,
+		if (!wrapper->wops->stream_opener) {
+			php_stream_wrapper_log_error(wrapper, options ^ REPORT_ERRORS TSRMLS_CC,
+					"wrapper does not support stream open");
+		} else {
+			stream = wrapper->wops->stream_opener(wrapper,
 				path_to_open, mode, options ^ REPORT_ERRORS,
 				opened_path, context STREAMS_REL_CC TSRMLS_CC);
+		}
 
 		/* if the caller asked for a persistent stream but the wrapper did not
 		 * return one, force an error here */

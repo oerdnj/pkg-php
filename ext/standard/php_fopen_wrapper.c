@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    |          Hartmut Holzgraefe <hholzgra@php.net>                       |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_fopen_wrapper.c,v 1.45.2.4.2.2 2006/07/05 17:38:14 iliaa Exp $ */
+/* $Id: php_fopen_wrapper.c,v 1.45.2.4.2.6 2007/01/01 09:36:08 sebastian Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -187,15 +187,57 @@ php_stream * php_stream_url_wrap_php(php_stream_wrapper *wrapper, char *path, ch
 	}
 	
 	if (!strcasecmp(path, "input")) {
+		if ((options & STREAM_OPEN_FOR_INCLUDE) && !PG(allow_url_include) ) {
+			if (options & REPORT_ERRORS) {
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "URL file-access is disabled in the server configuration");
+			}
+			return NULL;
+		}
 		return php_stream_alloc(&php_stream_input_ops, ecalloc(1, sizeof(off_t)), 0, "rb");
-	}  
+	}
 	
 	if (!strcasecmp(path, "stdin")) {
-		fd = !strcmp(sapi_module.name, "cli") ? STDIN_FILENO : dup(STDIN_FILENO);
+		if ((options & STREAM_OPEN_FOR_INCLUDE) && !PG(allow_url_include) ) {
+			if (options & REPORT_ERRORS) {
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "URL file-access is disabled in the server configuration");
+			}
+			return NULL;
+		}
+		if (!strcmp(sapi_module.name, "cli")) {
+			static int cli_in = 0;
+			fd = STDIN_FILENO;
+			if (cli_in) {
+				fd = dup(fd);
+			} else {
+				cli_in = 1;
+			}
+		} else {
+			fd = dup(STDIN_FILENO);
+		}
 	} else if (!strcasecmp(path, "stdout")) {
-		fd = !strcmp(sapi_module.name, "cli") ? STDOUT_FILENO : dup(STDOUT_FILENO);
+		if (!strcmp(sapi_module.name, "cli")) {
+			static int cli_out = 0;
+			fd = STDOUT_FILENO;
+			if (cli_out++) {
+				fd = dup(fd);
+			} else {
+				cli_out = 1;
+			}
+		} else {
+			fd = dup(STDOUT_FILENO);
+		}
 	} else if (!strcasecmp(path, "stderr")) {
-		fd = !strcmp(sapi_module.name, "cli") ? STDERR_FILENO : dup(STDERR_FILENO);
+		if (!strcmp(sapi_module.name, "cli")) {
+			static int cli_err = 0;
+			fd = STDERR_FILENO;
+			if (cli_err++) {
+				fd = dup(fd);
+			} else {
+				cli_err = 1;
+			}
+		} else {
+			fd = dup(STDERR_FILENO);
+		}
 	} else if (!strncasecmp(path, "filter/", 7)) {
 		/* Save time/memory when chain isn't specified */
 		if (strchr(mode, 'r') || strchr(mode, '+')) {
@@ -234,6 +276,7 @@ php_stream * php_stream_url_wrap_php(php_stream_wrapper *wrapper, char *path, ch
 		return stream;
  	} else {
 		/* invalid php://thingy */
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid php:// URL specified");
 		return NULL;
 	}
 	

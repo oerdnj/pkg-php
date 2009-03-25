@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: dblib_stmt.c,v 1.6.2.2 2006/01/01 12:47:32 sniper Exp $ */
+/* $Id: dblib_stmt.c,v 1.6.2.2.2.4 2007/01/15 01:56:09 fmk Exp $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -131,7 +131,7 @@ static int pdo_dblib_stmt_execute(pdo_stmt_t *stmt TSRMLS_DC)
 
 	arows = 100;
 	size = S->ncols * sizeof(pdo_dblib_colval);
-	S->rows = emalloc(arows * size);
+	S->rows = safe_emalloc(arows, size, 0);
 
 	/* let's fetch all the data */
 	do {
@@ -250,6 +250,17 @@ static int pdo_dblib_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_da
 	return 1;
 }
 
+static int dblib_dblib_stmt_cursor_closer(pdo_stmt_t *stmt TSRMLS_DC)
+{
+	pdo_dblib_stmt *S = (pdo_dblib_stmt*)stmt->driver_data;
+
+	if (S->rows) {
+		free_rows(S TSRMLS_CC);
+		S->rows = NULL;
+	}
+
+	return 1;
+}
 
 struct pdo_stmt_methods dblib_stmt_methods = {
 	pdo_dblib_stmt_dtor,
@@ -261,5 +272,7 @@ struct pdo_stmt_methods dblib_stmt_methods = {
 	NULL, /* set attr */
 	NULL, /* get attr */
 	NULL, /* meta */
+	NULL, /* nextrow */
+	dblib_dblib_stmt_cursor_closer
 };
 

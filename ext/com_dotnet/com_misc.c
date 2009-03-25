@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_misc.c,v 1.8.2.2 2006/01/01 12:50:00 sniper Exp $ */
+/* $Id: com_misc.c,v 1.8.2.2.2.3 2007/02/02 15:44:06 wharmby Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -78,8 +78,9 @@ PHPAPI void php_com_wrap_variant(zval *z, VARIANT *v,
 
 	VariantInit(&obj->v);
 	VariantCopyInd(&obj->v, v);
+	obj->modified = 0;
 
-	if (V_VT(&obj->v) == VT_DISPATCH) {
+	if ((V_VT(&obj->v) == VT_DISPATCH) && (V_DISPATCH(&obj->v) != NULL)) {
 		IDispatch_GetTypeInfo(V_DISPATCH(&obj->v), 0, LANG_NEUTRAL, &obj->typeinfo);
 	}
 

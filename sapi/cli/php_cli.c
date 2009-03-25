@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_cli.c,v 1.129.2.13.2.10 2006/09/22 17:41:09 iliaa Exp $ */
+/* $Id: php_cli.c,v 1.129.2.13.2.18 2007/04/25 09:56:29 bjori Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -105,15 +105,15 @@
 #define PHP_MODE_REFLECTION_FUNCTION    8
 #define PHP_MODE_REFLECTION_CLASS       9
 #define PHP_MODE_REFLECTION_EXTENSION   10
+#define PHP_MODE_REFLECTION_EXT_INFO    11
 
 #define HARDCODED_INI			\
 	"html_errors=0\n"			\
 	"register_argc_argv=1\n"	\
 	"implicit_flush=1\n"		\
 	"output_buffering=0\n"		\
-	"max_execution_time=0\n"    \
+	"max_execution_time=0\n"	\
 	"max_input_time=-1\n"
-
 
 static char *php_optarg = NULL;
 static int php_optind = 1;
@@ -153,6 +153,8 @@ static const opt_struct OPTIONS[] = {
 	{11,  1, "rclass"},
 	{12,  1, "re"},
 	{12,  1, "rextension"},
+	{13,  1, "ri"},
+	{13,  1, "rextinfo"},
 #endif
 	{'-', 0, NULL} /* end of args */
 };
@@ -450,6 +452,7 @@ static void php_cli_usage(char *argv0)
 				"  --rf <name>      Show information about function <name>.\n"
 				"  --rc <name>      Show information about class <name>.\n"
 				"  --re <name>      Show information about extension <name>.\n"
+				"  --ri <name>      Show configuration for extension <name>.\n"
 				"\n"
 #endif
 				, prog, prog, prog, prog, prog, prog);
@@ -474,9 +477,21 @@ static void cli_register_file_handles(TSRMLS_D)
 	s_err = php_stream_open_wrapper_ex("php://stderr", "wb", 0, NULL, sc_err);
 
 	if (s_in==NULL || s_out==NULL || s_err==NULL) {
+		FREE_ZVAL(zin);
+		FREE_ZVAL(zout);
+		FREE_ZVAL(zerr);
+		if (s_in) php_stream_close(s_in);
+		if (s_out) php_stream_close(s_out);
+		if (s_err) php_stream_close(s_err);
 		return;
 	}
-	
+
+#if PHP_DEBUG
+	/* do not close stdout and stderr */
+	s_out->flags |= PHP_STREAM_FLAG_NO_CLOSE;
+	s_err->flags |= PHP_STREAM_FLAG_NO_CLOSE;
+#endif
+
 	s_in_process = s_in;
 
 	php_stream_to_zval(s_in,  zin);
@@ -617,8 +632,8 @@ int main(int argc, char *argv[])
 	tsrm_startup(1, 1, 0, NULL);
 #endif
 
-	cli_sapi_module.php_ini_path_override = NULL;
 	cli_sapi_module.ini_defaults = sapi_cli_ini_defaults;
+	cli_sapi_module.php_ini_path_override = NULL;
 	cli_sapi_module.phpinfo_as_text = 1;
 	sapi_startup(&cli_sapi_module);
 
@@ -636,13 +651,16 @@ int main(int argc, char *argv[])
 
 	while ((c = php_getopt(argc, argv, OPTIONS, &php_optarg, &php_optind, 0))!=-1) {
 		switch (c) {
-		case 'c':
-			cli_sapi_module.php_ini_path_override = strdup(php_optarg);
-			break;
-		case 'n':
-			cli_sapi_module.php_ini_ignore = 1;
-			break;
-		case 'd': {
+			case 'c':
+				if (cli_sapi_module.php_ini_path_override) {
+					free(cli_sapi_module.php_ini_path_override);
+				}
+ 				cli_sapi_module.php_ini_path_override = strdup(php_optarg);
+				break;
+			case 'n':
+				cli_sapi_module.php_ini_ignore = 1;
+				break;
+			case 'd': {
 				/* define ini entries on command line */
 				int len = strlen(php_optarg);
 				char *val;
@@ -689,7 +707,7 @@ int main(int argc, char *argv[])
 #endif
 
 	/* startup after we get the above ini override se we get things right */
-	if (php_module_startup(&cli_sapi_module, NULL, 0)==FAILURE) {
+	if (cli_sapi_module.startup(&cli_sapi_module)==FAILURE) {
 		/* there is no way to see if we must call zend_ini_deactivate()
 		 * since we cannot check if EG(ini_directives) has been initialised
 		 * because the executor's constructor does not set initialize it.
@@ -754,7 +772,7 @@ int main(int argc, char *argv[])
 				}
 
 				request_started = 1;
-				php_printf("PHP %s (%s) (built: %s %s) %s\nCopyright (c) 1997-2006 The PHP Group\n%s",
+				php_printf("PHP %s (%s) (built: %s %s) %s\nCopyright (c) 1997-2007 The PHP Group\n%s",
 					PHP_VERSION, sapi_module.name, __DATE__, __TIME__,
 #if ZEND_DEBUG && defined(HAVE_GCOV)
 					"(DEBUG GCOV)",
@@ -939,6 +957,10 @@ int main(int argc, char *argv[])
 				break;
 			case 12:
 				behavior=PHP_MODE_REFLECTION_EXTENSION;
+				reflection_what = php_optarg;
+				break;
+			case 13:
+				behavior=PHP_MODE_REFLECTION_EXT_INFO;
 				reflection_what = php_optarg;
 				break;
 #endif
@@ -1246,6 +1268,26 @@ int main(int argc, char *argv[])
 					zval_ptr_dtor(&ref);
 					zval_ptr_dtor(&arg);
 
+					break;
+				}
+			case PHP_MODE_REFLECTION_EXT_INFO:
+				{
+					int len = strlen(reflection_what);
+					char *lcname = zend_str_tolower_dup(reflection_what, len);
+					zend_module_entry *module;
+
+					if (zend_hash_find(&module_registry, lcname, len+1, (void**)&module) == FAILURE) {
+						if (!strcmp(reflection_what, "main")) {
+							display_ini_entries(NULL);
+						} else {
+							zend_printf("Extension '%s' not present.\n", reflection_what);
+							exit_status = 1;
+						}
+					} else {
+						php_info_print_module(module TSRMLS_CC);
+					}
+					
+					efree(lcname);
 					break;
 				}
 #endif /* reflection */

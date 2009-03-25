@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_hash.h,v 1.13.2.7 2006/01/16 23:04:23 tony2001 Exp $ */
+/* $Id: php_hash.h,v 1.13.2.7.2.3 2007/01/08 22:29:25 nlopess Exp $ */
 
 #ifndef PHP_HASH_H
 #define PHP_HASH_H
@@ -45,35 +45,38 @@ typedef struct _php_hash_ops {
 } php_hash_ops;
 
 typedef struct _php_hash_data {
-	php_hash_ops *ops;
+	const php_hash_ops *ops;
 	void *context;
 
 	long options;
 	unsigned char *key;
 } php_hash_data;
 
-extern php_hash_ops php_hash_md4_ops;
-extern php_hash_ops php_hash_md5_ops;
-extern php_hash_ops php_hash_sha1_ops;
-extern php_hash_ops php_hash_sha256_ops;
-extern php_hash_ops php_hash_sha384_ops;
-extern php_hash_ops php_hash_sha512_ops;
-extern php_hash_ops php_hash_ripemd128_ops;
-extern php_hash_ops php_hash_ripemd160_ops;
-extern php_hash_ops php_hash_whirlpool_ops;
-extern php_hash_ops php_hash_3tiger128_ops;
-extern php_hash_ops php_hash_3tiger160_ops;
-extern php_hash_ops php_hash_3tiger192_ops;
-extern php_hash_ops php_hash_4tiger128_ops;
-extern php_hash_ops php_hash_4tiger160_ops;
-extern php_hash_ops php_hash_4tiger192_ops;
-extern php_hash_ops php_hash_snefru_ops;
-extern php_hash_ops php_hash_gost_ops;
-extern php_hash_ops php_hash_adler32_ops;
-extern php_hash_ops php_hash_crc32_ops;
-extern php_hash_ops php_hash_crc32b_ops;
+extern const php_hash_ops php_hash_md2_ops;
+extern const php_hash_ops php_hash_md4_ops;
+extern const php_hash_ops php_hash_md5_ops;
+extern const php_hash_ops php_hash_sha1_ops;
+extern const php_hash_ops php_hash_sha256_ops;
+extern const php_hash_ops php_hash_sha384_ops;
+extern const php_hash_ops php_hash_sha512_ops;
+extern const php_hash_ops php_hash_ripemd128_ops;
+extern const php_hash_ops php_hash_ripemd160_ops;
+extern const php_hash_ops php_hash_ripemd256_ops;
+extern const php_hash_ops php_hash_ripemd320_ops;
+extern const php_hash_ops php_hash_whirlpool_ops;
+extern const php_hash_ops php_hash_3tiger128_ops;
+extern const php_hash_ops php_hash_3tiger160_ops;
+extern const php_hash_ops php_hash_3tiger192_ops;
+extern const php_hash_ops php_hash_4tiger128_ops;
+extern const php_hash_ops php_hash_4tiger160_ops;
+extern const php_hash_ops php_hash_4tiger192_ops;
+extern const php_hash_ops php_hash_snefru_ops;
+extern const php_hash_ops php_hash_gost_ops;
+extern const php_hash_ops php_hash_adler32_ops;
+extern const php_hash_ops php_hash_crc32_ops;
+extern const php_hash_ops php_hash_crc32b_ops;
 
-#define PHP_HASH_HAVAL_OPS(p,b)	extern php_hash_ops php_hash_##p##haval##b##_ops;
+#define PHP_HASH_HAVAL_OPS(p,b)	extern const php_hash_ops php_hash_##p##haval##b##_ops;
 
 PHP_HASH_HAVAL_OPS(3,128)
 PHP_HASH_HAVAL_OPS(3,160)
@@ -117,8 +120,8 @@ PHP_FUNCTION(hash_update_file);
 PHP_FUNCTION(hash_final);
 PHP_FUNCTION(hash_algos);
 
-PHP_HASH_API php_hash_ops *php_hash_fetch_ops(const char *algo, int algo_len);
-PHP_HASH_API void php_hash_register_algo(const char *algo, php_hash_ops *ops);
+PHP_HASH_API const php_hash_ops *php_hash_fetch_ops(const char *algo, int algo_len);
+PHP_HASH_API void php_hash_register_algo(const char *algo, const php_hash_ops *ops);
 
 static inline void php_hash_bin2hex(char *out, const unsigned char *in, int in_len)
 {

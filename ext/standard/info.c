@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: info.c,v 1.249.2.10.2.6 2006/09/14 08:01:48 dmitry Exp $ */
+/* $Id: info.c,v 1.249.2.10.2.11 2007/04/02 12:41:07 sniper Exp $ */
 
 #include "php.h"
 #include "php_ini.h"
@@ -76,13 +76,9 @@ static int php_info_write_wrapper(const char *str, uint str_length)
 }
 
 
-/* {{{ _display_module_info
- */
-static int _display_module_info(zend_module_entry *module, void *arg TSRMLS_DC)
+PHPAPI void php_info_print_module(zend_module_entry *module TSRMLS_DC) /* {{{ */
 {
-	int show_info_func = *((int *) arg);
-
-	if (show_info_func && module->info_func) {
+	if (module->info_func) {
 		if (!sapi_module.phpinfo_as_text) {
 			php_printf("<h2><a name=\"module_%s\">%s</a></h2>\n", module->name, module->name);
 		} else {
@@ -91,7 +87,7 @@ static int _display_module_info(zend_module_entry *module, void *arg TSRMLS_DC)
 			php_info_print_table_end();
 		}
 		module->info_func(module TSRMLS_CC);
-	} else if (!show_info_func && !module->info_func) {
+	} else {
 		if (!sapi_module.phpinfo_as_text) {
 			php_printf("<tr>");
 			php_printf("<td>");
@@ -102,7 +98,24 @@ static int _display_module_info(zend_module_entry *module, void *arg TSRMLS_DC)
 			php_printf("\n");
 		}	
 	}
-	return 0;
+}
+/* }}} */
+
+static int _display_module_info_func(zend_module_entry *module TSRMLS_DC) /* {{{ */
+{
+	if (module->info_func) {
+		php_info_print_module(module TSRMLS_CC);
+	}
+	return ZEND_HASH_APPLY_KEEP;
+}
+/* }}} */
+
+static int _display_module_info_def(zend_module_entry *module TSRMLS_DC) /* {{{ */
+{
+	if (!module->info_func) {
+		php_info_print_module(module TSRMLS_CC);
+	}
+	return ZEND_HASH_APPLY_KEEP;
 }
 /* }}} */
 
@@ -380,6 +393,7 @@ PHPAPI void php_print_info_htmlhead(TSRMLS_D)
 	PUTS("<head>\n");
 	php_info_print_style(TSRMLS_C);
 	PUTS("<title>phpinfo()</title>");
+	PUTS("<meta name=\"ROBOTS\" content=\"NOINDEX,NOFOLLOW,NOARCHIVE\" />");
 /*
 	php_printf("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=%s\" />\n", charset);
 */
@@ -460,7 +474,8 @@ PHPAPI void php_print_info(int flag TSRMLS_DC)
 		php_info_print_table_row(2, "Virtual Directory Support", "disabled" );
 #endif
 
-		php_info_print_table_row(2, "Configuration File (php.ini) Path", php_ini_opened_path?php_ini_opened_path:PHP_CONFIG_FILE_PATH);
+		php_info_print_table_row(2, "Configuration File (php.ini) Path", PHP_CONFIG_FILE_PATH);
+		php_info_print_table_row(2, "Loaded Configuration File", php_ini_opened_path ? php_ini_opened_path : "(none)");
 
 		if (strlen(PHP_CONFIG_FILE_SCAN_DIR)) {
 			php_info_print_table_row(2, "Scan this dir for additional .ini files", PHP_CONFIG_FILE_SCAN_DIR);
@@ -508,10 +523,10 @@ PHPAPI void php_print_info(int flag TSRMLS_DC)
 						zend_hash_get_current_key_ex(url_stream_wrappers_hash, &stream_protocol, (uint *)&stream_protocol_len, &num_key, 0, NULL) == HASH_KEY_IS_STRING;
 						zend_hash_move_forward(url_stream_wrappers_hash)) {
 					stream_protocols_buf = erealloc(stream_protocols_buf, stream_protocols_buf_len + stream_protocol_len + 2 + 1);
-					memcpy(stream_protocols_buf + stream_protocols_buf_len, stream_protocol, stream_protocol_len);
-					stream_protocols_buf[stream_protocols_buf_len + stream_protocol_len] = ',';
-					stream_protocols_buf[stream_protocols_buf_len + stream_protocol_len + 1] = ' ';
-					stream_protocols_buf_len += stream_protocol_len + 2;
+					memcpy(stream_protocols_buf + stream_protocols_buf_len, stream_protocol, stream_protocol_len - 1);
+					stream_protocols_buf[stream_protocols_buf_len + stream_protocol_len - 1] = ',';
+					stream_protocols_buf[stream_protocols_buf_len + stream_protocol_len] = ' ';
+					stream_protocols_buf_len += stream_protocol_len + 1;
 				}
 				if (stream_protocols_buf) {
 					stream_protocols_buf[stream_protocols_buf_len - 2] = ' ';
@@ -538,8 +553,8 @@ PHPAPI void php_print_info(int flag TSRMLS_DC)
 				for(zend_hash_internal_pointer_reset(stream_xport_hash);
 					zend_hash_get_current_key_ex(stream_xport_hash, &xport_name, (uint *)&xport_name_len, &num_key, 0, NULL) == HASH_KEY_IS_STRING;
 					zend_hash_move_forward(stream_xport_hash)) {
-					if (xport_buf_len + xport_name_len + 3 > xport_buf_size) {
-						while (xport_buf_len + xport_name_len + 3 > xport_buf_size) {
+					if (xport_buf_len + xport_name_len + 2 > xport_buf_size) {
+						while (xport_buf_len + xport_name_len + 2 > xport_buf_size) {
 							xport_buf_size += 256;
 						}
 						if (xport_buf) {
@@ -552,8 +567,8 @@ PHPAPI void php_print_info(int flag TSRMLS_DC)
 						xport_buf[xport_buf_len++] = ',';
 						xport_buf[xport_buf_len++] = ' ';
 					}
-					memcpy(xport_buf + xport_buf_len, xport_name, xport_name_len);
-					xport_buf_len += xport_name_len;
+					memcpy(xport_buf + xport_buf_len, xport_name, xport_name_len - 1);
+					xport_buf_len += xport_name_len - 1;
 					xport_buf[xport_buf_len] = '\0';
 				}
 				if (xport_buf) {
@@ -579,8 +594,8 @@ PHPAPI void php_print_info(int flag TSRMLS_DC)
 				for(zend_hash_internal_pointer_reset(stream_filter_hash);
 					zend_hash_get_current_key_ex(stream_filter_hash, &filter_name, (uint *)&filter_name_len, &num_key, 0, NULL) == HASH_KEY_IS_STRING;
 					zend_hash_move_forward(stream_filter_hash)) {
-					if (filter_buf_len + filter_name_len + 3 > filter_buf_size) {
-						while (filter_buf_len + filter_name_len + 3 > filter_buf_size) {
+					if (filter_buf_len + filter_name_len + 2 > filter_buf_size) {
+						while (filter_buf_len + filter_name_len + 2 > filter_buf_size) {
 							filter_buf_size += 256;
 						}
 						if (filter_buf) {
@@ -593,8 +608,8 @@ PHPAPI void php_print_info(int flag TSRMLS_DC)
 						filter_buf[filter_buf_len++] = ',';
 						filter_buf[filter_buf_len++] = ' ';
 					}
-					memcpy(filter_buf + filter_buf_len, filter_name, filter_name_len);
-					filter_buf_len += filter_name_len;
+					memcpy(filter_buf + filter_buf_len, filter_name, filter_name_len - 1);
+					filter_buf_len += filter_name_len - 1;
 					filter_buf[filter_buf_len] = '\0';
 				}
 				if (filter_buf) {
@@ -661,22 +676,19 @@ PHPAPI void php_print_info(int flag TSRMLS_DC)
 	}
 
 	if (flag & PHP_INFO_MODULES) {
-		int show_info_func;
 		HashTable sorted_registry;
 		zend_module_entry tmp;
 
-		zend_hash_init(&sorted_registry, 50, NULL, NULL, 1);
+		zend_hash_init(&sorted_registry, zend_hash_num_elements(&module_registry), NULL, NULL, 1);
 		zend_hash_copy(&sorted_registry, &module_registry, NULL, &tmp, sizeof(zend_module_entry));
 		zend_hash_sort(&sorted_registry, zend_qsort, module_name_cmp, 0 TSRMLS_CC);
 
-		show_info_func = 1;
-		zend_hash_apply_with_argument(&sorted_registry, (apply_func_arg_t) _display_module_info, &show_info_func TSRMLS_CC);
+		zend_hash_apply(&sorted_registry, (apply_func_t) _display_module_info_func TSRMLS_CC);
 
 		SECTION("Additional Modules");
 		php_info_print_table_start();
 		php_info_print_table_header(1, "Module Name");
-		show_info_func = 0;
-		zend_hash_apply_with_argument(&sorted_registry, (apply_func_arg_t) _display_module_info, &show_info_func TSRMLS_CC);
+		zend_hash_apply(&sorted_registry, (apply_func_t) _display_module_info_def TSRMLS_CC);
 		php_info_print_table_end();
 
 		zend_hash_destroy(&sorted_registry);

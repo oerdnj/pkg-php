@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_ini.c,v 1.136.2.4.2.4 2006/09/19 20:33:11 dmitry Exp $ */
+/* $Id: php_ini.c,v 1.136.2.4.2.8 2007/04/16 08:09:56 dmitry Exp $ */
 
 #include "php.h"
 #include "ext/standard/info.h"
@@ -142,7 +142,7 @@ PHPAPI void display_ini_entries(zend_module_entry *module)
 	}
 	php_info_print_table_start();
 	php_info_print_table_header(3, "Directive", "Local Value", "Master Value");
-	zend_hash_apply_with_argument(EG(ini_directives), (apply_func_arg_t) php_ini_displayer, (void *) (long) module_number TSRMLS_CC);
+	zend_hash_apply_with_argument(EG(ini_directives), (apply_func_arg_t) php_ini_displayer, (void *) (zend_intptr_t) module_number TSRMLS_CC);
 	php_info_print_table_end();
 }
 /* }}} */
@@ -291,6 +291,7 @@ int php_init_config(TSRMLS_D)
 		php_ini_search_path = sapi_module.php_ini_path_override;
 		free_ini_search_path = 0;
 	} else if (!sapi_module.php_ini_ignore) {
+		int search_path_size;
 		char *default_location;
 		char *env_location;
 		char *binary_location;
@@ -308,16 +309,17 @@ int php_init_config(TSRMLS_D)
 		 * Prepare search path
 		 */
 
-		php_ini_search_path = (char *) emalloc(MAXPATHLEN * 4 + strlen(env_location) + 3 + 1);
+		search_path_size = MAXPATHLEN * 4 + strlen(env_location) + 3 + 1;
+		php_ini_search_path = (char *) emalloc(search_path_size);
 		free_ini_search_path = 1;
 		php_ini_search_path[0] = 0;
 
 		/* Add environment location */
 		if (env_location[0]) {
 			if (*php_ini_search_path) {
-				strcat(php_ini_search_path, paths_separator);
+				strlcat(php_ini_search_path, paths_separator, search_path_size);
 			}
-			strcat(php_ini_search_path, env_location);
+			strlcat(php_ini_search_path, env_location, search_path_size);
 			php_ini_file_name = env_location;
 		}
 
@@ -326,9 +328,9 @@ int php_init_config(TSRMLS_D)
 		reg_location = GetIniPathFromRegistry();
 		if (reg_location != NULL) {
 			if (*php_ini_search_path) {
-				strcat(php_ini_search_path, paths_separator);
+				strlcat(php_ini_search_path, paths_separator, search_path_size);
 			}
-			strcat(php_ini_search_path, reg_location);
+			strlcat(php_ini_search_path, reg_location, search_path_size);
 			efree(reg_location);
 		}
 #endif
@@ -336,9 +338,9 @@ int php_init_config(TSRMLS_D)
 		/* Add cwd (not with CLI) */
 		if (strcmp(sapi_module.name, "cli") != 0) {
 			if (*php_ini_search_path) {
-				strcat(php_ini_search_path, paths_separator);
+				strlcat(php_ini_search_path, paths_separator, search_path_size);
 			}
-			strcat(php_ini_search_path, ".");
+			strlcat(php_ini_search_path, ".", search_path_size);
 		}
 
 		/* Add binary directory */
@@ -366,9 +368,9 @@ int php_init_config(TSRMLS_D)
 				*(separator_location) = 0;
 			}
 			if (*php_ini_search_path) {
-				strcat(php_ini_search_path, paths_separator);
+				strlcat(php_ini_search_path, paths_separator, search_path_size);
 			}
-			strcat(php_ini_search_path, binary_location);
+			strlcat(php_ini_search_path, binary_location, search_path_size);
 			efree(binary_location);
 		}
 
@@ -378,9 +380,9 @@ int php_init_config(TSRMLS_D)
 	
 		if (0 < GetWindowsDirectory(default_location, MAXPATHLEN)) {
 			if (*php_ini_search_path) {
-				strcat(php_ini_search_path, paths_separator);
+				strlcat(php_ini_search_path, paths_separator, search_path_size);
 			}
-			strcat(php_ini_search_path, default_location);
+			strlcat(php_ini_search_path, default_location, search_path_size);
 		}
 		efree(default_location);
 
@@ -402,9 +404,9 @@ int php_init_config(TSRMLS_D)
 				default_location = (char *) emalloc(MAXPATHLEN + 1);
 				if (0 < get_system_windows_directory(default_location, MAXPATHLEN)) {
 					if (*php_ini_search_path) {
-						strcat(php_ini_search_path, paths_separator);
+						strlcat(php_ini_search_path, paths_separator, search_path_size);
 					}
-					strcat(php_ini_search_path, default_location);
+					strlcat(php_ini_search_path, default_location, search_path_size);
 				}
 				efree(default_location);
 			}
@@ -412,9 +414,9 @@ int php_init_config(TSRMLS_D)
 #else
 		default_location = PHP_CONFIG_FILE_PATH;
 		if (*php_ini_search_path) {
-			strcat(php_ini_search_path, paths_separator);
+			strlcat(php_ini_search_path, paths_separator, search_path_size);
 		}
-		strcat(php_ini_search_path, default_location);
+		strlcat(php_ini_search_path, default_location, search_path_size);
 #endif
 	}
 
@@ -439,8 +441,8 @@ int php_init_config(TSRMLS_D)
 		/* Search php-%sapi-module-name%.ini file in search path */
 		if (!fh.handle.fp) {
 			const char *fmt = "php-%s.ini";
-			char *ini_fname = emalloc(strlen(fmt) + strlen(sapi_module.name));
-			sprintf(ini_fname, fmt, sapi_module.name);
+			char *ini_fname;
+			spprintf(&ini_fname, 0, fmt, sapi_module.name);
 			fh.handle.fp = php_fopen_with_path(ini_fname, "r", php_ini_search_path, &php_ini_opened_path TSRMLS_CC);
 			efree(ini_fname);
 			if (fh.handle.fp) {
@@ -522,8 +524,8 @@ int php_init_config(TSRMLS_D)
 				php_ini_scanned_files = (char *) malloc(total_l);
 				*php_ini_scanned_files = '\0';
 				for (element = scanned_ini_list.head; element; element = element->next) {
-					strcat(php_ini_scanned_files, *(char **)element->data);		
-					strcat(php_ini_scanned_files, element->next ? ",\n" : "\n");
+					strlcat(php_ini_scanned_files, *(char **)element->data, total_l);
+					strlcat(php_ini_scanned_files, element->next ? ",\n" : "\n", total_l);
 				}	
 			}
 			zend_llist_destroy(&scanned_ini_list);
@@ -588,7 +590,7 @@ PHPAPI int cfg_get_long(char *varname, long *result)
 	zval *tmp, var;
 	
 	if (zend_hash_find(&configuration_hash, varname, strlen(varname) + 1, (void **) &tmp) == FAILURE) {
-		*result = (long) NULL;
+		*result = 0;
 		return FAILURE;
 	}
 	var = *tmp;

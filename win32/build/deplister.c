@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: deplister.c,v 1.3.2.1 2006/01/01 12:50:20 sniper Exp $ */
+/* $Id: deplister.c,v 1.3.2.1.2.1 2007/01/01 09:36:13 sebastian Exp $ */
 
 /* This little application will list the DLL dependencies for a PE
  * module to it's stdout for use by distro/installer building tools */

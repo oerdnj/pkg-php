@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_sdl.c,v 1.88.2.12.2.3 2006/09/20 13:42:50 dmitry Exp $ */
+/* $Id: php_sdl.c,v 1.88.2.12.2.7 2007/02/23 20:40:55 stas Exp $ */
 
 #include "php_soap.h"
 #include "ext/libxml/php_libxml.h"
@@ -1250,7 +1250,7 @@ static void sdl_deserialize_type(sdlTypePtr type, sdlTypePtr *types, encodePtr *
 
 	WSDL_CACHE_GET_INT(i, in);
 	if (i > 0) {
-		elements = emalloc((i+1) * sizeof(sdlTypePtr));
+		elements = safe_emalloc((i+1), sizeof(sdlTypePtr), 0);
 		elements[0] = NULL;
 		type->elements = emalloc(sizeof(HashTable));
 		zend_hash_init(type->elements, i, NULL, delete_type, 0);
@@ -1479,7 +1479,7 @@ static sdlPtr get_sdl_from_cache(const char *fn, const char *uri, time_t t, time
 	WSDL_CACHE_GET_INT(num_encoders, &in);
 
 	i = num_groups+num_types+num_elements;
-	types = emalloc((i+1)*sizeof(sdlTypePtr));
+	types = safe_emalloc((i+1), sizeof(sdlTypePtr), 0);
 	types[0] = NULL;
 	while (i > 0) {
 		types[i] = emalloc(sizeof(sdlType));
@@ -1492,7 +1492,7 @@ static sdlPtr get_sdl_from_cache(const char *fn, const char *uri, time_t t, time
 	while (enc->details.type != END_KNOWN_TYPES) {
 		i++; enc++;
 	}
-	encoders = emalloc((i+1)*sizeof(encodePtr));
+	encoders = safe_emalloc((i+1), sizeof(encodePtr), 0);
 	i = num_encoders;
 	encoders[0] = NULL;
 	while (i > 0) {
@@ -1550,7 +1550,7 @@ static sdlPtr get_sdl_from_cache(const char *fn, const char *uri, time_t t, time
 
 	/* deserialize bindings */
 	WSDL_CACHE_GET_INT(num_bindings, &in);
-	bindings = emalloc(num_bindings*sizeof(sdlBindingPtr));
+	bindings = safe_emalloc(num_bindings, sizeof(sdlBindingPtr), 0);
 	if (num_bindings > 0) {
 		sdl->bindings = emalloc(sizeof(HashTable));
 		zend_hash_init(sdl->bindings, num_bindings, NULL, delete_binding, 0);
@@ -1576,7 +1576,7 @@ static sdlPtr get_sdl_from_cache(const char *fn, const char *uri, time_t t, time
 	WSDL_CACHE_GET_INT(num_func, &in);
 	zend_hash_init(&sdl->functions, num_func, NULL, delete_function, 0);
 	if (num_func > 0) {
-		functions = emalloc(num_func*sizeof(sdlFunctionPtr));
+		functions = safe_emalloc(num_func, sizeof(sdlFunctionPtr), 0);
 		for (i = 0; i < num_func; i++) {
 			int binding_num, num_faults;
 			sdlFunctionPtr func = emalloc(sizeof(sdlFunction));
@@ -1862,8 +1862,8 @@ static void sdl_serialize_type(sdlTypePtr type, HashTable *tmp_encoders, HashTab
 	if (i > 0) {
 		sdlTypePtr *tmp;
 
-	  tmp_elements = emalloc(sizeof(HashTable));
-	  zend_hash_init(tmp_elements, 0, NULL, NULL, 0);
+		tmp_elements = emalloc(sizeof(HashTable));
+		zend_hash_init(tmp_elements, i, NULL, NULL, 0);
 
 		zend_hash_internal_pointer_reset(type->elements);
 		while (zend_hash_get_current_data(type->elements, (void**)&tmp) == SUCCESS) {

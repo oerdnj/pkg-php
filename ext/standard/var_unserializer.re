@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: var_unserializer.re,v 1.52.2.2 2006/01/01 12:26:08 sniper Exp $ */
+/* $Id: var_unserializer.re,v 1.52.2.2.2.3 2007/03/27 09:29:10 tony2001 Exp $ */
 
 #include "php.h"
 #include "ext/standard/php_var.h"
@@ -137,6 +137,45 @@ PHPAPI void var_destroy(php_unserialize_data_t *var_hashx)
 }
 
 /* }}} */
+
+static char *unserialize_str(const unsigned char **p, size_t *len)
+{
+	size_t i, j;
+	char *str = safe_emalloc(*len, 1, 1);
+	unsigned char *end = *(unsigned char **)p+*len;
+
+	if(end < *p) {
+		efree(str);
+		return NULL;
+	}
+
+	for (i = 0; i < *len && *p < end; i++) {
+		if (**p != '\\') {
+			str[i] = (char)**p;
+		} else {
+			unsigned char ch = 0;
+
+			for (j = 0; j < 2; j++) {
+				(*p)++;
+				if (**p >= '0' && **p <= '9') {
+					ch = (ch << 4) + (**p -'0');
+				} else if (**p >= 'a' && **p <= 'f') {
+					ch = (ch << 4) + (**p -'a'+10);
+				} else if (**p >= 'A' && **p <= 'F') {
+					ch = (ch << 4) + (**p -'A'+10);
+				} else {
+					efree(str);
+					return NULL;
+				}
+			}
+			str[i] = (char)ch;
+		}
+		(*p)++;
+	}
+	str[i] = 0;
+	*len = i;
+	return str;
+}
 
 #define YYFILL(n) do { } while (0)
 #define YYCTYPE unsigned char
@@ -472,6 +511,35 @@ PHPAPI int php_var_unserialize(UNSERIALIZE_PARAMETER)
 
 	INIT_PZVAL(*rval);
 	ZVAL_STRINGL(*rval, str, len, 1);
+	return 1;
+}
+
+"S:" uiv ":" ["] 	{
+	size_t len, maxlen;
+	char *str;
+
+	len = parse_uiv(start + 2);
+	maxlen = max - YYCURSOR;
+	if (maxlen < len) {
+		*p = start + 2;
+		return 0;
+	}
+
+	if ((str = unserialize_str(&YYCURSOR, &len)) == NULL) {
+		return 0;
+	}
+
+	if (*(YYCURSOR) != '"') {
+		efree(str);
+		*p = YYCURSOR;
+		return 0;
+	}
+
+	YYCURSOR += 2;
+	*p = YYCURSOR;
+
+	INIT_PZVAL(*rval);
+	ZVAL_STRINGL(*rval, str, len, 0);
 	return 1;
 }
 

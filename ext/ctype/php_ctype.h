@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -19,9 +19,6 @@
 #ifndef PHP_CTYPE_H
 #define PHP_CTYPE_H
 
-/* You should tweak config.m4 so this symbol (or some else suitable)
-   gets defined.
-*/
 #if HAVE_CTYPE
 
 extern zend_module_entry ctype_module_entry;
@@ -31,21 +28,6 @@ extern zend_module_entry ctype_module_entry;
 #define PHP_CTYPE_API __declspec(dllexport)
 #else
 #define PHP_CTYPE_API
-#endif
-
-/* 
-  	Declare any global variables you may need between the BEGIN
-	and END macros here:     
-
-ZEND_BEGIN_MODULE_GLOBALS(ctype)
-	int global_variable;
-ZEND_END_MODULE_GLOBALS(ctype)
-*/
-
-#ifdef ZTS
-#define CTYPEG(v) TSRMG(ctype_globals_id, php_ctype_globals *, v)
-#else
-#define CTYPEG(v) (ctype_globals.v)
 #endif
 
 #else

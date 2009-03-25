@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: sapi_apache2.c,v 1.136.2.2.2.3 2006/07/25 13:40:05 dmitry Exp $ */
+/* $Id: sapi_apache2.c,v 1.136.2.2.2.8 2007/01/01 09:36:12 sebastian Exp $ */
 
 #include <fcntl.h>
 
@@ -210,13 +210,21 @@ php_apache_sapi_register_variables(zval *track_vars_array TSRMLS_DC)
 	php_struct *ctx = SG(server_context);
 	const apr_array_header_t *arr = apr_table_elts(ctx->r->subprocess_env);
 	char *key, *val;
+	int new_val_len;
 	
 	APR_ARRAY_FOREACH_OPEN(arr, key, val)
-		if (!val) val = "";
-		php_register_variable(key, val, track_vars_array TSRMLS_CC);
+		if (!val) {
+			val = "";
+		}
+		if (sapi_module.input_filter(PARSE_SERVER, key, &val, strlen(val), &new_val_len TSRMLS_CC)) {
+			php_register_variable_safe(key, val, new_val_len, track_vars_array TSRMLS_CC);
+		}
 	APR_ARRAY_FOREACH_CLOSE()
 		
 	php_register_variable("PHP_SELF", ctx->r->uri, track_vars_array TSRMLS_CC);
+	if (sapi_module.input_filter(PARSE_SERVER, "PHP_SELF", &ctx->r->uri, strlen(ctx->r->uri), &new_val_len TSRMLS_CC)) {
+		php_register_variable_safe("PHP_SELF", ctx->r->uri, new_val_len, track_vars_array TSRMLS_CC);
+	}
 }
 
 static void
@@ -434,10 +442,10 @@ static int php_output_filter(ap_filter_t *f, apr_bucket_brigade *bb)
 	php_struct *ctx;
 	void *conf = ap_get_module_config(f->r->per_dir_config, &php5_module);
 	char *p = get_php_config(conf, "engine", sizeof("engine"));
-	TSRMLS_FETCH();
 	zend_file_handle zfd;
 	php_apr_bucket_brigade *pbb;
 	apr_bucket *b;
+	TSRMLS_FETCH();
 	
 	if (f->r->proxyreq) {
 		zend_try {
@@ -503,6 +511,7 @@ static int php_output_filter(ap_filter_t *f, apr_bucket_brigade *bb)
 		return ap_pass_brigade(f->next, bb);
 	}
 
+	apply_config(conf);
 	php_apache_request_ctor(f, ctx TSRMLS_CC);
 	
 	// It'd be nice if we could highlight based of a zend_file_handle here....
@@ -522,14 +531,8 @@ static int php_output_filter(ap_filter_t *f, apr_bucket_brigade *bb)
 	
 	php_execute_script(&zfd TSRMLS_CC);
 
-#if MEMORY_LIMIT
-	{
-		char *mem_usage;
-
-		mem_usage = apr_psprintf(ctx->r->pool, "%u", zend_memory_peak_usage(1 TSRMLS_CC));
-		apr_table_set(ctx->r->notes, "mod_php_memory_usage", mem_usage);
-	}
-#endif
+	apr_table_set(ctx->r->notes, "mod_php_memory_usage",
+		apr_psprintf(ctx->r->pool, "%u", zend_memory_peak_usage(1 TSRMLS_CC)));
 		
 	php_apache_request_dtor(f TSRMLS_CC);
 		

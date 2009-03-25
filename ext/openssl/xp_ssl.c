@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: xp_ssl.c,v 1.22.2.3.2.2 2006/10/05 00:38:00 iliaa Exp $ */
+/* $Id: xp_ssl.c,v 1.22.2.3.2.7 2007/04/04 10:44:55 tony2001 Exp $ */
 
 #include "php.h"
 #include "ext/standard/file.h"
@@ -26,6 +26,10 @@
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
 #include <openssl/err.h>
+
+#ifdef PHP_WIN32
+#include "win32/time.h"
+#endif
 
 #ifdef NETWARE
 #include <sys/select.h>
@@ -43,6 +47,7 @@ int php_openssl_get_x509_list_id(void);
 typedef struct _php_openssl_netstream_data_t {
 	php_netstream_data_t s;
 	SSL *ssl_handle;
+	struct timeval connect_timeout;
 	int enable_on_connect;
 	int is_client;
 	int ssl_active;
@@ -99,7 +104,7 @@ static int handle_ssl_error(php_stream *stream, int nr_bytes TSRMLS_DC)
 			/* re-negotiation, or perhaps the SSL layer needs more
 			 * packets: retry in next iteration */
 			errno = EAGAIN;
-			retry = sslsock->s.is_blocked;
+			retry = 1;
 			break;
 		case SSL_ERROR_SYSCALL:
 			if (ERR_peek_error() == 0) {
@@ -164,6 +169,9 @@ static int handle_ssl_error(php_stream *stream, int nr_bytes TSRMLS_DC)
 							err,
 							ebuf ? "OpenSSL Error messages:\n" : "",
 							ebuf ? ebuf : "");
+					if (ebuf) {
+						efree(ebuf);
+					}
 			}
 				
 			retry = 0;
@@ -386,6 +394,9 @@ static inline int php_openssl_enable_crypto(php_stream *stream,
 	int n, retry = 1;
 
 	if (cparam->inputs.activate && !sslsock->ssl_active) {
+		float timeout = sslsock->connect_timeout.tv_sec + sslsock->connect_timeout.tv_usec / 1000000;
+		int blocked = sslsock->s.is_blocked;
+
 		if (!sslsock->state_set) {
 			if (sslsock->is_client) {
 				SSL_set_connect_state(sslsock->ssl_handle);
@@ -395,9 +406,23 @@ static inline int php_openssl_enable_crypto(php_stream *stream,
 			sslsock->state_set = 1;
 		}
 	
+		if (sslsock->is_client && SUCCESS == php_set_sock_blocking(sslsock->s.socket, 0 TSRMLS_CC)) {
+                	sslsock->s.is_blocked = 0;
+		}
 		do {
 			if (sslsock->is_client) {
+				struct timeval tvs, tve;
+				struct timezone tz;
+
+				gettimeofday(&tvs, &tz);
 				n = SSL_connect(sslsock->ssl_handle);
+				gettimeofday(&tve, &tz);
+
+				timeout -= (tve.tv_sec + tve.tv_usec / 1000000) - (tvs.tv_sec + tvs.tv_usec / 1000000);
+				if (timeout < 0) {
+					php_error_docref(NULL TSRMLS_CC, E_WARNING, "SSL: connection timeout");
+					return -1;
+				}
 			} else {
 				n = SSL_accept(sslsock->ssl_handle);
 			}
@@ -408,6 +433,10 @@ static inline int php_openssl_enable_crypto(php_stream *stream,
 				break;
 			}
 		} while (retry);
+
+		if (sslsock->is_client && sslsock->s.is_blocked != blocked && SUCCESS == php_set_sock_blocking(sslsock->s.socket, blocked TSRMLS_CC)) {
+			sslsock->s.is_blocked = blocked;
+		}
 
 		if (n == 1) {
 			X509 *peer_cert;
@@ -583,7 +612,7 @@ static int php_openssl_sockop_set_option(php_stream *stream, int option, int val
 						tv.tv_sec = FG(default_socket_timeout);
 						tv.tv_usec = 0;
 					} else {
-						tv = sslsock->s.timeout;
+						tv = sslsock->connect_timeout;
 					}
 				} else {
 					tv.tv_sec = value;
@@ -741,8 +770,13 @@ php_stream *php_openssl_ssl_socket_factory(const char *proto, long protolen,
 	memset(sslsock, 0, sizeof(*sslsock));
 
 	sslsock->s.is_blocked = 1;
+	/* this timeout is used by standard stream funcs, therefor it should use the default value */
 	sslsock->s.timeout.tv_sec = FG(default_socket_timeout);
 	sslsock->s.timeout.tv_usec = 0;
+
+	/* use separate timeout for our private funcs */
+	sslsock->connect_timeout.tv_sec = timeout->tv_sec;
+	sslsock->connect_timeout.tv_usec = timeout->tv_usec;
 
 	/* we don't know the socket until we have determined if we are binding or
 	 * connecting */

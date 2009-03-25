@@ -192,6 +192,16 @@ typedef struct
 #include "jisx0208.h"
 #endif
 
+extern int any2eucjp (char *, char *, unsigned int);
+
+/* Persistent font cache until explicitly cleared */
+/* Fonts can be used across multiple images */
+
+/* 2.0.16: thread safety (the font cache is shared) */
+gdMutexDeclare(gdFontCacheMutex);
+static gdCache_head_t *fontCache = NULL;
+static FT_Library library;
+
 #define Tcl_UniChar int
 #define TCL_UTF_MAX 3
 static int gdTcl_UtfToUniChar (char *str, Tcl_UniChar * chPtr)
@@ -367,7 +377,11 @@ static void *fontFetch (char **error, void *key)
 		path = gdEstrdup (fontsearchpath);
 
 		/* if name is an absolute filename then test directly */
+#ifdef NETWARE
+		if (*name == '/' || (name[0] != 0 && strstr(name, ":/"))) {
+#else
 		if (*name == '/' || (name[0] != 0 && name[1] == ':' && (name[2] == '/' || name[2] == '\\'))) {
+#endif
 			snprintf(fullname, sizeof(fullname) - 1, "%s", name);
 			if (access(fullname, R_OK) == 0) {
 				font_found++;
@@ -703,29 +717,32 @@ gdroundupdown (FT_F26Dot6 v1, int updown)
 	return (!updown) ? (v1 < 0 ? ((v1 - 63) >> 6) : v1 >> 6) : (v1 > 0 ? ((v1 + 63) >> 6) : v1 >> 6);
 }
 
-extern int any2eucjp (char *, char *, unsigned int);
-
-/* Persistent font cache until explicitly cleared */
-/* Fonts can be used across multiple images */
-
-/* 2.0.16: thread safety (the font cache is shared) */
-gdMutexDeclare(gdFontCacheMutex);
-static gdCache_head_t *fontCache = NULL;
-static FT_Library library;
-
 void gdFontCacheShutdown()
 {
+	gdMutexLock(gdFontCacheMutex);
+
 	if (fontCache) {
-		gdMutexShutdown(gdFontCacheMutex);
 		gdCacheDelete(fontCache);
 		fontCache = NULL;
 		FT_Done_FreeType(library);
 	}
+
+	gdMutexUnlock(gdFontCacheMutex);
 }
 
 void gdFreeFontCache()
 {
 	gdFontCacheShutdown();
+}
+
+void gdFontCacheMutexSetup()
+{
+	gdMutexSetup(gdFontCacheMutex);
+}
+
+void gdFontCacheMutexShutdown()
+{
+	gdMutexShutdown(gdFontCacheMutex);
 }
 
 int gdFontCacheSetup(void)
@@ -734,9 +751,7 @@ int gdFontCacheSetup(void)
 		/* Already set up */
 		return 0;
 	}
-	gdMutexSetup(gdFontCacheMutex);
 	if (FT_Init_FreeType(&library)) {
-		gdMutexShutdown(gdFontCacheMutex);
 		return -1;
 	}
 	fontCache = gdCacheCreate (FONTCACHESIZE, fontTest, fontFetch, fontRelease);
@@ -799,15 +814,16 @@ gdImageStringFTEx (gdImage * im, int *brect, int fg, char *fontlist, double ptsi
 
 	/***** initialize font library and font cache on first call ******/
 
+	gdMutexLock(gdFontCacheMutex);
 	if (!fontCache) {
 		if (gdFontCacheSetup() != 0) {
 			gdCacheDelete(tc_cache);
+			gdMutexUnlock(gdFontCacheMutex);
 			return "Failure to initialize font library";
 		}
 	}
 	/*****/
 
-	gdMutexLock(gdFontCacheMutex);
 	/* get the font (via font cache) */
 	fontkey.fontlist = fontlist;
 	fontkey.library = &library;
@@ -983,7 +999,7 @@ gdImageStringFTEx (gdImage * im, int *brect, int fg, char *fontlist, double ptsi
 					} else {
 						ch = c & 0xFF;	/* don't extend sign */
 					}
-					next++;
+					if (*next) next++;
 				}
 				break;
 			case gdFTEX_Big5: {

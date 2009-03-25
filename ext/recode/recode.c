@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: recode.c,v 1.37.2.1.2.1 2006/06/15 18:33:08 dmitry Exp $ */
+/* $Id: recode.c,v 1.37.2.1.2.2 2007/01/01 09:36:05 sebastian Exp $ */
 
 /* {{{ includes & prototypes */
 
@@ -122,7 +122,7 @@ PHP_MINFO_FUNCTION(recode)
 {
 	php_info_print_table_start();
 	php_info_print_table_row(2, "Recode Support", "enabled");
-	php_info_print_table_row(2, "Revision", "$Revision: 1.37.2.1.2.1 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 1.37.2.1.2.2 $");
 	php_info_print_table_end();
 }
 

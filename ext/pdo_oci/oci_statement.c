@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: oci_statement.c,v 1.16.2.10 2006/03/18 22:06:30 tony2001 Exp $ */
+/* $Id: oci_statement.c,v 1.16.2.10.2.5 2007/01/26 15:07:45 tony2001 Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -150,6 +150,23 @@ static int oci_stmt_execute(pdo_stmt_t *stmt TSRMLS_DC) /* {{{ */
 				(S->stmt, OCI_HTYPE_STMT, &colcount, 0, OCI_ATTR_PARAM_COUNT, S->err));
 
 		stmt->column_count = (int)colcount;
+	
+		if (S->cols) {
+			int i;
+			for (i = 0; i < stmt->column_count; i++) {
+				if (S->cols[i].data) {
+					switch (S->cols[i].dtype) {
+						case SQLT_BLOB:
+						case SQLT_CLOB:
+							/* do nothing */
+							break;
+						default:
+							efree(S->cols[i].data);
+					}
+				}
+			}
+			efree(S->cols);
+		}
 
 		S->cols = ecalloc(colcount, sizeof(pdo_oci_column));
 	}
@@ -222,7 +239,7 @@ static sb4 oci_bind_output_cb(dvoid *ctx, OCIBind *bindp, ub4 iter, ub4 index, d
 	zval_dtor(param->parameter);
 
 	Z_STRLEN_P(param->parameter) = param->max_value_len;
-	Z_STRVAL_P(param->parameter) = emalloc(Z_STRLEN_P(param->parameter)+1);
+	Z_STRVAL_P(param->parameter) = ecalloc(1, Z_STRLEN_P(param->parameter)+1);
 	P->used_for_output = 1;
 
 	P->actual_len = Z_STRLEN_P(param->parameter);	
@@ -272,9 +289,9 @@ static int oci_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_data *pa
 					case PDO_PARAM_STR:
 					default:
 						P->oci_type = SQLT_CHR;
-						value_sz = param->max_value_len + 1;
+						value_sz = param->max_value_len;
 						if (param->max_value_len == 0) {
-							value_sz = 4000; /* maximum size before value is interpreted as a LONG value */
+							value_sz = 1332; /* maximum size before value is interpreted as a LONG value */
 						}
 						
 				}
@@ -460,6 +477,7 @@ static sb4 oci_define_callback(dvoid *octxp, OCIDefine *define, ub4 iter, dvoid 
 			*piecep = OCI_ONE_PIECE;
 			*bufpp = col->data;
 			*alenpp = &col->datalen;
+			*indpp = (dvoid *)&col->indicator;
 			break;
 
 		default:
@@ -642,12 +660,14 @@ static int oci_blob_flush(php_stream *stream TSRMLS_DC)
 	return 0;
 }
 
+/* TODO: implement
 static int oci_blob_seek(php_stream *stream, off_t offset, int whence, off_t *newoffset TSRMLS_DC)
 {
 	struct oci_lob_self *self = (struct oci_lob_self*)stream->abstract;
-	/* TODO: implement */
+
 	return -1;	
 }
+*/
 
 static php_stream_ops oci_blob_stream_ops = {
 	oci_blob_write,

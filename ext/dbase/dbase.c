@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: dbase.c,v 1.74.2.2.2.5 2006/10/10 23:01:23 tony2001 Exp $ */
+/* $Id: dbase.c,v 1.74.2.2.2.9 2007/02/25 23:17:12 tony2001 Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -129,10 +129,15 @@ PHP_FUNCTION(dbase_open)
 	convert_to_string_ex(dbf_name);
 	convert_to_long_ex(options);
 
+	if (!Z_STRLEN_PP(dbf_name)) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "The filename cannot be empty.");
+		RETURN_FALSE;
+	}
+
 	if (Z_LVAL_PP(options) == 1) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Cannot open %s in write-only mode", Z_STRVAL_PP(dbf_name));
 		RETURN_FALSE;
-	} else if (Z_LVAL_PP(options) < 0) {
+	} else if (Z_LVAL_PP(options) < 0 || Z_LVAL_PP(options) > 3) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid access mode %ld", Z_LVAL_PP(options));
 		RETURN_FALSE;
 	}
@@ -615,6 +620,11 @@ PHP_FUNCTION(dbase_create)
 	}
 
 	num_fields = zend_hash_num_elements(Z_ARRVAL_PP(fields));
+
+	if (num_fields <= 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to create database without fields");
+		RETURN_FALSE;
+	}
 
 	/* have to use regular malloc() because this gets free()d by
 	   code in the dbase library */

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: bz2_filter.c,v 1.3.2.2.2.2 2006/06/23 07:30:26 mike Exp $ */
+/* $Id: bz2_filter.c,v 1.3.2.2.2.4 2007/01/25 12:22:21 tony2001 Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -100,6 +100,11 @@ static php_stream_filter_status_t php_bz2_decompress_filter(
 			data->strm.avail_in = 0;
 			consumed += desired;
 			bin += desired;
+
+			if (!desired) {
+				flags |= PSFS_FLAG_FLUSH_CLOSE;
+				break;
+			}
 
 			if (data->strm.avail_out < data->outbuf_len) {
 				php_stream_bucket *out_bucket;

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    |          Rasmus Lerdorf <rasmus@php.net>                             |
    +----------------------------------------------------------------------+
  */
-/* $Id: crypt.c,v 1.62.2.1 2006/01/01 12:50:14 sniper Exp $ */
+/* $Id: crypt.c,v 1.62.2.1.2.6 2007/01/01 09:36:08 sebastian Exp $ */
 #include <stdlib.h>
 
 #include "php.h"
@@ -28,6 +28,9 @@
 #include <unistd.h>
 #endif
 #if HAVE_CRYPT_H
+#if defined(CRYPT_R_GNU_SOURCE) && !defined(_GNU_SOURCE)
+#define _GNU_SOURCE
+#endif
 #include <crypt.h>
 #endif
 #if TM_IN_SYS_TIME
@@ -145,8 +148,22 @@ PHP_FUNCTION(crypt)
 		salt[2] = '\0';
 #endif
 	}
+#if defined(HAVE_CRYPT_R) && (defined(_REENTRANT) || defined(_THREAD_SAFE))
+	{
+#if defined(CRYPT_R_STRUCT_CRYPT_DATA)
+		struct crypt_data buffer;
+		memset(&buffer, 0, sizeof(buffer));
+#elif defined(CRYPT_R_CRYPTD)
+		CRYPTD buffer;
+#else 
+#error Data struct used by crypt_r() is unknown. Please report.
+#endif
 
-	RETVAL_STRING(crypt(str, salt), 1);
+		RETURN_STRING(crypt_r(str, salt, &buffer), 1);
+	}
+#else
+	RETURN_STRING(crypt(str, salt), 1);
+#endif
 }
 /* }}} */
 #endif

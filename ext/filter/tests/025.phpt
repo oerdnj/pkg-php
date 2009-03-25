@@ -1,5 +1,7 @@
 --TEST--
 filter_var() and FILTER_SANITIZE_STRING
+--SKIPIF--
+<?php if (!extension_loaded("filter")) die("skip"); ?>
 --FILE--
 <?php
 
@@ -17,7 +19,7 @@ echo "Done\n";
 string(0) ""
 string(0) ""
 string(12) "!@#$%^&*()'""
-string(32) "!@#$%^&#38;*()&#38;#39;&#38;#34;"
+string(24) "!@#$%^&#38;*()&#39;&#34;"
 string(11) "`1234567890"
 string(5) "`123`"
 string(1) "."

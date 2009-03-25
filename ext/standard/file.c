@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: file.c,v 1.409.2.6.2.7 2006/10/13 01:42:19 iliaa Exp $ */
+/* $Id: file.c,v 1.409.2.6.2.17 2007/02/23 16:22:20 tony2001 Exp $ */
 
 /* Synced with php 3.0 revision 1.218 1999-06-16 [ssb] */
 
@@ -228,6 +228,10 @@ PHP_MINIT_FUNCTION(file)
 	REGISTER_LONG_CONSTANT("STREAM_CRYPTO_METHOD_SSLv23_SERVER",	STREAM_CRYPTO_METHOD_SSLv23_SERVER,	CONST_CS|CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("STREAM_CRYPTO_METHOD_TLS_SERVER",		STREAM_CRYPTO_METHOD_TLS_SERVER,	CONST_CS|CONST_PERSISTENT);
 	
+	REGISTER_LONG_CONSTANT("STREAM_SHUT_RD",	STREAM_SHUT_RD,		CONST_CS|CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("STREAM_SHUT_WR",	STREAM_SHUT_WR,		CONST_CS|CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("STREAM_SHUT_RDWR",	STREAM_SHUT_RDWR,	CONST_CS|CONST_PERSISTENT);
+
 #ifdef PF_INET
 	REGISTER_LONG_CONSTANT("STREAM_PF_INET", PF_INET, CONST_CS|CONST_PERSISTENT);
 #elif defined(AF_INET)
@@ -399,6 +403,7 @@ PHP_FUNCTION(get_meta_tags)
 				}
 			} else if (tok_last == TOK_EQUAL && looking_for_val) {
 				if (saw_name) {
+					STR_FREE(name);
 					/* Get the NAME attr (Single word attr, non-quoted) */
 					temp = name = estrndup(md.token_data, md.token_len);
 
@@ -411,6 +416,7 @@ PHP_FUNCTION(get_meta_tags)
 
 					have_name = 1;
 				} else if (saw_content) {
+					STR_FREE(value);
 					/* Get the CONTENT attr (Single word attr, non-quoted) */
 					if (PG(magic_quotes_runtime)) {
 						value = php_addslashes(md.token_data, 0, &md.token_len, 0 TSRMLS_CC);
@@ -437,6 +443,7 @@ PHP_FUNCTION(get_meta_tags)
 			}
 		} else if (tok == TOK_STRING && tok_last == TOK_EQUAL && looking_for_val) {
 			if (saw_name) {
+				STR_FREE(name);
 				/* Get the NAME attr (Quoted single/double) */
 				temp = name = estrndup(md.token_data, md.token_len);
 
@@ -449,6 +456,7 @@ PHP_FUNCTION(get_meta_tags)
 
 				have_name = 1;
 			} else if (saw_content) {
+				STR_FREE(value);
 				/* Get the CONTENT attr (Single word attr, non-quoted) */
 				if (PG(magic_quotes_runtime)) {
 					value = php_addslashes(md.token_data, 0, &md.token_len, 0 TSRMLS_CC);
@@ -472,12 +480,13 @@ PHP_FUNCTION(get_meta_tags)
 				/* For BC */
 				php_strtolower(name, strlen(name));
 				if (have_content) {
-					add_assoc_string(return_value, name, value, 0); 
+					add_assoc_string(return_value, name, value, 1); 
 				} else {
 					add_assoc_string(return_value, name, "", 1);
 				}
 
 				efree(name);
+				STR_FREE(value);
 			} else if (have_content) {
 				efree(value);
 			}
@@ -499,6 +508,8 @@ PHP_FUNCTION(get_meta_tags)
 		md.token_data = NULL;
 	}
 
+	STR_FREE(value);
+	STR_FREE(name);
 	php_stream_close(md.stream);
 }
 
@@ -535,7 +546,8 @@ PHP_FUNCTION(file_get_contents)
 	}
 
 	if (offset > 0 && php_stream_seek(stream, offset, SEEK_SET) < 0) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to seek to position %ld in the stream.", offset);
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to seek to position %ld in the stream", offset);
+		php_stream_close(stream);
 		RETURN_FALSE;
 	}
 
@@ -591,6 +603,7 @@ PHP_FUNCTION(file_put_contents)
 	}
 
 	if (flags & LOCK_EX && php_stream_lock(stream, LOCK_EX)) {
+		php_stream_close(stream);
 		RETURN_FALSE;
 	}
 
@@ -645,11 +658,23 @@ PHP_FUNCTION(file_put_contents)
 			}
 			break;
 
+		case IS_OBJECT:
+			if (Z_OBJ_HT_P(data) != NULL) {
+				zval out;
+
+				if (zend_std_cast_object_tostring(data, &out, IS_STRING TSRMLS_CC) == SUCCESS) {
+					numbytes = php_stream_write(stream, Z_STRVAL(out), Z_STRLEN(out));
+					if (numbytes != Z_STRLEN(out)) {
+						php_error_docref(NULL TSRMLS_CC, E_WARNING, "Only %d of %d bytes written, possibly out of free disk space", numbytes, Z_STRLEN(out));
+						numbytes = -1;
+					}
+					zval_dtor(&out);
+					break;
+				}
+			}
 		default:
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "The 2nd parameter should be either a string or an array");
-			numbytes = -1;
+			numbytes = -1;		
 			break;
-	
 	}
 	php_stream_close(stream);
 
@@ -1463,7 +1488,7 @@ PHP_FUNCTION(umask)
 
 	oldumask = umask(077);
 
-	if (BG(umask) != -1) {
+	if (BG(umask) == -1) {
 		BG(umask) = oldumask;
 	}
 
@@ -2151,9 +2176,11 @@ PHPAPI void php_fgetcsv(php_stream *stream, /* {{{ */
 								size_t new_len;
 								char *new_temp;
 
-								memcpy(tptr, hunk_begin, bptr - hunk_begin);
-								tptr += (bptr - hunk_begin);
-								hunk_begin = bptr;
+								if (hunk_begin != line_end) {
+									memcpy(tptr, hunk_begin, bptr - hunk_begin);
+									tptr += (bptr - hunk_begin);
+									hunk_begin = bptr;
+								}
 
 								/* add the embedded line end to the field */
 								memcpy(tptr, line_end, line_end_len);
@@ -2480,6 +2507,14 @@ PHP_FUNCTION(fnmatch)
 }
 /* }}} */
 #endif
+
+/* {{{ proto string sys_get_temp_dir()
+   Returns directory path used for temporary files */
+PHP_FUNCTION(sys_get_temp_dir)
+{
+	RETURN_STRING((char *)php_get_temporary_directory(), 1);
+}
+/* }}} */
 
 /*
  * Local variables:

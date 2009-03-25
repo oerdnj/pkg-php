@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: uuencode.c,v 1.5.2.1.2.1 2006/06/26 18:48:56 bjori Exp $ */
+/* $Id: uuencode.c,v 1.5.2.1.2.4 2007/03/12 20:55:15 tony2001 Exp $ */
 
 /*
  * Portions of this code are based on Berkeley's uuencode/uudecode
@@ -65,13 +65,13 @@
 
 #define PHP_UU_DEC(c) (((c) - ' ') & 077)
 
-PHPAPI int php_uuencode(char *src, int src_len, char **dest)
+PHPAPI int php_uuencode(char *src, int src_len, char **dest) /* {{{ */
 {
 	int len = 45;
 	char *p, *s, *e, *ee;
 
 	/* encoded length is ~ 38% greater then the original */
-	p = *dest = emalloc((ceil(src_len * 1.38) + 45 + 1));
+	p = *dest = safe_emalloc(ceil(src_len * 1.38), 1, 46);
 	s = src;
 	e = src + src_len;
 
@@ -122,13 +122,14 @@ PHPAPI int php_uuencode(char *src, int src_len, char **dest)
 
 	return (p - *dest);
 }
+/* }}} */
 
-PHPAPI int php_uudecode(char *src, int src_len, char **dest)
+PHPAPI int php_uudecode(char *src, int src_len, char **dest) /* {{{ */
 {
 	int len, total_len=0;
 	char *s, *e, *p, *ee;
 
-	p = *dest = emalloc(ceil(src_len * 0.75) + 1);
+	p = *dest = safe_emalloc(ceil(src_len * 0.75), 1, 1);
 	s = src;
 	e = src + src_len;
 
@@ -182,6 +183,7 @@ err:
 	efree(*dest);
 	return -1;
 }
+/* }}} */
 
 /* {{{ proto string convert_uuencode(string data) 
    uuencode a string */
@@ -220,3 +222,12 @@ PHP_FUNCTION(convert_uudecode)
 	RETURN_STRINGL(dst, dst_len, 0);
 }
 /* }}} */
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -15,7 +15,7 @@
    | Author: Wez Furlong <wez@thebrainroom.com>                           |
    +----------------------------------------------------------------------+
  */
-/* $Id: proc_open.c,v 1.36.2.1.2.1 2006/06/01 14:03:49 tony2001 Exp $ */
+/* $Id: proc_open.c,v 1.36.2.1.2.15 2007/04/16 08:09:55 dmitry Exp $ */
 
 #if 0 && (defined(__linux__) || defined(sun) || defined(__IRIX__))
 # define _BSD_SOURCE 		/* linux wants this when XOPEN mode is on */
@@ -216,10 +216,10 @@ static void proc_open_rsrc_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	
 #ifdef PHP_WIN32
 	
-	WaitForSingleObject(proc->child, INFINITE);
-	GetExitCodeProcess(proc->child, &wstatus);
+	WaitForSingleObject(proc->childHandle, INFINITE);
+	GetExitCodeProcess(proc->childHandle, &wstatus);
 	FG(pclose_ret) = wstatus;
-	CloseHandle(proc->child);
+	CloseHandle(proc->childHandle);
 	
 #elif HAVE_SYS_WAIT_H
 	
@@ -248,7 +248,7 @@ static void proc_open_rsrc_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 /* {{{ php_make_safe_mode_command */
 static int php_make_safe_mode_command(char *cmd, char **safecmd, int is_persistent TSRMLS_DC)
 {
-	int lcmd, larg0, ldir, len, overflow_limit;
+	int lcmd, larg0;
 	char *space, *sep, *arg0;
 
 	if (!PG(safe_mode)) {
@@ -257,42 +257,27 @@ static int php_make_safe_mode_command(char *cmd, char **safecmd, int is_persiste
 	}
 
 	lcmd = strlen(cmd);
-	ldir = strlen(PG(safe_mode_exec_dir));
-	len = lcmd + ldir + 2;
-	overflow_limit = len;
 
-	arg0 = emalloc(len);
-	
-	strcpy(arg0, cmd);
-	
-	space = strchr(arg0, ' ');
+	arg0 = estrndup(cmd, lcmd);
+
+	space = memchr(arg0, ' ', lcmd);
 	if (space) {
 		*space = '\0';
+		larg0 = space - arg0;
+	} else {
+		larg0 = lcmd;
 	}
-	larg0 = strlen(arg0);
 
-	if (strstr(arg0, "..")) {
+	if (php_memnstr(arg0, "..", sizeof("..")-1, arg0 + larg0)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "No '..' components allowed in path");
 		efree(arg0);
 		return FAILURE;
 	}
 
-	*safecmd = emalloc(len);
-	strcpy(*safecmd, PG(safe_mode_exec_dir));
-	overflow_limit -= ldir;
-	
-	sep = strrchr(arg0, PHP_DIR_SEPARATOR);
-	if (sep) {
-		strcat(*safecmd, sep);
-		overflow_limit -= strlen(sep);
-	} else {
-		strcat(*safecmd, "/");
-		strcat(*safecmd, arg0);
-		overflow_limit -= larg0 + 1;
-	}
-	if (space) {
-		strncat(*safecmd, cmd + larg0, overflow_limit);
-	}
+	sep = zend_memrchr(arg0, PHP_DIR_SEPARATOR, larg0);
+
+	spprintf(safecmd, 0, "%s%s%s%s", PG(safe_mode_exec_dir), (sep ? sep : "/"), (sep ? "" : arg0), (space ? cmd + larg0 : ""));
+
 	efree(arg0);
 	arg0 = php_escape_shell_cmd(*safecmd);
 	efree(*safecmd);
@@ -315,7 +300,7 @@ PHP_MINIT_FUNCTION(proc_open)
 }
 /* }}} */
 
-/* {{{ proto int proc_terminate(resource process [, long signal])
+/* {{{ proto bool proc_terminate(resource process [, long signal])
    kill a process opened by proc_open */
 PHP_FUNCTION(proc_terminate)
 {
@@ -330,13 +315,18 @@ PHP_FUNCTION(proc_terminate)
 	ZEND_FETCH_RESOURCE(proc, struct php_process_handle *, &zproc, -1, "process", le_proc_open);
 	
 #ifdef PHP_WIN32
-	TerminateProcess(proc->child, 255);
+	if (TerminateProcess(proc->childHandle, 255)) {
+		RETURN_TRUE;
+	} else {
+		RETURN_FALSE;
+	}
 #else
-	kill(proc->child, sig_no);
+	if (kill(proc->child, sig_no) == 0) {
+		RETURN_TRUE;
+	} else {
+		RETURN_FALSE;
+	}
 #endif
-	
-	zend_list_delete(Z_LVAL_P(zproc));
-	RETURN_LONG(FG(pclose_ret));
 }
 /* }}} */
 
@@ -386,7 +376,7 @@ PHP_FUNCTION(proc_get_status)
 	
 #ifdef PHP_WIN32
 	
-	GetExitCodeProcess(proc->child, &wstatus);
+	GetExitCodeProcess(proc->childHandle, &wstatus);
 
 	running = wstatus == STILL_ACTIVE;
 	exitcode == STILL_ACTIVE ? -1 : wstatus;
@@ -485,6 +475,7 @@ PHP_FUNCTION(proc_open)
 	struct php_proc_open_descriptor_item descriptors[PHP_PROC_OPEN_MAX_DESCRIPTORS];
 #ifdef PHP_WIN32
 	PROCESS_INFORMATION pi;
+	HANDLE childHandle;
 	STARTUPINFO si;
 	BOOL newprocok;
 	SECURITY_ATTRIBUTES security;
@@ -503,6 +494,7 @@ PHP_FUNCTION(proc_open)
 	int is_persistent = 0; /* TODO: ensure that persistent procs will work */
 #ifdef PHP_WIN32
 	int suppress_errors = 0;
+	int bypass_shell = 0;
 #endif
 #if PHP_CAN_DO_PTS
 	php_file_descriptor_t dev_ptmx = -1;	/* master */
@@ -523,8 +515,15 @@ PHP_FUNCTION(proc_open)
 	if (other_options) {
 		zval **item;
 		if (SUCCESS == zend_hash_find(Z_ARRVAL_P(other_options), "suppress_errors", sizeof("suppress_errors"), (void**)&item)) {
-			if (Z_TYPE_PP(item) == IS_BOOL && Z_BVAL_PP(item)) {
+			if ((Z_TYPE_PP(item) == IS_BOOL || Z_TYPE_PP(item) == IS_LONG) &&
+			    Z_LVAL_PP(item)) {
 				suppress_errors = 1;
+			}
+		}	
+		if (SUCCESS == zend_hash_find(Z_ARRVAL_P(other_options), "bypass_shell", sizeof("bypass_shell"), (void**)&item)) {
+			if ((Z_TYPE_PP(item) == IS_BOOL || Z_TYPE_PP(item) == IS_LONG) &&
+			    Z_LVAL_PP(item)) {
+				bypass_shell = 1;
 			}
 		}	
 	}
@@ -639,8 +638,6 @@ PHP_FUNCTION(proc_open)
 					descriptors[ndesc].mode_flags |= O_BINARY;
 #endif
 
-				
-
 			} else if (strcmp(Z_STRVAL_PP(ztype), "file") == 0) {
 				zval **zfile, **zmode;
 				int fd;
@@ -674,7 +671,8 @@ PHP_FUNCTION(proc_open)
 				}
 
 #ifdef PHP_WIN32
-				descriptors[ndesc].childend = (HANDLE)_get_osfhandle(fd);
+				descriptors[ndesc].childend = dup_fd_as_handle(fd);
+				_close(fd);
 #else
 				descriptors[ndesc].childend = fd;
 #endif
@@ -742,27 +740,38 @@ PHP_FUNCTION(proc_open)
 	
 	memset(&pi, 0, sizeof(pi));
 	
-	command_with_cmd = emalloc(command_len + sizeof(COMSPEC_9X) + 1 + sizeof(" /c "));
-	sprintf(command_with_cmd, "%s /c %s", GetVersion() < 0x80000000 ? COMSPEC_NT : COMSPEC_9X, command);
-
 	if (suppress_errors) {
 		old_error_mode = SetErrorMode(SEM_FAILCRITICALERRORS|SEM_NOGPFAULTERRORBOX);
 	}
 	
-	newprocok = CreateProcess(NULL, command_with_cmd, &security, &security, TRUE, NORMAL_PRIORITY_CLASS, env.envp, cwd, &si, &pi);
+	if (bypass_shell) {
+		newprocok = CreateProcess(NULL, command, &security, &security, TRUE, NORMAL_PRIORITY_CLASS|CREATE_NO_WINDOW, env.envp, cwd, &si, &pi);
+	} else {
+		spprintf(&command_with_cmd, 0, "%s /c %s", GetVersion() < 0x80000000 ? COMSPEC_NT : COMSPEC_9X, command);
+
+		newprocok = CreateProcess(NULL, command_with_cmd, &security, &security, TRUE, NORMAL_PRIORITY_CLASS|CREATE_NO_WINDOW, env.envp, cwd, &si, &pi);
+		
+		efree(command_with_cmd);
+	}
 
 	if (suppress_errors) {
 		SetErrorMode(old_error_mode);
 	}
 	
-	efree(command_with_cmd);
-
 	if (FALSE == newprocok) {
+		/* clean up all the descriptors */
+		for (i = 0; i < ndesc; i++) {
+			CloseHandle(descriptors[i].childend);
+			if (descriptors[i].parentend) {
+				CloseHandle(descriptors[i].parentend);
+			}
+		}
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "CreateProcess failed");
 		goto exit_fail;
 	}
 
-	child = pi.hProcess;
+	childHandle = pi.hProcess;
+	child       = pi.dwProcessId;
 	CloseHandle(pi.hThread);
 
 #elif defined(NETWARE)
@@ -775,6 +784,9 @@ PHP_FUNCTION(proc_open)
 	channel.errfd = -1;
 	/* Duplicate the command as processing downwards will modify it*/
 	command_dup = strdup(command);
+	if (!command_dup) {
+		goto exit_fail;
+	}
 	/* get a number of args */
 	construct_argc_argv(command_dup, NULL, &command_num_args, NULL);
 	child_argv = (char**) malloc((command_num_args + 1) * sizeof(char*));
@@ -800,7 +812,8 @@ PHP_FUNCTION(proc_open)
 		/* clean up all the descriptors */
 		for (i = 0; i < ndesc; i++) {
 			close(descriptors[i].childend);
-			close(descriptors[i].parentend);
+			if (descriptors[i].parentend)
+				close(descriptors[i].parentend);
 		}
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "procve failed - %s", strerror(errno));
 		goto exit_fail;
@@ -867,7 +880,8 @@ PHP_FUNCTION(proc_open)
 		/* clean up all the descriptors */
 		for (i = 0; i < ndesc; i++) {
 			close(descriptors[i].childend);
-			close(descriptors[i].parentend);
+			if (descriptors[i].parentend)
+				close(descriptors[i].parentend);
 		}
 
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "fork failed - %s", strerror(errno));
@@ -885,6 +899,9 @@ PHP_FUNCTION(proc_open)
 	proc->command = command;
 	proc->npipes = ndesc;
 	proc->child = child;
+#ifdef PHP_WIN32
+	proc->childHandle = childHandle;
+#endif
 	proc->env = env;
 
 	if (pipes != NULL) {
@@ -929,10 +946,14 @@ PHP_FUNCTION(proc_open)
 						break;
 				}
 #ifdef PHP_WIN32
-				stream = php_stream_fopen_from_fd(_open_osfhandle((long)descriptors[i].parentend,
+				stream = php_stream_fopen_from_fd(_open_osfhandle((zend_intptr_t)descriptors[i].parentend,
 							descriptors[i].mode_flags), mode_string, NULL);
 #else
 				stream = php_stream_fopen_from_fd(descriptors[i].parentend, mode_string, NULL);
+# if defined(F_SETFD) && defined(FD_CLOEXEC)
+				/* mark the descriptor close-on-exec, so that it won't be inherited by potential other children */
+				fcntl(descriptors[i].parentend, F_SETFD, FD_CLOEXEC);
+# endif
 #endif
 				if (stream) {
 					zval *retfp;

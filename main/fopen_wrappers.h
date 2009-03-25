@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: fopen_wrappers.h,v 1.44.2.1.2.1 2006/07/01 11:35:34 nlopess Exp $ */
+/* $Id: fopen_wrappers.h,v 1.44.2.1.2.2 2007/01/01 09:36:10 sebastian Exp $ */
 
 #ifndef FOPEN_WRAPPERS_H
 #define FOPEN_WRAPPERS_H

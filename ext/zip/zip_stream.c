@@ -1,4 +1,4 @@
-/* $Id: zip_stream.c,v 1.1.2.1 2006/07/27 00:36:55 iliaa Exp $ */
+/* $Id: zip_stream.c,v 1.1.2.5 2007/03/14 11:08:57 pajoye Exp $ */
 #ifdef HAVE_CONFIG_H
 #   include "config.h"
 #endif
@@ -12,6 +12,7 @@
 #include "ext/standard/file.h"
 #include "ext/standard/php_string.h"
 #include "fopen_wrappers.h"
+#include "php_zip.h"
 
 #include "ext/standard/url.h"
 
@@ -60,9 +61,15 @@ static size_t php_zip_ops_write(php_stream *stream, const char *buf, size_t coun
 static int php_zip_ops_close(php_stream *stream, int close_handle TSRMLS_DC)
 {
 	STREAM_DATA_FROM_STREAM();
-	if (close_handle && self->za) {
-		zip_close(self->za);
-		self->za = NULL;
+	if (close_handle) {
+		if (self->za) {
+			zip_close(self->za);
+			self->za = NULL;
+		}
+		if (self->zf) {
+			zip_fclose(self->zf);
+			self->zf = NULL;
+		}
 	}
 	efree(self);
 	stream->abstract = NULL;
@@ -106,6 +113,10 @@ php_stream *php_stream_zip_open(char *filename, char *path, char *mode STREAMS_D
 	}
 
 	if (filename) {
+		if (OPENBASEDIR_CHECKPATH(filename)) {
+			return NULL;
+		}
+
 		/* duplicate to make the stream za independent (esp. for MSHUTDOWN) */
 		stream_za = zip_open(filename, ZIP_CREATE, &err);
 		if (!stream_za) {
@@ -147,7 +158,7 @@ php_stream *php_stream_zip_opener(php_stream_wrapper *wrapper,
 
 	char *file_basename;
 	size_t file_basename_len;
-	char file_dirname[MAXPATHLEN+1];
+	char file_dirname[MAXPATHLEN];
 
 	struct zip *za;
 	struct zip_file *zf = NULL;
@@ -173,13 +184,18 @@ php_stream *php_stream_zip_opener(php_stream_wrapper *wrapper,
 		return NULL;
 	}
 	path_len = strlen(path);
+	if (path_len >= MAXPATHLEN || mode[0] != 'r') {
+		return NULL;
+	}
 
 	memcpy(file_dirname, path, path_len - fragment_len);
 	file_dirname[path_len - fragment_len] = '\0';
 
 	php_basename(path, path_len - fragment_len, NULL, 0, &file_basename, &file_basename_len TSRMLS_CC);
 	fragment++;
-	if (mode[0] != 'r') {
+
+	if (OPENBASEDIR_CHECKPATH(file_dirname)) {
+		efree(file_basename);
 		return NULL;
 	}
 

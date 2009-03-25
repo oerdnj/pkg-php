@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php.h,v 1.221.2.4.2.3 2006/09/04 08:18:15 dmitry Exp $ */
+/* $Id: php.h,v 1.221.2.4.2.7 2007/01/01 09:36:11 sebastian Exp $ */
 
 #ifndef PHP_H
 #define PHP_H
@@ -199,7 +199,6 @@ char *strerror(int);
 
 #if HAVE_PWD_H
 # ifdef PHP_WIN32
-#include "win32/pwd.h"
 #include "win32/param.h"
 # else
 #include <pwd.h>
@@ -330,6 +329,8 @@ PHPAPI void php_register_pre_request_shutdown(void (*func)(void *), void *userda
 PHPAPI int cfg_get_long(char *varname, long *result);
 PHPAPI int cfg_get_double(char *varname, double *result);
 PHPAPI int cfg_get_string(char *varname, char **result);
+
+PHPAPI void php_com_initialize(TSRMLS_D);
 END_EXTERN_C()
 
 /* PHP-named Zend macro wrappers */
@@ -339,6 +340,7 @@ END_EXTERN_C()
 #define PHP_FUNCTION			ZEND_FUNCTION
 #define PHP_METHOD  			ZEND_METHOD
 
+#define PHP_RAW_NAMED_FE ZEND_RAW_NAMED_FE
 #define PHP_NAMED_FE	ZEND_NAMED_FE
 #define PHP_FE			ZEND_FE
 #define PHP_DEP_FE      ZEND_DEP_FE

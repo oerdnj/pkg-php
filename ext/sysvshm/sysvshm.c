@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: sysvshm.c,v 1.70.2.2.2.1 2006/06/29 09:03:27 tony2001 Exp $ */
+/* $Id: sysvshm.c,v 1.70.2.2.2.4 2007/02/24 15:44:43 iliaa Exp $ */
 
 /* This has been built and tested on Linux 2.2.14 
  *
@@ -134,6 +134,11 @@ PHP_FUNCTION(shm_attach)
 			shm_key = Z_LVAL_PP(arg_key);
 	}
 
+	if (shm_size < 1) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Segment size must be greater then zero.");
+		RETURN_FALSE;
+	}
+
 	shm_list_ptr = (sysvshm_shm *) emalloc(sizeof(sysvshm_shm));
 
 	/* get the id from a specified key or create new shared memory */
@@ -216,7 +221,7 @@ PHP_FUNCTION(shm_remove)
 	id = Z_LVAL_PP(arg_id);
 	shm_list_ptr = (sysvshm_shm *) zend_list_find(id, &type);
 
-	if (!shm_list_ptr) {
+	if (!shm_list_ptr || type != php_sysvshm.le_shm) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "The parameter is not a valid shm_identifier");
 		RETURN_FALSE;
 	}
@@ -252,7 +257,7 @@ PHP_FUNCTION(shm_put_var)
 	key = Z_LVAL_PP(arg_key);
 
 	shm_list_ptr = (sysvshm_shm *) zend_list_find(id, &type);
-	if (type != php_sysvshm.le_shm) {
+	if (!shm_list_ptr || type != php_sysvshm.le_shm) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%ld is not a SysV shared memory index", id);
 		RETURN_FALSE;
 	}
@@ -299,7 +304,7 @@ PHP_FUNCTION(shm_get_var)
 	key = Z_LVAL_PP(arg_key);
 
 	shm_list_ptr = (sysvshm_shm *) zend_list_find(id, &type);
-	if (type != php_sysvshm.le_shm) {
+	if (!shm_list_ptr || type != php_sysvshm.le_shm) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%ld is not a SysV shared memory index", id);
 		RETURN_FALSE;
 	}
@@ -345,7 +350,7 @@ PHP_FUNCTION(shm_remove_var)
 	key = Z_LVAL_PP(arg_key);
 
 	shm_list_ptr = (sysvshm_shm *) zend_list_find(id, &type);
-	if (type != php_sysvshm.le_shm) {
+	if (!shm_list_ptr || type != php_sysvshm.le_shm) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%ld is not a SysV shared memory index", id);
 		RETURN_FALSE;
 	}

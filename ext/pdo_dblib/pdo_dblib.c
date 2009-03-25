@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_dblib.c,v 1.9.2.6.2.2 2006/07/24 00:01:02 sniper Exp $ */
+/* $Id: pdo_dblib.c,v 1.9.2.6.2.3 2007/01/01 09:36:04 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"

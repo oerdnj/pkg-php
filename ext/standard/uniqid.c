@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: uniqid.c,v 1.41.2.2 2006/01/01 12:50:15 sniper Exp $ */
+/* $Id: uniqid.c,v 1.41.2.2.2.2 2007/01/05 15:06:55 iliaa Exp $ */
 
 #include "php.h"
 
@@ -76,7 +76,7 @@ PHP_FUNCTION(uniqid)
 	 * digits for usecs.
 	 */
 	if (more_entropy) {
-		spprintf(&uniqid, 0, "%s%08x%05x%.8f", prefix, sec, usec, php_combined_lcg(TSRMLS_C) * 10);
+		spprintf(&uniqid, 0, "%s%08x%05x%.8F", prefix, sec, usec, php_combined_lcg(TSRMLS_C) * 10);
 	} else {
 		spprintf(&uniqid, 0, "%s%08x%05x", prefix, sec, usec);
 	}

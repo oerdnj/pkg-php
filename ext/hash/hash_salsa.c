@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: hash_salsa.c,v 1.3.2.3 2006/01/01 12:50:07 sniper Exp $ */
+/* $Id: hash_salsa.c,v 1.3.2.3.2.2 2007/01/08 22:29:25 nlopess Exp $ */
 
 #include "php_hash.h"
 #include "php_hash_salsa.h"
@@ -194,7 +194,7 @@ PHP_HASH_API void PHP_SALSAFinal(unsigned char digest[64], PHP_SALSA_CTX *contex
 	memset(context, 0, sizeof(*context));
 }
 
-php_hash_ops php_hash_salsa10_ops = {
+const php_hash_ops php_hash_salsa10_ops = {
 	(php_hash_init_func_t) PHP_SALSA10Init,
 	(php_hash_update_func_t) PHP_SALSAUpdate,
 	(php_hash_final_func_t) PHP_SALSAFinal,
@@ -203,7 +203,7 @@ php_hash_ops php_hash_salsa10_ops = {
 	sizeof(PHP_SALSA_CTX)
 };
 
-php_hash_ops php_hash_salsa20_ops = {
+const php_hash_ops php_hash_salsa20_ops = {
 	(php_hash_init_func_t) PHP_SALSA20Init,
 	(php_hash_update_func_t) PHP_SALSAUpdate,
 	(php_hash_final_func_t) PHP_SALSAFinal,

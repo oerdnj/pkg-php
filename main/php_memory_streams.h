@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_memory_streams.h,v 1.13.2.1.2.1 2006/05/13 17:58:58 helly Exp $ */
+/* $Id: php_memory_streams.h,v 1.13.2.1.2.3 2007/02/03 16:40:05 helly Exp $ */
 
 #ifndef PHP_MEMORY_STREAM_H
 #define PHP_MEMORY_STREAM_H
@@ -48,10 +48,10 @@ PHPAPI php_stream *_php_stream_temp_create(int mode, size_t max_memory_usage STR
 PHPAPI php_stream *_php_stream_temp_open(int mode, size_t max_memory_usage, char *buf, size_t length STREAMS_DC TSRMLS_DC);
 END_EXTERN_C()
 
-extern php_stream_ops php_stream_memory_ops;
-extern php_stream_ops php_stream_temp_ops;
-extern php_stream_ops php_stream_rfc2397_ops;
-extern php_stream_wrapper php_stream_rfc2397_wrapper;
+extern PHPAPI php_stream_ops php_stream_memory_ops;
+extern PHPAPI php_stream_ops php_stream_temp_ops;
+extern PHPAPI php_stream_ops php_stream_rfc2397_ops;
+extern PHPAPI php_stream_wrapper php_stream_rfc2397_wrapper;
 
 #define PHP_STREAM_IS_MEMORY &php_stream_memory_ops
 #define PHP_STREAM_IS_TEMP   &php_stream_temp_ops

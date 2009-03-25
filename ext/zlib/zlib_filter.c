@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zlib_filter.c,v 1.6.2.2.2.2 2006/10/16 15:39:39 iliaa Exp $ */
+/* $Id: zlib_filter.c,v 1.6.2.2.2.4 2007/01/25 12:22:21 tony2001 Exp $ */
 
 #include "php.h"
 #include "php_zlib.h"
@@ -99,6 +99,11 @@ static php_stream_filter_status_t php_zlib_inflate_filter(
 			data->strm.avail_in = 0;
 			consumed += desired;
 			bin += desired;
+
+			if (!desired) {
+				flags |= PSFS_FLAG_FLUSH_CLOSE;
+				break;
+			}
 
 			if (data->strm.avail_out < data->outbuf_len) {
 				php_stream_bucket *out_bucket;
@@ -207,6 +212,11 @@ static php_stream_filter_status_t php_zlib_deflate_filter(
 			data->strm.avail_in = 0;
 			consumed += desired;
 			bin += desired;
+
+			if (!desired) {
+				flags |= PSFS_FLAG_FLUSH_CLOSE;
+				break;
+			}
 
 			if (data->strm.avail_out < data->outbuf_len) {
 				php_stream_bucket *out_bucket;

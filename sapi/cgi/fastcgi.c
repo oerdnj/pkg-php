@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: fastcgi.c,v 1.4.2.13.2.11 2006/10/16 10:46:59 dmitry Exp $ */
+/* $Id: fastcgi.c,v 1.4.2.13.2.24 2007/04/09 15:39:59 dmitry Exp $ */
 
 #include "php.h"
 #include "fastcgi.h"
@@ -31,7 +31,7 @@
 
 #include <windows.h>
 
-	typedef unsigned int size_t;
+	typedef unsigned int in_addr_t;
 
 	struct sockaddr_un {
 		short   sun_family;
@@ -70,6 +70,15 @@
 # include <arpa/inet.h>
 # include <netdb.h>
 # include <signal.h>
+
+# define closesocket(s) close(s)
+
+# if defined(HAVE_SYS_POLL_H) && defined(HAVE_POLL)
+#  include <sys/poll.h>
+# endif
+# if defined(HAVE_SYS_SELECT_H)
+#  include <sys/select.h>
+# endif
 
 #ifndef INADDR_NONE
 #define INADDR_NONE ((unsigned long) -1)
@@ -126,7 +135,7 @@ typedef union _sa_t {
 
 typedef struct _fcgi_mgmt_rec {
 	char*  name;
-	size_t name_len;
+	char   name_len;
 	char   val;
 } fcgi_mgmt_rec;
 
@@ -140,6 +149,7 @@ static const fcgi_mgmt_rec fcgi_mgmt_vars[] = {
 static int is_initialized = 0;
 static int is_fastcgi = 0;
 static int in_shutdown = 0;
+static in_addr_t *allowed_clients = NULL;
 
 #ifdef _WIN32
 
@@ -161,6 +171,11 @@ static void fcgi_signal_handler(int signo)
 }
 
 #endif
+
+int fcgi_in_shutdown(void)
+{
+	return in_shutdown;
+}
 
 int fcgi_init(void)
 {
@@ -240,12 +255,89 @@ int fcgi_is_fastcgi(void)
 	}
 }
 
+#ifdef _WIN32
+/* Do some black magic with the NT security API.
+ * We prepare a DACL (Discretionary Access Control List) so that
+ * we, the creator, are allowed all access, while "Everyone Else"
+ * is only allowed to read and write to the pipe.
+ * This avoids security issues on shared hosts where a luser messes
+ * with the lower-level pipe settings and screws up the FastCGI service.
+ */
+static PACL prepare_named_pipe_acl(PSECURITY_DESCRIPTOR sd, LPSECURITY_ATTRIBUTES sa)
+{
+  DWORD req_acl_size;
+  char everyone_buf[32], owner_buf[32];
+  PSID sid_everyone, sid_owner;
+  SID_IDENTIFIER_AUTHORITY
+    siaWorld = SECURITY_WORLD_SID_AUTHORITY,
+    siaCreator = SECURITY_CREATOR_SID_AUTHORITY;
+  PACL acl;
+
+  sid_everyone = (PSID)&everyone_buf;
+  sid_owner = (PSID)&owner_buf;
+
+  req_acl_size = sizeof(ACL) +
+    (2 * ((sizeof(ACCESS_ALLOWED_ACE) - sizeof(DWORD)) + GetSidLengthRequired(1)));
+
+  acl = malloc(req_acl_size);
+
+  if (acl == NULL) {
+    return NULL;
+  }
+
+  if (!InitializeSid(sid_everyone, &siaWorld, 1)) {
+    goto out_fail;
+  }
+  *GetSidSubAuthority(sid_everyone, 0) = SECURITY_WORLD_RID;
+
+  if (!InitializeSid(sid_owner, &siaCreator, 1)) {
+    goto out_fail;
+  }
+  *GetSidSubAuthority(sid_owner, 0) = SECURITY_CREATOR_OWNER_RID;
+
+  if (!InitializeAcl(acl, req_acl_size, ACL_REVISION)) {
+    goto out_fail;
+  }
+
+  if (!AddAccessAllowedAce(acl, ACL_REVISION, FILE_GENERIC_READ | FILE_GENERIC_WRITE, sid_everyone)) {
+    goto out_fail;
+  }
+
+  if (!AddAccessAllowedAce(acl, ACL_REVISION, FILE_ALL_ACCESS, sid_owner)) {
+    goto out_fail;
+  }
+
+  if (!InitializeSecurityDescriptor(sd, SECURITY_DESCRIPTOR_REVISION)) {
+    goto out_fail;
+  }
+
+  if (!SetSecurityDescriptorDacl(sd, TRUE, acl, FALSE)) {
+    goto out_fail;
+  }
+
+  sa->lpSecurityDescriptor = sd;
+
+  return acl;
+
+out_fail:
+  free(acl);
+  return NULL;
+}
+#endif
+
+static int is_port_number(const char *bindpath)
+{
+	while (*bindpath) {
+		if (*bindpath < '0' || *bindpath > '9') {
+			return 0;
+		}
+		bindpath++;
+	}
+	return 1;
+}
+
 int fcgi_listen(const char *path, int backlog)
 {
-#ifdef _WIN32
-	/* TODO: Support for manual binding on TCP sockets (php -b <port>) */
-	return -1;
-#else
 	char     *s;
 	int       tcp = 0;
 	char      host[MAXPATHLEN];
@@ -259,6 +351,12 @@ int fcgi_listen(const char *path, int backlog)
 		if (port != 0 && (s-path) < MAXPATHLEN) {
 			strncpy(host, path, s-path);
 			host[s-path] = '\0';
+			tcp = 1;
+		}
+	} else if (is_port_number(path)) {
+		port = atoi(path);
+		if (port != 0) {
+			host[0] = '\0';
 			tcp = 1;
 		}
 	}
@@ -289,6 +387,33 @@ int fcgi_listen(const char *path, int backlog)
 			}
 		}
 	} else {
+#ifdef _WIN32
+	    SECURITY_DESCRIPTOR  sd;
+    	SECURITY_ATTRIBUTES  sa;
+	    PACL                 acl;
+		HANDLE namedPipe;
+
+		memset(&sa, 0, sizeof(sa));
+		sa.nLength = sizeof(sa);
+		sa.bInheritHandle = FALSE;
+		acl = prepare_named_pipe_acl(&sd, &sa);
+
+		namedPipe = CreateNamedPipe(path,
+			PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
+			PIPE_TYPE_BYTE | PIPE_WAIT | PIPE_READMODE_BYTE,
+			PIPE_UNLIMITED_INSTANCES,
+			8192, 8192, 0, &sa);
+		if (namedPipe == INVALID_HANDLE_VALUE) {
+			return -1;
+		}		
+		listen_socket = _open_osfhandle((long)namedPipe, 0);
+		if (!is_initialized) {
+			fcgi_init();
+		}
+		is_fastcgi = 1;
+		return listen_socket;
+
+#else
 		int path_len = strlen(path);
 
 		if (path_len >= sizeof(sa.sa_unix.sun_path)) {
@@ -304,6 +429,7 @@ int fcgi_listen(const char *path, int backlog)
 		sa.sa_unix.sun_len = sock_len;
 #endif
 		unlink(path);
+#endif
 	}
 
 	/* Create, bind socket and start listen on it */
@@ -317,14 +443,51 @@ int fcgi_listen(const char *path, int backlog)
 
 	if (!tcp) {
 		chmod(path, 0777);
+	} else {
+	    char *ip = getenv("FCGI_WEB_SERVER_ADDRS");
+	    char *cur, *end;
+	    int n;
+	    
+	    if (ip) {
+	    	ip = strdup(ip);
+	    	cur = ip;
+	    	n = 0;
+	    	while (*cur) {
+	    		if (*cur == ',') n++;
+	    		cur++;
+	    	}
+	    	allowed_clients = malloc(sizeof(in_addr_t) * (n+2));
+	    	n = 0;
+	    	cur = ip;
+	    	while (cur) {
+		    	end = strchr(cur, ',');
+		    	if (end) {
+	    			*end = 0;
+	    			end++;
+	    		}
+	    		allowed_clients[n] = inet_addr(cur);
+	    		if (allowed_clients[n] == INADDR_NONE) {
+					fprintf(stderr, "Wrong IP address '%s' in FCGI_WEB_SERVER_ADDRS\n", cur);
+	    		}
+	    		n++;
+	    		cur = end;
+	    	}
+	    	allowed_clients[n] = INADDR_NONE;
+			free(ip);
+		}
 	}
 
 	if (!is_initialized) {
 		fcgi_init();
 	}
 	is_fastcgi = 1;
-	return listen_socket;
+
+#ifdef _WIN32
+	if (tcp) {
+		listen_socket = _open_osfhandle((long)listen_socket, 0);
+	}
 #endif
+	return listen_socket;
 }
 
 void fcgi_init_request(fcgi_request *req, int listen_socket)
@@ -339,6 +502,10 @@ void fcgi_init_request(fcgi_request *req, int listen_socket)
 
 	req->out_hdr  = NULL;
 	req->out_pos  = req->out_buf;
+
+#ifdef _WIN32
+	req->tcp = !GetNamedPipeInfo((HANDLE)_get_osfhandle(req->listen_socket), NULL, NULL, NULL, NULL);
+#endif
 }
 
 static inline ssize_t safe_write(fcgi_request *req, const void *buf, size_t count)
@@ -347,7 +514,19 @@ static inline ssize_t safe_write(fcgi_request *req, const void *buf, size_t coun
 	size_t n = 0;
 
 	do {
+		errno = 0;
+#ifdef _WIN32
+		if (!req->tcp) {
+			ret = write(req->fd, ((char*)buf)+n, count-n);
+		} else {
+			ret = send(req->fd, ((char*)buf)+n, count-n, 0);
+			if (ret <= 0) {
+				errno = WSAGetLastError();
+			}
+		}
+#else
 		ret = write(req->fd, ((char*)buf)+n, count-n);
+#endif
 		if (ret > 0) {
 			n += ret;
 		} else if (ret <= 0 && errno != 0 && errno != EINTR) {
@@ -363,7 +542,19 @@ static inline ssize_t safe_read(fcgi_request *req, const void *buf, size_t count
 	size_t n = 0;
 
 	do {
+		errno = 0;
+#ifdef _WIN32
+		if (!req->tcp) {
+			ret = read(req->fd, ((char*)buf)+n, count-n);
+		} else {
+			ret = recv(req->fd, ((char*)buf)+n, count-n, 0);
+			if (ret <= 0) {
+				errno = WSAGetLastError();
+			}
+		}
+#else
 		ret = read(req->fd, ((char*)buf)+n, count-n);
+#endif
 		if (ret > 0) {
 			n += ret;
 		} else if (ret == 0 && errno == 0) {
@@ -540,8 +731,8 @@ static int fcgi_read_request(fcgi_request *req)
 
 		for (j = 0; j < sizeof(fcgi_mgmt_vars)/sizeof(fcgi_mgmt_vars[0]); j++) {
 			if (zend_hash_exists(&req->env, fcgi_mgmt_vars[j].name, fcgi_mgmt_vars[j].name_len+1) == 0) {
-                sprintf((char*)p, "%c%c%s%c", fcgi_mgmt_vars[j].name_len, 1, fcgi_mgmt_vars[j].name, fcgi_mgmt_vars[j].val);
-                p += fcgi_mgmt_vars[j].name_len + 3;
+		                sprintf((char*)p, "%c%c%s%c", fcgi_mgmt_vars[j].name_len, 1, fcgi_mgmt_vars[j].name, fcgi_mgmt_vars[j].val);
+		                p += fcgi_mgmt_vars[j].name_len + 3;
 			}
 		}
 		len = p - buf - sizeof(fcgi_header);
@@ -616,16 +807,30 @@ static inline void fcgi_close(fcgi_request *req, int force, int destroy)
 	if (destroy) {
 		zend_hash_destroy(&req->env);
 	}
+
+#ifdef _WIN32
+	if (is_impersonate && !req->tcp) {
+		RevertToSelf();
+	}
+#endif
+
 	if ((force || !req->keep) && req->fd >= 0) {
 #ifdef _WIN32
-		HANDLE pipe = (HANDLE)_get_osfhandle(req->fd);
+		if (!req->tcp) {
+			HANDLE pipe = (HANDLE)_get_osfhandle(req->fd);
 
-		if (!force) {
-			FlushFileBuffers(pipe);
-		}
-		DisconnectNamedPipe(pipe);
-		if (is_impersonate) {
-			RevertToSelf();
+			if (!force) {
+				FlushFileBuffers(pipe);
+			}
+			DisconnectNamedPipe(pipe);
+		} else {
+			if (!force) {
+				char buf[8];
+
+				shutdown(req->fd, 1);
+				while (recv(req->fd, buf, sizeof(buf), 0) > 0) {}
+			}
+			closesocket(req->fd);
 		}
 #else
 		if (!force) {
@@ -655,41 +860,57 @@ int fcgi_accept_request(fcgi_request *req)
 					return -1;
 				}
 #ifdef _WIN32
-				pipe = (HANDLE)_get_osfhandle(req->listen_socket);
-
-				FCGI_LOCK(req->listen_socket);
-				ov.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-				if (!ConnectNamedPipe(pipe, &ov)) {
-					errno = GetLastError();
-					if (errno == ERROR_IO_PENDING) {
-						while (WaitForSingleObject(ov.hEvent, 1000) == WAIT_TIMEOUT) {
-							if (in_shutdown) {
-								CloseHandle(ov.hEvent);
-								FCGI_UNLOCK(req->listen_socket);
-								return -1;
+				if (!req->tcp) {
+					pipe = (HANDLE)_get_osfhandle(req->listen_socket);
+					FCGI_LOCK(req->listen_socket);
+					ov.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+					if (!ConnectNamedPipe(pipe, &ov)) {
+						errno = GetLastError();
+						if (errno == ERROR_IO_PENDING) {
+							while (WaitForSingleObject(ov.hEvent, 1000) == WAIT_TIMEOUT) {
+								if (in_shutdown) {
+									CloseHandle(ov.hEvent);
+									FCGI_UNLOCK(req->listen_socket);
+									return -1;
+								}
 							}
+						} else if (errno != ERROR_PIPE_CONNECTED) {
 						}
-					} else if (errno != ERROR_PIPE_CONNECTED) {
 					}
-				}
-				CloseHandle(ov.hEvent);
-				if (is_impersonate && !ImpersonateNamedPipeClient(pipe)) {
-					DisconnectNamedPipe(pipe);
-					req->fd = -1;
-				} else {
+					CloseHandle(ov.hEvent);
 					req->fd = req->listen_socket;
-				}
-				FCGI_UNLOCK(req->listen_socket);
+					FCGI_UNLOCK(req->listen_socket);
+				} else {
+					SOCKET listen_socket = (SOCKET)_get_osfhandle(req->listen_socket);
 #else
 				{
+					int listen_socket = req->listen_socket;
+#endif
 					sa_t sa;
 					socklen_t len = sizeof(sa);
 
 					FCGI_LOCK(req->listen_socket);
-					req->fd = accept(req->listen_socket, (struct sockaddr *)&sa, &len);
+					req->fd = accept(listen_socket, (struct sockaddr *)&sa, &len);
 					FCGI_UNLOCK(req->listen_socket);
+					if (req->fd >= 0 && allowed_clients) {
+						int n = 0;
+						int allowed = 0;
+
+			    		while (allowed_clients[n] != INADDR_NONE) {
+			    			if (allowed_clients[n] == sa.sa_inet.sin_addr.s_addr) {
+			    				allowed = 1;
+			    				break;
+			    			}
+			    			n++;
+			    		}
+						if (!allowed) {
+							fprintf(stderr, "Connection from disallowed IP address '%s' is dropped.\n", inet_ntoa(sa.sa_inet.sin_addr));
+							closesocket(req->fd);
+							req->fd = -1;
+							continue;
+						}
+					}
 				}
-#endif
 
 				if (req->fd < 0 && (in_shutdown || errno != EINTR)) {
 					return -1;
@@ -699,18 +920,42 @@ int fcgi_accept_request(fcgi_request *req)
 				break;
 #else
 				if (req->fd >= 0) {
-					struct timeval tv = {5,0};
-					fd_set set;
+#if defined(HAVE_SYS_POLL_H) && defined(HAVE_POLL)
+					struct pollfd fds;
+					int ret;
 
-					FD_ZERO(&set);
-					FD_SET(req->fd, &set);
-try_again:
-					errno = 0;
-					if (select(req->fd + 1, &set, NULL, NULL, &tv) >= 0 && FD_ISSET(req->fd, &set)) {
+					fds.fd = req->fd;
+					fds.events = POLLIN;
+					fds.revents = 0;
+					do {
+						errno = 0;
+						ret = poll(&fds, 1, 5000);
+					} while (ret < 0 && errno == EINTR);
+					if (ret > 0 && (fds.revents & POLLIN)) {
 						break;
 					}
-					if (errno == EINTR) goto try_again;
 					fcgi_close(req, 1, 0);
+#else
+					if (req->fd < FD_SETSIZE) {
+						struct timeval tv = {5,0};
+						fd_set set;
+						int ret;
+
+						FD_ZERO(&set);
+						FD_SET(req->fd, &set);
+						do {
+							errno = 0;
+							ret = select(req->fd + 1, &set, NULL, NULL, &tv) >= 0;
+						} while (ret < 0 && errno == EINTR);
+						if (ret > 0 && FD_ISSET(req->fd, &set)) {
+							break;
+						}
+						fcgi_close(req, 1, 0);
+					} else {
+						fprintf(stderr, "Too many open file descriptors. FD_SETSIZE limit exceeded.");
+						fcgi_close(req, 1, 0);
+					}
+#endif
 				}
 #endif
 			}
@@ -718,6 +963,15 @@ try_again:
 			return -1;
 		}
 		if (fcgi_read_request(req)) {
+#ifdef _WIN32
+			if (is_impersonate && !req->tcp) {
+				pipe = (HANDLE)_get_osfhandle(req->fd);
+				if (!ImpersonateNamedPipeClient(pipe)) {
+					fcgi_close(req, 1, 1);
+					continue;
+				}
+			}
+#endif
 			return req->fd;
 		} else {
 			fcgi_close(req, 1, 1);
@@ -908,14 +1162,15 @@ char* fcgi_getenv(fcgi_request *req, const char* var, int var_len)
 char* fcgi_putenv(fcgi_request *req, char* var, int var_len, char* val)
 {
 	if (var && req) {
-		char **ret;
-
 		if (val == NULL) {
-			val = "";
-		}
-		val = strdup(val);
-		if (zend_hash_update(&req->env, var, var_len+1, &val, sizeof(char*), (void**)&ret) == SUCCESS) {
-			return *ret;
+			zend_hash_del(&req->env, var, var_len+1);
+		} else {
+			char **ret;
+
+			val = strdup(val);
+			if (zend_hash_update(&req->env, var, var_len+1, &val, sizeof(char*), (void**)&ret) == SUCCESS) {
+				return *ret;
+			}
 		}
 	}
 	return NULL;

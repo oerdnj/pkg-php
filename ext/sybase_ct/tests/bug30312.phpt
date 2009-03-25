@@ -6,7 +6,7 @@ Sybase-CT bug #30312 (sybase_unbuffered_query calls)
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: bug30312.phpt,v 1.1 2005/02/06 11:58:53 thekid Exp $
+ * $Id: bug30312.phpt,v 1.1.4.1 2007/03/14 11:46:06 thekid Exp $
  */
 
   require('test.inc');
@@ -23,5 +23,5 @@ Sybase-CT bug #30312 (sybase_unbuffered_query calls)
   var_dump($array[0]);
 ?>
 --EXPECTF--
-string(%d) "%s  %d %d %d:%d%s"
-string(%d) "%s  %d %d %d:%d%s"
+string(%d) "%s %d %d %d:%d%s"
+string(%d) "%s %d %d %d:%d%s"

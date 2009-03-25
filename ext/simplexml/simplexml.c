@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: simplexml.c,v 1.151.2.22.2.15 2006/09/06 15:31:48 nlopess Exp $ */
+/* $Id: simplexml.c,v 1.151.2.22.2.26 2007/04/24 14:11:28 iliaa Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -56,6 +56,7 @@ static php_sxe_object* php_sxe_object_new(zend_class_entry *ce TSRMLS_DC);
 static zend_object_value php_sxe_register_object(php_sxe_object * TSRMLS_DC);
 static xmlNodePtr php_sxe_reset_iterator(php_sxe_object *sxe, int use_data TSRMLS_DC);
 static xmlNodePtr php_sxe_iterator_fetch(php_sxe_object *sxe, xmlNodePtr node, int use_data TSRMLS_DC);
+static zval *sxe_get_value(zval *z TSRMLS_DC);
 
 /* {{{ _node_as_zval()
  */
@@ -137,7 +138,14 @@ static xmlNodePtr sxe_get_element_by_offset(php_sxe_object *sxe, long offset, xm
 	long nodendx = 0;
 	
 	if (sxe->iter.type == SXE_ITER_NONE) {
-		return NULL;
+		if (offset == 0) {
+			if (cnt) {
+				*cnt = 0;
+			}
+			return node;
+		} else {
+			return NULL;
+		}
 	}
 	while (node && nodendx <= offset) {
 		SKIP_TEXT(node)
@@ -427,7 +435,8 @@ static void sxe_prop_dim_write(zval *object, zval *member, zval *value, zend_boo
 	int             is_attr = 0;
 	int				nodendx = 0;
 	int             test = 0;
-	long            cnt;
+	int				new_value = 0;
+	long            cnt = 0;
 	zval            tmp_zv, trim_zv, value_copy;
 
 	if (!member) {
@@ -504,8 +513,20 @@ static void sxe_prop_dim_write(zval *object, zval *member, zval *value, zend_boo
 				break;
 			case IS_STRING:
 				break;
+			case IS_OBJECT:
+				if (Z_OBJCE_P(value) == sxe_class_entry) {
+					value = sxe_get_value(value TSRMLS_CC);
+					INIT_PZVAL(value);
+					new_value = 1;
+					break;
+				}
+				/* break is missing intentionally */
 			default:
-				php_error_docref(NULL TSRMLS_CC, E_WARNING, "It is not yet possible to assign complex types to %s", attribs ? "attributes" : "properties");
+				if (member == &tmp_zv) {
+					zval_dtor(&tmp_zv);
+				}
+				zend_error(E_WARNING, "It is not yet possible to assign complex types to %s", attribs ? "attributes" : "properties");
+				return;
 		}
 	}
 
@@ -593,6 +614,9 @@ next_iter:
 	}
 	if (value && value == &value_copy) {
 		zval_dtor(value);
+	}
+	if (new_value) {
+		zval_ptr_dtor(&value);
 	}
 }
 /* }}} */
@@ -1105,9 +1129,11 @@ SXE_METHOD(xpath)
 		php_libxml_increment_node_ptr((php_libxml_node_object *)sxe, xmlDocGetRootElement((xmlDocPtr) sxe->document->ptr), NULL TSRMLS_CC);
 	}
 
-	sxe->xpath->node = sxe->node->node;
+	nodeptr = php_sxe_get_first_node(sxe, sxe->node->node TSRMLS_CC);
 
- 	ns = xmlGetNsList((xmlDocPtr) sxe->document->ptr, (xmlNodePtr) sxe->node->node);
+	sxe->xpath->node = nodeptr;
+
+ 	ns = xmlGetNsList((xmlDocPtr) sxe->document->ptr, nodeptr);
 	if (ns != NULL) {
 		while (ns[nsnbr] != NULL) {
 			nsnbr++;
@@ -1159,6 +1185,7 @@ SXE_METHOD(xpath)
 
 	xmlXPathFreeObject(retval);
 }
+/* }}} */
 
 /* {{{ proto bool SimpleXMLElement::registerXPathNamespace(string prefix, string ns)
    Creates a prefix/ns context for the next XPath query */
@@ -1211,7 +1238,7 @@ SXE_METHOD(asXML)
 		node = php_sxe_get_first_node(sxe, node TSRMLS_CC);
 
 		if (node) {
-			if (XML_DOCUMENT_NODE == node->parent->type) {
+			if (node->parent && (XML_DOCUMENT_NODE == node->parent->type)) {
 				int bytes;
 				bytes = xmlSaveFile(filename, (xmlDocPtr) sxe->document->ptr);
 				if (bytes == -1) {
@@ -1240,7 +1267,7 @@ SXE_METHOD(asXML)
 	node = php_sxe_get_first_node(sxe, node TSRMLS_CC);
 
 	if (node) {
-		if (XML_DOCUMENT_NODE == node->parent->type) {
+		if (node->parent && (XML_DOCUMENT_NODE == node->parent->type)) {
 			xmlDocDumpMemory((xmlDocPtr) sxe->document->ptr, &strval, &strval_len);
 			RETVAL_STRINGL((char *)strval, strval_len, 1);
 			xmlFree(strval);
@@ -1515,8 +1542,8 @@ SXE_METHOD(addAttribute)
 		return;
 	}
 
-	if (qname_len == 0 || value_len == 0) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Attribute name and value are required");
+	if (qname_len == 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Attribute name is required");
 		return;
 	}
 
@@ -1525,7 +1552,7 @@ SXE_METHOD(addAttribute)
 
 	node = php_sxe_get_first_node(sxe, node TSRMLS_CC);
 
-	if (node->type != XML_ELEMENT_NODE) {
+	if (node && node->type != XML_ELEMENT_NODE) {
 		node = node->parent;
 	}
 
@@ -1760,6 +1787,16 @@ sxe_object_clone(void *object, void **clone_ptr TSRMLS_DC)
 		clone->document->refcount++;
 		docp = clone->document->ptr;
 	}
+
+	clone->iter.isprefix = sxe->iter.isprefix;
+	if (sxe->iter.name != NULL) {
+		clone->iter.name = xmlStrdup((xmlChar *)sxe->iter.name);
+	}
+	if (sxe->iter.nsprefix != NULL) {
+		clone->iter.nsprefix = xmlStrdup((xmlChar *)sxe->iter.nsprefix);
+	}
+	clone->iter.type = sxe->iter.type;
+
 	if (sxe->node) {
 		nodep = xmlDocCopyNode(sxe->node->node, docp, 1);
 	}
@@ -2331,7 +2368,7 @@ PHP_MINFO_FUNCTION(simplexml)
 {
 	php_info_print_table_start();
 	php_info_print_table_header(2, "Simplexml support", "enabled");
-	php_info_print_table_row(2, "Revision", "$Revision: 1.151.2.22.2.15 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 1.151.2.22.2.26 $");
 	php_info_print_table_row(2, "Schema support",
 #ifdef LIBXML_SCHEMAS_ENABLED
 		"enabled");

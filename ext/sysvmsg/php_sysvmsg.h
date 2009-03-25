@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_sysvmsg.h,v 1.6.2.1 2006/01/01 12:50:16 sniper Exp $ */
+/* $Id: php_sysvmsg.h,v 1.6.2.1.2.2 2007/01/08 22:34:07 nlopess Exp $ */
 
 #ifndef PHP_SYSVMSG_H
 #define PHP_SYSVMSG_H
@@ -40,9 +40,6 @@ extern zend_module_entry sysvmsg_module_entry;
 #endif
 
 PHP_MINIT_FUNCTION(sysvmsg);
-PHP_MSHUTDOWN_FUNCTION(sysvmsg);
-PHP_RINIT_FUNCTION(sysvmsg);
-PHP_RSHUTDOWN_FUNCTION(sysvmsg);
 PHP_MINFO_FUNCTION(sysvmsg);
 
 PHP_FUNCTION(msg_get_queue);

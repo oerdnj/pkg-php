@@ -1,7 +1,7 @@
 #  +----------------------------------------------------------------------+
 #  | PHP Version 5                                                        |
 #  +----------------------------------------------------------------------+
-#  | Copyright (c) 1997-2006 The PHP Group                                |
+#  | Copyright (c) 1997-2007 The PHP Group                                |
 #  +----------------------------------------------------------------------+
 #  | This source file is subject to version 3.01 of the PHP license,      |
 #  | that is bundled with this package in the file LICENSE, and is        |
@@ -14,12 +14,13 @@
 #  | Author: Wez Furlong <wez@thebrainroom.com>                           |
 #  +----------------------------------------------------------------------+
 #
-# $Id: Makefile,v 1.35.2.1 2006/01/01 12:50:20 sniper Exp $
+# $Id: Makefile,v 1.35.2.1.2.6 2007/03/04 00:41:16 edink Exp $
 # This is the makefile template for the win32 build
 
 CC="$(CL)"
 LD="$(LINK)"
 MC="$(MC)"
+MT="$(MT)"
 
 MCFILE=$(BUILD_DIR)\wsyslog.rc
 
@@ -54,6 +55,14 @@ $(MCFILE): win32\build\wsyslog.mc
 
 #	$(RC) /fo $(MCFILE) $(BUILD_DIR)\wsyslog.rc
 
+!if $(MT) == ""
+_VC_MANIFEST_EMBED_EXE=
+_VC_MANIFEST_EMBED_DLL=
+!else
+_VC_MANIFEST_EMBED_EXE= if exist $@.manifest $(MT) -nologo -manifest $@.manifest -outputresource:$@;1
+_VC_MANIFEST_EMBED_DLL= if exist $@.manifest $(MT) -nologo -manifest $@.manifest -outputresource:$@;2
+!endif
+
 $(PHPDLL_RES): win32\build\template.rc
 	$(RC) /fo $(PHPDLL_RES) /d FILE_DESCRIPTION="\"PHP Script Interpreter\"" \
 		/d FILE_NAME="\"$(PHPDLL)\"" /d PRODUCT_NAME="\"PHP Script Interpreter\"" \
@@ -61,7 +70,8 @@ $(PHPDLL_RES): win32\build\template.rc
 		win32\build\template.rc 
 
 $(BUILD_DIR)\$(PHPDLL): generated_files $(PHPDEF) $(PHP_GLOBAL_OBJS) $(STATIC_EXT_OBJS) $(PHPDLL_RES) $(MCFILE)
-	@$(LD) /out:$(BUILD_DIR)\$(PHPDLL) $(PHP_LDFLAGS) $(LDFLAGS) $(STATIC_EXT_LDFLAGS) $(PHP_GLOBAL_OBJS) $(STATIC_EXT_OBJS) $(STATIC_EXT_LIBS) $(LIBS) $(PHPDLL_RES)
+	@$(CC) $(PHP_GLOBAL_OBJS) $(STATIC_EXT_OBJS) $(STATIC_EXT_LIBS) $(LIBS) $(PHPDLL_RES) /link /out:$(BUILD_DIR)\$(PHPDLL) $(PHP_LDFLAGS) $(LDFLAGS) $(STATIC_EXT_LDFLAGS)
+	-@$(_VC_MANIFEST_EMBED_DLL)
 	
 $(BUILD_DIR)\$(PHPLIB): $(BUILD_DIR)\$(PHPDLL)
 	

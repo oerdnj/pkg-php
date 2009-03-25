@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2007 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,13 +17,14 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_builtin_functions.c,v 1.277.2.12.2.8 2006/09/26 07:55:09 dmitry Exp $ */
+/* $Id: zend_builtin_functions.c,v 1.277.2.12.2.17 2007/04/16 08:09:54 dmitry Exp $ */
 
 #include "zend.h"
 #include "zend_API.h"
 #include "zend_builtin_functions.h"
 #include "zend_constants.h"
 #include "zend_ini.h"
+#include "zend_exceptions.h"
 
 #undef ZEND_TEST_EXCEPTIONS
 
@@ -171,14 +172,14 @@ ZEND_FUNCTION(func_num_args)
 	int arg_count;
 
 	p = EG(argument_stack).top_element-1-1;
-	arg_count = (ulong) *p;		/* this is the amount of arguments passed to func_num_args(); */
+	arg_count = (int)(zend_uintptr_t) *p;		/* this is the amount of arguments passed to func_num_args(); */
 	p -= 1+arg_count;
 	if (*p) {
 		zend_error(E_ERROR, "func_num_args(): Can't be used as a function parameter");
 	}
 	--p;
 	if (p>=EG(argument_stack).elements) {
-		RETURN_LONG((ulong) *p);
+		RETURN_LONG((long)(zend_uintptr_t) *p);
 	} else {
 		zend_error(E_WARNING, "func_num_args():  Called from the global scope - no function context");
 		RETURN_LONG(-1);
@@ -201,7 +202,7 @@ ZEND_FUNCTION(func_get_arg)
 		RETURN_FALSE;
 	}
 	convert_to_long_ex(z_requested_offset);
-	requested_offset = (*z_requested_offset)->value.lval;
+	requested_offset = Z_LVAL_PP(z_requested_offset);
 
 	if (requested_offset < 0) {
 		zend_error(E_WARNING, "func_get_arg():  The argument number should be >= 0");
@@ -209,7 +210,7 @@ ZEND_FUNCTION(func_get_arg)
 	}
 
 	p = EG(argument_stack).top_element-1-1;
-	arg_count = (ulong) *p;		/* this is the amount of arguments passed to func_get_arg(); */
+	arg_count = (int)(zend_uintptr_t) *p;		/* this is the amount of arguments passed to func_get_arg(); */
 	p -= 1+arg_count;
 	if (*p) {
 		zend_error(E_ERROR, "func_get_arg(): Can't be used as a function parameter");
@@ -219,7 +220,7 @@ ZEND_FUNCTION(func_get_arg)
 		zend_error(E_WARNING, "func_get_arg():  Called from the global scope - no function context");
 		RETURN_FALSE;
 	}
-	arg_count = (ulong) *p;
+	arg_count = (int)(zend_uintptr_t) *p;
 
 	if (requested_offset>=arg_count) {
 		zend_error(E_WARNING, "func_get_arg():  Argument %ld not passed to function", requested_offset);
@@ -243,7 +244,7 @@ ZEND_FUNCTION(func_get_args)
 	int i;
 
 	p = EG(argument_stack).top_element-1-1;
-	arg_count = (ulong) *p;		/* this is the amount of arguments passed to func_get_args(); */
+	arg_count = (int)(zend_uintptr_t) *p;		/* this is the amount of arguments passed to func_get_args(); */
 	p -= 1+arg_count;
 	if (*p) {
 		zend_error(E_ERROR, "func_get_args(): Can't be used as a function parameter");
@@ -254,7 +255,7 @@ ZEND_FUNCTION(func_get_args)
 		zend_error(E_WARNING, "func_get_args():  Called from the global scope - no function context");
 		RETURN_FALSE;
 	}
-	arg_count = (ulong) *p;
+	arg_count = (int)(zend_uintptr_t) *p;
 
 
 	array_init(return_value);
@@ -281,7 +282,7 @@ ZEND_NAMED_FUNCTION(zend_if_strlen)
 		ZEND_WRONG_PARAM_COUNT();
 	}
 	convert_to_string_ex(str);
-	RETVAL_LONG((*str)->value.str.len);
+	RETVAL_LONG(Z_STRLEN_PP(str));
 }
 /* }}} */
 
@@ -517,8 +518,8 @@ repeat:
 		zval_ptr_dtor(&val_free);
 	}
 	c.flags = case_sensitive; /* non persistent */
-	c.name = zend_strndup((*var)->value.str.val, (*var)->value.str.len);
-	c.name_len = (*var)->value.str.len+1;
+	c.name = zend_strndup(Z_STRVAL_PP(var), Z_STRLEN_PP(var));
+	c.name_len = Z_STRLEN_PP(var)+1;
 	c.module_number = PHP_USER_CONSTANT;
 	if (zend_register_constant(&c TSRMLS_CC) == SUCCESS) {
 		RETURN_TRUE;
@@ -541,7 +542,7 @@ ZEND_FUNCTION(defined)
 	}
 	
 	convert_to_string_ex(var);
-	if (zend_get_constant((*var)->value.str.val, (*var)->value.str.len, &c TSRMLS_CC)) {
+	if (zend_get_constant(Z_STRVAL_PP(var), Z_STRLEN_PP(var), &c TSRMLS_CC)) {
 		zval_dtor(&c);
 		RETURN_TRUE;
 	} else {
@@ -1085,9 +1086,9 @@ ZEND_FUNCTION(function_exists)
 		ZEND_WRONG_PARAM_COUNT();
 	}
 	convert_to_string_ex(function_name);
-	lcname = zend_str_tolower_dup((*function_name)->value.str.val, (*function_name)->value.str.len);
+	lcname = zend_str_tolower_dup(Z_STRVAL_PP(function_name), Z_STRLEN_PP(function_name));
 
-	retval = (zend_hash_find(EG(function_table), lcname, (*function_name)->value.str.len+1, (void **)&func) == SUCCESS);
+	retval = (zend_hash_find(EG(function_table), lcname, Z_STRLEN_PP(function_name)+1, (void **)&func) == SUCCESS);
 	
 	efree(lcname);
 
@@ -1115,7 +1116,7 @@ ZEND_FUNCTION(leak)
 	if (ZEND_NUM_ARGS()>=1) {
 		if (zend_get_parameters_ex(1, &leak)==SUCCESS) {
 			convert_to_long_ex(leak);
-			leakbytes = (*leak)->value.lval;
+			leakbytes = Z_LVAL_PP(leak);
 		}
 	}
 
@@ -1172,7 +1173,7 @@ ZEND_FUNCTION(trigger_error)
 				ZEND_WRONG_PARAM_COUNT();
 			}
 			convert_to_long_ex(z_error_type);
-			error_type = (*z_error_type)->value.lval;
+			error_type = Z_LVAL_PP(z_error_type);
 			switch (error_type) {
 				case E_USER_ERROR:
 				case E_USER_WARNING:
@@ -1188,7 +1189,7 @@ ZEND_FUNCTION(trigger_error)
 			ZEND_WRONG_PARAM_COUNT();	
 	}
 	convert_to_string_ex(z_error_message);
-	zend_error(error_type, "%s", (*z_error_message)->value.str.val);
+	zend_error(error_type, "%s", Z_STRVAL_PP(z_error_message));
 	RETURN_TRUE;
 }
 /* }}} */
@@ -1416,11 +1417,16 @@ ZEND_FUNCTION(get_defined_functions)
 	zend_hash_apply_with_arguments(EG(function_table), (apply_func_args_t) copy_function_name, 2, internal, user);
 
 	if (zend_hash_add(Z_ARRVAL_P(return_value), "internal", sizeof("internal"), (void **)&internal, sizeof(zval *), NULL) == FAILURE) {
+		zval_ptr_dtor(&internal);
+		zval_ptr_dtor(&user);
+		zval_dtor(return_value);
 		zend_error(E_WARNING, "Cannot add internal functions to return value from get_defined_functions()");
 		RETURN_FALSE;
 	}
 
 	if (zend_hash_add(Z_ARRVAL_P(return_value), "user", sizeof("user"), (void **)&user, sizeof(zval *), NULL) == FAILURE) {
+		zval_ptr_dtor(&user);
+		zval_dtor(return_value);
 		zend_error(E_WARNING, "Cannot add user functions to return value from get_defined_functions()");
 		RETURN_FALSE;
 	}
@@ -1466,8 +1472,7 @@ ZEND_FUNCTION(create_function)
 			+2	/* for the curly braces */
 			+Z_STRLEN_PP(z_function_code);
 
-	eval_code = (char *) emalloc(eval_code_length);
-	sprintf(eval_code, "function " LAMBDA_TEMP_FUNCNAME "(%s){%s}", Z_STRVAL_PP(z_function_args), Z_STRVAL_PP(z_function_code));
+	zend_spprintf(&eval_code, 0, "function " LAMBDA_TEMP_FUNCNAME "(%s){%s}", Z_STRVAL_PP(z_function_args), Z_STRVAL_PP(z_function_code));
 
 	eval_name = zend_make_compiled_string_description("runtime-created function" TSRMLS_CC);
 	retval = zend_eval_string(eval_code, NULL, eval_name TSRMLS_CC);
@@ -1577,7 +1582,7 @@ ZEND_FUNCTION(get_loaded_extensions)
 /* }}} */
 
 
-/* {{{ proto array get_defined_constants(void)
+/* {{{ proto array get_defined_constants([mixed categorize])
    Return an array containing the names and values of all defined constants */
 ZEND_FUNCTION(get_defined_constants)
 {
@@ -1650,7 +1655,7 @@ static zval *debug_backtrace_get_args(void ***curpos TSRMLS_DC)
 {
 	void **p = *curpos - 2;
 	zval *arg_array, **arg;
-	int arg_count = (ulong) *p;
+	int arg_count = (int)(zend_uintptr_t) *p;
 
 	*curpos -= (arg_count+2);
 
@@ -1661,7 +1666,9 @@ static zval *debug_backtrace_get_args(void ***curpos TSRMLS_DC)
 	while (--arg_count >= 0) {
 		arg = (zval **) p++;
 		if (*arg) {
-			SEPARATE_ZVAL_TO_MAKE_IS_REF(arg);
+			if (Z_TYPE_PP(arg) != IS_OBJECT) {
+				SEPARATE_ZVAL_TO_MAKE_IS_REF(arg);
+			}
 			(*arg)->refcount++;
 			add_next_index_zval(arg_array, *arg);
 		} else {
@@ -1924,7 +1931,7 @@ ZEND_API void zend_fetch_debug_backtrace(zval *return_value, int skip_last, int 
 	}
 
 	/* skip debug_backtrace() */
-	if (skip_last--) {
+	if (skip_last-- && ptr) {
 		int arg_count = *((ulong*)(cur_arg_pos - 2));
 		cur_arg_pos -= (arg_count + 2);
 		frames_on_stack--;

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_wrapper.c,v 1.9.2.1 2006/01/01 12:50:00 sniper Exp $ */
+/* $Id: com_wrapper.c,v 1.9.2.1.2.5 2007/03/05 15:49:00 wharmby Exp $ */
 
 /* This module exports a PHP object as a COM object by wrapping it
  * using IDispatchEx */
@@ -74,7 +74,7 @@ static inline void trace(char *fmt, ...)
 	va_list ap;
 	char buf[4096];
 
-	sprintf(buf, "T=%08x ", GetCurrentThreadId());
+	snprintf(buf, sizeof(buf), "T=%08x ", GetCurrentThreadId());
 	OutputDebugString(buf);
 	
 	va_start(ap, fmt);
@@ -92,13 +92,17 @@ static inline void trace(char *fmt, ...)
 # define TSRMLS_FIXED()
 #endif
 
-#define FETCH_DISP(methname)	\
-	TSRMLS_FIXED() \
-	php_dispatchex *disp = (php_dispatchex*)This; \
-	trace(" PHP:%s %s\n", Z_OBJCE_P(disp->object)->name, methname); \
-	if (GetCurrentThreadId() != disp->engine_thread) \
-		return RPC_E_WRONG_THREAD;
-
+#define FETCH_DISP(methname)																			\
+	TSRMLS_FIXED() 																						\
+	php_dispatchex *disp = (php_dispatchex*)This; 														\
+	if (COMG(rshutdown_started)) {																		\
+		trace(" PHP Object:%p (name:unknown) %s\n", disp->object,  methname); 							\
+	} else {																							\
+		trace(" PHP Object:%p (name:%s) %s\n", disp->object, Z_OBJCE_P(disp->object)->name, methname); 	\
+	}																									\
+	if (GetCurrentThreadId() != disp->engine_thread) {													\
+		return RPC_E_WRONG_THREAD;																		\
+	}
 
 static HRESULT STDMETHODCALLTYPE disp_queryinterface( 
 	IDispatchEx *This,
@@ -298,6 +302,17 @@ static HRESULT STDMETHODCALLTYPE disp_invokeex(
 							&retval, pdp->cArgs, params, 1, NULL TSRMLS_CC)) {
 					ret = S_OK;
 					trace("function called ok\n");
+
+					/* Copy any modified values to callers copy of variant*/
+					for (i = 0; i < pdp->cArgs; i++) {
+						php_com_dotnet_object *obj = CDNO_FETCH(*params[i]);
+						VARIANT *srcvar = &obj->v;
+						VARIANT *dstvar = &pdp->rgvarg[ pdp->cArgs - 1 - i];
+						if ((V_VT(dstvar) & VT_BYREF) && obj->modified ) {
+							trace("percolate modified value for arg %d VT=%08x\n", i, V_VT(dstvar));
+							php_com_copy_variant(dstvar, srcvar TSRMLS_CC);   
+						}
+					}
 				} else {
 					trace("failed to call func\n");
 					ret = DISP_E_EXCEPTION;
@@ -463,7 +478,7 @@ static void generate_dispids(php_dispatchex *disp TSRMLS_DC)
 			   	&namelen, &pid, 0, &pos))) {
 			char namebuf[32];
 			if (keytype == HASH_KEY_IS_LONG) {
-				sprintf(namebuf, "%d", pid);
+				snprintf(namebuf, sizeof(namebuf), "%d", pid);
 				name = namebuf;
 				namelen = strlen(namebuf)+1;
 			}
@@ -477,6 +492,7 @@ static void generate_dispids(php_dispatchex *disp TSRMLS_DC)
 			/* add the mappings */
 			MAKE_STD_ZVAL(tmp);
 			ZVAL_STRINGL(tmp, name, namelen-1, 1);
+			pid = zend_hash_next_free_element(disp->dispid_to_name);
 			zend_hash_index_update(disp->dispid_to_name, pid, (void*)&tmp, sizeof(zval *), NULL);
 
 			MAKE_STD_ZVAL(tmp);
@@ -494,7 +510,7 @@ static void generate_dispids(php_dispatchex *disp TSRMLS_DC)
 
 			char namebuf[32];
 			if (keytype == HASH_KEY_IS_LONG) {
-				sprintf(namebuf, "%d", pid);
+				snprintf(namebuf, sizeof(namebuf), "%d", pid);
 				name = namebuf;
 				namelen = strlen(namebuf) + 1;
 			}
@@ -508,6 +524,7 @@ static void generate_dispids(php_dispatchex *disp TSRMLS_DC)
 			/* add the mappings */
 			MAKE_STD_ZVAL(tmp);
 			ZVAL_STRINGL(tmp, name, namelen-1, 1);
+			pid = zend_hash_next_free_element(disp->dispid_to_name);
 			zend_hash_index_update(disp->dispid_to_name, pid, (void*)&tmp, sizeof(zval *), NULL);
 
 			MAKE_STD_ZVAL(tmp);
@@ -521,7 +538,7 @@ static php_dispatchex *disp_constructor(zval *object TSRMLS_DC)
 {
 	php_dispatchex *disp = (php_dispatchex*)CoTaskMemAlloc(sizeof(php_dispatchex));
 
-	trace("constructing a COM proxy\n");
+	trace("constructing a COM wrapper for PHP object %p (%s)\n", object, Z_OBJCE_P(object)->name);
 	
 	if (disp == NULL)
 		return NULL;
@@ -546,8 +563,13 @@ static void disp_destructor(php_dispatchex *disp)
 {
 	TSRMLS_FETCH();
 	
-	trace("destroying COM wrapper for PHP object %s\n", Z_OBJCE_P(disp->object)->name);
-
+	/* Object store not available during request shutdown */
+	if (COMG(rshutdown_started)) {
+		trace("destroying COM wrapper for PHP object %p (name:unknown)\n", disp->object);
+	} else {
+		trace("destroying COM wrapper for PHP object %p (name:%s)\n", disp->object, Z_OBJCE_P(disp->object)->name);
+	}
+	
 	disp->id = 0;
 	
 	if (disp->refcount > 0)

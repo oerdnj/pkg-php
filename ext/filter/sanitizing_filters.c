@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: sanitizing_filters.c,v 1.11.2.5 2006/10/03 11:42:23 pajoye Exp $ */
+/* $Id: sanitizing_filters.c,v 1.11.2.9 2007/01/01 09:36:00 sebastian Exp $ */
 
 #include "php_filter.h"
 #include "filter_private.h"
@@ -27,52 +27,29 @@ typedef unsigned long filter_map[256];
 /* }}} */
 
 /* {{{ HELPER FUNCTIONS */
-static void php_filter_encode_html(zval *value, const char* chars, int encode_nul)
+static void php_filter_encode_html(zval *value, const unsigned char *chars)
 {
-	register int x, y;
-	smart_str str = {0};
-	int len = Z_STRLEN_P(value);
-	char *s = Z_STRVAL_P(value);
-
-	if (Z_STRLEN_P(value) == 0) {
-		return;
-	}
-
-	for (x = 0, y = 0; len--; x++, y++) {
-		if (strchr(chars, s[x]) || (encode_nul && s[x] == 0)) {
-			smart_str_appendl(&str, "&#", 2);
-			smart_str_append_long(&str, s[x]);
-			smart_str_appendc(&str, ';');
-		} else {
-			smart_str_appendc(&str, s[x]);
-		}
-	}
-	smart_str_0(&str);
-	efree(Z_STRVAL_P(value));
-	Z_STRVAL_P(value) = str.c;
-	Z_STRLEN_P(value) = str.len;
-}
-
-static void php_filter_encode_html_high_low(zval *value, long flags)
-{
-	register int x, y;
 	smart_str str = {0};
 	int len = Z_STRLEN_P(value);
 	unsigned char *s = (unsigned char *)Z_STRVAL_P(value);
+	unsigned char *e = s + len;
 
 	if (Z_STRLEN_P(value) == 0) {
 		return;
 	}
-	
-	for (x = 0, y = 0; len--; x++, y++) {
-		if (((flags & FILTER_FLAG_ENCODE_LOW) && (s[x] < 32)) || ((flags & FILTER_FLAG_ENCODE_HIGH) && (s[x] > 127))) {
+
+	while (s < e) {
+		if (chars[*s]) {
 			smart_str_appendl(&str, "&#", 2);
-			smart_str_append_unsigned(&str, s[x]);
+			smart_str_append_unsigned(&str, (unsigned long)*s);
 			smart_str_appendc(&str, ';');
 		} else {
-			smart_str_appendc(&str, s[x]);
+			/* XXX: this needs to be optimized to work with blocks of 'safe' chars */
+			smart_str_appendc(&str, *s);
 		}
+		s++;
 	}
+
 	smart_str_0(&str);
 	efree(Z_STRVAL_P(value));
 	Z_STRVAL_P(value) = str.c;
@@ -87,27 +64,47 @@ static const unsigned char hexchars[] = "0123456789ABCDEF";
 
 #define DEFAULT_URL_ENCODE    LOWALPHA HIALPHA DIGIT "-._"
 
-static void php_filter_encode_url(zval *value, const char* chars, int high, int low, int encode_nul)
+static void php_filter_encode_url(zval *value, const unsigned char* chars, const int char_len, int high, int low, int encode_nul)
 {
-	register int x, y;
-	unsigned char *str;
-	int len = Z_STRLEN_P(value);
-	char *s = Z_STRVAL_P(value);
+	unsigned char *str, *p;
+	unsigned char tmp[256];
+	unsigned char *s = (unsigned char *)chars;
+	unsigned char *e = s + char_len;
 
-	str = (unsigned char *) safe_emalloc(3, len, 1);
-	for (x = 0, y = 0; len--; x++, y++) {
-		str[y] = (unsigned char) s[x];
+	memset(tmp, 1, sizeof(tmp)-1);
 
-		if ((strlen(chars) && !strchr(chars, str[y])) || (high && str[y] > 127) || (low && str[y] < 32) || (encode_nul && str[y] == 0)) {
-			str[y++] = '%';
-			str[y++] = hexchars[(unsigned char) s[x] >> 4];
-			str[y] = hexchars[(unsigned char) s[x] & 15];
-		}
+	while (s < e) {
+		tmp[*s++] = 0;
 	}
-	str[y] = '\0';
+/* XXX: This is not needed since these chars in the allowed list never include the high/low/null value
+	if (encode_nul) {
+		tmp[0] = 1;
+	}
+	if (high) {
+		memset(tmp + 127, 1, sizeof(tmp) - 127);
+	}
+	if (low) {
+		memset(tmp, 1, 32);
+	}
+*/
+	p = str = (unsigned char *) safe_emalloc(3, Z_STRLEN_P(value), 1);
+	s = (unsigned char *)Z_STRVAL_P(value);
+	e = s + Z_STRLEN_P(value);
+
+	while (s < e) {
+		if (tmp[*s]) {
+			*p++ = '%';
+			*p++ = hexchars[(unsigned char) *s >> 4];
+			*p++ = hexchars[(unsigned char) *s & 15];
+		} else {
+			*p++ = *s;	
+		}
+		s++;	
+	}
+	*p = '\0';
 	efree(Z_STRVAL_P(value));
 	Z_STRVAL_P(value) = (char *)str;
-	Z_STRLEN_P(value) = y;
+	Z_STRLEN_P(value) = p - str;
 }
 
 static void php_filter_strip(zval *value, long flags)
@@ -181,30 +178,34 @@ static void filter_map_apply(zval *value, filter_map *map)
 void php_filter_string(PHP_INPUT_FILTER_PARAM_DECL)
 {
 	size_t new_len;
-	
+	unsigned char enc[256] = {0};
+
+	/* strip high/strip low ( see flags )*/
+	php_filter_strip(value, flags);
+
+	if (!(flags & FILTER_FLAG_NO_ENCODE_QUOTES)) {
+		enc['\''] = enc['"'] = 1;
+	}
+	if (flags & FILTER_FLAG_ENCODE_AMP) {
+		enc['&'] = 1;
+	}
+	if (flags & FILTER_FLAG_ENCODE_LOW) {
+		memset(enc, 1, 32);
+	}
+	if (flags & FILTER_FLAG_ENCODE_HIGH) {
+		memset(enc + 127, 1, sizeof(enc) - 127);
+	}
+
+	php_filter_encode_html(value, enc);
+
 	/* strip tags, implicitly also removes \0 chars */
-	new_len = php_strip_tags(Z_STRVAL_P(value), Z_STRLEN_P(value), NULL, NULL, 0);
+	new_len = php_strip_tags_ex(Z_STRVAL_P(value), Z_STRLEN_P(value), NULL, NULL, 0, 1);
 	Z_STRLEN_P(value) = new_len;
 
 	if (new_len == 0) {
 		zval_dtor(value);
 		ZVAL_EMPTY_STRING(value);
 		return;
-	}
-
-	if (! (flags & FILTER_FLAG_NO_ENCODE_QUOTES)) {
-		/* encode ' and " to numerical entity */
-		php_filter_encode_html(value, "'\"", 0);
-	}
-	/* strip high/strip low ( see flags )*/
-	php_filter_strip(value, flags);
-
-	/* encode low/encode high flags */
-	php_filter_encode_html_high_low(value, flags);
-
-	/* also all the flags - & encode as %xx */
-	if (flags & FILTER_FLAG_ENCODE_AMP) {
-		php_filter_encode_html(value, "&", 0);
 	}
 }
 /* }}} */
@@ -215,18 +216,28 @@ void php_filter_encoded(PHP_INPUT_FILTER_PARAM_DECL)
 	/* apply strip_high and strip_low filters */
 	php_filter_strip(value, flags);
 	/* urlencode */
-	php_filter_encode_url(value, DEFAULT_URL_ENCODE, flags & FILTER_FLAG_ENCODE_HIGH, flags & FILTER_FLAG_ENCODE_LOW, 1);
+	php_filter_encode_url(value, (unsigned char *)DEFAULT_URL_ENCODE, sizeof(DEFAULT_URL_ENCODE)-1, flags & FILTER_FLAG_ENCODE_HIGH, flags & FILTER_FLAG_ENCODE_LOW, 1);
 }
 /* }}} */
 
 /* {{{ php_filter_special_chars */
 void php_filter_special_chars(PHP_INPUT_FILTER_PARAM_DECL)
 {
-	/* encodes ' " < > & \0 to numerical entities */
-	php_filter_encode_html(value, "'\"<>&", 1);
-	/* if strip low is not set, then we encode them as &#xx; */
+	unsigned char enc[256] = {0};
+
 	php_filter_strip(value, flags);
-	php_filter_encode_html_high_low(value, FILTER_FLAG_ENCODE_LOW | flags);
+
+	/* encodes ' " < > & \0 to numerical entities */
+	enc['\''] = enc['"'] = enc['<'] = enc['>'] = enc['&'] = enc[0] = 1;
+
+	/* if strip low is not set, then we encode them as &#xx; */
+	memset(enc, 1, 32);
+
+	if (flags & FILTER_FLAG_ENCODE_HIGH) {
+		memset(enc + 127, 1, sizeof(enc) - 127);
+	}
+	
+	php_filter_encode_html(value, enc);	
 }
 /* }}} */
 
@@ -235,11 +246,21 @@ void php_filter_unsafe_raw(PHP_INPUT_FILTER_PARAM_DECL)
 {
 	/* Only if no flags are set (optimization) */
 	if (flags != 0 && Z_STRLEN_P(value) > 0) {
+		unsigned char enc[256] = {0};
+
 		php_filter_strip(value, flags);
+
 		if (flags & FILTER_FLAG_ENCODE_AMP) {
-			php_filter_encode_html(value, "&", 0);
+			enc['&'] = 1;
 		}
-		php_filter_encode_html_high_low(value, flags);
+		if (flags & FILTER_FLAG_ENCODE_LOW) {
+			memset(enc, 1, 32);
+		}
+		if (flags & FILTER_FLAG_ENCODE_HIGH) {
+			memset(enc + 127, 1, sizeof(enc) - 127);
+		}
+
+		php_filter_encode_html(value, enc);	
 	}
 }
 /* }}} */

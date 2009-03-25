@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: fdf.c,v 1.89.2.2.2.4 2006/07/23 23:55:46 sniper Exp $ */
+/* $Id: fdf.c,v 1.89.2.2.2.9 2007/03/05 21:54:46 stas Exp $ */
 
 /* FdfTk lib 2.0 is a Complete C/C++ FDF Toolkit available from
    http://beta1.adobe.com/ada/acrosdk/forms.html. */
@@ -1105,7 +1105,7 @@ PHP_FUNCTION(fdf_save_string)
 					RETVAL_FALSE;
 					goto err;
 				}
-				buf = emalloc(stat.st_size +1);
+				buf = safe_emalloc(1, stat.st_size, 1);
 				fread(buf, stat.st_size, 1, fp);
 				buf[stat.st_size] = '\0';
 				fclose(fp);
@@ -1442,22 +1442,26 @@ SAPI_POST_HANDLER_FUNC(fdf_post_handler)
 			if(nBytes>0) {
 				err = FDFGetValue(theFDF, name, value, value_len-1, &nBytes);
 				if(err == FDFErcOK && nBytes != 0) {
+					unsigned int new_val_len;
+
 					for(p=value;*p;p++) if(*p=='\r') *p='\n';
 					if(lastfieldname) efree(lastfieldname);
-					lastfieldname = estrdup(name);		
-					php_register_variable(name, value, array_ptr TSRMLS_CC);
+					lastfieldname = estrdup(name);
+
+					if (sapi_module.input_filter(PARSE_POST, name, &value, nBytes, &new_val_len TSRMLS_CC)) {
+						php_register_variable_safe(name, value, new_val_len, array_ptr TSRMLS_CC);
+					}
 				} 
 			}
 		}   
-		
 		FDFClose(theFDF);
-		VCWD_UNLINK((const char *)filename);
-		efree(filename);
 
 		if(name)          efree(name);
 		if(value)         efree(value);
 		if(lastfieldname) efree(lastfieldname);
 	} 
+	VCWD_UNLINK((const char *)filename);
+	efree(filename);
 }
 /* }}} */
 
@@ -1726,8 +1730,7 @@ PHP_FUNCTION(fdf_get_attachment) {
 		RETURN_FALSE;
 	}
 
-	strncpy(pathbuf	, savepath, MAXPATHLEN-1);
-	pathbuf[MAXPATHLEN-1] = '\0';
+	strlcpy(pathbuf, savepath, sizeof(pathbuf));
 
 	if(0 == stat(pathbuf, &statBuf)) {
 		is_dir = S_ISDIR(statBuf.st_mode);

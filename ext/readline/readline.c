@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: readline.c,v 1.42.2.3.2.1 2006/09/04 18:59:01 nlopess Exp $ */
+/* $Id: readline.c,v 1.42.2.3.2.3 2007/02/12 01:23:17 iliaa Exp $ */
 
 /* {{{ includes & prototypes */
 
@@ -453,6 +453,7 @@ PHP_FUNCTION(readline_completion_function)
 
 	if (!zend_is_callable(arg, 0, &name)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s is not callable", name);
+		efree(name);
 		RETURN_FALSE;
 	}
 

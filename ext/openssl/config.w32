@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.1 2003/12/05 23:13:27 wez Exp $
+// $Id: config.w32,v 1.1.6.1 2007/01/07 18:38:22 iliaa Exp $
 // vim:ft=javascript
 
 ARG_WITH("openssl", "OpenSSL support", "no");
@@ -11,6 +11,7 @@ if (PHP_OPENSSL != "no") {
 
 		AC_DEFINE("HAVE_OPENSSL_EXT", PHP_OPENSSL_SHARED ? 0 : 1, "Have openssl");
 		AC_DEFINE("HAVE_OPENSSL", 1);
+		AC_DEFINE("HAVE_DSA_DEFAULT_METHOD", 1);
 	}
 }
 

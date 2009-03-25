@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
  */
 
 
-/* $Id: incomplete_class.c,v 1.28.2.2 2006/01/28 06:14:34 fmk Exp $ */
+/* $Id: incomplete_class.c,v 1.28.2.2.2.2 2007/02/01 14:07:43 tony2001 Exp $ */
 
 #include "php.h"
 #include "basic_functions.h"
@@ -39,14 +39,20 @@ static zend_object_handlers php_incomplete_object_handlers;
 static void incomplete_class_message(zval *object, int error_type TSRMLS_DC)
 {
 	char *class_name;
+	zend_bool class_name_alloced = 1;
 
 	class_name = php_lookup_class_name(object, NULL);
 	
 	if (!class_name) {
+		class_name_alloced = 0;
 		class_name = "unknown";
 	}
 	
 	php_error_docref(NULL TSRMLS_CC, error_type, INCOMPLETE_CLASS_MSG, class_name);
+
+	if (class_name_alloced) {
+		efree(class_name);
+	}
 }
 /* }}} */
 

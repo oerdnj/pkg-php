@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_xmlreader.c,v 1.13.2.14.2.5 2006/10/04 13:30:53 tony2001 Exp $ */
+/* $Id: php_xmlreader.c,v 1.13.2.14.2.7 2007/01/12 12:17:32 tony2001 Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1274,7 +1274,6 @@ PHP_MINIT_FUNCTION(xmlreader)
 }
 /* }}} */
 
-
 /* {{{ PHP_MSHUTDOWN_FUNCTION
  */
 PHP_MSHUTDOWN_FUNCTION(xmlreader)
@@ -1293,10 +1292,6 @@ PHP_MINFO_FUNCTION(xmlreader)
 		php_info_print_table_row(2, "XMLReader", "enabled");
 	}
 	php_info_print_table_end();
-
-	/* Remove comments if you have entries in php.ini
-	DISPLAY_INI_ENTRIES();
-	*/
 }
 /* }}} */
 

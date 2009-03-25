@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5													      |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group								  |
+   | Copyright (c) 1997-2007 The PHP Group								  |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,	  |
    | that is bundled with this package in the file LICENSE, and is		  |
@@ -17,7 +17,7 @@
    | PHP 4.0 patches by Zeev Suraski <zeev@zend.com>					  |
    +----------------------------------------------------------------------+
  */
-/* $Id: mod_php5.c,v 1.11.2.1.2.3 2006/08/03 09:56:50 dmitry Exp $ */
+/* $Id: mod_php5.c,v 1.11.2.1.2.5 2007/01/01 09:36:12 sebastian Exp $ */
 
 #include "php_apache_http.h"
 
@@ -736,16 +736,10 @@ static int send_php(request_rec *r, int display_source_mode, char *filename)
 static int send_parsed_php(request_rec * r)
 {
 	int result = send_php(r, 0, NULL);
-
-#if MEMORY_LIMIT
-	{
-		char *mem_usage;
-		TSRMLS_FETCH();
+	TSRMLS_FETCH();
  
-		mem_usage = ap_psprintf(r->pool, "%u", zend_memory_peak_usage(1 TSRMLS_CC));
-		ap_table_setn(r->notes, "mod_php_memory_usage", mem_usage);
-	}
-#endif
+	ap_table_setn(r->notes, "mod_php_memory_usage",
+		ap_psprintf(r->pool, "%u", zend_memory_peak_usage(1 TSRMLS_CC)));
 
 	return result;
 }
