@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: plain_wrapper.c,v 1.39.2.3 2004/10/28 05:05:39 tony2001 Exp $ */
+/* $Id: plain_wrapper.c,v 1.39.2.7 2005/05/24 10:14:05 tony2001 Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -155,6 +155,7 @@ PHPAPI php_stream *_php_stream_fopen_tmpfile(int dummy STREAMS_DC TSRMLS_DC)
 		php_stream *stream = php_stream_fopen_from_fd_rel(fd, "r+b", NULL);
 		if (stream) {
 			php_stdio_stream_data *self = (php_stdio_stream_data*)stream->abstract;
+			stream->wrapper = &php_plain_files_wrapper;
 
 			self->temp_file_name = opened_path;
 			self->lock_flag = LOCK_UN;
@@ -461,6 +462,9 @@ static int php_stdiop_cast(php_stream *stream, int castas, void **ret TSRMLS_DC)
 					/* we were opened as a plain file descriptor, so we
 					 * need fdopen now */
 					data->file = fdopen(data->fd, stream->mode);
+					if (data->file == NULL) {
+						return FAILURE;
+					}
 				}
 				
 				*(FILE**)ret = data->file;
@@ -578,7 +582,7 @@ static int php_stdiop_set_option(php_stream *stream, int option, int value, void
 				return 0;
 			}
 
-			if (!flock(fd, value) || (errno == EWOULDBLOCK && value & LOCK_NB)) {
+			if (!flock(fd, value)) {
 				data->lock_flag = value;
 				return 0;
 			} else {

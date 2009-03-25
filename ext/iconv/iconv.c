@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: iconv.c,v 1.117.2.5 2005/03/23 23:08:24 moriyoshi Exp $ */
+/* $Id: iconv.c,v 1.117.2.6 2005/06/08 23:51:05 iliaa Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -516,7 +516,7 @@ static php_iconv_err_t _php_iconv_strlen(unsigned int *pretval, const char *str,
 #endif
 	}
 
-	out_left = 0;
+	errno = out_left = 0;
 
 	for (in_p = str, in_left = nbytes, cnt = 0; in_left > 0; cnt+=2) {
 		size_t prev_in_left;
@@ -547,6 +547,7 @@ static php_iconv_err_t _php_iconv_strlen(unsigned int *pretval, const char *str,
 			break;
 
 		case E2BIG:
+		case 0:
 			*pretval = cnt;
 			break;
 

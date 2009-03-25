@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_API.c,v 1.256.2.10 2005/03/16 04:19:20 wez Exp $ */
+/* $Id: zend_API.c,v 1.256.2.18 2005/07/25 20:26:49 helly Exp $ */
 
 #include "zend.h"
 #include "zend_execute.h"
@@ -152,7 +152,29 @@ ZEND_API int _zend_get_parameters_array_ex(int param_count, zval ***argument_arr
 	}
 
 	while (param_count-->0) {
-		*(argument_array++) = (zval **) p-(arg_count--);
+		zval **value = (zval**)(p-arg_count);
+
+		if (EG(ze1_compatibility_mode) && Z_TYPE_PP(value) == IS_OBJECT) {
+			zval *value_ptr;
+			char *class_name;
+			zend_uint class_name_len;
+			int dup;
+			
+			dup = zend_get_object_classname(*value, &class_name, &class_name_len TSRMLS_CC);
+
+			ALLOC_ZVAL(value_ptr);
+			*value_ptr = **value;
+			INIT_PZVAL(value_ptr);
+			zend_error(E_STRICT, "Implicit cloning object of class '%s' because of 'zend.ze1_compatibility_mode'", class_name);
+			if(!dup) {
+				efree(class_name);
+			}
+			value_ptr->value.obj = Z_OBJ_HANDLER_PP(value, clone_obj)(*value TSRMLS_CC);
+			zval_ptr_dtor(value);
+			*value = value_ptr;
+		}
+		*(argument_array++) = value;
+		arg_count--;
 	}
 
 	return SUCCESS;
@@ -161,7 +183,10 @@ ZEND_API int _zend_get_parameters_array_ex(int param_count, zval ***argument_arr
 
 ZEND_API void zend_wrong_param_count(TSRMLS_D)
 {
-	zend_error(E_WARNING, "Wrong parameter count for %s()", get_active_function_name(TSRMLS_C));
+	char *space;
+	char *class_name = get_active_class_name(&space TSRMLS_CC);
+	
+	zend_error(E_WARNING, "Wrong parameter count for %s%s%s()", class_name, space, get_active_function_name(TSRMLS_C));
 }
 
 
@@ -207,6 +232,20 @@ ZEND_API zend_class_entry *zend_get_class_entry(zval *zobject TSRMLS_DC)
 		zend_error(E_ERROR, "Class entry requested for an object without PHP class");
 		return NULL;
 	}
+}
+
+/* returns 1 if you need to copy result, 0 if it's already a copy */
+ZEND_API int zend_get_object_classname(zval *object, char **class_name, zend_uint *class_name_len TSRMLS_DC)
+{
+	if (Z_OBJ_HT_P(object)->get_class_name == NULL ||
+		Z_OBJ_HT_P(object)->get_class_name(object, class_name, class_name_len, 0 TSRMLS_CC) != SUCCESS) {
+		zend_class_entry *ce = Z_OBJCE_P(object);
+		
+		*class_name = ce->name;
+		*class_name_len = ce->name_length;
+		return 1;
+	}
+	return 0;
 }
 
 
@@ -452,8 +491,10 @@ static int zend_parse_arg(int arg_num, zval **arg, va_list *va, char **spec, int
 	expected_type = zend_parse_arg_impl(arg, va, spec TSRMLS_CC);
 	if (expected_type) {
 		if (!quiet) {
-			zend_error(E_WARNING, "%s() expects parameter %d to be %s, %s given",
-					get_active_function_name(TSRMLS_C), arg_num, expected_type,
+			char *space;
+			char *class_name = get_active_class_name(&space TSRMLS_CC);
+			zend_error(E_WARNING, "%s%s%s() expects parameter %d to be %s, %s given",
+					class_name, space, get_active_function_name(TSRMLS_C), arg_num, expected_type,
 					zend_zval_type_name(*arg));
 		}
 		return FAILURE;
@@ -690,8 +731,13 @@ ZEND_API void zend_merge_properties(zval *obj, HashTable *properties, int destro
 ZEND_API void zend_update_class_constants(zend_class_entry *class_type TSRMLS_DC)
 {
 	if (!class_type->constants_updated) {
+		zend_class_entry **scope = EG(in_execution)?&EG(scope):&CG(active_class_entry);
+		zend_class_entry *old_scope = *scope;
+
+		*scope = class_type;
 		zend_hash_apply_with_argument(&class_type->default_properties, (apply_func_arg_t) zval_update_constant, (void *) 1 TSRMLS_CC);
 		zend_hash_apply_with_argument(class_type->static_members, (apply_func_arg_t) zval_update_constant, (void *) 1 TSRMLS_CC);
+		*scope = old_scope;
 		class_type->constants_updated = 1;
 	}
 }
@@ -1305,7 +1351,7 @@ ZEND_API int zend_register_functions(zend_class_entry *scope, zend_function_entr
 		if (ptr->flags) {
 			if (!(ptr->flags & ZEND_ACC_PPP_MASK)) {
 				zend_error(error_type, "Invalid access level for %s%s%s() - access must be exactly one of public, protected or private", scope ? scope->name : "", scope ? "::" : "", ptr->fname);
-				internal_function->fn_flags |= ZEND_ACC_PUBLIC;
+				internal_function->fn_flags = ZEND_ACC_PUBLIC;
 			} else {
 				internal_function->fn_flags = ptr->flags;
 			}
@@ -1712,7 +1758,7 @@ ZEND_API int zend_disable_class(char *class_name, uint class_name_length TSRMLS_
 	return 1;
 }
 
-ZEND_API zend_bool zend_is_callable(zval *callable, zend_bool syntax_only, char **callable_name)
+ZEND_API zend_bool zend_is_callable(zval *callable, uint check_flags, char **callable_name)
 {
 	char *lcname;
 	zend_bool retval = 0;
@@ -1723,7 +1769,7 @@ ZEND_API zend_bool zend_is_callable(zval *callable, zend_bool syntax_only, char 
 			if (callable_name) {
 				*callable_name = estrndup(Z_STRVAL_P(callable), Z_STRLEN_P(callable));
 			}
-			if (syntax_only) {
+			if (check_flags & IS_CALLABLE_CHECK_SYNTAX_ONLY) {
 				return 1;
 			}
 
@@ -1760,7 +1806,7 @@ ZEND_API zend_bool zend_is_callable(zval *callable, zend_bool syntax_only, char 
 							memcpy(ptr, Z_STRVAL_PP(method), Z_STRLEN_PP(method) + 1);
 						}
 
-						if (syntax_only)
+						if (check_flags & IS_CALLABLE_CHECK_SYNTAX_ONLY)
 							return 1;
 
 						lcname = zend_str_tolower_dup(Z_STRVAL_PP(obj), Z_STRLEN_PP(obj));
@@ -1789,14 +1835,27 @@ ZEND_API zend_bool zend_is_callable(zval *callable, zend_bool syntax_only, char 
 							memcpy(ptr, Z_STRVAL_PP(method), Z_STRLEN_PP(method) + 1);
 						}
 
-						if (syntax_only)
+						if (check_flags & IS_CALLABLE_CHECK_SYNTAX_ONLY)
 							return 1;
 					}
 
 					if (ce) {
+						zend_function *fbc;
+
 						lcname = zend_str_tolower_dup(Z_STRVAL_PP(method), Z_STRLEN_PP(method));
-						if (zend_hash_exists(&ce->function_table, lcname, Z_STRLEN_PP(method)+1)) {
+						if (zend_hash_find(&ce->function_table, lcname, Z_STRLEN_PP(method)+1, (void **)&fbc) == SUCCESS) {
 							retval = 1;
+							if ((check_flags & IS_CALLABLE_CHECK_NO_ACCESS) == 0) {
+								if (fbc->op_array.fn_flags & ZEND_ACC_PRIVATE) {
+									if (!zend_check_private(fbc, (Z_TYPE_PP(obj) == IS_STRING)?EG(scope):(*obj)->value.obj.handlers->get_class_entry(*obj TSRMLS_CC), lcname, Z_STRLEN_PP(method) TSRMLS_CC)) {
+										retval = 0;
+									}
+								} else if ((fbc->common.fn_flags & ZEND_ACC_PROTECTED)) {
+									if (!zend_check_protected(fbc->common.scope, EG(scope))) {
+										retval = 0;
+									}
+								}
+							}
 						}
 						/* check for __call too */
 						if (retval == 0 && ce->__call != 0) {
@@ -1828,8 +1887,10 @@ ZEND_API zend_bool zend_is_callable(zval *callable, zend_bool syntax_only, char 
 
 ZEND_API zend_bool zend_make_callable(zval *callable, char **callable_name TSRMLS_DC)
 {
-	char *lcname, *func;
+	char *lcname, *func, *class_name;
 	zend_bool retval = 0;
+	zend_class_entry **pce;
+	int class_name_len;
 
 	if (zend_is_callable(callable, 0, callable_name)) {
 		return 1;
@@ -1839,12 +1900,18 @@ ZEND_API zend_bool zend_make_callable(zval *callable, char **callable_name TSRML
 			lcname = zend_str_tolower_dup(Z_STRVAL_P(callable), Z_STRLEN_P(callable));
 
 			if ((func = strstr(lcname, "::")) != NULL) {
-				zval_dtor(callable);
-				array_init(callable);
-				add_next_index_stringl(callable, lcname, func - lcname, 1);
-				func += 2;
-				add_next_index_stringl(callable, func, strlen(func), 1);
-				retval = 1; 
+				*func = '\0';
+				class_name_len = func - lcname;
+				class_name = estrndup(Z_STRVAL_P(callable), class_name_len);
+				if (zend_lookup_class(class_name, class_name_len, &pce TSRMLS_CC) == SUCCESS) {
+					zval_dtor(callable);
+					array_init(callable);
+					add_next_index_stringl(callable, lcname, class_name_len, 1);
+					func += 2;
+					add_next_index_stringl(callable, func, strlen(func), 1);
+					retval = 1; 
+				}
+				efree(class_name);
 			}
 			efree(lcname);
 			break;
@@ -1984,7 +2051,12 @@ ZEND_API void zend_update_property(zend_class_entry *scope, zval *object, char *
 	EG(scope) = scope;
 
 	if (!Z_OBJ_HT_P(object)->write_property) {
-		zend_error(E_CORE_ERROR, "Property %s of class %s cannot be updated", Z_OBJCE_P(object)->name, name);
+		char *class_name;
+		zend_uint class_name_len;
+
+		zend_get_object_classname(object, &class_name, &class_name_len TSRMLS_CC);
+		
+		zend_error(E_CORE_ERROR, "Property %s of class %s cannot be updated", name, class_name);
 	}
 	ZVAL_STRINGL(&property, name, name_length, 0);
 	Z_OBJ_HT_P(object)->write_property(object, &property, value TSRMLS_CC);
@@ -2033,7 +2105,11 @@ ZEND_API zval *zend_read_property(zend_class_entry *scope, zval *object, char *n
 	EG(scope) = scope;
 
 	if (!Z_OBJ_HT_P(object)->read_property) {
-		zend_error(E_CORE_ERROR, "Property %s of class %s cannot be read", Z_OBJCE_P(object)->name, name);
+		char *class_name;
+		zend_uint class_name_len;
+
+		zend_get_object_classname(object, &class_name, &class_name_len TSRMLS_CC);
+		zend_error(E_CORE_ERROR, "Property %s of class %s cannot be read", name, class_name);
 	}
 	ZVAL_STRINGL(&property, name, name_length, 0);
 	value = Z_OBJ_HT_P(object)->read_property(object, &property, silent TSRMLS_CC);

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_compile.h,v 1.284.2.2 2004/09/16 00:44:12 andi Exp $ */
+/* $Id: zend_compile.h,v 1.284.2.6 2005/06/24 08:45:43 dmitry Exp $ */
 
 #ifndef ZEND_COMPILE_H
 #define ZEND_COMPILE_H
@@ -41,10 +41,13 @@
 #define DEC_BPC(op_array)	if (CG(interactive)) { ((op_array)->backpatch_count--); }
 #define HANDLE_INTERACTIVE()  if (CG(interactive)) { execute_new_code(TSRMLS_C); }
 
-#define RESET_DOC_COMMENT()      \
-    {                            \
-        CG(doc_comment) = NULL;  \
-        CG(doc_comment_len) = 0; \
+#define RESET_DOC_COMMENT()        \
+    {                              \
+        if (CG(doc_comment)) {     \
+          efree(CG(doc_comment));  \
+          CG(doc_comment) = NULL;  \
+        }                          \
+        CG(doc_comment_len) = 0;   \
     }
 
 typedef struct _zend_op_array zend_op_array;
@@ -130,6 +133,9 @@ typedef struct _zend_try_catch_element {
 
 /* method flag (bc only), any method that has this flag can be used statically and non statically. */
 #define ZEND_ACC_ALLOW_STATIC	0x10000
+
+/* shadow of parent's private method/property */
+#define ZEND_ACC_SHADOW 0x20000
 
 char *zend_visibility_string(zend_uint fn_flags);
 
@@ -738,6 +744,7 @@ int zendlex(znode *zendlval TSRMLS_DC);
 #define ZEND_FETCH_CLASS_MAIN		3
 #define ZEND_FETCH_CLASS_GLOBAL		4
 #define ZEND_FETCH_CLASS_AUTO		5
+#define ZEND_FETCH_CLASS_INTERFACE	6
 
 
 /* variable parsing type (compile-time) */
@@ -798,6 +805,7 @@ int zendlex(znode *zendlval TSRMLS_DC);
 
 #define ZEND_ARG_SEND_BY_REF (1<<0)
 #define ZEND_ARG_COMPILE_TIME_BOUND (1<<1)
+#define ZEND_ARG_SEND_FUNCTION (1<<2)
 
 #define AI_USE_PTR(ai) \
 	if ((ai).ptr_ptr) { \

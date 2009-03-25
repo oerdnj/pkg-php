@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_virtual_cwd.h,v 1.42.2.1 2005/03/11 11:07:17 hyanantha Exp $ */
+/* $Id: tsrm_virtual_cwd.h,v 1.42.2.3 2005/07/16 11:50:59 hyanantha Exp $ */
 
 #ifndef VIRTUAL_CWD_H
 #define VIRTUAL_CWD_H
@@ -74,10 +74,8 @@ typedef unsigned short mode_t;
 #define DEFAULT_DIR_SEPARATOR	';'
 #define IS_SLASH(c)	((c) == '/' || (c) == '\\')
 #define IS_SLASH_P(c)	IS_SLASH(*(c))
-#define COPY_WHEN_ABSOLUTE(path) \
-    (strchr(path, ':') - path + 1)  /* Take the volume name which ends with a colon */
 #define IS_ABSOLUTE_PATH(path, len) \
-    (strchr(path, ':') != NULL) /* Colon indicates volume name */
+    ((strchr(path, ':') != NULL) || ((len >= 1) && ((path[0] == '/') || (path[0] == '\\'))))
 
 #else
 #ifdef HAVE_DIRENT_H
@@ -141,11 +139,7 @@ CWD_API FILE *virtual_fopen(const char *path, const char *mode TSRMLS_DC);
 CWD_API int virtual_open(const char *path TSRMLS_DC, int flags, ...);
 CWD_API int virtual_creat(const char *path, mode_t mode TSRMLS_DC);
 CWD_API int virtual_rename(char *oldname, char *newname TSRMLS_DC);
-#if !(defined(NETWARE) && defined(CLIB_STAT_PATCH))
 CWD_API int virtual_stat(const char *path, struct stat *buf TSRMLS_DC);
-#else
-CWD_API int virtual_stat(const char *path, struct stat_libc *buf TSRMLS_DC);
-#endif
 #if !defined(TSRM_WIN32) && !defined(NETWARE)
 CWD_API int virtual_lstat(const char *path, struct stat *buf TSRMLS_DC);
 #endif

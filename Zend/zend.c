@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend.c,v 1.287.2.4 2005/03/15 23:47:12 wez Exp $ */
+/* $Id: zend.c,v 1.287.2.12 2005/07/22 07:33:27 dmitry Exp $ */
 
 #include "zend.h"
 #include "zend_extensions.h"
@@ -803,6 +803,13 @@ void zend_deactivate_modules(TSRMLS_D)
 	} zend_end_try();
 }
 
+void zend_call_destructors(TSRMLS_D) 
+{
+	zend_try {
+		shutdown_destructors(TSRMLS_C);
+	} zend_end_try();
+}
+
 void zend_deactivate(TSRMLS_D)
 {
 	/* we're no longer executing anything */
@@ -819,6 +826,8 @@ void zend_deactivate(TSRMLS_D)
 	zend_try {
 		shutdown_compiler(TSRMLS_C);
 	} zend_end_try();
+
+	zend_destroy_rsrc_list(&EG(regular_list) TSRMLS_CC);
 
 	zend_try {
 		zend_ini_deactivate(TSRMLS_C);
@@ -872,8 +881,6 @@ ZEND_API void zend_error(int type, const char *format, ...)
 	char *error_filename;
 	uint error_lineno;
 	zval *orig_user_error_handler;
-	zval *orig_garbage[2];
-	int  orig_garbage_ptr;
 	TSRMLS_FETCH();
 
 	/* Obtain relevant filename and lineno */
@@ -962,7 +969,7 @@ ZEND_API void zend_error(int type, const char *format, ...)
 
 			z_context->value.ht = EG(active_symbol_table);
 			z_context->type = IS_ARRAY;
-			ZVAL_ADDREF(z_context); /* we don't want this one to be freed */
+			zval_copy_ctor(z_context);
 
 			params = (zval ***) emalloc(sizeof(zval **)*5);
 			params[0] = &z_error_type;
@@ -974,12 +981,6 @@ ZEND_API void zend_error(int type, const char *format, ...)
 			orig_user_error_handler = EG(user_error_handler);
 			EG(user_error_handler) = NULL;
 	    
-			orig_garbage_ptr = EG(garbage_ptr);
-			EG(garbage_ptr) = 0;
-			if (orig_garbage_ptr > 0) {
-				memcpy(&orig_garbage, &EG(garbage), sizeof(zval*)*orig_garbage_ptr);
-			}
-
 			if (call_user_function_ex(CG(function_table), NULL, orig_user_error_handler, &retval, 5, params, 1, NULL TSRMLS_CC)==SUCCESS) {
 				if (retval) {
 					if (Z_TYPE_P(retval) == IS_BOOL && Z_LVAL_P(retval) == 0) {
@@ -992,24 +993,18 @@ ZEND_API void zend_error(int type, const char *format, ...)
 				zend_error_cb(type, error_filename, error_lineno, format, args);
 			}
 
-			if (orig_garbage_ptr > 0) {
-				while (EG(garbage_ptr)) {
-					zval_ptr_dtor(&EG(garbage)[--EG(garbage_ptr)]);
-				}				
-				EG(garbage_ptr) = orig_garbage_ptr;
-				memcpy(&EG(garbage), &orig_garbage, sizeof(zval*)*orig_garbage_ptr);
+			if (!EG(user_error_handler)) {
+				EG(user_error_handler) = orig_user_error_handler;
+			} else {
+				zval_ptr_dtor(&orig_user_error_handler);
 			}
-
-			EG(user_error_handler) = orig_user_error_handler;
 
 			efree(params);
 			zval_ptr_dtor(&z_error_message);
 			zval_ptr_dtor(&z_error_type);
 			zval_ptr_dtor(&z_error_filename);
 			zval_ptr_dtor(&z_error_lineno);
-			if (ZVAL_REFCOUNT(z_context) == 2) {
-				FREE_ZVAL(z_context);
-			}
+			zval_ptr_dtor(&z_context);
 			break;
 	}
 

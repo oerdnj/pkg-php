@@ -17,7 +17,7 @@
    |          Marcus Boerger <helly@php.net>                              |
    +----------------------------------------------------------------------+
 
-   $Id: sqlite.c,v 1.146.2.3 2004/09/26 01:41:40 wez Exp $ 
+   $Id: sqlite.c,v 1.146.2.7 2005/06/07 15:38:37 dmitry Exp $ 
 */
 
 #ifdef HAVE_CONFIG_H
@@ -49,7 +49,7 @@
 
 ZEND_DECLARE_MODULE_GLOBALS(sqlite)
 
-#if HAVE_PHP_SESSION
+#if HAVE_PHP_SESSION && !defined(COMPILE_DL_SESSION)
 extern ps_module ps_mod_sqlite;
 #define ps_sqlite_ptr &ps_mod_sqlite
 #endif
@@ -998,6 +998,10 @@ PHP_MINIT_FUNCTION(sqlite)
 	REGISTER_SQLITE_CLASS(Result,     query,     NULL);
 	REGISTER_SQLITE_CLASS(Unbuffered, ub_query,  NULL);
 	REGISTER_SQLITE_CLASS(Exception,  exception, zend_exception_get_default());
+
+	sqlite_ce_db->ce_flags &= ~ZEND_ACC_FINAL_CLASS;
+	sqlite_ce_db->constructor->common.fn_flags |= ZEND_ACC_FINAL;
+
 	sqlite_object_handlers_query.get_class_entry = sqlite_get_ce_query;
 	sqlite_object_handlers_ub_query.get_class_entry = sqlite_get_ce_ub_query;
 	
@@ -1011,7 +1015,7 @@ PHP_MINIT_FUNCTION(sqlite)
 
 	REGISTER_INI_ENTRIES();
 
-#if HAVE_PHP_SESSION
+#if HAVE_PHP_SESSION && !defined(COMPILE_DL_SESSION)
 	php_session_register_module(ps_sqlite_ptr);
 #endif
 	
@@ -1047,6 +1051,7 @@ PHP_MINIT_FUNCTION(sqlite)
 	REGISTER_LONG_CONSTANT("SQLITE_MISUSE",			SQLITE_MISUSE, CONST_CS|CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("SQLITE_NOLFS",			SQLITE_NOLFS, CONST_CS|CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("SQLITE_AUTH",			SQLITE_AUTH, CONST_CS|CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("SQLITE_NOTADB",			SQLITE_NOTADB, CONST_CS|CONST_PERSISTENT);
 #ifdef SQLITE_FORMAT
 	REGISTER_LONG_CONSTANT("SQLITE_FORMAT",			SQLITE_FORMAT, CONST_CS|CONST_PERSISTENT);
 #endif
@@ -1071,7 +1076,7 @@ PHP_MINFO_FUNCTION(sqlite)
 {
 	php_info_print_table_start();
 	php_info_print_table_header(2, "SQLite support", "enabled");
-	php_info_print_table_row(2, "PECL Module version", PHP_SQLITE_MODULE_VERSION " $Id: sqlite.c,v 1.146.2.3 2004/09/26 01:41:40 wez Exp $");
+	php_info_print_table_row(2, "PECL Module version", PHP_SQLITE_MODULE_VERSION " $Id: sqlite.c,v 1.146.2.7 2005/06/07 15:38:37 dmitry Exp $");
 	php_info_print_table_row(2, "SQLite Library", sqlite_libversion());
 	php_info_print_table_row(2, "SQLite Encoding", sqlite_libencoding());
 	php_info_print_table_end();
@@ -1168,6 +1173,7 @@ PHP_FUNCTION(sqlite_popen)
 	}
 	if (errmsg) {
 		zval_dtor(errmsg);
+		ZVAL_NULL(errmsg);
 	}
 
 	if (strncmp(filename, ":memory:", sizeof(":memory:") - 1)) {
@@ -1243,6 +1249,7 @@ PHP_FUNCTION(sqlite_open)
 	}
 	if (errmsg) {
 		zval_dtor(errmsg);
+		ZVAL_NULL(errmsg);
 	}
 
 	if (strncmp(filename, ":memory:", sizeof(":memory:") - 1)) {
@@ -1297,6 +1304,7 @@ PHP_FUNCTION(sqlite_factory)
 	}
 	if (errmsg) {
 		zval_dtor(errmsg);
+		ZVAL_NULL(errmsg);
 	}
 
 	if (strncmp(filename, ":memory:", sizeof(":memory:") - 1)) {

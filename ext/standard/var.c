@@ -18,7 +18,8 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: var.c,v 1.191.2.5 2004/12/17 14:39:35 derick Exp $ */
+/* $Id: var.c,v 1.191.2.8 2005/06/28 09:17:19 stas Exp $ */
+
 
 
 /* {{{ includes 
@@ -463,7 +464,7 @@ static inline int php_add_var_hash(HashTable *var_hash, zval *var, void *var_old
 	/* relies on "(long)" being a perfect hash function for data pointers,
 	   however the actual identity of an object has had to be determined
 	   by its object handle and the class entry since 5.0. */
-	if (Z_TYPE_P(var) == IS_OBJECT) {
+	if ((Z_TYPE_P(var) == IS_OBJECT) && Z_OBJ_HT_P(var)->get_class_entry != NULL) {
 		p = smart_str_print_long(id + sizeof(id) - 1,
 				(((unsigned long)Z_OBJCE_P(var) << 5)
 				| ((unsigned long)Z_OBJCE_P(var) >> (sizeof(long) * 8 - 5)))
@@ -584,18 +585,18 @@ static void php_var_serialize_class(smart_str *buf, zval **struc, zval *retval_p
 					
 					do {
 						zend_mangle_property_name(&priv_name, &prop_name_length, ce->name, ce->name_length, 
-									Z_STRVAL_PP(name), Z_STRLEN_PP(name) + 1, ce->type & ZEND_INTERNAL_CLASS);
-						if (zend_hash_find(Z_OBJPROP_PP(struc), priv_name, prop_name_length, (void *) &d) == SUCCESS) {
-							php_var_serialize_string(buf, priv_name, prop_name_length-1);
+									Z_STRVAL_PP(name), Z_STRLEN_PP(name), ce->type & ZEND_INTERNAL_CLASS);
+						if (zend_hash_find(Z_OBJPROP_PP(struc), priv_name, prop_name_length+1, (void *) &d) == SUCCESS) {
+							php_var_serialize_string(buf, priv_name, prop_name_length);
 							efree(priv_name);
 							php_var_serialize_intern(buf, d, var_hash TSRMLS_CC);
 							break;
 						}
 						efree(priv_name);
 						zend_mangle_property_name(&prot_name, &prop_name_length,  "*", 1, 
-									Z_STRVAL_PP(name), Z_STRLEN_PP(name) + 1, ce->type & ZEND_INTERNAL_CLASS);
-						if (zend_hash_find(Z_OBJPROP_PP(struc), prot_name, prop_name_length, (void *) &d) == SUCCESS) {
-							php_var_serialize_string(buf, prot_name, prop_name_length - 1);
+									Z_STRVAL_PP(name), Z_STRLEN_PP(name), ce->type & ZEND_INTERNAL_CLASS);
+						if (zend_hash_find(Z_OBJPROP_PP(struc), prot_name, prop_name_length+1, (void *) &d) == SUCCESS) {
+							php_var_serialize_string(buf, prot_name, prop_name_length);
 							efree(prot_name);
 							php_var_serialize_intern(buf, d, var_hash TSRMLS_CC);
 							break;
@@ -671,7 +672,8 @@ static void php_var_serialize_intern(smart_str *buf, zval **struc, HashTable *va
 				zval fname;
 				int res;
 
-				if(Z_OBJCE_PP(struc) != PHP_IC_ENTRY) {
+				if (Z_OBJ_HT_PP(struc)->get_class_entry && Z_OBJCE_PP(struc) != PHP_IC_ENTRY &&
+				    zend_hash_exists(&Z_OBJCE_PP(struc)->function_table, "__sleep", sizeof("__sleep"))) {
 					INIT_PZVAL(&fname);
 					ZVAL_STRINGL(&fname, "__sleep", sizeof("__sleep") - 1, 0);
 					res = call_user_function_ex(CG(function_table), struc, &fname, 

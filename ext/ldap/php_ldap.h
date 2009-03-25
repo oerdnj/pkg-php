@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_ldap.h,v 1.30 2004/01/08 17:32:19 sniper Exp $ */
+/* $Id: php_ldap.h,v 1.30.2.1 2005/05/08 15:44:15 sniper Exp $ */
 
 #ifndef PHP_LDAP_H
 #define PHP_LDAP_H
@@ -70,14 +70,18 @@ PHP_FUNCTION(ldap_error);
 PHP_FUNCTION(ldap_compare);
 PHP_FUNCTION(ldap_sort);
 
-#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP
+#if (LDAP_API_VERSION > 2000) || HAVE_NSLDAP || HAVE_ORALDAP_10
 PHP_FUNCTION(ldap_get_option);
 PHP_FUNCTION(ldap_set_option);
-PHP_FUNCTION(ldap_parse_result);
 PHP_FUNCTION(ldap_first_reference);
 PHP_FUNCTION(ldap_next_reference);
-PHP_FUNCTION(ldap_parse_reference);
 PHP_FUNCTION(ldap_rename);
+#ifdef HAVE_LDAP_PARSE_RESULT
+PHP_FUNCTION(ldap_parse_result);
+#endif
+#ifdef HAVE_LDAP_PARSE_REFERENCE
+PHP_FUNCTION(ldap_parse_reference);
+#endif
 #endif
 
 #if LDAP_API_VERSION > 2000

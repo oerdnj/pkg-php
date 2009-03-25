@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_object_handlers.c,v 1.101.2.7 2005/03/19 15:38:19 helly Exp $ */
+/* $Id: zend_object_handlers.c,v 1.101.2.18 2005/06/20 18:25:12 dmitry Exp $ */
 
 #include "zend.h"
 #include "zend_globals.h"
@@ -162,13 +162,7 @@ static int zend_verify_property_access(zend_property_info *property_info, zend_c
 		case ZEND_ACC_PUBLIC:
 			return 1;
 		case ZEND_ACC_PROTECTED:
-			while (ce) {
-				if (ce==EG(scope)) {
-					return 1;
-				}
-				ce = ce->parent;
-			}
-			return 0;
+			return zend_check_protected(ce, EG(scope));;
 		case ZEND_ACC_PRIVATE:
 			if (ce==EG(scope) && EG(scope)) {
 				return 1;
@@ -198,22 +192,41 @@ static inline zend_property_info *zend_get_property_info(zend_object *zobj, zval
 	zend_property_info *property_info = NULL;
 	zend_property_info *scope_property_info;
 	zend_bool denied_access = 0;
-
-	ulong h = zend_get_hash_value(Z_STRVAL_P(member), Z_STRLEN_P(member)+1);
-	if (zend_hash_quick_find(&zobj->ce->properties_info, Z_STRVAL_P(member), Z_STRLEN_P(member)+1, h, (void **) &property_info)==SUCCESS) {
-		if (zend_verify_property_access(property_info, zobj->ce TSRMLS_CC)) {
-			if (property_info->flags & ZEND_ACC_CHANGED
-				&& !(property_info->flags & ZEND_ACC_PRIVATE)) {
-				/* We still need to make sure that we're not in a context
-				 * where the right property is a different 'statically linked' private
-				 * continue checking below...
-				 */
+	ulong h;
+	
+	if (Z_STRVAL_P(member)[0] == '\0') {
+		if (!silent) {
+			if (Z_STRLEN_P(member) == 0) {
+				zend_error(E_ERROR, "Cannot access empty property");
 			} else {
-				return property_info;
+				zend_error(E_ERROR, "Cannot access property started with '\\0'");
 			}
+		}
+		return NULL;				
+	}
+	h = zend_get_hash_value(Z_STRVAL_P(member), Z_STRLEN_P(member) + 1);
+	if (zend_hash_quick_find(&zobj->ce->properties_info, Z_STRVAL_P(member), Z_STRLEN_P(member)+1, h, (void **) &property_info)==SUCCESS) {
+		if(property_info->flags & ZEND_ACC_SHADOW) {
+			/* if it's a shadow - go to access it's private */
+			property_info = NULL;
 		} else {
-			/* Try to look in the scope instead */
-			denied_access = 1;
+			if (zend_verify_property_access(property_info, zobj->ce TSRMLS_CC)) {
+				if (property_info->flags & ZEND_ACC_CHANGED
+					&& !(property_info->flags & ZEND_ACC_PRIVATE)) {
+					/* We still need to make sure that we're not in a context
+					 * where the right property is a different 'statically linked' private
+					 * continue checking below...
+					 */
+				} else {
+					if (!silent && (property_info->flags & ZEND_ACC_STATIC)) {
+						zend_error(E_STRICT, "Accessing static property %s::$%s as non static", zobj->ce->name, Z_STRVAL_P(member));
+					}
+					return property_info;
+				}
+			} else {
+				/* Try to look in the scope instead */
+				denied_access = 1;
+			}
 		}
 	}
 	if (EG(scope) != zobj->ce
@@ -221,6 +234,9 @@ static inline zend_property_info *zend_get_property_info(zend_object *zobj, zval
 		&& EG(scope)
 		&& zend_hash_quick_find(&EG(scope)->properties_info, Z_STRVAL_P(member), Z_STRLEN_P(member)+1, h, (void **) &scope_property_info)==SUCCESS
 		&& scope_property_info->flags & ZEND_ACC_PRIVATE) {
+		if (!silent && (scope_property_info->flags & ZEND_ACC_STATIC)) {
+			zend_error(E_STRICT, "Accessing static property %s::$%s as non static", EG(scope)->name, Z_STRVAL_P(member));
+		}
 		return scope_property_info;
 	} else if (property_info) {
 		if (denied_access) {
@@ -255,9 +271,14 @@ ZEND_API int zend_check_property_access(zend_object *zobj, char *prop_info_name 
 	if (!property_info) {
 		return FAILURE;
 	}
-	if (prop_info_name[0] == '\0' && prop_info_name[1] != '*' && !(property_info->flags & ZEND_ACC_PRIVATE)) {
-		/* we we're looking for a private prop but found a non private one of the same name */
-		return FAILURE;
+	if (prop_info_name[0] == '\0' && prop_info_name[1] != '*') {
+		if (!(property_info->flags & ZEND_ACC_PRIVATE)) {
+			/* we we're looking for a private prop but found a non private one of the same name */
+			return FAILURE;
+		} else if (strcmp(prop_info_name+1, property_info->name+1)) {
+			/* we we're looking for a private prop but found a private one of the same name but another class */
+			return FAILURE;
+		}
 	}
 	return zend_verify_property_access(property_info, zobj->ce TSRMLS_CC) ? SUCCESS : FAILURE;
 }
@@ -265,7 +286,7 @@ ZEND_API int zend_check_property_access(zend_object *zobj, char *prop_info_name 
 zval *zend_std_read_property(zval *object, zval *member, int type TSRMLS_DC)
 {
 	zend_object *zobj;
-	zval tmp_member;
+	zval *tmp_member = NULL;
 	zval **retval;
 	zval *rv = NULL;
 	zend_property_info *property_info;
@@ -275,10 +296,12 @@ zval *zend_std_read_property(zval *object, zval *member, int type TSRMLS_DC)
 	zobj = Z_OBJ_P(object);
 
  	if (member->type != IS_STRING) {
-		tmp_member = *member;
-		zval_copy_ctor(&tmp_member);
-		convert_to_string(&tmp_member);
-		member = &tmp_member;
+ 		ALLOC_ZVAL(tmp_member);
+		*tmp_member = *member;
+		INIT_PZVAL(tmp_member);
+		zval_copy_ctor(tmp_member);
+		convert_to_string(tmp_member);
+		member = tmp_member;
 	}
 
 #if DEBUG_OBJECT_HANDLERS
@@ -306,8 +329,10 @@ zval *zend_std_read_property(zval *object, zval *member, int type TSRMLS_DC)
 			retval = &EG(uninitialized_zval_ptr);
 		}
 	}
-	if (member == &tmp_member) {
-		zval_dtor(member);
+	if (tmp_member) {
+		(*retval)->refcount++;
+		zval_ptr_dtor(&tmp_member);
+		(*retval)->refcount--;
 	}
 	return *retval;
 }
@@ -316,7 +341,7 @@ zval *zend_std_read_property(zval *object, zval *member, int type TSRMLS_DC)
 static void zend_std_write_property(zval *object, zval *member, zval *value TSRMLS_DC)
 {
 	zend_object *zobj;
-	zval tmp_member;
+	zval *tmp_member = NULL;
 	zval **variable_ptr;
 	int setter_done = 0;
 	zend_property_info *property_info;
@@ -324,10 +349,12 @@ static void zend_std_write_property(zval *object, zval *member, zval *value TSRM
 	zobj = Z_OBJ_P(object);
 
  	if (member->type != IS_STRING) {
-		tmp_member = *member;
-		zval_copy_ctor(&tmp_member);
-		convert_to_string(&tmp_member);
-		member = &tmp_member;
+ 		ALLOC_ZVAL(tmp_member);
+		*tmp_member = *member;
+		INIT_PZVAL(tmp_member);
+		zval_copy_ctor(tmp_member);
+		convert_to_string(tmp_member);
+		member = tmp_member;
 	}
 
 	property_info = zend_get_property_info(zobj, member, 0 TSRMLS_CC);
@@ -371,8 +398,8 @@ static void zend_std_write_property(zval *object, zval *member, zval *value TSRM
 		}
 		zend_hash_quick_update(zobj->properties, property_info->name, property_info->name_length+1, property_info->h, &value, sizeof(zval *), (void **) &foo);
 	}
-	if (member == &tmp_member) {
-		zval_dtor(member);
+	if (tmp_member) {
+		zval_ptr_dtor(&tmp_member);
 	}
 }
 
@@ -612,7 +639,7 @@ ZEND_API void zend_std_call_user_call(INTERNAL_FUNCTION_PARAMETERS)
  * Returns the function address that should be called, or NULL
  * if no such function exists.
  */
-static inline zend_function *zend_check_private(zend_function *fbc, zend_class_entry *ce, int fn_flags, char *function_name_strval, int function_name_strlen TSRMLS_DC)
+static inline zend_function *zend_check_private_int(zend_function *fbc, zend_class_entry *ce, char *function_name_strval, int function_name_strlen TSRMLS_DC)
 {
 	if (!ce) {
 		return 0;
@@ -646,6 +673,11 @@ static inline zend_function *zend_check_private(zend_function *fbc, zend_class_e
 	return NULL;
 }
 
+
+ZEND_API int zend_check_private(zend_function *fbc, zend_class_entry *ce, char *function_name_strval, int function_name_strlen TSRMLS_DC)
+{
+	return zend_check_private_int(fbc, ce, function_name_strval, function_name_strlen TSRMLS_CC) != NULL;
+}
 
 /* Ensures that we're allowed to call a protected method.
  */
@@ -714,7 +746,8 @@ static union _zend_function *zend_std_get_method(zval *object, char *method_name
 			zend_function *priv_fbc;
 
 			if (zend_hash_find(&EG(scope)->function_table, lc_method_name, method_len+1, (void **) &priv_fbc)==SUCCESS
-				&& priv_fbc->common.fn_flags & ZEND_ACC_PRIVATE) {
+				&& priv_fbc->common.fn_flags & ZEND_ACC_PRIVATE
+				&& priv_fbc->common.scope == EG(scope)) {
 				fbc = priv_fbc;
 			}
 		}
@@ -723,7 +756,7 @@ static union _zend_function *zend_std_get_method(zval *object, char *method_name
 
 		/* Ensure that if we're calling a private function, we're allowed to do so.
 		 */
-		updated_fbc = zend_check_private(fbc, object->value.obj.handlers->get_class_entry(object TSRMLS_CC), fbc->common.fn_flags, lc_method_name, method_len TSRMLS_CC);
+		updated_fbc = zend_check_private_int(fbc, object->value.obj.handlers->get_class_entry(object TSRMLS_CC), lc_method_name, method_len TSRMLS_CC);
 		if (!updated_fbc) {
 			zend_error(E_ERROR, "Call to %s method %s::%s() from context '%s'", zend_visibility_string(fbc->common.fn_flags), ZEND_FN_SCOPE_NAME(fbc), method_name, EG(scope) ? EG(scope)->name : "");
 		}
@@ -761,7 +794,7 @@ ZEND_API zend_function *zend_std_get_static_method(zend_class_entry *ce, char *f
 
 		/* Ensure that if we're calling a private function, we're allowed to do so.
 		 */
-		updated_fbc = zend_check_private(fbc, EG(scope), fbc->common.fn_flags, function_name_strval, function_name_strlen TSRMLS_CC); 
+		updated_fbc = zend_check_private_int(fbc, EG(scope), function_name_strval, function_name_strlen TSRMLS_CC); 
 		if (!updated_fbc) {
 			zend_error(E_ERROR, "Call to %s method %s::%s() from context '%s'", zend_visibility_string(fbc->common.fn_flags), ZEND_FN_SCOPE_NAME(fbc), function_name_strval, EG(scope) ? EG(scope)->name : "");
 		}
@@ -785,7 +818,7 @@ ZEND_API zval **zend_std_get_static_property(zend_class_entry *ce, char *propert
 	zend_property_info *property_info;
 	zend_property_info std_property_info;
 
-	if (zend_hash_find(&ce->properties_info, property_name, property_name_len+1, (void **) &property_info)==FAILURE) {
+	if (zend_hash_find(&ce->properties_info, property_name, property_name_len+1, (void **) &property_info)==FAILURE || (property_info->flags & ZEND_ACC_SHADOW)) {
 		std_property_info.flags = ZEND_ACC_PUBLIC;
 		std_property_info.name = property_name;
 		std_property_info.name_length = property_name_len;
@@ -793,7 +826,7 @@ ZEND_API zval **zend_std_get_static_property(zend_class_entry *ce, char *propert
 		property_info = &std_property_info;
 	}
 
-#if 1&&DEBUG_OBJECT_HANDLERS
+#if DEBUG_OBJECT_HANDLERS
 	zend_printf("Access type for %s::%s is %s\n", ce->name, property_name, zend_visibility_string(property_info->flags));
 #endif
 
@@ -944,6 +977,9 @@ ZEND_API int zend_std_cast_object_tostring(zval *readobj, zval *writeobj, int ty
 	
 	switch (type) {
 		case IS_STRING:
+			if (!zend_hash_exists(&Z_OBJCE_P(readobj)->function_table, "__tostring", sizeof("__tostring"))) {
+				return FAILURE;
+			}
 			ZVAL_STRING(&fname, "__tostring", 0);
 			if (call_user_function_ex(NULL, &readobj, &fname, &retval, 0, NULL, 0, NULL TSRMLS_CC) == SUCCESS) {
 				if (retval) {

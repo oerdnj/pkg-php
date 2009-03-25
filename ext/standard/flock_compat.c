@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: flock_compat.c,v 1.27 2004/01/08 08:17:31 andi Exp $ */
+/* $Id: flock_compat.c,v 1.27.2.1 2005/06/28 13:46:45 hyanantha Exp $ */
 
 #include "php.h"
 #include <errno.h>
@@ -33,11 +33,7 @@
 #endif
 
 #ifdef NETWARE
-#ifdef NEW_LIBC
 #include <netinet/in.h>
-#else
-#include <sys/socket.h>
-#endif
 #endif
 
 #ifndef HAVE_FLOCK

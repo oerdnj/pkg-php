@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: basic_functions.c,v 1.673.2.13 2005/03/10 12:10:57 hyanantha Exp $ */
+/* $Id: basic_functions.c,v 1.673.2.18 2005/08/21 18:36:33 zeev Exp $ */
 
 #include "php.h"
 #include "php_streams.h"
@@ -469,7 +469,6 @@ function_entry basic_functions[] = {
 	PHP_FALIAS(show_source, 		highlight_file,							NULL)
 	PHP_FE(highlight_string,												NULL)
 	PHP_FE(php_strip_whitespace,												NULL)
-	PHP_FE(php_check_syntax,												second_arg_force_ref)
 
 	PHP_FE(ini_get,															NULL)
 	PHP_FE(ini_get_all,														NULL)
@@ -930,7 +929,6 @@ static void basic_globals_ctor(php_basic_globals *basic_globals_p TSRMLS_DC)
 	BG(user_tick_functions) = NULL;
 	BG(user_filter_map) = NULL;
 	BG(user_compare_fci_cache) = empty_fcall_info_cache;
-	/*BG(array_walk_fci_cache) = empty_fcall_info_cache;*/
 	zend_hash_init(&BG(sm_protected_env_vars), 5, NULL, NULL, 1);
 	BG(sm_allowed_env_vars) = NULL;
 
@@ -1192,17 +1190,10 @@ PHP_RSHUTDOWN_FUNCTION(basic)
 	}
 	STR_FREE(BG(locale_string));
 
-	if (FG(stream_wrappers)) {
-		zend_hash_destroy(FG(stream_wrappers));
-		efree(FG(stream_wrappers));
-		FG(stream_wrappers) = NULL;
-	}
-
-	if (FG(stream_filters)) {
-		zend_hash_destroy(FG(stream_filters));
-		efree(FG(stream_filters));
-		FG(stream_filters) = NULL;
-	}
+	/*
+	 FG(stream_wrappers) and FG(stream_filters) are destroyed
+	 during php_request_shutdown()
+	 */
 
 	PHP_RSHUTDOWN(filestat)(SHUTDOWN_FUNC_ARGS_PASSTHRU);
 #ifdef HAVE_SYSLOG_H
@@ -1909,7 +1900,7 @@ PHP_FUNCTION(call_user_func)
 		convert_to_string_ex(params[0]);
 	}
 
-	if (!zend_is_callable(*params[0], 0, &name)) {
+	if (!zend_is_callable(*params[0], IS_CALLABLE_CHECK_NO_ACCESS, &name)) {
 		php_error_docref1(NULL TSRMLS_CC, name, E_WARNING, "First argument is expected to be a valid callback");
 		efree(name);
 		efree(params);
@@ -1964,7 +1955,7 @@ PHP_FUNCTION(call_user_func_array)
 		convert_to_string_ex(func);
 	}
 
-	if (!zend_is_callable(*func, 0, &name)) {
+	if (!zend_is_callable(*func, IS_CALLABLE_CHECK_NO_ACCESS, &name)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "First argument is expected to be a valid callback, '%s' was given", name);
 		efree(name);
 		RETURN_NULL();
@@ -2103,17 +2094,21 @@ void user_tick_function_dtor(user_tick_function_entry *tick_function_entry)
 static int user_shutdown_function_call(php_shutdown_function_entry *shutdown_function_entry TSRMLS_DC)
 {
 	zval retval;
+	char *function_name = NULL;
 
-	if (call_user_function(	EG(function_table), NULL,
-							shutdown_function_entry->arguments[0],
-							&retval, 
-							shutdown_function_entry->arg_count - 1,
-							shutdown_function_entry->arguments + 1 
-							TSRMLS_CC ) == SUCCESS ) {
+	if (!zend_is_callable(shutdown_function_entry->arguments[0], 0, &function_name)) {
+		php_error(E_WARNING, "(Registered shutdown functions) Unable to call %s() - function does not exist", function_name);
+	} else if (call_user_function(EG(function_table), NULL,
+								shutdown_function_entry->arguments[0],
+								&retval, 
+								shutdown_function_entry->arg_count - 1,
+								shutdown_function_entry->arguments + 1 
+								TSRMLS_CC ) == SUCCESS)
+	{
 		zval_dtor(&retval);
-
-	} else {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to call %s() - function does not exist", Z_STRVAL_P(shutdown_function_entry->arguments[0]));
+	} 
+	if (function_name) {
+		efree(function_name);
 	}
 	return 0;
 }
@@ -2206,6 +2201,7 @@ void php_free_shutdown_functions(TSRMLS_D)
 PHP_FUNCTION(register_shutdown_function)
 {
 	php_shutdown_function_entry shutdown_function_entry;
+	char *function_name = NULL;
 	int i;
 
 	shutdown_function_entry.arg_count = ZEND_NUM_ARGS();
@@ -2214,26 +2210,31 @@ PHP_FUNCTION(register_shutdown_function)
 		WRONG_PARAM_COUNT;
 	}
 
-	shutdown_function_entry.arguments = (pval **) safe_emalloc(sizeof(pval *), shutdown_function_entry.arg_count, 0);
+	shutdown_function_entry.arguments = (zval **) safe_emalloc(sizeof(zval *), shutdown_function_entry.arg_count, 0);
 
 	if (zend_get_parameters_array(ht, shutdown_function_entry.arg_count, shutdown_function_entry.arguments) == FAILURE) {
 		RETURN_FALSE;
 	}
 	
-	/* Prevent entering of anything but arrays/strings */
-	if (Z_TYPE_P(shutdown_function_entry.arguments[0]) != IS_ARRAY) {
-		convert_to_string(shutdown_function_entry.arguments[0]);
-	}
-	
-	if (!BG(user_shutdown_function_names)) {
-		ALLOC_HASHTABLE(BG(user_shutdown_function_names));
-		zend_hash_init(BG(user_shutdown_function_names), 0, NULL, (void (*)(void *)) user_shutdown_function_dtor, 0);
-	}
+	/* Prevent entering of anything but valid callback (syntax check only!) */
+	if (!zend_is_callable(shutdown_function_entry.arguments[0], 1, &function_name)) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid shutdown callback '%s' passed", function_name);
+		efree(shutdown_function_entry.arguments);
+		RETVAL_FALSE;
+	} else {
+		if (!BG(user_shutdown_function_names)) {
+			ALLOC_HASHTABLE(BG(user_shutdown_function_names));
+			zend_hash_init(BG(user_shutdown_function_names), 0, NULL, (void (*)(void *)) user_shutdown_function_dtor, 0);
+		}
 
-	for (i = 0; i < shutdown_function_entry.arg_count; i++) {
-		shutdown_function_entry.arguments[i]->refcount++;
+		for (i = 0; i < shutdown_function_entry.arg_count; i++) {
+			shutdown_function_entry.arguments[i]->refcount++;
+		}
+		zend_hash_next_index_insert(BG(user_shutdown_function_names), &shutdown_function_entry, sizeof(php_shutdown_function_entry), NULL);
 	}
-	zend_hash_next_index_insert(BG(user_shutdown_function_names), &shutdown_function_entry, sizeof(php_shutdown_function_entry), NULL);
+	if (function_name) {
+		efree(function_name);
+	}
 }
 /* }}} */
 
@@ -2318,49 +2319,6 @@ PHP_FUNCTION(php_strip_whitespace)
 
 	php_ob_get_buffer(return_value TSRMLS_CC);
 	php_end_ob_buffer(0, 0 TSRMLS_CC);
-
-	return;
-}
-/* }}} */
-
-/* {{{ proto bool php_check_syntax(string file_name [, &$error_message])
-   Check the syntax of the specified file. */
-PHP_FUNCTION(php_check_syntax)
-{
-	char *filename;
-	int filename_len;
-	zval *errm=NULL;
-	zend_file_handle file_handle = {0};
-
-	int old_errors = PG(display_errors);
-	int log_errors = PG(log_errors);
-
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|z", &filename, &filename_len, &errm) == FAILURE) {
-		RETURN_FALSE;
-	}
-
-	file_handle.type = ZEND_HANDLE_FILENAME;
-	file_handle.filename = filename;
-	file_handle.free_filename = 0;
-	file_handle.opened_path = NULL;	
-
-	PG(log_errors) = PG(display_errors) = 0;
-
-	if (php_lint_script(&file_handle TSRMLS_CC) != SUCCESS) {
-		if (errm) {
-			char *error_str;
-
-			zval_dtor(errm);
-			spprintf(&error_str, 0, "%s in %s on line %d", PG(last_error_message), PG(last_error_file), PG(last_error_lineno));
-			ZVAL_STRING(errm, error_str, 0);
-		}
-		RETVAL_FALSE;
-	} else {
-		RETVAL_TRUE;
-	}
-
-	PG(display_errors) = old_errors;
-	PG(log_errors) = log_errors;
 
 	return;
 }

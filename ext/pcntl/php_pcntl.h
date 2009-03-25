@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_pcntl.h,v 1.17.2.1 2004/08/28 12:20:41 derick Exp $ */
+/* $Id: php_pcntl.h,v 1.17.2.2 2005/05/07 14:58:02 wez Exp $ */
 
 #ifndef PHP_PCNTL_H
 #define PHP_PCNTL_H
@@ -58,12 +58,17 @@ PHP_FUNCTION(pcntl_getpriority);
 PHP_FUNCTION(pcntl_setpriority);
 #endif
 
+struct php_pcntl_pending_signal {
+	struct php_pcntl_pending_signal *next;
+	long signo;
+};
+
 ZEND_BEGIN_MODULE_GLOBALS(pcntl)
 	HashTable php_signal_table;
-	zend_llist php_signal_queue;
-	int signal_queue_ready;
 	int processing_signal_queue;
+	struct php_pcntl_pending_signal *head, *tail, *spares;
 ZEND_END_MODULE_GLOBALS(pcntl)
+
 #ifdef ZTS
 #define PCNTL_G(v) TSRMG(pcntl_globals_id, zend_pcntl_globals *, v)
 #else

@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: main.c,v 1.604.2.11 2005/03/24 01:11:35 andi Exp $ */
+/* $Id: main.c,v 1.604.2.22 2005/08/16 18:11:34 helly Exp $ */
 
 /* {{{ includes
  */
@@ -32,14 +32,7 @@
 #include "win32/signal.h"
 #include <process.h>
 #elif defined(NETWARE)
-#ifdef NEW_LIBC
 #include <sys/timeval.h>
-#else
-#include "netware/time_nw.h"
-#endif
-/*#include "netware/signal_nw.h"*/
-/*#include "netware/env.h"*/    /* Temporary */
-/*#include <process.h>*/
 #ifdef USE_WINSOCK
 #include <novsock2.h>
 #endif
@@ -229,7 +222,7 @@ static PHP_INI_MH(OnUpdateTimeout)
 #	define PHP_SAFE_MODE_EXEC_DIR ""
 #endif
 
-#ifdef PHP_PROG_SENDMAIL
+#if defined(PHP_PROG_SENDMAIL) && !defined(NETWARE) 
 #	define DEFAULT_SENDMAIL_PATH PHP_PROG_SENDMAIL " -t -i "
 #else
 #	define DEFAULT_SENDMAIL_PATH NULL
@@ -660,6 +653,9 @@ static void php_error_cb(int type, const char *error_filename, const uint error_
 			case E_PARSE:
 				/* fatal errors are real errors and cannot be made exceptions */
 				break;
+			case E_STRICT:
+				/* for the sake of BC to old damaged code */
+				break;
 			case E_NOTICE:
 			case E_USER_NOTICE:
 				/* notices are no errors and are not treated as such like E_WARNINGS */
@@ -778,8 +774,8 @@ static void php_error_cb(int type, const char *error_filename, const uint error_
 				/* restore memory limit */
 				AG(memory_limit) = PG(memory_limit); 
 #endif
-				zend_bailout();
 				efree(buffer);
+				zend_bailout();
 				return;
 			}
 			break;
@@ -1162,6 +1158,10 @@ void php_request_shutdown_for_hook(void *dummy)
 	} zend_end_try();
 
 	zend_try {
+		php_shutdown_stream_hashes(TSRMLS_C);
+	} zend_end_try();
+
+	zend_try {
 		shutdown_memory_manager(CG(unclean_shutdown), 0 TSRMLS_CC);
 	} zend_end_try();
 
@@ -1184,6 +1184,7 @@ void php_request_shutdown(void *dummy)
 	 * inside zend_executor callback functions.
 	 */
 	EG(opline_ptr) = NULL;
+	EG(active_op_array) = NULL;
 
 	zend_try {
 		php_end_ob_buffers((zend_bool)(SG(request_info).headers_only?0:1) TSRMLS_CC);
@@ -1191,6 +1192,10 @@ void php_request_shutdown(void *dummy)
 
 	zend_try {
 		sapi_send_headers(TSRMLS_C);
+	} zend_end_try();
+
+	zend_try {
+		zend_call_destructors(TSRMLS_C);
 	} zend_end_try();
 
 	if (PG(modules_activated)) zend_try {
@@ -1221,6 +1226,10 @@ void php_request_shutdown(void *dummy)
 
 	zend_try {
 		sapi_deactivate(TSRMLS_C);
+	} zend_end_try();
+
+	zend_try {
+		php_shutdown_stream_hashes(TSRMLS_C);
 	} zend_end_try();
 
 	zend_try {
@@ -1430,6 +1439,8 @@ int php_module_startup(sapi_module_struct *sf, zend_module_entry *additional_mod
 	REGISTER_MAIN_STRINGL_CONSTANT("PHP_CONFIG_FILE_SCAN_DIR", PHP_CONFIG_FILE_SCAN_DIR, sizeof(PHP_CONFIG_FILE_SCAN_DIR)-1, CONST_PERSISTENT | CONST_CS);
 	REGISTER_MAIN_STRINGL_CONSTANT("PHP_SHLIB_SUFFIX", PHP_SHLIB_SUFFIX, sizeof(PHP_SHLIB_SUFFIX)-1, CONST_PERSISTENT | CONST_CS);
 	REGISTER_MAIN_STRINGL_CONSTANT("PHP_EOL", PHP_EOL, sizeof(PHP_EOL)-1, CONST_PERSISTENT | CONST_CS);
+	REGISTER_MAIN_LONG_CONSTANT("PHP_INT_MAX", LONG_MAX, CONST_PERSISTENT | CONST_CS);
+	REGISTER_MAIN_LONG_CONSTANT("PHP_INT_SIZE", sizeof(long), CONST_PERSISTENT | CONST_CS);
 	php_output_register_constants(TSRMLS_C);
 	php_rfc1867_register_constants(TSRMLS_C);
 

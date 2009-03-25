@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_open_temporary_file.c,v 1.30.2.1 2005/03/11 08:18:14 hyanantha Exp $ */
+/* $Id: php_open_temporary_file.c,v 1.30.2.4 2005/07/16 12:14:45 hyanantha Exp $ */
 
 #include "php.h"
 
@@ -31,17 +31,11 @@
 #include "win32/winutil.h"
 #elif defined(NETWARE)
 #ifdef USE_WINSOCK
-/*#include <ws2nlm.h>*/
 #include <novsock2.h>
 #else
 #include <sys/socket.h>
 #endif
-#ifdef NEW_LIBC
 #include <sys/param.h>
-#else
-#include "netware/param.h"
-#endif
-#include "netware/mktemp.h"
 #else
 #include <sys/param.h>
 #include <sys/socket.h>
@@ -104,6 +98,7 @@ static int php_do_open_temporary_file(const char *path, const char *pfx, char **
 {
 	char *trailing_slash;
 	char *opened_path;
+	int path_len = 0;
 	int fd = -1;
 #ifndef HAVE_MKSTEMP
 	int open_flags = O_CREAT | O_TRUNC | O_RDWR
@@ -112,19 +107,17 @@ static int php_do_open_temporary_file(const char *path, const char *pfx, char **
 #endif
 		;
 #endif
-#ifdef NETWARE
-    char *file_path = NULL;
-#endif
-
 	if (!path) {
 		return -1;
 	}
+
+	path_len = strlen(path);
 
 	if (!(opened_path = emalloc(MAXPATHLEN))) {
 		return -1;
 	}
 
-	if (IS_SLASH(path[strlen(path)-1])) {
+	if (!path_len || IS_SLASH(path[path_len - 1])) {
 		trailing_slash = "";
 	} else {
 		trailing_slash = "/";

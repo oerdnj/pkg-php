@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_curl.h,v 1.41 2004/03/12 18:37:55 sterling Exp $ */
+/* $Id: php_curl.h,v 1.41.2.1 2005/06/02 21:04:43 tony2001 Exp $ */
 
 #ifndef _PHP_CURL_H
 #define _PHP_CURL_H
@@ -121,6 +121,7 @@ typedef struct {
 	php_curl_handlers       *handlers;
 	long                     id;
 	unsigned int             uses;
+	zend_bool                in_callback;
 } php_curl;
 
 typedef struct {

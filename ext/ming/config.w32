@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.2 2004/03/11 18:48:26 fmk Exp $
+// $Id: config.w32,v 1.2.2.1 2005/07/25 21:03:27 helly Exp $
 // vim:ft=javascript
 
 ARG_WITH("ming", "MING support", "no");
@@ -15,12 +15,13 @@ function ming_check_version()
 	}
 
 	c = file_get_contents(ming_h + "\\ming.h");
-	if (c.match(/MING_VERSION\s+(0.[a-zA-Z0-9]+)/)) {
+	if (typeof(c) == "string" && c.match(/MING_VERSION\s+(0.[a-zA-Z0-9]+)/)) {
 		v = RegExp.$1;
 		if (v > "0.2") {
 			if (CHECK_LIB("libungif.lib", "ming", PHP_MING) &&
 				CHECK_LIB("libpng.lib", "ming", PHP_MING)) {
 				AC_DEFINE('HAVE_NEW_MING', 1);
+				AC_DEFINE('HAVE_SWFPREBUILTCLIP', 1);
 				if (PHP_ZLIB != "no") {
 					AC_DEFINE('HAVE_MING_ZLIB', 1);
 				}

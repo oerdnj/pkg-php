@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_objects_API.c,v 1.41.2.4 2005/02/22 14:54:33 helly Exp $ */
+/* $Id: zend_objects_API.c,v 1.41.2.5 2005/06/06 10:38:22 dmitry Exp $ */
 
 #include "zend.h"
 #include "zend_globals.h"
@@ -151,7 +151,9 @@ ZEND_API void zend_objects_store_del_ref(zval *zobject TSRMLS_DC)
 				EG(objects_store).object_buckets[handle].destructor_called = 1;
 
 				if (obj->dtor) {
+					zobject->refcount++;
 					obj->dtor(obj->object, handle TSRMLS_CC);
+					zobject->refcount--;
 				}
 			}
 			if (obj->refcount == 1) {

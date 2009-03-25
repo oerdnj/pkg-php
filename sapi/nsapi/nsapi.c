@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: nsapi.c,v 1.63.2.2 2004/09/20 13:29:44 thetaphi Exp $ */
+/* $Id: nsapi.c,v 1.63.2.3 2005/07/04 12:47:26 dmitry Exp $ */
 
 /*
  * PHP includes
@@ -310,7 +310,7 @@ PHP_MSHUTDOWN_FUNCTION(nsapi)
 PHP_MINFO_FUNCTION(nsapi)
 {
 	php_info_print_table_start();
-	php_info_print_table_row(2, "NSAPI Module Revision", "$Revision: 1.63.2.2 $");
+	php_info_print_table_row(2, "NSAPI Module Revision", "$Revision: 1.63.2.3 $");
 	php_info_print_table_row(2, "Server Software", system_version());
 	php_info_print_table_row(2, "Sub-requests with nsapi_virtual()",
 	 (nsapi_servact_service)?((zend_ini_long("zlib.output_compression", sizeof("zlib.output_compression"), 0))?"not supported with zlib.output_compression":"enabled"):"not supported on this platform" );
@@ -768,7 +768,7 @@ static void nsapi_php_ini_entries(NSLS_D TSRMLS_DC)
 				/* change the ini entry */
 				if (zend_alter_ini_entry(entry->param->name, strlen(entry->param->name)+1,
 				 entry->param->value, strlen(entry->param->value),
-				 PHP_INI_SYSTEM, PHP_INI_STAGE_RUNTIME)==FAILURE) {
+				 PHP_INI_SYSTEM, PHP_INI_STAGE_ACTIVATE)==FAILURE) {
 					log_error(LOG_WARN, pblock_findval("fn", NSG(pb)), NSG(sn), NSG(rq), "Cannot change php.ini key \"%s\" to \"%s\"", entry->param->name, entry->param->value);
 				}
 			}

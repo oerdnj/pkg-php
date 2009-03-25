@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.15 2003/12/07 15:37:30 sniper Exp $
+dnl $Id: config.m4,v 1.15.2.1 2005/04/27 13:13:37 sniper Exp $
 dnl
 
 PHP_ARG_ENABLE(dom, whether to enable DOM support,
@@ -10,7 +10,11 @@ if test -z "$PHP_LIBXML_DIR"; then
   [  --with-libxml-dir[=DIR]   DOM: libxml2 install prefix.], no, no)
 fi
 
-if test "$PHP_DOM" != "no" && test "$PHP_LIBXML" != "no"; then
+if test "$PHP_DOM" != "no"; then
+
+  if test "$PHP_LIBXML" = "no"; then   
+    AC_MSG_ERROR([DOM extension requires LIBXML extension, add --enable-libxml])
+  fi
 
   PHP_SETUP_LIBXML(DOM_SHARED_LIBADD, [
     AC_DEFINE(HAVE_DOM,1,[ ])

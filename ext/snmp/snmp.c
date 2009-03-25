@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: snmp.c,v 1.92.2.5 2005/03/17 19:47:48 harrie Exp $ */
+/* $Id: snmp.c,v 1.92.2.11 2005/06/28 13:43:29 hyanantha Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -40,18 +40,12 @@
 #include "win32/time.h"
 #elif defined(NETWARE)
 #ifdef USE_WINSOCK
-/*#include <ws2nlm.h>*/
 #include <novsock2.h>
 #else
 #include <sys/socket.h>
 #endif
 #include <errno.h>
-/*#include <process.h>*/
-#ifdef NEW_LIBC
 #include <sys/timeval.h>
-#else
-#include "netware/time_nw.h"
-#endif
 #else
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -187,6 +181,11 @@ static void php_snmp_init_globals(zend_snmp_globals *snmp_globals)
 PHP_MINIT_FUNCTION(snmp)
 {
 	init_snmp("snmpapp");
+
+#ifdef NETSNMP_DS_LIB_DONT_PERSIST_STATE
+	/* Prevent update of the snmpapp.conf file */
+	netsnmp_ds_set_boolean(NETSNMP_DS_LIBRARY_ID, NETSNMP_DS_LIB_DONT_PERSIST_STATE, 1);
+#endif
 
 	ZEND_INIT_MODULE_GLOBALS(snmp, php_snmp_init_globals, NULL);
 
@@ -352,9 +351,9 @@ static void php_snmp_internal(INTERNAL_FUNCTION_PARAMETERS, int st,
 	struct snmp_pdu *pdu=NULL, *response;
 	struct variable_list *vars;
 	oid name[MAX_NAME_LEN];
-	int name_length;
+	size_t name_length;
 	oid root[MAX_NAME_LEN];
-	int rootlen = 0;
+	size_t rootlen = 0;
 	int gotroot = 0;
 	int status, count;
 	char buf[2048];
@@ -447,6 +446,7 @@ retry:
 					if (st == 1) {
 						*return_value = *snmpval;
 						zval_copy_ctor(return_value);
+						zval_ptr_dtor(&snmpval);
 						snmp_close(ss);
 						return;
 					} else if (st == 2) {

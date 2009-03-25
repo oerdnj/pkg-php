@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: output.c,v 1.164 2004/03/14 23:56:07 helly Exp $ */
+/* $Id: output.c,v 1.164.2.2 2005/08/24 16:20:06 iliaa Exp $ */
 
 #include "php.h"
 #include "ext/standard/head.h"
@@ -238,7 +238,7 @@ PHPAPI void php_end_ob_buffer(zend_bool send_buffer, zend_bool just_flush TSRMLS
 		OG(ob_lock) = 1;
 
 		if (call_user_function_ex(CG(function_table), NULL, OG(active_ob_buffer).output_handler, &alternate_buffer, 2, params, 1, NULL TSRMLS_CC)==SUCCESS) {
-			if (!(Z_TYPE_P(alternate_buffer)==IS_BOOL && Z_BVAL_P(alternate_buffer)==0)) {
+			if (alternate_buffer && !(Z_TYPE_P(alternate_buffer)==IS_BOOL && Z_BVAL_P(alternate_buffer)==0)) {
 				convert_to_string_ex(&alternate_buffer);
 				final_buffer = Z_STRVAL_P(alternate_buffer);
 				final_buffer_length = Z_STRLEN_P(alternate_buffer);
@@ -294,6 +294,9 @@ PHPAPI void php_end_ob_buffer(zend_bool send_buffer, zend_bool just_flush TSRMLS
 	OG(ob_nesting_level)--;
 
 	if (send_buffer) {
+		if (just_flush) { /* if flush is called prior to proper end, ensure presence of NUL */
+			final_buffer[final_buffer_length] = '\0';
+		}
 		OG(php_body_write)(final_buffer, final_buffer_length TSRMLS_CC);
 	}
 

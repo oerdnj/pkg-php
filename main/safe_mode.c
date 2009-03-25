@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: safe_mode.c,v 1.58.2.1 2004/12/01 22:37:47 sesser Exp $ */
+/* $Id: safe_mode.c,v 1.58.2.2 2005/07/16 12:14:45 hyanantha Exp $ */
 
 #include "php.h"
 
@@ -190,7 +190,12 @@ PHPAPI int php_checkuid_ex(const char *filename, char *fopen_mode, int mode, int
 }
 
 PHPAPI int php_checkuid(const char *filename, char *fopen_mode, int mode) {
+#ifdef NETWARE
+	/* NetWare don't have uid*/
+        return 1;
+#else
 	return php_checkuid_ex(filename, fopen_mode, mode, 0);
+#endif
 }
 
 PHPAPI char *php_get_current_user()

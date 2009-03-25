@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: ming.c,v 1.68.2.1 2004/10/01 19:23:39 rasmus Exp $ */
+/* $Id: ming.c,v 1.68.2.3 2005/07/25 21:03:27 helly Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -72,6 +72,10 @@ static SWFSound getSound(zval *id TSRMLS_DC);
 #ifdef HAVE_NEW_MING
 static SWFFontCharacter getFontCharacter(zval *id TSRMLS_DC);
 static SWFSoundInstance getSoundInstance(zval *id TSRMLS_DC);
+static SWFVideoStream getVideoStream(zval *id TSRMLS_DC);
+#endif
+#ifdef HAVE_SWFPREBUILTCLIP
+static SWFPrebuiltClip getPrebuiltClip(zval *id TSRMLS_DC);
 #endif
 
 #define PHP_MING_FILE_CHK(file) \
@@ -156,6 +160,10 @@ static int le_swfsoundp;
 #ifdef HAVE_NEW_MING
 static int le_swffontcharp;
 static int le_swfsoundinstancep;
+static int le_swfvideostreamp;
+#endif
+#ifdef HAVE_SWFPREBUILTCLIP
+static int le_swfprebuiltclipp;
 #endif
 
 static zend_class_entry *movie_class_entry_ptr;
@@ -175,6 +183,10 @@ static zend_class_entry *sound_class_entry_ptr;
 #ifdef HAVE_NEW_MING
 static zend_class_entry *fontchar_class_entry_ptr;
 static zend_class_entry *soundinstance_class_entry_ptr;
+static zend_class_entry *videostream_class_entry_ptr;
+#endif
+#ifdef HAVE_SWFPREBUILTCLIP
+static zend_class_entry *prebuiltclip_class_entry_ptr;
 #endif
  
 /* {{{ internal function SWFgetProperty
@@ -232,10 +244,20 @@ static SWFCharacter getCharacter(zval *id TSRMLS_DC)
 		return (SWFCharacter)getBitmap(id TSRMLS_CC);
 	else if(Z_OBJCE_P(id) == sound_class_entry_ptr)
 		return (SWFCharacter)getSound(id TSRMLS_CC);
-/*
+#ifdef HAVE_NEW_MING
+
+	else if(Z_OBJCE_P(id) == fontchar_class_entry_ptr)
+		return (SWFCharacter)getFontCharacter(id TSRMLS_CC);
 	else if(Z_OBJCE_P(id) == soundinstance_class_entry_ptr)
 		return (SWFCharacter)getSoundInstance(id TSRMLS_CC);
-*/
+
+	else if(Z_OBJCE_P(id) == videostream_class_entry_ptr)
+		return (SWFCharacter)getVideoStream(id TSRMLS_CC);
+#endif
+#ifdef HAVE_SWFPREBUILTCLIP
+	else if(Z_OBJCE_P(id) == prebuiltclip_class_entry_ptr)
+		return (SWFCharacter)getPrebuiltClip(id TSRMLS_CC);
+#endif
 	else
 		php_error_docref(NULL TSRMLS_CC, E_ERROR, "Called object is not an SWFCharacter");
 		return NULL;
@@ -603,6 +625,7 @@ PHP_METHOD(swfbutton, addSound)
 		ret = zend_list_insert(item, le_swfsoundinstancep);
 		object_init_ex(return_value, soundinstance_class_entry_ptr);
 		add_property_resource(return_value, "soundinstance", ret);
+		zend_list_addref(ret);
 	}
 }
 /* }}} */
@@ -1878,7 +1901,189 @@ static zend_function_entry swfsoundinstance_functions[] = {
 	{ NULL, NULL, NULL }
 };
 
+/* {{{ SWFVideoStream */
+
+/* {{{ proto class swfvideostream_init([file])
+   Returns a SWVideoStream object */
+
+PHP_METHOD(swfvideostream, __construct)
+{
+	zval **zfile = NULL;
+	SWFVideoStream stream;
+	SWFInput input;
+	int ret;
+
+	switch(ZEND_NUM_ARGS()) {
+		case 1:
+			if(zend_get_parameters_ex(1, &zfile) == FAILURE)
+				WRONG_PARAM_COUNT;
+	
+			if(Z_TYPE_PP(zfile) != IS_RESOURCE)
+  			{
+			    convert_to_string_ex(zfile);
+			    input = newSWFInput_buffer(Z_STRVAL_PP(zfile), Z_STRLEN_PP(zfile));
+			    zend_list_addref(zend_list_insert(input, le_swfinputp));
+  			}
+  			else
+			    input = getInput(zfile TSRMLS_CC);
+		
+			stream = newSWFVideoStream_fromInput(input);
+			break;
+		case 0:
+			stream = newSWFVideoStream();
+			break;
+		default:
+			WRONG_PARAM_COUNT;
+			break;
+	}
+	
+	if(stream) {
+		ret = zend_list_insert(stream, le_swfvideostreamp);
+		object_init_ex(getThis(), videostream_class_entry_ptr);
+		add_property_resource(getThis(), "videostream", ret);
+		zend_list_addref(ret);
+	}
+	
+}	
+
+static void destroy_SWFVideoStream_resource(zend_rsrc_list_entry *resource TSRMLS_DC)
+{
+	destroySWFVideoStream((SWFVideoStream)resource->ptr);
+}
+/* }}} */
+
+/* {{{ internal function getVideoStream
+   Returns the SWFVideoStream object contained in zval *id */
+                                                                                                                                             
+static SWFVideoStream getVideoStream(zval *id TSRMLS_DC)
+{
+	void *stream = SWFgetProperty(id, "videostream", 11, le_swfvideostreamp TSRMLS_CC);
+	                                                                                                                                         
+	if(!stream)
+		php_error(E_ERROR, "called object is not an SWFVideoStream!");
+	                                                                                                                                         
+	return (SWFVideoStream)stream;
+}
+
+/* }}} */
+
+/* {{{ setDimension */
+
+PHP_METHOD(swfvideostream, setdimension)
+{
+	zval **x, **y;
+	SWFVideoStream stream = getVideoStream(getThis() TSRMLS_CC);
+	if(!stream)
+		 php_error(E_ERROR, "getVideoSTream returned NULL");
+
+	if( ZEND_NUM_ARGS() != 2 
+			|| zend_get_parameters_ex(2, &x, &y) == FAILURE )
+		WRONG_PARAM_COUNT;
+
+	convert_to_long_ex(x);
+	convert_to_long_ex(y);
+
+	SWFVideoStream_setDimension(stream, Z_LVAL_PP(x), Z_LVAL_PP(y));
+}
+/* }}} */
+
+/* {{{ getNumFrames */
+PHP_METHOD(swfvideostream, getnumframes) 
+{
+	if(ZEND_NUM_ARGS() != 0)
+		WRONG_PARAM_COUNT;
+
+	RETURN_LONG(SWFVideoStream_getNumFrames(getVideoStream(getThis() TSRMLS_CC)));
+}
+/* }}} */
+		
+		
+static zend_function_entry swfvideostream_functions[] = {
+	PHP_ME(swfvideostream, 	__construct,	NULL, 0)
+	PHP_ME(swfvideostream, setdimension, NULL, 0)
+	PHP_ME(swfvideostream, getnumframes, NULL, 0)
+	{ NULL, NULL, NULL }
+};
+
+/* }}} */
 #endif
+
+#ifdef HAVE_SWFPREBUILTCLIP
+/* {{{ SWFPrebuiltClip */
+/* {{{ proto class swfprebuiltclip_init([file])
+    Returns a SWFPrebuiltClip object */
+
+PHP_METHOD(swfprebuiltclip, __construct)
+{
+	zval **zfile = NULL;
+	SWFPrebuiltClip clip;
+	SWFInput input;
+	int ret;
+
+	switch(ZEND_NUM_ARGS()) {
+		case 1:
+			if(zend_get_parameters_ex(1, &zfile) == FAILURE)
+				WRONG_PARAM_COUNT;
+	
+			if(Z_TYPE_PP(zfile) != IS_RESOURCE)
+   			{
+			    convert_to_string_ex(zfile);
+			    input = newSWFInput_buffer(Z_STRVAL_PP(zfile), Z_STRLEN_PP(zfile));
+			    zend_list_addref(zend_list_insert(input, le_swfinputp));
+   			}
+   			else
+			    input = getInput(zfile TSRMLS_CC);
+		
+			clip = newSWFPrebuiltClip_fromInput(input);
+			break;
+/* not sure whether this makes sense
+   there would have to be a function to add contents
+		case 0:
+			clip = newSWFPrebuiltClip();
+			break; */
+		default:
+			WRONG_PARAM_COUNT;
+			break;
+	}
+	
+	if(clip) {
+		ret = zend_list_insert(clip, le_swfprebuiltclipp);
+		object_init_ex(getThis(), prebuiltclip_class_entry_ptr);
+		add_property_resource(getThis(), "prebuiltclip", ret);
+		zend_list_addref(ret);
+	}
+}
+/* }}} */
+
+/* {{{ internal function destroy_SWFPrebuiltClip */
+static void destroy_SWFPrebuiltClip_resource(zend_rsrc_list_entry *resource TSRMLS_DC)
+{
+	destroySWFPrebuiltClip((SWFPrebuiltClip)resource->ptr);
+}
+/* }}} */
+
+/* {{{ internal function getPrebuiltClip
+   Returns the SWFPrebuiltClip object contained in zval *id */
+                                                                                                                                             
+static SWFPrebuiltClip getPrebuiltClip(zval *id TSRMLS_DC)
+{
+	void *clip = SWFgetProperty(id, "prebuiltclip", 12, le_swfprebuiltclipp TSRMLS_CC);
+                                                                     
+	if(!clip)
+		php_error(E_ERROR, "called object is not an SWFPrebuiltClip!");
+                                                                                                                                             
+	return (SWFPrebuiltClip)clip;
+}
+
+/* }}} */
+static zend_function_entry swfprebuiltclip_functions[] = {
+	PHP_ME(swfprebuiltclip, __construct, NULL, 0)
+	{ NULL, NULL, NULL }
+};
+
+/* }}} */
+#endif
+
 /* }}} */
 
 /* {{{ SWFMovie
@@ -1979,6 +2184,7 @@ PHP_METHOD(swfmovie, add)
 		ret = zend_list_insert(item, le_swfdisplayitemp);
 		object_init_ex(return_value, displayitem_class_entry_ptr);
 		add_property_resource(return_value, "displayitem", ret);
+		zend_list_addref(ret);
 	}
 }
 /* }}} */
@@ -2012,14 +2218,14 @@ static void phpByteOutputMethod(byte b, void *data)
 PHP_METHOD(swfmovie, output)
 {
 	SWFMovie movie = getMovie(getThis() TSRMLS_CC);
-#ifdef HAVE_MING_ZLIB
+#if defined(HAVE_MING_ZLIB) && !defined(HAVE_NEW_MING)
 	zval **zlimit = NULL;
 	int limit = -1;
 	int argc = ZEND_NUM_ARGS();
+	int oldval = INT_MIN;
+	long out; 
 
-	if(argc==0) {
-		limit = 6;
-	} else {
+	if(argc) {
 		if (zend_get_parameters_ex(1, &zlimit) == FAILURE) {
 			WRONG_PARAM_COUNT;
 		}
@@ -2032,13 +2238,35 @@ PHP_METHOD(swfmovie, output)
 			RETURN_FALSE;
 		}
 	}
-#endif
+	oldval = Ming_setSWFCompression(limit);			
+	out = SWFMovie_output(movie, &phpByteOutputMethod, NULL);
+	if (oldval >= -1 && oldval <= 9) {
+		Ming_setSWFCompression(oldval);
+	}	
+	RETURN_LONG(out);
+#elif defined(HAVE_NEW_MING)
+	zval **zlimit = NULL;
+	int limit = -1;
+	int argc = ZEND_NUM_ARGS();
 
-#ifdef HAVE_NEW_MING
+	if(argc) {
+		if (zend_get_parameters_ex(1, &zlimit) == FAILURE) {
+			WRONG_PARAM_COUNT;
+		}
+
+		convert_to_long_ex(zlimit);
+		limit = Z_LVAL_PP(zlimit);
+
+		if ((limit < 0) || (limit > 9)) {
+			php_error(E_WARNING,"compression level must be within 0..9");
+			RETURN_FALSE;
+		}
+	}
 	RETURN_LONG(SWFMovie_output(movie, &phpByteOutputMethod, NULL, limit));
 #else
 	RETURN_LONG(SWFMovie_output(movie, &phpByteOutputMethod, NULL));
 #endif
+
 }
 /* }}} */
 
@@ -2054,9 +2282,13 @@ static void phpStreamOutputMethod(byte b, void * data)
 PHP_METHOD(swfmovie, saveToFile)
 {
 	zval **x;
-#ifdef HAVE_MING_ZLIB
+#if defined(HAVE_MING_ZLIB) || defined(HAVE_NEW_MING)
 	zval **zlimit = NULL;
 	int limit = -1;
+#endif
+#if defined(HAVE_MING_ZLIB) && !defined(HAVE_NEW_MING)
+	int oldval = INT_MIN;
+	long out;
 #endif
 	SWFMovie movie = getMovie(getThis() TSRMLS_CC);
 	php_stream *what;
@@ -2067,7 +2299,7 @@ PHP_METHOD(swfmovie, saveToFile)
 			WRONG_PARAM_COUNT;
 		break;
 	case 2:
-#ifdef HAVE_MING_ZLIB
+#if defined(HAVE_MING_ZLIB) || defined(HAVE_NEW_MING)
 		if (zend_get_parameters_ex(2, &x, &zlimit) == FAILURE)
 			WRONG_PARAM_COUNT;
 		convert_to_long_ex(zlimit);
@@ -2077,13 +2309,21 @@ PHP_METHOD(swfmovie, saveToFile)
 			RETURN_FALSE;
 		}
 #endif
+#if defined(HAVE_MING_ZLIB) && !defined(HAVE_NEW_MING)
+		oldval = Ming_setSWFCompression(limit);
+#endif
 		break;
 	default:
 		WRONG_PARAM_COUNT;
 	}
 
 	ZEND_FETCH_RESOURCE(what, php_stream *, x, -1,"File-Handle",php_file_le_stream());
-#ifdef HAVE_NEW_MING
+#if defined(HAVE_MING_ZLIB) && !defined(HAVE_NEW_MING)
+	out = SWFMovie_output(getMovie(getThis() TSRMLS_CC), &phpStreamOutputMethod, what);
+	if (oldval >= -1 && oldval <=9)
+		Ming_setSWFCompression(oldval);
+	RETURN_LONG(out);
+#elif defined(HAVE_NEW_MING)
 	RETURN_LONG(SWFMovie_output(movie, &phpStreamOutputMethod, what, limit));
 #else
 	RETURN_LONG(SWFMovie_output(movie, &phpStreamOutputMethod, what));
@@ -2096,9 +2336,12 @@ PHP_METHOD(swfmovie, saveToFile)
 PHP_METHOD(swfmovie, save)
 {
 	zval **x;
-#ifdef HAVE_MING_ZLIB
+#if defined(HAVE_MING_ZLIB) || defined(HAVE_NEW_MING)
 	zval **zlimit = NULL;
 	int limit = -1;
+#endif
+#if defined(HAVE_MING_ZLIB) && !defined(HAVE_NEW_MING)
+	int oldval = INT_MIN;
 #endif
 	long retval;
 	php_stream *stream;
@@ -2110,7 +2353,7 @@ PHP_METHOD(swfmovie, save)
 		}
 		break;
 	case 2:
-#ifdef HAVE_MING_ZLIB
+#if defined(HAVE_MING_ZLIB) || defined(HAVE_NEW_MING)
 		if (zend_get_parameters_ex(2, &x, &zlimit) == FAILURE) {
 			WRONG_PARAM_COUNT;
 		}
@@ -2121,6 +2364,9 @@ PHP_METHOD(swfmovie, save)
 			RETURN_FALSE;
 		}
 #endif
+#if defined(HAVE_MING_ZLIB) && !defined(HAVE_NEW_MING)
+		oldval = Ming_setSWFCompression(limit);
+#endif
 		break;
 	default:
 		WRONG_PARAM_COUNT;
@@ -2128,10 +2374,15 @@ PHP_METHOD(swfmovie, save)
 		  
 	if (Z_TYPE_PP(x) == IS_RESOURCE) {
 		ZEND_FETCH_RESOURCE(stream, php_stream *, x, -1,"File-Handle",php_file_le_stream());
-#ifdef HAVE_NEW_MING
+#if defined(HAVE_NEW_MING)
 		RETURN_LONG(SWFMovie_output(getMovie(getThis() TSRMLS_CC), &phpStreamOutputMethod, stream, limit));
 #else
-		RETURN_LONG(SWFMovie_output(getMovie(getThis() TSRMLS_CC), &phpStreamOutputMethod, stream));
+		RETVAL_LONG(SWFMovie_output(getMovie(getThis() TSRMLS_CC), &phpStreamOutputMethod, stream));
+#if defined(HAVE_MING_ZLIB) && !defined(HAVE_NEW_MING)
+    if(oldval >= -1 && oldval <=9)
+		Ming_setSWFCompression(oldval);
+#endif
+		return;
 #endif
 	}
 
@@ -2142,12 +2393,17 @@ PHP_METHOD(swfmovie, save)
 		RETURN_FALSE;
 	}
 	
-#ifdef HAVE_NEW_MING
+#if defined(HAVE_NEW_MING)
 	retval = SWFMovie_output(getMovie(getThis() TSRMLS_CC), &phpStreamOutputMethod, (void *)stream, limit);
 #else
 	retval = SWFMovie_output(getMovie(getThis() TSRMLS_CC), &phpStreamOutputMethod, (void *)stream);
 #endif
 	php_stream_close(stream);
+#if defined(HAVE_MING_ZLIB) && !defined(HAVE_NEW_MING)
+    if(oldval >= -1 && oldval <=9)
+		Ming_setSWFCompression(oldval);
+#endif
+    
 	RETURN_LONG(retval);
 }
 /* }}} */
@@ -2301,6 +2557,7 @@ PHP_METHOD(swfmovie, startSound)
 		ret = zend_list_insert(item, le_swfsoundinstancep);
 		object_init_ex(return_value, soundinstance_class_entry_ptr);
 		add_property_resource(return_value, "soundinstance", ret);
+		zend_list_addref(ret);
 	}
 }
 /* }}} */
@@ -2345,6 +2602,7 @@ PHP_METHOD(swfmovie, importChar)
     	ret = zend_list_insert(res, le_swfspritep);
 		object_init_ex(return_value, sprite_class_entry_ptr);
 		add_property_resource(return_value, "sprite", ret);
+		zend_list_addref(ret);
 	}	
 }
 /* }}} */
@@ -2372,6 +2630,7 @@ PHP_METHOD(swfmovie, importFont)
     	ret = zend_list_insert(res, le_swffontcharp);
 		object_init_ex(return_value, fontchar_class_entry_ptr);
 		add_property_resource(return_value, "fontcharacter", ret);
+		zend_list_addref(ret);
 	}	
 }
 /* }}} */
@@ -2400,6 +2659,7 @@ PHP_METHOD(swfmovie, addFont)
     	ret = zend_list_insert(res, le_swffontcharp);
 		object_init_ex(return_value, fontchar_class_entry_ptr);
 		add_property_resource(return_value, "fontcharacter", ret);
+		zend_list_addref(ret);
 	}	
 }
 /* }}} */
@@ -2584,6 +2844,7 @@ PHP_METHOD(swfshape, addFill)
 	ret = zend_list_insert(fill, le_swffillp);
 	object_init_ex(return_value, fill_class_entry_ptr);
 	add_property_resource(return_value, "fill", ret);
+	zend_list_addref(ret);
 }
 /* }}} */
 
@@ -2870,7 +3131,7 @@ PHP_METHOD(swfshape, drawCircle)
 /* }}} */
 
 /* {{{ proto void swfshape::drawarc(float r, float startAngle, float endAngle)
-   Draws an arc of radius r centered at the current location, from angle startAngle to angle endAngle measured counterclockwise from 12 o'clock */
+   Draws an arc of radius r centered at the current location, from angle startAngle to angle endAngle measured clockwise from 12 o'clock */
 PHP_METHOD(swfshape, drawArc)
 {
 	zval **r, **start, **end;
@@ -2883,7 +3144,7 @@ PHP_METHOD(swfshape, drawArc)
 	convert_to_double_ex(end);
 
 	/* convert angles to radians, since that's what php uses elsewhere */
-	SWFShape_drawArc(getShape(getThis() TSRMLS_CC), FLOAT_Z_DVAL_PP(r), (float)(Z_DVAL_PP(start)*M_PI/180.0), (float)(Z_DVAL_PP(end)*M_PI/180.0));
+	SWFShape_drawArc(getShape(getThis() TSRMLS_CC), FLOAT_Z_DVAL_PP(r), FLOAT_Z_DVAL_PP(start), FLOAT_Z_DVAL_PP(end));
 }
 /* }}} */
 
@@ -3015,6 +3276,7 @@ PHP_METHOD(swfsprite, add)
 		ret = zend_list_insert(item, le_swfdisplayitemp);
 		object_init_ex(return_value, displayitem_class_entry_ptr);
 		add_property_resource(return_value, "displayitem", ret);
+		zend_list_addref(ret);
 	}
 }
 /* }}} */
@@ -3097,6 +3359,7 @@ PHP_METHOD(swfsprite, startSound)
 		ret = zend_list_insert(item, le_swfsoundinstancep);
 		object_init_ex(return_value, soundinstance_class_entry_ptr);
 		add_property_resource(return_value, "soundinstance", ret);
+		zend_list_addref(ret);
 	}
 }
 
@@ -3795,12 +4058,26 @@ PHP_MINIT_FUNCTION(ming)
 #ifdef HAVE_NEW_MING
 	zend_class_entry fontchar_class_entry;
 	zend_class_entry soundinstance_class_entry;
+	zend_class_entry videostream_class_entry;
+#endif
+#ifdef HAVE_SWFPREBUILTCLIP
+	zend_class_entry prebuiltclip_class_entry;
 #endif
 
 	Ming_setErrorFunction((void *) php_ming_error);
 
 #define CONSTANT(s,c) REGISTER_LONG_CONSTANT((s), (c), CONST_CS | CONST_PERSISTENT)
 
+#ifdef HAVE_NEW_MING
+	CONSTANT("MING_NEW",                    1);
+#else
+	CONSTANT("MING_NEW",                    0);
+#endif
+#ifdef HAVE_MING_ZLIB
+	CONSTANT("MING_ZLIB",                   1);
+#else
+	CONSTANT("MING_ZLIB",                   0);
+#endif
 	/* flags for SWFButton_addShape */
 	CONSTANT("SWFBUTTON_HIT",               SWFBUTTONRECORD_HITSTATE);
 	CONSTANT("SWFBUTTON_DOWN",              SWFBUTTONRECORD_DOWNSTATE);
@@ -3868,6 +4145,10 @@ PHP_MINIT_FUNCTION(ming)
 #ifdef HAVE_NEW_MING
 	le_swffontcharp = zend_register_list_destructors_ex(destroy_SWFFontCharacter_resource, NULL, "SWFFontCharacter", module_number);
 	le_swfsoundinstancep = zend_register_list_destructors_ex(NULL, NULL, "SWFSoundInstance", module_number);
+	le_swfvideostreamp = zend_register_list_destructors_ex(destroy_SWFVideoStream_resource, NULL, "SWFVideoStream", module_number);
+#endif
+#ifdef HAVE_SWFPREBUILTCLIP
+	le_swfprebuiltclipp = zend_register_list_destructors_ex(destroy_SWFPrebuiltClip_resource, NULL, "SWFPrebuiltClip", module_number);
 #endif
 
 	INIT_CLASS_ENTRY(shape_class_entry, "SWFShape", swfshape_functions);
@@ -3887,6 +4168,10 @@ PHP_MINIT_FUNCTION(ming)
 #ifdef HAVE_NEW_MING
 	INIT_CLASS_ENTRY(fontchar_class_entry, "SWFFontChar", swffontchar_functions);
 	INIT_CLASS_ENTRY(soundinstance_class_entry, "SWFSoundInstance", swfsoundinstance_functions);
+	INIT_CLASS_ENTRY(videostream_class_entry, "SWFVideoStream", swfvideostream_functions);
+#endif
+#ifdef HAVE_SWFPREBUILTCLIP
+	INIT_CLASS_ENTRY(prebuiltclip_class_entry, "SWFPrebuiltClip", swfprebuiltclip_functions);
 #endif
 
 	shape_class_entry_ptr = zend_register_internal_class(&shape_class_entry TSRMLS_CC);
@@ -3906,6 +4191,10 @@ PHP_MINIT_FUNCTION(ming)
 #ifdef HAVE_NEW_MING
 	fontchar_class_entry_ptr = zend_register_internal_class(&fontchar_class_entry TSRMLS_CC);
 	soundinstance_class_entry_ptr = zend_register_internal_class(&soundinstance_class_entry TSRMLS_CC);
+	videostream_class_entry_ptr = zend_register_internal_class(&videostream_class_entry TSRMLS_CC);
+#endif
+#ifdef HAVE_SWFPREBUILTCLIP
+	prebuiltclip_class_entry_ptr = zend_register_internal_class(&prebuiltclip_class_entry TSRMLS_CC);
 #endif
 
 	return SUCCESS;

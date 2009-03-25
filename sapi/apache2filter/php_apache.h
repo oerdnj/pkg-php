@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_apache.h,v 1.23 2004/01/08 17:33:17 sniper Exp $ */
+/* $Id: php_apache.h,v 1.23.2.1 2005/07/16 12:30:10 hyanantha Exp $ */
 
 #ifndef PHP_APACHE_H
 #define PHP_APACHE_H
@@ -41,11 +41,7 @@ typedef struct php_struct {
 	/* Index for reading from buffer */
 	int post_idx;
 	/* stat structure of the current file */	
-#if defined(NETWARE) && defined(CLIB_STAT_PATCH)
-	struct stat_libc finfo;
-#else
 	struct stat finfo;
-#endif
 	/* Buffer for request body filter */
 	char *post_data;
 	/* Whether or not we've processed PHP in the output filters yet. */

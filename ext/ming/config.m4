@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.20.2.1 2004/12/14 16:15:40 dmitry Exp $
+dnl $Id: config.m4,v 1.20.2.2 2005/07/25 21:03:27 helly Exp $
 dnl
 
 PHP_ARG_WITH(ming, for MING support,
@@ -58,7 +58,9 @@ int main() {
     AC_MSG_RESULT([unknown])
   ]) 
 
-  dnl Check Ming version (FIXME: if/when ming has some better way to detect the version..)
+  PHP_CHECK_LIBRARY(ming, SWFPrebuiltClip, [ AC_DEFINE(HAVE_SWFPREBUILTCLIP, 1, [ ]) ], [], []) 
+
+dnl Check Ming version (FIXME: if/when ming has some better way to detect the version..)
   old_CPPFLAGS=$CPPFLAGS
   CPPFLAGS=-I$MING_INC_DIR
   AC_EGREP_CPP(yes, [

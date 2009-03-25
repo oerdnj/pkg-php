@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: var_unserializer.re,v 1.27.2.12 2005/03/10 01:54:24 helly Exp $ */
+/* $Id: var_unserializer.re,v 1.27.2.13 2005/06/01 10:53:25 dmitry Exp $ */
 
 #include "php.h"
 #include "ext/standard/php_var.h"
@@ -301,7 +301,8 @@ static inline int object_common2(UNSERIALIZE_PARAMETER, long elements)
 		return 0;
 	}
 
-	if(Z_OBJCE_PP(rval) != PHP_IC_ENTRY) {
+	if (Z_OBJCE_PP(rval) != PHP_IC_ENTRY &&
+	    zend_hash_exists(&Z_OBJCE_PP(rval)->function_table, "__wakeup", sizeof("__wakeup"))) {
 		INIT_PZVAL(&fname);
 		ZVAL_STRINGL(&fname, "__wakeup", sizeof("__wakeup") - 1, 0);
 		call_user_function_ex(CG(function_table), rval, &fname, &retval_ptr, 0, 0, 1, NULL TSRMLS_CC);

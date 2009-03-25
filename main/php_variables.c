@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_variables.c,v 1.81.2.3 2005/02/17 04:46:10 iliaa Exp $ */
+/* $Id: php_variables.c,v 1.81.2.12 2005/09/01 19:15:51 iliaa Exp $ */
 
 #include <stdio.h>
 #include "php.h"
@@ -186,7 +186,19 @@ plain_var:
 			if (!index) {
 				zend_hash_next_index_insert(symtable1, &gpc_element, sizeof(zval *), (void **) &gpc_element_p);
 			} else {
+				zval **tmp;
 				char *escaped_index = php_addslashes(index, index_len, &index_len, 0 TSRMLS_CC);
+				/* 
+				 * According to rfc2965, more specific paths are listed above the less specific ones.
+				 * If we encounter a duplicate cookie name, we should skip it, since it is not possible
+				 * to have the same (plain text) cookie name for the same path and we should not overwrite
+				 * more specific cookies with the less specific ones.
+				 */
+				if (PG(http_globals)[TRACK_VARS_COOKIE] && symtable1 == Z_ARRVAL_P(PG(http_globals)[TRACK_VARS_COOKIE]) && 
+					zend_symtable_find(symtable1, escaped_index, index_len+1, (void **) &tmp) != FAILURE) {
+					efree(escaped_index);
+					break;
+				}
 				zend_symtable_update(symtable1, escaped_index, index_len+1, &gpc_element, sizeof(zval *), (void **) &gpc_element_p);
 				efree(escaped_index);
 			}
@@ -250,12 +262,21 @@ SAPI_API SAPI_TREAT_DATA_FUNC(php_default_treat_data)
 			INIT_PZVAL(array_ptr);
 			switch (arg) {
 				case PARSE_POST:
+					if (PG(http_globals)[TRACK_VARS_POST]) {
+						zval_ptr_dtor(&PG(http_globals)[TRACK_VARS_POST]);
+					}
 					PG(http_globals)[TRACK_VARS_POST] = array_ptr;
 					break;
 				case PARSE_GET:
+					if (PG(http_globals)[TRACK_VARS_GET]) {
+						zval_ptr_dtor(&PG(http_globals)[TRACK_VARS_GET]);
+					}
 					PG(http_globals)[TRACK_VARS_GET] = array_ptr;
 					break;
 				case PARSE_COOKIE:
+					if (PG(http_globals)[TRACK_VARS_COOKIE]) {
+						zval_ptr_dtor(&PG(http_globals)[TRACK_VARS_COOKIE]);
+					}
 					PG(http_globals)[TRACK_VARS_COOKIE] = array_ptr;
 					break;
 			}
@@ -500,6 +521,9 @@ static inline void php_register_server_variables(TSRMLS_D)
 	ALLOC_ZVAL(array_ptr);
 	array_init(array_ptr);
 	INIT_PZVAL(array_ptr);
+	if (PG(http_globals)[TRACK_VARS_SERVER]) {
+		zval_ptr_dtor(&PG(http_globals)[TRACK_VARS_SERVER]);
+	}
 	PG(http_globals)[TRACK_VARS_SERVER] = array_ptr;
 	PG(magic_quotes_gpc) = 0;
 
@@ -675,8 +699,8 @@ int php_hash_environment(TSRMLS_D)
 			PG(http_globals)[i] = dummy_track_vars_array;
 		}
 
-		zend_hash_update(&EG(symbol_table), auto_global_records[i].name, auto_global_records[i].name_len, &PG(http_globals)[i], sizeof(zval *), NULL);
 		PG(http_globals)[i]->refcount++;
+		zend_hash_update(&EG(symbol_table), auto_global_records[i].name, auto_global_records[i].name_len, &PG(http_globals)[i], sizeof(zval *), NULL);
 		if (PG(register_long_arrays)) {
 			zend_hash_update(&EG(symbol_table), auto_global_records[i].long_name, auto_global_records[i].long_name_len, &PG(http_globals)[i], sizeof(zval *), NULL);
 			PG(http_globals)[i]->refcount++;
@@ -696,7 +720,18 @@ int php_hash_environment(TSRMLS_D)
 
 static zend_bool php_auto_globals_create_server(char *name, uint name_len TSRMLS_DC)
 {
-	php_register_server_variables(TSRMLS_C);
+	if (PG(variables_order) && (strchr(PG(variables_order),'S') || strchr(PG(variables_order),'s'))) {
+		php_register_server_variables(TSRMLS_C);
+	} else {
+		zval *server_vars=NULL;
+		ALLOC_ZVAL(server_vars);
+		array_init(server_vars);
+		INIT_PZVAL(server_vars);
+		if (PG(http_globals)[TRACK_VARS_SERVER]) {
+			zval_ptr_dtor(&PG(http_globals)[TRACK_VARS_SERVER]);
+		}
+		PG(http_globals)[TRACK_VARS_SERVER] = server_vars;
+	}
 
 	zend_hash_update(&EG(symbol_table), name, name_len+1, &PG(http_globals)[TRACK_VARS_SERVER], sizeof(zval *), NULL);
 	PG(http_globals)[TRACK_VARS_SERVER]->refcount++;
@@ -716,9 +751,14 @@ static zend_bool php_auto_globals_create_env(char *name, uint name_len TSRMLS_DC
 	ALLOC_ZVAL(env_vars);
 	array_init(env_vars);
 	INIT_PZVAL(env_vars);
+	if (PG(http_globals)[TRACK_VARS_ENV]) {
+		zval_ptr_dtor(&PG(http_globals)[TRACK_VARS_ENV]);
+	}
 	PG(http_globals)[TRACK_VARS_ENV] = env_vars;
 	
-	php_import_environment_variables(PG(http_globals)[TRACK_VARS_ENV] TSRMLS_CC);
+	if (PG(variables_order) && (strchr(PG(variables_order),'E') || strchr(PG(variables_order),'e'))) {
+		php_import_environment_variables(PG(http_globals)[TRACK_VARS_ENV] TSRMLS_CC);
+	}
 
 	zend_hash_update(&EG(symbol_table), name, name_len+1, &PG(http_globals)[TRACK_VARS_ENV], sizeof(zval *), NULL);
 	PG(http_globals)[TRACK_VARS_ENV]->refcount++;

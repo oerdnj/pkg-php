@@ -1735,8 +1735,8 @@ void gdImageFilledEllipse (gdImagePtr im, int mx, int my, int w, int h, int c)
 	rx = r << 1;
 	ry = 0;
 	x = a;
-	old_y2=-1;
-	old_y1=-1;
+	old_y2=-2;
+	old_y1=-2;
 	while (x > 0){
 		if (r > 0) {
 			my1++;my2--;
@@ -3824,9 +3824,9 @@ int gdImageSelectiveBlur( gdImagePtr src)
 
 int gdImageEdgeDetectQuick(gdImagePtr src)
 {
-	float filter[3][3] =	{{1.0,1.0,1.0},
-				{0.0,0.0,0.0},
-				{-1.0,-1.0,-1.0}};
+	float filter[3][3] =	{{-1.0,0.0,-1.0},
+				{0.0,4.0,0.0},
+				{-1.0,0.0,-1.0}};
 
 	return gdImageConvolution(src, filter, 1, 127);
 }
@@ -3842,9 +3842,9 @@ int gdImageGaussianBlur(gdImagePtr im)
 
 int gdImageEmboss(gdImagePtr im)
 {
-	float filter[3][3] =	{{-1.0,0.0,-1.0},
-				{0.0,4.0,0.0},
-				{-1.0,0.0,-1.0}};
+	float filter[3][3] =	{{1.0,1.0,1.0},
+				{0.0,0.0,0.0},
+				{-1.0,-1.0,-1.0}};
 
 	return gdImageConvolution(im, filter, 1, 127);
 }

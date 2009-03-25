@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: acconfig.h,v 1.34.2.2 2005/03/11 06:51:01 hyanantha Exp $ */
+/* $Id: acconfig.h,v 1.34.2.3 2005/07/29 09:20:02 hyanantha Exp $ */
 
 #define ZEND_API
 #define ZEND_DLEXPORT
@@ -98,6 +98,13 @@ int zend_sprintf(char *buffer, const char *format, ...);
 #endif
 
 #endif /* ifndef ZEND_ACCONFIG_H_NO_C_PROTOS */
+
+#ifdef NETWARE 
+#ifdef USE_WINSOCK
+#/*This detection against winsock is of no use*/ undef HAVE_SOCKLEN_T 
+#/*This detection against winsock is of no use*/ undef HAVE_SYS_SOCKET_H
+#endif
+#endif
 
 /*
  * Local variables:

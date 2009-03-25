@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_schema.c,v 1.49.2.3 2005/03/22 10:18:47 dmitry Exp $ */
+/* $Id: php_schema.c,v 1.49.2.6 2005/06/01 14:42:50 dmitry Exp $ */
 
 #include "php_soap.h"
 #include "libxml/uri.h"
@@ -88,20 +88,10 @@ static encodePtr create_encoder(sdlPtr sdl, sdlTypePtr cur_type, const char *ns,
 
 static encodePtr get_create_encoder(sdlPtr sdl, sdlTypePtr cur_type, const char *ns, const char *type)
 {
-	encodePtr enc = NULL;
-	smart_str nscat = {0};
-
-	smart_str_appends(&nscat, ns);
-	smart_str_appendc(&nscat, ':');
-	smart_str_appends(&nscat, type);
-	smart_str_0(&nscat);
-
-	enc = get_encoder_ex(sdl, nscat.c, nscat.len);
+	encodePtr enc = get_encoder(sdl, ns, type);
 	if (enc == NULL) {
 		enc = create_encoder(sdl, cur_type, ns, type);
 	}
-
-	smart_str_free(&nscat);
 	return enc;
 }
 
@@ -1397,7 +1387,6 @@ static int schema_complexType(sdlPtr sdl, xmlAttrPtr tns, xmlNodePtr compType, s
 {
 	xmlNodePtr trav;
 	xmlAttrPtr attrs, name, ns;
-	TSRMLS_FETCH();
 
 	attrs = compType->properties;
 	ns = get_attribute(attrs, "targetNamespace");
@@ -1665,6 +1654,39 @@ static int schema_element(sdlPtr sdl, xmlAttrPtr tns, xmlNodePtr element, sdlTyp
 		cur_type->def = estrdup(attr->children->content);
 	}
 
+	/* form */
+	attr = get_attribute(attrs, "form");
+	if (attr) {
+		if (strncmp(attr->children->content,"qualified",sizeof("qualified")) == 0) {
+		  cur_type->form = XSD_FORM_QUALIFIED;
+		} else if (strncmp(attr->children->content,"unqualified",sizeof("unqualified")) == 0) {
+		  cur_type->form = XSD_FORM_UNQUALIFIED;
+		} else {
+		  cur_type->form = XSD_FORM_DEFAULT;
+		}
+	} else {
+	  cur_type->form = XSD_FORM_DEFAULT;
+	}
+	if (cur_type->form == XSD_FORM_DEFAULT) {
+ 		xmlNodePtr parent = element->parent;
+ 		while (parent) {
+			if (node_is_equal_ex(parent, "schema", SCHEMA_NAMESPACE)) {
+				xmlAttrPtr def;
+				def = get_attribute(parent->properties, "elementFormDefault");
+				if(def == NULL || strncmp(def->children->content, "qualified", sizeof("qualified"))) {
+					cur_type->form = XSD_FORM_UNQUALIFIED;
+				} else {
+					cur_type->form = XSD_FORM_QUALIFIED;
+				}
+				break;
+			}
+			parent = parent->parent;
+  	}
+		if (parent == NULL) {
+			cur_type->form = XSD_FORM_UNQUALIFIED;
+		}	
+	}
+
 	/* type = QName */
 	type = get_attribute(attrs, "type");
 	if (type) {
@@ -1891,7 +1913,25 @@ static int schema_attribute(sdlPtr sdl, xmlAttrPtr tns, xmlNodePtr attrType, sdl
 		}
 		attr = attr->next;
 	}
-
+	if (newAttr->form == XSD_FORM_DEFAULT) {
+ 		xmlNodePtr parent = attrType->parent;
+ 		while (parent) {
+			if (node_is_equal_ex(parent, "schema", SCHEMA_NAMESPACE)) {
+				xmlAttrPtr def;
+				def = get_attribute(parent->properties, "attributeFormDefault");
+				if(def == NULL || strncmp(def->children->content, "qualified", sizeof("qualified"))) {
+					newAttr->form = XSD_FORM_UNQUALIFIED;
+				} else {
+					newAttr->form = XSD_FORM_QUALIFIED;
+				}
+				break;
+			}
+			parent = parent->parent;
+  	}
+		if (parent == NULL) {
+			newAttr->form = XSD_FORM_UNQUALIFIED;
+		}	
+	}
 	trav = attrType->children;
 	if (trav != NULL && node_is_equal(trav, "annotation")) {
 		/* TODO: <annotation> support */
@@ -2192,6 +2232,7 @@ static void schema_type_fixup(sdlCtx *ctx, sdlTypePtr type)
 				if ((*tmp)->def) {
 				  type->def = estrdup((*tmp)->def);
 				}
+				type->form = (*tmp)->form;
 			} else if (strcmp(type->ref, SCHEMA_NAMESPACE ":schema") == 0) {
 				type->encode = get_conversion(XSD_ANYXML);
 			} else {

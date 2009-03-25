@@ -1,15 +1,19 @@
-dnl $Id: config.m4,v 1.7 2003/11/12 23:42:35 sniper Exp $
+dnl $Id: config.m4,v 1.7.2.1 2005/04/27 13:13:38 sniper Exp $
 dnl config.m4 for extension simplexml
 
-PHP_ARG_ENABLE(simplexml, whether to enable simplexml support,
-[  --disable-simplexml     Disable simplexml support], yes)
+PHP_ARG_ENABLE(simplexml, whether to enable SimpleXML support,
+[  --disable-simplexml     Disable SimpleXML support], yes)
 
 if test -z "$PHP_LIBXML_DIR"; then
   PHP_ARG_WITH(libxml-dir, libxml2 install dir,
   [  --with-libxml-dir=DIR     SimpleXML: libxml2 install prefix], no, no)
 fi
 
-if test "$PHP_SIMPLEXML" != "no" && test "$PHP_LIBXML" != "no"; then
+if test "$PHP_SIMPLEXML" != "no"; then
+
+  if test "$PHP_LIBXML" = "no"; then   
+    AC_MSG_ERROR([SimpleXML extension requires LIBXML extension, add --enable-libxml])                
+  fi
 
   PHP_SETUP_LIBXML(SIMPLEXML_SHARED_LIBADD, [
     AC_DEFINE(HAVE_SIMPLEXML,1,[ ])

@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: html.c,v 1.97.2.8 2005/03/21 08:43:57 hyanantha Exp $ */
+/* $Id: html.c,v 1.97.2.10 2005/05/11 14:58:34 jorton Exp $ */
 
 /*
  * HTML entity resources:
@@ -58,7 +58,7 @@ enum entity_charset { cs_terminator, cs_8859_1, cs_cp1252,
 					  cs_big5hkscs, cs_sjis, cs_eucjp, cs_koi8r,
 					  cs_cp1251, cs_8859_5, cs_cp866, cs_macroman
 					};
-typedef const char *entity_table_t;
+typedef const char *const entity_table_t;
 
 /* codepage 1252 is a Windows extension to iso-8859-1. */
 static entity_table_t ent_cp_1252[] = {
@@ -113,11 +113,11 @@ static entity_table_t ent_uni_338_402[] = {
 	"Scaron", "scaron", NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	/* 376 (0x0178)
+	/* 376 (0x0178) */
 	"Yuml", NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, */
-	/* 400 (0x0190)*/
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	/* 400 (0x0190) */
 	NULL, NULL, "fnof"
 };
 
@@ -988,7 +988,11 @@ PHPAPI char *php_unescape_html_entities(unsigned char *old, int oldlen, int *new
 								if ((code >= 0x80 && code < 0xa0) || code > 0xff) {
 									invalid_code = 1;
 								} else {
-									*(q++) = code;
+									if (code == 39 || !quote_style) {
+										invalid_code = 1;
+									} else {
+										*(q++) = code;
+									}
 								}
 								break;
 

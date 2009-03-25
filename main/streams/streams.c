@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: streams.c,v 1.61.2.6 2005/02/22 00:24:51 iliaa Exp $ */
+/* $Id: streams.c,v 1.61.2.14 2005/06/01 15:11:15 dmitry Exp $ */
 
 #define _GNU_SOURCE
 #include "php.h"
@@ -592,8 +592,9 @@ PHPAPI size_t _php_stream_read(php_stream *stream, char *buf, size_t size TSRMLS
 		}
 
 		/* just break anyway, to avoid greedy read */
-		if (stream->wrapper != &php_plain_files_wrapper)
+		if (stream->wrapper != &php_plain_files_wrapper) {
 			break;
+		}
 	}
 
 	if (didread > 0) {
@@ -832,6 +833,7 @@ PHPAPI char *php_stream_get_record(php_stream *stream, size_t maxlen, size_t *re
 {
 	char *e, *buf;
 	size_t toread;
+	int skip = 0;
 
 	php_stream_fill_read_buffer(stream, maxlen TSRMLS_CC);
 
@@ -839,15 +841,16 @@ PHPAPI char *php_stream_get_record(php_stream *stream, size_t maxlen, size_t *re
 		toread = maxlen;
 	} else {
 		if (delim_len == 1) {
-			e = memchr(stream->readbuf, *delim, stream->readbuflen);
+			e = memchr(stream->readbuf + stream->readpos, *delim, stream->writepos - stream->readpos);
 		} else {
-			e = php_memnstr(stream->readbuf, delim, delim_len, (stream->readbuf + stream->readbuflen));
+			e = php_memnstr(stream->readbuf + stream->readpos, delim, delim_len, (stream->readbuf + stream->writepos));
 		}
 
 		if (!e) {
 			toread = maxlen;
 		} else {
-			toread = e - (char *) stream->readbuf;
+			toread = e - (char *) stream->readbuf - stream->readpos;
+			skip = 1;
 		}
 	}
 
@@ -857,8 +860,12 @@ PHPAPI char *php_stream_get_record(php_stream *stream, size_t maxlen, size_t *re
 
 	buf = emalloc(toread + 1);
 	*returned_len = php_stream_read(stream, buf, toread);
-	                
+
 	if (*returned_len >= 0) {
+		if (skip) {
+			stream->readpos += delim_len;
+			stream->position += delim_len;
+		}
 		buf[*returned_len] = '\0';
 		return buf;
 	} else {
@@ -1361,6 +1368,21 @@ static void stream_resource_persistent_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC
 	FG(pclose_ret) = php_stream_free(stream, PHP_STREAM_FREE_CLOSE | PHP_STREAM_FREE_RSRC_DTOR);
 }
 
+void php_shutdown_stream_hashes(TSRMLS_D)
+{
+	if (FG(stream_wrappers)) {
+		zend_hash_destroy(FG(stream_wrappers));
+		efree(FG(stream_wrappers));
+		FG(stream_wrappers) = NULL;
+	}
+
+	if (FG(stream_filters)) {
+		zend_hash_destroy(FG(stream_filters));
+		efree(FG(stream_filters));
+		FG(stream_filters) = NULL;
+	}
+}
+
 int php_init_stream_wrappers(int module_number TSRMLS_DC)
 {
 	le_stream = zend_register_list_destructors_ex(stream_resource_regular_dtor, NULL, "stream", module_number);
@@ -1396,7 +1418,18 @@ int php_shutdown_stream_wrappers(int module_number TSRMLS_DC)
 /* API for registering GLOBAL wrappers */
 PHPAPI int php_register_url_stream_wrapper(char *protocol, php_stream_wrapper *wrapper TSRMLS_DC)
 {
-	return zend_hash_add(&url_stream_wrappers_hash, protocol, strlen(protocol), wrapper, sizeof(*wrapper), NULL);
+	int i, protocol_len = strlen(protocol);
+
+	for(i = 0; i < protocol_len; i++) {
+		if (!isalnum((int)protocol[i]) &&
+			protocol[i] != '+' &&
+			protocol[i] != '-' &&
+			protocol[i] != '.') {
+			return FAILURE;
+		}
+	}
+
+	return zend_hash_add(&url_stream_wrappers_hash, protocol, protocol_len, wrapper, sizeof(*wrapper), NULL);
 }
 
 PHPAPI int php_unregister_url_stream_wrapper(char *protocol TSRMLS_DC)
@@ -1407,6 +1440,17 @@ PHPAPI int php_unregister_url_stream_wrapper(char *protocol TSRMLS_DC)
 /* API for registering VOLATILE wrappers */
 PHPAPI int php_register_url_stream_wrapper_volatile(char *protocol, php_stream_wrapper *wrapper TSRMLS_DC)
 {
+	int i, protocol_len = strlen(protocol);
+
+	for(i = 0; i < protocol_len; i++) {
+		if (!isalnum((int)protocol[i]) &&
+			protocol[i] != '+' &&
+			protocol[i] != '-' &&
+			protocol[i] != '.') {
+			return FAILURE;
+		}
+	}
+
 	if (!FG(stream_wrappers)) {
 		php_stream_wrapper tmpwrapper;
 
@@ -1415,7 +1459,7 @@ PHPAPI int php_register_url_stream_wrapper_volatile(char *protocol, php_stream_w
 		zend_hash_copy(FG(stream_wrappers), &url_stream_wrappers_hash, NULL, &tmpwrapper, sizeof(php_stream_wrapper));
 	}
 
-	return zend_hash_add(FG(stream_wrappers), protocol, strlen(protocol), wrapper, sizeof(*wrapper), NULL);
+	return zend_hash_add(FG(stream_wrappers), protocol, protocol_len, wrapper, sizeof(*wrapper), NULL);
 }
 
 /* }}} */

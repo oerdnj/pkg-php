@@ -17,11 +17,12 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_config.w32.h,v 1.36.2.1 2004/09/15 12:29:24 derick Exp $ */
+/* $Id: zend_config.w32.h,v 1.36.2.2 2005/06/08 15:57:46 sniper Exp $ */
 
 #ifndef ZEND_CONFIG_W32_H
 #define ZEND_CONFIG_W32_H
 
+#define USE_ZEND_ALLOC 1
 #define HAVE_ALLOCA 1
 #define HAVE_LIMITS_H 1
 #define _CRTDBG_MAP_ALLOC

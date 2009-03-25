@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_builtin_functions.c,v 1.239.2.18 2005/03/14 09:13:14 stas Exp $ */
+/* $Id: zend_builtin_functions.c,v 1.239.2.27 2005/06/27 17:42:06 stas Exp $ */
 
 #include "zend.h"
 #include "zend_API.h"
@@ -523,6 +523,7 @@ ZEND_FUNCTION(get_class)
 	zval **arg;
 	char *name = "";
 	zend_uint name_len = 0;
+	int dup;
 	
 	if (!ZEND_NUM_ARGS()) {
 		if (EG(scope)) {
@@ -538,19 +539,9 @@ ZEND_FUNCTION(get_class)
 		RETURN_FALSE;
 	}
 
-	if (Z_OBJ_HT_PP(arg)->get_class_name == NULL ||
-		Z_OBJ_HT_PP(arg)->get_class_name(*arg, &name, &name_len, 0 TSRMLS_CC) != SUCCESS) {
-		zend_class_entry *ce;
+	dup = zend_get_object_classname(*arg, &name, &name_len TSRMLS_CC);
 
-		ce = zend_get_class_entry(*arg TSRMLS_CC);
-		if (!ce) {
-			RETURN_FALSE;
-		}
-
-		RETURN_STRINGL(ce->name, ce->name_length, 1);
-	} 
-
-	RETURN_STRINGL(name, name_len, 0);
+	RETURN_STRINGL(name, name_len, dup);
 }
 /* }}} */
 
@@ -802,7 +793,6 @@ ZEND_FUNCTION(get_class_methods)
 	zend_class_entry *ce = NULL, **pce;
 	HashPosition pos;
 	zend_function *mptr;
-	int instanceof;
 
 	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &class)==FAILURE) {
 		ZEND_WRONG_PARAM_COUNT();
@@ -824,14 +814,16 @@ ZEND_FUNCTION(get_class_methods)
 		RETURN_NULL();
 	}
 
-	instanceof = EG(scope) && instanceof_function(EG(scope), ce TSRMLS_CC);
-
 	array_init(return_value);
 	zend_hash_internal_pointer_reset_ex(&ce->function_table, &pos);
 
 	while (zend_hash_get_current_data_ex(&ce->function_table, (void **) &mptr, &pos) == SUCCESS) {
 		if ((mptr->common.fn_flags & ZEND_ACC_PUBLIC) 
-		 || (instanceof && ((mptr->common.fn_flags & ZEND_ACC_PROTECTED) || EG(scope) == mptr->common.scope))) {
+		 || (EG(scope) &&
+		     (((mptr->common.fn_flags & ZEND_ACC_PROTECTED) &&
+		       instanceof_function(EG(scope), mptr->common.scope TSRMLS_CC))
+		   || ((mptr->common.fn_flags & ZEND_ACC_PRIVATE) &&
+		       EG(scope) == mptr->common.scope)))) {
 			MAKE_STD_ZVAL(method_name);
 			ZVAL_STRING(method_name, mptr->common.function_name, 1);
 			zend_hash_next_index_insert(return_value->value.ht, &method_name, sizeof(zval *), NULL);
@@ -1528,6 +1520,12 @@ static zval *debug_backtrace_get_args(void ***curpos TSRMLS_DC)
 		(*arg)->refcount++;
 		add_next_index_zval(arg_array, *arg);
 	}
+	
+	/* skip args from incomplete frames */
+	while ((((*curpos)-1) > EG(argument_stack).elements) && *((*curpos)-1)) {
+		(*curpos)--;
+	}
+
 	return arg_array;
 }
 
@@ -1550,7 +1548,7 @@ void debug_print_backtrace_args(zval *arg_array TSRMLS_DC)
 /* {{{ proto void debug_print_backtrace(void) */
 ZEND_FUNCTION(debug_print_backtrace)
 {
-	zend_execute_data *ptr;
+	zend_execute_data *ptr, *skip;
 	int lineno;
 	char *function_name;
 	char *filename;
@@ -1575,6 +1573,11 @@ ZEND_FUNCTION(debug_print_backtrace)
 		args -= *(ulong*)args;
 		frames_on_stack++;
 
+		/* skip args from incomplete frames */
+		while (((args-1) > EG(argument_stack).elements) && *(args-1)) {
+			args--;
+		}
+
 		if ((args-1) == EG(argument_stack).elements) {
 			arg_stack_consistent = 1;
 			break;
@@ -1588,14 +1591,35 @@ ZEND_FUNCTION(debug_print_backtrace)
 	cur_arg_pos -= 2;
 	frames_on_stack--;
 
+	if (arg_stack_consistent) {
+		/* skip args from incomplete frames */
+		while (((cur_arg_pos-1) > EG(argument_stack).elements) && *(cur_arg_pos-1)) {
+			cur_arg_pos--;
+		}
+	}
+
 	array_init(return_value);
 
 	while (ptr) {
-   		class_name = call_type = NULL;   
+		char *free_class_name = NULL;
+
+		class_name = call_type = NULL;   
 		arg_array = NULL;
-		if (ptr->op_array) {
-			filename = ptr->op_array->filename;
-			lineno = ptr->opline->lineno;
+
+		skip = ptr;
+		/* skip internal handler */
+		if (!skip->op_array &&
+		    skip->prev_execute_data &&
+		    skip->prev_execute_data->opline &&
+		    skip->prev_execute_data->opline->opcode != ZEND_DO_FCALL &&
+		    skip->prev_execute_data->opline->opcode != ZEND_DO_FCALL_BY_NAME &&
+		    skip->prev_execute_data->opline->opcode != ZEND_INCLUDE_OR_EVAL) {
+		  skip = skip->prev_execute_data;
+		}
+
+		if (skip->op_array) {
+			filename = skip->op_array->filename;
+			lineno = skip->opline->lineno;
 		} else {
 			filename = NULL;
 			lineno = 0;
@@ -1605,7 +1629,18 @@ ZEND_FUNCTION(debug_print_backtrace)
 
 		if (function_name) {
 			if (ptr->object) {
-				class_name = Z_OBJCE(*ptr->object)->name;
+				if (ptr->function_state.function->common.scope) {
+					class_name = ptr->function_state.function->common.scope->name;
+				} else {
+					zend_uint class_name_len;
+					int dup;
+					
+					dup = zend_get_object_classname(ptr->object, &class_name, &class_name_len TSRMLS_CC);
+					if(!dup) {
+						free_class_name = class_name;
+					}
+				}
+
 				call_type = "->";
 			} else if (ptr->function_state.function->common.scope) {
 				class_name = ptr->function_state.function->common.scope->name;
@@ -1624,6 +1659,11 @@ ZEND_FUNCTION(debug_print_backtrace)
 			/* i know this is kinda ugly, but i'm trying to avoid extra cycles in the main execution loop */
 			zend_bool build_filename_arg = 1;
 
+			if (!ptr->opline || ptr->opline->opcode != ZEND_INCLUDE_OR_EVAL) {
+				/* can happen when calling eval from a custom sapi */
+				function_name = "unknown";
+				build_filename_arg = 0;
+			} else
 			switch (ptr->opline->op2.u.constant.value.lval) {
 				case ZEND_EVAL:
 					function_name = "eval";
@@ -1668,8 +1708,11 @@ ZEND_FUNCTION(debug_print_backtrace)
 		}
 		zend_printf(") called at [%s:%d]\n", filename, lineno);
 		include_filename = filename;
-		ptr = ptr->prev_execute_data;
+		ptr = skip->prev_execute_data;
 		++indent;
+		if (free_class_name) {
+			efree(free_class_name);
+		}
 	}
 }
 
@@ -1677,12 +1720,11 @@ ZEND_FUNCTION(debug_print_backtrace)
 
 ZEND_API void zend_fetch_debug_backtrace(zval *return_value, int skip_last TSRMLS_DC)
 {
-	zend_execute_data *ptr;
+	zend_execute_data *ptr, *skip;
 	int lineno;
 	char *function_name;
 	char *filename;
 	char *class_name;
-	char *call_type;
 	char *include_filename = NULL;
 	zval *stack_frame;
 	void **cur_arg_pos = EG(argument_stack).top_element;
@@ -1697,6 +1739,11 @@ ZEND_API void zend_fetch_debug_backtrace(zval *return_value, int skip_last TSRML
 		args -= *(ulong*)args;
 		frames_on_stack++;
 
+		/* skip args from incomplete frames */
+		while (((args-1) > EG(argument_stack).elements) && *(args-1)) {
+			args--;
+		}
+
 		if ((args-1) == EG(argument_stack).elements) {
 			arg_stack_consistent = 1;
 			break;
@@ -1705,12 +1752,24 @@ ZEND_API void zend_fetch_debug_backtrace(zval *return_value, int skip_last TSRML
 
 	ptr = EG(current_execute_data);
 
+	/* skip "new Exception()" */
+	if ((skip_last == 0) && ptr->opline && (ptr->opline->opcode == ZEND_NEW)) {
+		ptr = ptr->prev_execute_data;
+	}
+
 	/* skip debug_backtrace() */
 	if (skip_last--) {
 		int arg_count = *((ulong*)(cur_arg_pos - 2));
 		cur_arg_pos -= (arg_count + 2);
 		frames_on_stack--;
 		ptr = ptr->prev_execute_data;
+
+		if (arg_stack_consistent) {
+			/* skip args from incomplete frames */
+			while (((cur_arg_pos-1) > EG(argument_stack).elements) && *(cur_arg_pos-1)) {
+				cur_arg_pos--;
+			}
+		}
 	}
 
 	array_init(return_value);
@@ -1719,9 +1778,20 @@ ZEND_API void zend_fetch_debug_backtrace(zval *return_value, int skip_last TSRML
 		MAKE_STD_ZVAL(stack_frame);
 		array_init(stack_frame);
 
-		if (ptr->op_array) {
-			filename = ptr->op_array->filename;
-			lineno = ptr->opline->lineno;
+		skip = ptr;
+		/* skip internal handler */
+		if (!skip->op_array &&
+		    skip->prev_execute_data &&
+		    skip->prev_execute_data->opline &&
+		    skip->prev_execute_data->opline->opcode != ZEND_DO_FCALL &&
+		    skip->prev_execute_data->opline->opcode != ZEND_DO_FCALL_BY_NAME &&
+		    skip->prev_execute_data->opline->opcode != ZEND_INCLUDE_OR_EVAL) {
+		  skip = skip->prev_execute_data;
+		}
+
+		if (skip->op_array) {
+			filename = skip->op_array->filename;
+			lineno = skip->opline->lineno;
 			add_assoc_string_ex(stack_frame, "file", sizeof("file"), filename, 1);
 			add_assoc_long_ex(stack_frame, "line", sizeof("line"), lineno);
 
@@ -1738,19 +1808,20 @@ ZEND_API void zend_fetch_debug_backtrace(zval *return_value, int skip_last TSRML
 			add_assoc_string_ex(stack_frame, "function", sizeof("function"), function_name, 1);
 
 			if (ptr->object && Z_TYPE_P(ptr->object) == IS_OBJECT) {
-				class_name = Z_OBJCE(*ptr->object)->name;
-				call_type = "->";
+				if (ptr->function_state.function->common.scope) {
+					add_assoc_string_ex(stack_frame, "class", sizeof("class"), ptr->function_state.function->common.scope->name, 1);
+				} else {
+					zend_uint class_name_len;
+					int dup;
+					
+					dup = zend_get_object_classname(ptr->object, &class_name, &class_name_len TSRMLS_CC);
+					add_assoc_string_ex(stack_frame, "class", sizeof("class"), class_name, dup);
+					
+				}
+				add_assoc_string_ex(stack_frame, "type", sizeof("type"), "->", 1);
 			} else if (ptr->function_state.function->common.scope) {
-				class_name = ptr->function_state.function->common.scope->name;
-				call_type = "::";
-			} else {
-				class_name = NULL;
-				call_type = NULL;
-			}
-
-			if (class_name) {
-				add_assoc_string_ex(stack_frame, "class", sizeof("class"), class_name, 1);
-				add_assoc_string_ex(stack_frame, "type", sizeof("type"), call_type, 1);
+				add_assoc_string_ex(stack_frame, "class", sizeof("class"), ptr->function_state.function->common.scope->name, 1);
+				add_assoc_string_ex(stack_frame, "type", sizeof("type"), "::", 1);
 			}
 
 			if ((! ptr->opline) || ((ptr->opline->opcode == ZEND_DO_FCALL_BY_NAME) || (ptr->opline->opcode == ZEND_DO_FCALL))) {
@@ -1763,7 +1834,7 @@ ZEND_API void zend_fetch_debug_backtrace(zval *return_value, int skip_last TSRML
 			/* i know this is kinda ugly, but i'm trying to avoid extra cycles in the main execution loop */
 			zend_bool build_filename_arg = 1;
 
-			if (!ptr->opline) {
+			if (!ptr->opline || ptr->opline->opcode != ZEND_INCLUDE_OR_EVAL) {
 				/* can happen when calling eval from a custom sapi */
 				function_name = "unknown";
 				build_filename_arg = 0;
@@ -1814,7 +1885,7 @@ ZEND_API void zend_fetch_debug_backtrace(zval *return_value, int skip_last TSRML
 
 		include_filename = filename; 
 
-		ptr = ptr->prev_execute_data;
+		ptr = skip->prev_execute_data;
 	}
 }
 /* }}} */
@@ -1892,7 +1963,6 @@ ZEND_FUNCTION(get_extension_funcs)
 	}
 }
 /* }}} */
-
 
 /*
  * Local variables:

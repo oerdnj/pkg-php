@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_sdl.h,v 1.31.2.4 2005/03/22 10:18:48 dmitry Exp $ */
+/* $Id: php_sdl.h,v 1.31.2.5 2005/04/20 08:31:10 dmitry Exp $ */
 
 #ifndef PHP_SDL_H
 #define PHP_SDL_H
@@ -180,6 +180,19 @@ typedef enum _sdlTypeKind {
 	XSD_TYPEKIND_EXTENSION
 } sdlTypeKind;
 
+typedef enum _sdlUse {
+	XSD_USE_DEFAULT,
+	XSD_USE_OPTIONAL,
+	XSD_USE_PROHIBITED,
+	XSD_USE_REQUIRED
+} sdlUse;
+
+typedef enum _sdlForm {
+	XSD_FORM_DEFAULT,
+	XSD_FORM_QUALIFIED,
+	XSD_FORM_UNQUALIFIED
+} sdlForm;
+
 struct _sdlType {
 	sdlTypeKind         kind;
 	char               *name;
@@ -193,6 +206,7 @@ struct _sdlType {
 	char               *def;
 	char               *fixed;
 	char               *ref;
+	sdlForm             form;
 };
 
 struct _sdlParam {
@@ -218,19 +232,6 @@ struct _sdlFunction {
 	void               *bindingAttributes;  /* sdlSoapBindingFunctionPtr */
 	HashTable          *faults;             /* array of sdlFaultPtr */
 };
-
-typedef enum _sdlUse {
-	XSD_USE_DEFAULT,
-	XSD_USE_OPTIONAL,
-	XSD_USE_PROHIBITED,
-	XSD_USE_REQUIRED
-} sdlUse;
-
-typedef enum _sdlForm {
-	XSD_FORM_DEFAULT,
-	XSD_FORM_QUALIFIED,
-	XSD_FORM_UNQUALIFIED
-} sdlForm;
 
 typedef struct _sdlExtraAttribute {
 	char *ns;

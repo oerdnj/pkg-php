@@ -15,7 +15,7 @@
    | Author: Chris Schneider <cschneid@relog.ch>                          |
    +----------------------------------------------------------------------+
  */
-/* $Id: pack.c,v 1.52.2.3 2005/03/21 08:55:43 hyanantha Exp $ */
+/* $Id: pack.c,v 1.52.2.4 2005/05/27 02:03:27 iliaa Exp $ */
 
 #include "php.h"
 
@@ -824,7 +824,9 @@ PHP_FUNCTION(unpack)
 
 				inputpos += size;
 				if (inputpos < 0) {
-					php_error_docref(NULL TSRMLS_CC, E_WARNING, "Type %c: outside of string", type);
+					if (size != -1) { /* only print warning if not working with * */
+						php_error_docref(NULL TSRMLS_CC, E_WARNING, "Type %c: outside of string", type);
+					}
 					inputpos = 0;
 				}
 			} else if (arg < 0) {

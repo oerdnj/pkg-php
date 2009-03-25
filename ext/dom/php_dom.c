@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_dom.c,v 1.60.2.6 2005/02/09 11:47:12 rrichards Exp $ */
+/* $Id: php_dom.c,v 1.60.2.8 2005/06/22 19:58:33 rrichards Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -33,6 +33,40 @@
 #include "ext/standard/info.h"
 #define PHP_XPATH 1
 #define PHP_XPTR 2
+
+zend_class_entry *dom_node_class_entry;
+zend_class_entry *dom_domexception_class_entry;
+zend_class_entry *dom_domstringlist_class_entry;
+zend_class_entry *dom_namelist_class_entry;
+zend_class_entry *dom_domimplementationlist_class_entry;
+zend_class_entry *dom_domimplementationsource_class_entry;
+zend_class_entry *dom_domimplementation_class_entry;
+zend_class_entry *dom_documentfragment_class_entry;
+zend_class_entry *dom_document_class_entry;
+zend_class_entry *dom_nodelist_class_entry;
+zend_class_entry *dom_namednodemap_class_entry;
+zend_class_entry *dom_characterdata_class_entry;
+zend_class_entry *dom_attr_class_entry;
+zend_class_entry *dom_element_class_entry;
+zend_class_entry *dom_text_class_entry;
+zend_class_entry *dom_comment_class_entry;
+zend_class_entry *dom_typeinfo_class_entry;
+zend_class_entry *dom_userdatahandler_class_entry;
+zend_class_entry *dom_domerror_class_entry;
+zend_class_entry *dom_domerrorhandler_class_entry;
+zend_class_entry *dom_domlocator_class_entry;
+zend_class_entry *dom_domconfiguration_class_entry;
+zend_class_entry *dom_cdatasection_class_entry;
+zend_class_entry *dom_documenttype_class_entry;
+zend_class_entry *dom_notation_class_entry;
+zend_class_entry *dom_entity_class_entry;
+zend_class_entry *dom_entityreference_class_entry;
+zend_class_entry *dom_processinginstruction_class_entry;
+zend_class_entry *dom_string_extend_class_entry;
+#if defined(LIBXML_XPATH_ENABLED)
+zend_class_entry *dom_xpath_class_entry;
+#endif
+zend_class_entry *dom_namespace_node_class_entry;
 
 zend_object_handlers dom_object_handlers;
 zend_object_handlers dom_ze1_object_handlers;
@@ -360,6 +394,7 @@ zend_object_value dom_objects_store_clone_obj(zval *zobject TSRMLS_DC)
 	zend_object_value retval;
 	void *new_object;
 	dom_object *intern;
+	dom_object *old_object;
 	struct _store_object *obj;
 	zend_object_handle handle = Z_OBJ_HANDLE_P(zobject);
 
@@ -376,6 +411,9 @@ zend_object_value dom_objects_store_clone_obj(zval *zobject TSRMLS_DC)
 	intern->handle = retval.handle;
 	retval.handlers = Z_OBJ_HT_P(zobject);
 	
+	old_object = (dom_object *) obj->object;
+	zend_objects_clone_members(&intern->std, retval, &old_object->std, intern->handle TSRMLS_CC);
+
 	return retval;
 }
 
@@ -882,7 +920,7 @@ void dom_namednode_iter(dom_object *basenode, int ntype, dom_object *intern, xml
 
 }
 
-static dom_object* dom_objects_set_class(zend_class_entry *class_type TSRMLS_DC)
+static dom_object* dom_objects_set_class(zend_class_entry *class_type, zend_bool hash_copy TSRMLS_DC)
 {
 	zend_class_entry *base_class;
 	zval *tmp;
@@ -905,7 +943,9 @@ static dom_object* dom_objects_set_class(zend_class_entry *class_type TSRMLS_DC)
 
 	ALLOC_HASHTABLE(intern->std.properties);
 	zend_hash_init(intern->std.properties, 0, NULL, ZVAL_PTR_DTOR, 0);
-	zend_hash_copy(intern->std.properties, &class_type->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
+	if (hash_copy) {
+		zend_hash_copy(intern->std.properties, &class_type->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
+	}
 
 	return intern;
 }
@@ -918,7 +958,7 @@ void dom_objects_clone(void *object, void **object_clone TSRMLS_DC)
 	xmlNodePtr node;
 	xmlNodePtr cloned_node;
 
-	clone = dom_objects_set_class(intern->std.ce TSRMLS_CC);
+	clone = dom_objects_set_class(intern->std.ce, 0 TSRMLS_CC);
 
 	if (instanceof_function(intern->std.ce, dom_node_class_entry TSRMLS_CC)) {
 		node = (xmlNodePtr)dom_object_get_node((dom_object *) object);
@@ -946,7 +986,7 @@ zend_object_value dom_objects_new(zend_class_entry *class_type TSRMLS_DC)
 	zend_object_value retval;
 	dom_object *intern;
 	
-	intern = dom_objects_set_class(class_type TSRMLS_CC);
+	intern = dom_objects_set_class(class_type, 1 TSRMLS_CC);
 
 	retval.handle = zend_objects_store_put(intern, NULL, (zend_objects_free_object_storage_t)dom_objects_free_storage, dom_objects_clone TSRMLS_CC);
 	intern->handle = retval.handle;
@@ -963,7 +1003,7 @@ zend_object_value dom_xpath_objects_new(zend_class_entry *class_type TSRMLS_DC)
 	zend_object_value retval;
 	dom_object *intern;
 	
-	intern = dom_objects_set_class(class_type TSRMLS_CC);
+	intern = dom_objects_set_class(class_type, 1 TSRMLS_CC);
 
 	retval.handle = zend_objects_store_put(intern, NULL, (zend_objects_free_object_storage_t)dom_xpath_objects_free_storage, dom_objects_clone TSRMLS_CC);
 	intern->handle = retval.handle;
@@ -1019,7 +1059,7 @@ zend_object_value dom_nnodemap_objects_new(zend_class_entry *class_type TSRMLS_D
 	dom_object *intern;
 	dom_nnodemap_object *objmap;
 	
-	intern = dom_objects_set_class(class_type TSRMLS_CC);
+	intern = dom_objects_set_class(class_type, 1 TSRMLS_CC);
 	intern->ptr = emalloc(sizeof(dom_nnodemap_object));
 	objmap = (dom_nnodemap_object *)intern->ptr;
 	objmap->baseobj = NULL;

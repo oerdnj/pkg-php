@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: acconfig.h,v 1.34.2.2 2005/03/11 06:51:01 hyanantha Exp $ */
+/* $Id: acconfig.h,v 1.34.2.3 2005/07/29 09:20:02 hyanantha Exp $ */
 
 #define ZEND_API
 #define ZEND_DLEXPORT
@@ -218,6 +218,9 @@
 /* Define if you have the getcwd function.  */
 #undef HAVE_GETCWD
 
+/* Define if you have the getgroups function.  */
+#undef HAVE_GETGROUPS
+
 /* Define if you have the getlogin function.  */
 #undef HAVE_GETLOGIN
 
@@ -302,6 +305,9 @@
 /* Define if you have the ldap_parse_reference function.  */
 #undef HAVE_LDAP_PARSE_REFERENCE
 
+/* Define if you have the ldap_parse_result function.  */
+#undef HAVE_LDAP_PARSE_RESULT
+
 /* Define if you have the ldap_start_tls_s function.  */
 #undef HAVE_LDAP_START_TLS_S
 
@@ -340,6 +346,9 @@
 
 /* Define if you have the mkfifo function.  */
 #undef HAVE_MKFIFO
+
+/* Define if you have the mknod function.  */
+#undef HAVE_MKNOD
 
 /* Define if you have the mkstemp function.  */
 #undef HAVE_MKSTEMP
@@ -632,6 +641,9 @@
 /* Define if you have the <sys/ipc.h> header file.  */
 #undef HAVE_SYS_IPC_H
 
+/* Define if you have the <sys/mkdev.h> header file.  */
+#undef HAVE_SYS_MKDEV_H
+
 /* Define if you have the <sys/mman.h> header file.  */
 #undef HAVE_SYS_MMAN_H
 
@@ -739,12 +751,6 @@
 
 /* Enabling BIND8 compatibility for Panther */
 #undef BIND_8_COMPAT
-
-/* hardcode for each of the cross compiler host */
-#undef PHP_OS
-
-/* hardcode for each of the cross compiler host */
-#undef PHP_UNAME
 
 /* Whether you have AOLserver */
 #undef HAVE_AOLSERVER
@@ -1426,6 +1432,9 @@
 #undef HAVE_GD_DYNAMIC_CTX_EX
 
 /*   */
+#undef HAVE_GD_GIF_CTX
+
+/*   */
 #undef HAVE_GD_JPG
 
 /*   */
@@ -1690,6 +1699,9 @@
 #undef HAVE_ORALDAP
 
 /*   */
+#undef HAVE_ORALDAP_10
+
+/*   */
 #undef HAVE_LDAP
 
 /* Whether 3 arg set_rebind_proc() */
@@ -1751,6 +1763,9 @@
 
 /*   */
 #undef HAVE_DESTROY_SWF_BLOCK
+
+/*   */
+#undef HAVE_SWFPREBUILTCLIP
 
 /*   */
 #undef HAVE_NEW_MING
@@ -1936,6 +1951,27 @@
 #undef HAVE_EMPRESS
 
 /*   */
+#undef AIX
+
+/*   */
+#undef HPUX
+
+/*   */
+#undef LINUX
+
+/*   */
+#undef NEUTRINO
+
+/*   */
+#undef ISOLARIS
+
+/*   */
+#undef SOLARIS
+
+/*   */
+#undef UNIXWARE
+
+/*   */
 #undef HAVE_BIRDSTEP
 
 /*   */
@@ -2043,7 +2079,7 @@
 /* PostgreSQL 7.4 or later */
 #undef HAVE_PGTRANSACTIONSTATUS
 
-/* Whether libpq is compiled with --enable-multibye */
+/* Whether libpq is compiled with --enable-multibyte */
 #undef HAVE_PGSQL_WITH_MULTIBYTE_SUPPORT
 
 /* Whether to build pgsql as dynamic module */
@@ -2197,6 +2233,9 @@
 #undef HAVE_FLUSHIO
 
 /*   */
+#undef HAVE_REGEX_T_RE_MAGIC
+
+/*   */
 #undef HSREGEX
 
 /*   */
@@ -2204,6 +2243,9 @@
 
 /*   */
 #undef REGEX
+
+/* 1 */
+#undef HAVE_REGEX_T_RE_MAGIC
 
 /*  see #24142  */
 #undef PHP_ROUND_FUZZ
@@ -2427,6 +2469,12 @@
 /*   */
 #undef ZEND_DEBUG
 
+/* Use Zend memory manager */
+#undef USE_ZEND_ALLOC
+
+/* Use Zend memory manager */
+#undef USE_ZEND_ALLOC
+
 /*   */
 #undef ZTS
 
@@ -2462,6 +2510,12 @@
 
 /* PHP build date */
 #undef PHP_BUILD_DATE
+
+/* hardcode for each of the cross compiler host */
+#undef PHP_OS
+
+/* hardcode for each of the cross compiler host */
+#undef PHP_UNAME
 
 /* uname -a output */
 #undef PHP_UNAME
@@ -2537,6 +2591,13 @@ int zend_sprintf(char *buffer, const char *format, ...);
 #endif
 
 #endif /* ifndef ZEND_ACCONFIG_H_NO_C_PROTOS */
+
+#ifdef NETWARE 
+#ifdef USE_WINSOCK
+#/*This detection against winsock is of no use*/ undef HAVE_SOCKLEN_T 
+#/*This detection against winsock is of no use*/ undef HAVE_SYS_SOCKET_H
+#endif
+#endif
 
 /*
  * Local variables:

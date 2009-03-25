@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: exif.c,v 1.162.2.8 2005/03/17 17:20:35 iliaa Exp $ */
+/* $Id: exif.c,v 1.162.2.9 2005/08/05 14:00:47 hyanantha Exp $ */
 
 /*  ToDos
  *
@@ -115,7 +115,7 @@ function_entry exif_functions[] = {
 };
 /* }}} */
 
-#define EXIF_VERSION "1.4 $Id: exif.c,v 1.162.2.8 2005/03/17 17:20:35 iliaa Exp $"
+#define EXIF_VERSION "1.4 $Id: exif.c,v 1.162.2.9 2005/08/05 14:00:47 hyanantha Exp $"
 
 /* {{{ PHP_MINFO_FUNCTION
  */
@@ -3744,7 +3744,11 @@ static int exif_read_file(image_info_type *ImageInfo, char *FileName, int read_t
 	if (php_stream_is(ImageInfo->infile, PHP_STREAM_IS_STDIO)) {
 		if (VCWD_STAT(FileName, &st) >= 0) {
 			/* Store file date/time. */
+#ifdef NETWARE
+			ImageInfo->FileDateTime = st.st_mtime.tv_sec;
+#else
 			ImageInfo->FileDateTime = st.st_mtime;
+#endif
 			ImageInfo->FileSize = st.st_size;
 			/*exif_error_docref(NULL EXIFERR_CC, ImageInfo, E_NOTICE, "Opened stream is file: %d", ImageInfo->FileSize);*/
 		}

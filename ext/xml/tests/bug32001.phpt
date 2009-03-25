@@ -1,5 +1,8 @@
 --TEST--
 Bug #32001 (xml_parse*() goes into infinite loop when autodetection in effect)
+--SKIPIF--
+<?php # vim:ft=php
+if (!extension_loaded("iconv")) print "skip";
 --FILE--
 <?php
 class testcase {
@@ -151,10 +154,12 @@ $suite = array(
 	new testcase("GB2312",    1),
 );
 
-preg_match("/^libxml2 Version.*\$/im", `$_ENV[TEST_PHP_EXECUTABLE] -i`, $match);
-
-echo $match[0], "\n";
-
+if (XML_SAX_IMPL == 'libxml') {
+  preg_match("/^libxml2 Version.*\$/im", `$_ENV[TEST_PHP_EXECUTABLE] -i`, $match);
+  echo $match[0], "\n";
+} else {
+  echo "libxml2 Version => NONE\n";  
+}
 
 foreach ($suite as $testcase) {
 	$testcase->run();

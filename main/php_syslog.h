@@ -16,18 +16,13 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_syslog.h,v 1.9.2.1 2005/01/09 21:05:17 sniper Exp $ */
+/* $Id: php_syslog.h,v 1.9.2.2 2005/07/22 12:35:09 hyanantha Exp $ */
 
 #ifndef PHP_SYSLOG_H
 #define PHP_SYSLOG_H
 
 #ifdef PHP_WIN32
 #include "win32/syslog.h"
-#elif defined(NETWARE)
-# include "config.nw.h"
-#ifdef HAVE_SYSLOG_H
-#include <syslog.h>
-#endif
 #else
 #include <php_config.h>
 #ifdef HAVE_SYSLOG_H

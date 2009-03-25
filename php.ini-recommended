@@ -452,6 +452,13 @@ register_long_arrays = Off
 ; should turn it off for increased performance.
 register_argc_argv = Off
 
+; When enabled, the SERVER and ENV variables are created when they're first
+; used (Just In Time) instead of when the script starts. If these variables
+; are not used within a script, having this directive on will result in a
+; performance gain. The PHP directives register_globals, register_long_arrays,
+; and register_argc_argv must be disabled for this directive to have any affect.
+auto_globals_jit = On
+
 ; Maximum size of POST data that PHP will accept.
 post_max_size = 8M
 
@@ -535,6 +542,9 @@ enable_dl = On
 ; Set to 1 if running under IIS.  Default is zero.
 ; fastcgi.impersonate = 1;
 
+; Disable logging through FastCGI connection
+; fastcgi.log = 0
+
 ; cgi.rfc2616_headers configuration option tells PHP what type of headers to
 ; use when sending HTTP response code. If it's set 0 PHP sends Status: header that
 ; is supported by Apache. When this option is set to 1 PHP will send
@@ -608,6 +618,7 @@ default_socket_timeout = 60
 ;Note that ODBC support is built in, so no dll is needed for it.
 ;
 
+;extension=php_mbstring.dll
 ;extension=php_bz2.dll
 ;extension=php_cpdf.dll
 ;extension=php_curl.dll
@@ -625,7 +636,6 @@ default_socket_timeout = 60
 ;extension=php_interbase.dll
 ;extension=php_java.dll
 ;extension=php_ldap.dll
-;extension=php_mbstring.dll
 ;extension=php_mcrypt.dll
 ;extension=php_mhash.dll
 ;extension=php_mime_magic.dll
@@ -768,10 +778,10 @@ mysqli.default_user =
 
 ; Default password for mysqli_connect() (doesn't apply in safe mode).
 ; Note that this is generally a *bad* idea to store passwords in this file.
-; *Any* user with PHP access can run 'echo get_cfg_var("mysqli.default_password")
+; *Any* user with PHP access can run 'echo get_cfg_var("mysqli.default_pw")
 ; and reveal this password!  And of course, any users with read access to this
 ; file will be able to reveal the password as well.
-mysqli.default_password =
+mysqli.default_pw =
 
 ; Allow or prevent reconnect
 mysqli.reconnect = Off

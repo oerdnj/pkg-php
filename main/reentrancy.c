@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: reentrancy.c,v 1.40 2004/01/08 08:17:54 andi Exp $ */
+/* $Id: reentrancy.c,v 1.40.2.2 2005/07/01 08:00:44 hyanantha Exp $ */
 
 #include <sys/types.h>
 #include <string.h>
@@ -27,11 +27,6 @@
 
 #ifdef PHP_WIN32
 #include "win32/readdir.h"
-#endif
-
-#if defined(NETWARE) && !(NEW_LIBC)
-/*#include <ws2nlm.h>*/
-#include <sys/socket.h>
 #endif
 
 #include "php_reentrancy.h"
@@ -119,51 +114,6 @@ PHPAPI struct tm *php_gmtime_r(const time_t *const timep, struct tm *p_tm)
 }
 
 #endif
-
-#if defined(NETWARE)
-/*
-   Re-entrant versions of functions seem to be better for loading NLMs in different address space.
-   Since we have them now in LibC, we might as well make use of them.
-*/
-
-#define HAVE_LOCALTIME_R 1
-#define HAVE_CTIME_R 1
-#define HAVE_ASCTIME_R 1
-#define HAVE_GMTIME_R 1
-
-PHPAPI struct tm *php_localtime_r(const time_t *const timep, struct tm *p_tm)
-{
-    /* Modified according to LibC definition */
-	if (localtime_r(timep, p_tm) != NULL)
-		return (p_tm);
-	return (NULL);
-}
-
-PHPAPI char *php_ctime_r(const time_t *clock, char *buf)
-{
-    /* Modified according to LibC definition */
-	if (ctime_r(clock, buf) != NULL)
-		return (buf);
-	return (NULL);
-}
-
-PHPAPI char *php_asctime_r(const struct tm *tm, char *buf)
-{
-    /* Modified according to LibC definition */
-	if (asctime_r(tm, buf) != NULL)
-		return (buf);
-	return (NULL);
-}
-
-PHPAPI struct tm *php_gmtime_r(const time_t *const timep, struct tm *p_tm)
-{
-    /* Modified according to LibC definition */
-	if (gmtime_r(timep, p_tm) != NULL)
-		return (p_tm);
-	return (NULL);
-}
-
-#endif	/* NETWARE */
 
 #if defined(__BEOS__)
 

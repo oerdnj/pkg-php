@@ -15,14 +15,9 @@
    | Author: Rasmus Lerdorf <rasmus@lerdorf.on.ca>                        |
    +----------------------------------------------------------------------+
  */
-/* $Id: head.c,v 1.75.2.1 2005/01/07 21:16:00 tony2001 Exp $ */
+/* $Id: head.c,v 1.75.2.2 2005/06/28 14:49:14 hyanantha Exp $ */
 
 #include <stdio.h>
-
-#if defined(NETWARE) && !defined(NEW_LIBC)
-#include <sys/socket.h>
-#endif
-
 #include "php.h"
 #include "ext/standard/php_standard.h"
 #include "SAPI.h"
