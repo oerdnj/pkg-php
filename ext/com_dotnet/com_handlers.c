@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_handlers.c,v 1.30.2.5 2006/02/07 11:50:54 rrichards Exp $ */
+/* $Id: com_handlers.c,v 1.30.2.5.2.2 2006/10/06 12:23:30 edink Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -486,17 +486,12 @@ static int com_objects_compare(zval *object1, zval *object2 TSRMLS_DC)
 	return ret;
 }
 
-static int com_object_cast(zval *readobj, zval *writeobj, int type, int should_free TSRMLS_DC)
+static int com_object_cast(zval *readobj, zval *writeobj, int type TSRMLS_DC)
 {
 	php_com_dotnet_object *obj;
 	VARIANT v;
 	VARTYPE vt = VT_EMPTY;
-	zval free_obj;
 	HRESULT res = S_OK;
-	
-	if (should_free) {
-		free_obj = *writeobj;
-	}
 
 	obj = CDNO_FETCH(readobj);
 	ZVAL_NULL(writeobj);
@@ -538,15 +533,11 @@ static int com_object_cast(zval *readobj, zval *writeobj, int type, int should_f
 
 	VariantClear(&v);
 
-	if (should_free) {
-		zval_dtor(&free_obj);
-	}
-
 	if (SUCCEEDED(res)) {
 		return SUCCESS;
 	}
 
-	return FAILURE;
+	return zend_std_cast_object_tostring(readobj, writeobj, type TSRMLS_CC);
 }
 
 static int com_object_count(zval *object, long *count TSRMLS_DC)

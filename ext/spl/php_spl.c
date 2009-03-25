@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_spl.c,v 1.52.2.28 2006/03/23 19:55:16 helly Exp $ */
+/* $Id: php_spl.c,v 1.52.2.28.2.6 2006/08/07 09:49:53 tony2001 Exp $ */
 
 #ifdef HAVE_CONFIG_H
 	#include "config.h"
@@ -36,6 +36,7 @@
 #include "spl_observer.h"
 #include "zend_exceptions.h"
 #include "zend_interfaces.h"
+#include "ext/standard/md5.h"
 
 #ifdef COMPILE_DL_SPL
 ZEND_GET_MODULE(spl)
@@ -50,9 +51,9 @@ zend_function_entry spl_functions_none[] = {
 };
 /* }}} */
 
-/* {{{ spl_init_globals
+/* {{{ PHP_GINIT_FUNCTION
  */
-static void spl_init_globals(zend_spl_globals *spl_globals)
+static PHP_GINIT_FUNCTION(spl)
 {
 	spl_globals->autoload_extensions = NULL;
 	spl_globals->autoload_functions  = NULL;
@@ -180,6 +181,8 @@ PHP_FUNCTION(class_implements)
 	SPL_ADD_CLASS(RecursiveFilterIterator, z_list, sub, allow, ce_flags); \
 	SPL_ADD_CLASS(RecursiveIterator, z_list, sub, allow, ce_flags); \
 	SPL_ADD_CLASS(RecursiveIteratorIterator, z_list, sub, allow, ce_flags); \
+	SPL_ADD_CLASS(RecursiveRegexIterator, z_list, sub, allow, ce_flags); \
+	SPL_ADD_CLASS(RegexIterator, z_list, sub, allow, ce_flags); \
 	SPL_ADD_CLASS(RuntimeException, z_list, sub, allow, ce_flags); \
 	SPL_ADD_CLASS(SeekableIterator, z_list, sub, allow, ce_flags); \
 	SPL_ADD_CLASS(SimpleXMLIterator, z_list, sub, allow, ce_flags); \
@@ -210,10 +213,25 @@ int spl_autoload(const char *class_name, const char * lc_name, int class_name_le
 	zend_file_handle file_handle;
 	zend_op_array *new_op_array;
 	zval *result = NULL;
+	zval err_mode;
+	int ret;
 
 	class_file_len = spprintf(&class_file, 0, "%s%s", lc_name, file_extension);
 
-	if (zend_stream_open(class_file, &file_handle TSRMLS_CC) == SUCCESS) {
+	ZVAL_LONG(&err_mode, EG(error_reporting));
+	if (Z_LVAL(err_mode)) {
+		php_alter_ini_entry("error_reporting", sizeof("error_reporting"), "0", 1, ZEND_INI_USER, ZEND_INI_STAGE_RUNTIME);
+	}
+
+	ret = zend_stream_open(class_file, &file_handle TSRMLS_CC);
+
+	if (!EG(error_reporting) && Z_LVAL(err_mode) != EG(error_reporting)) {
+		convert_to_string(&err_mode);
+		zend_alter_ini_entry("error_reporting", sizeof("error_reporting"), Z_STRVAL(err_mode), Z_STRLEN(err_mode), ZEND_INI_USER, ZEND_INI_STAGE_RUNTIME);
+		zendi_zval_dtor(err_mode);
+	}
+
+	if (ret == SUCCESS) {
 		if (!file_handle.opened_path) {
 			file_handle.opened_path = estrndup(class_file, class_file_len);
 		}
@@ -227,7 +245,7 @@ int spl_autoload(const char *class_name, const char * lc_name, int class_name_le
 		if (new_op_array) {
 			EG(return_value_ptr_ptr) = &result;
 			EG(active_op_array) = new_op_array;
-	
+
 			zend_execute(new_op_array TSRMLS_CC);
 	
 			destroy_op_array(new_op_array TSRMLS_CC);
@@ -257,14 +275,10 @@ PHP_FUNCTION(spl_autoload)
 	zend_op **original_opline_ptr = EG(opline_ptr);
 	zend_op_array *original_active_op_array = EG(active_op_array);
 	zend_function_state *original_function_state_ptr = EG(function_state_ptr);
-	zval err_mode;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|s", &class_name, &class_name_len, &file_exts, &file_exts_len) == FAILURE) {
 		RETURN_FALSE;
 	}
-
-	ZVAL_LONG(&err_mode, EG(error_reporting));
-	php_alter_ini_entry("error_reporting", sizeof("error_reporting"), "0", 1, ZEND_INI_USER, ZEND_INI_STAGE_RUNTIME); 
 
 	copy = pos1 = estrdup(ZEND_NUM_ARGS() > 1 ? file_exts : SPL_G(autoload_extensions));
 	lc_name = zend_str_tolower_dup(class_name, class_name_len);
@@ -284,12 +298,6 @@ PHP_FUNCTION(spl_autoload)
 	efree(lc_name);
 	if (copy) {
 		efree(copy);
-	}
-
-	if (!EG(error_reporting) && Z_LVAL(err_mode) != EG(error_reporting)) {
-		convert_to_string(&err_mode);
-		zend_alter_ini_entry("error_reporting", sizeof("error_reporting"), Z_STRVAL(err_mode), Z_STRLEN(err_mode), ZEND_INI_USER, ZEND_INI_STAGE_RUNTIME);
-		zendi_zval_dtor(err_mode);
 	}
 
 	EG(return_value_ptr_ptr) = original_return_value;
@@ -564,6 +572,32 @@ PHP_FUNCTION(spl_autoload_functions)
 	add_next_index_string(return_value, EG(autoload_func)->common.function_name, 1);
 } /* }}} */
 
+/* {{{ proto string spl_object_hash(object obj)
+ Return hash id for given object */
+PHP_FUNCTION(spl_object_hash)
+{
+	zval *obj;
+	int len;
+	char *hash;
+	char md5str[33];
+	PHP_MD5_CTX context;
+	unsigned char digest[16];
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "o", &obj) == FAILURE) {
+		return;
+	}
+
+	len = spprintf(&hash, 0, "%p:%d", Z_OBJ_HT_P(obj), Z_OBJ_HANDLE_P(obj));
+	
+	md5str[0] = '\0';
+	PHP_MD5Init(&context);
+	PHP_MD5Update(&context, (unsigned char*)hash, len);
+	PHP_MD5Final(digest, &context);
+	make_digest(md5str, digest);
+	RETVAL_STRING(md5str, 1);
+	efree(hash);
+}
+
 int spl_build_class_list_string(zval **entry, char **list TSRMLS_DC) /* {{{ */
 {
 	char *res;
@@ -608,7 +642,14 @@ PHP_MINFO_FUNCTION(spl)
 
 static
 ZEND_BEGIN_ARG_INFO(arginfo_iterator, 0)
-	ZEND_ARG_INFO(0, iterator)
+	ZEND_ARG_OBJ_INFO(0, iterator, Traversable, 0)
+ZEND_END_ARG_INFO();
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_iterator_apply, 0, 0, 2)
+	ZEND_ARG_OBJ_INFO(0, iterator, Traversable, 0)
+	ZEND_ARG_INFO(0, function)
+	ZEND_ARG_ARRAY_INFO(0, args, 1)
 ZEND_END_ARG_INFO();
 
 /* {{{ spl_functions
@@ -623,9 +664,11 @@ zend_function_entry spl_functions[] = {
 	PHP_FE(spl_autoload_call,       NULL)
 	PHP_FE(class_parents,           NULL)
 	PHP_FE(class_implements,        NULL)
+	PHP_FE(spl_object_hash,         NULL)
 #ifdef SPL_ITERATORS_H
 	PHP_FE(iterator_to_array,       arginfo_iterator)
 	PHP_FE(iterator_count,          arginfo_iterator)
+	PHP_FE(iterator_apply,          arginfo_iterator_apply)
 #endif /* SPL_ITERATORS_H */
 	{NULL, NULL, NULL}
 };
@@ -635,8 +678,6 @@ zend_function_entry spl_functions[] = {
  */
 PHP_MINIT_FUNCTION(spl)
 {
-	ZEND_INIT_MODULE_GLOBALS(spl, spl_init_globals, NULL);
-
 	PHP_MINIT(spl_iterators)(INIT_FUNC_ARGS_PASSTHRU);
 	PHP_MINIT(spl_array)(INIT_FUNC_ARGS_PASSTHRU);
 	PHP_MINIT(spl_directory)(INIT_FUNC_ARGS_PASSTHRU);
@@ -694,7 +735,11 @@ zend_module_entry spl_module_entry = {
 	PHP_RSHUTDOWN(spl),
 	PHP_MINFO(spl),
 	"0.2",
-	STANDARD_MODULE_PROPERTIES
+	PHP_MODULE_GLOBALS(spl),
+	PHP_GINIT(spl),
+	NULL,
+	NULL,
+	STANDARD_MODULE_PROPERTIES_EX
 };
 /* }}} */
 

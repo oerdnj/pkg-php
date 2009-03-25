@@ -2,7 +2,7 @@
 	Build Configuration for Win32.
 	This has only been tested with MS VisualC++ 6 (and later).
 
-	$Id: config.w32.h,v 1.85.4.2 2006/06/05 08:30:54 stas Exp $
+	$Id: config.w32.h,v 1.85.4.1.2.1 2006/06/05 09:00:15 stas Exp $
 */
 
 /* Default PHP / PEAR directories */

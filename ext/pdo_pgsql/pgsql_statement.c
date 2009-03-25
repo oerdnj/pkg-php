@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pgsql_statement.c,v 1.31.2.12 2006/03/27 20:51:01 wez Exp $ */
+/* $Id: pgsql_statement.c,v 1.31.2.12.2.3 2006/09/19 15:45:21 iliaa Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -60,10 +60,14 @@ static int pgsql_stmt_dtor(pdo_stmt_t *stmt TSRMLS_DC)
 		char *q = NULL;
 		PGresult *res;
 
-		spprintf(&q, 0, "DEALLOCATE %s", S->stmt_name);
-		res = PQexec(H->server, q);
-		efree(q);
-		if (res) PQclear(res);
+		if (S->is_prepared) {
+			spprintf(&q, 0, "DEALLOCATE %s", S->stmt_name);
+			res = PQexec(H->server, q);
+			efree(q);
+			if (res) {
+				PQclear(res);
+			}
+		}
 		efree(S->stmt_name);
 		S->stmt_name = NULL;
 	}
@@ -247,16 +251,16 @@ static int pgsql_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_data *
 			case PDO_PARAM_EVT_EXEC_PRE:
 				if (!S->param_values) {
 					S->param_values = ecalloc(
-							zend_hash_num_elements(stmt->bound_params),
+							zend_hash_num_elements(stmt->bound_param_map),
 							sizeof(char*));
 					S->param_lengths = ecalloc(
-							zend_hash_num_elements(stmt->bound_params),
+							zend_hash_num_elements(stmt->bound_param_map),
 							sizeof(int));
 					S->param_formats = ecalloc(
-							zend_hash_num_elements(stmt->bound_params),
+							zend_hash_num_elements(stmt->bound_param_map),
 							sizeof(int));
 					S->param_types = ecalloc(
-							zend_hash_num_elements(stmt->bound_params),
+							zend_hash_num_elements(stmt->bound_param_map),
 							sizeof(Oid));
 				}
 				if (param->paramno >= 0) {
@@ -341,6 +345,7 @@ static int pgsql_stmt_fetch(pdo_stmt_t *stmt,
 		
 		spprintf(&q, 0, "FETCH %s %ld FROM %s", ori_str, offset, S->cursor_name);
 		S->result = PQexec(S->H->server, q);
+		efree(q);
 		status = PQresultStatus(S->result);
 
 		if (status != PGRES_COMMAND_OK && status != PGRES_TUPLES_OK) {

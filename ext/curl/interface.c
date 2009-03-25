@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: interface.c,v 1.62.2.16 2006/08/10 17:16:35 iliaa Exp $ */
+/* $Id: interface.c,v 1.62.2.14.2.12 2006/10/10 23:12:59 iliaa Exp $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 
@@ -163,12 +163,12 @@ static void _php_curl_close(zend_rsrc_list_entry *rsrc TSRMLS_DC);
 		php_url *tmp_url; 																		\
 															\
 		if (!(tmp_url = php_url_parse_ex(str, len))) {											\
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid url '%s'", str);				\
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid URL '%s'", str);				\
 			RETURN_FALSE; 																		\
 		} 																						\
 															\
 		if (php_memnstr(str, tmp_url->path, strlen(tmp_url->path), str + len)) {				\
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Url '%s' contains unencoded control characters.", str);	\
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "URL '%s' contains unencoded control characters.", str);	\
 			RETURN_FALSE;											\
 		}													\
 																								\
@@ -181,27 +181,128 @@ static void _php_curl_close(zend_rsrc_list_entry *rsrc TSRMLS_DC);
 		php_url_free(tmp_url); 																	\
 	}
 
+/* {{{ arginfo */
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_curl_version, 0, 0, 0)
+	ZEND_ARG_INFO(0, version)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_curl_init, 0, 0, 0)
+	ZEND_ARG_INFO(0, url)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_curl_copy_handle, 0)
+	ZEND_ARG_INFO(0, ch)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_curl_setopt, 0)
+	ZEND_ARG_INFO(0, ch)
+	ZEND_ARG_INFO(0, option)
+	ZEND_ARG_INFO(0, value)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_curl_setopt_array, 0)
+	ZEND_ARG_INFO(0, ch)
+	ZEND_ARG_INFO(0, options)/* ARRAY_INFO(0, options, 0) */
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_curl_exec, 0)
+	ZEND_ARG_INFO(0, ch)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_curl_getinfo, 0, 0, 1)
+	ZEND_ARG_INFO(0, ch)
+	ZEND_ARG_INFO(0, option)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_curl_error, 0)
+	ZEND_ARG_INFO(0, ch)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_curl_errno, 0)
+	ZEND_ARG_INFO(0, ch)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_curl_close, 0)
+	ZEND_ARG_INFO(0, ch)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_curl_multi_init, 0)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_curl_multi_add_handle, 0)
+	ZEND_ARG_INFO(0, mh)
+	ZEND_ARG_INFO(0, ch)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_curl_multi_remove_handle, 0)
+	ZEND_ARG_INFO(0, mh)
+	ZEND_ARG_INFO(0, ch)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_curl_multi_select, 0, 0, 1)
+	ZEND_ARG_INFO(0, mh)
+	ZEND_ARG_INFO(0, timeout)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_curl_multi_exec, 0, 0, 1)
+	ZEND_ARG_INFO(0, mh)
+	ZEND_ARG_INFO(1, still_running)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_curl_multi_getcontent, 0)
+	ZEND_ARG_INFO(0, ch)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_curl_multi_info_read, 0, 0, 1)
+	ZEND_ARG_INFO(0, mh)
+	ZEND_ARG_INFO(0, msgs_in_queue)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_curl_multi_close, 0)
+	ZEND_ARG_INFO(0, mh)
+ZEND_END_ARG_INFO()
+
+/* }}} */
+
 /* {{{ curl_functions[]
  */
 zend_function_entry curl_functions[] = {
-	PHP_FE(curl_init,                NULL)
-	PHP_FE(curl_copy_handle,         NULL)
-	PHP_FE(curl_version,             NULL)
-	PHP_FE(curl_setopt,              NULL)
-	PHP_FE(curl_setopt_array,        NULL)
-	PHP_FE(curl_exec,                NULL)
-	PHP_FE(curl_getinfo,             NULL)
-	PHP_FE(curl_error,               NULL)
-	PHP_FE(curl_errno,               NULL)
-	PHP_FE(curl_close,               NULL)
-	PHP_FE(curl_multi_init,          NULL)
-	PHP_FE(curl_multi_add_handle,    NULL)
-	PHP_FE(curl_multi_remove_handle, NULL)
-	PHP_FE(curl_multi_select,        NULL)
-	PHP_FE(curl_multi_exec,          second_arg_force_ref)
-	PHP_FE(curl_multi_getcontent,    NULL)
-	PHP_FE(curl_multi_info_read,     NULL)
-	PHP_FE(curl_multi_close,         NULL)
+	PHP_FE(curl_init,                arginfo_curl_init)
+	PHP_FE(curl_copy_handle,         arginfo_curl_copy_handle)
+	PHP_FE(curl_version,             arginfo_curl_version)
+	PHP_FE(curl_setopt,              arginfo_curl_setopt)
+	PHP_FE(curl_setopt_array,        arginfo_curl_setopt_array)
+	PHP_FE(curl_exec,                arginfo_curl_exec)
+	PHP_FE(curl_getinfo,             arginfo_curl_getinfo)
+	PHP_FE(curl_error,               arginfo_curl_error)
+	PHP_FE(curl_errno,               arginfo_curl_errno)
+	PHP_FE(curl_close,               arginfo_curl_close)
+	PHP_FE(curl_multi_init,          arginfo_curl_multi_init)
+	PHP_FE(curl_multi_add_handle,    arginfo_curl_multi_add_handle)
+	PHP_FE(curl_multi_remove_handle, arginfo_curl_multi_remove_handle)
+	PHP_FE(curl_multi_select,        arginfo_curl_multi_select)
+	PHP_FE(curl_multi_exec,          arginfo_curl_multi_exec)
+	PHP_FE(curl_multi_getcontent,    arginfo_curl_multi_getcontent)
+	PHP_FE(curl_multi_info_read,     arginfo_curl_multi_info_read)
+	PHP_FE(curl_multi_close,         arginfo_curl_multi_close)
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -224,9 +325,6 @@ zend_module_entry curl_module_entry = {
 
 #ifdef COMPILE_DL_CURL
 ZEND_GET_MODULE (curl)
-# ifdef PHP_WIN32
-# include "zend_arg_defs.c"
-# endif
 #endif
 
 /* {{{ PHP_MINFO_FUNCTION
@@ -234,8 +332,8 @@ ZEND_GET_MODULE (curl)
 PHP_MINFO_FUNCTION(curl)
 {
 	php_info_print_table_start();
-	php_info_print_table_row(2, "CURL support",    "enabled");
-	php_info_print_table_row(2, "CURL Information", curl_version());
+	php_info_print_table_row(2, "cURL support",    "enabled");
+	php_info_print_table_row(2, "cURL Information", curl_version());
 	php_info_print_table_end();
 }
 /* }}} */
@@ -465,13 +563,11 @@ PHP_MINIT_FUNCTION(curl)
 	REGISTER_CURL_CONSTANT(CURLE_SSL_CIPHER);
 	REGISTER_CURL_CONSTANT(CURLE_SSL_CACERT);
 	REGISTER_CURL_CONSTANT(CURLE_BAD_CONTENT_ENCODING);
-#ifdef CURLE_LDAP_INVALID_URL
+#if LIBCURL_VERSION_NUM >= 0x070a08
 	REGISTER_CURL_CONSTANT(CURLE_LDAP_INVALID_URL);
-#endif	
-#ifdef CURLE_FILESIZE_EXCEEDED
 	REGISTER_CURL_CONSTANT(CURLE_FILESIZE_EXCEEDED);
 #endif
-#ifdef CURLE_FTP_SSL_FAILED
+#if LIBCURL_VERSION_NUM >= 0x070b00
 	REGISTER_CURL_CONSTANT(CURLE_FTP_SSL_FAILED);
 #endif
 
@@ -495,11 +591,19 @@ PHP_MINIT_FUNCTION(curl)
 
 	REGISTER_CURL_CONSTANT(CURLMSG_DONE);
 
-#ifdef CURLOPT_FTPSSLAUTH
+#if LIBCURL_VERSION_NUM >= 0x070c02
 	REGISTER_CURL_CONSTANT(CURLOPT_FTPSSLAUTH);
 	REGISTER_CURL_CONSTANT(CURLFTPAUTH_DEFAULT);
 	REGISTER_CURL_CONSTANT(CURLFTPAUTH_SSL);
 	REGISTER_CURL_CONSTANT(CURLFTPAUTH_TLS);
+#endif
+
+#if LIBCURL_VERSION_NUM >  0x070b00
+	REGISTER_CURL_CONSTANT(CURLOPT_FTP_SSL);
+	REGISTER_CURL_CONSTANT(CURLFTPSSL_NONE);
+	REGISTER_CURL_CONSTANT(CURLFTPSSL_TRY);
+	REGISTER_CURL_CONSTANT(CURLFTPSSL_CONTROL);
+	REGISTER_CURL_CONSTANT(CURLFTPSSL_ALL);
 #endif
 
 #ifdef PHP_CURL_NEED_OPENSSL_TSL
@@ -956,7 +1060,7 @@ static void alloc_curl_handle(php_curl **ch)
 /* }}} */
 
 /* {{{ proto resource curl_init([string url])
-   Initialize a CURL session */
+   Initialize a cURL session */
 PHP_FUNCTION(curl_init)
 {
 	zval       **url;
@@ -1041,13 +1145,45 @@ PHP_FUNCTION(curl_copy_handle)
 	}
 
 	alloc_curl_handle(&dupch);
-	TSRMLS_SET_CTX(ch->thread_ctx);
+	TSRMLS_SET_CTX(dupch->thread_ctx);
 
 	dupch->cp = cp;
 	dupch->handlers->write->method = ch->handlers->write->method;
 	dupch->handlers->write->type   = ch->handlers->write->type;
 	dupch->handlers->read->method  = ch->handlers->read->method;
 	dupch->handlers->write_header->method = ch->handlers->write_header->method;
+
+	dupch->handlers->write->fp = ch->handlers->write->fp;
+	dupch->handlers->write_header->fp = ch->handlers->write_header->fp;
+	dupch->handlers->read->fp = ch->handlers->read->fp;
+	dupch->handlers->read->fd = ch->handlers->read->fd;
+
+	if (ch->handlers->passwd) {
+		zval_add_ref(&ch->handlers->passwd);
+		dupch->handlers->passwd = ch->handlers->passwd;
+		curl_easy_setopt(ch->cp, CURLOPT_PASSWDDATA, (void *) dupch);
+	}
+	if (ch->handlers->write->func_name) {
+		zval_add_ref(&ch->handlers->write->func_name);
+		dupch->handlers->write->func_name = ch->handlers->write->func_name;
+	}
+	if (ch->handlers->read->func_name) {
+		zval_add_ref(&ch->handlers->read->func_name);
+		dupch->handlers->read->func_name = ch->handlers->read->func_name;
+	}
+	if (ch->handlers->write_header->func_name) {
+		zval_add_ref(&ch->handlers->write_header->func_name);
+		dupch->handlers->write_header->func_name = ch->handlers->write_header->func_name;
+	}
+
+	curl_easy_setopt(dupch->cp, CURLOPT_ERRORBUFFER,       dupch->err.str);
+	curl_easy_setopt(dupch->cp, CURLOPT_FILE,              (void *) dupch);
+	curl_easy_setopt(dupch->cp, CURLOPT_INFILE,            (void *) dupch);
+	curl_easy_setopt(dupch->cp, CURLOPT_WRITEHEADER,       (void *) dupch);
+
+	zend_llist_copy(&dupch->to_free.str, &ch->to_free.str);
+	zend_llist_copy(&dupch->to_free.slist, &ch->to_free.slist);
+	zend_llist_copy(&dupch->to_free.post, &ch->to_free.post);
 
 	ZEND_REGISTER_RESOURCE(return_value, dupch, le_curl);
 	dupch->id = Z_LVAL_P(return_value);
@@ -1110,8 +1246,11 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 		case CURLOPT_PROXYAUTH:
 #endif
 
-#ifdef CURLOPT_FTPSSLAUTH
+#if LIBCURL_VERSION_NUM >= 0x070c02
 		case CURLOPT_FTPSSLAUTH:
+#endif
+#if LIBCURL_VERSION_NUM >  0x070b00
+		case CURLOPT_FTP_SSL:
 #endif
 		case CURLOPT_UNRESTRICTED_AUTH:
 		case CURLOPT_PORT:
@@ -1179,11 +1318,13 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 			ZEND_VERIFY_RESOURCE(what);
 
 			if (FAILURE == php_stream_cast((php_stream *) what, PHP_STREAM_AS_STDIO, (void *) &fp, REPORT_ERRORS)) {
-				RETURN_FALSE;
+				RETVAL_FALSE;
+				return 1;
 			}
 
 			if (!fp) {
-				RETURN_FALSE;
+				RETVAL_FALSE;
+				return 1;
 			}
 
 			error = CURLE_OK;
@@ -1278,7 +1419,8 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 				postfields = HASH_OF(*zvalue);
 				if (! postfields) {
 					php_error_docref(NULL TSRMLS_CC, E_WARNING, "Couldn't get HashTable in CURLOPT_POSTFIELDS"); 
-					RETURN_FALSE;
+					RETVAL_FALSE;
+					return 1;
 				}
 
 				for (zend_hash_internal_pointer_reset(postfields);
@@ -1300,7 +1442,8 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 						++postval;
 						/* safe_mode / open_basedir check */
 						if (php_check_open_basedir(postval TSRMLS_CC) || (PG(safe_mode) && !php_checkuid(postval, "rb+", CHECKUID_CHECK_MODE_PARAM))) {
-							RETURN_FALSE;
+							RETVAL_FALSE;
+							return 1;
 						}
 						error = curl_formadd(&first, &last, 
 											 CURLFORM_COPYNAME, string_key,
@@ -1319,7 +1462,8 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 
 				SAVE_CURL_ERROR(ch, error);
 				if (error != CURLE_OK) {
-					RETURN_FALSE;
+					RETVAL_FALSE
+					return 1;
 				}
 
 				zend_llist_add_element(&ch->to_free.post, &first);
@@ -1347,7 +1491,8 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 			ph = HASH_OF(*zvalue);
 			if (!ph) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "You must pass either an object or an array with the CURLOPT_HTTPHEADER, CURLOPT_QUOTE, CURLOPT_HTTP200ALIASES and CURLOPT_POSTQUOTE arguments");
-				RETURN_FALSE;
+				RETVAL_FALSE;
+				return 1;
 			}
 
 			for (zend_hash_internal_pointer_reset(ph);
@@ -1364,7 +1509,8 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 				if (!slist) {
 					efree(indiv);
 					php_error_docref(NULL TSRMLS_CC, E_WARNING, "Could not build curl_slist"); 
-					RETURN_FALSE;
+					RETVAL_FALSE;
+					return 1;
 				}
 				zend_llist_add_element(&ch->to_free.str, &indiv);
 			}
@@ -1386,7 +1532,8 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 			convert_to_string_ex(zvalue);
 
 			if (php_check_open_basedir(Z_STRVAL_PP(zvalue) TSRMLS_CC) || (PG(safe_mode) && !php_checkuid(Z_STRVAL_PP(zvalue), "rb+", CHECKUID_CHECK_MODE_PARAM))) {
-				RETURN_FALSE;			
+				RETVAL_FALSE;
+				return 1;
 			}
 
 			copystr = estrndup(Z_STRVAL_PP(zvalue), Z_STRLEN_PP(zvalue));
@@ -1419,7 +1566,7 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 }
 
 /* {{{ proto bool curl_setopt(resource ch, int option, mixed value)
-   Set an option for a CURL transfer */
+   Set an option for a cURL transfer */
 PHP_FUNCTION(curl_setopt)
 {
 	zval       **zid, **zoption, **zvalue;
@@ -1442,7 +1589,7 @@ PHP_FUNCTION(curl_setopt)
 /* }}} */
 
 /* {{{ proto bool curl_setopt_array(resource ch, array options)
-   Set an array of option for a CURL transfer */
+   Set an array of option for a cURL transfer */
 PHP_FUNCTION(curl_setopt_array)
 {
 	zval		*zid, *arr, **entry;
@@ -1491,7 +1638,7 @@ void _php_curl_cleanup_handle(php_curl *ch)
 /* }}} */
 
 /* {{{ proto bool curl_exec(resource ch)
-   Perform a CURL session */
+   Perform a cURL session */
 PHP_FUNCTION(curl_exec)
 {
 	zval      **zid;
@@ -1524,11 +1671,15 @@ PHP_FUNCTION(curl_exec)
 		RETURN_STRINGL(ch->handlers->write->buf.c, ch->handlers->write->buf.len, 1);
 	}
 	--ch->uses;
-	RETURN_TRUE;
+	if (ch->handlers->write->method == PHP_CURL_RETURN) {
+		RETURN_EMPTY_STRING();
+	} else {
+		RETURN_TRUE;
+	}
 }
 /* }}} */
 
-/* {{{ proto mixed curl_getinfo(resource ch, int opt)
+/* {{{ proto mixed curl_getinfo(resource ch [, int option])
    Get information regarding a specific transfer */
 PHP_FUNCTION(curl_getinfo)
 {
@@ -1712,7 +1863,7 @@ PHP_FUNCTION(curl_errno)
 /* }}} */
 
 /* {{{ proto void curl_close(resource ch)
-   Close a CURL session */
+   Close a cURL session */
 PHP_FUNCTION(curl_close)
 {
 	zval      **zid;
@@ -1725,7 +1876,7 @@ PHP_FUNCTION(curl_close)
 	ZEND_FETCH_RESOURCE(ch, php_curl *, zid, -1, le_curl_name, le_curl);
 
 	if (ch->in_callback) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Attempt to close CURL handle from a callback");
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Attempt to close cURL handle from a callback");
 		return;
 	}
 	

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_virtual_cwd.h,v 1.48.2.5 2006/04/10 11:56:18 sniper Exp $ */
+/* $Id: tsrm_virtual_cwd.h,v 1.48.2.5.2.2 2006/10/04 13:24:19 tony2001 Exp $ */
 
 #ifndef VIRTUAL_CWD_H
 #define VIRTUAL_CWD_H
@@ -37,8 +37,14 @@
 #include <stdarg.h>
 #endif
 
+#ifdef ZTS
+#define VIRTUAL_DIR
+#endif
+
 #ifndef TSRM_WIN32
 #include <unistd.h>
+#else
+#include <direct.h>
 #endif
 
 #if defined(__osf__) || defined(_AIX)
@@ -167,7 +173,7 @@ CWD_API int virtual_access(const char *pathname, int mode TSRMLS_DC);
 #endif
 
 #if defined(__osf__) || defined(_AIX)
-char *php_realpath_hack(char *src, char *dest);
+char *php_realpath_hack(const char *src, char *dest);
 #endif
 
 #if HAVE_UTIME

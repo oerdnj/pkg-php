@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: php_mysqli.h,v 1.54.2.7 2006/04/05 12:17:08 georg Exp $ 
+  $Id: php_mysqli.h,v 1.54.2.7.2.2 2006/05/09 11:26:09 georg Exp $ 
 */
 
 /* A little hack to prevent build break, when mysql is used together with
@@ -161,12 +161,12 @@ extern void php_local_infile_end(void *);
 extern int php_local_infile_error(void *, char *, uint);
 extern void php_set_local_infile_handler_default(MY_MYSQL *);
 extern void php_mysqli_throw_sql_exception(char *sqlstate, int errorno TSRMLS_DC, char *format, ...);
-zend_class_entry *mysqli_link_class_entry;
-zend_class_entry *mysqli_stmt_class_entry;
-zend_class_entry *mysqli_result_class_entry;
-zend_class_entry *mysqli_driver_class_entry;
-zend_class_entry *mysqli_warning_class_entry;
-zend_class_entry *mysqli_exception_class_entry;
+extern zend_class_entry *mysqli_link_class_entry;
+extern zend_class_entry *mysqli_stmt_class_entry;
+extern zend_class_entry *mysqli_result_class_entry;
+extern zend_class_entry *mysqli_driver_class_entry;
+extern zend_class_entry *mysqli_warning_class_entry;
+extern zend_class_entry *mysqli_exception_class_entry;
 
 #ifdef HAVE_SPL
 extern PHPAPI zend_class_entry *spl_ce_RuntimeException;
@@ -191,13 +191,13 @@ PHP_MYSQLI_EXPORT(zend_object_value) mysqli_objects_new(zend_class_entry * TSRML
 	mysqli_entry = zend_register_internal_class(&ce TSRMLS_CC); \
 } \
 
-#define MYSQLI_REGISTER_RESOURCE_EX(__ptr, __zval, __ce)  \
+#define MYSQLI_REGISTER_RESOURCE_EX(__ptr, __zval)  \
 	((mysqli_object *) zend_object_store_get_object(__zval TSRMLS_CC))->ptr = __ptr; \
 
 #define MYSQLI_RETURN_RESOURCE(__ptr, __ce) \
 	Z_TYPE_P(return_value) = IS_OBJECT; \
 	(return_value)->value.obj = mysqli_objects_new(__ce TSRMLS_CC); \
-	MYSQLI_REGISTER_RESOURCE_EX(__ptr, return_value, __ce)
+	MYSQLI_REGISTER_RESOURCE_EX(__ptr, return_value)
 
 #define MYSQLI_REGISTER_RESOURCE(__ptr, __ce) \
 {\
@@ -207,7 +207,7 @@ PHP_MYSQLI_EXPORT(zend_object_value) mysqli_objects_new(zend_class_entry * TSRML
 		Z_TYPE_P(object) = IS_OBJECT;\
 		(object)->value.obj = mysqli_objects_new(__ce TSRMLS_CC);\
 	}\
-	MYSQLI_REGISTER_RESOURCE_EX(__ptr, object, __ce)\
+	MYSQLI_REGISTER_RESOURCE_EX(__ptr, object)\
 }
 
 #define MYSQLI_FETCH_RESOURCE(__ptr, __type, __id, __name, __check) \

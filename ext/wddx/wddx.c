@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: wddx.c,v 1.119.2.11 2006/05/25 10:01:30 helly Exp $ */
+/* $Id: wddx.c,v 1.119.2.10.2.6 2006/08/02 22:03:47 tony2001 Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -366,53 +366,22 @@ void php_wddx_packet_end(wddx_packet *packet)
 
 /* {{{ php_wddx_serialize_string
  */
-static void php_wddx_serialize_string(wddx_packet *packet, zval *var)
+static void php_wddx_serialize_string(wddx_packet *packet, zval *var TSRMLS_DC)
 {
-	char *buf,
-		 *p,
-		 *vend,
-		 control_buf[WDDX_BUF_LEN];
-	int l;
-
 	php_wddx_add_chunk_static(packet, WDDX_STRING_S);
 
 	if (Z_STRLEN_P(var) > 0) {
-		l = 0;
-		vend = Z_STRVAL_P(var) + Z_STRLEN_P(var);
-		buf = (char *)emalloc(Z_STRLEN_P(var) + 1);
+		char *buf, *enc;
+		int buf_len, enc_len;
 
-		for(p = Z_STRVAL_P(var); p != vend; p++) {
-			switch (*p) {
-				case '<':
-					FLUSH_BUF();
-					php_wddx_add_chunk_static(packet, "&lt;");
-					break;
+		buf = php_escape_html_entities(Z_STRVAL_P(var), Z_STRLEN_P(var), &buf_len, 0, ENT_QUOTES, NULL TSRMLS_CC);
+		enc = xml_utf8_encode(buf, buf_len, &enc_len, "ISO-8859-1");
 
-				case '&':
-					FLUSH_BUF();
-					php_wddx_add_chunk_static(packet, "&amp;");
-					break;
+		php_wddx_add_chunk_ex(packet, enc, enc_len);
 
-				case '>':
-					FLUSH_BUF();
-					php_wddx_add_chunk_static(packet, "&gt;");
-					break;
-
-				default:
-					if (iscntrl((int)*(unsigned char *)p)) {
-						FLUSH_BUF();
-						sprintf(control_buf, WDDX_CHAR, *p);
-						php_wddx_add_chunk(packet, control_buf);
-					} else
-						buf[l++] = *p;
-					break;
-			}
-		}
-
-		FLUSH_BUF();
 		efree(buf);
+		efree(enc);
 	}
-	
 	php_wddx_add_chunk_static(packet, WDDX_STRING_E);
 }
 /* }}} */
@@ -529,7 +498,7 @@ static void php_wddx_serialize_object(wddx_packet *packet, zval *obj)
 			if (zend_hash_get_current_key_ex(HASH_OF(obj), &key, &key_len, &idx, 0, NULL) == HASH_KEY_IS_STRING) {
 				char *class_name, *prop_name;
 				
-				zend_unmangle_property_name_ex(key, key_len, &class_name, &prop_name);
+				zend_unmangle_property_name(key, key_len-1, &class_name, &prop_name);
 				php_wddx_serialize_var(packet, *ent, prop_name, strlen(prop_name)+1 TSRMLS_CC);
 			} else {
 				key_len = sprintf(tmp_buf, "%ld", idx);
@@ -638,7 +607,7 @@ void php_wddx_serialize_var(wddx_packet *packet, zval *var, char *name, int name
 	
 	switch(Z_TYPE_P(var)) {
 		case IS_STRING:
-			php_wddx_serialize_string(packet, var);
+			php_wddx_serialize_string(packet, var TSRMLS_CC);
 			break;
 			
 		case IS_LONG:
@@ -657,7 +626,7 @@ void php_wddx_serialize_var(wddx_packet *packet, zval *var, char *name, int name
 		case IS_ARRAY:
 			ht = Z_ARRVAL_P(var);
 			if (ht->nApplyCount > 1) {
-				php_error_docref(NULL TSRMLS_CC, E_ERROR, "WDDX doesn't support circular references");
+				php_error_docref(NULL TSRMLS_CC, E_RECOVERABLE_ERROR, "WDDX doesn't support circular references");
 				return;
 			}
 			ht->nApplyCount++;															
@@ -668,7 +637,7 @@ void php_wddx_serialize_var(wddx_packet *packet, zval *var, char *name, int name
 		case IS_OBJECT:
 			ht = Z_OBJPROP_P(var);
 			if (ht->nApplyCount > 1) {
-				php_error_docref(NULL TSRMLS_CC, E_ERROR, "WDDX doesn't support circular references");
+				php_error_docref(NULL TSRMLS_CC, E_RECOVERABLE_ERROR, "WDDX doesn't support circular references");
 				return;
 			}
 			ht->nApplyCount++;
@@ -723,7 +692,7 @@ static void php_wddx_push_element(void *user_data, const XML_Char *name, const X
 	if (!strcmp(name, EL_PACKET)) {
 		int i;
 		
-		for (i=0; atts[i]; i++) {
+		if (atts) for (i=0; atts[i]; i++) {
 			if (!strcmp(atts[i], EL_VERSION)) {
 				/* nothing for now */
 			}

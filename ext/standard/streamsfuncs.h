@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: streamsfuncs.h,v 1.13.2.1 2006/01/01 12:50:15 sniper Exp $ */
+/* $Id: streamsfuncs.h,v 1.13.2.1.2.1 2006/06/26 16:33:39 bjori Exp $ */
 
 /* Flags for stream_socket_client */
 #define PHP_STREAM_CLIENT_PERSISTENT	1
@@ -33,7 +33,6 @@ PHP_FUNCTION(stream_socket_sendto);
 PHP_FUNCTION(stream_copy_to_stream);
 PHP_FUNCTION(stream_get_contents);
 
-PHP_FUNCTION(set_socket_blocking); /* deprecated */
 PHP_FUNCTION(stream_set_blocking);
 PHP_FUNCTION(stream_select);
 PHP_FUNCTION(stream_set_timeout);

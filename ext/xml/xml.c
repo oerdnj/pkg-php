@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: xml.c,v 1.157.2.4 2006/02/02 21:43:09 tony2001 Exp $ */
+/* $Id: xml.c,v 1.157.2.4.2.3 2006/08/15 22:47:10 rrichards Exp $ */
 
 #define IS_EXT_MODULE
 
@@ -57,11 +57,7 @@
  * - Weird things happen with <![CDATA[]]> sections.
  */
 
-#ifdef ZTS
-int xml_globals_id;
-#else
-PHP_XML_API php_xml_globals xml_globals;
-#endif
+ZEND_DECLARE_MODULE_GLOBALS(xml)
 
 /* {{{ dynamically loadable module stuff */
 #ifdef COMPILE_DL_XML
@@ -75,6 +71,7 @@ ZEND_GET_MODULE(xml)
 /* {{{ function prototypes */
 PHP_MINIT_FUNCTION(xml);
 PHP_MINFO_FUNCTION(xml);
+static PHP_GINIT_FUNCTION(xml);
 
 static void xml_parser_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC);
 static void xml_set_handler(zval **, zval **);
@@ -82,7 +79,6 @@ inline static unsigned short xml_encode_iso_8859_1(unsigned char);
 inline static char xml_decode_iso_8859_1(unsigned short);
 inline static unsigned short xml_encode_us_ascii(unsigned char);
 inline static char xml_decode_us_ascii(unsigned short);
-static XML_Char *xml_utf8_encode(const char *, int, int *, const XML_Char *);
 static zval *xml_call_handler(xml_parser *, zval *, zend_function *, int, zval **);
 static zval *_xml_xmlchar_zval(const XML_Char *, int, const XML_Char *);
 static int _xml_xmlcharlen(const XML_Char *);
@@ -161,7 +157,11 @@ zend_module_entry xml_module_entry = {
 	NULL,                 /* per-request shutdown function */
 	PHP_MINFO(xml),       /* information function */
     NO_VERSION_YET,
-	STANDARD_MODULE_PROPERTIES
+    PHP_MODULE_GLOBALS(xml), /* globals descriptor */
+    PHP_GINIT(xml),          /* globals ctor */
+    NULL,                    /* globals dtor */
+    NULL,                    /* post deactivate */
+	STANDARD_MODULE_PROPERTIES_EX
 };
 
 /* All the encoding functions are set to NULL right now, since all
@@ -182,12 +182,10 @@ static int le_xml_parser;
 /* }}} */
 
 /* {{{ startup, shutdown and info functions */
-#ifdef ZTS
-static void php_xml_init_globals(php_xml_globals *xml_globals_p TSRMLS_DC)
+static PHP_GINIT_FUNCTION(xml)
 {
-	XML(default_encoding) = "UTF-8";
+	xml_globals->default_encoding = "UTF-8";
 }
-#endif
 
 static void *php_xml_malloc_wrapper(size_t sz)
 {
@@ -209,12 +207,6 @@ static void php_xml_free_wrapper(void *ptr)
 PHP_MINIT_FUNCTION(xml)
 {
 	le_xml_parser =	zend_register_list_destructors_ex(xml_parser_dtor, NULL, "xml", module_number);
-
-#ifdef ZTS
-	ts_allocate_id(&xml_globals_id, sizeof(php_xml_globals), (ts_allocate_ctor) php_xml_init_globals, NULL);
-#else
-	XML(default_encoding) = "UTF-8";
-#endif
 
 	REGISTER_LONG_CONSTANT("XML_ERROR_NONE", XML_ERROR_NONE, CONST_CS|CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("XML_ERROR_NO_MEMORY", XML_ERROR_NO_MEMORY, CONST_CS|CONST_PERSISTENT);
@@ -388,7 +380,12 @@ static void xml_set_handler(zval **handler, zval **data)
 
 	/* IS_ARRAY might indicate that we're using array($obj, 'method') syntax */
 	if (Z_TYPE_PP(data) != IS_ARRAY) {
+
 		convert_to_string_ex(data);
+		if (Z_STRLEN_PP(data) == 0) {
+			*handler = NULL;
+			return;
+		}
 	}
 
 	zval_add_ref(data);
@@ -504,7 +501,7 @@ static xml_encoding *xml_get_encoding(const XML_Char *name)
 /* }}} */
 
 /* {{{ xml_utf8_encode */
-static XML_Char *xml_utf8_encode(const char *s, int len, int *newlen, const XML_Char *encoding)
+PHPAPI char *xml_utf8_encode(const char *s, int len, int *newlen, const XML_Char *encoding)
 {
 	int pos = len;
 	char *newbuf;
@@ -865,6 +862,25 @@ void _xml_characterDataHandler(void *userData, const XML_Char *s, int len)
 					
 				} else {
 					zval *tag;
+					zval **curtag, **mytype, **myval;
+					HashPosition hpos=NULL;
+
+					zend_hash_internal_pointer_end_ex(Z_ARRVAL_P(parser->data), &hpos);
+
+					if (hpos && (zend_hash_get_current_data_ex(Z_ARRVAL_P(parser->data), (void **) &curtag, &hpos) == SUCCESS)) {
+						if (zend_hash_find(Z_ARRVAL_PP(curtag),"type",sizeof("type"),(void **) &mytype) == SUCCESS) {
+							if (!strcmp(Z_STRVAL_PP(mytype), "cdata")) {
+								if (zend_hash_find(Z_ARRVAL_PP(curtag),"value",sizeof("value"),(void **) &myval) == SUCCESS) {
+									int newlen = Z_STRLEN_PP(myval) + decoded_len;
+									Z_STRVAL_PP(myval) = erealloc(Z_STRVAL_PP(myval),newlen+1);
+									strcpy(Z_STRVAL_PP(myval) + Z_STRLEN_PP(myval),decoded_value);
+									Z_STRLEN_PP(myval) += decoded_len;
+									efree(decoded_value);
+									return;
+								}
+							}
+						}
+					}
 
 					MAKE_STD_ZVAL(tag);
 					

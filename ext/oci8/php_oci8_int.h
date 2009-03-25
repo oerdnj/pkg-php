@@ -25,7 +25,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_oci8_int.h,v 1.11.2.6 2006/04/05 14:06:00 tony2001 Exp $ */
+/* $Id: php_oci8_int.h,v 1.11.2.6.2.7 2006/08/22 11:09:12 tony2001 Exp $ */
 
 #if HAVE_OCI8
 # ifndef PHP_OCI8_INT_H
@@ -78,7 +78,7 @@ extern zend_class_entry *oci_coll_class_entry_ptr;
 #define PHP_OCI_MAX_NAME_LEN  64
 #define PHP_OCI_MAX_DATA_SIZE INT_MAX
 #define PHP_OCI_PIECE_SIZE    (64*1024)-1
-#define PHP_OCI_LOB_BUFFER_SIZE 32768 
+#define PHP_OCI_LOB_BUFFER_SIZE 1048576l  /* 1Mb seems to be the most reasonable buffer size for LOB reading */
 
 #define PHP_OCI_ASSOC               1<<0
 #define PHP_OCI_NUM                 1<<1
@@ -126,7 +126,15 @@ typedef struct { /* php_oci_descriptor {{{ */
 	int lob_current_position;		/* LOB internal pointer */ 
 	int lob_size;					/* cached LOB size. -1 = Lob wasn't initialized yet */
 	int buffering;					/* cached buffering flag. 0 - off, 1 - on, 2 - on and buffer was used */
+	ub4 chunk_size;					/* chunk size of the LOB. 0 - unknown */
+	ub1 charset_form;				/* charset form, required for NCLOBs */
+	ub2 charset_id;					/* charset ID */
 } php_oci_descriptor; /* }}} */
+
+typedef struct { /* php_oci_lob_ctx {{{ */
+	char **lob_data;            /* address of pointer to LOB data */
+	ub4 *lob_len;               /* address of LOB length variable (bytes) */
+} php_oci_lob_ctx; /* }}} */
 
 typedef struct { /* php_oci_collection {{{ */
 	int id;
@@ -160,6 +168,7 @@ typedef struct { /* php_oci_statement {{{ */
 	int ncolumns;					/* number of columns in the result */
 	unsigned executed:1;			/* statement executed flag */
 	unsigned has_data:1;			/* statement has more data flag */
+	unsigned nested:1;			/* statement handle is valid */
 	ub2 stmttype;					/* statement type */
 } php_oci_statement; /* }}} */
 
@@ -171,15 +180,15 @@ typedef struct { /* php_oci_bind {{{ */
 	php_oci_statement *parent_statement;     /* pointer to the parent statement */
 	struct {
 		void *elements;
-/*		ub2 *indicators;
+/*		ub2 *indicators; */
 		ub2 *element_lengths;
-		ub2 *retcodes;		*/
+/*		ub2 *retcodes;		*/
 		long current_length;
 		long old_length;
 		long max_length;
 		long type;
 	} array;
-	sb2 indicator;			/*  */
+	sb2 indicator;			/* -1 means NULL */
 	ub2 retcode;			/*  */
 } php_oci_bind; /* }}} */
 
@@ -205,12 +214,24 @@ typedef struct { /* php_oci_out_column {{{ */
 	ub4 cb_retlen;					/* */
 	ub2 scale;						/* column scale */
 	ub2 precision;					/* column precision */
+	ub1 charset_form;				/* charset form, required for NCLOBs */
+	ub2 charset_id;					/* charset ID */
 } php_oci_out_column; /* }}} */
 
 /* {{{ macros */
 
 #define PHP_OCI_CALL(func, params) \
+	OCI_G(in_call) = 1; \
 	func params; \
+	OCI_G(in_call) = 0; \
+	if (OCI_G(debug_mode)) { \
+		php_printf ("OCI8 DEBUG: " #func " at (%s:%d) \n", __FILE__, __LINE__); \
+	}
+
+#define PHP_OCI_CALL_RETURN(__retval, func, params) \
+	OCI_G(in_call) = 1; \
+	__retval = func params; \
+	OCI_G(in_call) = 0; \
 	if (OCI_G(debug_mode)) { \
 		php_printf ("OCI8 DEBUG: " #func " at (%s:%d) \n", __FILE__, __LINE__); \
 	}
@@ -306,7 +327,7 @@ int php_oci_lob_read (php_oci_descriptor *, long, long, char **, ub4 * TSRMLS_DC
 int php_oci_lob_write (php_oci_descriptor *, ub4, char *, int, ub4 * TSRMLS_DC);
 int php_oci_lob_flush (php_oci_descriptor *, int TSRMLS_DC);
 int php_oci_lob_set_buffering (php_oci_descriptor *, int TSRMLS_DC);
-int php_oci_lob_get_buffering (php_oci_descriptor * TSRMLS_DC);
+int php_oci_lob_get_buffering (php_oci_descriptor *);
 int php_oci_lob_copy (php_oci_descriptor *, php_oci_descriptor *, long TSRMLS_DC);
 #ifdef HAVE_OCI8_TEMP_LOB
 int php_oci_lob_close (php_oci_descriptor * TSRMLS_DC);
@@ -318,6 +339,11 @@ int php_oci_lob_append (php_oci_descriptor *, php_oci_descriptor * TSRMLS_DC);
 int php_oci_lob_truncate (php_oci_descriptor *, long TSRMLS_DC);
 int php_oci_lob_erase (php_oci_descriptor *, long, long, ub4 * TSRMLS_DC);
 int php_oci_lob_is_equal (php_oci_descriptor *, php_oci_descriptor *, boolean * TSRMLS_DC);
+#if defined(HAVE_OCI_LOB_READ2)
+sb4 php_oci_lob_callback (dvoid *ctxp, CONST dvoid *bufxp, oraub8 len, ub1 piece, dvoid **changed_bufpp, oraub8 *changed_lenp);
+#else
+sb4 php_oci_lob_callback (dvoid *ctxp, CONST dvoid *bufxp, ub4 len, ub1 piece);
+#endif
 
 /* }}} */
 
@@ -346,10 +372,10 @@ int php_oci_collection_append_string(php_oci_collection *, char *, int TSRMLS_DC
 
 /* statement related prototypes {{{ */
 
-php_oci_statement * php_oci_statement_create (php_oci_connection *, char *, long, zend_bool TSRMLS_DC);
+php_oci_statement * php_oci_statement_create (php_oci_connection *, char *, int TSRMLS_DC);
 int php_oci_statement_set_prefetch (php_oci_statement *, ub4 TSRMLS_DC);
 int php_oci_statement_fetch (php_oci_statement *, ub4 TSRMLS_DC);
-php_oci_out_column * php_oci_statement_get_column (php_oci_statement *, long, char*, long TSRMLS_DC);
+php_oci_out_column * php_oci_statement_get_column (php_oci_statement *, long, char*, int TSRMLS_DC);
 int php_oci_statement_execute (php_oci_statement *, ub4 TSRMLS_DC);
 int php_oci_statement_cancel (php_oci_statement * TSRMLS_DC);
 void php_oci_statement_free (php_oci_statement * TSRMLS_DC);
@@ -395,6 +421,8 @@ ZEND_BEGIN_MODULE_GLOBALS(oci) /* {{{ */
 	int shutdown;				/* in shutdown flag */
 
 	OCIEnv *env;				/* global environment handle */
+
+	zend_bool in_call;
 
 ZEND_END_MODULE_GLOBALS(oci) /* }}} */ 
 

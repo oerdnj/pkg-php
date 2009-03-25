@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_odbc_includes.h,v 1.12.2.1 2006/01/01 12:50:10 sniper Exp $ */
+/* $Id: php_odbc_includes.h,v 1.12.2.1.2.2 2006/06/19 16:13:15 tony2001 Exp $ */
 
 #ifndef PHP_ODBC_INCLUDES_H
 #define PHP_ODBC_INCLUDES_H
@@ -249,7 +249,7 @@ typedef struct odbc_result {
 	odbc_connection *conn_ptr;
 } odbc_result;
 
-typedef struct {
+ZEND_BEGIN_MODULE_GLOBALS(odbc)
 	char *defDB;
 	char *defUser;
 	char *defPW;
@@ -266,7 +266,7 @@ typedef struct {
     char lasterrormsg[SQL_MAX_MESSAGE_LENGTH];
 	HashTable *resource_list;
 	HashTable *resource_plist;
-} php_odbc_globals;
+ZEND_END_MODULE_GLOBALS(odbc)
 
 int odbc_add_result(HashTable *list, odbc_result *result);
 odbc_result *odbc_get_result(HashTable *list, int count);
@@ -284,10 +284,10 @@ void odbc_sql_error(ODBC_SQL_ERROR_PARAMS);
 #define IS_SQL_BINARY(x) (x == SQL_BINARY || x == SQL_VARBINARY || x == SQL_LONGVARBINARY)
 
 #ifdef ZTS
-# define ODBCG(v) TSRMG(odbc_globals_id, php_odbc_globals *, v)
+# define ODBCG(v) TSRMG(odbc_globals_id, zend_odbc_globals *, v)
 #else
 # define ODBCG(v) (odbc_globals.v)
-extern ZEND_API php_odbc_globals odbc_globals;
+extern ZEND_API zend_odbc_globals odbc_globals;
 #endif
 
 #endif /* HAVE_UODBC */

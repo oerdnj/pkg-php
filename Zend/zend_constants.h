@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_constants.h,v 1.31.2.2 2006/03/15 09:04:36 dmitry Exp $ */
+/* $Id: zend_constants.h,v 1.31.2.2.2.1 2006/10/18 16:35:15 johannes Exp $ */
 
 #ifndef ZEND_CONSTANTS_H
 #define ZEND_CONSTANTS_H
@@ -56,6 +56,7 @@ int zend_shutdown_constants(TSRMLS_D);
 void zend_register_standard_constants(TSRMLS_D);
 void clean_non_persistent_constants(TSRMLS_D);
 ZEND_API int zend_get_constant(char *name, uint name_len, zval *result TSRMLS_DC);
+ZEND_API int zend_get_constant_ex(char *name, uint name_len, zval *result, zend_class_entry *scope TSRMLS_DC);
 ZEND_API void zend_register_long_constant(char *name, uint name_len, long lval, int flags, int module_number TSRMLS_DC);
 ZEND_API void zend_register_double_constant(char *name, uint name_len, double dval, int flags, int module_number TSRMLS_DC);
 ZEND_API void zend_register_string_constant(char *name, uint name_len, char *strval, int flags, int module_number TSRMLS_DC);

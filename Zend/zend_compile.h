@@ -5,7 +5,7 @@
    | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
-   | that is bundled with this package in the file LICENSE, and is        | 
+   | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
    | http://www.zend.com/license/2_00.txt.                                |
    | If you did not receive a copy of the Zend license and are unable to  |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_compile.h,v 1.316.2.8 2006/03/13 11:13:42 dmitry Exp $ */
+/* $Id: zend_compile.h,v 1.316.2.8.2.7 2006/09/26 10:30:50 dmitry Exp $ */
 
 #ifndef ZEND_COMPILE_H
 #define ZEND_COMPILE_H
@@ -89,6 +89,7 @@ struct _zend_op {
 
 
 typedef struct _zend_brk_cont_element {
+	int start;
 	int cont;
 	int brk;
 	int parent;
@@ -149,6 +150,7 @@ typedef struct _zend_property_info {
 	ulong h;
 	char *doc_comment;
 	int doc_comment_len;
+	zend_class_entry *ce;
 } zend_property_info;
 
 
@@ -226,9 +228,9 @@ struct _zend_op_array {
 typedef struct _zend_internal_function {
 	/* Common elements */
 	zend_uchar type;
-	char *function_name;		
+	char * function_name;
 	zend_class_entry *scope;
-	zend_uint fn_flags;	
+	zend_uint fn_flags;
 	union _zend_function *prototype;
 	zend_uint num_args;
 	zend_uint required_num_args;
@@ -238,6 +240,7 @@ typedef struct _zend_internal_function {
 	/* END of common elements */
 
 	void (*handler)(INTERNAL_FUNCTION_PARAMETERS);
+	struct _zend_module_entry *module;
 } zend_internal_function;
 
 #define ZEND_FN_SCOPE_NAME(function)  ((function) && (function)->common.scope ? (function)->common.scope->name : "")
@@ -257,7 +260,7 @@ typedef union _zend_function {
 		zend_bool pass_rest_by_reference;
 		unsigned char return_reference;
 	} common;
-	
+
 	zend_op_array op_array;
 	zend_internal_function internal_function;
 } zend_function;
@@ -319,6 +322,7 @@ void shutdown_compiler(TSRMLS_D);
 void zend_init_compiler_data_structures(TSRMLS_D);
 
 extern ZEND_API zend_op_array *(*zend_compile_file)(zend_file_handle *file_handle, int type TSRMLS_DC);
+extern ZEND_API zend_op_array *(*zend_compile_string)(zval *source_string, char *filename TSRMLS_DC);
 
 ZEND_API int lex_scan(zval *zendlval TSRMLS_DC);
 void startup_scanner(TSRMLS_D);
@@ -507,7 +511,7 @@ ZEND_API void function_add_ref(zend_function *function);
 
 /* helper functions in zend_language_scanner.l */
 ZEND_API zend_op_array *compile_file(zend_file_handle *file_handle, int type TSRMLS_DC);
-ZEND_API zend_op_array *compile_string(zval *source_string, char *filename TSRMLS_DC);	
+ZEND_API zend_op_array *compile_string(zval *source_string, char *filename TSRMLS_DC);
 ZEND_API zend_op_array *compile_filename(int type, zval *filename TSRMLS_DC);
 ZEND_API int zend_execute_scripts(int type TSRMLS_DC, zval **retval, int file_count, ...);
 ZEND_API int open_file_for_scanning(zend_file_handle *file_handle TSRMLS_DC);
@@ -525,8 +529,7 @@ ZEND_API void destroy_zend_class(zend_class_entry **pce);
 void zend_class_add_ref(zend_class_entry **ce);
 
 ZEND_API void zend_mangle_property_name(char **dest, int *dest_length, char *src1, int src1_length, char *src2, int src2_length, int internal);
-ZEND_API void zend_unmangle_property_name(char *mangled_property, char **prop_name, char **class_name);
-ZEND_API void zend_unmangle_property_name_ex(char *mangled_property, int mangled_property_len, char **prop_name, char **class_name);
+ZEND_API int zend_unmangle_property_name(char *mangled_property, int mangled_property_len, char **prop_name, char **class_name);
 
 #define ZEND_FUNCTION_DTOR (void (*)(void *)) zend_function_dtor
 #define ZEND_CLASS_DTOR (void (*)(void *)) destroy_zend_class
@@ -647,6 +650,9 @@ int zendlex(znode *zendlval TSRMLS_DC);
 #define ZEND_FE_FETCH_BYREF	1
 #define ZEND_FE_FETCH_WITH_KEY	2
 
+#define ZEND_FE_RESET_VARIABLE 		1
+#define ZEND_FE_RESET_REFERENCE		2
+
 #define ZEND_MEMBER_FUNC_CALL	1<<0
 
 #define ZEND_ARG_SEND_BY_REF (1<<0)
@@ -657,40 +663,22 @@ int zendlex(znode *zendlval TSRMLS_DC);
 #define ZEND_SEND_BY_REF     1
 #define ZEND_SEND_PREFER_REF 2
 
-/* Lost In Stupid Parentheses */
-#define ARG_SHOULD_BE_SENT_BY_REF(zf, arg_num)											\
-	(																					\
-		zf																				\
-		&& ((zend_function *) zf)->common.arg_info										\
-		&&																				\
-		(																				\
-			(																			\
-				arg_num<=((zend_function *) zf)->common.num_args						\
-				&& ((zend_function *) zf)->common.arg_info[arg_num-1].pass_by_reference	== ZEND_SEND_BY_REF \
-			)																			\
-		||	(																			\
-				arg_num>((zend_function *) zf)->common.num_args							\
-				&& ((zend_function *) zf)->common.pass_rest_by_reference == ZEND_SEND_BY_REF				\
-			)																			\
-		)																				\
-	)
+#define ARG_SEND_TYPE(zf, arg_num)												\
+	((zf) ?                                                                     \
+	 ((((zend_function*)(zf))->common.arg_info &&                               \
+	   arg_num<=((zend_function*)(zf))->common.num_args) ?                      \
+	  ((zend_function *)(zf))->common.arg_info[arg_num-1].pass_by_reference :   \
+	  ((zend_function *)(zf))->common.pass_rest_by_reference) :                 \
+	 ZEND_SEND_BY_VAL)	
 
-#define ARG_MAY_BE_SENT_BY_REF(zf, arg_num)											\
-	(																					\
-		zf																				\
-		&& ((zend_function *) zf)->common.arg_info										\
-		&&																				\
-		(																				\
-			(																			\
-				arg_num<=((zend_function *) zf)->common.num_args						\
-				&& ((zend_function *) zf)->common.arg_info[arg_num-1].pass_by_reference	== ZEND_SEND_PREFER_REF \
-			)																			\
-		||	(																			\
-				arg_num>((zend_function *) zf)->common.num_args							\
-				&& ((zend_function *) zf)->common.pass_rest_by_reference == ZEND_SEND_PREFER_REF				\
-			)																			\
-		)																				\
-	)
+#define ARG_MUST_BE_SENT_BY_REF(zf, arg_num) \
+	(ARG_SEND_TYPE(zf, arg_num) == ZEND_SEND_BY_REF)
+
+#define ARG_SHOULD_BE_SENT_BY_REF(zf, arg_num) \
+	(ARG_SEND_TYPE(zf, arg_num) & (ZEND_SEND_BY_REF|ZEND_SEND_PREFER_REF))
+
+#define ARG_MAY_BE_SENT_BY_REF(zf, arg_num) \
+	(ARG_SEND_TYPE(zf, arg_num) == ZEND_SEND_PREFER_REF)
 
 #define ZEND_RETURN_VAL 0
 #define ZEND_RETURN_REF 1
@@ -705,9 +693,10 @@ END_EXTERN_C()
 #define ZEND_DESTRUCTOR_FUNC_NAME	"__destruct"
 #define ZEND_GET_FUNC_NAME          "__get"
 #define ZEND_SET_FUNC_NAME          "__set"
-#define ZEND_UNSET_FUNC_NAME          "__unset"
-#define ZEND_ISSET_FUNC_NAME          "__isset"
+#define ZEND_UNSET_FUNC_NAME        "__unset"
+#define ZEND_ISSET_FUNC_NAME        "__isset"
 #define ZEND_CALL_FUNC_NAME         "__call"
+#define ZEND_TOSTRING_FUNC_NAME     "__tostring"
 #define ZEND_AUTOLOAD_FUNC_NAME     "__autoload"
 
 #endif /* ZEND_COMPILE_H */

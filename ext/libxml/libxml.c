@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: libxml.c,v 1.32.2.7 2006/01/01 12:50:08 sniper Exp $ */
+/* $Id: libxml.c,v 1.32.2.7.2.8 2006/09/06 21:44:45 edink Exp $ */
 
 #define IS_EXT_MODULE
 
@@ -60,20 +60,14 @@ typedef struct _php_libxml_func_handler {
 
 static HashTable php_libxml_exports;
 
-#ifdef ZTS
-int libxml_globals_id;
-#else
-PHP_LIBXML_API php_libxml_globals libxml_globals;
-#endif
+ZEND_DECLARE_MODULE_GLOBALS(libxml)
+static PHP_GINIT_FUNCTION(libxml);
 
 zend_class_entry *libxmlerror_class_entry;
 
 /* {{{ dynamically loadable module stuff */
 #ifdef COMPILE_DL_LIBXML
 ZEND_GET_MODULE(libxml)
-# ifdef PHP_WIN32
-# include "zend_arg_defs.c"
-# endif
 #endif /* COMPILE_DL_LIBXML */
 /* }}} */
 
@@ -86,13 +80,38 @@ PHP_MINFO_FUNCTION(libxml);
 
 /* }}} */
 
+/* {{{ arginfo */
+static
+ZEND_BEGIN_ARG_INFO(arginfo_libxml_set_streams_context, 0)
+	ZEND_ARG_INFO(0, context)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_libxml_use_internal_errors, 0)
+	ZEND_ARG_INFO(0, use_errors)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_libxml_get_last_error, 0)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_libxml_get_errors, 0)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_libxml_clear_errors, 0)
+ZEND_END_ARG_INFO()
+
+/* }}} */
+
 /* {{{ extension definition structures */
 zend_function_entry libxml_functions[] = {
-	PHP_FE(libxml_set_streams_context, NULL)
-	PHP_FE(libxml_use_internal_errors, NULL)
-	PHP_FE(libxml_get_last_error, NULL)
-	PHP_FE(libxml_clear_errors, NULL)
-	PHP_FE(libxml_get_errors, NULL)
+	PHP_FE(libxml_set_streams_context, arginfo_libxml_set_streams_context)
+	PHP_FE(libxml_use_internal_errors, arginfo_libxml_use_internal_errors)
+	PHP_FE(libxml_get_last_error, arginfo_libxml_get_last_error)
+	PHP_FE(libxml_clear_errors, arginfo_libxml_clear_errors)
+	PHP_FE(libxml_get_errors, arginfo_libxml_get_errors)
 	{NULL, NULL, NULL}
 };
 
@@ -106,7 +125,11 @@ zend_module_entry libxml_module_entry = {
 	PHP_RSHUTDOWN(libxml),   /* per-request shutdown function */
 	PHP_MINFO(libxml),       /* information function */
     NO_VERSION_YET,
-	STANDARD_MODULE_PROPERTIES
+    PHP_MODULE_GLOBALS(libxml), /* globals descriptor */
+    PHP_GINIT(libxml),          /* globals ctor */
+    NULL,                       /* globals dtor */
+    NULL,                       /* post deactivate */
+	STANDARD_MODULE_PROPERTIES_EX
 };
 
 /* }}} */
@@ -237,14 +260,12 @@ static void php_libxml_node_free_list(xmlNodePtr node TSRMLS_DC)
 /* }}} */
 
 /* {{{ startup, shutdown and info functions */
-#ifdef ZTS
-static void php_libxml_init_globals(php_libxml_globals *libxml_globals_p TSRMLS_DC)
+static PHP_GINIT_FUNCTION(libxml)
 {
-	LIBXML(stream_context) = NULL;
-	LIBXML(error_buffer).c = NULL;
-	LIBXML(error_list) = NULL;
+	libxml_globals->stream_context = NULL;
+	libxml_globals->error_buffer.c = NULL;
+	libxml_globals->error_list = NULL;
 }
-#endif
 
 /* Channel libxml file io layer through the PHP streams subsystem.
  * This allows use of ftps:// and https:// urls */
@@ -575,14 +596,6 @@ PHP_MINIT_FUNCTION(libxml)
 
 	php_libxml_initialize();
 
-#ifdef ZTS
-	ts_allocate_id(&libxml_globals_id, sizeof(php_libxml_globals), (ts_allocate_ctor) php_libxml_init_globals, NULL);
-#else
-	LIBXML(stream_context) = NULL;
-	LIBXML(error_buffer).c = NULL;
-	LIBXML(error_list) = NULL;
-#endif
-
 	REGISTER_LONG_CONSTANT("LIBXML_VERSION",			LIBXML_VERSION,			CONST_CS | CONST_PERSISTENT);
 	REGISTER_STRING_CONSTANT("LIBXML_DOTTED_VERSION",	LIBXML_DOTTED_VERSION,	CONST_CS | CONST_PERSISTENT);
 
@@ -644,6 +657,10 @@ PHP_RSHUTDOWN_FUNCTION(libxml)
 	xmlParserInputBufferCreateFilenameDefault(NULL);
 	xmlOutputBufferCreateFilenameDefault(NULL);
 
+	if (LIBXML(stream_context)) {
+		zval_ptr_dtor(&LIBXML(stream_context));
+		LIBXML(stream_context) = NULL;
+	}
 	smart_str_free(&LIBXML(error_buffer));
 	if (LIBXML(error_list)) {
 		zend_llist_destroy(LIBXML(error_list));
@@ -683,12 +700,12 @@ PHP_FUNCTION(libxml_set_streams_context)
 }
 /* }}} */
 
-/* {{{ proto void libxml_use_internal_errors(boolean use_errors) 
+/* {{{ proto void libxml_use_internal_errors([boolean use_errors]) 
    Disable libxml errors and allow user to fetch error information as needed */
 PHP_FUNCTION(libxml_use_internal_errors)
 {
 	xmlStructuredErrorFunc current_handler;
-	int use_errors=0, retval;
+	zend_bool use_errors=0, retval;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|b", &use_errors) == FAILURE) {
 		return;
@@ -942,11 +959,15 @@ int php_libxml_decrement_doc_ref(php_libxml_node_object *object TSRMLS_DC) {
 				xmlFreeDoc((xmlDoc *) object->document->ptr);
 			}
 			if (object->document->doc_props != NULL) {
+				if (object->document->doc_props->classmap) {
+					zend_hash_destroy(object->document->doc_props->classmap);
+					FREE_HASHTABLE(object->document->doc_props->classmap);
+				}
 				efree(object->document->doc_props);
 			}
 			efree(object->document);
+			object->document = NULL;
 		}
-		object->document = NULL;
 	}
 
 	return ret_refcount;
@@ -1004,11 +1025,20 @@ void php_libxml_node_decrement_resource(php_libxml_node_object *object TSRMLS_DC
 				obj_node->_private = NULL;
 			}
 		}
+	}
+	if (object != NULL && object->document != NULL) {
 		/* Safe to call as if the resource were freed then doc pointer is NULL */
 		php_libxml_decrement_doc_ref(object TSRMLS_CC);
 	}
 }
 /* }}} */
+
+#ifdef PHP_WIN32
+PHP_LIBXML_API BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
+{
+	return xmlDllMain(hinstDLL, fdwReason, lpvReserved);
+}
+#endif
 
 #endif
 

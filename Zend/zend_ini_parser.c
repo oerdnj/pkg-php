@@ -116,7 +116,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_ini_parser.y,v 1.41.2.2 2006/04/12 09:51:54 dmitry Exp $ */
+/* $Id: zend_ini_parser.y,v 1.41.2.2.2.1 2006/09/19 20:33:12 dmitry Exp $ */
 
 #define DEBUG_CFG_PARSER 0
 #include "zend.h"
@@ -256,10 +256,14 @@ static void ini_error(char *str)
 	TSRMLS_FETCH();
 
 	currently_parsed_filename = zend_ini_scanner_get_filename(TSRMLS_C);
-	error_buf_len = 128+strlen(currently_parsed_filename); /* should be more than enough */
-	error_buf = (char *) emalloc(error_buf_len);
+	if (currently_parsed_filename) {
+		error_buf_len = 128+strlen(currently_parsed_filename); /* should be more than enough */
+		error_buf = (char *) emalloc(error_buf_len);
 
-	sprintf(error_buf, "Error parsing %s on line %d\n", currently_parsed_filename, zend_ini_scanner_get_lineno(TSRMLS_C));
+		sprintf(error_buf, "Error parsing %s on line %d\n", currently_parsed_filename, zend_ini_scanner_get_lineno(TSRMLS_C));
+	} else {
+		error_buf = estrdup("Invalid configuration directive\n");
+	}
 
 	if (CG(ini_parser_unbuffered_errors)) {
 #ifdef PHP_WIN32
@@ -294,6 +298,29 @@ ZEND_API int zend_parse_ini_file(zend_file_handle *fh, zend_bool unbuffered_erro
 	zend_ini_close_file(fh TSRMLS_CC);
 
 	if (retval==0) {
+		return SUCCESS;
+	} else {
+		return FAILURE;
+	}
+}
+
+
+ZEND_API int zend_parse_ini_string(char *str, zend_bool unbuffered_errors, zend_ini_parser_cb_t ini_parser_cb, void *arg)
+{
+	zend_ini_parser_param ini_parser_param;
+	TSRMLS_FETCH();
+
+	ini_parser_param.ini_parser_cb = ini_parser_cb;
+	ini_parser_param.arg = arg;
+
+	CG(ini_parser_param) = &ini_parser_param;
+	if (zend_ini_prepare_string_for_scanning(str TSRMLS_CC)==FAILURE) {
+		return FAILURE;
+	}
+
+	CG(ini_parser_unbuffered_errors) = unbuffered_errors;
+
+	if (ini_parse(TSRMLS_C)) {
 		return SUCCESS;
 	} else {
 		return FAILURE;
@@ -625,9 +652,9 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   221,   221,   222,   226,   234,   242,   243,   244,   249,
-     250,   251,   252,   253,   258,   259,   260,   261,   262,   263,
-     267,   271,   272,   273,   274,   275,   276,   280
+       0,   248,   248,   249,   253,   261,   269,   270,   271,   276,
+     277,   278,   279,   280,   285,   286,   287,   288,   289,   290,
+     294,   298,   299,   300,   301,   302,   303,   307
 };
 #endif
 

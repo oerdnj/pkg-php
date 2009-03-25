@@ -17,12 +17,12 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend.h,v 1.293.2.11 2006/03/30 21:39:01 tony2001 Exp $ */
+/* $Id: zend.h,v 1.293.2.11.2.6 2006/09/14 10:32:45 dmitry Exp $ */
 
 #ifndef ZEND_H
 #define ZEND_H
 
-#define ZEND_VERSION "2.1.0"
+#define ZEND_VERSION "2.2.0"
 
 #define ZEND_ENGINE_2
 
@@ -258,7 +258,6 @@ void zend_error_noreturn(int type, const char *format, ...) __attribute__ ((nore
 #  define zend_error_noreturn zend_error
 #endif
 
-
 /*
  * zval
  */
@@ -320,7 +319,7 @@ struct _zend_class_entry {
 	char type;
 	char *name;
 	zend_uint name_length;
-	struct _zend_class_entry *parent; 
+	struct _zend_class_entry *parent;
 	int refcount;
 	zend_bool constants_updated;
 	zend_uint ce_flags;
@@ -341,6 +340,7 @@ struct _zend_class_entry {
 	union _zend_function *__unset;
 	union _zend_function *__isset;
 	union _zend_function *__call;
+	union _zend_function *__tostring;
 	union _zend_function *serialize_func;
 	union _zend_function *unserialize_func;
 
@@ -348,7 +348,7 @@ struct _zend_class_entry {
 
 	/* handlers */
 	zend_object_value (*create_object)(zend_class_entry *class_type TSRMLS_DC);
-	zend_object_iterator *(*get_iterator)(zend_class_entry *ce, zval *object TSRMLS_DC);
+	zend_object_iterator *(*get_iterator)(zend_class_entry *ce, zval *object, int by_ref TSRMLS_DC);
 	int (*interface_gets_implemented)(zend_class_entry *iface, zend_class_entry *class_type TSRMLS_DC); /* a class implements this interface */
 
 	/* serializer callbacks */
@@ -363,7 +363,7 @@ struct _zend_class_entry {
 	zend_uint line_end;
 	char *doc_comment;
 	zend_uint doc_comment_len;
-	
+
 	struct _zend_module_entry *module;
 };
 
@@ -384,7 +384,7 @@ typedef struct _zend_utility_functions {
 	char *(*getenv_function)(char *name, size_t name_len TSRMLS_DC);
 } zend_utility_functions;
 
-		
+
 typedef struct _zend_utility_values {
 	char *import_use_extension;
 	uint import_use_extension_length;
@@ -430,7 +430,6 @@ typedef int (*zend_write_func_t)(const char *str, uint str_length);
 #define OE_IS_OBJECT	(1<<1)
 #define OE_IS_METHOD	(1<<2)
 
-
 int zend_startup(zend_utility_functions *utility_functions, char **extensions, int start_builtin_functions);
 void zend_shutdown(TSRMLS_D);
 void zend_register_standard_ini_entries(TSRMLS_D);
@@ -449,19 +448,19 @@ END_EXTERN_C()
 
 #define zend_try												\
 	{															\
-		jmp_buf orig_bailout;									\
-		zend_bool orig_bailout_set=EG(bailout_set);				\
+		jmp_buf *__orig_bailout = EG(bailout);					\
+		jmp_buf __bailout;										\
 																\
-		EG(bailout_set) = 1;									\
-		memcpy(&orig_bailout, &EG(bailout), sizeof(jmp_buf));	\
-		if (setjmp(EG(bailout))==0)
+		EG(bailout) = &__bailout;								\
+		if (setjmp(__bailout)==0) {
 #define zend_catch												\
-		else
+		} else {												\
+			EG(bailout) = __orig_bailout;
 #define zend_end_try()											\
-		memcpy(&EG(bailout), &orig_bailout, sizeof(jmp_buf));	\
-		EG(bailout_set) = orig_bailout_set;						\
+		}														\
+		EG(bailout) = __orig_bailout;							\
 	}
-#define zend_first_try		EG(bailout_set)=0;	zend_try
+#define zend_first_try		EG(bailout)=NULL; zend_try
 
 BEGIN_EXTERN_C()
 ZEND_API char *get_zend_version(void);
@@ -503,7 +502,9 @@ END_EXTERN_C()
 
 /* output support */
 #define ZEND_WRITE(str, str_len)		zend_write((str), (str_len))
+#define ZEND_WRITE_EX(str, str_len)		write_func((str), (str_len))
 #define ZEND_PUTS(str)					zend_write((str), strlen((str)))
+#define ZEND_PUTS_EX(str)				write_func((str), strlen((str)))
 #define ZEND_PUTC(c)					zend_write(&(c), 1), (c)
 
 
@@ -562,7 +563,7 @@ END_EXTERN_C()
 
 #define INIT_PZVAL(z)		\
 	(z)->refcount = 1;		\
-	(z)->is_ref = 0;	
+	(z)->is_ref = 0;
 
 #define INIT_ZVAL(z) z = zval_used_for_init;
 
@@ -638,6 +639,11 @@ END_EXTERN_C()
 	} else { \
 		varptr->refcount++; \
 	}
+
+#define READY_TO_DESTROY(zv) \
+	((zv)->refcount == 1 && \
+	 (Z_TYPE_P(zv) != IS_OBJECT || \
+	  zend_objects_store_get_refcount(zv TSRMLS_CC) == 1))
 
 
 #define ZEND_MAX_RESERVED_RESOURCES	4

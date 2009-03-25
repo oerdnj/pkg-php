@@ -1,4 +1,4 @@
-dnl $Id: config.m4,v 1.80.2.3 2006/01/04 21:31:29 derick Exp $ -*- autoconf -*-
+dnl $Id: config.m4,v 1.80.2.3.2.1 2006/08/24 11:06:02 tony2001 Exp $ -*- autoconf -*-
 
 divert(3)dnl
 
@@ -475,6 +475,26 @@ int main(int argc, char** argv)
 dnl This is the most probable fallback so we assume yes in case of cross compile.
 if test "$ac_cv_huge_val_nan" = "yes"; then
   AC_DEFINE([HAVE_HUGE_VAL_NAN], 1, [whether HUGE_VAL + -HUGEVAL == NAN])
+fi
+
+AC_CACHE_CHECK(whether strptime() declaration fails, ac_cv_strptime_decl_fails,[
+  AC_TRY_COMPILE([
+#include <time.h>
+  ],[
+#ifndef HAVE_STRPTIME
+#error no strptime() on this platform
+#else
+/* use invalid strptime() declaration to see if it fails to compile */
+int strptime(const char *s, const char *format, struct tm *tm);
+#endif
+  ],[
+      ac_cv_strptime_decl_fails=no
+  ],[
+      ac_cv_strptime_decl_fails=yes
+  ])
+])
+if test "$ac_cv_strptime_decl_fails" = "yes"; then
+  AC_DEFINE([HAVE_STRPTIME_DECL_FAILS], 1, [whether strptime() declaration fails])
 fi
 
 PHP_CHECK_I18N_FUNCS

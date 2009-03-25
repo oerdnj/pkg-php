@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: recode.c,v 1.37.2.1 2006/01/01 12:50:12 sniper Exp $ */
+/* $Id: recode.c,v 1.37.2.1.2.1 2006/06/15 18:33:08 dmitry Exp $ */
 
 /* {{{ includes & prototypes */
 
@@ -64,6 +64,7 @@ ZEND_END_MODULE_GLOBALS(recode)
 #endif
     
 ZEND_DECLARE_MODULE_GLOBALS(recode);
+static PHP_GINIT_FUNCTION(recode);
 
 /* {{{ module stuff */
 static zend_function_entry php_recode_functions[] = {
@@ -83,22 +84,24 @@ zend_module_entry recode_module_entry = {
 	NULL, 
 	PHP_MINFO(recode), 
 	NO_VERSION_YET,
-	STANDARD_MODULE_PROPERTIES
+	PHP_MODULE_GLOBALS(recode),
+	PHP_GINIT(recode),
+	NULL,
+	NULL,
+	STANDARD_MODULE_PROPERTIES_EX
 };
 
 #ifdef COMPILE_DL_RECODE
 ZEND_GET_MODULE(recode)
 #endif
 
-static void php_recode_init_globals (zend_recode_globals *rg)
+static PHP_GINIT_FUNCTION(recode)
 {
-	rg->outer = NULL;
+	recode_globals->outer = NULL;
 }
 
 PHP_MINIT_FUNCTION(recode)
 {
-	ZEND_INIT_MODULE_GLOBALS(recode, php_recode_init_globals, NULL);
-
 	ReSG(outer) = recode_new_outer(false);
 	if (ReSG(outer) == NULL) {
 		return FAILURE;
@@ -119,7 +122,7 @@ PHP_MINFO_FUNCTION(recode)
 {
 	php_info_print_table_start();
 	php_info_print_table_row(2, "Recode Support", "enabled");
-	php_info_print_table_row(2, "Revision", "$Revision: 1.37.2.1 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 1.37.2.1.2.1 $");
 	php_info_print_table_end();
 }
 

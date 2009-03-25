@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_bz2.h,v 1.7.2.1 2006/01/01 12:50:00 sniper Exp $ */
+/* $Id: php_bz2.h,v 1.7.2.1.2.2 2006/08/14 20:08:17 nlopess Exp $ */
 
 #ifndef PHP_BZ2_H
 #define PHP_BZ2_H
@@ -28,17 +28,6 @@ extern zend_module_entry bz2_module_entry;
 
 /* Bzip2 includes */
 #include <bzlib.h>
-
-PHP_MINIT_FUNCTION(bz2);
-PHP_MSHUTDOWN_FUNCTION(bz2);
-PHP_MINFO_FUNCTION(bz2);
-PHP_FUNCTION(bzopen);
-PHP_FUNCTION(bzread);
-PHP_FUNCTION(bzerrno);
-PHP_FUNCTION(bzerrstr);
-PHP_FUNCTION(bzerror);
-PHP_FUNCTION(bzcompress);
-PHP_FUNCTION(bzdecompress);
 
 #else
 #define phpext_bz2_ptr NULL

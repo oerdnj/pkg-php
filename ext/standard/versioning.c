@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: versioning.c,v 1.19.2.1 2006/01/01 12:50:16 sniper Exp $ */
+/* $Id: versioning.c,v 1.19.2.1.2.1 2006/06/26 18:48:56 bjori Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -204,8 +204,6 @@ php_version_compare(const char *orig_ver1, const char *orig_ver2)
 }
 
 /* }}} */
-/* {{{ do_version_compare() */
-
 /* {{{ proto int version_compare(string ver1, string ver2 [, string oper])
   Compares two "PHP-standardized" version number strings */
 

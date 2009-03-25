@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.22.2.1 2005/11/29 17:32:40 sniper Exp $
+dnl $Id: config.m4,v 1.22.2.1.2.1 2006/06/01 19:14:48 mike Exp $
 dnl config.m4 for extension mysqli
 
 PHP_ARG_WITH(mysqli, for MySQLi support,
@@ -22,9 +22,13 @@ dnl  fi
     MYSQL_CONFIG=$PHP_MYSQLI
   fi
 
+  MYSQL_LIB_NAME='mysqlclient'
   if test "$PHP_EMBEDDED_MYSQLI" = "yes"; then
     AC_DEFINE(HAVE_EMBEDDED_MYSQLI, 1, [embedded MySQL support enabled])
     MYSQL_LIB_CFG='--libmysqld-libs'
+  elif test "$enable_maintainer_zts" = "yes"; then
+    MYSQL_LIB_CFG='--libs_r'
+    MYSQL_LIB_NAME='mysqlclient_r'
   else
     MYSQL_LIB_CFG='--libs'
   fi
@@ -40,12 +44,12 @@ dnl  fi
   dnl
   dnl Check the library
   dnl
-  PHP_CHECK_LIBRARY(mysqlclient, mysql_set_server_option,
+  PHP_CHECK_LIBRARY($MYSQL_LIB_NAME, mysql_set_server_option,
   [
     PHP_EVAL_INCLINE($MYSQLI_INCLINE)
     PHP_EVAL_LIBLINE($MYSQLI_LIBLINE, MYSQLI_SHARED_LIBADD)
     AC_DEFINE(HAVE_MYSQLILIB,1,[ ])
-    PHP_CHECK_LIBRARY(mysqlclient, mysql_stmt_field_count,
+    PHP_CHECK_LIBRARY($MYSQL_LIB_NAME, mysql_stmt_field_count,
     [ ],[
 		AC_MSG_ERROR([MySQLI doesn't support versions < 4.1.3 (for MySQL 4.1.x) and < 5.0.1 for (MySQL 5.0.x) anymore. Please update your libraries.])
 	],[$MYSQLI_LIBLINE])

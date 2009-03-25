@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.12 2005/06/30 13:39:42 sniper Exp $
+dnl $Id: config.m4,v 1.12.4.1 2006/06/19 02:19:13 iliaa Exp $
 dnl
 
 PHP_ARG_ENABLE(posix,whether to enable POSIX-like functions,
@@ -11,5 +11,5 @@ if test "$PHP_POSIX" = "yes"; then
 
   AC_CHECK_HEADERS(sys/mkdev.h)
 
-  AC_CHECK_FUNCS(seteuid setegid setsid getsid setpgid getpgid ctermid mkfifo mknod getrlimit getlogin getgroups makedev)
+  AC_CHECK_FUNCS(seteuid setegid setsid getsid setpgid getpgid ctermid mkfifo mknod getrlimit getlogin getgroups makedev initgroups)
 fi

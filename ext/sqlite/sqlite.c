@@ -17,7 +17,7 @@
    |          Marcus Boerger <helly@php.net>                              |
    +----------------------------------------------------------------------+
 
-   $Id: sqlite.c,v 1.166.2.13 2006/04/18 14:30:15 iliaa Exp $
+   $Id: sqlite.c,v 1.166.2.13.2.5 2006/10/20 21:28:31 tony2001 Exp $
 */
 
 #ifdef HAVE_CONFIG_H
@@ -62,6 +62,7 @@ extern pdo_driver_t pdo_sqlite2_driver;
 #endif
 
 ZEND_DECLARE_MODULE_GLOBALS(sqlite)
+static PHP_GINIT_FUNCTION(sqlite);
 
 #if HAVE_PHP_SESSION && !defined(COMPILE_DL_SESSION)
 extern ps_module ps_mod_sqlite;
@@ -207,61 +208,61 @@ zend_function_entry sqlite_functions[] = {
 };
 
 zend_function_entry sqlite_funcs_db[] = {
-	PHP_ME_MAPPING(__construct, sqlite_open, third_arg_force_ref)
-/*	PHP_ME_MAPPING(close, sqlite_close, NULL)*/
-	PHP_ME_MAPPING(query, sqlite_query, third_arg_force_ref)
-	PHP_ME_MAPPING(queryExec, sqlite_exec, second_arg_force_ref)
-	PHP_ME_MAPPING(arrayQuery, sqlite_array_query, NULL)
-	PHP_ME_MAPPING(singleQuery, sqlite_single_query, NULL)
-	PHP_ME_MAPPING(unbufferedQuery, sqlite_unbuffered_query, third_arg_force_ref)
-	PHP_ME_MAPPING(lastInsertRowid, sqlite_last_insert_rowid, NULL)
-	PHP_ME_MAPPING(changes, sqlite_changes, NULL)
-	PHP_ME_MAPPING(createAggregate, sqlite_create_aggregate, NULL)
-	PHP_ME_MAPPING(createFunction, sqlite_create_function, NULL)
-	PHP_ME_MAPPING(busyTimeout, sqlite_busy_timeout, NULL)
-	PHP_ME_MAPPING(lastError, sqlite_last_error, NULL)
-	PHP_ME_MAPPING(fetchColumnTypes, sqlite_fetch_column_types, NULL)
-/*	PHP_ME_MAPPING(error_string, sqlite_error_string, NULL) static */
-/*	PHP_ME_MAPPING(escape_string, sqlite_escape_string, NULL) static */
+	PHP_ME_MAPPING(__construct, sqlite_open, third_arg_force_ref, 0)
+/*	PHP_ME_MAPPING(close, sqlite_close, NULL, 0)*/
+	PHP_ME_MAPPING(query, sqlite_query, third_arg_force_ref, 0)
+	PHP_ME_MAPPING(queryExec, sqlite_exec, second_arg_force_ref, 0)
+	PHP_ME_MAPPING(arrayQuery, sqlite_array_query, NULL, 0)
+	PHP_ME_MAPPING(singleQuery, sqlite_single_query, NULL, 0)
+	PHP_ME_MAPPING(unbufferedQuery, sqlite_unbuffered_query, third_arg_force_ref, 0)
+	PHP_ME_MAPPING(lastInsertRowid, sqlite_last_insert_rowid, NULL, 0)
+	PHP_ME_MAPPING(changes, sqlite_changes, NULL, 0)
+	PHP_ME_MAPPING(createAggregate, sqlite_create_aggregate, NULL, 0)
+	PHP_ME_MAPPING(createFunction, sqlite_create_function, NULL, 0)
+	PHP_ME_MAPPING(busyTimeout, sqlite_busy_timeout, NULL, 0)
+	PHP_ME_MAPPING(lastError, sqlite_last_error, NULL, 0)
+	PHP_ME_MAPPING(fetchColumnTypes, sqlite_fetch_column_types, NULL, 0)
+/*	PHP_ME_MAPPING(error_string, sqlite_error_string, NULL, 0) static */
+/*	PHP_ME_MAPPING(escape_string, sqlite_escape_string, NULL, 0) static */
 	{NULL, NULL, NULL}
 };
 
 zend_function_entry sqlite_funcs_query[] = {
-	PHP_ME_MAPPING(fetch, sqlite_fetch_array, NULL)
-	PHP_ME_MAPPING(fetchObject, sqlite_fetch_object, NULL)
-	PHP_ME_MAPPING(fetchSingle, sqlite_fetch_single, NULL)
-	PHP_ME_MAPPING(fetchAll, sqlite_fetch_all, NULL)
-	PHP_ME_MAPPING(column, sqlite_column, NULL)
-	PHP_ME_MAPPING(numFields, sqlite_num_fields, NULL)
-	PHP_ME_MAPPING(fieldName, sqlite_field_name, NULL)
+	PHP_ME_MAPPING(fetch, sqlite_fetch_array, NULL, 0)
+	PHP_ME_MAPPING(fetchObject, sqlite_fetch_object, NULL, 0)
+	PHP_ME_MAPPING(fetchSingle, sqlite_fetch_single, NULL, 0)
+	PHP_ME_MAPPING(fetchAll, sqlite_fetch_all, NULL, 0)
+	PHP_ME_MAPPING(column, sqlite_column, NULL, 0)
+	PHP_ME_MAPPING(numFields, sqlite_num_fields, NULL, 0)
+	PHP_ME_MAPPING(fieldName, sqlite_field_name, NULL, 0)
 	/* iterator */
-	PHP_ME_MAPPING(current, sqlite_current, NULL)
-	PHP_ME_MAPPING(key, sqlite_key, NULL)
-	PHP_ME_MAPPING(next, sqlite_next, NULL)
-	PHP_ME_MAPPING(valid, sqlite_valid, NULL)
-	PHP_ME_MAPPING(rewind, sqlite_rewind, NULL)
+	PHP_ME_MAPPING(current, sqlite_current, NULL, 0)
+	PHP_ME_MAPPING(key, sqlite_key, NULL, 0)
+	PHP_ME_MAPPING(next, sqlite_next, NULL, 0)
+	PHP_ME_MAPPING(valid, sqlite_valid, NULL, 0)
+	PHP_ME_MAPPING(rewind, sqlite_rewind, NULL, 0)
 	/* countable */
-	PHP_ME_MAPPING(count, sqlite_num_rows, NULL)
+	PHP_ME_MAPPING(count, sqlite_num_rows, NULL, 0)
 	/* additional */
-	PHP_ME_MAPPING(prev, sqlite_prev, NULL)
-	PHP_ME_MAPPING(hasPrev, sqlite_has_prev, NULL)
-	PHP_ME_MAPPING(numRows, sqlite_num_rows, NULL)
-	PHP_ME_MAPPING(seek, sqlite_seek, NULL)
+	PHP_ME_MAPPING(prev, sqlite_prev, NULL, 0)
+	PHP_ME_MAPPING(hasPrev, sqlite_has_prev, NULL, 0)
+	PHP_ME_MAPPING(numRows, sqlite_num_rows, NULL, 0)
+	PHP_ME_MAPPING(seek, sqlite_seek, NULL, 0)
 	{NULL, NULL, NULL}
 };
 
 zend_function_entry sqlite_funcs_ub_query[] = {
-	PHP_ME_MAPPING(fetch, sqlite_fetch_array, NULL)
-	PHP_ME_MAPPING(fetchObject, sqlite_fetch_object, NULL)
-	PHP_ME_MAPPING(fetchSingle, sqlite_fetch_single, NULL)
-	PHP_ME_MAPPING(fetchAll, sqlite_fetch_all, NULL)
-	PHP_ME_MAPPING(column, sqlite_column, NULL)
-	PHP_ME_MAPPING(numFields, sqlite_num_fields, NULL)
-	PHP_ME_MAPPING(fieldName, sqlite_field_name, NULL)
+	PHP_ME_MAPPING(fetch, sqlite_fetch_array, NULL, 0)
+	PHP_ME_MAPPING(fetchObject, sqlite_fetch_object, NULL, 0)
+	PHP_ME_MAPPING(fetchSingle, sqlite_fetch_single, NULL, 0)
+	PHP_ME_MAPPING(fetchAll, sqlite_fetch_all, NULL, 0)
+	PHP_ME_MAPPING(column, sqlite_column, NULL, 0)
+	PHP_ME_MAPPING(numFields, sqlite_num_fields, NULL, 0)
+	PHP_ME_MAPPING(fieldName, sqlite_field_name, NULL, 0)
 	/* iterator */
-	PHP_ME_MAPPING(current, sqlite_current, NULL)
-	PHP_ME_MAPPING(next, sqlite_next, NULL)
-	PHP_ME_MAPPING(valid, sqlite_valid, NULL)
+	PHP_ME_MAPPING(current, sqlite_current, NULL, 0)
+	PHP_ME_MAPPING(next, sqlite_next, NULL, 0)
+	PHP_ME_MAPPING(valid, sqlite_valid, NULL, 0)
 	{NULL, NULL, NULL}
 };
 
@@ -300,7 +301,15 @@ zend_module_entry sqlite_module_entry = {
 #if ZEND_MODULE_API_NO >= 20010901
 	PHP_SQLITE_MODULE_VERSION,
 #endif
+#if ZEND_MODULE_API_NO >= 20060613
+	PHP_MODULE_GLOBALS(sqlite),
+	PHP_GINIT(sqlite),
+	NULL,
+	NULL,
+	STANDARD_MODULE_PROPERTIES_EX
+#else
 	STANDARD_MODULE_PROPERTIES
+#endif
 };
 
 
@@ -998,12 +1007,15 @@ zend_object_iterator_funcs sqlite_query_iterator_funcs = {
 	sqlite_iterator_rewind
 };
 
-zend_object_iterator *sqlite_get_iterator(zend_class_entry *ce, zval *object TSRMLS_DC)
+zend_object_iterator *sqlite_get_iterator(zend_class_entry *ce, zval *object, int by_ref TSRMLS_DC)
 {
 	sqlite_object_iterator *iterator = emalloc(sizeof(sqlite_object_iterator));
 
 	sqlite_object *obj = (sqlite_object*) zend_object_store_get_object(object TSRMLS_CC);
 
+	if (by_ref) {
+		zend_error(E_RECOVERABLE_ERROR, "An iterator cannot be used with foreach by reference");
+	}
 	object->refcount++;
 	iterator->it.data = (void*)object;
 	iterator->it.funcs = ce->iterator_funcs.funcs;
@@ -1013,10 +1025,9 @@ zend_object_iterator *sqlite_get_iterator(zend_class_entry *ce, zval *object TSR
 }
 /* }}} */
 
-static int init_sqlite_globals(zend_sqlite_globals *g)
+static PHP_GINIT_FUNCTION(sqlite)
 {
-	g->assoc_case = 0;
-	return SUCCESS;
+	sqlite_globals->assoc_case = 0;
 }
 
 PHP_MINIT_FUNCTION(sqlite)
@@ -1027,7 +1038,7 @@ PHP_MINIT_FUNCTION(sqlite)
 #if defined(HAVE_SPL) && ((PHP_MAJOR_VERSION > 5) || (PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION >= 1))
 	REGISTER_SQLITE_CLASS(Exception,  exception, spl_ce_RuntimeException);
 #else
-	REGISTER_SQLITE_CLASS(Exception,  exception, zend_exception_get_default());
+	REGISTER_SQLITE_CLASS(Exception,  exception, zend_exception_get_default(TSRMLS_C));
 #endif
 
 	sqlite_ce_db->ce_flags &= ~ZEND_ACC_FINAL_CLASS;
@@ -1047,8 +1058,6 @@ PHP_MINIT_FUNCTION(sqlite)
 #endif
 	sqlite_ce_query->get_iterator = sqlite_get_iterator;
 	sqlite_ce_query->iterator_funcs.funcs = &sqlite_query_iterator_funcs;
-
-	ZEND_INIT_MODULE_GLOBALS(sqlite, init_sqlite_globals, NULL);
 
 	REGISTER_INI_ENTRIES();
 
@@ -1124,7 +1133,7 @@ PHP_MINFO_FUNCTION(sqlite)
 {
 	php_info_print_table_start();
 	php_info_print_table_header(2, "SQLite support", "enabled");
-	php_info_print_table_row(2, "PECL Module version", PHP_SQLITE_MODULE_VERSION " $Id: sqlite.c,v 1.166.2.13 2006/04/18 14:30:15 iliaa Exp $");
+	php_info_print_table_row(2, "PECL Module version", PHP_SQLITE_MODULE_VERSION " $Id: sqlite.c,v 1.166.2.13.2.5 2006/10/20 21:28:31 tony2001 Exp $");
 	php_info_print_table_row(2, "SQLite Library", sqlite_libversion());
 	php_info_print_table_row(2, "SQLite Encoding", sqlite_libencoding());
 	php_info_print_table_end();
@@ -1228,13 +1237,13 @@ PHP_FUNCTION(sqlite_popen)
 
 	if (strncmp(filename, ":memory:", sizeof(":memory:") - 1)) {
 		/* resolve the fully-qualified path name to use as the hash key */
-		fullpath = expand_filepath(filename, NULL TSRMLS_CC);
-
-		if (PG(safe_mode) && (!php_checkuid(fullpath, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
+		if (!(fullpath = expand_filepath(filename, NULL TSRMLS_CC))) {
 			RETURN_FALSE;
 		}
 
-		if (php_check_open_basedir(fullpath TSRMLS_CC)) {
+		if ((PG(safe_mode) && (!php_checkuid(fullpath, NULL, CHECKUID_CHECK_FILE_AND_DIR))) || 
+				php_check_open_basedir(fullpath TSRMLS_CC)) {
+			efree(fullpath);
 			RETURN_FALSE;
 		}
 	} else {
@@ -1304,9 +1313,17 @@ PHP_FUNCTION(sqlite_open)
 
 	if (strncmp(filename, ":memory:", sizeof(":memory:") - 1)) {
 		/* resolve the fully-qualified path name to use as the hash key */
-		fullpath = expand_filepath(filename, NULL TSRMLS_CC);
+		if (!(fullpath = expand_filepath(filename, NULL TSRMLS_CC))) {
+			php_std_error_handling();
+			if (object) {
+				RETURN_NULL();
+			} else {
+				RETURN_FALSE;
+			}
+		}
 
-		if (PG(safe_mode) && (!php_checkuid(fullpath, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
+		if ((PG(safe_mode) && (!php_checkuid(fullpath, NULL, CHECKUID_CHECK_FILE_AND_DIR))) ||
+				php_check_open_basedir(fullpath TSRMLS_CC)) {
 			php_std_error_handling();
 			efree(fullpath);
 			if (object) {
@@ -1315,17 +1332,6 @@ PHP_FUNCTION(sqlite_open)
 				RETURN_FALSE;
 			}
 		}
-
-		if (php_check_open_basedir(fullpath TSRMLS_CC)) {
-			php_std_error_handling();
-			efree(fullpath);
-			if (object) {
-				RETURN_NULL();
-			} else {
-				RETURN_FALSE;
-			}
-		}
-
 	}
 
 	php_sqlite_open(fullpath ? fullpath : filename, (int)mode, NULL, return_value, errmsg, object TSRMLS_CC);
@@ -1359,15 +1365,13 @@ PHP_FUNCTION(sqlite_factory)
 
 	if (strncmp(filename, ":memory:", sizeof(":memory:") - 1)) {
 		/* resolve the fully-qualified path name to use as the hash key */
-		fullpath = expand_filepath(filename, NULL TSRMLS_CC);
-
-		if (PG(safe_mode) && (!php_checkuid(fullpath, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
-			efree(fullpath);
+		if (!(fullpath = expand_filepath(filename, NULL TSRMLS_CC))) {
 			php_std_error_handling();
 			RETURN_NULL();
 		}
 
-		if (php_check_open_basedir(fullpath TSRMLS_CC)) {
+		if ((PG(safe_mode) && (!php_checkuid(fullpath, NULL, CHECKUID_CHECK_FILE_AND_DIR))) ||
+				php_check_open_basedir(fullpath TSRMLS_CC)) {
 			efree(fullpath);
 			php_std_error_handling();
 			RETURN_NULL();

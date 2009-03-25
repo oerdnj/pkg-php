@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: sysvshm.c,v 1.70.2.2 2006/01/01 12:50:16 sniper Exp $ */
+/* $Id: sysvshm.c,v 1.70.2.2.2.1 2006/06/29 09:03:27 tony2001 Exp $ */
 
 /* This has been built and tested on Linux 2.2.14 
  *
@@ -408,6 +408,10 @@ static long php_check_shm_data(sysvshm_chunk_head *ptr, long key)
 			return pos;
 		}	
 		pos += shm_var->next;
+
+		if (shm_var->next <= 0 || pos < ptr->start) {
+			return -1;
+		}
 	}
 	return -1;
 }

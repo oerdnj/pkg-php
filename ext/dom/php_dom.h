@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_dom.h,v 1.28.2.1 2006/01/01 12:50:06 sniper Exp $ */
+/* $Id: php_dom.h,v 1.28.2.1.2.3 2006/06/20 18:04:25 bjori Exp $ */
 
 #ifndef PHP_DOM_H
 #define PHP_DOM_H
@@ -37,6 +37,7 @@ extern zend_module_entry dom_module_entry;
 #include <libxml/xmlerror.h>
 #include <libxml/xinclude.h>
 #include <libxml/hash.h>
+#include <libxml/c14n.h>
 #if defined(LIBXML_HTML_ENABLED)
 #include <libxml/HTMLparser.h>
 #include <libxml/HTMLtree.h>
@@ -109,7 +110,8 @@ void dom_namednode_iter(dom_object *basenode, int ntype, dom_object *intern, xml
 xmlNodePtr create_notation(const xmlChar *name, const xmlChar *ExternalID, const xmlChar *SystemID);
 xmlNode *php_dom_libxml_hash_iter(xmlHashTable *ht, int index);
 xmlNode *php_dom_libxml_notation_iter(xmlHashTable *ht, int index);
-zend_object_iterator *php_dom_get_iterator(zend_class_entry *ce, zval *object TSRMLS_DC);
+zend_object_iterator *php_dom_get_iterator(zend_class_entry *ce, zval *object, int by_ref TSRMLS_DC);
+int dom_set_doc_classmap(php_libxml_ref_obj *document, zend_class_entry *basece, zend_class_entry *ce TSRMLS_DC);
 
 #define REGISTER_DOM_CLASS(ce, name, parent_ce, funcs, entry) \
 INIT_CLASS_ENTRY(ce, name, funcs); \

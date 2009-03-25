@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.6 2004/06/12 18:42:13 abies Exp $
+// $Id: config.w32,v 1.6.4.1 2006/05/11 21:43:59 edink Exp $
 // vim:ft=javascript
 
 ARG_WITH("pdo-firebird", "Firebird support for PDO", "no");
@@ -10,7 +10,6 @@ if (PHP_PDO_FIREBIRD != "no") {
 		) && CHECK_HEADER_ADD_INCLUDE("ibase.h", "CFLAGS_PDO_FIREBIRD", PHP_PHP_BUILD + "\\interbase\\include;" + PHP_PDO_FIREBIRD)) {
 
 		EXTENSION("pdo_firebird", "pdo_firebird.c firebird_driver.c firebird_statement.c");
-		ADD_FLAG('CFLAGS_PDO_FIREBIRD', "/I ..\\pecl");
 	} else {
 		WARNING("pdo_firebird not enabled; libraries and headers not found");
 	}

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: bcmath.c,v 1.62.2.2 2006/01/01 12:50:00 sniper Exp $ */
+/* $Id: bcmath.c,v 1.62.2.2.2.2 2006/06/15 18:33:06 dmitry Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -32,18 +32,89 @@
 #include "libbcmath/src/bcmath.h"
 
 ZEND_DECLARE_MODULE_GLOBALS(bcmath);
+static PHP_GINIT_FUNCTION(bcmath);
+
+/* {{{ arginfo */
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_bcadd, 0, 0, 2)
+	ZEND_ARG_INFO(0, left_operand)
+	ZEND_ARG_INFO(0, right_operand)
+	ZEND_ARG_INFO(0, scale)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_bcsub, 0, 0, 2)
+	ZEND_ARG_INFO(0, left_operand)
+	ZEND_ARG_INFO(0, right_operand)
+	ZEND_ARG_INFO(0, scale)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_bcmul, 0, 0, 2)
+	ZEND_ARG_INFO(0, left_operand)
+	ZEND_ARG_INFO(0, right_operand)
+	ZEND_ARG_INFO(0, scale)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_bcdiv, 0, 0, 2)
+	ZEND_ARG_INFO(0, left_operand)
+	ZEND_ARG_INFO(0, right_operand)
+	ZEND_ARG_INFO(0, scale)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_bcmod, 0)
+	ZEND_ARG_INFO(0, left_operand)
+	ZEND_ARG_INFO(0, right_operand)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_bcpowmod, 0, 0, 3)
+	ZEND_ARG_INFO(0, x)
+	ZEND_ARG_INFO(0, y)
+	ZEND_ARG_INFO(0, mod)
+	ZEND_ARG_INFO(0, scale)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_bcpow, 0, 0, 2)
+	ZEND_ARG_INFO(0, x)
+	ZEND_ARG_INFO(0, y)
+	ZEND_ARG_INFO(0, scale)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_bcsqrt, 0, 0, 1)
+	ZEND_ARG_INFO(0, operand)
+	ZEND_ARG_INFO(0, scale)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_bccomp, 0, 0, 2)
+	ZEND_ARG_INFO(0, left_operand)
+	ZEND_ARG_INFO(0, right_operand)
+	ZEND_ARG_INFO(0, scale)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_bcscale, 0)
+	ZEND_ARG_INFO(0, scale)
+ZEND_END_ARG_INFO()
+
+/* }}} */
 
 zend_function_entry bcmath_functions[] = {
-	PHP_FE(bcadd,									NULL)
-	PHP_FE(bcsub,									NULL)
-	PHP_FE(bcmul,									NULL)
-	PHP_FE(bcdiv,									NULL)
-	PHP_FE(bcmod,									NULL)
-	PHP_FE(bcpow,									NULL)
-	PHP_FE(bcsqrt,									NULL)
-	PHP_FE(bcscale,									NULL)
-	PHP_FE(bccomp,									NULL)
-	PHP_FE(bcpowmod,								NULL)
+	PHP_FE(bcadd,									arginfo_bcadd)
+	PHP_FE(bcsub,									arginfo_bcsub)
+	PHP_FE(bcmul,									arginfo_bcmul)
+	PHP_FE(bcdiv,									arginfo_bcdiv)
+	PHP_FE(bcmod,									arginfo_bcmod)
+	PHP_FE(bcpow,									arginfo_bcpow)
+	PHP_FE(bcsqrt,									arginfo_bcsqrt)
+	PHP_FE(bcscale,									arginfo_bcscale)
+	PHP_FE(bccomp,									arginfo_bccomp)
+	PHP_FE(bcpowmod,								arginfo_bcpowmod)
 	{NULL, NULL, NULL}
 };
 
@@ -57,7 +128,11 @@ zend_module_entry bcmath_module_entry = {
 	PHP_RSHUTDOWN(bcmath),
 	PHP_MINFO(bcmath),
 	NO_VERSION_YET,
-	STANDARD_MODULE_PROPERTIES
+	PHP_MODULE_GLOBALS(bcmath),
+	PHP_GINIT(bcmath),
+	NULL,
+	NULL,
+	STANDARD_MODULE_PROPERTIES_EX
 };
 
 #ifdef COMPILE_DL_BCMATH
@@ -70,9 +145,9 @@ PHP_INI_BEGIN()
 PHP_INI_END()
 /* }}} */
 
-/* {{{ php_bcmath_init_globals
+/* {{{ PHP_GINIT_FUNCTION
  */
-static void php_bcmath_init_globals(zend_bcmath_globals *bcmath_globals)
+static PHP_GINIT_FUNCTION(bcmath)
 {
 	bcmath_globals->bc_precision = 0;
 }
@@ -82,8 +157,6 @@ static void php_bcmath_init_globals(zend_bcmath_globals *bcmath_globals)
  */
 PHP_MINIT_FUNCTION(bcmath)
 {
-	ZEND_INIT_MODULE_GLOBALS(bcmath, php_bcmath_init_globals, NULL);
-
 	REGISTER_INI_ENTRIES();
 
 	return SUCCESS;

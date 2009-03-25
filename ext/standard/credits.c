@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: credits.c,v 1.36.2.4 2006/03/23 18:36:46 iliaa Exp $ */
+/* $Id: credits.c,v 1.36.2.4.2.1 2006/09/03 11:27:50 johannes Exp $ */
 
 #include "php.h"
 #include "info.h"
@@ -105,7 +105,7 @@ PHPAPI void php_print_credits(int flag TSRMLS_DC)
 
 	if (flag & PHP_CREDITS_QA) {
 		php_info_print_table_start();
-		php_info_print_table_header(1, "PHP 5.1 Quality Assurance Team");
+		php_info_print_table_header(1, "PHP Quality Assurance Team");
 		php_info_print_table_row(1, "Ilia Alshanetsky, Joerg Behrens, Antony Dovgal, Stefan Esser, Moriyoshi Koizumi, Magnus Maatta, Sebastian Nohn, Derick Rethans, Melvyn Sopacua, Jani Taskinen");
 		php_info_print_table_end();
 	}

@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.69 2005/05/29 23:16:41 sniper Exp $
+dnl $Id: config.m4,v 1.69.4.1 2006/09/24 18:06:37 iliaa Exp $
 dnl
 
 AC_DEFUN([IMAP_INC_CHK],[if test -r "$i$1/c-client.h"; then
@@ -113,6 +113,11 @@ if test "$PHP_IMAP" != "no"; then
     dnl Check for c-client version 2004
     AC_EGREP_HEADER(mail_fetch_overview_sequence, $IMAP_INC_DIR/mail.h, [
       AC_DEFINE(HAVE_IMAP2004,1,[ ])
+    ])
+    
+    dnl Check for new version of the utf8_mime2text() function
+    AC_EGREP_HEADER(mail_append_set, $IMAP_INC_DIR/mail.h, [
+      AC_DEFINE(HAVE_NEW_MIME2TEXT,1,[ ])
     ])
 
     dnl Check for c-client version 2001

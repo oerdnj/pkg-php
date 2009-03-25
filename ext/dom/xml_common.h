@@ -17,24 +17,14 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: xml_common.h,v 1.23.2.1 2006/01/01 12:50:06 sniper Exp $ */
+/* $Id: xml_common.h,v 1.23.2.1.2.1 2006/05/22 17:12:25 rrichards Exp $ */
 
 #ifndef PHP_XML_COMMON_H
 #define PHP_XML_COMMON_H
 
 #include "ext/libxml/php_libxml.h"
 
-typedef struct _dom_doc_props {
-	int formatoutput;
-	int validateonparse;
-	int resolveexternals;
-	int preservewhitespace;
-	int substituteentities;
-	int stricterror;
-	int recover;
-} dom_doc_props;
-
-typedef dom_doc_props *dom_doc_propsptr;
+typedef libxml_doc_props *dom_doc_propsptr;
 
 typedef struct _dom_object {
 	zend_object  std;

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: zlib_fopen_wrapper.c,v 1.46.2.1 2006/01/01 12:50:17 sniper Exp $ */
+/* $Id: zlib_fopen_wrapper.c,v 1.46.2.1.2.1 2006/08/14 20:08:18 nlopess Exp $ */
 
 #define _GNU_SOURCE
 
@@ -92,7 +92,7 @@ static int php_gziop_flush(php_stream *stream TSRMLS_DC)
 	return gzflush(self->gz_file, Z_SYNC_FLUSH);
 }
 
-php_stream_ops php_stream_gzio_ops = {
+static php_stream_ops php_stream_gzio_ops = {
 	php_gziop_write, php_gziop_read,
 	php_gziop_close, php_gziop_flush,
 	"ZLIB",

@@ -327,7 +327,7 @@
    | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
-   | that is bundled with this package in the file LICENSE, and is        | 
+   | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
    | http://www.zend.com/license/2_00.txt.                                |
    | If you did not receive a copy of the Zend license and are unable to  |
@@ -339,15 +339,15 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_language_parser.y,v 1.160.2.4 2006/03/12 16:52:18 iliaa Exp $ */
+/* $Id: zend_language_parser.y,v 1.160.2.4.2.1 2006/05/11 21:07:39 helly Exp $ */
 
-/* 
+/*
  * LALR shift/reduce conflicts and how they are resolved:
  *
  * - 2 shift/reduce conflicts due to the dangeling elseif/else ambiguity.  Solved by shift.
- * - 1 shift/reduce conflict due to arrays within encapsulated strings. Solved by shift. 
+ * - 1 shift/reduce conflict due to arrays within encapsulated strings. Solved by shift.
  * - 1 shift/reduce conflict due to objects within encapsulated strings.  Solved by shift.
- * 
+ *
  */
 
 
@@ -3564,42 +3564,42 @@ yyreduce:
 
   case 141:
 
-    { znode tmp;  fetch_simple_variable(&tmp, &(yyvsp[(2) - (2)]), 0 TSRMLS_CC); (yyval).op_type = IS_CONST; (yyval).u.constant.value.lval=1; (yyval).u.constant.type=IS_LONG; INIT_PZVAL(&(yyval).u.constant); zend_do_receive_arg(ZEND_RECV, &tmp, &(yyval), NULL, &(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)]), 0 TSRMLS_CC); }
+    { znode tmp;  fetch_simple_variable(&tmp, &(yyvsp[(2) - (2)]), 0 TSRMLS_CC); (yyval).op_type = IS_CONST; Z_LVAL((yyval).u.constant)=1; Z_TYPE((yyval).u.constant)=IS_LONG; INIT_PZVAL(&(yyval).u.constant); zend_do_receive_arg(ZEND_RECV, &tmp, &(yyval), NULL, &(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)]), 0 TSRMLS_CC); }
     break;
 
   case 142:
 
-    { znode tmp;  fetch_simple_variable(&tmp, &(yyvsp[(3) - (3)]), 0 TSRMLS_CC); (yyval).op_type = IS_CONST; (yyval).u.constant.value.lval=1; (yyval).u.constant.type=IS_LONG; INIT_PZVAL(&(yyval).u.constant); zend_do_receive_arg(ZEND_RECV, &tmp, &(yyval), NULL, &(yyvsp[(1) - (3)]), &(yyvsp[(3) - (3)]), 1 TSRMLS_CC); }
+    { znode tmp;  fetch_simple_variable(&tmp, &(yyvsp[(3) - (3)]), 0 TSRMLS_CC); (yyval).op_type = IS_CONST; Z_LVAL((yyval).u.constant)=1; Z_TYPE((yyval).u.constant)=IS_LONG; INIT_PZVAL(&(yyval).u.constant); zend_do_receive_arg(ZEND_RECV, &tmp, &(yyval), NULL, &(yyvsp[(1) - (3)]), &(yyvsp[(3) - (3)]), 1 TSRMLS_CC); }
     break;
 
   case 143:
 
-    { znode tmp;  fetch_simple_variable(&tmp, &(yyvsp[(3) - (5)]), 0 TSRMLS_CC); (yyval).op_type = IS_CONST; (yyval).u.constant.value.lval=1; (yyval).u.constant.type=IS_LONG; INIT_PZVAL(&(yyval).u.constant); zend_do_receive_arg(ZEND_RECV_INIT, &tmp, &(yyval), &(yyvsp[(5) - (5)]), &(yyvsp[(1) - (5)]), &(yyvsp[(3) - (5)]), 1 TSRMLS_CC); }
+    { znode tmp;  fetch_simple_variable(&tmp, &(yyvsp[(3) - (5)]), 0 TSRMLS_CC); (yyval).op_type = IS_CONST; Z_LVAL((yyval).u.constant)=1; Z_TYPE((yyval).u.constant)=IS_LONG; INIT_PZVAL(&(yyval).u.constant); zend_do_receive_arg(ZEND_RECV_INIT, &tmp, &(yyval), &(yyvsp[(5) - (5)]), &(yyvsp[(1) - (5)]), &(yyvsp[(3) - (5)]), 1 TSRMLS_CC); }
     break;
 
   case 144:
 
-    { znode tmp;  fetch_simple_variable(&tmp, &(yyvsp[(2) - (4)]), 0 TSRMLS_CC); (yyval).op_type = IS_CONST; (yyval).u.constant.value.lval=1; (yyval).u.constant.type=IS_LONG; INIT_PZVAL(&(yyval).u.constant); zend_do_receive_arg(ZEND_RECV_INIT, &tmp, &(yyval), &(yyvsp[(4) - (4)]), &(yyvsp[(1) - (4)]), &(yyvsp[(2) - (4)]), 0 TSRMLS_CC); }
+    { znode tmp;  fetch_simple_variable(&tmp, &(yyvsp[(2) - (4)]), 0 TSRMLS_CC); (yyval).op_type = IS_CONST; Z_LVAL((yyval).u.constant)=1; Z_TYPE((yyval).u.constant)=IS_LONG; INIT_PZVAL(&(yyval).u.constant); zend_do_receive_arg(ZEND_RECV_INIT, &tmp, &(yyval), &(yyvsp[(4) - (4)]), &(yyvsp[(1) - (4)]), &(yyvsp[(2) - (4)]), 0 TSRMLS_CC); }
     break;
 
   case 145:
 
-    { znode tmp;  fetch_simple_variable(&tmp, &(yyvsp[(4) - (4)]), 0 TSRMLS_CC); (yyval)=(yyvsp[(1) - (4)]); (yyval).u.constant.value.lval++; zend_do_receive_arg(ZEND_RECV, &tmp, &(yyval), NULL, &(yyvsp[(3) - (4)]), &(yyvsp[(4) - (4)]), 0 TSRMLS_CC); }
+    { znode tmp;  fetch_simple_variable(&tmp, &(yyvsp[(4) - (4)]), 0 TSRMLS_CC); (yyval)=(yyvsp[(1) - (4)]); Z_LVAL((yyval).u.constant)++; zend_do_receive_arg(ZEND_RECV, &tmp, &(yyval), NULL, &(yyvsp[(3) - (4)]), &(yyvsp[(4) - (4)]), 0 TSRMLS_CC); }
     break;
 
   case 146:
 
-    { znode tmp;  fetch_simple_variable(&tmp, &(yyvsp[(5) - (5)]), 0 TSRMLS_CC); (yyval)=(yyvsp[(1) - (5)]); (yyval).u.constant.value.lval++; zend_do_receive_arg(ZEND_RECV, &tmp, &(yyval), NULL, &(yyvsp[(3) - (5)]), &(yyvsp[(5) - (5)]), 1 TSRMLS_CC); }
+    { znode tmp;  fetch_simple_variable(&tmp, &(yyvsp[(5) - (5)]), 0 TSRMLS_CC); (yyval)=(yyvsp[(1) - (5)]); Z_LVAL((yyval).u.constant)++; zend_do_receive_arg(ZEND_RECV, &tmp, &(yyval), NULL, &(yyvsp[(3) - (5)]), &(yyvsp[(5) - (5)]), 1 TSRMLS_CC); }
     break;
 
   case 147:
 
-    { znode tmp;  fetch_simple_variable(&tmp, &(yyvsp[(5) - (7)]), 0 TSRMLS_CC); (yyval)=(yyvsp[(1) - (7)]); (yyval).u.constant.value.lval++; zend_do_receive_arg(ZEND_RECV_INIT, &tmp, &(yyval), &(yyvsp[(7) - (7)]), &(yyvsp[(3) - (7)]), &(yyvsp[(5) - (7)]), 1 TSRMLS_CC); }
+    { znode tmp;  fetch_simple_variable(&tmp, &(yyvsp[(5) - (7)]), 0 TSRMLS_CC); (yyval)=(yyvsp[(1) - (7)]); Z_LVAL((yyval).u.constant)++; zend_do_receive_arg(ZEND_RECV_INIT, &tmp, &(yyval), &(yyvsp[(7) - (7)]), &(yyvsp[(3) - (7)]), &(yyvsp[(5) - (7)]), 1 TSRMLS_CC); }
     break;
 
   case 148:
 
-    { znode tmp;  fetch_simple_variable(&tmp, &(yyvsp[(4) - (6)]), 0 TSRMLS_CC); (yyval)=(yyvsp[(1) - (6)]); (yyval).u.constant.value.lval++; zend_do_receive_arg(ZEND_RECV_INIT, &tmp, &(yyval), &(yyvsp[(6) - (6)]), &(yyvsp[(3) - (6)]), &(yyvsp[(4) - (6)]), 0 TSRMLS_CC); }
+    { znode tmp;  fetch_simple_variable(&tmp, &(yyvsp[(4) - (6)]), 0 TSRMLS_CC); (yyval)=(yyvsp[(1) - (6)]); Z_LVAL((yyval).u.constant)++; zend_do_receive_arg(ZEND_RECV_INIT, &tmp, &(yyval), &(yyvsp[(6) - (6)]), &(yyvsp[(3) - (6)]), &(yyvsp[(4) - (6)]), 0 TSRMLS_CC); }
     break;
 
   case 149:
@@ -3614,7 +3614,7 @@ yyreduce:
 
   case 151:
 
-    { (yyval).op_type = IS_CONST; (yyval).u.constant.type=IS_NULL;}
+    { (yyval).op_type = IS_CONST; Z_TYPE((yyval).u.constant)=IS_NULL;}
     break;
 
   case 152:
@@ -3624,37 +3624,37 @@ yyreduce:
 
   case 153:
 
-    { (yyval).u.constant.value.lval = 0; }
+    { Z_LVAL((yyval).u.constant) = 0; }
     break;
 
   case 154:
 
-    { (yyval).u.constant.value.lval = 1;  zend_do_pass_param(&(yyvsp[(1) - (1)]), ZEND_SEND_VAL, (yyval).u.constant.value.lval TSRMLS_CC); }
+    { Z_LVAL((yyval).u.constant) = 1;  zend_do_pass_param(&(yyvsp[(1) - (1)]), ZEND_SEND_VAL, Z_LVAL((yyval).u.constant) TSRMLS_CC); }
     break;
 
   case 155:
 
-    { (yyval).u.constant.value.lval = 1;  zend_do_pass_param(&(yyvsp[(1) - (1)]), ZEND_SEND_VAR, (yyval).u.constant.value.lval TSRMLS_CC); }
+    { Z_LVAL((yyval).u.constant) = 1;  zend_do_pass_param(&(yyvsp[(1) - (1)]), ZEND_SEND_VAR, Z_LVAL((yyval).u.constant) TSRMLS_CC); }
     break;
 
   case 156:
 
-    { (yyval).u.constant.value.lval = 1;  zend_do_pass_param(&(yyvsp[(2) - (2)]), ZEND_SEND_REF, (yyval).u.constant.value.lval TSRMLS_CC); }
+    { Z_LVAL((yyval).u.constant) = 1;  zend_do_pass_param(&(yyvsp[(2) - (2)]), ZEND_SEND_REF, Z_LVAL((yyval).u.constant) TSRMLS_CC); }
     break;
 
   case 157:
 
-    { (yyval).u.constant.value.lval=(yyvsp[(1) - (3)]).u.constant.value.lval+1;  zend_do_pass_param(&(yyvsp[(3) - (3)]), ZEND_SEND_VAL, (yyval).u.constant.value.lval TSRMLS_CC); }
+    { Z_LVAL((yyval).u.constant)=Z_LVAL((yyvsp[(1) - (3)]).u.constant)+1;  zend_do_pass_param(&(yyvsp[(3) - (3)]), ZEND_SEND_VAL, Z_LVAL((yyval).u.constant) TSRMLS_CC); }
     break;
 
   case 158:
 
-    { (yyval).u.constant.value.lval=(yyvsp[(1) - (3)]).u.constant.value.lval+1;  zend_do_pass_param(&(yyvsp[(3) - (3)]), ZEND_SEND_VAR, (yyval).u.constant.value.lval TSRMLS_CC); }
+    { Z_LVAL((yyval).u.constant)=Z_LVAL((yyvsp[(1) - (3)]).u.constant)+1;  zend_do_pass_param(&(yyvsp[(3) - (3)]), ZEND_SEND_VAR, Z_LVAL((yyval).u.constant) TSRMLS_CC); }
     break;
 
   case 159:
 
-    { (yyval).u.constant.value.lval=(yyvsp[(1) - (4)]).u.constant.value.lval+1;  zend_do_pass_param(&(yyvsp[(4) - (4)]), ZEND_SEND_REF, (yyval).u.constant.value.lval TSRMLS_CC); }
+    { Z_LVAL((yyval).u.constant)=Z_LVAL((yyvsp[(1) - (4)]).u.constant)+1;  zend_do_pass_param(&(yyvsp[(4) - (4)]), ZEND_SEND_REF, Z_LVAL((yyval).u.constant) TSRMLS_CC); }
     break;
 
   case 160:
@@ -3704,7 +3704,7 @@ yyreduce:
 
   case 171:
 
-    { CG(access_type) = (yyvsp[(1) - (1)]).u.constant.value.lval; }
+    { CG(access_type) = Z_LVAL((yyvsp[(1) - (1)]).u.constant); }
     break;
 
   case 174:
@@ -3724,12 +3724,12 @@ yyreduce:
 
   case 177:
 
-    { (yyval).u.constant.value.lval = ZEND_ACC_ABSTRACT; }
+    { Z_LVAL((yyval).u.constant) = ZEND_ACC_ABSTRACT; }
     break;
 
   case 178:
 
-    { (yyval).u.constant.value.lval = 0;	}
+    { Z_LVAL((yyval).u.constant) = 0;	}
     break;
 
   case 179:
@@ -3739,17 +3739,17 @@ yyreduce:
 
   case 180:
 
-    { (yyval).u.constant.value.lval = ZEND_ACC_PUBLIC; }
+    { Z_LVAL((yyval).u.constant) = ZEND_ACC_PUBLIC; }
     break;
 
   case 181:
 
-    { (yyval).u.constant.value.lval = ZEND_ACC_PUBLIC; }
+    { Z_LVAL((yyval).u.constant) = ZEND_ACC_PUBLIC; }
     break;
 
   case 182:
 
-    { (yyval) = (yyvsp[(1) - (1)]);  if (!((yyval).u.constant.value.lval & ZEND_ACC_PPP_MASK)) { (yyval).u.constant.value.lval |= ZEND_ACC_PUBLIC; } }
+    { (yyval) = (yyvsp[(1) - (1)]);  if (!(Z_LVAL((yyval).u.constant) & ZEND_ACC_PPP_MASK)) { Z_LVAL((yyval).u.constant) |= ZEND_ACC_PUBLIC; } }
     break;
 
   case 183:
@@ -3759,37 +3759,37 @@ yyreduce:
 
   case 184:
 
-    { (yyval).u.constant.value.lval = zend_do_verify_access_types(&(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)])); }
+    { Z_LVAL((yyval).u.constant) = zend_do_verify_access_types(&(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)])); }
     break;
 
   case 185:
 
-    { (yyval).u.constant.value.lval = ZEND_ACC_PUBLIC; }
+    { Z_LVAL((yyval).u.constant) = ZEND_ACC_PUBLIC; }
     break;
 
   case 186:
 
-    { (yyval).u.constant.value.lval = ZEND_ACC_PROTECTED; }
+    { Z_LVAL((yyval).u.constant) = ZEND_ACC_PROTECTED; }
     break;
 
   case 187:
 
-    { (yyval).u.constant.value.lval = ZEND_ACC_PRIVATE; }
+    { Z_LVAL((yyval).u.constant) = ZEND_ACC_PRIVATE; }
     break;
 
   case 188:
 
-    { (yyval).u.constant.value.lval = ZEND_ACC_STATIC; }
+    { Z_LVAL((yyval).u.constant) = ZEND_ACC_STATIC; }
     break;
 
   case 189:
 
-    { (yyval).u.constant.value.lval = ZEND_ACC_ABSTRACT; }
+    { Z_LVAL((yyval).u.constant) = ZEND_ACC_ABSTRACT; }
     break;
 
   case 190:
 
-    { (yyval).u.constant.value.lval = ZEND_ACC_FINAL; }
+    { Z_LVAL((yyval).u.constant) = ZEND_ACC_FINAL; }
     break;
 
   case 191:
@@ -3834,7 +3834,7 @@ yyreduce:
 
   case 199:
 
-    { (yyval).op_type = IS_CONST;  (yyval).u.constant.type = IS_BOOL;  (yyval).u.constant.value.lval = 1; }
+    { (yyval).op_type = IS_CONST;  Z_TYPE((yyval).u.constant) = IS_BOOL;  Z_LVAL((yyval).u.constant) = 1; }
     break;
 
   case 200:
@@ -4079,12 +4079,12 @@ yyreduce:
 
   case 248:
 
-    { (yyvsp[(1) - (2)]).u.constant.value.lval=0; (yyvsp[(1) - (2)]).u.constant.type=IS_LONG; (yyvsp[(1) - (2)]).op_type = IS_CONST; INIT_PZVAL(&(yyvsp[(1) - (2)]).u.constant); zend_do_binary_op(ZEND_ADD, &(yyval), &(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)]) TSRMLS_CC); }
+    { Z_LVAL((yyvsp[(1) - (2)]).u.constant)=0; Z_TYPE((yyvsp[(1) - (2)]).u.constant)=IS_LONG; (yyvsp[(1) - (2)]).op_type = IS_CONST; INIT_PZVAL(&(yyvsp[(1) - (2)]).u.constant); zend_do_binary_op(ZEND_ADD, &(yyval), &(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)]) TSRMLS_CC); }
     break;
 
   case 249:
 
-    { (yyvsp[(1) - (2)]).u.constant.value.lval=0; (yyvsp[(1) - (2)]).u.constant.type=IS_LONG; (yyvsp[(1) - (2)]).op_type = IS_CONST; INIT_PZVAL(&(yyvsp[(1) - (2)]).u.constant); zend_do_binary_op(ZEND_SUB, &(yyval), &(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)]) TSRMLS_CC); }
+    { Z_LVAL((yyvsp[(1) - (2)]).u.constant)=0; Z_TYPE((yyvsp[(1) - (2)]).u.constant)=IS_LONG; (yyvsp[(1) - (2)]).op_type = IS_CONST; INIT_PZVAL(&(yyvsp[(1) - (2)]).u.constant); zend_do_binary_op(ZEND_SUB, &(yyval), &(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)]) TSRMLS_CC); }
     break;
 
   case 250:
@@ -4334,7 +4334,7 @@ yyreduce:
 
   case 301:
 
-    { (yyval).u.constant.value.lval=0; }
+    { Z_LVAL((yyval).u.constant)=0; }
     break;
 
   case 302:
@@ -4399,12 +4399,12 @@ yyreduce:
 
   case 314:
 
-    { zval minus_one;  minus_one.type = IS_LONG; minus_one.value.lval = -1;  mul_function(&(yyvsp[(2) - (2)]).u.constant, &(yyvsp[(2) - (2)]).u.constant, &minus_one TSRMLS_CC);  (yyval) = (yyvsp[(2) - (2)]); }
+    { zval minus_one;  Z_TYPE(minus_one) = IS_LONG; Z_LVAL(minus_one) = -1;  mul_function(&(yyvsp[(2) - (2)]).u.constant, &(yyvsp[(2) - (2)]).u.constant, &minus_one TSRMLS_CC);  (yyval) = (yyvsp[(2) - (2)]); }
     break;
 
   case 315:
 
-    { (yyval) = (yyvsp[(3) - (4)]); (yyval).u.constant.type = IS_CONSTANT_ARRAY; }
+    { (yyval) = (yyvsp[(3) - (4)]); Z_TYPE((yyval).u.constant) = IS_CONSTANT_ARRAY; }
     break;
 
   case 316:
@@ -4690,12 +4690,12 @@ yyreduce:
 
   case 374:
 
-    { (yyval).u.constant.value.lval = 1; }
+    { Z_LVAL((yyval).u.constant) = 1; }
     break;
 
   case 375:
 
-    { (yyval).u.constant.value.lval++; }
+    { Z_LVAL((yyval).u.constant)++; }
     break;
 
   case 378:
@@ -4800,27 +4800,27 @@ yyreduce:
 
   case 398:
 
-    { (yyvsp[(2) - (2)]).u.constant.value.lval = (long) '['; zend_do_add_char(&(yyval), &(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)]) TSRMLS_CC); }
+    { Z_LVAL((yyvsp[(2) - (2)]).u.constant) = (long) '['; zend_do_add_char(&(yyval), &(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)]) TSRMLS_CC); }
     break;
 
   case 399:
 
-    { (yyvsp[(2) - (2)]).u.constant.value.lval = (long) ']'; zend_do_add_char(&(yyval), &(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)]) TSRMLS_CC); }
+    { Z_LVAL((yyvsp[(2) - (2)]).u.constant) = (long) ']'; zend_do_add_char(&(yyval), &(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)]) TSRMLS_CC); }
     break;
 
   case 400:
 
-    { (yyvsp[(2) - (2)]).u.constant.value.lval = (long) '{'; zend_do_add_char(&(yyval), &(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)]) TSRMLS_CC); }
+    { Z_LVAL((yyvsp[(2) - (2)]).u.constant) = (long) '{'; zend_do_add_char(&(yyval), &(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)]) TSRMLS_CC); }
     break;
 
   case 401:
 
-    { (yyvsp[(2) - (2)]).u.constant.value.lval = (long) '}'; zend_do_add_char(&(yyval), &(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)]) TSRMLS_CC); }
+    { Z_LVAL((yyvsp[(2) - (2)]).u.constant) = (long) '}'; zend_do_add_char(&(yyval), &(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)]) TSRMLS_CC); }
     break;
 
   case 402:
 
-    { znode tmp;  (yyvsp[(2) - (2)]).u.constant.value.lval = (long) '-';  zend_do_add_char(&tmp, &(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)]) TSRMLS_CC);  (yyvsp[(2) - (2)]).u.constant.value.lval = (long) '>'; zend_do_add_char(&(yyval), &tmp, &(yyvsp[(2) - (2)]) TSRMLS_CC); }
+    { znode tmp;  Z_LVAL((yyvsp[(2) - (2)]).u.constant) = (long) '-';  zend_do_add_char(&tmp, &(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)]) TSRMLS_CC);  Z_LVAL((yyvsp[(2) - (2)]).u.constant) = (long) '>'; zend_do_add_char(&(yyval), &tmp, &(yyvsp[(2) - (2)]) TSRMLS_CC); }
     break;
 
   case 403:

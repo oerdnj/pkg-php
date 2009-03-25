@@ -19,7 +19,7 @@
    |          Sara Golemon <pollita@php.net>                              |
    +----------------------------------------------------------------------+
  */
-/* $Id: http_fopen_wrapper.c,v 1.99.2.12 2006/04/16 17:40:33 iliaa Exp $ */ 
+/* $Id: http_fopen_wrapper.c,v 1.99.2.12.2.1 2006/06/29 14:40:49 bjori Exp $ */ 
 
 #include "php.h"
 #include "php_globals.h"
@@ -619,7 +619,7 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 			php_url_free(resource);
 			/* check for invalid redirection URLs */
 			if ((resource = php_url_parse(new_path)) == NULL) {
-				php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "Invalid redirect url! %s", new_path);
+				php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "Invalid redirect URL! %s", new_path);
 				goto out;
 			}
 
@@ -631,7 +631,7 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 		s = val; e = s + l;	\
 		while (s < e) {	\
 			if (iscntrl(*s)) {	\
-				php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "Invalid redirect url! %s", new_path);	\
+				php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "Invalid redirect URL! %s", new_path);	\
 				goto out;	\
 			}	\
 			s++;	\

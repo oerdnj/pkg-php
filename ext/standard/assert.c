@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: assert.c,v 1.60.2.3 2006/01/01 12:50:14 sniper Exp $ */
+/* $Id: assert.c,v 1.60.2.3.2.2 2006/07/01 12:21:07 nlopess Exp $ */
 
 /* {{{ includes/startup/misc */
 
@@ -151,8 +151,11 @@ PHP_FUNCTION(assert)
 		compiled_string_description = zend_make_compiled_string_description("assert code" TSRMLS_CC);
 		if (zend_eval_string(myeval, &retval, compiled_string_description TSRMLS_CC) == FAILURE) {
 			efree(compiled_string_description);
-			php_error_docref(NULL TSRMLS_CC, E_ERROR, "Failure evaluating code: %s%s", PHP_EOL, myeval);
-			/* php_error_docref() does not return in this case. */
+			php_error_docref(NULL TSRMLS_CC, E_RECOVERABLE_ERROR, "Failure evaluating code: %s%s", PHP_EOL, myeval);
+			if (ASSERTG(bail)) {
+				zend_bailout();
+			}
+			RETURN_FALSE;
 		}
 		efree(compiled_string_description);
 

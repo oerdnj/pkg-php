@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: sqlite_driver.c,v 1.20.2.5 2006/01/01 12:50:12 sniper Exp $ */
+/* $Id: sqlite_driver.c,v 1.20.2.5.2.1 2006/09/16 18:30:03 iliaa Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -641,6 +641,10 @@ static char *make_filename_safe(const char *filename TSRMLS_DC)
 {
 	if (strncmp(filename, ":memory:", sizeof(":memory:")-1)) {
 		char *fullpath = expand_filepath(filename, NULL TSRMLS_CC);
+
+		if (!fullpath) {
+			return NULL;
+		}
 
 		if (PG(safe_mode) && (!php_checkuid(fullpath, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
 			efree(fullpath);

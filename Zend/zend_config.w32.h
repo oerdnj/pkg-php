@@ -17,12 +17,10 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_config.w32.h,v 1.39.2.2 2006/03/14 14:19:00 dmitry Exp $ */
+/* $Id: zend_config.w32.h,v 1.39.2.2.2.1 2006/07/18 09:06:32 dmitry Exp $ */
 
 #ifndef ZEND_CONFIG_W32_H
 #define ZEND_CONFIG_W32_H
-
-#define USE_ZEND_ALLOC 1
 
 #include <../main/config.w32.h>
 

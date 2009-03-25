@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_globals.h,v 1.141.2.3 2006/01/04 23:53:04 andi Exp $ */
+/* $Id: zend_globals.h,v 1.141.2.3.2.6 2006/09/11 14:30:03 tony2001 Exp $ */
 
 #ifndef ZEND_GLOBALS_H
 #define ZEND_GLOBALS_H
@@ -31,7 +31,6 @@
 #include "zend_ptr_stack.h"
 #include "zend_hash.h"
 #include "zend_llist.h"
-#include "zend_fast_cache.h"
 #include "zend_objects.h"
 #include "zend_objects_API.h"
 #include "zend_modules.h"
@@ -48,7 +47,6 @@
 BEGIN_EXTERN_C()
 ZEND_API extern int compiler_globals_id;
 ZEND_API extern int executor_globals_id;
-ZEND_API extern int alloc_globals_id;
 END_EXTERN_C()
 
 #endif
@@ -176,7 +174,7 @@ struct _zend_executor_globals {
 
 	HashTable included_files;	/* files already included */
 
-	jmp_buf bailout;
+	jmp_buf *bailout;
 
 	int error_reporting;
 	int orig_error_reporting;
@@ -199,7 +197,6 @@ struct _zend_executor_globals {
 	zend_bool in_execution;
 	HashTable *in_autoload;
 	zend_function *autoload_func;
-	zend_bool bailout_set;
 	zend_bool full_tables_cleanup;
 	zend_bool ze1_compatibility_mode;
 
@@ -228,6 +225,8 @@ struct _zend_executor_globals {
 	int lambda_count;
 
 	HashTable *ini_directives;
+	HashTable *modified_ini_directives;
+
 	zend_objects_store objects_store;
 	zval *exception;
 	zend_op *opline_before_exception;
@@ -238,35 +237,9 @@ struct _zend_executor_globals {
 
 	zend_property_info std_property_info;
 
+	zend_bool active; 
+
 	void *reserved[ZEND_MAX_RESERVED_RESOURCES];
-};
-
-#include "zend_mm.h"
-
-struct _zend_alloc_globals {
-	zend_mem_header *head;		/* standard list */
-	void *cache[MAX_CACHED_MEMORY][MAX_CACHED_ENTRIES];
-	unsigned int cache_count[MAX_CACHED_MEMORY];
-	void *fast_cache_list_head[MAX_FAST_CACHE_TYPES];
-
-#ifdef ZEND_WIN32
-	HANDLE memory_heap;
-#endif
-
-#if ZEND_DEBUG
-	/* for performance tuning */
-	int cache_stats[MAX_CACHED_MEMORY][2];
-	int fast_cache_stats[MAX_FAST_CACHE_TYPES][2];
-#endif
-#if MEMORY_LIMIT
-	unsigned int memory_limit;
-	unsigned int allocated_memory;
-	unsigned int allocated_memory_peak;
-	unsigned char memory_exhausted;
-#endif
-#ifdef ZEND_MM
-	zend_mm_heap mm_heap;
-#endif
 };
 
 struct _zend_scanner_globals {

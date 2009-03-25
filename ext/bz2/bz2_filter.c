@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: bz2_filter.c,v 1.3.2.2 2006/01/01 12:50:00 sniper Exp $ */
+/* $Id: bz2_filter.c,v 1.3.2.2.2.2 2006/06/23 07:30:26 mike Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -274,7 +274,7 @@ static php_stream_filter *php_bz2_filter_create(const char *filtername, zval *fi
 	/* Create this filter */
 	data = pecalloc(1, sizeof(php_bz2_filter_data), persistent);
 	if (!data) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed allocating %d bytes.", sizeof(php_bz2_filter_data));
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed allocating %zu bytes.", sizeof(php_bz2_filter_data));
 		return NULL;
 	}
 
@@ -287,14 +287,14 @@ static php_stream_filter *php_bz2_filter_create(const char *filtername, zval *fi
 	data->strm.avail_out = data->outbuf_len = data->inbuf_len = 2048;
 	data->strm.next_in = data->inbuf = (char *) pemalloc(data->inbuf_len, persistent);
 	if (!data->inbuf) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed allocating %d bytes.", data->inbuf_len);
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed allocating %zu bytes.", data->inbuf_len);
 		pefree(data, persistent);
 		return NULL;
 	}
 	data->strm.avail_in = 0;
 	data->strm.next_out = data->outbuf = (char *) pemalloc(data->outbuf_len, persistent);
 	if (!data->outbuf) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed allocating %d bytes.", data->outbuf_len);
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed allocating %zu bytes.", data->outbuf_len);
 		pefree(data->inbuf, persistent);
 		pefree(data, persistent);
 		return NULL;

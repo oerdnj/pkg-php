@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_exceptions.c,v 1.6.2.1 2006/01/01 12:50:13 sniper Exp $ */
+/* $Id: spl_exceptions.c,v 1.6.2.1.2.1 2006/05/10 00:03:38 helly Exp $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -47,7 +47,7 @@ PHPAPI zend_class_entry *spl_ce_RangeException;
 PHPAPI zend_class_entry *spl_ce_UnderflowException;
 PHPAPI zend_class_entry *spl_ce_UnexpectedValueException;
 
-#define spl_ce_Exception zend_exception_get_default()
+#define spl_ce_Exception zend_exception_get_default(TSRMLS_C)
 
 /* {{{ PHP_MINIT_FUNCTION(spl_exceptions) */
 PHP_MINIT_FUNCTION(spl_exceptions)

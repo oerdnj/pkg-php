@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_arg_defs.c,v 1.2.2.2 2006/04/06 21:10:45 andrei Exp $ */
+/* $Id: zend_arg_defs.c,v 1.2.2.2.2.1 2006/05/09 23:53:23 helly Exp $ */
 
 ZEND_BEGIN_ARG_INFO(first_arg_force_ref, 0)
 	ZEND_ARG_PASS_INFO(1)
@@ -50,4 +50,3 @@ ZEND_END_ARG_INFO();
 
 ZEND_BEGIN_ARG_INFO(all_args_by_ref, 1)
 ZEND_END_ARG_INFO();
-

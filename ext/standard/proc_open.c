@@ -15,7 +15,7 @@
    | Author: Wez Furlong <wez@thebrainroom.com>                           |
    +----------------------------------------------------------------------+
  */
-/* $Id: proc_open.c,v 1.36.2.1 2006/01/01 12:50:15 sniper Exp $ */
+/* $Id: proc_open.c,v 1.36.2.1.2.1 2006/06/01 14:03:49 tony2001 Exp $ */
 
 #if 0 && (defined(__linux__) || defined(sun) || defined(__IRIX__))
 # define _BSD_SOURCE 		/* linux wants this when XOPEN mode is on */
@@ -501,7 +501,9 @@ PHP_FUNCTION(proc_open)
 	php_process_id_t child;
 	struct php_process_handle *proc;
 	int is_persistent = 0; /* TODO: ensure that persistent procs will work */
+#ifdef PHP_WIN32
 	int suppress_errors = 0;
+#endif
 #if PHP_CAN_DO_PTS
 	php_file_descriptor_t dev_ptmx = -1;	/* master */
 	php_file_descriptor_t slave_pty = -1;
@@ -517,6 +519,7 @@ PHP_FUNCTION(proc_open)
 		RETURN_FALSE;
 	}
 
+#ifdef PHP_WIN32
 	if (other_options) {
 		zval **item;
 		if (SUCCESS == zend_hash_find(Z_ARRVAL_P(other_options), "suppress_errors", sizeof("suppress_errors"), (void**)&item)) {
@@ -525,6 +528,7 @@ PHP_FUNCTION(proc_open)
 			}
 		}	
 	}
+#endif
 	
 	command_len = strlen(command);
 

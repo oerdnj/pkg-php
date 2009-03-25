@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: streamsfuncs.c,v 1.58.2.6 2006/04/19 08:43:29 tony2001 Exp $ */
+/* $Id: streamsfuncs.c,v 1.58.2.6.2.9 2006/10/11 23:22:45 pollita Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -33,8 +33,10 @@
 
 #ifndef PHP_WIN32
 #define php_select(m, r, w, e, t)	select(m, r, w, e, t)
+typedef unsigned long long php_timeout_ull;
 #else
 #include "win32/select.h"
+typedef unsigned __int64 php_timeout_ull;
 #endif
 
 static php_stream_context *decode_context_param(zval *contextresource TSRMLS_DC);
@@ -81,7 +83,7 @@ PHP_FUNCTION(stream_socket_client)
 	int host_len;
 	zval *zerrno = NULL, *zerrstr = NULL, *zcontext = NULL;
 	double timeout = FG(default_socket_timeout);
-	unsigned long conv;
+	php_timeout_ull conv;
 	struct timeval tv;
 	char *hashkey = NULL;
 	php_stream *stream = NULL;
@@ -103,7 +105,7 @@ PHP_FUNCTION(stream_socket_client)
 	}
 	
 	/* prepare the timeout value for use */
-	conv = (unsigned long) (timeout * 1000000.0);
+	conv = (php_timeout_ull) (timeout * 1000000.0);
 	tv.tv_sec = conv / 1000000;
 	tv.tv_usec = conv % 1000000;
 
@@ -231,7 +233,7 @@ PHP_FUNCTION(stream_socket_accept)
 {
 	double timeout = FG(default_socket_timeout);
 	zval *peername = NULL;
-	unsigned long conv;
+	php_timeout_ull conv;
 	struct timeval tv;
 	php_stream *stream = NULL, *clistream = NULL;
 	zval *zstream;
@@ -245,7 +247,7 @@ PHP_FUNCTION(stream_socket_accept)
 	php_stream_from_zval(stream, &zstream);
 	
 	/* prepare the timeout value for use */
-	conv = (unsigned long) (timeout * 1000000.0);
+	conv = (php_timeout_ull) (timeout * 1000000.0);
 	tv.tv_sec = conv / 1000000;
 	tv.tv_usec = conv % 1000000;
 
@@ -309,7 +311,7 @@ PHP_FUNCTION(stream_socket_sendto)
 	php_stream *stream;
 	zval *zstream;
 	long flags = 0;
-	char *data, *target_addr;
+	char *data, *target_addr = NULL;
 	int datalen, target_addr_len = 0;
 	php_sockaddr_storage sa;
 	socklen_t sl = 0;
@@ -404,7 +406,7 @@ PHP_FUNCTION(stream_get_contents)
 	php_stream_from_zval(stream, &zsrc);
 
 	if (pos > 0 && php_stream_seek(stream, pos, SEEK_SET) < 0) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to seek to %ld position in the stream.", pos);
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to seek to position %ld in the stream.", pos);
 		RETURN_FALSE;
 	}
 
@@ -440,7 +442,7 @@ PHP_FUNCTION(stream_copy_to_stream)
 	php_stream_from_zval(dest, &zdest);
 
 	if (pos > 0 && php_stream_seek(src, pos, SEEK_SET) < 0) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to seek to %ld position in the stream.", pos);
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to seek to position %ld in the stream.", pos);
 		RETURN_FALSE;
 	}
 
@@ -448,7 +450,7 @@ PHP_FUNCTION(stream_copy_to_stream)
 }
 /* }}} */
 
-/* {{{ proto resource stream_get_meta_data(resource fp)
+/* {{{ proto array stream_get_meta_data(resource fp)
     Retrieves header/meta data from streams/file pointers */
 PHP_FUNCTION(stream_get_meta_data)
 {
@@ -612,7 +614,7 @@ static int stream_array_from_fd_set(zval *stream_array, fd_set *fds TSRMLS_DC)
 		return 0;
 	}
 	ALLOC_HASHTABLE(new_hash);
-	zend_hash_init(new_hash, 0, NULL, ZVAL_PTR_DTOR, 0);
+	zend_hash_init(new_hash, zend_hash_num_elements(Z_ARRVAL_P(stream_array)), NULL, ZVAL_PTR_DTOR, 0);
 	
 	for (zend_hash_internal_pointer_reset(Z_ARRVAL_P(stream_array));
 		 zend_hash_get_current_data(Z_ARRVAL_P(stream_array), (void **) &elem) == SUCCESS;
@@ -660,7 +662,7 @@ static int stream_array_emulate_read_fd_set(zval *stream_array TSRMLS_DC)
 		return 0;
 	}
 	ALLOC_HASHTABLE(new_hash);
-	zend_hash_init(new_hash, 0, NULL, ZVAL_PTR_DTOR, 0);
+	zend_hash_init(new_hash, zend_hash_num_elements(Z_ARRVAL_P(stream_array)), NULL, ZVAL_PTR_DTOR, 0);
 	
 	for (zend_hash_internal_pointer_reset(Z_ARRVAL_P(stream_array));
 		 zend_hash_get_current_data(Z_ARRVAL_P(stream_array), (void **) &elem) == SUCCESS;
@@ -706,7 +708,7 @@ static int stream_array_emulate_read_fd_set(zval *stream_array TSRMLS_DC)
    Runs the select() system call on the sets of streams with a timeout specified by tv_sec and tv_usec */
 PHP_FUNCTION(stream_select)
 {
-	zval			*r_array, *w_array, *e_array, *sec = NULL;
+	zval			*r_array, *w_array, *e_array, **sec = NULL;
 	struct timeval	tv;
 	struct timeval *tv_p = NULL;
 	fd_set			rfds, wfds, efds;
@@ -715,7 +717,7 @@ PHP_FUNCTION(stream_select)
 	long			usec = 0;
 	int				set_count, max_set_count = 0;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a!a!a!z!|l", &r_array, &w_array, &e_array, &sec, &usec) == FAILURE)
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a!a!a!Z!|l", &r_array, &w_array, &e_array, &sec, &usec) == FAILURE)
 		return;
 
 	FD_ZERO(&rfds);
@@ -752,9 +754,9 @@ PHP_FUNCTION(stream_select)
 
 	/* If seconds is not set to null, build the timeval, else we wait indefinitely */
 	if (sec != NULL) {
-		convert_to_long(sec);
+		convert_to_long_ex(sec);
 
-		if (Z_LVAL_P(sec) < 0) {
+		if (Z_LVAL_PP(sec) < 0) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "The seconds parameter must be greater than 0.");
 			RETURN_FALSE;
 		} else if (usec < 0) {
@@ -764,10 +766,10 @@ PHP_FUNCTION(stream_select)
 
 		/* Solaris + BSD do not like microsecond values which are >= 1 sec */
 		if (usec > 999999) {
-			tv.tv_sec = Z_LVAL_P(sec) + (usec / 1000000);
+			tv.tv_sec = Z_LVAL_PP(sec) + (usec / 1000000);
 			tv.tv_usec = usec % 1000000;			
 		} else {
-			tv.tv_sec = Z_LVAL_P(sec);
+			tv.tv_sec = Z_LVAL_PP(sec);
 			tv.tv_usec = usec;
 		}
 
@@ -1117,6 +1119,7 @@ static void apply_filter_to_stream(int append, INTERNAL_FUNCTION_PARAMETERS)
 		RETURN_FALSE;
 	}
 }
+/* }}} */
 
 /* {{{ proto resource stream_filter_prepend(resource stream, string filtername[, int read_write[, string filterparams]])
    Prepend a filter to a stream */
@@ -1171,7 +1174,7 @@ PHP_FUNCTION(stream_filter_remove)
 PHP_FUNCTION(stream_get_line)
 {
 	char *str = NULL;
-	int str_len;
+	int str_len = 0;
 	long max_length;
 	zval *zstream;
 	char *buf;
@@ -1223,15 +1226,6 @@ PHP_FUNCTION(stream_set_blocking)
 	RETURN_TRUE;
 }
 
-/* }}} */
-
-/* {{{ proto bool set_socket_blocking(resource socket, int mode)
-   Set blocking/non-blocking mode on a socket */
-PHP_FUNCTION(set_socket_blocking)
-{
-	php_error_docref(NULL TSRMLS_CC, E_NOTICE, "This function is deprecated, use stream_set_blocking() instead");
-	PHP_FN(stream_set_blocking)(INTERNAL_FUNCTION_PARAM_PASSTHRU);
-}
 /* }}} */
 
 /* {{{ proto bool stream_set_timeout(resource stream, int seconds, int microseconds)

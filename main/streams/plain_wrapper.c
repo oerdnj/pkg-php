@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: plain_wrapper.c,v 1.52.2.7 2006/08/22 06:16:19 dmitry Exp $ */
+/* $Id: plain_wrapper.c,v 1.52.2.6.2.8 2006/10/19 09:49:44 dmitry Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -242,10 +242,9 @@ PHPAPI php_stream *_php_stream_fopen_from_file(FILE *file, const char *mode STRE
 #elif defined(PHP_WIN32)
 	{
 		long handle = _get_osfhandle(self->fd);
-		DWORD in_buf_size, out_buf_size;
 
 		if (handle != 0xFFFFFFFF) {
-			self->is_pipe = GetNamedPipeInfo((HANDLE)handle, NULL, &out_buf_size, &in_buf_size, NULL);
+			self->is_pipe = GetFileType((HANDLE)handle) == FILE_TYPE_PIPE;
 		}
 	}
 #endif
@@ -373,7 +372,7 @@ static int php_stdiop_close(php_stream *stream, int close_handle TSRMLS_DC)
 				data->file = NULL;
 			}
 		} else if (data->fd != -1) {
-#ifdef PHP_DEBUG
+#if PHP_DEBUG
 			if ((data->fd == 1 || data->fd == 2) && 0 == strcmp(sapi_module.name, "cli")) {
 				/* don't close stdout or stderr in CLI in DEBUG mode, as we want to see any leaks */
 				ret = 0;
@@ -705,7 +704,7 @@ static int php_stdiop_set_option(php_stream *stream, int option, int value, void
 							delta = range->offset - loffs;
 						}
 
-						data->last_mapped_addr = MapViewOfFile(data->file_mapping, acc, 0, loffs, range->length);
+						data->last_mapped_addr = MapViewOfFile(data->file_mapping, acc, 0, loffs, range->length + delta);
 
 						if (data->last_mapped_addr) {
 							/* give them back the address of the start offset they requested */
@@ -1088,7 +1087,18 @@ static int php_plain_files_mkdir(php_stream_wrapper *wrapper, char *dir, int mod
 		int offset = 0;
 
 		buf = estrndup(dir, dir_len);
+
+#ifdef PHP_WIN32
+		e = buf;
+		while (*e) {
+			if (*e == '/') {
+				*e = DEFAULT_SLASH;
+			}
+			e++;
+		}
+#else
 		e = buf + dir_len;
+#endif
 
 		if ((p = memchr(buf, DEFAULT_SLASH, dir_len))) {
 			offset = p - buf + 1;
@@ -1099,10 +1109,22 @@ static int php_plain_files_mkdir(php_stream_wrapper *wrapper, char *dir, int mod
 		}
 		else {
 			/* find a top level directory we need to create */
-			while ( (p = strrchr(buf + offset, DEFAULT_SLASH)) || (p = strrchr(buf, DEFAULT_SLASH)) ) {
+			while ( (p = strrchr(buf + offset, DEFAULT_SLASH)) || ( offset !=1 && (p = strrchr(buf, DEFAULT_SLASH))) ) {
+				int n = 0;
+
 				*p = '\0';
+				while (p > buf && *(p-1) == DEFAULT_SLASH) {
+					++n;
+					--p;
+					*p = '\0';
+				}
 				if (VCWD_STAT(buf, &sb) == 0) {
-					*p = DEFAULT_SLASH;
+					while (1) {
+						*p = DEFAULT_SLASH;
+						if (!n) break;
+						--n;
+						++p;
+					}
 					break;
 				}
 			}
@@ -1116,9 +1138,10 @@ static int php_plain_files_mkdir(php_stream_wrapper *wrapper, char *dir, int mod
 			}
 			/* create any needed directories if the creation of the 1st directory worked */
 			while (++p != e) {
-				if (*p == '\0' && *(p + 1) != '\0') {
+				if (*p == '\0') {
 					*p = DEFAULT_SLASH;
-					if ((ret = VCWD_MKDIR(buf, (mode_t)mode)) < 0) {
+					if ((*(p+1) != '\0') &&
+					    (ret = VCWD_MKDIR(buf, (mode_t)mode)) < 0) {
 						if (options & REPORT_ERRORS) {
 							php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", strerror(errno));
 						}
@@ -1271,11 +1294,6 @@ not_relative_path:
 #endif
 
 	if (!path || (path && !*path)) {
-
-		if (((options & STREAM_DISABLE_OPEN_BASEDIR) == 0) && php_check_open_basedir(path TSRMLS_CC)) {
-			return NULL;
-		}
-
 		if (PG(safe_mode) && (!php_checkuid(filename, mode, CHECKUID_CHECK_MODE_PARAM))) {
 			return NULL;
 		}
@@ -1315,11 +1333,13 @@ not_relative_path:
 			*end = '\0';
 			end++;
 		}
+		if (*ptr == '\0') {
+			goto stream_skip;
+		}
 		snprintf(trypath, MAXPATHLEN, "%s/%s", ptr, filename);
 
 		if (((options & STREAM_DISABLE_OPEN_BASEDIR) == 0) && php_check_open_basedir_ex(trypath, 0 TSRMLS_CC)) {
-			ptr = end;
-			continue;
+			goto stream_skip;
 		}
 		
 		if (PG(safe_mode)) {
@@ -1332,8 +1352,7 @@ not_relative_path:
 					goto stream_done;
 				}
 			}
-			ptr = end;
-			continue;
+			goto stream_skip;
 		}
 		stream = php_stream_fopen_rel(trypath, mode, opened_path, options);
 		if (stream) {
@@ -1341,6 +1360,7 @@ stream_done:
 			efree(pathbuf);
 			return stream;
 		}
+stream_skip:
 		ptr = end;
 	} /* end provided path */
 

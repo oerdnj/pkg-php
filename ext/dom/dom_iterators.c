@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: dom_iterators.c,v 1.9.2.3 2006/03/03 20:15:10 rrichards Exp $ */
+/* $Id: dom_iterators.c,v 1.9.2.3.2.4 2006/10/07 19:59:19 iliaa Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -162,7 +162,7 @@ static int php_dom_iterator_current_key(zend_object_iterator *iter, char **str_k
 	object = (zval *)iterator->intern.data;
 
 	if (instanceof_function(Z_OBJCE_P(object), dom_nodelist_class_entry TSRMLS_CC)) {
-		*int_key = iter->index - 1;
+		*int_key = iter->index;
 		return HASH_KEY_IS_LONG;
 	} else {
 		curobj = iterator->curobj;
@@ -170,6 +170,8 @@ static int php_dom_iterator_current_key(zend_object_iterator *iter, char **str_k
 		intern = (dom_object *)zend_object_store_get_object(curobj TSRMLS_CC);
 		if (intern != NULL && intern->ptr != NULL) {
 			curnode = (xmlNodePtr)((php_libxml_node_ptr *)intern->ptr)->node;
+		} else {
+			return HASH_KEY_NON_EXISTANT;
 		}
 
 		namelen = xmlStrlen(curnode->name);
@@ -187,7 +189,7 @@ static void php_dom_iterator_move_forward(zend_object_iterator *iter TSRMLS_DC)
 	dom_object *intern;
 	dom_object *nnmap;
 	dom_nnodemap_object *objmap;
-	int ret, previndex=1;
+	int ret, previndex=0;
 	HashTable *nodeht;
 	zval **entry;
 
@@ -220,21 +222,23 @@ static void php_dom_iterator_move_forward(zend_object_iterator *iter TSRMLS_DC)
 					if (basenode && (basenode->type == XML_DOCUMENT_NODE || 
 						basenode->type == XML_HTML_DOCUMENT_NODE)) {
 						basenode = xmlDocGetRootElement((xmlDoc *) basenode);
-					} else {
+					} else if (basenode) {
 						basenode = basenode->children;
+					} else {
+						goto err;
 					}
 					curnode = dom_get_elements_by_tag_name_ns_raw(basenode, objmap->ns, objmap->local, &previndex, iter->index);
 				}
 			}
 		} else {
 			if (objmap->nodetype == XML_ENTITY_NODE) {
-				curnode = php_dom_libxml_hash_iter(objmap->ht, iter->index - 1);
+				curnode = php_dom_libxml_hash_iter(objmap->ht, iter->index);
 			} else {
-				curnode = php_dom_libxml_notation_iter(objmap->ht, iter->index - 1);
+				curnode = php_dom_libxml_notation_iter(objmap->ht, iter->index);
 			}
 		}
 	}
-
+err:
 	zval_ptr_dtor((zval**)&curobj);
 	if (curnode) {
 		MAKE_STD_ZVAL(curattr);
@@ -253,7 +257,7 @@ zend_object_iterator_funcs php_dom_iterator_funcs = {
 	NULL
 };
 
-zend_object_iterator *php_dom_get_iterator(zend_class_entry *ce, zval *object TSRMLS_DC)
+zend_object_iterator *php_dom_get_iterator(zend_class_entry *ce, zval *object, int by_ref TSRMLS_DC)
 {
 	dom_object *intern;
 	dom_nnodemap_object *objmap;
@@ -262,8 +266,12 @@ zend_object_iterator *php_dom_get_iterator(zend_class_entry *ce, zval *object TS
 	int ret, curindex = 0;
 	HashTable *nodeht;
 	zval **entry;
+	php_dom_iterator *iterator;
 
-	php_dom_iterator *iterator = emalloc(sizeof(php_dom_iterator));
+	if (by_ref) {
+		zend_error(E_ERROR, "An iterator cannot be used with foreach by reference");
+	}
+	iterator = emalloc(sizeof(php_dom_iterator));
 
 	object->refcount++;
 	iterator->intern.data = (void*)object;
@@ -283,6 +291,9 @@ zend_object_iterator *php_dom_get_iterator(zend_class_entry *ce, zval *object TS
 				}
 			} else {
 				nodep = (xmlNode *)dom_object_get_node(objmap->baseobj);
+				if (!nodep) {
+					goto err;
+				}
 				if (objmap->nodetype == XML_ATTRIBUTE_NODE || objmap->nodetype == XML_ELEMENT_NODE) {
 					if (objmap->nodetype == XML_ATTRIBUTE_NODE) {
 						curnode = (xmlNodePtr) nodep->properties;
@@ -306,7 +317,7 @@ zend_object_iterator *php_dom_get_iterator(zend_class_entry *ce, zval *object TS
 			}
 		}
 	}
-
+err:
 	if (curnode) {
 		MAKE_STD_ZVAL(curattr);
 		curattr = php_dom_create_object(curnode, &ret, NULL, curattr, objmap->baseobj TSRMLS_CC);

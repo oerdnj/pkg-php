@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: sockets.c,v 1.171.2.9 2006/04/07 14:04:36 pajoye Exp $ */
+/* $Id: sockets.c,v 1.171.2.9.2.4 2006/10/03 19:51:01 iliaa Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -57,6 +57,7 @@
 #endif
 
 ZEND_DECLARE_MODULE_GLOBALS(sockets)
+static PHP_GINIT_FUNCTION(sockets);
 
 #ifndef MSG_WAITALL
 #ifdef LINUX
@@ -159,7 +160,11 @@ zend_module_entry sockets_module_entry = {
 	PHP_RSHUTDOWN(sockets),
 	PHP_MINFO(sockets),
 	NO_VERSION_YET,
-	STANDARD_MODULE_PROPERTIES
+	PHP_MODULE_GLOBALS(sockets),
+	PHP_GINIT(sockets),
+	NULL,
+	NULL,
+	STANDARD_MODULE_PROPERTIES_EX
 };
 
 
@@ -432,7 +437,7 @@ static int php_set_inet_addr(struct sockaddr_in *sin, char *string, php_socket *
 	return 1;
 }
 
-static void php_sockets_init_globals(zend_sockets_globals *sockets_globals TSRMLS_DC)
+static PHP_GINIT_FUNCTION(sockets)
 {
 	sockets_globals->last_error = 0;
 	sockets_globals->strerror_buf = NULL;
@@ -443,8 +448,6 @@ static void php_sockets_init_globals(zend_sockets_globals *sockets_globals TSRML
 PHP_MINIT_FUNCTION(sockets)
 {
 	struct protoent *pe;
-
-	ZEND_INIT_MODULE_GLOBALS(sockets, php_sockets_init_globals, NULL);
 
 	le_socket = zend_register_list_destructors_ex(php_destroy_socket, NULL, le_socket_name, module_number);
 
@@ -533,6 +536,7 @@ static int php_sock_array_to_fd_set(zval *sock_array, fd_set *fds, PHP_SOCKET *m
 {
 	zval		**element;
 	php_socket	*php_sock;
+	int			num = 0;
 	
 	if (Z_TYPE_P(sock_array) != IS_ARRAY) return 0;
 
@@ -547,9 +551,10 @@ static int php_sock_array_to_fd_set(zval *sock_array, fd_set *fds, PHP_SOCKET *m
 		if (php_sock->bsd_socket > *max_fd) {
 			*max_fd = php_sock->bsd_socket;
 		}
+		num++;
 	}
 
-	return 1;
+	return num ? 1 : 0;
 }
 
 static int php_sock_array_from_fd_set(zval *sock_array, fd_set *fds TSRMLS_DC)
@@ -558,11 +563,12 @@ static int php_sock_array_from_fd_set(zval *sock_array, fd_set *fds TSRMLS_DC)
 	zval		**dest_element;
 	php_socket	*php_sock;
 	HashTable	*new_hash;
+	int			num = 0;
 
 	if (Z_TYPE_P(sock_array) != IS_ARRAY) return 0;
 
 	ALLOC_HASHTABLE(new_hash);
-	zend_hash_init(new_hash, 0, NULL, ZVAL_PTR_DTOR, 0);
+	zend_hash_init(new_hash, zend_hash_num_elements(Z_ARRVAL_P(sock_array)), NULL, ZVAL_PTR_DTOR, 0);
 	for (zend_hash_internal_pointer_reset(Z_ARRVAL_P(sock_array));
 		 zend_hash_get_current_data(Z_ARRVAL_P(sock_array), (void **) &element) == SUCCESS;
 		 zend_hash_move_forward(Z_ARRVAL_P(sock_array))) {
@@ -575,6 +581,7 @@ static int php_sock_array_from_fd_set(zval *sock_array, fd_set *fds TSRMLS_DC)
 			zend_hash_next_index_insert(new_hash, (void *)element, sizeof(zval *), (void **)&dest_element);
 			if (dest_element) zval_add_ref(dest_element);
 		}
+		num++;
 	}
 
 	/* Destroy old array, add new one */
@@ -584,7 +591,7 @@ static int php_sock_array_from_fd_set(zval *sock_array, fd_set *fds TSRMLS_DC)
 	zend_hash_internal_pointer_reset(new_hash);
 	Z_ARRVAL_P(sock_array) = new_hash;
 
-	return 1;
+	return num ? 1 : 0;
 }
 
 /* {{{ proto int socket_select(array &read_fds, array &write_fds, &array except_fds, int tv_sec[, int tv_usec])
@@ -1591,7 +1598,7 @@ PHP_FUNCTION(socket_get_option)
    Sets socket options for the socket */
 PHP_FUNCTION(socket_set_option)
 {
-	zval			*arg1, *arg4;
+	zval			*arg1, **arg4;
 	struct linger	lv;
 	struct timeval tv;
 	php_socket		*php_sock;
@@ -1612,7 +1619,7 @@ PHP_FUNCTION(socket_set_option)
 	char			*sec_key = "sec";
 	char			*usec_key = "usec";
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rllz", &arg1, &level, &optname, &arg4) == FAILURE)
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rllZ", &arg1, &level, &optname, &arg4) == FAILURE)
 		return;
 
 	ZEND_FETCH_RESOURCE(php_sock, php_socket *, &arg1, -1, le_socket_name, le_socket);
@@ -1621,8 +1628,8 @@ PHP_FUNCTION(socket_set_option)
 
 	switch (optname) {
 		case SO_LINGER:
-			convert_to_array_ex(&arg4);
-			opt_ht = HASH_OF(arg4);
+			convert_to_array_ex(arg4);
+			opt_ht = HASH_OF(*arg4);
 
 			if (zend_hash_find(opt_ht, l_onoff_key, strlen(l_onoff_key) + 1, (void **)&l_onoff) == FAILURE) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "no key \"%s\" passed in optval", l_onoff_key);
@@ -1644,8 +1651,8 @@ PHP_FUNCTION(socket_set_option)
 			break;
 		case SO_RCVTIMEO:
 		case SO_SNDTIMEO:
-			convert_to_array_ex(&arg4);
-			opt_ht = HASH_OF(arg4);
+			convert_to_array_ex(arg4);
+			opt_ht = HASH_OF(*arg4);
 
 			if (zend_hash_find(opt_ht, sec_key, strlen(sec_key) + 1, (void **)&sec) == FAILURE) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "no key \"%s\" passed in optval", sec_key);
@@ -1670,8 +1677,8 @@ PHP_FUNCTION(socket_set_option)
 #endif
 			break;
 		default:
-			convert_to_long_ex(&arg4);
-			ov = Z_LVAL_P(arg4);
+			convert_to_long_ex(arg4);
+			ov = Z_LVAL_PP(arg4);
 			
 			optlen = sizeof(ov);
 			opt_ptr = &ov;

@@ -18,11 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: datetime.c,v 1.134.2.2 2006/01/01 12:50:14 sniper Exp $ */
-
-#if HAVE_STRPTIME
-#define _XOPEN_SOURCE
-#endif
+/* $Id: datetime.c,v 1.134.2.2.2.2 2006/08/24 11:06:02 tony2001 Exp $ */
 
 #include "php.h"
 #include "zend_operators.h"
@@ -85,6 +81,10 @@ PHPAPI char *php_std_date(time_t t TSRMLS_DC)
 
 
 #if HAVE_STRPTIME
+#ifndef HAVE_STRPTIME_DECL_FAILS
+char *strptime(const char *s, const char *format, struct tm *tm);
+#endif
+
 /* {{{ proto string strptime(string timestamp, string format)
    Parse a time/date generated with strftime() */
 PHP_FUNCTION(strptime)
@@ -100,6 +100,8 @@ PHP_FUNCTION(strptime)
 		&ts, &ts_length, &format, &format_length) == FAILURE) {
 		return;
 	}
+
+	memset(&parsed_time, 0, sizeof(parsed_time));
 
 	unparsed_part = strptime(ts, format, &parsed_time);
 	if (unparsed_part == NULL) {

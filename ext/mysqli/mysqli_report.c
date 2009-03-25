@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_report.c,v 1.11.2.2 2006/01/01 12:50:09 sniper Exp $ 
+  $Id: mysqli_report.c,v 1.11.2.2.2.1 2006/10/02 07:36:18 bjori Exp $ 
 */
 
 #ifdef HAVE_CONFIG_H
@@ -27,7 +27,7 @@
 #include "ext/standard/info.h"
 #include "php_mysqli.h"
 
-/* {{{ bool mysqli_report(int flags)
+/* {{{ proto bool mysqli_report(int flags)
    sets report level */
 PHP_FUNCTION(mysqli_report)
 {

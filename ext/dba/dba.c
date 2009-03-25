@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: dba.c,v 1.111.2.4 2006/01/01 12:50:05 sniper Exp $ */
+/* $Id: dba.c,v 1.111.2.4.2.3 2006/07/06 23:13:18 iliaa Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -51,24 +51,115 @@
 #include "php_inifile.h"
 #include "php_qdbm.h"
 
+/* {{{ arginfo */
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_dba_popen, 0, 0, 2)
+	ZEND_ARG_INFO(0, path)
+	ZEND_ARG_INFO(0, mode)
+	ZEND_ARG_INFO(0, handlername)
+	ZEND_ARG_INFO(0, ...)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_dba_open, 0, 0, 2)
+	ZEND_ARG_INFO(0, path)
+	ZEND_ARG_INFO(0, mode)
+	ZEND_ARG_INFO(0, handlername)
+	ZEND_ARG_INFO(0, ...)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_dba_close, 0)
+	ZEND_ARG_INFO(0, handle)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_dba_exists, 0)
+	ZEND_ARG_INFO(0, key)
+	ZEND_ARG_INFO(0, handle)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_dba_fetch, 0, 0, 2)
+	ZEND_ARG_INFO(0, key)
+	ZEND_ARG_INFO(0, skip)
+	ZEND_ARG_INFO(0, handle)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_dba_key_split, 0)
+	ZEND_ARG_INFO(0, key)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_dba_firstkey, 0)
+	ZEND_ARG_INFO(0, handle)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_dba_nextkey, 0)
+	ZEND_ARG_INFO(0, handle)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_dba_delete, 0)
+	ZEND_ARG_INFO(0, key)
+	ZEND_ARG_INFO(0, handle)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_dba_insert, 0)
+	ZEND_ARG_INFO(0, key)
+	ZEND_ARG_INFO(0, value)
+	ZEND_ARG_INFO(0, handle)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_dba_replace, 0)
+	ZEND_ARG_INFO(0, key)
+	ZEND_ARG_INFO(0, value)
+	ZEND_ARG_INFO(0, handle)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_dba_optimize, 0)
+	ZEND_ARG_INFO(0, handle)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_dba_sync, 0)
+	ZEND_ARG_INFO(0, handle)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_dba_handlers, 0, 0, 0)
+	ZEND_ARG_INFO(0, full_info)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_dba_list, 0)
+ZEND_END_ARG_INFO()
+
+/* }}} */
+
 /* {{{ dba_functions[]
  */
 zend_function_entry dba_functions[] = {
-	PHP_FE(dba_open, NULL)
-	PHP_FE(dba_popen, NULL)
-	PHP_FE(dba_close, NULL)
-	PHP_FE(dba_delete, NULL)
-	PHP_FE(dba_exists, NULL)
-	PHP_FE(dba_fetch, NULL)
-	PHP_FE(dba_insert, NULL)
-	PHP_FE(dba_replace, NULL)
-	PHP_FE(dba_firstkey, NULL)
-	PHP_FE(dba_nextkey, NULL)
-	PHP_FE(dba_optimize, NULL)
-	PHP_FE(dba_sync, NULL)
-	PHP_FE(dba_handlers, NULL)
-	PHP_FE(dba_list, NULL)
-	PHP_FE(dba_key_split, NULL)
+	PHP_FE(dba_open, arginfo_dba_open)
+	PHP_FE(dba_popen, arginfo_dba_popen)
+	PHP_FE(dba_close, arginfo_dba_close)
+	PHP_FE(dba_delete, arginfo_dba_delete)
+	PHP_FE(dba_exists, arginfo_dba_exists)
+	PHP_FE(dba_fetch, arginfo_dba_fetch)
+	PHP_FE(dba_insert, arginfo_dba_insert)
+	PHP_FE(dba_replace, arginfo_dba_replace)
+	PHP_FE(dba_firstkey, arginfo_dba_firstkey)
+	PHP_FE(dba_nextkey, arginfo_dba_nextkey)
+	PHP_FE(dba_optimize, arginfo_dba_optimize)
+	PHP_FE(dba_sync, arginfo_dba_sync)
+	PHP_FE(dba_handlers, arginfo_dba_handlers)
+	PHP_FE(dba_list, arginfo_dba_list)
+	PHP_FE(dba_key_split, arginfo_dba_key_split)
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -76,6 +167,21 @@ zend_function_entry dba_functions[] = {
 PHP_MINIT_FUNCTION(dba);
 PHP_MSHUTDOWN_FUNCTION(dba);
 PHP_MINFO_FUNCTION(dba);
+
+ZEND_BEGIN_MODULE_GLOBALS(dba)
+	char *default_handler;
+	dba_handler *default_hptr;
+ZEND_END_MODULE_GLOBALS(dba) 
+
+ZEND_DECLARE_MODULE_GLOBALS(dba)
+
+#ifdef ZTS
+#define DBA_G(v) TSRMG(dba_globals_id, zend_dba_globals *, v)
+#else
+#define DBA_G(v) (dba_globals.v)
+#endif 
+
+static PHP_GINIT_FUNCTION(dba);
 
 zend_module_entry dba_module_entry = {
 	STANDARD_MODULE_HEADER,
@@ -87,7 +193,11 @@ zend_module_entry dba_module_entry = {
 	NULL,
 	PHP_MINFO(dba),
 	NO_VERSION_YET,
-	STANDARD_MODULE_PROPERTIES
+	PHP_MODULE_GLOBALS(dba),
+	PHP_GINIT(dba),
+	NULL,
+	NULL,
+	STANDARD_MODULE_PROPERTIES_EX
 };
 
 #ifdef COMPILE_DL_DBA
@@ -117,7 +227,7 @@ static size_t php_dba_make_key(zval **key, char **key_str, char **key_free TSRML
 		size_t len;
 	
 		if (zend_hash_num_elements(Z_ARRVAL_PP(key)) != 2) {
-			php_error_docref(NULL TSRMLS_CC, E_ERROR, "Key does not have exactly two elements: (key, name)");
+			php_error_docref(NULL TSRMLS_CC, E_RECOVERABLE_ERROR, "Key does not have exactly two elements: (key, name)");
 			return -1;
 		}
 		zend_hash_internal_pointer_reset_ex(Z_ARRVAL_PP(key), &pos);
@@ -287,21 +397,9 @@ static dba_handler handler[] = {
 #endif
 /* cdb/cdb_make and ini are no option here */
 
-ZEND_BEGIN_MODULE_GLOBALS(dba)
-	char *default_handler;
-	dba_handler *default_hptr;
-ZEND_END_MODULE_GLOBALS(dba) 
-
-ZEND_DECLARE_MODULE_GLOBALS(dba)
-
-#ifdef ZTS
-#define DBA_G(v) TSRMG(dba_globals_id, zend_dba_globals *, v)
-#else
-#define DBA_G(v) (dba_globals.v)
-#endif 
-
 static int le_db;
 static int le_pdb;
+/* }}} */
 
 /* {{{ dba_fetch_resource
 PHPAPI void dba_fetch_resource(dba_info **pinfo, zval **id TSRMLS_DC)
@@ -407,9 +505,9 @@ PHP_INI_BEGIN()
 PHP_INI_END()
 /* }}} */
  
-/* {{{ php_dba_init_globals
+/* {{{ PHP_GINIT_FUNCTION
  */
-static void php_dba_init_globals(zend_dba_globals *dba_globals)
+static PHP_GINIT_FUNCTION(dba)
 {
 	dba_globals->default_handler = "";
 	dba_globals->default_hptr    = NULL;
@@ -420,7 +518,6 @@ static void php_dba_init_globals(zend_dba_globals *dba_globals)
  */
 PHP_MINIT_FUNCTION(dba)
 {
-	ZEND_INIT_MODULE_GLOBALS(dba, php_dba_init_globals, NULL);
 	REGISTER_INI_ENTRIES();
 	le_db = zend_register_list_destructors_ex(dba_close_rsrc, NULL, "dba", module_number);
 	le_pdb = zend_register_list_destructors_ex(dba_close_pe_rsrc, dba_close_rsrc, "dba persistent", module_number);

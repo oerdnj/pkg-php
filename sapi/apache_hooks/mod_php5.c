@@ -17,7 +17,7 @@
    | PHP 4.0 patches by Zeev Suraski <zeev@zend.com>					  |
    +----------------------------------------------------------------------+
  */
-/* $Id: mod_php5.c,v 1.11.2.1 2006/01/01 12:50:18 sniper Exp $ */
+/* $Id: mod_php5.c,v 1.11.2.1.2.3 2006/08/03 09:56:50 dmitry Exp $ */
 
 #include "php_apache_http.h"
 
@@ -742,8 +742,7 @@ static int send_parsed_php(request_rec * r)
 		char *mem_usage;
 		TSRMLS_FETCH();
  
-		mem_usage = ap_psprintf(r->pool, "%u", AG(allocated_memory_peak));
-		AG(allocated_memory_peak) = 0;
+		mem_usage = ap_psprintf(r->pool, "%u", zend_memory_peak_usage(1 TSRMLS_CC));
 		ap_table_setn(r->notes, "mod_php_memory_usage", mem_usage);
 	}
 #endif
@@ -1161,6 +1160,18 @@ static CONST_PREFIX char *php_apache_admin_flag_handler(cmd_parms *cmd, php_per_
 }
 /* }}} */
 
+/* {{{ php_apache_phpini_set
+ */
+static CONST_PREFIX char *php_apache_phpini_set(cmd_parms *cmd, HashTable *conf, char *arg)
+{
+	if (apache_sapi_module.php_ini_path_override) {
+		return "Only first PHPINIDir directive honored per configuration tree - subsequent ones ignored";
+	}
+	apache_sapi_module.php_ini_path_override = ap_server_root_relative(cmd->pool, arg);
+	return NULL;
+}
+/* }}} */
+
 /* {{{ int php_xbithack_handler(request_rec * r)
  */
 static int php_xbithack_handler(request_rec * r)
@@ -1432,6 +1443,7 @@ command_rec php_commands[] =
 	{"php_flag",		php_apache_flag_handler, NULL, OR_OPTIONS, TAKE2, "PHP Flag Modifier"},
 	{"php_admin_value",	php_apache_admin_value_handler, NULL, ACCESS_CONF|RSRC_CONF, TAKE2, "PHP Value Modifier (Admin)"},
 	{"php_admin_flag",	php_apache_admin_flag_handler, NULL, ACCESS_CONF|RSRC_CONF, TAKE2, "PHP Flag Modifier (Admin)"},
+	{"PHPINIDir",       php_apache_phpini_set, NULL, RSRC_CONF, TAKE1, "Directory containing the php.ini file"},
 	{NULL}
 };
 /* }}} */

@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: filters.c,v 1.44.2.6 2006/04/17 19:26:04 pollita Exp $ */
+/* $Id: filters.c,v 1.44.2.6.2.3 2006/09/04 19:14:59 nlopess Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -470,7 +470,6 @@ static php_conv_err_t php_conv_base64_encode_convert(php_conv_base64_encode *ins
 	register size_t ocnt, icnt;
 	register unsigned char *ps, *pd;
 	register unsigned int line_ccnt;
-	size_t nbytes_written;
 
 	if (in_pp == NULL || in_left_p == NULL) { 
 		return php_conv_base64_encode_flush(inst, in_pp, in_left_p, out_pp, out_left_p);
@@ -481,7 +480,6 @@ static php_conv_err_t php_conv_base64_encode_convert(php_conv_base64_encode *ins
 	ps = (unsigned char *)(*in_pp);
 	icnt = *in_left_p;
 	line_ccnt = inst->line_ccnt;
-	nbytes_written = 0;
 
 	/* consume the remainder first */
 	switch (inst->erem_len) {
@@ -1882,7 +1880,7 @@ static php_stream_filter *consumed_filter_create(const char *filtername, zval *f
 	/* Create this filter */
 	data = pecalloc(1, sizeof(php_consumed_filter_data), persistent);
 	if (!data) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed allocating %d bytes.", sizeof(php_consumed_filter_data));
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed allocating %zd bytes.", sizeof(php_consumed_filter_data));
 		return NULL;
 	}
 	data->persistent = persistent;

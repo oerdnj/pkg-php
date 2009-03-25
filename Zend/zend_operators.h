@@ -17,13 +17,14 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_operators.h,v 1.94.2.4 2006/01/04 23:53:04 andi Exp $ */
+/* $Id: zend_operators.h,v 1.94.2.4.2.4 2006/08/08 10:54:24 tony2001 Exp $ */
 
 #ifndef ZEND_OPERATORS_H
 #define ZEND_OPERATORS_H
 
 #include <errno.h>
 #include <math.h>
+#include <assert.h>
 
 #ifdef HAVE_IEEEFP_H
 #include <ieeefp.h>
@@ -65,6 +66,15 @@ ZEND_API zend_bool instanceof_function_ex(zend_class_entry *instance_ce, zend_cl
 ZEND_API zend_bool instanceof_function(zend_class_entry *instance_ce, zend_class_entry *ce TSRMLS_DC);
 END_EXTERN_C()
 
+/**
+ * Checks whether the string "str" with the length "length" is a numeric string.
+ *
+ * The function returns 0 if the string did not contain a string; IS_LONG if
+ * the string contained a number that fits in the integer range and IS_DOUBLE
+ * in case it did not. The long value is returned into the pointer *lval if
+ * that pointer was not NULL or into the pointer *dval if that pointer was not
+ * NULL.
+ */
 static inline zend_bool is_numeric_string(char *str, int length, long *lval, double *dval, int allow_errors)
 {
 	long local_lval;
@@ -75,7 +85,7 @@ static inline zend_bool is_numeric_string(char *str, int length, long *lval, dou
 	if (!length) {
 		return 0;
 	}
-	
+
 	/* handle hex numbers */
 	if (length>=2 && str[0]=='0' && (str[1]=='x' || str[1]=='X')) {
 		conv_base=16;
@@ -148,17 +158,29 @@ zend_memnstr(char *haystack, char *needle, int needle_len, char *end)
 				return p;
 			}
 		}
-		
+
 		if (p == NULL) {
 			return NULL;
 		}
-		
+
 		p++;
 	}
-	
+
 	return NULL;
 }
 
+static inline void *zend_memrchr(const void *s, int c, size_t n)
+{
+	register unsigned char *e = (unsigned char *)s + n;
+
+	for (e--; e >= (unsigned char *)s; e--) {
+		if (*e == (unsigned char)c) {
+			return (void *)e;
+		}
+	}
+
+	return NULL;
+}
 
 BEGIN_EXTERN_C()
 ZEND_API int increment_function(zval *op1);
@@ -225,6 +247,41 @@ END_EXTERN_C()
 		convert_to_##lower_type(*ppzv);						\
 	}
 
+#define convert_to_explicit_type(pzv, type)		\
+    do {										\
+		switch (type) {							\
+			case IS_NULL:						\
+				convert_to_null(pzv);			\
+				break;							\
+			case IS_LONG:						\
+				convert_to_long(pzv);			\
+				break;							\
+			case IS_DOUBLE: 					\
+				convert_to_double(pzv); 		\
+				break; 							\
+			case IS_BOOL: 						\
+				convert_to_boolean(pzv); 		\
+				break; 							\
+			case IS_ARRAY: 						\
+				convert_to_array(pzv); 			\
+				break; 							\
+			case IS_OBJECT: 					\
+				convert_to_object(pzv); 		\
+				break; 							\
+			case IS_STRING: 					\
+				convert_to_string(pzv); 		\
+				break; 							\
+			default: 							\
+				assert(0); 						\
+				break; 							\
+		}										\
+	} while (0);								\
+
+#define convert_to_explicit_type_ex(ppzv, str_type)	\
+	if (Z_TYPE_PP(ppzv) != str_type) {				\
+		SEPARATE_ZVAL_IF_NOT_REF(ppzv);				\
+		convert_to_explicit_type(*ppzv, str_type);	\
+	}
 
 #define convert_to_boolean_ex(ppzv)	convert_to_ex_master(ppzv, boolean, BOOL)
 #define convert_to_long_ex(ppzv)	convert_to_ex_master(ppzv, long, LONG)
@@ -235,7 +292,7 @@ END_EXTERN_C()
 #define convert_to_null_ex(ppzv)	convert_to_ex_master(ppzv, null, NULL)
 
 #define convert_scalar_to_number_ex(ppzv)							\
-	if ((*ppzv)->type!=IS_LONG && (*ppzv)->type!=IS_DOUBLE) {		\
+	if (Z_TYPE_PP(ppzv)!=IS_LONG && Z_TYPE_PP(ppzv)!=IS_DOUBLE) {		\
 		if (!(*ppzv)->is_ref) {										\
 			SEPARATE_ZVAL(ppzv);									\
 		}															\
@@ -250,8 +307,8 @@ END_EXTERN_C()
 #define Z_STRLEN(zval)			(zval).value.str.len
 #define Z_ARRVAL(zval)			(zval).value.ht
 #define Z_OBJVAL(zval)			(zval).value.obj
-#define Z_OBJ_HANDLE(zval)		(zval).value.obj.handle
-#define Z_OBJ_HT(zval)			(zval).value.obj.handlers
+#define Z_OBJ_HANDLE(zval)		Z_OBJVAL(zval).handle
+#define Z_OBJ_HT(zval)			Z_OBJVAL(zval).handlers
 #define Z_OBJCE(zval)			zend_get_class_entry(&(zval) TSRMLS_CC)
 #define Z_OBJPROP(zval)			Z_OBJ_HT((zval))->get_properties(&(zval) TSRMLS_CC)
 #define Z_OBJ_HANDLER(zval, hf) Z_OBJ_HT((zval))->hf
@@ -269,7 +326,7 @@ END_EXTERN_C()
 #define Z_OBJVAL_P(zval_p)      Z_OBJVAL(*zval_p)
 #define Z_OBJ_HANDLE_P(zval_p)  Z_OBJ_HANDLE(*zval_p)
 #define Z_OBJ_HT_P(zval_p)      Z_OBJ_HT(*zval_p)
-#define Z_OBJ_HANDLER_P(zval_p, h) Z_OBJ_HANDLER(*zval_p, h) 
+#define Z_OBJ_HANDLER_P(zval_p, h) Z_OBJ_HANDLER(*zval_p, h)
 
 #define Z_LVAL_PP(zval_pp)		Z_LVAL(**zval_pp)
 #define Z_BVAL_PP(zval_pp)		Z_BVAL(**zval_pp)
@@ -283,7 +340,7 @@ END_EXTERN_C()
 #define Z_OBJVAL_PP(zval_pp)    Z_OBJVAL(**zval_pp)
 #define Z_OBJ_HANDLE_PP(zval_p) Z_OBJ_HANDLE(**zval_p)
 #define Z_OBJ_HT_PP(zval_p)     Z_OBJ_HT(**zval_p)
-#define Z_OBJ_HANDLER_PP(zval_p, h) Z_OBJ_HANDLER(**zval_p, h) 
+#define Z_OBJ_HANDLER_PP(zval_p, h) Z_OBJ_HANDLER(**zval_p, h)
 
 #define Z_TYPE(zval)		(zval).type
 #define Z_TYPE_P(zval_p)	Z_TYPE(*zval_p)

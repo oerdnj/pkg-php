@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_ini.c,v 1.136.2.4 2006/01/01 12:50:17 sniper Exp $ */
+/* $Id: php_ini.c,v 1.136.2.4.2.4 2006/09/19 20:33:11 dmitry Exp $ */
 
 #include "php.h"
 #include "ext/standard/info.h"
@@ -258,6 +258,7 @@ static void pvalue_config_destructor(zval *pvalue)
  */
 int php_init_config(TSRMLS_D)
 {
+	char *php_ini_file_name = NULL;
 	char *php_ini_search_path = NULL;
 	int safe_mode_state;
 	char *open_basedir;
@@ -286,6 +287,7 @@ int php_init_config(TSRMLS_D)
 	open_basedir = PG(open_basedir);
 
 	if (sapi_module.php_ini_path_override) {
+		php_ini_file_name = sapi_module.php_ini_path_override;
 		php_ini_search_path = sapi_module.php_ini_path_override;
 		free_ini_search_path = 0;
 	} else if (!sapi_module.php_ini_ignore) {
@@ -310,6 +312,15 @@ int php_init_config(TSRMLS_D)
 		free_ini_search_path = 1;
 		php_ini_search_path[0] = 0;
 
+		/* Add environment location */
+		if (env_location[0]) {
+			if (*php_ini_search_path) {
+				strcat(php_ini_search_path, paths_separator);
+			}
+			strcat(php_ini_search_path, env_location);
+			php_ini_file_name = env_location;
+		}
+
 #ifdef PHP_WIN32
 		/* Add registry location */
 		reg_location = GetIniPathFromRegistry();
@@ -322,16 +333,8 @@ int php_init_config(TSRMLS_D)
 		}
 #endif
 
-		/* Add environment location */
-		if (env_location[0]) {
-			if (*php_ini_search_path) {
-				strcat(php_ini_search_path, paths_separator);
-			}
-			strcat(php_ini_search_path, env_location);
-		}
-
-		/* Add cwd (only with CLI) */
-		if (strcmp(sapi_module.name, "cli") == 0) {
+		/* Add cwd (not with CLI) */
+		if (strcmp(sapi_module.name, "cli") != 0) {
 			if (*php_ini_search_path) {
 				strcat(php_ini_search_path, paths_separator);
 			}
@@ -421,13 +424,15 @@ int php_init_config(TSRMLS_D)
 	memset(&fh, 0, sizeof(fh));
 	/* Check if php_ini_path_override is a file */
 	if (!sapi_module.php_ini_ignore) {
-		if (sapi_module.php_ini_path_override && sapi_module.php_ini_path_override[0]) {
+		if (php_ini_file_name && php_ini_file_name[0]) {
 			struct stat statbuf;
 	
-			if (!VCWD_STAT(sapi_module.php_ini_path_override, &statbuf)) {
+			if (!VCWD_STAT(php_ini_file_name, &statbuf)) {
 				if (!((statbuf.st_mode & S_IFMT) == S_IFDIR)) {
-					fh.handle.fp = VCWD_FOPEN(sapi_module.php_ini_path_override, "r");
-					fh.filename = sapi_module.php_ini_path_override;
+					fh.handle.fp = VCWD_FOPEN(php_ini_file_name, "r");
+					if (fh.handle.fp) {
+						fh.filename = php_ini_opened_path = expand_filepath(php_ini_file_name, NULL TSRMLS_CC);
+					}
 				}
 			}
 		}
@@ -524,6 +529,11 @@ int php_init_config(TSRMLS_D)
 			zend_llist_destroy(&scanned_ini_list);
 		}
 	}
+
+	if (sapi_module.ini_entries) {
+		zend_parse_ini_string(sapi_module.ini_entries, 1, php_config_ini_parser_cb, &extension_lists);
+	}
+
 	return SUCCESS;
 }
 /* }}} */

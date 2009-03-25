@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: unixtime2tm.c,v 1.12.2.4 2006/01/04 21:31:34 derick Exp $ */
+/* $Id: unixtime2tm.c,v 1.12.2.4.2.1 2006/05/15 08:54:16 derick Exp $ */
 
 #include "timelib.h"
 
@@ -30,12 +30,6 @@
 #include <string.h>
 #else
 #include <strings.h>
-#endif
-
-#if defined(_MSC_VER)
-#define TIMELIB_LL_CONST(n) n ## i64
-#else
-#define TIMELIB_LL_CONST(n) n ## ll
 #endif
 
 static int month_tab_leap[12] = { -1, 30, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };

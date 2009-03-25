@@ -1,21 +1,29 @@
 --TEST--
-ZE2 A static abstrcat method may not be called
---SKIPIF--
-<?php if (version_compare(zend_version(), '2.0.0-dev', '<')) die('skip ZendEngine 2 needed'); ?>
+ZE2 A static abstract methods
 --FILE--
 <?php
 
-abstract class fail {
-	abstract static function show();
+interface showable
+{
+	static function show();
 }
 
-class pass extends fail {
+class pass implements showable
+{
 	static function show() {
 		echo "Call to function show()\n";
 	}
 }
 
 pass::show();
+
+eval('
+class fail
+{
+	abstract static function func();
+}
+');
+
 fail::show();
 
 echo "Done\n"; // shouldn't be displayed
@@ -23,4 +31,6 @@ echo "Done\n"; // shouldn't be displayed
 --EXPECTF--
 Call to function show()
 
-Fatal error: Cannot call abstract method fail::show() in %s on line %d
+Strict Standards: Static function fail::func() should not be abstract in %stests/classes/abstract_static.php(%d) : eval()'d code on line %d
+
+Fatal error: Class fail contains 1 abstract method and must therefore be declared abstract or implement the remaining methods (fail::func) in %s/tests/classes/abstract_static.php(%d) : eval()'d code on line %d

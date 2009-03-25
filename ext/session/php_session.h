@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_session.h,v 1.101.2.2 2006/01/28 06:14:49 fmk Exp $ */
+/* $Id: php_session.h,v 1.101.2.2.2.3 2006/10/06 21:11:36 iliaa Exp $ */
 
 #ifndef PHP_SESSION_H
 #define PHP_SESSION_H
@@ -103,6 +103,7 @@ typedef struct _php_ps_globals {
 	char *cookie_path;
 	char *cookie_domain;
 	zend_bool  cookie_secure;
+	zend_bool  cookie_httponly;
 	ps_module *mod;
 	void *mod_data;
 	php_session_status session_status;
@@ -125,6 +126,7 @@ typedef struct _php_ps_globals {
 	long hash_bits_per_character;
 	int send_cookie;
 	int define_sid;
+	zend_bool invalid_session_id;	/* allows the driver to report about an invalid session id and request id regeneration */
 } php_ps_globals;
 
 typedef php_ps_globals zend_ps_globals;
@@ -196,6 +198,9 @@ PHPAPI int php_session_register_serializer(const char *name,
 
 PHPAPI void php_session_set_id(char *id TSRMLS_DC);
 PHPAPI void php_session_start(TSRMLS_D);
+
+PHPAPI ps_module *_php_find_ps_module(char *name TSRMLS_DC);
+PHPAPI const ps_serializer *_php_find_ps_serializer(char *name TSRMLS_DC);
 
 #define PS_ADD_VARL(name,namelen) do {										\
 	php_add_session_var(name, namelen TSRMLS_CC);							\

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: exif.c,v 1.173.2.5 2006/04/10 18:23:24 helly Exp $ */
+/* $Id: exif.c,v 1.173.2.5.2.4 2006/10/10 22:22:43 tony2001 Exp $ */
 
 /*  ToDos
  *
@@ -98,24 +98,48 @@ typedef unsigned char uchar;
 
 #define MAX_IFD_NESTING_LEVEL 100
 
+/* {{{ arginfo */
 static
-ZEND_BEGIN_ARG_INFO(exif_thumbnail_force_ref, 1)
-	ZEND_ARG_PASS_INFO(0)
-ZEND_END_ARG_INFO();
+ZEND_BEGIN_ARG_INFO(arginfo_exif_tagname, 0)
+	ZEND_ARG_INFO(0, index)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_exif_read_data, 0, 0, 1)
+	ZEND_ARG_INFO(0, filename)
+	ZEND_ARG_INFO(0, sections_needed)
+	ZEND_ARG_INFO(0, sub_arrays)
+	ZEND_ARG_INFO(0, read_thumbnail)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_exif_thumbnail, 0, 0, 1)
+	ZEND_ARG_INFO(0, filename)
+	ZEND_ARG_INFO(1, width)
+	ZEND_ARG_INFO(1, height)
+	ZEND_ARG_INFO(1, imagetype)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_exif_imagetype, 0)
+	ZEND_ARG_INFO(0, imagefile)
+ZEND_END_ARG_INFO()
+
+/* }}} */
 
 /* {{{ exif_functions[]
  */
 zend_function_entry exif_functions[] = {
-	PHP_FE(exif_read_data, NULL)
-	PHP_FALIAS(read_exif_data, exif_read_data, NULL)
-	PHP_FE(exif_tagname, NULL)
-	PHP_FE(exif_thumbnail, exif_thumbnail_force_ref)
-	PHP_FE(exif_imagetype, NULL)
+	PHP_FE(exif_read_data, arginfo_exif_read_data)
+	PHP_FALIAS(read_exif_data, exif_read_data, arginfo_exif_read_data)
+	PHP_FE(exif_tagname, arginfo_exif_tagname)
+	PHP_FE(exif_thumbnail, arginfo_exif_thumbnail)
+	PHP_FE(exif_imagetype, arginfo_exif_imagetype)
 	{NULL, NULL, NULL}
 };
 /* }}} */
 
-#define EXIF_VERSION "1.4 $Id: exif.c,v 1.173.2.5 2006/04/10 18:23:24 helly Exp $"
+#define EXIF_VERSION "1.4 $Id: exif.c,v 1.173.2.5.2.4 2006/10/10 22:22:43 tony2001 Exp $"
 
 /* {{{ PHP_MINFO_FUNCTION
  */
@@ -182,9 +206,9 @@ PHP_INI_BEGIN()
 PHP_INI_END()
 /* }}} */
  
-/* {{{ php_extname_init_globals
+/* {{{ PHP_GINIT_FUNCTION
  */
-static void php_exif_init_globals(zend_exif_globals *exif_globals)
+static PHP_GINIT_FUNCTION(exif)
 {
 	exif_globals->encode_unicode    = NULL;
 	exif_globals->decode_unicode_be = NULL;
@@ -199,7 +223,6 @@ static void php_exif_init_globals(zend_exif_globals *exif_globals)
    Get the size of an image as 4-element array */
 PHP_MINIT_FUNCTION(exif)
 {
-	ZEND_INIT_MODULE_GLOBALS(exif, php_exif_init_globals, NULL);
 	REGISTER_INI_ENTRIES();
 	REGISTER_LONG_CONSTANT("EXIF_USE_MBSTRING", EXIF_USE_MBSTRING, CONST_CS | CONST_PERSISTENT); 
 	return SUCCESS;
@@ -230,7 +253,15 @@ zend_module_entry exif_module_entry = {
 #if ZEND_MODULE_API_NO >= 20010901
 	EXIF_VERSION,
 #endif
+#if ZEND_MODULE_API_NO >= 20060613
+	PHP_MODULE_GLOBALS(exif),
+	PHP_GINIT(exif),
+	NULL,
+	NULL,
+	STANDARD_MODULE_PROPERTIES_EX
+#else	
 	STANDARD_MODULE_PROPERTIES
+#endif
 };
 /* }}} */
 
@@ -2151,7 +2182,7 @@ static void exif_process_CME (image_info_type *image_info, char *value, size_t l
 		}
 	} else {
 		exif_iif_add_tag(image_info, SECTION_COMMENT, "Comment", TAG_COMPUTED_VALUE, TAG_FMT_UNDEFINED, 0, NULL);
-		php_error_docref(NULL TSRMLS_CC, E_NOTICE, "JPEG2000 comment section to small");
+		php_error_docref(NULL TSRMLS_CC, E_NOTICE, "JPEG2000 comment section too small");
 	}
 }
 #endif
@@ -2775,6 +2806,7 @@ static int exif_process_IFD_TAG(image_info_type *ImageInfo, char *dir_entry, cha
 				// pointers read without the need to free them
 				// explicitley before returning.
 				*/
+				memset(&cbuf, 0, sizeof(cbuf));
 				value_ptr = cbuf;
 			}
 
@@ -3676,7 +3708,7 @@ static int exif_scan_FILE_header(image_info_type *ImageInfo TSRMLS_DC)
 			}
 		}
 	} else {
-		exif_error_docref(NULL EXIFERR_CC, ImageInfo, E_WARNING, "File to small (%d)", ImageInfo->FileSize);
+		exif_error_docref(NULL EXIFERR_CC, ImageInfo, E_WARNING, "File too small (%d)", ImageInfo->FileSize);
 	}
 	return ret;
 }
@@ -3990,6 +4022,7 @@ PHP_FUNCTION(exif_thumbnail)
 
 	ret = exif_read_file(&ImageInfo, p_name, 1, 0 TSRMLS_CC);
 	if (ret==FALSE) {
+		exif_discard_imageinfo(&ImageInfo);
 		RETURN_FALSE;
 	}
 

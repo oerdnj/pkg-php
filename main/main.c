@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: main.c,v 1.640.2.25 2006/08/10 21:49:56 iliaa Exp $ */
+/* $Id: main.c,v 1.640.2.23.2.16 2006/09/25 14:48:33 iliaa Exp $ */
 
 /* {{{ includes
  */
@@ -30,6 +30,7 @@
 #ifdef PHP_WIN32
 #include "win32/time.h"
 #include "win32/signal.h"
+#include "win32/php_win32_globals.h"
 #include <process.h>
 #elif defined(NETWARE)
 #include <sys/timeval.h>
@@ -311,7 +312,7 @@ PHP_INI_BEGIN()
 	PHP_INI_ENTRY("smtp_port",					"25",		PHP_INI_ALL,		NULL)
 	PHP_INI_ENTRY("browscap",					NULL,		PHP_INI_SYSTEM,		NULL)
 #if MEMORY_LIMIT
-	PHP_INI_ENTRY("memory_limit",				"8M",		PHP_INI_ALL,		OnChangeMemoryLimit)
+	PHP_INI_ENTRY("memory_limit",				"16M",		PHP_INI_ALL,		OnChangeMemoryLimit)
 #endif
 	PHP_INI_ENTRY("precision",					"14",		PHP_INI_ALL,		OnSetPrecision)
 	PHP_INI_ENTRY("sendmail_from",				NULL,		PHP_INI_ALL,		NULL)
@@ -321,6 +322,7 @@ PHP_INI_BEGIN()
 	PHP_INI_ENTRY("disable_classes",			"",			PHP_INI_SYSTEM,		NULL)
 
 	STD_PHP_INI_BOOLEAN("allow_url_fopen",		"1",		PHP_INI_SYSTEM,		OnUpdateBool,			allow_url_fopen,			php_core_globals,	core_globals)
+	STD_PHP_INI_BOOLEAN("allow_url_include",		"0",		PHP_INI_SYSTEM,		OnUpdateBool,			allow_url_include,			php_core_globals,	core_globals)
 	STD_PHP_INI_BOOLEAN("always_populate_raw_post_data",		"0",		PHP_INI_SYSTEM|PHP_INI_PERDIR,		OnUpdateBool,			always_populate_raw_post_data,			php_core_globals,	core_globals)
 	STD_PHP_INI_ENTRY("realpath_cache_size", "16K", PHP_INI_SYSTEM, OnUpdateLong, realpath_cache_size_limit, virtual_cwd_globals, cwd_globals)
 	STD_PHP_INI_ENTRY("realpath_cache_ttl", "120", PHP_INI_SYSTEM, OnUpdateLong, realpath_cache_ttl, virtual_cwd_globals, cwd_globals)
@@ -569,16 +571,18 @@ PHPAPI void php_verror(const char *docref, const char *params, int type, const c
 	if (docref_buf) {
 		efree(docref_buf);
 	}
-	php_error(type, "%s", message);
-	efree(message);
 
-	if (PG(track_errors) && module_initialized && EG(active_symbol_table)) {
+	if (PG(track_errors) && module_initialized && EG(active_symbol_table) && 
+			(!EG(user_error_handler) || !(EG(user_error_handler_error_reporting) & type))) {
 		zval *tmp;
 		ALLOC_INIT_ZVAL(tmp);
 		ZVAL_STRINGL(tmp, buffer, buffer_len, 1);
 		zend_hash_update(EG(active_symbol_table), "php_errormsg", sizeof("php_errormsg"), (void **) &tmp, sizeof(zval *), NULL);
 	}
 	efree(buffer);
+
+	php_error(type, "%s", message);
+	efree(message);
 }
 /* }}} */
 
@@ -681,6 +685,7 @@ static void php_error_cb(int type, const char *error_filename, const uint error_
 		if (PG(last_error_file)) {
 			free(PG(last_error_file));
 		}
+		PG(last_error_type) = type;
 		PG(last_error_message) = strdup(buffer);
 		PG(last_error_file) = strdup(error_filename);
 		PG(last_error_lineno) = error_lineno;
@@ -689,8 +694,10 @@ static void php_error_cb(int type, const char *error_filename, const uint error_
 	/* according to error handling mode, suppress error, throw exception or show it */
 	if (PG(error_handling) != EH_NORMAL) {
 		switch (type) {
+			case E_ERROR:
 			case E_CORE_ERROR:
 			case E_COMPILE_ERROR:
+			case E_USER_ERROR:
 			case E_PARSE:
 				/* fatal errors are real errors and cannot be made exceptions */
 				break;
@@ -724,6 +731,9 @@ static void php_error_cb(int type, const char *error_filename, const uint error_
 			case E_COMPILE_ERROR:
 			case E_USER_ERROR:
 				error_type_str = "Fatal error";
+				break;
+			case E_RECOVERABLE_ERROR:
+				error_type_str = "Catchable fatal error";
 				break;
 			case E_WARNING:
 			case E_CORE_WARNING:
@@ -814,6 +824,7 @@ static void php_error_cb(int type, const char *error_filename, const uint error_
 			}
 		/* no break - intentionally */
 		case E_ERROR:
+		case E_RECOVERABLE_ERROR:
 		/* case E_PARSE: the parser would return 1 (failure), we can bail out nicely */
 		case E_COMPILE_ERROR:
 		case E_USER_ERROR:
@@ -821,7 +832,7 @@ static void php_error_cb(int type, const char *error_filename, const uint error_
 			if (module_initialized) {
 #if MEMORY_LIMIT
 				/* restore memory limit */
-				AG(memory_limit) = PG(memory_limit); 
+				zend_set_memory_limit(PG(memory_limit));
 #endif
 				efree(buffer);
 				zend_objects_store_mark_destructed(&EG(objects_store) TSRMLS_CC);
@@ -836,16 +847,14 @@ static void php_error_cb(int type, const char *error_filename, const uint error_
 		efree(buffer);
 		return;
 	}
+
 	if (PG(track_errors) && module_initialized && EG(active_symbol_table)) {
 		zval *tmp;
-
-		ALLOC_ZVAL(tmp);
-		INIT_PZVAL(tmp);
-		Z_STRVAL_P(tmp) = (char *) estrndup(buffer, buffer_len);
-		Z_STRLEN_P(tmp) = buffer_len;
-		Z_TYPE_P(tmp) = IS_STRING;
+		ALLOC_INIT_ZVAL(tmp);
+		ZVAL_STRINGL(tmp, buffer, buffer_len, 1);
 		zend_hash_update(EG(active_symbol_table), "php_errormsg", sizeof("php_errormsg"), (void **) & tmp, sizeof(zval *), NULL);
 	}
+
 	efree(buffer);
 }
 /* }}} */
@@ -956,10 +965,9 @@ static void php_message_handler_for_zend(long message, void *data)
 				char memory_leak_buf[512];
 
 				if (message==ZMSG_MEMORY_LEAK_DETECTED) {
-					zend_mem_header *t = (zend_mem_header *) data;
-					void *ptr = (void *)((char *)t+sizeof(zend_mem_header)+MEM_HEADER_PADDING);
+					zend_leak_info *t = (zend_leak_info *) data;
 
-					snprintf(memory_leak_buf, 512, "%s(%d) :  Freeing 0x%.8lX (%d bytes), script=%s\n", t->filename, t->lineno, (unsigned long)ptr, t->size, SAFE_FILENAME(SG(request_info).path_translated));
+					snprintf(memory_leak_buf, 512, "%s(%d) :  Freeing 0x%.8lX (%d bytes), script=%s\n", t->filename, t->lineno, (unsigned long)t->addr, t->size, SAFE_FILENAME(SG(request_info).path_translated));
 					if (t->orig_filename) {
 						char relay_buf[512];
 
@@ -1342,6 +1350,25 @@ static void core_globals_ctor(php_core_globals *core_globals TSRMLS_DC)
 /* }}} */
 #endif
 
+/* {{{ core_globals_dtor
+ */
+static void core_globals_dtor(php_core_globals *core_globals TSRMLS_DC)
+{
+	if (core_globals->last_error_message) {
+		free(core_globals->last_error_message);
+	}
+	if (core_globals->last_error_file) {
+		free(core_globals->last_error_file);
+	}
+	if (core_globals->disable_functions) {
+		free(core_globals->disable_functions);
+	}
+	if (core_globals->disable_classes) {
+		free(core_globals->disable_classes);
+	}
+}
+/* }}} */
+
 /* {{{ php_register_extensions
  */
 int php_register_extensions(zend_module_entry **ptr, int count TSRMLS_DC)
@@ -1428,10 +1455,13 @@ int php_module_startup(sapi_module_struct *sf, zend_module_entry *additional_mod
 
 #ifdef ZTS
 	executor_globals = ts_resource(executor_globals_id);
-	ts_allocate_id(&core_globals_id, sizeof(php_core_globals), (ts_allocate_ctor) core_globals_ctor, NULL);
+	ts_allocate_id(&core_globals_id, sizeof(php_core_globals), (ts_allocate_ctor) core_globals_ctor, (ts_allocate_dtor) core_globals_dtor);
 	core_globals = ts_resource(core_globals_id);
+#ifdef PHP_WIN32
+	ts_allocate_id(&php_win32_core_globals_id, sizeof(php_win32_core_globals), (ts_allocate_ctor) php_win32_core_globals_ctor, NULL);
 #endif
-	EG(bailout_set) = 0;
+#endif
+	EG(bailout) = NULL;
 	EG(error_reporting) = E_ALL & ~E_NOTICE;
 	
 	PG(header_is_being_sent) = 0;
@@ -1571,6 +1601,8 @@ int php_module_startup(sapi_module_struct *sf, zend_module_entry *additional_mod
 	sapi_deactivate(TSRMLS_C);
 	module_startup = 0;
 
+	shutdown_memory_manager(1, 0 TSRMLS_CC);
+
 	/* we're done */
 	return SUCCESS;
 }
@@ -1628,23 +1660,13 @@ void php_module_shutdown(TSRMLS_D)
 #ifndef ZTS
 	zend_ini_shutdown(TSRMLS_C);
 	shutdown_memory_manager(CG(unclean_shutdown), 1 TSRMLS_CC);
+	core_globals_dtor(&core_globals TSRMLS_CC);
 #else
 	zend_ini_global_shutdown(TSRMLS_C);
+	ts_free_id(core_globals_id);	
 #endif
 
 	module_initialized = 0;
-	if (PG(last_error_message)) {
-		free(PG(last_error_message));
-	}
-	if (PG(last_error_file)) {
-		free(PG(last_error_file));
-	}
-	if (PG(disable_functions)) {
-		free(PG(disable_functions));
-	}
-	if (PG(disable_classes)) {
-		free(PG(disable_classes));
-	}
 }
 /* }}} */
 
@@ -1682,8 +1704,7 @@ PHPAPI int php_execute_script(zend_file_handle *primary_file TSRMLS_DC)
 
 		PG(during_request_startup) = 0;
 
-		if (primary_file->type == ZEND_HANDLE_FILENAME 
-				&& primary_file->filename) {
+		if ((primary_file->type == ZEND_HANDLE_FILENAME || primary_file->type == ZEND_HANDLE_STREAM) && primary_file->filename) {
 #if HAVE_BROKEN_GETCWD
 			/* this looks nasty to me */
 			old_cwd_fd = open(".", 0);

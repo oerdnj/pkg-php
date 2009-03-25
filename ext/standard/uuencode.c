@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: uuencode.c,v 1.5.2.1 2006/01/01 12:50:15 sniper Exp $ */
+/* $Id: uuencode.c,v 1.5.2.1.2.1 2006/06/26 18:48:56 bjori Exp $ */
 
 /*
  * Portions of this code are based on Berkeley's uuencode/uudecode
@@ -183,7 +183,7 @@ err:
 	return -1;
 }
 
-/* {{{ proto string uuencode(string data) 
+/* {{{ proto string convert_uuencode(string data) 
    uuencode a string */
 PHP_FUNCTION(convert_uuencode)
 {
@@ -200,7 +200,7 @@ PHP_FUNCTION(convert_uuencode)
 }
 /* }}} */
 
-/* {{{ proto string uudecode(string data)
+/* {{{ proto string convert_uudecode(string data)
    decode a uuencoded string */
 PHP_FUNCTION(convert_uudecode)
 {

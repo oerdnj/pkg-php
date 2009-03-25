@@ -31,7 +31,7 @@
 */
 
 
-static const char rcsid[] = "#(@) $Id: xml_element.c,v 1.9 2005/04/22 11:06:53 jorton Exp $";
+static const char rcsid[] = "#(@) $Id: xml_element.c,v 1.9.4.1 2006/07/30 11:34:02 tony2001 Exp $";
 
 
 
@@ -44,6 +44,9 @@ static const char rcsid[] = "#(@) $Id: xml_element.c,v 1.9 2005/04/22 11:06:53 j
  *   06/2000
  * HISTORY
  *   $Log: xml_element.c,v $
+ *   Revision 1.9.4.1  2006/07/30 11:34:02  tony2001
+ *   MFH: fix compile warnings (#38257)
+ *
  *   Revision 1.9  2005/04/22 11:06:53  jorton
  *   Fixed bug #32797 (invalid C code in xmlrpc extension).
  *
@@ -697,8 +700,8 @@ xml_element* xml_elem_parse_buf(const char* in_buf, int len, XML_ELEM_INPUT_OPTI
       mydata.input_options = options;
       mydata.needs_enc_conversion = options->encoding && strcmp(options->encoding, encoding_utf_8);
 
-      XML_SetElementHandler(parser, _xmlrpc_startElement, _xmlrpc_endElement);
-      XML_SetCharacterDataHandler(parser, _xmlrpc_charHandler);
+      XML_SetElementHandler(parser, (XML_StartElementHandler)_xmlrpc_startElement, (XML_EndElementHandler)_xmlrpc_endElement);
+      XML_SetCharacterDataHandler(parser, (XML_CharacterDataHandler)_xmlrpc_charHandler);
 
       /* pass the xml_elem_data struct along */
       XML_SetUserData(parser, (void*)&mydata);

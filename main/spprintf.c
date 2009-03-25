@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: spprintf.c,v 1.25.2.2 2006/01/24 20:59:46 helly Exp $ */
+/* $Id: spprintf.c,v 1.25.2.2.2.1 2006/05/07 12:40:17 helly Exp $ */
 
 /* This is the spprintf implementation.
  * It has emerged from apache snprintf. See original header:
@@ -513,6 +513,7 @@ static void xbuf_format_converter(smart_str *xbuf, const char *fmt, va_list ap)
 
 
 				case 's':
+				case 'v':
 					s = va_arg(ap, char *);
 					if (s != NULL) {
 						s_len = strlen(s);

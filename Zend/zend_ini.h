@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_ini.h,v 1.34.2.1 2006/01/04 23:53:04 andi Exp $ */
+/* $Id: zend_ini.h,v 1.34.2.1.2.1 2006/09/19 20:33:12 dmitry Exp $ */
 
 #ifndef ZEND_INI_H
 #define ZEND_INI_H
@@ -193,6 +193,7 @@ END_EXTERN_C()
 typedef void (*zend_ini_parser_cb_t)(zval *arg1, zval *arg2, int callback_type, void *arg);
 BEGIN_EXTERN_C()
 ZEND_API int zend_parse_ini_file(zend_file_handle *fh, zend_bool unbuffered_errors, zend_ini_parser_cb_t ini_parser_cb, void *arg);
+ZEND_API int zend_parse_ini_string(char *str, zend_bool unbuffered_errors, zend_ini_parser_cb_t ini_parser_cb, void *arg);
 END_EXTERN_C()
 
 #define ZEND_INI_PARSER_ENTRY	1

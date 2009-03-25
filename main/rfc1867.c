@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: rfc1867.c,v 1.173.2.1 2006/01/01 12:50:17 sniper Exp $ */
+/* $Id: rfc1867.c,v 1.173.2.1.2.5 2006/09/29 10:05:34 sesser Exp $ */
 
 /*
  *  This product includes software developed by the Apache Group
@@ -35,10 +35,12 @@
 
 #define DEBUG_FILE_UPLOAD ZEND_DEBUG
 
+PHPAPI int (*php_rfc1867_callback)(unsigned int event, void *event_data, void **extra TSRMLS_DC) = NULL;
+
 #if HAVE_MBSTRING && !defined(COMPILE_DL_MBSTRING)
 #include "ext/mbstring/mbstring.h"
 
-static void safe_php_register_variable(char *var, char *strval, zval *track_vars_array, zend_bool override_protection TSRMLS_DC);
+static void safe_php_register_variable(char *var, char *strval, int val_len, zval *track_vars_array, zend_bool override_protection TSRMLS_DC);
 
 #define SAFE_RETURN { \
     php_mb_flush_gpc_variables(num_vars, val_list, len_list, array_ptr TSRMLS_CC); \
@@ -62,7 +64,7 @@ void php_mb_flush_gpc_variables(int num_vars, char **val_list, int *len_list, zv
 			php_mb_gpc_encoding_converter(val_list, len_list, num_vars, NULL, NULL TSRMLS_CC);
 		}
 		for (i=0; i<num_vars; i+=2){
-			safe_php_register_variable(val_list[i], val_list[i+1], array_ptr, 0 TSRMLS_CC);
+			safe_php_register_variable(val_list[i], val_list[i+1], len_list[i+1], array_ptr, 0 TSRMLS_CC);
 			efree(val_list[i]);
 			efree(val_list[i+1]);
 		} 
@@ -132,6 +134,7 @@ void php_mb_gpc_stack_variable(char *param, char *value, char ***pval_list, int 
 #define UPLOAD_ERROR_D    4  /* No file uploaded */
 #define UPLOAD_ERROR_E    6  /* Missing /tmp or similar directory */
 #define UPLOAD_ERROR_F    7  /* Failed to write file to disk */
+#define UPLOAD_ERROR_X    8  /* File upload stopped by extension */
 
 void php_rfc1867_register_constants(TSRMLS_D)
 {
@@ -142,6 +145,7 @@ void php_rfc1867_register_constants(TSRMLS_D)
 	REGISTER_MAIN_LONG_CONSTANT("UPLOAD_ERR_NO_FILE",    UPLOAD_ERROR_D,  CONST_CS | CONST_PERSISTENT);
 	REGISTER_MAIN_LONG_CONSTANT("UPLOAD_ERR_NO_TMP_DIR", UPLOAD_ERROR_E,  CONST_CS | CONST_PERSISTENT);
 	REGISTER_MAIN_LONG_CONSTANT("UPLOAD_ERR_CANT_WRITE", UPLOAD_ERROR_F,  CONST_CS | CONST_PERSISTENT);
+	REGISTER_MAIN_LONG_CONSTANT("UPLOAD_ERR_EXTENSION",  UPLOAD_ERROR_X,  CONST_CS | CONST_PERSISTENT);
 }
 
 static void normalize_protected_variable(char *varname TSRMLS_DC)
@@ -219,10 +223,10 @@ static zend_bool is_protected_variable(char *varname TSRMLS_DC)
 }
 
 
-static void safe_php_register_variable(char *var, char *strval, zval *track_vars_array, zend_bool override_protection TSRMLS_DC)
+static void safe_php_register_variable(char *var, char *strval, int val_len, zval *track_vars_array, zend_bool override_protection TSRMLS_DC)
 {
 	if (override_protection || !is_protected_variable(var TSRMLS_CC)) {
-		php_register_variable(var, strval, track_vars_array TSRMLS_CC);
+		php_register_variable_safe(var, strval, val_len, track_vars_array TSRMLS_CC);
 	}
 }
 
@@ -240,7 +244,7 @@ static void register_http_post_files_variable(char *strvar, char *val, zval *htt
 	int register_globals = PG(register_globals);
 
 	PG(register_globals) = 0;
-	safe_php_register_variable(strvar, val, http_post_files, override_protection TSRMLS_CC);
+	safe_php_register_variable(strvar, val, strlen(val), http_post_files, override_protection TSRMLS_CC);
 	PG(register_globals) = register_globals;
 }
 
@@ -753,7 +757,7 @@ static int multipart_buffer_read(multipart_buffer *self, char *buf, int bytes, i
   XXX: this is horrible memory-usage-wise, but we only expect
   to do this on small pieces of form data.
 */
-static char *multipart_buffer_read_body(multipart_buffer *self TSRMLS_DC)
+static char *multipart_buffer_read_body(multipart_buffer *self, unsigned int *len TSRMLS_DC)
 {
 	char buf[FILLUNIT], *out=NULL;
 	int total_bytes=0, read_bytes=0;
@@ -765,6 +769,7 @@ static char *multipart_buffer_read_body(multipart_buffer *self TSRMLS_DC)
 	}
 
 	if (out) out[total_bytes] = '\0';
+	*len = total_bytes;
 
 	return out;
 }
@@ -791,6 +796,7 @@ SAPI_API SAPI_POST_HANDLER_FUNC(rfc1867_post_handler)
 	zval *array_ptr = (zval *) arg;
 	int fd=-1;
 	zend_llist header;
+	void *event_extra_data = NULL;
 
 	if (SG(request_info).content_length > SG(post_max_size)) {
 		sapi_module.sapi_error(E_WARNING, "POST Content-Length of %ld bytes exceeds the limit of %ld bytes", SG(request_info).content_length, SG(post_max_size));
@@ -849,16 +855,26 @@ SAPI_API SAPI_POST_HANDLER_FUNC(rfc1867_post_handler)
 #endif
 	zend_llist_init(&header, sizeof(mime_header_entry), (llist_dtor_func_t) php_free_hdr_entry, 0);
 
+	if (php_rfc1867_callback != NULL) {
+		multipart_event_start event_start;
+
+		event_start.content_length = SG(request_info).content_length;
+		if (php_rfc1867_callback(MULTIPART_EVENT_START, &event_start, &event_extra_data TSRMLS_CC) == FAILURE) {
+			goto fileupload_done;
+		}
+	}
+
 	while (!multipart_buffer_eof(mbuff TSRMLS_CC))
 	{
 		char buff[FILLUNIT];
 		char *cd=NULL,*param=NULL,*filename=NULL, *tmp=NULL;
-		int blen=0, wlen=0;
+		size_t blen=0, wlen=0;
+		off_t offset;
 
 		zend_llist_clean(&header);
 
 		if (!multipart_buffer_headers(mbuff, &header TSRMLS_CC)) {
-			SAFE_RETURN;
+			goto fileupload_done;
 		}
 
 		if ((cd = php_mime_get_hdr_value(header, "Content-Disposition"))) {
@@ -900,26 +916,53 @@ SAPI_API SAPI_POST_HANDLER_FUNC(rfc1867_post_handler)
 
 			/* Normal form variable, safe to read all data into memory */
 			if (!filename && param) {
-
-				char *value = multipart_buffer_read_body(mbuff TSRMLS_CC);
+				unsigned int value_len;
+				char *value = multipart_buffer_read_body(mbuff, &value_len TSRMLS_CC);
 				unsigned int new_val_len; /* Dummy variable */
 
 				if (!value) {
 					value = estrdup("");
 				}
 
-				if (sapi_module.input_filter(PARSE_POST, param, &value, strlen(value), &new_val_len TSRMLS_CC)) {
+				if (sapi_module.input_filter(PARSE_POST, param, &value, value_len, &new_val_len TSRMLS_CC)) {
+					if (php_rfc1867_callback != NULL) {
+						multipart_event_formdata event_formdata;
+						size_t newlength = 0;
+
+						event_formdata.post_bytes_processed = SG(read_post_bytes);
+						event_formdata.name = param;
+						event_formdata.value = &value;
+						event_formdata.length = new_val_len;
+						event_formdata.newlength = &newlength;
+						if (php_rfc1867_callback(MULTIPART_EVENT_FORMDATA, &event_formdata, &event_extra_data TSRMLS_CC) == FAILURE) {
+							efree(param);
+							efree(value);
+							continue;
+						}
+						new_val_len = newlength;
+					}
+
 #if HAVE_MBSTRING && !defined(COMPILE_DL_MBSTRING)
 					if (php_mb_encoding_translation(TSRMLS_C)) {
 						php_mb_gpc_stack_variable(param, value, &val_list, &len_list, 
 												  &num_vars, &num_vars_max TSRMLS_CC);
 					} else {
-						safe_php_register_variable(param, value, array_ptr, 0 TSRMLS_CC);
+						safe_php_register_variable(param, value, new_val_len, array_ptr, 0 TSRMLS_CC);
 					}
 #else
-					safe_php_register_variable(param, value, array_ptr, 0 TSRMLS_CC);
+					safe_php_register_variable(param, value, new_val_len, array_ptr, 0 TSRMLS_CC);
 #endif
+				} else if (php_rfc1867_callback != NULL) {
+					multipart_event_formdata event_formdata;
+
+					event_formdata.post_bytes_processed = SG(read_post_bytes);
+					event_formdata.name = param;
+					event_formdata.value = &value;
+					event_formdata.length = value_len;
+					event_formdata.newlength = NULL;
+					php_rfc1867_callback(MULTIPART_EVENT_FORMDATA, &event_formdata, &event_extra_data TSRMLS_CC);
 				}
+
 				if (!strcasecmp(param, "MAX_FILE_SIZE")) {
 					max_file_size = atol(value);
 				}
@@ -937,7 +980,7 @@ SAPI_API SAPI_POST_HANDLER_FUNC(rfc1867_post_handler)
 			/* Return with an error if the posted data is garbled */
 			if (!param && !filename) {
 				sapi_module.sapi_error(E_WARNING, "File Upload Mime headers garbled");
-				SAFE_RETURN;
+				goto fileupload_done;
 			}
 			
 			if (!param) {
@@ -981,11 +1024,34 @@ SAPI_API SAPI_POST_HANDLER_FUNC(rfc1867_post_handler)
 					cancel_upload = UPLOAD_ERROR_E;
 				}
 			}
+			
+			if (!skip_upload && php_rfc1867_callback != NULL) {
+				multipart_event_file_start event_file_start;
+
+				event_file_start.post_bytes_processed = SG(read_post_bytes);
+				event_file_start.name = param;
+				event_file_start.filename = &filename;
+				if (php_rfc1867_callback(MULTIPART_EVENT_FILE_START, &event_file_start, &event_extra_data TSRMLS_CC) == FAILURE) {
+					if (temp_filename) {
+						if (cancel_upload != UPLOAD_ERROR_E) { /* file creation failed */
+							close(fd);
+							unlink(temp_filename);
+						}
+						efree(temp_filename);
+					}
+					temp_filename="";
+					efree(param);
+					efree(filename);
+					continue;
+				}
+			}
+
+			
 			if (skip_upload) {
 				efree(param);
 				efree(filename);
 				continue;
-			}	
+			}
 
 			if(strlen(filename) == 0) {
 #if DEBUG_FILE_UPLOAD
@@ -994,9 +1060,25 @@ SAPI_API SAPI_POST_HANDLER_FUNC(rfc1867_post_handler)
 				cancel_upload = UPLOAD_ERROR_D;
 			}
 
+			offset = 0;
 			end = 0;
 			while (!cancel_upload && (blen = multipart_buffer_read(mbuff, buff, sizeof(buff), &end TSRMLS_CC)))
 			{
+				if (php_rfc1867_callback != NULL) {
+					multipart_event_file_data event_file_data;
+
+					event_file_data.post_bytes_processed = SG(read_post_bytes);
+					event_file_data.offset = offset;
+					event_file_data.data = buff;
+					event_file_data.length = blen;
+					event_file_data.newlength = &blen;
+					if (php_rfc1867_callback(MULTIPART_EVENT_FILE_DATA, &event_file_data, &event_extra_data TSRMLS_CC) == FAILURE) {
+						cancel_upload = UPLOAD_ERROR_X;
+						continue;
+					}
+				}
+				
+			
 				if (PG(upload_max_filesize) > 0 && total_bytes > PG(upload_max_filesize)) {
 #if DEBUG_FILE_UPLOAD
 					sapi_module.sapi_error(E_NOTICE, "upload_max_filesize of %ld bytes exceeded - file [%s=%s] not saved", PG(upload_max_filesize), param, filename);
@@ -1008,6 +1090,7 @@ SAPI_API SAPI_POST_HANDLER_FUNC(rfc1867_post_handler)
 #endif
 					cancel_upload = UPLOAD_ERROR_B;
 				} else if (blen > 0) {
+				
 					wlen = write(fd, buff, blen);
 			
 					if (wlen < blen) {
@@ -1018,6 +1101,8 @@ SAPI_API SAPI_POST_HANDLER_FUNC(rfc1867_post_handler)
 					} else {
 						total_bytes += wlen;
 					}
+					
+					offset += wlen;
 				} 
 			}
 			if (fd!=-1) { /* may not be initialized if file could not be created */
@@ -1035,6 +1120,17 @@ SAPI_API SAPI_POST_HANDLER_FUNC(rfc1867_post_handler)
 				cancel_upload = 5;
 			}
 #endif		
+
+			if (php_rfc1867_callback != NULL) {
+				multipart_event_file_end event_file_end;
+
+				event_file_end.post_bytes_processed = SG(read_post_bytes);
+				event_file_end.temp_filename = temp_filename;
+				event_file_end.cancel_upload = cancel_upload;
+				if (php_rfc1867_callback(MULTIPART_EVENT_FILE_END, &event_file_end, &event_extra_data TSRMLS_CC) == FAILURE) {
+					cancel_upload = UPLOAD_ERROR_X;
+				}
+			}
 
 			if (cancel_upload) {
 				if (temp_filename) {
@@ -1123,9 +1219,9 @@ filedone:
 			
 			if (!is_anonymous) {
 				if (s && s > filename) {
-					safe_php_register_variable(lbuf, s+1, NULL, 0 TSRMLS_CC);
+					safe_php_register_variable(lbuf, s+1, strlen(s+1), NULL, 0 TSRMLS_CC);
 				} else {
-					safe_php_register_variable(lbuf, filename, NULL, 0 TSRMLS_CC);
+					safe_php_register_variable(lbuf, filename, strlen(filename), NULL, 0 TSRMLS_CC);
 				}
 			}
 
@@ -1161,7 +1257,7 @@ filedone:
 				sprintf(lbuf, "%s_type", param);
 			}
 			if (!is_anonymous) {
-				safe_php_register_variable(lbuf, cd, NULL, 0 TSRMLS_CC);
+				safe_php_register_variable(lbuf, cd, strlen(cd), NULL, 0 TSRMLS_CC);
 			}
 
 			/* Add $foo[type] */
@@ -1185,7 +1281,7 @@ filedone:
 			PG(magic_quotes_gpc) = 0;
 			/* if param is of form xxx[.*] this will cut it to xxx */
 			if (!is_anonymous) {
-				safe_php_register_variable(param, temp_filename, NULL, 1 TSRMLS_CC);
+				safe_php_register_variable(param, temp_filename, strlen(temp_filename), NULL, 1 TSRMLS_CC);
 			}
 	
 			/* Add $foo[tmp_name] */
@@ -1242,7 +1338,14 @@ filedone:
 			efree(param);
 		}
 	}
-
+fileupload_done:
+	if (php_rfc1867_callback != NULL) {
+		multipart_event_end event_end;
+		
+		event_end.post_bytes_processed = SG(read_post_bytes);
+		php_rfc1867_callback(MULTIPART_EVENT_END, &event_end, &event_extra_data TSRMLS_CC);
+	}
+	
 	SAFE_RETURN;
 }
 

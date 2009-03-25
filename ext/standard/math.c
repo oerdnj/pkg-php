@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: math.c,v 1.131.2.2 2006/02/06 11:28:41 tony2001 Exp $ */
+/* $Id: math.c,v 1.131.2.2.2.2 2006/08/27 19:14:43 bjori Exp $ */
 
 #include "php.h"
 #include "php_math.h"
@@ -28,10 +28,6 @@
 #include <math.h>
 #include <float.h>
 #include <stdlib.h>
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
 
 #ifndef PHP_ROUND_FUZZ
 # ifndef PHP_WIN32
@@ -976,13 +972,8 @@ PHPAPI char *_php_math_number_format(double d, int dec, char dec_point, char tho
 		is_negative = 1;
 		d = -d;
 	}
-	if (!dec_point && dec > 0) {
-		d *= pow(10, dec);
-		dec = 0;
-	} else {
-		dec = MAX(0, dec);
-	}
 
+	dec = MAX(0, dec);
 	PHP_ROUND_WITH_FUZZ(d, dec);
 
 	tmplen = spprintf(&tmpbuf, 0, "%.*f", dec, d);
@@ -991,8 +982,10 @@ PHPAPI char *_php_math_number_format(double d, int dec, char dec_point, char tho
 		return tmpbuf;
 	}
 
+	/* find decimal point, if expected */
+	dp = dec ? strchr(tmpbuf, '.') : NULL;
+
 	/* calculate the length of the return buffer */
-	dp = strchr(tmpbuf, '.');
 	if (dp) {
 		integral = dp - tmpbuf;
 	} else {
@@ -1008,7 +1001,11 @@ PHPAPI char *_php_math_number_format(double d, int dec, char dec_point, char tho
 	reslen = integral;
 	
 	if (dec) {
-		reslen += 1 + dec;
+		reslen += dec;
+
+		if (dec_point) {
+			reslen++;
+		}
 	}
 
 	/* add a byte for minus sign */
@@ -1025,29 +1022,29 @@ PHPAPI char *_php_math_number_format(double d, int dec, char dec_point, char tho
 	 * Take care, as the sprintf implementation may return less places than
 	 * we requested due to internal buffer limitations */
 	if (dec) {
-		int declen = dp ? strlen(dp+1) : 0;
-		int topad = declen > 0 ? dec - declen : 0;
+		int declen = dp ? s - dp : 0;
+		int topad = dec > declen ? dec - declen : 0;
 
 		/* pad with '0's */
-
 		while (topad--) {
 			*t-- = '0';
 		}
 		
 		if (dp) {
-			/* now copy the chars after the point */
-			memcpy(t - declen + 1, dp + 1, declen);
-
+			s -= declen + 1; /* +1 to skip the point */
 			t -= declen;
-			s -= declen;
+
+			/* now copy the chars after the point */
+			memcpy(t + 1, dp + 1, declen);
 		}
 
 		/* add decimal point */
-		*t-- = dec_point;
-		s--;
+		if (dec_point) {
+			*t-- = dec_point;
+		}
 	}
 
-	/* copy the numbers before the decimal place, adding thousand
+	/* copy the numbers before the decimal point, adding thousand
 	 * separator every three digits */
 	while(s >= tmpbuf) {
 		*t-- = *s--;

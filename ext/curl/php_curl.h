@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_curl.h,v 1.44.2.2 2006/01/24 20:11:14 iliaa Exp $ */
+/* $Id: php_curl.h,v 1.44.2.2.2.1 2006/10/05 15:06:40 tony2001 Exp $ */
 
 #ifndef _PHP_CURL_H
 #define _PHP_CURL_H
@@ -138,6 +138,7 @@ typedef struct {
 } php_curlm;
 
 void _php_curl_cleanup_handle(php_curl *);
+void _php_curl_multi_cleanup_list(void *data);
 
 /* streams support */
 

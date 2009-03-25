@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: snprintf.c,v 1.37.2.4 2006/01/24 20:59:46 helly Exp $ */
+/* $Id: snprintf.c,v 1.37.2.4.2.1 2006/05/07 12:40:17 helly Exp $ */
 
 /* ====================================================================
  * Copyright (c) 1995-1998 The Apache Group.  All rights reserved.
@@ -897,6 +897,7 @@ static int format_converter(register buffy * odp, const char *fmt,
 
 
 				case 's':
+				case 'v':
 					s = va_arg(ap, char *);
 					if (s != NULL) {
 						s_len = strlen(s);

@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2005 The PHP Group                                |
+  | Copyright (c) 1997-2006 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_odbc_int.h,v 1.9.2.1 2006/03/27 21:04:12 wez Exp $ */
+/* $Id: php_pdo_odbc_int.h,v 1.9.2.1.2.1 2006/10/11 02:10:56 wez Exp $ */
 
 #ifdef PHP_WIN32
 # define PDO_ODBC_TYPE	"Win32"
@@ -137,6 +137,7 @@ typedef struct {
 	long fetched_len;
 	SWORD	coltype;
 	char colname[128];
+	unsigned is_long;
 } pdo_odbc_column;
 
 typedef struct {

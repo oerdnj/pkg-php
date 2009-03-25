@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tokenizer.c,v 1.31.2.5 2006/01/01 12:50:16 sniper Exp $ */
+/* $Id: tokenizer.c,v 1.31.2.5.2.2 2006/06/20 22:39:15 iliaa Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -119,9 +119,9 @@ zend_module_entry tokenizer_module_entry = {
 	"tokenizer",
 	tokenizer_functions,
 	PHP_MINIT(tokenizer),
-	PHP_MSHUTDOWN(tokenizer),
-	PHP_RINIT(tokenizer),		/* Replace with NULL if there's nothing to do at request start */
-	PHP_RSHUTDOWN(tokenizer),	/* Replace with NULL if there's nothing to do at request end */
+	NULL,
+	NULL,
+	NULL,
 	PHP_MINFO(tokenizer),
 #if ZEND_MODULE_API_NO >= 20010901
 	"0.1", /* Replace with version number for your extension */
@@ -144,10 +144,10 @@ PHP_INI_END()
 */
 /* }}} */
 
-/* {{{ php_tokenizer_init_globals
+/* {{{ PHP_GINIT_FUNCTION
  */
 /* Uncomment this function if you have INI entries
-static void php_tokenizer_init_globals(zend_tokenizer_globals *tokenizer_globals)
+static PHP_GINIT_FUNCTION(tokenizer)
 {
 	tokenizer_globals->global_value = 0;
 	tokenizer_globals->global_string = NULL;
@@ -160,7 +160,6 @@ static void php_tokenizer_init_globals(zend_tokenizer_globals *tokenizer_globals
 PHP_MINIT_FUNCTION(tokenizer)
 {
 	/* If you have INI entries, uncomment these lines 
-	ZEND_INIT_MODULE_GLOBALS(tokenizer, php_tokenizer_init_globals, NULL);
 	REGISTER_INI_ENTRIES();
 	*/
 
@@ -284,35 +283,6 @@ PHP_MINIT_FUNCTION(tokenizer)
 	REGISTER_LONG_CONSTANT("T_CLONE", T_CLONE, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("T_HALT_COMPILER", T_HALT_COMPILER, CONST_CS | CONST_PERSISTENT);
 
-	return SUCCESS;
-}
-/* }}} */
-
-/* {{{ PHP_MSHUTDOWN_FUNCTION
- */
-PHP_MSHUTDOWN_FUNCTION(tokenizer)
-{
-	/* uncomment this line if you have INI entries
-	UNREGISTER_INI_ENTRIES();
-	*/
-	return SUCCESS;
-}
-/* }}} */
-
-/* Remove if there's nothing to do at request start */
-/* {{{ PHP_RINIT_FUNCTION
- */
-PHP_RINIT_FUNCTION(tokenizer)
-{
-	return SUCCESS;
-}
-/* }}} */
-
-/* Remove if there's nothing to do at request end */
-/* {{{ PHP_RSHUTDOWN_FUNCTION
- */
-PHP_RSHUTDOWN_FUNCTION(tokenizer)
-{
 	return SUCCESS;
 }
 /* }}} */

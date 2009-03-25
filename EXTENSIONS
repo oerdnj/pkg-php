@@ -229,7 +229,7 @@ STATUS:              Working
 SINCE:               5.0
 -------------------------------------------------------------------------------
 EXTENSION:           simplexml
-PRIMARY MAINTAINER:  Sterling Hughes <sterling@php.net>
+PRIMARY MAINTAINER:  Marcus Boerger <helly@php.net>
 MAINTENANCE:         Maintained
 STATUS:              Working
 SINCE:               5.0
@@ -461,6 +461,11 @@ STATUS:              Unknown
 -------------------------------------------------------------------------------
 EXTENSION:           recode
 PRIMARY MAINTAINER:  Kristian Köhntopp <kris@koehntopp.de>
+MAINTENANCE:         Maintained
+STATUS:              Working
+-------------------------------------------------------------------------------
+EXTENSION:           reflection
+PRIMARY MAINTAINER:  Marcus Börger <helly@php.net>, Johannes Schlüter <johannes@php.net>
 MAINTENANCE:         Maintained
 STATUS:              Working
 -------------------------------------------------------------------------------

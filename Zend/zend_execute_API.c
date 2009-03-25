@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute_API.c,v 1.331.2.20 2006/04/20 22:49:20 tony2001 Exp $ */
+/* $Id: zend_execute_API.c,v 1.331.2.20.2.10 2006/10/18 17:04:49 johannes Exp $ */
 
 #include <stdio.h>
 #include <signal.h>
@@ -155,8 +155,8 @@ void init_executor(TSRMLS_D)
 		ALLOC_ZVAL(globals);
 		globals->refcount=1;
 		globals->is_ref=1;
-		globals->type = IS_ARRAY;
-		globals->value.ht = &EG(symbol_table);
+		Z_TYPE_P(globals) = IS_ARRAY;
+		Z_ARRVAL_P(globals) = &EG(symbol_table);
 		zend_hash_update(&EG(symbol_table), "GLOBALS", sizeof("GLOBALS"), &globals, sizeof(zval *), NULL);
 	}
 	EG(active_symbol_table) = &EG(symbol_table);
@@ -188,10 +188,28 @@ void init_executor(TSRMLS_D)
 	EG(scope) = NULL;
 
 	EG(This) = NULL;
+	
+	EG(active_op_array) = NULL;
+
+	EG(active) = 1;
+}
+
+static int zval_call_destructor(zval **zv TSRMLS_DC)
+{
+	if (Z_TYPE_PP(zv) == IS_OBJECT && (*zv)->refcount == 1) {
+		return ZEND_HASH_APPLY_REMOVE;
+	} else {
+		return ZEND_HASH_APPLY_KEEP;
+	}
 }
 
 void shutdown_destructors(TSRMLS_D) {
 	zend_try {
+		int symbols;
+		do {
+			symbols = zend_hash_num_elements(&EG(symbol_table));
+			zend_hash_reverse_apply(&EG(symbol_table), (apply_func_t) zval_call_destructor TSRMLS_CC);
+		} while (symbols != zend_hash_num_elements(&EG(symbol_table)));
 		zend_objects_store_call_destructors(&EG(objects_store) TSRMLS_CC);
 	} zend_catch {
 		/* if we couldn't destruct cleanly, mark all objects as destructed anyway */
@@ -302,6 +320,7 @@ void shutdown_executor(TSRMLS_D)
 			FREE_HASHTABLE(EG(in_autoload));
 		}
 	} zend_end_try();
+	EG(active) = 0;
 }
 
 
@@ -429,13 +448,13 @@ ZEND_API int zend_is_true(zval *op)
 
 #include "../TSRM/tsrm_strtok_r.h"
 
-ZEND_API int zval_update_constant(zval **pp, void *arg TSRMLS_DC)
+ZEND_API int zval_update_constant_ex(zval **pp, void *arg, zend_class_entry *scope TSRMLS_DC)
 {
 	zval *p = *pp;
 	zend_bool inline_change = (zend_bool) (unsigned long) arg;
 	zval const_value;
 
-	if (p->type == IS_CONSTANT) {
+	if (Z_TYPE_P(p) == IS_CONSTANT) {
 		int refcount;
 		zend_uchar is_ref;
 
@@ -445,7 +464,7 @@ ZEND_API int zval_update_constant(zval **pp, void *arg TSRMLS_DC)
 		refcount = p->refcount;
 		is_ref = p->is_ref;
 
-		if (!zend_get_constant(p->value.str.val, p->value.str.len, &const_value TSRMLS_CC)) {
+		if (!zend_get_constant_ex(p->value.str.val, p->value.str.len, &const_value, scope TSRMLS_CC)) {
 			zend_error(E_NOTICE, "Use of undefined constant %s - assumed '%s'",
 					   p->value.str.val,
 					   p->value.str.val);
@@ -462,7 +481,7 @@ ZEND_API int zval_update_constant(zval **pp, void *arg TSRMLS_DC)
 
 		p->refcount = refcount;
 		p->is_ref = is_ref;
-	} else if (p->type == IS_CONSTANT_ARRAY) {
+	} else if (Z_TYPE_P(p) == IS_CONSTANT_ARRAY) {
 		zval **element, *new_val;
 		char *str_index;
 		uint str_index_len;
@@ -470,23 +489,23 @@ ZEND_API int zval_update_constant(zval **pp, void *arg TSRMLS_DC)
 
 		SEPARATE_ZVAL_IF_NOT_REF(pp);
 		p = *pp;
-		p->type = IS_ARRAY;
+		Z_TYPE_P(p) = IS_ARRAY;
 
 		/* First go over the array and see if there are any constant indices */
-		zend_hash_internal_pointer_reset(p->value.ht);
-		while (zend_hash_get_current_data(p->value.ht, (void **) &element)==SUCCESS) {
+		zend_hash_internal_pointer_reset(Z_ARRVAL_P(p));
+		while (zend_hash_get_current_data(Z_ARRVAL_P(p), (void **) &element)==SUCCESS) {
 			if (!(Z_TYPE_PP(element) & IS_CONSTANT_INDEX)) {
-				zend_hash_move_forward(p->value.ht);
+				zend_hash_move_forward(Z_ARRVAL_P(p));
 				continue;
 			}
 			Z_TYPE_PP(element) &= ~IS_CONSTANT_INDEX;
-			if (zend_hash_get_current_key_ex(p->value.ht, &str_index, &str_index_len, &num_index, 0, NULL)!=HASH_KEY_IS_STRING) {
-				zend_hash_move_forward(p->value.ht);
+			if (zend_hash_get_current_key_ex(Z_ARRVAL_P(p), &str_index, &str_index_len, &num_index, 0, NULL)!=HASH_KEY_IS_STRING) {
+				zend_hash_move_forward(Z_ARRVAL_P(p));
 				continue;
 			}
-			if (!zend_get_constant(str_index, str_index_len-1, &const_value TSRMLS_CC)) {
+			if (!zend_get_constant_ex(str_index, str_index_len-1, &const_value, scope TSRMLS_CC)) {
 				zend_error(E_NOTICE, "Use of undefined constant %s - assumed '%s'",	str_index, str_index);
-				zend_hash_move_forward(p->value.ht);
+				zend_hash_move_forward(Z_ARRVAL_P(p));
 				continue;
 			}
 
@@ -509,30 +528,34 @@ ZEND_API int zval_update_constant(zval **pp, void *arg TSRMLS_DC)
 			zval_ptr_dtor(element);
 			*element = new_val;
 
-			switch (const_value.type) {
+			switch (Z_TYPE(const_value)) {
 				case IS_STRING:
-					zend_symtable_update_current_key(p->value.ht, const_value.value.str.val, const_value.value.str.len+1);
+					zend_symtable_update_current_key(Z_ARRVAL_P(p), const_value.value.str.val, const_value.value.str.len+1);
 					break;
 				case IS_BOOL:
 				case IS_LONG:
-					zend_hash_update_current_key(p->value.ht, HASH_KEY_IS_LONG, NULL, 0, const_value.value.lval);
+					zend_hash_update_current_key(Z_ARRVAL_P(p), HASH_KEY_IS_LONG, NULL, 0, Z_LVAL(const_value));
 					break;
 				case IS_DOUBLE:
-					zend_hash_update_current_key(p->value.ht, HASH_KEY_IS_LONG, NULL, 0, (long)const_value.value.dval);
+					zend_hash_update_current_key(Z_ARRVAL_P(p), HASH_KEY_IS_LONG, NULL, 0, (long)Z_DVAL(const_value));
 					break;
 				case IS_NULL:
-					zend_hash_update_current_key(p->value.ht, HASH_KEY_IS_STRING, "", 1, 0);
+					zend_hash_update_current_key(Z_ARRVAL_P(p), HASH_KEY_IS_STRING, "", 1, 0);
 					break;
 			}
-			zend_hash_move_forward(p->value.ht);
+			zend_hash_move_forward(Z_ARRVAL_P(p));
 			zval_dtor(&const_value);
 		}
-		zend_hash_apply_with_argument(p->value.ht, (apply_func_arg_t) zval_update_constant, (void *) 1 TSRMLS_CC);
-		zend_hash_internal_pointer_reset(p->value.ht);
+		zend_hash_apply_with_argument(Z_ARRVAL_P(p), (apply_func_arg_t) zval_update_constant, (void *) 1 TSRMLS_CC);
+		zend_hash_internal_pointer_reset(Z_ARRVAL_P(p));
 	}
 	return 0;
 }
 
+ZEND_API int zval_update_constant(zval **pp, void *arg TSRMLS_DC)
+{
+	return zval_update_constant_ex(pp, arg, NULL TSRMLS_CC);
+}
 
 int call_user_function(HashTable *function_table, zval **object_pp, zval *function_name, zval *retval_ptr, zend_uint param_count, zval *params[] TSRMLS_DC)
 {
@@ -599,6 +622,10 @@ int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci_cache TS
 	char *fname, *colon;
 	int fname_len;
 
+	if (!EG(active)) {
+		return FAILURE; /* executor is already inactive */
+	}
+
 	if (EG(exception)) {
 		return FAILURE; /* we would result in an instable executor otherwise */
 	}
@@ -631,13 +658,13 @@ int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci_cache TS
 	*fci->retval_ptr_ptr = NULL;
 
 	if (!fci_cache || !fci_cache->initialized) {
-		if (fci->function_name->type==IS_ARRAY) { /* assume array($obj, $name) couple */
+		if (Z_TYPE_P(fci->function_name)==IS_ARRAY) { /* assume array($obj, $name) couple */
 			zval **tmp_object_ptr, **tmp_real_function_name;
 
-			if (zend_hash_index_find(fci->function_name->value.ht, 0, (void **) &tmp_object_ptr)==FAILURE) {
+			if (zend_hash_index_find(Z_ARRVAL_P(fci->function_name), 0, (void **) &tmp_object_ptr)==FAILURE) {
 				return FAILURE;
 			}
-			if (zend_hash_index_find(fci->function_name->value.ht, 1, (void **) &tmp_real_function_name)==FAILURE) {
+			if (zend_hash_index_find(Z_ARRVAL_P(fci->function_name), 1, (void **) &tmp_real_function_name)==FAILURE) {
 				return FAILURE;
 			}
 			fci->function_name = *tmp_real_function_name;
@@ -693,7 +720,7 @@ int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci_cache TS
 					if (found == FAILURE) {
 						zend_error(E_ERROR, "Class '%s' not found", Z_STRVAL_PP(fci->object_pp));
 					}
-					if (scope && EG(This) && 
+					if (scope && EG(This) &&
 						instanceof_function(Z_OBJCE_P(EG(This)), scope TSRMLS_CC) &&
 						instanceof_function(scope, *ce TSRMLS_CC)) {
 						fci->object_pp = &EG(This);
@@ -776,7 +803,7 @@ int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci_cache TS
 			&& !(EX(function_state).function->common.fn_flags & ZEND_ACC_STATIC)
 			&& !instanceof_function(check_scope_or_static, calling_scope TSRMLS_CC)) {
 				zend_error(E_ERROR, "Cannot call method %s() of class %s which is not a derived from %s", fname, calling_scope->name, check_scope_or_static->name);
-				return 0;
+				return FAILURE;
 			}
 		} else {
 			char *function_name_lc = zend_str_tolower_dup(fname, fname_len);
@@ -816,7 +843,7 @@ int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci_cache TS
 		fci->object_pp = fci_cache->object_pp;
 		EX(object) = fci->object_pp ? *fci->object_pp : NULL;
 	}
-	
+
 	if (EX(function_state).function->common.fn_flags & (ZEND_ACC_ABSTRACT|ZEND_ACC_DEPRECATED)) {
 		if (EX(function_state).function->common.fn_flags & ZEND_ACC_ABSTRACT) {
 			zend_error_noreturn(E_ERROR, "Cannot call abstract method %s::%s()", EX(function_state).function->common.scope->name, EX(function_state).function->common.function_name);
@@ -1023,7 +1050,7 @@ ZEND_API int zend_lookup_class_ex(char *name, int name_length, int use_autoload,
 	ZVAL_STRINGL(class_name_ptr, name, name_length, 1);
 	
 	args[0] = &class_name_ptr;
-	
+
 	fcall_info.size = sizeof(fcall_info);
 	fcall_info.function_table = EG(function_table);
 	fcall_info.function_name = &autoload_function;
@@ -1101,7 +1128,7 @@ ZEND_API int zend_eval_string(char *str, zval *retval_ptr, char *string_name TSR
 
 	original_handle_op_arrays = CG(handle_op_arrays);
 	CG(handle_op_arrays) = 0;
-	new_op_array = compile_string(&pv, string_name TSRMLS_CC);
+	new_op_array = zend_compile_string(&pv, string_name TSRMLS_CC);
 	CG(handle_op_arrays) = original_handle_op_arrays;
 
 	if (new_op_array) {
@@ -1339,6 +1366,7 @@ void zend_shutdown_timeout_thread()
 	/* Wait for thread termination */
 	WaitForSingleObject(timeout_thread_handle, 5000);
 	CloseHandle(timeout_thread_handle);
+	timeout_thread_initialized = 0;
 }
 
 #endif
@@ -1490,9 +1518,9 @@ void zend_verify_abstract_class(zend_class_entry *ce TSRMLS_DC)
 
 		zend_hash_apply_with_argument(&ce->function_table, (apply_func_arg_t) zend_verify_abstract_class_function, &ai TSRMLS_CC);
 
-		if (ai.cnt) {		
-			zend_error(E_ERROR, "Class %s contains %d abstract method%s and must therefore be declared abstract or implement the remaining methods (" MAX_ABSTRACT_INFO_FMT MAX_ABSTRACT_INFO_FMT MAX_ABSTRACT_INFO_FMT ")", 
-				ce->name, ai.cnt, 
+		if (ai.cnt) {
+			zend_error(E_ERROR, "Class %s contains %d abstract method%s and must therefore be declared abstract or implement the remaining methods (" MAX_ABSTRACT_INFO_FMT MAX_ABSTRACT_INFO_FMT MAX_ABSTRACT_INFO_FMT ")",
+				ce->name, ai.cnt,
 				ai.cnt > 1 ? "s" : "",
 				DISPLAY_ABSTRACT_FN(0),
 				DISPLAY_ABSTRACT_FN(1),

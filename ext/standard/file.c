@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: file.c,v 1.409.2.6 2006/04/06 02:39:55 iliaa Exp $ */
+/* $Id: file.c,v 1.409.2.6.2.7 2006/10/13 01:42:19 iliaa Exp $ */
 
 /* Synced with php 3.0 revision 1.218 1999-06-16 [ssb] */
 
@@ -535,7 +535,7 @@ PHP_FUNCTION(file_get_contents)
 	}
 
 	if (offset > 0 && php_stream_seek(stream, offset, SEEK_SET) < 0) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to seek to %ld position in the stream.", offset);
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to seek to position %ld in the stream.", offset);
 		RETURN_FALSE;
 	}
 
@@ -571,10 +571,15 @@ PHP_FUNCTION(file_put_contents)
 	long flags = 0;
 	zval *zcontext = NULL;
 	php_stream_context *context = NULL;
+	php_stream *srcstream = NULL;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sz/|lr!", &filename, &filename_len, 
 				&data, &flags, &zcontext) == FAILURE) {
 		return;
+	}
+
+	if (Z_TYPE_P(data) == IS_RESOURCE) {
+		php_stream_from_zval(srcstream, &data);
 	}
 
 	context = php_stream_context_from_zval(zcontext, flags & PHP_FILE_NO_DEFAULT_CONTEXT);
@@ -591,14 +596,8 @@ PHP_FUNCTION(file_put_contents)
 
 	switch (Z_TYPE_P(data)) {
 		case IS_RESOURCE:
-		{
-			php_stream *srcstream;
-			php_stream_from_zval(srcstream, &data);
-
 			numbytes = php_stream_copy_to_stream(srcstream, stream, PHP_STREAM_COPY_ALL);
-
 			break;
-		}
 		case IS_NULL:
 		case IS_LONG:
 		case IS_DOUBLE:
@@ -1464,6 +1463,10 @@ PHP_FUNCTION(umask)
 
 	oldumask = umask(077);
 
+	if (BG(umask) != -1) {
+		BG(umask) = oldumask;
+	}
+
 	if (arg_count == 0) {
 		umask(oldumask);
 	} else {
@@ -1473,8 +1476,6 @@ PHP_FUNCTION(umask)
 		convert_to_long_ex(arg1);
 		umask(Z_LVAL_PP(arg1));
 	}
-
-	/* XXX we should maybe reset the umask after each request! */
 
 	RETURN_LONG(oldumask);
 }
@@ -1710,9 +1711,14 @@ PHP_FUNCTION(copy)
 }
 /* }}} */
 
+PHPAPI int php_copy_file(char *src, char *dest TSRMLS_DC)
+{
+	return php_copy_file_ex(src, dest, ENFORCE_SAFE_MODE TSRMLS_CC);
+}
+
 /* {{{ php_copy_file
  */
-PHPAPI int php_copy_file(char *src, char *dest TSRMLS_DC)
+PHPAPI int php_copy_file_ex(char *src, char *dest, int src_chk TSRMLS_DC)
 {
 	php_stream *srcstream = NULL, *deststream = NULL;
 	int ret = FAILURE;
@@ -1767,7 +1773,7 @@ no_stat:
 	}
 safe_to_copy:
 
-	srcstream = php_stream_open_wrapper(src, "rb", ENFORCE_SAFE_MODE | REPORT_ERRORS, NULL);
+	srcstream = php_stream_open_wrapper(src, "rb", src_chk | REPORT_ERRORS, NULL);
 	
 	if (!srcstream) {
 		return ret;
@@ -1975,17 +1981,14 @@ PHP_FUNCTION(fputcsv)
    Get line from file pointer and parse for CSV fields */
 PHP_FUNCTION(fgetcsv)
 {
-	char *temp, *tptr, *bptr, *line_end, *limit;
 	char delimiter = ',';	/* allow this to be set as parameter */
 	char enclosure = '"';	/* allow this to be set as parameter */
-	const char escape_char = '\\';
 	/* first section exactly as php_fgetss */
 
 	long len = 0;
-	size_t buf_len, temp_len, line_end_len;
+	size_t buf_len;
 	char *buf;
 	php_stream *stream;
-	int inc_len;
 
 	{
 		zval *fd, **len_zv = NULL;
@@ -2005,6 +2008,8 @@ PHP_FUNCTION(fgetcsv)
 			if (delimiter_str_len < 1) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "delimiter must be a character");
 				RETURN_FALSE;
+			} else if (delimiter_str_len > 1) {
+				php_error_docref(NULL TSRMLS_CC, E_NOTICE, "delimiter must be a single character");
 			}
 
 			/* use first character from string */
@@ -2015,7 +2020,10 @@ PHP_FUNCTION(fgetcsv)
 			if (enclosure_str_len < 1) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "enclosure must be a character");
 				RETURN_FALSE;
+			} else if (enclosure_str_len > 1) {
+				php_error_docref(NULL TSRMLS_CC, E_NOTICE, "enclosure must be a single character");
 			}
+
 			/* use first character from string */
 			enclosure = enclosure_str[0];
 		}
@@ -2047,6 +2055,23 @@ PHP_FUNCTION(fgetcsv)
 			RETURN_FALSE;
 		}
 	}
+
+	php_fgetcsv(stream, delimiter, enclosure, buf_len, buf, return_value TSRMLS_CC);
+}
+/* }}} */
+
+
+PHPAPI void php_fgetcsv(php_stream *stream, /* {{{ */
+		char delimiter, char enclosure, 
+		size_t buf_len, char *buf,
+		zval *return_value TSRMLS_DC)
+{
+	char *temp, *tptr, *bptr, *line_end, *limit;
+	const char escape_char = '\\';
+
+	size_t temp_len, line_end_len;
+	int inc_len;
+
 	/* initialize internal state */
 	php_mblen(NULL, 0);
 

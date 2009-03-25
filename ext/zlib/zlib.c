@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: zlib.c,v 1.183.2.6 2006/01/01 12:50:17 sniper Exp $ */
+/* $Id: zlib.c,v 1.183.2.6.2.4 2006/08/14 20:08:18 nlopess Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -82,11 +82,28 @@
 #define GZIP_FOOTER_LENGTH		8
 
 /* True globals, no need for thread safety */
-static int gz_magic[2] = {0x1f, 0x8b};	/* gzip magic header */
+static const int gz_magic[2] = {0x1f, 0x8b};	/* gzip magic header */
+
+static int php_enable_output_compression(int buffer_size TSRMLS_DC);
+
+static PHP_MINIT_FUNCTION(zlib);
+static PHP_MSHUTDOWN_FUNCTION(zlib);
+static PHP_RINIT_FUNCTION(zlib);
+static PHP_MINFO_FUNCTION(zlib);
+static PHP_FUNCTION(gzopen);
+static PHP_FUNCTION(readgzfile);
+static PHP_FUNCTION(gzfile);
+static PHP_FUNCTION(gzcompress);
+static PHP_FUNCTION(gzuncompress);
+static PHP_FUNCTION(gzdeflate);
+static PHP_FUNCTION(gzinflate);
+static PHP_FUNCTION(gzencode);
+static PHP_FUNCTION(ob_gzhandler);
+static PHP_FUNCTION(zlib_get_coding_type);
 
 /* {{{ php_zlib_functions[]
  */
-zend_function_entry php_zlib_functions[] = {
+static zend_function_entry php_zlib_functions[] = {
 	PHP_FE(readgzfile,						NULL)
 	PHP_FALIAS(gzrewind,	rewind,			NULL)
 	PHP_FALIAS(gzclose,		fclose,			NULL)
@@ -113,6 +130,8 @@ zend_function_entry php_zlib_functions[] = {
 };
 /* }}} */
 
+ZEND_DECLARE_MODULE_GLOBALS(zlib)
+
 /* {{{ php_zlib_module_entry
  */
 zend_module_entry php_zlib_module_entry = {
@@ -125,11 +144,13 @@ zend_module_entry php_zlib_module_entry = {
 	NULL,
 	PHP_MINFO(zlib),
 	"1.1",
-	STANDARD_MODULE_PROPERTIES
+	PHP_MODULE_GLOBALS(zlib),
+	NULL,
+	NULL,
+	NULL,
+	STANDARD_MODULE_PROPERTIES_EX
 };
 /* }}} */
-
-ZEND_DECLARE_MODULE_GLOBALS(zlib)
 
 #ifdef COMPILE_DL_ZLIB
 ZEND_GET_MODULE(php_zlib)
@@ -199,22 +220,10 @@ PHP_INI_BEGIN()
 	STD_PHP_INI_ENTRY("zlib.output_handler",             "", PHP_INI_ALL, OnUpdate_zlib_output_handler,           output_handler,           zend_zlib_globals, zlib_globals)
 PHP_INI_END()
 
-#ifdef ZTS
-/* {{{ php_zlib_init_globals
- */
-static void php_zlib_init_globals(zend_zlib_globals *zlib_globals_p TSRMLS_DC)
-{
-}
-/* }}} */
-#endif
-
 /* {{{ PHP_MINIT_FUNCTION
  */
-PHP_MINIT_FUNCTION(zlib)
+static PHP_MINIT_FUNCTION(zlib)
 {
-#ifdef ZTS
-	ts_allocate_id(&zlib_globals_id, sizeof(zend_zlib_globals), (ts_allocate_ctor) php_zlib_init_globals, NULL);
-#endif
 	php_register_url_stream_wrapper("compress.zlib", &php_stream_gzip_wrapper TSRMLS_CC);
 	php_stream_filter_register_factory("zlib.*", &php_zlib_filter_factory TSRMLS_CC);
 
@@ -229,7 +238,7 @@ PHP_MINIT_FUNCTION(zlib)
 
 /* {{{ PHP_RINIT_FUNCTION
  */
-PHP_RINIT_FUNCTION(zlib)
+static PHP_RINIT_FUNCTION(zlib)
 {
 	uint chunk_size = ZLIBG(output_compression);
 
@@ -248,7 +257,7 @@ PHP_RINIT_FUNCTION(zlib)
 
 /* {{{ PHP_MSHUTDOWN_FUNCTION
  */
-PHP_MSHUTDOWN_FUNCTION(zlib)
+static PHP_MSHUTDOWN_FUNCTION(zlib)
 {
 	php_unregister_url_stream_wrapper("zlib" TSRMLS_CC);
 	php_stream_filter_unregister_factory("zlib.*" TSRMLS_CC);
@@ -261,7 +270,7 @@ PHP_MSHUTDOWN_FUNCTION(zlib)
 
 /* {{{ PHP_MINFO_FUNCTION
  */
-PHP_MINFO_FUNCTION(zlib)
+static PHP_MINFO_FUNCTION(zlib)
 {
 	php_info_print_table_start();
 	php_info_print_table_row(2, "ZLib Support", "enabled");
@@ -277,7 +286,7 @@ PHP_MINFO_FUNCTION(zlib)
 
 /* {{{ proto array gzfile(string filename [, int use_include_path])
    Read und uncompress entire .gz-file into an array */
-PHP_FUNCTION(gzfile)
+static PHP_FUNCTION(gzfile)
 {
 	char *filename;
 	int filename_len;
@@ -322,7 +331,7 @@ PHP_FUNCTION(gzfile)
 
 /* {{{ proto resource gzopen(string filename, string mode [, int use_include_path])
    Open a .gz-file and return a .gz-file pointer */
-PHP_FUNCTION(gzopen)
+static PHP_FUNCTION(gzopen)
 {
 	char *filename, *mode;
 	int filename_len, mode_len;
@@ -350,7 +359,7 @@ PHP_FUNCTION(gzopen)
  */
 /* {{{ proto int readgzfile(string filename [, int use_include_path])
    Output a .gz-file */
-PHP_FUNCTION(readgzfile)
+static PHP_FUNCTION(readgzfile)
 {
 	char *filename;
 	int filename_len;
@@ -377,7 +386,7 @@ PHP_FUNCTION(readgzfile)
 
 /* {{{ proto string gzcompress(string data [, int level]) 
    Gzip-compress a string */
-PHP_FUNCTION(gzcompress)
+static PHP_FUNCTION(gzcompress)
 {
 	int data_len, status;
 	long level = Z_DEFAULT_COMPRESSION;
@@ -419,7 +428,7 @@ PHP_FUNCTION(gzcompress)
 
 /* {{{ proto string gzuncompress(string data [, int length]) 
    Unzip a gzip-compressed string */
-PHP_FUNCTION(gzuncompress)
+static PHP_FUNCTION(gzuncompress)
 {
 	int data_len, status;
 	unsigned int factor=1, maxfactor=16;
@@ -465,7 +474,7 @@ PHP_FUNCTION(gzuncompress)
 
 /* {{{ proto string gzdeflate(string data [, int level]) 
    Gzip-compress a string */
-PHP_FUNCTION(gzdeflate)
+static PHP_FUNCTION(gzdeflate)
 {
 	int data_len,status;
 	long level = Z_DEFAULT_COMPRESSION;
@@ -526,7 +535,7 @@ PHP_FUNCTION(gzdeflate)
 
 /* {{{ proto string gzinflate(string data [, int length]) 
    Unzip a gzip-compressed string */
-PHP_FUNCTION(gzinflate)
+static PHP_FUNCTION(gzinflate)
 {
 	int data_len, status;
 	unsigned int factor=1, maxfactor=16;
@@ -537,6 +546,10 @@ PHP_FUNCTION(gzinflate)
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l", &data, &data_len, &limit) == FAILURE) {
 		return;
+	}
+
+	if (!data_len) {
+		RETURN_FALSE;
 	}
 
 	if (limit < 0) {
@@ -602,7 +615,7 @@ PHP_FUNCTION(gzinflate)
 
 /* {{{ proto string zlib_get_coding_type(void)
    Returns the coding type used for output compression */
-PHP_FUNCTION(zlib_get_coding_type)
+static PHP_FUNCTION(zlib_get_coding_type)
 {
 	switch (ZLIBG(compression_coding)) {
 		case CODING_GZIP:
@@ -736,7 +749,7 @@ static int php_deflate_string(const char *str, uint str_length, char **newstr, u
 
 /* {{{ proto string gzencode(string data [, int level [, int encoding_mode]])
    GZ encode a string */
-PHP_FUNCTION(gzencode)
+static PHP_FUNCTION(gzencode)
 {
 	char *data, *s2;
 	int data_len;
@@ -824,6 +837,8 @@ PHP_FUNCTION(gzencode)
 			trailer[6] = (char) (stream.total_in >> 16) & 0xFF;
 			trailer[7] = (char) (stream.total_in >> 24) & 0xFF;
 			trailer[8] = '\0';
+		} else {
+			s2[stream.total_out + GZIP_HEADER_LENGTH + (coding == CODING_GZIP ? GZIP_FOOTER_LENGTH : 0)] = '\0'; 
 		}
 		RETURN_STRINGL(s2, stream.total_out + GZIP_HEADER_LENGTH + (coding == CODING_GZIP ? GZIP_FOOTER_LENGTH : 0), 0);
 	} else {
@@ -864,7 +879,7 @@ int php_ob_gzhandler_check(TSRMLS_D)
 
 /* {{{ proto string ob_gzhandler(string str, int mode)
    Encode str based on accept-encoding setting - designed to be called from ob_start() */
-PHP_FUNCTION(ob_gzhandler)
+static PHP_FUNCTION(ob_gzhandler)
 {
 	char *string;
 	int string_len;
@@ -965,7 +980,7 @@ static void php_gzip_output_handler(char *output, uint output_len, char **handle
 
 /* {{{ php_enable_output_compression
  */
-int php_enable_output_compression(int buffer_size TSRMLS_DC)
+static int php_enable_output_compression(int buffer_size TSRMLS_DC)
 {
 	zval **a_encoding;
 

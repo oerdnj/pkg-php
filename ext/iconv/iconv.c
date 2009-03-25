@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: iconv.c,v 1.124.2.8 2006/04/27 00:50:54 moriyoshi Exp $ */
+/* $Id: iconv.c,v 1.124.2.8.2.7 2006/09/12 17:26:34 tony2001 Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -62,23 +62,103 @@
 #define _php_iconv_memequal(a, b, c) \
   ((c) == sizeof(unsigned long) ? *((unsigned long *)(a)) == *((unsigned long *)(b)) : ((c) == sizeof(unsigned int) ? *((unsigned int *)(a)) == *((unsigned int *)(b)) : memcmp(a, b, c) == 0))
 
+/* {{{ arginfo */
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_iconv_strlen, 0, 0, 1)
+	ZEND_ARG_INFO(0, str)
+	ZEND_ARG_INFO(0, charset)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_iconv_substr, 0, 0, 2)
+	ZEND_ARG_INFO(0, str)
+	ZEND_ARG_INFO(0, offset)
+	ZEND_ARG_INFO(0, length)
+	ZEND_ARG_INFO(0, charset)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_iconv_strpos, 0, 0, 2)
+	ZEND_ARG_INFO(0, haystack)
+	ZEND_ARG_INFO(0, needle)
+	ZEND_ARG_INFO(0, offset)
+	ZEND_ARG_INFO(0, charset)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_iconv_strrpos, 0, 0, 2)
+	ZEND_ARG_INFO(0, haystack)
+	ZEND_ARG_INFO(0, needle)
+	ZEND_ARG_INFO(0, charset)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_iconv_mime_encode, 0, 0, 2)
+	ZEND_ARG_INFO(0, field_name)
+	ZEND_ARG_INFO(0, field_value)
+	ZEND_ARG_INFO(0, preference) /* ZEND_ARG_ARRAY_INFO(0, preference, 1) */
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_iconv_mime_decode, 0, 0, 1)
+	ZEND_ARG_INFO(0, encoded_string)
+	ZEND_ARG_INFO(0, mode)
+	ZEND_ARG_INFO(0, charset)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_iconv_mime_decode_headers, 0, 0, 1)
+	ZEND_ARG_INFO(0, headers)
+	ZEND_ARG_INFO(0, mode)
+	ZEND_ARG_INFO(0, charset)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_iconv, 0)
+	ZEND_ARG_INFO(0, in_charset)
+	ZEND_ARG_INFO(0, out_charset)
+	ZEND_ARG_INFO(0, str)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_ob_iconv_handler, 0)
+	ZEND_ARG_INFO(0, contents)
+	ZEND_ARG_INFO(0, status)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO(arginfo_iconv_set_encoding, 0)
+	ZEND_ARG_INFO(0, type)
+	ZEND_ARG_INFO(0, charset)
+ZEND_END_ARG_INFO()
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_iconv_get_encoding, 0, 0, 0)
+	ZEND_ARG_INFO(0, type)
+ZEND_END_ARG_INFO()
+
+/* }}} */
+
 /* {{{ iconv_functions[]
  */
 zend_function_entry iconv_functions[] = {
-	PHP_NAMED_FE(iconv,php_if_iconv,				NULL)
-	PHP_FE(ob_iconv_handler,						NULL)
-	PHP_FE(iconv_get_encoding,						NULL)
-	PHP_FE(iconv_set_encoding,						NULL)
-	PHP_FE(iconv_strlen,							NULL)
-	PHP_FE(iconv_substr,							NULL)
-	PHP_FE(iconv_strpos,							NULL)
-	PHP_FE(iconv_strrpos,							NULL)
-	PHP_FE(iconv_mime_encode,						NULL)
-	PHP_FE(iconv_mime_decode,						NULL)
-	PHP_FE(iconv_mime_decode_headers,				NULL)
+	PHP_NAMED_FE(iconv,php_if_iconv,				arginfo_iconv)
+	PHP_FE(ob_iconv_handler,						arginfo_ob_iconv_handler)
+	PHP_FE(iconv_get_encoding,						arginfo_iconv_get_encoding)
+	PHP_FE(iconv_set_encoding,						arginfo_iconv_set_encoding)
+	PHP_FE(iconv_strlen,							arginfo_iconv_strlen)
+	PHP_FE(iconv_substr,							arginfo_iconv_substr)
+	PHP_FE(iconv_strpos,							arginfo_iconv_strpos)
+	PHP_FE(iconv_strrpos,							arginfo_iconv_strrpos)
+	PHP_FE(iconv_mime_encode,						arginfo_iconv_mime_encode)
+	PHP_FE(iconv_mime_decode,						arginfo_iconv_mime_decode)
+	PHP_FE(iconv_mime_decode_headers,				arginfo_iconv_mime_decode_headers)
 	{NULL, NULL, NULL}
 };
 /* }}} */
+
+ZEND_DECLARE_MODULE_GLOBALS(iconv)
+static PHP_GINIT_FUNCTION(iconv);
 
 /* {{{ iconv_module_entry
  */
@@ -92,15 +172,26 @@ zend_module_entry iconv_module_entry = {
 	NULL,
 	PHP_MINFO(miconv),
 	NO_VERSION_YET,
-	STANDARD_MODULE_PROPERTIES
+	PHP_MODULE_GLOBALS(iconv),
+	PHP_GINIT(iconv),
+	NULL,
+	NULL,
+	STANDARD_MODULE_PROPERTIES_EX
 };
 /* }}} */
-
-ZEND_DECLARE_MODULE_GLOBALS(iconv)
 
 #ifdef COMPILE_DL_ICONV
 ZEND_GET_MODULE(iconv)
 #endif
+
+/* {{{ PHP_GINIT_FUNCTION */
+static PHP_GINIT_FUNCTION(iconv)
+{
+	iconv_globals->input_encoding = NULL;
+	iconv_globals->output_encoding = NULL;
+	iconv_globals->internal_encoding = NULL;
+}
+/* }}} */
 
 #ifdef HAVE_LIBICONV
 #define iconv libiconv
@@ -151,21 +242,11 @@ PHP_INI_BEGIN()
 PHP_INI_END()
 /* }}} */
 
-/* {{{ php_iconv_init_globals */
-static void php_iconv_init_globals(zend_iconv_globals *iconv_globals)
-{
-	iconv_globals->input_encoding = NULL;
-	iconv_globals->output_encoding = NULL;
-	iconv_globals->internal_encoding = NULL;
-}
-/* }}} */
-
 /* {{{ PHP_MINIT_FUNCTION */
 PHP_MINIT_FUNCTION(miconv)
 {
 	char *version = "unknown";
 
-	ZEND_INIT_MODULE_GLOBALS(iconv, php_iconv_init_globals, NULL);
 	REGISTER_INI_ENTRIES();
 
 #if HAVE_LIBICONV
@@ -1078,7 +1159,7 @@ static php_iconv_err_t _php_iconv_mime_encode(smart_str *pretval, const char *fn
 
 				prev_in_left = in_left;
 
-				encoded = php_base64_encode(buf, (int)(out_size - out_left), &dummy);
+				encoded = (char *) php_base64_encode((unsigned char *) buf, (int)(out_size - out_left), &dummy);
 				encoded_len = (size_t)dummy;
 
 				if (char_cnt < encoded_len) {
@@ -1748,7 +1829,7 @@ static void _php_iconv_show_error(php_iconv_err_t err, const char *out_charset, 
 
 		case PHP_ICONV_ERR_TOO_BIG:
 			/* should not happen */
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Run out of buffer");
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Buffer length exceeded");
 			break;
 
 		case PHP_ICONV_ERR_MALFORMED:
@@ -1802,7 +1883,6 @@ PHP_FUNCTION(iconv_substr)
 	char *str;
 	int str_len; 
 	long offset, length;
-	zval *len_z = NULL;
 
 	php_iconv_err_t err;
 
@@ -1810,17 +1890,14 @@ PHP_FUNCTION(iconv_substr)
 
 	charset = ICONVG(internal_encoding);
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sl|zs",
-		&str, &str_len, &offset, &len_z,
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sl|ls",
+		&str, &str_len, &offset, &length,
 		&charset, &charset_len) == FAILURE) {
 		RETURN_FALSE;
 	}
 
-	if (len_z == NULL) {
+	if (ZEND_NUM_ARGS() < 3) {
 		length = str_len; 
-	} else {
-		convert_to_long_ex(&len_z);
-		length = Z_LVAL_P(len_z);
 	}
 
 	err = _php_iconv_substr(&retval, str, str_len, offset, length, charset); 
@@ -1839,7 +1916,7 @@ PHP_FUNCTION(iconv_substr)
 }
 /* }}} */
 
-/* {{{ proto int iconv_strpos(string haystack, string needle, int offset [, string charset])
+/* {{{ proto int iconv_strpos(string haystack, string needle [, int offset [, string charset]])
    Finds position of first occurrence of needle within part of haystack beginning with offset */
 PHP_FUNCTION(iconv_strpos)
 {
@@ -1866,6 +1943,10 @@ PHP_FUNCTION(iconv_strpos)
 
 	if (offset < 0) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Offset not contained in string.");
+		RETURN_FALSE;
+	}
+
+	if (ndl_len < 1) {
 		RETURN_FALSE;
 	}
 
@@ -1904,6 +1985,10 @@ PHP_FUNCTION(iconv_strrpos)
 		RETURN_FALSE;
 	}
 
+	if (ndl_len < 1) {
+		RETURN_FALSE;
+	}
+
 	err = _php_iconv_strpos(&retval, haystk, haystk_len, ndl, ndl_len,
 	                        -1, charset); 
 	_php_iconv_show_error(err, GENERIC_SUPERSET_NAME, charset TSRMLS_CC);
@@ -1916,7 +2001,7 @@ PHP_FUNCTION(iconv_strrpos)
 }
 /* }}} */
 
-/* {{{ proto string iconv_mime_encode(string field_name, string field_value, [, array preference])
+/* {{{ proto string iconv_mime_encode(string field_name, string field_value [, array preference])
    Composes a mime header field with field_name and field_value in a specified scheme */
 PHP_FUNCTION(iconv_mime_encode)
 {
@@ -2197,7 +2282,7 @@ PHP_FUNCTION(ob_iconv_handler)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zl", &zv_string, &status) == FAILURE)
 		return;
 
-	convert_to_string_ex(&zv_string);
+	convert_to_string(zv_string);
 
 	if (SG(sapi_headers).mimetype && 
 		strncasecmp(SG(sapi_headers).mimetype, "text/", 5) == 0) {
@@ -2300,6 +2385,7 @@ typedef struct _php_iconv_stream_filter {
 	char stub[128];
 	size_t stub_len;
 } php_iconv_stream_filter;
+/* }}} iconv stream filter */
 
 /* {{{ php_iconv_stream_filter_dtor */
 static void php_iconv_stream_filter_dtor(php_iconv_stream_filter *self)
@@ -2547,6 +2633,7 @@ out_failure:
 	pefree(out_buf, persistent);
 	return FAILURE;
 }
+/* }}} php_iconv_stream_filter_append_bucket */
 
 /* {{{ php_iconv_stream_filter_do_filter */
 static php_stream_filter_status_t php_iconv_stream_filter_do_filter(

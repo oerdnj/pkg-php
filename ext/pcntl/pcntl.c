@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: pcntl.c,v 1.48.2.2 2006/01/01 12:50:10 sniper Exp $ */
+/* $Id: pcntl.c,v 1.48.2.2.2.3 2006/08/31 15:42:18 tony2001 Exp $ */
 
 #define PCNTL_DEBUG 0
 
@@ -42,6 +42,7 @@
 #endif
 
 ZEND_DECLARE_MODULE_GLOBALS(pcntl)
+static PHP_GINIT_FUNCTION(pcntl);
 
 zend_function_entry pcntl_functions[] = {
 	PHP_FE(pcntl_fork,			NULL)
@@ -75,7 +76,11 @@ zend_module_entry pcntl_module_entry = {
 	PHP_RSHUTDOWN(pcntl),
 	PHP_MINFO(pcntl),
 	NO_VERSION_YET,
-	STANDARD_MODULE_PROPERTIES
+	PHP_MODULE_GLOBALS(pcntl),
+	PHP_GINIT(pcntl),
+	NULL,
+	NULL,
+	STANDARD_MODULE_PROPERTIES_EX
 };
 
 #ifdef COMPILE_DL_PCNTL
@@ -160,7 +165,7 @@ void php_register_signal_constants(INIT_FUNC_ARGS)
 #endif
 }
 
-static void php_pcntl_init_globals(zend_pcntl_globals *pcntl_globals)
+static PHP_GINIT_FUNCTION(pcntl)
 { 
 	memset(pcntl_globals, 0, sizeof(*pcntl_globals));
 }
@@ -175,7 +180,6 @@ PHP_RINIT_FUNCTION(pcntl)
 PHP_MINIT_FUNCTION(pcntl)
 {
 	php_register_signal_constants(INIT_FUNC_ARGS_PASSTHRU);
-	ZEND_INIT_MODULE_GLOBALS(pcntl, php_pcntl_init_globals, NULL);
 	php_add_tick_function(pcntl_tick_handler);
 
 	return SUCCESS;
@@ -545,7 +549,7 @@ PHP_FUNCTION(pcntl_signal)
 	/* Special long value case for SIG_DFL and SIG_IGN */
 	if (Z_TYPE_P(handle)==IS_LONG) {
 		if (Z_LVAL_P(handle)!= (long) SIG_DFL && Z_LVAL_P(handle) != (long) SIG_IGN) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid value for handle argument specifEied");
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid value for handle argument specified");
 		}
 		if (php_signal(signo, (Sigfunc *) Z_LVAL_P(handle), (int) restart_syscalls) == SIG_ERR) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Error assigning signal");
@@ -693,16 +697,19 @@ void pcntl_tick_handler()
 	PCNTL_G(head) = NULL; /* simple stores are atomic */
 	
 	/* Allocate */
-	MAKE_STD_ZVAL(param);
-	MAKE_STD_ZVAL(retval);
 
 	while (queue) {
 		if (zend_hash_index_find(&PCNTL_G(php_signal_table), queue->signo, (void **) &handle)==SUCCESS) {
+			MAKE_STD_ZVAL(retval);
+			MAKE_STD_ZVAL(param);
+			ZVAL_NULL(retval);
 			ZVAL_LONG(param, queue->signo);
 
 			/* Call php signal handler - Note that we do not report errors, and we ignore the return value */
 			/* FIXME: this is probably broken when multiple signals are handled in this while loop (retval) */
 			call_user_function(EG(function_table), NULL, *handle, retval, 1, &param TSRMLS_CC);
+			zval_ptr_dtor(&param);
+			zval_ptr_dtor(&retval);
 		}
 
 		next = queue->next;
@@ -713,10 +720,6 @@ void pcntl_tick_handler()
 
 	/* Re-enable queue */
 	PCNTL_G(processing_signal_queue) = 0;
-
-	/* Clean up */
-	efree(param);
-	efree(retval);
 }
 
 
