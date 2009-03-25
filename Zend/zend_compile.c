@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_compile.c,v 1.647.2.25 2006/03/27 08:09:18 dmitry Exp $ */
+/* $Id: zend_compile.c,v 1.647.2.27 2006/05/02 15:49:26 dmitry Exp $ */
 
 #include <zend_language_parser.h>
 #include "zend.h"
@@ -154,6 +154,7 @@ void zend_init_compiler_data_structures(TSRMLS_D)
 
 void init_compiler(TSRMLS_D)
 {
+	CG(active_op_array) = NULL;
 	zend_init_compiler_data_structures(TSRMLS_C);
 	zend_init_rsrc_list(TSRMLS_C);
 	zend_hash_init(&CG(filenames_table), 5, NULL, (dtor_func_t) free_estring, 0);

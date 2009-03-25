@@ -2408,7 +2408,7 @@ echo "$ac_t""$target" 1>&6
 
 MAJOR_VERSION=5
 MINOR_VERSION=1
-RELEASE_VERSION=5
+RELEASE_VERSION=6
 EXTRA_VERSION=""
 VERSION="$MAJOR_VERSION.$MINOR_VERSION.$RELEASE_VERSION$EXTRA_VERSION"
 
@@ -3110,7 +3110,7 @@ test -n "$YACC" || YACC="yacc"
 
   
   # we only support certain bison versions
-  bison_version_list="1.28 1.35 1.75 1.875 2.0 2.1"
+  bison_version_list="1.28 1.35 1.75 1.875 2.0 2.1 2.2 2.3"
 
   # for standalone build of Zend Engine
   test -z "$SED" && SED=sed
@@ -101824,7 +101824,7 @@ fi
 
 
   # we only support certain bison versions
-  bison_version_list="1.28 1.35 1.75 1.875 2.0 2.1"
+  bison_version_list="1.28 1.35 1.75 1.875 2.0 2.1 2.2 2.3"
 
   # for standalone build of Zend Engine
   test -z "$SED" && SED=sed

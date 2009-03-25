@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_opcode.c,v 1.110.2.5 2006/03/14 11:24:45 dmitry Exp $ */
+/* $Id: zend_opcode.c,v 1.110.2.6 2006/04/10 12:26:53 dmitry Exp $ */
 
 #include <stdio.h>
 
@@ -367,8 +367,10 @@ int pass_two(zend_op_array *op_array TSRMLS_DC)
 		zend_llist_apply_with_argument(&zend_extensions, (llist_apply_with_arg_func_t) zend_extension_op_array_handler, op_array TSRMLS_CC);
 	}
 
-	op_array->opcodes = (zend_op *) erealloc(op_array->opcodes, sizeof(zend_op)*op_array->last);
-	op_array->size = op_array->last;
+	if (!CG(interactive) && op_array->size != op_array->last) {
+		op_array->opcodes = (zend_op *) erealloc(op_array->opcodes, sizeof(zend_op)*op_array->last);
+		op_array->size = op_array->last;
+	}
 
 	opline = op_array->opcodes;
 	end = opline + op_array->last;

@@ -116,7 +116,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_ini_parser.y,v 1.41.2.1 2006/01/04 23:53:04 andi Exp $ */
+/* $Id: zend_ini_parser.y,v 1.41.2.2 2006/04/12 09:51:54 dmitry Exp $ */
 
 #define DEBUG_CFG_PARSER 0
 #include "zend.h"
@@ -549,16 +549,16 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  2
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   43
+#define YYLAST   41
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  19
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  8
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  26
+#define YYNRULES  27
 /* YYNRULES -- Number of states.  */
-#define YYNSTATES  36
+#define YYNSTATES  38
 
 /* YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.  */
 #define YYUNDEFTOK  2
@@ -605,8 +605,8 @@ static const yytype_uint8 yytranslate[] =
 static const yytype_uint8 yyprhs[] =
 {
        0,     0,     3,     6,     7,    11,    16,    18,    20,    22,
-      24,    26,    28,    30,    32,    33,    36,    39,    42,    43,
-      47,    49,    53,    57,    60,    63,    67
+      24,    26,    28,    30,    31,    33,    35,    37,    40,    43,
+      46,    50,    52,    56,    60,    63,    66,    70
 };
 
 /* YYRHS -- A `-1'-separated list of the rules' RHS.  */
@@ -614,19 +614,20 @@ static const yytype_int8 yyrhs[] =
 {
       20,     0,    -1,    20,    21,    -1,    -1,     3,    14,    22,
       -1,     3,     5,    14,    22,    -1,     3,    -1,     6,    -1,
-      15,    -1,    25,    -1,     7,    -1,     8,    -1,    23,    -1,
-      15,    -1,    -1,    23,    24,    -1,    23,     4,    -1,    23,
-      26,    -1,    -1,     9,     3,    16,    -1,    26,    -1,    25,
-      10,    25,    -1,    25,    11,    25,    -1,    12,    25,    -1,
-      13,    25,    -1,    17,    25,    18,    -1,     3,    -1
+      15,    -1,    25,    -1,     7,    -1,     8,    -1,    15,    -1,
+      -1,    24,    -1,     4,    -1,    26,    -1,    23,    24,    -1,
+      23,     4,    -1,    23,    26,    -1,     9,     3,    16,    -1,
+      23,    -1,    25,    10,    25,    -1,    25,    11,    25,    -1,
+      12,    25,    -1,    13,    25,    -1,    17,    25,    18,    -1,
+       3,    -1
 };
 
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
        0,   221,   221,   222,   226,   234,   242,   243,   244,   249,
-     250,   251,   252,   253,   254,   259,   260,   261,   262,   266,
-     270,   271,   272,   273,   274,   275,   279
+     250,   251,   252,   253,   258,   259,   260,   261,   262,   263,
+     267,   271,   272,   273,   274,   275,   276,   280
 };
 #endif
 
@@ -657,16 +658,16 @@ static const yytype_uint16 yytoknum[] =
 static const yytype_uint8 yyr1[] =
 {
        0,    19,    20,    20,    21,    21,    21,    21,    21,    22,
-      22,    22,    22,    22,    22,    23,    23,    23,    23,    24,
-      25,    25,    25,    25,    25,    25,    26
+      22,    22,    22,    22,    23,    23,    23,    23,    23,    23,
+      24,    25,    25,    25,    25,    25,    25,    26
 };
 
 /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
 static const yytype_uint8 yyr2[] =
 {
        0,     2,     2,     0,     3,     4,     1,     1,     1,     1,
-       1,     1,     1,     1,     0,     2,     2,     2,     0,     3,
-       1,     3,     3,     2,     2,     3,     1
+       1,     1,     1,     0,     1,     1,     1,     2,     2,     2,
+       3,     1,     3,     3,     2,     2,     3,     1
 };
 
 /* YYDEFACT[STATE-NAME] -- Default rule to reduce with in state
@@ -674,56 +675,56 @@ static const yytype_uint8 yyr2[] =
    means the default is an error.  */
 static const yytype_uint8 yydefact[] =
 {
-       3,     0,     1,     6,     7,     8,     2,     0,    14,    14,
-      26,    10,    11,     0,     0,    13,     0,     4,    12,     9,
-      20,     5,    23,    24,     0,    16,     0,    15,    17,     0,
-       0,    25,     0,    21,    22,    19
+       3,     0,     1,     6,     7,     8,     2,     0,    13,    13,
+      27,    15,    10,    11,     0,     0,     0,    12,     0,     4,
+      21,    14,     9,    16,     5,     0,    24,    25,     0,    18,
+      17,    19,     0,     0,    20,    26,    22,    23
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-      -1,     1,     6,    17,    18,    27,    19,    20
+      -1,     1,     6,    19,    20,    21,    22,    23
 };
 
 /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
    STATE-NUM.  */
-#define YYPACT_NINF -14
+#define YYPACT_NINF -16
 static const yytype_int8 yypact[] =
 {
-     -14,     4,   -14,    -3,   -14,   -14,   -14,    -2,    17,    17,
-     -14,   -14,   -14,    10,    10,   -14,    10,   -14,     5,    -5,
-     -14,   -14,   -14,   -14,    25,   -14,    12,   -14,   -14,    10,
-      10,   -14,     2,   -14,   -14,   -14
+     -16,     4,   -16,    -3,   -16,   -16,   -16,    -2,    17,    17,
+     -16,   -16,   -16,   -16,    13,    24,    24,   -16,    24,   -16,
+       5,   -16,    12,   -16,   -16,    -1,   -16,   -16,    -5,   -16,
+     -16,   -16,    24,    24,   -16,   -16,   -16,   -16
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -14,   -14,   -14,    19,   -14,   -14,   -13,    13
+     -16,   -16,   -16,    22,   -16,    15,   -15,    18
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
    positive, shift that token.  If negative, reduce the rule which
    number is the opposite.  If zero, do what YYDEFACT says.
    If YYTABLE_NINF, syntax error.  */
-#define YYTABLE_NINF -19
-static const yytype_int8 yytable[] =
+#define YYTABLE_NINF -1
+static const yytype_uint8 yytable[] =
 {
-      22,    23,     7,    24,     2,    29,    30,     3,    10,    25,
-       4,     8,     9,    10,    26,    32,    33,    34,    35,     5,
-      10,   -18,    13,    14,    11,    12,   -18,    16,    21,    13,
-      14,    28,    15,     0,    16,    29,    30,     0,     0,     0,
-       0,     0,     0,    31
+      26,    27,     7,    28,     2,    32,    33,     3,    10,    29,
+       4,     8,     9,    35,    14,    34,    25,    36,    37,     5,
+      10,    11,    32,    33,    12,    13,    14,    10,    11,    15,
+      16,    24,    17,    14,    18,    30,    15,    16,    31,     0,
+       0,    18
 };
 
 static const yytype_int8 yycheck[] =
 {
-      13,    14,     5,    16,     0,    10,    11,     3,     3,     4,
-       6,    14,    14,     3,     9,     3,    29,    30,    16,    15,
-       3,     4,    12,    13,     7,     8,     9,    17,     9,    12,
-      13,    18,    15,    -1,    17,    10,    11,    -1,    -1,    -1,
-      -1,    -1,    -1,    18
+      15,    16,     5,    18,     0,    10,    11,     3,     3,     4,
+       6,    14,    14,    18,     9,    16,     3,    32,    33,    15,
+       3,     4,    10,    11,     7,     8,     9,     3,     4,    12,
+      13,     9,    15,     9,    17,    20,    12,    13,    20,    -1,
+      -1,    17
 };
 
 /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
@@ -731,9 +732,9 @@ static const yytype_int8 yycheck[] =
 static const yytype_uint8 yystos[] =
 {
        0,    20,     0,     3,     6,    15,    21,     5,    14,    14,
-       3,     7,     8,    12,    13,    15,    17,    22,    23,    25,
-      26,    22,    25,    25,    25,     4,     9,    24,    26,    10,
-      11,    18,     3,    25,    25,    16
+       3,     4,     7,     8,     9,    12,    13,    15,    17,    22,
+      23,    24,    25,    26,    22,     3,    25,    25,    25,     4,
+      24,    26,    10,    11,    16,    18,    25,    25
 };
 
 #define yyerrok		(yyerrstatus = 0)
@@ -1598,7 +1599,7 @@ yyreduce:
 
   case 12:
 
-    { (yyval) = (yyvsp[(1) - (1)]); }
+    { zend_ini_init_string(&(yyval)); }
     break;
 
   case 13:
@@ -1608,65 +1609,70 @@ yyreduce:
 
   case 14:
 
-    { zend_ini_init_string(&(yyval)); }
+    { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 15:
 
-    { zend_ini_add_string(&(yyval), &(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)])); free((yyvsp[(2) - (2)]).value.str.val); }
+    { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 16:
 
-    { zend_ini_add_string(&(yyval), &(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)])); free((yyvsp[(2) - (2)]).value.str.val); }
+    { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 17:
 
-    { zend_ini_add_string(&(yyval), &(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)])); }
+    { zend_ini_add_string(&(yyval), &(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)])); free((yyvsp[(2) - (2)]).value.str.val); }
     break;
 
   case 18:
 
-    { zend_ini_init_string(&(yyval)); }
+    { zend_ini_add_string(&(yyval), &(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)])); free((yyvsp[(2) - (2)]).value.str.val); }
     break;
 
   case 19:
 
-    { zend_ini_get_var(&(yyval), &(yyvsp[(2) - (3)])); }
+    { zend_ini_add_string(&(yyval), &(yyvsp[(1) - (2)]), &(yyvsp[(2) - (2)])); free((yyvsp[(2) - (2)]).value.str.val); }
     break;
 
   case 20:
 
-    { (yyval) = (yyvsp[(1) - (1)]); }
+    { zend_ini_get_var(&(yyval), &(yyvsp[(2) - (3)])); free((yyvsp[(2) - (3)]).value.str.val); }
     break;
 
   case 21:
 
-    { zend_ini_do_op('|', &(yyval), &(yyvsp[(1) - (3)]), &(yyvsp[(3) - (3)])); }
+    { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 22:
 
-    { zend_ini_do_op('&', &(yyval), &(yyvsp[(1) - (3)]), &(yyvsp[(3) - (3)])); }
+    { zend_ini_do_op('|', &(yyval), &(yyvsp[(1) - (3)]), &(yyvsp[(3) - (3)])); }
     break;
 
   case 23:
 
-    { zend_ini_do_op('~', &(yyval), &(yyvsp[(2) - (2)]), NULL); }
+    { zend_ini_do_op('&', &(yyval), &(yyvsp[(1) - (3)]), &(yyvsp[(3) - (3)])); }
     break;
 
   case 24:
 
-    { zend_ini_do_op('!', &(yyval), &(yyvsp[(2) - (2)]), NULL); }
+    { zend_ini_do_op('~', &(yyval), &(yyvsp[(2) - (2)]), NULL); }
     break;
 
   case 25:
 
-    { (yyval) = (yyvsp[(2) - (3)]); }
+    { zend_ini_do_op('!', &(yyval), &(yyvsp[(2) - (2)]), NULL); }
     break;
 
   case 26:
+
+    { (yyval) = (yyvsp[(2) - (3)]); }
+    break;
+
+  case 27:
 
     { zend_ini_get_constant(&(yyval), &(yyvsp[(1) - (1)])); }
     break;
