@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2004 The PHP Group                                |
+  | Copyright (c) 1997-2005 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
  
-/* $Id: bz2.c,v 1.6.2.5 2005/06/09 16:13:24 iliaa Exp $ */
+/* $Id: bz2.c,v 1.14.2.1 2005/10/25 15:53:06 iliaa Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -240,13 +240,14 @@ static void php_bz2_error(INTERNAL_FUNCTION_PARAMETERS, int);
 PHP_MINIT_FUNCTION(bz2)
 {
 	php_register_url_stream_wrapper("compress.bzip2", &php_stream_bzip2_wrapper TSRMLS_CC);
-
+	php_stream_filter_register_factory("bzip2.*", &php_bz2_filter_factory TSRMLS_CC);
 	return SUCCESS;
 }
 
 PHP_MSHUTDOWN_FUNCTION(bz2)
 {
 	php_unregister_url_stream_wrapper("compress.bzip2" TSRMLS_CC);
+	php_stream_filter_unregister_factory("bzip2.*" TSRMLS_CC);
 
 	return SUCCESS;
 }
@@ -255,6 +256,8 @@ PHP_MINFO_FUNCTION(bz2)
 {
 	php_info_print_table_start();
 	php_info_print_table_row(2, "BZip2 Support", "Enabled");
+	php_info_print_table_row(2, "Stream Wrapper support", "compress.bz2://");
+	php_info_print_table_row(2, "Stream Filter support", "bzip2.decompress, bzip2.compress");
 	php_info_print_table_row(2, "BZip2 Version", (char *) BZ2_bzlibVersion());
 	php_info_print_table_end();
 }
@@ -438,7 +441,11 @@ PHP_FUNCTION(bzdecompress)
 	char *source, *dest;
 	int source_len, error;
 	long small = 0;
+#if defined(PHP_WIN32)
+	unsigned __int64 size = 0;
+#else
 	unsigned long long size = 0;
+#endif
 	bz_stream bzs;
 
 	if (FAILURE == zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l", &source, &source_len, &small)) {

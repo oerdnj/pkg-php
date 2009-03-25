@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_gd.h,v 1.57 2004/01/08 17:32:08 sniper Exp $ */
+/* $Id: php_gd.h,v 1.59.2.2 2005/11/02 21:26:25 sniper Exp $ */
 
 #ifndef PHP_GD_H
 #define PHP_GD_H
@@ -29,6 +29,15 @@
 #endif
 
 #if HAVE_LIBGD
+
+/* open_basedir and safe_mode checks */
+#define PHP_GD_CHECK_OPEN_BASEDIR(filename, errormsg)                                   \
+	if (!filename || php_check_open_basedir(filename TSRMLS_CC) ||                      \
+		(PG(safe_mode) && !php_checkuid(filename, NULL, CHECKUID_CHECK_FILE_AND_DIR))   \
+	) {                                                                                 \
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, errormsg);                          \
+		RETURN_FALSE;                                                                   \
+	}
 
 #define PHP_GDIMG_TYPE_GIF      1
 #define PHP_GDIMG_TYPE_PNG      2
@@ -175,6 +184,7 @@ PHP_FUNCTION(image2wbmp);
 PHP_FUNCTION(imagelayereffect);
 PHP_FUNCTION(imagecolormatch);
 PHP_FUNCTION(imagefilter);
+PHP_FUNCTION(imageconvolution);
 PHP_FUNCTION(imagexbm);
 #endif
 

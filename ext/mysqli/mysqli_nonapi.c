@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2004 The PHP Group                                |
+  | Copyright (c) 1997-2005 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_nonapi.c,v 1.34.2.11 2005/08/06 16:56:06 andrey Exp $ 
+  $Id: mysqli_nonapi.c,v 1.54.2.2 2005/10/10 20:06:35 tony2001 Exp $ 
 */
 
 #ifdef HAVE_CONFIG_H
@@ -52,7 +52,7 @@ PHP_FUNCTION(mysqli_connect)
 	if (!socket_len) {
 		socket = NULL;
 	}
-
+    
 	/* TODO: safe mode handling */
 	if (PG(sql_safe_mode)){
 	} else {
@@ -67,12 +67,21 @@ PHP_FUNCTION(mysqli_connect)
 		}
 	}
 
-	mysql = (MY_MYSQL *)ecalloc(1, sizeof(MY_MYSQL));
+	mysql = (MY_MYSQL *) ecalloc(1, sizeof(MY_MYSQL));
 
 	if (!(mysql->mysql = mysql_init(NULL))) {
 		efree(mysql);
 		RETURN_FALSE;
 	}
+
+#ifdef HAVE_EMBEDDED_MYSQLI
+	if (hostname_len && hostname) {
+		unsigned int external=1;
+		mysql_options(mysql->mysql, MYSQL_OPT_USE_REMOTE_CONNECTION, (char *)&external);
+	} else {
+		mysql_options(mysql->mysql, MYSQL_OPT_USE_EMBEDDED_CONNECTION, 0);
+	}
+#endif
 
 	if (!socket) {
 		socket = MyG(default_socket);
@@ -81,12 +90,11 @@ PHP_FUNCTION(mysqli_connect)
 	if (mysql_real_connect(mysql->mysql,hostname,username,passwd,dbname,port,socket,CLIENT_MULTI_RESULTS) == NULL) {
 		/* Save error messages */
 
-		MYSQLI_REPORT_MYSQL_ERROR(mysql->mysql);
+		php_mysqli_throw_sql_exception( mysql->mysql->net.sqlstate, mysql->mysql->net.last_errno TSRMLS_CC,
+										mysql->mysql->net.last_error);
+
 		php_mysqli_set_error(mysql_errno(mysql->mysql), (char *) mysql_error(mysql->mysql) TSRMLS_CC);
 
-		if (!(MyG(report_mode) & MYSQLI_REPORT_ERROR)) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", mysql_error(mysql->mysql));
-		}
 		/* free mysql structure */
 		mysql_close(mysql->mysql);
 		efree(mysql);
@@ -104,7 +112,7 @@ PHP_FUNCTION(mysqli_connect)
 	mysqli_resource = (MYSQLI_RESOURCE *)ecalloc (1, sizeof(MYSQLI_RESOURCE));
 	mysqli_resource->ptr = (void *)mysql;
 
-	if (!object) {
+	if (!object || !instanceof_function(Z_OBJCE_P(object), mysqli_link_class_entry TSRMLS_CC)) {
 		MYSQLI_RETURN_RESOURCE(mysqli_resource, mysqli_link_class_entry);	
 	} else {
 		((mysqli_object *) zend_object_store_get_object(object TSRMLS_CC))->ptr = mysqli_resource;
@@ -112,60 +120,6 @@ PHP_FUNCTION(mysqli_connect)
 	}
 }
 /* }}} */
-
-#ifdef HAVE_EMBEDDED_MYSQLI
-/* {{{ proto object mysqli_embedded_connect(void)
-   Open a connection to a embedded mysql server */ 
-PHP_FUNCTION(mysqli_embedded_connect)
-{
-	MY_MYSQL 			*mysql;
-	MYSQLI_RESOURCE 	*mysqli_resource;
-	zval  				*object = getThis();
-	char				*dbname = NULL;
-	int					dblen = 0;
-
-	if (!MyG(embedded)) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Embedded server was not initialized.");
-		RETURN_FALSE;
-	}
-
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &dbname,  &dblen) == FAILURE) {
-		return;
-	}
-
-	mysql = (MY_MYSQL *) ecalloc(1, sizeof(MY_MYSQL));
-
-	if (!(mysql = mysql_init(NULL))) {
-		efree(mysql);
-		RETURN_FALSE;
-	}
-
-	if (mysql_real_connect(mysql, NULL, NULL, NULL, dbname, 0, NULL, 0) == NULL) {
-		MYSQLI_REPORT_MYSQL_ERROR(mysql->mysql);
-		php_mysqli_set_error(mysql_errno(mysql->mysql), (char *) mysql_error(mysql->mysql) TSRMLS_CC);
-
-		if (!(MyG(report_mode) & MYSQLI_REPORT_ERROR)) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", mysql_error(mysql->mysql));
-		}
-		/* free mysql structure */
-		mysql_close(mysql->mysql);
-		efree(mysql);
-		RETURN_FALSE;
-	}
-
-	php_mysqli_set_error(mysql_errno(mysql->mysql), (char *) mysql_error(mysql->mysql) TSRMLS_CC);
-
-	mysqli_resource = (MYSQLI_RESOURCE *)ecalloc (1, sizeof(MYSQLI_RESOURCE));
-	mysqli_resource->ptr = (void *)mysql;
-
-	if (!object) {
-		MYSQLI_RETURN_RESOURCE(mysqli_resource, mysqli_link_class_entry);	
-	} else {
-		((mysqli_object *) zend_object_store_get_object(object TSRMLS_CC))->ptr = mysqli_resource;
-	}
-}
-/* }}} */
-#endif
 
 /* {{{ proto int mysqli_connect_errno(void)
    Returns the numerical value of the error message from last connect command */
@@ -218,7 +172,7 @@ PHP_FUNCTION(mysqli_multi_query)
 	MY_MYSQL		*mysql;
 	zval			*mysql_link;
 	char			*query = NULL;
-	unsigned long 	query_len;
+	unsigned int 	query_len;
 
 	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "Os", &mysql_link, mysqli_link_class_entry, &query, &query_len) == FAILURE) {
 		return;
@@ -264,6 +218,7 @@ PHP_FUNCTION(mysqli_query)
 	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "Os|l", &mysql_link, mysqli_link_class_entry, &query, &query_len, &resultmode) == FAILURE) {
 		return;
 	}
+
 	if (!query_len) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Empty query");
 		RETURN_FALSE;
@@ -293,6 +248,8 @@ PHP_FUNCTION(mysqli_query)
 	result = (resultmode == MYSQLI_USE_RESULT) ? mysql_use_result(mysql->mysql) : mysql_store_result(mysql->mysql);
 
 	if (!result) {
+		php_mysqli_throw_sql_exception(mysql->mysql->net.sqlstate, mysql->mysql->net.last_errno TSRMLS_CC,
+										mysql->mysql->net.last_error); 
 		RETURN_FALSE;
 	}
 
@@ -303,6 +260,54 @@ PHP_FUNCTION(mysqli_query)
 	mysqli_resource = (MYSQLI_RESOURCE *)ecalloc (1, sizeof(MYSQLI_RESOURCE));
 	mysqli_resource->ptr = (void *)result;
 	MYSQLI_RETURN_RESOURCE(mysqli_resource, mysqli_result_class_entry);
+}
+/* }}} */
+
+/* {{{ proto object mysqli_get_warnings(object link) */
+PHP_FUNCTION(mysqli_get_warnings)
+{
+	MY_MYSQL			*mysql;
+	zval				*mysql_link;
+	MYSQLI_RESOURCE		*mysqli_resource;
+	MYSQLI_WARNING		*w;
+
+	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "O", &mysql_link, mysqli_link_class_entry) == FAILURE) {
+		return;
+	}
+	MYSQLI_FETCH_RESOURCE(mysql, MY_MYSQL*, &mysql_link, "mysqli_link");
+
+	if (mysql_warning_count(mysql->mysql)) {
+		w = php_get_warnings(mysql->mysql); 
+	} else {
+		RETURN_FALSE;
+	}
+	mysqli_resource = (MYSQLI_RESOURCE *)ecalloc (1, sizeof(MYSQLI_RESOURCE));
+	mysqli_resource->ptr = mysqli_resource->info = (void *)w;
+	MYSQLI_RETURN_RESOURCE(mysqli_resource, mysqli_warning_class_entry);	
+}
+/* }}} */
+
+/* {{{ proto object mysqli_get_warnings(object link) */
+PHP_FUNCTION(mysqli_stmt_get_warnings)
+{
+	MY_STMT				*stmt;
+	zval				*stmt_link;
+	MYSQLI_RESOURCE		*mysqli_resource;
+	MYSQLI_WARNING		*w;
+
+	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "O", &stmt_link, mysqli_stmt_class_entry) == FAILURE) {
+		return;
+	}
+	MYSQLI_FETCH_RESOURCE(stmt, MY_STMT*, &stmt_link, "mysqli_stmt");
+
+	if (mysql_warning_count(stmt->stmt->mysql)) {
+		w = php_get_warnings(stmt->stmt->mysql); 
+	} else {
+		RETURN_FALSE;
+	}
+	mysqli_resource = (MYSQLI_RESOURCE *)ecalloc (1, sizeof(MYSQLI_RESOURCE));
+	mysqli_resource->ptr = mysqli_resource->info = (void *)w;
+	MYSQLI_RETURN_RESOURCE(mysqli_resource, mysqli_warning_class_entry);	
 }
 /* }}} */
 
@@ -321,11 +326,40 @@ PHP_FUNCTION(mysqli_set_charset)
 	}
 	MYSQLI_FETCH_RESOURCE(mysql, MY_MYSQL*, &mysql_link, "mysqli_link");
 
-	if (mysql_set_character_set(mysql->mysql, cs_name))
-	{
+	if (mysql_set_character_set(mysql->mysql, cs_name)) {
 		RETURN_FALSE;
 	}
 	RETURN_TRUE;
+}
+/* }}} */
+#endif
+
+#ifdef HAVE_MYSQLI_GET_CHARSET 
+/* {{{ object mysqli_get_charset(object link) 
+   returns a character set object */
+PHP_FUNCTION(mysqli_get_charset)
+{
+	MY_MYSQL				*mysql;
+	zval					*mysql_link;
+	MY_CHARSET_INFO			cs;
+
+	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "O", &mysql_link, mysqli_link_class_entry) == FAILURE) {
+		return;
+	}
+	MYSQLI_FETCH_RESOURCE(mysql, MY_MYSQL*, &mysql_link, "mysqli_link");
+
+	object_init(return_value);
+
+	mysql_get_character_set_info(mysql->mysql, &cs);
+
+	add_property_string(return_value, "charset", (cs.name) ? (char *)cs.csname : "", 1);
+	add_property_string(return_value, "collation",(cs.name) ? (char *)cs.name : "", 1);
+	add_property_string(return_value, "comment", (cs.comment) ? (char *)cs.comment : "", 1);
+	add_property_string(return_value, "dir", (cs.dir) ? (char *)cs.dir : "", 1);
+	add_property_long(return_value, "min_length", cs.mbminlen);
+	add_property_long(return_value, "max_length", cs.mbmaxlen);
+	add_property_long(return_value, "number", cs.number);
+	add_property_long(return_value, "state", cs.state);
 }
 /* }}} */
 #endif

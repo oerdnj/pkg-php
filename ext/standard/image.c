@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: image.c,v 1.98.2.10 2005/06/28 15:22:39 hyanantha Exp $ */
+/* $Id: image.c,v 1.114 2005/08/03 14:08:05 sniper Exp $ */
 
 #include "php.h"
 #include <stdio.h>
@@ -625,8 +625,8 @@ static struct gfxinfo *php_handle_jpc(php_stream * stream TSRMLS_DC)
 
 	dummy_short = php_read2(stream TSRMLS_CC); /* Lsiz */
 	dummy_short = php_read2(stream TSRMLS_CC); /* Rsiz */
-	result->width = php_read4(stream TSRMLS_CC); /* Ysiz */
-	result->height = php_read4(stream TSRMLS_CC); /* Xsiz */
+	result->width = php_read4(stream TSRMLS_CC); /* Xsiz */
+	result->height = php_read4(stream TSRMLS_CC); /* Ysiz */
 
 #if MBO_0
 	php_read4(stream TSRMLS_CC); /* XOsiz */

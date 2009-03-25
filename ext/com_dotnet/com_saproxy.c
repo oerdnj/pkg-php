@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_saproxy.c,v 1.13 2004/07/08 01:18:43 iliaa Exp $ */
+/* $Id: com_saproxy.c,v 1.15.2.1 2005/11/27 12:19:04 rrichards Exp $ */
 
 /* This module implements a SafeArray proxy which is used internally
  * by the engine when resolving multi-dimensional array accesses on
@@ -168,7 +168,7 @@ static zval *saproxy_read_dimension(zval *object, zval *offset, int type TSRMLS_
 		VariantInit(&v);
 		
 		/* we can return a real value */
-		indices = emalloc(dims * sizeof(LONG));
+		indices = safe_emalloc(dims, sizeof(LONG), 0);
 
 		/* copy indices from proxy */
 		for (i = 0; i < dims; i++) {
@@ -244,7 +244,7 @@ static void saproxy_write_dimension(zval *object, zval *offset, zval *value TSRM
 		VARTYPE vt;
 
 		dims = SafeArrayGetDim(V_ARRAY(&proxy->obj->v));
-		indices = emalloc(dims * sizeof(LONG));
+		indices = safe_emalloc(dims, sizeof(LONG), 0);
 		/* copy indices from proxy */
 		for (i = 0; i < dims; i++) {
 			convert_to_long(proxy->indices[i]);
@@ -323,7 +323,7 @@ static HashTable *saproxy_properties_get(zval *object TSRMLS_DC)
 	return NULL;
 }
 
-static union _zend_function *saproxy_method_get(zval *object, char *name, int len TSRMLS_DC)
+static union _zend_function *saproxy_method_get(zval **object, char *name, int len TSRMLS_DC)
 {
 	/* no methods */
 	return NULL;

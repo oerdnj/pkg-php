@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: md5crypt.h,v 1.4 2004/01/08 17:33:28 sniper Exp $ */
+/* $Id: md5crypt.h,v 1.5 2005/08/03 14:08:57 sniper Exp $ */
 #ifndef _MD5CRYPT_H_
 #define _MD5CRYPT_H_
 

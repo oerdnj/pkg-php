@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: nsapi.c,v 1.63.2.3 2005/07/04 12:47:26 dmitry Exp $ */
+/* $Id: nsapi.c,v 1.69 2005/08/03 14:08:50 sniper Exp $ */
 
 /*
  * PHP includes
@@ -310,7 +310,7 @@ PHP_MSHUTDOWN_FUNCTION(nsapi)
 PHP_MINFO_FUNCTION(nsapi)
 {
 	php_info_print_table_start();
-	php_info_print_table_row(2, "NSAPI Module Revision", "$Revision: 1.63.2.3 $");
+	php_info_print_table_row(2, "NSAPI Module Revision", "$Revision: 1.69 $");
 	php_info_print_table_row(2, "Server Software", system_version());
 	php_info_print_table_row(2, "Sub-requests with nsapi_virtual()",
 	 (nsapi_servact_service)?((zend_ini_long("zlib.output_compression", sizeof("zlib.output_compression"), 0))?"not supported with zlib.output_compression":"enabled"):"not supported on this platform" );
@@ -708,6 +708,11 @@ static void nsapi_log_message(char *message)
 	log_error(LOG_INFORM, pblock_findval("fn", rc->pb), rc->sn, rc->rq, "%s", message);
 }
 
+static time_t sapi_nsapi_get_request_time(TSRMLS_D)
+{
+	return REQ_TIME( ((nsapi_request_context *)SG(server_context))->rq );
+}
+
 static int php_nsapi_startup(sapi_module_struct *sapi_module)
 {
 	if (php_module_startup(sapi_module, &nsapi_module_entry, 1)==FAILURE) {
@@ -743,6 +748,7 @@ static sapi_module_struct nsapi_sapi_module = {
 
 	sapi_nsapi_register_server_variables,   /* register server variables */
 	nsapi_log_message,                      /* Log message */
+	sapi_nsapi_get_request_time,			/* Get request time */
 
 	NULL,                                   /* Block interruptions */
 	NULL,                                   /* Unblock interruptions */
@@ -932,7 +938,7 @@ int NSAPI_PUBLIC php5_execute(pblock *pb, Session *sn, Request *rq)
 	SG(request_info).content_type = nsapi_strdup(content_type);
 	SG(request_info).content_length = (content_length == NULL) ? 0 : strtoul(content_length, 0, 0);
 	SG(sapi_headers).http_response_code = (error_directive) ? rq->status_num : 200;
-
+	
 	nsapi_php_ini_entries(NSLS_C TSRMLS_CC);
 
 	if (!PG(safe_mode)) php_handle_auth_data(pblock_findval("authorization", rq->headers) TSRMLS_CC);

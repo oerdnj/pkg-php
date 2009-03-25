@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_memory_streams.h,v 1.11 2004/02/20 08:04:30 hholzgra Exp $ */
+/* $Id: php_memory_streams.h,v 1.13 2005/08/03 14:08:35 sniper Exp $ */
 
 #ifndef PHP_MEMORY_STREAM_H
 #define PHP_MEMORY_STREAM_H
@@ -27,6 +27,7 @@
 
 #define TEMP_STREAM_DEFAULT  0
 #define TEMP_STREAM_READONLY 1
+#define TEMP_STREAM_TAKE_BUFFER 2
 
 #define php_stream_memory_create(mode) _php_stream_memory_create((mode) STREAMS_CC TSRMLS_CC)
 #define php_stream_memory_create_rel(mode) _php_stream_memory_create((mode) STREAMS_REL_CC TSRMLS_CC)

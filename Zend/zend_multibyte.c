@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_multibyte.c,v 1.3 2004/01/08 17:31:48 sniper Exp $ */
+/* $Id: zend_multibyte.c,v 1.4.2.1 2005/11/15 13:29:29 dmitry Exp $ */
 
 #include "zend.h"
 #include "zend_compile.h"
@@ -994,11 +994,13 @@ static zend_encoding* zend_multibyte_find_script_encoding(zend_encoding *onetime
 		return onetime_encoding;
 	}
 
-	/* check out bom(byte order mark) and see if containing wchars */
-	script_encoding = zend_multibyte_detect_unicode(TSRMLS_C);
-	if (script_encoding != NULL) {
-		/* bom or wchar detection is prior to 'script_encoding' option */
-		return script_encoding;
+	if (CG(detect_unicode)) {
+		/* check out bom(byte order mark) and see if containing wchars */
+		script_encoding = zend_multibyte_detect_unicode(TSRMLS_C);
+		if (script_encoding != NULL) {
+			/* bom or wchar detection is prior to 'script_encoding' option */
+			return script_encoding;
+		}
 	}
 
 	/* if no script_encoding specified, just leave alone */

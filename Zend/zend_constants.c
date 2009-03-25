@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_constants.c,v 1.69 2004/07/13 19:22:11 helly Exp $ */
+/* $Id: zend_constants.c,v 1.71 2005/08/03 13:30:49 sniper Exp $ */
 
 #include "zend.h"
 #include "zend_constants.h"
@@ -116,25 +116,25 @@ void zend_register_standard_constants(TSRMLS_D)
 		c.flags = CONST_PERSISTENT;
 		c.module_number = 0;
 
-		c.name = zend_strndup(ZEND_STRS("TRUE"));
+		c.name = zend_strndup(ZEND_STRL("TRUE"));
 		c.name_len = sizeof("TRUE");
 		c.value.value.lval = 1;
 		c.value.type = IS_BOOL;
 		zend_register_constant(&c TSRMLS_CC);
 		
-		c.name = zend_strndup(ZEND_STRS("FALSE"));
+		c.name = zend_strndup(ZEND_STRL("FALSE"));
 		c.name_len = sizeof("FALSE");
 		c.value.value.lval = 0;
 		c.value.type = IS_BOOL;
 		zend_register_constant(&c TSRMLS_CC);
 
-		c.name = zend_strndup(ZEND_STRS("ZEND_THREAD_SAFE"));
+		c.name = zend_strndup(ZEND_STRL("ZEND_THREAD_SAFE"));
 		c.name_len = sizeof("ZEND_THREAD_SAFE");
 		c.value.value.lval = ZTS_V;
 		c.value.type = IS_BOOL;
 		zend_register_constant(&c TSRMLS_CC);
 
-		c.name = zend_strndup(ZEND_STRS("NULL"));
+		c.name = zend_strndup(ZEND_STRL("NULL"));
 		c.name_len = sizeof("NULL");
 		c.value.type = IS_NULL;
 		zend_register_constant(&c TSRMLS_CC);

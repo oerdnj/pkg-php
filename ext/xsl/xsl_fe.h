@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2004 The PHP Group                                |
+  | Copyright (c) 1997-2005 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,13 +16,13 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: xsl_fe.h,v 1.6 2004/01/19 15:07:08 chregu Exp $ */
+/* $Id: xsl_fe.h,v 1.8 2005/08/03 14:08:23 sniper Exp $ */
 
 #ifndef XSL_FE_H
 #define XSL_FE_H
 
 extern zend_function_entry php_xsl_xsltprocessor_class_functions[];
-zend_class_entry *xsl_xsltprocessor_class_entry;
+extern zend_class_entry *xsl_xsltprocessor_class_entry;
 
 PHP_FUNCTION(xsl_xsltprocessor_import_stylesheet);
 PHP_FUNCTION(xsl_xsltprocessor_transform_to_doc);

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_objects_API.c,v 1.41.2.5 2005/06/06 10:38:22 dmitry Exp $ */
+/* $Id: zend_objects_API.c,v 1.47.2.3 2005/11/15 12:41:31 dmitry Exp $ */
 
 #include "zend.h"
 #include "zend_globals.h"
@@ -38,6 +38,7 @@ ZEND_API void zend_objects_store_init(zend_objects_store *objects, zend_uint ini
 ZEND_API void zend_objects_store_destroy(zend_objects_store *objects)
 {
 	efree(objects->object_buckets);
+	objects->object_buckets = NULL;
 }
 
 ZEND_API void zend_objects_store_call_destructors(zend_objects_store *objects TSRMLS_DC)
@@ -50,7 +51,7 @@ ZEND_API void zend_objects_store_call_destructors(zend_objects_store *objects TS
 
 			if (!objects->object_buckets[i].destructor_called) {
 				objects->object_buckets[i].destructor_called = 1;
-				if (obj->dtor) {
+				if (obj->dtor && obj->object) {
 					obj->dtor(obj->object, i TSRMLS_CC);
 				}
 			}
@@ -110,7 +111,7 @@ ZEND_API zend_object_handle zend_objects_store_put(void *object, zend_objects_st
 
 	obj->refcount = 1;
 	obj->object = object;
-	obj->dtor = dtor;
+	obj->dtor = dtor?dtor:(zend_objects_store_dtor_t)zend_objects_destroy_object;
 	obj->free_storage = free_storage;
 
 	obj->clone = clone;
@@ -138,9 +139,16 @@ ZEND_API void zend_objects_store_add_ref(zval *object TSRMLS_DC)
 
 ZEND_API void zend_objects_store_del_ref(zval *zobject TSRMLS_DC)
 {
-	zend_object_handle handle = Z_OBJ_HANDLE_P(zobject);
-	struct _store_object *obj = &EG(objects_store).object_buckets[handle].bucket.obj;
-	
+	zend_object_handle handle;
+	struct _store_object *obj;
+
+	if (!EG(objects_store).object_buckets) {
+		return;
+	}
+
+	handle = Z_OBJ_HANDLE_P(zobject);
+	obj = &EG(objects_store).object_buckets[handle].bucket.obj;
+
 	/*	Make sure we hold a reference count during the destructor call
 		otherwise, when the destructor ends the storage might be freed
 		when the refcount reaches 0 a second time

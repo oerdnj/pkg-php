@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: ftok.c,v 1.13.2.2 2005/01/28 16:47:16 tony2001 Exp $ */
+/* $Id: ftok.c,v 1.16 2005/08/03 14:08:01 sniper Exp $ */
 
 #include "php.h"
 
@@ -49,7 +49,7 @@ PHP_FUNCTION(ftok)
 	if (Z_STRLEN_PP(proj)!=1){
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Project identifier is invalid");
 		RETURN_LONG(-1);
-	}
+    }
 
 	if ((PG(safe_mode) && (!php_checkuid(Z_STRVAL_PP(pathname), NULL, CHECKUID_CHECK_FILE_AND_DIR))) || php_check_open_basedir(Z_STRVAL_PP(pathname) TSRMLS_CC)) {
 		RETURN_LONG(-1);

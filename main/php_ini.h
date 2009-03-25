@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_ini.h,v 1.43 2004/01/08 17:33:04 sniper Exp $ */
+/* $Id: php_ini.h,v 1.45.2.2 2005/09/02 14:05:46 sniper Exp $ */
 
 #ifndef PHP_INI_H
 #define PHP_INI_H
@@ -24,9 +24,9 @@
 #include "zend_ini.h"
 
 BEGIN_EXTERN_C()
-int php_init_config();
+int php_init_config(TSRMLS_D);
 int php_shutdown_config(void);
-void php_ini_delayed_modules_startup(TSRMLS_D);
+void php_ini_register_extensions(TSRMLS_D);
 zval *cfg_get_entry(char *name, uint name_length);
 END_EXTERN_C()
 

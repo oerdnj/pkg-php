@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: globals.c,v 1.2.2.1 2004/07/30 14:24:59 wez Exp $ */
+/* $Id: globals.c,v 1.5 2005/08/03 14:08:57 sniper Exp $ */
 
 #include "php.h"
 #include "php_win32_globals.h"
@@ -24,7 +24,7 @@
 #ifdef ZTS
 PHPAPI int php_win32_core_globals_id;
 #else
-php_win32_core_globals php_win32_core_globals;
+php_win32_core_globals the_php_win32_core_globals;
 #endif
 
 void php_win32_core_globals_ctor(void *vg TSRMLS_DC)
@@ -39,7 +39,7 @@ PHP_RSHUTDOWN_FUNCTION(win32_core_globals)
 #ifdef ZTS
 		ts_resource(php_win32_core_globals_id)
 #else
-		&php_win32_core_globals
+		&the_php_win32_core_globals
 #endif
 		;
 

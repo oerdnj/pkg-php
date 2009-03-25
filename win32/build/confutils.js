@@ -3,7 +3,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2004 The PHP Group                                |
+  | Copyright (c) 1997-2005 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-// $Id: confutils.js,v 1.42.2.4 2005/07/22 18:09:33 wez Exp $
+// $Id: confutils.js,v 1.60 2005/08/03 14:08:58 sniper Exp $
 
 var STDOUT = WScript.StdOut;
 var STDERR = WScript.StdErr;
@@ -350,7 +350,7 @@ can be built that way. \
 		 'php-build', 'snapshot-template',
 		 'pcre-regex', 'fastcgi', 'force-cgi-redirect',
 		 'path-info-check', 'zts', 'ipv6', 'memory-limit',
-		 'zend-multibyte', 'fd-setsize', 'memory-manager'
+		 'zend-multibyte', 'fd-setsize', 'memory-manager', 't1lib'
 		);
 	var force;
 

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_dotnet.c,v 1.7.2.2 2004/10/09 13:10:37 wez Exp $ */
+/* $Id: com_dotnet.c,v 1.14 2005/08/03 14:06:41 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -126,7 +126,6 @@ static HRESULT dotnet_init(char **p_where TSRMLS_DC)
 	HRESULT hr;
 	struct dotnet_runtime_stuff *stuff;
 	IUnknown *unk = NULL;
-	OLECHAR *olename, *oletmp;
 	char *where = "";
 
 	stuff = malloc(sizeof(*stuff));
@@ -188,7 +187,7 @@ PHP_FUNCTION(com_dotnet_create_instance)
 	char *assembly_name, *datatype_name;
 	int assembly_name_len, datatype_name_len;
 	struct dotnet_runtime_stuff *stuff;
-	OLECHAR *olestring, *oleassembly, *oletype;
+	OLECHAR *oleassembly, *oletype;
 	HRESULT hr;
 	int ret = FAILURE;
 	char *where = "";

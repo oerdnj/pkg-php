@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: namednodemap.c,v 1.12.2.1 2004/11/18 19:55:00 rrichards Exp $ */
+/* $Id: namednodemap.c,v 1.15 2005/08/03 14:07:04 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -167,7 +167,8 @@ Since:
 PHP_FUNCTION(dom_namednodemap_item)
 {
 	zval *id, *rv = NULL;
-	int index, ret;
+	long index;
+	int ret;
 	dom_object *intern;
 	xmlNodePtr itemnode = NULL;
 

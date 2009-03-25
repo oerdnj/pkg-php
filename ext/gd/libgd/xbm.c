@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: xbm.c,v 1.6 2004/01/08 08:15:43 andi Exp $ */
+/* $Id: xbm.c,v 1.7.2.1 2005/08/18 12:54:44 sniper Exp $ */
 
 #include <stdio.h>
 #include <math.h>
@@ -147,7 +147,7 @@ gdImagePtr gdImageCreateFromXbm(FILE * fd)
 		}
 	}
 
-	php_gd_error("EOF before image was complete\n");
+	php_gd_error("EOF before image was complete");
 	gdImageDestroy(im);
 	return 0;
 }

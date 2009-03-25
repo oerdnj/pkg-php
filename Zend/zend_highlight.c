@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_highlight.c,v 1.43.2.5 2005/05/22 16:40:49 iliaa Exp $ */
+/* $Id: zend_highlight.c,v 1.49.2.1 2005/11/27 06:39:28 iliaa Exp $ */
 
 #include "zend.h"
 #include <zend_language_parser.h>
@@ -164,6 +164,8 @@ ZEND_API void zend_highlight(zend_syntax_highlighter_ini *syntax_highlighter_ini
 
 		if (token.type == IS_STRING) {
 			switch (token_type) {
+				case EOF:
+					goto done;
 				case T_OPEN_TAG:
 				case T_OPEN_TAG_WITH_ECHO:
 				case T_CLOSE_TAG:
@@ -180,6 +182,7 @@ ZEND_API void zend_highlight(zend_syntax_highlighter_ini *syntax_highlighter_ini
 		}
 		token.type = 0;
 	}
+done:
 	if (last_color != syntax_highlighter_ini->highlight_html) {
 		zend_printf("</span>\n");
 	}
@@ -208,6 +211,9 @@ ZEND_API void zend_strip(TSRMLS_D)
 			case T_DOC_COMMENT:
 				token.type = 0;
 				continue;
+
+			case EOF:
+				return;
 			
 			case T_END_HEREDOC: {
 					char *ptr = LANG_SCNG(yy_text);

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -15,7 +15,7 @@
    | Author: Edin Kadribasic <edink@php.net>                              |
    +----------------------------------------------------------------------+
 */
-/* $Id: php_embed.c,v 1.8.2.1 2005/01/25 22:00:14 andrei Exp $ */
+/* $Id: php_embed.c,v 1.11 2005/08/03 14:08:49 sniper Exp $ */
 
 #include "php_embed.h"
 
@@ -125,6 +125,7 @@ sapi_module_struct php_embed_module = {
   
 	php_embed_register_variables,   /* register server variables */
 	php_embed_log_message,          /* Log message */
+	NULL,							/* Get request time */
   
 	STANDARD_SAPI_MODULE_PROPERTIES
 };

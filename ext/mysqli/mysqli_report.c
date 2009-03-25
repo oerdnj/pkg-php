@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2004 The PHP Group                                |
+  | Copyright (c) 1997-2005 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_report.c,v 1.9 2004/07/07 08:02:27 georg Exp $ 
+  $Id: mysqli_report.c,v 1.11 2005/08/03 14:07:31 sniper Exp $ 
 */
 
 #ifdef HAVE_CONFIG_H
@@ -46,7 +46,7 @@ PHP_FUNCTION(mysqli_report)
 
 /* {{{ void php_mysqli_report_error(char *sqlstate, int errorno, char *error) */ 
 void php_mysqli_report_error(char *sqlstate, int errorno, char *error TSRMLS_DC) {
-	php_error_docref(NULL TSRMLS_CC, E_WARNING, "Error (%s/%d): %s", sqlstate, errorno, error);
+	php_mysqli_throw_sql_exception(sqlstate, errorno TSRMLS_CC, error);
 }
 /* }}} */
 
@@ -61,7 +61,7 @@ void php_mysqli_report_index(char *query, unsigned int status TSRMLS_DC) {
 	} else {
 		return;
 	}
-	php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s used in query/prepared statement %s", index, query);
+	php_mysqli_throw_sql_exception("00000", 0 TSRMLS_CC, "%s used in query/prepared statement %s", index, query);
 }
 /* }}} */
 

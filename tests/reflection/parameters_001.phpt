@@ -1,13 +1,5 @@
 --TEST--
 Check for parameter being optional
---SKIPIF--
-<?php
-	class a { function b() {} }
-	$a = new ReflectionMethod('a','b');
-	if (!method_exists($a, 'getNumberOfRequiredParameters')) {
-		exit("skip getNumberOfRequiredParameters is only in PHP 5.1+");
-	}
-?>
 --FILE--
 <?php
 

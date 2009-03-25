@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: dba.c,v 1.109 2004/01/08 08:14:39 andi Exp $ */
+/* $Id: dba.c,v 1.111 2005/08/03 14:06:53 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -43,6 +43,7 @@
 #include "php_ndbm.h"
 #include "php_dbm.h"
 #include "php_cdb.h"
+#include "php_db1.h"
 #include "php_db2.h"
 #include "php_db3.h"
 #include "php_db4.h"
@@ -239,6 +240,9 @@ static dba_handler handler[] = {
 #if DBA_CDB_BUILTIN
     DBA_NAMED_HND(cdb_make, cdb, DBA_STREAM_OPEN|DBA_LOCK_ALL) /* No lock in lib */
 #endif
+#if DBA_DB1
+	DBA_HND(db1, DBA_LOCK_ALL) /* No lock in lib */
+#endif
 #if DBA_DB2
 	DBA_HND(db2, DBA_LOCK_ALL) /* No lock in lib */
 #endif
@@ -268,6 +272,8 @@ static dba_handler handler[] = {
 #define DBA_DEFAULT "db3"
 #elif DBA_DB2
 #define DBA_DEFAULT "db2"
+#elif DBA_DB1
+#define DBA_DEFAULT "db1"
 #elif DBA_GDBM
 #define DBA_DEFAULT "gdbm"
 #elif DBA_NBBM

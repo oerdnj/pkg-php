@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_handlers.c,v 1.22.2.5 2005/04/19 05:57:21 wez Exp $ */
+/* $Id: com_handlers.c,v 1.30.2.1 2005/11/27 12:19:04 rrichards Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -259,12 +259,13 @@ static PHP_FUNCTION(com_method_handler)
 			INTERNAL_FUNCTION_PARAM_PASSTHRU);
 }
 
-static union _zend_function *com_method_get(zval *object, char *name, int len TSRMLS_DC)
+static union _zend_function *com_method_get(zval **object_ptr, char *name, int len TSRMLS_DC)
 {
 	zend_internal_function f, *fptr = NULL;
 	php_com_dotnet_object *obj;
 	union _zend_function *func;
 	DISPID dummy;
+	zval *object = *object_ptr;
 
 	obj = CDNO_FETCH(object);
 
@@ -287,7 +288,7 @@ static union _zend_function *com_method_get(zval *object, char *name, int len TS
 		f.handler = PHP_FN(com_method_handler);
 
 		fptr = &f;
-		
+	
 		if (obj->typeinfo) {
 			/* look for byref params */
 			ITypeComp *comp;
@@ -492,7 +493,7 @@ static int com_object_cast(zval *readobj, zval *writeobj, int type, int should_f
 	VARTYPE vt = VT_EMPTY;
 	zval free_obj;
 	HRESULT res = S_OK;
-
+	
 	if (should_free) {
 		free_obj = *writeobj;
 	}
@@ -523,9 +524,11 @@ static int com_object_cast(zval *readobj, zval *writeobj, int type, int should_f
 		case IS_STRING:
 			vt = VT_BSTR;
 			break;
+		default:
+			;
 	}
 
-	if (vt != VT_EMPTY) {
+	if (vt != VT_EMPTY && vt != V_VT(&v)) {
 		res = VariantChangeType(&v, &v, 0, vt);
 	}
 
@@ -534,6 +537,7 @@ static int com_object_cast(zval *readobj, zval *writeobj, int type, int should_f
 	}
 
 	VariantClear(&v);
+
 	if (should_free) {
 		zval_dtor(&free_obj);
 	}
@@ -673,6 +677,7 @@ zend_object_value php_com_object_new(zend_class_entry *ce TSRMLS_DC)
 	VariantInit(&obj->v);
 	obj->code_page = CP_ACP;
 	obj->ce = ce;
+	obj->zo.ce = ce;
 
 	retval.handle = zend_objects_store_put(obj, NULL, php_com_object_free_storage, php_com_object_clone TSRMLS_CC);
 	retval.handlers = &php_com_object_handlers;

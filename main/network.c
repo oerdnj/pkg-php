@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: network.c,v 1.109.2.5 2005/07/27 12:43:06 hyanantha Exp $ */
+/* $Id: network.c,v 1.118 2005/08/03 14:08:31 sniper Exp $ */
 
 /*#define DEBUG_MAIN_NETWORK 1*/
 
@@ -28,6 +28,9 @@
 #ifdef PHP_WIN32
 #define O_RDONLY _O_RDONLY
 #include "win32/param.h"
+#elif defined(NETWARE)
+#include <sys/timeval.h>
+#include <sys/param.h>
 #else
 #include <sys/param.h>
 #endif
@@ -52,6 +55,7 @@
 #ifdef USE_WINSOCK
 #include <novsock2.h>
 #else
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <sys/select.h>
@@ -718,7 +722,7 @@ PHPAPI php_socket_t php_network_accept_incoming(php_socket_t srvsock,
 /* {{{ php_network_connect_socket_to_host */
 php_socket_t php_network_connect_socket_to_host(const char *host, unsigned short port,
 		int socktype, int asynchronous, struct timeval *timeout, char **error_string,
-		int *error_code
+		int *error_code, char *bindto, unsigned short bindport 
 		TSRMLS_DC)
 {
 	int num_addrs, n, fatal = 0;
@@ -780,13 +784,46 @@ php_socket_t php_network_connect_socket_to_host(const char *host, unsigned short
 		}
 
 		if (sa) {
+			/* make a connection attempt */
+
+			if (bindto) {
+				struct sockaddr local_address;
+			
+				if (sa->sa_family == AF_INET) {
+					struct sockaddr_in *in4 = (struct sockaddr_in*)&local_address;
+				
+					in4->sin_family = sa->sa_family;
+					in4->sin_port = htons(bindport);
+					if (!inet_aton(bindto, &in4->sin_addr)) {
+						goto bad_ip;
+					}
+					memset(&(in4->sin_zero), 0, sizeof(in4->sin_zero));
+				}
+#if HAVE_IPV6 && HAVE_INET_PTON
+				 else { /* IPV6 */
+					struct sockaddr_in6 *in6 = (struct sockaddr_in6*)&local_address;
+				
+					in6->sin6_family = sa->sa_family;
+					in6->sin6_port = htons(bindport);
+					if (inet_pton(AF_INET6, bindto, &in6->sin6_addr) < 1) {
+						goto bad_ip;
+					}
+				}
+#endif
+				if (bind(sock, &local_address, sizeof(struct sockaddr))) {
+					php_error_docref(NULL TSRMLS_CC, E_WARNING, "failed to bind to '%s:%d', system said: %s", bindto, bindport, strerror(errno));
+				}
+				goto bind_done;
+bad_ip:
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid IP Address: %s", bindto);
+			}
+bind_done:
 			/* free error string recieved during previous iteration (if any) */
 			if (error_string && *error_string) {
 				efree(*error_string);
 				*error_string = NULL;
 			}
-
-			/* make a connection attempt */
+			
 			n = php_network_connect_socket(sock, sa, socklen, asynchronous,
 					timeout ? &working_timeout : NULL,
 					error_string, error_code);

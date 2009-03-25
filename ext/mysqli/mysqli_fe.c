@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2004 The PHP Group                                |
+  | Copyright (c) 1997-2005 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_fe.c,v 1.40.2.3 2005/05/13 13:53:08 georg Exp $ 
+  $Id: mysqli_fe.c,v 1.49.2.2 2005/10/18 10:02:36 tony2001 Exp $ 
 */
 
 #ifdef HAVE_CONFIG_H
@@ -65,11 +65,10 @@ function_entry mysqli_functions[] = {
 	PHP_FE(mysqli_disable_reads_from_master,			NULL)
 	PHP_FE(mysqli_disable_rpl_parse,					NULL)
 	PHP_FE(mysqli_dump_debug_info,						NULL)
-#ifdef HAVE_EMBEDDED_MYSQLI
-	PHP_FE(mysqli_embedded_connect,						NULL)
-#endif
 	PHP_FE(mysqli_enable_reads_from_master,				NULL)
 	PHP_FE(mysqli_enable_rpl_parse,						NULL)
+	PHP_FE(mysqli_embedded_server_end,					NULL)
+	PHP_FE(mysqli_embedded_server_start,				NULL)
 	PHP_FE(mysqli_errno,								NULL)
 	PHP_FE(mysqli_error,								NULL)
 	PHP_FE(mysqli_stmt_execute,							NULL)
@@ -86,12 +85,16 @@ function_entry mysqli_functions[] = {
 	PHP_FE(mysqli_field_seek,							NULL)
 	PHP_FE(mysqli_field_tell,							NULL)
 	PHP_FE(mysqli_free_result,							NULL)
+#ifdef HAVE_MYSQLI_GET_CHARSET 
+	PHP_FE(mysqli_get_charset,							NULL)
+#endif
 	PHP_FE(mysqli_get_client_info,						NULL)
 	PHP_FE(mysqli_get_client_version,					NULL)
 	PHP_FE(mysqli_get_host_info,						NULL)
 	PHP_FE(mysqli_get_proto_info,						NULL)
 	PHP_FE(mysqli_get_server_info,						NULL)
 	PHP_FE(mysqli_get_server_version,					NULL)
+	PHP_FE(mysqli_get_warnings,							NULL)
 	PHP_FE(mysqli_init, 								NULL)
 	PHP_FE(mysqli_info,									NULL)
 	PHP_FE(mysqli_insert_id,							NULL)
@@ -131,14 +134,11 @@ function_entry mysqli_functions[] = {
 	PHP_FE(mysqli_stmt_bind_result,						second_arg_force_by_ref_rest)
 	PHP_FE(mysqli_stmt_fetch,							NULL)
 	PHP_FE(mysqli_stmt_free_result,						NULL)
+	PHP_FE(mysqli_stmt_get_warnings,					NULL)
 	PHP_FE(mysqli_stmt_insert_id,						NULL)
 	PHP_FE(mysqli_stmt_reset,							NULL)
 	PHP_FE(mysqli_stmt_param_count,						NULL)
 	PHP_FE(mysqli_send_query,							NULL)
-#ifdef HAVE_EMBEDDED_MYSQLI
-	PHP_FE(mysqli_server_end,							NULL)
-	PHP_FE(mysqli_server_init,							NULL)
-#endif
 	PHP_FE(mysqli_slave_query,							NULL)
 	PHP_FE(mysqli_sqlstate,   							NULL)
 	PHP_FE(mysqli_ssl_set,								NULL)
@@ -186,7 +186,7 @@ function_entry mysqli_functions[] = {
 function_entry mysqli_link_methods[] = {
 	PHP_FALIAS(autocommit,mysqli_autocommit,NULL)
 	PHP_FALIAS(change_user,mysqli_change_user,NULL)
-	PHP_FALIAS(character_set_name,mysqli_character_set_name,NULL)
+	PHP_FALIAS(character_set_name, mysqli_character_set_name,NULL)
 	PHP_FALIAS(client_encoding, mysqli_character_set_name,NULL)
 	PHP_FALIAS(close,mysqli_close,NULL)
 	PHP_FALIAS(commit,mysqli_commit,NULL)
@@ -197,16 +197,20 @@ function_entry mysqli_link_methods[] = {
 	PHP_FALIAS(dump_debug_info,mysqli_dump_debug_info,NULL)
 	PHP_FALIAS(enable_reads_from_master,mysqli_enable_reads_from_master,NULL)
 	PHP_FALIAS(enable_rpl_parse,mysqli_enable_rpl_parse,NULL)
+#ifdef HAVE_MYSQLI_GET_CHARSET 
+	PHP_FALIAS(get_charset,mysqli_get_charset,NULL)
+#endif
 	PHP_FALIAS(get_client_info,mysqli_get_client_info,NULL)
 	PHP_FALIAS(get_server_info,mysqli_get_server_info,NULL)
+	PHP_FALIAS(get_warnings, mysqli_get_warnings, NULL)
 	PHP_FALIAS(init,mysqli_init,NULL)
 	PHP_FALIAS(kill,mysqli_kill,NULL)
 	PHP_FALIAS(set_local_infile_default,mysqli_set_local_infile_default,NULL)
 	PHP_FALIAS(set_local_infile_handler,mysqli_set_local_infile_handler,NULL)
 	PHP_FALIAS(master_query,mysqli_master_query,NULL)
 	PHP_FALIAS(multi_query,mysqli_multi_query,NULL)
+	PHP_FALIAS(mysqli,mysqli_connect,NULL)
 	PHP_FALIAS(more_results,mysqli_more_results, NULL)
-	PHP_FALIAS(mysqli, mysqli_connect, NULL)
 	PHP_FALIAS(next_result, mysqli_next_result, NULL)
 	PHP_FALIAS(options,mysqli_options,NULL)
 	PHP_FALIAS(ping,mysqli_ping,NULL)
@@ -241,6 +245,7 @@ function_entry mysqli_link_methods[] = {
  * Every user visible function must have an entry in mysqli_result_functions[].
  */
 function_entry mysqli_result_methods[] = {
+	PHP_FALIAS(mysqli_result, mysqli_result_construct, NULL)
 	PHP_FALIAS(close,mysqli_free_result,NULL)
 	PHP_FALIAS(free,mysqli_free_result,NULL)
 	PHP_FALIAS(data_seek,mysqli_data_seek,NULL)
@@ -263,6 +268,7 @@ function_entry mysqli_result_methods[] = {
  * Every user visible function must have an entry in mysqli_stmt_functions[].
  */
 function_entry mysqli_stmt_methods[] = {
+	PHP_FALIAS(mysqli_stmt, mysqli_stmt_construct, NULL)
 	PHP_FALIAS(attr_get,mysqli_stmt_attr_get,NULL)
 	PHP_FALIAS(attr_set,mysqli_stmt_attr_set,NULL)
 	PHP_FALIAS(bind_param,mysqli_stmt_bind_param,second_arg_force_by_ref_rest)
@@ -271,6 +277,7 @@ function_entry mysqli_stmt_methods[] = {
 	PHP_FALIAS(data_seek,mysqli_stmt_data_seek,NULL)
 	PHP_FALIAS(execute,mysqli_stmt_execute,NULL)
 	PHP_FALIAS(fetch,mysqli_stmt_fetch,NULL)
+	PHP_FALIAS(get_warnings, mysqli_stmt_get_warnings,	NULL)
 	PHP_FALIAS(result_metadata, mysqli_stmt_result_metadata,NULL)
 	PHP_FALIAS(num_rows, mysqli_stmt_num_rows,NULL)
 	PHP_FALIAS(send_long_data,mysqli_stmt_send_long_data,NULL)

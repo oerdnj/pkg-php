@@ -139,7 +139,7 @@ implicit_flush = Off
 
 ; The unserialize callback function will be called (with the undefined class'
 ; name as parameter), if the unserializer finds an undefined class
-; which should be instanciated.
+; which should be instantiated.
 ; A warning appears if the specified function is not defined, or if the
 ; function doesn't include/implement the missing class.
 ; So only set this entry, if you really want to implement such a
@@ -222,6 +222,10 @@ disable_classes =
 ;highlight.default = #0000BB
 ;highlight.html    = #000000
 
+; If enabled, the request will be allowed to complete even if the user aborts
+; the request. Consider enabling it if executing long request, which may end up
+; being interrupted by the user or a browser timing out.
+; ignore_user_abort = On
 
 ;
 ; Misc
@@ -273,11 +277,11 @@ memory_limit = 8M      ; Maximum amount of memory a script may consume (8MB)
 ;
 ;   - Show all errors, except for notices and coding standards warnings
 ;
-;error_reporting = E_ALL & ~E_NOTICE & ~E_STRICT
+;error_reporting = E_ALL & ~E_NOTICE
 ;
 ;   - Show all errors, except for notices
 ;
-;error_reporting = E_ALL & ~E_NOTICE
+;error_reporting = E_ALL & ~E_NOTICE | E_STRICT
 ;
 ;   - Show only errors
 ;
@@ -285,7 +289,7 @@ memory_limit = 8M      ; Maximum amount of memory a script may consume (8MB)
 ;
 ;   - Show all errors except for notices and coding standards warnings
 ;
-error_reporting  =  E_ALL & ~E_NOTICE & ~E_STRICT
+error_reporting  =  E_ALL & ~E_NOTICE
 
 ; Print out errors (as a part of the output).  For production web sites,
 ; you're strongly encouraged to turn this feature off, and use error logging
@@ -556,27 +560,25 @@ default_socket_timeout = 60
 ; extension_dir directive above.
 
 
-;Windows Extensions
-;Note that ODBC support is built in, so no dll is needed for it.
-;
+; Windows Extensions
+; Note that ODBC support is built in, so no dll is needed for it.
+; Note that many DLL files are located in the extensions/ (PHP 4) ext/ (PHP 5)
+; extension folders as well as the separate PECL DLL download (PHP 5).
+; Be sure to appropriately set the extension_dir directive.
 
 ;extension=php_mbstring.dll
 ;extension=php_bz2.dll
-;extension=php_cpdf.dll
 ;extension=php_curl.dll
 ;extension=php_dba.dll
 ;extension=php_dbase.dll
-;extension=php_dbx.dll
 ;extension=php_exif.dll
 ;extension=php_fdf.dll
 ;extension=php_filepro.dll
 ;extension=php_gd2.dll
 ;extension=php_gettext.dll
 ;extension=php_ifx.dll
-;extension=php_iisfunc.dll
 ;extension=php_imap.dll
 ;extension=php_interbase.dll
-;extension=php_java.dll
 ;extension=php_ldap.dll
 ;extension=php_mcrypt.dll
 ;extension=php_mhash.dll
@@ -588,23 +590,24 @@ default_socket_timeout = 60
 ;extension=php_oci8.dll
 ;extension=php_openssl.dll
 ;extension=php_oracle.dll
-;extension=php_pdf.dll
 ;extension=php_pgsql.dll
 ;extension=php_shmop.dll
 ;extension=php_snmp.dll
 ;extension=php_sockets.dll
+;extension=php_sqlite.dll
 ;extension=php_sybase_ct.dll
 ;extension=php_tidy.dll
-;extension=php_w32api.dll
 ;extension=php_xmlrpc.dll
 ;extension=php_xsl.dll
-;extension=php_yaz.dll
-;extension=php_zip.dll
 
 
 ;;;;;;;;;;;;;;;;;;;
 ; Module Settings ;
 ;;;;;;;;;;;;;;;;;;;
+
+[Date]
+; Defines the default timezone used by the date functions
+;date.timezone = 
 
 [Syslog]
 ; Whether or not to define the various syslog variables (e.g. $LOG_PID,
@@ -697,7 +700,7 @@ mysql.connect_timeout = 60
 ; SQL-Errors will be displayed.
 mysql.trace_mode = Off
 
-[MySQLI]
+[MySQLi]
 
 ; Maximum number of links.  -1 means no limit.
 mysqli.max_links = -1
@@ -781,7 +784,7 @@ sybase.min_message_severity = 10
 ; Compatability mode with old versions of PHP 3.0.
 ; If on, this will cause PHP to automatically assign types to results according
 ; to their Sybase type, instead of treating them all as strings.  This
-; compatability mode will probably not stay around forever, so try applying
+; compatibility mode will probably not stay around forever, so try applying
 ; whatever necessary changes to your code, and turn it off.
 sybase.compatability_mode = Off
 
@@ -800,16 +803,6 @@ sybct.min_server_severity = 10
 
 ; Minimum client message severity to display.
 sybct.min_client_severity = 10
-
-[dbx]
-; returned column names can be converted for compatibility reasons
-; possible values for dbx.colnames_case are
-; "unchanged" (default, if not set)
-; "lowercase"
-; "uppercase"
-; the recommended default is either upper- or lowercase, but
-; unchanged is currently set for backwards compatibility
-dbx.colnames_case = "unchanged"
 
 [bcmath]
 ; Number of decimal digits for all bcmath functions.
@@ -1037,8 +1030,10 @@ mssql.compatability_mode = Off
 ; Use NT authentication when connecting to the server
 mssql.secure_connection = Off
 
-; Specify max number of processes. Default = 25
-;mssql.max_procs = 25
+; Specify max number of processes. -1 = library default
+; msdlib defaults to 25
+; FreeTDS defaults to 4096
+;mssql.max_procs = -1
 
 [Assertion]
 ; Assert(expr); active by default.
@@ -1056,25 +1051,6 @@ mssql.secure_connection = Off
 ; Eval the expression with current error_reporting().  Set to true if you want
 ; error_reporting(0) around the eval().
 ;assert.quiet_eval = 0
-
-[Ingres II]
-; Allow or prevent persistent links.
-ingres.allow_persistent = On
-
-; Maximum number of persistent links.  -1 means no limit.
-ingres.max_persistent = -1
-
-; Maximum number of links, including persistents.  -1 means no limit.
-ingres.max_links = -1
-
-; Default database (format: [node_id::]dbname[/srv_class]).
-ingres.default_database =
-
-; Default user.
-ingres.default_user =
-
-; Default password.
-ingres.default_password =
 
 [Verisign Payflow Pro]
 ; Default Payflow Pro server.
@@ -1098,7 +1074,7 @@ pfpro.defaulttimeout = 30
 ; Default proxy password.
 ;pfpro.proxypassword =
 
-[com]
+[COM]
 ; path to a file containing GUIDs, IIDs or filenames of files with TypeLibs
 ;com.typelib_file =
 ; allow Distributed-COM calls
@@ -1126,7 +1102,7 @@ pfpro.defaulttimeout = 30
 ; registered as output buffer to function
 ;mbstring.http_output = SJIS
 
-; enable automatic encoding translation accoding to
+; enable automatic encoding translation according to
 ; mbstring.internal_encoding setting. Input chars are
 ; converted to internal encoding by setting this to On.
 ; Note: Do _not_ use automatic encoding translation for

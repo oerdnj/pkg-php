@@ -23,6 +23,12 @@ if (pg_connection_busy($db))
 {
 	echo "pg_connection_busy() error\n";
 }
+if (function_exists('pg_transaction_status')) {
+	if (pg_transaction_status($db) != PGSQL_TRANSACTION_IDLE) 
+	{
+		echo "pg_transaction_status() error\n";
+	}
+}
 if (!pg_host($db)) 
 {
 	echo "pg_host() error\n";

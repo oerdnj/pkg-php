@@ -1,9 +1,9 @@
 dnl
-dnl $Id: config.m4,v 1.14 2003/10/01 02:53:11 sniper Exp $
+dnl $Id: config.m4,v 1.15 2005/05/29 23:16:41 sniper Exp $
 dnl
 
 PHP_ARG_WITH(mhash, for mhash support,
-[  --with-mhash[=DIR]      Include mhash support.])
+[  --with-mhash[=DIR]      Include mhash support])
 
 if test "$PHP_MHASH" != "no"; then
   for i in $PHP_MHASH /usr/local /usr /opt/mhash; do

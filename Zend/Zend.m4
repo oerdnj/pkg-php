@@ -1,23 +1,8 @@
 dnl
-dnl $Id: Zend.m4,v 1.43.2.5 2005/06/07 17:22:56 sniper Exp $
+dnl $Id: Zend.m4,v 1.58 2005/06/14 12:23:26 sniper Exp $
 dnl
 dnl This file contains Zend specific autoconf functions.
 dnl
-
-AC_DEFUN([LIBZEND_BISON_CHECK],[
-
-if test "$YACC" != "bison -y"; then
-    AC_MSG_WARN(You will need bison if you want to regenerate the Zend parser.)
-else
-    AC_MSG_CHECKING(bison version)
-    set `bison --version| grep 'GNU Bison' | cut -d ' ' -f 4 | sed -e 's/\./ /' | tr -d 'a-z'`
-    if test "${1}" = "1" -a "${2}" -lt "28"; then
-        AC_MSG_WARN(You will need bison 1.28 if you want to regenerate the Zend parser (found ${1}.${2}).)
-    fi
-    AC_MSG_RESULT(${1}.${2} (ok))
-fi
-
-])
 
 AC_DEFUN([LIBZEND_CHECK_INT_TYPE],[
 AC_MSG_CHECKING(for $1)
@@ -136,6 +121,14 @@ AC_ARG_ENABLE(debug,
 
 AC_DEFUN([LIBZEND_OTHER_CHECKS],[
 
+AC_ARG_WITH(zend-vm,
+[  --with-zend-vm=TYPE     Set virtual machine dispatch method. Type is
+                          one of "CALL", "SWITCH" or "GOTO" [TYPE=CALL]],[
+  PHP_ZEND_VM=$withval
+],[
+  PHP_ZEND_VM=CALL
+])
+
 AC_ARG_ENABLE(zend-memory-manager,
 [  --disable-zend-memory-manager
                           Disable the Zend memory manager - FOR DEVELOPERS ONLY!!],
@@ -146,7 +139,7 @@ AC_ARG_ENABLE(zend-memory-manager,
 ])
 
 AC_ARG_ENABLE(maintainer-zts,
-[  --enable-maintainer-zts Enable thread safety - for code maintainers only],[
+[  --enable-maintainer-zts Enable thread safety - for code maintainers only!!],[
   ZEND_MAINTAINER_ZTS=$enableval
 ],[
   ZEND_MAINTAINER_ZTS=no
@@ -154,25 +147,28 @@ AC_ARG_ENABLE(maintainer-zts,
 
 AC_ARG_ENABLE(inline-optimization,
 [  --disable-inline-optimization 
-                          If building zend_execute.lo fails, try this switch.],[
+                          If building zend_execute.lo fails, try this switch],[
   ZEND_INLINE_OPTIMIZATION=$enableval
 ],[
   ZEND_INLINE_OPTIMIZATION=yes
 ])
 
 AC_ARG_ENABLE(memory-limit,
-[  --enable-memory-limit   Compile with memory limit support. ], [
+[  --enable-memory-limit   Compile with memory limit support], [
   ZEND_MEMORY_LIMIT=$enableval
 ],[
   ZEND_MEMORY_LIMIT=no
 ])
 
 AC_ARG_ENABLE(zend-multibyte,
-[  --enable-zend-multibyte Compile with zend multibyte support. ], [
+[  --enable-zend-multibyte Compile with zend multibyte support], [
   ZEND_MULTIBYTE=$enableval
 ],[
   ZEND_MULTIBYTE=no
 ])
+
+AC_MSG_CHECKING([virtual machine dispatch method])
+AC_MSG_RESULT($PHP_ZEND_VM)
 
 AC_MSG_CHECKING(whether to enable the Zend memory manager)
 AC_MSG_RESULT($ZEND_USE_ZEND_ALLOC)
@@ -192,6 +188,19 @@ AC_MSG_RESULT($ZEND_DEBUG)
 AC_MSG_CHECKING(whether to enable Zend multibyte)
 AC_MSG_RESULT($ZEND_MULTIBYTE)
 	
+case $PHP_ZEND_VM in
+  SWITCH)
+    AC_DEFINE(ZEND_VM_KIND,ZEND_VM_KIND_SWITCH,[virtual machine dispatch method])
+    ;;
+  GOTO)
+    AC_DEFINE(ZEND_VM_KIND,ZEND_VM_KIND_GOTO,[virtual machine dispatch method])
+    ;;
+  *)
+    PHP_ZEND_VM=CALL
+    AC_DEFINE(ZEND_VM_KIND,ZEND_VM_KIND_CALL,[virtual machine dispatch method])
+    ;;
+esac
+
 if test "$ZEND_DEBUG" = "yes"; then
   AC_DEFINE(ZEND_DEBUG,1,[ ])
   echo " $CFLAGS" | grep ' -g' >/dev/null || DEBUG_CFLAGS="-g"
@@ -241,6 +250,13 @@ AC_C_INLINE
 
 AC_SUBST(INLINE_CFLAGS)
 
+AC_MSG_CHECKING(target system is Darwin)
+if echo "$target" | grep "darwin" > /dev/null; then
+  AC_DEFINE([DARWIN], 1, [Define if the target system is darwin])
+  AC_MSG_RESULT(yes)
+else
+  AC_MSG_RESULT(no)
+fi
 
 dnl test and set the alignment define for ZEND_MM
 dnl this also does the logarithmic test for ZEND_MM.

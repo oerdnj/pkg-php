@@ -1,9 +1,9 @@
 dnl
-dnl $Id: config.m4,v 1.10 2002/03/12 16:37:42 sas Exp $
+dnl $Id: config.m4,v 1.11 2005/05/29 23:16:45 sniper Exp $
 dnl
 
 PHP_ARG_ENABLE(wddx,whether to enable WDDX support,
-[  --enable-wddx           Enable WDDX support.])
+[  --enable-wddx           Enable WDDX support])
 
 if test "$PHP_WDDX" != "no"; then
   if test "$ext_shared" != "yes" && test "$enable_xml" = "no"; then

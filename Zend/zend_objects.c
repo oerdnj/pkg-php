@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_objects.c,v 1.47.2.4 2005/08/04 08:46:53 dmitry Exp $ */
+/* $Id: zend_objects.c,v 1.56.2.1 2005/11/15 13:35:23 dmitry Exp $ */
 
 #include "zend.h"
 #include "zend_globals.h"
@@ -75,7 +75,7 @@ ZEND_API void zend_objects_destroy_object(zend_object *object, zend_object_handl
 		 */
 		old_exception = EG(exception);
 		EG(exception) = NULL;
-		zend_call_method_with_0_params(&obj, object->ce, NULL, "__destruct", NULL);
+		zend_call_method_with_0_params(&obj, object->ce, &object->ce->destructor, ZEND_DESTRUCTOR_FUNC_NAME, NULL);
 		if (old_exception) {
 			if (EG(exception)) {
 				zend_error(E_ERROR, "Ignoring exception from %s::__destruct() while an exception is already active", object->ce->name);
@@ -88,6 +88,10 @@ ZEND_API void zend_objects_destroy_object(zend_object *object, zend_object_handl
 
 ZEND_API void zend_objects_free_object_storage(zend_object *object TSRMLS_DC)
 {
+	if (object->guards) {
+		zend_hash_destroy(object->guards);
+		FREE_HASHTABLE(object->guards);		
+	}
 	zend_hash_destroy(object->properties);
 	FREE_HASHTABLE(object->properties);
 	efree(object);
@@ -101,8 +105,7 @@ ZEND_API zend_object_value zend_objects_new(zend_object **object, zend_class_ent
 	(*object)->ce = class_type;
 	retval.handle = zend_objects_store_put(*object, (zend_objects_store_dtor_t) zend_objects_destroy_object, (zend_objects_free_object_storage_t) zend_objects_free_object_storage, NULL TSRMLS_CC);
 	retval.handlers = &std_object_handlers;
-	(*object)->in_get = 0;
-	(*object)->in_set = 0;
+	(*object)->guards = NULL;
 	return retval;
 }
 
@@ -140,31 +143,15 @@ ZEND_API void zend_objects_clone_members(zend_object *new_object, zend_object_va
 	}
 	if (old_object->ce->clone) {
 		zval *new_obj;
-		zval *clone_func_name;
-		zval *retval_ptr;
-		HashTable symbol_table;
 
 		MAKE_STD_ZVAL(new_obj);
 		new_obj->type = IS_OBJECT;
 		new_obj->value.obj = new_obj_val;
 		zval_copy_ctor(new_obj);
 
-		/* FIXME: Optimize this so that we use the old_object->ce->clone function pointer instead of the name */
-		MAKE_STD_ZVAL(clone_func_name);
-		clone_func_name->type = IS_STRING;
-		clone_func_name->value.str.val = estrndup("__clone", sizeof("__clone")-1);
-		clone_func_name->value.str.len = sizeof("__clone")-1;
+		zend_call_method_with_0_params(&new_obj, old_object->ce, &old_object->ce->clone, ZEND_CLONE_FUNC_NAME, NULL);
 
-		ZEND_INIT_SYMTABLE(&symbol_table);
-		
-		call_user_function_ex(NULL, &new_obj, clone_func_name, &retval_ptr, 0, NULL, 0, &symbol_table TSRMLS_CC);
-
-		zend_hash_destroy(&symbol_table);
 		zval_ptr_dtor(&new_obj);
-		zval_ptr_dtor(&clone_func_name);
-		if(retval_ptr) {
-			zval_ptr_dtor(&retval_ptr);
-		}
 	}
 }
 

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: multi.c,v 1.16 2004/03/11 00:27:16 iliaa Exp $ */
+/* $Id: multi.c,v 1.19.2.1 2005/09/08 14:50:23 iliaa Exp $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 
@@ -111,7 +111,7 @@ PHP_FUNCTION(curl_multi_remove_handle)
 	ZEND_FETCH_RESOURCE(mh, php_curlm *, &z_mh, -1, le_curl_multi_handle_name, le_curl_multi_handle);
 	ZEND_FETCH_RESOURCE(ch, php_curl *, &z_ch, -1, le_curl_name, le_curl);
 
-	zval_ptr_dtor(&z_ch);
+	--ch->uses;
 	
 	RETURN_LONG((long) curl_multi_remove_handle(mh->multi, ch->cp));
 }
@@ -195,7 +195,7 @@ PHP_FUNCTION(curl_multi_getcontent)
 	ZEND_FETCH_RESOURCE(ch, php_curl *, &z_ch, -1, le_curl_name, le_curl);
 
 	if (ch->handlers->write->method == PHP_CURL_RETURN && ch->handlers->write->buf.len > 0) {
-		if (ch->handlers->write->type == PHP_CURL_BINARY) {
+		if (ch->handlers->write->type != PHP_CURL_BINARY) {
 			smart_str_0(&ch->handlers->write->buf);
 		}
 		

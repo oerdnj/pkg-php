@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config9.m4,v 1.1.2.1 2004/12/21 02:53:34 sniper Exp $
+dnl $Id: config9.m4,v 1.2 2004/11/09 16:11:13 jorton Exp $
 dnl
 
 dnl Check for extensions with which Recode can not work

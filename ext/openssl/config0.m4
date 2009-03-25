@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config0.m4,v 1.2.4.2 2005/01/01 14:35:29 wez Exp $
+dnl $Id: config0.m4,v 1.4 2005/01/01 14:32:58 wez Exp $
 dnl
 
 PHP_ARG_WITH(openssl, for OpenSSL support,

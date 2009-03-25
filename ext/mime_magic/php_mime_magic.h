@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2004 The PHP Group                                |
+  | Copyright (c) 1997-2005 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -15,7 +15,7 @@
   | Author:                                                              |
   +----------------------------------------------------------------------+
 
-  $Id: php_mime_magic.h,v 1.10 2004/01/08 17:32:24 sniper Exp $ 
+  $Id: php_mime_magic.h,v 1.11 2005/08/03 14:07:26 sniper Exp $ 
 */
 
 #ifndef PHP_MIME_MAGIC_H

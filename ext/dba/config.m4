@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.60.2.4 2005/08/22 19:59:36 iliaa Exp $
+dnl $Id: config.m4,v 1.70.2.1 2005/08/22 19:59:28 iliaa Exp $
 dnl
 
 dnl Suppose we need FlatFile if no support or only CDB is used.
@@ -21,7 +21,7 @@ AC_DEFUN([PHP_TEMP_LDFLAGS],[
 dnl Assign INCLUDE/LFLAGS from PREFIX
 AC_DEFUN([PHP_DBA_STD_ASSIGN],[
   if test -n "$THIS_PREFIX" && test "$THIS_PREFIX" != "/usr"; then
-    THIS_LFLAGS=$THIS_PREFIX/lib
+    THIS_LFLAGS=$THIS_PREFIX/$PHP_LIBDIR
   fi
 ])
 
@@ -66,7 +66,8 @@ AC_DEFUN([AC_DBA_STD_RESULT],[
 ])
 
 PHP_ARG_ENABLE(dba,whether to enable DBA,
-[  --enable-dba            Build DBA with builtin modules])
+[  --enable-dba            Build DBA with builtin modules. To build shared DBA
+                          extension use --enable-dba=shared])
 
 AC_ARG_WITH(qdbm,
 [  --with-qdbm[=DIR]         DBA: Include QDBM support],[
@@ -86,7 +87,7 @@ AC_ARG_WITH(qdbm,
           AC_DEFINE_UNQUOTED(QDBM_INCLUDE_FILE, "$THIS_INCLUDE", [ ])
           AC_DEFINE(DBA_QDBM, 1, [ ])
           THIS_LIBS=$LIB
-        ], [], [-L$THIS_PREFIX/lib])
+        ], [], [-L$THIS_PREFIX/$PHP_LIBDIR])
         if test -n "$THIS_LIBS"; then
           break
         fi
@@ -120,7 +121,7 @@ AC_ARG_WITH(gdbm,
         AC_DEFINE_UNQUOTED(GDBM_INCLUDE_FILE, "$THIS_INCLUDE", [ ])
         AC_DEFINE(DBA_GDBM, 1, [ ]) 
         THIS_LIBS=gdbm
-      ], [], [-L$THIS_PREFIX/lib])
+      ], [], [-L$THIS_PREFIX/$PHP_LIBDIR])
     fi
     
     PHP_DBA_STD_ASSIGN
@@ -152,7 +153,7 @@ AC_ARG_WITH(ndbm,
           AC_DEFINE_UNQUOTED(NDBM_INCLUDE_FILE, "$THIS_INCLUDE", [ ])
           AC_DEFINE(DBA_NDBM, 1, [ ]) 
           THIS_LIBS=$LIB
-        ], [], [-L$THIS_PREFIX/lib])
+        ], [], [-L$THIS_PREFIX/$PHP_LIBDIR])
         if test -n "$THIS_LIBS"; then
           break
         fi
@@ -170,8 +171,8 @@ dnl Berkeley specific (library and version test)
 dnl parameters(version, library list, function)
 AC_DEFUN([PHP_DBA_DB_CHECK],[
   for LIB in $2; do
-    if test -f $THIS_PREFIX/lib/lib$LIB.a -o -f $THIS_PREFIX/lib/lib$LIB.$SHLIB_SUFFIX_NAME; then
-      PHP_TEMP_LDFLAGS(-L$THIS_PREFIX/lib, -l$LIB,[
+    if test -f $THIS_PREFIX/$PHP_LIBDIR/lib$LIB.a -o -f $THIS_PREFIX/$PHP_LIBDIR/lib$LIB.$SHLIB_SUFFIX_NAME; then
+      PHP_TEMP_LDFLAGS(-L$THIS_PREFIX/$PHP_LIBDIR, -l$LIB,[
         AC_TRY_LINK([
 #include "$THIS_INCLUDE"
         ],[
@@ -191,7 +192,7 @@ AC_DEFUN([PHP_DBA_DB_CHECK],[
     fi
   done
   if test -z "$THIS_LIBS"; then
-	AC_MSG_CHECKING(for db$1 major version)
+    AC_MSG_CHECKING(for db$1 major version)
     AC_MSG_ERROR(Header contains different version)
   fi
   if test "$1" = "4"; then
@@ -226,6 +227,9 @@ AC_DEFUN([PHP_DBA_DB_CHECK],[
       AC_DEFINE_UNQUOTED(DB$1_INCLUDE_FILE, "$THIS_INCLUDE", [ ])
     fi
   fi
+  DB$1_LIBS=$THIS_LIBS
+  DB$1_PREFIX=$THIS_PREFIX
+  DB$1_INCLUDE=$THIS_INCLUDE
   PHP_DBA_STD_ASSIGN
   PHP_DBA_STD_CHECK
   PHP_DBA_STD_ATTACH
@@ -333,6 +337,75 @@ AC_ARG_WITH(db2,
 ])
 AC_DBA_STD_RESULT(db2,Berkeley DB2)
 
+AC_ARG_WITH(db1,
+[  --with-db1[=DIR]          DBA: Include Berkeley DB1 support/emulation],[
+  if test "$withval" != "no"; then
+    PHP_DBA_STD_BEGIN
+    AC_MSG_CHECKING(for DB1 in library)
+    if test "$HAVE_DB4" = "1"; then
+      THIS_VERSION=4
+      THIS_LIBS=$DB4_LIBS
+      THIS_PREFIX=$DB4_PREFIX
+    elif test "$HAVE_DB3" = "1"; then
+      THIS_LIBS=$DB3_LIBS
+      THIS_PREFIX=$DB3_PREFIX
+    elif test "$HAVE_DB2" = "1"; then
+      THIS_VERSION=2
+      THIS_LIBS=$DB2_LIBS
+      THIS_PREFIX=$DB2_PREFIX
+    fi
+    if test "$HAVE_DB4" = "1" -o "$HAVE_DB3" = "1" -o "$HAVE_DB2" = "1"; then
+      AC_DEFINE_UNQUOTED(DB1_VERSION, "Berkeley DB 1.85 emulation in DB$THIS_VERSION", [ ])
+      for i in db$THIS_VERSION/db_185.h include/db$THIS_VERSION/db_185.h include/db/db_185.h; do
+        if test -f "$THIS_PREFIX/$i"; then
+          THIS_INCLUDE=$THIS_PREFIX/$i
+          break
+        fi
+      done
+    else
+      AC_DEFINE_UNQUOTED(DB1_VERSION, "Unknown DB1", [ ])
+      for i in $withval /usr/local /usr; do
+        if test -f "$i/db1/db.h"; then
+          THIS_PREFIX=$i
+          THIS_INCLUDE=$i/db1/db.h
+          break
+        elif test -f "$i/include/db1/db.h"; then
+          THIS_PREFIX=$i
+          THIS_INCLUDE=$i/include/db1/db.h
+          break
+        elif test -f "$i/include/db.h"; then
+          THIS_PREFIX=$i
+          THIS_INCLUDE=$i/include/db.h
+          break
+        fi
+      done
+      THIS_LIBS=db
+    fi
+    AC_MSG_RESULT($THIS_LIBS)
+    AC_MSG_CHECKING(for DB1 in header)
+    AC_MSG_RESULT($THIS_INCLUDE)
+    if test -n "$THIS_INCLUDE"; then
+      PHP_TEMP_LDFLAGS(-L$THIS_PREFIX/$PHP_LIBDIR, -l$THIS_LIBS,[
+        AC_TRY_LINK([
+#include "$THIS_INCLUDE"
+        ],[
+          DB * dbp = dbopen("", 0, 0, DB_HASH, 0);
+        ],[
+          AC_DEFINE_UNQUOTED(DB1_INCLUDE_FILE, "$THIS_INCLUDE", [ ])
+          AC_DEFINE(DBA_DB1, 1, [ ])
+          THIS_RESULT=yes
+        ],[
+          THIS_RESULT=no
+        ])
+      ])
+    fi
+    PHP_DBA_STD_ASSIGN
+    PHP_DBA_STD_CHECK
+    PHP_DBA_STD_ATTACH
+  fi
+])
+AC_DBA_STD_RESULT(db1,DB1)
+
 AC_ARG_WITH(dbm,
 [  --with-dbm[=DIR]          DBA: Include DBM support],[
   if test "$withval" != "no"; then
@@ -366,7 +439,7 @@ AC_ARG_WITH(dbm,
           fi
           AC_DEFINE(DBA_DBM, 1, [ ]) 
           THIS_LIBS=$LIB
-        ], [], [-L$THIS_PREFIX/lib])
+        ], [], [-L$THIS_PREFIX/$PHP_LIBDIR])
         if test -n "$THIS_LIBS"; then
           break
         fi
@@ -408,7 +481,7 @@ AC_ARG_WITH(cdb,
           AC_DEFINE_UNQUOTED(CDB_INCLUDE_FILE, "$THIS_INCLUDE", [ ])
           AC_DEFINE(DBA_CDB, 1, [ ]) 
           THIS_LIBS=$LIB
-        ], [], [-L$THIS_PREFIX/lib])
+        ], [], [-L$THIS_PREFIX/$PHP_LIBDIR])
         if test -n "$THIS_LIBS"; then
           break
         fi
@@ -469,7 +542,7 @@ AC_MSG_CHECKING(whether to enable DBA interface)
 if test "$HAVE_DBA" = "1"; then
   AC_MSG_RESULT(yes)
   AC_DEFINE(HAVE_DBA, 1, [ ])
-  PHP_NEW_EXTENSION(dba, dba.c dba_cdb.c dba_db2.c dba_dbm.c dba_gdbm.c dba_ndbm.c dba_db3.c dba_db4.c dba_flatfile.c dba_inifile.c dba_qdbm.c $cdb_sources $flat_sources $ini_sources, $ext_shared)
+  PHP_NEW_EXTENSION(dba, dba.c dba_cdb.c dba_dbm.c dba_gdbm.c dba_ndbm.c dba_db1.c dba_db2.c dba_db3.c dba_db4.c dba_flatfile.c dba_inifile.c dba_qdbm.c $cdb_sources $flat_sources $ini_sources, $ext_shared)
   PHP_ADD_BUILD_DIR($ext_builddir/libinifile)
   PHP_ADD_BUILD_DIR($ext_builddir/libcdb)
   PHP_ADD_BUILD_DIR($ext_builddir/libflatfile)

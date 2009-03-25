@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: user_filters.c,v 1.28.2.1 2005/06/09 08:19:18 dmitry Exp $ */
+/* $Id: user_filters.c,v 1.31 2005/08/03 14:08:15 sniper Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -116,7 +116,6 @@ static void userfilter_dtor(php_stream_filter *thisfilter TSRMLS_DC)
 	zval *obj = (zval*)thisfilter->abstract;
 	zval func_name;
 	zval *retval = NULL;
-	zval **tmp; 
 
 	if (obj == NULL) {
 		/* If there's no object associated then there's nothing to dispose of */

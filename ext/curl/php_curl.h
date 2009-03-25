@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_curl.h,v 1.41.2.1 2005/06/02 21:04:43 tony2001 Exp $ */
+/* $Id: php_curl.h,v 1.44 2005/08/03 14:06:45 sniper Exp $ */
 
 #ifndef _PHP_CURL_H
 #define _PHP_CURL_H
@@ -51,9 +51,9 @@ extern zend_module_entry curl_module_entry;
 #define PHP_CURL_BINARY 6
 #define PHP_CURL_IGNORE 7
 
-int  le_curl;
+extern int  le_curl;
 #define le_curl_name "cURL handle"
-int  le_curl_multi_handle;
+extern int  le_curl_multi_handle;
 #define le_curl_multi_handle_name "cURL Multi Handle"
 
 PHP_MINIT_FUNCTION(curl);

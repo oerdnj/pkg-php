@@ -1,5 +1,5 @@
 --TEST--
-Magic object handlers segfault and memory errors
+Magic object handlers segfaults and memory errors
 --FILE--
 <?php
 function f($x) {

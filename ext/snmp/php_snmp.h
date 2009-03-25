@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2004 The PHP Group                                |
+  | Copyright (c) 1997-2005 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -20,7 +20,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_snmp.h,v 1.22.2.2 2005/03/17 19:47:48 harrie Exp $ */
+/* $Id: php_snmp.h,v 1.25 2005/08/03 14:07:46 sniper Exp $ */
 
 #ifndef PHP_SNMP_H
 #define PHP_SNMP_H

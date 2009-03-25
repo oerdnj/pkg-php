@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: sockets.c,v 1.165.2.4 2005/05/12 16:27:05 tony2001 Exp $ */
+/* $Id: sockets.c,v 1.171.2.2 2005/11/03 15:00:51 mike Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -116,7 +116,9 @@ function_entry sockets_functions[] = {
 	PHP_FE(socket_select,			first_through_third_args_force_ref)
 	PHP_FE(socket_create,			NULL)
 	PHP_FE(socket_create_listen,	NULL)
+#ifdef HAVE_SOCKETPAIR
 	PHP_FE(socket_create_pair,		fourth_arg_force_ref)
+#endif
 	PHP_FE(socket_accept,			NULL)
 	PHP_FE(socket_set_nonblock,		NULL)
 	PHP_FE(socket_set_block,		NULL)
@@ -339,7 +341,7 @@ static char *php_strerror(int error TSRMLS_DC)
 
 		if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |	FORMAT_MESSAGE_IGNORE_INSERTS,
 				  NULL, error, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &tmp, 0, NULL)) {
-
+			
 			if (SOCKETS_G(strerror_buf)) {
 				efree(SOCKETS_G(strerror_buf));
 			}
@@ -696,7 +698,7 @@ PHP_FUNCTION(socket_accept)
 	}
 
 	new_sock->error = 0;
-
+	
 	ZEND_REGISTER_RESOURCE(return_value, new_sock, le_socket);
 }
 /* }}} */
@@ -1504,6 +1506,7 @@ PHP_FUNCTION(socket_get_option)
 	zval			*arg1;
 	struct linger	linger_val;
 	struct timeval		tv;
+	int				timeout = 0;
 	socklen_t		optlen;
 	php_socket		*php_sock;
 	int				other_val;
@@ -1531,12 +1534,24 @@ PHP_FUNCTION(socket_get_option)
 			break; 
 		case SO_RCVTIMEO:
 		case SO_SNDTIMEO:
+#ifndef PHP_WIN32
 			optlen = sizeof(tv);
 
 			if (getsockopt(php_sock->bsd_socket, level, optname, (char*)&tv, &optlen) != 0) {
 				PHP_SOCKET_ERROR(php_sock, "unable to retrieve socket option", errno);
 				RETURN_FALSE;
 			}
+#else
+			optlen = sizeof(int);
+			
+			if (getsockopt(php_sock->bsd_socket, level, optname, (char*)&timeout, &optlen) != 0) {
+				PHP_SOCKET_ERROR(php_sock, "unable to retrieve socket option", errno);
+				RETURN_FALSE;
+			}
+			
+			tv.tv_sec = timeout ? timeout / 1000 : 0;
+			tv.tv_usec = timeout ? (timeout * 1000) % 1000000 : 0;
+#endif
 
 			array_init(return_value);
 			
@@ -1566,7 +1581,7 @@ PHP_FUNCTION(socket_set_option)
 	struct linger	lv;
 	struct timeval tv;
 	php_socket		*php_sock;
-	int				ov, optlen, retval;
+	int				ov, optlen, retval, timeout;
 	long				level, optname;
 	void 			*opt_ptr;
 	
@@ -1626,11 +1641,16 @@ PHP_FUNCTION(socket_set_option)
 			
 			convert_to_long_ex(sec);
 			convert_to_long_ex(usec);
+#ifndef PHP_WIN32
 			tv.tv_sec = Z_LVAL_PP(sec);
 			tv.tv_usec = Z_LVAL_PP(usec);
-
 			optlen = sizeof(tv);
 			opt_ptr = &tv;
+#else
+			timeout = Z_LVAL_PP(sec) * 1000 + Z_LVAL_PP(usec) / 1000;
+			optlen = sizeof(int);
+			opt_ptr = &timeout;
+#endif
 			break;
 		default:
 			convert_to_long_ex(&arg4);
@@ -1652,6 +1672,7 @@ PHP_FUNCTION(socket_set_option)
 }
 /* }}} */
 
+#ifdef HAVE_SOCKETPAIR
 /* {{{ proto bool socket_create_pair(int domain, int type, int protocol, array &fd)
    Creates a pair of indistinguishable sockets and stores them in fds. */
 PHP_FUNCTION(socket_create_pair)
@@ -1711,6 +1732,7 @@ PHP_FUNCTION(socket_create_pair)
 	RETURN_TRUE;
 }
 /* }}} */
+#endif
 
 /* {{{ proto bool socket_shutdown(resource socket[, int how])
    Shuts down a socket for receiving, sending, or both. */

@@ -169,6 +169,10 @@ SOURCE="..\main\fopen_wrappers.c"
 # End Source File
 # Begin Source File
 
+SOURCE=.\globals.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\main\internal_functions_win32.c
 # End Source File
 # Begin Source File
@@ -206,10 +210,6 @@ SOURCE=..\main\php_open_temporary_file.c
 # Begin Source File
 
 SOURCE=..\main\php_scandir.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\main\php_sprintf.c
 # End Source File
 # Begin Source File
 
@@ -282,10 +282,6 @@ SOURCE="..\main\fopen_wrappers.h"
 # Begin Source File
 
 SOURCE=..\main\getopt.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\main\internal_functions_registry.h
 # End Source File
 # Begin Source File
 
@@ -1524,6 +1520,10 @@ SOURCE=..\ext\zlib\zlib.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\ext\zlib\zlib_filter.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\ext\zlib\zlib_fopen_wrapper.c
 # End Source File
 # End Group
@@ -1701,10 +1701,6 @@ SOURCE=..\ext\standard\pack.c
 # Begin Source File
 
 SOURCE=..\ext\standard\pageinfo.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\ext\standard\parsedate.c
 # End Source File
 # Begin Source File
 
@@ -2147,61 +2143,6 @@ SOURCE=..\win32\wfile.h
 SOURCE=.\winutil.h
 # End Source File
 # End Group
-# End Group
-# Begin Group "Parsers"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=..\ext\standard\parsedate.y
-
-!IF  "$(CFG)" == "php5dllts - Win32 Debug_TS"
-
-# Begin Custom Build - Generating ext/standard/parsedate.c
-InputPath=..\ext\standard\parsedate.y
-
-"..\ext\standard\parsedate.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	cd ..\ext\standard 
-	bison --output=parsedate.c -v -d parsedate.y 
-	
-# End Custom Build
-
-!ELSEIF  "$(CFG)" == "php5dllts - Win32 Release_TS"
-
-# Begin Custom Build - Generating ext/standard/parsedate.c
-InputPath=..\ext\standard\parsedate.y
-
-"..\ext\standard\parsedate.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	cd ..\ext\standard 
-	bison --output=parsedate.c -v -d parsedate.y 
-	
-# End Custom Build
-
-!ELSEIF  "$(CFG)" == "php5dllts - Win32 Release_TS_inline"
-
-# Begin Custom Build - Generating ext/standard/parsedate.c
-InputPath=..\ext\standard\parsedate.y
-
-"..\ext\standard\parsedate.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	cd ..\ext\standard 
-	bison --output=parsedate.c -v -d parsedate.y 
-	
-# End Custom Build
-
-!ELSEIF  "$(CFG)" == "php5dllts - Win32 Release_TSDbg"
-
-# Begin Custom Build - Generating ext/standard/parsedate.c
-InputPath=..\ext\standard\parsedate.y
-
-"..\ext\standard\parsedate.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	cd ..\ext\standard 
-	bison --output=parsedate.c -v -d parsedate.y 
-	
-# End Custom Build
-
-!ENDIF 
-
-# End Source File
 # End Group
 # Begin Group "Text Files"
 

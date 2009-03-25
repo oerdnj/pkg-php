@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_functions.c,v 1.41 2004/01/08 08:18:04 andi Exp $ */
+/* $Id: php_functions.c,v 1.44 2005/08/03 14:08:46 sniper Exp $ */
 
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
@@ -92,7 +92,7 @@ PHP_FUNCTION(virtual)
 #define ADD_LONG(name) \
 		add_property_long(return_value, #name, rr->name)
 #define ADD_TIME(name) \
-		add_property_long(return_value, #name, rr->name / APR_USEC_PER_SEC);
+		add_property_long(return_value, #name, apr_time_sec(rr->name));
 #define ADD_STRING(name) \
 		if (rr->name) add_property_string(return_value, #name, (char *) rr->name, 1)
 
@@ -138,7 +138,6 @@ PHP_FUNCTION(apache_lookup_uri)
 		ADD_LONG(allowed);
 		ADD_LONG(sent_bodyct);
 		ADD_LONG(bytes_sent);
-		ADD_LONG(request_time);
 		ADD_LONG(mtime);
 		ADD_TIME(request_time);
 
@@ -165,7 +164,7 @@ PHP_FUNCTION(apache_request_headers)
 	arr = apr_table_elts(ctx->f->r->headers_in);
 
 	APR_ARRAY_FOREACH_OPEN(arr, key, val)
-		if (!val) val = empty_string;
+		if (!val) val = "";
 		add_assoc_string(return_value, key, val, 1);
 	APR_ARRAY_FOREACH_CLOSE()
 }
@@ -185,7 +184,7 @@ PHP_FUNCTION(apache_response_headers)
 	arr = apr_table_elts(ctx->f->r->headers_out);
 
 	APR_ARRAY_FOREACH_OPEN(arr, key, val)
-		if (!val) val = empty_string;
+		if (!val) val = "";
 		add_assoc_string(return_value, key, val, 1);
 	APR_ARRAY_FOREACH_CLOSE()
 }

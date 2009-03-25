@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.27.2.2 2005/01/10 21:37:59 tony2001 Exp $
+dnl $Id: config.m4,v 1.33.2.2 2005/10/13 19:28:58 sniper Exp $
 dnl
 
 PHP_ARG_WITH(iconv, for iconv support,
@@ -18,15 +18,23 @@ if test "$PHP_ICONV" != "no"; then
     iconv_ldflags_save="$LDFLAGS"
 
     if test -z "$ICONV_DIR"; then
-      PHP_ICONV_PREFIX="/usr"
+      for i in /usr/local /usr; do
+        if test -f "$i/include/iconv.h" || test -f "$i/include/giconv.h"; then
+          PHP_ICONV_PREFIX="$i"
+          break
+        fi
+      done
+      if test -z "$PHP_ICONV_PREFIX"; then
+        PHP_ICONV_PREFIX="/usr"
+      fi
     else
       PHP_ICONV_PREFIX="$ICONV_DIR"
     fi
 
     CFLAGS="-I$PHP_ICONV_PREFIX/include $CFLAGS"
-    LDFLAGS="-L$PHP_ICONV_PREFIX/lib $LDFLAGS"
+    LDFLAGS="-L$PHP_ICONV_PREFIX/$PHP_LIBDIR $LDFLAGS"
 
-    if test -r $PHP_ICONV_PREFIX/include/giconv.h; then
+    if test -r "$PHP_ICONV_PREFIX/include/giconv.h"; then
       PHP_ICONV_H_PATH="$PHP_ICONV_PREFIX/include/giconv.h"
     else
       PHP_ICONV_H_PATH="$PHP_ICONV_PREFIX/include/iconv.h"
@@ -115,6 +123,10 @@ int main() {
       AC_MSG_RESULT(no)
       PHP_DEFINE([ICONV_SUPPORTS_ERRNO],0,[ext/iconv])
       AC_DEFINE([ICONV_SUPPORTS_ERRNO],0,[Whether iconv supports error no or not])
+    ],[
+      AC_MSG_RESULT(no, cross-compiling)
+      PHP_DEFINE([ICONV_SUPPORTS_ERRNO],0,[ext/iconv])
+      AC_DEFINE([ICONV_SUPPORTS_ERRNO],0,[Whether iconv supports error no or not])
     ])
 
     AC_MSG_CHECKING([if your cpp allows macro usage in include lines])
@@ -134,6 +146,7 @@ int main() {
 
     PHP_NEW_EXTENSION(iconv, iconv.c, $ext_shared,, [-I\"$PHP_ICONV_PREFIX/include\"])
     PHP_SUBST(ICONV_SHARED_LIBADD)
+    PHP_INSTALL_HEADERS([ext/iconv/])
   else
     AC_MSG_ERROR(Please reinstall the iconv library.)
   fi

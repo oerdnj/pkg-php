@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_objects_API.h,v 1.14.2.2 2004/09/17 10:19:47 stas Exp $ */
+/* $Id: zend_objects_API.h,v 1.20 2005/08/03 13:30:56 sniper Exp $ */
 
 #ifndef ZEND_OBJECTS_API_H
 #define ZEND_OBJECTS_API_H
@@ -25,8 +25,7 @@
 #include "zend.h"
 
 typedef void (*zend_objects_store_dtor_t)(void *object, zend_object_handle handle TSRMLS_DC);
-typedef void (*zend_objects_free_object_storage_t)(zend_object *object TSRMLS_DC);
-
+typedef void (*zend_objects_free_object_storage_t)(void *object TSRMLS_DC);
 typedef void (*zend_objects_store_clone_t)(void *object, void **object_clone TSRMLS_DC);
 
 typedef struct _zend_object_store_bucket {

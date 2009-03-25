@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2004 The PHP Group                                |
+  | Copyright (c) 1997-2005 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: streamsfuncs.h,v 1.8 2004/01/08 17:32:52 sniper Exp $ */
+/* $Id: streamsfuncs.h,v 1.13 2005/08/03 14:08:13 sniper Exp $ */
 
 /* Flags for stream_socket_client */
 #define PHP_STREAM_CLIENT_PERSISTENT	1
@@ -43,12 +43,18 @@ PHP_FUNCTION(stream_get_wrappers);
 PHP_FUNCTION(stream_get_line);
 PHP_FUNCTION(stream_get_meta_data);
 PHP_FUNCTION(stream_wrapper_register);
+PHP_FUNCTION(stream_wrapper_unregister);
+PHP_FUNCTION(stream_wrapper_restore);
 PHP_FUNCTION(stream_context_create);
 PHP_FUNCTION(stream_context_set_params);
 PHP_FUNCTION(stream_context_set_option);
 PHP_FUNCTION(stream_context_get_options);
+PHP_FUNCTION(stream_context_get_default);
 PHP_FUNCTION(stream_filter_prepend);
 PHP_FUNCTION(stream_filter_append);
+PHP_FUNCTION(stream_filter_remove);
+PHP_FUNCTION(stream_socket_enable_crypto);
+PHP_FUNCTION(stream_socket_pair);
 
 /*
  * Local variables:

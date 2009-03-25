@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_iterator.c,v 1.7 2004/03/08 21:17:39 helly Exp $ */
+/* $Id: com_iterator.c,v 1.9 2005/08/03 14:06:41 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -232,7 +232,7 @@ fail:
 	if (I) {
 		VariantClear(&I->safe_array);
 		VariantClear(&I->v);
-		free(I);
+		efree(I);
 	}
 	return NULL;
 }

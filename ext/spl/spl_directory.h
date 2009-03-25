@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_directory.h,v 1.6 2004/01/20 20:59:45 helly Exp $ */
+/* $Id: spl_directory.h,v 1.12.2.1 2005/09/15 14:08:14 helly Exp $ */
 
 #ifndef SPL_DIRECTORY_H
 #define SPL_DIRECTORY_H
@@ -24,8 +24,9 @@
 #include "php.h"
 #include "php_spl.h"
 
-extern zend_class_entry *spl_ce_DirectoryIterator;
-extern zend_class_entry *spl_ce_RecursiveDirectoryIterator;
+extern PHPAPI zend_class_entry *spl_ce_DirectoryIterator;
+extern PHPAPI zend_class_entry *spl_ce_RecursiveDirectoryIterator;
+extern PHPAPI zend_class_entry *spl_ce_SplFileObject;
 
 PHP_MINIT_FUNCTION(spl_directory);
 
@@ -36,8 +37,31 @@ typedef struct _spl_ce_dir_object {
 	char              *path;
 	char              *path_name;
 	int               path_name_len;
+	char              *sub_path;
+	int               sub_path_len;
 	int               index;
 } spl_ce_dir_object;
+
+typedef struct _spl_file_object {
+	zend_object        std;
+	php_stream         *stream;
+	php_stream_context *context;
+	zval               *zcontext;
+	char               *file_name;
+	int                file_name_len;
+	char               *open_mode;
+	int                open_mode_len;
+	zval               *current_zval;
+	char               *current_line;
+	size_t             current_line_len;
+	size_t             max_line_len;
+	long               current_line_num;
+	long               flags;
+	zval               zresource;
+	zend_function      *func_getCurr;
+} spl_file_object;
+
+#define SPL_FILE_OBJECT_DROP_NEW_LINE      0x00000001 /* drop new lines */
 
 #endif /* SPL_DIRECTORY_H */
 

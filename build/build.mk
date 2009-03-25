@@ -1,7 +1,7 @@
 #  +----------------------------------------------------------------------+
 #  | PHP Version 5                                                        |
 #  +----------------------------------------------------------------------+
-#  | Copyright (c) 1997-2004 The PHP Group                                |
+#  | Copyright (c) 1997-2005 The PHP Group                                |
 #  +----------------------------------------------------------------------+
 #  | This source file is subject to version 3.0 of the PHP license,       |
 #  | that is bundled with this package in the file LICENSE, and is        |
@@ -14,7 +14,7 @@
 #  | Author: Sascha Schumann <sascha@schumann.cx>                         |
 #  +----------------------------------------------------------------------+
 #
-# $Id: build.mk,v 1.25 2004/03/14 17:44:36 sas Exp $ 
+# $Id: build.mk,v 1.26 2005/08/03 14:06:37 sniper Exp $ 
 #
 #
 # Makefile to generate build tools

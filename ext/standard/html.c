@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: html.c,v 1.97.2.10 2005/05/11 14:58:34 jorton Exp $ */
+/* $Id: html.c,v 1.111 2005/08/03 14:08:01 sniper Exp $ */
 
 /*
  * HTML entity resources:
@@ -463,6 +463,12 @@ static const struct {
 	{ '<',	"&lt;",		4,	0 },
 	{ '>',	"&gt;",		4,	0 },
 	{ 0, NULL, 0, 0 }
+};
+	
+struct basic_entities_dec {
+	unsigned short charcode;
+	char entity[8];
+	int entitylen;	
 };
 	
 #define MB_RETURN { \
@@ -1203,6 +1209,72 @@ void register_html_constants(INIT_FUNC_ARGS)
 PHP_FUNCTION(htmlspecialchars)
 {
 	php_html_entities(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
+}
+/* }}} */
+
+/* {{{ proto string htmlspecialchars(string string [, int quote_style])
+   Convert special HTML entities back to characters */
+PHP_FUNCTION(htmlspecialchars_decode)
+{
+	char *str, *new_str, *e, *p;
+	int len, j, i, new_len;
+	long quote_style = ENT_COMPAT;
+	struct basic_entities_dec basic_entities_dec[8];
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l", &str, &len, &quote_style) == FAILURE) {
+		return;
+	}
+
+	new_str = estrndup(str, len);
+	new_len = len;
+	e = new_str + new_len;
+
+	if (!(p = memchr(new_str, '&', new_len))) {
+		RETURN_STRINGL(new_str, new_len, 0);
+	}
+
+	for (j = 0, i = 0; basic_entities[i].charcode != 0; i++) {
+		if (basic_entities[i].flags && !(quote_style & basic_entities[i].flags)) {
+			continue;
+		}
+		basic_entities_dec[j].charcode = basic_entities[i].charcode;
+		memcpy(basic_entities_dec[j].entity, basic_entities[i].entity, basic_entities[i].entitylen + 1);
+		basic_entities_dec[j].entitylen = basic_entities[i].entitylen;
+		j++;
+	}
+	basic_entities_dec[j].charcode = '&';
+	basic_entities_dec[j].entitylen = sizeof("&amp;") - 1;
+	memcpy(basic_entities_dec[j].entity, "&amp;", sizeof("&amp;"));
+	i = j + 1;
+	
+	do {
+		int l = e - p;
+	
+		for (j = 0; j < i; j++) {
+			if (basic_entities_dec[j].entitylen > l) {
+				continue;
+			}
+			if (!memcmp(p, basic_entities_dec[j].entity, basic_entities_dec[j].entitylen)) {
+				int e_len = basic_entities_dec[j].entitylen - 1;
+		
+				*p++ = basic_entities_dec[j].charcode;
+				memmove(p, p + e_len, (e - p - e_len));
+				e -= e_len;
+				goto done;
+			}
+		}
+		p++;
+
+done:
+		if (p >= e) {
+			break;
+		}
+	} while ((p = memchr(p, '&', (e - p))));
+
+	new_len = e - new_str;
+
+	new_str[new_len] = '\0';
+	RETURN_STRINGL(new_str, new_len, 0);
 }
 /* }}} */
 

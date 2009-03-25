@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2004 The PHP Group                                |
+  | Copyright (c) 1997-2005 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: var_unserializer.re,v 1.27.2.13 2005/06/01 10:53:25 dmitry Exp $ */
+/* $Id: var_unserializer.re,v 1.52.2.1 2005/09/05 16:22:19 sniper Exp $ */
 
 #include "php.h"
 #include "ext/standard/php_var.h"
@@ -87,7 +87,7 @@ PHPAPI void var_replace(php_unserialize_data_t *var_hashx, zval *ozval, zval **n
 		for (i = 0; i < var_hash->used_slots; i++) {
 			if (var_hash->data[i] == ozval) {
 				var_hash->data[i] = *nzval;
-				return;
+				/* do not break here */
 			}
 		}
 		var_hash = var_hash->next;
@@ -123,7 +123,7 @@ PHPAPI void var_destroy(php_unserialize_data_t *var_hashx)
 		efree(var_hash);
 		var_hash = next;
 	}
-	
+
 	var_hash = var_hashx->first_dtor;
 	
 	while (var_hash) {
@@ -150,7 +150,8 @@ uiv = [+]? [0-9]+;
 iv = [+-]? [0-9]+;
 nv = [+-]? ([0-9]* "." [0-9]+|[0-9]+ "." [0-9]*);
 nvexp = (iv | nv) [eE] [+-]? iv;
-any = [\000-\277];
+any = [\000-\377];
+object = [OC];
 */
 
 
@@ -280,10 +281,37 @@ static inline int finish_nested_data(UNSERIALIZE_PARAMETER)
 	return 0;
 }
 
-static inline int object_common1(UNSERIALIZE_PARAMETER, zend_class_entry *ce)
+static inline int object_custom(UNSERIALIZE_PARAMETER, zend_class_entry *ce)
+{
+	long datalen;
+
+	if(ce->unserialize == NULL) {
+		zend_error(E_WARNING, "Class %s has no unserializer", ce->name);
+		return 0;
+	}
+
+	datalen = parse_iv2((*p) + 2, p);
+
+	(*p) += 2;
+
+	if(datalen < 0 || (*p) + datalen >= max) {
+		zend_error(E_WARNING, "Insufficient data for unserializing - %ld required, %d present", datalen, max - (*p));
+		return 0;
+	}
+
+	if(ce->unserialize(rval, ce, (const unsigned char*)*p, datalen, (zend_unserialize_data *)var_hash TSRMLS_CC) != SUCCESS) {
+		return 0;
+	}
+
+	(*p) += datalen;
+
+	return finish_nested_data(UNSERIALIZE_PASSTHRU);
+}
+
+static inline long object_common1(UNSERIALIZE_PARAMETER, zend_class_entry *ce)
 {
 	long elements;
-
+	
 	elements = parse_iv2((*p) + 2, p);
 
 	(*p) += 2;
@@ -363,7 +391,7 @@ PHPAPI int php_var_unserialize(UNSERIALIZE_PARAMETER)
 	if (id == -1 || var_access(var_hash, id, &rval_ref) != SUCCESS) {
 		return 0;
 	}
-	
+
 	if (*rval == *rval_ref) return 0;
 
 	if (*rval != NULL) {
@@ -456,10 +484,6 @@ PHPAPI int php_var_unserialize(UNSERIALIZE_PARAMETER)
 		return 0;
 	}
 
-	if (elements < 0) {
-		return 0;
-	}
-
 	INIT_PZVAL(*rval);
 	Z_TYPE_PP(rval) = IS_ARRAY;
 	ALLOC_HASHTABLE(Z_ARRVAL_PP(rval));
@@ -481,18 +505,24 @@ PHPAPI int php_var_unserialize(UNSERIALIZE_PARAMETER)
 			object_common1(UNSERIALIZE_PASSTHRU, ZEND_STANDARD_CLASS_DEF_PTR));
 }
 
-"O:" uiv ":" ["]	{
+object ":" uiv ":" ["]	{
 	size_t len, len2, len3, maxlen;
 	long elements;
 	char *class_name;
 	zend_class_entry *ce;
 	zend_class_entry **pce;
 	int incomplete_class = 0;
-	
+
+	int custom_object = 0;
+
 	zval *user_func;
 	zval *retval_ptr;
 	zval **args[1];
 	zval *arg_func_name;
+
+	if(*start == 'C') {
+		custom_object = 1;
+	}
 	
 	INIT_PZVAL(*rval);
 	len2 = len = parse_uiv(start + 2);
@@ -515,7 +545,7 @@ PHPAPI int php_var_unserialize(UNSERIALIZE_PARAMETER)
 		return 0;
 	}
 
-	len3 = strspn(class_name, "0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+	len3 = strspn(class_name, "0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\177\200\201\202\203\204\205\206\207\210\211\212\213\214\215\216\217\220\221\222\223\224\225\226\227\230\231\232\233\234\235\236\237\240\241\242\243\244\245\246\247\250\251\252\253\254\255\256\257\260\261\262\263\264\265\266\267\270\271\272\273\274\275\276\277\300\301\302\303\304\305\306\307\310\311\312\313\314\315\316\317\320\321\322\323\324\325\326\327\330\331\332\333\334\335\336\337\340\341\342\343\344\345\346\347\350\351\352\353\354\355\356\357\360\361\362\363\364\365\366\367\370\371\372\373\374\375\376\377");
 	if (len3 != len)
 	{
 		*p = YYCURSOR + len3 - len;
@@ -569,8 +599,14 @@ PHPAPI int php_var_unserialize(UNSERIALIZE_PARAMETER)
 		zval_ptr_dtor(&arg_func_name);
 		break;
 	} while (1);
-	
+
 	*p = YYCURSOR;
+
+	if(custom_object) {
+		efree(class_name);
+		return object_custom(UNSERIALIZE_PASSTHRU, ce);
+	}
+	
 	elements = object_common1(UNSERIALIZE_PASSTHRU, ce);
 
 	if (incomplete_class) {

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_engine.h,v 1.18 2004/01/20 20:59:45 helly Exp $ */
+/* $Id: spl_engine.h,v 1.19 2005/08/03 14:07:53 sniper Exp $ */
 
 #ifndef SPL_ENGINE_H
 #define SPL_ENGINE_H

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5													      |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group								  |
+   | Copyright (c) 1997-2005 The PHP Group								  |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license, 	  |
    | that is bundled with this package in the file LICENSE, and is		  |
@@ -17,7 +17,7 @@
    | PHP 4.0 patches by Zeev Suraski <zeev@zend.com>					  |
    +----------------------------------------------------------------------+
  */
-/* $Id: mod_php5.c,v 1.4.2.2 2005/06/20 12:46:52 tony2001 Exp $ */
+/* $Id: mod_php5.c,v 1.11 2005/08/03 14:08:48 sniper Exp $ */
 
 #include "php_apache_http.h"
 
@@ -380,7 +380,7 @@ static void sapi_apache_register_server_variables(zval *track_vars_array TSRMLS_
 		if (elts[i].val) {
 			val = elts[i].val;
 		} else {
-			val = empty_string;
+			val = "";
 		}
 		php_register_variable(elts[i].key, val, track_vars_array  TSRMLS_CC);
 	}
@@ -527,6 +527,7 @@ static sapi_module_struct apache_sapi_module = {
 
 	sapi_apache_register_server_variables,		/* register server variables */
 	php_apache_log_message,			/* Log message */
+	NULL,							/* Get request time */
 
 	NULL,							/* php.ini path override */
 
@@ -568,6 +569,7 @@ static void init_request_info(TSRMLS_D)
 	SG(request_info).path_translated = r->filename;
 	SG(request_info).request_uri = r->uri;
 	SG(request_info).request_method = (char *)r->method;
+	SG(request_info).proto_num = r->proto_num;
 	SG(request_info).content_type = (char *) table_get(r->subprocess_env, "CONTENT_TYPE");
 	SG(request_info).content_length = (content_length ? atoi(content_length) : 0);
 	SG(sapi_headers).http_response_code = r->status;
@@ -575,24 +577,26 @@ static void init_request_info(TSRMLS_D)
 	if (r->headers_in) {
 		authorization = table_get(r->headers_in, "Authorization");
 	}
-	if (authorization
-		&& !auth_type(r)
-		&& !strcasecmp(getword(r->pool, &authorization, ' '), "Basic")) {
-		tmp = uudecode(r->pool, authorization);
-		SG(request_info).auth_user = NULL;
-		tmp_user = getword_nulls_nc(r->pool, &tmp, ':');
-		if (tmp_user) {
-			r->connection->user = pstrdup(r->connection->pool, tmp_user);
-			r->connection->ap_auth_type = "Basic";
-			SG(request_info).auth_user = estrdup(tmp_user);
+
+	SG(request_info).auth_user = NULL;
+	SG(request_info).auth_password = NULL;
+
+	if (authorization && !auth_type(r)) {
+        if (!strcasecmp(getword(r->pool, &authorization, ' '), "Basic")) {
+            tmp = uudecode(r->pool, authorization);
+            tmp_user = getword_nulls_nc(r->pool, &tmp, ':');
+            if (tmp_user) {
+                r->connection->user = pstrdup(r->connection->pool, tmp_user);
+                r->connection->ap_auth_type = "Basic";
+                SG(request_info).auth_user = estrdup(tmp_user);
+            }
+            if (tmp) {
+                SG(request_info).auth_password = estrdup(tmp);
+            }
+		} else if  (!strcasecmp(getword(r->pool, &authorization, ' '), "Digest")) {
+            r->connection->ap_auth_type = "Digest";
+            SG(request_info).auth_digest = estrdup(authorization);
 		}
-		SG(request_info).auth_password = NULL;
-		if (tmp) {
-			SG(request_info).auth_password = estrdup(tmp);
-		}
-	} else {
-		SG(request_info).auth_user = NULL;
-		SG(request_info).auth_password = NULL;
 	}
 }
 /* }}} */

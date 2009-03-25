@@ -6,7 +6,7 @@ Sybase-CT application name
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: test_appname.phpt,v 1.1 2004/01/24 02:42:26 thekid Exp $ 
+ * $Id: test_appname.phpt,v 1.2 2005/02/06 12:59:03 thekid Exp $ 
  */
 
   require('test.inc');
@@ -19,7 +19,7 @@ Sybase-CT application name
   }
   // }}}
 
-  $program_name= basename(__FILE__, '.php');
+  $program_name= 'phpt_test';
   $hostname= 'php.net';
   ini_set('sybct.hostname', $hostname);
   
@@ -50,7 +50,7 @@ Sybase-CT application name
     from 
       master..sysprocesses
     where
-      program_name = "test_appname"
+      program_name = "phpt_test"
 <<< Return: resource
 array(1) {
   [0]=>
@@ -58,7 +58,7 @@ array(1) {
     ["hostname"]=>
     string(10) "php.net%s"
     ["program_name"]=>
-    string(16) "test_appname%s"
+    string(16) "phpt_test%s"
   }
 }
 bool(true)

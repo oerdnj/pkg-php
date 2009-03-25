@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: acconfig.h,v 1.34.2.3 2005/07/29 09:20:02 hyanantha Exp $ */
+/* $Id: acconfig.h,v 1.40 2005/08/03 13:30:45 sniper Exp $ */
 
 #define ZEND_API
 #define ZEND_DLEXPORT
@@ -65,6 +65,13 @@ int zend_sprintf(char *buffer, const char *format, ...);
 
 #include <math.h>
 
+/* To enable the is_nan, is_infinite and is_finite PHP functions */
+#ifdef NETWARE
+	#define HAVE_ISNAN 1
+	#define HAVE_ISINF 1
+	#define HAVE_ISFINITE 1
+#endif
+
 #ifndef zend_isnan
 #ifdef HAVE_ISNAN
 #define zend_isnan(a) isnan(a)
@@ -98,9 +105,9 @@ int zend_sprintf(char *buffer, const char *format, ...);
 
 #endif /* ifndef ZEND_ACCONFIG_H_NO_C_PROTOS */
 
-#ifdef NETWARE 
+#ifdef NETWARE
 #ifdef USE_WINSOCK
-#/*This detection against winsock is of no use*/ undef HAVE_SOCKLEN_T 
+#/*This detection against winsock is of no use*/ undef HAVE_SOCKLEN_T
 #/*This detection against winsock is of no use*/ undef HAVE_SYS_SOCKET_H
 #endif
 #endif

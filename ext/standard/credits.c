@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,10 +17,11 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: credits.c,v 1.32.2.1 2004/08/09 21:53:19 andi Exp $ */
+/* $Id: credits.c,v 1.36.2.2 2005/09/20 22:19:01 johannes Exp $ */
 
 #include "php.h"
 #include "info.h"
+#include "SAPI.h"
 
 #define CREDIT_LINE(module, authors) php_info_print_table_row(2, module, authors)
 
@@ -28,11 +29,15 @@
  */
 PHPAPI void php_print_credits(int flag TSRMLS_DC)
 {
-	if (flag & PHP_CREDITS_FULLPAGE) {
+	if (!sapi_module.phpinfo_as_text && flag & PHP_CREDITS_FULLPAGE) {
 		php_print_info_htmlhead(TSRMLS_C);
 	}
 
-	PUTS("<h1>PHP Credits</h1>\n");
+	if (!sapi_module.phpinfo_as_text) {
+		PUTS("<h1>PHP Credits</h1>\n");
+	} else {
+		PUTS("PHP Credits\n");
+	}
 
 	if (flag & PHP_CREDITS_GROUP) {
 		/* Group */
@@ -46,7 +51,11 @@ PHPAPI void php_print_credits(int flag TSRMLS_DC)
 	if (flag & PHP_CREDITS_GENERAL) {
 		/* Design & Concept */
 		php_info_print_table_start();
-		php_info_print_table_header(1, "Language Design &amp; Concept");
+		if (!sapi_module.phpinfo_as_text) {
+			php_info_print_table_header(1, "Language Design &amp; Concept");
+		} else {
+			php_info_print_table_header(1, "Language Design & Concept");
+		}
 		php_info_print_table_row(1, "Andi Gutmans, Rasmus Lerdorf, Zeev Suraski");
 		php_info_print_table_end();
 
@@ -57,9 +66,10 @@ PHPAPI void php_print_credits(int flag TSRMLS_DC)
 		CREDIT_LINE("Zend Scripting Language Engine", "Andi Gutmans, Zeev Suraski");
 		CREDIT_LINE("Extension Module API", "Andi Gutmans, Zeev Suraski, Andrei Zmievski");
 		CREDIT_LINE("UNIX Build and Modularization", "Stig Bakken, Sascha Schumann");
-		CREDIT_LINE("Win32 Port", "Shane Caraveo, Zeev Suraski");
+		CREDIT_LINE("Win32 Port", "Shane Caraveo, Zeev Suraski, Wez Furlong");
 		CREDIT_LINE("Server API (SAPI) Abstraction Layer", "Andi Gutmans, Shane Caraveo, Zeev Suraski");
-		CREDIT_LINE("Streams Abstraction Layer", "Wez Furlong");
+		CREDIT_LINE("Streams Abstraction Layer", "Wez Furlong, Sara Golemon");
+		CREDIT_LINE("PHP Data Objects Layer", "Wez Furlong, Marcus Boerger, Sterling Hughes, George Schlossnagle");
 		php_info_print_table_end();
 	}
 
@@ -95,7 +105,7 @@ PHPAPI void php_print_credits(int flag TSRMLS_DC)
 
 	if (flag & PHP_CREDITS_QA) {
 		php_info_print_table_start();
-		php_info_print_table_header(1, "PHP 5.0 Quality Assurance Team");
+		php_info_print_table_header(1, "PHP 5.1 Quality Assurance Team");
 		php_info_print_table_row(1, "Ilia Alshanetsky, Joerg Behrens, Stefan Esser, Moriyoshi Koizumi, Magnus Maatta, Sebastian Nohn, Derick Rethans, Melvyn Sopacua, Jani Taskinen");
 		php_info_print_table_end();
 	}
@@ -108,7 +118,7 @@ PHPAPI void php_print_credits(int flag TSRMLS_DC)
 		php_info_print_table_end();
 	}
 
-	if (flag & PHP_CREDITS_FULLPAGE) {
+	if (!sapi_module.phpinfo_as_text && flag & PHP_CREDITS_FULLPAGE) {
 		PUTS("</div></body></html>\n");
 	}
 }

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
  */
 
 
-/* $Id: incomplete_class.c,v 1.24.2.3 2004/11/25 20:28:37 zeev Exp $ */
+/* $Id: incomplete_class.c,v 1.28 2005/08/03 14:08:05 sniper Exp $ */
 
 #include "php.h"
 #include "basic_functions.h"
@@ -82,8 +82,8 @@ static int incomplete_class_has_property(zval *object, zval *member, int check_e
 	return 0;
 }
 
-static union _zend_function *incomplete_class_get_method(zval *object_ptr, char *method, int method_len TSRMLS_DC) {
-	incomplete_class_message(object_ptr, E_ERROR TSRMLS_CC);
+static union _zend_function *incomplete_class_get_method(zval **object, char *method, int method_len TSRMLS_DC) {
+	incomplete_class_message(*object, E_ERROR TSRMLS_CC);
 	return NULL;
 }
 
@@ -122,7 +122,7 @@ zend_class_entry *php_create_incomplete_class(TSRMLS_D)
 
 /* {{{ php_lookup_class_name
  */
-char *php_lookup_class_name(zval *object, size_t *nlen)
+char *php_lookup_class_name(zval *object, zend_uint *nlen)
 {
 	zval **val;
 	char *retval = NULL;
@@ -144,7 +144,7 @@ char *php_lookup_class_name(zval *object, size_t *nlen)
 
 /* {{{ php_store_class_name
  */
-void php_store_class_name(zval *object, const char *name, size_t len)
+void php_store_class_name(zval *object, const char *name, zend_uint len)
 {
 	zval *val;
 	TSRMLS_FETCH();

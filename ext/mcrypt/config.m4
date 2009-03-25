@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.28.2.2 2005/01/22 01:36:56 sniper Exp $
+dnl $Id: config.m4,v 1.31 2005/05/29 23:16:41 sniper Exp $
 dnl 
 
 AC_DEFUN([PHP_MCRYPT_CHECK_VERSION],[
@@ -21,7 +21,7 @@ AC_DEFUN([PHP_MCRYPT_CHECK_VERSION],[
 
 
 PHP_ARG_WITH(mcrypt, for mcrypt support,
-[  --with-mcrypt[=DIR]     Include mcrypt support.])
+[  --with-mcrypt[=DIR]     Include mcrypt support])
 
 if test "$PHP_MCRYPT" != "no"; then
   for i in $PHP_MCRYPT /usr/local /usr; do

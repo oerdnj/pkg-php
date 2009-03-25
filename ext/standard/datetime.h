@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,31 +17,21 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: datetime.h,v 1.16 2004/01/08 17:32:51 sniper Exp $ */
+/* $Id: datetime.h,v 1.23 2005/08/03 14:07:58 sniper Exp $ */
 
 #ifndef DATETIME_H
 #define DATETIME_H
 
 PHP_FUNCTION(time);
-PHP_FUNCTION(mktime);
-PHP_FUNCTION(gmmktime);
-PHP_FUNCTION(date);
 PHP_FUNCTION(idate);
-PHP_FUNCTION(gmdate);
 PHP_FUNCTION(localtime);
 PHP_FUNCTION(getdate);
 PHP_FUNCTION(checkdate);
-#if HAVE_STRFTIME
-PHP_FUNCTION(strftime);
-PHP_FUNCTION(gmstrftime);
-#endif
-PHP_FUNCTION(strtotime);
+#if HAVE_STRPTIME
+PHP_FUNCTION(strptime);
+#endif 
 
-int php_idate(char format, int timestamp, int gm);
-extern char *php_std_date(time_t t TSRMLS_DC);
-void php_mktime(INTERNAL_FUNCTION_PARAMETERS, int gm);
-#if HAVE_STRFTIME
-void _php_strftime(INTERNAL_FUNCTION_PARAMETERS, int gm);
-#endif
+PHPAPI int php_idate(char format, int timestamp, int gm);
+PHPAPI char *php_std_date(time_t t TSRMLS_DC);
 
 #endif /* DATETIME_H */

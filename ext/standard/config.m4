@@ -1,4 +1,4 @@
-dnl $Id: config.m4,v 1.75.2.1 2004/12/30 07:04:11 sniper Exp $ -*- sh -*-
+dnl $Id: config.m4,v 1.80.2.1 2005/11/21 23:08:02 sniper Exp $ -*- autoconf -*-
 
 divert(3)dnl
 
@@ -67,6 +67,10 @@ AC_DEFUN([AC_CRYPT_CAP],[
   
   AC_CACHE_CHECK(for standard DES crypt, ac_cv_crypt_des,[
   AC_TRY_RUN([
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 #if HAVE_CRYPT_H
 #include <crypt.h>
 #endif
@@ -94,6 +98,10 @@ main() {
 
   AC_CACHE_CHECK(for extended DES crypt, ac_cv_crypt_ext_des,[
   AC_TRY_RUN([
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 #if HAVE_CRYPT_H
 #include <crypt.h>
 #endif
@@ -121,6 +129,10 @@ main() {
 
   AC_CACHE_CHECK(for MD5 crypt, ac_cv_crypt_md5,[
   AC_TRY_RUN([
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 #if HAVE_CRYPT_H
 #include <crypt.h>
 #endif
@@ -160,6 +172,10 @@ main() {
 
   AC_CACHE_CHECK(for Blowfish crypt, ac_cv_crypt_blowfish,[
   AC_TRY_RUN([
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 #if HAVE_CRYPT_H
 #include <crypt.h>
 #endif
@@ -200,7 +216,7 @@ AC_FLUSH_IO
 divert(5)dnl
 
 AC_ARG_WITH(regex,
-[  --with-regex=TYPE       regex library type: system, apache, php. Default: php
+[  --with-regex=TYPE       regex library type: system, apache, php. [TYPE=php]
                           WARNING: Do NOT use unless you know what you are doing!],
 [
   case $withval in 
@@ -259,8 +275,12 @@ dnl
 AC_MSG_CHECKING([whether rounding works as expected])
 AC_TRY_RUN([
 #include <math.h>
+  /* keep this out-of-line to prevent use of gcc inline floor() */
+  double somefn(double n) {
+    return floor(n*pow(10,2) + 0.5);
+  }
   int main() {
-    return floor(0.045*pow(10,2) + 0.5)/10.0 != 0.5;
+    return somefn(0.045)/10.0 != 0.5;
   }
 ],[
   PHP_ROUND_FUZZ=0.5
@@ -463,7 +483,7 @@ PHP_NEW_EXTENSION(standard, array.c base64.c basic_functions.c browscap.c crc32.
                             cyr_convert.c datetime.c dir.c dl.c dns.c exec.c file.c filestat.c \
                             flock_compat.c formatted_print.c fsock.c head.c html.c image.c \
                             info.c iptc.c lcg.c link.c mail.c math.c md5.c metaphone.c \
-                            microtime.c pack.c pageinfo.c parsedate.c quot_print.c rand.c \
+                            microtime.c pack.c pageinfo.c quot_print.c rand.c \
                             reg.c soundex.c string.c scanf.c syslog.c type.c uniqid.c url.c \
                             url_scanner.c var.c versioning.c assert.c strnatcmp.c levenshtein.c \
                             incomplete_class.c url_scanner_ex.c ftp_fopen_wrapper.c \
@@ -472,3 +492,6 @@ PHP_NEW_EXTENSION(standard, array.c base64.c basic_functions.c browscap.c crc32.
                             filters.c proc_open.c sunfuncs.c streamsfuncs.c http.c)
 
 PHP_ADD_MAKEFILE_FRAGMENT
+
+PHP_INSTALL_HEADERS([ext/standard/])
+

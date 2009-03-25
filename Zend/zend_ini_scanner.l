@@ -3,7 +3,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_ini_scanner.l,v 1.35.2.4 2005/02/06 23:52:29 zeev Exp $ */
+/* $Id: zend_ini_scanner.l,v 1.41 2005/08/03 13:30:53 sniper Exp $ */
 
 #define yyleng SCNG(yy_leng)
 #define yytext SCNG(yy_text)
@@ -153,12 +153,20 @@ NEWLINE ("\r"|"\n"|"\r\n")
 	return TC_ENCAPSULATED_STRING;
 }
 
-<INITIAL>[&|~()!] {
+<INITIAL>[&|~$(){}!] {
 	return yytext[0];
 }
 
+<INITIAL>"${" {
+	return TC_DOLLAR_CURLY;
+}
 
-<INITIAL>[^=\n\r\t;|&~()!"\[]+ {
+<INITIAL>"}" {
+	ini_lval->value.lval = (long) yytext[0];
+	return yytext[0];
+}
+
+<INITIAL>[^=\n\r\t;|&$~(){}!"\[]+ {
 	/* STRING */
 	register int i;
 
@@ -189,8 +197,6 @@ NEWLINE ("\r"|"\n"|"\r\n")
 		/* whitespace */
 	}
 }
-
-
 
 <INITIAL>[=\n] {
 	if (yytext[0] == '\n') {

@@ -5,6 +5,12 @@
 extern "C" {
 #endif
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include "php_compat.h"
+
 #ifndef WIN32
 /* default fontpath for unix systems */
 #define DEFAULT_FONTPATH "/usr/X11R6/lib/X11/fonts/TrueType:/usr/X11R6/lib/X11/fonts/truetype:/usr/X11R6/lib/X11/fonts/TTF:/usr/share/fonts/TrueType:/usr/share/fonts/truetype:/usr/openwin/lib/X11/fonts/TrueType:/usr/X11R6/lib/X11/fonts/Type1:."
@@ -534,11 +540,11 @@ void gdImageCopyResized(gdImagePtr dst, gdImagePtr src, int dstX, int dstY, int 
 	substituted automatically. */
 void gdImageCopyResampled(gdImagePtr dst, gdImagePtr src, int dstX, int dstY, int srcX, int srcY, int dstW, int dstH, int srcW, int srcH);
 
-gdImagePtr gdImageRotate90(gdImagePtr src);
-gdImagePtr gdImageRotate180(gdImagePtr src);
-gdImagePtr gdImageRotate270(gdImagePtr src);
-gdImagePtr gdImageRotate45(gdImagePtr src, double dAngle, int clrBack);
-gdImagePtr gdImageRotate (gdImagePtr src, double dAngle, int clrBack);
+gdImagePtr gdImageRotate90(gdImagePtr src, int ignoretransparent);
+gdImagePtr gdImageRotate180(gdImagePtr src, int ignoretransparent);
+gdImagePtr gdImageRotate270(gdImagePtr src, int ignoretransparent);
+gdImagePtr gdImageRotate45(gdImagePtr src, double dAngle, int clrBack, int ignoretransparent);
+gdImagePtr gdImageRotate (gdImagePtr src, double dAngle, int clrBack, int ignoretransparent);
 
 void gdImageSetBrush(gdImagePtr im, gdImagePtr brush);
 void gdImageSetTile(gdImagePtr im, gdImagePtr tile);

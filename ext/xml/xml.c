@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: xml.c,v 1.151.2.4 2005/04/28 12:17:18 rrichards Exp $ */
+/* $Id: xml.c,v 1.157.2.1 2005/10/12 03:21:05 rrichards Exp $ */
 
 #define IS_EXT_MODULE
 
@@ -139,8 +139,20 @@ function_entry xml_functions[] = {
 	{NULL, NULL, NULL}
 };
 
+#ifdef LIBXML_EXPAT_COMPAT
+static zend_module_dep xml_deps[] = {
+	ZEND_MOD_REQUIRED("libxml")
+	{NULL, NULL, NULL}
+};
+#endif
+
 zend_module_entry xml_module_entry = {
+#ifdef LIBXML_EXPAT_COMPAT
+    STANDARD_MODULE_HEADER_EX, NULL,
+	xml_deps,
+#else
     STANDARD_MODULE_HEADER,
+#endif
 	"xml",                /* extension name */
 	xml_functions,        /* extension function list */
 	PHP_MINIT(xml),       /* extension-wide startup function */
@@ -442,8 +454,8 @@ static zval *xml_call_handler(xml_parser *parser, zval *handler, zend_function *
 	} else {
 		for (i = 0; i < argc; i++) {
 			zval_ptr_dtor(&argv[i]);
-	}
-	return NULL;
+		}
+		return NULL;
 	}
 }
 /* }}} */
@@ -1096,12 +1108,7 @@ PHP_FUNCTION(xml_parser_create)
    Create an XML parser */
 PHP_FUNCTION(xml_parser_create_ns)
 {
-#if defined(HAVE_LIBXML) && defined(HAVE_XML) && !defined(HAVE_LIBEXPAT) && LIBXML_VERSION < 20600 
-	php_error_docref(NULL TSRMLS_CC, E_WARNING, "is broken with libxml2 %s. Please upgrade to libxml2 2.6", LIBXML_DOTTED_VERSION);
-	RETURN_FALSE;
-#else
 	php_xml_parser_create_impl(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1);
-#endif
 }
 /* }}} */
 

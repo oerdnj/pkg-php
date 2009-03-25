@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute.h,v 1.72.2.1 2005/04/24 14:49:00 sniper Exp $ */
+/* $Id: zend_execute.h,v 1.84.2.3 2005/09/19 17:50:24 dmitry Exp $ */
 
 #ifndef ZEND_EXECUTE_H
 #define ZEND_EXECUTE_H
@@ -35,7 +35,9 @@ typedef union _temp_variable {
 		zend_bool fcall_returned_reference;
 	} var;
 	struct {
-		zval tmp_var;
+		zval **ptr_ptr;
+		zval *ptr;
+		zend_bool fcall_returned_reference;
 		zval *str;
 		zend_uint offset;
 	} str_offset;
@@ -63,6 +65,7 @@ static inline void safe_free_zval_ptr_rel(zval *p ZEND_FILE_LINE_DC ZEND_FILE_LI
 	}
 }
 ZEND_API int zend_lookup_class(char *name, int name_length, zend_class_entry ***ce TSRMLS_DC);
+ZEND_API int zend_lookup_class_ex(char *name, int name_length, int use_autoload, zend_class_entry ***ce TSRMLS_DC);
 ZEND_API int zend_eval_string(char *str, zval *retval_ptr, char *string_name TSRMLS_DC);
 ZEND_API int zend_eval_string_ex(char *str, zval *retval_ptr, char *string_name, int handle_exceptions TSRMLS_DC);
 
@@ -96,6 +99,24 @@ static inline int i_zend_is_true(zval *op)
 		case IS_OBJECT:
 			if(IS_ZEND_STD_OBJECT(*op)) {
 				TSRMLS_FETCH();
+
+				if (Z_OBJ_HT_P(op)->cast_object) {
+					zval tmp;
+					if (Z_OBJ_HT_P(op)->cast_object(op, &tmp, IS_BOOL, 0 TSRMLS_CC) == SUCCESS) {
+						result = Z_LVAL(tmp);
+						break;
+					}
+				} else if (Z_OBJ_HT_P(op)->get) {
+					zval *tmp = Z_OBJ_HT_P(op)->get(op TSRMLS_CC);
+					if(Z_TYPE_P(tmp) != IS_OBJECT) {
+						/* for safety - avoid loop */
+						convert_to_boolean(tmp);
+						result = Z_LVAL_P(tmp);
+						zval_ptr_dtor(&tmp);
+						break;
+					}
+				}
+			
 				if(EG(ze1_compatibility_mode)) {
 					result = (zend_hash_num_elements(Z_OBJPROP_P(op))?1:0);
 				} else {
@@ -167,12 +188,32 @@ void zend_shutdown_timeout_thread();
 
 #define active_opline (*EG(opline_ptr))
 
-void zend_assign_to_variable_reference(znode *result, zval **variable_ptr_ptr, zval **value_ptr_ptr, temp_variable *Ts TSRMLS_DC);
-
 /* The following tries to resolve the classname of a zval of type object.
  * Since it is slow it should be only used in error messages.
  */
 #define Z_OBJ_CLASS_NAME_P(zval) ((zval) && (zval)->type == IS_OBJECT && Z_OBJ_HT_P(zval)->get_class_entry != NULL && Z_OBJ_HT_P(zval)->get_class_entry(zval TSRMLS_CC) ? Z_OBJ_HT_P(zval)->get_class_entry(zval TSRMLS_CC)->name : "")
+
+ZEND_API zval** zend_get_compiled_variable_value(zend_execute_data *execute_data_ptr, zend_uint var);
+
+#define ZEND_USER_OPCODE_CONTINUE   0 /* execute next opcode */
+#define ZEND_USER_OPCODE_RETURN     1 /* exit from executor (return from function) */
+#define ZEND_USER_OPCODE_DISPATCH   2 /* call original opcode handler */
+
+#define ZEND_USER_OPCODE_DISPATCH_TO 0x100 /* call original handler of returned opcode */
+
+ZEND_API int zend_set_user_opcode_handler(zend_uchar opcode, opcode_handler_t handler);
+ZEND_API opcode_handler_t zend_get_user_opcode_handler(zend_uchar opcode);
+
+/* former zend_execute_locks.h */
+typedef struct _zend_free_op {
+	zval* var;
+/*	int   is_var; */
+} zend_free_op;
+
+ZEND_API zval *zend_get_zval_ptr(znode *node, temp_variable *Ts, zend_free_op *should_free, int type TSRMLS_DC);
+ZEND_API zval **zend_get_zval_ptr_ptr(znode *node, temp_variable *Ts, zend_free_op *should_free, int type TSRMLS_DC);
+
+ZEND_API int zend_do_fcall(ZEND_OPCODE_HANDLER_ARGS);
 
 END_EXTERN_C()
 

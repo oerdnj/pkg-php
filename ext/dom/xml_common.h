@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2004 The PHP Group                                |
+  | Copyright (c) 1997-2005 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: xml_common.h,v 1.19.2.1 2005/06/22 19:58:33 rrichards Exp $ */
+/* $Id: xml_common.h,v 1.23 2005/08/03 14:07:06 sniper Exp $ */
 
 #ifndef PHP_XML_COMMON_H
 #define PHP_XML_COMMON_H
@@ -31,6 +31,7 @@ typedef struct _dom_doc_props {
 	int preservewhitespace;
 	int substituteentities;
 	int stricterror;
+	int recover;
 } dom_doc_props;
 
 typedef dom_doc_props *dom_doc_propsptr;
@@ -67,7 +68,7 @@ PHP_DOM_EXPORT xmlNodePtr dom_object_get_node(dom_object *obj);
 #define NODE_GET_OBJ(__ptr, __id, __prtype, __intern) { \
 	__intern = (php_libxml_node_object *)zend_object_store_get_object(__id TSRMLS_CC); \
 	if (__intern->node == NULL || !(__ptr = (__prtype)__intern->node->node)) { \
-  		php_error(E_WARNING, "Couldn't fetch %s", __intern->std.ce->name);\
+  		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Couldn't fetch %s", __intern->std.ce->name);\
   		RETURN_NULL();\
   	} \
 }
@@ -76,7 +77,7 @@ PHP_DOM_EXPORT xmlNodePtr dom_object_get_node(dom_object *obj);
 	__intern = (php_libxml_node_object *)zend_object_store_get_object(__id TSRMLS_CC); \
 	if (__intern->document != NULL) { \
 		if (!(__ptr = (__prtype)__intern->document->ptr)) { \
-  			php_error(E_WARNING, "Couldn't fetch %s", __intern->std.ce->name);\
+  			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Couldn't fetch %s", __intern->std.ce->name);\
   			RETURN_NULL();\
   		} \
 	} \
@@ -84,13 +85,13 @@ PHP_DOM_EXPORT xmlNodePtr dom_object_get_node(dom_object *obj);
 
 #define DOM_RET_OBJ(zval, obj, ret, domobject) \
 	if (NULL == (zval = php_dom_create_object(obj, ret, zval, return_value, domobject TSRMLS_CC))) { \
-		php_error(E_WARNING, "Cannot create required DOM object"); \
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Cannot create required DOM object"); \
 		RETURN_FALSE; \
 	}
 
 #define DOM_GET_THIS(zval) \
 	if (NULL == (zval = getThis())) { \
-		php_error(E_WARNING, "Underlying object missing"); \
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Underlying object missing"); \
 		RETURN_FALSE; \
 	}
 

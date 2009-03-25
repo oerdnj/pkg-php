@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2004 The PHP Group                                |
+  | Copyright (c) 1997-2005 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: xp_ssl.c,v 1.16.2.3 2005/01/04 03:45:40 iliaa Exp $ */
+/* $Id: xp_ssl.c,v 1.22.2.1 2005/09/07 15:36:23 dmitry Exp $ */
 
 #include "php.h"
 #include "ext/standard/file.h"
@@ -26,6 +26,10 @@
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
 #include <openssl/err.h>
+
+#ifdef NETWARE
+#include <sys/select.h>
+#endif
 
 int php_openssl_apply_verification_policy(SSL *ssl, X509 *peer, php_stream *stream TSRMLS_DC);
 SSL *php_SSL_new_from_context(SSL_CTX *ctx, php_stream *stream TSRMLS_DC);
@@ -42,6 +46,8 @@ typedef struct _php_openssl_netstream_data_t {
 	int is_client;
 	int ssl_active;
 	php_stream_xport_crypt_method_t method;
+	unsigned state_set:1;
+	unsigned _spare:31;
 } php_openssl_netstream_data_t;
 
 php_stream_ops php_openssl_socket_ops;
@@ -88,6 +94,8 @@ static int handle_ssl_error(php_stream *stream, int nr_bytes TSRMLS_DC)
 		case SSL_ERROR_WANT_WRITE:
 			/* re-negotiation, or perhaps the SSL layer needs more
 			 * packets: retry in next iteration */
+			errno = EAGAIN;
+			retry = sslsock->s.is_blocked;
 			break;
 		case SSL_ERROR_SYSCALL:
 			if (ERR_peek_error() == 0) {
@@ -155,6 +163,7 @@ static int handle_ssl_error(php_stream *stream, int nr_bytes TSRMLS_DC)
 			}
 				
 			retry = 0;
+			errno = 0;
 	}
 	return retry;
 }
@@ -206,7 +215,7 @@ static size_t php_openssl_sockop_read(php_stream *stream, char *buf, size_t coun
 
 			if (nr_bytes <= 0) {
 				retry = handle_ssl_error(stream, nr_bytes TSRMLS_CC);
-				stream->eof = (retry == 0 && !SSL_pending(sslsock->ssl_handle));
+				stream->eof = (retry == 0 && errno != EAGAIN && !SSL_pending(sslsock->ssl_handle));
 				
 			} else {
 				/* we got the data */
@@ -373,10 +382,13 @@ static inline int php_openssl_enable_crypto(php_stream *stream,
 	int n, retry = 1;
 
 	if (cparam->inputs.activate && !sslsock->ssl_active) {
-		if (sslsock->is_client) {
-			SSL_set_connect_state(sslsock->ssl_handle);
-		} else {
-			SSL_set_accept_state(sslsock->ssl_handle);
+		if (!sslsock->state_set) {
+			if (sslsock->is_client) {
+				SSL_set_connect_state(sslsock->ssl_handle);
+			} else {
+				SSL_set_accept_state(sslsock->ssl_handle);
+			}
+			sslsock->state_set = 1;
 		}
 	
 		do {
@@ -405,6 +417,8 @@ static inline int php_openssl_enable_crypto(php_stream *stream,
 			}
 
 			X509_free(peer_cert);
+		} else  {
+			n = errno == EAGAIN ? 0 : -1;
 		}
 
 		return n;
@@ -437,7 +451,7 @@ static inline int php_openssl_tcp_sockop_accept(php_stream *stream, php_openssl_
 	if (clisock >= 0) {
 		php_openssl_netstream_data_t *clisockdata;
 
-		clisockdata = pemalloc(sizeof(*clisockdata), stream->is_persistent);
+		clisockdata = emalloc(sizeof(*clisockdata));
 
 		if (clisockdata == NULL) {
 			closesocket(clisock);

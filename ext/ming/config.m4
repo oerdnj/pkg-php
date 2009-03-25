@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.20.2.2 2005/07/25 21:03:27 helly Exp $
+dnl $Id: config.m4,v 1.22.2.3 2005/11/24 00:51:42 helly Exp $
 dnl
 
 PHP_ARG_WITH(ming, for MING support,
@@ -9,7 +9,7 @@ if test "$PHP_MING" != "no"; then
   AC_CHECK_LIB(m, sin)
 
   for i in $PHP_MING /usr/local /usr; do
-    if test -f $i/lib/libming.$SHLIB_SUFFIX_NAME -o -f $i/lib/libming.a; then
+    if test -f $i/$PHP_LIBDIR/libming.$SHLIB_SUFFIX_NAME -o -f $i/$PHP_LIBDIR/libming.a; then
       MING_DIR=$i
       break
     fi
@@ -34,11 +34,11 @@ if test "$PHP_MING" != "no"; then
   ],[
     AC_MSG_ERROR([Ming library 0.2a or greater required.])
   ],[
-    -L$MING_DIR/lib
+    -L$MING_DIR/$PHP_LIBDIR
   ])
   
   PHP_ADD_INCLUDE($MING_INC_DIR)
-  PHP_ADD_LIBRARY_WITH_PATH(ming, $MING_DIR/lib, MING_SHARED_LIBADD)
+  PHP_ADD_LIBRARY_WITH_PATH(ming, $MING_DIR/$PHP_LIBDIR, MING_SHARED_LIBADD)
 
   AC_MSG_CHECKING([for destroySWFBlock])
   AC_TRY_RUN([
@@ -72,6 +72,13 @@ yes
     AC_DEFINE(HAVE_NEW_MING,  1, [ ]) 
     dnl FIXME: This is now unconditional..better check coming later.
     AC_DEFINE(HAVE_MING_ZLIB, 1, [ ])
+    AC_TRY_COMPILE([
+#include <ming.h>
+int main(int,void) {
+  SWFMovie_output(NULL, NULL, NULL, 0));
+  return 0;
+}
+	], [ AC_DEFINE(HAVE_MING_MOVIE_LEVEL, 1, []) ])
   ])
   CPPFLAGS=$old_CPPFLAGS
 

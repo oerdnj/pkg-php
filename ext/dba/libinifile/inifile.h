@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: inifile.h,v 1.4 2004/01/08 17:31:59 sniper Exp $ */
+/* $Id: inifile.h,v 1.5 2005/08/03 14:06:57 sniper Exp $ */
 
 #ifndef PHP_LIB_INIFILE_H
 #define PHP_LIB_INIFILE_H

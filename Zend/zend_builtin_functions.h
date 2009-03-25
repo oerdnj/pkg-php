@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_builtin_functions.h,v 1.16 2004/02/18 22:44:40 hholzgra Exp $ */
+/* $Id: zend_builtin_functions.h,v 1.17.2.1 2005/11/24 05:07:28 sebastian Exp $ */
 
 #ifndef ZEND_BUILTIN_FUNCTIONS_H
 #define ZEND_BUILTIN_FUNCTIONS_H
@@ -25,7 +25,7 @@
 int zend_startup_builtin_functions(TSRMLS_D);
 
 BEGIN_EXTERN_C()
-ZEND_API void zend_fetch_debug_backtrace(zval *return_value, int skip_last TSRMLS_DC);
+ZEND_API void zend_fetch_debug_backtrace(zval *return_value, int skip_last, int provide_object TSRMLS_DC);
 END_EXTERN_C()
 
 #endif /* ZEND_BUILTIN_FUNCTIONS_H */

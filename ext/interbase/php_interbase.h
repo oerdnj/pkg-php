@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_interbase.h,v 1.70 2004/06/12 20:52:07 abies Exp $ */
+/* $Id: php_interbase.h,v 1.71 2005/08/03 14:07:22 sniper Exp $ */
 
 #ifndef PHP_INTERBASE_H
 #define PHP_INTERBASE_H

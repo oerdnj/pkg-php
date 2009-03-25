@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_dynamic_array.h,v 1.13 2004/07/15 19:41:22 helly Exp $ */
+/* $Id: zend_dynamic_array.h,v 1.14 2005/08/03 13:30:49 sniper Exp $ */
 
 #ifndef ZEND_DYNAMIC_ARRAY_H
 #define ZEND_DYNAMIC_ARRAY_H

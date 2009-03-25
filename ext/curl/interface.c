@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: interface.c,v 1.46.2.8 2005/06/02 21:04:43 tony2001 Exp $ */
+/* $Id: interface.c,v 1.62.2.7 2005/11/27 20:07:36 iliaa Exp $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 
@@ -44,6 +44,45 @@
 #define HttpPost curl_httppost
 #endif
 
+/* {{{ cruft for thread safe SSL crypto locks */
+#if defined(ZTS) && defined(HAVE_CURL_SSL)
+# ifdef PHP_WIN32
+#  define PHP_CURL_NEED_SSL_TSL
+#  define PHP_CURL_NEED_OPENSSL_TSL
+#  include <openssl/crypto.h>
+# else /* !PHP_WIN32 */
+#  if defined(HAVE_CURL_OPENSSL)
+#   if defined(HAVE_OPENSSL_CRYPTO_H)
+#    define PHP_CURL_NEED_SSL_TSL
+#    define PHP_CURL_NEED_OPENSSL_TSL
+#    include <openssl/crypto.h>
+#   else
+#    warning \
+	"libcurl was compiled with OpenSSL support, but configure could not find " \
+	"openssl/crypto.h; thus no SSL crypto locking callbacks will be set, which may " \
+	"cause random crashes on SSL requests"
+#   endif
+#  elif defined(HAVE_CURL_GNUTLS)
+#   if defined(HAVE_GCRYPT_H)
+#    define PHP_CURL_NEED_SSL_TSL
+#    define PHP_CURL_NEED_GNUTLS_TSL
+#    include <gcrypt.h>
+#   else
+#    warning \
+	"libcurl was compiled with GnuTLS support, but configure could not find " \
+	"gcrypt.h; thus no SSL crypto locking callbacks will be set, which may " \
+	"cause random crashes on SSL requests"
+#   endif
+#  else
+#   warning \
+	"libcurl was compiled with SSL support, but configure could not determine which" \
+	"library was used; thus no SSL crypto locking callbacks will be set, which may " \
+	"cause random crashes on SSL requests"
+#  endif /* HAVE_CURL_OPENSSL || HAVE_CURL_GNUTLS */
+# endif /* PHP_WIN32 */
+#endif /* ZTS && HAVE_CURL_SSL */
+/* }}} */
+
 #define SMART_STR_PREALLOC 4096
 
 #include "ext/standard/php_smart_str.h"
@@ -51,6 +90,14 @@
 #include "ext/standard/file.h"
 #include "ext/standard/url.h"
 #include "php_curl.h"
+
+int  le_curl;
+int  le_curl_multi_handle;
+
+#ifdef PHP_CURL_NEED_SSL_TSL
+static inline void php_curl_ssl_init(void);
+static inline void php_curl_ssl_cleanup(void);
+#endif
 
 static void _php_curl_close(zend_rsrc_list_entry *rsrc TSRMLS_DC);
 
@@ -62,8 +109,8 @@ static void _php_curl_close(zend_rsrc_list_entry *rsrc TSRMLS_DC);
 #define CAAZ(s, v) add_assoc_zval_ex(return_value, s, sizeof(s), (zval *) v);
 
 #define PHP_CURL_CHECK_OPEN_BASEDIR(str, len)													\
-	if (PG(open_basedir) && *PG(open_basedir) &&                                                \
-	    strncasecmp(str, "file://", sizeof("file://") - 1) == 0)								\
+	if (((PG(open_basedir) && *PG(open_basedir)) || PG(safe_mode)) &&                                                \
+	    strncasecmp(str, "file:", sizeof("file:") - 1) == 0)								\
 	{ 																							\
 		php_url *tmp_url; 																		\
 																								\
@@ -72,7 +119,7 @@ static void _php_curl_close(zend_rsrc_list_entry *rsrc TSRMLS_DC);
 			RETURN_FALSE; 																		\
 		} 																						\
 																								\
-		if (php_check_open_basedir(tmp_url->path TSRMLS_CC) || 									\
+		if (tmp_url->query || tmp_url->fragment || php_check_open_basedir(tmp_url->path TSRMLS_CC) || 									\
 			(PG(safe_mode) && !php_checkuid(tmp_url->path, "rb+", CHECKUID_CHECK_MODE_PARAM))	\
 		) { 																					\
 			php_url_free(tmp_url); 																\
@@ -188,6 +235,8 @@ PHP_MINIT_FUNCTION(curl)
 	REGISTER_CURL_CONSTANT(CURLOPT_LOW_SPEED_TIME);
 	REGISTER_CURL_CONSTANT(CURLOPT_RESUME_FROM);
 	REGISTER_CURL_CONSTANT(CURLOPT_COOKIE);
+	REGISTER_CURL_CONSTANT(CURLOPT_COOKIESESSION);
+	REGISTER_CURL_CONSTANT(CURLOPT_AUTOREFERER);
 	REGISTER_CURL_CONSTANT(CURLOPT_SSLCERT);
 	REGISTER_CURL_CONSTANT(CURLOPT_SSLCERTPASSWD);
 	REGISTER_CURL_CONSTANT(CURLOPT_WRITEHEADER);
@@ -390,7 +439,17 @@ PHP_MINIT_FUNCTION(curl)
 	REGISTER_CURL_CONSTANT(CURLM_INTERNAL_ERROR);
 
 	REGISTER_CURL_CONSTANT(CURLMSG_DONE);
-	
+
+#ifdef CURLOPT_FTPSSLAUTH
+	REGISTER_CURL_CONSTANT(CURLOPT_FTPSSLAUTH);
+	REGISTER_CURL_CONSTANT(CURLFTPAUTH_DEFAULT);
+	REGISTER_CURL_CONSTANT(CURLFTPAUTH_SSL);
+	REGISTER_CURL_CONSTANT(CURLFTPAUTH_TLS);
+#endif
+
+#ifdef PHP_CURL_NEED_SSL_TSL
+	php_curl_ssl_init();
+#endif
 	if (curl_global_init(CURL_GLOBAL_SSL) != CURLE_OK) {
 		return FAILURE;
 	}
@@ -428,7 +487,9 @@ PHP_MSHUTDOWN_FUNCTION(curl)
 	php_unregister_url_stream_wrapper("ldap" TSRMLS_CC);
 #endif
 	curl_global_cleanup();
-
+#ifdef PHP_CURL_NEED_SSL_TSL
+	php_curl_ssl_cleanup();
+#endif
 	return SUCCESS;
 }
 /* }}} */
@@ -452,7 +513,6 @@ static size_t curl_write(char *data, size_t size, size_t nmemb, void *ctx)
 			PHPWRITE(data, length);
 			break;
 		case PHP_CURL_FILE:
-			fflush(t->fp);
 			return fwrite(data, size, nmemb, t->fp);
 		case PHP_CURL_RETURN:
 			smart_str_appendl(&t->buf, data, (int) length);
@@ -561,6 +621,7 @@ static size_t curl_read(char *data, size_t size, size_t nmemb, void *ctx)
 			ch->in_callback = 0;
 			if (error == FAILURE) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Cannot call the CURLOPT_READFUNCTION"); 
+				length = -1;
 			} else if (retval_ptr) {
 				if (Z_TYPE_P(retval_ptr) == IS_STRING) {
 					length = MIN(size * nmemb, Z_STRLEN_P(retval_ptr));
@@ -780,7 +841,7 @@ static void alloc_curl_handle(php_curl **ch)
 	(*ch)->handlers->read         = ecalloc(1, sizeof(php_curl_read));
 
 	(*ch)->in_callback = 0;
-	
+		
 	memset(&(*ch)->err, 0, sizeof((*ch)->err));
 	
 	zend_llist_init(&(*ch)->to_free.str,   sizeof(char *),            (void(*)(void *)) curl_free_string, 0);
@@ -870,7 +931,7 @@ PHP_FUNCTION(curl_copy_handle)
 
 	cp = curl_easy_duphandle(ch->cp);
 	if (!cp) {
-		php_error(E_WARNING, "Cannot duplicate cURL handle");
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Cannot duplicate cURL handle");
 		RETURN_FALSE;
 	}
 
@@ -958,8 +1019,14 @@ PHP_FUNCTION(curl_setopt)
 #if LIBCURL_VERSION_NUM > 0x070a06 /* CURLOPT_PROXYAUTH is available since curl 7.10.7 */
 		case CURLOPT_PROXYAUTH:
 #endif
+
+#ifdef CURLOPT_FTPSSLAUTH
+		case CURLOPT_FTPSSLAUTH:
+#endif
 		case CURLOPT_UNRESTRICTED_AUTH:
 		case CURLOPT_PORT:
+		case CURLOPT_AUTOREFERER:
+		case CURLOPT_COOKIESESSION:
 			convert_to_long_ex(zvalue);
 			error = curl_easy_setopt(ch->cp, option, Z_LVAL_PP(zvalue));
 			break;
@@ -1128,10 +1195,15 @@ PHP_FUNCTION(curl_setopt)
 					 * must be explicitly cast to long in curl_formadd
 					 * use since curl needs a long not an int. */
 					if (*postval == '@') {
+						++postval;
+						/* safe_mode / open_basedir check */
+						if (php_check_open_basedir(postval TSRMLS_CC) || (PG(safe_mode) && !php_checkuid(postval, "rb+", CHECKUID_CHECK_MODE_PARAM))) {
+							RETURN_FALSE;
+						}
 						error = curl_formadd(&first, &last, 
 											 CURLFORM_COPYNAME, string_key,
 											 CURLFORM_NAMELENGTH, (long)string_key_len - 1,
-											 CURLFORM_FILE, ++postval, 
+											 CURLFORM_FILE, postval, 
 											 CURLFORM_END);
 					} else {
 						error = curl_formadd(&first, &last, 
@@ -1237,11 +1309,7 @@ PHP_FUNCTION(curl_setopt)
    Cleanup an execution phase */
 void _php_curl_cleanup_handle(php_curl *ch)
 {
-	if (ch->uses < 1) {
-		return;
-	}
-
-	if (ch->handlers->write->buf.len) {
+	if (ch->handlers->write->buf.len > 0) {
 		memset(&ch->handlers->write->buf, 0, sizeof(smart_str));
 	}
 
@@ -1280,12 +1348,13 @@ PHP_FUNCTION(curl_exec)
 	ch->uses++;
 
 	if (ch->handlers->write->method == PHP_CURL_RETURN && ch->handlers->write->buf.len > 0) {
+		--ch->uses;
 		if (ch->handlers->write->type != PHP_CURL_BINARY)  {
 			smart_str_0(&ch->handlers->write->buf);
 		}
 		RETURN_STRINGL(ch->handlers->write->buf.c, ch->handlers->write->buf.len, 0);
 	}
-
+	--ch->uses;
 	RETURN_TRUE;
 }
 /* }}} */
@@ -1525,7 +1594,106 @@ static void _php_curl_close(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 }	
 /* }}} */
 
-#endif
+#ifdef PHP_CURL_NEED_OPENSSL_TSL
+/* {{{ */
+static MUTEX_T *php_curl_openssl_tsl = NULL;
+
+static void php_curl_ssl_lock(int mode, int n, const char * file, int line)
+{
+	if (mode & CRYPTO_LOCK) {
+		tsrm_mutex_lock(php_curl_openssl_tsl[n]);
+	} else {
+		tsrm_mutex_unlock(php_curl_openssl_tsl[n]);
+	}
+}
+
+static unsigned long php_curl_ssl_id(void)
+{
+	return (unsigned long) tsrm_thread_id();
+}
+
+static inline void php_curl_ssl_init(void)
+{
+	int i, c = CRYPTO_num_locks();
+	
+	php_curl_openssl_tsl = malloc(c * sizeof(MUTEX_T));
+	
+	for (i = 0; i < c; ++i) {
+		php_curl_openssl_tsl[i] = tsrm_mutex_alloc();
+	}
+	
+	CRYPTO_set_id_callback(php_curl_ssl_id);
+	CRYPTO_set_locking_callback(php_curl_ssl_lock);
+}
+
+static inline void php_curl_ssl_cleanup(void)
+{
+	if (php_curl_openssl_tsl) {
+		int i, c = CRYPTO_num_locks();
+		
+		CRYPTO_set_id_callback(NULL);
+		CRYPTO_set_locking_callback(NULL);
+		
+		for (i = 0; i < c; ++i) {
+			tsrm_mutex_free(php_curl_openssl_tsl[i]);
+		}
+		
+		free(php_curl_openssl_tsl);
+		php_curl_openssl_tsl = NULL;
+	}
+}
+#endif /* PHP_CURL_NEED_OPENSSL_TSL */
+/* }}} */
+
+#ifdef PHP_CURL_NEED_GNUTLS_TSL
+/* {{{ */
+static int php_curl_ssl_mutex_create(void **m)
+{
+	if (*((MUTEX_T *) m) = tsrm_mutex_alloc()) {
+		return SUCCESS;
+	} else {
+		return FAILURE;
+	}
+}
+
+static int php_curl_ssl_mutex_destroy(void **m)
+{
+	tsrm_mutex_free(*((MUTEX_T *) m));
+	return SUCCESS;
+}
+
+static int php_curl_ssl_mutex_lock(void **m)
+{
+	return tsrm_mutex_lock(*((MUTEX_T *) m));
+}
+
+static int php_curl_ssl_mutex_unlock(void **m)
+{
+	return tsrm_mutex_unlock(*((MUTEX_T *) m));
+}
+
+static struct gcry_thread_cbs php_curl_gnutls_tsl = {
+	GCRY_THREAD_OPTIONS_USER,
+	NULL,
+	php_curl_ssl_mutex_create,
+	php_curl_ssl_mutex_destroy,
+	php_curl_ssl_mutex_lock,
+	php_curl_ssl_mutex_unlock
+};
+
+static inline void php_curl_ssl_init(void)
+{
+	gcry_control(GCRYCTL_SET_THREAD_CBS, &php_curl_gnutls_tsl);
+}
+
+static inline void php_curl_ssl_cleanup(void)
+{
+	return;
+}
+#endif /* PHP_CURL_NEED_GNUTLS_TSL */
+/* }}} */
+
+#endif /* HAVE_CURL */
 
 /*
  * Local variables:

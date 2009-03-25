@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,12 +17,12 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend.h,v 1.257.2.25 2005/08/25 17:41:08 zeev Exp $ */
+/* $Id: zend.h,v 1.293.2.6 2005/11/26 21:03:44 iliaa Exp $ */
 
 #ifndef ZEND_H
 #define ZEND_H
 
-#define ZEND_VERSION "2.0.5"
+#define ZEND_VERSION "2.1.0"
 
 #define ZEND_ENGINE_2
 
@@ -119,7 +119,7 @@ const char *zend_mh_bundle_error(void);
 # define ZEND_EXTENSIONS_SUPPORT	1
 #elif defined(HAVE_MACH_O_DYLD_H)
 # define DL_LOAD(libname)			zend_mh_bundle_load(libname)
-# define DL_UNLOAD					zend_mh_bundle_unload
+# define DL_UNLOAD			zend_mh_bundle_unload
 # define DL_FETCH_SYMBOL(h,s)		zend_mh_bundle_symbol(h,s)
 # define DL_ERROR					zend_mh_bundle_error
 # define DL_HANDLE					void *
@@ -171,14 +171,14 @@ char *alloca ();
 # define ZEND_ATTRIBUTE_FORMAT(type, idx, first)
 #endif
 
-#if ZEND_GCC_VERSION >= 3001
+#if ZEND_GCC_VERSION >= 3001 && !defined(__INTEL_COMPILER)
 # define ZEND_ATTRIBUTE_PTR_FORMAT(type, idx, first) __attribute__ ((format(type, idx, first)))
 #else
 # define ZEND_ATTRIBUTE_PTR_FORMAT(type, idx, first)
 #endif
 
 
-#if (HAVE_ALLOCA || (defined (__GNUC__) && __GNUC__ >= 2)) && !(defined(ZTS) && defined(ZEND_WIN32)) && !(defined(ZTS) && defined(NETWARE)) && !(defined(ZTS) && defined(HPUX)) && !defined(__darwin__) && !defined(__APPLE__)
+#if (HAVE_ALLOCA || (defined (__GNUC__) && __GNUC__ >= 2)) && !(defined(ZTS) && defined(ZEND_WIN32)) && !(defined(ZTS) && defined(NETWARE)) && !(defined(ZTS) && defined(HPUX)) && !defined(DARWIN)
 # define do_alloca(p) alloca(p)
 # define free_alloca(p)
 #else
@@ -247,8 +247,16 @@ char *alloca ();
 #include "zend_ts_hash.h"
 #include "zend_llist.h"
 
-#define INTERNAL_FUNCTION_PARAMETERS int ht, zval *return_value, zval *this_ptr, int return_value_used TSRMLS_DC
-#define INTERNAL_FUNCTION_PARAM_PASSTHRU ht, return_value, this_ptr, return_value_used TSRMLS_CC
+#define INTERNAL_FUNCTION_PARAMETERS int ht, zval *return_value, zval **return_value_ptr, zval *this_ptr, int return_value_used TSRMLS_DC
+#define INTERNAL_FUNCTION_PARAM_PASSTHRU ht, return_value, return_value_ptr, this_ptr, return_value_used TSRMLS_CC
+
+#if defined(__GNUC__) && !defined(__INTEL_COMPILER) && !defined(DARWIN)
+#  define ZEND_VM_ALWAYS_INLINE  __attribute__ ((always_inline))
+void zend_error_noreturn(int type, const char *format, ...) __attribute__ ((noreturn));
+#else
+#  define ZEND_VM_ALWAYS_INLINE
+#  define zend_error_noreturn zend_error
+#endif
 
 
 /*
@@ -257,11 +265,18 @@ char *alloca ();
 typedef struct _zval_struct zval;
 typedef struct _zend_class_entry zend_class_entry;
 
+typedef struct _zend_guard {
+	zend_bool in_get;
+	zend_bool in_set;
+	zend_bool in_unset;
+	zend_bool in_isset;
+	zend_bool dummy; /* sizeof(zend_guard) must not be equal to sizeof(void*) */
+} zend_guard;
+
 typedef struct _zend_object {
 	zend_class_entry *ce;
 	HashTable *properties;
-	unsigned int in_get:1;
-	unsigned int in_set:1;
+	HashTable *guards; /* protects from __get/__set ... recursion */
 } zend_object;
 
 typedef unsigned int zend_object_handle;
@@ -303,6 +318,12 @@ union _zend_function;
 
 #include "zend_iterators.h"
 
+struct _zend_serialize_data;
+struct _zend_unserialize_data;
+
+typedef struct _zend_serialize_data zend_serialize_data;
+typedef struct _zend_unserialize_data zend_unserialize_data;
+
 struct _zend_class_entry {
 	char type;
 	char *name;
@@ -315,6 +336,7 @@ struct _zend_class_entry {
 	HashTable function_table;
 	HashTable default_properties;
 	HashTable properties_info;
+	HashTable default_static_members;
 	HashTable *static_members;
 	HashTable constants_table;
 	struct _zend_function_entry *builtin_functions;
@@ -324,7 +346,11 @@ struct _zend_class_entry {
 	union _zend_function *clone;
 	union _zend_function *__get;
 	union _zend_function *__set;
+	union _zend_function *__unset;
+	union _zend_function *__isset;
 	union _zend_function *__call;
+	union _zend_function *serialize_func;
+	union _zend_function *unserialize_func;
 
 	zend_class_iterator_funcs iterator_funcs;
 
@@ -332,6 +358,10 @@ struct _zend_class_entry {
 	zend_object_value (*create_object)(zend_class_entry *class_type TSRMLS_DC);
 	zend_object_iterator *(*get_iterator)(zend_class_entry *ce, zval *object TSRMLS_DC);
 	int (*interface_gets_implemented)(zend_class_entry *iface, zend_class_entry *class_type TSRMLS_DC); /* a class implements this interface */
+
+	/* serializer callbacks */
+	int (*serialize)(zval *object, unsigned char **buffer, zend_uint *buf_len, zend_serialize_data *data TSRMLS_DC);
+	int (*unserialize)(zval **object, zend_class_entry *ce, const unsigned char *buf, zend_uint buf_len, zend_unserialize_data *data TSRMLS_DC);
 
 	zend_class_entry **interfaces;
 	zend_uint num_interfaces;
@@ -359,6 +389,7 @@ typedef struct _zend_utility_functions {
 	void (*on_timeout)(int seconds TSRMLS_DC);
 	int (*stream_open_function)(const char *filename, zend_file_handle *handle TSRMLS_DC);
 	int (*vspprintf_function)(char **pbuf, size_t max_len, const char *format, va_list ap);
+	char *(*getenv_function)(char *name, size_t name_len TSRMLS_DC);
 } zend_utility_functions;
 
 		
@@ -377,7 +408,7 @@ typedef int (*zend_write_func_t)(const char *str, uint str_length);
 #define MAX(a, b)  (((a)>(b))?(a):(b))
 #define MIN(a, b)  (((a)<(b))?(a):(b))
 #define ZEND_STRL(str)		(str), (sizeof(str)-1)
-#define ZEND_STRS(str)		(str), (sizeof(str)-1)
+#define ZEND_STRS(str)		(str), (sizeof(str))
 #define ZEND_NORMALIZE_BOOL(n)			\
 	((n) ? (((n)>0) ? 1 : -1) : 0)
 #define ZEND_TRUTH(x)		((x) ? 1 : 0)
@@ -386,13 +417,14 @@ typedef int (*zend_write_func_t)(const char *str, uint str_length);
 
 
 /* data types */
+/* All data types <= IS_BOOL have their constructor/destructors skipped */
 #define IS_NULL		0
 #define IS_LONG		1
 #define IS_DOUBLE	2
-#define IS_STRING	3
+#define IS_BOOL		3
 #define IS_ARRAY	4
 #define IS_OBJECT	5
-#define IS_BOOL		6
+#define IS_STRING	6
 #define IS_RESOURCE	7
 #define IS_CONSTANT	8
 #define IS_CONSTANT_ARRAY	9
@@ -463,22 +495,19 @@ void zend_post_deactivate_modules(TSRMLS_D);
 #define	Z_DBG(expr)
 #endif
 
-ZEND_API extern char *empty_string;
-
 BEGIN_EXTERN_C()
 ZEND_API void free_estring(char **str_p);
 END_EXTERN_C()
 
-#define STR_FREE(ptr) if (ptr && ptr!=empty_string) { efree(ptr); }
-#define STR_FREE_REL(ptr) if (ptr && ptr!=empty_string) { efree_rel(ptr); }
+/* FIXME: Check if we can save if (ptr) too */
 
-#define STR_REALLOC(ptr, size)										\
-	if (ptr!=empty_string) {										\
-		ptr = (char *) erealloc(ptr, size);							\
-	} else {														\
-		ptr = (char *) emalloc(size);								\
-		memset(ptr, 0, size);										\
-	}
+#define STR_FREE(ptr) if (ptr) { efree(ptr); }
+#define STR_FREE_REL(ptr) if (ptr) { efree_rel(ptr); }
+
+#define STR_EMPTY_ALLOC() estrndup("", sizeof("")-1)
+
+#define STR_REALLOC(ptr, size) \
+			ptr = (char *) erealloc(ptr, size);
 
 /* output support */
 #define ZEND_WRITE(str, str_len)		zend_write((str), (str_len))
@@ -497,6 +526,7 @@ extern ZEND_API void (*zend_error_cb)(int type, const char *error_filename, cons
 extern void (*zend_on_timeout)(int seconds TSRMLS_DC);
 extern ZEND_API int (*zend_stream_open_function)(const char *filename, zend_file_handle *handle TSRMLS_DC);
 extern int (*zend_vspprintf)(char **pbuf, size_t max_len, const char *format, va_list ap);
+extern ZEND_API char *(*zend_getenv)(char *name, size_t name_len TSRMLS_DC);
 
 
 ZEND_API void zend_error(int type, const char *format, ...) ZEND_ATTRIBUTE_FORMAT(printf, 2, 3);
@@ -620,6 +650,7 @@ END_EXTERN_C()
 
 #define ZEND_MAX_RESERVED_RESOURCES	4
 
+#include "zend_variables.h"
 
 #endif /* ZEND_H */
 

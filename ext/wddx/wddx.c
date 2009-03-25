@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: wddx.c,v 1.111.2.3 2005/05/30 15:13:57 sniper Exp $ */
+/* $Id: wddx.c,v 1.119.2.5 2005/10/06 18:48:19 rrichards Exp $ */
 
 #include "php.h"
 
@@ -34,7 +34,7 @@
 #include "ext/standard/php_smart_str.h"
 #include "ext/standard/html.h"
 #include "ext/standard/php_string.h"
-#include "ext/standard/php_parsedate.h"
+#include "ext/date/php_date.h"
 
 #define WDDX_BUF_LEN			256
 #define PHP_CLASS_NAME_VAR		"php_class_name"
@@ -422,7 +422,7 @@ static void php_wddx_serialize_number(wddx_packet *packet, zval *var)
 	tmp = *var;
 	zval_copy_ctor(&tmp);
 	convert_to_string(&tmp);
-	sprintf(tmp_buf, WDDX_NUMBER, Z_STRVAL(tmp));
+	snprintf(tmp_buf, sizeof(tmp_buf), WDDX_NUMBER, Z_STRVAL(tmp));
 	zval_dtor(&tmp);
 
 	php_wddx_add_chunk(packet, tmp_buf);	
@@ -524,7 +524,7 @@ static void php_wddx_serialize_object(wddx_packet *packet, zval *obj)
 			if (zend_hash_get_current_key_ex(HASH_OF(obj), &key, &key_len, &idx, 0, NULL) == HASH_KEY_IS_STRING) {
 				char *class_name, *prop_name;
 				
-				zend_unmangle_property_name(key, &class_name, &prop_name);
+				zend_unmangle_property_name_ex(key, key_len, &class_name, &prop_name);
 				php_wddx_serialize_var(packet, *ent, prop_name, strlen(prop_name)+1 TSRMLS_CC);
 			} else {
 				key_len = sprintf(tmp_buf, "%ld", idx);
@@ -617,15 +617,17 @@ static void php_wddx_serialize_array(wddx_packet *packet, zval *arr)
  */
 void php_wddx_serialize_var(wddx_packet *packet, zval *var, char *name, int name_len TSRMLS_DC)
 {
-	char tmp_buf[WDDX_BUF_LEN];
+	char *tmp_buf;
 	char *name_esc;
 	int name_esc_len;
 	HashTable *ht;
 
 	if (name) {
 		name_esc = php_escape_html_entities(name, name_len, &name_esc_len, 0, ENT_QUOTES, NULL TSRMLS_CC);
-		sprintf(tmp_buf, WDDX_VAR_S, name_esc);
+		tmp_buf = emalloc(name_esc_len + sizeof(WDDX_VAR_S));
+		snprintf(tmp_buf, name_esc_len + sizeof(WDDX_VAR_S), WDDX_VAR_S, name_esc);
 		php_wddx_add_chunk(packet, tmp_buf);
+		efree(tmp_buf);
 		efree(name_esc);
 	}
 	
@@ -728,7 +730,7 @@ static void php_wddx_push_element(void *user_data, const XML_Char *name, const X
 		ALLOC_ZVAL(ent.data);
 		INIT_PZVAL(ent.data);
 		Z_TYPE_P(ent.data) = IS_STRING;
-		Z_STRVAL_P(ent.data) = empty_string;
+		Z_STRVAL_P(ent.data) = STR_EMPTY_ALLOC();
 		Z_STRLEN_P(ent.data) = 0;
 		wddx_stack_push((wddx_stack *)stack, &ent, sizeof(st_entry));
 	} else if (!strcmp(name, EL_BINARY)) {
@@ -738,7 +740,7 @@ static void php_wddx_push_element(void *user_data, const XML_Char *name, const X
 		ALLOC_ZVAL(ent.data);
 		INIT_PZVAL(ent.data);
 		Z_TYPE_P(ent.data) = IS_STRING;
-		Z_STRVAL_P(ent.data) = empty_string;
+		Z_STRVAL_P(ent.data) = STR_EMPTY_ALLOC();
 		Z_STRLEN_P(ent.data) = 0;
 		wddx_stack_push((wddx_stack *)stack, &ent, sizeof(st_entry));
 	} else if (!strcmp(name, EL_CHAR)) {
@@ -997,10 +999,20 @@ static void php_wddx_pop_element(void *user_data, const XML_Char *name)
 						ent1->data->refcount--;
 						add_property_zval(ent2->data, ent1->varname, ent1->data);
 						EG(scope) = old_scope;
-					} else
-						zend_hash_update(target_hash,
-										 ent1->varname, strlen(ent1->varname)+1,
-										 &ent1->data, sizeof(zval *), NULL);
+					} else {
+						long l;  
+						double d;
+				
+						switch (is_numeric_string(ent1->varname, strlen(ent1->varname), &l, &d, 0)) {
+							case IS_DOUBLE:
+								l = (long) d;
+							case IS_LONG:
+								zend_hash_index_update(target_hash, l, &ent1->data, sizeof(zval *), NULL);
+								break;
+							default:
+								zend_hash_update(target_hash,ent1->varname, strlen(ent1->varname)+1, &ent1->data, sizeof(zval *), NULL);
+						}
+					}
 					efree(ent1->varname);
 				} else	{
 					zend_hash_next_index_insert(target_hash,
@@ -1039,6 +1051,7 @@ static void php_wddx_process_data(void *user_data, const XML_Char *s, int len)
 				decoded = xml_utf8_decode(s, len, &decoded_len, "ISO-8859-1");
 
 				if (Z_STRLEN_P(ent->data) == 0) {
+					STR_FREE(Z_STRVAL_P(ent->data));
 					Z_STRVAL_P(ent->data) = estrndup(decoded, decoded_len);
 					Z_STRLEN_P(ent->data) = decoded_len;
 				} else {
@@ -1054,6 +1067,7 @@ static void php_wddx_process_data(void *user_data, const XML_Char *s, int len)
 
 			case ST_BINARY:
 				if (Z_STRLEN_P(ent->data) == 0) {
+					STR_FREE(Z_STRVAL_P(ent->data));
 					Z_STRVAL_P(ent->data) = estrndup(s, len + 1);
 				} else {
 					Z_STRVAL_P(ent->data) = erealloc(Z_STRVAL_P(ent->data), Z_STRLEN_P(ent->data) + len + 1);

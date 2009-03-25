@@ -1,10 +1,10 @@
 dnl
-dnl $Id: config.m4,v 1.30 2003/02/25 05:33:27 nobbie Exp $
+dnl $Id: config.m4,v 1.34 2005/07/29 19:41:00 sniper Exp $
 dnl
 
 PHP_ARG_WITH(informix,for Informix support,
 [  --with-informix[=DIR]   Include Informix support.  DIR is the Informix base
-                          install directory, defaults to ${INFORMIXDIR:-nothing}.])
+                          install directory, defaults to ${INFORMIXDIR:-nothing}])
 
 if test "$PHP_INFORMIX" != "no"; then
 
@@ -44,8 +44,20 @@ if test "$PHP_INFORMIX" != "no"; then
   esac
 
   AC_MSG_CHECKING([Informix version])
+  IFX_IBM_VERSION=[`$INFORMIXDIR/bin/esql -V | grep "IBM Informix-ESQL Version" | sed -ne '1 s/\(.*\)ESQL Version \([0-9]*\)\.\([0-9]*\).*/\2\3/p'`]
   IFX_VERSION=[`$INFORMIXDIR/bin/esql -V | grep "ESQL Version" | sed -ne '1 s/\(.*\)ESQL Version \([0-9]*\)\.\([0-9]*\).*/\2\3/p'`]
-  AC_MSG_RESULT($IFX_VERSION)
+
+  if test "$IFX_IBM_VERSION"; then
+    if test $IFX_IBM_VERSION -ge "290" && test $IFX_IBM_VERSION -lt "300"; then
+      IFX_VERSION=960
+    else
+      IFX_VERSION=$IFX_IBM_VERSION
+    fi
+    AC_MSG_RESULT([IBM: $IFX_VERSION])
+  else
+    AC_MSG_RESULT([$IFX_VERSION])
+  fi
+
   AC_DEFINE_UNQUOTED(IFX_VERSION, $IFX_VERSION, [ ])
 
   if test $IFX_VERSION -ge "900"; then
@@ -60,10 +72,8 @@ if test "$PHP_INFORMIX" != "no"; then
 
   for i in $IFX_LIBS; do
     case "$i" in
-      *.o)
-        IFX_LIBOBJS="$IFX_LIBOBJS $i"
-        PHP_ADD_LIBPATH($ext_builddir, INFORMIX_SHARED_LIBADD)
-        PHP_ADD_LIBRARY_DEFER(phpifx, 1, INFORMIX_SHARED_LIBADD)
+       *.o)
+        DLIBS="$DLIBS $i"
         ;;
       -lm)
         ;;
@@ -90,7 +100,10 @@ if test "$PHP_INFORMIX" != "no"; then
 
   PHP_SUBST(INFORMIX_SHARED_LIBADD)
   PHP_SUBST(INFORMIXDIR)
-  PHP_SUBST(IFX_LIBOBJS)
   PHP_SUBST(IFX_ESQL_FLAGS)
   AC_DEFINE(HAVE_IFX,1,[ ])
+
+  if test "$ext_shared" = "yes"; then
+    with_tags=
+  fi 
 fi

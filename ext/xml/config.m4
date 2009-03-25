@@ -1,9 +1,9 @@
 dnl
-dnl $Id: config.m4,v 1.48.2.1 2005/04/27 13:13:38 sniper Exp $
+dnl $Id: config.m4,v 1.54 2005/06/20 00:52:59 sniper Exp $
 dnl
 
 PHP_ARG_ENABLE(xml,whether to enable XML support,
-[  --disable-xml           Disable XML support.], yes)
+[  --disable-xml           Disable XML support], yes)
 
 if test -z "$PHP_LIBXML_DIR"; then
   PHP_ARG_WITH(libxml-dir, libxml2 install dir,
@@ -26,6 +26,7 @@ if test "$PHP_XML" != "no"; then
 
     PHP_SETUP_LIBXML(XML_SHARED_LIBADD, [
       xml_extra_sources="compat.c"
+      PHP_ADD_EXTENSION_DEP(xml, libxml)
     ], [
       AC_MSG_ERROR([xml2-config not found. Use --with-libxml-dir=<DIR>])
     ])
@@ -36,7 +37,7 @@ if test "$PHP_XML" != "no"; then
   dnl
   if test "$PHP_LIBEXPAT_DIR" != "no"; then
     for i in $PHP_XML $PHP_LIBEXPAT_DIR; do
-      if test -f "$i/lib/libexpat.a" || test -f "$i/lib/libexpat.$SHLIB_SUFFIX_NAME"; then
+      if test -f "$i/$PHP_LIBDIR/libexpat.a" || test -f "$i/$PHP_LIBDIR/libexpat.$SHLIB_SUFFIX_NAME"; then
         EXPAT_DIR=$i
         break
       fi
@@ -47,11 +48,12 @@ if test "$PHP_XML" != "no"; then
     fi
 
     PHP_ADD_INCLUDE($EXPAT_DIR/include)
-    PHP_ADD_LIBRARY_WITH_PATH(expat, $EXPAT_DIR/lib, XML_SHARED_LIBADD)
+    PHP_ADD_LIBRARY_WITH_PATH(expat, $EXPAT_DIR/$PHP_LIBDIR, XML_SHARED_LIBADD)
     AC_DEFINE(HAVE_LIBEXPAT, 1, [ ])
   fi
 
   PHP_NEW_EXTENSION(xml, xml.c $xml_extra_sources, $ext_shared)
   PHP_SUBST(XML_SHARED_LIBADD)
+  PHP_INSTALL_HEADERS([ext/xml/])
   AC_DEFINE(HAVE_XML, 1, [ ])
 fi

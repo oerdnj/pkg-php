@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
  */
 
 
-/* $Id: php_mssql.h,v 1.38 2004/06/07 18:03:51 fmk Exp $ */
+/* $Id: php_mssql.h,v 1.42 2005/08/08 21:32:18 fmk Exp $ */
 
 #ifndef PHP_MSSQL_H
 #define PHP_MSSQL_H
@@ -31,13 +31,12 @@
 #define PHP_MSSQL_API
 #endif
 
-
-#define MSSQL_VERSION "7.0"
-#include "sqlfront.h"
-#include "sqldb.h"
+#include <sqlfront.h>
+#include <sqldb.h>
 
 typedef short TDS_SHORT;
-#if HAVE_FREETDS
+#ifdef HAVE_FREETDS
+#define MSSQL_VERSION "FreeTDS"
 #define SQLTEXT SYBTEXT
 #define SQLCHAR SYBCHAR
 #define SQLVARCHAR SYBVARCHAR
@@ -72,6 +71,7 @@ typedef short TDS_SHORT;
 typedef unsigned char	*LPBYTE;
 typedef float           DBFLT4;
 #else
+#define MSSQL_VERSION "7.0"
 #define DBERRHANDLE(a, b) dbprocerrhandle(a, b)
 #define DBMSGHANDLE(a, b) dbprocmsghandle(a, b)
 #define EHANDLEFUNC DBERRHANDLE_PROC
@@ -188,7 +188,7 @@ typedef struct mssql_result {
 	int lastresult;
 	int blocks_initialized;
 	int cur_row,cur_field;
-	int num_rows,num_fields;
+	int num_rows,num_fields,have_fields;
 } mssql_result;
 
 

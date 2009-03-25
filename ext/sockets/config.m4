@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.15 2003/07/08 03:38:00 pollita Exp $
+dnl $Id: config.m4,v 1.15.4.1 2005/09/23 09:54:31 hyanantha Exp $
 dnl
 
 PHP_ARG_ENABLE(sockets, whether to enable sockets support,
@@ -31,5 +31,6 @@ if test "$PHP_SOCKETS" != "no"; then
   PHP_NEW_EXTENSION([sockets], [sockets.c], [$ext_shared])
 fi
 
+PHP_CHECK_FUNC(socketpair)
 PHP_CHECK_FUNC(gethostbyname2)
 

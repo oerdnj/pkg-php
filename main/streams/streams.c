@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: streams.c,v 1.61.2.14 2005/06/01 15:11:15 dmitry Exp $ */
+/* $Id: streams.c,v 1.82 2005/08/03 14:08:43 sniper Exp $ */
 
 #define _GNU_SOURCE
 #include "php.h"
@@ -38,6 +38,7 @@
 static HashTable url_stream_wrappers_hash;
 static int le_stream = FAILURE; /* true global */
 static int le_pstream = FAILURE; /* true global */
+static int le_stream_filter = FAILURE; /* true global */
 
 PHPAPI int php_file_le_stream(void)
 {
@@ -49,9 +50,19 @@ PHPAPI int php_file_le_pstream(void)
 	return le_pstream;
 }
 
+PHPAPI int php_file_le_stream_filter(void)
+{
+	return le_stream_filter;
+}
+
 PHPAPI HashTable *_php_stream_get_url_stream_wrappers_hash(TSRMLS_D)
 {
 	return (FG(stream_wrappers) ? FG(stream_wrappers) : &url_stream_wrappers_hash);
+}
+
+PHPAPI HashTable *php_stream_get_url_stream_wrappers_hash_global(void)
+{
+	return &url_stream_wrappers_hash;
 }
 
 static int _php_stream_release_context(list_entry *le, void *pContext TSRMLS_DC)
@@ -882,7 +893,7 @@ static size_t _php_stream_write_buffer(php_stream *stream, const char *buf, size
  	/* if we have a seekable stream we need to ensure that data is written at the
  	 * current stream->position. This means invalidating the read buffer and then
 	 * performing a low-level seek */
-	if (stream->ops->seek && (stream->flags & PHP_STREAM_FLAG_NO_SEEK) == 0) {
+	if (stream->ops->seek && (stream->flags & PHP_STREAM_FLAG_NO_SEEK) == 0 && stream->readpos != stream->writepos) {
 		stream->readpos = stream->writepos = 0;
 
 		stream->ops->seek(stream, stream->position, SEEK_SET, &stream->position TSRMLS_CC);
@@ -1388,6 +1399,9 @@ int php_init_stream_wrappers(int module_number TSRMLS_DC)
 	le_stream = zend_register_list_destructors_ex(stream_resource_regular_dtor, NULL, "stream", module_number);
 	le_pstream = zend_register_list_destructors_ex(NULL, stream_resource_persistent_dtor, "persistent stream", module_number);
 
+	/* Filters are cleaned up by the streams they're attached to */
+	le_stream_filter = zend_register_list_destructors_ex(NULL, NULL, "stream filter", module_number);
+
 	return (
 			zend_hash_init(&url_stream_wrappers_hash, 0, NULL, NULL, 1) == SUCCESS
 			&& 
@@ -1415,10 +1429,12 @@ int php_shutdown_stream_wrappers(int module_number TSRMLS_DC)
 	return SUCCESS;
 }
 
-/* API for registering GLOBAL wrappers */
-PHPAPI int php_register_url_stream_wrapper(char *protocol, php_stream_wrapper *wrapper TSRMLS_DC)
+/* Validate protocol scheme names during registration
+ * Must conform to /^[a-zA-Z0-9+.-]+$/
+ */
+static inline int php_stream_wrapper_scheme_validate(char *protocol, int protocol_len)
 {
-	int i, protocol_len = strlen(protocol);
+	int i;
 
 	for(i = 0; i < protocol_len; i++) {
 		if (!isalnum((int)protocol[i]) &&
@@ -1427,6 +1443,18 @@ PHPAPI int php_register_url_stream_wrapper(char *protocol, php_stream_wrapper *w
 			protocol[i] != '.') {
 			return FAILURE;
 		}
+	}
+
+	return SUCCESS;
+}
+
+/* API for registering GLOBAL wrappers */
+PHPAPI int php_register_url_stream_wrapper(char *protocol, php_stream_wrapper *wrapper TSRMLS_DC)
+{
+	int protocol_len = strlen(protocol);
+
+	if (php_stream_wrapper_scheme_validate(protocol, protocol_len) == FAILURE) {
+		return FAILURE;
 	}
 
 	return zend_hash_add(&url_stream_wrappers_hash, protocol, protocol_len, wrapper, sizeof(*wrapper), NULL);
@@ -1440,21 +1468,16 @@ PHPAPI int php_unregister_url_stream_wrapper(char *protocol TSRMLS_DC)
 /* API for registering VOLATILE wrappers */
 PHPAPI int php_register_url_stream_wrapper_volatile(char *protocol, php_stream_wrapper *wrapper TSRMLS_DC)
 {
-	int i, protocol_len = strlen(protocol);
+	int protocol_len = strlen(protocol);
 
-	for(i = 0; i < protocol_len; i++) {
-		if (!isalnum((int)protocol[i]) &&
-			protocol[i] != '+' &&
-			protocol[i] != '-' &&
-			protocol[i] != '.') {
-			return FAILURE;
-		}
+	if (php_stream_wrapper_scheme_validate(protocol, protocol_len) == FAILURE) {
+		return FAILURE;
 	}
 
 	if (!FG(stream_wrappers)) {
 		php_stream_wrapper tmpwrapper;
 
-		FG(stream_wrappers) = emalloc(sizeof(HashTable));
+		ALLOC_HASHTABLE(FG(stream_wrappers));
 		zend_hash_init(FG(stream_wrappers), 0, NULL, NULL, 1);
 		zend_hash_copy(FG(stream_wrappers), &url_stream_wrappers_hash, NULL, &tmpwrapper, sizeof(php_stream_wrapper));
 	}
@@ -1462,6 +1485,18 @@ PHPAPI int php_register_url_stream_wrapper_volatile(char *protocol, php_stream_w
 	return zend_hash_add(FG(stream_wrappers), protocol, protocol_len, wrapper, sizeof(*wrapper), NULL);
 }
 
+PHPAPI int php_unregister_url_stream_wrapper_volatile(char *protocol TSRMLS_DC)
+{
+	if (!FG(stream_wrappers)) {
+		php_stream_wrapper tmpwrapper;
+
+		ALLOC_HASHTABLE(FG(stream_wrappers));
+		zend_hash_init(FG(stream_wrappers), 0, NULL, NULL, 1);
+		zend_hash_copy(FG(stream_wrappers), &url_stream_wrappers_hash, NULL, &tmpwrapper, sizeof(php_stream_wrapper));
+	}
+
+	return zend_hash_del(FG(stream_wrappers), protocol, strlen(protocol));
+}
 /* }}} */
 
 /* {{{ php_stream_locate_url_wrapper */
@@ -1510,28 +1545,63 @@ PHPAPI php_stream_wrapper *php_stream_locate_url_wrapper(const char *path, char 
 	}
 	/* TODO: curl based streams probably support file:// properly */
 	if (!protocol || !strncasecmp(protocol, "file", n))	{
+		if (protocol) {
+			int localhost = 0;
+
+			if (!strncasecmp(path, "file://localhost/", 17)) {
+				localhost = 1;
+			}
+
 #ifdef PHP_WIN32
-		if (protocol && path[n+1] == '/' && path[n+2] == '/' && path[n+3] != '\0' && path[n+3] != '/' && path[n+4] != ':')	{
+			if (localhost == 0 && path[n+3] != '\0' && path[n+3] != '/' && path[n+4] != ':')	{
 #else
-		if (protocol && path[n+1] == '/' && path[n+2] == '/' && path[n+3] != '/')	{
+			if (localhost == 0 && path[n+3] != '/')	{
 #endif
+				if (options & REPORT_ERRORS) {
+					php_error_docref(NULL TSRMLS_CC, E_WARNING, "remote host file access not supported, %s", path);
+				}
+				return NULL;
+			}
+
+			if (path_for_open) {
+				/* skip past protocol and :/, but handle windows correctly */
+				*path_for_open = (char*)path + n + 1;
+				if (localhost == 1) {
+					(*path_for_open) += 11;
+				}
+				while (*(++*path_for_open)=='/');
+#ifdef PHP_WIN32
+				if (*(*path_for_open + 1) != ':')
+#endif
+					(*path_for_open)--;
+			}
+		}
+
+		if (options & STREAM_LOCATE_WRAPPERS_ONLY) {
+			return NULL;
+		}
+		
+		if (FG(stream_wrappers)) {
+			/* The file:// wrapper may have been disabled/overridden */
+
+			if (wrapper) {
+				/* It was found so go ahead and provide it */
+				return wrapper;
+			}
+			
+			/* Check again, the original check might have not known the protocol name */
+			if (zend_hash_find(wrapper_hash, "file", sizeof("file")-1, (void**)&wrapper) == SUCCESS) {
+				return wrapper;
+			}
+
 			if (options & REPORT_ERRORS) {
-				php_error_docref(NULL TSRMLS_CC, E_WARNING, "remote host file access not supported, %s", path);
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Plainfiles wrapper disabled");
 			}
 			return NULL;
 		}
-		if (protocol && path_for_open) {
-			/* skip past protocol and :/, but handle windows correctly */
-			*path_for_open = (char*)path + n + 1;
-			while (*(++*path_for_open)=='/');
-#ifdef PHP_WIN32
-			if (*(*path_for_open + 1) != ':')
-#endif
-				(*path_for_open)--;
-		}
-		
-		/* fall back on regular file access */
-		return (options & STREAM_LOCATE_WRAPPERS_ONLY) ? NULL : &php_plain_files_wrapper;
+
+		/* fall back on regular file access */		
+		return &php_plain_files_wrapper;
 	}
 
 	if (wrapper && wrapper->is_url && !PG(allow_url_fopen)) {

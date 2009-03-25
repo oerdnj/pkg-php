@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_com_dotnet_internal.h,v 1.12.2.1 2005/04/19 05:57:21 wez Exp $ */
+/* $Id: php_com_dotnet_internal.h,v 1.14.2.1 2005/11/27 12:19:04 rrichards Exp $ */
 
 #ifndef PHP_COM_DOTNET_INTERNAL_H
 #define PHP_COM_DOTNET_INTERNAL_H
@@ -33,6 +33,8 @@
 #undef php_win_err
 
 typedef struct _php_com_dotnet_object {
+	zend_object zo;
+
 	VARIANT v;
 
 	ITypeInfo *typeinfo;

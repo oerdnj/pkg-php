@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2004 The PHP Group                                |
+  | Copyright (c) 1997-2005 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: streamsfuncs.c,v 1.35.2.10 2005/01/15 04:51:03 sniper Exp $ */
+/* $Id: streamsfuncs.c,v 1.58 2005/08/03 14:08:12 sniper Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -40,6 +40,38 @@
 static php_stream_context *decode_context_param(zval *contextresource TSRMLS_DC);
 
 /* Streams based network functions */
+
+#if HAVE_SOCKETPAIR
+/* {{{ proto array stream_socket_pair(int domain, int type, int protocol)
+   Creates a pair of connected, indistinguishable socket streams */
+PHP_FUNCTION(stream_socket_pair)
+{
+	long domain, type, protocol;
+	php_stream *s1, *s2;
+	int pair[2];
+
+	if (FAILURE == zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "lll",
+			&domain, &type, &protocol)) {
+		RETURN_FALSE;
+	}
+
+	if (0 != socketpair(domain, type, protocol, pair)) {
+		char errbuf[256];
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "failed to create sockets: [%d]: %s",
+			php_socket_errno(), php_socket_strerror(php_socket_errno(), errbuf, sizeof(errbuf)));
+		RETURN_FALSE;
+	}
+
+	array_init(return_value);
+
+	s1 = php_stream_sock_open_from_socket(pair[0], 0);
+	s2 = php_stream_sock_open_from_socket(pair[1], 0);
+
+	add_next_index_resource(return_value, php_stream_get_resource_id(s1));
+	add_next_index_resource(return_value, php_stream_get_resource_id(s2));
+}
+/* }}} */
+#endif
 
 /* {{{ proto resource stream_socket_client(string remoteaddress [, long &errcode, string &errstring, double timeout, long flags, resource context])
    Open a client connection to a remote address */
@@ -353,21 +385,26 @@ PHP_FUNCTION(stream_socket_recvfrom)
 }
 /* }}} */
 
-/* {{{ proto long stream_get_contents(resource source [, long maxlen ])
+/* {{{ proto long stream_get_contents(resource source [, long maxlen [, long offset]])
    Reads all remaining bytes (or up to maxlen bytes) from a stream and returns them as a string. */
 PHP_FUNCTION(stream_get_contents)
 {
 	php_stream *stream;
 	zval *zsrc;
-	long maxlen = PHP_STREAM_COPY_ALL;
+	long maxlen = PHP_STREAM_COPY_ALL, pos = 0;
 	int len, newlen;
 	char *contents = NULL;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r|l", &zsrc, &maxlen) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r|ll", &zsrc, &maxlen, &pos) == FAILURE) {
 		RETURN_FALSE;
 	}
 
 	php_stream_from_zval(stream, &zsrc);
+
+	if (pos > 0 && php_stream_seek(stream, pos, SEEK_SET) < 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to seek to %ld position in the stream.", pos);
+		RETURN_FALSE;
+	}
 
 	if ((len = php_stream_copy_to_mem(stream, &contents, maxlen, 0)) > 0) {
 		
@@ -385,20 +422,25 @@ PHP_FUNCTION(stream_get_contents)
 }
 /* }}} */
 
-/* {{{ proto long stream_copy_to_stream(resource source, resource dest [, long maxlen ])
+/* {{{ proto long stream_copy_to_stream(resource source, resource dest [, long maxlen [, long pos]])
    Reads up to maxlen bytes from source stream and writes them to dest stream. */
 PHP_FUNCTION(stream_copy_to_stream)
 {
 	php_stream *src, *dest;
 	zval *zsrc, *zdest;
-	long maxlen = PHP_STREAM_COPY_ALL;
+	long maxlen = PHP_STREAM_COPY_ALL, pos = 0;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rr|l", &zsrc, &zdest, &maxlen) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rr|ll", &zsrc, &zdest, &maxlen, &pos) == FAILURE) {
 		RETURN_FALSE;
 	}
 
 	php_stream_from_zval(src, &zsrc);
 	php_stream_from_zval(dest, &zdest);
+
+	if (pos > 0 && php_stream_seek(src, pos, SEEK_SET) < 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to seek to %ld position in the stream.", pos);
+		RETURN_FALSE;
+	}
 
 	RETURN_LONG(php_stream_copy_to_stream(src, dest, maxlen));
 }
@@ -895,9 +937,7 @@ PHP_FUNCTION(stream_context_get_options)
 		RETURN_FALSE;
 	}
 
-	*return_value = *context->options;
-	zval_copy_ctor(return_value);
-	INIT_PZVAL(return_value);
+	RETURN_ZVAL(context->options, 1, 0);
 }
 /* }}} */
 
@@ -958,6 +998,30 @@ PHP_FUNCTION(stream_context_set_params)
 }
 /* }}} */
 
+/* {{{ proto resource stream_context_get_default([array options])
+   Get a handle on the default file/stream context and optionally set parameters */
+PHP_FUNCTION(stream_context_get_default)
+{
+	zval *params = NULL;
+	php_stream_context *context;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|a", &params) == FAILURE) {
+		RETURN_FALSE;
+	}
+	
+	if (FG(default_context) == NULL) {
+		FG(default_context) = php_stream_context_alloc();
+	}
+	context = FG(default_context);
+	
+	if (params) {
+		parse_context_options(context, params);
+	}
+	
+	php_stream_context_to_zval(context, return_value);
+}
+/* }}} */
+
 /* {{{ proto resource stream_context_create([array options])
    Create a file context and optionally set parameters */
 PHP_FUNCTION(stream_context_create)
@@ -988,7 +1052,7 @@ static void apply_filter_to_stream(int append, INTERNAL_FUNCTION_PARAMETERS)
 	int filternamelen;
 	long read_write = 0;
 	zval *filterparams = NULL;
-	php_stream_filter *filter;
+	php_stream_filter *filter = NULL;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs|lz", &zstream,
 				&filtername, &filternamelen, &read_write, &filterparams) == FAILURE) {
@@ -1037,10 +1101,14 @@ static void apply_filter_to_stream(int append, INTERNAL_FUNCTION_PARAMETERS)
 		}
 	}
 
-	RETURN_TRUE;
+	if (filter) {
+		RETURN_RESOURCE(filter->rsrc_id = ZEND_REGISTER_RESOURCE(NULL, filter, php_file_le_stream_filter()));
+	} else {
+		RETURN_FALSE;
+	}
 }
 
-/* {{{ proto bool stream_filter_prepend(resource stream, string filtername[, int read_write[, string filterparams]])
+/* {{{ proto resource stream_filter_prepend(resource stream, string filtername[, int read_write[, string filterparams]])
    Prepend a filter to a stream */
 PHP_FUNCTION(stream_filter_prepend)
 {
@@ -1048,7 +1116,7 @@ PHP_FUNCTION(stream_filter_prepend)
 }
 /* }}} */
 
-/* {{{ proto bool stream_filter_append(resource stream, string filtername[, int read_write[, string filterparams]])
+/* {{{ proto resource stream_filter_append(resource stream, string filtername[, int read_write[, string filterparams]])
    Append a filter to a stream */
 PHP_FUNCTION(stream_filter_append)
 {
@@ -1056,6 +1124,36 @@ PHP_FUNCTION(stream_filter_append)
 }
 /* }}} */
 
+/* {{{ proto bool stream_filter_remove(resource stream_filter)
+	Flushes any data in the filter's internal buffer, removes it from the chain, and frees the resource */
+PHP_FUNCTION(stream_filter_remove)
+{
+	zval *zfilter;
+	php_stream_filter *filter;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &zfilter) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	filter = zend_fetch_resource(&zfilter TSRMLS_CC, -1, NULL, NULL, 1, php_file_le_stream_filter());
+	if (!filter) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid resource given, not a stream filter");
+		RETURN_FALSE;
+	}
+
+	if (php_stream_filter_flush(filter, 1) == FAILURE) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to flush filter, not removing");
+		RETURN_FALSE;
+	}
+
+	if (zend_list_delete(Z_LVAL_P(zfilter)) == FAILURE) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Could not invalidate filter, not removing");
+		RETURN_FALSE;
+	} else {
+		php_stream_filter_remove(filter, 1 TSRMLS_CC);
+		RETURN_TRUE;
+	}
+}
 /* }}} */
 
 /* {{{ proto string stream_get_line(resource stream, int maxlen [, string ending])
@@ -1077,6 +1175,9 @@ PHP_FUNCTION(stream_get_line)
 	if (max_length < 0) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "The maximum allowed length must be greater then or equal to zero.");
 		RETURN_FALSE;
+	}
+	if (!max_length) {
+		max_length = PHP_SOCK_CHUNK_SIZE;
 	}
 
 	php_stream_from_zval(stream, &zstream);
@@ -1193,6 +1294,46 @@ PHP_FUNCTION(stream_set_write_buffer)
 	}
 
 	RETURN_LONG(ret == 0 ? 0 : EOF);
+}
+/* }}} */
+
+/* {{{ proto int stream_socket_enable_crypto(resource stream, bool enable [, int cryptokind, resource sessionstream])
+   Enable or disable a specific kind of crypto on the stream */
+PHP_FUNCTION(stream_socket_enable_crypto)
+{
+	long cryptokind;
+	zval *zstream, *zsessstream = NULL;
+	php_stream *stream, *sessstream = NULL;
+	zend_bool enable;
+	int ret;
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rb|lr", &zstream, &enable, &cryptokind, &zsessstream) == FAILURE) {
+		RETURN_FALSE;
+	}
+	
+	php_stream_from_zval(stream, &zstream);
+
+	if (ZEND_NUM_ARGS() >= 3) {
+		if (zsessstream) {
+			php_stream_from_zval(sessstream, &zsessstream);
+		}
+		
+		if (php_stream_xport_crypto_setup(stream, cryptokind, sessstream TSRMLS_CC) < 0) {
+			RETURN_FALSE;
+		}
+	}
+
+	ret = php_stream_xport_crypto_enable(stream, enable TSRMLS_CC);
+	switch (ret) {
+		case -1:
+			RETURN_FALSE;
+
+		case 0:
+			RETURN_LONG(0);
+		
+		default:
+			RETURN_TRUE;
+	}
 }
 /* }}} */
 

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: html.h,v 1.18 2004/01/08 17:32:51 sniper Exp $ */
+/* $Id: html.h,v 1.20 2005/08/03 14:08:04 sniper Exp $ */
 
 #ifndef HTML_H
 #define HTML_H
@@ -33,6 +33,7 @@ void register_html_constants(INIT_FUNC_ARGS);
 
 PHP_FUNCTION(htmlspecialchars);
 PHP_FUNCTION(htmlentities);
+PHP_FUNCTION(htmlspecialchars_decode);
 PHP_FUNCTION(html_entity_decode);
 PHP_FUNCTION(get_html_translation_table);
 

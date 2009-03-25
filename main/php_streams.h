@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_streams.h,v 1.95.2.5 2005/07/16 12:14:45 hyanantha Exp $ */
+/* $Id: php_streams.h,v 1.103 2005/08/03 14:08:37 sniper Exp $ */
 
 #ifndef PHP_STREAMS_H
 #define PHP_STREAMS_H
@@ -30,6 +30,7 @@
 BEGIN_EXTERN_C()
 PHPAPI int php_file_le_stream(void);
 PHPAPI int php_file_le_pstream(void);
+PHPAPI int php_file_le_stream_filter(void);
 END_EXTERN_C()
 
 /* {{{ Streams memory debugging stuff */
@@ -407,7 +408,7 @@ END_EXTERN_C()
 
 /* copy up to maxlen bytes from src to dest.  If maxlen is PHP_STREAM_COPY_ALL, copy until eof(src).
  * Uses mmap if the src is a plain file and at offset 0 */
-#define PHP_STREAM_COPY_ALL			((size_t)-1)
+#define PHP_STREAM_COPY_ALL		((size_t)-1)
 
 BEGIN_EXTERN_C()
 PHPAPI size_t _php_stream_copy_to_stream(php_stream *src, php_stream *dest, size_t maxlen STREAMS_DC TSRMLS_DC);
@@ -508,6 +509,7 @@ BEGIN_EXTERN_C()
 PHPAPI int php_register_url_stream_wrapper(char *protocol, php_stream_wrapper *wrapper TSRMLS_DC);
 PHPAPI int php_unregister_url_stream_wrapper(char *protocol TSRMLS_DC);
 PHPAPI int php_register_url_stream_wrapper_volatile(char *protocol, php_stream_wrapper *wrapper TSRMLS_DC);
+PHPAPI int php_unregister_url_stream_wrapper_volatile(char *protocol TSRMLS_DC);
 PHPAPI php_stream *_php_stream_open_wrapper_ex(char *path, char *mode, int options, char **opened_path, php_stream_context *context STREAMS_DC TSRMLS_DC);
 PHPAPI php_stream_wrapper *php_stream_locate_url_wrapper(const char *path, char **path_for_open, int options TSRMLS_DC);
 PHPAPI char *php_stream_locate_eol(php_stream *stream, char *buf, size_t buf_len TSRMLS_DC);
@@ -539,6 +541,7 @@ PHPAPI int _php_stream_make_seekable(php_stream *origstream, php_stream **newstr
 /* Give other modules access to the url_stream_wrappers_hash and stream_filters_hash */
 PHPAPI HashTable *_php_stream_get_url_stream_wrappers_hash(TSRMLS_D);
 #define php_stream_get_url_stream_wrappers_hash()	_php_stream_get_url_stream_wrappers_hash(TSRMLS_C)
+PHPAPI HashTable *php_stream_get_url_stream_wrappers_hash_global(void);
 PHPAPI HashTable *_php_get_stream_filters_hash(TSRMLS_D);
 #define php_get_stream_filters_hash()	_php_get_stream_filters_hash(TSRMLS_C)
 PHPAPI HashTable *php_get_stream_filters_hash_global();

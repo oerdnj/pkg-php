@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: text.c,v 1.20.2.1 2004/11/18 19:55:00 rrichards Exp $ */
+/* $Id: text.c,v 1.23 2005/08/03 14:07:06 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -38,6 +38,7 @@
 zend_function_entry php_dom_text_class_functions[] = {
 	PHP_FALIAS(splitText, dom_text_split_text, NULL)
 	PHP_FALIAS(isWhitespaceInElementContent, dom_text_is_whitespace_in_element_content, NULL)
+	PHP_FALIAS(isElementContentWhitespace, dom_text_is_whitespace_in_element_content, NULL)
 	PHP_FALIAS(replaceWholeText, dom_text_replace_whole_text, NULL)
 	PHP_ME(domtext, __construct, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}

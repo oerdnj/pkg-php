@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2003 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_sxe.c,v 1.7 2004/03/08 17:33:29 helly Exp $ */
+/* $Id: spl_sxe.c,v 1.8.2.2 2005/10/03 16:05:08 helly Exp $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -34,6 +34,7 @@
 #include "spl_sxe.h"
 
 zend_class_entry *spl_ce_SimpleXMLIterator = NULL;
+zend_class_entry *spl_ce_SimpleXMLElement;
 
 #if HAVE_LIBXML && HAVE_SIMPLEXML
 
@@ -41,9 +42,10 @@ zend_class_entry *spl_ce_SimpleXMLIterator = NULL;
 
 SPL_METHOD(SimpleXMLIterator, rewind) /* {{{ */
 {
-	php_sxe_object *sxe = php_sxe_fetch_object(getThis() TSRMLS_CC);
+	php_sxe_iterator iter;
 
-	php_sxe_reset_iterator(sxe TSRMLS_CC);
+	iter.sxe = php_sxe_fetch_object(getThis() TSRMLS_CC);
+	spl_ce_SimpleXMLElement->iterator_funcs.funcs->rewind((zend_object_iterator*)&iter TSRMLS_CC);
 }
 /* }}} */
 
@@ -89,9 +91,10 @@ SPL_METHOD(SimpleXMLIterator, key) /* {{{ */
 
 SPL_METHOD(SimpleXMLIterator, next) /* {{{ */
 {
-	php_sxe_object *sxe = php_sxe_fetch_object(getThis() TSRMLS_CC);
+	php_sxe_iterator iter;
 
-	php_sxe_move_forward_iterator(sxe TSRMLS_CC);
+	iter.sxe = php_sxe_fetch_object(getThis() TSRMLS_CC);
+	spl_ce_SimpleXMLElement->iterator_funcs.funcs->move_forward((zend_object_iterator*)&iter TSRMLS_CC);
 }
 /* }}} */
 
@@ -146,13 +149,17 @@ static zend_function_entry spl_funcs_SimpleXMLIterator[] = {
 
 SPL_API PHP_MINIT_FUNCTION(spl_sxe) /* {{{ */
 {
-	zend_class_entry *spl_ce_SimpleXML_Element = sxe_get_element_class_entry();
-
-	if (!spl_ce_SimpleXML_Element) {
+	zend_class_entry **pce;
+	
+	if (zend_hash_find(CG(class_table), "simplexmlelement", sizeof("SimpleXMLElement"), (void **) &pce) == FAILURE) {
+		spl_ce_SimpleXMLElement  = NULL;
+		spl_ce_SimpleXMLIterator = NULL;
 		return SUCCESS; /* SimpleXML must be initialized before */
 	}
+	
+	spl_ce_SimpleXMLElement = *pce;
 
-	REGISTER_SPL_SUB_CLASS_EX(SimpleXMLIterator, SimpleXML_Element, sxe_object_new, spl_funcs_SimpleXMLIterator);
+	REGISTER_SPL_SUB_CLASS_EX(SimpleXMLIterator, SimpleXMLElement, spl_ce_SimpleXMLElement->create_object, spl_funcs_SimpleXMLIterator);
 	REGISTER_SPL_IMPLEMENTS(SimpleXMLIterator, RecursiveIterator);
 
 	return SUCCESS;

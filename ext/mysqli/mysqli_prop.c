@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2004 The PHP Group                                |
+  | Copyright (c) 1997-2005 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_prop.c,v 1.14.2.6 2005/03/30 13:52:39 jorton Exp $ 
+  $Id: mysqli_prop.c,v 1.23 2005/08/03 14:07:30 sniper Exp $ 
 */
 
 #ifdef HAVE_CONFIG_H
@@ -36,24 +36,22 @@
 		return SUCCESS; \
 	} \
 
-
-
 #define MYSQLI_GET_MYSQL() \
 MYSQL *p; \
 ALLOC_ZVAL(*retval);\
-CHECK_OBJECT(); \
+CHECK_OBJECT();\
 p = (MYSQL *)((MY_MYSQL *)((MYSQLI_RESOURCE *)(obj->ptr))->ptr)->mysql;
 
 #define MYSQLI_GET_RESULT() \
 MYSQL_RES *p; \
 ALLOC_ZVAL(*retval);\
-CHECK_OBJECT(); \
+CHECK_OBJECT();\
 p = (MYSQL_RES *)((MYSQLI_RESOURCE *)(obj->ptr))->ptr
 
 #define MYSQLI_GET_STMT() \
 MYSQL_STMT *p; \
 ALLOC_ZVAL(*retval);\
-CHECK_OBJECT(); \
+CHECK_OBJECT();\
 p = (MYSQL_STMT *)((MY_STMT *)((MYSQLI_RESOURCE *)(obj->ptr))->ptr)->stmt
 
 #define MYSQLI_MAP_PROPERTY_FUNC_LONG( __func, __int_func, __get_type, __ret_type)\
@@ -179,9 +177,8 @@ static int result_type_read(mysqli_object *obj, zval **retval TSRMLS_DC)
 {
 	MYSQL_RES *p;
 
-	ALLOC_ZVAL(*retval); 
+	ALLOC_ZVAL(*retval);
 	CHECK_OBJECT();
-
  	p = (MYSQL_RES *)((MYSQLI_RESOURCE *)(obj->ptr))->ptr;
 
 	if (!p) {
@@ -198,11 +195,10 @@ static int result_lengths_read(mysqli_object *obj, zval **retval TSRMLS_DC)
 {
 	MYSQL_RES *p;
 
-	ALLOC_ZVAL(*retval); 
+	ALLOC_ZVAL(*retval);
 	CHECK_OBJECT();
 
 	p = (MYSQL_RES *)((MYSQLI_RESOURCE *)(obj->ptr))->ptr;
-
 	if (!p || !p->field_count) {
 		ZVAL_NULL(*retval);
 	} else {
@@ -284,6 +280,7 @@ MYSQLI_MAP_PROPERTY_FUNC_LONG(stmt_errno_read, mysql_stmt_errno, MYSQLI_GET_STMT
 MYSQLI_MAP_PROPERTY_FUNC_STRING(stmt_error_read, mysql_stmt_error, MYSQLI_GET_STMT());
 MYSQLI_MAP_PROPERTY_FUNC_STRING(stmt_sqlstate_read, mysql_stmt_sqlstate, MYSQLI_GET_STMT());
 
+/* }}} */
 mysqli_property_entry mysqli_link_property_entries[] = {
 	{"affected_rows", link_affected_rows_read, NULL},
 	{"client_info", link_client_info_read, NULL},

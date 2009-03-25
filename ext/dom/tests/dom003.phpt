@@ -59,6 +59,6 @@ object(DOMException)#%d (6) {
 
 Fatal error: Uncaught exception 'DOMException' with message 'Hierarchy Request Error' in %sdom003.php:%d
 Stack trace:
-#0 %sdom003.php(%d): DOMNode->appendChild(Object(DOMElement))
+#0 %sdom003.php(13): DOMNode->appendChild(Object(DOMElement))
 #1 {main}
   thrown in %sdom003.php on line %d

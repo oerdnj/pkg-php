@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_session.h,v 1.98.2.1 2005/02/13 17:54:31 sniper Exp $ */
+/* $Id: php_session.h,v 1.101 2005/08/03 14:07:44 sniper Exp $ */
 
 #ifndef PHP_SESSION_H
 #define PHP_SESSION_H
@@ -216,8 +216,7 @@ PHPAPI void php_session_start(TSRMLS_D);
 	ulong num_key;												\
 	zval **struc;
 
-#define PS_ENCODE_LOOP(code)										\
-	{																\
+#define PS_ENCODE_LOOP(code) do {									\
 		HashTable *_ht = Z_ARRVAL_P(PS(http_session_vars)); \
 																	\
 		for (zend_hash_internal_pointer_reset(_ht);			\
@@ -228,7 +227,7 @@ PHPAPI void php_session_start(TSRMLS_D);
 				code;		 										\
 			} 														\
 		}															\
-	}
+	} while(0)
 
 PHPAPI ZEND_EXTERN_MODULE_GLOBALS(ps)
 

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -14,12 +14,13 @@
    +----------------------------------------------------------------------+
    | Author: Edin Kadribasic <edink@php.net>                              |
    |         Marcus Boerger <helly@php.net>                               |
+   |         Johannes Schlueter <johannes@php.net>                        |
    |         Parts based on CGI SAPI Module by                            |
    |         Rasmus Lerdorf, Stig Bakken and Zeev Suraski                 |
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_cli.c,v 1.113.2.2 2005/03/22 15:09:20 tony2001 Exp $ */
+/* $Id: php_cli.c,v 1.129.2.6 2005/11/17 08:37:31 sniper Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -69,11 +70,18 @@
 #include <unixlib/local.h>
 #endif
 
+#if (HAVE_LIBREADLINE || HAVE_LIBEDIT) && !defined(COMPILE_DL_READLINE)
+#include <readline/readline.h>
+#if !HAVE_LIBEDIT
+#include <readline/history.h>
+#endif
+#include "php_cli_readline.h"
+#endif /* HAVE_LIBREADLINE || HAVE_LIBEDIT */
+
 #include "zend_compile.h"
 #include "zend_execute.h"
 #include "zend_highlight.h"
 #include "zend_indent.h"
-
 
 #include "php_getopt.h"
 
@@ -91,6 +99,9 @@
 
 static char *php_optarg = NULL;
 static int php_optind = 1;
+#if (HAVE_LIBREADLINE || HAVE_LIBEDIT) && !defined(COMPILE_DL_READLINE)
+static char php_last_char = '\0';
+#endif
 
 static const opt_struct OPTIONS[] = {
 	{'a', 0, "interactive"},
@@ -199,6 +210,13 @@ static int sapi_cli_ub_write(const char *str, uint str_length TSRMLS_DC)
 	const char *ptr = str;
 	uint remaining = str_length;
 	size_t ret;
+
+#if (HAVE_LIBREADLINE || HAVE_LIBEDIT) && !defined(COMPILE_DL_READLINE)
+	if (!str_length) {
+		return 0;
+	}
+	php_last_char = str[str_length-1];
+#endif
 
 	while (remaining > 0)
 	{
@@ -345,6 +363,7 @@ static sapi_module_struct cli_sapi_module = {
 
 	sapi_cli_register_variables,	/* register server variables */
 	sapi_cli_log_message,			/* Log message */
+	NULL,							/* Get request time */
 
 	STANDARD_SAPI_MODULE_PROPERTIES
 };
@@ -368,8 +387,13 @@ static void php_cli_usage(char *argv0)
 	            "       %s [options] [-B <begin_code>] -R <code> [-E <end_code>] [--] [args...]\n"
 	            "       %s [options] [-B <begin_code>] -F <file> [-E <end_code>] [--] [args...]\n"
 	            "       %s [options] -- [args...]\n"
+	            "       %s [options] -a\n"
 	            "\n"
+#if (HAVE_LIBREADLINE || HAVE_LIBEDIT) && !defined(COMPILE_DL_READLINE)
+				"  -a               Run as interactive shell\n"
+#else
 				"  -a               Run interactively\n"
+#endif
 				"  -c <path>|<file> Look for php.ini file in this directory\n"
 				"  -n               No php.ini file will be used\n"
 				"  -d foo[=bar]     Define INI entry foo with value 'bar'\n"
@@ -393,11 +417,11 @@ static void php_cli_usage(char *argv0)
 				"  args...          Arguments passed to script. Use -- args when first argument\n"
 				"                   starts with - or script is read from stdin\n"
 				"\n"
-				, prog, prog, prog, prog, prog);
+				, prog, prog, prog, prog, prog, prog);
 }
 /* }}} */
 
-static void define_command_line_ini_entry(char *arg)
+static void define_command_line_ini_entry(char *arg TSRMLS_DC)
 {
 	char *name, *value;
 
@@ -409,7 +433,14 @@ static void define_command_line_ini_entry(char *arg)
 	} else {
 		value = "1";
 	}
-	zend_alter_ini_entry(name, strlen(name)+1, value, strlen(value), PHP_INI_SYSTEM, PHP_INI_STAGE_ACTIVATE);
+
+	if (!strcasecmp(name, "extension")) { /* load function module */
+		zval extension, zval;
+		ZVAL_STRING(&extension, value, 0);
+		php_dl(&extension, MODULE_PERSISTENT, &zval, 1 TSRMLS_CC);
+	} else {
+		zend_alter_ini_entry(name, strlen(name)+1, value, strlen(value), PHP_INI_SYSTEM, PHP_INI_STAGE_ACTIVATE);
+	}
 }
 
 
@@ -457,21 +488,21 @@ static void cli_register_file_handles(TSRMLS_D)
 	
 	ic.value = *zin;
 	ic.flags = CONST_CS;
-	ic.name = zend_strndup(ZEND_STRS("STDIN"));
+	ic.name = zend_strndup(ZEND_STRL("STDIN"));
 	ic.name_len = sizeof("STDIN");
 	ic.module_number = 0;
 	zend_register_constant(&ic TSRMLS_CC);
 
 	oc.value = *zout;
 	oc.flags = CONST_CS;
-	oc.name = zend_strndup(ZEND_STRS("STDOUT"));
+	oc.name = zend_strndup(ZEND_STRL("STDOUT"));
 	oc.name_len = sizeof("STDOUT");
 	oc.module_number = 0;
 	zend_register_constant(&oc TSRMLS_CC);
 
 	ec.value = *zerr;
 	ec.flags = CONST_CS;
-	ec.name = zend_strndup(ZEND_STRS("STDERR"));
+	ec.name = zend_strndup(ZEND_STRL("STDERR"));
 	ec.name_len = sizeof("STDERR");
 	ec.module_number = 0;
 	zend_register_constant(&ec TSRMLS_CC);
@@ -492,7 +523,7 @@ static int cli_seek_file_begin(zend_file_handle *file_handle, char *script_file,
 	*lineno = 1;
 
 	if (!(file_handle->handle.fp = VCWD_FOPEN(script_file, "rb"))) {
-		php_printf("Could not open input file: %s.\n", script_file);
+		php_printf("Could not open input file: %s\n", script_file);
 		return FAILURE;
 	}
 	file_handle->filename = script_file;
@@ -656,18 +687,18 @@ int main(int argc, char *argv[])
 			switch (c) {
 
 			case 'd': /* define ini entries on command line */
-				define_command_line_ini_entry(php_optarg);
+				define_command_line_ini_entry(php_optarg TSRMLS_CC);
 				break;
 
 			case 'h': /* help & quit */
 			case '?':
-				php_output_startup();
-				php_output_activate(TSRMLS_C);
+				if (php_request_startup(TSRMLS_C)==FAILURE) {
+					goto err;
+				}
 				php_cli_usage(argv[0]);
 				php_end_ob_buffers(1 TSRMLS_CC);
-				exit_status=1;
-				goto err;
-
+				exit_status=0;
+				goto out;
 
 			case 'i': /* php info & quit */
 				if (php_request_startup(TSRMLS_C)==FAILURE) {
@@ -675,32 +706,33 @@ int main(int argc, char *argv[])
 				}
 				php_print_info(0xFFFFFFFF TSRMLS_CC);
 				php_end_ob_buffers(1 TSRMLS_CC);
-				exit_status=1;
+				exit_status=0;
 				goto out;
 
 			case 'm': /* list compiled in modules */
-				php_output_startup();
-				php_output_activate(TSRMLS_C);
+				if (php_request_startup(TSRMLS_C)==FAILURE) {
+					goto err;
+				}
 				php_printf("[PHP Modules]\n");
 				print_modules(TSRMLS_C);
 				php_printf("\n[Zend Modules]\n");
 				print_extensions(TSRMLS_C);
 				php_printf("\n");
 				php_end_ob_buffers(1 TSRMLS_CC);
-				exit_status=1;
-				goto err;
+				exit_status=0;
+				goto out;
 
 			case 'v': /* show php version & quit */
 				if (php_request_startup(TSRMLS_C)==FAILURE) {
 					goto err;
 				}
 #if ZEND_DEBUG
-				php_printf("PHP %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2004 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
+				php_printf("PHP %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2005 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 #else
-				php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2004 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
+				php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2005 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 #endif
 				php_end_ob_buffers(1 TSRMLS_CC);
-				exit_status=1;
+				exit_status=0;
 				goto out;
 
 			default:
@@ -943,6 +975,67 @@ int main(int argc, char *argv[])
 			if (strcmp(file_handle.filename, "-")) {
 				cli_register_file_handles(TSRMLS_C);
 			}
+
+#if (HAVE_LIBREADLINE || HAVE_LIBEDIT) && !defined(COMPILE_DL_READLINE)
+			if (interactive) {
+				char *line;
+				size_t size = 4096, pos = 0, len;
+				char *code = emalloc(size);
+				char *prompt = "php > ";
+				char *history_file;
+
+				history_file = tilde_expand("~/.php_history");
+				rl_attempted_completion_function = cli_code_completion;
+				rl_special_prefixes = "$";
+				read_history(history_file);
+
+				EG(exit_status) = 0;
+				while ((line = readline(prompt)) != NULL) {
+					if (strcmp(line, "exit") == 0 || strcmp(line, "quit") == 0) {
+						free(line);
+						break;
+					}
+
+					if (!pos && !*line) {
+						free(line);
+						continue;
+					}
+
+					len = strlen(line);
+					if (pos + len + 2 > size) {
+						size = pos + len + 2;
+						code = erealloc(code, size);
+					}
+					memcpy(&code[pos], line, len);
+					pos += len;
+					code[pos] = '\n';
+					code[++pos] = '\0';
+
+					if (*line) {
+						add_history(line);
+					}
+
+					free(line);
+
+					if (!cli_is_valid_code(code, pos, &prompt TSRMLS_CC)) {
+						continue;
+					}
+
+					zend_eval_string(code, NULL, "php shell code" TSRMLS_CC);
+					pos = 0;
+					
+					if (php_last_char != '\0' && php_last_char != '\n') {
+						sapi_cli_single_write("\n", 1);
+					}
+					php_last_char = '\0';
+				}
+				write_history(history_file);
+				free(history_file);
+				efree(code);
+				exit_status = EG(exit_status);
+				break;
+			}
+#endif /* HAVE_LIBREADLINE || HAVE_LIBEDIT */
 			php_execute_script(&file_handle TSRMLS_CC);
 			exit_status = EG(exit_status);
 			break;

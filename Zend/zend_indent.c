@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_indent.c,v 1.22.2.1 2004/12/30 15:23:07 sniper Exp $ */
+/* $Id: zend_indent.c,v 1.24 2005/08/03 13:30:53 sniper Exp $ */
 
 /* This indenter doesn't really work, it's here for no particular reason. */
 

@@ -1,12 +1,14 @@
 dnl
-dnl $Id: config.m4,v 1.20 2003/10/01 02:53:13 sniper Exp $
+dnl $Id: config.m4,v 1.25.2.1 2005/11/18 15:07:39 sniper Exp $
 dnl
 
 PHP_ARG_WITH(libedit,for libedit readline replacement, 
-[  --with-libedit[=DIR]    Include libedit readline replacement (CLI/CGI only).])
+[  --with-libedit[=DIR]    Include libedit readline replacement (CLI/CGI only)])
 
-PHP_ARG_WITH(readline,for readline support,
-[  --with-readline[=DIR]   Include readline support (CLI/CGI only).])
+if test "$PHP_LIBEDIT" = "no"; then
+  PHP_ARG_WITH(readline,for readline support,
+  [  --with-readline[=DIR]   Include readline support (CLI/CGI only)])
+fi
 
 if test "$PHP_READLINE" != "no"; then
   for i in $PHP_READLINE /usr/local /usr; do
@@ -19,32 +21,42 @@ if test "$PHP_READLINE" != "no"; then
 
   PHP_ADD_INCLUDE($READLINE_DIR/include)
 
+  PHP_READLINE_LIBS=""
   AC_CHECK_LIB(ncurses, tgetent,
   [
     PHP_ADD_LIBRARY(ncurses,,READLINE_SHARED_LIBADD)
+    PHP_READLINE_LIBS="$PHP_READLINE_LIBS -lncurses"
   ],[
     AC_CHECK_LIB(termcap, tgetent,
     [
       PHP_ADD_LIBRARY(termcap,,READLINE_SHARED_LIBADD)
+      PHP_READLINE_LIBS="$PHP_READLINE_LIBS -ltermcap"
     ])
   ])
 
   PHP_CHECK_LIBRARY(readline, readline,
   [
-    PHP_ADD_LIBRARY_WITH_PATH(readline, $READLINE_DIR/lib, READLINE_SHARED_LIBADD)
+    PHP_ADD_LIBRARY_WITH_PATH(readline, $READLINE_DIR/$PHP_LIBDIR, READLINE_SHARED_LIBADD)
   ], [
     AC_MSG_ERROR(readline library not found)
   ], [
-    -L$READLINE_DIR/lib 
+    -L$READLINE_DIR/$PHP_LIBDIR $PHP_READLINE_LIBS
+  ])
+
+  PHP_CHECK_LIBRARY(readline, rl_callback_read_char,
+  [
+    AC_DEFINE(HAVE_RL_CALLBACK_READ_CHAR, 1, [ ])
+  ],[],[
+    -L$READLINE_DIR/$PHP_LIBDIR $PHP_READLINE_LIBS
   ])
 
   PHP_CHECK_LIBRARY(history, add_history,
   [
-    PHP_ADD_LIBRARY_WITH_PATH(history, $READLINE_DIR/lib, READLINE_SHARED_LIBADD)
+    PHP_ADD_LIBRARY_WITH_PATH(history, $READLINE_DIR/$PHP_LIBDIR, READLINE_SHARED_LIBADD)
   ], [
     AC_MSG_ERROR(history library required by readline not found)
   ], [
-    -L$READLINE_DIR/lib 
+    -L$READLINE_DIR/$PHP_LIBDIR $PHP_READLINE_LIBS
   ])
 
   PHP_NEW_EXTENSION(readline, readline.c, $ext_shared, cli)
@@ -75,11 +87,11 @@ elif test "$PHP_LIBEDIT" != "no"; then
 
   PHP_CHECK_LIBRARY(edit, readline,
   [
-    PHP_ADD_LIBRARY_WITH_PATH(edit, $LIBEDIT_DIR/lib, READLINE_SHARED_LIBADD)  
+    PHP_ADD_LIBRARY_WITH_PATH(edit, $LIBEDIT_DIR/$PHP_LIBDIR, READLINE_SHARED_LIBADD)  
   ], [
     AC_MSG_ERROR(edit library required by readline not found)
   ], [
-    -L$READLINE_DIR/lib 
+    -L$READLINE_DIR/$PHP_LIBDIR 
   ])
 
   PHP_NEW_EXTENSION(readline, readline.c, $ext_shared, cli)

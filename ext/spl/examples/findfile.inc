@@ -4,13 +4,13 @@
  * @ingroup Examples
  * @brief class FindFile
  * @author  Marcus Boerger
- * @date    2003 - 2004
+ * @date    2003 - 2005
  *
  * SPL - Standard PHP Library
  */
 
-if (!class_exists("FindFile")) require_once("findfile.inc");
-if (!class_exists("AppendIterator")) require_once("appenditerator.inc");
+if (!class_exists("FindFile", false)) require_once("findfile.inc");
+if (!class_exists("AppendIterator", false)) require_once("appenditerator.inc");
 
 /** @ingroup Examples
  * @brief   Base class to find files

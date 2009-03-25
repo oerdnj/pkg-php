@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: dom_fe.h,v 1.11 2004/05/16 10:30:16 rrichards Exp $ */
+/* $Id: dom_fe.h,v 1.14 2005/08/03 14:07:01 sniper Exp $ */
 #ifndef DOM_FE_H
 #define DOM_FE_H
 
@@ -102,6 +102,7 @@ PHP_METHOD(domimplementation, getFeature);
 
 /* domdocumentfragment methods */
 PHP_METHOD(domdocumentfragment, __construct);
+PHP_METHOD(domdocumentfragment, appendXML);
 
 /* domdocument methods */
 PHP_FUNCTION(dom_document_create_element);
@@ -258,6 +259,7 @@ PHP_FUNCTION(dom_string_extend_find_offset32);
 PHP_METHOD(domxpath, __construct);
 PHP_FUNCTION(dom_xpath_register_ns);
 PHP_FUNCTION(dom_xpath_query);
+PHP_FUNCTION(dom_xpath_evaluate);
 #endif
 
 #endif /* DOM_FE_H */

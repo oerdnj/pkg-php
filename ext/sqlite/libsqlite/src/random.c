@@ -15,7 +15,7 @@
 ** Random numbers are used by some of the database backends in order
 ** to generate random integer keys for tables or random filenames.
 **
-** $Id: random.c,v 1.5 2004/07/10 12:27:51 wez Exp $
+** $Id: random.c,v 1.5.4.1 2005/09/07 15:11:32 iliaa Exp $
 */
 #include "sqliteInt.h"
 #include "os.h"

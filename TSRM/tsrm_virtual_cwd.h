@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_virtual_cwd.h,v 1.42.2.3 2005/07/16 11:50:59 hyanantha Exp $ */
+/* $Id: tsrm_virtual_cwd.h,v 1.48 2005/08/03 13:28:14 sniper Exp $ */
 
 #ifndef VIRTUAL_CWD_H
 #define VIRTUAL_CWD_H
@@ -74,6 +74,7 @@ typedef unsigned short mode_t;
 #define DEFAULT_DIR_SEPARATOR	';'
 #define IS_SLASH(c)	((c) == '/' || (c) == '\\')
 #define IS_SLASH_P(c)	IS_SLASH(*(c))
+/* Colon indicates volume name, either first character should be forward slash or backward slash */
 #define IS_ABSOLUTE_PATH(path, len) \
     ((strchr(path, ':') != NULL) || ((len >= 1) && ((path[0] == '/') || (path[0] == '\\'))))
 
@@ -140,7 +141,7 @@ CWD_API int virtual_open(const char *path TSRMLS_DC, int flags, ...);
 CWD_API int virtual_creat(const char *path, mode_t mode TSRMLS_DC);
 CWD_API int virtual_rename(char *oldname, char *newname TSRMLS_DC);
 CWD_API int virtual_stat(const char *path, struct stat *buf TSRMLS_DC);
-#if !defined(TSRM_WIN32) && !defined(NETWARE)
+#if !defined(TSRM_WIN32)
 CWD_API int virtual_lstat(const char *path, struct stat *buf TSRMLS_DC);
 #endif
 CWD_API int virtual_unlink(const char *path TSRMLS_DC);
@@ -194,13 +195,37 @@ CWD_API int virtual_chown(const char *filename, uid_t owner, gid_t group TSRMLS_
 
 CWD_API int virtual_file_ex(cwd_state *state, const char *path, verify_path_func verify_path, int use_realpath);
 
+#define REALPATH_CACHE
+#define REALPATH_CACHE_TTL  (2*60) /* 2 minutes */
+#define REALPATH_CACHE_SIZE 0      /* disabled while php.ini isn't loaded */
+
+#ifdef REALPATH_CACHE
+typedef struct _realpath_cache_bucket {
+	unsigned long                  key;
+	char                          *path;
+	int                            path_len;
+	char                          *realpath;
+	int                            realpath_len;
+	time_t                         expires;
+	struct _realpath_cache_bucket *next;	
+} realpath_cache_bucket;
+#endif
+
 typedef struct _virtual_cwd_globals {
 	cwd_state cwd;
+#ifdef REALPATH_CACHE
+	long                   realpath_cache_size;
+	long                   realpath_cache_size_limit;
+	long                   realpath_cache_ttl;
+	realpath_cache_bucket *realpath_cache[1024];
+#endif
 } virtual_cwd_globals;
 
 #ifdef ZTS
+extern ts_rsrc_id cwd_globals_id;
 # define CWDG(v) TSRMG(cwd_globals_id, virtual_cwd_globals *, v)
 #else
+extern virtual_cwd_globals cwd_globals;
 # define CWDG(v) (cwd_globals.v)
 #endif
 
@@ -223,7 +248,7 @@ typedef struct _virtual_cwd_globals {
 #define VCWD_REALPATH(path, real_path) virtual_realpath(path, real_path TSRMLS_CC)
 #define VCWD_RENAME(oldname, newname) virtual_rename(oldname, newname TSRMLS_CC)
 #define VCWD_STAT(path, buff) virtual_stat(path, buff TSRMLS_CC)
-#ifndef TSRM_WIN32
+#if !defined(TSRM_WIN32)
 #define VCWD_LSTAT(path, buff) virtual_lstat(path, buff TSRMLS_CC)
 #endif
 #define VCWD_UNLINK(path) virtual_unlink(path TSRMLS_CC)

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: uniqid.c,v 1.39 2004/01/08 08:17:34 andi Exp $ */
+/* $Id: uniqid.c,v 1.41.2.1 2005/10/19 13:41:44 iliaa Exp $ */
 
 #include "php.h"
 
@@ -50,11 +50,10 @@ PHP_FUNCTION(uniqid)
 	zend_bool more_entropy = 0;
 #endif
 	char *uniqid;
-	int sec, usec, argc, prefix_len = 0;
+	int sec, usec, prefix_len = 0;
 	struct timeval tv;
 
-	argc = ZEND_NUM_ARGS();
-	if (zend_parse_parameters(argc TSRMLS_CC, "|sb", &prefix, &prefix_len,
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|sb", &prefix, &prefix_len,
 							  &more_entropy)) {
 		return;
 	}
@@ -62,8 +61,8 @@ PHP_FUNCTION(uniqid)
 #if HAVE_USLEEP && !defined(PHP_WIN32)
 	if (!more_entropy) {
 #if defined(__CYGWIN__)
-		php_error_docref(NULL TSRMLS_CC, E_ERROR, "You must use 'more entropy' under CYGWIN.");
-		return;
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "You must use 'more entropy' under CYGWIN.");
+		RETURN_FALSE;
 #else
 		usleep(1);
 #endif

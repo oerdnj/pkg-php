@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    |          Hartmut Holzgraefe <hholzgra@php.net>                       |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_fopen_wrapper.c,v 1.44 2004/04/19 17:41:39 wez Exp $ */
+/* $Id: php_fopen_wrapper.c,v 1.45.2.2 2005/11/17 19:40:38 pollita Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -73,17 +73,19 @@ static size_t php_stream_input_write(php_stream *stream, const char *buf, size_t
 
 static size_t php_stream_input_read(php_stream *stream, char *buf, size_t count TSRMLS_DC)
 {
+	off_t *position = (off_t*)stream->abstract;
 	size_t read_bytes = 0;
+
 	if(!stream->eof) {
 		if(SG(request_info).raw_post_data) { /* data has already been read by a post handler */
-			read_bytes = SG(request_info).raw_post_data_length - stream->position;
+			read_bytes = SG(request_info).raw_post_data_length - *position;
 			if(read_bytes <= count) {
 				stream->eof = 1;
 			} else {
 				read_bytes = count;
 			}
 			if(read_bytes) {
-				memcpy(buf, SG(request_info).raw_post_data + stream->position, read_bytes);
+				memcpy(buf, SG(request_info).raw_post_data + *position, read_bytes);
 			}
 		} else if(sapi_module.read_post) {
 			read_bytes = sapi_module.read_post(buf, count TSRMLS_CC);
@@ -96,12 +98,15 @@ static size_t php_stream_input_read(php_stream *stream, char *buf, size_t count 
 		}
 	}
 
+	*position += read_bytes;
 	SG(read_post_bytes) += read_bytes;
     return read_bytes;
 }
 
 static int php_stream_input_close(php_stream *stream, int close_handle TSRMLS_DC)
 {
+	efree(stream->abstract);
+
 	return 0;
 }
 
@@ -132,14 +137,14 @@ static void php_stream_apply_filter_list(php_stream *stream, char *filterlist, i
 			if ((temp_filter = php_stream_filter_create(p, NULL, php_stream_is_persistent(stream) TSRMLS_CC))) {
 				php_stream_filter_append(&stream->readfilters, temp_filter);
 			} else {
-				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to create filter (%s)\n", p);
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to create filter (%s)", p);
 			}
 		}
 		if (write_chain) {
 			if ((temp_filter = php_stream_filter_create(p, NULL, php_stream_is_persistent(stream) TSRMLS_CC))) {
 				php_stream_filter_append(&stream->writefilters, temp_filter);
 			} else {
-				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to create filter (%s)\n", p);
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to create filter (%s)", p);
 			}
 		}
 		p = php_strtok_r(NULL, "|", &token);
@@ -162,7 +167,7 @@ php_stream * php_stream_url_wrap_php(php_stream_wrapper *wrapper, char *path, ch
 	}
 	
 	if (!strcasecmp(path, "input")) {
-		return php_stream_alloc(&php_stream_input_ops, NULL, 0, "rb");
+		return php_stream_alloc(&php_stream_input_ops, ecalloc(1, sizeof(off_t)), 0, "rb");
 	}  
 	
 	if (!strcasecmp(path, "stdin")) {

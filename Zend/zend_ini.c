@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_ini.c,v 1.33.2.4 2005/09/02 21:08:43 sniper Exp $ */
+/* $Id: zend_ini.c,v 1.39.2.1 2005/09/02 20:51:15 andrei Exp $ */
 
 #include "zend.h"
 #include "zend_qsort.h"
@@ -49,8 +49,8 @@ static int zend_restore_ini_entry_cb(zend_ini_entry *ini_entry, int stage TSRMLS
 	if (ini_entry->modified) {
 		if (ini_entry->on_modify) {
 			zend_try {
-			/* even if on_modify bails out, we have to continue on with restoring, 
-				since there can be allocated variables that would be freed on MM shutdown 
+			/* even if on_modify bails out, we have to continue on with restoring,
+				since there can be allocated variables that would be freed on MM shutdown
 				and would lead to memory corruption later  ini entry is modified again */
 				ini_entry->on_modify(ini_entry, ini_entry->orig_value, ini_entry->orig_value_length, ini_entry->mh_arg1, ini_entry->mh_arg2, ini_entry->mh_arg3, stage TSRMLS_CC);
 			} zend_end_try();
@@ -374,15 +374,33 @@ static void zend_ini_displayer_cb(zend_ini_entry *ini_entry, int type)
 
 ZEND_INI_DISP(zend_ini_boolean_displayer_cb)
 {
-	int value;
+	int value, tmp_value_len;
+	char *tmp_value;
 
 	if (type==ZEND_INI_DISPLAY_ORIG && ini_entry->modified) {
-		value = (ini_entry->orig_value ? atoi(ini_entry->orig_value) : 0);
+		tmp_value = (ini_entry->orig_value ? ini_entry->orig_value : NULL );
+		tmp_value_len = ini_entry->orig_value_length;
 	} else if (ini_entry->value) {
-		value = atoi(ini_entry->value);
+		tmp_value = ini_entry->value;
+		tmp_value_len = ini_entry->value_length;
 	} else {
-		value = 0;
+		tmp_value = NULL;
+		tmp_value_len = 0;
 	}
+
+	if (tmp_value_len == 4 && strcasecmp(tmp_value, "true") == 0) {
+		value = 1;
+	}
+	else if (tmp_value_len == 3 && strcasecmp(tmp_value, "yes") == 0) {
+		value = 1;
+	}
+	else if (tmp_value_len == 2 && strcasecmp(tmp_value, "on") == 0) {
+		value = 1;
+	}
+	else {
+		value = atoi(tmp_value);
+	}
+	
 	if (value) {
 		ZEND_PUTS("On");
 	} else {
@@ -455,10 +473,17 @@ ZEND_API ZEND_INI_MH(OnUpdateBool)
 
 	p = (zend_bool *) (base+(size_t) mh_arg1);
 
-	if (strncasecmp("on", new_value, sizeof("on"))) {
-		*p = (zend_bool) atoi(new_value);
-	} else {
+	if (new_value_length==2 && strcasecmp("on", new_value)==0) {
 		*p = (zend_bool) 1;
+	} 
+	else if (new_value_length==3 && strcasecmp("yes", new_value)==0) {
+		*p = (zend_bool) 1;
+	} 
+	else if (new_value_length==4 && strcasecmp("true", new_value)==0) {
+		*p = (zend_bool) 1;
+	} 
+	else {
+		*p = (zend_bool) atoi(new_value);
 	}
 	return SUCCESS;
 }

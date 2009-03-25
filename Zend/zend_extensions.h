@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_extensions.h,v 1.57.2.2 2004/11/25 20:26:48 zeev Exp $ */
+/* $Id: zend_extensions.h,v 1.67.2.2 2005/10/25 23:19:59 helly Exp $ */
 
 #ifndef ZEND_EXTENSIONS_H
 #define ZEND_EXTENSIONS_H
@@ -27,7 +27,7 @@
 /* The first number is the engine version and the rest is the date.
  * This way engine 2 API no. is always greater than engine 1 API no..
  */
-#define ZEND_EXTENSION_API_NO	220040412
+#define ZEND_EXTENSION_API_NO	220051025
 
 typedef struct _zend_extension_version_info {
 	int zend_extension_api_no;

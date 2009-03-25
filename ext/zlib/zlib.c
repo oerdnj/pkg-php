@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: zlib.c,v 1.181.2.2 2005/09/02 17:25:22 iliaa Exp $ */
+/* $Id: zlib.c,v 1.183.2.4 2005/10/25 15:35:39 mike Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -68,6 +68,13 @@
 #ifndef PHPWRITE
 #define PHPWRITE(a,n) php_write((a),(n) TSRMLS_CC)
 #endif
+#endif
+
+/* Win32 needs some more memory */
+#ifdef PHP_WIN32
+#define PHP_ZLIB_MODIFIER 100
+#else
+#define PHP_ZLIB_MODIFIER 1000
 #endif
 
 #define OS_CODE			0x03 /* FIXME */
@@ -209,6 +216,7 @@ PHP_MINIT_FUNCTION(zlib)
 	ts_allocate_id(&zlib_globals_id, sizeof(zend_zlib_globals), (ts_allocate_ctor) php_zlib_init_globals, NULL);
 #endif
 	php_register_url_stream_wrapper("compress.zlib", &php_stream_gzip_wrapper TSRMLS_CC);
+	php_stream_filter_register_factory("zlib.*", &php_zlib_filter_factory TSRMLS_CC);
 
 	REGISTER_LONG_CONSTANT("FORCE_GZIP", CODING_GZIP, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("FORCE_DEFLATE", CODING_DEFLATE, CONST_CS | CONST_PERSISTENT);
@@ -243,6 +251,7 @@ PHP_RINIT_FUNCTION(zlib)
 PHP_MSHUTDOWN_FUNCTION(zlib)
 {
 	php_unregister_url_stream_wrapper("zlib" TSRMLS_CC);
+	php_stream_filter_unregister_factory("zlib.*" TSRMLS_CC);
 	
 	UNREGISTER_INI_ENTRIES();
 
@@ -256,6 +265,8 @@ PHP_MINFO_FUNCTION(zlib)
 {
 	php_info_print_table_start();
 	php_info_print_table_row(2, "ZLib Support", "enabled");
+	php_info_print_table_row(2, "Stream Wrapper support", "compress.zlib://");
+	php_info_print_table_row(2, "Stream Filter support", "zlib.inflate, zlib.deflate");
 	php_info_print_table_row(2, "Compiled Version", ZLIB_VERSION);
 	php_info_print_table_row(2, "Linked Version", (char *) zlibVersion());
 	php_info_print_table_end();
@@ -382,7 +393,7 @@ PHP_FUNCTION(gzcompress)
 		RETURN_FALSE;
 	}
 
-	l2 = data_len + (data_len / 1000) + 15 + 1; /* room for \0 */
+	l2 = data_len + (data_len / PHP_ZLIB_MODIFIER) + 15 + 1; /* room for \0 */
 	s2 = (char *) emalloc(l2);
 	if (!s2) {
 		RETURN_FALSE;
@@ -478,7 +489,7 @@ PHP_FUNCTION(gzdeflate)
 	stream.next_in = (Bytef *) data;
 	stream.avail_in = data_len;
 
-	stream.avail_out = stream.avail_in + (stream.avail_in / 1000) + 15 + 1; /* room for \0 */
+	stream.avail_out = stream.avail_in + (stream.avail_in / PHP_ZLIB_MODIFIER) + 15 + 1; /* room for \0 */
 
 	s2 = (char *) emalloc(stream.avail_out);
 	if (!s2) {
@@ -614,7 +625,7 @@ static int php_do_deflate(uint str_length, Bytef **p_buffer, uint *p_buffer_len,
 	int start_offset = ((do_start && ZLIBG(compression_coding) == CODING_GZIP) ? 10 : 0);
 	int end_offset = (do_end ? 8 : 0);
 
-	outlen = (uint) (sizeof(char) * (str_length * 1.001f + 12) + 1); /* leave some room for a trailing \0 */
+	outlen = (uint) (str_length + (str_length / PHP_ZLIB_MODIFIER) + 12 + 1); /* leave some room for a trailing \0 */
 	if ((outlen + start_offset + end_offset) > *p_buffer_len) {
 		buffer = (Bytef *) emalloc(outlen + start_offset + end_offset);
 	} else {
@@ -754,7 +765,7 @@ PHP_FUNCTION(gzencode)
 	stream.next_in = (Bytef *) data;
 	stream.avail_in = data_len;
 
-	stream.avail_out = stream.avail_in + (stream.avail_in / 1000) + 15 + 1; /* room for \0 */
+	stream.avail_out = stream.avail_in + (stream.avail_in / PHP_ZLIB_MODIFIER) + 15 + 1; /* room for \0 */
 	s2 = (char *) emalloc(stream.avail_out + GZIP_HEADER_LENGTH + (coding == CODING_GZIP ? GZIP_FOOTER_LENGTH : 0));
 
 	/* add gzip file header */

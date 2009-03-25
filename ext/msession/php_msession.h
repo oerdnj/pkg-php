@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | msession 1.0                                                         |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -35,9 +35,6 @@ extern zend_module_entry msession_module_entry;
 #endif
 
 PHP_MINIT_FUNCTION(msession);
-PHP_MSHUTDOWN_FUNCTION(msession);
-PHP_RINIT_FUNCTION(msession);
-PHP_RSHUTDOWN_FUNCTION(msession);
 PHP_MINFO_FUNCTION(msession);
 
 PHP_FUNCTION(msession_connect);

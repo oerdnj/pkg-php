@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_globals.h,v 1.135.2.1 2004/11/03 23:14:31 derick Exp $ */
+/* $Id: zend_globals.h,v 1.141.2.1 2005/11/15 13:29:28 dmitry Exp $ */
 
 #ifndef ZEND_GLOBALS_H
 #define ZEND_GLOBALS_H
@@ -135,6 +135,7 @@ struct _zend_compiler_globals {
 #ifdef ZEND_MULTIBYTE
 	zend_encoding **script_encoding_list;
 	int script_encoding_list_size;
+	zend_bool detect_unicode;
 
 	zend_encoding *internal_encoding;
 
@@ -192,6 +193,7 @@ struct _zend_executor_globals {
 
 	zend_bool in_execution;
 	HashTable *in_autoload;
+	zend_function *autoload_func;
 	zend_bool bailout_set;
 	zend_bool full_tables_cleanup;
 	zend_bool ze1_compatibility_mode;
@@ -207,12 +209,6 @@ struct _zend_executor_globals {
 	HashTable persistent_list;
 
 	zend_ptr_stack argument_stack;
-	zval *free_op1, *free_op2;
-	int (*unary_op)(zval *result, zval *op1);
-	int (*binary_op)(zval *result, zval *op1, zval *op2 TSRMLS_DC);
-
-	zval *garbage[2];
-	int garbage_ptr;
 
 	int user_error_handler_error_reporting;
 	zval *user_error_handler;

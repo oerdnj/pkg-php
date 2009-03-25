@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: plain_wrapper.c,v 1.39.2.7 2005/05/24 10:14:05 tony2001 Exp $ */
+/* $Id: plain_wrapper.c,v 1.52.2.2 2005/11/17 14:19:40 tony2001 Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -156,6 +156,7 @@ PHPAPI php_stream *_php_stream_fopen_tmpfile(int dummy STREAMS_DC TSRMLS_DC)
 		if (stream) {
 			php_stdio_stream_data *self = (php_stdio_stream_data*)stream->abstract;
 			stream->wrapper = &php_plain_files_wrapper;
+			stream->orig_path = estrdup(opened_path);
 
 			self->temp_file_name = opened_path;
 			self->lock_flag = LOCK_UN;
@@ -208,6 +209,12 @@ PHPAPI php_stream *_php_stream_fopen_from_fd(int fd, const char *mode, const cha
 			stream->flags |= PHP_STREAM_FLAG_NO_SEEK;
 		} else {
 			stream->position = lseek(self->fd, 0, SEEK_CUR);
+#ifdef ESPIPE
+			if (stream->position == (off_t)-1 && errno == ESPIPE) {
+				stream->position = 0;
+				self->is_pipe = 1;
+			}
+#endif
 		}
 	}
 
@@ -368,8 +375,8 @@ static int php_stdiop_close(php_stream *stream, int close_handle TSRMLS_DC)
 			}
 		} else if (data->fd != -1) {
 #ifdef PHP_DEBUG
-			if (data->fd == 2 && 0 == strcmp(sapi_module.name, "cli")) {
-				/* don't close stderr in CLI in DEBUG mode, as we want to see any leaks */
+			if ((data->fd == 1 || data->fd == 2) && 0 == strcmp(sapi_module.name, "cli")) {
+				/* don't close stdout or stderr in CLI in DEBUG mode, as we want to see any leaks */
 				ret = 0;
 			} else {
 				ret = close(data->fd);
@@ -533,7 +540,7 @@ static int php_stdiop_set_option(php_stream *stream, int option, int value, void
 			flags = fcntl(fd, F_GETFL, 0);
 			oldval = (flags & O_NONBLOCK) ? 0 : 1;
 			if (value)
-				flags ^= O_NONBLOCK;
+				flags &= ~O_NONBLOCK;
 			else
 				flags |= O_NONBLOCK;
 			
@@ -1028,7 +1035,7 @@ static int php_plain_files_rename(php_stream_wrapper *wrapper, char *url_from, c
 			struct stat sb;
 			if (php_copy_file(url_from, url_to TSRMLS_CC) == SUCCESS) {
 				if (VCWD_STAT(url_from, &sb) == 0) {
-#if !defined(TSRM_WIN32) && !defined(NETWARE)					
+#if !defined(TSRM_WIN32) && !defined(NETWARE)
 					if (VCWD_CHMOD(url_to, sb.st_mode)) {
 						if (errno == EPERM) {
 							php_error_docref2(NULL TSRMLS_CC, url_from, url_to, E_WARNING, "%s", strerror(errno));
@@ -1079,18 +1086,24 @@ static int php_plain_files_mkdir(php_stream_wrapper *wrapper, char *dir, int mod
 		char *e, *buf;
 		struct stat sb;
 		int dir_len = strlen(dir);
+		int offset = 0;
 
 		buf = estrndup(dir, dir_len);
 		e = buf + dir_len;
 
+		if ((p = memchr(buf, DEFAULT_SLASH, dir_len))) {
+			offset = p - buf + 1;
+		}
+
 		/* find a top level directory we need to create */
-		while ((p = strrchr(buf, DEFAULT_SLASH))) {
+		while ((p = strrchr(buf + offset, DEFAULT_SLASH))) {
 			*p = '\0';
 			if (VCWD_STAT(buf, &sb) == 0) {
 				*p = DEFAULT_SLASH;
 				break;
 			}
 		}
+
 		if (p == buf) {
 			ret = php_mkdir(dir, mode TSRMLS_CC);
 		} else if (!(ret = php_mkdir(buf, mode TSRMLS_CC))) {
@@ -1297,24 +1310,24 @@ not_relative_path:
 			end++;
 		}
 		snprintf(trypath, MAXPATHLEN, "%s/%s", ptr, filename);
-		
-		if (((options & STREAM_DISABLE_OPEN_BASEDIR) == 0) && php_check_open_basedir(trypath TSRMLS_CC)) {
-			stream = NULL;
-			goto stream_done;
+
+		if (((options & STREAM_DISABLE_OPEN_BASEDIR) == 0) && php_check_open_basedir_ex(trypath, 0 TSRMLS_CC)) {
+			ptr = end;
+			continue;
 		}
 		
 		if (PG(safe_mode)) {
 			if (VCWD_STAT(trypath, &sb) == 0) {
 				/* file exists ... check permission */
 				if ((php_check_safe_mode_include_dir(trypath TSRMLS_CC) == 0) ||
-						php_checkuid(trypath, mode, CHECKUID_CHECK_MODE_PARAM)) {
+						php_checkuid_ex(trypath, mode, CHECKUID_CHECK_MODE_PARAM, CHECKUID_NO_ERRORS)) {
 					/* UID ok, or trypath is in safe_mode_include_dir */
 					stream = php_stream_fopen_rel(trypath, mode, opened_path, options);
-				} else {
-					stream = NULL;
+					goto stream_done;
 				}
-				goto stream_done;
 			}
+			ptr = end;
+			continue;
 		}
 		stream = php_stream_fopen_rel(trypath, mode, opened_path, options);
 		if (stream) {

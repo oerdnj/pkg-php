@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,14 +17,13 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: basic_functions.c,v 1.673.2.18 2005/08/21 18:36:33 zeev Exp $ */
+/* $Id: basic_functions.c,v 1.725.2.7 2005/11/20 18:07:27 sniper Exp $ */
 
 #include "php.h"
 #include "php_streams.h"
 #include "php_main.h"
 #include "php_globals.h"
 #include "php_ini.h"
-#include "internal_functions_registry.h"
 #include "php_standard.h"
 #include "php_math.h"
 #include "php_http.h"
@@ -51,7 +50,11 @@ typedef struct yy_buffer_state *YY_BUFFER_STATE;
 #include <time.h>
 #include <stdio.h>
 
-#include <netdb.h>
+#ifdef NETWARE
+#include <netinet/in.h>
+#endif
+
+#include<netdb.h>
 
 #if HAVE_ARPA_INET_H
 # include <arpa/inet.h>
@@ -139,6 +142,10 @@ static
 		ZEND_ARG_PASS_INFO(1)
 	ZEND_END_ARG_INFO()
 
+static
+	ZEND_BEGIN_ARG_INFO(all_args_prefer_ref, ZEND_SEND_PREFER_REF)
+	ZEND_END_ARG_INFO()
+
 typedef struct _php_shutdown_function_entry {
 	zval **arguments;
 	int arg_count;
@@ -163,29 +170,21 @@ function_entry basic_functions[] = {
 	PHP_FE(usleep,															NULL)
 #if HAVE_NANOSLEEP
 	PHP_FE(time_nanosleep,														NULL)
-#endif
-	PHP_FE(time,															NULL)
-	PHP_FE(mktime,															NULL)
-	PHP_FE(gmmktime,														NULL)
-
-#if HAVE_STRFTIME
-	PHP_FE(strftime,														NULL)
-	PHP_FE(gmstrftime,														NULL)
+	PHP_FE(time_sleep_until,														NULL)
 #endif
 
-	PHP_FE(strtotime,														NULL)
-	PHP_FE(date,															NULL)
+#if HAVE_STRPTIME
+	PHP_FE(strptime,														NULL)
+#endif
+
 	PHP_FE(idate,															NULL)
-	PHP_FE(gmdate,															NULL)
-	PHP_FE(getdate,															NULL)
-	PHP_FE(localtime,														NULL)
-	PHP_FE(checkdate,														NULL)
 
 	PHP_FE(flush,															NULL)
 	PHP_FE(wordwrap,														NULL)
 	PHP_FE(htmlspecialchars,												NULL)
 	PHP_FE(htmlentities,													NULL)
 	PHP_FE(html_entity_decode,												NULL)
+	PHP_FE(htmlspecialchars_decode,												NULL)
 	PHP_FE(get_html_translation_table,										NULL)
 	PHP_FE(sha1,															NULL)
 	PHP_FE(sha1_file,														NULL)
@@ -395,9 +394,7 @@ function_entry basic_functions[] = {
 	PHP_FE(log,																NULL)
 	PHP_FE(log10,															NULL)
 	PHP_FE(sqrt,															NULL)
-#ifdef HAVE_HYPOT
 	PHP_FE(hypot,															NULL)
-#endif	
 	PHP_FE(deg2rad,															NULL)
 	PHP_FE(rad2deg,															NULL)
 	PHP_FE(bindec,															NULL)
@@ -409,6 +406,12 @@ function_entry basic_functions[] = {
 	PHP_FE(base_convert,													NULL)
 	PHP_FE(number_format,													NULL)
 	PHP_FE(fmod,															NULL)
+#ifdef HAVE_INET_NTOP
+	PHP_NAMED_FE(inet_ntop,		php_inet_ntop,											NULL)
+#endif
+#ifdef HAVE_INET_PTON
+	PHP_NAMED_FE(inet_pton,		php_inet_pton,											NULL)
+#endif
 	PHP_FE(ip2long,															NULL)
 	PHP_FE(long2ip,															NULL)
 
@@ -450,7 +453,7 @@ function_entry basic_functions[] = {
 	PHP_FE(call_user_func_array,											NULL)
 	PHP_FE(call_user_method,		second_arg_force_ref)
 	PHP_FE(call_user_method_array,	second_arg_force_ref)
-	PHP_FE(serialize,														NULL)															
+	PHP_FE(serialize,														NULL)
 	PHP_FE(unserialize,														NULL)
 
 	PHP_FE(var_dump,														NULL)
@@ -580,17 +583,24 @@ function_entry basic_functions[] = {
 	PHP_FE(stream_context_set_params,										NULL)
 	PHP_FE(stream_context_set_option,										NULL)
 	PHP_FE(stream_context_get_options,										NULL)
+	PHP_FE(stream_context_get_default,										NULL)
 	PHP_FE(stream_filter_prepend,											NULL)
 	PHP_FE(stream_filter_append,											NULL)
+	PHP_FE(stream_filter_remove,											NULL)
 	PHP_FE(stream_socket_client,				 second_and_third_args_force_ref)
 	PHP_FE(stream_socket_server,				 second_and_third_args_force_ref)
 	PHP_FE(stream_socket_accept,				 		   third_arg_force_ref)
 	PHP_FE(stream_socket_get_name,											NULL)
 	PHP_FE(stream_socket_recvfrom,							fourth_arg_force_ref)
 	PHP_FE(stream_socket_sendto,											NULL)
+	PHP_FE(stream_socket_enable_crypto,										NULL)
+#if HAVE_SOCKETPAIR
+	PHP_FE(stream_socket_pair,												NULL)
+#endif
 	PHP_FE(stream_copy_to_stream,											NULL)
 	PHP_FE(stream_get_contents,												NULL)
 	PHP_FE(fgetcsv,															NULL)
+	PHP_FE(fputcsv,															NULL)
 	PHP_FE(flock,											 third_arg_force_ref)
 	PHP_FE(get_meta_tags,													NULL)
 	PHP_FE(stream_set_write_buffer,											NULL)
@@ -604,6 +614,8 @@ function_entry basic_functions[] = {
 	PHP_FE(stream_get_line,												NULL)
 	PHP_FE(stream_wrapper_register,											NULL)
 	PHP_FALIAS(stream_register_wrapper, stream_wrapper_register,			NULL)
+	PHP_FE(stream_wrapper_unregister,										NULL)
+	PHP_FE(stream_wrapper_restore,											NULL)
 	PHP_FE(stream_get_wrappers,												NULL)
 	PHP_FE(stream_get_transports,											NULL)
 	PHP_FE(get_headers,													NULL)
@@ -676,8 +688,10 @@ function_entry basic_functions[] = {
 	PHP_FE(is_link,															NULL)
 	PHP_NAMED_FE(stat,				php_if_stat,							NULL)
 	PHP_NAMED_FE(lstat,				php_if_lstat,							NULL)
+#ifndef NETWARE
 	PHP_FE(chown,															NULL)
 	PHP_FE(chgrp,															NULL)
+#endif
 	PHP_FE(chmod,															NULL)
 #if HAVE_UTIME
 	PHP_FE(touch,															NULL)
@@ -742,8 +756,8 @@ function_entry basic_functions[] = {
 	PHP_FE(prev,					first_arg_force_ref)
 	PHP_FE(next,					first_arg_force_ref)
 	PHP_FE(reset,					first_arg_force_ref)
-	PHP_FE(current,					first_arg_force_ref)
-	PHP_FE(key,						first_arg_force_ref)
+	PHP_FE(current,					all_args_prefer_ref)
+	PHP_FE(key,					all_args_prefer_ref)
 	PHP_FE(min,																NULL)
 	PHP_FE(max,																NULL)
 	PHP_FE(in_array,														NULL)
@@ -752,7 +766,7 @@ function_entry basic_functions[] = {
 	PHP_FE(compact,															NULL)
 	PHP_FE(array_fill,														NULL)
 	PHP_FE(range,															NULL)
-	PHP_FE(array_multisort,													NULL)
+	PHP_FE(array_multisort,													all_args_prefer_ref)
 	PHP_FE(array_push,				first_arg_force_ref)
 	PHP_FE(array_pop,				first_arg_force_ref)
 	PHP_FE(array_shift,				first_arg_force_ref)
@@ -772,23 +786,28 @@ function_entry basic_functions[] = {
 	PHP_FE(array_rand,														NULL)
 	PHP_FE(array_unique,													NULL)
 	PHP_FE(array_intersect,													NULL)
+	PHP_FE(array_intersect_key,												NULL)	
+	PHP_FE(array_intersect_ukey,											NULL)
 	PHP_FE(array_uintersect,												NULL)
 	PHP_FE(array_intersect_assoc,											NULL)
 	PHP_FE(array_uintersect_assoc,											NULL)
 	PHP_FE(array_intersect_uassoc,											NULL)
 	PHP_FE(array_uintersect_uassoc,											NULL)
 	PHP_FE(array_diff,														NULL)
+	PHP_FE(array_diff_key,													NULL)
+	PHP_FE(array_diff_ukey,													NULL)
 	PHP_FE(array_udiff,														NULL)
 	PHP_FE(array_diff_assoc,												NULL)
 	PHP_FE(array_udiff_assoc,												NULL)
 	PHP_FE(array_diff_uassoc,												NULL)
 	PHP_FE(array_udiff_uassoc,												NULL)
 	PHP_FE(array_sum,														NULL)
+	PHP_FE(array_product,													NULL)
 	PHP_FE(array_filter,													NULL)
 	PHP_FE(array_map,														NULL)
 	PHP_FE(array_chunk,														NULL)
-	PHP_FE(array_combine,														NULL)
-	PHP_FE(array_key_exists,														NULL)
+	PHP_FE(array_combine,													NULL)
+	PHP_FE(array_key_exists,												NULL)
 
 	/* aliases from array.c */
 	PHP_FALIAS(pos, 				current, 				 first_arg_force_ref)
@@ -934,6 +953,10 @@ static void basic_globals_ctor(php_basic_globals *basic_globals_p TSRMLS_DC)
 
 	memset(&BG(url_adapt_state), 0, sizeof(BG(url_adapt_state)));
 	memset(&BG(url_adapt_state_ex), 0, sizeof(BG(url_adapt_state_ex)));
+	
+#if defined(_REENTRANT) && defined(HAVE_MBRLEN) && defined(HAVE_MBSTATE_T)
+	memset(&BG(mblen_state), 0, sizeof(BG(mblen_state)));
+#endif
 
 	BG(incomplete_class) = php_create_incomplete_class(TSRMLS_C);
 }
@@ -997,7 +1020,7 @@ PHP_MINIT_FUNCTION(basic)
 #else
 	basic_globals_ctor(&basic_globals TSRMLS_CC);
 #ifdef PHP_WIN32
-	php_win32_core_globals_ctor(&php_win32_core_globals TSRMLS_CC);
+	php_win32_core_globals_ctor(&the_php_win32_core_globals TSRMLS_CC);
 #endif
 #endif
 
@@ -1194,7 +1217,7 @@ PHP_RSHUTDOWN_FUNCTION(basic)
 	 FG(stream_wrappers) and FG(stream_filters) are destroyed
 	 during php_request_shutdown()
 	 */
-
+	
 	PHP_RSHUTDOWN(filestat)(SHUTDOWN_FUNC_ARGS_PASSTHRU);
 #ifdef HAVE_SYSLOG_H
 	PHP_RSHUTDOWN(syslog)(SHUTDOWN_FUNC_ARGS_PASSTHRU);
@@ -1247,6 +1270,79 @@ PHP_FUNCTION(constant)
 	}
 }
 /* }}} */
+
+#ifdef HAVE_INET_NTOP
+/* {{{ proto string inet_ntop(string in_addr)
+   Converts a packed inet address to a human readable IP address string */
+PHP_NAMED_FUNCTION(php_inet_ntop)
+{
+	char *address;
+	int address_len, af = AF_INET;
+	char buffer[40];
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &address, &address_len) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+#ifdef HAVE_IPV6
+	if (address_len == 16) {
+		af = AF_INET6;
+	} else
+#endif
+	if (address_len != 4) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid in_addr value");
+		RETURN_FALSE;
+	}
+
+	if (!inet_ntop(af, address, buffer, sizeof(buffer))) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "An unknown error occured");
+		RETURN_FALSE;
+	}
+
+	RETURN_STRING(buffer, 1);
+}
+/* }}} */
+#endif /* HAVE_INET_NTOP */
+
+#ifdef HAVE_INET_PTON
+/* {{{ proto string inet_pton(string ip_address)
+   Converts a human readable IP address to a packed binary string */
+PHP_NAMED_FUNCTION(php_inet_pton)
+{
+	int ret, af = AF_INET;
+	char *address;
+	int address_len;
+	char buffer[17];
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &address, &address_len) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	memset(buffer, 0, sizeof(buffer));
+
+#ifdef HAVE_IPV6
+	if (strchr(address, ':')) {
+		af = AF_INET6;
+	} else 
+#endif
+	if (!strchr(address, '.')) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unrecognized address %s", address);
+		RETURN_FALSE;
+	}
+
+	ret = inet_pton(af, address, buffer);
+
+	if (ret <= 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unrecognized address %s", address);
+		RETURN_FALSE;
+	}
+
+	RETURN_STRINGL(buffer, af == AF_INET ? 4 : 16, 1);
+}
+/* }}} */
+#endif /* HAVE_INET_PTON */
+
+
 
 /* {{{ proto int ip2long(string ip_address)
    Converts a string containing an (IPv4) Internet Protocol dotted address into a proper address */
@@ -1635,6 +1731,7 @@ PHP_FUNCTION(sleep)
 #else
 	php_sleep(Z_LVAL_PP(num));
 #endif
+
 }
 /* }}} */
 
@@ -1680,6 +1777,48 @@ PHP_FUNCTION(time_nanosleep)
 	}
 
 	RETURN_FALSE;
+}
+/* }}} */
+
+/* {{{ proto mixed time_sleep_until(float timestamp)
+   Make the script sleep until the specified time */
+PHP_FUNCTION(time_sleep_until)
+{
+	double d_ts, c_ts;
+	struct timeval tm;
+	struct timespec php_req, php_rem;
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "d", &d_ts)) {
+		WRONG_PARAM_COUNT;
+	}
+
+	if (gettimeofday((struct timeval *) &tm, NULL) != 0) {
+		RETURN_FALSE;
+	}
+
+	c_ts = (double)(d_ts - tm.tv_sec - tm.tv_usec / 1000000.00);
+	if (c_ts < 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Sleep until to time is less then current time.");
+		RETURN_FALSE;
+	}
+
+	php_req.tv_sec = (time_t) c_ts;
+	if (php_req.tv_sec > c_ts) { /* rounding up occurred */
+		php_req.tv_sec--;
+	}
+	/* 1sec = 1000000000 nanoseconds */
+	php_req.tv_nsec = (long) ((c_ts - php_req.tv_sec) * 1000000000.00);
+
+	while (nanosleep(&php_req, &php_rem)) {
+		if (errno == EINTR) {
+			php_req.tv_sec = php_rem.tv_sec;
+			php_req.tv_nsec = php_rem.tv_nsec;
+		} else {
+			RETURN_FALSE;
+		}
+	}
+
+	RETURN_TRUE;
 }
 /* }}} */
 #endif
@@ -1890,7 +2029,7 @@ PHP_FUNCTION(call_user_func)
 
 	params = safe_emalloc(sizeof(zval **), argc, 0);
 
-	if (zend_get_parameters_array_ex(argc, params) == FAILURE) {
+	if (zend_get_parameters_array_ex(1, params) == FAILURE) {
 		efree(params);
 		RETURN_FALSE;
 	}
@@ -1905,6 +2044,11 @@ PHP_FUNCTION(call_user_func)
 		efree(name);
 		efree(params);
 		RETURN_NULL();
+	}
+
+	if (zend_get_parameters_array_ex(argc, params) == FAILURE) {
+		efree(params);
+		RETURN_FALSE;
 	}
 
 	if (call_user_function_ex(EG(function_table), NULL, *params[0], &retval_ptr, argc-1, params+1, 0, NULL TSRMLS_CC) == SUCCESS) {
@@ -1964,13 +2108,17 @@ PHP_FUNCTION(call_user_func_array)
 	func_params_ht = Z_ARRVAL_PP(params);
 
 	count = zend_hash_num_elements(func_params_ht);
-	func_params = safe_emalloc(sizeof(zval **), count, 0);
+	if (count) {
+		func_params = safe_emalloc(sizeof(zval **), count, 0);
 
-	for (zend_hash_internal_pointer_reset(func_params_ht);
-		 zend_hash_get_current_data(func_params_ht, (void **) &func_params[current]) == SUCCESS;
-		 zend_hash_move_forward(func_params_ht)
-		) {
-		current++;
+		for (zend_hash_internal_pointer_reset(func_params_ht);
+				zend_hash_get_current_data(func_params_ht, (void **) &func_params[current]) == SUCCESS;
+				zend_hash_move_forward(func_params_ht)
+			) {
+			current++;
+		}
+	} else {
+		func_params = NULL;
 	}
 
 	if (call_user_function_ex(EG(function_table), NULL, *func, &retval_ptr, count, func_params, 0, NULL TSRMLS_CC) == SUCCESS) {
@@ -1982,7 +2130,9 @@ PHP_FUNCTION(call_user_func_array)
 	}
 
 	efree(name);
-	efree(func_params);
+	if (func_params) {
+		efree(func_params);
+	}
 }
 /* }}} */
 
@@ -3076,13 +3226,27 @@ static int copy_request_variable(void *pDest, int num_args, va_list args, zend_h
 	prefix = va_arg(args, char *);
 	prefix_len = va_arg(args, uint);
 
-	new_key_len = prefix_len + hash_key->nKeyLength;
-	new_key = (char *) emalloc(new_key_len);
+	if (!prefix_len) {
+		if (!hash_key->nKeyLength) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Numeric key detected - possible security hazard.");
+			return 0;
+		} else if (!strcmp(hash_key->arKey, "GLOBALS")) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Attempted GLOBALS variable overwrite.");
+			return 0; 
+		}
+	}
 
-	memcpy(new_key, prefix, prefix_len);
-	memcpy(new_key+prefix_len, hash_key->arKey, hash_key->nKeyLength);
+	if (hash_key->nKeyLength) {
+		new_key_len = prefix_len + hash_key->nKeyLength;
+		new_key = (char *) emalloc(new_key_len);
 
-	zend_hash_del(&EG(symbol_table), new_key, new_key_len);
+		memcpy(new_key, prefix, prefix_len);
+		memcpy(new_key+prefix_len, hash_key->arKey, hash_key->nKeyLength);
+	} else {
+		new_key_len = spprintf(&new_key, 0, "%s%ld", prefix, hash_key->h);
+	}
+
+	zend_delete_global_variable(new_key, new_key_len-1 TSRMLS_CC);
 	ZEND_SET_SYMBOL_WITH_LENGTH(&EG(symbol_table), new_key, new_key_len, *var, (*var)->refcount+1, 0);
 
 	efree(new_key);

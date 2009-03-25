@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: filestat.c,v 1.130.2.4 2005/07/15 09:29:18 hyanantha Exp $ */
+/* $Id: filestat.c,v 1.136.2.1 2005/10/22 17:02:06 wez Exp $ */
 
 #include "php.h"
 #include "safe_mode.h"
@@ -105,11 +105,11 @@ PHP_RSHUTDOWN_FUNCTION(filestat)
 {
 	if (BG(CurrentStatFile)) {
 		efree (BG(CurrentStatFile));
-		BG(CurrentStatFile)=NULL;
+		BG(CurrentStatFile) = NULL;
 	}
 	if (BG(CurrentLStatFile)) {
 		efree (BG(CurrentLStatFile));
-		BG(CurrentLStatFile)=NULL;
+		BG(CurrentLStatFile) = NULL;
 	}
 	return SUCCESS;
 }
@@ -325,9 +325,10 @@ PHP_FUNCTION(disk_free_space)
 
 /* {{{ proto bool chgrp(string filename, mixed group)
    Change file group */
+#ifndef NETWARE
 PHP_FUNCTION(chgrp)
 {
-#if !defined(WINDOWS) && !defined(NETWARE)  /* I guess 'chgrp' won't be available on NetWare */
+#if !defined(WINDOWS)
 	pval **filename, **group;
 	gid_t gid;
 	struct group *gr=NULL;
@@ -369,13 +370,15 @@ PHP_FUNCTION(chgrp)
 	RETURN_FALSE;
 #endif
 }
+#endif
 /* }}} */
 
 /* {{{ proto bool chown (string filename, mixed user)
    Change file owner */
+#ifndef NETWARE
 PHP_FUNCTION(chown)
 {
-#if !defined(WINDOWS) && !defined(NETWARE)  /* I guess 'chown' won't be available on NetWare */
+#if !defined(WINDOWS)
 	pval **filename, **user;
 	int ret;
 	uid_t uid;
@@ -415,6 +418,7 @@ PHP_FUNCTION(chown)
 #endif
 	RETURN_TRUE;
 }
+#endif
 /* }}} */
 
 /* {{{ proto bool chmod(string filename, int mode)
@@ -539,6 +543,7 @@ PHP_FUNCTION(clearstatcache)
 #define IS_LINK_OPERATION(__t) ((__t) == FS_TYPE || (__t) == FS_IS_LINK || (__t) == FS_LSTAT)
 #define IS_EXISTS_CHECK(__t) ((__t) == FS_EXISTS  || (__t) == FS_IS_W || (__t) == FS_IS_R || (__t) == FS_IS_X || (__t) == FS_IS_FILE || (__t) == FS_IS_DIR || (__t) == FS_IS_LINK)
 #define IS_ABLE_CHECK(__t) ((__t) == FS_IS_R || (__t) == FS_IS_W || (__t) == FS_IS_X)
+#define IS_ACCESS_CHECK(__t) (IS_ABLE_CHECK(type) || (__t) == FS_EXISTS)
 
 /* {{{ php_stat
  */
@@ -554,6 +559,35 @@ PHPAPI void php_stat(const char *filename, php_stat_len filename_length, int typ
 
 	if (!filename_length) {
 		RETURN_FALSE;
+	}
+
+	if (IS_ACCESS_CHECK(type)) {
+		char *local;
+
+		if (php_stream_locate_url_wrapper(filename, &local, 0 TSRMLS_CC) == &php_plain_files_wrapper) {
+			switch (type) {
+#ifdef F_OK
+				case FS_EXISTS:
+					RETURN_BOOL(VCWD_ACCESS(local, F_OK) == 0);
+					break;
+#endif
+#ifdef W_OK
+				case FS_IS_W:
+					RETURN_BOOL(VCWD_ACCESS(local, W_OK) == 0);
+					break;
+#endif
+#ifdef R_OK
+				case FS_IS_R:
+					RETURN_BOOL(VCWD_ACCESS(local, R_OK) == 0);
+					break;
+#endif
+#ifdef X_OK
+				case FS_IS_X:
+					RETURN_BOOL(VCWD_ACCESS(local, X_OK) == 0);
+					break;
+#endif
+			}
+		}
 	}
 
 	if (IS_LINK_OPERATION(type)) {
@@ -613,7 +647,7 @@ PHPAPI void php_stat(const char *filename, php_stat_len filename_length, int typ
 		php_stream_wrapper *wrapper;
 
 		wrapper = php_stream_locate_url_wrapper(filename, NULL, 0 TSRMLS_CC);
-		if (wrapper && wrapper->wops && wrapper->wops->label && strcmp(wrapper->wops->label, "plainfile") == 0) {
+		if (wrapper == &php_plain_files_wrapper) {
 			if (type == FS_IS_X) {
 				xmask = S_IXROOT;
 			} else {

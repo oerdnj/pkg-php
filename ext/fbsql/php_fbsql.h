@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_fbsql.h,v 1.28 2004/02/26 20:31:14 fmk Exp $ */
+/* $Id: php_fbsql.h,v 1.31 2005/08/03 14:07:09 sniper Exp $ */
 
 #define HAVE_FBSQL 1
 
@@ -43,6 +43,7 @@ PHP_FUNCTION(fbsql_connect);
 PHP_FUNCTION(fbsql_pconnect);
 PHP_FUNCTION(fbsql_close);
 PHP_FUNCTION(fbsql_select_db);
+PHP_FUNCTION(fbsql_set_characterset);
 PHP_FUNCTION(fbsql_change_user);
 PHP_FUNCTION(fbsql_create_db);
 PHP_FUNCTION(fbsql_drop_db);
@@ -57,6 +58,7 @@ PHP_FUNCTION(fbsql_list_fields);
 PHP_FUNCTION(fbsql_error);
 PHP_FUNCTION(fbsql_errno);
 PHP_FUNCTION(fbsql_affected_rows);
+PHP_FUNCTION(fbsql_rows_fetched);
 PHP_FUNCTION(fbsql_insert_id);
 PHP_FUNCTION(fbsql_result);
 PHP_FUNCTION(fbsql_next_result);
