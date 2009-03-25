@@ -1,3 +1,9 @@
+php5 (5.3.0RC1-1) unstable; urgency=low
+
+  * New Upstream Version
+
+ -- Mark A. Hershberger <mhershberger@intrahealth.org>  Wed, 25 Mar 2009 19:39:48 -0400
+
 php5 (5.2.9.dfsg.1-1) unstable; urgency=low
 
   * New upstream release (closes: #520538).
