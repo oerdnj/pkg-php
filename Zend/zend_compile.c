@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_compile.c,v 1.647.2.27.2.37 2007/05/02 17:24:15 dmitry Exp $ */
+/* $Id: zend_compile.c,v 1.647.2.27.2.40 2007/05/18 13:12:03 dmitry Exp $ */
 
 #include <zend_language_parser.h>
 #include "zend.h"
@@ -941,24 +941,25 @@ void zend_do_init_string(znode *result TSRMLS_DC)
 }
 
 
-void zend_do_add_char(znode *result, znode *op1, znode *op2 TSRMLS_DC)
-{
-	zend_op *opline = get_next_op(CG(active_op_array) TSRMLS_CC);
-
-	opline->opcode = ZEND_ADD_CHAR;
-	opline->op1 = *op1;
-	opline->op2 = *op2;
-	opline->op2.op_type = IS_CONST;
-	opline->result = opline->op1;
-	*result = opline->result;
-}
-
-
 void zend_do_add_string(znode *result, znode *op1, znode *op2 TSRMLS_DC)
 {
-	zend_op *opline = get_next_op(CG(active_op_array) TSRMLS_CC);
+	zend_op *opline;
 
-	opline->opcode = ZEND_ADD_STRING;
+	if (Z_STRLEN(op2->u.constant) > 1) {
+		opline = get_next_op(CG(active_op_array) TSRMLS_CC);
+		opline->opcode = ZEND_ADD_STRING;
+	} else if (Z_STRLEN(op2->u.constant) == 1) {
+		int ch = *Z_STRVAL(op2->u.constant);
+
+		/* Free memory and use ZEND_ADD_CHAR in case of 1 character strings */
+		efree(Z_STRVAL(op2->u.constant));
+		ZVAL_LONG(&op2->u.constant, ch);
+		opline = get_next_op(CG(active_op_array) TSRMLS_CC);
+		opline->opcode = ZEND_ADD_CHAR;
+	} else { /* String can be empty after a variable at the end of a heredoc */
+		efree(Z_STRVAL(op2->u.constant));
+		return;
+	}
 	opline->op1 = *op1;
 	opline->op2 = *op2;
 	opline->op2.op_type = IS_CONST;
@@ -1265,9 +1266,18 @@ void zend_do_end_function_declaration(znode *function_token TSRMLS_DC)
 
 void zend_do_receive_arg(zend_uchar op, znode *var, znode *offset, znode *initialization, znode *class_type, znode *varname, zend_uchar pass_by_reference TSRMLS_DC)
 {
-	zend_op *opline = get_next_op(CG(active_op_array) TSRMLS_CC);
+	zend_op *opline;
 	zend_arg_info *cur_arg_info;
 
+	if (CG(active_op_array)->scope &&
+		((CG(active_op_array)->fn_flags & ZEND_ACC_STATIC) == 0) &&
+		(Z_TYPE(varname->u.constant) == IS_STRING) &&
+		(Z_STRLEN(varname->u.constant) == sizeof("this")-1) &&
+		(memcmp(Z_STRVAL(varname->u.constant), "this", sizeof("this")) == 0)) {
+		zend_error(E_COMPILE_ERROR, "Cannot re-assign $this");
+	}
+
+	opline = get_next_op(CG(active_op_array) TSRMLS_CC);
 	CG(active_op_array)->num_args++;
 	opline->opcode = op;
 	opline->result = *var;
@@ -3801,7 +3811,11 @@ void zend_do_foreach_cont(znode *foreach_token, znode *open_brackets_token, znod
 		/* Change "write context" into "read context" */
 		fetch->extended_value = 0;  /* reset ZEND_FE_RESET_VARIABLE */
 		while (fetch != end) {
-			(--fetch)->opcode -= 3; /* FETCH_W -> FETCH_R */
+			--fetch;
+			if (fetch->opcode == ZEND_FETCH_DIM_W && fetch->op2.op_type == IS_UNUSED) {
+				zend_error(E_COMPILE_ERROR, "Cannot use [] for reading");
+			}
+			fetch->opcode -= 3; /* FETCH_W -> FETCH_R */
 		}
 		/* prevent double SWITCH_FREE */
 		zend_stack_top(&CG(foreach_copy_stack), (void **) &foreach_copy);
@@ -3914,24 +3928,6 @@ void zend_do_declare_end(znode *declare_token TSRMLS_DC)
 	if ((get_next_op_number(CG(active_op_array)) - declare_token->u.opline_num) - ((Z_LVAL(CG(declarables).ticks))?1:0)) {
 		CG(declarables) = *declarables;
 	}
-}
-
-
-void zend_do_end_heredoc(TSRMLS_D)
-{
-	int opline_num = get_next_op_number(CG(active_op_array))-1;
-	zend_op *opline = &CG(active_op_array)->opcodes[opline_num];
-
-	if (opline->opcode != ZEND_ADD_STRING) {
-		return;
-	}
-
-	opline->op2.u.constant.value.str.val[(opline->op2.u.constant.value.str.len--)-1] = 0;
-	if (opline->op2.u.constant.value.str.len>0) {
-		if (opline->op2.u.constant.value.str.val[opline->op2.u.constant.value.str.len-1]=='\r') {
-			opline->op2.u.constant.value.str.val[(opline->op2.u.constant.value.str.len--)-1] = 0;
-		}
-	}	
 }
 
 
@@ -4123,12 +4119,12 @@ int zendlex(znode *zendlval TSRMLS_DC)
 {
 	int retval;
 
-again:
 	if (CG(increment_lineno)) {
 		CG(zend_lineno)++;
 		CG(increment_lineno) = 0;
 	}
 
+again:
 	Z_TYPE(zendlval->u.constant) = IS_LONG;
 	retval = lex_scan(&zendlval->u.constant TSRMLS_CC);
 	switch (retval) {
@@ -4139,8 +4135,7 @@ again:
 			goto again;
 
 		case T_CLOSE_TAG:
-			if (LANG_SCNG(yy_text)[LANG_SCNG(yy_leng)-1]=='\n'
-				|| (LANG_SCNG(yy_text)[LANG_SCNG(yy_leng)-2]=='\r' && LANG_SCNG(yy_text)[LANG_SCNG(yy_leng)-1])) {
+			if (LANG_SCNG(yy_text)[LANG_SCNG(yy_leng)-1] != '>') {
 				CG(increment_lineno) = 1;
 			}
 			retval = ';'; /* implicit ; */

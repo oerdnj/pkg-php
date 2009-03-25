@@ -1,5 +1,5 @@
 --TEST--
-bug #27303 (OCIBindByName binds numeric PHP values as characters)
+Bug #27303 (OCIBindByName binds numeric PHP values as characters)
 --SKIPIF--
 <?php if (!extension_loaded('oci8')) die("skip no oci8 extension"); ?>
 --FILE--
@@ -15,7 +15,7 @@ $create_st[] = "create table mytab (mydata varchar2(20), seqcol number)";
 
 foreach ($create_st as $statement) {
 	$stmt = oci_parse($c, $statement);
-	oci_execute($stmt);
+	@oci_execute($stmt);
 }
 
 define('MYLIMIT', 200);

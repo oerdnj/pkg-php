@@ -22,7 +22,7 @@
 #ifndef PHP_SOCKETS_H
 #define PHP_SOCKETS_H
 
-/* $Id: php_sockets.h,v 1.36.2.1.2.2 2007/01/10 15:25:07 bjori Exp $ */
+/* $Id: php_sockets.h,v 1.36.2.1.2.3 2007/05/19 17:58:22 iliaa Exp $ */
 
 #if HAVE_SOCKETS
 
@@ -41,7 +41,6 @@ extern zend_module_entry sockets_module_entry;
 
 PHP_MINIT_FUNCTION(sockets);
 PHP_MINFO_FUNCTION(sockets);
-PHP_RINIT_FUNCTION(sockets);
 PHP_RSHUTDOWN_FUNCTION(sockets);
 
 PHP_FUNCTION(socket_select);

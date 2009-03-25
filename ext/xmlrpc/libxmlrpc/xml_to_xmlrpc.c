@@ -31,13 +31,13 @@
 */
 
 
-static const char rcsid[] = "#(@) $Id: xml_to_xmlrpc.c,v 1.5.6.2 2007/03/04 18:24:49 iliaa Exp $";
+static const char rcsid[] = "#(@) $Id: xml_to_xmlrpc.c,v 1.5.6.3 2007/05/03 04:16:32 edink Exp $";
 
+#include "php.h"
+#include "main/snprintf.h"
 #ifdef _WIN32
 #include "xmlrpc_win32.h"
 #endif
-#include "php.h"
-#include "main/snprintf.h"
 #include <string.h>
 #include <stdlib.h>
 #include "xml_to_xmlrpc.h"

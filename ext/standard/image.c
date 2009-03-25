@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: image.c,v 1.114.2.2.2.4 2007/02/24 02:17:27 helly Exp $ */
+/* $Id: image.c,v 1.114.2.2.2.5 2007/05/08 18:38:20 iliaa Exp $ */
 
 #include "php.h"
 #include <stdio.h>
@@ -1185,7 +1185,7 @@ PHPAPI int php_getimagetype(php_stream * stream, char *filetype TSRMLS_DC)
 
 	if ( !filetype) filetype = tmp;
 	if((php_stream_read(stream, filetype, 3)) != 3) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Read error!");
+		php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Read error!");
 		return IMAGE_FILETYPE_UNKNOWN;
 	}
 
@@ -1196,7 +1196,7 @@ PHPAPI int php_getimagetype(php_stream * stream, char *filetype TSRMLS_DC)
 		return IMAGE_FILETYPE_JPEG;
 	} else if (!memcmp(filetype, php_sig_png, 3)) {
 		if (php_stream_read(stream, filetype+3, 5) != 5) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Read error!");
+			php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Read error!");
 			return IMAGE_FILETYPE_UNKNOWN;
 		}
 		if (!memcmp(filetype, php_sig_png, 8)) {
@@ -1218,7 +1218,7 @@ PHPAPI int php_getimagetype(php_stream * stream, char *filetype TSRMLS_DC)
 	}
 
 	if (php_stream_read(stream, filetype+3, 1) != 1) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Read error!");
+		php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Read error!");
 		return IMAGE_FILETYPE_UNKNOWN;
 	}
 /* BYTES READ: 4 */
@@ -1233,7 +1233,7 @@ PHPAPI int php_getimagetype(php_stream * stream, char *filetype TSRMLS_DC)
 	}
 
 	if (php_stream_read(stream, filetype+4, 8) != 8) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Read error!");
+		php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Read error!");
 		return IMAGE_FILETYPE_UNKNOWN;
 	}
 /* BYTES READ: 12 */

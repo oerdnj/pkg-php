@@ -89,7 +89,7 @@
  *	directly -- and assumed always to succeed.
  */
 
-/* $Id: zend_strtod.c,v 1.17.2.2.2.10 2007/04/26 23:13:25 tony2001 Exp $ */
+/* $Id: zend_strtod.c,v 1.17.2.2.2.11 2007/05/04 16:19:57 tony2001 Exp $ */
 
 #include <zend_strtod.h>
 
@@ -273,9 +273,9 @@ BEGIN_EXTERN_C()
 #endif
 
 /* The following definition of Storeinc is appropriate for MIPS processors.
- *  * An alternative that might be better on some machines is
- *   * #define Storeinc(a,b,c) (*a++ = b << 16 | c & 0xffff)
- *    */
+ * An alternative that might be better on some machines is
+ * #define Storeinc(a,b,c) (*a++ = b << 16 | c & 0xffff)
+ */
 #if defined(IEEE_LITTLE_ENDIAN) + defined(VAX) + defined(__arm__)
 #define Storeinc(a,b,c) (((unsigned short *)a)[1] = (unsigned short)b, \
 		((unsigned short *)a)[0] = (unsigned short)c, a++)

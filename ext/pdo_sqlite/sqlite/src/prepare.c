@@ -13,7 +13,7 @@
 ** interface, and routines that contribute to loading the database schema
 ** from disk.
 **
-** $Id: prepare.c,v 1.1.2.2.2.3 2007/04/09 16:35:11 iliaa Exp $
+** $Id: prepare.c,v 1.1.2.2.2.4 2007/05/16 21:04:46 iliaa Exp $
 */
 #include "sqliteInt.h"
 #include "os.h"
@@ -537,13 +537,15 @@ int sqlite3Prepare(
   if( sqlite3SafetyOff(db) ){
     rc = SQLITE_MISUSE;
   }
-  if( rc==SQLITE_OK ){
-    if( saveSqlFlag ){
-      sqlite3VdbeSetSql(sParse.pVdbe, zSql, sParse.zTail - zSql);
-    }
-    *ppStmt = (sqlite3_stmt*)sParse.pVdbe;
-  }else if( sParse.pVdbe ){
+
+  if( saveSqlFlag ){
+    sqlite3VdbeSetSql(sParse.pVdbe, zSql, sParse.zTail - zSql);
+  }
+  if( rc!=SQLITE_OK || sqlite3MallocFailed() ){
     sqlite3_finalize((sqlite3_stmt*)sParse.pVdbe);
+    assert(!(*ppStmt));
+  }else{
+    *ppStmt = (sqlite3_stmt*)sParse.pVdbe;
   }
 
   if( zErrMsg ){

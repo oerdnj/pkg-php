@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: json.c,v 1.9.2.14 2007/04/13 21:34:12 andrei Exp $ */
+/* $Id: json.c,v 1.9.2.15 2007/05/25 13:24:50 bjori Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -387,6 +387,8 @@ static void json_encode_r(smart_str *buf, zval *val TSRMLS_DC) {
     return;
 }
 
+/* {{{ proto string json_encode(mixed data)
+   Returns the JSON representation of a value */
 static PHP_FUNCTION(json_encode)
 {
     zval *parameter;
@@ -402,7 +404,10 @@ static PHP_FUNCTION(json_encode)
 
     smart_str_free(&buf);
 }
+/* }}} */
 
+/* {{{ proto mixed json_decode(string json [, bool assoc])
+   Decodes the JSON representation into a PHP value */
 static PHP_FUNCTION(json_decode)
 {
     char *parameter;
@@ -476,6 +481,7 @@ static PHP_FUNCTION(json_decode)
 	}
     }
 }
+/* }}} */
 
 /*
  * Local variables:

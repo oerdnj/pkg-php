@@ -1,4 +1,4 @@
- ## $Id: configure.in,v 1.579.2.52.2.49 2007/05/02 23:05:13 iliaa Exp $ -*- autoconf -*-
+ ## $Id: configure.in,v 1.579.2.52.2.56 2007/05/30 18:45:59 iliaa Exp $ -*- autoconf -*-
 dnl ## Process this file with autoconf to produce a configure script.
 
 divert(1)
@@ -43,7 +43,7 @@ AC_CONFIG_HEADER(main/php_config.h)
 
 MAJOR_VERSION=5
 MINOR_VERSION=2
-RELEASE_VERSION=2
+RELEASE_VERSION=3
 EXTRA_VERSION=""
 PHP_VERSION="$MAJOR_VERSION.$MINOR_VERSION.$RELEASE_VERSION$EXTRA_VERSION"
 PHP_VERSION_ID=`expr [$]MAJOR_VERSION \* 10000 + [$]MINOR_VERSION \* 100 + [$]RELEASE_VERSION`
@@ -258,12 +258,6 @@ AC_MSG_RESULT([$PHP_SAPI])
 if test "$enable_maintainer_zts" = "yes"; then
   PTHREADS_ASSIGN_VARS
   PTHREADS_FLAGS
-fi
-
-if test "$PHP_ENABLE_FASTCGI" = "yes"; then
-  PHP_CONFIGURE_PART(Running FastCGI checks)
-  sinclude(sapi/cgi/libfcgi/acinclude.m4)
-  sinclude(sapi/cgi/libfcgi/libfcgi.m4)
 fi
 
 divert(3)
@@ -1304,9 +1298,6 @@ all_targets="$lcov_target \$(OVERALL_TARGET) \$(PHP_MODULES) \$(PHP_CLI_TARGET)"
 install_targets="$install_modules install-build install-headers install-programs $install_pear"
 
 case $PHP_SAPI in
-  cgi)
-    install_targets="install-sapi $install_targets"
-    ;;
   cli)
     install_targets="$PHP_INSTALL_CLI_TARGET $install_targets"
     ;;
@@ -1344,10 +1335,9 @@ case $host_alias in
   ;;
 esac
 
-PHP_ADD_SOURCES(/Zend, zend_language_parser.c zend_language_scanner.c \
-    zend_ini_parser.c zend_ini_scanner.c)
-
 PHP_ADD_SOURCES(Zend, \
+    zend_language_parser.c zend_language_scanner.c \
+    zend_ini_parser.c zend_ini_scanner.c \
     zend_alloc.c zend_compile.c zend_constants.c zend_dynamic_array.c \
     zend_execute_API.c zend_highlight.c zend_llist.c \
     zend_opcode.c zend_operators.c zend_ptr_stack.c zend_stack.c \

@@ -1,5 +1,5 @@
 --TEST--
-PDO MySQL Bug #33689
+PDO MySQL Bug #33689 (query() execute() and fetch() return false on valid select queries)
 --SKIPIF--
 <?php
 if (!extension_loaded('pdo') || !extension_loaded('pdo_mysql')) die('skip not loaded');
@@ -25,7 +25,7 @@ $stmt = $db->prepare('SELECT * from test');
 print_r($stmt->getColumnMeta(0));
 $stmt->execute();
 print_r($stmt->getColumnMeta(0));
-
+?>
 --EXPECTF--
 object(PDOStatement)#%d (1) {
   ["queryString"]=>
@@ -44,6 +44,7 @@ Array
             [0] => not_null
         )
 
+    [table] => test
     [name] => bar
     [len] => 11
     [precision] => 0

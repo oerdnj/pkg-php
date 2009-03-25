@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: userspace.c,v 1.31.2.3.2.4 2007/02/13 19:50:59 tony2001 Exp $ */
+/* $Id: userspace.c,v 1.31.2.3.2.5 2007/05/15 13:04:43 scottmac Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -458,8 +458,8 @@ PHP_FUNCTION(stream_wrapper_register)
 			if (zend_hash_exists(php_stream_get_url_stream_wrappers_hash(), protocol, protocol_len + 1)) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Protocol %s:// is already defined.", protocol);
 			} else {
-				/* Should never happen */
-				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to register wrapper class %s to %s://", classname, protocol);
+				/* Hash doesn't exist so it must have been an invalid protocol scheme */
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid protocol scheme specified. Unable to register wrapper class %s to %s://", classname, protocol);
 			}
 		}
 	} else {

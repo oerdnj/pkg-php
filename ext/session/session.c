@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: session.c,v 1.417.2.8.2.33 2007/04/04 19:52:19 tony2001 Exp $ */
+/* $Id: session.c,v 1.417.2.8.2.34 2007/05/16 01:18:14 stas Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1283,8 +1283,11 @@ PHPAPI void php_session_start(TSRMLS_D)
 		char *q;
 
 		p += lensess + 1;
-		if ((q = strpbrk(p, "/?\\")))
+		if ((q = strpbrk(p, "/?\\"))) {
 			PS(id) = estrndup(p, q - p);
+			PS(send_cookie) = 0;
+		}
+
 	}
 
 	/* check whether the current request was referred to by

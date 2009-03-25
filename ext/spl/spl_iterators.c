@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_iterators.c,v 1.73.2.30.2.27 2007/03/04 14:01:06 helly Exp $ */
+/* $Id: spl_iterators.c,v 1.73.2.30.2.28 2007/05/11 00:15:25 helly Exp $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -1424,6 +1424,10 @@ SPL_METHOD(RegexIterator, accept)
 			MAKE_STD_ZVAL(intern->current.data);
 			ZVAL_STRINGL(intern->current.data, result, result_len, 0);
 		}
+	}
+
+	if (intern->u.regex.flags & REGIT_INVERTED) {
+		RETVAL_BOOL(Z_LVAL_P(return_value));
 	}
 
 	if (use_copy) {

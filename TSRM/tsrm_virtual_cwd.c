@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_virtual_cwd.c,v 1.74.2.9.2.26 2007/04/12 15:28:58 dmitry Exp $ */
+/* $Id: tsrm_virtual_cwd.c,v 1.74.2.9.2.29 2007/05/30 10:50:47 tony2001 Exp $ */
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -518,7 +518,7 @@ CWD_API int virtual_file_ex(cwd_state *state, const char *path, verify_path_func
 	}
 
 	if (use_cache) {
-		t = CWDG(realpath_cache_ttl)?time(NULL):0;
+		t = CWDG(realpath_cache_ttl)?time(0):0;
 		if ((bucket = realpath_cache_find(path, path_length, t TSRMLS_CC)) != NULL) {		
 			int len = bucket->realpath_len;
 
@@ -1009,7 +1009,7 @@ CWD_API int virtual_lstat(const char *path, struct stat *buf TSRMLS_DC)
 	int retval;
 
 	CWD_STATE_COPY(&new_state, &CWDG(cwd));
-	if (virtual_file_ex(&new_state, path, NULL, CWD_REALPATH)) {
+	if (virtual_file_ex(&new_state, path, NULL, CWD_EXPAND)) {
 		CWD_STATE_FREE(&new_state);
 		return -1;
 	}

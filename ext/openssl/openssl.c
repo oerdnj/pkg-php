@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: openssl.c,v 1.98.2.5.2.32 2007/04/05 18:08:42 rrichards Exp $ */
+/* $Id: openssl.c,v 1.98.2.5.2.34 2007/05/19 22:05:08 pajoye Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -707,11 +707,15 @@ PHP_MINIT_FUNCTION(openssl)
 	REGISTER_LONG_CONSTANT("OPENSSL_PKCS1_OAEP_PADDING", RSA_PKCS1_OAEP_PADDING, CONST_CS|CONST_PERSISTENT);
 
 	/* Ciphers */
+#ifndef OPENSSL_NO_RC2
 	REGISTER_LONG_CONSTANT("OPENSSL_CIPHER_RC2_40", PHP_OPENSSL_CIPHER_RC2_40, CONST_CS|CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("OPENSSL_CIPHER_RC2_128", PHP_OPENSSL_CIPHER_RC2_128, CONST_CS|CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("OPENSSL_CIPHER_RC2_64", PHP_OPENSSL_CIPHER_RC2_64, CONST_CS|CONST_PERSISTENT);
+#endif
+#ifndef OPENSSL_NO_DES
 	REGISTER_LONG_CONSTANT("OPENSSL_CIPHER_DES", PHP_OPENSSL_CIPHER_DES, CONST_CS|CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("OPENSSL_CIPHER_3DES", PHP_OPENSSL_CIPHER_3DES, CONST_CS|CONST_PERSISTENT);
+#endif
 
 	/* Values for key types */
 	REGISTER_LONG_CONSTANT("OPENSSL_KEYTYPE_RSA", OPENSSL_KEYTYPE_RSA, CONST_CS|CONST_PERSISTENT);
@@ -1541,13 +1545,13 @@ cleanup:
 }
 /* }}} */
 
-/* {{{ proto bool openssl_pkcs12_read(mixed PKCS12, array &certs, string pass)
+/* {{{ proto bool openssl_pkcs12_read(string PKCS12, array &certs, string pass)
    Parses a PKCS12 to an array */
 PHP_FUNCTION(openssl_pkcs12_read)
 {
-	zval *zp12 = NULL, *zout = NULL, *zextracerts, *zcert, *zpkey;
-	char * pass;
-	int pass_len;
+	zval *zout = NULL, *zextracerts, *zcert, *zpkey;
+	char *pass, *zp12;
+	int pass_len, zp12_len;
 	PKCS12 * p12 = NULL;
 	EVP_PKEY * pkey = NULL;
 	X509 * cert = NULL;
@@ -1555,14 +1559,14 @@ PHP_FUNCTION(openssl_pkcs12_read)
 	BIO * bio_in = NULL;
 	int i;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zzs", &zp12, &zout, &pass, &pass_len) == FAILURE)
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "szs", &zp12, &zp12_len, &zout, &pass, &pass_len) == FAILURE)
 		return;
 
 	RETVAL_FALSE;
 	
 	bio_in = BIO_new(BIO_s_mem());
 	
-	if(!BIO_write(bio_in, Z_STRVAL_P(zp12), Z_STRLEN_P(zp12)))
+	if(!BIO_write(bio_in, zp12, zp12_len))
 		goto cleanup;
 	
 	if(d2i_PKCS12_bio(bio_in, &p12)) {
@@ -2928,6 +2932,7 @@ PHP_FUNCTION(openssl_pkcs7_encrypt)
 
 	/* sanity check the cipher */
 	switch (cipherid) {
+#ifndef OPENSSL_NO_RC2
 		case PHP_OPENSSL_CIPHER_RC2_40:
 			cipher = EVP_rc2_40_cbc();
 			break;
@@ -2937,12 +2942,17 @@ PHP_FUNCTION(openssl_pkcs7_encrypt)
 		case PHP_OPENSSL_CIPHER_RC2_128:
 			cipher = EVP_rc2_cbc();
 			break;
+#endif
+
+#ifndef OPENSSL_NO_DES
 		case PHP_OPENSSL_CIPHER_DES:
 			cipher = EVP_des_cbc();
 			break;
 		case PHP_OPENSSL_CIPHER_3DES:
 			cipher = EVP_des_ede3_cbc();
 			break;
+#endif
+
 		default:
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid cipher type `%ld'", cipherid);
 			goto clean_exit;

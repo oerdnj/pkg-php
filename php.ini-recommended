@@ -108,6 +108,9 @@
 ;     It's not possible to decide to force a variable to be passed by reference
 ;     when calling a function.  The PHP 4 style to do this is by making the
 ;     function require the relevant argument by reference.
+; - short_open_tag = Off           [Portability]
+;     Using short tags is discouraged when developing code meant for redistribution
+;     since short tags may not be supported on the target server.
 
 ;;;;;;;;;;;;;;;;;;;;
 ; Language Options ;
@@ -299,6 +302,7 @@ expose_php = On
 
 max_execution_time = 30     ; Maximum execution time of each script, in seconds
 max_input_time = 60	; Maximum amount of time each script may spend parsing request data
+;max_input_nesting_level = 64 ; Maximum input variable nesting level
 memory_limit = 128M      ; Maximum amount of memory a script may consume (128MB)
 
 
@@ -539,6 +543,14 @@ enable_dl = On
 ; will look for to know it is OK to continue execution.  Setting this variable MAY
 ; cause security issues, KNOW WHAT YOU ARE DOING FIRST.
 ; cgi.redirect_status_env = ;
+
+; cgi.fix_pathinfo provides *real* PATH_INFO/PATH_TRANSLATED support for CGI.  PHP's
+; previous behaviour was to set PATH_TRANSLATED to SCRIPT_FILENAME, and to not grok
+; what PATH_INFO is.  For more information on PATH_INFO, see the cgi specs.  Setting
+; this to 1 will cause PHP CGI to fix it's paths to conform to the spec.  A setting
+; of zero causes PHP to behave as before.  Default is zero.  You should fix your scripts
+; to use SCRIPT_FILENAME rather than PATH_TRANSLATED.
+; cgi.fix_pathinfo=1
 
 ; FastCGI under IIS (on WINNT based OS) supports the ability to impersonate
 ; security tokens of the calling client.  This allows IIS to define the

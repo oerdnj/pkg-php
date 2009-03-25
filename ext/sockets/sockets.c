@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: sockets.c,v 1.171.2.9.2.8 2007/02/25 22:59:32 tony2001 Exp $ */
+/* $Id: sockets.c,v 1.171.2.9.2.9 2007/05/19 17:58:22 iliaa Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -158,7 +158,7 @@ zend_module_entry sockets_module_entry = {
 	sockets_functions,
 	PHP_MINIT(sockets),
 	NULL,
-	PHP_RINIT(sockets),
+	NULL,
 	PHP_RSHUTDOWN(sockets),
 	PHP_MINFO(sockets),
 	NO_VERSION_YET,
@@ -512,13 +512,6 @@ PHP_MINFO_FUNCTION(sockets)
 	php_info_print_table_start();
 	php_info_print_table_row(2, "Sockets Support", "enabled");
 	php_info_print_table_end();
-}
-/* }}} */
-
-/* {{{ PHP_RINIT_FUNCTION */
-PHP_RINIT_FUNCTION(sockets)
-{
-	return SUCCESS;
 }
 /* }}} */
 

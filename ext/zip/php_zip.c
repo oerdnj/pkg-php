@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_zip.c,v 1.1.2.31 2007/03/14 15:02:20 iliaa Exp $ */
+/* $Id: php_zip.c,v 1.1.2.33 2007/05/19 22:25:11 pajoye Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -62,7 +62,7 @@ static int le_zip_entry;
 		php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Empty string as entry name"); \
 		RETURN_FALSE; \
 	} \
-	if (zip_stat(za, path, flags, &sb)) { \
+	if (zip_stat(za, path, flags, &sb) != 0) { \
 		RETURN_FALSE; \
 	}
 /* }}} */
@@ -103,7 +103,7 @@ static int php_zip_extract_file(struct zip * za, char *dest, char *file, int fil
 	size_t file_basename_len;
 	int is_dir_only = 0;
 
-	if (file_len >= MAXPATHLEN || zip_stat(za, file, 0, &sb)) {
+	if (file_len >= MAXPATHLEN || zip_stat(za, file, 0, &sb) != 0) {
 		return 0;
 	}
 
@@ -1699,7 +1699,6 @@ static ZIPARCHIVE_METHOD(extractTo)
 	zval **zval_file = NULL;
 	php_stream_statbuf ssb;
 	char *pathto;
-	char *file;
 	int pathto_len;
 	int ret, i;
 
@@ -1713,24 +1712,22 @@ static ZIPARCHIVE_METHOD(extractTo)
 		return;
 	}
 
-	if (pathto_len<1) {
+	if (pathto_len < 1) {
 		RETURN_FALSE;
 	}
 
-    if (php_stream_stat_path(pathto, &ssb) < 0) {
-        ret = php_stream_mkdir(pathto, 0777,  PHP_STREAM_MKDIR_RECURSIVE, NULL);
-        if (!ret) {
-            efree(pathto);
-            RETURN_FALSE;
-        }
-    }
+	if (php_stream_stat_path(pathto, &ssb) < 0) {
+		ret = php_stream_mkdir(pathto, 0777,  PHP_STREAM_MKDIR_RECURSIVE, NULL);
+		if (!ret) {
+			RETURN_FALSE;
+		}
+	}
 
 	ZIP_FROM_OBJECT(intern, this);
 	if (zval_files) {
 		switch (Z_TYPE_P(zval_files)) {
 			case IS_STRING:
-				file = Z_STRVAL_P(zval_files);
-				if (!php_zip_extract_file(intern, pathto, file, Z_STRLEN_P(zval_files) TSRMLS_CC)) {
+				if (!php_zip_extract_file(intern, pathto, Z_STRVAL_P(zval_files), Z_STRLEN_P(zval_files) TSRMLS_CC)) {
 					RETURN_FALSE;
 				}
 				break;
@@ -1745,8 +1742,7 @@ static ZIPARCHIVE_METHOD(extractTo)
 							case IS_LONG:
 								break;
 							case IS_STRING:
-								file = Z_STRVAL_PP(zval_file);
-								if (!php_zip_extract_file(intern, pathto, file, Z_STRLEN_PP(zval_file) TSRMLS_CC)) {
+								if (!php_zip_extract_file(intern, pathto, Z_STRVAL_PP(zval_file), Z_STRLEN_PP(zval_file) TSRMLS_CC)) {
 									RETURN_FALSE;
 								}
 								break;
@@ -1760,22 +1756,21 @@ static ZIPARCHIVE_METHOD(extractTo)
 				break;
 		}
 	} else {
-        /* Extract all files */
-        int filecount = zip_get_num_files(intern);
+		/* Extract all files */
+		int filecount = zip_get_num_files(intern);
 
-        if (filecount == -1) {
-            php_error_docref(NULL TSRMLS_CC, E_WARNING, "Illegal archive");
-            RETURN_FALSE;
-        }
+		if (filecount == -1) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Illegal archive");
+			RETURN_FALSE;
+		}
 
-        for (i = 0; i < filecount; i++) {
-            file = (char*)zip_get_name(intern, i, ZIP_FL_UNCHANGED);
-            if (!php_zip_extract_file(intern, pathto, file, strlen(file) TSRMLS_CC)) {
-                RETURN_FALSE;
-            }
-        }
-    }
-
+		for (i = 0; i < filecount; i++) {
+			char *file = (char*)zip_get_name(intern, i, ZIP_FL_UNCHANGED);
+			if (!php_zip_extract_file(intern, pathto, file, strlen(file) TSRMLS_CC)) {
+				RETURN_FALSE;
+			}
+		}
+	}
 	RETURN_TRUE;
 }
 /* }}} */
@@ -1884,7 +1879,7 @@ static ZIPARCHIVE_METHOD(getStream)
 		return;
 	}
 
-	if (zip_stat(intern, filename, 0, &sb)) {
+	if (zip_stat(intern, filename, 0, &sb) != 0) {
 		RETURN_FALSE;
 	}
 
@@ -2027,7 +2022,7 @@ static PHP_MINFO_FUNCTION(zip)
 	php_info_print_table_start();
 
 	php_info_print_table_row(2, "Zip", "enabled");
-	php_info_print_table_row(2, "Extension Version","$Id: php_zip.c,v 1.1.2.31 2007/03/14 15:02:20 iliaa Exp $");
+	php_info_print_table_row(2, "Extension Version","$Id: php_zip.c,v 1.1.2.33 2007/05/19 22:25:11 pajoye Exp $");
 	php_info_print_table_row(2, "Zip version", "2.0.0");
 	php_info_print_table_row(2, "Libzip version", "0.7.1");
 

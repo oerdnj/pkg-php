@@ -1,13 +1,14 @@
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: test.inc,v 1.4.6.2 2007/03/11 12:56:44 tony2001 Exp $ 
+ * $Id: test.inc,v 1.4.6.3 2007/05/22 11:36:55 thekid Exp $ 
  */
 
   // Change if needed
   define('HOST',     '****');
   define('USER',     '****');
   define('PASSWORD', '****');
+  define('TEMPDB',   'tempdb');
 
   // {{{ bool sybase_msg_handler(int msgnumber, int severity, int state, int line, string text)
   //     Handles server messages

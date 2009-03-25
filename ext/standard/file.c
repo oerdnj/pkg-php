@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: file.c,v 1.409.2.6.2.17 2007/02/23 16:22:20 tony2001 Exp $ */
+/* $Id: file.c,v 1.409.2.6.2.20 2007/05/27 17:33:39 iliaa Exp $ */
 
 /* Synced with php 3.0 revision 1.218 1999-06-16 [ssb] */
 
@@ -534,6 +534,11 @@ PHP_FUNCTION(file_get_contents)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|br!ll",
 				  &filename, &filename_len, &use_include_path, &zcontext, &offset, &maxlen) == FAILURE) {
 		return;
+	}
+
+	if (ZEND_NUM_ARGS() == 5 && maxlen < 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "length must be greater than or equal to zero");
+		RETURN_FALSE;
 	}
 
 	context = php_stream_context_from_zval(zcontext, 0);
@@ -2366,6 +2371,14 @@ PHP_FUNCTION(realpath)
 	convert_to_string_ex(path);
 
 	if (VCWD_REALPATH(Z_STRVAL_PP(path), resolved_path_buff)) {
+		if (PG(safe_mode) && (!php_checkuid(resolved_path_buff, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
+			RETURN_FALSE;
+		}
+
+		if (php_check_open_basedir(resolved_path_buff TSRMLS_CC)) {
+			RETURN_FALSE;
+		}
+
 #ifdef ZTS
 		if (VCWD_ACCESS(resolved_path_buff, F_OK)) {
 			RETURN_FALSE;

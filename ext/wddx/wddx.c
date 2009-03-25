@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: wddx.c,v 1.119.2.10.2.15 2007/03/04 04:38:43 stas Exp $ */
+/* $Id: wddx.c,v 1.119.2.10.2.16 2007/05/05 15:14:56 iliaa Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -984,6 +984,9 @@ static void php_wddx_pop_element(void *user_data, const XML_Char *name)
 									goto bigint;
 								}
 								l = (long) d;
+								if (l != d) {
+									goto bigint;
+								}
 							case IS_LONG:
 								zend_hash_index_update(target_hash, l, &ent1->data, sizeof(zval *), NULL);
 								break;

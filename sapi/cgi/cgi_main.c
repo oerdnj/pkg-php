@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: cgi_main.c,v 1.267.2.15.2.36 2007/04/17 20:00:53 sniper Exp $ */
+/* $Id: cgi_main.c,v 1.267.2.15.2.40 2007/05/28 08:11:59 dmitry Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -331,7 +331,16 @@ static int sapi_cgi_send_headers(sapi_headers_struct *sapi_headers TSRMLS_DC)
 			}
 
 		} else {
-			len = slprintf(buf, sizeof(buf), "Status: %d\r\n", SG(sapi_headers).http_response_code);
+			char *s;
+
+			if (SG(sapi_headers).http_status_line &&
+			    (s = strchr(SG(sapi_headers).http_status_line, ' ')) != 0 &&
+			    (s - SG(sapi_headers).http_status_line) >= 5 &&
+			    strncasecmp(SG(sapi_headers).http_status_line, "HTTP/", 5) == 0) {
+				len = slprintf(buf, sizeof(buf), "Status:%s\r\n", s);
+			} else {
+				len = slprintf(buf, sizeof(buf), "Status: %d\r\n", SG(sapi_headers).http_response_code);
+			}
 		}
 
 		PHPWRITE_H(buf, len);
@@ -816,8 +825,8 @@ static void init_request_info(TSRMLS_D)
 						 * out what SCRIPT_NAME should be
 						 */
 						int slen = len - strlen(pt);
-						int pilen = strlen(env_path_info);
-						char *path_info = env_path_info + pilen - slen;
+						int pilen = env_path_info ? strlen(env_path_info) : 0;
+						char *path_info = env_path_info ? env_path_info + pilen - slen : NULL;
 
 						if (orig_path_info != path_info) {
 							if (orig_path_info) {
@@ -857,10 +866,12 @@ static void init_request_info(TSRMLS_D)
 							env_script_name = pt + l;
 
 							/* PATH_TRANSATED = DOCUMENT_ROOT + PATH_INFO */
-							path_translated_len = l + strlen(env_path_info);
+							path_translated_len = l + (env_path_info ? strlen(env_path_info) : 0);
 							path_translated = (char *) emalloc(path_translated_len + 1);
 							memcpy(path_translated, env_document_root, l);
-							memcpy(path_translated + l, env_path_info, (path_translated_len - l));
+							if (env_path_info) {
+								memcpy(path_translated + l, env_path_info, (path_translated_len - l));
+							}
 							path_translated[path_translated_len] = '\0';
 							if (orig_path_translated) {
 								_sapi_cgibin_putenv("ORIG_PATH_TRANSLATED", orig_path_translated TSRMLS_CC);
@@ -872,12 +883,14 @@ static void init_request_info(TSRMLS_D)
 						) {
 							/* PATH_TRANSATED = PATH_TRANSATED - SCRIPT_NAME + PATH_INFO */
 							int ptlen = strlen(pt) - strlen(env_script_name);
-							int path_translated_len = ptlen + strlen(env_path_info);
+							int path_translated_len = ptlen + env_path_info ? strlen(env_path_info) : 0;
 							char *path_translated = NULL;
 
 							path_translated = (char *) emalloc(path_translated_len + 1);
 							memcpy(path_translated, pt, ptlen);
-							memcpy(path_translated + ptlen, env_path_info, path_translated_len - ptlen);
+							if (env_path_info) {
+								memcpy(path_translated + ptlen, env_path_info, path_translated_len - ptlen);
+							}
 							path_translated[path_translated_len] = '\0';
 							if (orig_path_translated) {
 								_sapi_cgibin_putenv("ORIG_PATH_TRANSLATED", orig_path_translated TSRMLS_CC);
@@ -1298,8 +1311,6 @@ consult the installation file that came with this distribution, or visit \n\
 #endif	/* FORCE_CGI_REDIRECT */
 
 #if PHP_FASTCGI
-	/* for windows, socket listening is broken in the fastcgi library itself
-	   so dissabling this feature on windows till time is available to fix it */
 	if (bindpath) {
 		fcgi_fd = fcgi_listen(bindpath, 128);
 		if (fcgi_fd < 0) {
@@ -1416,6 +1427,9 @@ consult the installation file that came with this distribution, or visit \n\
 			switch (c) {
 				case 'h':
 				case '?':
+#if PHP_FASTCGI
+					fcgi_shutdown();
+#endif
 					no_headers = 1;
 					php_output_startup();
 					php_output_activate(TSRMLS_C);
@@ -1810,6 +1824,7 @@ fastcgi_request_done:
 			}
 			/* end of fastcgi loop */
 		}
+		fcgi_shutdown();
 #endif
 
 		if (cgi_sapi_module.php_ini_path_override) {

@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: streams.c,v 1.82.2.6.2.12 2007/03/03 19:01:34 helly Exp $ */
+/* $Id: streams.c,v 1.82.2.6.2.13 2007/05/08 12:08:17 dmitry Exp $ */
 
 #define _GNU_SOURCE
 #include "php.h"
@@ -1809,6 +1809,9 @@ PHPAPI php_stream *_php_stream_open_wrapper_ex(char *path, char *mode, int optio
 			case PHP_STREAM_UNCHANGED:
 				return stream;
 			case PHP_STREAM_RELEASED:
+				if (newstream->orig_path) {
+					pefree(newstream->orig_path, persistent);
+				}
 				newstream->orig_path = pestrdup(path, persistent);
 				return newstream;
 			default:

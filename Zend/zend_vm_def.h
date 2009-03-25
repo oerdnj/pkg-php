@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_vm_def.h,v 1.59.2.29.2.43 2007/04/16 08:09:55 dmitry Exp $ */
+/* $Id: zend_vm_def.h,v 1.59.2.29.2.45 2007/05/18 13:12:04 dmitry Exp $ */
 
 /* If you change this file, please regenerate the zend_vm_execute.h and
  * zend_vm_opcodes.h files by running:
@@ -1619,11 +1619,14 @@ ZEND_VM_HANDLER(56, ZEND_ADD_VAR, TMP, TMP|VAR|CV)
 	zend_free_op free_op1, free_op2;
 	zval *var = GET_OP2_ZVAL_PTR(BP_VAR_R);
 	zval var_copy;
-	int use_copy;
+	int use_copy = 0;
 
-	zend_make_printable_zval(var, &var_copy, &use_copy);
-	if (use_copy) {
-		var = &var_copy;
+	if (Z_TYPE_P(var) != IS_STRING) {
+		zend_make_printable_zval(var, &var_copy, &use_copy);
+
+		if (use_copy) {
+			var = &var_copy;
+		}
 	}
 	add_string_to_string(	&EX_T(opline->result.u.var).tmp_var,
 							GET_OP1_ZVAL_PTR(BP_VAR_NA),
@@ -2783,22 +2786,19 @@ ZEND_VM_HANDLER(73, ZEND_INCLUDE_OR_EVAL, CONST|TMP|VAR|CV, ANY)
 		case ZEND_INCLUDE_ONCE:
 		case ZEND_REQUIRE_ONCE: {
 				zend_file_handle file_handle;
-				char cwd[MAXPATHLEN];
-				cwd_state state;
 
 				if (IS_ABSOLUTE_PATH(Z_STRVAL_P(inc_filename), Z_STRLEN_P(inc_filename))) {
-					cwd[0] = '\0';
-				} else if (!VCWD_GETCWD(cwd, MAXPATHLEN)) {
-					cwd[0] = '\0';
+					cwd_state state;
+	
+					state.cwd_length = 0;
+					state.cwd = malloc(1);
+					state.cwd[0] = 0;
+
+					failure_retval = (!virtual_file_ex(&state, Z_STRVAL_P(inc_filename), NULL, 1) &&
+						zend_hash_exists(&EG(included_files), state.cwd, state.cwd_length+1));
+
+					free(state.cwd);
 				}
-
-				state.cwd_length = strlen(cwd);
-				state.cwd = zend_strndup(cwd, state.cwd_length);
-
-				failure_retval = (!virtual_file_ex(&state, Z_STRVAL_P(inc_filename), NULL, 1) &&
-					zend_hash_exists(&EG(included_files), state.cwd, state.cwd_length+1));
-
-				free(state.cwd);
 
 				if (failure_retval) {
 					/* do nothing */
