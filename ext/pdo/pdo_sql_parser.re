@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_sql_parser.re,v 1.28.2.4 2006/01/25 16:35:23 iliaa Exp $ */
+/* $Id: pdo_sql_parser.re,v 1.28.2.4.2.8 2007/03/06 00:52:55 iliaa Exp $ */
 
 #include "php.h"
 #include "php_pdo_driver.h"
@@ -29,14 +29,14 @@
 
 #define RET(i) {s->cur = cursor; return i; }
 
-#define YYCTYPE         char
+#define YYCTYPE         unsigned char
 #define YYCURSOR        cursor
-#define YYLIMIT         s->lim
+#define YYLIMIT         cursor
 #define YYMARKER        s->ptr
 #define YYFILL(n)
 
 typedef struct Scanner {
-	char 	*lim, *ptr, *cur, *tok;
+	char 	*ptr, *cur, *tok;
 } Scanner;
 
 static int scan(Scanner *s) 
@@ -48,16 +48,15 @@ static int scan(Scanner *s)
 	BINDCHR		= [:][a-zA-Z0-9_]+;
 	QUESTION	= [?];
 	SPECIALS	= [:?"'];
-	ESCQQ     	= [\\]["];
-	ESCQ     	= [\\]['];
-	EOF			= [\000];
+	MULTICHAR	= [:?];
+	EOF		= [\000];
 	ANYNOEOF	= [\001-\377];
 	*/
 
 	/*!re2c
-		(["] (ESCQQ|ANYNOEOF\[\\"])* ["])		{ RET(PDO_PARSER_TEXT); }
-		(['] (ESCQ|ANYNOEOF\[\\'])* ['])		{ RET(PDO_PARSER_TEXT); }
-		SPECIALS{2,}							{ RET(PDO_PARSER_TEXT); }
+		(["] ([^"])* ["])		{ RET(PDO_PARSER_TEXT); }
+		(['] ([^'])* ['])		{ RET(PDO_PARSER_TEXT); }
+		MULTICHAR{2,}							{ RET(PDO_PARSER_TEXT); }
 		BINDCHR									{ RET(PDO_PARSER_BIND); }
 		QUESTION								{ RET(PDO_PARSER_BIND_POS); }
 		SPECIALS								{ RET(PDO_PARSER_TEXT); }
@@ -92,7 +91,6 @@ PDO_API int pdo_parse_params(pdo_stmt_t *stmt, char *inquery, int inquery_len,
 
 	ptr = *outquery;
 	s.cur = inquery;
-	s.lim = inquery + inquery_len;
 
 	/* phase 1: look for args */
 	while((t = scan(&s)) != PDO_PARSER_EOI) {
@@ -128,9 +126,9 @@ PDO_API int pdo_parse_params(pdo_stmt_t *stmt, char *inquery, int inquery_len,
 	if (query_type == (PDO_PLACEHOLDER_NAMED|PDO_PLACEHOLDER_POSITIONAL)) {
 		/* they mixed both types; punt */
 		pdo_raise_impl_error(stmt->dbh, stmt, "HY093", "mixed named and positional parameters" TSRMLS_CC);
-		return -1;
+		ret = -1;
+		goto clean_up;
 	}
-
 
 	if (stmt->supports_placeholders == query_type && !stmt->named_rewrite_template) {
 		/* query matches native syntax */
@@ -155,9 +153,27 @@ PDO_API int pdo_parse_params(pdo_stmt_t *stmt, char *inquery, int inquery_len,
 		ret = -1;
 		goto clean_up;
 	}
-	
+
+	if (params && bindno != zend_hash_num_elements(params) && stmt->supports_placeholders == PDO_PLACEHOLDER_NONE) {
+		/* extra bit of validation for instances when same params are bound more then once */
+		if (query_type != PDO_PLACEHOLDER_POSITIONAL && bindno > zend_hash_num_elements(params)) {
+			int ok = 1;
+			for (plc = placeholders; plc; plc = plc->next) {
+				if (zend_hash_find(params, plc->pos, plc->len, (void**) &param) == FAILURE) {
+					ok = 0;
+					break;
+				}
+			}
+			if (ok) {
+				goto safe;
+			}
+		}
+		pdo_raise_impl_error(stmt->dbh, stmt, "HY093", "number of bound variables does not match number of tokens" TSRMLS_CC);
+		ret = -1;
+		goto clean_up;
+	}
+safe:
 	/* what are we going to do ? */
-	
 	if (stmt->supports_placeholders == PDO_PLACEHOLDER_NONE) {
 		/* query generation */
 
@@ -191,11 +207,14 @@ PDO_API int pdo_parse_params(pdo_stmt_t *stmt, char *inquery, int inquery_len,
 							/* bork */
 							ret = -1;
 							strcpy(stmt->error_code, stmt->dbh->error_code);
-							efree(buf);
+							if (buf) {
+								efree(buf);
+							}
 							goto clean_up;
 						}
-						efree(buf);
-
+						if (buf) {
+							efree(buf);
+						}
 					} else {
 						pdo_raise_impl_error(stmt->dbh, stmt, "HY105", "Expected a stream resource" TSRMLS_CC);
 						ret = -1;
@@ -398,7 +417,6 @@ int old_pdo_parse_params(pdo_stmt_t *stmt, char *inquery, int inquery_len, char 
 
 	ptr = *outquery;
 	s.cur = inquery;
-	s.lim = inquery + inquery_len;
 	while((t = scan(&s)) != PDO_PARSER_EOI) {
 		if(t == PDO_PARSER_TEXT) {
 			memcpy(ptr, s.tok, s.cur - s.tok);

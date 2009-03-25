@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2007 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute.c,v 1.716.2.12.2.12 2006/10/02 11:09:52 tony2001 Exp $ */
+/* $Id: zend_execute.c,v 1.716.2.12.2.19 2007/04/16 08:09:54 dmitry Exp $ */
 
 #define ZEND_INTENSIVE_DEBUGGING 0
 
@@ -64,7 +64,7 @@ static void zend_extension_fcall_end_handler(zend_extension *extension, zend_op_
 
 #define TEMP_VAR_STACK_LIMIT 2000
 
-static inline void zend_pzval_unlock_func(zval *z, zend_free_op *should_free)
+static inline void zend_pzval_unlock_func(zval *z, zend_free_op *should_free, int unref)
 {
 	if (!--z->refcount) {
 		z->refcount = 1;
@@ -73,7 +73,7 @@ static inline void zend_pzval_unlock_func(zval *z, zend_free_op *should_free)
 /*		should_free->is_var = 1; */
 	} else {
 		should_free->var = 0;
-		if (z->is_ref && z->refcount == 1) {
+		if (unref && z->is_ref && z->refcount == 1) {
 			z->is_ref = 0;
 		}
 	}
@@ -87,7 +87,8 @@ static inline void zend_pzval_unlock_free_func(zval *z)
 	}
 }
 
-#define PZVAL_UNLOCK(z, f) zend_pzval_unlock_func(z, f)
+#define PZVAL_UNLOCK(z, f) zend_pzval_unlock_func(z, f, 1)
+#define PZVAL_UNLOCK_EX(z, f, u) zend_pzval_unlock_func(z, f, u)
 #define PZVAL_UNLOCK_FREE(z) zend_pzval_unlock_free_func(z)
 #define PZVAL_LOCK(z) (z)->refcount++
 #define RETURN_VALUE_UNUSED(pzn)	(((pzn)->u.EA.type & EXT_TYPE_UNUSED))
@@ -103,15 +104,15 @@ static inline void zend_pzval_unlock_free_func(zval *z)
 
 #define FREE_OP(should_free) \
 	if (should_free.var) { \
-		if ((long)should_free.var & 1L) { \
-			zval_dtor((zval*)((long)should_free.var & ~1L)); \
+		if ((zend_uintptr_t)should_free.var & 1L) { \
+			zval_dtor((zval*)((zend_uintptr_t)should_free.var & ~1L)); \
 		} else { \
 			zval_ptr_dtor(&should_free.var); \
 		} \
 	}
 
 #define FREE_OP_IF_VAR(should_free) \
-	if (should_free.var != NULL && (((long)should_free.var & 1L) == 0)) { \
+	if (should_free.var != NULL && (((zend_uintptr_t)should_free.var & 1L) == 0)) { \
 		zval_ptr_dtor(&should_free.var); \
 	}
 
@@ -120,9 +121,9 @@ static inline void zend_pzval_unlock_free_func(zval *z)
 		zval_ptr_dtor(&should_free.var); \
 	}
 
-#define TMP_FREE(z) (zval*)(((long)(z)) | 1L)
+#define TMP_FREE(z) (zval*)(((zend_uintptr_t)(z)) | 1L)
 
-#define IS_TMP_FREE(should_free) ((long)should_free.var & 1L)
+#define IS_TMP_FREE(should_free) ((zend_uintptr_t)should_free.var & 1L)
 
 #define INIT_PZVAL_COPY(z,v) \
 	(z)->value = (v)->value; \
@@ -411,11 +412,7 @@ static void zend_assign_to_variable_reference(zval **variable_ptr_ptr, zval **va
 		*variable_ptr_ptr = value_ptr;
 		value_ptr->refcount++;
 
-		variable_ptr->refcount--;
-		if (variable_ptr->refcount==0) {
-			zendi_zval_dtor(*variable_ptr);
-			FREE_ZVAL(variable_ptr);
-		}
+		zval_ptr_dtor(&variable_ptr);
 	} else if (!variable_ptr->is_ref) {
 		if (variable_ptr_ptr == value_ptr_ptr) {
 			SEPARATE_ZVAL(variable_ptr_ptr);
@@ -614,7 +611,7 @@ static inline void zend_assign_to_object(znode *result, zval **object_ptr, znode
 		Z_OBJ_HT_P(object)->write_dimension(object, property_name, value TSRMLS_CC);
 	}
 
-	if (result && !RETURN_VALUE_UNUSED(result)) {
+	if (result && !RETURN_VALUE_UNUSED(result) && !EG(exception)) {
 		T(result->u.var).var.ptr = value;
 		T(result->u.var).var.ptr_ptr = &T(result->u.var).var.ptr; /* this is so that we could use it in FETCH_DIM_R, etc. - see bug #27876 */
 		PZVAL_LOCK(value);
@@ -1166,16 +1163,22 @@ static void zend_fetch_dimension_address(temp_variable *result, zval **container
 				overloaded_result = Z_OBJ_HT_P(container)->read_dimension(container, dim, type TSRMLS_CC);
 
 				if (overloaded_result) {
-					switch (type) {
-						case BP_VAR_RW:
-						case BP_VAR_W:
-							if (Z_TYPE_P(overloaded_result) != IS_OBJECT
-								&& !overloaded_result->is_ref) {
-								zend_error_noreturn(E_ERROR, "Objects used as arrays in post/pre increment/decrement must return values by reference");
-							}
-							break;
-					}
+					if (!overloaded_result->is_ref &&
+					    (type == BP_VAR_W || type == BP_VAR_RW  || type == BP_VAR_UNSET)) {
+						if (overloaded_result->refcount > 0) {
+							zval *tmp = overloaded_result;
 
+							ALLOC_ZVAL(overloaded_result);
+							*overloaded_result = *tmp;
+							zval_copy_ctor(overloaded_result);
+							overloaded_result->is_ref = 0;
+							overloaded_result->refcount = 0;
+						}
+						if (Z_TYPE_P(overloaded_result) != IS_OBJECT) {
+							zend_class_entry *ce = Z_OBJCE_P(container);
+							zend_error(E_NOTICE, "Indirect modification of overloaded element of %s has no effect", ce->name);
+						}
+					}
 					retval = &overloaded_result;
 				} else {
 					retval = &EG(error_zval_ptr);

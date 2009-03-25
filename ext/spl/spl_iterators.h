@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_iterators.h,v 1.18.2.7.2.9 2006/09/28 22:33:06 tony2001 Exp $ */
+/* $Id: spl_iterators.h,v 1.18.2.7.2.11 2007/02/08 22:17:40 helly Exp $ */
 
 #ifndef SPL_ITERATORS_H
 #define SPL_ITERATORS_H
@@ -50,6 +50,7 @@ extern PHPAPI zend_class_entry *spl_ce_EmptyIterator;
 extern PHPAPI zend_class_entry *spl_ce_AppendIterator;
 extern PHPAPI zend_class_entry *spl_ce_RegexIterator;
 extern PHPAPI zend_class_entry *spl_ce_RecursiveRegexIterator;
+extern PHPAPI zend_class_entry *spl_ce_Countable;
 
 PHP_MINIT_FUNCTION(spl_iterators);
 

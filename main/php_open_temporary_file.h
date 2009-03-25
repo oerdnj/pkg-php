@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_open_temporary_file.h,v 1.13.2.1 2006/01/01 12:50:17 sniper Exp $ */
+/* $Id: php_open_temporary_file.h,v 1.13.2.1.2.2 2007/02/07 21:01:06 helly Exp $ */
 
 #ifndef PHP_OPEN_TEMPORARY_FILE_H
 #define PHP_OPEN_TEMPORARY_FILE_H
@@ -25,6 +25,7 @@ BEGIN_EXTERN_C()
 PHPAPI FILE *php_open_temporary_file(const char *dir, const char *pfx, char **opened_path_p TSRMLS_DC);
 PHPAPI int php_open_temporary_fd(const char *dir, const char *pfx, char **opened_path_p TSRMLS_DC);
 PHPAPI const char *php_get_temporary_directory(void);
+PHPAPI void php_shutdown_temporary_directory();
 END_EXTERN_C()
 
 #endif /* PHP_OPEN_TEMPORARY_FILE_H */

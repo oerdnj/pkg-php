@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_language_parser.y,v 1.160.2.4.2.1 2006/05/11 21:07:39 helly Exp $ */
+/* $Id: zend_language_parser.y,v 1.160.2.4.2.4 2007/04/04 00:42:42 iliaa Exp $ */
 
 /*
  * LALR shift/reduce conflicts and how they are resolved:
@@ -162,7 +162,7 @@ top_statement:
 		statement
 	|	function_declaration_statement	{ zend_do_early_binding(TSRMLS_C); }
 	|	class_declaration_statement		{ zend_do_early_binding(TSRMLS_C); }
-	|	T_HALT_COMPILER '(' ')' ';'   { REGISTER_MAIN_LONG_CONSTANT("__COMPILER_HALT_OFFSET__", zend_get_scanned_file_offset(TSRMLS_C), CONST_CS); YYACCEPT; }
+	|	T_HALT_COMPILER '(' ')' ';'   { zend_do_halt_compiler_register(TSRMLS_C); YYACCEPT; }
 ;
 
 
@@ -214,14 +214,14 @@ unticked_statement:
 	|	expr ';'				{ zend_do_free(&$1 TSRMLS_CC); }
 	|	T_USE use_filename ';'		{ zend_error(E_COMPILE_ERROR,"use: Not yet supported. Please use include_once() or require_once()");  zval_dtor(&$2.u.constant); }
 	|	T_UNSET '(' unset_variables ')' ';'
-	|	T_FOREACH '(' variable { zend_do_foreach_begin(&$1, &$2, &$3, 1 TSRMLS_CC); } T_AS
-		{ zend_do_foreach_fetch(&$1, &$2, &$5 TSRMLS_CC); }
-		foreach_variable foreach_optional_arg ')' { zend_do_foreach_cont(&$1, &$5, &$7, &$8 TSRMLS_CC); }
-		foreach_statement { zend_do_foreach_end(&$1, &$5 TSRMLS_CC); }
-	|	T_FOREACH '(' expr_without_variable { zend_do_foreach_begin(&$1, &$2, &$3, 0 TSRMLS_CC); } T_AS
-		{ zend_do_foreach_fetch(&$1, &$2, &$5 TSRMLS_CC); }
-		variable foreach_optional_arg ')' { zend_check_writable_variable(&$7); zend_do_foreach_cont(&$1, &$5, &$7, &$8 TSRMLS_CC); }
-		foreach_statement { zend_do_foreach_end(&$1, &$5 TSRMLS_CC); }
+	|	T_FOREACH '(' variable T_AS
+		{ zend_do_foreach_begin(&$1, &$2, &$3, &$4, 1 TSRMLS_CC); }
+		foreach_variable foreach_optional_arg ')' { zend_do_foreach_cont(&$1, &$2, &$4, &$6, &$7 TSRMLS_CC); }
+		foreach_statement { zend_do_foreach_end(&$1, &$4 TSRMLS_CC); }
+	|	T_FOREACH '(' expr_without_variable T_AS
+		{ zend_do_foreach_begin(&$1, &$2, &$3, &$4, 0 TSRMLS_CC); }
+		variable foreach_optional_arg ')' { zend_check_writable_variable(&$6); zend_do_foreach_cont(&$1, &$2, &$4, &$6, &$7 TSRMLS_CC); }
+		foreach_statement { zend_do_foreach_end(&$1, &$4 TSRMLS_CC); }
 	|	T_DECLARE { $1.u.opline_num = get_next_op_number(CG(active_op_array)); zend_do_declare_begin(TSRMLS_C); } '(' declare_list ')' declare_statement { zend_do_declare_end(&$1 TSRMLS_CC); }
 	|	';'		/* empty statement */
 	|	T_TRY { zend_do_try(&$1 TSRMLS_CC); } '{' inner_statement_list '}'

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: user_filters.c,v 1.31.2.4.2.2 2006/10/11 14:46:40 tony2001 Exp $ */
+/* $Id: user_filters.c,v 1.31.2.4.2.8 2007/02/01 14:21:01 tony2001 Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -256,6 +256,7 @@ static php_stream_filter *user_filter_factory_create(const char *filtername,
 	zval *obj, *zfilter;
 	zval func_name;
 	zval *retval = NULL;
+	int len;
 	
 	/* some sanity checks */
 	if (persistent) {
@@ -264,9 +265,10 @@ static php_stream_filter *user_filter_factory_create(const char *filtername,
 		return NULL;
 	}
 
+	len = strlen(filtername);
+
 	/* determine the classname/class entry */
-	if (FAILURE == zend_hash_find(BG(user_filter_map), (char*)filtername,
-				strlen(filtername), (void**)&fdat)) {
+	if (FAILURE == zend_hash_find(BG(user_filter_map), (char*)filtername, len + 1, (void**)&fdat)) {
 		char *period;
 
 		/* Userspace Filters using ambiguous wildcards could cause problems.
@@ -275,15 +277,15 @@ static php_stream_filter *user_filter_factory_create(const char *filtername,
            TODO: Allow failed userfilter creations to continue
                  scanning through the list */
 		if ((period = strrchr(filtername, '.'))) {
-			char *wildcard;
+			char *wildcard = emalloc(len + 3);
 
 			/* Search for wildcard matches instead */
-			wildcard = estrdup(filtername);
+			memcpy(wildcard, filtername, len + 1); /* copy \0 */
 			period = wildcard + (period - filtername);
 			while (period) {
 				*period = '\0';
 				strcat(wildcard, ".*");
-				if (SUCCESS == zend_hash_find(BG(user_filter_map), wildcard, strlen(wildcard), (void**)&fdat)) {
+				if (SUCCESS == zend_hash_find(BG(user_filter_map), wildcard, strlen(wildcard) + 1, (void**)&fdat)) {
 					period = NULL;
 				} else {
 					*period = '\0';
@@ -494,6 +496,10 @@ PHP_FUNCTION(stream_bucket_new)
 	memcpy(pbuffer, buffer, buffer_len);
 
 	bucket = php_stream_bucket_new(stream, pbuffer, buffer_len, 1, php_stream_is_persistent(stream) TSRMLS_CC);
+	
+	if (bucket == NULL) {
+		RETURN_FALSE;
+	}
 
 	ALLOC_INIT_ZVAL(zbucket);
 	ZEND_REGISTER_RESOURCE(zbucket, bucket, le_bucket);
@@ -527,8 +533,9 @@ PHP_FUNCTION(stream_get_filters)
 		for(zend_hash_internal_pointer_reset(filters_hash);
 			(key_flags = zend_hash_get_current_key_ex(filters_hash, &filter_name, &filter_name_len, &num_key, 0, NULL)) != HASH_KEY_NON_EXISTANT;
 			zend_hash_move_forward(filters_hash))
-				if (key_flags == HASH_KEY_IS_STRING)
-					add_next_index_stringl(return_value, filter_name, filter_name_len, 1);
+				if (key_flags == HASH_KEY_IS_STRING) {
+					add_next_index_stringl(return_value, filter_name, filter_name_len - 1, 1);
+				}
 	}
 	/* It's okay to return an empty array if no filters are registered */
 }
@@ -567,7 +574,7 @@ PHP_FUNCTION(stream_filter_register)
 	fdat = ecalloc(1, sizeof(*fdat) + classname_len);
 	memcpy(fdat->classname, classname, classname_len);
 
-	if (zend_hash_add(BG(user_filter_map), filtername, filtername_len, (void*)fdat,
+	if (zend_hash_add(BG(user_filter_map), filtername, filtername_len + 1, (void*)fdat,
 				sizeof(*fdat) + classname_len, NULL) == SUCCESS &&
 			php_stream_filter_register_factory_volatile(filtername, &user_filter_factory TSRMLS_CC) == SUCCESS) {
 		RETVAL_TRUE;

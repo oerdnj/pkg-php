@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_com_dotnet.h,v 1.5.2.1 2006/01/01 12:50:00 sniper Exp $ */
+/* $Id: php_com_dotnet.h,v 1.5.2.1.2.2 2007/03/05 15:49:00 wharmby Exp $ */
 
 #ifndef PHP_COM_DOTNET_H
 #define PHP_COM_DOTNET_H
@@ -47,6 +47,7 @@ ZEND_BEGIN_MODULE_GLOBALS(com_dotnet)
 	zend_bool autoreg_case_sensitive;
 	void *dotnet_runtime_stuff; /* opaque to avoid cluttering up other modules */
 	int code_page; /* default code_page if left unspecified */
+	zend_bool rshutdown_started;
 ZEND_END_MODULE_GLOBALS(com_dotnet)
 
 #ifdef ZTS

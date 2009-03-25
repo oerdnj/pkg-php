@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_http.c,v 1.77.2.11.2.3 2006/09/06 11:03:45 dmitry Exp $ */
+/* $Id: php_http.c,v 1.77.2.11.2.8 2007/02/24 02:17:26 helly Exp $ */
 
 #include "php_soap.h"
 #include "ext/standard/base64.h"
@@ -469,9 +469,10 @@ try_again:
 					char          HA1[33], HA2[33], response[33], cnonce[33], nc[9];
 					PHP_MD5_CTX   md5ctx;
 					unsigned char hash[16];
+					unsigned int ctx;
 
 					PHP_MD5Init(&md5ctx);
-					sprintf(cnonce, "%d", rand());
+					snprintf(cnonce, sizeof(cnonce), "%d", php_rand_r(&ctx));
 					PHP_MD5Update(&md5ctx, (unsigned char*)cnonce, strlen(cnonce));
 					PHP_MD5Final(hash, &md5ctx);
 					make_digest(cnonce, hash);
@@ -479,7 +480,7 @@ try_again:
 					if (zend_hash_find(Z_ARRVAL_PP(digest), "nc", sizeof("nc"), (void **)&tmp) == SUCCESS &&
 					    Z_TYPE_PP(tmp) == IS_LONG) {
 						Z_LVAL_PP(tmp)++;
-						sprintf(nc, "%08ld", Z_LVAL_PP(tmp));
+						snprintf(nc, sizeof(nc), "%08ld", Z_LVAL_PP(tmp));
 					} else {
 						add_assoc_long(*digest, "nc", 1);
 						strcpy(nc, "00000001");
@@ -909,19 +910,20 @@ try_again:
 				efree(http_body);
 				efree(loc);
 				if (new_url->scheme == NULL && new_url->path != NULL) {
-					new_url->scheme = estrdup(phpurl->scheme);
-					new_url->host = estrdup(phpurl->host);
+					new_url->scheme = NULL;
+					new_url->host = phpurl->host ? estrdup(phpurl->host) : NULL;
 					new_url->port = phpurl->port;
 					if (new_url->path && new_url->path[0] != '/') {
-						char *t = phpurl->path?phpurl->path:"/";
+						char *t = phpurl->path;
 						char *p = strrchr(t, '/');
-						char *s = emalloc((p - t) + strlen(new_url->path) + 2);
-
-						strncpy(s, t, (p - t) + 1);
-						s[(p - t) + 1] = 0;
-						strcat(s, new_url->path);
-						efree(new_url->path);
-						new_url->path = s;
+						if (p) {
+							char *s = emalloc((p - t) + strlen(new_url->path) + 2);
+							strncpy(s, t, (p - t) + 1);
+							s[(p - t) + 1] = 0;
+							strcat(s, new_url->path);
+							efree(new_url->path);
+							new_url->path = s;
+						}
 					}
 				}
 				phpurl = new_url;

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: ibase_blobs.c,v 1.9.2.1 2006/01/01 12:50:08 sniper Exp $ */
+/* $Id: ibase_blobs.c,v 1.9.2.1.2.3 2007/02/24 02:17:24 helly Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -74,16 +74,15 @@ int _php_ibase_string_to_quad(char const *id, ISC_QUAD *qd) /* {{{ */
 
 char *_php_ibase_quad_to_string(ISC_QUAD const qd) /* {{{ */
 {
-	char *result = (char *) emalloc(BLOB_ID_LEN+1);
+	char *result;
 
 	/* shortcut for most common case */
 	if (sizeof(ISC_QUAD) == sizeof(ISC_UINT64)) {
-		sprintf(result, "0x%0*" LL_MASK "x", 16, *(ISC_UINT64*)(void *) &qd);
+		spprintf(&result, BLOB_ID_LEN+1, "0x%0*" LL_MASK "x", 16, *(ISC_UINT64*)(void *) &qd);
 	} else {
 		ISC_UINT64 res = ((ISC_UINT64) qd.gds_quad_high << 0x20) | qd.gds_quad_low;
-		sprintf(result, "0x%0*" LL_MASK "x", 16, res);
+		spprintf(&result, BLOB_ID_LEN+1, "0x%0*" LL_MASK "x", 16, res);
 	}
-	result[BLOB_ID_LEN] = '\0';
 	return result;
 }
 /* }}} */
@@ -105,7 +104,7 @@ int _php_ibase_blob_get(zval *return_value, ibase_blob *ib_blob, unsigned long m
 		unsigned long cur_len;
 		unsigned short seg_len;
 
-		bl_data = emalloc(max_len + 1);
+		bl_data = safe_emalloc(1, max_len, 1);
 
 		for (cur_len = stat = 0; (stat == 0 || stat == isc_segment) && cur_len < max_len; cur_len += seg_len) {
 

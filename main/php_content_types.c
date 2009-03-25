@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_content_types.c,v 1.32.2.1 2006/01/01 12:50:17 sniper Exp $ */
+/* $Id: php_content_types.c,v 1.32.2.1.2.2 2007/04/01 19:09:36 iliaa Exp $ */
 
 #include "php.h"
 #include "SAPI.h"
@@ -42,7 +42,7 @@ SAPI_API SAPI_POST_READER_FUNC(php_default_post_reader)
 
 	/* $HTTP_RAW_POST_DATA registration */
 	if(!strcmp(SG(request_info).request_method, "POST")) {
-		if(NULL == SG(request_info).post_entry) {
+		if(NULL == SG(request_info).post_entry && SG(request_info).post_data) {
 			/* no post handler registered, so we just swallow the data */
 			sapi_read_standard_form_data(TSRMLS_C);
 			length = SG(request_info).post_data_length;

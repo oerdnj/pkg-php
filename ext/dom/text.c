@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: text.c,v 1.23.2.1 2006/01/01 12:50:06 sniper Exp $ */
+/* $Id: text.c,v 1.23.2.1.2.2 2007/01/01 09:36:00 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -155,6 +155,10 @@ PHP_FUNCTION(dom_text_split_text)
 	
 	xmlFree(first);
 	xmlFree(second);
+
+	if (nnode == NULL) {
+		RETURN_FALSE;
+	}
 
 	if (node->parent != NULL) {
 		nnode->type = XML_ELEMENT_NODE;

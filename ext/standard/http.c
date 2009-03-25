@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: http.c,v 1.14.2.4.2.1 2006/07/24 18:03:45 helly Exp $ */
+/* $Id: http.c,v 1.14.2.4.2.3 2007/01/03 23:16:56 iliaa Exp $ */
 
 #include "php_http.h"
 #include "php_ini.h"
@@ -215,7 +215,7 @@ PHP_FUNCTION(http_build_query)
 	}
 
 	if (!formstr.c) {
-		RETURN_NULL();
+		RETURN_EMPTY_STRING();
 	}
 
 	smart_str_0(&formstr);

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: xsltprocessor.c,v 1.39.2.2.2.4 2006/07/31 13:05:35 chregu Exp $ */
+/* $Id: xsltprocessor.c,v 1.39.2.2.2.8 2007/01/01 09:36:10 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -87,7 +87,7 @@ static char **php_xsl_xslt_make_params(HashTable *parht, int xpath_params TSRMLS
 	int i = 0;
 
 	parsize = (2 * zend_hash_num_elements(parht) + 1) * sizeof(char *);
-	params = (char **)emalloc(parsize);
+	params = (char **)safe_emalloc((2 * zend_hash_num_elements(parht) + 1), sizeof(char *), 0);
 	memset((char *)params, 0, parsize);
 
 	for (zend_hash_internal_pointer_reset(parht);
@@ -268,7 +268,7 @@ static void xsl_ext_function_php(xmlXPathParserContextPtr ctxt, int nargs, int t
 		
 	} else if ( intern->registerPhpFunctions == 2 && zend_hash_exists(intern->registered_phpfunctions, callable, strlen(callable) + 1) == 0) { 
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Not allowed to call handler '%s()'.", callable);
-		// Push an empty string, so that we at least have an xslt result...
+		/* Push an empty string, so that we at least have an xslt result... */
 		valuePush(ctxt, xmlXPathNewString(""));
 	} else {
 		result = zend_call_function(&fci, NULL TSRMLS_CC);
@@ -384,13 +384,15 @@ PHP_FUNCTION(xsl_xsltprocessor_import_stylesheet)
 	efree(member);
 	if (clone_docu == 0) {
 		/* check if the stylesheet is using xsl:key, if yes, we have to clone the document _always_ before a transformation */
-		nodep = xmlDocGetRootElement(sheetp->doc)->children;
-		while (nodep) {
-			if (nodep->type == XML_ELEMENT_NODE && xmlStrEqual(nodep->name, "key") && xmlStrEqual(nodep->ns->href, XSLT_NAMESPACE)) {
-				intern->hasKeys = 1;
-				break;
+		nodep = xmlDocGetRootElement(sheetp->doc);
+		if (nodep && (nodep = nodep->children)) {
+			while (nodep) {
+				if (nodep->type == XML_ELEMENT_NODE && xmlStrEqual(nodep->name, "key") && xmlStrEqual(nodep->ns->href, XSLT_NAMESPACE)) {
+					intern->hasKeys = 1;
+					break;
+				}
+				nodep = nodep->next;
 			}
-			nodep = nodep->next;
 		}
 	} else {
 		intern->hasKeys = clone_docu;

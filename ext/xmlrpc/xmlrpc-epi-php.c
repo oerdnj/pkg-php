@@ -37,7 +37,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -51,7 +51,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: xmlrpc-epi-php.c,v 1.39.2.5.2.2 2006/08/14 08:18:01 tony2001 Exp $ */
+/* $Id: xmlrpc-epi-php.c,v 1.39.2.5.2.5 2007/01/12 12:32:15 tony2001 Exp $ */
 
 /**********************************************************************
 * BUGS:                                                               *
@@ -72,11 +72,6 @@
 #include "xmlrpc.h"
 
 #define PHP_EXT_VERSION "0.51"
-
-/* You should tweak config.m4 so this symbol (or some else suitable)
-	gets defined.  */
-
-ZEND_DECLARE_MODULE_GLOBALS(xmlrpc)
 
 static int le_xmlrpc_server;
 
@@ -103,9 +98,9 @@ zend_module_entry xmlrpc_module_entry = {
 	"xmlrpc",
 	xmlrpc_functions,
 	PHP_MINIT(xmlrpc),
-	PHP_MSHUTDOWN(xmlrpc),
-	PHP_RINIT(xmlrpc),      /* Replace with NULL if there's nothing to do at request start */
-	PHP_RSHUTDOWN(xmlrpc),  /* Replace with NULL if there's nothing to do at request end */
+	NULL,
+	NULL,
+	NULL,
 	PHP_MINFO(xmlrpc),
 	PHP_EXT_VERSION,
 	STANDARD_MODULE_PROPERTIES
@@ -233,24 +228,6 @@ PHP_MINIT_FUNCTION(xmlrpc)
 {
 	le_xmlrpc_server = zend_register_list_destructors_ex(xmlrpc_server_destructor, NULL, "xmlrpc server", module_number);
 
-	return SUCCESS;
-}
-
-/* module shutdown */
-PHP_MSHUTDOWN_FUNCTION(xmlrpc)
-{
-	return SUCCESS;
-}
-
-/* Remove if there's nothing to do at request start */
-PHP_RINIT_FUNCTION(xmlrpc)
-{
-	return SUCCESS;
-}
-
-/* Remove if there's nothing to do at request end */
-PHP_RSHUTDOWN_FUNCTION(xmlrpc)
-{
 	return SUCCESS;
 }
 
@@ -689,7 +666,7 @@ PHP_FUNCTION(xmlrpc_encode_request)
 	}
 	
 	if (out.xmlrpc_out.xml_elem_opts.encoding != ENCODING_DEFAULT) {
-		efree(out.xmlrpc_out.xml_elem_opts.encoding);
+		efree((char *)out.xmlrpc_out.xml_elem_opts.encoding);
 	}
 }
 /* }}} */

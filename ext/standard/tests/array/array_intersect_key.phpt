@@ -62,9 +62,9 @@ function comp_func($a, $b) {
 --EXPECTF--
 array(3) {
   [2]=>
-  &int(4)
+  int(4)
   [-20]=>
-  &int(-40)
+  int(-40)
   [-2500]=>
   &int(-5000)
 }
@@ -138,11 +138,11 @@ array(1) {
 }
 array(4) {
   [0]=>
-  &int(0)
+  int(0)
   [2]=>
-  &int(4)
+  int(4)
   [-20]=>
-  &int(-40)
+  int(-40)
   [-2500]=>
   &int(-5000)
 }

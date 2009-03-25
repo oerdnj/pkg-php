@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: cgi_main.c,v 1.267.2.15.2.13 2006/09/23 12:27:40 tony2001 Exp $ */
+/* $Id: cgi_main.c,v 1.267.2.15.2.36 2007/04/17 20:00:53 sniper Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -119,12 +119,11 @@ static pid_t pgroup;
 
 static char *php_optarg = NULL;
 static int php_optind = 1;
+static zend_module_entry cgi_module_entry;
 
 static const opt_struct OPTIONS[] = {
 	{'a', 0, "interactive"},
-#ifndef PHP_WIN32
 	{'b', 1, "bindpath"},
-#endif
 	{'C', 0, "no-chdir"},
 	{'c', 1, "php-ini"},
 	{'d', 1, "define"},
@@ -145,17 +144,32 @@ static const opt_struct OPTIONS[] = {
 	{'-', 0, NULL} /* end of args */
 };
 
+typedef struct _php_cgi_globals_struct {
+	zend_bool rfc2616_headers;
+	zend_bool nph;
+	zend_bool check_shebang_line;
 #if ENABLE_PATHINFO_CHECK
-/* true global.  this is retreived once only, even for fastcgi */
-long fix_pathinfo = 1;
+	zend_bool fix_pathinfo;
 #endif
-
+#if FORCE_CGI_REDIRECT
+	zend_bool force_redirect;
+	char *redirect_status_env;
+#endif
 #if PHP_FASTCGI
-long fcgi_logging = 1;
+	zend_bool fcgi_logging;
+# ifdef PHP_WIN32
+	zend_bool impersonate;
+# endif
 #endif
+} php_cgi_globals_struct;
 
-static long rfc2616_headers = 0;
-static long cgi_nph = 0;
+#ifdef ZTS
+static int php_cgi_globals_id;
+#define CGIG(v) TSRMG(php_cgi_globals_id, php_cgi_globals_struct *, v)
+#else
+static php_cgi_globals_struct php_cgi_globals;
+#define CGIG(v) (php_cgi_globals.v)
+#endif
 
 #ifdef PHP_WIN32
 #define TRANSLATE_SLASHES(path) \
@@ -304,12 +318,12 @@ static int sapi_cgi_send_headers(sapi_headers_struct *sapi_headers TSRMLS_DC)
 		return  SAPI_HEADER_SENT_SUCCESSFULLY;
 	}
 
-	if (cgi_nph || SG(sapi_headers).http_response_code != 200)
+	if (CGIG(nph) || SG(sapi_headers).http_response_code != 200)
 	{
 		int len;
 
-		if (rfc2616_headers && SG(sapi_headers).http_status_line) {
-			len = snprintf(buf, SAPI_CGI_MAX_HEADER_LENGTH,
+		if (CGIG(rfc2616_headers) && SG(sapi_headers).http_status_line) {
+			len = slprintf(buf, SAPI_CGI_MAX_HEADER_LENGTH,
 						   "%s\r\n", SG(sapi_headers).http_status_line);
 
 			if (len > SAPI_CGI_MAX_HEADER_LENGTH) {
@@ -317,7 +331,7 @@ static int sapi_cgi_send_headers(sapi_headers_struct *sapi_headers TSRMLS_DC)
 			}
 
 		} else {
-			len = sprintf(buf, "Status: %d\r\n", SG(sapi_headers).http_response_code);
+			len = slprintf(buf, sizeof(buf), "Status: %d\r\n", SG(sapi_headers).http_response_code);
 		}
 
 		PHPWRITE_H(buf, len);
@@ -340,18 +354,14 @@ static int sapi_cgi_send_headers(sapi_headers_struct *sapi_headers TSRMLS_DC)
 
 static int sapi_cgi_read_post(char *buffer, uint count_bytes TSRMLS_DC)
 {
-	uint read_bytes=0, tmp_read_bytes;
-#if PHP_FASTCGI
-	char *pos = buffer;
-#endif
+	int read_bytes=0, tmp_read_bytes;
 
 	count_bytes = MIN(count_bytes, (uint) SG(request_info).content_length - SG(read_post_bytes));
 	while (read_bytes < count_bytes) {
 #if PHP_FASTCGI
 		if (fcgi_is_fastcgi()) {
 			fcgi_request *request = (fcgi_request*) SG(server_context);
-			tmp_read_bytes = fcgi_read(request, pos, count_bytes - read_bytes);
-			pos += tmp_read_bytes;
+			tmp_read_bytes = fcgi_read(request, buffer + read_bytes, count_bytes - read_bytes);
 		} else {
 			tmp_read_bytes = read(0, buffer + read_bytes, count_bytes - read_bytes);
 		}
@@ -432,13 +442,13 @@ static char *_sapi_cgibin_putenv(char *name, char *value TSRMLS_DC)
 #endif
 #if !HAVE_SETENV
 	if (value) {
-		len = snprintf(buf, len - 1, "%s=%s", name, value);
+		len = slprintf(buf, len - 1, "%s=%s", name, value);
 		putenv(buf);
 	}
 #endif
 #if !HAVE_UNSETENV
 	if (!value) {
-		len = snprintf(buf, len - 1, "%s=", name);
+		len = slprintf(buf, len - 1, "%s=", name);
 		putenv(buf);
 	}
 #endif
@@ -483,6 +493,7 @@ void cgi_php_import_environment_variables(zval *array_ptr TSRMLS_DC)
 		char *var, **val;
 		uint var_len;
 		ulong idx;
+		int filter_arg = (array_ptr == PG(http_globals)[TRACK_VARS_ENV])?PARSE_ENV:PARSE_SERVER;
 
 		/* turn off magic_quotes while importing environment variables */
 		PG(magic_quotes_gpc) = 0;
@@ -490,7 +501,10 @@ void cgi_php_import_environment_variables(zval *array_ptr TSRMLS_DC)
 		     zend_hash_get_current_key_ex(&request->env, &var, &var_len, &idx, 0, &pos) == HASH_KEY_IS_STRING &&
 		     zend_hash_get_current_data_ex(&request->env, (void **) &val, &pos) == SUCCESS;
 		     zend_hash_move_forward_ex(&request->env, &pos)) {
-			php_register_variable(var, *val, array_ptr TSRMLS_CC);
+			unsigned int new_val_len;
+			if (sapi_module.input_filter(filter_arg, var, val, strlen(*val), &new_val_len TSRMLS_CC)) {
+				php_register_variable_safe(var, *val, new_val_len, array_ptr TSRMLS_CC);
+			}
 		}
 		PG(magic_quotes_gpc) = magic_quotes_gpc;
 	}
@@ -499,20 +513,25 @@ void cgi_php_import_environment_variables(zval *array_ptr TSRMLS_DC)
 
 static void sapi_cgi_register_variables(zval *track_vars_array TSRMLS_DC)
 {
+	unsigned int new_val_len;
+	char *val = SG(request_info).request_uri ? SG(request_info).request_uri : "";
 	/* In CGI mode, we consider the environment to be a part of the server
 	 * variables
 	 */
 	php_import_environment_variables(track_vars_array TSRMLS_CC);
 	/* Build the special-case PHP_SELF variable for the CGI version */
-	php_register_variable("PHP_SELF", (SG(request_info).request_uri ? SG(request_info).request_uri : ""), track_vars_array TSRMLS_CC);
+	if (sapi_module.input_filter(PARSE_SERVER, "PHP_SELF", &val, strlen(val), &new_val_len TSRMLS_CC)) {
+		php_register_variable_safe("PHP_SELF", val, new_val_len, track_vars_array TSRMLS_CC);
+	}
 }
 
 static void sapi_cgi_log_message(char *message)
 {
 #if PHP_FASTCGI
-	if (fcgi_is_fastcgi() && fcgi_logging) {
+	TSRMLS_FETCH();
+
+	if (fcgi_is_fastcgi() && CGIG(fcgi_logging)) {
 		fcgi_request *request;
-		TSRMLS_FETCH();
 		
 		request = (fcgi_request*) SG(server_context);
 		if (request) {			
@@ -547,7 +566,7 @@ static int sapi_cgi_deactivate(TSRMLS_D)
 
 static int php_cgi_startup(sapi_module_struct *sapi_module)
 {
-	if (php_module_startup(sapi_module, NULL, 0) == FAILURE) {
+	if (php_module_startup(sapi_module, &cgi_module_entry, 1) == FAILURE) {
 		return FAILURE;
 	}
 	return SUCCESS;
@@ -609,7 +628,7 @@ static void php_cgi_usage(char *argv0)
 	php_printf("Usage: %s [-q] [-h] [-s] [-v] [-i] [-f <file>]\n"
 			   "       %s <file> [args...]\n"
 			   "  -a               Run interactively\n"
-#if PHP_FASTCGI && !defined(PHP_WIN32)
+#if PHP_FASTCGI
 			   "  -b <address:port>|<port> Bind Path for external FASTCGI Server mode\n"
 #endif
 			   "  -C               Do not chdir to the script's directory\n"
@@ -737,34 +756,18 @@ static void init_request_info(TSRMLS_D)
 		char *env_redirect_url = sapi_cgibin_getenv("REDIRECT_URL", sizeof("REDIRECT_URL")-1 TSRMLS_CC);
 		char *env_document_root = sapi_cgibin_getenv("DOCUMENT_ROOT", sizeof("DOCUMENT_ROOT")-1 TSRMLS_CC);
 
-		if (fix_pathinfo) {
+		if (CGIG(fix_pathinfo)) {
+			char *real_path;
+			char *orig_path_translated = env_path_translated;
+			char *orig_path_info = env_path_info;
+			char *orig_script_name = env_script_name;
+			char *orig_script_filename = env_script_filename;
 
-			/* save the originals first for anything we change later */
-			if (env_path_translated) {
-				_sapi_cgibin_putenv("ORIG_PATH_TRANSLATED", env_path_translated TSRMLS_CC);
-			}
-			if (env_path_info) {
-				_sapi_cgibin_putenv("ORIG_PATH_INFO", env_path_info TSRMLS_CC);
-			}
-			if (env_script_name) {
-				_sapi_cgibin_putenv("ORIG_SCRIPT_NAME", env_script_name TSRMLS_CC);
-			}
-			if (env_script_filename) {
-				_sapi_cgibin_putenv("ORIG_SCRIPT_FILENAME", env_script_filename TSRMLS_CC);
-			}
-			if (!env_document_root) {
-				/* ini version of document root */
-				if (!env_document_root) {
-					env_document_root = PG(doc_root);
-				}
-				/* set the document root, this makes a more
-				   consistent env for php scripts */
-				if (env_document_root) {
-					env_document_root = _sapi_cgibin_putenv("DOCUMENT_ROOT", env_document_root TSRMLS_CC);
-					/* fix docroot */
-					TRANSLATE_SLASHES(env_document_root);
-				}
-			}
+			if (!env_document_root && PG(doc_root)) {
+				env_document_root = _sapi_cgibin_putenv("DOCUMENT_ROOT", PG(doc_root) TSRMLS_CC);
+				/* fix docroot */
+				TRANSLATE_SLASHES(env_document_root);
+ 			}
 
 			if (env_path_translated != NULL && env_redirect_url != NULL) {
 				/* 
@@ -774,7 +777,7 @@ static void init_request_info(TSRMLS_D)
 				*/
 				script_path_translated = env_path_translated;
 				/* we correct SCRIPT_NAME now in case we don't have PATH_INFO */
-				env_script_name = _sapi_cgibin_putenv("SCRIPT_NAME", env_redirect_url TSRMLS_CC);
+				env_script_name = env_redirect_url;
 			}
 
 #ifdef __riscos__
@@ -788,7 +791,8 @@ static void init_request_info(TSRMLS_D)
 			 * of it by stat'ing back through the '/'
 			 * this fixes url's like /info.php/test
 			 */
-			if (script_path_translated && stat(script_path_translated, &st) == -1 ) {
+			if (script_path_translated &&
+			    (real_path = tsrm_realpath(script_path_translated, NULL TSRMLS_CC)) == NULL) {
 				char *pt = estrdup(script_path_translated);
 				int len = strlen(pt);
 				char *ptr;
@@ -815,8 +819,19 @@ static void init_request_info(TSRMLS_D)
 						int pilen = strlen(env_path_info);
 						char *path_info = env_path_info + pilen - slen;
 
-						env_path_info = _sapi_cgibin_putenv("PATH_INFO", path_info TSRMLS_CC);
-						script_path_translated = _sapi_cgibin_putenv("SCRIPT_FILENAME", pt TSRMLS_CC);
+						if (orig_path_info != path_info) {
+							if (orig_path_info) {
+								_sapi_cgibin_putenv("ORIG_PATH_INFO", orig_path_info TSRMLS_CC);
+							}
+							env_path_info = _sapi_cgibin_putenv("PATH_INFO", path_info TSRMLS_CC);
+						}
+						if (!orig_script_filename ||
+							strcmp(orig_script_filename, pt) != 0) {
+							if (orig_script_filename) {
+								_sapi_cgibin_putenv("ORIG_SCRIPT_FILENAME", orig_script_filename TSRMLS_CC);
+							}
+							script_path_translated = _sapi_cgibin_putenv("SCRIPT_FILENAME", pt TSRMLS_CC);
+						}
 						TRANSLATE_SLASHES(pt);
 
 						/* figure out docroot
@@ -829,7 +844,7 @@ static void init_request_info(TSRMLS_D)
 							int path_translated_len = 0;
 							char *path_translated = NULL;
 							
-							if (env_document_root[l - 1] == '/') {
+							if (l && env_document_root[l - 1] == '/') {
 								--l;
 							}
 
@@ -839,14 +854,17 @@ static void init_request_info(TSRMLS_D)
 							 *
 							 * SCRIPT_NAME is the portion of the path beyond docroot
 							 */
-							env_script_name = _sapi_cgibin_putenv("SCRIPT_NAME", pt + l TSRMLS_CC);
+							env_script_name = pt + l;
 
 							/* PATH_TRANSATED = DOCUMENT_ROOT + PATH_INFO */
-							path_translated_len = l + strlen(env_path_info) + 2;
-							path_translated = (char *) emalloc(path_translated_len);
-							*path_translated = 0;
-							strncat(path_translated, env_document_root, l);
-							strcat(path_translated, env_path_info);
+							path_translated_len = l + strlen(env_path_info);
+							path_translated = (char *) emalloc(path_translated_len + 1);
+							memcpy(path_translated, env_document_root, l);
+							memcpy(path_translated + l, env_path_info, (path_translated_len - l));
+							path_translated[path_translated_len] = '\0';
+							if (orig_path_translated) {
+								_sapi_cgibin_putenv("ORIG_PATH_TRANSLATED", orig_path_translated TSRMLS_CC);
+						   	}
 							env_path_translated = _sapi_cgibin_putenv("PATH_TRANSLATED", path_translated TSRMLS_CC);
 							efree(path_translated);
 						} else if (env_script_name && 
@@ -854,13 +872,16 @@ static void init_request_info(TSRMLS_D)
 						) {
 							/* PATH_TRANSATED = PATH_TRANSATED - SCRIPT_NAME + PATH_INFO */
 							int ptlen = strlen(pt) - strlen(env_script_name);
-							int path_translated_len = ptlen + strlen(env_path_info) + 2;
+							int path_translated_len = ptlen + strlen(env_path_info);
 							char *path_translated = NULL;
 
-							path_translated = (char *) emalloc(path_translated_len);
-							*path_translated = 0;
-							strncat(path_translated, pt, ptlen);
-							strcat(path_translated, env_path_info);
+							path_translated = (char *) emalloc(path_translated_len + 1);
+							memcpy(path_translated, pt, ptlen);
+							memcpy(path_translated + ptlen, env_path_info, path_translated_len - ptlen);
+							path_translated[path_translated_len] = '\0';
+							if (orig_path_translated) {
+								_sapi_cgibin_putenv("ORIG_PATH_TRANSLATED", orig_path_translated TSRMLS_CC);
+						   	}
 							env_path_translated = _sapi_cgibin_putenv("PATH_TRANSLATED", path_translated TSRMLS_CC);
 							efree(path_translated);
 						}
@@ -873,19 +894,52 @@ static void init_request_info(TSRMLS_D)
 					 * a valid path... we will fail, badly. of course we would
 					 * have failed anyway... we output 'no input file' now.
 					 */
+					if (orig_script_filename) {
+						_sapi_cgibin_putenv("ORIG_SCRIPT_FILENAME", orig_script_filename TSRMLS_CC);
+					}
 					script_path_translated = _sapi_cgibin_putenv("SCRIPT_FILENAME", NULL TSRMLS_CC);
 					SG(sapi_headers).http_response_code = 404;
+				}
+				if (!orig_script_name ||
+					strcmp(orig_script_name, env_script_name) != 0) {
+					if (orig_script_name) {
+						_sapi_cgibin_putenv("ORIG_SCRIPT_NAME", orig_script_name TSRMLS_CC);
+					}
+					SG(request_info).request_uri = _sapi_cgibin_putenv("SCRIPT_NAME", env_script_name TSRMLS_CC);
+				} else {
+					SG(request_info).request_uri = orig_script_name;
 				}
 				if (pt) {
 					efree(pt);
 				}
 			} else {
 				/* make sure path_info/translated are empty */
-				script_path_translated = _sapi_cgibin_putenv("SCRIPT_FILENAME", script_path_translated TSRMLS_CC);
-				_sapi_cgibin_putenv("PATH_INFO", NULL TSRMLS_CC);
-				_sapi_cgibin_putenv("PATH_TRANSLATED", NULL TSRMLS_CC);
-			}
-			SG(request_info).request_uri = sapi_cgibin_getenv("SCRIPT_NAME", sizeof("SCRIPT_NAME")-1 TSRMLS_CC);
+				if (!orig_script_filename ||
+					(script_path_translated != orig_script_filename) ||
+					strcmp(script_path_translated, orig_script_filename) != 0) {
+					if (orig_script_filename) {
+						_sapi_cgibin_putenv("ORIG_SCRIPT_FILENAME", orig_script_filename TSRMLS_CC);
+					}
+					script_path_translated = _sapi_cgibin_putenv("SCRIPT_FILENAME", script_path_translated TSRMLS_CC);
+				}
+				if (orig_path_info) {
+					_sapi_cgibin_putenv("ORIG_PATH_INFO", orig_path_info TSRMLS_CC);
+					_sapi_cgibin_putenv("PATH_INFO", NULL TSRMLS_CC);
+				}
+				if (orig_path_translated) {
+					_sapi_cgibin_putenv("ORIG_PATH_TRANSLATED", orig_path_translated TSRMLS_CC);
+					_sapi_cgibin_putenv("PATH_TRANSLATED", NULL TSRMLS_CC);
+				}
+				if (env_script_name != orig_script_name) {
+					if (orig_script_name) {
+						_sapi_cgibin_putenv("ORIG_SCRIPT_NAME", orig_script_name TSRMLS_CC);
+					}
+					SG(request_info).request_uri = _sapi_cgibin_putenv("SCRIPT_NAME", env_script_name TSRMLS_CC);
+				} else {
+					SG(request_info).request_uri = env_script_name;
+				}
+			}			
+			free(real_path);
 		} else {
 #endif
 			/* pre 4.3 behaviour, shouldn't be used but provides BC */
@@ -941,20 +995,95 @@ void fastcgi_cleanup(int signal)
 }
 #endif
 
+PHP_INI_BEGIN()
+	STD_PHP_INI_ENTRY("cgi.rfc2616_headers",     "0",  PHP_INI_ALL,    OnUpdateBool,   rfc2616_headers, php_cgi_globals_struct, php_cgi_globals)
+	STD_PHP_INI_ENTRY("cgi.nph",                 "0",  PHP_INI_ALL,    OnUpdateBool,   nph, php_cgi_globals_struct, php_cgi_globals)
+	STD_PHP_INI_ENTRY("cgi.check_shebang_line",  "1",  PHP_INI_SYSTEM, OnUpdateBool,   check_shebang_line, php_cgi_globals_struct, php_cgi_globals)
+#if FORCE_CGI_REDIRECT
+	STD_PHP_INI_ENTRY("cgi.force_redirect",      "1",  PHP_INI_SYSTEM, OnUpdateBool,   force_redirect, php_cgi_globals_struct, php_cgi_globals)
+	STD_PHP_INI_ENTRY("cgi.redirect_status_env", NULL, PHP_INI_SYSTEM, OnUpdateString, redirect_status_env, php_cgi_globals_struct, php_cgi_globals)
+#endif
+#if ENABLE_PATHINFO_CHECK
+	STD_PHP_INI_ENTRY("cgi.fix_pathinfo",        "1",  PHP_INI_SYSTEM, OnUpdateBool,   fix_pathinfo, php_cgi_globals_struct, php_cgi_globals)
+#endif
 #if PHP_FASTCGI
-#ifndef PHP_WIN32
-static int is_port_number(const char *bindpath)
+	STD_PHP_INI_ENTRY("fastcgi.logging",         "1",  PHP_INI_SYSTEM, OnUpdateBool,   fcgi_logging, php_cgi_globals_struct, php_cgi_globals)
+# ifdef PHP_WIN32
+	STD_PHP_INI_ENTRY("fastcgi.impersonate",     "0",  PHP_INI_SYSTEM, OnUpdateBool,   impersonate, php_cgi_globals_struct, php_cgi_globals)
+# endif
+#endif
+PHP_INI_END()
+
+/* {{{ php_cgi_globals_ctor
+ */
+static void php_cgi_globals_ctor(php_cgi_globals_struct *php_cgi_globals TSRMLS_DC)
 {
-	while (*bindpath) {
-		if (*bindpath < '0' || *bindpath > '9') {
-			return 0;
-		}
-		bindpath++;
-	}
-	return 1;
+	php_cgi_globals->rfc2616_headers = 0;
+	php_cgi_globals->nph = 0;
+	php_cgi_globals->check_shebang_line = 1;
+#if FORCE_CGI_REDIRECT
+	php_cgi_globals->force_redirect = 1;
+	php_cgi_globals->redirect_status_env = NULL;
+#endif
+#if ENABLE_PATHINFO_CHECK
+	php_cgi_globals->fix_pathinfo = 1;
+#endif
+#if PHP_FASTCGI
+	php_cgi_globals->fcgi_logging = 1;
+# ifdef PHP_WIN32
+	php_cgi_globals->impersonate = 0;
+# endif
+#endif
 }
+/* }}} */
+
+/* {{{ PHP_MINIT_FUNCTION
+ */
+static PHP_MINIT_FUNCTION(cgi)
+{
+#ifdef ZTS
+	ts_allocate_id(&php_cgi_globals_id, sizeof(php_cgi_globals_struct), (ts_allocate_ctor) php_cgi_globals_ctor, NULL);
+#else
+	php_cgi_globals_ctor(&php_cgi_globals TSRMLS_CC);
 #endif
+	REGISTER_INI_ENTRIES();
+	return SUCCESS;
+}
+/* }}} */
+
+/* {{{ PHP_MSHUTDOWN_FUNCTION
+ */
+static PHP_MSHUTDOWN_FUNCTION(cgi)
+{
+	UNREGISTER_INI_ENTRIES();
+	return SUCCESS;
+}
+/* }}} */
+
+/* {{{ PHP_MINFO_FUNCTION
+ */
+static PHP_MINFO_FUNCTION(cgi)
+{
+	DISPLAY_INI_ENTRIES();
+}
+/* }}} */
+
+static zend_module_entry cgi_module_entry = {
+	STANDARD_MODULE_HEADER,
+#if PHP_FASTCGI
+	"cgi-fcgi",
+#else
+	"cgi",
 #endif
+	NULL, 
+	PHP_MINIT(cgi), 
+	PHP_MSHUTDOWN(cgi), 
+	NULL, 
+	NULL, 
+	PHP_MINFO(cgi), 
+	NO_VERSION_YET,
+	STANDARD_MODULE_PROPERTIES
+};
 
 /* {{{ main
  */
@@ -973,10 +1102,6 @@ int main(int argc, char *argv[])
 	char *orig_optarg = php_optarg;
 	char *script_file = NULL;
 	int ini_entries_len = 0;
-#if FORCE_CGI_REDIRECT
-	long force_redirect = 1;
-	char *redirect_status_env = NULL;
-#endif
 
 /* end of temporary locals */
 #ifdef ZTS
@@ -991,14 +1116,10 @@ int main(int argc, char *argv[])
 	int max_requests = 500;
 	int requests = 0;
 	int fastcgi = fcgi_is_fastcgi();
-#ifndef PHP_WIN32
 	char *bindpath = NULL;
-#endif
 	int fcgi_fd = 0;
 	fcgi_request request;
-#ifdef PHP_WIN32
-	long impersonate = 0;
-#else
+#ifndef PHP_WIN32
 	int status = 0;
 #endif
 #endif /* PHP_FASTCGI */
@@ -1030,6 +1151,7 @@ int main(int argc, char *argv[])
 #endif
 
 	sapi_startup(&cgi_sapi_module);
+	cgi_sapi_module.php_ini_path_override = NULL;
 
 #ifdef PHP_WIN32
 	_fmode = _O_BINARY; /* sets default for file streams to binary */
@@ -1057,6 +1179,9 @@ int main(int argc, char *argv[])
 	while ((c = php_getopt(argc, argv, OPTIONS, &php_optarg, &php_optind, 0)) != -1) {
 		switch (c) {
 			case 'c':
+				if (cgi_sapi_module.php_ini_path_override) {
+					free(cgi_sapi_module.php_ini_path_override);
+				}
 				cgi_sapi_module.php_ini_path_override = strdup(php_optarg);
 				break;
 			case 'n':
@@ -1094,7 +1219,6 @@ int main(int argc, char *argv[])
 				break;
 			}
 #if PHP_FASTCGI
-#ifndef PHP_WIN32
 			/* if we're started on command line, check to see if
 			   we are being started as an 'external' fastcgi
 			   server by accepting a bindpath parameter. */
@@ -1104,7 +1228,10 @@ int main(int argc, char *argv[])
 				}
 				break;
 #endif
-#endif
+			case 's': /* generate highlighted HTML from source */
+				behavior = PHP_MODE_HIGHLIGHT;
+				break;
+
 		}
 
 	}
@@ -1123,7 +1250,7 @@ int main(int argc, char *argv[])
 	cgi_sapi_module.executable_location = argv[0];
 
 	/* startup after we get the above ini override se we get things right */
-	if (php_module_startup(&cgi_sapi_module, NULL, 0) == FAILURE) {
+	if (cgi_sapi_module.startup(&cgi_sapi_module) == FAILURE) {
 #ifdef ZTS
 		tsrm_shutdown();
 #endif
@@ -1132,13 +1259,7 @@ int main(int argc, char *argv[])
 
 #if FORCE_CGI_REDIRECT
 	/* check force_cgi after startup, so we have proper output */
-	if (cfg_get_long("cgi.force_redirect", &force_redirect) == FAILURE) {
-		force_redirect = 1;
-	}
-	if (cgi && force_redirect) {
-		if (cfg_get_string("cgi.redirect_status_env", &redirect_status_env) == FAILURE) {
-			redirect_status_env = NULL;
-		}
+	if (cgi && CGIG(force_redirect)) {
 		/* Apache will generate REDIRECT_STATUS,
 		 * Netscape and redirect.so will generate HTTP_REDIRECT_STATUS.
 		 * redirect.so and installation instructions available from
@@ -1149,7 +1270,7 @@ int main(int argc, char *argv[])
 			&& !getenv ("HTTP_REDIRECT_STATUS")
 			/* this is to allow a different env var to be configured
 			   in case some server does something different than above */
-			&& (!redirect_status_env || !getenv(redirect_status_env))
+			&& (!CGIG(redirect_status_env) || !getenv(CGIG(redirect_status_env)))
 			) {
 			SG(sapi_headers).http_response_code = 400;
 			PUTS("<b>Security Alert!</b> The PHP CGI cannot be accessed directly.\n\n\
@@ -1176,52 +1297,11 @@ consult the installation file that came with this distribution, or visit \n\
 	}
 #endif	/* FORCE_CGI_REDIRECT */
 
-#if ENABLE_PATHINFO_CHECK
-	if (cfg_get_long("cgi.fix_pathinfo", &fix_pathinfo) == FAILURE) {
-		fix_pathinfo = 1;
-	}
-#endif
-
 #if PHP_FASTCGI
-	if (cfg_get_long("fastcgi.logging", &fcgi_logging) == FAILURE) {
-		fcgi_logging = 1;
-	}
-#endif
-
-	/* Check wheater to send RFC2616 style headers compatible with
-	 * PHP versions 4.2.3 and earlier compatible with web servers
-	 * such as IIS. Default is informal CGI RFC header compatible
-	 * with Apache.
-	 */
-	if (cfg_get_long("cgi.rfc2616_headers", &rfc2616_headers) == FAILURE) {
-		rfc2616_headers = 0;
-	}
-
-	if (cfg_get_long("cgi.nph", &cgi_nph) == FAILURE) {
-		cgi_nph = 0;
-	}
-
-#if PHP_FASTCGI
-#ifndef PHP_WIN32
 	/* for windows, socket listening is broken in the fastcgi library itself
 	   so dissabling this feature on windows till time is available to fix it */
 	if (bindpath) {
-		/* Pass on the arg to the FastCGI library, with one exception.
-		 * If just a port is specified, then we prepend a ':' onto the
-		 * path (it's what the fastcgi library expects)
-		 */		
-		if (strchr(bindpath, ':') == NULL && is_port_number(bindpath)) {
-			char *tmp;
-
-			tmp = malloc(strlen(bindpath) + 2);
-			tmp[0] = ':';
-			memcpy(tmp + 1, bindpath, strlen(bindpath) + 1);
-
-			fcgi_fd = fcgi_listen(tmp, 128);
-			free(tmp);
-		} else {
-			fcgi_fd = fcgi_listen(bindpath, 128);
-		}
+		fcgi_fd = fcgi_listen(bindpath, 128);
 		if (fcgi_fd < 0) {
 			fprintf(stderr, "Couldn't create FastCGI listen socket on port %s\n", bindpath);
 #ifdef ZTS
@@ -1231,7 +1311,7 @@ consult the installation file that came with this distribution, or visit \n\
 		}
 		fastcgi = fcgi_is_fastcgi();
 	}
-#endif
+	
 	if (fastcgi) {
 		/* How many times to run PHP scripts before dying */
 		if (getenv("PHP_FCGI_MAX_REQUESTS")) {
@@ -1278,6 +1358,10 @@ consult the installation file that came with this distribution, or visit \n\
 		    sigaction(SIGQUIT, &act, &old_quit)) {
 			perror("Can't set signals");
 			exit(1);
+		}
+
+		if (fcgi_in_shutdown()) {
+			exit(0);
 		}
 
 		while (parent) {
@@ -1351,11 +1435,8 @@ consult the installation file that came with this distribution, or visit \n\
 #ifdef PHP_WIN32
 		/* attempt to set security impersonation for fastcgi
 		   will only happen on NT based OS, others will ignore it. */
-		if (fastcgi) {
-			if (cfg_get_long("fastcgi.impersonate", &impersonate) == FAILURE) {
-				impersonate = 0;
-			}
-			if (impersonate) fcgi_impersonate();
+		if (fastcgi && CGIG(impersonate)) {
+			fcgi_impersonate();
 		}
 #endif
 		while (!fastcgi || fcgi_accept_request(&request) >= 0) {
@@ -1401,6 +1482,9 @@ consult the installation file that came with this distribution, or visit \n\
 						break;
 
   				case 'f': /* parse file */
+						if (script_file) {
+							efree(script_file);
+						}
 						script_file = estrdup(php_optarg);
 						no_headers = 1;
 						/* arguments after the file are considered script args */
@@ -1410,6 +1494,7 @@ consult the installation file that came with this distribution, or visit \n\
 
 				case 'i': /* php info & quit */
 						if (php_request_startup(TSRMLS_C) == FAILURE) {
+							SG(server_context) = NULL;
 							php_module_shutdown(TSRMLS_C);
 							return FAILURE;
 						}
@@ -1450,13 +1535,10 @@ consult the installation file that came with this distribution, or visit \n\
 						no_headers = 1;
 						break;
 
-  				case 's': /* generate highlighted HTML from source */
-						behavior = PHP_MODE_HIGHLIGHT;
-						break;
-
 				case 'v': /* show php version & quit */
 						no_headers = 1;
 						if (php_request_startup(TSRMLS_C) == FAILURE) {
+							SG(server_context) = NULL;
 							php_module_shutdown(TSRMLS_C);
 							return FAILURE;
 						}
@@ -1465,9 +1547,9 @@ consult the installation file that came with this distribution, or visit \n\
 							SG(request_info).no_headers = 1;
 						}
 #if ZEND_DEBUG
-						php_printf("PHP %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2006 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
+						php_printf("PHP %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2007 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 #else
-						php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2006 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
+						php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2007 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 #endif
 						php_end_ob_buffers(1 TSRMLS_CC);
 						exit(0);
@@ -1515,17 +1597,23 @@ consult the installation file that came with this distribution, or visit \n\
 			   test.php v1=test "v2=hello world!"
 			*/
 			if (!SG(request_info).query_string && argc > php_optind) {
+				int slen = strlen(PG(arg_separator).input);
 				len = 0;
 				for (i = php_optind; i < argc; i++) {
-					len += strlen(argv[i]) + 1;
+					if (i < (argc - 1)) {
+						len += strlen(argv[i]) + slen;
+					} else {
+						len += strlen(argv[i]);
+					}
 				}
 
-				s = malloc(len + 1);
+				len += 2;
+				s = malloc(len);
 				*s = '\0';			/* we are pretending it came from the environment  */
-				for (i = php_optind, len = 0; i < argc; i++) {
-					strcat(s, argv[i]);
+				for (i = php_optind; i < argc; i++) {
+					strlcat(s, argv[i], len);
 					if (i < (argc - 1)) {
-						strcat(s, PG(arg_separator).input);
+						strlcat(s, PG(arg_separator).input, len);
 					}
 				}
 				SG(request_info).query_string = s;
@@ -1564,6 +1652,7 @@ consult the installation file that came with this distribution, or visit \n\
 				fcgi_finish_request(&request);
 			}
 #endif
+			SG(server_context) = NULL;
 			php_module_shutdown(TSRMLS_C);
 			return FAILURE;
 		}
@@ -1577,6 +1666,7 @@ consult the installation file that came with this distribution, or visit \n\
 			1. we are running from shell and got filename was there
 			2. we are running as cgi or fastcgi
 		*/
+		retval = FAILURE;
 		if (cgi || SG(request_info).path_translated) {
 			retval = php_fopen_primary_script(&file_handle TSRMLS_CC);
 		}
@@ -1585,8 +1675,13 @@ consult the installation file that came with this distribution, or visit \n\
 			running from shell (so fp == NULL), then fail.
 		*/
 		if (retval == FAILURE && file_handle.handle.fp == NULL) {
-			SG(sapi_headers).http_response_code = 404;
-			PUTS("No input file specified.\n");
+			if (errno == EACCES) {
+				SG(sapi_headers).http_response_code = 403;
+				PUTS("Access denied.\n");
+			} else {
+				SG(sapi_headers).http_response_code = 404;
+				PUTS("No input file specified.\n");
+			}
 #if PHP_FASTCGI
 			/* we want to serve more requests if this is fastcgi
 			   so cleanup and continue, request shutdown is
@@ -1596,11 +1691,12 @@ consult the installation file that came with this distribution, or visit \n\
 			}
 #endif
 			php_request_shutdown((void *) 0);
+			SG(server_context) = NULL;
 			php_module_shutdown(TSRMLS_C);
 			return FAILURE;
 		}
 
-		if (file_handle.handle.fp && (file_handle.handle.fp != stdin)) {
+		if (CGIG(check_shebang_line) && file_handle.handle.fp && (file_handle.handle.fp != stdin)) {
 			/* #!php support */
 			c = fgetc(file_handle.handle.fp);
 			if (c == '#') {
@@ -1648,6 +1744,11 @@ consult the installation file that came with this distribution, or visit \n\
 					if (open_file_for_scanning(&file_handle TSRMLS_CC) == SUCCESS) {
 						php_get_highlight_struct(&syntax_highlighter_ini);
 						zend_highlight(&syntax_highlighter_ini TSRMLS_CC);
+#if PHP_FASTCGI
+						if (fastcgi) {
+							goto fastcgi_request_done;
+						}
+#endif
 						fclose(file_handle.handle.fp);
 						php_end_ob_buffers(1 TSRMLS_CC);
 					}
@@ -1702,11 +1803,9 @@ fastcgi_request_done:
 			requests++;
 			if (max_requests && (requests == max_requests)) {
 				fcgi_finish_request(&request);
-#ifndef PHP_WIN32
 				if (bindpath) {
 					free(bindpath);
 				}
-#endif
 				break;
 			}
 			/* end of fastcgi loop */

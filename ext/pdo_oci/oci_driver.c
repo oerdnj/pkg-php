@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: oci_driver.c,v 1.24.2.4 2006/01/01 12:50:12 sniper Exp $ */
+/* $Id: oci_driver.c,v 1.24.2.4.2.3 2007/04/10 20:28:49 tony2001 Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -58,6 +58,7 @@ static int pdo_oci_fetch_error_func(pdo_dbh_t *dbh, pdo_stmt_t *stmt, zval *info
 ub4 _oci_error(OCIError *err, pdo_dbh_t *dbh, pdo_stmt_t *stmt, char *what, sword status, const char *file, int line TSRMLS_DC) /* {{{ */
 {
 	text errbuf[1024] = "<<Unknown>>";
+	char tmp_buf[2048];
 	pdo_oci_db_handle *H = (pdo_oci_db_handle *)dbh->driver_data;
 	pdo_oci_error_info *einfo;
 	pdo_oci_stmt *S = NULL;
@@ -89,26 +90,33 @@ ub4 _oci_error(OCIError *err, pdo_dbh_t *dbh, pdo_stmt_t *stmt, char *what, swor
 			break;
 		case OCI_ERROR:
 			OCIErrorGet(err, (ub4)1, NULL, &einfo->errcode, errbuf, (ub4)sizeof(errbuf), OCI_HTYPE_ERROR);
-			spprintf(&einfo->errmsg, 0, "%s: %s (%s:%d)", what, errbuf, file, line);
+			slprintf(tmp_buf, sizeof(tmp_buf), "%s: %s (%s:%d)", what, errbuf, file, line);
+			einfo->errmsg = pestrdup(tmp_buf, dbh->is_persistent);
 			break;
 		case OCI_SUCCESS_WITH_INFO:
 			OCIErrorGet(err, (ub4)1, NULL, &einfo->errcode, errbuf, (ub4)sizeof(errbuf), OCI_HTYPE_ERROR);
-			spprintf(&einfo->errmsg, 0, "%s: OCI_SUCCESS_WITH_INFO: %s (%s:%d)", what, errbuf, file, line);
+			slprintf(tmp_buf, sizeof(tmp_buf), "%s: OCI_SUCCESS_WITH_INFO: %s (%s:%d)", what, errbuf, file, line);
+			einfo->errmsg = pestrdup(tmp_buf, dbh->is_persistent);
 			break;
 		case OCI_NEED_DATA:
-			spprintf(&einfo->errmsg, 0, "%s: OCI_NEED_DATA (%s:%d)", what, file, line);
+			slprintf(tmp_buf, sizeof(tmp_buf), "%s: OCI_NEED_DATA (%s:%d)", what, file, line);
+			einfo->errmsg = pestrdup(tmp_buf, dbh->is_persistent);
 			break;
 		case OCI_NO_DATA:
-			spprintf(&einfo->errmsg, 0, "%s: OCI_NO_DATA (%s:%d)", what, file, line);
+			slprintf(tmp_buf, sizeof(tmp_buf), "%s: OCI_NO_DATA (%s:%d)", what, file, line);
+			einfo->errmsg = pestrdup(tmp_buf, dbh->is_persistent);
 			break;
 		case OCI_INVALID_HANDLE:
-			spprintf(&einfo->errmsg, 0, "%s: OCI_INVALID_HANDLE (%s:%d)", what, file, line);
+			slprintf(tmp_buf, sizeof(tmp_buf), "%s: OCI_INVALID_HANDLE (%s:%d)", what, file, line);
+			einfo->errmsg = pestrdup(tmp_buf, dbh->is_persistent);
 			break;
 		case OCI_STILL_EXECUTING:
-			spprintf(&einfo->errmsg, 0, "%s: OCI_STILL_EXECUTING (%s:%d)", what, file, line);
+			slprintf(tmp_buf, sizeof(tmp_buf), "%s: OCI_STILL_EXECUTING (%s:%d)", what, file, line);
+			einfo->errmsg = pestrdup(tmp_buf, dbh->is_persistent);
 			break;
 		case OCI_CONTINUE:
-			spprintf(&einfo->errmsg, 0, "%s: OCI_CONTINUE (%s:%d)", what, file, line);
+			slprintf(tmp_buf, sizeof(tmp_buf), "%s: OCI_CONTINUE (%s:%d)", what, file, line);
+			einfo->errmsg = pestrdup(tmp_buf, dbh->is_persistent);
 			break;
 	}
 
@@ -338,8 +346,6 @@ static long oci_handle_doer(pdo_dbh_t *dbh, const char *sql, long sql_len TSRMLS
 
 static int oci_handle_quoter(pdo_dbh_t *dbh, const char *unquoted, int unquotedlen, char **quoted, int *quotedlen, enum pdo_param_type paramtype  TSRMLS_DC) /* {{{ */
 {
-	pdo_oci_db_handle *H = (pdo_oci_db_handle *)dbh->driver_data;
-
 	return 0;
 }
 /* }}} */

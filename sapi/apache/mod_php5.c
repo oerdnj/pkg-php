@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    | PHP 4.0 patches by Zeev Suraski <zeev@zend.com>                      |
    +----------------------------------------------------------------------+
  */
-/* $Id: mod_php5.c,v 1.19.2.7.2.6 2006/10/12 20:02:58 bfrance Exp $ */
+/* $Id: mod_php5.c,v 1.19.2.7.2.9 2007/01/01 09:36:12 sebastian Exp $ */
 
 #include "php_apache_http.h"
 #include "http_conf_globals.h"
@@ -246,10 +246,11 @@ static void sapi_apache_register_server_variables(zval *track_vars_array TSRMLS_
 	table_entry *elts = (table_entry *) arr->elts;
 	zval **path_translated;
 	HashTable *symbol_table;
+	int new_val_len;
 
 	for (i = 0; i < arr->nelts; i++) {
 		char *val;
-		int val_len, new_val_len;
+		int val_len;
 
 		if (elts[i].val) {
 			val = elts[i].val;
@@ -277,7 +278,9 @@ static void sapi_apache_register_server_variables(zval *track_vars_array TSRMLS_
 		php_register_variable("PATH_TRANSLATED", Z_STRVAL_PP(path_translated), track_vars_array TSRMLS_CC);
 	}
 
-	php_register_variable("PHP_SELF", ((request_rec *) SG(server_context))->uri, track_vars_array TSRMLS_CC);
+	if (sapi_module.input_filter(PARSE_SERVER, "PHP_SELF", &((request_rec *) SG(server_context))->uri, strlen(((request_rec *) SG(server_context))->uri), &new_val_len TSRMLS_CC)) {
+		php_register_variable("PHP_SELF", ((request_rec *) SG(server_context))->uri, track_vars_array TSRMLS_CC);
+	}
 }
 /* }}} */
 
@@ -673,16 +676,10 @@ static int send_php(request_rec *r, int display_source_mode, char *filename)
 static int send_parsed_php(request_rec * r)
 {
 	int result = send_php(r, 0, NULL);
-
-#if MEMORY_LIMIT
-	{
-		char *mem_usage;
-		TSRMLS_FETCH();
+	TSRMLS_FETCH();
  
-		mem_usage = ap_psprintf(r->pool, "%u", zend_memory_peak_usage(1 TSRMLS_CC));
-		ap_table_setn(r->notes, "mod_php_memory_usage", mem_usage);
-	}
-#endif
+	ap_table_setn(r->notes, "mod_php_memory_usage",
+		ap_psprintf(r->pool, "%u", zend_memory_peak_usage(1 TSRMLS_CC)));
 
 	return result;
 }

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: streams.c,v 1.14.2.2.2.9 2006/09/15 15:42:53 tony2001 Exp $ */
+/* $Id: streams.c,v 1.14.2.2.2.11 2007/01/01 09:35:48 sebastian Exp $ */
 
 /* This file implements cURL based wrappers.
  * NOTE: If you are implementing your own streams that are intended to
@@ -86,6 +86,11 @@ static size_t on_header_available(char *data, size_t size, size_t nmemb, void *c
 	php_stream *stream = (php_stream *) ctx;
 	php_curl_stream *curlstream = (php_curl_stream *) stream->abstract;
 	TSRMLS_FETCH();
+
+	if (length < 2) {
+		/* invalid header ? */
+		return length;
+	}
 
 	if (!(length == 2 && data[0] == '\r' && data[1] == '\n')) {
 		MAKE_STD_ZVAL(header);

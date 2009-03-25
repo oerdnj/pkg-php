@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: basic_functions.c,v 1.725.2.31.2.28 2006/10/13 01:42:19 iliaa Exp $ */
+/* $Id: basic_functions.c,v 1.725.2.31.2.49 2007/04/17 20:34:14 tony2001 Exp $ */
 
 #include "php.h"
 #include "php_streams.h"
@@ -1399,6 +1399,9 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_fnmatch, 0, 0, 2)
 	ZEND_ARG_INFO(0, flags)
 ZEND_END_ARG_INFO()
 #endif
+static
+ZEND_BEGIN_ARG_INFO(arginfo_sys_get_temp_dir, 0)
+ZEND_END_ARG_INFO()
 /* }}} */
 /* {{{ filestat.c */
 static
@@ -2440,6 +2443,14 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_stream_socket_enable_crypto, 0, 0, 2)
 	ZEND_ARG_INFO(0, cryptokind)
 	ZEND_ARG_INFO(0, sessionstream)
 ZEND_END_ARG_INFO()
+
+#ifdef HAVE_SHUTDOWN
+static
+ZEND_BEGIN_ARG_INFO(arginfo_stream_socket_shutdown, 0)
+	ZEND_ARG_INFO(0, stream)
+	ZEND_ARG_INFO(0, how)
+ZEND_END_ARG_INFO()
+#endif
 /* }}} */
 /* {{{ string.c */
 static
@@ -3056,7 +3067,6 @@ ZEND_BEGIN_ARG_INFO(arginfo_unserialize, 0)
 	ZEND_ARG_INFO(0, variable_representation)
 ZEND_END_ARG_INFO()
 
-#if MEMORY_LIMIT
 static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_memory_get_usage, 0, 0, 0)
 	ZEND_ARG_INFO(0, real_usage)
@@ -3066,7 +3076,6 @@ static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_memory_get_peak_usage, 0, 0, 0)
 	ZEND_ARG_INFO(0, real_usage)
 ZEND_END_ARG_INFO()
-#endif
 /* }}} */
 /* {{{ versioning.c */
 static
@@ -3323,10 +3332,10 @@ zend_function_entry basic_functions[] = {
 	PHP_FE(number_format,													arginfo_number_format)
 	PHP_FE(fmod,															arginfo_fmod)
 #ifdef HAVE_INET_NTOP
-	PHP_NAMED_FE(inet_ntop,		php_inet_ntop,								arginfo_inet_ntop)
+	PHP_RAW_NAMED_FE(inet_ntop,		php_inet_ntop,								arginfo_inet_ntop)
 #endif
 #ifdef HAVE_INET_PTON
-	PHP_NAMED_FE(inet_pton,		php_inet_pton,								arginfo_inet_pton)
+	PHP_RAW_NAMED_FE(inet_pton,		php_inet_pton,								arginfo_inet_pton)
 #endif
 	PHP_FE(ip2long,															arginfo_ip2long)
 	PHP_FE(long2ip,															arginfo_long2ip)
@@ -3379,10 +3388,8 @@ zend_function_entry basic_functions[] = {
 	PHP_FE(var_export,														arginfo_var_export)
 	PHP_FE(debug_zval_dump,													arginfo_debug_zval_dump)
 	PHP_FE(print_r,															arginfo_print_r)
-#if MEMORY_LIMIT 
 	PHP_FE(memory_get_usage,												arginfo_memory_get_usage)
 	PHP_FE(memory_get_peak_usage,											arginfo_memory_get_peak_usage)
-#endif
 
 	PHP_FE(register_shutdown_function,										arginfo_register_shutdown_function)
 	PHP_FE(register_tick_function,											arginfo_register_tick_function)
@@ -3514,6 +3521,9 @@ zend_function_entry basic_functions[] = {
 	PHP_FE(stream_socket_recvfrom,											arginfo_stream_socket_recvfrom)
 	PHP_FE(stream_socket_sendto,											arginfo_stream_socket_sendto)
 	PHP_FE(stream_socket_enable_crypto,										arginfo_stream_socket_enable_crypto)
+#ifdef HAVE_SHUTDOWN
+	PHP_FE(stream_socket_shutdown,											arginfo_stream_socket_shutdown)
+#endif
 #if HAVE_SOCKETPAIR
 	PHP_FE(stream_socket_pair,												arginfo_stream_socket_pair)
 #endif
@@ -3762,6 +3772,7 @@ zend_function_entry basic_functions[] = {
 	PHP_FE(output_add_rewrite_var,											arginfo_output_add_rewrite_var)
 	PHP_FE(output_reset_rewrite_vars,										arginfo_output_reset_rewrite_vars)
 
+	PHP_FE(sys_get_temp_dir,												arginfo_sys_get_temp_dir)
 	{NULL, NULL, NULL}
 };
 
@@ -3833,10 +3844,17 @@ static void php_putenv_destructor(putenv_entry *pe)
 		SetEnvironmentVariable(pe->key, "bugbug");
 #endif
 		putenv(pe->previous_value);
+# if defined(PHP_WIN32)
+		efree(pe->previous_value);
+# endif
 	} else {
 # if HAVE_UNSETENV
 		unsetenv(pe->key);
 # elif defined(PHP_WIN32)
+		char *del_string = emalloc(pe->key_len+2);
+		snprintf(del_string, pe->key_len+2, "%s=", pe->key);
+		putenv(del_string);
+		efree(del_string);
 		SetEnvironmentVariable(pe->key, NULL);
 # else
 		char **env;
@@ -3940,7 +3958,7 @@ PHP_MINIT_FUNCTION(basic)
 #ifdef ZTS
 	ts_allocate_id(&basic_globals_id, sizeof(php_basic_globals), (ts_allocate_ctor) basic_globals_ctor, (ts_allocate_dtor) basic_globals_dtor);
 #ifdef PHP_WIN32
-	ts_allocate_id(&php_win32_core_globals_id, sizeof(php_win32_core_globals), (ts_allocate_ctor)php_win32_core_globals_ctor, NULL);
+	ts_allocate_id(&php_win32_core_globals_id, sizeof(php_win32_core_globals), (ts_allocate_ctor)php_win32_core_globals_ctor, (ts_allocate_dtor)php_win32_core_globals_dtor );
 #endif
 #else
 	basic_globals_ctor(&basic_globals TSRMLS_CC);
@@ -4065,6 +4083,9 @@ PHP_MSHUTDOWN_FUNCTION(basic)
 #endif
 #else
 	basic_globals_dtor(&basic_globals TSRMLS_CC);
+#ifdef PHP_WIN32
+	php_win32_core_globals_dtor(&the_php_win32_core_globals TSRMLS_CC);
+#endif
 #endif
 
 	php_unregister_url_stream_wrapper("php" TSRMLS_CC);
@@ -4154,6 +4175,7 @@ PHP_RSHUTDOWN_FUNCTION(basic)
 	if (BG(locale_string) != NULL) {
 		setlocale(LC_ALL, "C");
 		setlocale(LC_CTYPE, "");
+		zend_update_current_locale();
 	}
 	STR_FREE(BG(locale_string));
 	BG(locale_string) = NULL;
@@ -4395,7 +4417,8 @@ PHP_FUNCTION(putenv)
 			/* Check the allowed list */
 			if (BG(sm_allowed_env_vars) && *BG(sm_allowed_env_vars)) {
 				char *allowed_env_vars = estrdup(BG(sm_allowed_env_vars));
-				char *allowed_prefix = strtok(allowed_env_vars, ", ");
+				char *strtok_buf = NULL;
+				char *allowed_prefix = php_strtok_r(allowed_env_vars, ", ", &strtok_buf);
 				zend_bool allowed = 0;
 
 				while (allowed_prefix) {
@@ -4403,7 +4426,7 @@ PHP_FUNCTION(putenv)
 						allowed = 1;
 						break;
 					}
-					allowed_prefix = strtok(NULL, ", ");
+					allowed_prefix = php_strtok_r(NULL, ", ", &strtok_buf);
 				}
 				efree(allowed_env_vars);
 				if (!allowed) {
@@ -4421,7 +4444,12 @@ PHP_FUNCTION(putenv)
 		pe.previous_value = NULL;
 		for (env = environ; env != NULL && *env != NULL; env++) {
 			if (!strncmp(*env, pe.key, pe.key_len) && (*env)[pe.key_len] == '=') {	/* found it */
+#if defined(PHP_WIN32)
+				/* must copy previous value because MSVCRT's putenv can free the string without notice */
+				pe.previous_value = estrdup(*env);
+#else
 				pe.previous_value = *env;
+#endif
 				break;
 			}
 		}
@@ -4433,8 +4461,15 @@ PHP_FUNCTION(putenv)
 		 * We try to avoid this by setting our own value first */
 		SetEnvironmentVariable(pe.key, "bugbug");
 #endif
-		
+
+#if HAVE_UNSETENV
+		if (!p) { /* no '=' means we want to unset it */
+			unsetenv(pe.putenv_string);
+		}
+		if (!p || putenv(pe.putenv_string) == 0) {	/* success */
+#else
 		if (putenv(pe.putenv_string) == 0) {	/* success */
+#endif
 			zend_hash_add(&BG(putenv_ht), pe.key, pe.key_len+1, (void **) &pe, sizeof(putenv_entry), NULL);
 #ifdef HAVE_TZSET
 			if (!strncmp(pe.key, "TZ", pe.key_len)) {
@@ -4648,13 +4683,13 @@ PHP_FUNCTION(getopt)
 			}
 		} else {
 			/* other strings */
-			if(zend_hash_find(HASH_OF(return_value), optname, strlen(optname)+1, (void **)&args) != FAILURE) {
+			if(zend_hash_find(HASH_OF(return_value), optname, optname_len + 1, (void **)&args) != FAILURE) {
 				if(Z_TYPE_PP(args) != IS_ARRAY) {
 					convert_to_array_ex(args);
 				} 
 				zend_hash_next_index_insert(HASH_OF(*args),  (void *)&val, sizeof(zval *), NULL);
 			} else {
-				zend_hash_add(HASH_OF(return_value), optname, strlen(optname)+1, (void *)&val, sizeof(zval *), NULL);
+				zend_hash_add(HASH_OF(return_value), optname, optname_len + 1, (void *)&val, sizeof(zval *), NULL);
 			}
 		}
 	}
@@ -4725,7 +4760,7 @@ PHP_FUNCTION(time_nanosleep)
 	struct timespec php_req, php_rem;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ll", &tv_sec, &tv_nsec)) {
-		WRONG_PARAM_COUNT;
+		return;
 	}
 
 	php_req.tv_sec = (time_t) tv_sec;
@@ -4754,7 +4789,7 @@ PHP_FUNCTION(time_sleep_until)
 	struct timespec php_req, php_rem;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "d", &d_ts)) {
-		WRONG_PARAM_COUNT;
+		return;
 	}
 
 	if (gettimeofday((struct timeval *) &tm, NULL) != 0) {
@@ -5289,17 +5324,24 @@ static int user_tick_function_compare(user_tick_function_entry * tick_fe1, user_
 {
 	zval *func1 = tick_fe1->arguments[0];
 	zval *func2 = tick_fe2->arguments[0];
+	int ret;
 	TSRMLS_FETCH();
 
 	if (Z_TYPE_P(func1) == IS_STRING && Z_TYPE_P(func2) == IS_STRING) {
-		return (zend_binary_zval_strcmp(func1, func2) == 0);
+		ret = (zend_binary_zval_strcmp(func1, func2) == 0);
 	} else if (Z_TYPE_P(func1) == IS_ARRAY && Z_TYPE_P(func2) == IS_ARRAY) {
 		zval result;
 		zend_compare_arrays(&result, func1, func2 TSRMLS_CC);
-		return (Z_LVAL(result) == 0);
+		ret = (Z_LVAL(result) == 0);
 	} else {
+		ret = 0;
+	}
+
+	if (ret && tick_fe1->calling) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to delete tick function executed at the moment");
 		return 0;
 	}
+	return ret;
 }
 
 void php_call_shutdown_functions(TSRMLS_D)
@@ -6102,6 +6144,12 @@ static void php_simple_ini_parser_cb(zval *arg1, zval *arg2, int callback_type, 
 				}
 			}
 
+			if (Z_TYPE_P(hash) != IS_ARRAY) {
+				zval_dtor(hash);
+				INIT_PZVAL(hash);
+				array_init(hash);
+			}
+
 			ALLOC_ZVAL(element);
 			*element = *arg2;
 			zval_copy_ctor(element);
@@ -6211,6 +6259,33 @@ static int copy_request_variable(void *pDest, int num_args, va_list args, zend_h
 		} else if (!strcmp(hash_key->arKey, "GLOBALS")) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Attempted GLOBALS variable overwrite.");
 			return 0; 
+		} else if (*hash_key->arKey == '_' && 
+				(
+					!strcmp(hash_key->arKey, "_GET") || 
+					!strcmp(hash_key->arKey, "_POST") || 
+					!strcmp(hash_key->arKey, "_COOKIE") || 
+					!strcmp(hash_key->arKey, "_ENV") || 
+					!strcmp(hash_key->arKey, "_SERVER") || 
+					!strcmp(hash_key->arKey, "_SESSION") || 
+					!strcmp(hash_key->arKey, "_FILES") || 
+					!strcmp(hash_key->arKey, "_REQUEST")
+				)
+			) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Attempted super-global (%s) variable overwrite.", hash_key->arKey);
+			return 0; 	
+		} else if (*hash_key->arKey == 'H' && 
+				(
+					!strcmp(hash_key->arKey, "HTTP_POST_VARS") || 
+					!strcmp(hash_key->arKey, "HTTP_GET_VARS") || 
+					!strcmp(hash_key->arKey, "HTTP_COOKIE_VARS") || 
+					!strcmp(hash_key->arKey, "HTTP_ENV_VARS") || 
+					!strcmp(hash_key->arKey, "HTTP_SERVER_VARS") || 
+					!strcmp(hash_key->arKey, "HTTP_RAW_POST_DATA") || 
+					!strcmp(hash_key->arKey, "HTTP_POST_FILES")
+				)
+			) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Attempted long input array (%s) overwrite.", hash_key->arKey);
+			return 0; 	
 		}
 	}
 

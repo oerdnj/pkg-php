@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_variant.c,v 1.11.2.2 2006/02/04 10:57:27 rrichards Exp $ */
+/* $Id: com_variant.c,v 1.11.2.2.2.6 2007/04/09 15:32:35 dmitry Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -257,6 +257,140 @@ PHPAPI int php_com_zval_from_variant(zval *z, VARIANT *v, int codepage TSRMLS_DC
 	return ret;
 }
 
+
+PHPAPI int php_com_copy_variant(VARIANT *dstvar, VARIANT *srcvar TSRMLS_DC)
+{
+	int ret = SUCCESS;
+	
+	switch (V_VT(dstvar) & ~VT_BYREF) {
+	case VT_EMPTY:
+	case VT_NULL:
+	case VT_VOID:
+		/* should not be possible */
+		break;
+
+	case VT_UI1:
+		if (V_VT(dstvar) & VT_BYREF) {
+			*V_UI1REF(dstvar) = V_UI1(srcvar);
+		} else {
+			 V_UI1(dstvar) = V_UI1(srcvar);
+		}
+		break;
+
+	case VT_I1:
+		if (V_VT(dstvar) & VT_BYREF) {
+			*V_I1REF(dstvar) = V_I1(srcvar);
+		} else {
+			V_I1(dstvar) = V_I1(srcvar);
+		}
+		break;
+
+	case VT_UI2:
+		if (V_VT(dstvar) & VT_BYREF) {
+			*V_UI2REF(dstvar) = V_UI2(srcvar);
+		} else {
+			V_UI2(dstvar) = V_UI2(srcvar); 
+		}
+		break;
+
+	case VT_I2:
+		if (V_VT(dstvar) & VT_BYREF) {
+			*V_I2REF(dstvar) = V_I2(srcvar);
+		} else {
+			V_I2(dstvar) = V_I2(srcvar);
+		}
+		break;
+
+	case VT_UI4: 
+		if (V_VT(dstvar) & VT_BYREF) {
+			*V_UI4REF(dstvar) = V_UI4(srcvar);
+		} else {
+			V_UI4(dstvar) = V_UI4(srcvar);
+		}
+		break;
+
+	case VT_I4:
+		if (V_VT(dstvar) & VT_BYREF) {
+			*V_I4REF(dstvar) = V_I4(srcvar);
+		} else {
+			V_I4(dstvar) = V_I4(srcvar);
+		}
+		break;
+
+	case VT_INT:
+		if (V_VT(dstvar) & VT_BYREF) {
+			*V_INTREF(dstvar) = V_INT(srcvar);
+		} else {
+			V_INT(dstvar) = V_INT(srcvar);
+		}
+		break;
+
+	case VT_UINT:
+		if (V_VT(dstvar) & VT_BYREF) {
+			*V_UINTREF(dstvar) = V_UINT(srcvar);
+		} else {
+			V_UINT(dstvar) = V_UINT(srcvar);       
+		}
+		break;
+
+	case VT_R4:
+		if (V_VT(dstvar) & VT_BYREF) {
+			*V_R4REF(dstvar) = V_R4(srcvar);
+		} else {
+			V_R4(dstvar) = V_R4(srcvar);
+		}
+		break;
+
+	case VT_R8:
+		if (V_VT(dstvar) & VT_BYREF) {
+			*V_R8REF(dstvar) = V_R8(srcvar);
+		} else {
+			V_R8(dstvar) = V_R8(srcvar);
+		}
+		break;
+
+	case VT_BOOL:
+		if (V_VT(dstvar) & VT_BYREF) {
+			*V_BOOLREF(dstvar) = V_BOOL(srcvar);
+		} else {
+			V_BOOL(dstvar) = V_BOOL(srcvar);
+		}
+        break;
+
+	case VT_BSTR:
+		if (V_VT(dstvar) & VT_BYREF) {
+			*V_BSTRREF(dstvar) = V_BSTR(srcvar);
+		} else {
+			V_BSTR(dstvar) = V_BSTR(srcvar);
+        }
+		break;
+
+	case VT_UNKNOWN:
+		if (V_VT(dstvar) & VT_BYREF) {
+			*V_UNKNOWNREF(dstvar) = V_UNKNOWN(srcvar);
+		} else {
+			V_UNKNOWN(dstvar) = V_UNKNOWN(srcvar);
+		}
+		break;
+
+	case VT_DISPATCH:
+		if (V_VT(dstvar) & VT_BYREF) {
+			*V_DISPATCHREF(dstvar) = V_DISPATCH(srcvar);
+		} else {
+			V_DISPATCH(dstvar) = V_DISPATCH(srcvar);
+		}
+		break;
+
+	case VT_VARIANT:
+		return php_com_copy_variant(V_VARIANTREF(dstvar), srcvar TSRMLS_CC);
+		
+	default:
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "variant->variant: failed to copy from 0x%x to 0x%x", V_VT(dstvar), V_VT(srcvar));
+		ret = FAILURE;
+	}
+	return ret;
+}
+
 /* {{{ com_variant_create_instance - ctor for new VARIANT() */
 PHP_FUNCTION(com_variant_create_instance)
 {
@@ -280,6 +414,7 @@ PHP_FUNCTION(com_variant_create_instance)
 			return;
 	}
 
+	php_com_initialize(TSRMLS_C);
 	if (ZEND_NUM_ARGS() == 3) {
 		obj->code_page = codepage;
 	}
@@ -288,19 +423,36 @@ PHP_FUNCTION(com_variant_create_instance)
 		php_com_variant_from_zval(&obj->v, zvalue, obj->code_page TSRMLS_CC);
 	}
 
-	if (ZEND_NUM_ARGS() >= 2) {
+	/* Only perform conversion if variant not already of type passed */
+	if ((ZEND_NUM_ARGS() >= 2) && (vt != V_VT(&obj->v))) {
 
-		res = VariantChangeType(&obj->v, &obj->v, 0, (VARTYPE)vt);
+		/* If already an array and VT_ARRAY is passed then:
+			- if only VT_ARRAY passed then do not perform a conversion
+			- if VT_ARRAY plus other type passed then perform conversion 
+			  but will probably fail (origional behavior)
+		*/
+		if ((vt & VT_ARRAY) && (V_VT(&obj->v) & VT_ARRAY)) {
+			long orig_vt = vt;
 
-		if (FAILED(res)) {
-			char *werr, *msg;
+			vt &= ~VT_ARRAY;
+			if (vt) {
+				vt = orig_vt;
+			}
+		}
 
-			werr = php_win_err(res);
-			spprintf(&msg, 0, "Variant type conversion failed: %s", werr);
-			LocalFree(werr);
+		if (vt) {
+			res = VariantChangeType(&obj->v, &obj->v, 0, (VARTYPE)vt);
 
-			php_com_throw_exception(res, msg TSRMLS_CC);
-			efree(msg);
+			if (FAILED(res)) {
+				char *werr, *msg;
+
+				werr = php_win_err(res);
+				spprintf(&msg, 0, "Variant type conversion failed: %s", werr);
+				LocalFree(werr);
+
+				php_com_throw_exception(res, msg TSRMLS_CC);
+				efree(msg);
+			}
 		}
 	}
 
@@ -339,6 +491,8 @@ PHP_FUNCTION(variant_set)
 	VariantClear(&obj->v);
 
 	php_com_variant_from_zval(&obj->v, zvalue, obj->code_page TSRMLS_CC);
+	/* remember we modified this variant */
+	obj->modified = 1;
 }
 /* }}} */
 
@@ -789,6 +943,7 @@ PHP_FUNCTION(variant_date_to_timestamp)
 PHP_FUNCTION(variant_date_from_timestamp)
 {
 	long timestamp;
+	time_t ttstamp;
 	SYSTEMTIME systime;
 	struct tm *tmv;
 	VARIANT res;
@@ -798,9 +953,15 @@ PHP_FUNCTION(variant_date_from_timestamp)
 		return;
 	}
 
+	if (timestamp < 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Timestamp value must be a positive value.");
+		RETURN_FALSE;
+	}
+
 	VariantInit(&res);
 	tzset();
-	tmv = localtime(&timestamp);
+	ttstamp = timestamp;
+	tmv = localtime(&ttstamp);
 	memset(&systime, 0, sizeof(systime));
 
 	systime.wDay = tmv->tm_mday;

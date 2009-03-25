@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_saproxy.c,v 1.15.2.2.2.1 2006/05/10 14:39:10 rrichards Exp $ */
+/* $Id: com_saproxy.c,v 1.15.2.2.2.3 2007/01/01 09:35:48 sebastian Exp $ */
 
 /* This module implements a SafeArray proxy which is used internally
  * by the engine when resolving multi-dimensional array accesses on
@@ -120,7 +120,7 @@ static zval *saproxy_read_dimension(zval *object, zval *offset, int type TSRMLS_
 
 		res = php_com_do_invoke(proxy->obj, Z_STRVAL_P(proxy->indices[0]),
 			   	Z_STRLEN_P(proxy->indices[0]), DISPATCH_METHOD|DISPATCH_PROPERTYGET, &v,
-			   	proxy->dimensions, args TSRMLS_CC);
+			   	proxy->dimensions, args, 0 TSRMLS_CC);
 
 		if (res == SUCCESS) {
 			php_com_zval_from_variant(return_value, &v, proxy->obj->code_page TSRMLS_CC);
@@ -233,7 +233,7 @@ static void saproxy_write_dimension(zval *object, zval *offset, zval *value TSRM
 		VariantInit(&v);
 		if (SUCCESS == php_com_do_invoke(proxy->obj, Z_STRVAL_P(proxy->indices[0]),
 					Z_STRLEN_P(proxy->indices[0]), DISPATCH_PROPERTYPUT, &v, proxy->dimensions + 1,
-					args TSRMLS_CC)) {
+					args, 0 TSRMLS_CC)) {
 			VariantClear(&v);
 		}
 

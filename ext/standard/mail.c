@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: mail.c,v 1.87.2.1 2006/01/01 12:50:15 sniper Exp $ */
+/* $Id: mail.c,v 1.87.2.1.2.5 2007/03/30 00:28:58 iliaa Exp $ */
 
 #include <stdlib.h>
 #include <ctype.h>
@@ -48,12 +48,20 @@
 
 #define SKIP_LONG_HEADER_SEP(str, pos)										\
 	if (str[pos] == '\r' && str[pos + 1] == '\n' && (str[pos + 2] == ' ' || str[pos + 2] == '\t')) {	\
-		pos += 3;											\
-		while (str[pos] == ' ' || str[pos] == '\t') {							\
+		pos += 2;											\
+		while (str[pos + 1] == ' ' || str[pos + 1] == '\t') {							\
 			pos++;											\
 		}												\
 		continue;											\
 	}													\
+
+#define MAIL_ASCIIZ_CHECK(str, len)			\
+	p = str;					\
+	e = p + len;					\
+	while ((p = memchr(p, '\0', (e - p)))) {	\
+		*p = ' ';				\
+	}						\
+
 
 /* {{{ proto int ezmlm_hash(string addr)
    Calculate EZMLM list hash value. */
@@ -88,6 +96,7 @@ PHP_FUNCTION(mail)
 	int subject_len, extra_cmd_len, i;
 	char *force_extra_parameters = INI_STR("mail.force_extra_parameters");
 	char *to_r, *subject_r;
+	char *p, *e;
 
 	if (PG(safe_mode) && (ZEND_NUM_ARGS() == 5)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "SAFE MODE Restriction in effect.  The fifth parameter is disabled in SAFE MODE.");
@@ -102,6 +111,17 @@ PHP_FUNCTION(mail)
 							  &extra_cmd, &extra_cmd_len
 							  ) == FAILURE) {
 		return;
+	}
+
+	/* ASCIIZ check */
+	MAIL_ASCIIZ_CHECK(to, to_len);
+	MAIL_ASCIIZ_CHECK(subject, subject_len);
+	MAIL_ASCIIZ_CHECK(message, message_len);
+	if (headers) {
+		MAIL_ASCIIZ_CHECK(headers, headers_len);
+	}
+	if (extra_cmd) {
+		MAIL_ASCIIZ_CHECK(extra_cmd, extra_cmd_len);
 	}
 
 	if (to_len > 0) {
@@ -150,7 +170,7 @@ PHP_FUNCTION(mail)
 	} else if (extra_cmd) {
 		extra_cmd = php_escape_shell_cmd(extra_cmd);
 	}
-	
+
 	if (php_mail(to_r, subject_r, message, headers, extra_cmd TSRMLS_CC)) {
 		RETVAL_TRUE;
 	} else {
@@ -200,10 +220,7 @@ PHPAPI int php_mail(char *to, char *subject, char *message, char *headers, char 
 #endif
 	}
 	if (extra_cmd != NULL) {
-		sendmail_cmd = emalloc (strlen (sendmail_path) + strlen (extra_cmd) + 2);
-		strcpy (sendmail_cmd, sendmail_path);
-		strcat (sendmail_cmd, " ");
-		strcat (sendmail_cmd, extra_cmd);
+		spprintf(&sendmail_cmd, 0, "%s %s", sendmail_path, extra_cmd);
 	} else {
 		sendmail_cmd = sendmail_path;
 	}

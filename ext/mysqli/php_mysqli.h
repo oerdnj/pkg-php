@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: php_mysqli.h,v 1.54.2.7.2.2 2006/05/09 11:26:09 georg Exp $ 
+  $Id: php_mysqli.h,v 1.54.2.7.2.5 2007/02/24 14:33:50 helly Exp $ 
 */
 
 /* A little hack to prevent build break, when mysql is used together with
@@ -243,9 +243,9 @@ PHP_MYSQLI_EXPORT(zend_object_value) mysqli_objects_new(zend_class_entry * TSRML
 	if ((__val) < LONG_MAX) {		\
 		RETURN_LONG((__val));		\
 	} else {				\
-		char ret[40];			\
-		sprintf(ret, "%llu", (__val));	\
-		RETURN_STRING(ret,1);		\
+		char *ret;			\
+		int l = spprintf(&ret, 0, "%llu", (__val));	\
+		RETURN_STRINGL(ret, l, 0);		\
 	}					\
 }
 

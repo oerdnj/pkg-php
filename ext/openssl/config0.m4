@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config0.m4,v 1.4 2005/01/01 14:32:58 wez Exp $
+dnl $Id: config0.m4,v 1.4.4.1 2007/01/07 18:38:22 iliaa Exp $
 dnl
 
 PHP_ARG_WITH(openssl, for OpenSSL support,
@@ -15,6 +15,8 @@ if test "$PHP_OPENSSL" != "no"; then
   if test "$PHP_KERBEROS" != "no"; then
     PHP_SETUP_KERBEROS(OPENSSL_SHARED_LIBADD)
   fi
+
+  AC_CHECK_LIB(ssl, DSA_get_default_method, AC_DEFINE(HAVE_DSA_DEFAULT_METHOD, 1, [OpenSSL 0.9.7 or later]))
 
   PHP_SETUP_OPENSSL(OPENSSL_SHARED_LIBADD, 
   [

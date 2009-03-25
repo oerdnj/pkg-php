@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_extension.c,v 1.17.2.2.2.4 2006/10/18 23:47:33 iliaa Exp $ */
+/* $Id: com_extension.c,v 1.17.2.2.2.6 2007/03/05 15:49:00 wharmby Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -315,6 +315,7 @@ PHP_MSHUTDOWN_FUNCTION(com_dotnet)
  */
 PHP_RINIT_FUNCTION(com_dotnet)
 {
+	COMG(rshutdown_started) = 0;
 	return SUCCESS;
 }
 /* }}} */
@@ -328,6 +329,7 @@ PHP_RSHUTDOWN_FUNCTION(com_dotnet)
 		php_com_dotnet_rshutdown(TSRMLS_C);
 	}
 #endif
+	COMG(rshutdown_started) = 1;
 	return SUCCESS;
 }
 /* }}} */

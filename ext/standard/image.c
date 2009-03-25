@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: image.c,v 1.114.2.2.2.2 2006/06/25 21:08:28 bjori Exp $ */
+/* $Id: image.c,v 1.114.2.2.2.4 2007/02/24 02:17:27 helly Exp $ */
 
 #include "php.h"
 #include <stdio.h>
@@ -454,7 +454,7 @@ static int php_read_APP(php_stream * stream, unsigned int marker, zval *info TSR
 		return 0;
 	}
 
-	sprintf(markername, "APP%d", marker - M_APP0);
+	snprintf(markername, sizeof(markername), "APP%d", marker - M_APP0);
 
 	if (zend_hash_find(Z_ARRVAL_P(info), markername, strlen(markername)+1, (void **) &tmp) == FAILURE) {
 		/* XXX we onyl catch the 1st tag of it's kind! */

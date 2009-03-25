@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: ibase_service.c,v 1.11.2.2 2006/01/01 12:50:08 sniper Exp $ */
+/* $Id: ibase_service.c,v 1.11.2.2.2.5 2007/03/06 00:24:00 stas Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -160,7 +160,7 @@ static void _php_ibase_user(INTERNAL_FUNCTION_PARAMETERS, char operation) /* {{{
 	
 	for (i = 0; i < sizeof(user_flags); ++i) {
 		if (args[i] != NULL) {
-			int chunk = snprintf(&buf[spb_len], sizeof(buf) - spb_len, "%c%c%c%s",
+			int chunk = slprintf(&buf[spb_len], sizeof(buf) - spb_len, "%c%c%c%s",
 				user_flags[i], (char)args_len[i], (char)(args_len[i] >> 8), args[i]);
 			
 			if ((spb_len + chunk) > sizeof(buf) || chunk <= 0) {
@@ -224,7 +224,7 @@ PHP_FUNCTION(ibase_service_attach)
 	}
 
 	/* construct the spb, hack the service name into it as well */
-	spb_len = snprintf(buf, sizeof(buf), "%c%c%c%c%s%c%c%s" "%s:service_mgr",
+	spb_len = slprintf(buf, sizeof(buf), "%c%c%c%c%s%c%c%s" "%s:service_mgr",
 		isc_spb_version, isc_spb_current_version, isc_spb_user_name, (char)ulen,
 		user, isc_spb_password, (char)plen, pass, host);
 
@@ -322,7 +322,7 @@ query_loop:
 					heap_p = heap_buf + res_size;
 				}
 				result += 2;
-				sprintf(heap_p, "%s\n", result);
+				snprintf(heap_p, heap_buf_size - (heap_buf - heap_p), "%s\n", result);
 				heap_p += line_len +2;
 				goto query_loop; /* repeat until result is exhausted */
 
@@ -425,7 +425,8 @@ static void _php_ibase_backup_restore(INTERNAL_FUNCTION_PARAMETERS, char operati
 	 */
 	zval *res;
 	char *db, *bk, buf[200];
-	long dblen, bklen, spb_len, opts = 0;
+	int dblen, bklen, spb_len;
+	long opts = 0;
 	zend_bool verbose = 0;
 	ibase_service *svm;
 
@@ -440,7 +441,7 @@ static void _php_ibase_backup_restore(INTERNAL_FUNCTION_PARAMETERS, char operati
 		"Interbase service manager handle", le_service);
 
 	/* fill the param buffer */
-	spb_len = snprintf(buf, sizeof(buf), "%c%c%c%c%s%c%c%c%s%c%c%c%c%c",
+	spb_len = slprintf(buf, sizeof(buf), "%c%c%c%c%s%c%c%c%s%c%c%c%c%c",
 		operation, isc_spb_dbname, (char)dblen, (char)(dblen >> 8), db,
 		isc_spb_bkp_file, (char)bklen, (char)(bklen >> 8), bk, isc_spb_options,
 		(char)opts,(char)(opts >> 8), (char)(opts >> 16), (char)(opts >> 24));
@@ -489,7 +490,8 @@ static void _php_ibase_service_action(INTERNAL_FUNCTION_PARAMETERS, char svc_act
 {
 	zval *res;
 	char buf[128], *db;
-	long action, spb_len, dblen, argument = 0;
+	int dblen, spb_len;
+	long action, argument = 0;
 	ibase_service *svm;
 
 	RESET_ERRMSG;
@@ -542,7 +544,7 @@ options_argument:
 			case isc_spb_prp_deny_new_transactions:
 			case isc_spb_prp_deny_new_attachments:
 			case isc_spb_prp_set_sql_dialect:
-				spb_len = snprintf(buf, sizeof(buf), "%c%c%c%c%s%c%c%c%c%c",
+				spb_len = slprintf(buf, sizeof(buf), "%c%c%c%c%s%c%c%c%c%c",
 					svc_action, isc_spb_dbname, (char)dblen, (char)(dblen >> 8), db,
 					(char)action, (char)argument, (char)(argument >> 8), (char)(argument >> 16),
 					(char)(argument >> 24));
@@ -551,7 +553,7 @@ options_argument:
 			case isc_spb_prp_reserve_space:
 			case isc_spb_prp_write_mode:
 			case isc_spb_prp_access_mode:
-				spb_len = snprintf(buf, sizeof(buf), "%c%c%c%c%s%c%c",
+				spb_len = slprintf(buf, sizeof(buf), "%c%c%c%c%s%c%c",
 					isc_action_svc_properties, isc_spb_dbname, (char)dblen, (char)(dblen >> 8),
 					db, (char)action, (char)argument);
 		}

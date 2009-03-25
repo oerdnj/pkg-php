@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -324,7 +324,7 @@ zend_module_entry gmp_module_entry = {
 	"gmp",
 	gmp_functions,
 	ZEND_MODULE_STARTUP_N(gmp),
-	ZEND_MODULE_SHUTDOWN_N(gmp),
+	NULL,
 	NULL,
 	ZEND_MODULE_DEACTIVATE_N(gmp),
 	ZEND_MODULE_INFO_N(gmp),
@@ -389,6 +389,7 @@ ZEND_MODULE_STARTUP_D(gmp)
 	REGISTER_LONG_CONSTANT("GMP_ROUND_ZERO", GMP_ROUND_ZERO, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("GMP_ROUND_PLUSINF", GMP_ROUND_PLUSINF, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("GMP_ROUND_MINUSINF", GMP_ROUND_MINUSINF, CONST_CS | CONST_PERSISTENT);
+	REGISTER_STRING_CONSTANT("GMP_VERSION", (char *)gmp_version, CONST_CS | CONST_PERSISTENT);
 
 	mp_set_memory_functions(gmp_emalloc, gmp_erealloc, gmp_efree);
 
@@ -409,25 +410,14 @@ ZEND_MODULE_DEACTIVATE_D(gmp)
 }
 /* }}} */
 
-/* {{{ ZEND_MSHUTDOWN_FUNCTION
- */
-ZEND_MODULE_SHUTDOWN_D(gmp)
-{
-	return SUCCESS;
-}
-/* }}} */
-
 /* {{{ ZEND_MINFO_FUNCTION
  */
 ZEND_MODULE_INFO_D(gmp)
 {
 	php_info_print_table_start();
 	php_info_print_table_row(2, "gmp support", "enabled");
+	php_info_print_table_row(2, "GMP version", gmp_version);
 	php_info_print_table_end();
-
-	/* Remove comments if you have entries in php.ini
-	DISPLAY_INI_ENTRIES();
-	*/
 }
 /* }}} */
 
@@ -1008,7 +998,13 @@ ZEND_FUNCTION(gmp_mod)
    Divide a by b using exact division algorithm */
 ZEND_FUNCTION(gmp_divexact)
 {
-	gmp_binary_op(mpz_divexact);
+	zval **a_arg, **b_arg;
+
+	if (ZEND_NUM_ARGS() != 2 || zend_get_parameters_ex(2, &a_arg, &b_arg) == FAILURE){
+		WRONG_PARAM_COUNT;
+	}
+	
+	gmp_zval_binary_ui_op_ex(return_value, a_arg, b_arg, mpz_divexact, NULL, 0, 1 TSRMLS_CC);
 }
 /* }}} */
 
@@ -1496,6 +1492,11 @@ ZEND_FUNCTION(gmp_setbit)
 			break;
 	}
 
+	if (index < 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Index must be greater than or equal to zero");
+		return;
+	}
+
 	if (set) {
 		mpz_setbit(*gmpnum_a, index);
 	} else {
@@ -1520,6 +1521,11 @@ ZEND_FUNCTION(gmp_clrbit)
 
 	convert_to_long_ex(ind_arg);
 	index = Z_LVAL_PP(ind_arg);
+	
+	if (index < 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Index must be greater than or equal to zero");
+		return;
+	}
 
 	mpz_clrbit(*gmpnum_a, index);
 }
@@ -1574,6 +1580,11 @@ ZEND_FUNCTION(gmp_scan0)
 	FETCH_GMP_ZVAL(gmpnum_a, a_arg);
 	convert_to_long_ex(start_arg);
 
+	if (Z_LVAL_PP(start_arg) < 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Starting index must be greater than or equal to zero");
+		RETURN_FALSE;
+	}
+
 	RETURN_LONG(mpz_scan0(*gmpnum_a, Z_LVAL_PP(start_arg)));
 }
 /* }}} */
@@ -1591,6 +1602,11 @@ ZEND_FUNCTION(gmp_scan1)
 
 	FETCH_GMP_ZVAL(gmpnum_a, a_arg);
 	convert_to_long_ex(start_arg);
+	
+	if (Z_LVAL_PP(start_arg) < 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Starting index must be greater than or equal to zero");
+		RETURN_FALSE;
+	}
 
 	RETURN_LONG(mpz_scan1(*gmpnum_a, Z_LVAL_PP(start_arg)));
 }

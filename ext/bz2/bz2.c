@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
  
-/* $Id: bz2.c,v 1.14.2.3.2.8 2006/08/17 20:46:51 tony2001 Exp $ */
+/* $Id: bz2.c,v 1.14.2.3.2.12 2007/03/14 03:50:18 iliaa Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -225,6 +225,10 @@ PHP_BZ2_API php_stream *_php_stream_bz2open(php_stream_wrapper *wrapper,
 #else
 	path_copy = path;
 #endif  
+
+	if ((PG(safe_mode) && (!php_checkuid(path_copy, NULL, CHECKUID_CHECK_FILE_AND_DIR))) || php_check_open_basedir(path_copy TSRMLS_CC)) {
+		return NULL;
+	}
 	
 	/* try and open it directly first */
 	bz_file = BZ2_bzopen(path_copy, mode);
@@ -236,7 +240,7 @@ PHP_BZ2_API php_stream *_php_stream_bz2open(php_stream_wrapper *wrapper,
 	
 	if (bz_file == NULL) {
 		/* that didn't work, so try and get something from the network/wrapper */
-		stream = php_stream_open_wrapper(path, mode, options | STREAM_WILL_CAST, opened_path);
+		stream = php_stream_open_wrapper(path, mode, options | STREAM_WILL_CAST | ENFORCE_SAFE_MODE, opened_path);
 	
 		if (stream) {
 			int fd;
@@ -330,7 +334,7 @@ static PHP_FUNCTION(bzread)
 	
 	php_stream_from_zval(stream, &bz);
 
-	if (len < 0) {
+	if ((len + 1) < 1) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "length may not be negative");
 		RETURN_FALSE;
 	}
@@ -562,13 +566,13 @@ static PHP_FUNCTION(bzdecompress)
 		/* compression is better then 2:1, need to allocate more memory */
 		bzs.avail_out = source_len;
 		size = (bzs.total_out_hi32 * (unsigned int) -1) + bzs.total_out_lo32;
-		dest = erealloc(dest, size + bzs.avail_out + 1);
+		dest = safe_erealloc(dest, 1, bzs.avail_out+1, size );
 		bzs.next_out = dest + size;
 	}
 
 	if (error == BZ_STREAM_END || error == BZ_OK) {
 		size = (bzs.total_out_hi32 * (unsigned int) -1) + bzs.total_out_lo32;
-		dest = erealloc(dest, size + 1);
+		dest = safe_erealloc(dest, 1, size, 1);
 		dest[size] = '\0';
 		RETVAL_STRINGL(dest, size, 0);
 	} else { /* real error */

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_virtual_cwd.h,v 1.48.2.5.2.2 2006/10/04 13:24:19 tony2001 Exp $ */
+/* $Id: tsrm_virtual_cwd.h,v 1.48.2.5.2.8 2007/01/22 09:31:46 dmitry Exp $ */
 
 #ifndef VIRTUAL_CWD_H
 #define VIRTUAL_CWD_H
@@ -126,6 +126,12 @@ typedef unsigned short mode_t;
 #define CWD_API
 #endif
 
+#ifdef TSRM_WIN32
+CWD_API int php_sys_stat(const char *path, struct stat *buf);
+#else
+# define php_sys_stat stat
+#endif
+
 typedef struct _cwd_state {
 	char *cwd;
 	int cwd_length;
@@ -172,10 +178,6 @@ CWD_API int virtual_access(const char *pathname, int mode TSRMLS_DC);
 #endif
 #endif
 
-#if defined(__osf__) || defined(_AIX)
-char *php_realpath_hack(const char *src, char *dest);
-#endif
-
 #if HAVE_UTIME
 CWD_API int virtual_utime(const char *filename, struct utimbuf *buf TSRMLS_DC);
 #endif
@@ -184,7 +186,16 @@ CWD_API int virtual_chmod(const char *filename, mode_t mode TSRMLS_DC);
 CWD_API int virtual_chown(const char *filename, uid_t owner, gid_t group, int link TSRMLS_DC);
 #endif
 
+/* One of the following constants must be used as the last argument 
+   in virtual_file_ex() call. */
+
+#define CWD_EXPAND   0 /* expand "." and ".." but dont resolve symlinks      */
+#define CWD_FILEPATH 1 /* resolve symlinks if file is exist otherwise expand */
+#define CWD_REALPATH 2 /* call realpath(), resolve symlinks. File must exist */
+
 CWD_API int virtual_file_ex(cwd_state *state, const char *path, verify_path_func verify_path, int use_realpath);
+
+CWD_API char *tsrm_realpath(const char *path, char *real_path TSRMLS_DC);
 
 #define REALPATH_CACHE_TTL  (2*60) /* 2 minutes */
 #define REALPATH_CACHE_SIZE 0      /* disabled while php.ini isn't loaded */
@@ -214,6 +225,9 @@ extern ts_rsrc_id cwd_globals_id;
 extern virtual_cwd_globals cwd_globals;
 # define CWDG(v) (cwd_globals.v)
 #endif
+
+CWD_API void realpath_cache_clean(TSRMLS_D);
+CWD_API void realpath_cache_del(const char *path, int path_len TSRMLS_DC);
 
 /* The actual macros to be used in programs using TSRM
  * If the program defines VIRTUAL_DIR it will use the
@@ -265,7 +279,7 @@ extern virtual_cwd_globals cwd_globals;
 #define VCWD_CHDIR(path) chdir(path)
 #define VCWD_CHDIR_FILE(path) virtual_chdir_file(path, chdir)
 #define VCWD_GETWD(buf) getwd(buf)
-#define VCWD_STAT(path, buff) stat(path, buff)
+#define VCWD_STAT(path, buff) php_sys_stat(path, buff)
 #define VCWD_LSTAT(path, buff) lstat(path, buff)
 #define VCWD_UNLINK(path) unlink(path)
 #define VCWD_MKDIR(pathname, mode) mkdir(pathname, mode)
@@ -278,15 +292,7 @@ extern virtual_cwd_globals cwd_globals;
 #define VCWD_ACCESS(pathname, mode) access(pathname, mode)
 #endif
 
-#ifdef HAVE_REALPATH
-#if defined(__osf__) || defined(_AIX)
-#define VCWD_REALPATH(path, real_path) php_realpath_hack(path, real_path)
-#else
-#define VCWD_REALPATH(path, real_path) realpath(path, real_path)
-#endif
-#else
-#define VCWD_REALPATH(path, real_path) strcpy(real_path, path)
-#endif
+#define VCWD_REALPATH(path, real_path) tsrm_realpath(path, real_path TSRMLS_CC)
 
 #if HAVE_UTIME
 #define VCWD_UTIME(path, time) utime(path, time)

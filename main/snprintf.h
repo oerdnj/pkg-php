@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,11 +17,11 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: snprintf.h,v 1.32.2.3 2006/01/01 12:50:17 sniper Exp $ */
+/* $Id: snprintf.h,v 1.32.2.3.2.5 2007/04/06 19:25:52 andrei Exp $ */
 
 /*
 
-Comparing: sprintf, snprintf, spprintf 
+Comparing: sprintf, snprintf, slprintf, spprintf 
 
 sprintf  offers the ability to make a lot of failures since it does not know
          the size of the buffer it uses. Therefore usage of sprintf often
@@ -36,6 +36,11 @@ snprintf knows the buffers size and will not write behind it. But you will
          A bad thing is having a big maximum while in most cases you would
          only need a small buffer. If the size of the resulting string is 
          longer or equal to the buffer size than the buffer is not terminated.
+         The function also returns the number of chars not including the 
+         terminating \0 that were needed to fully comply to the print request.
+
+slprintf same as snprintf with the difference that it actually returns the 
+         length printed not including the terminating \0.
 
 spprintf is the dynamical version of snprintf. It allocates the buffer in size
          as needed and allows a maximum setting as snprintf (turn this feature
@@ -65,11 +70,34 @@ Example:
 #ifndef SNPRINTF_H
 #define SNPRINTF_H
 
+typedef int bool_int;
+
+typedef enum {
+	NO = 0, YES = 1
+} boolean_e;
+
+
 BEGIN_EXTERN_C()
-PHPAPI int ap_php_snprintf(char *, size_t, const char *, ...) PHP_ATTRIBUTE_FORMAT(printf, 3, 4);
-PHPAPI int ap_php_vsnprintf(char *, size_t, const char *, va_list ap) PHP_ATTRIBUTE_FORMAT(printf, 3, 0);
+PHPAPI int ap_php_slprintf(char *buf, size_t len, const char *format,...);
+PHPAPI int ap_php_vslprintf(char *buf, size_t len, const char *format, va_list ap);
+PHPAPI int ap_php_snprintf(char *, size_t, const char *, ...);
+PHPAPI int ap_php_vsnprintf(char *, size_t, const char *, va_list ap);
 PHPAPI int php_sprintf (char* s, const char* format, ...) PHP_ATTRIBUTE_FORMAT(printf, 2, 3);
+PHPAPI char * php_gcvt(double value, int ndigit, char dec_point, char exponent, char *buf);
+PHPAPI char * php_conv_fp(register char format, register double num,
+		 boolean_e add_dp, int precision, char dec_point, bool_int * is_negative, char *buf, int *len);
+
 END_EXTERN_C()
+
+#ifdef slprintf
+#undef slprintf
+#endif
+#define slprintf ap_php_slprintf
+
+#ifdef vslprintf
+#undef vslprintf
+#endif
+#define vslprintf ap_php_vslprintf
 
 #ifdef snprintf
 #undef snprintf
@@ -87,10 +115,6 @@ END_EXTERN_C()
 #define sprintf php_sprintf
 
 typedef enum {
-	NO = 0, YES = 1
-} boolean_e;
-
-typedef enum {
 	LM_STD = 0,
 #if SIZEOF_INTMAX_T
 	LM_INTMAX_T,
@@ -106,11 +130,6 @@ typedef enum {
 	LM_LONG_DOUBLE
 } length_modifier_e;
 
-extern char * ap_php_cvt(double arg, int ndigits, int *decpt, int *sign, int eflag, char *buf);
-extern char * ap_php_ecvt(double arg, int ndigits, int *decpt, int *sign, char *buf);
-extern char * ap_php_fcvt(double arg, int ndigits, int *decpt, int *sign, char *buf);
-extern char * ap_php_gcvt(double number, int ndigit, char *buf, boolean_e altform);
-
 #ifdef PHP_WIN32
 # define WIDE_INT		__int64
 #elif SIZEOF_LONG_LONG_INT
@@ -123,17 +142,11 @@ extern char * ap_php_gcvt(double number, int ndigit, char *buf, boolean_e altfor
 typedef WIDE_INT wide_int;
 typedef unsigned WIDE_INT u_wide_int;
 
-typedef int bool_int;
-
 extern char * ap_php_conv_10(register wide_int num, register bool_int is_unsigned,
 	   register bool_int * is_negative, char *buf_end, register int *len);
 
-extern char * ap_php_conv_fp(register char format, register double num,
-		 boolean_e add_dp, int precision, bool_int * is_negative, char *buf, int *len);
-
 extern char * ap_php_conv_p2(register u_wide_int num, register int nbits,
 		 char format, char *buf_end, register int *len);
-
 
 #endif /* SNPRINTF_H */
 

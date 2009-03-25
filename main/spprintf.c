@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: spprintf.c,v 1.25.2.2.2.1 2006/05/07 12:40:17 helly Exp $ */
+/* $Id: spprintf.c,v 1.25.2.2.2.5 2007/01/01 09:36:11 sebastian Exp $ */
 
 /* This is the spprintf implementation.
  * It has emerged from apache snprintf. See original header:
@@ -76,7 +76,6 @@
  * SIO stdio-replacement strx_* functions by Panos Tsirigotis
  * <panos@alumni.cs.colorado.edu> for xinetd.
  */
-
 #include "php.h"
 
 #include <stddef.h>
@@ -89,6 +88,13 @@
 #include <math.h>
 #ifdef HAVE_INTTYPES_H
 #include <inttypes.h>
+#endif
+
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#define LCONV_DECIMAL_POINT (*lconv->decimal_point)
+#else
+#define LCONV_DECIMAL_POINT '.'
 #endif
 
 #include "snprintf.h"
@@ -195,6 +201,10 @@ static void xbuf_format_converter(smart_str *xbuf, const char *fmt, va_list ap)
 
 	char num_buf[NUM_BUF_SIZE];
 	char char_buf[2];			/* for printing %% and %<unknown> */
+
+#ifdef HAVE_LOCALE_H
+	struct lconv *lconv = NULL;
+#endif
 
 	/*
 	 * Flag variables
@@ -528,6 +538,7 @@ static void xbuf_format_converter(smart_str *xbuf, const char *fmt, va_list ap)
 
 
 				case 'f':
+				case 'F':
 				case 'e':
 				case 'E':
 					switch(modifier) {
@@ -548,8 +559,14 @@ static void xbuf_format_converter(smart_str *xbuf, const char *fmt, va_list ap)
 						s = "inf";
 						s_len = 3;
 					} else {
-						s = ap_php_conv_fp(*fmt, fp_num, alternate_form,
-									(adjust_precision == NO) ? FLOAT_DIGITS : precision,
+#ifdef HAVE_LOCALE_H
+						if (!lconv) {
+							lconv = localeconv();
+						}
+#endif
+						s = php_conv_fp((*fmt == 'f')?'F':*fmt, fp_num, alternate_form,
+						 (adjust_precision == NO) ? FLOAT_DIGITS : precision,
+						 (*fmt == 'f')?(*lconv->decimal_point):'.',
 									&is_negative, &num_buf[1], &s_len);
 						if (is_negative)
 							prefix_char = '-';
@@ -596,8 +613,12 @@ static void xbuf_format_converter(smart_str *xbuf, const char *fmt, va_list ap)
 					/*
 					 * * We use &num_buf[ 1 ], so that we have room for the sign
 					 */
-					s = ap_php_gcvt(fp_num, precision, &num_buf[1],
-							alternate_form);
+#ifdef HAVE_LOCALE_H
+					if (!lconv) {
+						lconv = localeconv();
+					}
+#endif
+					s = php_gcvt(fp_num, precision, *lconv->decimal_point, (*fmt == 'G')?'E':'e', &num_buf[1]);
 					if (*s == '-')
 						prefix_char = *s++;
 					else if (print_sign)
@@ -609,8 +630,6 @@ static void xbuf_format_converter(smart_str *xbuf, const char *fmt, va_list ap)
 
 					if (alternate_form && (q = strchr(s, '.')) == NULL)
 						s[s_len++] = '.';
-					if (*fmt == 'G' && (q = strchr(s, 'e')) != NULL)
-						*q = 'E';
 					break;
 
 
@@ -747,7 +766,6 @@ PHPAPI int spprintf(char **pbuf, size_t max_len, const char *format, ...)
 	va_end(ap);
 	return (cc);
 }
-
 /*
  * Local variables:
  * tab-width: 4

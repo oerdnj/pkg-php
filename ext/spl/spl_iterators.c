@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_iterators.c,v 1.73.2.30.2.17 2006/07/21 21:26:11 helly Exp $ */
+/* $Id: spl_iterators.c,v 1.73.2.30.2.27 2007/03/04 14:01:06 helly Exp $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -57,6 +57,7 @@ PHPAPI zend_class_entry *spl_ce_EmptyIterator;
 PHPAPI zend_class_entry *spl_ce_AppendIterator;
 PHPAPI zend_class_entry *spl_ce_RegexIterator;
 PHPAPI zend_class_entry *spl_ce_RecursiveRegexIterator;
+PHPAPI zend_class_entry *spl_ce_Countable;
 
 zend_function_entry spl_funcs_RecursiveIterator[] = {
 	SPL_ABSTRACT_ME(RecursiveIterator, hasChildren,  NULL)
@@ -748,18 +749,19 @@ static zend_object_value spl_RecursiveIteratorIterator_new(zend_class_entry *cla
 /* }}} */
 
 static
-ZEND_BEGIN_ARG_INFO(arginfo_recursive_it___construct, 0) 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_recursive_it___construct, 0, 0, 1) 
 	ZEND_ARG_OBJ_INFO(0, iterator, Traversable, 0)
 	ZEND_ARG_INFO(0, mode)
+	ZEND_ARG_INFO(0, flags)
 ZEND_END_ARG_INFO();
 
 static
-ZEND_BEGIN_ARG_INFO(arginfo_recursive_it_getSubIterator, 0) 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_recursive_it_getSubIterator, 0, 0, 0)
 	ZEND_ARG_INFO(0, level)
 ZEND_END_ARG_INFO();
 
 static
-ZEND_BEGIN_ARG_INFO(arginfo_recursive_it_setMaxDepth, 0) 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_recursive_it_setMaxDepth, 0, 0, 0)
 	ZEND_ARG_INFO(0, max_depth)
 ZEND_END_ARG_INFO();
 
@@ -1012,8 +1014,13 @@ static spl_dual_it_object* spl_dual_it_construct(INTERNAL_FUNCTION_PARAMETERS, z
 			intern->u.regex.mode = mode;
 			intern->u.regex.regex = estrndup(regex, regex_len);
 			intern->u.regex.pce = pcre_get_compiled_regex_cache(regex, regex_len TSRMLS_CC);
+			if (intern->u.regex.pce == NULL) {
+				/* pcre_get_compiled_regex_cache has already sent error */
+				php_set_error_handling(EH_NORMAL, NULL TSRMLS_CC);
+				return NULL;
+			}
 			intern->u.regex.pce->refcount++;
-			break;;
+			break;
 		}
 #endif
 		default:
@@ -1329,41 +1336,6 @@ SPL_METHOD(ParentIterator, __construct)
 	spl_dual_it_construct(INTERNAL_FUNCTION_PARAM_PASSTHRU, spl_ce_ParentIterator, spl_ce_RecursiveIterator, DIT_ParentIterator);
 } /* }}} */
 
-/* {{{ proto bool ParentIterator::hasChildren()
-   Check whether the inner iterator's current element has children */
-SPL_METHOD(ParentIterator, hasChildren)
-{
-	spl_dual_it_object   *intern;
-	zval                 *retval;
-
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
-
-	zend_call_method_with_0_params(&intern->inner.zobject, intern->inner.ce, NULL, "haschildren", &retval);
-	if (retval) {
-		RETURN_ZVAL(retval, 0, 1);
-	} else {
-		RETURN_FALSE;
-	}
-} /* }}} */
-
-/* {{{ proto ParentIterator ParentIterator::getChildren()
-   Return the inner iterator's children contained in a ParentIterator */
-SPL_METHOD(ParentIterator, getChildren)
-{
-	spl_dual_it_object   *intern;
-	zval                 *retval;
-
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
-
-	zend_call_method_with_0_params(&intern->inner.zobject, intern->inner.ce, NULL, "getchildren", &retval);
-	if (!EG(exception) && retval) {
-		spl_instantiate_arg_ex1(Z_OBJCE_P(getThis()), &return_value, 0, retval TSRMLS_CC);
-	}
-	if (retval) {
-		zval_ptr_dtor(&retval);
-	}
-} /* }}} */
-
 #if HAVE_PCRE || HAVE_BUNDLED_PCRE
 /* {{{ proto void RegexIterator::__construct(Iterator it, string regex [, int mode [, int flags [, int preg_flags]]]) 
    Create an RegexIterator from another iterator and a regular expression */
@@ -1383,7 +1355,7 @@ SPL_METHOD(RegexIterator, accept)
 
 	if (intern->u.regex.flags & REGIT_USE_KEY) {
 		if (intern->current.key_type == HASH_KEY_IS_LONG) {
-			subject_len = snprintf(tmp, sizeof(tmp), "%ld", intern->current.int_key);
+			subject_len = slprintf(tmp, sizeof(tmp), "%ld", intern->current.int_key);
 			subject = &tmp[0];
 			use_copy = 0;
 		} else {
@@ -1481,7 +1453,7 @@ SPL_METHOD(RegexIterator, setMode)
 
 	if (mode < 0 || mode >= REGIT_MODE_MAX) {
 		zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0 TSRMLS_CC, "Illegal mode %ld", mode);
-		return;// NULL
+		return;/* NULL */
 	}
 
 	intern->u.regex.mode = mode;
@@ -1523,7 +1495,7 @@ SPL_METHOD(RegexIterator, getPregFlags)
 	}
 } /* }}} */
 
-/* {{{ proto bool RegexIterator::setFlags(int new_flags)
+/* {{{ proto bool RegexIterator::setPregFlags(int new_flags)
    Set PREG flags */
 SPL_METHOD(RegexIterator, setPregFlags)
 {
@@ -1658,7 +1630,6 @@ ZEND_END_ARG_INFO();
 
 static zend_function_entry spl_funcs_RecursiveFilterIterator[] = {
 	SPL_ME(RecursiveFilterIterator,  __construct,      arginfo_parent_it___construct, ZEND_ACC_PUBLIC)
-	SPL_MA(ParentIterator,  accept,  RecursiveFilterIterator, hasChildren, NULL, ZEND_ACC_PUBLIC)
 	SPL_ME(RecursiveFilterIterator,  hasChildren,      NULL, ZEND_ACC_PUBLIC)
 	SPL_ME(RecursiveFilterIterator,  getChildren,      NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
@@ -1666,10 +1637,7 @@ static zend_function_entry spl_funcs_RecursiveFilterIterator[] = {
 
 static zend_function_entry spl_funcs_ParentIterator[] = {
 	SPL_ME(ParentIterator,  __construct,      arginfo_parent_it___construct, ZEND_ACC_PUBLIC)
-	SPL_MA(ParentIterator,  accept,           ParentIterator, hasChildren, NULL, ZEND_ACC_PUBLIC)
-	SPL_ME(ParentIterator,  hasChildren,      NULL, ZEND_ACC_PUBLIC)
-	SPL_ME(ParentIterator,  getChildren,      NULL, ZEND_ACC_PUBLIC)
-	SPL_ME(dual_it,         getInnerIterator, NULL, ZEND_ACC_PUBLIC)
+	SPL_MA(ParentIterator,  accept,           RecursiveFilterIterator, hasChildren, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 
@@ -1720,9 +1688,9 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_rec_regex_it___construct, 0, 0, 2)
 ZEND_END_ARG_INFO();
 
 static zend_function_entry spl_funcs_RecursiveRegexIterator[] = {
-	SPL_ME(RecursiveRegexIterator, __construct,      arginfo_rec_regex_it___construct, ZEND_ACC_PUBLIC)
-	SPL_ME(ParentIterator,         hasChildren,      NULL, ZEND_ACC_PUBLIC)
-	SPL_ME(RecursiveRegexIterator, getChildren,      NULL, ZEND_ACC_PUBLIC)
+	SPL_ME(RecursiveRegexIterator,  __construct,      arginfo_rec_regex_it___construct, ZEND_ACC_PUBLIC)
+	SPL_ME(RecursiveFilterIterator, hasChildren,      NULL, ZEND_ACC_PUBLIC)
+	SPL_ME(RecursiveRegexIterator,  getChildren,      NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 #endif
@@ -1857,7 +1825,7 @@ static zend_function_entry spl_funcs_SeekableIterator[] = {
 };
 
 static
-ZEND_BEGIN_ARG_INFO(arginfo_limit_it___construct, 0) 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_limit_it___construct, 0, 0, 1) 
 	ZEND_ARG_OBJ_INFO(0, iterator, Iterator, 0)
 	ZEND_ARG_INFO(0, offset)
 	ZEND_ARG_INFO(0, count)
@@ -2192,7 +2160,7 @@ SPL_METHOD(CachingIterator, getFlags)
 }
 /* }}} */
 
-/* {{{ proto void CachingIterator::setFlags()
+/* {{{ proto void CachingIterator::setFlags(int flags)
    Set the internal flags */
 SPL_METHOD(CachingIterator, setFlags)
 {
@@ -2225,8 +2193,25 @@ SPL_METHOD(CachingIterator, setFlags)
 }
 /* }}} */
 
+/* {{{ proto void CachingIterator::count()
+   Number of cached elements */
+SPL_METHOD(CachingIterator, count)
+{
+	spl_dual_it_object   *intern;
+
+	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	if (!(intern->u.caching.flags & CIT_FULL_CACHE))	{
+		zend_throw_exception_ex(spl_ce_BadMethodCallException, 0 TSRMLS_CC, "%v does not use a full cache (see CachingIterator::__construct)", Z_OBJCE_P(getThis())->name);
+		return;
+	}
+
+	RETURN_LONG(zend_hash_num_elements(HASH_OF(intern->u.caching.zcache)));
+}
+/* }}} */
+
 static
-ZEND_BEGIN_ARG_INFO(arginfo_caching_it___construct, 0) 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_caching_it___construct, 0, 0, 1) 
 	ZEND_ARG_OBJ_INFO(0, iterator, Iterator, 0)
 	ZEND_ARG_INFO(0, flags)
 ZEND_END_ARG_INFO();
@@ -2237,12 +2222,12 @@ ZEND_BEGIN_ARG_INFO(arginfo_caching_it_setFlags, 0)
 ZEND_END_ARG_INFO();
 
 static
-ZEND_BEGIN_ARG_INFO_EX(arginfo_caching_it_offsetGet, 0, 0, 1)
+ZEND_BEGIN_ARG_INFO(arginfo_caching_it_offsetGet, 0)
 	ZEND_ARG_INFO(0, index)
 ZEND_END_ARG_INFO();
 
 static
-ZEND_BEGIN_ARG_INFO_EX(arginfo_caching_it_offsetSet, 0, 0, 2)
+ZEND_BEGIN_ARG_INFO(arginfo_caching_it_offsetSet, 0)
 	ZEND_ARG_INFO(0, index)
 	ZEND_ARG_INFO(0, newval)
 ZEND_END_ARG_INFO();
@@ -2264,6 +2249,7 @@ static zend_function_entry spl_funcs_CachingIterator[] = {
 	SPL_ME(CachingIterator, offsetUnset,      arginfo_caching_it_offsetGet,   ZEND_ACC_PUBLIC)
 	SPL_ME(CachingIterator, offsetExists,     arginfo_caching_it_offsetGet,   ZEND_ACC_PUBLIC)
 	SPL_ME(CachingIterator, getCache,         NULL, ZEND_ACC_PUBLIC)
+	SPL_ME(CachingIterator, count,            NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 
@@ -2301,7 +2287,7 @@ SPL_METHOD(RecursiveCachingIterator, getChildren)
 } /* }}} */
 
 static
-ZEND_BEGIN_ARG_INFO_EX(arginfo_caching_rec_it___construct, 0, ZEND_RETURN_VALUE, 2) 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_caching_rec_it___construct, 0, ZEND_RETURN_VALUE, 1) 
 	ZEND_ARG_OBJ_INFO(0, iterator, Iterator, 0)
 	ZEND_ARG_INFO(0, flags)
 ZEND_END_ARG_INFO();
@@ -2728,23 +2714,38 @@ static int spl_iterator_to_array_apply(zend_object_iterator *iter, void *puser T
 }
 /* }}} */
 
-/* {{{ proto array iterator_to_array(Traversable it) 
+static int spl_iterator_to_values_apply(zend_object_iterator *iter, void *puser TSRMLS_DC) /* {{{ */
+{
+	zval **data, *return_value = (zval*)puser;
+
+	iter->funcs->get_current_data(iter, &data TSRMLS_CC);
+	if (EG(exception)) {
+		return ZEND_HASH_APPLY_STOP;
+	}
+	(*data)->refcount++;
+	add_next_index_zval(return_value, *data);
+	return ZEND_HASH_APPLY_KEEP;
+}
+/* }}} */
+
+/* {{{ proto array iterator_to_array(Traversable it [, bool use_keys = true]) 
    Copy the iterator into an array */
 PHP_FUNCTION(iterator_to_array)
 {
 	zval  *obj;
+	zend_bool use_keys = 1;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &obj, zend_ce_traversable) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O|b", &obj, zend_ce_traversable, &use_keys) == FAILURE) {
 		RETURN_FALSE;
 	}
 
 	array_init(return_value);
-	
-	if (spl_iterator_apply(obj, spl_iterator_to_array_apply, (void*)return_value TSRMLS_CC) != SUCCESS) {
+
+	if (spl_iterator_apply(obj, use_keys ? spl_iterator_to_array_apply : spl_iterator_to_values_apply, (void*)return_value TSRMLS_CC) != SUCCESS) {
 		zval_dtor(return_value);
 		RETURN_NULL();
 	}
-}
+} /* }}} */
 
 static int spl_iterator_count_apply(zend_object_iterator *iter, void *puser TSRMLS_DC) /* {{{ */
 {
@@ -2823,6 +2824,11 @@ static zend_function_entry spl_funcs_OuterIterator[] = {
 	{NULL, NULL, NULL}
 };
 
+static zend_function_entry spl_funcs_Countable[] = {
+	SPL_ABSTRACT_ME(Countable, count,   NULL)
+	{NULL, NULL, NULL}
+};
+
 /* {{{ PHP_MINIT_FUNCTION(spl_iterators)
  */
 PHP_MINIT_FUNCTION(spl_iterators)
@@ -2865,6 +2871,7 @@ PHP_MINIT_FUNCTION(spl_iterators)
 
 	REGISTER_SPL_SUB_CLASS_EX(ParentIterator, RecursiveFilterIterator, spl_dual_it_new, spl_funcs_ParentIterator);
 
+	REGISTER_SPL_INTERFACE(Countable);
 	REGISTER_SPL_INTERFACE(SeekableIterator);
 	REGISTER_SPL_ITERATOR(SeekableIterator);
 
@@ -2872,6 +2879,7 @@ PHP_MINIT_FUNCTION(spl_iterators)
 
 	REGISTER_SPL_SUB_CLASS_EX(CachingIterator, IteratorIterator, spl_dual_it_new, spl_funcs_CachingIterator);
 	REGISTER_SPL_IMPLEMENTS(CachingIterator, ArrayAccess);
+	REGISTER_SPL_IMPLEMENTS(CachingIterator, Countable);
 
 	REGISTER_SPL_CLASS_CONST_LONG(CachingIterator, "CALL_TOSTRING",        CIT_CALL_TOSTRING); 
 	REGISTER_SPL_CLASS_CONST_LONG(CachingIterator, "CATCH_GET_CHILD",      CIT_CATCH_GET_CHILD); 

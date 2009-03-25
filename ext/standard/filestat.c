@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: filestat.c,v 1.136.2.8.2.3 2006/07/02 13:51:40 iliaa Exp $ */
+/* $Id: filestat.c,v 1.136.2.8.2.12 2007/04/06 22:10:56 tony2001 Exp $ */
 
 #include "php.h"
 #include "safe_mode.h"
@@ -98,14 +98,15 @@
 
 #define S_IXROOT ( S_IXUSR | S_IXGRP | S_IXOTH )
 
-PHP_RINIT_FUNCTION(filestat)
+PHP_RINIT_FUNCTION(filestat) /* {{{ */
 {
 	BG(CurrentStatFile)=NULL;
 	BG(CurrentLStatFile)=NULL;
 	return SUCCESS;
 }
+/* }}} */
 
-PHP_RSHUTDOWN_FUNCTION(filestat) 
+PHP_RSHUTDOWN_FUNCTION(filestat) /* {{{ */ 
 {
 	if (BG(CurrentStatFile)) {
 		efree (BG(CurrentStatFile));
@@ -117,15 +118,12 @@ PHP_RSHUTDOWN_FUNCTION(filestat)
 	}
 	return SUCCESS;
 }
+/* }}} */
 
-/* {{{ proto float disk_total_space(string path)
-   Get total disk space for filesystem that path is on */
-PHP_FUNCTION(disk_total_space)
+static int php_disk_total_space(char *path, double *space TSRMLS_DC) /* {{{ */
+#if defined(WINDOWS) /* {{{ */
 {
-	zval **path;
-#ifdef WINDOWS
-	double bytestotal;
-
+	double bytestotal = 0;
 	HINSTANCE kernel32;
 	FARPROC gdfse;
 	typedef BOOL (WINAPI *gdfse_func)(LPCTSTR, PULARGE_INTEGER, PULARGE_INTEGER, PULARGE_INTEGER);
@@ -142,26 +140,6 @@ PHP_FUNCTION(disk_total_space)
 	DWORD NumberOfFreeClusters;
 	DWORD TotalNumberOfClusters;
 
-#else /* not - WINDOWS */
-#if defined(HAVE_SYS_STATVFS_H) && defined(HAVE_STATVFS)
-	struct statvfs buf;
-#elif (defined(HAVE_SYS_STATFS_H) || defined(HAVE_SYS_MOUNT_H)) && defined(HAVE_STATFS)
-	struct statfs buf;
-#endif
-	double bytestotal = 0;
-#endif /* WINDOWS */
-
-	if (ZEND_NUM_ARGS()!=1 || zend_get_parameters_ex(1, &path)==FAILURE) {
-		WRONG_PARAM_COUNT;
-	}
-
-	convert_to_string_ex(path);
-
-	if (php_check_open_basedir(Z_STRVAL_PP(path) TSRMLS_CC)) {
-		RETURN_FALSE;
-	}
-
-#ifdef WINDOWS
 	/* GetDiskFreeSpaceEx is only available in NT and Win95 post-OSR2,
 	   so we have to jump through some hoops to see if the function
 	   exists. */
@@ -171,48 +149,63 @@ PHP_FUNCTION(disk_total_space)
 		/* It's available, so we can call it. */
 		if (gdfse) {
 			func = (gdfse_func)gdfse;
-			if (func(Z_STRVAL_PP(path),
-				&FreeBytesAvailableToCaller,
-				&TotalNumberOfBytes,
-				&TotalNumberOfFreeBytes) == 0) { 
+			if (func(path,
+						&FreeBytesAvailableToCaller,
+						&TotalNumberOfBytes,
+						&TotalNumberOfFreeBytes) == 0) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", php_win_err());
-				RETURN_FALSE;
+				return FAILURE;
 			}
 
 			/* i know - this is ugly, but i works <thies@thieso.net> */
 			bytestotal  = TotalNumberOfBytes.HighPart *
 				(double) (((unsigned long)1) << 31) * 2.0 +
 				TotalNumberOfBytes.LowPart;
-		}
-		/* If it's not available, we just use GetDiskFreeSpace */
-		else {
-			if (GetDiskFreeSpace(Z_STRVAL_PP(path),
-				&SectorsPerCluster, &BytesPerSector,
-				&NumberOfFreeClusters, &TotalNumberOfClusters) == 0) { 
+		} else { /* If it's not available, we just use GetDiskFreeSpace */
+			if (GetDiskFreeSpace(path,
+						&SectorsPerCluster, &BytesPerSector,
+						&NumberOfFreeClusters, &TotalNumberOfClusters) == 0) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", php_win_err());
-				RETURN_FALSE; 
+				return FAILURE;
 			}
 			bytestotal = (double)TotalNumberOfClusters * (double)SectorsPerCluster * (double)BytesPerSector;
 		}
-	}
-	else {
+	} else {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to load kernel32.dll");
-		RETURN_FALSE;
+		return FAILURE;
 	}
+	
+	*space = bytestotal;
+	return SUCCESS;	
+}
+/* }}} */
+#elif defined(OS2) /* {{{ */
+{
+	double bytestotal = 0;
+	FSALLOCATE fsinfo;
+	char drive = path[0] & 95;
 
-#elif defined(OS2)
-	{
-		FSALLOCATE fsinfo;
-		char drive = Z_STRVAL_PP(path)[0] & 95;
-
-		if (DosQueryFSInfo( drive ? drive - 64 : 0, FSIL_ALLOC, &fsinfo, sizeof( fsinfo ) ) == 0)
-			bytestotal = (double)fsinfo.cbSector * fsinfo.cSectorUnit * fsinfo.cUnit;
+	if (DosQueryFSInfo( drive ? drive - 64 : 0, FSIL_ALLOC, &fsinfo, sizeof( fsinfo ) ) == 0) {
+		bytestotal = (double)fsinfo.cbSector * fsinfo.cSectorUnit * fsinfo.cUnit;
+		*space = bytestotal;
+		return SUCCESS;
 	}
-#else /* WINDOWS, OS/2 */
+	return FAILURE;
+}
+/* }}} */
+#else /* {{{ if !defined(OS2) && !defined(WINDOWS) */
+{
+	double bytestotal = 0;
 #if defined(HAVE_SYS_STATVFS_H) && defined(HAVE_STATVFS)
-	if (statvfs(Z_STRVAL_PP(path), &buf)) { 
+    struct statvfs buf;
+#elif (defined(HAVE_SYS_STATFS_H) || defined(HAVE_SYS_MOUNT_H)) && defined(HAVE_STATFS)
+    struct statfs buf;
+#endif
+
+#if defined(HAVE_SYS_STATVFS_H) && defined(HAVE_STATVFS)
+	if (statvfs(path, &buf)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", strerror(errno));
-		RETURN_FALSE; 
+		return FAILURE;
 	}
 	if (buf.f_frsize) {
 		bytestotal = (((double)buf.f_blocks) * ((double)buf.f_frsize));
@@ -221,25 +214,47 @@ PHP_FUNCTION(disk_total_space)
 	}
 
 #elif (defined(HAVE_SYS_STATFS_H) || defined(HAVE_SYS_MOUNT_H)) && defined(HAVE_STATFS)
-	if (statfs(Z_STRVAL_PP(path), &buf)) { 
+	if (statfs(path, &buf)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", strerror(errno));
-		RETURN_FALSE;
+		return FAILURE;
 	}
 	bytestotal = (((double)buf.f_bsize) * ((double)buf.f_blocks));
 #endif
-#endif /* WINDOWS */
 
-	RETURN_DOUBLE(bytestotal);
+	*space = bytestotal;
+	return SUCCESS;
+}
+#endif
+/* }}} */
+/* }}} */
+
+/* {{{ proto float disk_total_space(string path)
+   Get total disk space for filesystem that path is on */
+PHP_FUNCTION(disk_total_space)
+{
+	double bytestotal;
+	char *path;
+	int path_len;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &path, &path_len) == FAILURE) {
+		return;
+	}
+
+	if (php_check_open_basedir(path TSRMLS_CC)) {
+		RETURN_FALSE;
+	}
+
+	if (php_disk_total_space(path, &bytestotal TSRMLS_CC) == SUCCESS) {
+		RETURN_DOUBLE(bytestotal);
+	}
+	RETURN_FALSE;
 }
 /* }}} */
 
-/* {{{ proto float disk_free_space(string path)
-   Get free disk space for filesystem that path is on */
-PHP_FUNCTION(disk_free_space)
+static int php_disk_free_space(char *path, double *space TSRMLS_DC) /* {{{ */
+#if defined(WINDOWS) /* {{{ */ 
 {
-	zval **path;
-#ifdef WINDOWS
-	double bytesfree;
+	double bytesfree = 0;
 
 	HINSTANCE kernel32;
 	FARPROC gdfse;
@@ -257,26 +272,6 @@ PHP_FUNCTION(disk_free_space)
 	DWORD NumberOfFreeClusters;
 	DWORD TotalNumberOfClusters;
 
-#else /* not - WINDOWS */
-#if defined(HAVE_SYS_STATVFS_H) && defined(HAVE_STATVFS)
-	struct statvfs buf;
-#elif (defined(HAVE_SYS_STATFS_H) || defined(HAVE_SYS_MOUNT_H)) && defined(HAVE_STATFS)
-	struct statfs buf;
-#endif
-	double bytesfree = 0;
-#endif /* WINDOWS */
-
-	if (ZEND_NUM_ARGS()!=1 || zend_get_parameters_ex(1, &path)==FAILURE) {
-		WRONG_PARAM_COUNT;
-	}
-
-	convert_to_string_ex(path);
-
-	if (php_check_open_basedir(Z_STRVAL_PP(path) TSRMLS_CC)) {
-		RETURN_FALSE;
-	}
-
-#ifdef WINDOWS
 	/* GetDiskFreeSpaceEx is only available in NT and Win95 post-OSR2,
 	   so we have to jump through some hoops to see if the function
 	   exists. */
@@ -286,48 +281,63 @@ PHP_FUNCTION(disk_free_space)
 		/* It's available, so we can call it. */
 		if (gdfse) {
 			func = (gdfse_func)gdfse;
-			if (func(Z_STRVAL_PP(path),
+			if (func(path,
 				&FreeBytesAvailableToCaller,
 				&TotalNumberOfBytes,
 				&TotalNumberOfFreeBytes) == 0) { 
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", php_win_err());
-				RETURN_FALSE;
+				return FAILURE;
 			}
 
 			/* i know - this is ugly, but i works <thies@thieso.net> */
 			bytesfree  = FreeBytesAvailableToCaller.HighPart *
 				(double) (((unsigned long)1) << 31) * 2.0 +
 				FreeBytesAvailableToCaller.LowPart;
-		}
-		/* If it's not available, we just use GetDiskFreeSpace */
-		else {
-			if (GetDiskFreeSpace(Z_STRVAL_PP(path),
+		} else { /* If it's not available, we just use GetDiskFreeSpace */
+			if (GetDiskFreeSpace(path,
 				&SectorsPerCluster, &BytesPerSector,
 				&NumberOfFreeClusters, &TotalNumberOfClusters) == 0) { 
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", php_win_err());
-				RETURN_FALSE;
+				return FAILURE;
 			}
 			bytesfree = (double)NumberOfFreeClusters * (double)SectorsPerCluster * (double)BytesPerSector;
 		}
-	}
-	else {
+	} else {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to load kernel32.dll");
-		RETURN_FALSE;
+		return FAILURE;
 	}
 
-#elif defined(OS2)
-	{
-		FSALLOCATE fsinfo;
-		char drive = Z_STRVAL_PP(path)[0] & 95;
+	*space = bytesfree;
+	return SUCCESS;
+}
+/* }}} */
+#elif defined(OS2) /* {{{ */
+{
+	double bytesfree = 0;
+	FSALLOCATE fsinfo;
+	char drive = path[0] & 95;
 
-		if (DosQueryFSInfo( drive ? drive - 64 : 0, FSIL_ALLOC, &fsinfo, sizeof( fsinfo ) ) == 0)
-			bytesfree = (double)fsinfo.cbSector * fsinfo.cSectorUnit * fsinfo.cUnitAvail;
-	}
-#else /* WINDOWS, OS/2 */
+	if (DosQueryFSInfo( drive ? drive - 64 : 0, FSIL_ALLOC, &fsinfo, sizeof( fsinfo ) ) == 0) {
+		bytesfree = (double)fsinfo.cbSector * fsinfo.cSectorUnit * fsinfo.cUnitAvail;
+		*space = bytesfree;
+		return SUCCESS;
+	} 
+	return FAILURE;
+}
+/* }}} */
+#else /* {{{ if !defined(OS2) && !defined(WINDOWS) */
+{
+	double bytesfree = 0;
 #if defined(HAVE_SYS_STATVFS_H) && defined(HAVE_STATVFS)
-	if (statvfs(Z_STRVAL_PP(path), &buf)) { 
+	struct statvfs buf;
+#elif (defined(HAVE_SYS_STATFS_H) || defined(HAVE_SYS_MOUNT_H)) && defined(HAVE_STATFS)
+	struct statfs buf;
+#endif
+
+#if defined(HAVE_SYS_STATVFS_H) && defined(HAVE_STATVFS)
+	if (statvfs(path, &buf)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", strerror(errno));
-		RETURN_FALSE;
+		return FAILURE;
 	}
 	if (buf.f_frsize) {
 		bytesfree = (((double)buf.f_bavail) * ((double)buf.f_frsize));
@@ -335,9 +345,9 @@ PHP_FUNCTION(disk_free_space)
 		bytesfree = (((double)buf.f_bavail) * ((double)buf.f_bsize));
 	}
 #elif (defined(HAVE_SYS_STATFS_H) || defined(HAVE_SYS_MOUNT_H)) && defined(HAVE_STATFS)
-	if (statfs(Z_STRVAL_PP(path), &buf)) {
+	if (statfs(path, &buf)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", strerror(errno));
-		RETURN_FALSE;
+		return FAILURE;
 	}
 #ifdef NETWARE
 	bytesfree = (((double)buf.f_bsize) * ((double)buf.f_bfree));
@@ -345,18 +355,42 @@ PHP_FUNCTION(disk_free_space)
 	bytesfree = (((double)buf.f_bsize) * ((double)buf.f_bavail));
 #endif
 #endif
-#endif /* WINDOWS */
+	
+	*space = bytesfree;
+	return SUCCESS;
+}
+#endif
+/* }}} */
+/* }}} */
 
-	RETURN_DOUBLE(bytesfree);
+/* {{{ proto float disk_free_space(string path)
+   Get free disk space for filesystem that path is on */
+PHP_FUNCTION(disk_free_space)
+{
+	double bytesfree;
+	char *path;
+	int path_len;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &path, &path_len) == FAILURE) {
+		return;
+	}
+
+	if (php_check_open_basedir(path TSRMLS_CC)) {
+		RETURN_FALSE;
+	}
+
+	if (php_disk_free_space(path, &bytesfree TSRMLS_CC) == SUCCESS) {
+		RETURN_DOUBLE(bytesfree);
+	}
+	RETURN_FALSE;
 }
 /* }}} */
 
 #if !defined(WINDOWS)
-static void php_do_chgrp(INTERNAL_FUNCTION_PARAMETERS, int do_lchgrp)
+static void php_do_chgrp(INTERNAL_FUNCTION_PARAMETERS, int do_lchgrp) /* {{{ */
 {
 	zval **filename, **group;
 	gid_t gid;
-	struct group *gr=NULL;
 	int ret;
 
 	if (ZEND_NUM_ARGS()!=2 || zend_get_parameters_ex(2, &filename, &group)==FAILURE) {
@@ -364,13 +398,33 @@ static void php_do_chgrp(INTERNAL_FUNCTION_PARAMETERS, int do_lchgrp)
 	}
 	convert_to_string_ex(filename);
 	if (Z_TYPE_PP(group) == IS_STRING) {
-		gr = getgrnam(Z_STRVAL_PP(group));
+#if defined(ZTS) && defined(HAVE_GETGRNAM_R) && defined(_SC_GETGR_R_SIZE_MAX)
+		struct group gr;
+		struct group *retgrptr;
+		long grbuflen = sysconf(_SC_GETGR_R_SIZE_MAX);
+		char *grbuf;
+
+		if (grbuflen < 1) {
+			RETURN_FALSE;
+		}
+
+		grbuf = emalloc(grbuflen);
+		if (getgrnam_r(Z_STRVAL_PP(group), &gr, grbuf, grbuflen, &retgrptr) != 0 || retgrptr == NULL) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to find gid for %s", Z_STRVAL_PP(group));
+			efree(grbuf);
+			RETURN_FALSE;
+		}
+		efree(grbuf);
+		gid = gr.gr_gid;
+#else
+		struct group *gr = getgrnam(Z_STRVAL_PP(group));
+
 		if (!gr) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to find gid for %s",
-					   Z_STRVAL_PP(group));
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to find gid for %s", Z_STRVAL_PP(group));
 			RETURN_FALSE;
 		}
 		gid = gr->gr_gid;
+#endif
 	} else {
 		convert_to_long_ex(group);
 		gid = Z_LVAL_PP(group);
@@ -398,6 +452,7 @@ static void php_do_chgrp(INTERNAL_FUNCTION_PARAMETERS, int do_lchgrp)
 	}
 	RETURN_TRUE;
 }
+/* }}} */
 #endif
 
 #ifndef NETWARE
@@ -428,25 +483,45 @@ PHP_FUNCTION(lchgrp)
 /* }}} */
 #endif
 
-static void php_do_chown(INTERNAL_FUNCTION_PARAMETERS, int do_lchown)
+#if !defined(WINDOWS)
+static void php_do_chown(INTERNAL_FUNCTION_PARAMETERS, int do_lchown) /* {{{ */
 {
 	zval **filename, **user;
 	int ret;
 	uid_t uid;
-	struct passwd *pw = NULL;
 
 	if (ZEND_NUM_ARGS()!=2 || zend_get_parameters_ex(2, &filename, &user)==FAILURE) {
 		WRONG_PARAM_COUNT;
 	}
 	convert_to_string_ex(filename);
 	if (Z_TYPE_PP(user) == IS_STRING) {
-		pw = getpwnam(Z_STRVAL_PP(user));
+#if defined(ZTS) && defined(_SC_GETPW_R_SIZE_MAX) && defined(HAVE_GETPWNAM_R)
+		struct passwd pw;
+		struct passwd *retpwptr = NULL;
+		long pwbuflen = sysconf(_SC_GETPW_R_SIZE_MAX);
+		char *pwbuf;
+
+		if (pwbuflen < 1) {
+			RETURN_FALSE;
+		}
+
+		pwbuf = emalloc(pwbuflen);
+		if (getpwnam_r(Z_STRVAL_PP(user), &pw, pwbuf, pwbuflen, &retpwptr) != 0 || retpwptr == NULL) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to find uid for %s", Z_STRVAL_PP(user));
+			efree(pwbuf);
+			RETURN_FALSE;
+		}
+		efree(pwbuf);
+		uid = pw.pw_uid;
+#else
+		struct passwd *pw = getpwnam(Z_STRVAL_PP(user));
+
 		if (!pw) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to find uid for %s",
-					   Z_STRVAL_PP(user));
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to find uid for %s", Z_STRVAL_PP(user));
 			RETURN_FALSE;
 		}
 		uid = pw->pw_uid;
+#endif
 	} else {
 		convert_to_long_ex(user);
 		uid = Z_LVAL_PP(user);
@@ -473,6 +548,8 @@ static void php_do_chown(INTERNAL_FUNCTION_PARAMETERS, int do_lchown)
 		RETURN_FALSE;
 	}
 }
+/* }}} */
+#endif
 
 #ifndef NETWARE
 /* {{{ proto bool chown (string filename, mixed user)
@@ -633,6 +710,7 @@ PHP_FUNCTION(clearstatcache)
 		efree(BG(CurrentLStatFile));
 		BG(CurrentLStatFile) = NULL;
 	}
+	realpath_cache_clean(TSRMLS_C);
 }
 /* }}} */
 
@@ -654,14 +732,27 @@ PHPAPI void php_stat(const char *filename, php_stat_len filename_length, int typ
 			      "size", "atime", "mtime", "ctime", "blksize", "blocks"};
 	char *local;
 	php_stream_wrapper *wrapper;
+	char safe_mode_buf[MAXPATHLEN];
 
 	if (!filename_length) {
 		RETURN_FALSE;
 	}
 
 	if ((wrapper = php_stream_locate_url_wrapper(filename, &local, 0 TSRMLS_CC)) == &php_plain_files_wrapper) {
-		if (php_check_open_basedir(local TSRMLS_CC) || (PG(safe_mode) && !php_checkuid_ex(filename, NULL, CHECKUID_ALLOW_FILE_NOT_EXISTS, CHECKUID_NO_ERRORS))) {
+		if (php_check_open_basedir(local TSRMLS_CC)) {
 			RETURN_FALSE;
+		} else if (PG(safe_mode)) {
+			if (type == FS_IS_X) {
+				if (strstr(local, "..")) {
+					RETURN_FALSE;
+				} else {
+					char *b = strrchr(local, PHP_DIR_SEPARATOR);
+					snprintf(safe_mode_buf, MAXPATHLEN, "%s%s%s", PG(safe_mode_exec_dir), (b ? "" : "/"), (b ? b : local));
+					local = (char *)&safe_mode_buf;
+				}
+			} else if (!php_checkuid_ex(local, NULL, CHECKUID_ALLOW_FILE_NOT_EXISTS, CHECKUID_NO_ERRORS)) {
+				RETURN_FALSE;
+			}
 		}
 	}
 

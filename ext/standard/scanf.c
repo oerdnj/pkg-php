@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: scanf.c,v 1.31.2.2.2.1 2006/08/04 11:50:15 tony2001 Exp $ */
+/* $Id: scanf.c,v 1.31.2.2.2.3 2007/02/24 02:17:27 helly Exp $ */
 
 /*
    scanf.c --
@@ -1094,7 +1094,7 @@ PHPAPI int php_sscanf_internal(	char *string, char *format,
 					*end = '\0';
 					value = (int) (*fn)(buf, NULL, base);
 					if ((flags & SCAN_UNSIGNED) && (value < 0)) {
-						sprintf(buf, "%u", value); /* INTL: ISO digit */
+						snprintf(buf, sizeof(buf), "%u", value); /* INTL: ISO digit */
 						if (numVars && objIndex >= argCount) {
 							break;
 						} else if (numVars) {

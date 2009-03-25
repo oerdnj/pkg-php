@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    |          Marcus Boerger <helly@php.net>                              |
    +----------------------------------------------------------------------+
 
-   $Id: sqlite.c,v 1.166.2.13.2.5 2006/10/20 21:28:31 tony2001 Exp $
+   $Id: sqlite.c,v 1.166.2.13.2.7 2007/03/06 02:17:13 stas Exp $
 */
 
 #ifdef HAVE_CONFIG_H
@@ -1133,7 +1133,7 @@ PHP_MINFO_FUNCTION(sqlite)
 {
 	php_info_print_table_start();
 	php_info_print_table_header(2, "SQLite support", "enabled");
-	php_info_print_table_row(2, "PECL Module version", PHP_SQLITE_MODULE_VERSION " $Id: sqlite.c,v 1.166.2.13.2.5 2006/10/20 21:28:31 tony2001 Exp $");
+	php_info_print_table_row(2, "PECL Module version", PHP_SQLITE_MODULE_VERSION " $Id: sqlite.c,v 1.166.2.13.2.7 2007/03/06 02:17:13 stas Exp $");
 	php_info_print_table_row(2, "SQLite Library", sqlite_libversion());
 	php_info_print_table_row(2, "SQLite Encoding", sqlite_libencoding());
 	php_info_print_table_end();
@@ -1465,7 +1465,7 @@ next_row:
 				/* add the row to our collection */
 				if (rres->nrows + 1 >= rres->alloc_rows) {
 					rres->alloc_rows = rres->alloc_rows ? rres->alloc_rows * 2 : 16;
-					rres->table = erealloc(rres->table, rres->alloc_rows * rres->ncolumns * sizeof(char *));
+					rres->table = safe_erealloc(rres->table, rres->alloc_rows, rres->ncolumns*sizeof(char *), 0);
 				}
 				base = rres->nrows * rres->ncolumns;
 				for (i = 0; i < rres->ncolumns; i++) {

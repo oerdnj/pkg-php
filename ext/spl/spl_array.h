@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,18 +16,18 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_array.h,v 1.13.2.2.2.1 2006/05/10 00:03:38 helly Exp $ */
+/* $Id: spl_array.h,v 1.13.2.2.2.4 2007/02/08 22:54:34 helly Exp $ */
 
 #ifndef SPL_ARRAY_H
 #define SPL_ARRAY_H
 
 #include "php.h"
 #include "php_spl.h"
+#include "spl_iterators.h"
 
 extern PHPAPI zend_class_entry *spl_ce_ArrayObject;
 extern PHPAPI zend_class_entry *spl_ce_ArrayIterator;
 extern PHPAPI zend_class_entry *spl_ce_RecursiveArrayIterator;
-extern PHPAPI zend_class_entry *spl_ce_Countable;
 
 PHP_MINIT_FUNCTION(spl_array);
 

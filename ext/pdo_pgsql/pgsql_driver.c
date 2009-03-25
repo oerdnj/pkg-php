@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pgsql_driver.c,v 1.53.2.14.2.4 2006/10/06 22:34:16 iliaa Exp $ */
+/* $Id: pgsql_driver.c,v 1.53.2.14.2.7 2007/01/01 09:36:05 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -325,7 +325,7 @@ static int pgsql_handle_quoter(pdo_dbh_t *dbh, const char *unquoted, int unquote
 			(*quoted)[0] = '\'';
 			(*quoted)[*quotedlen-1] = '\'';
 			(*quoted)[*quotedlen] = '\0';
-			free(escaped);
+			PQfreemem(escaped);
 			break;
 		default:
 			*quoted = safe_emalloc(2, unquotedlen, 3);
@@ -633,6 +633,11 @@ static zend_function_entry *pdo_pgsql_get_driver_methods(pdo_dbh_t *dbh, int kin
 	}
 }
 
+static int pdo_pgsql_set_attr(pdo_dbh_t *dbh, long attr, zval *val TSRMLS_DC)
+{
+	return 0;
+}
+
 static struct pdo_dbh_methods pgsql_methods = {
 	pgsql_handle_closer,
 	pgsql_handle_preparer,
@@ -641,7 +646,7 @@ static struct pdo_dbh_methods pgsql_methods = {
 	pgsql_handle_begin,
 	pgsql_handle_commit,
 	pgsql_handle_rollback,
-	NULL, /* set_attr */
+	pdo_pgsql_set_attr,
 	pdo_pgsql_last_insert_id,
 	pdo_pgsql_fetch_error_func,
 	pdo_pgsql_get_attribute,

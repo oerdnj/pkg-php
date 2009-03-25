@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_smart_str.h,v 1.30.2.3 2006/05/03 13:32:10 iliaa Exp $ */
+/* $Id: php_smart_str.h,v 1.30.2.3.2.1 2007/01/01 09:36:08 sebastian Exp $ */
 
 #ifndef PHP_SMART_STR_H
 #define PHP_SMART_STR_H

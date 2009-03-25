@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: callback_filter.c,v 1.9.2.1 2006/07/19 08:35:55 tony2001 Exp $ */
+/* $Id: callback_filter.c,v 1.9.2.4 2007/01/01 09:36:00 sebastian Exp $ */
 
 #include "php_filter.h"
 
@@ -39,17 +39,17 @@ void php_filter_callback(PHP_INPUT_FILTER_PARAM_DECL)
 	status = call_user_function_ex(EG(function_table), NULL, option_array, &retval_ptr, 1, args, 0, NULL TSRMLS_CC);
 
 	if (status == SUCCESS && retval_ptr != NULL) {
-		zval_dtor(value);
-		*value = *retval_ptr;
-		zval_copy_ctor(value);
+		if (retval_ptr != value) {
+			zval_dtor(value);
+			COPY_PZVAL_TO_ZVAL(*value, retval_ptr);
+		} else {
+			zval_ptr_dtor(&retval_ptr);
+		}
 	} else {
 		zval_dtor(value);
 		Z_TYPE_P(value) = IS_NULL;
 	}
 
-	if (retval_ptr) {
-		zval_ptr_dtor(&retval_ptr);
-	}
 	efree(args);
 }
 

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -58,6 +58,8 @@ PHP_MINFO_FUNCTION(spl);
 ZEND_BEGIN_MODULE_GLOBALS(spl)
 	char *       autoload_extensions;
 	HashTable *  autoload_functions;
+	int          autoload_running;
+	int          autoload_extensions_len;
 ZEND_END_MODULE_GLOBALS(spl)
 
 #ifdef ZTS

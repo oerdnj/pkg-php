@@ -3,7 +3,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -23,7 +23,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: run-tests.php,v 1.226.2.37.2.15 2006/09/14 16:58:52 nlopess Exp $ */
+/* $Id: run-tests.php,v 1.226.2.37.2.27 2007/05/02 15:41:06 tony2001 Exp $ */
 
 /* Sanity check to ensure that pcre extension needed by this script is available.
  * In the event it is not, print a nice error message indicating that this script will
@@ -202,6 +202,7 @@ More .INIs  : " . (function_exists(\'php_ini_scanned_files\') ? str_replace("\n"
 	// check for extensions that need special handling and regenerate
 	$info_params_ex = array(
 		'session' => array('session.auto_start=0'),
+		'tidy' => array('tidy.clean_output=0'),
 		'zlib' => array('zlib.output_compression=Off'),
 		'xdebug' => array('xdebug.default_enable=0'),
 	);
@@ -397,7 +398,7 @@ if (isset($argc) && $argc > 1) {
 					$html_output = is_resource($html_file);
 					break;
 				case '--version':
-					echo '$Revision: 1.226.2.37.2.15 $'."\n";
+					echo '$Revision: 1.226.2.37.2.27 $'."\n";
 					exit(1);
 				default:
 					echo "Illegal switch '$switch' specified!\n";
@@ -517,7 +518,7 @@ HELP;
 		if ($html_output) {
 			fclose($html_file);
 		}
-		if (getenv('REPORT_EXIT_STATUS') == 1 and ereg('FAILED( |$)', implode(' ', $test_results))) {
+		if (getenv('REPORT_EXIT_STATUS') == 1 and preg_match('/FAILED(?: |$)/', implode(' ', $test_results))) {
 			exit(1);
 		}
 		exit(0);
@@ -533,7 +534,7 @@ $exts_skipped = 0;
 $ignored_by_ext = 0;
 sort($exts_to_test);
 $test_dirs = array();
-$optionals = array('tests', 'ext', 'Zend', 'ZendEngine2');
+$optionals = array('tests', 'ext', 'Zend', 'ZendEngine2', 'sapi/cli', 'sapi/cgi');
 foreach($optionals as $dir) {
 	if (@filetype($dir) == 'dir') {
 		$test_dirs[] = $dir;
@@ -647,7 +648,10 @@ define('QA_SUBMISSION_PAGE', 'http://qa.php.net/buildtest-process.php');
 /* We got failed Tests, offer the user to send an e-mail to QA team, unless NO_INTERACTION is set */
 if (!getenv('NO_INTERACTION')) {
 	$fp = fopen("php://stdin", "r+");
-	echo "\nYou may have found a problem in PHP.\nWe would like to send this report automatically to the\n";
+	if ($sum_results['FAILED'] || $sum_results['BORKED'] || $sum_results['WARNED'] || $sum_results['LEAKED']) {
+		echo "\nYou may have found a problem in PHP.";
+	}
+	echo "\nWe would like to send this report automatically to the\n";
 	echo "PHP QA team, to give us a better understanding of how\nthe test cases are doing. If you don't want to send it\n";
 	echo "immediately, you can choose \"s\" to save the report to\na file that you can send us later.\n";
 	echo "Do you want to send this report now? [Yns]: ";
@@ -699,8 +703,8 @@ if ($just_save_results || !getenv('NO_INTERACTION')) {
 
 		if (substr(PHP_OS, 0, 3) != "WIN") {
 			/* If PHP_AUTOCONF is set, use it; otherwise, use 'autoconf'. */
-			if (!empty($_ENV['PHP_AUTOCONF'])) {
-				$autoconf = shell_exec($_ENV['PHP_AUTOCONF'] . ' --version');
+			if (getenv('PHP_AUTOCONF')) {
+				$autoconf = shell_exec(getenv('PHP_AUTOCONF') . ' --version');
 			} else {
 				$autoconf = shell_exec('autoconf --version');
 			}
@@ -950,13 +954,14 @@ TEST $file
 		'TEST'   => '',
 		'SKIPIF' => '',
 		'GET'    => '',
+		'COOKIE' => '',
 		'POST_RAW' => '',
 		'POST'   => '',
 		'UPLOAD' => '',
 		'ARGS'   => '',
 	);
 
-	$fp = @fopen($file, "rt") or error("Cannot open test file: $file");
+	$fp = fopen($file, "rt") or error("Cannot open test file: $file");
 
 	$borked = false;
 	$bork_info = '';
@@ -966,7 +971,7 @@ TEST $file
 		$bork_info = "empty test [$file]";
 		$borked = true;
 	}
-	if (!ereg('^--TEST--',$line,$r)) {
+	if (strncmp('--TEST--', $line, 8)) {
 		$bork_info = "tests must start with --TEST-- [$file]";
 		$borked = true;
 	}
@@ -991,7 +996,7 @@ TEST $file
 		}
 
 		// End of actual test?
-		if ($secfile && preg_match('/^===DONE===/', $line, $r)) {
+		if ($secfile && preg_match('/^===DONE===$/', $line)) {
 			$secdone = true;
 		}
 	}
@@ -1039,7 +1044,7 @@ TEST $file
 	$tested = trim($section_text['TEST']);
 
 	/* For GET/POST tests, check if cgi sapi is available and if it is, use it. */
-	if (!empty($section_text['GET']) || !empty($section_text['POST']) || !empty($section_text['POST_RAW'])) {
+	if (!empty($section_text['GET']) || !empty($section_text['POST']) || !empty($section_text['POST_RAW']) || !empty($section_text['COOKIE'])) {
 		if (isset($php_cgi)) {
 			$old_php = $php;
 			$php = $php_cgi .' -C ';
@@ -1134,9 +1139,9 @@ TEST $file
 	$env['CONTENT_TYPE']='';
 	$env['CONTENT_LENGTH']='';
 	if (!empty($section_text['ENV'])) {
-		foreach(explode("\n", $section_text['ENV']) as $e) {
-			$e = explode('=',trim($e));
-			if (count($e) == 2) {
+		foreach(explode("\n", trim($section_text['ENV'])) as $e) {
+			$e = explode('=',trim($e),2);
+			if (!empty($e[0]) && isset($e[1])) {
 				$env[$e[0]] = $e[1];
 			}
 		}
@@ -1171,14 +1176,19 @@ TEST $file
 			save_text($test_skipif, $section_text['SKIPIF'], $temp_skipif);
 			$extra = substr(PHP_OS, 0, 3) !== "WIN" ?
 				"unset REQUEST_METHOD; unset QUERY_STRING; unset PATH_TRANSLATED; unset SCRIPT_FILENAME; unset REQUEST_METHOD;": "";
+
+			if ($leak_check) {
+				$env['USE_ZEND_ALLOC'] = '0';
+			} else {
+				$env['USE_ZEND_ALLOC'] = '1';
+			}
 			$output = system_with_timeout("$extra $php -q $ini_settings $test_skipif", $env);
 			if (!$cfg['keep']['skip']) {
 				@unlink($test_skipif);
 			}
-			if (!strncasecmp('skip', trim($output), 4)) {
-				$reason = (eregi("^skip[[:space:]]*(.+)\$", trim($output))) ? eregi_replace("^skip[[:space:]]*(.+)\$", "\\1", trim($output)) : FALSE;
-				if ($reason) {
-					show_result("SKIP", $tested, $tested_file, "reason: $reason", $temp_filenames);
+			if (!strncasecmp('skip', ltrim($output), 4)) {
+				if (preg_match('/^\s*skip\s*(.+)\s*/i', $output, $m)) {
+					show_result("SKIP", $tested, $tested_file, "reason: $m[1]", $temp_filenames);
 				} else {
 					show_result("SKIP", $tested, $tested_file, '', $temp_filenames);
 				}
@@ -1190,17 +1200,15 @@ TEST $file
 				}
 				return 'SKIPPED';
 			}
-			if (!strncasecmp('info', trim($output), 4)) {
-				$reason = (ereg("^info[[:space:]]*(.+)\$", trim($output))) ? ereg_replace("^info[[:space:]]*(.+)\$", "\\1", trim($output)) : FALSE;
-				if ($reason) {
-					$info = " (info: $reason)";
+			if (!strncasecmp('info', ltrim($output), 4)) {
+				if (preg_match('/^\s*info\s*(.+)\s*/i', $output, $m)) {
+					$info = " (info: $m[1])";
 				}
 			}
-			if (!strncasecmp('warn', trim($output), 4)) {
-				$reason = (ereg("^warn[[:space:]]*(.+)\$", trim($output))) ? ereg_replace("^warn[[:space:]]*(.+)\$", "\\1", trim($output)) : FALSE;
-				if ($reason) {
+			if (!strncasecmp('warn', ltrim($output), 4)) {
+				if (preg_match('/^\s*warn\s*(.+)\s*/i', $output, $m)) {
 					$warn = true; /* only if there is a reason */
-					$info = " (warn: $reason)";
+					$info = " (warn: $m[1])";
 				}
 			}
 		}
@@ -1288,6 +1296,12 @@ TEST $file
 	$env['PATH_TRANSLATED'] = $test_file;
 	$env['SCRIPT_FILENAME'] = $test_file;
 
+	if (array_key_exists('COOKIE', $section_text)) {
+		$env['HTTP_COOKIE'] = trim($section_text['COOKIE']);
+	} else {
+		$env['HTTP_COOKIE'] = '';
+	}
+
 	$args = $section_text['ARGS'] ? ' -- '.$section_text['ARGS'] : '';
 
 	if (array_key_exists('POST_RAW', $section_text) && !empty($section_text['POST_RAW'])) {
@@ -1296,8 +1310,8 @@ TEST $file
 
 		$request = '';
 		foreach ($raw_lines as $line) {
-			if (empty($env['CONTENT_TYPE']) && eregi('^(Content-Type:)(.*)', $line, $res)) {
-				$env['CONTENT_TYPE'] = trim(str_replace("\r", '', $res[2]));
+			if (empty($env['CONTENT_TYPE']) && preg_match('/^Content-Type:(.*)/i', $line, $res)) {
+				$env['CONTENT_TYPE'] = trim(str_replace("\r", '', $res[1]));
 				continue;
 			}
 			$request .= $line . "\n";
@@ -1347,6 +1361,7 @@ QUERY_STRING    = " . $env['QUERY_STRING'] . "
 REDIRECT_STATUS = " . $env['REDIRECT_STATUS'] . "
 REQUEST_METHOD  = " . $env['REQUEST_METHOD'] . "
 SCRIPT_FILENAME = " . $env['SCRIPT_FILENAME'] . "
+HTTP_COOKIE     = " . $env['HTTP_COOKIE'] . "
 COMMAND $cmd
 ";
 
@@ -1502,11 +1517,13 @@ COMMAND $cmd
 	}
 
 	if ($leaked) {
-		$restype = 'LEAK';
-	} else if ($warn) {
-		$restype = 'WARN';
-	} else {
-		$restype = 'FAIL';
+		$restype[] = 'LEAK';
+	}
+	if ($warn) {
+		$restype[] = 'WARN';
+	}
+	if (!$passed) {
+		$restype[] = 'FAIL';
 	}
 
 	if (!$passed) {
@@ -1538,21 +1555,23 @@ $output
 		}
 	}
 
-	show_result($restype, $tested, $tested_file, $info, $temp_filenames);
+	show_result(implode('&', $restype), $tested, $tested_file, $info, $temp_filenames);
 
-	$PHP_FAILED_TESTS[$restype.'ED'][] = array (
+	foreach ($restype as $type) {
+		$PHP_FAILED_TESTS[$type.'ED'][] = array (
 						'name' => $file,
 						'test_name' => (is_array($IN_REDIRECT) ? $IN_REDIRECT['via'] : '') . $tested . " [$tested_file]",
 						'output' => $output_filename,
 						'diff'   => $diff_filename,
 						'info'   => $info,
 						);
+	}
 
 	if (isset($old_php)) {
 		$php = $old_php;
 	}
 
-	return $restype.'ED';
+	return $restype[0].'ED';
 }
 
 function comp_line($l1,$l2,$is_reg)
@@ -1680,7 +1699,14 @@ function settings2array($settings, &$ini_settings)
 			$setting = explode("=", $setting, 2);
 			$name = trim(strtolower($setting[0]));
 			$value = trim($setting[1]);
-			$ini_settings[$name] = $value;
+			if ($name == 'extension') {
+				if (!isset($ini_settings[$name])) {
+					$ini_settings[$name] = array();
+				}
+				$ini_settings[$name][] = $value;
+			} else {
+				$ini_settings[$name] = $value;
+			}
 		}
 	}
 }
@@ -1689,8 +1715,15 @@ function settings2params(&$ini_settings)
 {
 	$settings = '';
 	foreach($ini_settings as $name => $value) {
-		$value = addslashes($value);
-		$settings .= " -d \"$name=$value\"";
+		if (is_array($value)) {
+			foreach($value as $val) {
+				$val = addslashes($val);
+				$settings .= " -d \"$name=$val\"";
+			}
+		} else {
+			$value = addslashes($value);
+			$settings .= " -d \"$name=$value\"";
+		}
 	}
 	$ini_settings = $settings;
 }

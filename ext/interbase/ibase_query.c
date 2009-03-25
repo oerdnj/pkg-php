@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: ibase_query.c,v 1.23.2.1 2006/01/01 12:50:08 sniper Exp $ */
+/* $Id: ibase_query.c,v 1.23.2.1.2.9 2007/03/15 22:33:04 tony2001 Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -603,9 +603,8 @@ static int _php_ibase_bind_array(zval *val, char *buf, unsigned long buf_size, /
 					break;
 				default:
 					convert_to_string(val);
-					strncpy(buf, Z_STRVAL_P(val), array->el_size);
-					buf[array->el_size-1] = '\0';
-			}	
+					strlcpy(buf, Z_STRVAL_P(val), buf_size);
+			}
 		}
 	}
 	return SUCCESS;
@@ -675,8 +674,7 @@ static int _php_ibase_bind(XSQLDA *sqlda, zval ***b_vars, BIND_BUF *buf, /* {{{ 
 			case SQL_TYPE_DATE:
 			case SQL_TYPE_TIME:
 				if (Z_TYPE_P(b_var) == IS_LONG) {
-					/* insert timestamp directly */
-					t = *gmtime(&Z_LVAL_P(b_var));
+					php_gmtime_r(&Z_LVAL_P(b_var), &t);
 				} else {
 #ifdef HAVE_STRPTIME
 					char *format = INI_STR("ibase.timestampformat");
@@ -690,7 +688,7 @@ static int _php_ibase_bind(XSQLDA *sqlda, zval ***b_vars, BIND_BUF *buf, /* {{{ 
 						case SQL_TYPE_TIME:
 							format = INI_STR("ibase.timeformat");
 					}
-					if (! strptime(Z_STRVAL_P(b_var), format, &t)) {
+					if (!strptime(Z_STRVAL_P(b_var), format, &t)) {
 						/* strptime() cannot handle it, so let IB have a try */
 						break;
 					}
@@ -1118,7 +1116,7 @@ PHP_FUNCTION(ibase_query)
 			}					
 		case 1:
 		case 0:
-			if (SUCCESS == zend_parse_parameters(ZEND_NUM_ARGS() ? 1 : 0 TSRMLS_CC, "s|z", &query, 
+			if (SUCCESS == zend_parse_parameters(ZEND_NUM_ARGS() ? 1 : 0 TSRMLS_CC, "s", &query, 
 					&query_len)) {
 				ZEND_FETCH_RESOURCE2(ib_link, ibase_db_link *, NULL, IBG(default_link), LE_LINK,
 			    	le_link, le_plink);
@@ -1147,7 +1145,7 @@ PHP_FUNCTION(ibase_query)
 				break;
 			}
 		} else if (bind_n > 0) {
-			bind_args = (zval ***) emalloc(sizeof(zval **) * ZEND_NUM_ARGS());
+			bind_args = (zval ***) safe_emalloc(sizeof(zval **), ZEND_NUM_ARGS(), 0);
 
 			if (FAILURE == zend_get_parameters_array_ex(ZEND_NUM_ARGS(), bind_args)) {
 				break;
@@ -1318,17 +1316,17 @@ static int _php_ibase_var_zval(zval *val, void *data, int type, int len, /* {{{ 
 			goto _sql_long;
 #else
 			if (scale == 0) {
-				l = sprintf(string_data, "%" LL_MASK "d", *(ISC_INT64 *) data);
+				l = slprintf(string_data, sizeof(string_data), "%" LL_MASK "d", *(ISC_INT64 *) data);
 				ZVAL_STRINGL(val,string_data,l,1);
 			} else {
 				ISC_INT64 n = *(ISC_INT64 *) data, f = scales[-scale];
 
 				if (n >= 0) {
-					l = sprintf(string_data, "%" LL_MASK "d.%0*" LL_MASK "d", n / f, -scale, n % f);
+					l = slprintf(string_data, sizeof(string_data), "%" LL_MASK "d.%0*" LL_MASK "d", n / f, -scale, n % f);
 				} else if (n <= -f) {
-					l = sprintf(string_data, "%" LL_MASK "d.%0*" LL_MASK "d", n / f, -scale, -n % f);				
+					l = slprintf(string_data, sizeof(string_data), "%" LL_MASK "d.%0*" LL_MASK "d", n / f, -scale, -n % f);				
 				 } else {
-					l = sprintf(string_data, "-0.%0*" LL_MASK "d", -scale, -n % f);
+					l = slprintf(string_data, sizeof(string_data), "-0.%0*" LL_MASK "d", -scale, -n % f);
 				}
 				ZVAL_STRINGL(val,string_data,l,1);
 			}
@@ -1343,11 +1341,11 @@ static int _php_ibase_var_zval(zval *val, void *data, int type, int len, /* {{{ 
 				long f = (long) scales[-scale];
 
 				if (n >= 0) {
-					l = sprintf(string_data, "%ld.%0*ld", n / f, -scale,  n % f);
+					l = slprintf(string_data, sizeof(string_data), "%ld.%0*ld", n / f, -scale,  n % f);
 				} else if (n <= -f) {
-					l = sprintf(string_data, "%ld.%0*ld", n / f, -scale,  -n % f);
+					l = slprintf(string_data, sizeof(string_data), "%ld.%0*ld", n / f, -scale,  -n % f);
 				} else {
-					l = sprintf(string_data, "-0.%0*ld", -scale, -n % f);
+					l = slprintf(string_data, sizeof(string_data), "-0.%0*ld", -scale, -n % f);
 				}
 				ZVAL_STRINGL(val,string_data,l,1);
 			}
@@ -1387,14 +1385,14 @@ format_date_time:
 #else
 				switch (type & ~1) {
 					default:
-						l = sprintf(string_data, "%02d/%02d/%4d %02d:%02d:%02d", t.tm_mon+1, t.tm_mday, 
+						l = slprintf(string_data, sizeof(string_data), "%02d/%02d/%4d %02d:%02d:%02d", t.tm_mon+1, t.tm_mday, 
 							t.tm_year + 1900, t.tm_hour, t.tm_min, t.tm_sec);
 						break;
 					case SQL_TYPE_DATE:
-						l = sprintf(string_data, "%02d/%02d/%4d", t.tm_mon + 1, t.tm_mday, t.tm_year+1900);
+						l = slprintf(string_data, sizeof(string_data), "%02d/%02d/%4d", t.tm_mon + 1, t.tm_mday, t.tm_year+1900);
 						break;
 					case SQL_TYPE_TIME:
-						l = sprintf(string_data, "%02d:%02d:%02d", t.tm_hour, t.tm_min, t.tm_sec);
+						l = slprintf(string_data, sizeof(string_data), "%02d:%02d:%02d", t.tm_hour, t.tm_min, t.tm_sec);
 						break;
 				}
 #endif
@@ -1526,7 +1524,7 @@ static void _php_ibase_fetch_hash(INTERNAL_FUNCTION_PARAMETERS, int fetch_type) 
 							Z_ARRVAL_P(return_value),alias,strlen(alias)+1,&p)) {
 				
 				case '\0':
-						sprintf(alias = buf, "%s_%02d", base, i++);
+						snprintf(alias = buf, sizeof(buf), "%s_%02d", base, i++);
 					}
 			}
 		}
@@ -1939,7 +1937,7 @@ static void _php_ibase_field_info(zval *return_value, XSQLVAR *var) /* {{{ */
 	add_index_stringl(return_value, 2, var->relname, var->relname_length, 1);
 	add_assoc_stringl(return_value, "relation", var->relname, var->relname_length, 1);
 
-	len = sprintf(buf, "%d", var->sqllen);
+	len = slprintf(buf, 16, "%d", var->sqllen);
 	add_index_stringl(return_value, 3, buf, len, 1);
 	add_assoc_stringl(return_value, "length", buf, len, 1);
 
@@ -1958,7 +1956,7 @@ static void _php_ibase_field_info(zval *return_value, XSQLVAR *var) /* {{{ */
 				precision = 18;
 				break;
 		}
-		len = sprintf(buf, "NUMERIC(%d,%d)", precision, -var->sqlscale);
+		len = slprintf(buf, 16, "NUMERIC(%d,%d)", precision, -var->sqlscale);
 		add_index_stringl(return_value, 4, s, len, 1);
 		add_assoc_stringl(return_value, "type", s, len, 1);
 	} else {

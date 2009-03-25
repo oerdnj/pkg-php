@@ -511,7 +511,7 @@ static int btree_pager_stats(
     return TCL_ERROR;
   }
   pBt = sqlite3TextToPtr(argv[1]);
-  a = sqlite3pager_stats(sqlite3BtreePager(pBt));
+  a = sqlite3PagerStats(sqlite3BtreePager(pBt));
   for(i=0; i<11; i++){
     static char *zName[] = {
       "ref", "page", "max", "size", "state", "err",
@@ -545,7 +545,7 @@ static int btree_pager_ref_dump(
   }
   pBt = sqlite3TextToPtr(argv[1]);
 #ifdef SQLITE_DEBUG
-  sqlite3pager_refdump(sqlite3BtreePager(pBt));
+  sqlite3PagerRefdump(sqlite3BtreePager(pBt));
 #endif
   return TCL_OK;
 }
@@ -567,6 +567,7 @@ static int btree_integrity_check(
   int nRoot;
   int *aRoot;
   int i;
+  int nErr;
   char *zResult;
 
   if( argc<3 ){
@@ -576,16 +577,16 @@ static int btree_integrity_check(
   }
   pBt = sqlite3TextToPtr(argv[1]);
   nRoot = argc-2;
-  aRoot = malloc( sizeof(int)*(argc-2) );
+  aRoot = (int*)malloc( sizeof(int)*(argc-2) );
   for(i=0; i<argc-2; i++){
     if( Tcl_GetInt(interp, argv[i+2], &aRoot[i]) ) return TCL_ERROR;
   }
 #ifndef SQLITE_OMIT_INTEGRITY_CHECK
-  zResult = sqlite3BtreeIntegrityCheck(pBt, aRoot, nRoot);
+  zResult = sqlite3BtreeIntegrityCheck(pBt, aRoot, nRoot, 10000, &nErr);
 #else
   zResult = 0;
 #endif
-  free(aRoot);
+  free((void*)aRoot);
   if( zResult ){
     Tcl_AppendResult(interp, zResult, 0);
     sqliteFree(zResult); 
@@ -598,7 +599,6 @@ static int btree_integrity_check(
 **
 ** Print information about all cursors to standard output for debugging.
 */
-#ifdef SQLITE_DEBUG
 static int btree_cursor_list(
   void *NotUsed,
   Tcl_Interp *interp,    /* The TCL interpreter that invoked this command */
@@ -616,7 +616,6 @@ static int btree_cursor_list(
   sqlite3BtreeCursorList(pBt);
   return SQLITE_OK;
 }
-#endif
 
 /*
 ** Usage:   btree_cursor ID TABLENUM WRITEABLE
@@ -707,9 +706,9 @@ static int btree_move_to(
   if( sqlite3BtreeFlags(pCur) & BTREE_INTKEY ){
     int iKey;
     if( Tcl_GetInt(interp, argv[2], &iKey) ) return TCL_ERROR;
-    rc = sqlite3BtreeMoveto(pCur, 0, iKey, &res);
+    rc = sqlite3BtreeMoveto(pCur, 0, iKey, 0, &res);
   }else{
-    rc = sqlite3BtreeMoveto(pCur, argv[2], strlen(argv[2]), &res);  
+    rc = sqlite3BtreeMoveto(pCur, argv[2], strlen(argv[2]), 0, &res);  
   }
   if( rc ){
     Tcl_AppendResult(interp, errorName(rc), 0);
@@ -776,7 +775,7 @@ static int btree_insert(
     unsigned char *pBuf;
     if( Tcl_GetWideIntFromObj(interp, objv[2], &iKey) ) return TCL_ERROR;
     pBuf = Tcl_GetByteArrayFromObj(objv[3], &len);
-    rc = sqlite3BtreeInsert(pCur, 0, iKey, pBuf, len);
+    rc = sqlite3BtreeInsert(pCur, 0, iKey, pBuf, len, 0);
   }else{
     int keylen;
     int dlen;
@@ -784,7 +783,7 @@ static int btree_insert(
     unsigned char *pDBuf;
     pKBuf = Tcl_GetByteArrayFromObj(objv[2], &keylen);
     pDBuf = Tcl_GetByteArrayFromObj(objv[3], &dlen);
-    rc = sqlite3BtreeInsert(pCur, pKBuf, keylen, pDBuf, dlen);
+    rc = sqlite3BtreeInsert(pCur, pKBuf, keylen, pDBuf, dlen, 0);
   }
   if( rc ){
     Tcl_AppendResult(interp, errorName(rc), 0);
@@ -1053,6 +1052,7 @@ static int btree_data(
   rc = sqlite3BtreeData(pCur, 0, n, zBuf);
   if( rc ){
     Tcl_AppendResult(interp, errorName(rc), 0);
+    free(zBuf);
     return TCL_ERROR;
   }
   zBuf[n] = 0;
@@ -1186,8 +1186,8 @@ static int btree_payload_size(
 **   aResult[7] =  Header size in bytes
 **   aResult[8] =  Local payload size
 **   aResult[9] =  Parent page number
+**   aResult[10]=  Page number of the first overflow page
 */
-#ifdef SQLITE_DEBUG
 static int btree_cursor_info(
   void *NotUsed,
   Tcl_Interp *interp,    /* The TCL interpreter that invoked this command */
@@ -1198,7 +1198,7 @@ static int btree_cursor_info(
   int rc;
   int i, j;
   int up;
-  int aResult[10];
+  int aResult[11];
   char zBuf[400];
 
   if( argc!=2 && argc!=3 ){
@@ -1225,7 +1225,78 @@ static int btree_cursor_info(
   Tcl_AppendResult(interp, &zBuf[1], 0);
   return SQLITE_OK;
 }
-#endif
+
+/*
+** Copied from btree.c:
+*/
+static u32 t4Get4byte(unsigned char *p){
+  return (p[0]<<24) | (p[1]<<16) | (p[2]<<8) | p[3];
+}
+
+/*
+**   btree_ovfl_info  BTREE  CURSOR
+**
+** Given a cursor, return the sequence of pages number that form the
+** overflow pages for the data of the entry that the cursor is point
+** to.
+*/ 
+static int btree_ovfl_info(
+  void *NotUsed,
+  Tcl_Interp *interp,    /* The TCL interpreter that invoked this command */
+  int argc,              /* Number of arguments */
+  const char **argv      /* Text of each argument */
+){
+  Btree *pBt;
+  BtCursor *pCur;
+  Pager *pPager;
+  int rc;
+  int n;
+  int dataSize;
+  u32 pgno;
+  void *pPage;
+  int aResult[11];
+  char zElem[100];
+  Tcl_DString str;
+
+  if( argc!=3 ){
+    Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0], 
+                    " BTREE CURSOR", 0);
+    return TCL_ERROR;
+  }
+  pBt = sqlite3TextToPtr(argv[1]);
+  pCur = sqlite3TextToPtr(argv[2]);
+  if( (*(void**)pCur) != (void*)pBt ){
+    Tcl_AppendResult(interp, "Cursor ", argv[2], " does not belong to btree ",
+       argv[1], 0);
+    return TCL_ERROR;
+  }
+  pPager = sqlite3BtreePager(pBt);
+  rc = sqlite3BtreeCursorInfo(pCur, aResult, 0);
+  if( rc ){
+    Tcl_AppendResult(interp, errorName(rc), 0);
+    return TCL_ERROR;
+  }
+  dataSize = sqlite3BtreeGetPageSize(pBt) - sqlite3BtreeGetReserve(pBt);
+  Tcl_DStringInit(&str);
+  n = aResult[6] - aResult[8];
+  n = (n + dataSize - 1)/dataSize;
+  pgno = (u32)aResult[10];
+  while( pgno && n-- ){
+    DbPage *pDbPage;
+    sprintf(zElem, "%d", pgno);
+    Tcl_DStringAppendElement(&str, zElem);
+    if( sqlite3PagerGet(pPager, pgno, &pDbPage)!=SQLITE_OK ){
+      Tcl_DStringFree(&str);
+      Tcl_AppendResult(interp, "unable to get page ", zElem, 0);
+      return TCL_ERROR;
+    }
+    pPage = sqlite3PagerGetData(pDbPage);
+    pgno = t4Get4byte((unsigned char*)pPage);
+    sqlite3PagerUnref(pDbPage);
+  }
+  Tcl_DStringResult(interp, &str);
+  return SQLITE_OK;
+}
 
 /*
 ** The command is provided for the purpose of setting breakpoints.
@@ -1441,10 +1512,9 @@ int Sqlitetest3_Init(Tcl_Interp *interp){
      { "btree_rollback_statement", (Tcl_CmdProc*)btree_rollback_statement },
      { "btree_from_db",            (Tcl_CmdProc*)btree_from_db            },
      { "btree_set_cache_size",     (Tcl_CmdProc*)btree_set_cache_size     },
-#ifdef SQLITE_DEBUG
      { "btree_cursor_info",        (Tcl_CmdProc*)btree_cursor_info        },
+     { "btree_ovfl_info",          (Tcl_CmdProc*)btree_ovfl_info          },
      { "btree_cursor_list",        (Tcl_CmdProc*)btree_cursor_list        },
-#endif
   };
   int i;
 

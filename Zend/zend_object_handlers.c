@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2007 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_object_handlers.c,v 1.135.2.6.2.15 2006/09/12 11:01:16 dmitry Exp $ */
+/* $Id: zend_object_handlers.c,v 1.135.2.6.2.20 2007/03/23 17:16:55 stas Exp $ */
 
 #include "zend.h"
 #include "zend_globals.h"
@@ -42,8 +42,8 @@
   set, we call __set handler. If it fails, we do not change the array.
 
   for both handlers above, when we are inside __get/__set, no further calls for
-  __get/__set for these objects will be made, to prevent endless recursion and
-  enable accessors to change properties array.
+  __get/__set for this property of this object will be made, to prevent endless 
+  recursion and enable accessors to change properties array.
 
   if we have __call and method which is not part of the class function table is
   called, we cal __call handler.
@@ -334,14 +334,17 @@ zval *zend_std_read_property(zval *object, zval *member, int type TSRMLS_DC)
 
 			if (rv) {
 				retval = &rv;
-				if ((type == BP_VAR_W || type == BP_VAR_RW  || type == BP_VAR_UNSET) && rv->refcount > 0) {
-					zval *tmp = rv;
+				if (!rv->is_ref &&
+				    (type == BP_VAR_W || type == BP_VAR_RW  || type == BP_VAR_UNSET)) {
+					if (rv->refcount > 0) {
+						zval *tmp = rv;
 
-					ALLOC_ZVAL(rv);
-					*rv = *tmp;
-					zval_copy_ctor(rv);
-					rv->is_ref = 0;
-					rv->refcount = 0;
+						ALLOC_ZVAL(rv);
+						*rv = *tmp;
+						zval_copy_ctor(rv);
+						rv->is_ref = 0;
+						rv->refcount = 0;
+					}
 					if (Z_TYPE_P(rv) != IS_OBJECT) {
 						zend_error(E_NOTICE, "Indirect modification of overloaded property %s::$%s has no effect", zobj->ce->name, Z_STRVAL_P(member));
 					}

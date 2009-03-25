@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: dl.c,v 1.106.2.1 2006/01/01 12:50:14 sniper Exp $ */
+/* $Id: dl.c,v 1.106.2.1.2.2 2007/02/23 00:37:35 iliaa Exp $ */
 
 #include "php.h"
 #include "dl.h"
@@ -125,12 +125,10 @@ void php_dl(zval *file, int type, zval *return_value, int start_now TSRMLS_DC)
 	if (extension_dir && extension_dir[0]){
 		int extension_dir_len = strlen(extension_dir);
 
-		libpath = emalloc(extension_dir_len+Z_STRLEN_P(file)+2);
-
 		if (IS_SLASH(extension_dir[extension_dir_len-1])) {
-			sprintf(libpath, "%s%s", extension_dir, Z_STRVAL_P(file)); /* SAFE */
+			spprintf(&libpath, 0, "%s%s", extension_dir, Z_STRVAL_P(file));
 		} else {
-			sprintf(libpath, "%s%c%s", extension_dir, DEFAULT_SLASH, Z_STRVAL_P(file)); /* SAFE */
+			spprintf(&libpath, 0, "%s%c%s", extension_dir, DEFAULT_SLASH, Z_STRVAL_P(file));
 		}
 	} else {
 		libpath = estrndup(Z_STRVAL_P(file), Z_STRLEN_P(file));

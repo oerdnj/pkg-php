@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,8 +17,9 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_scandir.c,v 1.12.2.1 2006/01/01 12:50:17 sniper Exp $ */
+/* $Id: php_scandir.c,v 1.12.2.1.2.5 2007/01/01 09:36:11 sebastian Exp $ */
 
+#include "php.h"
 #include "php_scandir.h"
 
 #ifdef HAVE_SYS_TYPES_H
@@ -32,6 +33,7 @@
 #ifndef HAVE_SCANDIR
 
 #ifdef PHP_WIN32
+#include "win32/param.h"
 #include "win32/readdir.h"
 #endif  
 
@@ -59,9 +61,10 @@ int php_scandir(const char *dirname, struct dirent **namelist[], int (*selector)
 {
 	DIR *dirp = NULL;
 	struct dirent **vector = NULL;
-	struct dirent *dp = NULL;
 	int vector_size = 0;
 	int nfiles = 0;
+	char entry[sizeof(struct dirent)+MAXPATHLEN];
+	struct dirent *dp = (struct dirent *)&entry;
 
 	if (namelist == NULL) {
 		return -1;
@@ -71,7 +74,7 @@ int php_scandir(const char *dirname, struct dirent **namelist[], int (*selector)
 		return -1;
 	}
 
-	while ((dp = readdir(dirp)) != NULL) {
+	while (!php_readdir_r(dirp, (struct dirent *)entry, &dp) && dp) {
 		int dsize = 0;
 		struct dirent *newdp = NULL;
 

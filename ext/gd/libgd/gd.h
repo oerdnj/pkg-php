@@ -11,14 +11,18 @@ extern "C" {
 
 #include "php_compat.h"
 
-#ifndef WIN32
-/* default fontpath for unix systems */
-#define DEFAULT_FONTPATH "/usr/X11R6/lib/X11/fonts/TrueType:/usr/X11R6/lib/X11/fonts/truetype:/usr/X11R6/lib/X11/fonts/TTF:/usr/share/fonts/TrueType:/usr/share/fonts/truetype:/usr/openwin/lib/X11/fonts/TrueType:/usr/X11R6/lib/X11/fonts/Type1:."
-#define PATHSEPARATOR ":"
-#else
+#ifdef NETWARE
+/* default fontpath for netware systems */
+#define DEFAULT_FONTPATH "sys:/java/nwgfx/lib/x11/fonts/ttf;."
+#define PATHSEPARATOR ";"
+#elif defined(WIN32)
 /* default fontpath for windows systems */
 #define DEFAULT_FONTPATH "c:\\winnt\\fonts;c:\\windows\\fonts;."
 #define PATHSEPARATOR ";"
+#else
+/* default fontpath for unix systems */
+#define DEFAULT_FONTPATH "/usr/X11R6/lib/X11/fonts/TrueType:/usr/X11R6/lib/X11/fonts/truetype:/usr/X11R6/lib/X11/fonts/TTF:/usr/share/fonts/TrueType:/usr/share/fonts/truetype:/usr/openwin/lib/X11/fonts/TrueType:/usr/X11R6/lib/X11/fonts/Type1:."
+#define PATHSEPARATOR ":"
 #endif
 
 /* gd.h: declarations file for the graphic-draw module.
@@ -300,6 +304,14 @@ void gdImageString(gdImagePtr im, gdFontPtr f, int x, int y, unsigned char *s, i
 void gdImageStringUp(gdImagePtr im, gdFontPtr f, int x, int y, unsigned char *s, int color);
 void gdImageString16(gdImagePtr im, gdFontPtr f, int x, int y, unsigned short *s, int color);
 void gdImageStringUp16(gdImagePtr im, gdFontPtr f, int x, int y, unsigned short *s, int color);
+
+/*
+ * The following functions are required to be called prior to the
+ * use of any sort of threads in a module load / shutdown function
+ * respectively.
+ */
+void gdFontCacheMutexSetup();
+void gdFontCacheMutexShutdown();
 
 /* 2.0.16: for thread-safe use of gdImageStringFT and friends,
  * call this before allowing any thread to call gdImageStringFT.

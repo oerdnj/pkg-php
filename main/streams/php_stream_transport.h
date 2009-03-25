@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_stream_transport.h,v 1.10.2.1 2006/01/01 12:50:18 sniper Exp $ */
+/* $Id: php_stream_transport.h,v 1.10.2.1.2.4 2007/02/05 05:15:16 andi Exp $ */
 
 #if HAVE_SYS_SOCKET_H
 # include <sys/socket.h>
@@ -104,7 +104,18 @@ PHPAPI int php_stream_xport_recvfrom(php_stream *stream, char *buf, size_t bufle
  * sending it as OOB data */
 PHPAPI int php_stream_xport_sendto(php_stream *stream, const char *buf, size_t buflen,
 		long flags, void *addr, socklen_t addrlen TSRMLS_DC);
+
+typedef enum {
+	STREAM_SHUT_RD,
+	STREAM_SHUT_WR,
+	STREAM_SHUT_RDWR
+} stream_shutdown_t;
+
+/* Similar to shutdown() system call; shut down part of a full-duplex
+ * connection */
+PHPAPI int php_stream_xport_shutdown(php_stream *stream, stream_shutdown_t how TSRMLS_DC);
 END_EXTERN_C()
+
 
 /* Structure definition for the set_option interface that the above functions wrap */
 
@@ -116,11 +127,13 @@ typedef struct _php_stream_xport_param {
 		STREAM_XPORT_OP_GET_NAME,
 		STREAM_XPORT_OP_GET_PEER_NAME,
 		STREAM_XPORT_OP_RECV,
-		STREAM_XPORT_OP_SEND
+		STREAM_XPORT_OP_SEND,
+		STREAM_XPORT_OP_SHUTDOWN
 	} op;
 	unsigned int want_addr:1;
 	unsigned int want_textaddr:1;
 	unsigned int want_errortext:1;
+	unsigned int how:2;
 
 	struct {
 		char *name;

@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: firebird_driver.c,v 1.17.2.2 2006/01/01 12:50:11 sniper Exp $ */
+/* $Id: firebird_driver.c,v 1.17.2.2.2.4 2007/02/27 03:28:16 iliaa Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -38,8 +38,10 @@ static int firebird_alloc_prepare_stmt(pdo_dbh_t*, const char*, long, XSQLDA*, i
 /* map driver specific error message to PDO error */
 void _firebird_error(pdo_dbh_t *dbh, pdo_stmt_t *stmt, char const *file, long line TSRMLS_DC) /* {{{ */
 {
+#if 0
 	pdo_firebird_db_handle *H = stmt ? ((pdo_firebird_stmt *)stmt->driver_data)->H 
 		: (pdo_firebird_db_handle *)dbh->driver_data;
+#endif
 	pdo_error_type *const error_code = stmt ? &stmt->error_code : &dbh->error_code;
 	
 #if 0
@@ -600,6 +602,8 @@ static int pdo_firebird_handle_factory(pdo_dbh_t *dbh, zval *driver_options TSRM
 		{ "role", NULL,	0 }
 	};
 	int i, ret = 0;
+	short buf_len = 256, dpb_len;
+
 	pdo_firebird_db_handle *H = dbh->driver_data = pecalloc(1,sizeof(*H),dbh->is_persistent);
 
 	php_pdo_parse_data_source(dbh->data_source, dbh->data_source_len, vars, 3);
@@ -614,9 +618,11 @@ static int pdo_firebird_handle_factory(pdo_dbh_t *dbh, zval *driver_options TSRM
 		
 		/* loop through all the provided arguments and set dpb fields accordingly */
 		for (i = 0; i < sizeof(dpb_flags); ++i) {
-			if (dpb_values[i]) {
-				dpb += sprintf(dpb, "%c%c%s", dpb_flags[i], (unsigned char)strlen(dpb_values[i]),
+			if (dpb_values[i] && buf_len > 0) {
+				dpb_len = slprintf(dpb, buf_len, "%c%c%s", dpb_flags[i], (unsigned char)strlen(dpb_values[i]),
 					dpb_values[i]);
+				dpb += dpb_len;
+				buf_len -= dpb_len;
 			}
 		}
 		

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -15,7 +15,7 @@
    | Author: Hartmut Holzgraefe <hholzgra@php.net>                        |
    +----------------------------------------------------------------------+
  */
-/* $Id: levenshtein.c,v 1.34.2.1.2.1 2006/06/26 18:48:56 bjori Exp $ */
+/* $Id: levenshtein.c,v 1.34.2.1.2.3 2007/01/01 09:36:08 sebastian Exp $ */
 
 #include "php.h"
 #include <stdlib.h>
@@ -132,7 +132,7 @@ PHP_FUNCTION(levenshtein)
 		WRONG_PARAM_COUNT;
 	}	
 
-	if(distance<0) {
+	if(distance < 0 && /* TODO */ ZEND_NUM_ARGS() != 3) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Argument string(s) too long");
 	}
 	

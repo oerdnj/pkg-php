@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: type.c,v 1.30.2.2 2006/01/01 12:50:15 sniper Exp $ */
+/* $Id: type.c,v 1.30.2.2.2.3 2007/02/24 02:17:27 helly Exp $ */
 
 #include "php.h"
 #include "php_incomplete_class.h"
@@ -64,8 +64,7 @@ PHP_FUNCTION(gettype)
 		   int res_len;
 
 		   res_len = sizeof("object of type ")-1 + Z_OBJCE_P(arg)->name_length;
-		   result = (char *) emalloc(res_len+1);
-		   sprintf(result, "object of type %s", Z_OBJCE_P(arg)->name);
+		   spprintf(&result, 0, "object of type %s", Z_OBJCE_P(arg)->name);
 		   RETVAL_STRINGL(result, res_len, 0);
 		   }
 		 */
@@ -305,7 +304,6 @@ PHP_FUNCTION(is_object)
 PHP_FUNCTION(is_numeric)
 {
 	zval **arg;
-	int result;
 
 	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &arg) == FAILURE) {
 		WRONG_PARAM_COUNT;
@@ -318,8 +316,7 @@ PHP_FUNCTION(is_numeric)
 			break;
 
 		case IS_STRING:
-			result = is_numeric_string(Z_STRVAL_PP(arg), Z_STRLEN_PP(arg), NULL, NULL, 0);
-			if (result == IS_LONG || result == IS_DOUBLE) {
+			if (is_numeric_string(Z_STRVAL_PP(arg), Z_STRLEN_PP(arg), NULL, NULL, 0)) {
 				RETURN_TRUE;
 			} else {
 				RETURN_FALSE;

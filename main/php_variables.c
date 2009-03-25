@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_variables.c,v 1.104.2.10.2.1 2006/07/27 15:37:56 iliaa Exp $ */
+/* $Id: php_variables.c,v 1.104.2.10.2.8 2007/04/17 15:06:50 iliaa Exp $ */
 
 #include <stdio.h>
 #include "php.h"
@@ -119,9 +119,15 @@ PHPAPI void php_register_variable_ex(char *var, zval *val, zval *track_vars_arra
 	index_len = var_len;
 
 	if (is_array) {
+		int nest_level = 0;
 		while (1) {
 			char *index_s;
 			int new_idx_len = 0;
+
+			if(++nest_level > PG(max_input_nesting_level)) {
+				/* too many levels of nesting */
+				php_error_docref(NULL TSRMLS_CC, E_ERROR, "Input variable nesting level more than allowed %ld (change max_input_nesting_level in php.ini to increase the limit)", PG(max_input_nesting_level));
+			}
 
 			ip++;
 			index_s = ip;
@@ -152,8 +158,7 @@ PHPAPI void php_register_variable_ex(char *var, zval *val, zval *track_vars_arra
 				array_init(gpc_element);
 				zend_hash_next_index_insert(symtable1, &gpc_element, sizeof(zval *), (void **) &gpc_element_p);
 			} else {
-				if (PG(magic_quotes_gpc) && (index != var)) {
-					/* no need to addslashes() the index if it's the main variable name */
+				if (PG(magic_quotes_gpc)) {
 					escaped_index = php_addslashes(index, index_len, &index_len, 0 TSRMLS_CC);
 				} else {
 					escaped_index = index;
@@ -342,6 +347,17 @@ SAPI_API SAPI_TREAT_DATA_FUNC(php_default_treat_data)
 	
 	while (var) {
 		val = strchr(var, '=');
+
+		if (arg == PARSE_COOKIE) {
+			/* Remove leading spaces from cookie names, needed for multi-cookie header where ; can be followed by a space */
+			while (isspace(*var)) {
+				var++;
+			}
+			if (var == val || *var == '\0') {
+				goto next_cookie;
+			}
+		}
+
 		if (val) { /* have a value */
 			int val_len;
 			unsigned int new_val_len;
@@ -366,6 +382,7 @@ SAPI_API SAPI_TREAT_DATA_FUNC(php_default_treat_data)
 			}
 			efree(val);
 		}
+next_cookie:
 		var = php_strtok_r(NULL, separator, &strtok_buf);
 	}
 
@@ -609,8 +626,6 @@ int php_hash_environment(TSRMLS_D)
 {
 	char *p;
 	unsigned char _gpc_flags[5] = {0, 0, 0, 0, 0};
-	zval *dummy_track_vars_array = NULL;
-	zend_bool initialized_dummy_track_vars_array=0;
 	zend_bool jit_initialization = (PG(auto_globals_jit) && !PG(register_globals) && !PG(register_long_arrays));
 	struct auto_global_record {
 		char *name;
@@ -701,15 +716,9 @@ int php_hash_environment(TSRMLS_D)
 			continue;
 		}
 		if (!PG(http_globals)[i]) {
-			if (!initialized_dummy_track_vars_array) {
-				ALLOC_ZVAL(dummy_track_vars_array);
-				array_init(dummy_track_vars_array);
-				INIT_PZVAL(dummy_track_vars_array);
-				initialized_dummy_track_vars_array = 1;
-			} else {
-				dummy_track_vars_array->refcount++;
-			}
-			PG(http_globals)[i] = dummy_track_vars_array;
+			ALLOC_ZVAL(PG(http_globals)[i]);
+			array_init(PG(http_globals)[i]);
+			INIT_PZVAL(PG(http_globals)[i]);
 		}
 
 		PG(http_globals)[i]->refcount++;

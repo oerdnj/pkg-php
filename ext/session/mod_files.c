@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: mod_files.c,v 1.100.2.3.2.2 2006/08/08 14:54:49 iliaa Exp $ */
+/* $Id: mod_files.c,v 1.100.2.3.2.5 2007/03/03 15:07:31 iliaa Exp $ */
 
 #include "php.h"
 
@@ -251,6 +251,15 @@ PS_OPEN_FUNC(files)
 	if (*save_path == '\0') {
 		/* if save path is an empty string, determine the temporary dir */
 		save_path = php_get_temporary_directory();
+
+		if (strcmp(save_path, "/tmp")) {
+			if (PG(safe_mode) && (!php_checkuid(save_path, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
+				return FAILURE;
+			}
+			if (php_check_open_basedir(save_path TSRMLS_CC)) {
+				return FAILURE;
+			}
+		}
 	}
 	
 	/* split up input parameter */

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -25,7 +25,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: oci8_interface.c,v 1.8.2.7.2.3 2006/08/22 11:09:12 tony2001 Exp $ */
+/* $Id: oci8_interface.c,v 1.8.2.7.2.9 2007/01/11 12:01:08 tony2001 Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -40,6 +40,10 @@
 #include "php_oci8.h"
 #include "php_oci8_int.h"
 
+#ifndef OCI_STMT_CALL
+#define OCI_STMT_CALL 10
+#endif
+
 /* {{{ proto bool oci_define_by_name(resource stmt, string name, mixed &var [, int type])
    Define a PHP variable to an Oracle column by name */
 /* if you want to define a LOB/CLOB etc make sure you allocate it via OCINewDescriptor BEFORE defining!!! */
@@ -48,7 +52,7 @@ PHP_FUNCTION(oci_define_by_name)
 	zval *stmt, *var;
 	char *name;
 	int name_len;
-	long type = SQLT_CHR;
+	long type = 0;
 	php_oci_statement *statement;
 	php_oci_define *define, *tmp_define;
 
@@ -587,7 +591,8 @@ PHP_FUNCTION(oci_lob_truncate)
 {
 	zval **tmp, *z_descriptor = getThis();
 	php_oci_descriptor *descriptor;
-	ub4 trim_length = 0;
+	long trim_length = 0;
+	ub4 ub_trim_length;
 	
 	if (getThis()) {
 		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &trim_length) == FAILURE) {
@@ -604,10 +609,16 @@ PHP_FUNCTION(oci_lob_truncate)
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to find descriptor property");
 		RETURN_FALSE;
 	}
-	
+
+	if (trim_length < 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Length must be greater than or equal to zero");
+		RETURN_FALSE;
+	}
+
+	ub_trim_length = (ub4) trim_length;
 	PHP_OCI_ZVAL_TO_DESCRIPTOR(*tmp, descriptor);
 	
-	if (php_oci_lob_truncate(descriptor, trim_length TSRMLS_CC)) {
+	if (php_oci_lob_truncate(descriptor, ub_trim_length TSRMLS_CC)) {
 		RETURN_FALSE;
 	}
 	RETURN_TRUE;
@@ -674,7 +685,7 @@ PHP_FUNCTION(oci_lob_flush)
 {
 	zval **tmp, *z_descriptor = getThis();
 	php_oci_descriptor *descriptor;
-	ub4 flush_flag = 0;
+	long flush_flag = 0;
 	
 	if (getThis()) {
 		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &flush_flag) == FAILURE) {
@@ -1549,7 +1560,7 @@ PHP_FUNCTION(oci_error)
 	php_oci_connection *connection;
 	text *errbuf;
 	sb4 errcode = 0;
-	sword error = 0;
+	sword error = OCI_SUCCESS;
 	dvoid *errh = NULL;
 #ifdef HAVE_OCI8_ATTR_STATEMENT
 	ub2 error_offset = 0;
@@ -1839,6 +1850,9 @@ PHP_FUNCTION(oci_statement_type)
 			break;
 		case OCI_STMT_DECLARE:
 			RETVAL_STRING("DECLARE",1);
+			break;
+		case OCI_STMT_CALL:
+			RETVAL_STRING("CALL",1);
 			break;
 		default:
 			RETVAL_STRING("UNKNOWN",1);

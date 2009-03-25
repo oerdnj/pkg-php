@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_schema.c,v 1.58.2.6.2.3 2006/10/03 19:51:01 iliaa Exp $ */
+/* $Id: php_schema.c,v 1.58.2.6.2.5 2007/02/15 17:01:29 dmitry Exp $ */
 
 #include "php_soap.h"
 #include "libxml/uri.h"
@@ -681,7 +681,9 @@ static int schema_restriction_simpleContent(sdlPtr sdl, xmlAttrPtr tns, xmlNodeP
 				cur_type->restrictions->enumeration = emalloc(sizeof(HashTable));
 				zend_hash_init(cur_type->restrictions->enumeration, 0, NULL, delete_restriction_var_char, 0);
 			}
-			zend_hash_add(cur_type->restrictions->enumeration, enumval->value, strlen(enumval->value)+1, &enumval, sizeof(sdlRestrictionCharPtr), NULL);
+			if (zend_hash_add(cur_type->restrictions->enumeration, enumval->value, strlen(enumval->value)+1, &enumval, sizeof(sdlRestrictionCharPtr), NULL) == FAILURE) {
+				delete_restriction_var_char(&enumval);
+			}
 		} else {
 			break;
 		}
@@ -2313,6 +2315,7 @@ void delete_model_persistent(void *handle)
 void delete_type(void *data)
 {
 	sdlTypePtr type = *((sdlTypePtr*)data);
+
 	if (type->name) {
 		efree(type->name);
 	}

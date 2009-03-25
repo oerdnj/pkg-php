@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -98,10 +98,11 @@ PHP_MINIT_FUNCTION(ncurses)
 	PHP_NCURSES_CONST(KEY_UP);
 	PHP_NCURSES_CONST(KEY_LEFT);
 	PHP_NCURSES_CONST(KEY_RIGHT);
+	PHP_NCURSES_CONST(KEY_HOME);
+	PHP_NCURSES_CONST(KEY_END);
 	PHP_NCURSES_CONST(KEY_BACKSPACE);
 	PHP_NCURSES_CONST(KEY_MOUSE);
 	PHP_NCURSES_CONST(KEY_F0);
-
 
 	/* TODO:this macro sux, we have 65 function key,
 	   so we need a little loop */
@@ -150,7 +151,6 @@ PHP_MINIT_FUNCTION(ncurses)
 	PHP_NCURSES_CONST(KEY_COMMAND);
 	PHP_NCURSES_CONST(KEY_COPY);
 	PHP_NCURSES_CONST(KEY_CREATE);
-	PHP_NCURSES_CONST(KEY_END);
 	PHP_NCURSES_CONST(KEY_EXIT);
 	PHP_NCURSES_CONST(KEY_FIND);
 	PHP_NCURSES_CONST(KEY_HELP);
@@ -277,10 +277,6 @@ PHP_MINFO_FUNCTION(ncurses)
 		php_info_print_table_row(2, "color support", "no");
 #endif
 	php_info_print_table_end();
-
-	/* Remove comments if you have entries in php.ini
-	DISPLAY_INI_ENTRIES();
-	*/
 }
 /* }}} */
 

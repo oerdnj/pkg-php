@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_fbsql.c,v 1.114.2.3.2.3 2006/08/14 18:40:08 fmk Exp $ */
+/* $Id: php_fbsql.c,v 1.114.2.3.2.6 2007/02/24 02:17:24 helly Exp $ */
 
 /* TODO:
  *
@@ -851,7 +851,7 @@ PHP_MINFO_FUNCTION(fbsql)
 	php_info_print_table_row(2, "Active Links", buf);
 
 /*
-	sprintf(buf, "%ld", FB_SQL_G(resultCount));
+	snprintf(buf, sizeof(buf), "%ld", FB_SQL_G(resultCount));
 	php_info_print_table_row(2, "Active Results", buf);
 */
 
@@ -2893,7 +2893,7 @@ void phpfbColumnAsString(PHPFBResult* result, int column, void* data , int* leng
 		{
 			double v = *((double*)data);
 			char b[128];
-			snprintf(b, sizeof(b), "%f", v);
+			snprintf(b, sizeof(b), "%F", v);
 			phpfbestrdup(b, length, value);
 		}
 		break;
@@ -2905,7 +2905,7 @@ void phpfbColumnAsString(PHPFBResult* result, int column, void* data , int* leng
  			unsigned scale = fbcdmdScale(dtmd);
   			double v = *((double*)data);
   			char b[128];
- 			snprintf(b, sizeof(b), "%.*f", scale, v);
+ 			snprintf(b, sizeof(b), "%.*F", scale, v);
   			phpfbestrdup(b, length, value);
 		}
 		break;
@@ -2944,7 +2944,7 @@ void phpfbColumnAsString(PHPFBResult* result, int column, void* data , int* leng
 					for (i = 0; i < nBits / 8; i++)
 					{
 						char c[4];
-						sprintf(c, "%02x", ptr->bytes[i]);
+						snprintf(c, sizeof(c), "%02x", ptr->bytes[i]);
 						r[i*2+2] = c[0];
 						r[i*2+3] = c[1];
 					}
@@ -3021,7 +3021,7 @@ void phpfbColumnAsString(PHPFBResult* result, int column, void* data , int* leng
 		{
 			char b[128];
 			double seconds = *((double*)data);
-			snprintf(b, sizeof(b), "%f", seconds);
+			snprintf(b, sizeof(b), "%F", seconds);
 			phpfbestrdup(b, length, value);
 		}
 		break;

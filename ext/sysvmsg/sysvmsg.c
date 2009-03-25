@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: sysvmsg.c,v 1.20.2.3.2.1 2006/06/05 22:52:11 iliaa Exp $ */
+/* $Id: sysvmsg.c,v 1.20.2.3.2.6 2007/01/17 08:25:32 tony2001 Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -24,7 +24,6 @@
 
 #include "php.h"
 #include "php_globals.h"
-#include "php_ini.h"
 #include "ext/standard/info.h"
 #include "php_sysvmsg.h"
 #include "ext/standard/php_var.h"
@@ -84,7 +83,7 @@ zend_module_entry sysvmsg_module_entry = {
 	"sysvmsg",
 	sysvmsg_functions,
 	PHP_MINIT(sysvmsg),
-	PHP_MSHUTDOWN(sysvmsg),
+	NULL,
 	NULL,
 	NULL,
 	PHP_MINFO(sysvmsg),
@@ -99,16 +98,6 @@ ZEND_GET_MODULE(sysvmsg)
 # include "zend_arg_defs.c"
 # endif
 #endif
-
-/* {{{ PHP_INI
- */
-/* Remove comments and fill if you need to have entries in php.ini
-PHP_INI_BEGIN()
-	STD_PHP_INI_ENTRY("sysvmsg.value",  "42",     PHP_INI_ALL, OnUpdateLong,    global_value,  zend_sysvmsg_globals, sysvmsg_globals)
-	STD_PHP_INI_ENTRY("sysvmsg.string", "foobar", PHP_INI_ALL, OnUpdateString, global_string, zend_sysvmsg_globals, sysvmsg_globals)
-PHP_INI_END()
-*/
-/* }}} */
 
 static void sysvmsg_release(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 {
@@ -130,21 +119,13 @@ PHP_MINIT_FUNCTION(sysvmsg)
 }
 /* }}} */
 
-/* {{{ PHP_MSHUTDOWN_FUNCTION
- */
-PHP_MSHUTDOWN_FUNCTION(sysvmsg)
-{
-	return SUCCESS;
-}
-/* }}} */
-
 /* {{{ PHP_MINFO_FUNCTION
  */
 PHP_MINFO_FUNCTION(sysvmsg)
 {
 	php_info_print_table_start();
 	php_info_print_table_row(2, "sysvmsg support", "enabled");
-	php_info_print_table_row(2, "Revision", "$Revision: 1.20.2.3.2.1 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 1.20.2.3.2.6 $");
 	php_info_print_table_end();
 }
 /* }}} */
@@ -294,7 +275,12 @@ PHP_FUNCTION(msg_receive)
 				&out_message, &do_unserialize, &flags, &zerrcode) == FAILURE) {
 		return;
 	}
-	
+
+	if (maxsize <= 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "maximum size of the message has to be greater than zero");
+		return;
+	}
+
 	if (flags != 0) {
 		if (flags & PHP_MSG_EXCEPT) {
 #ifndef MSG_EXCEPT
@@ -314,8 +300,8 @@ PHP_FUNCTION(msg_receive)
 	
 	ZEND_FETCH_RESOURCE(mq, sysvmsg_queue_t *, &queue, -1, "sysvmsg queue", le_sysvmsg);
 
-	messagebuffer = (struct php_msgbuf *) emalloc(sizeof(struct php_msgbuf) + maxsize);
-	
+	messagebuffer = (struct php_msgbuf *) safe_emalloc(maxsize, 1, sizeof(struct php_msgbuf));
+
 	result = msgrcv(mq->id, messagebuffer, maxsize, desiredmsgtype, realflags);
 		
 	zval_dtor(out_msgtype);
@@ -389,7 +375,7 @@ PHP_FUNCTION(msg_send)
 		
 		/* NB: php_msgbuf is 1 char bigger than a long, so there is no need to
 		 * allocate the extra byte. */
-		messagebuffer = emalloc(sizeof(struct php_msgbuf) + msg_var.len);
+		messagebuffer = safe_emalloc(msg_var.len, 1, sizeof(struct php_msgbuf));
 		memcpy(messagebuffer->mtext, msg_var.c, msg_var.len + 1);
 		message_len = msg_var.len;
 		smart_str_free(&msg_var);
@@ -407,7 +393,7 @@ PHP_FUNCTION(msg_send)
 				break;
 
 			case IS_DOUBLE:
-				message_len = spprintf(&p, 0, "%f", Z_DVAL_P(message));
+				message_len = spprintf(&p, 0, "%F", Z_DVAL_P(message));
 				break;
 
 			default:
@@ -415,7 +401,7 @@ PHP_FUNCTION(msg_send)
 				RETURN_FALSE;
 		}
 
-		messagebuffer = emalloc(sizeof(struct php_msgbuf) + message_len);
+		messagebuffer = safe_emalloc(message_len, 1, sizeof(struct php_msgbuf));
 		memcpy(messagebuffer->mtext, p, message_len + 1);
 
 		if (Z_TYPE_P(message) != IS_STRING) {

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: bcmath.c,v 1.62.2.2.2.2 2006/06/15 18:33:06 dmitry Exp $ */
+/* $Id: bcmath.c,v 1.62.2.2.2.5 2007/01/01 09:35:48 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -33,6 +33,7 @@
 
 ZEND_DECLARE_MODULE_GLOBALS(bcmath);
 static PHP_GINIT_FUNCTION(bcmath);
+static PHP_GSHUTDOWN_FUNCTION(bcmath);
 
 /* {{{ arginfo */
 static
@@ -124,13 +125,13 @@ zend_module_entry bcmath_module_entry = {
 	bcmath_functions,
 	PHP_MINIT(bcmath),
 	PHP_MSHUTDOWN(bcmath),
-	PHP_RINIT(bcmath),
-	PHP_RSHUTDOWN(bcmath),
+	NULL,
+	NULL,
 	PHP_MINFO(bcmath),
 	NO_VERSION_YET,
 	PHP_MODULE_GLOBALS(bcmath),
 	PHP_GINIT(bcmath),
-	NULL,
+    PHP_GSHUTDOWN(bcmath),
 	NULL,
 	STANDARD_MODULE_PROPERTIES_EX
 };
@@ -150,6 +151,17 @@ PHP_INI_END()
 static PHP_GINIT_FUNCTION(bcmath)
 {
 	bcmath_globals->bc_precision = 0;
+	bc_init_numbers(TSRMLS_C);
+}
+/* }}} */
+
+/* {{{ PHP_GSHUTDOWN_FUNCTION
+ */
+static PHP_GSHUTDOWN_FUNCTION(bcmath)
+{
+	_bc_free_num_ex(&bcmath_globals->_zero_, 1);
+	_bc_free_num_ex(&bcmath_globals->_one_, 1);
+	_bc_free_num_ex(&bcmath_globals->_two_, 1);
 }
 /* }}} */
 
@@ -173,28 +185,6 @@ PHP_MSHUTDOWN_FUNCTION(bcmath)
 }
 /* }}} */
 
-/* {{{ PHP_RINIT_FUNCTION
- */
-PHP_RINIT_FUNCTION(bcmath)
-{
-	bc_init_numbers(TSRMLS_C);
-
-	return SUCCESS;
-}
-/* }}} */
-
-/* {{{ PHP_RSHUTDOWN_FUNCTION
- */
-PHP_RSHUTDOWN_FUNCTION(bcmath)
-{
-	_bc_free_num_ex(&BCG(_zero_), 1);
-	_bc_free_num_ex(&BCG(_one_), 1);
-	_bc_free_num_ex(&BCG(_two_), 1);
-
-	return SUCCESS;
-}
-/* }}} */	
-         
 /* {{{ PHP_MINFO_FUNCTION
  */
 PHP_MINFO_FUNCTION(bcmath)
@@ -461,7 +451,7 @@ PHP_FUNCTION(bcpowmod)
 	long scale = BCG(bc_precision);
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sss|l", &left, &left_len, &right, &right_len, &modulous, &modulous_len, &scale) == FAILURE) {
-		WRONG_PARAM_COUNT;
+		return;
 	}
 
 	bc_init_num(&first TSRMLS_CC);

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2007 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_objects_API.c,v 1.47.2.6.2.3 2006/08/07 15:15:20 dmitry Exp $ */
+/* $Id: zend_objects_API.c,v 1.47.2.6.2.5 2007/01/01 09:35:47 sebastian Exp $ */
 
 #include "zend.h"
 #include "zend_globals.h"
@@ -64,8 +64,11 @@ ZEND_API void zend_objects_store_call_destructors(zend_objects_store *objects TS
 
 ZEND_API void zend_objects_store_mark_destructed(zend_objects_store *objects TSRMLS_DC)
 {
-	zend_uint i = 1;
+	zend_uint i;
 
+	if (!objects->object_buckets) {
+		return;
+	}
 	for (i = 1; i < objects->top ; i++) {
 		if (objects->object_buckets[i].valid) {
 			objects->object_buckets[i].destructor_called = 1;

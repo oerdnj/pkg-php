@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: sapi_apache2.c,v 1.57.2.10.2.6 2006/08/10 13:43:18 tony2001 Exp $ */
+/* $Id: sapi_apache2.c,v 1.57.2.10.2.13 2007/01/01 09:36:12 sebastian Exp $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 
@@ -129,9 +129,14 @@ php_apache_sapi_send_headers(sapi_headers_struct *sapi_headers TSRMLS_DC)
 
 	/* httpd requires that r->status_line is set to the first digit of
 	 * the status-code: */
-	if (sline && strlen(sline) > 12 && strncmp(sline, "HTTP/1.", 7) == 0 
-		&& sline[8] == ' ') {
+	if (sline && strlen(sline) > 12 && strncmp(sline, "HTTP/1.", 7) == 0 && sline[8] == ' ') {
 		ctx->r->status_line = apr_pstrdup(ctx->r->pool, sline + 9);
+		ctx->r->proto_num = 1000 + (sline[7]-'0');
+		if ((sline[7]-'0') == 0) {
+			apr_table_set(ctx->r->subprocess_env, "force-response-1.0", "true");
+		} else {
+			apr_table_set(ctx->r->subprocess_env, "force-response-1.1", "true");
+		}
 	}
 	
 	/*	call ap_set_content_type only once, else each time we call it, 
@@ -232,13 +237,20 @@ php_apache_sapi_register_variables(zval *track_vars_array TSRMLS_DC)
 	php_struct *ctx = SG(server_context);
 	const apr_array_header_t *arr = apr_table_elts(ctx->r->subprocess_env);
 	char *key, *val;
+	int new_val_len;
 
 	APR_ARRAY_FOREACH_OPEN(arr, key, val)
-		if (!val) val = "";
-		php_register_variable(key, val, track_vars_array TSRMLS_CC);
+		if (!val) {
+			val = "";
+		}
+		if (sapi_module.input_filter(PARSE_SERVER, key, &val, strlen(val), &new_val_len TSRMLS_CC)) {
+			php_register_variable_safe(key, val, new_val_len, track_vars_array TSRMLS_CC);
+		}
 	APR_ARRAY_FOREACH_CLOSE()
 
-	php_register_variable("PHP_SELF", ctx->r->uri, track_vars_array TSRMLS_CC);
+	if (sapi_module.input_filter(PARSE_SERVER, "PHP_SELF", &ctx->r->uri, strlen(ctx->r->uri), &new_val_len TSRMLS_CC)) {
+		php_register_variable_safe("PHP_SELF", ctx->r->uri, new_val_len, track_vars_array TSRMLS_CC);
+	}
 }
 
 static void
@@ -455,6 +467,20 @@ static void php_apache_ini_dtor(request_rec *r, request_rec *p TSRMLS_DC)
 {
 	if (strcmp(r->protocol, "INCLUDED")) {
 		zend_try { zend_ini_deactivate(TSRMLS_C); } zend_end_try();
+	} else {
+typedef struct {
+	HashTable config;
+} php_conf_rec;
+		char *str;
+		uint str_len;
+		php_conf_rec *c = ap_get_module_config(r->per_dir_config, &php5_module);
+
+		for (zend_hash_internal_pointer_reset(&c->config); 
+				zend_hash_get_current_key_ex(&c->config, &str, &str_len, NULL, 0,  NULL) == HASH_KEY_IS_STRING;
+				zend_hash_move_forward(&c->config)
+		) {
+			zend_restore_ini_entry(str, str_len, ZEND_INI_STAGE_SHUTDOWN);
+		}	
 	}
 	if (p) {
 		((php_struct *)SG(server_context))->r = p;
@@ -561,8 +587,13 @@ zend_first_try {
 			}
 		}
 		
-		/* check if comming due to ErrorDocument */
-		if (parent_req && parent_req->status != HTTP_OK) {
+		/* 
+		 * check if comming due to ErrorDocument 
+		 * We make a special exception of 413 (Invalid POST request) as the invalidity of the request occurs
+		 * during processing of the request by PHP during POST processing. Therefor we need to re-use the exiting
+		 * PHP instance to handle the request rather then creating a new one.
+		*/
+		if (parent_req && parent_req->status != HTTP_OK && parent_req->status != 413 && strcmp(r->protocol, "INCLUDED")) {
 			parent_req = NULL;
 			goto normal;
 		}
@@ -593,14 +624,9 @@ zend_first_try {
 		} else {
 			zend_execute_scripts(ZEND_INCLUDE TSRMLS_CC, NULL, 1, &zfd);
 		}
-#if MEMORY_LIMIT
-		{
-			char *mem_usage;
 
-			mem_usage = apr_psprintf(ctx->r->pool, "%u", zend_memory_peak_usage(1 TSRMLS_CC));
-			apr_table_set(r->notes, "mod_php_memory_usage", mem_usage);
-		}
-#endif
+		apr_table_set(r->notes, "mod_php_memory_usage",
+			apr_psprintf(ctx->r->pool, "%u", zend_memory_peak_usage(1 TSRMLS_CC)));
 	}
 
 } zend_end_try();

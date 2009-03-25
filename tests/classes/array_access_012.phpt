@@ -31,4 +31,6 @@ $data['element'] = &$test;
 <?php exit(0); ?>
 --EXPECTF--
 
-Fatal error: Objects used as arrays in post/pre increment/decrement must return values by reference in %sarray_access_012.php on line %d
+Notice: Indirect modification of overloaded element of ArrayAccessImpl has no effect in %sarray_access_012.php on line 24
+
+Fatal error: Cannot assign by reference to overloaded object in %sarray_access_012.php on line 24

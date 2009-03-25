@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: streamsfuncs.c,v 1.58.2.6.2.9 2006/10/11 23:22:45 pollita Exp $ */
+/* $Id: streamsfuncs.c,v 1.58.2.6.2.14 2007/04/09 15:38:58 dmitry Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -361,7 +361,7 @@ PHP_FUNCTION(stream_socket_recvfrom)
 		RETURN_FALSE;
 	}
 	
-	read_buf = emalloc(to_read + 1);
+	read_buf = safe_emalloc(1, to_read, 1);
 	
 	recvd = php_stream_xport_recvfrom(stream, read_buf, to_read, flags, NULL, NULL,
 			zremote ? &Z_STRVAL_P(zremote) : NULL,
@@ -530,7 +530,7 @@ PHP_FUNCTION(stream_get_transports)
 		while (zend_hash_get_current_key_ex(stream_xport_hash,
 					&stream_xport, &stream_xport_len,
 					&num_key, 0, NULL) == HASH_KEY_IS_STRING) {
-			add_next_index_stringl(return_value, stream_xport, stream_xport_len, 1);
+			add_next_index_stringl(return_value, stream_xport, stream_xport_len - 1, 1);
 			zend_hash_move_forward(stream_xport_hash);
 		}
 	} else {
@@ -558,7 +558,7 @@ PHP_FUNCTION(stream_get_wrappers)
 			(key_flags = zend_hash_get_current_key_ex(url_stream_wrappers_hash, &stream_protocol, &stream_protocol_len, &num_key, 0, NULL)) != HASH_KEY_NON_EXISTANT;
 			zend_hash_move_forward(url_stream_wrappers_hash)) {
 				if (key_flags == HASH_KEY_IS_STRING) {
-					add_next_index_stringl(return_value, stream_protocol, stream_protocol_len, 1);
+					add_next_index_stringl(return_value, stream_protocol, stream_protocol_len - 1, 1);
 				}
 		}
 	} else {
@@ -712,7 +712,7 @@ PHP_FUNCTION(stream_select)
 	struct timeval	tv;
 	struct timeval *tv_p = NULL;
 	fd_set			rfds, wfds, efds;
-	int				max_fd = 0;
+	php_socket_t	max_fd = 0;
 	int				retval, sets = 0;
 	long			usec = 0;
 	int				set_count, max_set_count = 0;
@@ -1339,6 +1339,36 @@ PHP_FUNCTION(stream_socket_enable_crypto)
 			RETURN_TRUE;
 	}
 }
+/* }}} */
+
+#ifdef HAVE_SHUTDOWN
+/* {{{ proto int stream_socket_shutdown(resource stream, int how)
+	causes all or part of a full-duplex connection on the socket associated
+	with stream to be shut down.  If how is SHUT_RD,  further receptions will
+	be disallowed. If how is SHUT_WR, further transmissions will be disallowed.
+	If how is SHUT_RDWR,  further  receptions and transmissions will be
+	disallowed. */
+PHP_FUNCTION(stream_socket_shutdown)
+{
+	long how;
+	zval *zstream;
+	php_stream *stream;
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rl", &zstream, &how) == FAILURE) {
+		RETURN_FALSE;
+	}
+	
+	if (how != STREAM_SHUT_RD &&
+	    how != STREAM_SHUT_WR &&
+	    how != STREAM_SHUT_RDWR) {
+		RETURN_FALSE;
+	}
+
+	php_stream_from_zval(stream, &zstream);
+
+	RETURN_BOOL(php_stream_xport_shutdown(stream, (stream_shutdown_t)how TSRMLS_CC) == 0);
+}
+#endif
 /* }}} */
 
 /*

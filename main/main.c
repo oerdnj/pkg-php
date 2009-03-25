@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: main.c,v 1.640.2.23.2.16 2006/09/25 14:48:33 iliaa Exp $ */
+/* $Id: main.c,v 1.640.2.23.2.35 2007/04/18 09:38:56 rrichards Exp $ */
 
 /* {{{ includes
  */
@@ -27,6 +27,7 @@
 
 #include "php.h"
 #include <stdio.h>
+#include <fcntl.h>
 #ifdef PHP_WIN32
 #include "win32/time.h"
 #include "win32/signal.h"
@@ -61,8 +62,8 @@
 #include "ext/standard/credits.h"
 #ifdef PHP_WIN32
 #include <io.h>
-#include <fcntl.h>
 #include "win32/php_registry.h"
+#include "ext/standard/flock_compat.h"
 #endif
 #include "php_syslog.h"
 #include "Zend/zend_exceptions.h"
@@ -83,6 +84,7 @@
 #include "php_ticks.h"
 #include "php_logos.h"
 #include "php_streams.h"
+#include "php_open_temporary_file.h"
 
 #include "SAPI.h"
 #include "rfc1867.h"
@@ -100,12 +102,16 @@ PHPAPI int core_globals_id;
  */
 static PHP_INI_MH(OnSetPrecision)
 {
-	EG(precision) = atoi(new_value);
-	return SUCCESS;
+	int i = atoi(new_value);
+	if (i >= 0) {
+		EG(precision) = i;
+		return SUCCESS;
+	} else {
+		return FAILURE;
+	}
 }
 /* }}} */
 
-#if MEMORY_LIMIT
 /* {{{ PHP_INI_MH
  */
 static PHP_INI_MH(OnChangeMemoryLimit)
@@ -118,7 +124,6 @@ static PHP_INI_MH(OnChangeMemoryLimit)
 	return zend_set_memory_limit(PG(memory_limit));
 }
 /* }}} */
-#endif
 
 
 /* {{{ php_disable_functions
@@ -281,7 +286,7 @@ PHP_INI_BEGIN()
 	STD_PHP_INI_BOOLEAN("y2k_compliance",		"1",		PHP_INI_ALL,		OnUpdateBool,			y2k_compliance,			php_core_globals,	core_globals)
 
 	STD_PHP_INI_ENTRY("unserialize_callback_func",	NULL,	PHP_INI_ALL,		OnUpdateString,			unserialize_callback_func,	php_core_globals,	core_globals)
-	STD_PHP_INI_ENTRY("serialize_precision",	"100",	PHP_INI_ALL,		OnUpdateLong,			serialize_precision,	php_core_globals,	core_globals)
+	STD_PHP_INI_ENTRY("serialize_precision",	"100",	PHP_INI_ALL,		OnUpdateLongGEZero,			serialize_precision,	php_core_globals,	core_globals)
 	STD_PHP_INI_ENTRY("arg_separator.output",	"&",		PHP_INI_ALL,		OnUpdateStringUnempty,	arg_separator.output,	php_core_globals,	core_globals)
 	STD_PHP_INI_ENTRY("arg_separator.input",	"&",		PHP_INI_SYSTEM|PHP_INI_PERDIR,	OnUpdateStringUnempty,	arg_separator.input,	php_core_globals,	core_globals)
 
@@ -301,6 +306,7 @@ PHP_INI_BEGIN()
 	STD_PHP_INI_ENTRY("upload_max_filesize",	"2M",		PHP_INI_SYSTEM|PHP_INI_PERDIR,		OnUpdateLong,			upload_max_filesize,	php_core_globals,	core_globals)
 	STD_PHP_INI_ENTRY("post_max_size",			"8M",		PHP_INI_SYSTEM|PHP_INI_PERDIR,		OnUpdateLong,			post_max_size,			sapi_globals_struct,sapi_globals)
 	STD_PHP_INI_ENTRY("upload_tmp_dir",			NULL,		PHP_INI_SYSTEM,		OnUpdateStringUnempty,	upload_tmp_dir,			php_core_globals,	core_globals)
+	STD_PHP_INI_ENTRY("max_input_nesting_level", "64",		PHP_INI_SYSTEM|PHP_INI_PERDIR,		OnUpdateLongGEZero,	max_input_nesting_level,			php_core_globals,	core_globals)
 
 	STD_PHP_INI_ENTRY("user_dir",				NULL,		PHP_INI_SYSTEM,		OnUpdateString,			user_dir,				php_core_globals,	core_globals)
 	STD_PHP_INI_ENTRY("variables_order",		"EGPCS",	PHP_INI_SYSTEM|PHP_INI_PERDIR,		OnUpdateStringUnempty,	variables_order,		php_core_globals,	core_globals)
@@ -311,9 +317,7 @@ PHP_INI_BEGIN()
 	PHP_INI_ENTRY("SMTP",						"localhost",PHP_INI_ALL,		NULL)
 	PHP_INI_ENTRY("smtp_port",					"25",		PHP_INI_ALL,		NULL)
 	PHP_INI_ENTRY("browscap",					NULL,		PHP_INI_SYSTEM,		NULL)
-#if MEMORY_LIMIT
-	PHP_INI_ENTRY("memory_limit",				"16M",		PHP_INI_ALL,		OnChangeMemoryLimit)
-#endif
+	PHP_INI_ENTRY("memory_limit",				"128M",		PHP_INI_ALL,		OnChangeMemoryLimit)
 	PHP_INI_ENTRY("precision",					"14",		PHP_INI_ALL,		OnSetPrecision)
 	PHP_INI_ENTRY("sendmail_from",				NULL,		PHP_INI_ALL,		NULL)
 	PHP_INI_ENTRY("sendmail_path",	DEFAULT_SENDMAIL_PATH,	PHP_INI_SYSTEM,		NULL)
@@ -339,7 +343,7 @@ static int module_shutdown = 0;
  */
 PHPAPI void php_log_err(char *log_message TSRMLS_DC)
 {
-	FILE *log_file;
+	int fd = -1;
 	char error_time_str[128];
 	struct tm tmbuf;
 	time_t error_time;
@@ -352,14 +356,19 @@ PHPAPI void php_log_err(char *log_message TSRMLS_DC)
 			return;
 		}
 #endif
-		log_file = VCWD_FOPEN(PG(error_log), "ab");
-		if (log_file != NULL) {
+		fd = VCWD_OPEN_MODE(PG(error_log), O_CREAT | O_APPEND | O_WRONLY, 0644);
+		if (fd != -1) {
+			char *tmp;
+			int len;
 			time(&error_time);
-			strftime(error_time_str, sizeof(error_time_str), "%d-%b-%Y %H:%M:%S", php_localtime_r(&error_time, &tmbuf)); 
-			fprintf(log_file, "[%s] ", error_time_str);
-			fprintf(log_file, "%s", log_message);
-			fprintf(log_file, "%s", PHP_EOL);
-			fclose(log_file);
+			strftime(error_time_str, sizeof(error_time_str), "%d-%b-%Y %H:%M:%S", php_localtime_r(&error_time, &tmbuf));
+			len = spprintf(&tmp, 0, "[%s] %s%s", error_time_str, log_message, PHP_EOL);
+#ifdef PHP_WIN32
+			php_flock(fd, 2);
+#endif
+			write(fd, tmp, len);
+			efree(tmp);
+			close(fd);
 			return;
 		}
 	}
@@ -830,10 +839,8 @@ static void php_error_cb(int type, const char *error_filename, const uint error_
 		case E_USER_ERROR:
 			EG(exit_status) = 255;
 			if (module_initialized) {
-#if MEMORY_LIMIT
 				/* restore memory limit */
 				zend_set_memory_limit(PG(memory_limit));
-#endif
 				efree(buffer);
 				zend_objects_store_mark_destructed(&EG(objects_store) TSRMLS_CC);
 				zend_bailout();
@@ -905,9 +912,14 @@ static long stream_fteller_for_zend(void *handle TSRMLS_DC)
 
 static int php_stream_open_for_zend(const char *filename, zend_file_handle *handle TSRMLS_DC)
 {
+	return php_stream_open_for_zend_ex(filename, handle, ENFORCE_SAFE_MODE|USE_PATH|REPORT_ERRORS|STREAM_OPEN_FOR_INCLUDE TSRMLS_CC);
+}
+
+PHPAPI int php_stream_open_for_zend_ex(const char *filename, zend_file_handle *handle, int mode TSRMLS_DC)
+{
 	php_stream *stream;
 
-	stream = php_stream_open_wrapper((char *)filename, "rb", ENFORCE_SAFE_MODE|USE_PATH|REPORT_ERRORS|STREAM_OPEN_FOR_INCLUDE, &handle->opened_path);
+	stream = php_stream_open_wrapper((char *)filename, "rb", mode, &handle->opened_path);
 
 	if (stream) {
 		handle->type = ZEND_HANDLE_STREAM;
@@ -925,7 +937,6 @@ static int php_stream_open_for_zend(const char *filename, zend_file_handle *hand
 	}
 	return FAILURE;
 }
-
 
 /* {{{ php_get_configuration_directive_for_zend
  */
@@ -962,20 +973,20 @@ static void php_message_handler_for_zend(long message, void *data)
 		case ZMSG_MEMORY_LEAK_REPEATED:
 #if ZEND_DEBUG
 			if (EG(error_reporting) & E_WARNING) {
-				char memory_leak_buf[512];
+				char memory_leak_buf[1024];
 
 				if (message==ZMSG_MEMORY_LEAK_DETECTED) {
 					zend_leak_info *t = (zend_leak_info *) data;
 
-					snprintf(memory_leak_buf, 512, "%s(%d) :  Freeing 0x%.8lX (%d bytes), script=%s\n", t->filename, t->lineno, (unsigned long)t->addr, t->size, SAFE_FILENAME(SG(request_info).path_translated));
+					snprintf(memory_leak_buf, 512, "%s(%d) :  Freeing 0x%.8lX (%zu bytes), script=%s\n", t->filename, t->lineno, (zend_uintptr_t)t->addr, t->size, SAFE_FILENAME(SG(request_info).path_translated));
 					if (t->orig_filename) {
 						char relay_buf[512];
 
 						snprintf(relay_buf, 512, "%s(%d) : Actual location (location was relayed)\n", t->orig_filename, t->orig_lineno);
-						strcat(memory_leak_buf, relay_buf);
+						strlcat(memory_leak_buf, relay_buf, sizeof(memory_leak_buf));
 					}
 				} else {
-					unsigned long leak_count = (unsigned long) data;
+					unsigned long leak_count = (zend_uintptr_t) data;
 
 					snprintf(memory_leak_buf, 512, "Last leak repeated %ld time%s\n", leak_count, (leak_count>1?"s":""));
 				}
@@ -1005,12 +1016,18 @@ static void php_message_handler_for_zend(long message, void *data)
 				struct tm *ta, tmbuf;
 				time_t curtime;
 				char *datetime_str, asctimebuf[52];
+				char memory_leak_buf[4096];
 
 				time(&curtime);
 				ta = php_localtime_r(&curtime, &tmbuf);
 				datetime_str = php_asctime_r(ta, asctimebuf);
 				datetime_str[strlen(datetime_str)-1]=0;	/* get rid of the trailing newline */
-				fprintf(stderr, "[%s]  Script:  '%s'\n", datetime_str, SAFE_FILENAME(SG(request_info).path_translated));
+				snprintf(memory_leak_buf, sizeof(memory_leak_buf), "[%s]  Script:  '%s'\n", datetime_str, SAFE_FILENAME(SG(request_info).path_translated));
+#	if defined(PHP_WIN32)
+				OutputDebugString(memory_leak_buf);
+#	else
+				fprintf(stderr, "%s", memory_leak_buf);
+#	endif
 			}
 			break;
 	}
@@ -1073,7 +1090,7 @@ int php_request_startup(TSRMLS_D)
 	int retval = SUCCESS;
 
 #ifdef PHP_WIN32
-	CoInitialize(NULL);
+	PG(com_initialized) = 0;
 #endif
 
 #if PHP_SIGCHILD
@@ -1325,11 +1342,27 @@ void php_request_shutdown(void *dummy)
 	} zend_end_try();
 
 #ifdef PHP_WIN32
-	CoUninitialize();
+	if (PG(com_initialized)) {
+		CoUninitialize();
+		PG(com_initialized) = 0;
+	}
 #endif
 }
 /* }}} */
 
+
+/* {{{ php_com_initialize
+ */
+PHPAPI void php_com_initialize(TSRMLS_D)
+{
+#ifdef PHP_WIN32
+	if (!PG(com_initialized)) {
+		CoInitialize(NULL);
+		PG(com_initialized) = 1;
+	}
+#endif
+}
+/* }}} */
 
 /* {{{ php_body_write_wrapper
  */
@@ -1458,7 +1491,7 @@ int php_module_startup(sapi_module_struct *sf, zend_module_entry *additional_mod
 	ts_allocate_id(&core_globals_id, sizeof(php_core_globals), (ts_allocate_ctor) core_globals_ctor, (ts_allocate_dtor) core_globals_dtor);
 	core_globals = ts_resource(core_globals_id);
 #ifdef PHP_WIN32
-	ts_allocate_id(&php_win32_core_globals_id, sizeof(php_win32_core_globals), (ts_allocate_ctor) php_win32_core_globals_ctor, NULL);
+	ts_allocate_id(&php_win32_core_globals_id, sizeof(php_win32_core_globals), (ts_allocate_ctor) php_win32_core_globals_ctor, (ts_allocate_dtor) php_win32_core_globals_dtor);
 #endif
 #endif
 	EG(bailout) = NULL;
@@ -1480,6 +1513,7 @@ int php_module_startup(sapi_module_struct *sf, zend_module_entry *additional_mod
 
 #if HAVE_SETLOCALE
 	setlocale(LC_CTYPE, "");
+	zend_update_current_locale();
 #endif
 
 #if HAVE_TZSET
@@ -1665,6 +1699,8 @@ void php_module_shutdown(TSRMLS_D)
 	zend_ini_global_shutdown(TSRMLS_C);
 	ts_free_id(core_globals_id);	
 #endif
+
+	php_shutdown_temporary_directory();
 
 	module_initialized = 0;
 }
@@ -1871,7 +1907,7 @@ PHPAPI int php_handle_auth_data(const char *auth TSRMLS_DC)
 PHPAPI int php_lint_script(zend_file_handle *file TSRMLS_DC)
 {
 	zend_op_array *op_array;
-	zend_bool retval = FAILURE;
+	int retval = FAILURE;
 
 	zend_try {
 		op_array = zend_compile_file(file, ZEND_INCLUDE TSRMLS_CC);

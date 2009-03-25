@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_cli_readline.c,v 1.3.2.5 2006/01/01 12:50:19 sniper Exp $ */
+/* $Id: php_cli_readline.c,v 1.3.2.5.2.2 2007/02/24 02:17:28 helly Exp $ */
 
 #include "php.h"
 
@@ -418,9 +418,10 @@ TODO:
 			efree(class_name);
 		}
 		if (pce && retval) {
-			char *tmp = malloc(class_name_len + 2 + strlen(retval) + 1);
+			int len = class_name_len + 2 + strlen(retval) + 1;
+			char *tmp = malloc(len);
 			
-			sprintf(tmp, "%s::%s", (*pce)->name, retval);
+			snprintf(tmp, len, "%s::%s", (*pce)->name, retval);
 			free(retval);
 			retval = tmp;
 		}

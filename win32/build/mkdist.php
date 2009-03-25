@@ -1,4 +1,4 @@
-<?php # $Id: mkdist.php,v 1.13 2005/03/26 21:32:20 edink Exp $
+<?php # $Id: mkdist.php,v 1.13.4.1 2006/12/19 10:26:01 edink Exp $
 /* piece together a windows binary distro */
 
 $build_dir = $argv[1];
@@ -399,6 +399,17 @@ if (file_exists($snapshot_template)) {
 				/* copy to extras */
 				copy($item, "$dist_dir/extras/$bi");
 			}
+		}
+	}
+	
+	/* copy c++ runtime */
+	$items = glob("$snapshot_template/dlls/*.CRT");
+
+	foreach ($items as $item) {
+		$bi = basename($item);
+		if (is_dir($item)) {
+			copy_dir($item, "$dist_dir/$bi");
+			copy_dir($item, "$dist_dir/ext/$bi");
 		}
 	}
 } else {

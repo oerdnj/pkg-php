@@ -3,7 +3,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-// $Id: confutils.js,v 1.60.2.1.2.1 2006/05/07 00:04:56 edink Exp $
+// $Id: confutils.js,v 1.60.2.1.2.6 2007/03/19 03:15:48 edink Exp $
 
 var STDOUT = WScript.StdOut;
 var STDERR = WScript.StdErr;
@@ -578,7 +578,7 @@ function CHECK_LIB(libnames, target, path_to_check, common_name)
 	path_to_check += ";" + php_usual_lib_suspects;
 
 	// It is common practice to put libs under one of these dir names
-	var subdirs = new Array(PHP_DEBUG == "yes" ? "Debug" : "Release", "lib", "libs", "libexec");
+	var subdirs = new Array(PHP_DEBUG == "yes" ? "Debug" : (PHP_DEBUG_PACK == "yes"?"Release_Dbg":"Release"), "lib", "libs", "libexec");
 
 	// libnames can be ; separated list of accepted library names
 	libnames = libnames.split(';');
@@ -665,7 +665,7 @@ function OLD_CHECK_LIB(libnames, target, path_to_check)
 	var i;
 	var libname;
 
-	var subdir = PHP_DEBUG == "yes" ? "Debug" : "Release";
+	var subdir = PHP_DEBUG == "yes" ? "Debug" : (PHP_DEBUG_PACK == "yes"?"Release_Dbg":"Release");
 
 	libnames = libnames.split(';');
 	for (i = 0; i < libnames.length; i++) {
@@ -876,7 +876,8 @@ function SAPI(sapiname, file_list, makefiletarget, cflags, obj_dir)
 	var SAPI = sapiname.toUpperCase();
 	var ldflags;
 	var resname;
-	var ld = "@$(LD)";
+	var ld;
+	var manifest;
 
 	if (typeof(obj_dir) == "undefined") {
 		sapiname_for_printing = configure_module_dirname;
@@ -908,15 +909,26 @@ function SAPI(sapiname, file_list, makefiletarget, cflags, obj_dir)
 
 	if (makefiletarget.match(new RegExp("\\.dll$"))) {
 		ldflags = "/dll $(LDFLAGS)";
+		manifest = "-@$(_VC_MANIFEST_EMBED_DLL)";
 	} else if (makefiletarget.match(new RegExp("\\.lib$"))) {
 		ldflags = "$(LDFLAGS)";
 		ld = "$(MAKE_LIB)";
 	} else {
 		ldflags = "$(LDFLAGS)";
+		manifest = "-@$(_VC_MANIFEST_EMBED_EXE)";
 	}
 
-	MFO.WriteLine("\t" + ld + " /nologo /out:$(BUILD_DIR)\\" + makefiletarget + " " + ldflags + " $(" + SAPI + "_GLOBAL_OBJS) $(BUILD_DIR)\\$(PHPLIB) $(LDFLAGS_" + SAPI + ") $(LIBS_" + SAPI + ") $(BUILD_DIR)\\" + resname);
+	if (ld) {
+		MFO.WriteLine("\t" + ld + " /nologo /out:$(BUILD_DIR)\\" + makefiletarget + " " + ldflags + " $(" + SAPI + "_GLOBAL_OBJS) $(BUILD_DIR)\\$(PHPLIB) $(LDFLAGS_" + SAPI + ") $(LIBS_" + SAPI + ") $(BUILD_DIR)\\" + resname);
+	} else {
+		ld = "@$(CC)";
+		MFO.WriteLine("\t" + ld + " /nologo " + " $(" + SAPI + "_GLOBAL_OBJS) $(BUILD_DIR)\\$(PHPLIB) $(LIBS_" + SAPI + ") $(BUILD_DIR)\\" + resname + " /link /out:$(BUILD_DIR)\\" + makefiletarget + " " + ldflags + " $(LDFLAGS_" + SAPI + ")");
+	}
 
+	if (manifest) {
+		MFO.WriteLine("\t" + manifest);
+	}
+		
 	DEFINE('CFLAGS_' + SAPI + '_OBJ', '$(CFLAGS_' + SAPI + ')');
 
 	if (configure_module_dirname.match("pecl")) {
@@ -993,7 +1005,7 @@ function EXTENSION(extname, file_list, shared, cflags, dllname, obj_dir)
 	var objs = null;
 	var EXT = extname.toUpperCase();
 	var extname_for_printing;
-
+	
 	if (shared == null) {
 		eval("shared = PHP_" + EXT + "_SHARED;");
 	}
@@ -1031,10 +1043,13 @@ function EXTENSION(extname, file_list, shared, cflags, dllname, obj_dir)
 		var libname = dllname.substring(0, dllname.length-4) + ".lib";
 
 		var resname = generate_version_info_resource(dllname, configure_module_dirname);
-		var ld = "@$(LD)";
+		var ld = "@$(CC)";
 
-		MFO.WriteLine("$(BUILD_DIR)\\" + dllname + " $(BUILD_DIR)\\" + libname + ": $(DEPS_" + EXT + ") $(" + EXT + "_GLOBAL_OBJS) $(BUILD_DIR)\\$(PHPLIB) $(BUILD_DIR)\\" + resname);
-		MFO.WriteLine("\t" + ld + " /out:$(BUILD_DIR)\\" + dllname + " $(DLL_LDFLAGS) $(LDFLAGS) $(LDFLAGS_" + EXT + ") $(" + EXT + "_GLOBAL_OBJS) $(BUILD_DIR)\\$(PHPLIB) $(LIBS_" + EXT + ") $(LIBS) $(BUILD_DIR)\\" + resname);
+		MFO.WriteLine("$(BUILD_DIR)\\" + libname + ": $(BUILD_DIR)\\" + dllname);
+		MFO.WriteBlankLines(1);
+		MFO.WriteLine("$(BUILD_DIR)\\" + dllname + ": $(DEPS_" + EXT + ") $(" + EXT + "_GLOBAL_OBJS) $(BUILD_DIR)\\$(PHPLIB) $(BUILD_DIR)\\" + resname);
+		MFO.WriteLine("\t" + ld + " $(" + EXT + "_GLOBAL_OBJS) $(BUILD_DIR)\\$(PHPLIB) $(LIBS_" + EXT + ") $(LIBS) $(BUILD_DIR)\\" + resname + " /link /out:$(BUILD_DIR)\\" + dllname + " $(DLL_LDFLAGS) $(LDFLAGS) $(LDFLAGS_" + EXT + ")");
+		MFO.WriteLine("\t-@$(_VC_MANIFEST_EMBED_DLL)");
 		MFO.WriteBlankLines(1);
 
 		if (configure_module_dirname.match("pecl")) {
@@ -1211,7 +1226,7 @@ function generate_files()
 			continue;
 		}
 		last = bd;
-		ADD_FLAG("BUILD_DIRS_SUB", bd);
+		ADD_FLAG("BUILD_DIRS_SUB", bd.replace(new RegExp('^'+dir+'\\\\'), '$(BUILD_DIR)\\'));
 		if (!FSO.FolderExists(bd)) {
 			FSO.CreateFolder(bd);
 		}

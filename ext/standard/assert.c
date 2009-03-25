@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: assert.c,v 1.60.2.3.2.2 2006/07/01 12:21:07 nlopess Exp $ */
+/* $Id: assert.c,v 1.60.2.3.2.6 2007/02/16 16:35:04 dmitry Exp $ */
 
 /* {{{ includes/startup/misc */
 
@@ -30,6 +30,7 @@ ZEND_BEGIN_MODULE_GLOBALS(assert)
 	long warning;
 	long quiet_eval;
 	zval *callback;
+	char *cb;
 ZEND_END_MODULE_GLOBALS(assert)
 
 ZEND_DECLARE_MODULE_GLOBALS(assert)
@@ -52,15 +53,26 @@ enum {
 
 static PHP_INI_MH(OnChangeCallback)
 {
-	if (ASSERTG(callback)) {
-		zval_ptr_dtor(&ASSERTG(callback));
+	if (EG(in_execution)) {
+		if (ASSERTG(callback)) {
+			zval_ptr_dtor(&ASSERTG(callback));
+		}
+		if (new_value && (ASSERTG(callback) || new_value_length)) {
+			MAKE_STD_ZVAL(ASSERTG(callback));
+			ZVAL_STRINGL(ASSERTG(callback), new_value, new_value_length, 1);
+		}
+	} else {
+		if (ASSERTG(cb)) {
+			pefree(ASSERTG(cb), 1);
+		}
+		if (new_value && new_value_length) {
+			ASSERTG(cb) = pemalloc(new_value_length + 1, 1);
+			memcpy(ASSERTG(cb), new_value, new_value_length);
+			ASSERTG(cb)[new_value_length] = '\0';
+		} else {
+			ASSERTG(cb) = NULL;
+		}
 	}
-
-	if (new_value && (ASSERTG(callback) || new_value_length)) {
-		MAKE_STD_ZVAL(ASSERTG(callback));
-		ZVAL_STRINGL(ASSERTG(callback), new_value, new_value_length, 1);
-	}
-
 	return SUCCESS;
 }
 
@@ -75,6 +87,7 @@ PHP_INI_END()
 static void php_assert_init_globals(zend_assert_globals *assert_globals_p TSRMLS_DC)
 {
 	assert_globals_p->callback = NULL;
+	assert_globals_p->cb = NULL;
 }
 
 PHP_MINIT_FUNCTION(assert)
@@ -94,9 +107,9 @@ PHP_MINIT_FUNCTION(assert)
 
 PHP_MSHUTDOWN_FUNCTION(assert)
 {
-	if (ASSERTG(callback)) {
-		zval_ptr_dtor(&ASSERTG(callback));
-		ASSERTG(callback) = NULL;
+	if (ASSERTG(cb)) {
+		pefree(ASSERTG(cb), 1);
+		ASSERTG(cb) = NULL;
 	}
 	return SUCCESS;
 }
@@ -172,6 +185,11 @@ PHP_FUNCTION(assert)
 
 	if (val) {
 		RETURN_TRUE;
+	}
+
+	if (!ASSERTG(callback) && ASSERTG(cb)) {
+		MAKE_STD_ZVAL(ASSERTG(callback));
+		ZVAL_STRING(ASSERTG(callback), ASSERTG(cb), 1);
 	}
 
 	if (ASSERTG(callback)) {
@@ -268,6 +286,13 @@ PHP_FUNCTION(assert_options)
 		break;
 
 	case ASSERT_CALLBACK:
+		if (ASSERTG(callback) != NULL) {
+			RETVAL_ZVAL(ASSERTG(callback), 1, 0);
+		} else if (ASSERTG(cb)) {
+			RETVAL_STRING(ASSERTG(cb), 1);
+		} else {
+			RETVAL_NULL();
+		}
 		if (ac == 2) {
 			if (ASSERTG(callback)) {
 				zval_ptr_dtor(&ASSERTG(callback));
@@ -275,7 +300,7 @@ PHP_FUNCTION(assert_options)
 			ASSERTG(callback) = *value;
 			zval_add_ref(value);
 		}
-		RETURN_TRUE;
+		return;
 		break;
 
 	default:

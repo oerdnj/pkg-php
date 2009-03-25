@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,11 +18,12 @@
    |          Gerrit Thomson <334647@swin.edu.au>                         |
    |          Jani Taskinen  <sniper@iki.fi>                              |
    |          Stig Venaas    <venaas@uninett.no>                          |
+   |          Doug Goldstein <cardoe@cardoe.com>                          |
    | PHP 4.0 updates:  Zeev Suraski <zeev@zend.com>                       |
    +----------------------------------------------------------------------+
  */
  
-/* $Id: ldap.c,v 1.161.2.3.2.1 2006/06/15 18:33:07 dmitry Exp $ */
+/* $Id: ldap.c,v 1.161.2.3.2.5 2007/04/30 21:40:02 tony2001 Exp $ */
 #define IS_EXT_MODULE
 
 #ifdef HAVE_CONFIG_H
@@ -117,7 +118,7 @@ zend_function_entry ldap_functions[] = {
 	PHP_FE(ldap_first_attribute,	third_arg_force_ref)
 	PHP_FE(ldap_next_attribute,		third_arg_force_ref)
 	PHP_FE(ldap_get_attributes,							NULL)
-	PHP_FE(ldap_get_values,								NULL)
+	PHP_FALIAS(ldap_get_values,	ldap_get_values_len,				NULL)
 	PHP_FE(ldap_get_values_len,							NULL)
 	PHP_FE(ldap_get_dn,									NULL)
 	PHP_FE(ldap_explode_dn,								NULL)
@@ -317,7 +318,7 @@ PHP_MINFO_FUNCTION(ldap)
 
 	php_info_print_table_start();
 	php_info_print_table_row(2, "LDAP Support", "enabled");
-	php_info_print_table_row(2, "RCS Version", "$Id: ldap.c,v 1.161.2.3.2.1 2006/06/15 18:33:07 dmitry Exp $");
+	php_info_print_table_row(2, "RCS Version", "$Id: ldap.c,v 1.161.2.3.2.5 2007/04/30 21:40:02 tony2001 Exp $");
 
 	if (LDAPG(max_links) == -1) {
 		snprintf(tmp, 31, "%ld/unlimited", LDAPG(num_links));
@@ -342,13 +343,13 @@ PHP_MINFO_FUNCTION(ldap)
 
 #if HAVE_NSLDAP
 	SDKVersion = ldap_version(&ver);
-	snprintf(tmp, 31, "%f", SDKVersion/100.0);
+	snprintf(tmp, 31, "%F", SDKVersion/100.0);
 	php_info_print_table_row(2, "SDK Version", tmp);
 
-	snprintf(tmp, 31, "%f", ver.protocol_version/100.0);
+	snprintf(tmp, 31, "%F", ver.protocol_version/100.0);
 	php_info_print_table_row(2, "Highest LDAP Protocol Supported", tmp);
 
-	snprintf(tmp, 31, "%f", ver.SSL_version/100.0);
+	snprintf(tmp, 31, "%F", ver.SSL_version/100.0);
 	php_info_print_table_row(2, "SSL Level Supported", tmp);
 
 	if (ver.security_level != LDAP_SECURITY_NONE) {
@@ -375,9 +376,9 @@ PHP_FUNCTION(ldap_connect)
 	int hostlen;
 	long port = 389; /* Default port */
 #ifdef HAVE_ORALDAP
-	char *wallet, *walletpasswd;
-	int walletlen, walletpasswdlen;
-	long authmode;
+	char *wallet = NULL, *walletpasswd = NULL;
+	int walletlen = 0, walletpasswdlen = 0;
+	long authmode = GSLC_SSL_NO_AUTH;
 	int ssl=0;
 #endif
 	ldap_linkdata *ld;
@@ -1036,7 +1037,7 @@ PHP_FUNCTION(ldap_get_entries)
 	BerElement *ber;
 	char *attribute;
 	size_t attr_len;
-	char **ldap_value;
+	struct berval **ldap_value;
 	char *dn;
 
 	if (ZEND_NUM_ARGS() != 2 || zend_get_parameters_ex(2, &link, &result) == FAILURE) {
@@ -1067,16 +1068,16 @@ PHP_FUNCTION(ldap_get_entries)
 		attribute = ldap_first_attribute(ldap, ldap_result_entry, &ber);
 
 		while (attribute != NULL) {
-			ldap_value = ldap_get_values(ldap, ldap_result_entry, attribute);
-			num_values = ldap_count_values(ldap_value);
+			ldap_value = ldap_get_values_len(ldap, ldap_result_entry, attribute);
+			num_values = ldap_count_values_len(ldap_value);
 
 			MAKE_STD_ZVAL(tmp2);
 			array_init(tmp2);
 			add_assoc_long(tmp2, "count", num_values);
 			for (i = 0; i < num_values; i++) {
-				add_index_string(tmp2, i, ldap_value[i], 1);
+				add_index_stringl(tmp2, i, ldap_value[i]->bv_val, ldap_value[i]->bv_len, 1);
 			}	
-			ldap_value_free(ldap_value);
+			ldap_value_free_len(ldap_value);
 
 			attr_len = strlen(attribute);
 			zend_hash_update(Z_ARRVAL_P(tmp1), php_strtolower(attribute, attr_len), attr_len+1, (void *) &tmp2, sizeof(zval *), NULL);
@@ -1183,7 +1184,7 @@ PHP_FUNCTION(ldap_get_attributes)
 	ldap_linkdata *ld;
 	ldap_resultentry *resultentry;
 	char *attribute;
-	char **ldap_value;
+	struct berval **ldap_value;
 	int i, num_values, num_attrib;
 	BerElement *ber;
 
@@ -1199,16 +1200,16 @@ PHP_FUNCTION(ldap_get_attributes)
 	
 	attribute = ldap_first_attribute(ld->link, resultentry->data, &ber);
 	while (attribute != NULL) {
-		ldap_value = ldap_get_values(ld->link, resultentry->data, attribute);
-		num_values = ldap_count_values(ldap_value);
+		ldap_value = ldap_get_values_len(ld->link, resultentry->data, attribute);
+		num_values = ldap_count_values_len(ldap_value);
 
 		MAKE_STD_ZVAL(tmp);
 		array_init(tmp);
 		add_assoc_long(tmp, "count", num_values);
 		for (i = 0; i < num_values; i++) {
-			add_index_string(tmp, i, ldap_value[i], 1);
+			add_index_stringl(tmp, i, ldap_value[i]->bv_val, ldap_value[i]->bv_len, 1);
 		}
-		ldap_value_free(ldap_value);
+		ldap_value_free_len(ldap_value);
 
 		zend_hash_update(Z_ARRVAL_P(return_value), attribute, strlen(attribute)+1, (void *) &tmp, sizeof(zval *), NULL);
 		add_index_string(return_value, num_attrib, attribute, 1);
@@ -1226,46 +1227,6 @@ PHP_FUNCTION(ldap_get_attributes)
 #endif
 	
 	add_assoc_long(return_value, "count", num_attrib);
-}
-/* }}} */
-
-/* {{{ proto array ldap_get_values(resource link, resource result_entry, string attribute)
-   Get all values from a result entry */
-PHP_FUNCTION(ldap_get_values)
-{
-	zval **link, **result_entry, **attr;
-	ldap_linkdata *ld;
-	ldap_resultentry *resultentry;
-	char *attribute;
-	char **ldap_value;
-	int i, num_values;
-
-	if (ZEND_NUM_ARGS() != 3 || zend_get_parameters_ex(3, &link, &result_entry, &attr) == FAILURE) {
-		WRONG_PARAM_COUNT;
-	}
-
-	ZEND_FETCH_RESOURCE(ld, ldap_linkdata *, link, -1, "ldap link", le_link);
-	ZEND_FETCH_RESOURCE(resultentry, ldap_resultentry *, result_entry, -1, "ldap result entry", le_result_entry);
-
-	convert_to_string_ex(attr);
-	attribute = Z_STRVAL_PP(attr);
-
-	if ((ldap_value = ldap_get_values(ld->link, resultentry->data, attribute)) == NULL) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Cannot get the value(s) of attribute %s", ldap_err2string(_get_lderrno(ld->link)));
-		RETURN_FALSE;
-	}
-
-	num_values = ldap_count_values(ldap_value);
-
-	array_init(return_value);
-
-	for (i = 0; i<num_values; i++) {
-		add_next_index_string(return_value, ldap_value[i], 1);
-	}
-	
-	add_assoc_long(return_value, "count", num_values);
-	ldap_value_free(ldap_value);
-
 }
 /* }}} */
 

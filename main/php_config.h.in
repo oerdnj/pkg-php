@@ -4,7 +4,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2007 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: acconfig.h,v 1.40.2.1 2006/01/04 23:53:03 andi Exp $ */
+/* $Id: acconfig.h,v 1.40.2.1.2.1 2007/01/01 09:35:45 sebastian Exp $ */
 
 #define ZEND_API
 #define ZEND_DLEXPORT
@@ -182,6 +182,9 @@
 /* Define if you have the crypt function.  */
 #undef HAVE_CRYPT
 
+/* Define if you have the crypt_r function.  */
+#undef HAVE_CRYPT_R
+
 /* Define if you have the ctermid function.  */
 #undef HAVE_CTERMID
 
@@ -224,6 +227,12 @@
 /* Define if you have the getcwd function.  */
 #undef HAVE_GETCWD
 
+/* Define if you have the getgrgid_r function.  */
+#undef HAVE_GETGRGID_R
+
+/* Define if you have the getgrnam_r function.  */
+#undef HAVE_GETGRNAM_R
+
 /* Define if you have the getgroups function.  */
 #undef HAVE_GETGROUPS
 
@@ -250,6 +259,12 @@
 
 /* Define if you have the getprotobynumber function.  */
 #undef HAVE_GETPROTOBYNUMBER
+
+/* Define if you have the getpwnam_r function.  */
+#undef HAVE_GETPWNAM_R
+
+/* Define if you have the getpwuid_r function.  */
+#undef HAVE_GETPWUID_R
 
 /* Define if you have the getrlimit function.  */
 #undef HAVE_GETRLIMIT
@@ -794,6 +809,9 @@
 /* Enabling BIND8 compatibility for Panther */
 #undef BIND_8_COMPAT
 
+/* Define if the target system has /dev/urandom device */
+#undef HAVE_DEV_URANDOM
+
 /* Whether you have AOLserver */
 #undef HAVE_AOLSERVER
 
@@ -917,9 +935,6 @@
 /* Whether to use Roxen in ZTS mode */
 #undef ROXEN_USE_ZTS
 
-/* whether write(2) works */
-#undef PHP_WRITE_STDOUT
-
 /*   */
 #undef FORCE_CGI_REDIRECT
 
@@ -943,6 +958,9 @@
 
 /* Define if processor uses big-endian word */
 #undef WORDS_BIGENDIAN
+
+/* whether write(2) works */
+#undef PHP_WRITE_STDOUT
 
 /*   */
 #undef HAVE_SOCKET
@@ -1133,6 +1151,15 @@
 /*   */
 #undef in_addr_t
 
+/* Define if crypt_r has uses CRYPTD */
+#undef CRYPT_R_CRYPTD
+
+/* Define if crypt_r uses struct crypt_data */
+#undef CRYPT_R_STRUCT_CRYPT_DATA
+
+/* Define if struct crypt_data requires _GNU_SOURCE */
+#undef CRYPT_R_GNU_SOURCE
+
 /* Whether you have gcov */
 #undef HAVE_GCOV
 
@@ -1189,6 +1216,9 @@
 
 /* Whether to build openssl as dynamic module */
 #undef COMPILE_DL_OPENSSL
+
+/* OpenSSL 0.9.7 or later */
+#undef HAVE_DSA_DEFAULT_METHOD
 
 /*   */
 #undef HAVE_OPENSSL_EXT
@@ -1491,6 +1521,9 @@
 #undef HAVE_GD_FONTCACHESHUTDOWN
 
 /*   */
+#undef HAVE_GD_FONTMUTEX
+
+/*   */
 #undef HAVE_GD_DYNAMIC_CTX_EX
 
 /*   */
@@ -1594,6 +1627,9 @@
 
 /*   */
 #undef HAVE_GD_FREEFONTCACHE
+
+/*   */
+#undef HAVE_GD_FONTMUTEX
 
 /*   */
 #undef HAVE_GD_DYNAMIC_CTX_EX
@@ -1706,7 +1742,7 @@
 /*   */
 #undef HAVE_IMAP2004
 
-/*   */
+/* Whether utf8_mime2text() has new signature */
 #undef HAVE_NEW_MIME2TEXT
 
 /*   */
@@ -1726,18 +1762,6 @@
 
 /*   */
 #undef HAVE_IMAP_AUTH_GSS
-
-/*   */
-#undef IFX_VERSION
-
-/*   */
-#undef HAVE_IFX_IUS
-
-/* Whether to build informix as dynamic module */
-#undef COMPILE_DL_INFORMIX
-
-/*   */
-#undef HAVE_IFX
 
 /*   */
 #undef HAVE_IBASE
@@ -1828,6 +1852,12 @@
 
 /*   */
 #undef HAVE_SWFPREBUILTCLIP
+
+/*   */
+#undef HAVE_SWFMOVIE_NAMEDANCHOR
+
+/*   */
+#undef HAVE_MING_SETSWFCOMPRESSION
 
 /*   */
 #undef HAVE_DESTROY_SWF_BLOCK
@@ -2361,6 +2391,9 @@
 #undef HAVE_PQGETCOPYDATA
 
 /* PostgreSQL 7.4 or later */
+#undef HAVE_PQFREEMEM
+
+/* PostgreSQL 7.4 or later */
 #undef HAVE_PQSETERRORVERBOSITY
 
 /* PostgreSQL 7.4 or later */
@@ -2383,6 +2416,9 @@
 
 /* Whether to build posix as dynamic module */
 #undef COMPILE_DL_POSIX
+
+/* Whether you have a working ttyname_r */
+#undef HAVE_TTYNAME_R
 
 /* Whether to build pspell as dynamic module */
 #undef COMPILE_DL_PSPELL
@@ -2821,12 +2857,6 @@
 
 /*   */
 #undef ZTS
-
-/* Memory limit */
-#undef MEMORY_LIMIT
-
-/* Memory limit */
-#undef MEMORY_LIMIT
 
 /*   */
 #undef ZEND_MULTIBYTE

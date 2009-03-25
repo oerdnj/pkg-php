@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -19,7 +19,7 @@
    |          Sara Golemon <pollita@php.net>                              |
    +----------------------------------------------------------------------+
  */
-/* $Id: http_fopen_wrapper.c,v 1.99.2.12.2.1 2006/06/29 14:40:49 bjori Exp $ */ 
+/* $Id: http_fopen_wrapper.c,v 1.99.2.12.2.9 2007/04/23 16:37:28 bjori Exp $ */ 
 
 #include "php.h"
 #include "php_globals.h"
@@ -104,11 +104,12 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 	int transport_len, have_header = 0, request_fulluri = 0;
 	char *protocol_version = NULL;
 	int protocol_version_len = 3; /* Default: "1.0" */
+	struct timeval timeout;
 
 	tmp_line[0] = '\0';
 
 	if (redirect_max < 1) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Redirection limit reached, aborting.");
+		php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "Redirection limit reached, aborting");
 		return NULL;
 	}
 
@@ -137,6 +138,7 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 	
 		if (strpbrk(mode, "awx+")) {
 			php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "HTTP wrapper does not support writeable connections.");
+			php_url_free(resource);
 			return NULL;
 		}
 
@@ -159,9 +161,23 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 		}
 	}
 
+	if (context && php_stream_context_get_option(context, wrapper->wops->label, "timeout", &tmpzval) == SUCCESS) {
+		SEPARATE_ZVAL(tmpzval);
+		convert_to_double_ex(tmpzval);
+		timeout.tv_sec = (time_t) Z_DVAL_PP(tmpzval);
+		timeout.tv_usec = (size_t) ((Z_DVAL_PP(tmpzval) - timeout.tv_sec) * 1000000);
+	} else {
+		timeout.tv_sec = FG(default_socket_timeout);
+		timeout.tv_usec = 0;
+	}
+
 	stream = php_stream_xport_create(transport_string, transport_len, options,
 			STREAM_XPORT_CLIENT | STREAM_XPORT_CONNECT,
-			NULL, NULL, context, &errstr, NULL);
+			NULL, &timeout, context, &errstr, NULL);
+    
+	if (stream) {
+		php_stream_set_option(stream, PHP_STREAM_OPTION_READ_TIMEOUT, 0, &timeout);
+	}
 			
 	if (errstr) {
 		php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "%s", errstr);
@@ -180,7 +196,7 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 		smart_str_append_unsigned(&header, resource->port);
 		smart_str_appendl(&header, " HTTP/1.0\r\n\r\n", sizeof(" HTTP/1.0\r\n\r\n")-1);
 		if (php_stream_write(stream, header.c, header.len) != header.len) {
-			php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "Cannot conect to HTTPS server through proxy");
+			php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "Cannot connect to HTTPS server through proxy");
 			php_stream_close(stream);
 			stream = NULL;
 		}
@@ -203,7 +219,7 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 		if (stream) {
 			if (php_stream_xport_crypto_setup(stream, STREAM_CRYPTO_METHOD_SSLv23_CLIENT, NULL TSRMLS_CC) < 0 ||
 			    php_stream_xport_crypto_enable(stream, 1 TSRMLS_CC) < 0) {
-				php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "Cannot conect to HTTPS server through proxy");
+				php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "Cannot connect to HTTPS server through proxy");
 				php_stream_close(stream);
 				stream = NULL;
 			}
@@ -232,8 +248,7 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 		redirect_max = Z_LVAL_PP(tmpzval);
 	}
 
-	if (header_init && context &&
-		php_stream_context_get_option(context, "http", "method", &tmpzval) == SUCCESS) {
+	if (context && php_stream_context_get_option(context, "http", "method", &tmpzval) == SUCCESS) {
 		if (Z_TYPE_PP(tmpzval) == IS_STRING && Z_STRLEN_PP(tmpzval) > 0) {
 			scratch_len = strlen(path) + 29 + Z_STRLEN_PP(tmpzval);
 			scratch = emalloc(scratch_len);
@@ -241,13 +256,11 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 			strcat(scratch, " ");
 		}
 	}
-
-	if (context &&
-		php_stream_context_get_option(context, "http", "protocol_version", &tmpzval) == SUCCESS) {
+ 
+	if (context && php_stream_context_get_option(context, "http", "protocol_version", &tmpzval) == SUCCESS) {
 		SEPARATE_ZVAL(tmpzval);
 		convert_to_double_ex(tmpzval);
-		protocol_version_len = spprintf(&protocol_version, 0, "%.1f", Z_DVAL_PP(tmpzval));
-		zval_ptr_dtor(tmpzval);
+		protocol_version_len = spprintf(&protocol_version, 0, "%.1F", Z_DVAL_PP(tmpzval));
 	}
 
 	if (!scratch) {
@@ -426,7 +439,7 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 		/* ensure the header is only sent if user_agent is not blank */
 		if (ua_len > sizeof(_UA_HEADER)) {
 			ua = emalloc(ua_len + 1);
-			if ((ua_len = snprintf(ua, ua_len, _UA_HEADER, ua_str)) > 0) {
+			if ((ua_len = slprintf(ua, ua_len, _UA_HEADER, ua_str)) > 0) {
 				ua[ua_len] = 0;
 				php_stream_write(stream, ua, ua_len);
 			} else {
@@ -444,7 +457,7 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 		php_stream_context_get_option(context, "http", "content", &tmpzval) == SUCCESS &&
 		Z_TYPE_PP(tmpzval) == IS_STRING && Z_STRLEN_PP(tmpzval) > 0) {
 		if (!(have_header & HTTP_HEADER_CONTENT_LENGTH)) {
-			scratch_len = snprintf(scratch, scratch_len, "Content-Length: %d\r\n", Z_STRLEN_PP(tmpzval));
+			scratch_len = slprintf(scratch, scratch_len, "Content-Length: %d\r\n", Z_STRLEN_PP(tmpzval));
 			php_stream_write(stream, scratch, scratch_len);
 		}
 		if (!(have_header & HTTP_HEADER_TYPE)) {
@@ -565,7 +578,11 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 		}
 	}
 	
-	if (!reqok || location[0] != '\0')	{		
+	if (!reqok || location[0] != '\0') {
+		if (options & STREAM_ONLY_GET_HEADERS && redirect_max <= 1) {
+			goto out;
+		}
+
 		if (location[0] != '\0')
 			php_stream_notify_info(context, PHP_STREAM_NOTIFY_REDIRECTED, location, 0);
 

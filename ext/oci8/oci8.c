@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -26,7 +26,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: oci8.c,v 1.269.2.16.2.25 2006/10/18 14:23:23 tony2001 Exp $ */
+/* $Id: oci8.c,v 1.269.2.16.2.32 2007/02/24 02:17:25 helly Exp $ */
 /* TODO
  *
  * file://localhost/www/docs/oci10/ociaahan.htm#423823 - implement lob_empty() with OCI_ATTR_LOBEMPTY
@@ -89,7 +89,9 @@ static void php_oci_connection_list_dtor (zend_rsrc_list_entry * TSRMLS_DC);
 static void php_oci_pconnection_list_dtor (zend_rsrc_list_entry * TSRMLS_DC);
 static void php_oci_statement_list_dtor (zend_rsrc_list_entry * TSRMLS_DC);
 static void php_oci_descriptor_list_dtor (zend_rsrc_list_entry * TSRMLS_DC);
+#ifdef PHP_OCI8_HAVE_COLLECTIONS 
 static void php_oci_collection_list_dtor (zend_rsrc_list_entry * TSRMLS_DC);
+#endif
 
 static int php_oci_persistent_helper(zend_rsrc_list_entry *le TSRMLS_DC);
 #ifdef ZTS
@@ -375,7 +377,7 @@ zend_module_entry oci8_module_entry = {
 	PHP_RINIT(oci),       /* per-request startup function */
 	PHP_RSHUTDOWN(oci),   /* per-request shutdown function */
 	PHP_MINFO(oci),       /* information function */
-	"1.2.2",
+	"1.2.3",
 #if (PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION > 1) || (PHP_MAJOR_VERSION > 5)
 	PHP_MODULE_GLOBALS(oci),  /* globals descriptor */
 	PHP_GINIT(oci),           /* globals ctor */
@@ -646,8 +648,12 @@ PHP_RSHUTDOWN_FUNCTION(oci)
 {
 #ifdef ZTS
 	zend_hash_apply_with_argument(&EG(regular_list), (apply_func_arg_t) php_oci_list_helper, (void *)le_descriptor TSRMLS_CC);
+#ifdef PHP_OCI8_HAVE_COLLECTIONS 
 	zend_hash_apply_with_argument(&EG(regular_list), (apply_func_arg_t) php_oci_list_helper, (void *)le_collection TSRMLS_CC);
-	zend_hash_apply_with_argument(&EG(regular_list), (apply_func_arg_t) php_oci_list_helper, (void *)le_statement TSRMLS_CC);
+#endif
+	while (OCI_G(num_statements)) { 
+		zend_hash_apply_with_argument(&EG(regular_list), (apply_func_arg_t) php_oci_list_helper, (void *)le_statement TSRMLS_CC);
+	}
 #endif
 
 	/* check persistent connections and do the necessary actions if needed */
@@ -667,12 +673,12 @@ PHP_MINFO_FUNCTION(oci)
 
 	php_info_print_table_start();
 	php_info_print_table_row(2, "OCI8 Support", "enabled");
-	php_info_print_table_row(2, "Version", "1.2.2");
-	php_info_print_table_row(2, "Revision", "$Revision: 1.269.2.16.2.25 $");
+	php_info_print_table_row(2, "Version", "1.2.3");
+	php_info_print_table_row(2, "Revision", "$Revision: 1.269.2.16.2.32 $");
 
-	sprintf(buf, "%ld", OCI_G(num_persistent));
+	snprintf(buf, sizeof(buf), "%ld", OCI_G(num_persistent));
 	php_info_print_table_row(2, "Active Persistent Connections", buf);
-	sprintf(buf, "%ld", OCI_G(num_links));
+	snprintf(buf, sizeof(buf), "%ld", OCI_G(num_links));
 	php_info_print_table_row(2, "Active Connections", buf);
 
 #if !defined(PHP_WIN32) && !defined(HAVE_OCI_INSTANT_CLIENT)
@@ -681,7 +687,7 @@ PHP_MINFO_FUNCTION(oci)
 	php_info_print_table_row(2, "Libraries Used", PHP_OCI8_SHARED_LIBADD );
 #else 
 #	if defined(HAVE_OCI_INSTANT_CLIENT) && defined(OCI_MAJOR_VERSION) && defined(OCI_MINOR_VERSION) 
-	sprintf(buf, "%d.%d", OCI_MAJOR_VERSION, OCI_MINOR_VERSION);
+	snprintf(buf, sizeof(buf), "%d.%d", OCI_MAJOR_VERSION, OCI_MINOR_VERSION);
 	php_info_print_table_row(2, "Oracle Instant Client Version", buf);
 #	endif
 #endif
@@ -740,6 +746,7 @@ static void php_oci_descriptor_list_dtor(zend_rsrc_list_entry *entry TSRMLS_DC)
 	php_oci_lob_free(descriptor TSRMLS_CC);
 } /* }}} */
 
+#ifdef PHP_OCI8_HAVE_COLLECTIONS 
 /* {{{ php_oci_collection_list_dtor()
  Collection destructor */
 static void php_oci_collection_list_dtor(zend_rsrc_list_entry *entry TSRMLS_DC)
@@ -747,6 +754,7 @@ static void php_oci_collection_list_dtor(zend_rsrc_list_entry *entry TSRMLS_DC)
 	php_oci_collection *collection = (php_oci_collection *)entry->ptr;
 	php_oci_collection_close(collection TSRMLS_CC);
 } /* }}} */
+#endif
 
 /* }}} */
 
@@ -776,13 +784,16 @@ void php_oci_bind_hash_dtor(void *data)
 	if (bind->array.elements) {
 		efree(bind->array.elements);
 	}
+
 	if (bind->array.element_lengths) {
 		efree(bind->array.element_lengths);
 	}
-/*
+
 	if (bind->array.indicators) {
 		efree(bind->array.indicators);
-	} 
+	}
+
+/*
 	if (bind->array.retcodes) {
 		efree(bind->array.retcodes);
 	} 
@@ -1043,7 +1054,7 @@ php_oci_connection *php_oci_do_connect_ex(char *username, int username_len, char
 		size_t rsize = 0;
 		sword result;
 
-		PHP_OCI_CALL_RETURN(result, OCINlsEnvironmentVariableGet, (&charsetid_nls_lang, 0, OCI_NLS_CHARSET_ID, 0, &rsize))
+		PHP_OCI_CALL_RETURN(result, OCINlsEnvironmentVariableGet, (&charsetid_nls_lang, 0, OCI_NLS_CHARSET_ID, 0, &rsize));
 		if (result != OCI_SUCCESS) {
 			charsetid_nls_lang = 0;
 		}
@@ -1810,13 +1821,13 @@ static int php_oci_persistent_helper(zend_rsrc_list_entry *le TSRMLS_DC)
 static int php_oci_list_helper(zend_rsrc_list_entry *le, void *le_type TSRMLS_DC)
 {
 	int type = (int) le_type;
-		
+
 	if (le->type == type) {
-		if (le->ptr != NULL) {
-			return 1;
+		if (le->ptr != NULL && --le->refcount<=0) {
+			return ZEND_HASH_APPLY_REMOVE;
 		}
 	}
-	return 0;
+	return ZEND_HASH_APPLY_KEEP;
 } /* }}} */
 #endif
 

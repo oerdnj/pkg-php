@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2007 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_ini.c,v 1.39.2.2.2.3 2006/09/06 08:54:44 dmitry Exp $ */
+/* $Id: zend_ini.c,v 1.39.2.2.2.8 2007/04/16 08:09:54 dmitry Exp $ */
 
 #include "zend.h"
 #include "zend_qsort.h"
@@ -126,7 +126,6 @@ ZEND_API int zend_copy_ini_directives(TSRMLS_D)
 		return FAILURE;
 	}
 	zend_hash_copy(EG(ini_directives), registered_zend_ini_directives, NULL, &ini_entry, sizeof(zend_ini_entry));
-	zend_ini_refresh_caches(ZEND_INI_STAGE_STARTUP TSRMLS_CC);
 	return SUCCESS;
 }
 #endif
@@ -214,6 +213,7 @@ ZEND_API void zend_unregister_ini_entries(int module_number TSRMLS_DC)
 }
 
 
+#ifdef ZTS
 static int zend_ini_refresh_cache(zend_ini_entry *p, int stage TSRMLS_DC)
 {
 	if (p->on_modify) {
@@ -225,8 +225,9 @@ static int zend_ini_refresh_cache(zend_ini_entry *p, int stage TSRMLS_DC)
 
 ZEND_API void zend_ini_refresh_caches(int stage TSRMLS_DC)
 {
-	zend_hash_apply_with_argument(EG(ini_directives), (apply_func_arg_t) zend_ini_refresh_cache, (void *)(long) stage TSRMLS_CC);
+	zend_hash_apply_with_argument(EG(ini_directives), (apply_func_arg_t) zend_ini_refresh_cache, (void *)(zend_intptr_t) stage TSRMLS_CC);
 }
+#endif
 
 
 ZEND_API int zend_alter_ini_entry(char *name, uint name_length, char *new_value, uint new_value_length, int modify_type, int stage)
@@ -356,7 +357,7 @@ ZEND_API char *zend_ini_string(char *name, uint name_length, int orig)
 	return "";
 }
 
-
+#if TONY_20070307 
 static void zend_ini_displayer_cb(zend_ini_entry *ini_entry, int type)
 {
 	if (ini_entry->displayer) {
@@ -393,7 +394,7 @@ static void zend_ini_displayer_cb(zend_ini_entry *ini_entry, int type)
 		ZEND_WRITE(display_string, display_string_length);
 	}
 }
-
+#endif
 
 ZEND_INI_DISP(zend_ini_boolean_displayer_cb)
 {
@@ -526,6 +527,28 @@ ZEND_API ZEND_INI_MH(OnUpdateLong)
 	p = (long *) (base+(size_t) mh_arg1);
 
 	*p = zend_atoi(new_value, new_value_length);
+	return SUCCESS;
+}
+
+ZEND_API ZEND_INI_MH(OnUpdateLongGEZero)
+{
+	long *p, tmp;
+#ifndef ZTS
+	char *base = (char *) mh_arg2;
+#else
+	char *base;
+
+	base = (char *) ts_resource(*((int *) mh_arg2));
+#endif
+
+	tmp = zend_atoi(new_value, new_value_length);
+	if (tmp < 0) {
+		return FAILURE;
+	}
+
+	p = (long *) (base+(size_t) mh_arg1);
+	*p = tmp;
+
 	return SUCCESS;
 }
 

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_olechar.c,v 1.5.2.1 2006/01/01 12:50:00 sniper Exp $ */
+/* $Id: com_olechar.c,v 1.5.2.1.2.3 2007/02/21 01:13:44 stas Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -44,8 +44,8 @@ PHPAPI OLECHAR *php_com_string_to_olestring(char *string, uint string_len, int c
 		string_len++;
 	}
 
-	if (strlen > 0) {
-		olestring = (OLECHAR*)safe_emalloc(sizeof(OLECHAR), string_len, 0);
+	if (string_len > 0) {
+		olestring = (OLECHAR*)safe_emalloc(string_len, sizeof(OLECHAR), 0);
 		ok = MultiByteToWideChar(codepage, flags, string, string_len, olestring, string_len);
 	} else {
 		ok = FALSE;
@@ -75,7 +75,7 @@ PHPAPI char *php_com_olestring_to_string(OLECHAR *olestring, uint *string_len, i
 	length = WideCharToMultiByte(codepage, 0, olestring, -1, NULL, 0, NULL, NULL);
 
 	if (length) {
-		string = (char*)safe_emalloc(sizeof(char), length, 0);
+		string = (char*)safe_emalloc(length, sizeof(char), 0);
 		length = WideCharToMultiByte(codepage, 0, olestring, -1, string, length, NULL, NULL);
 		ok = length > 0;
 	} else {

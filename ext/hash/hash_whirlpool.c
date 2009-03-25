@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: hash_whirlpool.c,v 1.3.2.3 2006/01/01 12:50:07 sniper Exp $ */
+/* $Id: hash_whirlpool.c,v 1.3.2.3.2.2 2007/01/08 22:29:25 nlopess Exp $ */
 
 #include "php_hash.h"
 
@@ -433,7 +433,7 @@ PHP_HASH_API void PHP_WHIRLPOOLFinal(unsigned char digest[64], PHP_WHIRLPOOL_CTX
     memset(context, 0, sizeof(*context));
 }
 
-php_hash_ops php_hash_whirlpool_ops = {
+const php_hash_ops php_hash_whirlpool_ops = {
 	(php_hash_init_func_t) PHP_WHIRLPOOLInit,
 	(php_hash_update_func_t) PHP_WHIRLPOOLUpdate,
 	(php_hash_final_func_t) PHP_WHIRLPOOLFinal,

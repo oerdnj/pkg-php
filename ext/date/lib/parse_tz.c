@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,11 +16,15 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: parse_tz.c,v 1.20.2.6.2.6 2006/09/01 23:25:29 nlopess Exp $ */
+/* $Id: parse_tz.c,v 1.20.2.6.2.12 2007/01/25 14:38:45 tony2001 Exp $ */
 
 #include "timelib.h"
 
 #include <stdio.h>
+
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif
 
 #ifdef HAVE_STRING_H
 #include <string.h>
@@ -192,39 +196,43 @@ void timelib_dump_tzinfo(timelib_tzinfo *tz)
 	}
 }
 
-static int tz_search(char *timezone, int left, int right, const timelib_tzdb *tzdb)
-{
-	int mid, cmp;
-
-	if (left > right) {
-		return -1; /* not found */
-	}
- 
-	mid = (left + right) / 2;
- 
-	cmp = strcasecmp(timezone, tzdb->index[mid].id);
-	if (cmp < 0) {
-		return tz_search(timezone, left, mid - 1, tzdb);
-	} else if (cmp > 0) {
-		return tz_search(timezone, mid + 1, right, tzdb);
-	} else { /* (cmp == 0) */
-		return tzdb->index[mid].pos;
-	}
-}
-
-
 static int seek_to_tz_position(const unsigned char **tzf, char *timezone, const timelib_tzdb *tzdb)
 {
-	int	pos;
-	
-	pos = tz_search(timezone, 0, tzdb->index_size - 1, tzdb);
+	int left = 0, right = tzdb->index_size - 1;
+#ifdef HAVE_SETLOCALE
+	char *cur_locale = NULL, *tmp;
 
-	if (pos == -1) {
-		return 0;
+	tmp = setlocale(LC_CTYPE, NULL);
+	if (tmp) {
+		cur_locale = strdup(tmp);
 	}
+	setlocale(LC_CTYPE, "C");
+#endif	
 
-	(*tzf) = &(tzdb->data[pos + 20]);
-	return 1;
+	do {
+		int mid = ((unsigned)left + right) >> 1;
+		int cmp = strcasecmp(timezone, tzdb->index[mid].id);
+
+		if (cmp < 0) {
+			right = mid - 1;
+		} else if (cmp > 0) {
+			left = mid + 1;
+		} else { /* (cmp == 0) */
+			(*tzf) = &(tzdb->data[tzdb->index[mid].pos + 20]);
+#ifdef HAVE_SETLOCALE
+			setlocale(LC_CTYPE, cur_locale);
+			if (cur_locale) free(cur_locale);
+#endif	
+			return 1;
+		}
+
+	} while (left <= right);
+
+#ifdef HAVE_SETLOCALE
+	setlocale(LC_CTYPE, cur_locale);
+	if (cur_locale) free(cur_locale);
+#endif	
+	return 0;
 }
 
 const timelib_tzdb *timelib_builtin_db(void)

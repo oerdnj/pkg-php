@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: output.c,v 1.167.2.3 2006/03/27 08:26:10 tony2001 Exp $ */
+/* $Id: output.c,v 1.167.2.3.2.3 2007/04/16 02:25:24 shire Exp $ */
 
 #include "php.h"
 #include "ext/standard/head.h"
@@ -112,7 +112,7 @@ void php_output_register_constants(TSRMLS_D)
 /* }}} */
 
 
-/* {{{ php_body_wirte
+/* {{{ php_body_write
  * Write body part */
 PHPAPI int php_body_write(const char *str, uint str_length TSRMLS_DC)
 {
@@ -120,7 +120,7 @@ PHPAPI int php_body_write(const char *str, uint str_length TSRMLS_DC)
 }
 /* }}} */
 
-/* {{{ php_header_wirte
+/* {{{ php_header_write
  * Write HTTP header */
 PHPAPI int php_header_write(const char *str, uint str_length TSRMLS_DC)
 {
@@ -416,9 +416,23 @@ PHPAPI int php_ob_init_conflict(char *handler_new, char *handler_set TSRMLS_DC)
  */
 static int php_ob_init_named(uint initial_size, uint block_size, char *handler_name, zval *output_handler, uint chunk_size, zend_bool erase TSRMLS_DC)
 {
+	php_ob_buffer tmp_buf;
+
 	if (output_handler && !zend_is_callable(output_handler, 0, NULL)) {
 		return FAILURE;
 	}
+	
+	tmp_buf.block_size = block_size;
+	tmp_buf.size = initial_size;
+	tmp_buf.buffer = (char *) emalloc(initial_size+1);
+	tmp_buf.text_length = 0;
+	tmp_buf.output_handler = output_handler;
+	tmp_buf.chunk_size = chunk_size;
+	tmp_buf.status = 0;
+	tmp_buf.internal_output_handler = NULL;
+	tmp_buf.handler_name = estrdup(handler_name&&handler_name[0]?handler_name:OB_DEFAULT_HANDLER_NAME);
+	tmp_buf.erase = erase;
+
 	if (OG(ob_nesting_level)>0) {
 #if HAVE_ZLIB && !defined(COMPILE_DL_ZLIB)
 		if (!strncmp(handler_name, "ob_gzhandler", sizeof("ob_gzhandler")) && php_ob_gzhandler_check(TSRMLS_C)) {
@@ -431,16 +445,7 @@ static int php_ob_init_named(uint initial_size, uint block_size, char *handler_n
 		zend_stack_push(&OG(ob_buffers), &OG(active_ob_buffer), sizeof(php_ob_buffer));
 	}
 	OG(ob_nesting_level)++;
-	OG(active_ob_buffer).block_size = block_size;
-	OG(active_ob_buffer).size = initial_size;
-	OG(active_ob_buffer).buffer = (char *) emalloc(initial_size+1);
-	OG(active_ob_buffer).text_length = 0;
-	OG(active_ob_buffer).output_handler = output_handler;
-	OG(active_ob_buffer).chunk_size = chunk_size;
-	OG(active_ob_buffer).status = 0;
-	OG(active_ob_buffer).internal_output_handler = NULL;
-	OG(active_ob_buffer).handler_name = estrdup(handler_name&&handler_name[0]?handler_name:OB_DEFAULT_HANDLER_NAME);
-	OG(active_ob_buffer).erase = erase;
+	OG(active_ob_buffer) = tmp_buf;
 	OG(php_body_write) = php_b_body_write;
 	return SUCCESS;
 }

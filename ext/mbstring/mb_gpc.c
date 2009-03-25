@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: mb_gpc.c,v 1.17.2.2 2006/01/01 12:50:08 sniper Exp $ */
+/* $Id: mb_gpc.c,v 1.17.2.2.2.3 2007/03/18 16:36:13 iliaa Exp $ */
 
 /* {{{ includes */
 #ifdef HAVE_CONFIG_H
@@ -154,6 +154,8 @@ MBSTRING_API SAPI_TREAT_DATA_FUNC(mbstr_treat_data)
 	info.num_from_encodings     = MBSTRG(http_input_list_size); 
 	info.from_language          = MBSTRG(language);
 
+	MBSTRG(illegalchars) = 0;
+
 	detected = _php_mb_encoding_handler_ex(&info, array_ptr, res TSRMLS_CC);
 	MBSTRG(http_input_identify) = detected;
 
@@ -206,9 +208,8 @@ enum mbfl_no_encoding _php_mb_encoding_handler_ex(const php_mb_encoding_handler_
 	/* register_globals stuff
 	 * XXX: this feature is going to be deprecated? */
 
-	if (info->force_register_globals) {
-		prev_rg_state = PG(register_globals);
-		PG(register_globals) = 1;
+	if (info->force_register_globals && !(prev_rg_state = PG(register_globals))) {
+		zend_alter_ini_entry("register_globals", sizeof("register_globals"), "1", sizeof("1")-1, PHP_INI_PERDIR, PHP_INI_STAGE_RUNTIME);
 	}
 
 	if (!res || *res == '\0') {
@@ -341,11 +342,12 @@ enum mbfl_no_encoding _php_mb_encoding_handler_ex(const php_mb_encoding_handler_
 
 out:
 	/* register_global stuff */
-	if (info->force_register_globals) {
-		PG(register_globals) = prev_rg_state;
+	if (info->force_register_globals && !prev_rg_state) {
+		zend_alter_ini_entry("register_globals", sizeof("register_globals"), "0", sizeof("0")-1, PHP_INI_PERDIR, PHP_INI_STAGE_RUNTIME);
 	}
 
 	if (convd != NULL) {
+		MBSTRG(illegalchars) += mbfl_buffer_illegalchars(convd);
 		mbfl_buffer_converter_delete(convd);
 	}
 	if (val_list != NULL) {

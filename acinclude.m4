@@ -1,5 +1,5 @@
 dnl
-dnl $Id: acinclude.m4,v 1.332.2.14.2.5 2006/10/02 20:49:23 tony2001 Exp $
+dnl $Id: acinclude.m4,v 1.332.2.14.2.12 2007/03/25 10:21:02 sniper Exp $
 dnl
 dnl This file contains local autoconf functions.
 dnl
@@ -177,7 +177,7 @@ AC_DEFUN([PHP_ADD_MAKEFILE_FRAGMENT],[
   ifelse($1,,src=$ext_srcdir/Makefile.frag,src=$1)
   ifelse($2,,ac_srcdir=$ext_srcdir,ac_srcdir=$2)
   ifelse($3,,ac_builddir=$ext_builddir,ac_builddir=$3)
-  $SED -e "s#\$(srcdir)#$ac_srcdir#g" -e "s#\$(builddir)#$ac_builddir#g" $src  >> Makefile.fragments
+  test -f "$src" && $SED -e "s#\$(srcdir)#$ac_srcdir#g" -e "s#\$(builddir)#$ac_builddir#g" $src  >> Makefile.fragments
 ])
 
 dnl
@@ -2496,7 +2496,7 @@ AC_DEFUN([PHP_CONFIG_NICE],[
 
 EOF
 
-  for var in CFLAGS CXXFLAGS CPPFLAGS LDFLAGS LIBS CC CXX; do
+  for var in CFLAGS CXXFLAGS CPPFLAGS LDFLAGS EXTRA_LDFLAGS_PROGRAM LIBS CC CXX; do
     eval val=\$$var
     if test -n "$val"; then
       echo "$var='$val' \\" >> $1
@@ -2574,3 +2574,104 @@ ifelse([$1],[],:,[$1])
 ifelse([$2],[],[AC_MSG_ERROR([Cannot find php_pdo_driver.h.])],[$2])
   fi
 ])
+
+dnl
+dnl PHP_DETECT_ICC
+dnl
+AC_DEFUN([PHP_DETECT_ICC],
+[
+  ICC="no"
+  AC_MSG_CHECKING([for icc])
+  AC_EGREP_CPP([^__INTEL_COMPILER], [__INTEL_COMPILER],
+    ICC="no"
+    AC_MSG_RESULT([no]),
+    ICC="yes"
+    AC_MSG_RESULT([yes])
+  )
+])
+
+dnl
+dnl PHP_CRYPT_R_STYLE
+dnl detect the style of crypt_r() is any is available
+dnl see APR_CHECK_CRYPT_R_STYLE() for original version
+dnl
+AC_DEFUN([PHP_CRYPT_R_STYLE],
+[
+  AC_CACHE_CHECK([which data struct is used by crypt_r], php_cv_crypt_r_style,[
+    php_cv_crypt_r_style=none
+    AC_TRY_COMPILE([
+#define _REENTRANT 1
+#include <crypt.h>
+],[
+CRYPTD buffer;
+crypt_r("passwd", "hash", &buffer);
+], 
+php_cv_crypt_r_style=cryptd)
+
+    if test "$php_cv_crypt_r_style" = "none"; then
+      AC_TRY_COMPILE([
+#define _REENTRANT 1
+#include <crypt.h>
+],[
+struct crypt_data buffer;
+crypt_r("passwd", "hash", &buffer);
+], 
+php_cv_crypt_r_style=struct_crypt_data)
+    fi
+
+    if test "$php_cv_crypt_r_style" = "none"; then
+      AC_TRY_COMPILE([
+#define _REENTRANT 1
+#define _GNU_SOURCE
+#include <crypt.h>
+],[
+struct crypt_data buffer;
+crypt_r("passwd", "hash", &buffer);
+], 
+php_cv_crypt_r_style=struct_crypt_data_gnu_source)
+    fi
+    ])
+
+  if test "$php_cv_crypt_r_style" = "cryptd"; then
+    AC_DEFINE(CRYPT_R_CRYPTD, 1, [Define if crypt_r has uses CRYPTD])
+  fi
+  if test "$php_cv_crypt_r_style" = "struct_crypt_data" -o "$php_cv_crypt_r_style" = "struct_crypt_data_gnu_source"; then
+    AC_DEFINE(CRYPT_R_STRUCT_CRYPT_DATA, 1, [Define if crypt_r uses struct crypt_data])
+  fi
+  if test "$php_cv_crypt_r_style" = "struct_crypt_data_gnu_source"; then
+    AC_DEFINE(CRYPT_R_GNU_SOURCE, 1, [Define if struct crypt_data requires _GNU_SOURCE])
+  fi
+  if test "$php_cv_crypt_r_style" = "none"; then
+    AC_MSG_ERROR([Unable to detect data struct used by crypt_r])
+  fi
+])
+
+AC_DEFUN([PHP_TEST_WRITE_STDOUT],[
+  AC_CACHE_CHECK(whether writing to stdout works,ac_cv_write_stdout,[
+    AC_TRY_RUN([
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
+#define TEXT "This is the test message -- "
+
+main()
+{
+  int n;
+
+  n = write(1, TEXT, sizeof(TEXT)-1);
+  return (!(n == sizeof(TEXT)-1));
+}
+    ],[
+      ac_cv_write_stdout=yes
+    ],[
+      ac_cv_write_stdout=no
+    ],[
+      ac_cv_write_stdout=no
+    ])
+  ])
+  if test "$ac_cv_write_stdout" = "yes"; then
+    AC_DEFINE(PHP_WRITE_STDOUT, 1, [whether write(2) works])
+  fi
+])
+

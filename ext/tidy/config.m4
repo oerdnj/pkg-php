@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.5 2005/05/29 23:16:45 sniper Exp $
+dnl $Id: config.m4,v 1.5.4.1 2006/12/23 17:58:47 derick Exp $
 dnl
 
 PHP_ARG_WITH(tidy,for TIDY support,
@@ -27,7 +27,7 @@ if test "$PHP_TIDY" != "no"; then
     AC_MSG_ERROR(Cannot find libtidy)
   fi
 
-  TIDY_LIBDIR=$TIDY_DIR/lib
+  TIDY_LIBDIR=$TIDY_DIR/$PHP_LIBDIR
 
   PHP_ADD_LIBRARY_WITH_PATH(tidy, $TIDY_LIBDIR, TIDY_SHARED_LIBADD)
   PHP_ADD_INCLUDE($TIDY_INCDIR)

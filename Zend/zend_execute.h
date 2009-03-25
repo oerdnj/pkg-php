@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2007 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute.h,v 1.84.2.4.2.4 2006/10/18 16:35:15 johannes Exp $ */
+/* $Id: zend_execute.h,v 1.84.2.4.2.7 2007/04/16 08:09:54 dmitry Exp $ */
 
 #ifndef ZEND_EXECUTE_H
 #define ZEND_EXECUTE_H
@@ -41,6 +41,12 @@ typedef union _temp_variable {
 		zval *str;
 		zend_uint offset;
 	} str_offset;
+	struct {
+		zval **ptr_ptr;
+		zval *ptr;
+		zend_bool fcall_returned_reference;
+		HashPointer fe_pos;
+	} fe;
 	zend_class_entry *class_entry;
 } temp_variable;
 
@@ -140,7 +146,7 @@ ZEND_API int zval_update_constant_ex(zval **pp, void *arg, zend_class_entry *sco
 static inline void zend_ptr_stack_clear_multiple(TSRMLS_D)
 {
 	void **p = EG(argument_stack).top_element-2;
-	int delete_count = (ulong) *p;
+	int delete_count = (int)(zend_uintptr_t) *p;
 
 	EG(argument_stack).top -= (delete_count+2);
 	while (--delete_count>=0) {
@@ -154,7 +160,7 @@ static inline void zend_ptr_stack_clear_multiple(TSRMLS_D)
 static inline int zend_ptr_stack_get_arg(int requested_arg, void **data TSRMLS_DC)
 {
 	void **p = EG(argument_stack).top_element-2;
-	int arg_count = (ulong) *p;
+	int arg_count = (int)(zend_uintptr_t) *p;
 
 	if (requested_arg>arg_count) {
 		return FAILURE;

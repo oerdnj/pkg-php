@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -15,11 +15,11 @@
    | Author: Wez Furlong <wez@thebrainroom.com>                           |
    +----------------------------------------------------------------------+
  */
-/* $Id: proc_open.h,v 1.5.2.1 2006/01/01 12:50:15 sniper Exp $ */
+/* $Id: proc_open.h,v 1.5.2.1.2.2 2007/01/01 09:36:08 sebastian Exp $ */
 
 #ifdef PHP_WIN32
 typedef HANDLE php_file_descriptor_t;
-typedef HANDLE php_process_id_t;
+typedef DWORD php_process_id_t;
 #else
 typedef int php_file_descriptor_t;
 typedef pid_t php_process_id_t;
@@ -40,6 +40,9 @@ typedef struct _php_process_env {
 
 struct php_process_handle {
 	php_process_id_t	child;
+#ifdef PHP_WIN32
+	HANDLE childHandle;
+#endif
 	int npipes;
 	long pipes[PHP_PROC_OPEN_MAX_DESCRIPTORS];
 	char *command;

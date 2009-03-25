@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_libxml.h,v 1.15.2.2.2.2 2006/06/15 18:33:07 dmitry Exp $ */
+/* $Id: php_libxml.h,v 1.15.2.2.2.4 2007/01/01 09:36:02 sebastian Exp $ */
 
 #ifndef PHP_LIBXML_H
 #define PHP_LIBXML_H
@@ -74,12 +74,6 @@ typedef struct _php_libxml_node_object {
 } php_libxml_node_object;
 
 typedef void * (*php_libxml_export_node) (zval *object TSRMLS_DC);
-
-PHP_FUNCTION(libxml_set_streams_context);
-PHP_FUNCTION(libxml_use_internal_errors);
-PHP_FUNCTION(libxml_get_last_error);
-PHP_FUNCTION(libxml_clear_errors);
-PHP_FUNCTION(libxml_get_errors);
 
 int php_libxml_increment_node_ptr(php_libxml_node_object *object, xmlNodePtr node, void *private_data TSRMLS_DC);
 int php_libxml_decrement_node_ptr(php_libxml_node_object *object TSRMLS_DC);

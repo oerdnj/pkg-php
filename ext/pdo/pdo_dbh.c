@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_dbh.c,v 1.82.2.31.2.7 2006/08/21 16:53:50 iliaa Exp $ */
+/* $Id: pdo_dbh.c,v 1.82.2.31.2.10 2007/04/29 14:47:34 iliaa Exp $ */
 
 /* The PDO Database Handle Class */
 
@@ -706,6 +706,15 @@ static int pdo_dbh_attribute_set(pdo_dbh_t *dbh, long attr, zval *value TSRMLS_D
 			return SUCCESS;
 
 		case PDO_ATTR_DEFAULT_FETCH_MODE:
+			if (Z_TYPE_P(value) == IS_ARRAY) {
+				zval **tmp;
+				if (zend_hash_index_find(Z_ARRVAL_P(value), 0, (void**)&tmp) == SUCCESS && Z_TYPE_PP(tmp) == IS_LONG) {
+					if (Z_LVAL_PP(tmp) == PDO_FETCH_INTO || Z_LVAL_PP(tmp) == PDO_FETCH_CLASS) {
+						pdo_raise_impl_error(dbh, NULL, "HY000", "FETCH_INTO and FETCH_CLASS are not yet supported as default fetch modes" TSRMLS_CC);
+						return FAILURE;
+					}
+				}
+			}
 			convert_to_long(value);
 			if (Z_LVAL_P(value) == PDO_FETCH_USE_DEFAULT) {
 				pdo_raise_impl_error(dbh, NULL, "HY000", "invalid fetch mode type" TSRMLS_CC);
@@ -814,7 +823,7 @@ static PHP_METHOD(PDO, setAttribute)
 
 	PDO_CONSTRUCT_CHECK;
 
-	if (pdo_dbh_attribute_set(dbh, attr, value TSRMLS_CC)) {
+	if (pdo_dbh_attribute_set(dbh, attr, value TSRMLS_CC) != FAILURE) {
  		RETURN_TRUE;
  	}
  	RETURN_FALSE;

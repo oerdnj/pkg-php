@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,12 +17,16 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_math.h,v 1.28.2.2 2006/01/13 13:04:27 tony2001 Exp $ */
+/* $Id: php_math.h,v 1.28.2.2.2.3 2007/01/01 09:36:08 sebastian Exp $ */
 
 #ifndef PHP_MATH_H
 #define PHP_MATH_H
 
 PHPAPI char *_php_math_number_format(double, int, char , char);
+PHPAPI char * _php_math_longtobase(zval *arg, int base);
+PHPAPI long _php_math_basetolong(zval *arg, int base);
+PHPAPI int _php_math_basetozval(zval *arg, int base, zval *ret);
+PHPAPI char * _php_math_zvaltobase(zval *arg, int base TSRMLS_DC);
 
 PHP_FUNCTION(sin);
 PHP_FUNCTION(cos);

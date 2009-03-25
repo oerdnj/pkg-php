@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_com.c,v 1.16.2.2.2.1 2006/10/10 17:32:50 iliaa Exp $ */
+/* $Id: com_com.c,v 1.16.2.2.2.5 2007/04/09 15:32:08 dmitry Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -53,6 +53,7 @@ PHP_FUNCTION(com_create_instance)
 		&authid, EOAC_NONE
 	};
 
+	php_com_initialize(TSRMLS_C);
 	obj = CDNO_FETCH(object);
 
 	if (FAILURE == zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET,
@@ -294,6 +295,7 @@ PHP_FUNCTION(com_get_active_object)
 	HRESULT res;
 	OLECHAR *module = NULL;
 
+	php_com_initialize(TSRMLS_C);
 	if (FAILURE == zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l",
 				&module_name, &module_name_len, &code_page)) {
 		php_com_throw_exception(E_INVALIDARG, "Invalid arguments!" TSRMLS_CC);
@@ -336,7 +338,7 @@ PHP_FUNCTION(com_get_active_object)
 /* Performs an Invoke on the given com object.
  * returns a failure code and creates an exception if there was an error */
 HRESULT php_com_invoke_helper(php_com_dotnet_object *obj, DISPID id_member,
-		WORD flags, DISPPARAMS *disp_params, VARIANT *v, int silent TSRMLS_DC)
+		WORD flags, DISPPARAMS *disp_params, VARIANT *v, int silent, int allow_noarg TSRMLS_DC)
 {
 	HRESULT hr;
 	unsigned int arg_err;
@@ -387,7 +389,7 @@ HRESULT php_com_invoke_helper(php_com_dotnet_object *obj, DISPID id_member,
 				break;
 
 			case DISP_E_BADPARAMCOUNT:
-				if ((disp_params->cArgs + disp_params->cNamedArgs == 0) && (flags == DISPATCH_PROPERTYGET)) {
+				if ((disp_params->cArgs + disp_params->cNamedArgs == 0) && (allow_noarg == 1)) {
 					/* if getting a property and they are missing all parameters,
 					 * we want to create a proxy object for them; so lets not create an
 					 * exception here */
@@ -543,7 +545,7 @@ int php_com_do_invoke_byref(php_com_dotnet_object *obj, char *name, int namelen,
 	}
 
 	/* this will create an exception if needed */
-	hr = php_com_invoke_helper(obj, dispid, flags, &disp_params, v, 0 TSRMLS_CC);	
+	hr = php_com_invoke_helper(obj, dispid, flags, &disp_params, v, 0, 0 TSRMLS_CC);	
 
 	/* release variants */
 	if (vargs) {
@@ -581,7 +583,7 @@ int php_com_do_invoke_byref(php_com_dotnet_object *obj, char *name, int namelen,
 
 
 int php_com_do_invoke_by_id(php_com_dotnet_object *obj, DISPID dispid,
-		WORD flags,	VARIANT *v, int nargs, zval **args, int silent TSRMLS_DC)
+		WORD flags,	VARIANT *v, int nargs, zval **args, int silent, int allow_noarg TSRMLS_DC)
 {
 	DISPID altdispid;
 	DISPPARAMS disp_params;
@@ -610,7 +612,7 @@ int php_com_do_invoke_by_id(php_com_dotnet_object *obj, DISPID dispid,
 	}
 
 	/* this will create an exception if needed */
-	hr = php_com_invoke_helper(obj, dispid, flags, &disp_params, v, silent TSRMLS_CC);	
+	hr = php_com_invoke_helper(obj, dispid, flags, &disp_params, v, silent, allow_noarg TSRMLS_CC);	
 
 	/* release variants */
 	if (vargs) {
@@ -628,7 +630,7 @@ int php_com_do_invoke_by_id(php_com_dotnet_object *obj, DISPID dispid,
 }
 
 int php_com_do_invoke(php_com_dotnet_object *obj, char *name, int namelen,
-		WORD flags,	VARIANT *v, int nargs, zval **args TSRMLS_DC)
+		WORD flags,	VARIANT *v, int nargs, zval **args, int allow_noarg TSRMLS_DC)
 {
 	DISPID dispid;
 	HRESULT hr;
@@ -646,7 +648,7 @@ int php_com_do_invoke(php_com_dotnet_object *obj, char *name, int namelen,
 		return FAILURE;
 	}
 
-	return php_com_do_invoke_by_id(obj, dispid, flags, v, nargs, args, 0 TSRMLS_CC);
+	return php_com_do_invoke_by_id(obj, dispid, flags, v, nargs, args, 0, allow_noarg TSRMLS_CC);
 }
 
 /* {{{ proto string com_create_guid()
@@ -660,9 +662,10 @@ PHP_FUNCTION(com_create_guid)
 		ZEND_WRONG_PARAM_COUNT();
 	}
 
+	php_com_initialize(TSRMLS_C);
 	if (CoCreateGuid(&retval) == S_OK && StringFromCLSID(&retval, &guid_string) == S_OK) {
 		Z_TYPE_P(return_value) = IS_STRING;
-		Z_STRVAL_P(return_value) = php_com_olestring_to_string(guid_string, &Z_STRLEN_P(return_value), CP_ACP, 0);
+		Z_STRVAL_P(return_value) = php_com_olestring_to_string(guid_string, &Z_STRLEN_P(return_value), CP_ACP TSRMLS_CC);
 
 		CoTaskMemFree(guid_string);
 	} else {
@@ -688,6 +691,7 @@ PHP_FUNCTION(com_event_sink)
 		RETURN_FALSE;
 	}
 
+	php_com_initialize(TSRMLS_C);
 	obj = CDNO_FETCH(object);
 	
 	if (sink && Z_TYPE_P(sink) == IS_ARRAY) {
@@ -748,6 +752,7 @@ PHP_FUNCTION(com_print_typeinfo)
 		RETURN_FALSE;
 	}
 
+	php_com_initialize(TSRMLS_C);
 	if (Z_TYPE_P(arg1) == IS_OBJECT) {
 		CDNO_FETCH_VERIFY(obj, arg1);
 	} else {
@@ -778,6 +783,7 @@ PHP_FUNCTION(com_message_pump)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &timeoutms) == FAILURE)
 		RETURN_FALSE;
 	
+	php_com_initialize(TSRMLS_C);
 	result = MsgWaitForMultipleObjects(0, NULL, FALSE, timeoutms, QS_ALLINPUT);
 
 	if (result == WAIT_OBJECT_0) {
@@ -811,6 +817,7 @@ PHP_FUNCTION(com_load_typelib)
 
 	RETVAL_FALSE;
 	
+	php_com_initialize(TSRMLS_C);
 	pTL = php_com_load_typelib_via_cache(name, codepage, &cached TSRMLS_CC);
 	if (pTL) {
 		if (cached) {

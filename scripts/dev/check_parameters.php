@@ -3,7 +3,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: check_parameters.php,v 1.1.2.3 2006/09/10 11:44:51 tony2001 Exp $ */
+/* $Id: check_parameters.php,v 1.1.2.4 2007/01/01 19:32:09 iliaa Exp $ */
 
 
 define('REPORT_LEVEL', 2); // 0 reports less false-positives. up to level 5.

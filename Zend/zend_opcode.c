@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2007 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_opcode.c,v 1.110.2.6 2006/04/10 12:26:53 dmitry Exp $ */
+/* $Id: zend_opcode.c,v 1.110.2.6.2.3 2007/04/16 08:09:55 dmitry Exp $ */
 
 #include <stdio.h>
 
@@ -99,6 +99,8 @@ void init_op_array(zend_op_array *op_array, zend_uchar type, int initial_ops_siz
 
 	op_array->start_op = NULL;
 
+	op_array->fn_flags = CG(interactive)?ZEND_ACC_INTERACTIVE:0;
+
 	zend_llist_apply_with_argument(&zend_extensions, (llist_apply_with_arg_func_t) zend_extension_op_array_ctor_handler, op_array TSRMLS_CC);
 }
 
@@ -158,7 +160,7 @@ ZEND_API int zend_cleanup_class_data(zend_class_entry **pce TSRMLS_DC)
 		zend_hash_destroy(CE_STATIC_MEMBERS(*pce));
 		FREE_HASHTABLE(CE_STATIC_MEMBERS(*pce));
 #ifdef ZTS
-		CG(static_members)[(long)((*pce)->static_members)] = NULL;
+		CG(static_members)[(zend_intptr_t)((*pce)->static_members)] = NULL;
 #else
 		(*pce)->static_members = NULL;
 #endif
@@ -294,7 +296,7 @@ zend_op *get_next_op(zend_op_array *op_array TSRMLS_DC)
 	zend_op *next_op;
 
 	if (next_op_num >= op_array->size) {
-		if (CG(interactive)) {
+		if (op_array->fn_flags & ZEND_ACC_INTERACTIVE) {
 			/* we messed up */
 			zend_printf("Ran out of opcode space!\n"
 						"You should probably consider writing this huge script into a file!\n");
@@ -367,7 +369,7 @@ int pass_two(zend_op_array *op_array TSRMLS_DC)
 		zend_llist_apply_with_argument(&zend_extensions, (llist_apply_with_arg_func_t) zend_extension_op_array_handler, op_array TSRMLS_CC);
 	}
 
-	if (!CG(interactive) && op_array->size != op_array->last) {
+	if (!(op_array->fn_flags & ZEND_ACC_INTERACTIVE) && op_array->size != op_array->last) {
 		op_array->opcodes = (zend_op *) erealloc(op_array->opcodes, sizeof(zend_op)*op_array->last);
 		op_array->size = op_array->last;
 	}

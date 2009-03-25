@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: pgsql.c,v 1.331.2.13.2.9 2006/10/06 21:45:10 iliaa Exp $ */
+/* $Id: pgsql.c,v 1.331.2.13.2.20 2007/02/24 02:17:25 helly Exp $ */
 
 #include <stdlib.h>
 
@@ -599,9 +599,9 @@ PHP_MINFO_FUNCTION(pgsql)
 	php_info_print_table_row(2, "SSL support", "disabled");
 #endif
 #endif /* HAVE_PG_CONFIG_H */	
-	sprintf(buf, "%ld", PGG(num_persistent));
+	snprintf(buf, sizeof(buf), "%ld", PGG(num_persistent));
 	php_info_print_table_row(2, "Active Persistent Links", buf);
-	sprintf(buf, "%ld", PGG(num_links));
+	snprintf(buf, sizeof(buf), "%ld", PGG(num_links));
 	php_info_print_table_row(2, "Active Links", buf);
 	php_info_print_table_end();
 
@@ -629,6 +629,16 @@ static void php_pgsql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 	smart_str_appends(&str, "pgsql");
 	
 	for (i = 0; i < ZEND_NUM_ARGS(); i++) {
+		/* make sure that the PGSQL_CONNECT_FORCE_NEW bit is not part of the hash so that subsequent connections
+		 * can re-use this connection. Bug #39979
+		 */ 
+		if (i == 1 && ZEND_NUM_ARGS() == 2 && Z_TYPE_PP(args[i]) == IS_LONG) {
+			if (Z_LVAL_PP(args[1]) == PGSQL_CONNECT_FORCE_NEW) {
+				continue;
+			} else if (Z_LVAL_PP(args[1]) & PGSQL_CONNECT_FORCE_NEW) {
+				smart_str_append_long(&str, Z_LVAL_PP(args[1]) ^ PGSQL_CONNECT_FORCE_NEW);
+			}
+		}
 		convert_to_string_ex(args[i]);
 		smart_str_appendc(&str, '_');
 		smart_str_appendl(&str, Z_STRVAL_PP(args[i]), Z_STRLEN_PP(args[i]));
@@ -1472,6 +1482,7 @@ PHP_FUNCTION(pg_execute)
 		php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Found results on this connection. Use pg_get_result() to get these results first");
 	}
 
+	SEPARATE_ZVAL(pv_param_arr);
 	zend_hash_internal_pointer_reset(Z_ARRVAL_PP(pv_param_arr));
 	num_params = zend_hash_num_elements(Z_ARRVAL_PP(pv_param_arr));
 	if (num_params > 0) {
@@ -1486,7 +1497,8 @@ PHP_FUNCTION(pg_execute)
 			}
 
 			otype = (*tmp)->type;
-			convert_to_string(*tmp);
+			SEPARATE_ZVAL(tmp);
+			convert_to_string_ex(tmp);
 			if (Z_TYPE_PP(tmp) != IS_STRING) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING,"Error converting parameter");
 				_php_pgsql_free_params(params, num_params);
@@ -1495,8 +1507,7 @@ PHP_FUNCTION(pg_execute)
 
 			if (otype == IS_NULL) {
 				params[i] = NULL;
-			}
-			else {
+			} else {
 				params[i] = Z_STRVAL_PP(tmp);
 			}
 
@@ -2101,7 +2112,7 @@ static void php_pgsql_fetch_hash(INTERNAL_FUNCTION_PARAMETERS, long result_type,
 					Bucket *p;
 	
 					fci.param_count = 0;
-					fci.params = emalloc(sizeof(zval*) * ht->nNumOfElements);
+					fci.params = safe_emalloc(sizeof(zval*), ht->nNumOfElements, 0);
 					p = ht->pListHead;
 					while (p != NULL) {
 						fci.params[fci.param_count++] = (zval**)p->pData;
@@ -3292,7 +3303,6 @@ PHP_FUNCTION(pg_copy_to)
 	char *table_name, *pg_delim = NULL, *pg_null_as = NULL;
 	int table_name_len, pg_delim_len, pg_null_as_len;
 	char *query;
-	char *query_template = "COPY \"\" TO STDOUT DELIMITERS ':' WITH NULL AS ''";
 	int id = -1;
 	PGconn *pgsql;
 	PGresult *pgsql_result;
@@ -3320,9 +3330,7 @@ PHP_FUNCTION(pg_copy_to)
 		pg_null_as = safe_estrdup("\\\\N");
 	}
 
-	query = (char *)emalloc(strlen(query_template) + strlen(table_name) + strlen(pg_null_as) + 1);
-	sprintf(query, "COPY \"%s\" TO STDOUT DELIMITERS '%c' WITH NULL AS '%s'",
-			table_name, *pg_delim, pg_null_as);
+	spprintf(&query, 0, "COPY \"%s\" TO STDOUT DELIMITERS '%c' WITH NULL AS '%s'", table_name, *pg_delim, pg_null_as);
 
 	while ((pgsql_result = PQgetResult(pgsql))) {
 		PQclear(pgsql_result);
@@ -3357,7 +3365,7 @@ PHP_FUNCTION(pg_copy_to)
 							break;
 						default:
 							add_next_index_string(return_value, csv, 1);
-							free(csv);
+							PQfreemem(csv);
 							break;
 					}
 				}
@@ -3430,7 +3438,6 @@ PHP_FUNCTION(pg_copy_from)
 	int  table_name_len, pg_delim_len, pg_null_as_len;
 	int  pg_null_as_free = 0;
 	char *query;
-	char *query_template = "COPY \"\" FROM STDIN DELIMITERS ':' WITH NULL AS ''";
 	HashPosition pos;
 	int id = -1;
 	PGconn *pgsql;
@@ -3453,9 +3460,7 @@ PHP_FUNCTION(pg_copy_from)
 
 	ZEND_FETCH_RESOURCE2(pgsql, PGconn *, &pgsql_link, id, "PostgreSQL link", le_link, le_plink);
 
-	query = (char *)emalloc(strlen(query_template) + strlen(table_name) + strlen(pg_null_as) + 1);
-	sprintf(query, "COPY \"%s\" FROM STDIN DELIMITERS '%c' WITH NULL AS '%s'",
-			table_name, *pg_delim, pg_null_as);
+	spprintf(&query, 0, "COPY \"%s\" FROM STDIN DELIMITERS '%c' WITH NULL AS '%s'", table_name, *pg_delim, pg_null_as);
 	while ((pgsql_result = PQgetResult(pgsql))) {
 		PQclear(pgsql_result);
 	}
@@ -3481,10 +3486,11 @@ PHP_FUNCTION(pg_copy_from)
 #if HAVE_PQPUTCOPYDATA
 				while (zend_hash_get_current_data_ex(Z_ARRVAL_P(pg_rows), (void **) &tmp, &pos) == SUCCESS) {
 					convert_to_string_ex(tmp);
-					query = (char *)emalloc(Z_STRLEN_PP(tmp) +2);
-					strcpy(query, Z_STRVAL_PP(tmp));
-					if(*(query+Z_STRLEN_PP(tmp)-1) != '\n')
-						strcat(query, "\n");
+					query = (char *)emalloc(Z_STRLEN_PP(tmp) + 2);
+					strlcpy(query, Z_STRVAL_PP(tmp), Z_STRLEN_PP(tmp) + 2);
+					if(Z_STRLEN_PP(tmp) > 0 && *(query + Z_STRLEN_PP(tmp) - 1) != '\n') {
+						strlcat(query, "\n", Z_STRLEN_PP(tmp) + 2);
+					}
 					if (PQputCopyData(pgsql, query, strlen(query)) != 1) {
 						efree(query);
 						PHP_PQ_ERROR("copy failed: %s", pgsql);
@@ -3500,10 +3506,11 @@ PHP_FUNCTION(pg_copy_from)
 #else
 				while (zend_hash_get_current_data_ex(Z_ARRVAL_P(pg_rows), (void **) &tmp, &pos) == SUCCESS) {
 					convert_to_string_ex(tmp);
-					query = (char *)emalloc(Z_STRLEN_PP(tmp) +2);
-					strcpy(query, Z_STRVAL_PP(tmp));
-					if(*(query+Z_STRLEN_PP(tmp)-1) != '\n')
-						strcat(query, "\n");
+					query = (char *)emalloc(Z_STRLEN_PP(tmp) + 2);
+					strlcpy(query, Z_STRVAL_PP(tmp), Z_STRLEN_PP(tmp) + 2);
+					if(Z_STRLEN_PP(tmp) > 0 && *(query + Z_STRLEN_PP(tmp) - 1) != '\n') {
+						strlcat(query, "\n", Z_STRLEN_PP(tmp) + 2);
+					}
 					if (PQputline(pgsql, query)==EOF) {
 						efree(query);
 						PHP_PQ_ERROR("copy failed: %s", pgsql);
@@ -3609,7 +3616,7 @@ PHP_FUNCTION(pg_escape_bytea)
 		to = (char *)PQescapeBytea((unsigned char*)from, from_len, &to_len);
 
 	RETVAL_STRINGL(to, to_len-1, 1); /* to_len includes addtional '\0' */
-	free(to);
+	PQfreemem(to);
 }
 /* }}} */
 
@@ -3734,7 +3741,7 @@ PHP_FUNCTION(pg_unescape_bytea)
 #if HAVE_PQUNESCAPEBYTEA
 	tmp = (char *)PQunescapeBytea((unsigned char*)from, &to_len);
 	to = estrndup(tmp, to_len);
-	free(tmp);
+	PQfreemem(tmp);
 #else
 	to = (char *)php_pgsql_unescape_bytea((unsigned char*)from, &to_len);
 #endif
@@ -4347,6 +4354,7 @@ PHP_FUNCTION(pg_get_notify)
 		add_assoc_string(return_value, "message", pgsql_notify->relname, 1);
 		add_assoc_long(return_value, "pid", pgsql_notify->be_pid);
 	}
+	PQfreemem(pgsql_notify);
 }
 /* }}} */
 
@@ -4966,14 +4974,14 @@ PHP_PGSQL_API int php_pgsql_convert(PGconn *pg_link, const char *table_name, con
 				switch(Z_TYPE_PP(val)) {
 					case IS_STRING:
 						if (Z_STRLEN_PP(val) == 0) {
-							ZVAL_STRING(new_val, "NULL", 1);
-						}
-						else {
+							ZVAL_STRINGL(new_val, "NULL", sizeof("NULL")-1, 1);
+						} else if (!strcasecmp(Z_STRVAL_PP(val), "now()")) {
+							ZVAL_STRINGL(new_val, "NOW()", sizeof("NOW()")-1, 1);
+						} else {
 							/* FIXME: better regex must be used */
 							if (php_pgsql_convert_match(Z_STRVAL_PP(val), "^([0-9]{4}[/-][0-9]{1,2}[/-][0-9]{1,2})([ \\t]+(([0-9]{1,2}:[0-9]{1,2}){1}(:[0-9]{1,2}){0,1}(\\.[0-9]+){0,1}([ \\t]*([+-][0-9]{1,2}(:[0-9]{1,2}){0,1}|[a-zA-Z]{1,5})){0,1})){0,1}$", 1 TSRMLS_CC) == FAILURE) {
 								err = 1;
-							}
-							else {
+							} else {
 								ZVAL_STRING(new_val, Z_STRVAL_PP(val), 1);
 								php_pgsql_add_quotes(new_val, 1 TSRMLS_CC);
 							}
@@ -4981,7 +4989,7 @@ PHP_PGSQL_API int php_pgsql_convert(PGconn *pg_link, const char *table_name, con
 						break;
 				
 					case IS_NULL:
-						ZVAL_STRING(new_val, "NULL", 1);
+						ZVAL_STRINGL(new_val, "NULL", sizeof("NULL")-1, 1);
 						break;
 
 					default:
@@ -5152,7 +5160,7 @@ PHP_PGSQL_API int php_pgsql_convert(PGconn *pg_link, const char *table_name, con
 							Z_STRLEN_P(new_val) = to_len-1; /* PQescapeBytea's to_len includes additional '\0' */
 							Z_STRVAL_P(new_val) = emalloc(to_len);
 							memcpy(Z_STRVAL_P(new_val), tmp, to_len);
-							free(tmp);
+							PQfreemem(tmp);
 							php_pgsql_add_quotes(new_val, 1 TSRMLS_CC);
 								
 						}
@@ -5381,7 +5389,7 @@ PHP_PGSQL_API int php_pgsql_insert(PGconn *pg_link, const char *table, zval *var
 				smart_str_append_long(&querystr, Z_LVAL_PP(val));
 				break;
 			case IS_DOUBLE:
-				smart_str_appendl(&querystr, buf, snprintf(buf, sizeof(buf), "%f", Z_DVAL_PP(val)));
+				smart_str_appendl(&querystr, buf, snprintf(buf, sizeof(buf), "%F", Z_DVAL_PP(val)));
 				break;
 			default:
 				/* should not happen */
@@ -5483,7 +5491,7 @@ static inline int build_assignment_string(smart_str *querystr, HashTable *ht, co
 				smart_str_append_long(querystr, Z_LVAL_PP(val));
 				break;
 			case IS_DOUBLE:
-				smart_str_appendl(querystr, buf, sprintf(buf, "%f", Z_DVAL_PP(val)));
+				smart_str_appendl(querystr, buf, MIN(snprintf(buf, sizeof(buf), "%F", Z_DVAL_PP(val)), sizeof(buf)-1));
 				break;
 			default:
 				/* should not happen */

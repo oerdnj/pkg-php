@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2007 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_odbc_includes.h,v 1.12.2.1.2.2 2006/06/19 16:13:15 tony2001 Exp $ */
+/* $Id: php_odbc_includes.h,v 1.12.2.1.2.4 2007/03/13 00:04:38 stas Exp $ */
 
 #ifndef PHP_ODBC_INCLUDES_H
 #define PHP_ODBC_INCLUDES_H
@@ -236,7 +236,6 @@ typedef struct odbc_result_value {
 
 typedef struct odbc_result {
 	ODBC_SQL_STMT_T stmt;
-	int id;
 	odbc_result_value *values;
 	SWORD numcols;
 	SWORD numparams;

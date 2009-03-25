@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2007 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_API.c,v 1.296.2.27.2.23 2006/10/03 11:10:32 dmitry Exp $ */
+/* $Id: zend_API.c,v 1.296.2.27.2.29 2007/04/30 19:54:41 johannes Exp $ */
 
 #include "zend.h"
 #include "zend_execute.h"
@@ -44,7 +44,7 @@ ZEND_API int zend_get_parameters(int ht, int param_count, ...)
 	TSRMLS_FETCH();
 
 	p = EG(argument_stack).top_element-2;
-	arg_count = (ulong) *p;
+	arg_count = (int)(zend_uintptr_t) *p;
 
 	if (param_count>arg_count) {
 		return FAILURE;
@@ -82,7 +82,7 @@ ZEND_API int _zend_get_parameters_array(int ht, int param_count, zval **argument
 	zval *param_ptr;
 
 	p = EG(argument_stack).top_element-2;
-	arg_count = (ulong) *p;
+	arg_count = (int)(zend_uintptr_t) *p;
 
 	if (param_count>arg_count) {
 		return FAILURE;
@@ -122,7 +122,7 @@ ZEND_API int zend_get_parameters_ex(int param_count, ...)
 	TSRMLS_FETCH();
 
 	p = EG(argument_stack).top_element-2;
-	arg_count = (ulong) *p;
+	arg_count = (int)(zend_uintptr_t) *p;
 
 	if (param_count>arg_count) {
 		return FAILURE;
@@ -145,7 +145,7 @@ ZEND_API int _zend_get_parameters_array_ex(int param_count, zval ***argument_arr
 	int arg_count;
 
 	p = EG(argument_stack).top_element-2;
-	arg_count = (ulong) *p;
+	arg_count = (int)(zend_uintptr_t) *p;
 
 	if (param_count>arg_count) {
 		return FAILURE;
@@ -187,7 +187,7 @@ ZEND_API int zend_copy_parameters_array(int param_count, zval *argument_array TS
 	int arg_count;
 
 	p = EG(argument_stack).top_element-2;
-	arg_count = (ulong) *p;
+	arg_count = (int)(zend_uintptr_t) *p;
 
 	if (param_count>arg_count) {
 		return FAILURE;
@@ -698,7 +698,7 @@ static int zend_parse_va_args(int num_args, char *type_spec, va_list *va, int fl
 	}
 
 	p = EG(argument_stack).top_element-2;
-	arg_count = (ulong) *p;
+	arg_count = (int)(zend_uintptr_t) *p;
 
 	if (num_args > arg_count) {
 		zend_error(E_WARNING, "%s(): could not obtain parameters for parsing",
@@ -878,7 +878,7 @@ ZEND_API void zend_update_class_constants(zend_class_entry *class_type TSRMLS_DC
 				zend_update_class_constants(class_type->parent TSRMLS_CC);
 			}
 #if ZTS
-			ALLOC_HASHTABLE(CG(static_members)[(long)(class_type->static_members)]);
+			ALLOC_HASHTABLE(CG(static_members)[(zend_intptr_t)(class_type->static_members)]);
 #else
 			ALLOC_HASHTABLE(class_type->static_members);
 #endif
@@ -2095,18 +2095,17 @@ static zend_function_entry disabled_class_new[] =  {
 
 ZEND_API int zend_disable_class(char *class_name, uint class_name_length TSRMLS_DC)
 {
-	zend_class_entry *disabled_class;
-	disabled_class = (zend_class_entry *) emalloc(sizeof(zend_class_entry));
+	zend_class_entry disabled_class;
 
 	zend_str_tolower(class_name, class_name_length);
 	if (zend_hash_del(CG(class_table), class_name, class_name_length+1)==FAILURE) {
 		return FAILURE;
 	}
-	INIT_CLASS_ENTRY((*disabled_class), class_name, disabled_class_new);
-	disabled_class->create_object = display_disabled_class;
-	disabled_class->name_length = class_name_length;
-	zend_register_internal_class(disabled_class TSRMLS_CC);
-	return 1;
+	INIT_CLASS_ENTRY(disabled_class, class_name, disabled_class_new);
+	disabled_class.create_object = display_disabled_class;
+	disabled_class.name_length = class_name_length;
+	zend_register_internal_class(&disabled_class TSRMLS_CC);
+	return SUCCESS;
 }
 
 static int zend_is_callable_check_func(int check_flags, zval ***zobj_ptr_ptr, zend_class_entry *ce_org, zval *callable, zend_class_entry **ce_ptr, zend_function **fptr_ptr TSRMLS_DC)
@@ -2263,9 +2262,9 @@ ZEND_API zend_bool zend_is_callable_ex(zval *callable, uint check_flags, char **
 						}
 
 						lcname = zend_str_tolower_dup(Z_STRVAL_PP(obj), Z_STRLEN_PP(obj));
-						if (Z_STRLEN_PP(obj) == sizeof("self") - 1 && memcmp(lcname, "self", sizeof("self")) == 0) {
+						if (Z_STRLEN_PP(obj) == sizeof("self") - 1 && memcmp(lcname, "self", sizeof("self")) == 0 && EG(active_op_array)) {
 							ce = EG(active_op_array)->scope;
-						} else if (Z_STRLEN_PP(obj) == sizeof("parent") - 1 && memcmp(lcname, "parent", sizeof("parent")) == 0 && EG(active_op_array)->scope) {
+						} else if (Z_STRLEN_PP(obj) == sizeof("parent") - 1 && memcmp(lcname, "parent", sizeof("parent")) == 0 && EG(active_op_array) && EG(active_op_array)->scope) {
 							ce = EG(active_op_array)->scope->parent;
 						} else if (zend_lookup_class(Z_STRVAL_PP(obj), Z_STRLEN_PP(obj), &pce TSRMLS_CC) == SUCCESS) {
 							ce = *pce;
@@ -2362,35 +2361,64 @@ ZEND_API int zend_fcall_info_init(zval *callable, zend_fcall_info *fci, zend_fca
 	fci->size = sizeof(*fci);
 	fci->function_table = ce ? &ce->function_table : EG(function_table);
 	fci->object_pp = obj;
-	fci->function_name = NULL;
+	fci->function_name = callable;
 	fci->retval_ptr_ptr = NULL;
 	fci->param_count = 0;
 	fci->params = NULL;
 	fci->no_separation = 1;
 	fci->symbol_table = NULL;
 
-	fcc->initialized = 1;
-	fcc->function_handler = func;
-	fcc->calling_scope = ce;
-	fcc->object_pp = obj;
+        if (strlen(func->common.function_name) == sizeof(ZEND_CALL_FUNC_NAME) - 1 && !memcmp(func->common.function_name, ZEND_CALL_FUNC_NAME, sizeof(ZEND_CALL_FUNC_NAME))) {
+		fcc->initialized = 0;
+		fcc->function_handler = NULL;
+		fcc->calling_scope = NULL;
+		fcc->object_pp = NULL;
+	} else {
+		fcc->initialized = 1;
+		fcc->function_handler = func;
+		fcc->calling_scope = ce;
+		fcc->object_pp = obj;
+	}
 
 	return SUCCESS;
 }
 
+
+ZEND_API void zend_fcall_info_args_clear(zend_fcall_info *fci, int free_mem)
+{
+	if (fci->params) {
+		while (fci->param_count) {
+			zval_ptr_dtor(fci->params[--fci->param_count]);
+		}
+		if (free_mem) {
+			efree(fci->params);
+			fci->params = NULL;
+		}
+	}
+	fci->param_count = 0;
+}
+
+ZEND_API void zend_fcall_info_args_save(zend_fcall_info *fci, int *param_count, zval ****params)
+{
+	*param_count = fci->param_count;
+	*params = fci->params;
+	fci->param_count = 0;
+	fci->params = NULL;
+}
+
+ZEND_API void zend_fcall_info_args_restore(zend_fcall_info *fci, int param_count, zval ***params)
+{
+	zend_fcall_info_args_clear(fci, 1);
+	fci->param_count = param_count;
+	fci->params = params;
+}
 
 ZEND_API int zend_fcall_info_args(zend_fcall_info *fci, zval *args TSRMLS_DC)
 {
 	HashPosition pos;
 	zval         **arg, ***params;
 
-	if (fci->params) {
-		while (fci->param_count) {
-			zval_ptr_dtor(fci->params[--fci->param_count]);
-		}
-		efree(fci->params);
-	}
-	fci->params = NULL;
-	fci->param_count = 0;
+	zend_fcall_info_args_clear(fci, !args);
 
 	if (!args) {
 		return SUCCESS;
@@ -2404,7 +2432,6 @@ ZEND_API int zend_fcall_info_args(zend_fcall_info *fci, zval *args TSRMLS_DC)
 	fci->params = params = (zval***)safe_emalloc(sizeof(zval**), fci->param_count, 0);
 
 	zend_hash_internal_pointer_reset_ex(Z_ARRVAL_P(args), &pos);
-
 	while (zend_hash_get_current_data_ex(Z_ARRVAL_P(args), (void **) &arg, &pos) == SUCCESS) {
 		*params++ = arg;
 		(*arg)->refcount++;
@@ -2421,8 +2448,7 @@ ZEND_API int zend_fcall_info_call(zend_fcall_info *fci, zend_fcall_info_cache *f
 
 	fci->retval_ptr_ptr = retval_ptr_ptr ? retval_ptr_ptr : &retval;
 	if (args) {
-		org_params = fci->params;
-		org_count = fci->param_count;
+		zend_fcall_info_args_save(fci, &org_count, &org_params);
 		zend_fcall_info_args(fci, args TSRMLS_CC);
 	}
 	result = zend_call_function(fci, fcc TSRMLS_CC);
@@ -2431,9 +2457,7 @@ ZEND_API int zend_fcall_info_call(zend_fcall_info *fci, zend_fcall_info_cache *f
 		zval_ptr_dtor(&retval);
 	}
 	if (args) {
-		zend_fcall_info_args(fci, NULL TSRMLS_CC);
-		fci->params = org_params;
-		fci->param_count = org_count;
+		zend_fcall_info_args_restore(fci, org_count, org_params);
 	}
 	return result;
 }

@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2006 The PHP Group                                |
+  | Copyright (c) 1997-2007 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_zip.h,v 1.10 2006/07/24 16:58:58 pajoye Exp $ */
+/* $Id: php_zip.h,v 1.10.2.3 2007/03/14 11:08:57 pajoye Exp $ */
 
 #ifndef PHP_ZIP_H
 #define PHP_ZIP_H
@@ -24,23 +24,21 @@
 extern zend_module_entry zip_module_entry;
 #define phpext_zip_ptr &zip_module_entry
 
-#ifdef PHP_WIN32
-#define PHP_ZIP_API __declspec(dllexport)
-#else
-#define PHP_ZIP_API
-#endif
-
 #ifdef ZTS
 #include "TSRM.h"
 #endif
 
 #include "lib/zip.h"
 
-#ifndef ZEND_ENGINE_2_1
-# if (PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION > 0)
-#  define ZEND_ENGINE_2_1
-# endif
+/* {{{ OPENBASEDIR_CHECKPATH(filename) */
+#if (PHP_MAJOR_VERSION < 6)
+#define OPENBASEDIR_CHECKPATH(filename) \
+	(PG(safe_mode) && (!php_checkuid(filename, NULL, CHECKUID_CHECK_FILE_AND_DIR))) || php_check_open_basedir(filename TSRMLS_CC)
+#else 
+#define OPENBASEDIR_CHECKPATH(filename) \
+	php_check_open_basedir(filename TSRMLS_CC)
 #endif
+/* }}} */
 
 typedef struct _ze_zip_rsrc {
 	struct zip *za;
@@ -55,7 +53,6 @@ typedef struct _ze_zip_read_rsrc {
 	struct zip_stat sb;
 } zip_read_rsrc;
 
-#ifdef ZEND_ENGINE_2_1
 #define ZIPARCHIVE_ME(name, arg_info, flags)	ZEND_FENTRY(name, c_ziparchive_ ##name, arg_info, flags)
 #define ZIPARCHIVE_METHOD(name)	ZEND_NAMED_FUNCTION(c_ziparchive_##name)
 
@@ -70,24 +67,10 @@ typedef struct _ze_zip_object {
 	int filename_len;
 } ze_zip_object;
 
-zend_class_entry *zip_class_entry_ce;
-
 php_stream *php_stream_zip_opener(php_stream_wrapper *wrapper, char *path, char *mode, int options, char **opened_path, php_stream_context *context STREAMS_DC TSRMLS_DC);
 php_stream *php_stream_zip_open(char *filename, char *path, char *mode STREAMS_DC TSRMLS_DC);
 
 extern php_stream_wrapper php_stream_zip_wrapper;
-#endif
-
-PHP_FUNCTION(zip_open);
-PHP_FUNCTION(zip_read);
-PHP_FUNCTION(zip_close);
-PHP_FUNCTION(zip_entry_read);
-PHP_FUNCTION(zip_entry_filesize);
-PHP_FUNCTION(zip_entry_name);
-PHP_FUNCTION(zip_entry_compressedsize);
-PHP_FUNCTION(zip_entry_compressionmethod);
-PHP_FUNCTION(zip_entry_open);
-PHP_FUNCTION(zip_entry_close);
 
 #endif	/* PHP_ZIP_H */
 
