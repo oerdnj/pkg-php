@@ -1,11 +1,11 @@
 dnl
-dnl $Id: config.m4,v 1.16 2004/01/17 13:00:13 sniper Exp $
+dnl $Id: config.m4,v 1.17 2005/05/29 23:16:46 sniper Exp $
 dnl
 
 RESULT=no
 AC_MSG_CHECKING(for Zeus ISAPI support)
 AC_ARG_WITH(isapi,
-[  --with-isapi[=DIR]      Build PHP as an ISAPI module for use with Zeus.],
+[  --with-isapi[=DIR]      Build PHP as an ISAPI module for use with Zeus],
 [
 	if test "$withval" = "yes"; then
 		ZEUSPATH=/usr/local/zeus # the default

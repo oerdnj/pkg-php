@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_reflection_api.h,v 1.2 2004/01/08 17:31:48 sniper Exp $ */
+/* $Id: zend_reflection_api.h,v 1.4 2005/08/03 13:30:57 sniper Exp $ */
 
 #ifndef ZEND_REFLECTION_API_H
 #define ZEND_REFLECTION_API_H
@@ -24,6 +24,7 @@
 BEGIN_EXTERN_C()
 
 ZEND_API void zend_register_reflection_api(TSRMLS_D);
+ZEND_API void zend_reflection_class_factory(zend_class_entry *ce, zval *object TSRMLS_DC);
 	
 END_EXTERN_C()
 

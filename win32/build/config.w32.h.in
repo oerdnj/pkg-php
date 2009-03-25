@@ -1,6 +1,6 @@
 /*
 	Build Configuration Template for Win32.
-	$Id: config.w32.h.in,v 1.5.2.1 2005/07/22 18:09:33 wez Exp $
+	$Id: config.w32.h.in,v 1.7.2.1 2005/09/21 08:41:16 derick Exp $
 */
 
 /* Default PHP / PEAR directories */
@@ -117,7 +117,7 @@
 #define SIZEOF_LONG 4
 /* MSVC.6/NET don't allow 'long long' or know 'intmax_t' */
 #define SIZEOF_LONG_LONG_INT 0
-#define SIZEOF_LONG_LONG 0
+#define SIZEOF_LONG_LONG 8 /* defined as __int64 */
 #define SIZEOF_INTMAX_T 0
 #define ssize_t SSIZE_T
 #ifdef _WIN64

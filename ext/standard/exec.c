@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    |         Ilia Alshanetsky <iliaa@php.net>                             |
    +----------------------------------------------------------------------+
  */
-/* $Id: exec.c,v 1.111 2004/07/12 18:49:47 iliaa Exp $ */
+/* $Id: exec.c,v 1.113 2005/08/03 14:07:58 sniper Exp $ */
 
 #include <stdio.h>
 #include "php.h"
@@ -66,7 +66,7 @@ int php_exec(int type, char *cmd, pval *array, pval *return_value TSRMLS_DC)
 	php_stream *stream;
 	size_t buflen, bufl = 0;
 #if PHP_SIGCHILD
-	void (*sig_handler)();
+	void (*sig_handler)() = NULL;
 #endif
 
 	if (PG(safe_mode)) {
@@ -177,7 +177,9 @@ int php_exec(int type, char *cmd, pval *array, pval *return_value TSRMLS_DC)
 
 done:
 #if PHP_SIGCHILD
-	signal (SIGCHLD, sig_handler);
+	if (sig_handler) {
+		signal(SIGCHLD, sig_handler);
+	}
 #endif
 	if (d) {
 		efree(d);

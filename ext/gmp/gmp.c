@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -924,7 +924,7 @@ ZEND_FUNCTION(gmp_sqrt)
 	INIT_GMP_NUM(gmpnum_result);
 	mpz_sqrt(*gmpnum_result, *gmpnum_a);
 
-	ZEND_REGISTER_RESOURCE(return_value, gmpnum_result, le_gmp);	
+	ZEND_REGISTER_RESOURCE(return_value, gmpnum_result, le_gmp);
 }
 /* }}} */
 
@@ -941,12 +941,12 @@ ZEND_FUNCTION(gmp_sqrtrem)
 	}
 
 	FETCH_GMP_ZVAL(gmpnum_a, a_arg);
-
+	
 	if (mpz_sgn(*gmpnum_a) < 0) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING,"Number has to be greater than or equal to 0");
 		RETURN_FALSE;
 	}
-
+	
 	INIT_GMP_NUM(gmpnum_result1);
 	INIT_GMP_NUM(gmpnum_result2);
 

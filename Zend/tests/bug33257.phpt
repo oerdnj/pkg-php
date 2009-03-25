@@ -1,5 +1,7 @@
 --TEST--
 Bug #33257 array_splice() inconsistent when passed function instead of variable 
+--INI--
+error_reporting=4095
 --FILE--
 <?php
 class X {
@@ -14,4 +16,10 @@ array_splice(X::getArr(), 1, 1);
 print_r(X::getArr());
 ?>
 --EXPECTF--
-Fatal error: Only variables can be passed by reference in %sbug33257.php on line 10
+Strict Standards: Only variables should be passed by reference in %sbug33257.php on line 10
+Array
+(
+    [0] => a
+    [1] => b
+    [2] => c
+)

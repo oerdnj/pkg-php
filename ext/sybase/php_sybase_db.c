@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: php_sybase_db.c,v 1.62.2.1 2004/12/21 06:57:15 sniper Exp $ */
+/* $Id: php_sybase_db.c,v 1.66 2005/08/06 05:42:42 fmk Exp $ */
 
 
 #ifdef HAVE_CONFIG_H
@@ -100,6 +100,8 @@ function_entry sybase_functions[] = {
 	PHP_FE(sybase_affected_rows,		NULL)
 	PHP_FE(sybase_min_error_severity,	NULL)
 	PHP_FE(sybase_min_message_severity,	NULL)
+
+#if !defined(PHP_WIN32) && !defined(HAVE_MSSQL)
 	PHP_FALIAS(mssql_connect,		sybase_connect,			NULL)
 	PHP_FALIAS(mssql_pconnect,		sybase_pconnect,		NULL)
 	PHP_FALIAS(mssql_close,			sybase_close,			NULL)
@@ -119,6 +121,7 @@ function_entry sybase_functions[] = {
 	PHP_FALIAS(mssql_affected_rows,		sybase_affected_rows,			NULL)
 	PHP_FALIAS(mssql_min_error_severity,	sybase_min_error_severity,		NULL)
 	PHP_FALIAS(mssql_min_message_severity,	sybase_min_message_severity,	NULL)
+#endif
 	{NULL, NULL, NULL}
 };
 
@@ -282,7 +285,7 @@ PHP_RINIT_FUNCTION(sybase)
 	php_sybase_module.default_link=-1;
 	php_sybase_module.num_links = php_sybase_module.num_persistent;
 	php_sybase_module.appname = estrndup("PHP " PHP_VERSION, sizeof("PHP " PHP_VERSION));
-	php_sybase_module.server_message = empty_string;
+	php_sybase_module.server_message = STR_EMPTY_ALLOC();
 	php_sybase_module.min_error_severity = php_sybase_module.cfg_min_error_severity;
 	php_sybase_module.min_message_severity = php_sybase_module.cfg_min_message_severity;
 	return SUCCESS;
@@ -886,7 +889,7 @@ PHP_FUNCTION(sybase_query)
 		result->fields[i].max_length = dbcollen(sybase_ptr->link,i+1);
 		result->fields[i].column_source = estrdup(dbcolsource(sybase_ptr->link,i+1));
 		if (!result->fields[i].column_source) {
-			result->fields[i].column_source = empty_string;
+			result->fields[i].column_source = STR_EMPTY_ALLOC();
 		}
 		Z_TYPE(result->fields[i]) = column_types[i];
 		/* set numeric flag */

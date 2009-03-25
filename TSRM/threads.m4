@@ -91,7 +91,7 @@ int main() {
   *netware*)
     pthreads_working=yes
   esac
-] 
+]
 ) ] )dnl
 dnl
 dnl PTHREADS_CHECK()

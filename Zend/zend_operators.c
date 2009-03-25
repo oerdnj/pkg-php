@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_operators.c,v 1.193.2.9 2005/04/08 14:36:39 helly Exp $ */
+/* $Id: zend_operators.c,v 1.208.2.1 2005/09/12 11:48:56 dmitry Exp $ */
 
 #include <ctype.h>
 
@@ -43,13 +43,17 @@ ZEND_API int zend_atoi(const char *str, int str_len)
 	retval = strtol(str, NULL, 0);
 	if (str_len>0) {
 		switch (str[str_len-1]) {
+			case 'g':
+			case 'G':
+				retval *= 1024;
+				/* break intentionally missing */
+			case 'm':
+			case 'M':
+				retval *= 1024;
+				/* break intentionally missing */
 			case 'k':
 			case 'K':
 				retval *= 1024;
-				break;
-			case 'm':
-			case 'M':
-				retval *= 1048576;
 				break;
 		}
 	}
@@ -187,7 +191,7 @@ ZEND_API void convert_scalar_to_number(zval *op TSRMLS_DC)
 #define DVAL_TO_LVAL(d, l) (l) = (d) > LONG_MAX ? (unsigned long) (d) : (long) (d)
 
 #define zendi_convert_to_long(op, holder, result)					\
-	if (op==result) {												\
+	if (op == result) {												\
 		convert_to_long(op);										\
 	} else if ((op)->type != IS_LONG) {								\
 		switch ((op)->type) {										\
@@ -334,13 +338,12 @@ ZEND_API void convert_to_long_base(zval *op, int base)
 					if (ht) {
 						retval = (zend_hash_num_elements(ht)?1:0);
 					}
-					zval_dtor(op);
-					ZVAL_LONG(op, retval);
-					return;
 				} else {
-					/* we cannot convert it to long */
-					return;
+					zend_error(E_NOTICE, "Object of class %s could not be converted to int", Z_OBJCE_P(op)->name);
 				}
+				zval_dtor(op);
+				ZVAL_LONG(op, retval);
+				return;
 			}
 		default:
 			zend_error(E_WARNING, "Cannot convert to ordinal value");
@@ -479,7 +482,7 @@ ZEND_API void convert_to_boolean(zval *op)
 				zend_bool retval = 1;
 				TSRMLS_FETCH();
 
-				convert_object_to_type(op, IS_BOOL, convert_to_double);
+				convert_object_to_type(op, IS_BOOL, convert_to_boolean);
 
 				if (op->type == IS_BOOL) {
 					return;
@@ -511,7 +514,7 @@ ZEND_API void _convert_to_string(zval *op ZEND_FILE_LINE_DC)
 
 	switch (op->type) {
 		case IS_NULL:
-			op->value.str.val = empty_string;
+			op->value.str.val = STR_EMPTY_ALLOC();
 			op->value.str.len = 0;
 			break;
 		case IS_STRING:
@@ -521,7 +524,7 @@ ZEND_API void _convert_to_string(zval *op ZEND_FILE_LINE_DC)
 				op->value.str.val = estrndup_rel("1", 1);
 				op->value.str.len = 1;
 			} else {
-				op->value.str.val = empty_string;
+				op->value.str.val = STR_EMPTY_ALLOC();
 				op->value.str.len = 0;
 			}
 			break;
@@ -1131,11 +1134,8 @@ ZEND_API int add_char_to_string(zval *result, zval *op1, zval *op2)
 ZEND_API int add_string_to_string(zval *result, zval *op1, zval *op2)
 {
 	int length = op1->value.str.len + op2->value.str.len;
-	if (op1->value.str.val == empty_string) {
-		result->value.str.val = (char *) emalloc(length+1);
-	} else {
-		result->value.str.val = (char *) erealloc(op1->value.str.val, length+1);
-	}
+
+	result->value.str.val = (char *) erealloc(op1->value.str.val, length+1);
     memcpy(result->value.str.val+op1->value.str.len, op2->value.str.val, op2->value.str.len);
     result->value.str.val[length] = 0;
 	result->value.str.len = length;
@@ -1168,12 +1168,8 @@ ZEND_API int concat_function(zval *result, zval *op1, zval *op2 TSRMLS_DC)
 	if (result==op1) {	/* special case, perform operations on result */
 		uint res_len = op1->value.str.len + op2->value.str.len;
 		
-		if (result->value.str.len == 0) { /* handle empty_string */
-			STR_FREE(result->value.str.val);
-			result->value.str.val = emalloc(res_len+1);
-		} else {
-			result->value.str.val = erealloc(result->value.str.val, res_len+1);
-		}
+		result->value.str.val = erealloc(result->value.str.val, res_len+1);
+
 		memcpy(result->value.str.val+result->value.str.len, op2->value.str.val, op2->value.str.len);
 		result->value.str.val[res_len]=0;
 		result->value.str.len = res_len;
@@ -1322,7 +1318,7 @@ ZEND_API int compare_function(zval *result, zval *op1, zval *op2 TSRMLS_DC)
 		zendi_smart_strcmp(result, op1, op2);
 		COMPARE_RETURN_AND_FREE(SUCCESS);
 	}
-	
+
 	if (op1->type == IS_BOOL || op2->type == IS_BOOL
 		|| op1->type == IS_NULL || op2->type == IS_NULL) {
 		zendi_convert_to_boolean(op1, op1_copy, result);

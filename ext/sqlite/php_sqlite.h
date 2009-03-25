@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    |          Marcus Boerger <helly@php.net>                              |
    +----------------------------------------------------------------------+
 
-   $Id: php_sqlite.h,v 1.30 2004/05/13 14:19:10 stas Exp $ 
+   $Id: php_sqlite.h,v 1.32 2005/08/03 14:07:53 sniper Exp $ 
 */
 
 #ifndef PHP_SQLITE_H
@@ -65,6 +65,7 @@ PHP_FUNCTION(sqlite_seek);
 PHP_FUNCTION(sqlite_rewind);
 PHP_FUNCTION(sqlite_next);
 PHP_FUNCTION(sqlite_prev);
+PHP_FUNCTION(sqlite_key);
 
 PHP_FUNCTION(sqlite_valid);
 PHP_FUNCTION(sqlite_has_prev);

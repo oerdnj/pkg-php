@@ -9,7 +9,7 @@
 **    May you share freely, never taking more than you give.
 **
 *************************************************************************
-** $Id: btree.c,v 1.5 2004/07/10 12:27:51 wez Exp $
+** $Id: btree.c,v 1.5.4.1 2005/09/07 15:11:31 iliaa Exp $
 **
 ** This file implements a external (disk-based) database using BTrees.
 ** For a detailed discussion of BTrees, refer to

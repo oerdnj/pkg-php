@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: mbstring.c,v 1.214.2.4 2005/02/21 15:15:08 moriyoshi Exp $ */
+/* $Id: mbstring.c,v 1.224.2.5 2005/11/25 21:55:25 hirokawa Exp $ */
 
 /*
  * PHP 4 Multibyte String module "mbstring"
@@ -55,6 +55,7 @@
 #include "mbstring.h"
 #include "ext/standard/php_string.h"
 #include "ext/standard/php_mail.h"
+#include "ext/standard/exec.h"
 #include "ext/standard/php_smart_str.h"
 #include "ext/standard/url.h"
 #include "main/php_output.h"
@@ -128,6 +129,12 @@ static const enum mbfl_no_encoding php_mb_default_identify_list_ru[] = {
 	mbfl_no_encoding_cp866
 };
 
+static const enum mbfl_no_encoding php_mb_default_identify_list_hy[] = {
+	mbfl_no_encoding_ascii,
+	mbfl_no_encoding_utf8,
+	mbfl_no_encoding_armscii8
+};
+
 static const enum mbfl_no_encoding php_mb_default_identify_list_neut[] = {
 	mbfl_no_encoding_ascii,
 	mbfl_no_encoding_utf8
@@ -140,6 +147,7 @@ static const php_mb_nls_ident_list php_mb_default_identify_list[] = {
 	{ mbfl_no_language_traditional_chinese, php_mb_default_identify_list_tw_hk, sizeof(php_mb_default_identify_list_tw_hk) / sizeof(php_mb_default_identify_list_tw_hk[0]) },
 	{ mbfl_no_language_simplified_chinese, php_mb_default_identify_list_cn, sizeof(php_mb_default_identify_list_cn) / sizeof(php_mb_default_identify_list_cn[0]) },
 	{ mbfl_no_language_russian, php_mb_default_identify_list_ru, sizeof(php_mb_default_identify_list_ru) / sizeof(php_mb_default_identify_list_ru[0]) },
+	{ mbfl_no_language_armenian, php_mb_default_identify_list_hy, sizeof(php_mb_default_identify_list_hy) / sizeof(php_mb_default_identify_list_hy[0]) },
 	{ mbfl_no_language_neutral, php_mb_default_identify_list_neut, sizeof(php_mb_default_identify_list_neut) / sizeof(php_mb_default_identify_list_neut[0]) }
 };
 
@@ -227,6 +235,14 @@ zend_module_entry mbstring_module_entry = {
 };
 /* }}} */
 
+/* {{{ static sapi_post_entry php_post_entries[] */
+static sapi_post_entry php_post_entries[] = {
+	{ DEFAULT_POST_CONTENT_TYPE, sizeof(DEFAULT_POST_CONTENT_TYPE)-1, sapi_read_standard_form_data,	php_std_post_handler },
+	{ MULTIPART_CONTENT_TYPE,    sizeof(MULTIPART_CONTENT_TYPE)-1,    NULL,                         rfc1867_post_handler },
+	{ NULL, 0, NULL, NULL }
+};
+/* }}} */
+
 ZEND_DECLARE_MODULE_GLOBALS(mbstring)
 
 #ifdef COMPILE_DL_MBSTRING
@@ -280,6 +296,14 @@ static mbfl_allocators _php_mb_allocators = {
 	_php_mb_allocators_pmalloc,
 	_php_mb_allocators_prealloc,
 	_php_mb_allocators_pfree
+};
+/* }}} */
+
+/* {{{ static sapi_post_entry mbstr_post_entries[] */
+static sapi_post_entry mbstr_post_entries[] = {
+	{ DEFAULT_POST_CONTENT_TYPE, sizeof(DEFAULT_POST_CONTENT_TYPE)-1, sapi_read_standard_form_data, php_mb_post_handler },
+	{ MULTIPART_CONTENT_TYPE,    sizeof(MULTIPART_CONTENT_TYPE)-1,    NULL,                         rfc1867_post_handler },
+	{ NULL, 0, NULL, NULL }
 };
 /* }}} */
 
@@ -680,10 +704,13 @@ static PHP_INI_MH(OnUpdate_mbstring_encoding_translation)
 
 	OnUpdateBool(entry, new_value, new_value_length, mh_arg1, mh_arg2, mh_arg3, stage TSRMLS_CC);
 
-	if (MBSTRG(encoding_translation)){
-		_php_mb_enable_encoding_translation(1);
+	if (MBSTRG(encoding_translation)) {
+		sapi_unregister_post_entry(php_post_entries TSRMLS_CC);
+		sapi_register_post_entries(mbstr_post_entries TSRMLS_CC);
+		sapi_register_treat_data(mbstr_treat_data);
 	} else {
-		_php_mb_enable_encoding_translation(0);
+		sapi_unregister_post_entry(mbstr_post_entries TSRMLS_CC);
+		sapi_register_post_entries(php_post_entries TSRMLS_CC);
 	}
 
 	return SUCCESS;
@@ -774,7 +801,8 @@ PHP_MINIT_FUNCTION(mbstring)
 	REGISTER_INI_ENTRIES();
 
 	if (MBSTRG(encoding_translation)) {
-		_php_mb_enable_encoding_translation(1);
+		sapi_register_post_entries(mbstr_post_entries TSRMLS_CC);
+		sapi_register_treat_data(mbstr_treat_data);
 	}
 
 	REGISTER_LONG_CONSTANT("MB_OVERLOAD_MAIL", MB_OVERLOAD_MAIL, CONST_CS | CONST_PERSISTENT);
@@ -807,10 +835,6 @@ PHP_MSHUTDOWN_FUNCTION(mbstring)
 #endif /* ZEND_MULTIBYTE */
 	if (MBSTRG(detect_order_list)) {
 		free(MBSTRG(detect_order_list));
-	}
-
-	if (MBSTRG(encoding_translation)) {
-		_php_mb_enable_encoding_translation(0);
 	}
 
 #if HAVE_MBREGEX
@@ -860,6 +884,9 @@ PHP_RINIT_FUNCTION(mbstring)
 				break;
 			case mbfl_no_language_german:
 				default_enc = "ISO-8859-15";
+				break;
+			case mbfl_no_language_armenian:
+				default_enc = "ArmSCII-8";
 				break;
 			case mbfl_no_language_english:
 			default:
@@ -2267,7 +2294,7 @@ PHP_FUNCTION(mb_list_encodings)
 }
 /* }}} */
 
-/* {{{ proto string mb_encode_mimeheader(string str [, string charset [, string transfer-encoding [, string linefeed]]])
+/* {{{ proto string mb_encode_mimeheader(string str [, string charset [, string transfer-encoding [, string linefeed [, int indent]]]])
    Converts the string to MIME "encoded-word" in the format of =?charset?(B|Q)?encoded_string?= */
 PHP_FUNCTION(mb_encode_mimeheader)
 {
@@ -2279,12 +2306,13 @@ PHP_FUNCTION(mb_encode_mimeheader)
 	int trans_enc_name_len;
 	char *linefeed = "\r\n";
 	int linefeed_len;
+	int indent = 0;
 
 	mbfl_string_init(&string);
 	string.no_language = MBSTRG(current_language);
 	string.no_encoding = MBSTRG(current_internal_encoding);
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|sss", (char **)&string.val, &string.len, &charset_name, &charset_name_len, &trans_enc_name, &trans_enc_name_len, &linefeed, &linefeed_len) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|sssl", (char **)&string.val, &string.len, &charset_name, &charset_name_len, &trans_enc_name, &trans_enc_name_len, &linefeed, &linefeed_len, &indent) == FAILURE) {
 		return;
 	}
 
@@ -2314,7 +2342,7 @@ PHP_FUNCTION(mb_encode_mimeheader)
 	}
 
 	mbfl_string_init(&result);
-	ret = mbfl_mime_header_encode(&string, &result, charset, transenc, linefeed, 0);
+	ret = mbfl_mime_header_encode(&string, &result, charset, transenc, linefeed, indent);
 	if (ret != NULL) {
 		RETVAL_STRINGL((char *)ret->val, ret->len, 0)	/* the string is already strdup()'ed */
 	} else {
@@ -2770,6 +2798,15 @@ PHP_FUNCTION(mb_decode_numericentity)
  */
 #if HAVE_SENDMAIL
 
+#define SKIP_LONG_HEADER_SEP_MBSTRING(str, pos)										\
+	if (str[pos] == '\r' && str[pos + 1] == '\n' && (str[pos + 2] == ' ' || str[pos + 2] == '\t')) {	\
+		pos += 3;											\
+		while (str[pos] == ' ' || str[pos] == '\t') {							\
+			pos++;											\
+		}												\
+		continue;											\
+	}
+
 #define APPEND_ONE_CHAR(ch) do { \
 	if (token.a > 0) { \
 		smart_str_appendc(&token, ch); \
@@ -2981,6 +3018,9 @@ PHP_FUNCTION(mb_send_mail)
 	int subject_len;
 	char *extra_cmd=NULL;
 	int extra_cmd_len;
+	int i;
+	char *to_r;
+	char *force_extra_parameters = INI_STR("mail.force_extra_parameters");
 	struct {
 		int cnt_type:1;
 		int cnt_trans_enc:1;
@@ -3086,7 +3126,30 @@ PHP_FUNCTION(mb_send_mail)
 	}
 
 	/* To: */
-	if (to == NULL || to_len <= 0) {
+	if (to != NULL) {
+        if (to_len > 0) {
+            to_r = estrndup(to, to_len);
+            for (; to_len; to_len--) {
+                if (!isspace((unsigned char) to_r[to_len - 1])) {
+                    break;
+                }
+                to_r[to_len - 1] = '\0';
+            }
+            for (i = 0; to_r[i]; i++) {
+			if (iscntrl((unsigned char) to_r[i])) {
+				/* According to RFC 822, section 3.1.1 long headers may be separated into
+				 * parts using CRLF followed at least one linear-white-space character ('\t' or ' ').
+				 * To prevent these separators from being replaced with a space, we use the
+				 * SKIP_LONG_HEADER_SEP_MBSTRING to skip over them.
+				 */
+				SKIP_LONG_HEADER_SEP_MBSTRING(to_r, i);
+				to_r[i] = ' ';
+			}
+            }
+        } else {
+            to_r = to;
+        }
+    } else {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Missing To: field");
 		err = 1;
 	}
@@ -3182,12 +3245,24 @@ PHP_FUNCTION(mb_send_mail)
 	mbfl_memory_device_output('\0', &device);
 	headers = (char *)device.buffer;
 
-	if (!err && php_mail(to, subject, message, headers, extra_cmd TSRMLS_CC)) {
+	if (force_extra_parameters) {
+		extra_cmd = estrdup(force_extra_parameters);
+	} else if (extra_cmd) {
+		extra_cmd = php_escape_shell_cmd(extra_cmd);
+	} 
+
+	if (!err && php_mail(to_r, subject, message, headers, extra_cmd TSRMLS_CC)) {
 		RETVAL_TRUE;
 	} else {
 		RETVAL_FALSE;
 	}
 
+	if (extra_cmd) {
+		efree(extra_cmd);
+	}
+	if (to_r != to) {
+		efree(to_r);
+	}
 	if (subject_buf) {
 		efree((void *)subject_buf);
 	}
@@ -3198,6 +3273,7 @@ PHP_FUNCTION(mb_send_mail)
 	zend_hash_destroy(&ht_headers);
 }
 
+#undef SKIP_LONG_HEADER_SEP_MBSTRING
 #undef APPEND_ONE_CHAR
 #undef SEPARATE_SMART_STR
 #undef PHP_MBSTR_MAIL_MIME_HEADER1

@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.5.2.1 2005/03/04 15:15:49 sniper Exp $
+dnl $Id: config.m4,v 1.7 2005/05/29 23:16:46 sniper Exp $
 dnl
 AC_DEFUN([PHP_APACHE_FD_CHECK], [
 AC_CACHE_CHECK([for member fd in BUFF *],ac_cv_php_fd_in_buff,[
@@ -22,7 +22,7 @@ AC_MSG_CHECKING(for Apache 1.x (hooks) module support via DSO through APXS)
 AC_ARG_WITH(apache-hooks,
 [  --with-apache-hooks[=FILE]      
                           EXPERIMENTAL: Build shared Apache 1.x module. FILE is the optional
-                          pathname to the Apache apxs tool; defaults to "apxs".],[
+                          pathname to the Apache apxs tool [apxs]],[
   if test "$withval" = "yes"; then
     APXS=apxs
     $APXS -q CFLAGS >/dev/null 2>&1
@@ -123,7 +123,7 @@ AC_MSG_CHECKING(for Apache 1.x (hooks) module support)
 AC_ARG_WITH(apache-hooks-static,
 [  --with-apache-hooks-static[=DIR]     
                           EXPERIMENTAL: Build Apache 1.x module. DIR is the top-level Apache
-                          build directory, defaults to /usr/local/apache.],[
+                          build directory [/usr/local/apache]],[
 
   APACHE_INSTALL_FILES="\$(srcdir)/sapi/apache_hooks/mod_php5.* sapi/apache_hooks/libphp5.module"
 
@@ -240,7 +240,7 @@ fi
 
 AC_MSG_CHECKING(for mod_charset compatibility option)
 AC_ARG_WITH(mod_charset,
-[  --with-mod_charset      Enable transfer tables for mod_charset (Rus Apache).],
+[  --with-mod_charset      Enable transfer tables for mod_charset (Rus Apache)],
 [
   AC_MSG_RESULT(yes)
   AC_DEFINE(USE_TRANSFER_TABLES,1,[ ])

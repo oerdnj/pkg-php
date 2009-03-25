@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: rfc1867.c,v 1.159.2.13 2005/07/13 20:51:12 iliaa Exp $ */
+/* $Id: rfc1867.c,v 1.173 2005/08/03 14:08:38 sniper Exp $ */
 
 /*
  *  This product includes software developed by the Apache Group
@@ -1096,8 +1096,13 @@ SAPI_API SAPI_POST_HANDLER_FUNC(rfc1867_post_handler)
 				num_vars--;
 				goto filedone;
 			}
-#endif
-
+#endif			
+			/* The \ check should technically be needed for win32 systems only where
+			 * it is a valid path separator. However, IE in all it's wisdom always sends
+			 * the full path of the file on the user's filesystem, which means that unless
+			 * the user does basename() they get a bogus file name. Until IE's user base drops 
+			 * to nill or problem is fixed this code must remain enabled for all systems.
+			 */
 			s = strrchr(filename, '\\');
 			if ((tmp = strrchr(filename, '/')) > s) {
 				s = tmp;
@@ -1113,9 +1118,8 @@ SAPI_API SAPI_POST_HANDLER_FUNC(rfc1867_post_handler)
 #endif
 
 #if HAVE_MBSTRING && !defined(COMPILE_DL_MBSTRING)
-filedone:
+filedone:			
 #endif
-
 			
 			if (!is_anonymous) {
 				if (s && s > filename) {

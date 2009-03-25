@@ -4,7 +4,7 @@
  * @brief   Program Tree view example
  * @ingroup Examples
  * @author  Marcus Boerger
- * @date    2003 - 2004
+ * @date    2003 - 2005
  *
  * Usage: php tree.php \<path\>
  *
@@ -28,10 +28,11 @@ EOF;
 	exit(1);
 }
 
-if (!class_exists("DirectoryTreeIterator")) require_once("directorytreeiterator.inc");
+if (!class_exists("DirectoryTreeIterator", false)) require_once("directorytreeiterator.inc");
+if (!class_exists("DirectoryGraphIterator", false)) require_once("directorygraphiterator.inc");
 
 echo $argv[1]."\n";
-foreach(new DirectoryTreeIterator($argv[1]) as $file)
+foreach(new DirectoryGraphIterator($argv[1]) as $file)
 {
 	echo $file . "\n";
 }

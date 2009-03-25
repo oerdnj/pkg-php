@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: sapi_apache2.c,v 1.125.2.5 2005/07/16 12:30:10 hyanantha Exp $ */
+/* $Id: sapi_apache2.c,v 1.136 2005/08/03 14:08:47 sniper Exp $ */
 
 #include <fcntl.h>
 
@@ -172,13 +172,13 @@ php_apache_sapi_get_stat(TSRMLS_D)
 	ctx->finfo.st_dev = ctx->r->finfo.device;
 	ctx->finfo.st_ino = ctx->r->finfo.inode;
 #ifdef NETWARE
-	ctx->finfo.st_atime.tv_sec = ctx->r->finfo.atime/1000000;
-	ctx->finfo.st_mtime.tv_sec = ctx->r->finfo.mtime/1000000;
-	ctx->finfo.st_ctime.tv_sec = ctx->r->finfo.ctime/1000000;
+	ctx->finfo.st_atime.tv_sec = apr_time_sec(ctx->r->finfo.atime);
+	ctx->finfo.st_mtime.tv_sec = apr_time_sec(ctx->r->finfo.mtime);
+	ctx->finfo.st_ctime.tv_sec = apr_time_sec(ctx->r->finfo.ctime);
 #else
-	ctx->finfo.st_atime = ctx->r->finfo.atime/1000000;
-	ctx->finfo.st_mtime = ctx->r->finfo.mtime/1000000;
-	ctx->finfo.st_ctime = ctx->r->finfo.ctime/1000000;
+	ctx->finfo.st_atime = apr_time_sec(ctx->r->finfo.atime);
+	ctx->finfo.st_mtime = apr_time_sec(ctx->r->finfo.mtime);
+	ctx->finfo.st_ctime = apr_time_sec(ctx->r->finfo.ctime);
 #endif
 
 	ctx->finfo.st_size = ctx->r->finfo.size;
@@ -218,7 +218,7 @@ php_apache_sapi_register_variables(zval *track_vars_array TSRMLS_DC)
 	char *key, *val;
 	
 	APR_ARRAY_FOREACH_OPEN(arr, key, val)
-		if (!val) val = empty_string;
+		if (!val) val = "";
 		php_register_variable(key, val, track_vars_array TSRMLS_CC);
 	APR_ARRAY_FOREACH_CLOSE()
 		
@@ -272,7 +272,8 @@ static void php_apache_sapi_log_message(char *msg)
    
 	if (ctx == NULL) { /* we haven't initialized our ctx yet, oh well */
 		ap_log_error(APLOG_MARK, APLOG_ERR | APLOG_STARTUP, 0, NULL, "%s", msg);
-	} else {
+	}
+	else {
 		ap_log_error(APLOG_MARK, APLOG_ERR, 0, ctx->r->server, "%s", msg);
 	}
 }
@@ -287,6 +288,12 @@ php_apache_disable_caching(ap_filter_t *f)
 	f->r->no_local_copy = 1;
 	
 	return OK;
+}
+
+static time_t php_apache_sapi_get_request_time(TSRMLS_D)
+{
+	php_struct *ctx = SG(server_context);
+	return apr_time_sec(ctx->r->request_time);
 }
 
 extern zend_module_entry php_apache_module;
@@ -325,6 +332,7 @@ static sapi_module_struct apache2_sapi_module = {
 
 	php_apache_sapi_register_variables,
 	php_apache_sapi_log_message,			/* Log message */
+	php_apache_sapi_get_request_time,		/* Get Request Time */
 
 	STANDARD_SAPI_MODULE_PROPERTIES
 };
@@ -380,6 +388,7 @@ static void php_apache_request_ctor(ap_filter_t *f, php_struct *ctx TSRMLS_DC)
 #define safe_strdup(x) ((x)?strdup((x)):NULL)	
 	SG(request_info).query_string = safe_strdup(f->r->args);
 	SG(request_info).request_method = f->r->method;
+	SG(request_info).proto_num = f->r->proto_num;
 	SG(request_info).request_uri = safe_strdup(f->r->uri);
 	SG(request_info).path_translated = safe_strdup(f->r->filename);
 	f->r->no_local_copy = 1;

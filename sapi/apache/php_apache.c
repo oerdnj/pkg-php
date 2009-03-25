@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    |          David Sklar <sklar@student.net>                             |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_apache.c,v 1.86.2.1 2004/10/06 00:12:04 iliaa Exp $ */
+/* $Id: php_apache.c,v 1.89 2005/08/03 14:08:45 sniper Exp $ */
 
 #include "php_apache_http.h"
 
@@ -47,6 +47,7 @@ PHP_FUNCTION(apache_child_terminate);
 PHP_FUNCTION(apache_setenv);
 PHP_FUNCTION(apache_get_version);
 PHP_FUNCTION(apache_get_modules);
+PHP_FUNCTION(apache_reset_timeout);
 
 PHP_MINFO_FUNCTION(apache);
 
@@ -524,23 +525,29 @@ PHP_FUNCTION(apache_get_modules)
 	char *p;
 	
 	array_init(return_value);
-
-	if (!ap_loaded_modules) {
-		return;
-	}
 	
 	for (n = 0; ap_loaded_modules[n]; ++n) {
 		char *s = (char *) ap_loaded_modules[n]->name;
-		if (!s) {
-			continue;
-		}
-		
 		if ((p = strchr(s, '.'))) {
 			add_next_index_stringl(return_value, s, (p - s), 1);
 		} else {
 			add_next_index_string(return_value, s, 1);
 		}	
 	}
+}
+/* }}} */
+
+/* {{{ proto bool apache_reset_timeout(void)
+   Reset the Apache write timer */
+PHP_FUNCTION(apache_reset_timeout)
+{
+	if (PG(safe_mode)) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Cannot reset the Apache timeout in safe mode");
+		RETURN_FALSE;
+	}
+
+	ap_reset_timeout((request_rec *)SG(server_context));
+	RETURN_TRUE;
 }
 /* }}} */
 

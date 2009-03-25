@@ -1,8 +1,9 @@
-dnl ## $Id: config.m4,v 1.2 2003/12/08 16:54:18 aleigh Exp $ -*- sh -*-
+dnl ## $Id: config.m4,v 1.3 2005/05/29 23:16:46 sniper Exp $ -*- sh -*-
 
 AC_MSG_CHECKING(for Continuity support)
 AC_ARG_WITH(continuity,
-[  --with-continuity=DIR        Specify path to the installed Continuity Server],[
+[  --with-continuity=DIR   Build PHP as Continuity Server module. 
+                          DIR is path to the installed Continuity Server root],[
   PHP_CONTINUITY=$withval
 ],[
   PHP_CONTINUITY=no

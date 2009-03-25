@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_open_temporary_file.c,v 1.30.2.4 2005/07/16 12:14:45 hyanantha Exp $ */
+/* $Id: php_open_temporary_file.c,v 1.34 2005/08/03 14:08:35 sniper Exp $ */
 
 #include "php.h"
 
@@ -107,6 +107,7 @@ static int php_do_open_temporary_file(const char *path, const char *pfx, char **
 #endif
 		;
 #endif
+
 	if (!path) {
 		return -1;
 	}

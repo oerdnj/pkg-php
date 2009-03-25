@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: roxen.c,v 1.59 2004/01/17 13:00:15 sniper Exp $ */
+/* $Id: roxen.c,v 1.61 2005/08/03 14:08:52 sniper Exp $ */
 
 #include "php.h"
 #ifdef HAVE_ROXEN
@@ -438,7 +438,7 @@ static void php_info_roxen(ZEND_MODULE_INFO_FUNC_ARGS)
 {
   /*  char buf[512]; */
   php_info_print_table_start();
-  php_info_print_table_row(2, "SAPI module version", "$Id: roxen.c,v 1.59 2004/01/17 13:00:15 sniper Exp $");
+  php_info_print_table_row(2, "SAPI module version", "$Id: roxen.c,v 1.61 2005/08/03 14:08:52 sniper Exp $");
   /*  php_info_print_table_row(2, "Build date", Ns_InfoBuildDate());
       php_info_print_table_row(2, "Config file path", Ns_InfoConfigFile());
       php_info_print_table_row(2, "Error Log path", Ns_InfoErrorLog());
@@ -501,6 +501,7 @@ static sapi_module_struct roxen_sapi_module = {
   php_roxen_sapi_read_cookies,		/* read Cookies */
   NULL,					/* register server variables */
   NULL,					/* Log message */
+  NULL,					/* Get request time */
 
   STANDARD_SAPI_MODULE_PROPERTIES
 };

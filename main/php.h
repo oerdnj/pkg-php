@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php.h,v 1.203.2.11 2005/06/29 06:41:15 hyanantha Exp $ */
+/* $Id: php.h,v 1.221 2005/08/07 15:13:50 hholzgra Exp $ */
 
 #ifndef PHP_H
 #define PHP_H
@@ -26,7 +26,7 @@
 #include <dmalloc.h>
 #endif
 
-#define PHP_API_VERSION 20031224
+#define PHP_API_VERSION 20041225
 #define PHP_HAVE_STREAMS
 #define YYDEBUG 0
 
@@ -63,6 +63,12 @@
 #else 
 #define PHP_EOL "\n"
 #endif
+#endif
+
+#ifdef NETWARE
+/* For php_get_uname() function */
+#define PHP_UNAME  "NetWare"
+#define PHP_OS      PHP_UNAME
 #endif
 
 #include "php_regex.h"
@@ -248,9 +254,9 @@ END_EXTERN_C()
 
 /* global variables */
 #if !defined(PHP_WIN32)
-extern char **environ;
-#define php_sleep sleep
 #define PHP_SLEEP_NON_VOID
+#define php_sleep sleep
+extern char **environ;
 #endif	/* !defined(PHP_WIN32) */
 
 #ifdef PHP_PWRITE_64
@@ -313,7 +319,7 @@ END_EXTERN_C()
 
 /* functions */
 BEGIN_EXTERN_C()
-int php_startup_internal_extensions(void);
+int php_register_internal_extensions(TSRMLS_D);
 
 int php_mergesort(void *base, size_t nmemb, register size_t size, int (*cmp)(const void *, const void * TSRMLS_DC) TSRMLS_DC);
 
@@ -334,6 +340,8 @@ END_EXTERN_C()
 #define PHP_FE			ZEND_FE
 #define PHP_FALIAS		ZEND_FALIAS
 #define PHP_ME          ZEND_ME
+#define PHP_MALIAS      ZEND_MALIAS
+#define PHP_ABSTRACT_ME ZEND_ABSTRACT_ME
 #define PHP_ME_MAPPING  ZEND_ME_MAPPING
 
 #define PHP_MODULE_STARTUP_N	ZEND_MODULE_STARTUP_N

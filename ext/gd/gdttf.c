@@ -2,7 +2,7 @@
 /*                                          */
 /* John Ellson   ellson@lucent.com          */
 
-/* $Id: gdttf.c,v 1.20.2.1 2005/01/09 21:05:16 sniper Exp $ */
+/* $Id: gdttf.c,v 1.21 2005/01/09 21:05:05 sniper Exp $ */
 
 #include "php.h"
 

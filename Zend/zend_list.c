@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_list.c,v 1.64.2.1 2005/06/17 11:28:43 tony2001 Exp $ */
+/* $Id: zend_list.c,v 1.66 2005/08/03 13:30:55 sniper Exp $ */
 
 /* resource lists */
 
@@ -116,7 +116,7 @@ ZEND_API void *zend_fetch_resource(zval **passed_id TSRMLS_DC, int default_id, c
 	int i;
 	char *space;
 	char *class_name;
-		
+
 	if (default_id==-1) { /* use id */
 		if (!passed_id) {
 			if (resource_type_name) {

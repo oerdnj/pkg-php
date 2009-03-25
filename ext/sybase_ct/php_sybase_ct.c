@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_sybase_ct.c,v 1.97.2.1 2004/07/29 20:05:46 thekid Exp $ */
+/* $Id: php_sybase_ct.c,v 1.103.2.1 2005/08/18 13:34:41 sniper Exp $ */
 
 
 #ifdef HAVE_CONFIG_H
@@ -62,6 +62,7 @@ function_entry sybase_functions[] = {
 	PHP_FE(sybase_set_message_handler, NULL)
 	PHP_FE(sybase_deadlock_retry_count, NULL)
 
+#if !defined(PHP_WIN32) && !defined(HAVE_MSSQL)
 	PHP_FALIAS(mssql_connect, sybase_connect, NULL)
 	PHP_FALIAS(mssql_pconnect, sybase_pconnect, NULL)
 	PHP_FALIAS(mssql_close, sybase_close, NULL)
@@ -85,6 +86,7 @@ function_entry sybase_functions[] = {
 	PHP_FALIAS(mssql_min_server_severity, sybase_min_server_severity, NULL)
 	PHP_FALIAS(mssql_set_message_handler, sybase_set_message_handler, NULL)
 	PHP_FALIAS(mssql_deadlock_retry_count, sybase_deadlock_retry_count, NULL)
+#endif
 
 	{NULL, NULL, NULL}
 };
@@ -190,6 +192,7 @@ static void _close_sybase_link(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 		}
 	}
 
+	ct_cmd_drop(sybase_ptr->cmd);
 	ct_con_drop(sybase_ptr->connection);
 	efree(sybase_ptr);
 	SybCtG(num_links)--;
@@ -349,7 +352,7 @@ PHP_INI_BEGIN()
 	STD_PHP_INI_ENTRY("sybct.min_client_severity", "10", PHP_INI_ALL, OnUpdateLong, min_client_severity, zend_sybase_globals, sybase_globals)
 	STD_PHP_INI_ENTRY("sybct.login_timeout", "-1", PHP_INI_ALL, OnUpdateLong, login_timeout, zend_sybase_globals, sybase_globals)
 	STD_PHP_INI_ENTRY("sybct.hostname", NULL, PHP_INI_ALL, OnUpdateString, hostname, zend_sybase_globals, sybase_globals)
-	STD_PHP_INI_ENTRY_EX("sybct.deadlock_retry_count", "-1", PHP_INI_ALL, OnUpdateLong, deadlock_retry_count, zend_sybase_globals, sybase_globals, display_link_numbers)
+	STD_PHP_INI_ENTRY_EX("sybct.deadlock_retry_count", "0", PHP_INI_ALL, OnUpdateLong, deadlock_retry_count, zend_sybase_globals, sybase_globals, display_link_numbers)
 PHP_INI_END()
 
 
@@ -399,14 +402,6 @@ static void php_sybase_init_globals(zend_sybase_globals *sybase_globals)
 		}
 	}
 
-	/* Set the packet size, which is also per context */
-	if (cfg_get_long("sybct.packet_size", &opt)==SUCCESS) {
-		CS_INT cs_packet_size = opt;
-		if (ct_config(sybase_globals->context, CS_SET, CS_PACKETSIZE, &cs_packet_size, CS_UNUSED, NULL)!=CS_SUCCEED) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Sybase:  Unable to update the packet size");
-		}
-	}
-
 	sybase_globals->num_persistent=0;
 	sybase_globals->callback_name = NULL;
 }
@@ -438,7 +433,7 @@ PHP_RINIT_FUNCTION(sybase)
 	SybCtG(default_link)=-1;
 	SybCtG(num_links) = SybCtG(num_persistent);
 	SybCtG(appname) = estrndup("PHP " PHP_VERSION, sizeof("PHP " PHP_VERSION));
-	SybCtG(server_message) = empty_string;
+	SybCtG(server_message) = STR_EMPTY_ALLOC();
 	return SUCCESS;
 }
 
@@ -473,6 +468,7 @@ static int php_sybase_do_connect_internal(sybase_link *sybase, char *host, char 
 {
 	CS_LOCALE *tmp_locale;
 	TSRMLS_FETCH();
+	long packetsize;
 
 	/* set a CS_CONNECTION record */
 	if (ct_con_alloc(SybCtG(context), &sybase->connection)!=CS_SUCCEED) {
@@ -518,6 +514,12 @@ static int php_sybase_do_connect_internal(sybase_link *sybase, char *host, char 
 					}
 				}
 			}
+		}
+	}
+	
+	if (cfg_get_long("sybct.packet_size", &packetsize) == SUCCESS) {
+		if (ct_con_props(sybase->connection, CS_SET, CS_PACKETSIZE, (CS_VOID *)&packetsize, CS_UNUSED, NULL) != CS_SUCCEED) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Sybase: Unable to update connection packetsize.");
 		}
 	}
 
@@ -1321,7 +1323,7 @@ static sybase_result * php_sybase_fetch_result_set (sybase_link *sybase_ptr, int
 			result->fields[i].name = estrdup(computed_buf);
 			j++;
 		}
-		result->fields[i].column_source = empty_string;
+		result->fields[i].column_source = STR_EMPTY_ALLOC();
 		result->fields[i].max_length = result->datafmt[i].maxlength-1;
 		result->fields[i].numeric = result->numerics[i];
 		Z_TYPE(result->fields[i]) = result->types[i];
@@ -1575,7 +1577,7 @@ static void php_sybase_query (INTERNAL_FUNCTION_PARAMETERS, int buffered)
 
 		/* Retry deadlocks up until deadlock_retry_count times */		
 		if (sybase_ptr->deadlock && SybCtG(deadlock_retry_count) != -1 && ++deadlock_count > SybCtG(deadlock_retry_count)) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Sybase:  Retried deadlock %d times [max: %ld], giving up\n", deadlock_count- 1, SybCtG(deadlock_retry_count));
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Sybase:  Retried deadlock %d times [max: %ld], giving up", deadlock_count- 1, SybCtG(deadlock_retry_count));
 			if (result != NULL) {
 				_free_sybase_result(result);
 			}
@@ -1652,7 +1654,7 @@ PHP_FUNCTION(sybase_free_result)
 	
 	/* Did we fetch up until the end? */
 	if (result->last_retcode != CS_END_DATA && result->last_retcode != CS_END_RESULTS) {
-		/* php_error_docref(NULL TSRMLS_CC, E_WARNING, "Sybase:  Cancelling the rest of the results\n"); */
+		/* php_error_docref(NULL TSRMLS_CC, E_WARNING, "Sybase:  Cancelling the rest of the results"); */
 		ct_cancel(NULL, result->sybase_ptr->cmd, CS_CANCEL_ALL);
 		php_sybase_finish_results(result);
 	}

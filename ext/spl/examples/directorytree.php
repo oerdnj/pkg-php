@@ -4,7 +4,7 @@
  * @brief   Program Directory tree example
  * @ingroup Examples
  * @author  Marcus Boerger
- * @date    2003 - 2004
+ * @date    2003 - 2005
  *
  * Usage: php directorytree.php \<path\> [\<start\> [\<count\>]]
  *
@@ -24,7 +24,7 @@ EOF;
 	exit(1);
 }
 
-if (!class_exists("DirectoryTreeIterator")) require_once("directorytreeiterator.inc");
+if (!class_exists("DirectoryTreeIterator", false)) require_once("directorytreeiterator.inc");
 
 $length = $argc > 3 ? $argv[3] : -1;
 

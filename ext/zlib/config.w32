@@ -1,10 +1,10 @@
-// $Id: config.w32,v 1.7 2004/03/10 18:30:44 fmk Exp $
+// $Id: config.w32,v 1.8 2004/07/17 00:21:04 pollita Exp $
 // vim:ft=javascript
 
 ARG_ENABLE("zlib", "ZLIB support", "yes");
 
 if (PHP_ZLIB == "yes") {
-	EXTENSION("zlib", "zlib.c zlib_fopen_wrapper.c", null, "/D ZLIB_EXPORTS");
+	EXTENSION("zlib", "zlib.c zlib_fopen_wrapper.c zlib_filter.c", null, "/D ZLIB_EXPORTS");
 	AC_DEFINE("HAVE_ZLIB", 1, "ZLIB support");
 	CHECK_LIB("zlib.lib", "zlib", PHP_ZLIB);
 	CHECK_HEADER_ADD_INCLUDE("zlib.h", "CFLAGS", "..\\zlib;" + php_usual_include_suspects);

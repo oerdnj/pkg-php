@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_alloc.h,v 1.52.2.4 2005/06/07 13:37:13 derick Exp $ */
+/* $Id: zend_alloc.h,v 1.63 2005/08/03 13:30:47 sniper Exp $ */
 
 #ifndef ZEND_ALLOC_H
 #define ZEND_ALLOC_H
@@ -50,8 +50,7 @@ typedef struct _zend_mem_header {
     struct _zend_mem_header *pNext;
     struct _zend_mem_header *pLast;
 #endif
-	unsigned int size:31;
-	unsigned int cached:1;
+	unsigned int size;
 } zend_mem_header;
 
 typedef union _align_test {
@@ -79,6 +78,7 @@ ZEND_API char *zend_strndup(const char *s, unsigned int length) ZEND_ATTRIBUTE_M
 
 ZEND_API void *_emalloc(size_t size ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_DC) ZEND_ATTRIBUTE_MALLOC;
 ZEND_API void *_safe_emalloc(size_t nmemb, size_t size, size_t offset ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_DC) ZEND_ATTRIBUTE_MALLOC;
+ZEND_API void *_safe_malloc(size_t nmemb, size_t size, size_t offset) ZEND_ATTRIBUTE_MALLOC;
 ZEND_API void _efree(void *ptr ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_DC);
 ZEND_API void *_ecalloc(size_t nmemb, size_t size ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_DC) ZEND_ATTRIBUTE_MALLOC;
 ZEND_API void *_erealloc(void *ptr, size_t size, int allow_failure ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_DC);
@@ -109,6 +109,7 @@ ZEND_API char *_estrndup(const char *s, unsigned int length ZEND_FILE_LINE_DC ZE
 
 /* Selective persistent/non persistent allocation macros */
 #define pemalloc(size, persistent) ((persistent)?malloc(size):emalloc(size))
+#define safe_pemalloc(nmemb, size, offset, persistent)	((persistent)?_safe_malloc(nmemb, size, offset):safe_emalloc(nmemb, size, offset))
 #define pefree(ptr, persistent)  ((persistent)?free(ptr):efree(ptr))
 #define pecalloc(nmemb, size, persistent) ((persistent)?calloc((nmemb), (size)):ecalloc((nmemb), (size)))
 #define perealloc(ptr, size, persistent) ((persistent)?realloc((ptr), (size)):erealloc((ptr), (size)))
@@ -127,7 +128,7 @@ ZEND_API char *_estrndup(const char *s, unsigned int length ZEND_FILE_LINE_DC ZE
 #define _GNU_SOURCE
 #include <string.h>
 #undef _GNU_SOURCE
-																 
+
 /* Standard wrapper macros */
 #define emalloc(size)					malloc(size)
 #define safe_emalloc(nmemb, size, offset)		malloc((nmemb) * (size) + (offset))
@@ -150,6 +151,7 @@ ZEND_API char *_estrndup(const char *s, unsigned int length ZEND_FILE_LINE_DC ZE
 
 /* Selective persistent/non persistent allocation macros */
 #define pemalloc(size, persistent)		malloc(size)
+#define safe_pemalloc(nmemb, size, offset, persistent)		malloc((nmemb) * (size) + (offset))
 #define pefree(ptr, persistent)			free(ptr)
 #define pecalloc(nmemb, size, persistent)		calloc((nmemb), (size))
 #define perealloc(ptr, size, persistent)		realloc((ptr), (size))
@@ -162,10 +164,11 @@ ZEND_API char *_estrndup(const char *s, unsigned int length ZEND_FILE_LINE_DC ZE
 #define perealloc_rel(ptr, size, persistent)		realloc((ptr), (size))
 #define perealloc_recoverable_rel(ptr, size, persistent)	realloc((ptr), (size))
 #define pestrdup_rel(s, persistent)			strdup(s)
+
 #endif /* !USE_ZEND_ALLOC */
 
-#define safe_estrdup(ptr)  ((ptr)?(estrdup(ptr)):(empty_string))
-#define safe_estrndup(ptr, len) ((ptr)?(estrndup((ptr), (len))):(empty_string))
+#define safe_estrdup(ptr)  ((ptr)?(estrdup(ptr)):STR_EMPTY_ALLOC())
+#define safe_estrndup(ptr, len) ((ptr)?(estrndup((ptr), (len))):STR_EMPTY_ALLOC())
 
 ZEND_API int zend_set_memory_limit(unsigned int memory_limit);
 
@@ -182,7 +185,6 @@ void zend_debug_alloc_output(char *format, ...);
 #define mem_block_check(type, ptr, silent)
 #define full_mem_check(silent)
 #endif
-
 
 END_EXTERN_C()
 

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,12 +18,14 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: dl.c,v 1.96.2.3 2005/05/04 13:48:01 hyanantha Exp $ */
+/* $Id: dl.c,v 1.106 2005/08/08 16:49:43 sniper Exp $ */
 
 #include "php.h"
 #include "dl.h"
 #include "php_globals.h"
+#include "php_ini.h"
 #include "ext/standard/info.h"
+
 #include "SAPI.h"
 
 #if defined(HAVE_LIBDL) || HAVE_MACH_O_DYLD_H
@@ -39,6 +41,9 @@
 #include "win32/param.h"
 #include "win32/winutil.h"
 #define GET_DL_ERROR()	php_win_err()
+#elif defined(NETWARE)
+#include <sys/param.h>
+#define GET_DL_ERROR()	dlerror()
 #else
 #include <sys/param.h>
 #define GET_DL_ERROR()	DL_ERROR()
@@ -51,7 +56,7 @@
    Load a PHP extension at runtime */
 PHP_FUNCTION(dl)
 {
-	pval **file;
+	zval **file;
 
 	/* obtain arguments */
 	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &file) == FAILURE) {
@@ -60,24 +65,27 @@ PHP_FUNCTION(dl)
 
 	convert_to_string_ex(file);
 
-#ifdef ZTS
+	if (!PG(enable_dl)) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Dynamically loaded extensions aren't enabled");
+		RETURN_FALSE;
+	} else if (PG(safe_mode)) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Dynamically loaded extensions aren't allowed when running in Safe Mode");
+		RETURN_FALSE;
+	}
+
 	if ((strncmp(sapi_module.name, "cgi", 3)!=0) && 
 		(strcmp(sapi_module.name, "cli")!=0) &&
 		(strncmp(sapi_module.name, "embed", 5)!=0)) {
+#ifdef ZTS
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Not supported in multithreaded Web servers - use extension=%s in your php.ini", Z_STRVAL_PP(file));
 		RETURN_FALSE;
-	}
+#else
+		php_error_docref(NULL TSRMLS_CC, E_STRICT, "dl() is deprecated - use extension=%s in your php.ini", Z_STRVAL_PP(file));
 #endif
-
-	if (!PG(enable_dl)) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Dynamically loaded extensions aren't enabled");
-	} else if (PG(safe_mode)) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Dynamically loaded extensions aren't allowed when running in Safe Mode");
-	} else {
-		zend_error(E_STRICT, "dl() is deprecated - use extension=%s in your php.ini", Z_STRVAL_PP(file));
-		php_dl(*file, MODULE_TEMPORARY, return_value TSRMLS_CC);
-		EG(full_tables_cleanup) = 1;
 	}
+
+	php_dl(*file, MODULE_TEMPORARY, return_value, 0 TSRMLS_CC);
+	EG(full_tables_cleanup) = 1;
 }
 
 /* }}} */
@@ -93,7 +101,7 @@ PHP_FUNCTION(dl)
 
 /* {{{ php_dl
  */
-void php_dl(pval *file, int type, pval *return_value TSRMLS_DC)
+void php_dl(zval *file, int type, zval *return_value, int start_now TSRMLS_DC)
 {
 	void *handle;
 	char *libpath;
@@ -102,16 +110,13 @@ void php_dl(pval *file, int type, pval *return_value TSRMLS_DC)
 	int error_type;
 	char *extension_dir;
 
-	if (type==MODULE_PERSISTENT) {
-		/* Use the configuration hash directly, the INI mechanism is not yet initialized */
-		if (cfg_get_string("extension_dir", &extension_dir)==FAILURE) {
-			extension_dir = PHP_EXTENSION_DIR;
-		}
+	if (type == MODULE_PERSISTENT) {
+		extension_dir = INI_STR("extension_dir");
 	} else {
 		extension_dir = PG(extension_dir);
 	}
 
-	if (type==MODULE_TEMPORARY) {
+	if (type == MODULE_TEMPORARY) {
 		error_type = E_WARNING;
 	} else {
 		error_type = E_CORE_WARNING;
@@ -212,20 +217,24 @@ void php_dl(pval *file, int type, pval *return_value TSRMLS_DC)
 	module_entry->type = type;
 	module_entry->module_number = zend_next_free_module();
 	module_entry->handle = handle;
-	
-	if (zend_register_module_ex(module_entry TSRMLS_CC) == FAILURE) {
+
+	if ((module_entry = zend_register_module_ex(module_entry TSRMLS_CC)) == NULL) {
 		DL_UNLOAD(handle);
 		RETURN_FALSE;
 	}
 
-	if ((type == MODULE_TEMPORARY) && module_entry->request_startup_func) {
-		if (module_entry->request_startup_func(type, module_entry->module_number TSRMLS_CC)) {
+	if ((type == MODULE_TEMPORARY || start_now) && zend_startup_module_ex(module_entry TSRMLS_CC) == FAILURE) {
+		DL_UNLOAD(handle);
+		RETURN_FALSE;
+	}
+
+	if ((type == MODULE_TEMPORARY || start_now) && module_entry->request_startup_func) {
+		if (module_entry->request_startup_func(type, module_entry->module_number TSRMLS_CC) == FAILURE) {
 			php_error_docref(NULL TSRMLS_CC, error_type, "Unable to initialize module '%s'", module_entry->name);
 			DL_UNLOAD(handle);
 			RETURN_FALSE;
 		}
 	}
-	
 	RETURN_TRUE;
 }
 /* }}} */
@@ -237,7 +246,7 @@ PHP_MINFO_FUNCTION(dl)
 
 #else
 
-void php_dl(pval *file, int type, pval *return_value TSRMLS_DC)
+void php_dl(zval *file, int type, zval *return_value, int start_now TSRMLS_DC)
 {
 	php_error_docref(NULL TSRMLS_CC, E_WARNING, "Cannot dynamically load %s - dynamic modules are not supported", Z_STRVAL_P(file));
 	RETURN_FALSE;

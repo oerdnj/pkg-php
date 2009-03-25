@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2004 The PHP Group                                |
+  | Copyright (c) 1997-2005 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: ming.c,v 1.68.2.3 2005/07/25 21:03:27 helly Exp $ */
+/* $Id: ming.c,v 1.79.2.2 2005/11/24 00:51:42 helly Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -2244,7 +2244,7 @@ PHP_METHOD(swfmovie, output)
 		Ming_setSWFCompression(oldval);
 	}	
 	RETURN_LONG(out);
-#elif defined(HAVE_NEW_MING)
+#elif defined(HAVE_NEW_MING) && defined(HAVE_MING_MOVIE_LEVEL)
 	zval **zlimit = NULL;
 	int limit = -1;
 	int argc = ZEND_NUM_ARGS();
@@ -2323,7 +2323,7 @@ PHP_METHOD(swfmovie, saveToFile)
 	if (oldval >= -1 && oldval <=9)
 		Ming_setSWFCompression(oldval);
 	RETURN_LONG(out);
-#elif defined(HAVE_NEW_MING)
+#elif defined(HAVE_NEW_MING) && defined(HAVE_MING_MOVIE_LEVEL)
 	RETURN_LONG(SWFMovie_output(movie, &phpStreamOutputMethod, what, limit));
 #else
 	RETURN_LONG(SWFMovie_output(movie, &phpStreamOutputMethod, what));
@@ -2374,7 +2374,7 @@ PHP_METHOD(swfmovie, save)
 		  
 	if (Z_TYPE_PP(x) == IS_RESOURCE) {
 		ZEND_FETCH_RESOURCE(stream, php_stream *, x, -1,"File-Handle",php_file_le_stream());
-#if defined(HAVE_NEW_MING)
+#if defined(HAVE_NEW_MING) && defined(HAVE_MING_MOVIE_LEVEL)
 		RETURN_LONG(SWFMovie_output(getMovie(getThis() TSRMLS_CC), &phpStreamOutputMethod, stream, limit));
 #else
 		RETVAL_LONG(SWFMovie_output(getMovie(getThis() TSRMLS_CC), &phpStreamOutputMethod, stream));
@@ -2393,7 +2393,7 @@ PHP_METHOD(swfmovie, save)
 		RETURN_FALSE;
 	}
 	
-#if defined(HAVE_NEW_MING)
+#if defined(HAVE_NEW_MING) && defined(HAVE_MING_MOVIE_LEVEL)
 	retval = SWFMovie_output(getMovie(getThis() TSRMLS_CC), &phpStreamOutputMethod, (void *)stream, limit);
 #else
 	retval = SWFMovie_output(getMovie(getThis() TSRMLS_CC), &phpStreamOutputMethod, (void *)stream);

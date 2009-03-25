@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: ftp.c,v 1.103.2.7 2005/03/17 17:16:49 iliaa Exp $ */
+/* $Id: ftp.c,v 1.112.2.2 2005/11/05 22:02:15 iliaa Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -136,7 +136,7 @@ ftp_open(const char *host, short port, long timeout_sec TSRMLS_DC)
 
 	ftp->fd = php_network_connect_socket_to_host(host,
 			(unsigned short) (port ? port : 21), SOCK_STREAM,
-			0, &tv, NULL, NULL TSRMLS_CC);
+			0, &tv, NULL, NULL, NULL, 0 TSRMLS_CC);
 	if (ftp->fd == -1) {
 		goto bail;
 	}
@@ -148,7 +148,7 @@ ftp_open(const char *host, short port, long timeout_sec TSRMLS_DC)
 	size = sizeof(ftp->localaddr);
 	memset(&ftp->localaddr, 0, size);
 	if (getsockname(ftp->fd, (struct sockaddr*) &ftp->localaddr, &size) == -1) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "getsockname failed: %s (%d)\n", strerror(errno), errno);
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "getsockname failed: %s (%d)", strerror(errno), errno);
 		goto bail;
 	}
 
@@ -280,7 +280,9 @@ ftp_login(ftpbuf_t *ftp, const char *user, const char *pass TSRMLS_DC)
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "failed to create the SSL context");
 				return 0;
 			}
-			
+
+			SSL_CTX_set_options(ctx, SSL_OP_ALL);
+
 			ftp->ssl_handle = SSL_new(ctx);
 			if (ftp->ssl_handle == NULL) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "failed to create the SSL handle");
@@ -808,7 +810,7 @@ ftp_get(ftpbuf_t *ftp, php_stream *outstream, const char *path, ftptype_t type, 
 
 	if (resumepos > 0) {
 		if (resumepos > 2147483647) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "PHP cannot handle files greater then 2147483647 bytes.\n");
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "PHP cannot handle files greater then 2147483647 bytes.");
 			goto bail;
 		}
 		sprintf(arg, "%u", resumepos);
@@ -905,7 +907,7 @@ ftp_put(ftpbuf_t *ftp, const char *path, php_stream *instream, ftptype_t type, i
 
 	if (startpos > 0) {
 		if (startpos > 2147483647) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "PHP cannot handle files with a size greater then 2147483647 bytes.\n");
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "PHP cannot handle files with a size greater then 2147483647 bytes.");
 			goto bail;
 		}
 		sprintf(arg, "%u", startpos);
@@ -1384,7 +1386,7 @@ ftp_getdata(ftpbuf_t *ftp TSRMLS_DC)
 	sa = (struct sockaddr *) &ftp->localaddr;
 	/* bind/listen */
 	if ((fd = socket(sa->sa_family, SOCK_STREAM, 0)) == -1) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "socket() failed: %s (%d)\n", strerror(errno), errno);
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "socket() failed: %s (%d)", strerror(errno), errno);
 		goto bail;
 	}
 
@@ -1399,7 +1401,7 @@ ftp_getdata(ftpbuf_t *ftp TSRMLS_DC)
 		tv.tv_sec = ftp->timeout_sec;
 		tv.tv_usec = 0;
 		if (php_connect_nonb(fd, (struct sockaddr*) &ftp->pasvaddr, size, &tv) == -1) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "php_connect_nonb() failed: %s (%d)\n", strerror(errno), errno);
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "php_connect_nonb() failed: %s (%d)", strerror(errno), errno);
 			goto bail;
 		}
 
@@ -1417,17 +1419,17 @@ ftp_getdata(ftpbuf_t *ftp TSRMLS_DC)
 	size = php_sockaddr_size(&addr);
 
 	if (bind(fd, (struct sockaddr*) &addr, size) == -1) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "bind() failed: %s (%d)\n", strerror(errno), errno);
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "bind() failed: %s (%d)", strerror(errno), errno);
 		goto bail;
 	}
 
 	if (getsockname(fd, (struct sockaddr*) &addr, &size) == -1) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "getsockname() failed: %s (%d)\n", strerror(errno), errno);
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "getsockname() failed: %s (%d)", strerror(errno), errno);
 		goto bail;
 	}
 
 	if (listen(fd, 5) == -1) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "listen() failed: %s (%d)\n", strerror(errno), errno);
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "listen() failed: %s (%d)", strerror(errno), errno);
 		goto bail;
 	}
 
@@ -1513,7 +1515,9 @@ data_accepted:
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "data_accept: failed to create the SSL context");
 			return 0;
 		}
-			
+
+		SSL_CTX_set_options(ctx, SSL_OP_ALL);
+
 		data->ssl_handle = SSL_new(ctx);
 		if (data->ssl_handle == NULL) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "data_accept: failed to create the SSL handle");
@@ -1702,7 +1706,7 @@ ftp_nb_get(ftpbuf_t *ftp, php_stream *outstream, const char *path, ftptype_t typ
 		 * since php is 32 bit by design, we bail out with warning
 		 */
 		if (resumepos > 2147483647) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "PHP cannot handle files greater then 2147483648 bytes.\n");
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "PHP cannot handle files greater then 2147483648 bytes.");
 			goto bail;
 		}
 		sprintf(arg, "%u", resumepos);
@@ -1820,7 +1824,7 @@ ftp_nb_put(ftpbuf_t *ftp, const char *path, php_stream *instream, ftptype_t type
 	}
 	if (startpos > 0) {
 		if (startpos > 2147483647) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "PHP cannot handle files with a size greater then 2147483647 bytes.\n");
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "PHP cannot handle files with a size greater then 2147483647 bytes.");
 			goto bail;
 		}
 		sprintf(arg, "%u", startpos);

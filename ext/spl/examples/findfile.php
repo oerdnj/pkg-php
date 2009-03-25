@@ -4,7 +4,7 @@
  * @brief   Program Find a specific file by name.
  * @ingroup Examples
  * @author  Marcus Boerger
- * @date    2003 - 2004
+ * @date    2003 - 2005
  *
  * Usage: php findfile.php \<path\> \<name\>
  *
@@ -27,7 +27,7 @@ EOF;
 	exit(1);
 }
 
-if (!class_exists("FindFile")) require_once("findfile.inc");
+if (!class_exists("FindFile", false)) require_once("findfile.inc");
 
 foreach(new FindFile($argv[1], $argv[2]) as $file) echo $file->getPathname()."\n";
 ?>

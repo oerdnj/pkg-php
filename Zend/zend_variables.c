@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_variables.c,v 1.57 2004/07/10 07:45:49 andi Exp $ */
+/* $Id: zend_variables.c,v 1.62 2005/08/03 13:30:58 sniper Exp $ */
 
 #include <stdio.h>
 #include "zend.h"
@@ -26,18 +26,9 @@
 #include "zend_constants.h"
 #include "zend_list.h"
 
-ZEND_API char *empty_string = "";	/* in order to save emalloc() and efree() time for
-									 * empty strings (usually used to denote empty
-									 * return values in failed functions).
-									 * The macro STR_FREE() will not efree() it.
-									 */
 
-
-ZEND_API void _zval_dtor(zval *zvalue ZEND_FILE_LINE_DC)
+ZEND_API void _zval_dtor_func(zval *zvalue ZEND_FILE_LINE_DC)
 {
-	if (zvalue->type==IS_LONG) {
-		return;
-	}
 	switch (zvalue->type & ~IS_CONSTANT_INDEX) {
 		case IS_STRING:
 		case IS_CONSTANT:
@@ -86,9 +77,7 @@ ZEND_API void _zval_internal_dtor(zval *zvalue ZEND_FILE_LINE_DC)
 		case IS_STRING:
 		case IS_CONSTANT:
 			CHECK_ZVAL_STRING_REL(zvalue);
-			if (zvalue->value.str.val != empty_string) {
-				free(zvalue->value.str.val);
-			}
+			free(zvalue->value.str.val);
 			break;
 		case IS_ARRAY:
 		case IS_CONSTANT_ARRAY:
@@ -112,7 +101,7 @@ ZEND_API void zval_add_ref(zval **p)
 }
 
 
-ZEND_API int _zval_copy_ctor(zval *zvalue ZEND_FILE_LINE_DC)
+ZEND_API void _zval_copy_ctor_func(zval *zvalue ZEND_FILE_LINE_DC)
 {
 	switch (zvalue->type) {
 		case IS_RESOURCE: {
@@ -127,12 +116,6 @@ ZEND_API int _zval_copy_ctor(zval *zvalue ZEND_FILE_LINE_DC)
 			break;
 		case IS_CONSTANT:
 		case IS_STRING:
-			if (zvalue->value.str.val) {
-				if (zvalue->value.str.len==0) {
-					zvalue->value.str.val = empty_string;
-					return SUCCESS;
-				}
-			}
 			CHECK_ZVAL_STRING_REL(zvalue);
 			zvalue->value.str.val = (char *) estrndup_rel(zvalue->value.str.val, zvalue->value.str.len);
 			break;
@@ -144,7 +127,7 @@ ZEND_API int _zval_copy_ctor(zval *zvalue ZEND_FILE_LINE_DC)
 				TSRMLS_FETCH();
 
 				if (zvalue->value.ht == &EG(symbol_table)) {
-					return SUCCESS; /* do nothing */
+					return; /* do nothing */
 				}
 				ALLOC_HASHTABLE_REL(tmp_ht);
 				zend_hash_init(tmp_ht, 0, NULL, ZVAL_PTR_DTOR, 0);
@@ -159,7 +142,6 @@ ZEND_API int _zval_copy_ctor(zval *zvalue ZEND_FILE_LINE_DC)
 			}
 			break;
 	}
-	return SUCCESS;
 }
 
 
@@ -170,9 +152,9 @@ ZEND_API int zend_print_variable(zval *var)
 
 
 #if ZEND_DEBUG
-ZEND_API int _zval_copy_ctor_wrapper(zval *zvalue)
+ZEND_API void _zval_copy_ctor_wrapper(zval *zvalue)
 {
-	return zval_copy_ctor(zvalue);
+	zval_copy_ctor(zvalue);
 }
 
 

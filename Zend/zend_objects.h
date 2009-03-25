@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_objects.h,v 1.22 2004/02/18 22:44:40 hholzgra Exp $ */
+/* $Id: zend_objects.h,v 1.25 2005/08/03 13:30:55 sniper Exp $ */
 
 #ifndef ZEND_OBJECTS_H
 #define ZEND_OBJECTS_H

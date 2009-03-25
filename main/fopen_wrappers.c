@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: fopen_wrappers.c,v 1.170.2.4 2005/07/16 12:14:44 hyanantha Exp $ */
+/* $Id: fopen_wrappers.c,v 1.175.2.1 2005/09/27 15:07:48 iliaa Exp $ */
 
 /* {{{ includes
  */
@@ -65,7 +65,6 @@
 #ifdef PHP_WIN32
 #include <winsock2.h>
 #elif defined(NETWARE) && defined(USE_WINSOCK)
-/*#include <ws2nlm.h>*/
 #include <novsock2.h>
 #else
 #include <netinet/in.h>
@@ -109,8 +108,8 @@ PHPAPI int php_check_specific_open_basedir(const char *basedir, const char *path
 		/* Handler for basedirs that end with a / */
 		resolved_basedir_len = strlen(resolved_basedir);
 		if (basedir[strlen(basedir) - 1] == PHP_DIR_SEPARATOR) {
-			if (resolved_basedir[resolved_basedir_len - 1] == '/') {
-				resolved_basedir[resolved_basedir_len - 1] = PHP_DIR_SEPARATOR;
+			if (resolved_basedir[resolved_basedir_len - 1] != PHP_DIR_SEPARATOR) {
+				resolved_basedir[resolved_basedir_len] = PHP_DIR_SEPARATOR;
 				resolved_basedir[++resolved_basedir_len] = '\0';
 			}
 		}

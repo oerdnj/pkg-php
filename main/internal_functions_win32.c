@@ -2,7 +2,7 @@
 	+----------------------------------------------------------------------+
 	| PHP Version 5                                                        |
 	+----------------------------------------------------------------------+
-	| Copyright (c) 1997-2004 The PHP Group                                |
+	| Copyright (c) 1997-2005 The PHP Group                                |
 	+----------------------------------------------------------------------+
 	| This source file is subject to version 3.0 of the PHP license,       |
 	| that is bundled with this package in the file LICENSE, and is        |
@@ -17,14 +17,13 @@
 	+----------------------------------------------------------------------+
 */
 
-/* $Id: internal_functions_win32.c,v 1.84 2004/01/08 08:17:53 andi Exp $ */
+/* $Id: internal_functions_win32.c,v 1.87 2005/08/03 14:08:29 sniper Exp $ */
 
 /* {{{ includes
  */
 #include "php.h"
 #include "php_main.h"
 #include "zend_modules.h"
-#include "internal_functions_registry.h"
 #include "zend_compile.h"
 #include <stdarg.h>
 #include <stdlib.h>
@@ -159,9 +158,9 @@ zend_module_entry *php_builtin_extensions[] = {
 
 #define EXTCOUNT (sizeof(php_builtin_extensions)/sizeof(zend_module_entry *))
 	
-int php_startup_internal_extensions(void)
+int php_register_internal_extensions(TSRMLS_D)
 {
-	return php_startup_extensions(php_builtin_extensions, EXTCOUNT);
+	return php_register_extensions(php_builtin_extensions, EXTCOUNT TSRMLS_CC);
 }
 
 /*

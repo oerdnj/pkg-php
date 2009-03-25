@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_functions.h,v 1.17 2004/04/12 13:02:54 helly Exp $ */
+/* $Id: spl_functions.h,v 1.19.2.1 2005/09/15 03:33:04 helly Exp $ */
 
 #ifndef PHP_FUNCTIONS_H
 #define PHP_FUNCTIONS_H
@@ -52,6 +52,9 @@ typedef zend_object_value (*create_object_func_t)(zend_class_entry *class_type T
 #define REGISTER_SPL_PROPERTY(class_name, prop_name) \
 	spl_register_property(spl_ce_ ## class_name, prop_name, prop_val, prop_flags TSRMLS_CC);
 
+#define REGISTER_SPL_CLASS_CONST_LONG(class_name, const_name, value) \
+	zend_declare_class_constant_long(spl_ce_ ## class_name, const_name, sizeof(const_name)-1, (long)value TSRMLS_CC);
+
 void spl_destroy_class(zend_class_entry ** ppce);
 
 void spl_register_std_class(zend_class_entry ** ppce, char * class_name, create_object_func_t ctor, function_entry * function_list TSRMLS_DC);
@@ -82,7 +85,7 @@ int spl_add_classes(zend_class_entry ** ppce, zval *list, int sub, int allow, in
 	PHP_METHOD(spl_ ## class_name, function_name)
 
 #define SPL_MA(class_name, function_name, alias_class, alias_function, arg_info, flags) \
-	ZEND_MALIAS(spl_ ## alias_class, function_name, alias_function, arg_info, flags)
+	PHP_MALIAS(spl_ ## alias_class, function_name, alias_function, arg_info, flags)
 #endif /* PHP_FUNCTIONS_H */
 
 /*

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_opcode.c,v 1.103 2004/06/06 08:37:12 sesser Exp $ */
+/* $Id: zend_opcode.c,v 1.110.2.1 2005/09/01 10:05:32 dmitry Exp $ */
 
 #include <stdio.h>
 
@@ -26,6 +26,8 @@
 #include "zend_compile.h"
 #include "zend_extensions.h"
 #include "zend_API.h"
+
+#include "zend_vm.h"
 
 static void zend_extension_op_array_ctor_handler(zend_extension *extension, zend_op_array *op_array TSRMLS_DC)
 {
@@ -64,6 +66,10 @@ void init_op_array(zend_op_array *op_array, zend_uchar type, int initial_ops_siz
 	op_array->last = 0;
 	op_array->opcodes = NULL;
 	op_array_alloc_ops(op_array);
+
+	op_array->size_var = 0; /* FIXME:??? */
+	op_array->last_var = 0;
+	op_array->vars = NULL;
 
 	op_array->T = 0;
 
@@ -132,11 +138,17 @@ ZEND_API int zend_cleanup_function_data(zend_function *function TSRMLS_DC)
 
 ZEND_API int zend_cleanup_class_data(zend_class_entry **pce TSRMLS_DC)
 {
+	if ((*pce)->static_members) {
+		if ((*pce)->static_members != &(*pce)->default_static_members) {
+			zend_hash_destroy((*pce)->static_members);
+			FREE_HASHTABLE((*pce)->static_members);
+		}
+		(*pce)->static_members = NULL;
+	}
 	if ((*pce)->type == ZEND_USER_CLASS) {
 		/* Clean all parts that can contain run-time data */
 		/* Note that only run-time accessed data need to be cleaned up, pre-defined data can
 		   not contain objects and thus are not probelmatic */
-		zend_hash_clean((*pce)->static_members);
 		zend_hash_apply(&(*pce)->function_table, (apply_func_t) zend_cleanup_function_data TSRMLS_CC);
 	}
 	return 0;
@@ -153,10 +165,9 @@ ZEND_API void destroy_zend_class(zend_class_entry **pce)
 		case ZEND_USER_CLASS:
 			zend_hash_destroy(&ce->default_properties);
 			zend_hash_destroy(&ce->properties_info);
-			zend_hash_destroy(ce->static_members);
+			zend_hash_destroy(&ce->default_static_members);
 			efree(ce->name);
 			zend_hash_destroy(&ce->function_table);
-			FREE_HASHTABLE(ce->static_members);
 			zend_hash_destroy(&ce->constants_table);
 			if (ce->num_interfaces > 0 && ce->interfaces) {
 				efree(ce->interfaces);
@@ -169,10 +180,9 @@ ZEND_API void destroy_zend_class(zend_class_entry **pce)
 		case ZEND_INTERNAL_CLASS:
 			zend_hash_destroy(&ce->default_properties);
 			zend_hash_destroy(&ce->properties_info);
-			zend_hash_destroy(ce->static_members);
+			zend_hash_destroy(&ce->default_static_members);
 			free(ce->name);
 			zend_hash_destroy(&ce->function_table);
-			free(ce->static_members);
 			zend_hash_destroy(&ce->constants_table);
 			if (ce->num_interfaces > 0) {
 				free(ce->interfaces);
@@ -207,6 +217,15 @@ ZEND_API void destroy_op_array(zend_op_array *op_array TSRMLS_DC)
 
 	efree(op_array->refcount);
 
+	if (op_array->vars) {
+		i = op_array->last_var;
+		while (i > 0) {
+			i--;
+			efree(op_array->vars[i].name);
+		}
+		efree(op_array->vars);
+	}
+
 	while (opline<end) {
 		if (opline->op1.op_type==IS_CONST) {
 #if DEBUG_ZEND>2
@@ -223,6 +242,7 @@ ZEND_API void destroy_op_array(zend_op_array *op_array TSRMLS_DC)
 		opline++;
 	}
 	efree(op_array->opcodes);
+
 	if (op_array->function_name) {
 		efree(op_array->function_name);
 	}
@@ -360,7 +380,7 @@ int pass_two(zend_op_array *op_array TSRMLS_DC)
 				opline->op2.u.jmp_addr = &op_array->opcodes[opline->op2.u.opline_num];
 				break;
 		}
-		opline->handler = zend_opcode_handlers[opline->opcode];
+		ZEND_VM_SET_OPCODE_HANDLER(opline);
 		opline++;
 	}
 	

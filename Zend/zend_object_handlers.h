@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,12 +17,13 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_object_handlers.h,v 1.41.2.3 2005/04/27 15:44:06 dmitry Exp $ */
+/* $Id: zend_object_handlers.h,v 1.47 2005/08/03 13:30:55 sniper Exp $ */
 
 #ifndef ZEND_OBJECT_HANDLERS_H
 #define ZEND_OBJECT_HANDLERS_H
 
 union _zend_function;
+struct _zend_property_info;
 
 /* The following rule applies to read_property() and read_dimension() implementations:
    If you return a zval which is not otherwise referenced by the extension or the engine's
@@ -60,7 +61,12 @@ typedef void (*zend_object_set_t)(zval **property, zval *value TSRMLS_DC);
 typedef zval* (*zend_object_get_t)(zval *property TSRMLS_DC);
 
 /* Used to check if a property of the object exists */
-typedef int (*zend_object_has_property_t)(zval *object, zval *member, int check_empty TSRMLS_DC);
+/* param has_set_exists:
+ * 0 (has) whether property exists and is not NULL
+ * 1 (set) whether property exists and is true
+ * 2 (exists) whether property exists
+ */
+typedef int (*zend_object_has_property_t)(zval *object, zval *member, int has_set_exists TSRMLS_DC);
 
 /* Used to check if a dimension of the object exists */
 typedef int (*zend_object_has_dimension_t)(zval *object, zval *member, int check_empty TSRMLS_DC);
@@ -79,7 +85,7 @@ typedef HashTable *(*zend_object_get_properties_t)(zval *object TSRMLS_DC);
 /* Andi - EX(fbc) (function being called) needs to be initialized already in the INIT fcall opcode so that the parameters can be parsed the right way. We need to add another callback for this.
  */
 typedef int (*zend_object_call_method_t)(char *method, INTERNAL_FUNCTION_PARAMETERS);
-typedef union _zend_function *(*zend_object_get_method_t)(zval *object, char *method, int method_len TSRMLS_DC);
+typedef union _zend_function *(*zend_object_get_method_t)(zval **object_ptr, char *method, int method_len TSRMLS_DC);
 typedef union _zend_function *(*zend_object_get_constructor_t)(zval *object TSRMLS_DC);
 
 /* Object maintenance/destruction */
@@ -130,6 +136,7 @@ BEGIN_EXTERN_C()
 ZEND_API union _zend_function *zend_std_get_static_method(zend_class_entry *ce, char *function_name_strval, int function_name_strlen TSRMLS_DC);
 ZEND_API zval **zend_std_get_static_property(zend_class_entry *ce, char *property_name, int property_name_len, zend_bool silent TSRMLS_DC);
 ZEND_API zend_bool zend_std_unset_static_property(zend_class_entry *ce, char *property_name, int property_name_len TSRMLS_DC);
+ZEND_API struct _zend_property_info *zend_get_property_info(zend_class_entry *ce, zval *member, int silent TSRMLS_DC);
 
 ZEND_API int zend_std_cast_object_tostring(zval *readobj, zval *writeobj, int type, int should_free TSRMLS_DC);
 

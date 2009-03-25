@@ -3,12 +3,16 @@ set character set
 --SKIPIF--
 <?php 
 require_once('skipif.inc'); 
+if (!function_exists('mysqli_set_charset')) {
+	die('skip mysqli_set_charset() not available');
+}
 ?>
 --FILE--
 <?php
 	include "connect.inc";
 
 	$mysql = new mysqli($host, $user, $passwd);
+	mysqli_query($mysql, "SET sql_mode=''");
 
 	$esc_str = chr(0xbf) . chr(0x5c);
 

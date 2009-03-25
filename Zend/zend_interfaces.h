@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_interfaces.h,v 1.8 2004/04/27 15:38:07 helly Exp $ */
+/* $Id: zend_interfaces.h,v 1.11 2005/08/03 13:30:53 sniper Exp $ */
 
 #ifndef ZEND_INTERFACES_H
 #define ZEND_INTERFACES_H
@@ -30,6 +30,7 @@ extern ZEND_API zend_class_entry *zend_ce_traversable;
 extern ZEND_API zend_class_entry *zend_ce_aggregate;
 extern ZEND_API zend_class_entry *zend_ce_iterator;
 extern ZEND_API zend_class_entry *zend_ce_arrayaccess;
+extern ZEND_API zend_class_entry *zend_ce_serializable;
 
 typedef struct _zend_user_iterator {
 	zend_object_iterator     it;

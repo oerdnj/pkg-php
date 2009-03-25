@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: sapi_apache2.c,v 1.40.2.11 2005/09/02 13:51:26 sniper Exp $ */
+/* $Id: sapi_apache2.c,v 1.57.2.7 2005/11/18 18:59:49 iliaa Exp $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 
@@ -175,13 +175,13 @@ php_apache_sapi_get_stat(TSRMLS_D)
 	ctx->finfo.st_dev = ctx->r->finfo.device;
 	ctx->finfo.st_ino = ctx->r->finfo.inode;
 #if defined(NETWARE) && defined(CLIB_STAT_PATCH)
-	ctx->finfo.st_atime.tv_sec = ctx->r->finfo.atime/1000000;
-	ctx->finfo.st_mtime.tv_sec = ctx->r->finfo.mtime/1000000;
-	ctx->finfo.st_ctime.tv_sec = ctx->r->finfo.ctime/1000000;
+	ctx->finfo.st_atime.tv_sec = apr_time_sec(ctx->r->finfo.atime);
+	ctx->finfo.st_mtime.tv_sec = apr_time_sec(ctx->r->finfo.mtime);
+	ctx->finfo.st_ctime.tv_sec = apr_time_sec(ctx->r->finfo.ctime);
 #else
-	ctx->finfo.st_atime = ctx->r->finfo.atime/1000000;
-	ctx->finfo.st_mtime = ctx->r->finfo.mtime/1000000;
-	ctx->finfo.st_ctime = ctx->r->finfo.ctime/1000000;
+	ctx->finfo.st_atime = apr_time_sec(ctx->r->finfo.atime);
+	ctx->finfo.st_mtime = apr_time_sec(ctx->r->finfo.mtime);
+	ctx->finfo.st_ctime = apr_time_sec(ctx->r->finfo.ctime);
 #endif
 
 	ctx->finfo.st_size = ctx->r->finfo.size;
@@ -221,7 +221,7 @@ php_apache_sapi_register_variables(zval *track_vars_array TSRMLS_DC)
 	char *key, *val;
 	
 	APR_ARRAY_FOREACH_OPEN(arr, key, val)
-		if (!val) val = empty_string;
+		if (!val) val = "";
 		php_register_variable(key, val, track_vars_array TSRMLS_CC);
 	APR_ARRAY_FOREACH_CLOSE()
 		
@@ -278,6 +278,11 @@ static void php_apache_sapi_log_message_ex(char *msg, request_rec *r)
 	}
 }
 
+static time_t php_apache_sapi_get_request_time(TSRMLS_D) {
+	php_struct *ctx = SG(server_context);
+	return apr_time_sec(ctx->r->request_time);
+}
+
 extern zend_module_entry php_apache_module;
 
 static int php_apache2_startup(sapi_module_struct *sapi_module)
@@ -314,6 +319,7 @@ static sapi_module_struct apache2_sapi_module = {
 
 	php_apache_sapi_register_variables,
 	php_apache_sapi_log_message,			/* Log message */
+	php_apache_sapi_get_request_time,		/* Request Time */
 
 	STANDARD_SAPI_MODULE_PROPERTIES
 };
@@ -405,6 +411,7 @@ static int php_apache_request_ctor(request_rec *r, php_struct *ctx TSRMLS_DC)
 	SG(request_info).content_type = apr_table_get(r->headers_in, "Content-Type");
 	SG(request_info).query_string = apr_pstrdup(r->pool, r->args);
 	SG(request_info).request_method = r->method;
+	SG(request_info).proto_num = r->proto_num;
 	SG(request_info).request_uri = apr_pstrdup(r->pool, r->uri);
 	SG(request_info).path_translated = apr_pstrdup(r->pool, r->filename);
 	r->no_local_copy = 1;
@@ -436,6 +443,18 @@ static void php_apache_request_dtor(request_rec *r TSRMLS_DC)
 	php_request_shutdown(NULL);
 }
 
+static void php_apache_ini_dtor(request_rec *r, request_rec *p TSRMLS_DC)
+{
+	if (strcmp(r->protocol, "INCLUDED")) {
+		zend_try { zend_ini_deactivate(TSRMLS_C); } zend_end_try();
+	}
+	if (p) {
+		((php_struct *)SG(server_context))->r = p;
+	} else {
+		apr_pool_cleanup_run(r->pool, (void *)&SG(server_context), php_server_context_cleanup);
+	}
+}
+
 static int php_handler(request_rec *r)
 {
 	php_struct *ctx;
@@ -446,15 +465,32 @@ static int php_handler(request_rec *r)
 	request_rec *parent_req = NULL;
 	TSRMLS_FETCH();
 
+#define PHPAP_INI_OFF php_apache_ini_dtor(r, parent_req TSRMLS_CC);
+
 	conf = ap_get_module_config(r->per_dir_config, &php5_module);
+
+	/* apply_config() needs r in some cases, so allocate server_context early */
+	ctx = SG(server_context);
+	if (ctx == NULL) {
+normal:
+		ctx = SG(server_context) = apr_pcalloc(r->pool, sizeof(*ctx));
+		/* register a cleanup so we clear out the SG(server_context)
+		 * after each request. Note: We pass in the pointer to the
+		 * server_context in case this is handled by a different thread.
+		 */
+		apr_pool_cleanup_register(r->pool, (void *)&SG(server_context), php_server_context_cleanup, apr_pool_cleanup_null);
+		ctx->r = r;
+		ctx = NULL; /* May look weird to null it here, but it is to catch the right case in the first_try later on */
+	} else {
+		parent_req = ctx->r;
+		ctx->r = r;
+	}
 	apply_config(conf);
 
 	if (strcmp(r->handler, PHP_MAGIC_TYPE) && strcmp(r->handler, PHP_SOURCE_MAGIC_TYPE) && strcmp(r->handler, PHP_SCRIPT)) {
 		/* Check for xbithack in this case. */
 		if (!AP2(xbithack) || strcmp(r->handler, "text/html") || !(r->finfo.protection & APR_UEXECUTE)) {
-			zend_try {
-				zend_ini_deactivate(TSRMLS_C);
-			} zend_end_try();
+			PHPAP_INI_OFF;
 			return DECLINED;
 		}
 	}
@@ -463,32 +499,24 @@ static int php_handler(request_rec *r)
 	 * the configuration; default behaviour is to accept. */ 
 	if (r->used_path_info == AP_REQ_REJECT_PATH_INFO
 		&& r->path_info && r->path_info[0]) {
-		zend_try {
-			zend_ini_deactivate(TSRMLS_C);
-		} zend_end_try();
+		PHPAP_INI_OFF;
 		return HTTP_NOT_FOUND;
 	}
 
 	/* handle situations where user turns the engine off */
 	if (!AP2(engine)) {
-		zend_try {
-			zend_ini_deactivate(TSRMLS_C);
-		} zend_end_try();
+		PHPAP_INI_OFF;
 		return DECLINED;
 	}
 
 	if (r->finfo.filetype == 0) {
 		php_apache_sapi_log_message_ex("script '%s' not found or unable to stat", r);
-		zend_try {
-				zend_ini_deactivate(TSRMLS_C);
-		} zend_end_try();
+		PHPAP_INI_OFF;
 		return HTTP_NOT_FOUND;
 	}
 	if (r->finfo.filetype == APR_DIR) {
 		php_apache_sapi_log_message_ex("attempt to invoke directory '%s' as script", r);
-		zend_try {
-			zend_ini_deactivate(TSRMLS_C);
-		} zend_end_try();
+		PHPAP_INI_OFF;
 		return HTTP_FORBIDDEN;
 	}
 
@@ -504,25 +532,27 @@ static int php_handler(request_rec *r)
 
 zend_first_try {
 
-	ctx = SG(server_context);
 	if (ctx == NULL) {
-normal:
-		ctx = SG(server_context) = apr_pcalloc(r->pool, sizeof(*ctx));
-		/* register a cleanup so we clear out the SG(server_context)
-		 * after each request. Note: We pass in the pointer to the
-		 * server_context in case this is handled by a different thread.
-		 */
-		apr_pool_cleanup_register(r->pool, (void *)&SG(server_context), php_server_context_cleanup, apr_pool_cleanup_null);
-
-		ctx->r = r;
 		brigade = apr_brigade_create(r->pool, r->connection->bucket_alloc);
+		ctx = SG(server_context);
 		ctx->brigade = brigade;
 
 		if (php_apache_request_ctor(r, ctx TSRMLS_CC)!=SUCCESS) {
 			zend_bailout();
 		}
 	} else {
-		parent_req = ctx->r;
+		if (!parent_req) {
+			parent_req = ctx->r;
+		}
+		if (parent_req && parent_req->handler && 
+				strcmp(parent_req->handler, PHP_MAGIC_TYPE) && 
+				strcmp(parent_req->handler, PHP_SOURCE_MAGIC_TYPE) && 
+				strcmp(parent_req->handler, PHP_SCRIPT)) {
+			if (php_apache_request_ctor(r, ctx TSRMLS_CC)!=SUCCESS) {
+				zend_bailout();
+			}
+		}
+		
 		/* check if comming due to ErrorDocument */
 		if (parent_req && parent_req->status != HTTP_OK) {
 			parent_req = NULL;

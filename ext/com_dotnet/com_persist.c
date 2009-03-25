@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_persist.c,v 1.2 2004/06/16 23:57:25 abies Exp $ */
+/* $Id: com_persist.c,v 1.5 2005/08/03 14:06:42 sniper Exp $ */
 
 /* Infrastructure for working with persistent COM objects.
  * Implements: IStream* wrapper for PHP streams.
@@ -38,7 +38,7 @@
 
 typedef struct {
 	CONST_VTBL struct IStreamVtbl *lpVtbl;
-	THREAD_T engine_thread;
+	DWORD engine_thread;
 	LONG refcount;
 	php_stream *stream;
 	int id;
@@ -53,17 +53,23 @@ static void istream_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	istream_destructor(stm);
 }
 
+#ifdef ZTS
+# define TSRMLS_FIXED()	TSRMLS_FETCH();
+#else
+# define TSRMLS_FIXED()
+#endif
+
 #define FETCH_STM()	\
+	TSRMLS_FIXED() \
 	php_istream *stm = (php_istream*)This; \
-	if (tsrm_thread_id() != stm->engine_thread) \
-		return E_UNEXPECTED;
+	if (GetCurrentThreadId() != stm->engine_thread) \
+		return RPC_E_WRONG_THREAD;
 
 static HRESULT STDMETHODCALLTYPE stm_queryinterface(
 	IStream *This,
 	/* [in] */ REFIID riid,
 	/* [iid_is][out] */ void **ppvObject)
 {
-	TSRMLS_FETCH();
 	FETCH_STM();
 
 	if (IsEqualGUID(&IID_IUnknown, riid) ||
@@ -79,7 +85,6 @@ static HRESULT STDMETHODCALLTYPE stm_queryinterface(
 
 static ULONG STDMETHODCALLTYPE stm_addref(IStream *This)
 {
-	TSRMLS_FETCH();
 	FETCH_STM();
 
 	return InterlockedIncrement(&stm->refcount);
@@ -88,7 +93,6 @@ static ULONG STDMETHODCALLTYPE stm_addref(IStream *This)
 static ULONG STDMETHODCALLTYPE stm_release(IStream *This)
 {
 	ULONG ret;
-	TSRMLS_FETCH();
 	FETCH_STM();
 
 	ret = InterlockedDecrement(&stm->refcount);
@@ -103,7 +107,6 @@ static ULONG STDMETHODCALLTYPE stm_release(IStream *This)
 static HRESULT STDMETHODCALLTYPE stm_read(IStream *This, void *pv, ULONG cb, ULONG *pcbRead)
 {
 	int nread;
-	TSRMLS_FETCH();
 	FETCH_STM();
 
 	nread = php_stream_read(stm->stream, pv, cb);
@@ -120,7 +123,6 @@ static HRESULT STDMETHODCALLTYPE stm_read(IStream *This, void *pv, ULONG cb, ULO
 static HRESULT STDMETHODCALLTYPE stm_write(IStream *This, void const *pv, ULONG cb, ULONG *pcbWritten)
 {
 	int nwrote;
-	TSRMLS_FETCH();
 	FETCH_STM();
 
 	nwrote = php_stream_write(stm->stream, pv, cb);
@@ -140,7 +142,6 @@ static HRESULT STDMETHODCALLTYPE stm_seek(IStream *This, LARGE_INTEGER dlibMove,
 	off_t offset;
 	int whence;
 	int ret;
-	TSRMLS_FETCH();
 	FETCH_STM();
 
 	switch (dwOrigin) {
@@ -169,7 +170,6 @@ static HRESULT STDMETHODCALLTYPE stm_seek(IStream *This, LARGE_INTEGER dlibMove,
 
 static HRESULT STDMETHODCALLTYPE stm_set_size(IStream *This, ULARGE_INTEGER libNewSize)
 {
-	TSRMLS_FETCH();
 	FETCH_STM();
 
 	if (libNewSize.HighPart) {
@@ -190,7 +190,6 @@ static HRESULT STDMETHODCALLTYPE stm_set_size(IStream *This, ULARGE_INTEGER libN
 static HRESULT STDMETHODCALLTYPE stm_copy_to(IStream *This, IStream *pstm, ULARGE_INTEGER cb,
 		ULARGE_INTEGER *pcbRead, ULARGE_INTEGER *pcbWritten)
 {
-	TSRMLS_FETCH();
 	FETCH_STM();
 
 	return E_NOTIMPL;
@@ -198,7 +197,6 @@ static HRESULT STDMETHODCALLTYPE stm_copy_to(IStream *This, IStream *pstm, ULARG
 
 static HRESULT STDMETHODCALLTYPE stm_commit(IStream *This, DWORD grfCommitFlags)
 {
-	TSRMLS_FETCH();
 	FETCH_STM();
 
 	php_stream_flush(stm->stream);
@@ -281,7 +279,7 @@ PHPAPI IStream *php_com_wrapper_export_stream(php_stream *stream TSRMLS_DC)
 		return NULL;
 
 	memset(stm, 0, sizeof(*stm));
-	stm->engine_thread = tsrm_thread_id();
+	stm->engine_thread = GetCurrentThreadId();
 	stm->lpVtbl = &php_istream_vtbl;
 	stm->refcount = 1;
 	stm->stream = stream;
@@ -719,7 +717,6 @@ static void helper_free_storage(void *obj TSRMLS_DC)
 static void helper_clone(void *obj, void **clone_ptr TSRMLS_DC)
 {
 	php_com_persist_helper *clone, *object = (php_com_persist_helper*)obj;
-	zval *tmp;
 
 	clone = emalloc(sizeof(*object));
 	memcpy(clone, object, sizeof(*object));
@@ -746,7 +743,6 @@ static zend_object_value helper_new(zend_class_entry *ce TSRMLS_DC)
 {
 	php_com_persist_helper *helper;
 	zend_object_value retval;
-	zval *tmp;
 
 	helper = emalloc(sizeof(*helper));
 	memset(helper, 0, sizeof(*helper));

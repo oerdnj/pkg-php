@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_reentrancy.h,v 1.22 2004/02/20 08:04:30 hholzgra Exp $ */
+/* $Id: php_reentrancy.h,v 1.23 2005/08/03 14:08:36 sniper Exp $ */
 
 #ifndef PHP_REENTRANCY_H
 #define PHP_REENTRANCY_H

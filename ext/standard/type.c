@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: type.c,v 1.25.2.1 2005/05/25 10:58:26 stas Exp $ */
+/* $Id: type.c,v 1.30 2005/08/03 14:08:14 sniper Exp $ */
 
 #include "php.h"
 #include "php_incomplete_class.h"
@@ -42,10 +42,6 @@ PHP_FUNCTION(gettype)
 
 		case IS_LONG:
 			RETVAL_STRING("integer", 1);
-			break;
-
-		case IS_RESOURCE:
-			RETVAL_STRING("resource", 1);
 			break;
 
 		case IS_DOUBLE:
@@ -74,6 +70,16 @@ PHP_FUNCTION(gettype)
 		   }
 		 */
 			break;
+
+		case IS_RESOURCE:
+			{
+				char *type_name;
+				type_name = zend_rsrc_list_get_rsrc_type(Z_LVAL_PP(arg) TSRMLS_CC);
+				if (type_name) {
+					RETVAL_STRING("resource", 1);
+					break;
+				}
+			}
 
 		default:
 			RETVAL_STRING("unknown type", 1);
@@ -153,8 +159,7 @@ PHP_FUNCTION(intval)
 			WRONG_PARAM_COUNT;
 	}
 
-	*return_value = **num;
-	zval_copy_ctor(return_value);
+	RETVAL_ZVAL(*num, 1, 0);
 	convert_to_long_base(return_value, base);
 }
 /* }}} */
@@ -169,8 +174,7 @@ PHP_FUNCTION(floatval)
 		WRONG_PARAM_COUNT;
 	}
 
-	*return_value = **num;
-	zval_copy_ctor(return_value);
+	RETVAL_ZVAL(*num, 1, 0);
 	convert_to_double(return_value);
 }
 /* }}} */
@@ -179,7 +183,7 @@ PHP_FUNCTION(floatval)
    Get the string value of a variable */
 PHP_FUNCTION(strval)
 {
-	pval **num;
+	zval **num, *tmp;
 	zval expr_copy;
 	int use_copy;
 
@@ -187,16 +191,12 @@ PHP_FUNCTION(strval)
 		WRONG_PARAM_COUNT;
 	}
 
-	*return_value = **num;
-
-	zend_make_printable_zval(return_value, &expr_copy, &use_copy);
+	zend_make_printable_zval(*num, &expr_copy, &use_copy);
 	if (use_copy) {
-		*return_value = expr_copy;
-		INIT_PZVAL(return_value);
-		zval_copy_ctor(return_value);
-		zval_dtor(&expr_copy);
+		tmp = &expr_copy;
+		RETVAL_ZVAL(tmp, 0, 0);
 	} else {
-		zval_copy_ctor(return_value);
+		RETVAL_ZVAL(*num, 1, 0);
 	}
 }
 /* }}} */

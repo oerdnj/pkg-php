@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    |          Ben Mansell <ben@zeus.com> (Zeus Support)                   |
    +----------------------------------------------------------------------+
  */
-/* $Id: php5isapi.c,v 1.3.2.3 2005/04/17 03:39:14 sniper Exp $ */
+/* $Id: php5isapi.c,v 1.8 2005/08/03 14:08:50 sniper Exp $ */
 
 #include "php.h"
 #include <httpext.h>
@@ -368,7 +368,7 @@ static char *sapi_isapi_read_cookies(TSRMLS_D)
 			efree(tmp_variable_buf);
 		}
 	}
-	return estrndup("", sizeof("")-1);
+	return STR_EMPTY_ALLOC();
 }
 
 
@@ -682,7 +682,8 @@ static sapi_module_struct isapi_sapi_module = {
 	sapi_isapi_read_cookies,		/* read Cookies */
 
 	sapi_isapi_register_server_variables,	/* register server variables */
-	NULL,									/* Log message */
+	NULL,							/* Log message */
+	NULL,							/* Get request time */
 
 	STANDARD_SAPI_MODULE_PROPERTIES
 };

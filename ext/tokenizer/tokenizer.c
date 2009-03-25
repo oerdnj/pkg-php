@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tokenizer.c,v 1.29.2.1 2004/12/30 15:23:07 sniper Exp $ */
+/* $Id: tokenizer.c,v 1.31.2.3 2005/11/27 06:41:31 iliaa Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -282,7 +282,8 @@ PHP_MINIT_FUNCTION(tokenizer)
 	REGISTER_LONG_CONSTANT("T_THROW", T_THROW, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("T_TRY", T_TRY, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("T_CLONE", T_CLONE, CONST_CS | CONST_PERSISTENT);
-	
+	REGISTER_LONG_CONSTANT("T_HALT_COMPILER", T_HALT_COMPILER, CONST_CS | CONST_PERSISTENT);
+
 	return SUCCESS;
 }
 /* }}} */
@@ -343,6 +344,8 @@ static void tokenize(zval *return_value TSRMLS_DC)
 	while ((token_type = lex_scan(&token TSRMLS_CC))) {
 		destroy = 1;
 		switch (token_type) {
+			case EOF:
+				zendleng--; /* don't count EOF */
 			case T_OPEN_TAG:
 			case T_OPEN_TAG_WITH_ECHO:
 			case T_WHITESPACE:
@@ -495,6 +498,7 @@ get_token_type_name(int token_type)
 		case T_THROW: return "T_THROW";
 		case T_TRY: return "T_TRY";
 		case T_CLONE: return "T_CLONE";
+		case T_HALT_COMPILER: return "T_HALT_COMPILER";
 	}
 	return "UNKNOWN";
 }
@@ -518,6 +522,8 @@ PHP_FUNCTION(token_get_all)
 	if (zend_prepare_string_for_scanning(&source_z, "" TSRMLS_CC) == FAILURE) {
 		RETURN_EMPTY_STRING();
 	}
+
+	LANG_SCNG(start) = 1;
 
 	tokenize(return_value TSRMLS_CC);
 	

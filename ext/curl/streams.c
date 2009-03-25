@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: streams.c,v 1.12.2.1 2004/08/31 20:11:32 pollita Exp $ */
+/* $Id: streams.c,v 1.14.2.1 2005/08/25 12:25:10 sniper Exp $ */
 
 /* This file implements cURL based wrappers.
  * NOTE: If you are implementing your own streams that are intended to
@@ -361,7 +361,7 @@ static php_stream_wrapper_ops php_curl_wrapper_ops = {
 	NULL, /* stream_stat: curl streams know how to stat themselves */
 	NULL, /* stat url */
 	NULL, /* opendir */
-	NULL, /* label */
+	"cURL", /* label */
 	NULL, /* unlink */
 	NULL, /* rename */
 	NULL, /* mkdir */

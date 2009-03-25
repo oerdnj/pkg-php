@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2004 The PHP Group                                |
+  | Copyright (c) 1997-2005 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_soap.h,v 1.33.2.3 2005/02/02 10:34:21 dmitry Exp $ */
+/* $Id: php_soap.h,v 1.38 2005/08/03 14:07:48 sniper Exp $ */
 
 #ifndef PHP_SOAP_H
 #define PHP_SOAP_H
@@ -26,7 +26,9 @@
 #include "php_globals.h"
 #include "ext/standard/info.h"
 #include "ext/standard/php_standard.h"
+#if HAVE_PHP_SESSION && !defined(COMPILE_DL_SESSION)
 #include "ext/session/php_session.h"
+#endif
 #include "ext/standard/php_smart_str.h"
 #include "php_ini.h"
 #include "SAPI.h"

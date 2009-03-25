@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: gd.c,v 1.294.2.12 2005/05/06 16:49:04 tony2001 Exp $ */
+/* $Id: gd.c,v 1.312.2.4 2005/11/01 17:05:09 sniper Exp $ */
 
 /* gd 1.2 is copyright 1994, 1995, Quest Protein Database Center,
    Cold Spring Harbor Labs. */
@@ -324,6 +324,7 @@ function_entry gd_functions[] = {
 /* gd filters */
 #ifdef HAVE_GD_BUNDLED
 	PHP_FE(imagefilter,     						NULL)
+	PHP_FE(imageconvolution,						NULL)
 #endif
 
 	{NULL, NULL, NULL}
@@ -705,7 +706,7 @@ PHP_FUNCTION(imageloadfont)
 
 	convert_to_string_ex(file);
 
-	stream = php_stream_open_wrapper(Z_STRVAL_PP(file), "rb", IGNORE_PATH | IGNORE_URL_WIN | REPORT_ERRORS, NULL);
+	stream = php_stream_open_wrapper(Z_STRVAL_PP(file), "rb", ENFORCE_SAFE_MODE | IGNORE_PATH | IGNORE_URL_WIN | REPORT_ERRORS, NULL);
 	if (stream == NULL) {
 		RETURN_FALSE;
 	}
@@ -889,6 +890,10 @@ PHP_FUNCTION(imagetruecolortopalette)
 	convert_to_boolean_ex(dither);
 	convert_to_long_ex(ncolors);
 
+	if (Z_LVAL_PP(ncolors) <= 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Number of colors has to be greater than zero");
+		RETURN_FALSE;
+	}
 	gdImageTrueColorToPalette(im, Z_LVAL_PP(dither), Z_LVAL_PP(ncolors));
 
 	RETURN_TRUE;
@@ -1208,23 +1213,19 @@ PHP_FUNCTION(imagecopyresampled)
    Rotate an image using a custom angle */
 PHP_FUNCTION(imagerotate)
 {
-	zval **SIM, **ANGLE, **BGDCOLOR;
+	zval *SIM;
 	gdImagePtr im_dst, im_src;
 	double degrees;
 	long color;
+	long ignoretransparent = 0;
 
-	if (ZEND_NUM_ARGS() != 3 || zend_get_parameters_ex(3, &SIM, &ANGLE, &BGDCOLOR) == FAILURE) {
-		ZEND_WRONG_PARAM_COUNT();
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rdl|l", &SIM, &degrees, &color, &ignoretransparent) == FAILURE) {
+		RETURN_FALSE;
 	}
 
-	ZEND_FETCH_RESOURCE(im_src, gdImagePtr, SIM, -1, "Image", le_gd);
+	ZEND_FETCH_RESOURCE(im_src, gdImagePtr, &SIM, -1, "Image", le_gd);
 
-	convert_to_long_ex(BGDCOLOR);
-	color = Z_LVAL_PP(BGDCOLOR);
-
-	convert_to_double_ex(ANGLE);
-	degrees = Z_DVAL_PP(ANGLE);
-	im_dst = gdImageRotate(im_src, degrees, color);
+	im_dst = gdImageRotate(im_src, degrees, color, ignoretransparent);
 
 	if (im_dst != NULL) {
 		ZEND_REGISTER_RESOURCE(return_value, im_dst, le_gd);
@@ -1518,7 +1519,7 @@ static void _php_image_create_from(INTERNAL_FUNCTION_PARAMETERS, int image_type,
 
 	fn = Z_STRVAL_PP(file);
 
-	stream = php_stream_open_wrapper(fn, "rb", REPORT_ERRORS|IGNORE_PATH|IGNORE_URL_WIN, NULL);
+	stream = php_stream_open_wrapper(fn, "rb", ENFORCE_SAFE_MODE|REPORT_ERRORS|IGNORE_PATH|IGNORE_URL_WIN, NULL);
 	if (stream == NULL)	{
 		RETURN_FALSE;
 	}
@@ -1726,10 +1727,7 @@ static void _php_image_output(INTERNAL_FUNCTION_PARAMETERS, int image_type, char
 	}
 
 	if ((argc == 2) || (argc > 2 && Z_STRLEN_PP(file))) {
-		if (!fn || fn == empty_string || php_check_open_basedir(fn TSRMLS_CC)) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid filename '%s'", fn);
-			RETURN_FALSE;
-		}
+		PHP_GD_CHECK_OPEN_BASEDIR(fn, "Invalid filename");
 
 		fp = VCWD_FOPEN(fn, "wb");
 		if (!fp) {
@@ -3109,7 +3107,8 @@ static void php_imagettftext_common(INTERNAL_FUNCTION_PARAMETERS, int mode, int 
 {
 	zval *IM, *EXT = NULL;
 	gdImagePtr im=NULL;
-	int col = -1, x = -1, y = -1, str_len, fontname_len, i, brect[8];
+	long col = -1, x = -1, y = -1;
+	int str_len, fontname_len, i, brect[8];
 	double ptsize, angle;
 	unsigned char *str = NULL, *fontname = NULL;
 	char *error = NULL;
@@ -3824,16 +3823,10 @@ static void _php_image_convert(INTERNAL_FUNCTION_PARAMETERS, int image_type )
 	}
 
 	/* Check origin file */
-	if (!fn_org || fn_org == empty_string || php_check_open_basedir(fn_org TSRMLS_CC)) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid origin filename '%s'", fn_org);
-		RETURN_FALSE;
-	}
+	PHP_GD_CHECK_OPEN_BASEDIR(fn_org, "Invalid origin filename");
 
 	/* Check destination file */
-	if (!fn_dest || fn_dest == empty_string || php_check_open_basedir(fn_dest TSRMLS_CC)) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid destination filename '%s'", fn_dest);
-		RETURN_FALSE;
-	}
+	PHP_GD_CHECK_OPEN_BASEDIR(fn_dest, "Invalid destination filename");
 
 	/* Open origin file */
 	org = VCWD_FOPEN(fn_org, "rb");
@@ -4191,6 +4184,59 @@ PHP_FUNCTION(imagefilter)
 	}
 }
 /* }}} */
+
+/* {{{ proto resource imageconvolution(resource src_im, array matrix3x3, double div, double offset)
+   Apply a 3x3 convolution matrix, using coefficient div and offset */
+PHP_FUNCTION(imageconvolution)
+{
+	zval *SIM, *hash_matrix;
+	pval **var = NULL, **var2 = NULL;
+	gdImagePtr im_src = NULL;
+	double div, offset;
+	int nelem, i, j, res;
+	float matrix[3][3] = {{0,0,0}, {0,0,0}, {0,0,0}};
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "radd", &SIM, &hash_matrix, &div, &offset) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	ZEND_FETCH_RESOURCE(im_src, gdImagePtr, &SIM, -1, "Image", le_gd);
+
+	nelem = zend_hash_num_elements(Z_ARRVAL_P(hash_matrix));
+	if (nelem != 3) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "You must have 3x3 array");
+		RETURN_FALSE;
+	}
+
+	for (i=0; i<3; i++) {
+		if (zend_hash_index_find(Z_ARRVAL_P(hash_matrix), (i), (void **) &var) == SUCCESS) {
+			if (Z_TYPE_PP(var) != IS_ARRAY || zend_hash_num_elements(Z_ARRVAL_PP(var)) != 3 ) {
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "You must have 3x3 array");
+				RETURN_FALSE;
+			}
+
+			for (j=0; j<3; j++) {
+				if (zend_hash_index_find(Z_ARRVAL_PP(var), (j), (void **) &var2) == SUCCESS) {
+					SEPARATE_ZVAL(var2);
+					convert_to_double(*var2);
+					matrix[i][j] = Z_DVAL_PP(var2);
+				} else {
+					php_error_docref(NULL TSRMLS_CC, E_WARNING, "You must have a 3x3 matrix");
+					RETURN_FALSE;
+				}
+			}
+		}
+	}
+	res = gdImageConvolution(im_src, matrix, div, offset);
+
+	if (res) {
+		RETURN_TRUE;
+	} else {
+		RETURN_FALSE;
+	}
+}
+/* }}} */
+
 /* End section: Filters */
 
 /* {{{ proto bool imageantialias(resource im, bool on)

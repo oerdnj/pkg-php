@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: domimplementation.c,v 1.13 2004/05/31 12:50:28 rrichards Exp $ */
+/* $Id: domimplementation.c,v 1.15 2005/08/03 14:07:02 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -201,7 +201,7 @@ PHP_METHOD(domimplementation, createDocument)
 			xmlFreeDoc(docp);
 			xmlFree(localname);
 			/* Need some type of error here */
-			php_error(E_WARNING, "Unexpected Error");
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unexpected Error");
 			RETURN_FALSE;
 		}
 

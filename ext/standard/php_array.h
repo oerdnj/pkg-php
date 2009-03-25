@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_array.h,v 1.46 2004/01/08 17:32:51 sniper Exp $ */
+/* $Id: php_array.h,v 1.50 2005/08/03 14:08:09 sniper Exp $ */
 
 #ifndef PHP_ARRAY_H
 #define PHP_ARRAY_H
@@ -76,18 +76,23 @@ PHP_FUNCTION(array_change_key_case);
 PHP_FUNCTION(array_rand);
 PHP_FUNCTION(array_unique);
 PHP_FUNCTION(array_intersect);
+PHP_FUNCTION(array_intersect_key);
+PHP_FUNCTION(array_intersect_ukey);
 PHP_FUNCTION(array_uintersect);
 PHP_FUNCTION(array_intersect_assoc);
 PHP_FUNCTION(array_uintersect_assoc);
 PHP_FUNCTION(array_intersect_uassoc);
 PHP_FUNCTION(array_uintersect_uassoc);
 PHP_FUNCTION(array_diff);
+PHP_FUNCTION(array_diff_key);
+PHP_FUNCTION(array_diff_ukey);
 PHP_FUNCTION(array_udiff);
 PHP_FUNCTION(array_diff_assoc);
 PHP_FUNCTION(array_udiff_assoc);
 PHP_FUNCTION(array_diff_uassoc);
 PHP_FUNCTION(array_udiff_uassoc);
 PHP_FUNCTION(array_sum);
+PHP_FUNCTION(array_product);
 PHP_FUNCTION(array_filter);
 PHP_FUNCTION(array_map);
 PHP_FUNCTION(array_key_exists);
@@ -97,18 +102,5 @@ PHP_FUNCTION(array_combine);
 HashTable* php_splice(HashTable *, int, int, zval ***, int, HashTable **);
 PHPAPI int php_array_merge(HashTable *dest, HashTable *src, int recursive TSRMLS_DC);
 int multisort_compare(const void *a, const void *b TSRMLS_DC);
-
-typedef struct {
-	int *multisort_flags[2];
-	int (*compare_func)(zval *result, zval *op1, zval *op2 TSRMLS_DC);
-} php_array_globals;
-
-#ifdef ZTS
-#define ARRAYG(v) TSRMG(array_globals_id, php_array_globals *, v)
-extern int array_globals_id;
-#else
-#define ARRAYG(v) (array_globals.v)
-extern php_array_globals array_globals;
-#endif
 
 #endif /* PHP_ARRAY_H */

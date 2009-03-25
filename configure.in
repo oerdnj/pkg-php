@@ -1,4 +1,4 @@
-dnl ## $Id: configure.in,v 1.514.2.58 2005/09/05 10:41:12 zeev Exp $ -*- sh -*-
+ ## $Id: configure.in,v 1.579.2.23 2005/11/27 14:19:38 iliaa Exp $ -*- autoconf -*-
 dnl ## Process this file with autoconf to produce a configure script.
 
 divert(1)
@@ -23,6 +23,9 @@ dnl ## In diversion 5 we check which extensions should be compiled.
 dnl ## All of these are normally in the extension directories.
 dnl ## Diversion 5 is the last one.  Here we generate files and clean up.
 
+dnl include Zend specific macro definitions first
+dnl -------------------------------------------------------------------------
+sinclude(Zend/acinclude.m4)
 
 dnl Basic autoconf + automake initialization, generation of config.nice.
 dnl -------------------------------------------------------------------------
@@ -31,16 +34,14 @@ AC_PREREQ(2.13)
 AC_INIT(README.CVS-RULES)
 
 PHP_CONFIG_NICE(config.nice)
-for arg in $0 "$@"; do
-  CONFIGURE_COMMAND="$CONFIGURE_COMMAND '$arg'"
-done
 
-PHP_CANONICAL_HOST
+PHP_CANONICAL_HOST_TARGET
+
 AC_CONFIG_HEADER(main/php_config.h)
 
 MAJOR_VERSION=5
-MINOR_VERSION=0
-RELEASE_VERSION=5
+MINOR_VERSION=1
+RELEASE_VERSION=1
 EXTRA_VERSION=""
 VERSION="$MAJOR_VERSION.$MINOR_VERSION.$RELEASE_VERSION$EXTRA_VERSION"
 
@@ -122,60 +123,22 @@ AC_PROG_CC_C_O
 dnl Change to AC_PROG_CC_STDC when we start requiring a post-2.13 autoconf
 dnl AC_PROG_CC_STDC
 AC_PROG_CPP
-
 AC_AIX
+AC_PROG_LN_S
 
-dnl AC_PROG_CXX
-dnl AC_PROG_CXXCPP
+dnl Support systems with system libraries in e.g. /usr/lib64
+AC_ARG_WITH(libdir,
+[  --with-libdir=NAME      Look for libraries in .../NAME rather than .../lib],
+[PHP_LIBDIR=$withval], [PHP_LIBDIR=lib])
 
 dnl check for -R, etc. switch
 PHP_RUNPATH_SWITCH
 
+dnl Checks for some support/generator progs
 PHP_PROG_RE2C
-AC_PROG_LN_S
-AC_PROG_AWK
-AC_PROG_YACC
-if test "$YACC" != "bison -y"; then
-    AC_MSG_WARN([You will need bison if you want to regenerate the PHP parsers.])
-else
-    AC_MSG_CHECKING([bison version])
-    set `bison --version| grep 'GNU Bison' | cut -d ' ' -f 4 | sed -e 's/\./ /'|tr -d a-z`
-    if test "${1}" -ne "1" -o "(" "${2}" != "28" -a "${2}" != "35" -a "${2}" != "75" -a "${2}" != "875" ")"; then
-      AC_MSG_WARN([You will need bison 1.28, 1.35, 1.75 or 1.875 if you want to regenerate the Zend parser (found ${1}.${2}).])
-    fi
-    AC_MSG_RESULT(${1}.${2} (ok))
-fi
-AC_PROG_LEX
-if test -n "$LEX"; then
-  AC_DECL_YYTEXT
-  :
-fi
-dnl ## Make flex scanners use const if they can, even if __STDC__ is not
-dnl ## true, for compilers like Sun's that only set __STDC__ true in
-dnl ## "limit-to-ANSI-standard" mode, not in "ANSI-compatible" mode
-AC_C_CONST
-if test "$ac_cv_c_const" = "yes" ; then
-  LEX_CFLAGS="-DYY_USE_CONST"
-fi
-
-AC_MSG_CHECKING([flex version])
-if test "$LEX" ;then
-	flexvers=`echo "" | $LEX -V -v --version 2>/dev/null | 
-		sed -e 's/^.* //' -e 's/\./ /g'`
-	if test ! -z "$flexvers"; then
-		set $flexvers
-		if test "${1}" != "2" -o "${2}" != "5" -o "${3}" != "4"; then
-			AC_MSG_WARN(You will need flex 2.5.4 if you want to regenerate Zend/PHP lexical parsers.)
-		fi
-	fi
-AC_MSG_RESULT(${1}.${2}.${3} (ok))
-else
-	AC_MSG_WARN(You will need flex 2.5.4 or later if you want to regenerate Zend/PHP lexical parsers.)
-fi
-
-dnl Check whether byte ordering is bigendian
-PHP_C_BIGENDIAN
-
+PHP_PROG_AWK
+PHP_PROG_BISON
+PHP_PROG_LEX
 
 dnl Platform-specific compile settings.
 dnl -------------------------------------------------------------------------
@@ -244,10 +207,8 @@ esac
 dnl Include Zend and TSRM configurations.
 dnl -------------------------------------------------------------------------
 
-sinclude(Zend/acinclude.m4)
 sinclude(Zend/Zend.m4)
 sinclude(TSRM/tsrm.m4)
-
 
 
 divert(2)
@@ -266,7 +227,6 @@ PHP_HELP_SEPARATOR([SAPI modules:])
 PHP_SHLIB_SUFFIX_NAME
 PHP_SAPI=default
 PHP_BUILD_PROGRAM
-
 
 
 dnl SAPI configuration.
@@ -304,16 +264,20 @@ dnl ## includes what regex library is used and whether debugging or short
 dnl ## tags are enabled, and the default behaviour of php.ini options.
 
 
-
 dnl Starting system checks.
 dnl -------------------------------------------------------------------------
 
 PHP_CONFIGURE_PART(Running system checks)
 
-PHP_MISSING_TIME_R_DECL
+dnl Find sendmail binary
 PHP_PROG_SENDMAIL
+
 dnl Check whether the system uses EBCDIC (not ASCII) as its native codeset
 PHP_EBCDIC
+
+dnl Check whether the system byte ordering is bigendian
+PHP_C_BIGENDIAN
+
 dnl Check for /usr/pkg/{lib,include} which is where NetBSD puts binary
 dnl and source packages.  This should be harmless on other OSs.
 if test -d /usr/pkg/include -a -d /usr/pkg/lib ; then
@@ -332,6 +296,7 @@ dnl are usually in libnsl
 dnl Also, uClibc will bark at linking with glibc's libnsl.
 
 PHP_CHECK_FUNC(socket, socket)
+PHP_CHECK_FUNC(socketpair, socket)
 PHP_CHECK_FUNC(htonl, socket)
 PHP_CHECK_FUNC(gethostname, nsl)
 PHP_CHECK_FUNC(gethostbyaddr, nsl)
@@ -361,7 +326,6 @@ dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_DIRENT
 
-PHP_MISSING_FCLOSE_DECL
 dnl QNX requires unix.h to allow functions in libunix to work properly
 AC_CHECK_HEADERS([ \
 inttypes.h \
@@ -443,6 +407,9 @@ dnl -------------------------------------------------------------------------
 AC_STRUCT_TM
 AC_STRUCT_TIMEZONE
 
+PHP_MISSING_TIME_R_DECL
+PHP_MISSING_FCLOSE_DECL
+
 PHP_TM_GMTOFF
 PHP_STRUCT_FLOCK
 PHP_SOCKLEN_T
@@ -472,23 +439,8 @@ dnl Checks for types
 AC_TYPE_SIZE_T
 AC_TYPE_UID_T
 
-dnl Check for struct sockaddr_storage
-AC_CACHE_CHECK([for struct sockaddr_storage], ac_cv_sockaddr_storage,
-[AC_TRY_COMPILE([ #include <sys/types.h>
-#include <sys/socket.h>], [struct sockaddr_storage s; s],
-  ac_cv_sockaddr_storage=yes, ac_cv_sockaddr_storage=no)])
-if test "$ac_cv_sockaddr_storage" = yes; then
-  AC_DEFINE(HAVE_SOCKADDR_STORAGE,1,[Whether you have struct sockaddr_storage])
-fi
-
-dnl Check if sockaddr data structure includes an "sa_len" member
-
-AC_TRY_COMPILE([
-#include <sys/types.h>
-#include <sys/socket.h>
-], [static struct sockaddr sa; int n = (int) sa.sa_len; return n],
-[AC_DEFINE(HAVE_SOCKADDR_LEN,1,[Whether sockaddr struct has sa_len])],
-[])
+dnl Checks for sockaddr_storage and sockaddr.sa_len
+PHP_SOCKADDR_CHECKS
 
 dnl Check for IPv6 support
 AC_CACHE_CHECK([for IPv6 support], ac_cv_ipv6_support,
@@ -496,8 +448,6 @@ AC_CACHE_CHECK([for IPv6 support], ac_cv_ipv6_support,
 #include <sys/socket.h>
 #include <netinet/in.h>], [struct sockaddr_in6 s; struct in6_addr t=in6addr_any; int i=AF_INET6; s; t.s6_addr[0] = 0;],
   [ac_cv_ipv6_support=yes], [ac_cv_ipv6_support=no])])
-
-
 
 dnl Checks for library functions.
 dnl -------------------------------------------------------------------------
@@ -566,6 +516,7 @@ strcoll \
 strdup \
 strerror \
 strftime \
+strptime \
 strstr \
 strtok_r \
 symlink \
@@ -620,7 +571,7 @@ int main(void) {
   freeaddrinfo(ai);
   exit(0);
 }
-  ],ac_cv_func_getaddrinfo=yes, ac_cv_func_getaddrinfo=no),
+  ],ac_cv_func_getaddrinfo=yes, ac_cv_func_getaddrinfo=no, ac_cv_func_getaddrinfo=no),
 ac_cv_func_getaddrinfo=no)])
 if test "$ac_cv_func_getaddrinfo" = yes; then
   AC_DEFINE(HAVE_GETADDRINFO,1,[Define if you have the getaddrinfo function])
@@ -634,28 +585,7 @@ dnl PHP_AC_BROKEN_SNPRINTF
 PHP_DECLARED_TIMEZONE
 PHP_TIME_R_TYPE
 PHP_READDIR_R_TYPE
-
-dnl AIX keeps in_addr_t in /usr/include/netinet/in.h
-dnl AC_MSG_CHECKING([for in_addr_t])
-AC_CACHE_VAL(ac_cv_type_$1,
-[AC_EGREP_CPP(dnl
-changequote(<<,>>)dnl
-<<in_addr_t[^a-zA-Z_0-9]>>dnl
-changequote([,]), [#include <sys/types.h>
-#if STDC_HEADERS
-#include <stdlib.h>
-#include <stddef.h>
-#endif
-#ifdef HAVE_NETINET_IN_H
-#include <netinet/in.h>
-#endif], ac_cv_type_in_addr_t=yes, ac_cv_type_in_addr_t=no)])dnl
-
-dnl AC_MSG_RESULT([$ac_cv_type_in_addr_t])
-if test $ac_cv_type_in_addr_t = no; then
-  AC_DEFINE(in_addr_t, u_int, [ ])
-fi
-
-
+PHP_CHECK_IN_ADDR_T
 
 divert(4)
 
@@ -668,7 +598,7 @@ PHP_CONFIGURE_PART(General settings)
 PHP_HELP_SEPARATOR([General settings:])
 
 PHP_ARG_ENABLE(debug, whether to include debugging symbols,
-[  --enable-debug          Compile with debugging symbols.], no, no)
+[  --enable-debug          Compile with debugging symbols], no, no)
 
 if test "$PHP_DEBUG" = "yes"; then
   PHP_DEBUG=1
@@ -679,8 +609,8 @@ else
 fi
 
 PHP_ARG_WITH(layout,[layout of installed files],
-[  --with-layout=TYPE      Sets how installed files will be laid out.  Type is
-                          one of "PHP" (default) or "GNU"], PHP, no)
+[  --with-layout=TYPE      Set how installed files will be laid out.  Type is
+                          one of "PHP" or "GNU" [TYPE=PHP]], PHP, no)
 
 case $PHP_LAYOUT in
   GNU)
@@ -692,9 +622,9 @@ case $PHP_LAYOUT in
 esac
 
 PHP_ARG_WITH(config-file-path,[path to configuration file],
-[  --with-config-file-path=PATH  
-                          Sets the path in which to look for php.ini,
-                          defaults to PREFIX/lib], DEFAULT, no)
+[  --with-config-file-path=PATH
+                          Set the path in which to look for php.ini
+                          [PREFIX/lib]], DEFAULT, no)
 
 if test "$PHP_CONFIG_FILE_PATH" = "DEFAULT"; then
   case $PHP_LAYOUT in
@@ -710,13 +640,13 @@ fi
 PHP_ARG_WITH(config-file-scan-dir,[directory to be scanned for configuration files],
 [  --with-config-file-scan-dir=PATH ], DEFAULT, no) 
 if test "$PHP_CONFIG_FILE_SCAN_DIR" = "DEFAULT"; then
-	PHP_CONFIG_FILE_SCAN_DIR=""
+  PHP_CONFIG_FILE_SCAN_DIR=
 fi
 
 test -n "$DEBUG_CFLAGS" && CFLAGS="$CFLAGS $DEBUG_CFLAGS"
 
 PHP_ARG_ENABLE(safe-mode, whether to enable safe mode by default,
-[  --enable-safe-mode      Enable safe mode by default.], no, no)
+[  --enable-safe-mode      Enable safe mode by default], no, no)
 
 if test "$PHP_SAFE_MODE" = "yes"; then
   AC_DEFINE(PHP_SAFE_MODE,1,[ ])
@@ -726,8 +656,8 @@ fi
 
 AC_MSG_CHECKING([for safe mode exec dir])
 AC_ARG_WITH(exec-dir,
-[  --with-exec-dir[=DIR]   Only allow executables in DIR when in safe mode
-                          defaults to /usr/local/php/bin],
+[  --with-exec-dir[=DIR]   Only allow executables in DIR under safe-mode
+                          [/usr/local/php/bin]],
 [
   if test "$withval" != "no"; then
     if test "$withval" = "yes"; then
@@ -747,7 +677,7 @@ AC_ARG_WITH(exec-dir,
 ])
 
 PHP_ARG_ENABLE(sigchild,whether to enable PHP's own SIGCHLD handler,
-[  --enable-sigchild       Enable PHP's own SIGCHLD handler.], no, no)
+[  --enable-sigchild       Enable PHP's own SIGCHLD handler], no, no)
 
 if test "$PHP_SIGCHILD" = "yes"; then
   AC_DEFINE(PHP_SIGCHILD, 1, [ ])
@@ -781,7 +711,7 @@ if test "$PHP_LIBGCC" = "yes"; then
 fi
 
 PHP_ARG_ENABLE(short-tags,whether to enable short tags by default,
-[  --disable-short-tags    Disable the short-form <? start tag by default.],yes, no)
+[  --disable-short-tags    Disable the short-form <? start tag by default],yes, no)
 
 if test "$PHP_SHORT_TAGS" = "yes"; then
   AC_DEFINE(DEFAULT_SHORT_OPEN_TAG,"1",[ ])
@@ -827,11 +757,7 @@ AC_MSG_CHECKING([whether to enable versioning])
 AC_ARG_ENABLE(versioning,
 [  --enable-versioning     Export only required symbols.
                           See INSTALL for more information], [
-  if test "x$APXS" != "x"; then
-    PHP_VERSIONING=$enableval
-  else
-    PHP_VERSIONING=no
-  fi
+  PHP_VERSIONING=$enableval
 ],[
   PHP_VERSIONING=no
 ])
@@ -864,7 +790,7 @@ dnl Check if all enabled by default extensions should be disabled
 dnl
 
 AC_ARG_ENABLE(all,
-[ --disable-all   Disable all extensions enabled by default.
+[ --disable-all   Disable all extensions which are enabled by default
 ], [
   PHP_ENABLE_ALL=$enableval
 ])
@@ -876,6 +802,9 @@ dnl Extensions post-config
 dnl -------------------------------------------------------------------------
 
 if test "$PHP_VERSIONING" = "yes"; then
+  if test -n "$PHP_MODULES"; then
+    AC_MSG_ERROR([--enable-versioning cannot be used with shared modules])
+  fi
   test -z "$PHP_SYM_FILE" && PHP_SYM_FILE="$abs_srcdir/sapi/$PHP_SAPI/php.sym"
   if test -f "$PHP_SYM_FILE"; then
     EXTRA_LDFLAGS="-export-symbols $PHP_SYM_FILE $EXTRA_LDFLAGS"
@@ -929,7 +858,7 @@ if test "$PHP_SAPI_CLI" = "no"; then
 fi
 
 PHP_ARG_WITH(pear, [whether to install PEAR],
-[  --with-pear=DIR         Install PEAR in DIR (default PREFIX/lib/php)
+[  --with-pear=DIR         Install PEAR in DIR [PREFIX/lib/php]
   --without-pear          Do not install PEAR], DEFAULT, yes)
 
 if test "$PHP_PEAR" != "no"; then
@@ -947,12 +876,10 @@ if test "$PHP_PEAR" != "no"; then
   fi
 
 dnl
-dnl ext/xmlrpc is not really there yet to be a requirement..
-dnl
 dnl  if test "$PHP_XMLRPC" = "no"; then
 dnl    pear_error_msg="$pear_error_msg 
 dnl                    PEAR requires XML-RPC to be enabled. Add --with-xmlrpc to the configure line. (or --without-pear)"
-dnl fi
+dnl  fi
 dnl
 
   if test "$pear_error_msg"; then
@@ -1007,6 +934,7 @@ TSRM_BASIC_CHECKS
 if test "$PHP_THREAD_SAFETY" = "yes"; then
   TSRM_THREADS_CHECKS
 fi
+
 EXTRA_LDFLAGS="$EXTRA_LDFLAGS $LDFLAGS"
 EXTRA_LDFLAGS_PROGRAM="$EXTRA_LDFLAGS_PROGRAM $LDFLAGS"
 EXTRA_LIBS="$EXTRA_LIBS $LIBS"
@@ -1042,7 +970,7 @@ datadir=`eval echo $datadir`
 
 dnl Build extension directory path
 
-ZEND_MODULE_API_NO=`egrep '#define ZEND_MODULE_API_NO ' $srcdir/Zend/zend_modules.h|sed 's/#define ZEND_MODULE_API_NO //'`
+ZEND_MODULE_API_NO=`$EGREP '#define ZEND_MODULE_API_NO ' $srcdir/Zend/zend_modules.h|$SED 's/#define ZEND_MODULE_API_NO //'`
 
 if test -z "$EXTENSION_DIR"; then
   extbasedir=$ZEND_MODULE_API_NO
@@ -1114,25 +1042,26 @@ EXTRA_LDFLAGS_PROGRAM="$EXTRA_LDFLAGS_PROGRAM $PHP_LDFLAGS"
 
 PHP_BUILD_DATE=`date '+%Y-%m-%d'`
 AC_DEFINE_UNQUOTED(PHP_BUILD_DATE,"$PHP_BUILD_DATE",[PHP build date])
+
 case $host_alias in
 *netware*)
-    PHP_OS="NetWare"
-    PHP_UNAME="NetWare"
-    AC_DEFINE_UNQUOTED(PHP_OS,"$PHP_OS",[hardcode for each of the cross compiler host])
-    AC_DEFINE_UNQUOTED(PHP_UNAME,"$PHP_UNAME",[hardcode for each of the cross compiler host])
-    ;;
+  PHP_OS="NetWare"
+  PHP_UNAME="NetWare"
+  AC_DEFINE_UNQUOTED(PHP_OS,"$PHP_OS",[hardcode for each of the cross compiler host])
+  AC_DEFINE_UNQUOTED(PHP_UNAME,"$PHP_UNAME",[hardcode for each of the cross compiler host])
+  ;;
 *)
-    PHP_UNAME=`uname -a | xargs`
-    AC_DEFINE_UNQUOTED(PHP_UNAME,"$PHP_UNAME",[uname -a output])
-    PHP_OS=`uname | xargs`
-    AC_DEFINE_UNQUOTED(PHP_OS,"$PHP_OS",[uname output])
-    ;;
+  PHP_UNAME=`uname -a | xargs`
+  AC_DEFINE_UNQUOTED(PHP_UNAME,"$PHP_UNAME",[uname -a output])
+  PHP_OS=`uname | xargs`
+  AC_DEFINE_UNQUOTED(PHP_OS,"$PHP_OS",[uname output])
+  ;;
 esac
 
 if test "$PHP_SAPI_CLI" != "no"; then
   PHP_CLI_TARGET="\$(SAPI_CLI_PATH)"
   PHP_INSTALL_CLI_TARGET="install-cli"
-  PHP_ADD_SOURCES(sapi/cli, php_cli.c getopt.c,, cli)
+  PHP_ADD_SOURCES(sapi/cli, php_cli.c php_cli_readline.c getopt.c,, cli)
 fi
 
 PHP_SUBST(PHP_CLI_TARGET)
@@ -1151,8 +1080,8 @@ PHP_SUBST_OLD(php_abs_top_srcdir)
 
 PHP_SUBST(bindir)
 PHP_SUBST(exec_prefix)
-PHP_SUBST(program_prefix)
-PHP_SUBST(program_suffix)
+PHP_SUBST_OLD(program_prefix)
+PHP_SUBST_OLD(program_suffix)
 PHP_SUBST(includedir)
 PHP_SUBST(libdir)
 PHP_SUBST(mandir)
@@ -1163,18 +1092,15 @@ PHP_SUBST(localstatedir)
 PHP_SUBST(datadir)
 PHP_SUBST(sysconfdir)
 
-PHP_SUBST(AWK)
 PHP_SUBST(EXEEXT)
 PHP_SUBST(CC)
 PHP_SUBST(CFLAGS)
 PHP_SUBST(CFLAGS_CLEAN)
-PHP_SUBST_OLD(CONFIGURE_COMMAND)
 PHP_SUBST(CPP)
 PHP_SUBST(CPPFLAGS)
 PHP_SUBST(CXX)
 PHP_SUBST(CXXFLAGS)
 PHP_SUBST(CXXFLAGS_CLEAN)
-PHP_SUBST(CXX_PHP_COMPILE)
 PHP_SUBST_OLD(DEBUG_CFLAGS)
 PHP_SUBST_OLD(EXTENSION_DIR)
 PHP_SUBST_OLD(EXTRA_LDFLAGS)
@@ -1185,30 +1111,25 @@ PHP_SUBST_OLD(INCLUDES)
 PHP_SUBST_OLD(EXTRA_INCLUDES)
 PHP_SUBST_OLD(INCLUDE_PATH)
 PHP_SUBST_OLD(INSTALL_IT)
-PHP_SUBST(LEX)
-PHP_SUBST(LEX_OUTPUT_ROOT)
 PHP_SUBST(LFLAGS)
 PHP_SUBST(LIBTOOL)
 PHP_SUBST(LN_S)
 PHP_SUBST_OLD(NATIVE_RPATHS)
 PHP_SUBST_OLD(PEAR_INSTALLDIR)
 PHP_SUBST(PHP_BUILD_DATE)
-PHP_SUBST(PHP_COMPILE)
 PHP_SUBST_OLD(PHP_LDFLAGS)
 PHP_SUBST_OLD(PHP_LIBS)
 PHP_SUBST(OVERALL_TARGET)
 PHP_SUBST(PHP_RPATHS)
 PHP_SUBST(PHP_SAPI)
 PHP_SUBST_OLD(PHP_VERSION)
-PHP_SUBST(PROG_SENDMAIL)
-PHP_SUBST(RE2C)
 PHP_SUBST(SHELL)
 PHP_SUBST(SHARED_LIBTOOL)
 PHP_SUBST(WARNING_LEVEL)
 PHP_SUBST(PHP_FRAMEWORKS)
 PHP_SUBST(PHP_FRAMEWORKPATH)
-PHP_SUBST_OLD(YACC)
 PHP_SUBST_OLD(SHLIB_SUFFIX_NAME)
+PHP_SUBST(INSTALL_HEADERS)
 
 old_CC=$CC
 
@@ -1260,7 +1181,7 @@ INLINE_CFLAGS="$INLINE_CFLAGS $standard_libtool_flag"
 CXXFLAGS="$CXXFLAGS $standard_libtool_flag"
 
 all_targets='$(OVERALL_TARGET) $(PHP_MODULES) $(PHP_CLI_TARGET)'
-install_targets="$install_modules $install_pear install-build install-headers install-programs"
+install_targets="$install_modules install-build install-headers install-programs $install_pear"
 
 case $PHP_SAPI in
   cgi)
@@ -1276,6 +1197,8 @@ esac
 
 PHP_SUBST(all_targets)
 PHP_SUBST(install_targets)
+
+PHP_INSTALL_HEADERS([Zend/ TSRM/ include/ main/ main/streams/ regex/])
 
 PHP_ADD_SOURCES(TSRM, TSRM.c tsrm_strtok_r.c tsrm_virtual_cwd.c)
 
@@ -1336,6 +1259,7 @@ PHP_ADD_BUILD_DIR(Zend)
 
 PHP_ADD_MAKEFILE_FRAGMENT($abs_srcdir/scripts/Makefile.frag,$abs_srcdir/scripts,scripts)
 PHP_ADD_MAKEFILE_FRAGMENT($abs_srcdir/Makefile.frag,$abs_srcdir/Zend,Zend)
+PHP_ADD_MAKEFILE_FRAGMENT($abs_srcdir/Zend/Makefile.frag,$abs_srcdir/Zend,Zend)
 
 PHP_GEN_BUILD_DIRS
 PHP_GEN_GLOBAL_MAKEFILE
@@ -1445,7 +1369,7 @@ X
   fi
 
   # Warn about linking Apache with libpthread if oci8 extension is enabled on linux.
-  if test "$PHP_OCI8" != "no" -o "$PHP_ORACLE" != "no"; then
+  if test "$PHP_OCI8" != "no"; then
     if test "$PHP_SAPI" = "apache"; then
       if test `uname` = "Linux"; then
 cat <<X

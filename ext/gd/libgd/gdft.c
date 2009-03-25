@@ -919,6 +919,8 @@ gdImageStringFTEx (gdImage * im, int *brect, int fg, char *fontlist, double ptsi
 			/* I do not know the significance of the constant 0xf000.
 			 * It was determined by inspection of the character codes
 			 * stored in Microsoft font symbol.
+			 * Added by Pierre (pajoye@php.net):
+			 * Convert to the Symbol glyph range only for a Symbol family member
 			 */
 			len = gdTcl_UtfToUniChar (next, &ch);
 			ch |= 0xf000;

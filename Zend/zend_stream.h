@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_stream.h,v 1.6 2004/06/25 12:55:11 wez Exp $ */
+/* $Id: zend_stream.h,v 1.8 2005/08/03 13:30:58 sniper Exp $ */
 
 #ifndef ZEND_STREAM_H
 #define ZEND_STREAM_H
@@ -27,11 +27,13 @@
 
 typedef size_t (*zend_stream_reader_t)(void *handle, char *buf, size_t len TSRMLS_DC);
 typedef void (*zend_stream_closer_t)(void *handle TSRMLS_DC);
+typedef long (*zend_stream_fteller_t)(void *handle TSRMLS_DC);
 
 typedef struct _zend_stream {
 	void *handle;
 	zend_stream_reader_t reader;
 	zend_stream_closer_t closer;
+	zend_stream_fteller_t fteller;
 	int interactive;
 } zend_stream;
 
@@ -52,6 +54,7 @@ ZEND_API int zend_stream_open(const char *filename, zend_file_handle *handle TSR
 ZEND_API int zend_stream_ferror(zend_file_handle *file_handle TSRMLS_DC);
 ZEND_API int zend_stream_getc(zend_file_handle *file_handle TSRMLS_DC);
 ZEND_API size_t zend_stream_read(zend_file_handle *file_handle, char *buf, size_t len TSRMLS_DC);
+ZEND_API long zend_stream_ftell(zend_file_handle *file_handle TSRMLS_DC);
 ZEND_API int zend_stream_fixup(zend_file_handle *file_handle TSRMLS_DC);
 END_EXTERN_C()
 

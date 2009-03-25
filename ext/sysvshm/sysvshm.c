@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: sysvshm.c,v 1.67.2.1 2005/01/20 10:03:32 tony2001 Exp $ */
+/* $Id: sysvshm.c,v 1.70 2005/08/03 14:08:18 sniper Exp $ */
 
 /* This has been built and tested on Linux 2.2.14 
  *
@@ -316,7 +316,7 @@ PHP_FUNCTION(shm_get_var)
 	shm_data = &shm_var->mem;
 	
 	PHP_VAR_UNSERIALIZE_INIT(var_hash);
-	if (php_var_unserialize(&return_value, (const char **) &shm_data, shm_data + shm_var->length, &var_hash TSRMLS_CC) != 1) {
+	if (php_var_unserialize(&return_value, (const unsigned char **) &shm_data, shm_data + shm_var->length, &var_hash TSRMLS_CC) != 1) {
 		PHP_VAR_UNSERIALIZE_DESTROY(var_hash);
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "variable data in shared memory is corrupted");
 		RETURN_FALSE;

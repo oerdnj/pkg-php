@@ -1,8 +1,8 @@
-dnl $Id: config.m4,v 1.8.2.1 2005/04/27 13:13:38 sniper Exp $
+dnl $Id: config.m4,v 1.10 2005/05/29 23:16:44 sniper Exp $
 dnl config.m4 for extension soap
 
 PHP_ARG_ENABLE(soap, whether to enable SOAP support,
-[  --enable-soap          Include SOAP support.])
+[  --enable-soap           Enable SOAP support])
 
 if test -z "$PHP_LIBXML_DIR"; then
   PHP_ARG_WITH(libxml-dir, libxml2 install dir,

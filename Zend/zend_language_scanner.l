@@ -4,7 +4,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_language_scanner.l,v 1.111.2.10 2005/06/09 08:54:24 dmitry Exp $ */
+/* $Id: zend_language_scanner.l,v 1.131.2.6 2005/11/27 06:39:28 iliaa Exp $ */
 
 #define yyleng SCNG(yy_leng)
 #define yytext SCNG(yy_text)
@@ -57,6 +57,7 @@
 #include "zend_constants.h"
 #include "zend_variables.h"
 #include "zend_operators.h"
+#include "zend_API.h"
 #include "zend_strtod.h"
 
 #ifdef HAVE_STDARG_H
@@ -124,7 +125,7 @@ BEGIN_EXTERN_C()
 void startup_scanner(TSRMLS_D)
 {
 	CG(heredoc) = NULL;
-	CG(heredoc_len)=0;
+	CG(heredoc_len) = 0;
 	CG(doc_comment) = NULL;
 	CG(doc_comment_len) = 0;
 	SCNG(yy_start_stack_ptr) = 0;
@@ -244,7 +245,9 @@ ZEND_API void zend_file_handle_dtor(zend_file_handle *fh)
 			fclose(fh->handle.fp);
 			break;
 		case ZEND_HANDLE_STREAM:
-			fh->handle.stream.closer(fh->handle.stream.handle TSRMLS_CC);
+			if (fh->handle.stream.closer) {
+				fh->handle.stream.closer(fh->handle.stream.handle TSRMLS_CC);
+			}
 			break;
 		case ZEND_HANDLE_FILENAME:
 			/* We're only supposed to get here when destructing the used_files hash,
@@ -431,7 +434,7 @@ zend_op_array *compile_filename(int type, zval *filename TSRMLS_DC)
 	file_handle.free_filename = 0;
 	file_handle.type = ZEND_HANDLE_FILENAME;
 	file_handle.opened_path = NULL;
-
+	file_handle.handle.fp = NULL;
 
 	retval = zend_compile_file(&file_handle, type TSRMLS_CC);
 	if (retval && file_handle.handle.stream.handle) {
@@ -491,6 +494,22 @@ ZEND_API int zend_prepare_string_for_scanning(zval *str, char *filename TSRMLS_D
 	CG(zend_lineno) = 1;
 	CG(increment_lineno) = 0;
 	return SUCCESS;
+}
+
+
+ZEND_API int zend_get_scanned_file_offset(TSRMLS_D)
+{
+	if (yyin) {
+		int offset_in_buffer = (yy_c_buf_p - (YY_CURRENT_BUFFER)->yy_ch_buf);
+		int read_bytes = SCNG(yy_n_chars);
+		int offset_from_the_end = read_bytes - offset_in_buffer;
+
+		return zend_stream_ftell(yyin TSRMLS_CC) - offset_from_the_end;
+	} else {
+		/* The entire file is in the buffer; probably zend multibyte
+		   is enabled */
+		return (yy_c_buf_p - (YY_CURRENT_BUFFER)->yy_ch_buf);
+	}
 }
 
 
@@ -598,6 +617,7 @@ int highlight_string(zval *str, zend_syntax_highlighter_ini *syntax_highlighter_
 	if (zend_prepare_string_for_scanning(str, str_name TSRMLS_CC)==FAILURE) {
 		return FAILURE;
 	}
+	BEGIN(INITIAL);
 	zend_highlight(syntax_highlighter_ini TSRMLS_CC);
 #ifdef ZEND_MULTIBYTE
 	if (SCNG(script_org)) {
@@ -1013,6 +1033,10 @@ NEWLINE ("\r"|"\n"|"\r\n")
 
 <ST_IN_SCRIPTING>"empty" {
 	return T_EMPTY;
+}
+
+<ST_IN_SCRIPTING>"__halt_compiler" {
+	return T_HALT_COMPILER;
 }
 
 <ST_IN_SCRIPTING>"static" {
@@ -1441,6 +1465,14 @@ NEWLINE ("\r"|"\n"|"\r\n")
 	yymore();
 }
 
+<ST_ONE_LINE_COMMENT><<EOF>> {
+	zendlval->value.str.val = yytext; /* no copying - intentional */
+	zendlval->value.str.len = yyleng;
+	zendlval->type = IS_STRING;
+	BEGIN(INITIAL);
+	return EOF;
+}
+
 <ST_ONE_LINE_COMMENT>{NEWLINE} {
 	zendlval->value.str.val = yytext; /* no copying - intentional */
 	zendlval->value.str.len = yyleng;
@@ -1774,6 +1806,13 @@ NEWLINE ("\r"|"\n"|"\r\n")
 	return yytext[0];
 }
 
+<ST_DOUBLE_QUOTES,ST_BACKQUOTE,ST_HEREDOC>"\\{" {
+	zendlval->value.str.val = estrndup("\\{", sizeof("\\{") - 1);
+	zendlval->value.str.len = sizeof("\\{") - 1;
+	zendlval->type = IS_STRING;
+	return T_STRING;
+}
+
 <ST_DOUBLE_QUOTES,ST_BACKQUOTE,ST_HEREDOC>"{$" {
 	zendlval->value.lval = (long) yytext[0];
 	yy_push_state(ST_IN_SCRIPTING TSRMLS_CC);
@@ -1827,9 +1866,6 @@ NEWLINE ("\r"|"\n"|"\r\n")
 			zendlval->value.lval = (long) '\\';
 			break;
 		case '$':
-			zendlval->value.lval = (long) yytext[1];
-			break;
-		case '{':
 			zendlval->value.lval = (long) yytext[1];
 			break;
 		default:

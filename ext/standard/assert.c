@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: assert.c,v 1.59 2004/01/08 08:17:30 andi Exp $ */
+/* $Id: assert.c,v 1.60.2.1 2005/08/18 13:34:41 sniper Exp $ */
 
 /* {{{ includes/startup/misc */
 
@@ -151,7 +151,7 @@ PHP_FUNCTION(assert)
 		compiled_string_description = zend_make_compiled_string_description("assert code" TSRMLS_CC);
 		if (zend_eval_string(myeval, &retval, compiled_string_description TSRMLS_CC) == FAILURE) {
 			efree(compiled_string_description);
-			php_error_docref(NULL TSRMLS_CC, E_ERROR, "Failure evaluating code:\n%s", myeval);
+			php_error_docref(NULL TSRMLS_CC, E_ERROR, "Failure evaluating code: %s%s", PHP_EOL, myeval);
 			/* php_error_docref() does not return in this case. */
 		}
 		efree(compiled_string_description);

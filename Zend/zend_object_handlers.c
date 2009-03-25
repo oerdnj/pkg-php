@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_object_handlers.c,v 1.101.2.18 2005/06/20 18:25:12 dmitry Exp $ */
+/* $Id: zend_object_handlers.c,v 1.135.2.4 2005/11/16 11:52:27 dmitry Exp $ */
 
 #include "zend.h"
 #include "zend_globals.h"
@@ -58,40 +58,18 @@ static HashTable *zend_std_get_properties(zval *object TSRMLS_DC)
 
 static zval *zend_std_call_getter(zval *object, zval *member TSRMLS_DC)
 {
-	zval **call_args[1];
 	zval *retval = NULL;
-	zval __get_name;
-	int call_result;
+	zend_class_entry *ce = Z_OBJCE_P(object);
 	
-	/* __get handler is called with two arguments:
-	   property name
-	   return value for the object (by reference)
+	/* __get handler is called with one argument:
+	      property name
 
 	   it should return whether the call was successfull or not
 	*/
-	INIT_PZVAL(&__get_name);
-	ZVAL_STRINGL(&__get_name, ZEND_GET_FUNC_NAME, sizeof(ZEND_GET_FUNC_NAME)-1, 0);
-
-	SEPARATE_ARG_IF_REF(member);
-	call_args[0] = &member;
-
-	/* go call the __get handler */
-	call_result = call_user_function_ex(NULL,
-										&object,
-										&__get_name,
-										&retval,
-										1, call_args,
-										0, NULL TSRMLS_CC);
-
-	/* 
-	   call_result is if call_user_function gone OK.
-	   retval returns the value that is received
-	*/
 	
-	if (call_result == FAILURE) {
-		zend_error(E_ERROR, "Could not call __get handler for class %s", Z_OBJCE_P(object)->name);
-		return NULL;
-	}
+	SEPARATE_ARG_IF_REF(member);
+
+	zend_call_method_with_1_params(&object, ce, &ce->__get, ZEND_GET_FUNC_NAME, &retval, member);
 
 	zval_ptr_dtor(&member);
 
@@ -104,44 +82,20 @@ static zval *zend_std_call_getter(zval *object, zval *member TSRMLS_DC)
 
 static int zend_std_call_setter(zval *object, zval *member, zval *value TSRMLS_DC)
 {
-	zval **call_args[2];
 	zval *retval = NULL;
-	zval __set_name;
-	int call_result;
 	int result;
-	
+	zend_class_entry *ce = Z_OBJCE_P(object);
+
+	SEPARATE_ARG_IF_REF(member);
+	value->refcount++;
+
 	/* __set handler is called with two arguments:
-	   property name
-	   value to be set
+	     property name
+	     value to be set
 
 	   it should return whether the call was successfull or not
 	*/
-	INIT_PZVAL(&__set_name);
-	ZVAL_STRINGL(&__set_name, ZEND_SET_FUNC_NAME, sizeof(ZEND_SET_FUNC_NAME)-1, 0);
-
-	SEPARATE_ARG_IF_REF(member);
-	call_args[0] = &member;
-	value->refcount++;
-	call_args[1] = &value;
-
-	/* go call the __set handler */
-	call_result = call_user_function_ex(NULL,
-										&object,
-										&__set_name,
-										&retval,
-										2, call_args,
-										0, NULL TSRMLS_CC);
-
-	/* 
-	   call_result is if call_user_function gone OK.
-	   retval shows if __get method went OK.
-	*/
-	
-
-	if (call_result == FAILURE) {
-		zend_error(E_ERROR, "Could not call __set handler for class %s", Z_OBJCE_P(object)->name);
-		return FAILURE;
-	}
+	zend_call_method_with_2_params(&object, ce, &ce->__set, ZEND_SET_FUNC_NAME, &retval, member, value);
 
 	zval_ptr_dtor(&member);
 	zval_ptr_dtor(&value);
@@ -155,6 +109,40 @@ static int zend_std_call_setter(zval *object, zval *member, zval *value TSRMLS_D
 	}
 }
 
+static void zend_std_call_unsetter(zval *object, zval *member TSRMLS_DC)
+{
+	zend_class_entry *ce = Z_OBJCE_P(object);
+	
+	/* __unset handler is called with one argument:
+	      property name
+	*/
+	
+	SEPARATE_ARG_IF_REF(member);
+
+	zend_call_method_with_1_params(&object, ce, &ce->__unset, ZEND_UNSET_FUNC_NAME, NULL, member);
+
+	zval_ptr_dtor(&member);
+}
+
+static zval *zend_std_call_issetter(zval *object, zval *member TSRMLS_DC)
+{
+	zval *retval = NULL;
+	zend_class_entry *ce = Z_OBJCE_P(object);
+	
+	/* __isset handler is called with one argument:
+	      property name
+
+	   it should return whether the property is set or not
+	*/
+	
+	SEPARATE_ARG_IF_REF(member);
+
+	zend_call_method_with_1_params(&object, ce, &ce->__isset, ZEND_ISSET_FUNC_NAME, &retval, member);
+
+	zval_ptr_dtor(&member);
+
+	return retval;
+}
 
 static int zend_verify_property_access(zend_property_info *property_info, zend_class_entry *ce TSRMLS_DC)
 {
@@ -162,7 +150,7 @@ static int zend_verify_property_access(zend_property_info *property_info, zend_c
 		case ZEND_ACC_PUBLIC:
 			return 1;
 		case ZEND_ACC_PROTECTED:
-			return zend_check_protected(ce, EG(scope));;
+			return zend_check_protected(ce, EG(scope));
 		case ZEND_ACC_PRIVATE:
 			if (ce==EG(scope) && EG(scope)) {
 				return 1;
@@ -187,13 +175,13 @@ static inline zend_bool is_derived_class(zend_class_entry *child_class, zend_cla
 	return 0;
 }
 
-static inline zend_property_info *zend_get_property_info(zend_object *zobj, zval *member, int silent TSRMLS_DC)
+ZEND_API struct _zend_property_info *zend_get_property_info(zend_class_entry *ce, zval *member, int silent TSRMLS_DC)
 {
 	zend_property_info *property_info = NULL;
 	zend_property_info *scope_property_info;
 	zend_bool denied_access = 0;
 	ulong h;
-	
+
 	if (Z_STRVAL_P(member)[0] == '\0') {
 		if (!silent) {
 			if (Z_STRLEN_P(member) == 0) {
@@ -205,12 +193,12 @@ static inline zend_property_info *zend_get_property_info(zend_object *zobj, zval
 		return NULL;				
 	}
 	h = zend_get_hash_value(Z_STRVAL_P(member), Z_STRLEN_P(member) + 1);
-	if (zend_hash_quick_find(&zobj->ce->properties_info, Z_STRVAL_P(member), Z_STRLEN_P(member)+1, h, (void **) &property_info)==SUCCESS) {
+	if (zend_hash_quick_find(&ce->properties_info, Z_STRVAL_P(member), Z_STRLEN_P(member)+1, h, (void **) &property_info)==SUCCESS) {
 		if(property_info->flags & ZEND_ACC_SHADOW) {
 			/* if it's a shadow - go to access it's private */
 			property_info = NULL;
 		} else {
-			if (zend_verify_property_access(property_info, zobj->ce TSRMLS_CC)) {
+			if (zend_verify_property_access(property_info, ce TSRMLS_CC)) {
 				if (property_info->flags & ZEND_ACC_CHANGED
 					&& !(property_info->flags & ZEND_ACC_PRIVATE)) {
 					/* We still need to make sure that we're not in a context
@@ -219,7 +207,7 @@ static inline zend_property_info *zend_get_property_info(zend_object *zobj, zval
 					 */
 				} else {
 					if (!silent && (property_info->flags & ZEND_ACC_STATIC)) {
-						zend_error(E_STRICT, "Accessing static property %s::$%s as non static", zobj->ce->name, Z_STRVAL_P(member));
+						zend_error(E_STRICT, "Accessing static property %s::$%s as non static", ce->name, Z_STRVAL_P(member));
 					}
 					return property_info;
 				}
@@ -229,14 +217,11 @@ static inline zend_property_info *zend_get_property_info(zend_object *zobj, zval
 			}
 		}
 	}
-	if (EG(scope) != zobj->ce
-		&& is_derived_class(zobj->ce, EG(scope))
+	if (EG(scope) != ce
+		&& is_derived_class(ce, EG(scope))
 		&& EG(scope)
 		&& zend_hash_quick_find(&EG(scope)->properties_info, Z_STRVAL_P(member), Z_STRLEN_P(member)+1, h, (void **) &scope_property_info)==SUCCESS
 		&& scope_property_info->flags & ZEND_ACC_PRIVATE) {
-		if (!silent && (scope_property_info->flags & ZEND_ACC_STATIC)) {
-			zend_error(E_STRICT, "Accessing static property %s::$%s as non static", EG(scope)->name, Z_STRVAL_P(member));
-		}
 		return scope_property_info;
 	} else if (property_info) {
 		if (denied_access) {
@@ -244,7 +229,7 @@ static inline zend_property_info *zend_get_property_info(zend_object *zobj, zval
 			if (silent) {
 				return NULL;
 			}
-			zend_error(E_ERROR, "Cannot access %s property %s::$%s", zend_visibility_string(property_info->flags), zobj->ce->name, Z_STRVAL_P(member));
+			zend_error(E_ERROR, "Cannot access %s property %s::$%s", zend_visibility_string(property_info->flags), ce->name, Z_STRVAL_P(member));
 		} else {
 			/* fall through, return property_info... */
 		}
@@ -252,7 +237,7 @@ static inline zend_property_info *zend_get_property_info(zend_object *zobj, zval
 		EG(std_property_info).flags = ZEND_ACC_PUBLIC;
 		EG(std_property_info).name = Z_STRVAL_P(member);
 		EG(std_property_info).name_length = Z_STRLEN_P(member);
-		EG(std_property_info).h = zend_get_hash_value(EG(std_property_info).name, EG(std_property_info).name_length+1);
+		EG(std_property_info).h = h;
 		property_info = &EG(std_property_info);
 	}
 	return property_info;
@@ -267,7 +252,7 @@ ZEND_API int zend_check_property_access(zend_object *zobj, char *prop_info_name 
 
 	zend_unmangle_property_name(prop_info_name, &class_name, &prop_name);
 	ZVAL_STRING(&member, prop_name, 0);
-	property_info = zend_get_property_info(zobj, &member, 1 TSRMLS_CC);
+	property_info = zend_get_property_info(zobj->ce, &member, 1 TSRMLS_CC);
 	if (!property_info) {
 		return FAILURE;
 	}
@@ -281,6 +266,30 @@ ZEND_API int zend_check_property_access(zend_object *zobj, char *prop_info_name 
 		}
 	}
 	return zend_verify_property_access(property_info, zobj->ce TSRMLS_CC) ? SUCCESS : FAILURE;
+}
+
+static int zend_get_property_guard(zend_object *zobj, zend_property_info *property_info, zval *member, zend_guard **pguard)
+{
+	zend_property_info info;
+	zend_guard stub;
+
+	if (!property_info) {
+		property_info = &info;
+		info.name = Z_STRVAL_P(member);
+		info.name_length = Z_STRLEN_P(member);
+		info.h = zend_get_hash_value(Z_STRVAL_P(member), Z_STRLEN_P(member) + 1);
+	}
+	if (!zobj->guards) {
+		ALLOC_HASHTABLE(zobj->guards);
+		zend_hash_init(zobj->guards, 0, NULL, NULL, 0);
+	} else if (zend_hash_quick_find(zobj->guards, property_info->name, property_info->name_length+1, property_info->h, (void **) pguard) == SUCCESS) {
+		return SUCCESS;
+	}
+	stub.in_get = 0;
+	stub.in_set = 0;
+	stub.in_unset = 0;
+	stub.in_isset = 0;
+	return zend_hash_quick_add(zobj->guards, property_info->name, property_info->name_length+1, property_info->h, (void**)&stub, sizeof(stub), (void**) pguard);
 }
 
 zval *zend_std_read_property(zval *object, zval *member, int type TSRMLS_DC)
@@ -308,14 +317,19 @@ zval *zend_std_read_property(zval *object, zval *member, int type TSRMLS_DC)
 	fprintf(stderr, "Read object #%d property: %s\n", Z_OBJ_HANDLE_P(object), Z_STRVAL_P(member));
 #endif			
 
-	property_info = zend_get_property_info(zobj, member, 0 TSRMLS_CC);
+	/* make zend_get_property_info silent if we have getter - we may want to use it */
+	property_info = zend_get_property_info(zobj->ce, member, (zobj->ce->__get != NULL) TSRMLS_CC);
 
-	if (zend_hash_quick_find(zobj->properties, property_info->name, property_info->name_length+1, property_info->h, (void **) &retval) == FAILURE) {
-		if (zobj->ce->__get && !zobj->in_get) {
+	if (!property_info || zend_hash_quick_find(zobj->properties, property_info->name, property_info->name_length+1, property_info->h, (void **) &retval) == FAILURE) {
+		zend_guard *guard;
+
+		if (zobj->ce->__get &&
+		    zend_get_property_guard(zobj, property_info, member, &guard) == SUCCESS &&
+		    !guard->in_get) {
 			/* have getter - try with it! */
-			zobj->in_get = 1; /* prevent circular getting */
+			guard->in_get = 1; /* prevent circular getting */
 			rv = zend_std_call_getter(object, member TSRMLS_CC);
-			zobj->in_get = 0;
+			guard->in_get = 0;
 
 			if (rv) {
 				retval = &rv;
@@ -345,7 +359,7 @@ static void zend_std_write_property(zval *object, zval *member, zval *value TSRM
 	zval **variable_ptr;
 	int setter_done = 0;
 	zend_property_info *property_info;
-	
+
 	zobj = Z_OBJ_P(object);
 
  	if (member->type != IS_STRING) {
@@ -357,9 +371,9 @@ static void zend_std_write_property(zval *object, zval *member, zval *value TSRM
 		member = tmp_member;
 	}
 
-	property_info = zend_get_property_info(zobj, member, 0 TSRMLS_CC);
+	property_info = zend_get_property_info(zobj->ce, member, (zobj->ce->__set != NULL) TSRMLS_CC);
 
-	if (zend_hash_quick_find(zobj->properties, property_info->name, property_info->name_length+1, property_info->h, (void **) &variable_ptr) == SUCCESS) {
+	if (property_info && zend_hash_quick_find(zobj->properties, property_info->name, property_info->name_length+1, property_info->h, (void **) &variable_ptr) == SUCCESS) {
 		if (*variable_ptr == value) {
 			/* if we already have this value there, we don't actually need to do anything */
 			setter_done = 1;
@@ -367,24 +381,30 @@ static void zend_std_write_property(zval *object, zval *member, zval *value TSRM
 			/* if we are assigning reference, we shouldn't move it, but instead assign variable
 			   to the same pointer */
 			if (PZVAL_IS_REF(*variable_ptr)) {
-				zval_dtor(*variable_ptr); /* old value should be destroyed */
+				zval garbage = **variable_ptr; /* old value should be destroyed */
+
 				/* To check: can't *variable_ptr be some system variable like error_zval here? */
 				(*variable_ptr)->type = value->type;
 				(*variable_ptr)->value = value->value;
 				if (value->refcount>0) {
 					zval_copy_ctor(*variable_ptr);
 				}
+				zval_dtor(&garbage);
 				setter_done = 1;
 			}
 		}
 	} else {
-		if (zobj->ce->__set && !zobj->in_set) {
-			zobj->in_set = 1; /* prevent circular setting */
+		zend_guard *guard;
+
+		if (zobj->ce->__set &&
+		    zend_get_property_guard(zobj, property_info, member, &guard) == SUCCESS &&
+		    !guard->in_set) {
+			guard->in_set = 1; /* prevent circular setting */
 			if (zend_std_call_setter(object, member, value TSRMLS_CC) != SUCCESS) {
 				/* for now, just ignore it - __set should take care of warnings, etc. */
 			}
 			setter_done = 1;
-			zobj->in_set = 0;
+			guard->in_set = 0;
 		}
 	}
 
@@ -440,7 +460,7 @@ zval *zend_std_read_dimension(zval *object, zval *offset, int type TSRMLS_DC)
 static void zend_std_write_dimension(zval *object, zval *offset, zval *value TSRMLS_DC)
 {
 	zend_class_entry *ce = Z_OBJCE_P(object);
-	
+
 	if (instanceof_function_ex(ce, zend_ce_arrayaccess, 1 TSRMLS_CC)) {
 		if (!offset) {
 			ALLOC_INIT_ZVAL(offset);
@@ -464,18 +484,25 @@ static int zend_std_has_dimension(zval *object, zval *offset, int check_empty TS
 	if (instanceof_function_ex(ce, zend_ce_arrayaccess, 1 TSRMLS_CC)) {
 		SEPARATE_ARG_IF_REF(offset);
 		zend_call_method_with_1_params(&object, ce, NULL, "offsetexists", &retval, offset);
-		zval_ptr_dtor(&offset);
 		if (retval) {
 			result = i_zend_is_true(retval);
 			zval_ptr_dtor(&retval);
-			return result;
+			if (check_empty && result && !EG(exception)) {
+				zend_call_method_with_1_params(&object, ce, NULL, "offsetget", &retval, offset);
+				if (retval) {
+					result = i_zend_is_true(retval);
+					zval_ptr_dtor(&retval);
+				}
+			}
 		} else {
-			return 0;
+			result = 0;
 		}
+		zval_ptr_dtor(&offset);
 	} else {
 		zend_error(E_ERROR, "Cannot use object of type %s as array", ce->name);
 		return 0;
 	}
+	return result;
 }
 
 
@@ -499,12 +526,15 @@ static zval **zend_std_get_property_ptr_ptr(zval *object, zval *member TSRMLS_DC
 	fprintf(stderr, "Ptr object #%d property: %s\n", Z_OBJ_HANDLE_P(object), Z_STRVAL_P(member));
 #endif			
 
-	property_info = zend_get_property_info(zobj, member, 0 TSRMLS_CC);
+	property_info = zend_get_property_info(zobj->ce, member, (zobj->ce->__get != NULL) TSRMLS_CC);
 
-	if (zend_hash_quick_find(zobj->properties, property_info->name, property_info->name_length+1, property_info->h, (void **) &retval) == FAILURE) {
+	if (!property_info || zend_hash_quick_find(zobj->properties, property_info->name, property_info->name_length+1, property_info->h, (void **) &retval) == FAILURE) {
 		zval *new_zval;
+		zend_guard *guard;
 
-		if (!zobj->ce->__get && !zobj->ce->__set) {
+		if (!zobj->ce->__get ||
+		    zend_get_property_guard(zobj, property_info, member, &guard) != SUCCESS ||
+		    guard->in_get) {
 			/* we don't have access controls - will just add it */
 			new_zval = &EG(uninitialized_zval);
 
@@ -526,23 +556,37 @@ static zval **zend_std_get_property_ptr_ptr(zval *object, zval *member TSRMLS_DC
 static void zend_std_unset_property(zval *object, zval *member TSRMLS_DC)
 {
 	zend_object *zobj;
-	zval tmp_member;
+	zval *tmp_member = NULL;
 	zend_property_info *property_info;
 	
 	zobj = Z_OBJ_P(object);
 
  	if (member->type != IS_STRING) {
-		tmp_member = *member;
-		zval_copy_ctor(&tmp_member);
-		convert_to_string(&tmp_member);
-		member = &tmp_member;
+ 		ALLOC_ZVAL(tmp_member);
+		*tmp_member = *member;
+		INIT_PZVAL(tmp_member);
+		zval_copy_ctor(tmp_member);
+		convert_to_string(tmp_member);
+		member = tmp_member;
 	}
 
-	property_info = zend_get_property_info(zobj, member, 0 TSRMLS_CC);
+	property_info = zend_get_property_info(zobj->ce, member, (zobj->ce->__unset != NULL) TSRMLS_CC);
 	
-	zend_hash_del(zobj->properties, property_info->name, property_info->name_length+1);
-	if (member == &tmp_member) {
-		zval_dtor(member);
+	if (!property_info || zend_hash_del(zobj->properties, property_info->name, property_info->name_length+1) == FAILURE) {
+		zend_guard *guard;
+
+		if (zobj->ce->__unset &&
+		    zend_get_property_guard(zobj, property_info, member, &guard) == SUCCESS &&
+		    !guard->in_unset) {
+			/* have unseter - try with it! */
+			guard->in_unset = 1; /* prevent circular setting */
+			zend_std_call_unsetter(object, member TSRMLS_CC);
+			guard->in_unset = 0;
+		}
+	}
+
+	if (tmp_member) {
+		zval_ptr_dtor(&tmp_member);
 	}
 }
 
@@ -563,18 +607,17 @@ static void zend_std_unset_dimension(zval *object, zval *offset TSRMLS_DC)
 
 ZEND_API void zend_std_call_user_call(INTERNAL_FUNCTION_PARAMETERS)
 {
-	zval ***args;
 	zend_internal_function *func = (zend_internal_function *)EG(function_state_ptr)->function;
-	zval __call_name;
 	zval *method_name_ptr, *method_args_ptr;
-	zval **call_args[2];
 	zval *method_result_ptr = NULL;
-	int i, call_result;
+	zend_class_entry *ce = Z_OBJCE_P(this_ptr);
 	
-	args = (zval ***)emalloc(ZEND_NUM_ARGS() * sizeof(zval **));
+	ALLOC_ZVAL(method_args_ptr);
+	INIT_PZVAL(method_args_ptr);
+	array_init(method_args_ptr);
 
-	if (zend_get_parameters_array_ex(ZEND_NUM_ARGS(), args) == FAILURE) {
-		efree(args);
+	if (zend_copy_parameters_array(ZEND_NUM_ARGS(), method_args_ptr TSRMLS_CC) == FAILURE) {
+		zval_dtor(method_args_ptr);
 		zend_error(E_ERROR, "Cannot get arguments for __call");
 		RETURN_FALSE;
 	}
@@ -583,50 +626,21 @@ ZEND_API void zend_std_call_user_call(INTERNAL_FUNCTION_PARAMETERS)
 	INIT_PZVAL(method_name_ptr);
 	ZVAL_STRING(method_name_ptr, func->function_name, 0); /* no dup - it's a copy */
 
-	ALLOC_ZVAL(method_args_ptr);
-	INIT_PZVAL(method_args_ptr);
-	array_init(method_args_ptr);
-
-	for(i=0; i<ZEND_NUM_ARGS(); i++) {
-		zval_add_ref(args[i]);
-		add_next_index_zval(method_args_ptr, *args[i]);
-	}
-
-	efree(args);
-	
-	INIT_PZVAL(&__call_name);
-	ZVAL_STRINGL(&__call_name, ZEND_CALL_FUNC_NAME, sizeof(ZEND_CALL_FUNC_NAME)-1, 0);
-	
 	/* __call handler is called with two arguments:
 	   method name
 	   array of method parameters
 
 	*/
-	call_args[0] = &method_name_ptr;
-	call_args[1] = &method_args_ptr;
+	zend_call_method_with_2_params(&this_ptr, ce, &ce->__call, ZEND_CALL_FUNC_NAME, &method_result_ptr, method_name_ptr, method_args_ptr);
 
-	/* go call the __call handler */
-	call_result = call_user_function_ex(NULL,
-										&this_ptr,
-										&__call_name,
-										&method_result_ptr,
-										2, call_args,
-										0, NULL TSRMLS_CC);
-
-	/* call_result is if call_user_function gone OK.
-	   method_result_ptr is the true result of the called method
-	*/
-	
 	if (method_result_ptr) {
-		*return_value = *method_result_ptr;
-		zval_copy_ctor(return_value);
-		zval_ptr_dtor(&method_result_ptr);
+		if (method_result_ptr->is_ref || method_result_ptr->refcount > 1) {
+			RETVAL_ZVAL(method_result_ptr, 1, 1);
+		} else {
+			RETVAL_ZVAL(method_result_ptr, 0, 1);
+		}
 	}
 	
-	if (call_result == FAILURE) {
-		zend_error(E_ERROR, "Could not call __call handler for class %s", Z_OBJCE_P(this_ptr)->name);
-	}
-
 	/* now destruct all auxiliaries */
 	zval_ptr_dtor(&method_args_ptr);
 	zval_ptr_dtor(&method_name_ptr);
@@ -679,6 +693,7 @@ ZEND_API int zend_check_private(zend_function *fbc, zend_class_entry *ce, char *
 	return zend_check_private_int(fbc, ce, function_name_strval, function_name_strlen TSRMLS_CC) != NULL;
 }
 
+
 /* Ensures that we're allowed to call a protected method.
  */
 ZEND_API int zend_check_protected(zend_class_entry *ce, zend_class_entry *scope)
@@ -708,11 +723,12 @@ ZEND_API int zend_check_protected(zend_class_entry *ce, zend_class_entry *scope)
 }
 
 
-static union _zend_function *zend_std_get_method(zval *object, char *method_name, int method_len TSRMLS_DC)
+static union _zend_function *zend_std_get_method(zval **object_ptr, char *method_name, int method_len TSRMLS_DC)
 {
 	zend_object *zobj;
 	zend_function *fbc;
 	char *lc_method_name;
+	zval *object = *object_ptr;
 	
 	lc_method_name = do_alloca(method_len+1);
 	/* Create a zend_copy_str_tolower(dest, src, src_length); */
@@ -730,6 +746,8 @@ static union _zend_function *zend_std_get_method(zval *object, char *method_name
 			call_user_call->scope = zobj->ce;
 			call_user_call->fn_flags = 0;
 			call_user_call->function_name = estrndup(method_name, method_len);
+			call_user_call->pass_rest_by_reference = 0;
+			call_user_call->return_reference = ZEND_RETURN_VALUE;
 
 			return (union _zend_function *)call_user_call;
 		} else {
@@ -837,6 +855,8 @@ ZEND_API zval **zend_std_get_static_property(zend_class_entry *ce, char *propert
 		return NULL;
 	}
 
+	zend_update_class_constants(tmp_ce TSRMLS_CC);
+
 	zend_hash_quick_find(tmp_ce->static_members, property_info->name, property_info->name_length+1, property_info->h, (void **) &retval);
 
 	if (!retval) {
@@ -847,7 +867,6 @@ ZEND_API zval **zend_std_get_static_property(zend_class_entry *ce, char *propert
 		}
 	}
 	
-	zval_update_constant(retval, (void *) 1 TSRMLS_CC);
 	return retval;
 }
 
@@ -902,42 +921,76 @@ static int zend_std_compare_objects(zval *o1, zval *o2 TSRMLS_DC)
 	return zend_compare_symbol_tables_i(zobj1->properties, zobj2->properties TSRMLS_CC);
 }
 
-
-static int zend_std_has_property(zval *object, zval *member, int check_empty TSRMLS_DC)
+static int zend_std_has_property(zval *object, zval *member, int has_set_exists TSRMLS_DC)
 {
 	zend_object *zobj;
 	int result;
 	zval **value;
-	zval tmp_member;
+	zval *tmp_member = NULL;
 	zend_property_info *property_info;
 	
 	zobj = Z_OBJ_P(object);
 
  	if (member->type != IS_STRING) {
-		tmp_member = *member;
-		zval_copy_ctor(&tmp_member);
-		convert_to_string(&tmp_member);
-		member = &tmp_member;
+ 		ALLOC_ZVAL(tmp_member);
+		*tmp_member = *member;
+		INIT_PZVAL(tmp_member);
+		zval_copy_ctor(tmp_member);
+		convert_to_string(tmp_member);
+		member = tmp_member;
 	}
 
 #if DEBUG_OBJECT_HANDLERS
 	fprintf(stderr, "Read object #%d property: %s\n", Z_OBJ_HANDLE_P(object), Z_STRVAL_P(member));
 #endif			
 
-	property_info = zend_get_property_info(zobj, member, 0 TSRMLS_CC);
+	property_info = zend_get_property_info(zobj->ce, member, 1 TSRMLS_CC);
 
-	if (zend_hash_find(zobj->properties, property_info->name, property_info->name_length+1, (void **) &value) == SUCCESS) {
-		if (check_empty) {
-			result = zend_is_true(*value);
-		} else {
-			result = (Z_TYPE_PP(value) != IS_NULL);
+	if (!property_info || zend_hash_quick_find(zobj->properties, property_info->name, property_info->name_length+1, property_info->h, (void **) &value) == FAILURE) {
+		zend_guard *guard;
+
+		result = 0;
+		if ((has_set_exists != 2) &&
+		    zobj->ce->__isset &&
+		    zend_get_property_guard(zobj, property_info, member, &guard) == SUCCESS &&
+		    !guard->in_isset) {
+			zval *rv;
+
+			/* have issetter - try with it! */
+			guard->in_isset = 1; /* prevent circular getting */
+			rv = zend_std_call_issetter(object, member TSRMLS_CC);
+			if (rv) {
+				result = zend_is_true(rv);
+				zval_ptr_dtor(&rv);
+				if (has_set_exists && result && !EG(exception) && zobj->ce->__get && !guard->in_get) {
+					guard->in_get = 1;
+					rv = zend_std_call_getter(object, member TSRMLS_CC);
+					guard->in_get = 0;
+					if (rv) {
+						rv->refcount++;
+						result = i_zend_is_true(rv);
+						zval_ptr_dtor(&rv);
+					}
+				}
+			}
+			guard->in_isset = 0;
 		}
 	} else {
-		result = 0;
+		switch (has_set_exists) {
+		case 0:
+			result = (Z_TYPE_PP(value) != IS_NULL);
+			break;
+		default:
+			result = zend_is_true(*value);
+			break;
+		case 2:
+			result = 1;
+			break;
+		}
 	}
 
-	if (member == &tmp_member) {
-		zval_dtor(member);
+	if (tmp_member) {
+		zval_ptr_dtor(&tmp_member);
 	}
 	return result;
 }
@@ -988,7 +1041,7 @@ ZEND_API int zend_std_cast_object_tostring(zval *readobj, zval *writeobj, int ty
 					}
 				} else {
 					MAKE_STD_ZVAL(retval);
-					ZVAL_STRINGL(retval, empty_string, 0, 0);
+					ZVAL_STRINGL(retval, "", 0, 1);
 				}
 				*writeobj = *retval;
 				zval_copy_ctor(writeobj);

@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2004 The PHP Group                                |
+  | Copyright (c) 1997-2005 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -110,7 +110,7 @@ PHP_MSHUTDOWN_FUNCTION(continuity)
 PHP_MINFO_FUNCTION(continuity)
 {
         php_info_print_table_start();
-        php_info_print_table_row(2, "Continuity Module Revision", "$Revision: 1.9 $");
+        php_info_print_table_row(2, "Continuity Module Revision", "$Revision: 1.11 $");
         php_info_print_table_row(2, "Server Version", conFget_build());
 #ifdef CONTINUITY_CDPEXT
 	php_info_print_table_row(2,"CDP Extensions", "enabled");
@@ -378,6 +378,7 @@ sapi_module_struct capi_sapi_module = {
 
    sapi_capi_register_server_variables,	/* register server variables */
    capi_log_message,		/* Log message */
+   NULL,					/* Get request time */
 
    NULL,			/* Block interruptions */
    NULL,			/* Unblock interruptions */
@@ -461,7 +462,7 @@ int phpFinit(lstTset * opt)
    core_globals = ts_resource(core_globals_id);
 
    logFmsg(0, "mod/php: PHP Interface v3 (module)");
-   logFmsg(0, "mod/php: Copyright (c) 1999, 2000 The PHP Group. All rights reserved.");
+   logFmsg(0, "mod/php: Copyright (c) 1999-2005 The PHP Group. All rights reserved.");
 
    sapi_startup(&capi_sapi_module);
    capi_sapi_module.startup(&capi_sapi_module);

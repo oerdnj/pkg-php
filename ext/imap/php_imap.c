@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -26,7 +26,7 @@
    | PHP 4.0 updates:  Zeev Suraski <zeev@zend.com>                       |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_imap.c,v 1.184.2.20 2005/08/30 22:03:42 iliaa Exp $ */
+/* $Id: php_imap.c,v 1.208.2.1 2005/08/30 22:03:28 iliaa Exp $ */
 
 #define IMAP41
 
@@ -113,7 +113,7 @@ function_entry imap_functions[] = {
 	PHP_FE(imap_qprint,								NULL)
 	PHP_FE(imap_8bit,								NULL)
 	PHP_FE(imap_binary,								NULL)
-	PHP_FE(imap_utf8,							 	NULL)
+	PHP_FE(imap_utf8,								NULL)
 	PHP_FE(imap_status,								NULL)
 	PHP_FE(imap_mailboxmsginfo,						NULL)
 	PHP_FE(imap_setflag_full,						NULL)
@@ -132,7 +132,7 @@ function_entry imap_functions[] = {
 	PHP_FE(imap_utf7_encode,						NULL)
 	PHP_FE(imap_mime_header_decode,					NULL)
 	PHP_FE(imap_thread,								NULL)
-	PHP_FE(imap_timeout,							NULL)
+	PHP_FE(imap_timeout,								NULL)
 
 #if defined(HAVE_IMAP2000) || defined(HAVE_IMAP2001)
 	PHP_FE(imap_get_quota,							NULL)
@@ -3135,6 +3135,12 @@ PHP_FUNCTION(imap_mail_compose)
 		goto done;
 	}
 
+	if (bod && bod->type == TYPEMULTIPART && (!bod->nested.part || !bod->nested.part->next)) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "cannot generate multipart e-mail without components.");
+		RETVAL_FALSE;
+		goto done;
+	}
+
 	rfc822_encode_body_7bit(env, topbod); 
 	rfc822_header (tmp, env, topbod);
 
@@ -3165,8 +3171,7 @@ PHP_FUNCTION(imap_mail_compose)
 
 		efree(tempstring);
 	} else {
-		mystring = emalloc(strlen(tmp) + 1);
-		strcpy(mystring, tmp);
+		mystring = estrdup(tmp);
 	}
 
 	bod = topbod;
@@ -3190,8 +3195,9 @@ PHP_FUNCTION(imap_mail_compose)
 
 		/* for each part */
 			do {
+				t=tmp;
 			/* build cookie */
-				sprintf (t=tmp, "--%s%s", cookie, CRLF);
+				sprintf (t, "--%s%s", cookie, CRLF);
 
 			/* append mini-header */
 				rfc822_write_body_header(&t, &part->body);
@@ -3201,37 +3207,36 @@ PHP_FUNCTION(imap_mail_compose)
 
 			/* output cookie, mini-header, and contents */
 				tempstring=emalloc(strlen(mystring)+strlen(tmp)+1);
-				strcpy(tempstring, mystring);
+				sprintf(tempstring, "%s%s", mystring, tmp);
 				efree(mystring);
 				mystring=tempstring;
-				strcat(mystring, tmp);
 
 				bod=&part->body;
 
-				tempstring = emalloc(strlen(bod->contents.text.data)+strlen(CRLF)+strlen(mystring)+1);
+				tempstring=emalloc(strlen(bod->contents.text.data)+strlen(CRLF)+strlen(mystring)+1);
 				sprintf(tempstring, "%s%s%s", mystring, bod->contents.text.data, CRLF);
 				efree(mystring);
-				mystring = tempstring;
+				mystring=tempstring;
 			} while ((part = part->next)); /* until done */
 
 			/* output trailing cookie */
 			sprintf(tmp, "--%s--", cookie);
-			tempstring = emalloc(strlen(tmp)+strlen(CRLF)+strlen(mystring)+1);
+			tempstring=emalloc(strlen(tmp)+strlen(CRLF)+strlen(mystring)+1);
 			sprintf(tempstring, "%s%s%s", mystring, tmp, CRLF);
 			efree(mystring);
-			mystring = tempstring;
+			mystring=tempstring;
 	} else if (bod) {
 			tempstring = emalloc(strlen(bod->contents.text.data)+strlen(CRLF)+strlen(mystring)+1);
 			sprintf(tempstring, "%s%s%s", mystring, bod->contents.text.data, CRLF);
 			efree(mystring);
-			mystring = tempstring;
+			mystring=tempstring;
 	} else {
 		efree(mystring);
 		RETVAL_FALSE;
 		goto done;
 	}
 
-	RETVAL_STRING(tempstring, 0);  
+	RETVAL_STRING(tempstring, 0);
 done:
 	mail_free_body(&topbod);
 	mail_free_envelope(&env);
@@ -3342,7 +3347,7 @@ int _php_imap_mail(char *to, char *subject, char *message, char *headers, char *
 		strcat(bufferHeader, headers);
 	}
 
-	if (TSendMail(INI_STR("SMTP"), &tsm_err, &tsm_errmsg, bufferHeader, subject, bufferTo, message, bufferCc, bufferBcc, rpath) != SUCCESS) {
+	if (TSendMail(INI_STR("SMTP"), &tsm_err, &tsm_errmsg, bufferHeader, subject, bufferTo, message, bufferCc, bufferBcc, rpath TSRMLS_CC) != SUCCESS) {
 		if (tsm_errmsg) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", tsm_errmsg);
 			efree(tsm_errmsg);

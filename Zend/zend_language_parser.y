@@ -3,7 +3,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_language_parser.y,v 1.144.2.3 2005/06/08 06:48:38 dmitry Exp $ */
+/* $Id: zend_language_parser.y,v 1.160.2.2 2005/10/17 07:57:00 dmitry Exp $ */
 
 /* 
  * LALR shift/reduce conflicts and how they are resolved:
@@ -35,6 +35,8 @@
 #include "zend_list.h"
 #include "zend_globals.h"
 #include "zend_API.h"
+#include "zend_constants.h"
+
 
 #define YYERROR_VERBOSE
 #define YYSTYPE znode
@@ -118,6 +120,7 @@
 %token T_UNSET
 %token T_ISSET
 %token T_EMPTY
+%token T_HALT_COMPILER
 %token T_CLASS
 %token T_INTERFACE
 %token T_EXTENDS
@@ -159,6 +162,7 @@ top_statement:
 		statement
 	|	function_declaration_statement	{ zend_do_early_binding(TSRMLS_C); }
 	|	class_declaration_statement		{ zend_do_early_binding(TSRMLS_C); }
+	|	T_HALT_COMPILER '(' ')' ';'   { REGISTER_MAIN_LONG_CONSTANT("__COMPILER_HALT_OFFSET__", zend_get_scanned_file_offset(TSRMLS_C), CONST_CS); YYACCEPT; }
 ;
 
 
@@ -172,11 +176,12 @@ inner_statement:
 		statement
 	|	function_declaration_statement
 	|	class_declaration_statement
+	|	T_HALT_COMPILER '(' ')' ';'   { zend_error(E_COMPILE_ERROR, "__HALT_COMPILER() can only be used from the outermost scope"); }
 ;
 
 
 statement:
-		unticked_statement { zend_do_ticks(TSRMLS_C); RESET_DOC_COMMENT(); }
+		unticked_statement { zend_do_ticks(TSRMLS_C); }
 ;
 
 unticked_statement:
@@ -209,8 +214,14 @@ unticked_statement:
 	|	expr ';'				{ zend_do_free(&$1 TSRMLS_CC); }
 	|	T_USE use_filename ';'		{ zend_error(E_COMPILE_ERROR,"use: Not yet supported. Please use include_once() or require_once()");  zval_dtor(&$2.u.constant); }
 	|	T_UNSET '(' unset_variables ')' ';'
-	|	T_FOREACH '(' variable T_AS { zend_do_foreach_begin(&$1, &$3, &$2, &$4, 1 TSRMLS_CC); } foreach_variable foreach_optional_arg ')' { zend_do_foreach_cont(&$6, &$7, &$4, &$1 TSRMLS_CC); } foreach_statement { zend_do_foreach_end(&$1, &$2 TSRMLS_CC); }
-	|	T_FOREACH '(' expr_without_variable T_AS { zend_do_foreach_begin(&$1, &$3, &$2, &$4, 0 TSRMLS_CC); } w_variable foreach_optional_arg ')' { zend_do_foreach_cont(&$6, &$7, &$4, &$1 TSRMLS_CC); } foreach_statement { zend_do_foreach_end(&$1, &$2 TSRMLS_CC); }
+	|	T_FOREACH '(' variable { zend_do_foreach_begin(&$1, &$2, &$3, 1 TSRMLS_CC); } T_AS 
+		{ zend_do_foreach_fetch(&$1, &$2, &$5 TSRMLS_CC); } 
+		foreach_variable foreach_optional_arg ')' { zend_do_foreach_cont(&$1, &$5, &$7, &$8 TSRMLS_CC); } 
+		foreach_statement { zend_do_foreach_end(&$1, &$5 TSRMLS_CC); }
+	|	T_FOREACH '(' expr_without_variable { zend_do_foreach_begin(&$1, &$2, &$3, 0 TSRMLS_CC); } T_AS 
+		{ zend_do_foreach_fetch(&$1, &$2, &$5 TSRMLS_CC); } 
+		variable foreach_optional_arg ')' { zend_check_writable_variable(&$7); zend_do_foreach_cont(&$1, &$5, &$7, &$8 TSRMLS_CC); } 
+		foreach_statement { zend_do_foreach_end(&$1, &$5 TSRMLS_CC); }
 	|	T_DECLARE { $1.u.opline_num = get_next_op_number(CG(active_op_array)); zend_do_declare_begin(TSRMLS_C); } '(' declare_list ')' declare_statement { zend_do_declare_end(&$1 TSRMLS_CC); }
 	|	';'		/* empty statement */
 	|	T_TRY { zend_do_try(&$1 TSRMLS_CC); } '{' inner_statement_list '}'
@@ -327,8 +338,8 @@ foreach_optional_arg:
 
 
 foreach_variable:
-		w_variable			{ $$ = $1; }
-	|	'&' w_variable		{ $$ = $2;  $$.u.EA.type |= ZEND_PARSED_REFERENCE_VARIABLE; }
+		variable			{ zend_check_writable_variable(&$1); $$ = $1; }
+	|	'&' variable		{ zend_check_writable_variable(&$2); $$ = $2;  $$.u.EA.type |= ZEND_PARSED_REFERENCE_VARIABLE; }
 ;
 
 for_statement:
@@ -428,6 +439,7 @@ non_empty_parameter_list:
 optional_class_type:
 		/* empty */		{ $$.op_type = IS_UNUSED; }
 	|	T_STRING		{ $$ = $1; }
+	|	T_ARRAY		{ $$.op_type = IS_CONST; $$.u.constant.type=IS_NULL;}
 ;
 
 
@@ -447,8 +459,8 @@ non_empty_function_call_parameter_list:
 ;
 
 global_var_list:
-		global_var_list ',' global_var	{ zend_do_fetch_global_variable(&$3, NULL, ZEND_FETCH_GLOBAL TSRMLS_CC); }
-	|	global_var						{ zend_do_fetch_global_variable(&$1, NULL, ZEND_FETCH_GLOBAL TSRMLS_CC); }
+		global_var_list ',' global_var	{ zend_do_fetch_global_variable(&$3, NULL, ZEND_FETCH_GLOBAL_LOCK TSRMLS_CC); }
+	|	global_var						{ zend_do_fetch_global_variable(&$1, NULL, ZEND_FETCH_GLOBAL_LOCK TSRMLS_CC); }
 ;
 
 
@@ -771,7 +783,7 @@ variable_without_objects:
 ;
 
 static_member:
-		fully_qualified_class_name T_PAAMAYIM_NEKUDOTAYIM variable_without_objects { $$ = $3; zend_do_fetch_static_member(&$1 TSRMLS_CC); }
+		fully_qualified_class_name T_PAAMAYIM_NEKUDOTAYIM variable_without_objects { $$ = $3; zend_do_fetch_static_member(&$$, &$1 TSRMLS_CC); }
 ;
 
 

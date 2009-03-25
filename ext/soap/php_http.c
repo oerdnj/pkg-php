@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2004 The PHP Group                                |
+  | Copyright (c) 1997-2005 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_http.c,v 1.55.2.19 2005/07/08 09:36:42 dmitry Exp $ */
+/* $Id: php_http.c,v 1.77.2.3 2005/10/12 14:04:02 tony2001 Exp $ */
 
 #include "php_soap.h"
 #include "ext/standard/base64.h"
@@ -110,11 +110,9 @@ static php_stream* http_connect(zval* this_ptr, php_url *phpurl, int use_ssl, in
 	php_stream *stream;
 	zval **proxy_host, **proxy_port, **tmp;
 	char *host;
-#ifdef ZEND_ENGINE_2
 	php_stream_context *context = NULL;
 	char *name;
 	long namelen;
-#endif
 	int port;
 	int old_error_reporting;
 	struct timeval tv;
@@ -141,21 +139,13 @@ static php_stream* http_connect(zval* this_ptr, php_url *phpurl, int use_ssl, in
 	old_error_reporting = EG(error_reporting);
 	EG(error_reporting) &= ~(E_WARNING|E_NOTICE|E_USER_WARNING|E_USER_NOTICE);
 
-#ifdef ZEND_ENGINE_2
-	namelen = spprintf(&name, 0, "%s://%s:%d", (use_ssl && !*use_proxy)? "ssl" : "tcp", host, port);
-	if (use_ssl) {
-		zval **tmp;
-
-		if (zend_hash_find(Z_OBJPROP_P(this_ptr), "_local_cert", sizeof("_local_cert"), (void **) &tmp) == SUCCESS &&
-		    Z_TYPE_PP(tmp) == IS_STRING) {
-			context = php_stream_context_alloc();
-			php_stream_context_set_option(context, "ssl", "local_cert", *tmp);
-			if (zend_hash_find(Z_OBJPROP_P(this_ptr), "_passphrase", sizeof("_passphrase"), (void **) &tmp) == SUCCESS &&
-			    Z_TYPE_PP(tmp) == IS_STRING) {
-				php_stream_context_set_option(context, "ssl", "passphrase", *tmp);
-			}
-		}
+	if (SUCCESS == zend_hash_find(Z_OBJPROP_P(this_ptr),
+			"_stream_context", sizeof("_stream_context"), (void**)&tmp)) {
+		context = php_stream_context_from_zval(*tmp, 0);
 	}
+
+	namelen = spprintf(&name, 0, "%s://%s:%d", (use_ssl && !*use_proxy)? "ssl" : "tcp", host, port);
+
 	stream = php_stream_xport_create(name, namelen,
 		ENFORCE_SAFE_MODE | REPORT_ERRORS,
 		STREAM_XPORT_CLIENT | STREAM_XPORT_CONNECT,
@@ -164,9 +154,6 @@ static php_stream* http_connect(zval* this_ptr, php_url *phpurl, int use_ssl, in
 		context,
 		NULL, NULL);
 	efree(name);
-#else
-	stream = php_stream_sock_open_host(host, port, SOCK_STREAM, timeout, NULL);
-#endif
 
 	/* SSL & proxy */
 	if (stream && *use_proxy && use_ssl) {
@@ -194,7 +181,6 @@ static php_stream* http_connect(zval* this_ptr, php_url *phpurl, int use_ssl, in
 			}
 			efree(http_headers);
 		}
-#ifdef ZEND_ENGINE_2
 		/* enable SSL transport layer */
 		if (stream) {
 			if (php_stream_xport_crypto_setup(stream, STREAM_CRYPTO_METHOD_SSLv23_CLIENT, NULL TSRMLS_CC) < 0 ||
@@ -203,18 +189,8 @@ static php_stream* http_connect(zval* this_ptr, php_url *phpurl, int use_ssl, in
 				stream = NULL;
 			}
 		}
-#endif
 	}
 
-#if !defined(ZEND_ENGINE_2) && defined(HAVE_OPENSSL_EXT)
-	if (stream && use_ssl) {
-		/* enable SSL transport layer */
-		if (FAILURE == php_stream_sock_ssl_activate(stream, 1)) {
-			php_stream_close(stream);
-			stream = NULL;
-		}
-	}
-#endif
 	EG(error_reporting) = old_error_reporting;
 	return stream;
 }
@@ -258,6 +234,7 @@ int make_http_soap_request(zval  *this_ptr,
 	int http_status;
 	int content_type_xml = 0;
 	char *content_encoding;
+	zend_bool old_allow_url_fopen;
 
 	if (this_ptr == NULL || Z_TYPE_P(this_ptr) != IS_OBJECT) {
 		return FALSE;
@@ -339,23 +316,16 @@ try_again:
 		add_soap_fault(this_ptr, "HTTP", "Unknown protocol. Only http and https are allowed.", NULL, NULL TSRMLS_CC);
 		return FALSE;
 	}
-#ifdef ZEND_ENGINE_2
+
+	old_allow_url_fopen = PG(allow_url_fopen);
+	PG(allow_url_fopen) = 1;
 	if (use_ssl && php_stream_locate_url_wrapper("https://", NULL, STREAM_LOCATE_WRAPPERS_ONLY TSRMLS_CC) == NULL) {
 		php_url_free(phpurl);
 		if (request != buf) {efree(request);}
-		add_soap_fault(this_ptr, "HTTP", "SSL support not available in this build", NULL, NULL TSRMLS_CC);
+		add_soap_fault(this_ptr, "HTTP", "SSL support is not available in this build", NULL, NULL TSRMLS_CC);
+		PG(allow_url_fopen) = old_allow_url_fopen;
 		return FALSE;
 	}
-#else
-#ifndef HAVE_OPENSSL_EXT
-	if (use_ssl) {
-		php_url_free(phpurl);
-		if (request != buf) {efree(request);}
-		add_soap_fault(this_ptr, "HTTP", "SSL support not available in this build", NULL, NULL TSRMLS_CC);
-		return FALSE;
-	}
-#endif
-#endif
 
 	if (phpurl->port == 0) {
 		phpurl->port = use_ssl ? 443 : 80;
@@ -402,9 +372,11 @@ try_again:
 			php_url_free(phpurl);
 			if (request != buf) {efree(request);}
 			add_soap_fault(this_ptr, "HTTP", "Could not connect to host", NULL, NULL TSRMLS_CC);
+			PG(allow_url_fopen) = old_allow_url_fopen;
 			return FALSE;
 		}
 	}
+	PG(allow_url_fopen) = old_allow_url_fopen;
 
 	if (stream) {
 		zval **cookies, **login, **password;
@@ -427,6 +399,10 @@ try_again:
 		if (phpurl->query) {
 			smart_str_appendc(&soap_headers, '?');
 			smart_str_appends(&soap_headers, phpurl->query);
+		}
+		if (phpurl->fragment) {
+			smart_str_appendc(&soap_headers, '#');
+			smart_str_appends(&soap_headers, phpurl->fragment);
 		}
 		smart_str_append_const(&soap_headers, " HTTP/1.1\r\n"
 			"Host: ");
@@ -584,6 +560,10 @@ try_again:
 						smart_str_appendc(&soap_headers, '?');
 						smart_str_appends(&soap_headers, phpurl->query);
 					}
+					if (phpurl->fragment) {
+						smart_str_appendc(&soap_headers, '#');
+						smart_str_appends(&soap_headers, phpurl->fragment);
+					}
 					if (zend_hash_find(Z_ARRVAL_PP(digest), "qop", sizeof("qop"), (void **)&tmp) == SUCCESS &&
 					    Z_TYPE_PP(tmp) == IS_STRING) {
 					/* TODO: Support for qop="auth-int" */
@@ -687,6 +667,9 @@ try_again:
 		}
 		smart_str_free(&soap_headers);
 
+	} else {
+		add_soap_fault(this_ptr, "HTTP", "Failed to create stream??", NULL, NULL TSRMLS_CC);
+		return FALSE;
 	}
 
 	do {
@@ -853,6 +836,7 @@ try_again:
 		php_stream_close(stream);
 		zend_hash_del(Z_OBJPROP_P(this_ptr), "httpsocket", sizeof("httpsocket"));
 		zend_hash_del(Z_OBJPROP_P(this_ptr), "_use_proxy", sizeof("_use_proxy"));
+		stream = NULL;
 	}
 
 	/* Process HTTP status codes */
@@ -861,17 +845,8 @@ try_again:
 
 		if ((loc = get_http_header_value(http_headers,"Location: ")) != NULL) {
 			php_url *new_url  = php_url_parse(loc);
-			char *body;
-			int body_size;
 
 			if (new_url != NULL) {
-				if (get_http_body(stream, !http_1_1, http_headers, &body, &body_size TSRMLS_CC)) {
-					efree(body);
-				} else {
-					php_stream_close(stream);
-					zend_hash_del(Z_OBJPROP_P(this_ptr), "httpsocket", sizeof("httpsocket"));
-					stream = NULL;
-				}
 				efree(http_headers);
 				efree(http_body);
 				efree(loc);
@@ -951,9 +926,7 @@ try_again:
 			if (digest != NULL) {
 				php_url *new_url  = emalloc(sizeof(php_url));
 
-#ifdef ZEND_ENGINE_2
 				digest->refcount--;
-#endif
 				add_property_zval_ex(this_ptr, "_digest", sizeof("_digest"), digest TSRMLS_CC);
 
 				*new_url = *phpurl;

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: iptc.c,v 1.48 2004/06/22 20:27:46 iliaa Exp $ */
+/* $Id: iptc.c,v 1.50 2005/08/03 14:08:07 sniper Exp $ */
 
 /*
  * Functions to parse & compse IPTC data.
@@ -227,11 +227,6 @@ PHP_FUNCTION(iptcembed)
 		fstat(fileno(fp), &sb);
 
 		poi = spoolbuf = emalloc(len + sizeof(psheader) + sb.st_size + 1024);
-
-		if (! spoolbuf) {
-			fclose(fp);
-			RETURN_FALSE;
-		}
 	} 
 
 	if (php_iptc_get1(fp, spool, poi?&poi:0 TSRMLS_CC) != 0xFF) {

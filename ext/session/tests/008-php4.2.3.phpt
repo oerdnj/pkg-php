@@ -5,6 +5,7 @@ bug compatibility: global is used albeit register_globals=0
  if (version_compare(PHP_VERSION,"4.2.3-dev", "<")) die("skip this is for PHP >= 4.2.3");
 ?>
 --INI--
+register_long_arrays=1
 session.use_cookies=0
 session.cache_limiter=
 register_globals=0
@@ -16,7 +17,7 @@ html_errors=0
 display_errors=1
 error_reporting=2039;
 session.serialize_handler=php
-register_long_arrays=1
+session.save_handler=files
 --FILE--
 <?php
 session_id("abtest");

@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2004 The PHP Group                                |
+  | Copyright (c) 1997-2005 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_schema.c,v 1.49.2.6 2005/06/01 14:42:50 dmitry Exp $ */
+/* $Id: php_schema.c,v 1.58.2.2 2005/11/08 08:30:17 dmitry Exp $ */
 
 #include "php_soap.h"
 #include "libxml/uri.h"
@@ -95,14 +95,14 @@ static encodePtr get_create_encoder(sdlPtr sdl, sdlTypePtr cur_type, const char 
 	return enc;
 }
 
-static void schema_load_file(sdlCtx *ctx, xmlAttrPtr ns, xmlChar *location, xmlAttrPtr tns, int import) {
+static void schema_load_file(sdlCtx *ctx, xmlAttrPtr ns, xmlChar *location, xmlAttrPtr tns, int import TSRMLS_DC) {
 	if (location != NULL &&
 	    !zend_hash_exists(&ctx->docs, location, strlen(location)+1)) {
 		xmlDocPtr doc;
 		xmlNodePtr schema;
 		xmlAttrPtr new_tns;
 
-		doc = soap_xmlParseFile(location);
+		doc = soap_xmlParseFile(location TSRMLS_CC);
 		if (doc == NULL) {
 			soap_error1(E_ERROR, "Parsing Schema: can't import schema from '%s'", location);
 		}
@@ -133,7 +133,7 @@ static void schema_load_file(sdlCtx *ctx, xmlAttrPtr ns, xmlChar *location, xmlA
 			}
 		}
 		zend_hash_add(&ctx->docs, location, strlen(location)+1, (void**)&doc, sizeof(xmlDocPtr), NULL);
-		load_schema(ctx, schema);
+		load_schema(ctx, schema TSRMLS_CC);
 	}
 }
 
@@ -157,7 +157,7 @@ static void schema_load_file(sdlCtx *ctx, xmlAttrPtr ns, xmlChar *location, xmlA
   Content: ((include | import | redefine | annotation)*, (((simpleType | complexType | group | attributeGroup) | element | attribute | notation), annotation*)*)
 </schema>
 */
-int load_schema(sdlCtx *ctx,xmlNodePtr schema)
+int load_schema(sdlCtx *ctx, xmlNodePtr schema TSRMLS_DC)
 {
 	xmlNodePtr trav;
 	xmlAttrPtr tns;
@@ -199,7 +199,7 @@ int load_schema(sdlCtx *ctx,xmlNodePtr schema)
 	    		uri = xmlBuildURI(location->children->content, base);
 			    xmlFree(base);
 				}
-				schema_load_file(ctx,NULL,uri,tns,0);
+				schema_load_file(ctx, NULL, uri, tns, 0 TSRMLS_CC);
 				xmlFree(uri);
 			}
 
@@ -219,7 +219,7 @@ int load_schema(sdlCtx *ctx,xmlNodePtr schema)
 	    		uri = xmlBuildURI(location->children->content, base);
 			    xmlFree(base);
 				}
-				schema_load_file(ctx,NULL,uri,tns,0);
+				schema_load_file(ctx, NULL, uri, tns, 0 TSRMLS_CC);
 				xmlFree(uri);
 				/* TODO: <redefine> support */
 			}
@@ -244,7 +244,7 @@ int load_schema(sdlCtx *ctx,xmlNodePtr schema)
 			    xmlFree(base);
 				}
 			}
-			schema_load_file(ctx,ns,uri,tns,1);
+			schema_load_file(ctx, ns, uri, tns, 1 TSRMLS_CC);
 			if (uri != NULL) {xmlFree(uri);}
 		} else if (node_is_equal(trav,"annotation")) {
 			/* TODO: <annotation> support */
@@ -533,10 +533,6 @@ static int schema_union(sdlPtr sdl, xmlAttrPtr tns, xmlNodePtr unionType, sdlTyp
 	while (trav != NULL) {
 		if (node_is_equal(trav,"simpleType")) {
 			sdlTypePtr newType, *tmp;
-
-			if (memberTypes != NULL) {
-				soap_error0(E_ERROR, "Parsing Schema: union has both 'memberTypes' attribute and subtypes");
-			}
 
 			newType = emalloc(sizeof(sdlType));
 			memset(newType, 0, sizeof(sdlType));
@@ -2196,9 +2192,25 @@ static void schema_content_model_fixup(sdlCtx *ctx, sdlContentModelPtr model)
 			}
 			break;
 		}
-		case XSD_CONTENT_SEQUENCE:
-		case XSD_CONTENT_ALL:
 		case XSD_CONTENT_CHOICE: {
+			if (model->max_occurs != 1) {
+				HashPosition pos;
+				sdlContentModelPtr *tmp;
+
+				zend_hash_internal_pointer_reset_ex(model->u.content, &pos);
+				while (zend_hash_get_current_data_ex(model->u.content, (void**)&tmp, &pos) == SUCCESS) {
+					(*tmp)->min_occurs = 0;
+					(*tmp)->max_occurs = model->max_occurs;
+					zend_hash_move_forward_ex(model->u.content, &pos);
+				}
+
+				model->kind = XSD_CONTENT_ALL;
+				model->min_occurs = 1;
+				model->max_occurs = 1;
+			}
+		}
+		case XSD_CONTENT_SEQUENCE:
+		case XSD_CONTENT_ALL: {
 			sdlContentModelPtr *tmp;
 
 			zend_hash_internal_pointer_reset(model->u.content);

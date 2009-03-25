@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_xml.h,v 1.26.2.1 2005/04/28 12:17:18 rrichards Exp $ */
+/* $Id: php_xml.h,v 1.28 2005/08/03 14:08:21 sniper Exp $ */
 
 #ifndef PHP_XML_H
 #define PHP_XML_H

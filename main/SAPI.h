@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: SAPI.h,v 1.108 2004/01/08 17:33:04 sniper Exp $ */
+/* $Id: SAPI.h,v 1.114 2005/08/03 14:08:28 sniper Exp $ */
 
 #ifndef SAPI_H
 #define SAPI_H
@@ -24,6 +24,9 @@
 #include "zend.h"
 #include "zend_llist.h"
 #include "zend_operators.h"
+#ifdef PHP_WIN32
+#include "win95nt.h"
+#endif
 #include <sys/stat.h>
 
 #define SAPI_OPTION_NO_CHDIR 1
@@ -95,6 +98,7 @@ typedef struct {
 	/* for HTTP authentication */
 	char *auth_user;
 	char *auth_password;
+	char *auth_digest;
 
 	/* this is necessary for the CGI SAPI module */
 	char *argv0;
@@ -106,6 +110,7 @@ typedef struct {
     /* this is necessary for CLI module */
     int argc;
     char **argv;
+	int proto_num;
 } sapi_request_info;
 
 
@@ -122,6 +127,8 @@ typedef struct _sapi_globals_struct {
 	long post_max_size;
 	int options;
 	zend_bool sapi_started;
+	time_t global_request_time;
+	HashTable known_post_content_types;
 } sapi_globals_struct;
 
 
@@ -176,9 +183,9 @@ SAPI_API int sapi_send_headers(TSRMLS_D);
 SAPI_API void sapi_free_header(sapi_header_struct *sapi_header);
 SAPI_API void sapi_handle_post(void *arg TSRMLS_DC);
 
-SAPI_API int sapi_register_post_entries(sapi_post_entry *post_entry);
-SAPI_API int sapi_register_post_entry(sapi_post_entry *post_entry);
-SAPI_API void sapi_unregister_post_entry(sapi_post_entry *post_entry);
+SAPI_API int sapi_register_post_entries(sapi_post_entry *post_entry TSRMLS_DC);
+SAPI_API int sapi_register_post_entry(sapi_post_entry *post_entry TSRMLS_DC);
+SAPI_API void sapi_unregister_post_entry(sapi_post_entry *post_entry TSRMLS_DC);
 SAPI_API int sapi_register_default_post_reader(void (*default_post_reader)(TSRMLS_D));
 SAPI_API int sapi_register_treat_data(void (*treat_data)(int arg, char *str, zval *destArray TSRMLS_DC));
 SAPI_API int sapi_register_input_filter(unsigned int (*input_filter)(int arg, char *var, char **val, unsigned int val_len, unsigned int *new_val_len TSRMLS_DC));
@@ -197,6 +204,7 @@ SAPI_API int sapi_force_http_10(TSRMLS_D);
 
 SAPI_API int sapi_get_target_uid(uid_t * TSRMLS_DC);
 SAPI_API int sapi_get_target_gid(gid_t * TSRMLS_DC);
+SAPI_API time_t sapi_get_request_time(TSRMLS_D);
 END_EXTERN_C()
 
 struct _sapi_module_struct {
@@ -225,6 +233,7 @@ struct _sapi_module_struct {
 
 	void (*register_server_variables)(zval *track_vars_array TSRMLS_DC);
 	void (*log_message)(char *message);
+	time_t (*get_request_time)(TSRMLS_D);
 
 	char *php_ini_path_override;
 

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: safe_mode.c,v 1.58.2.2 2005/07/16 12:14:45 hyanantha Exp $ */
+/* $Id: safe_mode.c,v 1.62 2005/08/03 14:08:39 sniper Exp $ */
 
 #include "php.h"
 
@@ -63,7 +63,6 @@ PHPAPI int php_checkuid_ex(const char *filename, char *fopen_mode, int mode, int
 		return 0;
 	}
 	filename=(char *)&filenamecopy;
-
 
 	if (fopen_mode) {
 		if (fopen_mode[0] == 'r') {
@@ -191,8 +190,8 @@ PHPAPI int php_checkuid_ex(const char *filename, char *fopen_mode, int mode, int
 
 PHPAPI int php_checkuid(const char *filename, char *fopen_mode, int mode) {
 #ifdef NETWARE
-	/* NetWare don't have uid*/
-        return 1;
+/* NetWare don't have uid*/
+	return 1;
 #else
 	return php_checkuid_ex(filename, fopen_mode, mode, 0);
 #endif
@@ -215,11 +214,11 @@ PHPAPI char *php_get_current_user()
 	pstat = sapi_get_stat(TSRMLS_C);
 
 	if (!pstat) {
-		return empty_string;
+		return "";
 	}
 
 	if ((pwd=getpwuid(pstat->st_uid))==NULL) {
-		return empty_string;
+		return "";
 	}
 	SG(request_info).current_user_length = strlen(pwd->pw_name);
 	SG(request_info).current_user = estrndup(pwd->pw_name, SG(request_info).current_user_length);

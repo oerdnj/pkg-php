@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_pcntl.h,v 1.17.2.2 2005/05/07 14:58:02 wez Exp $ */
+/* $Id: php_pcntl.h,v 1.20 2005/08/03 14:07:37 sniper Exp $ */
 
 #ifndef PHP_PCNTL_H
 #define PHP_PCNTL_H

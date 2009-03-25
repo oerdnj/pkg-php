@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -84,7 +84,7 @@ PHP_FUNCTION(ncurses_color_set)
 /* }}} */
 #endif
 
-/* {{{ proto int ncurses_delwin(resource window)
+/* {{{ proto bool ncurses_delwin(resource window)
    Deletes a ncurses window */
 PHP_FUNCTION(ncurses_delwin)
 {
@@ -98,6 +98,7 @@ PHP_FUNCTION(ncurses_delwin)
 	FETCH_WINRES(w, &handle);
 
 	zend_list_delete(Z_LVAL_P(handle));
+	RETURN_TRUE;
 }
 /* }}} */
 
@@ -149,7 +150,7 @@ PHP_FUNCTION(ncurses_init)
 		c.value = *zscr;
 		zval_copy_ctor(&c.value);
 		c.flags = CONST_CS;
-		c.name = zend_strndup(ZEND_STRS("STDSCR"));
+		c.name = zend_strndup(ZEND_STRL("STDSCR"));
 		c.name_len = sizeof("STDSCR");
 		zend_register_constant(&c TSRMLS_CC);
 
@@ -162,7 +163,7 @@ PHP_FUNCTION(ncurses_init)
 		c.value = *zscr;            \
 		zval_copy_ctor(&c.value);   \
 		c.flags = CONST_CS;         \
-		c.name = zend_strndup(ZEND_STRS("NCURSES_" #x)); \
+		c.name = zend_strndup(ZEND_STRL("NCURSES_" #x)); \
 		c.name_len = sizeof("NCURSES_" #x);                           \
 		zend_register_constant(&c TSRMLS_CC)
 		

@@ -6,7 +6,7 @@ Sybase-CT bug #28354 (sybase_free_result crash)
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: bug28354.phpt,v 1.2 2004/05/21 20:53:01 thekid Exp $ 
+ * $Id: bug28354.phpt,v 1.3 2005/02/06 12:59:03 thekid Exp $ 
  */
 
   require('test.inc');
@@ -16,7 +16,7 @@ Sybase-CT bug #28354 (sybase_free_result crash)
   error_reporting(error_reporting() & !E_NOTICE);       // Suppress notices
 
   // Check if stored procedure already exists
-  $sp_name= basename(__FILE__, '.php');
+  $sp_name= 'phpt_bug28354';
   var_dump(sybase_select_db('tempdb', $db));
   if (!sybase_select_single($db, 'select object_id("'.$sp_name.'")')) {
     echo "Stored procedure {$sp_name} not found, creating\n";

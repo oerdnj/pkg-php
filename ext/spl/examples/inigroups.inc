@@ -4,13 +4,13 @@
  * @ingroup Examples
  * @brief class IniGroups
  * @author  Marcus Boerger
- * @date    2003 - 2004
+ * @date    2003 - 2005
  *
  * SPL - Standard PHP Library
  */
 
-if (!class_exists("KeyFilter")) require_once("keyfilter.inc");
-if (!class_exists("DbaReader")) require_once("dbareader.inc");
+if (!class_exists("KeyFilter", false)) require_once("keyfilter.inc");
+if (!class_exists("DbaReader", false)) require_once("dbareader.inc");
 
 /** @ingroup Examples
  * @brief   Class to iterate all groups within an ini file.

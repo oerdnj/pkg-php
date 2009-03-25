@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_exif.h,v 1.13 2004/01/08 17:32:04 sniper Exp $ */
+/* $Id: php_exif.h,v 1.14 2005/08/03 14:07:08 sniper Exp $ */
 
 #if HAVE_EXIF
 extern zend_module_entry exif_module_entry;

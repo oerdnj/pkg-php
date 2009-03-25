@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_operators.h,v 1.88.2.5 2005/01/18 00:30:39 iliaa Exp $ */
+/* $Id: zend_operators.h,v 1.94.2.2 2005/11/17 19:21:32 tony2001 Exp $ */
 
 #ifndef ZEND_OPERATORS_H
 #define ZEND_OPERATORS_H
@@ -65,7 +65,7 @@ ZEND_API zend_bool instanceof_function_ex(zend_class_entry *instance_ce, zend_cl
 ZEND_API zend_bool instanceof_function(zend_class_entry *instance_ce, zend_class_entry *ce TSRMLS_DC);
 END_EXTERN_C()
 
-static inline zend_bool is_numeric_string(char *str, int length, long *lval, double *dval, zend_bool allow_errors)
+static inline zend_bool is_numeric_string(char *str, int length, long *lval, double *dval, int allow_errors)
 {
 	long local_lval;
 	double local_dval;
@@ -116,14 +116,20 @@ static inline zend_bool is_numeric_string(char *str, int length, long *lval, dou
 	} else {
 		end_ptr_double=NULL;
 	}
-	if (allow_errors) {
-		if (end_ptr_double>end_ptr_long && dval) {
-			*dval = local_dval;
-			return IS_DOUBLE;
-		} else if (end_ptr_long && lval) {
-			*lval = local_lval;
-			return IS_LONG;
-		}
+
+	if (!allow_errors) {
+		return 0;
+	}
+	if (allow_errors == -1) {
+		zend_error(E_NOTICE, "A non well formed numeric value encountered");
+	}
+
+	if (end_ptr_double>end_ptr_long && dval) {
+		*dval = local_dval;
+		return IS_DOUBLE;
+	} else if (end_ptr_long && lval) {
+		*lval = local_lval;
+		return IS_LONG;
 	}
 	return 0;
 }

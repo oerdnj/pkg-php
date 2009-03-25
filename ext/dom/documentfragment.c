@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: documentfragment.c,v 1.11 2004/05/31 12:50:28 rrichards Exp $ */
+/* $Id: documentfragment.c,v 1.15 2005/08/03 14:07:00 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -37,6 +37,7 @@
 
 zend_function_entry php_dom_documentfragment_class_functions[] = {
 	PHP_ME(domdocumentfragment, __construct, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(domdocumentfragment, appendXML, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 
@@ -73,4 +74,74 @@ PHP_METHOD(domdocumentfragment, __construct)
 	}
 }
 /* }}} end DOMDocumentFragment::__construct */
+
+/* php_dom_xmlSetTreeDoc is a custom implementation of xmlSetTreeDoc
+ needed for hack in appendXML due to libxml bug - no need to share this function */
+static void php_dom_xmlSetTreeDoc(xmlNodePtr tree, xmlDocPtr doc) {
+    xmlAttrPtr prop;
+	xmlNodePtr cur;
+
+    if (tree) {
+		if(tree->type == XML_ELEMENT_NODE) {
+			prop = tree->properties;
+			while (prop != NULL) {
+				prop->doc = doc;
+				if (prop->children) {
+					cur = prop->children;
+					while (cur != NULL) {
+						php_dom_xmlSetTreeDoc(cur, doc);
+						cur = cur->next;
+					}
+				}
+				prop = prop->next;
+			}
+		}
+		if (tree->children != NULL) {
+			cur = tree->children;
+			while (cur != NULL) {
+				php_dom_xmlSetTreeDoc(cur, doc);
+				cur = cur->next;
+			}
+		}
+		tree->doc = doc;
+    }
+}
+
+/* {{{ proto void DOMDocumentFragment::appendXML(string data); */
+PHP_METHOD(domdocumentfragment, appendXML) {
+	zval *id;
+	xmlNode *nodep;
+	dom_object *intern;
+	char *data = NULL;
+	int data_len = 0;
+	int err;
+	xmlNodePtr lst;
+
+	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "Os", &id, dom_documentfragment_class_entry, &data, &data_len) == FAILURE) {
+		return;
+	}
+
+	DOM_GET_OBJ(nodep, id, xmlNodePtr, intern);
+
+	if (dom_node_is_read_only(nodep) == SUCCESS) {
+		php_dom_throw_error(NO_MODIFICATION_ALLOWED_ERR, dom_get_strict_error(intern->document) TSRMLS_CC);
+		RETURN_FALSE;
+	}
+
+	if (data) {
+		err = xmlParseBalancedChunkMemory(nodep->doc, NULL, NULL, 0, data, &lst);
+		if (err != 0) {
+			RETURN_FALSE;
+		}
+		/* Following needed due to bug in libxml2 <= 2.6.14 
+		ifdef after next libxml release as bug is fixed in their cvs */
+		php_dom_xmlSetTreeDoc(lst, nodep->doc);
+		/* End stupid hack */
+
+		xmlAddChildList(nodep,lst);
+	}
+
+	RETURN_TRUE;
+}
+
 #endif

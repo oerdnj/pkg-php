@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: domexception.c,v 1.9 2004/05/31 12:50:28 rrichards Exp $ */
+/* $Id: domexception.c,v 1.11 2005/08/03 14:07:02 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -40,6 +40,16 @@ extern zend_class_entry *dom_domexception_class_entry;
 zend_function_entry php_dom_domexception_class_functions[] = {
 	{NULL, NULL, NULL}
 };
+
+/* {{{ php_dom_throw_error_with_message */
+void php_dom_throw_error_with_message(int error_code, char *error_message, int strict_error TSRMLS_DC)
+{
+	if (strict_error == 1) {
+		zend_throw_exception(dom_domexception_class_entry, error_message, error_code TSRMLS_CC);
+	} else {
+		php_libxml_issue_error(E_WARNING, error_message TSRMLS_CC);
+	}
+}
 
 /* {{{ php_dom_throw_error */
 void php_dom_throw_error(int error_code, int strict_error TSRMLS_DC)
@@ -100,11 +110,7 @@ void php_dom_throw_error(int error_code, int strict_error TSRMLS_DC)
 			error_message = "Unhandled Error";
 	}
 
-	if (strict_error == 1) {
-		zend_throw_exception(dom_domexception_class_entry, error_message, error_code TSRMLS_CC);
-	} else {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", error_message);
-	}
+	php_dom_throw_error_with_message(error_code, error_message, strict_error TSRMLS_CC);
 }
 /* }}} end php_dom_throw_error */
 

@@ -1,9 +1,9 @@
 dnl
-dnl $Id: config.m4,v 1.16 2003/12/09 23:59:32 sniper Exp $
+dnl $Id: config.m4,v 1.17 2005/05/29 23:16:40 sniper Exp $
 dnl
 
 PHP_ARG_ENABLE(bcmath, whether to enable bc style precision math functions,
-[  --enable-bcmath         Enable bc style precision math functions.])
+[  --enable-bcmath         Enable bc style precision math functions])
 
 if test "$PHP_BCMATH" != "no"; then
   PHP_NEW_EXTENSION(bcmath, bcmath.c \

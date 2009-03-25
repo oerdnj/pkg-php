@@ -4,7 +4,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: acconfig.h,v 1.34.2.3 2005/07/29 09:20:02 hyanantha Exp $ */
+/* $Id: acconfig.h,v 1.40 2005/08/03 13:30:45 sniper Exp $ */
 
 #define ZEND_API
 #define ZEND_DLEXPORT
@@ -134,6 +134,9 @@
 /* The number of bytes in a long.  */
 #undef SIZEOF_LONG
 
+/* The number of bytes in a long int.  */
+#undef SIZEOF_LONG_INT
+
 /* The number of bytes in a long long.  */
 #undef SIZEOF_LONG_LONG
 
@@ -169,6 +172,9 @@
 
 /* Define if you have the atanh function.  */
 #undef HAVE_ATANH
+
+/* Define if you have the atoll function.  */
+#undef HAVE_ATOLL
 
 /* Define if you have the chroot function.  */
 #undef HAVE_CHROOT
@@ -329,6 +335,9 @@
 /* Define if you have the lrand48 function.  */
 #undef HAVE_LRAND48
 
+/* Define if you have the makedev function.  */
+#undef HAVE_MAKEDEV
+
 /* Define if you have the mblen function.  */
 #undef HAVE_MBLEN
 
@@ -355,6 +364,18 @@
 
 /* Define if you have the mmap function.  */
 #undef HAVE_MMAP
+
+/* Define if you have the mysql_commit function.  */
+#undef HAVE_MYSQL_COMMIT
+
+/* Define if you have the mysql_next_result function.  */
+#undef HAVE_MYSQL_NEXT_RESULT
+
+/* Define if you have the mysql_sqlstate function.  */
+#undef HAVE_MYSQL_SQLSTATE
+
+/* Define if you have the mysql_stmt_prepare function.  */
+#undef HAVE_MYSQL_STMT_PREPARE
 
 /* Define if you have the nanosleep function.  */
 #undef HAVE_NANOSLEEP
@@ -476,6 +497,9 @@
 /* Define if you have the strpbrk function.  */
 #undef HAVE_STRPBRK
 
+/* Define if you have the strptime function.  */
+#undef HAVE_STRPTIME
+
 /* Define if you have the strstr function.  */
 #undef HAVE_STRSTR
 
@@ -487,6 +511,9 @@
 
 /* Define if you have the strtol function.  */
 #undef HAVE_STRTOL
+
+/* Define if you have the strtoll function.  */
+#undef HAVE_STRTOLL
 
 /* Define if you have the strtoul function.  */
 #undef HAVE_STRTOUL
@@ -560,6 +587,9 @@
 /* Define if you have the <fcntl.h> header file.  */
 #undef HAVE_FCNTL_H
 
+/* Define if you have the <gcrypt.h> header file.  */
+#undef HAVE_GCRYPT_H
+
 /* Define if you have the <grp.h> header file.  */
 #undef HAVE_GRP_H
 
@@ -598,6 +628,9 @@
 
 /* Define if you have the <netinet/tcp.h> header file.  */
 #undef HAVE_NETINET_TCP_H
+
+/* Define if you have the <openssl/crypto.h> header file.  */
+#undef HAVE_OPENSSL_CRYPTO_H
 
 /* Define if you have the <pwd.h> header file.  */
 #undef HAVE_PWD_H
@@ -742,12 +775,6 @@
 
 /* Define if you have the socket library (-lsocket).  */
 #undef HAVE_LIBSOCKET
-
-/* Define if you have the sqlcli library (-lsqlcli).  */
-#undef HAVE_LIBSQLCLI
-
-/* Define if processor uses big-endian word */
-#undef WORDS_BIGENDIAN
 
 /* Enabling BIND8 compatibility for Panther */
 #undef BIND_8_COMPAT
@@ -915,32 +942,29 @@
 /* Define if va_arg(arg, long double) crashes the compiler */
 #undef HAVE_VA_ARG_LONG_DOUBLE_BUG
 
-/* Whether localtime_r is declared */
-#undef MISSING_LOCALTIME_R_DECL
-
-/* Whether gmtime_r is declared */
-#undef MISSING_GMTIME_R_DECL
-
-/* Whether asctime_r is declared */
-#undef MISSING_ASCTIME_R_DECL
-
-/* Whether ctime_r is declared */
-#undef MISSING_CTIME_R_DECL
-
-/* Whether strtok_r is declared */
-#undef MISSING_STRTOK_R_DECL
-
 /* whether you have sendmail */
 #undef HAVE_SENDMAIL
 
 /* Define if system uses EBCDIC */
 #undef CHARSET_EBCDIC
 
+/* Define if processor uses big-endian word */
+#undef WORDS_BIGENDIAN
+
 /*   */
 #undef HAVE_SOCKET
 
 /*   */
 #undef HAVE_SOCKET
+
+/*   */
+#undef HAVE_LIBSOCKET
+
+/*   */
+#undef HAVE_SOCKETPAIR
+
+/*   */
+#undef HAVE_SOCKETPAIR
 
 /*   */
 #undef HAVE_LIBSOCKET
@@ -1043,12 +1067,6 @@
 
 /*   */
 #undef HAVE_LIBBIND
-
-/*   */
-#undef MISSING_FCLOSE_DECL
-
-/*   */
-#undef MISSING_FCLOSE_DECL
 
 /*   */
 #undef HAVE_FOPENCOOKIE
@@ -1065,6 +1083,27 @@
 /* Define if your glibc borks on fopen with mode a+ */
 #undef HAVE_BROKEN_GLIBC_FOPEN_APPEND
 
+/* Whether localtime_r is declared */
+#undef MISSING_LOCALTIME_R_DECL
+
+/* Whether gmtime_r is declared */
+#undef MISSING_GMTIME_R_DECL
+
+/* Whether asctime_r is declared */
+#undef MISSING_ASCTIME_R_DECL
+
+/* Whether ctime_r is declared */
+#undef MISSING_CTIME_R_DECL
+
+/* Whether strtok_r is declared */
+#undef MISSING_STRTOK_R_DECL
+
+/*   */
+#undef MISSING_FCLOSE_DECL
+
+/*   */
+#undef MISSING_FCLOSE_DECL
+
 /* whether you have tm_gmtoff in struct tm */
 #undef HAVE_TM_GMTOFF
 
@@ -1077,8 +1116,8 @@
 /* Whether you have struct sockaddr_storage */
 #undef HAVE_SOCKADDR_STORAGE
 
-/* Whether sockaddr struct has sa_len */
-#undef HAVE_SOCKADDR_LEN
+/* Whether struct sockaddr has field sa_len */
+#undef HAVE_SOCKADDR_SA_LEN
 
 /* Define if you have the getaddrinfo function */
 #undef HAVE_GETADDRINFO
@@ -1158,6 +1197,18 @@
 /*   */
 #undef HAVE_OPENSSL_EXT
 
+/* Whether to build pcre as dynamic module */
+#undef COMPILE_DL_PCRE
+
+/*   */
+#undef HAVE_BUNDLED_PCRE
+
+/*   */
+#undef HAVE_PCRE
+
+/* Whether to build pcre as dynamic module */
+#undef COMPILE_DL_PCRE
+
 /* Whether to build zlib as dynamic module */
 #undef COMPILE_DL_ZLIB
 
@@ -1182,17 +1233,20 @@
 /* Whether to build calendar as dynamic module */
 #undef COMPILE_DL_CALENDAR
 
-/* Whether to build cpdf as dynamic module */
-#undef COMPILE_DL_CPDF
-
-/* Whether you have cpdflib */
-#undef HAVE_CPDFLIB
-
 /*   */
 #undef HAVE_CTYPE
 
 /* Whether to build ctype as dynamic module */
 #undef COMPILE_DL_CTYPE
+
+/* Have cURL with  SSL support */
+#undef HAVE_CURL_SSL
+
+/* Have cURL with OpenSSL support */
+#undef HAVE_CURL_OPENSSL
+
+/* Have cURL with GnuTLS support */
+#undef HAVE_CURL_GNUTLS
 
 /*   */
 #undef HAVE_CURL
@@ -1205,6 +1259,15 @@
 
 /* Whether to build curl as dynamic module */
 #undef COMPILE_DL_CURL
+
+/*  Define if int32_t type is present.  */
+#undef HAVE_INT32_T
+
+/*  Define if uint32_t type is present.  */
+#undef HAVE_UINT32_T
+
+/* Whether to build date as dynamic module */
+#undef COMPILE_DL_DATE
 
 /*   */
 #undef QDBM_INCLUDE_FILE
@@ -1241,6 +1304,18 @@
 
 /*   */
 #undef DB2_INCLUDE_FILE
+
+/*   */
+#undef DB1_VERSION
+
+/*   */
+#undef DB1_VERSION
+
+/*   */
+#undef DB1_INCLUDE_FILE
+
+/*   */
+#undef DBA_DB1
 
 /*   */
 #undef DBM_INCLUDE_FILE
@@ -1302,12 +1377,6 @@
 /* Whether to build dbase as dynamic module */
 #undef COMPILE_DL_DBASE
 
-/* Whether to build dbx as dynamic module */
-#undef COMPILE_DL_DBX
-
-/* Whether to build dio as dynamic module */
-#undef COMPILE_DL_DIO
-
 /*   */
 #undef HAVE_LIBXML
 
@@ -1322,12 +1391,6 @@
 
 /* Whether to build exif as dynamic module */
 #undef COMPILE_DL_EXIF
-
-/*   */
-#undef HAVE_FAMLIB
-
-/* Whether to build fam as dynamic module */
-#undef COMPILE_DL_FAM
 
 /* Whether you have FrontBase */
 #undef HAVE_FBSQL
@@ -1573,7 +1636,13 @@
 #undef COMPILE_DL_HWAPI
 
 /*   */
+#undef HAVE_LIBICONV
+
+/*   */
 #undef HAVE_GICONV_H
+
+/*   */
+#undef HAVE_LIBICONV
 
 /*   */
 #undef HAVE_ICONV
@@ -1592,6 +1661,9 @@
 
 /* Which iconv implementation to use */
 #undef PHP_ICONV_IMPL
+
+/* Whether iconv supports error no or not */
+#undef ICONV_SUPPORTS_ERRNO
 
 /* Whether iconv supports error no or not */
 #undef ICONV_SUPPORTS_ERRNO
@@ -1662,23 +1734,11 @@
 /*   */
 #undef HAVE_IFX
 
-/* Whether you have Ingres II */
-#undef HAVE_II
-
-/* Whether to build ingres_ii as dynamic module */
-#undef COMPILE_DL_INGRES_II
-
 /*   */
 #undef HAVE_IBASE
 
 /* Whether to build interbase as dynamic module */
 #undef COMPILE_DL_INTERBASE
-
-/* Whether to build ircg as dynamic module */
-#undef COMPILE_DL_IRCG
-
-/* Whether you want IRCG support */
-#undef HAVE_IRCG
 
 /* Whether to build ldap as dynamic module */
 #undef COMPILE_DL_LDAP
@@ -1737,15 +1797,6 @@
 /* Whether to build mcrypt as dynamic module */
 #undef COMPILE_DL_MCRYPT
 
-/* Whether or not we're using libmonetra 4.2 or higher  */
-#undef LIBMONETRA_BELOW_4_2
-
-/*   */
-#undef HAVE_MCVE
-
-/* Whether to build mcve as dynamic module */
-#undef COMPILE_DL_MCVE
-
 /* Whether to build mhash as dynamic module */
 #undef COMPILE_DL_MHASH
 
@@ -1775,12 +1826,6 @@
 
 /* Whether to build ming as dynamic module */
 #undef COMPILE_DL_MING
-
-/*   */
-#undef HAVE_MNOGOSEARCH
-
-/* Whether to build mnogosearch as dynamic module */
-#undef COMPILE_DL_MNOGOSEARCH
 
 /*   */
 #undef HAVE_MSESSION
@@ -1945,6 +1990,9 @@
 #undef HAVE_IBMDB2
 
 /*   */
+#undef HAVE_ODBC_ROUTER
+
+/*   */
 #undef HAVE_EMPRESS
 
 /*   */
@@ -2001,18 +2049,6 @@
 /* Whether to build odbc as dynamic module */
 #undef COMPILE_DL_ODBC
 
-/* Whether to build oracle as dynamic module */
-#undef COMPILE_DL_ORACLE
-
-/*   */
-#undef HAVE_ORACLE
-
-/* Whether to build ovrimos as dynamic module */
-#undef COMPILE_DL_OVRIMOS
-
-/*   */
-#undef HAVE_LIBSQLCLI
-
 /*   */
 #undef HAVE_FORK
 
@@ -2025,26 +2061,113 @@
 /* Whether to build pcntl as dynamic module */
 #undef COMPILE_DL_PCNTL
 
-/* Whether to build pcre as dynamic module */
-#undef COMPILE_DL_PCRE
+/* Whether to build pdo as dynamic module */
+#undef COMPILE_DL_PDO
+
+/* Whether to build pdo_dblib as dynamic module */
+#undef COMPILE_DL_PDO_DBLIB
 
 /*   */
-#undef HAVE_BUNDLED_PCRE
+#undef HAVE_LIBDNET_STUB
 
 /*   */
-#undef HAVE_PCRE
-
-/* Whether to build pcre as dynamic module */
-#undef COMPILE_DL_PCRE
-
-/* Version of SDK */
-#undef PFPRO_VERSION
-
-/* Whether to build pfpro as dynamic module */
-#undef COMPILE_DL_PFPRO
+#undef HAVE_PDO_DBLIB
 
 /*   */
-#undef HAVE_PFPRO
+#undef HAVE_FREETDS
+
+/*   */
+#undef HAVE_PDO_FIREBIRD
+
+/* Whether to build pdo_firebird as dynamic module */
+#undef COMPILE_DL_PDO_FIREBIRD
+
+/* Whether you have MySQL */
+#undef HAVE_MYSQL
+
+/*   */
+#undef PDO_MYSQL_UNIX_ADDR
+
+/* Whether to build pdo_mysql as dynamic module */
+#undef COMPILE_DL_PDO_MYSQL
+
+/*   */
+#undef HAVE_OCIENVCREATE
+
+/*   */
+#undef HAVE_OCIENVNLSCREATE
+
+/*   */
+#undef HAVE_OCILOBISTEMPORARY
+
+/*   */
+#undef HAVE_OCILOBISTEMPORARY
+
+/*   */
+#undef HAVE_OCICOLLASSIGN
+
+/*   */
+#undef HAVE_OCISTMTFETCH2
+
+/* Whether to build pdo_oci as dynamic module */
+#undef COMPILE_DL_PDO_OCI
+
+/*   */
+#undef HAVE_ODBC_H
+
+/*   */
+#undef HAVE_ODBCSDK_H
+
+/*   */
+#undef HAVE_IODBC_H
+
+/*   */
+#undef HAVE_SQLUNIX_H
+
+/*   */
+#undef HAVE_SQLTYPES_H
+
+/*   */
+#undef HAVE_SQLUCODE_H
+
+/*   */
+#undef HAVE_SQL_H
+
+/*   */
+#undef HAVE_ISQL_H
+
+/*   */
+#undef HAVE_SQLEXT_H
+
+/*   */
+#undef HAVE_ISQLEXT_H
+
+/*   */
+#undef HAVE_UDBCEXT_H
+
+/*   */
+#undef HAVE_SQLCLI1_H
+
+/*   */
+#undef HAVE_LIBRARYMANAGER_H
+
+/*   */
+#undef HAVE_CLI0CORE_H
+
+/*   */
+#undef HAVE_CLI0EXT_H
+
+/*   */
+#undef HAVE_CLI0CLI_H
+
+/*   */
+#undef HAVE_CLI0DEFS_H
+
+/*   */
+#undef HAVE_CLI0ENV_H
+
+/* Whether to build pdo_odbc as dynamic module */
+#undef COMPILE_DL_PDO_ODBC
 
 /* Whether to have pg_config.h */
 #undef HAVE_PG_CONFIG_H
@@ -2052,8 +2175,8 @@
 /* Whether to have pg_config.h */
 #undef HAVE_PG_CONFIG_H
 
-/* Whether to build PostgreSQL support or not */
-#undef HAVE_PGSQL
+/* Whether to build PostgreSQL for PDO support or not */
+#undef HAVE_PDO_PGSQL
 
 /* PostgreSQL 7.2.0 or later */
 #undef HAVE_PQESCAPE
@@ -2079,6 +2202,108 @@
 /* PostgreSQL 7.4 or later */
 #undef HAVE_PGTRANSACTIONSTATUS
 
+/* PostgreSQL 7.4 or later */
+#undef HAVE_PQUNESCAPEBYTEA
+
+/* PostgreSQL 7.4 or later */
+#undef HAVE_PQEXECPARAMS
+
+/* PostgreSQL 7.4 or later */
+#undef HAVE_PQRESULTERRORFIELD
+
+/* Whether libpq is compiled with --enable-multibyte */
+#undef HAVE_PGSQL_WITH_MULTIBYTE_SUPPORT
+
+/* prepared statements */
+#undef HAVE_PQPREPARE
+
+/* Whether to build pdo_pgsql as dynamic module */
+#undef COMPILE_DL_PDO_PGSQL
+
+/*   */
+#undef HAVE_PDO_SQLITELIB
+
+/* have commercial sqlite3 with crypto support */
+#undef HAVE_SQLITE3_KEY
+
+/* Whether to build pdo_sqlite as dynamic module */
+#undef COMPILE_DL_PDO_SQLITE
+
+/* Whether to build pdo_sqlite as dynamic module */
+#undef COMPILE_DL_PDO_SQLITE
+
+/* Size of a pointer */
+#undef SQLITE_PTR_SZ
+
+/* Whether to have pg_config.h */
+#undef HAVE_PG_CONFIG_H
+
+/* Whether to have pg_config.h */
+#undef HAVE_PG_CONFIG_H
+
+/* Whether to build PostgreSQL support or not */
+#undef HAVE_PGSQL
+
+/* PostgreSQL 7.2.0 or later */
+#undef HAVE_PQESCAPE
+
+/* PostgreSQL 7.3.0 or later */
+#undef HAVE_PQUNESCAPEBYTEA
+
+/* PostgreSQL 7.0.x or later */
+#undef HAVE_PQSETNONBLOCKING
+
+/* Broken libpq under windows */
+#undef HAVE_PQCMDTUPLES
+
+/* Older PostgreSQL */
+#undef HAVE_PQOIDVALUE
+
+/* PostgreSQL 7.0.x or later */
+#undef HAVE_PQCLIENTENCODING
+
+/* PostgreSQL 7.4 or later */
+#undef HAVE_PQPARAMETERSTATUS
+
+/* PostgreSQL 7.4 or later */
+#undef HAVE_PQPROTOCOLVERSION
+
+/* PostgreSQL 7.4 or later */
+#undef HAVE_PGTRANSACTIONSTATUS
+
+/* PostgreSQL 7.4 or later */
+#undef HAVE_PQEXECPARAMS
+
+/* PostgreSQL 7.4 or later */
+#undef HAVE_PQPREPARE
+
+/* PostgreSQL 7.4 or later */
+#undef HAVE_PQEXECPREPARED
+
+/* PostgreSQL 7.4 or later */
+#undef HAVE_PQRESULTERRORFIELD
+
+/* PostgreSQL 7.4 or later */
+#undef HAVE_PQSENDQUERYPARAMS
+
+/* PostgreSQL 7.4 or later */
+#undef HAVE_PQSENDPREPARE
+
+/* PostgreSQL 7.4 or later */
+#undef HAVE_PQSENDQUERYPREPARED
+
+/* PostgreSQL 7.4 or later */
+#undef HAVE_PQPUTCOPYDATA
+
+/* PostgreSQL 7.4 or later */
+#undef HAVE_PQPUTCOPYEND
+
+/* PostgreSQL 7.4 or later */
+#undef HAVE_PQGETCOPYDATA
+
+/* PostgreSQL 7.4 or later */
+#undef HAVE_PQSETERRORVERBOSITY
+
 /* Whether libpq is compiled with --enable-multibyte */
 #undef HAVE_PGSQL_WITH_MULTIBYTE_SUPPORT
 
@@ -2096,6 +2321,9 @@
 
 /*   */
 #undef HAVE_PSPELL
+
+/*   */
+#undef HAVE_RL_CALLBACK_READ_CHAR
 
 /* Whether to build readline as dynamic module */
 #undef COMPILE_DL_READLINE
@@ -2191,6 +2419,9 @@
 #undef COMPILE_DL_SOCKETS
 
 /*   */
+#undef HAVE_SOCKETPAIR
+
+/*   */
 #undef HAVE_GETHOSTBYNAME2
 
 /* Whether you want SPL (Standard PHP Library) support */
@@ -2199,11 +2430,8 @@
 /* Whether to build spl as dynamic module */
 #undef COMPILE_DL_SPL
 
-/*   */
-#undef HAVE_SQLITELIB
-
-/* Whether to build sqlite as dynamic module */
-#undef COMPILE_DL_SQLITE
+/* Have PDO */
+#undef PHP_SQLITE2_HAVE_PDO
 
 /* Whether to build sqlite as dynamic module */
 #undef COMPILE_DL_SQLITE
@@ -2385,6 +2613,9 @@
 /* Whether to build sysvshm as dynamic module */
 #undef COMPILE_DL_SYSVSHM
 
+/*   */
+#undef HAVE_TIDYOPTGETDOC
+
 /* Whether to build tidy as dynamic module */
 #undef COMPILE_DL_TIDY
 
@@ -2413,19 +2644,40 @@
 #undef HAVE_XML
 
 /*   */
+#undef HAVE_LIBXML
+
+/*   */
+#undef HAVE_XMLREADER
+
+/* Whether to build xmlreader as dynamic module */
+#undef COMPILE_DL_XMLREADER
+
+/*   */
 #undef HAVE_XMLRPC
 
 /*   */
-#undef HAVE_LIBEXPAT2
+#undef HAVE_LIBXML
+
+/*   */
+#undef HAVE_LIBEXPAT
+
+/*   */
+#undef HAVE_LIBICONV
 
 /*   */
 #undef HAVE_GICONV_H
+
+/*   */
+#undef HAVE_LIBICONV
 
 /*   */
 #undef HAVE_ICONV
 
 /*   */
 #undef UNDEF_THREADS_HACK
+
+/* Whether to build xmlrpc as dynamic module */
+#undef COMPILE_DL_XMLRPC
 
 /* Whether to build xmlrpc as dynamic module */
 #undef COMPILE_DL_XMLRPC
@@ -2438,15 +2690,6 @@
 
 /* Whether to build xsl as dynamic module */
 #undef COMPILE_DL_XSL
-
-/*   */
-#undef HAVE_YP
-
-/* Whether to build yp as dynamic module */
-#undef COMPILE_DL_YP
-
-/*   */
-#undef SOLARIS_YP
 
 /* Define if int32_t type is present.  */
 #undef HAVE_INT32_T
@@ -2462,6 +2705,15 @@
 
 /* Define if dlsym() requires a leading underscore in symbol names.  */
 #undef DLSYM_NEEDS_UNDERSCORE
+
+/* virtual machine dispatch method */
+#undef ZEND_VM_KIND
+
+/* virtual machine dispatch method */
+#undef ZEND_VM_KIND
+
+/* virtual machine dispatch method */
+#undef ZEND_VM_KIND
 
 /*   */
 #undef ZEND_DEBUG
@@ -2486,6 +2738,9 @@
 
 /*   */
 #undef ZEND_MULTIBYTE
+
+/* Define if the target system is darwin */
+#undef DARWIN
 
 /*   */
 #undef ZEND_MM_ALIGNMENT
@@ -2559,6 +2814,13 @@ int zend_sprintf(char *buffer, const char *format, ...);
 
 #include <math.h>
 
+/* To enable the is_nan, is_infinite and is_finite PHP functions */
+#ifdef NETWARE
+	#define HAVE_ISNAN 1
+	#define HAVE_ISINF 1
+	#define HAVE_ISFINITE 1
+#endif
+
 #ifndef zend_isnan
 #ifdef HAVE_ISNAN
 #define zend_isnan(a) isnan(a)
@@ -2592,9 +2854,9 @@ int zend_sprintf(char *buffer, const char *format, ...);
 
 #endif /* ifndef ZEND_ACCONFIG_H_NO_C_PROTOS */
 
-#ifdef NETWARE 
+#ifdef NETWARE
 #ifdef USE_WINSOCK
-#/*This detection against winsock is of no use*/ undef HAVE_SOCKLEN_T 
+#/*This detection against winsock is of no use*/ undef HAVE_SOCKLEN_T
 #/*This detection against winsock is of no use*/ undef HAVE_SYS_SOCKET_H
 #endif
 #endif

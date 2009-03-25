@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_interfaces.c,v 1.21.2.4 2005/03/01 23:42:29 helly Exp $ */
+/* $Id: zend_interfaces.c,v 1.33.2.1 2005/10/03 12:36:36 helly Exp $ */
 
 #include "zend.h"
 #include "zend_API.h"
@@ -27,6 +27,7 @@ ZEND_API zend_class_entry *zend_ce_traversable;
 ZEND_API zend_class_entry *zend_ce_aggregate;
 ZEND_API zend_class_entry *zend_ce_iterator;
 ZEND_API zend_class_entry *zend_ce_arrayaccess;
+ZEND_API zend_class_entry *zend_ce_serializable;
 
 /* {{{ zend_call_method 
  Only returns the returned zval if retval_ptr != NULL */
@@ -57,6 +58,7 @@ ZEND_API zval* zend_call_method(zval **object_pp, zend_class_entry *obj_ce, zend
 		/* no interest in caching and no information already present that is
 		 * needed later inside zend_call_function. */
 		ZVAL_STRINGL(&z_fname, function_name, function_name_len, 0);
+		fci.function_table = !object_pp ? EG(function_table) : NULL;
 		result = zend_call_function(&fci, NULL TSRMLS_CC);
 	} else {
 		zend_fcall_info_cache fcic;
@@ -192,7 +194,10 @@ static int zend_user_it_get_current_key(zend_object_iterator *_iter, char **str_
 
 	if (!retval) {
 		*int_key = 0;
-		zend_error(E_WARNING, "Nothing returned from %s::key()", iter->ce->name);
+		if (!EG(exception))
+		{
+			zend_error(E_WARNING, "Nothing returned from %s::key()", iter->ce->name);
+		}
 		return HASH_KEY_IS_LONG;
 	}
 	switch (retval->type) {
@@ -322,13 +327,27 @@ static int zend_implement_traversable(zend_class_entry *interface, zend_class_en
 /* {{{ zend_implement_aggregate */
 static int zend_implement_aggregate(zend_class_entry *interface, zend_class_entry *class_type TSRMLS_DC)
 {
+	int i, t = -1;
+
 	if (class_type->get_iterator) {
 		if (class_type->type == ZEND_INTERNAL_CLASS) {
 			/* inheritance ensures the class has necessary userland methods */
 			return SUCCESS;
 		} else if (class_type->get_iterator != zend_user_it_get_new_iterator) {
-			/* c-level get_iterator cannot be changed */
-			return FAILURE;
+			/* c-level get_iterator cannot be changed (exception being only Traversable is implmented) */
+			if (class_type->num_interfaces) {
+				for (i = 0; i < class_type->num_interfaces; i++) {
+					if (class_type->interfaces[i] == zend_ce_iterator) {
+						return FAILURE;
+					}
+					if (class_type->interfaces[i] == zend_ce_traversable) {
+						t = i;
+					}
+				}
+			}
+			if (t == -1) {
+				return FAILURE;
+			}
 		}
 	}
 	class_type->iterator_funcs.zf_new_iterator = NULL;
@@ -378,6 +397,79 @@ static int zend_implement_arrayaccess(zend_class_entry *interface, zend_class_en
 }
 /* }}}*/
 
+/* {{{ zend_user_serialize */
+int zend_user_serialize(zval *object, unsigned char **buffer, zend_uint *buf_len, zend_serialize_data *data TSRMLS_DC)
+{
+	zend_class_entry * ce = Z_OBJCE_P(object);
+	zval *retval;
+	int result;
+
+	zend_call_method_with_0_params(&object, ce, &ce->serialize_func, "serialize", &retval);
+
+
+	if (!retval || EG(exception)) {
+		result = FAILURE;
+	} else {
+		switch(Z_TYPE_P(retval)) {
+		case IS_NULL:
+			/* we could also make this '*buf_len = 0' but this allows to skip variables */
+			zval_ptr_dtor(&retval);
+			return FAILURE;
+		case IS_STRING:
+			*buffer = estrndup(Z_STRVAL_P(retval), Z_STRLEN_P(retval));
+			*buf_len = Z_STRLEN_P(retval);
+			result = SUCCESS;
+			break;
+		default: /* failure */
+			result = FAILURE;
+			break;
+		}
+		zval_ptr_dtor(&retval);
+	}
+
+	if (result == FAILURE) {
+		zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "%s::serialize() must return a string or NULL", ce->name);
+	}
+	return result;
+}
+/* }}} */
+
+/* {{{ zend_user_unserialize */
+int zend_user_unserialize(zval **object, zend_class_entry *ce, const unsigned char *buf, zend_uint buf_len, zend_unserialize_data *data TSRMLS_DC)
+{
+	zval * zdata;
+
+	object_init_ex(*object, ce);
+	
+	MAKE_STD_ZVAL(zdata);
+	ZVAL_STRINGL(zdata, (char*)buf, buf_len, 1);
+
+	zend_call_method_with_1_params(object, ce, &ce->unserialize_func, "unserialize", NULL, zdata);
+	
+	zval_ptr_dtor(&zdata);
+	
+	if (EG(exception)) {
+		return FAILURE;
+	} else {
+		return SUCCESS;
+	}
+}
+/* }}} */
+
+/* {{{ zend_implement_serializable */
+static int zend_implement_serializable(zend_class_entry *interface, zend_class_entry *class_type TSRMLS_DC)
+{
+	if ((class_type->serialize   && class_type->serialize   != zend_user_serialize)
+	||  (class_type->unserialize && class_type->unserialize != zend_user_unserialize)
+	) {
+		return FAILURE;
+	}
+	class_type->serialize = zend_user_serialize;
+	class_type->unserialize = zend_user_unserialize;
+	return SUCCESS;
+}
+/* }}}*/
+
 /* {{{ function tables */
 zend_function_entry zend_funcs_aggregate[] = {
 	ZEND_ABSTRACT_ME(iterator, getIterator, NULL)
@@ -396,24 +488,39 @@ zend_function_entry zend_funcs_iterator[] = {
 zend_function_entry *zend_funcs_traversable    = NULL;
 
 static
-ZEND_BEGIN_ARG_INFO(arginfo_arrayaccess_offset, 0)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_arrayaccess_offset, 0, 0, 1)
 	ZEND_ARG_INFO(0, offset)
 ZEND_END_ARG_INFO();
 
 static
-ZEND_BEGIN_ARG_INFO(arginfo_arrayaccess_offset_value, 0) 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_arrayaccess_offset_get, 0, 0, 1) /* actually this should be return by ref but atm cannot be */
+	ZEND_ARG_INFO(0, offset)
+ZEND_END_ARG_INFO();
+
+static
+ZEND_BEGIN_ARG_INFO_EX(arginfo_arrayaccess_offset_value, 0, 0, 2) 
 	ZEND_ARG_INFO(0, offset)
 	ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO();
 
 zend_function_entry zend_funcs_arrayaccess[] = {
 	ZEND_ABSTRACT_ME(arrayaccess, offsetExists, arginfo_arrayaccess_offset)
-	ZEND_ABSTRACT_ME(arrayaccess, offsetGet,    arginfo_arrayaccess_offset)
+	ZEND_ABSTRACT_ME(arrayaccess, offsetGet,    arginfo_arrayaccess_offset_get)
 	ZEND_ABSTRACT_ME(arrayaccess, offsetSet,    arginfo_arrayaccess_offset_value)
 	ZEND_ABSTRACT_ME(arrayaccess, offsetUnset,  arginfo_arrayaccess_offset)
 	{NULL, NULL, NULL}
 };
 
+static
+ZEND_BEGIN_ARG_INFO(arginfo_serializable_serialize, 0)
+	ZEND_ARG_INFO(0, serialized)
+ZEND_END_ARG_INFO();
+
+zend_function_entry zend_funcs_serializable[] = {
+	ZEND_ABSTRACT_ME(serializable, serialize,   NULL)
+	ZEND_FENTRY(unserialize, NULL, arginfo_serializable_serialize, ZEND_ACC_PUBLIC|ZEND_ACC_ABSTRACT|ZEND_ACC_CTOR) 
+	{NULL, NULL, NULL}
+};
 /* }}} */
 
 #define REGISTER_ITERATOR_INTERFACE(class_name, class_name_str) \
@@ -439,6 +546,8 @@ ZEND_API void zend_register_interfaces(TSRMLS_D)
 	REGISTER_ITERATOR_IMPLEMENT(iterator, traversable);
 	
 	REGISTER_ITERATOR_INTERFACE(arrayaccess, ArrayAccess);
+	
+	REGISTER_ITERATOR_INTERFACE(serializable, Serializable)
 }
 /* }}} */
 

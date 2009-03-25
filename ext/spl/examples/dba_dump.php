@@ -4,7 +4,7 @@
  * @brief   Program DBA dump utility
  * @ingroup Examples
  * @author  Marcus Boerger
- * @date    2003 - 2004
+ * @date    2003 - 2005
  *
  * Usage: php dba_dump.php \<file\> \<handler\> [\<regex\>]
  *
@@ -26,8 +26,8 @@ EOF;
 	exit(1);
 }
 
-if (!class_exists("DbaReader")) require_once("dbareader.inc");
-if (!class_exists("KeyFilter")) require_once("keyfilter.inc");
+if (!class_exists("DbaReader", false)) require_once("dbareader.inc");
+if (!class_exists("KeyFilter", false)) require_once("keyfilter.inc");
 
 $db = new DbaReader($argv[1], $argv[2]);
 

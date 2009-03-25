@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -19,7 +19,7 @@
    | Stig Bakken <ssb@php.net>                                            |
    +----------------------------------------------------------------------+
  */
-/* $Id: sapi_apache.c,v 1.45 2004/01/08 08:18:03 andi Exp $ */
+/* $Id: sapi_apache.c,v 1.47 2005/08/03 14:08:46 sniper Exp $ */
 
 #include "php_apache_http.h"
 
@@ -34,8 +34,7 @@ int apache_php_module_main(request_rec *r, int display_source_mode TSRMLS_DC)
 		return FAILURE;
 	}
 	/* sending a file handle to another dll is not working
-	// so let zend open it. 
-	*/
+	   so let zend open it. */
 	
 	if (display_source_mode) {
 		zend_syntax_highlighter_ini syntax_highlighter_ini;

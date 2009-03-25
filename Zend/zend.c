@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend.c,v 1.287.2.12 2005/07/22 07:33:27 dmitry Exp $ */
+/* $Id: zend.c,v 1.308.2.4 2005/11/15 13:29:28 dmitry Exp $ */
 
 #include "zend.h"
 #include "zend_extensions.h"
@@ -38,6 +38,7 @@
 #   define GLOBAL_FUNCTION_TABLE    CG(function_table)
 #   define GLOBAL_CLASS_TABLE       CG(class_table)
 #   define GLOBAL_AUTO_GLOBALS_TABLE    CG(auto_globals)
+#   define GLOBAL_CONSTANTS_TABLE   EG(zend_constants)
 #endif
 
 #if defined(ZEND_WIN32) && ZEND_DEBUG
@@ -55,6 +56,7 @@ ZEND_API void (*zend_unblock_interruptions)(void);
 ZEND_API void (*zend_ticks_function)(int ticks);
 ZEND_API void (*zend_error_cb)(int type, const char *error_filename, const uint error_lineno, const char *format, va_list args);
 int (*zend_vspprintf)(char **pbuf, size_t max_len, const char *format, va_list ap);
+ZEND_API char *(*zend_getenv)(char *name, size_t name_len TSRMLS_DC);
 
 void (*zend_on_timeout)(int seconds TSRMLS_DC);
 
@@ -76,6 +78,9 @@ static ZEND_INI_MH(OnUpdateErrorReporting)
 ZEND_INI_BEGIN()
 	ZEND_INI_ENTRY("error_reporting",				NULL,		ZEND_INI_ALL,		OnUpdateErrorReporting)
 	STD_ZEND_INI_BOOLEAN("zend.ze1_compatibility_mode",	"0",	ZEND_INI_ALL,		OnUpdateBool,	ze1_compatibility_mode,	zend_executor_globals,	executor_globals)
+#ifdef ZEND_MULTIBYTE
+	STD_ZEND_INI_BOOLEAN("detect_unicode", "1", ZEND_INI_ALL, OnUpdateBool, detect_unicode, zend_compiler_globals, compiler_globals)
+#endif
 ZEND_INI_END()
 
 
@@ -87,6 +92,7 @@ HashTable *global_function_table;
 HashTable *global_class_table;
 HashTable *global_constants_table;
 HashTable *global_auto_globals_table;
+static HashTable *global_persistent_list = NULL;
 #endif
 
 ZEND_API zend_utility_values zend_uv;
@@ -96,7 +102,7 @@ ZEND_API zval zval_used_for_init; /* True global variable */
 /* version information */
 static char *zend_version_info;
 static uint zend_version_info_length;
-#define ZEND_CORE_VERSION_INFO	"Zend Engine v" ZEND_VERSION ", Copyright (c) 1998-2004 Zend Technologies\n"
+#define ZEND_CORE_VERSION_INFO	"Zend Engine v" ZEND_VERSION ", Copyright (c) 1998-2005 Zend Technologies\n"
 
 
 #define PRINT_ZVAL_INDENT 4
@@ -126,7 +132,7 @@ static void print_hash(HashTable *ht, int indent, zend_bool is_object TSRMLS_DC)
 				if (is_object) {
 					char *prop_name, *class_name;
 
-					zend_unmangle_property_name(string_key, &class_name, &prop_name);
+					zend_unmangle_property_name_ex(string_key, str_len, &class_name, &prop_name);
 					ZEND_PUTS(prop_name);
 					if (class_name) {
 						if (class_name[0]=='*') {
@@ -193,7 +199,7 @@ ZEND_API void zend_make_printable_zval(zval *expr, zval *expr_copy, int *use_cop
 	switch (expr->type) {
 		case IS_NULL:
 			expr_copy->value.str.len = 0;
-			expr_copy->value.str.val = empty_string;
+			expr_copy->value.str.val = STR_EMPTY_ALLOC();
 			break;
 		case IS_BOOL:
 			if (expr->value.lval) {
@@ -201,7 +207,7 @@ ZEND_API void zend_make_printable_zval(zval *expr, zval *expr_copy, int *use_cop
 				expr_copy->value.str.val = estrndup("1", 1);
 			} else {
 				expr_copy->value.str.len = 0;
-				expr_copy->value.str.val = empty_string;
+				expr_copy->value.str.val = STR_EMPTY_ALLOC();
 			}
 			break;
 		case IS_RESOURCE:
@@ -241,7 +247,7 @@ ZEND_API void zend_make_printable_zval(zval *expr, zval *expr_copy, int *use_cop
 				if (EG(exception)) {
 					zval_dtor(expr_copy);
 					expr_copy->value.str.len = 0;
-					expr_copy->value.str.val = empty_string;
+					expr_copy->value.str.val = STR_EMPTY_ALLOC();
 					break;
 				}
 			}
@@ -485,6 +491,13 @@ static void executor_globals_ctor(zend_executor_globals *executor_globals TSRMLS
 static void executor_globals_dtor(zend_executor_globals *executor_globals TSRMLS_DC)
 {
 	zend_ini_shutdown(TSRMLS_C);
+	if (&executor_globals->persistent_list != global_persistent_list) {
+		zend_destroy_rsrc_list(&executor_globals->persistent_list TSRMLS_CC);
+	}
+	if (executor_globals->zend_constants != GLOBAL_CONSTANTS_TABLE) {
+		zend_hash_destroy(executor_globals->zend_constants);
+		free(executor_globals->zend_constants);
+	}
 }
 
 
@@ -494,14 +507,11 @@ static void zend_new_thread_end_handler(THREAD_T thread_id TSRMLS_DC)
 	zend_ini_refresh_caches(ZEND_INI_STAGE_STARTUP TSRMLS_CC);
 }
 
-
 static void alloc_globals_dtor(zend_alloc_globals *alloc_globals_p TSRMLS_DC)
 {
 	shutdown_memory_manager(0, 1 TSRMLS_CC);
 }
-
 #endif
-
 
 static void alloc_globals_ctor(zend_alloc_globals *alloc_globals_p TSRMLS_DC)
 {
@@ -574,6 +584,7 @@ int zend_startup(zend_utility_functions *utility_functions, char **extensions, i
 	zend_ticks_function = utility_functions->ticks_function;
 	zend_on_timeout = utility_functions->on_timeout;
 	zend_vspprintf = utility_functions->vspprintf_function;
+	zend_getenv = utility_functions->getenv_function;
 
 	zend_compile_file = compile_file;
 	zend_execute = execute;
@@ -683,6 +694,7 @@ void zend_post_startup(TSRMLS_D)
 	compiler_globals_ctor(compiler_globals, tsrm_ls);
 	free(EG(zend_constants));
 	executor_globals_ctor(executor_globals, tsrm_ls);
+	global_persistent_list = &EG(persistent_list);
 	zend_new_thread_end_handler(tsrm_thread_id() TSRMLS_CC);
 }
 #endif
@@ -693,9 +705,7 @@ void zend_shutdown(TSRMLS_D)
 #ifdef ZEND_WIN32
 	zend_shutdown_timeout_thread();
 #endif
-#ifndef ZTS
 	zend_destroy_rsrc_list(&EG(persistent_list) TSRMLS_CC);
-#endif
 	zend_hash_graceful_reverse_destroy(&module_registry);
 
 	zend_hash_destroy(GLOBAL_FUNCTION_TABLE);
@@ -707,16 +717,17 @@ void zend_shutdown(TSRMLS_D)
 	zend_shutdown_extensions(TSRMLS_C);
 	free(zend_version_info);
 
-	zend_shutdown_constants(TSRMLS_C);
 	free(GLOBAL_FUNCTION_TABLE);
 	free(GLOBAL_CLASS_TABLE);
-#ifdef ZTS
-	zend_destroy_rsrc_list(&EG(persistent_list) TSRMLS_CC);
+
 	zend_hash_destroy(GLOBAL_CONSTANTS_TABLE);
 	free(GLOBAL_CONSTANTS_TABLE);
+
+#ifdef ZTS
 	GLOBAL_FUNCTION_TABLE = NULL;
 	GLOBAL_CLASS_TABLE = NULL;
 	GLOBAL_AUTO_GLOBALS_TABLE = NULL;
+	GLOBAL_CONSTANTS_TABLE = NULL;
 #endif
 	zend_destroy_rsrc_list_dtors();
 }
@@ -944,13 +955,20 @@ ZEND_API void zend_error(int type, const char *format, ...)
 			ALLOC_INIT_ZVAL(z_error_lineno);
 			ALLOC_INIT_ZVAL(z_context);
 
-#if defined(va_copy)
-			va_copy(usr_copy, args);
-#else
-			usr_copy = args;
+/* va_copy() is __va_copy() in old gcc versions.
+ * According to the autoconf manual, using
+ * memcpy(&dst, &src, sizeof(va_list))
+ * gives maximum portability. */
+#ifndef va_copy
+# ifdef __va_copy
+#  define va_copy(dest, src)	__va_copy((dest), (src))
+# else
+#  define va_copy(dest, src)	memcpy(&(dest), &(src), sizeof(va_list))
+# endif
 #endif
+			va_copy(usr_copy, args);
 			z_error_message->value.str.len = zend_vspprintf(&z_error_message->value.str.val, 0, format, usr_copy);
-#if defined(va_copy)
+#ifdef va_copy
 			va_end(usr_copy);
 #endif
 			z_error_message->type = IS_STRING;
@@ -995,7 +1013,8 @@ ZEND_API void zend_error(int type, const char *format, ...)
 
 			if (!EG(user_error_handler)) {
 				EG(user_error_handler) = orig_user_error_handler;
-			} else {
+			} 
+			else {
 				zval_ptr_dtor(&orig_user_error_handler);
 			}
 
@@ -1016,6 +1035,9 @@ ZEND_API void zend_error(int type, const char *format, ...)
 	}
 }
 
+#if defined(__GNUC__) && !defined(__INTEL_COMPILER) && !defined(DARWIN)
+void zend_error_noreturn(int type, const char *format, ...) __attribute__ ((alias("zend_error"),noreturn));
+#endif
 
 ZEND_API void zend_output_debug_string(zend_bool trigger_break, char *format, ...)
 {
@@ -1058,6 +1080,10 @@ ZEND_API int zend_execute_scripts(int type TSRMLS_DC, zval **retval, int file_co
 			continue;
 		}
 		EG(active_op_array) = zend_compile_file(file_handle, ZEND_INCLUDE TSRMLS_CC);
+		if(file_handle->opened_path) {
+			int dummy=1;
+			zend_hash_add(&EG(included_files), file_handle->opened_path, strlen(file_handle->opened_path)+1, (void *)&dummy, sizeof(int), NULL);
+		}
 		zend_destroy_file_handle(file_handle TSRMLS_CC);
 		if (EG(active_op_array)) {
 			EG(return_value_ptr_ptr) = retval ? retval : &local_retval;

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_config.nw.h,v 1.5 2004/01/08 17:31:47 sniper Exp $ */
+/* $Id: zend_config.nw.h,v 1.8 2005/08/03 13:30:49 sniper Exp $ */
 
 #ifndef ZEND_CONFIG_NW_H
 #define ZEND_CONFIG_NW_H
@@ -34,7 +34,8 @@ typedef unsigned int uint;
 /* #include <malloc.h> */
 
 #define HAVE_STRING_H 1
-
+#define HAVE_SYS_SELECT_H 1
+#define HAVE_STDLIB_H 1
 #undef HAVE_KILL
 #define HAVE_GETPID 1
 /* #define HAVE_ALLOCA_H 1 */

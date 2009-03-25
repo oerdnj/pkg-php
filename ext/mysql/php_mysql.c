@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
  
-/* $Id: php_mysql.c,v 1.209.2.2 2005/04/07 22:23:28 sniper Exp $ */
+/* $Id: php_mysql.c,v 1.213.2.2 2005/09/04 17:10:56 wez Exp $ */
 
 /* TODO:
  *
@@ -33,7 +33,14 @@
 #include "php_globals.h"
 #include "ext/standard/info.h"
 #include "ext/standard/php_string.h"
-#include "zend_exceptions.h"
+
+#ifdef ZEND_ENGINE_2
+# include "zend_exceptions.h"
+#else
+  /* PHP 4 compat */
+# define OnUpdateLong	OnUpdateInt
+# define E_STRICT		E_NOTICE
+#endif
 
 #if HAVE_MYSQL
 
@@ -211,7 +218,7 @@ zend_module_entry mysql_module_entry = {
 	PHP_RINIT(mysql),
 	PHP_RSHUTDOWN(mysql),
 	PHP_MINFO(mysql),
-	NO_VERSION_YET,
+	"1.0",
 	STANDARD_MODULE_PROPERTIES
 };
 /* }}} */
@@ -1904,6 +1911,7 @@ static void php_mysql_fetch_hash(INTERNAL_FUNCTION_PARAMETERS, int result_type, 
 	zval            *res, *ctor_params = NULL;
 	zend_class_entry *ce;
 
+#ifdef ZEND_ENGINE_2
 	if (into_object) {
 		char *class_name;
 		int class_name_len;
@@ -1922,7 +1930,9 @@ static void php_mysql_fetch_hash(INTERNAL_FUNCTION_PARAMETERS, int result_type, 
 			return;
 		}
 		result_type = MYSQL_ASSOC;
-	} else {
+	} else
+#endif
+	{
 		if (ZEND_NUM_ARGS() > expected_args) {
 			WRONG_PARAM_COUNT;
 		}
@@ -1997,6 +2007,7 @@ static void php_mysql_fetch_hash(INTERNAL_FUNCTION_PARAMETERS, int result_type, 
 		}
 	}
 
+#ifdef ZEND_ENGINE_2
 	if (into_object) {
 		zval dataset = *return_value;
 		zend_fcall_info fci;
@@ -2060,6 +2071,8 @@ static void php_mysql_fetch_hash(INTERNAL_FUNCTION_PARAMETERS, int result_type, 
 			zend_throw_exception_ex(zend_exception_get_default(), 0 TSRMLS_CC, "Class %s does not have a constructor hence you cannot use ctor_params", ce->name);
 		}
 	}
+#endif
+
 }
 /* }}} */
 
@@ -2248,9 +2261,9 @@ PHP_FUNCTION(mysql_fetch_field)
 	}
 	object_init(return_value);
 
-	add_property_string(return_value, "name",(mysql_field->name?mysql_field->name:empty_string), 1);
-	add_property_string(return_value, "table",(mysql_field->table?mysql_field->table:empty_string), 1);
-	add_property_string(return_value, "def",(mysql_field->def?mysql_field->def:empty_string), 1);
+	add_property_string(return_value, "name",(mysql_field->name?mysql_field->name:""), 1);
+	add_property_string(return_value, "table",(mysql_field->table?mysql_field->table:""), 1);
+	add_property_string(return_value, "def",(mysql_field->def?mysql_field->def:""), 1);
 	add_property_long(return_value, "max_length", mysql_field->max_length);
 	add_property_long(return_value, "not_null", IS_NOT_NULL(mysql_field->flags)?1:0);
 	add_property_long(return_value, "primary_key", IS_PRI_KEY(mysql_field->flags)?1:0);

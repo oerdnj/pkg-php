@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: info.c,v 1.245.2.5 2005/08/16 00:25:46 iliaa Exp $ */
+/* $Id: info.c,v 1.249.2.5 2005/11/23 00:15:08 iliaa Exp $ */
 
 #include "php.h"
 #include "php_ini.h"
@@ -149,14 +149,16 @@ static void php_print_gpcse_array(char *name, uint name_length TSRMLS_DC)
 				php_ob_get_buffer(tmp3 TSRMLS_CC);
 				php_end_ob_buffer(0, 0 TSRMLS_CC);
 				
-				elem_esc = php_info_html_esc(Z_STRVAL_P(tmp3) TSRMLS_CC);
-				PUTS(elem_esc);
-				efree(elem_esc);
+				if (!sapi_module.phpinfo_as_text) {
+					elem_esc = php_info_html_esc(Z_STRVAL_P(tmp3) TSRMLS_CC);
+					PUTS(elem_esc);
+					efree(elem_esc);
+					PUTS("</pre>");
+				} else {
+					PUTS(Z_STRVAL_P(tmp3));
+				}
 				zval_ptr_dtor(&tmp3);
 
-				if (!sapi_module.phpinfo_as_text) {
-					PUTS("</pre>");
-				}
 			} else if (Z_TYPE_PP(tmp) != IS_STRING) {
 				tmp2 = **tmp;
 				zval_copy_ctor(&tmp2);
@@ -201,9 +203,9 @@ static void php_print_gpcse_array(char *name, uint name_length TSRMLS_DC)
  */
 void php_info_print_style(TSRMLS_D)
 {
-	php_printf("<style type=\"text/css\"><!--\n");
+	php_printf("<style type=\"text/css\">\n");
 	php_info_print_css(TSRMLS_C);
-	php_printf("//--></style>\n");
+	php_printf("</style>\n");
 }
 /* }}} */
 
@@ -564,6 +566,47 @@ PHPAPI void php_print_info(int flag TSRMLS_DC)
 			} else {
 				/* Any chances we will ever hit this? */
 				php_info_print_table_row(2, "Stream Socket Transports", "disabled"); /* ?? */
+			}
+		}
+
+		{
+			HashTable *stream_filter_hash;
+			char *filter_name, *filter_buf = NULL;
+			int filter_name_len, filter_buf_len = 0, filter_buf_size = 0;
+			ulong num_key;
+
+			if ((stream_filter_hash = php_get_stream_filters_hash())) {
+				for(zend_hash_internal_pointer_reset(stream_filter_hash);
+					zend_hash_get_current_key_ex(stream_filter_hash, &filter_name, &filter_name_len, &num_key, 0, NULL) == HASH_KEY_IS_STRING;
+					zend_hash_move_forward(stream_filter_hash)) {
+					if (filter_buf_len + filter_name_len + 3 > filter_buf_size) {
+						while (filter_buf_len + filter_name_len + 3 > filter_buf_size) {
+							filter_buf_size += 256;
+						}
+						if (filter_buf) {
+							filter_buf = erealloc(filter_buf, filter_buf_size);
+						} else {
+							filter_buf = emalloc(filter_buf_size);
+						}
+					}
+					if (filter_buf_len > 0) {
+						filter_buf[filter_buf_len++] = ',';
+						filter_buf[filter_buf_len++] = ' ';
+					}
+					memcpy(filter_buf + filter_buf_len, filter_name, filter_name_len);
+					filter_buf_len += filter_name_len;
+					filter_buf[filter_buf_len] = '\0';
+				}
+				if (filter_buf) {
+					php_info_print_table_row(2, "Registered Stream Filters", filter_buf);
+					efree(filter_buf);
+				} else {
+					/* Any chances we will ever hit this? */
+					php_info_print_table_row(2, "Registered Stream Filters", "no filters registered");
+				}
+			} else {
+				/* Any chances we will ever hit this? */
+				php_info_print_table_row(2, "Stream Filters", "disabled"); /* ?? */
 			}
 		}
 		

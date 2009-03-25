@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: php_msql.c,v 1.57.2.1 2005/02/17 20:13:10 andi Exp $ */
+/* $Id: php_msql.c,v 1.60 2005/08/03 14:07:28 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1102,8 +1102,8 @@ PHP_FUNCTION(msql_fetch_field)
 	}
 	object_init(return_value);
 
-	add_property_string(return_value, "name",(msql_field->name?msql_field->name:empty_string), 1);
-	add_property_string(return_value, "table",(msql_field->table?msql_field->table:empty_string), 1);
+	add_property_string(return_value, "name",(msql_field->name?msql_field->name:""), 1);
+	add_property_string(return_value, "table",(msql_field->table?msql_field->table:""), 1);
 	add_property_long(return_value, "not_null",IS_NOT_NULL(msql_field->flags));
 #if MSQL1
 	add_property_long(return_value, "primary_key",(msql_field->flags&PRI_KEY_FLAG?1:0));

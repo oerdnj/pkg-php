@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_functions.c,v 1.13.2.2 2005/01/24 11:46:59 jorton Exp $ */
+/* $Id: php_functions.c,v 1.18 2005/08/03 14:08:48 sniper Exp $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 
@@ -115,7 +115,7 @@ PHP_FUNCTION(virtual)
 #define ADD_LONG(name) \
 		add_property_long(return_value, #name, rr->name)
 #define ADD_TIME(name) \
-		add_property_long(return_value, #name, rr->name / APR_USEC_PER_SEC);
+		add_property_long(return_value, #name, apr_time_sec(rr->name));
 #define ADD_STRING(name) \
 		if (rr->name) add_property_string(return_value, #name, (char *) rr->name, 1)
 
@@ -161,7 +161,6 @@ PHP_FUNCTION(apache_lookup_uri)
 		ADD_LONG(allowed);
 		ADD_LONG(sent_bodyct);
 		ADD_LONG(bytes_sent);
-		ADD_LONG(request_time);
 		ADD_LONG(mtime);
 		ADD_TIME(request_time);
 
@@ -188,7 +187,7 @@ PHP_FUNCTION(apache_request_headers)
 	arr = apr_table_elts(ctx->r->headers_in);
 
 	APR_ARRAY_FOREACH_OPEN(arr, key, val)
-		if (!val) val = empty_string;
+		if (!val) val = "";
 		add_assoc_string(return_value, key, val, 1);
 	APR_ARRAY_FOREACH_CLOSE()
 }
@@ -208,7 +207,7 @@ PHP_FUNCTION(apache_response_headers)
 	arr = apr_table_elts(ctx->r->headers_out);
 
 	APR_ARRAY_FOREACH_OPEN(arr, key, val)
-		if (!val) val = empty_string;
+		if (!val) val = "";
 		add_assoc_string(return_value, key, val, 1);
 	APR_ARRAY_FOREACH_CLOSE()
 }
@@ -407,7 +406,9 @@ PHP_MINFO_FUNCTION(apache)
 	sprintf(tmp, "Per Child: %d - Keep Alive: %s - Max Per Connection: %d", max_requests, (serv->keep_alive ? "on":"off"), serv->keep_alive_max);
 	php_info_print_table_row(2, "Max Requests", tmp);
 
-	sprintf(tmp, "Connection: %lld - Keep-Alive: %lld", (serv->timeout / 1000000), (serv->keep_alive_timeout / 1000000));
+	apr_snprintf(tmp, sizeof tmp,
+				 "Connection: %" APR_TIME_T_FMT " - Keep-Alive: %" APR_TIME_T_FMT, 
+				 apr_time_sec(serv->timeout), apr_time_sec(serv->keep_alive_timeout));
 	php_info_print_table_row(2, "Timeouts", tmp);
 	
 	php_info_print_table_row(2, "Virtual Server", (serv->is_virtual ? "Yes" : "No"));
@@ -428,7 +429,7 @@ PHP_MINFO_FUNCTION(apache)
 		php_info_print_table_header(2, "Variable", "Value");
 		APR_ARRAY_FOREACH_OPEN(arr, key, val)
 			if (!val) {
-				val = empty_string;
+				val = "";
 			}
 			php_info_print_table_row(2, key, val);
 		APR_ARRAY_FOREACH_CLOSE()
@@ -443,7 +444,7 @@ PHP_MINFO_FUNCTION(apache)
 		arr = apr_table_elts(((php_struct *) SG(server_context))->r->headers_in);
 		APR_ARRAY_FOREACH_OPEN(arr, key, val)
 			if (!val) {
-				val = empty_string;
+				val = "";
 			}
 		        php_info_print_table_row(2, key, val);
 		APR_ARRAY_FOREACH_CLOSE()
@@ -452,7 +453,7 @@ PHP_MINFO_FUNCTION(apache)
 		arr = apr_table_elts(((php_struct *) SG(server_context))->r->headers_out);
 		APR_ARRAY_FOREACH_OPEN(arr, key, val)
 			if (!val) {
-				val = empty_string;
+				val = "";
 			}
 		        php_info_print_table_row(2, key, val);
 		APR_ARRAY_FOREACH_CLOSE()

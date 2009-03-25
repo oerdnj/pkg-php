@@ -1,13 +1,13 @@
 dnl
-dnl $Id: config.m4,v 1.15.2.1 2005/04/27 13:13:37 sniper Exp $
+dnl $Id: config.m4,v 1.20 2005/05/29 23:16:40 sniper Exp $
 dnl
 
 PHP_ARG_ENABLE(dom, whether to enable DOM support,
-[  --disable-dom           Disable new DOM support.], yes)
+[  --disable-dom           Disable new DOM support], yes)
 
 if test -z "$PHP_LIBXML_DIR"; then
   PHP_ARG_WITH(libxml-dir, libxml2 install dir,
-  [  --with-libxml-dir[=DIR]   DOM: libxml2 install prefix.], no, no)
+  [  --with-libxml-dir[=DIR]   DOM: libxml2 install prefix], no, no)
 fi
 
 if test "$PHP_DOM" != "no"; then
@@ -30,6 +30,8 @@ if test "$PHP_DOM" != "no"; then
                             typeinfo.c domerror.c domlocator.c namednodemap.c userdatahandler.c], 
                             $ext_shared)
     PHP_SUBST(DOM_SHARED_LIBADD)
+    PHP_INSTALL_HEADERS([ext/dom/xml_common.h])
+    PHP_ADD_EXTENSION_DEP(dom, libxml)
   ], [
     AC_MSG_ERROR([xml2-config not found. Please check your libxml2 installation.])
   ])

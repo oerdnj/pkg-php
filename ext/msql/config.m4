@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.12.14.1 2004/12/30 07:04:10 sniper Exp $
+dnl $Id: config.m4,v 1.14 2005/05/29 23:16:42 sniper Exp $
 dnl
 
 dnl
@@ -23,7 +23,7 @@ AC_DEFUN([PHP_MSQL_VERSION],[
 
 PHP_ARG_WITH(msql,for mSQL support,
 [  --with-msql[=DIR]       Include mSQL support.  DIR is the mSQL base
-                          install directory, defaults to /usr/local/Hughes.])
+                          install directory, defaults to /usr/local/Hughes])
 
   if test "$PHP_MSQL" != "no"; then
     if test "$PHP_MSQL" = "yes"; then

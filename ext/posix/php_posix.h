@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
  */
 
 
-/* $Id: php_posix.h,v 1.14.2.1 2005/05/09 12:16:11 sniper Exp $ */
+/* $Id: php_posix.h,v 1.18 2005/08/03 14:07:42 sniper Exp $ */
 
 #ifndef PHP_POSIX_H
 #define PHP_POSIX_H
@@ -93,6 +93,12 @@ PHP_FUNCTION(posix_getcwd);
 #ifdef HAVE_MKFIFO
 PHP_FUNCTION(posix_mkfifo);
 #endif
+#ifdef HAVE_MKNOD
+PHP_FUNCTION(posix_mknod);
+#endif
+
+/* POSIX.1, 5.6 */
+PHP_FUNCTION(posix_access);
 
 /* POSIX.1, 9.2 */
 PHP_FUNCTION(posix_getgrnam);

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: browscap.c,v 1.82.2.1 2005/01/25 22:00:14 andrei Exp $ */
+/* $Id: browscap.c,v 1.85 2005/08/03 14:07:57 sniper Exp $ */
 
 #include "php.h"
 #include "php_regex.h"
@@ -39,7 +39,7 @@ static void browscap_entry_dtor(zval **pvalue)
 		zend_hash_destroy(Z_ARRVAL_PP(pvalue));
 		free(Z_ARRVAL_PP(pvalue));
 	} else if (Z_TYPE_PP(pvalue) == IS_STRING) {
-		if (Z_STRVAL_PP(pvalue) && Z_STRVAL_PP(pvalue) != empty_string) {
+		if (Z_STRVAL_PP(pvalue)) {
 			free(Z_STRVAL_PP(pvalue));
 		}
 	}
@@ -102,7 +102,7 @@ static void php_browscap_parser_cb(zval *arg1, zval *arg2, int callback_type, vo
 
 				new_property = (zval *) malloc(sizeof(zval));
 				INIT_PZVAL(new_property);
-				Z_STRVAL_P(new_property) = Z_STRLEN_P(arg2)?zend_strndup(Z_STRVAL_P(arg2), Z_STRLEN_P(arg2)):empty_string;
+				Z_STRVAL_P(new_property) = zend_strndup(Z_STRVAL_P(arg2), Z_STRLEN_P(arg2));
 				Z_STRLEN_P(new_property) = Z_STRLEN_P(arg2);
 				Z_TYPE_P(new_property) = IS_STRING;
 

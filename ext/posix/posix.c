@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: posix.c,v 1.60.2.4 2005/06/06 22:06:00 wez Exp $ */
+/* $Id: posix.c,v 1.70.2.1 2005/11/02 15:53:49 derick Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -114,7 +114,12 @@ function_entry posix_functions[] = {
 #ifdef HAVE_MKFIFO
 	PHP_FE(posix_mkfifo,	NULL)
 #endif
+#ifdef HAVE_MKNOD
+	PHP_FE(posix_mknod,	NULL)
+#endif
 
+	/* POSIX.1, 5.6 */
+	PHP_FE(posix_access,	NULL)
 	/* POSIX.1, 9.2 */
 	PHP_FE(posix_getgrnam,	NULL)
 	PHP_FE(posix_getgrgid,	NULL)
@@ -138,7 +143,7 @@ function_entry posix_functions[] = {
 static PHP_MINFO_FUNCTION(posix)
 {
 	php_info_print_table_start();
-	php_info_print_table_row(2, "Revision", "$Revision: 1.60.2.4 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 1.70.2.1 $");
 	php_info_print_table_end();
 }
 /* }}} */
@@ -153,6 +158,26 @@ static void php_posix_init_globals(zend_posix_globals *posix_globals TSRMLS_DC)
 static PHP_MINIT_FUNCTION(posix)
 {
 	ZEND_INIT_MODULE_GLOBALS(posix, php_posix_init_globals, NULL);
+	REGISTER_LONG_CONSTANT("POSIX_F_OK", F_OK, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("POSIX_X_OK", X_OK, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("POSIX_W_OK", W_OK, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("POSIX_R_OK", R_OK, CONST_CS | CONST_PERSISTENT);
+#ifdef S_IFREG
+	REGISTER_LONG_CONSTANT("POSIX_S_IFREG", S_IFREG, CONST_CS | CONST_PERSISTENT);
+#endif
+#ifdef S_IFCHR
+	REGISTER_LONG_CONSTANT("POSIX_S_IFCHR", S_IFCHR, CONST_CS | CONST_PERSISTENT);
+#endif
+#ifdef S_IFBLK
+	REGISTER_LONG_CONSTANT("POSIX_S_IFBLK", S_IFBLK, CONST_CS | CONST_PERSISTENT);
+#endif
+#ifdef S_IFIFO
+	REGISTER_LONG_CONSTANT("POSIX_S_IFIFO", S_IFIFO, CONST_CS | CONST_PERSISTENT);
+#endif
+#ifdef S_IFSOCK
+	REGISTER_LONG_CONSTANT("POSIX_S_IFSOCK", S_IFSOCK, CONST_CS | CONST_PERSISTENT);
+#endif
+
 	return SUCCESS;
 }
 /* }}} */
@@ -204,7 +229,7 @@ PHP_FUNCTION(posix_kill)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ll", &pid, &sig) == FAILURE) {
 		RETURN_FALSE;
 	}
-  
+		
 	if (kill(pid, sig) < 0) {
 		POSIX_G(last_error) = errno;
 		RETURN_FALSE;
@@ -560,7 +585,7 @@ PHP_FUNCTION(posix_isatty)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &z_fd) == FAILURE) {
 		RETURN_FALSE;
 	}
-
+	
 	switch (Z_TYPE_P(z_fd)) {
 		case IS_RESOURCE:
 			if (!php_posix_stream_get_fd(z_fd, &fd TSRMLS_CC)) {
@@ -643,6 +668,59 @@ PHP_FUNCTION(posix_mkfifo)
 #endif
 /* }}} */
 
+/* {{{ proto bool posix_mknod(string pathname, int mode [, int major [, int minor]])
+   Make a special or ordinary file (POSIX.1) */
+#ifdef HAVE_MKNOD
+PHP_FUNCTION(posix_mknod)
+{
+	char *path;
+	int path_len;
+	long mode;
+	long major = 0, minor = 0;
+	int result;
+	dev_t php_dev;
+
+	php_dev = 0;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sl|ll", &path, &path_len,
+			&mode, &major, &minor) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	if (php_check_open_basedir_ex(path, 0 TSRMLS_CC) ||
+			(PG(safe_mode) && (!php_checkuid(path, NULL, CHECKUID_ALLOW_ONLY_DIR)))) {
+		RETURN_FALSE;
+	}
+
+	if ((mode & S_IFCHR) || (mode & S_IFBLK)) {
+		if (ZEND_NUM_ARGS() == 2) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "For S_IFCHR and S_IFBLK you need to pass a major device kernel identifier");
+			RETURN_FALSE;
+		}
+		if (major == 0) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING,
+				"Expects argument 3 to be non-zero for POSIX_S_IFCHR and POSIX_S_IFBLK");
+			RETURN_FALSE;
+		} else {
+#if defined(HAVE_MAKEDEV) || defined(makedev)
+			php_dev = makedev(major, minor);
+#else
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Can not create a block or character device, creating a normal file instead");
+#endif
+		}
+	}
+
+	result = mknod(path, mode, php_dev);
+	if (result < 0) {
+		POSIX_G(last_error) = errno;
+		RETURN_FALSE;
+	}
+
+	RETURN_TRUE;
+}
+#endif
+/* }}} */
+
 /* Takes a pointer to posix group and a pointer to an already initialized ZVAL
  * array container and fills the array with the posix group member data. */
 int php_posix_group_to_array(struct group *g, zval *array_group) {
@@ -672,15 +750,48 @@ int php_posix_group_to_array(struct group *g, zval *array_group) {
 	POSIX.1, 5.5.1 unlink()
 	POSIX.1, 5.5.2 rmdir()
 	POSIX.1, 5.5.3 rename()
-	POSIX.1, 5.6.x stat(), access(), chmod(), utime()
-		already supported by PHP (access() not supported, because it is
-		braindead and dangerous and gives outdated results).
+	POSIX.1, 5.6.x stat(), chmod(), utime() already supported by PHP.
+*/
 
+/* {{{ proto bool posix_access(string file [, int mode])
+   Determine accessibility of a file (POSIX.1 5.6.3) */
+PHP_FUNCTION(posix_access)
+{
+	long mode = 0;
+	int filename_len, ret;
+	char *filename, *path;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l", &filename, &filename_len, &mode) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	path = expand_filepath(filename, NULL TSRMLS_CC);
+
+	if (php_check_open_basedir_ex(path, 0 TSRMLS_CC) ||
+			(PG(safe_mode) && (!php_checkuid_ex(filename, NULL, CHECKUID_CHECK_FILE_AND_DIR, CHECKUID_NO_ERRORS)))) {
+		efree(path);
+		POSIX_G(last_error) = EPERM;
+		RETURN_FALSE;
+	}
+
+	ret = access(path, mode);
+	efree(path);
+
+	if (ret) {
+		POSIX_G(last_error) = errno;
+		RETURN_FALSE;
+	}
+
+	RETURN_TRUE;
+}
+/* }}} */
+
+/*
 	POSIX.1, 6.x most I/O functions already supported by PHP.
 	POSIX.1, 7.x tty functions, TODO
 	POSIX.1, 8.x interactions with other C language functions
-	POSIX.1, 9.x system database access	
- */
+	POSIX.1, 9.x system database access
+*/
 
 /* {{{ proto array posix_getgrnam(string groupname)
    Group database access (POSIX.1, 9.2.1) */
@@ -760,6 +871,7 @@ PHP_FUNCTION(posix_getpwnam)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name, &name_len) == FAILURE) {
 		RETURN_FALSE;
 	}
+
 	if (NULL == (pw = getpwnam(name))) {
 		POSIX_G(last_error) = errno;
 		RETURN_FALSE;

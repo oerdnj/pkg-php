@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_alloc.c,v 1.137.2.4 2005/08/18 15:14:23 iliaa Exp $ */
+/* $Id: zend_alloc.c,v 1.144.2.1 2005/08/18 15:14:12 iliaa Exp $ */
 
 #include "zend.h"
 #include "zend_alloc.h"
@@ -164,7 +164,6 @@ ZEND_API void *_emalloc(size_t size ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_DC)
 		AG(cache_stats)[CACHE_INDEX][1]++;
 		memcpy((((char *) p) + sizeof(zend_mem_header) + MEM_HEADER_PADDING + size), &mem_block_end_magic, sizeof(long));
 #endif
-		p->cached = 0;
 		p->size = size;
 		return (void *)((char *)p + sizeof(zend_mem_header) + MEM_HEADER_PADDING);
 	} else {
@@ -197,7 +196,6 @@ ZEND_API void *_emalloc(size_t size ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_DC)
 		HANDLE_UNBLOCK_INTERRUPTIONS();
 		return (void *)p;
 	}
-	p->cached = 0;
 	ADD_POINTER_TO_LIST(p);
 	p->size = size; /* Save real size for correct cache output */
 #if ZEND_DEBUG
@@ -244,6 +242,30 @@ ZEND_API void *_safe_emalloc(size_t nmemb, size_t size, size_t offset ZEND_FILE_
 	return 0;
 }
 
+ZEND_API void *_safe_malloc(size_t nmemb, size_t size, size_t offset)
+{
+
+	if (nmemb < LONG_MAX
+			&& size < LONG_MAX
+			&& offset < LONG_MAX
+			&& nmemb >= 0
+			&& size >= 0
+			&& offset >= 0) {
+		long lval;
+		double dval;
+		int use_dval;
+
+		ZEND_SIGNED_MULTIPLY_LONG(nmemb, size, lval, dval, use_dval);
+
+		if (!use_dval
+				&& lval < (long) (LONG_MAX - offset)) {
+			return pemalloc(lval + offset, 1);
+		}
+	}
+
+	zend_error(E_ERROR, "Possible integer overflow in memory allocation (%zd * %zd + %zd)", nmemb, size, offset);
+	return 0;
+}
 
 
 ZEND_API void _efree(void *ptr ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_DC)
@@ -271,7 +293,6 @@ ZEND_API void _efree(void *ptr ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_DC)
 #if !ZEND_DISABLE_MEMORY_CACHE
 	if ((CACHE_INDEX < MAX_CACHED_MEMORY) && (AG(cache_count)[CACHE_INDEX] < MAX_CACHED_ENTRIES)) {
 		AG(cache)[CACHE_INDEX][AG(cache_count)[CACHE_INDEX]++] = p;
-		p->cached = 1;
 #if ZEND_DEBUG
 		p->magic = MEM_BLOCK_CACHED_MAGIC;
 #endif
@@ -530,42 +551,36 @@ ZEND_API void shutdown_memory_manager(int silent, int full_shutdown TSRMLS_DC)
 	p = AG(head);
 	t = AG(head);
 	while (t) {
-		if (!t->cached) {
 #if ZEND_DEBUG
-			if (!t->reported) {
-				zend_mem_header *iterator;
-				int total_leak=0, total_leak_count=0;
+		if (!t->reported) {
+			zend_mem_header *iterator;
+			int total_leak=0, total_leak_count=0;
 
-				grand_total_leaks++;
-				if (!silent) {
-					zend_message_dispatcher(ZMSG_MEMORY_LEAK_DETECTED, t);
-				}
-				t->reported = 1;
-				for (iterator=t->pNext; iterator; iterator=iterator->pNext) {
-					if (!iterator->cached
-						&& iterator->filename==t->filename
-						&& iterator->lineno==t->lineno) {
-						total_leak += iterator->size;
-						total_leak_count++;
-						iterator->reported = 1;
-					}
-				}
-				if (!silent && total_leak_count>0) {
-					zend_message_dispatcher(ZMSG_MEMORY_LEAK_REPEATED, (void *) (long) (total_leak_count));
-				}
-				grand_total_leaks += total_leak_count;
+			grand_total_leaks++;
+			if (!silent) {
+				zend_message_dispatcher(ZMSG_MEMORY_LEAK_DETECTED, t);
 			}
+			t->reported = 1;
+			for (iterator=t->pNext; iterator; iterator=iterator->pNext) {
+				if (iterator->filename==t->filename && iterator->lineno==t->lineno) {
+					total_leak += iterator->size;
+					total_leak_count++;
+					iterator->reported = 1;
+				}
+			}
+			if (!silent && total_leak_count>0) {
+				zend_message_dispatcher(ZMSG_MEMORY_LEAK_REPEATED, (void *) (long) (total_leak_count));
+			}
+			grand_total_leaks += total_leak_count;
+		}
 #endif
 #if MEMORY_LIMIT
-			AG(allocated_memory) -= REAL_SIZE(t->size);
+		AG(allocated_memory) -= REAL_SIZE(t->size);
 #endif
-			p = t->pNext;
-			REMOVE_POINTER_FROM_LIST(t);
-			ZEND_DO_FREE(t);
-			t = p;
-		} else {
-			t = t->pNext;
-		}
+		p = t->pNext;
+		REMOVE_POINTER_FROM_LIST(t);
+		ZEND_DO_FREE(t);
+		t = p;
 	}
 
 #if ZEND_DEBUG
@@ -784,7 +799,6 @@ ZEND_API void _full_mem_check(int silent ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_D
 	zend_debug_alloc_output("------------------------------------------------\n");
 }
 #endif
-
 
 /*
  * Local variables:

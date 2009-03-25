@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_functions.c,v 1.25 2004/03/09 16:38:37 helly Exp $ */
+/* $Id: spl_functions.c,v 1.28 2005/08/03 14:07:53 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 	#include "config.h"
@@ -59,7 +59,9 @@ void spl_register_std_class(zend_class_entry ** ppce, char * class_name, void * 
 	*ppce = zend_register_internal_class(&ce TSRMLS_CC);
 
 	/* entries changed by initialize */
-	(*ppce)->create_object = obj_ctor;
+	if (obj_ctor) {
+		(*ppce)->create_object = obj_ctor;
+	}
 }
 /* }}} */
 
@@ -73,7 +75,11 @@ void spl_register_sub_class(zend_class_entry ** ppce, zend_class_entry * parent_
 	*ppce = zend_register_internal_class_ex(&ce, parent_ce, NULL TSRMLS_CC);
 
 	/* entries changed by initialize */
-	(*ppce)->create_object = obj_ctor;
+	if (obj_ctor) {
+		(*ppce)->create_object = obj_ctor;
+	} else {
+		(*ppce)->create_object = parent_ce->create_object;
+	}
 }
 /* }}} */
 

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,12 +16,13 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_stream_plain_wrapper.h,v 1.6 2004/02/20 08:22:12 hholzgra Exp $ */
+/* $Id: php_stream_plain_wrapper.h,v 1.7.2.1 2005/10/22 17:02:10 wez Exp $ */
 
 /* definitions for the plain files wrapper */
 
 /* operations for a plain file; use the php_stream_fopen_XXX funcs below */
 PHPAPI extern php_stream_ops php_stream_stdio_ops;
+PHPAPI extern php_stream_wrapper php_plain_files_wrapper;
 
 BEGIN_EXTERN_C()
 

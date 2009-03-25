@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: iconv.c,v 1.117.2.6 2005/06/08 23:51:05 iliaa Exp $ */
+/* $Id: iconv.c,v 1.124.2.2 2005/10/20 16:51:03 tony2001 Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -583,26 +583,38 @@ static php_iconv_err_t _php_iconv_substr(smart_str *pretval,
 	size_t out_left;
 
 	unsigned int cnt;
-
+	unsigned int total_len;
+	
+	err = _php_iconv_strlen(&total_len, str, nbytes, enc);
+	if (err != PHP_ICONV_ERR_SUCCESS) {
+		return err;
+	}
+	
 	/* normalize the offset and the length */
-	if (offset < 0 || len < 0) {
-		unsigned int total_len;
-		err = _php_iconv_strlen(&total_len, str, nbytes, enc);
-		if (err != PHP_ICONV_ERR_SUCCESS) {
-			return err;
+	if (offset < 0) {
+		if ((offset += total_len) < 0) {
+			offset = 0;
 		}
-		if (offset < 0) {
-			if ((offset += total_len) < 0) {
-				offset = 0;
-			}
-		}
-		if (len < 0) {
-			if ((len += (total_len - offset)) < 0) {
-				len = 0;
-			}
+	}
+	if (len < 0) {
+		if ((len += (total_len - offset)) < 0) {
+			len = 0;
 		}
 	}
 
+	if (offset >= total_len) {
+		return PHP_ICONV_ERR_SUCCESS;
+	}
+	
+	if ((offset + len) > total_len) {
+		/* trying to compute the length */
+		len = total_len - offset;
+	}
+
+	if (len == 0) {
+		return PHP_ICONV_ERR_SUCCESS;
+	}
+	
 	cd1 = iconv_open(GENERIC_SUPERSET_NAME, enc);
 
 	if (cd1 == (iconv_t)(-1)) {
@@ -1230,7 +1242,7 @@ static php_iconv_err_t _php_iconv_mime_decode(smart_str *pretval, const char *st
 	const char *encoded_word = NULL;
 	const char *spaces = NULL;
 
-	php_iconv_enc_scheme_t enc_scheme = 0;
+	php_iconv_enc_scheme_t enc_scheme = PHP_ICONV_ENC_SCHEME_BASE64;
 
 	if (next_pos != NULL) {
 		*next_pos = NULL;
@@ -1689,7 +1701,7 @@ static php_iconv_err_t _php_iconv_mime_decode(smart_str *pretval, const char *st
 				if (scan_stat == 1) {
 					_php_iconv_appendc(pretval, '=', cd_pl);
 				}
-				err = 0;
+				err = PHP_ICONV_ERR_SUCCESS;
 			} else {
 				err = PHP_ICONV_ERR_MALFORMED;
 				goto out;
@@ -2064,7 +2076,7 @@ PHP_FUNCTION(iconv_mime_decode_headers)
 	int charset_len;
 	long mode = 0;
 	
-	php_iconv_err_t err = 0;
+	php_iconv_err_t err = PHP_ICONV_ERR_SUCCESS;
 
 	charset = ICONVG(internal_encoding);
 

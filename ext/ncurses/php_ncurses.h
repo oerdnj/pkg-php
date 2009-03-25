@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -47,8 +47,6 @@ extern function_entry ncurses_functions[];
 
 PHP_MINIT_FUNCTION(ncurses);
 PHP_MSHUTDOWN_FUNCTION(ncurses);
-PHP_RINIT_FUNCTION(ncurses);
-PHP_RSHUTDOWN_FUNCTION(ncurses);
 PHP_MINFO_FUNCTION(ncurses);
 
 ZEND_BEGIN_MODULE_GLOBALS(ncurses)

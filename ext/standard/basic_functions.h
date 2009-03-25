@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: basic_functions.h,v 1.133.2.2 2005/08/21 18:36:34 zeev Exp $ */
+/* $Id: basic_functions.h,v 1.139 2005/08/03 14:07:57 sniper Exp $ */
 
 #ifndef BASIC_FUNCTIONS_H
 #define BASIC_FUNCTIONS_H
@@ -50,8 +50,15 @@ PHP_FUNCTION(sleep);
 PHP_FUNCTION(usleep);
 #if HAVE_NANOSLEEP
 PHP_FUNCTION(time_nanosleep);
+PHP_FUNCTION(time_sleep_until);
 #endif
 PHP_FUNCTION(flush);
+#ifdef HAVE_INET_NTOP
+PHP_NAMED_FUNCTION(php_inet_ntop);
+#endif
+#ifdef HAVE_INET_PTON
+PHP_NAMED_FUNCTION(php_inet_pton);
+#endif
 PHP_FUNCTION(ip2long);
 PHP_FUNCTION(long2ip);
 

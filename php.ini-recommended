@@ -138,7 +138,7 @@ zend.ze1_compatibility_mode = Off
 ; servers which are not under your control, because short tags may not
 ; be supported on the target server. For portable, redistributable code,
 ; be sure not to use short tags.
-short_open_tag = On
+short_open_tag = Off
 
 ; Allow ASP-style <% %> tags.
 asp_tags = Off
@@ -280,6 +280,10 @@ disable_classes =
 ;highlight.default = #0000BB
 ;highlight.html    = #000000
 
+; If enabled, the request will be allowed to complete even if the user aborts
+; the request. Consider enabling it if executing long request, which may end up
+; being interrupted by the user or a browser timing out.
+; ignore_user_abort = On
 
 ;
 ; Misc
@@ -331,17 +335,17 @@ memory_limit = 8M      ; Maximum amount of memory a script may consume (8MB)
 ;
 ;   - Show all errors, except for notices and coding standards warnings
 ;
-;error_reporting = E_ALL & ~E_NOTICE & ~E_STRICT
+;error_reporting = E_ALL & ~E_NOTICE
 ;
 ;   - Show all errors, except for notices
 ;
-;error_reporting = E_ALL & ~E_NOTICE
+;error_reporting = E_ALL & ~E_NOTICE | E_STRICT
 ;
 ;   - Show only errors
 ;
 ;error_reporting = E_COMPILE_ERROR|E_ERROR|E_CORE_ERROR
 ;
-;   - Show all errors
+;   - Show all errors, except coding standards warnings
 ;
 error_reporting  =  E_ALL
 
@@ -614,27 +618,25 @@ default_socket_timeout = 60
 ; extension_dir directive above.
 
 
-;Windows Extensions
-;Note that ODBC support is built in, so no dll is needed for it.
-;
+; Windows Extensions
+; Note that ODBC support is built in, so no dll is needed for it.
+; Note that many DLL files are located in the extensions/ (PHP 4) ext/ (PHP 5)
+; extension folders as well as the separate PECL DLL download (PHP 5).
+; Be sure to appropriately set the extension_dir directive.
 
 ;extension=php_mbstring.dll
 ;extension=php_bz2.dll
-;extension=php_cpdf.dll
 ;extension=php_curl.dll
 ;extension=php_dba.dll
 ;extension=php_dbase.dll
-;extension=php_dbx.dll
 ;extension=php_exif.dll
 ;extension=php_fdf.dll
 ;extension=php_filepro.dll
 ;extension=php_gd2.dll
 ;extension=php_gettext.dll
 ;extension=php_ifx.dll
-;extension=php_iisfunc.dll
 ;extension=php_imap.dll
 ;extension=php_interbase.dll
-;extension=php_java.dll
 ;extension=php_ldap.dll
 ;extension=php_mcrypt.dll
 ;extension=php_mhash.dll
@@ -646,23 +648,24 @@ default_socket_timeout = 60
 ;extension=php_oci8.dll
 ;extension=php_openssl.dll
 ;extension=php_oracle.dll
-;extension=php_pdf.dll
 ;extension=php_pgsql.dll
 ;extension=php_shmop.dll
 ;extension=php_snmp.dll
 ;extension=php_sockets.dll
+;extension=php_sqlite.dll
 ;extension=php_sybase_ct.dll
 ;extension=php_tidy.dll
-;extension=php_w32api.dll
 ;extension=php_xmlrpc.dll
 ;extension=php_xsl.dll
-;extension=php_yaz.dll
-;extension=php_zip.dll
 
 
 ;;;;;;;;;;;;;;;;;;;
 ; Module Settings ;
 ;;;;;;;;;;;;;;;;;;;
+
+[Date]
+; Defines the default timezone used by the date functions
+;date.timezone =
 
 [Syslog]
 ; Whether or not to define the various syslog variables (e.g. $LOG_PID,
@@ -755,7 +758,7 @@ mysql.connect_timeout = 60
 ; SQL-Errors will be displayed.
 mysql.trace_mode = Off
 
-[MySQLI]
+[MySQLi]
 
 ; Maximum number of links.  -1 means no limit.
 mysqli.max_links = -1
@@ -858,16 +861,6 @@ sybct.min_server_severity = 10
 
 ; Minimum client message severity to display.
 sybct.min_client_severity = 10
-
-[dbx]
-; returned column names can be converted for compatibility reasons
-; possible values for dbx.colnames_case are
-; "unchanged" (default, if not set)
-; "lowercase"
-; "uppercase"
-; the recommended default is either upper- or lowercase, but
-; unchanged is currently set for backwards compatibility
-dbx.colnames_case = "lowercase"
 
 [bcmath]
 ; Number of decimal digits for all bcmath functions.
@@ -1095,8 +1088,10 @@ mssql.compatability_mode = Off
 ; Use NT authentication when connecting to the server
 mssql.secure_connection = Off
 
-; Specify max number of processes. Default = 25
-;mssql.max_procs = 25
+; Specify max number of processes. -1 = library default
+; msdlib defaults to 25
+; FreeTDS defaults to 4096
+;mssql.max_procs = -1
 
 [Assertion]
 ; Assert(expr); active by default.
@@ -1114,25 +1109,6 @@ mssql.secure_connection = Off
 ; Eval the expression with current error_reporting().  Set to true if you want
 ; error_reporting(0) around the eval().
 ;assert.quiet_eval = 0
-
-[Ingres II]
-; Allow or prevent persistent links.
-ingres.allow_persistent = On
-
-; Maximum number of persistent links.  -1 means no limit.
-ingres.max_persistent = -1
-
-; Maximum number of links, including persistents.  -1 means no limit.
-ingres.max_links = -1
-
-; Default database (format: [node_id::]dbname[/srv_class]).
-ingres.default_database =
-
-; Default user.
-ingres.default_user =
-
-; Default password.
-ingres.default_password =
 
 [Verisign Payflow Pro]
 ; Default Payflow Pro server.
@@ -1156,7 +1132,7 @@ pfpro.defaulttimeout = 30
 ; Default proxy password.
 ;pfpro.proxypassword =
 
-[com]
+[COM]
 ; path to a file containing GUIDs, IIDs or filenames of files with TypeLibs
 ;com.typelib_file =
 ; allow Distributed-COM calls

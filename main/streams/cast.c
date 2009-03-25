@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: cast.c,v 1.10 2004/01/08 08:17:58 andi Exp $ */
+/* $Id: cast.c,v 1.12 2005/08/03 14:08:40 sniper Exp $ */
 
 #define _GNU_SOURCE
 #include "php.h"
@@ -267,7 +267,7 @@ exit_success:
 		
 		php_error_docref(NULL TSRMLS_CC, E_WARNING,
 				"%ld bytes of buffered data lost during stream conversion!",
-				stream->writepos - stream->readpos);
+				(long)(stream->writepos - stream->readpos));
 	}
 	
 	if (castas == PHP_STREAM_AS_STDIO && ret)

@@ -1,19 +1,20 @@
 dnl
-dnl $Id: config.m4,v 1.17.2.2 2005/02/05 11:02:10 georg Exp $
+dnl $Id: config.m4,v 1.22 2005/06/07 12:39:02 sniper Exp $
 dnl config.m4 for extension mysqli
 
 PHP_ARG_WITH(mysqli, for MySQLi support,
 [  --with-mysqli[=FILE]    Include MySQLi support. FILE is the optional pathname 
-                        to mysql_config.])
+                          to mysql_config])
 
 PHP_ARG_ENABLE(embedded_mysqli, whether to enable embedded MySQLi support,
-[  --enable-embedded-mysqli  MYSQLi: Enable embedded support.], no, no)
+[  --enable-embedded-mysqli  MYSQLi: Enable embedded support], no, no)
 
 if test "$PHP_MYSQLI" != "no"; then
 
-  if test "$PHP_MYSQL" = "yes"; then
-    AC_MSG_ERROR([--with-mysql (using bundled libs) can not be used together with --with-mysqli.])
-  fi
+dnl there are no mysql libs currently bundled with PHP.. --Jani
+dnl  if test "$PHP_MYSQL" = "yes"; then
+dnl    AC_MSG_ERROR([--with-mysql (using bundled libs) can not be used together with --with-mysqli.])
+dnl  fi
 
   if test "$PHP_MYSQLI" = "yes"; then
     MYSQL_CONFIG=`$php_shtool path mysql_config`
@@ -54,6 +55,6 @@ if test "$PHP_MYSQLI" != "no"; then
     $MYSQLI_LIBLINE
   ])
 
-  PHP_NEW_EXTENSION(mysqli, mysqli.c mysqli_api.c mysqli_prop.c mysqli_nonapi.c mysqli_fe.c mysqli_report.c mysqli_repl.c, $ext_shared)
+  PHP_NEW_EXTENSION(mysqli, mysqli.c mysqli_api.c mysqli_prop.c mysqli_nonapi.c mysqli_fe.c mysqli_report.c mysqli_repl.c mysqli_driver.c mysqli_warning.c mysqli_exception.c mysqli_embedded.c, $ext_shared)
   PHP_SUBST(MYSQLI_SHARED_LIBADD)
 fi

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
 */
 
 
-/* $Id: reg.h,v 1.20 2004/01/08 17:32:52 sniper Exp $ */
+/* $Id: reg.h,v 1.21 2005/08/03 14:08:12 sniper Exp $ */
 
 #ifndef REG_H
 #define REG_H

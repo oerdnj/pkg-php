@@ -27,18 +27,18 @@ foreach ($filters as $filter) {
 filter_test(array($filters[0], $filters[1]));
 
 ?>
---EXPECT--
+--EXPECTF--
 filter: string.rot13
-bool(true)
+resource(%d) of type (stream filter)
 string(12) "Uryyb Gurer!"
 filter: string.toupper
-bool(true)
+resource(%d) of type (stream filter)
 string(12) "HELLO THERE!"
 filter: string.tolower
-bool(true)
+resource(%d) of type (stream filter)
 string(12) "hello there!"
 filter: string.rot13
-bool(true)
+resource(%d) of type (stream filter)
 filter: string.toupper
-bool(true)
+resource(%d) of type (stream filter)
 string(12) "URYYB GURER!"

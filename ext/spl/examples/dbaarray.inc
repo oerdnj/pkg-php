@@ -4,12 +4,12 @@
  * @ingroup Examples
  * @brief class DbaArray
  * @author  Marcus Boerger
- * @date    2003 - 2004
+ * @date    2003 - 2005
  *
  * SPL - Standard PHP Library
  */
 
-if (!class_exists("DbaReader")) require_once("dbareader.inc");
+if (!class_exists("DbaReader", false)) require_once("dbareader.inc");
 
 /** @ingroup Examples
  * @brief   This implements a DBA Array

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: file.h,v 1.90.2.1 2005/07/15 09:29:18 hyanantha Exp $ */
+/* $Id: file.h,v 1.94 2005/08/03 14:07:59 sniper Exp $ */
 
 /* Synced with php 3.0 revision 1.30 1999-06-16 [ssb] */
 
@@ -39,6 +39,7 @@ PHPAPI PHP_FUNCTION(fgets);
 PHP_FUNCTION(fscanf);
 PHPAPI PHP_FUNCTION(fgetss);
 PHP_FUNCTION(fgetcsv);
+PHP_FUNCTION(fputcsv);
 PHPAPI PHP_FUNCTION(fwrite);
 PHPAPI PHP_FUNCTION(fflush);
 PHPAPI PHP_FUNCTION(rewind);
@@ -122,7 +123,7 @@ typedef struct {
 extern PHPAPI int file_globals_id;
 #else
 #define FG(v) (file_globals.v)
-extern php_file_globals file_globals;
+extern PHPAPI php_file_globals file_globals;
 #endif
 
 

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: output.c,v 1.164.2.2 2005/08/24 16:20:06 iliaa Exp $ */
+/* $Id: output.c,v 1.167.2.1 2005/08/24 16:19:57 iliaa Exp $ */
 
 #include "php.h"
 #include "ext/standard/head.h"
@@ -701,6 +701,9 @@ PHPAPI int php_ub_body_write(const char *str, uint str_length TSRMLS_DC)
 	int result = 0;
 
 	if (SG(request_info).headers_only) {
+		if(SG(headers_sent)) {
+			return 0;
+		}
 		php_header(TSRMLS_C);
 		zend_bailout();
 	}

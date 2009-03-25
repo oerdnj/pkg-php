@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2004 The PHP Group                                |
+  | Copyright (c) 1997-2005 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -15,7 +15,7 @@
   | Author: Hartmut Holzgraefe  <hholzgra@php.net>                       |
   +----------------------------------------------------------------------+
 
-  $Id: mime_magic.c,v 1.37.2.2 2005/05/25 03:06:07 iliaa Exp $ 
+  $Id: mime_magic.c,v 1.42.2.3 2005/10/18 15:04:07 derick Exp $ 
 
   This module contains a lot of stuff taken from Apache mod_mime_magic,
   so the license section is a little bit longer than usual:
@@ -160,7 +160,6 @@
 
 #include <fcntl.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -261,7 +260,9 @@ PHP_INI_END()
  */
 static void php_mime_magic_init_globals(zend_mime_magic_globals *mime_magic_globals)
 {
-	mime_global.magicfile = NULL;
+	memset(mime_magic_globals, 0, sizeof(zend_mime_magic_globals));
+	mime_global.magic = NULL;
+	mime_global.last = NULL;
 }
 /* }}} */
 
@@ -272,9 +273,7 @@ PHP_MINIT_FUNCTION(mime_magic)
 	ZEND_INIT_MODULE_GLOBALS(mime_magic, php_mime_magic_init_globals, NULL);
 	REGISTER_INI_ENTRIES();
 
-	mime_global.magicfile = MIME_MAGIC_G(magicfile);
-
-	if(mime_global.magicfile) {
+	if(MIME_MAGIC_G(magicfile)) {
 		if(apprentice()) {
 			MIME_MAGIC_G(status) = "invalid magic file, disabled";
 		} else {
@@ -351,7 +350,7 @@ PHP_FUNCTION(mime_content_type)
 
 	if (conf->magic == (struct magic *)-1) {
 		if(MIME_MAGIC_G(debug))
-			php_error_docref("http://www.php.net/mime_magic" TSRMLS_CC, E_ERROR, "mime_magic could not be initialized, magic file %s is not available", conf->magicfile);
+			php_error_docref("http://www.php.net/mime_magic" TSRMLS_CC, E_ERROR, "mime_magic could not be initialized, magic file %s is not available", MIME_MAGIC_G(magicfile));
 		RETURN_FALSE;
 	} 
 
@@ -394,7 +393,11 @@ static int apprentice(void)
     magic_server_config_rec *conf = &mime_global;
     TSRMLS_FETCH();
 
-    fname = conf->magicfile; /* todo cwd? */
+    if (!MIME_MAGIC_G(magicfile)) {
+        return -1;
+    }
+	
+    fname = MIME_MAGIC_G(magicfile); /* todo cwd? */
     f = fopen(fname, "rb");
     if (f == NULL) {
 		conf->magic = (struct magic *)-1;
@@ -431,9 +434,6 @@ static int apprentice(void)
 		/* parse it */
 		if (parse(line + ws_offset, lineno) != 0)
 			++errs;
-
-		if(errs && !MIME_MAGIC_G(debug)) 
-			break;
     }
 
     (void) fclose(f);
@@ -1074,6 +1074,8 @@ static int magic_process(zval *what TSRMLS_DC)
 		streampos = php_stream_tell(stream); /* remember stream position for restauration */
 		php_stream_seek(stream, 0, SEEK_SET);
 		break;
+	default:
+		return -1;	
 	}
 
 

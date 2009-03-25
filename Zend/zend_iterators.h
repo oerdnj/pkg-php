@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_iterators.h,v 1.9 2004/04/27 15:38:07 helly Exp $ */
+/* $Id: zend_iterators.h,v 1.10 2005/08/03 13:30:53 sniper Exp $ */
 
 /* These iterators were designed to operate within the foreach()
  * structures provided by the engine, but could be extended for use

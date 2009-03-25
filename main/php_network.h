@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_network.h,v 1.52.2.1 2004/09/28 09:13:37 wez Exp $ */
+/* $Id: php_network.h,v 1.56 2005/08/03 14:08:35 sniper Exp $ */
 
 #ifndef _PHP_NETWORK_H
 #define _PHP_NETWORK_H
@@ -210,7 +210,7 @@ PHPAPI void _php_emit_fd_setsize_warning(int max_fd);
 typedef struct sockaddr_storage php_sockaddr_storage;
 #else
 typedef struct {
-#ifdef HAVE_SOCKADDR_LEN
+#ifdef HAVE_SOCKADDR_SA_LEN
 		unsigned char ss_len;
 		unsigned char ss_family;
 #else
@@ -223,7 +223,7 @@ typedef struct {
 BEGIN_EXTERN_C()
 PHPAPI php_socket_t php_network_connect_socket_to_host(const char *host, unsigned short port,
 		int socktype, int asynchronous, struct timeval *timeout, char **error_string,
-		int *error_code
+		int *error_code, char *bindto, unsigned short bindport 
 		TSRMLS_DC);
 
 PHPAPI int php_network_connect_socket(php_socket_t sockfd,

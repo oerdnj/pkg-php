@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_language_scanner.h,v 1.18 2004/01/17 00:26:12 sniper Exp $ */
+/* $Id: zend_language_scanner.h,v 1.19 2005/08/03 13:30:54 sniper Exp $ */
 
 #ifndef ZEND_SCANNER_H
 #define ZEND_SCANNER_H

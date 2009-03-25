@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.25.2.1 2005/02/09 16:23:31 rasmus Exp $ 
+dnl $Id: config.m4,v 1.28.2.3 2005/11/22 22:53:34 tony2001 Exp $ 
 dnl
 
 PHP_ARG_WITH(curl, for CURL support,
@@ -36,22 +36,54 @@ if test "$PHP_CURL" != "no"; then
     CURL_CONFIG=${CURL_DIR}/bin/curl-config
   else
     if ${CURL_DIR}/curl-config --libs > /dev/null 2>&1; then
-       CURL_CONFIG=${CURL_DIR}/curl-config
+      CURL_CONFIG=${CURL_DIR}/curl-config
     fi
   fi
 
   curl_version_full=`$CURL_CONFIG --version`
-  curl_version=`echo ${curl_version_full} | sed -e 's/libcurl //' | awk 'BEGIN { FS = "."; } { printf "%d", ($1 * 1000 + $2) * 1000 + $3;}'`
+  curl_version=`echo ${curl_version_full} | sed -e 's/libcurl //' | $AWK 'BEGIN { FS = "."; } { printf "%d", ($1 * 1000 + $2) * 1000 + $3;}'`
   if test "$curl_version" -ge 7010005; then
     AC_MSG_RESULT($curl_version_full)
     CURL_LIBS=`$CURL_CONFIG --libs`
   else
     AC_MSG_ERROR(cURL version 7.10.5 or later is required to compile php with cURL support)
   fi
+  
+  AC_MSG_CHECKING([for SSL support in libcurl])
+  CURL_SSL=`$CURL_CONFIG --feature | $EGREP SSL`
+  if test "$CURL_SSL" = "SSL"; then
+    AC_MSG_RESULT([yes])
+    AC_DEFINE([HAVE_CURL_SSL], [1], [Have cURL with  SSL support])
+
+    AC_MSG_CHECKING([for SSL library used])
+    CURL_SSL_FLAVOUR=
+    for i in $CURL_LIBS; do
+      if test "$i" = "-lssl"; then
+        CURL_SSL_FLAVOUR="openssl"
+        AC_MSG_RESULT([openssl])
+        AC_DEFINE([HAVE_CURL_OPENSSL], [1], [Have cURL with OpenSSL support])
+        AC_CHECK_HEADERS([openssl/crypto.h])
+        break
+      elif test "$i" = "-lgnutls"; then
+        CURL_SSL_FLAVOUR="gnutls"
+        AC_MSG_RESULT([gnutls])
+        AC_DEFINE([HAVE_CURL_GNUTLS], [1], [Have cURL with GnuTLS support])
+        AC_CHECK_HEADERS([gcrypt.h])
+        break
+      fi
+    done
+    if test -z "$CURL_SSL_FLAVOUR"; then
+      AC_MSG_RESULT([unknown!])
+      AC_MSG_WARN([Could not determine the type of SSL library used!])
+      AC_MSG_WARN([Building will fail in ZTS mode!])
+    fi
+  else
+    AC_MSG_RESULT([no])
+  fi
 
   PHP_ADD_INCLUDE($CURL_DIR/include)
   PHP_EVAL_LIBLINE($CURL_LIBS, CURL_SHARED_LIBADD)
-  PHP_ADD_LIBRARY_WITH_PATH(curl, $CURL_DIR/lib, CURL_SHARED_LIBADD)
+  PHP_ADD_LIBRARY_WITH_PATH(curl, $CURL_DIR/$PHP_LIBDIR, CURL_SHARED_LIBADD)
 
   PHP_CHECK_LIBRARY(curl,curl_easy_perform, 
   [ 
@@ -59,14 +91,14 @@ if test "$PHP_CURL" != "no"; then
   ],[
     AC_MSG_ERROR(There is something wrong. Please check config.log for more information.)
   ],[
-    $CURL_LIBS -L$CURL_DIR/lib
+    $CURL_LIBS -L$CURL_DIR/$PHP_LIBDIR
   ])
 
   PHP_CHECK_LIBRARY(curl,curl_version_info,
   [
     AC_DEFINE(HAVE_CURL_VERSION_INFO,1,[ ])
   ],[],[
-    $CURL_LIBS -L$CURL_DIR/lib
+    $CURL_LIBS -L$CURL_DIR/$PHP_LIBDIR
   ])
 
   if test "$PHP_CURLWRAPPERS" != "no" ; then

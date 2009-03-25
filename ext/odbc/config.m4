@@ -1,11 +1,17 @@
 dnl
-dnl $Id: config.m4,v 1.65.2.6 2005/04/21 23:02:15 sniper Exp $
+dnl $Id: config.m4,v 1.78.2.1 2005/11/21 19:06:02 sniper Exp $
 dnl
+
+AC_DEFUN([PHP_ODBC_CHECK_HEADER],[
+if ! test -f "$ODBC_INCDIR/$1"; then
+  AC_MSG_ERROR([ODBC header file '$ODBC_INCDIR/$1' not found!])
+fi
+])
 
 dnl
 dnl Figure out which library file to link with for the Solid support.
 dnl
-AC_DEFUN([AC_FIND_SOLID_LIBS],[
+AC_DEFUN([PHP_ODBC_FIND_SOLID_LIBS],[
   AC_MSG_CHECKING([Solid library file])  
   ac_solid_uname_r=`uname -r 2>/dev/null`
   ac_solid_uname_s=`uname -s 2>/dev/null`
@@ -17,7 +23,7 @@ AC_DEFUN([AC_FIND_SOLID_LIBS],[
       if ldd -v /bin/sh | grep GLIBC > /dev/null; then
         AC_DEFINE(SS_LINUX,1,[Needed in sqlunix.h ])
         ac_solid_os=l2x
-	  else
+      else
         AC_DEFINE(SS_LINUX,1,[Needed in sqlunix.h ])
         ac_solid_os=lux
       fi;; 
@@ -48,7 +54,7 @@ AC_DEFUN([AC_FIND_SOLID_LIBS],[
 # Check for the library files, and setup the ODBC_LIBS path...
 #
 if test ! -f $1/lib${ac_solid_prefix}${ac_solid_os}${ac_solid_version}.so -a \
-	! -f $1/lib${ac_solid_prefix}${ac_solid_os}${ac_solid_version}.a; then
+  ! -f $1/lib${ac_solid_prefix}${ac_solid_os}${ac_solid_version}.a; then
   #
   # we have an error and should bail out, as we can't find the libs!
   #
@@ -71,7 +77,8 @@ fi
 dnl
 dnl Figure out which library file to link with for the Empress support.
 dnl
-AC_DEFUN([AC_FIND_EMPRESS_LIBS],[
+
+AC_DEFUN([PHP_ODBC_FIND_EMPRESS_LIBS],[
   AC_MSG_CHECKING([Empress library file])
   ODBC_LIBS=`echo $1/libempodbccl.so | cut -d' ' -f1`
   if test ! -f $ODBC_LIBS; then
@@ -80,7 +87,7 @@ AC_DEFUN([AC_FIND_EMPRESS_LIBS],[
   AC_MSG_RESULT(`echo $ODBC_LIBS | sed -e 's!.*/!!'`)
 ])
 
-AC_DEFUN([AC_FIND_EMPRESS_BCS_LIBS],[
+AC_DEFUN([PHP_ODBC_FIND_EMPRESS_BCS_LIBS],[
   AC_MSG_CHECKING([Empress local access library file])
   ODBCBCS_LIBS=`echo $1/libempodbcbcs.a | cut -d' ' -f1`
   if test ! -f $ODBCBCS_LIBS; then
@@ -93,7 +100,7 @@ if test -z "$ODBC_TYPE"; then
 AC_MSG_CHECKING(for Adabas support)
 AC_ARG_WITH(adabas,
 [  --with-adabas[=DIR]     Include Adabas D support.  DIR is the Adabas base
-                          install directory, defaults to /usr/local.],
+                          install directory [/usr/local]],
 [
   PHP_WITH_SHARED
   if test "$withval" = "yes"; then
@@ -101,8 +108,8 @@ AC_ARG_WITH(adabas,
   fi
   if test "$withval" != "no"; then
     PHP_ADD_INCLUDE($withval/incl)
-    PHP_ADD_LIBPATH($withval/lib)
-    ODBC_OBJS="$withval/lib/odbclib.a"
+    PHP_ADD_LIBPATH($withval/$PHP_LIBDIR)
+    ODBC_OBJS="$withval/$PHP_LIBDIR/odbclib.a"
     ODBC_LIB="$abs_builddir/ext/odbc/libodbc_adabas.a"
     $srcdir/build/shtool mkdir -f -p ext/odbc
     rm -f "$ODBC_LIB"
@@ -111,6 +118,7 @@ AC_ARG_WITH(adabas,
     PHP_ADD_LIBRARY(sqlrte)
     PHP_ADD_LIBRARY_WITH_PATH(odbc_adabas, $abs_builddir/ext/odbc)
     ODBC_TYPE=adabas
+    PHP_ODBC_CHECK_HEADER(sqlext.h)
     AC_DEFINE(HAVE_ADABAS,1,[ ])
     AC_MSG_RESULT(yes)
   else
@@ -125,7 +133,7 @@ if test -z "$ODBC_TYPE"; then
 AC_MSG_CHECKING(for SAP DB support)
 AC_ARG_WITH(sapdb,
 [  --with-sapdb[=DIR]      Include SAP DB support.  DIR is SAP DB base
-                          install directory, defaults to /usr/local.],
+                          install directory [/usr/local]],
 [
   PHP_WITH_SHARED
   if test "$withval" = "yes"; then
@@ -159,7 +167,7 @@ AC_ARG_WITH(solid,
   fi
   if test "$withval" != "no"; then
     ODBC_INCDIR=$withval/include
-    ODBC_LIBDIR=$withval/lib
+    ODBC_LIBDIR=$withval/$PHP_LIBDIR
     ODBC_INCLUDE=-I$ODBC_INCDIR
     ODBC_TYPE=solid
     if test -f $ODBC_LIBDIR/soc*35.a; then
@@ -170,7 +178,7 @@ AC_ARG_WITH(solid,
       AC_DEFINE(HAVE_SOLID,1,[ ])
     fi
     AC_MSG_RESULT(yes)
-    AC_FIND_SOLID_LIBS($ODBC_LIBDIR)
+    PHP_ODBC_FIND_SOLID_LIBS($ODBC_LIBDIR)
   else
     AC_MSG_RESULT(no)
   fi
@@ -192,13 +200,11 @@ AC_ARG_WITH(ibm-db2,
       ODBC_LIBDIR=/home/db2inst1/sqllib/lib
     else
       ODBC_INCDIR=$withval/include
-      ODBC_LIBDIR=$withval/lib
+      ODBC_LIBDIR=$withval/$PHP_LIBDIR
     fi
 
-    if ! test -f "$ODBC_INCDIR/sqlcli1.h"; then
-      AC_MSG_ERROR([IBM DB2 header files not found])
-    fi
-	
+    PHP_ODBC_CHECK_HEADER(sqlcli1.h)
+
     ODBC_INCLUDE=-I$ODBC_INCDIR
     ODBC_LFLAGS=-L$ODBC_LIBDIR
     ODBC_TYPE=db2
@@ -217,6 +223,33 @@ You need to source your DB2 environment before running PHP configure:
     ], [
       $ODBC_LFLAGS $ODBC_LIBS
     ])
+  else
+    AC_MSG_RESULT(no)
+  fi
+],[
+  AC_MSG_RESULT(no)
+])
+fi
+
+if test -z "$ODBC_TYPE"; then
+AC_MSG_CHECKING(for ODBCRouter.com support)
+AC_ARG_WITH(ODBCRouter,
+[  --with-ODBCRouter[=DIR] Include ODBCRouter.com support.  DIR is ODBCRouter base
+                          install directory [/usr]],
+[
+  PHP_WITH_SHARED
+  if test "$withval" = "yes"; then
+    withval=/usr
+  fi
+  if test "$withval" != "no"; then
+    ODBC_INCDIR=$withval/include
+    ODBC_LIBDIR=$withval/lib
+    ODBC_LFLAGS=-L$ODBC_LIBDIR
+    ODBC_INCLUDE=-I$ODBC_INCDIR
+    ODBC_LIBS=-lodbcsdk
+    ODBC_TYPE=ODBCRouter
+    AC_DEFINE(HAVE_ODBC_ROUTER,1,[ ])
+    AC_MSG_RESULT(yes)
   else
     AC_MSG_RESULT(no)
   fi
@@ -247,7 +280,7 @@ AC_ARG_WITH(empress,
     ODBC_TYPE=empress
     AC_DEFINE(HAVE_EMPRESS,1,[ ])
     AC_MSG_RESULT(yes)
-    AC_FIND_EMPRESS_LIBS($ODBC_LIBDIR)
+    PHP_ODBC_FIND_EMPRESS_LIBS($ODBC_LIBDIR)
   else
     AC_MSG_RESULT(no)
   fi
@@ -261,9 +294,8 @@ AC_MSG_CHECKING(for Empress local access support)
 AC_ARG_WITH(empress-bcs,
 [  --with-empress-bcs[=DIR]
                           Include Empress Local Access support.  DIR is the 
-                          Empress base install directory, defaults to 
-                          \$EMPRESSPATH.  From PHP 4, this option only supports
-                          Empress Version 8.60 and above.],
+                          Empress base install directory. (Empress Version >= 8.60 required)
+                          [\$EMPRESSPATH]],
 [
   PHP_WITH_SHARED
   if test "$withval" != "no"; then
@@ -295,7 +327,7 @@ AC_ARG_WITH(empress-bcs,
     ODBC_TYPE=empress
     AC_DEFINE(HAVE_EMPRESS,1,[ ])
     AC_MSG_RESULT(yes)
-    AC_FIND_EMPRESS_BCS_LIBS($ODBC_LIBDIR)
+    PHP_ODBC_FIND_EMPRESS_BCS_LIBS($ODBC_LIBDIR)
   else
     AC_MSG_RESULT(no)
   fi
@@ -308,7 +340,7 @@ if test -z "$ODBC_TYPE"; then
 AC_MSG_CHECKING(for Birdstep support)
 AC_ARG_WITH(birdstep,
 [  --with-birdstep[=DIR]   Include Birdstep support.  DIR is the Birdstep base
-                          install directory, defaults to /usr/local/birdstep.],
+                          install directory [/usr/local/birdstep]],
 [
   PHP_WITH_SHARED
 
@@ -318,7 +350,7 @@ AC_ARG_WITH(birdstep,
         ODBC_LIBDIR=/usr/local/birdstep/lib
     else
         ODBC_INCDIR=$withval/include
-        ODBC_LIBDIR=$withval/lib
+        ODBC_LIBDIR=$withval/$PHP_LIBDIR
     fi
    
     case $host_alias in
@@ -342,10 +374,10 @@ AC_ARG_WITH(birdstep,
     ODBC_TYPE=birdstep
     ODBC_LFLAGS=-L$ODBC_LIBDIR
     ODBC_LIBS="-lCadm -lCdict -lCenc -lCrdm -lCrpc -lCrdbc -lCrm -lCuapi -lutil"
-    
-    if test -e "$ODBC_LIBDIR/libCrdbc32.$SHLIB_SUFFIX_NAME"; then
+
+    if test -f "$ODBC_LIBDIR/libCrdbc32.$SHLIB_SUFFIX_NAME"; then
       ODBC_LIBS="-lCrdbc32 -lCadm32 -lCncp32 -lCrm32 -lCsql32 -lCdict32 -lCrdm32 -lCrpc32 -lutil"
-    elif test -e "$ODBC_LIBDIR/libCrdbc.$SHLIB_SUFFIX_NAME"; then
+    elif test -f "$ODBC_LIBDIR/libCrdbc.$SHLIB_SUFFIX_NAME"; then
       ODBC_LIBS="-lCrdbc -lCadm -lCncp -lCrm -lCsql -lCdict -lCrdm -lCrpc -lutil"
     fi
 
@@ -374,14 +406,14 @@ AC_ARG_WITH(custom-odbc,
                           run configure script:
                               CPPFLAGS=\"-DODBC_QNX -DSQLANY_BUG\"
                               LDFLAGS=-lunix
-                              CUSTOM_ODBC_LIBS=\"-ldblib -lodbc\".],
+                              CUSTOM_ODBC_LIBS=\"-ldblib -lodbc\"],
 [
   if test "$withval" = "yes"; then
     withval=/usr/local
   fi
   if test "$withval" != "no"; then
     ODBC_INCDIR=$withval/include
-    ODBC_LIBDIR=$withval/lib
+    ODBC_LIBDIR=$withval/$PHP_LIBDIR
     ODBC_LFLAGS=-L$ODBC_LIBDIR
     ODBC_INCLUDE=-I$ODBC_INCDIR
     ODBC_LIBS=$CUSTOM_ODBC_LIBS
@@ -400,7 +432,7 @@ if test -z "$ODBC_TYPE"; then
 AC_MSG_CHECKING(for iODBC support)
 AC_ARG_WITH(iodbc,
 [  --with-iodbc[=DIR]      Include iODBC support.  DIR is the iODBC base
-                          install directory, defaults to /usr/local.],
+                          install directory [/usr/local]],
 [
   PHP_WITH_SHARED
   if test "$withval" = "yes"; then
@@ -411,7 +443,7 @@ AC_ARG_WITH(iodbc,
     PHP_ADD_INCLUDE($withval/include, 1)
     ODBC_TYPE=iodbc
     ODBC_INCLUDE=-I$withval/include
-    ODBC_LFLAGS=-L$withval/lib
+    ODBC_LFLAGS=-L$withval/$PHP_LIBDIR
     ODBC_LIBS=-liodbc
     AC_DEFINE(HAVE_IODBC,1,[ ])
     AC_DEFINE(HAVE_ODBC2,1,[ ])
@@ -428,8 +460,7 @@ if test -z "$ODBC_TYPE"; then
 AC_MSG_CHECKING(for Easysoft ODBC-ODBC Bridge support)
 AC_ARG_WITH(esoob,
 [  --with-esoob[=DIR]      Include Easysoft OOB support. DIR is the OOB base
-                          install directory,
-                          defaults to /usr/local/easysoft/oob/client.],
+                          install directory [/usr/local/easysoft/oob/client]],
 [
   PHP_WITH_SHARED
   if test "$withval" = "yes"; then
@@ -437,7 +468,7 @@ AC_ARG_WITH(esoob,
   fi
   if test "$withval" != "no"; then
     ODBC_INCDIR=$withval/include
-    ODBC_LIBDIR=$withval/lib
+    ODBC_LIBDIR=$withval/$PHP_LIBDIR
     ODBC_LFLAGS=-L$ODBC_LIBDIR
     ODBC_INCLUDE=-I$ODBC_INCDIR
     ODBC_LIBS=-lesoobclient
@@ -456,7 +487,7 @@ if test -z "$ODBC_TYPE"; then
 AC_MSG_CHECKING(for unixODBC support)
 AC_ARG_WITH(unixODBC,
 [  --with-unixODBC[=DIR]   Include unixODBC support.  DIR is the unixODBC base
-                          install directory, defaults to /usr/local.],
+                          install directory [/usr/local]],
 [
   PHP_WITH_SHARED
   if test "$withval" = "yes"; then
@@ -464,11 +495,12 @@ AC_ARG_WITH(unixODBC,
   fi
   if test "$withval" != "no"; then
     ODBC_INCDIR=$withval/include
-    ODBC_LIBDIR=$withval/lib
+    ODBC_LIBDIR=$withval/$PHP_LIBDIR
     ODBC_LFLAGS=-L$ODBC_LIBDIR
     ODBC_INCLUDE=-I$ODBC_INCDIR
     ODBC_LIBS=-lodbc
     ODBC_TYPE=unixODBC
+    PHP_ODBC_CHECK_HEADER(sqlext.h)
     AC_DEFINE(HAVE_UNIXODBC,1,[ ])
     AC_MSG_RESULT(yes)
   else
@@ -485,20 +517,20 @@ AC_ARG_WITH(dbmaker,
 [  --with-dbmaker[=DIR]    Include DBMaker support.  DIR is the DBMaker base
                           install directory, defaults to where the latest 
                           version of DBMaker is installed (such as
-                          /home/dbmaker/3.6).],
+                          /home/dbmaker/3.6)],
 [
   PHP_WITH_SHARED
   if test "$withval" = "yes"; then
     # find dbmaker's home directory
-    DBMAKER_HOME=`grep "^dbmaker:" /etc/passwd | awk -F: '{print $6}'`
+    DBMAKER_HOME=`grep "^dbmaker:" /etc/passwd | $AWK -F: '{print $6}'`
 
     # check DBMaker version (from 5.0 to 2.0)
     DBMAKER_VERSION=5.0
 
     while test ! -d $DBMAKER_HOME/$DBMAKER_VERSION -a "$DBMAKER_VERSION" != "2.9"; do
-        DM_VER=`echo $DBMAKER_VERSION | sed -e 's/\.//' | awk '{ print $1-1;}'`
-        MAJOR_V=`echo $DM_VER | awk '{ print $1/10; }'  | awk  -F. '{ print $1; }'`
-        MINOR_V=`echo $DM_VER | awk '{ print $1%10; }'`
+        DM_VER=`echo $DBMAKER_VERSION | sed -e 's/\.//' | $AWK '{ print $1-1;}'`
+        MAJOR_V=`echo $DM_VER | $AWK '{ print $1/10; }'  | $AWK -F. '{ print $1; }'`
+        MINOR_V=`echo $DM_VER | $AWK '{ print $1%10; }'`
         DBMAKER_VERSION=$MAJOR_V.$MINOR_V
     done
 
@@ -513,7 +545,7 @@ AC_ARG_WITH(dbmaker,
 
   if test "$withval" != "no"; then
     ODBC_INCDIR=$withval/include
-    ODBC_LIBDIR=$withval/lib
+    ODBC_LIBDIR=$withval/$PHP_LIBDIR
     ODBC_INCLUDE=-I$ODBC_INCDIR
     ODBC_LFLAGS=-L$ODBC_LIBDIR
     ODBC_INCLUDE=-I$ODBC_INCDIR

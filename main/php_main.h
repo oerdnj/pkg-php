@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_main.h,v 1.31.2.1 2005/01/09 16:30:15 sniper Exp $ */
+/* $Id: php_main.h,v 1.34 2005/08/03 14:08:35 sniper Exp $ */
 
 #ifndef PHP_MAIN_H
 #define PHP_MAIN_H
@@ -36,7 +36,7 @@ PHPAPI void php_module_shutdown_for_exec(void);
 PHPAPI int php_module_shutdown_wrapper(sapi_module_struct *sapi_globals);
 PHPAPI int php_request_startup_for_hook(TSRMLS_D);
 
-PHPAPI int php_startup_extensions(zend_module_entry **ptr, int count);
+PHPAPI int php_register_extensions(zend_module_entry **ptr, int count TSRMLS_DC);
 
 PHPAPI int php_execute_script(zend_file_handle *primary_file TSRMLS_DC);
 PHPAPI int php_execute_simple_script(zend_file_handle *primary_file, zval **ret TSRMLS_DC);

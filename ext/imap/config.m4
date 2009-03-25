@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.63.2.4 2005/01/11 04:56:44 sniper Exp $
+dnl $Id: config.m4,v 1.69 2005/05/29 23:16:41 sniper Exp $
 dnl
 
 AC_DEFUN([IMAP_INC_CHK],[if test -r "$i$1/c-client.h"; then
@@ -86,13 +86,13 @@ AC_DEFUN([PHP_IMAP_SSL_CHK], [
 
 
 PHP_ARG_WITH(imap,for IMAP support,
-[  --with-imap[=DIR]       Include IMAP support. DIR is the c-client install prefix.])
+[  --with-imap[=DIR]       Include IMAP support. DIR is the c-client install prefix])
 
 PHP_ARG_WITH(kerberos,for IMAP Kerberos support,
-[  --with-kerberos[=DIR]     IMAP: Include Kerberos support. DIR is the Kerberos install prefix.], no, no)
+[  --with-kerberos[=DIR]     IMAP: Include Kerberos support. DIR is the Kerberos install prefix], no, no)
 
 PHP_ARG_WITH(imap-ssl,for IMAP SSL support,
-[  --with-imap-ssl[=DIR]     IMAP: Include SSL support. DIR is the OpenSSL install prefix.], no, no)
+[  --with-imap-ssl[=DIR]     IMAP: Include SSL support. DIR is the OpenSSL install prefix], no, no)
 
 
 if test "$PHP_IMAP" != "no"; then  
@@ -148,13 +148,13 @@ if test "$PHP_IMAP" != "no"; then
 
     if test -r "$IMAP_DIR/c-client/c-client.a"; then
       ln -s "$IMAP_DIR/c-client/c-client.a" "$IMAP_DIR/c-client/libc-client.a" >/dev/null 2>&1
-    elif test -r "$IMAP_DIR/lib/c-client.a"; then
-      ln -s "$IMAP_DIR/lib/c-client.a" "$IMAP_DIR/lib/libc-client.a" >/dev/null 2>&1
+    elif test -r "$IMAP_DIR/$PHP_LIBDIR/c-client.a"; then
+      ln -s "$IMAP_DIR/$PHP_LIBDIR/c-client.a" "$IMAP_DIR/$PHP_LIBDIR/libc-client.a" >/dev/null 2>&1
     fi
 
     for lib in c-client4 c-client imap; do
       IMAP_LIB=$lib
-      IMAP_LIB_CHK(lib)
+      IMAP_LIB_CHK($PHP_LIBDIR)
       IMAP_LIB_CHK(c-client)
     done
 

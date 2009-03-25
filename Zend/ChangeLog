@@ -1,3 +1,4471 @@
+2005-08-05  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_execute.c
+      tests/array_type_hint_001.phpt
+      tests/bug33996.phpt:
+      Fixed bug #33996 (No information given for fatal error on passing invalid
+      value to typed argument)
+
+    * zend_operators.c
+      tests/bug33999.phpt:
+      Fixed bug #33999 (object remains object when cast to int)
+
+    * zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h:
+      Fixed memory leak in foreach() on undefined variable
+      (Zend/tests/foreach_undefined.php)
+
+2005-08-04  Antony Dovgal  <antony@zend.com>
+
+    * tests/foreach_undefined.phpt:
+      add test for the last Dmitry's fix
+
+2005-08-04  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_compile.c:
+      Fixed possible memory corryption during compilation of <?php foreach($a as
+      $b); ?>
+
+    * (PHP_5_0)
+      zend_objects.c:
+      Fixed clone bug in ze1_compatibility mode
+
+    * zend_objects.c:
+      Fixed clone bug in ze1_compatibilty mode
+
+2005-08-03  Jani Taskinen  <jani.taskinen@sci.fi>
+
+    * LICENSE:
+      - Bumber up year
+
+    * acconfig.h
+      zend.c
+      zend.h
+      zend_API.c
+      zend_API.h
+      zend_alloc.c
+      zend_alloc.h
+      zend_builtin_functions.c
+      zend_builtin_functions.h
+      zend_compile.c
+      zend_compile.h
+      zend_config.nw.h
+      zend_config.w32.h
+      zend_constants.c
+      zend_constants.h
+      zend_default_classes.c
+      zend_dynamic_array.c
+      zend_dynamic_array.h
+      zend_errors.h
+      zend_exceptions.c
+      zend_exceptions.h
+      zend_execute.c
+      zend_execute.h
+      zend_execute_API.c
+      zend_extensions.c
+      zend_extensions.h
+      zend_fast_cache.h
+      zend_globals.h
+      zend_globals_macros.h
+      zend_hash.c
+      zend_hash.h
+      zend_highlight.c
+      zend_highlight.h
+      zend_indent.c
+      zend_indent.h
+      zend_ini.c
+      zend_ini.h
+      zend_ini_parser.y
+      zend_ini_scanner.h
+      zend_ini_scanner.l
+      zend_interfaces.c
+      zend_interfaces.h
+      zend_istdiostream.h
+      zend_iterators.c
+      zend_iterators.h
+      zend_language_parser.y
+      zend_language_scanner.h
+      zend_language_scanner.l
+      zend_list.c
+      zend_list.h
+      zend_llist.c
+      zend_llist.h
+      zend_mm.c
+      zend_mm.h
+      zend_modules.h
+      zend_multibyte.c
+      zend_multibyte.h
+      zend_multiply.h
+      zend_object_handlers.c
+      zend_object_handlers.h
+      zend_objects.c
+      zend_objects.h
+      zend_objects_API.c
+      zend_objects_API.h
+      zend_opcode.c
+      zend_operators.c
+      zend_operators.h
+      zend_ptr_stack.c
+      zend_ptr_stack.h
+      zend_qsort.c
+      zend_qsort.h
+      zend_reflection_api.c
+      zend_reflection_api.h
+      zend_sprintf.c
+      zend_stack.c
+      zend_stack.h
+      zend_static_allocator.c
+      zend_static_allocator.h
+      zend_stream.c
+      zend_stream.h
+      zend_strtod.h
+      zend_ts_hash.c
+      zend_ts_hash.h
+      zend_types.h
+      zend_variables.c
+      zend_variables.h
+      zend_vm.h:
+      Bump up the year
+
+    * README.ZEND_VM:
+      Nuked DOS EOLs
+
+2005-08-02  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_execute_API.c
+      zend_execute_API.c:
+      Fixed bug #33942 (the patch to #33156 crash cygwin except cli)
+
+2005-08-02  Jani Taskinen  <jani.taskinen@sci.fi>
+
+    * zend_exceptions.c:
+      - Fixed bug #33967 (misuse of Exception constructor doesn\'t display
+      errorfile)
+
+2005-08-02  Dmitry Stogov  <dmitry@zend.com>
+
+    * bench.php:
+      Removed warnings
+
+2005-07-29  Ilia Alshanetsky  <ilia@prohost.org>
+
+    * zend_vm_def.h
+      zend_vm_execute.h:
+      Fixed warning message generated when isset() or empty() are given invalid
+      offset type.
+
+2005-07-29  Anantha Kesari H Y  <hyanantha@novell.com>
+
+    * acconfig.h
+      acconfig.h:
+      In NetWare few of the programs like apache2 and ldap use winsock inclusinf
+      sys/socket.h is not desirable.
+      --Kamesh
+
+2005-07-29  Jani Taskinen  <jani.taskinen@sci.fi>
+
+    * zend_vm_execute.h:
+      update generated file
+
+2005-07-28  Andi Gutmans  <andi@zend.com>
+
+    * zend_vm_def.h:
+      - Tiny fixlet
+
+2005-07-28  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_API.c
+      zend_API.h:
+      - Add convenience function zend_is_callable_ex() and base zend_is_callable
+        and zend_make_callable on it. This functions allows to check if a php
+        variable is a callable function and returns its function pointer as well
+        as object if possible.
+
+2005-07-26  Jani Taskinen  <jani.taskinen@sci.fi>
+
+    * zend_execute_API.c:
+      bug #33865
+
+2005-07-25  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_API.c:
+      - Fix #33853
+
+2005-07-22  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend.c
+      zend.c
+      tests/bug33802.phpt
+      tests/bug33802.phpt
+      tests/bug33802.phpt:
+      Fixed bug #33802 (throw Exception in error handler causes crash)
+
+2005-07-21  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_execute_API.c:
+      - Fix error generation logic (found by johannes)
+
+2005-07-21  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_vm_def.h:
+      Fixed bug with returning from internal function by reference
+
+2005-07-19  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_interfaces.c:
+      - Dont't warn in case an exception is pending - in this case it'd
+      superflous
+
+2005-07-19  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_compile.c
+      zend_compile.c
+      zend_execute.c
+      zend_vm_execute.h
+      zend_vm_opcodes.h:
+      Fixed bug #33710 (ArrayAccess objects doen't initialize $this)
+
+2005-07-18  Rasmus Lerdorf  <rasmus@lerdorf.com>
+
+    * zend_language_scanner.l:
+      Valgrind is unhappy that this is not initialized
+
+2005-07-18  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_API.c
+      zend_API.h:
+      Fixed bug in new module statrup mechanism
+
+    * (PHP_5_0)
+      zend_execute.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h
+      tests/bug33558.phpt:
+      Fixed bug #33558 (warning with nested calls to functions returning by
+      reference)
+
+    * tests/bug33558.phpt
+      tests/bug33558.phpt:
+      
+      Fixed bug #33558 (warning with nested calls to functions returning by
+      reference)
+
+    * zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_gen.php
+      zend_vm_opcodes.h:
+      Removed some compilation warnings.
+
+2005-07-18  Jani Taskinen  <jani.taskinen@sci.fi>
+
+    * tests/bug33710.phpt:
+      typo
+
+2005-07-17  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * tests/bug33710.phpt:
+      - Add new test
+
+2005-07-17  Ilia Alshanetsky  <ilia@prohost.org>
+
+    * zend_compile.c:
+      Added missing init.
+
+2005-07-14  Andi Gutmans  <andi@zend.com>
+
+    * zend.h:
+      - Back to -dev
+
+    * (php_5_1_0b3)
+      zend.h:
+      - Beta 3
+
+2005-07-12  Andi Gutmans  <andi@zend.com>
+
+    * zend.h:
+      - Back to -dev
+
+    * (php_5_1_0b3)
+      zend.h:
+      - Beta 3
+
+2005-07-12  Dmitry Stogov  <dmitry@zend.com>
+
+    * (php_5_1_0b3)
+      zend_execute_API.c
+      zend_execute_API.c:
+      Fixed bug #33156 (cygwin version of setitimer doesn't accept ITIMER_PROF).
+      (Nuno)
+
+2005-07-11  Ilia Alshanetsky  <ilia@prohost.org>
+
+    * zend_vm_def.h
+      zend_vm_execute.h:
+      Make references misuse emit E_NOTICE rather E_STRICT to be compatible with
+      PHP 4.4.0
+
+2005-07-08  Jani Taskinen  <jani.taskinen@sci.fi>
+
+    * tests/unset_cv05.phpt
+      tests/unset_cv06.phpt:
+      fix test when session.save_handler is "user"
+
+2005-07-07  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend.h
+      zend_API.c
+      zend_API.h
+      zend_compile.c
+      zend_compile.h
+      zend_object_handlers.c
+      zend_objects.c
+      zend_reflection_api.c:
+      Fixed bug #33512 (Add missing support for isset()/unset() overloading to
+      complement the property get/set methods)
+
+2005-07-07  Anantha Kesari H Y  <hyanantha@novell.com>
+
+    * zend_stream.c
+      zend_stream.c:
+      zend_stream_getc uses fread internally. NetWare LibC fread reads 4(Which I
+      believe EOT) for EOF(^D) character. This happens when fread is asked to
+      read one and only character as is the case with cl interactive mode.
+      -- Kamesh
+
+2005-07-07  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_execute_API.c
+      zend_hash.c
+      zend_hash.h
+      tests/bug28072.phpt:
+      Fixed bug #28072 (static array with some constant keys will be incorrectly
+      ordered).
+
+2005-07-04  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_compile.h
+      zend_execute.c
+      zend_language_parser.y
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h:
+      Fixed SIGSEGV on 'global ${"{$blah}_ID"};'
+
+    * zend_API.h
+      zend_execute_API.c:
+      Fixed bug #31158 (array_splice on $GLOBALS crashes)
+
+2005-07-03  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h:
+      Fixed memory leak
+
+2005-06-30  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_API.c
+      zend_API.h:
+      Restored old behavior of zend_statup_module()
+
+2005-06-29  Stanislav Malyshev  <stas@zend.com>
+
+    * zend_execute.c
+      zend_vm_def.h
+      zend_vm_execute.h:
+      fix conditions for freeing
+
+    * zend_API.c
+      zend_API.c:
+      add comment
+
+    * (PHP_5_0)
+      zend_execute.c:
+      fix conditions
+
+2005-06-28  Antony Dovgal  <antony@zend.com>
+
+    * zend_execute.c:
+      fix leak: when dup was <success>ful zend_std_object_get_class_name()
+      returns SUCCESS aka 0
+
+2005-06-28  Stanislav Malyshev  <stas@zend.com>
+
+    * zend_execute.c
+      zend_vm_def.h
+      zend_vm_execute.h:
+      fix previous patch
+
+    * zend_vm_execute.h:
+      update
+
+    * zend_execute.c
+      zend_vm_def.h:
+      fixes for non-php objects
+
+    * (PHP_5_0)
+      zend_execute.c:
+      fixes fo rnon-php objects (John Coggeshall)
+
+2005-06-27  Jani Taskinen  <jani.taskinen@sci.fi>
+
+    * zend.c:
+      - Fixed bug #31358 (Older GCC versions do not provide portable va_copy()).
+
+2005-06-27  Stanislav Malyshev  <stas@zend.com>
+
+    * zend_API.c
+      zend_API.c
+      zend_API.h
+      zend_API.h
+      zend_builtin_functions.c
+      zend_builtin_functions.c
+      zend_exceptions.c
+      zend_exceptions.c:
+      fix various "Class entry requested for an object without PHP class"
+      messages
+      when working with non-PHP objects.
+
+2005-06-27  Dmitry Stogov  <dmitry@zend.com>
+
+    * (PHP_5_0)
+      zend_execute.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h:
+      Fixed SIGSEGV on assigment string offset by reference
+
+    * zend_builtin_functions.c
+      zend_builtin_functions.c:
+      Fixed wrong include/requre occurrences in debug backtrace.
+
+2005-06-24  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_execute.h
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_gen.php
+      zend_vm_opcodes.h:
+      Export zend_do_fcall() helper from executor
+
+    * zend_compile.c
+      zend_compile.c:
+      Partial fix for bug #26584 (Class member - array key overflow)
+      It doesn't fix integer overflow problem, but allows null, boolean and
+      double keys in array constants in the same way as in runtime.
+
+    * tests/bug30519.phpt
+      tests/bug30519.phpt:
+      
+      Fixed bug #30519 (Interface not existing says Class not found)
+
+    * zend_compile.c
+      zend_compile.c
+      zend_compile.h
+      zend_compile.h
+      zend_execute.c
+      zend_execute_API.c
+      zend_execute_API.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h
+      tests/bug30519.phpt:
+      Fixed bug #30519 (Interface not existing says Class not found)
+
+2005-06-23  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_builtin_functions.c
+      zend_builtin_functions.c
+      tests/bug28377.phpt:
+      Fixed bug #28377 (debug_backtrace is intermittently passing args)
+
+    * tests/bug28377.phpt
+      tests/bug28377.phpt:
+      
+      file bug28377.phpt was initially added on branch PHP_5_0.
+
+    * (PHP_5_0)
+      zend_execute.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h
+      tests/bug32660.phpt:
+      Fixed bug #32660 (Assignment by reference causes crash when field access is
+      overloaded (__get))
+
+    * tests/bug32660.phpt
+      tests/bug32660.phpt:
+      
+      Fixed bug #32660 (Assignment by reference causes crash when field access
+      is overloaded (__get))
+
+    * zend_builtin_functions.c
+      zend_builtin_functions.c
+      tests/bug30828.phpt:
+      Fixed bug #30828 (debug_backtrace() reports incorrect class in overridden
+      methods)
+
+    * tests/bug30828.phpt
+      tests/bug30828.phpt:
+      
+      file bug30828.phpt was initially added on branch PHP_5_0.
+
+    * (PHP_5_0)
+      tests/bug27268.phpt:
+      Test for bug #27268. It is fixed in HEAD but not in PHP_5_0.
+
+    * zend_execute.c
+      tests/bug27268.phpt
+      tests/bug27268.phpt:
+      Fixed bug #27268 (Bad references accentuated by clone).
+
+2005-06-23  Andi Gutmans  <andi@zend.com>
+
+    * zend.h:
+      - Back to -dev
+
+    * (php_5_1_0b2)
+      zend.h:
+      - Beta 2
+
+2005-06-22  Dmitry Stogov  <dmitry@zend.com>
+
+    * (php_5_1_0b2)
+      zend_builtin_functions.c
+      zend_builtin_functions.c
+      zend_execute_API.c
+      zend_execute_API.c
+      tests/bug29896.phpt:
+      Fixed bug #29896 (Backtrace argument list out of sync)
+
+    * tests/bug29896.phpt
+      tests/bug29896.phpt:
+      
+      file bug29896.phpt was initially added on branch PHP_5_0.
+
+2005-06-22  Stanislav Malyshev  <stas@zend.com>
+
+    * (php_5_1_0b2)
+      zend_vm.h
+      zend_vm_execute.h
+      zend_vm_gen.php:
+      export zend_vm_set_opcode_handler
+
+2005-06-22  Antony Dovgal  <antony@zend.com>
+
+    * (php_5_1_0b2)
+      zend_ini.c:
+      - allow to use "yes" and "true" with ini_set() and in commandline (through
+      -d flag)
+      - fix #15854 that was caused by wrong consideration that
+      zend_ini_boolean_displayer_cb()
+      always recieves converted to "0"/"1" values.
+
+2005-06-22  Dmitry Stogov  <dmitry@zend.com>
+
+    * (php_5_1_0b2)
+      zend_compile.c
+      zend_compile.c
+      zend_compile.h
+      zend_compile.h
+      zend_execute.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h
+      tests/bug33257.phpt:
+      Fixed bug #33257 (array_splice() inconsistent when passed function instead
+      of variable)
+
+    * tests/bug33257.phpt
+      tests/bug33257.phpt:
+      
+      file bug33257.phpt was initially added on branch PHP_5_0.
+
+2005-06-22  Jani Taskinen  <jani.taskinen@sci.fi>
+
+    * (php_5_1_0b2)
+      tests/unset_cv05.phpt
+      tests/unset_cv06.phpt:
+      fix tests
+
+2005-06-21  Dmitry Stogov  <dmitry@zend.com>
+
+    * tests/unset_cv07.phpt:
+      Fixed test file
+
+2005-06-21  Andi Gutmans  <andi@zend.com>
+
+    * zend.h:
+      - Back to -dev. Guys (n' Girls), give at least 1 hour before you start
+      - complaining about not going back to -dev. I like checking the tarball
+      - before I change it back.
+
+    * (php_5_1_0b2)
+      zend.h:
+      - Take #3 :)
+
+2005-06-21  Ilia Alshanetsky  <ilia@prohost.org>
+
+    * (php_5_1_0b2)
+      zend_reflection_api.c:
+      Fixed memory leak.
+      
+
+2005-06-21  Dmitry Stogov  <dmitry@zend.com>
+
+    * (PHP_5_0)
+      zend_compile.c:
+      Remove unnecessary ZEND_FETCH_CLASS together with
+      ZEND_DECLARE_INHERITED_CLASS
+      in case of early binding
+
+    * (php_5_1_0b2)
+      zend_compile.c:
+      Remove unnecessary ZEND_FETCH_CLASS together with
+      ZEND_DECLARE_INHERITED_CLASS in case of early binding
+
+2005-06-20  Andi Gutmans  <andi@zend.com>
+
+    * zend.h:
+      - Back to -dev
+
+    * (php_5_1_0b2)
+      zend.h:
+      - Beta 2
+
+2005-06-20  Dmitry Stogov  <dmitry@zend.com>
+
+    * (php_5_1_0b2)
+      zend_object_handlers.c
+      zend_object_handlers.c:
+      Fixed possible crash on $x = $obj->$non_string
+
+2005-06-20  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * (php_5_1_0b2)
+      zend_reflection_api.c:
+      - Fix bug #33389 by fixing copying
+
+    * zend_reflection_api.c:
+      - Show true/flase
+
+2005-06-19  Derick Rethans  <php@derickrethans.nl>
+
+    * tests/bug32226.phpt:
+      - Fixed layout of test description.
+
+2005-06-17  Jani Taskinen  <jani.taskinen@sci.fi>
+
+    * tests/bug29368.phpt
+      tests/bug30856.phpt
+      tests/bug30961.phpt
+      tests/bug31720.phpt
+      tests/bug32226.phpt
+      tests/bug33277.phpt:
+      No short-tags!
+
+2005-06-17  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_compile.h
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h:
+      Removed EX(fbc_constructor) (it is no longer needed)
+
+2005-06-17  Antony Dovgal  <antony@zend.com>
+
+    * (PHP_5_0)
+      zend_API.c
+      zend_list.c:
+      MFH: improve error messages in internal classes
+
+    * zend_API.c
+      zend_list.c:
+      improve error messages when error raised from an internal class (do not
+      hide class name)
+
+2005-06-17  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_object_handlers.c
+      zend_object_handlers.c:
+      Fixed bug #33277 (private method accessed by child class)
+
+2005-06-17  Antony Dovgal  <antony@zend.com>
+
+    * zend_hash.c:
+      fix bug #33382 (array_reverse() fails after *sort())
+      no need to MFH - the bug existed only in HEAD
+
+2005-06-17  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_API.c
+      zend_API.h
+      zend_extensions.h
+      zend_modules.h:
+      Improved PHP extension loading mechanism with support for module
+      dependencies and conflicts.
+
+2005-06-16  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_reflection_api.c:
+      - Internal functions/methods can now return by reference
+
+    * zend_execute.c:
+      - Fix TSRM build
+
+2005-06-16  Dmitry Stogov  <dmitry@zend.com>
+
+    * bench.php:
+      typo
+
+    * zend.h
+      zend_API.h
+      zend_compile.c
+      zend_compile.h
+      zend_execute.c
+      zend_execute_API.c
+      zend_extensions.h
+      zend_modules.h
+      zend_object_handlers.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h:
+      Allowed return by refrence from internal functions
+
+2005-06-16  Stanislav Malyshev  <stas@zend.com>
+
+    * zend_execute.c
+      zend_execute.h:
+      rename to zend_
+
+2005-06-16  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h
+      tests/bug33318.phpt:
+      Fixed bug #33318 (throw 1; results in Invalid opcode 108/1/8)
+
+2005-06-16  Zeev Suraski  <zeev@zend.com>
+
+    * zend_language_scanner.l:
+      Fixlet
+
+2005-06-16  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_execute.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h:
+      Compilation warnings
+
+    * zend_compile.c
+      zend_compile.h
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h:
+      ZEND_UNSET_DIM_OBJ is splitted to ZEND_UNSET_DIM and ZEND_UNSET_OBJ.
+
+2005-06-16  Stanislav Malyshev  <stas@zend.com>
+
+    * zend_execute.c
+      zend_execute.h:
+      export zval getters
+
+2005-06-16  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_execute.h
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_gen.php
+      zend_vm_opcodes.h:
+      USER_OPCODE API is improvet.
+      Implemented ability to dispatch from user handler to internal handler of
+      another opcode.
+
+2005-06-15  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend.c
+      zend.h:
+      Fixed OS X compatibility
+
+2005-06-15  Jani Taskinen  <jani.taskinen@sci.fi>
+
+    * tests/bug32428.phpt:
+      typofix
+
+2005-06-14  Ilia Alshanetsky  <ilia@prohost.org>
+
+    * bench.php:
+      more accurate timing function.
+
+2005-06-14  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_vm_execute.h
+      zend_vm_gen.php
+      zend_vm_opcodes.h:
+      Removed old executor
+
+2005-06-14  Jani Taskinen  <jani.taskinen@sci.fi>
+
+    * Zend.m4:
+      reordered + added msg to configure output for PHP_ZEND_VM
+
+    * Zend.m4:
+      typofix
+
+    * Zend.m4
+      acinclude.m4:
+      fix standalone build
+
+2005-06-13  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_execute.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_gen.php
+      zend_vm_opcodes.h:
+      Specializer optimization
+
+    * zend.c
+      zend.h
+      zend_execute.c:
+      Fixed bug #33212 ([GCC 4]: 'zend_error_noreturn' aliased to external symbol
+      'zend_error').
+      The fix is not tested on Solaris and DARWIN!
+
+    * zend_reflection_api.c
+      tests/bug33312.phpt:
+      Fixed bug #33312 (ReflectionParameter methods do not work correctly)
+
+2005-06-11  Andi Gutmans  <andi@zend.com>
+
+    * zend.h:
+      - Back to -dev
+
+    * (php_5_1_0b2)
+      zend.h:
+      - b2 (will post it to internals@)
+
+2005-06-10  Andi Gutmans  <andi@zend.com>
+
+    * zend.h:
+      - Back to -dev
+
+    * (php_5_1_0b1)
+      zend.h:
+      - Go with 5.1.0b1
+
+2005-06-10  Dmitry Stogov  <dmitry@zend.com>
+
+    * (php_5_1_0b1)
+      tests/bug30162.phpt:
+      Added test for bug #30162 (it is already fixed but test file was forgotten)
+
+    * (php_5_1_0b1)
+      tests/bug31177.phpt:
+      Added test file for bug #31177 (not fixed yet)
+
+    * tests/bug31177.phpt
+      tests/bug31177.phpt:
+      
+      file bug31177.phpt was initially added on branch PHP_5_0.
+
+    * (php_5_1_0b1)
+      tests/bug29689.phpt:
+      typos
+
+    * (php_5_1_0b1)
+      zend_reflection_api.c
+      zend_reflection_api.c:
+      Fixed support for ZEND_ACC_SHADOW in ReflectionProperty constructor
+
+    * (php_5_1_0b1)
+      zend_execute.c
+      zend_execute.h
+      zend_extensions.h
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_gen.php
+      zend_vm_opcodes.h:
+      Fix so that extensions like xdebug, can overload opcodes in all execution
+      modes including goto/switch
+
+    * (php_5_1_0b1)
+      zend_compile.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h:
+      Merge three opcodes (ZEND_NEW, ZEND_JMP_NO_CTOR, ZEND_INIT_CTOR) into one
+      (ZEND_NEW). There was no real reason for this anymore and API should be
+      changed before 5.1
+
+2005-06-09  Stanislav Malyshev  <stas@zend.com>
+
+    * zend_compile.c
+      zend_compile.h
+      zend_object_handlers.c
+      zend_reflection_api.c
+      tests/bug29689.phpt:
+      MF50:  fix #29689 and more private property problems
+
+    * tests/bug33277.phpt:
+      add test for this TBF bug
+
+    * zend_compile.c:
+      disallow abstrace private methods
+
+    * (PHP_5_0)
+      zend_compile.c:
+      Disallow abstract privae methods
+
+    * (PHP_5_0)
+      zend_compile.c
+      zend_compile.h
+      zend_object_handlers.c
+      zend_reflection_api.c
+      tests/bug29689.phpt:
+      fix #29689 and more private property problems
+
+2005-06-09  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend.c
+      zend.c
+      zend_execute_API.c
+      zend_execute_API.c:
+      Fixed double call to php_stream_close() on compiler errors
+
+2005-06-09  Stanislav Malyshev  <stas@zend.com>
+
+    * tests/bug33277.phpt
+      tests/bug33277.phpt:
+      
+      file bug33277.phpt was initially added on branch PHP_5_0.
+
+2005-06-09  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend.c
+      zend.c:
+      Fixed bug #25922 (In error handler, modifying 5th arg (errcontext) may
+      result in seg fault)
+
+    * zend_language_scanner.l
+      zend_language_scanner.l:
+      Fixed bug (Crash on Windows and ZTS) that was introduced with fix for bug
+      #26456
+
+2005-06-08  Dmitry Stogov  <dmitry@zend.com>
+
+    * (PHP_5_0)
+      zend_execute.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h:
+      Fixed exception handling in getIterator() callback (bugs #26229 & #30725)
+
+    * zend_compile.c
+      zend_compile.c:
+      Fixed valgrind errors
+
+    * zend_reflection_api.c:
+      Fixed ReflectionClass::setStaticPropertyValue()
+
+2005-06-08  Jani Taskinen  <jani.taskinen@sci.fi>
+
+    * zend_config.w32.h:
+      Hopefully fixes win32 builds
+
+2005-06-08  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_compile.c:
+      Fixed lookups for previos opcodes
+
+    * zend_execute_API.c
+      zend_execute_API.c
+      tests/bug30140.phpt:
+      Fixed bug #30140 (Problem with array in static properties)
+
+    * tests/bug30140.phpt
+      tests/bug30140.phpt:
+      
+      file bug30140.phpt was initially added on branch PHP_5_0.
+
+    * (PHP_5_0)
+      tests/bug32322.phpt:
+      Added test for bug #32322 (Return values by reference broken( using
+      self::),example singleton instance)
+
+    * tests/bug32322.phpt
+      tests/bug32322.phpt:
+      
+      Added test for bug #32322 (Return values by reference broken( using
+      self::),example singleton instance)
+
+    * zend_object_handlers.c
+      zend_object_handlers.c
+      tests/bug30820.phpt:
+      Fixed bug #30820 (static member conflict with $this->member silently
+      ignored)
+
+    * tests/bug30820.phpt
+      tests/bug30820.phpt:
+      
+      file bug30820.phpt was initially added on branch PHP_5_0.
+
+    * zend_compile.c
+      zend_compile.c
+      zend_language_parser.y
+      zend_language_parser.y
+      tests/bug30961.phpt:
+      Fixed bug #30961 (Wrong linenumber in ReflectionClass getStartLine())
+
+    * tests/bug30961.phpt
+      tests/bug30961.phpt:
+      
+      file bug30961.phpt was initially added on branch PHP_5_0.
+
+2005-06-07  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_compile.c
+      zend_compile.c
+      zend_compile.h
+      zend_compile.h
+      zend_language_scanner.l
+      zend_language_scanner.l:
+      Fixed bug #26456 (Wrong results from Reflection-API getDocComment() when
+      called via STDIN)
+
+2005-06-07  Jani Taskinen  <jani.taskinen@sci.fi>
+
+    * Zend.m4:
+      -Moved --disable-zend-memory-manager where it belongs
+
+    * acinclude.m4:
+      - Show "none" when nothing is found
+
+2005-06-07  Ilia Alshanetsky  <ilia@prohost.org>
+
+    * zend_objects.c:
+      Fixed ZTS build.
+
+2005-06-07  Derick Rethans  <php@derickrethans.nl>
+
+    * (PHP_5_0)
+      zend_alloc.h:
+      - MFH: Added the --disable-zend-memory-manager switch to disable the Zend
+        memory manager.
+
+    * zend_alloc.h:
+      - Added the --disable-zend-memory-manager switch to disable the Zend memory
+        manager.
+
+2005-06-07  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_builtin_functions.c
+      zend_builtin_functions.c:
+      Fixed memory leak in debug_print_backtrace()
+
+    * zend_execute.c
+      zend_execute.c:
+      fixed memory leak in bug #28972 ([] operator overflow treatment is
+      incorrect), not the bug itself.
+
+2005-06-07  Derick Rethans  <php@derickrethans.nl>
+
+    * (PHP_5_0)
+      zend_execute.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h:
+      - MF44: Problems with user defined error handler and references
+
+2005-06-07  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_objects.c
+      zend_objects.c
+      tests/bug33243.phpt:
+      Fixed bug #33243 (ze1_compatibility_mode does not work as expected)
+
+    * tests/bug33243.phpt
+      tests/bug33243.phpt:
+      
+      file bug33243.phpt was initially added on branch PHP_5_0.
+
+2005-06-07  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_compile.c
+      zend_compile.c
+      zend_compile.h
+      zend_compile.h
+      zend_language_scanner.l
+      zend_language_scanner.l:
+      Fixed bug #26456 (Wrong results from Reflection-API getDocComment() when
+      called via STDIN)
+
+2005-06-07  Jani Taskinen  <jani.taskinen@sci.fi>
+
+    * Zend.m4:
+      -Moved --disable-zend-memory-manager where it belongs
+
+    * acinclude.m4:
+      - Show "none" when nothing is found
+
+2005-06-07  Ilia Alshanetsky  <ilia@prohost.org>
+
+    * zend_objects.c:
+      Fixed ZTS build.
+
+2005-06-07  Derick Rethans  <php@derickrethans.nl>
+
+    * (PHP_5_0)
+      zend_alloc.h:
+      - MFH: Added the --disable-zend-memory-manager switch to disable the Zend
+        memory manager.
+
+    * zend_alloc.h:
+      - Added the --disable-zend-memory-manager switch to disable the Zend memory
+        manager.
+
+2005-06-07  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_builtin_functions.c
+      zend_builtin_functions.c:
+      Fixed memory leak in debug_print_backtrace()
+
+    * zend_execute.c
+      zend_execute.c:
+      fixed memory leak in bug #28972 ([] operator overflow treatment is
+      incorrect), not the bug itself.
+
+2005-06-07  Derick Rethans  <php@derickrethans.nl>
+
+    * (PHP_5_0)
+      zend_execute.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h:
+      - MF44: Problems with user defined error handler and references
+
+2005-06-07  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_objects.c
+      zend_objects.c
+      tests/bug33243.phpt:
+      Fixed bug #33243 (ze1_compatibility_mode does not work as expected)
+
+    * tests/bug33243.phpt
+      tests/bug33243.phpt:
+      
+      file bug33243.phpt was initially added on branch PHP_5_0.
+
+2005-06-06  Derick Rethans  <php@derickrethans.nl>
+
+    * zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h:
+      - Regenerate VM files and add warning about regeneration
+
+    * (PHP_5_0)
+      zend_execute.c
+      zend_vm_def.h:
+      - MH44: Problems with user defined error handler and wrong usage of
+      references
+
+2005-06-06  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_compile.c
+      tests/bug32428.phpt:
+      Fixed bug #32428 (The @ warning error supression operator is broken)
+
+    * zend_objects_API.c
+      zend_objects_API.c
+      tests/bug32799.phpt:
+      Fixed bug #32799 (crash: calling the corresponding global var during the
+      destruct)
+
+    * tests/bug32799.phpt
+      tests/bug32799.phpt:
+      
+      file bug32799.phpt was initially added on branch PHP_5_0.
+
+    * tests/bug32596.phpt:
+      Added test for bug #32596 (Segfault/Memory Leak by getClass (etc) in
+      __destruct)
+
+    * tests/bug32596.phpt
+      tests/bug32596.phpt:
+      
+      file bug32596.phpt was initially added on branch PHP_5_0.
+
+    * (PHP_5_0)
+      zend_execute_API.c:
+      Fixed bug #32596 (Segfault/Memory Leak by getClass (etc) in __destruct)
+
+    * (PHP_5_0)
+      tests/bug32993.phpt:
+      Added test for bug #32993 (implemented Iterator function current() don't
+      throw
+        exception)
+
+    * tests/bug32993.phpt
+      tests/bug32993.phpt:
+      
+      Fixed bug #32993 (implemented Iterator function current() don't throw
+      exception)
+
+    * zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h:
+      Fixed bug #32993 (implemented Iterator function current() don't throw
+      exception)
+
+    * zend_object_handlers.c
+      zend_object_handlers.c
+      tests/bug33171.phpt:
+      Fixed bug #33171 (foreach enumerates private fields declared in base
+      classes)
+
+    * tests/bug33171.phpt
+      tests/bug33171.phpt:
+      
+      file bug33171.phpt was initially added on branch PHP_5_0.
+
+2005-06-06  Wez Furlong  <wez.php@thebrainroom.net>
+
+    * zend_language_scanner.l:
+      Avoid double-freeing streams.
+      This can happen because all streams are registered as resources;
+      the engine also tracks them in the open_files global.
+      
+      Avoid the potential for double-freeing by simply making streams exposed to
+      the
+      engine have no closer for the engine to call; they will already be in the
+      resource list, and thus will be shut down properly at request end.
+
+2005-06-04  Zeev Suraski  <zeev@zend.com>
+
+    * zend_compile.h
+      zend_language_parser.y
+      zend_language_scanner.l
+      zend_stream.c
+      zend_stream.h
+      tests/halt01.phpt
+      tests/halt02.phpt
+      tests/halt03.phpt:
+      Thought I committed it ages ago...  Anyway, without further delays, the
+      final
+      __halt_compiler() patch
+
+2005-06-03  Dmitry Stogov  <dmitry@zend.com>
+
+    * tests/bug30394.phpt:
+      Added test for 5.0 specific bug #30394 (Assignment operators yield wrong
+      result with __get/__set)
+
+    * (PHP_5_0)
+      zend.c
+      zend_execute_API.c
+      tests/bug30394.phpt
+      tests/bug30394.phpt:
+      Fixed bug #30394 (Assignment operators yield wrong result with __get/__set)
+
+    * zend_compile.c
+      zend_compile.c
+      tests/bug30080.phpt:
+      Fixed bug #30080 (Passing array or non array of objects)
+
+    * tests/bug30080.phpt
+      tests/bug30080.phpt:
+      
+      file bug30080.phpt was initially added on branch PHP_5_0.
+
+    * zend_compile.c
+      zend_compile.c
+      zend_execute.c
+      tests/bug27598.phpt:
+      Fixed bug #27598 (list() array key assignment causes HUGE memory leak)
+
+    * tests/bug27598.phpt
+      tests/bug27598.phpt:
+      
+      file bug27598.phpt was initially added on branch PHP_5_0.
+
+    * zend_execute.c
+      zend_object_handlers.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h
+      tests/object_handlers.phpt:
+      Fixed memory allocation bugs related to magic object handlers (__get(),
+      __set(),
+       ...)
+
+    * tests/object_handlers.phpt
+      tests/object_handlers.phpt:
+      
+      file object_handlers.phpt was initially added on branch PHP_5_0.
+
+    * (PHP_5_0)
+      zend_execute.c
+      zend_object_handlers.c:
+      Fixed memory allocation bugs related to magic object handlers (__get(),
+      __set(), ...)
+
+2005-06-01  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_object_handlers.c
+      zend_object_handlers.c
+      tests/bug30791.phpt:
+      Fixed bug #30791 (magic methods (__sleep/__wakeup/__toString) call __call
+      if object is overloaded)
+
+    * tests/bug30791.phpt
+      tests/bug30791.phpt:
+      
+      file bug30791.phpt was initially added on branch PHP_5_0.
+
+2005-05-31  Magnus M‰‰tt‰  <novell@kiruna.se>
+
+    * tests/bug27304.phpt:
+      Fix test
+
+2005-05-31  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_operators.c:
+      Reverted wrong fix for bug #30572.
+      Seems the bug was already fixed in other way.
+      But reverted patch produced a lot of valgrind errors, because IS_TMP_VAR
+      operands don't initialize refcount.
+
+2005-05-31  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_compile.c:
+      - Only allow changing return ref agnostic when a script method overrides an
+        internal method (found by dmitry)
+
+2005-05-29  Jani Taskinen  <jani.taskinen@sci.fi>
+
+    * Zend.m4:
+      - Unify the "configure --help" texts
+
+2005-05-29  Hartmut Holzgraefe  <hartmut@php-groupies.de>
+
+    * acinclude.m4:
+      forgot to re-add 1.875 as a valid bison version after testing
+
+    * acinclude.m4:
+      bison may be installed under a different executable name, e.g.
+      
+        YACC="bison-1.75" configure ...
+      
+      removing the check for "bison -y" allows for this
+      the check was redundant anyway as the following one filters
+      for "GNU Bison" in the --version output
+
+    * Zend.m4
+      acinclude.m4:
+      avoid code duplication in bison version test
+
+2005-05-28  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_compile.c
+      zend_compile.h:
+      - Make zend_do_inheritance ZEND_API
+
+2005-05-27  Dmitry Stogov  <dmitry@zend.com>
+
+    * (PHP_5_0)
+      zend_execute.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h
+      tests/bug22836.phpt
+      tests/bug22836.phpt:
+      Fixed bug #22836 (returning reference to uninitialized variable)
+
+2005-05-26  Dmitry Stogov  <dmitry@zend.com>
+
+    * (PHP_5_0)
+      zend_execute_API.c
+      tests/bug33116.phpt:
+      Fixed bug #33116 (crash when assigning class name to global variable in
+      __autoload)
+
+    * tests/bug33116.phpt
+      tests/bug33116.phpt:
+      
+      Fixed bug #33116 (crash when assigning class name to global variable in
+      __autoload).
+
+    * zend_execute_API.c:
+      Fixed bug #33116 (crash when assigning class name to global variable in
+      __autoload).
+
+    * zend_API.h
+      zend_compile.c
+      zend_compile.h
+      zend_execute.c
+      zend_language_parser.y
+      zend_reflection_api.c
+      tests/array_type_hint_001.phpt:
+      Added array type hinting. (This patch requires full re-make)
+
+2005-05-26  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * (PHP_5_0)
+      tests/bug27304.phpt
+      tests/bug32981.phpt:
+      - Add new tests
+
+    * tests/bug27304.phpt
+      tests/bug27304.phpt
+      tests/bug32981.phpt
+      tests/bug32981.phpt:
+      
+      - Add new tests
+
+2005-05-22  Ilia Alshanetsky  <ilia@prohost.org>
+
+    * (PHP_5_0)
+      zend_highlight.c:
+      MFH: Fixed bug #29338 (unencoded spaces get ignored after certain tags).
+
+    * zend_highlight.c:
+      Fixed bug #29338 (unencoded spaces get ignored after certain tags).
+
+2005-05-22  Stanislav Malyshev  <stas@zend.com>
+
+    * zend.c
+      zend.c:
+      fix leak
+
+2005-05-19  Dmitry Stogov  <dmitry@zend.com>
+
+    * (PHP_5_0)
+      zend_object_handlers.c:
+      Backported fix for bug #30451
+
+    * tests/bug31828.phpt
+      tests/bug31828.phpt
+      tests/bug32080.phpt
+      tests/bug32080.phpt:
+      Strict warnings
+
+2005-05-18  Stanislav Malyshev  <stas@zend.com>
+
+    * zend.c
+      zend.c:
+      fix for #29890 - part 2
+
+    * (PHP_5_0)
+      tests/bug29890.phpt:
+      test
+
+    * tests/bug29890.phpt
+      tests/bug29890.phpt:
+      
+      test
+
+    * zend_execute_API.c
+      zend_execute_API.c:
+      fix #29890 - crash when function call fails
+
+    * zend_object_handlers.c:
+      revert - seems to be fixed elsewhere
+
+    * zend_object_handlers.c:
+      fix #30451  	static properties don't work properly
+
+    * tests/bug29689.phpt
+      tests/bug30451.phpt:
+      tests
+
+    * tests/bug29689.phpt
+      tests/bug29689.phpt
+      tests/bug30451.phpt
+      tests/bug30451.phpt:
+      
+      file bug29689.phpt was initially added on branch PHP_5_0.
+
+2005-05-17  Magnus M‰‰tt‰  <novell@kiruna.se>
+
+    * tests/bug31828.phpt
+      tests/bug32080.phpt:
+      Fix tests.
+
+2005-05-13  Antony Dovgal  <tony2001@phpclub.net>
+
+    * (PHP_5_0)
+      zend.c:
+      MFH: fix bug #29975 (memory leaks when set_error_handler() is used inside
+      error handler)
+
+    * zend.c:
+      fix bug #29975 (memory leaks when set_error_handler() is used inside error
+      handler)
+
+2005-05-12  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_reflection_api.c:
+      - Make ReflectionObject::hasProperty() recognize dynamically added props
+
+2005-05-06  Jani Taskinen  <jani.taskinen@sci.fi>
+
+    * zend_object_handlers.h:
+      typofix :)
+
+2005-05-05  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_compile.c
+      zend_compile.c
+      zend_execute.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h
+      tests/bug31525.phpt:
+      Fixed bug #31525 (object reference being dropped. $this getting lost)
+
+    * tests/bug31525.phpt
+      tests/bug31525.phpt:
+      
+      file bug31525.phpt was initially added on branch PHP_5_0.
+
+2005-05-04  Stanislav Malyshev  <stas@zend.com>
+
+    * zend.c:
+      fix bug #32924:	prepend does not add file to included files
+
+    * (PHP_5_0)
+      zend_execute.c:
+      clarify some magic
+
+2005-05-04  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_execute.c:
+      Fixed bug #30641 (Compile error: error: symbol "zend_error" is used but not
+      defined)
+
+    * tests/bug30707.phpt
+      tests/bug30707.phpt:
+      
+      file bug30707.phpt was initially added on branch PHP_5_0.
+
+    * (PHP_5_0)
+      zend_execute.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h
+      tests/bug30707.phpt:
+      Fixed bug #30707 (Segmentation fault on exception in method)
+
+    * (PHP_5_0)
+      zend_execute.c:
+      ws
+
+    * tests/bug30162.phpt
+      tests/bug30162.phpt:
+      
+      file bug30162.phpt was initially added on branch PHP_5_0.
+
+    * (PHP_5_0)
+      zend_execute.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h
+      tests/bug30161.phpt:
+      Fixed bug #30162 (Catching exception in constructor couses lose of $this)
+
+2005-05-03  Dmitry Stogov  <dmitry@zend.com>
+
+    * tests/unset_cv07.phpt:
+      Fixed notice message
+
+2005-05-03  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * (PHP_5_0)
+      tests/bug32252.phpt:
+      - Add test
+
+2005-05-03  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_object_handlers.c:
+      Fixed destruction of zval after returning from __call()
+
+    * zend_builtin_functions.c
+      zend_builtin_functions.c
+      tests/bug32296.phpt:
+      Fixed bug #32296 (get_class_methods output has changed between 5.0.2 and
+      5.0.3)
+      Now get_class_methods() shows accessible private and protected methods if
+      it is called from class scope.
+
+    * tests/bug32296.phpt
+      tests/bug32296.phpt:
+      
+      file bug32296.phpt was initially added on branch PHP_5_0.
+
+2005-05-02  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_builtin_functions.c
+      zend_object_handlers.c
+      zend_object_handlers.h:
+      - Extend API to support real existance test without the need to add any new
+        functions or change any behavior
+
+    * zend_execute_API.c:
+      -  Part 2 of #30126: Enhancement for error message for abstract classes
+
+    * zend_execute_API.c:
+      - Part 1 of #30126: Enhancement for error message for abstract classes
+
+2005-04-29  Jani Taskinen  <jani.taskinen@sci.fi>
+
+    * zend_object_handlers.c:
+      compile fix
+
+    * tests/bug30332.phpt
+      tests/bug32852.phpt:
+      Make sure E_STRICT is set always
+
+2005-04-29  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_API.c
+      zend_API.c
+      tests/bug30332.phpt:
+      Fixed bug #30332 (zend.ze1_compatibility_mode isnt fully compatable with
+      array_push())
+
+    * tests/bug30332.phpt
+      tests/bug30332.phpt:
+      
+      file bug30332.phpt was initially added on branch PHP_5_0.
+
+    * zend_execute.c
+      zend_execute.c
+      tests/bug31828.phpt
+      tests/bug32080.phpt
+      tests/bug32852.phpt:
+      Fixed bug #32852 (Crash with singleton and __destruct when
+      zend.ze1_compatibility_mode = On)
+      Fixed bug #31828 (Crash with zend.ze1_compatibility_mode=On)
+      Fixed bug #32080 (segfault when assigning object to itself with
+      zend.ze1_compatibility_mode=On)
+
+    * tests/bug31828.phpt
+      tests/bug31828.phpt
+      tests/bug32080.phpt
+      tests/bug32080.phpt
+      tests/bug32852.phpt
+      tests/bug32852.phpt:
+      
+      file bug31828.phpt was initially added on branch PHP_5_0.
+
+2005-04-29  Jani Taskinen  <jani.taskinen@sci.fi>
+
+    * tests/bug22836.phpt
+      tests/bug27641.phpt:
+      - Unify error_reporting setting + make sure E_STRICT is set when wanted
+
+2005-04-28  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_object_handlers.c
+      zend_object_handlers.c
+      tests/bug29015.phpt:
+      Fixed bug #29015 (Incorrect behavior of member vars(non string
+      ones)-numeric mem vars und others)
+
+    * tests/bug29015.phpt
+      tests/bug29015.phpt:
+      
+      file bug29015.phpt was initially added on branch PHP_5_0.
+
+2005-04-27  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_API.c
+      zend_API.h
+      zend_object_handlers.c
+      zend_object_handlers.h
+      tests/bug29210.phpt:
+      Fixed bug #29210 (Function: is_callable - no support for private and
+      protected classes)
+
+    * (PHP_5_0)
+      zend_API.c
+      zend_API.h
+      zend_object_handlers.c
+      zend_object_handlers.h
+      tests/bug29210.phpt
+      tests/bug29210.phpt:
+      Fixed bug #29210 (Function: is_callable - no support for private and
+      protected classes).
+
+    * zend_compile.c
+      zend_compile.c
+      tests/bug29104.phpt
+      tests/bug29104.phpt
+      tests/bug29104.phpt:
+      Fixed bug #29104 (Function declaration in method doesn't work)
+
+    * zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h
+      tests/bug32833.phpt:
+      Fixed bug #32833 (Invalid opcode)
+
+    * tests/bug32674.phpt
+      tests/bug32674.phpt:
+      
+      file bug32674.phpt was initially added on branch PHP_5_0.
+
+    * (PHP_5_0)
+      zend_execute.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h
+      tests/bug32674.phpt:
+      Fixed bug #32674 (exception in iterator causes crash)
+
+2005-04-26  Dmitry Stogov  <dmitry@zend.com>
+
+    * tests/bug30889.phpt
+      tests/bug30889.phpt:
+      
+      file bug30889.phpt was initially added on branch PHP_5_0.
+
+    * (PHP_5_0)
+      zend_execute.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h
+      tests/bug30889.phpt:
+      Fixed bug #30889 (Conflict between __get/__set and ++ operator)
+
+    * tests/bug32429.phpt:
+      fix
+
+    * zend_API.c
+      zend_API.c
+      tests/bug30702.phpt:
+      Fixed bug #30702 (cannot initialize class variable from class constant)
+
+    * tests/bug30702.phpt
+      tests/bug30702.phpt:
+      
+      file bug30702.phpt was initially added on branch PHP_5_0.
+
+    * zend_compile.c
+      tests/bug32427.phpt:
+      Fixed bug #32427 (Interfaces are not allowed 'static' access modifier).
+
+    * zend_builtin_functions.c
+      tests/bug32429.phpt:
+      Fixed bug #32429 (method_exists() always return TRUE if __call method
+      exists)
+
+2005-04-25  Andrei Zmievski  <andrei@gravitonic.com>
+
+    * zend_object_handlers.c:
+      Reverting. Let's not introduce major BC breakage like this without a
+      good reason.
+
+2005-04-25  Dmitry Stogov  <dmitry@zend.com>
+
+    * tests/bug29944.phpt
+      tests/bug29944.phpt:
+      
+      Fixed bug #29944 (Function defined in switch, crashes).
+
+    * zend_compile.c
+      zend_compile.c
+      tests/bug29944.phpt:
+      Fixed bug #29944 (Function defined in switch, crashes).
+
+2005-04-25  Jani Taskinen  <jani.taskinen@sci.fi>
+
+    * zend_hash.c:
+      ws
+
+2005-04-25  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_hash.c:
+      Fixed call to estrndup() with invalid length
+
+    * (PHP_5_0)
+      zend_hash.c:
+      Fixed call to estrndup() with invalid lengt
+
+2005-04-25  Sebastian Bergmann  <sb@sebastian-bergmann.de>
+
+    * zend_reflection_api.c:
+      Correct grammar.
+
+2005-04-24  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_compile.c:
+      - Need to copy doc comments correct for properties
+
+2005-04-23  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * tests/bug29674.phpt
+      tests/bug30161.phpt
+      tests/bug30346.phpt:
+      - Add new tests
+
+2005-04-21  Jani Taskinen  <jani.taskinen@sci.fi>
+
+    * tests/unset_cv05.phpt:
+      Fix test when register_long_arrays is off in your php.ini
+
+2005-04-19  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_API.c
+      zend_API.h
+      zend_compile.c
+      zend_compile.h
+      zend_reflection_api.c:
+      - Add ReflectionProperty::getDocComment()
+
+2005-04-19  Jani Taskinen  <jani.taskinen@sci.fi>
+
+    * zend_compile.c
+      zend_exceptions.c:
+      No c++ comments in C code
+
+2005-04-18  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_builtin_functions.c
+      zend_builtin_functions.c
+      zend_execute.c:
+      Fixed memory leak in debug_backtrace()
+
+2005-04-17  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_builtin_functions.c:
+      - Fix special cases of property_exists()
+
+    * zend_object_handlers.c:
+      - Fix logic
+
+2005-04-16  Sara Golemon  <php@alphaweb.net>
+
+    * tests/method_exists.phpt:
+      method_exists() regression test
+
+    * zend_builtin_functions.c:
+      Fix method_exists(), pce is fetched, but ce is used
+
+2005-04-15  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_builtin_functions.c:
+      - Fix even though we already know that the function will be renamed
+
+2005-04-15  Andrei Zmievski  <andrei@gravitonic.com>
+
+    * zend_execute.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h:
+      Fix certain operations to stop relying on presence of read_property and
+      write_property handlers. They may be NULL'ed out by certain objects
+      pretending to be pure arrays, for example. Do checks first.
+
+2005-04-12  Stanislav Malyshev  <stas@zend.com>
+
+    * zend_ini.c:
+      fix memory corruption if one on the on_modify handlers errors out
+
+    * (PHP_5_0)
+      zend_ini.c:
+      fi memory corruption if one on the on_modify handlers errors out
+
+2005-04-08  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_operators.c:
+      - Fix memory corruption found by rob
+
+    * tests/bug22836.phpt:
+      - Ensure we see all errors. No need for () in return
+
+    * zend_builtin_functions.c:
+      - Add property_exits()
+
+    * zend_object_handlers.c:
+      - No E_ERROR when we just check (where did my 0->1 change go on first
+      commit?)
+
+    * zend_object_handlers.c:
+      - No E_ERROR when we just check, here visibility simply means there is none
+
+    * zend_object_handlers.c
+      zend_object_handlers.h:
+      - Simplify getting property info and make it an api function
+
+2005-04-07  Jani Taskinen  <jani.taskinen@sci.fi>
+
+    * zend_alloc.c
+      zend_alloc.h:
+      - Nuke the code duplication
+
+    * zend_alloc.h:
+      Fix build when USE_ZEND_ALLOC is 0
+
+2005-04-07  Zeev Suraski  <zeev@zend.com>
+
+    * (PHP_5_0)
+      zend_alloc.c
+      zend_alloc.h:
+      MFH (Fix strdup() bug when USE_ZEND_ALLOC was disabled)
+
+    * zend_alloc.c
+      zend_alloc.h:
+      Fix strdup() bug when USE_ZEND_ALLOC is disabled
+
+2005-04-05  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_interfaces.c:
+      - Just return FAILURE & allow NULL without emmidiate error
+
+2005-04-04  Stanislav Malyshev  <stas@zend.com>
+
+    * zend_builtin_functions.c:
+      MF50: fix backtraces - non-Zend classes have names too
+
+    * (PHP_5_0)
+      zend_builtin_functions.c:
+      fix backtraces - non-Zend classes have names too
+
+2005-04-03  Jani Taskinen  <jani.taskinen@sci.fi>
+
+    * (PHP_5_0)
+      zend_execute_API.c:
+      MFH: - Fixed bug #28839 (SIGSEGV in interactive mode (php -a)).
+      MFH:   (kameshj at fastmail dot fm)
+
+2005-03-31  Derick Rethans  <php@derickrethans.nl>
+
+    * (PHP_5_0)
+      zend_API.c:
+      - MFH: internal_function->fn_flags is not initialized at this point
+
+2005-03-26  Jani Taskinen  <jani.taskinen@sci.fi>
+
+    * zend_execute_API.c:
+      - Fixed bug #28839 (SIGSEGV in interactive mode (php -a))
+        (kameshj at fastmail dot fm)
+
+2005-03-24  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_vm_execute.h:
+      - Second part of removing temp solution
+
+    * zend_vm_def.h:
+      - Remove potential bad solution for now
+
+2005-03-23  Andrei Zmievski  <andrei@gravitonic.com>
+
+    * zend_execute.c:
+      Consolidate: call _get_zval_ptr_var() for IS_VAR case in
+      _get_zval_ptr().
+
+2005-03-21  Andi Gutmans  <andi@zend.com>
+
+    * (PHP_5_0)
+      zend_execute.c:
+      - Fix memset() bug (Joe Orton)
+
+2005-03-21  Andrei Zmievski  <andrei@gravitonic.com>
+
+    * zend_API.c:
+      internal_function->fn_flags is not initialized at this point
+
+2005-03-20  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * tests/bug31102.phpt:
+      - Added missing description (thanks jani)
+
+    * tests/bug31102.phpt:
+      - Add new test
+
+2005-03-19  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_object_handlers.c:
+      - More fixes to gracefully act on exception thrown in overload methods
+
+    * zend_object_handlers.c:
+      - Fix #31185
+
+    * zend_execute_API.c:
+      - Fix all incarnations of bug #30266
+
+2005-03-19  Andi Gutmans  <andi@zend.com>
+
+    * zend_interfaces.c
+      zend_interfaces.h:
+      - Fix typos
+
+2005-03-16  Wez Furlong  <wez.php@thebrainroom.net>
+
+    * (PHP_5_0)
+      zend_API.c:
+      MFH: don't call rshutdown twice for dl()'d modules.
+
+    * zend_API.c:
+      don't call rshutdown twice for dl()'d modules.
+      Spotted by Andrei.
+
+2005-03-15  Wez Furlong  <wez.php@thebrainroom.net>
+
+    * zend.c
+      zend_API.c
+      zend_modules.h:
+      fix shutdown so that dl()'d modules are unloaded after all the dtors have
+      been called.
+
+2005-03-14  Zeev Suraski  <zeev@zend.com>
+
+    * zend_ini.c:
+      Clarify logic
+
+2005-03-14  Stanislav Malyshev  <stas@zend.com>
+
+    * zend_builtin_functions.c
+      zend_builtin_functions.c:
+      ws
+
+2005-03-13  Stanislav Malyshev  <stas@zend.com>
+
+    * zend_stream.c
+      zend_stream.c:
+      Do not convert ZEND_HANDLE_FP to ZEND_HANDLE_STREAM but allow using
+      reader/closer
+      on it
+
+2005-03-13  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_interfaces.c:
+      - More exact signatures (even though complete correct not possible atm)
+
+2005-03-13  Stanislav Malyshev  <stas@zend.com>
+
+    * zend_builtin_functions.c
+      zend_builtin_functions.c:
+      Fix get_extension_funcs() - extension names are now lowercased, so should
+      be function arguments.
+
+2005-03-13  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_execute_API.c:
+      - Actually this is a much better error decription
+
+    * zend_execute_API.c
+      tests/bug32290.phpt
+      tests/bug32290.phpt:
+      - Bugfix #32290
+
+2005-03-12  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_vm_def.h
+      zend_vm_execute.h:
+      - If an exception is pending we don't bail out but show the unhandled
+      exception
+
+2005-03-11  Anantha Kesari H Y  <hyanantha@novell.com>
+
+    * (PHP_5_0)
+      acconfig.h:
+      NetWare LibC's sys/types.h does not include sys/select.h implicitly as it
+      is the case with Linux LibC
+
+2005-03-11  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * tests/bug32252.phpt:
+      - Add new test
+
+    * tests/bug27145.phpt
+      tests/bug27145.phpt:
+      - Irrelevant
+
+    * zend_object_handlers.c:
+      - Don't touch refcount/is_ref
+
+2005-03-10  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * tests/bug28442.phpt
+      tests/bug28442.phpt:
+      
+      - Bugfix #28442
+
+    * zend_compile.c:
+      - Bugfix #28442
+
+2005-03-10  Anantha Kesari H Y  <hyanantha@novell.com>
+
+    * (PHP_5_0)
+      acconfig.h:
+      Autoconf based build can be used for NetWare
+
+    * (PHP_5_0)
+      zend.h:
+      NetWare can make use of ./configure generated zend_config.h
+
+    * (PHP_5_0)
+      Zend.m4:
+      This patch is needed for cross compilation to go through
+
+2005-03-10  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_vm_execute.h:
+      - #31562 2nd part
+
+    * zend_vm_def.h:
+      - Fix #31562
+
+2005-03-07  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend.h
+      zend_compile.c
+      zend_interfaces.c
+      zend_interfaces.h:
+      - New Interface Serializeable
+      - Change signature of unserialize() callback to ease inheritance and
+        support code reuse of handlers
+
+    * tests/bug32226.phpt
+      tests/bug32226.phpt:
+      
+      - Add updated description
+
+    * zend_builtin_functions.c
+      tests/bug32226.phpt:
+      - Fix #32226
+
+2005-03-07  Zeev Suraski  <zeev@zend.com>
+
+    * zend_language_scanner.l
+      zend_language_scanner.l:
+      Revert // </script> patch
+
+2005-03-06  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_reflection_api.c:
+      - Fix by Tim
+
+2005-03-06  Jani Taskinen  <jani.taskinen@kolumbus.fi>
+
+    * zend_compile.c
+      zend_compile.c:
+      Fixed compile warning (bug #32046)
+
+    * zend_mm.c:
+      Fix compile warning (bug #32047)
+
+2005-03-01  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_interfaces.c:
+      - Support statuc methods/functions
+
+2005-03-01  Jani Taskinen  <jani.taskinen@kolumbus.fi>
+
+    * (PHP_5_0)
+      zend_language_scanner.l:
+      MFH: - Fixed bug #31672 (</script> not considered closing tag if
+      MFH:   preceded by one-line comment)
+
+    * zend_language_scanner.l:
+      Fix the fix for one line comments with <script..> </script> tags
+
+2005-02-28  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_builtin_functions.c:
+      - Add support for methods dynamically added through object handlers
+
+2005-02-27  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_object_handlers.c:
+      - If silence if wanted we do not error out
+
+    * zend_reflection_api.c:
+      - Add two new methods
+      - Fix signature, no need to cast it
+
+    * zend_API.h:
+      - These must be initailized
+
+    * zend_builtin_functions.c:
+      - Update method_exists to new handlers and allow first parameter as string
+
+2005-02-27  Jani Taskinen  <jani.taskinen@kolumbus.fi>
+
+    * Zend.m4:
+      - Cache the version check results
+
+2005-02-24  Andi Gutmans  <andi@zend.com>
+
+    * zend_language_scanner.l:
+      - Make one line comments work the same with <script ...> </script> as with
+      - other tags. This will break scripts that have whitespace at the end
+      - of the closing tag </script    > but this is barely used as it is
+      - and I doubt ppl used whitespace. (patch by Jani)
+
+    * zend_objects_API.h:
+      - This part of the patch was right
+
+2005-02-24  Dmitry Stogov  <dmitry@zend.com>
+
+    * (PHP_5_0)
+      zend_execute.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h:
+      Fixed bug in ZEND_POST_INC/ZEND_POST_DEC handlers.
+      These opcodes assume IS_TMP_VAR as result.
+
+2005-02-24  Andi Gutmans  <andi@zend.com>
+
+    * zend_modules.h:
+      - Need zend_Compile.h for struct _zend_arg_info  definiton (thanks to Joe
+      Orton)
+
+    * zend_objects.c
+      zend_objects.h
+      zend_objects_API.h:
+      - Revert following patch until we decide what is the right way to handle
+      - this:
+       - Fix signatures they are all meant to be able to deal with any type in
+      any
+          object storage (though we are still missing several parts)
+
+2005-02-23  Derick Rethans  <php@derickrethans.nl>
+
+    * (PHP_5_0)
+      zend_reflection_api.c:
+      - MFH: fixed bug #32076 (ReflectionMethod :: isDestructor() always return
+        true).
+
+    * zend_reflection_api.c:
+      - Fixed bug #32076 (ReflectionMethod :: isDestructor() always return true)
+        (Patch by Antony Dogval)
+
+2005-02-23  Stanislav Malyshev  <stas@zend.com>
+
+    * zend.h
+      zend_compile.c:
+      Custom object serializer infrastructure
+
+2005-02-23  Jani Taskinen  <jani.taskinen@kolumbus.fi>
+
+    * Zend.m4:
+      Hack the planet
+
+2005-02-23  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_interfaces.c:
+      - Allow to convert Traversable into Aggregate
+
+2005-02-22  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_objects_API.c:
+      - We cannot provide this fallback becuase it requires zend_object ptr's.
+
+2005-02-22  Jani Taskinen  <jani.taskinen@kolumbus.fi>
+
+    * Zend.m4:
+      Fix cross-compile
+
+    * acconfig.h:
+      Fix build (it was #ifNdef NETWARE..)
+
+2005-02-22  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_objects.c
+      zend_objects.h
+      zend_objects_API.h:
+      - Fix signatures they are all meant to be able to deal with any type in any
+        object storage (though we are still missing several parts)
+
+    * zend_objects_API.c:
+      - Force calling of dtors unless otherwise specified (fixes several
+      __destruct bugs)
+
+2005-02-22  Anantha Kesari H Y  <hyanantha@novell.com>
+
+    * zend.h:
+      NetWare can include autoconf generated config headers
+
+    * acconfig.h:
+      NetWare can make use of the configure script generated header file.
+
+2005-02-21  Moriyoshi Koizumi  <moriyoshi@at.wakwak.com>
+
+    * Makefile.am:
+      - Add missing entry.
+
+2005-02-20  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_compile.c:
+      Fixed possible memory corruption
+
+2005-02-19  Rui Hirokawa  <rui_hirokawa@ybb.ne.jp>
+
+    * (PHP_5_0)
+      zend_language_scanner.l:
+      MFH: fixed #31987 zend-multibyte in ZTS.
+
+    * zend_language_scanner.l:
+      fixed #31987 zend-multibyte in ZTS.
+
+2005-02-17  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_API.c:
+      - A little optimization to prevent problems when trying to reimplement an
+        interface inherited from an interfaces that was just implemented......
+
+    * zend_API.c:
+      - No C++ ruleZ here
+
+    * zend_API.c:
+      - Actually we must do this in two steps: 1st resize the table and set all
+        interfaces, 2nd implement the interfaces
+
+    * zend_API.c:
+      - Incrementation is done elsewhere
+
+    * zend_API.c:
+      - Fix windows build (funny MS compiler)
+
+2005-02-17  Jani Taskinen  <jani.taskinen@kolumbus.fi>
+
+    * (PHP_5_0)
+      Zend.m4
+      zend_strtod.c:
+      MFH: - Compile fix for systems without int32_t typedef
+
+    * Zend.m4
+      zend_strtod.c:
+      - Compile fix for systems without int32_t typedef
+
+2005-02-13  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_execute_API.c
+      zend_reflection_api.c:
+      - Be more gracious in reflection API
+
+    * zend_language_scanner.l:
+      - Fix doc comment handling
+
+2005-02-12  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_execute_API.c:
+      - Bugfix #30682 (autoconversion from false/true to 0/1 missing in case of
+        static property default value)
+
+2005-02-11  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_compile.c
+      zend_compile.h
+      zend_language_parser.y:
+      - Cleanup foreach handling
+
+2005-02-10  Jani Taskinen  <jani.taskinen@kolumbus.fi>
+
+    * zend_strtod.c
+      zend_strtod.c:
+      - Fixed bug #31920 (zend_strtod.c error: conflicting types for 'int8_t')
+
+2005-02-10  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h
+      tests/bug30407.phpt:
+      Fixed bug #30407 (Strange behaviour of default arguments)
+
+2005-02-07  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_compile.c:
+      Fixed bug introduced with foreach() optimization patch
+
+    * zend_compile.c:
+      Fixed FE_RESET/FE_FETCH bug.
+      Now FE_RESET instruction takes jump-address from itself, not from the
+      following FE_FETCH instruction.
+
+    * zend_compile.c
+      zend_compile.h
+      zend_language_parser.y
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h:
+      foreash($a as $key => $val) optimization
+      Removed temorary array creation on each iteration.
+
+2005-02-07  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_compile.c
+      zend_compile.h
+      zend_language_parser.y:
+      - Remove part of the cleanup which causes a problem with unnormal code
+        like tests/lang/040.phpt
+
+2005-02-06  Zeev Suraski  <zeev@zend.com>
+
+    * (PHP_5_0)
+      zend_ini_scanner.l:
+      Correct fix for #28803
+
+    * zend_ini_scanner.l:
+      Correct fix for #28804
+
+2005-02-05  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_compile.c
+      zend_compile.h
+      zend_language_parser.y
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h:
+      - Cleanup foreach statement
+
+2005-02-04  Hartmut Holzgraefe  <hartmut@php-groupies.de>
+
+    * zend_API.c
+      zend_API.h:
+      added some missing zend_[declare|update]_property_...() convenience
+      functions for bool, double and binary safe string data
+
+2005-02-03  Jani Taskinen  <jani.taskinen@kolumbus.fi>
+
+    * (PHP_5_0)
+      zend_ini_scanner.l:
+      MFH: Fixed bug #28804 (ini-file section parsing pattern is buggy).
+
+    * zend_ini_scanner.l:
+      - Fixed bug #28804 (ini-file section parsing pattern is buggy).
+
+    * zend_ini_scanner.l
+      zend_ini_scanner.l:
+      ws fix
+
+2005-02-02  Stanislav Malyshev  <stas@zend.com>
+
+    * zend_execute_API.c:
+      Fix #31720    Invalid object callbacks not caught in array_walk() (patch
+      from Antony Dovgal)
+
+    * tests/bug31720.phpt:
+      test for Bug #31720
+
+    * tests/bug31720.phpt
+      tests/bug31720.phpt:
+      
+      file bug31720.phpt was initially added on branch PHP_5_0.
+
+    * (PHP_5_0)
+      zend_execute_API.c:
+      Fix #31720  	Invalid object callbacks not caught in array_walk() (patch
+      from Antony Dovgal)
+
+2005-02-02  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend.h
+      zend.h
+      zend_object_handlers.c
+      zend_object_handlers.c
+      tests/bug31683.phpt:
+      Fixed bugs #29767 and #31683 (__get and __set methods must not modify
+      property name).
+
+    * tests/bug31683.phpt
+      tests/bug31683.phpt:
+      
+      file bug31683.phpt was initially added on branch PHP_5_0.
+
+2005-02-01  Stanislav Malyshev  <stas@zend.com>
+
+    * zend_builtin_functions.c
+      zend_builtin_functions.c:
+      Fix debug_trace with eval (patch from Antony Dovgal)
+
+    * tests/bug_debug_backtrace.phpt:
+      test for eval debug_backtrace bug
+
+    * tests/bug_debug_backtrace.phpt
+      tests/bug_debug_backtrace.phpt:
+      
+      file bug_debug_backtrace.phpt was initially added on branch PHP_5_0.
+
+2005-01-31  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_reflection_api.c:
+      - Add ReclectionClass:hasProperty(), ReflectionClass::hasConstant()
+        to complete api (johannes@php.net)
+
+2005-01-28  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_execute_API.c:
+      - Fix severity (found by johannes)
+
+2005-01-25  Jani Taskinen  <jani.taskinen@kolumbus.fi>
+
+    * zend.h:
+      New versions of glibc support a RTLD_DEEPBIND flag to dlopen.  The
+      effect of this flag when loading a "foo.so" with undefined symbols is
+      that the search that symbol starts at foo.so and its dependencies
+      *before* the loading process' global symbol table.
+      
+      This is an effective workaround for symbol namespace collisions between
+      various modules and the libraries on which they depend (where fixing the
+      respective modules or libraries is not possible e.g. due to API
+      constraints).
+      
+      (By: Joe Orton)
+
+2005-01-25  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * (PHP_5_0)
+      zend_execute.c
+      zend_interfaces.c
+      tests/bug26229.phpt:
+      - MFH #26229 (getIterator() segfaults when it returns arrays or scalars)
+
+    * zend_interfaces.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      tests/bug26229.phpt:
+      - Bugfix #26229 (getIterator() segfaults when it returns arrays or scalars)
+
+    * Makefile.frag:
+      - Fix dependency
+
+    * zend_vm_def.h
+      zend_vm_execute.h:
+      - Use correct freeing (thx Dmitry)
+
+2005-01-24  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_vm_def.h
+      zend_vm_execute.h
+      tests/bug30725.phpt:
+      - Second and last part of #30725 fix
+
+    * zend_interfaces.c:
+      - Allow getIterator() to fail
+
+    * tests/bug30725.phpt:
+      
+      - Add new test
+
+2005-01-22  Jani Taskinen  <jani.taskinen@kolumbus.fi>
+
+    * (PHP_5_0)
+      Zend.m4
+      configure.in
+      zend_strtod.c:
+      MFH: Compile fix for systems without uint32_t typedef
+
+    * Zend.m4
+      configure.in
+      zend_strtod.c:
+      - Compile fix for systems without uint32_t typedef
+
+2005-01-22  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_API.c
+      zend_API.h
+      zend_reflection_api.c:
+      - Fix #31651 (ReflectionClass::getDefaultProperties segfaults with arrays.)
+
+2005-01-22  Andi Gutmans  <andi@zend.com>
+
+    * zend_compile.c
+      zend_compile.h
+      zend_execute.c
+      zend_execute.h:
+      - Two new API calls for Derick (retreive CV name and value) by Dmitry
+
+2005-01-20  Jani Taskinen  <jani.taskinen@kolumbus.fi>
+
+    * zend.h
+      zend_constants.c:
+      - Revert the weird change of ZEND_STRS() macro and use the correct
+        ZEND_STRL() macro.
+
+2005-01-19  Jani Taskinen  <jani.taskinen@kolumbus.fi>
+
+    * zend_object_handlers.c:
+      - Fixed bug #29183 (Undefined symbol zend_check_private with Solaris CC)
+
+2005-01-19  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_ini_parser.y:
+      - Fix memleak
+
+2005-01-18  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_compile.c:
+      Fixed patch for bug #31478 (SegFault/Memory Leak with empty())
+
+    * zend_execute.c:
+      Fixed bug #28444 (Cannot access undefined property for object with
+      overloaded property access).
+
+    * (PHP_5_0)
+      zend_execute.c:
+      Fixed bug #28444 (Cannot access undefined property for object with
+      overloaded property access). (Dmitry)
+
+2005-01-18  Ilia Alshanetsky  <ilia@prohost.org>
+
+    * (PHP_5_0)
+      zend_operators.h:
+      MFH: Fixed bug #30726 (-.1 like numbers are not being handled correctly).
+
+    * zend_operators.h:
+      Fixed bug #30726 (-.1 like numbers are not being handled correctly).
+
+2005-01-17  Jani Taskinen  <jani.taskinen@kolumbus.fi>
+
+    * (PHP_5_0)
+      zend_language_scanner.l:
+      MFH: - Fixed bug #31444 (Memory leak in zend_language_scanner.c)
+
+    * zend_language_scanner.l:
+      - Fixed bug #31444 (Memory leak in zend_language_scanner.c)
+
+2005-01-15  Andi Gutmans  <andi@zend.com>
+
+    * (PHP_5_0)
+      zend_API.c:
+      - Fix WS
+
+    * (PHP_5_0)
+      zend_API.c:
+      - Change to using DL_UNLOAD macro.
+
+    * zend_API.c:
+      - Unload on MAC OS X (shouldn't be a reason not to)
+
+2005-01-14  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_execute.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h
+      tests/bug31098.phpt:
+      Restore behavior of $str["str"]. (Now $str["str"] is equivalent to $str[0]
+      again)
+
+    * (PHP_5_0)
+      tests/bug31098.phpt:
+      Path -> pattern
+
+    * (PHP_5_0)
+      zend_execute.c
+      tests/bug31098.phpt:
+      Revert to old behavior of $str["str"]. ($str["str"] is equivalent of
+      $str[0])
+
+2005-01-13  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_execute.c
+      zend_execute.c:
+      Additional fix for fix of bug #29883
+
+2005-01-12  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_execute.c
+      zend_execute.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_opcodes.h
+      tests/bug31098.phpt
+      tests/bug31098.phpt:
+      Fixed bug #31098 (isset false positive)
+
+2005-01-11  Moriyoshi Koizumi  <moriyoshi@at.wakwak.com>
+
+    * (PHP_5_0)
+      zend_execute.c
+      tests/bug31098.phpt:
+      - MFH: fix for bug #31098.
+
+    * tests/bug31098.phpt
+      tests/bug31436.phpt:
+      
+      - Test renaming
+
+    * zend_vm_execute.h
+      tests/bug31436.phpt:
+      - Fix bug #31436 (isset() incorrectly returns true in dereference of a
+      wrong type)
+
+    * zend_compile.c:
+      - Fix bug #31478 (segfault with empty())
+
+2005-01-10  Rasmus Lerdorf  <rasmus@lerdorf.com>
+
+    * zend.h
+      zend_API.c:
+      Fix OSX DL_UNLOAD macro and actually use it to make shared extensions
+      work on OSX.
+
+2005-01-10  Jani Taskinen  <jani.taskinen@kolumbus.fi>
+
+    * header
+      zend_arg_defs.c
+      zend_strtod.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      zend_vm_gen.php
+      zend_vm_opcodes.h:
+      - Added missing header sections.
+
+    * acinclude.m4
+      configure.in:
+      - Added AC_ZEND_C_BIGENDIAN macro (as requested by Andi)
+
+2005-01-09  Jani Taskinen  <jani.taskinen@kolumbus.fi>
+
+    * (PHP_5_0)
+      zend.h:
+      MFH: - Fix outside-source-tree builds. Always include generated header
+      files
+             with #include <some_header.h> to make sure the correct file is
+      used.
+
+    * zend.h:
+      - Fix outside-source-tree builds. Always include generated header files
+        with #include <some_header.h> to make sure the correct file is used.
+
+    * zend.c:
+      MFB: - Rationalize code a bit
+
+2005-01-03  Stanislav Malyshev  <stas@zend.com>
+
+    * (PHP_5_0)
+      zend_language_scanner.l:
+      MFH:
+      Fix the following nasty bug:
+      - if compile bails out from the middle of compiling, current_buffer is not
+      restored
+      - if current_buffer is not null, yy_switch_to_buffer will do: *yy_c_buf_p
+      = yy_hold_char; on
+      the next request
+      - which would lead to memory corruption on next request
+
+    * zend_language_scanner.l:
+      Fix the following nasty bug:
+      - if compile bails out from the middle of compiling, current_buffer is not
+      restored
+      - if current_buffer is not null, yy_switch_to_buffer will do: *yy_c_buf_p
+      = yy_hold_char; on
+      the next request
+      - which would lead to memory corruption on next request
+
+2005-01-02  Ilia Alshanetsky  <ilia@prohost.org>
+
+    * (PHP_5_0)
+      zend_highlight.c:
+      MFH: Fixed bug #31371 (highlight_file() trims new line after heredoc).
+
+    * zend_highlight.c:
+      Fixed bug #31371 (highlight_file() trims new line after heredoc).
+
+2004-12-30  Jani Taskinen  <jani.taskinen@kolumbus.fi>
+
+    * (PHP_5_0)
+      zend_compile.c
+      zend_highlight.c
+      zend_indent.c
+      zend_ini_scanner.l
+      zend_language_scanner.l:
+      MFH: - Fixed bug #28930 (PHP sources pick wrong header files generated by
+      bison).
+
+    * zend_compile.c
+      zend_highlight.c
+      zend_indent.c
+      zend_ini_scanner.l
+      zend_language_scanner.l:
+      - Fixed bug #28930 (PHP sources pick wrong header files generated by bison)
+
+    * Zend.m4
+      acinclude.m4:
+      MFB_4_3: Quote macro names in AC_DEFUN()
+
+2004-12-27  Zeev Suraski  <zeev@zend.com>
+
+    * zend_builtin_functions.c:
+      MFB
+
+    * (PHP_5_0)
+      zend_builtin_functions.c:
+      Fix desc
+
+2004-12-27  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * (PHP_5_0)
+      zend_reflection_api.c:
+      - MFH: Need to unmangle the class name here
+
+    * zend_reflection_api.c:
+      - Need to unmangle the class name here
+
+2004-12-27  Zeev Suraski  <zeev@zend.com>
+
+    * (PHP_5_0)
+      zend_exceptions.c:
+      Add descriptions
+
+2004-12-27  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_execute.c
+      zend_execute.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      tests/bug22836.phpt
+      tests/bug22836.phpt
+      tests/unset_cv01.phpt
+      tests/unset_cv02.phpt
+      tests/unset_cv03.phpt
+      tests/unset_cv04.phpt
+      tests/unset_cv06.phpt
+      tests/unset_cv08.phpt
+      tests/unset_cv09.phpt
+      tests/unset_cv10.phpt:
+      "Undefined variable:  %s" noticies were fixed to use one space
+
+2004-12-27  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_reflection_api.c:
+      - More proto/error message fixes
+
+    * zend_reflection_api.c:
+      - Small fixlet (by Tony)
+
+2004-12-24  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_vm_def.h
+      zend_vm_execute.h:
+      New sarbage collector's bug was fixed (the behavior should be the same as
+      in PHP_5_0)
+
+    * zend_execute.c
+      tests/unset_cv01.phpt
+      tests/unset_cv02.phpt
+      tests/unset_cv03.phpt
+      tests/unset_cv04.phpt
+      tests/unset_cv06.phpt
+      tests/unset_cv08.phpt
+      tests/unset_cv09.phpt
+      tests/unset_cv10.phpt:
+      "Undefined variable:  %s" noticies were fixed to be compatible with PHP_5_0
+
+2004-12-21  Jani Taskinen  <jani.taskinen@kolumbus.fi>
+
+    * (PHP_5_0)
+      zend_strtod.c:
+      MFH: - Use correct header files (in c99 compliant way). uint32_t is
+      preferred.
+
+    * zend_strtod.c:
+      - Use correct header files (in c99 compliant way). uint32_t is preferred.
+
+2004-12-20  Jani Taskinen  <jani.taskinen@kolumbus.fi>
+
+    * zend_strtod.c:
+      Better fix for endian compile problems.
+
+2004-12-17  Andi Gutmans  <andi@zend.com>
+
+    * zend_object_handlers.c:
+      - Fixed Bug #30562  	Segmentation fault with __call()
+
+2004-12-17  Derick Rethans  <php@derickrethans.nl>
+
+    * zend_strtod.c
+      zend_strtod.c:
+      - MF43: Fixed strtod for Irix and some other strange platform
+
+2004-12-16  Derick Rethans  <php@derickrethans.nl>
+
+    * zend_strtod.c
+      zend_strtod.c:
+      - MF43: Make it compile on HPUX on Itanium 2
+
+    * zend_strtod.c
+      zend_strtod.c:
+      - MF43: Fixed bug #31107 (strtod on solaris9/intel)
+
+2004-12-16  Jani Taskinen  <jani.taskinen@kolumbus.fi>
+
+    * (PHP_5_0)
+      ChangeLog:
+      - MFH: Fix typo (avaliable -> available). (bug #28725)
+
+    * ChangeLog:
+      - Fix typo (avaliable -> available). (bug #28725)
+
+2004-12-16  Derick Rethans  <php@derickrethans.nl>
+
+    * zend_strtod.c:
+      - MF43: Fixed bug #31110 and #31111 (Zend/zend_strtod.c problems)
+
+    * (PHP_5_0)
+      zend_strtod.c:
+      - Fixed bug #31110 and #31111 (Zend/zend_strtod.c problems)
+
+2004-12-15  Andi Gutmans  <andi@zend.com>
+
+    * (PHP_5_0)
+      zend.h:
+      - 5.0.4-dev
+
+    * (PHP_5_0)
+      zend.h:
+      - Redo 5.0.3
+
+    * (PHP_5_0)
+      zend.h:
+      - Back to -dev
+
+    * (PHP_5_0)
+      zend.h:
+      - Roll PHP 5.0.3
+
+2004-12-14  Derick Rethans  <php@derickrethans.nl>
+
+    * zend_strtod.c
+      zend_strtod.c:
+      - MFH: Fixed compile error related to bug #28605.
+
+2004-12-13  Derick Rethans  <php@derickrethans.nl>
+
+    * zend_operators.c:
+      - Added "G" modifier to ini setting number format.
+
+2004-12-10  Andi Gutmans  <andi@zend.com>
+
+    * (PHP_5_0)
+      zend.h:
+      - Back to -dev
+
+    * (PHP_5_0)
+      zend.h:
+      - 5.0.3RC2
+
+2004-12-07  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_exceptions.c
+      zend_exceptions.c:
+      Fixed bug #30904 (segfault when recording soapclient into session).
+
+2004-12-06  Stanislav Malyshev  <stas@zend.com>
+
+    * tests/bug30998.phpt:
+      add test
+
+    * zend.c
+      zend.c:
+      port fix for #30998: Crash when user error handler returns false on amd64
+
+2004-12-06  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_compile.c
+      zend_compile.c
+      tests/bug30922.phpt:
+      Fixed bug #30922 (reflective functions crash PHP when interfaces extend
+      themselves)
+
+    * tests/bug30922.phpt
+      tests/bug30922.phpt:
+      
+      file bug30922.phpt was initially added on branch PHP_5_0.
+
+2004-12-06  Stanislav Malyshev  <stas@zend.com>
+
+    * (PHP_5_0)
+      zend_builtin_functions.c:
+      if fetch called not from PHP function, ptr can be NULL
+
+2004-12-01  Ilia Alshanetsky  <ilia@prohost.org>
+
+    * zend_strtod.c:
+      MFB: Removed extra space that causes problems for some compilers.
+
+    * (PHP_5_0)
+      zend_strtod.c:
+      Removed extra space that causes problems for some compilers.
+
+2004-12-01  Derick Rethans  <php@derickrethans.nl>
+
+    * (PHP_5_0)
+      zend_strtod.c:
+      - revert unwanted change
+
+    * zend_strtod.c
+      zend_strtod.c:
+      - Fixed MacOSX compilation  (Patch by Christian)
+
+    * (PHP_5_0)
+      zend.h:
+      - And in Zend/ too.
+
+2004-12-01  Dmitry Stogov  <dmitry@zend.com>
+
+    * (PHP_5_0)
+      zend_execute.c
+      zend_vm_def.h
+      zend_vm_execute.h
+      tests/bug29883.phpt
+      tests/bug29883.phpt
+      tests/bug29883.phpt:
+      Fixed bug #29883 (isset gives invalid values on strings).
+
+2004-11-30  Andi Gutmans  <andi@zend.com>
+
+    * (PHP_5_0)
+      zend.h:
+      - Go with 5.0.3RC1
+
+2004-11-29  Derick Rethans  <php@derickrethans.nl>
+
+    * (PHP_5_0)
+      zend_operators.c:
+      - MF43: Revert Joe's work around a bug in GCC patch as it breaks too many
+      things.
+
+    * zend_operators.c:
+      - MFH: Revert Joe's work around a bug in GCC patch as it breaks too many
+      things.
+
+2004-11-25  Zeev Suraski  <zeev@zend.com>
+
+    * (PHP_5_0)
+      zend_execute.c
+      zend_execute_API.c
+      zend_extensions.h
+      zend_object_handlers.c
+      zend_object_handlers.h:
+      Reverting get_method() signature change
+
+2004-11-24  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_reflection_api.c:
+      - Fix Bug #30856 (ReflectionClass::getStaticProperties segfaults)
+
+    * tests/bug30856.phpt:
+      
+      - Add new test
+
+2004-11-17  Stanislav Malyshev  <stas@zend.com>
+
+    * (PHP_5_0)
+      zend_execute_API.c:
+      fix #30543
+
+    * zend_execute_API.c:
+      fix crash
+
+2004-11-16  Derick Rethans  <php@derickrethans.nl>
+
+    * zend_strtod.c
+      zend_strtod.c:
+      - Make this compile for the Mac again
+
+2004-11-15  Derick Rethans  <php@derickrethans.nl>
+
+    * (PHP_5_0)
+      zend_strtod.c:
+      - MFH: Fixed bug #30779 (Compile of Zend/zend_strtod.c fails on Sparc)
+
+    * zend_strtod.c:
+      - Fixed bug #30779 (Compile of Zend/zend_strtod.c fails on Sparc)
+
+2004-11-14  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * (PHP_5_0)
+      zend_reflection_api.c:
+      MFH #30783 Apache crash when using ReflectionFunction::getStaticVariables()
+      MFH proto fixes
+
+    * zend_reflection_api.c:
+      - Bugix #30783: Apache crash when using
+      ReflectionFunction::getStaticVariables()
+
+2004-11-09  Andrei Zmievski  <andreiz@gravitonic.com>
+
+    * zend_ini_parser.y:
+      Revert inadvertent commit.
+
+    * zend_ini_parser.y:
+      .dylib extension are Mach-O shared libraries that meant for linking
+      against. Loadable modules (aka bundles) can have any extension, so we
+      should probably stick with .so
+      
+      http://fink.sourceforge.net/doc/porting/shared.php?phpLang=en#lib-and-mod
+
+2004-11-05  Derick Rethans  <php@derickrethans.nl>
+
+    * (PHP_5_0)
+      zend_execute_API.c:
+      - Fix for bug #30367, #30490 and possibly #30011.
+
+2004-11-04  Edin Kadribasic  <edink@emini.dk>
+
+    * Zend.dsp
+      ZendTS.dsp:
+      Added zend_strtod.* to the build
+
+    * zend_strtod.c
+      zend_strtod.h:
+      Make zend_strtod compile on windows
+
+2004-11-04  Moriyoshi Koizumi  <moriyoshi@at.wakwak.com>
+
+    * (PHP_5_0)
+      Makefile.am:
+      - MFH: Add entry for zend_strtod.c in belief that this is still active.
+
+    * Makefile.am:
+      - Add entry for zend_strtod.c in belief that this is still active.
+
+2004-11-03  Moriyoshi Koizumi  <moriyoshi@at.wakwak.com>
+
+    * Zend.m4:
+      - Don't show grep outputs
+
+2004-11-03  Derick Rethans  <php@derickrethans.nl>
+
+    * (PHP_5_0)
+      zend_execute_API.c
+      zend_globals.h
+      zend_ini.c
+      zend_language_scanner.l
+      zend_operators.c
+      zend_operators.h
+      zend_strtod.c
+      zend_strtod.h:
+      - MFH: Fixed bug #30630: Added a BSD based strtod function that is
+        locale-independent.
+
+    * zend_execute_API.c
+      zend_globals.h
+      zend_ini.c
+      zend_language_scanner.l
+      zend_operators.c
+      zend_operators.h
+      zend_strtod.c
+      zend_strtod.h:
+      - Fixed bug #30630: Added a BSD based strtod function that is
+        locale-independent.
+
+2004-11-03  Moriyoshi Koizumi  <moriyoshi@at.wakwak.com>
+
+    * Zend.m4
+      zend.h
+      zend_execute.c:
+      - Checks for Darwin'ish systems that uses Mach-O, which apparently doesn't
+        support weak symbol aliasing at this time.
+
+2004-11-03  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_reflection_api.c:
+      - Trying to invoke function not methot here
+
+    * zend_reflection_api.c:
+      - Fix invokeargs() with static methods
+
+2004-11-03  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_vm_def.h
+      zend_vm_execute.h:
+      Fixed "isset() and the new VM" bug.
+
+2004-11-02  Sebastian Bergmann  <sb@sebastian-bergmann.de>
+
+    * (PHP_5_0)
+      zend_API.c:
+      MFH: Patch by Joe Orton <jorton@redhat.com>.
+
+    * zend_API.c:
+      Patch by Joe Orton <jorton@redhat.com>.
+
+2004-10-31  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_reflection_api.c:
+      - Add ReflectionFunction::invokeArgs(array)
+      - Add ReflectionMethod::invokeArgs(obj, array)
+
+2004-10-31  Sebastian Bergmann  <sb@sebastian-bergmann.de>
+
+    * zend_reflection_api.c:
+      Invokation -> Invocation
+
+2004-10-30  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend.h:
+      Bump version (as discussed with Andi)
+
+    * (PHP_5_0)
+      zend_execute.c:
+      - Fix (readd function name which got lost during earlier comit)
+
+    * zend_reflection_api.c:
+      - Be consistent and use names as keys (found by johannes)
+
+    * zend_extensions.h
+      zend_modules.h:
+      - Bump API version
+
+    * (PHP_5_0)
+      zend_extensions.h
+      zend_modules.h:
+      Bump api after latest changes
+
+    * (PHP_5_0)
+      zend_execute.c
+      zend_object_handlers.c
+      zend_object_handlers.h:
+      MFH change zend_object_handlers->get_method()
+
+    * zend_execute_API.c
+      zend_object_handlers.c
+      zend_object_handlers.h
+      zend_vm_def.h
+      zend_vm_execute.h:
+      - Change zend_object_handlers->get_method() to allow aggregation for
+      internal classes
+
+    * Makefile.frag:
+      - New architecture needs one more dependency
+
+    * zend_exceptions.c
+      zend_reflection_api.c:
+      - Fix protos
+
+2004-10-29  Andi Gutmans  <andi@zend.com>
+
+    * zend_operators.c:
+      - For Ilia:
+      - MFH: Fixed bug #30572 (crash when comparing SimpleXML attribute to a
+      boolean).
+      - Hope this works well. I will MFH tomorrow if no one complains.
+
+2004-10-28  Dmitry Stogov  <dmitry@zend.com>
+
+    * README.ZEND_VM
+      zend_vm_gen.php:
+      --without-lines changed to --with-lines
+
+2004-10-28  Andi Gutmans  <andi@zend.com>
+
+    * zend_vm_execute.skl
+      zend_vm_gen.php:
+      - Fix typo
+
+2004-10-27  Andi Gutmans  <andi@zend.com>
+
+    * zend_vm_opcodes.h:
+      - Oops missed this one
+
+    * zend_operators.c:
+      - Revert   Fixed bug #30228 (crash when comparing SimpleXML attribute to a
+      boolean).
+      - Need to discuss where the real problem is.
+
+    * README.ZEND_VM:
+      - Tiny fixes
+
+    * README.ZEND_VM
+      zend_compile.h
+      zend_vm_execute.h
+      zend_vm_gen.php:
+      - Improve comments, docs, code...
+
+2004-10-26  Andi Gutmans  <andi@zend.com>
+
+    * zend_builtin_functions.c:
+      - Patch from Andrey Hristov:
+      I have cooked a small patch which allows is_subclass_of() the accept
+      not only an object as first parameter but a string as well. When string
+      is passed the function checks whether the class specified is subclass of
+      the second parameter
+      class a{}
+      class b{} extends a{}
+      is_subclass_of("a", "a") //false
+      is_subclass_of("b", "a") //true
+      currently only objects are allowed as first parameter
+
+2004-10-26  Ilia Alshanetsky  <ilia@prohost.org>
+
+    * (PHP_5_0)
+      zend_operators.c:
+      MFH: Fixed bug #30572 (crash when comparing SimpleXML attribute to a
+      boolean).
+
+    * zend_operators.c:
+      Fixed bug #30228 (crash when comparing SimpleXML attribute to a boolean).
+
+2004-10-23  Andi Gutmans  <andi@zend.com>
+
+    * zend_vm_execute.h:
+      - Add missing file
+
+2004-10-22  Andi Gutmans  <andi@zend.com>
+
+    * zend_vm_handlers.h
+      zend_vm_spec.h:
+      - Nuke another two files
+
+    * Makefile.frag
+      zend_execute.c
+      zend_vm.h
+      zend_vm_def.h
+      zend_vm_execute.skl
+      zend_vm_gen.php:
+      - Commit new VM
+      - Old one is tagged as PRE_NEW_VM_GEN_PATCH
+      - Still doing work so more commits to come. Don't complain (yet) :)
+
+    * (PRE_NEW_VM_GEN_PATCH)
+      zend_execute.c:
+      - Fix crash (MFB PHP5_0)
+
+2004-10-21  Andi Gutmans  <andi@zend.com>
+
+    * (PHP_5_0)
+      zend_execute.c:
+      - Fix bug #30395 (Apache Child Segmentation fault in specific PHP-Code)
+
+2004-10-20  Andi Gutmans  <andi@zend.com>
+
+    * zend_operators.c:
+      - If object handles are equal then save the comparison of properties in
+      - the == operator.
+
+2004-10-18  Anantha Kesari H Y  <hyanantha@novell.com>
+
+    * zend_modules.h:
+      including zend_compile.h for NetWare as NetWare uses MetroWerks Code
+      warrior compiler which does not allow declarations of following kind
+      before defining the types.
+      extern struct _zend_arg_info first_arg_force_ref[2];
+
+2004-10-16  Andi Gutmans  <andi@zend.com>
+
+    * zend_compile.c:
+      - One more test (WS)
+
+    * zend_compile.c:
+      - WS fix to test commit
+
+2004-10-16  Anantha Kesari H Y  <hyanantha@novell.com>
+
+    * zend_compile.c
+      zend_compile.c:
+      Fix for 30457
+
+2004-10-14  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_builtin_functions.c:
+      - Allow to omit object/classname in get_parent_class() which makes it
+        compatible with the signature and behavior of get_class()
+
+2004-10-13  Andi Gutmans  <andi@zend.com>
+
+    * zend_compile.c:
+      - Don't allow access modifiers in interfaces. Explicitly stating public
+      - should also be disallowed but we don't have a way to detect it today.
+
+2004-10-12  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_builtin_functions.c:
+      Bug #30381 Strange results with get_class_vars()
+
+    * (PHP_5_0)
+      zend_builtin_functions.c:
+      MFH Fix visibility of get_class_vars() and get_class_methods()
+
+    * zend_builtin_functions.c:
+      - Fix visibility in get_class_vars() and get_class_methods()
+
+    * zend_builtin_functions.c:
+      - Fix set_exception_handler
+
+2004-10-10  Sebastian Bergmann  <sb@sebastian-bergmann.de>
+
+    * .cvsignore
+      tests/.cvsignore:
+      Add *.gcda and *.gcno (from gcc -fprofile-{use|generate}) to .cvsignore.
+
+2004-10-08  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_compile.c
+      zend_compile.h
+      zend_vm_handlers.h:
+      - Revert automatic pass arg_info
+
+2004-10-08  Andi Gutmans  <andi@zend.com>
+
+    * zend_compile.c:
+      - Fix BC break with default in switch() having to be at the end.
+
+2004-10-08  Anantha Kesari H Y  <hyanantha@novell.com>
+
+    * acconfig.h
+      zend_config.nw.h:
+      explicitly including sys/select.h as NetWare LibC sys/types.h does not
+      include sys/select.h implicitly as other LibC
+
+2004-10-06  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_reflection_api.c:
+      - Fix Bug #30344
+
+2004-10-05  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_compile.c
+      zend_compile.h
+      zend_vm_handlers.h:
+      - Add arginfo ZEND_ARG_SEND_AUTOMATIC which lets the compiler automatically
+        determine whether pass by ref is possible or pass by value is needed.
+
+2004-10-05  Dmitry Stogov  <dmitry@zend.com>
+
+    * tests/unset_cv06.phpt
+      tests/unset_cv07.phpt
+      tests/unset_cv07.phpt:
+      Test files are fixed.
+
+    * zend_execute.c
+      zend_vm_handlers.h
+      tests/unset_cv11.phpt:
+      Fixed unset() bug that was introduced with CV optimization patch
+
+    * zend_execute_API.c
+      zend_vm_handlers.h
+      tests/unset.inc
+      tests/unset_cv01.phpt
+      tests/unset_cv02.phpt
+      tests/unset_cv03.phpt
+      tests/unset_cv04.phpt
+      tests/unset_cv05.phpt
+      tests/unset_cv06.phpt
+      tests/unset_cv07.phpt
+      tests/unset_cv08.phpt
+      tests/unset_cv09.phpt
+      tests/unset_cv10.phpt:
+      Added test cases for CV optimization patch
+
+2004-10-04  Andi Gutmans  <andi@zend.com>
+
+    * zend_API.h
+      zend_execute_API.c:
+      - Rename delete_global_variable() to zend_delete_global_variable()
+
+    * Zend.m4
+      zend_API.h
+      zend_compile.c
+      zend_compile.h
+      zend_execute.c
+      zend_execute_API.c
+      zend_language_parser.y
+      zend_opcode.c
+      zend_vm.h
+      zend_vm_handlers.h
+      zend_vm_spec.h:
+      - Commit the variable fetch optimization.
+      - Extensions which delete global variables need to use new special
+      function
+      - delete_global_variable() (I'm about to rename it) to remove them.
+      - Will post to internals@ or via commit messages if there's anything else.
+
+2004-10-04  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_builtin_functions.c:
+      - Bugfix #27798
+
+    * tests/bug27798.phpt:
+      
+      - Add new test
+
+2004-10-02  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * (PHP_5_0)
+      tests/bug28444.phpt
+      tests/bug29368.phpt:
+      - Add new tests
+
+    * tests/bug28444.phpt
+      tests/bug29368.phpt:
+      
+      - Add new test
+
+2004-10-01  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * Makefile.frag:
+      - Add makefile fragment which simplifies working on the executer
+
+2004-09-30  Andi Gutmans  <andi@zend.com>
+
+    * zend_operators.c:
+      - Small improvement to DVAL_TO_ZVAL macro
+
+2004-09-29  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_API.c:
+      - MFB (synch correctly not only for one problem)
+
+    * zend_API.c:
+      - Refix the fix
+
+2004-09-29  Andi Gutmans  <andi@zend.com>
+
+    * bench.php
+      tests/bench.php:
+      - Move bench.php to Zend/
+
+2004-09-28  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_API.c
+      zend_API.h
+      zend_object_handlers.c
+      zend_objects.c:
+      Simplify/Optmize magic method calls (__get/__set/__call/__clone/__destruct)
+
+2004-09-28  Andi Gutmans  <andi@zend.com>
+
+    * zend_execute_API.c:
+      - Return the warning until we check if we can change the type of str.len
+
+2004-09-28  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_reflection_api.c
+      zend_reflection_api.h:
+      - publish reflection_class_factory() as zend_reflection_class_factory()
+
+2004-09-27  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * (PHP_5_0)
+      zend_reflection_api.c:
+      MFH fix several property handling issues
+
+    * zend_reflection_api.c:
+      - Make internally used properties read-only and fix default properties
+
+    * zend_exceptions.c:
+      - Fix memeleak
+
+    * zend_reflection_api.c:
+      - Declare properties
+
+2004-09-27  Andi Gutmans  <andi@zend.com>
+
+    * README.ZEND_VM:
+      - Document zend_vm_use_old_executor() for Derick.
+
+2004-09-27  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_reflection_api.c:
+      Fix Reflection_Class to ReflectionClass in docu/messages
+
+    * zend_execute_API.c:
+      - Fix warning
+
+    * zend_compile.c
+      zend_stream.c:
+      - Fix warning
+
+    * zend_builtin_functions.c
+      zend_reflection_api.c:
+      - Fix warnings
+
+    * zend_interfaces.c:
+      Fix warnign
+
+2004-09-27  Andi Gutmans  <andi@zend.com>
+
+    * zend_variables.c
+      zend_variables.h:
+      - Use zval_ctor_func() for wrapper and update the prototype to void
+
+    * zend_variables.c
+      zend_variables.h:
+      - Make zval_copy_ctor() return void like dtor(). No one ever checks the
+      - return value which is SUCCESS always.
+
+2004-09-26  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend.h
+      zend_variables.h:
+      - Fix build
+
+2004-09-26  Andi Gutmans  <andi@zend.com>
+
+    * zend.h
+      zend_variables.c
+      zend_variables.h:
+      - Apply Thies and Sterling's patch which doesn't call ctor/dtor functions
+      - for types which don't require it (BOOL/NULL/LONG/DOUBLE)
+      - Breaks serialization!!!
+
+2004-09-24  Anantha Kesari H Y  <hyanantha@novell.com>
+
+    * zend_API.c:
+      selectively avoiding module cleanup code for apache 1 build and removing a
+      duplicate code
+
+2004-09-24  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_vm_spec.h:
+      Fixed specializer bug.
+
+2004-09-23  Andi Gutmans  <andi@zend.com>
+
+    * (PHP_5_0)
+      zend.h:
+      - PHP 5.0.3-dev
+
+    * zend_compile.h
+      zend_execute.c
+      zend_execute.h
+      zend_execute_API.c
+      zend_opcode.c
+      zend_vm.h:
+      - Commit new VM architecture. This one allows people (aka Derick) to
+      - ask the engine to use function handler mode. Will update the README
+      - about that.
+
+    * (PHP_5_0)
+      zend.h:
+      - Roll 5.0.2
+
+2004-09-23  Ilia Alshanetsky  <ilia@prohost.org>
+
+    * tests/bug20240.phpt:
+      Fixed test.
+
+2004-09-23  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_reflection_api.c:
+      Bugfix # 30209
+
+2004-09-23  Andi Gutmans  <andi@zend.com>
+
+    * tests/bench.php:
+      - Commit synthetic benchmark
+
+2004-09-23  Anantha Kesari H Y  <hyanantha@novell.com>
+
+    * zend_execute.c
+      zend_execute_API.c
+      zend_globals.h:
+      Reverted the NetWare Specific Stack limit related patches as asked by Andi
+
+2004-09-22  Anantha Kesari H Y  <hyanantha@novell.com>
+
+    * zend_execute_API.c
+      zend_globals.h:
+      NetWare specific stack limit checks
+
+    * zend_API.c:
+      Aligned the ifdef NETWARE blocks to first column.
+
+    * zend_execute.c:
+      Stack limit will be checked while executing the script
+
+    * zend_config.nw.h:
+      To avoid redefinition (of free, alloca etc.) compilation errors in Zend.
+
+    * zend_API.c:
+      When Apache is unloaded, it calls dlclose on all the PHP extensions
+      that are loaded in memory. In the case of Apache 1.3, this call is
+      blocking indefinitely. As a work around, this call is bypassed for Apache
+      1.3 build on NetWare only. This means that none of the loaded PHP
+      extensions are unloaded. They will have to be manually unloaded before
+      re-loading the Apache 1.3 again.
+
+    * zend.h:
+      defined ZEND_PATHS_SEPERATOR to semicolon for NetWare
+
+    * acconfig.h:
+      enabled macros to call the proper LibC functions
+
+2004-09-22  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_vm_handlers.h
+      zend_vm_spec.h:
+      Specializer was updated with executor's fixes.
+
+    * zend_execute.c
+      zend_execute.c:
+      Fixed bug #29566 (foreach/string handling strangeness (crash)).
+
+    * zend_execute.c:
+      Fixed bug in fix for bug #29707
+
+2004-09-21  Andi Gutmans  <andi@zend.com>
+
+    * zend_execute.c
+      zend_execute.h:
+      - Fix for bug #29707
+
+2004-09-19  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_reflection_api.c:
+      Bugfix #30146 (ReflectionProperty->getValue() requires instance for static
+      property)
+
+    * zend_reflection_api.c:
+      Bugfix #30148 (ReflectionMethod->isConstructor() fails for inherited
+      classes)
+
+2004-09-17  Stanislav Malyshev  <stas@zend.com>
+
+    * zend_execute_API.c
+      zend_objects_API.c
+      zend_objects_API.h:
+      fix crash when dtor is fialing on shutdown
+
+2004-09-16  Andi Gutmans  <andi@zend.com>
+
+    * (PHP_5_0)
+      zend.h:
+      - Go with PHP 5.0.2RC1
+
+    * tests/bug27669.phpt:
+      - Add test for bug #27669
+
+2004-09-16  Sebastian Bergmann  <sb@sebastian-bergmann.de>
+
+    * zend_language_parser.y:
+      ZTS fix.
+
+2004-09-16  Andi Gutmans  <andi@zend.com>
+
+    * zend_compile.c
+      zend_compile.h
+      zend_language_parser.y:
+      - Fix bug #27669 (Dmitry).
+      Fixes:
+      <?
+              class A
+              {
+                      function hello()
+                      {
+                              echo "Hello World\n";
+                      }
+              }
+              $y[0] = 'hello';
+              A::$y[0]();
+      ?>
+
+2004-09-15  Ilia Alshanetsky  <ilia@prohost.org>
+
+    * zend_operators.h:
+      MFH: Fixed a bug causing ".123" * "90" and alike to return a 0.
+
+    * (PHP_5_0)
+      zend_operators.h:
+      Fixed a bug causing ".123" * "90" and alike to return a 0.
+
+2004-09-15  Derick Rethans  <php@derickrethans.nl>
+
+    * zend_config.w32.h:
+      - Windows support strcoll too.
+
+2004-09-13  Stanislav Malyshev  <stas@zend.com>
+
+    * zend_execute.c:
+      Antony Dovgal's error message improvement - #27290
+
+2004-09-11  Derick Rethans  <php@derickrethans.nl>
+
+    * zend_operators.c
+      zend_operators.h:
+      - MFB: Added the sorting flag SORT_LOCALE_STRING to the sort() functions
+      which
+        makes them sort based on the current locale. (Derick)
+
+    * (PHP_5_0)
+      zend_operators.c
+      zend_operators.h:
+      - Added the sorting flag SORT_LOCALE_STRING to the sort() functions which
+      makes
+        them sort based on the current locale. (Derick)
+
+2004-09-11  Andi Gutmans  <andi@zend.com>
+
+    * zend_operators.c:
+      - Resolve undefined behavior (joe at redhat)
+
+2004-09-10  Andi Gutmans  <andi@zend.com>
+
+    * zend_compile.c:
+      - This one fixes rather strange problem - ZE allows multiple declarations
+      of the same class constant.
+      - It could be a minor BC break, but I'm sure it's a bug. (Antony Dovgal
+      aka tony2001)
+
+2004-09-09  Andi Gutmans  <andi@zend.com>
+
+    * zend_extensions.h:
+      - Revert API bump
+
+    * README.ZEND_VM:
+      - Commit VM explanation.
+
+    * zend.c:
+      - Recommit
+
+    * zend_API.c
+      zend_API.h
+      zend_compile.c:
+      - Recommit:
+        - Check signature of magic methods
+        - Register __get/__set/__call for internal classes
+
+    * zend_extensions.h:
+      - Recommit:
+        - Bump the API number to work around this major breakage.
+
+    * ChangeLog
+      zend.c
+      zend_API.c
+      zend_API.h
+      zend_builtin_functions.c
+      zend_compile.c
+      zend_compile.h
+      zend_exceptions.c
+      zend_execute.c
+      zend_execute.h
+      zend_execute_API.c
+      zend_extensions.h
+      zend_opcode.c:
+      - Roll back VM commit
+
+2004-09-09  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend.c:
+      - Drop namespace relict
+
+    * (PHP_5_0)
+      zend_API.c
+      zend_API.h
+      zend_compile.c:
+      MFH signature check/method registration
+
+    * zend_API.c
+      zend_API.h
+      zend_compile.c:
+      - Check signature of magic methods
+      - Register __get/__set/__call for internal classes
+
+2004-09-09  Derick Rethans  <php@derickrethans.nl>
+
+    * zend_extensions.h:
+      - Bump the API number to work around this major breakage.
+
+2004-09-09  Dmitry Stogov  <dmitry@zend.com>
+
+    * zend_vm.h:
+      We will use CALL dispatch method for compilers other then GCC. It is more
+      safe.
+
+2004-09-09  Andi Gutmans  <andi@zend.com>
+
+    * zend_API.c:
+      - Fix the fix.
+
+2004-09-06  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_objects.c:
+      - Fix handling of exceptions in dtors
+
+2004-09-05  Zeev Suraski  <zeev@zend.com>
+
+    * zend.c
+      zend.h
+      zend_ini_parser.y:
+      Fix reverse dependency
+
+2004-09-04  Andi Gutmans  <andi@zend.com>
+
+    * zend_API.c:
+      - Don't destroy object when calling overloaded cast method in
+      - zend_parse_parameters()
+
+2004-09-02  Sebastian Bergmann  <sb@sebastian-bergmann.de>
+
+    * zend_compile.c:
+      Fugbix typo.
+
+2004-08-30  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * (PHP_5_0)
+      ZEND_CHANGES:
+      MFH: Add some information about array overloading
+
+    * ZEND_CHANGES:
+      Add some information about array overloading
+
+2004-08-30  Stanislav Malyshev  <stas@zend.com>
+
+    * zend_execute.c:
+      fix crash #29893
+
+2004-08-29  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_execute.c:
+      String offset starts with 0, fix isset($str[$len])
+
+    * (PHP_5_0)
+      zend_compile.c:
+      MFH: Bugfix #29882 isset crashes on arrays
+
+    * zend_compile.c:
+      Bugfix #29882 isset crashes on arrays
+
+2004-08-27  Andi Gutmans  <andi@zend.com>
+
+    * zend_alloc.c:
+      - Fix leak report for 0 byte allocations (Dmitry)
+
+2004-08-26  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * (PHP_5_0)
+      zend_compile.c:
+      MFH: Enforce semantics: Classes cannot extend Interfaces
+
+    * zend_compile.c:
+      Enforce semantics: Classes cannot extend Interfaces
+
+    * tests/bug29828.phpt:
+      Fix test: Classes cannot extend Interfaces
+
+    * zend_compile.c:
+      Drop doubled check
+
+    * zend_compile.c:
+      - Bugfix #29828 Interfaces no longer work
+
+    * tests/bug29828.phpt:
+      
+      Add new test
+
+2004-08-25  Andi Gutmans  <andi@zend.com>
+
+    * zend_builtin_functions.c:
+      - Add interface_exists() and differentiate between classes and interfaces
+        (Andrey Hristov)
+
+2004-08-24  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_API.c:
+      - Add missing brackets
+
+2004-08-23  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_compile.c:
+      - Drop unused variable
+
+    * zend_execute_API.c
+      zend_globals.h:
+      - Boost up __autoload() calls by caching the lookup
+
+2004-08-23  Andi Gutmans  <andi@zend.com>
+
+    * zend_compile.c:
+      - Improve performance of switch()
+
+2004-08-23  Zeev Suraski  <zeev@zend.com>
+
+    * (PHP_5_0)
+      zend_reflection_api.c:
+      Fix names
+
+2004-08-21  Sara Golemon  <php@alphaweb.net>
+
+    * zend_compile.c:
+      Bugfix#29777 Some compilers don't like // style comments
+
+2004-08-20  Sara Golemon  <php@alphaweb.net>
+
+    * zend_ini_parser.y:
+      Fix compile
+
+2004-08-19  Andi Gutmans  <andi@zend.com>
+
+    * zend_execute.c:
+      - Cleanup
+
+    * zend.c
+      zend_execute_API.c
+      zend_globals.h:
+      - Second wave of garbage removal.
+
+    * zend_compile.h
+      zend_execute.c:
+      - Stop using garbage. Please let me know if you find any bugs resulting
+      - of this patch (very likely). (Dmitry, Andi)
+
+2004-08-19  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_reflection_api.c:
+      - Implement #29728: Reflection API Feature: Default parameter value.
+        . ReflectionParameter::isDefaultValueAvailable()
+        . ReflectionParameter::getDefaultValue()
+
+    * zend_reflection_api.c:
+      - Nedd to work on copy
+
+2004-08-18  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_reflection_api.c:
+      - Show default value of optional parameters of user defined functions.
+
+2004-08-18  Andrei Zmievski  <andreiz@gmail.com>
+
+    * zend_ini_parser.y:
+      Forgot to turn off debugging.
+
+    * zend_ini_parser.y
+      zend_ini_scanner.l:
+      Re-add my patch for .ini variable access.
+
+2004-08-16  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * (PHP_5_0)
+      zend_reflection_api.c:
+      MFH: Fix bug #29447: Reflection API issues
+
+    * zend_reflection_api.c:
+      - Fix bug #29447: Reflection API issues
+
+2004-08-15  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_compile.c:
+      Remove unnecessary check
+
+2004-08-14  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_compile.c:
+      Add missing check
+
+2004-08-12  Andi Gutmans  <andi@zend.com>
+
+    * (PHP_5_0)
+      zend.h:
+      - Back to 5.0.2-dev
+
+    * (PHP_5_0)
+      zend.h:
+      - Roll 5.0.1
+
+    * (PHP_5_0)
+      zend.h:
+      - Back to -dev
+
+    * (PHP_5_0)
+      zend.h:
+      - 5.0.1RC2
+
+    * zend_compile.c
+      zend_compile.h
+      zend_execute.c:
+      - Don't use magic numbers
+
+    * zend_compile.c
+      zend_execute.c:
+      - Significantly improve performance of foreach($arr as $data). (Marcus)
+
+2004-08-11  Ilia Alshanetsky  <ilia@prohost.org>
+
+    * zend_highlight.c:
+      MFH: Fixed bug #29607 (highlighting code with HEREDOC produces invalid
+      output).
+
+    * (PHP_5_0)
+      zend_highlight.c:
+      Fixed bug #29607 (highlighting code with HEREDOC produces invalid output).
+
+2004-08-11  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_execute.c:
+      More meaningfull error message
+
+2004-08-11  Derick Rethans  <php@derickrethans.nl>
+
+    * (PHP_5_0)
+      zend_alloc.h:
+      - MFH: Patch to allow the Zend memory allocators to be disabled.
+
+    * zend_alloc.h:
+      - Added missing defines.
+
+2004-08-10  Ilia Alshanetsky  <ilia@prohost.org>
+
+    * (PHP_5_0)
+      zend_highlight.c:
+      MFH: Fixed bug #29606 (php_strip_whitespace() prints to stdout rather then
+      returning the value).
+
+    * zend_highlight.c:
+      Fixed bug #29606 (php_strip_whitespace() prints to stdout rather then
+      returning the value).
+
+2004-08-10  Andi Gutmans  <andi@zend.com>
+
+    * (PHP_5_0)
+      zend.h:
+      - Back to -dev
+
+    * (PHP_5_0)
+      zend.h:
+      - 5.0.1RC1
+
+2004-08-10  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_execute.c:
+      - Fix warnings
+
+2004-08-07  Andi Gutmans  <andi@zend.com>
+
+    * zend_alloc.h:
+      - Commit Derick's patch for allowing Zend to use regular libc memory
+      - allocation functions. Mainly useful in conjunction with tools such as
+      - valgrind which enables us to find bugs we might not find with the
+      - current memory managers boundary protection.
+
+2004-08-05  Ilia Alshanetsky  <ilia@prohost.org>
+
+    * zend_builtin_functions.c:
+      Eliminate unneeded variable.
+
+2004-08-04  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_reflection_api.c
+      tests/bug29523.phpt:
+      - Fix bug #29523 (ReflectionParameter::isOptional() is incorrect)
+
+2004-08-03  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * ZEND_CHANGES:
+      Update
+
+    * (PHP_5_0)
+      zend_builtin_functions.c
+      tests/bug29505.phpt:
+      - MFH Bug #29505 get_class_vars() severely broken when used with arrays
+
+    * tests/bug29505.phpt:
+      
+      Add new test
+
+    * zend_builtin_functions.c:
+      - Fixed Bug #29505 get_class_vars() severely broken when used with arrays
+
+2004-08-02  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_reflection_api.c:
+      - Add methods to check parameter count
+
+    * (PHP_5_0)
+      zend_compile.c:
+      MFH Change to use memcmp instead of strcmp
+
+    * zend_compile.c:
+      - Change to use memcmp instead of strcmp
+
+2004-08-02  Andi Gutmans  <andi@zend.com>
+
+    * zend_compile.c:
+      - Fix typo
+
+2004-08-02  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_language_parser.y
+      zend_language_scanner.l:
+      - Remove all for now
+
+    * zend_compile.c
+      zend_compile.h
+      zend_execute_API.c:
+      MFB: Enforce protocol on magic methods/functions
+
+2004-08-02  Ilia Alshanetsky  <ilia@prohost.org>
+
+    * (PHP_5_0)
+      zend_execute.c:
+      MFH: A gentler (performance wise) allocation of buffer for temp variables.
+
+    * zend_execute.c:
+      A gentler (performance wise) allocation of buffer for temp variables.
+
+2004-08-01  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * (PHP_5_0)
+      zend_compile.c
+      zend_compile.h
+      zend_execute_API.c:
+      - Enforce protocol on magic methods/functions
+
+2004-07-30  Andi Gutmans  <andi@zend.com>
+
+    * zend_execute.c
+      zend_execute_API.c
+      zend_ptr_stack.c
+      zend_ptr_stack.h:
+      - More ptr_stack optimizations and cleanups
+
+    * zend_alloc.c
+      zend_alloc.h
+      zend_execute.c
+      zend_fast_cache.h
+      zend_ptr_stack.h:
+      - Improve performance by inlining zend_ptr_stack_n_push(). var_args can
+        usually not be inlined by compilers.
+
+2004-07-29  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_hash.c:
+      - Increase performance of *sort() and some internal sort operations.
+
+2004-07-29  Sara Golemon  <php@alphaweb.net>
+
+    * zend_compile.c
+      zend_compile.h
+      zend_execute.c
+      zend_language_parser.y
+      zend_language_scanner.l
+      zend_opcode.c:
+      Revert goto opcode
+
+    * zend_execute.c:
+      &tmp and label are the same thing, don't free it till we're done with it.
+
+    * zend_compile.c
+      zend_execute.c:
+      Plug some memory leaks and promote unknown label to E_ERROR.
+      If someone tries to jump to a non-existant label execution really
+      shouldn't try to carry on.
+
+    * zend_compile.c
+      zend_compile.h
+      zend_execute.c
+      zend_language_parser.y
+      zend_language_scanner.l
+      zend_opcode.c:
+      Add goto operator by popular request.
+
+2004-07-28  Wez Furlong  <wez.php@thebrainroom.net>
+
+    * zend_ini.c:
+      Fix: ini entries for dl()'d modules now work under ZTS
+      Side-effect: avoid possible crashes when multiple threads load/unload
+      modules and mess with the global hash table.
+
+2004-07-28  Andi Gutmans  <andi@zend.com>
+
+    * zend.h
+      zend.h:
+      - Fix MAC OSX to always use native DSO loading
+
+2004-07-27  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_exceptions.c:
+      - Be specific about visibility
+
+2004-07-27  Wez Furlong  <wez.php@thebrainroom.net>
+
+    * zend_builtin_functions.c:
+      Fix two possible crashes.  Latter is unlikely unless you are doing scary
+      things, but former looks nasty.
+
+2004-07-26  Stanislav Malyshev  <stas@zend.com>
+
+    * zend_interfaces.c:
+      quick fix for #29382
+
+2004-07-25  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_reflection_api.c:
+      - Show visibility errors (try to fix #29354)
+
+    * (PHP_5_0)
+      zend_execute.c
+      zend_objects_API.c
+      zend_objects_API.h:
+      - MFH: Fix bug #29368 : The destructor is called when an exception is
+        thrown from the constructor
+
+    * zend_execute.c
+      zend_objects_API.c
+      zend_objects_API.h:
+      - Fix bug #29368 : The destructor is called when an exception is thrown
+      from the constructor
+
+    * zend.c
+      zend.h
+      zend_execute.h
+      zend_execute_API.c:
+      - Execute destructors earlier (Florian Schaper, fschaper at intux org)
+
+    * zend_reflection_api.c:
+      - Add ReflectionParameter::isOptional() to test whether a parameter is
+        optional and also show this information in export.
+
+    * zend_exceptions.c:
+      - Add optional parameters $filename and $lineno to ErrorException
+        constructor to allow overwriting automatically retrieved information.
+
+2004-07-23  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_execute.c:
+      Fix 0 Byte leak after alloca to emalloc change
+
+2004-07-22  Zeev Suraski  <zeev@zend.com>
+
+    * zend_object_handlers.c:
+      Fix bug in handling of protected properties
+
+2004-07-21  Edin Kadribasic  <edink@emini.dk>
+
+    * zend_builtin_functions.c:
+      Fixed build
+
+2004-07-21  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * (PHP_5_0)
+      zend_builtin_functions.c:
+      MFH: Fixded #29291: get_class_vars() return names with NULLs
+
+    * zend_builtin_functions.c:
+      - Fixded #29291: get_class_vars() return names with NULLs
+
+2004-07-20  Moriyoshi Koizumi  <moriyoshi@at.wakwak.com>
+
+    * zend_alloc.c
+      zend_alloc.h:
+      - Add safe_pemalloc()
+
+2004-07-20  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_reflection_api.c:
+      - Fixed bug 28895 again (long live the dead)
+
+2004-07-20  Zeev Suraski  <zeev@zend.com>
+
+    * zend_exceptions.c:
+      Fix prototypes
+
+    * zend_exceptions.c:
+      Add descriptions
+
+2004-07-20  Stanislav Malyshev  <stas@zend.com>
+
+    * zend_compile.c:
+      add todo
+
+    * (PHP_5_0)
+      zend_ini.h
+      zend_ini_parser.y:
+      export ini parser
+
+2004-07-19  Sebastian Bergmann  <sb@sebastian-bergmann.de>
+
+    * zend_reflection_api.c:
+      Fix prototypes: Reflection_* -> Reflection*.
+
+    * zend_reflection_api.c:
+      Make ReflectionClass::getMethod() and ReflectionClass::getProperty() raise
+      an ReflectionException instead of returning NULL on failure.
+
+    * zend_reflection_api.c:
+      Do not use contracted forms.
+
+2004-07-19  Stanislav Malyshev  <stas@zend.com>
+
+    * zend_ini.h
+      zend_ini_parser.y:
+      export INI parser
+
+    * zend_object_handlers.c:
+      __set and __get will be called not only when variable doesn't exist but
+      also when it's
+      invisible
+
+2004-07-19  Andi Gutmans  <andi@zend.com>
+
+    * zend_extensions.h
+      zend_modules.h:
+      - Bump API number due to empty_string change
+
+    * zend.c
+      zend.h
+      zend_API.h
+      zend_alloc.h
+      zend_execute.c
+      zend_object_handlers.c
+      zend_operators.c
+      zend_variables.c:
+      - Nuke empty_string. It is a reminanent from the time where RETURN_FALSE()
+        used to return "" and not bool(false). It's not worth keeping it because
+        STR_FREE() and zval_dtor() always have to check for it and it slows down
+        the general case. In addition, it seems that empty_string has been
+      abused
+        quite a lot, and was used not only for setting zval's but generally in
+        PHP code instead of "", which wasn't the intention. Last but not least,
+        nuking empty_string should improve stability as I doubt every place
+        correctly checked if they are not mistakenly erealloc()'ing it or
+        calling efree() on it.
+        NOTE: Some code is probably broken. Each extension maintainer should
+        check and see that my changes are OK. Also, I haven't had time to touch
+        PECL yet. Will try and do it tomorrow.
+
+2004-07-18  Wez Furlong  <wez.php@thebrainroom.net>
+
+    * zend_execute_API.c:
+      No point allocating 0 bytes
+
+2004-07-16  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_language_parser.y
+      zend_language_scanner.l:
+      - Speed up by making null/false/true reserved word which allows to drop
+        an opcode (FETCH_CONSTANT) for every usage.
+
+    * zend_execute.c:
+      Bugfix #28464 catch() does not catch exceptions by interfaces
+
+2004-07-16  Ilia Alshanetsky  <ilia@prohost.org>
+
+    * zend_operators.h:
+      MFB: Fixed bug #28800 (strings beginning with "inf" improperly converted).
+
+    * (PHP_5_0)
+      zend_operators.h:
+      Fixed bug #28800 (strings beginning with "inf" improperly converted).
+
+2004-07-15  Andi Gutmans  <andi@zend.com>
+
+    * zend_alloc.c
+      zend_alloc.h:
+      - Improve performance of zend_alloc by stopping the size from being a bit
+      - field.
+
+2004-07-15  Marcus Boerger  <marcus.boerger@post.rwth-aachen.de>
+
+    * zend_exceptions.c
+      zend_exceptions.h:
+      - Add new class ErrorException to encapsulate errors in exceptions
+
+    * zend_dynamic_array.h:
+      - Fix prototype
+
 2004-07-14  Stanislav Malyshev  <stas@zend.com>
 
     * zend_object_handlers.c:
@@ -4935,7 +9403,7 @@
 2003-06-10  Jani Taskinen  <sniper@iki.fi>
 
     * zend_multiply.h:
-      - Missing $Id: ChangeLog,v 1.500.2.1 2004/12/16 12:35:37 sniper Exp $ tag
+      - Missing $Id: ChangeLog,v 1.745 2005/08/06 05:37:51 changelog Exp $ tag
 
 2003-06-10  James Cox  <james@imajes.info>
 
@@ -6659,7 +11127,7 @@
       zend_types.h
       zend_variables.c
       zend_variables.h:
-      - Added some missing CVS $Id: ChangeLog,v 1.500.2.1 2004/12/16 12:35:37 sniper Exp $ tags, headers and footers.
+      - Added some missing CVS $Id: ChangeLog,v 1.745 2005/08/06 05:37:51 changelog Exp $ tags, headers and footers.
 
 2003-01-30  Ilia Alshanetsky  <ilia@prohost.org>
 

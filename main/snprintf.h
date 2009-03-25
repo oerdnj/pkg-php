@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -13,10 +13,11 @@
    | license@php.net so we can mail you a copy immediately.               |
    +----------------------------------------------------------------------+
    | Author: Stig Sæther Bakken <ssb@php.net>                             |
+   |         Marcus Boerger <helly@php.net>                               |
    +----------------------------------------------------------------------+
 */
 
-/* $Id: snprintf.h,v 1.27.2.3 2005/03/31 07:39:42 sniper Exp $ */
+/* $Id: snprintf.h,v 1.32.2.1 2005/09/15 19:11:15 derick Exp $ */
 
 /*
 
@@ -110,12 +111,12 @@ extern char * ap_php_ecvt(double arg, int ndigits, int *decpt, int *sign, char *
 extern char * ap_php_fcvt(double arg, int ndigits, int *decpt, int *sign, char *buf);
 extern char * ap_php_gcvt(double number, int ndigit, char *buf, boolean_e altform);
 
-#if SIZEOF_LONG_LONG_INT
+#if PHP_WIN32
+# define WIDE_INT		__int64
+#elif SIZEOF_LONG_LONG_INT
 # define WIDE_INT		long long int
 #elif SIZEOF_LONG_LONG
 # define WIDE_INT		long long
-#elif _WIN64
-# define WIDE_INT		__int64
 #else
 # define WIDE_INT		long
 #endif

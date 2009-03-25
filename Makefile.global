@@ -5,7 +5,6 @@ INSTALL_DATA = $(INSTALL) -m 644
 DEFS = -DPHP_ATOM_INC -I$(top_builddir)/include -I$(top_builddir)/main -I$(top_srcdir)
 COMMON_FLAGS = $(DEFS) $(INCLUDES) $(EXTRA_INCLUDES) $(CPPFLAGS) $(PHP_FRAMEWORKPATH)
 
-
 all: $(all_targets) 
 	@echo
 	@echo "Build complete."
@@ -43,19 +42,44 @@ install-modules: build-modules
 	@rm -f modules/*.la >/dev/null 2>&1
 	@$(INSTALL) modules/* $(INSTALL_ROOT)$(EXTENSION_DIR)
 
-install-tester:
-	@echo "Installing regression tester:     $(INSTALL_ROOT)$(PEAR_INSTALLDIR)/"
-	@$(mkinstalldirs) $(INSTALL_ROOT)$(PEAR_INSTALLDIR)
-	@$(INSTALL) -m 755 $(top_srcdir)/run-tests.php $(INSTALL_ROOT)$(PEAR_INSTALLDIR)
+install-headers:
+	-@if test "$(INSTALL_HEADERS)"; then \
+		for i in $(INSTALL_HEADERS); do \
+			i=`$(top_srcdir)/build/shtool path -d $$i`; \
+			paths="$$paths $(INSTALL_ROOT)$(phpincludedir)/$$i"; \
+		done; \
+		$(mkinstalldirs) $$paths && \
+		echo "Installing header files:          $(INSTALL_ROOT)$(phpincludedir)/" && \
+		for i in $(INSTALL_HEADERS); do \
+			if test "$(PHP_PECL_EXTENSION)"; then \
+				src=`echo $$i | $(SED) -e "s#ext/$(PHP_PECL_EXTENSION)/##g"`; \
+			else \
+				src=$$i; \
+			fi; \
+			if test -f "$(top_srcdir)/$$src"; then \
+				$(INSTALL_DATA) $(top_srcdir)/$$src $(INSTALL_ROOT)$(phpincludedir)/$$i; \
+			elif test -f "$(top_builddir)/$$src"; then \
+				$(INSTALL_DATA) $(top_builddir)/$$src $(INSTALL_ROOT)$(phpincludedir)/$$i; \
+			else \
+				(cd $(top_srcdir)/$$src && $(INSTALL_DATA) *.h $(INSTALL_ROOT)$(phpincludedir)/$$i; \
+				cd $(top_builddir)/$$src && $(INSTALL_DATA) *.h $(INSTALL_ROOT)$(phpincludedir)/$$i) 2>/dev/null || true; \
+			fi \
+		done; \
+	fi
+	
+install-su: install-pear
 
-install-su: install-pear install-tester
-
-test: 
-	-@if test -x $(SAPI_CLI_PATH) && test ! -z $(SAPI_CLI_PATH); then \
+test: all 
+	-@if test ! -z "$(PHP_EXECUTABLE)" && test -x "$(PHP_EXECUTABLE)"; then \
+		TEST_PHP_EXECUTABLE=$(PHP_EXECUTABLE) \
+		TEST_PHP_SRCDIR=$(top_srcdir) \
+		CC="$(CC)" \
+			$(PHP_EXECUTABLE) -d 'open_basedir=' -d 'safe_mode=0' -d 'output_buffering=0' -d 'memory_limit=-1' $(top_srcdir)/run-tests.php -d 'extension_dir=modules/' -d `( . $(PHP_MODULES) ; echo extension=$$dlname)` tests/; \
+	elif test ! -z "$(SAPI_CLI_PATH)" && test -x "$(SAPI_CLI_PATH)"; then \
 		TEST_PHP_EXECUTABLE=$(top_builddir)/$(SAPI_CLI_PATH) \
 		TEST_PHP_SRCDIR=$(top_srcdir) \
 		CC="$(CC)" \
-			$(top_builddir)/$(SAPI_CLI_PATH) -d 'open_basedir=' -d 'safe_mode=0' -d 'output_buffering=0' $(top_srcdir)/run-tests.php $(TESTS); \
+			$(top_builddir)/$(SAPI_CLI_PATH) -d 'open_basedir=' -d 'safe_mode=0' -d 'output_buffering=0' -d 'memory_limit=-1' $(top_srcdir)/run-tests.php $(TESTS); \
 	else \
 		echo "ERROR: Cannot run tests without CLI sapi."; \
 	fi
@@ -69,7 +93,7 @@ clean:
 
 distclean: clean
 	rm -f config.cache config.log config.status Makefile.objects Makefile.fragments libtool main/php_config.h stamp-h php5.spec sapi/apache/libphp5.module buildmk.stamp
-	egrep define'.*include/php' $(top_srcdir)/configure|sed 's/.*>//'|xargs rm -f
+	$(EGREP) define'.*include/php' $(top_srcdir)/configure | $(SED) 's/.*>//'|xargs rm -f
 	find . -name Makefile | xargs rm -f
 
 .PHONY: all clean install distclean test

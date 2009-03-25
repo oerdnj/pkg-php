@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2004 The PHP Group                                |
+   | Copyright (c) 1997-2005 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.0 of the PHP license,       |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: mb_gpc.c,v 1.11.2.2 2005/03/04 00:35:23 iliaa Exp $ */
+/* $Id: mb_gpc.c,v 1.17 2005/08/03 14:07:24 sniper Exp $ */
 
 /* {{{ includes */
 #ifdef HAVE_CONFIG_H
@@ -48,48 +48,21 @@
 
 ZEND_EXTERN_MODULE_GLOBALS(mbstring)
 
-/* {{{ static sapi_post_entry mbstr_post_entries[] */
-static sapi_post_entry mbstr_post_entries[] = {
-	{ DEFAULT_POST_CONTENT_TYPE, sizeof(DEFAULT_POST_CONTENT_TYPE)-1, sapi_read_standard_form_data, php_mb_post_handler },
-	{ MULTIPART_CONTENT_TYPE,    sizeof(MULTIPART_CONTENT_TYPE)-1,    NULL,                         rfc1867_post_handler },
-	{ NULL, 0, NULL, NULL }
-};
-/* }}} */
-
-/* {{{ static sapi_post_entry php_post_entries[] */
-static sapi_post_entry php_post_entries[] = {
-	{ DEFAULT_POST_CONTENT_TYPE, sizeof(DEFAULT_POST_CONTENT_TYPE)-1, sapi_read_standard_form_data,	php_std_post_handler },
-	{ MULTIPART_CONTENT_TYPE,    sizeof(MULTIPART_CONTENT_TYPE)-1,    NULL,                         rfc1867_post_handler },
-	{ NULL, 0, NULL, NULL }
-};
-/* }}} */
-
-/* {{{ int _php_mb_enable_encoding_translation(int flag) */
-int _php_mb_enable_encoding_translation(int flag)
-{
-	if (flag) {
-		sapi_unregister_post_entry(php_post_entries);
-		sapi_register_post_entries(mbstr_post_entries);
-		sapi_register_treat_data(mbstr_treat_data);	   			   
-	} else {
-		sapi_unregister_post_entry(mbstr_post_entries);
-		sapi_register_post_entries(php_post_entries);
-		sapi_register_treat_data(php_default_treat_data);	   			   
-	}
-	return SUCCESS;
-}
-/* }}} */ 
-
 /* {{{ MBSTRING_API SAPI_TREAT_DATA_FUNC(mbstr_treat_data)
  * http input processing */
 MBSTRING_API SAPI_TREAT_DATA_FUNC(mbstr_treat_data)
 {
 	char *res = NULL, *separator=NULL;
 	const char *c_var;
-	pval *array_ptr;
+	zval *array_ptr;
 	int free_buffer=0;
 	enum mbfl_no_encoding detected;
 	php_mb_encoding_handler_info_t info;
+
+	if (!MBSTRG(encoding_translation)) {
+		php_default_treat_data(arg, str, destArray TSRMLS_CC);
+		return;
+	}
 
 	switch (arg) {
 		case PARSE_POST:
@@ -211,7 +184,7 @@ MBSTRING_API SAPI_TREAT_DATA_FUNC(mbstr_treat_data)
 }
 /* }}} */
 
-/* {{{ enum mbfl_no_encoding _php_mb_encoding_handler_ex() */
+/* {{{ mbfl_no_encoding _php_mb_encoding_handler_ex() */
 enum mbfl_no_encoding _php_mb_encoding_handler_ex(const php_mb_encoding_handler_info_t *info, zval *arg, char *res TSRMLS_DC)
 {
 	char *var, *val;

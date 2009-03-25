@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2004 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_API.h,v 1.185.2.4 2005/06/27 17:42:06 stas Exp $ */
+/* $Id: zend_API.h,v 1.207.2.3 2005/10/28 14:46:29 dmitry Exp $ */
 
 #ifndef ZEND_API_H
 #define ZEND_API_H
@@ -57,14 +57,15 @@ typedef struct _zend_function_entry {
                                                     ZEND_FENTRY(name, ZEND_FN(classname##_##alias), arg_info, flags)
 #define ZEND_ME_MAPPING(name, func_name, arg_types) ZEND_NAMED_FE(name, ZEND_FN(func_name), arg_types)
 
-#define ZEND_ARG_INFO(pass_by_ref, name)							{ #name, sizeof(#name)-1, NULL, 0, 0, pass_by_ref, 0, 0 },
-#define ZEND_ARG_PASS_INFO(pass_by_ref)								{ NULL, 0, NULL, 0, 0, pass_by_ref, 0, 0 },
-#define ZEND_ARG_OBJ_INFO(pass_by_ref, name, classname, allow_null) { #name, sizeof(#name)-1, #classname, sizeof(#classname)-1, allow_null, pass_by_ref, 0, 0 },
+#define ZEND_ARG_INFO(pass_by_ref, name)							{ #name, sizeof(#name)-1, NULL, 0, 0, 0, pass_by_ref, 0, 0 },
+#define ZEND_ARG_PASS_INFO(pass_by_ref)								{ NULL, 0, NULL, 0, 0, 0, pass_by_ref, 0, 0 },
+#define ZEND_ARG_OBJ_INFO(pass_by_ref, name, classname, allow_null) { #name, sizeof(#name)-1, #classname, sizeof(#classname)-1, 0, allow_null, pass_by_ref, 0, 0 },
+#define ZEND_ARG_ARRAY_INFO(pass_by_ref, name, allow_null) { #name, sizeof(#name)-1, NULL, 0, 1, allow_null, pass_by_ref, 0, 0 },
 #define ZEND_BEGIN_ARG_INFO_EX(name, pass_rest_by_reference, return_reference, required_num_args)	\
 	zend_arg_info name[] = {																		\
-		{ NULL, 0, NULL, 0, 0, pass_rest_by_reference, return_reference, required_num_args },
+		{ NULL, 0, NULL, 0, 0, 0, pass_rest_by_reference, return_reference, required_num_args },
 #define ZEND_BEGIN_ARG_INFO(name, pass_rest_by_reference)	\
-	ZEND_BEGIN_ARG_INFO_EX(name, pass_rest_by_reference, ZEND_RETURN_REFERENCE_AGNOSTIC, -1)
+	ZEND_BEGIN_ARG_INFO_EX(name, pass_rest_by_reference, ZEND_RETURN_VALUE, -1)
 #define ZEND_END_ARG_INFO()		};
 
 /* Name macros */
@@ -117,7 +118,7 @@ typedef struct _zend_function_entry {
 
 #define INIT_CLASS_ENTRY(class_container, class_name, functions) INIT_OVERLOADED_CLASS_ENTRY(class_container, class_name, functions, NULL, NULL, NULL)
 
-#define INIT_OVERLOADED_CLASS_ENTRY(class_container, class_name, functions, handle_fcall, handle_propget, handle_propset) \
+#define INIT_OVERLOADED_CLASS_ENTRY_EX(class_container, class_name, functions, handle_fcall, handle_propget, handle_propset, handle_propunset, handle_propisset) \
 	{															\
 		class_container.name = strdup(class_name);				\
 		class_container.name_length = sizeof(class_name) - 1;	\
@@ -130,6 +131,10 @@ typedef struct _zend_function_entry {
 		class_container.__call = handle_fcall;	\
 		class_container.__get = handle_propget;	\
 		class_container.__set = handle_propset;	\
+		class_container.__unset = handle_propunset;	\
+		class_container.__isset = handle_propisset;	\
+		class_container.serialize = NULL;	\
+		class_container.unserialize = NULL;	\
 		class_container.parent = NULL;          \
 		class_container.num_interfaces = 0;     \
 		class_container.interfaces = NULL;      \
@@ -138,6 +143,9 @@ typedef struct _zend_function_entry {
 		class_container.module = NULL;          \
 	}
 
+#define INIT_OVERLOADED_CLASS_ENTRY(class_container, class_name, functions, handle_fcall, handle_propget, handle_propset) \
+	INIT_OVERLOADED_CLASS_ENTRY_EX(class_container, class_name, functions, handle_fcall, handle_propget, handle_propset, NULL, NULL)
+
 int zend_next_free_module(void);
 
 BEGIN_EXTERN_C()
@@ -145,6 +153,9 @@ ZEND_API int zend_get_parameters(int ht, int param_count, ...);
 ZEND_API int _zend_get_parameters_array(int ht, int param_count, zval **argument_array TSRMLS_DC);
 ZEND_API int zend_get_parameters_ex(int param_count, ...);
 ZEND_API int _zend_get_parameters_array_ex(int param_count, zval ***argument_array TSRMLS_DC);
+
+/* internal function to efficiently copy parameters when executing __call() */
+ZEND_API int zend_copy_parameters_array(int param_count, zval *argument_array TSRMLS_DC);
 
 #define zend_get_parameters_array(ht, param_count, argument_array)			\
 	_zend_get_parameters_array(ht, param_count, argument_array TSRMLS_CC)
@@ -166,9 +177,12 @@ ZEND_API int zend_parse_method_parameters_ex(int flags, int num_args TSRMLS_DC, 
 
 ZEND_API int zend_register_functions(zend_class_entry *scope, zend_function_entry *functions, HashTable *function_table, int type TSRMLS_DC);
 ZEND_API void zend_unregister_functions(zend_function_entry *functions, int count, HashTable *function_table TSRMLS_DC);
-ZEND_API int zend_register_module(zend_module_entry *module_entry);
-ZEND_API int zend_register_module_ex(zend_module_entry *module TSRMLS_DC);
-void zend_check_magic_method_implementation(zend_class_entry *ce, zend_function *fptr, int error_type TSRMLS_DC);
+ZEND_API int zend_startup_module(zend_module_entry *module_entry);
+ZEND_API zend_module_entry* zend_register_internal_module(zend_module_entry *module_entry TSRMLS_DC);
+ZEND_API zend_module_entry* zend_register_module_ex(zend_module_entry *module TSRMLS_DC);
+ZEND_API int zend_startup_module_ex(zend_module_entry *module TSRMLS_DC);
+ZEND_API int zend_startup_modules(TSRMLS_D);
+ZEND_API void zend_check_magic_method_implementation(zend_class_entry *ce, zend_function *fptr, int error_type TSRMLS_DC);
 
 ZEND_API zend_class_entry *zend_register_internal_class(zend_class_entry *class_entry TSRMLS_DC);
 ZEND_API zend_class_entry *zend_register_internal_class_ex(zend_class_entry *class_entry, zend_class_entry *parent_ce, char *parent_name TSRMLS_DC);
@@ -182,23 +196,49 @@ ZEND_API void zend_wrong_param_count(TSRMLS_D);
 
 #define IS_CALLABLE_CHECK_SYNTAX_ONLY (1<<0)
 #define IS_CALLABLE_CHECK_NO_ACCESS   (1<<1)
+#define IS_CALLABLE_CHECK_IS_STATIC   (1<<2)
 
+ZEND_API zend_bool zend_is_callable_ex(zval *callable, uint check_flags, char **callable_name, int *callable_name_len, zend_class_entry **ce_ptr, zend_function **fptr_ptr, zval ***zobj_ptr_ptr TSRMLS_DC);
 ZEND_API zend_bool zend_is_callable(zval *callable, uint check_flags, char **callable_name);
 ZEND_API zend_bool zend_make_callable(zval *callable, char **callable_name TSRMLS_DC);
 ZEND_API char *zend_get_module_version(char *module_name);
 ZEND_API int zend_get_module_started(char *module_name);
 ZEND_API int zend_declare_property(zend_class_entry *ce, char *name, int name_length, zval *property, int access_type TSRMLS_DC);
+ZEND_API int zend_declare_property_ex(zend_class_entry *ce, char *name, int name_length, zval *property, int access_type, char *doc_comment, int doc_comment_len TSRMLS_DC);
 ZEND_API int zend_declare_property_null(zend_class_entry *ce, char *name, int name_length, int access_type TSRMLS_DC);
+ZEND_API int zend_declare_property_bool(zend_class_entry *ce, char *name, int name_length, long value, int access_type TSRMLS_DC);
 ZEND_API int zend_declare_property_long(zend_class_entry *ce, char *name, int name_length, long value, int access_type TSRMLS_DC);
+ZEND_API int zend_declare_property_double(zend_class_entry *ce, char *name, int name_length, double value, int access_type TSRMLS_DC);
 ZEND_API int zend_declare_property_string(zend_class_entry *ce, char *name, int name_length, char *value, int access_type TSRMLS_DC);
+ZEND_API int zend_declare_property_stringl(zend_class_entry *ce, char *name, int name_length, char *value, int value_len, int access_type TSRMLS_DC);
+
+ZEND_API int zend_declare_class_constant(zend_class_entry *ce, char *name, size_t name_length, zval *value TSRMLS_DC);
+ZEND_API int zend_declare_class_constant_long(zend_class_entry *ce, char *name, size_t name_length, long value TSRMLS_DC);
+ZEND_API int zend_declare_class_constant_bool(zend_class_entry *ce, char *name, size_t name_length, zend_bool value TSRMLS_DC);
+ZEND_API int zend_declare_class_constant_double(zend_class_entry *ce, char *name, size_t name_length, double value TSRMLS_DC);
+ZEND_API int zend_declare_class_constant_stringl(zend_class_entry *ce, char *name, size_t name_length, char *value, size_t value_length TSRMLS_DC);
+ZEND_API int zend_declare_class_constant_string(zend_class_entry *ce, char *name, size_t name_length, char *value TSRMLS_DC);
 
 ZEND_API void zend_update_class_constants(zend_class_entry *class_type TSRMLS_DC);
 ZEND_API void zend_update_property(zend_class_entry *scope, zval *object, char *name, int name_length, zval *value TSRMLS_DC);
 ZEND_API void zend_update_property_null(zend_class_entry *scope, zval *object, char *name, int name_length TSRMLS_DC);
+ZEND_API void zend_update_property_bool(zend_class_entry *scope, zval *object, char *name, int name_length, long value TSRMLS_DC);
 ZEND_API void zend_update_property_long(zend_class_entry *scope, zval *object, char *name, int name_length, long value TSRMLS_DC);
+ZEND_API void zend_update_property_double(zend_class_entry *scope, zval *object, char *name, int name_length, double value TSRMLS_DC);
 ZEND_API void zend_update_property_string(zend_class_entry *scope, zval *object, char *name, int name_length, char *value TSRMLS_DC);
+ZEND_API void zend_update_property_stringl(zend_class_entry *scope, zval *object, char *name, int name_length, char *value, int value_length TSRMLS_DC);
+
+ZEND_API int zend_update_static_property(zend_class_entry *scope, char *name, int name_length, zval *value TSRMLS_DC);
+ZEND_API int zend_update_static_property_null(zend_class_entry *scope, char *name, int name_length TSRMLS_DC);
+ZEND_API int zend_update_static_property_bool(zend_class_entry *scope, char *name, int name_length, long value TSRMLS_DC);
+ZEND_API int zend_update_static_property_long(zend_class_entry *scope, char *name, int name_length, long value TSRMLS_DC);
+ZEND_API int zend_update_static_property_double(zend_class_entry *scope, char *name, int name_length, double value TSRMLS_DC);
+ZEND_API int zend_update_static_property_string(zend_class_entry *scope, char *name, int name_length, char *value TSRMLS_DC);
+ZEND_API int zend_update_static_property_stringl(zend_class_entry *scope, char *name, int name_length, char *value, int value_length TSRMLS_DC);
 
 ZEND_API zval *zend_read_property(zend_class_entry *scope, zval *object, char *name, int name_length, zend_bool silent TSRMLS_DC);
+
+ZEND_API zval *zend_read_static_property(zend_class_entry *scope, char *name, int name_length, zend_bool silent TSRMLS_DC);
 
 ZEND_API zend_class_entry *zend_get_class_entry(zval *zobject TSRMLS_DC);
 ZEND_API int zend_get_object_classname(zval *object, char **class_name, zend_uint *class_name_len TSRMLS_DC);
@@ -215,8 +255,6 @@ ZEND_API int zend_get_object_classname(zval *object, char **class_name, zend_uin
 #ifndef ZEND_WIN32
 #define DLEXPORT
 #endif
-
-ZEND_API int zend_startup_module(zend_module_entry *module);
 
 #define array_init(arg)			_array_init((arg) ZEND_FILE_LINE_CC)
 #define object_init(arg)		_object_init((arg) ZEND_FILE_LINE_CC TSRMLS_CC)
@@ -256,14 +294,14 @@ ZEND_API int add_assoc_zval_ex(zval *arg, char *key, uint key_len, zval *value);
 #define add_next_index_unset(__arg) add_next_index_null(__arg)
 #define add_property_unset(__arg, __key) add_property_null(__arg, __key)
 
-ZEND_API int add_index_long(zval *arg, uint idx, long n);
-ZEND_API int add_index_null(zval *arg, uint idx);
-ZEND_API int add_index_bool(zval *arg, uint idx, int b);
-ZEND_API int add_index_resource(zval *arg, uint idx, int r);
-ZEND_API int add_index_double(zval *arg, uint idx, double d);
-ZEND_API int add_index_string(zval *arg, uint idx, char *str, int duplicate);
-ZEND_API int add_index_stringl(zval *arg, uint idx, char *str, uint length, int duplicate);
-ZEND_API int add_index_zval(zval *arg, uint index, zval *value);
+ZEND_API int add_index_long(zval *arg, ulong idx, long n);
+ZEND_API int add_index_null(zval *arg, ulong idx);
+ZEND_API int add_index_bool(zval *arg, ulong idx, int b);
+ZEND_API int add_index_resource(zval *arg, ulong idx, int r);
+ZEND_API int add_index_double(zval *arg, ulong idx, double d);
+ZEND_API int add_index_string(zval *arg, ulong idx, char *str, int duplicate);
+ZEND_API int add_index_stringl(zval *arg, ulong idx, char *str, uint length, int duplicate);
+ZEND_API int add_index_zval(zval *arg, ulong index, zval *value);
 
 ZEND_API int add_next_index_long(zval *arg, long n);
 ZEND_API int add_next_index_null(zval *arg);
@@ -280,10 +318,10 @@ ZEND_API int add_get_assoc_stringl_ex(zval *arg, char *key, uint key_len, char *
 #define add_get_assoc_string(__arg, __key, __str, __dest, __duplicate) add_get_assoc_string_ex(__arg, __key, strlen(__key)+1, __str, __dest, __duplicate)
 #define add_get_assoc_stringl(__arg, __key, __str, __length, __dest, __duplicate) add_get_assoc_stringl_ex(__arg, __key, strlen(__key)+1, __str, __length, __dest, __duplicate)
 
-ZEND_API int add_get_index_long(zval *arg, uint idx, long l, void **dest);
-ZEND_API int add_get_index_double(zval *arg, uint idx, double d, void **dest);
-ZEND_API int add_get_index_string(zval *arg, uint idx, char *str, void **dest, int duplicate);
-ZEND_API int add_get_index_stringl(zval *arg, uint idx, char *str, uint length, void **dest, int duplicate);
+ZEND_API int add_get_index_long(zval *arg, ulong idx, long l, void **dest);
+ZEND_API int add_get_index_double(zval *arg, ulong idx, double d, void **dest);
+ZEND_API int add_get_index_string(zval *arg, ulong idx, char *str, void **dest, int duplicate);
+ZEND_API int add_get_index_stringl(zval *arg, ulong idx, char *str, uint length, void **dest, int duplicate);
 
 ZEND_API int add_property_long_ex(zval *arg, char *key, uint key_len, long l TSRMLS_DC);
 ZEND_API int add_property_null_ex(zval *arg, char *key, uint key_len TSRMLS_DC);
@@ -335,6 +373,10 @@ ZEND_API int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci
 
 ZEND_API int zend_set_hash_symbol(zval *symbol, char *name, int name_length,
                                   zend_bool is_ref, int num_symbol_tables, ...);
+
+ZEND_API int zend_delete_global_variable(char *name, int name_len TSRMLS_DC);
+
+ZEND_API void zend_reset_all_cv(HashTable *symbol_table TSRMLS_DC);
 
 #define add_method(arg, key, method)	add_assoc_function((arg), (key), (method))
 
@@ -392,7 +434,7 @@ END_EXTERN_C()
 
 #define ZVAL_EMPTY_STRING(z) {	        \
 		(z)->value.str.len = 0;  	    \
-		(z)->value.str.val = empty_string; \
+		(z)->value.str.val = STR_EMPTY_ALLOC(); \
 		(z)->type = IS_STRING;		    \
 	}
 

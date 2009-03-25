@@ -2,7 +2,6 @@
 ZE2 iterators and break
 --SKIPIF--
 <?php if (version_compare(zend_version(), '2.0.0-dev', '<')) die('skip ZendEngine 2 needed'); ?>
-<?php if (!class_exists('Iterator')) print "skip interface iterator doesn't exist"; ?>
 --FILE--
 <?php
 class c_iter implements Iterator {
@@ -60,7 +59,7 @@ class c implements IteratorAggregate {
 
 $t = new c();
 
-foreach($t as $v) {
+foreach($t as $k => $v) {
 	foreach($t as $w) {
 		echo "double:$v:$w\n";
 		break;
@@ -83,7 +82,6 @@ c_iter::__construct
 c_iter::rewind
 c_iter::valid = true
 c_iter::current
-c_iter::key
 double:0:0
 c_iter::__destruct
 c_iter::next
@@ -95,7 +93,6 @@ c_iter::__construct
 c_iter::rewind
 c_iter::valid = true
 c_iter::current
-c_iter::key
 double:1:0
 c_iter::__destruct
 c_iter::next
@@ -107,7 +104,6 @@ c_iter::__construct
 c_iter::rewind
 c_iter::valid = true
 c_iter::current
-c_iter::key
 double:2:0
 c_iter::__destruct
 c_iter::next
