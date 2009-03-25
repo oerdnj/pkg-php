@@ -1,0 +1,14 @@
+EXPORTS
+	compress
+	compress2
+	deflate
+	deflateEnd
+	deflateInit2_
+	uncompress
+	inflateInit_
+	inflateInit2_
+	inflate
+	inflateEnd
+	crc32
+	inflateReset
+	

@@ -1,0 +1,15 @@
+
+typedef HashTable ircg_hash_table;
+#define ircg_hash_index_find zend_hash_index_find
+#define ircg_hash_find zend_hash_find
+#define ircg_hash_index_del zend_hash_index_del
+#define ircg_hash_update zend_hash_update
+#define ircg_hash_internal_pointer_reset_ex zend_hash_internal_pointer_reset_ex
+#define ircg_hash_get_current_key_ex zend_hash_get_current_key_ex
+#define ircg_hash_get_current_data_ex zend_hash_get_current_data_ex
+#define ircg_hash_add zend_hash_add
+#define ircg_hash_move_forward_ex zend_hash_move_forward_ex
+#define ircg_hash_init zend_hash_init
+#define ircg_hash_destroy zend_hash_destroy
+#define ircg_hash_index_update zend_hash_index_update
+#define ircg_hash_index_exists zend_hash_index_exists

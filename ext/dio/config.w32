@@ -1,0 +1,9 @@
+// $Id: config.w32,v 1.1 2004/06/09 19:27:36 fmk Exp $
+// vim:ft=javascript
+
+ARG_ENABLE("dio", "Enable the direct I/O support", "no");
+
+if (PHP_DIO != "no") {
+	EXTENSION("dio", "dio.c");
+	AC_DEFINE('HAVE_DIO', 1, 'dio support');
+}
