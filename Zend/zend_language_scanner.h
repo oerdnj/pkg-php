@@ -17,26 +17,33 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_language_scanner.h,v 1.19.2.1.2.3 2008/12/31 11:17:33 sebastian Exp $ */
+/* $Id: zend_language_scanner.h,v 1.19.2.1.2.1.2.5 2008/12/31 11:15:32 sebastian Exp $ */
 
 #ifndef ZEND_SCANNER_H
 #define ZEND_SCANNER_H
 
 typedef struct _zend_lex_state {
-	YY_BUFFER_STATE buffer_state;
-	int state;
+	unsigned int yy_leng;
+	unsigned char *yy_start;
+	unsigned char *yy_text;
+	unsigned char *yy_cursor;
+	unsigned char *yy_marker;
+	unsigned char *yy_limit;
+	int yy_state;
+	zend_stack state_stack;
+
 	zend_file_handle *in;
 	uint lineno;
 	char *filename;
 
 #ifdef ZEND_MULTIBYTE
 	/* original (unfiltered) script */
-	char *script_org;
-	int script_org_size;
+	unsigned char *script_org;
+	size_t script_org_size;
 
 	/* filtered script */
-	char *script_filtered;
-	int script_filtered_size;
+	unsigned char *script_filtered;
+	size_t script_filtered_size;
 
 	/* input/ouput filters */
 	zend_encoding_filter input_filter;
@@ -47,7 +54,6 @@ typedef struct _zend_lex_state {
 } zend_lex_state;
 
 
-void zend_fatal_scanner_error(char *);
 BEGIN_EXTERN_C()
 int zend_compare_file_handles(zend_file_handle *fh1, zend_file_handle *fh2);
 ZEND_API void zend_save_lexical_state(zend_lex_state *lex_state TSRMLS_DC);

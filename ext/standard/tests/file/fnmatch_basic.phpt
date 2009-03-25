@@ -2,8 +2,8 @@
 Test fnmatch() function: Basic functionality
 --SKIPIF--
 <?php
-if( (stristr(PHP_OS, "Mac")) || (stristr(PHP_OS, "Win")) )
-  die("skip do not run on MacOS/Windows");
+if (!function_exists('fnmatch'))
+    die("skip fnmatch() function is not available");
 ?>
 --FILE--
 <?php
@@ -31,7 +31,7 @@ var_dump( fnmatch(NULL, NULL) );
 
 echo "\n*** Done ***\n";
 ?>
---EXPECTF--
+--EXPECT--
 *** Testing fnmatch() with file ***
 bool(true)
 bool(true)

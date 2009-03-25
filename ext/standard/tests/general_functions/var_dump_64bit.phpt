@@ -578,13 +578,13 @@ object(object_class)#6 (7) {
   int(50)
   ["public_var1"]=>
   int(10)
-  ["private_var1:private"]=>
+  ["private_var1":"object_class":private]=>
   int(20)
-  ["private_var2:private"]=>
+  ["private_var2":"object_class":private]=>
   int(21)
-  ["protected_var1:protected"]=>
+  ["protected_var1":protected]=>
   string(8) "string_1"
-  ["protected_var2:protected"]=>
+  ["protected_var2":protected]=>
   string(8) "string_2"
   ["public_var2"]=>
   int(11)
@@ -602,13 +602,13 @@ object(contains_object_class)#8 (7) {
     int(50)
     ["public_var1"]=>
     int(10)
-    ["private_var1:private"]=>
+    ["private_var1":"object_class":private]=>
     int(20)
-    ["private_var2:private"]=>
+    ["private_var2":"object_class":private]=>
     int(21)
-    ["protected_var1:protected"]=>
+    ["protected_var1":protected]=>
     string(8) "string_1"
-    ["protected_var2:protected"]=>
+    ["protected_var2":protected]=>
     string(8) "string_2"
     ["public_var2"]=>
     int(11)
@@ -619,47 +619,47 @@ object(contains_object_class)#8 (7) {
     int(50)
     ["public_var1"]=>
     int(10)
-    ["private_var1:private"]=>
+    ["private_var1":"object_class":private]=>
     int(20)
-    ["private_var2:private"]=>
+    ["private_var2":"object_class":private]=>
     int(21)
-    ["protected_var1:protected"]=>
+    ["protected_var1":protected]=>
     string(8) "string_1"
-    ["protected_var2:protected"]=>
+    ["protected_var2":protected]=>
     string(8) "string_2"
     ["public_var2"]=>
     int(11)
   }
-  ["class_object3:private"]=>
+  ["class_object3":"contains_object_class":private]=>
   object(object_class)#9 (7) {
     ["value"]=>
     int(50)
     ["public_var1"]=>
     int(10)
-    ["private_var1:private"]=>
+    ["private_var1":"object_class":private]=>
     int(20)
-    ["private_var2:private"]=>
+    ["private_var2":"object_class":private]=>
     int(21)
-    ["protected_var1:protected"]=>
+    ["protected_var1":protected]=>
     string(8) "string_1"
-    ["protected_var2:protected"]=>
+    ["protected_var2":protected]=>
     string(8) "string_2"
     ["public_var2"]=>
     int(11)
   }
-  ["class_object4:protected"]=>
+  ["class_object4":protected]=>
   object(object_class)#10 (7) {
     ["value"]=>
     int(50)
     ["public_var1"]=>
     int(10)
-    ["private_var1:private"]=>
+    ["private_var1":"object_class":private]=>
     int(20)
-    ["private_var2:private"]=>
+    ["private_var2":"object_class":private]=>
     int(21)
-    ["protected_var1:protected"]=>
+    ["protected_var1":protected]=>
     string(8) "string_1"
-    ["protected_var2:protected"]=>
+    ["protected_var2":protected]=>
     string(8) "string_2"
     ["public_var2"]=>
     int(11)
@@ -677,13 +677,13 @@ object(contains_object_class)#8 (7) {
       int(50)
       ["public_var1"]=>
       int(10)
-      ["private_var1:private"]=>
+      ["private_var1":"object_class":private]=>
       int(20)
-      ["private_var2:private"]=>
+      ["private_var2":"object_class":private]=>
       int(21)
-      ["protected_var1:protected"]=>
+      ["protected_var1":protected]=>
       string(8) "string_1"
-      ["protected_var2:protected"]=>
+      ["protected_var2":protected]=>
       string(8) "string_2"
       ["public_var2"]=>
       int(11)
@@ -694,47 +694,47 @@ object(contains_object_class)#8 (7) {
       int(50)
       ["public_var1"]=>
       int(10)
-      ["private_var1:private"]=>
+      ["private_var1":"object_class":private]=>
       int(20)
-      ["private_var2:private"]=>
+      ["private_var2":"object_class":private]=>
       int(21)
-      ["protected_var1:protected"]=>
+      ["protected_var1":protected]=>
       string(8) "string_1"
-      ["protected_var2:protected"]=>
+      ["protected_var2":protected]=>
       string(8) "string_2"
       ["public_var2"]=>
       int(11)
     }
-    ["class_object3:private"]=>
+    ["class_object3":"contains_object_class":private]=>
     object(object_class)#9 (7) {
       ["value"]=>
       int(50)
       ["public_var1"]=>
       int(10)
-      ["private_var1:private"]=>
+      ["private_var1":"object_class":private]=>
       int(20)
-      ["private_var2:private"]=>
+      ["private_var2":"object_class":private]=>
       int(21)
-      ["protected_var1:protected"]=>
+      ["protected_var1":protected]=>
       string(8) "string_1"
-      ["protected_var2:protected"]=>
+      ["protected_var2":protected]=>
       string(8) "string_2"
       ["public_var2"]=>
       int(11)
     }
-    ["class_object4:protected"]=>
+    ["class_object4":protected]=>
     object(object_class)#10 (7) {
       ["value"]=>
       int(50)
       ["public_var1"]=>
       int(10)
-      ["private_var1:private"]=>
+      ["private_var1":"object_class":private]=>
       int(20)
-      ["private_var2:private"]=>
+      ["private_var2":"object_class":private]=>
       int(21)
-      ["protected_var1:protected"]=>
+      ["protected_var1":protected]=>
       string(8) "string_1"
-      ["protected_var2:protected"]=>
+      ["protected_var2":protected]=>
       string(8) "string_2"
       ["public_var2"]=>
       int(11)
@@ -756,13 +756,13 @@ object(contains_object_class)#1 (7) {
     int(50)
     ["public_var1"]=>
     int(10)
-    ["private_var1:private"]=>
+    ["private_var1":"object_class":private]=>
     int(20)
-    ["private_var2:private"]=>
+    ["private_var2":"object_class":private]=>
     int(21)
-    ["protected_var1:protected"]=>
+    ["protected_var1":protected]=>
     string(8) "string_1"
-    ["protected_var2:protected"]=>
+    ["protected_var2":protected]=>
     string(8) "string_2"
     ["public_var2"]=>
     int(11)
@@ -773,47 +773,47 @@ object(contains_object_class)#1 (7) {
     int(50)
     ["public_var1"]=>
     int(10)
-    ["private_var1:private"]=>
+    ["private_var1":"object_class":private]=>
     int(20)
-    ["private_var2:private"]=>
+    ["private_var2":"object_class":private]=>
     int(21)
-    ["protected_var1:protected"]=>
+    ["protected_var1":protected]=>
     string(8) "string_1"
-    ["protected_var2:protected"]=>
+    ["protected_var2":protected]=>
     string(8) "string_2"
     ["public_var2"]=>
     int(11)
   }
-  ["class_object3:private"]=>
+  ["class_object3":"contains_object_class":private]=>
   object(object_class)#2 (7) {
     ["value"]=>
     int(50)
     ["public_var1"]=>
     int(10)
-    ["private_var1:private"]=>
+    ["private_var1":"object_class":private]=>
     int(20)
-    ["private_var2:private"]=>
+    ["private_var2":"object_class":private]=>
     int(21)
-    ["protected_var1:protected"]=>
+    ["protected_var1":protected]=>
     string(8) "string_1"
-    ["protected_var2:protected"]=>
+    ["protected_var2":protected]=>
     string(8) "string_2"
     ["public_var2"]=>
     int(11)
   }
-  ["class_object4:protected"]=>
+  ["class_object4":protected]=>
   object(object_class)#3 (7) {
     ["value"]=>
     int(50)
     ["public_var1"]=>
     int(10)
-    ["private_var1:private"]=>
+    ["private_var1":"object_class":private]=>
     int(20)
-    ["private_var2:private"]=>
+    ["private_var2":"object_class":private]=>
     int(21)
-    ["protected_var1:protected"]=>
+    ["protected_var1":protected]=>
     string(8) "string_1"
-    ["protected_var2:protected"]=>
+    ["protected_var2":protected]=>
     string(8) "string_2"
     ["public_var2"]=>
     int(11)
@@ -831,13 +831,13 @@ object(contains_object_class)#1 (7) {
       int(50)
       ["public_var1"]=>
       int(10)
-      ["private_var1:private"]=>
+      ["private_var1":"object_class":private]=>
       int(20)
-      ["private_var2:private"]=>
+      ["private_var2":"object_class":private]=>
       int(21)
-      ["protected_var1:protected"]=>
+      ["protected_var1":protected]=>
       string(8) "string_1"
-      ["protected_var2:protected"]=>
+      ["protected_var2":protected]=>
       string(8) "string_2"
       ["public_var2"]=>
       int(11)
@@ -848,47 +848,47 @@ object(contains_object_class)#1 (7) {
       int(50)
       ["public_var1"]=>
       int(10)
-      ["private_var1:private"]=>
+      ["private_var1":"object_class":private]=>
       int(20)
-      ["private_var2:private"]=>
+      ["private_var2":"object_class":private]=>
       int(21)
-      ["protected_var1:protected"]=>
+      ["protected_var1":protected]=>
       string(8) "string_1"
-      ["protected_var2:protected"]=>
+      ["protected_var2":protected]=>
       string(8) "string_2"
       ["public_var2"]=>
       int(11)
     }
-    ["class_object3:private"]=>
+    ["class_object3":"contains_object_class":private]=>
     object(object_class)#2 (7) {
       ["value"]=>
       int(50)
       ["public_var1"]=>
       int(10)
-      ["private_var1:private"]=>
+      ["private_var1":"object_class":private]=>
       int(20)
-      ["private_var2:private"]=>
+      ["private_var2":"object_class":private]=>
       int(21)
-      ["protected_var1:protected"]=>
+      ["protected_var1":protected]=>
       string(8) "string_1"
-      ["protected_var2:protected"]=>
+      ["protected_var2":protected]=>
       string(8) "string_2"
       ["public_var2"]=>
       int(11)
     }
-    ["class_object4:protected"]=>
+    ["class_object4":protected]=>
     object(object_class)#3 (7) {
       ["value"]=>
       int(50)
       ["public_var1"]=>
       int(10)
-      ["private_var1:private"]=>
+      ["private_var1":"object_class":private]=>
       int(20)
-      ["private_var2:private"]=>
+      ["private_var2":"object_class":private]=>
       int(21)
-      ["protected_var1:protected"]=>
+      ["protected_var1":protected]=>
       string(8) "string_1"
-      ["protected_var2:protected"]=>
+      ["protected_var2":protected]=>
       string(8) "string_2"
       ["public_var2"]=>
       int(11)
@@ -906,13 +906,13 @@ object(object_class)#2 (7) {
   int(50)
   ["public_var1"]=>
   int(10)
-  ["private_var1:private"]=>
+  ["private_var1":"object_class":private]=>
   int(20)
-  ["private_var2:private"]=>
+  ["private_var2":"object_class":private]=>
   int(21)
-  ["protected_var1:protected"]=>
+  ["protected_var1":protected]=>
   string(8) "string_1"
-  ["protected_var2:protected"]=>
+  ["protected_var2":protected]=>
   string(8) "string_2"
   ["public_var2"]=>
   int(11)
@@ -923,13 +923,13 @@ object(object_class)#3 (7) {
   int(50)
   ["public_var1"]=>
   int(10)
-  ["private_var1:private"]=>
+  ["private_var1":"object_class":private]=>
   int(20)
-  ["private_var2:private"]=>
+  ["private_var2":"object_class":private]=>
   int(21)
-  ["protected_var1:protected"]=>
+  ["protected_var1":protected]=>
   string(8) "string_1"
-  ["protected_var2:protected"]=>
+  ["protected_var2":protected]=>
   string(8) "string_2"
   ["public_var2"]=>
   int(11)
@@ -943,13 +943,13 @@ object(object_class)#5 (7) {
   int(50)
   ["public_var1"]=>
   int(10)
-  ["private_var1:private"]=>
+  ["private_var1":"object_class":private]=>
   int(20)
-  ["private_var2:private"]=>
+  ["private_var2":"object_class":private]=>
   int(21)
-  ["protected_var1:protected"]=>
+  ["protected_var1":protected]=>
   string(8) "string_1"
-  ["protected_var2:protected"]=>
+  ["protected_var2":protected]=>
   string(8) "string_2"
   ["public_var2"]=>
   int(11)
@@ -963,13 +963,13 @@ object(object_class)#13 (8) {
   int(50)
   ["public_var1"]=>
   int(10)
-  ["private_var1:private"]=>
+  ["private_var1":"object_class":private]=>
   int(20)
-  ["private_var2:private"]=>
+  ["private_var2":"object_class":private]=>
   int(21)
-  ["protected_var1:protected"]=>
+  ["protected_var1":protected]=>
   string(8) "string_1"
-  ["protected_var2:protected"]=>
+  ["protected_var2":protected]=>
   string(8) "string_2"
   ["public_var2"]=>
   int(11)
@@ -979,13 +979,13 @@ object(object_class)#13 (8) {
     int(50)
     ["public_var1"]=>
     int(10)
-    ["private_var1:private"]=>
+    ["private_var1":"object_class":private]=>
     int(20)
-    ["private_var2:private"]=>
+    ["private_var2":"object_class":private]=>
     int(21)
-    ["protected_var1:protected"]=>
+    ["protected_var1":protected]=>
     string(8) "string_1"
-    ["protected_var2:protected"]=>
+    ["protected_var2":protected]=>
     string(8) "string_2"
     ["public_var2"]=>
     int(11)
@@ -995,13 +995,13 @@ object(object_class)#13 (8) {
       int(50)
       ["public_var1"]=>
       int(10)
-      ["private_var1:private"]=>
+      ["private_var1":"object_class":private]=>
       int(20)
-      ["private_var2:private"]=>
+      ["private_var2":"object_class":private]=>
       int(21)
-      ["protected_var1:protected"]=>
+      ["protected_var1":protected]=>
       string(8) "string_1"
-      ["protected_var2:protected"]=>
+      ["protected_var2":protected]=>
       string(8) "string_2"
       ["public_var2"]=>
       int(11)
@@ -1011,13 +1011,13 @@ object(object_class)#13 (8) {
         int(50)
         ["public_var1"]=>
         int(10)
-        ["private_var1:private"]=>
+        ["private_var1":"object_class":private]=>
         int(20)
-        ["private_var2:private"]=>
+        ["private_var2":"object_class":private]=>
         int(21)
-        ["protected_var1:protected"]=>
+        ["protected_var1":protected]=>
         string(8) "string_1"
-        ["protected_var2:protected"]=>
+        ["protected_var2":protected]=>
         string(8) "string_2"
         ["public_var2"]=>
         int(11)
@@ -1424,13 +1424,13 @@ array(9) {
     int(50)
     ["public_var1"]=>
     int(10)
-    ["private_var1:private"]=>
+    ["private_var1":"object_class":private]=>
     int(20)
-    ["private_var2:private"]=>
+    ["private_var2":"object_class":private]=>
     int(21)
-    ["protected_var1:protected"]=>
+    ["protected_var1":protected]=>
     string(8) "string_1"
-    ["protected_var2:protected"]=>
+    ["protected_var2":protected]=>
     string(8) "string_2"
     ["public_var2"]=>
     int(11)
@@ -1448,13 +1448,13 @@ array(9) {
       int(50)
       ["public_var1"]=>
       int(10)
-      ["private_var1:private"]=>
+      ["private_var1":"object_class":private]=>
       int(20)
-      ["private_var2:private"]=>
+      ["private_var2":"object_class":private]=>
       int(21)
-      ["protected_var1:protected"]=>
+      ["protected_var1":protected]=>
       string(8) "string_1"
-      ["protected_var2:protected"]=>
+      ["protected_var2":protected]=>
       string(8) "string_2"
       ["public_var2"]=>
       int(11)
@@ -1465,47 +1465,47 @@ array(9) {
       int(50)
       ["public_var1"]=>
       int(10)
-      ["private_var1:private"]=>
+      ["private_var1":"object_class":private]=>
       int(20)
-      ["private_var2:private"]=>
+      ["private_var2":"object_class":private]=>
       int(21)
-      ["protected_var1:protected"]=>
+      ["protected_var1":protected]=>
       string(8) "string_1"
-      ["protected_var2:protected"]=>
+      ["protected_var2":protected]=>
       string(8) "string_2"
       ["public_var2"]=>
       int(11)
     }
-    ["class_object3:private"]=>
+    ["class_object3":"contains_object_class":private]=>
     object(object_class)#9 (7) {
       ["value"]=>
       int(50)
       ["public_var1"]=>
       int(10)
-      ["private_var1:private"]=>
+      ["private_var1":"object_class":private]=>
       int(20)
-      ["private_var2:private"]=>
+      ["private_var2":"object_class":private]=>
       int(21)
-      ["protected_var1:protected"]=>
+      ["protected_var1":protected]=>
       string(8) "string_1"
-      ["protected_var2:protected"]=>
+      ["protected_var2":protected]=>
       string(8) "string_2"
       ["public_var2"]=>
       int(11)
     }
-    ["class_object4:protected"]=>
+    ["class_object4":protected]=>
     object(object_class)#10 (7) {
       ["value"]=>
       int(50)
       ["public_var1"]=>
       int(10)
-      ["private_var1:private"]=>
+      ["private_var1":"object_class":private]=>
       int(20)
-      ["private_var2:private"]=>
+      ["private_var2":"object_class":private]=>
       int(21)
-      ["protected_var1:protected"]=>
+      ["protected_var1":protected]=>
       string(8) "string_1"
-      ["protected_var2:protected"]=>
+      ["protected_var2":protected]=>
       string(8) "string_2"
       ["public_var2"]=>
       int(11)
@@ -1523,13 +1523,13 @@ array(9) {
         int(50)
         ["public_var1"]=>
         int(10)
-        ["private_var1:private"]=>
+        ["private_var1":"object_class":private]=>
         int(20)
-        ["private_var2:private"]=>
+        ["private_var2":"object_class":private]=>
         int(21)
-        ["protected_var1:protected"]=>
+        ["protected_var1":protected]=>
         string(8) "string_1"
-        ["protected_var2:protected"]=>
+        ["protected_var2":protected]=>
         string(8) "string_2"
         ["public_var2"]=>
         int(11)
@@ -1540,47 +1540,47 @@ array(9) {
         int(50)
         ["public_var1"]=>
         int(10)
-        ["private_var1:private"]=>
+        ["private_var1":"object_class":private]=>
         int(20)
-        ["private_var2:private"]=>
+        ["private_var2":"object_class":private]=>
         int(21)
-        ["protected_var1:protected"]=>
+        ["protected_var1":protected]=>
         string(8) "string_1"
-        ["protected_var2:protected"]=>
+        ["protected_var2":protected]=>
         string(8) "string_2"
         ["public_var2"]=>
         int(11)
       }
-      ["class_object3:private"]=>
+      ["class_object3":"contains_object_class":private]=>
       object(object_class)#9 (7) {
         ["value"]=>
         int(50)
         ["public_var1"]=>
         int(10)
-        ["private_var1:private"]=>
+        ["private_var1":"object_class":private]=>
         int(20)
-        ["private_var2:private"]=>
+        ["private_var2":"object_class":private]=>
         int(21)
-        ["protected_var1:protected"]=>
+        ["protected_var1":protected]=>
         string(8) "string_1"
-        ["protected_var2:protected"]=>
+        ["protected_var2":protected]=>
         string(8) "string_2"
         ["public_var2"]=>
         int(11)
       }
-      ["class_object4:protected"]=>
+      ["class_object4":protected]=>
       object(object_class)#10 (7) {
         ["value"]=>
         int(50)
         ["public_var1"]=>
         int(10)
-        ["private_var1:private"]=>
+        ["private_var1":"object_class":private]=>
         int(20)
-        ["private_var2:private"]=>
+        ["private_var2":"object_class":private]=>
         int(21)
-        ["protected_var1:protected"]=>
+        ["protected_var1":protected]=>
         string(8) "string_1"
-        ["protected_var2:protected"]=>
+        ["protected_var2":protected]=>
         string(8) "string_2"
         ["public_var2"]=>
         int(11)
@@ -1602,13 +1602,13 @@ array(9) {
       int(50)
       ["public_var1"]=>
       int(10)
-      ["private_var1:private"]=>
+      ["private_var1":"object_class":private]=>
       int(20)
-      ["private_var2:private"]=>
+      ["private_var2":"object_class":private]=>
       int(21)
-      ["protected_var1:protected"]=>
+      ["protected_var1":protected]=>
       string(8) "string_1"
-      ["protected_var2:protected"]=>
+      ["protected_var2":protected]=>
       string(8) "string_2"
       ["public_var2"]=>
       int(11)
@@ -1619,47 +1619,47 @@ array(9) {
       int(50)
       ["public_var1"]=>
       int(10)
-      ["private_var1:private"]=>
+      ["private_var1":"object_class":private]=>
       int(20)
-      ["private_var2:private"]=>
+      ["private_var2":"object_class":private]=>
       int(21)
-      ["protected_var1:protected"]=>
+      ["protected_var1":protected]=>
       string(8) "string_1"
-      ["protected_var2:protected"]=>
+      ["protected_var2":protected]=>
       string(8) "string_2"
       ["public_var2"]=>
       int(11)
     }
-    ["class_object3:private"]=>
+    ["class_object3":"contains_object_class":private]=>
     object(object_class)#2 (7) {
       ["value"]=>
       int(50)
       ["public_var1"]=>
       int(10)
-      ["private_var1:private"]=>
+      ["private_var1":"object_class":private]=>
       int(20)
-      ["private_var2:private"]=>
+      ["private_var2":"object_class":private]=>
       int(21)
-      ["protected_var1:protected"]=>
+      ["protected_var1":protected]=>
       string(8) "string_1"
-      ["protected_var2:protected"]=>
+      ["protected_var2":protected]=>
       string(8) "string_2"
       ["public_var2"]=>
       int(11)
     }
-    ["class_object4:protected"]=>
+    ["class_object4":protected]=>
     object(object_class)#3 (7) {
       ["value"]=>
       int(50)
       ["public_var1"]=>
       int(10)
-      ["private_var1:private"]=>
+      ["private_var1":"object_class":private]=>
       int(20)
-      ["private_var2:private"]=>
+      ["private_var2":"object_class":private]=>
       int(21)
-      ["protected_var1:protected"]=>
+      ["protected_var1":protected]=>
       string(8) "string_1"
-      ["protected_var2:protected"]=>
+      ["protected_var2":protected]=>
       string(8) "string_2"
       ["public_var2"]=>
       int(11)
@@ -1677,13 +1677,13 @@ array(9) {
         int(50)
         ["public_var1"]=>
         int(10)
-        ["private_var1:private"]=>
+        ["private_var1":"object_class":private]=>
         int(20)
-        ["private_var2:private"]=>
+        ["private_var2":"object_class":private]=>
         int(21)
-        ["protected_var1:protected"]=>
+        ["protected_var1":protected]=>
         string(8) "string_1"
-        ["protected_var2:protected"]=>
+        ["protected_var2":protected]=>
         string(8) "string_2"
         ["public_var2"]=>
         int(11)
@@ -1694,47 +1694,47 @@ array(9) {
         int(50)
         ["public_var1"]=>
         int(10)
-        ["private_var1:private"]=>
+        ["private_var1":"object_class":private]=>
         int(20)
-        ["private_var2:private"]=>
+        ["private_var2":"object_class":private]=>
         int(21)
-        ["protected_var1:protected"]=>
+        ["protected_var1":protected]=>
         string(8) "string_1"
-        ["protected_var2:protected"]=>
+        ["protected_var2":protected]=>
         string(8) "string_2"
         ["public_var2"]=>
         int(11)
       }
-      ["class_object3:private"]=>
+      ["class_object3":"contains_object_class":private]=>
       object(object_class)#2 (7) {
         ["value"]=>
         int(50)
         ["public_var1"]=>
         int(10)
-        ["private_var1:private"]=>
+        ["private_var1":"object_class":private]=>
         int(20)
-        ["private_var2:private"]=>
+        ["private_var2":"object_class":private]=>
         int(21)
-        ["protected_var1:protected"]=>
+        ["protected_var1":protected]=>
         string(8) "string_1"
-        ["protected_var2:protected"]=>
+        ["protected_var2":protected]=>
         string(8) "string_2"
         ["public_var2"]=>
         int(11)
       }
-      ["class_object4:protected"]=>
+      ["class_object4":protected]=>
       object(object_class)#3 (7) {
         ["value"]=>
         int(50)
         ["public_var1"]=>
         int(10)
-        ["private_var1:private"]=>
+        ["private_var1":"object_class":private]=>
         int(20)
-        ["private_var2:private"]=>
+        ["private_var2":"object_class":private]=>
         int(21)
-        ["protected_var1:protected"]=>
+        ["protected_var1":protected]=>
         string(8) "string_1"
-        ["protected_var2:protected"]=>
+        ["protected_var2":protected]=>
         string(8) "string_2"
         ["public_var2"]=>
         int(11)
@@ -1752,13 +1752,13 @@ array(9) {
     int(50)
     ["public_var1"]=>
     int(10)
-    ["private_var1:private"]=>
+    ["private_var1":"object_class":private]=>
     int(20)
-    ["private_var2:private"]=>
+    ["private_var2":"object_class":private]=>
     int(21)
-    ["protected_var1:protected"]=>
+    ["protected_var1":protected]=>
     string(8) "string_1"
-    ["protected_var2:protected"]=>
+    ["protected_var2":protected]=>
     string(8) "string_2"
     ["public_var2"]=>
     int(11)
@@ -1769,13 +1769,13 @@ array(9) {
     int(50)
     ["public_var1"]=>
     int(10)
-    ["private_var1:private"]=>
+    ["private_var1":"object_class":private]=>
     int(20)
-    ["private_var2:private"]=>
+    ["private_var2":"object_class":private]=>
     int(21)
-    ["protected_var1:protected"]=>
+    ["protected_var1":protected]=>
     string(8) "string_1"
-    ["protected_var2:protected"]=>
+    ["protected_var2":protected]=>
     string(8) "string_2"
     ["public_var2"]=>
     int(11)
@@ -1789,13 +1789,13 @@ array(9) {
     int(50)
     ["public_var1"]=>
     int(10)
-    ["private_var1:private"]=>
+    ["private_var1":"object_class":private]=>
     int(20)
-    ["private_var2:private"]=>
+    ["private_var2":"object_class":private]=>
     int(21)
-    ["protected_var1:protected"]=>
+    ["protected_var1":protected]=>
     string(8) "string_1"
-    ["protected_var2:protected"]=>
+    ["protected_var2":protected]=>
     string(8) "string_2"
     ["public_var2"]=>
     int(11)
@@ -1907,5 +1907,5 @@ string(9) " lambda_2"
 
 *** Testing error conditions ***
 
-Warning: Wrong parameter count for var_dump() in %s on line %d
+Warning: var_dump() expects at least 1 parameter, 0 given in %s on line %d
 Done

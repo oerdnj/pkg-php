@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
  
-/* $Id: bz2.c,v 1.14.2.3.2.16 2008/12/31 11:17:35 sebastian Exp $ */
+/* $Id: bz2.c,v 1.14.2.3.2.12.2.11 2008/12/31 11:15:35 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -52,41 +52,34 @@ static PHP_FUNCTION(bzcompress);
 static PHP_FUNCTION(bzdecompress);
 
 /* {{{ arginfo */
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_bzread, 0, 0, 1)
 	ZEND_ARG_INFO(0, bz)
 	ZEND_ARG_INFO(0, length)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO(arginfo_bzopen, 0)
 	ZEND_ARG_INFO(0, file)
 	ZEND_ARG_INFO(0, mode)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO(arginfo_bzerrno, 0)
 	ZEND_ARG_INFO(0, bz)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO(arginfo_bzerrstr, 0)
 	ZEND_ARG_INFO(0, bz)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO(arginfo_bzerror, 0)
 	ZEND_ARG_INFO(0, bz)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_bzcompress, 0, 0, 2)
 	ZEND_ARG_INFO(0, source)
 	ZEND_ARG_INFO(0, blocksize)
 	ZEND_ARG_INFO(0, workfactor)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_bzdecompress, 0, 0, 1)
 	ZEND_ARG_INFO(0, source)
 	ZEND_ARG_INFO(0, small)
@@ -94,7 +87,7 @@ ZEND_END_ARG_INFO()
 
 /* }}} */
 
-static zend_function_entry bz2_functions[] = {
+static const zend_function_entry bz2_functions[] = {
 	PHP_FE(bzopen,       arginfo_bzopen)
 	PHP_FE(bzread,       arginfo_bzread)
 	PHP_FALIAS(bzwrite,   fwrite,		NULL)
@@ -365,23 +358,24 @@ static PHP_FUNCTION(bzread)
    Opens a new BZip2 stream */
 static PHP_FUNCTION(bzopen)
 {
-	zval    **file,   /* The file to open */
-	        **mode;   /* The mode to open the stream with */
+	zval    **file;   /* The file to open */
+	char     *mode;   /* The mode to open the stream with */
+	int      mode_len;
+
 	BZFILE   *bz;     /* The compressed file stream */
 	php_stream *stream = NULL;
 	
-	if (ZEND_NUM_ARGS() != 2 || zend_get_parameters_ex(2, &file, &mode) == FAILURE) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "Zs", &file, &mode, &mode_len) == FAILURE) {
+		return;
 	}
-	convert_to_string_ex(mode);
 
-	if (Z_STRLEN_PP(mode) != 1 || (Z_STRVAL_PP(mode)[0] != 'r' && Z_STRVAL_PP(mode)[0] != 'w')) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "'%s' is not a valid mode for bzopen(). Only 'w' and 'r' are supported.", Z_STRVAL_PP(mode));
+	if (mode_len != 1 || (mode[0] != 'r' && mode[0] != 'w')) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "'%s' is not a valid mode for bzopen(). Only 'w' and 'r' are supported.", mode);
 		RETURN_FALSE;
 	}
 
 	/* If it's not a resource its a string containing the filename to open */
-	if (Z_TYPE_PP(file) != IS_RESOURCE) {
+	if (Z_TYPE_PP(file) == IS_STRING) {
 		convert_to_string_ex(file);
 
 		if (Z_STRLEN_PP(file) == 0) {
@@ -391,10 +385,10 @@ static PHP_FUNCTION(bzopen)
 
 		stream = php_stream_bz2open(NULL,
 									Z_STRVAL_PP(file), 
-									Z_STRVAL_PP(mode), 
+									mode, 
 									ENFORCE_SAFE_MODE | REPORT_ERRORS, 
 									NULL);
-	} else {
+	} else if (Z_TYPE_PP(file) == IS_RESOURCE) {
 		/* If it is a resource, than its a stream resource */
 		int fd;
 		int stream_mode_len;
@@ -410,17 +404,17 @@ static PHP_FUNCTION(bzopen)
 			RETURN_FALSE;
 		}
 
-		switch(Z_STRVAL_PP(mode)[0]) {
+		switch(mode[0]) {
 			case 'r':
 				/* only "r" and "rb" are supported */
-				if (stream->mode[0] != Z_STRVAL_PP(mode)[0] && !(stream_mode_len == 2 && stream->mode[1] != Z_STRVAL_PP(mode)[0])) {
+				if (stream->mode[0] != mode[0] && !(stream_mode_len == 2 && stream->mode[1] != mode[0])) {
 					php_error_docref(NULL TSRMLS_CC, E_WARNING, "cannot read from a stream opened in write only mode");
 					RETURN_FALSE;
 				}
 				break;
 			case 'w':
 				/* support only "w"(b), "a"(b), "x"(b) */
-				if (stream->mode[0] != Z_STRVAL_PP(mode)[0] && !(stream_mode_len == 2 && stream->mode[1] != Z_STRVAL_PP(mode)[0])
+				if (stream->mode[0] != mode[0] && !(stream_mode_len == 2 && stream->mode[1] != mode[0])
 					&& stream->mode[0] != 'a' && !(stream_mode_len == 2 && stream->mode[1] != 'a')
 					&& stream->mode[0] != 'x' && !(stream_mode_len == 2 && stream->mode[1] != 'x')) {
 					php_error_docref(NULL TSRMLS_CC, E_WARNING, "cannot write to a stream opened in read only mode");
@@ -436,9 +430,12 @@ static PHP_FUNCTION(bzopen)
 			RETURN_FALSE;
 		}
 		
-		bz = BZ2_bzdopen(fd, Z_STRVAL_PP(mode));
+		bz = BZ2_bzdopen(fd, mode);
 
-		stream = php_stream_bz2open_from_BZFILE(bz, Z_STRVAL_PP(mode), stream);
+		stream = php_stream_bz2open_from_BZFILE(bz, mode, stream);
+	} else {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "first parameter has to be string or file-resource");
+		RETURN_FALSE;
 	}
 
 	if (stream) {
@@ -477,47 +474,42 @@ static PHP_FUNCTION(bzerror)
    Compresses a string into BZip2 encoded data */
 static PHP_FUNCTION(bzcompress)
 {
-	zval            **source,          /* Source data to compress */
-	                **zblock_size,     /* Optional block size to use */
-					**zwork_factor;    /* Optional work factor to use */
+	char             *source;          /* Source data to compress */
+	long              zblock_size = 0; /* Optional block size to use */
+	long              zwork_factor = 0;/* Optional work factor to use */
 	char             *dest = NULL;     /* Destination to place the compressed data into */
 	int               error,           /* Error Container */
 					  block_size  = 4, /* Block size for compression algorithm */
 					  work_factor = 0, /* Work factor for compression algorithm */
 					  argc;            /* Argument count */
-	unsigned int      source_len,      /* Length of the source data */
-					  dest_len;        /* Length of the destination buffer */ 
-	
+	int               source_len;      /* Length of the source data */
+	unsigned int      dest_len;        /* Length of the destination buffer */ 
+
 	argc = ZEND_NUM_ARGS();
 
-	if (argc < 1 || argc > 3 || zend_get_parameters_ex(argc, &source, &zblock_size, &zwork_factor) == FAILURE) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|ll", &source, &source_len, &zblock_size, &zwork_factor) == FAILURE) {
+		return;
 	}
 
-	convert_to_string_ex(source);
-	
 	/* Assign them to easy to use variables, dest_len is initially the length of the data
 	   + .01 x length of data + 600 which is the largest size the results of the compression 
 	   could possibly be, at least that's what the libbz2 docs say (thanks to jeremy@nirvani.net 
 	   for pointing this out).  */
-	source_len = Z_STRLEN_PP(source);
-	dest_len   = Z_STRLEN_PP(source) + (0.01 * Z_STRLEN_PP(source)) + 600;
+	dest_len   = source_len + (0.01 * source_len) + 600;
 	
 	/* Allocate the destination buffer */
 	dest = emalloc(dest_len + 1);
 	
 	/* Handle the optional arguments */
 	if (argc > 1) {
-		convert_to_long_ex(zblock_size);
-		block_size = Z_LVAL_PP(zblock_size);
+		block_size = zblock_size;
 	}
 	
 	if (argc > 2) {
-		convert_to_long_ex(zwork_factor);
-		work_factor = Z_LVAL_PP(zwork_factor);
+		work_factor = zwork_factor;
 	}
 
-	error = BZ2_bzBuffToBuffCompress(dest, &dest_len, Z_STRVAL_PP(source), source_len, block_size, 0, work_factor);
+	error = BZ2_bzBuffToBuffCompress(dest, &dest_len, source, source_len, block_size, 0, work_factor);
 	if (error != BZ_OK) {
 		efree(dest);
 		RETURN_LONG(error);
@@ -589,17 +581,17 @@ static PHP_FUNCTION(bzdecompress)
    The central error handling interface, does the work for bzerrno, bzerrstr and bzerror */
 static void php_bz2_error(INTERNAL_FUNCTION_PARAMETERS, int opt)
 { 
-	zval        **bzp;     /* BZip2 Resource Pointer */
+	zval         *bzp;     /* BZip2 Resource Pointer */
 	php_stream   *stream;
 	const char   *errstr;  /* Error string */
 	int           errnum;  /* Error number */
 	struct php_bz2_stream_data_t *self;
 	
-	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &bzp) == FAILURE) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &bzp) == FAILURE) {
+		return;
 	}
 
-	php_stream_from_zval(stream, bzp);
+	php_stream_from_zval(stream, &bzp);
 
 	if (!php_stream_is(stream, PHP_STREAM_IS_BZIP2)) {
 		RETURN_FALSE;

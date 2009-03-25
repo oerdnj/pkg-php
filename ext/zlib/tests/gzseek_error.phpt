@@ -22,12 +22,12 @@ var_dump(gzseek());
 ===DONE===
 --EXPECTF--
 
-Warning: Wrong parameter count for gzseek() in %s on line %d
-NULL
+Warning: gzseek() expects at most 3 parameters, 4 given in %s on line %d
+bool(false)
 
-Warning: Wrong parameter count for gzseek() in %s on line %d
-NULL
+Warning: gzseek() expects at least 2 parameters, 1 given in %s on line %d
+bool(false)
 
-Warning: Wrong parameter count for gzseek() in %s on line %d
-NULL
+Warning: gzseek() expects at least 2 parameters, 0 given in %s on line %d
+bool(false)
 ===DONE===

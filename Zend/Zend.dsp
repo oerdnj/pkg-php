@@ -123,6 +123,10 @@ SOURCE=.\zend_builtin_functions.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\zend_closures.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\zend_compile.c
 # End Source File
 # Begin Source File
@@ -148,6 +152,10 @@ SOURCE=.\zend_execute_API.c
 # Begin Source File
 
 SOURCE=.\zend_extensions.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\zend_float.c
 # End Source File
 # Begin Source File
 

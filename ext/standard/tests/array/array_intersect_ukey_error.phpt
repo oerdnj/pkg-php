@@ -41,16 +41,16 @@ var_dump( array_intersect_ukey() );
 
 -- Testing array_intersect_ukey() function with more than expected no. of arguments --
 
-Warning: array_intersect_ukey(): Not a valid callback 10 in %s on line %d
+Warning: array_intersect_ukey() expects parameter 4 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 -- Testing array_intersect_ukey() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for array_intersect_ukey() in %s on line %d
+Warning: array_intersect_ukey(): at least 3 parameters are required, 2 given in %s on line %d
 NULL
 
 -- Testing array_intersect_ukey() function with no arguments --
 
-Warning: Wrong parameter count for array_intersect_ukey() in %s on line %d
+Warning: array_intersect_ukey(): at least 3 parameters are required, 0 given in %s on line %d
 NULL
 ===DONE===

@@ -77,82 +77,82 @@ echo "Done";
 *** Testing array_map() : unexpected values for 'callback' argument ***
 
 -- Iteration 1 --
-Warning: array_map(): The first argument, '0', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 -- Iteration 2 --
-Warning: array_map(): The first argument, '1', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 -- Iteration 3 --
-Warning: array_map(): The first argument, '12345', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 -- Iteration 4 --
-Warning: array_map(): The first argument, '-2345', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 -- Iteration 5 --
-Warning: array_map(): The first argument, '10.5', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 -- Iteration 6 --
-Warning: array_map(): The first argument, '-10.5', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 -- Iteration 7 --
-Warning: array_map(): The first argument, '123456789000', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 -- Iteration 8 --
-Warning: array_map(): The first argument, '1.23456789E-9', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 -- Iteration 9 --
-Warning: array_map(): The first argument, '0.5', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 -- Iteration 10 --
-Warning: array_map(): The first argument, '1', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 -- Iteration 11 --
-Warning: array_map(): The first argument, '', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 -- Iteration 12 --
-Warning: array_map(): The first argument, '1', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 -- Iteration 13 --
-Warning: array_map(): The first argument, '', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 -- Iteration 14 --
-Warning: array_map(): The first argument, '', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, function '' not found or invalid function name in %s on line %d
 NULL
 
 -- Iteration 15 --
-Warning: array_map(): The first argument, '', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, function '' not found or invalid function name in %s on line %d
 NULL
 
 -- Iteration 16 --
-Warning: array_map(): The first argument, 'Array', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, array must have exactly two members in %s on line %d
 NULL
 
 -- Iteration 17 --
-Warning: array_map(): The first argument, 'Array', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, first array member is not a valid class name or object in %s on line %d
 NULL
 
 -- Iteration 18 --
-Warning: array_map(): The first argument, 'Array', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, first array member is not a valid class name or object in %s on line %d
 NULL
 
 -- Iteration 19 --
-Warning: array_map(): The first argument, 'Class A object', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 -- Iteration 20 --
-Warning: array_map(): The first argument, 'Resource id #%d', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, no array or string given in %s on line %d
 NULL
 Done

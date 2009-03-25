@@ -87,7 +87,7 @@ for($index = 0; $index < count($to_arr); $index++) {
 fclose($file_handle);  //closing the file handle
 
 ?>
-===Done===
+===DONE===
 --EXPECTF--
 *** Testing strtr() function: with unexpected inputs for 'to' ***
 
@@ -111,18 +111,18 @@ string(6) "234101"
 
 -- Iteration 7 --
 
-Notice: Array to string conversion in %s on line %d
-string(6) "ay2Arr"
+Warning: strtr() expects parameter 3 to be string, array given in %s on line %d
+NULL
 
 -- Iteration 8 --
 
-Notice: Array to string conversion in %s on line %d
-string(6) "ay2Arr"
+Warning: strtr() expects parameter 3 to be string, array given in %s on line %d
+NULL
 
 -- Iteration 9 --
 
-Notice: Array to string conversion in %s on line %d
-string(6) "ay2Arr"
+Warning: strtr() expects parameter 3 to be string, array given in %s on line %d
+NULL
 
 -- Iteration 10 --
 string(6) "0121tm"
@@ -146,11 +146,13 @@ string(6) "012atm"
 string(6) "plesam"
 
 -- Iteration 17 --
-string(6) "ourRes"
+
+Warning: strtr() expects parameter 3 to be string, resource given in %s on line %d
+NULL
 
 -- Iteration 18 --
 string(6) "012atm"
 
 -- Iteration 19 --
 string(6) "012atm"
-===Done===
+===DONE===

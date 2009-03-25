@@ -12,7 +12,7 @@ if (substr(PHP_OS, 0, 3) == 'WIN') {
 
 $php = getenv('TEST_PHP_EXECUTABLE');
 
-$filename = dirname(__FILE__).'/021.tmp.php';
+$filename = __DIR__.'/021.tmp.php';
 
 $script = "#!$php -n\n".
           "ola\n".
@@ -29,7 +29,7 @@ echo "\nDone\n";
 ?>
 --CLEAN--
 <?php
-unlink(dirname(__FILE__).'/021.tmp.php');
+unlink(__DIR__.'/021.tmp.php');
 ?>
 --EXPECTF--
 ola

@@ -124,16 +124,24 @@ int(2570)
 int(2570)
 
 --empty array--
-int(2570)
+
+Warning: imagecolorallocate() expects parameter 2 to be long, array given in %s on line %d
+NULL
 
 --int indexed array--
-int(68106)
+
+Warning: imagecolorallocate() expects parameter 2 to be long, array given in %s on line %d
+NULL
 
 --associative array--
-int(68106)
+
+Warning: imagecolorallocate() expects parameter 2 to be long, array given in %s on line %d
+NULL
 
 --nested arrays--
-int(68106)
+
+Warning: imagecolorallocate() expects parameter 2 to be long, array given in %s on line %d
+NULL
 
 --uppercase NULL--
 int(2570)
@@ -154,32 +162,44 @@ int(68106)
 int(2570)
 
 --empty string DQ--
-int(2570)
+
+Warning: imagecolorallocate() expects parameter 2 to be long, string given in %s on line %d
+NULL
 
 --empty string SQ--
-int(2570)
+
+Warning: imagecolorallocate() expects parameter 2 to be long, string given in %s on line %d
+NULL
 
 --string DQ--
-int(2570)
+
+Warning: imagecolorallocate() expects parameter 2 to be long, string given in %s on line %d
+NULL
 
 --string SQ--
-int(2570)
+
+Warning: imagecolorallocate() expects parameter 2 to be long, string given in %s on line %d
+NULL
 
 --mixed case string--
-int(2570)
+
+Warning: imagecolorallocate() expects parameter 2 to be long, string given in %s on line %d
+NULL
 
 --heredoc--
-int(2570)
+
+Warning: imagecolorallocate() expects parameter 2 to be long, string given in %s on line %d
+NULL
 
 --instance of classWithToString--
 
-Notice: Object of class classWithToString could not be converted to int in %s on line %d
-int(68106)
+Warning: imagecolorallocate() expects parameter 2 to be long, object given in %s on line %d
+NULL
 
 --instance of classWithoutToString--
 
-Notice: Object of class classWithoutToString could not be converted to int in %s on line %d
-int(68106)
+Warning: imagecolorallocate() expects parameter 2 to be long, object given in %s on line %d
+NULL
 
 --undefined var--
 int(2570)
@@ -188,5 +208,7 @@ int(2570)
 int(2570)
 
 --file resource--
-int(330250)
+
+Warning: imagecolorallocate() expects parameter 2 to be long, resource given in %s on line %d
+NULL
 ===DONE===

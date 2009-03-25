@@ -12,7 +12,7 @@ class C {
 
 class UsesMagic extends ArrayObject {
 	
-	public $b = "This should never show up";
+	public $b = "This should not be in the storage";
 
 	function __get($name) { 
 		$args = func_get_args();
@@ -73,30 +73,35 @@ var_dump($ao);
 --EXPECTF--
 --> Write existent, non-existent and dynamic:
   Original wrapped object:
-object(C)#%d (5) {
+object(C)#1 (5) {
   ["a"]=>
   string(7) "changed"
   ["b"]=>
   int(2)
   ["c"]=>
   int(3)
-  ["priv:private"]=>
+  ["priv":"C":private]=>
   string(6) "secret"
   ["dynamic"]=>
   string(11) "new.changed"
 }
   Wrapping ArrayObject:
-object(UsesMagic)#%d (5) {
-  ["a"]=>
-  string(7) "changed"
+object(UsesMagic)#2 (2) {
   ["b"]=>
-  int(2)
-  ["c"]=>
-  int(3)
-  ["priv:private"]=>
-  string(6) "secret"
-  ["dynamic"]=>
-  string(11) "new.changed"
+  string(33) "This should not be in the storage"
+  ["storage":"ArrayObject":private]=>
+  object(C)#1 (5) {
+    ["a"]=>
+    string(7) "changed"
+    ["b"]=>
+    int(2)
+    ["c"]=>
+    int(3)
+    ["priv":"C":private]=>
+    string(6) "secret"
+    ["dynamic"]=>
+    string(11) "new.changed"
+  }
 }
 
 --> Read existent, non-existent and dynamic:
@@ -106,30 +111,35 @@ Notice: Undefined index:  nonexistent in %s on line 45
 NULL
 string(11) "new.changed"
   Original wrapped object:
-object(C)#%d (5) {
+object(C)#1 (5) {
   ["a"]=>
   string(7) "changed"
   ["b"]=>
   int(2)
   ["c"]=>
   int(3)
-  ["priv:private"]=>
+  ["priv":"C":private]=>
   string(6) "secret"
   ["dynamic"]=>
   string(11) "new.changed"
 }
   Wrapping ArrayObject:
-object(UsesMagic)#%d (5) {
-  ["a"]=>
-  string(7) "changed"
+object(UsesMagic)#2 (2) {
   ["b"]=>
-  int(2)
-  ["c"]=>
-  int(3)
-  ["priv:private"]=>
-  string(6) "secret"
-  ["dynamic"]=>
-  string(11) "new.changed"
+  string(33) "This should not be in the storage"
+  ["storage":"ArrayObject":private]=>
+  object(C)#1 (5) {
+    ["a"]=>
+    string(7) "changed"
+    ["b"]=>
+    int(2)
+    ["c"]=>
+    int(3)
+    ["priv":"C":private]=>
+    string(6) "secret"
+    ["dynamic"]=>
+    string(11) "new.changed"
+  }
 }
 
 --> isset existent, non-existent and dynamic:
@@ -137,50 +147,60 @@ bool(true)
 bool(false)
 bool(true)
   Original wrapped object:
-object(C)#%d (5) {
+object(C)#1 (5) {
   ["a"]=>
   string(7) "changed"
   ["b"]=>
   int(2)
   ["c"]=>
   int(3)
-  ["priv:private"]=>
+  ["priv":"C":private]=>
   string(6) "secret"
   ["dynamic"]=>
   string(11) "new.changed"
 }
   Wrapping ArrayObject:
-object(UsesMagic)#%d (5) {
-  ["a"]=>
-  string(7) "changed"
+object(UsesMagic)#2 (2) {
   ["b"]=>
-  int(2)
-  ["c"]=>
-  int(3)
-  ["priv:private"]=>
-  string(6) "secret"
-  ["dynamic"]=>
-  string(11) "new.changed"
+  string(33) "This should not be in the storage"
+  ["storage":"ArrayObject":private]=>
+  object(C)#1 (5) {
+    ["a"]=>
+    string(7) "changed"
+    ["b"]=>
+    int(2)
+    ["c"]=>
+    int(3)
+    ["priv":"C":private]=>
+    string(6) "secret"
+    ["dynamic"]=>
+    string(11) "new.changed"
+  }
 }
 
 --> Unset existent, non-existent and dynamic:
 
 Notice: Undefined index:  nonexistent in %s on line 63
   Original wrapped object:
-object(C)#%d (3) {
+object(C)#1 (3) {
   ["b"]=>
   int(2)
   ["c"]=>
   int(3)
-  ["priv:private"]=>
+  ["priv":"C":private]=>
   string(6) "secret"
 }
   Wrapping ArrayObject:
-object(UsesMagic)#%d (3) {
+object(UsesMagic)#2 (2) {
   ["b"]=>
-  int(2)
-  ["c"]=>
-  int(3)
-  ["priv:private"]=>
-  string(6) "secret"
+  string(33) "This should not be in the storage"
+  ["storage":"ArrayObject":private]=>
+  object(C)#1 (3) {
+    ["b"]=>
+    int(2)
+    ["c"]=>
+    int(3)
+    ["priv":"C":private]=>
+    string(6) "secret"
+  }
 }

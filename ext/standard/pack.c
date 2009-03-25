@@ -15,7 +15,7 @@
    | Author: Chris Schneider <cschneid@relog.ch>                          |
    +----------------------------------------------------------------------+
  */
-/* $Id: pack.c,v 1.57.2.5.2.8 2008/12/31 11:17:45 sebastian Exp $ */
+/* $Id: pack.c,v 1.57.2.5.2.6.2.5 2008/12/31 11:15:45 sebastian Exp $ */
 
 #include "php.h"
 
@@ -106,8 +106,8 @@ static void php_pack(zval **val, int size, int *map, char *output)
    Takes one or more arguments and packs them into a binary string according to the format argument */
 PHP_FUNCTION(pack)
 {
-	zval ***argv;
-	int argc, i;
+	zval ***argv = NULL;
+	int num_args, i;
 	int currentarg;
 	char *format;
 	int formatlen;
@@ -117,20 +117,12 @@ PHP_FUNCTION(pack)
 	int outputpos = 0, outputsize = 0;
 	char *output;
 
-	argc = ZEND_NUM_ARGS();
-
-	if (argc < 1) {
-		WRONG_PARAM_COUNT;
-	}
-
-	argv = safe_emalloc(argc, sizeof(zval **), 0);
-
-	if (zend_get_parameters_array_ex(argc, argv) == FAILURE) {
-		efree(argv);
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "+", &argv, &num_args) == FAILURE) {
+		return;
 	}
 
 	convert_to_string_ex(argv[0]);
+
 	format = Z_STRVAL_PP(argv[0]);
 	formatlen = Z_STRLEN_PP(argv[0]);
 
@@ -178,7 +170,7 @@ PHP_FUNCTION(pack)
 			case 'A': 
 			case 'h': 
 			case 'H':
-				if (currentarg >= argc) {
+				if (currentarg >= num_args) {
 					efree(argv);
 					efree(formatcodes);
 					efree(formatargs);
@@ -210,12 +202,12 @@ PHP_FUNCTION(pack)
 			case 'f': 
 			case 'd': 
 				if (arg < 0) {
-					arg = argc - currentarg;
+					arg = num_args - currentarg;
 				}
 
 				currentarg += arg;
 
-				if (currentarg > argc) {
+				if (currentarg > num_args) {
 					efree(argv);
 					efree(formatcodes);
 					efree(formatargs);
@@ -236,8 +228,8 @@ PHP_FUNCTION(pack)
 		formatargs[formatcount] = arg;
 	}
 
-	if (currentarg < argc) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%d arguments unused", (argc - currentarg));
+	if (currentarg < num_args) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%d arguments unused", (num_args - currentarg));
 	}
 
 	/* Calculate output length and upper bound while processing*/
@@ -514,26 +506,19 @@ static long php_unpack(char *data, int size, int issigned, int *map)
    Unpack binary string into named array elements according to format argument */
 PHP_FUNCTION(unpack)
 {
-	zval **formatarg;
-	zval **inputarg;
-	char *format;
-	char *input;
-	int formatlen;
-	int inputpos, inputlen;
-	int i;
+	char *format, *input, *formatarg, *inputarg;
+	int formatlen, formatarg_len, inputarg_len;
+	int inputpos, inputlen, i;
 
-	if (ZEND_NUM_ARGS() != 2 || 
-        zend_get_parameters_ex(2, &formatarg, &inputarg) == FAILURE) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &formatarg, &formatarg_len,
+		&inputarg, &inputarg_len) == FAILURE) {
+		return;
 	}
 
-	convert_to_string_ex(formatarg);
-	convert_to_string_ex(inputarg);
-
-	format = Z_STRVAL_PP(formatarg);
-	formatlen = Z_STRLEN_PP(formatarg);
-	input = Z_STRVAL_PP(inputarg);
-	inputlen = Z_STRLEN_PP(inputarg);
+	format = formatarg;
+	formatlen = formatarg_len;
+	input = inputarg;
+	inputlen = inputarg_len;
 	inputpos = 0;
 
 	array_init(return_value);

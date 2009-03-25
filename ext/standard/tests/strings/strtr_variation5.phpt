@@ -87,7 +87,7 @@ for($index = 0; $index < count($strings); $index++) {
 fclose($file_handle);  //closing the file handle
 
 ?>
-===Done===
+===DONE===
 --EXPECTF--
 *** Testing strtr() function: with unexpected inputs for 'str' ***
 -- Iteration 1 --
@@ -104,16 +104,16 @@ string(5) "-ma.5"
 string(12) "tatm34567aaa"
 -- Iteration 7 --
 
-Notice: Array to string conversion in %s on line %d
-string(5) "Arr0y"
+Warning: strtr() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 8 --
 
-Notice: Array to string conversion in %s on line %d
-string(5) "Arr0y"
+Warning: strtr() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 9 --
 
-Notice: Array to string conversion in %s on line %d
-string(5) "Arr0y"
+Warning: strtr() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 10 --
 string(1) "t"
 -- Iteration 11 --
@@ -129,9 +129,11 @@ string(0) ""
 -- Iteration 16 --
 string(13) "s02ple objec1"
 -- Iteration 17 --
-string(%d) "Resource id #%s"
+
+Warning: strtr() expects parameter 1 to be string, resource given in %s on line %d
+NULL
 -- Iteration 18 --
 string(0) ""
 -- Iteration 19 --
 string(0) ""
-===Done===
+===DONE===

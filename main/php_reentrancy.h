@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_reentrancy.h,v 1.23.2.1.2.3 2008/12/31 11:17:47 sebastian Exp $ */
+/* $Id: php_reentrancy.h,v 1.23.2.1.2.1.2.2 2008/12/31 11:15:47 sebastian Exp $ */
 
 #ifndef PHP_REENTRANCY_H
 #define PHP_REENTRANCY_H

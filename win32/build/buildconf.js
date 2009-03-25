@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2007 The PHP Group                                |
+  | Copyright (c) 1997-2008 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,12 +16,14 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: buildconf.js,v 1.13.2.2.2.2 2009/01/03 03:27:47 kalle Exp $ */
+/* $Id: buildconf.js,v 1.13.2.2.2.1.2.5 2009/01/02 12:18:21 kalle Exp $ */
 // This generates a configure script for win32 build
 
 WScript.StdOut.WriteLine("Rebuilding configure.js");
 var FSO = WScript.CreateObject("Scripting.FileSystemObject");
 var C = FSO.CreateTextFile("configure.js", true);
+var B = FSO.CreateTextFile("configure.bat", true);
+var DSP = false;
 
 var modules = "";
 var MODULES = WScript.CreateObject("Scripting.Dictionary");
@@ -54,7 +56,7 @@ function find_config_w32(dirname)
 	var	fc = new Enumerator(f.SubFolders);
 	var c, i, ok, n;
 	var item = null;
-	var re_dep_line = new RegExp("ADD_EXTENSION_DEP\\([^,]*\\s*,\\s*['\"]([^'\"]+)['\"].*\\);", "gm");
+	var re_dep_line = new RegExp("ADD_EXTENSION_DEP\\([^,]*\\s*,\\s*['\"]([^'\"]+)['\"].*\\)", "gm");
 	
 	for (; !fc.atEnd(); fc.moveNext())
 	{
@@ -72,7 +74,6 @@ function find_config_w32(dirname)
 			continue;
 		}
 
-			
 		c = FSO.BuildPath(fc.item(), "config.w32");
 		if (FSO.FileExists(c)) {
 //			WScript.StdOut.WriteLine(c);
@@ -90,6 +91,7 @@ function find_config_w32(dirname)
 					if (calls[i].match(re_dep_line)) {
 //						WScript.StdOut.WriteLine("n depends on " + RegExp.$1);
 						deps[deps.length] = RegExp.$1;
+
 					}
 				}
 			}
@@ -202,6 +204,11 @@ function buildconf_process_args()
 			WScript.StdOut.WriteLine("Adding " + argval + " to the module search path");
 			module_dirs[module_dirs.length] = argval;
 		}
+
+		if (argname == '--add-project-files') {
+			WScript.StdOut.WriteLine("Adding dsp templates into the mix");
+			DSP = true;
+		}
 	}
 }
 
@@ -210,6 +217,16 @@ buildconf_process_args();
 // Write the head of the configure script
 C.WriteLine("/* This file automatically generated from win32/build/confutils.js */");
 C.Write(file_get_contents("win32/build/confutils.js"));
+
+// If project files were requested, pull in the code to generate them
+if (DSP == true) {
+	C.WriteLine('PHP_DSP="yes"');
+	C.WriteBlankLines(1);
+	C.Write(file_get_contents("win32/build/projectgen.js"));
+} else {
+	C.WriteLine('PHP_DSP="no"');
+	C.WriteBlankLines(1);
+}
 
 // Pull in code from sapi and extensions
 modules = file_get_contents("win32/build/config.w32");
@@ -259,3 +276,5 @@ C.Write(modules);
 C.WriteBlankLines(1);
 C.Write(file_get_contents("win32/build/configure.tail"));
 
+B.WriteLine("@echo off");
+B.WriteLine("cscript /nologo configure.js %*");

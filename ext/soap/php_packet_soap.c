@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_packet_soap.c,v 1.42.2.1.2.6 2008/12/31 11:17:43 sebastian Exp $ */
+/* $Id: php_packet_soap.c,v 1.42.2.1.2.4.2.3 2008/12/31 11:15:43 sebastian Exp $ */
 
 #include "php_soap.h"
 
@@ -241,7 +241,7 @@ int parse_packet_soap(zval *this_ptr, char *buffer, int buffer_size, sdlFunction
 		}
 #ifdef ZEND_ENGINE_2
 		if (details) {
-			details->refcount--;
+			Z_DELREF_P(details);
 		}
 #endif
 		xmlFreeDoc(response);
@@ -387,7 +387,7 @@ int parse_packet_soap(zval *this_ptr, char *buffer, int buffer_size, sdlFunction
 			zend_hash_internal_pointer_reset(Z_ARRVAL_P(return_value));
 			zend_hash_get_current_data(Z_ARRVAL_P(return_value), (void**)&tmp);
 			tmp = *(zval**)tmp;
-			tmp->refcount++;
+			Z_ADDREF_P(tmp);
 			zval_dtor(return_value);
 			*return_value = *tmp;
 			FREE_ZVAL(tmp);

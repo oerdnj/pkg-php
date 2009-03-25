@@ -1,7 +1,5 @@
 --TEST--
 SPL: SplObjectStorage serialization & overloading
---SKIPIF--
-<?php if (!extension_loaded("spl")) print "skip"; ?>
 --FILE--
 <?php
 
@@ -62,17 +60,63 @@ var_dump($storage2);
 int(2)
 int(1)
 int(2)
-object(MyStorage)#%d (1) {
+object(MyStorage)#%d (2) {
   ["bla"]=>
   int(26)
+  ["storage":"SplObjectStorage":private]=>
+  array(2) {
+    ["%s"]=>
+    array(2) {
+      ["obj"]=>
+      object(TestClass)#%d (1) {
+        ["test"]=>
+        int(1)
+      }
+      ["inf"]=>
+      NULL
+    }
+    ["%s"]=>
+    array(2) {
+      ["obj"]=>
+      object(TestClass)#%d (1) {
+        ["test"]=>
+        int(2)
+      }
+      ["inf"]=>
+      NULL
+    }
+  }
 }
 string(%d) "%s"
 ===UNSERIALIZE===
 int(2)
 int(1)
 int(2)
-object(MyStorage)#%d (1) {
+object(MyStorage)#%d (2) {
   ["bla"]=>
   int(26)
+  ["storage":"SplObjectStorage":private]=>
+  array(2) {
+    ["%s"]=>
+    array(2) {
+      ["obj"]=>
+      object(TestClass)#%d (1) {
+        ["test"]=>
+        int(1)
+      }
+      ["inf"]=>
+      NULL
+    }
+    ["%s"]=>
+    array(2) {
+      ["obj"]=>
+      object(TestClass)#%d (1) {
+        ["test"]=>
+        int(2)
+      }
+      ["inf"]=>
+      NULL
+    }
+  }
 }
 ===DONE===

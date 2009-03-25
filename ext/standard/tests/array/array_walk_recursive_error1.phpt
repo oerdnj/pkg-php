@@ -26,6 +26,7 @@ var_dump( array_walk_recursive() );
 echo "-- Testing array_walk_recursive() function with one argument --\n";
 var_dump( array_walk_recursive($input) );
 
+$input = array( array(1, 2), array(3), array(4, 5));
 echo "-- Testing array_walk_recursive() function with non existent callback function  --\n";
 var_dump( array_walk_recursive($input, "non_existent") );
 
@@ -43,6 +44,6 @@ Warning: array_walk_recursive() expects at least 2 parameters, 1 given in %s on 
 NULL
 -- Testing array_walk_recursive() function with non existent callback function  --
 
-Warning: array_walk_recursive(): Unable to call non_existent() - function does not exist in %s on line %d
-bool(true)
+Warning: array_walk_recursive() expects parameter 2 to be a valid callback, function 'non_existent' not found or invalid function name in %s on line %d
+NULL
 Done

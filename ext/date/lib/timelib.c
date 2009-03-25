@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: timelib.c,v 1.7.2.4.2.8 2008/12/31 11:17:36 sebastian Exp $ */
+/* $Id: timelib.c,v 1.7.2.4.2.6.2.8 2008/12/31 11:15:35 sebastian Exp $ */
 
 #include "timelib.h"
 #include <ctype.h>
@@ -38,6 +38,21 @@ timelib_time* timelib_time_ctor(void)
 	return t;
 }
 
+timelib_rel_time* timelib_rel_time_ctor(void)
+{
+	timelib_rel_time *t;
+	t = calloc(1, sizeof(timelib_rel_time));
+
+	return t;
+}
+
+timelib_rel_time* timelib_rel_time_clone(timelib_rel_time *rel)
+{
+	timelib_rel_time *tmp = timelib_rel_time_ctor();
+	memcpy(tmp, rel, sizeof(timelib_rel_time));
+	return tmp;
+}
+
 void timelib_time_tz_abbr_update(timelib_time* tm, char* tz_abbr)
 {
 	unsigned int i;
@@ -52,6 +67,11 @@ void timelib_time_tz_abbr_update(timelib_time* tm, char* tz_abbr)
 void timelib_time_dtor(timelib_time* t)
 {
 	TIMELIB_TIME_FREE(t->tz_abbr);
+	TIMELIB_TIME_FREE(t);
+}
+
+void timelib_rel_time_dtor(timelib_rel_time* t)
+{
 	TIMELIB_TIME_FREE(t);
 }
 
@@ -113,7 +133,9 @@ void timelib_tzinfo_dtor(timelib_tzinfo *tz)
 	TIMELIB_TIME_FREE(tz->type);
 	TIMELIB_TIME_FREE(tz->timezone_abbr);
 	TIMELIB_TIME_FREE(tz->leap_times);
+	TIMELIB_TIME_FREE(tz->location.comments);
 	TIMELIB_TIME_FREE(tz);
+	tz = NULL;
 }
 
 char *timelib_get_tz_abbr_ptr(timelib_time *t)
@@ -203,16 +225,49 @@ void timelib_dump_date(timelib_time *d, int options)
 		if (d->have_relative) {
 			printf("%3lldY %3lldM %3lldD / %3lldH %3lldM %3lldS", 
 				d->relative.y, d->relative.m, d->relative.d, d->relative.h, d->relative.i, d->relative.s);
-		}
-		if (d->have_weekday_relative) {
-			printf(" / %d.%d", d->relative.weekday, d->relative.weekday_behavior);
-		}
-		if (d->have_special_relative) {
-			switch (d->special.type) {
-				case TIMELIB_SPECIAL_WEEKDAY:
-					printf(" / %lld weekday", d->special.amount);
-					break;
+			if (d->relative.first_last_day_of != 0) {
+				switch (d->relative.first_last_day_of) {
+					case 1:
+						printf(" / first day of");
+						break;
+					case 2:
+						printf(" / last day of");
+						break;
+				}
 			}
+			if (d->relative.have_weekday_relative) {
+				printf(" / %d.%d", d->relative.weekday, d->relative.weekday_behavior);
+			}
+			if (d->relative.have_special_relative) {
+				switch (d->relative.special.type) {
+					case TIMELIB_SPECIAL_WEEKDAY:
+						printf(" / %lld weekday", d->relative.special.amount);
+						break;
+					case TIMELIB_SPECIAL_DAY_OF_WEEK_IN_MONTH:
+						printf(" / x y of z month");
+						break;
+					case TIMELIB_SPECIAL_LAST_DAY_OF_WEEK_IN_MONTH:
+						printf(" / last y of z month");
+						break;
+				}
+			}
+		}
+	}
+	printf("\n");
+}
+
+void timelib_dump_rel_time(timelib_rel_time *d)
+{
+	printf("%3lldY %3lldM %3lldD / %3lldH %3lldM %3lldS (days: %lld)%s", 
+		d->y, d->m, d->d, d->h, d->i, d->s, d->days, d->invert ? " inverted" : "");
+	if (d->first_last_day_of != 0) {
+		switch (d->first_last_day_of) {
+			case 1:
+				printf(" / first day of");
+				break;
+			case 2:
+				printf(" / last day of");
+				break;
 		}
 	}
 	printf("\n");

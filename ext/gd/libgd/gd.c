@@ -613,8 +613,8 @@ void gdImagePaletteCopy (gdImagePtr to, gdImagePtr from)
 		xlate[i] = -1;
 	}
 
-	for (x = 0; x < to->sx; x++) {
-		for (y = 0; y < to->sy; y++) {
+	for (y = 0; y < to->sy; y++) {
+		for (x = 0; x < to->sx; x++) {
 			p = gdImageGetPixel(to, x, y);
 			if (xlate[p] == -1) {
 				/* This ought to use HWB, but we don't have an alpha-aware version of that yet. */
@@ -860,23 +860,27 @@ static void gdImageBrushApply (gdImagePtr im, int x, int y)
 
 static void gdImageTileApply (gdImagePtr im, int x, int y)
 {
+	gdImagePtr tile = im->tile;
 	int srcx, srcy;
 	int p;
-	if (!im->tile) {
+	if (!tile) {
 		return;
 	}
-	srcx = x % gdImageSX(im->tile);
-	srcy = y % gdImageSY(im->tile);
+	srcx = x % gdImageSX(tile);
+	srcy = y % gdImageSY(tile);
 	if (im->trueColor) {
-		p = gdImageGetTrueColorPixel(im->tile, srcx, srcy);
-		if (p != gdImageGetTransparent (im->tile)) {
+		p = gdImageGetPixel(tile, srcx, srcy);
+		if (p != gdImageGetTransparent (tile)) {
+			if (!tile->trueColor) {
+				p = gdTrueColorAlpha(tile->red[p], tile->green[p], tile->blue[p], tile->alpha[p]);
+			}
 			gdImageSetPixel(im, x, y, p);
 		}
 	} else {
-		p = gdImageGetPixel(im->tile, srcx, srcy);
+		p = gdImageGetPixel(tile, srcx, srcy);
 		/* Allow for transparency */
-		if (p != gdImageGetTransparent(im->tile)) {
-			if (im->tile->trueColor) {
+		if (p != gdImageGetTransparent(tile)) {
+			if (tile->trueColor) {
 				/* Truecolor tile. Very slow on a palette destination. */
 				gdImageSetPixel(im, x, y, gdImageColorResolveAlpha(im,
 											gdTrueColorGetRed(p),
@@ -1804,7 +1808,9 @@ void gdImageFilledEllipse (gdImagePtr im, int mx, int my, int w, int h, int c)
 	a=w>>1;
 	b=h>>1;
 
-	gdImageLine(im, mx-a, my, mx+a, my, c);
+	for (x = mx-a; x <= mx+a; x++) {
+		gdImageSetPixel(im, x, my, c);
+	}
 
 	mx1 = mx-a;my1 = my;
 	mx2 = mx+a;my2 = my;

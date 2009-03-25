@@ -16,12 +16,12 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: xsl_fe.h,v 1.8.2.1.2.4 2008/12/31 11:17:47 sebastian Exp $ */
+/* $Id: xsl_fe.h,v 1.8.2.1.2.1.2.5 2008/12/31 11:15:47 sebastian Exp $ */
 
 #ifndef XSL_FE_H
 #define XSL_FE_H
 
-extern zend_function_entry php_xsl_xsltprocessor_class_functions[];
+extern const zend_function_entry php_xsl_xsltprocessor_class_functions[];
 extern zend_class_entry *xsl_xsltprocessor_class_entry;
 
 PHP_FUNCTION(xsl_xsltprocessor_import_stylesheet);
@@ -33,6 +33,7 @@ PHP_FUNCTION(xsl_xsltprocessor_get_parameter);
 PHP_FUNCTION(xsl_xsltprocessor_remove_parameter);
 PHP_FUNCTION(xsl_xsltprocessor_has_exslt_support);
 PHP_FUNCTION(xsl_xsltprocessor_register_php_functions);
+PHP_FUNCTION(xsl_xsltprocessor_set_profiling);
 #endif
 
 /*

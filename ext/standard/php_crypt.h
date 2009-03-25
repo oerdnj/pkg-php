@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_crypt.h,v 1.18.2.1.2.3 2008/12/31 11:17:45 sebastian Exp $ */
+/* $Id: php_crypt.h,v 1.18.2.1.2.1.2.4 2008/12/31 11:15:45 sebastian Exp $ */
 
 #ifndef PHP_CRYPT_H
 #define PHP_CRYPT_H
@@ -26,6 +26,7 @@
 PHP_FUNCTION(crypt);
 #if HAVE_CRYPT
 PHP_MINIT_FUNCTION(crypt);
+PHP_MSHUTDOWN_FUNCTION(crypt);
 PHP_RINIT_FUNCTION(crypt);
 #endif
 

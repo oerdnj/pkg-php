@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: domimplementationsource.c,v 1.5.2.1.2.4 2008/12/31 11:17:37 sebastian Exp $ */
+/* $Id: domimplementationsource.c,v 1.5.2.1.2.1.2.8 2008/12/31 11:15:36 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -29,12 +29,10 @@
 
 
 /* {{{ arginfo */
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_implementationsource_getdomimplementation, 0, 0, 1)
 	ZEND_ARG_INFO(0, features)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_implementationsource_getdomimplementations, 0, 0, 1)
 	ZEND_ARG_INFO(0, features)
 ZEND_END_ARG_INFO();
@@ -47,14 +45,13 @@ ZEND_END_ARG_INFO();
 * Since: DOM Level 3
 */
 
-zend_function_entry php_dom_domimplementationsource_class_functions[] = {
+const zend_function_entry php_dom_domimplementationsource_class_functions[] = {
 	PHP_FALIAS(getDomimplementation, dom_domimplementationsource_get_domimplementation, arginfo_dom_implementationsource_getdomimplementation)
 	PHP_FALIAS(getDomimplementations, dom_domimplementationsource_get_domimplementations, arginfo_dom_implementationsource_getdomimplementations)
 	{NULL, NULL, NULL}
 };
 
 /* {{{ attribute protos, not implemented yet */
-
 
 /* {{{ proto domdomimplementation dom_domimplementationsource_get_domimplementation(string features);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#ID-getDOMImpl
@@ -66,7 +63,6 @@ PHP_FUNCTION(dom_domimplementationsource_get_domimplementation)
 }
 /* }}} end dom_domimplementationsource_get_domimplementation */
 
-
 /* {{{ proto domimplementationlist dom_domimplementationsource_get_domimplementations(string features);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#ID-getDOMImpls
 Since: 
@@ -76,4 +72,16 @@ PHP_FUNCTION(dom_domimplementationsource_get_domimplementations)
  DOM_NOT_IMPLEMENTED();
 }
 /* }}} end dom_domimplementationsource_get_domimplementations */
+
+/* }}} */
+
 #endif
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

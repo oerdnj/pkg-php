@@ -289,6 +289,6 @@ int(1218177627)
 
 --unset var--
 string(5) "01:10"
-float(1.1742%d)
+float(1.174%d)
 int(1218177627)
 ===DONE===

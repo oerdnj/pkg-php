@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_ts_hash.c,v 1.14.2.1.2.4 2008/12/31 11:17:33 sebastian Exp $ */
+/* $Id: zend_ts_hash.c,v 1.14.2.1.2.2.2.4 2009/01/09 19:16:55 tony2001 Exp $ */
 
 #include "zend.h"
 #include "zend_ts_hash.h"
@@ -169,13 +169,13 @@ ZEND_API void zend_ts_hash_apply_with_argument(TsHashTable *ht, apply_func_arg_t
 	end_write(ht);
 }
 
-ZEND_API void zend_ts_hash_apply_with_arguments(TsHashTable *ht, apply_func_args_t apply_func, int num_args, ...)
+ZEND_API void zend_ts_hash_apply_with_arguments(TsHashTable *ht TSRMLS_DC, apply_func_args_t apply_func, int num_args, ...)
 {
 	va_list args;
 
 	va_start(args, num_args);
 	begin_write(ht);
-	zend_hash_apply_with_arguments(TS_HASH(ht), apply_func, num_args, args);
+	zend_hash_apply_with_arguments(TS_HASH(ht) TSRMLS_CC, apply_func, num_args, args);
 	end_write(ht);
 	va_end(args);
 }
@@ -270,6 +270,13 @@ ZEND_API void zend_ts_hash_copy(TsHashTable *target, TsHashTable *source, copy_c
 	begin_write(target);
 	zend_hash_copy(TS_HASH(target), TS_HASH(source), pCopyConstructor, tmp, size);
 	end_write(target);
+	end_read(source);
+}
+
+ZEND_API void zend_ts_hash_copy_to_hash(HashTable *target, TsHashTable *source, copy_ctor_func_t pCopyConstructor, void *tmp, uint size)
+{
+	begin_read(source);
+	zend_hash_copy(target, TS_HASH(source), pCopyConstructor, tmp, size);
 	end_read(source);
 }
 

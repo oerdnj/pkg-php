@@ -46,11 +46,11 @@ var_dump( usort($array_arg, 'non_existent', $extra_arg) );
 
 -- Testing usort() function with non-existent compare function --
 
-Warning: usort(): Invalid comparison function in %s on line %d
-bool(false)
+Warning: usort() expects parameter 2 to be a valid callback, function 'non_existent' not found or invalid function name in %s on line %d
+NULL
 
 -- Testing usort() function with non-existent compare function and extra argument --
 
-Warning: Wrong parameter count for usort() in %s on line %d
+Warning: usort() expects exactly 2 parameters, 3 given in %s on line %d
 NULL
 ===DONE===

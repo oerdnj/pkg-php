@@ -20,7 +20,7 @@ dechex(23,2,true);
 
 Incorrect number of arguments
 
-Warning: Wrong parameter count for dechex() in %s on line %d
+Warning: dechex() expects exactly 1 parameter, 0 given in %s on line %d
 
-Warning: Wrong parameter count for dechex() in %s on line %d
+Warning: dechex() expects exactly 1 parameter, 3 given in %s on line %d
 ===Done===

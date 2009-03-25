@@ -111,7 +111,7 @@ Warning: imap_fetchbody(): Bad message number in %s on line %d
 bool(false)
 
 -- Iteration 2 --
-string(%d) "1: this is a test message, please ignore%a"
+%unicode|string%(%d) "1: this is a test message, please ignore%a"
 
 -- Iteration 3 --
 
@@ -159,7 +159,7 @@ Warning: imap_fetchbody(): Bad message number in %s on line %d
 bool(false)
 
 -- Iteration 12 --
-string(%d) "1: this is a test message, please ignore%a"
+%unicode|string%(%d) "1: this is a test message, please ignore%a"
 
 -- Iteration 13 --
 
@@ -167,7 +167,7 @@ Warning: imap_fetchbody(): Bad message number in %s on line %d
 bool(false)
 
 -- Iteration 14 --
-string(%d) "1: this is a test message, please ignore%a"
+%unicode|string%(%d) "1: this is a test message, please ignore%a"
 
 -- Iteration 15 --
 
@@ -176,38 +176,38 @@ bool(false)
 
 -- Iteration 16 --
 
-Warning: imap_fetchbody(): Bad message number in %s on line %d
-bool(false)
+Warning: imap_fetchbody() expects parameter 2 to be long, %unicode_string_optional% given in %s on line %d
+NULL
 
 -- Iteration 17 --
 
-Warning: imap_fetchbody(): Bad message number in %s on line %d
-bool(false)
+Warning: imap_fetchbody() expects parameter 2 to be long, %unicode_string_optional% given in %s on line %d
+NULL
 
 -- Iteration 18 --
 
-Warning: imap_fetchbody(): Bad message number in %s on line %d
-bool(false)
+Warning: imap_fetchbody() expects parameter 2 to be long, array given in %s on line %d
+NULL
 
 -- Iteration 19 --
 
-Warning: imap_fetchbody(): Bad message number in %s on line %d
-bool(false)
+Warning: imap_fetchbody() expects parameter 2 to be long, %unicode_string_optional% given in %s on line %d
+NULL
 
 -- Iteration 20 --
 
-Warning: imap_fetchbody(): Bad message number in %s on line %d
-bool(false)
+Warning: imap_fetchbody() expects parameter 2 to be long, %unicode_string_optional% given in %s on line %d
+NULL
 
 -- Iteration 21 --
 
-Warning: imap_fetchbody(): Bad message number in %s on line %d
-bool(false)
+Warning: imap_fetchbody() expects parameter 2 to be long, %unicode_string_optional% given in %s on line %d
+NULL
 
 -- Iteration 22 --
 
-Notice: Object of class classA could not be converted to int in %s on line %d
-string(%d) "1: this is a test message, please ignore%a"
+Warning: imap_fetchbody() expects parameter 2 to be long, object given in %s on line %d
+NULL
 
 -- Iteration 23 --
 

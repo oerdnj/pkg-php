@@ -15,4 +15,4 @@ var_dump(ob_start(array($c, 'f')));
 echo "done"
 ?>
 --EXPECTF--
-Fatal error: ob_start(): No method name given: use ob_start(array($object,'method')) to specify instance $object and the name of a method of class C to use as output handler in %s on line 11
+Catchable fatal error: Object of class C could not be converted to string in %s on line 11

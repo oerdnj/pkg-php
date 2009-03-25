@@ -18,20 +18,35 @@ var_dump(new ArrayObject(new ArrayObject($a)));
 ?>
 --EXPECTF--
 --> No arguments:
-object(ArrayObject)#%d (0) {
+object(ArrayObject)#1 (1) {
+  ["storage":"ArrayObject":private]=>
+  array(0) {
+  }
 }
 --> Object argument:
-object(ArrayObject)#%d (1) {
-  ["p"]=>
-  string(5) "hello"
+object(ArrayObject)#2 (1) {
+  ["storage":"ArrayObject":private]=>
+  object(stdClass)#1 (1) {
+    ["p"]=>
+    string(5) "hello"
+  }
 }
 --> Array argument:
-object(ArrayObject)#%d (1) {
-  ["key1"]=>
-  string(4) "val1"
+object(ArrayObject)#2 (1) {
+  ["storage":"ArrayObject":private]=>
+  array(1) {
+    ["key1"]=>
+    string(4) "val1"
+  }
 }
 --> Nested ArrayObject argument:
-object(ArrayObject)#%d (1) {
-  ["p"]=>
-  string(5) "hello"
+object(ArrayObject)#2 (1) {
+  ["storage":"ArrayObject":private]=>
+  object(ArrayObject)#3 (1) {
+    ["storage":"ArrayObject":private]=>
+    object(stdClass)#1 (1) {
+      ["p"]=>
+      string(5) "hello"
+    }
+  }
 }

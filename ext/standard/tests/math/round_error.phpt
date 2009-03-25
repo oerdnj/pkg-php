@@ -25,9 +25,7 @@ var_dump(round(500, 10, true));
 
 -- Wrong nmumber of arguments --
 
-Warning: Wrong parameter count for round() in %s on line %d
+Warning: round() expects at least 1 parameter, 0 given in %s on line %d
 NULL
-
-Warning: Wrong parameter count for round() in %s on line %d
-NULL
+float(500)
 ===Done===

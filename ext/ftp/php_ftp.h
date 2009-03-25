@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_ftp.h,v 1.29.2.1.2.3 2008/12/31 11:17:37 sebastian Exp $ */
+/* $Id: php_ftp.h,v 1.29.2.1.2.1.2.2 2008/12/31 11:15:37 sebastian Exp $ */
 
 #ifndef	_INCLUDED_FTP_H
 #define	_INCLUDED_FTP_H

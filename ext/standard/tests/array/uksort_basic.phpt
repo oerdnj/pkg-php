@@ -12,15 +12,15 @@ function cmp($a, $b) {
     }
     return ($a < $b) ? -1 : 1;
 }
-$a = array(3=>0, 2=>1, 5=>2, 6=>3, 1=>4);
-uksort($a, "cmp");
+$a = array(3, 2, 5, 6, 1);
+uasort($a, "cmp");
 foreach($a as $key => $value) {
     echo "$key: $value\n";
 }
 ?>
 --EXPECT--
-1: 4
-2: 1
-3: 0
-5: 2
-6: 3
+4: 1
+1: 2
+0: 3
+2: 5
+3: 6

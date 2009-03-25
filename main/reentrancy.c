@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: reentrancy.c,v 1.43.2.1.2.4 2008/12/31 11:17:47 sebastian Exp $ */
+/* $Id: reentrancy.c,v 1.43.2.1.2.2.2.2 2008/12/31 11:15:48 sebastian Exp $ */
 
 #include <sys/types.h>
 #include <string.h>

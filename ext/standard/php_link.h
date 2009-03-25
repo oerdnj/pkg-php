@@ -16,12 +16,12 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_link.h,v 1.12.2.1.2.3 2008/12/31 11:17:45 sebastian Exp $ */
+/* $Id: php_link.h,v 1.12.2.1.2.1.2.3 2009/01/16 01:00:22 pajoye Exp $ */
 
 #ifndef PHP_LINK_H
 #define PHP_LINK_H
 
-#ifdef HAVE_SYMLINK
+#if defined(HAVE_SYMLINK) || defined(PHP_WIN32)
 
 PHP_FUNCTION(link);
 PHP_FUNCTION(readlink);

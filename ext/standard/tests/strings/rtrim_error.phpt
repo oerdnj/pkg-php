@@ -33,12 +33,12 @@ var_dump(rtrim($hello, "a..b..c"));
 
 -- Testing rtrim() function with no arguments --
 
-Warning: Wrong parameter count for rtrim() in %s on line %d
+Warning: rtrim() expects at least 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing rtrim() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for rtrim() in %s on line %d
+Warning: rtrim() expects at most 2 parameters, 3 given in %s on line %d
 NULL
 
 -- Test rtrim function with various invalid charlists

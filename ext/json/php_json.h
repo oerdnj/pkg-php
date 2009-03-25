@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_json.h,v 1.8.2.4 2008/12/31 11:17:38 sebastian Exp $ */
+/* $Id: php_json.h,v 1.8.2.2.2.5 2008/12/31 11:15:38 sebastian Exp $ */
 
 #ifndef PHP_JSON_H
 #define PHP_JSON_H
@@ -26,24 +26,21 @@
 extern zend_module_entry json_module_entry;
 #define phpext_json_ptr &json_module_entry
 
-#ifdef PHP_WIN32
-#define PHP_JSON_API __declspec(dllexport)
-#else
-#define PHP_JSON_API
-#endif
-
 #ifdef ZTS
 #include "TSRM.h"
 #endif
 
+ZEND_BEGIN_MODULE_GLOBALS(json)
+	int error_code;
+ZEND_END_MODULE_GLOBALS(json)
+
 #ifdef ZTS
-#define JSON_G(v) TSRMG(json_globals_id, zend_json_globals *, v)
+# define JSON_G(v) TSRMG(json_globals_id, zend_json_globals *, v)
 #else
-#define JSON_G(v) (json_globals.v)
+# define JSON_G(v) (json_globals.v)
 #endif
 
 #endif  /* PHP_JSON_H */
-
 
 /*
  * Local variables:

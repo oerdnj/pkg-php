@@ -1,6 +1,6 @@
 --TEST--
 Test get_magic_quotes_runtime() function
---INI-
+--INI--
 magic_quotes_runtime = 0
 --FILE--
 <?php
@@ -34,22 +34,28 @@ var_dump(get_magic_quotes_runtime(true));
 
 ?>
 ===DONE===
---EXPECT--
+--EXPECTF--
 Simple testcase for get_magic_quotes_runtime() function
 
 -- magic quotes runtime set in INI file: 0 --
 
 -- Set magic quotes runtime to 1:  --
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 
 -- magic quotes runtime after set: 1 --
 
 -- Set magic quotes runtime to 0:  --
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 
 -- magic quotes runtime after set: 0 --
 
 -- Set magic quotes runtime to 1:  --
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 
 -- magic quotes runtime after set: 1 --

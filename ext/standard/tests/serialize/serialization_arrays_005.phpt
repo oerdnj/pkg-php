@@ -55,6 +55,7 @@ $a[0] = &$c[0];
 $a[1] = &$c[1];
 check($c);
 
+
 echo "\n\n--- Containing array references 1 element in nested array:\n";
 $a = array();
 $a[0] = 1;
@@ -75,7 +76,6 @@ $c = array(1,1,&$a);
 $a[0] = 1;
 $a[1] = &$c;
 check($c);
-$a[1] = null;
 
 ?>
 --EXPECTF--

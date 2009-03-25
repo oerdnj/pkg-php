@@ -48,7 +48,7 @@ $numbers =  array (
 		  1,
 		  255,
 		  256,
-	      2147483647,
+		  2147483647,
 		  -2147483648,
 		
 		  // float values
@@ -108,7 +108,7 @@ fclose($file_handle);
 setlocale(LC_MONETARY, $original);
 
 ?>
-===DONE===
+===Done===
 --EXPECTF--
 *** Testing money_format() function: with unexpected inputs for 'number' argument ***
 -- Iteration 1 --
@@ -183,4 +183,4 @@ NULL
 string(18) " USD          0.00"
 -- Iteration 27 --
 string(18) " USD          0.00"
-===DONE===
+===Done===

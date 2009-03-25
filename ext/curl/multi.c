@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: multi.c,v 1.19.2.3.2.10 2008/12/31 11:17:36 sebastian Exp $ */
+/* $Id: multi.c,v 1.19.2.3.2.7.2.4 2008/12/31 11:15:35 sebastian Exp $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 
@@ -55,8 +55,8 @@ PHP_FUNCTION(curl_multi_init)
 {
 	php_curlm *mh;
 	
-	if (ZEND_NUM_ARGS() != 0) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 
 	mh = ecalloc(1, sizeof(php_curlm));

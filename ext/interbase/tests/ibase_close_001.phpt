@@ -21,5 +21,5 @@ bool(true)
 Warning: ibase_close(): %d is not a valid Firebird/InterBase link resource in %s on line %d
 bool(false)
 
-Warning: ibase_close(): %d is not a valid Firebird/InterBase link resource in %s on line %d
-bool(false)
+Warning: ibase_close() expects parameter 1 to be resource,%string given in %s on line %d
+NULL

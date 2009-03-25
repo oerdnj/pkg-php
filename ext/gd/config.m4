@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.154.2.1.2.6 2007/07/03 17:25:33 sniper Exp $
+dnl $Id: config.m4,v 1.154.2.1.2.6.2.2 2009/01/14 19:05:59 tabe Exp $
 dnl
 
 dnl
@@ -27,9 +27,6 @@ fi
 
 PHP_ARG_WITH(xpm-dir, for the location of libXpm,
 [  --with-xpm-dir[=DIR]      GD: Set the path to libXpm install prefix], no, no)
-
-PHP_ARG_WITH(ttf, for FreeType 1.x support,
-[  --with-ttf[=DIR]          GD: Include FreeType 1.x support], no, no)
 
 PHP_ARG_WITH(freetype-dir, for FreeType 2,
 [  --with-freetype-dir[=DIR] GD: Set the path to FreeType 2 install prefix], no, no)
@@ -165,41 +162,6 @@ AC_DEFUN([PHP_GD_XPM],[
   fi
 ])
 
-AC_DEFUN([PHP_GD_FREETYPE1],[
-  if test "$PHP_TTF" != "no"; then
-    if test "$PHP_FREETYPE_DIR" = "no" || test "$PHP_FREETYPE_DIR" = ""; then
-      if test -n "$PHP_TTF"; then
-        for i in $PHP_TTF /usr/local /usr; do
-          if test -f "$i/include/freetype.h"; then
-            TTF_DIR=$i
-            unset TTF_INC_DIR
-          fi
-          if test -f "$i/include/freetype/freetype.h"; then
-            TTF_DIR=$i
-            TTF_INC_DIR=$i/include/freetype
-          fi
-          if test -f "$i/include/freetype1/freetype/freetype.h"; then
-            TTF_DIR=$i
-            TTF_INC_DIR=$i/include/freetype1/freetype
-          fi
-          test -n "$TTF_DIR" && break
-        done
-      fi
-      if test -n "$TTF_DIR" ; then
-        AC_DEFINE(HAVE_LIBTTF,1,[ ])
-        PHP_ADD_LIBRARY_WITH_PATH(ttf, $TTF_DIR/$PHP_LIBDIR, GD_SHARED_LIBADD)
-      fi
-      if test -z "$TTF_INC_DIR"; then
-        TTF_INC_DIR=$TTF_DIR/include
-      fi
-      PHP_ADD_INCLUDE($TTF_INC_DIR)
-    else
-      AC_MSG_CHECKING(for FreeType 1 support)
-      AC_MSG_RESULT([no - FreeType 2.x is to be used instead])
-    fi
-  fi
-])
-
 AC_DEFUN([PHP_GD_FREETYPE2],[
   if test "$PHP_FREETYPE_DIR" != "no"; then
 
@@ -306,7 +268,7 @@ if test "$PHP_GD" = "yes"; then
                  libgd/gdxpm.c libgd/gdfontt.c libgd/gdfonts.c libgd/gdfontmb.c libgd/gdfontl.c \
                  libgd/gdfontg.c libgd/gdtables.c libgd/gdft.c libgd/gdcache.c libgd/gdkanji.c \
                  libgd/wbmp.c libgd/gd_wbmp.c libgd/gdhelpers.c libgd/gd_topal.c libgd/gd_gif_in.c \
-                 libgd/xbm.c libgd/gd_gif_out.c libgd/gd_security.c"
+                 libgd/xbm.c libgd/gd_gif_out.c libgd/gd_security.c libgd/gd_pixelate.c"
 
 dnl check for fabsf and floorf which are available since C99
   AC_CHECK_FUNCS(fabsf floorf)
@@ -322,7 +284,6 @@ dnl Various checks for GD features
   PHP_GD_PNG
   PHP_GD_XPM
   PHP_GD_FREETYPE2
-  PHP_GD_FREETYPE1
   PHP_GD_T1LIB
 
 dnl These are always available with bundled library
@@ -370,10 +331,6 @@ dnl enable the support in bundled GD library
     GDLIB_CFLAGS="$GDLIB_CFLAGS -DHAVE_LIBFREETYPE"
   fi
 
-  if test -n "$TTF_DIR"; then
-    GDLIB_CFLAGS="$GDLIB_CFLAGS -DHAVE_LIBTTF"
-  fi
-
   if test -n "$USE_GD_JIS_CONV"; then
     AC_DEFINE(USE_GD_JISX0208, 1, [ ])
     GDLIB_CFLAGS="$GDLIB_CFLAGS -DJISX0208"
@@ -392,7 +349,6 @@ dnl Various checks for GD features
   PHP_GD_PNG
   PHP_GD_XPM
   PHP_GD_FREETYPE2
-  PHP_GD_FREETYPE1
   PHP_GD_T1LIB
 
 dnl Header path
@@ -441,7 +397,7 @@ dnl
 dnl Common for both builtin and external GD
 dnl
 if test "$PHP_GD" != "no"; then
-  PHP_NEW_EXTENSION(gd, gd.c gdttf.c $extra_sources, $ext_shared,, \\$(GDLIB_CFLAGS))
+  PHP_NEW_EXTENSION(gd, gd.c $extra_sources, $ext_shared,, \\$(GDLIB_CFLAGS))
 
   if test "$GD_MODULE_TYPE" = "builtin"; then
     GDLIB_CFLAGS="-I$ext_srcdir/libgd $GDLIB_CFLAGS"

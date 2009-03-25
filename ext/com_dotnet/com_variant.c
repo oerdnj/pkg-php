@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_variant.c,v 1.11.2.2.2.8 2008/12/31 11:17:36 sebastian Exp $ */
+/* $Id: com_variant.c,v 1.11.2.2.2.6.2.2 2008/12/31 11:15:35 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

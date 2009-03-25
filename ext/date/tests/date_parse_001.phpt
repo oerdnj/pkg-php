@@ -1,11 +1,10 @@
 --TEST--
 Test basic date_parse()
---INI--
-date.timezone=UTC
 --FILE--
 <?php
+    date_default_timezone_set('UTC');
     var_dump(date_parse("2006-12-12 10:00:00.5"));
-	var_dump(date_parse("2006-12-12"));
+    var_dump(date_parse("2006-12-12"));
     var_dump(date_parse("2006-12--12"));
     var_dump(date_parse("2006-02-30"));
     var_dump(date_parse("2006-03-04"));
@@ -125,9 +124,11 @@ array(12) {
   ["fraction"]=>
   bool(false)
   ["warning_count"]=>
-  int(0)
+  int(1)
   ["warnings"]=>
-  array(0) {
+  array(1) {
+    [11]=>
+    string(27) "The parsed date was invalid"
   }
   ["error_count"]=>
   int(0)
@@ -298,6 +299,6 @@ array(12) {
   bool(false)
 }
 
-Warning: date_parse() expects parameter 1 to be string, array given in %s on line %d
+Warning: date_parse() expects parameter 1 to be string, array given in %sdate_parse_001.php on line %d
 bool(false)
 Done

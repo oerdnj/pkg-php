@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_multibyte.c,v 1.4.2.4.2.3 2008/12/31 11:17:33 sebastian Exp $ */
+/* $Id: zend_multibyte.c,v 1.4.2.4.2.1.2.7 2009/03/18 17:44:25 moriyoshi Exp $ */
 
 #include "zend.h"
 #include "zend_compile.h"
@@ -25,20 +25,21 @@
 #include "zend_multibyte.h"
 
 #ifdef ZEND_MULTIBYTE
-static int zend_multibyte_encoding_filter(char **to, int *to_length, const char *to_encoding, const char *from, int from_length, const char *from_encoding TSRMLS_DC);
-int sjis_input_filter(char **buf, int *length, const char *sjis, int sjis_length TSRMLS_DC);
-int sjis_output_filter(char **buf, int *length, const char *sjis, int sjis_length TSRMLS_DC);
-static char* zend_multibyte_assemble_encoding_list(zend_encoding **encoding_list, int encoding_list_size);
-static int zend_multibyte_parse_encoding_list(const char *encoding_list, int encoding_list_size, zend_encoding ***result, int *result_size);
-static zend_encoding* zend_multibyte_find_script_encoding(zend_encoding *onetime_encoding TSRMLS_DC);
-static zend_encoding* zend_multibyte_detect_unicode(TSRMLS_D);
-static zend_encoding* zend_multibyte_detect_utf_encoding(char *script, int script_size TSRMLS_DC);
+static size_t zend_multibyte_encoding_filter(unsigned char **to, size_t *to_length, const char *to_encoding, const unsigned char *from, size_t from_length, const char *from_encoding TSRMLS_DC);
+size_t sjis_input_filter(unsigned char **buf, size_t *length, const unsigned char *sjis, size_t sjis_length TSRMLS_DC);
+size_t sjis_output_filter(unsigned char **buf, size_t *length, const unsigned char *sjis, size_t sjis_length TSRMLS_DC);
+static char* zend_multibyte_assemble_encoding_list(zend_encoding **encoding_list, size_t encoding_list_size);
+static int zend_multibyte_parse_encoding_list(const char *encoding_list,
+size_t encoding_list_size, zend_encoding ***result, size_t *result_size);
+static zend_encoding *zend_multibyte_find_script_encoding(zend_encoding *onetime_encoding TSRMLS_DC);
+static zend_encoding *zend_multibyte_detect_unicode(TSRMLS_D);
+static zend_encoding *zend_multibyte_detect_utf_encoding(const unsigned char *script, size_t script_size TSRMLS_DC);
 
 /*
  * encodings
  */
-const char *ucs2_aliases[] = {"ISO-10646-UCS-2", "UCS2" , "UNICODE", NULL};
-zend_encoding encoding_ucs2 = {
+static const char *ucs2_aliases[] = {"ISO-10646-UCS-2", "UCS2" , "UNICODE", NULL};
+static zend_encoding encoding_ucs2 = {
 	NULL,
 	NULL,
 	"UCS-2",
@@ -46,7 +47,7 @@ zend_encoding encoding_ucs2 = {
 	0
 };
 
-zend_encoding encoding_ucs2be = {
+static zend_encoding encoding_ucs2be = {
 	NULL,
 	NULL,
 	"UCS-2BE",
@@ -54,7 +55,7 @@ zend_encoding encoding_ucs2be = {
 	0
 };
 
-zend_encoding encoding_ucs2le = {
+static zend_encoding encoding_ucs2le = {
 	NULL,
 	NULL,
 	"UCS-2LE",
@@ -62,8 +63,8 @@ zend_encoding encoding_ucs2le = {
 	0
 };
 
-const char *ucs4_aliases[] = {"ISO-10646-UCS-4", "UCS4", NULL};
-zend_encoding encoding_ucs4 = {
+static const char *ucs4_aliases[] = {"ISO-10646-UCS-4", "UCS4", NULL};
+static zend_encoding encoding_ucs4 = {
 	NULL,
 	NULL,
 	"UCS-4",
@@ -71,7 +72,7 @@ zend_encoding encoding_ucs4 = {
 	0
 };
 
-zend_encoding encoding_ucs4be = {
+static zend_encoding encoding_ucs4be = {
 	NULL,
 	NULL,
 	"UCS-4BE",
@@ -79,7 +80,7 @@ zend_encoding encoding_ucs4be = {
 	0
 };
 
-zend_encoding encoding_ucs4le = {
+static zend_encoding encoding_ucs4le = {
 	NULL,
 	NULL,
 	"UCS-4LE",
@@ -87,8 +88,8 @@ zend_encoding encoding_ucs4le = {
 	0
 };
 
-const char *utf32_aliases[] = {"utf32", NULL};
-zend_encoding encoding_utf32 = {
+static const char *utf32_aliases[] = {"utf32", NULL};
+static zend_encoding encoding_utf32 = {
 	NULL,
 	NULL,
 	"UTF-32",
@@ -96,7 +97,7 @@ zend_encoding encoding_utf32 = {
 	0
 };
 
-zend_encoding encoding_utf32be = {
+static zend_encoding encoding_utf32be = {
 	NULL,
 	NULL,
 	"UTF-32BE",
@@ -104,7 +105,7 @@ zend_encoding encoding_utf32be = {
 	0
 };
 
-zend_encoding encoding_utf32le = {
+static zend_encoding encoding_utf32le = {
 	NULL,
 	NULL,
 	"UTF-32LE",
@@ -112,8 +113,8 @@ zend_encoding encoding_utf32le = {
 	0
 };
 
-const char *utf16_aliases[] = {"utf16", NULL};
-zend_encoding encoding_utf16 = {
+static const char *utf16_aliases[] = {"utf16", NULL};
+static zend_encoding encoding_utf16 = {
 	NULL,
 	NULL,
 	"UTF-16",
@@ -121,7 +122,7 @@ zend_encoding encoding_utf16 = {
 	0
 };
 
-zend_encoding encoding_utf16be = {
+static zend_encoding encoding_utf16be = {
 	NULL,
 	NULL,
 	"UTF-16BE",
@@ -129,7 +130,7 @@ zend_encoding encoding_utf16be = {
 	0
 };
 
-zend_encoding encoding_utf16le = {
+static zend_encoding encoding_utf16le = {
 	NULL,
 	NULL,
 	"UTF-16LE",
@@ -137,8 +138,8 @@ zend_encoding encoding_utf16le = {
 	0
 };
 
-const char *utf8_aliases[] = {"utf8", NULL};
-zend_encoding encoding_utf8 = {
+static const char *utf8_aliases[] = {"utf8", NULL};
+static zend_encoding encoding_utf8 = {
 	NULL,
 	NULL,
 	"UTF-8",
@@ -146,8 +147,8 @@ zend_encoding encoding_utf8 = {
 	1
 };
 
-const char *ascii_aliases[] = {"ANSI_X3.4-1968", "iso-ir-6", "ANSI_X3.4-1986", "ISO_646.irv:1991", "US-ASCII", "ISO646-US", "us", "IBM367", "cp367", "csASCII", NULL};
-zend_encoding encoding_ascii = {
+static const char *ascii_aliases[] = {"ANSI_X3.4-1968", "iso-ir-6", "ANSI_X3.4-1986", "ISO_646.irv:1991", "US-ASCII", "ISO646-US", "us", "IBM367", "cp367", "csASCII", NULL};
+static zend_encoding encoding_ascii = {
 	NULL,
 	NULL,
 	"ASCII",
@@ -155,8 +156,8 @@ zend_encoding encoding_ascii = {
 	1
 };
 
-const char *euc_jp_aliases[] = {"EUC", "EUC_JP", "eucJP", "x-euc-jp", NULL};
-zend_encoding encoding_euc_jp = {
+static const char *euc_jp_aliases[] = {"EUC", "EUC_JP", "eucJP", "x-euc-jp", NULL};
+static zend_encoding encoding_euc_jp = {
 	NULL,
 	NULL,
 	"EUC-JP",
@@ -164,8 +165,8 @@ zend_encoding encoding_euc_jp = {
 	1
 };
 
-const char *sjis_aliases[] = {"x-sjis", "SJIS", "SHIFT-JIS", NULL};
-zend_encoding encoding_sjis = {
+static const char *sjis_aliases[] = {"x-sjis", "SJIS", "SHIFT-JIS", NULL};
+static zend_encoding encoding_sjis = {
 	sjis_input_filter,
 	sjis_output_filter,
 	"Shift_JIS",
@@ -173,8 +174,8 @@ zend_encoding encoding_sjis = {
 	0
 };
 
-const char *eucjp_win_aliases[] = {"eucJP-open", NULL};
-zend_encoding encoding_eucjp_win = {
+static const char *eucjp_win_aliases[] = {"eucJP-open", NULL};
+static zend_encoding encoding_eucjp_win = {
 	NULL,
 	NULL,
 	"eucJP-win",
@@ -182,8 +183,8 @@ zend_encoding encoding_eucjp_win = {
 	1
 };
 
-const char *sjis_win_aliases[] = {"SJIS-open", "MS_Kanji", "Windows-31J", "CP932", NULL};
-zend_encoding encoding_sjis_win = {
+static const char *sjis_win_aliases[] = {"SJIS-open", "MS_Kanji", "Windows-31J", "CP932", NULL};
+static zend_encoding encoding_sjis_win = {
 	/* sjis-filters does not care about diffs of Shift_JIS and CP932 */
 	sjis_input_filter,
 	sjis_output_filter,
@@ -192,8 +193,8 @@ zend_encoding encoding_sjis_win = {
 	0
 };
 
-const char *jis_aliases[] = {"ISO-2022-JP", NULL};
-zend_encoding encoding_jis = {
+static const char *jis_aliases[] = {"ISO-2022-JP", NULL};
+static zend_encoding encoding_jis = {
 	NULL,
 	NULL,
 	"JIS",
@@ -201,8 +202,8 @@ zend_encoding encoding_jis = {
 	0
 };
 
-const char *euc_cn_aliases[] = {"CN-GB", "EUC_CN", "eucCN", "x-euc-cn", "gb2312", NULL};
-zend_encoding encoding_euc_cn = {
+static const char *euc_cn_aliases[] = {"CN-GB", "EUC_CN", "eucCN", "x-euc-cn", "gb2312", NULL};
+static zend_encoding encoding_euc_cn = {
 	NULL,
 	NULL,
 	"EUC-CN",
@@ -210,8 +211,8 @@ zend_encoding encoding_euc_cn = {
 	1
 };
 
-const char *cp936_aliases[] = {"CP-936", NULL};
-zend_encoding encoding_cp936 = {
+static const char *cp936_aliases[] = {"CP-936", NULL};
+static zend_encoding encoding_cp936 = {
 	NULL,
 	NULL,
 	"CP936",
@@ -219,8 +220,8 @@ zend_encoding encoding_cp936 = {
 	0
 };
 
-const char *hz_aliases[] = {"HZ-GB-2312", NULL};
-zend_encoding encoding_hz = {
+static const char *hz_aliases[] = {"HZ-GB-2312", NULL};
+static zend_encoding encoding_hz = {
 	NULL,
 	NULL,
 	"HZ",
@@ -228,8 +229,8 @@ zend_encoding encoding_hz = {
 	0
 };
 
-const char *euc_tw_aliases[] = {"EUC_TW", "eucTW", "x-euc-tw", NULL};
-zend_encoding encoding_euc_tw = {
+static const char *euc_tw_aliases[] = {"EUC_TW", "eucTW", "x-euc-tw", NULL};
+static zend_encoding encoding_euc_tw = {
 	NULL,
 	NULL,
 	"EUC-TW",
@@ -237,8 +238,8 @@ zend_encoding encoding_euc_tw = {
 	1
 };
 
-const char *big5_aliases[] = {"BIG5", "CN-BIG5", "BIG-FIVE", "BIGFIVE", "CP950", NULL};
-zend_encoding encoding_big5 = {
+static const char *big5_aliases[] = {"BIG5", "CN-BIG5", "BIG-FIVE", "BIGFIVE", "CP950", NULL};
+static zend_encoding encoding_big5 = {
 	NULL,
 	NULL,
 	"BIG-5",
@@ -246,8 +247,8 @@ zend_encoding encoding_big5 = {
 	0
 };
 
-const char *euc_kr_aliases[] = {"EUC_KR", "eucKR", "x-euc-kr", NULL};
-zend_encoding encoding_euc_kr = {
+static const char *euc_kr_aliases[] = {"EUC_KR", "eucKR", "x-euc-kr", NULL};
+static zend_encoding encoding_euc_kr = {
 	NULL,
 	NULL,
 	"EUC-KR",
@@ -255,8 +256,8 @@ zend_encoding encoding_euc_kr = {
 	1
 };
 
-const char *uhc_aliases[] = {"CP949", NULL};
-zend_encoding encoding_uhc = {
+static const char *uhc_aliases[] = {"CP949", NULL};
+static zend_encoding encoding_uhc = {
 	NULL,
 	NULL,
 	"UHC",
@@ -264,7 +265,7 @@ zend_encoding encoding_uhc = {
 	1
 };
 
-zend_encoding encoding_2022kr = {
+static zend_encoding encoding_2022kr = {
 	NULL,
 	NULL,
 	"ISO-2022-KR",
@@ -272,8 +273,8 @@ zend_encoding encoding_2022kr = {
 	0
 };
 
-const char *cp1252_aliases[] = {"cp1252", NULL};
-zend_encoding encoding_cp1252 = {
+static const char *cp1252_aliases[] = {"cp1252", NULL};
+static zend_encoding encoding_cp1252 = {
 	NULL,
 	NULL,
 	"Windows-1252",
@@ -281,8 +282,8 @@ zend_encoding encoding_cp1252 = {
 	1
 };
 
-const char *iso_8859_1_aliases[] = {"ISO_8859-1", "latin1", NULL};
-zend_encoding encoding_8859_1 = {
+static const char *iso_8859_1_aliases[] = {"ISO_8859-1", "latin1", NULL};
+static zend_encoding encoding_8859_1 = {
 	NULL,
 	NULL,
 	"ISO-8859-1",
@@ -290,8 +291,8 @@ zend_encoding encoding_8859_1 = {
 	1
 };
 
-const char *iso_8859_2_aliases[] = {"ISO_8859-2", "latin2", NULL};
-zend_encoding encoding_8859_2 = {
+static const char *iso_8859_2_aliases[] = {"ISO_8859-2", "latin2", NULL};
+static zend_encoding encoding_8859_2 = {
 	NULL,
 	NULL,
 	"ISO-8859-2",
@@ -299,8 +300,8 @@ zend_encoding encoding_8859_2 = {
 	1
 };
 
-const char *iso_8859_3_aliases[] = {"ISO_8859-3", "latin3", NULL};
-zend_encoding encoding_8859_3 = {
+static const char *iso_8859_3_aliases[] = {"ISO_8859-3", "latin3", NULL};
+static zend_encoding encoding_8859_3 = {
 	NULL,
 	NULL,
 	"ISO-8859-3",
@@ -308,8 +309,8 @@ zend_encoding encoding_8859_3 = {
 	1
 };
 
-const char *iso_8859_4_aliases[] = {"ISO_8859-4", "latin4", NULL};
-zend_encoding encoding_8859_4 = {
+static const char *iso_8859_4_aliases[] = {"ISO_8859-4", "latin4", NULL};
+static zend_encoding encoding_8859_4 = {
 	NULL,
 	NULL,
 	"ISO-8859-4",
@@ -317,8 +318,8 @@ zend_encoding encoding_8859_4 = {
 	1
 };
 
-const char *iso_8859_5_aliases[] = {"ISO_8859-5", "cyrillic", NULL};
-zend_encoding encoding_8859_5 = {
+static const char *iso_8859_5_aliases[] = {"ISO_8859-5", "cyrillic", NULL};
+static zend_encoding encoding_8859_5 = {
 	NULL,
 	NULL,
 	"ISO-8859-5",
@@ -326,8 +327,8 @@ zend_encoding encoding_8859_5 = {
 	1
 };
 
-const char *iso_8859_6_aliases[] = {"ISO_8859-6", "arabic", NULL};
-zend_encoding encoding_8859_6 = {
+static const char *iso_8859_6_aliases[] = {"ISO_8859-6", "arabic", NULL};
+static zend_encoding encoding_8859_6 = {
 	NULL,
 	NULL,
 	"ISO-8859-6",
@@ -335,8 +336,8 @@ zend_encoding encoding_8859_6 = {
 	1
 };
 
-const char *iso_8859_7_aliases[] = {"ISO_8859-7", "greek", NULL};
-zend_encoding encoding_8859_7 = {
+static const char *iso_8859_7_aliases[] = {"ISO_8859-7", "greek", NULL};
+static zend_encoding encoding_8859_7 = {
 	NULL,
 	NULL,
 	"ISO-8859-7",
@@ -344,8 +345,8 @@ zend_encoding encoding_8859_7 = {
 	1
 };
 
-const char *iso_8859_8_aliases[] = {"ISO_8859-8", "hebrew", NULL};
-zend_encoding encoding_8859_8 = {
+static const char *iso_8859_8_aliases[] = {"ISO_8859-8", "hebrew", NULL};
+static zend_encoding encoding_8859_8 = {
 	NULL,
 	NULL,
 	"ISO-8859-8",
@@ -353,8 +354,8 @@ zend_encoding encoding_8859_8 = {
 	1
 };
 
-const char *iso_8859_9_aliases[] = {"ISO_8859-9", "latin5", NULL};
-zend_encoding encoding_8859_9 = {
+static const char *iso_8859_9_aliases[] = {"ISO_8859-9", "latin5", NULL};
+static zend_encoding encoding_8859_9 = {
 	NULL,
 	NULL,
 	"ISO-8859-9",
@@ -362,8 +363,8 @@ zend_encoding encoding_8859_9 = {
 	1
 };
 
-const char *iso_8859_10_aliases[] = {"ISO_8859-10", "latin6", NULL};
-zend_encoding encoding_8859_10 = {
+static const char *iso_8859_10_aliases[] = {"ISO_8859-10", "latin6", NULL};
+static zend_encoding encoding_8859_10 = {
 	NULL,
 	NULL,
 	"ISO-8859-10",
@@ -371,8 +372,8 @@ zend_encoding encoding_8859_10 = {
 	1
 };
 
-const char *iso_8859_13_aliases[] = {"ISO_8859-13", NULL};
-zend_encoding encoding_8859_13 = {
+static const char *iso_8859_13_aliases[] = {"ISO_8859-13", NULL};
+static zend_encoding encoding_8859_13 = {
 	NULL,
 	NULL,
 	"ISO-8859-13",
@@ -380,8 +381,8 @@ zend_encoding encoding_8859_13 = {
 	1
 };
 
-const char *iso_8859_14_aliases[] = {"ISO_8859-14", "latin8", NULL};
-zend_encoding encoding_8859_14 = {
+static const char *iso_8859_14_aliases[] = {"ISO_8859-14", "latin8", NULL};
+static zend_encoding encoding_8859_14 = {
 	NULL,
 	NULL,
 	"ISO-8859-14",
@@ -389,8 +390,8 @@ zend_encoding encoding_8859_14 = {
 	1
 };
 
-const char *iso_8859_15_aliases[] = {"ISO_8859-15", NULL};
-zend_encoding encoding_8859_15 = {
+static const char *iso_8859_15_aliases[] = {"ISO_8859-15", NULL};
+static zend_encoding encoding_8859_15 = {
 	NULL,
 	NULL,
 	"ISO-8859-15",
@@ -398,8 +399,8 @@ zend_encoding encoding_8859_15 = {
 	1
 };
 
-const char *cp1251_aliases[] = {"CP1251", "CP-1251", "WINDOWS-1251", NULL};
-zend_encoding encoding_cp1251 = {
+static const char *cp1251_aliases[] = {"CP1251", "CP-1251", "WINDOWS-1251", NULL};
+static zend_encoding encoding_cp1251 = {
 	NULL,
 	NULL,
 	"Windows-1251",
@@ -407,8 +408,8 @@ zend_encoding encoding_cp1251 = {
 	1
 };
 
-const char *cp866_aliases[] = {"CP866", "CP-866", "IBM-866", NULL};
-zend_encoding encoding_cp866 = {
+static const char *cp866_aliases[] = {"CP866", "CP-866", "IBM-866", NULL};
+static zend_encoding encoding_cp866 = {
 	NULL,
 	NULL,
 	"CP866",
@@ -416,8 +417,8 @@ zend_encoding encoding_cp866 = {
 	1
 };
 
-const char *koi8r_aliases[] = {"KOI8-R", "KOI8R", NULL};
-zend_encoding encoding_koi8r = {
+static const char *koi8r_aliases[] = {"KOI8-R", "KOI8R", NULL};
+static zend_encoding encoding_koi8r = {
 	NULL,
 	NULL,
 	"KOI8-R",
@@ -425,7 +426,43 @@ zend_encoding encoding_koi8r = {
 	1
 };
 
-zend_encoding *zend_encoding_table[] = {
+static const char *koi8u_aliases[] = {"KOI8-U", "KOI8U", NULL};
+static zend_encoding encoding_koi8u = {
+	NULL,
+	NULL,
+	"KOI8-U",
+	(const char *(*)[])&koi8u_aliases,
+	1
+};
+
+static const char *cp1254_aliases[] = {"cp1254", NULL};
+static zend_encoding encoding_cp1254 = {
+	NULL,
+	NULL,
+	"Windows-1254",
+	(const char *(*)[])&cp1254_aliases,
+	1
+};
+
+static const char *armscii8_aliases[] = { "ArmSCII8", "ARMSCII-8", "ARMSCII8", NULL};
+static zend_encoding encoding_armscii8 = {
+	NULL,
+	NULL,
+	"ArmSCII-8",
+	(const char *(*)[])&armscii8_aliases,
+	1
+};
+
+static const char *cp850_aliases[] = {"IBM850", NULL};
+static zend_encoding encoding_cp850 = {
+	NULL,
+	NULL,
+	"CP850",
+	(const char *(*)[])&cp850_aliases,
+	1
+};
+
+static zend_encoding *zend_encoding_table[] = {
 	&encoding_ucs4,
 	&encoding_ucs4be,
 	&encoding_ucs4le,
@@ -470,12 +507,17 @@ zend_encoding *zend_encoding_table[] = {
 	&encoding_cp1251,
 	&encoding_cp866,
 	&encoding_koi8r,
+	&encoding_koi8u,
+	&encoding_armscii8,
+	&encoding_cp1254,
+	&encoding_cp850,
 	NULL
 };
 
 
 
-ZEND_API int zend_multibyte_set_script_encoding(char *encoding_list, int encoding_list_size TSRMLS_DC)
+ZEND_API int zend_multibyte_set_script_encoding(const char *encoding_list,
+size_t encoding_list_size TSRMLS_DC)
 {
 	if (CG(script_encoding_list)) {
 		efree(CG(script_encoding_list));
@@ -493,7 +535,7 @@ ZEND_API int zend_multibyte_set_script_encoding(char *encoding_list, int encodin
 }
 
 
-ZEND_API int zend_multibyte_set_internal_encoding(char *encoding_name, int encoding_name_size TSRMLS_DC)
+ZEND_API int zend_multibyte_set_internal_encoding(const char *encoding_name TSRMLS_DC)
 {
 	CG(internal_encoding) = zend_multibyte_fetch_encoding(encoding_name);
 	return 0;
@@ -558,7 +600,7 @@ ZEND_API int zend_multibyte_set_filter(zend_encoding *onetime_encoding TSRMLS_DC
 }
 
 
-ZEND_API zend_encoding* zend_multibyte_fetch_encoding(char *encoding_name)
+ZEND_API zend_encoding* zend_multibyte_fetch_encoding(const char *encoding_name)
 {
 	int i, j;
 	zend_encoding *encoding;
@@ -568,7 +610,7 @@ ZEND_API zend_encoding* zend_multibyte_fetch_encoding(char *encoding_name)
 	}
 
 	for (i = 0; (encoding = zend_encoding_table[i]) != NULL; i++) {
-		if (zend_binary_strcasecmp((char*)encoding->name, strlen(encoding->name), encoding_name, strlen(encoding_name)) == 0) {
+		if (zend_binary_strcasecmp(encoding->name, strlen(encoding->name), encoding_name, strlen(encoding_name)) == 0) {
 			return encoding;
 		}
 	}
@@ -576,7 +618,7 @@ ZEND_API zend_encoding* zend_multibyte_fetch_encoding(char *encoding_name)
 	for (i = 0; (encoding = zend_encoding_table[i]) != NULL; i++) {
 		if (encoding->aliases != NULL) {
 			for (j = 0; (*encoding->aliases)[j] != NULL; j++) {
-				if (zend_binary_strcasecmp((char*)(*encoding->aliases)[j], strlen((*encoding->aliases)[j]), encoding_name, strlen(encoding_name)) == 0) {
+				if (zend_binary_strcasecmp((*encoding->aliases)[j], strlen((*encoding->aliases)[j]), encoding_name, strlen(encoding_name)) == 0) {
 					return encoding;
 				}
 			}
@@ -587,7 +629,8 @@ ZEND_API zend_encoding* zend_multibyte_fetch_encoding(char *encoding_name)
 }
 
 
-ZEND_API int zend_multibyte_script_encoding_filter(char **to, int *to_length, const char *from, int from_length TSRMLS_DC)
+ZEND_API size_t zend_multibyte_script_encoding_filter(unsigned char **to, size_t
+*to_length, const unsigned char *from, size_t from_length TSRMLS_DC)
 {
 	const char *name;
 
@@ -600,7 +643,7 @@ ZEND_API int zend_multibyte_script_encoding_filter(char **to, int *to_length, co
 	return zend_multibyte_encoding_filter(to, to_length, name, from, from_length, LANG_SCNG(script_encoding)->name TSRMLS_CC);
 }
 
-ZEND_API int zend_multibyte_internal_encoding_filter(char **to, int *to_length, const char *from, int from_length TSRMLS_DC)
+ZEND_API size_t zend_multibyte_internal_encoding_filter(unsigned char **to, size_t *to_length, const unsigned char *from, size_t from_length TSRMLS_DC)
 {
 	const char *name;
 
@@ -613,9 +656,9 @@ ZEND_API int zend_multibyte_internal_encoding_filter(char **to, int *to_length, 
 	return zend_multibyte_encoding_filter(to, to_length, LANG_SCNG(internal_encoding)->name, from, from_length, name TSRMLS_CC);
 }
 
-static int zend_multibyte_encoding_filter(char **to, int *to_length, const char *to_encoding, const char *from, int from_length, const char *from_encoding TSRMLS_DC)
+static size_t zend_multibyte_encoding_filter(unsigned char **to, size_t *to_length, const char *to_encoding, const unsigned char *from, size_t from_length, const char *from_encoding TSRMLS_DC)
 {
-	int oddlen;
+	size_t oddlen;
 
 	if (!CG(encoding_converter)) {
 		return 0;
@@ -658,21 +701,22 @@ static const unsigned char table_sjis[] = { /* 0x80-0x9f,0xE0-0xEF */
   3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 0, 0, 0
 };
 
-int sjis_input_filter(char **buf, int *length, const char *sjis, int sjis_length TSRMLS_DC)
+size_t sjis_input_filter(unsigned char **buf, size_t *length, const unsigned char *sjis, size_t sjis_length TSRMLS_DC)
 {
-	unsigned char *p, *q;
+	const unsigned char *p;
+	unsigned char *q;
 	unsigned char  c1, c2;
 
-	*buf = (char*)emalloc(sjis_length*3/2+1);
+	*buf = (unsigned char*)emalloc(sjis_length * 3 / 2 + 1);
 	if (!*buf)
 		return 0;
 	*length = 0;
 
-	p = (unsigned char*)sjis;
-	q = (unsigned char*)*buf;
+	p = sjis;
+	q = *buf;
 
 	/* convert [SJIS -> EUC-JP] (for lex scan) -- some other better ways? */
-	while (*p && (p-(unsigned char*)sjis) < sjis_length) {
+	while (*p && (p - sjis) < sjis_length) {
 		if (!(*p & 0x80)) {
 			*q++ = *p++;
 			continue;
@@ -694,7 +738,7 @@ int sjis_input_filter(char **buf, int *length, const char *sjis, int sjis_length
 		if (table_sjis[*p] == 2) {
 			/* 2 byte kanji code */
 			c1 = *p++;
-			if (!*p || (p-(unsigned char*)sjis) >= sjis_length) {
+			if (!*p || (p - sjis) >= sjis_length) {
 				break;
 			}
 			c2 = *p++;
@@ -725,11 +769,11 @@ int sjis_input_filter(char **buf, int *length, const char *sjis, int sjis_length
 			 * so, these code are for perfect RESTORING in sjis_output_filter()
 			 */
 			c1 = *p++;
-			if (!*p || (p-(unsigned char*)sjis) >= sjis_length) {
+			if (!*p || (p - sjis) >= sjis_length) {
 				break;
 			}
 			c2 = *p++;
-			*q++ = (char)0x8f;
+			*q++ = 0x8f;
 			/*
 			 * MAP TO (EUC-JP):
 			 * type A: 0xeba1 - 0xf4fe
@@ -754,8 +798,8 @@ int sjis_input_filter(char **buf, int *length, const char *sjis, int sjis_length
 			*q++ = c2;
 		}
 	}
-	*q = (char)NULL;
-	*length = (char*)q - *buf;
+	*q = '\0';
+	*length = q - *buf;
 
 	return *length;
 }
@@ -779,18 +823,18 @@ static const unsigned char table_eucjp[] = { /* 0xA1-0xFE */
   2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1
 };
 
-int sjis_output_filter(char **sjis, int *sjis_length, const char *buf, int length TSRMLS_DC)
+size_t sjis_output_filter(unsigned char **sjis, size_t *sjis_length, const unsigned char *buf, size_t length TSRMLS_DC)
 {
 	unsigned char c1, c2;
-	char *p;
-	const char *q;
+	unsigned char *p;
+	const unsigned char *q;
 
 	if (!sjis || !sjis_length) {
 		return 0;
 	}
 
 	/* always Shift_JIS <= EUC-JP */
-	*sjis = (char*)emalloc(length+1);
+	*sjis = (unsigned char*)emalloc(length+1);
 	if (!sjis) {
 		return 0;
 	}
@@ -798,14 +842,14 @@ int sjis_output_filter(char **sjis, int *sjis_length, const char *buf, int lengt
 	q = buf;
 
 	/* restore converted strings [EUC-JP -> Shift_JIS] */
-	while (*q) {
+	while (*q && (q - buf) < length) {
 		if (!(*q & 0x80)) {
 			*p++ = *q++;
 			continue;
 		}
 
 		/* hankaku kana */
-		if (*q == (char)0x8e) {
+		if (*q == 0x8e) {
 			q++;
 			if (*q) {
 				*p++ = *q++;
@@ -814,7 +858,7 @@ int sjis_output_filter(char **sjis, int *sjis_length, const char *buf, int lengt
 		}
 
 		/* 2 byte kanji code */
-		if (table_eucjp[(unsigned char)*q] == 2) {
+		if (table_eucjp[*q] == 2) {
 			c1 = (*q++ & ~0x80) & 0xff;
 			if (*q) {
 				c2 = (*q++ & ~0x80) & 0xff;
@@ -837,7 +881,7 @@ int sjis_output_filter(char **sjis, int *sjis_length, const char *buf, int lengt
 			continue;
 		}
 
-		if (*q == (char)0x8f) {
+		if (*q == 0x8f) {
 			q++;
 			if (*q) {
 				c1 = (*q++ & ~0x80) & 0xff;
@@ -882,7 +926,7 @@ int sjis_output_filter(char **sjis, int *sjis_length, const char *buf, int lengt
 }
 
 
-static char* zend_multibyte_assemble_encoding_list(zend_encoding **encoding_list, int encoding_list_size)
+static char *zend_multibyte_assemble_encoding_list(zend_encoding **encoding_list, size_t encoding_list_size)
 {
 	int i, list_size = 0;
 	const char *name;
@@ -901,7 +945,7 @@ static char* zend_multibyte_assemble_encoding_list(zend_encoding **encoding_list
 				if (!list) {
 					return NULL;
 				}
-				*list = (char)NULL;
+				*list = '\0';
 			} else {
 				list = (char*)erealloc(list, list_size);
 				if (!list) {
@@ -916,7 +960,8 @@ static char* zend_multibyte_assemble_encoding_list(zend_encoding **encoding_list
 }
 
 
-static int zend_multibyte_parse_encoding_list(const char *encoding_list, int encoding_list_size, zend_encoding ***result, int *result_size)
+static int zend_multibyte_parse_encoding_list(const char *encoding_list,
+size_t encoding_list_size, zend_encoding ***result, size_t *result_size)
 {
 	int n, size;
 	char *p, *p1, *p2, *endp, *tmpstr;
@@ -1034,7 +1079,7 @@ static zend_encoding* zend_multibyte_detect_unicode(TSRMLS_D)
 {
 	zend_encoding *script_encoding = NULL;
 	int bom_size;
-	char *script;
+	unsigned char *script;
 
 	if (LANG_SCNG(script_org_size) < sizeof(BOM_UTF32_LE)-1) {
 		return NULL;
@@ -1060,7 +1105,7 @@ static zend_encoding* zend_multibyte_detect_unicode(TSRMLS_D)
 
 	if (script_encoding) {
 		/* remove BOM */
-		script = (char*)emalloc(LANG_SCNG(script_org_size)+1-bom_size);
+		script = (unsigned char*)emalloc(LANG_SCNG(script_org_size)+1-bom_size);
 		memcpy(script, LANG_SCNG(script_org)+bom_size, LANG_SCNG(script_org_size)+1-bom_size);
 		efree(LANG_SCNG(script_org));
 		LANG_SCNG(script_org) = script;
@@ -1078,9 +1123,9 @@ static zend_encoding* zend_multibyte_detect_unicode(TSRMLS_D)
 	return NULL;
 }
 
-static zend_encoding* zend_multibyte_detect_utf_encoding(char *script, int script_size TSRMLS_DC)
+static zend_encoding *zend_multibyte_detect_utf_encoding(const unsigned char *script, size_t script_size TSRMLS_DC)
 {
-	char *p;
+	const unsigned char *p;
 	int wchar_size = 2;
 	int le = 0;
 
@@ -1091,7 +1136,7 @@ static zend_encoding* zend_multibyte_detect_utf_encoding(char *script, int scrip
 		if (!p) {
 			break;
 		}
-		if (*(p+1) == (char)NULL && *(p+2) == (char)NULL) {
+		if (*(p+1) == '\0' && *(p+2) == '\0') {
 			wchar_size = 4;
 			break;
 		}
@@ -1103,11 +1148,11 @@ static zend_encoding* zend_multibyte_detect_utf_encoding(char *script, int scrip
 	/* BE or LE? */
 	p = script;
 	while ((p-script) < script_size) {
-		if (*p == (char)NULL && *(p+wchar_size-1) != (char)NULL) {
+		if (*p == '\0' && *(p+wchar_size-1) != '\0') {
 			/* BE */
 			le = 0;
 			break;
-		} else if (*p != (char)NULL && *(p+wchar_size-1) == (char)NULL) {
+		} else if (*p != '\0' && *(p+wchar_size-1) == '\0') {
 			/* LE* */
 			le = 1;
 			break;

@@ -26,6 +26,6 @@ echo "Done";
 
 -- Testing posix_get_last_error() function with one argument --
 
-Warning: Wrong parameter count for posix_get_last_error() in %s on line %d
+Warning: posix_get_last_error() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 Done

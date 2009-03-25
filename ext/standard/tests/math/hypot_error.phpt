@@ -23,11 +23,11 @@ hypot(36,25,0);
 
 -- Testing hypot() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for hypot() in %s on line %d
+Warning: hypot() expects exactly 2 parameters, 0 given in %s on line %d
 
-Warning: Wrong parameter count for hypot() in %s on line %d
+Warning: hypot() expects exactly 2 parameters, 1 given in %s on line %d
 
 -- Testing hypot() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for hypot() in %s on line %d
+Warning: hypot() expects exactly 2 parameters, 3 given in %s on line %d
 ===Done===

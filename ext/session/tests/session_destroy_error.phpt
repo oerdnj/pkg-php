@@ -97,122 +97,122 @@ ob_end_flush();
 
 -- Iteration 1 --
 
-Warning: Wrong parameter count for session_destroy() in %s on line %d
+Warning: session_destroy() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
 -- Iteration 2 --
 
-Warning: Wrong parameter count for session_destroy() in %s on line %d
+Warning: session_destroy() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
 -- Iteration 3 --
 
-Warning: Wrong parameter count for session_destroy() in %s on line %d
+Warning: session_destroy() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
 -- Iteration 4 --
 
-Warning: Wrong parameter count for session_destroy() in %s on line %d
+Warning: session_destroy() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
 -- Iteration 5 --
 
-Warning: Wrong parameter count for session_destroy() in %s on line %d
+Warning: session_destroy() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
 -- Iteration 6 --
 
-Warning: Wrong parameter count for session_destroy() in %s on line %d
+Warning: session_destroy() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
 -- Iteration 7 --
 
-Warning: Wrong parameter count for session_destroy() in %s on line %d
+Warning: session_destroy() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
 -- Iteration 8 --
 
-Warning: Wrong parameter count for session_destroy() in %s on line %d
+Warning: session_destroy() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
 -- Iteration 9 --
 
-Warning: Wrong parameter count for session_destroy() in %s on line %d
+Warning: session_destroy() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
 -- Iteration 10 --
 
-Warning: Wrong parameter count for session_destroy() in %s on line %d
+Warning: session_destroy() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
 -- Iteration 11 --
 
-Warning: Wrong parameter count for session_destroy() in %s on line %d
+Warning: session_destroy() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
 -- Iteration 12 --
 
-Warning: Wrong parameter count for session_destroy() in %s on line %d
+Warning: session_destroy() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
 -- Iteration 13 --
 
-Warning: Wrong parameter count for session_destroy() in %s on line %d
+Warning: session_destroy() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
 -- Iteration 14 --
 
-Warning: Wrong parameter count for session_destroy() in %s on line %d
+Warning: session_destroy() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
 -- Iteration 15 --
 
-Warning: Wrong parameter count for session_destroy() in %s on line %d
+Warning: session_destroy() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
 -- Iteration 16 --
 
-Warning: Wrong parameter count for session_destroy() in %s on line %d
+Warning: session_destroy() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
 -- Iteration 17 --
 
-Warning: Wrong parameter count for session_destroy() in %s on line %d
+Warning: session_destroy() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
 -- Iteration 18 --
 
-Warning: Wrong parameter count for session_destroy() in %s on line %d
+Warning: session_destroy() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
 -- Iteration 19 --
 
-Warning: Wrong parameter count for session_destroy() in %s on line %d
+Warning: session_destroy() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
 -- Iteration 20 --
 
-Warning: Wrong parameter count for session_destroy() in %s on line %d
+Warning: session_destroy() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
 -- Iteration 21 --
 
-Warning: Wrong parameter count for session_destroy() in %s on line %d
+Warning: session_destroy() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
 -- Iteration 22 --
 
-Warning: Wrong parameter count for session_destroy() in %s on line %d
+Warning: session_destroy() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
 -- Iteration 23 --
 
-Warning: Wrong parameter count for session_destroy() in %s on line %d
+Warning: session_destroy() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
 -- Iteration 24 --
 
-Warning: Wrong parameter count for session_destroy() in %s on line %d
+Warning: session_destroy() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 Done
 

@@ -1,7 +1,7 @@
 --TEST--
 Test strip_tags() function : error conditions
 --INI--
-set short_open_tag = on
+short_open_tag = on
 --FILE--
 <?php
 /* Prototype  : string strip_tags(string $str [, string $allowable_tags])
@@ -30,11 +30,11 @@ echo "Done";
 
 -- Testing strip_tags() function with Zero arguments --
 
-Warning: Wrong parameter count for strip_tags() in %s on line %d
+Warning: strip_tags() expects at least 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing strip_tags() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for strip_tags() in %s on line %d
+Warning: strip_tags() expects at most 2 parameters, 3 given in %s on line %d
 NULL
 Done

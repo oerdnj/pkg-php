@@ -1,5 +1,5 @@
 --TEST--
-ob_start(): don't allow non-static functions as static callbacks.
+ob_start(): non-static method as static callbacks.
 --FILE--
 <?php
 /* 
@@ -24,8 +24,10 @@ var_dump(ob_start('C::h'));
 checkAndClean();
 
 ?>
---EXPECT--
-bool(false)
+--EXPECTF--
+Strict Standards: Non-static method C::h() should not be called statically in %s on line 20
+bool(true)
 Array
 (
+    [0] => C::h
 )

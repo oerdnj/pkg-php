@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_olechar.c,v 1.5.2.1.2.5 2008/12/31 11:17:36 sebastian Exp $ */
+/* $Id: com_olechar.c,v 1.5.2.1.2.3.2.2 2008/12/31 11:15:35 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

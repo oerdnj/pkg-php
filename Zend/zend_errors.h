@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_errors.h,v 1.18.2.1.2.7 2008/12/31 11:17:33 sebastian Exp $ */
+/* $Id: zend_errors.h,v 1.18.2.1.2.5.2.4 2008/12/31 11:15:32 sebastian Exp $ */
 
 #ifndef ZEND_ERRORS_H
 #define ZEND_ERRORS_H
@@ -35,8 +35,10 @@
 #define E_USER_NOTICE		(1<<10L)
 #define E_STRICT			(1<<11L)
 #define E_RECOVERABLE_ERROR	(1<<12L)
+#define E_DEPRECATED		(1<<13L)
+#define E_USER_DEPRECATED	(1<<14L)
 
-#define E_ALL (E_ERROR | E_WARNING | E_PARSE | E_NOTICE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_USER_ERROR | E_USER_WARNING | E_USER_NOTICE | E_RECOVERABLE_ERROR)
+#define E_ALL (E_ERROR | E_WARNING | E_PARSE | E_NOTICE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_USER_ERROR | E_USER_WARNING | E_USER_NOTICE | E_RECOVERABLE_ERROR | E_DEPRECATED | E_USER_DEPRECATED)
 #define E_CORE (E_CORE_ERROR | E_CORE_WARNING)
 
 #endif /* ZEND_ERRORS_H */

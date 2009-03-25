@@ -69,7 +69,7 @@ foreach($values as $value) {
 fclose($fp);
 echo "Done";
 ?>
---EXPECT--
+--EXPECTF--
 *** Testing fseek() : usage variations ***
 
 Arg value -100 
@@ -125,19 +125,27 @@ int(0)
 int(3)
 
 Arg value  
-int(0)
+
+Warning: fseek() expects parameter 3 to be long, string given in %s on line %d
+bool(false)
 int(3)
 
 Arg value  
-int(0)
+
+Warning: fseek() expects parameter 3 to be long, string given in %s on line %d
+bool(false)
 int(3)
 
 Arg value string 
-int(0)
+
+Warning: fseek() expects parameter 3 to be long, string given in %s on line %d
+bool(false)
 int(3)
 
 Arg value string 
-int(0)
+
+Warning: fseek() expects parameter 3 to be long, string given in %s on line %d
+bool(false)
 int(3)
 
 Arg value  
@@ -148,3 +156,4 @@ Arg value
 int(0)
 int(3)
 Done
+

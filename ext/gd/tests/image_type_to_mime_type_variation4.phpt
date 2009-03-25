@@ -1,5 +1,11 @@
 --TEST--
-Test image_type_to_mime_type() function : usage variations  - Passing IMAGETYPE_ICO and IMAGETYPE_SWC
+Test image_type_to_mime_type() function : usage variations - Passing IMAGETYPE_ICO and IMAGETYPE_SWC
+--SKIPIF--
+<?php
+	if (!defined("IMAGETYPE_SWC") || !defined("IMAGETYPE_ICO") || !extension_loaded('zlib')) {
+		die("skip zlib extension is not available or IMAGETYPE_SWC/IMAGETYPE_ICO is not defined ");
+	}
+?>
 --FILE--
 <?php
 /* Prototype  : string image_type_to_mime_type(int imagetype)
@@ -16,8 +22,8 @@ var_dump( image_type_to_mime_type(IMAGETYPE_ICO) );
 var_dump( image_type_to_mime_type(IMAGETYPE_SWC) );
 ?>
 ===DONE===
---EXPECTREGEX--
-\*\*\* Testing image_type_to_mime_type\(\) : usage variations \*\*\*
-string\(24\) "application\/octet-stream"
-string\(2[49]\) "application\/(x-shockwave-flash|octet-stream)"
+--EXPECT--
+*** Testing image_type_to_mime_type() : usage variations ***
+string(24) "image/vnd.microsoft.icon"
+string(29) "application/x-shockwave-flash"
 ===DONE===

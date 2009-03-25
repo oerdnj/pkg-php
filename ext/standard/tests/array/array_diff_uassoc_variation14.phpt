@@ -34,7 +34,7 @@ var_dump( array_diff_uassoc($array1, $array2, $value) );
 ===DONE===
 --EXPECTF--
 *** Testing array_diff_uassoc() : usage variation ***
-Error: 4096 - Object of class classWithoutToString could not be converted to string, %s(%d)
-Error: 2 - array_diff_uassoc(): Not a valid callback , %s(%d)
+Error: 2 - array_diff_uassoc() expects parameter 3 to be a valid callback, no array or string given, %s(%d)
 NULL
 ===DONE===
+

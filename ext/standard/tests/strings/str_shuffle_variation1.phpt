@@ -100,16 +100,16 @@ string(5) "%s"
 string(12) "%s"
 -- Iteration 9 --
 
-Notice: Array to string conversion in %s on line %d
-string(5) "%s"
+Warning: str_shuffle() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 10 --
 
-Notice: Array to string conversion in %s on line %d
-string(5) "%s"
+Warning: str_shuffle() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 11 --
 
-Notice: Array to string conversion in %s on line %d
-string(5) "%s"
+Warning: str_shuffle() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 12 --
 string(1) "1"
 -- Iteration 13 --
@@ -125,7 +125,9 @@ string(0) ""
 -- Iteration 18 --
 string(13) "%s"
 -- Iteration 19 --
-string(%d) "%s"
+
+Warning: str_shuffle() expects parameter 1 to be string, resource given in %s on line %d
+NULL
 -- Iteration 20 --
 string(0) ""
 -- Iteration 21 --

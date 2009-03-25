@@ -69,7 +69,7 @@ bool(false)
 bool(true)
 -- Iteration 2 --
 
-Warning: rename(%s/rename_variation/rename_variation.tmp/,%s/rename_variation2.tmp): Invalid argument in %s on line %d
+Warning: rename(%s/rename_variation/rename_variation.tmp/,%s/rename_variation2.tmp): No such file or directory in %s on line %d
 bool(false)
 bool(false)
 bool(false)

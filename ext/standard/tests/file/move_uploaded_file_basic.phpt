@@ -70,10 +70,9 @@ Valid move to existing file
 bool(true)
 Wrong parameters
 
-Warning: Wrong parameter count for move_uploaded_file() in %s on line %d
+Warning: move_uploaded_file() expects exactly 2 parameters, 0 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for move_uploaded_file() in %s on line %d
+Warning: move_uploaded_file() expects exactly 2 parameters, 3 given in %s on line %d
 NULL
-
 

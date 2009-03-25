@@ -4,7 +4,7 @@
  * @ingroup SPL
  * @brief class SplObjectStorage
  * @author  Marcus Boerger
- * @date    2003 - 2005
+ * @date    2003 - 2008
  *
  * SPL - Standard PHP Library
  */
@@ -12,7 +12,7 @@
 /**
  * @brief   Object storage
  * @author  Marcus Boerger
- * @version 1.0
+ * @version 1.1
  * @since PHP 5.1.2
  *
  * This container allows to store objects uniquly without the need to compare
@@ -20,7 +20,7 @@
  * here therefore has a complexity of O(n) while the actual implementation has
  * complexity O(1).
  */
-class SplObjectStorage implements Iterator, Countable
+class SplObjectStorage implements Iterator, Countable, ArrayAccess
 {
 	private $storage = array();
 	private $index = 0;
@@ -50,7 +50,27 @@ class SplObjectStorage implements Iterator, Countable
 	 */
 	function current()
 	{
-		return current($this->storage);
+		$element = current($this->storage);
+		return $element ? $element[0] : NULL
+	}
+	
+	/** @return get current object's associated information
+	 * @since 5.3.0
+	 */
+	function getInfo()
+	{
+		$element = current($this->storage);
+		return $element ? $element[1] : NULL
+	}
+	
+	/** @return set current object's associated information
+	 * @since 5.3.0
+	 */
+	function setInfo($inf = NULL)
+	{
+		if ($this->valid()) {
+			$this->storage[$this->index][1] = $inf;
+		}
 	}
 	
 	/** Forward to next element
@@ -68,16 +88,16 @@ class SplObjectStorage implements Iterator, Countable
 		return count($this->storage);
 	}
 
-	/** @param obj object to look for
+	/** @param $obj object to look for
 	 * @return whether $obj is contained in storage
-	  */
+	 */
 	function contains($obj)
 	{
 		if (is_object($obj))
 		{
-			foreach($this->storage as $object)
+			foreach($this->storage as $element)
 			{
-				if ($object === $obj)
+				if ($object === $element[0])
 				{
 					return true;
 				}
@@ -86,13 +106,15 @@ class SplObjectStorage implements Iterator, Countable
 		return false;
 	}
 
-	/** @param $obj new object to attach to storage if not yet contained
+	/** @param $obj new object to attach to storage or object whose
+	 *              associative information is to be replaced
+	 * @param $inf associative information stored along the object
 	 */
-	function attach($obj)
+	function attach($obj, $inf = NULL)
 	{
 		if (is_object($obj) && !$this->contains($obj))
 		{
-			$this->storage[] = $obj;
+			$this->storage[] = array($obj, $inf);
 		}
 	}
 
@@ -102,9 +124,9 @@ class SplObjectStorage implements Iterator, Countable
 	{
 		if (is_object($obj))
 		{
-			foreach($this->storage as $idx => $object)
+			foreach($this->storage as $idx => $element)
 			{
-				if ($object === $obj)
+				if ($object === $element[0])
 				{
 					unset($this->storage[$idx]);
 					$this->rewind();
@@ -112,6 +134,54 @@ class SplObjectStorage implements Iterator, Countable
 				}
 			}
 		}
+	}
+
+	/** @param $obj new object to attach to storage or object whose
+	 *              associative information is to be replaced
+	 * @param $inf associative information stored along the object
+	 * @since 5.3.0
+	 */
+	function offsetSet($obj, $inf)
+	{
+		$this->attach($obj, $inf);
+	}
+
+	/** @param $obj Exising object to look for
+	 * @return associative information stored with object
+	 * @throw UnexpectedValueException if Object $obj is not contained in
+	 *                                 storage
+	 * @since 5.3.0
+	 */
+	function offsetGet($obj)
+	{
+		if (is_object($obj))
+		{
+			foreach($this->storage as $idx => $element)
+			{
+				if ($object === $element[0])
+				{
+					return $element[1];
+				}
+			}
+		}
+		throw new UnexpectedValueException('Object not found');
+	}
+
+	/** @param $obj Exising object to look for
+	 * @return associative information stored with object
+	 * @since 5.3.0
+	 */
+	function offsetUnset($obj)
+	{
+		$this->detach($obj);
+	}
+
+	/** @param $obj object to look for
+	 * @return whether $obj is contained in storage
+	 */
+	function offsetEsists($obj)
+	{
+		return $this->contains($obj);
 	}
 }
 

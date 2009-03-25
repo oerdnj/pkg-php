@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: characterdata.c,v 1.15.2.1.2.5 2008/12/31 11:17:37 sebastian Exp $ */
+/* $Id: characterdata.c,v 1.15.2.1.2.2.2.9 2008/12/31 11:15:36 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -29,30 +29,25 @@
 
 
 /* {{{ arginfo */
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_characterdata_substring_data, 0, 0, 2)
 	ZEND_ARG_INFO(0, offset)
 	ZEND_ARG_INFO(0, count)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_characterdata_append_data, 0, 0, 1)
 	ZEND_ARG_INFO(0, arg)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_characterdata_insert_data, 0, 0, 2)
 	ZEND_ARG_INFO(0, offset)
 	ZEND_ARG_INFO(0, arg)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_characterdata_delete_data, 0, 0, 2)
 	ZEND_ARG_INFO(0, offset)
 	ZEND_ARG_INFO(0, count)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_characterdata_replace_data, 0, 0, 3)
 	ZEND_ARG_INFO(0, offset)
 	ZEND_ARG_INFO(0, count)
@@ -67,7 +62,7 @@ ZEND_END_ARG_INFO();
 * Since: 
 */
 
-zend_function_entry php_dom_characterdata_class_functions[] = {
+const zend_function_entry php_dom_characterdata_class_functions[] = {
 	PHP_FALIAS(substringData, dom_characterdata_substring_data, arginfo_dom_characterdata_substring_data)
 	PHP_FALIAS(appendData, dom_characterdata_append_data, arginfo_dom_characterdata_append_data)
 	PHP_FALIAS(insertData, dom_characterdata_insert_data, arginfo_dom_characterdata_insert_data)
@@ -118,7 +113,7 @@ int dom_characterdata_data_write(dom_object *obj, zval *newval TSRMLS_DC)
 	}
 
 	if (newval->type != IS_STRING) {
-		if(newval->refcount > 1) {
+		if(Z_REFCOUNT_P(newval) > 1) {
 			value_copy = *newval;
 			zval_copy_ctor(&value_copy);
 			newval = &value_copy;
@@ -171,7 +166,6 @@ int dom_characterdata_length_read(dom_object *obj, zval **retval TSRMLS_DC)
 
 /* }}} */
 
-
 /* {{{ proto string dom_characterdata_substring_data(int offset, int count);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-ID-6531BCCF
 Since: 
@@ -221,7 +215,6 @@ PHP_FUNCTION(dom_characterdata_substring_data)
 }
 /* }}} end dom_characterdata_substring_data */
 
-
 /* {{{ proto void dom_characterdata_append_data(string arg);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-ID-32791A2F
 Since: 
@@ -255,7 +248,6 @@ PHP_FUNCTION(dom_characterdata_append_data)
 	RETURN_TRUE;
 }
 /* }}} end dom_characterdata_append_data */
-
 
 /* {{{ proto void dom_characterdata_insert_data(int offset, string arg);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-ID-3EDB695F
@@ -304,7 +296,6 @@ PHP_FUNCTION(dom_characterdata_insert_data)
 	RETURN_TRUE;
 }
 /* }}} end dom_characterdata_insert_data */
-
 
 /* {{{ proto void dom_characterdata_delete_data(int offset, int count);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-ID-7C603781
@@ -360,7 +351,6 @@ PHP_FUNCTION(dom_characterdata_delete_data)
 	RETURN_TRUE;
 }
 /* }}} end dom_characterdata_delete_data */
-
 
 /* {{{ proto void dom_characterdata_replace_data(int offset, int count, string arg);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-ID-E5CBA7FB
@@ -423,4 +413,14 @@ PHP_FUNCTION(dom_characterdata_replace_data)
 	RETURN_TRUE;
 }
 /* }}} end dom_characterdata_replace_data */
+
 #endif
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

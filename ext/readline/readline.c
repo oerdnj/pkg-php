@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: readline.c,v 1.42.2.3.2.9 2008/12/31 11:17:42 sebastian Exp $ */
+/* $Id: readline.c,v 1.42.2.3.2.3.2.16 2009/01/22 14:40:20 iliaa Exp $ */
 
 /* {{{ includes & prototypes */
 
@@ -67,25 +67,79 @@ PHP_MINIT_FUNCTION(readline);
 PHP_RSHUTDOWN_FUNCTION(readline);
 
 /* }}} */
-/* {{{ module stuff */
 
-static zend_function_entry php_readline_functions[] = {
-	PHP_FE(readline,	   		        NULL)
-	PHP_FE(readline_info,  	            NULL)
-	PHP_FE(readline_add_history, 		NULL)
-	PHP_FE(readline_clear_history, 		NULL)
+/* {{{ arginfo */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_readline, 0, 0, 0)
+	ZEND_ARG_INFO(0, prompt)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_readline_info, 0, 0, 0)
+	ZEND_ARG_INFO(0, varname)
+	ZEND_ARG_INFO(0, newvalue)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_readline_add_history, 0, 0, 1)
+	ZEND_ARG_INFO(0, prompt)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(arginfo_readline_clear_history, 0)
+ZEND_END_ARG_INFO()
+
 #ifndef HAVE_LIBEDIT
-	PHP_FE(readline_list_history, 		NULL)
+ZEND_BEGIN_ARG_INFO(arginfo_readline_list_history, 0)
+ZEND_END_ARG_INFO()
 #endif
-	PHP_FE(readline_read_history, 		NULL)
-	PHP_FE(readline_write_history, 		NULL)
-	PHP_FE(readline_completion_function,NULL)
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_readline_read_history, 0, 0, 0)
+	ZEND_ARG_INFO(0, filename)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_readline_write_history, 0, 0, 0)
+	ZEND_ARG_INFO(0, filename)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_readline_completion_function, 0, 0, 1)
+	ZEND_ARG_INFO(0, funcname)
+ZEND_END_ARG_INFO()
+
 #if HAVE_RL_CALLBACK_READ_CHAR
-	PHP_FE(readline_callback_handler_install, NULL)
-	PHP_FE(readline_callback_read_char,			NULL)
-	PHP_FE(readline_callback_handler_remove,	NULL)
-	PHP_FE(readline_redisplay, NULL)
-	PHP_FE(readline_on_new_line, NULL)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_readline_callback_handler_install, 0, 0, 2)
+	ZEND_ARG_INFO(0, prompt)
+	ZEND_ARG_INFO(0, callback)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(arginfo_readline_callback_read_char, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(arginfo_readline_callback_handler_remove, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(arginfo_readline_redisplay, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(arginfo_readline_on_new_line, 0)
+ZEND_END_ARG_INFO()
+#endif
+/* }}} */
+
+/* {{{ module stuff */
+static const zend_function_entry php_readline_functions[] = {
+	PHP_FE(readline,	   		        arginfo_readline)
+	PHP_FE(readline_info,  	            arginfo_readline_info)
+	PHP_FE(readline_add_history, 		arginfo_readline_add_history)
+	PHP_FE(readline_clear_history, 		arginfo_readline_clear_history)
+#ifndef HAVE_LIBEDIT
+	PHP_FE(readline_list_history, 		arginfo_readline_list_history)
+#endif
+	PHP_FE(readline_read_history, 		arginfo_readline_read_history)
+	PHP_FE(readline_write_history, 		arginfo_readline_write_history)
+	PHP_FE(readline_completion_function,arginfo_readline_completion_function)
+#if HAVE_RL_CALLBACK_READ_CHAR
+	PHP_FE(readline_callback_handler_install, arginfo_readline_callback_handler_install)
+	PHP_FE(readline_callback_read_char,			arginfo_readline_callback_read_char)
+	PHP_FE(readline_callback_handler_remove,	arginfo_readline_callback_handler_remove)
+	PHP_FE(readline_redisplay, arginfo_readline_redisplay)
+	PHP_FE(readline_on_new_line, arginfo_readline_on_new_line)
 #endif
 	{NULL, NULL, NULL}
 };
@@ -156,24 +210,22 @@ PHP_FUNCTION(readline)
 
 /* }}} */
 
-/* {{{ proto mixed readline_info([string varname] [, string newvalue]) 
-   Gets/sets various internal readline variables. */
-
 #define SAFE_STRING(s) ((s)?(char*)(s):"")
 
+/* {{{ proto mixed readline_info([string varname [, string newvalue]]) 
+   Gets/sets various internal readline variables. */
 PHP_FUNCTION(readline_info)
 {
-	zval **what;
-	zval **value;
-	int oldval;
+	char *what = NULL;
+	zval **value = NULL;
+	int what_len, oldval;
 	char *oldstr;
-	int ac = ZEND_NUM_ARGS();
 
-	if (ac < 0 || ac > 2 || zend_get_parameters_ex(ac, &what, &value) == FAILURE) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|sZ", &what, &what_len, &value) == FAILURE) {
+		return;
 	}
 
-	if (ac == 0) {
+	if (!what) {
 		array_init(return_value);
 		add_assoc_string(return_value,"line_buffer",SAFE_STRING(rl_line_buffer),1);
 		add_assoc_long(return_value,"point",rl_point);
@@ -191,56 +243,54 @@ PHP_FUNCTION(readline_info)
 		add_assoc_string(return_value,"library_version",(char *)SAFE_STRING(rl_library_version),1);
 		add_assoc_string(return_value,"readline_name",(char *)SAFE_STRING(rl_readline_name),1);
 	} else {
-		convert_to_string_ex(what);
-
-		if (! strcasecmp(Z_STRVAL_PP(what),"line_buffer")) {
+		if (!strcasecmp(what,"line_buffer")) {
 			oldstr = rl_line_buffer;
-			if (ac == 2) {
+			if (value) {
 				/* XXX if (rl_line_buffer) free(rl_line_buffer); */
 				convert_to_string_ex(value);
 				rl_line_buffer = strdup(Z_STRVAL_PP(value));
 			}
 			RETVAL_STRING(SAFE_STRING(oldstr),1);
-		} else if (! strcasecmp(Z_STRVAL_PP(what),"point")) {
+		} else if (!strcasecmp(what, "point")) {
 			RETVAL_LONG(rl_point);
-		} else if (! strcasecmp(Z_STRVAL_PP(what),"end")) {
+		} else if (!strcasecmp(what, "end")) {
 			RETVAL_LONG(rl_end);
 #ifdef HAVE_LIBREADLINE
-		} else if (! strcasecmp(Z_STRVAL_PP(what),"mark")) {
+		} else if (!strcasecmp(what, "mark")) {
 			RETVAL_LONG(rl_mark);
-		} else if (! strcasecmp(Z_STRVAL_PP(what),"done")) {
+		} else if (!strcasecmp(what, "done")) {
 			oldval = rl_done;
-			if (ac == 2) {
+			if (value) {
 				convert_to_long_ex(value);
 				rl_done = Z_LVAL_PP(value);
 			}
 			RETVAL_LONG(oldval);
-		} else if (! strcasecmp(Z_STRVAL_PP(what),"pending_input")) {
+		} else if (!strcasecmp(what, "pending_input")) {
 			oldval = rl_pending_input;
-			if (ac == 2) {
+			if (value) {
 				convert_to_string_ex(value);
 				rl_pending_input = Z_STRVAL_PP(value)[0];
 			}
 			RETVAL_LONG(oldval);
-		} else if (! strcasecmp(Z_STRVAL_PP(what),"prompt")) {
+		} else if (!strcasecmp(what, "prompt")) {
 			RETVAL_STRING(SAFE_STRING(rl_prompt),1);
-		} else if (! strcasecmp(Z_STRVAL_PP(what),"terminal_name")) {
+		} else if (!strcasecmp(what, "terminal_name")) {
 			RETVAL_STRING((char *)SAFE_STRING(rl_terminal_name),1);
 #endif
 #if HAVE_ERASE_EMPTY_LINE
-		} else if (! strcasecmp(Z_STRVAL_PP(what),"erase_empty_line")) {
+		} else if (!strcasecmp(what, "erase_empty_line")) {
 			oldval = rl_erase_empty_line;
-			if (ac == 2) {
+			if (value) {
 				convert_to_long_ex(value);
 				rl_erase_empty_line = Z_LVAL_PP(value);
 			}
 			RETVAL_LONG(oldval);
 #endif
-		} else if (! strcasecmp(Z_STRVAL_PP(what),"library_version")) {
+		} else if (!strcasecmp(what,"library_version")) {
 			RETVAL_STRING((char *)SAFE_STRING(rl_library_version),1);
-		} else if (! strcasecmp(Z_STRVAL_PP(what),"readline_name")) {
+		} else if (!strcasecmp(what, "readline_name")) {
 			oldstr = (char*)rl_readline_name;
-			if (ac == 2) {
+			if (value) {
 				/* XXX if (rl_readline_name) free(rl_readline_name); */
 				convert_to_string_ex(value);
 				rl_readline_name = strdup(Z_STRVAL_PP(value));;
@@ -251,19 +301,18 @@ PHP_FUNCTION(readline_info)
 }
 
 /* }}} */
-/* {{{ proto bool readline_add_history([string prompt]) 
+/* {{{ proto bool readline_add_history(string prompt) 
    Adds a line to the history */
 PHP_FUNCTION(readline_add_history)
 {
-	zval **arg;
-	int ac = ZEND_NUM_ARGS();
+	char *arg;
+	int arg_len;
 
-	if (ac != 1 || zend_get_parameters_ex(ac, &arg) == FAILURE) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &arg, &arg_len) == FAILURE) {
+		return;
 	}
-	convert_to_string_ex(arg);
 
-	add_history(Z_STRVAL_PP(arg));
+	add_history(arg);
 
 	RETURN_TRUE;
 }
@@ -273,10 +322,8 @@ PHP_FUNCTION(readline_add_history)
    Clears the history */
 PHP_FUNCTION(readline_clear_history)
 {
-	int ac = ZEND_NUM_ARGS();
-
-	if (ac != 0) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 
 	clear_history();
@@ -291,12 +338,11 @@ PHP_FUNCTION(readline_clear_history)
 PHP_FUNCTION(readline_list_history)
 {
 	HIST_ENTRY **history;
-	int ac = ZEND_NUM_ARGS();
 
-	if (ac) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
-
+	
 	history = history_list();
 	
 	array_init(return_value);
@@ -310,26 +356,19 @@ PHP_FUNCTION(readline_list_history)
 }
 #endif
 /* }}} */
-/* {{{ proto bool readline_read_history([string filename] [, int from] [,int to]) 
+/* {{{ proto bool readline_read_history([string filename]) 
    Reads the history */
 PHP_FUNCTION(readline_read_history)
 {
-	zval **arg;
-	char *filename = NULL;
-	int ac = ZEND_NUM_ARGS();
+	char *arg = NULL;
+	int arg_len;
 
-	if (ac < 0 || ac > 1 || zend_get_parameters_ex(ac, &arg) == FAILURE) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &arg, &arg_len) == FAILURE) {
+		return;
 	}
 
 	/* XXX from & to NYI */
-
-	if (ac == 1) {
-		convert_to_string_ex(arg);
-		filename = Z_STRVAL_PP(arg);
-	}
-
-	if (read_history(filename)) {
+	if (read_history(arg)) {
 		RETURN_FALSE;
 	} else {
 		RETURN_TRUE;
@@ -341,20 +380,14 @@ PHP_FUNCTION(readline_read_history)
    Writes the history */
 PHP_FUNCTION(readline_write_history)
 {
-	zval **arg;
-	char *filename = NULL;
-	int ac = ZEND_NUM_ARGS();
+	char *arg = NULL;
+	int arg_len;
 
-	if (ac < 0 || ac > 1 || zend_get_parameters_ex(ac, &arg) == FAILURE) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &arg, &arg_len) == FAILURE) {
+		return;
 	}
 
-	if (ac == 1) {
-		convert_to_string_ex(arg);
-		filename = Z_STRVAL_PP(arg);
-	}
-
-	if (write_history(filename)) {
+	if (write_history(arg)) {
 		RETURN_FALSE;
 	} else {
 		RETURN_TRUE;
@@ -370,7 +403,7 @@ static char *_readline_command_generator(const char *text, int state)
 	HashTable  *myht = Z_ARRVAL(_readline_array);
 	zval **entry;
 	
-	if (! state)	{
+	if (!state) {
 		zend_hash_internal_pointer_reset(myht);
 	}
 	
@@ -453,7 +486,7 @@ PHP_FUNCTION(readline_completion_function)
 		RETURN_FALSE;
 	}
 
-	if (!zend_is_callable(arg, 0, &name)) {
+	if (!zend_is_callable(arg, 0, &name TSRMLS_CC)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s is not callable", name);
 		efree(name);
 		RETURN_FALSE;
@@ -507,7 +540,7 @@ PHP_FUNCTION(readline_callback_handler_install)
 		return;
 	}
 
-	if (!zend_is_callable(callback, 0, &name)) {
+	if (!zend_is_callable(callback, 0, &name TSRMLS_CC)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s is not callable", name);
 		efree(name);
 		RETURN_FALSE;

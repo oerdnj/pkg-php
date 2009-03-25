@@ -33,11 +33,12 @@ echo "Done";
 
 -- Testing xml_error_string() function with Zero arguments --
 
-Warning: Wrong parameter count for xml_error_string() in %s on line %d
+Warning: xml_error_string() expects exactly 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing xml_error_string() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for xml_error_string() in %s on line %d
+Warning: xml_error_string() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
 Done
+

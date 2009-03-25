@@ -37,11 +37,12 @@ echo "Done";
 
 -- Testing xml_parse() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for xml_parse() in %s on line %d
+Warning: xml_parse() expects at most 3 parameters, 4 given in %s on line %d
 NULL
 
 -- Testing xml_parse() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for xml_parse() in %s on line %d
+Warning: xml_parse() expects at least 2 parameters, 1 given in %s on line %d
 NULL
 Done
+

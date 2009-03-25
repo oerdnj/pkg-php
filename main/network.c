@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: network.c,v 1.118.2.2.2.16 2009/01/03 00:06:59 felipe Exp $ */
+/* $Id: network.c,v 1.118.2.2.2.6.2.14 2009/01/03 00:06:33 felipe Exp $ */
 
 /*#define DEBUG_MAIN_NETWORK 1*/
 
@@ -26,8 +26,9 @@
 #include <stddef.h>
 
 #ifdef PHP_WIN32
-#define O_RDONLY _O_RDONLY
-#include "win32/param.h"
+# include "win32/inet.h"
+# define O_RDONLY _O_RDONLY
+# include "win32/param.h"
 #elif defined(NETWARE)
 #include <sys/timeval.h>
 #include <sys/param.h>
@@ -90,6 +91,11 @@ int inet_aton(const char *, struct in_addr *);
 # define SOCK_ERR INVALID_SOCKET
 # define SOCK_CONN_ERR SOCKET_ERROR
 # define PHP_TIMEOUT_ERROR_VALUE		WSAETIMEDOUT
+
+#if HAVE_IPV6
+const struct in6_addr in6addr_any = {0}; /* IN6ADDR_ANY_INIT; */
+#endif
+
 #else
 # define SOCK_ERR -1
 # define SOCK_CONN_ERR -1

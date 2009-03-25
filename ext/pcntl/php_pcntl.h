@@ -16,22 +16,13 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_pcntl.h,v 1.20.2.1.2.3 2008/12/31 11:17:41 sebastian Exp $ */
+/* $Id: php_pcntl.h,v 1.20.2.1.2.1.2.6 2008/12/31 11:15:40 sebastian Exp $ */
 
 #ifndef PHP_PCNTL_H
 #define PHP_PCNTL_H
 
-#include <sys/wait.h>
-#include "php_signal.h"
-#include "php_ticks.h"
 extern zend_module_entry pcntl_module_entry;
 #define phpext_pcntl_ptr &pcntl_module_entry
-
-#ifdef PHP_WIN32
-#define PHP_PCNTL_API __declspec(dllexport)
-#else
-#define PHP_PCNTL_API
-#endif
 
 PHP_MINIT_FUNCTION(pcntl);
 PHP_MSHUTDOWN_FUNCTION(pcntl);
@@ -50,6 +41,14 @@ PHP_FUNCTION(pcntl_wexitstatus);
 PHP_FUNCTION(pcntl_wtermsig);
 PHP_FUNCTION(pcntl_wstopsig);
 PHP_FUNCTION(pcntl_signal);
+PHP_FUNCTION(pcntl_signal_dispatch);
+#ifdef HAVE_SIGPROCMASK
+PHP_FUNCTION(pcntl_sigprocmask);
+#endif
+#if HAVE_SIGWAITINFO && HAVE_SIGTIMEDWAIT
+PHP_FUNCTION(pcntl_sigwaitinfo);
+PHP_FUNCTION(pcntl_sigtimedwait);
+#endif
 PHP_FUNCTION(pcntl_exec);
 #ifdef HAVE_GETPRIORITY
 PHP_FUNCTION(pcntl_getpriority);

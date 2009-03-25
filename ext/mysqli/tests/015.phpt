@@ -1,15 +1,16 @@
 --TEST--
-mysqli autocommit/commit/rollback with myisam 
+mysqli autocommit/commit/rollback with innodb
 --SKIPIF--
-<?php	
+<?php
 	require_once('skipif.inc');
+	require_once('skipifconnectfailure.inc');
 	include "connect.inc";
-	$link = mysqli_connect($host, $user, $passwd);
+	$link = mysqli_connect($host, $user, $passwd, $db, $port, $socket);
 	$result = mysqli_query($link, "SHOW VARIABLES LIKE 'have_innodb'");
 	$row = mysqli_fetch_row($result);
 	mysqli_free_result($result);
 	mysqli_close($link);
-	
+
 	if ($row[1] == "NO") {
 		printf ("skip innodb support not installed.");
 	}
@@ -17,49 +18,71 @@ mysqli autocommit/commit/rollback with myisam
 --FILE--
 <?php
 	include "connect.inc";
-	
-	$link = mysqli_connect($host, $user, $passwd);
 
-	mysqli_select_db($link, "test");
+	$link = mysqli_connect($host, $user, $passwd, $db, $port, $socket);
+	if (!$link)
+		printf("[001] Cannot connect, [%d] %s\n", mysqli_connect_errno(), mysqli_connect_error());
 
-	mysqli_autocommit($link, TRUE);
+	if (!mysqli_select_db($link, $db))
+		printf("[002] Cannot select DB '%s', [%d] %s\n", $db,
+			mysqli_errno($link), mysqli_error($link));
 
-  	mysqli_query($link,"DROP TABLE IF EXISTS ac_01");
+	if (!mysqli_autocommit($link, TRUE))
+		printf("[003] Cannot turn on autocommit mode, [%d] %s\n",
+			mysqli_errno($link), mysqli_error($link));
 
-	mysqli_query($link,"CREATE TABLE ac_01(a int, b varchar(10))");
+	if (!mysqli_query($link,"DROP TABLE IF EXISTS test") ||
+		!mysqli_query($link,"CREATE TABLE test(a int, b varchar(10)) Engine=InnoDB") ||
+		!mysqli_query($link, "INSERT INTO test VALUES (1, 'foobar')"))
+		printf("[004] Cannot create test data, [%d] %s\n",
+			mysqli_errno($link), mysqli_error($link));
 
-	mysqli_query($link, "INSERT INTO ac_01 VALUES (1, 'foobar')");
-	mysqli_autocommit($link, FALSE);
+	if (!mysqli_autocommit($link, FALSE))
+		printf("[005] Cannot turn off autocommit mode, [%d] %s\n",
+			mysqli_errno($link), mysqli_error($link));
 
-	mysqli_query($link, "DELETE FROM ac_01");
-	mysqli_query($link, "INSERT INTO ac_01 VALUES (2, 'egon')");
+	if (!mysqli_query($link, "DELETE FROM test") ||
+			!mysqli_query($link, "INSERT INTO test VALUES (2, 'egon')"))
+		printf("[006] Cannot modify test data, [%d] %s\n",
+			mysqli_errno($link), mysqli_error($link));
 
-	mysqli_rollback($link);
+	if (!mysqli_rollback($link))
+		printf("[007] Cannot call rollback, [%d] %s\n",
+			mysqli_errno($link), mysqli_error($link));
 
-	$result = mysqli_query($link, "SELECT * FROM ac_01");
+	$result = mysqli_query($link, "SELECT SQL_NO_CACHE * FROM test");
+	if (!$result)
+		printf("[008] [%d] %s\n", mysqli_errno($link), mysqli_error($link));
 	$row = mysqli_fetch_row($result);
 	mysqli_free_result($result);
 
 	var_dump($row);
 
-	mysqli_query($link, "DELETE FROM ac_01");
-	mysqli_query($link, "INSERT INTO ac_01 VALUES (2, 'egon')");
+	if (!mysqli_query($link, "DELETE FROM test") ||
+			!mysqli_query($link, "INSERT INTO test VALUES (2, 'egon')"))
+		printf("[009] Cannot modify test data, [%d] %s\n",
+			mysqli_errno($link), mysqli_error($link));
+
 	mysqli_commit($link);
 
-	$result = mysqli_query($link, "SELECT * FROM ac_01");
+	$result = mysqli_query($link, "SELECT * FROM test");
+	if (!$result)
+		printf("[010] [%d] %s\n", mysqli_errno($link), mysqli_error($link));
 	$row = mysqli_fetch_row($result);
 	mysqli_free_result($result);
 
 	var_dump($row);
 
+	mysqli_query($link, "DROP TABLE IF EXISTS test");
 	mysqli_close($link);
+	print "done!";
 ?>
---EXPECT--
+--EXPECTF--
 array(2) {
   [0]=>
-  string(1) "2"
+  string(1) "1"
   [1]=>
-  string(4) "egon"
+  string(6) "foobar"
 }
 array(2) {
   [0]=>
@@ -67,3 +90,18 @@ array(2) {
   [1]=>
   string(4) "egon"
 }
+done!
+--UEXPECTF--
+array(2) {
+  [0]=>
+  unicode(1) "1"
+  [1]=>
+  unicode(6) "foobar"
+}
+array(2) {
+  [0]=>
+  unicode(1) "2"
+  [1]=>
+  unicode(4) "egon"
+}
+done!

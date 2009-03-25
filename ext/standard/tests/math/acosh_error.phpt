@@ -1,10 +1,5 @@
 --TEST--
 Test wrong number of arguments for acosh()
---SKIPIF--
-<?php
-if(substr(PHP_OS, 0, 3) == "WIN" )
-        die ("skip - function not supported on Windows");
-?>
 --FILE--
 <?php
 /* 
@@ -25,10 +20,10 @@ var_dump(acosh());
 --EXPECTF--
 Too many arguments
 
-Warning: Wrong parameter count for acosh() in %s on line 11
+Warning: acosh() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
 
 Too few arguments
 
-Warning: Wrong parameter count for acosh() in %s on line 14
+Warning: acosh() expects exactly 1 parameter, 0 given in %s on line %d
 NULL

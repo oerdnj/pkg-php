@@ -39,15 +39,15 @@ var_dump(substr_replace($s1, "evening", array(5), array(8)));
 
 -- Testing substr_replace() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for substr_replace() in %s on line %d
+Warning: substr_replace() expects at least 3 parameters, 0 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for substr_replace() in %s on line %d
+Warning: substr_replace() expects at least 3 parameters, 2 given in %s on line %d
 NULL
 
 -- Testing substr_replace() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for substr_replace() in %s on line %d
+Warning: substr_replace() expects at most 4 parameters, 5 given in %s on line %d
 NULL
 
 -- Testing substr_replace() function with start and length different types --

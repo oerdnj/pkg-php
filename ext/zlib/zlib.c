@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: zlib.c,v 1.183.2.6.2.8 2008/12/31 11:17:47 sebastian Exp $ */
+/* $Id: zlib.c,v 1.183.2.6.2.5.2.9 2008/12/31 11:15:47 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -101,10 +101,62 @@ static PHP_FUNCTION(gzencode);
 static PHP_FUNCTION(ob_gzhandler);
 static PHP_FUNCTION(zlib_get_coding_type);
 
+/* {{{ arginfo */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_gzfile, 0, 0, 1)
+	ZEND_ARG_INFO(0, filename)
+	ZEND_ARG_INFO(0, use_include_path)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_gzopen, 0, 0, 2)
+	ZEND_ARG_INFO(0, filename)
+	ZEND_ARG_INFO(0, mode)
+	ZEND_ARG_INFO(0, use_include_path)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_readgzfile, 0, 0, 1)
+	ZEND_ARG_INFO(0, filename)
+	ZEND_ARG_INFO(0, use_include_path)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_gzcompress, 0, 0, 1)
+	ZEND_ARG_INFO(0, data)
+	ZEND_ARG_INFO(0, level)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_gzuncompress, 0, 0, 1)
+	ZEND_ARG_INFO(0, data)
+	ZEND_ARG_INFO(0, length)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_gzdeflate, 0, 0, 1)
+	ZEND_ARG_INFO(0, data)
+	ZEND_ARG_INFO(0, level)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_gzinflate, 0, 0, 1)
+	ZEND_ARG_INFO(0, data)
+	ZEND_ARG_INFO(0, length)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(arginfo_zlib_get_coding_type, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_gzencode, 0, 0, 1)
+	ZEND_ARG_INFO(0, data)
+	ZEND_ARG_INFO(0, level)
+	ZEND_ARG_INFO(0, encoding_mode)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_ob_gzhandler, 0, 0, 2)
+	ZEND_ARG_INFO(0, str)
+	ZEND_ARG_INFO(0, mode)
+ZEND_END_ARG_INFO()
+/* }}} */
+
 /* {{{ php_zlib_functions[]
  */
-static zend_function_entry php_zlib_functions[] = {
-	PHP_FE(readgzfile,						NULL)
+static const zend_function_entry php_zlib_functions[] = {
+	PHP_FE(readgzfile,						arginfo_readgzfile)
 	PHP_FALIAS(gzrewind,	rewind,			NULL)
 	PHP_FALIAS(gzclose,		fclose,			NULL)
 	PHP_FALIAS(gzeof,		feof,			NULL)
@@ -112,20 +164,20 @@ static zend_function_entry php_zlib_functions[] = {
 	PHP_FALIAS(gzgets,		fgets,			NULL)
 	PHP_FALIAS(gzgetss,		fgetss,			NULL)
 	PHP_FALIAS(gzread,		fread,			NULL)
-	PHP_FE(gzopen,							NULL)
+	PHP_FE(gzopen,							arginfo_gzopen)
 	PHP_FALIAS(gzpassthru,	fpassthru,		NULL)
 	PHP_FALIAS(gzseek,		fseek,			NULL)
 	PHP_FALIAS(gztell,		ftell,			NULL)
 	PHP_FALIAS(gzwrite,		fwrite,			NULL)
 	PHP_FALIAS(gzputs,		fwrite,			NULL)
-	PHP_FE(gzfile,							NULL)
-	PHP_FE(gzcompress,            			NULL)
-	PHP_FE(gzuncompress,           			NULL)
-	PHP_FE(gzdeflate,             			NULL)
-	PHP_FE(gzinflate,              			NULL)
-	PHP_FE(gzencode,						NULL)
-	PHP_FE(ob_gzhandler,					NULL)
-	PHP_FE(zlib_get_coding_type,			NULL)
+	PHP_FE(gzfile,							arginfo_gzfile)
+	PHP_FE(gzcompress,            			arginfo_gzcompress)
+	PHP_FE(gzuncompress,           			arginfo_gzuncompress)
+	PHP_FE(gzdeflate,             			arginfo_gzdeflate)
+	PHP_FE(gzinflate,              			arginfo_gzinflate)
+	PHP_FE(gzencode,						arginfo_gzencode)
+	PHP_FE(ob_gzhandler,					arginfo_ob_gzhandler)
+	PHP_FE(zlib_get_coding_type,			arginfo_zlib_get_coding_type)
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -571,6 +623,20 @@ static PHP_FUNCTION(gzinflate)
 	}
 	plength = limit;
 
+	stream.zalloc = php_zlib_alloc;
+	stream.zfree = php_zlib_free;
+	stream.opaque = Z_NULL;
+	stream.avail_in = data_len + 1; /* there is room for \0 */
+	stream.next_in = (Bytef *) data;
+	stream.total_out = 0;
+
+	/* init with -MAX_WBITS disables the zlib internal headers */
+	status = inflateInit2(&stream, -MAX_WBITS);
+	if (status != Z_OK) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", zError(status));
+		RETURN_FALSE;
+	}
+
 	/*
 	  stream.avail_out wants to know the output data length
 	  if none was given as a parameter
@@ -578,43 +644,32 @@ static PHP_FUNCTION(gzinflate)
 	  doubling it whenever it wasn't big enough
 	  that should be enaugh for all real life cases	
 	*/
-
-	stream.zalloc = php_zlib_alloc;
-	stream.zfree = php_zlib_free;
-
 	do {
 		length = plength ? plength : (unsigned long)data_len * (1 << factor++);
 		s2 = (char *) erealloc(s1, length);
 
-		if (!s2 && s1) {
-			efree(s1);
+		if (!s2) {
+			if (s1) {
+				efree(s1);
+			}
+			inflateEnd(&stream);
 			RETURN_FALSE;
 		}
-
-		stream.next_in = (Bytef *) data;
-		stream.avail_in = (uInt) data_len + 1; /* there is room for \0 */
-
-		stream.next_out = s2;
-		stream.avail_out = (uInt) length;
-
-		/* init with -MAX_WBITS disables the zlib internal headers */
-		status = inflateInit2(&stream, -MAX_WBITS);
-		if (status == Z_OK) {
-			status = inflate(&stream, Z_FINISH);
-			if (status != Z_STREAM_END) {
-				inflateEnd(&stream);
-				if (status == Z_OK) {
-					status = Z_BUF_ERROR;
-				}
-			} else {
-				status = inflateEnd(&stream);
-			}
-		}
 		s1 = s2;
-		
-	} while ((status == Z_BUF_ERROR) && (!plength) && (factor < maxfactor));
 
-	if (status == Z_OK) {
+		stream.next_out = (Bytef *) &s2[stream.total_out];
+		stream.avail_out = length - stream.total_out;
+		status = inflate(&stream, Z_NO_FLUSH);
+
+	} while ((Z_BUF_ERROR == status || (Z_OK == status && stream.avail_in)) && !plength && factor < maxfactor);
+
+	inflateEnd(&stream);
+
+	if ((plength && Z_OK == status) || factor >= maxfactor) {
+		status = Z_MEM_ERROR;
+	}
+
+	if (Z_STREAM_END == status || Z_OK == status) {
 		s2 = erealloc(s2, stream.total_out + 1); /* room for \0 */
 		s2[ stream.total_out ] = '\0';
 		RETURN_STRINGL(s2, stream.total_out, 0);

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_operators.h,v 1.94.2.4.2.15 2009/02/15 14:31:17 iliaa Exp $ */
+/* $Id: zend_operators.h,v 1.94.2.4.2.10.2.14 2009/03/18 01:08:12 mattwil Exp $ */
 
 #ifndef ZEND_OPERATORS_H
 #define ZEND_OPERATORS_H
@@ -35,18 +35,6 @@
 #if 0&&HAVE_BCMATH
 #include "ext/bcmath/libbcmath/src/bcmath.h"
 #endif
-
-#if SIZEOF_LONG == 4
-#define MAX_LENGTH_OF_LONG 11
-static const char long_min_digits[] = "2147483648";
-#elif SIZEOF_LONG == 8
-#define MAX_LENGTH_OF_LONG 20
-static const char long_min_digits[] = "9223372036854775808";
-#else
-#error "Unknown SIZEOF_LONG"
-#endif
-
-#define MAX_LENGTH_OF_DOUBLE 32
 
 BEGIN_EXTERN_C()
 ZEND_API int add_function(zval *result, zval *op1, zval *op2 TSRMLS_DC);
@@ -71,9 +59,43 @@ ZEND_API int is_not_equal_function(zval *result, zval *op1, zval *op2 TSRMLS_DC)
 ZEND_API int is_smaller_function(zval *result, zval *op1, zval *op2 TSRMLS_DC);
 ZEND_API int is_smaller_or_equal_function(zval *result, zval *op1, zval *op2 TSRMLS_DC);
 
-ZEND_API zend_bool instanceof_function_ex(zend_class_entry *instance_ce, zend_class_entry *ce, zend_bool interfaces_only TSRMLS_DC);
-ZEND_API zend_bool instanceof_function(zend_class_entry *instance_ce, zend_class_entry *ce TSRMLS_DC);
+ZEND_API zend_bool instanceof_function_ex(const zend_class_entry *instance_ce, const zend_class_entry *ce, zend_bool interfaces_only TSRMLS_DC);
+ZEND_API zend_bool instanceof_function(const zend_class_entry *instance_ce, const zend_class_entry *ce TSRMLS_DC);
 END_EXTERN_C()
+
+#define MAX_UNSIGNED_INT ((double) LONG_MAX * 2) + 1
+#ifdef _WIN64
+# define DVAL_TO_LVAL(d, l) \
+	if ((d) > LONG_MAX) { \
+		(l) = (long)(unsigned long)(__int64) (d); \
+	} else { \
+		(l) = (long) (d); \
+	}
+#elif !defined(_WIN64) && __WORDSIZE == 64
+# define DVAL_TO_LVAL(d, l) \
+	if ((d) >= LONG_MAX) { \
+		(l) = LONG_MAX; \
+	} else if ((d) <=  LONG_MIN) { \
+		(l) = LONG_MIN; \
+	} else {\
+		(l) = (long) (d); \
+	} 
+#else
+# define DVAL_TO_LVAL(d, l) \
+	if ((d) > LONG_MAX) { \
+		if ((d) > MAX_UNSIGNED_INT) { \
+			(l) = LONG_MAX; \
+		} else { \
+			(l) = (unsigned long) (d); \
+		} \
+	} else { \
+		if((d) < LONG_MIN) { \
+			(l) = LONG_MIN; \
+		} else { \
+			(l) = (long) (d); \
+		} \
+	} 
+#endif
 
 #define ZEND_IS_DIGIT(c) ((c) >= '0' && (c) <= '9')
 #define ZEND_IS_XDIGIT(c) (((c) >= 'A' && (c) <= 'F') || ((c) >= 'a'  && (c) <= 'f'))
@@ -220,9 +242,14 @@ zend_memnstr(char *haystack, char *needle, int needle_len, char *end)
 	char *p = haystack;
 	char ne = needle[needle_len-1];
 
+	if (needle_len == 1) {
+		return (char *)memchr(p, *needle, (end-p));
+	}
+
 	if(needle_len > end-haystack) {
 		return NULL;
 	}
+
 	end -= needle_len;
 
 	while (p <= end) {
@@ -275,8 +302,8 @@ ZEND_API void convert_to_object(zval *op);
 ZEND_API void multi_convert_to_long_ex(int argc, ...);
 ZEND_API void multi_convert_to_double_ex(int argc, ...);
 ZEND_API void multi_convert_to_string_ex(int argc, ...);
-ZEND_API int add_char_to_string(zval *result, zval *op1, zval *op2);
-ZEND_API int add_string_to_string(zval *result, zval *op1, zval *op2);
+ZEND_API int add_char_to_string(zval *result, const zval *op1, const zval *op2);
+ZEND_API int add_string_to_string(zval *result, const zval *op1, const zval *op2);
 #define convert_to_string(op) if ((op)->type != IS_STRING) { _convert_to_string((op) ZEND_FILE_LINE_CC); }
 
 ZEND_API double zend_string_to_double(const char *number, zend_uint length);
@@ -304,10 +331,10 @@ ZEND_API int zend_binary_zval_strcmp(zval *s1, zval *s2);
 ZEND_API int zend_binary_zval_strncmp(zval *s1, zval *s2, zval *s3);
 ZEND_API int zend_binary_zval_strcasecmp(zval *s1, zval *s2);
 ZEND_API int zend_binary_zval_strncasecmp(zval *s1, zval *s2, zval *s3);
-ZEND_API int zend_binary_strcmp(char *s1, uint len1, char *s2, uint len2);
-ZEND_API int zend_binary_strncmp(char *s1, uint len1, char *s2, uint len2, uint length);
-ZEND_API int zend_binary_strcasecmp(char *s1, uint len1, char *s2, uint len2);
-ZEND_API int zend_binary_strncasecmp(char *s1, uint len1, char *s2, uint len2, uint length);
+ZEND_API int zend_binary_strcmp(const char *s1, uint len1, const char *s2, uint len2);
+ZEND_API int zend_binary_strncmp(const char *s1, uint len1, const char *s2, uint len2, uint length);
+ZEND_API int zend_binary_strcasecmp(const char *s1, uint len1, const char *s2, uint len2);
+ZEND_API int zend_binary_strncasecmp(const char *s1, uint len1, const char *s2, uint len2, uint length);
 
 ZEND_API void zendi_smart_strcmp(zval *result, zval *s1, zval *s2);
 ZEND_API void zend_compare_symbol_tables(zval *result, HashTable *ht1, HashTable *ht2 TSRMLS_DC);
@@ -315,6 +342,7 @@ ZEND_API void zend_compare_arrays(zval *result, zval *a1, zval *a2 TSRMLS_DC);
 ZEND_API void zend_compare_objects(zval *result, zval *o1, zval *o2 TSRMLS_DC);
 
 ZEND_API int zend_atoi(const char *str, int str_len);
+ZEND_API long zend_atol(const char *str, int str_len);
 
 ZEND_API void zend_locale_sprintf_double(zval *op ZEND_FILE_LINE_DC);
 END_EXTERN_C()
@@ -370,7 +398,7 @@ END_EXTERN_C()
 
 #define convert_scalar_to_number_ex(ppzv)							\
 	if (Z_TYPE_PP(ppzv)!=IS_LONG && Z_TYPE_PP(ppzv)!=IS_DOUBLE) {		\
-		if (!(*ppzv)->is_ref) {										\
+		if (!Z_ISREF_PP(ppzv)) {										\
 			SEPARATE_ZVAL(ppzv);									\
 		}															\
 		convert_scalar_to_number(*ppzv TSRMLS_CC);					\
@@ -390,6 +418,7 @@ END_EXTERN_C()
 #define Z_OBJPROP(zval)			Z_OBJ_HT((zval))->get_properties(&(zval) TSRMLS_CC)
 #define Z_OBJ_HANDLER(zval, hf) Z_OBJ_HT((zval))->hf
 #define Z_RESVAL(zval)			(zval).value.lval
+#define Z_OBJDEBUG(zval,is_tmp)	(Z_OBJ_HANDLER((zval),get_debug_info)?Z_OBJ_HANDLER((zval),get_debug_info)(&(zval),&is_tmp TSRMLS_CC):(is_tmp=0,Z_OBJ_HANDLER((zval),get_properties)?Z_OBJPROP(zval):NULL))
 
 #define Z_LVAL_P(zval_p)		Z_LVAL(*zval_p)
 #define Z_BVAL_P(zval_p)		Z_BVAL(*zval_p)
@@ -404,6 +433,7 @@ END_EXTERN_C()
 #define Z_OBJ_HANDLE_P(zval_p)  Z_OBJ_HANDLE(*zval_p)
 #define Z_OBJ_HT_P(zval_p)      Z_OBJ_HT(*zval_p)
 #define Z_OBJ_HANDLER_P(zval_p, h) Z_OBJ_HANDLER(*zval_p, h)
+#define Z_OBJDEBUG_P(zval_p,is_tmp) Z_OBJDEBUG(*zval_p,is_tmp)
 
 #define Z_LVAL_PP(zval_pp)		Z_LVAL(**zval_pp)
 #define Z_BVAL_PP(zval_pp)		Z_BVAL(**zval_pp)
@@ -418,6 +448,7 @@ END_EXTERN_C()
 #define Z_OBJ_HANDLE_PP(zval_p) Z_OBJ_HANDLE(**zval_p)
 #define Z_OBJ_HT_PP(zval_p)     Z_OBJ_HT(**zval_p)
 #define Z_OBJ_HANDLER_PP(zval_p, h) Z_OBJ_HANDLER(**zval_p, h)
+#define Z_OBJDEBUG_PP(zval_pp,is_tmp) Z_OBJDEBUG(**zval_pp,is_tmp)
 
 #define Z_TYPE(zval)		(zval).type
 #define Z_TYPE_P(zval_p)	Z_TYPE(*zval_p)

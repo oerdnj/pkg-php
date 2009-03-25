@@ -151,20 +151,20 @@ string(32) "bfb155997017986c01090afebd62c7ca"
 string(16) "cc60ac201164b6c7"
 
 --empty array--
-Error: 8 - Array to string conversion, %s(%d)
-string(16) "c5f0f5425f13ef7c"
+Error: 2 - mcrypt_encrypt() expects parameter 3 to be string, array given, %s(%d)
+string(0) ""
 
 --int indexed array--
-Error: 8 - Array to string conversion, %s(%d)
-string(16) "c5f0f5425f13ef7c"
+Error: 2 - mcrypt_encrypt() expects parameter 3 to be string, array given, %s(%d)
+string(0) ""
 
 --associative array--
-Error: 8 - Array to string conversion, %s(%d)
-string(16) "c5f0f5425f13ef7c"
+Error: 2 - mcrypt_encrypt() expects parameter 3 to be string, array given, %s(%d)
+string(0) ""
 
 --nested arrays--
-Error: 8 - Array to string conversion, %s(%d)
-string(16) "c5f0f5425f13ef7c"
+Error: 2 - mcrypt_encrypt() expects parameter 3 to be string, array given, %s(%d)
+string(0) ""
 
 --uppercase NULL--
 string(16) "6ece228c41457539"
@@ -194,9 +194,8 @@ string(16) "6ece228c41457539"
 string(32) "749c3b4d16731d98370128754b7c930f"
 
 --instance of classWithoutToString--
-Error: 4096 - Object of class classWithoutToString could not be converted to string, %s(%d)
-Error: 8 - Object of class classWithoutToString to string conversion, %s(%d)
-string(16) "e8c97e08755c2169"
+Error: 2 - mcrypt_encrypt() expects parameter 3 to be string, object given, %s(%d)
+string(0) ""
 
 --undefined var--
 string(16) "6ece228c41457539"
@@ -205,5 +204,7 @@ string(16) "6ece228c41457539"
 string(16) "6ece228c41457539"
 
 --resource--
-string(%s) %s
+Error: 2 - mcrypt_encrypt() expects parameter 3 to be string, resource given, %s(%d)
+string(0) ""
 ===DONE===
+

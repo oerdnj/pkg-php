@@ -53,27 +53,27 @@ var_dump($c);
 --EXPECTF--
 Unset and recreate a superclass's private property:
 object(D)#%d (1) {
-  ["p:private"]=>
-  string(7) "changed"
+  [%u|b%"p":%u|b%"C":private]=>
+  %unicode|string%(7) "changed"
 }
 
 Unset superclass's private property, and recreate it as public in subclass:
 object(D)#%d (1) {
-  ["p"]=>
-  string(12) "changed in D"
+  [%u|b%"p"]=>
+  %unicode|string%(12) "changed in D"
 }
 
 Unset superclass's private property, and recreate it as public at global scope:
 object(D)#%d (1) {
-  ["p"]=>
-  string(34) "this will create a public property"
+  [%u|b%"p"]=>
+  %unicode|string%(34) "this will create a public property"
 }
 
 
 Unset and recreate a private property:
 object(C)#%d (1) {
-  ["p:private"]=>
-  string(7) "changed"
+  [%u|b%"p":%u|b%"C":private]=>
+  %unicode|string%(7) "changed"
 }
 
 Unset a private property, and attempt to recreate at global scope (expecting failure):

@@ -39,12 +39,12 @@ fclose($im);
 
 -- Testing imagecolorstotal() function with Zero arguments --
 
-Warning: Wrong parameter count for imagecolorstotal() in %s on line %d
+Warning: imagecolorstotal() expects exactly 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing imagecolorstotal() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for imagecolorstotal() in %s on line %d
+Warning: imagecolorstotal() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
 
 -- Testing imagecolorstotal() function with a invalid resource

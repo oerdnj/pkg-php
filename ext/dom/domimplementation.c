@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: domimplementation.c,v 1.15.2.2.2.5 2008/12/31 11:17:37 sebastian Exp $ */
+/* $Id: domimplementation.c,v 1.15.2.2.2.2.2.9 2008/12/31 11:15:36 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -28,24 +28,20 @@
 #include "php_dom.h"
 
 /* {{{ arginfo */
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_implementation_get_feature, 0, 0, 2)
 	ZEND_ARG_INFO(0, feature)
 	ZEND_ARG_INFO(0, version)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_implementation_has_feature, 0, 0, 0)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_implementation_create_documenttype, 0, 0, 3)
 	ZEND_ARG_INFO(0, qualifiedName)
 	ZEND_ARG_INFO(0, publicId)
 	ZEND_ARG_INFO(0, systemId)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_implementation_create_document, 0, 0, 3)
 	ZEND_ARG_INFO(0, namespaceURI)
 	ZEND_ARG_INFO(0, qualifiedName)
@@ -60,7 +56,7 @@ ZEND_END_ARG_INFO();
 * Since: 
 */
 
-zend_function_entry php_dom_domimplementation_class_functions[] = {
+const zend_function_entry php_dom_domimplementation_class_functions[] = {
 	PHP_ME(domimplementation, getFeature, arginfo_dom_implementation_get_feature, ZEND_ACC_PUBLIC|ZEND_ACC_ALLOW_STATIC)
 	PHP_ME(domimplementation, hasFeature, arginfo_dom_implementation_has_feature, ZEND_ACC_PUBLIC|ZEND_ACC_ALLOW_STATIC)
 	PHP_ME(domimplementation, createDocumentType, arginfo_dom_implementation_create_documenttype, ZEND_ACC_PUBLIC|ZEND_ACC_ALLOW_STATIC)
@@ -89,7 +85,6 @@ PHP_METHOD(domimplementation, hasFeature)
 }
 /* }}} end dom_domimplementation_has_feature */
 
-
 /* {{{ proto DOMDocumentType dom_domimplementation_create_document_type(string qualifiedName, string publicId, string systemId);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#Level-2-Core-DOM-createDocType
 Since: DOM Level 2
@@ -99,7 +94,7 @@ PHP_METHOD(domimplementation, createDocumentType)
 	zval *rv = NULL;
 	xmlDtd *doctype;
 	int ret, name_len = 0, publicid_len = 0, systemid_len = 0;
-	char *name, *publicid, *systemid;
+	char *name = NULL, *publicid = NULL, *systemid = NULL;
 	xmlChar *pch1 = NULL, *pch2 = NULL, *localname = NULL;
 	xmlURIPtr uri;
 
@@ -150,7 +145,6 @@ PHP_METHOD(domimplementation, createDocumentType)
 }
 /* }}} end dom_domimplementation_create_document_type */
 
-
 /* {{{ proto DOMDocument dom_domimplementation_create_document(string namespaceURI, string qualifiedName, DOMDocumentType doctype);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#Level-2-Core-DOM-createDocument
 Since: DOM Level 2
@@ -163,7 +157,7 @@ PHP_METHOD(domimplementation, createDocument)
 	xmlDtdPtr doctype = NULL;
 	xmlNsPtr nsptr = NULL;
 	int ret, uri_len = 0, name_len = 0, errorcode = 0;
-	char *uri, *name;
+	char *uri = NULL, *name = NULL;
 	char *prefix = NULL, *localname = NULL;
 	dom_object *doctobj;
 
@@ -253,7 +247,6 @@ PHP_METHOD(domimplementation, createDocument)
 }
 /* }}} end dom_domimplementation_create_document */
 
-
 /* {{{ proto DOMNode dom_domimplementation_get_feature(string feature, string version);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#DOMImplementation3-getFeature
 Since: DOM Level 3
@@ -263,4 +256,14 @@ PHP_METHOD(domimplementation, getFeature)
  DOM_NOT_IMPLEMENTED();
 }
 /* }}} end dom_domimplementation_get_feature */
+
 #endif
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

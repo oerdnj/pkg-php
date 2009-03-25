@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_alloc.c,v 1.144.2.3.2.54 2009/01/25 14:04:09 dsp Exp $ */
+/* $Id: zend_alloc.c,v 1.144.2.3.2.43.2.22 2009/03/20 11:23:00 dmitry Exp $ */
 
 #include "zend.h"
 #include "zend_alloc.h"
@@ -33,7 +33,6 @@
 #endif
 
 #ifdef ZEND_WIN32
-# define _WIN32_WINNT 0x0400
 # include <wincrypt.h>
 # include <process.h>
 #endif
@@ -79,12 +78,7 @@ void zend_debug_alloc_output(char *format, ...)
 #endif
 
 #if (defined (__GNUC__) && __GNUC__ > 2 ) && !defined(__INTEL_COMPILER) && !defined(DARWIN) && !defined(__hpux) && !defined(_AIX)
-# define EXPECTED(condition)   __builtin_expect(condition, 1)
-# define UNEXPECTED(condition) __builtin_expect(condition, 0)
 static void zend_mm_panic(const char *message) __attribute__ ((noreturn));
-#else
-# define EXPECTED(condition)   (condition)
-# define UNEXPECTED(condition) (condition)
 #endif
 
 static void zend_mm_panic(const char *message)
@@ -115,8 +109,12 @@ static void zend_mm_panic(const char *message)
 
 #if defined(HAVE_MEM_MMAP_ANON) || defined(HAVE_MEM_MMAP_ZERO)
 # ifdef HAVE_MREMAP
+#  ifndef _GNU_SOURCE
 #   define _GNU_SOURCE
+#  endif
+#  ifndef __USE_GNU
 #   define __USE_GNU
+#  endif
 # endif
 # include <sys/mman.h>
 # ifndef MAP_ANON
@@ -140,6 +138,10 @@ static zend_mm_storage* zend_mm_mem_dummy_init(void *params)
 static void zend_mm_mem_dummy_dtor(zend_mm_storage *storage)
 {
 	free(storage);
+}
+
+static void zend_mm_mem_dummy_compact(zend_mm_storage *storage)
+{
 }
 
 #if defined(HAVE_MEM_MMAP_ANON) || defined(HAVE_MEM_MMAP_ZERO)
@@ -180,7 +182,7 @@ static zend_mm_segment* zend_mm_mem_mmap_anon_alloc(zend_mm_storage *storage, si
 	return ret;
 }
 
-# define ZEND_MM_MEM_MMAP_ANON_DSC {"mmap_anon", zend_mm_mem_dummy_init, zend_mm_mem_dummy_dtor, zend_mm_mem_mmap_anon_alloc, zend_mm_mem_mmap_realloc, zend_mm_mem_mmap_free}
+# define ZEND_MM_MEM_MMAP_ANON_DSC {"mmap_anon", zend_mm_mem_dummy_init, zend_mm_mem_dummy_dtor, zend_mm_mem_dummy_compact, zend_mm_mem_mmap_anon_alloc, zend_mm_mem_mmap_realloc, zend_mm_mem_mmap_free}
 
 #endif
 
@@ -215,7 +217,7 @@ static zend_mm_segment* zend_mm_mem_mmap_zero_alloc(zend_mm_storage *storage, si
 	return ret;
 }
 
-# define ZEND_MM_MEM_MMAP_ZERO_DSC {"mmap_zero", zend_mm_mem_mmap_zero_init, zend_mm_mem_mmap_zero_dtor, zend_mm_mem_mmap_zero_alloc, zend_mm_mem_mmap_realloc, zend_mm_mem_mmap_free}
+# define ZEND_MM_MEM_MMAP_ZERO_DSC {"mmap_zero", zend_mm_mem_mmap_zero_init, zend_mm_mem_mmap_zero_dtor, zend_mm_mem_dummy_compact, zend_mm_mem_mmap_zero_alloc, zend_mm_mem_mmap_realloc, zend_mm_mem_mmap_free}
 
 #endif
 
@@ -240,6 +242,12 @@ static void zend_mm_mem_win32_dtor(zend_mm_storage *storage)
 	free(storage);
 }
 
+static void zend_mm_mem_win32_compact(zend_mm_storage *storage)
+{
+    HeapDestroy((HANDLE)storage->data);
+    storage->data = (void*)HeapCreate(HEAP_NO_SERIALIZE, 0, 0);
+}
+
 static zend_mm_segment* zend_mm_mem_win32_alloc(zend_mm_storage *storage, size_t size)
 {
 	return (zend_mm_segment*) HeapAlloc((HANDLE)storage->data, HEAP_NO_SERIALIZE, size);
@@ -255,7 +263,7 @@ static zend_mm_segment* zend_mm_mem_win32_realloc(zend_mm_storage *storage, zend
 	return (zend_mm_segment*) HeapReAlloc((HANDLE)storage->data, HEAP_NO_SERIALIZE, segment, size);
 }
 
-# define ZEND_MM_MEM_WIN32_DSC {"win32", zend_mm_mem_win32_init, zend_mm_mem_win32_dtor, zend_mm_mem_win32_alloc, zend_mm_mem_win32_realloc, zend_mm_mem_win32_free}
+# define ZEND_MM_MEM_WIN32_DSC {"win32", zend_mm_mem_win32_init, zend_mm_mem_win32_dtor, zend_mm_mem_win32_compact, zend_mm_mem_win32_alloc, zend_mm_mem_win32_realloc, zend_mm_mem_win32_free}
 
 #endif
 
@@ -276,7 +284,7 @@ static void zend_mm_mem_malloc_free(zend_mm_storage *storage, zend_mm_segment *p
 	free(ptr);
 }
 
-# define ZEND_MM_MEM_MALLOC_DSC {"malloc", zend_mm_mem_dummy_init, zend_mm_mem_dummy_dtor, zend_mm_mem_malloc_alloc, zend_mm_mem_malloc_realloc, zend_mm_mem_malloc_free}
+# define ZEND_MM_MEM_MALLOC_DSC {"malloc", zend_mm_mem_dummy_init, zend_mm_mem_dummy_dtor, zend_mm_mem_dummy_compact, zend_mm_mem_malloc_alloc, zend_mm_mem_malloc_realloc, zend_mm_mem_malloc_free}
 
 #endif
 
@@ -385,7 +393,7 @@ typedef struct _zend_mm_free_block {
 #define ZEND_MM_NUM_BUCKETS (sizeof(size_t) << 3)
 
 #define ZEND_MM_CACHE 1
-#define ZEND_MM_CACHE_SIZE (ZEND_MM_NUM_BUCKETS * 2 * 1024)
+#define ZEND_MM_CACHE_SIZE (ZEND_MM_NUM_BUCKETS * 4 * 1024)
 
 #ifndef ZEND_MM_CACHE_STAT
 # define ZEND_MM_CACHE_STAT 0
@@ -393,6 +401,9 @@ typedef struct _zend_mm_free_block {
 
 struct _zend_mm_heap {
 	int                 use_zend_alloc;
+	void               *(*_malloc)(size_t);
+	void                (*_free)(void*);
+	void               *(*_realloc)(void*, size_t);
 	size_t              free_bitmap;
 	size_t              large_free_bitmap;
 	size_t              block_size;
@@ -1189,7 +1200,7 @@ static long zend_mm_find_leaks(zend_mm_segment *segment, zend_mm_block *b)
 	return leaks;
 }
 
-static void zend_mm_check_leaks(zend_mm_heap *heap)
+static void zend_mm_check_leaks(zend_mm_heap *heap TSRMLS_DC)
 {
 	zend_mm_segment *segment = heap->segments_list;
 	zend_mm_block *p, *q;
@@ -1220,12 +1231,12 @@ static void zend_mm_check_leaks(zend_mm_heap *heap)
 				leak.orig_filename = p->debug.orig_filename;
 				leak.orig_lineno = p->debug.orig_lineno;
 
-				zend_message_dispatcher(ZMSG_LOG_SCRIPT_NAME, NULL);
-				zend_message_dispatcher(ZMSG_MEMORY_LEAK_DETECTED, &leak);
+				zend_message_dispatcher(ZMSG_LOG_SCRIPT_NAME, NULL TSRMLS_CC);
+				zend_message_dispatcher(ZMSG_MEMORY_LEAK_DETECTED, &leak TSRMLS_CC);
 				repeated = zend_mm_find_leaks(segment, p);
 				total += 1 + repeated;
 				if (repeated) {
-					zend_message_dispatcher(ZMSG_MEMORY_LEAK_REPEATED, (void *)(zend_uintptr_t)repeated);
+					zend_message_dispatcher(ZMSG_MEMORY_LEAK_REPEATED, (void *)(zend_uintptr_t)repeated TSRMLS_CC);
 				}
 #if ZEND_MM_CACHE
 			} else if (p->magic == MEM_BLOCK_CACHED) {
@@ -1245,7 +1256,7 @@ static void zend_mm_check_leaks(zend_mm_heap *heap)
 		p = q;
 	}
 	if (total) {
-		zend_message_dispatcher(ZMSG_MEMORY_LEAKS_GRAND_TOTAL, &total);
+		zend_message_dispatcher(ZMSG_MEMORY_LEAKS_GRAND_TOTAL, &total TSRMLS_CC);
 	}
 }
 
@@ -1264,7 +1275,9 @@ static int zend_mm_check_ptr(zend_mm_heap *heap, void *ptr, int silent ZEND_FILE
 		no_cache_notice = 1;
 	}
 	if (!silent) {
-		zend_message_dispatcher(ZMSG_LOG_SCRIPT_NAME, NULL);
+		TSRMLS_FETCH();
+		
+		zend_message_dispatcher(ZMSG_LOG_SCRIPT_NAME, NULL TSRMLS_CC);
 		zend_debug_alloc_output("---------------------------------------\n");
 		zend_debug_alloc_output("%s(%d) : Block "PTR_FMT" status:\n" ZEND_FILE_LINE_RELAY_CC, ptr);
 		if (__zend_orig_filename) {
@@ -1513,7 +1526,7 @@ static int zend_mm_check_heap(zend_mm_heap *heap, int silent ZEND_FILE_LINE_DC Z
 }
 #endif
 
-ZEND_API void zend_mm_shutdown(zend_mm_heap *heap, int full_shutdown, int silent)
+ZEND_API void zend_mm_shutdown(zend_mm_heap *heap, int full_shutdown, int silent TSRMLS_DC)
 {
 	zend_mm_storage *storage;
 	zend_mm_segment *segment;
@@ -1577,7 +1590,7 @@ ZEND_API void zend_mm_shutdown(zend_mm_heap *heap, int full_shutdown, int silent
 
 #if ZEND_DEBUG
 	if (!silent) {
-		zend_mm_check_leaks(heap);
+		zend_mm_check_leaks(heap TSRMLS_CC);
 	}
 #endif
 
@@ -1595,17 +1608,10 @@ ZEND_API void zend_mm_shutdown(zend_mm_heap *heap, int full_shutdown, int silent
 			free(heap);
 		}
 	} else {
-#ifdef HAVE_MEM_WIN32
-		/* FIX for bug #41713 */
-		/* TODO: add new "compact" handler */
 		if (heap->compact_size &&
-		    heap->real_peak > heap->compact_size &&
-		    storage->handlers->dtor == zend_mm_mem_win32_dtor &&
-		    storage->handlers->init == zend_mm_mem_win32_init) {
-		    HeapDestroy((HANDLE)storage->data);
-		    storage->data = (void*)HeapCreate(HEAP_NO_SERIALIZE, 0, 0);
+		    heap->real_peak > heap->compact_size) {
+			storage->handlers->compact(storage);
 		}
-#endif
 		heap->segments_list = NULL;
 		zend_mm_init(heap);
 		heap->real_size = 0;
@@ -2290,7 +2296,7 @@ ZEND_API void *_emalloc(size_t size ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_DC)
 	TSRMLS_FETCH();
 
 	if (UNEXPECTED(!AG(mm_heap)->use_zend_alloc)) {
-		return malloc(size);
+		return AG(mm_heap)->_malloc(size);
 	}
 	return _zend_mm_alloc_int(AG(mm_heap), size ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_ORIG_RELAY_CC);
 }
@@ -2300,7 +2306,7 @@ ZEND_API void _efree(void *ptr ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_DC)
 	TSRMLS_FETCH();
 
 	if (UNEXPECTED(!AG(mm_heap)->use_zend_alloc)) {
-		free(ptr);
+		AG(mm_heap)->_free(ptr);
 		return;
 	}
 	_zend_mm_free_int(AG(mm_heap), ptr ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_ORIG_RELAY_CC);
@@ -2311,7 +2317,7 @@ ZEND_API void *_erealloc(void *ptr, size_t size, int allow_failure ZEND_FILE_LIN
 	TSRMLS_FETCH();
 
 	if (UNEXPECTED(!AG(mm_heap)->use_zend_alloc)) {
-		return realloc(ptr, size);
+		return AG(mm_heap)->_realloc(ptr, size);
 	}
 	return _zend_mm_realloc_int(AG(mm_heap), ptr, size ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_ORIG_RELAY_CC);
 }
@@ -2362,6 +2368,19 @@ static inline size_t safe_address(size_t nmemb, size_t size, size_t offset)
                 return 0;
         }
         return res;
+}
+
+#elif SIZEOF_SIZE_T == 4 && defined(HAVE_ZEND_LONG64)
+
+static inline size_t safe_address(size_t nmemb, size_t size, size_t offset)
+{
+	zend_ulong64 res = (zend_ulong64)nmemb * (zend_ulong64)size + (zend_ulong64)offset;
+
+	if (UNEXPECTED(res > (zend_ulong64)0xFFFFFFFFL)) {
+		zend_error_noreturn(E_ERROR, "Possible integer overflow in memory allocation (%zu * %zu + %zu)", nmemb, size, offset);
+		return 0;
+	}
+	return (size_t) res;
 }
 
 #else
@@ -2487,7 +2506,7 @@ ZEND_API size_t zend_memory_peak_usage(int real_usage TSRMLS_DC)
 
 ZEND_API void shutdown_memory_manager(int silent, int full_shutdown TSRMLS_DC)
 {
-	zend_mm_shutdown(AG(mm_heap), full_shutdown, silent);
+	zend_mm_shutdown(AG(mm_heap), full_shutdown, silent TSRMLS_CC);
 }
 
 static void alloc_globals_ctor(zend_alloc_globals *alloc_globals TSRMLS_DC)
@@ -2498,6 +2517,11 @@ static void alloc_globals_ctor(zend_alloc_globals *alloc_globals TSRMLS_DC)
 	tmp = getenv("USE_ZEND_ALLOC");
 	if (tmp) {
 		alloc_globals->mm_heap->use_zend_alloc = zend_atoi(tmp, 0);
+		if (!alloc_globals->mm_heap->use_zend_alloc) {
+			alloc_globals->mm_heap->_malloc = malloc;
+			alloc_globals->mm_heap->_free = free;
+			alloc_globals->mm_heap->_realloc = realloc;
+		}
 	}
 }
 
@@ -2529,6 +2553,17 @@ ZEND_API zend_mm_heap *zend_mm_set_heap(zend_mm_heap *new_heap TSRMLS_DC)
 ZEND_API zend_mm_storage *zend_mm_get_storage(zend_mm_heap *heap)
 {
 	return heap->storage;
+}
+
+ZEND_API void zend_mm_set_custom_handlers(zend_mm_heap *heap,
+                                          void* (*_malloc)(size_t),
+                                          void  (*_free)(void*),
+                                          void* (*_realloc)(void*, size_t))
+{
+	heap->use_zend_alloc = 0;
+	heap->_malloc = _malloc;
+	heap->_free = _free;
+	heap->_realloc = _realloc;
 }
 
 #if ZEND_DEBUG

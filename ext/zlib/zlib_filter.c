@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zlib_filter.c,v 1.6.2.2.2.13 2008/12/31 11:17:47 sebastian Exp $ */
+/* $Id: zlib_filter.c,v 1.6.2.2.2.4.2.9 2008/12/31 11:15:47 sebastian Exp $ */
 
 #include "php.h"
 #include "php_zlib.h"
@@ -123,7 +123,6 @@ static php_stream_filter_status_t php_zlib_inflate_filter(
 				php_stream_bucket_delref(bucket TSRMLS_CC);
 				return PSFS_PASS_ON;
 			}
-
 		}
 		php_stream_bucket_delref(bucket TSRMLS_CC);
 	}

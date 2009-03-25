@@ -40,11 +40,12 @@ echo "Done";
 
 -- Testing xml_set_object() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for xml_set_object() in %s on line %d
+Warning: xml_set_object() expects exactly 2 parameters, 3 given in %s on line %d
 NULL
 
 -- Testing xml_set_object() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for xml_set_object() in %s on line %d
+Warning: xml_set_object() expects exactly 2 parameters, 1 given in %s on line %d
 NULL
 Done
+

@@ -1,9 +1,7 @@
 --TEST--
 Test hash_hmac() function : basic functionality 
 --SKIPIF--
-<?php 
-	if(!extension_loaded("hash")) print "skip"; 
-?>
+<?php extension_loaded('hash') or die('skip: hash extension not loaded.'); ?>
 --FILE--
 <?php
 /*
@@ -22,7 +20,8 @@ var_dump(hash_hmac('crc32'));
 var_dump(hash_hmac('crc32', $data));
 
 echo "\n-- Testing hash_hmac() function with more than expected no. of arguments --\n";
-var_dump(hash_hmac('crc32', $data, $key, TRUE, 10));
+$extra_arg = 10;
+var_dump(hash_hmac('crc32', $data, $key, TRUE, $extra_arg));
 
 echo "\n-- Testing hash_hmac() function with invalid hash algorithm --\n";
 var_dump(hash_hmac('foo', $data, $key));

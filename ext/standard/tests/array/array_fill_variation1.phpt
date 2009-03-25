@@ -125,9 +125,9 @@ array(2) {
 }
 -- Iteration 3 --
 array(2) {
-  [-1097262584]=>
+  [2147483647]=>
   int(100)
-  [0]=>
+  [-2147483648]=>
   int(100)
 }
 -- Iteration 4 --
@@ -146,90 +146,102 @@ array(2) {
 }
 -- Iteration 6 --
 
-Warning: array_fill(): Wrong data type for start key in %s on line %d
-bool(false)
+Warning: array_fill() expects parameter 1 to be long, array given in %sarray_fill_variation1.php on line %d
+NULL
 -- Iteration 7 --
 
-Warning: array_fill(): Wrong data type for start key in %s on line %d
-bool(false)
+Warning: array_fill() expects parameter 1 to be long, array given in %sarray_fill_variation1.php on line %d
+NULL
 -- Iteration 8 --
 
-Warning: array_fill(): Wrong data type for start key in %s on line %d
-bool(false)
+Warning: array_fill() expects parameter 1 to be long, array given in %sarray_fill_variation1.php on line %d
+NULL
 -- Iteration 9 --
 
-Warning: array_fill(): Wrong data type for start key in %s on line %d
-bool(false)
+Warning: array_fill() expects parameter 1 to be long, array given in %sarray_fill_variation1.php on line %d
+NULL
 -- Iteration 10 --
 
-Warning: array_fill(): Wrong data type for start key in %s on line %d
-bool(false)
+Warning: array_fill() expects parameter 1 to be long, array given in %sarray_fill_variation1.php on line %d
+NULL
 -- Iteration 11 --
-
-Warning: array_fill(): Wrong data type for start key in %s on line %d
-bool(false)
+array(2) {
+  [0]=>
+  int(100)
+  [1]=>
+  int(100)
+}
 -- Iteration 12 --
-
-Warning: array_fill(): Wrong data type for start key in %s on line %d
-bool(false)
+array(2) {
+  [0]=>
+  int(100)
+  [1]=>
+  int(100)
+}
 -- Iteration 13 --
-
-Warning: array_fill(): Wrong data type for start key in %s on line %d
-bool(false)
+array(2) {
+  [1]=>
+  int(100)
+  [2]=>
+  int(100)
+}
 -- Iteration 14 --
-
-Warning: array_fill(): Wrong data type for start key in %s on line %d
-bool(false)
+array(2) {
+  [0]=>
+  int(100)
+  [1]=>
+  int(100)
+}
 -- Iteration 15 --
-
-Warning: array_fill(): Wrong data type for start key in %s on line %d
-bool(false)
+array(2) {
+  [1]=>
+  int(100)
+  [2]=>
+  int(100)
+}
 -- Iteration 16 --
-
-Warning: array_fill(): Wrong data type for start key in %s on line %d
-bool(false)
+array(2) {
+  [0]=>
+  int(100)
+  [1]=>
+  int(100)
+}
 -- Iteration 17 --
-array(2) {
-  [0]=>
-  int(100)
-  [1]=>
-  int(100)
-}
+
+Warning: array_fill() expects parameter 1 to be long, string given in %sarray_fill_variation1.php on line %d
+NULL
 -- Iteration 18 --
-array(2) {
-  [0]=>
-  int(100)
-  [1]=>
-  int(100)
-}
+
+Warning: array_fill() expects parameter 1 to be long, string given in %sarray_fill_variation1.php on line %d
+NULL
 -- Iteration 19 --
-array(2) {
-  [0]=>
-  int(100)
-  [1]=>
-  int(100)
-}
+
+Warning: array_fill() expects parameter 1 to be long, string given in %sarray_fill_variation1.php on line %d
+NULL
 -- Iteration 20 --
-array(2) {
-  [0]=>
-  int(100)
-  [1]=>
-  int(100)
-}
+
+Warning: array_fill() expects parameter 1 to be long, string given in %sarray_fill_variation1.php on line %d
+NULL
 -- Iteration 21 --
 
-Warning: array_fill(): Wrong data type for start key in %s on line %d
-bool(false)
+Warning: array_fill() expects parameter 1 to be long, object given in %sarray_fill_variation1.php on line %d
+NULL
 -- Iteration 22 --
-
-Warning: array_fill(): Wrong data type for start key in %s on line %d
-bool(false)
+array(2) {
+  [0]=>
+  int(100)
+  [1]=>
+  int(100)
+}
 -- Iteration 23 --
-
-Warning: array_fill(): Wrong data type for start key in %s on line %d
-bool(false)
+array(2) {
+  [0]=>
+  int(100)
+  [1]=>
+  int(100)
+}
 -- Iteration 24 --
 
-Warning: array_fill(): Wrong data type for start key in %s on line %d
-bool(false)
+Warning: array_fill() expects parameter 1 to be long, resource given in %sarray_fill_variation1.php on line %d
+NULL
 Done

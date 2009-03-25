@@ -37,6 +37,10 @@ class bar extends test {
 		$this->foobar = 2;
 		$this->a = 200;
 		
+		$p = new reflectionproperty($this, 'a');
+		$p->setAccessible(true);
+		var_dump($p->getValue($this), $p->isDefault(), $p->isPublic());
+		
 		$p = new reflectionproperty($this, 'foobar');
 		var_dump($p->getValue($this), $p->isDefault(), $p->isPublic());
 	}
@@ -69,6 +73,9 @@ object(ReflectionProperty)#3 (2) {
   ["class"]=>
   string(1) "x"
 }
+int(200)
+bool(true)
+bool(false)
 int(2)
 bool(false)
 bool(true)

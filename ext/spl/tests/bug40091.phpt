@@ -1,7 +1,5 @@
 --TEST--
 Bug #40091 (issue with spl_autoload_register() and 2 instances of the same class)
---SKIPIF--
-<?php if (!extension_loaded("spl")) print "skip"; ?>
 --FILE--
 <?php
 class MyAutoloader {
@@ -25,13 +23,19 @@ Array
 (
     [0] => Array
         (
-            [0] => MyAutoloader
+            [0] => MyAutoloader Object
+                (
+                )
+
             [1] => autoload
         )
 
     [1] => Array
         (
-            [0] => MyAutoloader
+            [0] => MyAutoloader Object
+                (
+                )
+
             [1] => autoload
         )
 

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: ibase_blobs.c,v 1.9.2.1.2.5 2008/12/31 11:17:38 sebastian Exp $ */
+/* $Id: ibase_blobs.c,v 1.9.2.1.2.3.2.2 2008/12/31 11:15:38 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

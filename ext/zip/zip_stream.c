@@ -1,4 +1,4 @@
-/* $Id: zip_stream.c,v 1.1.2.7 2008/07/23 11:25:50 tony2001 Exp $ */
+/* $Id: zip_stream.c,v 1.1.2.5.2.2 2008/07/23 11:25:14 tony2001 Exp $ */
 #ifdef HAVE_CONFIG_H
 #   include "config.h"
 #endif

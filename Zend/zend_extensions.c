@@ -17,14 +17,14 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_extensions.c,v 1.48.2.1.2.5 2008/12/31 11:17:33 sebastian Exp $ */
+/* $Id: zend_extensions.c,v 1.48.2.1.2.3.2.4 2009/01/17 02:05:13 stas Exp $ */
 
 #include "zend_extensions.h"
 
 ZEND_API zend_llist zend_extensions;
 static int last_resource_number;
 
-int zend_load_extension(char *path)
+int zend_load_extension(const char *path)
 {
 #if ZEND_EXTENSIONS_SUPPORT
 	DL_HANDLE handle;
@@ -79,18 +79,9 @@ int zend_load_extension(char *path)
 			DL_UNLOAD(handle);
 			return FAILURE;
 		}
-	} else if (ZTS_V!=extension_version_info->thread_safe) {
-		fprintf(stderr, "Cannot load %s - it %s thread safe, whereas Zend %s\n",
-					new_extension->name,
-					(extension_version_info->thread_safe?"is":"isn't"),
-					(ZTS_V?"is":"isn't"));
-		DL_UNLOAD(handle);
-		return FAILURE;
-	} else if (ZEND_DEBUG!=extension_version_info->debug) {
-		fprintf(stderr, "Cannot load %s - it %s debug information, whereas Zend %s\n",
-					new_extension->name,
-					(extension_version_info->debug?"contains":"does not contain"),
-					(ZEND_DEBUG?"does":"does not"));
+	} else if (strcmp(ZEND_EXTENSION_BUILD_ID, extension_version_info->build_id)) {
+		fprintf(stderr, "Cannot load %s - it was build with configuration %s, whereas running engine is %s\n",
+					new_extension->name, extension_version_info->build_id, ZEND_EXTENSION_BUILD_ID);
 		DL_UNLOAD(handle);
 		return FAILURE;
 	}
@@ -178,7 +169,7 @@ void zend_extension_dtor(zend_extension *extension)
 }
 
 
-static void zend_extension_message_dispatcher(zend_extension *extension, int num_args, va_list args TSRMLS_DC)
+static void zend_extension_message_dispatcher(const zend_extension *extension, int num_args, va_list args TSRMLS_DC)
 {
 	int message;
 	void *arg;
@@ -211,7 +202,7 @@ ZEND_API int zend_get_resource_handle(zend_extension *extension)
 }
 
 
-ZEND_API zend_extension *zend_get_extension(char *extension_name)
+ZEND_API zend_extension *zend_get_extension(const char *extension_name)
 {
 	zend_llist_element *element;
 

@@ -29,6 +29,7 @@ var_dump( mb_substitute_character($substchar, $extra_arg) );
 
 -- Testing mb_substitute_character() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for mb_substitute_character() in %s on line %d
+Warning: mb_substitute_character() expects at most 1 parameter, 2 given in %s on line %d
 NULL
 ===DONE===
+

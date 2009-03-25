@@ -30,11 +30,11 @@ var_dump( current($array_arg, $extra_arg) );
 
 -- Testing current() function with Zero arguments --
 
-Warning: Wrong parameter count for current() in %s on line %d
+Warning: current() expects exactly 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing current() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for current() in %s on line %d
+Warning: current() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
 ===DONE===

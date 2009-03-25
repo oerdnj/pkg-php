@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_ini.c,v 1.39.2.2.2.28 2008/12/31 11:17:33 sebastian Exp $ */
+/* $Id: zend_ini.c,v 1.39.2.2.2.18.2.18 2008/12/31 11:15:32 sebastian Exp $ */
 
 #include "zend.h"
 #include "zend_qsort.h"
@@ -60,12 +60,11 @@ static int zend_restore_ini_entry_cb(zend_ini_entry *ini_entry, int stage TSRMLS
 		}
 		ini_entry->value = ini_entry->orig_value;
 		ini_entry->value_length = ini_entry->orig_value_length;
+		ini_entry->modifiable = ini_entry->orig_modifiable;
 		ini_entry->modified = 0;
 		ini_entry->orig_value = NULL;
 		ini_entry->orig_value_length = 0;
-		if (ini_entry->modifiable >= (1 << 3)) {
-			ini_entry->modifiable >>= 3;
-		}
+		ini_entry->orig_modifiable = 0;
 	}
 	return 0;
 }
@@ -167,9 +166,9 @@ ZEND_API void zend_ini_sort_entries(TSRMLS_D) /* {{{ */
 /*
  * Registration / unregistration
  */
-ZEND_API int zend_register_ini_entries(zend_ini_entry *ini_entry, int module_number TSRMLS_DC) /* {{{ */
+ZEND_API int zend_register_ini_entries(const zend_ini_entry *ini_entry, int module_number TSRMLS_DC) /* {{{ */
 {
-	zend_ini_entry *p = ini_entry;
+	const zend_ini_entry *p = ini_entry;
 	zend_ini_entry *hashed_ini_entry;
 	zval default_value;
 	HashTable *directives = registered_zend_ini_directives;
@@ -190,12 +189,12 @@ ZEND_API int zend_register_ini_entries(zend_ini_entry *ini_entry, int module_num
 #endif
 
 	while (p->name) {
-		p->module_number = module_number;
 		config_directive_success = 0;
-		if (zend_hash_add(directives, p->name, p->name_length, p, sizeof(zend_ini_entry), (void **) &hashed_ini_entry) == FAILURE) {
+		if (zend_hash_add(directives, p->name, p->name_length, (void*)p, sizeof(zend_ini_entry), (void **) &hashed_ini_entry) == FAILURE) {
 			zend_unregister_ini_entries(module_number TSRMLS_CC);
 			return FAILURE;
 		}
+		hashed_ini_entry->module_number = module_number;
 		if ((zend_get_configuration_directive(p->name, p->name_length, &default_value)) == SUCCESS) {
 			if (!hashed_ini_entry->on_modify
 				|| hashed_ini_entry->on_modify(hashed_ini_entry, Z_STRVAL(default_value), Z_STRLEN(default_value), hashed_ini_entry->mh_arg1, hashed_ini_entry->mh_arg2, hashed_ini_entry->mh_arg3, ZEND_INI_STAGE_STARTUP TSRMLS_CC) == SUCCESS) {
@@ -239,17 +238,18 @@ ZEND_API void zend_ini_refresh_caches(int stage TSRMLS_DC) /* {{{ */
 
 ZEND_API int zend_alter_ini_entry(char *name, uint name_length, char *new_value, uint new_value_length, int modify_type, int stage) /* {{{ */
 {
-	return zend_alter_ini_entry_ex(name, name_length, new_value, new_value_length, modify_type, stage, 0);
+	TSRMLS_FETCH();
+
+	return zend_alter_ini_entry_ex(name, name_length, new_value, new_value_length, modify_type, stage, 0 TSRMLS_CC);
 }
 /* }}} */
 
-ZEND_API int zend_alter_ini_entry_ex(char *name, uint name_length, char *new_value, uint new_value_length, int modify_type, int stage, int force_change) /* {{{ */
+ZEND_API int zend_alter_ini_entry_ex(char *name, uint name_length, char *new_value, uint new_value_length, int modify_type, int stage, int force_change TSRMLS_DC) /* {{{ */
 {
 	zend_ini_entry *ini_entry;
 	char *duplicate;
 	zend_bool modifiable;
 	zend_bool modified;
-	TSRMLS_FETCH();
 
 	if (zend_hash_find(EG(ini_directives), name, name_length, (void **) &ini_entry) == FAILURE) {
 		return FAILURE;
@@ -259,8 +259,7 @@ ZEND_API int zend_alter_ini_entry_ex(char *name, uint name_length, char *new_val
 	modified = ini_entry->modified;
 
 	if (stage == ZEND_INI_STAGE_ACTIVATE && modify_type == ZEND_INI_SYSTEM) {
-		/* only touch lower bits */
-		ini_entry->modifiable = (ini_entry->modifiable & (ZEND_INI_ALL << 3)) | ZEND_INI_SYSTEM;
+		ini_entry->modifiable = ZEND_INI_SYSTEM;
 	}
 
 	if (!force_change) {
@@ -276,8 +275,7 @@ ZEND_API int zend_alter_ini_entry_ex(char *name, uint name_length, char *new_val
 	if (!modified) {
 		ini_entry->orig_value = ini_entry->value;
 		ini_entry->orig_value_length = ini_entry->value_length;
-		/* store orginial value in the upper bits */
-		ini_entry->modifiable = (modifiable << 3) | ini_entry->modifiable;
+		ini_entry->orig_modifiable = modifiable;
 		ini_entry->modified = 1;
 		zend_hash_add(EG(modified_ini_directives), name, name_length, &ini_entry, sizeof(zend_ini_entry*), NULL);
 	}
@@ -293,6 +291,7 @@ ZEND_API int zend_alter_ini_entry_ex(char *name, uint name_length, char *new_val
 		ini_entry->value_length = new_value_length;
 	} else {
 		efree(duplicate);
+		return FAILURE;
 	}
 
 	return SUCCESS;
@@ -343,8 +342,8 @@ ZEND_API long zend_ini_long(char *name, uint name_length, int orig) /* {{{ */
 	if (zend_hash_find(EG(ini_directives), name, name_length, (void **) &ini_entry) == SUCCESS) {
 		if (orig && ini_entry->modified) {
 			return (ini_entry->orig_value ? strtol(ini_entry->orig_value, NULL, 0) : 0);
-		} else if (ini_entry->value) {
-			return strtol(ini_entry->value, NULL, 0);
+		} else {
+			return (ini_entry->value      ? strtol(ini_entry->value, NULL, 0)      : 0);
 		}
 	}
 
@@ -360,8 +359,8 @@ ZEND_API double zend_ini_double(char *name, uint name_length, int orig) /* {{{ *
 	if (zend_hash_find(EG(ini_directives), name, name_length, (void **) &ini_entry) == SUCCESS) {
 		if (orig && ini_entry->modified) {
 			return (double) (ini_entry->orig_value ? zend_strtod(ini_entry->orig_value, NULL) : 0.0);
-		} else if (ini_entry->value) {
-			return (double) zend_strtod(ini_entry->value, NULL);
+		} else {
+			return (double) (ini_entry->value      ? zend_strtod(ini_entry->value, NULL)      : 0.0);
 		}
 	}
 
@@ -369,20 +368,42 @@ ZEND_API double zend_ini_double(char *name, uint name_length, int orig) /* {{{ *
 }
 /* }}} */
 
-ZEND_API char *zend_ini_string(char *name, uint name_length, int orig) /* {{{ */
+ZEND_API char *zend_ini_string_ex(char *name, uint name_length, int orig, zend_bool *exists) /* {{{ */
 {
 	zend_ini_entry *ini_entry;
 	TSRMLS_FETCH();
 
 	if (zend_hash_find(EG(ini_directives), name, name_length, (void **) &ini_entry) == SUCCESS) {
+		if (exists) {
+			*exists = 1;
+		}
+
 		if (orig && ini_entry->modified) {
 			return ini_entry->orig_value;
 		} else {
 			return ini_entry->value;
 		}
+	} else {
+		if (exists) {
+			*exists = 0;
+		}
+		return NULL;
 	}
+}
+/* }}} */
 
-	return "";
+ZEND_API char *zend_ini_string(char *name, uint name_length, int orig) /* {{{ */
+{
+	zend_bool exists = 1;
+	char *return_value;
+
+	return_value = zend_ini_string_ex(name, name_length, orig, &exists);
+	if (!exists) {
+		return NULL;
+	} else if (!return_value) {
+		return_value = "";
+	}
+	return return_value;
 }
 /* }}} */
 
@@ -556,12 +577,12 @@ ZEND_API ZEND_INI_MH(OnUpdateLong) /* {{{ */
 
 	p = (long *) (base+(size_t) mh_arg1);
 
-	*p = zend_atoi(new_value, new_value_length);
+	*p = zend_atol(new_value, new_value_length);
 	return SUCCESS;
 }
 /* }}} */
 
-ZEND_API ZEND_INI_MH(OnUpdateLongGEZero)
+ZEND_API ZEND_INI_MH(OnUpdateLongGEZero) /* {{{ */
 {
 	long *p, tmp;
 #ifndef ZTS
@@ -572,7 +593,7 @@ ZEND_API ZEND_INI_MH(OnUpdateLongGEZero)
 	base = (char *) ts_resource(*((int *) mh_arg2));
 #endif
 
-	tmp = zend_atoi(new_value, new_value_length);
+	tmp = zend_atol(new_value, new_value_length);
 	if (tmp < 0) {
 		return FAILURE;
 	}

@@ -25,24 +25,32 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_oci8.h,v 1.36.2.2.2.3 2008/12/31 11:17:40 sebastian Exp $ */
+/* $Id: php_oci8.h,v 1.36.2.2.2.1.2.13 2009/03/16 05:44:49 sixd Exp $ */
 
 #if HAVE_OCI8
 # ifndef PHP_OCI8_H
 #  define PHP_OCI8_H
 
-#ifdef PHP_WIN32
-#define PHP_OCI_API __declspec(dllexport)
-#else
-#define PHP_OCI_API
-#endif                                   
-
 #ifdef ZTS
 # include "TSRM.h"
 #endif
 
+
+/*
+ * The version of the OCI8 extension.
+ */
+#ifdef PHP_OCI8_VERSION
+/* The definition of PHP_OCI8_VERSION changed in PHP 5.3 and building
+ * this code with PHP 5.2 and earlier (e.g. when using OCI8 from PECL)
+ * will conflict.
+ */
+#undef PHP_OCI8_VERSION
+#endif
+#define PHP_OCI8_VERSION "1.3.5"
+
 extern zend_module_entry oci8_module_entry;
 #define phpext_oci8_ptr &oci8_module_entry
+#define phpext_oci8_11g_ptr &oci8_module_entry
 
 
 PHP_MINIT_FUNCTION(oci);
@@ -64,5 +72,3 @@ PHP_MINFO_FUNCTION(oci);
  * c-basic-offset: 4
  * End:
  */
-
-

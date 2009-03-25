@@ -117,8 +117,10 @@ if ($failed == false) {
 }
 ?>
 ===DONE===
---EXPECT--
+--EXPECTF--
 *** Testing define_syslog_variables() : basic functionality ***
+
+Deprecated: Function define_syslog_variables() is deprecated in %s on line %d
 NULL
 PASSED
 ===DONE===

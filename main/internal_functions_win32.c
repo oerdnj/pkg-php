@@ -17,7 +17,7 @@
 	+----------------------------------------------------------------------+
 */
 
-/* $Id: internal_functions_win32.c,v 1.87.2.1.2.5 2008/12/31 11:17:47 sebastian Exp $ */
+/* $Id: internal_functions_win32.c,v 1.87.2.1.2.3.2.3 2008/12/31 11:15:47 sebastian Exp $ */
 
 /* {{{ includes
  */
@@ -193,7 +193,7 @@ static zend_module_entry *php_builtin_extensions[] = {
 
 #define EXTCOUNT (sizeof(php_builtin_extensions)/sizeof(zend_module_entry *))
 	
-int php_register_internal_extensions(TSRMLS_D)
+PHPAPI int php_register_internal_extensions(TSRMLS_D)
 {
 	return php_register_extensions(php_builtin_extensions, EXTCOUNT TSRMLS_CC);
 }

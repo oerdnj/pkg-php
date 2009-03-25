@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: win95nt.h,v 1.20.2.2.2.4 2008/12/31 11:17:48 sebastian Exp $ */
+/* $Id: win95nt.h,v 1.20.2.2.2.2.2.4 2008/12/31 11:15:48 sebastian Exp $ */
 
 /* Defines and types for Windows 95/NT */
 #define HAVE_DECLARED_TIMEZONE
@@ -28,6 +28,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <sys/types.h>
+#include <process.h>
+
 typedef int uid_t;
 typedef int gid_t;
 typedef char * caddr_t;
@@ -72,7 +74,10 @@ typedef long pid_t;
 #endif
 
 /* General Windows stuff */
-#define WINDOWS 1
+#ifndef WINDOWS
+# define WINDOWS 1
+#endif
+
 
 /* Prevent use of VC5 OpenFile function */
 #define NOOPENFILE

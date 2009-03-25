@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_simplexml_exports.h,v 1.3.2.3.2.3 2008/12/31 11:17:43 sebastian Exp $ */
+/* $Id: php_simplexml_exports.h,v 1.3.2.3.2.1.2.3 2008/12/31 11:15:43 sebastian Exp $ */
 
 #ifndef PHP_SIMPLEXML_EXPORTS_H
 #define PHP_SIMPLEXML_EXPORTS_H
@@ -39,7 +39,7 @@
 	} \
 }
 
-ZEND_API zend_object_value sxe_object_new(zend_class_entry *ce TSRMLS_DC);
+PHP_SXE_API zend_object_value sxe_object_new(zend_class_entry *ce TSRMLS_DC);
 /* {{{ php_sxe_fetch_object()
  */
 static inline php_sxe_object *

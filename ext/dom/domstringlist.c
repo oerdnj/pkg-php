@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: domstringlist.c,v 1.6.2.1.2.4 2008/12/31 11:17:37 sebastian Exp $ */
+/* $Id: domstringlist.c,v 1.6.2.1.2.1.2.8 2008/12/31 11:15:36 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -27,9 +27,7 @@
 #if HAVE_LIBXML && HAVE_DOM
 #include "php_dom.h"
 
-
 /* {{{ arginfo */
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_stringlist_item, 0, 0, 1)
 	ZEND_ARG_INFO(0, index)
 ZEND_END_ARG_INFO();
@@ -42,7 +40,7 @@ ZEND_END_ARG_INFO();
 * Since: DOM Level 3
 */
 
-zend_function_entry php_dom_domstringlist_class_functions[] = {
+const zend_function_entry php_dom_domstringlist_class_functions[] = {
 	PHP_FALIAS(item, dom_domstringlist_item, arginfo_dom_stringlist_item)
 	{NULL, NULL, NULL}
 };
@@ -63,9 +61,6 @@ int dom_domstringlist_length_read(dom_object *obj, zval **retval TSRMLS_DC)
 
 /* }}} */
 
-
-
-
 /* {{{ proto domstring dom_domstringlist_item(int index);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#DOMStringList-item
 Since: 
@@ -75,4 +70,16 @@ PHP_FUNCTION(dom_domstringlist_item)
  DOM_NOT_IMPLEMENTED();
 }
 /* }}} end dom_domstringlist_item */
+
+/* }}} */
+
 #endif
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

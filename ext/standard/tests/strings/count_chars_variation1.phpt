@@ -190,43 +190,16 @@ array(8) {
 }
 -- Iteration 10 --
 
-Notice: Array to string conversion in %s on line %d
-array(4) {
-  [65]=>
-  int(1)
-  [97]=>
-  int(1)
-  [114]=>
-  int(2)
-  [121]=>
-  int(1)
-}
+Warning: count_chars() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 11 --
 
-Notice: Array to string conversion in %s on line %d
-array(4) {
-  [65]=>
-  int(1)
-  [97]=>
-  int(1)
-  [114]=>
-  int(2)
-  [121]=>
-  int(1)
-}
+Warning: count_chars() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 12 --
 
-Notice: Array to string conversion in %s on line %d
-array(4) {
-  [65]=>
-  int(1)
-  [97]=>
-  int(1)
-  [114]=>
-  int(2)
-  [121]=>
-  int(1)
-}
+Warning: count_chars() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 13 --
 array(1) {
   [49]=>
@@ -277,9 +250,9 @@ array(12) {
   int(1)
 }
 -- Iteration 20 --
-array(%d) {
- %a
-}
+
+Warning: count_chars() expects parameter 1 to be string, resource given in %s on line %d
+NULL
 -- Iteration 21 --
 array(0) {
 }

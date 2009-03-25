@@ -58,7 +58,7 @@ function test_gzfile() {
    unlink($firstFile);
    unlink($secondFile);
    
-   //should fail to read the file
+   //should read the file in working directory
    var_dump(gzfile($filename, true));
    echo "\n";
    
@@ -95,9 +95,10 @@ array(1) {
   string(22) "This is a file in dir1"
 }
 
-
-Warning: gzfile(afile.txt.gz): failed to open stream: No such file or directory in %s on line %d
-bool(false)
+array(1) {
+  [0]=>
+  string(29) "This is a file in working dir"
+}
 
 array(1) {
   [0]=>

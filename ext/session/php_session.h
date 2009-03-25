@@ -16,12 +16,16 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_session.h,v 1.101.2.2.2.7 2008/12/31 11:17:43 sebastian Exp $ */
+/* $Id: php_session.h,v 1.101.2.2.2.5.2.5 2008/12/31 11:15:42 sebastian Exp $ */
 
 #ifndef PHP_SESSION_H
 #define PHP_SESSION_H
 
 #include "ext/standard/php_var.h"
+
+#if defined(HAVE_HASH_EXT) && !defined(COMPILE_DL_HASH)
+# include "ext/hash/php_hash.h"
+#endif
 
 #define PHP_SESSION_API 20020330
 
@@ -112,6 +116,17 @@ typedef struct _php_ps_globals {
 	long gc_maxlifetime;
 	int module_number;
 	long cache_expire;
+	union {
+		zval *names[6];
+		struct {
+			zval *ps_open;
+			zval *ps_close;
+			zval *ps_read;
+			zval *ps_write;
+			zval *ps_destroy;
+			zval *ps_gc;
+		} name;
+	} mod_user_names;
 	zend_bool bug_compat; /* Whether to behave like PHP 4.2 and earlier */
 	zend_bool bug_compat_warn; /* Whether to warn about it */
 	const struct ps_serializer_struct *serializer;
@@ -123,6 +138,9 @@ typedef struct _php_ps_globals {
 	zend_bool apply_trans_sid;	/* whether or not to enable trans-sid for the current request */
 
 	long hash_func;
+#if defined(HAVE_HASH_EXT) && !defined(COMPILE_DL_HASH)
+	php_hash_ops *hash_ops;
+#endif
 	long hash_bits_per_character;
 	int send_cookie;
 	int define_sid;
@@ -133,26 +151,6 @@ typedef php_ps_globals zend_ps_globals;
 
 extern zend_module_entry session_module_entry;
 #define phpext_session_ptr &session_module_entry
-
-PHP_FUNCTION(session_name);
-PHP_FUNCTION(session_module_name);
-PHP_FUNCTION(session_save_path);
-PHP_FUNCTION(session_id);
-PHP_FUNCTION(session_regenerate_id);
-PHP_FUNCTION(session_decode);
-PHP_FUNCTION(session_register);
-PHP_FUNCTION(session_unregister);
-PHP_FUNCTION(session_is_registered);
-PHP_FUNCTION(session_encode);
-PHP_FUNCTION(session_start);
-PHP_FUNCTION(session_destroy);
-PHP_FUNCTION(session_unset);
-PHP_FUNCTION(session_set_save_handler);
-PHP_FUNCTION(session_cache_expire);
-PHP_FUNCTION(session_cache_limiter);
-PHP_FUNCTION(session_set_cookie_params);
-PHP_FUNCTION(session_get_cookie_params);
-PHP_FUNCTION(session_write_close);
 
 #ifdef ZTS
 #define PS(v) TSRMG(ps_globals_id, php_ps_globals *, v)
@@ -229,7 +227,7 @@ PHPAPI const ps_serializer *_php_find_ps_serializer(char *name TSRMLS_DC);
 				(key_type = zend_hash_get_current_key_ex(_ht, &key, &key_length, &num_key, 0, NULL)) != HASH_KEY_NON_EXISTANT; \
 				zend_hash_move_forward(_ht)) {				\
 			if (key_type == HASH_KEY_IS_LONG) {                                             \
-				php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Skipping numeric key %ld.", num_key); \
+				php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Skipping numeric key %ld", num_key); \
 				continue;                                                               \
 			}										\
 			key_length--;										\

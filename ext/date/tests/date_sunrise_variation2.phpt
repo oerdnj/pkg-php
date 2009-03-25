@@ -18,7 +18,6 @@ $longitude = -9;
 $zenith = 90;
 $gmt_offset = 1;
 
-
 //get an unset variable
 $unset_var = 10;
 unset ($unset_var);

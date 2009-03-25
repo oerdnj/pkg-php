@@ -26,11 +26,12 @@ var_dump( exif_tagname(0x10E, $extra_arg) );
 
 -- Testing exif_tagname() function with no arguments --
 
-Warning: Wrong parameter count for exif_tagname() in %s on line %d
+Warning: exif_tagname() expects exactly 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing exif_tagname() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for exif_tagname() in %s on line %d
+Warning: exif_tagname() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
 ===Done===
+

@@ -113,72 +113,72 @@ Subject: test1
 "
 
 -- Iteration 2 --
-string(%d) "1: this is a test message, please ignore%a"
+%unicode|string%(%d) "1: this is a test message, please ignore%a"
 
 -- Iteration 3 --
-string(0) ""
+%unicode|string%(0) ""
 
 -- Iteration 4 --
-string(0) ""
+%unicode|string%(0) ""
 
 -- Iteration 5 --
-string(0) ""
+%unicode|string%(0) ""
 
 -- Iteration 6 --
-string(0) ""
+%unicode|string%(0) ""
 
 -- Iteration 7 --
-string(0) ""
+%unicode|string%(0) ""
 
 -- Iteration 8 --
-string(0) ""
+%unicode|string%(0) ""
 
 -- Iteration 9 --
-string(0) ""
+%unicode|string%(0) ""
 
 -- Iteration 10 --
-string(%d) "From: %s
+%unicode|string%(%d) "From: %s
 To: %s
 Subject: test1
 
 1: this is a test message, please ignore%a"
 
 -- Iteration 11 --
-string(%d) "From: %s
+%unicode|string%(%d) "From: %s
 To: %s
 Subject: test1
 
 1: this is a test message, please ignore%a"
 
 -- Iteration 12 --
-string(%d) "1: this is a test message, please ignore%a"
+%unicode|string%(%d) "1: this is a test message, please ignore%a"
 
 -- Iteration 13 --
-string(%d) "From: %s
+%unicode|string%(%d) "From: %s
 To: %s
 Subject: test1
 
 1: this is a test message, please ignore%a"
 
 -- Iteration 14 --
-string(%d) "1: this is a test message, please ignore%a"
+%unicode|string%(%d) "1: this is a test message, please ignore%a"
 
 -- Iteration 15 --
-string(%d) "From: %s
+%unicode|string%(%d) "From: %s
 To: %s
 Subject: test1
 
 1: this is a test message, please ignore%a"
 
 -- Iteration 16 --
-string(%d) "From: %s
+%unicode|string%(%d) "From: %s
 To: %s
 Subject: test1
 
 1: this is a test message, please ignore%a"
 
 -- Iteration 17 --
-string(%d) "From: %s
+%unicode|string%(%d) "From: %s
 To: %s
 Subject: test1
 
@@ -186,30 +186,30 @@ Subject: test1
 
 -- Iteration 18 --
 
-Notice: Array to string conversion in %s on line %d
-string(0) ""
+Warning: imap_fetchbody() expects parameter 3 to be %unicode_string_optional%, array given in %s on line 87
+NULL
 
 -- Iteration 19 --
-string(0) ""
+%unicode|string%(0) ""
 
 -- Iteration 20 --
-string(0) ""
+%unicode|string%(0) ""
 
 -- Iteration 21 --
-string(0) ""
+%unicode|string%(0) ""
 
 -- Iteration 22 --
-string(0) ""
+%unicode|string%(0) ""
 
 -- Iteration 23 --
-string(%d) "From: %s
+%unicode|string%(%d) "From: %s
 To: %s
 Subject: test1
 
 1: this is a test message, please ignore%a"
 
 -- Iteration 24 --
-string(%d) "From: %s
+%unicode|string%(%d) "From: %s
 To: %s
 Subject: test1
 

@@ -98,122 +98,122 @@ fclose($fp);
 
 -- Iteration 1 --
 
-Warning: next(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: next() expects parameter 1 to be array, integer given in %s on line %d
+NULL
 
 -- Iteration 2 --
 
-Warning: next(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: next() expects parameter 1 to be array, integer given in %s on line %d
+NULL
 
 -- Iteration 3 --
 
-Warning: next(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: next() expects parameter 1 to be array, integer given in %s on line %d
+NULL
 
 -- Iteration 4 --
 
-Warning: next(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: next() expects parameter 1 to be array, integer given in %s on line %d
+NULL
 
 -- Iteration 5 --
 
-Warning: next(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: next() expects parameter 1 to be array, double given in %s on line %d
+NULL
 
 -- Iteration 6 --
 
-Warning: next(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: next() expects parameter 1 to be array, double given in %s on line %d
+NULL
 
 -- Iteration 7 --
 
-Warning: next(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: next() expects parameter 1 to be array, double given in %s on line %d
+NULL
 
 -- Iteration 8 --
 
-Warning: next(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: next() expects parameter 1 to be array, double given in %s on line %d
+NULL
 
 -- Iteration 9 --
 
-Warning: next(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: next() expects parameter 1 to be array, double given in %s on line %d
+NULL
 
 -- Iteration 10 --
 
-Warning: next(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: next() expects parameter 1 to be array, null given in %s on line %d
+NULL
 
 -- Iteration 11 --
 
-Warning: next(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: next() expects parameter 1 to be array, null given in %s on line %d
+NULL
 
 -- Iteration 12 --
 
-Warning: next(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: next() expects parameter 1 to be array, boolean given in %s on line %d
+NULL
 
 -- Iteration 13 --
 
-Warning: next(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: next() expects parameter 1 to be array, boolean given in %s on line %d
+NULL
 
 -- Iteration 14 --
 
-Warning: next(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: next() expects parameter 1 to be array, boolean given in %s on line %d
+NULL
 
 -- Iteration 15 --
 
-Warning: next(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: next() expects parameter 1 to be array, boolean given in %s on line %d
+NULL
 
 -- Iteration 16 --
 
-Warning: next(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: next() expects parameter 1 to be array, string given in %s on line %d
+NULL
 
 -- Iteration 17 --
 
-Warning: next(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: next() expects parameter 1 to be array, string given in %s on line %d
+NULL
 
 -- Iteration 18 --
 bool(false)
 
 -- Iteration 19 --
 
-Warning: next(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: next() expects parameter 1 to be array, string given in %s on line %d
+NULL
 
 -- Iteration 20 --
 
-Warning: next(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: next() expects parameter 1 to be array, string given in %s on line %d
+NULL
 
 -- Iteration 21 --
 
-Warning: next(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: next() expects parameter 1 to be array, string given in %s on line %d
+NULL
 
 -- Iteration 22 --
 bool(false)
 
 -- Iteration 23 --
 
-Warning: next(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: next() expects parameter 1 to be array, null given in %s on line %d
+NULL
 
 -- Iteration 24 --
 
-Warning: next(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: next() expects parameter 1 to be array, null given in %s on line %d
+NULL
 
 -- Iteration 25 --
 
-Warning: next(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: next() expects parameter 1 to be array, resource given in %s on line %d
+NULL
 ===DONE===

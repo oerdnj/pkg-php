@@ -32,12 +32,11 @@ var_dump( array_udiff($arr1, $arr2) );
 
 -- Testing array_udiff() function with more than expected no. of arguments --
 
-Warning: array_udiff(): Not a valid callback 10 in %s on line %d
+Warning: array_udiff() expects parameter 4 to be a valid callback, no array or string given in %sarray_udiff_error.php on line %d
 NULL
 
 -- Testing array_udiff() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for array_udiff() in %s on line %d
+Warning: array_udiff(): at least 3 parameters are required, 2 given in %sarray_udiff_error.php on line %d
 NULL
 ===DONE===
-

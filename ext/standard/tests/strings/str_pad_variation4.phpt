@@ -120,21 +120,31 @@ NULL
 Warning: str_pad(): Padding type has to be STR_PAD_LEFT, STR_PAD_RIGHT, or STR_PAD_BOTH in %s on line %d
 NULL
 -- Iteration 10 --
-string(20) "*********Test string"
+
+Warning: str_pad() expects parameter 4 to be long, string given in %s on line %d
+NULL
 -- Iteration 11 --
-string(20) "*********Test string"
+
+Warning: str_pad() expects parameter 4 to be long, string given in %s on line %d
+NULL
 -- Iteration 12 --
 string(20) "****Test string*****"
 -- Iteration 13 --
-string(20) "*********Test string"
+string(20) "****Test string*****"
 -- Iteration 14 --
 string(20) "****Test string*****"
 -- Iteration 15 --
-string(20) "*********Test string"
+
+Warning: str_pad() expects parameter 4 to be long, array given in %s on line %d
+NULL
 -- Iteration 16 --
-string(20) "Test string*********"
+
+Warning: str_pad() expects parameter 4 to be long, array given in %s on line %d
+NULL
 -- Iteration 17 --
-string(20) "Test string*********"
+
+Warning: str_pad() expects parameter 4 to be long, array given in %s on line %d
+NULL
 -- Iteration 18 --
 string(20) "Test string*********"
 -- Iteration 19 --
@@ -149,8 +159,8 @@ string(20) "*********Test string"
 string(20) "*********Test string"
 -- Iteration 24 --
 
-Notice: Object of class sample could not be converted to int in %s on line %d
-string(20) "Test string*********"
+Warning: str_pad() expects parameter 4 to be long, object given in %s on line %d
+NULL
 -- Iteration 25 --
 string(20) "*********Test string"
 -- Iteration 26 --

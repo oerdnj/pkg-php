@@ -1,7 +1,5 @@
 --TEST--
 SPL: ArrayObject
---SKIPIF--
-<?php if (!extension_loaded("spl")) print "skip"; ?>
 --FILE--
 <?php
 
@@ -38,11 +36,14 @@ var_dump($ar);
 ===DONE===
 <?php exit(0); ?>
 --EXPECTF--
-object(ArrayObject)#%d (2) {
-  [0]=>
-  int(0)
-  [1]=>
-  int(1)
+object(ArrayObject)#%d (1) {
+  ["storage":"ArrayObject":private]=>
+  array(2) {
+    [0]=>
+    int(0)
+    [1]=>
+    int(1)
+  }
 }
 int(2)
 int(3)
@@ -61,17 +62,20 @@ array(6) {
   int(5)
 }
 string(1) "a"
-object(ArrayObject)#%d (5) {
-  [0]=>
-  int(0)
-  [1]=>
-  int(1)
-  [2]=>
-  int(2)
-  [3]=>
-  int(3)
-  ["a"]=>
-  string(1) "a"
+object(ArrayObject)#%d (1) {
+  ["storage":"ArrayObject":private]=>
+  array(5) {
+    [0]=>
+    int(0)
+    [1]=>
+    int(1)
+    [2]=>
+    int(2)
+    [3]=>
+    int(3)
+    ["a"]=>
+    string(1) "a"
+  }
 }
 int(0)
 
@@ -84,20 +88,26 @@ NULL
 Notice: Undefined offset:  7 in %sarray_001.php on line %d
 
 Notice: Undefined index:  c in %sarray_001.php on line %d
-object(ArrayObject)#%d (2) {
-  [0]=>
-  int(0)
-  [2]=>
-  int(2)
+object(ArrayObject)#%d (1) {
+  ["storage":"ArrayObject":private]=>
+  array(2) {
+    [0]=>
+    int(0)
+    [2]=>
+    int(2)
+  }
 }
-object(ArrayObject)#%d (4) {
-  [0]=>
-  int(0)
-  [2]=>
-  int(2)
-  [4]=>
-  string(1) "3"
-  [5]=>
-  int(4)
+object(ArrayObject)#%d (1) {
+  ["storage":"ArrayObject":private]=>
+  array(4) {
+    [0]=>
+    int(0)
+    [2]=>
+    int(2)
+    [4]=>
+    string(1) "3"
+    [5]=>
+    int(4)
+  }
 }
 ===DONE===

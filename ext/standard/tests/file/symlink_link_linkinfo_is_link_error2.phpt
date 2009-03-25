@@ -71,39 +71,39 @@ unlink(dirname(__FILE__)."/symlink_link_linkinfo_is_link_error2.tmp");
 --EXPECTF--
 *** Testing link() for error conditions ***
 
-Warning: Wrong parameter count for link() in %s on line %d
+Warning: link() expects exactly 2 parameters, 0 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for link() in %s on line %d
+Warning: link() expects exactly 2 parameters, 3 given in %s on line %d
 NULL
 
-Warning: link(): %s in %s on line %d
+Warning: link(): No such file or directory in %s on line %d
 bool(false)
 
-Warning: link(): %s in %s on line %d
+Warning: link(): No such file or directory in %s on line %d
 bool(false)
 
-Warning: link(): %s in %s on line %d
+Warning: link(): No such file or directory in %s on line %d
 bool(false)
 
-Warning: link(): %s in %s on line %d
+Warning: link(): No such file or directory in %s on line %d
 bool(false)
 
-Warning: link(): %s in %s on line %d
+Warning: link(): No such file or directory in %s on line %d
 bool(false)
 
-Warning: link(): %s in %s on line %d
+Warning: link(): No such file or directory in %s on line %d
 bool(false)
 
-Warning: link(): %s in %s on line %d
+Warning: link(): No such file or directory in %s on line %d
 bool(false)
 
 *** Testing is_link() for error conditions ***
 
-Warning: Wrong parameter count for is_link() in %s on line %d
+Warning: is_link() expects exactly 1 parameter, 0 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for is_link() in %s on line %d
+Warning: is_link() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
 bool(false)
 bool(false)
@@ -111,3 +111,4 @@ bool(false)
 bool(false)
 bool(false)
 Done
+

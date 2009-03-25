@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_ibase_udf.c,v 1.9.2.1.2.4 2008/12/31 11:17:38 sebastian Exp $ */
+/* $Id: php_ibase_udf.c,v 1.9.2.1.2.2.2.3 2008/12/31 11:15:38 sebastian Exp $ */
 
 /**
 * This UDF library adds the ability to call PHP functions from SQL
@@ -192,10 +192,14 @@ static void call_php(char *name, PARAMDSC *r, int argc, PARAMDSC **argv)
 		INIT_ZVAL(callback);
 		ZVAL_STRING(&callback,name,0);
 
+		LOCK();
+		
 		/* check if the requested function exists */
-		if (!zend_is_callable(&callback, 0, NULL)) {
+		if (!zend_is_callable(&callback, 0, NULL TSRMLS_CC)) {
 			break;
 		}
+		
+		UNLOCK();
 	
 		/* create the argument array */
 		for (i = 0; i < argc; ++i) {

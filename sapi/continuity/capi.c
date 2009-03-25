@@ -80,7 +80,7 @@ PHP_FUNCTION(continuity_virtual);
 PHP_FUNCTION(continuity_request_headers);
 PHP_FUNCTION(continuity_response_headers);
 
-zend_function_entry continuity_functions[] = {
+const zend_function_entry continuity_functions[] = {
         {NULL, NULL, NULL}
 };
 
@@ -110,7 +110,7 @@ PHP_MSHUTDOWN_FUNCTION(continuity)
 PHP_MINFO_FUNCTION(continuity)
 {
         php_info_print_table_start();
-        php_info_print_table_row(2, "Continuity Module Revision", "$Revision: 1.11.2.2.2.3 $");
+        php_info_print_table_row(2, "Continuity Module Revision", "$Revision: 1.11.2.2.2.1.2.5 $");
         php_info_print_table_row(2, "Server Version", conFget_build());
 #ifdef CONTINUITY_CDPEXT
 	php_info_print_table_row(2,"CDP Extensions", "enabled");
@@ -378,7 +378,8 @@ sapi_module_struct capi_sapi_module = {
 
    sapi_capi_register_server_variables,	/* register server variables */
    capi_log_message,		/* Log message */
-   NULL,					/* Get request time */
+   NULL,			/* Get request time */
+   NULL,			/* Child terminate */
 
    NULL,			/* Block interruptions */
    NULL,			/* Unblock interruptions */

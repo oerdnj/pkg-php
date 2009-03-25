@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: userdatahandler.c,v 1.6.2.1.2.3 2008/12/31 11:17:37 sebastian Exp $ */
+/* $Id: userdatahandler.c,v 1.6.2.1.2.1.2.4 2008/12/31 11:15:36 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -35,13 +35,12 @@
 * Since: DOM Level 3
 */
 
-zend_function_entry php_dom_userdatahandler_class_functions[] = {
+const zend_function_entry php_dom_userdatahandler_class_functions[] = {
 	PHP_FALIAS(handle, dom_userdatahandler_handle, NULL)
 	{NULL, NULL, NULL}
 };
 
 /* {{{ attribute protos, not implemented yet */
-
 
 /* {{{ proto dom_void dom_userdatahandler_handle(short operation, string key, domobject data, node src, node dst);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#ID-handleUserDataEvent
@@ -52,4 +51,16 @@ PHP_FUNCTION(dom_userdatahandler_handle)
  DOM_NOT_IMPLEMENTED();
 }
 /* }}} end dom_userdatahandler_handle */
+
+/* }}} */
+
 #endif
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

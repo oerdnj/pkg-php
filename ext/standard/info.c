@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: info.c,v 1.249.2.10.2.19 2008/12/31 11:17:45 sebastian Exp $ */
+/* $Id: info.c,v 1.249.2.10.2.14.2.23 2009/01/17 02:05:13 stas Exp $ */
 
 #include "php.h"
 #include "php_ini.h"
@@ -36,6 +36,18 @@
 #include "zend_highlight.h"
 #ifdef HAVE_SYS_UTSNAME_H
 #include <sys/utsname.h>
+#endif
+
+#ifdef PHP_WIN32
+typedef void (WINAPI *PGNSI)(LPSYSTEM_INFO);
+typedef BOOL (WINAPI *PGPI)(DWORD, DWORD, DWORD, DWORD, PDWORD);
+
+# include "winver.h"
+
+#if _MSC_VER < 1300
+# define OSVERSIONINFOEX php_win_OSVERSIONINFOEX
+#endif
+
 #endif
 
 #if HAVE_MBSTRING
@@ -77,26 +89,29 @@ static int php_info_write_wrapper(const char *str, uint str_length)
 }
 
 
-PHPAPI void php_info_print_module(zend_module_entry *module TSRMLS_DC) /* {{{ */
+PHPAPI void php_info_print_module(zend_module_entry *zend_module TSRMLS_DC) /* {{{ */
 {
-	if (module->info_func) {
+	if (zend_module->info_func || zend_module->version) {
 		if (!sapi_module.phpinfo_as_text) {
-			php_printf("<h2><a name=\"module_%s\">%s</a></h2>\n", module->name, module->name);
+			php_printf("<h2><a name=\"module_%s\">%s</a></h2>\n", zend_module->name, zend_module->name);
 		} else {
 			php_info_print_table_start();
-			php_info_print_table_header(1, module->name);
+			php_info_print_table_header(1, zend_module->name);
 			php_info_print_table_end();
 		}
-		module->info_func(module TSRMLS_CC);
+		if (zend_module->info_func) {
+			zend_module->info_func(zend_module TSRMLS_CC);
+		} else {
+			php_info_print_table_start();
+			php_info_print_table_row(2, "Version", zend_module->version);
+			php_info_print_table_end();
+			DISPLAY_INI_ENTRIES();
+		}
 	} else {
 		if (!sapi_module.phpinfo_as_text) {
-			php_printf("<tr>");
-			php_printf("<td>");
-			php_printf("%s", module->name);
-			php_printf("</td></tr>\n");
+			php_printf("<tr><td>%s</td></tr>\n", zend_module->name);
 		} else {
-			php_printf("%s", module->name);
-			php_printf("\n");
+			php_printf("%s\n", zend_module->name);
 		}	
 	}
 }
@@ -104,7 +119,7 @@ PHPAPI void php_info_print_module(zend_module_entry *module TSRMLS_DC) /* {{{ */
 
 static int _display_module_info_func(zend_module_entry *module TSRMLS_DC) /* {{{ */
 {
-	if (module->info_func) {
+	if (module->info_func || module->version) {
 		php_info_print_module(module TSRMLS_CC);
 	}
 	return ZEND_HASH_APPLY_KEEP;
@@ -113,7 +128,7 @@ static int _display_module_info_func(zend_module_entry *module TSRMLS_DC) /* {{{
 
 static int _display_module_info_def(zend_module_entry *module TSRMLS_DC) /* {{{ */
 {
-	if (!module->info_func) {
+	if (!module->info_func && !module->version) {
 		php_info_print_module(module TSRMLS_CC);
 	}
 	return ZEND_HASH_APPLY_KEEP;
@@ -238,6 +253,211 @@ PHPAPI char *php_info_html_esc(char *string TSRMLS_DC)
 /* }}} */
 
 
+#ifdef PHP_WIN32
+/* {{{  */
+char* php_get_windows_name()
+{
+	OSVERSIONINFOEX osvi;
+	SYSTEM_INFO si;
+	PGNSI pGNSI;
+	PGPI pGPI;
+	BOOL bOsVersionInfoEx;
+	DWORD dwType;
+	char *major = NULL, *sub = NULL, *retval;
+
+	ZeroMemory(&si, sizeof(SYSTEM_INFO));
+	ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
+	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+
+	if (!(bOsVersionInfoEx = GetVersionEx ((OSVERSIONINFO *) &osvi))) {
+		return NULL;
+	}
+
+	pGNSI = (PGNSI) GetProcAddress(GetModuleHandle("kernel32.dll"), "GetNativeSystemInfo");
+	if(NULL != pGNSI) {
+		pGNSI(&si);
+	} else {
+		GetSystemInfo(&si);
+	}
+
+	if (VER_PLATFORM_WIN32_NT==osvi.dwPlatformId && osvi.dwMajorVersion > 4 ) {
+		if (osvi.dwMajorVersion == 6 && osvi.dwMinorVersion == 0 )	{
+			if (osvi.wProductType == VER_NT_WORKSTATION) {
+				major = "Windows Vista";
+			} else {
+				major = "Windows Server 2008";
+			}
+
+			pGPI = (PGPI) GetProcAddress(GetModuleHandle("kernel32.dll"), "GetProductInfo");
+			pGPI(6, 0, 0, 0, &dwType);
+
+			switch (dwType) {
+				case PRODUCT_ULTIMATE:
+					sub = "Ultimate Edition";
+					break;
+				case PRODUCT_HOME_PREMIUM:
+					sub = "Home Premium Edition";
+					break;
+				case PRODUCT_HOME_BASIC:
+					sub = "Home Basic Edition";
+					break;
+				case PRODUCT_ENTERPRISE:
+					sub = "Enterprise Edition";
+					break;
+				case PRODUCT_BUSINESS:
+					sub = "Business Edition";
+					break;
+				case PRODUCT_STARTER:
+					sub = "Starter Edition";
+					break;
+				case PRODUCT_CLUSTER_SERVER:
+					sub = "Cluster Server Edition";
+					break;
+				case PRODUCT_DATACENTER_SERVER:
+					sub = "Datacenter Edition";
+					break;
+				case PRODUCT_DATACENTER_SERVER_CORE:
+					sub = "Datacenter Edition (core installation)";
+					break;
+				case PRODUCT_ENTERPRISE_SERVER:
+					sub = "Enterprise Edition";
+					break;
+				case PRODUCT_ENTERPRISE_SERVER_CORE:
+					sub = "Enterprise Edition (core installation)";
+					break;
+				case PRODUCT_ENTERPRISE_SERVER_IA64:
+					sub = "Enterprise Edition for Itanium-based Systems";
+					break;
+				case PRODUCT_SMALLBUSINESS_SERVER:
+					sub = "Small Business Server";
+					break;
+				case PRODUCT_SMALLBUSINESS_SERVER_PREMIUM:
+					sub = "Small Business Server Premium Edition";
+					break;
+				case PRODUCT_STANDARD_SERVER:
+					sub = "Standard Edition";
+					break;
+				case PRODUCT_STANDARD_SERVER_CORE:
+					sub = "Standard Edition (core installation)";
+					break;
+				case PRODUCT_WEB_SERVER:
+					sub = "Web Server Edition";
+					break;
+			}
+		}
+
+		if ( osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 2 )	{
+			if (GetSystemMetrics(SM_SERVERR2))
+				major = "Windows Server 2003 R2";
+			else if (osvi.wSuiteMask == VER_SUITE_STORAGE_SERVER)
+				major = "Windows Storage Server 2003";
+			else if (osvi.wSuiteMask == VER_SUITE_WH_SERVER)
+				major = "Windows Home Server";
+			else if (osvi.wProductType == VER_NT_WORKSTATION &&
+				si.wProcessorArchitecture==PROCESSOR_ARCHITECTURE_AMD64) {
+				major = "Windows XP Professional x64 Edition";
+			} else {
+				major = "Windows Server 2003";
+			}
+
+			/* Test for the server type. */
+			if ( osvi.wProductType != VER_NT_WORKSTATION ) {
+				if ( si.wProcessorArchitecture==PROCESSOR_ARCHITECTURE_IA64 ) {
+					if( osvi.wSuiteMask & VER_SUITE_DATACENTER )
+						sub = "Datacenter Edition for Itanium-based Systems";
+					else if( osvi.wSuiteMask & VER_SUITE_ENTERPRISE )
+						sub = "Enterprise Edition for Itanium-based Systems";
+				}
+
+				else if ( si.wProcessorArchitecture==PROCESSOR_ARCHITECTURE_AMD64 ) {
+					if( osvi.wSuiteMask & VER_SUITE_DATACENTER )
+						sub = "Datacenter x64 Edition";
+					else if( osvi.wSuiteMask & VER_SUITE_ENTERPRISE )
+						sub = "Enterprise x64 Edition";
+					else sub = "Standard x64 Edition";
+				} else {
+					if ( osvi.wSuiteMask & VER_SUITE_COMPUTE_SERVER )
+						sub = "Compute Cluster Edition";
+					else if( osvi.wSuiteMask & VER_SUITE_DATACENTER )
+						sub = "Datacenter Edition";
+					else if( osvi.wSuiteMask & VER_SUITE_ENTERPRISE )
+						sub = "Enterprise Edition";
+					else if ( osvi.wSuiteMask & VER_SUITE_BLADE )
+						sub = "Web Edition";
+					else sub = "Standard Edition";
+				}
+			} 
+		}
+
+		if ( osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 1 )	{
+			major = "Windows XP";
+			if( osvi.wSuiteMask & VER_SUITE_PERSONAL )
+				sub = "Home Edition";
+			else sub = "Professional";
+		}
+
+		if ( osvi.dwMajorVersion == 5 && osvi.dwMinorVersion == 0 ) {
+			major = "Windows 2000";
+
+			if (osvi.wProductType == VER_NT_WORKSTATION ) {
+				sub = "Professional";
+			} else {
+				if( osvi.wSuiteMask & VER_SUITE_DATACENTER )
+					sub = "Datacenter Server";
+				else if( osvi.wSuiteMask & VER_SUITE_ENTERPRISE )
+					sub = "Advanced Server";
+				else sub = "Server";
+			}
+		}
+	} else {
+		return NULL;
+	}
+
+	spprintf(&retval, 0, "%s%s%s%s%s", major, sub?" ":"", sub?sub:"", osvi.szCSDVersion[0] != '\0'?" ":"", osvi.szCSDVersion);
+	return retval;
+}
+/* }}}  */
+
+/* {{{  */
+void php_get_windows_cpu(char *buf, int bufsize)
+{
+	SYSTEM_INFO SysInfo;
+	GetSystemInfo(&SysInfo);
+	switch (SysInfo.wProcessorArchitecture) {
+		case PROCESSOR_ARCHITECTURE_INTEL :
+			snprintf(buf, bufsize, "i%d", SysInfo.dwProcessorType);
+			break;
+		case PROCESSOR_ARCHITECTURE_MIPS :
+			snprintf(buf, bufsize, "MIPS R%d000", SysInfo.wProcessorLevel);
+			break;
+		case PROCESSOR_ARCHITECTURE_ALPHA :
+			snprintf(buf, bufsize, "Alpha %d", SysInfo.wProcessorLevel);
+			break;
+		case PROCESSOR_ARCHITECTURE_PPC :
+			snprintf(buf, bufsize, "PPC 6%02d", SysInfo.wProcessorLevel);
+			break;
+		case PROCESSOR_ARCHITECTURE_IA64 :
+			snprintf(buf, bufsize,  "IA64");
+			break;
+#if defined(PROCESSOR_ARCHITECTURE_IA32_ON_WIN64)
+		case PROCESSOR_ARCHITECTURE_IA32_ON_WIN64 :
+			snprintf(buf, bufsize, "IA32");
+			break;
+#endif
+#if defined(PROCESSOR_ARCHITECTURE_AMD64)
+		case PROCESSOR_ARCHITECTURE_AMD64 :
+			snprintf(buf, bufsize, "AMD64");
+			break;
+#endif
+		case PROCESSOR_ARCHITECTURE_UNKNOWN :
+		default:
+			snprintf(buf, bufsize, "Unknown");
+			break;
+	}
+}
+/* }}}  */
+#endif
+
 /* {{{ php_get_uname
  */
 PHPAPI char *php_get_uname(char mode)
@@ -251,10 +471,8 @@ PHPAPI char *php_get_uname(char mode)
 	DWORD dwWindowsMinorVersion =  (DWORD)(HIBYTE(LOWORD(dwVersion)));
 	DWORD dwSize = MAX_COMPUTERNAME_LENGTH + 1;
 	char ComputerName[MAX_COMPUTERNAME_LENGTH + 1];
-	SYSTEM_INFO SysInfo;
-
+	
 	GetComputerName(ComputerName, &dwSize);
-	GetSystemInfo(&SysInfo);
 
 	if (mode == 's') {
 		if (dwVersion < 0x80000000) {
@@ -268,52 +486,34 @@ PHPAPI char *php_get_uname(char mode)
 	} else if (mode == 'n') {
 		php_uname = ComputerName;
 	} else if (mode == 'v') {
+		char *winver = php_get_windows_name();
 		dwBuild = (DWORD)(HIWORD(dwVersion));
-		snprintf(tmp_uname, sizeof(tmp_uname), "build %d", dwBuild);
-		php_uname = tmp_uname;
-	} else if (mode == 'm') {
-		switch (SysInfo.wProcessorArchitecture) {
-			case PROCESSOR_ARCHITECTURE_INTEL :
-				snprintf(tmp_uname, sizeof(tmp_uname), "i%d", SysInfo.dwProcessorType);
-				php_uname = tmp_uname;
-				break;
-			case PROCESSOR_ARCHITECTURE_MIPS :
-				snprintf(tmp_uname, sizeof(tmp_uname), "MIPS R%d000", SysInfo.wProcessorLevel);
-				php_uname = tmp_uname;
-				break;
-			case PROCESSOR_ARCHITECTURE_ALPHA :
-				snprintf(tmp_uname, sizeof(tmp_uname), "Alpha %d", SysInfo.wProcessorLevel);
-				php_uname = tmp_uname;
-				break;
-			case PROCESSOR_ARCHITECTURE_PPC :
-				snprintf(tmp_uname, sizeof(tmp_uname), "PPC 6%02d", SysInfo.wProcessorLevel);
-				php_uname = tmp_uname;
-				break;
-			case PROCESSOR_ARCHITECTURE_IA64 :
-				php_uname = "IA64";
-				break;
-#if defined(PROCESSOR_ARCHITECTURE_IA32_ON_WIN64)
-			case PROCESSOR_ARCHITECTURE_IA32_ON_WIN64 :
-				php_uname = "IA32";
-				break;
-#endif
-#if defined(PROCESSOR_ARCHITECTURE_AMD64)
-			case PROCESSOR_ARCHITECTURE_AMD64 :
-				php_uname = "AMD64";
-				break;
-#endif
-			case PROCESSOR_ARCHITECTURE_UNKNOWN :
-			default :
-				php_uname = "Unknown";
-				break;
+		if(winver == NULL) {
+			snprintf(tmp_uname, sizeof(tmp_uname), "build %d", dwBuild);
+		} else {
+			snprintf(tmp_uname, sizeof(tmp_uname), "build %d (%s)", dwBuild, winver);
 		}
+		php_uname = tmp_uname;
+		if(winver) {
+			efree(winver);
+		}
+	} else if (mode == 'm') {
+		php_get_windows_cpu(tmp_uname, sizeof(tmp_uname));
+		php_uname = tmp_uname;
 	} else { /* assume mode == 'a' */
 		/* Get build numbers for Windows NT or Win95 */
 		if (dwVersion < 0x80000000){
+			char *winver = php_get_windows_name();
+			char wincpu[20];
+
+			php_get_windows_cpu(wincpu, sizeof(wincpu));
 			dwBuild = (DWORD)(HIWORD(dwVersion));
-			snprintf(tmp_uname, sizeof(tmp_uname), "%s %s %d.%d build %d",
+			snprintf(tmp_uname, sizeof(tmp_uname), "%s %s %d.%d build %d (%s) %s",
 					 "Windows NT", ComputerName,
-					 dwWindowsMajorVersion, dwWindowsMinorVersion, dwBuild);
+					 dwWindowsMajorVersion, dwWindowsMinorVersion, dwBuild, winver?winver:"unknown", wincpu);
+			if(winver) {
+				efree(winver);
+			}
 		} else {
 			snprintf(tmp_uname, sizeof(tmp_uname), "%s %s %d.%d",
 					 "Windows 9x", ComputerName,
@@ -327,30 +527,6 @@ PHPAPI char *php_get_uname(char mode)
 	if (uname((struct utsname *)&buf) == -1) {
 		php_uname = PHP_UNAME;
 	} else {
-#ifdef NETWARE
-		if (mode == 's') {
-			php_uname = buf.sysname;
-		} else if (mode == 'r') {
-			snprintf(tmp_uname, sizeof(tmp_uname), "%d.%d.%d", 
-					 buf.netware_major, buf.netware_minor, buf.netware_revision);
-			php_uname = tmp_uname;
-		} else if (mode == 'n') {
-			php_uname = buf.servername;
-		} else if (mode == 'v') {
-			snprintf(tmp_uname, sizeof(tmp_uname), "libc-%d.%d.%d #%d",
-					 buf.libmajor, buf.libminor, buf.librevision, buf.libthreshold);
-			php_uname = tmp_uname;
-		} else if (mode == 'm') {
-			php_uname = buf.machine;
-		} else { /* assume mode == 'a' */
-			snprintf(tmp_uname, sizeof(tmp_uname), "%s %s %d.%d.%d libc-%d.%d.%d #%d %s",
-					 buf.sysname, buf.servername,
-					 buf.netware_major, buf.netware_minor, buf.netware_revision,
-					 buf.libmajor, buf.libminor, buf.librevision, buf.libthreshold,
-					 buf.machine);
-			php_uname = tmp_uname;
-		}
-#else
 		if (mode == 's') {
 			php_uname = buf.sysname;
 		} else if (mode == 'r') {
@@ -367,7 +543,6 @@ PHPAPI char *php_get_uname(char mode)
 					 buf.machine);
 			php_uname = tmp_uname;
 		}
-#endif /* NETWARE */
 	}
 #else
 	php_uname = PHP_UNAME;
@@ -487,9 +662,16 @@ PHPAPI void php_print_info(int flag TSRMLS_DC)
 		php_info_print_table_start();
 		php_info_print_table_row(2, "System", php_uname );
 		php_info_print_table_row(2, "Build Date", __DATE__ " " __TIME__ );
+#ifdef COMPILER
+		php_info_print_table_row(2, "Compiler", COMPILER);
+#endif
+#ifdef ARCHITECTURE
+		php_info_print_table_row(2, "Architecture", ARCHITECTURE);
+#endif
 #ifdef CONFIGURE_COMMAND
 		php_info_print_table_row(2, "Configure Command", CONFIGURE_COMMAND );
 #endif
+
 		if (sapi_module.pretty_name) {
 			php_info_print_table_row(2, "Server API", sapi_module.pretty_name );
 		}
@@ -503,7 +685,7 @@ PHPAPI void php_print_info(int flag TSRMLS_DC)
 		php_info_print_table_row(2, "Configuration File (php.ini) Path", PHP_CONFIG_FILE_PATH);
 		php_info_print_table_row(2, "Loaded Configuration File", php_ini_opened_path ? php_ini_opened_path : "(none)");
 		php_info_print_table_row(2, "Scan this dir for additional .ini files", php_ini_scanned_path ? php_ini_scanned_path : "(none)");
-		php_info_print_table_row(2, "additional .ini files parsed", php_ini_scanned_files ? php_ini_scanned_files : "(none)");
+		php_info_print_table_row(2, "Additional .ini files parsed", php_ini_scanned_files ? php_ini_scanned_files : "(none)");
 
 		snprintf(temp_api, sizeof(temp_api), "%d", PHP_API_VERSION);
 		php_info_print_table_row(2, "PHP API", temp_api);
@@ -513,6 +695,9 @@ PHPAPI void php_print_info(int flag TSRMLS_DC)
 
 		snprintf(temp_api, sizeof(temp_api), "%d", ZEND_EXTENSION_API_NO);
 		php_info_print_table_row(2, "Zend Extension", temp_api);
+
+		php_info_print_table_row(2, "Zend Extension Build", ZEND_EXTENSION_BUILD_ID);
+		php_info_print_table_row(2, "PHP Extension Build", ZEND_MODULE_BUILD_ID);
 
 #if ZEND_DEBUG
 		php_info_print_table_row(2, "Debug Build", "yes" );
@@ -528,6 +713,12 @@ PHPAPI void php_print_info(int flag TSRMLS_DC)
 
 		php_info_print_table_row(2, "Zend Memory Manager", is_zend_mm(TSRMLS_C) ? "enabled" : "disabled" );
 
+#ifdef ZEND_MULTIBYTE
+		php_info_print_table_row(2, "Zend Multibyte Support", "enabled");
+#else
+		php_info_print_table_row(2, "Zend Multibyte Support", "disabled");
+#endif
+
 #if HAVE_IPV6
 		php_info_print_table_row(2, "IPv6 Support", "enabled" );
 #else
@@ -540,9 +731,10 @@ PHPAPI void php_print_info(int flag TSRMLS_DC)
 			ulong num_key;
 
 			if ((url_stream_wrappers_hash = php_stream_get_url_stream_wrappers_hash())) {
-				for (zend_hash_internal_pointer_reset(url_stream_wrappers_hash);
-						zend_hash_get_current_key_ex(url_stream_wrappers_hash, &stream_protocol, (uint *)&stream_protocol_len, &num_key, 0, NULL) == HASH_KEY_IS_STRING;
-						zend_hash_move_forward(url_stream_wrappers_hash)) {
+				HashPosition pos;
+				for (zend_hash_internal_pointer_reset_ex(url_stream_wrappers_hash, &pos);
+						zend_hash_get_current_key_ex(url_stream_wrappers_hash, &stream_protocol, (uint *)&stream_protocol_len, &num_key, 0, &pos) == HASH_KEY_IS_STRING;
+						zend_hash_move_forward_ex(url_stream_wrappers_hash, &pos)) {
 					stream_protocols_buf = erealloc(stream_protocols_buf, stream_protocols_buf_len + stream_protocol_len + 2 + 1);
 					memcpy(stream_protocols_buf + stream_protocols_buf_len, stream_protocol, stream_protocol_len - 1);
 					stream_protocols_buf[stream_protocols_buf_len + stream_protocol_len - 1] = ',';
@@ -571,9 +763,10 @@ PHPAPI void php_print_info(int flag TSRMLS_DC)
 			ulong num_key;
 
 			if ((stream_xport_hash = php_stream_xport_get_hash())) {
-				for(zend_hash_internal_pointer_reset(stream_xport_hash);
-					zend_hash_get_current_key_ex(stream_xport_hash, &xport_name, (uint *)&xport_name_len, &num_key, 0, NULL) == HASH_KEY_IS_STRING;
-					zend_hash_move_forward(stream_xport_hash)) {
+				HashPosition pos;
+				for(zend_hash_internal_pointer_reset_ex(stream_xport_hash, &pos);
+					zend_hash_get_current_key_ex(stream_xport_hash, &xport_name, (uint *)&xport_name_len, &num_key, 0, &pos) == HASH_KEY_IS_STRING;
+					zend_hash_move_forward_ex(stream_xport_hash, &pos)) {
 					if (xport_buf_len + xport_name_len + 2 > xport_buf_size) {
 						while (xport_buf_len + xport_name_len + 2 > xport_buf_size) {
 							xport_buf_size += 256;
@@ -612,9 +805,10 @@ PHPAPI void php_print_info(int flag TSRMLS_DC)
 			ulong num_key;
 
 			if ((stream_filter_hash = php_get_stream_filters_hash())) {
-				for(zend_hash_internal_pointer_reset(stream_filter_hash);
-					zend_hash_get_current_key_ex(stream_filter_hash, &filter_name, (uint *)&filter_name_len, &num_key, 0, NULL) == HASH_KEY_IS_STRING;
-					zend_hash_move_forward(stream_filter_hash)) {
+				HashPosition pos;
+				for(zend_hash_internal_pointer_reset_ex(stream_filter_hash, &pos);
+					zend_hash_get_current_key_ex(stream_filter_hash, &filter_name, (uint *)&filter_name_len, &num_key, 0, &pos) == HASH_KEY_IS_STRING;
+					zend_hash_move_forward_ex(stream_filter_hash, &pos)) {
 					if (filter_buf_len + filter_name_len + 2 > filter_buf_size) {
 						while (filter_buf_len + filter_name_len + 2 > filter_buf_size) {
 							filter_buf_size += 256;
@@ -692,8 +886,10 @@ PHPAPI void php_print_info(int flag TSRMLS_DC)
 		} else {
 			SECTION("Configuration");
 		}	
-		SECTION("PHP Core");
-		display_ini_entries(NULL);
+		if (!(flag & PHP_INFO_MODULES)) {
+			SECTION("PHP Core");
+			display_ini_entries(NULL);
+		}
 	}
 
 	if (flag & PHP_INFO_MODULES) {
@@ -1010,15 +1206,10 @@ void register_phpinfo_constants(INIT_FUNC_ARGS)
    Output a page of useful information about PHP and the current request */
 PHP_FUNCTION(phpinfo)
 {
-	int argc = ZEND_NUM_ARGS();
-	long flag;
+	long flag = PHP_INFO_ALL;
 
-	if (zend_parse_parameters(argc TSRMLS_CC, "|l", &flag) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &flag) == FAILURE) {
 		return;
-	}
-
-	if(!argc) {
-		flag = PHP_INFO_ALL;
 	}
 
 	/* Andale!  Andale!  Yee-Hah! */
@@ -1036,20 +1227,23 @@ PHP_FUNCTION(phpinfo)
 PHP_FUNCTION(phpversion)
 {
 	zval **arg;
+	const char *version;
 	int argc = ZEND_NUM_ARGS();
 
 	if (argc == 0) {
 		RETURN_STRING(PHP_VERSION, 1);
-	} else if (argc == 1 && zend_get_parameters_ex(1, &arg) == SUCCESS) {
-		char *version;
+	} else {
+		if (zend_parse_parameters(argc TSRMLS_CC, "Z", &arg) == FAILURE) {
+			return;
+		}
+			
 		convert_to_string_ex(arg);
 		version = zend_get_module_version(Z_STRVAL_PP(arg));
+		
 		if (version == NULL) {
 			RETURN_FALSE;
 		}
 		RETURN_STRING(version, 1);
-	} else {
-		WRONG_PARAM_COUNT;
 	}
 }
 /* }}} */
@@ -1058,16 +1252,11 @@ PHP_FUNCTION(phpversion)
    Prints the list of people who've contributed to the PHP project */
 PHP_FUNCTION(phpcredits)
 {
-	int argc = ZEND_NUM_ARGS();
-	long flag;
+	long flag = PHP_CREDITS_ALL;
 
-	if (zend_parse_parameters(argc TSRMLS_CC, "|l", &flag) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &flag) == FAILURE) {
 		return;
 	}
-
-	if(!argc) {
-		flag = PHP_CREDITS_ALL;
-	} 
 
 	php_print_credits(flag TSRMLS_CC);
 	RETURN_TRUE;
@@ -1103,8 +1292,8 @@ PHPAPI char *php_logo_guid(void)
 PHP_FUNCTION(php_logo_guid)
 {
 
-	if (ZEND_NUM_ARGS() != 0) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 
 	RETURN_STRING(php_logo_guid(), 0);
@@ -1116,8 +1305,8 @@ PHP_FUNCTION(php_logo_guid)
 PHP_FUNCTION(php_real_logo_guid)
 {
 
-	if (ZEND_NUM_ARGS() != 0) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 
 	RETURN_STRINGL(PHP_LOGO_GUID, sizeof(PHP_LOGO_GUID)-1, 1);
@@ -1128,8 +1317,8 @@ PHP_FUNCTION(php_real_logo_guid)
    Return the special ID used to request the PHP logo in phpinfo screens*/
 PHP_FUNCTION(php_egg_logo_guid)
 {
-	if (ZEND_NUM_ARGS() != 0) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 
 	RETURN_STRINGL(PHP_EGG_LOGO_GUID, sizeof(PHP_EGG_LOGO_GUID)-1, 1);
@@ -1140,8 +1329,8 @@ PHP_FUNCTION(php_egg_logo_guid)
    Return the special ID used to request the Zend logo in phpinfo screens*/
 PHP_FUNCTION(zend_logo_guid)
 {
-	if (ZEND_NUM_ARGS() != 0) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 
 	RETURN_STRINGL(ZEND_LOGO_GUID, sizeof(ZEND_LOGO_GUID)-1, 1);
@@ -1152,8 +1341,8 @@ PHP_FUNCTION(zend_logo_guid)
    Return the current SAPI module name */
 PHP_FUNCTION(php_sapi_name)
 {
-	if (ZEND_NUM_ARGS() != 0) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 
 	if (sapi_module.name) {
@@ -1170,7 +1359,7 @@ PHP_FUNCTION(php_sapi_name)
 PHP_FUNCTION(php_uname)
 {
 	char *mode = "a";
-	int modelen;
+	int modelen = sizeof("a")-1;
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &mode, &modelen) == FAILURE) {
 		return;
 	}
@@ -1183,6 +1372,10 @@ PHP_FUNCTION(php_uname)
    Return comma-separated string of .ini files parsed from the additional ini dir */
 PHP_FUNCTION(php_ini_scanned_files)
 {
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
+	
 	if (strlen(PHP_CONFIG_FILE_SCAN_DIR) && php_ini_scanned_files) {
 		RETURN_STRING(php_ini_scanned_files, 1);
 	} else {
@@ -1195,6 +1388,10 @@ PHP_FUNCTION(php_ini_scanned_files)
    Return the actual loaded ini filename */
 PHP_FUNCTION(php_ini_loaded_file)
 {
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
+	
 	if (php_ini_opened_path) {
 		RETURN_STRING(php_ini_opened_path, 1);
 	} else {

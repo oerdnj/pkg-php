@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_schema.c,v 1.58.2.6.2.8 2008/12/31 11:17:43 sebastian Exp $ */
+/* $Id: php_schema.c,v 1.58.2.6.2.6.2.2 2008/12/31 11:15:43 sebastian Exp $ */
 
 #include "php_soap.h"
 #include "libxml/uri.h"

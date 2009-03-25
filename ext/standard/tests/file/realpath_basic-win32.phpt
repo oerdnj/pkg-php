@@ -33,12 +33,12 @@ $filenames = array (
   "$file_path/realpath_basic//home/test//../test/./realpath_basic.tmp",
   "$file_path/realpath_basic/home//../././realpath_basic.tmp//",
 
-  /* filenames with invalid path */
-  // checking for binary safe
-  "$file_path/realpath_basicx000/home/realpath_basic.tmp",
+   // checking for binary safe
+  b"$file_path/realpath_basic/home/realpath_basic.tmp",
 
+  /* filenames with invalid path */
   "$file_path///realpath_basic/home//..//././test//realpath_basic.tmp",
-  "$file_path/realpath_basic/home/../home/../test/..realpath_basic.tmp"
+  "$file_path/realpath_basic/home/../home/../test/../..realpath_basic.tmp"
 );
 
 $counter = 1;
@@ -70,16 +70,16 @@ rmdir("$name_prefix/");
 string(%d) "%s\realpath_basic\home\realpath_basic.tmp"
 
 -- Iteration 2 --
-string(%d) "%s\realpath_basic\realpath_basic.tmp"
+bool(false)
 
 -- Iteration 3 --
 string(%d) "%s\realpath_basic\home\test\realpath_basic.tmp"
 
 -- Iteration 4 --
-string(%d) "%s\realpath_basic\realpath_basic.tmp"
+bool(false)
 
 -- Iteration 5 --
-bool(false)
+string(%d) "%s\realpath_basic\home\realpath_basic.tmp"
 
 -- Iteration 6 --
 bool(false)

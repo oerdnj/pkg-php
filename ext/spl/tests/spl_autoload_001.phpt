@@ -1,7 +1,5 @@
 --TEST--
 SPL: spl_autoload() and friends
---SKIPIF--
-<?php if (!extension_loaded("spl")) print "skip"; ?>
 --INI--
 include_path=.
 --FILE--
@@ -134,5 +132,5 @@ TestFunc2(TestClass)
 %stestclass.class.inc
 bool(true)
 ===NOFUNCTION===
-Exception: Function 'unavailable_autoload_function' not found
+Exception: Function 'unavailable_autoload_function' not found (function 'unavailable_autoload_function' not found or invalid function name)
 ===DONE===

@@ -1,5 +1,5 @@
 --TEST--
-Bug #42850 (array_walk_recursive() leaves references)
+Bug #42850 (array_walk_recursive() leaves references) 
 --FILE--
 <?php
 

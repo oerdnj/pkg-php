@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: basic_functions.h,v 1.139.2.4.2.8 2008/12/31 11:17:44 sebastian Exp $ */
+/* $Id: basic_functions.h,v 1.139.2.4.2.6.2.11 2008/12/31 11:15:44 sebastian Exp $ */
 
 #ifndef BASIC_FUNCTIONS_H
 #define BASIC_FUNCTIONS_H
@@ -84,6 +84,8 @@ PHP_FUNCTION(call_user_func);
 PHP_FUNCTION(call_user_func_array);
 PHP_FUNCTION(call_user_method);
 PHP_FUNCTION(call_user_method_array);
+PHP_FUNCTION(forward_static_call);
+PHP_FUNCTION(forward_static_call_array);
 
 PHP_FUNCTION(register_shutdown_function);
 PHP_FUNCTION(highlight_file);
@@ -125,6 +127,10 @@ PHP_FUNCTION(move_uploaded_file);
 
 /* From the INI parser */
 PHP_FUNCTION(parse_ini_file);
+PHP_FUNCTION(parse_ini_string);
+#if ZEND_DEBUG
+PHP_FUNCTION(config_get_hash);
+#endif
 
 PHP_FUNCTION(str_rot13);
 PHP_FUNCTION(stream_get_filters);
@@ -137,6 +143,7 @@ PHP_MINIT_FUNCTION(user_filters);
 PHP_RSHUTDOWN_FUNCTION(user_filters);
 
 PHPAPI int _php_error_log(int opt_err, char *message, char *opt, char *headers TSRMLS_DC);
+PHPAPI int php_prefix_varname(zval *result, zval *prefix, char *var_name, int var_name_len, zend_bool add_underscore TSRMLS_DC);
 
 #if SIZEOF_INT == 4
 /* Most 32-bit and 64-bit systems have 32-bit ints */
@@ -162,8 +169,9 @@ typedef struct _php_basic_globals {
 	char strtok_table[256];
 	ulong strtok_len;
 	char str_ebuf[40];
-	zval **array_walk_func_name;
-	zval **user_compare_func_name;
+	zend_fcall_info array_walk_fci;
+	zend_fcall_info_cache array_walk_fci_cache;
+	zend_fcall_info user_compare_fci;
 	zend_fcall_info_cache user_compare_fci_cache;
 	zend_llist *user_tick_functions;
 
@@ -176,7 +184,7 @@ typedef struct _php_basic_globals {
 	long page_uid;
 	long page_gid;
 	long page_inode;
-	long page_mtime;
+	time_t page_mtime;
 
 	/* filestat.c && main/streams/streams.c */
 	char *CurrentStatFile, *CurrentLStatFile;

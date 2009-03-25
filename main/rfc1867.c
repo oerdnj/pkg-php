@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: rfc1867.c,v 1.173.2.1.2.15 2008/12/31 11:17:47 sebastian Exp $ */
+/* $Id: rfc1867.c,v 1.173.2.1.2.9.2.9 2008/12/31 11:15:48 sebastian Exp $ */
 
 /*
  *  This product includes software developed by the Apache Group
@@ -203,7 +203,8 @@ static void normalize_protected_variable(char *varname TSRMLS_DC)
 			index = NULL;
 		}	
 	}
-	*s++='\0';
+
+	*s = '\0';
 }
 
 
@@ -610,7 +611,7 @@ static char *substring_conf(char *start, int len, char quote TSRMLS_DC)
 		}
 	}
 
-	*resp++ = '\0';
+	*resp = '\0';
 	return result;
 }
 
@@ -1089,7 +1090,7 @@ SAPI_API SAPI_POST_HANDLER_FUNC(rfc1867_post_handler)
 				} else if (blen > 0) {
 				
 					wlen = write(fd, buff, blen);
-
+			
 					if (wlen == -1) {
 						/* write failed */
 #if DEBUG_FILE_UPLOAD

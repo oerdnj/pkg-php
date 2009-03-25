@@ -2,13 +2,16 @@ define ____executor_globals
 	if basic_functions_module.zts
 		set $tsrm_ls = ts_resource_ex(0, 0)
 		set $eg = ((zend_executor_globals) (*((void ***) $tsrm_ls))[executor_globals_id-1])
+		set $cg = ((zend_compiler_globals) (*((void ***) $tsrm_ls))[compiler_globals_id-1])
 	else
 		set $eg = executor_globals
+		set $cg = compiler_globals
 	end
 end
 
 document ____executor_globals
 	portable way of accessing executor_globals, set $eg
+	this also sets compiler_globals to $cg
 	ZTS detection is automatically based on ext/standard module struct
 end
 
@@ -46,8 +49,8 @@ define ____printzv_contents
 	set $zvalue = $arg0
 	set $type = $zvalue->type
 
-	printf "(refcount=%d", $zvalue->refcount
-	if $zvalue->is_ref
+	printf "(refcount=%d", $zvalue->refcount__gc
+	if $zvalue->is_ref__gc
 		printf ",is_ref"
 	end
 	printf ") "

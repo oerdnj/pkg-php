@@ -17,13 +17,14 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_default_classes.c,v 1.59.2.2.2.3 2008/12/31 11:17:33 sebastian Exp $ */
+/* $Id: zend_default_classes.c,v 1.59.2.2.2.1.2.3 2008/12/31 11:15:32 sebastian Exp $ */
 
 #include "zend.h"
 #include "zend_API.h"
 #include "zend_builtin_functions.h"
 #include "zend_interfaces.h"
 #include "zend_exceptions.h"
+#include "zend_closures.h"
 
 
 ZEND_API void zend_register_default_classes(TSRMLS_D)
@@ -31,6 +32,7 @@ ZEND_API void zend_register_default_classes(TSRMLS_D)
 	zend_register_interfaces(TSRMLS_C);
 	zend_register_default_exception(TSRMLS_C);
 	zend_register_iterator_wrapper(TSRMLS_C);
+	zend_register_closure_ce(TSRMLS_C);
 }
 
 /*

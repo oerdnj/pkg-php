@@ -61,9 +61,7 @@ $inputs = array(
 
       // float data
       'float 10.5' => 10.5,
-      'float -10.5' => -10.5,
       'float 12.3456789000e10' => 12.3456789000e10,
-      'float -12.3456789000e10' => -12.3456789000e10,
       'float .5' => .5,
 
       // array data
@@ -120,31 +118,27 @@ unlink($filename);
 --float 10.5--
 bool(true)
 
---float -10.5--
-Error: 2 - touch(): Utime failed: Invalid argument, %s(%d)
-bool(false)
-
 --float 12.3456789000e10--
-Error: 2 - touch(): Utime failed: Invalid argument, %s(%d)
-bool(false)
-
---float -12.3456789000e10--
 bool(true)
 
 --float .5--
 bool(true)
 
 --empty array--
-bool(true)
+Error: 2 - touch() expects parameter 3 to be long, array given, %s(%d)
+NULL
 
 --int indexed array--
-bool(true)
+Error: 2 - touch() expects parameter 3 to be long, array given, %s(%d)
+NULL
 
 --associative array--
-bool(true)
+Error: 2 - touch() expects parameter 3 to be long, array given, %s(%d)
+NULL
 
 --nested arrays--
-bool(true)
+Error: 2 - touch() expects parameter 3 to be long, array given, %s(%d)
+NULL
 
 --uppercase NULL--
 bool(true)
@@ -165,30 +159,36 @@ bool(true)
 bool(true)
 
 --empty string DQ--
-bool(true)
+Error: 2 - touch() expects parameter 3 to be long, string given, %s(%d)
+NULL
 
 --empty string SQ--
-bool(true)
+Error: 2 - touch() expects parameter 3 to be long, string given, %s(%d)
+NULL
 
 --string DQ--
-bool(true)
+Error: 2 - touch() expects parameter 3 to be long, string given, %s(%d)
+NULL
 
 --string SQ--
-bool(true)
+Error: 2 - touch() expects parameter 3 to be long, string given, %s(%d)
+NULL
 
 --mixed case string--
-bool(true)
+Error: 2 - touch() expects parameter 3 to be long, string given, %s(%d)
+NULL
 
 --heredoc--
-bool(true)
+Error: 2 - touch() expects parameter 3 to be long, string given, %s(%d)
+NULL
 
 --instance of classWithToString--
-Error: 8 - Object of class classWithToString could not be converted to int, %s(%d)
-bool(true)
+Error: 2 - touch() expects parameter 3 to be long, object given, %s(%d)
+NULL
 
 --instance of classWithoutToString--
-Error: 8 - Object of class classWithoutToString could not be converted to int, %s(%d)
-bool(true)
+Error: 2 - touch() expects parameter 3 to be long, object given, %s(%d)
+NULL
 
 --undefined var--
 bool(true)
@@ -196,3 +196,4 @@ bool(true)
 --unset var--
 bool(true)
 ===DONE===
+

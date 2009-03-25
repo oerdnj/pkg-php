@@ -24,19 +24,25 @@ array(4) {
   ["p2"]=>
   string(34) "new element added to a after clone"
 }
-object(ArrayObject)#%d (3) {
-  [0]=>
-  int(1)
-  [1]=>
-  int(2)
-  ["new.aa1"]=>
-  string(24) "new element added to aa1"
+object(ArrayObject)#1 (1) {
+  ["storage":"ArrayObject":private]=>
+  array(3) {
+    [0]=>
+    int(1)
+    [1]=>
+    int(2)
+    ["new.aa1"]=>
+    string(24) "new element added to aa1"
+  }
 }
-object(ArrayObject)#%d (3) {
-  [0]=>
-  int(1)
-  [1]=>
-  int(2)
-  ["new.aa2"]=>
-  string(24) "new element added to aa2"
+object(ArrayObject)#2 (1) {
+  ["storage":"ArrayObject":private]=>
+  array(3) {
+    [0]=>
+    int(1)
+    [1]=>
+    int(2)
+    ["new.aa2"]=>
+    string(24) "new element added to aa2"
+  }
 }

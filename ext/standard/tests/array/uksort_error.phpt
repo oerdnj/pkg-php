@@ -30,17 +30,16 @@ var_dump( uksort() );
 
 -- Testing uksort() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for uksort() in %s on line %d
+Warning: uksort() expects exactly 2 parameters, 3 given in %suksort_error.php on line %d
 NULL
 
 -- Testing uksort() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for uksort() in %s on line %d
+Warning: uksort() expects exactly 2 parameters, 1 given in %suksort_error.php on line %d
 NULL
 
 -- Testing uksort() function with zero arguments --
 
-Warning: Wrong parameter count for uksort() in %s on line %d
+Warning: uksort() expects exactly 2 parameters, 0 given in %suksort_error.php on line %d
 NULL
 ===DONE===
-

@@ -20,8 +20,6 @@ var_dump($array);
 var_dump(@natcasesort($array));
 var_dump($array);
 
-$array[4] = null;
-
 echo "Done";
 ?>
 --EXPECTF--

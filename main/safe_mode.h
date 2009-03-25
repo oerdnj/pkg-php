@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: safe_mode.h,v 1.13.2.1.2.4 2008/12/31 11:17:48 sebastian Exp $ */
+/* $Id: safe_mode.h,v 1.13.2.1.2.2.2.2 2008/12/31 11:15:48 sebastian Exp $ */
 
 #ifndef SAFE_MODE_H
 #define SAFE_MODE_H

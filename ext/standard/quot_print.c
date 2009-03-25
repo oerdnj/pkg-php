@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: quot_print.c,v 1.29.2.2.2.5 2009/01/07 17:38:13 felipe Exp $ */
+/* $Id: quot_print.c,v 1.29.2.2.2.1.2.6 2009/01/07 17:20:18 felipe Exp $ */
 
 #include <stdlib.h>
 
@@ -34,7 +34,7 @@
 /*
 *  Converting HEX char to INT value
 */
-static char php_hex2int(int c)
+static char php_hex2int(int c) /* {{{ */
 {
 	if (isdigit(c)) {
 		return c - '0';
@@ -49,8 +49,9 @@ static char php_hex2int(int c)
 		return -1;
 	}
 }
+/* }}} */
 
-PHPAPI unsigned char *php_quot_print_decode(const unsigned char *str, size_t length, size_t *ret_length, int replace_us_by_ws)
+PHPAPI unsigned char *php_quot_print_decode(const unsigned char *str, size_t length, size_t *ret_length, int replace_us_by_ws) /* {{{ */
 {
 	register unsigned int i;
 	register unsigned const char *p1;
@@ -140,7 +141,54 @@ PHPAPI unsigned char *php_quot_print_decode(const unsigned char *str, size_t len
 	*ret_length = decoded_len;
 	return retval;
 }
+/* }}} */
 
+#define PHP_QPRINT_MAXL 75
+ 
+PHPAPI unsigned char *php_quot_print_encode(const unsigned char *str, size_t length, size_t *ret_length) /* {{{ */
+{
+	unsigned long lp = 0;
+	unsigned char c, *ret, *d;
+	char *hex = "0123456789ABCDEF";
+
+	ret = safe_emalloc(1, 3 * length + 3 * (((3 * length)/PHP_QPRINT_MAXL) + 1), 0);
+	d = ret;
+
+	while (length--) {
+		if (((c = *str++) == '\015') && (*str == '\012') && length > 0) {
+			*d++ = '\015';
+			*d++ = *str++;
+			length--;
+			lp = 0;
+		} else {
+			if (iscntrl (c) || (c == 0x7f) || (c & 0x80) || (c == '=') || ((c == ' ') && (*str == '\015'))) {
+				if ((lp += 3) > PHP_QPRINT_MAXL) {
+					*d++ = '=';
+					*d++ = '\015';
+					*d++ = '\012';
+					lp = 3;
+				}
+				*d++ = '=';
+				*d++ = hex[c >> 4];
+				*d++ = hex[c & 0xf];
+			} else {
+				if ((++lp) > PHP_QPRINT_MAXL) {
+					*d++ = '=';
+					*d++ = '\015';
+					*d++ = '\012';
+					lp = 1;
+				}
+				*d++ = c;
+			}
+		}
+	}
+	*d = '\0';
+	*ret_length = d - ret;
+
+	ret = erealloc(ret, *ret_length + 1);
+	return ret;
+}
+/* }}} */
 
 /*
 *
@@ -151,22 +199,20 @@ PHPAPI unsigned char *php_quot_print_decode(const unsigned char *str, size_t len
    Convert a quoted-printable string to an 8 bit string */
 PHP_FUNCTION(quoted_printable_decode)
 {
-	zval **arg1;
-	char *str_in, *str_out;
-	int i = 0, j = 0, k;
+	char *arg1, *str_in, *str_out;
+	int arg1_len, i = 0, j = 0, k;
 
-	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &arg1) == FAILURE) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &arg1, &arg1_len) == FAILURE) {
+		return;
 	}
-	convert_to_string_ex(arg1);
     
-	if (Z_STRLEN_PP(arg1) == 0) {
+	if (arg1_len == 0) {
 		/* shortcut */
 		RETURN_EMPTY_STRING();
 	}
 
-	str_in = Z_STRVAL_PP(arg1);
-	str_out = emalloc(Z_STRLEN_PP(arg1) + 1);
+	str_in = arg1;
+	str_out = emalloc(arg1_len + 1);
 	while (str_in[i]) {
 		switch (str_in[i]) {
 		case '=':
@@ -207,6 +253,26 @@ PHP_FUNCTION(quoted_printable_decode)
 	str_out[j] = '\0';
     
 	RETVAL_STRINGL(str_out, j, 0);
+}
+/* }}} */
+
+/* {{{ proto string quoted_printable_encode(string str) */
+PHP_FUNCTION(quoted_printable_encode)
+{
+	char *str, *new_str;
+	int str_len;
+	size_t new_str_len;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &str, &str_len) != SUCCESS) {
+		return;
+	}
+
+	if (!str_len) {
+		RETURN_EMPTY_STRING();
+	}
+
+	new_str = (char *)php_quot_print_encode((unsigned char *)str, (size_t)str_len, &new_str_len);
+	RETURN_STRINGL(new_str, new_str_len, 0);
 }
 /* }}} */
 

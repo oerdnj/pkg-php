@@ -50,7 +50,7 @@ $arrays = array (
        array("hello", $heredoc => array("heredoc", 'string'), "string"),
 
        // array with object, unset variable and resource variable
-/*8*/  array(new classA() => 11, @$unset_var => array("unset"), $fp => 'resource', 11, "hello")
+/*8*/ array(new classA() => 11, @$unset_var => array("unset"), $fp => 'resource', 11, "hello")
 );
 
 // initialise the second array 

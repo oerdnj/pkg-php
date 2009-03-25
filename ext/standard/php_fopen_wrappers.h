@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_fopen_wrappers.h,v 1.21.2.1.2.3 2008/12/31 11:17:45 sebastian Exp $ */
+/* $Id: php_fopen_wrappers.h,v 1.21.2.1.2.1.2.2 2008/12/31 11:15:45 sebastian Exp $ */
 
 #ifndef PHP_FOPEN_WRAPPERS_H
 #define PHP_FOPEN_WRAPPERS_H

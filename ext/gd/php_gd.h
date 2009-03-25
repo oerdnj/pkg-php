@@ -17,14 +17,14 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_gd.h,v 1.59.2.3.2.7 2008/12/31 11:17:37 sebastian Exp $ */
+/* $Id: php_gd.h,v 1.59.2.3.2.5.2.5 2008/12/31 11:15:37 sebastian Exp $ */
 
 #ifndef PHP_GD_H
 #define PHP_GD_H
 
 #define HAVE_GDIMAGECREATEFROMPNG 1
 
-#if HAVE_LIBTTF|HAVE_LIBFREETYPE
+#if HAVE_LIBFREETYPE
 #define ENABLE_GD_TTF
 #endif
 
@@ -51,9 +51,11 @@
 #define PHP_GDIMG_TYPE_GD2PART 10
 
 #ifdef PHP_WIN32
-#define PHP_GD_API __declspec(dllexport)
+#	define PHP_GD_API __declspec(dllexport)
+#elif defined(__GNUC__) && __GNUC__ >= 4
+#	define PHP_GD_API __attribute__ ((visibility("default")))
 #else
-#define PHP_GD_API
+#	define PHP_GD_API
 #endif
 
 PHPAPI extern const char php_sig_gif[3];
@@ -69,7 +71,7 @@ PHP_MINIT_FUNCTION(gd);
 #if HAVE_LIBT1 || HAVE_GD_FONTMUTEX
 PHP_MSHUTDOWN_FUNCTION(gd);
 #endif
-#if HAVE_LIBGD20 && HAVE_GD_STRINGFT
+#if HAVE_GD_STRINGFT
 PHP_RSHUTDOWN_FUNCTION(gd);
 #endif
 
@@ -99,7 +101,6 @@ PHP_FUNCTION(imagecreate);
 PHP_FUNCTION(imageftbbox);
 PHP_FUNCTION(imagefttext);
 
-#ifdef HAVE_LIBGD20
 PHP_FUNCTION(imagecreatetruecolor);
 PHP_FUNCTION(imagetruecolortopalette);
 PHP_FUNCTION(imagesetthickness);
@@ -112,7 +113,6 @@ PHP_FUNCTION(imagecolorresolvealpha);
 PHP_FUNCTION(imagecolorclosestalpha);
 PHP_FUNCTION(imagecolorexactalpha);
 PHP_FUNCTION(imagecopyresampled);
-#endif
 
 #ifdef PHP_WIN32
 PHP_FUNCTION(imagegrabwindow);

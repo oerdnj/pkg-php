@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_opcode.c,v 1.110.2.6.2.6 2008/12/31 11:17:33 sebastian Exp $ */
+/* $Id: zend_opcode.c,v 1.110.2.6.2.3.2.10 2008/12/31 11:15:32 sebastian Exp $ */
 
 #include <stdio.h>
 
@@ -95,11 +95,13 @@ void init_op_array(zend_op_array *op_array, zend_uchar type, int initial_ops_siz
 	op_array->return_reference = 0;
 	op_array->done_pass_two = 0;
 
-	op_array->uses_this = 0;
+	op_array->this_var = -1;
 
 	op_array->start_op = NULL;
 
 	op_array->fn_flags = CG(interactive)?ZEND_ACC_INTERACTIVE:0;
+
+	op_array->early_binding = -1;
 
 	memset(op_array->reserved, 0, ZEND_MAX_RESERVED_RESOURCES * sizeof(void*));
 
@@ -276,9 +278,9 @@ ZEND_API void destroy_op_array(zend_op_array *op_array TSRMLS_DC)
 	}
 	if (op_array->arg_info) {
 		for (i=0; i<op_array->num_args; i++) {
-			efree(op_array->arg_info[i].name);
+			efree((char*)op_array->arg_info[i].name);
 			if (op_array->arg_info[i].class_name) {
-				efree(op_array->arg_info[i].class_name);
+				efree((char*)op_array->arg_info[i].class_name);
 			}
 		}
 		efree(op_array->arg_info);
@@ -364,10 +366,10 @@ int pass_two(zend_op_array *op_array TSRMLS_DC)
 	if (op_array->type!=ZEND_USER_FUNCTION && op_array->type!=ZEND_EVAL_CODE) {
 		return 0;
 	}
-	if (CG(extended_info)) {
+	if (CG(compiler_options) & ZEND_COMPILE_EXTENDED_INFO) {
 		zend_update_extended_info(op_array TSRMLS_CC);
 	}
-	if (CG(handle_op_arrays)) {
+	if (CG(compiler_options) & ZEND_COMPILE_HANDLE_OP_ARRAY) {
 		zend_llist_apply_with_argument(&zend_extensions, (llist_apply_with_arg_func_t) zend_extension_op_array_handler, op_array TSRMLS_CC);
 	}
 
@@ -380,14 +382,19 @@ int pass_two(zend_op_array *op_array TSRMLS_DC)
 	end = opline + op_array->last;
 	while (opline < end) {
 		if (opline->op1.op_type == IS_CONST) {
-			opline->op1.u.constant.is_ref = 1;
-			opline->op1.u.constant.refcount = 2; /* Make sure is_ref won't be reset */
+			Z_SET_ISREF(opline->op1.u.constant);
+			Z_SET_REFCOUNT(opline->op1.u.constant, 2); /* Make sure is_ref won't be reset */
 		}
 		if (opline->op2.op_type == IS_CONST) {
-			opline->op2.u.constant.is_ref = 1;
-			opline->op2.u.constant.refcount = 2;
+			Z_SET_ISREF(opline->op2.u.constant);
+			Z_SET_REFCOUNT(opline->op2.u.constant, 2);
 		}
 		switch (opline->opcode) {
+			case ZEND_GOTO:
+				if (Z_TYPE(opline->op2.u.constant) != IS_LONG) {
+					zend_resolve_goto_label(op_array, opline, 1 TSRMLS_CC);
+				}
+				/* break omitted intentionally */
 			case ZEND_JMP:
 				opline->op1.u.jmp_addr = &op_array->opcodes[opline->op1.u.opline_num];
 				break;
@@ -395,6 +402,7 @@ int pass_two(zend_op_array *op_array TSRMLS_DC)
 			case ZEND_JMPNZ:
 			case ZEND_JMPZ_EX:
 			case ZEND_JMPNZ_EX:
+			case ZEND_JMP_SET:
 				opline->op2.u.jmp_addr = &op_array->opcodes[opline->op2.u.opline_num];
 				break;
 		}
@@ -429,73 +437,76 @@ ZEND_API unary_op_type get_unary_op(int opcode)
 	}
 }
 
-ZEND_API void *get_binary_op(int opcode)
+ZEND_API binary_op_type get_binary_op(int opcode)
 {
 	switch (opcode) {
 		case ZEND_ADD:
 		case ZEND_ASSIGN_ADD:
-			return (void *) add_function;
+			return (binary_op_type) add_function;
 			break;
 		case ZEND_SUB:
 		case ZEND_ASSIGN_SUB:
-			return (void *) sub_function;
+			return (binary_op_type) sub_function;
 			break;
 		case ZEND_MUL:
 		case ZEND_ASSIGN_MUL:
-			return (void *) mul_function;
+			return (binary_op_type) mul_function;
 			break;
 		case ZEND_DIV:
 		case ZEND_ASSIGN_DIV:
-			return (void *) div_function;
+			return (binary_op_type) div_function;
 			break;
 		case ZEND_MOD:
 		case ZEND_ASSIGN_MOD:
-			return (void *) mod_function;
+			return (binary_op_type) mod_function;
 			break;
 		case ZEND_SL:
 		case ZEND_ASSIGN_SL:
-			return (void *) shift_left_function;
+			return (binary_op_type) shift_left_function;
 			break;
 		case ZEND_SR:
 		case ZEND_ASSIGN_SR:
-			return (void *) shift_right_function;
+			return (binary_op_type) shift_right_function;
 			break;
 		case ZEND_CONCAT:
 		case ZEND_ASSIGN_CONCAT:
-			return (void *) concat_function;
+			return (binary_op_type) concat_function;
 			break;
 		case ZEND_IS_IDENTICAL:
-			return (void *) is_identical_function;
+			return (binary_op_type) is_identical_function;
 			break;
 		case ZEND_IS_NOT_IDENTICAL:
-			return (void *) is_not_identical_function;
+			return (binary_op_type) is_not_identical_function;
 			break;
 		case ZEND_IS_EQUAL:
-			return (void *) is_equal_function;
+			return (binary_op_type) is_equal_function;
 			break;
 		case ZEND_IS_NOT_EQUAL:
-			return (void *) is_not_equal_function;
+			return (binary_op_type) is_not_equal_function;
 			break;
 		case ZEND_IS_SMALLER:
-			return (void *) is_smaller_function;
+			return (binary_op_type) is_smaller_function;
 			break;
 		case ZEND_IS_SMALLER_OR_EQUAL:
-			return (void *) is_smaller_or_equal_function;
+			return (binary_op_type) is_smaller_or_equal_function;
 			break;
 		case ZEND_BW_OR:
 		case ZEND_ASSIGN_BW_OR:
-			return (void *) bitwise_or_function;
+			return (binary_op_type) bitwise_or_function;
 			break;
 		case ZEND_BW_AND:
 		case ZEND_ASSIGN_BW_AND:
-			return (void *) bitwise_and_function;
+			return (binary_op_type) bitwise_and_function;
 			break;
 		case ZEND_BW_XOR:
 		case ZEND_ASSIGN_BW_XOR:
-			return (void *) bitwise_xor_function;
+			return (binary_op_type) bitwise_xor_function;
+			break;
+		case ZEND_BOOL_XOR:
+			return (binary_op_type) boolean_xor_function;
 			break;
 		default:
-			return (void *) NULL;
+			return (binary_op_type) NULL;
 			break;
 	}
 }

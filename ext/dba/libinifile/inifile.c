@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: inifile.c,v 1.14.2.1.2.6 2008/12/31 11:17:36 sebastian Exp $ */
+/* $Id: inifile.c,v 1.14.2.1.2.3.2.3 2008/12/31 11:15:36 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -43,7 +43,7 @@
 /* {{{ inifile_version */
 char *inifile_version() 
 {
-	return "1.0, $Revision: 1.14.2.1.2.6 $";
+	return "1.0, $Revision: 1.14.2.1.2.3.2.3 $";
 }
 /* }}} */ 
 

@@ -1,9 +1,5 @@
 --TEST--
 Test array_slice() function : usage variations - Pass different data types as $offset arg
---SKIPIF--
-<?php if (PHP_INT_SIZE > 4) die("skip this test is for 32bit platform only"); ?>
---INI--
-precision=12
 --FILE--
 <?php
 /* Prototype  : array array_slice(array $input, int $offset [, int $length [, bool $preserve_keys]])
@@ -154,15 +150,7 @@ array(4) {
 }
 
 -- Iteration 7 --
-array(4) {
-  ["one"]=>
-  int(1)
-  [0]=>
-  int(2)
-  ["three"]=>
-  int(3)
-  [1]=>
-  int(4)
+array(0) {
 }
 
 -- Iteration 8 --

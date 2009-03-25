@@ -35,11 +35,12 @@ echo "Done";
 
 -- Testing xml_parser_get_option() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for xml_parser_get_option() in %s on line %d
+Warning: xml_parser_get_option() expects exactly 2 parameters, 3 given in %s on line %d
 NULL
 
 -- Testing xml_parser_get_option() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for xml_parser_get_option() in %s on line %d
+Warning: xml_parser_get_option() expects exactly 2 parameters, 1 given in %s on line %d
 NULL
 Done
+

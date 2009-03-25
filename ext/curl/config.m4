@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.28.2.3.2.8 2008/11/07 21:18:45 felipe Exp $ 
+dnl $Id: config.m4,v 1.28.2.3.2.7.2.1 2008/11/07 21:14:46 felipe Exp $ 
 dnl
 
 PHP_ARG_WITH(curl, for cURL support,

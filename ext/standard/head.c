@@ -15,7 +15,7 @@
    | Author: Rasmus Lerdorf <rasmus@lerdorf.on.ca>                        |
    +----------------------------------------------------------------------+
  */
-/* $Id: head.c,v 1.84.2.1.2.11 2008/12/31 11:17:45 sebastian Exp $ */
+/* $Id: head.c,v 1.84.2.1.2.7.2.7 2008/12/31 11:15:45 sebastian Exp $ */
 
 #include <stdio.h>
 #include "php.h"
@@ -47,6 +47,20 @@ PHP_FUNCTION(header)
 		return;
 	
 	sapi_header_op(rep ? SAPI_HEADER_REPLACE:SAPI_HEADER_ADD, &ctr TSRMLS_CC);
+}
+/* }}} */
+
+/* {{{ proto void header_remove([string name])
+   Removes an HTTP header previously set using header() */
+PHP_FUNCTION(header_remove)
+{
+	sapi_header_line ctr = {0};
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &ctr.line,
+	                          &ctr.line_len) == FAILURE)
+		return;
+
+	sapi_header_op(ZEND_NUM_ARGS() == 0 ? SAPI_HEADER_DELETE_ALL : SAPI_HEADER_DELETE, &ctr TSRMLS_CC);
 }
 /* }}} */
 
@@ -197,7 +211,7 @@ PHP_FUNCTION(setrawcookie)
    Returns true if headers have already been sent, false otherwise */
 PHP_FUNCTION(headers_sent)
 {
-	zval *arg1, *arg2;
+	zval *arg1 = NULL, *arg2 = NULL;
 	char *file="";
 	int line=0;
 
@@ -246,8 +260,8 @@ static void php_head_apply_header_list_to_hash(void *data, void *arg TSRMLS_DC)
    Return list of headers to be sent / already sent */
 PHP_FUNCTION(headers_list)
 {
-	if (ZEND_NUM_ARGS() > 0) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 
 	if (!&SG(sapi_headers).headers) {

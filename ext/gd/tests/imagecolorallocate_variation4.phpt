@@ -123,16 +123,24 @@ int(657920)
 int(657920)
 
 --empty array--
-int(657920)
+
+Warning: imagecolorallocate() expects parameter 4 to be long, array given in %s on line %d
+NULL
 
 --int indexed array--
-int(657921)
+
+Warning: imagecolorallocate() expects parameter 4 to be long, array given in %s on line %d
+NULL
 
 --associative array--
-int(657921)
+
+Warning: imagecolorallocate() expects parameter 4 to be long, array given in %s on line %d
+NULL
 
 --nested arrays--
-int(657921)
+
+Warning: imagecolorallocate() expects parameter 4 to be long, array given in %s on line %d
+NULL
 
 --uppercase NULL--
 int(657920)
@@ -153,32 +161,44 @@ int(657921)
 int(657920)
 
 --empty string DQ--
-int(657920)
+
+Warning: imagecolorallocate() expects parameter 4 to be long, string given in %s on line %d
+NULL
 
 --empty string SQ--
-int(657920)
+
+Warning: imagecolorallocate() expects parameter 4 to be long, string given in %s on line %d
+NULL
 
 --string DQ--
-int(657920)
+
+Warning: imagecolorallocate() expects parameter 4 to be long, string given in %s on line %d
+NULL
 
 --string SQ--
-int(657920)
+
+Warning: imagecolorallocate() expects parameter 4 to be long, string given in %s on line %d
+NULL
 
 --mixed case string--
-int(657920)
+
+Warning: imagecolorallocate() expects parameter 4 to be long, string given in %s on line %d
+NULL
 
 --heredoc--
-int(657920)
+
+Warning: imagecolorallocate() expects parameter 4 to be long, string given in %s on line %d
+NULL
 
 --instance of classWithToString--
 
-Notice: Object of class classWithToString could not be converted to int in %s on line %d
-int(657921)
+Warning: imagecolorallocate() expects parameter 4 to be long, object given in %s on line %d
+NULL
 
 --instance of classWithoutToString--
 
-Notice: Object of class classWithoutToString could not be converted to int in %s on line %d
-int(657921)
+Warning: imagecolorallocate() expects parameter 4 to be long, object given in %s on line %d
+NULL
 
 --undefined var--
 int(657920)
@@ -187,5 +207,7 @@ int(657920)
 int(657920)
 
 --file resource--
-int(657925)
+
+Warning: imagecolorallocate() expects parameter 4 to be long, resource given in %s on line %d
+NULL
 ===DONE===

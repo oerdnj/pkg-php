@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_config.w32.h,v 1.39.2.2.2.4 2008/12/31 11:17:33 sebastian Exp $ */
+/* $Id: zend_config.w32.h,v 1.39.2.2.2.2.2.3 2008/12/31 11:15:32 sebastian Exp $ */
 
 #ifndef ZEND_CONFIG_W32_H
 #define ZEND_CONFIG_W32_H
@@ -48,7 +48,9 @@ typedef unsigned int uint;
 #define istdiostream stdiostream
 
 #define snprintf _snprintf
+#if _MSC_VER < 1500
 #define vsnprintf _vsnprintf
+#endif
 #define strcasecmp(s1, s2) stricmp(s1, s2)
 #define strncasecmp(s1, s2, n) strnicmp(s1, s2, n)
 #define zend_isinf(a)	((_fpclass(a) == _FPCLASS_PINF) || (_fpclass(a) == _FPCLASS_NINF))

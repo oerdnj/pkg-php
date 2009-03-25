@@ -60,22 +60,22 @@ echo "Done"
 *** Testing uasort() : error conditions ***
 -- Testing uasort() function with Zero argument --
 
-Warning: Wrong parameter count for uasort() in %s on line %d
+Warning: uasort() expects exactly 2 parameters, 0 given in %s on line %d
 NULL
 -- Testing uasort() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for uasort() in %s on line %d
+Warning: uasort() expects exactly 2 parameters, 3 given in %s on line %d
 NULL
 -- Testing uasort() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for uasort() in %s on line %d
+Warning: uasort() expects exactly 2 parameters, 1 given in %s on line %d
 NULL
 -- Testing uasort() function with non-existent compare function --
 
-Warning: uasort(): Invalid comparison function in %s on line %d
-bool(false)
+Warning: uasort() expects parameter 2 to be a valid callback, function 'non_existent' not found or invalid function name in %s on line %d
+NULL
 -- Testing uasort() function with non-existent compare function and extra argument --
 
-Warning: Wrong parameter count for uasort() in %s on line %d
+Warning: uasort() expects exactly 2 parameters, 3 given in %s on line %d
 NULL
 Done

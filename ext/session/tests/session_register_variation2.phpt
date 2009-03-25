@@ -30,11 +30,14 @@ ob_end_flush();
 bool(true)
 array(0) {
 }
-bool(false)
+
+Deprecated: Function session_register() is deprecated in %s on line %d
+
+Warning: session_register() expects at least 1 parameter, 0 given in %s on line %d
+NULL
 array(0) {
 }
 bool(true)
 array(0) {
 }
 Done
-

@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_milter.c,v 1.14.2.2.2.6 2008/12/31 11:17:49 sebastian Exp $ */
+/* $Id: php_milter.c,v 1.14.2.2.2.3.2.10 2008/12/31 11:15:49 sebastian Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -769,18 +769,60 @@ PHP_MINFO_FUNCTION(milter)
 /* }}} */
 /* }}} */
 
+/* {{{ arginfo */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_smfi_setflags, 0, 0, 1)
+	ZEND_ARG_INFO(0, flags)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_smfi_settimeout, 0, 0, 1)
+	ZEND_ARG_INFO(0, timeout)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_smfi_getsymval, 0, 0, 1)
+	ZEND_ARG_INFO(0, macro)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_smfi_setreply, 0, 0, 3)
+	ZEND_ARG_INFO(0, rcode)
+	ZEND_ARG_INFO(0, xcode)
+	ZEND_ARG_INFO(0, message)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_smfi_addheader, 0, 0, 2)
+	ZEND_ARG_INFO(0, headerf)
+	ZEND_ARG_INFO(0, headerv)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_smfi_chgheader, 0, 0, 2)
+	ZEND_ARG_INFO(0, headerf)
+	ZEND_ARG_INFO(0, headerv)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_smfi_addrcpt, 0, 0, 1)
+	ZEND_ARG_INFO(0, rcpt)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_smfi_delrcpt, 0, 0, 1)
+	ZEND_ARG_INFO(0, rcpt)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_smfi_replacebody, 0, 0, 1)
+	ZEND_ARG_INFO(0, body)
+ZEND_END_ARG_INFO()
+/* }}} */
+
 /* {{{ milter_functions[]
 */
-static zend_function_entry milter_functions[] = {
-	PHP_FE(smfi_setflags, NULL)
-	PHP_FE(smfi_settimeout, NULL)
-	PHP_FE(smfi_getsymval, NULL)
-	PHP_FE(smfi_setreply, NULL)
-	PHP_FE(smfi_addheader, NULL)
-	PHP_FE(smfi_chgheader, NULL)
-	PHP_FE(smfi_addrcpt, NULL)
-	PHP_FE(smfi_delrcpt, NULL)
-	PHP_FE(smfi_replacebody, NULL)
+const static zend_function_entry milter_functions[] = {
+	PHP_FE(smfi_setflags, 		arginfo_smfi_setflags)
+	PHP_FE(smfi_settimeout, 	arginfo_smfi_settimeout)
+	PHP_FE(smfi_getsymval, 		arginfo_smfi_getsymval)
+	PHP_FE(smfi_setreply, 		arginfo_smfi_setreply)
+	PHP_FE(smfi_addheader, 		arginfo_smfi_addheader)
+	PHP_FE(smfi_chgheader, 		arginfo_smfi_chgheader)
+	PHP_FE(smfi_addrcpt, 		arginfo_smfi_addrcpt)
+	PHP_FE(smfi_delrcpt, 		arginfo_smfi_delrcpt)
+	PHP_FE(smfi_replacebody, 	arginfo_smfi_replacebody)
 	{ NULL, NULL, NULL }
 };
 /* }}} */
@@ -870,6 +912,7 @@ static sapi_module_struct milter_sapi_module = {
 	sapi_milter_register_variables,	/* register server variables */
 	NULL,							/* Log message */
 	NULL,							/* Get request time */
+	NULL,							/* Child terminate */
 
 	NULL,							/* Block interruptions */
 	NULL,							/* Unblock interruptions */
@@ -1027,7 +1070,7 @@ int main(int argc, char *argv[])
 				break;
 
 			case 'e': /* enable extended info output */
-				CG(extended_info) = 1;
+				CG(compiler_options) |= ZEND_COMPILE_EXTENDED_INFO;
 				break;
 
 			case 'f': /* parse file */

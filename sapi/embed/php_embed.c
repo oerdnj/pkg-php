@@ -15,9 +15,10 @@
    | Author: Edin Kadribasic <edink@php.net>                              |
    +----------------------------------------------------------------------+
 */
-/* $Id: php_embed.c,v 1.11.2.1.2.8 2008/12/31 11:17:49 sebastian Exp $ */
+/* $Id: php_embed.c,v 1.11.2.1.2.5.2.6 2009/01/04 20:18:57 pajoye Exp $ */
 
 #include "php_embed.h"
+#include "ext/standard/php_standard.h"
 
 #ifdef PHP_WIN32
 #include <io.h>
@@ -134,10 +135,22 @@ sapi_module_struct php_embed_module = {
 	php_embed_register_variables,   /* register server variables */
 	php_embed_log_message,          /* Log message */
 	NULL,							/* Get request time */
+	NULL,							/* Child terminate */
   
 	STANDARD_SAPI_MODULE_PROPERTIES
 };
 /* }}} */
+
+/* {{{ arginfo ext/standard/dl.c */
+ZEND_BEGIN_ARG_INFO(arginfo_dl, 0)
+	ZEND_ARG_INFO(0, extension_filename)
+ZEND_END_ARG_INFO()
+/* }}} */
+
+static const zend_function_entry additional_functions[] = {
+	ZEND_FE(dl, arginfo_dl)
+	{NULL, NULL, NULL}
+};
 
 int php_embed_init(int argc, char **argv PTSRMLS_DC)
 {
@@ -174,6 +187,8 @@ int php_embed_init(int argc, char **argv PTSRMLS_DC)
 
   php_embed_module.ini_entries = malloc(sizeof(HARDCODED_INI));
   memcpy(php_embed_module.ini_entries, HARDCODED_INI, sizeof(HARDCODED_INI));
+
+  php_embed_module.additional_functions = additional_functions;
 
   if (argv) {
 	php_embed_module.executable_location = argv[0];

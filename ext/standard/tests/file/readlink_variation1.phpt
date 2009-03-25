@@ -65,8 +65,8 @@ bool(false)
 Warning: readlink(): No such file or directory in %s on line %d
 bool(false)
 
-Warning: readlink(): No such file or directory in %s on line %d
-bool(false)
+Warning: readlink() expects parameter 1 to be string, resource given in %s on line %d
+NULL
 
 Warning: readlink(): No such file or directory in %s on line %d
 bool(false)
@@ -75,3 +75,4 @@ Warning: readlink(): No such file or directory in %s on line %d
 bool(false)
 
 *** Done ***
+

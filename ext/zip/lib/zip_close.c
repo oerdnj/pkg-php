@@ -200,7 +200,7 @@ zip_close(struct zip *za)
 		de.comp_size = za->cdir->entry[i].comp_size;
 		de.uncomp_size = za->cdir->entry[i].uncomp_size;
 		de.bitflags &= ~ZIP_GPBF_DATA_DESCRIPTOR;
-		}
+	    }
 	    memcpy(cd->entry+j, za->cdir->entry+i, sizeof(cd->entry[j]));
 	}
 
@@ -231,9 +231,9 @@ zip_close(struct zip *za)
 	    if (!ZIP_ENTRY_DATA_CHANGED(za->entry+i)) {
 		if ((zs=zip_source_zip(za, za, i, ZIP_FL_RECOMPRESS, 0, -1))
 		    == NULL) {
-		error = 1;
-		break;
-	    }
+		    error = 1;
+		    break;
+		}
 	    }
 
 	    if (add_data(za, zs ? zs : za->entry[i].source, &de, out) < 0) {
@@ -286,27 +286,27 @@ zip_close(struct zip *za)
 	return -1;
     }
 
-   if (za->zp) {
+    if (za->zp) {
 	fclose(za->zp);
 	za->zp = NULL;
 	reopen_on_error = 1;
     }
     if (_zip_rename(temp, za->zn) != 0) {
-		_zip_error_set(&za->error, ZIP_ER_RENAME, errno);
-		remove(temp);
-		free(temp);
+	_zip_error_set(&za->error, ZIP_ER_RENAME, errno);
+	remove(temp);
+	free(temp);
 	if (reopen_on_error) {
 	    /* ignore errors, since we're already in an error case */
 	    za->zp = fopen(za->zn, "rb");
 	}
-		return -1;
-	}
+	return -1;
+    }
     mask = umask(0);
     umask(mask);
     chmod(za->zn, 0666&~mask);
 
     _zip_free(za);
-	free(temp);
+    free(temp);
 
     return 0;
 }
@@ -638,7 +638,7 @@ _zip_create_temp_output(struct zip *za, FILE **outp)
     FILE *tfp;
 	int len = strlen(za->zn) + 8;
 
-    if ((temp=(char *)malloc(strlen(za->zn)+8)) == NULL) {
+    if ((temp=(char *)malloc(len)) == NULL) {
 	_zip_error_set(&za->error, ZIP_ER_MEMORY, 0);
 	return NULL;
     }

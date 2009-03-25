@@ -25,7 +25,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: oci8_interface.c,v 1.8.2.7.2.17 2008/12/31 11:17:40 sebastian Exp $ */
+/* $Id: oci8_interface.c,v 1.8.2.7.2.13.2.11 2009/03/09 20:20:07 sixd Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -442,8 +442,7 @@ PHP_FUNCTION(oci_lob_seek)
 	}
 	
 	PHP_OCI_ZVAL_TO_DESCRIPTOR(*tmp, descriptor);
-	
-	
+
 	if (php_oci_lob_get_length(descriptor, &lob_length TSRMLS_CC)) {
 		RETURN_FALSE;
 	}
@@ -453,9 +452,9 @@ PHP_FUNCTION(oci_lob_seek)
 			descriptor->lob_current_position += offset;
 			break;
 		case PHP_OCI_SEEK_END:
-			if (descriptor->lob_size + offset >= 0) {
+			if ((descriptor->lob_size + offset) >= 0) {
 				descriptor->lob_current_position = descriptor->lob_size + offset;
-			} 
+			}
 			else {
 				descriptor->lob_current_position = 0;
 			}
@@ -464,8 +463,7 @@ PHP_FUNCTION(oci_lob_seek)
 		default:
 				descriptor->lob_current_position = (offset > 0) ? offset : 0;
 			break;
-	}
-	
+	}	
 	RETURN_TRUE;
 }
 /* }}} */
@@ -505,7 +503,7 @@ PHP_FUNCTION(oci_lob_write)
 	zval **tmp, *z_descriptor = getThis();
 	php_oci_descriptor *descriptor;
 	int data_len;
-	long write_len = 0; 
+	long write_len = 0;
 	ub4 bytes_written;
 	char *data;
 	
@@ -861,7 +859,8 @@ PHP_FUNCTION(oci_lob_export)
 {	
 	zval **tmp, *z_descriptor = getThis();
 	php_oci_descriptor *descriptor;
-	char *filename, *buffer;
+	char *filename;
+	char *buffer;
 	int filename_len;
 	long start = -1, length = -1, block_length;
 	php_stream *stream;
@@ -964,7 +963,6 @@ PHP_FUNCTION(oci_lob_export)
 }
 /* }}} */
 
-#ifdef HAVE_OCI8_TEMP_LOB
 /* {{{ proto bool oci_lob_write_temporary(string var [, int lob_type])
    Writes temporary blob */
 PHP_FUNCTION(oci_lob_write_temporary)
@@ -1026,7 +1024,6 @@ PHP_FUNCTION(oci_lob_close)
 	RETURN_TRUE;
 }
 /* }}} */
-#endif 
 
 /* {{{ proto object oci_new_descriptor(resource connection [, int type])
    Initialize a new empty descriptor LOB/FILE (LOB is default) */
@@ -1249,7 +1246,7 @@ PHP_FUNCTION(oci_field_type_raw)
 {
 	php_oci_out_column *column;
 
-	column = php_oci_statement_get_column_helper(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0); 
+	column = php_oci_statement_get_column_helper(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
 	if (column) {
 		RETURN_LONG(column->data_type);
 	}
@@ -1402,7 +1399,13 @@ PHP_FUNCTION(oci_fetch_all)
 				if (flags & PHP_OCI_NUM) {
 					zend_hash_next_index_insert(Z_ARRVAL_P(row), &element, sizeof(zval*), NULL);
 				} else { /* default to ASSOC */
+#if (PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION > 1) || (PHP_MAJOR_VERSION > 5)
+					/* zend_symtable_update is only available in 5.2+ */
+					zend_symtable_update(Z_ARRVAL_P(row), columns[ i ]->name, columns[ i ]->name_len+1, &element, sizeof(zval*), NULL);
+#else
+					/* This code path means Bug #45458 will remain broken when OCI8 is built with PHP 4 */
 					zend_hash_update(Z_ARRVAL_P(row), columns[ i ]->name, columns[ i ]->name_len+1, &element, sizeof(zval*), NULL);
+#endif
 				}
 			}
 
@@ -1434,7 +1437,13 @@ PHP_FUNCTION(oci_fetch_all)
 				
 				MAKE_STD_ZVAL(tmp);
 				array_init(tmp);
+#if (PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION > 1) || (PHP_MAJOR_VERSION > 5)
+				/* zend_symtable_update is only available in 5.2+ */
+				zend_symtable_update(Z_ARRVAL_P(array), columns[ i ]->name, columns[ i ]->name_len+1, (void *) &tmp, sizeof(zval*), (void **) &(outarrs[ i ]));
+#else
+				/* This code path means Bug #45458 will remain broken when OCI8 is built with PHP 4 */
 				zend_hash_update(Z_ARRVAL_P(array), columns[ i ]->name, columns[ i ]->name_len+1, (void *) &tmp, sizeof(zval*), (void **) &(outarrs[ i ]));
+#endif
 			}
 		}
 
@@ -1455,7 +1464,7 @@ PHP_FUNCTION(oci_fetch_all)
 		
 		efree(columns);
 		efree(outarrs);
-	} 
+	}
 
 	RETURN_LONG(rows);
 }
@@ -1519,6 +1528,13 @@ PHP_FUNCTION(oci_free_statement)
    Disconnect from database */
 PHP_FUNCTION(oci_close)
 {
+	/* oci_close for pconnect (if old_oci_close_semantics not set) would
+	 * release the connection back to the client-side session pool (and to the
+	 * server-side pool if Database Resident Connection Pool is being used).
+	 * Subsequent pconnects in the same script are not guaranteed to get the
+	 * same database session.
+	 */
+
 	zval *z_connection;
 	php_oci_connection *connection;
 
@@ -1533,6 +1549,7 @@ PHP_FUNCTION(oci_close)
 
 	PHP_OCI_ZVAL_TO_CONNECTION(z_connection, connection);
 	zend_list_delete(connection->rsrc_id);
+
 	ZVAL_NULL(z_connection);
 	
 	RETURN_TRUE;
@@ -1574,10 +1591,8 @@ PHP_FUNCTION(oci_error)
 	sb4 errcode = 0;
 	sword error = OCI_SUCCESS;
 	dvoid *errh = NULL;
-#ifdef HAVE_OCI8_ATTR_STATEMENT
 	ub2 error_offset = 0;
 	text *sqltext = NULL;
-#endif
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|r", &arg) == FAILURE) {
 		return;
@@ -1590,11 +1605,9 @@ PHP_FUNCTION(oci_error)
 			errh = statement->err;
 			error = statement->errcode;
 
-#ifdef HAVE_OCI8_ATTR_STATEMENT
 			if (php_oci_fetch_sqltext_offset(statement, &sqltext, &error_offset TSRMLS_CC)) {
 				RETURN_FALSE;
 			}
-#endif
 			goto go_out;
 		}
 
@@ -1622,7 +1635,7 @@ go_out:
 	}
 
 	if (!errh) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "OCIError: unable to find error handle");
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Oci_error: unable to find error handle");
 		RETURN_FALSE;
 	}
 
@@ -1632,10 +1645,8 @@ go_out:
 		array_init(return_value);
 		add_assoc_long(return_value, "code", errcode);
 		add_assoc_string(return_value, "message", (char*) errbuf, 0);
-#ifdef HAVE_OCI8_ATTR_STATEMENT
 		add_assoc_long(return_value, "offset", error_offset);
 		add_assoc_string(return_value, "sqltext", sqltext ? (char *) sqltext : "", 1);
-#endif
 	} else {
 		RETURN_FALSE;
 	}
@@ -1714,7 +1725,7 @@ PHP_FUNCTION(oci_password_change)
 	int user_len, pass_old_len, pass_new_len, dbname_len;
 	php_oci_connection *connection;
 
-	/*  Disable in Safe Mode  */
+	/*	Disable in Safe Mode  */
 	if (PG(safe_mode)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "is disabled in Safe Mode");
 		RETURN_FALSE;
@@ -1902,7 +1913,6 @@ PHP_FUNCTION(oci_num_rows)
 }
 /* }}} */
 
-#ifdef PHP_OCI8_HAVE_COLLECTIONS
 /* {{{ proto bool oci_free_collection()
    Deletes collection object*/
 PHP_FUNCTION(oci_free_collection)
@@ -2174,7 +2184,7 @@ PHP_FUNCTION(oci_new_collection)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs|s", &z_connection, &tdo, &tdo_len, &schema, &schema_len) == FAILURE) {
 		return;
 	}
-    
+	
 	PHP_OCI_ZVAL_TO_CONNECTION(z_connection, connection);
 	
 	if ( (collection = php_oci_collection_create(connection, tdo, tdo_len, schema, schema_len TSRMLS_CC)) ) {
@@ -2186,8 +2196,6 @@ PHP_FUNCTION(oci_new_collection)
 	}
 }
 /* }}} */
-
-#endif
 
 #endif /* HAVE_OCI8 */
 

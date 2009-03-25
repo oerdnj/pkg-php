@@ -24,12 +24,12 @@ var_dump( bin2hex("Hello World", $extra_arg) );
 
 -- Testing bin2hex() function with no arguments --
 
-Warning: Wrong parameter count for bin2hex() in %s on line %d
+Warning: bin2hex() expects exactly 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing bin2hex() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for bin2hex() in %s on line %d
+Warning: bin2hex() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
  
 ===DONE===

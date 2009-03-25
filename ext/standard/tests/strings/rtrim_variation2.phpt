@@ -103,16 +103,16 @@ string(19) "!---Hello World---!"
 string(19) "!---Hello World---!"
 -- Iteration 10 --
 
-Notice: Array to string conversion in %s on line %d3
-string(19) "!---Hello World---!"
+Warning: rtrim() expects parameter 2 to be string, array given in %s on line %d
+NULL
 -- Iteration 11 --
 
-Notice: Array to string conversion in %s on line %d3
-string(19) "!---Hello World---!"
+Warning: rtrim() expects parameter 2 to be string, array given in %s on line %d
+NULL
 -- Iteration 12 --
 
-Notice: Array to string conversion in %s on line %d3
-string(19) "!---Hello World---!"
+Warning: rtrim() expects parameter 2 to be string, array given in %s on line %d
+NULL
 -- Iteration 13 --
 string(19) "!---Hello World---!"
 -- Iteration 14 --
@@ -128,7 +128,9 @@ string(19) "!---Hello World---!"
 -- Iteration 19 --
 string(19) "!---Hello World---!"
 -- Iteration 20 --
-string(19) "!---Hello World---!"
+
+Warning: rtrim() expects parameter 2 to be string, resource given in %s on line %d
+NULL
 -- Iteration 21 --
 string(19) "!---Hello World---!"
 -- Iteration 22 --

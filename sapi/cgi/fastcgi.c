@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: fastcgi.c,v 1.4.2.13.2.35 2008/12/31 11:17:48 sebastian Exp $ */
+/* $Id: fastcgi.c,v 1.4.2.13.2.28.2.11 2008/12/31 11:15:49 sebastian Exp $ */
 
 #include "php.h"
 #include "fastcgi.h"
@@ -267,63 +267,63 @@ void fcgi_shutdown(void)
  */
 static PACL prepare_named_pipe_acl(PSECURITY_DESCRIPTOR sd, LPSECURITY_ATTRIBUTES sa)
 {
-  DWORD req_acl_size;
-  char everyone_buf[32], owner_buf[32];
-  PSID sid_everyone, sid_owner;
-  SID_IDENTIFIER_AUTHORITY
-    siaWorld = SECURITY_WORLD_SID_AUTHORITY,
-    siaCreator = SECURITY_CREATOR_SID_AUTHORITY;
-  PACL acl;
+	DWORD req_acl_size;
+	char everyone_buf[32], owner_buf[32];
+	PSID sid_everyone, sid_owner;
+	SID_IDENTIFIER_AUTHORITY
+		siaWorld = SECURITY_WORLD_SID_AUTHORITY,
+		siaCreator = SECURITY_CREATOR_SID_AUTHORITY;
+	PACL acl;
 
-  sid_everyone = (PSID)&everyone_buf;
-  sid_owner = (PSID)&owner_buf;
+	sid_everyone = (PSID)&everyone_buf;
+	sid_owner = (PSID)&owner_buf;
 
-  req_acl_size = sizeof(ACL) +
-    (2 * ((sizeof(ACCESS_ALLOWED_ACE) - sizeof(DWORD)) + GetSidLengthRequired(1)));
+	req_acl_size = sizeof(ACL) +
+		(2 * ((sizeof(ACCESS_ALLOWED_ACE) - sizeof(DWORD)) + GetSidLengthRequired(1)));
 
-  acl = malloc(req_acl_size);
+	acl = malloc(req_acl_size);
 
-  if (acl == NULL) {
-    return NULL;
-  }
+	if (acl == NULL) {
+		return NULL;
+	}
 
-  if (!InitializeSid(sid_everyone, &siaWorld, 1)) {
-    goto out_fail;
-  }
-  *GetSidSubAuthority(sid_everyone, 0) = SECURITY_WORLD_RID;
+	if (!InitializeSid(sid_everyone, &siaWorld, 1)) {
+		goto out_fail;
+	}
+	*GetSidSubAuthority(sid_everyone, 0) = SECURITY_WORLD_RID;
 
-  if (!InitializeSid(sid_owner, &siaCreator, 1)) {
-    goto out_fail;
-  }
-  *GetSidSubAuthority(sid_owner, 0) = SECURITY_CREATOR_OWNER_RID;
+	if (!InitializeSid(sid_owner, &siaCreator, 1)) {
+		goto out_fail;
+	}
+	*GetSidSubAuthority(sid_owner, 0) = SECURITY_CREATOR_OWNER_RID;
 
-  if (!InitializeAcl(acl, req_acl_size, ACL_REVISION)) {
-    goto out_fail;
-  }
+	if (!InitializeAcl(acl, req_acl_size, ACL_REVISION)) {
+		goto out_fail;
+	}
 
-  if (!AddAccessAllowedAce(acl, ACL_REVISION, FILE_GENERIC_READ | FILE_GENERIC_WRITE, sid_everyone)) {
-    goto out_fail;
-  }
+	if (!AddAccessAllowedAce(acl, ACL_REVISION, FILE_GENERIC_READ | FILE_GENERIC_WRITE, sid_everyone)) {
+		goto out_fail;
+	}
 
-  if (!AddAccessAllowedAce(acl, ACL_REVISION, FILE_ALL_ACCESS, sid_owner)) {
-    goto out_fail;
-  }
+	if (!AddAccessAllowedAce(acl, ACL_REVISION, FILE_ALL_ACCESS, sid_owner)) {
+		goto out_fail;
+	}
 
-  if (!InitializeSecurityDescriptor(sd, SECURITY_DESCRIPTOR_REVISION)) {
-    goto out_fail;
-  }
+	if (!InitializeSecurityDescriptor(sd, SECURITY_DESCRIPTOR_REVISION)) {
+		goto out_fail;
+	}
 
-  if (!SetSecurityDescriptorDacl(sd, TRUE, acl, FALSE)) {
-    goto out_fail;
-  }
+	if (!SetSecurityDescriptorDacl(sd, TRUE, acl, FALSE)) {
+		goto out_fail;
+	}
 
-  sa->lpSecurityDescriptor = sd;
+	sa->lpSecurityDescriptor = sd;
 
-  return acl;
+	return acl;
 
 out_fail:
-  free(acl);
-  return NULL;
+	free(acl);
+	return NULL;
 }
 #endif
 
@@ -397,9 +397,9 @@ int fcgi_listen(const char *path, int backlog)
 		}
 	} else {
 #ifdef _WIN32
-	    SECURITY_DESCRIPTOR  sd;
-    	SECURITY_ATTRIBUTES  sa;
-	    PACL                 acl;
+		SECURITY_DESCRIPTOR  sd;
+		SECURITY_ATTRIBUTES  sa;
+		PACL                 acl;
 		HANDLE namedPipe;
 
 		memset(&sa, 0, sizeof(sa));
@@ -514,8 +514,8 @@ void fcgi_init_request(fcgi_request *req, int listen_socket)
 	req->in_len = 0;
 	req->in_pad = 0;
 
-	req->out_hdr  = NULL;
-	req->out_pos  = req->out_buf;
+	req->out_hdr = NULL;
+	req->out_pos = req->out_buf;
 
 #ifdef _WIN32
 	req->tcp = !GetNamedPipeInfo((HANDLE)_get_osfhandle(req->listen_socket), NULL, NULL, NULL, NULL);
@@ -634,8 +634,8 @@ static int fcgi_get_params(fcgi_request *req, unsigned char *p, unsigned char *e
 		}
 		memcpy(tmp, p, name_len);
 		tmp[name_len] = 0;
-		s = zend_strndup((char*)p + name_len, val_len);
-		zend_hash_update(&req->env, tmp, name_len+1, &s, sizeof(char*), NULL);
+		s = estrndup((char*)p + name_len, val_len);
+		zend_hash_update(req->env, tmp, name_len+1, &s, sizeof(char*), NULL);
 		p += name_len + val_len;
 	}
 	if (tmp != buf && tmp != NULL) {
@@ -646,7 +646,7 @@ static int fcgi_get_params(fcgi_request *req, unsigned char *p, unsigned char *e
 
 static void fcgi_free_var(char **s)
 {
-	free(*s);
+	efree(*s);
 }
 
 static int fcgi_read_request(fcgi_request *req)
@@ -656,10 +656,12 @@ static int fcgi_read_request(fcgi_request *req)
 	unsigned char buf[FCGI_MAX_LENGTH+8];
 
 	req->keep = 0;
+	req->closed = 0;
 	req->in_len = 0;
 	req->out_hdr = NULL;
 	req->out_pos = req->out_buf;
-	zend_hash_init(&req->env, 0, NULL, (void (*)(void *)) fcgi_free_var, 1);
+	ALLOC_HASHTABLE(req->env);
+	zend_hash_init(req->env, 0, NULL, (void (*)(void *)) fcgi_free_var, 0);
 
 	if (safe_read(req, &hdr, sizeof(fcgi_header)) != sizeof(fcgi_header) ||
 	    hdr.version < FCGI_VERSION_1) {
@@ -695,16 +697,16 @@ static int fcgi_read_request(fcgi_request *req)
 		req->keep = (((fcgi_begin_request*)buf)->flags & FCGI_KEEP_CONN);
 		switch ((((fcgi_begin_request*)buf)->roleB1 << 8) + ((fcgi_begin_request*)buf)->roleB0) {
 			case FCGI_RESPONDER:
-				val = strdup("RESPONDER");
-				zend_hash_update(&req->env, "FCGI_ROLE", sizeof("FCGI_ROLE"), &val, sizeof(char*), NULL);
+				val = estrdup("RESPONDER");
+				zend_hash_update(req->env, "FCGI_ROLE", sizeof("FCGI_ROLE"), &val, sizeof(char*), NULL);
 				break;
 			case FCGI_AUTHORIZER:
-				val = strdup("AUTHORIZER");
-				zend_hash_update(&req->env, "FCGI_ROLE", sizeof("FCGI_ROLE"), &val, sizeof(char*), NULL);
+				val = estrdup("AUTHORIZER");
+				zend_hash_update(req->env, "FCGI_ROLE", sizeof("FCGI_ROLE"), &val, sizeof(char*), NULL);
 				break;
 			case FCGI_FILTER:
-				val = strdup("FILTER");
-				zend_hash_update(&req->env, "FCGI_ROLE", sizeof("FCGI_ROLE"), &val, sizeof(char*), NULL);
+				val = estrdup("FILTER");
+				zend_hash_update(req->env, "FCGI_ROLE", sizeof("FCGI_ROLE"), &val, sizeof(char*), NULL);
 				break;
 			default:
 				return 0;
@@ -760,10 +762,10 @@ static int fcgi_read_request(fcgi_request *req)
 			return 0;
 		}
 
-		zend_hash_internal_pointer_reset_ex(&req->env, &pos);
-		while ((key_type = zend_hash_get_current_key_ex(&req->env, &str_index, &str_length, &num_index, 0, &pos)) != HASH_KEY_NON_EXISTANT) {
+		zend_hash_internal_pointer_reset_ex(req->env, &pos);
+		while ((key_type = zend_hash_get_current_key_ex(req->env, &str_index, &str_length, &num_index, 0, &pos)) != HASH_KEY_NON_EXISTANT) {
 			int zlen;
-			zend_hash_move_forward_ex(&req->env, &pos);
+			zend_hash_move_forward_ex(req->env, &pos);
 			if (key_type != HASH_KEY_IS_STRING) {
 				continue;
 			}
@@ -865,8 +867,10 @@ int fcgi_read(fcgi_request *req, char *str, int len)
 
 static inline void fcgi_close(fcgi_request *req, int force, int destroy)
 {
-	if (destroy) {
-		zend_hash_destroy(&req->env);
+	if (destroy && req->env) {
+		zend_hash_destroy(req->env);
+		FREE_HASHTABLE(req->env);
+		req->env = NULL;
 	}
 
 #ifdef _WIN32
@@ -912,7 +916,6 @@ int fcgi_accept_request(fcgi_request *req)
 	HANDLE pipe;
 	OVERLAPPED ov;
 #endif
-	fcgi_finish_request(req);
 
 	while (1) {
 		if (req->fd < 0) {
@@ -957,13 +960,13 @@ int fcgi_accept_request(fcgi_request *req)
 						int n = 0;
 						int allowed = 0;
 
-			    		while (allowed_clients[n] != INADDR_NONE) {
-			    			if (allowed_clients[n] == sa.sa_inet.sin_addr.s_addr) {
-			    				allowed = 1;
-			    				break;
-			    			}
-			    			n++;
-			    		}
+							while (allowed_clients[n] != INADDR_NONE) {
+								if (allowed_clients[n] == sa.sa_inet.sin_addr.s_addr) {
+									allowed = 1;
+									break;
+								}
+								n++;
+							}
 						if (!allowed) {
 							fprintf(stderr, "Connection from disallowed IP address '%s' is dropped.\n", inet_ntoa(sa.sa_inet.sin_addr));
 							closesocket(req->fd);
@@ -1203,13 +1206,18 @@ int fcgi_write(fcgi_request *req, fcgi_request_type type, const char *str, int l
 	return len;
 }
 
-int fcgi_finish_request(fcgi_request *req)
+int fcgi_finish_request(fcgi_request *req, int force_close)
 {
+	int ret = 1;
+
 	if (req->fd >= 0) {
-		fcgi_flush(req, 1);
-		fcgi_close(req, 0, 1);
+		if (!req->closed) {
+			ret = fcgi_flush(req, 1);
+			req->closed = 1;
+		}
+		fcgi_close(req, force_close, 1);
 	}
-	return 1;
+	return ret;
 }
 
 char* fcgi_getenv(fcgi_request *req, const char* var, int var_len)
@@ -1218,7 +1226,7 @@ char* fcgi_getenv(fcgi_request *req, const char* var, int var_len)
 
 	if (!req) return NULL;
 
-	if (zend_hash_find(&req->env, (char*)var, var_len+1, (void**)&val) == SUCCESS) {
+	if (zend_hash_find(req->env, (char*)var, var_len+1, (void**)&val) == SUCCESS) {
 		return *val;
 	}
 	return NULL;
@@ -1228,12 +1236,12 @@ char* fcgi_putenv(fcgi_request *req, char* var, int var_len, char* val)
 {
 	if (var && req) {
 		if (val == NULL) {
-			zend_hash_del(&req->env, var, var_len+1);
+			zend_hash_del(req->env, var, var_len+1);
 		} else {
 			char **ret;
 
-			val = strdup(val);
-			if (zend_hash_update(&req->env, var, var_len+1, &val, sizeof(char*), (void**)&ret) == SUCCESS) {
+			val = estrdup(val);
+			if (zend_hash_update(req->env, var, var_len+1, &val, sizeof(char*), (void**)&ret) == SUCCESS) {
 				return *ret;
 			}
 		}
@@ -1253,7 +1261,7 @@ void fcgi_impersonate(void)
 }
 #endif
 
-void fcgi_set_mgmt_var(char * name, size_t name_len, const char * value, size_t value_len)
+void fcgi_set_mgmt_var(const char * name, size_t name_len, const char * value, size_t value_len)
 {
 	zval * zvalue;
 	zvalue = pemalloc(sizeof(*zvalue), 1);

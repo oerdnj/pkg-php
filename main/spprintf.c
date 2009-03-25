@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: spprintf.c,v 1.25.2.2.2.15 2009/02/04 15:03:12 iliaa Exp $ */
+/* $Id: spprintf.c,v 1.25.2.2.2.10.2.6 2008/12/31 11:15:48 sebastian Exp $ */
 
 /* This is the spprintf implementation.
  * It has emerged from apache snprintf. See original header:
@@ -30,7 +30,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -76,6 +76,7 @@
  * SIO stdio-replacement strx_* functions by Panos Tsirigotis
  * <panos@alumni.cs.colorado.edu> for xinetd.
  */
+#define _GNU_SOURCE
 #include "php.h"
 
 #include <stddef.h>
@@ -133,7 +134,7 @@
 #define INS_STRING(xbuf, s, slen) do { 	\
 	smart_str_appendl(xbuf, s, slen);	\
 } while (0)
-	
+
 #define INS_CHAR(xbuf, ch)          \
 	INS_CHAR_NR(xbuf, ch)
 
@@ -180,6 +181,7 @@
 
 /* }}} */
 
+
 #if !HAVE_STRNLEN
 static size_t strnlen(const char *s, size_t maxlen) {
 	char *r = memchr(s, '\0', maxlen);
@@ -192,11 +194,12 @@ static size_t strnlen(const char *s, size_t maxlen) {
  */
 static void xbuf_format_converter(smart_str *xbuf, const char *fmt, va_list ap) /* {{{ */
 {
-	register char *s = NULL;
+	char *s = NULL;
 	char *q;
-	int s_len;
+	int s_len, free_zcopy;
+	zval *zvp, zcopy;
 
-	register int min_width = 0;
+	int min_width = 0;
 	int precision = 0;
 	enum {
 		LEFT, RIGHT
@@ -237,6 +240,7 @@ static void xbuf_format_converter(smart_str *xbuf, const char *fmt, va_list ap) 
 			alternate_form = print_sign = print_blank = NO;
 			pad_char = ' ';
 			prefix_char = NUL;
+			free_zcopy = 0;
 
 			fmt++;
 
@@ -366,7 +370,7 @@ static void xbuf_format_converter(smart_str *xbuf, const char *fmt, va_list ap) 
 						fmt++;
 					}
 					/* these are promoted to int, so no break */
-				default:				
+				default:
 					modifier = LM_STD;
 					break;
 			}
@@ -383,6 +387,18 @@ static void xbuf_format_converter(smart_str *xbuf, const char *fmt, va_list ap) 
 			 *   It is reset to ' ' by non-numeric formats
 			 */
 			switch (*fmt) {
+				case 'Z':
+					zvp = (zval*) va_arg(ap, zval*);
+					zend_make_printable_zval(zvp, &zcopy, &free_zcopy);
+					if (free_zcopy) {
+						zvp = &zcopy;
+					}
+					s_len = Z_STRLEN_P(zvp);
+					s = Z_STRVAL_P(zvp);
+					if (adjust_precision && precision < s_len) {
+						s_len = precision;
+					}
+					break;
 				case 'u':
 					switch(modifier) {
 						default:
@@ -686,17 +702,17 @@ static void xbuf_format_converter(smart_str *xbuf, const char *fmt, va_list ap) 
 					goto skip_output;
 
 					/*
-					 * Always extract the argument as a "char *" pointer. We 
-					 * should be using "void *" but there are still machines 
+					 * Always extract the argument as a "char *" pointer. We
+					 * should be using "void *" but there are still machines
 					 * that don't understand it.
 					 * If the pointer size is equal to the size of an unsigned
-					 * integer we convert the pointer to a hex number, otherwise 
+					 * integer we convert the pointer to a hex number, otherwise
 					 * we print "%p" to indicate that we don't handle "%p".
 					 */
 				case 'p':
 					if (sizeof(char *) <= sizeof(u_wide_int)) {
 						ui_num = (u_wide_int)((size_t) va_arg(ap, char *));
-						s = ap_php_conv_p2(ui_num, 4, 'x', 
+						s = ap_php_conv_p2(ui_num, 4, 'x',
 								&num_buf[NUM_BUF_SIZE], &s_len);
 						if (ui_num != 0) {
 							*--s = 'x';
@@ -754,12 +770,15 @@ fmt_error:
 				PAD(xbuf, min_width - s_len, pad_char);
 			}
 			/*
-			 * Print the string s. 
+			 * Print the string s.
 			 */
 			INS_STRING(xbuf, s, s_len);
 
 			if (adjust_width && adjust == LEFT && min_width > s_len)
 				PAD(xbuf, min_width - s_len, pad_char);
+			if (free_zcopy) {
+				zval_dtor(&zcopy);
+			}
 		}
 skip_output:
 		fmt++;
@@ -776,14 +795,14 @@ PHPAPI int vspprintf(char **pbuf, size_t max_len, const char *format, va_list ap
 	smart_str xbuf = {0};
 
 	xbuf_format_converter(&xbuf, format, ap);
-	
+
 	if (max_len && xbuf.len > max_len) {
 		xbuf.len = max_len;
 	}
 	smart_str_0(&xbuf);
-		
+
 	*pbuf = xbuf.c;
-	
+
 	return xbuf.len;
 }
 /* }}} */

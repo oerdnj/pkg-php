@@ -134,20 +134,28 @@ bool(false)
 
 Arg value Array 
 
-Warning: xml_parser_get_option(): Unknown option in %s on line %d
-bool(false)
+Warning: xml_parser_get_option() expects parameter 2 to be long, array given in %s on line %d
+NULL
 
 Arg value Array 
-int(1)
+
+Warning: xml_parser_get_option() expects parameter 2 to be long, array given in %s on line %d
+NULL
 
 Arg value Array 
-int(1)
+
+Warning: xml_parser_get_option() expects parameter 2 to be long, array given in %s on line %d
+NULL
 
 Arg value Array 
-int(1)
+
+Warning: xml_parser_get_option() expects parameter 2 to be long, array given in %s on line %d
+NULL
 
 Arg value Array 
-int(1)
+
+Warning: xml_parser_get_option() expects parameter 2 to be long, array given in %s on line %d
+NULL
 
 Arg value  
 
@@ -177,31 +185,33 @@ bool(false)
 
 Arg value  
 
-Warning: xml_parser_get_option(): Unknown option in %s on line %d
-bool(false)
+Warning: xml_parser_get_option() expects parameter 2 to be long, string given in %s on line %d
+NULL
 
 Arg value  
 
-Warning: xml_parser_get_option(): Unknown option in %s on line %d
-bool(false)
+Warning: xml_parser_get_option() expects parameter 2 to be long, string given in %s on line %d
+NULL
 
 Arg value string 
 
-Warning: xml_parser_get_option(): Unknown option in %s on line %d
-bool(false)
+Warning: xml_parser_get_option() expects parameter 2 to be long, string given in %s on line %d
+NULL
 
 Arg value string 
 
-Warning: xml_parser_get_option(): Unknown option in %s on line %d
-bool(false)
+Warning: xml_parser_get_option() expects parameter 2 to be long, string given in %s on line %d
+NULL
 
 Arg value Some Ascii Data 
-int(1)
 
-Arg value Resource id %s 
+Warning: xml_parser_get_option() expects parameter 2 to be long, object given in %s on line %d
+NULL
 
-Warning: xml_parser_get_option(): Unknown option in %s on line %d
-bool(false)
+Arg value Resource id %s
+
+Warning: xml_parser_get_option() expects parameter 2 to be long, resource given in %s on line %d
+NULL
 
 Arg value  
 
@@ -213,3 +223,4 @@ Arg value
 Warning: xml_parser_get_option(): Unknown option in %s on line %d
 bool(false)
 Done
+

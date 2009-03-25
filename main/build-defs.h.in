@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: build-defs.h.in,v 1.15.2.2.2.2 2007/07/15 15:10:04 jani Exp $ */
+/* $Id: build-defs.h.in,v 1.15.2.2.2.2.2.1 2008/03/25 02:00:26 sixd Exp $ */
 
 #define CONFIGURE_COMMAND "@CONFIGURE_COMMAND@"
 #define PHP_ADA_INCLUDE		""
@@ -53,7 +53,7 @@
 #define PHP_ODBC_TYPE		"@ODBC_TYPE@"
 #define PHP_OCI8_SHARED_LIBADD 	"@OCI8_SHARED_LIBADD@"
 #define PHP_OCI8_DIR			"@OCI8_DIR@"
-#define PHP_OCI8_VERSION		"@OCI8_VERSION@"
+#define PHP_OCI8_ORACLE_VERSION		"@OCI8_ORACLE_VERSION@"
 #define PHP_ORACLE_SHARED_LIBADD 	"@ORACLE_SHARED_LIBADD@"
 #define PHP_ORACLE_DIR				"@ORACLE_DIR@"
 #define PHP_ORACLE_VERSION			"@ORACLE_VERSION@"

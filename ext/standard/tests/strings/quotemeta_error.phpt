@@ -24,11 +24,11 @@ var_dump(quotemeta("How are you ?", $extra_arg));
 
 -- Testing quotemeta() function with no arguments --
 
-Warning: Wrong parameter count for quotemeta() in %s on line %d
+Warning: quotemeta() expects exactly 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing quotemeta() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for quotemeta() in %s on line %d
+Warning: quotemeta() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
 ===DONE===

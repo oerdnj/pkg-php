@@ -253,56 +253,17 @@ string(241) ".The hebrevcc function converts logical Hebrew text to visual text<
 .The function tries to avoid breaking words<br />
 "
 -- Iteration 10 --
-string(241) ".The hebrevcc function converts logical Hebrew text to visual text<br />
-) This function is similar to hebrevc() with the difference that it converts newlines<br />
-<to '<br (<br />
-.'<br />
-.The function tries to avoid breaking words<br />
-"
+
+Warning: hebrevc() expects parameter 2 to be long, array given in %s on line %d
+NULL
 -- Iteration 11 --
-string(331) "xttel uaisv<br />
-tot ext<br />
-ewbrHel cagilos rtveonc<br />
-ontincfuc vcreebh<br />
-he.Ts<br />
-neliewn<br />
-tsernvcot i<br />
-atthe ncrefeifd<br />
-het<br />
-thwi) c(evbrheo t<br />
-arilims<br />
-isn ioctunf<br />
-isTh) (<br />
-r <b'<br />
-to<<br />
-.'s<br />
-rdwog inakreb<br />
-idvoa<br />
-tos ietrn ioctunf<br />
-he.T<br />
-"
+
+Warning: hebrevc() expects parameter 2 to be long, array given in %s on line %d
+NULL
 -- Iteration 12 --
-string(331) "xttel uaisv<br />
-tot ext<br />
-ewbrHel cagilos rtveonc<br />
-ontincfuc vcreebh<br />
-he.Ts<br />
-neliewn<br />
-tsernvcot i<br />
-atthe ncrefeifd<br />
-het<br />
-thwi) c(evbrheo t<br />
-arilims<br />
-isn ioctunf<br />
-isTh) (<br />
-r <b'<br />
-to<<br />
-.'s<br />
-rdwog inakreb<br />
-idvoa<br />
-tos ietrn ioctunf<br />
-he.T<br />
-"
+
+Warning: hebrevc() expects parameter 2 to be long, array given in %s on line %d
+NULL
 -- Iteration 13 --
 string(331) "xttel uaisv<br />
 tot ext<br />
@@ -376,20 +337,16 @@ string(241) ".The hebrevcc function converts logical Hebrew text to visual text<
 .The function tries to avoid breaking words<br />
 "
 -- Iteration 19 --
-string(241) ".The hebrevcc function converts logical Hebrew text to visual text<br />
-) This function is similar to hebrevc() with the difference that it converts newlines<br />
-<to '<br (<br />
-.'<br />
-.The function tries to avoid breaking words<br />
-"
+
+Warning: hebrevc() expects parameter 2 to be long, string given in %s on line %d
+NULL
 -- Iteration 20 --
-string(241) ".The hebrevcc function converts logical Hebrew text to visual text<br />
-) This function is similar to hebrevc() with the difference that it converts newlines<br />
-<to '<br (<br />
-.'<br />
-.The function tries to avoid breaking words<br />
-"
+
+Warning: hebrevc() expects parameter 2 to be long, string given in %s on line %d
+NULL
 -- Iteration 21 --
+
+Notice: A non well formed numeric value encountered in %s on line %d
 string(349) "textual vis<br />
 to<br />
 textrew Heb<br />
@@ -415,6 +372,8 @@ riest<br />
 tionfuncThe .<br />
 "
 -- Iteration 22 --
+
+Notice: A non well formed numeric value encountered in %s on line %d
 string(241) ".The hebrevcc function converts logical Hebrew text to visual text<br />
 ) This function is similar to hebrevc() with the difference that it converts newlines<br />
 <to '<br (<br />
@@ -422,38 +381,38 @@ string(241) ".The hebrevcc function converts logical Hebrew text to visual text<
 .The function tries to avoid breaking words<br />
 "
 -- Iteration 23 --
-string(241) ".The hebrevcc function converts logical Hebrew text to visual text<br />
-) This function is similar to hebrevc() with the difference that it converts newlines<br />
-<to '<br (<br />
-.'<br />
-.The function tries to avoid breaking words<br />
+string(349) "textual vis<br />
+to<br />
+textrew Heb<br />
+icallog<br />
+ertsconvion unctf<br />
+evcchebrThe .<br />
+inesnewlrts onvec<br />
+it<br />
+thatnce feredif<br />
+the<br />
+withc() brevhe<br />
+to<br />
+ilarsim<br />
+is<br />
+tionfunchis ) T<br />
+(<br />
+'<br<to .'<br />
+<br />
+ordsw<br />
+kingbreaoid av<br />
+to<br />
+riest<br />
+tionfuncThe .<br />
 "
 -- Iteration 24 --
 
-Notice: Object of class sample could not be converted to int in %s on line %d
-string(331) "xttel uaisv<br />
-tot ext<br />
-ewbrHel cagilos rtveonc<br />
-ontincfuc vcreebh<br />
-he.Ts<br />
-neliewn<br />
-tsernvcot i<br />
-atthe ncrefeifd<br />
-het<br />
-thwi) c(evbrheo t<br />
-arilims<br />
-isn ioctunf<br />
-isTh) (<br />
-r <b'<br />
-to<<br />
-.'s<br />
-rdwog inakreb<br />
-idvoa<br />
-tos ietrn ioctunf<br />
-he.T<br />
-"
+Warning: hebrevc() expects parameter 2 to be long, object given in %s on line %d
+NULL
 -- Iteration 25 --
-string(%d) %a
+
+Warning: hebrevc() expects parameter 2 to be long, resource given in %s on line %d
+NULL
 -- Iteration 26 --
 string(241) ".The hebrevcc function converts logical Hebrew text to visual text<br />
 ) This function is similar to hebrevc() with the difference that it converts newlines<br />

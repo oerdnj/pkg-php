@@ -27,12 +27,12 @@ var_dump(get_extension_funcs("foo"));
 
 -- Too few arguments --
 
-Warning: Wrong parameter count for get_extension_funcs() in %s on line %d
+Warning: get_extension_funcs() expects exactly 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Too many arguments --
 
-Warning: Wrong parameter count for get_extension_funcs() in %s on line %d
+Warning: get_extension_funcs() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
 
 -- Invalid extension name --

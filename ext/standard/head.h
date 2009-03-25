@@ -16,13 +16,14 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: head.h,v 1.28.2.1.2.4 2008/12/31 11:17:45 sebastian Exp $ */
+/* $Id: head.h,v 1.28.2.1.2.2.2.3 2008/12/31 11:15:45 sebastian Exp $ */
 
 #ifndef HEAD_H
 #define HEAD_H
 
 extern PHP_RINIT_FUNCTION(head);
 PHP_FUNCTION(header);
+PHP_FUNCTION(header_remove);
 PHP_FUNCTION(setcookie);
 PHP_FUNCTION(setrawcookie);
 PHP_FUNCTION(headers_sent);

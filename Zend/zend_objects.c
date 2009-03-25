@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_objects.c,v 1.56.2.3.2.8 2008/12/31 11:17:33 sebastian Exp $ */
+/* $Id: zend_objects.c,v 1.56.2.3.2.6.2.8 2008/12/31 11:15:32 sebastian Exp $ */
 
 #include "zend.h"
 #include "zend_globals.h"
@@ -53,7 +53,7 @@ ZEND_API void zend_objects_destroy_object(zend_object *object, zend_object_handl
 
 	if (destructor) {
 		zval *obj;
-		zval *old_exception;
+		zend_object_store_bucket *obj_bucket;
 
 		if (destructor->op_array.fn_flags & (ZEND_ACC_PRIVATE|ZEND_ACC_PROTECTED)) {
 			if (destructor->op_array.fn_flags & ZEND_ACC_PRIVATE) {
@@ -88,31 +88,23 @@ ZEND_API void zend_objects_destroy_object(zend_object *object, zend_object_handl
 		MAKE_STD_ZVAL(obj);
 		Z_TYPE_P(obj) = IS_OBJECT;
 		Z_OBJ_HANDLE_P(obj) = handle;
-		/* TODO: We cannot set proper handlers. */
-		Z_OBJ_HT_P(obj) = &std_object_handlers; 
+		obj_bucket = &EG(objects_store).object_buckets[handle];
+		if (!obj_bucket->bucket.obj.handlers) {
+			obj_bucket->bucket.obj.handlers = &std_object_handlers;
+		}
+		Z_OBJ_HT_P(obj) = obj_bucket->bucket.obj.handlers;
 		zval_copy_ctor(obj);
 
 		/* Make sure that destructors are protected from previously thrown exceptions.
 		 * For example, if an exception was thrown in a function and when the function's
 		 * local variable destruction results in a destructor being called.
 		 */
-		old_exception = EG(exception);
-		EG(exception) = NULL;
-		zend_call_method_with_0_params(&obj, object->ce, &destructor, ZEND_DESTRUCTOR_FUNC_NAME, NULL);
-		if (old_exception) {
-			if (EG(exception)) {
-				zend_class_entry *default_exception_ce = zend_exception_get_default(TSRMLS_C);
-				zval *file = zend_read_property(default_exception_ce, old_exception, "file", sizeof("file")-1, 1 TSRMLS_CC);
-				zval *line = zend_read_property(default_exception_ce, old_exception, "line", sizeof("line")-1, 1 TSRMLS_CC);
-
-				zval_ptr_dtor(&obj);
-				zval_ptr_dtor(&EG(exception));
-				EG(exception) = old_exception;
-				zend_error(E_ERROR, "Ignoring exception from %s::__destruct() while an exception is already active (Uncaught %s in %s on line %ld)", 
-					object->ce->name, Z_OBJCE_P(old_exception)->name, Z_STRVAL_P(file), Z_LVAL_P(line));
-			}
-			EG(exception) = old_exception;
+		if (EG(exception) && Z_OBJ_HANDLE_P(EG(exception)) == handle) {
+			zend_error(E_ERROR, "Attempt to destruct pending exception");
 		}
+		zend_exception_save(TSRMLS_C);
+		zend_call_method_with_0_params(&obj, object->ce, &destructor, ZEND_DESTRUCTOR_FUNC_NAME, NULL);
+		zend_exception_restore(TSRMLS_C);
 		zval_ptr_dtor(&obj);
 	}
 }
@@ -135,38 +127,15 @@ ZEND_API zend_object_value zend_objects_new(zend_object **object, zend_class_ent
 	return retval;
 }
 
-ZEND_API zend_object *zend_objects_get_address(zval *zobject TSRMLS_DC)
+ZEND_API zend_object *zend_objects_get_address(const zval *zobject TSRMLS_DC)
 {
 	return (zend_object *)zend_object_store_get_object(zobject TSRMLS_CC);
 }
 
-static void zval_add_ref_or_clone(zval **p)
-{
-	if (Z_TYPE_PP(p) == IS_OBJECT && !PZVAL_IS_REF(*p)) {
-		TSRMLS_FETCH();
-
-		if (Z_OBJ_HANDLER_PP(p, clone_obj) == NULL) {
-			zend_error(E_ERROR, "Trying to clone an uncloneable object of class %s",  Z_OBJCE_PP(p)->name);
-		} else {
-			zval *orig = *p;
-
-			ALLOC_ZVAL(*p);
-			**p = *orig;
-			INIT_PZVAL(*p);
-			(*p)->value.obj = Z_OBJ_HT_PP(p)->clone_obj(orig TSRMLS_CC);
-		}
-	} else {
-		(*p)->refcount++;
-	}
-}
-
 ZEND_API void zend_objects_clone_members(zend_object *new_object, zend_object_value new_obj_val, zend_object *old_object, zend_object_handle handle TSRMLS_DC)
 {
-	if (EG(ze1_compatibility_mode)) {
-		zend_hash_copy(new_object->properties, old_object->properties, (copy_ctor_func_t) zval_add_ref_or_clone, (void *) NULL /* Not used anymore */, sizeof(zval *));
-	} else {
-		zend_hash_copy(new_object->properties, old_object->properties, (copy_ctor_func_t) zval_add_ref, (void *) NULL /* Not used anymore */, sizeof(zval *));
-	}
+	zend_hash_copy(new_object->properties, old_object->properties, (copy_ctor_func_t) zval_add_ref, (void *) NULL /* Not used anymore */, sizeof(zval *));
+
 	if (old_object->ce->clone) {
 		zval *new_obj;
 

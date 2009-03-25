@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_schema.h,v 1.13.2.2.2.3 2008/12/31 11:17:43 sebastian Exp $ */
+/* $Id: php_schema.h,v 1.13.2.2.2.1.2.2 2008/12/31 11:15:43 sebastian Exp $ */
 
 #ifndef PHP_SCHEMA_H
 #define PHP_SCHEMA_H

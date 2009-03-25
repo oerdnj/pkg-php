@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo.c,v 1.57.2.17.2.11 2008/12/31 11:17:41 sebastian Exp $ */
+/* $Id: pdo.c,v 1.57.2.17.2.9.2.8 2008/12/31 11:15:40 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -102,6 +102,10 @@ PHP_FUNCTION(pdo_drivers)
 {
 	HashPosition pos;
 	pdo_driver_t **pdriver;
+
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
 	
 	array_init(return_value);
 
@@ -113,16 +117,21 @@ PHP_FUNCTION(pdo_drivers)
 }
 /* }}} */
 
+/* {{{ arginfo */
+ZEND_BEGIN_ARG_INFO(arginfo_pdo_drivers, 0)
+ZEND_END_ARG_INFO()
+/* }}} */
+
 /* {{{ pdo_functions[] */
-zend_function_entry pdo_functions[] = {
-	PHP_FE(pdo_drivers,             NULL)
+const zend_function_entry pdo_functions[] = {
+	PHP_FE(pdo_drivers,             arginfo_pdo_drivers)
 	{NULL, NULL, NULL}
 };
 /* }}} */
 
 /* {{{ pdo_functions[] */
 #if ZEND_MODULE_API_NO >= 20050922
-static zend_module_dep pdo_deps[] = {
+static const zend_module_dep pdo_deps[] = {
 #ifdef HAVE_SPL
 	ZEND_MOD_REQUIRED("spl")
 #endif

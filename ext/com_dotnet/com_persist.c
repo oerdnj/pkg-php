@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_persist.c,v 1.5.2.3.2.4 2008/12/31 11:17:36 sebastian Exp $ */
+/* $Id: com_persist.c,v 1.5.2.3.2.2.2.3 2008/12/31 11:15:35 sebastian Exp $ */
 
 /* Infrastructure for working with persistent COM objects.
  * Implements: IStream* wrapper for PHP streams.
@@ -681,7 +681,7 @@ CPH_METHOD(__construct)
 
 
 
-static zend_function_entry com_persist_helper_methods[] = {
+static const zend_function_entry com_persist_helper_methods[] = {
 	CPH_ME(__construct, NULL)
 	CPH_ME(GetCurFileName, NULL)
 	CPH_ME(SaveToFile, NULL)

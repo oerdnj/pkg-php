@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: recode.c,v 1.37.2.1.2.5 2008/12/31 11:17:42 sebastian Exp $ */
+/* $Id: recode.c,v 1.37.2.1.2.3.2.8 2008/12/31 11:15:42 sebastian Exp $ */
 
 /* {{{ includes & prototypes */
 
@@ -66,11 +66,24 @@ ZEND_END_MODULE_GLOBALS(recode)
 ZEND_DECLARE_MODULE_GLOBALS(recode);
 static PHP_GINIT_FUNCTION(recode);
 
+/* {{{ arginfo */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_recode_string, 0, 0, 2)
+	ZEND_ARG_INFO(0, request)
+	ZEND_ARG_INFO(0, str)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_recode_file, 0, 0, 3)
+	ZEND_ARG_INFO(0, request)
+	ZEND_ARG_INFO(0, input)
+	ZEND_ARG_INFO(0, output)
+ZEND_END_ARG_INFO()
+/* }}} */
+
 /* {{{ module stuff */
-static zend_function_entry php_recode_functions[] = {
-	PHP_FE(recode_string, NULL)
-	PHP_FE(recode_file, NULL)
-	PHP_FALIAS(recode, recode_string, NULL)
+static const zend_function_entry php_recode_functions[] = {
+	PHP_FE(recode_string, 	arginfo_recode_string)
+	PHP_FE(recode_file, 	arginfo_recode_file)
+	PHP_FALIAS(recode, recode_string, arginfo_recode_string)
 	{NULL, NULL, NULL}
 };
 
@@ -122,7 +135,7 @@ PHP_MINFO_FUNCTION(recode)
 {
 	php_info_print_table_start();
 	php_info_print_table_row(2, "Recode Support", "enabled");
-	php_info_print_table_row(2, "Revision", "$Revision: 1.37.2.1.2.5 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 1.37.2.1.2.3.2.8 $");
 	php_info_print_table_end();
 }
 
@@ -173,17 +186,18 @@ error_exit:
 PHP_FUNCTION(recode_file)
 {
 	RECODE_REQUEST request = NULL;
-	zval **req;
-	zval **input, **output;
+	char *req;
+	int req_len;
+	zval *input, *output;
 	php_stream *instream, *outstream;
 	FILE  *in_fp,  *out_fp;
 
-	if (ZEND_NUM_ARGS() != 3 || zend_get_parameters_ex(3, &req, &input, &output) == FAILURE) {
-	 	WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "srr", &req, &req_len, &input, &output) == FAILURE) {
+	 	return;
 	}
 
-	php_stream_from_zval(instream, input);
-	php_stream_from_zval(outstream, output);
+	php_stream_from_zval(instream, &input);
+	php_stream_from_zval(outstream, &output);
 
 	if (FAILURE == php_stream_cast(instream, PHP_STREAM_AS_STDIO, (void**)&in_fp, REPORT_ERRORS))	{
 		RETURN_FALSE;
@@ -192,8 +206,6 @@ PHP_FUNCTION(recode_file)
 	if (FAILURE == php_stream_cast(outstream, PHP_STREAM_AS_STDIO, (void**)&out_fp, REPORT_ERRORS))	{
 		RETURN_FALSE;
 	}
-	
-	convert_to_string_ex(req);
 
 	request = recode_new_request(ReSG(outer));
 	if (request == NULL) {
@@ -201,8 +213,8 @@ PHP_FUNCTION(recode_file)
 		RETURN_FALSE;
 	}
 
-	if (!recode_scan_request(request, Z_STRVAL_PP(req))) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Illegal recode request '%s'", Z_STRVAL_PP(req));
+	if (!recode_scan_request(request, req)) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Illegal recode request '%s'", req);
 		goto error_exit;
 	}
 	

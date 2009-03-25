@@ -249,31 +249,31 @@ bool(true)
 
 *** Testing error conditions ***
 
-Warning: Wrong parameter count for array_key_exists() in %s on line %d
+Warning: array_key_exists() expects exactly 2 parameters, 0 given in %s on line %d
 NULL
 
 Warning: array_key_exists(): The first argument should be either a string or an integer in %s on line %d
 bool(false)
 
-Warning: array_key_exists(): The second argument should be either an array or an object in %s on line %d
-bool(false)
+Warning: array_key_exists() expects parameter 2 to be array, string given in %s on line %d
+NULL
 
-Warning: array_key_exists(): The second argument should be either an array or an object in %s on line %d
-bool(false)
+Warning: array_key_exists() expects parameter 2 to be array, integer given in %s on line %d
+NULL
 
-Warning: array_key_exists(): The second argument should be either an array or an object in %s on line %d
-bool(false)
+Warning: array_key_exists() expects parameter 2 to be array, null given in %s on line %d
+NULL
 
-Warning: array_key_exists(): The second argument should be either an array or an object in %s on line %d
-bool(false)
+Warning: array_key_exists() expects parameter 2 to be array, boolean given in %s on line %d
+NULL
 
-Warning: array_key_exists(): The second argument should be either an array or an object in %s on line %d
-bool(false)
+Warning: array_key_exists() expects parameter 2 to be array, boolean given in %s on line %d
+NULL
 
-Warning: array_key_exists(): The second argument should be either an array or an object in %s on line %d
-bool(false)
+Warning: array_key_exists() expects parameter 2 to be array, double given in %s on line %d
+NULL
 
-Warning: Wrong parameter count for array_key_exists() in %s on line %d
+Warning: array_key_exists() expects exactly 2 parameters, 3 given in %s on line %d
 NULL
 
 Warning: array_key_exists(): The first argument should be either a string or an integer in %s on line %d

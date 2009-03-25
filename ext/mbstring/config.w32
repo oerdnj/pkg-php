@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.10.2.1.2.4 2007/02/04 00:21:51 fmk Exp $
+// $Id: config.w32,v 1.10.2.1.2.4.2.4 2009/03/20 18:42:02 pajoye Exp $
 // vim:ft=javascript
 
 ARG_ENABLE("mbstring", "multibyte string functions", "no");
@@ -12,7 +12,7 @@ if (PHP_MBSTRING == "yes") {
 	FSO.CopyFile("ext\\mbstring\\oniguruma\\win32\\config.h",
 		"ext\\mbstring\\oniguruma\\config.h", true);
 	
-	EXTENSION("mbstring", "mbstring.c php_unicode.c mb_gpc.c", null,
+	EXTENSION("mbstring", "mbstring.c php_unicode.c mb_gpc.c", true,
 		"-Iext/mbstring/libmbfl -Iext/mbstring/libmbfl/mbfl \
 		-Iext/mbstring/oniguruma /D NOT_RUBY=1 /D LIBMBFL_EXPORTS=1 \
 		/D HAVE_STDARG_PROTOTYPES=1 /D HAVE_CONFIG_H /D HAVE_STDLIB_H \
@@ -33,7 +33,8 @@ if (PHP_MBSTRING == "yes") {
 		mbfilter_koi8r.c mbfilter_qprint.c mbfilter_sjis.c mbfilter_ucs2.c \
 		mbfilter_ucs4.c mbfilter_uhc.c mbfilter_utf16.c mbfilter_utf32.c \
 		mbfilter_utf7.c mbfilter_utf7imap.c mbfilter_utf8.c \
-		mbfilter_uuencode.c mbfilter_armscii8.c", "mbstring");
+		mbfilter_koi8u.c mbfilter_cp1254.c \
+		mbfilter_uuencode.c mbfilter_armscii8.c mbfilter_cp850.c ", "mbstring");
 
 	ADD_SOURCES("ext/mbstring/libmbfl/mbfl", "mbfilter.c mbfilter_8bit.c \
 		mbfilter_pass.c mbfilter_wchar.c mbfl_convert.c mbfl_encoding.c \
@@ -42,7 +43,7 @@ if (PHP_MBSTRING == "yes") {
 
 	ADD_SOURCES("ext/mbstring/libmbfl/nls", "nls_de.c nls_en.c nls_ja.c \
 		nls_kr.c nls_neutral.c nls_ru.c nls_uni.c nls_zh.c nls_hy.c \
-		nls_tr.c", "mbstring");
+		nls_ua.c nls_tr.c", "mbstring");
 
 	AC_DEFINE('HAVE_MBSTRING', 1, 'Have mbstring support');
 	AC_DEFINE('HAVE_MBSTR_CN', 1, 'CN');
@@ -54,6 +55,7 @@ if (PHP_MBSTRING == "yes") {
 	if (PHP_MBREGEX != "no") {
 		AC_DEFINE('HAVE_STDARG_PROTOTYPES', 1, 'have stdarg.h');
 		AC_DEFINE('HAVE_MBREGEX', 1);
+		AC_DEFINE('HAVE_ONIG', 1);
 		if (PHP_MBREGEX_BACKTRACK != "no") {
 			AC_DEFINE('USE_COMBINATION_EXPLOSION_CHECK', 1);
 		}

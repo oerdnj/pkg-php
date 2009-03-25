@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_stack.h,v 1.19.2.1.2.3 2008/12/31 11:17:33 sebastian Exp $ */
+/* $Id: zend_stack.h,v 1.19.2.1.2.1.2.3 2008/12/31 11:15:32 sebastian Exp $ */
 
 #ifndef ZEND_STACK_H
 #define ZEND_STACK_H
@@ -32,14 +32,14 @@ typedef struct _zend_stack {
 
 BEGIN_EXTERN_C()
 ZEND_API int zend_stack_init(zend_stack *stack);
-ZEND_API int zend_stack_push(zend_stack *stack, void *element, int size);
-ZEND_API int zend_stack_top(zend_stack *stack, void **element);
+ZEND_API int zend_stack_push(zend_stack *stack, const void *element, int size);
+ZEND_API int zend_stack_top(const zend_stack *stack, void **element);
 ZEND_API int zend_stack_del_top(zend_stack *stack);
-ZEND_API int zend_stack_int_top(zend_stack *stack);
-ZEND_API int zend_stack_is_empty(zend_stack *stack);
+ZEND_API int zend_stack_int_top(const zend_stack *stack);
+ZEND_API int zend_stack_is_empty(const zend_stack *stack);
 ZEND_API int zend_stack_destroy(zend_stack *stack);
-ZEND_API void **zend_stack_base(zend_stack *stack);
-ZEND_API int zend_stack_count(zend_stack *stack);
+ZEND_API void **zend_stack_base(const zend_stack *stack);
+ZEND_API int zend_stack_count(const zend_stack *stack);
 ZEND_API void zend_stack_apply(zend_stack *stack, int type, int (*apply_function)(void *element));
 ZEND_API void zend_stack_apply_with_argument(zend_stack *stack, int type, int (*apply_function)(void *element, void *arg), void *arg);
 END_EXTERN_C()

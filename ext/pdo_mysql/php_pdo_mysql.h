@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_mysql.h,v 1.3.2.1.2.3 2008/12/31 11:17:42 sebastian Exp $ */
+/* $Id: php_pdo_mysql.h,v 1.3.2.1.2.1.2.4 2008/12/31 11:15:41 sebastian Exp $ */
 
 #ifndef PHP_PDO_MYSQL_H
 #define PHP_PDO_MYSQL_H
@@ -34,11 +34,6 @@ extern zend_module_entry pdo_mysql_module_entry;
 #include "TSRM.h"
 #endif
 
-PHP_MINIT_FUNCTION(pdo_mysql);
-PHP_MSHUTDOWN_FUNCTION(pdo_mysql);
-PHP_RINIT_FUNCTION(pdo_mysql);
-PHP_RSHUTDOWN_FUNCTION(pdo_mysql);
-PHP_MINFO_FUNCTION(pdo_mysql);
 
 #endif	/* PHP_PDO_MYSQL_H */
 

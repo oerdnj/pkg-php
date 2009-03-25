@@ -1,7 +1,5 @@
 --TEST--
 Test basename() function : error conditions 
---CREDITS--
-Dave Kelsey <d_kelsey@uk.ibm.com>
 --FILE--
 <?php
 /* Prototype  : string basename(string path [, string suffix])

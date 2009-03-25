@@ -56,7 +56,7 @@ bool(true)
 $key = var3:
 bool(true)
 $class1:
-object(myClass)#%d (3) {
+object(myClass)#1 (3) {
   ["var1"]=>
   string(1) "a"
   ["var2"]=>
@@ -69,7 +69,7 @@ object(myClass)#%d (3) {
 $key = var3:
 bool(true)
 $class2:
-object(myClass)#%d (3) {
+object(myClass)#2 (3) {
   ["var1"]=>
   string(1) "x"
   ["var2"]=>

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_hash_ripemd.h,v 1.2.2.3.2.4 2008/12/31 11:17:38 sebastian Exp $ */
+/* $Id: php_hash_ripemd.h,v 1.2.2.3.2.2.2.2 2008/12/31 11:15:37 sebastian Exp $ */
 
 #ifndef PHP_HASH_RIPEMD_H
 #define PHP_HASH_RIPEMD_H

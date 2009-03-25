@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: html.c,v 1.111.2.2.2.23 2008/12/31 11:17:45 sebastian Exp $ */
+/* $Id: html.c,v 1.111.2.2.2.14.2.15 2008/12/31 11:15:45 sebastian Exp $ */
 
 /*
  * HTML entity resources:
@@ -37,7 +37,6 @@
 #else
 #include <php_config.h>
 #endif
-#include "reg.h"
 #include "html.h"
 #include "php_string.h"
 #include "SAPI.h"
@@ -486,6 +485,7 @@ struct basic_entities_dec {
 
 #define CHECK_LEN(pos, chars_need)			\
 	if((str_len - (pos)) < chars_need) {	\
+		*newpos = pos;						\
 		*status = FAILURE;					\
 		return 0;							\
 	}
@@ -530,6 +530,7 @@ inline static unsigned short get_next_char(enum entity_charset charset,
 						more = 0;
 						if(stat) {
 							/* we didn't finish the UTF sequence correctly */
+							--pos;
 							*status = FAILURE;
 						}
 						break;
@@ -1040,8 +1041,6 @@ PHPAPI char *php_unescape_html_entities(unsigned char *old, int oldlen, int *new
 								break;
 
 							case cs_cp1252:
-							case cs_cp1251:
-							case cs_cp866:
 								if (code > 0xff) {
 									invalid_code = 1;
 								} else {
@@ -1049,6 +1048,8 @@ PHPAPI char *php_unescape_html_entities(unsigned char *old, int oldlen, int *new
 								}
 								break;
 
+							case cs_cp1251:
+							case cs_cp866:
 							case cs_big5:
 							case cs_big5hkscs:
 							case cs_sjis:
@@ -1136,6 +1137,9 @@ PHPAPI char *php_escape_html_entities_ex(unsigned char *old, int oldlen, int *ne
 
 		if(status == FAILURE) {
 			/* invalid MB sequence */
+			if (quote_style & ENT_HTML_IGNORE_ERRORS) {
+				continue;
+			}
 			efree(replaced);
 			if(!PG(display_errors)) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid multibyte sequence in argument");
@@ -1294,6 +1298,7 @@ void register_html_constants(INIT_FUNC_ARGS)
 	REGISTER_LONG_CONSTANT("ENT_COMPAT", ENT_COMPAT, CONST_PERSISTENT|CONST_CS);
 	REGISTER_LONG_CONSTANT("ENT_QUOTES", ENT_QUOTES, CONST_PERSISTENT|CONST_CS);
 	REGISTER_LONG_CONSTANT("ENT_NOQUOTES", ENT_NOQUOTES, CONST_PERSISTENT|CONST_CS);
+	REGISTER_LONG_CONSTANT("ENT_IGNORE", ENT_IGNORE, CONST_PERSISTENT|CONST_CS);
 }
 /* }}} */
 
@@ -1376,7 +1381,7 @@ done:
 PHP_FUNCTION(html_entity_decode)
 {
 	char *str, *hint_charset = NULL;
-	int str_len, hint_charset_len, len;
+	int str_len, hint_charset_len = 0, len;
 	long quote_style = ENT_COMPAT;
 	char *replaced;
 

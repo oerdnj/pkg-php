@@ -29,6 +29,15 @@ class classWithToString
 	}
 }
 
+class classWithoutToString
+{
+}
+
+// heredoc string
+$heredoc = <<<EOT
+hello world
+EOT;
+
 //array of values to iterate over
 $inputs = array(
 
@@ -57,6 +66,7 @@ $inputs = array(
 
       // object data
       'instance of classWithToString' => new classWithToString(),
+	  'instance of classWithoutToString' => new classWithoutToString(),
 
       // undefined data
       'undefined var' => @$undefined_var,
@@ -84,153 +94,161 @@ fclose($fp);
 
 --int 0--
 
-Warning: array_diff_ukey(): Not a valid callback 0 in %s on line %d
+Warning: array_diff_ukey() expects parameter 3 to be a valid callback, no array or string given in %s on line %d
 NULL
 
-Warning: array_diff_ukey(): Not a valid callback 0 in %s on line %d
+Warning: array_diff_ukey() expects parameter 4 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 --int 1--
 
-Warning: array_diff_ukey(): Not a valid callback 1 in %s on line %d
+Warning: array_diff_ukey() expects parameter 3 to be a valid callback, no array or string given in %s on line %d
 NULL
 
-Warning: array_diff_ukey(): Not a valid callback 1 in %s on line %d
+Warning: array_diff_ukey() expects parameter 4 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 --int 12345--
 
-Warning: array_diff_ukey(): Not a valid callback 12345 in %s on line %d
+Warning: array_diff_ukey() expects parameter 3 to be a valid callback, no array or string given in %s on line %d
 NULL
 
-Warning: array_diff_ukey(): Not a valid callback 12345 in %s on line %d
+Warning: array_diff_ukey() expects parameter 4 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 --int -12345--
 
-Warning: array_diff_ukey(): Not a valid callback -12345 in %s on line %d
+Warning: array_diff_ukey() expects parameter 3 to be a valid callback, no array or string given in %s on line %d
 NULL
 
-Warning: array_diff_ukey(): Not a valid callback -12345 in %s on line %d
+Warning: array_diff_ukey() expects parameter 4 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 --float 10.5--
 
-Warning: array_diff_ukey(): Not a valid callback 10.5 in %s on line %d
+Warning: array_diff_ukey() expects parameter 3 to be a valid callback, no array or string given in %s on line %d
 NULL
 
-Warning: array_diff_ukey(): Not a valid callback 10.5 in %s on line %d
+Warning: array_diff_ukey() expects parameter 4 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 --float -10.5--
 
-Warning: array_diff_ukey(): Not a valid callback -10.5 in %s on line %d
+Warning: array_diff_ukey() expects parameter 3 to be a valid callback, no array or string given in %s on line %d
 NULL
 
-Warning: array_diff_ukey(): Not a valid callback -10.5 in %s on line %d
+Warning: array_diff_ukey() expects parameter 4 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 --float 12.3456789000e10--
 
-Warning: array_diff_ukey(): Not a valid callback 123456789000 in %s on line %d
+Warning: array_diff_ukey() expects parameter 3 to be a valid callback, no array or string given in %s on line %d
 NULL
 
-Warning: array_diff_ukey(): Not a valid callback 123456789000 in %s on line %d
+Warning: array_diff_ukey() expects parameter 4 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 --float -12.3456789000e10--
 
-Warning: array_diff_ukey(): Not a valid callback -123456789000 in %s on line %d
+Warning: array_diff_ukey() expects parameter 3 to be a valid callback, no array or string given in %s on line %d
 NULL
 
-Warning: array_diff_ukey(): Not a valid callback -123456789000 in %s on line %d
+Warning: array_diff_ukey() expects parameter 4 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 --float .5--
 
-Warning: array_diff_ukey(): Not a valid callback 0.5 in %s on line %d
+Warning: array_diff_ukey() expects parameter 3 to be a valid callback, no array or string given in %s on line %d
 NULL
 
-Warning: array_diff_ukey(): Not a valid callback 0.5 in %s on line %d
+Warning: array_diff_ukey() expects parameter 4 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 --uppercase NULL--
 
-Warning: array_diff_ukey(): Not a valid callback  in %s on line %d
+Warning: array_diff_ukey() expects parameter 3 to be a valid callback, no array or string given in %s on line %d
 NULL
 
-Warning: array_diff_ukey(): Not a valid callback  in %s on line %d
+Warning: array_diff_ukey() expects parameter 4 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 --lowercase null--
 
-Warning: array_diff_ukey(): Not a valid callback  in %s on line %d
+Warning: array_diff_ukey() expects parameter 3 to be a valid callback, no array or string given in %s on line %d
 NULL
 
-Warning: array_diff_ukey(): Not a valid callback  in %s on line %d
+Warning: array_diff_ukey() expects parameter 4 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 --lowercase true--
 
-Warning: array_diff_ukey(): Not a valid callback 1 in %s on line %d
+Warning: array_diff_ukey() expects parameter 3 to be a valid callback, no array or string given in %s on line %d
 NULL
 
-Warning: array_diff_ukey(): Not a valid callback 1 in %s on line %d
+Warning: array_diff_ukey() expects parameter 4 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 --lowercase false--
 
-Warning: array_diff_ukey(): Not a valid callback  in %s on line %d
+Warning: array_diff_ukey() expects parameter 3 to be a valid callback, no array or string given in %s on line %d
 NULL
 
-Warning: array_diff_ukey(): Not a valid callback  in %s on line %d
+Warning: array_diff_ukey() expects parameter 4 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 --uppercase TRUE--
 
-Warning: array_diff_ukey(): Not a valid callback 1 in %s on line %d
+Warning: array_diff_ukey() expects parameter 3 to be a valid callback, no array or string given in %s on line %d
 NULL
 
-Warning: array_diff_ukey(): Not a valid callback 1 in %s on line %d
+Warning: array_diff_ukey() expects parameter 4 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 --uppercase FALSE--
 
-Warning: array_diff_ukey(): Not a valid callback  in %s on line %d
+Warning: array_diff_ukey() expects parameter 3 to be a valid callback, no array or string given in %s on line %d
 NULL
 
-Warning: array_diff_ukey(): Not a valid callback  in %s on line %d
+Warning: array_diff_ukey() expects parameter 4 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 --instance of classWithToString--
 
-Warning: array_diff_ukey(): Not a valid callback Class A object in %s on line %d
+Warning: array_diff_ukey() expects parameter 3 to be a valid callback, no array or string given in %s on line %d
 NULL
 
-Warning: array_diff_ukey(): Not a valid callback Class A object in %s on line %d
+Warning: array_diff_ukey() expects parameter 4 to be a valid callback, no array or string given in %s on line %d
+NULL
+
+--instance of classWithoutToString--
+
+Warning: array_diff_ukey() expects parameter 3 to be a valid callback, no array or string given in %s on line %d
+NULL
+
+Warning: array_diff_ukey() expects parameter 4 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 --undefined var--
 
-Warning: array_diff_ukey(): Not a valid callback  in %s on line %d
+Warning: array_diff_ukey() expects parameter 3 to be a valid callback, no array or string given in %s on line %d
 NULL
 
-Warning: array_diff_ukey(): Not a valid callback  in %s on line %d
+Warning: array_diff_ukey() expects parameter 4 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 --unset var--
 
-Warning: array_diff_ukey(): Not a valid callback  in %s on line %d
+Warning: array_diff_ukey() expects parameter 3 to be a valid callback, no array or string given in %s on line %d
 NULL
 
-Warning: array_diff_ukey(): Not a valid callback  in %s on line %d
+Warning: array_diff_ukey() expects parameter 4 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 --resource--
 
-Warning: array_diff_ukey(): Not a valid callback Resource id #5 in %s on line %d
+Warning: array_diff_ukey() expects parameter 3 to be a valid callback, no array or string given in %s on line %d
 NULL
 
-Warning: array_diff_ukey(): Not a valid callback Resource id #5 in %s on line %d
+Warning: array_diff_ukey() expects parameter 4 to be a valid callback, no array or string given in %s on line %d
 NULL
 ===DONE===

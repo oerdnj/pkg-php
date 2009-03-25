@@ -22,7 +22,7 @@ echo "*** Testing gzcompress() : variation ***\n";
 
 echo "\n-- Testing multiple compression --\n";
 $output = gzcompress($data);
-var_dump(md5($output));
+var_dump( md5($output));
 var_dump(md5(gzcompress($output)));
 
 ?>

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: attr.c,v 1.18.2.2.2.5 2008/12/31 11:17:37 sebastian Exp $ */
+/* $Id: attr.c,v 1.18.2.2.2.2.2.12 2009/03/13 13:43:29 rrichards Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -29,13 +29,10 @@
 
 #include "php_dom.h"
 
-
 /* {{{ arginfo */
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_attr_is_id, 0, 0, 0)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_attr_construct, 0, 0, 1)
 	ZEND_ARG_INFO(0, name)
 	ZEND_ARG_INFO(0, value)
@@ -49,7 +46,7 @@ ZEND_END_ARG_INFO();
 * Since: 
 */
 
-zend_function_entry php_dom_attr_class_functions[] = {
+const zend_function_entry php_dom_attr_class_functions[] = {
 	PHP_FALIAS(isId, dom_attr_is_id, arginfo_dom_attr_is_id)
 	PHP_ME(domattr, __construct, arginfo_dom_attr_construct, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
@@ -65,14 +62,15 @@ PHP_METHOD(domattr, __construct)
 	dom_object *intern;
 	char *name, *value = NULL;
 	int name_len, value_len, name_valid;
+	zend_error_handling error_handling;
 
-	php_set_error_handling(EH_THROW, dom_domexception_class_entry TSRMLS_CC);
+	zend_replace_error_handling(EH_THROW, dom_domexception_class_entry, &error_handling TSRMLS_CC);
 	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "Os|s", &id, dom_attr_class_entry, &name, &name_len, &value, &value_len) == FAILURE) {
-		php_std_error_handling();
+		zend_restore_error_handling(&error_handling TSRMLS_CC);
 		return;
 	}
 
-	php_std_error_handling();
+	zend_restore_error_handling(&error_handling TSRMLS_CC);
 	intern = (dom_object *)zend_object_store_get_object(id TSRMLS_CC);
 
 	name_valid = xmlValidateName((xmlChar *) name, 0);
@@ -99,7 +97,6 @@ PHP_METHOD(domattr, __construct)
 
 /* }}} end DOMAttr::__construct */
 
-
 /* {{{ name	string	
 readonly=yes 
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#ID-1112119403
@@ -124,8 +121,6 @@ int dom_attr_name_read(dom_object *obj, zval **retval TSRMLS_DC)
 
 /* }}} */
 
-
-
 /* {{{ specified	boolean	
 readonly=yes 
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#ID-862529273
@@ -140,8 +135,6 @@ int dom_attr_specified_read(dom_object *obj, zval **retval TSRMLS_DC)
 }
 
 /* }}} */
-
-
 
 /* {{{ value	string	
 readonly=no 
@@ -191,7 +184,7 @@ int dom_attr_value_write(dom_object *obj, zval *newval TSRMLS_DC)
 	}
 
 	if (newval->type != IS_STRING) {
-		if(newval->refcount > 1) {
+		if(Z_REFCOUNT_P(newval) > 1) {
 			value_copy = *newval;
 			zval_copy_ctor(&value_copy);
 			newval = &value_copy;
@@ -210,8 +203,6 @@ int dom_attr_value_write(dom_object *obj, zval *newval TSRMLS_DC)
 
 /* }}} */
 
-
-
 /* {{{ ownerElement	DOMElement	
 readonly=yes 
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#Attr-ownerElement
@@ -229,12 +220,13 @@ int dom_attr_owner_element_read(dom_object *obj, zval **retval TSRMLS_DC)
 		return FAILURE;
 	}
 
+	ALLOC_ZVAL(*retval);
+
 	nodeparent = nodep->parent;
 	if (!nodeparent) {
-		return FAILURE;
+		ZVAL_NULL(*retval);
+		return SUCCESS;
 	}
-
-	ALLOC_ZVAL(*retval);
 
 	if (NULL == (*retval = php_dom_create_object(nodeparent, &ret, NULL, *retval, obj TSRMLS_CC))) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING,  "Cannot create required DOM object");
@@ -245,8 +237,6 @@ int dom_attr_owner_element_read(dom_object *obj, zval **retval TSRMLS_DC)
 }
 
 /* }}} */
-
-
 
 /* {{{ schemaTypeInfo	DOMTypeInfo	
 readonly=yes 
@@ -262,8 +252,6 @@ int dom_attr_schema_type_info_read(dom_object *obj, zval **retval TSRMLS_DC)
 }
 
 /* }}} */
-
-
 
 /* {{{ proto boolean dom_attr_is_id();
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#Attr-isId
@@ -290,3 +278,12 @@ PHP_FUNCTION(dom_attr_is_id)
 /* }}} end dom_attr_is_id */
 
 #endif
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

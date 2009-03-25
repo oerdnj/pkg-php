@@ -19,12 +19,16 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_exceptions.h,v 1.21.2.1.2.4 2008/12/31 11:17:33 sebastian Exp $ */
+/* $Id: zend_exceptions.h,v 1.21.2.1.2.2.2.5 2009/01/02 13:14:49 helly Exp $ */
 
 #ifndef ZEND_EXCEPTIONS_H
 #define ZEND_EXCEPTIONS_H
 
 BEGIN_EXTERN_C()
+
+ZEND_API void zend_exception_set_previous(zval *exception, zval *add_previous TSRMLS_DC);
+ZEND_API void zend_exception_save(TSRMLS_D);
+ZEND_API void zend_exception_restore(TSRMLS_D);
 
 void zend_throw_exception_internal(zval *exception TSRMLS_DC);
 
@@ -45,8 +49,8 @@ ZEND_API zval * zend_throw_error_exception(zend_class_entry *exception_ce, char 
 
 extern ZEND_API void (*zend_throw_exception_hook)(zval *ex TSRMLS_DC);
 
-/* show an exception using zend_error(E_ERROR,...) */
-ZEND_API void zend_exception_error(zval *exception TSRMLS_DC);
+/* show an exception using zend_error(severity,...), severity should be E_ERROR */
+ZEND_API void zend_exception_error(zval *exception, int severity TSRMLS_DC);
 
 /* do not export, in php it's available thru spprintf directly */
 int zend_spprintf(char **message, int max_len, char *format, ...);

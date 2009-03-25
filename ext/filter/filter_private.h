@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: filter_private.h,v 1.12.2.11 2008/12/31 11:17:37 sebastian Exp $ */
+/* $Id: filter_private.h,v 1.12.2.9.2.2 2008/12/31 11:15:36 sebastian Exp $ */
 
 #ifndef FILTER_PRIVATE_H
 #define FILTER_PRIVATE_H
