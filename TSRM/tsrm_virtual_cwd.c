@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_virtual_cwd.c,v 1.74 2005/08/03 13:28:14 sniper Exp $ */
+/* $Id: tsrm_virtual_cwd.c,v 1.74.2.4 2006/01/01 12:50:00 sniper Exp $ */
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -478,13 +478,14 @@ CWD_API int virtual_file_ex(cwd_state *state, const char *path, verify_path_func
 #endif
 #if defined(TSRM_WIN32)
 	{
-		char *dummy = NULL;
 		int new_path_length;
   
-		new_path_length = GetLongPathName(path, dummy, 0) + 1;
+		new_path_length = GetLongPathName(path, NULL, 0);
 		if (new_path_length == 0) {
-			return 1;
+			goto php_failed_getlongpath;
 		}
+
+		/* GetLongPathName already counts the \0 */
 		new_path = (char *) malloc(new_path_length);
 		if (!new_path) {
 			return 1;
@@ -495,6 +496,7 @@ CWD_API int virtual_file_ex(cwd_state *state, const char *path, verify_path_func
 			path_length = new_path_length;
 		} else {
 			free(new_path);
+php_failed_getlongpath:
 			new_path = NULL;
 		}
 	}
@@ -856,7 +858,9 @@ CWD_API int virtual_stat(const char *path, struct stat *buf TSRMLS_DC)
 	int retval;
 
 	CWD_STATE_COPY(&new_state, &CWDG(cwd));
-	virtual_file_ex(&new_state, path, NULL, 1);
+	if (virtual_file_ex(&new_state, path, NULL, 1)) {
+		return -1;
+	}
 
 	retval = stat(new_state.cwd, buf);
 

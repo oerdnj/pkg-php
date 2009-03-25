@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_object_handlers.h,v 1.47 2005/08/03 13:30:55 sniper Exp $ */
+/* $Id: zend_object_handlers.h,v 1.47.2.2 2006/01/04 23:53:04 andi Exp $ */
 
 #ifndef ZEND_OBJECT_HANDLERS_H
 #define ZEND_OBJECT_HANDLERS_H
@@ -103,7 +103,7 @@ typedef int (*zend_object_cast_t)(zval *readobj, zval *writeobj, int type, int s
  * Returns FAILURE if the object does not have any sense of overloaded dimensions */
 typedef int (*zend_object_count_elements_t)(zval *object, long *count TSRMLS_DC);
 
-typedef struct _zend_object_handlers {
+struct _zend_object_handlers {
 	/* general object functions */
 	zend_object_add_ref_t					add_ref;
 	zend_object_del_ref_t					del_ref;
@@ -129,9 +129,10 @@ typedef struct _zend_object_handlers {
 	zend_object_compare_t					compare_objects;
 	zend_object_cast_t						cast_object;
 	zend_object_count_elements_t			count_elements;
-} zend_object_handlers;
+};
 
 extern ZEND_API zend_object_handlers std_object_handlers;
+
 BEGIN_EXTERN_C()
 ZEND_API union _zend_function *zend_std_get_static_method(zend_class_entry *ce, char *function_name_strval, int function_name_strlen TSRMLS_DC);
 ZEND_API zval **zend_std_get_static_property(zend_class_entry *ce, char *property_name, int property_name_len, zend_bool silent TSRMLS_DC);

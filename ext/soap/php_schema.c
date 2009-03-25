@@ -2,12 +2,12 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2005 The PHP Group                                |
+  | Copyright (c) 1997-2006 The PHP Group                                |
   +----------------------------------------------------------------------+
-  | This source file is subject to version 3.0 of the PHP license,       |
+  | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
   | available through the world-wide-web at the following url:           |
-  | http://www.php.net/license/3_0.txt.                                  |
+  | http://www.php.net/license/3_01.txt                                  |
   | If you did not receive a copy of the PHP license and are unable to   |
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_schema.c,v 1.58.2.2 2005/11/08 08:30:17 dmitry Exp $ */
+/* $Id: php_schema.c,v 1.58.2.4 2006/01/01 12:50:13 sniper Exp $ */
 
 #include "php_soap.h"
 #include "libxml/uri.h"
@@ -232,7 +232,11 @@ int load_schema(sdlCtx *ctx, xmlNodePtr schema TSRMLS_DC)
 			location = get_attribute(trav->properties, "schemaLocation");
 
 			if (ns != NULL && tns != NULL && strcmp(ns->children->content,tns->children->content) == 0) {
-				soap_error1(E_ERROR, "Parsing Schema: can't import schema from '%s', namespace must not match the enclosing schema 'targetNamespace'", location->children->content);
+				if (location) {
+					soap_error1(E_ERROR, "Parsing Schema: can't import schema from '%s', namespace must not match the enclosing schema 'targetNamespace'", location->children->content);
+				} else {
+					soap_error0(E_ERROR, "Parsing Schema: can't import schema. Namespace must not match the enclosing schema 'targetNamespace'");
+				}
 			}
 			if (location) {
 				xmlChar *base = xmlNodeGetBase(trav->doc, trav);

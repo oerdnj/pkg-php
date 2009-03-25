@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_hash.h,v 1.78 2005/08/03 13:30:52 sniper Exp $ */
+/* $Id: zend_hash.h,v 1.78.2.2 2006/01/04 23:53:04 andi Exp $ */
 
 #ifndef ZEND_HASH_H
 #define ZEND_HASH_H
@@ -351,6 +351,12 @@ static inline int zend_symtable_exists(HashTable *ht, char *arKey, uint nKeyLeng
 {
 	HANDLE_NUMERIC(arKey, nKeyLength, zend_hash_index_exists(ht, idx));
 	return zend_hash_exists(ht, arKey, nKeyLength);
+}
+
+static inline int zend_symtable_update_current_key(HashTable *ht, char *arKey, uint nKeyLength)
+{
+	HANDLE_NUMERIC(arKey, nKeyLength, zend_hash_update_current_key(ht, HASH_KEY_IS_LONG, NULL, 0, idx));
+	return zend_hash_update_current_key(ht, HASH_KEY_IS_STRING, arKey, nKeyLength, 0);
 }
 
 #endif							/* ZEND_HASH_H */

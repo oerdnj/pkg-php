@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: parse_tz.c,v 1.20.2.2 2005/10/03 11:17:24 derick Exp $ */
+/* $Id: parse_tz.c,v 1.20.2.5 2006/01/04 21:31:34 derick Exp $ */
 
 #include "timelib.h"
 
@@ -238,6 +238,12 @@ timelib_tzdb_index_entry *timelib_timezone_builtin_identifiers_list(int *count)
 	return timezonedb_idx_builtin;
 }
 
+int timelib_timezone_id_is_valid(char *timezone, timelib_tzdb *tzdb)
+{
+	char *tzf;
+	return (seek_to_tz_position((char**) &tzf, timezone, tzdb));
+}
+
 timelib_tzinfo *timelib_parse_tzfile(char *timezone, timelib_tzdb *tzdb)
 {
 	char *tzf;
@@ -357,4 +363,22 @@ timelib_time_offset *timelib_get_time_zone_info(timelib_sll ts, timelib_tzinfo *
 	tmp->abbr = abbr ? strdup(abbr) : strdup("GMT");
 
 	return tmp;
+}
+
+timelib_sll timelib_get_current_offset(timelib_time *t)
+{
+	timelib_time_offset *gmt_offset;
+			
+	switch (t->zone_type) {
+		case TIMELIB_ZONETYPE_ABBR:
+		case TIMELIB_ZONETYPE_OFFSET:
+			return t->z * 60;
+			
+		case TIMELIB_ZONETYPE_ID:
+			gmt_offset = timelib_get_time_zone_info(t->sse, t->tz_info);
+			return gmt_offset->offset;
+
+		default:
+			return 0;
+	}
 }

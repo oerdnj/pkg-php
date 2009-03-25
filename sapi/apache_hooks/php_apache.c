@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -17,7 +17,7 @@
    |          David Sklar <sklar@student.net>                             |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_apache.c,v 1.19 2005/08/03 14:08:49 sniper Exp $ */
+/* $Id: php_apache.c,v 1.19.2.3 2006/01/01 12:50:18 sniper Exp $ */
 
 #include "php_apache_http.h"
 
@@ -60,7 +60,7 @@ PHP_FUNCTION(apache_get_modules);
 PHP_MINFO_FUNCTION(apache);
 
 
-function_entry apache_functions[] = {
+zend_function_entry apache_functions[] = {
 	PHP_FE(virtual,									NULL)
 	PHP_FE(apache_request_headers,					NULL)
 	PHP_FE(apache_note,								NULL)
@@ -105,7 +105,7 @@ static void php_apache_request_free(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	zval_ptr_dtor(&z);
 }
 
-static request_rec *get_apache_request(pval *z TSRMLS_DC)
+static request_rec *get_apache_request(zval *z TSRMLS_DC)
 {
 	request_rec *r;
 	zval **addr;
@@ -1286,7 +1286,7 @@ PHP_FUNCTION(apache_request_send_header_field)
 
 /* {{{ php_apache_request_class_functions
  */
-static function_entry php_apache_request_class_functions[] = {
+static zend_function_entry php_apache_request_class_functions[] = {
 	/* string slots */
 	PHP_FALIAS(args,						apache_request_args,				NULL)
 	PHP_FALIAS(boundary,					apache_request_boundary,			NULL)
@@ -1711,7 +1711,7 @@ PHP_MINFO_FUNCTION(apache)
  */
 PHP_FUNCTION(virtual)
 {
-	pval **filename;
+	zval **filename;
 	request_rec *rr = NULL;
 
 	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &filename) == FAILURE) {
@@ -1818,7 +1818,7 @@ PHP_FUNCTION(apache_setenv)
    Perform a partial request of the given URI to obtain information about it */
 PHP_FUNCTION(apache_lookup_uri)
 {
-	pval **filename;
+	zval **filename;
 	request_rec *rr=NULL;
 
 	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &filename) == FAILURE) {
@@ -1892,7 +1892,7 @@ This function is most likely a bad idea.  Just playing with it for now.
 
 PHP_FUNCTION(apache_exec_uri)
 {
-	pval **filename;
+	zval **filename;
 	request_rec *rr=NULL;
 	TSRMLS_FETCH();
 

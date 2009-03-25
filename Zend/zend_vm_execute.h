@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -35,6 +35,10 @@ ZEND_API void execute(zend_op_array *op_array TSRMLS_DC)
 {
 	zend_execute_data execute_data;
 
+
+	if (EG(exception)) {
+		return;
+	}
 
 	/* Initialize execute_data */
 	EX(fbc) = NULL;
@@ -1364,7 +1368,7 @@ static int ZEND_PRINT_SPEC_CONST_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 static int zend_fetch_var_address_helper_SPEC_CONST(int type, ZEND_OPCODE_HANDLER_ARGS)
 {
 	zend_op *opline = EX(opline);
-	
+	zend_free_op free_op1;
 	zval *varname = &opline->op1.u.constant;
 	zval **retval;
 	zval tmp_varname;
@@ -1415,6 +1419,11 @@ static int zend_fetch_var_address_helper_SPEC_CONST(int type, ZEND_OPCODE_HANDLE
 				break;
 			case ZEND_FETCH_STATIC:
 				zval_update_constant(retval, (void*) 1 TSRMLS_CC);
+				break;
+			case ZEND_FETCH_GLOBAL_LOCK:
+				if (IS_CONST == IS_VAR && !free_op1.var) {
+					PZVAL_LOCK(*EX_T(opline->op1.u.var).var.ptr_ptr);
+				}
 				break;
 		}
 	}
@@ -3824,6 +3833,11 @@ static int zend_fetch_var_address_helper_SPEC_TMP(int type, ZEND_OPCODE_HANDLER_
 				break;
 			case ZEND_FETCH_STATIC:
 				zval_update_constant(retval, (void*) 1 TSRMLS_CC);
+				break;
+			case ZEND_FETCH_GLOBAL_LOCK:
+				if (IS_TMP_VAR == IS_VAR && !free_op1.var) {
+					PZVAL_LOCK(*EX_T(opline->op1.u.var).var.ptr_ptr);
+				}
 				break;
 		}
 	}
@@ -6727,6 +6741,11 @@ static int zend_fetch_var_address_helper_SPEC_VAR(int type, ZEND_OPCODE_HANDLER_
 			case ZEND_FETCH_STATIC:
 				zval_update_constant(retval, (void*) 1 TSRMLS_CC);
 				break;
+			case ZEND_FETCH_GLOBAL_LOCK:
+				if (IS_VAR == IS_VAR && !free_op1.var) {
+					PZVAL_LOCK(*EX_T(opline->op1.u.var).var.ptr_ptr);
+				}
+				break;
 		}
 	}
 
@@ -7057,7 +7076,8 @@ static int ZEND_SEND_VAR_NO_REF_SPEC_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 	if ((!(opline->extended_value & ZEND_ARG_SEND_FUNCTION) ||
 	     EX_T(opline->op1.u.var).var.fcall_returned_reference) &&
 	    varptr != &EG(uninitialized_zval) && 
-	    (PZVAL_IS_REF(varptr) || varptr->refcount == 1)) {
+	    (PZVAL_IS_REF(varptr) || 
+	     (varptr->refcount == 1 && (IS_VAR == IS_CV || free_op1.var)))) {
 		varptr->is_ref = 1;
 		varptr->refcount++;
 		zend_ptr_stack_push(&EG(argument_stack), varptr);
@@ -18777,7 +18797,7 @@ static int ZEND_PRINT_SPEC_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 static int zend_fetch_var_address_helper_SPEC_CV(int type, ZEND_OPCODE_HANDLER_ARGS)
 {
 	zend_op *opline = EX(opline);
-	
+	zend_free_op free_op1;
 	zval *varname = _get_zval_ptr_cv(&opline->op1, EX(Ts), BP_VAR_R TSRMLS_CC);
 	zval **retval;
 	zval tmp_varname;
@@ -18828,6 +18848,11 @@ static int zend_fetch_var_address_helper_SPEC_CV(int type, ZEND_OPCODE_HANDLER_A
 				break;
 			case ZEND_FETCH_STATIC:
 				zval_update_constant(retval, (void*) 1 TSRMLS_CC);
+				break;
+			case ZEND_FETCH_GLOBAL_LOCK:
+				if (IS_CV == IS_VAR && !free_op1.var) {
+					PZVAL_LOCK(*EX_T(opline->op1.u.var).var.ptr_ptr);
+				}
 				break;
 		}
 	}
@@ -19139,7 +19164,7 @@ static int zend_send_by_var_helper_SPEC_CV(ZEND_OPCODE_HANDLER_ARGS)
 static int ZEND_SEND_VAR_NO_REF_SPEC_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 {
 	zend_op *opline = EX(opline);
-	
+	zend_free_op free_op1;
 	zval *varptr;
 
 	if (opline->extended_value & ZEND_ARG_COMPILE_TIME_BOUND) { /* Had function_ptr at compile_time */
@@ -19154,7 +19179,8 @@ static int ZEND_SEND_VAR_NO_REF_SPEC_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 	if ((!(opline->extended_value & ZEND_ARG_SEND_FUNCTION) ||
 	     EX_T(opline->op1.u.var).var.fcall_returned_reference) &&
 	    varptr != &EG(uninitialized_zval) && 
-	    (PZVAL_IS_REF(varptr) || varptr->refcount == 1)) {
+	    (PZVAL_IS_REF(varptr) || 
+	     (varptr->refcount == 1 && (IS_CV == IS_CV || free_op1.var)))) {
 		varptr->is_ref = 1;
 		varptr->refcount++;
 		zend_ptr_stack_push(&EG(argument_stack), varptr);

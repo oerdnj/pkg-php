@@ -2,12 +2,12 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2005 The PHP Group                                |
+  | Copyright (c) 1997-2006 The PHP Group                                |
   +----------------------------------------------------------------------+
-  | This source file is subject to version 3.0 of the PHP license,       |
+  | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
   | available through the world-wide-web at the following url:           |
-  | http://www.php.net/license/3_0.txt.                                  |
+  | http://www.php.net/license/3_01.txt                                  |
   | If you did not receive a copy of the PHP license and are unable to   |
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_sdl.c,v 1.88.2.2 2005/11/18 11:00:15 dmitry Exp $ */
+/* $Id: php_sdl.c,v 1.88.2.5 2006/01/01 12:50:13 sniper Exp $ */
 
 #include "php_soap.h"
 #include "ext/libxml/php_libxml.h"
@@ -410,10 +410,10 @@ static sdlSoapBindingFunctionHeaderPtr wsdl_soap_binding_header(sdlCtx* ctx, xml
 				if (!h->ns && h->element->namens) {
 					h->ns = estrdup(h->element->namens);
 				}
-			}
-			if (h->element->name) {
-				efree(h->name);
-				h->name = estrdup(h->element->name);
+				if (h->element->name) {
+					efree(h->name);
+					h->name = estrdup(h->element->name);
+				}
 			}
 		}
 	}
@@ -1289,6 +1289,40 @@ static void sdl_deserialize_encoder(encodePtr enc, sdlTypePtr *types, char **in)
 	enc->details.sdl_type = types[i];
 	enc->to_xml = sdl_guess_convert_xml;
 	enc->to_zval = sdl_guess_convert_zval;
+
+	if (enc->details.sdl_type == NULL) {
+		int ns_len = strlen(enc->details.ns);
+		int type_len = strlen(enc->details.type_str);
+
+		if (((ns_len == sizeof(SOAP_1_1_ENC_NAMESPACE)-1 &&
+		      memcmp(enc->details.ns, SOAP_1_1_ENC_NAMESPACE, sizeof(SOAP_1_1_ENC_NAMESPACE)-1) == 0) ||
+		     (ns_len == sizeof(SOAP_1_2_ENC_NAMESPACE)-1 &&
+		      memcmp(enc->details.ns, SOAP_1_2_ENC_NAMESPACE, sizeof(SOAP_1_2_ENC_NAMESPACE)-1) == 0))) {
+			char *enc_nscat;
+			int enc_ns_len;
+			int enc_len;
+			encodePtr real_enc;
+
+			enc_ns_len = sizeof(XSD_NAMESPACE)-1;
+			enc_len = enc_ns_len + type_len + 1;
+			enc_nscat = emalloc(enc_len + 1);
+			memcpy(enc_nscat, XSD_NAMESPACE, sizeof(XSD_NAMESPACE)-1);
+			enc_nscat[enc_ns_len] = ':';
+			memcpy(enc_nscat+enc_ns_len+1, enc->details.type_str, type_len);
+			enc_nscat[enc_len] = '\0';
+
+			real_enc = get_encoder_ex(NULL, enc_nscat, enc_len);
+			efree(enc_nscat);
+			if (real_enc) {
+				enc->to_zval = real_enc->to_zval;
+				enc->to_xml = real_enc->to_xml;
+				enc->to_zval_before = real_enc->to_zval_before;
+				enc->to_xml_before = real_enc->to_xml_before;
+				enc->to_zval_after = real_enc->to_zval_after;
+				enc->to_xml_after = real_enc->to_xml_after;
+			}
+		}
+	}	
 }
 
 static void sdl_deserialize_soap_body(sdlSoapBindingFunctionBodyPtr body, encodePtr *encoders, sdlTypePtr *types, char **in)

@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: unixtime2tm.c,v 1.12 2005/08/03 14:06:50 sniper Exp $ */
+/* $Id: unixtime2tm.c,v 1.12.2.4 2006/01/04 21:31:34 derick Exp $ */
 
 #include "timelib.h"
 
@@ -93,6 +93,9 @@ void timelib_unixtime2gmt(timelib_time* tm, timelib_sll ts)
 	DEBUG(printf("tmp_days=%lld, year=%lld\n", tmp_days, cur_year););
 
 	months = timelib_is_leap(cur_year) ? month_tab_leap : month_tab;
+	if (timelib_is_leap(cur_year) && cur_year < 1970) {
+		tmp_days--;
+	}
 	i = 11;
 	while (i > 0) {
 		DEBUG(printf("month=%lld (%d)\n", i, months[i]););
@@ -121,7 +124,6 @@ void timelib_unixtime2gmt(timelib_time* tm, timelib_sll ts)
 	tm->sse_uptodate = 1;
 	tm->tim_uptodate = 1;
 	tm->is_localtime = 0;
-	tm->have_zone = 0;
 }
 
 void timelib_update_from_sse(timelib_time *tm)
@@ -138,8 +140,6 @@ void timelib_update_from_sse(timelib_time *tm)
 			
 			timelib_unixtime2gmt(tm, tm->sse - (tm->z * 60));
 
-			tm->is_localtime = 1;
-			tm->have_zone = 1;
 			tm->z = z;
 			tm->dst = dst;
 			goto cleanup;
@@ -165,25 +165,46 @@ cleanup:
 	tm->have_zone = 1;
 }
 
-void timelib_unixtime2local(timelib_time *tm, timelib_sll ts, timelib_tzinfo* tz)
+void timelib_unixtime2local(timelib_time *tm, timelib_sll ts)
 {
 	timelib_time_offset *gmt_offset;
+	timelib_tzinfo      *tz = tm->tz_info;
 
-	gmt_offset = timelib_get_time_zone_info(ts, tz);
-	timelib_unixtime2gmt(tm, ts + gmt_offset->offset);
+	switch (tm->zone_type) {
+		case TIMELIB_ZONETYPE_ABBR:
+		case TIMELIB_ZONETYPE_OFFSET: {
+			int z = tm->z;
+			signed int dst = tm->dst;
+			
+			timelib_unixtime2gmt(tm, ts - (tm->z * 60));
 
-	/* we need to reset the sse here as unixtime2gmt modifies it */
-	tm->sse = ts; 
-	tm->dst = gmt_offset->is_dst;
-	tm->z = gmt_offset->offset;
-	tm->tz_info = tz;
+			tm->z = z;
+			tm->dst = dst;
+			break;
+		}
 
-	timelib_time_tz_abbr_update(tm, gmt_offset->abbr);
-	timelib_time_offset_dtor(gmt_offset);
+		case TIMELIB_ZONETYPE_ID:
+			gmt_offset = timelib_get_time_zone_info(ts, tz);
+			timelib_unixtime2gmt(tm, ts + gmt_offset->offset);
+
+			/* we need to reset the sse here as unixtime2gmt modifies it */
+			tm->sse = ts; 
+			tm->dst = gmt_offset->is_dst;
+			tm->z = gmt_offset->offset;
+			tm->tz_info = tz;
+
+			timelib_time_tz_abbr_update(tm, gmt_offset->abbr);
+			timelib_time_offset_dtor(gmt_offset);
+			break;
+
+		default:
+			tm->is_localtime = 0;
+			tm->have_zone = 0;
+			return;
+	}
 
 	tm->is_localtime = 1;
 	tm->have_zone = 1;
-	tm->zone_type = TIMELIB_ZONETYPE_ID;
 }
 
 void timelib_set_timezone(timelib_time *t, timelib_tzinfo *tz)
@@ -225,7 +246,7 @@ int timelib_apply_localtime(timelib_time *t, unsigned int localtime)
 			return -1;
 		}
 
-		timelib_unixtime2local(t, t->sse, t->tz_info);
+		timelib_unixtime2local(t, t->sse);
 	} else {
 		/* Converting from local time to GMT time */
 		DEBUG(printf("Converting from local time to GMT time\n"););

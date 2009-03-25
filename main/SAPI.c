@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: SAPI.c,v 1.202.2.4 2005/11/06 22:08:30 sniper Exp $ */
+/* $Id: SAPI.c,v 1.202.2.7 2006/01/01 12:50:17 sniper Exp $ */
 
 #include <ctype.h>
 #include <sys/stat.h>
@@ -566,6 +566,19 @@ SAPI_API int sapi_header_op(sapi_header_op_enum op, void *arg TSRMLS_DC)
 	while(isspace(header_line[header_line_len-1])) 
 		  header_line[--header_line_len]='\0';
 	
+	/* new line safety check */
+	{
+		char *s = header_line, *e = header_line + header_line_len, *p;
+		while (s < e && (p = memchr(s, '\n', (e - s)))) {
+			if (*(p + 1) == ' ' || *(p + 1) == '\t') {
+				s = p + 1;
+				continue;
+			}
+			efree(header_line);
+			sapi_module.sapi_error(E_WARNING, "Header may not contain more than a single header, new line detected.");
+			return FAILURE;
+		}
+	}
 
 	sapi_header.header = header_line;
 	sapi_header.header_len = header_line_len;

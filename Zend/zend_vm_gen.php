@@ -3,7 +3,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    | Authors: Dmitry Stogov <dmitry@zend.com>                             |
    +----------------------------------------------------------------------+
 
-	 $Id: zend_vm_gen.php,v 1.12.2.2 2005/11/26 06:22:14 rasmus Exp $
+	 $Id: zend_vm_gen.php,v 1.12.2.4 2006/01/04 23:53:05 andi Exp $
 */
 
 $header_text = <<< DATA
@@ -24,7 +24,7 @@ $header_text = <<< DATA
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -1077,7 +1077,7 @@ function gen_vm($def, $skel) {
 		fputs($f,"#define $op $code\n");
 	}
 	fclose($f);
-	echo "zend_vm_opcodes.h generated succesfully.\n";
+	echo "zend_vm_opcodes.h generated successfully.\n";
 
 	// Generate zend_vm_execute.h
 	$f = fopen("zend_vm_execute.h", "w+") or die("ERROR: Cannot create zend_vm_execute.h\n");
@@ -1217,7 +1217,7 @@ function gen_vm($def, $skel) {
 	}
 
 	fclose($f);
-	echo "zend_vm_execute.h generated succesfully.\n";
+	echo "zend_vm_execute.h generated successfully.\n";
 }
 
 function usage() {

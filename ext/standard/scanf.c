@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: scanf.c,v 1.31 2005/08/03 14:08:12 sniper Exp $ */
+/* $Id: scanf.c,v 1.31.2.2 2006/01/01 12:50:15 sniper Exp $ */
 
 /*
    scanf.c --
@@ -126,7 +126,7 @@ typedef struct CharSet {
 static char *BuildCharSet(CharSet *cset, char *format);
 static int	CharInSet(CharSet *cset, int ch);
 static void	ReleaseCharSet(CharSet *cset);
-static inline void scan_set_error_return(int numVars, pval **return_value);
+static inline void scan_set_error_return(int numVars, zval **return_value);
 
 
 /* {{{ BuildCharSet
@@ -594,7 +594,7 @@ error:
 
 PHPAPI int php_sscanf_internal(	char *string, char *format,
 				int argCount, zval ***args,
-				int varStart, pval **return_value TSRMLS_DC)
+				int varStart, zval **return_value TSRMLS_DC)
 {
 	int  numVars, nconversions, totalVars = -1;
 	int  i, value, result;
@@ -1238,13 +1238,13 @@ done:
 /* }}} */
 
 /* the compiler choked when i tried to make this a macro    */
-static inline void scan_set_error_return(int numVars, pval **return_value)
+static inline void scan_set_error_return(int numVars, zval **return_value)
 {
 	if (numVars) {
 		Z_TYPE_PP(return_value) = IS_LONG;
 		Z_LVAL_PP(return_value) = SCAN_ERROR_EOF;  /* EOF marker */
 	} else {	
-	  /* pval_destructor( *return_value ); */ 
+	  /* zval_dtor( *return_value ); */ 
 	  /* convert_to_null calls destructor */
    		convert_to_null( *return_value );
 	}	

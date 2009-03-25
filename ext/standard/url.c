@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -15,7 +15,7 @@
    | Author: Jim Winstead <jimw@php.net>                                  |
    +----------------------------------------------------------------------+
  */
-/* $Id: url.c,v 1.86.2.1 2005/08/16 14:20:41 iliaa Exp $ */
+/* $Id: url.c,v 1.86.2.3 2006/01/01 12:50:15 sniper Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -328,15 +328,16 @@ end:
 }
 /* }}} */
 
-/* {{{ proto array parse_url(string url)
+/* {{{ proto mixed parse_url(string url, [int url_component])
    Parse a URL and return its components */
 PHP_FUNCTION(parse_url)
 {
 	char *str;
 	int str_len;
 	php_url *resource;
+	long key = -1;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &str, &str_len) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l", &str, &str_len, &key) == FAILURE) {
 		return;
 	}
 
@@ -344,6 +345,39 @@ PHP_FUNCTION(parse_url)
 	if (resource == NULL) {
 		php_error_docref1(NULL TSRMLS_CC, str, E_WARNING, "Unable to parse url");
 		RETURN_FALSE;
+	}
+
+	if (key > -1) {
+		switch (key) {
+			case PHP_URL_SCHEME:
+				if (resource->scheme != NULL) RETVAL_STRING(resource->scheme, 1);
+				break;
+			case PHP_URL_HOST:
+				if (resource->host != NULL) RETVAL_STRING(resource->host, 1);
+				break;
+			case PHP_URL_PORT:
+				if (resource->port != 0) RETVAL_LONG(resource->port);
+				break;
+			case PHP_URL_USER:
+				if (resource->user != NULL) RETVAL_STRING(resource->user, 1);
+				break;
+			case PHP_URL_PASS:
+				if (resource->pass != NULL) RETVAL_STRING(resource->pass, 1);
+				break;
+			case PHP_URL_PATH:
+				if (resource->path != NULL) RETVAL_STRING(resource->path, 1);
+				break;
+			case PHP_URL_QUERY:
+				if (resource->query != NULL) RETVAL_STRING(resource->query, 1);
+				break;
+			case PHP_URL_FRAGMENT:
+				if (resource->fragment != NULL) RETVAL_STRING(resource->fragment, 1);
+				break;
+			default:
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid url component identifier %ld.", key);
+				RETVAL_FALSE;
+		}
+		goto done;
 	}
 
 	/* allocate an array for return */
@@ -366,8 +400,8 @@ PHP_FUNCTION(parse_url)
 		add_assoc_string(return_value, "query", resource->query, 1);
 	if (resource->fragment != NULL)
 		add_assoc_string(return_value, "fragment", resource->fragment, 1);
-	
-    php_url_free(resource);
+done:	
+	php_url_free(resource);
 }
 /* }}} */
 

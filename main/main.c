@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: main.c,v 1.640.2.8 2005/11/25 00:02:11 iliaa Exp $ */
+/* $Id: main.c,v 1.640.2.13 2006/01/01 12:50:17 sniper Exp $ */
 
 /* {{{ includes
  */
@@ -433,6 +433,7 @@ PHPAPI void php_verror(const char *docref, const char *params, int type, const c
 	char *space;
 	char *class_name = get_active_class_name(&space TSRMLS_CC);
 	char *function;
+	int origin_len;
 	char *origin;
 	char *message;
 	int is_function = 0;
@@ -490,9 +491,16 @@ PHPAPI void php_verror(const char *docref, const char *params, int type, const c
 
 	/* if we still have memory then format the origin */
 	if (is_function) {
-		spprintf(&origin, 0, "%s%s%s(%s)", class_name, space, function, params);	
+		origin_len = spprintf(&origin, 0, "%s%s%s(%s)", class_name, space, function, params);	
 	} else {
-		spprintf(&origin, 0, "%s", function);	
+		origin_len = spprintf(&origin, 0, "%s", function);	
+	}
+
+	if (PG(html_errors)) {
+		int len;
+		char *replace = php_escape_html_entities(origin, origin_len, &len, 0, ENT_COMPAT, NULL TSRMLS_CC);
+		efree(origin);
+		origin = replace;
 	}
 
 	/* origin and buffer available, so lets come up with the error message */
@@ -566,7 +574,7 @@ PHPAPI void php_verror(const char *docref, const char *params, int type, const c
 		zval *tmp;
 		ALLOC_INIT_ZVAL(tmp);
 		ZVAL_STRINGL(tmp, buffer, buffer_len, 1);
-		zend_hash_update(EG(active_symbol_table), "php_errormsg", sizeof("php_errormsg"), (void **) &tmp, sizeof(pval *), NULL);
+		zend_hash_update(EG(active_symbol_table), "php_errormsg", sizeof("php_errormsg"), (void **) &tmp, sizeof(zval *), NULL);
 	}
 	efree(buffer);
 }
@@ -738,9 +746,8 @@ static void php_error_cb(int type, const char *error_filename, const uint error_
 
 		if (!module_initialized || PG(log_errors)) {
 			char *log_buffer;
-
 #ifdef PHP_WIN32
-			if (type==E_CORE_ERROR || type==E_CORE_WARNING) {
+			if ((type == E_CORE_ERROR || type == E_CORE_WARNING) && PG(display_startup_errors)) {
 				MessageBox(NULL, buffer, error_type_str, MB_OK|ZEND_SERVICE_MB_STYLE);
 			}
 #endif
@@ -761,10 +768,19 @@ static void php_error_cb(int type, const char *error_filename, const uint error_
 			} else {
 				char *prepend_string = INI_STR("error_prepend_string");
 				char *append_string = INI_STR("error_append_string");
-				char *error_format = PG(html_errors) ?
-					"%s<br />\n<b>%s</b>:  %s in <b>%s</b> on line <b>%d</b><br />\n%s"
-					: "%s\n%s: %s in %s on line %d\n%s";    
-				php_printf(error_format, STR_PRINT(prepend_string), error_type_str, buffer, error_filename, error_lineno, STR_PRINT(append_string));
+
+				if (PG(html_errors)) {
+					if (type == E_ERROR) {
+						int len;
+						char *buf = php_escape_html_entities(buffer, buffer_len, &len, 0, ENT_COMPAT, NULL TSRMLS_CC);
+						php_printf("%s<br />\n<b>%s</b>:  %s in <b>%s</b> on line <b>%d</b><br />\n%s", STR_PRINT(prepend_string), error_type_str, buf, error_filename, error_lineno, STR_PRINT(append_string));
+						efree(buf);
+					} else {
+						php_printf("%s<br />\n<b>%s</b>:  %s in <b>%s</b> on line <b>%d</b><br />\n%s", STR_PRINT(prepend_string), error_type_str, buffer, error_filename, error_lineno, STR_PRINT(append_string));
+					}
+				} else {
+					php_printf("%s\n%s: %s in %s on line %d\n%s", STR_PRINT(prepend_string), error_type_str, buffer, error_filename, error_lineno, STR_PRINT(append_string));
+				}
 			}
 		}
 #if ZEND_DEBUG
@@ -818,14 +834,14 @@ static void php_error_cb(int type, const char *error_filename, const uint error_
 		return;
 	}
 	if (PG(track_errors) && module_initialized && EG(active_symbol_table)) {
-		pval *tmp;
+		zval *tmp;
 
 		ALLOC_ZVAL(tmp);
 		INIT_PZVAL(tmp);
 		Z_STRVAL_P(tmp) = (char *) estrndup(buffer, buffer_len);
 		Z_STRLEN_P(tmp) = buffer_len;
 		Z_TYPE_P(tmp) = IS_STRING;
-		zend_hash_update(EG(active_symbol_table), "php_errormsg", sizeof("php_errormsg"), (void **) & tmp, sizeof(pval *), NULL);
+		zend_hash_update(EG(active_symbol_table), "php_errormsg", sizeof("php_errormsg"), (void **) & tmp, sizeof(zval *), NULL);
 	}
 	efree(buffer);
 }

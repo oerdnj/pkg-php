@@ -2,21 +2,23 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2005 The PHP Group                                |
+  | Copyright (c) 1997-2006 The PHP Group                                |
   +----------------------------------------------------------------------+
-  | This source file is subject to version 3.0 of the PHP license,       |
+  | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
   | available through the world-wide-web at the following url:           |
-  | http://www.php.net/license/3_0.txt.                                  |
+  | http://www.php.net/license/3_01.txt                                  |
   | If you did not receive a copy of the PHP license and are unable to   |
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
   +----------------------------------------------------------------------+
-  | Author: Edin Kadribasic <edink@emini.dk>                             |
+  | Authors: Edin Kadribasic <edink@emini.dk>                            |
+  |          Ilia Alshanestsky <ilia@prohost.org>                        |
+  |          Wez Furlong <wez@php.net>                                   |
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pgsql_statement.c,v 1.31.2.4 2005/11/25 03:35:04 wez Exp $ */
+/* $Id: pgsql_statement.c,v 1.31.2.10 2006/01/01 12:50:12 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -29,6 +31,9 @@
 #include "pdo/php_pdo_driver.h"
 #include "php_pdo_pgsql.h"
 #include "php_pdo_pgsql_int.h"
+#if HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
 
 /* from postgresql/src/include/catalog/pg_type.h */
 #define BOOLOID     16
@@ -38,7 +43,6 @@
 #define INT4OID     23
 #define TEXTOID     25
 #define OIDOID      26
-
 
 static int pgsql_stmt_dtor(pdo_stmt_t *stmt TSRMLS_DC)
 {
@@ -75,7 +79,14 @@ static int pgsql_stmt_dtor(pdo_stmt_t *stmt TSRMLS_DC)
 		efree(S->param_formats);
 		S->param_formats = NULL;
 	}
-
+	if (S->param_types) {
+		efree(S->param_types);
+		S->param_types = NULL;
+	}
+	if (S->query) {
+		efree(S->query);
+		S->query = NULL;
+	}
 #endif
 
 	if (S->cursor_name) {
@@ -118,7 +129,8 @@ static int pgsql_stmt_execute(pdo_stmt_t *stmt TSRMLS_DC)
 	if (S->stmt_name) {
 		/* using a prepared statement */
 
-		if (!stmt->executed) {
+		if (!S->is_prepared) {
+stmt_retry:
 			/* we deferred the prepare until now, because we didn't
 			 * know anything about the parameter types; now we do */
 			S->result = PQprepare(H->server, S->stmt_name, S->query, 
@@ -129,12 +141,31 @@ static int pgsql_stmt_execute(pdo_stmt_t *stmt TSRMLS_DC)
 				case PGRES_COMMAND_OK:
 				case PGRES_TUPLES_OK:
 					/* it worked */
+					S->is_prepared = 1;
 					PQclear(S->result);
 					break;
-				default:
-					pdo_pgsql_error_stmt(stmt, status,
-							pdo_pgsql_sqlstate(S->result));
-					return 0;
+				default: {
+					char *sqlstate = pdo_pgsql_sqlstate(S->result);
+					/* 42P05 means that the prepared statement already existed. this can happen if you use 
+					 * a connection pooling software line pgpool which doesn't close the db-connection once 
+					 * php disconnects. if php dies (no chanche to run RSHUTDOWN) during execution it has no 
+					 * chance to DEALLOCATE the prepared statements it has created. so, if we hit a 42P05 we 
+					 * deallocate it and retry ONCE (thies 2005.12.15)
+					 */
+					if (!strcmp(sqlstate, "42P05")) {
+						char buf[100]; /* stmt_name == "pdo_pgsql_cursor_%08x" */
+						PGresult *res;
+						snprintf(buf, sizeof(buf), "DEALLOCATE %s", S->stmt_name);
+						res = PQexec(H->server, buf);
+						if (res) {
+							PQclear(res);
+						}
+						goto stmt_retry;
+					} else {
+						pdo_pgsql_error_stmt(stmt, status, sqlstate);
+						return 0;
+					}
+				}
 			}
 		}
 		S->result = PQexecPrepared(H->server, S->stmt_name,
@@ -184,6 +215,12 @@ static int pgsql_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_data *
 #if HAVE_PQPREPARE
 	if (S->stmt_name && param->is_param) {
 		switch (event_type) {
+			case PDO_PARAM_EVT_FREE:
+				if (param->driver_data) {
+					efree(param->driver_data);
+				}
+				break;
+
 			case PDO_PARAM_EVT_ALLOC:
 				/* decode name from $1, $2 into 0, 1 etc. */
 				if (param->name) {
@@ -224,10 +261,26 @@ static int pgsql_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_data *
 						php_stream *stm;
 						php_stream_from_zval_no_verify(stm, &param->parameter);
 						if (stm) {
-							SEPARATE_ZVAL_IF_NOT_REF(&param->parameter);
-							Z_TYPE_P(param->parameter) = IS_STRING;
-							Z_STRLEN_P(param->parameter) = php_stream_copy_to_mem(stm,
-									&Z_STRVAL_P(param->parameter), PHP_STREAM_COPY_ALL, 0);
+							if (php_stream_is(stm, &pdo_pgsql_lob_stream_ops)) {
+								struct pdo_pgsql_lob_self *self = (struct pdo_pgsql_lob_self*)stm->abstract;
+								pdo_pgsql_bound_param *P = param->driver_data;
+
+								if (P == NULL) {
+									P = ecalloc(1, sizeof(*P));
+									param->driver_data = P;
+								}
+								P->oid = htonl(self->oid);
+								S->param_values[param->paramno] = (char*)&P->oid;
+								S->param_lengths[param->paramno] = sizeof(P->oid);
+								S->param_formats[param->paramno] = 1;
+								S->param_types[param->paramno] = OIDOID;
+								return 1;
+							} else {
+								SEPARATE_ZVAL_IF_NOT_REF(&param->parameter);
+								Z_TYPE_P(param->parameter) = IS_STRING;
+								Z_STRLEN_P(param->parameter) = php_stream_copy_to_mem(stm,
+										&Z_STRVAL_P(param->parameter), PHP_STREAM_COPY_ALL, 0);
+							}
 						} else {
 							/* expected a stream resource */
 							pdo_pgsql_error_stmt(stmt, PGRES_FATAL_ERROR, "HY105");
@@ -308,6 +361,7 @@ static int pgsql_stmt_describe(pdo_stmt_t *stmt, int colno TSRMLS_DC)
 {
 	pdo_pgsql_stmt *S = (pdo_pgsql_stmt*)stmt->driver_data;
 	struct pdo_column_data *cols = stmt->columns;
+	struct pdo_bound_param_data *param;
 	
 	if (!S->result) {
 		return 0;
@@ -324,10 +378,25 @@ static int pgsql_stmt_describe(pdo_stmt_t *stmt, int colno TSRMLS_DC)
 		case BOOLOID:
 			cols[colno].param_type = PDO_PARAM_BOOL;
 			break;
+	
+		case OIDOID:
+			/* did the user bind the column as a LOB ? */
+			if (stmt->bound_columns && (
+					SUCCESS == zend_hash_index_find(stmt->bound_columns,
+						colno, (void**)&param) ||
+					SUCCESS == zend_hash_find(stmt->bound_columns,
+						cols[colno].name, cols[colno].namelen,
+						(void**)&param))) {
+				if (PDO_PARAM_TYPE(param->param_type) == PDO_PARAM_LOB) {
+					cols[colno].param_type = PDO_PARAM_LOB;
+					break;
+				}
+			}
+			cols[colno].param_type = PDO_PARAM_INT;
+			break;
 
 		case INT2OID:
 		case INT4OID:
-		case OIDOID:
 			cols[colno].param_type = PDO_PARAM_INT;
 			break;
 
@@ -487,9 +556,24 @@ static int pgsql_stmt_get_col(pdo_stmt_t *stmt, int colno, char **ptr, unsigned 
 				break;
 				
 			case PDO_PARAM_LOB:
-				*ptr = php_pdo_pgsql_unescape_bytea(*ptr, &tmp_len);
-				*len = tmp_len;
-				*caller_frees = 1;
+				if (S->cols[colno].pgsql_type == OIDOID) {
+					/* ooo, a real large object */
+					char *end_ptr;
+					Oid oid = (Oid)strtoul(*ptr, &end_ptr, 10);
+					int loid = lo_open(S->H->server, oid, INV_READ);
+					if (loid >= 0) {
+						*ptr = (char*)pdo_pgsql_create_lob_stream(stmt->dbh, loid, oid TSRMLS_CC);
+						*len = 0;
+						return *ptr ? 1 : 0;
+					}
+					*ptr = NULL;
+					*len = 0;
+					return 0;
+				} else {
+					*ptr = php_pdo_pgsql_unescape_bytea(*ptr, &tmp_len);
+					*len = tmp_len;
+					*caller_frees = 1;
+				}
 				break;
 			case PDO_PARAM_NULL:
 			case PDO_PARAM_STR:

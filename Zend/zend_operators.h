@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_operators.h,v 1.94.2.2 2005/11/17 19:21:32 tony2001 Exp $ */
+/* $Id: zend_operators.h,v 1.94.2.4 2006/01/04 23:53:04 andi Exp $ */
 
 #ifndef ZEND_OPERATORS_H
 #define ZEND_OPERATORS_H
@@ -249,6 +249,7 @@ END_EXTERN_C()
 #define Z_STRVAL(zval)			(zval).value.str.val
 #define Z_STRLEN(zval)			(zval).value.str.len
 #define Z_ARRVAL(zval)			(zval).value.ht
+#define Z_OBJVAL(zval)			(zval).value.obj
 #define Z_OBJ_HANDLE(zval)		(zval).value.obj.handle
 #define Z_OBJ_HT(zval)			(zval).value.obj.handlers
 #define Z_OBJCE(zval)			zend_get_class_entry(&(zval) TSRMLS_CC)
@@ -265,6 +266,7 @@ END_EXTERN_C()
 #define Z_OBJPROP_P(zval_p)		Z_OBJPROP(*zval_p)
 #define Z_OBJCE_P(zval_p)		Z_OBJCE(*zval_p)
 #define Z_RESVAL_P(zval_p)		Z_RESVAL(*zval_p)
+#define Z_OBJVAL_P(zval_p)      Z_OBJVAL(*zval_p)
 #define Z_OBJ_HANDLE_P(zval_p)  Z_OBJ_HANDLE(*zval_p)
 #define Z_OBJ_HT_P(zval_p)      Z_OBJ_HT(*zval_p)
 #define Z_OBJ_HANDLER_P(zval_p, h) Z_OBJ_HANDLER(*zval_p, h) 
@@ -278,6 +280,7 @@ END_EXTERN_C()
 #define Z_OBJPROP_PP(zval_pp)	Z_OBJPROP(**zval_pp)
 #define Z_OBJCE_PP(zval_pp)		Z_OBJCE(**zval_pp)
 #define Z_RESVAL_PP(zval_pp)	Z_RESVAL(**zval_pp)
+#define Z_OBJVAL_PP(zval_pp)    Z_OBJVAL(**zval_pp)
 #define Z_OBJ_HANDLE_PP(zval_p) Z_OBJ_HANDLE(**zval_p)
 #define Z_OBJ_HT_PP(zval_p)     Z_OBJ_HT(**zval_p)
 #define Z_OBJ_HANDLER_PP(zval_p, h) Z_OBJ_HANDLER(**zval_p, h) 

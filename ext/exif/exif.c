@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: exif.c,v 1.173.2.2 2005/10/10 06:09:25 helly Exp $ */
+/* $Id: exif.c,v 1.173.2.4 2006/01/01 12:50:06 sniper Exp $ */
 
 /*  ToDos
  *
@@ -105,7 +105,7 @@ ZEND_END_ARG_INFO();
 
 /* {{{ exif_functions[]
  */
-function_entry exif_functions[] = {
+zend_function_entry exif_functions[] = {
 	PHP_FE(exif_read_data, NULL)
 	PHP_FALIAS(read_exif_data, exif_read_data, NULL)
 	PHP_FE(exif_tagname, NULL)
@@ -115,7 +115,7 @@ function_entry exif_functions[] = {
 };
 /* }}} */
 
-#define EXIF_VERSION "1.4 $Id: exif.c,v 1.173.2.2 2005/10/10 06:09:25 helly Exp $"
+#define EXIF_VERSION "1.4 $Id: exif.c,v 1.173.2.4 2006/01/01 12:50:06 sniper Exp $"
 
 /* {{{ PHP_MINFO_FUNCTION
  */
@@ -1843,7 +1843,7 @@ static void exif_iif_free(image_info_type *image_info, int section_index) {
 
 /* {{{ add_assoc_image_info
  * Add image_info to associative array value. */
-static void add_assoc_image_info(pval *value, int sub_array, image_info_type *image_info, int section_index TSRMLS_DC)
+static void add_assoc_image_info(zval *value, int sub_array, image_info_type *image_info, int section_index TSRMLS_DC)
 {
 	char    buffer[64], *val, *name, uname[64];
 	int     i, ap, l, b, idx=0, unknown=0;
@@ -1852,7 +1852,7 @@ static void add_assoc_image_info(pval *value, int sub_array, image_info_type *im
 #endif
 	image_info_value *info_value;
 	image_info_data  *info_data;
-	pval 			 *tmpi, *array = NULL;
+	zval 			 *tmpi, *array = NULL;
 
 #ifdef EXIF_DEBUG
 /*		php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Adding %d infos from section %s", image_info->info_list[section_index].count, exif_get_sectionname(section_index));*/
@@ -2248,7 +2248,7 @@ static char * exif_get_markername(int marker)
 	Get headername for index or false if not defined */
 PHP_FUNCTION(exif_tagname)
 {
-	pval **p_num;
+	zval **p_num;
 	int tag, ac = ZEND_NUM_ARGS();
 	char *szTemp;
 
@@ -3780,7 +3780,7 @@ static int exif_read_file(image_info_type *ImageInfo, char *FileName, int read_t
    Reads header data from the JPEG/TIFF image filename and optionally reads the internal thumbnails */
 PHP_FUNCTION(exif_read_data)
 {
-	pval **p_name, **p_sections_needed, **p_sub_arrays, **p_read_thumbnail, **p_read_all;
+	zval **p_name, **p_sections_needed, **p_sub_arrays, **p_read_thumbnail, **p_read_all;
 	int i, ac = ZEND_NUM_ARGS(), ret, sections_needed=0, sub_arrays=0, read_thumbnail=0, read_all=0;
 	image_info_type ImageInfo;
 	char tmp[64], *sections_str, *s;

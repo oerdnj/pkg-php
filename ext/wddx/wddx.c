@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: wddx.c,v 1.119.2.5 2005/10/06 18:48:19 rrichards Exp $ */
+/* $Id: wddx.c,v 1.119.2.8 2006/01/01 12:50:16 sniper Exp $ */
 
 #include "php.h"
 
@@ -99,7 +99,7 @@ static void php_wddx_process_data(void *user_data, const XML_Char *s, int len);
 
 /* {{{ wddx_functions[]
  */
-function_entry wddx_functions[] = {
+zend_function_entry wddx_functions[] = {
 	PHP_FE(wddx_serialize_value, NULL)
 	PHP_FE(wddx_serialize_vars, NULL)
 	PHP_FE(wddx_packet_start, NULL)
@@ -1005,11 +1005,15 @@ static void php_wddx_pop_element(void *user_data, const XML_Char *name)
 				
 						switch (is_numeric_string(ent1->varname, strlen(ent1->varname), &l, &d, 0)) {
 							case IS_DOUBLE:
+								if (d > INT_MAX) {
+									goto bigint;
+								}
 								l = (long) d;
 							case IS_LONG:
 								zend_hash_index_update(target_hash, l, &ent1->data, sizeof(zval *), NULL);
 								break;
 							default:
+bigint:
 								zend_hash_update(target_hash,ent1->varname, strlen(ent1->varname)+1, &ent1->data, sizeof(zval *), NULL);
 						}
 					}

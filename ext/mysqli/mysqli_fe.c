@@ -2,12 +2,12 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2005 The PHP Group                                |
+  | Copyright (c) 1997-2006 The PHP Group                                |
   +----------------------------------------------------------------------+
-  | This source file is subject to version 3.0 of the PHP license,       |
+  | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
   | available through the world-wide-web at the following url:           |
-  | http://www.php.net/license/3_0.txt.                                  |
+  | http://www.php.net/license/3_01.txt                                  |
   | If you did not receive a copy of the PHP license and are unable to   |
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_fe.c,v 1.49.2.2 2005/10/18 10:02:36 tony2001 Exp $ 
+  $Id: mysqli_fe.c,v 1.49.2.5 2006/01/01 12:50:09 sniper Exp $ 
 */
 
 #ifdef HAVE_CONFIG_H
@@ -50,7 +50,7 @@ static
  *
  * Every user visible function must have an entry in mysqli_functions[].
  */
-function_entry mysqli_functions[] = {
+zend_function_entry mysqli_functions[] = {
 	PHP_FE(mysqli_affected_rows,						NULL)
 	PHP_FE(mysqli_autocommit,							NULL)
 	PHP_FE(mysqli_change_user,							NULL)
@@ -158,22 +158,15 @@ function_entry mysqli_functions[] = {
 	PHP_FE(mysqli_warning_count,						NULL)
 
 	/* Aliases */
-	PHP_FALIAS(mysqli_bind_param,
-				mysqli_stmt_bind_param,					third_arg_force_by_ref_rest)
-	PHP_FALIAS(mysqli_bind_result,
-				mysqli_stmt_bind_result,				second_arg_force_by_ref_rest)
-	PHP_FALIAS(mysqli_client_encoding, 
-			   mysqli_character_set_name,				NULL)
-	PHP_FALIAS(mysqli_escape_string, 
-				mysqli_real_escape_string,				NULL)
-	PHP_FALIAS(mysqli_fetch, mysqli_stmt_fetch,			NULL)
-	PHP_FALIAS(mysqli_param_count,
-				mysqli_stmt_param_count,				NULL)
-	PHP_FALIAS(mysqli_get_metadata,
-				mysqli_stmt_result_metadata,			NULL)
-	PHP_FALIAS(mysqli_send_long_data,
-				mysqli_stmt_send_long_data,				NULL)
-	PHP_FALIAS(mysqli_set_opt, 		mysqli_options, 	NULL)
+	PHP_FALIAS(mysqli_bind_param,		mysqli_stmt_bind_param,		third_arg_force_by_ref_rest)
+	PHP_FALIAS(mysqli_bind_result,		mysqli_stmt_bind_result,	second_arg_force_by_ref_rest)
+	PHP_FALIAS(mysqli_client_encoding,	mysqli_character_set_name,	NULL)
+	PHP_FALIAS(mysqli_escape_string,	mysqli_real_escape_string,	NULL)
+	PHP_FALIAS(mysqli_fetch,			mysqli_stmt_fetch,			NULL)
+	PHP_FALIAS(mysqli_param_count,		mysqli_stmt_param_count,	NULL)
+	PHP_FALIAS(mysqli_get_metadata,		mysqli_stmt_result_metadata,	NULL)
+	PHP_FALIAS(mysqli_send_long_data,	mysqli_stmt_send_long_data,	NULL)
+	PHP_FALIAS(mysqli_set_opt,			mysqli_options,				NULL)
 
 	{NULL, NULL, NULL}	/* Must be the last line in mysqli_functions[] */
 };
@@ -183,7 +176,7 @@ function_entry mysqli_functions[] = {
  *
  * Every user visible function must have an entry in mysqli_functions[].
  */
-function_entry mysqli_link_methods[] = {
+zend_function_entry mysqli_link_methods[] = {
 	PHP_FALIAS(autocommit,mysqli_autocommit,NULL)
 	PHP_FALIAS(change_user,mysqli_change_user,NULL)
 	PHP_FALIAS(character_set_name, mysqli_character_set_name,NULL)
@@ -244,7 +237,7 @@ function_entry mysqli_link_methods[] = {
  *
  * Every user visible function must have an entry in mysqli_result_functions[].
  */
-function_entry mysqli_result_methods[] = {
+zend_function_entry mysqli_result_methods[] = {
 	PHP_FALIAS(mysqli_result, mysqli_result_construct, NULL)
 	PHP_FALIAS(close,mysqli_free_result,NULL)
 	PHP_FALIAS(free,mysqli_free_result,NULL)
@@ -267,7 +260,7 @@ function_entry mysqli_result_methods[] = {
  *
  * Every user visible function must have an entry in mysqli_stmt_functions[].
  */
-function_entry mysqli_stmt_methods[] = {
+zend_function_entry mysqli_stmt_methods[] = {
 	PHP_FALIAS(mysqli_stmt, mysqli_stmt_construct, NULL)
 	PHP_FALIAS(attr_get,mysqli_stmt_attr_get,NULL)
 	PHP_FALIAS(attr_set,mysqli_stmt_attr_set,NULL)

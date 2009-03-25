@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: nsapi.c,v 1.69 2005/08/03 14:08:50 sniper Exp $ */
+/* $Id: nsapi.c,v 1.69.2.3 2006/01/01 12:50:19 sniper Exp $ */
 
 /*
  * PHP includes
@@ -174,7 +174,7 @@ ZEND_DECLARE_MODULE_GLOBALS(nsapi)
  *
  * Every user visible function must have an entry in nsapi_functions[].
  */
-function_entry nsapi_functions[] = {
+zend_function_entry nsapi_functions[] = {
 	PHP_FE(nsapi_virtual,	NULL)										/* Make subrequest */
 	PHP_FALIAS(virtual, nsapi_virtual, NULL)							/* compatibility */
 	PHP_FE(nsapi_request_headers, NULL)									/* get request headers */
@@ -310,7 +310,7 @@ PHP_MSHUTDOWN_FUNCTION(nsapi)
 PHP_MINFO_FUNCTION(nsapi)
 {
 	php_info_print_table_start();
-	php_info_print_table_row(2, "NSAPI Module Revision", "$Revision: 1.69 $");
+	php_info_print_table_row(2, "NSAPI Module Revision", "$Revision: 1.69.2.3 $");
 	php_info_print_table_row(2, "Server Software", system_version());
 	php_info_print_table_row(2, "Sub-requests with nsapi_virtual()",
 	 (nsapi_servact_service)?((zend_ini_long("zlib.output_compression", sizeof("zlib.output_compression"), 0))?"not supported with zlib.output_compression":"enabled"):"not supported on this platform" );
@@ -329,7 +329,7 @@ PHP_MINFO_FUNCTION(nsapi)
  */
 PHP_FUNCTION(nsapi_virtual)
 {
-	pval **uri;
+	zval **uri;
 	int rv;
 	char *value;
 	Request *rq;

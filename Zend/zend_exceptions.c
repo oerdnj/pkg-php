@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -19,11 +19,10 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_exceptions.c,v 1.79.2.2 2005/11/24 05:07:28 sebastian Exp $ */
+/* $Id: zend_exceptions.c,v 1.79.2.6 2006/01/04 23:53:04 andi Exp $ */
 
 #include "zend.h"
 #include "zend_API.h"
-#include "zend_reflection_api.h"
 #include "zend_builtin_functions.h"
 #include "zend_interfaces.h"
 #include "zend_exceptions.h"
@@ -132,7 +131,7 @@ ZEND_METHOD(exception, __construct)
 	int    argc = ZEND_NUM_ARGS(), message_len;
 
 	if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, argc TSRMLS_CC, "|sl", &message, &message_len, &code) == FAILURE) {
-		zend_error(E_ERROR, "Wrong parameter count for exception([string $exception [, long $code ]])");
+		zend_error(E_ERROR, "Wrong parameters for Exception([string $exception [, long $code ]])");
 	}
 
 	object = getThis();
@@ -158,7 +157,7 @@ ZEND_METHOD(error_exception, __construct)
 	int    argc = ZEND_NUM_ARGS(), message_len, filename_len;
 
 	if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, argc TSRMLS_CC, "|sllsl", &message, &message_len, &code, &severity, &filename, &filename_len, &lineno) == FAILURE) {
-		zend_error(E_ERROR, "Wrong parameter count for exception([string $exception [, long $code ]])");
+		zend_error(E_ERROR, "Wrong parameters for ErrorException([string $exception [, long $code, [ long $severity, [ string $filename, [ long $lineno ]]]]])");
 	}
 
 	object = getThis();

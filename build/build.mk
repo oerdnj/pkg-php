@@ -1,12 +1,12 @@
 #  +----------------------------------------------------------------------+
 #  | PHP Version 5                                                        |
 #  +----------------------------------------------------------------------+
-#  | Copyright (c) 1997-2005 The PHP Group                                |
+#  | Copyright (c) 1997-2006 The PHP Group                                |
 #  +----------------------------------------------------------------------+
-#  | This source file is subject to version 3.0 of the PHP license,       |
+#  | This source file is subject to version 3.01 of the PHP license,      |
 #  | that is bundled with this package in the file LICENSE, and is        |
 #  | available through the world-wide-web at the following url:           |
-#  | http://www.php.net/license/3_0.txt.                                  |
+#  | http://www.php.net/license/3_01.txt                                  |
 #  | If you did not receive a copy of the PHP license and are unable to   |
 #  | obtain it through the world-wide-web, please send a note to          |
 #  | license@php.net so we can mail you a copy immediately.               |
@@ -14,7 +14,7 @@
 #  | Author: Sascha Schumann <sascha@schumann.cx>                         |
 #  +----------------------------------------------------------------------+
 #
-# $Id: build.mk,v 1.26 2005/08/03 14:06:37 sniper Exp $ 
+# $Id: build.mk,v 1.26.2.2 2006/01/01 12:50:00 sniper Exp $ 
 #
 #
 # Makefile to generate build tools
@@ -30,7 +30,7 @@ ALWAYS = generated_lists
 
 
 all: $(STAMP) $(ALWAYS)
-	@$(MAKE) AMFLAGS=$(AMFLAGS) -s -f build/build2.mk
+	@$(MAKE) -s -f build/build2.mk
 
 generated_lists:
 	@echo makefile_am_files = $(ZENDDIR)/Makefile.am \
@@ -55,7 +55,7 @@ snapshot:
 		test -d $$i || (test -d ../$$i && cp -rp ../$$i $$i); \
 	done; \
 	find . -type l -exec rm {} \; ; \
-	$(MAKE) AMFLAGS=--copy -f build/build.mk; \
+	$(MAKE) -f build/build.mk; \
 	cd ..; \
 	tar cf $$distname.tar $$distname; \
 	rm -rf $$distname $$distname.tar.*; \

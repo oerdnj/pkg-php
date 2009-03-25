@@ -2,12 +2,12 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2005 The PHP Group                                |
+  | Copyright (c) 1997-2006 The PHP Group                                |
   +----------------------------------------------------------------------+
-  | This source file is subject to version 3.0 of the PHP license,       |
+  | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
   | available through the world-wide-web at the following url:           |
-  | http://www.php.net/license/3_0.txt.                                  |
+  | http://www.php.net/license/3_01.txt                                  |
   | If you did not receive a copy of the PHP license and are unable to   |
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysql_statement.c,v 1.48.2.7 2005/10/29 02:41:50 wez Exp $ */
+/* $Id: mysql_statement.c,v 1.48.2.10 2006/01/01 12:50:11 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -42,7 +42,7 @@ static int pdo_mysql_stmt_dtor(pdo_stmt_t *stmt TSRMLS_DC)
 		S->result = NULL;
 	}
 	if (S->einfo.errmsg) {
-		efree(S->einfo.errmsg);
+		pefree(S->einfo.errmsg, stmt->dbh->is_persistent);
 		S->einfo.errmsg = NULL;
 	}
 #if HAVE_MYSQL_STMT_PREPARE
@@ -503,11 +503,22 @@ static char *type_to_name_native(int type)
         PDO_MYSQL_NATIVE_TYPE_NAME(FLOAT)
         PDO_MYSQL_NATIVE_TYPE_NAME(DOUBLE)
         PDO_MYSQL_NATIVE_TYPE_NAME(DECIMAL)
+#ifdef FIELD_TYPE_NEWDECIMAL
+        PDO_MYSQL_NATIVE_TYPE_NAME(NEWDECIMAL)
+#endif
+#ifdef FIELD_TYPE_GEOMETRY
+        PDO_MYSQL_NATIVE_TYPE_NAME(GEOMETRY)
+#endif
         PDO_MYSQL_NATIVE_TYPE_NAME(TIMESTAMP)
 #ifdef MYSQL_HAS_YEAR
         PDO_MYSQL_NATIVE_TYPE_NAME(YEAR)
 #endif
+        PDO_MYSQL_NATIVE_TYPE_NAME(SET)
+        PDO_MYSQL_NATIVE_TYPE_NAME(ENUM)
         PDO_MYSQL_NATIVE_TYPE_NAME(DATE)
+#ifdef FIELD_TYPE_NEWDATE
+        PDO_MYSQL_NATIVE_TYPE_NAME(NEWDATE)
+#endif
         PDO_MYSQL_NATIVE_TYPE_NAME(TIME)
         PDO_MYSQL_NATIVE_TYPE_NAME(DATETIME)
         PDO_MYSQL_NATIVE_TYPE_NAME(TINY_BLOB)

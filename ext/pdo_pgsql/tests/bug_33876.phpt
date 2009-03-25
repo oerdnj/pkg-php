@@ -3,6 +3,7 @@ PDO PgSQL Bug #33876
 --SKIPIF--
 <?php
 if (!extension_loaded('pdo') || !extension_loaded('pdo_pgsql')) die('skip not loaded');
+require dirname(__FILE__) . '/config.inc';
 require dirname(__FILE__) . '/../../../ext/pdo/tests/pdo_test.inc';
 PDOTest::skip();
 ?>
@@ -12,6 +13,7 @@ require dirname(__FILE__) . '/../../../ext/pdo/tests/pdo_test.inc';
 $db = PDOTest::test_factory(dirname(__FILE__) . '/common.phpt');
 $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT);
 
+$db->exec("SET LC_MESSAGES='C'");
 $db->exec('CREATE TABLE test (foo varchar(5) NOT NULL, bar bool NOT NULL)');
 $db->exec("INSERT INTO test VALUES('false','f')");
 $db->exec("INSERT INTO test VALUES('true', 't')");

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_API.h,v 1.207.2.3 2005/10/28 14:46:29 dmitry Exp $ */
+/* $Id: zend_API.h,v 1.207.2.6 2006/01/04 23:53:03 andi Exp $ */
 
 #ifndef ZEND_API_H
 #define ZEND_API_H
@@ -146,6 +146,12 @@ typedef struct _zend_function_entry {
 #define INIT_OVERLOADED_CLASS_ENTRY(class_container, class_name, functions, handle_fcall, handle_propget, handle_propset) \
 	INIT_OVERLOADED_CLASS_ENTRY_EX(class_container, class_name, functions, handle_fcall, handle_propget, handle_propset, NULL, NULL)
 
+#ifdef ZTS
+#	define CE_STATIC_MEMBERS(ce) (((ce)->type==ZEND_USER_CLASS)?(ce)->static_members:CG(static_members)[(long)(ce)->static_members])
+#else
+#	define CE_STATIC_MEMBERS(ce) ((ce)->static_members)
+#endif
+
 int zend_next_free_module(void);
 
 BEGIN_EXTERN_C()
@@ -197,6 +203,8 @@ ZEND_API void zend_wrong_param_count(TSRMLS_D);
 #define IS_CALLABLE_CHECK_SYNTAX_ONLY (1<<0)
 #define IS_CALLABLE_CHECK_NO_ACCESS   (1<<1)
 #define IS_CALLABLE_CHECK_IS_STATIC   (1<<2)
+
+#define IS_CALLABLE_STRICT  (IS_CALLABLE_CHECK_IS_STATIC)
 
 ZEND_API zend_bool zend_is_callable_ex(zval *callable, uint check_flags, char **callable_name, int *callable_name_len, zend_class_entry **ce_ptr, zend_function **fptr_ptr, zval ***zobj_ptr_ptr TSRMLS_DC);
 ZEND_API zend_bool zend_is_callable(zval *callable, uint check_flags, char **callable_name);

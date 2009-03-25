@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: xml.c,v 1.157.2.1 2005/10/12 03:21:05 rrichards Exp $ */
+/* $Id: xml.c,v 1.157.2.3 2006/01/01 12:50:16 sniper Exp $ */
 
 #define IS_EXT_MODULE
 
@@ -111,7 +111,7 @@ static
 		ZEND_ARG_PASS_INFO(1)
 	ZEND_END_ARG_INFO();
 
-function_entry xml_functions[] = {
+zend_function_entry xml_functions[] = {
 	PHP_FE(xml_parser_create, NULL)
 	PHP_FE(xml_parser_create_ns, NULL)
 	PHP_FE(xml_set_object, second_arg_force_ref)

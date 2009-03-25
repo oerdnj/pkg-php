@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: plain_wrapper.c,v 1.52.2.2 2005/11/17 14:19:40 tony2001 Exp $ */
+/* $Id: plain_wrapper.c,v 1.52.2.4 2006/01/01 12:50:18 sniper Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -316,7 +316,7 @@ static size_t php_stdiop_read(php_stream *stream, char *buf, size_t count TSRMLS
 	if (data->fd >= 0) {
 		ret = read(data->fd, buf, count);
 		
-		stream->eof = (ret == 0 || (ret == -1 && errno != EWOULDBLOCK));
+		stream->eof = (ret == 0 || (ret == (size_t)-1 && errno != EWOULDBLOCK));
 				
 	} else {
 #if HAVE_FLUSHIO

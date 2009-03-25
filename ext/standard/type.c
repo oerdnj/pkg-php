@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: type.c,v 1.30 2005/08/03 14:08:14 sniper Exp $ */
+/* $Id: type.c,v 1.30.2.2 2006/01/01 12:50:15 sniper Exp $ */
 
 #include "php.h"
 #include "php_incomplete_class.h"
@@ -25,7 +25,7 @@
    Returns the type of the variable */
 PHP_FUNCTION(gettype)
 {
-	pval **arg;
+	zval **arg;
 
 	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &arg) == FAILURE) {
 		WRONG_PARAM_COUNT;
@@ -91,7 +91,7 @@ PHP_FUNCTION(gettype)
    Set the type of the variable */
 PHP_FUNCTION(settype)
 {
-	pval **var, **type;
+	zval **var, **type;
 	char *new_type;
 
 	if (ZEND_NUM_ARGS() != 2 || zend_get_parameters_ex(2, &var, &type) == FAILURE) {
@@ -136,7 +136,7 @@ PHP_FUNCTION(settype)
    Get the integer value of a variable using the optional base for the conversion */
 PHP_FUNCTION(intval)
 {
-	pval **num, **arg_base;
+	zval **num, **arg_base;
 	int base;
 
 	switch (ZEND_NUM_ARGS()) {
@@ -168,7 +168,7 @@ PHP_FUNCTION(intval)
    Get the float value of a variable */
 PHP_FUNCTION(floatval)
 {
-	pval **num;
+	zval **num;
 
 	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &num) == FAILURE) {
 		WRONG_PARAM_COUNT;
@@ -203,7 +203,7 @@ PHP_FUNCTION(strval)
 
 static void php_is_type(INTERNAL_FUNCTION_PARAMETERS, int type)
 {
-	pval **arg;
+	zval **arg;
 
 	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &arg) == FAILURE) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Only one argument expected");

@@ -1,4 +1,4 @@
-dnl $Id: config.m4,v 1.41 2005/06/14 01:44:16 sniper Exp $
+dnl $Id: config.m4,v 1.41.2.1 2005/11/30 04:50:03 wez Exp $
 dnl config.m4 for extension sqlite
 dnl vim:et:ts=2:sw=2
 
@@ -105,16 +105,15 @@ if test "$PHP_SQLITE" != "no"; then
         libsqlite/src/vacuum.c libsqlite/src/copy.c \
         libsqlite/src/vdbeaux.c libsqlite/src/date.c \
         libsqlite/src/where.c libsqlite/src/trigger.c"
- 
-    PHP_ADD_EXTENSION_DEP(sqlite, spl)
-    PHP_ADD_EXTENSION_DEP(sqlite, pdo)
   fi
-
   dnl
   dnl Common for both bundled/external
   dnl
   sqlite_sources="sqlite.c sess_sqlite.c pdo_sqlite2.c $sqlite_extra_sources" 
   PHP_NEW_EXTENSION(sqlite, $sqlite_sources, $ext_shared,,$PHP_SQLITE_CFLAGS)
+  PHP_ADD_EXTENSION_DEP(sqlite, spl, true)
+  PHP_ADD_EXTENSION_DEP(sqlite, pdo, true)
+
   PHP_ADD_MAKEFILE_FRAGMENT
   PHP_SUBST(SQLITE_SHARED_LIBADD)
   PHP_INSTALL_HEADERS([$ext_builddir/libsqlite/src/sqlite.h])

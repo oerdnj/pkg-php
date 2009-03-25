@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_operators.c,v 1.208.2.1 2005/09/12 11:48:56 dmitry Exp $ */
+/* $Id: zend_operators.c,v 1.208.2.3 2006/01/04 23:53:04 andi Exp $ */
 
 #include <ctype.h>
 
@@ -1783,7 +1783,7 @@ ZEND_API char *zend_str_tolower_copy(char *dest, const char *source, unsigned in
 	while (str < end) {
 		*result++ = tolower((int)*str++);
 	}
-	*result = *end;
+	*result = '\0';
 
 	return dest;
 }

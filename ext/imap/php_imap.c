@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -26,7 +26,7 @@
    | PHP 4.0 updates:  Zeev Suraski <zeev@zend.com>                       |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_imap.c,v 1.208.2.1 2005/08/30 22:03:28 iliaa Exp $ */
+/* $Id: php_imap.c,v 1.208.2.4 2006/01/05 00:47:16 iliaa Exp $ */
 
 #define IMAP41
 
@@ -79,7 +79,7 @@ void *fs_get(size_t size);
 
 /* {{{ imap_functions[]
  */
-function_entry imap_functions[] = {
+zend_function_entry imap_functions[] = {
 	PHP_FE(imap_open,								NULL)
 	PHP_FE(imap_reopen,								NULL)
 	PHP_FE(imap_close,								NULL)
@@ -2837,9 +2837,10 @@ PHP_FUNCTION(imap_mail_compose)
 	char *cookie = NIL;
 	ENVELOPE *env;
 	BODY *bod=NULL, *topbod=NULL;
-	PART *mypart=NULL, *toppart=NULL, *part;
+	PART *mypart=NULL, *part;
 	PARAMETER *param, *disp_param = NULL, *custom_headers_param = NULL, *tmp_param = NULL;
 	char tmp[8 * MAILTMPLEN], *mystring=NULL, *t=NULL, *tempstring=NULL;
+	int toppart = 0;
 
 	if (ZEND_NUM_ARGS() != 2 || zend_get_parameters_ex(2, &envelope, &body) == FAILURE) {
 		ZEND_WRONG_PARAM_COUNT();
@@ -2922,7 +2923,6 @@ PHP_FUNCTION(imap_mail_compose)
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "body parameter cannot be empty");
 		RETURN_FALSE;
 	}
-	zend_hash_get_current_key(Z_ARRVAL_PP(body), &key, &ind, 0); /* FIXME: is this necessary?  we're not using key/ind */
 
 	if (Z_TYPE_PP(data) == IS_ARRAY) {
 		bod = mail_newbody();
@@ -3022,23 +3022,28 @@ PHP_FUNCTION(imap_mail_compose)
  	zend_hash_move_forward(Z_ARRVAL_PP(body));
 
 	while (zend_hash_get_current_data(Z_ARRVAL_PP(body), (void **) &data) == SUCCESS) {
-		zend_hash_get_current_key(Z_ARRVAL_PP(body), &key, &ind, 0);  /* FIXME: Is this necessary?  We're not using key/ind */
 		if (Z_TYPE_PP(data) == IS_ARRAY) {
+			short type = -1;
+			if (zend_hash_find(Z_ARRVAL_PP(data), "type", sizeof("type"), (void **) &pvalue)== SUCCESS) {
+				convert_to_long_ex(pvalue);
+				type = (short) Z_LVAL_PP(pvalue);
+			}
+
 			if (!toppart) {
 				bod->nested.part = mail_newbody_part();
 				mypart = bod->nested.part;
-				toppart = mypart;
-				bod=&mypart->body;
+				toppart = 1;
 			} else {
-				 mypart->next = mail_newbody_part();
-				 mypart = mypart->next;
-				 bod = &mypart->body;
+				mypart->next = mail_newbody_part();
+				mypart = mypart->next;
 			}
 
-			if (zend_hash_find(Z_ARRVAL_PP(data), "type", sizeof("type"), (void **) &pvalue)== SUCCESS) {
-				convert_to_long_ex(pvalue);
-				bod->type = (short) Z_LVAL_PP(pvalue);
-			}
+			bod = &mypart->body;
+
+			if (type != TYPEMULTIPART) {
+				bod->type = type;
+			}			
+
 			if (zend_hash_find(Z_ARRVAL_PP(data), "encoding", sizeof("encoding"), (void **) &pvalue)== SUCCESS) {
 				convert_to_long_ex(pvalue);
 				bod->encoding = (short) Z_LVAL_PP(pvalue);
@@ -3127,12 +3132,6 @@ PHP_FUNCTION(imap_mail_compose)
 			}
 		}
 		zend_hash_move_forward(Z_ARRVAL_PP(body));
-	}
-
-	if (bod && bod->type == TYPEMULTIPART && (!bod->nested.part || !bod->nested.part->next)) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "cannot generate multipart e-mail without components.");
-		RETVAL_FALSE;
-		goto done;
 	}
 
 	if (bod && bod->type == TYPEMULTIPART && (!bod->nested.part || !bod->nested.part->next)) {

@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: string.c,v 1.445.2.1 2005/09/28 22:39:52 iliaa Exp $ */
+/* $Id: string.c,v 1.445.2.6 2006/01/05 20:49:37 tony2001 Exp $ */
 
 /* Synced with php 3.0 revision 1.193 1999-06-16 [ssb] */
 
@@ -485,7 +485,7 @@ PHP_FUNCTION(strcoll)
 /* {{{ php_charmask
  * Fills a 256-byte bytemask with input. You can specify a range like 'a..z',
  * it needs to be incrementing.  
- * Returns: FAILURE/SUCCESS wether the input was correct (i.e. no range errors)
+ * Returns: FAILURE/SUCCESS whether the input was correct (i.e. no range errors)
  */
 static inline int php_charmask(unsigned char *input, int len, char *mask TSRMLS_DC)
 {
@@ -3753,7 +3753,7 @@ PHP_FUNCTION(strip_tags)
    Set locale information */
 PHP_FUNCTION(setlocale)
 {
-	pval ***args = (pval ***) safe_emalloc(sizeof(pval **), ZEND_NUM_ARGS(), 0);
+	zval ***args = (zval ***) safe_emalloc(sizeof(zval **), ZEND_NUM_ARGS(), 0);
 	zval **pcategory, **plocale;
 	int i, cat, n_args=ZEND_NUM_ARGS();
 	char *loc, *retval;
@@ -4219,7 +4219,7 @@ PHP_FUNCTION(str_repeat)
 	/* Initialize the result string */	
 	result_len = Z_STRLEN_PP(input_str) * Z_LVAL_PP(mult);
 	if (result_len < 1 || result_len > 2147483647) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "You may not create strings longer then 2147483647 bytes");
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "You may not create strings longer than 2147483647 bytes");
 		RETURN_FALSE;
 	}
 	result = (char *)emalloc(result_len + 1);
@@ -4735,33 +4735,38 @@ PHP_FUNCTION(str_word_count)
 	if (type == 1 || type == 2) {
 		array_init(return_value);
 	}
-	
+
+	/* first character cannot be ' or -, unless explicitly allowed by the user */
+	if ((*p == '\'' && (!char_list || !ch['\''])) || (*p == '-' && (!char_list || !ch['-']))) {
+		p++;
+	}
+	/* last character cannot be -, unless explicitly allowed by the user */
+	if (*(e - 1) == '-' && (!char_list || !ch['-'])) {
+		e--;
+	}
+
 	while (p < e) {
-		if (isalpha(*p) || (char_list && ch[(unsigned char)*p])) {
-			s = ++p - 1;
-			while (isalpha(*p) || *p == '\'' || (*p == '-' && isalpha(*(p+1))) || (char_list && ch[(unsigned char)*p])) {
-				p++;
-			}
-			
+		s = p;
+		while (p < e && (isalpha(*p) || (char_list && ch[(unsigned char)*p]) || *p == '\'' || *p == '-')) {
+			p++;
+		}
+		if (p > s) {
 			switch (type)
 			{
 				case 1:
 					buf = estrndup(s, (p-s));
-					add_next_index_stringl(return_value, buf, (p-s), 1);
-					efree(buf);
+					add_next_index_stringl(return_value, buf, (p-s), 0);
 					break;
 				case 2:
 					buf = estrndup(s, (p-s));
-					add_index_stringl(return_value, (s - str), buf, p-s, 1);
-					efree(buf);
+					add_index_stringl(return_value, (s - str), buf, p-s, 0);
 					break;
 				default:
 					word_count++;
 					break;		
 			}
-		} else {
-			p++;
 		}
+		p++;
 	}
 	
 	if (!type) {

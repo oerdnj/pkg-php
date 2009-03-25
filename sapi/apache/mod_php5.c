@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -17,7 +17,7 @@
    | PHP 4.0 patches by Zeev Suraski <zeev@zend.com>                      |
    +----------------------------------------------------------------------+
  */
-/* $Id: mod_php5.c,v 1.19.2.2 2005/10/18 23:51:54 tony2001 Exp $ */
+/* $Id: mod_php5.c,v 1.19.2.5 2006/01/06 18:06:38 rasmus Exp $ */
 
 #include "php_apache_http.h"
 #include "http_conf_globals.h"
@@ -593,7 +593,6 @@ static int send_php(request_rec *r, int display_source_mode, char *filename)
 		 */
 		if (!AP(engine)) {
 			r->content_type = php_apache_get_default_mimetype(r TSRMLS_CC);
-			r->allowed |= (1 << METHODS) - 1;
 			zend_try {
 				zend_ini_deactivate(TSRMLS_C);
 			} zend_end_try();
@@ -605,7 +604,7 @@ static int send_php(request_rec *r, int display_source_mode, char *filename)
 
 		/* Apache 1.2 has a more complex mechanism for reading POST data */
 #if MODULE_MAGIC_NUMBER > 19961007
-		if ((retval = setup_client_block(r, REQUEST_CHUNKED_ERROR))) {
+		if ((retval = setup_client_block(r, REQUEST_CHUNKED_DECHUNK))) {
 			zend_try {
 				zend_ini_deactivate(TSRMLS_C);
 			} zend_end_try();
@@ -851,7 +850,6 @@ static int php_xbithack_handler(request_rec * r)
 	TSRMLS_FETCH();
 
 	if (!(r->finfo.st_mode & S_IXUSR)) {
-		r->allowed |= (1 << METHODS) - 1;
 		return DECLINED;
 	}
 	per_dir_conf = (HashTable *) get_module_config(r->per_dir_config, &php5_module);
@@ -859,7 +857,6 @@ static int php_xbithack_handler(request_rec * r)
 		zend_hash_apply((HashTable *) per_dir_conf, (apply_func_t) php_apache_alter_ini_entries TSRMLS_CC);
 	}
 	if(!AP(xbithack)) {
-		r->allowed |= (1 << METHODS) - 1;
 		zend_try {
 			zend_ini_deactivate(TSRMLS_C);
 		} zend_end_try();

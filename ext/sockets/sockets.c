@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: sockets.c,v 1.171.2.2 2005/11/03 15:00:51 mike Exp $ */
+/* $Id: sockets.c,v 1.171.2.7 2006/01/01 12:50:13 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -112,7 +112,7 @@ static
 
 /* {{{ sockets_functions[]
  */
-function_entry sockets_functions[] = {
+zend_function_entry sockets_functions[] = {
 	PHP_FE(socket_select,			first_through_third_args_force_ref)
 	PHP_FE(socket_create,			NULL)
 	PHP_FE(socket_create_listen,	NULL)
@@ -861,7 +861,19 @@ PHP_FUNCTION(socket_read)
 	}
 
 	if (retval == -1) {
-		PHP_SOCKET_ERROR(php_sock, "unable to read from socket", errno);
+		/* if the socket is in non-blocking mode and there's no data to read,
+		don't output any error, as this is a normal situation, and not an error */
+		if (errno == EAGAIN
+#ifdef EWOULDBLOCK
+		|| errno == EWOULDBLOCK
+#endif
+		) {
+			php_sock->error = errno;
+			SOCKETS_G(last_error) = errno;
+		} else {
+			PHP_SOCKET_ERROR(php_sock, "unable to read from socket", errno);
+		}
+
 		efree(tmpbuf);
 		RETURN_FALSE;
 	}
@@ -1482,7 +1494,7 @@ PHP_FUNCTION(socket_sendto)
 				RETURN_FALSE;
 			}
 			
-			retval = sendto(php_sock->bsd_socket, buf, (len > buf_len) ? buf_len : len, flags, (struct sockaddr *) &sin, sizeof(sin));
+			retval = sendto(php_sock->bsd_socket, buf, (len > buf_len) ? buf_len : len, flags, (struct sockaddr *) &sin6, sizeof(sin6));
 			break;
 #endif
 		default:
@@ -1506,7 +1518,9 @@ PHP_FUNCTION(socket_get_option)
 	zval			*arg1;
 	struct linger	linger_val;
 	struct timeval		tv;
+#ifdef PHP_WIN32
 	int				timeout = 0;
+#endif
 	socklen_t		optlen;
 	php_socket		*php_sock;
 	int				other_val;
@@ -1581,7 +1595,10 @@ PHP_FUNCTION(socket_set_option)
 	struct linger	lv;
 	struct timeval tv;
 	php_socket		*php_sock;
-	int				ov, optlen, retval, timeout;
+	int				ov, optlen, retval; 
+#ifdef PHP_WIN32
+	int				timeout;
+#endif
 	long				level, optname;
 	void 			*opt_ptr;
 	

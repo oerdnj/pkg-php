@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_compile.c,v 1.647.2.18 2005/11/27 06:39:27 iliaa Exp $ */
+/* $Id: zend_compile.c,v 1.647.2.21 2006/01/04 23:53:04 andi Exp $ */
 
 #include <zend_language_parser.h>
 #include "zend.h"
@@ -1841,6 +1841,12 @@ static void do_inherit_parent_constructor(zend_class_entry *ce)
 		ce->destructor   = ce->parent->destructor;
 	}
 	if (ce->constructor) {
+		if (ce->parent->constructor && ce->parent->constructor->common.fn_flags & ZEND_ACC_FINAL) {
+			zend_error(E_ERROR, "Cannot override final %s::%s() with %s::%s()",
+				ce->parent->name, ce->parent->constructor->common.function_name,
+				ce->name, ce->constructor->common.function_name
+				);
+		}
 		return;
 	}
 	
@@ -2090,7 +2096,9 @@ static zend_bool do_inherit_property_access_check(HashTable *target_ht, zend_pro
 
 				if (parent_ce->type != ce->type) {
 					/* User class extends internal class */
-					ht = parent_ce->static_members;
+					TSRMLS_FETCH();
+
+					ht = CE_STATIC_MEMBERS(parent_ce);
 				} else {
 					ht = &parent_ce->default_static_members;
 				}
@@ -2196,7 +2204,7 @@ ZEND_API void zend_do_inheritance(zend_class_entry *ce, zend_class_entry *parent
 	if (parent_ce->type != ce->type) {
 		/* User class extends internal class */
 		zend_update_class_constants(parent_ce  TSRMLS_CC);
-		zend_hash_merge(&ce->default_static_members, parent_ce->static_members, (void (*)(void *)) inherit_static_prop, NULL, sizeof(zval *), 0);
+		zend_hash_merge(&ce->default_static_members, CE_STATIC_MEMBERS(parent_ce), (void (*)(void *)) inherit_static_prop, NULL, sizeof(zval *), 0);
 	} else {
 		zend_hash_merge(&ce->default_static_members, &parent_ce->default_static_members, (void (*)(void *)) inherit_static_prop, NULL, sizeof(zval *), 0);
 	}
@@ -4026,7 +4034,23 @@ ZEND_API void zend_initialize_class_data(zend_class_entry *ce, zend_bool nullify
 	zend_hash_init_ex(&ce->constants_table, 0, NULL, zval_ptr_dtor_func, persistent_hashes, 0);
 	zend_hash_init_ex(&ce->function_table, 0, NULL, ZEND_FUNCTION_DTOR, persistent_hashes, 0);
 
-	ce->static_members = (ce->type == ZEND_INTERNAL_CLASS) ? NULL : &ce->default_static_members;
+	if (ce->type == ZEND_INTERNAL_CLASS) {
+#ifdef ZTS
+		int n = zend_hash_num_elements(CG(class_table));
+
+		if (CG(static_members) && n >= CG(last_static_member)) {
+			/* Support for run-time declaration: dl() */
+			CG(last_static_member) = n+1;
+			CG(static_members) = realloc(CG(static_members), (n+1)*sizeof(HashTable*));
+			CG(static_members)[n] = NULL;
+		}
+		ce->static_members = (HashTable*)n;
+#else
+		ce->static_members = NULL;
+#endif
+	} else {
+		ce->static_members = &ce->default_static_members;
+	}
 
 	if (nullify_handlers) {
 		ce->constructor = NULL;

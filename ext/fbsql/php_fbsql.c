@@ -2,9 +2,9 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
    | http:/*www.php.net/license/3_0.txt.                                  |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_fbsql.c,v 1.114 2005/08/03 14:07:08 sniper Exp $ */
+/* $Id: php_fbsql.c,v 1.114.2.3 2006/01/01 12:50:06 sniper Exp $ */
 
 /* TODO:
  *
@@ -183,7 +183,7 @@ char *DigestPassword(char *user, char *password)
 
 /* {{{ fbsql_functions[]
  */
-function_entry fbsql_functions[] = {
+zend_function_entry fbsql_functions[] = {
 	PHP_FE(fbsql_connect,			NULL)
 	PHP_FE(fbsql_pconnect,			NULL)
 	PHP_FE(fbsql_close,				NULL)
@@ -502,7 +502,7 @@ PHP_MINFO_FUNCTION(fbsql)
 static void php_fbsql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 {
 	PHPFBLink* phpLink;
-	list_entry *lep;
+	zend_rsrc_list_entry *lep;
 	char name[1024];
 	char *hostName = NULL, *userName = NULL, *userPassword = NULL;
 	int argc = ZEND_NUM_ARGS(), create_new = 0;
@@ -543,7 +543,7 @@ static void php_fbsql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 			phpLink = (PHPFBLink*)lep->ptr;
 		}
 		else {
-			list_entry le;
+			zend_rsrc_list_entry le;
 
 			if ((FB_SQL_G(maxLinks) != -1 && FB_SQL_G(linkCount) == FB_SQL_G(maxLinks)))
 			{
@@ -592,7 +592,7 @@ static void php_fbsql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 	}
 	else
 	{
-		list_entry le;
+		zend_rsrc_list_entry le;
 
 		if ((FB_SQL_G(maxLinks) != -1 && FB_SQL_G(linkCount) == FB_SQL_G(maxLinks)))
 		{

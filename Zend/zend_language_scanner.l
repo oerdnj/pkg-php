@@ -4,7 +4,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_language_scanner.l,v 1.131.2.6 2005/11/27 06:39:28 iliaa Exp $ */
+/* $Id: zend_language_scanner.l,v 1.131.2.9 2006/01/04 23:53:04 andi Exp $ */
 
 #define yyleng SCNG(yy_leng)
 #define yytext SCNG(yy_text)
@@ -1461,16 +1461,22 @@ NEWLINE ("\r"|"\n"|"\r\n")
 	yymore();
 }
 
-<ST_ONE_LINE_COMMENT>[^\n\r?%>]+ {
-	yymore();
-}
-
-<ST_ONE_LINE_COMMENT><<EOF>> {
-	zendlval->value.str.val = yytext; /* no copying - intentional */
-	zendlval->value.str.len = yyleng;
-	zendlval->type = IS_STRING;
-	BEGIN(INITIAL);
-	return EOF;
+<ST_ONE_LINE_COMMENT>[^\n\r?%>]+{ANY_CHAR} {
+	switch (yytext[yyleng-1]) {
+		case '?': case '%': case '>':
+			yyless(yyleng-1);
+			yymore();
+			break;
+		case '\n':
+			CG(zend_lineno)++;
+			/* intentional fall through */
+		default:
+			zendlval->value.str.val = yytext; /* no copying - intentional */
+			zendlval->value.str.len = yyleng;
+			zendlval->type = IS_STRING;
+			BEGIN(ST_IN_SCRIPTING);
+			return T_COMMENT;
+	}
 }
 
 <ST_ONE_LINE_COMMENT>{NEWLINE} {
@@ -1727,7 +1733,6 @@ NEWLINE ("\r"|"\n"|"\r\n")
 
 <ST_HEREDOC>^{LABEL}(";")?{NEWLINE} {
 	int label_len;
-	unsigned char unput_semicolon;
 
 	CG(zend_lineno)++;
 	if (yytext[yyleng-2]=='\r') {
@@ -1738,17 +1743,12 @@ NEWLINE ("\r"|"\n"|"\r\n")
 
 	if (yytext[label_len-1]==';') {
 		label_len--;
-		unput_semicolon=1;
-	} else{
-		unput_semicolon=0;
 	}
 
 	if (label_len==CG(heredoc_len) && !memcmp(yytext, CG(heredoc), label_len)) {
 		zendlval->value.str.val = estrndup(yytext, label_len); /* unput destroys yytext */
 		zendlval->value.str.len = label_len;
-		if (unput_semicolon) {
-			unput(';');
-		}
+		yyless(yyleng - (yyleng - label_len));
 		efree(CG(heredoc));
 		CG(heredoc)=NULL;
 		CG(heredoc_len)=0;

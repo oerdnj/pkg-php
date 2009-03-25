@@ -2,12 +2,12 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2005 The PHP Group                                |
+  | Copyright (c) 1997-2006 The PHP Group                                |
   +----------------------------------------------------------------------+
-  | This source file is subject to version 3.0 of the PHP license,       |
+  | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
   | available through the world-wide-web at the following url:           |
-  | http://www.php.net/license/3_0.txt.                                  |
+  | http://www.php.net/license/3_01.txt                                  |
   | If you did not receive a copy of the PHP license and are unable to   |
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_dbh.c,v 1.82.2.18 2005/11/25 00:20:12 wez Exp $ */
+/* $Id: pdo_dbh.c,v 1.82.2.26 2006/01/01 12:50:11 sniper Exp $ */
 
 /* The PDO Database Handle Class */
 
@@ -283,7 +283,7 @@ static PHP_METHOD(PDO, dbh_constructor)
 		zval **v;
 		int plen;
 		char *hashkey = NULL;
-		list_entry *le;
+		zend_rsrc_list_entry *le;
 		pdo_dbh_t *pdbh = NULL;
 
 		if (SUCCESS == zend_hash_index_find(Z_ARRVAL_P(options), PDO_ATTR_PERSISTENT, (void**)&v)) {
@@ -377,7 +377,7 @@ static PHP_METHOD(PDO, dbh_constructor)
 		/* all set */
 
 		if (is_persistent) {
-			list_entry le;
+			zend_rsrc_list_entry le;
 
 			/* register in the persistent list etc. */
 			/* we should also need to replace the object store entry,
@@ -1083,7 +1083,7 @@ static PHP_METHOD(PDO, getAvailableDrivers)
 }
 /* }}} */
 
-function_entry pdo_dbh_functions[] = {
+zend_function_entry pdo_dbh_functions[] = {
 	ZEND_MALIAS(PDO, __construct, dbh_constructor,	NULL, 			ZEND_ACC_PUBLIC)
 	PHP_ME(PDO, prepare, 		NULL, 					ZEND_ACC_PUBLIC)
 	PHP_ME(PDO, beginTransaction,NULL,					ZEND_ACC_PUBLIC)
@@ -1106,13 +1106,13 @@ function_entry pdo_dbh_functions[] = {
 /* {{{ overloaded object handlers for PDO class */
 int pdo_hash_methods(pdo_dbh_t *dbh, int kind TSRMLS_DC)
 {
-	function_entry *funcs;
+	zend_function_entry *funcs;
 	zend_function func;
 	zend_internal_function *ifunc = (zend_internal_function*)&func;
 	int namelen;
 	char *lc_name;
 
-	if (!dbh->methods->get_driver_methods) {
+	if (!dbh || !dbh->methods || !dbh->methods->get_driver_methods) {
 		return 0;
 	}
 	funcs =	dbh->methods->get_driver_methods(dbh,
@@ -1344,6 +1344,11 @@ static void dbh_free(pdo_dbh_t *dbh TSRMLS_DC)
 	if (--dbh->refcount)
 		return;
 
+	if (dbh->query_stmt) {
+		zval_dtor(&dbh->query_stmt_zval);
+		dbh->query_stmt = NULL;
+	}
+
 	if (dbh->methods) {
 		dbh->methods->closer(dbh TSRMLS_CC);
 	}
@@ -1365,10 +1370,21 @@ static void dbh_free(pdo_dbh_t *dbh TSRMLS_DC)
 	for (i = 0; i < PDO_DBH_DRIVER_METHOD_KIND__MAX; i++) {
 		if (dbh->cls_methods[i]) {
 			zend_hash_destroy(dbh->cls_methods[i]);
+			pefree(dbh->cls_methods[i], dbh->is_persistent);
 		}
 	}
 
 	pefree(dbh, dbh->is_persistent);
+}
+
+PDO_API void php_pdo_dbh_addref(pdo_dbh_t *dbh TSRMLS_DC)
+{
+	dbh->refcount++;
+}
+
+PDO_API void php_pdo_dbh_delref(pdo_dbh_t *dbh TSRMLS_DC)
+{
+	dbh_free(dbh TSRMLS_CC);
 }
 
 static void pdo_dbh_free_storage(pdo_dbh_t *dbh TSRMLS_DC)

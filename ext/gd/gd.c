@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: gd.c,v 1.312.2.4 2005/11/01 17:05:09 sniper Exp $ */
+/* $Id: gd.c,v 1.312.2.12 2006/01/01 12:50:06 sniper Exp $ */
 
 /* gd 1.2 is copyright 1994, 1995, Quest Protein Database Center,
    Cold Spring Harbor Labs. */
@@ -163,7 +163,7 @@ static void _php_image_bw_convert(gdImagePtr im_org, gdIOCtx *out, int threshold
 
 /* {{{ gd_functions[]
  */
-function_entry gd_functions[] = {
+zend_function_entry gd_functions[] = {
 	PHP_FE(gd_info,                                 NULL)
 	PHP_FE(imagearc,								NULL)
 	PHP_FE(imageellipse,							NULL)
@@ -919,15 +919,19 @@ PHP_FUNCTION(imagecolormatch)
 	result = gdImageColorMatch(im1, im2);
 	switch (result) {
 		case -1:
-			php_error_docref(NULL TSRMLS_CC, E_ERROR, "Image1 must be TrueColor" );
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Image1 must be TrueColor" );
 			RETURN_FALSE;
 			break;
 		case -2:
-			php_error_docref(NULL TSRMLS_CC, E_ERROR, "Image2 must be Palette" );
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Image2 must be Palette" );
 			RETURN_FALSE;
 			break;
 		case -3:
-			php_error_docref(NULL TSRMLS_CC, E_ERROR, "Image1 and Image2 must be the same size" );
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Image1 and Image2 must be the same size" );
+			RETURN_FALSE;
+			break;
+		case -4:
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Image2 must have at least one color" );
 			RETURN_FALSE;
 			break;
 	}
@@ -1429,6 +1433,11 @@ PHP_FUNCTION(imagecreatefromstring)
 	}
 
 	convert_to_string_ex(data);
+	if (Z_STRLEN_PP(data) < 8) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Empty string or invalid image");
+		RETURN_FALSE;
+	}
+
 	memcpy(sig, Z_STRVAL_PP(data), 8);
 
 	imtype = _php_image_type(sig);
@@ -1480,7 +1489,7 @@ PHP_FUNCTION(imagecreatefromstring)
 			break;
 
 		default:
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Data is not in a recognized format.");
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Data is not in a recognized format");
 			RETURN_FALSE;
 	}
 
@@ -1871,7 +1880,7 @@ PHP_FUNCTION(imagegif)
 PHP_FUNCTION(imagepng)
 {
 #ifdef USE_GD_IOCTX
-	_php_image_output_ctx(INTERNAL_FUNCTION_PARAM_PASSTHRU, PHP_GDIMG_TYPE_PNG, "PNG", gdImagePngCtx);
+	_php_image_output_ctx(INTERNAL_FUNCTION_PARAM_PASSTHRU, PHP_GDIMG_TYPE_PNG, "PNG", gdImagePngCtxEx);
 #else
 	_php_image_output(INTERNAL_FUNCTION_PARAM_PASSTHRU, PHP_GDIMG_TYPE_PNG, "PNG", gdImagePng);
 #endif
@@ -2597,7 +2606,7 @@ PHP_FUNCTION(imageinterlace)
 static void php_imagepolygon(INTERNAL_FUNCTION_PARAMETERS, int filled)
 {
 	zval **IM, **POINTS, **NPOINTS, **COL;
-	pval **var = NULL;
+	zval **var = NULL;
 	gdImagePtr im;
 	gdPointPtr points;
 	int npoints, col, nelem, i;
@@ -3393,7 +3402,7 @@ PHP_FUNCTION(imagepsextendfont)
 	T1_DeleteAllSizes(*f_ind);
 
 	if (Z_DVAL_PP(ext) <= 0) {
-		php_error_docref(NULL TSRMLS_CC, E_ERROR, "Second parameter %f out of range (must be > 0)", Z_DVAL_PP(ext));
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Second parameter %f out of range (must be > 0)", Z_DVAL_PP(ext));
 		RETURN_FALSE;
 	}
 
@@ -4190,7 +4199,7 @@ PHP_FUNCTION(imagefilter)
 PHP_FUNCTION(imageconvolution)
 {
 	zval *SIM, *hash_matrix;
-	pval **var = NULL, **var2 = NULL;
+	zval **var = NULL, **var2 = NULL;
 	gdImagePtr im_src = NULL;
 	double div, offset;
 	int nelem, i, j, res;

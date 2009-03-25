@@ -2,12 +2,12 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2005 The PHP Group                                |
+  | Copyright (c) 1997-2006 The PHP Group                                |
   +----------------------------------------------------------------------+
-  | This source file is subject to version 3.0 of the PHP license,       |
+  | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
   | available through the world-wide-web at the following url:           |
-  | http://www.php.net/license/3_0.txt.                                  |
+  | http://www.php.net/license/3_01.txt                                  |
   | If you did not receive a copy of the PHP license and are unable to   |
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_http.c,v 1.77.2.3 2005/10/12 14:04:02 tony2001 Exp $ */
+/* $Id: php_http.c,v 1.77.2.6 2006/01/01 12:50:13 sniper Exp $ */
 
 #include "php_soap.h"
 #include "ext/standard/base64.h"
@@ -32,7 +32,7 @@ static int get_http_headers(php_stream *socketd,char **response, int *out_size T
 
 static int stream_alive(php_stream *stream  TSRMLS_DC)
 {
-	int socket;
+	long socket;
 	char buf;
 
 	/* maybe better to use:
@@ -179,7 +179,9 @@ static php_stream* http_connect(zval* this_ptr, php_url *phpurl, int use_ssl, in
 				php_stream_close(stream);
 				stream = NULL;
 			}
-			efree(http_headers);
+			if (http_headers) {
+				efree(http_headers);
+			}
 		}
 		/* enable SSL transport layer */
 		if (stream) {

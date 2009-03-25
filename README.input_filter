@@ -34,7 +34,7 @@ ZEND_END_MODULE_GLOBALS(my_input_filter)
 
 ZEND_DECLARE_MODULE_GLOBALS(my_input_filter)
 
-function_entry my_input_filter_functions[] = {
+zend_function_entry my_input_filter_functions[] = {
     PHP_FE(my_get_raw,   NULL)
     {NULL, NULL, NULL}
 };
@@ -85,7 +85,7 @@ PHP_MINFO_FUNCTION(my_input_filter)
 {
     php_info_print_table_start();
     php_info_print_table_row( 2, "My Input Filter Support", "enabled" );
-    php_info_print_table_row( 2, "Revision", "$Revision: 1.7 $");
+    php_info_print_table_row( 2, "Revision", "$Revision: 1.7.4.1 $");
     php_info_print_table_end();
 }
 

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_highlight.c,v 1.49.2.1 2005/11/27 06:39:28 iliaa Exp $ */
+/* $Id: zend_highlight.c,v 1.49.2.3 2006/01/04 23:53:04 andi Exp $ */
 
 #include "zend.h"
 #include <zend_language_parser.h>
@@ -94,7 +94,7 @@ ZEND_API void zend_highlight(zend_syntax_highlighter_ini *syntax_highlighter_ini
 	int token_type;
 	char *last_color = syntax_highlighter_ini->highlight_html;
 	char *next_color;
-	int in_string=0, post_heredoc = 0;
+	int in_string=0;
 
 	zend_printf("<code>");
 	zend_printf("<span style=\"color: %s\">\n", last_color);
@@ -151,14 +151,9 @@ ZEND_API void zend_highlight(zend_syntax_highlighter_ini *syntax_highlighter_ini
 		switch (token_type) {
 			case T_END_HEREDOC:
 				zend_html_puts(token.value.str.val, token.value.str.len TSRMLS_CC);
-				post_heredoc = 1;
 				break;
 			default:
 				zend_html_puts(LANG_SCNG(yy_text), LANG_SCNG(yy_leng) TSRMLS_CC);
-				if (post_heredoc) {
-					 zend_html_putc('\n');
-					 post_heredoc = 0;
-				}
 				break;
 		}
 
@@ -215,19 +210,18 @@ ZEND_API void zend_strip(TSRMLS_D)
 			case EOF:
 				return;
 			
-			case T_END_HEREDOC: {
-					char *ptr = LANG_SCNG(yy_text);
-
-					zend_write(ptr, LANG_SCNG(yy_leng) - 1);
-					/* The ensure that we only write one ; and that it followed by the required newline */
-					zend_write("\n", sizeof("\n") - 1);
-					if (ptr[LANG_SCNG(yy_leng) - 1] == ';') {
-						lex_scan(&token TSRMLS_CC);
-					}
-					efree(token.value.str.val);
+			case T_END_HEREDOC:
+				zend_write(LANG_SCNG(yy_text), LANG_SCNG(yy_leng));
+				efree(token.value.str.val);
+				/* read the following character, either newline or ; */
+				if (lex_scan(&token TSRMLS_CC) != T_WHITESPACE) {
+					zend_write(LANG_SCNG(yy_text), LANG_SCNG(yy_leng));
 				}
-				break;
-			
+				zend_write("\n", sizeof("\n") - 1);
+				prev_space = 1;
+				token.type = 0;
+				continue;
+
 			default:
 				zend_write(LANG_SCNG(yy_text), LANG_SCNG(yy_leng));
 				break;

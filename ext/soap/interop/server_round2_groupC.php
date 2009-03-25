@@ -7,7 +7,7 @@
 // +----------------------------------------------------------------------+
 // | This source file is subject to version 2.02 of the PHP license,      |
 // | that is bundled with this package in the file LICENSE, and is        |
-// | available at through the world-wide-web at                           |
+// | available through the world-wide-web at                              |
 // | http://www.php.net/license/2_02.txt.                                 |
 // | If you did not receive a copy of the PHP license and are unable to   |
 // | obtain it through the world-wide-web, please send a note to          |
@@ -16,7 +16,7 @@
 // | Authors: Shane Caraveo <Shane@Caraveo.com>                           |
 // +----------------------------------------------------------------------+
 //
-// $Id: server_round2_groupC.php,v 1.7 2004/02/13 10:29:55 dmitry Exp $
+// $Id: server_round2_groupC.php,v 1.7.4.2 2006/01/01 13:27:13 sniper Exp $
 //
 
 class SOAP_Interop_GroupC {

@@ -1,12 +1,12 @@
 #  +----------------------------------------------------------------------+
 #  | PHP Version 5                                                        |
 #  +----------------------------------------------------------------------+
-#  | Copyright (c) 1997-2005 The PHP Group                                |
+#  | Copyright (c) 1997-2006 The PHP Group                                |
 #  +----------------------------------------------------------------------+
-#  | This source file is subject to version 3.0 of the PHP license,       |
+#  | This source file is subject to version 3.01 of the PHP license,      |
 #  | that is bundled with this package in the file LICENSE, and is        |
 #  | available through the world-wide-web at the following url:           |
-#  | http://www.php.net/license/3_0.txt.                                  |
+#  | http://www.php.net/license/3_01.txt                                  |
 #  | If you did not receive a copy of the PHP license and are unable to   |
 #  | obtain it through the world-wide-web, please send a note to          |
 #  | license@php.net so we can mail you a copy immediately.               |
@@ -14,7 +14,7 @@
 #  | Author: Sascha Schumann <sascha@schumann.cx>                         |
 #  +----------------------------------------------------------------------+
 #
-# $Id: build2.mk,v 1.37 2005/08/03 14:06:38 sniper Exp $ 
+# $Id: build2.mk,v 1.37.2.2 2006/01/01 12:50:00 sniper Exp $ 
 #
 
 include generated_lists
@@ -22,9 +22,6 @@ include generated_lists
 TOUCH_FILES = mkinstalldirs install-sh missing
 
 LT_TARGETS = ltmain.sh config.guess config.sub
-
-makefile_in_files = $(makefile_am_files:.am=.in)
-makefile_files    = $(makefile_am_files:e.am=e)
 
 config_h_in = main/php_config.h.in
 

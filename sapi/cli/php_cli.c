@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -20,13 +20,18 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_cli.c,v 1.129.2.6 2005/11/17 08:37:31 sniper Exp $ */
+/* $Id: php_cli.c,v 1.129.2.10 2006/01/01 12:50:19 sniper Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
 #include "php_variables.h"
 #include "zend_hash.h"
 #include "zend_modules.h"
+#include "zend_interfaces.h"
+
+#ifdef HAVE_REFLECTION
+#include "ext/reflection/php_reflection.h"
+#endif
 
 #include "SAPI.h"
 
@@ -82,6 +87,7 @@
 #include "zend_execute.h"
 #include "zend_highlight.h"
 #include "zend_indent.h"
+#include "zend_exceptions.h"
 
 #include "php_getopt.h"
 
@@ -96,6 +102,9 @@
 #define PHP_MODE_STRIP         5
 #define PHP_MODE_CLI_DIRECT    6
 #define PHP_MODE_PROCESS_STDIN 7
+#define PHP_MODE_REFLECTION_FUNCTION    8
+#define PHP_MODE_REFLECTION_CLASS       9
+#define PHP_MODE_REFLECTION_EXTENSION   10
 
 static char *php_optarg = NULL;
 static int php_optind = 1;
@@ -129,6 +138,14 @@ static const opt_struct OPTIONS[] = {
 	{'?', 0, "usage"},/* help alias (both '?' and 'usage') */
 	{'v', 0, "version"},
 	{'z', 1, "zend-extension"},
+#ifdef HAVE_REFLECTION
+	{10,  1, "rf"},
+	{10,  1, "rfunction"},
+	{11,  1, "rc"},
+	{11,  1, "rclass"},
+	{12,  1, "re"},
+	{12,  1, "rextension"},
+#endif
 	{'-', 0, NULL} /* end of args */
 };
 
@@ -417,6 +434,10 @@ static void php_cli_usage(char *argv0)
 				"  args...          Arguments passed to script. Use -- args when first argument\n"
 				"                   starts with - or script is read from stdin\n"
 				"\n"
+				"  --rf <name>      Show information about function <name>.\n"
+				"  --rc <name>      Show information about class <name>.\n"
+				"  --re <name>      Show information about extension <name>.\n"
+				"\n"
 				, prog, prog, prog, prog, prog, prog);
 }
 /* }}} */
@@ -561,6 +582,9 @@ int main(int argc, char *argv[])
 	zend_file_handle file_handle;
 /* temporary locals */
 	int behavior=PHP_MODE_STANDARD;
+#ifdef HAVE_REFLECTION
+	char *reflection_what;
+#endif
 	int orig_optind=php_optind;
 	char *orig_optarg=php_optarg;
 	char *arg_free=NULL, **arg_excp=&arg_free;
@@ -727,9 +751,9 @@ int main(int argc, char *argv[])
 					goto err;
 				}
 #if ZEND_DEBUG
-				php_printf("PHP %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2005 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
+				php_printf("PHP %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2006 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 #else
-				php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2005 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
+				php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2006 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 #endif
 				php_end_ob_buffers(1 TSRMLS_CC);
 				exit_status=0;
@@ -897,6 +921,20 @@ int main(int argc, char *argv[])
 				hide_argv = 1;
 				break;
 
+#ifdef HAVE_REFLECTION
+			case 10:
+				behavior=PHP_MODE_REFLECTION_FUNCTION;
+				reflection_what = php_optarg;
+				break;
+			case 11:
+				behavior=PHP_MODE_REFLECTION_CLASS;
+				reflection_what = php_optarg;
+				break;
+			case 12:
+				behavior=PHP_MODE_REFLECTION_EXTENSION;
+				reflection_what = php_optarg;
+				break;
+#endif
 			default:
 				break;
 			}
@@ -1084,7 +1122,7 @@ int main(int argc, char *argv[])
 			{
 				char *input;
 				size_t len, index = 0;
-				pval *argn, *argi;
+				zval *argn, *argi;
 
 				cli_register_file_handles(TSRMLS_C);
 	
@@ -1095,7 +1133,7 @@ int main(int argc, char *argv[])
 				Z_TYPE_P(argi) = IS_LONG;
 				Z_LVAL_P(argi) = index;
 				INIT_PZVAL(argi);
-				zend_hash_update(&EG(symbol_table), "argi", sizeof("argi"), &argi, sizeof(pval *), NULL);
+				zend_hash_update(&EG(symbol_table), "argi", sizeof("argi"), &argi, sizeof(zval *), NULL);
 				while (exit_status == SUCCESS && (input=php_stream_gets(s_in_process, NULL, 0)) != NULL) {
 					len = strlen(input);
 					while (len-- && (input[len]=='\n' || input[len]=='\r')) {
@@ -1106,7 +1144,7 @@ int main(int argc, char *argv[])
 					Z_STRLEN_P(argn) = ++len;
 					Z_STRVAL_P(argn) = estrndup(input, len);
 					INIT_PZVAL(argn);
-					zend_hash_update(&EG(symbol_table), "argn", sizeof("argn"), &argn, sizeof(pval *), NULL);
+					zend_hash_update(&EG(symbol_table), "argn", sizeof("argn"), &argn, sizeof(zval *), NULL);
 					Z_LVAL_P(argi) = ++index;
 					if (exec_run) {
 						if (zend_eval_string_ex(exec_run, NULL, "Command line run code", 1 TSRMLS_CC) == FAILURE) {
@@ -1130,6 +1168,56 @@ int main(int argc, char *argv[])
 				}
 	
 				break;
+#ifdef HAVE_REFLECTION
+			case PHP_MODE_REFLECTION_FUNCTION:
+			case PHP_MODE_REFLECTION_CLASS:
+			case PHP_MODE_REFLECTION_EXTENSION:
+				{
+					zend_class_entry *pce;
+					zval *arg, *ref;
+					zend_execute_data execute_data;
+
+					switch (behavior) {
+						case PHP_MODE_REFLECTION_FUNCTION:
+							if (strstr(reflection_what, "::")) {
+								pce = reflection_method_ptr;
+							} else {
+								pce = reflection_function_ptr;
+							}
+							break;
+						case PHP_MODE_REFLECTION_CLASS:
+							pce = reflection_class_ptr;
+							break;
+						case PHP_MODE_REFLECTION_EXTENSION:
+							pce = reflection_extension_ptr;
+							break;
+					}
+					
+					MAKE_STD_ZVAL(arg);
+					ZVAL_STRING(arg, reflection_what, 1);
+					ALLOC_ZVAL(ref);
+					object_init_ex(ref, pce);
+					INIT_PZVAL(ref);
+
+					memset(&execute_data, 0, sizeof(zend_execute_data));
+					EG(current_execute_data) = &execute_data;
+					EX(function_state).function = pce->constructor;
+					zend_call_method_with_1_params(&ref, pce, &pce->constructor, "__construct", NULL, arg);
+
+					if (EG(exception)) {
+						zval *msg = zend_read_property(zend_exception_get_default(), EG(exception), "message", sizeof("message")-1, 0 TSRMLS_CC);
+						zend_printf("Exception: %s\n", Z_STRVAL_P(msg));
+						zval_ptr_dtor(&EG(exception));
+						EG(exception) = NULL;
+					} else {
+						zend_call_method_with_1_params(NULL, reflection_ptr, NULL, "export", NULL, ref);
+					}
+					zval_ptr_dtor(&ref);
+					zval_ptr_dtor(&arg);
+
+					break;
+				}
+#endif /* reflection */
 			}
 		}
 

@@ -1,4 +1,4 @@
-dnl $Id: config.m4,v 1.14.2.1 2005/09/24 23:23:24 sniper Exp $
+dnl $Id: config.m4,v 1.14.2.4 2006/01/06 11:48:19 tony2001 Exp $
 
 if test "$PHP_PDO" != "no"; then
 
@@ -7,16 +7,16 @@ AC_DEFUN([AC_PDO_OCI_VERSION],[
   if test -s "$PDO_OCI_DIR/orainst/unix.rgs"; then
     PDO_OCI_VERSION=`grep '"ocommon"' $PDO_OCI_DIR/orainst/unix.rgs | sed 's/[ ][ ]*/:/g' | cut -d: -f 6 | cut -c 2-4`
     test -z "$PDO_OCI_VERSION" && PDO_OCI_VERSION=7.3
-  elif test -f $PDO_OCI_DIR/lib/libclntsh.$SHLIB_SUFFIX_NAME.10.1; then
+  elif test -f $PDO_OCI_LIB_DIR/libclntsh.$SHLIB_SUFFIX_NAME.10.1; then
     PDO_OCI_VERSION=10.1    
-  elif test -f $PDO_OCI_DIR/lib/libclntsh.$SHLIB_SUFFIX_NAME.9.0; then
+  elif test -f $PDO_OCI_LIB_DIR/libclntsh.$SHLIB_SUFFIX_NAME.9.0; then
     PDO_OCI_VERSION=9.0
-  elif test -f $PDO_OCI_DIR/lib/libclntsh.$SHLIB_SUFFIX_NAME.8.0; then
+  elif test -f $PDO_OCI_LIB_DIR/libclntsh.$SHLIB_SUFFIX_NAME.8.0; then
     PDO_OCI_VERSION=8.1
-  elif test -f $PDO_OCI_DIR/lib/libclntsh.$SHLIB_SUFFIX_NAME.1.0; then
+  elif test -f $PDO_OCI_LIB_DIR/libclntsh.$SHLIB_SUFFIX_NAME.1.0; then
     PDO_OCI_VERSION=8.0
-  elif test -f $PDO_OCI_DIR/lib/libclntsh.a; then 
-    if test -f $PDO_OCI_DIR/lib/libcore4.a; then 
+  elif test -f $PDO_OCI_LIB_DIR/libclntsh.a; then 
+    if test -f $PDO_OCI_LIB_DIR/libcore4.a; then 
       PDO_OCI_VERSION=8.0
     else
       PDO_OCI_VERSION=8.1
@@ -27,6 +27,30 @@ AC_DEFUN([AC_PDO_OCI_VERSION],[
   AC_MSG_RESULT($PDO_OCI_VERSION)
 ])                                                                                                                                                                
 
+AC_DEFUN([AC_PDO_OCI_CHECK_LIB_DIR],[
+  AC_CHECK_SIZEOF(long int, 4)
+  AC_MSG_CHECKING([checking if we're at 64-bit platform])
+  if test "$ac_cv_sizeof_long_int" = "4" ; then
+    AC_MSG_RESULT([no])
+    TMP_PDO_OCI_LIB_DIR="$PDO_OCI_DIR/lib32"
+  else
+    AC_MSG_RESULT([yes])
+    TMP_PDO_OCI_LIB_DIR="$PDO_OCI_DIR/lib"
+  fi
+
+  AC_MSG_CHECKING([OCI8 libraries dir])
+  if test -d "$PDO_OCI_DIR/lib" -a ! -d "$PDO_OCI_DIR/lib32"; then
+    PDO_OCI_LIB_DIR="$PDO_OCI_DIR/lib"
+  elif ! test -d "$PDO_OCI_DIR/lib" -a -d "$PDO_OCI_DIR/lib32"; then
+    PDO_OCI_LIB_DIR="$PDO_OCI_DIR/lib32"
+  elif test -d "$PDO_OCI_DIR/lib" -a -d "$PDO_OCI_DIR/lib32"; then
+    PDO_OCI_LIB_DIR=$TMP_PDO_OCI_LIB_DIR
+  else
+    AC_MSG_ERROR([Oracle (OCI8) required libraries not found])
+  fi
+  AC_MSG_RESULT($PDO_OCI_LIB_DIR)
+])
+
 PHP_ARG_WITH(pdo-oci, Oracle OCI support for PDO,
 [  --with-pdo-oci[=DIR]      PDO: Oracle-OCI support. Default DIR is ORACLE_HOME.
                             You may also use --with-pdo-oci=instantclient,prefix,version to use
@@ -35,7 +59,7 @@ PHP_ARG_WITH(pdo-oci, Oracle OCI support for PDO,
 
 if test "$PHP_PDO_OCI" != "no"; then
   AC_MSG_CHECKING([Oracle Install-Dir])
-  if test "$PHP_PDO_OCI" = "yes" -o -z "$PHP_PDO_OCI"; then
+  if test "$PHP_PDO_OCI" = "yes" || test -z "$PHP_PDO_OCI"; then
     PDO_OCI_DIR=$ORACLE_HOME
   else
     PDO_OCI_DIR=$PHP_PDO_OCI
@@ -51,6 +75,8 @@ You need to tell me where to find your oracle SDK, or set ORACLE_HOME.
     AC_MSG_RESULT([yes])
   fi
 
+  AC_PDO_OCI_CHECK_LIB_DIR($PDO_OCI_DIR)
+
   if test "instantclient" = "`echo $PDO_OCI_DIR | cut -d, -f1`" ; then
     PDO_OCI_IC_PREFIX="`echo $PDO_OCI_DIR | cut -d, -f2`"
     PDO_OCI_IC_VERS="`echo $PDO_OCI_DIR | cut -d, -f3`"
@@ -61,10 +87,24 @@ You need to tell me where to find your oracle SDK, or set ORACLE_HOME.
     elif test -f $PDO_OCI_IC_PREFIX/lib/oracle/$PDO_OCI_IC_VERS/client/include/oci.h ; then
       PHP_ADD_INCLUDE($PDO_OCI_IC_PREFIX/lib/oracle/$PDO_OCI_IC_VERS/client/include)
       AC_MSG_RESULT($PDO_OCI_IC_PREFIX/lib/oracle/$PDO_OCI_IC_VERS/client/include)
+    elif test -f $PDO_OCI_IC_PREFIX/sdk/include/oci.h ; then
+      PHP_ADD_INCLUDE($PDO_OCI_PREFIX/sdk/include)
+      AC_MSG_RESULT($PDO_OCI_PREFIX/sdk/include)
+    elif test -f $PDO_OCI_IC_PREFIX/client/include/oci.h ; then
+      PHP_ADD_INCLUDE($PDO_OCI_PREFIX/client/include)
+      AC_MSG_RESULT($PDO_OCI_PREFIX/client/include)
     else
       AC_MSG_ERROR([I'm too dumb to figure out where the include dir is in your instant client install])
     fi
-    PDO_OCI_LIB_DIR="$PDO_OCI_IC_PREFIX/lib/oracle/$PDO_OCI_IC_VERS/client/lib"
+    if test -f "$PDO_OCI_IC_PREFIX/lib/oracle/$PDO_OCI_IC_VERS/client/lib/libclntsh.so" ; then
+      PDO_OCI_LIB_DIR="$PDO_OCI_IC_PREFIX/lib/oracle/$PDO_OCI_IC_VERS/client/lib"
+    elif test -f "$PDO_OCI_IC_PREFIX/client/lib/libclntsh.so" ; then
+      PDO_OCI_LIB_DIR="$PDO_OCI_IC_PREFIX/client/lib"
+    elif test -f "$PDO_OCI_IC_PREFIX/libclntsh.so" ; then
+      PDO_OCI_LIB_DIR="$PDO_OCI_IC_PREFIX"
+    else
+      AC_MSG_ERROR([I'm too dumb to figure out where the libraries are in your instant client install])
+    fi
     PDO_OCI_VERSION="`echo $PDO_OCI_IC_VERS | cut -d. -f1-2`"
   else
     if test -d "$PDO_OCI_DIR/rdbms/public"; then
@@ -88,12 +128,11 @@ You need to tell me where to find your oracle SDK, or set ORACLE_HOME.
       PDO_OCI_INCLUDES="$PDO_OCI_INCLUDES -I$PDO_OCI_DIR/include"
     fi
 
-    if test -f "$PDO_OCI_DIR/lib/sysliblist"; then
-      PHP_EVAL_LIBLINE(`cat $PDO_OCI_DIR/lib/sysliblist`, PDO_OCI_SYSLIB)
+    if test -f "$PDO_OCI_LIB_DIR/sysliblist"; then
+      PHP_EVAL_LIBLINE(`cat $PDO_OCI_LIB_DIR/sysliblist`, PDO_OCI_SYSLIB)
     elif test -f "$PDO_OCI_DIR/rdbms/lib/sysliblist"; then
       PHP_EVAL_LIBLINE(`cat $PDO_OCI_DIR/rdbms/lib/sysliblist`, PDO_OCI_SYSLIB)
     fi
-    PDO_OCI_LIB_DIR="$PDO_OCI_DIR/lib"
     AC_PDO_OCI_VERSION($PDO_OCI_DIR)
   fi
 

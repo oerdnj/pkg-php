@@ -1,5 +1,5 @@
 dnl
-dnl $Id: acinclude.m4,v 1.332.2.7 2005/11/21 23:08:01 sniper Exp $
+dnl $Id: acinclude.m4,v 1.332.2.9 2005/12/24 11:38:05 helly Exp $
 dnl
 dnl This file contains local autoconf functions.
 dnl
@@ -940,7 +940,7 @@ AC_DEFUN([PHP_NEW_EXTENSION],[
 
   if test "$3" != "shared" && test "$3" != "yes" && test "$4" != "cli"; then
 dnl ---------------------------------------------- Static module
-
+    [PHP_]translit($1,a-z_-,A-Z__)[_SHARED]=no
     PHP_ADD_SOURCES(PHP_EXT_DIR($1),$2,$ac_extra,)
     EXT_STATIC="$EXT_STATIC $1"
     if test "$3" != "nocli"; then
@@ -949,6 +949,7 @@ dnl ---------------------------------------------- Static module
   else
     if test "$3" = "shared" || test "$3" = "yes"; then
 dnl ---------------------------------------------- Shared module
+      [PHP_]translit($1,a-z_-,A-Z__)[_SHARED]=yes
       PHP_ADD_SOURCES_X(PHP_EXT_DIR($1),$2,$ac_extra,shared_objects_$1,yes)
       case $host_alias in
         *netware*[)]
@@ -964,6 +965,7 @@ dnl ---------------------------------------------- Shared module
 
   if test "$3" != "shared" && test "$3" != "yes" && test "$4" = "cli"; then
 dnl ---------------------------------------------- CLI static module
+    [PHP_]translit($1,a-z_-,A-Z__)[_SHARED]=no
     if test "$PHP_SAPI" = "cgi"; then
       PHP_ADD_SOURCES(PHP_EXT_DIR($1),$2,$ac_extra,)
       EXT_STATIC="$EXT_STATIC $1"
@@ -1004,9 +1006,29 @@ dnl list, so that modules can be init'd in the correct order
 dnl $1 = name of extension, $2 = extension upon which it depends
 dnl $3 = optional: if true, it's ok for $2 to have not been configured
 dnl default is false and should halt the build.
+dnl To be effective, this macro must be invoked *after* PHP_NEW_EXTENSION.
+dnl The extension on which it depends must also have been configured.
 dnl See ADD_EXTENSION_DEP in win32 build 
 dnl
-AC_DEFUN([PHP_ADD_EXTENSION_DEP], [])
+AC_DEFUN([PHP_ADD_EXTENSION_DEP], [
+  am_i_shared=$[PHP_]translit($1,a-z_-,A-Z__)[_SHARED]
+  is_it_shared=$[PHP_]translit($2,a-z_-,A-Z__)[_SHARED]
+  if test "$am_i_shared" = "no" && test "$is_it_shared" = "yes" ; then
+    AC_MSG_ERROR([
+You've configured extension $1 to build statically, but it
+depends on extension $2, which you've configured to build shared.
+You either need to build $1 shared or build $2 statically for the
+build to be successful.
+])
+  fi
+  if test "x$is_it_shared" = "x" && test "x$3" != "xtrue"; then
+    AC_MSG_ERROR([
+You've configured extension $1, which depends on extension $2,
+but you've either not enabled $2, or have disabled it.
+])
+  fi
+  dnl Some systems require that we link $2 to $1 when building
+])
 
 dnl -------------------------------------------------------------------------
 dnl Checks for structures, typedefs, broken functions, etc.
@@ -2036,7 +2058,7 @@ AC_DEFUN([PHP_PROG_RE2C],[
   if test -n "$RE2C"; then
     AC_CACHE_CHECK([for re2c version], php_cv_re2c_version, [
       re2c_vernum=`echo "" | re2c --vernum 2>/dev/null`
-      if test -z "$re2c_vernum" || test "$re2c_vernum" -lt "908"; then
+      if test -z "$re2c_vernum" || test "$re2c_vernum" -lt "911"; then
         php_cv_re2c_version=invalid
       else
         php_cv_re2c_version="`echo "" | re2c --version | cut -d ' ' -f 2  2>/dev/null` (ok)"
@@ -2045,7 +2067,7 @@ AC_DEFUN([PHP_PROG_RE2C],[
   fi
   case $php_cv_re2c_version in
     ""|invalid[)]
-      AC_MSG_WARN([You will need re2c 0.98 or later if you want to regenerate PHP parsers.])
+      AC_MSG_WARN([You will need re2c 0.9.11 or later if you want to regenerate PHP parsers.])
       RE2C="exit 0;"
       ;;
   esac

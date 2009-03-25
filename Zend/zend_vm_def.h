@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_vm_def.h,v 1.59.2.19 2005/10/31 19:25:10 dmitry Exp $ */
+/* $Id: zend_vm_def.h,v 1.59.2.22 2006/01/04 23:53:04 andi Exp $ */
 
 /* If you change this file, please regenerate the zend_vm_execute.h and
  * zend_vm_opcodes.h files by running:
@@ -963,6 +963,11 @@ ZEND_VM_HELPER_EX(zend_fetch_var_address_helper, CONST|TMP|VAR|CV, ANY, int type
 				break;
 			case ZEND_FETCH_STATIC:
 				zval_update_constant(retval, (void*) 1 TSRMLS_CC);
+				break;
+			case ZEND_FETCH_GLOBAL_LOCK:
+				if (OP1_TYPE == IS_VAR && !free_op1.var) {
+					PZVAL_LOCK(*EX_T(opline->op1.u.var).var.ptr_ptr);
+				}
 				break;
 		}
 	}
@@ -2186,7 +2191,8 @@ ZEND_VM_HANDLER(106, ZEND_SEND_VAR_NO_REF, VAR|CV, ANY)
 	if ((!(opline->extended_value & ZEND_ARG_SEND_FUNCTION) ||
 	     EX_T(opline->op1.u.var).var.fcall_returned_reference) &&
 	    varptr != &EG(uninitialized_zval) && 
-	    (PZVAL_IS_REF(varptr) || varptr->refcount == 1)) {
+	    (PZVAL_IS_REF(varptr) || 
+	     (varptr->refcount == 1 && (OP1_TYPE == IS_CV || free_op1.var)))) {
 		varptr->is_ref = 1;
 		varptr->refcount++;
 		zend_ptr_stack_push(&EG(argument_stack), varptr);

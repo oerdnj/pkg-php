@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_opcode.c,v 1.110.2.1 2005/09/01 10:05:32 dmitry Exp $ */
+/* $Id: zend_opcode.c,v 1.110.2.3 2006/01/04 23:53:04 andi Exp $ */
 
 #include <stdio.h>
 
@@ -138,18 +138,20 @@ ZEND_API int zend_cleanup_function_data(zend_function *function TSRMLS_DC)
 
 ZEND_API int zend_cleanup_class_data(zend_class_entry **pce TSRMLS_DC)
 {
-	if ((*pce)->static_members) {
-		if ((*pce)->static_members != &(*pce)->default_static_members) {
-			zend_hash_destroy((*pce)->static_members);
-			FREE_HASHTABLE((*pce)->static_members);
-		}
-		(*pce)->static_members = NULL;
-	}
 	if ((*pce)->type == ZEND_USER_CLASS) {
 		/* Clean all parts that can contain run-time data */
 		/* Note that only run-time accessed data need to be cleaned up, pre-defined data can
 		   not contain objects and thus are not probelmatic */
 		zend_hash_apply(&(*pce)->function_table, (apply_func_t) zend_cleanup_function_data TSRMLS_CC);
+		(*pce)->static_members = NULL;
+	} else if (CE_STATIC_MEMBERS(*pce)) {
+		zend_hash_destroy(CE_STATIC_MEMBERS(*pce));
+		FREE_HASHTABLE(CE_STATIC_MEMBERS(*pce));
+#ifdef ZTS
+		CG(static_members)[(long)((*pce)->static_members)] = NULL;
+#else
+		(*pce)->static_members = NULL;
+#endif
 	}
 	return 0;
 }

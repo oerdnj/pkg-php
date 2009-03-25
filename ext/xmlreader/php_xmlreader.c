@@ -2,12 +2,12 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2005 The PHP Group                                |
+  | Copyright (c) 1997-2006 The PHP Group                                |
   +----------------------------------------------------------------------+
-  | This source file is subject to version 3.0 of the PHP license,       |
+  | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
   | available through the world-wide-web at the following url:           |
-  | http://www.php.net/license/3_0.txt.                                  |
+  | http://www.php.net/license/3_01.txt                                  |
   | If you did not receive a copy of the PHP license and are unable to   |
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_xmlreader.c,v 1.13.2.3 2005/11/15 14:28:40 dmitry Exp $ */
+/* $Id: php_xmlreader.c,v 1.13.2.8 2006/01/01 12:50:16 sniper Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -53,7 +53,7 @@ typedef struct _xmlreader_prop_handler {
 
 #define XMLREADER_LOAD_STRING 0
 #define XMLREADER_LOAD_FILE 1
-
+/* {{{ xmlreader_register_prop_handler */
 static void xmlreader_register_prop_handler(HashTable *prop_handler, char *name, xmlreader_read_int_t read_int_func, xmlreader_read_char_t read_char_func, int rettype TSRMLS_DC)
 {
 	xmlreader_prop_handler hnd;
@@ -63,7 +63,9 @@ static void xmlreader_register_prop_handler(HashTable *prop_handler, char *name,
 	hnd.type = rettype;
 	zend_hash_add(prop_handler, name, strlen(name)+1, &hnd, sizeof(xmlreader_prop_handler), NULL);
 }
+/* }}} */
 
+/* {{{ xmlreader_property_reader */
 static int xmlreader_property_reader(xmlreader_object *obj, xmlreader_prop_handler *hnd, zval **retval TSRMLS_DC)
 {
 	char *retchar = NULL;
@@ -106,6 +108,7 @@ static int xmlreader_property_reader(xmlreader_object *obj, xmlreader_prop_handl
 
 	return SUCCESS;
 }
+/* }}} */
 
 /* {{{ xmlreader_read_property */
 zval *xmlreader_read_property(zval *object, zval *member, int type TSRMLS_DC)
@@ -185,6 +188,7 @@ void xmlreader_write_property(zval *object, zval *member, zval *value TSRMLS_DC)
 }
 /* }}} */
 
+/* {{{ _xmlreader_get_valid_file_path */
 /* _xmlreader_get_valid_file_path and _xmlreader_get_relaxNG should be made a 
 	common function in libxml extension as code is common to a few xml extensions */
 char *_xmlreader_get_valid_file_path(char *source, char *resolved_path, int resolved_path_len  TSRMLS_DC) {
@@ -231,8 +235,10 @@ char *_xmlreader_get_valid_file_path(char *source, char *resolved_path, int reso
 
 	return file_dest;
 }
+/* }}} */
 
 #ifdef LIBXML_SCHEMAS_ENABLED
+/* {{{ _xmlreader_get_relaxNG */
 static xmlRelaxNGPtr _xmlreader_get_relaxNG(char *source, int source_len, int type, 
 											xmlRelaxNGValidityErrorFunc error_func, 
 											xmlRelaxNGValidityWarningFunc warn_func TSRMLS_DC)
@@ -274,6 +280,7 @@ static xmlRelaxNGPtr _xmlreader_get_relaxNG(char *source, int source_len, int ty
 
 	return sptr;
 }
+/* }}} */
 #endif
 
 static zend_module_dep xmlreader_deps[] = {
@@ -309,6 +316,7 @@ void xmlreader_objects_clone(void *object, void **object_clone TSRMLS_DC)
 }
 /* }}} */
 
+/* {{{ xmlreader_free_resources */
 static void xmlreader_free_resources(xmlreader_object *intern) {
 	if (intern) {
 		if (intern->input) {
@@ -328,6 +336,7 @@ static void xmlreader_free_resources(xmlreader_object *intern) {
 #endif
 	}
 }
+/* }}} */
 
 /* {{{ xmlreader_objects_free_storage */
 void xmlreader_objects_free_storage(void *object TSRMLS_DC)
@@ -368,6 +377,7 @@ zend_object_value xmlreader_objects_new(zend_class_entry *class_type TSRMLS_DC)
 }
 /* }}} */
 
+/* {{{ php_xmlreader_string_arg */
 static void php_xmlreader_string_arg(INTERNAL_FUNCTION_PARAMETERS, xmlreader_read_one_char_t internal_function) {
 	zval *id;
 	int name_len = 0;
@@ -398,7 +408,9 @@ static void php_xmlreader_string_arg(INTERNAL_FUNCTION_PARAMETERS, xmlreader_rea
 		RETVAL_EMPTY_STRING();
 	}
 }
+/* }}} */
 
+/* {{{ php_xmlreader_no_arg */
 static void php_xmlreader_no_arg(INTERNAL_FUNCTION_PARAMETERS, xmlreader_read_int_t internal_function) {
 	zval *id;
 	int retval;
@@ -416,6 +428,7 @@ static void php_xmlreader_no_arg(INTERNAL_FUNCTION_PARAMETERS, xmlreader_read_in
 
 	RETURN_FALSE;
 }
+/* }}} */
 
 /* This function not yet needed until some additional functions are implemented in libxml
 static void php_xmlreader_no_arg_string(INTERNAL_FUNCTION_PARAMETERS, xmlreader_read_char_t internal_function) {
@@ -439,6 +452,7 @@ static void php_xmlreader_no_arg_string(INTERNAL_FUNCTION_PARAMETERS, xmlreader_
 }
 */
 
+/* {{{ php_xmlreader_set_relaxng_schema */
 static void php_xmlreader_set_relaxng_schema(INTERNAL_FUNCTION_PARAMETERS, int type) {
 #ifdef LIBXML_SCHEMAS_ENABLED
 	zval *id;
@@ -452,7 +466,7 @@ static void php_xmlreader_set_relaxng_schema(INTERNAL_FUNCTION_PARAMETERS, int t
 	}
 
 	if (source != NULL && !source_len) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Schema data source is requried");
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Schema data source is required");
 		RETURN_FALSE;
 	}
 
@@ -490,8 +504,9 @@ static void php_xmlreader_set_relaxng_schema(INTERNAL_FUNCTION_PARAMETERS, int t
 	RETURN_FALSE;
 #endif
 }
+/* }}} */
 
-/* {{{ proto boolean close()
+/* {{{ proto boolean XMLReader::close()
 Closes xmlreader - current frees resources until xmlTextReaderClose is fixed in libxml */
 PHP_METHOD(xmlreader, close)
 {
@@ -507,8 +522,9 @@ PHP_METHOD(xmlreader, close)
 	
 	RETURN_TRUE;
 }
+/* }}} */
 
-/* {{{ proto string getAttribute(string name)
+/* {{{ proto string XMLReader::getAttribute(string name)
 Get value of an attribute from current element */
 PHP_METHOD(xmlreader, getAttribute)
 {
@@ -516,7 +532,7 @@ PHP_METHOD(xmlreader, getAttribute)
 }
 /* }}} */
 
-/* {{{ proto string getAttributeNo(int index)
+/* {{{ proto string XMLReader::getAttributeNo(int index)
 Get value of an attribute at index from current element */
 PHP_METHOD(xmlreader, getAttributeNo)
 {
@@ -545,7 +561,7 @@ PHP_METHOD(xmlreader, getAttributeNo)
 }
 /* }}} */
 
-/* {{{ proto string getAttributeNs(string name, string namespaceURI)
+/* {{{ proto string XMLReader::getAttributeNs(string name, string namespaceURI)
 Get value of a attribute via name and namespace from current element */
 PHP_METHOD(xmlreader, getAttributeNs)
 {
@@ -579,8 +595,8 @@ PHP_METHOD(xmlreader, getAttributeNs)
 }
 /* }}} */
 
-/* {{{ proto boolean getParserProperty(int property)
-Indicates wether given property (one of the parser option constants) is set or not on parser */
+/* {{{ proto boolean XMLReader::getParserProperty(int property)
+Indicates whether given property (one of the parser option constants) is set or not on parser */
 PHP_METHOD(xmlreader, getParserProperty)
 {
 	zval *id;
@@ -606,7 +622,7 @@ PHP_METHOD(xmlreader, getParserProperty)
 }
 /* }}} */
 
-/* {{{ proto boolean isValid()
+/* {{{ proto boolean XMLReader::isValid()
 Returns boolean indicating if parsed document is valid or not.
 Must set XMLREADER_LOADDTD or XMLREADER_VALIDATE parser option prior to the first call to read 
 or this method will always return FALSE */
@@ -616,7 +632,7 @@ PHP_METHOD(xmlreader, isValid)
 }
 /* }}} */
 
-/* {{{ proto string lookupNamespace(string prefix)
+/* {{{ proto string XMLReader::lookupNamespace(string prefix)
 Return namespaceURI for associated prefix on current node */
 PHP_METHOD(xmlreader, lookupNamespace)
 {
@@ -624,7 +640,7 @@ PHP_METHOD(xmlreader, lookupNamespace)
 }
 /* }}} */
 
-/* {{{ proto boolean moveToAttribute(string name)
+/* {{{ proto boolean XMLReader::moveToAttribute(string name)
 Positions reader at specified attribute - Returns TRUE on success and FALSE on failure */
 PHP_METHOD(xmlreader, moveToAttribute)
 {
@@ -656,7 +672,7 @@ PHP_METHOD(xmlreader, moveToAttribute)
 }
 /* }}} */
 
-/* {{{ proto boolean moveToAttributeNo(int index)
+/* {{{ proto boolean XMLReader::moveToAttributeNo(int index)
 Positions reader at attribute at spcecified index.
 Returns TRUE on success and FALSE on failure */
 PHP_METHOD(xmlreader, moveToAttributeNo)
@@ -683,7 +699,7 @@ PHP_METHOD(xmlreader, moveToAttributeNo)
 }
 /* }}} */
 
-/* {{{ proto boolean moveToAttributeNs(string name, string namespaceURI)
+/* {{{ proto boolean XMLReader::moveToAttributeNs(string name, string namespaceURI)
 Positions reader at attribute spcified by name and namespaceURI.
 Returns TRUE on success and FALSE on failure */
 PHP_METHOD(xmlreader, moveToAttributeNs)
@@ -716,7 +732,7 @@ PHP_METHOD(xmlreader, moveToAttributeNs)
 }
 /* }}} */
 
-/* {{{ proto boolean moveToElement()
+/* {{{ proto boolean XMLReader::moveToElement()
 Moves the position of the current instance to the node that contains the current Attribute node. */
 PHP_METHOD(xmlreader, moveToElement)
 {
@@ -724,7 +740,7 @@ PHP_METHOD(xmlreader, moveToElement)
 }
 /* }}} */
 
-/* {{{ proto boolean moveToFirstAttribute()
+/* {{{ proto boolean XMLReader::moveToFirstAttribute()
 Moves the position of the current instance to the first attribute associated with the current node. */
 PHP_METHOD(xmlreader, moveToFirstAttribute)
 {
@@ -732,7 +748,7 @@ PHP_METHOD(xmlreader, moveToFirstAttribute)
 }
 /* }}} */
 
-/* {{{ proto boolean moveToNextAttribute()
+/* {{{ proto boolean XMLReader::moveToNextAttribute()
 Moves the position of the current instance to the next attribute associated with the current node. */
 PHP_METHOD(xmlreader, moveToNextAttribute)
 {
@@ -740,7 +756,7 @@ PHP_METHOD(xmlreader, moveToNextAttribute)
 }
 /* }}} */
 
-/* {{{ proto boolean read()
+/* {{{ proto boolean XMLReader::read()
 Moves the position of the current instance to the next node in the stream. */
 PHP_METHOD(xmlreader, read)
 {
@@ -765,7 +781,7 @@ PHP_METHOD(xmlreader, read)
 }
 /* }}} */
 
-/* {{{ proto boolean next([string localname])
+/* {{{ proto boolean XMLReader::next([string localname])
 Moves the position of the current instance to the next node in the stream. */
 PHP_METHOD(xmlreader, next)
 {
@@ -807,7 +823,7 @@ PHP_METHOD(xmlreader, next)
 }
 /* }}} */
 
-/* {{{ proto boolean open(string URI)
+/* {{{ proto boolean XMLReader::open(string URI)
 Sets the URI that the the XMLReader will parse. */
 PHP_METHOD(xmlreader, open)
 {
@@ -884,7 +900,7 @@ PHP_METHOD(xmlreader, resetState)
 }
 */
 
-/* {{{ proto boolean setParserProperty(int property, boolean value)
+/* {{{ proto boolean XMLReader::setParserProperty(int property, boolean value)
 Sets parser property (one of the parser option constants).
 Properties must be set after open() or XML() and before the first read() is called */
 PHP_METHOD(xmlreader, setParserProperty)
@@ -913,7 +929,7 @@ PHP_METHOD(xmlreader, setParserProperty)
 }
 /* }}} */
 
-/* {{{ proto boolean setRelaxNGSchemaSource(string filename)
+/* {{{ proto boolean XMLReader::setRelaxNGSchemaSource(string filename)
 Sets the string that the the XMLReader will parse. */
 PHP_METHOD(xmlreader, setRelaxNGSchema)
 {
@@ -921,7 +937,7 @@ PHP_METHOD(xmlreader, setRelaxNGSchema)
 }
 /* }}} */
 
-/* {{{ proto boolean setRelaxNGSchemaSource(string source)
+/* {{{ proto boolean XMLReader::setRelaxNGSchemaSource(string source)
 Sets the string that the the XMLReader will parse. */
 PHP_METHOD(xmlreader, setRelaxNGSchemaSource)
 {
@@ -929,7 +945,7 @@ PHP_METHOD(xmlreader, setRelaxNGSchemaSource)
 }
 /* }}} */
 
-/* {{{ proto boolean XML(string source)
+/* {{{ proto boolean XMLReader::XML(string source)
 Sets the string that the the XMLReader will parse. */
 PHP_METHOD(xmlreader, XML)
 {
@@ -1005,7 +1021,7 @@ PHP_METHOD(xmlreader, XML)
 }
 /* }}} */
 
-/* {{{ proto boolean expand()
+/* {{{ proto boolean XMLReader::expand()
 Moves the position of the current instance to the next node in the stream. */
 PHP_METHOD(xmlreader, expand)
 {

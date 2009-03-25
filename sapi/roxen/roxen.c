@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: roxen.c,v 1.61 2005/08/03 14:08:52 sniper Exp $ */
+/* $Id: roxen.c,v 1.61.2.2 2006/01/01 12:50:19 sniper Exp $ */
 
 #include "php.h"
 #ifdef HAVE_ROXEN
@@ -438,7 +438,7 @@ static void php_info_roxen(ZEND_MODULE_INFO_FUNC_ARGS)
 {
   /*  char buf[512]; */
   php_info_print_table_start();
-  php_info_print_table_row(2, "SAPI module version", "$Id: roxen.c,v 1.61 2005/08/03 14:08:52 sniper Exp $");
+  php_info_print_table_row(2, "SAPI module version", "$Id: roxen.c,v 1.61.2.2 2006/01/01 12:50:19 sniper Exp $");
   /*  php_info_print_table_row(2, "Build date", Ns_InfoBuildDate());
       php_info_print_table_row(2, "Config file path", Ns_InfoConfigFile());
       php_info_print_table_row(2, "Error Log path", Ns_InfoErrorLog());
@@ -512,19 +512,19 @@ static sapi_module_struct roxen_sapi_module = {
  * the HTTP header data, so that a script can access these.
  */
 #define ADD_STRING(name)										\
-	MAKE_STD_ZVAL(pval);										\
-	pval->type = IS_STRING;										\
-	pval->value.str.len = strlen(buf);							\
-	pval->value.str.val = estrndup(buf, pval->value.str.len);	\
+	MAKE_STD_ZVAL(zvalue);										\
+	zvalue->type = IS_STRING;										\
+	zvalue->value.str.len = strlen(buf);							\
+	zvalue->value.str.val = estrndup(buf, zvalue->value.str.len);	\
 	zend_hash_update(&EG(symbol_table), name, sizeof(name), 	\
-			&pval, sizeof(zval *), NULL)
+			&zvalue, sizeof(zval *), NULL)
 
 static void
 php_roxen_hash_environment(TSRMLS_D)
 {
   int i;
   char buf[512];
-  zval *pval;
+  zval *zvalue;
   struct svalue *headers;
   struct pike_string *sind;
   struct array *indices;
@@ -546,22 +546,22 @@ php_roxen_hash_environment(TSRMLS_D)
 	buf_len = MIN(511, ind->u.string->len);
 	strncpy(buf, ind->u.string->str, buf_len);
 	buf[buf_len] = '\0'; /* Terminate correctly */
-	MAKE_STD_ZVAL(pval);
-	pval->type = IS_STRING;
-	pval->value.str.len = val->u.string->len;
-	pval->value.str.val = estrndup(val->u.string->str, pval->value.str.len);
+	MAKE_STD_ZVAL(zvalue);
+	zvalue->type = IS_STRING;
+	zvalue->value.str.len = val->u.string->len;
+	zvalue->value.str.val = estrndup(val->u.string->str, zvalue->value.str.len);
 	
-	zend_hash_update(&EG(symbol_table), buf, buf_len + 1, &pval, sizeof(zval *), NULL);
+	zend_hash_update(&EG(symbol_table), buf, buf_len + 1, &zvalue, sizeof(zval *), NULL);
       }
     }
     free_array(indices);
   }
   
   /*
-    MAKE_STD_ZVAL(pval);
-    pval->type = IS_LONG;
-    pval->value.lval = Ns_InfoBootTime();
-    zend_hash_update(&EG(symbol_table), "SERVER_BOOTTIME", sizeof("SERVER_BOOTTIME"), &pval, sizeof(zval *), NULL);
+    MAKE_STD_ZVAL(zvalue);
+    zvalue->type = IS_LONG;
+    zvalue->value.lval = Ns_InfoBootTime();
+    zend_hash_update(&EG(symbol_table), "SERVER_BOOTTIME", sizeof("SERVER_BOOTTIME"), &zvalue, sizeof(zval *), NULL);
   */
 }
 

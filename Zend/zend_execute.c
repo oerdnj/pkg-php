@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2005 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2006 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute.c,v 1.716.2.6 2005/11/16 11:52:26 dmitry Exp $ */
+/* $Id: zend_execute.c,v 1.716.2.10 2006/01/04 23:53:04 andi Exp $ */
 
 #define ZEND_INTENSIVE_DEBUGGING 0
 
@@ -440,6 +440,7 @@ static inline void make_real_object(zval **object_ptr TSRMLS_DC)
 			SEPARATE_ZVAL(object_ptr);
 		}
 		zend_error(E_STRICT, "Creating default object from empty value");
+		zval_dtor(*object_ptr);
 		object_init(*object_ptr);
 	}
 }

@@ -2,12 +2,12 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2005 The PHP Group                                |
+   | Copyright (c) 1997-2006 The PHP Group                                |
    +----------------------------------------------------------------------+
-   | This source file is subject to version 3.0 of the PHP license,       |
+   | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
    | available through the world-wide-web at the following url:           |
-   | http://www.php.net/license/3_0.txt.                                  |
+   | http://www.php.net/license/3_01.txt                                  |
    | If you did not receive a copy of the PHP license and are unable to   |
    | obtain it through the world-wide-web, please send a note to          |
    | license@php.net so we can mail you a copy immediately.               |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_date.c,v 1.43.2.25 2005/11/27 06:51:40 iliaa Exp $ */
+/* $Id: php_date.c,v 1.43.2.37 2006/01/04 21:31:29 derick Exp $ */
 
 #include "php.h"
 #include "php_streams.h"
@@ -30,9 +30,10 @@
 #include <time.h>
 
 /* {{{ Function table */
-function_entry date_functions[] = {
+zend_function_entry date_functions[] = {
 	PHP_FE(strtotime, NULL)
 	PHP_FE(date, NULL)
+	PHP_FE(idate, NULL)
 	PHP_FE(gmdate, NULL)
 	PHP_FE(mktime, NULL)
 	PHP_FE(gmmktime, NULL)
@@ -71,11 +72,16 @@ function_entry date_functions[] = {
 	/* Options and Configuration */
 	PHP_FE(date_default_timezone_set, NULL)
 	PHP_FE(date_default_timezone_get, NULL)
+
+	/* Astronomical functions */
+	PHP_FE(date_sunrise, NULL)
+	PHP_FE(date_sunset, NULL)
+/*	PHP_FE(date_sun_info, NULL) */
 	{NULL, NULL, NULL}
 };
 
 #ifdef EXPERIMENTAL_DATE_SUPPORT
-function_entry date_funcs_date[] = {
+zend_function_entry date_funcs_date[] = {
 	ZEND_NAMED_FE(format, ZEND_FN(date_format), NULL)
 	ZEND_NAMED_FE(modify, ZEND_FN(date_modify), NULL)
 	ZEND_NAMED_FE(getTimezone, ZEND_FN(date_timezone_get), NULL)
@@ -87,7 +93,7 @@ function_entry date_funcs_date[] = {
 	{NULL, NULL, NULL}
 };
 
-function_entry date_funcs_timezone[] = {
+zend_function_entry date_funcs_timezone[] = {
 	ZEND_NAMED_FE(getName, ZEND_FN(timezone_name_get), NULL)
 	ZEND_NAMED_FE(getOffset, ZEND_FN(timezone_offset_get), NULL)
 	ZEND_NAMED_FE(getTransistions, ZEND_FN(timezone_transistions_get), NULL)
@@ -98,7 +104,7 @@ function_entry date_funcs_timezone[] = {
 
 static void date_register_classes(TSRMLS_D);
 #endif
-static char* guess_timezone(TSRMLS_D);
+static char* guess_timezone(timelib_tzdb *tzdb TSRMLS_DC);
 /* }}} */
 
 ZEND_DECLARE_MODULE_GLOBALS(date)
@@ -107,9 +113,22 @@ ZEND_DECLARE_MODULE_GLOBALS(date)
 timelib_tzdb *php_date_global_timezone_db;
 int php_date_global_timezone_db_enabled;
 
+#define DATE_DEFAULT_LATITUDE "31.7667"
+#define DATE_DEFAULT_LONGITUDE "35.2333"
+
+/* on 90'35; common sunset declaration (start of sun body appear) */
+#define DATE_SUNSET_ZENITH "90.583333"
+
+/* on 90'35; common sunrise declaration (sun body disappeared) */
+#define DATE_SUNRISE_ZENITH "90.583333"
+
 /* {{{ INI Settings */
 PHP_INI_BEGIN()
 	STD_PHP_INI_ENTRY("date.timezone", "", PHP_INI_ALL, OnUpdateString, default_timezone, zend_date_globals, date_globals)
+	PHP_INI_ENTRY("date.default_latitude",           DATE_DEFAULT_LATITUDE,        PHP_INI_ALL, NULL)
+	PHP_INI_ENTRY("date.default_longitude",          DATE_DEFAULT_LONGITUDE,       PHP_INI_ALL, NULL)
+	PHP_INI_ENTRY("date.sunset_zenith",              DATE_SUNSET_ZENITH,           PHP_INI_ALL, NULL)
+	PHP_INI_ENTRY("date.sunrise_zenith",             DATE_SUNRISE_ZENITH,          PHP_INI_ALL, NULL)
 PHP_INI_END()
 /* }}} */
 
@@ -224,7 +243,14 @@ PHP_RSHUTDOWN_FUNCTION(date)
 #define DATE_TZ_ERRMSG \
 	"It is not safe to rely on the system's timezone settings. Please use " \
 	"the date.timezone setting, the TZ environment variable or the " \
-	"date_default_timezone_set() function. "
+	"date_default_timezone_set() function. In case you used any of those " \
+	"methods and you are still getting this warning, you most likely " \
+	"misspelled the timezone identifier. "
+
+#define SUNFUNCS_RET_TIMESTAMP 0
+#define SUNFUNCS_RET_STRING    1
+#define SUNFUNCS_RET_DOUBLE    2
+
 
 /* {{{ PHP_MINIT_FUNCTION */
 PHP_MINIT_FUNCTION(date)
@@ -244,6 +270,10 @@ PHP_MINIT_FUNCTION(date)
 	REGISTER_STRING_CONSTANT("DATE_RFC2822", DATE_FORMAT_RFC2822, CONST_CS | CONST_PERSISTENT);
 	REGISTER_STRING_CONSTANT("DATE_RSS",     DATE_FORMAT_RFC1123, CONST_CS | CONST_PERSISTENT);
 	REGISTER_STRING_CONSTANT("DATE_W3C",     DATE_FORMAT_ISO8601, CONST_CS | CONST_PERSISTENT);
+
+	REGISTER_LONG_CONSTANT("SUNFUNCS_RET_TIMESTAMP", SUNFUNCS_RET_TIMESTAMP, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("SUNFUNCS_RET_STRING", SUNFUNCS_RET_STRING, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("SUNFUNCS_RET_DOUBLE", SUNFUNCS_RET_DOUBLE, CONST_CS | CONST_PERSISTENT);
 
 	php_date_global_timezone_db = NULL;
 	php_date_global_timezone_db_enabled = 0;
@@ -270,7 +300,7 @@ PHP_MINFO_FUNCTION(date)
 	php_info_print_table_row(2, "date/time support", "enabled");
 	php_info_print_table_row(2, "Timezone Database Version", tzdb->version);
 	php_info_print_table_row(2, "Timezone Database", php_date_global_timezone_db_enabled ? "external" : "internal");
-	php_info_print_table_row(2, "Default timezone", guess_timezone(TSRMLS_C));
+	php_info_print_table_row(2, "Default timezone", guess_timezone(tzdb TSRMLS_CC));
 	php_info_print_table_end();
 
 	DISPLAY_INI_ENTRIES();
@@ -295,7 +325,7 @@ static timelib_tzinfo *php_date_parse_tzfile(char *formal_tzname, timelib_tzdb *
 /* }}} */
 
 /* {{{ Helper functions */
-static char* guess_timezone(TSRMLS_D)
+static char* guess_timezone(timelib_tzdb *tzdb TSRMLS_DC)
 {
 	char *env;
 
@@ -305,11 +335,11 @@ static char* guess_timezone(TSRMLS_D)
 	}
 	/* Check environment variable */
 	env = getenv("TZ");
-	if (env && *env) {
+	if (env && *env && timelib_timezone_id_is_valid(env, tzdb)) {
 		return env;
 	}
 	/* Check config setting for default timezone */
-	if (DATEG(default_timezone) && (strlen(DATEG(default_timezone)) > 0)) {
+	if (DATEG(default_timezone) && (strlen(DATEG(default_timezone)) > 0) && timelib_timezone_id_is_valid(DATEG(default_timezone), tzdb)) {
 		return DATEG(default_timezone);
 	}
 #if HAVE_TM_ZONE
@@ -375,15 +405,10 @@ PHPAPI timelib_tzinfo *get_timezone_info(TSRMLS_D)
 	char *tz;
 	timelib_tzinfo *tzi;
 	
-	tz = guess_timezone(TSRMLS_C);
+	tz = guess_timezone(DATE_TIMEZONEDB TSRMLS_CC);
 	tzi = php_date_parse_tzfile(tz, DATE_TIMEZONEDB TSRMLS_CC);
 	if (! tzi) {
-		php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Timezone setting (date.timezone) or TZ environment variable contains an unknown timezone");
-		tzi = php_date_parse_tzfile("UTC", DATE_TIMEZONEDB TSRMLS_CC);
-
-		if (! tzi) {
-			php_error_docref(NULL TSRMLS_CC, E_ERROR, "Timezone database is corrupt - this should *never* happen!");
-		}
+		php_error_docref(NULL TSRMLS_CC, E_ERROR, "Timezone database is corrupt - this should *never* happen!");
 	}
 	return tzi;
 }
@@ -494,7 +519,15 @@ static char *date_format(char *format, int format_len, timelib_time *t, int loca
 			/* time */
 			case 'a': snprintf(buffer, 32, "%s", t->h >= 12 ? "pm" : "am"); break;
 			case 'A': snprintf(buffer, 32, "%s", t->h >= 12 ? "PM" : "AM"); break;
-			case 'B': snprintf(buffer, 32, "[B unimplemented]"); break;
+			case 'B': {
+				int retval = (((((long)t->sse)-(((long)t->sse) - ((((long)t->sse) % 86400) + 3600))) * 10) / 864);			
+				while (retval < 0) {
+					retval += 1000;
+				}
+				retval = retval % 1000;
+				snprintf(buffer, 32, "%03d", retval); break;
+				break;
+			}
 			case 'g': snprintf(buffer, 32, "%d", (t->h % 12) ? (int) t->h % 12 : 12); break;
 			case 'G': snprintf(buffer, 32, "%d", (int) t->h); break;
 			case 'h': snprintf(buffer, 32, "%02d", (t->h % 12) ? (int) t->h % 12 : 12); break;
@@ -555,7 +588,7 @@ static void php_date(INTERNAL_FUNCTION_PARAMETERS, int localtime)
 {
 	char   *format;
 	int     format_len;
-	time_t  ts;
+	long    ts;
 	char   *string;
 
 	if (ZEND_NUM_ARGS() == 1) {
@@ -581,7 +614,9 @@ PHPAPI char *php_format_date(char *format, int format_len, time_t ts, int localt
 
 	if (localtime) {
 		tzi = get_timezone_info(TSRMLS_C);
-		timelib_unixtime2local(t, ts, tzi);
+		t->tz_info = tzi;
+		t->zone_type = TIMELIB_ZONETYPE_ID;
+		timelib_unixtime2local(t, ts);
 	} else {
 		tzi = NULL;
 		timelib_unixtime2gmt(t, ts);
@@ -591,6 +626,103 @@ PHPAPI char *php_format_date(char *format, int format_len, time_t ts, int localt
 	
 	timelib_time_dtor(t);
 	return string;
+}
+/* }}} */
+
+/* {{{ php_idate
+ */
+PHPAPI int php_idate(char format, time_t ts, int localtime)
+{
+	timelib_time   *t;
+	timelib_tzinfo *tzi;
+	int retval = -1;
+	timelib_time_offset *offset;
+	timelib_sll isoweek, isoyear;
+
+	t = timelib_time_ctor();
+
+	if (!localtime) {
+		TSRMLS_FETCH();
+		tzi = get_timezone_info(TSRMLS_C);
+		t->tz_info = tzi;
+		t->zone_type = TIMELIB_ZONETYPE_ID;
+		timelib_unixtime2local(t, ts);
+	} else {
+		tzi = NULL;
+		timelib_unixtime2gmt(t, ts);
+	}
+
+	if (!localtime) {
+		if (t->zone_type == TIMELIB_ZONETYPE_ABBR) {
+			offset = timelib_time_offset_ctor();
+			offset->offset = (t->z - (t->dst * 60)) * -60;
+			offset->leap_secs = 0;
+			offset->is_dst = t->dst;
+			offset->abbr = strdup(t->tz_abbr);
+		} else if (t->zone_type == TIMELIB_ZONETYPE_OFFSET) {
+			offset = timelib_time_offset_ctor();
+			offset->offset = (t->z - (t->dst * 60)) * -60;
+			offset->leap_secs = 0;
+			offset->is_dst = t->dst;
+			offset->abbr = malloc(9); /* GMT±xxxx\0 */
+			snprintf(offset->abbr, 9, "GMT%c%02d%02d", 
+			                          !localtime ? ((offset->offset < 0) ? '-' : '+') : '+',
+			                          !localtime ? abs(offset->offset / 3600) : 0,
+			                          !localtime ? abs((offset->offset % 3600) / 60) : 0 );
+		} else {
+			offset = timelib_get_time_zone_info(t->sse, t->tz_info);
+		}
+	}
+
+	timelib_isoweek_from_date(t->y, t->m, t->d, &isoweek, &isoyear);
+
+	switch (format) {
+		/* day */
+		case 'd': case 'j': retval = (int) t->d; break;
+
+		case 'w': retval = (int) timelib_day_of_week(t->y, t->m, t->d); break;
+		case 'z': retval = (int) timelib_day_of_year(t->y, t->m, t->d); break;
+
+		/* week */
+		case 'W': retval = (int) isoweek; break; /* iso weeknr */
+
+		/* month */
+		case 'm': case 'n': retval = (int) t->m; break;
+		case 't': retval = (int) timelib_days_in_month(t->y, t->m); break;
+
+		/* year */
+		case 'L': retval = (int) timelib_is_leap((int) t->y); break;
+		case 'y': retval = (int) (t->y % 100); break;
+		case 'Y': retval = (int) t->y; break;
+
+		/* Swatch Beat a.k.a. Internet Time */
+		case 'B':
+			retval = (((((long)t->sse)-(((long)t->sse) - ((((long)t->sse) % 86400) + 3600))) * 10) / 864);			
+			while (retval < 0) {
+				retval += 1000;
+			}
+			retval = retval % 1000;
+			break;
+
+		/* time */
+		case 'g': case 'h': retval = (int) ((t->h % 12) ? (int) t->h % 12 : 12); break;
+		case 'H': case 'G': retval = (int) t->h; break;
+		case 'i': retval = (int) t->i; break;
+		case 's': retval = (int) t->s; break;
+
+		/* timezone */
+		case 'I': retval = (int) (!localtime ? offset->is_dst : 0); break;
+		case 'Z': retval = (int) (!localtime ? offset->offset : 0); break;
+
+		case 'U': retval = (int) t->sse; break;
+	}
+
+	if (!localtime) {
+		timelib_time_offset_dtor(offset);
+	}
+	timelib_time_dtor(t);
+
+	return retval;
 }
 /* }}} */
 
@@ -607,6 +739,37 @@ PHP_FUNCTION(date)
 PHP_FUNCTION(gmdate)
 {
 	php_date(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
+}
+/* }}} */
+
+/* {{{ proto int idate(string format [, int timestamp])
+   Format a local time/date as integer */
+PHP_FUNCTION(idate)
+{
+	char   *format;
+	int     format_len;
+	long    ts;
+	int ret; 
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l", &format, &format_len, &ts) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	if (format_len != 1) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "idate format is one char");
+		RETURN_FALSE;
+	}
+
+	if (ZEND_NUM_ARGS() == 1) {
+		ts = time(NULL);
+	}
+
+	ret = php_idate(format[0], ts, 0);
+	if (ret == -1) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unrecognized date format token.");
+		RETURN_FALSE;
+	}
+	RETURN_LONG(ret);
 }
 /* }}} */
 
@@ -629,7 +792,7 @@ signed long php_parse_date(char *string, signed long *now)
 	int           error1, error2;
 	signed long   retval;
 
-	parsed_time = timelib_strtotime(string, &error1, DATE_TIMEZONEDB);
+	parsed_time = timelib_strtotime(string, strlen(string), &error1, DATE_TIMEZONEDB);
 	timelib_update_ts(parsed_time, NULL);
 	retval = timelib_date_to_int(parsed_time, &error2);
 	timelib_time_dtor(parsed_time);
@@ -660,26 +823,30 @@ PHP_FUNCTION(strtotime)
 
 		initial_ts = emalloc(25);
 		snprintf(initial_ts, 24, "@%lu", preset_ts);
-		t = timelib_strtotime(initial_ts, &error1, DATE_TIMEZONEDB); /* we ignore the error here, as this should never fail */
+		t = timelib_strtotime(initial_ts, strlen(initial_ts), &error1, DATE_TIMEZONEDB); /* we ignore the error here, as this should never fail */
 		timelib_update_ts(t, tzi);
-		timelib_unixtime2local(now, t->sse, tzi);
+		now->tz_info = tzi;
+		now->zone_type = TIMELIB_ZONETYPE_ID;
+		timelib_unixtime2local(now, t->sse);
 		timelib_time_dtor(t);
 		efree(initial_ts);
 	} else if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "s", &times, &time_len) != FAILURE) {
 		/* We have no initial timestamp */
 		now = timelib_time_ctor();
-		timelib_unixtime2local(now, (timelib_sll) time(NULL), tzi);
+		now->tz_info = tzi;
+		now->zone_type = TIMELIB_ZONETYPE_ID;
+		timelib_unixtime2local(now, (timelib_sll) time(NULL));
 	} else {
 		RETURN_FALSE;
 	}
 
-	t = timelib_strtotime(times, &error1, DATE_TIMEZONEDB);
+	t = timelib_strtotime(times, time_len, &error1, DATE_TIMEZONEDB);
 	timelib_fill_holes(t, now, 0);
 	timelib_update_ts(t, tzi);
 	ts = timelib_date_to_int(t, &error2);
 
 	/* if tz_info is not a copy, avoid double free */
-	if (now->tz_info != tzi) {
+	if (now->tz_info != tzi && now->tz_info) {
 		timelib_tzinfo_dtor(now->tz_info);
 	}
 	if (t->tz_info != tzi) {
@@ -716,7 +883,9 @@ PHPAPI void php_mktime(INTERNAL_FUNCTION_PARAMETERS, int gmt)
 		timelib_unixtime2gmt(now, (timelib_sll) time(NULL));
 	} else {
 		tzi = get_timezone_info(TSRMLS_C);
-		timelib_unixtime2local(now, (timelib_sll) time(NULL), tzi);
+		now->tz_info = tzi;
+		now->zone_type = TIMELIB_ZONETYPE_ID;
+		timelib_unixtime2local(now, (timelib_sll) time(NULL));
 	}
 	/* Fill in the new data */
 	switch (ZEND_NUM_ARGS()) {
@@ -725,7 +894,7 @@ PHPAPI void php_mktime(INTERNAL_FUNCTION_PARAMETERS, int gmt)
 		case 6:
 			if (yea >= 0 && yea < 70) {
 				yea += 2000;
-			} else if (yea >= 70 && yea <= 100) {
+			} else if (yea >= 70 && yea <= 110) {
 				yea += 1900;
 			}
 			now->y = yea;
@@ -852,7 +1021,9 @@ PHPAPI void php_strftime(INTERNAL_FUNCTION_PARAMETERS, int gmt)
 		timelib_unixtime2gmt(ts, (timelib_sll) timestamp);
 	} else {
 		tzi = get_timezone_info(TSRMLS_C);
-		timelib_unixtime2local(ts, (timelib_sll) timestamp, tzi);
+		ts->tz_info = tzi;
+		ts->zone_type = TIMELIB_ZONETYPE_ID;
+		timelib_unixtime2local(ts, (timelib_sll) timestamp);
 	}
 	ta.tm_sec   = ts->s;
 	ta.tm_min   = ts->i;
@@ -945,7 +1116,9 @@ PHP_FUNCTION(localtime)
 
 	tzi = get_timezone_info(TSRMLS_C);
 	ts = timelib_time_ctor();
-	timelib_unixtime2local(ts, (timelib_sll) timestamp, tzi);
+	ts->tz_info = tzi;
+	ts->zone_type = TIMELIB_ZONETYPE_ID;
+	timelib_unixtime2local(ts, (timelib_sll) timestamp);
 
 	array_init(return_value);
 
@@ -989,7 +1162,9 @@ PHP_FUNCTION(getdate)
 
 	tzi = get_timezone_info(TSRMLS_C);
 	ts = timelib_time_ctor();
-	timelib_unixtime2local(ts, (timelib_sll) timestamp, tzi);
+	ts->tz_info = tzi;
+	ts->zone_type = TIMELIB_ZONETYPE_ID;
+	timelib_unixtime2local(ts, (timelib_sll) timestamp);
 
 	array_init(return_value);
 
@@ -1104,14 +1279,14 @@ static void date_object_free_storage_date(void *object TSRMLS_DC)
 
 static void date_object_free_storage_timezone(void *object TSRMLS_DC)
 {
-	php_date_obj *intern = (php_date_obj *)object;
-	
+	php_timezone_obj *intern = (php_timezone_obj *)object;
+
 	if (intern->std.properties) {
 		zend_hash_destroy(intern->std.properties);
 		efree(intern->std.properties);
 		intern->std.properties = NULL;
 	}
-	
+
 	efree(object);
 }
 
@@ -1145,7 +1320,7 @@ PHP_FUNCTION(date_create)
 
 	date_instanciate(date_ce_date, return_value TSRMLS_CC);
 	dateobj = (php_date_obj *) zend_object_store_get_object(return_value TSRMLS_CC);
-	dateobj->time = timelib_strtotime(time_str_len ? time_str : "now", &error, DATE_TIMEZONEDB);
+	dateobj->time = timelib_strtotime(time_str_len ? time_str : "now", time_str_len ? time_str_len : sizeof("now") -1, &error, DATE_TIMEZONEDB);
 
 	if (timezone_object) {
 		php_timezone_obj *tzobj;
@@ -1161,7 +1336,9 @@ PHP_FUNCTION(date_create)
 	}
 
 	now = timelib_time_ctor();
-	timelib_unixtime2local(now, (timelib_sll) time(NULL), tzi);
+	now->tz_info = tzi;
+	now->zone_type = TIMELIB_ZONETYPE_ID;
+	timelib_unixtime2local(now, (timelib_sll) time(NULL));
 
 	timelib_fill_holes(dateobj->time, now, 0);
 	timelib_update_ts(dateobj->time, tzi);
@@ -1203,7 +1380,7 @@ PHP_FUNCTION(date_modify)
 	}
 	dateobj = (php_date_obj *) zend_object_store_get_object(object TSRMLS_CC);
 
-	tmp_time = timelib_strtotime(modify, &error, DATE_TIMEZONEDB);
+	tmp_time = timelib_strtotime(modify, modify_len, &error, DATE_TIMEZONEDB);
 	dateobj->time->relative.y = tmp_time->relative.y;
 	dateobj->time->relative.m = tmp_time->relative.m;
 	dateobj->time->relative.d = tmp_time->relative.d;
@@ -1255,7 +1432,7 @@ PHP_FUNCTION(date_timezone_set)
 		timelib_tzinfo_dtor(dateobj->time->tz_info);
 	}
 	timelib_set_timezone(dateobj->time, timelib_tzinfo_clone(tzobj->tz));
-	timelib_unixtime2local(dateobj->time, dateobj->time->sse, dateobj->time->tz_info);
+	timelib_unixtime2local(dateobj->time, dateobj->time->sse);
 }
 
 PHP_FUNCTION(date_offset_get)
@@ -1480,6 +1657,10 @@ PHP_FUNCTION(date_default_timezone_set)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &zone, &zone_len) == FAILURE) {
 		RETURN_FALSE;
 	}
+	if (!timelib_timezone_id_is_valid(zone, DATE_TIMEZONEDB)) {
+		php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Timezone ID '%s' is invalid", zone);
+		RETURN_FALSE;
+	}
 	if (DATEG(timezone)) {
 		efree(DATEG(timezone));
 		DATEG(timezone) = NULL;
@@ -1500,6 +1681,211 @@ PHP_FUNCTION(date_default_timezone_get)
 }
 /* }}} */
 
+/* {{{ php_do_date_sunrise_sunset
+ *  Common for date_sunrise() and date_sunset() functions
+ */
+static void php_do_date_sunrise_sunset(INTERNAL_FUNCTION_PARAMETERS, int calc_sunset)
+{
+	double latitude, longitude, zenith, gmt_offset = 0, altitude;
+	double h_rise, h_set, N;
+	timelib_sll rise, set, transit;
+	long time, retformat;
+	int             rs;
+	timelib_time   *t;
+	timelib_tzinfo *tzi;
+	char            retstr[6];
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l|ldddd", &time, &retformat, &latitude, &longitude, &zenith, &gmt_offset) == FAILURE) {
+		RETURN_FALSE;
+	}
+	
+	switch (ZEND_NUM_ARGS()) {
+		case 1:
+			retformat = SUNFUNCS_RET_STRING;
+		case 2:
+			latitude = INI_FLT("date.default_latitude");
+		case 3:
+			longitude = INI_FLT("date.default_longitude");
+		case 4:
+			if (calc_sunset) {
+				zenith = INI_FLT("date.sunset_zenith");
+			} else {
+				zenith = INI_FLT("date.sunrise_zenith");
+			}
+		case 5:
+		case 6:
+			break;
+		default:
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "invalid format");
+			RETURN_FALSE;
+			break;
+	}
+	if (retformat != SUNFUNCS_RET_TIMESTAMP &&
+		retformat != SUNFUNCS_RET_STRING &&
+		retformat != SUNFUNCS_RET_DOUBLE)
+	{
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Wrong return format given, pick one of SUNFUNCS_RET_TIMESTAMP, SUNFUNCS_RET_STRING or SUNFUNCS_RET_DOUBLE");
+		RETURN_FALSE;
+	}
+	altitude = 90 - zenith;
+
+	/* Initialize time struct */
+	t = timelib_time_ctor();
+	tzi = get_timezone_info(TSRMLS_C);
+	t->tz_info = tzi;
+	t->zone_type = TIMELIB_ZONETYPE_ID;
+
+	if (ZEND_NUM_ARGS() <= 5) {
+		gmt_offset = timelib_get_current_offset(t) / 3600;
+	}
+
+	timelib_unixtime2local(t, time);
+	rs = timelib_astro_rise_set_altitude(t, longitude, latitude, altitude, altitude > -1 ? 1 : 0, &h_rise, &h_set, &rise, &set, &transit);
+
+	if (rs != 0) {
+		RETURN_FALSE;
+	}
+
+	if (retformat == SUNFUNCS_RET_TIMESTAMP) {
+		RETURN_LONG(calc_sunset ? set : rise);
+	}
+	N = (calc_sunset ? h_set : h_rise) + gmt_offset;
+	while (N > 24) {
+		N -= 24;
+	}
+	while (N < 0) {
+		N += 24;
+	}
+	switch (retformat) {
+		case SUNFUNCS_RET_STRING:
+			sprintf(retstr, "%02d:%02d", (int) N, (int) (60 * (N - (int) N)));
+			RETURN_STRINGL(retstr, 5, 1);
+			break;
+		case SUNFUNCS_RET_DOUBLE:
+			RETURN_DOUBLE(N);
+			break;
+	}
+}
+/* }}} */
+
+/* {{{ proto mixed date_sunrise(mixed time [, int format [, float latitude [, float longitude [, float zenith [, float gmt_offset]]]]])
+   Returns time of sunrise for a given day and location */
+PHP_FUNCTION(date_sunrise)
+{
+	php_do_date_sunrise_sunset(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
+}
+/* }}} */
+
+/* {{{ proto mixed date_sunset(mixed time [, int format [, float latitude [, float longitude [, float zenith [, float gmt_offset]]]]])
+   Returns time of sunset for a given day and location */
+PHP_FUNCTION(date_sunset)
+{
+	php_do_date_sunrise_sunset(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1);
+}
+/* }}} */
+
+/* {{{ proto array date_sun_info(long time, float latitude, float longitude)
+   Returns an array with information about sun set/rise and twilight begin/end */
+PHP_FUNCTION(date_sun_info)
+{
+	long            time;
+	double          latitude, longitude;
+	timelib_time   *t, *t2;
+	timelib_tzinfo *tzi;
+	int             rs;
+	timelib_sll     rise, set, transit;
+	int             dummy;
+	double          ddummy;
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ldd", &time, &latitude, &longitude) == FAILURE) {
+		RETURN_FALSE;
+	}
+	/* Initialize time struct */
+	t = timelib_time_ctor();
+	tzi = get_timezone_info(TSRMLS_C);
+	t->tz_info = tzi;
+	t->zone_type = TIMELIB_ZONETYPE_ID;
+	timelib_unixtime2local(t, time);
+
+	/* Setup */
+	t2 = timelib_time_ctor();
+	array_init(return_value);
+	
+	/* Get sun up/down and transit */
+	rs = timelib_astro_rise_set_altitude(t, latitude, longitude, -35.0/60, 1, &ddummy, &ddummy, &rise, &set, &transit);
+	switch (rs) {
+		case -1: /* always below */
+			add_assoc_bool(return_value, "sunrise", 0);
+			add_assoc_bool(return_value, "sunset", 0);
+			break;
+		case 1: /* always above */
+			add_assoc_bool(return_value, "sunrise", 1);
+			add_assoc_bool(return_value, "sunset", 1);
+			break;
+		default:
+			t2->sse = rise;
+			add_assoc_long(return_value, "sunrise", timelib_date_to_int(t2, &dummy));
+			t2->sse = set;
+			add_assoc_long(return_value, "sunset", timelib_date_to_int(t2, &dummy));
+	}
+	t2->sse = transit;
+	add_assoc_long(return_value, "transit", timelib_date_to_int(t2, &dummy));
+
+	/* Get civil twilight */
+	rs = timelib_astro_rise_set_altitude(t, latitude, longitude, -6.0, 0, &ddummy, &ddummy, &rise, &set, &transit);
+	switch (rs) {
+		case -1: /* always below */
+			add_assoc_bool(return_value, "civil_twilight_begin", 0);
+			add_assoc_bool(return_value, "civil_twilight_end", 0);
+			break;
+		case 1: /* always above */
+			add_assoc_bool(return_value, "civil_twilight_begin", 1);
+			add_assoc_bool(return_value, "civil_twilight_end", 1);
+			break;
+		default:
+			t2->sse = rise;
+			add_assoc_long(return_value, "civil_twilight_begin", timelib_date_to_int(t2, &dummy));
+			t2->sse = set;
+			add_assoc_long(return_value, "civil_twilight_end", timelib_date_to_int(t2, &dummy));
+	}
+
+	/* Get nautical twilight */
+	rs = timelib_astro_rise_set_altitude(t, latitude, longitude, -12.0, 0, &ddummy, &ddummy, &rise, &set, &transit);
+	switch (rs) {
+		case -1: /* always below */
+			add_assoc_bool(return_value, "nautical_twilight_begin", 0);
+			add_assoc_bool(return_value, "nautical_twilight_end", 0);
+			break;
+		case 1: /* always above */
+			add_assoc_bool(return_value, "nautical_twilight_begin", 1);
+			add_assoc_bool(return_value, "nautical_twilight_end", 1);
+			break;
+		default:
+			t2->sse = rise;
+			add_assoc_long(return_value, "nautical_twilight_begin", timelib_date_to_int(t2, &dummy));
+			t2->sse = set;
+			add_assoc_long(return_value, "nautical_twilight_end", timelib_date_to_int(t2, &dummy));
+	}
+
+	/* Get astronomical twilight */
+	rs = timelib_astro_rise_set_altitude(t, latitude, longitude, -18.0, 0, &ddummy, &ddummy, &rise, &set, &transit);
+	switch (rs) {
+		case -1: /* always below */
+			add_assoc_bool(return_value, "astronomical_twilight_begin", 0);
+			add_assoc_bool(return_value, "astronomical_twilight_end", 0);
+			break;
+		case 1: /* always above */
+			add_assoc_bool(return_value, "astronomical_twilight_begin", 1);
+			add_assoc_bool(return_value, "astronomical_twilight_end", 1);
+			break;
+		default:
+			t2->sse = rise;
+			add_assoc_long(return_value, "astronomical_twilight_begin", timelib_date_to_int(t2, &dummy));
+			t2->sse = set;
+			add_assoc_long(return_value, "astronomical_twilight_end", timelib_date_to_int(t2, &dummy));
+	}
+}
+/* }}} */
 /*
  * Local variables:
  * tab-width: 4
