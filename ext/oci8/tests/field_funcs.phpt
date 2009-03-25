@@ -34,7 +34,7 @@ if (!oci_execute($s)) {
 	die("oci_execute(select) failed!\n");
 }
 
-$row = oci_fetch_array($s, OCI_RETURN_NULLS + OCI_RETURN_LOBS);
+$row = oci_fetch_array($s, OCI_NUM + OCI_RETURN_NULLS + OCI_RETURN_LOBS);
 var_dump($row);
 
 foreach ($row as $num => $field) {
@@ -97,7 +97,7 @@ int(0)
 int(4000)
 bool(true)
 string(6) "STRING"
-string(7) "VARCHAR"
+string(8) "VARCHAR2"
 int(1)
 int(0)
 int(0)

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_constants.c,v 1.71.2.1 2006/01/04 23:53:04 andi Exp $ */
+/* $Id: zend_constants.c,v 1.71.2.5 2006/03/15 14:12:26 dmitry Exp $ */
 
 #include "zend.h"
 #include "zend_constants.h"
@@ -55,11 +55,13 @@ void zend_copy_constants(HashTable *target, HashTable *source)
 
 static int clean_non_persistent_constant(zend_constant *c TSRMLS_DC)
 {
-	if (c->flags & CONST_PERSISTENT) {
-		return EG(full_tables_cleanup) ? 0 : ZEND_HASH_APPLY_STOP;
-	} else {
-		return EG(full_tables_cleanup) ? 1 : ZEND_HASH_APPLY_REMOVE;
-	}
+	return (c->flags & CONST_PERSISTENT) ? ZEND_HASH_APPLY_STOP : ZEND_HASH_APPLY_REMOVE;
+}
+
+
+static int clean_non_persistent_constant_full(zend_constant *c TSRMLS_DC)
+{
+	return (c->flags & CONST_PERSISTENT) ? 0 : 1;
 }
 
 
@@ -112,8 +114,7 @@ void zend_register_standard_constants(TSRMLS_D)
 	{
 		zend_constant c;
 	
-		c.value.type = IS_BOOL;
-		c.flags = CONST_PERSISTENT;
+		c.flags = CONST_PERSISTENT | CONST_CT_SUBST;
 		c.module_number = 0;
 
 		c.name = zend_strndup(ZEND_STRL("TRUE"));
@@ -128,15 +129,17 @@ void zend_register_standard_constants(TSRMLS_D)
 		c.value.type = IS_BOOL;
 		zend_register_constant(&c TSRMLS_CC);
 
+		c.name = zend_strndup(ZEND_STRL("NULL"));
+		c.name_len = sizeof("NULL");
+		c.value.type = IS_NULL;
+		zend_register_constant(&c TSRMLS_CC);
+
+		c.flags = CONST_PERSISTENT;
+
 		c.name = zend_strndup(ZEND_STRL("ZEND_THREAD_SAFE"));
 		c.name_len = sizeof("ZEND_THREAD_SAFE");
 		c.value.value.lval = ZTS_V;
 		c.value.type = IS_BOOL;
-		zend_register_constant(&c TSRMLS_CC);
-
-		c.name = zend_strndup(ZEND_STRL("NULL"));
-		c.name_len = sizeof("NULL");
-		c.value.type = IS_NULL;
 		zend_register_constant(&c TSRMLS_CC);
 	}
 }
@@ -153,7 +156,7 @@ int zend_shutdown_constants(TSRMLS_D)
 void clean_non_persistent_constants(TSRMLS_D)
 {
 	if (EG(full_tables_cleanup)) {
-		zend_hash_apply(EG(zend_constants), (apply_func_t) clean_non_persistent_constant TSRMLS_CC);
+		zend_hash_apply(EG(zend_constants), (apply_func_t) clean_non_persistent_constant_full TSRMLS_CC);
 	} else {
 		zend_hash_reverse_apply(EG(zend_constants), (apply_func_t) clean_non_persistent_constant TSRMLS_CC);
 	}
@@ -309,8 +312,8 @@ ZEND_API int zend_register_constant(zend_constant *c TSRMLS_DC)
 
 	if (!(c->flags & CONST_CS)) {
 		/* keep in mind that c->name_len already contains the '\0' */
-		lowercase_name = estrndup(c->name, c->name_len);
-		zend_str_tolower(lowercase_name, c->name_len);
+		lowercase_name = estrndup(c->name, c->name_len-1);
+		zend_str_tolower(lowercase_name, c->name_len-1);
 		name = lowercase_name;
 	} else {
 		name = c->name;

@@ -16,13 +16,17 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_hash_types.h,v 1.2.2.3 2006/01/01 12:50:07 sniper Exp $ */
+/* $Id: php_hash_types.h,v 1.2.2.4 2006/02/19 23:39:53 mike Exp $ */
 
 #ifndef PHP_HASH_TYPES_H
 #define PHP_HASH_TYPES_H
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
+#else
+#ifndef PHP_WIN32
+#include "php_config.h"
+#endif
 #endif
 
 #ifndef PHP_WIN32

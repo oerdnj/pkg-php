@@ -16,7 +16,7 @@
    |          Nikos Mavroyanopoulos <nmav@hellug.gr> (HMAC, KEYGEN)       |
    +----------------------------------------------------------------------+
  */
-/* $Id: mhash.c,v 1.48.2.2 2006/01/01 12:50:09 sniper Exp $ */
+/* $Id: mhash.c,v 1.48.2.3 2006/04/03 09:14:33 tony2001 Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -205,7 +205,7 @@ PHP_FUNCTION(mhash_keygen_s2k)
 		WRONG_PARAM_COUNT;
 	}
 	if (bytes <= 0){
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "the byte parameter must be greater then 0");
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "the byte parameter must be greater than 0");
 		RETURN_FALSE;
 	}
 	

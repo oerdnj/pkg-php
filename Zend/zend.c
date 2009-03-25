@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend.c,v 1.308.2.7 2006/01/04 23:53:03 andi Exp $ */
+/* $Id: zend.c,v 1.308.2.12 2006/03/30 21:39:01 tony2001 Exp $ */
 
 #include "zend.h"
 #include "zend_extensions.h"
@@ -237,11 +237,19 @@ ZEND_API void zend_make_printable_zval(zval *expr, zval *expr_copy, int *use_cop
 				} else {
 					if(Z_OBJ_HANDLER_P(expr, get)) {
 						zval *z = Z_OBJ_HANDLER_P(expr, get)(expr TSRMLS_CC);
+
+						z->refcount++;
 						if(Z_TYPE_P(z) != IS_OBJECT) {
 							zend_make_printable_zval(z, expr_copy, use_copy);
-							FREE_ZVAL(z);
+							if (*use_copy) {
+								zval_ptr_dtor(&z);
+							} else {
+								ZVAL_ZVAL(expr_copy, z, 0, 1);
+								*use_copy = 1;
+							}
 							return;
 						}
+						zval_ptr_dtor(&z);
 					}
 				}
 				if (EG(exception)) {
@@ -869,7 +877,7 @@ static int exec_done_cb(zend_module_entry *module TSRMLS_DC)
 void zend_post_deactivate_modules(TSRMLS_D)
 {
 	zend_hash_apply(&module_registry, (apply_func_t) exec_done_cb TSRMLS_CC);
-	zend_hash_apply(&module_registry, (apply_func_t) module_registry_unload_temp TSRMLS_CC);
+	zend_hash_reverse_apply(&module_registry, (apply_func_t) module_registry_unload_temp TSRMLS_CC);
 }
 
 
@@ -1017,7 +1025,7 @@ ZEND_API void zend_error(int type, const char *format, ...)
 					}
 					zval_ptr_dtor(&retval);
 				}
-			} else {
+			} else if (!EG(exception)) {
 				/* The user error handler failed, use built-in error handler */
 				zend_error_cb(type, error_filename, error_lineno, format, args);
 			}
@@ -1046,7 +1054,7 @@ ZEND_API void zend_error(int type, const char *format, ...)
 	}
 }
 
-#if defined(__GNUC__) && !defined(__INTEL_COMPILER) && !defined(DARWIN) && !defined(__hpux)
+#if defined(__GNUC__) && !defined(__INTEL_COMPILER) && !defined(DARWIN) && !defined(__hpux) && !defined(_AIX)
 void zend_error_noreturn(int type, const char *format, ...) __attribute__ ((alias("zend_error"),noreturn));
 #endif
 

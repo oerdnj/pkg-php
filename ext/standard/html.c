@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: html.c,v 1.111.2.1 2006/01/01 12:50:14 sniper Exp $ */
+/* $Id: html.c,v 1.111.2.2 2006/02/25 21:32:11 rasmus Exp $ */
 
 /*
  * HTML entity resources:
@@ -884,7 +884,7 @@ PHPAPI char *php_unescape_html_entities(unsigned char *old, int oldlen, int *new
 	unsigned char replacement[15];
 	int replacement_len;
 
-	ret = estrdup(old);
+	ret = estrndup(old, oldlen);
 	retlen = oldlen;
 	if (!retlen) {
 		goto empty_source;

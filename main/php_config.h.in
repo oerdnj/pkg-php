@@ -227,6 +227,9 @@
 /* Define if you have the getgroups function.  */
 #undef HAVE_GETGROUPS
 
+/* Define if you have the getloadavg function.  */
+#undef HAVE_GETLOADAVG
+
 /* Define if you have the getlogin function.  */
 #undef HAVE_GETLOGIN
 
@@ -307,6 +310,9 @@
 
 /* Define if you have the kill function.  */
 #undef HAVE_KILL
+
+/* Define if you have the lchown function.  */
+#undef HAVE_LCHOWN
 
 /* Define if you have the ldap_parse_reference function.  */
 #undef HAVE_LDAP_PARSE_REFERENCE
@@ -1638,6 +1644,9 @@
 /* Have HASH Extension */
 #undef HAVE_HASH_EXT
 
+/* Define if processor uses big-endian word */
+#undef WORDS_BIGENDIAN
+
 /* Whether to build hash as dynamic module */
 #undef COMPILE_DL_HASH
 
@@ -1843,12 +1852,6 @@
 #undef COMPILE_DL_MING
 
 /*   */
-#undef HAVE_MSESSION
-
-/* Whether to build msession as dynamic module */
-#undef COMPILE_DL_MSESSION
-
-/*   */
 #undef HAVE_MSQL
 
 /* Whether to build msql as dynamic module */
@@ -1945,6 +1948,9 @@
 #undef HAVE_OCI_STMT_PREPARE2
 
 /*   */
+#undef HAVE_OCI_LOB_READ2
+
+/*   */
 #undef HAVE_OCI8_ATTR_STATEMENT
 
 /*   */
@@ -1955,6 +1961,9 @@
 
 /*   */
 #undef HAVE_OCI_STMT_PREPARE2
+
+/*   */
+#undef HAVE_OCI_LOB_READ2
 
 /*   */
 #undef HAVE_OCI8_TEMP_LOB
@@ -1994,6 +2003,9 @@
 
 /*   */
 #undef HAVE_OCI_STMT_PREPARE2
+
+/*   */
+#undef HAVE_OCI_LOB_READ2
 
 /*   */
 #undef HAVE_OCI8_TEMP_LOB

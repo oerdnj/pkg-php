@@ -17,7 +17,7 @@
  *
  */
 
-/* $Id: sendmail.c,v 1.65.2.1 2006/01/06 02:04:33 sniper Exp $ */
+/* $Id: sendmail.c,v 1.65.2.2 2006/02/08 21:03:36 johannes Exp $ */
 
 #include "php.h"				/*php specific */
 #include <stdio.h>
@@ -85,9 +85,9 @@ char LocalHost[HOST_NAME_LEN];
 #endif
 char seps[] = " ,\t\n";
 #ifndef NETWARE
-char *php_mailer = "PHP 4 WIN32";
+char *php_mailer = "PHP 5 WIN32";
 #else
-char *php_mailer = "PHP 4 NetWare";
+char *php_mailer = "PHP 5 NetWare";
 #endif	/* NETWARE */
 
 /* Error messages */

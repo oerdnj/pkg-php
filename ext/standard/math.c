@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: math.c,v 1.131.2.1 2006/01/01 12:50:15 sniper Exp $ */
+/* $Id: math.c,v 1.131.2.2 2006/02/06 11:28:41 tony2001 Exp $ */
 
 #include "php.h"
 #include "php_math.h"
@@ -448,7 +448,7 @@ PHP_FUNCTION(pow)
 		/* calculate pow(long,long) in O(log exp) operations, bail if overflow */
 		while (i >= 1) {
 			int overflow;
-			double dval;
+			double dval = 0.0;
 
 			if (i % 2) {
 				--i;

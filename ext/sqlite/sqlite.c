@@ -17,7 +17,7 @@
    |          Marcus Boerger <helly@php.net>                              |
    +----------------------------------------------------------------------+
 
-   $Id: sqlite.c,v 1.166.2.11 2006/01/01 12:50:14 sniper Exp $
+   $Id: sqlite.c,v 1.166.2.13 2006/04/18 14:30:15 iliaa Exp $
 */
 
 #ifdef HAVE_CONFIG_H
@@ -802,8 +802,7 @@ static void sqlite_object_free_storage(void *object TSRMLS_DC)
 {
 	sqlite_object *intern = (sqlite_object *)object;
 
-	zend_hash_destroy(intern->std.properties);
-	FREE_HASHTABLE(intern->std.properties);
+	zend_object_std_dtor(&intern->std TSRMLS_CC);
 
 	if (intern->u.ptr) {
 		if (intern->type == is_db) {
@@ -826,10 +825,8 @@ static void sqlite_object_new(zend_class_entry *class_type, zend_object_handlers
 
 	intern = emalloc(sizeof(sqlite_object));
 	memset(intern, 0, sizeof(sqlite_object));
-	intern->std.ce = class_type;
 
-	ALLOC_HASHTABLE(intern->std.properties);
-	zend_hash_init(intern->std.properties, 0, NULL, ZVAL_PTR_DTOR, 0);
+	zend_object_std_init(&intern->std, class_type TSRMLS_CC);
 	zend_hash_copy(intern->std.properties, &class_type->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
 
 	retval->handle = zend_objects_store_put(intern, (zend_objects_store_dtor_t)zend_objects_destroy_object, (zend_objects_free_object_storage_t) sqlite_object_free_storage, NULL TSRMLS_CC);
@@ -1127,7 +1124,7 @@ PHP_MINFO_FUNCTION(sqlite)
 {
 	php_info_print_table_start();
 	php_info_print_table_header(2, "SQLite support", "enabled");
-	php_info_print_table_row(2, "PECL Module version", PHP_SQLITE_MODULE_VERSION " $Id: sqlite.c,v 1.166.2.11 2006/01/01 12:50:14 sniper Exp $");
+	php_info_print_table_row(2, "PECL Module version", PHP_SQLITE_MODULE_VERSION " $Id: sqlite.c,v 1.166.2.13 2006/04/18 14:30:15 iliaa Exp $");
 	php_info_print_table_row(2, "SQLite Library", sqlite_libversion());
 	php_info_print_table_row(2, "SQLite Encoding", sqlite_libencoding());
 	php_info_print_table_end();
@@ -1708,7 +1705,9 @@ PHP_FUNCTION(sqlite_fetch_column_types)
 			add_index_string(return_value, i, colnames[ncols + i] ? (char *)colnames[ncols + i] : "", 1);
 		}
 	}
-
+	if (res.vm) {
+		sqlite_finalize(res.vm, NULL);
+	}
 done:
 	sqlite_exec(db->db, "PRAGMA show_datatypes = OFF", NULL, NULL, NULL);
 }

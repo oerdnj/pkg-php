@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_virtual_cwd.c,v 1.74.2.4 2006/01/01 12:50:00 sniper Exp $ */
+/* $Id: tsrm_virtual_cwd.c,v 1.74.2.9 2006/03/05 18:57:54 derick Exp $ */
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -163,18 +163,15 @@ static int php_is_file_ok(const cwd_state *state)
 static void cwd_globals_ctor(virtual_cwd_globals *cwd_globals TSRMLS_DC)
 {
 	CWD_STATE_COPY(&cwd_globals->cwd, &main_cwd_state);
-#ifdef REALPATH_CACHE
 	cwd_globals->realpath_cache_size = 0;
 	cwd_globals->realpath_cache_size_limit = REALPATH_CACHE_SIZE;
 	cwd_globals->realpath_cache_ttl = REALPATH_CACHE_TTL;
 	memset(cwd_globals->realpath_cache, 0, sizeof(cwd_globals->realpath_cache));
-#endif
 }
 
 static void cwd_globals_dtor(virtual_cwd_globals *cwd_globals TSRMLS_DC)
 {
 	CWD_STATE_FREE(&cwd_globals->cwd);
-#ifdef REALPATH_CACHE
 	{
 		int i;
 
@@ -187,7 +184,6 @@ static void cwd_globals_dtor(virtual_cwd_globals *cwd_globals TSRMLS_DC)
 			}
 		}
 	}
-#endif
 }
 
 static char *tsrm_strndup(const char *s, size_t length)
@@ -308,7 +304,6 @@ CWD_API char *virtual_getcwd(char *buf, size_t size TSRMLS_DC)
 	return buf;
 }
 
-#ifdef REALPATH_CACHE
 static inline unsigned long realpath_cache_key(const char *path, int path_len)
 {
   register unsigned long h;
@@ -352,19 +347,18 @@ static inline realpath_cache_bucket* realpath_cache_find(const char *path, int p
 	while (*bucket != NULL) {
 		if (CWDG(realpath_cache_ttl) && (*bucket)->expires < t) {
 			realpath_cache_bucket *r = *bucket;
-		  *bucket = (*bucket)->next;
-		  CWDG(realpath_cache_size) -= sizeof(realpath_cache_bucket) + r->path_len + 1 + r->realpath_len + 1;
-		  free(r);
+			*bucket = (*bucket)->next;
+			CWDG(realpath_cache_size) -= sizeof(realpath_cache_bucket) + r->path_len + 1 + r->realpath_len + 1;
+			free(r);
 		} else if (key == (*bucket)->key && path_len == (*bucket)->path_len &&
 		           memcmp(path, (*bucket)->path, path_len) == 0) {
 			return *bucket;
 		} else {
-			*bucket = (*bucket)->next;
+			bucket = &(*bucket)->next;
 		}
 	}
 	return NULL;
 }
-#endif
 
 
 /* Resolve path relatively to state and put the real path into state */
@@ -385,20 +379,17 @@ CWD_API int virtual_file_ex(cwd_state *state, const char *path, verify_path_func
 #else
 	char *new_path;
 #endif
-#ifdef REALPATH_CACHE
 	char orig_path[MAXPATHLEN];
-	int orig_path_len;
+	int orig_path_len = 0;
 	realpath_cache_bucket *bucket;
-	time_t t;
+	time_t t = 0;
 	TSRMLS_FETCH();
-#endif
 
 	if (path_length == 0) 
 		return (0);
 	if (path_length >= MAXPATHLEN)
 		return (1);
 
-#ifdef REALPATH_CACHE
 	if (use_realpath && CWDG(realpath_cache_size_limit)) {
 		if (IS_ABSOLUTE_PATH(path, path_length) || (state->cwd_length < 1)) {
 			memcpy(orig_path, path, path_length+1);
@@ -430,7 +421,6 @@ CWD_API int virtual_file_ex(cwd_state *state, const char *path, verify_path_func
 			}
 		}
 	}
-#endif
 #if !defined(TSRM_WIN32) && !defined(NETWARE)
 	/* cwd_length can be 0 when getcwd() fails.
 	 * This can happen under solaris when a dir does not have read permissions
@@ -609,11 +599,9 @@ php_failed_getlongpath:
 #endif
 	free(free_path);
 
-#ifdef REALPATH_CACHE
 	if (use_realpath && CWDG(realpath_cache_size_limit)) {
 		realpath_cache_add(orig_path, orig_path_len, state->cwd, state->cwd_length, t TSRMLS_CC);
 	}
-#endif
 
 	if (verify_path && verify_path(state)) {
 		CWD_STATE_FREE(state);
@@ -777,7 +765,7 @@ CWD_API int virtual_chmod(const char *filename, mode_t mode TSRMLS_DC)
 }
 
 #if !defined(TSRM_WIN32) && !defined(NETWARE)
-CWD_API int virtual_chown(const char *filename, uid_t owner, gid_t group TSRMLS_DC)
+CWD_API int virtual_chown(const char *filename, uid_t owner, gid_t group, int link TSRMLS_DC)
 {
 	cwd_state new_state;
 	int ret;
@@ -785,7 +773,15 @@ CWD_API int virtual_chown(const char *filename, uid_t owner, gid_t group TSRMLS_
 	CWD_STATE_COPY(&new_state, &CWDG(cwd));
 	virtual_file_ex(&new_state, filename, NULL, 0);
 
-	ret = chown(new_state.cwd, owner, group);
+	if (link) {
+#if HAVE_LCHOWN
+		ret = lchown(new_state.cwd, owner, group);
+#else
+		ret = -1;
+#endif
+	} else {
+		ret = chown(new_state.cwd, owner, group);
+	}
 
 	CWD_STATE_FREE(&new_state);
 	return ret;
@@ -1046,6 +1042,26 @@ CWD_API FILE *virtual_popen(const char *command, const char *type TSRMLS_DC)
 }
 
 #endif
+
+/* On AIX & Tru64 when a file does not exist realpath() returns
+ * NULL, and sets errno to ENOENT. Unlike in other libc implementations
+ * the destination is not filled and remains undefined. Therefor, we
+ * must populate it manually using strcpy as done on systems with no
+ * realpath() function.
+ */
+#if defined(__osf__) || defined(_AIX)
+char *php_realpath_hack(char *src, char *dest)
+{
+	char *ret;
+
+	if ((ret = realpath(src, dest)) == NULL && errno == ENOENT) {
+		return strcpy(dest, src);
+	} else {
+		return ret;
+	}
+}
+#endif
+
 
 
 /*

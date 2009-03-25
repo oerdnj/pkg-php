@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: tm2unixtime.c,v 1.13.2.2 2006/01/01 12:50:05 sniper Exp $ */
+/* $Id: tm2unixtime.c,v 1.13.2.3 2006/04/11 18:03:52 derick Exp $ */
 
 #include "timelib.h"
 
@@ -135,6 +135,13 @@ static timelib_sll do_years(timelib_sll year)
 {
 	timelib_sll i;
 	timelib_sll res = 0;
+	timelib_sll eras;
+
+	eras = (year - 1970) / 400;
+	if (eras != 0) {
+		year = year - (eras * 400);
+		res += (SECS_PER_ERA * eras);
+	}
 
 	if (year >= 1970) {
 		for (i = year - 1; i >= 1970; i--) {

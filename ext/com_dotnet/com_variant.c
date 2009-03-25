@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_variant.c,v 1.11.2.1 2006/01/01 12:50:00 sniper Exp $ */
+/* $Id: com_variant.c,v 1.11.2.2 2006/02/04 10:57:27 rrichards Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -40,7 +40,7 @@ static void safe_array_from_zval(VARIANT *v, zval *z, int codepage TSRMLS_DC)
 	int keytype;
 	char *strindex;
 	int strindexlen;
-	long intindex;
+	long intindex = -1;
 	long max_index = 0;
 	VARIANT *va;
 	zval **item;

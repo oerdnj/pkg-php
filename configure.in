@@ -1,4 +1,4 @@
- ## $Id: configure.in,v 1.579.2.35 2006/01/11 14:19:13 iliaa Exp $ -*- autoconf -*-
+ ## $Id: configure.in,v 1.579.2.54 2006/08/15 13:14:47 iliaa Exp $ -*- autoconf -*-
 dnl ## Process this file with autoconf to produce a configure script.
 
 divert(1)
@@ -41,7 +41,7 @@ AC_CONFIG_HEADER(main/php_config.h)
 
 MAJOR_VERSION=5
 MINOR_VERSION=1
-RELEASE_VERSION=2
+RELEASE_VERSION=5
 EXTRA_VERSION=""
 VERSION="$MAJOR_VERSION.$MINOR_VERSION.$RELEASE_VERSION$EXTRA_VERSION"
 
@@ -224,7 +224,7 @@ dnl -------------------------------------------------------------------------
 
 PTHREADS_CHECK
 PHP_HELP_SEPARATOR([SAPI modules:])
-PHP_SHLIB_SUFFIX_NAME
+PHP_SHLIB_SUFFIX_NAMES
 PHP_SAPI=default
 PHP_BUILD_PROGRAM
 
@@ -233,7 +233,7 @@ dnl SAPI configuration.
 dnl -------------------------------------------------------------------------
 
 dnl paths to the targets are relative to the build directory
-SAPI_SHARED=libs/libphp5.$SHLIB_SUFFIX_NAME
+SAPI_SHARED=libs/libphp5.$SHLIB_DL_SUFFIX_NAME
 SAPI_STATIC=libs/libphp5.a
 SAPI_LIBTOOL=libphp5.la
 
@@ -466,6 +466,7 @@ ftok \
 funopen \
 gai_strerror \
 gcvt \
+getloadavg \
 getlogin \
 getprotobyname \
 getprotobynumber \
@@ -482,6 +483,7 @@ isascii \
 link \
 localtime_r \
 lockf \
+lchown \
 lrand48 \
 memcpy \
 memmove \
@@ -1195,7 +1197,6 @@ PHP_SUBST(SHARED_LIBTOOL)
 PHP_SUBST(WARNING_LEVEL)
 PHP_SUBST(PHP_FRAMEWORKS)
 PHP_SUBST(PHP_FRAMEWORKPATH)
-PHP_SUBST_OLD(SHLIB_SUFFIX_NAME)
 PHP_SUBST(INSTALL_HEADERS)
 
 old_CC=$CC

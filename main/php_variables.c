@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_variables.c,v 1.104.2.4 2006/01/01 12:50:17 sniper Exp $ */
+/* $Id: php_variables.c,v 1.104.2.10 2006/05/03 11:24:29 dmitry Exp $ */
 
 #include <stdio.h>
 #include "php.h"
@@ -64,7 +64,7 @@ PHPAPI void php_register_variable_ex(char *var, zval *val, zval *track_vars_arra
 	char *index, *escaped_index = NULL;
 	int var_len, index_len;
 	zval *gpc_element, **gpc_element_p;
-	zend_bool is_array;
+	zend_bool is_array = 0;
 	HashTable *symtable1 = NULL;
 
 	assert(var != NULL);
@@ -83,44 +83,43 @@ PHPAPI void php_register_variable_ex(char *var, zval *val, zval *track_vars_arra
 	/*
 	 * Prepare variable name
 	 */
-	ip = strchr(var, '[');
-	if (ip) {
-		is_array = 1;
-		*ip = 0;
-	} else {
-		is_array = 0;
-	}
+
 	/* ignore leading spaces in the variable name */
 	while (*var && *var==' ') {
 		var++;
 	}
-	var_len = strlen(var);
+
+	/* ensure that we don't have spaces or dots in the variable name (not binary safe) */
+	for (p = var; *p; p++) {
+		if (*p == ' ' || *p == '.') {
+			*p='_';
+		} else if (*p == '[') {
+			is_array = 1;
+			ip = p;
+			*p = 0;
+			break;
+		}
+	}
+	var_len = p - var;
+
 	if (var_len==0) { /* empty variable name, or variable name with a space in it */
 		zval_dtor(val);
 		return;
 	}
 
 	/* GLOBALS hijack attempt, reject parameter */
-	if (symtable1 == EG(active_symbol_table) && !strcmp("GLOBALS", var)) {
+	if (symtable1 == EG(active_symbol_table) &&
+		var_len == sizeof("GLOBALS")-1 &&
+		!memcmp(var, "GLOBALS", sizeof("GLOBALS")-1)) {
 		zval_dtor(val);
 		return;
-	}
-
-	/* ensure that we don't have spaces or dots in the variable name (not binary safe) */
-	for (p=var; *p; p++) {
-		switch (*p) {
-			case ' ':
-			case '.':
-				*p='_';
-				break;
-		}
 	}
 
 	index = var;
 	index_len = var_len;
 
-	while (1) {
-		if (is_array) {
+	if (is_array) {
+		while (1) {
 			char *index_s;
 			int new_idx_len = 0;
 
@@ -179,42 +178,38 @@ PHPAPI void php_register_variable_ex(char *var, zval *val, zval *track_vars_arra
 				is_array = 1;
 				*ip = 0;
 			} else {
-				is_array = 0;
+				goto plain_var;
 			}
-		} else {
+		}
+	} else {
 plain_var:
-			MAKE_STD_ZVAL(gpc_element);
-			gpc_element->value = val->value;
-			Z_TYPE_P(gpc_element) = Z_TYPE_P(val);
-			if (!index) {
-				zend_hash_next_index_insert(symtable1, &gpc_element, sizeof(zval *), (void **) &gpc_element_p);
+		MAKE_STD_ZVAL(gpc_element);
+		gpc_element->value = val->value;
+		Z_TYPE_P(gpc_element) = Z_TYPE_P(val);
+		if (!index) {
+			zend_hash_next_index_insert(symtable1, &gpc_element, sizeof(zval *), (void **) &gpc_element_p);
+		} else {
+			if (PG(magic_quotes_gpc)) { 
+				escaped_index = php_addslashes(index, index_len, &index_len, 0 TSRMLS_CC);
 			} else {
-				zval **tmp;
-
-				if (PG(magic_quotes_gpc)) { 
-					escaped_index = php_addslashes(index, index_len, &index_len, 0 TSRMLS_CC);
-				} else {
-					escaped_index = index;
-				}
-				/* 
-				 * According to rfc2965, more specific paths are listed above the less specific ones.
-				 * If we encounter a duplicate cookie name, we should skip it, since it is not possible
-				 * to have the same (plain text) cookie name for the same path and we should not overwrite
-				 * more specific cookies with the less specific ones.
-				 */
-				if (PG(http_globals)[TRACK_VARS_COOKIE] && symtable1 == Z_ARRVAL_P(PG(http_globals)[TRACK_VARS_COOKIE]) && 
-					zend_symtable_find(symtable1, escaped_index, index_len+1, (void **) &tmp) != FAILURE) {
-					if (index != escaped_index) {
-						efree(escaped_index);
-					}
-					break;
-				}
-				zend_symtable_update(symtable1, escaped_index, index_len + 1, &gpc_element, sizeof(zval *), (void **) &gpc_element_p);
-				if (index != escaped_index) {
-					efree(escaped_index);
-				}
+				escaped_index = index;
 			}
-			break;
+			/* 
+			 * According to rfc2965, more specific paths are listed above the less specific ones.
+			 * If we encounter a duplicate cookie name, we should skip it, since it is not possible
+			 * to have the same (plain text) cookie name for the same path and we should not overwrite
+			 * more specific cookies with the less specific ones.
+			 */
+			if (PG(http_globals)[TRACK_VARS_COOKIE] &&
+				symtable1 == Z_ARRVAL_P(PG(http_globals)[TRACK_VARS_COOKIE]) &&
+				zend_symtable_exists(symtable1, escaped_index, index_len + 1)) {
+				zval_ptr_dtor(&gpc_element);
+			} else {
+				zend_symtable_update(symtable1, escaped_index, index_len + 1, &gpc_element, sizeof(zval *), (void **) &gpc_element_p);
+			}
+			if (escaped_index != index) {
+				efree(escaped_index);
+			}
 		}
 	}
 }
@@ -422,15 +417,12 @@ static void php_build_argv(char *s, zval *track_vars_array TSRMLS_DC)
 	int count = 0;
 	char *ss, *space;
 	
-	if (! (PG(register_globals) || SG(request_info).argc ||
-		   PG(http_globals)[TRACK_VARS_SERVER]) ) {
+	if (!(PG(register_globals) || SG(request_info).argc || track_vars_array)) {
 		return;
 	}
 	
-	ALLOC_ZVAL(arr);
+	ALLOC_INIT_ZVAL(arr);
 	array_init(arr);
-	arr->is_ref = 0;
-	arr->refcount = 0;
 
 	/* Prepare argv */
 	if (SG(request_info).argc) { /* are we in cli sapi? */
@@ -476,15 +468,13 @@ static void php_build_argv(char *s, zval *track_vars_array TSRMLS_DC)
 	}
 
 	/* prepare argc */
-	ALLOC_ZVAL(argc);
+	ALLOC_INIT_ZVAL(argc);
 	if (SG(request_info).argc) {
 		Z_LVAL_P(argc) = SG(request_info).argc;
 	} else {
 		Z_LVAL_P(argc) = count;
 	}
 	Z_TYPE_P(argc) = IS_LONG;
-	argc->is_ref = 0;
-	argc->refcount = 0;
 
 	if (PG(register_globals) || SG(request_info).argc) {
 		arr->refcount++;
@@ -498,6 +488,8 @@ static void php_build_argv(char *s, zval *track_vars_array TSRMLS_DC)
 		zend_hash_update(Z_ARRVAL_P(track_vars_array), "argv", sizeof("argv"), &arr, sizeof(zval *), NULL);
 		zend_hash_update(Z_ARRVAL_P(track_vars_array), "argc", sizeof("argc"), &argc, sizeof(zval *), NULL);
 	}
+	zval_ptr_dtor(&arr);
+	zval_ptr_dtor(&argc);
 }
 /* }}} */
 
@@ -613,7 +605,7 @@ int php_hash_environment(TSRMLS_D)
 	unsigned char _gpc_flags[5] = {0, 0, 0, 0, 0};
 	zval *dummy_track_vars_array = NULL;
 	zend_bool initialized_dummy_track_vars_array=0;
-	zend_bool jit_initialization = (PG(auto_globals_jit) && !PG(register_globals) && !PG(register_long_arrays) && !PG(register_argc_argv));
+	zend_bool jit_initialization = (PG(auto_globals_jit) && !PG(register_globals) && !PG(register_long_arrays));
 	struct auto_global_record {
 		char *name;
 		uint name_len;
@@ -736,6 +728,23 @@ static zend_bool php_auto_globals_create_server(char *name, uint name_len TSRMLS
 {
 	if (PG(variables_order) && (strchr(PG(variables_order),'S') || strchr(PG(variables_order),'s'))) {
 		php_register_server_variables(TSRMLS_C);
+
+		if (PG(register_argc_argv)) {
+			if (SG(request_info).argc) {
+				zval **argc, **argv;
+	
+				if (zend_hash_find(&EG(symbol_table), "argc", sizeof("argc"), (void**)&argc) == SUCCESS &&
+				    zend_hash_find(&EG(symbol_table), "argv", sizeof("argv"), (void**)&argv) == SUCCESS) {
+				(*argc)->refcount++;
+					(*argv)->refcount++;
+					zend_hash_update(Z_ARRVAL_P(PG(http_globals)[TRACK_VARS_SERVER]), "argv", sizeof("argv"), argv, sizeof(zval *), NULL);
+					zend_hash_update(Z_ARRVAL_P(PG(http_globals)[TRACK_VARS_SERVER]), "argc", sizeof("argc"), argc, sizeof(zval *), NULL);
+				}
+			} else {
+				php_build_argv(SG(request_info).query_string, PG(http_globals)[TRACK_VARS_SERVER] TSRMLS_CC);
+			}
+		}
+	
 	} else {
 		zval *server_vars=NULL;
 		ALLOC_ZVAL(server_vars);
@@ -754,7 +763,7 @@ static zend_bool php_auto_globals_create_server(char *name, uint name_len TSRMLS
 		zend_hash_update(&EG(symbol_table), "HTTP_SERVER_VARS", sizeof("HTTP_SERVER_VARS"), &PG(http_globals)[TRACK_VARS_SERVER], sizeof(zval *), NULL);
 		PG(http_globals)[TRACK_VARS_SERVER]->refcount++;
 	}
-
+	
 	return 0; /* don't rearm */
 }
 

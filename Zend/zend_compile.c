@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_compile.c,v 1.647.2.21 2006/01/04 23:53:04 andi Exp $ */
+/* $Id: zend_compile.c,v 1.647.2.25 2006/03/27 08:09:18 dmitry Exp $ */
 
 #include <zend_language_parser.h>
 #include "zend.h"
@@ -2940,13 +2940,7 @@ void zend_do_declare_class_constant(znode *var_name, znode *value TSRMLS_DC)
 	}
 	
 	ALLOC_ZVAL(property);
-
-	if (value) {
-		*property = value->u.constant;
-	} else {
-		INIT_PZVAL(property);
-		property->type = IS_NULL;
-	}
+	*property = value->u.constant;
 
 	if (zend_hash_add(&CG(active_class_entry)->constants_table, var_name->u.constant.value.str.val, var_name->u.constant.value.str.len+1, &property, sizeof(zval *), NULL)==FAILURE) {
 		FREE_ZVAL(property);
@@ -3095,6 +3089,33 @@ void zend_do_end_new_object(znode *result, znode *new_token, znode *argument_lis
 	*result = CG(active_op_array)->opcodes[new_token->u.opline_num].result;
 }
 
+static int zend_constant_ct_subst(znode *result, zval *const_name TSRMLS_DC)
+{
+	zend_constant *c = NULL;
+
+	if (zend_hash_find(EG(zend_constants), Z_STRVAL_P(const_name), Z_STRLEN_P(const_name)+1, (void **) &c) == FAILURE) {
+		char *lookup_name = zend_str_tolower_dup(Z_STRVAL_P(const_name), Z_STRLEN_P(const_name));
+		 
+		if (zend_hash_find(EG(zend_constants), lookup_name, Z_STRLEN_P(const_name)+1, (void **) &c)==SUCCESS) {
+			if ((c->flags & CONST_CS) && memcmp(c->name, Z_STRVAL_P(const_name), Z_STRLEN_P(const_name))!=0) {
+				c = NULL;
+			}
+		} else {
+			c = NULL;
+		}
+		efree(lookup_name);
+	}
+	if (c && (c->flags & CONST_CT_SUBST)) {
+		zval_dtor(const_name);
+		result->op_type = IS_CONST;
+		result->u.constant = c->value;
+		zval_copy_ctor(&result->u.constant);
+		INIT_PZVAL(&result->u.constant);
+		return 1;
+	}
+	return 0;
+}
+
 void zend_do_fetch_constant(znode *result, znode *constant_container, znode *constant_name, int mode TSRMLS_DC)
 {
 	switch (mode) {
@@ -3102,13 +3123,15 @@ void zend_do_fetch_constant(znode *result, znode *constant_container, znode *con
 			if (constant_container) {
 				zend_do_fetch_class_name(NULL, constant_container, constant_name TSRMLS_CC);
 				*result = *constant_container;
-			} else {
+				result->u.constant.type = IS_CONSTANT;
+			} else if (!zend_constant_ct_subst(result, &constant_name->u.constant TSRMLS_CC)) {
 				*result = *constant_name;
+				result->u.constant.type = IS_CONSTANT;
 			}
-			result->u.constant.type = IS_CONSTANT;
 			break;
 		case ZEND_RT:
-			{
+			if (constant_container ||
+			    !zend_constant_ct_subst(result, &constant_name->u.constant TSRMLS_CC)) {
 				zend_op *opline = get_next_op(CG(active_op_array) TSRMLS_CC);
 	
 				opline->opcode = ZEND_FETCH_CONSTANT;
@@ -3226,6 +3249,9 @@ void zend_do_add_static_array_element(znode *result, znode *offset, znode *expr)
 				break;
 			case IS_DOUBLE:
 				zend_hash_index_update(result->u.constant.value.ht, (long)offset->u.constant.value.dval, &element, sizeof(zval *), NULL);
+				break;
+			case IS_CONSTANT_ARRAY:
+				zend_error(E_ERROR, "Illegal offset type");
 				break;
 		}
 	} else {
@@ -3755,6 +3781,8 @@ void zend_do_declare_stmt(znode *var, znode *val TSRMLS_DC)
 		}
 		efree(val->u.constant.value.str.val);
 #endif /* ZEND_MULTIBYTE */
+	} else {
+		zval_dtor(&val->u.constant);
 	}
 	zval_dtor(&var->u.constant);
 }

@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: file.c,v 1.409.2.3 2006/01/01 12:50:14 sniper Exp $ */
+/* $Id: file.c,v 1.409.2.6 2006/04/06 02:39:55 iliaa Exp $ */
 
 /* Synced with php 3.0 revision 1.218 1999-06-16 [ssb] */
 
@@ -773,8 +773,9 @@ PHP_FUNCTION(tempnam)
 	zval **arg1, **arg2;
 	char *d;
 	char *opened_path;
-	char p[64];
+	char *p;
 	int fd;
+	size_t p_len;
 
 	if (ZEND_NUM_ARGS() != 2 || zend_get_parameters_ex(2, &arg1, &arg2) == FAILURE) {
 		WRONG_PARAM_COUNT;
@@ -787,7 +788,11 @@ PHP_FUNCTION(tempnam)
 	}
 	
 	d = estrndup(Z_STRVAL_PP(arg1), Z_STRLEN_PP(arg1));
-	strlcpy(p, Z_STRVAL_PP(arg2), sizeof(p));
+
+	php_basename(Z_STRVAL_PP(arg2), Z_STRLEN_PP(arg2), NULL, 0, &p, &p_len TSRMLS_CC);
+	if (p_len > 64) {
+		p[63] = '\0';
+	}
 
 	if ((fd = php_open_temporary_fd(d, p, &opened_path TSRMLS_CC)) >= 0) {
 		close(fd);
@@ -795,6 +800,7 @@ PHP_FUNCTION(tempnam)
 	} else {
 		RETVAL_FALSE;
 	}
+	efree(p);
 	efree(d);
 }
 /* }}} */
@@ -1355,10 +1361,10 @@ PHPAPI PHP_FUNCTION(fseek)
 /* {{{ proto int mkdir(char *dir int mode)
 */
 
-PHPAPI int php_mkdir(char *dir, long mode TSRMLS_DC)
+PHPAPI int php_mkdir_ex(char *dir, long mode, int options TSRMLS_DC)
 {
 	int ret;
-	
+
 	if (PG(safe_mode) && (!php_checkuid(dir, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
 		return -1;
 	}
@@ -1367,11 +1373,16 @@ PHPAPI int php_mkdir(char *dir, long mode TSRMLS_DC)
 		return -1;
 	}
 
-	if ((ret = VCWD_MKDIR(dir, (mode_t)mode)) < 0) {
+	if ((ret = VCWD_MKDIR(dir, (mode_t)mode)) < 0 && (options & REPORT_ERRORS)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", strerror(errno));
 	}
 
-	return ret;	
+	return ret;
+}
+
+PHPAPI int php_mkdir(char *dir, long mode TSRMLS_DC)
+{
+	    return php_mkdir_ex(dir, mode, REPORT_ERRORS TSRMLS_CC);
 }
 /* }}} */
 
@@ -1756,7 +1767,7 @@ no_stat:
 	}
 safe_to_copy:
 
-	srcstream = php_stream_open_wrapper(src, "rb", STREAM_DISABLE_OPEN_BASEDIR | REPORT_ERRORS, NULL);
+	srcstream = php_stream_open_wrapper(src, "rb", ENFORCE_SAFE_MODE | REPORT_ERRORS, NULL);
 	
 	if (!srcstream) {
 		return ret;

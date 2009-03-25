@@ -132,9 +132,17 @@ static int zend_do_fcall_common_helper_SPEC(ZEND_OPCODE_HANDLER_ARGS)
 	zend_bool should_change_scope;
 	zend_op *ctor_opline;
 
-	if (EX(function_state).function->common.fn_flags & ZEND_ACC_ABSTRACT) {
-		zend_error_noreturn(E_ERROR, "Cannot call abstract method %s::%s()", EX(function_state).function->common.scope->name, EX(function_state).function->common.function_name);
-		ZEND_VM_NEXT_OPCODE(); /* Never reached */
+	if (EX(function_state).function->common.fn_flags & (ZEND_ACC_ABSTRACT|ZEND_ACC_DEPRECATED)) {
+		if (EX(function_state).function->common.fn_flags & ZEND_ACC_ABSTRACT) {
+			zend_error_noreturn(E_ERROR, "Cannot call abstract method %s::%s()", EX(function_state).function->common.scope->name, EX(function_state).function->common.function_name);
+			ZEND_VM_NEXT_OPCODE(); /* Never reached */
+		}
+		if (EX(function_state).function->common.fn_flags & ZEND_ACC_DEPRECATED) {
+			zend_error(E_STRICT, "Function %s%s%s() is deprecated", 
+				EX(function_state).function->common.scope ? EX(function_state).function->common.scope->name : "",
+				EX(function_state).function->common.scope ? "::" : "",
+				EX(function_state).function->common.function_name);
+		};
 	}
 
 	zend_ptr_stack_2_push(&EG(argument_stack), (void *) opline->extended_value, NULL);
@@ -670,6 +678,15 @@ static int ZEND_INIT_STATIC_METHOD_CALL_SPEC_CONST_HANDLER(ZEND_OPCODE_HANDLER_A
 	if (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) {
 		EX(object) = NULL;
 	} else {
+		if (IS_CONST != IS_UNUSED &&
+		    EG(This) &&
+		    Z_OBJ_HT_P(EG(This))->get_class_entry &&
+		    !instanceof_function(Z_OBJCE_P(EG(This)), ce TSRMLS_CC)) { 
+		    /* We are calling method of the other (incompatible) class,
+		       but passing $this. This is done for compatibility with php-4. */
+			zend_error(E_STRICT, "Non-static method %s::%s() should not be called statically, assuming $this from incompatible context", EX(fbc)->common.scope->name, EX(fbc)->common.function_name);
+
+		}
 		if ((EX(object) = EG(This))) {
 			EX(object)->refcount++;
 		}
@@ -862,6 +879,15 @@ static int ZEND_INIT_STATIC_METHOD_CALL_SPEC_TMP_HANDLER(ZEND_OPCODE_HANDLER_ARG
 	if (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) {
 		EX(object) = NULL;
 	} else {
+		if (IS_TMP_VAR != IS_UNUSED &&
+		    EG(This) &&
+		    Z_OBJ_HT_P(EG(This))->get_class_entry &&
+		    !instanceof_function(Z_OBJCE_P(EG(This)), ce TSRMLS_CC)) { 
+		    /* We are calling method of the other (incompatible) class,
+		       but passing $this. This is done for compatibility with php-4. */
+			zend_error(E_STRICT, "Non-static method %s::%s() should not be called statically, assuming $this from incompatible context", EX(fbc)->common.scope->name, EX(fbc)->common.function_name);
+
+		}
 		if ((EX(object) = EG(This))) {
 			EX(object)->refcount++;
 		}
@@ -1011,6 +1037,15 @@ static int ZEND_INIT_STATIC_METHOD_CALL_SPEC_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARG
 	if (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) {
 		EX(object) = NULL;
 	} else {
+		if (IS_VAR != IS_UNUSED &&
+		    EG(This) &&
+		    Z_OBJ_HT_P(EG(This))->get_class_entry &&
+		    !instanceof_function(Z_OBJCE_P(EG(This)), ce TSRMLS_CC)) { 
+		    /* We are calling method of the other (incompatible) class,
+		       but passing $this. This is done for compatibility with php-4. */
+			zend_error(E_STRICT, "Non-static method %s::%s() should not be called statically, assuming $this from incompatible context", EX(fbc)->common.scope->name, EX(fbc)->common.function_name);
+
+		}
 		if ((EX(object) = EG(This))) {
 			EX(object)->refcount++;
 		}
@@ -1159,6 +1194,15 @@ static int ZEND_INIT_STATIC_METHOD_CALL_SPEC_UNUSED_HANDLER(ZEND_OPCODE_HANDLER_
 	if (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) {
 		EX(object) = NULL;
 	} else {
+		if (IS_UNUSED != IS_UNUSED &&
+		    EG(This) &&
+		    Z_OBJ_HT_P(EG(This))->get_class_entry &&
+		    !instanceof_function(Z_OBJCE_P(EG(This)), ce TSRMLS_CC)) { 
+		    /* We are calling method of the other (incompatible) class,
+		       but passing $this. This is done for compatibility with php-4. */
+			zend_error(E_STRICT, "Non-static method %s::%s() should not be called statically, assuming $this from incompatible context", EX(fbc)->common.scope->name, EX(fbc)->common.function_name);
+
+		}
 		if ((EX(object) = EG(This))) {
 			EX(object)->refcount++;
 		}
@@ -1240,6 +1284,15 @@ static int ZEND_INIT_STATIC_METHOD_CALL_SPEC_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS
 	if (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) {
 		EX(object) = NULL;
 	} else {
+		if (IS_CV != IS_UNUSED &&
+		    EG(This) &&
+		    Z_OBJ_HT_P(EG(This))->get_class_entry &&
+		    !instanceof_function(Z_OBJCE_P(EG(This)), ce TSRMLS_CC)) { 
+		    /* We are calling method of the other (incompatible) class,
+		       but passing $this. This is done for compatibility with php-4. */
+			zend_error(E_STRICT, "Non-static method %s::%s() should not be called statically, assuming $this from incompatible context", EX(fbc)->common.scope->name, EX(fbc)->common.function_name);
+
+		}
 		if ((EX(object) = EG(This))) {
 			EX(object)->refcount++;
 		}
@@ -2030,7 +2083,9 @@ static int ZEND_FE_RESET_SPEC_CONST_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 			}
 			array_ptr = *array_ptr_ptr;
 		} else {
-			SEPARATE_ZVAL_IF_NOT_REF(array_ptr_ptr);
+			if (Z_TYPE_PP(array_ptr_ptr) == IS_ARRAY) {
+				SEPARATE_ZVAL_IF_NOT_REF(array_ptr_ptr);
+			}
 			array_ptr = *array_ptr_ptr;
 			array_ptr->refcount++;
 		}
@@ -2177,8 +2232,8 @@ static int ZEND_ISSET_ISEMPTY_VAR_SPEC_CONST_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 
 static int ZEND_EXIT_SPEC_CONST_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 {
+	zend_op *opline = EX(opline);
 	if (IS_CONST != IS_UNUSED) {
-		zend_op *opline = EX(opline);
 		
 		zval *ptr = &opline->op1.u.constant;
 
@@ -4446,7 +4501,9 @@ static int ZEND_FE_RESET_SPEC_TMP_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 			}
 			array_ptr = *array_ptr_ptr;
 		} else {
-			SEPARATE_ZVAL_IF_NOT_REF(array_ptr_ptr);
+			if (Z_TYPE_PP(array_ptr_ptr) == IS_ARRAY) {
+				SEPARATE_ZVAL_IF_NOT_REF(array_ptr_ptr);
+			}
 			array_ptr = *array_ptr_ptr;
 			array_ptr->refcount++;
 		}
@@ -4594,8 +4651,8 @@ static int ZEND_ISSET_ISEMPTY_VAR_SPEC_TMP_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 
 static int ZEND_EXIT_SPEC_TMP_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 {
+	zend_op *opline = EX(opline);
 	if (IS_TMP_VAR != IS_UNUSED) {
-		zend_op *opline = EX(opline);
 		zend_free_op free_op1;
 		zval *ptr = _get_zval_ptr_tmp(&opline->op1, EX(Ts), &free_op1 TSRMLS_CC);
 
@@ -7444,7 +7501,9 @@ static int ZEND_FE_RESET_SPEC_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 			}
 			array_ptr = *array_ptr_ptr;
 		} else {
-			SEPARATE_ZVAL_IF_NOT_REF(array_ptr_ptr);
+			if (Z_TYPE_PP(array_ptr_ptr) == IS_ARRAY) {
+				SEPARATE_ZVAL_IF_NOT_REF(array_ptr_ptr);
+			}
 			array_ptr = *array_ptr_ptr;
 			array_ptr->refcount++;
 		}
@@ -7547,7 +7606,7 @@ static int ZEND_FE_FETCH_SPEC_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 	HashTable *fe_ht;
 	zend_object_iterator *iter = NULL;
 	int key_type;
-	zend_bool use_key = opline->extended_value & ZEND_FE_FETCH_WITH_KEY;
+	zend_bool use_key = (zend_bool)(opline->extended_value & ZEND_FE_FETCH_WITH_KEY);
 
 	PZVAL_LOCK(array);
 
@@ -7730,8 +7789,8 @@ static int ZEND_ISSET_ISEMPTY_VAR_SPEC_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 
 static int ZEND_EXIT_SPEC_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 {
+	zend_op *opline = EX(opline);
 	if (IS_VAR != IS_UNUSED) {
-		zend_op *opline = EX(opline);
 		zend_free_op free_op1;
 		zval *ptr = _get_zval_ptr_var(&opline->op1, EX(Ts), &free_op1 TSRMLS_CC);
 
@@ -14017,8 +14076,8 @@ static int ZEND_CLONE_SPEC_UNUSED_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 
 static int ZEND_EXIT_SPEC_UNUSED_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 {
+	zend_op *opline = EX(opline);
 	if (IS_UNUSED != IS_UNUSED) {
-		zend_op *opline = EX(opline);
 		
 		zval *ptr = NULL;
 
@@ -19539,7 +19598,9 @@ static int ZEND_FE_RESET_SPEC_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 			}
 			array_ptr = *array_ptr_ptr;
 		} else {
-			SEPARATE_ZVAL_IF_NOT_REF(array_ptr_ptr);
+			if (Z_TYPE_PP(array_ptr_ptr) == IS_ARRAY) {
+				SEPARATE_ZVAL_IF_NOT_REF(array_ptr_ptr);
+			}
 			array_ptr = *array_ptr_ptr;
 			array_ptr->refcount++;
 		}
@@ -19686,8 +19747,8 @@ static int ZEND_ISSET_ISEMPTY_VAR_SPEC_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 
 static int ZEND_EXIT_SPEC_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 {
+	zend_op *opline = EX(opline);
 	if (IS_CV != IS_UNUSED) {
-		zend_op *opline = EX(opline);
 		
 		zval *ptr = _get_zval_ptr_cv(&opline->op1, EX(Ts), BP_VAR_R TSRMLS_CC);
 

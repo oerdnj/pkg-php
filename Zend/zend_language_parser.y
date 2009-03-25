@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_language_parser.y,v 1.160.2.3 2006/01/04 23:53:04 andi Exp $ */
+/* $Id: zend_language_parser.y,v 1.160.2.4 2006/03/12 16:52:18 iliaa Exp $ */
 
 /* 
  * LALR shift/reduce conflicts and how they are resolved:
@@ -501,7 +501,7 @@ method_body:
 
 variable_modifiers:
 		non_empty_member_modifiers		{ $$ = $1; }
-	|	T_VAR							{ zend_error(E_STRICT, "var: Deprecated. Please use the public/private/protected modifiers"); $$.u.constant.value.lval = ZEND_ACC_PUBLIC; }
+	|	T_VAR							{ $$.u.constant.value.lval = ZEND_ACC_PUBLIC; }
 ;
 
 method_modifiers:

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_pcre.c,v 1.168.2.5 2006/01/01 12:50:11 sniper Exp $ */
+/* $Id: php_pcre.c,v 1.168.2.9 2006/04/11 21:33:46 andrei Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -453,7 +453,7 @@ static void php_pcre_match(INTERNAL_FUNCTION_PARAMETERS, int global)
 
 	/*
 	 * Build a mapping from subpattern numbers to their names. We will always
-	 * allocate the table, even though they may be no named subpatterns. This
+	 * allocate the table, even though there may be no named subpatterns. This
 	 * avoids somewhat more complicated logic in the inner loops.
 	 */
 	subpat_names = (char **)safe_emalloc(num_subpats, sizeof(char *), 0);
@@ -467,22 +467,34 @@ static void php_pcre_match(INTERNAL_FUNCTION_PARAMETERS, int global)
 		if (rc < 0) {
 			php_error(E_WARNING, "%s: internal pcre_fullinfo() error %d",
 					  get_active_function_name(TSRMLS_C), rc);
+			efree(offsets);
+			efree(subpat_names);
 			RETURN_FALSE;
 		}
 		if (name_cnt > 0) {
 			int rc1, rc2;
+			long dummy_l;
+			double dummy_d;
 			rc1 = pcre_fullinfo(re, extra, PCRE_INFO_NAMETABLE, &name_table);
 			rc2 = pcre_fullinfo(re, extra, PCRE_INFO_NAMEENTRYSIZE, &name_size);
 			rc = rc2 ? rc2 : rc1;
 			if (rc < 0) {
 				php_error(E_WARNING, "%s: internal pcre_fullinfo() error %d",
 						  get_active_function_name(TSRMLS_C), rc);
+				efree(offsets);
+				efree(subpat_names);
 				RETURN_FALSE;
 			}
 
 			while (ni++ < name_cnt) {
 				name_idx = 0xff * name_table[0] + name_table[1];
 				subpat_names[name_idx] = name_table + 2;
+				if (is_numeric_string(subpat_names[name_idx], strlen(subpat_names[name_idx]), &dummy_l, &dummy_d, 0) > 0) {
+					php_error(E_WARNING, "%s: numeric named subpatterns are not allowed", get_active_function_name(TSRMLS_C));
+					efree(offsets);
+					efree(subpat_names);
+					RETURN_FALSE;
+				}
 				name_table += name_size;
 			}
 		}
@@ -1455,7 +1467,7 @@ PHP_FUNCTION(preg_quote)
 	
 	/* Allocate enough memory so that even if each character
 	   is quoted, we won't run out of room */
-	out_str = safe_emalloc(2, Z_STRLEN_PP(in_str_arg), 1);
+	out_str = safe_emalloc(4, Z_STRLEN_PP(in_str_arg), 1);
 	
 	/* Go through the string and quote necessary characters */
 	for(p = in_str, q = out_str; p != in_str_end; p++) {
@@ -1486,6 +1498,8 @@ PHP_FUNCTION(preg_quote)
 
 			case '\0':
 				*q++ = '\\';
+				*q++ = '0';
+				*q++ = '0';
 				*q++ = '0';
 				break;
 
@@ -1613,8 +1627,8 @@ PHP_FUNCTION(preg_grep)
 zend_function_entry pcre_functions[] = {
 	PHP_FE(preg_match,				third_arg_force_ref)
 	PHP_FE(preg_match_all,			third_arg_force_ref)
-	PHP_FE(preg_replace,			NULL)
-	PHP_FE(preg_replace_callback,	NULL)
+	PHP_FE(preg_replace,			fifth_arg_force_ref)
+	PHP_FE(preg_replace_callback,	fifth_arg_force_ref)
 	PHP_FE(preg_split,				NULL)
 	PHP_FE(preg_quote,				NULL)
 	PHP_FE(preg_grep,				NULL)

@@ -2699,7 +2699,7 @@ char *yytext;
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_language_scanner.l,v 1.131.2.9 2006/01/04 23:53:04 andi Exp $ */
+/* $Id: zend_language_scanner.l,v 1.131.2.10 2006/01/17 09:39:57 dmitry Exp $ */
 
 #define yyleng SCNG(yy_leng)
 #define yytext SCNG(yy_text)
@@ -4939,7 +4939,6 @@ YY_RULE_SETUP
 {
 	int label_len;
 
-	CG(zend_lineno)++;
 	if (yytext[yyleng-2]=='\r') {
 		label_len = yyleng-2;
 	} else {
@@ -4960,6 +4959,7 @@ YY_RULE_SETUP
 		BEGIN(ST_IN_SCRIPTING);
 		return T_END_HEREDOC;
 	} else {
+		CG(zend_lineno)++;
 		zend_copy_value(zendlval, yytext, yyleng);
 		zendlval->type = IS_STRING;
 		return T_STRING;

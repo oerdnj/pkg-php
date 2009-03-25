@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: streams.c,v 1.14.2.2 2006/01/01 12:50:01 sniper Exp $ */
+/* $Id: streams.c,v 1.14.2.3 2006/08/10 17:16:35 iliaa Exp $ */
 
 /* This file implements cURL based wrappers.
  * NOTE: If you are implementing your own streams that are intended to
@@ -289,7 +289,11 @@ php_stream *php_curl_stream_opener(php_stream_wrapper *wrapper, char *filename, 
 	curl_easy_setopt(curlstream->curl, CURLOPT_WRITEHEADER, stream);
 
 	/* currently buggy (bug is in curl) */
-	curl_easy_setopt(curlstream->curl, CURLOPT_FOLLOWLOCATION, 1);
+	if ((PG(open_basedir) && *PG(open_basedir)) || PG(safe_mode)) {
+		curl_easy_setopt(curlstream->curl, CURLOPT_FOLLOWLOCATION, 0);
+	} else {
+		curl_easy_setopt(curlstream->curl, CURLOPT_FOLLOWLOCATION, 1);
+	}
 	
 	curl_easy_setopt(curlstream->curl, CURLOPT_ERRORBUFFER, curlstream->errstr);
 	curl_easy_setopt(curlstream->curl, CURLOPT_VERBOSE, 0);

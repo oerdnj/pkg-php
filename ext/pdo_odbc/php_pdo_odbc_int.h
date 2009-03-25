@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_odbc_int.h,v 1.9 2005/07/07 12:49:21 wez Exp $ */
+/* $Id: php_pdo_odbc_int.h,v 1.9.2.1 2006/03/27 21:04:12 wez Exp $ */
 
 #ifdef PHP_WIN32
 # define PDO_ODBC_TYPE	"Win32"
@@ -136,7 +136,7 @@ typedef struct {
 	unsigned long datalen;
 	long fetched_len;
 	SWORD	coltype;
-	char colname[32];
+	char colname[128];
 } pdo_odbc_column;
 
 typedef struct {
@@ -144,6 +144,8 @@ typedef struct {
 	pdo_odbc_column *cols;
 	pdo_odbc_db_handle *H;
 	pdo_odbc_errinfo einfo;
+	unsigned going_long:1;
+	unsigned _spare:31;
 } pdo_odbc_stmt;
 
 typedef struct {

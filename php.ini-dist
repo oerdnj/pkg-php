@@ -227,6 +227,16 @@ disable_classes =
 ; being interrupted by the user or a browser timing out.
 ; ignore_user_abort = On
 
+; Determines the size of the realpath cache to be used by PHP. This value should
+; be increased on systems where PHP opens many files to reflect the quantity of
+; the file operations performed.
+; realpath_cache_size=16k
+
+; Duration of time, in seconds for which to cache realpath information for a given
+; file or directory. For systems with rarely changing files, consider increasing this
+; value.
+; realpath_cache_ttl=120
+
 ;
 ; Misc
 ;
@@ -1132,9 +1142,13 @@ pfpro.defaulttimeout = 30
 ; 4: Overload ereg*() functions
 ;mbstring.func_overload = 0
 
+; enable strict encoding detection.
+;mbstring.strict_encoding = Off
+
 [FrontBase]
 ;fbsql.allow_persistent = On
 ;fbsql.autocommit = On
+;fbsql.show_timestamp_decimals = Off
 ;fbsql.default_database =
 ;fbsql.default_database_password =
 ;fbsql.default_host =
@@ -1147,6 +1161,12 @@ pfpro.defaulttimeout = 30
 ;fbsql.max_results = 128
 ;fbsql.batchSize = 1000
 
+[gd]
+; Tell the jpeg decode to libjpeg warnings and try to create
+; a gd image. The warning will then be displayed as notices
+; disabled by default
+;gd.jpeg_ignore_warning = 0
+ 
 [exif]
 ; Exif UNICODE user comments are handled as UCS-2BE/UCS-2LE and JIS as JIS.
 ; With mbstring support this will automatically be converted into the encoding

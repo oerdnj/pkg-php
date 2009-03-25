@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_engine.h,v 1.19.2.1 2006/01/01 12:50:13 sniper Exp $ */
+/* $Id: spl_engine.h,v 1.19.2.3 2006/03/14 18:07:51 fmk Exp $ */
 
 #ifndef SPL_ENGINE_H
 #define SPL_ENGINE_H
@@ -36,7 +36,7 @@ static inline zend_class_entry *spl_get_class_entry(zval *obj TSRMLS_DC)
 }
 /* }}} */
 
-void spl_instantiate(zend_class_entry *pce, zval **object, int alloc TSRMLS_DC);
+PHPAPI void spl_instantiate(zend_class_entry *pce, zval **object, int alloc TSRMLS_DC);
 
 /* {{{ spl_instantiate_arg_ex1 */
 static inline int spl_instantiate_arg_ex1(zend_class_entry *pce, zval **retval, int alloc, zval *arg1 TSRMLS_DC)
@@ -57,8 +57,6 @@ static inline int spl_instantiate_arg_ex2(zend_class_entry *pce, zval **retval, 
 	return 0;
 }
 /* }}} */
-
-int spl_is_instance_of(zval **obj, zend_class_entry *ce TSRMLS_DC);
 
 #endif /* SPL_ENGINE_H */
 

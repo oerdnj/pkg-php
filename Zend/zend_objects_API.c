@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_objects_API.c,v 1.47.2.4 2006/01/04 23:53:04 andi Exp $ */
+/* $Id: zend_objects_API.c,v 1.47.2.6 2006/03/28 21:58:01 tony2001 Exp $ */
 
 #include "zend.h"
 #include "zend_globals.h"
@@ -33,6 +33,7 @@ ZEND_API void zend_objects_store_init(zend_objects_store *objects, zend_uint ini
 	objects->top = 1; /* Skip 0 so that handles are true */
 	objects->size = init_size;
 	objects->free_list_head = -1;
+	memset(&objects->object_buckets[0], 0, sizeof(zend_object_store_bucket));
 }
 
 ZEND_API void zend_objects_store_destroy(zend_objects_store *objects)
@@ -52,7 +53,9 @@ ZEND_API void zend_objects_store_call_destructors(zend_objects_store *objects TS
 			if (!objects->object_buckets[i].destructor_called) {
 				objects->object_buckets[i].destructor_called = 1;
 				if (obj->dtor && obj->object) {
+					obj->refcount++;
 					obj->dtor(obj->object, i TSRMLS_CC);
+					obj->refcount--;
 				}
 			}
 		}

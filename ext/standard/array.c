@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: array.c,v 1.308.2.16 2006/01/01 12:50:14 sniper Exp $ */
+/* $Id: array.c,v 1.308.2.22 2006/06/03 18:59:55 andrei Exp $ */
 
 #include "php.h"
 #include "php_ini.h"
@@ -92,20 +92,9 @@
 
 #define DOUBLE_DRIFT_FIX	0.000000000000001
 
-ZEND_BEGIN_MODULE_GLOBALS(array) 
-	int *multisort_flags[2];
-	int (*compare_func)(zval *result, zval *op1, zval *op2 TSRMLS_DC);
-ZEND_END_MODULE_GLOBALS(array) 
-
 ZEND_DECLARE_MODULE_GLOBALS(array)
 
-#ifdef ZTS
-#define ARRAYG(v) TSRMG(array_globals_id, zend_array_globals *, v)
-#else
-#define ARRAYG(v) (array_globals.v)
-#endif
-
-/* {{{ php_extname_init_globals
+/* {{{ php_array_init_globals
  */
 static void php_array_init_globals(zend_array_globals *array_globals)
 {
@@ -325,8 +314,11 @@ PHP_FUNCTION(count)
 
 			if (Z_OBJ_HT_P(array)->get_class_entry && instanceof_function(Z_OBJCE_P(array), spl_ce_Countable TSRMLS_CC)) {
 				zend_call_method_with_0_params(&array, NULL, NULL, "count", &retval);
-				RETVAL_LONG(Z_LVAL_P(retval));
-				zval_ptr_dtor(&retval);
+				if (retval) {
+					convert_to_long(retval);
+					RETVAL_LONG(Z_LVAL_P(retval));
+					zval_ptr_dtor(&retval);
+				}
 				return;
 			}
 #endif
@@ -1823,14 +1815,14 @@ HashTable* php_splice(HashTable *in_hash, int offset, int length,
 	/* Clamp the offset.. */
 	if (offset > num_in)
 		offset = num_in;
-	else if (offset < 0 && (offset=num_in+offset) < 0)
+	else if (offset < 0 && (offset = (num_in + offset)) < 0)
 		offset = 0;
 	
 	/* ..and the length */
 	if (length < 0) {
-		length = num_in-offset+length;
-	} else if (((unsigned) offset + (unsigned) length) > num_in) {
-		length = num_in-offset;
+		length = num_in - offset + length;
+	} else if (((unsigned)offset + (unsigned)length) > (unsigned)num_in) {
+		length = num_in - offset;
 	}
 
 	/* Create and initialize output hash */
@@ -2217,14 +2209,14 @@ PHP_FUNCTION(array_slice)
 	/* Clamp the offset.. */
 	if (offset_val > num_in)
 		return;
-	else if (offset_val < 0 && (offset_val=num_in+offset_val) < 0)
+	else if (offset_val < 0 && (offset_val = (num_in + offset_val)) < 0)
 		offset_val = 0;
 	
 	/* ..and the length */
 	if (length_val < 0) {
-		length_val = num_in-offset_val+length_val;
-	} else if (((unsigned) offset_val + (unsigned) length_val) > num_in) {
-		length_val = num_in-offset_val;
+		length_val = num_in - offset_val + length_val;
+	} else if (((unsigned)offset_val + (unsigned)length_val) > (unsigned)num_in) {
+		length_val = num_in - offset_val;
 	}
 	
 	if (length_val == 0)
@@ -4146,12 +4138,10 @@ PHP_FUNCTION(array_filter)
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "The first argument should be an array");
 		return;
 	}
-	if (callback) {
-		func = *callback;
-	}
 	array = *input;
 
 	if (ZEND_NUM_ARGS() > 1) {
+		func = *callback;
 		if (!zend_is_callable(func, 0, &callback_name)) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "The second argument, '%s', should be a valid callback", callback_name);
 			efree(callback_name);

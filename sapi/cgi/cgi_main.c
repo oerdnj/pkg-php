@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: cgi_main.c,v 1.267.2.5 2006/01/01 12:50:18 sniper Exp $ */
+/* $Id: cgi_main.c,v 1.267.2.16 2006/05/24 07:55:38 dmitry Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -69,6 +69,7 @@
 
 #ifdef __riscos__
 #include <unixlib/local.h>
+int __riscosify_control = __RISCOSIFY_STRICT_UNIX_SPECS;
 #endif
 
 #include "zend_compile.h"
@@ -79,9 +80,7 @@
 #include "php_getopt.h"
 
 #if PHP_FASTCGI
-#include "fcgi_config.h"
-#include "fcgiapp.h"
-/* don't want to include fcgios.h, causes conflicts */
+#include "fastcgi.h"
 #ifdef PHP_WIN32
 extern int OS_SetImpersonate(void);
 #else
@@ -151,6 +150,13 @@ static const opt_struct OPTIONS[] = {
 /* true global.  this is retreived once only, even for fastcgi */
 long fix_pathinfo = 1;
 #endif
+
+#if PHP_FASTCGI
+long fcgi_logging = 1;
+#endif
+
+static long rfc2616_headers = 0;
+static long cgi_nph = 0;
 
 #ifdef PHP_WIN32
 #define TRANSLATE_SLASHES(path) \
@@ -276,7 +282,7 @@ static void sapi_cgibin_flush(void *server_context)
 #ifndef PHP_WIN32
 		!parent && 
 #endif
-		(!request || FCGX_FFlush(request->out) == -1)) {
+		request && FCGX_FFlush(request->out) == -1) {
 			php_handle_aborted_connection();
 		}
 		return;
@@ -294,25 +300,12 @@ static int sapi_cgi_send_headers(sapi_headers_struct *sapi_headers TSRMLS_DC)
 	char buf[SAPI_CGI_MAX_HEADER_LENGTH];
 	sapi_header_struct *h;
 	zend_llist_position pos;
-	long rfc2616_headers = 0, nph = 0;
 
 	if (SG(request_info).no_headers == 1) {
 		return  SAPI_HEADER_SENT_SUCCESSFULLY;
 	}
-	/* Check wheater to send RFC2616 style headers compatible with
-	 * PHP versions 4.2.3 and earlier compatible with web servers
-	 * such as IIS. Default is informal CGI RFC header compatible
-	 * with Apache.
-	 */
-	if (cfg_get_long("cgi.rfc2616_headers", &rfc2616_headers) == FAILURE) {
-		rfc2616_headers = 0;
-	}
 
-	if (cfg_get_long("cgi.nph", &nph) == FAILURE) {
-		nph = 0;
-	}
-
-	if (nph || SG(sapi_headers).http_response_code != 200)
+	if (cgi_nph || SG(sapi_headers).http_response_code != 200)
 	{
 		int len;
 
@@ -438,9 +431,28 @@ static char *sapi_cgi_read_cookies(TSRMLS_D)
 #if PHP_FASTCGI
 void cgi_php_import_environment_variables(zval *array_ptr TSRMLS_DC)
 {
+	if (PG(http_globals)[TRACK_VARS_ENV] &&
+	    array_ptr != PG(http_globals)[TRACK_VARS_ENV] &&
+	    Z_TYPE_P(PG(http_globals)[TRACK_VARS_ENV]) == IS_ARRAY &&
+	    zend_hash_num_elements(Z_ARRVAL_P(PG(http_globals)[TRACK_VARS_ENV])) > 0) {
+	    zval_dtor(array_ptr);
+	    *array_ptr = *PG(http_globals)[TRACK_VARS_ENV];
+	    INIT_PZVAL(array_ptr);
+	    zval_copy_ctor(array_ptr);
+	    return;
+	} else if (PG(http_globals)[TRACK_VARS_SERVER] &&
+		array_ptr != PG(http_globals)[TRACK_VARS_SERVER] &&
+	    Z_TYPE_P(PG(http_globals)[TRACK_VARS_SERVER]) == IS_ARRAY &&
+	    zend_hash_num_elements(Z_ARRVAL_P(PG(http_globals)[TRACK_VARS_SERVER])) > 0) {
+	    zval_dtor(array_ptr);
+	    *array_ptr = *PG(http_globals)[TRACK_VARS_SERVER];
+	    INIT_PZVAL(array_ptr);
+	    zval_copy_ctor(array_ptr);
+	    return;
+	}
 	if (!FCGX_IsCGI()) {
 		FCGX_Request *request = (FCGX_Request *) SG(server_context);
-		char **env, *p, *t;
+		char **env, *p;
 		int magic_quotes_gpc = PG(magic_quotes_gpc);
 
 		/* turn off magic_quotes while importing environment variables */
@@ -450,9 +462,9 @@ void cgi_php_import_environment_variables(zval *array_ptr TSRMLS_DC)
 			if (!p) {				/* malformed entry? */
 				continue;
 			}
-			t = estrndup(*env, p - *env);
-			php_register_variable(t, p + 1, array_ptr TSRMLS_CC);
-			efree(t);
+			*p = 0;
+			php_register_variable(*env, p + 1, array_ptr TSRMLS_CC);
+			*p = '=';
 		}
 		PG(magic_quotes_gpc) = magic_quotes_gpc;
 	}
@@ -474,15 +486,11 @@ static void sapi_cgi_register_variables(zval *track_vars_array TSRMLS_DC)
 static void sapi_cgi_log_message(char *message)
 {
 #if PHP_FASTCGI
-	long logging = 1;
-	TSRMLS_FETCH();
-
-	if (cfg_get_long("fastcgi.logging", &logging) == FAILURE) {
-		logging = 1;
-	}
-
-	if (!FCGX_IsCGI() && logging) {
-		FCGX_Request *request = (FCGX_Request *) SG(server_context);
+	if (!FCGX_IsCGI() && fcgi_logging) {
+		FCGX_Request *request;
+		TSRMLS_FETCH();
+		
+		 request = (FCGX_Request *) SG(server_context);
 		if (request) {
 			FCGX_FPrintF(request->err, "%s\n", message);
 		}
@@ -932,6 +940,21 @@ void fastcgi_cleanup(int signal)
 }
 #endif
 
+#if PHP_FASTCGI
+#ifndef PHP_WIN32
+static int is_port_number(const char *bindpath)
+{
+	while (*bindpath) {
+		if (*bindpath < '0' || *bindpath > '9') {
+			return 0;
+		}
+		bindpath++;
+	}
+	return 1;
+}
+#endif
+#endif
+
 /* {{{ main
  */
 int main(int argc, char *argv[])
@@ -1127,6 +1150,25 @@ consult the installation file that came with this distribution, or visit \n\
 #endif
 
 #if PHP_FASTCGI
+	if (cfg_get_long("fastcgi.logging", &fcgi_logging) == FAILURE) {
+		fcgi_logging = 1;
+	}
+#endif
+
+	/* Check wheater to send RFC2616 style headers compatible with
+	 * PHP versions 4.2.3 and earlier compatible with web servers
+	 * such as IIS. Default is informal CGI RFC header compatible
+	 * with Apache.
+	 */
+	if (cfg_get_long("cgi.rfc2616_headers", &rfc2616_headers) == FAILURE) {
+		rfc2616_headers = 0;
+	}
+
+	if (cfg_get_long("cgi.nph", &cgi_nph) == FAILURE) {
+		cgi_nph = 0;
+	}
+
+#if PHP_FASTCGI
 #ifndef PHP_WIN32
 	/* for windows, socket listening is broken in the fastcgi library itself
 	   so dissabling this feature on windows till time is available to fix it */
@@ -1139,7 +1181,7 @@ consult the installation file that came with this distribution, or visit \n\
 		 * path (it's what the fastcgi library expects)
 		 */
 		
-		if (strchr(bindpath, ':') == NULL) {
+		if (strchr(bindpath, ':') == NULL && is_port_number(bindpath)) {
 			char *tmp;
 
 			tmp = malloc(strlen(bindpath) + 2);
@@ -1244,7 +1286,8 @@ consult the installation file that came with this distribution, or visit \n\
 #ifdef DEBUG_FASTCGI
 				fprintf(stderr, "Wait for kids, pid %d\n", getpid());
 #endif
-				wait(&status);
+				while (wait(&status) < 0) {
+				}
 				running--;
 			}
 		}
@@ -1429,6 +1472,7 @@ consult the installation file that came with this distribution, or visit \n\
 
 			if (script_file) {
 				/* override path_translated if -f on command line */
+				STR_FREE(SG(request_info).path_translated);
 				SG(request_info).path_translated = script_file;
 			}
 
@@ -1658,6 +1702,7 @@ fastcgi_request_done:
 		exit_status = 255;
 	} zend_end_try();
 
+	SG(server_context) = NULL;
 	php_module_shutdown(TSRMLS_C);
 	sapi_shutdown();
 

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: filestat.c,v 1.136.2.3 2006/01/01 12:50:14 sniper Exp $ */
+/* $Id: filestat.c,v 1.136.2.9 2006/08/10 21:30:23 iliaa Exp $ */
 
 #include "php.h"
 #include "safe_mode.h"
@@ -323,12 +323,9 @@ PHP_FUNCTION(disk_free_space)
 }
 /* }}} */
 
-/* {{{ proto bool chgrp(string filename, mixed group)
-   Change file group */
-#ifndef NETWARE
-PHP_FUNCTION(chgrp)
-{
 #if !defined(WINDOWS)
+static void php_do_chgrp(INTERNAL_FUNCTION_PARAMETERS, int do_lchgrp)
+{
 	zval **filename, **group;
 	gid_t gid;
 	struct group *gr=NULL;
@@ -360,25 +357,51 @@ PHP_FUNCTION(chgrp)
 		RETURN_FALSE;
 	}
 
-	ret = VCWD_CHOWN(Z_STRVAL_PP(filename), -1, gid);
+	if (do_lchgrp) {
+#if HAVE_LCHOWN
+		ret = VCWD_LCHOWN(Z_STRVAL_PP(filename), -1, gid);
+#endif
+	} else {
+		ret = VCWD_CHOWN(Z_STRVAL_PP(filename), -1, gid);
+	}
 	if (ret == -1) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", strerror(errno));
 		RETURN_FALSE;
 	}
 	RETURN_TRUE;
+}
+#endif
+
+#ifndef NETWARE
+/* {{{ proto bool chgrp(string filename, mixed group)
+   Change file group */
+PHP_FUNCTION(chgrp)
+{
+#if !defined(WINDOWS)
+	php_do_chgrp(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
 #else
 	RETURN_FALSE;
 #endif
 }
-#endif
 /* }}} */
 
-/* {{{ proto bool chown (string filename, mixed user)
-   Change file owner */
-#ifndef NETWARE
-PHP_FUNCTION(chown)
+/* {{{ proto bool lchgrp(string filename, mixed group)
+   Change symlink group */
+#if HAVE_LCHOWN
+PHP_FUNCTION(lchgrp)
 {
-#if !defined(WINDOWS)
+# if !defined(WINDOWS)
+	php_do_chgrp(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1);
+# else
+	RETURN_FALSE;
+# endif
+}
+#endif
+/* }}} */
+#endif
+
+static void php_do_chown(INTERNAL_FUNCTION_PARAMETERS, int do_lchown)
+{
 	zval **filename, **user;
 	int ret;
 	uid_t uid;
@@ -410,16 +433,48 @@ PHP_FUNCTION(chown)
 		RETURN_FALSE;
 	}
 
-	ret = VCWD_CHOWN(Z_STRVAL_PP(filename), uid, -1);
+	if (do_lchown) {
+#if HAVE_LCHOWN
+		ret = VCWD_LCHOWN(Z_STRVAL_PP(filename), uid, -1);
+#endif
+	} else {
+		ret = VCWD_CHOWN(Z_STRVAL_PP(filename), uid, -1);
+	}
 	if (ret == -1) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", strerror(errno));
 		RETURN_FALSE;
 	}
+}
+
+#ifndef NETWARE
+/* {{{ proto bool chown (string filename, mixed user)
+   Change file owner */
+PHP_FUNCTION(chown)
+{
+#if !defined(WINDOWS)
+	RETVAL_TRUE;
+	php_do_chown(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
+#else
+	RETURN_FALSE;
 #endif
-	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto bool chown (string filename, mixed user)
+   Change file owner */
+#if HAVE_LCHOWN
+PHP_FUNCTION(lchown)
+{
+# if !defined(WINDOWS)
+	RETVAL_TRUE;
+	php_do_chown(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1);
+# else
+	RETURN_FALSE;
+# endif
 }
 #endif
 /* }}} */
+#endif
 
 /* {{{ proto bool chmod(string filename, int mode)
    Change file mode */
@@ -449,8 +504,23 @@ PHP_FUNCTION(chmod)
 	   Setuiding files could allow users to gain privileges
 	   that safe mode doesn't give them.
 	*/
-	if(PG(safe_mode))
-		imode &= 0777;
+
+	if(PG(safe_mode)) {
+		php_stream_statbuf ssb;
+		if (php_stream_stat_path_ex(Z_STRVAL_PP(filename), 0, &ssb, NULL)) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "stat failed for %s", Z_STRVAL_PP(filename));
+			RETURN_FALSE;
+		}
+		if ((imode & 04000) != 0 && (ssb.sb.st_mode & 04000) == 0) {
+			imode ^= 04000;
+		}
+		if ((imode & 02000) != 0 && (ssb.sb.st_mode & 02000) == 0) {
+			imode ^= 02000;
+		}
+		if ((imode & 01000) != 0 && (ssb.sb.st_mode & 01000) == 0) {
+			imode ^= 01000;
+		}
+	}
 
 	ret = VCWD_CHMOD(Z_STRVAL_PP(filename), imode);
 	if (ret == -1) {
@@ -556,15 +626,22 @@ PHPAPI void php_stat(const char *filename, php_stat_len filename_length, int typ
 	int flags = 0, rmask=S_IROTH, wmask=S_IWOTH, xmask=S_IXOTH; /* access rights defaults to other */
 	char *stat_sb_names[13]={"dev", "ino", "mode", "nlink", "uid", "gid", "rdev",
 			      "size", "atime", "mtime", "ctime", "blksize", "blocks"};
+	char *local;
+	php_stream_wrapper *wrapper;
 
 	if (!filename_length) {
 		RETURN_FALSE;
 	}
 
-	if (IS_ACCESS_CHECK(type)) {
-		char *local;
+	if ((wrapper = php_stream_locate_url_wrapper(filename, &local, 0 TSRMLS_CC)) == &php_plain_files_wrapper) {
+		if (php_check_open_basedir(local TSRMLS_CC) || (PG(safe_mode) && !php_checkuid_ex(filename, NULL, CHECKUID_ALLOW_FILE_NOT_EXISTS, CHECKUID_NO_ERRORS))) {
+			RETURN_FALSE;
+		}
+	}
 
-		if (php_stream_locate_url_wrapper(filename, &local, 0 TSRMLS_CC) == &php_plain_files_wrapper) {
+	if (IS_ACCESS_CHECK(type)) {
+		if (wrapper == &php_plain_files_wrapper) {
+
 			switch (type) {
 #ifdef F_OK
 				case FS_EXISTS:
@@ -644,9 +721,6 @@ PHPAPI void php_stat(const char *filename, php_stat_len filename_length, int typ
 	if (IS_ABLE_CHECK(type) && getuid() == 0) {
 		/* root has special perms on plain_wrapper 
 		   But we don't know about root under Netware */
-		php_stream_wrapper *wrapper;
-
-		wrapper = php_stream_locate_url_wrapper(filename, NULL, 0 TSRMLS_CC);
 		if (wrapper == &php_plain_files_wrapper) {
 			if (type == FS_IS_X) {
 				xmask = S_IXROOT;

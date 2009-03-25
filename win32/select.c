@@ -21,7 +21,7 @@
 
 #ifdef PHP_WIN32
 
-/* $Id: select.c,v 1.10.2.1 2006/01/01 12:50:20 sniper Exp $ */
+/* $Id: select.c,v 1.10.2.2 2006/02/26 10:49:50 helly Exp $ */
 
 /* Win32 select() will only work with sockets, so we roll our own implementation here.
  * - If you supply only sockets, this simply passes through to winsock select().
@@ -67,13 +67,13 @@ PHPAPI int php_select(int max_fd, fd_set *rfds, fd_set *wfds, fd_set *efds, stru
 			if ((DWORD)handles[n_handles] == 0xffffffff) {
 				/* socket */
 				if (SAFE_FD_ISSET(i, rfds)) {
-					FD_SET(i, &sock_read);
+					FD_SET((uint)i, &sock_read);
 				}
 				if (SAFE_FD_ISSET(i, wfds)) {
-					FD_SET(i, &sock_write);
+					FD_SET((uint)i, &sock_write);
 				}
 				if (SAFE_FD_ISSET(i, efds)) {
-					FD_SET(i, &sock_except);
+					FD_SET((uint)i, &sock_except);
 				}
 				if (i > sock_max_fd) {
 					sock_max_fd = i;
@@ -136,13 +136,13 @@ PHPAPI int php_select(int max_fd, fd_set *rfds, fd_set *wfds, fd_set *efds, stru
 				for (i = 0; i < n_handles; i++) {
 					if (WAIT_OBJECT_0 == WaitForSingleObject(handles[i], 0)) {
 						if (SAFE_FD_ISSET(handle_slot_to_fd[i], rfds)) {
-							FD_SET(handle_slot_to_fd[i], &aread);
+							FD_SET((uint)handle_slot_to_fd[i], &aread);
 						}
 						if (SAFE_FD_ISSET(handle_slot_to_fd[i], wfds)) {
-							FD_SET(handle_slot_to_fd[i], &awrite);
+							FD_SET((uint)handle_slot_to_fd[i], &awrite);
 						}
 						if (SAFE_FD_ISSET(handle_slot_to_fd[i], efds)) {
-							FD_SET(handle_slot_to_fd[i], &aexcept);
+							FD_SET((uint)handle_slot_to_fd[i], &aexcept);
 						}
 						retcode++;
 					}

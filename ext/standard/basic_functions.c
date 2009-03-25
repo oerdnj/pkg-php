@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: basic_functions.c,v 1.725.2.17 2006/01/04 21:31:29 derick Exp $ */
+/* $Id: basic_functions.c,v 1.725.2.32 2006/06/28 22:08:59 iliaa Exp $ */
 
 #include "php.h"
 #include "php_streams.h"
@@ -99,9 +99,9 @@ typedef struct yy_buffer_state *YY_BUFFER_STATE;
 
 
 #ifdef ZTS
-int basic_globals_id;
+PHPAPI int basic_globals_id;
 #else
-php_basic_globals basic_globals;
+PHPAPI php_basic_globals basic_globals;
 #endif
 
 #include "php_fopen_wrappers.h"
@@ -382,7 +382,9 @@ zend_function_entry basic_functions[] = {
 #endif
 #if !defined(PHP_WIN32) && !defined(NETWARE)
 	PHP_FE(expm1,															NULL)
+# ifdef HAVE_LOG1P
 	PHP_FE(log1p,															NULL)
+# endif
 #endif
 
 	PHP_FE(pi,																NULL)
@@ -423,7 +425,9 @@ zend_function_entry basic_functions[] = {
 #ifdef HAVE_GETOPT
 	PHP_FE(getopt,															NULL)
 #endif
-
+#ifdef HAVE_GETLOADAVG
+	PHP_FE(sys_getloadavg,														NULL)
+#endif
 #ifdef HAVE_GETTIMEOFDAY
 	PHP_FE(microtime,														NULL)
 	PHP_FE(gettimeofday,													NULL)
@@ -694,8 +698,6 @@ zend_function_entry basic_functions[] = {
 #endif
 #if HAVE_LCHOWN
 	PHP_FE(lchown,															NULL)
-#endif
-#if HAVE_LCHOWN
 	PHP_FE(lchgrp,															NULL)
 #endif
 	PHP_FE(chmod,															NULL)
@@ -1124,6 +1126,9 @@ PHP_MINIT_FUNCTION(basic)
 
 PHP_MSHUTDOWN_FUNCTION(basic)
 {
+#ifdef HAVE_SYSLOG_H
+	PHP_MSHUTDOWN(syslog)(SHUTDOWN_FUNC_ARGS_PASSTHRU);
+#endif
 #ifdef ZTS
 	ts_free_id(basic_globals_id);
 #ifdef PHP_WIN32
@@ -1663,7 +1668,7 @@ PHP_FUNCTION(getopt)
 	opterr = 0;
 
 	/* Force reinitialization of getopt() (via optind reset) on every call. */
-	optind = 0;
+	optind = 1;
 
 	/* Invoke getopt(3) on the argument array. */
 #ifdef HARTMUT_0
@@ -1743,17 +1748,19 @@ PHP_FUNCTION(flush)
    Delay for a given number of seconds */
 PHP_FUNCTION(sleep)
 {
-	zval **num;
+	long num;
 
-	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &num) == FAILURE) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &num) == FAILURE) {
+		RETURN_FALSE;
 	}
-
-	convert_to_long_ex(num);
+	if (num < 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Number of seconds must be greater than or equal to 0");
+		RETURN_FALSE;
+	}
 #ifdef PHP_SLEEP_NON_VOID
-	RETURN_LONG(php_sleep(Z_LVAL_PP(num)));
+	RETURN_LONG(php_sleep(num));
 #else
-	php_sleep(Z_LVAL_PP(num));
+	php_sleep(num);
 #endif
 
 }
@@ -1764,13 +1771,16 @@ PHP_FUNCTION(sleep)
 PHP_FUNCTION(usleep)
 {
 #if HAVE_USLEEP
-	zval **num;
+	long num;
 
-	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &num) == FAILURE) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &num) == FAILURE) {
+		return;
 	}
-	convert_to_long_ex(num);
-	usleep(Z_LVAL_PP(num));
+	if (num < 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Number of microseconds must be greater than or equal to 0");
+		RETURN_FALSE;
+	}
+	usleep(num);
 #endif
 }
 /* }}} */
@@ -1822,7 +1832,7 @@ PHP_FUNCTION(time_sleep_until)
 
 	c_ts = (double)(d_ts - tm.tv_sec - tm.tv_usec / 1000000.00);
 	if (c_ts < 0) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Sleep until to time is less then current time.");
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Sleep until to time is less than current time.");
 		RETURN_FALSE;
 	}
 
@@ -2024,7 +2034,7 @@ PHPAPI int _php_error_log(int opt_err, char *message, char *opt, char *headers T
 			break;
 
 		case 3:		/*save to a file */
-			stream = php_stream_open_wrapper(opt, "a", IGNORE_URL | ENFORCE_SAFE_MODE | REPORT_ERRORS, NULL);
+			stream = php_stream_open_wrapper(opt, "a", IGNORE_URL_WIN | ENFORCE_SAFE_MODE | REPORT_ERRORS, NULL);
 			if (!stream)
 				return FAILURE;
 			php_stream_write(stream, message, strlen(message));
@@ -2387,6 +2397,7 @@ PHP_FUNCTION(register_shutdown_function)
 	shutdown_function_entry.arguments = (zval **) safe_emalloc(sizeof(zval *), shutdown_function_entry.arg_count, 0);
 
 	if (zend_get_parameters_array(ht, shutdown_function_entry.arg_count, shutdown_function_entry.arguments) == FAILURE) {
+		efree(shutdown_function_entry.arguments);
 		RETURN_FALSE;
 	}
 	
@@ -2970,6 +2981,7 @@ PHP_FUNCTION(register_tick_function)
 	tick_fe.arguments = (zval **) safe_emalloc(sizeof(zval *), tick_fe.arg_count, 0);
 
 	if (zend_get_parameters_array(ht, tick_fe.arg_count, tick_fe.arguments) == FAILURE) {
+		efree(tick_fe.arguments);
 		RETURN_FALSE;
 	}
 
@@ -3338,6 +3350,23 @@ PHP_FUNCTION(import_request_variables)
 	}
 }
 /* }}} */
+
+#ifdef HAVE_GETLOADAVG
+PHP_FUNCTION(sys_getloadavg)
+{
+	double load[3];
+
+	if (getloadavg(load, 3) == -1) {
+		RETURN_FALSE;
+	} else {
+		array_init(return_value);
+		add_index_double(return_value, 0, load[0]);
+		add_index_double(return_value, 1, load[1]);
+		add_index_double(return_value, 2, load[2]);
+	}
+}
+#endif
+
 
 /*
  * Local variables:

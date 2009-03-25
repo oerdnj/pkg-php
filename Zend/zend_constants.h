@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_constants.h,v 1.31.2.1 2006/01/04 23:53:04 andi Exp $ */
+/* $Id: zend_constants.h,v 1.31.2.2 2006/03/15 09:04:36 dmitry Exp $ */
 
 #ifndef ZEND_CONSTANTS_H
 #define ZEND_CONSTANTS_H
@@ -26,6 +26,7 @@
 
 #define CONST_CS				(1<<0)				/* Case Sensitive */
 #define CONST_PERSISTENT		(1<<1)				/* Persistent */
+#define CONST_CT_SUBST			(2<<1)				/* Allow compile-time substitution */
 
 #define	PHP_USER_CONSTANT INT_MAX	/* a constant defined in user space */
 

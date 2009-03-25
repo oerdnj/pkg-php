@@ -32,7 +32,7 @@
 #include "spl_array.h"
 
 /* {{{ spl_instantiate */
-void spl_instantiate(zend_class_entry *pce, zval **object, int alloc TSRMLS_DC)
+PHPAPI void spl_instantiate(zend_class_entry *pce, zval **object, int alloc TSRMLS_DC)
 {
 	if (alloc) {
 		ALLOC_ZVAL(*object);
@@ -40,20 +40,6 @@ void spl_instantiate(zend_class_entry *pce, zval **object, int alloc TSRMLS_DC)
 	object_init_ex(*object, pce);
 	(*object)->refcount = 1;
 	(*object)->is_ref = 1; /* check if this can be hold always */
-}
-/* }}} */
-
-/* {{{ spl_is_instance_of */
-int spl_is_instance_of(zval **obj, zend_class_entry *ce TSRMLS_DC)
-{
-	/* Ensure everything needed is available before checking for the type.
-	 */
-	zend_class_entry *instance_ce;
-
-	if (obj && (instance_ce = spl_get_class_entry(*obj TSRMLS_CC)) != NULL) {
-		return instanceof_function(instance_ce, ce TSRMLS_CC);
-	}
-	return 0;
 }
 /* }}} */
 

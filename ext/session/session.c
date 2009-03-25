@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: session.c,v 1.417.2.5 2006/01/01 12:50:12 sniper Exp $ */
+/* $Id: session.c,v 1.417.2.8 2006/02/10 07:39:13 rasmus Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -277,7 +277,7 @@ typedef struct {
 
 #define MAX_STR 512
 
-void php_add_session_var(char *name, size_t namelen TSRMLS_DC)
+PHPAPI void php_add_session_var(char *name, size_t namelen TSRMLS_DC)
 {
 	zval **sym_track = NULL;
 	
@@ -318,7 +318,7 @@ void php_add_session_var(char *name, size_t namelen TSRMLS_DC)
 	}
 }
 
-void php_set_session_var(char *name, size_t namelen, zval *state_val, php_unserialize_data_t *var_hash TSRMLS_DC)
+PHPAPI void php_set_session_var(char *name, size_t namelen, zval *state_val, php_unserialize_data_t *var_hash TSRMLS_DC)
 {
 	if (PG(register_globals)) {
 		zval **old_symbol;
@@ -358,7 +358,7 @@ void php_set_session_var(char *name, size_t namelen, zval *state_val, php_unseri
 	}
 }
 
-int php_get_session_var(char *name, size_t namelen, zval ***state_var TSRMLS_DC)
+PHPAPI int php_get_session_var(char *name, size_t namelen, zval ***state_var TSRMLS_DC)
 {
 	int ret = FAILURE;
 
@@ -741,6 +741,12 @@ static void php_session_initialize(TSRMLS_D)
 	char *val;
 	int vallen;
 
+	/* check session name for invalid characters */
+	if (PS(id) && strpbrk(PS(id), "\r\n\t <>'\"\\")) {
+		efree(PS(id));
+		PS(id) = NULL;
+	}
+
 	if (!PS(mod)) {
 		php_error_docref(NULL TSRMLS_CC, E_ERROR, "No storage module chosen - failed to initialize session.");
 		return;
@@ -1082,8 +1088,9 @@ static void php_session_reset_id(TSRMLS_D)
 {
 	int module_number = PS(module_number);
 	
-	if (PS(use_cookies)) {
+	if (PS(use_cookies) && PS(send_cookie)) {
 		php_session_send_cookie(TSRMLS_C);
+		PS(send_cookie) = 0;
 	}
 
 	/* if the SID constant exists, destroy it. */
@@ -1479,6 +1486,7 @@ PHP_FUNCTION(session_regenerate_id)
 	
 		PS(id) = PS(mod)->s_create_sid(&PS(mod_data), NULL TSRMLS_CC);
 
+		PS(send_cookie) = 1;
 		php_session_reset_id(TSRMLS_C);
 		
 		RETURN_TRUE;

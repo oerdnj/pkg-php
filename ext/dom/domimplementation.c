@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: domimplementation.c,v 1.15.2.1 2006/01/01 12:50:06 sniper Exp $ */
+/* $Id: domimplementation.c,v 1.15.2.2 2006/02/24 10:19:54 mike Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -92,7 +92,7 @@ PHP_METHOD(domimplementation, createDocumentType)
 		pch2 = systemid;
 
 	uri = xmlParseURI(name);
-	if (uri->opaque != NULL) {
+	if (uri != NULL && uri->opaque != NULL) {
 		localname = xmlStrdup(uri->opaque);
 		if (xmlStrchr(localname, (xmlChar) ':') != NULL) {
 			php_dom_throw_error(NAMESPACE_ERR, 1 TSRMLS_CC);
@@ -108,7 +108,9 @@ PHP_METHOD(domimplementation, createDocumentType)
 	php_dom_throw_error(INVALID_CHARACTER_ERR, TSRMLS_CC);
 	*/
 
-	xmlFreeURI(uri);
+	if (uri) {
+		xmlFreeURI(uri);
+	}
 
 	doctype = xmlCreateIntSubset(NULL, localname, pch1, pch2);
 	xmlFree(localname);

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_virtual_cwd.h,v 1.48.2.1 2006/01/01 12:50:00 sniper Exp $ */
+/* $Id: tsrm_virtual_cwd.h,v 1.48.2.5 2006/04/10 11:56:18 sniper Exp $ */
 
 #ifndef VIRTUAL_CWD_H
 #define VIRTUAL_CWD_H
@@ -166,23 +166,8 @@ CWD_API int virtual_access(const char *pathname, int mode TSRMLS_DC);
 #endif
 #endif
 
-/* On AIX & Tru64 when a file does not exist realpath() returns
- * NULL, and sets errno to ENOENT. Unlike in other libc implementations
- * the destination is not filled and remains undefined. Therefor, we
- * must populate it manually using strcpy as done on systems with no
- * realpath() function.
- */
 #if defined(__osf__) || defined(_AIX)
-static char *php_realpath_hack(char *src, char *dest)
-{
-	char *ret;
-
-	if ((ret = realpath(src, dest)) == NULL && errno == ENOENT) {
-		return strcpy(dest, src);
-	} else {
-		return ret;
-	}
-}
+char *php_realpath_hack(char *src, char *dest);
 #endif
 
 #if HAVE_UTIME
@@ -190,16 +175,14 @@ CWD_API int virtual_utime(const char *filename, struct utimbuf *buf TSRMLS_DC);
 #endif
 CWD_API int virtual_chmod(const char *filename, mode_t mode TSRMLS_DC);
 #if !defined(TSRM_WIN32) && !defined(NETWARE)
-CWD_API int virtual_chown(const char *filename, uid_t owner, gid_t group TSRMLS_DC);
+CWD_API int virtual_chown(const char *filename, uid_t owner, gid_t group, int link TSRMLS_DC);
 #endif
 
 CWD_API int virtual_file_ex(cwd_state *state, const char *path, verify_path_func verify_path, int use_realpath);
 
-#define REALPATH_CACHE
 #define REALPATH_CACHE_TTL  (2*60) /* 2 minutes */
 #define REALPATH_CACHE_SIZE 0      /* disabled while php.ini isn't loaded */
 
-#ifdef REALPATH_CACHE
 typedef struct _realpath_cache_bucket {
 	unsigned long                  key;
 	char                          *path;
@@ -209,16 +192,13 @@ typedef struct _realpath_cache_bucket {
 	time_t                         expires;
 	struct _realpath_cache_bucket *next;	
 } realpath_cache_bucket;
-#endif
 
 typedef struct _virtual_cwd_globals {
 	cwd_state cwd;
-#ifdef REALPATH_CACHE
 	long                   realpath_cache_size;
 	long                   realpath_cache_size_limit;
 	long                   realpath_cache_ttl;
 	realpath_cache_bucket *realpath_cache[1024];
-#endif
 } virtual_cwd_globals;
 
 #ifdef ZTS
@@ -262,7 +242,10 @@ extern virtual_cwd_globals cwd_globals;
 #endif
 #define VCWD_CHMOD(path, mode) virtual_chmod(path, mode TSRMLS_CC)
 #if !defined(TSRM_WIN32) && !defined(NETWARE)
-#define VCWD_CHOWN(path, owner, group) virtual_chown(path, owner, group TSRMLS_CC)
+#define VCWD_CHOWN(path, owner, group) virtual_chown(path, owner, group, 0 TSRMLS_CC)
+#if HAVE_LCHOWN
+#define VCWD_LCHOWN(path, owner, group) virtual_chown(path, owner, group, 1 TSRMLS_CC)
+#endif
 #endif
 
 #else
@@ -305,6 +288,9 @@ extern virtual_cwd_globals cwd_globals;
 #define VCWD_CHMOD(path, mode) chmod(path, mode)
 #if !defined(TSRM_WIN32) && !defined(NETWARE)
 #define VCWD_CHOWN(path, owner, group) chown(path, owner, group)
+#if HAVE_LCHOWN
+#define VCWD_LCHOWN(path, owner, group) lchown(path, owner, group)
+#endif
 #endif
 
 #endif

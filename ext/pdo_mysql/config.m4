@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.25.2.6 2005/12/04 18:33:26 wez Exp $
+dnl $Id: config.m4,v 1.25.2.7 2006/05/02 00:59:22 wez Exp $
 dnl
 
 if test "$PHP_PDO" != "no"; then
@@ -87,6 +87,9 @@ if test "$PHP_PDO_MYSQL" != "no"; then
 
   AC_DEFINE_UNQUOTED(PDO_MYSQL_UNIX_ADDR, "$PDO_MYSQL_SOCKET", [ ])
 
+  
+  _SAVE_LIBS=$LIBS
+  LIBS="$LIBS $PDO_MYSQL_LIBS"
   PHP_CHECK_LIBRARY(mysqlclient, mysql_query,
   [
     PHP_EVAL_LIBLINE($PDO_MYSQL_LIBS, PDO_MYSQL_SHARED_LIBADD)
@@ -95,8 +98,6 @@ if test "$PHP_PDO_MYSQL" != "no"; then
   ],[
     $PDO_MYSQL_LIBS
   ])
-  _SAVE_LIBS=$LIBS
-  LIBS="$LIBS $PDO_MYSQL_LIBS"
   AC_CHECK_FUNCS([mysql_commit mysql_stmt_prepare mysql_next_result mysql_sqlstate]) 
   LIBS=$_SAVE_LIBS
 

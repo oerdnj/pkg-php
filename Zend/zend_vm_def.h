@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_vm_def.h,v 1.59.2.22 2006/01/04 23:53:04 andi Exp $ */
+/* $Id: zend_vm_def.h,v 1.59.2.27 2006/03/15 11:12:45 dmitry Exp $ */
 
 /* If you change this file, please regenerate the zend_vm_execute.h and
  * zend_vm_opcodes.h files by running:
@@ -1723,6 +1723,15 @@ ZEND_VM_HANDLER(113, ZEND_INIT_STATIC_METHOD_CALL, ANY, CONST|TMP|VAR|UNUSED|CV)
 	if (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) {
 		EX(object) = NULL;
 	} else {
+		if (OP2_TYPE != IS_UNUSED &&
+		    EG(This) &&
+		    Z_OBJ_HT_P(EG(This))->get_class_entry &&
+		    !instanceof_function(Z_OBJCE_P(EG(This)), ce TSRMLS_CC)) { 
+		    /* We are calling method of the other (incompatible) class,
+		       but passing $this. This is done for compatibility with php-4. */
+			zend_error(E_STRICT, "Non-static method %s::%s() should not be called statically, assuming $this from incompatible context", EX(fbc)->common.scope->name, EX(fbc)->common.function_name);
+
+		}
 		if ((EX(object) = EG(This))) {
 			EX(object)->refcount++;
 		}
@@ -1784,9 +1793,17 @@ ZEND_VM_HELPER(zend_do_fcall_common_helper, ANY, ANY)
 	zend_bool should_change_scope;
 	zend_op *ctor_opline;
 
-	if (EX(function_state).function->common.fn_flags & ZEND_ACC_ABSTRACT) {
-		zend_error_noreturn(E_ERROR, "Cannot call abstract method %s::%s()", EX(function_state).function->common.scope->name, EX(function_state).function->common.function_name);
-		ZEND_VM_NEXT_OPCODE(); /* Never reached */
+	if (EX(function_state).function->common.fn_flags & (ZEND_ACC_ABSTRACT|ZEND_ACC_DEPRECATED)) {
+		if (EX(function_state).function->common.fn_flags & ZEND_ACC_ABSTRACT) {
+			zend_error_noreturn(E_ERROR, "Cannot call abstract method %s::%s()", EX(function_state).function->common.scope->name, EX(function_state).function->common.function_name);
+			ZEND_VM_NEXT_OPCODE(); /* Never reached */
+		}
+		if (EX(function_state).function->common.fn_flags & ZEND_ACC_DEPRECATED) {
+			zend_error(E_STRICT, "Function %s%s%s() is deprecated", 
+				EX(function_state).function->common.scope ? EX(function_state).function->common.scope->name : "",
+				EX(function_state).function->common.scope ? "::" : "",
+				EX(function_state).function->common.function_name);
+		};
 	}
 
 	zend_ptr_stack_2_push(&EG(argument_stack), (void *) opline->extended_value, NULL);
@@ -2983,7 +3000,9 @@ ZEND_VM_HANDLER(77, ZEND_FE_RESET, CONST|TMP|VAR|CV, ANY)
 			}
 			array_ptr = *array_ptr_ptr;
 		} else {
-			SEPARATE_ZVAL_IF_NOT_REF(array_ptr_ptr);
+			if (Z_TYPE_PP(array_ptr_ptr) == IS_ARRAY) {
+				SEPARATE_ZVAL_IF_NOT_REF(array_ptr_ptr);
+			}
 			array_ptr = *array_ptr_ptr;
 			array_ptr->refcount++;
 		}
@@ -3086,7 +3105,7 @@ ZEND_VM_HANDLER(78, ZEND_FE_FETCH, VAR, ANY)
 	HashTable *fe_ht;
 	zend_object_iterator *iter = NULL;
 	int key_type;
-	zend_bool use_key = opline->extended_value & ZEND_FE_FETCH_WITH_KEY;
+	zend_bool use_key = (zend_bool)(opline->extended_value & ZEND_FE_FETCH_WITH_KEY);
 
 	PZVAL_LOCK(array);
 
@@ -3404,8 +3423,8 @@ ZEND_VM_HANDLER(148, ZEND_ISSET_ISEMPTY_PROP_OBJ, VAR|UNUSED|CV, CONST|TMP|VAR|C
 
 ZEND_VM_HANDLER(79, ZEND_EXIT, CONST|TMP|VAR|UNUSED|CV, ANY)
 {
+	zend_op *opline = EX(opline);
 	if (OP1_TYPE != IS_UNUSED) {
-		zend_op *opline = EX(opline);
 		zend_free_op free_op1;
 		zval *ptr = GET_OP1_ZVAL_PTR(BP_VAR_R);
 

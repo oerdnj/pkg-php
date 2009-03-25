@@ -1,6 +1,6 @@
 /*
 	Build Configuration Template for Win32.
-	$Id: config.w32.h.in,v 1.7.2.2 2005/12/14 02:01:13 wez Exp $
+	$Id: config.w32.h.in,v 1.7.2.4 2006/03/14 14:19:00 dmitry Exp $
 */
 
 /* Default PHP / PEAR directories */
@@ -107,11 +107,16 @@
 #undef HAVE_SYS_WAIT_H
 #define HAVE_SYSLOG_H 1
 #undef HAVE_UNISTD_H
-#define HAVE_LIBDL 1
+#define HAVE_SYS_TYPES_H 1
+#define HAVE_STDARG_H 1
+#undef HAVE_ALLOCA_H
+#undef HAVE_KILL
+#define HAVE_GETPID 1
 #define HAVE_LIBM 1
 #define HAVE_CUSERID 0
 #undef HAVE_RINT
 #define HAVE_STRFTIME 1
+#define SIZEOF_SHORT 2
 /* int and long are stll 32bit in 64bit compiles */
 #define SIZEOF_INT 4
 #define SIZEOF_LONG 4

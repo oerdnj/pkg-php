@@ -14,10 +14,13 @@
    +----------------------------------------------------------------------+
    | Authors:                                                             |
    | Wez Furlong (wez@thebrainroom.com)                                   |
+   | Sara Golemon (pollita@php.net)                                       |
+   | Moriyoshi Koizumi (moriyoshi@php.net)                                |
+   | Marcus Boerger (helly@php.net)                                       |
    +----------------------------------------------------------------------+
 */
 
-/* $Id: filters.c,v 1.44.2.3 2006/01/01 12:50:14 sniper Exp $ */
+/* $Id: filters.c,v 1.44.2.6 2006/04/17 19:26:04 pollita Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -102,7 +105,7 @@ static php_stream_filter_status_t strfilter_toupper_filter(
 	if (bytes_consumed) {
 		*bytes_consumed = consumed;
 	}
-	
+
 	return PSFS_PASS_ON;
 }
 
@@ -130,7 +133,7 @@ static php_stream_filter_status_t strfilter_tolower_filter(
 	if (bytes_consumed) {
 		*bytes_consumed = consumed;
 	}
-	
+
 	return PSFS_PASS_ON;
 }
 
@@ -638,7 +641,7 @@ static php_conv_err_t php_conv_base64_decode_convert(php_conv_base64_decode *ins
 	size_t icnt, ocnt;
 	unsigned int ustat;
 
-	const static unsigned int nbitsof_pack = 8;
+	static const unsigned int nbitsof_pack = 8;
 
 	if (in_pp == NULL || in_left_p == NULL) {
 		if (inst->eos || inst->urem_nbits == 0) { 
@@ -1028,6 +1031,18 @@ static php_conv_err_t php_conv_qprint_decode_convert(php_conv_qprint_decode *ins
 					scan_stat = 4;
 					ps++, icnt--;
 					break;
+				} else if (!inst->lbchars && lb_cnt == 0 && *ps == '\r') {
+					/* auto-detect line endings, looks like network line ending \r\n (could be mac \r) */
+					lb_cnt++;
+					scan_stat = 5;
+					ps++, icnt--;
+					break;
+				} else if (!inst->lbchars && lb_cnt == 0 && *ps == '\n') {
+					/* auto-detect line endings, looks like unix-lineendings, not to spec, but it is seem in the wild, a lot */
+					lb_cnt = lb_ptr = 0;
+					scan_stat = 0;
+					ps++, icnt--;
+					break;
 				} else if (lb_cnt < inst->lbchars_len &&
 							*ps == (unsigned char)inst->lbchars[lb_cnt]) {
 					lb_cnt++;
@@ -1085,7 +1100,16 @@ static php_conv_err_t php_conv_qprint_decode_convert(php_conv_qprint_decode *ins
 			} break;
 
 			case 5: {
-				if (lb_cnt >= inst->lbchars_len) {
+				if (!inst->lbchars && lb_cnt == 1 && *ps == '\n') {
+					/* auto-detect soft line breaks, found network line break */
+					lb_cnt = lb_ptr = 0;
+					scan_stat = 0;
+					ps++, icnt--; /* consume \n */
+				} else if (!inst->lbchars && lb_cnt > 0) {
+					/* auto-detect soft line breaks, found mac line break */
+					lb_cnt = lb_ptr = 0;
+					scan_stat = 0;
+				} else if (lb_cnt >= inst->lbchars_len) {
 					/* soft line break */
 					lb_cnt = lb_ptr = 0;
 					scan_stat = 0;
@@ -1405,12 +1429,10 @@ static php_conv *php_conv_open(int conv_mode, const HashTable *options, int pers
 			size_t lbchars_len;
 
 			if (options != NULL) {
+				/* If line-break-chars are not specified, filter will attempt to detect line endings (\r, \n, or \r\n) */
 				GET_STR_PROP(options, lbchars, lbchars_len, "line-break-chars", 0);
-				if (lbchars == NULL) {
-					lbchars = pestrdup("\r\n", 0);
-					lbchars_len = 2;
-				}
 			}
+
 			retval = pemalloc(sizeof(php_conv_qprint_decode), persistent);
 			if (lbchars != NULL) {
 				if (php_conv_qprint_decode_ctor((php_conv_qprint_decode *)retval, lbchars, lbchars_len, 1, persistent)) {
@@ -1795,6 +1817,88 @@ static php_stream_filter_factory strfilter_convert_factory = {
 };
 /* }}} */
 
+/* {{{ consumed filter implementation */
+typedef struct _php_consumed_filter_data {
+	int persistent;
+	size_t consumed;
+	off_t offset;
+} php_consumed_filter_data;
+
+static php_stream_filter_status_t consumed_filter_filter(
+	php_stream *stream,
+	php_stream_filter *thisfilter,
+	php_stream_bucket_brigade *buckets_in,
+	php_stream_bucket_brigade *buckets_out,
+	size_t *bytes_consumed,
+	int flags
+	TSRMLS_DC)
+{
+	php_consumed_filter_data *data = (php_consumed_filter_data *)(thisfilter->abstract);
+	php_stream_bucket *bucket;
+	size_t consumed = 0;
+
+	if (data->offset == ~0) {
+		data->offset = php_stream_tell(stream);
+	}
+	while ((bucket = buckets_in->head) != NULL) {
+		php_stream_bucket_unlink(bucket TSRMLS_CC);
+		consumed += bucket->buflen;
+		php_stream_bucket_append(buckets_out, bucket TSRMLS_CC);
+	}
+	if (bytes_consumed) {
+		*bytes_consumed = consumed;
+	}
+	if (flags & PSFS_FLAG_FLUSH_CLOSE) {
+		php_stream_seek(stream, data->offset + data->consumed, SEEK_SET);
+	}
+	data->consumed += consumed;
+	
+	return PSFS_PASS_ON;
+}
+
+static void consumed_filter_dtor(php_stream_filter *thisfilter TSRMLS_DC)
+{
+	if (thisfilter && thisfilter->abstract) {
+		php_consumed_filter_data *data = (php_consumed_filter_data*)thisfilter->abstract;
+		pefree(data, data->persistent);
+	}
+}
+
+static php_stream_filter_ops consumed_filter_ops = {
+	consumed_filter_filter,
+	consumed_filter_dtor,
+	"consumed"
+};
+
+static php_stream_filter *consumed_filter_create(const char *filtername, zval *filterparams, int persistent TSRMLS_DC)
+{
+	php_stream_filter_ops *fops = NULL;
+	php_consumed_filter_data *data;
+
+	if (strcasecmp(filtername, "consumed")) {
+		return NULL;
+	}
+
+	/* Create this filter */
+	data = pecalloc(1, sizeof(php_consumed_filter_data), persistent);
+	if (!data) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed allocating %d bytes.", sizeof(php_consumed_filter_data));
+		return NULL;
+	}
+	data->persistent = persistent;
+	data->consumed = 0;
+	data->offset = ~0;
+	fops = &consumed_filter_ops;
+
+	return php_stream_filter_alloc(fops, data, persistent);
+}
+
+php_stream_filter_factory consumed_filter_factory = {
+	consumed_filter_create
+};
+
+/* }}} */
+
 static const struct {
 	php_stream_filter_ops *ops;
 	php_stream_filter_factory *factory;
@@ -1804,6 +1908,7 @@ static const struct {
 	{ &strfilter_tolower_ops, &strfilter_tolower_factory },
 	{ &strfilter_strip_tags_ops, &strfilter_strip_tags_factory },
 	{ &strfilter_convert_ops, &strfilter_convert_factory },
+	{ &consumed_filter_ops, &consumed_filter_factory },
 	/* additional filters to go here */
 	{ NULL, NULL }
 };

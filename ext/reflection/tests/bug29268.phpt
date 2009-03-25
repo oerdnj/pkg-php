@@ -1,5 +1,7 @@
 --TEST--
-Bug #29268 (__autoload() not called with reflectionProperty->getClass())
+Reflection Bug #29268 (__autoload() not called with reflectionProperty->getClass())
+--SKIPIF--
+<?php extension_loaded('reflection') or die('skip'); ?>
 --FILE--
 <?php
 function __autoload($classname) {
@@ -14,8 +16,9 @@ class B{
 
 $ref = new reflectionMethod('B','doit');
 $parameters = $ref->getParameters();	
-foreach($parameters as $parameter){
-	$class = $parameter->getClass();	
+foreach($parameters as $parameter)
+{
+	$class = $parameter->getClass();
 	echo $class->name."\n";
 }
 echo "ok\n";

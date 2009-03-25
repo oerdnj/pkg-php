@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: dba_db4.c,v 1.15.2.2 2006/01/01 12:50:05 sniper Exp $ */
+/* $Id: dba_db4.c,v 1.15.2.3 2006/02/18 17:11:06 helly Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -139,9 +139,15 @@ DBA_FETCH_FUNC(db4)
 	DB4_GKEY;
 	
 	memset(&gval, 0, sizeof(gval));
+	if (info->flags & DBA_PERSISTENT) {
+		gval.flags |= DB_DBT_MALLOC;
+	}
 	if (!dba->dbp->get(dba->dbp, NULL, &gkey, &gval, 0)) {
 		if (newlen) *newlen = gval.size;
 		new = estrndup(gval.data, gval.size);
+		if (info->flags & DBA_PERSISTENT) {
+			free(gval.data);
+		}
 	}
 	return new;
 }
@@ -210,10 +216,22 @@ DBA_NEXTKEY_FUNC(db4)
 	memset(&gkey, 0, sizeof(gkey));
 	memset(&gval, 0, sizeof(gval));
 
+	if (info->flags & DBA_PERSISTENT) {
+		gkey.flags |= DB_DBT_MALLOC;
+		gval.flags |= DB_DBT_MALLOC;
+	}
 	if (dba->cursor->c_get(dba->cursor, &gkey, &gval, DB_NEXT) == 0) {
 		if (gkey.data) {
 			nkey = estrndup(gkey.data, gkey.size);
 			if (newlen) *newlen = gkey.size;
+		}
+		if (info->flags & DBA_PERSISTENT) {
+			if (gkey.data) {
+				free(gkey.data);
+			}
+			if (gval.data) {
+				free(gval.data);
+			}
 		}
 	}
 

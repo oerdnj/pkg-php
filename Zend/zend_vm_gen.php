@@ -16,7 +16,7 @@
    | Authors: Dmitry Stogov <dmitry@zend.com>                             |
    +----------------------------------------------------------------------+
 
-	 $Id: zend_vm_gen.php,v 1.12.2.4 2006/01/04 23:53:05 andi Exp $
+	 $Id: zend_vm_gen.php,v 1.12.2.5 2006/03/15 08:06:28 dmitry Exp $
 */
 
 $header_text = <<< DATA
@@ -1200,13 +1200,13 @@ function gen_vm($def, $skel) {
 			if ($kind == "handler") {
 				$op = $opcodes[$opnames[$name]];
 				if (isset($op['op1']["ANY"]) && isset($op['op2']["ANY"])) {
-					out($f, "{\n\treturn ".$name."_SPEC_HANDLER(ZEND_OPCODE_HANDLER_ARGS_PASSTHRU);\n}\n\n");
+					out($f, "{\n\treturn ".$name.(ZEND_VM_SPEC?"_SPEC":"")."_HANDLER(ZEND_OPCODE_HANDLER_ARGS_PASSTHRU);\n}\n\n");
 					$done = 1;
 				}
 			} else if ($helpers[$name]["param"] == null) {
 				$h = $helpers[$name];
 				if (isset($h['op1']["ANY"]) && isset($h['op2']["ANY"])) {
-					out($f, "{\n\treturn ".$name."_SPEC(ZEND_OPCODE_HANDLER_ARGS_PASSTHRU);\n}\n\n");
+					out($f, "{\n\treturn ".$name.(ZEND_VM_SPEC?"_SPEC":"")."(ZEND_OPCODE_HANDLER_ARGS_PASSTHRU);\n}\n\n");
 					$done = 1;
 				}
 			}

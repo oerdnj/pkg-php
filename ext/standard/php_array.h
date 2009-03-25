@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_array.h,v 1.50.2.1 2006/01/01 12:50:15 sniper Exp $ */
+/* $Id: php_array.h,v 1.50.2.3 2006/06/03 18:59:55 andrei Exp $ */
 
 #ifndef PHP_ARRAY_H
 #define PHP_ARRAY_H
@@ -102,5 +102,16 @@ PHP_FUNCTION(array_combine);
 HashTable* php_splice(HashTable *, int, int, zval ***, int, HashTable **);
 PHPAPI int php_array_merge(HashTable *dest, HashTable *src, int recursive TSRMLS_DC);
 int multisort_compare(const void *a, const void *b TSRMLS_DC);
+
+ZEND_BEGIN_MODULE_GLOBALS(array) 
+	int *multisort_flags[2];
+	int (*compare_func)(zval *result, zval *op1, zval *op2 TSRMLS_DC);
+ZEND_END_MODULE_GLOBALS(array) 
+
+#ifdef ZTS
+#define ARRAYG(v) TSRMG(array_globals_id, zend_array_globals *, v)
+#else
+#define ARRAYG(v) (array_globals.v)
+#endif
 
 #endif /* PHP_ARRAY_H */

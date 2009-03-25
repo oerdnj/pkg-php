@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_simplexml.h,v 1.20.2.1 2006/01/01 12:50:13 sniper Exp $ */
+/* $Id: php_simplexml.h,v 1.20.2.2 2006/02/26 23:14:45 helly Exp $ */
 
 #ifndef PHP_SIMPLEXML_H
 #define PHP_SIMPLEXML_H
@@ -53,6 +53,13 @@ PHP_RINIT_FUNCTION(simplexml);
 #endif
 PHP_MINFO_FUNCTION(simplexml);
 
+typedef enum {
+	SXE_ITER_NONE     = 0,
+	SXE_ITER_ELEMENT  = 1,
+	SXE_ITER_CHILD    = 2,
+	SXE_ITER_ATTRLIST = 3
+} SXE_ITER;
+
 typedef struct {
 	zend_object zo;
 	php_libxml_node_ptr *node;
@@ -63,15 +70,11 @@ typedef struct {
 		int                   itertype;
 		char                  *name;
 		char                  *nsprefix;
-		int                   type;
+		SXE_ITER              type;
 		zval                  *data;
 	} iter;
+	zval *tmp;
 } php_sxe_object;
-
-#define SXE_ITER_NONE 0
-#define SXE_ITER_ELEMENT 1
-#define SXE_ITER_CHILD 2
-#define SXE_ITER_ATTRLIST 3
 
 #ifdef ZTS
 #define SIMPLEXML_G(v) TSRMG(simplexml_globals_id, zend_simplexml_globals *, v)

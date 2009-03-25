@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_session.h,v 1.101.2.1 2006/01/01 12:50:12 sniper Exp $ */
+/* $Id: php_session.h,v 1.101.2.2 2006/01/28 06:14:49 fmk Exp $ */
 
 #ifndef PHP_SESSION_H
 #define PHP_SESSION_H
@@ -184,9 +184,9 @@ typedef struct ps_serializer_struct {
 
 PHPAPI void session_adapt_url(const char *, size_t, char **, size_t * TSRMLS_DC);
 
-void php_add_session_var(char *name, size_t namelen TSRMLS_DC);
-void php_set_session_var(char *name, size_t namelen, zval *state_val, php_unserialize_data_t *var_hash TSRMLS_DC);
-int php_get_session_var(char *name, size_t namelen, zval ***state_var TSRMLS_DC);
+PHPAPI void php_add_session_var(char *name, size_t namelen TSRMLS_DC);
+PHPAPI void php_set_session_var(char *name, size_t namelen, zval *state_val, php_unserialize_data_t *var_hash TSRMLS_DC);
+PHPAPI int php_get_session_var(char *name, size_t namelen, zval ***state_var TSRMLS_DC);
 
 PHPAPI int php_session_register_module(ps_module *);
 

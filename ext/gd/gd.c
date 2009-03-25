@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: gd.c,v 1.312.2.12 2006/01/01 12:50:06 sniper Exp $ */
+/* $Id: gd.c,v 1.312.2.20 2006/03/10 18:07:27 pajoye Exp $ */
 
 /* gd 1.2 is copyright 1994, 1995, Quest Protein Database Center,
    Cold Spring Harbor Labs. */
@@ -29,7 +29,13 @@
 #include "config.h"
 #endif
 
+#ifdef HAVE_GD_PNG
+/* needs to be first */
+#include <png.h>
+#endif
+
 #include "php.h"
+#include "php_ini.h"
 #include "ext/standard/head.h"
 #include <math.h>
 #include "SAPI.h"
@@ -352,6 +358,12 @@ zend_module_entry gd_module_entry = {
 ZEND_GET_MODULE(gd)
 #endif
 
+/* {{{ PHP_INI_BEGIN */
+PHP_INI_BEGIN()
+	PHP_INI_ENTRY("gd.jpeg_ignore_warning", "0", PHP_INI_ALL, NULL)
+PHP_INI_END()
+/* }}} */
+	
 /* {{{ php_free_gd_image
  */
 static void php_free_gd_image(zend_rsrc_list_entry *rsrc TSRMLS_DC)
@@ -400,6 +412,8 @@ PHP_MINIT_FUNCTION(gd)
 	le_ps_enc = zend_register_list_destructors_ex(php_free_ps_enc, NULL, "gd PS encoding", module_number);
 #endif
 
+	REGISTER_INI_ENTRIES();
+	
 	REGISTER_LONG_CONSTANT("IMG_GIF", 1, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("IMG_JPG", 2, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("IMG_JPEG", 2, CONST_CS | CONST_PERSISTENT);
@@ -450,6 +464,22 @@ PHP_MINIT_FUNCTION(gd)
 	/* End Section Filters */
 #else
 	REGISTER_LONG_CONSTANT("GD_BUNDLED", 0, CONST_CS | CONST_PERSISTENT);
+#endif
+
+#ifdef HAVE_GD_PNG
+
+/*
+ * cannot include #include "png.h"
+ * /usr/include/pngconf.h:310:2: error: #error png.h already includes setjmp.h with some additional fixup.
+ * as error, use the values for now...
+ */
+	REGISTER_LONG_CONSTANT("PNG_NO_FILTER",		0x00, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("PNG_FILTER_NONE",	0x08, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("PNG_FILTER_SUB",	0x10, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("PNG_FILTER_UP",		0x20, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("PNG_FILTER_AVG",	0x40, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("PNG_FILTER_PAETH",	0x80, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("PNG_ALL_FILTERS",	0x08 | 0x10 | 0x20 | 0x40 | 0x80, CONST_CS | CONST_PERSISTENT);
 #endif
 	return SUCCESS;
 }
@@ -1064,6 +1094,7 @@ PHP_FUNCTION(imagesavealpha)
 
 	RETURN_TRUE;
 }
+/* }}} */
 #endif
 
 #if HAVE_GD_BUNDLED
@@ -1095,6 +1126,7 @@ PHP_FUNCTION(imagecolorallocatealpha)
 	zval *IM;
 	long red, green, blue, alpha;
 	gdImagePtr im;
+	int ct = (-1);
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zllll", &IM, &red, &green, &blue, &alpha) == FAILURE) {
 		RETURN_FALSE;
@@ -1102,7 +1134,12 @@ PHP_FUNCTION(imagecolorallocatealpha)
 
 	ZEND_FETCH_RESOURCE(im, gdImagePtr, &IM, -1, "Image", le_gd);
 
-	RETURN_LONG(gdImageColorAllocateAlpha(im, red, green, blue, alpha));
+	ct = gdImageColorAllocateAlpha(im, red, green, blue, alpha);
+	if (ct < 0) {
+		RETURN_FALSE;
+	}
+
+	RETURN_LONG((long)ct);
 }
 /* }}} */
 
@@ -1513,6 +1550,8 @@ static void _php_image_create_from(INTERNAL_FUNCTION_PARAMETERS, int image_type,
 	php_stream *stream;
 	FILE * fp = NULL;
 	int argc=ZEND_NUM_ARGS();
+	long ignore_warning;
+
 
 	if ((image_type == PHP_GDIMG_TYPE_GD2PART && argc != 5) ||
 		(image_type != PHP_GDIMG_TYPE_GD2PART && argc != 1) ||
@@ -1593,6 +1632,18 @@ static void _php_image_create_from(INTERNAL_FUNCTION_PARAMETERS, int image_type,
 				im = gdImageCreateFromXpm(fn);
 				break;
 #endif
+
+#ifdef HAVE_GD_JPG
+			case PHP_GDIMG_TYPE_JPG:
+				ignore_warning = INI_INT("gd.jpeg_ignore_warning");
+#ifdef HAVE_GD_BUNDLED
+				im = gdImageCreateFromJpeg(fp, ignore_warning);
+#else
+				im = gdImageCreateFromJpeg(fp);
+#endif
+			break;
+#endif
+
 			default:
 				im = (*func_p)(fp);
 				break;
@@ -1960,6 +2011,7 @@ PHP_FUNCTION(imagecolorallocate)
 {
 	zval **IM, **red, **green, **blue;
 	gdImagePtr im;
+	int ct = (-1);
 
 	if (ZEND_NUM_ARGS() != 4 || zend_get_parameters_ex(4, &IM, &red, &green, &blue) == FAILURE) {
 		ZEND_WRONG_PARAM_COUNT();
@@ -1970,8 +2022,11 @@ PHP_FUNCTION(imagecolorallocate)
 	convert_to_long_ex(red);
 	convert_to_long_ex(green);
 	convert_to_long_ex(blue);
-
-	RETURN_LONG(gdImageColorAllocate(im, Z_LVAL_PP(red), Z_LVAL_PP(green), Z_LVAL_PP(blue)));
+	ct = gdImageColorAllocate(im, Z_LVAL_PP(red), Z_LVAL_PP(green), Z_LVAL_PP(blue));
+	if (ct < 0) {
+		RETURN_FALSE;
+	}
+	RETURN_LONG(ct);
 }
 /* }}} */
 
@@ -3191,6 +3246,8 @@ static void php_imagettftext_common(INTERNAL_FUNCTION_PARAMETERS, int mode, int 
 	fontname = (unsigned char *) fontname;
 #endif
 
+	PHP_GD_CHECK_OPEN_BASEDIR(fontname, "Invalid font filename");
+	
 #ifdef USE_GD_IMGSTRTTF
 # if HAVE_GD_STRINGFTEX
 	if (extended) {
@@ -3808,7 +3865,8 @@ static void _php_image_convert(INTERNAL_FUNCTION_PARAMETERS, int image_type )
 	int int_threshold;
 	int x, y;
 	float x_ratio, y_ratio;
-
+    long ignore_warning;
+	
 	if (argc != 5 || zend_get_parameters_ex(argc, &f_org, &f_dest, &height, &width, &threshold) == FAILURE) {
 		ZEND_WRONG_PARAM_COUNT();
 	}
@@ -3864,7 +3922,12 @@ static void _php_image_convert(INTERNAL_FUNCTION_PARAMETERS, int image_type )
 
 #ifdef HAVE_GD_JPG
 		case PHP_GDIMG_TYPE_JPG:
+			ignore_warning = INI_INT("gd.jpeg_ignore_warning");
+#ifdef HAVE_GD_BUNDLED
+			im_org = gdImageCreateFromJpeg(org, ignore_warning);
+#else
 			im_org = gdImageCreateFromJpeg(org);
+#endif
 			if (im_org == NULL) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to open '%s' Not a valid JPEG file", fn_dest);
 				RETURN_FALSE;

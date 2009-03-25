@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_compat.h,v 1.25.2.1 2006/01/01 12:50:17 sniper Exp $ */
+/* $Id: php_compat.h,v 1.25.2.3 2006/04/10 11:55:14 sniper Exp $ */
 
 #ifndef PHP_COMPAT_H
 #define PHP_COMPAT_H
@@ -38,6 +38,8 @@
 #define pcre_study				php_pcre_study
 #define pcre_version			php_pcre_version
 #define pcre_fullinfo			php_pcre_fullinfo
+#define pcre_free				php_pcre_free
+#define pcre_malloc				php_pcre_malloc
 #endif
 
 #define lookup				php_lookup
@@ -319,6 +321,12 @@
 #define term_source php_gd_term_source
 #define writewbmp php_gd_writewbmp
 #define ZeroDataBlock php_gd_ZeroDataBlock
+#define gdCacheCreate php_gd_gdCacheCreate
+#define gdCacheDelete php_gd_gdCacheDelete
+#define gdCacheGet php_gd_gdCacheGet
+#define gdFontCacheSetup php_gd_gdFontCacheSetup
+#define gdFontCacheShutdown php_gd_gdFontCacheShutdown
+#define gdFreeFontCache php_gd_gdFreeFontCache
 #endif /* HAVE_GD_BUNDLED */
 
 /* Define to specify how much context to retain around the current parse

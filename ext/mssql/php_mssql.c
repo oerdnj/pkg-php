@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_mssql.c,v 1.152.2.12 2006/01/01 12:50:09 sniper Exp $ */
+/* $Id: php_mssql.c,v 1.152.2.13 2006/04/04 18:49:12 fmk Exp $ */
 
 #ifdef COMPILE_DL_MSSQL
 #define HAVE_MSSQL 1
@@ -229,6 +229,7 @@ static void _free_mssql_result(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 	mssql_result *result = (mssql_result *)rsrc->ptr;
 
 	_free_result(result, 1);
+	dbcancel(result->mssql_ptr->link);
 	efree(result);
 }
 
@@ -1233,6 +1234,7 @@ PHP_FUNCTION(mssql_query)
 	}
 	if (dbsqlexec(mssql_ptr->link)==FAIL || (retvalue = dbresults(mssql_ptr->link))==FAIL) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Query failed");
+		dbcancel(mssql_ptr->link);
 		RETURN_FALSE;
 	}
 	
@@ -1247,6 +1249,7 @@ PHP_FUNCTION(mssql_query)
 
 	retvalue=dbnextrow(mssql_ptr->link);	
 	if (retvalue==FAIL) {
+		dbcancel(mssql_ptr->link);
 		RETURN_FALSE;
 	}
 
@@ -2172,6 +2175,7 @@ PHP_FUNCTION(mssql_execute)
 
 	if (dbrpcexec(mssql_ptr->link)==FAIL || dbsqlok(mssql_ptr->link)==FAIL) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "stored procedure execution failed");
+		dbcancel(mssql_ptr->link);
 		RETURN_FALSE;
 	}
 
@@ -2179,6 +2183,7 @@ PHP_FUNCTION(mssql_execute)
 
 	if (retval_results==FAIL) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "could not retrieve results");
+		dbcancel(mssql_ptr->link);
 		RETURN_FALSE;
 	}
 

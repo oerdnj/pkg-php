@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: var.c,v 1.203.2.5 2006/01/01 12:50:16 sniper Exp $ */
+/* $Id: var.c,v 1.203.2.7 2006/04/05 02:28:06 iliaa Exp $ */
 
 
 
@@ -221,12 +221,44 @@ static int zval_array_element_dump(zval **zv, int num_args, va_list args, zend_h
 	return 0;
 }
 
+static int zval_object_property_dump(zval **zv, int num_args, va_list args, zend_hash_key *hash_key)
+{
+	int level;
+	char *prop_name, *class_name;
+	TSRMLS_FETCH();
+
+	level = va_arg(args, int);
+
+	if (hash_key->nKeyLength ==0 ) { /* numeric key */
+		php_printf("%*c[%ld]=>\n", level + 1, ' ', hash_key->h);
+	} else { /* string key */
+		zend_unmangle_property_name_ex(hash_key->arKey, hash_key->nKeyLength, &class_name, &prop_name);
+		if (class_name) {
+			php_printf("%*c[\"%s", level + 1, ' ', prop_name);
+			if (class_name[0]=='*') {
+				ZEND_PUTS(":protected");
+			} else {
+				ZEND_PUTS(":private");
+			}
+		} else {
+			php_printf("%*c[\"%s", level + 1, ' ', hash_key->arKey);
+#ifdef ANDREY_0
+			ZEND_PUTS(":public");
+#endif
+		}
+		ZEND_PUTS("\"]=>\n");
+	}
+	php_debug_zval_dump(zv, level + 2 TSRMLS_CC);
+	return 0;
+}
+
 PHPAPI void php_debug_zval_dump(zval **struc, int level TSRMLS_DC)
 {
 	HashTable *myht = NULL;
 	char *class_name;
 	zend_uint class_name_len;
 	zend_class_entry *ce;
+	int (*zval_element_dump_func)(zval**, int, va_list, zend_hash_key*);
 
 	if (level > 1) {
 		php_printf("%*c", level - 1, ' ');
@@ -257,6 +289,7 @@ PHPAPI void php_debug_zval_dump(zval **struc, int level TSRMLS_DC)
 			return;
 		}
 		php_printf("%sarray(%d) refcount(%u){\n", COMMON, zend_hash_num_elements(myht), Z_REFCOUNT_PP(struc));
+		zval_element_dump_func = zval_array_element_dump;
 		goto head_done;
 	case IS_OBJECT:
 		myht = Z_OBJPROP_PP(struc);
@@ -268,9 +301,10 @@ PHPAPI void php_debug_zval_dump(zval **struc, int level TSRMLS_DC)
 		Z_OBJ_HANDLER(**struc, get_class_name)(*struc, &class_name, &class_name_len, 0 TSRMLS_CC);
 		php_printf("%sobject(%s)#%d (%d) refcount(%u){\n", COMMON, class_name, Z_OBJ_HANDLE_PP(struc), myht ? zend_hash_num_elements(myht) : 0, Z_REFCOUNT_PP(struc));
 		efree(class_name);
+		zval_element_dump_func = zval_object_property_dump;
 head_done:
 		if (myht) {
-			zend_hash_apply_with_arguments(myht, (apply_func_args_t) zval_array_element_dump, 1, level, (Z_TYPE_PP(struc) == IS_ARRAY ? 0 : 1));
+			zend_hash_apply_with_arguments(myht, (apply_func_args_t) zval_element_dump_func, 1, level, (Z_TYPE_PP(struc) == IS_ARRAY ? 0 : 1));
 		}
 		if (level > 1) {
 			php_printf("%*c", level-1, ' ');
@@ -781,10 +815,18 @@ static void php_var_serialize_intern(smart_str *buf, zval **struc, HashTable *va
 					if (zend_hash_get_current_data_ex(myht, 
 						(void **) &data, &pos) != SUCCESS 
 						|| !data 
-						|| data == struc) {
+						|| data == struc
+						|| (Z_TYPE_PP(data) == IS_ARRAY && Z_ARRVAL_PP(data)->nApplyCount > 1)
+					) {
 						smart_str_appendl(buf, "N;", 2);
 					} else {
+						if (Z_TYPE_PP(data) == IS_ARRAY) {
+							Z_ARRVAL_PP(data)->nApplyCount++;
+						}
 						php_var_serialize_intern(buf, data, var_hash TSRMLS_CC);
+						if (Z_TYPE_PP(data) == IS_ARRAY) {
+							Z_ARRVAL_PP(data)->nApplyCount--;
+						}
 					}
 				}
 			}

@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysql_statement.c,v 1.48.2.10 2006/01/01 12:50:11 sniper Exp $ */
+/* $Id: mysql_statement.c,v 1.48.2.14 2006/04/22 16:35:18 wez Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -67,11 +67,22 @@ static int pdo_mysql_stmt_dtor(pdo_stmt_t *stmt TSRMLS_DC)
 		efree(S->out_length);
 	}
 #endif
+#if HAVE_MYSQL_NEXT_RESULT
+	while (mysql_more_results(S->H->server)) {
+		MYSQL_RES *res;
+		if (mysql_next_result(S->H->server) != 0) {
+			break;
+		}
+			
+		res = mysql_store_result(S->H->server);
+		if (res) {
+			mysql_free_result(res);
+		}
+	}
+#endif
 	efree(S);
 	return 1;
 }
-
-#define PDO_MYSQL_MAX_BUFFER 1024*1024 /* 1 megabyte */
 
 static int pdo_mysql_stmt_execute(pdo_stmt_t *stmt TSRMLS_DC)
 {
@@ -144,8 +155,8 @@ static int pdo_mysql_stmt_execute(pdo_stmt_t *stmt TSRMLS_DC)
 								S->fields[i].max_length? S->fields[i].max_length:
 								S->fields[i].length;
 							/* work-around for longtext and alike */
-							if (S->bound_result[i].buffer_length > PDO_MYSQL_MAX_BUFFER) {
-								S->bound_result[i].buffer_length = PDO_MYSQL_MAX_BUFFER;
+							if (S->bound_result[i].buffer_length > H->max_buffer_size) {
+								S->bound_result[i].buffer_length = H->max_buffer_size;
 							}
 					}
 #if 0
@@ -592,6 +603,18 @@ static int pdo_mysql_stmt_cursor_closer(pdo_stmt_t *stmt TSRMLS_DC)
 		mysql_free_result(S->result);
 		S->result = NULL;
 	}
+#if HAVE_MYSQL_NEXT_RESULT
+	while (mysql_more_results(S->H->server)) {
+		MYSQL_RES *res;
+		if (mysql_next_result(S->H->server) != 0) {
+			break;
+		}
+		res = mysql_store_result(S->H->server);
+		if (res) {
+			mysql_free_result(res);
+		}
+	}
+#endif
 	return 1;
 }
 
