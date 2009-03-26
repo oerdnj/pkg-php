@@ -53,22 +53,6 @@
  fi
  
  ## convert skel_dir to full path
---- php5-5.2.9.dfsg.1.orig/ext/session/session.c
-+++ php5-5.2.9.dfsg.1/ext/session/session.c
-@@ -181,11 +181,11 @@ static PHP_INI_MH(OnUpdateSaveDir)
- PHP_INI_BEGIN()
- 	STD_PHP_INI_BOOLEAN("session.bug_compat_42",    "1",         PHP_INI_ALL, OnUpdateBool,   bug_compat,         php_ps_globals,    ps_globals)
- 	STD_PHP_INI_BOOLEAN("session.bug_compat_warn",  "1",         PHP_INI_ALL, OnUpdateBool,   bug_compat_warn,    php_ps_globals,    ps_globals)
--	STD_PHP_INI_ENTRY("session.save_path",          "",          PHP_INI_ALL, OnUpdateSaveDir,save_path,          php_ps_globals,    ps_globals)
-+	STD_PHP_INI_ENTRY("session.save_path",          "/var/lib/php5",      PHP_INI_ALL, OnUpdateString, save_path,          php_ps_globals,    ps_globals)
- 	STD_PHP_INI_ENTRY("session.name",               "PHPSESSID", PHP_INI_ALL, OnUpdateString, session_name,       php_ps_globals,    ps_globals)
- 	PHP_INI_ENTRY("session.save_handler",           "files",     PHP_INI_ALL, OnUpdateSaveHandler)
- 	STD_PHP_INI_BOOLEAN("session.auto_start",       "0",         PHP_INI_ALL, OnUpdateBool,   auto_start,         php_ps_globals,    ps_globals)
--	STD_PHP_INI_ENTRY("session.gc_probability",     "1",         PHP_INI_ALL, OnUpdateLong,    gc_probability,     php_ps_globals,    ps_globals)
-+	STD_PHP_INI_ENTRY("session.gc_probability",     "0",         PHP_INI_ALL, OnUpdateLong,    gc_probability,     php_ps_globals,    ps_globals)
- 	STD_PHP_INI_ENTRY("session.gc_divisor",         "100",       PHP_INI_ALL, OnUpdateLong,    gc_divisor,        php_ps_globals,    ps_globals)
- 	STD_PHP_INI_ENTRY("session.gc_maxlifetime",     "1440",      PHP_INI_ALL, OnUpdateLong,    gc_maxlifetime,     php_ps_globals,    ps_globals)
- 	PHP_INI_ENTRY("session.serialize_handler",      "php",       PHP_INI_ALL, OnUpdateSerializer)
 --- php5-5.2.9.dfsg.1.orig/php.ini-dist
 +++ php5-5.2.9.dfsg.1/php.ini-dist
 @@ -471,7 +471,7 @@ default_mimetype = "text/html"
@@ -148,29 +132,6 @@
  ;;;;;;;;;;;;;;;;;;;
  ; Module Settings ;
  ;;;;;;;;;;;;;;;;;;;
-@@ -989,7 +937,7 @@ session.save_handler = files
- ;
- ; where MODE is the octal representation of the mode. Note that this
- ; does not overwrite the process's umask.
--;session.save_path = "/tmp"
-+;session.save_path = /var/lib/php5
- 
- ; Whether to use cookies.
- session.use_cookies = 1
-@@ -1027,7 +975,12 @@ session.serialize_handler = php
- ; e.g. 1/100 means there is a 1% chance that the GC process starts
- ; on each request.
- 
--session.gc_probability = 1
-+; This is disabled in the Debian packages, due to the strict permissions
-+; on /var/lib/php5.  Instead of setting this here, see the cronjob at
-+; /etc/cron.d/php5, which uses the session.gc_maxlifetime setting below.
-+; php scripts using their own session.save_path should make sure garbage
-+; collection is enabled by setting session.gc_probability
-+;session.gc_probability = 0
- session.gc_divisor     = 100
- 
- ; After this number of seconds, stored data will be seen as 'garbage' and
 --- php5-5.2.9.dfsg.1.orig/php.ini-recommended
 +++ php5-5.2.9.dfsg.1/php.ini-recommended
 @@ -522,7 +522,7 @@ default_mimetype = "text/html"
@@ -250,29 +211,6 @@
  ;;;;;;;;;;;;;;;;;;;
  ; Module Settings ;
  ;;;;;;;;;;;;;;;;;;;
-@@ -1040,7 +988,7 @@ session.save_handler = files
- ;
- ; where MODE is the octal representation of the mode. Note that this
- ; does not overwrite the process's umask.
--;session.save_path = "/tmp"
-+;session.save_path = /var/lib/php5
- 
- ; Whether to use cookies.
- session.use_cookies = 1
-@@ -1078,7 +1026,12 @@ session.serialize_handler = php
- ; e.g. 1/100 means there is a 1% chance that the GC process starts
- ; on each request.
- 
--session.gc_probability = 1
-+; This is disabled in the Debian packages, due to the strict permissions
-+; on /var/lib/php5.  Instead of setting this here, see the cronjob at
-+; /etc/cron.d/php5, which uses the session.gc_maxlifetime setting below.
-+; php scripts using their own session.save_path should make sure garbage
-+; collection is enabled by setting session.gc_probability
-+;session.gc_probability = 0
- session.gc_divisor     = 1000
- 
- ; After this number of seconds, stored data will be seen as 'garbage' and
 --- php5-5.2.9.dfsg.1.orig/sapi/caudium/config.m4
 +++ php5-5.2.9.dfsg.1/sapi/caudium/config.m4
 @@ -26,8 +26,8 @@ if test "$PHP_CAUDIUM" != "no"; then
