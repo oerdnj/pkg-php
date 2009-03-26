@@ -7,7 +7,7 @@ Index: php5/ext/standard/info.c
  		php_info_print_table_row(2, "Architecture", ARCHITECTURE);
  #endif
 -#ifdef CONFIGURE_COMMAND
-+#ifdef 0
++#if 0
  		php_info_print_table_row(2, "Configure Command", CONFIGURE_COMMAND );
  #endif
  
