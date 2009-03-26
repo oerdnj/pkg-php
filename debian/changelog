@@ -1,8 +1,12 @@
 php5 (5.2.9.dfsg.1-2) UNRELEASED; urgency=low
 
+  [ Sean Finney ]
   * NOT RELEASED YET
 
- -- Sean Finney <seanius@debian.org>  Tue, 24 Mar 2009 19:31:22 +0100
+  [ Thijs Kinkhorst ]
+  * Update package sections to match override.
+
+ -- Thijs Kinkhorst <thijs@debian.org>  Thu, 26 Mar 2009 13:11:35 +0100
 
 php5 (5.2.9.dfsg.1-1) unstable; urgency=low
 
