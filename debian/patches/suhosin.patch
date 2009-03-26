@@ -241,33 +241,33 @@
  CWD_API void virtual_cwd_startup(void);
  CWD_API void virtual_cwd_shutdown(void);
  CWD_API char *virtual_getcwd_ex(size_t *length TSRMLS_DC);
---- php5-5.2.9.dfsg.1.orig/Zend/Makefile.am
-+++ php5-5.2.9.dfsg.1/Zend/Makefile.am
-@@ -17,7 +17,7 @@ libZend_la_SOURCES=\
+--- a/Zend/Makefile.am
++++ b/Zend/Makefile.am
+@@ -16,8 +16,8 @@ libZend_la_SOURCES=\
+ 	zend_ini.c zend_qsort.c zend_objects.c zend_object_handlers.c \
  	zend_objects_API.c zend_ts_hash.c zend_stream.c \
  	zend_default_classes.c \
- 	zend_iterators.c zend_interfaces.c zend_exceptions.c \
--	zend_strtod.c zend_multibyte.c
-+	zend_strtod.c zend_multibyte.c zend_canary.c
+	zend_iterators.c zend_interfaces.c zend_exceptions.c \
+-	zend_strtod.c zend_closures.c zend_float.c
++	zend_strtod.c zend_closures.c zend_float.c zend_canary.c
  
  libZend_la_LDFLAGS =
  libZend_la_LIBADD = @ZEND_EXTRA_LIBS@
---- php5-5.2.9.dfsg.1.orig/Zend/zend.c
-+++ php5-5.2.9.dfsg.1/Zend/zend.c
-@@ -57,7 +57,9 @@ ZEND_API void (*zend_ticks_function)(int
- ZEND_API void (*zend_error_cb)(int type, const char *error_filename, const uint error_lineno, const char *format, va_list args);
- int (*zend_vspprintf)(char **pbuf, size_t max_len, const char *format, va_list ap);
+--- a/Zend/zend.c
++++ b/Zend/zend.c
+@@ -60,6 +60,9 @@ int (*zend_vspprintf)(char **pbuf, size_t max_len, const char *format, va_list a
  ZEND_API char *(*zend_getenv)(char *name, size_t name_len TSRMLS_DC);
--
+ ZEND_API char *(*zend_resolve_path)(const char *filename, int filename_len TSRMLS_DC);
+ 
 +#if SUHOSIN_PATCH
 +ZEND_API void (*zend_suhosin_log)(int loglevel, char *fmt, ...);
 +#endif
  void (*zend_on_timeout)(int seconds TSRMLS_DC);
  
- static void (*zend_message_dispatcher_p)(long message, void *data);
-@@ -74,9 +76,88 @@ static ZEND_INI_MH(OnUpdateErrorReportin
- 	return SUCCESS;
+ static void (*zend_message_dispatcher_p)(long message, void *data TSRMLS_DC);
+@@ -88,8 +91,88 @@ static ZEND_INI_MH(OnUpdateGCEnabled) /* {{{ */
  }
+ /* }}} */
  
 +#if SUHOSIN_PATCH
 +static ZEND_INI_MH(OnUpdateSuhosin_log_syslog)
@@ -336,7 +336,7 @@
 +	return SUCCESS;
 +}
 +#endif
- 
++
  ZEND_INI_BEGIN()
  	ZEND_INI_ENTRY("error_reporting",				NULL,		ZEND_INI_ALL,		OnUpdateErrorReporting)
 +#if SUHOSIN_PATCH
@@ -351,22 +351,22 @@
 +	STD_ZEND_INI_ENTRY("suhosin.log.phpscript.name",			NULL,		ZEND_INI_PERDIR|ZEND_INI_SYSTEM,	OnUpdateString, log_phpscriptname, suhosin_patch_globals_struct,	suhosin_patch_globals)
 +	STD_ZEND_INI_BOOLEAN("suhosin.log.phpscript.is_safe",			"0",		ZEND_INI_SYSTEM,	OnUpdateBool, log_phpscript_is_safe,	suhosin_patch_globals_struct,	suhosin_patch_globals)
 +#endif
- 	STD_ZEND_INI_BOOLEAN("zend.ze1_compatibility_mode",	"0",	ZEND_INI_ALL,		OnUpdateBool,	ze1_compatibility_mode,	zend_executor_globals,	executor_globals)
+ 	STD_ZEND_INI_BOOLEAN("zend.enable_gc",				"1",	ZEND_INI_ALL,		OnUpdateGCEnabled,      gc_enabled,     zend_gc_globals,        gc_globals)
  #ifdef ZEND_MULTIBYTE
- 	STD_ZEND_INI_BOOLEAN("detect_unicode", "1", ZEND_INI_ALL, OnUpdateBool, detect_unicode, zend_compiler_globals, compiler_globals)
---- php5-5.2.9.dfsg.1.orig/Zend/zend.h
-+++ php5-5.2.9.dfsg.1/Zend/zend.h
-@@ -532,6 +532,9 @@ extern void (*zend_on_timeout)(int secon
- extern ZEND_API int (*zend_stream_open_function)(const char *filename, zend_file_handle *handle TSRMLS_DC);
+  	STD_ZEND_INI_BOOLEAN("detect_unicode", "1", ZEND_INI_ALL, OnUpdateBool, detect_unicode, zend_compiler_globals, compiler_globals)
+--- a/Zend/zend.h
++++ b/Zend/zend.h
+@@ -634,6 +634,9 @@
  extern int (*zend_vspprintf)(char **pbuf, size_t max_len, const char *format, va_list ap);
  extern ZEND_API char *(*zend_getenv)(char *name, size_t name_len TSRMLS_DC);
+ extern ZEND_API char *(*zend_resolve_path)(const char *filename, int filename_len TSRMLS_DC);
 +#if SUHOSIN_PATCH
 +extern ZEND_API void (*zend_suhosin_log)(int loglevel, char *fmt, ...);
 +#endif
  
- 
  ZEND_API void zend_error(int type, const char *format, ...) ZEND_ATTRIBUTE_FORMAT(printf, 2, 3);
-@@ -663,6 +666,13 @@ END_EXTERN_C()
+
+@@ -663,6 +666,13 @@
  #include "zend_operators.h"
  #include "zend_variables.h"
  
@@ -1374,21 +1374,21 @@
  
  divert(2)
  
-@@ -1371,7 +1372,7 @@ PHP_ADD_SOURCES(main, main.c snprintf.c 
+@@ -1424,7 +1428,7 @@ PHP_ADD_SOURCES(main, main.c snprintf.c spprintf.c php_sprintf.c \
         php_ini.c SAPI.c rfc1867.c php_content_types.c strlcpy.c \
         strlcat.c mergesort.c reentrancy.c php_variables.c php_ticks.c \
         network.c php_open_temporary_file.c php_logos.c \
--       output.c )
-+       output.c suhosin_patch.c )
+-       output.c getopt.c)
++       output.c getopt.c suhosin_patch.c )
  
  PHP_ADD_SOURCES(main/streams, streams.c cast.c memory.c filter.c \
-        plain_wrapper.c userspace.c transports.c xp_socket.c mmap.c)
-@@ -1397,7 +1398,7 @@ PHP_ADD_SOURCES(Zend, \
-     zend_variables.c zend.c zend_API.c zend_extensions.c zend_hash.c \
+        plain_wrapper.c userspace.c transports.c xp_socket.c mmap.c \
+@@ -1452,7 +1456,7 @@ PHP_ADD_SOURCES(Zend, \
      zend_list.c zend_indent.c zend_builtin_functions.c zend_sprintf.c \
      zend_ini.c zend_qsort.c zend_multibyte.c zend_ts_hash.c zend_stream.c \
--    zend_iterators.c zend_interfaces.c zend_exceptions.c zend_strtod.c)
-+    zend_iterators.c zend_interfaces.c zend_exceptions.c zend_strtod.c zend_canary.c )
+     zend_iterators.c zend_interfaces.c zend_exceptions.c zend_strtod.c zend_gc.c \
+-    zend_closures.c zend_float.c)
++    zend_closures.c zend_float.c zend_canary.c)
  
  if test -r "$abs_srcdir/Zend/zend_objects.c"; then
    PHP_ADD_SOURCES(Zend, zend_objects.c zend_object_handlers.c zend_objects_API.c zend_default_classes.c)
@@ -1408,7 +1408,7 @@
 --- php5-5.2.9.dfsg.1.orig/ext/standard/dl.c
 +++ php5-5.2.9.dfsg.1/ext/standard/dl.c
 @@ -241,6 +241,19 @@ void php_dl(zval *file, int type, zval *
- 			RETURN_FALSE;
+ 			return FAILURE;
  		}
  	}
 +#if SUHOSIN_PATCH
@@ -1424,7 +1424,7 @@
 +		}
 +	}
 +#endif	
- 	RETURN_TRUE;
+ 	return SUCCESS;
  }
  /* }}} */
 --- php5-5.2.9.dfsg.1.orig/ext/standard/file.c
@@ -2467,26 +2467,27 @@
  
 --- php5-5.2.9.dfsg.1.orig/sapi/cgi/cgi_main.c
 +++ php5-5.2.9.dfsg.1/sapi/cgi/cgi_main.c
-@@ -1797,11 +1797,19 @@ consult the installation file that came 
- 							SG(headers_sent) = 1;
- 							SG(request_info).no_headers = 1;
- 						}
+@@ -1859,10 +1859,18 @@ consult the installation file that came with this distribution, or visit \n\
+ 								SG(headers_sent) = 1;
+ 								SG(request_info).no_headers = 1;
+ 							}
 +#if SUHOSIN_PATCH
-+#if ZEND_DEBUG
+ #if ZEND_DEBUG
+-							php_printf("PHP %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2009 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 +						php_printf("PHP %s with Suhosin-Patch %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2009 The PHP Group\n%s", PHP_VERSION, SUHOSIN_PATCH_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
-+#else
+ #else
+-							php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2009 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 +						php_printf("PHP %s with Suhosin-Patch %s (%s) (built: %s %s)\nCopyright (c) 1997-2009 The PHP Group\n%s", PHP_VERSION, SUHOSIN_PATCH_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 +#endif
 +#else
- #if ZEND_DEBUG
- 						php_printf("PHP %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2009 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
- #else
- 						php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2009 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
- #endif
++#if ZEND_DEBUG
++						php_printf("PHP %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2009 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
++#else
++						php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2009 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 +#endif
- 						php_request_shutdown((void *) 0);
- 						exit_status = 0;
- 						goto out;
+ #endif
+ 							php_request_shutdown((void *) 0);
+ 							exit_status = 0;
 --- php5-5.2.9.dfsg.1.orig/sapi/cli/php_cli.c
 +++ php5-5.2.9.dfsg.1/sapi/cli/php_cli.c
 @@ -772,8 +772,14 @@ int main(int argc, char *argv[])
@@ -2506,16 +2507,16 @@
  #if ZEND_DEBUG && defined(HAVE_GCOV)
  					"(DEBUG GCOV)",
  #elif ZEND_DEBUG
---- php5-5.2.9.dfsg.1.orig/win32/build/config.w32
-+++ php5-5.2.9.dfsg.1/win32/build/config.w32
-@@ -305,7 +305,7 @@ ADD_SOURCES("Zend", "zend_language_parse
- 	zend_sprintf.c zend_ini.c zend_qsort.c zend_multibyte.c zend_ts_hash.c \
+--- a/win32/build/config.w32
++++ b/win32/build/config.w32
+@@ -312,7 +312,7 @@ ADD_SOURCES("Zend", "zend_language_parser.c zend_language_scanner.c \
  	zend_stream.c zend_iterators.c zend_interfaces.c zend_objects.c \
  	zend_object_handlers.c zend_objects_API.c \
--	zend_default_classes.c zend_execute.c zend_strtod.c");
-+	zend_default_classes.c zend_execute.c zend_strtod.c zend_canary.c");
+ 	zend_default_classes.c zend_execute.c zend_strtod.c zend_gc.c zend_closures.c \
+-	zend_float.c");
++	zend_float.c zend_canary.c");
  
- ADD_SOURCES("main", "main.c snprintf.c spprintf.c safe_mode.c fopen_wrappers.c \
+ ADD_SOURCES("main", "main.c snprintf.c spprintf.c safe_mode.c getopt.c fopen_wrappers.c \
  	php_scandir.c php_ini.c SAPI.c rfc1867.c php_content_types.c strlcpy.c \
 @@ -350,6 +350,8 @@ if (PHP_ZEND_MULTIBYTE == "yes") {
  AC_DEFINE('HAVE_USLEEP', 1);

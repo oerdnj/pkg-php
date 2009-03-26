@@ -21,22 +21,3 @@
  --FILE--
  <?php
  var_dump(phpinfo());
-@@ -24,6 +26,7 @@ Server API => Command Line Interface
- Virtual Directory Support => %s
- Configuration File (php.ini) Path => %s
- Loaded Configuration File => %a
-+Scan this dir for additional .ini files => %s
- PHP API => %d
- PHP Extension => %d
- Zend Extension => %d
---- php5-5.2.9.dfsg.1.orig/ext/standard/tests/strings/moneyformat.phpt
-+++ php5-5.2.9.dfsg.1/ext/standard/tests/strings/moneyformat.phpt
-@@ -5,6 +5,8 @@ money_format test
- 	if (!function_exists('money_format') || !function_exists('setlocale')) {
- 		die("SKIP money_format - not supported\n");
- 	}
-+	if (!setlocale(LC_MONETARY, 'en_US'))
-+		die("SKIP money_format - en_US locale not available\n");
- ?>
- --FILE--
- <?php

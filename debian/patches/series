@@ -15,15 +15,12 @@
 047-zts_with_dl.patch
 052-phpinfo_no_configure.patch
 053-extension_api.patch
-056-mime_magic_liberal.patch
 057-no_apache_installed.patch
 100-recode_is_shared.patch
 101-sqlite_is_shared.patch
-107-reflection_is_ext.patch
 108-64_bit_datetime.patch
 112-proc_open.patch
 113-php.ini_securitynotes.patch
-disable_dl_by_default.patch
 libdb_is_-ldb
 suhosin.patch
 fix_broken_upstream_tests.patch
