@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: user_filters.c,v 1.31.2.4.2.10 2007/12/31 07:20:13 sebastian Exp $ */
+/* $Id: user_filters.c,v 1.31.2.4.2.13 2009/01/08 18:40:56 lbarnaud Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -180,12 +180,14 @@ php_stream_filter_status_t userfilter_filter(
 	zval *retval = NULL;
 	zval **args[4];
 	zval *zclosing, *zconsumed, *zin, *zout, *zstream;
+	zval zpropname;
 	int call_result;
 
 	if (FAILURE == zend_hash_find(Z_OBJPROP_P(obj), "stream", sizeof("stream"), (void**)&zstream)) {
 		/* Give the userfilter class a hook back to the stream */
 		ALLOC_INIT_ZVAL(zstream);
 		php_stream_to_zval(stream, zstream);
+		zval_copy_ctor(zstream);
 		add_property_zval(obj, "stream", zstream);
 		/* add_property_zval increments the refcount which is unwanted here */
 		zval_ptr_dtor(&zstream);
@@ -246,6 +248,21 @@ php_stream_filter_status_t userfilter_filter(
 			php_stream_bucket_delref(bucket TSRMLS_CC);
 		}
 	}
+	if (ret != PSFS_PASS_ON) {
+		php_stream_bucket *bucket = buckets_out->head;
+		while (bucket != NULL) {
+			php_stream_bucket_unlink(bucket TSRMLS_CC);
+			php_stream_bucket_delref(bucket TSRMLS_CC);
+			bucket = buckets_out->head;
+		}
+	}
+
+	/* filter resources are cleaned up by the stream destructor,
+	 * keeping a reference to the stream resource here would prevent it
+	 * from being destroyed properly */
+	INIT_ZVAL(zpropname);
+	ZVAL_STRINGL(&zpropname, "stream", sizeof("stream")-1, 0);
+	Z_OBJ_HANDLER_P(obj, unset_property)(obj, &zpropname TSRMLS_CC);
 
 	zval_ptr_dtor(&zclosing);
 	zval_ptr_dtor(&zconsumed);

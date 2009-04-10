@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: var.c,v 1.203.2.7.2.22 2007/12/31 07:20:13 sebastian Exp $ */
+/* $Id: var.c,v 1.203.2.7.2.25 2009/01/07 14:36:49 derick Exp $ */
 
 
 
@@ -378,13 +378,15 @@ static int php_object_element_export(zval **zv, int num_args, va_list args, zend
 
 	level = va_arg(args, int);
 
+	php_printf("%*c", level + 1, ' ');
 	if (hash_key->nKeyLength != 0) {
-		php_printf("%*c", level + 1, ' ');
-		zend_unmangle_property_name(hash_key->arKey, hash_key->nKeyLength-1, &class_name, &prop_name);
+		zend_unmangle_property_name(hash_key->arKey, hash_key->nKeyLength - 1, &class_name, &prop_name);
 		php_printf(" '%s' => ", prop_name);
-		php_var_export(zv, level + 2 TSRMLS_CC);
-		PUTS (",\n");
+	} else {
+		php_printf(" %ld => ", hash_key->h);
 	}
+	php_var_export(zv, level + 2 TSRMLS_CC);
+	PUTS (",\n");
 	return 0;
 }
 
@@ -424,7 +426,7 @@ PHPAPI void php_var_export(zval **struc, int level TSRMLS_DC)
 			php_printf("\n%*c", level - 1, ' ');
 		}
 		PUTS ("array (\n");
-		zend_hash_apply_with_arguments(myht, (apply_func_args_t) php_array_element_export, 1, level, (Z_TYPE_PP(struc) == IS_ARRAY ? 0 : 1));
+		zend_hash_apply_with_arguments(myht, (apply_func_args_t) php_array_element_export, 1, level, 0);
 		if (level > 1) {
 			php_printf("%*c", level - 1, ' ');
 		}

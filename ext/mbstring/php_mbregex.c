@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_mbregex.c,v 1.53.2.1.2.7 2008/02/17 02:04:12 hirokawa Exp $ */
+/* $Id: php_mbregex.c,v 1.53.2.1.2.9 2008/12/31 11:17:39 sebastian Exp $ */
 
 
 #ifdef HAVE_CONFIG_H
@@ -66,6 +66,7 @@ void _php_mb_regex_globals_dtor(zend_mbstring_globals *pglobals TSRMLS_DC)
 /* {{{ PHP_MINIT_FUNCTION(mb_regex) */
 PHP_MINIT_FUNCTION(mb_regex)
 {
+	onig_init();
 	return SUCCESS;
 }
 /* }}} */
@@ -73,6 +74,7 @@ PHP_MINIT_FUNCTION(mb_regex)
 /* {{{ PHP_MSHUTDOWN_FUNCTION(mb_regex) */
 PHP_MSHUTDOWN_FUNCTION(mb_regex)
 {
+	onig_end();
 	return SUCCESS;
 }
 /* }}} */

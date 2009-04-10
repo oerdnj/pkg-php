@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: node.c,v 1.37.2.3.2.11 2008/01/30 06:48:20 sebastian Exp $ */
+/* $Id: node.c,v 1.37.2.3.2.13 2008/12/31 11:17:37 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -112,7 +112,7 @@ ZEND_END_ARG_INFO();
 static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_node_set_user_data, 0, 0, 3)
 	ZEND_ARG_INFO(0, key)
-	ZEND_ARG_OBJ_INFO(0, data, DOMUserData, 0)
+	ZEND_ARG_INFO(0, data)
 	ZEND_ARG_INFO(0, handler)
 ZEND_END_ARG_INFO();
 

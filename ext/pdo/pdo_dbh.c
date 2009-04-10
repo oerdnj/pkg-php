@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2008 The PHP Group                                |
+  | Copyright (c) 1997-2009 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_dbh.c,v 1.82.2.31.2.22 2008/03/03 21:14:33 iliaa Exp $ */
+/* $Id: pdo_dbh.c,v 1.82.2.31.2.25 2008/12/31 11:17:41 sebastian Exp $ */
 
 /* The PDO Database Handle Class */
 
@@ -1210,8 +1210,7 @@ int pdo_hash_methods(pdo_dbh_t *dbh, int kind TSRMLS_DC)
 	if (!dbh || !dbh->methods || !dbh->methods->get_driver_methods) {
 		return 0;
 	}
-	funcs =	dbh->methods->get_driver_methods(dbh,
-			PDO_DBH_DRIVER_METHOD_KIND_DBH TSRMLS_CC);
+	funcs =	dbh->methods->get_driver_methods(dbh, kind TSRMLS_CC);
 	if (!funcs) {
 		return 0;
 	}
@@ -1291,9 +1290,7 @@ static union _zend_function *dbh_method_get(
 
 		if (zend_hash_find(dbh->cls_methods[PDO_DBH_DRIVER_METHOD_KIND_DBH],
 				lc_method_name, method_len+1, (void**)&fbc) == FAILURE) {
-			if (std_object_handlers.get_method) {
-				fbc = std_object_handlers.get_method(object_pp, lc_method_name, method_len TSRMLS_CC);
-			}
+
 			if (!fbc) {
 				fbc = NULL;
 			}
@@ -1304,6 +1301,12 @@ static union _zend_function *dbh_method_get(
 	}
 
 out:
+	if (!fbc) {
+		if (std_object_handlers.get_method) {
+			fbc = std_object_handlers.get_method(object_pp, lc_method_name, method_len TSRMLS_CC);
+		}
+	}
+
 	efree(lc_method_name);
 	return fbc;
 }

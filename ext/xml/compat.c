@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -40,7 +40,7 @@ _qualify_namespace(XML_Parser parser, const xmlChar *name, const xmlChar *URI, x
 			/* Use libxml functions otherwise its memory deallocation is screwed up */
 			*qualified = xmlStrdup(URI);
 			*qualified = xmlStrncat(*qualified, parser->_ns_seperator, 1);
-			*qualified = xmlStrncat(*qualified, name, strlen(name));
+			*qualified = xmlStrncat(*qualified, name, xmlStrlen(name));
 	} else {
 		*qualified = xmlStrdup(name);
 	}
@@ -104,7 +104,66 @@ _start_element_handler_ns(void *user, const xmlChar *name, const xmlChar *prefix
 		y = 0;
 	}
 	
-	if (parser->h_start_element == NULL && parser->h_default == NULL) {
+	if (parser->h_start_element == NULL) {
+	 	if (parser->h_default) {
+
+			if (prefix) {
+				qualified_name = xmlStrncatNew((xmlChar *)"<", prefix, xmlStrlen(prefix));
+				qualified_name = xmlStrncat(qualified_name, (xmlChar *)":", 1);
+				qualified_name = xmlStrncat(qualified_name, name, xmlStrlen(name));
+			} else {
+				qualified_name = xmlStrncatNew((xmlChar *)"<", name, xmlStrlen(name));
+			}
+			
+			if (namespaces) {
+				int i, j;
+				for (i = 0,j = 0;j < nb_namespaces;j++) {
+					int ns_len;
+					char *ns_string, *ns_prefix, *ns_url;
+					
+					ns_prefix = (char *) namespaces[i++];
+					ns_url = (char *) namespaces[i++];
+					
+					if (ns_prefix) {
+						ns_len = spprintf(&ns_string, 0, " xmlns:%s=\"%s\"", ns_prefix, ns_url);
+					} else {
+						ns_len = spprintf(&ns_string, 0, " xmlns=\"%s\"", ns_url);
+					}
+					qualified_name = xmlStrncat(qualified_name, (xmlChar *)ns_string, ns_len);
+					
+					efree(ns_string);
+				}
+			}
+			
+			if (attributes) {
+				for (i = 0; i < nb_attributes; i += 1) {
+					int att_len;
+					char *att_string, *att_name, *att_value, *att_prefix, *att_valueend;
+
+					att_name = (char *) attributes[y++];
+					att_prefix = (char *)attributes[y++];
+					y++;
+					att_value = (char *)attributes[y++];
+					att_valueend = (char *)attributes[y++];
+
+					if (att_prefix) {
+						att_len = spprintf(&att_string, 0, " %s:%s=\"", att_prefix, att_name);
+					} else {
+						att_len = spprintf(&att_string, 0, " %s=\"", att_name);
+					}
+
+					qualified_name = xmlStrncat(qualified_name, (xmlChar *)att_string, att_len);
+					qualified_name = xmlStrncat(qualified_name, (xmlChar *)att_value, att_valueend - att_value);
+					qualified_name = xmlStrncat(qualified_name, (xmlChar *)"\"", 1);
+					
+					efree(att_string);
+				}
+
+			}
+			qualified_name = xmlStrncat(qualified_name, (xmlChar *)">", 1);
+			parser->h_default(parser->user, (const XML_Char *) qualified_name, xmlStrlen(qualified_name));
+			xmlFree(qualified_name);
+		}
 		return;
 	}
 	_qualify_namespace(parser, name, URI, &qualified_name);
@@ -178,6 +237,18 @@ _end_element_handler_ns(void *user, const xmlChar *name, const xmlChar * prefix,
 	XML_Parser  parser = (XML_Parser) user;
 
 	if (parser->h_end_element == NULL) {
+		if (parser->h_default) {
+			char *end_element;
+			int end_element_len;
+
+			if (prefix) {
+				end_element_len = spprintf(&end_element, 0, "</%s:%s>", (char *) prefix, (char *)name);
+			} else {
+				end_element_len = spprintf(&end_element, 0, "</%s>", (char *)name);
+			}
+			parser->h_default(parser->user, (const XML_Char *) end_element, end_element_len);
+			efree(end_element);
+		}
 		return;
 	}
 
@@ -212,7 +283,7 @@ _pi_handler(void *user, const xmlChar *target, const xmlChar *data)
 		if (parser->h_default) {
 			char    *full_pi;
 			spprintf(&full_pi, 0, "<?%s %s?>", (char *)target, (char *)data);
-			parser->h_default(parser->user, (const XML_Char *) full_pi, xmlStrlen(full_pi));
+			parser->h_default(parser->user, (const XML_Char *) full_pi, strlen(full_pi));
 			efree(full_pi);
 		}
 		return;
@@ -411,6 +482,10 @@ XML_ParserCreate_MM(const XML_Char *encoding, const XML_Memory_Handling_Suite *m
 	parser->parser->charset = XML_CHAR_ENCODING_NONE;
 #endif
 
+#if LIBXML_VERSION >= 20703
+	xmlCtxtUseOptions(parser->parser, XML_PARSE_OLDSAX);
+#endif
+
 	parser->parser->replaceEntities = 1;
 	parser->parser->wellFormed = 0;
 	if (sep != NULL) {
@@ -545,10 +620,10 @@ XML_GetErrorCode(XML_Parser parser)
 
 static const XML_Char *const error_mapping[] = {
 	"No error",
-	"Internal error",
 	"No memory",
 	"Invalid document start",
 	"Empty document",
+	"Not well-formed (invalid token)",
 	"Invalid document end",
 	"Invalid hexadecimal character reference",
 	"Invalid decimal character reference",

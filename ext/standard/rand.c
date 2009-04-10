@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -23,7 +23,7 @@
    |                     Shawn Cokus <Cokus@math.washington.edu>          |
    +----------------------------------------------------------------------+
  */
-/* $Id: rand.c,v 1.70.2.1.2.3 2007/12/31 07:20:13 sebastian Exp $ */
+/* $Id: rand.c,v 1.70.2.1.2.5 2008/12/31 11:17:45 sebastian Exp $ */
 
 #include <stdlib.h>
 
@@ -138,14 +138,6 @@ PHPAPI long php_rand(TSRMLS_D)
 	LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 	NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-	The original code included the following notice:
-
-	When you use this, send an email to: matumoto@math.keio.ac.jp
-    with an appropriate reference to your work.
-
-	It would be nice to CC: rjwagner@writeme.com and Cokus@math.washington.edu
-	when you write.
 */
 
 #define N             MT_N                 /* length of state vector */

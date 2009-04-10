@@ -12,12 +12,14 @@ Test vsprintf() function : usage variations - string formats with non-string val
  * the '$format' and '$args' arguments of the function
 */
 
+error_reporting(E_ALL & ~E_NOTICE);
+
 echo "*** Testing vsprintf() : string formats and non-string values ***\n";
 
 // defining array of string formats
 $formats = 
   '%s %+s %-s 
-   %ls %Ls %4s %-4s
+   %ls %4s %-4s
    %10.4s %-10.4s %04s %04.4s
    %\'#2s %\'2s %\'$2s %\'_2s
    %3$s %4$s %1$s %2$s';
@@ -28,14 +30,14 @@ $args_array = array(
 
   // array of float values
   array(2.2, .2, 10.2,
-        123456.234, 123456.234, -1234.6789, +1234.6789,
-        2e10, +2e12, -4e11, 22e+12,
+        123456.234, -1234.6789, +1234.6789,
+        2.1234567e10, +2.7654321e10, -2.7654321e10, 2.1234567e10,
         12345.780, 12.000000011111, -12.00000111111, -123456.234,
         3.33, +4.44, 1.11,-2.22 ),
-
+  
  // array of int values
  array(2, -2, +2,
-       123456, 123456234, -12346789, +12346789,
+       123456, -12346789, +12346789,
        123200, +20000, -40000, 22212,
        12345780, 1211111, -12111111, -12345634,
        3, +4, 1,-2 ),
@@ -43,14 +45,14 @@ $args_array = array(
 
   // different arrays
   array( array(0), array(1, 2), array(-1, -1),
-         array("123"), array('123'), array('-123'), array("-123"),
+         array("123"), array('-123'), array("-123"),
          array(true), array(false), array(TRUE), array(FALSE),
          array("123hello"), array("1", "2"), array('123hello'), array(12=>"12twelve"),
          array("3"), array("4"), array("1"), array("2") ),
 
   // array of boolean data
   array( true, TRUE, false,
-         TRUE, 0, FALSE, 1,
+         TRUE, FALSE, 1,
          true, false, TRUE, FALSE,
          0, 1, 1, 0,
          1, TRUE, 0, FALSE),
@@ -66,36 +68,36 @@ foreach($args_array as $args) {
   $counter++;
 }
 
-echo "Done";
 ?>
---EXPECTF--
+===DONE===
+--EXPECT--
 *** Testing vsprintf() : string formats and non-string values ***
 
 -- Iteration 1 --
-string(177) "2.2 0.2 10.2 
-   123456.234 s -1234.6789 1234.6789
-         2000 2000       -400000000000 2200
+string(174) "2.2 0.2 10.2 
+   123456.234 -1234.6789 1234.6789
+         2123 2765       -27654321000 2123
    12345.78 12.000000011111 -12.00000111111 -123456.234
    10.2 123456.234 2.2 0.2"
 
 -- Iteration 2 --
-string(132) "2 -2 2 
-   123456 s -12346789 12346789
+string(130) "2 -2 2 
+   123456 -12346789 12346789
          1232 2000       -40000 2221
    12345780 1211111 -12111111 -12345634
    2 123456 2 -2"
 
 -- Iteration 3 --
-string(131) "Array Array Array 
-   Array s Array Array
+string(129) "Array Array Array 
+   Array Array Array
          Arra Arra       Array Arra
    Array Array Array Array
    Array Array Array Array"
 
 -- Iteration 4 --
-string(81) "1 1  
-   1 s      1   
+string(79) "1 1  
+   1      1   
             1            0001 0000
    #0 1 $1 _0
     1 1 1"
-Done
+===DONE===

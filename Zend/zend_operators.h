@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2008 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2009 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_operators.h,v 1.94.2.4.2.11 2007/12/31 07:20:03 sebastian Exp $ */
+/* $Id: zend_operators.h,v 1.94.2.4.2.15 2009/02/15 14:31:17 iliaa Exp $ */
 
 #ifndef ZEND_OPERATORS_H
 #define ZEND_OPERATORS_H
@@ -220,6 +220,9 @@ zend_memnstr(char *haystack, char *needle, int needle_len, char *end)
 	char *p = haystack;
 	char ne = needle[needle_len-1];
 
+	if(needle_len > end-haystack) {
+		return NULL;
+	}
 	end -= needle_len;
 
 	while (p <= end) {

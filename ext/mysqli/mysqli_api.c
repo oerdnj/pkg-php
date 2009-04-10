@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2008 The PHP Group                                |
+  | Copyright (c) 1997-2009 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_api.c,v 1.118.2.22.2.20 2008/01/01 16:51:09 hholzgra Exp $ 
+  $Id: mysqli_api.c,v 1.118.2.22.2.22 2008/12/31 11:17:40 sebastian Exp $ 
 */
 
 #ifdef HAVE_CONFIG_H
@@ -1425,14 +1425,20 @@ PHP_FUNCTION(mysqli_real_connect)
 	/* TODO: safe mode handling */
 	if (PG(sql_safe_mode)) {
 	} else {
+		if (!socket_len || !socket) {
+			socket = MyG(default_socket);
+		}
+		if (!port) {
+			port = MyG(default_port);
+		}
 		if (!passwd) {
 			passwd = MyG(default_pw);
-			if (!username){
-				username = MyG(default_user);
-				if (!hostname) {
-					hostname = MyG(default_host);
-				}
-			}
+		}
+		if (!username){
+			username = MyG(default_user);
+		}
+		if (!hostname) {
+			hostname = MyG(default_host);
 		}
 	}	
 

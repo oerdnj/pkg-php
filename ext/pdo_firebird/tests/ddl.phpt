@@ -3,19 +3,19 @@ PDO_Firebird: DDL/transactions
 --SKIPIF--
 <?php include("skipif.inc"); ?>
 --FILE--
-<?php /* $Id: ddl.phpt,v 1.1 2004/06/12 03:09:48 abies Exp $ */
+<?php /* $Id: ddl.phpt,v 1.1.4.1 2009/02/09 12:56:09 felipe Exp $ */
 
 	require("testdb.inc");
     
 	$db = new PDO("firebird:dbname=$test_base",$user,$password) or die;
-	$db->setAttribute(PDO_ATTR_ERRMODE, PDO_ERRMODE_WARNING);
+	$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING);
 	
 	$db->exec("CREATE TABLE ddl (id INT NOT NULL PRIMARY KEY, text BLOB SUB_TYPE 1)");
 	$db->exec("CREATE GENERATOR gen_ddl_id");
 	$db->exec("CREATE TRIGGER ddl_bi FOR ddl BEFORE INSERT AS
 		BEGIN IF (NEW.id IS NULL) THEN NEW.id=GEN_ID(gen_ddl_id,1); END");
 	
-	$db->setAttribute(PDO_ATTR_AUTOCOMMIT,0);
+	$db->setAttribute(PDO::ATTR_AUTOCOMMIT,0);
 	
 	$db->beginTransaction();
 	var_dump($db->exec("INSERT INTO ddl (text) VALUES ('bla')"));

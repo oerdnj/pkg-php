@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2008 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2009 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -710,7 +710,17 @@ static int ZEND_INIT_STATIC_METHOD_CALL_SPEC_CONST_HANDLER(ZEND_OPCODE_HANDLER_A
 		    !instanceof_function(Z_OBJCE_P(EG(This)), ce TSRMLS_CC)) {
 		    /* We are calling method of the other (incompatible) class,
 		       but passing $this. This is done for compatibility with php-4. */
-			zend_error(E_STRICT, "Non-static method %s::%s() should not be called statically, assuming $this from incompatible context", EX(fbc)->common.scope->name, EX(fbc)->common.function_name);
+			int severity;
+			char *verb;
+			if (EX(fbc)->common.fn_flags & ZEND_ACC_ALLOW_STATIC) {
+				severity = E_STRICT;
+				verb = "should not";
+			} else {
+				/* An internal function assumes $this is present and won't check that. So PHP would crash by allowing the call. */
+				severity = E_ERROR;
+				verb = "cannot";
+			}
+			zend_error(severity, "Non-static method %s::%s() %s be called statically, assuming $this from incompatible context", EX(fbc)->common.scope->name, EX(fbc)->common.function_name, verb);
 
 		}
 		if ((EX(object) = EG(This))) {
@@ -911,7 +921,17 @@ static int ZEND_INIT_STATIC_METHOD_CALL_SPEC_TMP_HANDLER(ZEND_OPCODE_HANDLER_ARG
 		    !instanceof_function(Z_OBJCE_P(EG(This)), ce TSRMLS_CC)) {
 		    /* We are calling method of the other (incompatible) class,
 		       but passing $this. This is done for compatibility with php-4. */
-			zend_error(E_STRICT, "Non-static method %s::%s() should not be called statically, assuming $this from incompatible context", EX(fbc)->common.scope->name, EX(fbc)->common.function_name);
+			int severity;
+			char *verb;
+			if (EX(fbc)->common.fn_flags & ZEND_ACC_ALLOW_STATIC) {
+				severity = E_STRICT;
+				verb = "should not";
+			} else {
+				/* An internal function assumes $this is present and won't check that. So PHP would crash by allowing the call. */
+				severity = E_ERROR;
+				verb = "cannot";
+			}
+			zend_error(severity, "Non-static method %s::%s() %s be called statically, assuming $this from incompatible context", EX(fbc)->common.scope->name, EX(fbc)->common.function_name, verb);
 
 		}
 		if ((EX(object) = EG(This))) {
@@ -1072,7 +1092,17 @@ static int ZEND_INIT_STATIC_METHOD_CALL_SPEC_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARG
 		    !instanceof_function(Z_OBJCE_P(EG(This)), ce TSRMLS_CC)) {
 		    /* We are calling method of the other (incompatible) class,
 		       but passing $this. This is done for compatibility with php-4. */
-			zend_error(E_STRICT, "Non-static method %s::%s() should not be called statically, assuming $this from incompatible context", EX(fbc)->common.scope->name, EX(fbc)->common.function_name);
+			int severity;
+			char *verb;
+			if (EX(fbc)->common.fn_flags & ZEND_ACC_ALLOW_STATIC) {
+				severity = E_STRICT;
+				verb = "should not";
+			} else {
+				/* An internal function assumes $this is present and won't check that. So PHP would crash by allowing the call. */
+				severity = E_ERROR;
+				verb = "cannot";
+			}
+			zend_error(severity, "Non-static method %s::%s() %s be called statically, assuming $this from incompatible context", EX(fbc)->common.scope->name, EX(fbc)->common.function_name, verb);
 
 		}
 		if ((EX(object) = EG(This))) {
@@ -1232,7 +1262,17 @@ static int ZEND_INIT_STATIC_METHOD_CALL_SPEC_UNUSED_HANDLER(ZEND_OPCODE_HANDLER_
 		    !instanceof_function(Z_OBJCE_P(EG(This)), ce TSRMLS_CC)) {
 		    /* We are calling method of the other (incompatible) class,
 		       but passing $this. This is done for compatibility with php-4. */
-			zend_error(E_STRICT, "Non-static method %s::%s() should not be called statically, assuming $this from incompatible context", EX(fbc)->common.scope->name, EX(fbc)->common.function_name);
+			int severity;
+			char *verb;
+			if (EX(fbc)->common.fn_flags & ZEND_ACC_ALLOW_STATIC) {
+				severity = E_STRICT;
+				verb = "should not";
+			} else {
+				/* An internal function assumes $this is present and won't check that. So PHP would crash by allowing the call. */
+				severity = E_ERROR;
+				verb = "cannot";
+			}
+			zend_error(severity, "Non-static method %s::%s() %s be called statically, assuming $this from incompatible context", EX(fbc)->common.scope->name, EX(fbc)->common.function_name, verb);
 
 		}
 		if ((EX(object) = EG(This))) {
@@ -1325,7 +1365,17 @@ static int ZEND_INIT_STATIC_METHOD_CALL_SPEC_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS
 		    !instanceof_function(Z_OBJCE_P(EG(This)), ce TSRMLS_CC)) {
 		    /* We are calling method of the other (incompatible) class,
 		       but passing $this. This is done for compatibility with php-4. */
-			zend_error(E_STRICT, "Non-static method %s::%s() should not be called statically, assuming $this from incompatible context", EX(fbc)->common.scope->name, EX(fbc)->common.function_name);
+			int severity;
+			char *verb;
+			if (EX(fbc)->common.fn_flags & ZEND_ACC_ALLOW_STATIC) {
+				severity = E_STRICT;
+				verb = "should not";
+			} else {
+				/* An internal function assumes $this is present and won't check that. So PHP would crash by allowing the call. */
+				severity = E_ERROR;
+				verb = "cannot";
+			}
+			zend_error(severity, "Non-static method %s::%s() %s be called statically, assuming $this from incompatible context", EX(fbc)->common.scope->name, EX(fbc)->common.function_name, verb);
 
 		}
 		if ((EX(object) = EG(This))) {
@@ -5294,7 +5344,7 @@ static int ZEND_INIT_METHOD_CALL_SPEC_TMP_CONST_HANDLER(ZEND_OPCODE_HANDLER_ARGS
 		zend_error_noreturn(E_ERROR, "Call to a member function %s() on a non-object", function_name_strval);
 	}
 
-	if (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) {
+	if (!EX(object) || (EX(fbc) && (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) != 0)) {
 		EX(object) = NULL;
 	} else {
 		if (!PZVAL_IS_REF(EX(object))) {
@@ -5737,7 +5787,7 @@ static int ZEND_INIT_METHOD_CALL_SPEC_TMP_TMP_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 		zend_error_noreturn(E_ERROR, "Call to a member function %s() on a non-object", function_name_strval);
 	}
 
-	if (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) {
+	if (!EX(object) || (EX(fbc) && (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) != 0)) {
 		EX(object) = NULL;
 	} else {
 		if (!PZVAL_IS_REF(EX(object))) {
@@ -6182,7 +6232,7 @@ static int ZEND_INIT_METHOD_CALL_SPEC_TMP_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 		zend_error_noreturn(E_ERROR, "Call to a member function %s() on a non-object", function_name_strval);
 	}
 
-	if (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) {
+	if (!EX(object) || (EX(fbc) && (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) != 0)) {
 		EX(object) = NULL;
 	} else {
 		if (!PZVAL_IS_REF(EX(object))) {
@@ -6719,7 +6769,7 @@ static int ZEND_INIT_METHOD_CALL_SPEC_TMP_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 		zend_error_noreturn(E_ERROR, "Call to a member function %s() on a non-object", function_name_strval);
 	}
 
-	if (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) {
+	if (!EX(object) || (EX(fbc) && (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) != 0)) {
 		EX(object) = NULL;
 	} else {
 		if (!PZVAL_IS_REF(EX(object))) {
@@ -7484,7 +7534,9 @@ static int ZEND_SEND_VAR_NO_REF_SPEC_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 	} else {
 		zval *valptr;
 
-		zend_error(E_STRICT, "Only variables should be passed by reference");
+		if (!(opline->extended_value & ZEND_ARG_SEND_SILENT)) {
+			zend_error(E_STRICT, "Only variables should be passed by reference");
+		}
 		ALLOC_ZVAL(valptr);
 		INIT_PZVAL_COPY(valptr, varptr);
 		if (!0) {
@@ -9072,6 +9124,8 @@ static int zend_fetch_property_address_read_helper_SPEC_VAR_CONST(int type, ZEND
 	zval **retval;
 	zend_free_op free_op1;
 
+	zval *offset  = &opline->op2.u.constant;
+
 	retval = &EX_T(opline->result.u.var).var.ptr;
 	EX_T(opline->result.u.var).var.ptr_ptr = retval;
 
@@ -9083,6 +9137,7 @@ static int zend_fetch_property_address_read_helper_SPEC_VAR_CONST(int type, ZEND
 			PZVAL_LOCK(*retval);
 			AI_USE_PTR(EX_T(opline->result.u.var).var);
 		}
+
 		if (free_op1.var) {zval_ptr_dtor(&free_op1.var);};
 		ZEND_VM_NEXT_OPCODE();
 	}
@@ -9095,10 +9150,8 @@ static int zend_fetch_property_address_read_helper_SPEC_VAR_CONST(int type, ZEND
 		*retval = EG(uninitialized_zval_ptr);
 		SELECTIVE_PZVAL_LOCK(*retval, &opline->result);
 		AI_USE_PTR(EX_T(opline->result.u.var).var);
+
 	} else {
-
-		zval *offset  = &opline->op2.u.constant;
-
 		if (0) {
 			MAKE_REAL_ZVAL_PTR(offset);
 		}
@@ -9365,7 +9418,7 @@ static int ZEND_INIT_METHOD_CALL_SPEC_VAR_CONST_HANDLER(ZEND_OPCODE_HANDLER_ARGS
 		zend_error_noreturn(E_ERROR, "Call to a member function %s() on a non-object", function_name_strval);
 	}
 
-	if (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) {
+	if (!EX(object) || (EX(fbc) && (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) != 0)) {
 		EX(object) = NULL;
 	} else {
 		if (!PZVAL_IS_REF(EX(object))) {
@@ -10588,6 +10641,8 @@ static int zend_fetch_property_address_read_helper_SPEC_VAR_TMP(int type, ZEND_O
 	zval *container;
 	zval **retval;
 	zend_free_op free_op1;
+	zend_free_op free_op2;
+	zval *offset  = _get_zval_ptr_tmp(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
 
 	retval = &EX_T(opline->result.u.var).var.ptr;
 	EX_T(opline->result.u.var).var.ptr_ptr = retval;
@@ -10600,6 +10655,7 @@ static int zend_fetch_property_address_read_helper_SPEC_VAR_TMP(int type, ZEND_O
 			PZVAL_LOCK(*retval);
 			AI_USE_PTR(EX_T(opline->result.u.var).var);
 		}
+		zval_dtor(free_op2.var);
 		if (free_op1.var) {zval_ptr_dtor(&free_op1.var);};
 		ZEND_VM_NEXT_OPCODE();
 	}
@@ -10612,10 +10668,8 @@ static int zend_fetch_property_address_read_helper_SPEC_VAR_TMP(int type, ZEND_O
 		*retval = EG(uninitialized_zval_ptr);
 		SELECTIVE_PZVAL_LOCK(*retval, &opline->result);
 		AI_USE_PTR(EX_T(opline->result.u.var).var);
+		zval_dtor(free_op2.var);
 	} else {
-		zend_free_op free_op2;
-		zval *offset  = _get_zval_ptr_tmp(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
-
 		if (1) {
 			MAKE_REAL_ZVAL_PTR(offset);
 		}
@@ -10883,7 +10937,7 @@ static int ZEND_INIT_METHOD_CALL_SPEC_VAR_TMP_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 		zend_error_noreturn(E_ERROR, "Call to a member function %s() on a non-object", function_name_strval);
 	}
 
-	if (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) {
+	if (!EX(object) || (EX(fbc) && (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) != 0)) {
 		EX(object) = NULL;
 	} else {
 		if (!PZVAL_IS_REF(EX(object))) {
@@ -12108,6 +12162,8 @@ static int zend_fetch_property_address_read_helper_SPEC_VAR_VAR(int type, ZEND_O
 	zval *container;
 	zval **retval;
 	zend_free_op free_op1;
+	zend_free_op free_op2;
+	zval *offset  = _get_zval_ptr_var(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
 
 	retval = &EX_T(opline->result.u.var).var.ptr;
 	EX_T(opline->result.u.var).var.ptr_ptr = retval;
@@ -12120,6 +12176,7 @@ static int zend_fetch_property_address_read_helper_SPEC_VAR_VAR(int type, ZEND_O
 			PZVAL_LOCK(*retval);
 			AI_USE_PTR(EX_T(opline->result.u.var).var);
 		}
+		if (free_op2.var) {zval_ptr_dtor(&free_op2.var);};
 		if (free_op1.var) {zval_ptr_dtor(&free_op1.var);};
 		ZEND_VM_NEXT_OPCODE();
 	}
@@ -12132,10 +12189,8 @@ static int zend_fetch_property_address_read_helper_SPEC_VAR_VAR(int type, ZEND_O
 		*retval = EG(uninitialized_zval_ptr);
 		SELECTIVE_PZVAL_LOCK(*retval, &opline->result);
 		AI_USE_PTR(EX_T(opline->result.u.var).var);
+		if (free_op2.var) {zval_ptr_dtor(&free_op2.var);};
 	} else {
-		zend_free_op free_op2;
-		zval *offset  = _get_zval_ptr_var(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
-
 		if (0) {
 			MAKE_REAL_ZVAL_PTR(offset);
 		}
@@ -12385,7 +12440,13 @@ static int ZEND_ASSIGN_REF_SPEC_VAR_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 			PZVAL_LOCK(*value_ptr_ptr); /* undo the effect of get_zval_ptr_ptr() */
 		}
 		zend_error(E_STRICT, "Only variables should be assigned by reference");
+		if (EG(exception)) {
+			if (free_op2.var) {zval_ptr_dtor(&free_op2.var);};
+			ZEND_VM_NEXT_OPCODE();
+		}
 		return ZEND_ASSIGN_SPEC_VAR_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARGS_PASSTHRU);
+	} else if (IS_VAR == IS_VAR && opline->extended_value == ZEND_RETURNS_NEW) {
+		PZVAL_LOCK(*value_ptr_ptr);
 	}
 	if (IS_VAR == IS_VAR && EX_T(opline->op1.u.var).var.ptr_ptr == &EX_T(opline->op1.u.var).var.ptr) {
 		zend_error(E_ERROR, "Cannot assign by reference to overloaded object");
@@ -12393,6 +12454,10 @@ static int ZEND_ASSIGN_REF_SPEC_VAR_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 
 	variable_ptr_ptr = _get_zval_ptr_ptr_var(&opline->op1, EX(Ts), &free_op1 TSRMLS_CC);
 	zend_assign_to_variable_reference(variable_ptr_ptr, value_ptr_ptr TSRMLS_CC);
+
+	if (IS_VAR == IS_VAR && opline->extended_value == ZEND_RETURNS_NEW) {
+		(*variable_ptr_ptr)->refcount--;
+	}
 
 	if (!RETURN_VALUE_UNUSED(&opline->result)) {
 		EX_T(opline->result.u.var).var.ptr_ptr = variable_ptr_ptr;
@@ -12441,7 +12506,7 @@ static int ZEND_INIT_METHOD_CALL_SPEC_VAR_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 		zend_error_noreturn(E_ERROR, "Call to a member function %s() on a non-object", function_name_strval);
 	}
 
-	if (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) {
+	if (!EX(object) || (EX(fbc) && (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) != 0)) {
 		EX(object) = NULL;
 	} else {
 		if (!PZVAL_IS_REF(EX(object))) {
@@ -14113,6 +14178,8 @@ static int zend_fetch_property_address_read_helper_SPEC_VAR_CV(int type, ZEND_OP
 	zval **retval;
 	zend_free_op free_op1;
 
+	zval *offset  = _get_zval_ptr_cv(&opline->op2, EX(Ts), BP_VAR_R TSRMLS_CC);
+
 	retval = &EX_T(opline->result.u.var).var.ptr;
 	EX_T(opline->result.u.var).var.ptr_ptr = retval;
 
@@ -14124,6 +14191,7 @@ static int zend_fetch_property_address_read_helper_SPEC_VAR_CV(int type, ZEND_OP
 			PZVAL_LOCK(*retval);
 			AI_USE_PTR(EX_T(opline->result.u.var).var);
 		}
+
 		if (free_op1.var) {zval_ptr_dtor(&free_op1.var);};
 		ZEND_VM_NEXT_OPCODE();
 	}
@@ -14136,10 +14204,8 @@ static int zend_fetch_property_address_read_helper_SPEC_VAR_CV(int type, ZEND_OP
 		*retval = EG(uninitialized_zval_ptr);
 		SELECTIVE_PZVAL_LOCK(*retval, &opline->result);
 		AI_USE_PTR(EX_T(opline->result.u.var).var);
+
 	} else {
-
-		zval *offset  = _get_zval_ptr_cv(&opline->op2, EX(Ts), BP_VAR_R TSRMLS_CC);
-
 		if (0) {
 			MAKE_REAL_ZVAL_PTR(offset);
 		}
@@ -14387,7 +14453,13 @@ static int ZEND_ASSIGN_REF_SPEC_VAR_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 			PZVAL_LOCK(*value_ptr_ptr); /* undo the effect of get_zval_ptr_ptr() */
 		}
 		zend_error(E_STRICT, "Only variables should be assigned by reference");
+		if (EG(exception)) {
+
+			ZEND_VM_NEXT_OPCODE();
+		}
 		return ZEND_ASSIGN_SPEC_VAR_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS_PASSTHRU);
+	} else if (IS_CV == IS_VAR && opline->extended_value == ZEND_RETURNS_NEW) {
+		PZVAL_LOCK(*value_ptr_ptr);
 	}
 	if (IS_VAR == IS_VAR && EX_T(opline->op1.u.var).var.ptr_ptr == &EX_T(opline->op1.u.var).var.ptr) {
 		zend_error(E_ERROR, "Cannot assign by reference to overloaded object");
@@ -14395,6 +14467,10 @@ static int ZEND_ASSIGN_REF_SPEC_VAR_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 
 	variable_ptr_ptr = _get_zval_ptr_ptr_var(&opline->op1, EX(Ts), &free_op1 TSRMLS_CC);
 	zend_assign_to_variable_reference(variable_ptr_ptr, value_ptr_ptr TSRMLS_CC);
+
+	if (IS_CV == IS_VAR && opline->extended_value == ZEND_RETURNS_NEW) {
+		(*variable_ptr_ptr)->refcount--;
+	}
 
 	if (!RETURN_VALUE_UNUSED(&opline->result)) {
 		EX_T(opline->result.u.var).var.ptr_ptr = variable_ptr_ptr;
@@ -14442,7 +14518,7 @@ static int ZEND_INIT_METHOD_CALL_SPEC_VAR_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 		zend_error_noreturn(E_ERROR, "Call to a member function %s() on a non-object", function_name_strval);
 	}
 
-	if (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) {
+	if (!EX(object) || (EX(fbc) && (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) != 0)) {
 		EX(object) = NULL;
 	} else {
 		if (!PZVAL_IS_REF(EX(object))) {
@@ -15370,6 +15446,8 @@ static int zend_fetch_property_address_read_helper_SPEC_UNUSED_CONST(int type, Z
 	zval **retval;
 
 
+	zval *offset  = &opline->op2.u.constant;
+
 	retval = &EX_T(opline->result.u.var).var.ptr;
 	EX_T(opline->result.u.var).var.ptr_ptr = retval;
 
@@ -15382,6 +15460,7 @@ static int zend_fetch_property_address_read_helper_SPEC_UNUSED_CONST(int type, Z
 			AI_USE_PTR(EX_T(opline->result.u.var).var);
 		}
 
+
 		ZEND_VM_NEXT_OPCODE();
 	}
 
@@ -15393,10 +15472,8 @@ static int zend_fetch_property_address_read_helper_SPEC_UNUSED_CONST(int type, Z
 		*retval = EG(uninitialized_zval_ptr);
 		SELECTIVE_PZVAL_LOCK(*retval, &opline->result);
 		AI_USE_PTR(EX_T(opline->result.u.var).var);
+
 	} else {
-
-		zval *offset  = &opline->op2.u.constant;
-
 		if (0) {
 			MAKE_REAL_ZVAL_PTR(offset);
 		}
@@ -15616,7 +15693,7 @@ static int ZEND_INIT_METHOD_CALL_SPEC_UNUSED_CONST_HANDLER(ZEND_OPCODE_HANDLER_A
 		zend_error_noreturn(E_ERROR, "Call to a member function %s() on a non-object", function_name_strval);
 	}
 
-	if (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) {
+	if (!EX(object) || (EX(fbc) && (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) != 0)) {
 		EX(object) = NULL;
 	} else {
 		if (!PZVAL_IS_REF(EX(object))) {
@@ -16393,6 +16470,8 @@ static int zend_fetch_property_address_read_helper_SPEC_UNUSED_TMP(int type, ZEN
 	zval *container;
 	zval **retval;
 
+	zend_free_op free_op2;
+	zval *offset  = _get_zval_ptr_tmp(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
 
 	retval = &EX_T(opline->result.u.var).var.ptr;
 	EX_T(opline->result.u.var).var.ptr_ptr = retval;
@@ -16405,6 +16484,7 @@ static int zend_fetch_property_address_read_helper_SPEC_UNUSED_TMP(int type, ZEN
 			PZVAL_LOCK(*retval);
 			AI_USE_PTR(EX_T(opline->result.u.var).var);
 		}
+		zval_dtor(free_op2.var);
 
 		ZEND_VM_NEXT_OPCODE();
 	}
@@ -16417,10 +16497,8 @@ static int zend_fetch_property_address_read_helper_SPEC_UNUSED_TMP(int type, ZEN
 		*retval = EG(uninitialized_zval_ptr);
 		SELECTIVE_PZVAL_LOCK(*retval, &opline->result);
 		AI_USE_PTR(EX_T(opline->result.u.var).var);
+		zval_dtor(free_op2.var);
 	} else {
-		zend_free_op free_op2;
-		zval *offset  = _get_zval_ptr_tmp(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
-
 		if (1) {
 			MAKE_REAL_ZVAL_PTR(offset);
 		}
@@ -16640,7 +16718,7 @@ static int ZEND_INIT_METHOD_CALL_SPEC_UNUSED_TMP_HANDLER(ZEND_OPCODE_HANDLER_ARG
 		zend_error_noreturn(E_ERROR, "Call to a member function %s() on a non-object", function_name_strval);
 	}
 
-	if (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) {
+	if (!EX(object) || (EX(fbc) && (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) != 0)) {
 		EX(object) = NULL;
 	} else {
 		if (!PZVAL_IS_REF(EX(object))) {
@@ -17373,6 +17451,8 @@ static int zend_fetch_property_address_read_helper_SPEC_UNUSED_VAR(int type, ZEN
 	zval *container;
 	zval **retval;
 
+	zend_free_op free_op2;
+	zval *offset  = _get_zval_ptr_var(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
 
 	retval = &EX_T(opline->result.u.var).var.ptr;
 	EX_T(opline->result.u.var).var.ptr_ptr = retval;
@@ -17385,6 +17465,7 @@ static int zend_fetch_property_address_read_helper_SPEC_UNUSED_VAR(int type, ZEN
 			PZVAL_LOCK(*retval);
 			AI_USE_PTR(EX_T(opline->result.u.var).var);
 		}
+		if (free_op2.var) {zval_ptr_dtor(&free_op2.var);};
 
 		ZEND_VM_NEXT_OPCODE();
 	}
@@ -17397,10 +17478,8 @@ static int zend_fetch_property_address_read_helper_SPEC_UNUSED_VAR(int type, ZEN
 		*retval = EG(uninitialized_zval_ptr);
 		SELECTIVE_PZVAL_LOCK(*retval, &opline->result);
 		AI_USE_PTR(EX_T(opline->result.u.var).var);
+		if (free_op2.var) {zval_ptr_dtor(&free_op2.var);};
 	} else {
-		zend_free_op free_op2;
-		zval *offset  = _get_zval_ptr_var(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
-
 		if (0) {
 			MAKE_REAL_ZVAL_PTR(offset);
 		}
@@ -17620,7 +17699,7 @@ static int ZEND_INIT_METHOD_CALL_SPEC_UNUSED_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARG
 		zend_error_noreturn(E_ERROR, "Call to a member function %s() on a non-object", function_name_strval);
 	}
 
-	if (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) {
+	if (!EX(object) || (EX(fbc) && (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) != 0)) {
 		EX(object) = NULL;
 	} else {
 		if (!PZVAL_IS_REF(EX(object))) {
@@ -18619,6 +18698,8 @@ static int zend_fetch_property_address_read_helper_SPEC_UNUSED_CV(int type, ZEND
 	zval **retval;
 
 
+	zval *offset  = _get_zval_ptr_cv(&opline->op2, EX(Ts), BP_VAR_R TSRMLS_CC);
+
 	retval = &EX_T(opline->result.u.var).var.ptr;
 	EX_T(opline->result.u.var).var.ptr_ptr = retval;
 
@@ -18631,6 +18712,7 @@ static int zend_fetch_property_address_read_helper_SPEC_UNUSED_CV(int type, ZEND
 			AI_USE_PTR(EX_T(opline->result.u.var).var);
 		}
 
+
 		ZEND_VM_NEXT_OPCODE();
 	}
 
@@ -18642,10 +18724,8 @@ static int zend_fetch_property_address_read_helper_SPEC_UNUSED_CV(int type, ZEND
 		*retval = EG(uninitialized_zval_ptr);
 		SELECTIVE_PZVAL_LOCK(*retval, &opline->result);
 		AI_USE_PTR(EX_T(opline->result.u.var).var);
+
 	} else {
-
-		zval *offset  = _get_zval_ptr_cv(&opline->op2, EX(Ts), BP_VAR_R TSRMLS_CC);
-
 		if (0) {
 			MAKE_REAL_ZVAL_PTR(offset);
 		}
@@ -18865,7 +18945,7 @@ static int ZEND_INIT_METHOD_CALL_SPEC_UNUSED_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS
 		zend_error_noreturn(E_ERROR, "Call to a member function %s() on a non-object", function_name_strval);
 	}
 
-	if (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) {
+	if (!EX(object) || (EX(fbc) && (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) != 0)) {
 		EX(object) = NULL;
 	} else {
 		if (!PZVAL_IS_REF(EX(object))) {
@@ -19768,7 +19848,9 @@ static int ZEND_SEND_VAR_NO_REF_SPEC_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 	} else {
 		zval *valptr;
 
-		zend_error(E_STRICT, "Only variables should be passed by reference");
+		if (!(opline->extended_value & ZEND_ARG_SEND_SILENT)) {
+			zend_error(E_STRICT, "Only variables should be passed by reference");
+		}
 		ALLOC_ZVAL(valptr);
 		INIT_PZVAL_COPY(valptr, varptr);
 		if (!0) {
@@ -21199,6 +21281,8 @@ static int zend_fetch_property_address_read_helper_SPEC_CV_CONST(int type, ZEND_
 	zval **retval;
 
 
+	zval *offset  = &opline->op2.u.constant;
+
 	retval = &EX_T(opline->result.u.var).var.ptr;
 	EX_T(opline->result.u.var).var.ptr_ptr = retval;
 
@@ -21211,6 +21295,7 @@ static int zend_fetch_property_address_read_helper_SPEC_CV_CONST(int type, ZEND_
 			AI_USE_PTR(EX_T(opline->result.u.var).var);
 		}
 
+
 		ZEND_VM_NEXT_OPCODE();
 	}
 
@@ -21222,10 +21307,8 @@ static int zend_fetch_property_address_read_helper_SPEC_CV_CONST(int type, ZEND_
 		*retval = EG(uninitialized_zval_ptr);
 		SELECTIVE_PZVAL_LOCK(*retval, &opline->result);
 		AI_USE_PTR(EX_T(opline->result.u.var).var);
+
 	} else {
-
-		zval *offset  = &opline->op2.u.constant;
-
 		if (0) {
 			MAKE_REAL_ZVAL_PTR(offset);
 		}
@@ -21490,7 +21573,7 @@ static int ZEND_INIT_METHOD_CALL_SPEC_CV_CONST_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 		zend_error_noreturn(E_ERROR, "Call to a member function %s() on a non-object", function_name_strval);
 	}
 
-	if (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) {
+	if (!EX(object) || (EX(fbc) && (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) != 0)) {
 		EX(object) = NULL;
 	} else {
 		if (!PZVAL_IS_REF(EX(object))) {
@@ -22707,6 +22790,8 @@ static int zend_fetch_property_address_read_helper_SPEC_CV_TMP(int type, ZEND_OP
 	zval *container;
 	zval **retval;
 
+	zend_free_op free_op2;
+	zval *offset  = _get_zval_ptr_tmp(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
 
 	retval = &EX_T(opline->result.u.var).var.ptr;
 	EX_T(opline->result.u.var).var.ptr_ptr = retval;
@@ -22719,6 +22804,7 @@ static int zend_fetch_property_address_read_helper_SPEC_CV_TMP(int type, ZEND_OP
 			PZVAL_LOCK(*retval);
 			AI_USE_PTR(EX_T(opline->result.u.var).var);
 		}
+		zval_dtor(free_op2.var);
 
 		ZEND_VM_NEXT_OPCODE();
 	}
@@ -22731,10 +22817,8 @@ static int zend_fetch_property_address_read_helper_SPEC_CV_TMP(int type, ZEND_OP
 		*retval = EG(uninitialized_zval_ptr);
 		SELECTIVE_PZVAL_LOCK(*retval, &opline->result);
 		AI_USE_PTR(EX_T(opline->result.u.var).var);
+		zval_dtor(free_op2.var);
 	} else {
-		zend_free_op free_op2;
-		zval *offset  = _get_zval_ptr_tmp(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
-
 		if (1) {
 			MAKE_REAL_ZVAL_PTR(offset);
 		}
@@ -23000,7 +23084,7 @@ static int ZEND_INIT_METHOD_CALL_SPEC_CV_TMP_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 		zend_error_noreturn(E_ERROR, "Call to a member function %s() on a non-object", function_name_strval);
 	}
 
-	if (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) {
+	if (!EX(object) || (EX(fbc) && (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) != 0)) {
 		EX(object) = NULL;
 	} else {
 		if (!PZVAL_IS_REF(EX(object))) {
@@ -24219,6 +24303,8 @@ static int zend_fetch_property_address_read_helper_SPEC_CV_VAR(int type, ZEND_OP
 	zval *container;
 	zval **retval;
 
+	zend_free_op free_op2;
+	zval *offset  = _get_zval_ptr_var(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
 
 	retval = &EX_T(opline->result.u.var).var.ptr;
 	EX_T(opline->result.u.var).var.ptr_ptr = retval;
@@ -24231,6 +24317,7 @@ static int zend_fetch_property_address_read_helper_SPEC_CV_VAR(int type, ZEND_OP
 			PZVAL_LOCK(*retval);
 			AI_USE_PTR(EX_T(opline->result.u.var).var);
 		}
+		if (free_op2.var) {zval_ptr_dtor(&free_op2.var);};
 
 		ZEND_VM_NEXT_OPCODE();
 	}
@@ -24243,10 +24330,8 @@ static int zend_fetch_property_address_read_helper_SPEC_CV_VAR(int type, ZEND_OP
 		*retval = EG(uninitialized_zval_ptr);
 		SELECTIVE_PZVAL_LOCK(*retval, &opline->result);
 		AI_USE_PTR(EX_T(opline->result.u.var).var);
+		if (free_op2.var) {zval_ptr_dtor(&free_op2.var);};
 	} else {
-		zend_free_op free_op2;
-		zval *offset  = _get_zval_ptr_var(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
-
 		if (0) {
 			MAKE_REAL_ZVAL_PTR(offset);
 		}
@@ -24494,7 +24579,13 @@ static int ZEND_ASSIGN_REF_SPEC_CV_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 			PZVAL_LOCK(*value_ptr_ptr); /* undo the effect of get_zval_ptr_ptr() */
 		}
 		zend_error(E_STRICT, "Only variables should be assigned by reference");
+		if (EG(exception)) {
+			if (free_op2.var) {zval_ptr_dtor(&free_op2.var);};
+			ZEND_VM_NEXT_OPCODE();
+		}
 		return ZEND_ASSIGN_SPEC_CV_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARGS_PASSTHRU);
+	} else if (IS_VAR == IS_VAR && opline->extended_value == ZEND_RETURNS_NEW) {
+		PZVAL_LOCK(*value_ptr_ptr);
 	}
 	if (IS_CV == IS_VAR && EX_T(opline->op1.u.var).var.ptr_ptr == &EX_T(opline->op1.u.var).var.ptr) {
 		zend_error(E_ERROR, "Cannot assign by reference to overloaded object");
@@ -24502,6 +24593,10 @@ static int ZEND_ASSIGN_REF_SPEC_CV_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 
 	variable_ptr_ptr = _get_zval_ptr_ptr_cv(&opline->op1, EX(Ts), BP_VAR_W TSRMLS_CC);
 	zend_assign_to_variable_reference(variable_ptr_ptr, value_ptr_ptr TSRMLS_CC);
+
+	if (IS_VAR == IS_VAR && opline->extended_value == ZEND_RETURNS_NEW) {
+		(*variable_ptr_ptr)->refcount--;
+	}
 
 	if (!RETURN_VALUE_UNUSED(&opline->result)) {
 		EX_T(opline->result.u.var).var.ptr_ptr = variable_ptr_ptr;
@@ -24549,7 +24644,7 @@ static int ZEND_INIT_METHOD_CALL_SPEC_CV_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 		zend_error_noreturn(E_ERROR, "Call to a member function %s() on a non-object", function_name_strval);
 	}
 
-	if (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) {
+	if (!EX(object) || (EX(fbc) && (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) != 0)) {
 		EX(object) = NULL;
 	} else {
 		if (!PZVAL_IS_REF(EX(object))) {
@@ -26214,6 +26309,8 @@ static int zend_fetch_property_address_read_helper_SPEC_CV_CV(int type, ZEND_OPC
 	zval **retval;
 
 
+	zval *offset  = _get_zval_ptr_cv(&opline->op2, EX(Ts), BP_VAR_R TSRMLS_CC);
+
 	retval = &EX_T(opline->result.u.var).var.ptr;
 	EX_T(opline->result.u.var).var.ptr_ptr = retval;
 
@@ -26226,6 +26323,7 @@ static int zend_fetch_property_address_read_helper_SPEC_CV_CV(int type, ZEND_OPC
 			AI_USE_PTR(EX_T(opline->result.u.var).var);
 		}
 
+
 		ZEND_VM_NEXT_OPCODE();
 	}
 
@@ -26237,10 +26335,8 @@ static int zend_fetch_property_address_read_helper_SPEC_CV_CV(int type, ZEND_OPC
 		*retval = EG(uninitialized_zval_ptr);
 		SELECTIVE_PZVAL_LOCK(*retval, &opline->result);
 		AI_USE_PTR(EX_T(opline->result.u.var).var);
+
 	} else {
-
-		zval *offset  = _get_zval_ptr_cv(&opline->op2, EX(Ts), BP_VAR_R TSRMLS_CC);
-
 		if (0) {
 			MAKE_REAL_ZVAL_PTR(offset);
 		}
@@ -26486,7 +26582,13 @@ static int ZEND_ASSIGN_REF_SPEC_CV_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 			PZVAL_LOCK(*value_ptr_ptr); /* undo the effect of get_zval_ptr_ptr() */
 		}
 		zend_error(E_STRICT, "Only variables should be assigned by reference");
+		if (EG(exception)) {
+
+			ZEND_VM_NEXT_OPCODE();
+		}
 		return ZEND_ASSIGN_SPEC_CV_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS_PASSTHRU);
+	} else if (IS_CV == IS_VAR && opline->extended_value == ZEND_RETURNS_NEW) {
+		PZVAL_LOCK(*value_ptr_ptr);
 	}
 	if (IS_CV == IS_VAR && EX_T(opline->op1.u.var).var.ptr_ptr == &EX_T(opline->op1.u.var).var.ptr) {
 		zend_error(E_ERROR, "Cannot assign by reference to overloaded object");
@@ -26494,6 +26596,10 @@ static int ZEND_ASSIGN_REF_SPEC_CV_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 
 	variable_ptr_ptr = _get_zval_ptr_ptr_cv(&opline->op1, EX(Ts), BP_VAR_W TSRMLS_CC);
 	zend_assign_to_variable_reference(variable_ptr_ptr, value_ptr_ptr TSRMLS_CC);
+
+	if (IS_CV == IS_VAR && opline->extended_value == ZEND_RETURNS_NEW) {
+		(*variable_ptr_ptr)->refcount--;
+	}
 
 	if (!RETURN_VALUE_UNUSED(&opline->result)) {
 		EX_T(opline->result.u.var).var.ptr_ptr = variable_ptr_ptr;
@@ -26540,7 +26646,7 @@ static int ZEND_INIT_METHOD_CALL_SPEC_CV_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 		zend_error_noreturn(E_ERROR, "Call to a member function %s() on a non-object", function_name_strval);
 	}
 
-	if (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) {
+	if (!EX(object) || (EX(fbc) && (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) != 0)) {
 		EX(object) = NULL;
 	} else {
 		if (!PZVAL_IS_REF(EX(object))) {

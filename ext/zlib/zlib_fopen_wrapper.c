@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: zlib_fopen_wrapper.c,v 1.46.2.1.2.5 2007/12/31 07:20:14 sebastian Exp $ */
+/* $Id: zlib_fopen_wrapper.c,v 1.46.2.1.2.7 2009/01/20 15:43:05 felipe Exp $ */
 
 #define _GNU_SOURCE
 
@@ -60,6 +60,10 @@ static int php_gziop_seek(php_stream *stream, off_t offset, int whence, off_t *n
 
 	assert(self != NULL);
 
+	if (whence == SEEK_END) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "SEEK_END is not supported");
+		return -1;
+	}
 	*newoffs = gzseek(self->gz_file, offset, whence);
 
 	return (*newoffs < 0) ? -1 : 0;

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_array.h,v 1.13.2.2.2.5 2007/12/31 07:20:11 sebastian Exp $ */
+/* $Id: spl_array.h,v 1.13.2.2.2.6 2008/12/31 11:17:44 sebastian Exp $ */
 
 #ifndef SPL_ARRAY_H
 #define SPL_ARRAY_H

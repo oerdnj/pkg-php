@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2008 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2009 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_objects_API.c,v 1.47.2.6.2.7 2007/12/31 07:20:03 sebastian Exp $ */
+/* $Id: zend_objects_API.c,v 1.47.2.6.2.9 2009/02/11 09:58:33 tony2001 Exp $ */
 
 #include "zend.h"
 #include "zend_globals.h"
@@ -55,6 +55,7 @@ ZEND_API void zend_objects_store_call_destructors(zend_objects_store *objects TS
 				if (obj->dtor && obj->object) {
 					obj->refcount++;
 					obj->dtor(obj->object, i TSRMLS_CC);
+					obj = &objects->object_buckets[i].bucket.obj;
 					obj->refcount--;
 				}
 			}
@@ -200,6 +201,10 @@ ZEND_API void zend_objects_store_del_ref_by_handle(zend_object_handle handle TSR
 					} zend_end_try();
 				}
 			}
+
+			/* re-read the object from the object store as the store might have been reallocated in the dtor */
+			obj = &EG(objects_store).object_buckets[handle].bucket.obj;
+
 			if (obj->refcount == 1) {
 				if (obj->free_storage) {
 					zend_try {
@@ -241,6 +246,7 @@ ZEND_API zend_object_value zend_objects_store_clone_obj(zval *zobject TSRMLS_DC)
 	}
 
 	obj->clone(obj->object, &new_object TSRMLS_CC);
+	obj = &EG(objects_store).object_buckets[handle].bucket.obj;
 
 	retval.handle = zend_objects_store_put(new_object, obj->dtor, obj->free_storage, obj->clone TSRMLS_CC);
 	retval.handlers = Z_OBJ_HT_P(zobject);

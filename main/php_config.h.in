@@ -4,7 +4,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2008 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2009 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: acconfig.h,v 1.40.2.1.2.2 2007/12/31 07:20:02 sebastian Exp $ */
+/* $Id: acconfig.h,v 1.40.2.1.2.3 2008/12/31 11:17:32 sebastian Exp $ */
 
 #define ZEND_API
 #define ZEND_DLEXPORT
@@ -521,6 +521,9 @@
 /* Define if you have the strlcpy function.  */
 #undef HAVE_STRLCPY
 
+/* Define if you have the strnlen function.  */
+#undef HAVE_STRNLEN
+
 /* Define if you have the strpbrk function.  */
 #undef HAVE_STRPBRK
 
@@ -652,6 +655,9 @@
 
 /* Define if you have the <netinet/tcp.h> header file.  */
 #undef HAVE_NETINET_TCP_H
+
+/* Define if you have the <openssl/crypto.h> header file.  */
+#undef HAVE_OPENSSL_CRYPTO_H
 
 /* Define if you have the <pwd.h> header file.  */
 #undef HAVE_PWD_H
@@ -1746,6 +1752,9 @@
 #undef HAVE_IMAP_AUTH_GSS
 
 /*   */
+#undef HAVE_RFC822_OUTPUT_ADDRESS_LIST
+
+/*   */
 #undef HAVE_IBASE
 
 /* Whether to build interbase as dynamic module */
@@ -2401,6 +2410,9 @@
 
 /* Whether you have a working ttyname_r */
 #undef HAVE_TTYNAME_R
+
+/* Wether struct utsname has domainname */
+#undef HAVE_UTSNAME_DOMAINNAME
 
 /* Whether to build pspell as dynamic module */
 #undef COMPILE_DL_PSPELL

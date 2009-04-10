@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: nsapi.c,v 1.69.2.3.2.8 2008/03/09 16:06:33 felipe Exp $ */
+/* $Id: nsapi.c,v 1.69.2.3.2.16 2009/01/06 13:46:49 thetaphi Exp $ */
 
 /*
  * PHP includes
@@ -60,12 +60,6 @@
  * NSAPI includes
  */
 #include "nsapi.h"
-#include "base/pblock.h"
-#include "base/session.h"
-#include "frame/req.h"
-#include "frame/protocol.h"  /* protocol_start_response */
-#include "base/util.h"       /* is_mozilla, getline */
-#include "frame/log.h"       /* log_error */
 
 #define NSLS_D		struct nsapi_request_context *request_context
 #define NSLS_DC		, NSLS_D
@@ -231,13 +225,6 @@ char *nsapi_dll = NULL;
  */
 static void php_nsapi_init_dynamic_symbols(void)
 {
-#if defined(servact_uri2path) && defined(servact_pathchecks) && defined(servact_fileinfo) && defined(servact_service)
-	/* use functions from nsapi.h if available */
-	nsapi_servact_uri2path = &servact_uri2path;
-	nsapi_servact_pathchecks = &servact_pathchecks;
-	nsapi_servact_fileinfo = &servact_fileinfo;
-	nsapi_servact_service = &servact_service;
-#else
 	/* find address of internal NSAPI functions */
 #ifdef PHP_WIN32
 	register int i;
@@ -271,7 +258,6 @@ static void php_nsapi_init_dynamic_symbols(void)
 		nsapi_servact_fileinfo = NULL;
 		nsapi_servact_service = NULL;
 	}
-#endif
 }
 /* }}} */
 
@@ -308,7 +294,7 @@ PHP_MSHUTDOWN_FUNCTION(nsapi)
 PHP_MINFO_FUNCTION(nsapi)
 {
 	php_info_print_table_start();
-	php_info_print_table_row(2, "NSAPI Module Revision", "$Revision: 1.69.2.3.2.8 $");
+	php_info_print_table_row(2, "NSAPI Module Revision", "$Revision: 1.69.2.3.2.16 $");
 	php_info_print_table_row(2, "Server Software", system_version());
 	php_info_print_table_row(2, "Sub-requests with nsapi_virtual()",
 	 (nsapi_servact_service)?((zend_ini_long("zlib.output_compression", sizeof("zlib.output_compression"), 0))?"not supported with zlib.output_compression":"enabled"):"not supported on this platform" );
@@ -327,22 +313,20 @@ PHP_MINFO_FUNCTION(nsapi)
  */
 PHP_FUNCTION(nsapi_virtual)
 {
-	zval **uri;
-	int rv;
-	char *value;
+	int uri_len,rv;
+	char *uri,*value;
 	Request *rq;
 	nsapi_request_context *rc = (nsapi_request_context *)SG(server_context);
 
-	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &uri) == FAILURE) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &uri, &uri_len) == FAILURE) {
+		return;
 	}
-	convert_to_string_ex(uri);
 
 	if (!nsapi_servact_service) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to include uri '%s' - Sub-requests not supported on this platform", (*uri)->value.str.val);
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to include uri '%s' - Sub-requests not supported on this platform", uri);
 		RETURN_FALSE;
 	} else if (zend_ini_long("zlib.output_compression", sizeof("zlib.output_compression"), 0)) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to include uri '%s' - Sub-requests do not work with zlib.output_compression", (*uri)->value.str.val);
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to include uri '%s' - Sub-requests do not work with zlib.output_compression", uri);
 		RETURN_FALSE;
 	} else {
 		php_end_ob_buffers(1 TSRMLS_CC);
@@ -350,8 +334,8 @@ PHP_FUNCTION(nsapi_virtual)
 
 		/* do the sub-request */
 		/* thanks to Chris Elving from Sun for this code sniplet */
-		if ((rq = request_restart_internal((*uri)->value.str.val, NULL)) == NULL) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to include uri '%s' - Internal request creation failed", (*uri)->value.str.val);
+		if ((rq = request_restart_internal(uri, NULL)) == NULL) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to include uri '%s' - Internal request creation failed", uri);
 			RETURN_FALSE;
 		}
 
@@ -383,7 +367,7 @@ PHP_FUNCTION(nsapi_virtual)
 		} while (rv == REQ_RESTART);
 
 		if (rq->status_num != 200) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to include uri '%s' - HTTP status code %d during subrequest", (*uri)->value.str.val, rq->status_num);
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to include uri '%s' - HTTP status code %d during subrequest", uri, rq->status_num);
 			request_free(rq);
 			RETURN_FALSE;
 		}
@@ -402,6 +386,10 @@ PHP_FUNCTION(nsapi_request_headers)
 	register int i;
 	struct pb_entry *entry;
 	nsapi_request_context *rc = (nsapi_request_context *)SG(server_context);
+
+	if (ZEND_NUM_ARGS()) {
+		WRONG_PARAM_COUNT;
+	}
 
 	array_init(return_value);
 
@@ -425,9 +413,11 @@ PHP_FUNCTION(nsapi_response_headers)
 	struct pb_entry *entry;
 	nsapi_request_context *rc = (nsapi_request_context *)SG(server_context);
 
-	array_init(return_value);
+	if (ZEND_NUM_ARGS()) {
+		WRONG_PARAM_COUNT;
+	}
 
-	php_header(TSRMLS_C);
+	array_init(return_value);
 
 	for (i=0; i < rc->rq->srvhdrs->hsize; i++) {
 		entry=rc->rq->srvhdrs->ht[i];
@@ -447,14 +437,35 @@ PHP_FUNCTION(nsapi_response_headers)
 static int sapi_nsapi_ub_write(const char *str, unsigned int str_length TSRMLS_DC)
 {
 	int retval;
-	nsapi_request_context *rc;
+	nsapi_request_context *rc = (nsapi_request_context *)SG(server_context);
+	
+	if (!SG(headers_sent)) {
+		sapi_send_headers(TSRMLS_C);
+	}
 
-	rc = (nsapi_request_context *)SG(server_context);
 	retval = net_write(rc->sn->csd, (char *)str, str_length);
 	if (retval == IO_ERROR /* -1 */ || retval == IO_EOF /* 0 */) {
 		php_handle_aborted_connection();
 	}
 	return retval;
+}
+
+/* modified version of apache2 */
+static void sapi_nsapi_flush(void *server_context)
+{
+	nsapi_request_context *rc = (nsapi_request_context *)server_context;
+	TSRMLS_FETCH();
+
+	if (!SG(headers_sent)) {
+		sapi_send_headers(TSRMLS_C);
+	}
+
+	/* flushing is only supported in iPlanet servers from version 6.1 on, make it conditional */
+#if NSAPI_VERSION >= 302
+	if (net_flush(rc->sn->csd) < 0) {
+		php_handle_aborted_connection();
+	}
+#endif
 }
 
 static int sapi_nsapi_header_handler(sapi_header_struct *sapi_header, sapi_headers_struct *sapi_headers TSRMLS_DC)
@@ -729,6 +740,13 @@ static int php_nsapi_startup(sapi_module_struct *sapi_module)
 	return SUCCESS;
 }
 
+static struct stat* sapi_nsapi_get_stat(TSRMLS_D)
+{
+	return request_stat_path(
+		SG(request_info).path_translated,
+		((nsapi_request_context *)SG(server_context))->rq
+	);
+}
 
 static sapi_module_struct nsapi_sapi_module = {
 	"nsapi",                                /* name */
@@ -741,8 +759,8 @@ static sapi_module_struct nsapi_sapi_module = {
 	NULL,                                   /* deactivate */
 
 	sapi_nsapi_ub_write,                    /* unbuffered write */
-	NULL,                                   /* flush */
-	NULL,                                   /* get uid */
+	sapi_nsapi_flush,                       /* flush */
+	sapi_nsapi_get_stat,                    /* get uid/stat */
 	NULL,                                   /* getenv */
 
 	php_error,                              /* error handler */
@@ -831,12 +849,10 @@ int NSAPI_PUBLIC php5_init(pblock *pb, Session *sn, Request *rq)
 	int threads=128; /* default for server */
 
 	/* fetch max threads from NSAPI and initialize TSRM with it */
-#if defined(pool_maxthreads)
-	threads=pool_maxthreads;
+	threads=conf_getglobals()->Vpool_maxthreads;
 	if (threads<1) {
 		threads=128; /* default for server */
 	}
-#endif
 	tsrm_startup(threads, 1, 0, NULL);
 
 	core_globals = ts_resource(core_globals_id);
@@ -884,7 +900,7 @@ int NSAPI_PUBLIC php5_execute(pblock *pb, Session *sn, Request *rq)
 	int retval;
 	nsapi_request_context *request_context;
 	zend_file_handle file_handle = {0};
-	struct stat fst;
+	struct stat *fst;
 
 	char *path_info;
 	char *query_string    = pblock_findval("query", rq->reqpb);
@@ -956,7 +972,8 @@ int NSAPI_PUBLIC php5_execute(pblock *pb, Session *sn, Request *rq)
 	file_handle.free_filename = 0;
 	file_handle.opened_path = NULL;
 
-	if (stat(SG(request_info).path_translated, &fst)==0 && S_ISREG(fst.st_mode)) {
+	fst = request_stat_path(SG(request_info).path_translated, rq);
+	if (fst && S_ISREG(fst->st_mode)) {
 		if (php_request_startup(TSRMLS_C) == SUCCESS) {
 			php_execute_script(&file_handle TSRMLS_CC);
 			php_request_shutdown(NULL);

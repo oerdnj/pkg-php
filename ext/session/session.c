@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: session.c,v 1.417.2.8.2.42 2008/04/29 14:42:38 scottmac Exp $ */
+/* $Id: session.c,v 1.417.2.8.2.46 2008/12/31 11:17:43 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -40,7 +40,7 @@
 #include "ext/standard/md5.h"
 #include "ext/standard/sha1.h"
 #include "ext/standard/php_var.h"
-#include "ext/standard/datetime.h"
+#include "ext/date/php_date.h"
 #include "ext/standard/php_lcg.h"
 #include "ext/standard/url_scanner_ex.h"
 #include "ext/standard/php_rand.h"                   /* for RAND_MAX */
@@ -1116,7 +1116,7 @@ static void php_session_send_cookie(TSRMLS_D)
 		t = tv.tv_sec + PS(cookie_lifetime);
 
 		if (t > 0) {
-			date_fmt = php_std_date(t TSRMLS_CC);
+			date_fmt = php_format_date("D, d-M-Y H:i:s T", sizeof("D, d-M-Y H:i:s T")-1, t, 0 TSRMLS_CC);
 			smart_str_appends(&ncookie, COOKIE_EXPIRES);
 			smart_str_appends(&ncookie, date_fmt);
 			efree(date_fmt);
@@ -1508,6 +1508,15 @@ PHP_FUNCTION(session_set_save_handler)
 	}
 
 	zend_alter_ini_entry("session.save_handler", sizeof("session.save_handler"), "user", sizeof("user")-1, PHP_INI_USER, PHP_INI_STAGE_RUNTIME);
+
+	mdata = PS(mod_data);
+
+	if (mdata) {
+		for (i = 0; i < 6; i++) {
+			zval_ptr_dtor(&mdata->names[i]);
+		}
+		efree(mdata);
+	}
 
 	mdata = emalloc(sizeof(*mdata));
 
@@ -1914,6 +1923,21 @@ PHP_RINIT_FUNCTION(session)
 			PS(session_status) = php_session_disabled;
 			return SUCCESS;
 		}
+	}
+
+	if (PS(serializer) == NULL) {
+		char *value;
+
+		value = zend_ini_string("session.serialize_handler", sizeof("session.serialize_handler"), 0);
+		if (value) {
+			PS(serializer) = _php_find_ps_serializer(value TSRMLS_CC);
+		}
+	}
+
+	if (PS(mod) == NULL || PS(serializer) == NULL) {
+		/* current status is unusable */
+		PS(session_status) = php_session_disabled;
+		return SUCCESS;
 	}
 
 	if (PS(auto_start)) {

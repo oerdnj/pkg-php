@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: scanf.c,v 1.31.2.2.2.6 2007/12/31 07:20:13 sebastian Exp $ */
+/* $Id: scanf.c,v 1.31.2.2.2.9 2009/02/06 10:22:34 felipe Exp $ */
 
 /*
 	scanf.c --
@@ -1066,9 +1066,9 @@ addToInt:
 							break;
 						} else if (numVars) {
 						  /* change passed value type to string */
-						   current = args[objIndex++];
-						   convert_to_string( *current );
-						   ZVAL_STRING( *current, buf, 1 );
+							current = args[objIndex++];
+							zval_dtor(*current);
+							ZVAL_STRING( *current, buf, 1 );
 						} else {
 							add_index_string(*return_value, objIndex++, buf, 1);
 						}
@@ -1077,8 +1077,8 @@ addToInt:
 							break;
 						} else if (numVars) {
 							current = args[objIndex++];
-							convert_to_long( *current );
-							Z_LVAL(**current) = value;
+							zval_dtor(*current);
+							ZVAL_LONG(*current, value);
 						} else {
 							add_index_long(*return_value, objIndex++, value);
 						}
@@ -1182,8 +1182,8 @@ addToFloat:
 						break;
 					} else if (numVars) {
 						current = args[objIndex++];
-						convert_to_double( *current );
-						Z_DVAL_PP( current ) = dvalue;
+						zval_dtor(*current);
+						ZVAL_DOUBLE(*current, dvalue);
 					} else {
 						add_index_double( *return_value, objIndex++, dvalue );
 					}

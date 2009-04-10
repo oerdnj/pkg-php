@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2008 The PHP Group                                |
+  | Copyright (c) 1997-2009 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: logical_filters.c,v 1.1.2.24 2008/03/18 23:32:42 iliaa Exp $ */
+/* $Id: logical_filters.c,v 1.1.2.28 2009/02/02 23:51:58 iliaa Exp $ */
 
 #include "php_filter.h"
 #include "filter_private.h"
@@ -469,7 +469,7 @@ void php_filter_validate_url(PHP_INPUT_FILTER_PARAM_DECL) /* {{{ */
 void php_filter_validate_email(PHP_INPUT_FILTER_PARAM_DECL) /* {{{ */
 {
 	/* From http://cvs.php.net/co.php/pear/HTML_QuickForm/QuickForm/Rule/Email.php?r=1.4 */
-	const char regexp[] = "/^((\\\"[^\\\"\\f\\n\\r\\t\\b]+\\\")|([\\w\\!\\#\\$\\%\\&\\'\\*\\+\\-\\~\\/\\^\\`\\|\\{\\}]+(\\.[\\w\\!\\#\\$\\%\\&\\'\\*\\+\\-\\~\\/\\^\\`\\|\\{\\}]+)*))@((\\[(((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9])))\\])|(((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9])))|((([A-Za-z0-9])(([A-Za-z0-9\\-])*([A-Za-z0-9]))?\\.)+[A-Za-z\\-]+))$/D";
+	const char regexp[] = "/^((\\\"[^\\\"\\f\\n\\r\\t\\b]+\\\")|([\\w\\!\\#\\$\\%\\&\\'\\*\\+\\-\\~\\/\\^\\`\\|\\{\\}]+(\\.[\\w\\!\\#\\$\\%\\&\\'\\*\\+\\-\\~\\/\\^\\`\\|\\{\\}]*)*))@((\\[(((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9])))\\])|(((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9])))|((([A-Za-z0-9])(([A-Za-z0-9\\-])*([A-Za-z0-9]))?\\.?)+[A-Za-z\\-]*))$/D";
 
 	pcre       *re = NULL;
 	pcre_extra *pcre_extra = NULL;
@@ -526,9 +526,10 @@ static int _php_filter_validate_ipv6(char *str, int str_len TSRMLS_DC) /* {{{ */
 	int compressed = 0;
 	int blocks = 8;
 	int n;
-	char *ipv4;
+	char *ipv4 = NULL;
 	char *end;
 	int ip4elm[4];
+	char *s = str;
 
 	if (!memchr(str, ':', str_len)) {
 		return 0;
@@ -551,23 +552,29 @@ static int _php_filter_validate_ipv6(char *str, int str_len TSRMLS_DC) /* {{{ */
 		blocks = 6;
 	}
 
-	end = str + str_len;
+	end = ipv4 ? ipv4 : str + str_len;
+
 	while (str < end) {
 		if (*str == ':') {
 			if (--blocks == 0) {
+				if ((str+1) == end && ipv4) {
+					return 1;
+				}
 				return 0;
 			}			
 			if (++str >= end) {
-				return 0;
+				return (ipv4 && ipv4 == str && blocks == 3) || 0;
 			}
 			if (*str == ':') {
 				if (compressed || --blocks == 0) {
-					return 0;
+					return ipv4 != NULL;
 				}			
-				if (++str == end) {
+				if (++str == end || (ipv4 && ipv4 == str)) {
 					return 1;
 				}
 				compressed = 1;
+			} else if ((str - 1) == s) {
+				return 0;
 			}				
 		}
 		n = 0;

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -308,7 +308,7 @@ MBSTRING_API char *php_unicode_convert_case(int case_mode, char *srcstr, size_t 
 			for (i = 0; i < unicode_len; i+=4) {
 				int res = php_unicode_is_prop(
 					BE_ARY_TO_UINT32(&unicode_ptr[i]),
-					UC_MN|UC_ME|UC_CF|UC_LM|UC_SK|UC_LU|UC_LL|UC_LT, 0);
+					UC_MN|UC_ME|UC_CF|UC_LM|UC_SK|UC_LU|UC_LL|UC_LT|UC_PO|UC_OS, 0);
 				if (mode) {
 					if (res) {
 						UINT32_TO_BE_ARY(&unicode_ptr[i],

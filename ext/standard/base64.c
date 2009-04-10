@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -15,7 +15,7 @@
    | Author: Jim Winstead <jimw@php.net>                                  |
    +----------------------------------------------------------------------+
  */
-/* $Id: base64.c,v 1.43.2.2.2.4 2007/12/31 07:20:12 sebastian Exp $ */
+/* $Id: base64.c,v 1.43.2.2.2.7 2009/01/25 18:27:39 iliaa Exp $ */
 
 #include <string.h>
 
@@ -153,7 +153,13 @@ PHPAPI unsigned char *php_base64_decode_ex(const unsigned char *str, int length,
 
 	/* run through the whole string, converting as we go */
 	while ((ch = *current++) != '\0' && length-- > 0) {
-		if (ch == base64_pad) break;
+		if (ch == base64_pad) {
+			if (*current != '=' && (i % 4) == 1) {
+				efree(result);
+				return NULL;
+			}
+			continue;
+		}
 
 		ch = base64_reverse_table[ch];
 		if ((!strict && ch < 0) || ch == -1) { /* a space or some other separator character, we simply skip over */

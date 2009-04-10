@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_spl.c,v 1.52.2.28.2.18 2007/12/31 07:20:11 sebastian Exp $ */
+/* $Id: php_spl.c,v 1.52.2.28.2.20 2008/12/31 11:17:43 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 	#include "config.h"
@@ -89,7 +89,7 @@ static zend_class_entry * spl_find_ce_by_name(char *name, int len, zend_bool aut
 	return *ce;
 }
 
-/* {{{ proto array class_parents(object instance)
+/* {{{ proto array class_parents(object instance [, boolean autoload = true])
  Return an array containing the names of all parent classes */
 PHP_FUNCTION(class_parents)
 {

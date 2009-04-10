@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: interbase.c,v 1.225.2.4.2.8 2007/12/31 07:20:07 sebastian Exp $ */
+/* $Id: interbase.c,v 1.225.2.4.2.10 2008/12/31 11:17:38 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -894,8 +894,13 @@ PHP_FUNCTION(ibase_trans)
 			
 			if (Z_TYPE_PP(args[i]) == IS_RESOURCE) {
 				
-				ZEND_FETCH_RESOURCE2(ib_link[link_cnt], ibase_db_link *, args[i], -1, 
-					LE_LINK, le_link, le_plink);
+				if (!ZEND_FETCH_RESOURCE2_NO_RETURN(ib_link[link_cnt], ibase_db_link *, args[i], -1, LE_LINK, le_link, le_plink)) {
+					efree(teb);
+					efree(tpb);
+					efree(ib_link);
+					efree(args);
+					RETURN_FALSE;
+				}
 	
 				/* copy the most recent modifier string into tbp[] */
 				memcpy(&tpb[TPB_MAX_SIZE * link_cnt], last_tpb, TPB_MAX_SIZE);
@@ -959,8 +964,10 @@ PHP_FUNCTION(ibase_trans)
 
 	if (link_cnt == 0) {
 		link_cnt = 1;
-		ZEND_FETCH_RESOURCE2(ib_link[0], ibase_db_link *, NULL, IBG(default_link), LE_LINK, 
-			le_link, le_plink);
+		if (!ZEND_FETCH_RESOURCE2_NO_RETURN(ib_link[0], ibase_db_link *, NULL, IBG(default_link), LE_LINK, le_link, le_plink)) {
+			efree(ib_link);
+			RETURN_FALSE;
+		}
 		result = isc_start_transaction(IB_STATUS, &tr_handle, 1, &ib_link[0]->handle, tpb_len, last_tpb);
 	}
 	
