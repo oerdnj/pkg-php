@@ -25,11 +25,11 @@ var_dump( is_callable("string", TRUE, $callable_name, "EXTRA") );
 
 -- Testing is_callable() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for is_callable() in %s on line %d
+Warning: is_callable() expects at least 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing is_callable() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for is_callable() in %s on line %d
+Warning: is_callable() expects at most 3 parameters, 4 given in %s on line %d
 NULL
 ===DONE===

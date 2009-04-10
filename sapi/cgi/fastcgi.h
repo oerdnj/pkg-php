@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: fastcgi.h,v 1.2.2.4.2.8 2008/12/31 11:17:48 sebastian Exp $ */
+/* $Id: fastcgi.h,v 1.2.2.4.2.5.2.5 2008/12/31 11:15:49 sebastian Exp $ */
 
 /* FastCGI protocol */
 
@@ -99,6 +99,7 @@ typedef struct _fcgi_request {
 	int            fd;
 	int            id;
 	int            keep;
+	int            closed;
 
 	int            in_len;
 	int            in_pad;
@@ -108,7 +109,7 @@ typedef struct _fcgi_request {
 	unsigned char  out_buf[1024*8];
 	unsigned char  reserved[sizeof(fcgi_end_request_rec)];
 
-	HashTable      env;
+	HashTable     *env;
 } fcgi_request;
 
 int fcgi_init(void);
@@ -118,7 +119,7 @@ int fcgi_in_shutdown(void);
 int fcgi_listen(const char *path, int backlog);
 void fcgi_init_request(fcgi_request *req, int listen_socket);
 int fcgi_accept_request(fcgi_request *req);
-int fcgi_finish_request(fcgi_request *req);
+int fcgi_finish_request(fcgi_request *req, int force_close);
 
 char* fcgi_getenv(fcgi_request *req, const char* var, int var_len);
 char* fcgi_putenv(fcgi_request *req, char* var, int var_len, char* val);
@@ -132,7 +133,7 @@ int fcgi_flush(fcgi_request *req, int close);
 void fcgi_impersonate(void);
 #endif
 
-void fcgi_set_mgmt_var(char * name, size_t name_len, const char * value, size_t value_len);
+void fcgi_set_mgmt_var(const char * name, size_t name_len, const char * value, size_t value_len);
 void fcgi_free_mgmt_var_cb(void * ptr);
 
 /*

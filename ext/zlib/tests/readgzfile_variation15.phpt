@@ -61,7 +61,7 @@ function test_readgzfile() {
    unlink($firstFile);
    unlink($secondFile);
    
-   //should fail to read the file
+   //should read the file in working dir
    echo "file content:";   
    readgzfile($filename, true);
    echo "\n";
@@ -88,6 +88,7 @@ function test_readgzfile() {
 file content:This is a file in dir2
 file content:This is a file in dir1
 file content:This is a file in dir1
-file content:
+file content:This is a file in working dir
 file content:This is a file in script dir
 ===DONE===
+

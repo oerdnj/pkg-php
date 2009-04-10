@@ -1,14 +1,15 @@
 dnl
-dnl $Id: config.m4,v 1.2.2.2.2.2 2008/10/04 13:19:22 felipe Exp $
+dnl $Id: config.m4,v 1.2.2.2.2.1.2.2 2008/10/04 12:52:58 felipe Exp $
 dnl
 
-if test "$PHP_PDO" != "no"; then
 PHP_ARG_WITH(pdo-dblib, for PDO_DBLIB support via FreeTDS,
-[  --with-pdo-dblib[=DIR]    PDO: DBLIB-DB support.  DIR is the FreeTDS home
-                            directory])
-
+[  --with-pdo-dblib[=DIR]    PDO: DBLIB-DB support.  DIR is the FreeTDS home directory])
 
 if test "$PHP_PDO_DBLIB" != "no"; then
+
+  if test "$PHP_PDO" = "no" && test "$ext_shared" = "no"; then
+    AC_MSG_ERROR([PDO is not enabled! Add --enable-pdo to your configure line.])
+  fi
 
   if test "$PHP_PDO_DBLIB" = "yes"; then
 
@@ -83,6 +84,4 @@ if test "$PHP_PDO_DBLIB" != "no"; then
   [
     PHP_ADD_EXTENSION_DEP(pdo_dblib, pdo)
   ])
-fi
-
 fi

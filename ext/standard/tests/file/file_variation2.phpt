@@ -193,7 +193,7 @@ Error: 2 - file(): Filename cannot be empty, %s(%d)
 bool(false)
 
 --instance of classWithToString--
-Error: 2 - file(Class A object): failed to open stream: No such file or directory, %s(%d)
+Error: 2 - file(Class A object): failed to open stream: %s, %s(%d)
 bool(false)
 
 --instance of classWithoutToString--

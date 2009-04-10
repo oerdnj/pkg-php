@@ -2,7 +2,7 @@
 Bug #7214 (zip_entry_read() binary safe)
 --SKIPIF--
 <?php
-/* $Id: bug7214.phpt,v 1.1.2.1 2007/05/07 18:03:00 tony2001 Exp $ */
+/* $Id: bug7214.phpt,v 1.1.2.1.2.1 2008/05/21 09:27:41 pajoye Exp $ */
 if(!extension_loaded('zip')) die('skip');
  ?>
 --FILE--

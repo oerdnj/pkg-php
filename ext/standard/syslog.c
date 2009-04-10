@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: syslog.c,v 1.49.2.3.2.5 2008/12/31 11:17:46 sebastian Exp $ */
+/* $Id: syslog.c,v 1.49.2.3.2.2.2.6 2008/12/31 11:15:46 sebastian Exp $ */
 
 #include "php.h"
 
@@ -203,8 +203,8 @@ static void start_syslog(TSRMLS_D)
    Initializes all syslog-related variables */
 PHP_FUNCTION(define_syslog_variables)
 {
-	if (ZEND_NUM_ARGS() != 0) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 
 	if (!BG(syslog_started)) {
@@ -243,8 +243,8 @@ PHP_FUNCTION(openlog)
    Close connection to system logger */
 PHP_FUNCTION(closelog)
 {
-	if (ZEND_NUM_ARGS() != 0) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 
 	closelog();

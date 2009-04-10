@@ -2,6 +2,11 @@
 Test mkdir() function : variation: various valid and invalid paths 
 --CREDITS--
 Dave Kelsey <d_kelsey@uk.ibm.com>
+--SKIPIF--
+<?php
+if(substr(PHP_OS, 0, 3) == "WIN")
+  die("skip Not valid for Windows");
+?> 
 --FILE--
 <?php
 /* Prototype  : bool mkdir(string pathname [, int mode [, bool recursive [, resource context]]])

@@ -1,7 +1,5 @@
 --TEST--
 Test ReflectionProperty::isDefault() usage.
---SKIPIF--
-<?php extension_loaded('reflection') or die('skip'); ?>
 --FILE--
 <?php
 
@@ -62,4 +60,4 @@ bool(true)
 **********************************
 Wrong number of params:
 
-Warning: Wrong parameter count for ReflectionProperty::isDefault() in %s on line %d
+Warning: ReflectionProperty::isDefault() expects exactly 0 parameters, 1 given in %s on line %d

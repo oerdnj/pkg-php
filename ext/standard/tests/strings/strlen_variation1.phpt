@@ -102,16 +102,16 @@ int(5)
 int(12)
 -- Iteration 9 --
 
-Notice: Array to string conversion in %s on line %d
-int(5)
+Warning: strlen() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 10 --
 
-Notice: Array to string conversion in %s on line %d
-int(5)
+Warning: strlen() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 11 --
 
-Notice: Array to string conversion in %s on line %d
-int(5)
+Warning: strlen() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 12 --
 int(1)
 -- Iteration 13 --
@@ -127,7 +127,9 @@ int(0)
 -- Iteration 18 --
 int(13)
 -- Iteration 19 --
-int(%d)
+
+Warning: strlen() expects parameter 1 to be string, resource given in %s on line %d
+NULL
 -- Iteration 20 --
 int(0)
 -- Iteration 21 --

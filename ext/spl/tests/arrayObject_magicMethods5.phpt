@@ -12,7 +12,7 @@ class C {
 
 class UsesMagic extends ArrayObject {
 	
-	public $b = "This should never show up";
+	public $b = "This should appear in storage";
 
 	function __get($name) { 
 		$args = func_get_args();
@@ -71,32 +71,36 @@ echo "  Wrapping ArrayObject:\n";
 var_dump($ao);
 ?>
 --EXPECTF--
-
 --> Write existent, non-existent and dynamic:
 In UsesMagic::__set(a,changed)
 In UsesMagic::__set(dynamic,new)
 In UsesMagic::__set(dynamic,new.changed)
   Original wrapped object:
-object(C)#%d (4) {
+object(C)#1 (4) {
   ["a"]=>
   int(1)
   ["b"]=>
   int(2)
   ["c"]=>
   int(3)
-  ["priv:private"]=>
+  ["priv":"C":private]=>
   string(6) "secret"
 }
   Wrapping ArrayObject:
-object(UsesMagic)#%d (4) {
-  ["a"]=>
-  int(1)
+object(UsesMagic)#2 (2) {
   ["b"]=>
-  int(2)
-  ["c"]=>
-  int(3)
-  ["priv:private"]=>
-  string(6) "secret"
+  string(29) "This should appear in storage"
+  ["storage":"ArrayObject":private]=>
+  object(C)#1 (4) {
+    ["a"]=>
+    int(1)
+    ["b"]=>
+    int(2)
+    ["c"]=>
+    int(3)
+    ["priv":"C":private]=>
+    string(6) "secret"
+  }
 }
 
 --> Read existent, non-existent and dynamic:
@@ -107,26 +111,31 @@ NULL
 In UsesMagic::__get(dynamic)
 NULL
   Original wrapped object:
-object(C)#%d (4) {
+object(C)#1 (4) {
   ["a"]=>
   int(1)
   ["b"]=>
   int(2)
   ["c"]=>
   int(3)
-  ["priv:private"]=>
+  ["priv":"C":private]=>
   string(6) "secret"
 }
   Wrapping ArrayObject:
-object(UsesMagic)#%d (4) {
-  ["a"]=>
-  int(1)
+object(UsesMagic)#2 (2) {
   ["b"]=>
-  int(2)
-  ["c"]=>
-  int(3)
-  ["priv:private"]=>
-  string(6) "secret"
+  string(29) "This should appear in storage"
+  ["storage":"ArrayObject":private]=>
+  object(C)#1 (4) {
+    ["a"]=>
+    int(1)
+    ["b"]=>
+    int(2)
+    ["c"]=>
+    int(3)
+    ["priv":"C":private]=>
+    string(6) "secret"
+  }
 }
 
 --> isset existent, non-existent and dynamic:
@@ -137,26 +146,31 @@ bool(false)
 In UsesMagic::__isset(dynamic)
 bool(false)
   Original wrapped object:
-object(C)#%d (4) {
+object(C)#1 (4) {
   ["a"]=>
   int(1)
   ["b"]=>
   int(2)
   ["c"]=>
   int(3)
-  ["priv:private"]=>
+  ["priv":"C":private]=>
   string(6) "secret"
 }
   Wrapping ArrayObject:
-object(UsesMagic)#%d (4) {
-  ["a"]=>
-  int(1)
+object(UsesMagic)#2 (2) {
   ["b"]=>
-  int(2)
-  ["c"]=>
-  int(3)
-  ["priv:private"]=>
-  string(6) "secret"
+  string(29) "This should appear in storage"
+  ["storage":"ArrayObject":private]=>
+  object(C)#1 (4) {
+    ["a"]=>
+    int(1)
+    ["b"]=>
+    int(2)
+    ["c"]=>
+    int(3)
+    ["priv":"C":private]=>
+    string(6) "secret"
+  }
 }
 
 --> Unset existent, non-existent and dynamic:
@@ -164,24 +178,29 @@ In UsesMagic::__unset(a)
 In UsesMagic::__unset(nonexistent)
 In UsesMagic::__unset(dynamic)
   Original wrapped object:
-object(C)#%d (4) {
+object(C)#1 (4) {
   ["a"]=>
   int(1)
   ["b"]=>
   int(2)
   ["c"]=>
   int(3)
-  ["priv:private"]=>
+  ["priv":"C":private]=>
   string(6) "secret"
 }
   Wrapping ArrayObject:
-object(UsesMagic)#%d (4) {
-  ["a"]=>
-  int(1)
+object(UsesMagic)#2 (2) {
   ["b"]=>
-  int(2)
-  ["c"]=>
-  int(3)
-  ["priv:private"]=>
-  string(6) "secret"
+  string(29) "This should appear in storage"
+  ["storage":"ArrayObject":private]=>
+  object(C)#1 (4) {
+    ["a"]=>
+    int(1)
+    ["b"]=>
+    int(2)
+    ["c"]=>
+    int(3)
+    ["priv":"C":private]=>
+    string(6) "secret"
+  }
 }

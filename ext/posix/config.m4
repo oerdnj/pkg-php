@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.12.4.7 2009/01/21 19:23:03 jani Exp $
+dnl $Id: config.m4,v 1.12.4.5.2.2 2009/01/21 19:22:39 jani Exp $
 dnl
 
 PHP_ARG_ENABLE(posix,whether to enable POSIX-like functions,

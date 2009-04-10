@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: dow.c,v 1.8.2.3.2.6 2008/12/31 11:17:36 sebastian Exp $ */
+/* $Id: dow.c,v 1.8.2.3.2.3.2.5 2008/12/31 11:15:35 sebastian Exp $ */
 
 #include "timelib.h"
 
@@ -140,6 +140,21 @@ timelib_sll timelib_daynr_from_weeknr(timelib_sll y, timelib_sll w, timelib_sll 
 	return day + ((w - 1) * 7) + d;
 }
 
+int timelib_valid_time(timelib_sll h, timelib_sll i, timelib_sll s)
+{
+	if (h < 0 || h > 23 || i < 0 || i > 59 || s < 0 || s > 59) {
+		return 0;
+	}
+	return 1;
+}
+
+int timelib_valid_date(timelib_sll y, timelib_sll m, timelib_sll d)
+{
+	if (m < 1 || m > 12 || d < 1 || d > timelib_days_in_month(y, m)) {
+		return 0;
+	}
+	return 1;
+}
 #if 0
 int main(void)
 {

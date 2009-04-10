@@ -17,7 +17,7 @@
    |          Hartmut Holzgraefe <hholzgra@php.net>                       |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_fopen_wrapper.c,v 1.45.2.4.2.13 2008/12/31 11:17:45 sebastian Exp $ */
+/* $Id: php_fopen_wrapper.c,v 1.45.2.4.2.7.2.7 2008/12/31 11:15:45 sebastian Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -127,6 +127,7 @@ static void php_stream_apply_filter_list(php_stream *stream, char *filterlist, i
 
 	p = php_strtok_r(filterlist, "|", &token);
 	while (p) {
+		php_url_decode(p, strlen(p));
 		if (read_chain) {
 			if ((temp_filter = php_stream_filter_create(p, NULL, php_stream_is_persistent(stream) TSRMLS_CC))) {
 				php_stream_filter_append(&stream->readfilters, temp_filter);

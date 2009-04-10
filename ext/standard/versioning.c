@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: versioning.c,v 1.19.2.1.2.5 2008/12/31 11:17:46 sebastian Exp $ */
+/* $Id: versioning.c,v 1.19.2.1.2.3.2.4 2008/12/31 11:15:46 sebastian Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -45,7 +45,7 @@ php_canonicalize_version(const char *version)
     p = version;
     q = buf;
     *q++ = lp = *p++;
-    lq = '\0';
+
     while (*p) {
 /*  s/[-_+]/./g;
  *  s/([^\d\.])([^\D\.])/$1.$2/g;
@@ -55,22 +55,22 @@ php_canonicalize_version(const char *version)
 #define isndig(x) (!isdigit(x)&&(x)!='.')
 #define isspecialver(x) ((x)=='-'||(x)=='_'||(x)=='+')
 
-        lq = *(q - 1);
+		lq = *(q - 1);
 		if (isspecialver(*p)) {
 			if (lq != '.') {
-				lq = *q++ = '.';
+				*q++ = '.';
 			}
 		} else if ((isndig(lp) && isdig(*p)) || (isdig(lp) && isndig(*p))) {
 			if (lq != '.') {
 				*q++ = '.';
 			}
-			lq = *q++ = *p;
+			*q++ = *p;
 		} else if (!isalnum(*p)) {
 			if (lq != '.') {
-				lq = *q++ = '.';
+				*q++ = '.';
 			}
 		} else {
-			lq = *q++ = *p;
+			*q++ = *p;
 		}
 		lp = *p++;
     }
@@ -210,8 +210,8 @@ php_version_compare(const char *orig_ver1, const char *orig_ver2)
 
 PHP_FUNCTION(version_compare)
 {
-	char *v1, *v2, *op;
-	int v1_len, v2_len, op_len;
+	char *v1, *v2, *op = NULL;
+	int v1_len, v2_len, op_len = 0;
 	int compare, argc;
 
 	argc = ZEND_NUM_ARGS();

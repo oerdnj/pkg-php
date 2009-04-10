@@ -52,6 +52,7 @@ try {
 ?>
 ==DONE==
 --EXPECTF--
+Warning: The magic method __call() must have public visibility and can not be static in %s on line 3
 ---> Invoke __call via simple method call.
 NULL
 Exception caught OK; continuing.

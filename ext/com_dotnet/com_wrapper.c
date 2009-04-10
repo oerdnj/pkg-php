@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_wrapper.c,v 1.9.2.1.2.7 2008/12/31 11:17:36 sebastian Exp $ */
+/* $Id: com_wrapper.c,v 1.9.2.1.2.5.2.3 2008/12/31 11:15:35 sebastian Exp $ */
 
 /* This module exports a PHP object as a COM object by wrapping it
  * using IDispatchEx */
@@ -551,7 +551,7 @@ static php_dispatchex *disp_constructor(zval *object TSRMLS_DC)
 
 
 	if (object)
-		ZVAL_ADDREF(object);
+		Z_ADDREF_P(object);
 	disp->object = object;
 
 	disp->id = zend_list_insert(disp, le_dispatch);

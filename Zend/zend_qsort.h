@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_qsort.h,v 1.8.2.1.2.3 2008/12/31 11:17:33 sebastian Exp $ */
+/* $Id: zend_qsort.h,v 1.8.2.1.2.1.2.2 2008/12/31 11:15:32 sebastian Exp $ */
 
 #ifndef ZEND_QSORT_H
 #define ZEND_QSORT_H

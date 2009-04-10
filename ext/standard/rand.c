@@ -23,7 +23,7 @@
    |                     Shawn Cokus <Cokus@math.washington.edu>          |
    +----------------------------------------------------------------------+
  */
-/* $Id: rand.c,v 1.70.2.1.2.5 2008/12/31 11:17:45 sebastian Exp $ */
+/* $Id: rand.c,v 1.70.2.1.2.2.2.5 2008/12/31 11:15:45 sebastian Exp $ */
 
 #include <stdlib.h>
 
@@ -230,7 +230,7 @@ PHPAPI php_uint32 php_mt_rand(TSRMLS_D)
    Seeds random number generator */
 PHP_FUNCTION(srand)
 {
-	long seed;
+	long seed = 0;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &seed) == FAILURE)
 		return;
@@ -246,7 +246,7 @@ PHP_FUNCTION(srand)
    Seeds Mersenne Twister random number generator */
 PHP_FUNCTION(mt_srand)
 {
-	long seed;
+	long seed = 0;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &seed) == FAILURE) 
 		return;
@@ -343,8 +343,8 @@ PHP_FUNCTION(mt_rand)
    Returns the maximum value a random number can have */
 PHP_FUNCTION(getrandmax)
 {
-	if (ZEND_NUM_ARGS() != 0) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 
 	RETURN_LONG(PHP_RAND_MAX);
@@ -355,8 +355,8 @@ PHP_FUNCTION(getrandmax)
    Returns the maximum value a random number from Mersenne Twister can have */
 PHP_FUNCTION(mt_getrandmax)
 {
-	if (ZEND_NUM_ARGS() != 0) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 
 	/*

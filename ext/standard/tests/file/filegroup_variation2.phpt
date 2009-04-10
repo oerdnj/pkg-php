@@ -58,8 +58,8 @@ bool(false)
 bool(false)
 bool(false)
 
-Warning: filegroup(): stat failed for Resource id #%d in %s on line %d
-bool(false)
+Warning: filegroup() expects parameter 1 to be string, resource given in %s on line %d
+NULL
 
 Warning: filegroup(): stat failed for 1234 in %s on line %d
 bool(false)
@@ -68,3 +68,4 @@ Warning: filegroup(): stat failed for 0 in %s on line %d
 bool(false)
 
 *** Done ***
+

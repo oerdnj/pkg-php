@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: nodelist.c,v 1.17.2.2.2.5 2008/12/31 11:17:37 sebastian Exp $ */
+/* $Id: nodelist.c,v 1.17.2.2.2.2.2.8 2008/12/31 11:15:36 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -29,7 +29,6 @@
 
 
 /* {{{ arginfo */
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_nodelist_item, 0, 0, 1)
 	ZEND_ARG_INFO(0, index)
 ZEND_END_ARG_INFO();
@@ -42,7 +41,7 @@ ZEND_END_ARG_INFO();
 * Since: 
 */
 
-zend_function_entry php_dom_nodelist_class_functions[] = {
+const zend_function_entry php_dom_nodelist_class_functions[] = {
 	PHP_FALIAS(item, dom_nodelist_item, arginfo_dom_nodelist_item)
 	{NULL, NULL, NULL}
 };
@@ -98,7 +97,6 @@ int dom_nodelist_length_read(dom_object *obj, zval **retval TSRMLS_DC)
 }
 
 /* }}} */
-
 
 /* {{{ proto DOMNode dom_nodelist_item(int index);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#ID-844377136
@@ -173,4 +171,14 @@ PHP_FUNCTION(dom_nodelist_item)
 	RETVAL_NULL();
 }
 /* }}} end dom_nodelist_item */
+
 #endif
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

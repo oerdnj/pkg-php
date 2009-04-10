@@ -50,7 +50,7 @@ $input_values = array(
 
        // binary array
        array(b"binary"),
-      
+
        // mixed array
 /*8*/  array(16, 8.345, "Fruits", true, null, FALSE, -98, 0.005, 'banana')
 );

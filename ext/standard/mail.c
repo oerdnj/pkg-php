@@ -16,13 +16,15 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: mail.c,v 1.87.2.1.2.11 2008/12/31 11:17:45 sebastian Exp $ */
+/* $Id: mail.c,v 1.87.2.1.2.7.2.9 2009/01/13 21:29:12 iliaa Exp $ */
 
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdio.h>
 #include "php.h"
 #include "ext/standard/info.h"
+#include "ext/standard/php_string.h"
+#include "ext/standard/basic_functions.h"
 
 #if HAVE_SYSEXITS_H
 #include <sysexits.h>
@@ -51,22 +53,23 @@
 #define EX_TEMPFAIL     75      /* temp failure; user is invited to retry */
 #endif
 
-#define SKIP_LONG_HEADER_SEP(str, pos)										\
+#define SKIP_LONG_HEADER_SEP(str, pos)																	\
 	if (str[pos] == '\r' && str[pos + 1] == '\n' && (str[pos + 2] == ' ' || str[pos + 2] == '\t')) {	\
-		pos += 2;											\
-		while (str[pos + 1] == ' ' || str[pos + 1] == '\t') {							\
-			pos++;											\
-		}												\
-		continue;											\
-	}													\
+		pos += 2;																						\
+		while (str[pos + 1] == ' ' || str[pos + 1] == '\t') {											\
+			pos++;																						\
+		}																								\
+		continue;																						\
+	}																									\
 
-#define MAIL_ASCIIZ_CHECK(str, len)			\
-	p = str;					\
-	e = p + len;					\
+#define MAIL_ASCIIZ_CHECK(str, len)				\
+	p = str;									\
+	e = p + len;								\
 	while ((p = memchr(p, '\0', (e - p)))) {	\
-		*p = ' ';				\
-	}						\
+		*p = ' ';								\
+	}											\
 
+extern long php_getuid(void);
 
 /* {{{ proto int ezmlm_hash(string addr)
    Calculate EZMLM list hash value. */
@@ -75,18 +78,17 @@ PHP_FUNCTION(ezmlm_hash)
 	char *str = NULL;
 	unsigned long h = 5381L;
 	int j, str_len;
-	
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s",
-							  &str, &str_len) == FAILURE) {
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &str, &str_len) == FAILURE) {
 		return;
 	}
 
 	for (j = 0; j < str_len; j++) {
 		h = (h + (h << 5)) ^ (unsigned long) (unsigned char) tolower(str[j]);
 	}
-	
+
 	h = (h % 53);
-	
+
 	RETURN_LONG((int) h);
 }
 /* }}} */
@@ -97,8 +99,8 @@ PHP_FUNCTION(mail)
 {
 	char *to=NULL, *message=NULL, *headers=NULL;
 	char *subject=NULL, *extra_cmd=NULL;
-	int to_len, message_len, headers_len;
-	int subject_len, extra_cmd_len, i;
+	int to_len, message_len, headers_len = 0;
+	int subject_len, extra_cmd_len = 0, i;
 	char *force_extra_parameters = INI_STR("mail.force_extra_parameters");
 	char *to_r, *subject_r;
 	char *p, *e;
@@ -106,15 +108,11 @@ PHP_FUNCTION(mail)
 	if (PG(safe_mode) && (ZEND_NUM_ARGS() == 5)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "SAFE MODE Restriction in effect.  The fifth parameter is disabled in SAFE MODE");
 		RETURN_FALSE;
-	}	
-	
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sss|ss",
-							  &to, &to_len,
-							  &subject, &subject_len,
-							  &message, &message_len,
-							  &headers, &headers_len,
-							  &extra_cmd, &extra_cmd_len
-							  ) == FAILURE) {
+	}
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sss|ss",	&to, &to_len, &subject, &subject_len, &message, &message_len,
+																	&headers, &headers_len, &extra_cmd, &extra_cmd_len) == FAILURE
+	) {
 		return;
 	}
 
@@ -142,15 +140,14 @@ PHP_FUNCTION(mail)
 				/* According to RFC 822, section 3.1.1 long headers may be separated into
 				 * parts using CRLF followed at least one linear-white-space character ('\t' or ' ').
 				 * To prevent these separators from being replaced with a space, we use the
-				 * SKIP_LONG_HEADER_SEP to skip over them.
-				 */
+				 * SKIP_LONG_HEADER_SEP to skip over them. */
 				SKIP_LONG_HEADER_SEP(to_r, i);
 				to_r[i] = ' ';
 			}
 		}
 	} else {
 		to_r = to;
-  	}
+	}
 
 	if (subject_len > 0) {
 		subject_r = estrndup(subject, subject_len);
@@ -160,7 +157,7 @@ PHP_FUNCTION(mail)
 			}
 			subject_r[subject_len - 1] = '\0';
 		}
-		for(i = 0; subject_r[i]; i++) {
+		for (i = 0; subject_r[i]; i++) {
 			if (iscntrl((unsigned char) subject_r[i])) {
 				SKIP_LONG_HEADER_SEP(subject_r, i);
 				subject_r[i] = ' ';
@@ -206,25 +203,66 @@ PHPAPI int php_mail(char *to, char *subject, char *message, char *headers, char 
 	int ret;
 	char *sendmail_path = INI_STR("sendmail_path");
 	char *sendmail_cmd = NULL;
+	char *mail_log = INI_STR("mail.log");
+	char *hdr = headers;
 #if PHP_SIGCHILD
 	void (*sig_handler)() = NULL;
 #endif
 
+#define MAIL_RET(val) \
+	if (hdr != headers) {	\
+		efree(hdr);	\
+	}	\
+	return val;	\
+
+	if (mail_log) {
+		char *tmp;
+		int l = spprintf(&tmp, 0, "mail() on [%s:%d]: To: %s -- Headers: %s\n", zend_get_executed_filename(TSRMLS_C), zend_get_executed_lineno(TSRMLS_C), to, hdr ? hdr : "");
+		php_stream *stream = php_stream_open_wrapper(mail_log, "a", IGNORE_URL_WIN | REPORT_ERRORS | STREAM_DISABLE_OPEN_BASEDIR, NULL);
+
+		if (hdr) { /* find all \r\n instances and replace them with spaces, so a log line is always one line long */ 
+			char *p = tmp;
+			while ((p = strpbrk(p, "\r\n"))) {
+				*p = ' ';
+			}
+			tmp[l - 1] = '\n';
+		}
+		if (stream) {
+			php_stream_write(stream, tmp, l);
+			php_stream_close(stream);
+		}
+		efree(tmp);
+	}
+	if (PG(mail_x_header)) {
+		char *tmp = zend_get_executed_filename(TSRMLS_C);
+		char *f;
+		size_t f_len;
+
+		php_basename(tmp, strlen(tmp), NULL, 0,&f, &f_len TSRMLS_CC);
+
+		if (headers != NULL) {
+			spprintf(&hdr, 0, "%s\r\nX-PHP-Originating-Script: %ld:%s\n", headers, php_getuid(), f);
+		} else {
+			spprintf(&hdr, 0, "X-PHP-Originating-Script: %ld:%s\n", php_getuid(), f);
+		}
+		efree(f);
+	}
+
 	if (!sendmail_path) {
 #if (defined PHP_WIN32 || defined NETWARE)
 		/* handle old style win smtp sending */
-		if (TSendMail(INI_STR("SMTP"), &tsm_err, &tsm_errmsg, headers, subject, to, message, NULL, NULL, NULL TSRMLS_CC) == FAILURE) {
+		if (TSendMail(INI_STR("SMTP"), &tsm_err, &tsm_errmsg, hdr, subject, to, message, NULL, NULL, NULL TSRMLS_CC) == FAILURE) {
 			if (tsm_errmsg) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", tsm_errmsg);
 				efree(tsm_errmsg);
 			} else {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", GetSMErrorText(tsm_err));
 			}
-			return 0;
+			MAIL_RET(0);
 		}
-		return 1;
+		MAIL_RET(1);
 #else
-		return 0;
+		MAIL_RET(0);
 #endif
 	}
 	if (extra_cmd != NULL) {
@@ -252,8 +290,9 @@ PHPAPI int php_mail(char *to, char *subject, char *message, char *headers, char 
 	errno = 0;
 	sendmail = popen(sendmail_cmd, "w");
 #endif
-	if (extra_cmd != NULL)
+	if (extra_cmd != NULL) {
 		efree (sendmail_cmd);
+	}
 
 	if (sendmail) {
 #ifndef PHP_WIN32
@@ -266,17 +305,18 @@ PHPAPI int php_mail(char *to, char *subject, char *message, char *headers, char 
 			if (sig_handler) {
 				signal(SIGCHLD, sig_handler);
 			}
-#endif	
-			return 0;
+#endif
+			MAIL_RET(0);
 		}
 #endif
 		fprintf(sendmail, "To: %s\n", to);
 		fprintf(sendmail, "Subject: %s\n", subject);
-		if (headers != NULL) {
-			fprintf(sendmail, "%s\n", headers);
+		if (hdr != NULL) {
+			fprintf(sendmail, "%s\n", hdr);
 		}
 		fprintf(sendmail, "\n%s\n", message);
 		ret = pclose(sendmail);
+
 #if PHP_SIGCHILD
 		if (sig_handler) {
 			signal(SIGCHLD, sig_handler);
@@ -295,9 +335,9 @@ PHPAPI int php_mail(char *to, char *subject, char *message, char *headers, char 
 #endif
 #endif
 		{
-			return 0;
+			MAIL_RET(0);
 		} else {
-			return 1;
+			MAIL_RET(1);
 		}
 	} else {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Could not execute mail delivery program '%s'", sendmail_path);
@@ -306,10 +346,10 @@ PHPAPI int php_mail(char *to, char *subject, char *message, char *headers, char 
 			signal(SIGCHLD, sig_handler);						
 		}
 #endif
-		return 0;
+		MAIL_RET(0);
 	}
 
-	return 1; /* never reached */
+	MAIL_RET(1); /* never reached */
 }
 /* }}} */
 

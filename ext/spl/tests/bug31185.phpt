@@ -1,7 +1,5 @@
 --TEST--
 Bug #31185 (Crash when exceptions thrown from ArrayAccess::offsetUnset())
---SKIPIF--
-<?php if (!extension_loaded("spl")) print "skip"; ?>
 --FILE--
 <?php
 
@@ -52,7 +50,7 @@ FooBar::offsetSet(2, 2)
 CAUGHT: FAIL
 FooBar Object
 (
-    [array:private] => Array
+    [array:FooBar:private] => Array
         (
             [0] => 0
             [1] => 1

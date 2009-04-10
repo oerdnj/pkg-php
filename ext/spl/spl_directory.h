@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_directory.h,v 1.12.2.5.2.11 2008/12/31 11:17:44 sebastian Exp $ */
+/* $Id: spl_directory.h,v 1.12.2.5.2.4.2.13 2008/12/31 11:15:43 sebastian Exp $ */
 
 #ifndef SPL_DIRECTORY_H
 #define SPL_DIRECTORY_H
@@ -26,7 +26,9 @@
 
 extern PHPAPI zend_class_entry *spl_ce_SplFileInfo;
 extern PHPAPI zend_class_entry *spl_ce_DirectoryIterator;
+extern PHPAPI zend_class_entry *spl_ce_FilesystemIterator;
 extern PHPAPI zend_class_entry *spl_ce_RecursiveDirectoryIterator;
+extern PHPAPI zend_class_entry *spl_ce_GlobIterator;
 extern PHPAPI zend_class_entry *spl_ce_SplFileObject;
 extern PHPAPI zend_class_entry *spl_ce_SplTempFileObject;
 
@@ -43,17 +45,27 @@ typedef struct _spl_filesystem_object  spl_filesystem_object;
 typedef void (*spl_foreign_dtor_t)(spl_filesystem_object *object TSRMLS_DC);
 typedef void (*spl_foreign_clone_t)(spl_filesystem_object *src, spl_filesystem_object *dst TSRMLS_DC);
 
+PHPAPI char* spl_filesystem_object_get_path(spl_filesystem_object *intern, int *len TSRMLS_DC);
+
 typedef struct _spl_other_handler {
 	spl_foreign_dtor_t     dtor;
 	spl_foreign_clone_t    clone;
 } spl_other_handler;
 
+/* define an overloaded iterator structure */
+typedef struct {
+	zend_object_iterator  intern;
+	zval                  *current;
+	spl_filesystem_object *object;
+} spl_filesystem_iterator;
+
 struct _spl_filesystem_object {
 	zend_object        std;
 	void               *oth;
 	spl_other_handler  *oth_handler;
-	char               *path;
-	int                path_len;
+	char               *_path;
+	int                _path_len;
+	char               *orig_path;
 	char               *file_name;
 	int                file_name_len;
 	SPL_FS_OBJ_TYPE    type;
@@ -68,6 +80,9 @@ struct _spl_filesystem_object {
 			int                sub_path_len;
 			int                index;
 			int                is_recursive;
+			zend_function      *func_rewind;
+			zend_function      *func_next;
+			zend_function      *func_valid;
 		} dir;
 		struct {
 			php_stream         *stream;
@@ -84,14 +99,27 @@ struct _spl_filesystem_object {
 			zend_function      *func_getCurr;
 			char               delimiter;
 			char               enclosure;
+			char               escape;
 		} file;
 	} u;
+	spl_filesystem_iterator    it;
 };
+
+static inline spl_filesystem_iterator* spl_filesystem_object_to_iterator(spl_filesystem_object *obj)
+{
+	return &obj->it;
+}
+
+static inline spl_filesystem_object* spl_filesystem_iterator_to_object(spl_filesystem_iterator *it)
+{
+	return (spl_filesystem_object*)((char*)it - XtOffsetOf(spl_filesystem_object, it));
+}
 
 #define SPL_FILE_OBJECT_DROP_NEW_LINE      0x00000001 /* drop new lines */
 #define SPL_FILE_OBJECT_READ_AHEAD         0x00000002 /* read on rewind/next */
 #define SPL_FILE_OBJECT_SKIP_EMPTY         0x00000006 /* skip empty lines */
 #define SPL_FILE_OBJECT_READ_CSV           0x00000008 /* read via fgetcsv */
+#define SPL_FILE_OBJECT_MASK               0x0000000F /* read via fgetcsv */
 
 #define SPL_FILE_DIR_CURRENT_AS_FILEINFO   0x00000000 /* make RecursiveDirectoryTree::current() return SplFileInfo */
 #define SPL_FILE_DIR_CURRENT_AS_SELF       0x00000010 /* make RecursiveDirectoryTree::current() return getSelf() */
@@ -103,6 +131,9 @@ struct _spl_filesystem_object {
 #define SPL_FILE_DIR_KEY_AS_FILENAME       0x00000100 /* make RecursiveDirectoryTree::key() return getFilename() */
 #define SPL_FILE_DIR_KEY_MODE_MASK         0x00000F00 /* mask RecursiveDirectoryTree::key() */
 #define SPL_FILE_DIR_KEY(intern,mode)      ((intern->flags&SPL_FILE_DIR_KEY_MODE_MASK)==mode)
+
+#define SPL_FILE_DIR_SKIPDOTS              0x00001000 /* Tells whether it should skip dots or not */
+#define SPL_FILE_DIR_UNIXPATHS             0x00002000 /* Whether to unixify path separators */
 
 #endif /* SPL_DIRECTORY_H */
 

@@ -1,7 +1,5 @@
 --TEST--
 SPL: ArrayObject::exchangeArray() basic usage with object as underlying data store.
---XFAIL--
-Failing in 5.2 due to http://thread.gmane.org/gmane.comp.php.devel/52545/focus=52559
 --FILE--
 <?php
 
@@ -53,19 +51,22 @@ var_dump($ao, $original, $copy);
 ?>
 --EXPECTF--
 --> exchangeArray() with objects:
-object(ArrayObject)#%d (2) {
-  ["pub1"]=>
-  string(7) "public1"
-  ["addedToSwapIn"]=>
-  string(16) "added To Swap-In"
+object(ArrayObject)#2 (1) {
+  ["storage":"ArrayObject":private]=>
+  object(C)#3 (2) {
+    ["pub1"]=>
+    string(7) "public1"
+    ["addedToSwapIn"]=>
+    string(16) "added To Swap-In"
+  }
 }
-object(C)#%d (2) {
+object(C)#1 (2) {
   ["pub1"]=>
   string(7) "public1"
   ["addedToOriginal"]=>
   string(17) "added To Original"
 }
-object(C)#%d (2) {
+object(C)#3 (2) {
   ["pub1"]=>
   string(7) "public1"
   ["addedToSwapIn"]=>
@@ -82,13 +83,16 @@ array(2) {
 --> exchangeArray() with no arg:
 
 Warning: ArrayObject::exchangeArray() expects exactly 1 parameter, 0 given in %s on line 27
-object(ArrayObject)#%d (2) {
-  ["pub1"]=>
-  string(7) "public1"
-  ["addedToOriginal"]=>
-  string(17) "added To Original"
+object(ArrayObject)#2 (1) {
+  ["storage":"ArrayObject":private]=>
+  object(C)#3 (2) {
+    ["pub1"]=>
+    string(7) "public1"
+    ["addedToOriginal"]=>
+    string(17) "added To Original"
+  }
 }
-object(C)#%d (2) {
+object(C)#3 (2) {
   ["pub1"]=>
   string(7) "public1"
   ["addedToOriginal"]=>
@@ -106,13 +110,16 @@ array(2) {
 Exception:Passed variable is not an array or object, using empty array instead
 
 Notice: Undefined variable: copy in %s on line 46
-object(ArrayObject)#%d (2) {
-  ["pub1"]=>
-  string(7) "public1"
-  ["addedToOriginal"]=>
-  string(17) "added To Original"
+object(ArrayObject)#3 (1) {
+  ["storage":"ArrayObject":private]=>
+  object(C)#2 (2) {
+    ["pub1"]=>
+    string(7) "public1"
+    ["addedToOriginal"]=>
+    string(17) "added To Original"
+  }
 }
-object(C)#%d (2) {
+object(C)#2 (2) {
   ["pub1"]=>
   string(7) "public1"
   ["addedToOriginal"]=>

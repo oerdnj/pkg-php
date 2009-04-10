@@ -17,7 +17,7 @@
 */
 
 
-/* $Id: php_mysql.h,v 1.37.2.1.2.5 2008/12/31 11:17:40 sebastian Exp $ */
+/* $Id: php_mysql.h,v 1.37.2.1.2.2.2.4 2008/12/31 11:15:38 sebastian Exp $ */
 
 #ifndef PHP_MYSQL_H
 #define PHP_MYSQL_H

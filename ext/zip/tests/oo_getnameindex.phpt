@@ -2,7 +2,7 @@
 getNameIndex
 --SKIPIF--
 <?php
-/* $Id: oo_getnameindex.phpt,v 1.1.2.2 2006/11/03 16:46:19 pajoye Exp $ */
+/* $Id: oo_getnameindex.phpt,v 1.1.2.2.2.1 2008/05/21 09:27:41 pajoye Exp $ */
 if(!extension_loaded('zip')) die('skip');
 ?>
 --FILE--

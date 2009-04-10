@@ -69,7 +69,7 @@ $input = array( "a" => "Apple", 'z' => array('b' => 'Bananna', "c" => "carrot"),
 echo "-- Associative array with string keys --\n";
 var_dump( array_walk_recursive($input, "for_string"));
 
-// binary keys
+// binary key
 $input = array( b"a" => "Apple", b"b" => "Banana");
 echo "-- Associative array with binary keys --\n";
 var_dump( array_walk_recursive($input, "for_string"));

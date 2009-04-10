@@ -26,7 +26,7 @@ $section = 1;
 
 $sequences = array (0,     4, // out of range
                     '1,3', '1:3', // message sequences instead of numbers
-                    ); // 
+                   );
 
 foreach($sequences as $msg_no) {
 	echo "\n-- \$msg_no is $msg_no --\n";
@@ -44,7 +44,7 @@ require_once(dirname(__FILE__).'/clean.inc');
 --EXPECTF--
 *** Testing imap_fetchbody() : usage variations ***
 Create a temporary mailbox and add 3 msgs
-.. mailbox '%s.phpttest' created
+.. mailbox '{localhost/norsh}INBOX.phpttest' created
 
 -- $msg_no is 0 --
 
@@ -59,8 +59,12 @@ bool(false)
 
 
 -- $msg_no is 1,3 --
-string(%d) "1: this is a test message, please ignore%a"
+
+Notice: A non well formed numeric value encountered in %s on line %d
+%unicode|string%(%d) "1: this is a test message, please ignore%a"
 
 -- $msg_no is 1:3 --
-string(%d) "1: this is a test message, please ignore%a"
+
+Notice: A non well formed numeric value encountered in %s on line %d
+%unicode|string%(%d) "1: this is a test message, please ignore%a"
 ===DONE===

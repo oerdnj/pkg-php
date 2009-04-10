@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.22.2.1.2.2 2008/09/01 13:15:15 dmitry Exp $
+dnl $Id: config.m4,v 1.22.2.1.2.1.2.1 2008/09/01 13:15:31 dmitry Exp $
 dnl
 
 PHP_ARG_ENABLE(cli,,

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_openssl.h,v 1.16.2.1.2.6 2008/12/31 11:17:41 sebastian Exp $ */
+/* $Id: php_openssl.h,v 1.16.2.1.2.4.2.2 2008/12/31 11:15:40 sebastian Exp $ */
 
 #ifndef PHP_OPENSSL_H
 #define PHP_OPENSSL_H

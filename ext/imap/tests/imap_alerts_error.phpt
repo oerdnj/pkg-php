@@ -26,6 +26,6 @@ var_dump( imap_alerts($extra_arg) );
 
 -- Testing imap_alerts() function with one argument --
 
-Warning: Wrong parameter count for imap_alerts() in %s on line %d
+Warning: imap_alerts() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 ===DONE===

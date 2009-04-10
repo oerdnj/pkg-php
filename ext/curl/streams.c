@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: streams.c,v 1.14.2.2.2.13 2008/12/31 11:17:36 sebastian Exp $ */
+/* $Id: streams.c,v 1.14.2.2.2.11.2.4 2009/02/23 15:58:19 iliaa Exp $ */
 
 /* This file implements cURL based wrappers.
  * NOTE: If you are implementing your own streams that are intended to
@@ -64,6 +64,9 @@ static size_t on_data_available(char *data, size_t size, size_t nmemb, void *ctx
 	if (curlstream->readbuffer.writepos == 0) {
 		zval *sym;
 
+		if (!EG(active_symbol_table)) {
+			zend_rebuild_symbol_table(TSRMLS_C);
+		}
 		MAKE_STD_ZVAL(sym);
 		*sym = *curlstream->headers;
 		zval_copy_ctor(sym);
@@ -166,7 +169,8 @@ static size_t php_curl_stream_read(php_stream *stream, char *buf, size_t count T
 			tv.tv_sec = 15; /* TODO: allow this to be configured from the script */
 
 			/* wait for data */
-			switch (select(curlstream->maxfd + 1, &curlstream->readfds, &curlstream->writefds, &curlstream->excfds, &tv)) {
+			switch ((curlstream->maxfd < 0) ? 1 : 
+					select(curlstream->maxfd + 1, &curlstream->readfds, &curlstream->writefds, &curlstream->excfds, &tv)) {
 				case -1:
 					/* error */
 					return 0;
@@ -179,7 +183,8 @@ static size_t php_curl_stream_read(php_stream *stream, char *buf, size_t count T
 						curlstream->mcode = curl_multi_perform(curlstream->multi, &curlstream->pending);
 					} while (curlstream->mcode == CURLM_CALL_MULTI_PERFORM);
 			}
-		} while (curlstream->readbuffer.readpos >= curlstream->readbuffer.writepos && curlstream->pending > 0);
+		} while (curlstream->maxfd >= 0 &&
+				curlstream->readbuffer.readpos >= curlstream->readbuffer.writepos && curlstream->pending > 0);
 
 	}
 

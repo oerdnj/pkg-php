@@ -1,7 +1,5 @@
 --TEST--
 SPL: spl_autoload() and friends
---SKIPIF--
-<?php if (!extension_loaded("spl")) print "skip"; ?>
 --INI--
 include_path=.
 --FILE--
@@ -42,5 +40,6 @@ catch(Exception $e)
 --EXPECTF--
 TestFunc1(TestClass)
 TestFunc2(TestClass)
+TestFunc3(TestClass)
 Exception: Class TestClass missing
 ===DONE===

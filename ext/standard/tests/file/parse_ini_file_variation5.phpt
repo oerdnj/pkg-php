@@ -168,28 +168,20 @@ array(1) {
 }
 
 --empty array--
-array(1) {
-  ["a"]=>
-  string(4) "test"
-}
+Error: 2 - parse_ini_file() expects parameter 2 to be boolean, array given, %s(%d)
+bool(false)
 
 --int indexed array--
-array(1) {
-  ["a"]=>
-  string(4) "test"
-}
+Error: 2 - parse_ini_file() expects parameter 2 to be boolean, array given, %s(%d)
+bool(false)
 
 --associative array--
-array(1) {
-  ["a"]=>
-  string(4) "test"
-}
+Error: 2 - parse_ini_file() expects parameter 2 to be boolean, array given, %s(%d)
+bool(false)
 
 --nested arrays--
-array(1) {
-  ["a"]=>
-  string(4) "test"
-}
+Error: 2 - parse_ini_file() expects parameter 2 to be boolean, array given, %s(%d)
+bool(false)
 
 --uppercase NULL--
 array(1) {
@@ -240,16 +232,12 @@ array(1) {
 }
 
 --instance of classWithToString--
-array(1) {
-  ["a"]=>
-  string(4) "test"
-}
+Error: 2 - parse_ini_file() expects parameter 2 to be boolean, object given, %s(%d)
+bool(false)
 
 --instance of classWithoutToString--
-array(1) {
-  ["a"]=>
-  string(4) "test"
-}
+Error: 2 - parse_ini_file() expects parameter 2 to be boolean, object given, %s(%d)
+bool(false)
 
 --undefined var--
 array(1) {
@@ -263,3 +251,4 @@ array(1) {
   string(4) "test"
 }
 ===DONE===
+

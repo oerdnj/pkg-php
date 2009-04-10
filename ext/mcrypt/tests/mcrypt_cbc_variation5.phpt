@@ -160,24 +160,20 @@ Error: 2 - mcrypt_cbc(): The IV parameter must be as long as the blocksize, %s(%
 string(32) "6438db90653c4d3080c3ceab43618c05"
 
 --empty array--
-Error: 8 - Array to string conversion, %s(%d)
-Error: 2 - mcrypt_cbc(): The IV parameter must be as long as the blocksize, %s(%d)
-string(32) "6438db90653c4d3080c3ceab43618c05"
+Error: 2 - mcrypt_cbc() expects parameter 5 to be string, array given, %s(%d)
+string(0) ""
 
 --int indexed array--
-Error: 8 - Array to string conversion, %s(%d)
-Error: 2 - mcrypt_cbc(): The IV parameter must be as long as the blocksize, %s(%d)
-string(32) "6438db90653c4d3080c3ceab43618c05"
+Error: 2 - mcrypt_cbc() expects parameter 5 to be string, array given, %s(%d)
+string(0) ""
 
 --associative array--
-Error: 8 - Array to string conversion, %s(%d)
-Error: 2 - mcrypt_cbc(): The IV parameter must be as long as the blocksize, %s(%d)
-string(32) "6438db90653c4d3080c3ceab43618c05"
+Error: 2 - mcrypt_cbc() expects parameter 5 to be string, array given, %s(%d)
+string(0) ""
 
 --nested arrays--
-Error: 8 - Array to string conversion, %s(%d)
-Error: 2 - mcrypt_cbc(): The IV parameter must be as long as the blocksize, %s(%d)
-string(32) "6438db90653c4d3080c3ceab43618c05"
+Error: 2 - mcrypt_cbc() expects parameter 5 to be string, array given, %s(%d)
+string(0) ""
 
 --uppercase NULL--
 Error: 2 - mcrypt_cbc(): The IV parameter must be as long as the blocksize, %s(%d)
@@ -216,10 +212,8 @@ Error: 2 - mcrypt_cbc(): The IV parameter must be as long as the blocksize, %s(%
 string(32) "6438db90653c4d3080c3ceab43618c05"
 
 --instance of classWithoutToString--
-Error: 4096 - Object of class classWithoutToString could not be converted to string, %s(%d)
-Error: 8 - Object of class classWithoutToString to string conversion, %s(%d)
-Error: 2 - mcrypt_cbc(): The IV parameter must be as long as the blocksize, %s(%d)
-string(32) "6438db90653c4d3080c3ceab43618c05"
+Error: 2 - mcrypt_cbc() expects parameter 5 to be string, object given, %s(%d)
+string(0) ""
 
 --undefined var--
 Error: 2 - mcrypt_cbc(): The IV parameter must be as long as the blocksize, %s(%d)
@@ -230,6 +224,7 @@ Error: 2 - mcrypt_cbc(): The IV parameter must be as long as the blocksize, %s(%
 string(32) "6438db90653c4d3080c3ceab43618c05"
 
 --resource--
-Error: 2 - mcrypt_cbc(): The IV parameter must be as long as the blocksize, %s(%d)
-string(32) "6438db90653c4d3080c3ceab43618c05"
+Error: 2 - mcrypt_cbc() expects parameter 5 to be string, resource given, %s(%d)
+string(0) ""
 ===DONE===
+

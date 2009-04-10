@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: ftp.c,v 1.112.2.4.2.11 2008/12/31 11:17:37 sebastian Exp $ */
+/* $Id: ftp.c,v 1.112.2.4.2.9.2.3 2008/12/31 11:15:37 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1437,7 +1437,7 @@ ftp_getdata(ftpbuf_t *ftp TSRMLS_DC)
 
 	data->listener = fd;
 
-#if HAVE_IPV6
+#if HAVE_IPV6 && HAVE_INET_NTOP
 	if (sa->sa_family == AF_INET6) {
 		/* need to use EPRT */
 		char eprtarg[INET6_ADDRSTRLEN + sizeof("|x||xxxxx|")];

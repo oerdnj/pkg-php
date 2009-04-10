@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_firebird.c,v 1.4.2.3.2.3 2008/12/31 11:17:41 sebastian Exp $ */
+/* $Id: pdo_firebird.c,v 1.4.2.3.2.1.2.4 2008/12/31 11:15:41 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -30,7 +30,7 @@
 #include "php_pdo_firebird.h"
 #include "php_pdo_firebird_int.h"
 
-zend_function_entry pdo_firebird_functions[] = { /* {{{ */
+const zend_function_entry pdo_firebird_functions[] = { /* {{{ */
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -55,6 +55,10 @@ ZEND_GET_MODULE(pdo_firebird)
 
 PHP_MINIT_FUNCTION(pdo_firebird) /* {{{ */
 {
+	REGISTER_PDO_CLASS_CONST_LONG("FB_ATTR_DATE_FORMAT", (long) PDO_FB_ATTR_DATE_FORMAT);
+	REGISTER_PDO_CLASS_CONST_LONG("FB_ATTR_TIME_FORMAT", (long) PDO_FB_ATTR_TIME_FORMAT);
+	REGISTER_PDO_CLASS_CONST_LONG("FB_ATTR_TIMESTAMP_FORMAT", (long) PDO_FB_ATTR_TIMESTAMP_FORMAT);
+
 	php_pdo_register_driver(&pdo_firebird_driver);
 
 	return SUCCESS;

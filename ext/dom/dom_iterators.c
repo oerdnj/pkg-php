@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: dom_iterators.c,v 1.9.2.3.2.7 2008/12/31 11:17:37 sebastian Exp $ */
+/* $Id: dom_iterators.c,v 1.9.2.3.2.5.2.4 2008/12/31 11:15:36 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -42,7 +42,8 @@ struct _notationIterator {
 	xmlNotation *notation;
 };
 
-static void itemHashScanner (void *payload, void *data, xmlChar *name) {
+static void itemHashScanner (void *payload, void *data, xmlChar *name) /* {{{ */
+{
 	nodeIterator *priv = (nodeIterator *)data;
 
 	if(priv->cur < priv->index) {
@@ -53,9 +54,10 @@ static void itemHashScanner (void *payload, void *data, xmlChar *name) {
 		}
 	}
 }
+/* }}} */
 
-xmlNodePtr create_notation(const xmlChar *name, 
-									const xmlChar *ExternalID, const xmlChar *SystemID) {
+xmlNodePtr create_notation(const xmlChar *name, const xmlChar *ExternalID, const xmlChar *SystemID) /* {{{ */
+{
 	xmlEntityPtr ret;
 
 	ret = (xmlEntityPtr) xmlMalloc(sizeof(xmlEntity));
@@ -76,8 +78,9 @@ xmlNodePtr create_notation(const xmlChar *name,
 	ret->prev = NULL;
 	return((xmlNodePtr) ret);
 }
+/* }}} */
 
-xmlNode *php_dom_libxml_hash_iter(xmlHashTable *ht, int index)
+xmlNode *php_dom_libxml_hash_iter(xmlHashTable *ht, int index) /* {{{ */
 {
 	xmlNode *nodep = NULL;
 	nodeIterator *iter;
@@ -96,8 +99,9 @@ xmlNode *php_dom_libxml_hash_iter(xmlHashTable *ht, int index)
 		return NULL;
 	}
 }
+/* }}} */
 
-xmlNode *php_dom_libxml_notation_iter(xmlHashTable *ht, int index)
+xmlNode *php_dom_libxml_notation_iter(xmlHashTable *ht, int index) /* {{{ */
 {
 	notationIterator *iter;
 	xmlNotation *notep = NULL;
@@ -116,8 +120,9 @@ xmlNode *php_dom_libxml_notation_iter(xmlHashTable *ht, int index)
 		return NULL;
 	}
 }
+/* }}} */
 
-static void php_dom_iterator_dtor(zend_object_iterator *iter TSRMLS_DC)
+static void php_dom_iterator_dtor(zend_object_iterator *iter TSRMLS_DC) /* {{{ */
 {
 	php_dom_iterator *iterator = (php_dom_iterator *)iter;
 
@@ -129,8 +134,9 @@ static void php_dom_iterator_dtor(zend_object_iterator *iter TSRMLS_DC)
 
 	efree(iterator);
 }
+/* }}} */
 
-static int php_dom_iterator_valid(zend_object_iterator *iter TSRMLS_DC)
+static int php_dom_iterator_valid(zend_object_iterator *iter TSRMLS_DC) /* {{{ */
 {
 
 	php_dom_iterator *iterator = (php_dom_iterator *)iter;
@@ -141,15 +147,17 @@ static int php_dom_iterator_valid(zend_object_iterator *iter TSRMLS_DC)
 		return FAILURE;
 	}
 }
+/* }}} */
 
-static void php_dom_iterator_current_data(zend_object_iterator *iter, zval ***data TSRMLS_DC)
+static void php_dom_iterator_current_data(zend_object_iterator *iter, zval ***data TSRMLS_DC) /* {{{ */
 {
 	php_dom_iterator *iterator = (php_dom_iterator *)iter;
 
 	*data = &iterator->curobj;
 }
+/* }}} */
 
-static int php_dom_iterator_current_key(zend_object_iterator *iter, char **str_key, uint *str_key_len, ulong *int_key TSRMLS_DC)
+static int php_dom_iterator_current_key(zend_object_iterator *iter, char **str_key, uint *str_key_len, ulong *int_key TSRMLS_DC) /* {{{ */
 {
 	zval *curobj;
 	xmlNodePtr curnode = NULL;
@@ -180,8 +188,9 @@ static int php_dom_iterator_current_key(zend_object_iterator *iter, char **str_k
 		return HASH_KEY_IS_STRING;
 	}
 }
+/* }}} */
 
-static void php_dom_iterator_move_forward(zend_object_iterator *iter TSRMLS_DC)
+static void php_dom_iterator_move_forward(zend_object_iterator *iter TSRMLS_DC) /* {{{ */
 {
 	zval *curobj, *curattr = NULL;
 	zval *object;
@@ -209,7 +218,7 @@ static void php_dom_iterator_move_forward(zend_object_iterator *iter TSRMLS_DC)
 				zend_hash_move_forward(nodeht);
 				if (zend_hash_get_current_data(nodeht, (void **) &entry)==SUCCESS) {
 					curattr = *entry;
-					curattr->refcount++;
+					Z_ADDREF_P(curattr);
 				}
 			} else {
 				curnode = (xmlNodePtr)((php_libxml_node_ptr *)intern->ptr)->node;
@@ -247,6 +256,7 @@ err:
 
 	iterator->curobj = curattr;
 }
+/* }}} */
 
 zend_object_iterator_funcs php_dom_iterator_funcs = {
 	php_dom_iterator_dtor,
@@ -257,7 +267,7 @@ zend_object_iterator_funcs php_dom_iterator_funcs = {
 	NULL
 };
 
-zend_object_iterator *php_dom_get_iterator(zend_class_entry *ce, zval *object, int by_ref TSRMLS_DC)
+zend_object_iterator *php_dom_get_iterator(zend_class_entry *ce, zval *object, int by_ref TSRMLS_DC) /* {{{ */
 {
 	dom_object *intern;
 	dom_nnodemap_object *objmap;
@@ -273,7 +283,7 @@ zend_object_iterator *php_dom_get_iterator(zend_class_entry *ce, zval *object, i
 	}
 	iterator = emalloc(sizeof(php_dom_iterator));
 
-	object->refcount++;
+	Z_ADDREF_P(object);
 	iterator->intern.data = (void*)object;
 	iterator->intern.funcs = &php_dom_iterator_funcs;
 
@@ -287,7 +297,7 @@ zend_object_iterator *php_dom_get_iterator(zend_class_entry *ce, zval *object, i
 				zend_hash_internal_pointer_reset(nodeht);
 				if (zend_hash_get_current_data(nodeht, (void **) &entry)==SUCCESS) {
 					curattr = *entry;
-					curattr->refcount++;
+					Z_ADDREF_P(curattr);
 				}
 			} else {
 				nodep = (xmlNode *)dom_object_get_node(objmap->baseobj);
@@ -327,5 +337,15 @@ err:
 
 	return (zend_object_iterator*)iterator;
 }
+/* }}} */
 
 #endif
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

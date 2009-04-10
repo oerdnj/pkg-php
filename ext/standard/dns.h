@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2008 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,12 +18,24 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: dns.h,v 1.19.2.1.2.3 2008/12/31 11:17:44 sebastian Exp $ */
+/* $Id: dns.h,v 1.19.2.1.2.1.2.5 2009/01/11 23:37:16 scottmac Exp $ */
 
 #ifndef DNS_H
 #define DNS_H
 
-#if HAVE_RES_NMKQUERY && HAVE_RES_NSEND && HAVE_DN_EXPAND && HAVE_DN_SKIPNAME
+#if HAVE_RES_MKQUERY && !defined(HAVE_RES_NMKQUERY) && HAVE_RES_SEND && !defined(HAVE_RES_NSEND)
+#define HAVE_DEPRECATED_DNS_FUNCS 1
+#endif
+
+#if HAVE_DEPRECATED_DNS_FUNCS
+#define res_nmkquery(res, op, dname, class, type, data, datalen, newrr, buf, buflen) \
+	res_mkquery(op, dname, class, type, data, datalen, newrr, buf, buflen)
+#define res_nsend(res, msg, msglen, answer, anslen) \
+	res_send(msg, msglen, answer, anslen);
+#define res_nclose(res) /* noop */
+#endif
+
+#if ((HAVE_RES_NMKQUERY && HAVE_RES_NSEND) || HAVE_DEPRECATED_DNS_FUNCS) && HAVE_DN_EXPAND && HAVE_DN_SKIPNAME
 #define HAVE_DNS_FUNCS 1
 #endif
 
@@ -31,21 +43,23 @@ PHP_FUNCTION(gethostbyaddr);
 PHP_FUNCTION(gethostbyname);
 PHP_FUNCTION(gethostbynamel);
 
-#if HAVE_RES_SEARCH && !(defined(__BEOS__)||defined(PHP_WIN32))
-
-PHP_FUNCTION(dns_check_record);
-# if HAVE_DN_SKIPNAME && HAVE_DN_EXPAND
-PHP_FUNCTION(dns_get_mx);
-# endif
-
-# if HAVE_DNS_FUNCS
-
-PHP_FUNCTION(dns_get_record);
-
-PHP_MINIT_FUNCTION(dns);
-
-# endif
+#ifdef HAVE_GETHOSTNAME
+PHP_FUNCTION(gethostname);
 #endif
+
+#if defined(PHP_WIN32) || (HAVE_RES_SEARCH && !(defined(__BEOS__) || defined(NETWARE)))
+
+# if defined(PHP_WIN32) || (HAVE_DN_SKIPNAME && HAVE_DN_EXPAND)
+PHP_FUNCTION(dns_get_mx);
+PHP_FUNCTION(dns_check_record);
+# endif
+
+#if defined(PHP_WIN32) || HAVE_DNS_FUNCS
+PHP_FUNCTION(dns_get_record);
+PHP_MINIT_FUNCTION(dns);
+# endif
+
+#endif /* defined(PHP_WIN32) || (HAVE_RES_SEARCH && !(defined(__BEOS__) || defined(NETWARE))) */
 
 #ifndef INT16SZ
 #define INT16SZ		2

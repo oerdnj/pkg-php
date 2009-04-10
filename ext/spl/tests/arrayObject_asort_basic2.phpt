@@ -26,18 +26,21 @@ var_dump($ao1, $c);
 --EXPECTF--
 *** Testing ArrayObject::asort() : basic functionality ***
 bool(true)
-object(ArrayObject)#%d (4) {
-  ["prop3:private"]=>
-  string(1) "a"
-  ["prop1"]=>
-  string(1) "x"
-  ["prop4"]=>
-  string(1) "x"
-  ["prop2"]=>
-  string(1) "z"
+object(ArrayObject)#2 (1) {
+  ["storage":"ArrayObject":private]=>
+  object(C)#1 (4) {
+    ["prop3":"C":private]=>
+    string(1) "a"
+    ["prop1"]=>
+    string(1) "x"
+    ["prop4"]=>
+    string(1) "x"
+    ["prop2"]=>
+    string(1) "z"
+  }
 }
-object(C)#%d (4) {
-  ["prop3:private"]=>
+object(C)#1 (4) {
+  ["prop3":"C":private]=>
   string(1) "a"
   ["prop1"]=>
   string(1) "x"

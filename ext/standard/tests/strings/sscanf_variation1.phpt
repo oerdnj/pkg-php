@@ -125,25 +125,16 @@ array(1) {
 }
 -- Iteration 9 --
 
-Notice: Array to string conversion in %s on line %d
-array(1) {
-  [0]=>
-  string(5) "Array"
-}
+Warning: sscanf() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 10 --
 
-Notice: Array to string conversion in %s on line %d
-array(1) {
-  [0]=>
-  string(5) "Array"
-}
+Warning: sscanf() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 11 --
 
-Notice: Array to string conversion in %s on line %d
-array(1) {
-  [0]=>
-  string(5) "Array"
-}
+Warning: sscanf() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 12 --
 array(1) {
   [0]=>
@@ -168,10 +159,9 @@ array(1) {
   string(6) "sample"
 }
 -- Iteration 19 --
-array(1) {
-  [0]=>
-  string(8) "Resource"
-}
+
+Warning: sscanf() expects parameter 1 to be string, resource given in %s on line %d
+NULL
 -- Iteration 20 --
 NULL
 -- Iteration 21 --

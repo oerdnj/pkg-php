@@ -113,7 +113,7 @@ foreach($inputs as $key =>$value) {
       echo "\n--$key--\n";
       $res = gzopen($filename, $mode, $value);
       var_dump($res);
-      if ($res !== false && $res != NULL) {
+      if ($res === true) {
          gzclose($res);
       }
 };

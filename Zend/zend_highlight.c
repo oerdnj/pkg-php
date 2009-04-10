@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_highlight.c,v 1.49.2.3.2.4 2008/12/31 11:17:33 sebastian Exp $ */
+/* $Id: zend_highlight.c,v 1.49.2.3.2.2.2.6 2008/12/31 11:15:32 sebastian Exp $ */
 
 #include "zend.h"
 #include <zend_language_parser.h>
@@ -68,7 +68,7 @@ ZEND_API void zend_html_puts(const char *s, uint len TSRMLS_DC)
 		end = filtered + filtered_len;
 	}
 #endif /* ZEND_MULTIBYTE */
-	
+
 	while (ptr<end) {
 		if (*ptr==' ') {
 			do {
@@ -87,14 +87,12 @@ ZEND_API void zend_html_puts(const char *s, uint len TSRMLS_DC)
 }
 
 
-
 ZEND_API void zend_highlight(zend_syntax_highlighter_ini *syntax_highlighter_ini TSRMLS_DC)
 {
 	zval token;
 	int token_type;
 	char *last_color = syntax_highlighter_ini->highlight_html;
 	char *next_color;
-	int in_string=0;
 
 	zend_printf("<code>");
 	zend_printf("<span style=\"color: %s\">\n", last_color);
@@ -116,22 +114,18 @@ ZEND_API void zend_highlight(zend_syntax_highlighter_ini *syntax_highlighter_ini
 			case T_CLOSE_TAG:
 				next_color = syntax_highlighter_ini->highlight_default;
 				break;
+			case '"':
+			case T_ENCAPSED_AND_WHITESPACE:
 			case T_CONSTANT_ENCAPSED_STRING:
 				next_color = syntax_highlighter_ini->highlight_string;
 				break;
-			case '"':
-				next_color = syntax_highlighter_ini->highlight_string;
-				in_string = !in_string;
-				break;				
 			case T_WHITESPACE:
 				zend_html_puts(LANG_SCNG(yy_text), LANG_SCNG(yy_leng) TSRMLS_CC);  /* no color needed */
 				token.type = 0;
 				continue;
 				break;
 			default:
-				if (in_string) {
-					next_color = syntax_highlighter_ini->highlight_string;
-				} else if (token.type == 0) {
+				if (token.type == 0) {
 					next_color = syntax_highlighter_ini->highlight_keyword;
 				} else {
 					next_color = syntax_highlighter_ini->highlight_default;
@@ -159,8 +153,6 @@ ZEND_API void zend_highlight(zend_syntax_highlighter_ini *syntax_highlighter_ini
 
 		if (token.type == IS_STRING) {
 			switch (token_type) {
-				case EOF:
-					goto done;
 				case T_OPEN_TAG:
 				case T_OPEN_TAG_WITH_ECHO:
 				case T_CLOSE_TAG:
@@ -179,7 +171,7 @@ ZEND_API void zend_highlight(zend_syntax_highlighter_ini *syntax_highlighter_ini
 	}
 
 	/* handler for trailing comments, see bug #42767 */
-	if (LANG_SCNG(yy_leng) && LANG_SCNG(_yy_more_len)) {
+	if (LANG_SCNG(yy_leng) && LANG_SCNG(yy_text) < LANG_SCNG(yy_limit)) {
 		if (last_color != syntax_highlighter_ini->highlight_comment) {
 			if (last_color != syntax_highlighter_ini->highlight_html) {
 				zend_printf("</span>");
@@ -188,9 +180,9 @@ ZEND_API void zend_highlight(zend_syntax_highlighter_ini *syntax_highlighter_ini
 				zend_printf("<span style=\"color: %s\">", syntax_highlighter_ini->highlight_comment);
 			}
 		}
-		zend_html_puts(LANG_SCNG(yy_text), LANG_SCNG(_yy_more_len) TSRMLS_CC);
+		zend_html_puts(LANG_SCNG(yy_text), (LANG_SCNG(yy_limit) - LANG_SCNG(yy_text)) TSRMLS_CC);
 	}
-done:
+
 	if (last_color != syntax_highlighter_ini->highlight_html) {
 		zend_printf("</span>\n");
 	}
@@ -217,9 +209,6 @@ ZEND_API void zend_strip(TSRMLS_D)
 			case T_DOC_COMMENT:
 				token.type = 0;
 				continue;
-
-			case EOF:
-				return;
 			
 			case T_END_HEREDOC:
 				zend_write(LANG_SCNG(yy_text), LANG_SCNG(yy_leng));

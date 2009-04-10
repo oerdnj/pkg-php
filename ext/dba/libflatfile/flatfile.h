@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: flatfile.h,v 1.11.2.1.2.3 2008/12/31 11:17:36 sebastian Exp $ */
+/* $Id: flatfile.h,v 1.11.2.1.2.1.2.2 2008/12/31 11:15:36 sebastian Exp $ */
 
 #ifndef PHP_LIB_FLATFILE_H
 #define PHP_LIB_FLATFILE_H

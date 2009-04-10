@@ -1,7 +1,11 @@
 /*
 	Build Configuration Template for Win32.
-	$Id: config.w32.h.in,v 1.7.2.4.2.3 2007/07/11 17:36:56 johannes Exp $
+	$Id: config.w32.h.in,v 1.7.2.4.2.3.2.11 2009/02/02 09:40:55 pajoye Exp $
 */
+
+/* Define the minimum supported version */
+#define _WIN32_WINNT 0x500
+#define NTDDI_VERSION  _WIN32_WIN2K
 
 /* Default PHP / PEAR directories */
 #define PHP_CONFIG_FILE_PATH (getenv("SystemRoot"))?getenv("SystemRoot"):""
@@ -19,9 +23,9 @@
 /* Enable / Disable crypt() function (default: enabled) */
 #define HAVE_CRYPT 1
 #define PHP_STD_DES_CRYPT 1
-#define PHP_EXT_DES_CRYPT 0
+#define PHP_EXT_DES_CRYPT 1
 #define PHP_MD5_CRYPT 1
-#define PHP_BLOWFISH_CRYPT 0
+#define PHP_BLOWFISH_CRYPT 1
 
 /* PHP Runtime Configuration */
 #define PHP_URL_FOPEN 1
@@ -37,6 +41,7 @@
 #define HAVE_GETSERVBYPORT 1
 #define HAVE_GETPROTOBYNAME 1
 #define HAVE_GETPROTOBYNUMBER 1
+#define HAVE_GETHOSTNAME 1
 #define STDIN_FILENO 0
 #define STDOUT_FILENO 1
 #define STDERR_FILENO 2
@@ -48,12 +53,15 @@
 
 /* its in win32/time.c */
 #define HAVE_USLEEP 1
+#define HAVE_NANOSLEEP 1
 
+#define HAVE_GETHOSTNAME 1
 #define HAVE_GETCWD 1
 #define HAVE_POSIX_READDIR_R 1
 #define NEED_ISBLANK 1
 #define DISCARD_PATH 0
 #undef HAVE_SETITIMER
+#undef HAVE_SIGSETJMP
 #undef HAVE_IODBC
 #define HAVE_LIBDL 1
 #define HAVE_GETTIMEOFDAY 1
@@ -131,12 +139,17 @@
 # define SIZEOF_SIZE_T 4
 # define SIZEOF_PTRDIFF_T 4
 #endif
+#define HAVE_FNMATCH
 #define HAVE_GLOB
 #define PHP_SHLIB_SUFFIX "dll"
 #define HAVE_SQLDATASOURCES
 
 /* Win32 supports strcoll */
 #define HAVE_STRCOLL 1
+
+/* Win32 supports socketpair by the emulation in win32/sockets.c */
+#define HAVE_SOCKETPAIR 1
+#define HAVE_SOCKLEN_T 1
 
 /* Win32 support proc_open */
 #define PHP_CAN_SUPPORT_PROC_OPEN 1
@@ -154,4 +167,3 @@
 # define _USE_32BIT_TIME_T 1
 #endif
 #define HAVE_STDLIB_H 1
-

@@ -1,9 +1,7 @@
 --TEST--
 Test hash_file() function : basic functionality 
 --SKIPIF--
-<?php 
-	if(!extension_loaded("hash")) print "skip"; 
-?>
+<?php extension_loaded('hash') or die('skip: hash extension not loaded.'); ?>
 --FILE--
 <?php
 

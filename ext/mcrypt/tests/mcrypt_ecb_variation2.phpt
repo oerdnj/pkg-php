@@ -151,20 +151,20 @@ string(32) "326f64e3b9bd5a6beb0a9b52a09a5a48"
 string(32) "2aedf7661cd4d8c7593f44c58718e2b8"
 
 --empty array--
-Error: 8 - Array to string conversion, %s(%d)
-string(32) "3e67235c6c77c7795b69f7bf31ad63ec"
+Error: 2 - mcrypt_ecb() expects parameter 2 to be string, array given, %s(%d)
+string(0) ""
 
 --int indexed array--
-Error: 8 - Array to string conversion, %s(%d)
-string(32) "3e67235c6c77c7795b69f7bf31ad63ec"
+Error: 2 - mcrypt_ecb() expects parameter 2 to be string, array given, %s(%d)
+string(0) ""
 
 --associative array--
-Error: 8 - Array to string conversion, %s(%d)
-string(32) "3e67235c6c77c7795b69f7bf31ad63ec"
+Error: 2 - mcrypt_ecb() expects parameter 2 to be string, array given, %s(%d)
+string(0) ""
 
 --nested arrays--
-Error: 8 - Array to string conversion, %s(%d)
-string(32) "3e67235c6c77c7795b69f7bf31ad63ec"
+Error: 2 - mcrypt_ecb() expects parameter 2 to be string, array given, %s(%d)
+string(0) ""
 
 --uppercase NULL--
 string(32) "bfa2cb7240c8d2f6abeb34960c04f6d3"
@@ -194,9 +194,8 @@ string(32) "bfa2cb7240c8d2f6abeb34960c04f6d3"
 string(32) "1fd3514d8ced44d04d9dc7511fce33ef"
 
 --instance of classWithoutToString--
-Error: 4096 - Object of class classWithoutToString could not be converted to string, %s(%d)
-Error: 8 - Object of class classWithoutToString to string conversion, %s(%d)
-string(32) "fb3ff12423b2c3ba38905e448d35f4c0"
+Error: 2 - mcrypt_ecb() expects parameter 2 to be string, object given, %s(%d)
+string(0) ""
 
 --undefined var--
 string(32) "bfa2cb7240c8d2f6abeb34960c04f6d3"
@@ -205,5 +204,7 @@ string(32) "bfa2cb7240c8d2f6abeb34960c04f6d3"
 string(32) "bfa2cb7240c8d2f6abeb34960c04f6d3"
 
 --resource--
-string(%d) %s
+Error: 2 - mcrypt_ecb() expects parameter 2 to be string, resource given, %s(%d)
+string(0) ""
 ===DONE===
+

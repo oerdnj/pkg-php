@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_standard.h,v 1.24.2.2.2.3 2008/12/31 11:17:45 sebastian Exp $ */
+/* $Id: php_standard.h,v 1.24.2.2.2.1.2.3 2008/12/31 11:15:45 sebastian Exp $ */
 
 #include "basic_functions.h"
 #include "php_math.h"
@@ -24,7 +24,6 @@
 #include "base64.h"
 #include "php_dir.h"
 #include "dns.h"
-#include "reg.h"
 #include "php_mail.h"
 #include "md5.h"
 #include "sha1.h"

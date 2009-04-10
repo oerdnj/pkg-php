@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_encoding.h,v 1.38.2.3.2.6 2008/12/31 11:17:43 sebastian Exp $ */
+/* $Id: php_encoding.h,v 1.38.2.3.2.4.2.2 2008/12/31 11:15:43 sebastian Exp $ */
 
 #ifndef PHP_ENCODING_H
 #define PHP_ENCODING_H

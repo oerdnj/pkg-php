@@ -25,26 +25,26 @@ var_dump(gd_info());
 *** Testing gd_info() : variation ***
 array(%d) {
   ["GD Version"]=>
-  string(%d) "%s"
+  string(%d) %a
   ["FreeType Support"]=>
-  bool(%s)%A
+  bool%a
   ["T1Lib Support"]=>
-  bool(%s)
+  bool%a
   ["GIF Read Support"]=>
-  bool(%s)
+  bool%a
   ["GIF Create Support"]=>
-  bool(%s)
+  bool%a
   ["JPG Support"]=>
-  bool(%s)
+  bool%a
   ["PNG Support"]=>
-  bool(%s)
+  bool%a
   ["WBMP Support"]=>
-  bool(%s)
+  bool%a
   ["XPM Support"]=>
-  bool(%s)
+  bool%a
   ["XBM Support"]=>
-  bool(%s)
+  bool%a
   ["JIS-mapped Japanese Font Support"]=>
-  bool(%s)
+  bool%a
 }
 ===DONE===

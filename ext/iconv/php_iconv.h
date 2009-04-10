@@ -17,19 +17,21 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Revision: 1.28.2.2.2.4 $ */
+/* $Revision: 1.28.2.2.2.2.2.5 $ */
 
 #ifndef PHP_ICONV_H
 #define PHP_ICONV_H
 
 #ifdef PHP_WIN32
-#ifdef PHP_ICONV_EXPORTS
-#define PHP_ICONV_API __declspec(dllexport)
+#	ifdef PHP_ICONV_EXPORTS
+#		define PHP_ICONV_API __declspec(dllexport)
+#	else
+#		define PHP_ICONV_API __declspec(dllimport)
+#	endif 
+#elif defined(__GNUC__) && __GNUC__ >= 4
+#	define PHP_ICONV_API __attribute__ ((visibility("default")))
 #else
-#define PHP_ICONV_API __declspec(dllimport)
-#endif 
-#else
-#define PHP_ICONV_API
+#	define PHP_ICONV_API
 #endif
 
 #ifdef PHP_ATOM_INC
@@ -37,6 +39,7 @@
 #include "ext/iconv/php_have_libiconv.h"
 #include "ext/iconv/php_have_glibc_iconv.h"
 #include "ext/iconv/php_have_bsd_iconv.h"
+#include "ext/iconv/php_have_ibm_iconv.h"
 #include "ext/iconv/php_iconv_supports_errno.h"
 #include "ext/iconv/php_php_iconv_impl.h"
 #include "ext/iconv/php_php_iconv_h_path.h"
@@ -75,9 +78,19 @@ ZEND_END_MODULE_GLOBALS(iconv)
 #define ICONVG(v) (iconv_globals.v)
 #endif
 
-#define ICONV_INPUT_ENCODING "ISO-8859-1" 
-#define ICONV_OUTPUT_ENCODING "ISO-8859-1"
-#define ICONV_INTERNAL_ENCODING "ISO-8859-1" 
+#ifdef HAVE_IBM_ICONV
+# define ICONV_INPUT_ENCODING "ISO8859-1"
+# define ICONV_OUTPUT_ENCODING "ISO8859-1"
+# define ICONV_INTERNAL_ENCODING "ISO8859-1"
+# define ICONV_ASCII_ENCODING "IBM-850"
+# define ICONV_UCS4_ENCODING "UCS-4"
+#else
+# define ICONV_INPUT_ENCODING "ISO-8859-1"
+# define ICONV_OUTPUT_ENCODING "ISO-8859-1"
+# define ICONV_INTERNAL_ENCODING "ISO-8859-1"
+# define ICONV_ASCII_ENCODING "ASCII"
+# define ICONV_UCS4_ENCODING "UCS-4LE"
+#endif
 
 #ifndef ICONV_CSNMAXLEN
 #define ICONV_CSNMAXLEN 64

@@ -1,6 +1,5 @@
 --TEST--
 Test mb_strripos() function : usage variations - Pass different integers as $offset argument
---XFAIL--
 --SKIPIF--
 <?php
 extension_loaded('mbstring') or die('skip');
@@ -113,3 +112,4 @@ bool(false)
 Warning: mb_strripos(): Offset is greater than the length of haystack string in %s on line %d
 bool(false)
 Done
+

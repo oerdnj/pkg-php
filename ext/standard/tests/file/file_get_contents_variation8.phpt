@@ -77,11 +77,11 @@ Warning: file_get_contents() expects parameter 1 to be string, array given in %s
 NULL
 -- Iteration 8 --
 
-Warning: file_get_contents(/no/such/file/dir): failed to open stream: No such file or directory in %s on line %d
+Warning: file_get_contents(/no/such/file/dir): failed to open stream: %s in %s on line %d
 bool(false)
 -- Iteration 9 --
 
-Warning: file_get_contents(php/php): failed to open stream: %s in %s on line %d
+Warning: file_get_contents(php/php): failed to open stream: No such file or directory in %s on line %d
 bool(false)
 
 *** Done ***

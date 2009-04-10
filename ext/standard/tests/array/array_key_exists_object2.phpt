@@ -60,12 +60,12 @@ bool(false)
 $key = var3:
 bool(false)
 $class1:
-object(myClass)#%d (3) {
+object(myClass)#1 (3) {
   ["var1"]=>
   string(1) "a"
-  ["var2:protected"]=>
+  ["var2":protected]=>
   string(1) "b"
-  ["var3:private"]=>
+  ["var3":"myClass":private]=>
   NULL
 }
 
@@ -73,12 +73,12 @@ object(myClass)#%d (3) {
 $key = var3:
 bool(false)
 $class2:
-object(myClass)#%d (3) {
+object(myClass)#2 (3) {
   ["var1"]=>
   string(1) "x"
-  ["var2:protected"]=>
+  ["var2":protected]=>
   string(1) "y"
-  ["var3:private"]=>
+  ["var3":"myClass":private]=>
   string(1) "z"
 }
 Done

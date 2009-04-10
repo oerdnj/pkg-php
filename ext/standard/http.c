@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: http.c,v 1.14.2.4.2.7 2008/12/31 11:17:45 sebastian Exp $ */
+/* $Id: http.c,v 1.14.2.4.2.3.2.5 2008/12/31 11:15:45 sebastian Exp $ */
 
 #include "php_http.h"
 #include "php_ini.h"
@@ -194,7 +194,7 @@ PHP_FUNCTION(http_build_query)
 {
 	zval *formdata;
 	char *prefix = NULL, *arg_sep=NULL;
-	int arg_sep_len, prefix_len = 0;
+	int arg_sep_len = 0, prefix_len = 0;
 	smart_str formstr = {0};
 	
 

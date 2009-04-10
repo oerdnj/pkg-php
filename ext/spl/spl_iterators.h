@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_iterators.h,v 1.18.2.7.2.15 2008/12/31 11:17:44 sebastian Exp $ */
+/* $Id: spl_iterators.h,v 1.18.2.7.2.12.2.5 2008/12/31 11:15:44 sebastian Exp $ */
 
 #ifndef SPL_ITERATORS_H
 #define SPL_ITERATORS_H
@@ -35,6 +35,7 @@
 
 extern PHPAPI zend_class_entry *spl_ce_RecursiveIterator;
 extern PHPAPI zend_class_entry *spl_ce_RecursiveIteratorIterator;
+extern PHPAPI zend_class_entry *spl_ce_RecursiveTreeIterator;
 extern PHPAPI zend_class_entry *spl_ce_FilterIterator;
 extern PHPAPI zend_class_entry *spl_ce_RecursiveFilterIterator;
 extern PHPAPI zend_class_entry *spl_ce_ParentIterator;
@@ -76,6 +77,13 @@ typedef enum {
 #endif
 	DIT_Unknown = ~0
 } dual_it_type;
+
+typedef enum {
+	RIT_Default = 0,
+	RIT_RecursiveIteratorIterator = RIT_Default,
+	RIT_RecursiveTreeIterator,
+	RIT_Unknow = ~0
+} recursive_it_it_type;
 
 enum {
 	/* public */

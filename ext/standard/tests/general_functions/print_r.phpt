@@ -963,8 +963,8 @@ object_class Object
 (
     [value] => 50
     [public_var1] => 10
-    [private_var1:private] => 20
-    [private_var2:private] => 21
+    [private_var1:object_class:private] => 20
+    [private_var2:object_class:private] => 21
     [protected_var1:protected] => string_1
     [protected_var2:protected] => string_2
     [public_var2] => 11
@@ -974,8 +974,8 @@ object_class Object
 (
     [value] => 50
     [public_var1] => 10
-    [private_var1:private] => 20
-    [private_var2:private] => 21
+    [private_var1:object_class:private] => 20
+    [private_var2:object_class:private] => 21
     [protected_var1:protected] => string_1
     [protected_var2:protected] => string_2
     [public_var2] => 11
@@ -985,8 +985,8 @@ object_class Object
 (
     [value] => 50
     [public_var1] => 10
-    [private_var1:private] => 20
-    [private_var2:private] => 21
+    [private_var1:object_class:private] => 20
+    [private_var2:object_class:private] => 21
     [protected_var1:protected] => string_1
     [protected_var2:protected] => string_2
     [public_var2] => 11
@@ -1013,8 +1013,8 @@ contains_object_class Object
         (
             [value] => 50
             [public_var1] => 10
-            [private_var1:private] => 20
-            [private_var2:private] => 21
+            [private_var1:object_class:private] => 20
+            [private_var2:object_class:private] => 21
             [protected_var1:protected] => string_1
             [protected_var2:protected] => string_2
             [public_var2] => 11
@@ -1024,19 +1024,19 @@ contains_object_class Object
         (
             [value] => 50
             [public_var1] => 10
-            [private_var1:private] => 20
-            [private_var2:private] => 21
+            [private_var1:object_class:private] => 20
+            [private_var2:object_class:private] => 21
             [protected_var1:protected] => string_1
             [protected_var2:protected] => string_2
             [public_var2] => 11
         )
 
-    [class_object3:private] => object_class Object
+    [class_object3:contains_object_class:private] => object_class Object
         (
             [value] => 50
             [public_var1] => 10
-            [private_var1:private] => 20
-            [private_var2:private] => 21
+            [private_var1:object_class:private] => 20
+            [private_var2:object_class:private] => 21
             [protected_var1:protected] => string_1
             [protected_var2:protected] => string_2
             [public_var2] => 11
@@ -1046,8 +1046,8 @@ contains_object_class Object
         (
             [value] => 50
             [public_var1] => 10
-            [private_var1:private] => 20
-            [private_var2:private] => 21
+            [private_var1:object_class:private] => 20
+            [private_var2:object_class:private] => 21
             [protected_var1:protected] => string_1
             [protected_var2:protected] => string_2
             [public_var2] => 11
@@ -1068,8 +1068,8 @@ contains_object_class Object
         (
             [value] => 50
             [public_var1] => 10
-            [private_var1:private] => 20
-            [private_var2:private] => 21
+            [private_var1:object_class:private] => 20
+            [private_var2:object_class:private] => 21
             [protected_var1:protected] => string_1
             [protected_var2:protected] => string_2
             [public_var2] => 11
@@ -1079,19 +1079,19 @@ contains_object_class Object
         (
             [value] => 50
             [public_var1] => 10
-            [private_var1:private] => 20
-            [private_var2:private] => 21
+            [private_var1:object_class:private] => 20
+            [private_var2:object_class:private] => 21
             [protected_var1:protected] => string_1
             [protected_var2:protected] => string_2
             [public_var2] => 11
         )
 
-    [class_object3:private] => object_class Object
+    [class_object3:contains_object_class:private] => object_class Object
         (
             [value] => 50
             [public_var1] => 10
-            [private_var1:private] => 20
-            [private_var2:private] => 21
+            [private_var1:object_class:private] => 20
+            [private_var2:object_class:private] => 21
             [protected_var1:protected] => string_1
             [protected_var2:protected] => string_2
             [public_var2] => 11
@@ -1101,8 +1101,8 @@ contains_object_class Object
         (
             [value] => 50
             [public_var1] => 10
-            [private_var1:private] => 20
-            [private_var2:private] => 21
+            [private_var1:object_class:private] => 20
+            [private_var2:object_class:private] => 21
             [protected_var1:protected] => string_1
             [protected_var2:protected] => string_2
             [public_var2] => 11
@@ -1123,8 +1123,8 @@ contains_object_class Object
         (
             [value] => 50
             [public_var1] => 10
-            [private_var1:private] => 20
-            [private_var2:private] => 21
+            [private_var1:object_class:private] => 20
+            [private_var2:object_class:private] => 21
             [protected_var1:protected] => string_1
             [protected_var2:protected] => string_2
             [public_var2] => 11
@@ -1134,19 +1134,19 @@ contains_object_class Object
         (
             [value] => 50
             [public_var1] => 10
-            [private_var1:private] => 20
-            [private_var2:private] => 21
+            [private_var1:object_class:private] => 20
+            [private_var2:object_class:private] => 21
             [protected_var1:protected] => string_1
             [protected_var2:protected] => string_2
             [public_var2] => 11
         )
 
-    [class_object3:private] => object_class Object
+    [class_object3:contains_object_class:private] => object_class Object
         (
             [value] => 50
             [public_var1] => 10
-            [private_var1:private] => 20
-            [private_var2:private] => 21
+            [private_var1:object_class:private] => 20
+            [private_var2:object_class:private] => 21
             [protected_var1:protected] => string_1
             [protected_var2:protected] => string_2
             [public_var2] => 11
@@ -1156,8 +1156,8 @@ contains_object_class Object
         (
             [value] => 50
             [public_var1] => 10
-            [private_var1:private] => 20
-            [private_var2:private] => 21
+            [private_var1:object_class:private] => 20
+            [private_var2:object_class:private] => 21
             [protected_var1:protected] => string_1
             [protected_var2:protected] => string_2
             [public_var2] => 11
@@ -1179,8 +1179,8 @@ contains_object_class Object
         (
             [value] => 50
             [public_var1] => 10
-            [private_var1:private] => 20
-            [private_var2:private] => 21
+            [private_var1:object_class:private] => 20
+            [private_var2:object_class:private] => 21
             [protected_var1:protected] => string_1
             [protected_var2:protected] => string_2
             [public_var2] => 11
@@ -1190,19 +1190,19 @@ contains_object_class Object
         (
             [value] => 50
             [public_var1] => 10
-            [private_var1:private] => 20
-            [private_var2:private] => 21
+            [private_var1:object_class:private] => 20
+            [private_var2:object_class:private] => 21
             [protected_var1:protected] => string_1
             [protected_var2:protected] => string_2
             [public_var2] => 11
         )
 
-    [class_object3:private] => object_class Object
+    [class_object3:contains_object_class:private] => object_class Object
         (
             [value] => 50
             [public_var1] => 10
-            [private_var1:private] => 20
-            [private_var2:private] => 21
+            [private_var1:object_class:private] => 20
+            [private_var2:object_class:private] => 21
             [protected_var1:protected] => string_1
             [protected_var2:protected] => string_2
             [public_var2] => 11
@@ -1212,8 +1212,8 @@ contains_object_class Object
         (
             [value] => 50
             [public_var1] => 10
-            [private_var1:private] => 20
-            [private_var2:private] => 21
+            [private_var1:object_class:private] => 20
+            [private_var2:object_class:private] => 21
             [protected_var1:protected] => string_1
             [protected_var2:protected] => string_2
             [public_var2] => 11
@@ -1234,8 +1234,8 @@ contains_object_class Object
         (
             [value] => 50
             [public_var1] => 10
-            [private_var1:private] => 20
-            [private_var2:private] => 21
+            [private_var1:object_class:private] => 20
+            [private_var2:object_class:private] => 21
             [protected_var1:protected] => string_1
             [protected_var2:protected] => string_2
             [public_var2] => 11
@@ -1245,19 +1245,19 @@ contains_object_class Object
         (
             [value] => 50
             [public_var1] => 10
-            [private_var1:private] => 20
-            [private_var2:private] => 21
+            [private_var1:object_class:private] => 20
+            [private_var2:object_class:private] => 21
             [protected_var1:protected] => string_1
             [protected_var2:protected] => string_2
             [public_var2] => 11
         )
 
-    [class_object3:private] => object_class Object
+    [class_object3:contains_object_class:private] => object_class Object
         (
             [value] => 50
             [public_var1] => 10
-            [private_var1:private] => 20
-            [private_var2:private] => 21
+            [private_var1:object_class:private] => 20
+            [private_var2:object_class:private] => 21
             [protected_var1:protected] => string_1
             [protected_var2:protected] => string_2
             [public_var2] => 11
@@ -1267,8 +1267,8 @@ contains_object_class Object
         (
             [value] => 50
             [public_var1] => 10
-            [private_var1:private] => 20
-            [private_var2:private] => 21
+            [private_var1:object_class:private] => 20
+            [private_var2:object_class:private] => 21
             [protected_var1:protected] => string_1
             [protected_var2:protected] => string_2
             [public_var2] => 11
@@ -1289,8 +1289,8 @@ contains_object_class Object
         (
             [value] => 50
             [public_var1] => 10
-            [private_var1:private] => 20
-            [private_var2:private] => 21
+            [private_var1:object_class:private] => 20
+            [private_var2:object_class:private] => 21
             [protected_var1:protected] => string_1
             [protected_var2:protected] => string_2
             [public_var2] => 11
@@ -1300,19 +1300,19 @@ contains_object_class Object
         (
             [value] => 50
             [public_var1] => 10
-            [private_var1:private] => 20
-            [private_var2:private] => 21
+            [private_var1:object_class:private] => 20
+            [private_var2:object_class:private] => 21
             [protected_var1:protected] => string_1
             [protected_var2:protected] => string_2
             [public_var2] => 11
         )
 
-    [class_object3:private] => object_class Object
+    [class_object3:contains_object_class:private] => object_class Object
         (
             [value] => 50
             [public_var1] => 10
-            [private_var1:private] => 20
-            [private_var2:private] => 21
+            [private_var1:object_class:private] => 20
+            [private_var2:object_class:private] => 21
             [protected_var1:protected] => string_1
             [protected_var2:protected] => string_2
             [public_var2] => 11
@@ -1322,8 +1322,8 @@ contains_object_class Object
         (
             [value] => 50
             [public_var1] => 10
-            [private_var1:private] => 20
-            [private_var2:private] => 21
+            [private_var1:object_class:private] => 20
+            [private_var2:object_class:private] => 21
             [protected_var1:protected] => string_1
             [protected_var2:protected] => string_2
             [public_var2] => 11
@@ -1342,8 +1342,8 @@ object_class Object
 (
     [value] => 50
     [public_var1] => 10
-    [private_var1:private] => 20
-    [private_var2:private] => 21
+    [private_var1:object_class:private] => 20
+    [private_var2:object_class:private] => 21
     [protected_var1:protected] => string_1
     [protected_var2:protected] => string_2
     [public_var2] => 11
@@ -1353,8 +1353,8 @@ object_class Object
 (
     [value] => 50
     [public_var1] => 10
-    [private_var1:private] => 20
-    [private_var2:private] => 21
+    [private_var1:object_class:private] => 20
+    [private_var2:object_class:private] => 21
     [protected_var1:protected] => string_1
     [protected_var2:protected] => string_2
     [public_var2] => 11
@@ -1364,8 +1364,8 @@ object_class Object
 (
     [value] => 50
     [public_var1] => 10
-    [private_var1:private] => 20
-    [private_var2:private] => 21
+    [private_var1:object_class:private] => 20
+    [private_var2:object_class:private] => 21
     [protected_var1:protected] => string_1
     [protected_var2:protected] => string_2
     [public_var2] => 11
@@ -1376,8 +1376,8 @@ object_class Object
 (
     [value] => 50
     [public_var1] => 10
-    [private_var1:private] => 20
-    [private_var2:private] => 21
+    [private_var1:object_class:private] => 20
+    [private_var2:object_class:private] => 21
     [protected_var1:protected] => string_1
     [protected_var2:protected] => string_2
     [public_var2] => 11
@@ -1387,8 +1387,8 @@ object_class Object
 (
     [value] => 50
     [public_var1] => 10
-    [private_var1:private] => 20
-    [private_var2:private] => 21
+    [private_var1:object_class:private] => 20
+    [private_var2:object_class:private] => 21
     [protected_var1:protected] => string_1
     [protected_var2:protected] => string_2
     [public_var2] => 11
@@ -1398,8 +1398,8 @@ object_class Object
 (
     [value] => 50
     [public_var1] => 10
-    [private_var1:private] => 20
-    [private_var2:private] => 21
+    [private_var1:object_class:private] => 20
+    [private_var2:object_class:private] => 21
     [protected_var1:protected] => string_1
     [protected_var2:protected] => string_2
     [public_var2] => 11
@@ -1423,8 +1423,8 @@ object_class Object
 (
     [value] => 50
     [public_var1] => 10
-    [private_var1:private] => 20
-    [private_var2:private] => 21
+    [private_var1:object_class:private] => 20
+    [private_var2:object_class:private] => 21
     [protected_var1:protected] => string_1
     [protected_var2:protected] => string_2
     [public_var2] => 11
@@ -1434,8 +1434,8 @@ object_class Object
 (
     [value] => 50
     [public_var1] => 10
-    [private_var1:private] => 20
-    [private_var2:private] => 21
+    [private_var1:object_class:private] => 20
+    [private_var2:object_class:private] => 21
     [protected_var1:protected] => string_1
     [protected_var2:protected] => string_2
     [public_var2] => 11
@@ -1445,8 +1445,8 @@ object_class Object
 (
     [value] => 50
     [public_var1] => 10
-    [private_var1:private] => 20
-    [private_var2:private] => 21
+    [private_var1:object_class:private] => 20
+    [private_var2:object_class:private] => 21
     [protected_var1:protected] => string_1
     [protected_var2:protected] => string_2
     [public_var2] => 11
@@ -1461,8 +1461,8 @@ object_class Object
 (
     [value] => 50
     [public_var1] => 10
-    [private_var1:private] => 20
-    [private_var2:private] => 21
+    [private_var1:object_class:private] => 20
+    [private_var2:object_class:private] => 21
     [protected_var1:protected] => string_1
     [protected_var2:protected] => string_2
     [public_var2] => 11
@@ -1470,8 +1470,8 @@ object_class Object
         (
             [value] => 50
             [public_var1] => 10
-            [private_var1:private] => 20
-            [private_var2:private] => 21
+            [private_var1:object_class:private] => 20
+            [private_var2:object_class:private] => 21
             [protected_var1:protected] => string_1
             [protected_var2:protected] => string_2
             [public_var2] => 11

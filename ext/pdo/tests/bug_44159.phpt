@@ -1,14 +1,17 @@
 --TEST--
 Bug #44159 (Crash: $pdo->setAttribute(PDO::STATEMENT_ATTR_CLASS, NULL))
 --SKIPIF--
-<?php
-if (!extension_loaded('pdo_sqlite')) die('skip no pdo_sqlite');
+<?php # vim:ft=php
+if (!extension_loaded('pdo')) die('skip PDO not available');
+try {
+	$pdo = new PDO("sqlite:".__DIR__."/foo.db");
+} catch (Exception $e) {
+	die("skip PDP_SQLITE not available");
+}
 ?>
 --FILE--
 <?php
-
-$dir = dirname(__FILE__);
-$pdo = new PDO("sqlite:$dir/foo.db");
+$pdo = new PDO("sqlite:".__DIR__."/foo.db");
 
 $attrs = array(PDO::ATTR_STATEMENT_CLASS, PDO::ATTR_STRINGIFY_FETCHES, PDO::NULL_TO_STRING);
 
@@ -18,7 +21,7 @@ foreach ($attrs as $attr) {
 	var_dump($pdo->setAttribute($attr, 'nonsense'));
 }
 
-@unlink($dir."/foo.db");
+@unlink(__DIR__."/foo.db");
 
 ?>
 --EXPECTF--

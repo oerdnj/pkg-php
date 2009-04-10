@@ -108,7 +108,7 @@ fclose($file_handle);
 setlocale(LC_MONETARY, $original);
 
 ?>
-===DONE===
+===Done===
 --EXPECTF--
 *** Testing money_format() function: with unexpected inputs for 'format' argument ***
 -- Iteration 1 --
@@ -175,4 +175,4 @@ NULL
 string(0) ""
 -- Iteration 27 --
 string(0) ""
-===DONE===
+===Done===

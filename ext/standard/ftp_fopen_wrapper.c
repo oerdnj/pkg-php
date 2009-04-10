@@ -18,7 +18,7 @@
    |          Sara Golemon <pollita@php.net>                              |
    +----------------------------------------------------------------------+
  */
-/* $Id: ftp_fopen_wrapper.c,v 1.85.2.4.2.11 2008/12/31 11:17:45 sebastian Exp $ */
+/* $Id: ftp_fopen_wrapper.c,v 1.85.2.4.2.4.2.7 2008/12/31 11:15:45 sebastian Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -359,7 +359,6 @@ static unsigned short php_fopen_do_pasv(php_stream *stream, char *ip, size_t ip_
 		tpath++;
 		/* pull out the LSB of the port */
 		portno += (unsigned short) strtoul(tpath, &ttpath, 10);
-
 #ifdef HAVE_IPV6
 	} else {
 		/* parse epsv command (|||6446|) */
@@ -376,8 +375,7 @@ static unsigned short php_fopen_do_pasv(php_stream *stream, char *ip, size_t ip_
 		/* pull out the port */
 		portno = (unsigned short) strtoul(tpath + 1, &ttpath, 10);
 	}
-#endif
-
+#endif	
 	if (ttpath == NULL) {
 		/* didn't get correct response from EPSV/PASV */
 		return 0;
@@ -777,13 +775,13 @@ static int php_stream_ftp_url_stat(php_stream_wrapper *wrapper, char *url, int f
 	}
 
 	php_stream_write_string(stream, "TYPE I\r\n"); /* we need this since some servers refuse to accept SIZE command in ASCII mode */
-
+	
 	result = GET_FTP_RESULT(stream);
 
 	if(result < 200 || result > 299) {
 		goto stat_errexit;
 	}
-
+	
 	php_stream_printf(stream TSRMLS_CC, "SIZE %s\r\n", (resource->path != NULL ? resource->path : "/"));
 	result = GET_FTP_RESULT(stream);
 	if (result < 200 || result > 299) {

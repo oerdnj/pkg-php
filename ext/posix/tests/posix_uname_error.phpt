@@ -26,6 +26,6 @@ echo "Done";
 
 -- Testing posix_uname() function with one argument --
 
-Warning: Wrong parameter count for posix_uname() in %s on line %d
+Warning: posix_uname() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 Done

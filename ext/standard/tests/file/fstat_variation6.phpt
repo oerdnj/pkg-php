@@ -39,8 +39,8 @@ foreach ( $variation_array as $var ) {
 ?>
 ===DONE===
 --EXPECTF--
-Error: 2 - fstat(): supplied argument is not a valid stream resource, %s(%d)
+Error: 2 - fstat() expects parameter 1 to be resource, object given, %s(%d)
 bool(false)
-Error: 2 - fstat(): supplied argument is not a valid stream resource, %s(%d)
+Error: 2 - fstat() expects parameter 1 to be resource, object given, %s(%d)
 bool(false)
 ===DONE===

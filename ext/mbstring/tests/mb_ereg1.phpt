@@ -17,9 +17,8 @@ foreach ($a as $args) {
 	var_dump(mb_ereg($args[0], $args[1], $args[2]));
 	var_dump($args);
 }
-
-echo "Done\n";
 ?>
+===DONE===
 --EXPECTF--	
 bool(false)
 array(3) {
@@ -75,4 +74,4 @@ array(3) {
   array(0) {
   }
 }
-Done
+===DONE===

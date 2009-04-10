@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: sqlite_statement.c,v 1.18.2.4.2.5 2008/12/31 11:17:42 sebastian Exp $ */
+/* $Id: sqlite_statement.c,v 1.18.2.4.2.3.2.4 2009/01/13 02:50:54 scottmac Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -104,6 +104,21 @@ static int pdo_sqlite_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_d
 						pdo_sqlite_error_stmt(stmt);
 						return 0;
 					
+					case PDO_PARAM_INT:
+					case PDO_PARAM_BOOL:
+						if (Z_TYPE_P(param->parameter) == IS_NULL) {
+							if (sqlite3_bind_null(S->stmt, param->paramno + 1) == SQLITE_OK) {
+								return 1;
+							}
+						} else {
+							convert_to_long(param->parameter);
+							if (SQLITE_OK == sqlite3_bind_int(S->stmt, param->paramno + 1, Z_LVAL_P(param->parameter))) {
+								return 1;
+							}
+						}
+						pdo_sqlite_error_stmt(stmt);
+						return 0;
+					
 					case PDO_PARAM_LOB:
 						if (Z_TYPE_P(param->parameter) == IS_RESOURCE) {
 							php_stream *stm;
@@ -117,9 +132,25 @@ static int pdo_sqlite_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_d
 								pdo_raise_impl_error(stmt->dbh, stmt, "HY105", "Expected a stream resource" TSRMLS_CC);
 								return 0;
 							}
+						} else if (Z_TYPE_P(param->parameter) == IS_NULL) {
+							if (sqlite3_bind_null(S->stmt, param->paramno + 1) == SQLITE_OK) {
+								return 1;
+							}
+							pdo_sqlite_error_stmt(stmt);
+							return 0;
+						} else {
+							convert_to_string(param->parameter);
 						}
-						/* fall through */
-		
+						
+						if (SQLITE_OK == sqlite3_bind_blob(S->stmt, param->paramno + 1,
+								Z_STRVAL_P(param->parameter),
+								Z_STRLEN_P(param->parameter),
+								SQLITE_STATIC)) {
+							return 1;	
+						}
+						pdo_sqlite_error_stmt(stmt);
+						return 0;
+							
 					case PDO_PARAM_STR:
 					default:
 						if (Z_TYPE_P(param->parameter) == IS_NULL) {
@@ -291,6 +322,13 @@ static int pdo_sqlite_stmt_col_meta(pdo_stmt_t *stmt, long colno, zval *return_v
 	if (str) {
 		add_assoc_string(return_value, "sqlite:decl_type", str, 1);
 	}
+
+#ifdef SQLITE_ENABLE_COLUMN_METADATA
+	str = sqlite3_column_table_name(S->stmt, colno);
+	if (str) {
+		add_assoc_string(return_value, "table", str, 1);
+	}
+#endif
 
 	add_assoc_zval(return_value, "flags", flags);
 

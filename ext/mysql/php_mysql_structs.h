@@ -13,30 +13,45 @@
    | license@php.net so we can mail you a copy immediately.               |
    +----------------------------------------------------------------------+
    | Author: Zeev Suraski <zeev@zend.com>                                 |
+   |         Andrey Hristov <andrey@php.net>                              |
    +----------------------------------------------------------------------+
 */
 
 
-/* $Id: php_mysql_structs.h,v 1.1.4.4 2008/12/31 11:17:40 sebastian Exp $ */
+/* $Id: php_mysql_structs.h,v 1.1.2.7 2008/12/31 11:15:38 sebastian Exp $ */
 
 #ifndef PHP_MYSQL_STRUCTS_H
 #define PHP_MYSQL_STRUCTS_H
-
-#ifdef PHP_WIN32
-#define PHP_MYSQL_API __declspec(dllexport)
-#else
-#define PHP_MYSQL_API
-#endif
-
-#if HAVE_MYSQL
 
 #ifdef ZTS
 #include "TSRM.h"
 #endif
 
-extern zend_module_entry mysql_module_entry;
+#ifndef TRUE
+#define TRUE 1
+#endif
 
-#define mysql_module_ptr &mysql_module_entry
+#ifndef FALSE
+#define FALSE 0
+#endif
+
+#if defined(MYSQL_USE_MYSQLND)
+#include "ext/mysqlnd/mysqlnd.h"
+#include "mysql_mysqlnd.h"
+#else
+#include <mysql.h>
+#endif
+
+#ifdef PHP_MYSQL_UNIX_SOCK_ADDR
+#ifdef MYSQL_UNIX_ADDR
+#undef MYSQL_UNIX_ADDR
+#endif
+#define MYSQL_UNIX_ADDR PHP_MYSQL_UNIX_SOCK_ADDR
+#endif
+
+#if (MYSQL_VERSION_ID >= 40113 && MYSQL_VERSION_ID < 50000) || MYSQL_VERSION_ID >= 50007 || defined(MYSQL_USE_MYSQLND)
+#define MYSQL_HAS_SET_CHARSET
+#endif
 
 PHP_MINIT_FUNCTION(mysql);
 PHP_RINIT_FUNCTION(mysql);
@@ -91,7 +106,7 @@ PHP_FUNCTION(mysql_stat);
 PHP_FUNCTION(mysql_thread_id);
 PHP_FUNCTION(mysql_client_encoding);
 PHP_FUNCTION(mysql_ping);
-#if (MYSQL_VERSION_ID >= 40113 && MYSQL_VERSION_ID < 50000) || MYSQL_VERSION_ID >= 50007
+#ifdef MYSQL_HAS_SET_CHARSET
 PHP_FUNCTION(mysql_set_charset);
 #endif
 
@@ -108,6 +123,12 @@ ZEND_BEGIN_MODULE_GLOBALS(mysql)
 	long connect_timeout;
 	long result_allocated;
 	long trace_mode;
+	long allow_local_infile;
+#ifdef MYSQL_USE_MYSQLND
+	MYSQLND_THD_ZVAL_PCACHE *mysqlnd_thd_zval_cache;
+	MYSQLND_QCACHE			*mysqlnd_qcache;
+	long					cache_size;
+#endif
 ZEND_END_MODULE_GLOBALS(mysql)
 
 #ifdef ZTS
@@ -116,13 +137,5 @@ ZEND_END_MODULE_GLOBALS(mysql)
 # define MySG(v) (mysql_globals.v)
 #endif
 
-
-#else
-
-#define mysql_module_ptr NULL
-
-#endif
-
-#define phpext_mysql_ptr mysql_module_ptr
 
 #endif /* PHP_MYSQL_STRUCTS_H */

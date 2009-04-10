@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_pgsql.c,v 1.7.2.11.2.3 2008/12/31 11:17:42 sebastian Exp $ */
+/* $Id: pdo_pgsql.c,v 1.7.2.11.2.1.2.3 2008/12/31 11:15:41 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -35,7 +35,7 @@
 #endif
 
 /* {{{ pdo_pgsql_functions[] */
-zend_function_entry pdo_pgsql_functions[] = {
+const zend_function_entry pdo_pgsql_functions[] = {
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -43,7 +43,7 @@ zend_function_entry pdo_pgsql_functions[] = {
 /* {{{ pdo_sqlite_deps
  */
 #if ZEND_MODULE_API_NO >= 20050922
-static zend_module_dep pdo_pgsql_deps[] = {
+static const zend_module_dep pdo_pgsql_deps[] = {
 	ZEND_MOD_REQUIRED("pdo")
 	{NULL, NULL, NULL}
 };
@@ -123,7 +123,7 @@ PHP_MINFO_FUNCTION(pdo_pgsql)
 	php_info_print_table_row(2, "PostgreSQL(libpq) Version", PG_VERSION);
 #endif	
 	php_info_print_table_row(2, "Module version", pdo_pgsql_module_entry.version);
-	php_info_print_table_row(2, "Revision", " $Id: pdo_pgsql.c,v 1.7.2.11.2.3 2008/12/31 11:17:42 sebastian Exp $ ");
+	php_info_print_table_row(2, "Revision", " $Id: pdo_pgsql.c,v 1.7.2.11.2.1.2.3 2008/12/31 11:15:41 sebastian Exp $ ");
 
 	php_info_print_table_end();
 }

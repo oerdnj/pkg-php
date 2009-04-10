@@ -26,11 +26,11 @@ var_dump( count_chars($string, $mode, $extra_arg) );
 
 -- Testing count_chars() function with no arguments --
 
-Warning: Wrong parameter count for count_chars() in %s on line %d
+Warning: count_chars() expects at least 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing count_chars() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for count_chars() in %s on line %d
+Warning: count_chars() expects at most 2 parameters, 3 given in %s on line %d
 NULL
 ===DONE===

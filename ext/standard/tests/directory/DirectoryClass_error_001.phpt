@@ -25,36 +25,35 @@ var_dump($d->close(1,2));
 
 ?>
 --EXPECTF--
-
 --> Try all methods with bad handle:
 
-Warning: Directory::read(): supplied argument is not a valid Directory resource in %s on line 6
+Warning: Directory::read(): supplied argument is not a valid Directory resource in %s on line %d
 bool(false)
 
-Warning: Directory::rewind(): supplied argument is not a valid Directory resource in %s on line 7
+Warning: Directory::rewind(): supplied argument is not a valid Directory resource in %s on line %d
 bool(false)
 
-Warning: Directory::close(): supplied argument is not a valid Directory resource in %s on line 8
+Warning: Directory::close(): supplied argument is not a valid Directory resource in %s on line %d
 bool(false)
 
 --> Try all methods with no handle:
 
-Warning: Directory::read(): Unable to find my handle property in %s on line 13
+Warning: Directory::read(): Unable to find my handle property in %s on line %d
 bool(false)
 
-Warning: Directory::rewind(): Unable to find my handle property in %s on line 14
+Warning: Directory::rewind(): Unable to find my handle property in %s on line %d
 bool(false)
 
-Warning: Directory::close(): Unable to find my handle property in %s on line 15
+Warning: Directory::close(): Unable to find my handle property in %s on line %d
 bool(false)
 
 --> Try all methods with wrong number of args:
 
-Warning: Wrong parameter count for Directory::read() in %s on line 19
+Warning: Directory::read() expects at most 1 parameter, 2 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for Directory::rewind() in %s on line 20
+Warning: Directory::rewind() expects at most 1 parameter, 2 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for Directory::close() in %s on line 21
+Warning: Directory::close() expects at most 1 parameter, 2 given in %s on line %d
 NULL

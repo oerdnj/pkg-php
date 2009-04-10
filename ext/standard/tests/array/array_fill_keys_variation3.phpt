@@ -22,10 +22,10 @@ $nullVal = null;
 echo "\n-- Testing array_fill_keys() function with both wrong arguments --\n";
 var_dump( array_fill_keys($bool, $float) );
 
-echo "\n-- Testing array_fill_keys() function with resources --\n";
+echo "\n-- Testing array_fill_keys() function with unusual second arguments --\n";
 var_dump( array_fill_keys($array, $fp) );
 
-echo "\n-- Testing array_fill_keys() function with null --\n";
+echo "\n-- Testing array_fill_keys() function with mixed array --\n";
 var_dump( array_fill_keys($nullVal, $simpleStr) );
 
 fclose($fp);
@@ -39,7 +39,7 @@ echo "Done";
 Warning: array_fill_keys() expects parameter 1 to be array, boolean given in %sarray_fill_keys_variation3.php on line %d
 NULL
 
--- Testing array_fill_keys() function with resources --
+-- Testing array_fill_keys() function with unusual second arguments --
 array(2) {
   ["one"]=>
   resource(%d) of type (stream)
@@ -47,7 +47,7 @@ array(2) {
   resource(%d) of type (stream)
 }
 
--- Testing array_fill_keys() function with null --
+-- Testing array_fill_keys() function with mixed array --
 
 Warning: array_fill_keys() expects parameter 1 to be array, null given in %sarray_fill_keys_variation3.php on line %d
 NULL

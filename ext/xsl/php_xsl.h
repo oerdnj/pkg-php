@@ -16,19 +16,13 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_xsl.h,v 1.15.2.1.2.3 2008/12/31 11:17:47 sebastian Exp $ */
+/* $Id: php_xsl.h,v 1.15.2.1.2.1.2.4 2008/12/31 11:15:47 sebastian Exp $ */
 
 #ifndef PHP_XSL_H
 #define PHP_XSL_H
 
 extern zend_module_entry xsl_module_entry;
 #define phpext_xsl_ptr &xsl_module_entry
-
-#ifdef PHP_WIN32
-#define PHP_XSL_API __declspec(dllexport)
-#else
-#define PHP_XSL_API
-#endif
 
 #ifdef ZTS
 #include "TSRM.h"
@@ -60,6 +54,7 @@ typedef struct _xsl_object {
 	HashTable *registered_phpfunctions;
 	HashTable *node_list;
 	php_libxml_node_object *doc;
+	char *profiling;
 } xsl_object;
 
 void php_xsl_set_object(zval *wrapper, void *obj TSRMLS_DC);

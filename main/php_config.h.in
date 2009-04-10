@@ -19,10 +19,16 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: acconfig.h,v 1.40.2.1.2.3 2008/12/31 11:17:32 sebastian Exp $ */
+/* $Id: acconfig.h,v 1.40.2.1.2.1.2.3 2008/12/31 11:15:31 sebastian Exp $ */
 
-#define ZEND_API
-#define ZEND_DLEXPORT
+#if defined(__GNUC__) && __GNUC__ >= 4
+# define ZEND_API __attribute__ ((visibility("default")))
+# define ZEND_DLEXPORT __attribute__ ((visibility("default")))
+#else
+# define ZEND_API
+# define ZEND_DLEXPORT
+#endif
+
 #define ZEND_DLIMPORT
 
 
@@ -113,9 +119,6 @@
 /* Define to `int' if <sys/types.h> doesn't define.  */
 #undef uid_t
 
-/* Define if lex declares yytext as a char * by default, not a char[].  */
-#undef YYTEXT_POINTER
-
 #undef uint
 #undef ulong
 
@@ -160,6 +163,9 @@
 
 /* Define if you have the asinh function.  */
 #undef HAVE_ASINH
+
+/* Define if you have the asprintf function.  */
+#undef HAVE_ASPRINTF
 
 /* Define if you have the atanh function.  */
 #undef HAVE_ATANH
@@ -226,6 +232,9 @@
 
 /* Define if you have the getgroups function.  */
 #undef HAVE_GETGROUPS
+
+/* Define if you have the gethostname function.  */
+#undef HAVE_GETHOSTNAME
 
 /* Define if you have the getloadavg function.  */
 #undef HAVE_GETLOADAVG
@@ -425,9 +434,6 @@
 /* Define if you have the realpath function.  */
 #undef HAVE_REALPATH
 
-/* Define if you have the regcomp function.  */
-#undef HAVE_REGCOMP
-
 /* Define if you have the res_search function.  */
 #undef HAVE_RES_SEARCH
 
@@ -472,6 +478,18 @@
 
 /* Define if you have the sigaction function.  */
 #undef HAVE_SIGACTION
+
+/* Define if you have the sigprocmask function.  */
+#undef HAVE_SIGPROCMASK
+
+/* Define if you have the sigsetjmp function.  */
+#undef HAVE_SIGSETJMP
+
+/* Define if you have the sigtimedwait function.  */
+#undef HAVE_SIGTIMEDWAIT
+
+/* Define if you have the sigwaitinfo function.  */
+#undef HAVE_SIGWAITINFO
 
 /* Define if you have the sin function.  */
 #undef HAVE_SIN
@@ -520,6 +538,9 @@
 
 /* Define if you have the strlcpy function.  */
 #undef HAVE_STRLCPY
+
+/* Define if you have the strndup function.  */
+#undef HAVE_STRNDUP
 
 /* Define if you have the strnlen function.  */
 #undef HAVE_STRNLEN
@@ -571,6 +592,12 @@
 
 /* Define if you have the utime function.  */
 #undef HAVE_UTIME
+
+/* Define if you have the utimes function.  */
+#undef HAVE_UTIMES
+
+/* Define if you have the vasprintf function.  */
+#undef HAVE_VASPRINTF
 
 /* Define if you have the vsnprintf function.  */
 #undef HAVE_VSNPRINTF
@@ -932,17 +959,14 @@
 /* Whether to use Roxen in ZTS mode */
 #undef ROXEN_USE_ZTS
 
-/*   */
-#undef PHP_FASTCGI
+/* Define if the socklen_t typedef is in sys/socket.h */
+#undef HAVE_SOCKLEN_T
 
-/*   */
-#undef FORCE_CGI_REDIRECT
+/* Define if sockaddr_un in sys/un.h contains a sun_len component */
+#undef HAVE_SOCKADDR_UN_SUN_LEN
 
-/*   */
-#undef DISCARD_PATH
-
-/*   */
-#undef ENABLE_PATHINFO_CHECK
+/* Define if cross-process locking is required by accept() */
+#undef USE_LOCKING
 
 /* Define if system uses EBCDIC */
 #undef CHARSET_EBCDIC
@@ -1020,27 +1044,6 @@
 #undef HAVE_LIBDL
 
 /*   */
-#undef HAVE_RES_SEARCH
-
-/*   */
-#undef HAVE_RES_SEARCH
-
-/*   */
-#undef HAVE_LIBRESOLV
-
-/*   */
-#undef HAVE_RES_SEARCH
-
-/*   */
-#undef HAVE_LIBBIND
-
-/*   */
-#undef HAVE_RES_SEARCH
-
-/*   */
-#undef HAVE_LIBSOCKET
-
-/*   */
 #undef HAVE_INET_ATON
 
 /*   */
@@ -1051,21 +1054,6 @@
 
 /*   */
 #undef HAVE_INET_ATON
-
-/*   */
-#undef HAVE_LIBBIND
-
-/*   */
-#undef HAVE_DN_SKIPNAME
-
-/*   */
-#undef HAVE_DN_SKIPNAME
-
-/*   */
-#undef HAVE_LIBRESOLV
-
-/*   */
-#undef HAVE_DN_SKIPNAME
 
 /*   */
 #undef HAVE_LIBBIND
@@ -1208,6 +1196,24 @@
 /* Whether to enable IPv6 support */
 #undef HAVE_IPV6
 
+/* Whether to build ereg as dynamic module */
+#undef COMPILE_DL_EREG
+
+/*   */
+#undef HAVE_REGEX_T_RE_MAGIC
+
+/*   */
+#undef HSREGEX
+
+/*   */
+#undef REGEX
+
+/*   */
+#undef REGEX
+
+/* 1 */
+#undef HAVE_REGEX_T_RE_MAGIC
+
 /*   */
 #undef HAVE_LIBXML
 
@@ -1226,17 +1232,29 @@
 /*   */
 #undef HAVE_OPENSSL_EXT
 
+/*   */
+#undef HAVE_PCRE
+
+/* Whether to build pcre as dynamic module */
+#undef COMPILE_DL_PCRE
+
 /* Whether to build pcre as dynamic module */
 #undef COMPILE_DL_PCRE
 
 /*   */
 #undef HAVE_BUNDLED_PCRE
 
-/*   */
-#undef HAVE_PCRE
+/* have commercial sqlite3 with crypto support */
+#undef HAVE_SQLITE3_KEY
 
-/* Whether to build pcre as dynamic module */
-#undef COMPILE_DL_PCRE
+/* have sqlite3 with extension support */
+#undef SQLITE_OMIT_LOAD_EXTENSION
+
+/*   */
+#undef HAVE_SQLITE3
+
+/* Whether to build sqlite3 as dynamic module */
+#undef COMPILE_DL_SQLITE3
 
 /* Whether to build zlib as dynamic module */
 #undef COMPILE_DL_ZLIB
@@ -1392,12 +1410,6 @@
 #undef COMPILE_DL_DBA
 
 /*   */
-#undef DBASE
-
-/* Whether to build dbase as dynamic module */
-#undef COMPILE_DL_DBASE
-
-/*   */
 #undef HAVE_LIBXML
 
 /*   */
@@ -1406,29 +1418,20 @@
 /* Whether to build dom as dynamic module */
 #undef COMPILE_DL_DOM
 
+/* Whether to build enchant as dynamic module */
+#undef COMPILE_DL_ENCHANT
+
+/*   */
+#undef HAVE_ENCHANT
+
 /* Whether you want EXIF (metadata from images) support */
 #undef HAVE_EXIF
 
 /* Whether to build exif as dynamic module */
 #undef COMPILE_DL_EXIF
 
-/* Whether you have FrontBase */
-#undef HAVE_FBSQL
-
-/* Whether to build fbsql as dynamic module */
-#undef COMPILE_DL_FBSQL
-
-/*   */
-#undef HAVE_FDFTK_H_LOWER
-
-/*   */
-#undef HAVE_FDFTK_5
-
-/* Whether to build fdf as dynamic module */
-#undef COMPILE_DL_FDF
-
-/*   */
-#undef HAVE_FDFLIB
+/* Whether to build fileinfo as dynamic module */
+#undef COMPILE_DL_FILEINFO
 
 /* Whether to build filter as dynamic module */
 #undef COMPILE_DL_FILTER
@@ -1447,9 +1450,6 @@
 
 /*   */
 #undef HAVE_LIBFREETYPE
-
-/*   */
-#undef HAVE_LIBTTF
 
 /*   */
 #undef HAVE_LIBT1
@@ -1540,9 +1540,6 @@
 
 /*   */
 #undef HAVE_LIBFREETYPE
-
-/*   */
-#undef HAVE_LIBTTF
 
 /*   */
 #undef HAVE_LIBT1
@@ -1652,6 +1649,9 @@
 /*   */
 #undef HAVE_GMP
 
+/*   */
+#undef PHP_MHASH_BC
+
 /* Have HASH Extension */
 #undef HAVE_HASH_EXT
 
@@ -1684,6 +1684,12 @@
 
 /* glibc's iconv implementation */
 #undef HAVE_GLIBC_ICONV
+
+/* Which iconv implementation to use */
+#undef PHP_ICONV_IMPL
+
+/* IBM iconv implementation */
+#undef HAVE_IBM_ICONV
 
 /* Which iconv implementation to use */
 #undef PHP_ICONV_IMPL
@@ -1760,6 +1766,9 @@
 /* Whether to build interbase as dynamic module */
 #undef COMPILE_DL_INTERBASE
 
+/* Whether to build intl as dynamic module */
+#undef COMPILE_DL_INTL
+
 /* whether to enable JavaScript Object Serialization support */
 #undef HAVE_JSON
 
@@ -1805,11 +1814,26 @@
 /* whether to have multibyte string support */
 #undef HAVE_MBSTRING
 
-/* whether to have multibyte regex support */
-#undef HAVE_MBREGEX
-
 /* whether to check multibyte regex backtrack */
 #undef USE_COMBINATION_EXPLOSION_CHECK
+
+/* Define to 1 if you have the <stdarg.h> header file. */
+#undef HAVE_STDARG_PROTOTYPES
+
+/* Define to 1 if the bundled oniguruma is used */
+#undef PHP_ONIG_BUNDLED
+
+/* Define to 1 if the oniguruma library is available */
+#undef HAVE_ONIG
+
+/* Define to 1 if the oniguruma library is available */
+#undef HAVE_ONIG
+
+/* define to 1 if oniguruma has an invalid entry for KOI8 encoding */
+#undef PHP_ONIG_BAD_KOI8_ENTRY
+
+/* whether to have multibyte regex support */
+#undef HAVE_MBREGEX
 
 /* Whether to build mbstring as dynamic module */
 #undef COMPILE_DL_MBSTRING
@@ -1823,57 +1847,6 @@
 /* Whether to build mcrypt as dynamic module */
 #undef COMPILE_DL_MCRYPT
 
-/* Whether to build mhash as dynamic module */
-#undef COMPILE_DL_MHASH
-
-/*   */
-#undef HAVE_LIBMHASH
-
-/* Whether to build mime_magic as dynamic module */
-#undef COMPILE_DL_MIME_MAGIC
-
-/* magic file path */
-#undef PHP_MIME_MAGIC_FILE_PATH
-
-/*   */
-#undef HAVE_MING
-
-/*   */
-#undef HAVE_SWFPREBUILTCLIP
-
-/*   */
-#undef HAVE_SWFMOVIE_NAMEDANCHOR
-
-/*   */
-#undef HAVE_MING_SETSWFCOMPRESSION
-
-/*   */
-#undef HAVE_DESTROY_SWF_BLOCK
-
-/*   */
-#undef HAVE_NEW_MING
-
-/*   */
-#undef HAVE_MING_ZLIB
-
-/*   */
-#undef HAVE_MING_MOVIE_LEVEL
-
-/* Whether to build ming as dynamic module */
-#undef COMPILE_DL_MING
-
-/*   */
-#undef HAVE_MSQL
-
-/* Whether to build msql as dynamic module */
-#undef COMPILE_DL_MSQL
-
-/*   */
-#undef MSQL1
-
-/*   */
-#undef MSQL1
-
 /* Whether to build mssql as dynamic module */
 #undef COMPILE_DL_MSSQL
 
@@ -1886,17 +1859,20 @@
 /*   */
 #undef HAVE_FREETDS
 
+/*   */
+#undef PHP_MYSQL_UNIX_SOCK_ADDR
+
+/*   */
+#undef PHP_MYSQL_UNIX_SOCK_ADDR
+
 /* Whether you have MySQL */
 #undef HAVE_MYSQL
 
-/*   */
-#undef MYSQL_UNIX_ADDR
-
-/*   */
-#undef MYSQL_UNIX_ADDR
-
 /* Whether to build mysql as dynamic module */
 #undef COMPILE_DL_MYSQL
+
+/* Whether mysqlnd is enabled */
+#undef MYSQL_USE_MYSQLND
 
 /* embedded MySQL support enabled */
 #undef HAVE_EMBEDDED_MYSQLI
@@ -1907,92 +1883,11 @@
 /* Whether to build mysqli as dynamic module */
 #undef COMPILE_DL_MYSQLI
 
-/*   */
-#undef HAVE_NCURSES_H
-
-/*   */
-#undef HAVE_NCURSESLIB
-
-/*   */
-#undef HAVE_NCURSES_PANEL
-
-/*   */
-#undef HAVE_NCURSES_COLOR_SET
-
-/*   */
-#undef HAVE_NCURSES_SLK_COLOR
-
-/*   */
-#undef HAVE_NCURSES_ASSUME_DEFAULT_COLORS
-
-/*   */
-#undef HAVE_NCURSES_USE_EXTENDED_NAMES
-
-/* Whether to build ncurses as dynamic module */
-#undef COMPILE_DL_NCURSES
-
-/*   */
-#undef HAVE_OCI_ENV_CREATE
-
-/*   */
-#undef HAVE_OCI_STMT_PREPARE2
-
-/*   */
-#undef HAVE_OCI_ENV_CREATE
-
-/*   */
-#undef HAVE_OCI_STMT_PREPARE2
-
-/*   */
-#undef HAVE_OCI8_ATTR_STATEMENT
-
-/*   */
-#undef HAVE_OCI8_ATTR_STATEMENT
-
-/*   */
-#undef HAVE_OCI_ENV_NLS_CREATE
-
-/*   */
-#undef HAVE_OCI_ENV_CREATE
-
-/*   */
-#undef HAVE_OCI_STMT_PREPARE2
+/* Whether mysqlnd is enabled */
+#undef MYSQLI_USE_MYSQLND
 
 /*   */
 #undef HAVE_OCI_LOB_READ2
-
-/*   */
-#undef HAVE_OCI8_ATTR_STATEMENT
-
-/*   */
-#undef HAVE_OCI_ENV_NLS_CREATE
-
-/*   */
-#undef HAVE_OCI_ENV_CREATE
-
-/*   */
-#undef HAVE_OCI_STMT_PREPARE2
-
-/*   */
-#undef HAVE_OCI_LOB_READ2
-
-/*   */
-#undef HAVE_OCI8_TEMP_LOB
-
-/*   */
-#undef PHP_OCI8_HAVE_COLLECTIONS
-
-/*   */
-#undef HAVE_OCI8_TEMP_LOB
-
-/*   */
-#undef HAVE_OCI8_TEMP_LOB
-
-/*   */
-#undef PHP_OCI8_HAVE_COLLECTIONS
-
-/* Whether to build oci8 as dynamic module */
-#undef COMPILE_DL_OCI8
 
 /* Whether to build oci8 as dynamic module */
 #undef COMPILE_DL_OCI8
@@ -2001,28 +1896,16 @@
 #undef HAVE_OCI8
 
 /*   */
+#undef PHP_OCI8_DEF_DIR
+
+/*   */
+#undef PHP_OCI8_DEF_SHARED_LIBADD
+
+/*   */
 #undef HAVE_OCI_INSTANT_CLIENT
 
 /*   */
-#undef HAVE_OCI8_ATTR_STATEMENT
-
-/*   */
-#undef HAVE_OCI_ENV_NLS_CREATE
-
-/*   */
-#undef HAVE_OCI_ENV_CREATE
-
-/*   */
-#undef HAVE_OCI_STMT_PREPARE2
-
-/*   */
 #undef HAVE_OCI_LOB_READ2
-
-/*   */
-#undef HAVE_OCI8_TEMP_LOB
-
-/*   */
-#undef PHP_OCI8_HAVE_COLLECTIONS
 
 /* Whether to build oci8 as dynamic module */
 #undef COMPILE_DL_OCI8
@@ -2152,6 +2035,9 @@
 
 /* Whether to build pdo_firebird as dynamic module */
 #undef COMPILE_DL_PDO_FIREBIRD
+
+/* Whether pdo_mysql uses mysqlnd */
+#undef PDO_USE_MYSQLND
 
 /* Whether you have MySQL */
 #undef HAVE_MYSQL
@@ -2312,9 +2198,6 @@
 /* Whether to build pdo_sqlite as dynamic module */
 #undef COMPILE_DL_PDO_SQLITE
 
-/* Size of a pointer */
-#undef SQLITE_PTR_SZ
-
 /* Whether to have pg_config.h */
 #undef HAVE_PG_CONFIG_H
 
@@ -2399,8 +2282,23 @@
 /* Whether libpq is compiled with --enable-multibyte */
 #undef HAVE_PGSQL_WITH_MULTIBYTE_SUPPORT
 
+/* PostgreSQL 8.1 or later */
+#undef HAVE_PG_LO_CREATE
+
+/* PostgreSQL 8.4 or later */
+#undef HAVE_PG_LO_IMPORT_WITH_OID
+
 /* Whether to build pgsql as dynamic module */
 #undef COMPILE_DL_PGSQL
+
+/* Whether to build phar as dynamic module */
+#undef COMPILE_DL_PHAR
+
+/*   */
+#undef PHAR_HASH_OK
+
+/*   */
+#undef PHAR_HAVE_OPENSSL
 
 /* whether to include POSIX-like functions */
 #undef HAVE_POSIX
@@ -2546,35 +2444,32 @@
 /*   */
 #undef HAVE_CRYPT
 
+/* Whether PHP has to use its own crypt_r for blowfish, des, ext des and md5 */
+#undef PHP_USE_PHP_CRYPT_R
+
 /* Whether the system supports standard DES salt */
 #undef PHP_STD_DES_CRYPT
-
-/* Whether the system supports extended DES salt */
-#undef PHP_EXT_DES_CRYPT
-
-/* Whether the system supports MD5 salt */
-#undef PHP_MD5_CRYPT
 
 /* Whether the system supports BlowFish salt */
 #undef PHP_BLOWFISH_CRYPT
 
-/*   */
-#undef HAVE_REGEX_T_RE_MAGIC
+/* Whether the system supports extended DES salt */
+#undef PHP_EXT_DES_CRYPT
 
-/*   */
-#undef HSREGEX
+/* Whether the system supports extended DES salt */
+#undef PHP_MD5_CRYPT
 
-/*   */
-#undef REGEX
+/* Whether the system supports standard DES salt */
+#undef PHP_STD_DES_CRYPT
 
-/*   */
-#undef REGEX
+/* Whether the system supports BlowFish salt */
+#undef PHP_BLOWFISH_CRYPT
 
-/* 1 */
-#undef HAVE_REGEX_T_RE_MAGIC
+/* Whether the system supports extended DES salt */
+#undef PHP_EXT_DES_CRYPT
 
-/*  see #24142  */
-#undef PHP_ROUND_FUZZ
+/* Whether PHP has to use its own crypt_r for blowfish, des and ext des */
+#undef PHP_USE_PHP_CRYPT_R
 
 /* Define if your system has fork/vfork/CreateProcess */
 #undef PHP_CAN_SUPPORT_PROC_OPEN
@@ -2625,6 +2520,27 @@
 #undef HAVE_LIBSOCKET
 
 /*   */
+#undef HAVE_RES_SEARCH
+
+/*   */
+#undef HAVE_RES_SEARCH
+
+/*   */
+#undef HAVE_LIBRESOLV
+
+/*   */
+#undef HAVE_RES_SEARCH
+
+/*   */
+#undef HAVE_LIBBIND
+
+/*   */
+#undef HAVE_RES_SEARCH
+
+/*   */
+#undef HAVE_LIBSOCKET
+
+/*   */
 #undef HAVE_DN_EXPAND
 
 /*   */
@@ -2641,6 +2557,69 @@
 
 /*   */
 #undef HAVE_DN_EXPAND
+
+/*   */
+#undef HAVE_LIBSOCKET
+
+/*   */
+#undef HAVE_DN_SKIPNAME
+
+/*   */
+#undef HAVE_DN_SKIPNAME
+
+/*   */
+#undef HAVE_LIBRESOLV
+
+/*   */
+#undef HAVE_DN_SKIPNAME
+
+/*   */
+#undef HAVE_LIBBIND
+
+/*   */
+#undef HAVE_DN_SKIPNAME
+
+/*   */
+#undef HAVE_LIBSOCKET
+
+/*   */
+#undef HAVE_RES_MKQUERY
+
+/*   */
+#undef HAVE_RES_MKQUERY
+
+/*   */
+#undef HAVE_LIBRESOLV
+
+/*   */
+#undef HAVE_RES_MKQUERY
+
+/*   */
+#undef HAVE_LIBBIND
+
+/*   */
+#undef HAVE_RES_MKQUERY
+
+/*   */
+#undef HAVE_LIBSOCKET
+
+/*   */
+#undef HAVE_RES_SEND
+
+/*   */
+#undef HAVE_RES_SEND
+
+/*   */
+#undef HAVE_LIBRESOLV
+
+/*   */
+#undef HAVE_RES_SEND
+
+/*   */
+#undef HAVE_LIBBIND
+
+/*   */
+#undef HAVE_RES_SEND
 
 /*   */
 #undef HAVE_LIBSOCKET
@@ -2665,24 +2644,6 @@
 
 /* Whether to build standard as dynamic module */
 #undef COMPILE_DL_STANDARD
-
-/* Whether to build sybase as dynamic module */
-#undef COMPILE_DL_SYBASE
-
-/*   */
-#undef HAVE_LIBDNET_STUB
-
-/*   */
-#undef HAVE_SYBASE
-
-/*   */
-#undef PHP_SYBASE_DBOPEN
-
-/*   */
-#undef DBMFIX
-
-/*   */
-#undef PHP_SYBASE_DBOPEN
 
 /*   */
 #undef HAVE_SYBASE_CT
@@ -2813,6 +2774,12 @@
 /* Whether to build zip as dynamic module */
 #undef COMPILE_DL_ZIP
 
+/* Whether to build mysqlnd as dynamic module */
+#undef COMPILE_DL_MYSQLND
+
+/* EXPERIMENTAL: Use mysqlnd internal threading */
+#undef MYSQLND_THREADED
+
 /* Define if int32_t type is present.  */
 #undef HAVE_INT32_T
 
@@ -2824,6 +2791,21 @@
 
 /* whether floatingpoint.h defines fp_except */
 #undef HAVE_FP_EXCEPT
+
+/* whether _FPU_SETCW is present and usable */
+#undef HAVE__FPU_SETCW
+
+/* whether fpsetprec is present and usable */
+#undef HAVE_FPSETPREC
+
+/* whether _controlfp is present usable */
+#undef HAVE__CONTROLFP
+
+/* whether _controlfp_s is present and usable */
+#undef HAVE__CONTROLFP_S
+
+/* whether FPU control word can be manipulated by inline assembler */
+#undef HAVE_FPU_INLINE_ASM_X86
 
 /* Define if dlsym() requires a leading underscore in symbol names.  */
 #undef DLSYM_NEEDS_UNDERSCORE

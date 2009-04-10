@@ -1,4 +1,4 @@
-## $Id: configure.in,v 1.579.2.52.2.131 2009/02/25 14:56:50 iliaa Exp $ -*- autoconf -*-
+## $Id: configure.in,v 1.579.2.52.2.77.2.47 2009/03/23 20:33:21 johannes Exp $ -*- autoconf -*-
 dnl ## Process this file with autoconf to produce a configure script.
 
 divert(1)
@@ -11,9 +11,9 @@ dnl ## Diversion 2 is the initial checking of OS features, programs,
 dnl ## libraries and so on.
 
 dnl ## In diversion 3 we check for compile-time options to the PHP
-dnl ## core and how to deal with different system dependencies.
-dnl ## This includes what regex library is used and whether debugging or short
-dnl ## tags are enabled, and the default behaviour of php.ini options.
+dnl ## core and how to deal with different system dependencies. 
+dnl ## This includes whether debugging or short tags are enabled
+dnl ## and the default behaviour of php.ini options.
 dnl ## This is also where an SAPI interface is selected (choosing between
 dnl ## Apache module, CGI etc.)
 
@@ -40,9 +40,9 @@ PHP_CANONICAL_HOST_TARGET
 AC_CONFIG_HEADER(main/php_config.h)
 
 PHP_MAJOR_VERSION=5
-PHP_MINOR_VERSION=2
-PHP_RELEASE_VERSION=9
-PHP_EXTRA_VERSION=""
+PHP_MINOR_VERSION=3
+PHP_RELEASE_VERSION=0
+PHP_EXTRA_VERSION="RC1"
 PHP_VERSION="$PHP_MAJOR_VERSION.$PHP_MINOR_VERSION.$PHP_RELEASE_VERSION$PHP_EXTRA_VERSION"
 PHP_VERSION_ID=`expr [$]PHP_MAJOR_VERSION \* 10000 + [$]PHP_MINOR_VERSION \* 100 + [$]PHP_RELEASE_VERSION`
 
@@ -140,8 +140,9 @@ esac
 dnl Checks for programs.
 dnl -------------------------------------------------------------------------
 
-AC_PROG_CC
+AC_PROG_CC([cc gcc])
 PHP_DETECT_ICC
+PHP_DETECT_SUNCC
 AC_PROG_CC_C_O
 dnl Change to AC_PROG_CC_STDC when we start requiring a post-2.13 autoconf
 dnl AC_PROG_CC_STDC
@@ -163,7 +164,6 @@ PHP_RUNPATH_SWITCH
 dnl Checks for some support/generator progs
 PHP_PROG_AWK
 PHP_PROG_BISON
-PHP_PROG_LEX
 PHP_PROG_RE2C
 
 dnl Check if bison generated files exist when bison does not..
@@ -174,6 +174,34 @@ case $php_cv_bison_version in
     fi
     ;;
 esac
+
+PHP_ARG_ENABLE(re2c-cgoto, whether to enable computed goto gcc extension with re2c,
+[  --enable-re2c-cgoto     Enable -g flag to re2c to use computed goto gcc extension], no, no)
+
+if test "$PHP_RE2C_CGOTO" = "no"; then
+  RE2C_FLAGS=""
+else
+  AC_MSG_CHECKING([whether re2c -g works])
+  AC_TRY_COMPILE([],[
+int main(int argc, const char **argv)
+{
+  argc = argc;
+  argv = argv;
+label1:
+label2:
+  static void *adr[] = { &&label1, &&label2};
+  goto *adr[0];
+  return 0;
+}
+  ],[
+    RE2C_FLAGS=""
+    AC_MSG_RESULT([no])
+  ],[
+    RE2C_FLAGS="-g"
+    AC_MSG_RESULT([yes])
+  ])
+fi
+PHP_SUBST(RE2C_FLAGS)
 
 dnl Platform-specific compile settings.
 dnl -------------------------------------------------------------------------
@@ -187,7 +215,26 @@ case $host_cpu in
       CFLAGS="$CFLAGS -ieee"
     fi
     ;;
+  sparc*)
+    if test "$SUNCC" = "yes"; then
+      CFLAGS="$CFLAGS -xmemalign=8s"
+    fi
 esac
+
+dnl activate some gcc specific optimizations for gcc >= 4
+if test "$GCC" = "yes"; then
+  case $host_alias in
+  *darwin*)
+    GCC_MAJOR_VERSION=`$CC -dumpversion | /usr/bin/sed -nE '1s/([[0-9]]+)\.[[0-9]]+\..*/\1/;1p'`
+    ;;
+  *)
+    GCC_MAJOR_VERSION=`$CC --version | $SED -n '1s/[[^0-9]]*//;1s/\..*//;1p'`
+    ;;
+  esac
+  if test $GCC_MAJOR_VERSION -ge 4; then
+    CFLAGS="$CFLAGS -fvisibility=hidden"
+  fi
+fi
 
 case $host_alias in
   *solaris*)
@@ -300,9 +347,9 @@ fi
 divert(3)
 
 dnl ## In diversion 3 we check for compile-time options to the PHP
-dnl ## core and how to deal with different system dependencies.
-dnl ## This includes what regex library is used and whether debugging or short
-dnl ## tags are enabled, and the default behaviour of php.ini options.
+dnl ## core and how to deal with different system dependencies. 
+dnl ## This includes whether debugging or short tags are enabled
+dnl ## and the default behaviour of php.ini options.
 
 dnl Starting system checks.
 dnl -------------------------------------------------------------------------
@@ -351,15 +398,9 @@ if test "$ac_cv_func_dlopen" = "yes"; then
 fi
 AC_CHECK_LIB(m, sin)
 
-dnl Check for resolver routines.
-dnl Need to check for both res_search and __res_search
-dnl in -lc, -lbind, -lresolv and -lsocket
-PHP_CHECK_FUNC(res_search, resolv, bind, socket)
-
-dnl Check for inet_aton and dn_skipname
+dnl Check for inet_aton
 dnl in -lc, -lbind and -lresolv
 PHP_CHECK_FUNC(inet_aton, resolv, bind)
-PHP_CHECK_FUNC(dn_skipname, resolv, bind)
 
 
 dnl Then headers.
@@ -528,6 +569,7 @@ getprotobyname \
 getprotobynumber \
 getservbyname \
 getservbyport \
+gethostname \
 getrusage \
 gettimeofday \
 gmtime_r \
@@ -556,7 +598,6 @@ putenv \
 realpath \
 random \
 rand_r \
-regcomp \
 res_search \
 scandir \
 setitimer \
@@ -592,6 +633,8 @@ usleep \
 nanosleep \
 utime \
 vsnprintf \
+vasprintf \
+asprintf \
 )
 
 dnl Check for getaddrinfo, should be a better way, but...
@@ -747,6 +790,15 @@ if test "$PHP_DEBUG" = "yes"; then
   if test "$GCC" = "yes" || test "$ICC" = "yes"; then
     CFLAGS="$CFLAGS -O0"
     CXXFLAGS="$CXXFLAGS -O0"
+  fi
+  if test "$SUNCC" = "yes"; then
+    if test -n "$auto_cflags"; then
+      CFLAGS="-g"
+      CXXFLAGS="-g"
+    else
+      CFLAGS="$CFLAGS -g"
+      CXXFLAGS="$CFLAGS -g"
+    fi
   fi
 else
   PHP_DEBUG=0
@@ -985,10 +1037,6 @@ if test "$PHP_PEAR" != "no"; then
   dnl
   dnl PEAR dependancies
   dnl
-  if test "$PHP_PCRE_REGEX" = "no"; then
-    pear_error_msg="$pear_error_msg 
-                    PEAR requires PCRE to be enabled.    Add --with-pcre-regex to the configure line. (or --without-pear)"
-  fi
   if test "$PHP_XML" = "no"; then
     pear_error_msg="$pear_error_msg 
                     PEAR requires XML to be enabled.     Add --enable-xml to the configure line. (or --without-pear)"
@@ -1188,7 +1236,7 @@ esac
 if test "$PHP_CLI" != "no"; then
   PHP_CLI_TARGET="\$(SAPI_CLI_PATH)"
   PHP_INSTALL_CLI_TARGET="install-cli"
-  PHP_ADD_SOURCES(sapi/cli, php_cli.c php_cli_readline.c getopt.c,, cli)
+  PHP_ADD_SOURCES(sapi/cli, php_cli.c php_cli_readline.c,, cli)
   PHP_INSTALLED_SAPIS="cli $PHP_SAPI"
 else
   PHP_INSTALLED_SAPIS="$PHP_SAPI"
@@ -1344,8 +1392,16 @@ CFLAGS="\$(CFLAGS_CLEAN) $standard_libtool_flag"
 INLINE_CFLAGS="$INLINE_CFLAGS $standard_libtool_flag"
 CXXFLAGS="$CXXFLAGS $standard_libtool_flag"
 
-all_targets="$lcov_target \$(OVERALL_TARGET) \$(PHP_MODULES) \$(PHP_ZEND_EX) \$(PHP_CLI_TARGET)"
-install_targets="$install_modules install-build install-headers install-programs $install_pear"
+if test "$PHP_PHAR" != "no" && test "$PHP_CLI" != "no"; then
+  pharcmd=pharcmd
+  pharcmd_install=install-pharcmd
+else
+  pharcmd=
+  pharcmd_install=
+fi;
+
+all_targets="$lcov_target \$(OVERALL_TARGET) \$(PHP_MODULES) \$(PHP_ZEND_EX) \$(PHP_CLI_TARGET) $pharcmd"
+install_targets="$install_modules install-build install-headers install-programs $install_pear $pharcmd_install"
 
 case $PHP_SAPI in
   cli)
@@ -1359,7 +1415,7 @@ esac
 PHP_SUBST(all_targets)
 PHP_SUBST(install_targets)
 
-PHP_INSTALL_HEADERS([Zend/ TSRM/ include/ main/ main/streams/ regex/])
+PHP_INSTALL_HEADERS([Zend/ TSRM/ include/ main/ main/streams/])
 
 PHP_ADD_SOURCES(TSRM, TSRM.c tsrm_strtok_r.c tsrm_virtual_cwd.c)
 
@@ -1368,10 +1424,11 @@ PHP_ADD_SOURCES(main, main.c snprintf.c spprintf.c php_sprintf.c \
        php_ini.c SAPI.c rfc1867.c php_content_types.c strlcpy.c \
        strlcat.c mergesort.c reentrancy.c php_variables.c php_ticks.c \
        network.c php_open_temporary_file.c php_logos.c \
-       output.c )
+       output.c getopt.c)
 
 PHP_ADD_SOURCES(main/streams, streams.c cast.c memory.c filter.c \
-       plain_wrapper.c userspace.c transports.c xp_socket.c mmap.c)
+       plain_wrapper.c userspace.c transports.c xp_socket.c mmap.c \
+       glob_wrapper.c)
 
 PHP_ADD_SOURCES(/main, internal_functions.c,, sapi)
 
@@ -1394,7 +1451,8 @@ PHP_ADD_SOURCES(Zend, \
     zend_variables.c zend.c zend_API.c zend_extensions.c zend_hash.c \
     zend_list.c zend_indent.c zend_builtin_functions.c zend_sprintf.c \
     zend_ini.c zend_qsort.c zend_multibyte.c zend_ts_hash.c zend_stream.c \
-    zend_iterators.c zend_interfaces.c zend_exceptions.c zend_strtod.c)
+    zend_iterators.c zend_interfaces.c zend_exceptions.c zend_strtod.c zend_gc.c \
+    zend_closures.c zend_float.c)
 
 if test -r "$abs_srcdir/Zend/zend_objects.c"; then
   PHP_ADD_SOURCES(Zend, zend_objects.c zend_object_handlers.c zend_objects_API.c zend_default_classes.c)
@@ -1411,7 +1469,6 @@ fi
 PHP_ADD_SOURCES_X(Zend, zend_execute.c,,PHP_GLOBAL_OBJS,,$flag)
 
 PHP_ADD_BUILD_DIR(main main/streams)
-PHP_ADD_BUILD_DIR(regex)
 PHP_ADD_BUILD_DIR(sapi/$PHP_SAPI sapi/cli)
 PHP_ADD_BUILD_DIR(TSRM)
 PHP_ADD_BUILD_DIR(Zend)
@@ -1493,21 +1550,6 @@ dnl mv -f main/internal_functions.c main/internal_functions.c.old 2>/dev/null
     echo "| Please go read http://www.php.net/faq.build#faq.build.apxs         |"
     echo "| and make the changes described there and try again.                |"
   fi
-
-  # Warn about CGI version with no extra security options.
-  if test "$PHP_SAPI" = "cgi"; then
-    if test "$PHP_FORCE_CGI_REDIRECT" = "no" && test "$PHP_DISCARD_PATH" = "no"; then
-      echo "+--------------------------------------------------------------------+"
-      echo "|                        *** WARNING ***                             |"
-      echo "|                                                                    |"
-      echo "| You will be compiling the CGI version of PHP without any           |"
-      echo "| redirection checking.  By putting this cgi binary somewhere in     |"
-      echo "| your web space, users may be able to circumvent existing .htaccess |"
-      echo "| security by loading files directly through the parser.  See        |"
-      echo "| http://www.php.net/manual/security.php for more details.           |"
-    fi
-  fi
-
 
   if test -n "$DEBUG_LOG"; then
     rm -f config.cache

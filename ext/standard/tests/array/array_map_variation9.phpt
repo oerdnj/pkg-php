@@ -48,21 +48,21 @@ array(4) {
 }
 -- checking binary safe array with two parameter callback function --
 
-Warning: Missing argument 2 for callback2() in %s on line %d
+Warning: Missing argument 2 for callback2() in %s on line %d%d
 
-Notice: Undefined variable: b in %s on line %d
+Notice: Undefined variable: b in %s on line %d%d
 
-Warning: Missing argument 2 for callback2() in %s on line %d
+Warning: Missing argument 2 for callback2() in %s on line %d%d
 
-Notice: Undefined variable: b in %s on line %d
+Notice: Undefined variable: b in %s on line %d%d
 
-Warning: Missing argument 2 for callback2() in %s on line %d
+Warning: Missing argument 2 for callback2() in %s on line %d%d
 
-Notice: Undefined variable: b in %s on line %d
+Notice: Undefined variable: b in %s on line %d%d
 
-Warning: Missing argument 2 for callback2() in %s on line %d
+Warning: Missing argument 2 for callback2() in %s on line %d%d
 
-Notice: Undefined variable: b in %s on line %d
+Notice: Undefined variable: b in %s on line %d%d
 array(4) {
   [0]=>
   array(1) {

@@ -27,7 +27,6 @@ class for_integer_sort
     $this->private_class_value = $value2;
     $this->protected_class_value = $value3; 
   }
-
 }
 
 // class declaration for string objects
@@ -41,7 +40,7 @@ class for_string_sort
     $this->public_class_value = $value1;
     $this->private_class_value = $value2;
     $this->protected_class_value = $value3;
-   }
+  }
 
   // return string value
   function __tostring() {
@@ -102,36 +101,36 @@ array(4) {
   object(for_integer_sort)#%d (3) {
     ["public_class_value"]=>
     int(-88)
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_integer_sort":private]=>
     int(-5)
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     int(5)
   }
   [1]=>
   object(for_integer_sort)#%d (3) {
     ["public_class_value"]=>
     float(0.001)
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_integer_sort":private]=>
     float(99.5)
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     float(0.1)
   }
   [2]=>
   object(for_integer_sort)#%d (3) {
     ["public_class_value"]=>
     int(11)
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_integer_sort":private]=>
     int(33)
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     int(30)
   }
   [3]=>
   object(for_integer_sort)#%d (3) {
     ["public_class_value"]=>
     int(66)
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_integer_sort":private]=>
     int(44)
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     int(4)
   }
 }
@@ -141,36 +140,36 @@ array(4) {
   object(for_string_sort)#%d (3) {
     ["public_class_value"]=>
     string(3) "axx"
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_string_sort":private]=>
     string(3) "AXX"
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     string(3) "ass"
   }
   [1]=>
   object(for_string_sort)#%d (3) {
     ["public_class_value"]=>
     string(2) "py"
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_string_sort":private]=>
     string(2) "PY"
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     string(2) "pt"
   }
   [2]=>
   object(for_string_sort)#%d (3) {
     ["public_class_value"]=>
     string(1) "t"
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_string_sort":private]=>
     string(3) "eee"
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     string(3) "abb"
   }
   [3]=>
   object(for_string_sort)#%d (3) {
     ["public_class_value"]=>
     string(1) "w"
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_string_sort":private]=>
     string(1) "W"
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     string(1) "c"
   }
 }
@@ -182,36 +181,36 @@ array(4) {
   object(for_integer_sort)#%d (3) {
     ["public_class_value"]=>
     int(-88)
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_integer_sort":private]=>
     int(-5)
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     int(5)
   }
   [1]=>
   object(for_integer_sort)#%d (3) {
     ["public_class_value"]=>
     float(0.001)
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_integer_sort":private]=>
     float(99.5)
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     float(0.1)
   }
   [2]=>
   object(for_integer_sort)#%d (3) {
     ["public_class_value"]=>
     int(11)
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_integer_sort":private]=>
     int(33)
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     int(30)
   }
   [3]=>
   object(for_integer_sort)#%d (3) {
     ["public_class_value"]=>
     int(66)
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_integer_sort":private]=>
     int(44)
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     int(4)
   }
 }
@@ -221,36 +220,36 @@ array(4) {
   object(for_string_sort)#%d (3) {
     ["public_class_value"]=>
     string(3) "axx"
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_string_sort":private]=>
     string(3) "AXX"
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     string(3) "ass"
   }
   [1]=>
   object(for_string_sort)#%d (3) {
     ["public_class_value"]=>
     string(2) "py"
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_string_sort":private]=>
     string(2) "PY"
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     string(2) "pt"
   }
   [2]=>
   object(for_string_sort)#%d (3) {
     ["public_class_value"]=>
     string(1) "t"
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_string_sort":private]=>
     string(3) "eee"
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     string(3) "abb"
   }
   [3]=>
   object(for_string_sort)#%d (3) {
     ["public_class_value"]=>
     string(1) "w"
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_string_sort":private]=>
     string(1) "W"
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     string(1) "c"
   }
 }

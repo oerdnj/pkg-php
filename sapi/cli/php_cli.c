@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_cli.c,v 1.129.2.13.2.30 2008/12/31 11:17:49 sebastian Exp $ */
+/* $Id: php_cli.c,v 1.129.2.13.2.22.2.21 2009/01/09 17:21:11 iliaa Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -111,13 +111,13 @@ PHPAPI extern char *php_ini_scanned_files;
 #define PHP_MODE_REFLECTION_EXT_INFO    11
 #define PHP_MODE_SHOW_INI_CONFIG        12
 
-#define HARDCODED_INI			\
-	"html_errors=0\n"			\
-	"register_argc_argv=1\n"	\
-	"implicit_flush=1\n"		\
-	"output_buffering=0\n"		\
-	"max_execution_time=0\n"	\
-	"max_input_time=-1\n"
+const char HARDCODED_INI[] =
+	"html_errors=0\n"
+	"register_argc_argv=1\n"
+	"implicit_flush=1\n"
+	"output_buffering=0\n"
+	"max_execution_time=0\n"
+	"max_input_time=-1\n\0";
 
 static char *php_optarg = NULL;
 static int php_optind = 1;
@@ -291,19 +291,35 @@ static char *script_filename = "";
 
 static void sapi_cli_register_variables(zval *track_vars_array TSRMLS_DC) /* {{{ */
 {
+	unsigned int len;
+	char   *docroot = "";
+
 	/* In CGI mode, we consider the environment to be a part of the server
 	 * variables
 	 */
 	php_import_environment_variables(track_vars_array TSRMLS_CC);
 
 	/* Build the special-case PHP_SELF variable for the CLI version */
-	php_register_variable("PHP_SELF", php_self, track_vars_array TSRMLS_CC);
-	php_register_variable("SCRIPT_NAME", php_self, track_vars_array TSRMLS_CC);
+	len = strlen(php_self);
+	if (sapi_module.input_filter(PARSE_SERVER, "PHP_SELF", &php_self, len, &len TSRMLS_CC)) {
+		php_register_variable("PHP_SELF", php_self, track_vars_array TSRMLS_CC);
+	}
+	if (sapi_module.input_filter(PARSE_SERVER, "SCRIPT_NAME", &php_self, len, &len TSRMLS_CC)) {
+		php_register_variable("SCRIPT_NAME", php_self, track_vars_array TSRMLS_CC);
+	}
 	/* filenames are empty for stdin */
-	php_register_variable("SCRIPT_FILENAME", script_filename, track_vars_array TSRMLS_CC);
-	php_register_variable("PATH_TRANSLATED", script_filename, track_vars_array TSRMLS_CC);
+	len = strlen(script_filename);
+	if (sapi_module.input_filter(PARSE_SERVER, "SCRIPT_FILENAME", &script_filename, len, &len TSRMLS_CC)) {
+		php_register_variable("SCRIPT_FILENAME", script_filename, track_vars_array TSRMLS_CC);
+	}
+	if (sapi_module.input_filter(PARSE_SERVER, "PATH_TRANSLATED", &script_filename, len, &len TSRMLS_CC)) {
+		php_register_variable("PATH_TRANSLATED", script_filename, track_vars_array TSRMLS_CC);
+	}
 	/* just make it available */
-	php_register_variable("DOCUMENT_ROOT", "", track_vars_array TSRMLS_CC);
+	len = 0U;
+	if (sapi_module.input_filter(PARSE_SERVER, "DOCUMENT_ROOT", &docroot, len, &len TSRMLS_CC)) {
+		php_register_variable("DOCUMENT_ROOT", docroot, track_vars_array TSRMLS_CC);
+	}
 }
 /* }}} */
 
@@ -330,11 +346,8 @@ static char* sapi_cli_read_cookies(TSRMLS_D) /* {{{ */
 }
 /* }}} */
 
-static int sapi_cli_header_handler(sapi_header_struct *h, sapi_headers_struct *s TSRMLS_DC) /* {{{ */
+static int sapi_cli_header_handler(sapi_header_struct *h, sapi_header_op_enum op, sapi_headers_struct *s TSRMLS_DC) /* {{{ */
 {
-	/* free allocated header line */
-	efree(h->header);
-	/* avoid pushing headers into SAPI headers list */
 	return 0;
 }
 /* }}} */
@@ -365,20 +378,16 @@ static int php_cli_startup(sapi_module_struct *sapi_module) /* {{{ */
 
 /* overwriteable ini defaults must be set in sapi_cli_ini_defaults() */
 #define INI_DEFAULT(name,value)\
-	ZVAL_STRING(tmp, value, 0);\
-	zend_hash_update(configuration_hash, name, sizeof(name), tmp, sizeof(zval), (void**)&entry);\
-	Z_STRVAL_P(entry) = zend_strndup(Z_STRVAL_P(entry), Z_STRLEN_P(entry))
+	Z_SET_REFCOUNT(tmp, 0);\
+	Z_UNSET_ISREF(tmp);	\
+	ZVAL_STRINGL(&tmp, zend_strndup(value, sizeof(value)-1), sizeof(value)-1, 0);\
+	zend_hash_update(configuration_hash, name, sizeof(name), &tmp, sizeof(zval), NULL);\
 
 static void sapi_cli_ini_defaults(HashTable *configuration_hash)
 {
-	zval *tmp, *entry;
-	
-	MAKE_STD_ZVAL(tmp);
-
+	zval tmp;
 	INI_DEFAULT("report_zend_debug", "0");
 	INI_DEFAULT("display_errors", "1");
-
-	FREE_ZVAL(tmp);
 }
 /* }}} */
 
@@ -411,10 +420,22 @@ static sapi_module_struct cli_sapi_module = {
 	sapi_cli_register_variables,	/* register server variables */
 	sapi_cli_log_message,			/* Log message */
 	NULL,							/* Get request time */
+	NULL,							/* Child terminate */
 
 	STANDARD_SAPI_MODULE_PROPERTIES
 };
 /* }}} */
+
+/* {{{ arginfo ext/standard/dl.c */
+ZEND_BEGIN_ARG_INFO(arginfo_dl, 0)
+	ZEND_ARG_INFO(0, extension_filename)
+ZEND_END_ARG_INFO()
+/* }}} */
+
+static const zend_function_entry additional_functions[] = {
+	ZEND_FE(dl, arginfo_dl)
+	{NULL, NULL, NULL}
+};
 
 /* {{{ php_cli_usage
  */
@@ -549,18 +570,22 @@ static const char *param_mode_conflict = "Either execute direct code, process st
  */
 static int cli_seek_file_begin(zend_file_handle *file_handle, char *script_file, int *lineno TSRMLS_DC)
 {
-	int c;
+	char c;
 
 	*lineno = 1;
 
+	file_handle->type = ZEND_HANDLE_FP;
+	file_handle->opened_path = NULL;
+	file_handle->free_filename = 0;
 	if (!(file_handle->handle.fp = VCWD_FOPEN(script_file, "rb"))) {
 		php_printf("Could not open input file: %s\n", script_file);
 		return FAILURE;
 	}
 	file_handle->filename = script_file;
+
 	/* #!php support */
 	c = fgetc(file_handle->handle.fp);
-	if (c == '#') {
+	if (c == '#' && (c = fgetc(file_handle->handle.fp)) == '!') {
 		while (c != '\n' && c != '\r' && c != EOF) {
 			c = fgetc(file_handle->handle.fp);	/* skip to end of line */
 		}
@@ -575,6 +600,7 @@ static int cli_seek_file_begin(zend_file_handle *file_handle, char *script_file,
 	} else {
 		rewind(file_handle->handle.fp);
 	}
+
 	return SUCCESS;
 }
 /* }}} */
@@ -658,12 +684,11 @@ int main(int argc, char *argv[])
 	setmode(_fileno(stderr), O_BINARY);		/* make the stdio mode be binary */
 #endif
 
-	ini_entries_len = strlen(HARDCODED_INI);
-	cli_sapi_module.ini_entries = malloc(ini_entries_len+2);
-	memcpy(cli_sapi_module.ini_entries, HARDCODED_INI, ini_entries_len+1);
-	cli_sapi_module.ini_entries[ini_entries_len+1] = 0;
+	ini_entries_len = sizeof(HARDCODED_INI)-2;
+	cli_sapi_module.ini_entries = malloc(sizeof(HARDCODED_INI));
+	memcpy(cli_sapi_module.ini_entries, HARDCODED_INI, sizeof(HARDCODED_INI));
 
-	while ((c = php_getopt(argc, argv, OPTIONS, &php_optarg, &php_optind, 0))!=-1) {
+	while ((c = php_getopt(argc, argv, OPTIONS, &php_optarg, &php_optind, 0, 2))!=-1) {
 		switch (c) {
 			case 'c':
 				if (cli_sapi_module.php_ini_path_override) {
@@ -711,6 +736,7 @@ int main(int argc, char *argv[])
 	php_optarg = orig_optarg;
 
 	cli_sapi_module.executable_location = argv[0];
+	cli_sapi_module.additional_functions = additional_functions;
 
 	/* startup after we get the above ini override se we get things right */
 	if (cli_sapi_module.startup(&cli_sapi_module)==FAILURE) {
@@ -728,7 +754,7 @@ int main(int argc, char *argv[])
 		CG(in_compilation) = 0; /* not initialized but needed for several options */
 		EG(uninitialized_zval_ptr) = NULL;
 
-		while ((c = php_getopt(argc, argv, OPTIONS, &php_optarg, &php_optind, 0)) != -1) {
+		while ((c = php_getopt(argc, argv, OPTIONS, &php_optarg, &php_optind, 0, 2)) != -1) {
 			switch (c) {
 
 			case 'h': /* help & quit */
@@ -799,7 +825,7 @@ int main(int argc, char *argv[])
 
 		php_optind = orig_optind;
 		php_optarg = orig_optarg;
-		while ((c = php_getopt(argc, argv, OPTIONS, &php_optarg, &php_optind, 0)) != -1) {
+		while ((c = php_getopt(argc, argv, OPTIONS, &php_optarg, &php_optind, 0, 2)) != -1) {
 			switch (c) {
 
 			case 'a':	/* interactive mode */
@@ -818,7 +844,7 @@ int main(int argc, char *argv[])
 				break;
 
 			case 'e': /* enable extended info output */
-				CG(extended_info) = 1;
+				CG(compiler_options) |= ZEND_COMPILE_EXTENDED_INFO;
 				break;
 
 			case 'F':
@@ -1118,7 +1144,7 @@ int main(int argc, char *argv[])
 					}
 
 					if (EG(exception)) {
-						zend_exception_error(EG(exception) TSRMLS_CC);
+						zend_exception_error(EG(exception), E_WARNING TSRMLS_CC);
 					}
 
 					php_last_char = '\0';
@@ -1163,7 +1189,7 @@ int main(int argc, char *argv[])
 		case PHP_MODE_INDENT:
 			open_file_for_scanning(&file_handle TSRMLS_CC);
 			zend_indent();
-			fclose(file_handle.handle.fp);
+			zend_file_handle_dtor(file_handle.handle TSRMLS_CC);
 			goto out;
 			break;
 #endif

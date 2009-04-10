@@ -1,5 +1,7 @@
 --TEST--
 Bug #32290 (calling call_user_func_array() ends in infinite loop within child class)
+--INI--
+error_reporting=8191
 --FILE--
 <?php
 
@@ -97,8 +99,6 @@ var_dump($x->doSomethingStatic(1));
 --EXPECTF--
 ===A===
 TestB::doSomething(1)
-
-Strict Standards: Non-static method TestA::doSomething() cannot be called statically, assuming $this from compatible context TestB in %sbug32290.php on line %d
 TestA::doSomething(2)
 int(1)
 
@@ -109,8 +109,6 @@ int(1)
 
 ===C===
 TestB::doSomethingParent(1)
-
-Strict Standards: Non-static method TestA::doSomethingParent() cannot be called statically, assuming $this from compatible context TestB in %sbug32290.php on line %d
 TestA::doSomethingParent(2)
 int(1)
 

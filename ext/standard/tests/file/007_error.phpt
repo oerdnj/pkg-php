@@ -1,5 +1,7 @@
 --TEST--
 Test fopen, fclose() & feof() functions: error conditions
+--CREDITS--
+Dave Kelsey <d_kelsey@uk.ibm.com>
 --FILE--
 <?php
 /*
@@ -65,7 +67,6 @@ for($loop_counter = 1; $loop_counter <= count($invalid_args); $loop_counter++) {
 }
 
 ?>
-===Done===
 --EXPECTF--
 *** Testing error conditions for fopen(), fclsoe() & feof() ***
 
@@ -75,111 +76,110 @@ bool(false)
 Warning: fopen() expects at least 2 parameters, 0 given in %s on line %d
 bool(false)
 
-Warning: fclose(): %d is not a valid stream resource in %s on line %d
+Warning: fclose(): 5 is not a valid stream resource in %s on line %d
 bool(false)
 
-Warning: fclose(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fclose() expects parameter 1 to be resource, string given in %s on line %d
 bool(false)
 
-Warning: Wrong parameter count for fclose() in %s on line %d
-NULL
-
-Warning: feof(): %d is not a valid stream resource in %s on line %d
+Warning: fclose() expects exactly 1 parameter, 0 given in %s on line %d
 bool(false)
 
-Warning: feof(): supplied argument is not a valid stream resource in %s on line %d
+Warning: feof(): 5 is not a valid stream resource in %s on line %d
 bool(false)
 
-Warning: Wrong parameter count for feof() in %s on line %d
-NULL
+Warning: feof() expects parameter 1 to be resource, string given in %s on line %d
+bool(false)
+
+Warning: feof() expects exactly 1 parameter, 0 given in %s on line %d
+bool(false)
 
 Warning: fopen() expects at most 4 parameters, 5 given in %s on line %d
 bool(false)
 
-Warning: Wrong parameter count for fclose() in %s on line %d
-NULL
+Warning: fclose() expects exactly 1 parameter, 2 given in %s on line %d
+bool(false)
 
-Warning: Wrong parameter count for feof() in %s on line %d
-NULL
+Warning: feof() expects exactly 1 parameter, 2 given in %s on line %d
+bool(false)
 -- Testing fopen(), fclose() & feof() with invalid arguments --
 -- Iteration 1 --
 
 Warning: fopen(string): failed to open stream: No such file or directory in %s on line %d
 bool(false)
 
-Warning: fclose(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fclose() expects parameter 1 to be resource, string given in %s on line %d
 bool(false)
 
-Warning: feof(): supplied argument is not a valid stream resource in %s on line %d
+Warning: feof() expects parameter 1 to be resource, string given in %s on line %d
 bool(false)
 -- Iteration 2 --
 
 Warning: fopen(10): failed to open stream: No such file or directory in %s on line %d
 bool(false)
 
-Warning: fclose(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fclose() expects parameter 1 to be resource, integer given in %s on line %d
 bool(false)
 
-Warning: feof(): supplied argument is not a valid stream resource in %s on line %d
+Warning: feof() expects parameter 1 to be resource, integer given in %s on line %d
 bool(false)
 -- Iteration 3 --
 
 Warning: fopen(10.5): failed to open stream: No such file or directory in %s on line %d
 bool(false)
 
-Warning: fclose(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fclose() expects parameter 1 to be resource, double given in %s on line %d
 bool(false)
 
-Warning: feof(): supplied argument is not a valid stream resource in %s on line %d
+Warning: feof() expects parameter 1 to be resource, double given in %s on line %d
 bool(false)
 -- Iteration 4 --
 
 Warning: fopen(1): failed to open stream: No such file or directory in %s on line %d
 bool(false)
 
-Warning: fclose(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fclose() expects parameter 1 to be resource, boolean given in %s on line %d
 bool(false)
 
-Warning: feof(): supplied argument is not a valid stream resource in %s on line %d
+Warning: feof() expects parameter 1 to be resource, boolean given in %s on line %d
 bool(false)
 -- Iteration 5 --
 
 Warning: fopen() expects parameter 1 to be string, array given in %s on line %d
 bool(false)
 
-Warning: fclose(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fclose() expects parameter 1 to be resource, array given in %s on line %d
 bool(false)
 
-Warning: feof(): supplied argument is not a valid stream resource in %s on line %d
+Warning: feof() expects parameter 1 to be resource, array given in %s on line %d
 bool(false)
 -- Iteration 6 --
 
 Warning: fopen() expects parameter 1 to be string, object given in %s on line %d
 bool(false)
 
-Warning: fclose(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fclose() expects parameter 1 to be resource, object given in %s on line %d
 bool(false)
 
-Warning: feof(): supplied argument is not a valid stream resource in %s on line %d
+Warning: feof() expects parameter 1 to be resource, object given in %s on line %d
 bool(false)
 -- Iteration 7 --
 
 Warning: fopen(): Filename cannot be empty in %s on line %d
 bool(false)
 
-Warning: fclose(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fclose() expects parameter 1 to be resource, null given in %s on line %d
 bool(false)
 
-Warning: feof(): supplied argument is not a valid stream resource in %s on line %d
+Warning: feof() expects parameter 1 to be resource, null given in %s on line %d
 bool(false)
 -- Iteration 8 --
 
 Warning: fopen(): Filename cannot be empty in %s on line %d
 bool(false)
 
-Warning: fclose(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fclose() expects parameter 1 to be resource, string given in %s on line %d
 bool(false)
 
-Warning: feof(): supplied argument is not a valid stream resource in %s on line %d
+Warning: feof() expects parameter 1 to be resource, string given in %s on line %d
 bool(false)
-===Done===

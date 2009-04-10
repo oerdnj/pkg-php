@@ -25,14 +25,14 @@
 #include "php.h"
 #include "php_ini.h"
 #include "ext/standard/info.h"
-#include "php_mysqli.h"
+#include "php_mysqli_structs.h"
 #include "zend_exceptions.h"
 
 
 #define MAP_PROPERTY_MYG_BOOL_READ(name, value) \
 static int name(mysqli_object *obj, zval **retval TSRMLS_DC) \
 { \
-	ALLOC_ZVAL(*retval); \
+	MAKE_STD_ZVAL(*retval); \
 	ZVAL_BOOL(*retval, MyG(value)); \
 	return SUCCESS; \
 } \
@@ -47,7 +47,7 @@ static int name(mysqli_object *obj, zval *value TSRMLS_DC) \
 #define MAP_PROPERTY_MYG_LONG_READ(name, value) \
 static int name(mysqli_object *obj, zval **retval TSRMLS_DC) \
 { \
-	ALLOC_ZVAL(*retval); \
+	MAKE_STD_ZVAL(*retval); \
 	ZVAL_LONG(*retval, MyG(value)); \
 	return SUCCESS; \
 } \
@@ -62,7 +62,7 @@ static int name(mysqli_object *obj, zval *value TSRMLS_DC) \
 #define MAP_PROPERTY_MYG_STRING_READ(name, value) \
 static int name(mysqli_object *obj, zval **retval TSRMLS_DC) \
 { \
-	ALLOC_ZVAL(*retval); \
+	MAKE_STD_ZVAL(*retval); \
 	ZVAL_STRING(*retval, MyG(value), 1); \
 	return SUCCESS; \
 } \
@@ -78,8 +78,8 @@ static int name(mysqli_object *obj, zval *value TSRMLS_DC) \
 static int driver_report_write(mysqli_object *obj, zval *value TSRMLS_DC)
 {
 	MyG(report_mode) = Z_LVAL_P(value);
-	php_set_error_handling(MyG(report_mode) & MYSQLI_REPORT_STRICT ? EH_THROW : EH_NORMAL, 
-							zend_exception_get_default(TSRMLS_C) TSRMLS_CC);
+	/*FIXME*/
+	/* zend_replace_error_handling(MyG(report_mode) & MYSQLI_REPORT_STRICT ? EH_THROW : EH_NORMAL, NULL, NULL TSRMLS_CC); */
 	return SUCCESS;
 }
 /* }}} */
@@ -87,7 +87,7 @@ static int driver_report_write(mysqli_object *obj, zval *value TSRMLS_DC)
 /* {{{ property driver_embedded_read */
 static int driver_embedded_read(mysqli_object *obj, zval **retval TSRMLS_DC)
 {
-	ALLOC_ZVAL(*retval);
+	MAKE_STD_ZVAL(*retval);
 #ifdef HAVE_EMBEDDED_MYSQLI
 	ZVAL_BOOL(*retval, 1);
 #else
@@ -100,7 +100,7 @@ static int driver_embedded_read(mysqli_object *obj, zval **retval TSRMLS_DC)
 /* {{{ property driver_client_version_read */
 static int driver_client_version_read(mysqli_object *obj, zval **retval TSRMLS_DC)
 {
-	ALLOC_ZVAL(*retval);
+	MAKE_STD_ZVAL(*retval);
 	ZVAL_LONG(*retval, MYSQL_VERSION_ID);
 	return SUCCESS;
 }
@@ -109,8 +109,8 @@ static int driver_client_version_read(mysqli_object *obj, zval **retval TSRMLS_D
 /* {{{ property driver_client_info_read */
 static int driver_client_info_read(mysqli_object *obj, zval **retval TSRMLS_DC)
 {
-	ALLOC_ZVAL(*retval);
-	ZVAL_STRING(*retval, MYSQL_SERVER_VERSION, 1);
+	MAKE_STD_ZVAL(*retval);
+	ZVAL_STRING(*retval, (char *)mysql_get_client_info(), 1);
 	return SUCCESS;
 }
 /* }}} */
@@ -118,7 +118,7 @@ static int driver_client_info_read(mysqli_object *obj, zval **retval TSRMLS_DC)
 /* {{{ property driver_driver_version_read */
 static int driver_driver_version_read(mysqli_object *obj, zval **retval TSRMLS_DC)
 {
-	ALLOC_ZVAL(*retval);
+	MAKE_STD_ZVAL(*retval);
 	ZVAL_LONG(*retval, MYSQLI_VERSION_ID);
 	return SUCCESS;
 }
@@ -130,23 +130,46 @@ MAP_PROPERTY_MYG_LONG_READ(driver_report_read, report_mode);
 
 ZEND_FUNCTION(mysqli_driver_construct)
 {
+#if G0
+	MYSQLI_RESOURCE 	*mysqli_resource;
+
+	mysqli_resource = (MYSQLI_RESOURCE *)ecalloc (1, sizeof(MYSQLI_RESOURCE));
+	mysqli_resource->ptr = 1;
+	mysqli_resource->status = (ZEND_NUM_ARGS() == 1) ? MYSQLI_STATUS_INITIALIZED : MYSQLI_STATUS_VALID;
+	((mysqli_object *) zend_object_store_get_object(getThis() TSRMLS_CC))->ptr = mysqli_resource;
+#endif
 }
 
-mysqli_property_entry mysqli_driver_property_entries[] = {
-	{"client_info", driver_client_info_read, NULL},
-	{"client_version", driver_client_version_read, NULL},
-	{"driver_version", driver_driver_version_read, NULL},
-	{"embedded", driver_embedded_read, NULL},
-	{"reconnect", driver_reconnect_read, driver_reconnect_write},
-	{"report_mode", driver_report_read, driver_report_write},
-	{NULL, NULL, NULL}
+const mysqli_property_entry mysqli_driver_property_entries[] = {
+	{"client_info", sizeof("client_info") - 1, driver_client_info_read, NULL},
+	{"client_version", sizeof("client_version") - 1, driver_client_version_read, NULL},
+	{"driver_version", sizeof("driver_version") - 1, driver_driver_version_read, NULL},
+	{"embedded", sizeof("embedded") - 1, driver_embedded_read, NULL},
+	{"reconnect", sizeof("reconnect") - 1, driver_reconnect_read, driver_reconnect_write},
+	{"report_mode", sizeof("report_mode") - 1, driver_report_read, driver_report_write},
+	{NULL, 0, NULL, NULL}
 };
+
+/* {{{ mysqli_warning_property_info_entries */
+zend_property_info mysqli_driver_property_info_entries[] = {
+	{ZEND_ACC_PUBLIC, "client_info",	sizeof("client_info") - 1,		0, NULL, 0, NULL},
+	{ZEND_ACC_PUBLIC, "client_version",	sizeof("client_version") - 1,	0, NULL, 0, NULL},
+	{ZEND_ACC_PUBLIC, "driver_version",	sizeof("driver_version") - 1,	0, NULL, 0, NULL},
+	{ZEND_ACC_PUBLIC, "embedded",		sizeof("embedded") - 1,			0, NULL, 0, NULL},
+	{ZEND_ACC_PUBLIC, "reconnect",		sizeof("reconnect") - 1,		0, NULL, 0, NULL},
+	{ZEND_ACC_PUBLIC, "report_mode",	sizeof("report_mode") - 1,		0, NULL, 0, NULL},
+	{0,					NULL, 			0,								0, NULL, 0, NULL},
+};
+/* }}} */
+
 
 /* {{{ mysqli_driver_methods[]
  */
-zend_function_entry mysqli_driver_methods[] = {
+const zend_function_entry mysqli_driver_methods[] = {
+#if defined(HAVE_EMBEDDED_MYSQLI)
 	PHP_FALIAS(embedded_server_start, mysqli_embedded_server_start, NULL)
 	PHP_FALIAS(embedded_server_end, mysqli_embedded_server_end, NULL)
+#endif
 	{NULL, NULL, NULL}
 };
 /* }}} */

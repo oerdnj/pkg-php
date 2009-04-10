@@ -17,7 +17,7 @@ var_dump( nl2br() );
 echo "\n-- Testing nl2br() function with more than expected no. of arguments --";
 $str = 'string_val';
 $extra_arg = 10;
-var_dump( nl2br($str, $extra_arg) );
+var_dump( nl2br($str, true, $extra_arg) );
 
 echo "Done";
 ?>
@@ -25,10 +25,10 @@ echo "Done";
 *** Testing nl2br() : error conditions ***
 
 -- Testing nl2br() function with Zero arguments --
-Warning: Wrong parameter count for nl2br() in %s on line %d
+Warning: nl2br() expects at least 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing nl2br() function with more than expected no. of arguments --
-Warning: Wrong parameter count for nl2br() in %s on line %d
+Warning: nl2br() expects at most 2 parameters, 3 given in %s on line %d
 NULL
 Done

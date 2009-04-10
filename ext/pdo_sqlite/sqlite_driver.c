@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: sqlite_driver.c,v 1.20.2.5.2.5 2008/12/31 11:17:42 sebastian Exp $ */
+/* $Id: sqlite_driver.c,v 1.20.2.5.2.2.2.6 2008/12/31 11:15:41 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -308,7 +308,7 @@ static int do_callback(struct pdo_sqlite_fci *fc, zval *cb,
 	fc->fci.function_table = EG(function_table);
 	fc->fci.function_name = cb;
 	fc->fci.symbol_table = NULL;
-	fc->fci.object_pp = NULL;
+	fc->fci.object_ptr = NULL;
 	fc->fci.retval_ptr_ptr = &retval;
 	fc->fci.param_count = fake_argc;
 	
@@ -479,7 +479,7 @@ static PHP_METHOD(SQLite, sqliteCreateFunction)
 	dbh = zend_object_store_get_object(getThis() TSRMLS_CC);
 	PDO_CONSTRUCT_CHECK;
 
-	if (!zend_is_callable(callback, 0, &cbname)) {
+	if (!zend_is_callable(callback, 0, &cbname TSRMLS_CC)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "function '%s' is not callable", cbname);
 		efree(cbname);
 		RETURN_FALSE;
@@ -552,13 +552,13 @@ static PHP_METHOD(SQLite, sqliteCreateAggregate)
 	dbh = zend_object_store_get_object(getThis() TSRMLS_CC);
 	PDO_CONSTRUCT_CHECK;
 
-	if (!zend_is_callable(step_callback, 0, &cbname)) {
+	if (!zend_is_callable(step_callback, 0, &cbname TSRMLS_CC)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "function '%s' is not callable", cbname);
 		efree(cbname);
 		RETURN_FALSE;
 	}
 	efree(cbname);
-	if (!zend_is_callable(fini_callback, 0, &cbname)) {
+	if (!zend_is_callable(fini_callback, 0, &cbname TSRMLS_CC)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "function '%s' is not callable", cbname);
 		efree(cbname);
 		RETURN_FALSE;
@@ -596,13 +596,13 @@ static PHP_METHOD(SQLite, sqliteCreateAggregate)
 	RETURN_FALSE;
 }
 /* }}} */
-static zend_function_entry dbh_methods[] = {
+static const zend_function_entry dbh_methods[] = {
 	PHP_ME(SQLite, sqliteCreateFunction, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(SQLite, sqliteCreateAggregate, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 
-static zend_function_entry *get_driver_methods(pdo_dbh_t *dbh, int kind TSRMLS_DC)
+static const zend_function_entry *get_driver_methods(pdo_dbh_t *dbh, int kind TSRMLS_DC)
 {
 	switch (kind) {
 		case PDO_DBH_DRIVER_METHOD_KIND_DBH:

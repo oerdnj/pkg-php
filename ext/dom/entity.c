@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: entity.c,v 1.9.2.1.2.3 2008/12/31 11:17:37 sebastian Exp $ */
+/* $Id: entity.c,v 1.9.2.1.2.1.2.4 2008/12/31 11:15:36 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -35,7 +35,7 @@
 * Since: 
 */
 
-zend_function_entry php_dom_entity_class_functions[] = {
+const zend_function_entry php_dom_entity_class_functions[] = {
 	{NULL, NULL, NULL}
 };
 
@@ -67,8 +67,6 @@ int dom_entity_public_id_read(dom_object *obj, zval **retval TSRMLS_DC)
 
 /* }}} */
 
-
-
 /* {{{ systemId	string	
 readonly=yes 
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#ID-D7C29F3E
@@ -96,8 +94,6 @@ int dom_entity_system_id_read(dom_object *obj, zval **retval TSRMLS_DC)
 }
 
 /* }}} */
-
-
 
 /* {{{ notationName	string	
 readonly=yes 
@@ -130,8 +126,6 @@ int dom_entity_notation_name_read(dom_object *obj, zval **retval TSRMLS_DC)
 
 /* }}} */
 
-
-
 /* {{{ actualEncoding	string	
 readonly=no 
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#Entity3-actualEncoding
@@ -151,8 +145,6 @@ int dom_entity_actual_encoding_write(dom_object *obj, zval *newval TSRMLS_DC)
 
 /* }}} */
 
-
-
 /* {{{ encoding	string	
 readonly=no 
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#Entity3-encoding
@@ -171,8 +163,6 @@ int dom_entity_encoding_write(dom_object *obj, zval *newval TSRMLS_DC)
 }
 
 /* }}} */
-
-
 
 /* {{{ version	string	
 readonly=no 
@@ -194,3 +184,12 @@ int dom_entity_version_write(dom_object *obj, zval *newval TSRMLS_DC)
 /* }}} */
 
 #endif
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

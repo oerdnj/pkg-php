@@ -1,7 +1,5 @@
 --TEST--
 SPL: spl_autoload() with methods
---SKIPIF--
-<?php if (!extension_loaded("spl")) print "skip"; ?>
 --INI--
 include_path=.
 --FILE--
@@ -50,7 +48,7 @@ catch(Exception $e)
 ===DONE===
 <?php exit(0); ?>
 --EXPECTF--
-Exception: Passed array specifies a non static method but no object
+Exception: Passed array specifies a non static method but no object (non-static method MyAutoLoader::autoLoad() should not be called statically)
 MyAutoLoader::autoLoad(TestClass)
 MyAutoLoader::autoThrow(TestClass)
 Exception: Unavailable

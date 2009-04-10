@@ -16,11 +16,12 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: xp_ssl.c,v 1.22.2.3.2.16 2008/12/31 11:17:41 sebastian Exp $ */
+/* $Id: xp_ssl.c,v 1.22.2.3.2.9.2.10 2008/12/31 11:15:40 sebastian Exp $ */
 
 #include "php.h"
 #include "ext/standard/file.h"
 #include "streams/php_streams_int.h"
+#include "ext/standard/php_smart_str.h"
 #include "php_network.h"
 #include "php_openssl.h"
 #include <openssl/ssl.h>
@@ -89,9 +90,8 @@ static int handle_ssl_error(php_stream *stream, int nr_bytes, zend_bool is_init 
 	php_openssl_netstream_data_t *sslsock = (php_openssl_netstream_data_t*)stream->abstract;
 	int err = SSL_get_error(sslsock->ssl_handle, nr_bytes);
 	char esbuf[512];
-	char *ebuf = NULL, *wptr = NULL;
-	size_t ebuf_size = 0;
-	unsigned long code, ecode;
+	smart_str ebuf = {0};
+	unsigned long ecode;
 	int retry = 1;
 
 	switch(err) {
@@ -142,36 +142,23 @@ static int handle_ssl_error(php_stream *stream, int nr_bytes, zend_bool is_init 
 
 				default:
 					do {
-						/* allow room for a NUL and an optional \n */
-						if (ebuf) {
-							esbuf[0] = '\n';
-							esbuf[1] = '\0';
-							ERR_error_string_n(ecode, esbuf + 1, sizeof(esbuf) - 2);
-						} else {
-							esbuf[0] = '\0';
-							ERR_error_string_n(ecode, esbuf, sizeof(esbuf) - 1);
+						// NULL is automatically added
+						ERR_error_string_n(ecode, esbuf, sizeof(esbuf));
+						if (ebuf.c) {
+							smart_str_appendc(&ebuf, '\n');
 						}
-						code = strlen(esbuf);
-
-						ebuf = erealloc(ebuf, ebuf_size + code + 1);
-						ebuf_size += code;
-
-						if (wptr == NULL) {
-							wptr = ebuf;
-						}	
-
-						/* also copies the NUL */
-						memcpy(wptr, esbuf, code + 1);
-						wptr += code;
+						smart_str_appends(&ebuf, esbuf);
 					} while ((ecode = ERR_get_error()) != 0);
+
+					smart_str_0(&ebuf);
 
 					php_error_docref(NULL TSRMLS_CC, E_WARNING,
 							"SSL operation failed with code %d. %s%s",
 							err,
-							ebuf ? "OpenSSL Error messages:\n" : "",
-							ebuf ? ebuf : "");
-					if (ebuf) {
-						efree(ebuf);
+							ebuf.c ? "OpenSSL Error messages:\n" : "",
+							ebuf.c ? ebuf.c : "");
+					if (ebuf.c) {
+						smart_str_free(&ebuf);
 					}
 			}
 				
@@ -464,7 +451,7 @@ static inline int php_openssl_enable_crypto(php_stream *stream,
 								"ssl", "peer_certificate",
 								zcert);
 						peer_cert = NULL;
-						efree(zcert);
+						FREE_ZVAL(zcert);
 					}
 
 					if (SUCCESS == php_stream_context_get_option(
@@ -490,8 +477,8 @@ static inline int php_openssl_enable_crypto(php_stream *stream,
 										zend_list_insert(mycert,
 											php_openssl_get_x509_list_id()));
 								add_next_index_zval(arr, zcert);
+								FREE_ZVAL(zcert);
 							}
-								efree(zcert);
 
 						} else {
 							ZVAL_NULL(arr);

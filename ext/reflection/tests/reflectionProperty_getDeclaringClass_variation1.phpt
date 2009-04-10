@@ -1,7 +1,5 @@
 --TEST--
 Test ReflectionProperty::getDeclaringClass() with inherited properties.
---SKIPIF--
-<?php extension_loaded('reflection') or die('skip'); ?>
 --FILE--
 <?php
 
@@ -26,4 +24,4 @@ object(ReflectionClass)#%d (1) {
 }
 Wrong number of params:
 
-Warning: Wrong parameter count for ReflectionProperty::getDeclaringClass() in %s on line %d
+Warning: ReflectionProperty::getDeclaringClass() expects exactly 0 parameters, 1 given in %s on line %d

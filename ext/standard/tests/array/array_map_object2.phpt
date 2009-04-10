@@ -37,10 +37,10 @@ echo "Done";
 *** Testing array_map() :  with non-existent class and method ***
 -- with non-existent class --
 
-Warning: array_map(): The first argument, 'non-existent::square', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, class 'non-existent' not found in %s on line %d
 NULL
 -- with existent class and non-existent method --
 
-Warning: array_map(): The first argument, 'SimpleClass::non-existent', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, class 'SimpleClass' does not have a method 'non-existent' in %s on line %d
 NULL
 Done

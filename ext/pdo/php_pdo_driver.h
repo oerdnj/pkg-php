@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_driver.h,v 1.66.2.11.2.9 2008/12/31 11:17:41 sebastian Exp $ */
+/* $Id: php_pdo_driver.h,v 1.66.2.11.2.6.2.5 2008/12/31 11:15:40 sebastian Exp $ */
 
 #ifndef PHP_PDO_DRIVER_H
 #define PHP_PDO_DRIVER_H
@@ -44,7 +44,7 @@ PDO_API char *php_pdo_int64_to_str(pdo_int64_t i64 TSRMLS_DC);
 # define FALSE 0
 #endif
 
-#define PDO_DRIVER_API	20060511
+#define PDO_DRIVER_API	20080721
 
 enum pdo_param_type {
 	PDO_PARAM_NULL,
@@ -67,7 +67,12 @@ enum pdo_param_type {
 	PDO_PARAM_STMT, /* hierarchical result set */
 
 	/* get_col ptr should point to a zend_bool */
-	PDO_PARAM_BOOL
+	PDO_PARAM_BOOL,
+
+	/* get_col ptr should point to a zval*
+	   and the driver is responsible for adding correct type information to get_column_meta()
+	 */
+	PDO_PARAM_ZVAL
 };
 
 /* magic flag to denote a parameter as being input/output */
@@ -288,7 +293,7 @@ enum {
 	PDO_DBH_DRIVER_METHOD_KIND__MAX
 };
 
-typedef zend_function_entry *(*pdo_dbh_get_driver_methods_func)(pdo_dbh_t *dbh, int kind TSRMLS_DC);
+typedef const zend_function_entry *(*pdo_dbh_get_driver_methods_func)(pdo_dbh_t *dbh, int kind TSRMLS_DC);
 
 struct pdo_dbh_methods {
 	pdo_dbh_close_func		closer;

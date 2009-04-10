@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_open_temporary_file.c,v 1.34.2.1.2.12 2008/12/31 11:17:47 sebastian Exp $ */
+/* $Id: php_open_temporary_file.c,v 1.34.2.1.2.10.2.2 2008/12/31 11:15:47 sebastian Exp $ */
 
 #include "php.h"
 

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_fast_cache.h,v 1.21.2.1.2.4 2008/12/31 11:17:33 sebastian Exp $ */
+/* $Id: zend_fast_cache.h,v 1.21.2.1.2.2.2.2 2008/12/31 11:15:32 sebastian Exp $ */
 #if 0
 #ifndef ZEND_FAST_CACHE_H
 #define ZEND_FAST_CACHE_H

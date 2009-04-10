@@ -1,5 +1,5 @@
 --TEST--
-Test gmdate() function : usage variation - Passing unexpected values to format argument.
+Test gmdate() function : usage variation - Passing unexpected values to format argument .
 --FILE--
 <?php
 /* Prototype  : string gmdate(string format [, long timestamp])

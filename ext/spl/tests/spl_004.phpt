@@ -1,7 +1,5 @@
 --TEST--
 SPL: iterator_apply()
---SKIPIF--
-<?php if (!extension_loaded("spl")) print "skip"; ?>
 --FILE--
 <?php
 
@@ -51,7 +49,7 @@ var_dump(iterator_apply($it, 'non_existing_functon', NULL, 2));
 ?>
 ===DONE===
 <?php exit(0); ?>
---EXPECTF--
+--EXPECT--
 int(0)
 int(1)
 int(2)
@@ -79,7 +77,7 @@ int(4)
 Error: Argument 3 passed to iterator_apply() must be an array, integer given
 Error: iterator_apply() expects parameter 3 to be array, integer given
 NULL
-Error: iterator_apply() expects parameter 2 to be function,%sstring given
+Error: iterator_apply() expects parameter 2 to be a valid callback, function 'non_existing_functon' not found or invalid function name
 NULL
 Error: iterator_apply() expects at most 3 parameters, 4 given
 NULL

@@ -3,7 +3,8 @@
 peardir=$(PEAR_INSTALLDIR)
 
 # Skip all php.ini files altogether
-PEAR_INSTALL_FLAGS = -n -dshort_open_tag=0 -dsafe_mode=0 -dopen_basedir= -derror_reporting=E_ALL -dmemory_limit=-1 -ddetect_unicode=0
+PEAR_INSTALL_FLAGS = -n -dshort_open_tag=0 -dsafe_mode=0 -dopen_basedir= -derror_reporting=1803 -dmemory_limit=-1 -ddetect_unicode=0
+
 WGET = `which wget 2>/dev/null`
 FETCH = `which fetch 2>/dev/null`
 
@@ -21,9 +22,7 @@ install-pear:
 			elif test ! -z "$(FETCH)" && test -x "$(FETCH)"; then \
 				"$(FETCH)" -o $(builddir)/ http://pear.php.net/install-pear-nozlib.phar; \
 			else \
-				echo ""; \
-				echo "No download utilities found. Don't know how to download PEAR archive."; \
-				echo ""; \
+				$(top_builddir)/sapi/cli/php -n $(srcdir)/fetch.php http://pear.php.net/install-pear-nozlib.phar $(builddir)/install-pear-nozlib.phar; \
 			fi \
 		fi \
 	fi

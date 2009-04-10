@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: text.c,v 1.23.2.1.2.9 2008/12/31 11:17:37 sebastian Exp $ */
+/* $Id: text.c,v 1.23.2.1.2.4.2.12 2008/12/31 11:15:36 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -29,21 +29,17 @@
 #include "dom_ce.h"
 
 /* {{{ arginfo */
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_text_split_text, 0, 0, 1)
 	ZEND_ARG_INFO(0, offset)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_text_is_whitespace_in_element_content, 0, 0, 0)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_text_replace_whole_text, 0, 0, 1)
 	ZEND_ARG_INFO(0, content)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_text_construct, 0, 0, 0)
 	ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO();
@@ -56,7 +52,7 @@ ZEND_END_ARG_INFO();
 * Since: 
 */
 
-zend_function_entry php_dom_text_class_functions[] = {
+const zend_function_entry php_dom_text_class_functions[] = {
 	PHP_FALIAS(splitText, dom_text_split_text, arginfo_dom_text_split_text)
 	PHP_FALIAS(isWhitespaceInElementContent, dom_text_is_whitespace_in_element_content, arginfo_dom_text_is_whitespace_in_element_content)
 	PHP_FALIAS(isElementContentWhitespace, dom_text_is_whitespace_in_element_content, arginfo_dom_text_is_whitespace_in_element_content)
@@ -74,14 +70,15 @@ PHP_METHOD(domtext, __construct)
 	dom_object *intern;
 	char *value = NULL;
 	int value_len;
+	zend_error_handling error_handling;
 
-	php_set_error_handling(EH_THROW, dom_domexception_class_entry TSRMLS_CC);
+	zend_replace_error_handling(EH_THROW, dom_domexception_class_entry, &error_handling TSRMLS_CC);
 	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "O|s", &id, dom_text_class_entry, &value, &value_len) == FAILURE) {
-		php_std_error_handling();
+		zend_restore_error_handling(&error_handling TSRMLS_CC);
 		return;
 	}
 
-	php_std_error_handling();
+	zend_restore_error_handling(&error_handling TSRMLS_CC);
 	nodep = xmlNewText((xmlChar *) value);
 
 	if (!nodep) {
@@ -140,7 +137,6 @@ int dom_text_whole_text_read(dom_object *obj, zval **retval TSRMLS_DC)
 }
 
 /* }}} */
-
 
 /* {{{ proto DOMText dom_text_split_text(int offset);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-ID-38853C1D
@@ -204,7 +200,6 @@ PHP_FUNCTION(dom_text_split_text)
 }
 /* }}} end dom_text_split_text */
 
-
 /* {{{ proto boolean dom_text_is_whitespace_in_element_content();
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-Text3-isWhitespaceInElementContent
 Since: DOM Level 3
@@ -228,7 +223,6 @@ PHP_FUNCTION(dom_text_is_whitespace_in_element_content)
 }
 /* }}} end dom_text_is_whitespace_in_element_content */
 
-
 /* {{{ proto DOMText dom_text_replace_whole_text(string content);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-Text3-replaceWholeText
 Since: DOM Level 3
@@ -238,4 +232,14 @@ PHP_FUNCTION(dom_text_replace_whole_text)
  DOM_NOT_IMPLEMENTED();
 }
 /* }}} end dom_text_replace_whole_text */
+
 #endif
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

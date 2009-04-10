@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: libxml.c,v 1.32.2.7.2.18 2008/12/31 11:17:39 sebastian Exp $ */
+/* $Id: libxml.c,v 1.32.2.7.2.15.2.11 2009/03/14 17:30:28 rrichards Exp $ */
 
 #define IS_EXT_MODULE
 
@@ -87,32 +87,27 @@ static PHP_MINFO_FUNCTION(libxml);
 /* }}} */
 
 /* {{{ arginfo */
-static
 ZEND_BEGIN_ARG_INFO(arginfo_libxml_set_streams_context, 0)
 	ZEND_ARG_INFO(0, context)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO(arginfo_libxml_use_internal_errors, 0)
 	ZEND_ARG_INFO(0, use_errors)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO(arginfo_libxml_get_last_error, 0)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO(arginfo_libxml_get_errors, 0)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO(arginfo_libxml_clear_errors, 0)
 ZEND_END_ARG_INFO()
 
 /* }}} */
 
 /* {{{ extension definition structures */
-static zend_function_entry libxml_functions[] = {
+static const zend_function_entry libxml_functions[] = {
 	PHP_FE(libxml_set_streams_context, arginfo_libxml_set_streams_context)
 	PHP_FE(libxml_use_internal_errors, arginfo_libxml_use_internal_errors)
 	PHP_FE(libxml_get_last_error, arginfo_libxml_get_last_error)
@@ -523,7 +518,7 @@ static void php_libxml_internal_error_handler(int error_type, void *ctx, const c
 	}
 }
 
-void php_libxml_ctx_error(void *ctx, const char *msg, ...)
+PHP_LIBXML_API void php_libxml_ctx_error(void *ctx, const char *msg, ...)
 {
 	va_list args;
 	va_start(args, msg);
@@ -531,7 +526,7 @@ void php_libxml_ctx_error(void *ctx, const char *msg, ...)
 	va_end(args);
 }
 
-void php_libxml_ctx_warning(void *ctx, const char *msg, ...)
+PHP_LIBXML_API void php_libxml_ctx_warning(void *ctx, const char *msg, ...)
 {
 	va_list args;
 	va_start(args, msg);
@@ -597,6 +592,7 @@ static PHP_MINIT_FUNCTION(libxml)
 
 	REGISTER_LONG_CONSTANT("LIBXML_VERSION",			LIBXML_VERSION,			CONST_CS | CONST_PERSISTENT);
 	REGISTER_STRING_CONSTANT("LIBXML_DOTTED_VERSION",	LIBXML_DOTTED_VERSION,	CONST_CS | CONST_PERSISTENT);
+	REGISTER_STRING_CONSTANT("LIBXML_LOADED_VERSION",	(char *)xmlParserVersion,		CONST_CS | CONST_PERSISTENT);
 
 	/* For use with loading xml */
 	REGISTER_LONG_CONSTANT("LIBXML_NOENT",		XML_PARSE_NOENT,		CONST_CS | CONST_PERSISTENT);
@@ -676,7 +672,8 @@ static PHP_MINFO_FUNCTION(libxml)
 {
 	php_info_print_table_start();
 	php_info_print_table_row(2, "libXML support", "active");
-	php_info_print_table_row(2, "libXML Version", LIBXML_DOTTED_VERSION);
+	php_info_print_table_row(2, "libXML Compiled Version", LIBXML_DOTTED_VERSION);
+	php_info_print_table_row(2, "libXML Loaded Version", (char *)xmlParserVersion);
 	php_info_print_table_row(2, "libXML streams", "enabled");
 	php_info_print_table_end();
 }
@@ -695,12 +692,12 @@ static PHP_FUNCTION(libxml_set_streams_context)
 		zval_ptr_dtor(&LIBXML(stream_context));
 		LIBXML(stream_context) = NULL;
 	}
-	ZVAL_ADDREF(arg);
+	Z_ADDREF_P(arg);
 	LIBXML(stream_context) = arg;
 }
 /* }}} */
 
-/* {{{ proto void libxml_use_internal_errors([boolean use_errors]) 
+/* {{{ proto bool libxml_use_internal_errors([boolean use_errors]) 
    Disable libxml errors and allow user to fetch error information as needed */
 static PHP_FUNCTION(libxml_use_internal_errors)
 {
@@ -974,7 +971,7 @@ PHP_LIBXML_API int php_libxml_decrement_doc_ref(php_libxml_node_object *object T
 	return ret_refcount;
 }
 
-void php_libxml_node_free_resource(xmlNodePtr node TSRMLS_DC)
+PHP_LIBXML_API void php_libxml_node_free_resource(xmlNodePtr node TSRMLS_DC)
 {
 	if (!node) {
 		return;
@@ -1010,7 +1007,7 @@ void php_libxml_node_free_resource(xmlNodePtr node TSRMLS_DC)
 	}
 }
 
-void php_libxml_node_decrement_resource(php_libxml_node_object *object TSRMLS_DC)
+PHP_LIBXML_API void php_libxml_node_decrement_resource(php_libxml_node_object *object TSRMLS_DC)
 {
 	int ret_refcount = -1;
 	xmlNodePtr nodep;

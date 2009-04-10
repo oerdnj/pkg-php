@@ -5,6 +5,7 @@ oci_password_change()
 if (!extension_loaded('oci8')) die("skip no oci8 extension"); 
 require dirname(__FILE__)."/connect.inc";
 if (empty($dbase)) die ("skip requires database connection string be set");
+if ($test_drcp) die("skip password change not supported in DRCP Mode");
 
 // This test is known to fail with Oracle 10g client libraries
 // connecting to Oracle Database 11.1.0.6 (Oracle bug 6277160)

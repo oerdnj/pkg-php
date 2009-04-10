@@ -102,16 +102,16 @@ bool(false)
 bool(false)
 -- Iteration 10 --
 
-Notice: Array to string conversion in %s on line %d
-bool(false)
+Warning: get_extension_funcs() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 11 --
 
-Notice: Array to string conversion in %s on line %d
-bool(false)
+Warning: get_extension_funcs() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 12 --
 
-Notice: Array to string conversion in %s on line %d
-bool(false)
+Warning: get_extension_funcs() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 13 --
 bool(false)
 -- Iteration 14 --
@@ -127,7 +127,9 @@ bool(false)
 -- Iteration 19 --
 bool(false)
 -- Iteration 20 --
-bool(false)
+
+Warning: get_extension_funcs() expects parameter 1 to be string, resource given in %s on line %d
+NULL
 -- Iteration 21 --
 bool(false)
 -- Iteration 22 --

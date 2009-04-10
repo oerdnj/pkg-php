@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: dir.c,v 1.147.2.3.2.21 2008/12/31 11:17:44 sebastian Exp $ */
+/* $Id: dir.c,v 1.147.2.3.2.12.2.13 2008/12/31 11:15:44 sebastian Exp $ */
 
 /* {{{ includes/startup/misc */
 
@@ -75,6 +75,9 @@ static int le_dirp;
 static zend_class_entry *dir_class_entry_ptr;
 
 #define FETCH_DIRP() \
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|r", &id) == FAILURE) { \
+		return; \
+	} \
 	if (ZEND_NUM_ARGS() == 0) { \
 		myself = getThis(); \
 		if (myself) { \
@@ -86,15 +89,13 @@ static zend_class_entry *dir_class_entry_ptr;
 		} else { \
 			ZEND_FETCH_RESOURCE(dirp, php_stream *, 0, DIRG(default_dir), "Directory", php_file_le_stream()); \
 		} \
-	} else if ((ZEND_NUM_ARGS() != 1) || zend_get_parameters_ex(1, &id) == FAILURE) { \
-		WRONG_PARAM_COUNT; \
 	} else { \
-		dirp = (php_stream *) zend_fetch_resource(id TSRMLS_CC, -1, "Directory", NULL, 1, php_file_le_stream()); \
+		dirp = (php_stream *) zend_fetch_resource(&id TSRMLS_CC, -1, "Directory", NULL, 1, php_file_le_stream()); \
 		if (!dirp) \
 			RETURN_FALSE; \
 	} 
 
-static zend_function_entry php_dir_class_functions[] = {
+static const zend_function_entry php_dir_class_functions[] = {
 	PHP_FALIAS(close,	closedir,	NULL)
 	PHP_FALIAS(rewind,	rewinddir,	NULL)
 	PHP_NAMED_FE(read,  php_if_readdir, NULL)
@@ -212,9 +213,7 @@ static void _php_do_opendir(INTERNAL_FUNCTION_PARAMETERS, int createobject)
 		RETURN_NULL();
 	}
 
-	if (zcontext) {
-		context = php_stream_context_from_zval(zcontext, 0);
-	}
+	context = php_stream_context_from_zval(zcontext, 0);
 	
 	dirp = php_stream_opendir(dirname, ENFORCE_SAFE_MODE|REPORT_ERRORS, context);
 
@@ -257,7 +256,7 @@ PHP_FUNCTION(getdir)
    Close directory connection identified by the dir_handle */
 PHP_FUNCTION(closedir)
 {
-	zval **id, **tmp, *myself;
+	zval *id = NULL, **tmp, *myself;
 	php_stream *dirp;
 	int rsrc_id;
 
@@ -295,7 +294,7 @@ PHP_FUNCTION(chroot)
 		RETURN_FALSE;
 	}
 
-	php_clear_stat_cache(TSRMLS_C);
+	php_clear_stat_cache(1, NULL, 0 TSRMLS_CC);
 	
 	ret = chdir("/");
 	
@@ -350,8 +349,8 @@ PHP_FUNCTION(getcwd)
 	char path[MAXPATHLEN];
 	char *ret=NULL;
 	
-	if (ZEND_NUM_ARGS() != 0) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 
 #if HAVE_GETCWD
@@ -372,7 +371,7 @@ PHP_FUNCTION(getcwd)
    Rewind dir_handle back to the start */
 PHP_FUNCTION(rewinddir)
 {
-	zval **id, **tmp, *myself;
+	zval *id = NULL, **tmp, *myself;
 	php_stream *dirp;
 	
 	FETCH_DIRP();
@@ -390,7 +389,7 @@ PHP_FUNCTION(rewinddir)
    Read directory entry from dir_handle */
 PHP_NAMED_FUNCTION(php_if_readdir)
 {
-	zval **id, **tmp, *myself;
+	zval *id = NULL, **tmp, *myself;
 	php_stream *dirp;
 	php_stream_dirent entry;
 
@@ -557,9 +556,7 @@ PHP_FUNCTION(scandir)
 		RETURN_FALSE;
 	}
 
-	if (zcontext) {
-		context = php_stream_context_from_zval(zcontext, 0);
-	}
+	context = php_stream_context_from_zval(zcontext, 0);
 
 	if (!flags) {
 		n = php_stream_scandir(dirn, &namelist, context, (void *) php_stream_dirent_alphasort);

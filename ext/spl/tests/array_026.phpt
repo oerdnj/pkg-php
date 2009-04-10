@@ -10,12 +10,15 @@ var_dump($test, $test3['mmmmm']);
 --EXPECTF--
 Notice: Undefined variable: test3 in %s%earray_026.php on line %d
 object(ArrayObject)#%d (1) {
-  ["d1"]=>
-  array(2) {
-    ["d2"]=>
-    string(5) "hello"
-    ["d3"]=>
-    string(5) "world"
+  ["storage":"ArrayObject":private]=>
+  array(1) {
+    ["d1"]=>
+    array(2) {
+      ["d2"]=>
+      string(5) "hello"
+      ["d3"]=>
+      string(5) "world"
+    }
   }
 }
 NULL

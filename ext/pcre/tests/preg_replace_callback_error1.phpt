@@ -26,8 +26,8 @@ foreach($regex_array as $regex_value) {
     print "\nArg value is $regex_value\n";
     var_dump(preg_replace_callback($regex_value, 'integer_word', $subject));
 }
-echo "Done";
 ?>
+===Done===
 --EXPECTF--
 *** Testing preg_replace_callback() : error conditions ***
 
@@ -56,4 +56,4 @@ string(9) "number 1."
 
 Arg value is /[a-zA-Z]/
 string(3) " 1."
-Done
+===Done===

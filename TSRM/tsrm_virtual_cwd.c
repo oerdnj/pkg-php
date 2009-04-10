@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_virtual_cwd.c,v 1.74.2.9.2.41 2008/12/31 11:17:31 sebastian Exp $ */
+/* $Id: tsrm_virtual_cwd.c,v 1.74.2.9.2.35.2.17 2009/01/21 19:07:35 dmitry Exp $ */
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -136,6 +136,33 @@ static int php_check_dots(const char *element, int n)
 	free((s)->cwd);
 	
 #ifdef TSRM_WIN32
+
+#define SECS_BETWEEN_EPOCHS (__int64)11644473600
+#define SECS_TO_100NS (__int64)10000000
+static inline time_t FileTimeToUnixTime(const FILETIME FileTime)
+{
+	__int64 UnixTime;
+	long *nsec = NULL;
+	SYSTEMTIME SystemTime;
+	FileTimeToSystemTime(&FileTime, &SystemTime);
+
+	UnixTime = ((__int64)FileTime.dwHighDateTime << 32) +
+	FileTime.dwLowDateTime;
+
+	UnixTime -= (SECS_BETWEEN_EPOCHS * SECS_TO_100NS);
+
+	if (nsec) {
+		*nsec = (UnixTime % SECS_TO_100NS) * (__int64)100;
+	}
+
+	UnixTime /= SECS_TO_100NS; /* now convert to seconds */
+
+	if ((time_t)UnixTime != UnixTime) {
+		UnixTime = 0;
+	}
+	return (time_t)UnixTime;
+}
+
 CWD_API int php_sys_stat(const char *path, struct stat *buf) /* {{{ */
 {
 	WIN32_FILE_ATTRIBUTE_DATA data;
@@ -195,24 +222,19 @@ CWD_API int php_sys_stat(const char *path, struct stat *buf) /* {{{ */
 				buf->st_mode  |= (S_IEXEC|(S_IEXEC>>3)|(S_IEXEC>>6));
 			}
 		}
-	}			
-    buf->st_nlink = 1;
+	}
+
+	buf->st_nlink = 1;
 	t = data.nFileSizeHigh;
 	t = t << 32;
 	t |= data.nFileSizeLow;
 	buf->st_size = t;
-	t = data.ftLastAccessTime.dwHighDateTime;
-	t = t << 32;
-	t |= data.ftLastAccessTime.dwLowDateTime;
-	buf->st_atime = (unsigned long)((t / 10000000) - 11644473600);
-	t = data.ftCreationTime.dwHighDateTime;
-	t = t << 32;
-	t |= data.ftCreationTime.dwLowDateTime;
-	buf->st_ctime = (unsigned long)((t / 10000000) - 11644473600);
-	t = data.ftLastWriteTime.dwHighDateTime;
-	t = t << 32;
-	t |= data.ftLastWriteTime.dwLowDateTime;
-	buf->st_mtime = (unsigned long)((t / 10000000) - 11644473600);
+	buf->st_atime = FileTimeToUnixTime(data.ftLastAccessTime);
+	buf->st_ctime = FileTimeToUnixTime(data.ftCreationTime);
+	buf->st_mtime = FileTimeToUnixTime(data.ftLastWriteTime);
+	if (buf->st_mtime != buf->st_atime) {
+		buf->st_atime = buf->st_mtime;
+	}
 	return 0;
 }
 /* }}} */
@@ -257,22 +279,6 @@ static void cwd_globals_dtor(virtual_cwd_globals *cwd_globals TSRMLS_DC) /* {{{ 
 }
 /* }}} */
 
-static char *tsrm_strndup(const char *s, size_t length) /* {{{ */
-{
-    char *p;
-
-    p = (char *) malloc(length+1);
-    if (!p) {
-        return (char *)NULL;
-    }
-    if (length) {
-        memcpy(p,s,length);
-    }
-    p[length]=0;
-    return p;
-}
-/* }}} */
-
 CWD_API void virtual_cwd_startup(void) /* {{{ */
 {
 	char cwd[MAXPATHLEN];
@@ -295,8 +301,14 @@ CWD_API void virtual_cwd_startup(void) /* {{{ */
 	if (!result) {
 		cwd[0] = '\0';
 	}
-	main_cwd_state.cwd = strdup(cwd);
+
 	main_cwd_state.cwd_length = strlen(cwd);
+#ifdef TSRM_WIN32
+	if (main_cwd_state.cwd_length >= 2 && cwd[1] == ':') {
+		cwd[0] = toupper(cwd[0]);
+	}
+#endif
+	main_cwd_state.cwd = strdup(cwd);
 
 #ifdef ZTS
 	ts_allocate_id(&cwd_globals_id, sizeof(virtual_cwd_globals), (ts_allocate_ctor) cwd_globals_ctor, (ts_allocate_dtor) cwd_globals_dtor);
@@ -347,6 +359,7 @@ CWD_API char *virtual_getcwd_ex(size_t *length TSRMLS_DC) /* {{{ */
 		*length = state->cwd_length+1;
 		retval = (char *) malloc(*length+1);
 		memcpy(retval, state->cwd, *length);
+		retval[0] = toupper(retval[0]);
 		retval[*length-1] = DEFAULT_SLASH;
 		retval[*length] = '\0';
 		return retval;
@@ -431,9 +444,17 @@ CWD_API void realpath_cache_del(const char *path, int path_len TSRMLS_DC) /* {{{
 }
 /* }}} */
 
-static inline void realpath_cache_add(const char *path, int path_len, const char *realpath, int realpath_len, time_t t TSRMLS_DC) /* {{{ */
+static inline void realpath_cache_add(const char *path, int path_len, const char *realpath, int realpath_len, int is_dir, time_t t TSRMLS_DC) /* {{{ */
 {
-	long size = sizeof(realpath_cache_bucket) + path_len + 1 + realpath_len + 1;
+	long size = sizeof(realpath_cache_bucket) + path_len + 1;
+	int same = 1;
+	
+	if (realpath_len != path_len ||
+	    memcmp(path, realpath, path_len) != 0) {
+		size += realpath_len + 1;
+		same = 0;
+	}
+
 	if (CWDG(realpath_cache_size) + size <= CWDG(realpath_cache_size_limit)) {
 		realpath_cache_bucket *bucket = malloc(size);
 		unsigned long n;
@@ -442,9 +463,14 @@ static inline void realpath_cache_add(const char *path, int path_len, const char
 		bucket->path = (char*)bucket + sizeof(realpath_cache_bucket);
 		memcpy(bucket->path, path, path_len+1);
 		bucket->path_len = path_len;
-		bucket->realpath = bucket->path + (path_len + 1);
-		memcpy(bucket->realpath, realpath, realpath_len+1);
+		if (same) {
+			bucket->realpath = bucket->path;
+		} else {
+			bucket->realpath = bucket->path + (path_len + 1);
+			memcpy(bucket->realpath, realpath, realpath_len+1);
+		}
 		bucket->realpath_len = realpath_len;
+		bucket->is_dir = is_dir;
 		bucket->expires = t + CWDG(realpath_cache_ttl);
 		n = bucket->key % (sizeof(CWDG(realpath_cache)) / sizeof(CWDG(realpath_cache)[0]));
 		bucket->next = CWDG(realpath_cache)[n];
@@ -477,33 +503,243 @@ static inline realpath_cache_bucket* realpath_cache_find(const char *path, int p
 }
 /* }}} */
 
+#undef LINK_MAX
+#define LINK_MAX 32
+
+static int tsrm_realpath_r(char *path, int start, int len, int *ll, time_t *t, int use_realpath, int is_dir, int *link_is_dir TSRMLS_DC) /* {{{ */
+{
+	int i, j, save;
+	int directory = 0;
+#ifdef TSRM_WIN32
+	WIN32_FIND_DATA data;
+	HANDLE hFind;
+#else
+	struct stat st;
+#endif
+	realpath_cache_bucket *bucket;
+	char *tmp;
+	TSRM_ALLOCA_FLAG(use_heap);
+
+	while (1) {
+		if (len <= start) {
+			return start;
+		}
+
+		i = len;
+		while (i > start && !IS_SLASH(path[i-1])) {
+			i--;
+		}
+
+		if (i == len ||
+			(i == len - 1 && path[i] == '.')) {
+			/* remove double slashes and '.' */
+			len = i - 1;
+			is_dir = 1;
+			continue;
+		} else if (i == len - 2 && path[i] == '.' && path[i+1] == '.') {
+			/* remove '..' and previous directory */
+			if (i - 1 <= start) {
+				return start ? start : len;
+			}
+			j = tsrm_realpath_r(path, start, i-1, ll, t, use_realpath, 1, NULL TSRMLS_CC);
+			if (j > start) {
+				j--;
+				while (j > start && !IS_SLASH(path[j])) {
+					j--;
+				}
+				if (!start) {
+					/* leading '..' must not be removed in case of relative path */
+					if (j == 0 && path[0] == '.' && path[1] == '.' &&
+					    IS_SLASH(path[2])) {
+						path[3] = '.';
+						path[4] = '.';
+						path[5] = DEFAULT_SLASH;
+						j = 5;
+					} else if (j > 0 && 
+				               path[j+1] == '.' && path[j+2] == '.' &&
+				               IS_SLASH(path[j+3])) {
+						j += 4;
+						path[j++] = '.';
+						path[j++] = '.';
+						path[j] = DEFAULT_SLASH;
+					}
+				}
+			} else if (!start && !j) {
+				/* leading '..' must not be removed in case of relative path */
+				path[0] = '.';
+				path[1] = '.';
+				path[2] = DEFAULT_SLASH;
+				j = 2;
+			}
+			return j;
+		}
+	
+		path[len] = 0;
+
+		save = (use_realpath != CWD_EXPAND);
+
+		if (start && save && CWDG(realpath_cache_size_limit)) {
+			/* cache lookup for absolute path */
+			if (!*t) {
+				*t = time(0);
+			}
+		    if ((bucket = realpath_cache_find(path, len, *t TSRMLS_CC)) != NULL) {
+		    	if (is_dir && !bucket->is_dir) {
+					/* not a directory */
+					return -1;
+		    	} else {
+		    		if (link_is_dir) {
+		    			*link_is_dir = bucket->is_dir;
+		    		}
+					memcpy(path, bucket->realpath, bucket->realpath_len + 1);
+				    return bucket->realpath_len;
+				}
+	    	}
+		}
+
+#ifdef TSRM_WIN32
+		if (save && (hFind = FindFirstFile(path, &data)) == INVALID_HANDLE_VALUE) {
+			if (use_realpath == CWD_REALPATH) {
+				/* file not found */
+				return -1;
+			}
+			/* continue resolution anyway but don't save result in the cache */
+			save = 0;
+		}
+		if (save) {
+			directory = (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
+			if (is_dir && !directory) {
+				/* not a directory */
+				FindClose(hFind);
+				return -1;
+			}
+		}
+		tmp = tsrm_do_alloca(len+1, use_heap);
+		memcpy(tmp, path, len+1);
+#elif defined(NETWARE)
+		save = 0;
+		tmp = tsrm_do_alloca(len+1, use_heap);
+		memcpy(tmp, path, len+1);
+#else
+		if (save && lstat(path, &st) < 0) {
+			if (use_realpath == CWD_REALPATH) {
+				/* file not found */
+				return -1;
+			}
+			/* continue resolution anyway but don't save result in the cache */
+			save = 0;
+		}
+
+		tmp = tsrm_do_alloca(len+1, use_heap);
+		memcpy(tmp, path, len+1);
+
+		if (save && S_ISLNK(st.st_mode)) {
+			if (++(*ll) > LINK_MAX || (j = readlink(tmp, path, MAXPATHLEN)) < 0) {
+			    /* too many links or broken symlinks */
+				tsrm_free_alloca(tmp, use_heap);
+				return -1;
+			}
+			path[j] = 0;
+			if (IS_ABSOLUTE_PATH(path, j)) {
+				j = tsrm_realpath_r(path, 1, j, ll, t, use_realpath, is_dir, &directory TSRMLS_CC);
+				if (j < 0) {
+					tsrm_free_alloca(tmp, use_heap);
+					return -1;
+				}
+			} else {
+			    if (i + j >= MAXPATHLEN-1) {
+					tsrm_free_alloca(tmp, use_heap);
+					return -1; /* buffer overflow */
+			    }
+				memmove(path+i, path, j+1);
+				memcpy(path, tmp, i-1);
+				path[i-1] = DEFAULT_SLASH;
+				j = tsrm_realpath_r(path, start, i + j, ll, t, use_realpath, is_dir, &directory TSRMLS_CC);
+				if (j < 0) {
+					tsrm_free_alloca(tmp, use_heap);
+					return -1;
+				}
+			}
+			if (link_is_dir) {
+				*link_is_dir = directory;
+			}
+		} else {
+			if (save) {
+				directory = S_ISDIR(st.st_mode);
+				if (link_is_dir) {
+					*link_is_dir = directory;
+				}
+				if (is_dir && !directory) {
+					/* not a directory */
+					return -1;
+				}
+			}
+#endif
+			if (i - 1 <= start) {
+				j = start;
+			} else {
+				/* some leading directories may be unaccessable */
+				j = tsrm_realpath_r(path, start, i-1, ll, t, save ? CWD_FILEPATH : use_realpath, 1, NULL TSRMLS_CC);
+				if (j > start) {
+					path[j++] = DEFAULT_SLASH;
+				}
+			}
+#ifdef TSRM_WIN32
+			if (j < 0 || j + len - i >= MAXPATHLEN-1) {
+				tsrm_free_alloca(tmp, use_heap);
+				if (save) FindClose(hFind);
+				return -1;
+			}
+			if (save) {
+				i = strlen(data.cFileName);
+				memcpy(path+j, data.cFileName, i+1);
+				j += i;
+				FindClose(hFind);
+			} else {
+				/* use the original file or directory name as it wasn't found */
+				memcpy(path+j, tmp+i, len-i+1);
+				j += (len-i);
+			}
+#else
+			if (j < 0 || j + len - i >= MAXPATHLEN-1) {
+				tsrm_free_alloca(tmp, use_heap);
+				return -1;
+			}
+			memcpy(path+j, tmp+i, len-i+1);
+			j += (len-i);
+		}
+#endif
+
+		if (save && start && CWDG(realpath_cache_size_limit)) {
+			/* save absolute path in the cache */
+			realpath_cache_add(tmp, len, path, j, directory, *t TSRMLS_CC);
+		}
+
+		tsrm_free_alloca(tmp, use_heap);
+		return j;
+	}
+}
+/* }}} */
+
 /* Resolve path relatively to state and put the real path into state */
 /* returns 0 for ok, 1 for error */
 CWD_API int virtual_file_ex(cwd_state *state, const char *path, verify_path_func verify_path, int use_realpath) /* {{{ */
 {
 	int path_length = strlen(path);
-	cwd_state old_state;
-	char orig_path[MAXPATHLEN];
-	realpath_cache_bucket *bucket;
-	time_t t = 0;
+	char resolved_path[MAXPATHLEN];
+	int start = 1;
+	int ll = 0;
+	time_t t;
 	int ret;
-	int use_cache;
-	int use_relative_path = 0;
-#ifdef TSRM_WIN32
-	int is_unc;
-	int exists;
-#endif
+	int add_slash;
 	TSRMLS_FETCH();
 
-	use_cache = ((use_realpath != CWD_EXPAND) && CWDG(realpath_cache_size_limit));
-
-	if (path_length == 0) 
-		return (1);
-	if (path_length >= MAXPATHLEN)
-		return (1);
+	if (path_length == 0 || path_length >= MAXPATHLEN-1) {
+		return 1;
+	}
 
 #if VIRTUAL_CWD_DEBUG
-		fprintf(stderr,"cwd = %s path = %s\n", state->cwd, path);
+	fprintf(stderr,"cwd = %s path = %s\n", state->cwd, path);
 #endif
 
 	/* cwd_length can be 0 when getcwd() fails.
@@ -511,255 +747,149 @@ CWD_API int virtual_file_ex(cwd_state *state, const char *path, verify_path_func
 	 * but *does* have execute permissions */
 	if (!IS_ABSOLUTE_PATH(path, path_length)) {
 		if (state->cwd_length == 0) {
-			use_cache = 0;
-			use_relative_path = 1;
+			/* resolve relative path */
+			start = 0;
+			memcpy(resolved_path , path, path_length + 1);
 		} else {
-			int orig_path_len;
 			int state_cwd_length = state->cwd_length;
 
 #ifdef TSRM_WIN32
 			if (IS_SLASH(path[0])) {
-				state_cwd_length = 2;
+				if (state->cwd[1] == ':') {
+					/* Copy only the drive name */
+					state_cwd_length = 2;
+				} else if (IS_UNC_PATH(state->cwd, state->cwd_length)) {
+					/* Copy only the share name */
+					state_cwd_length = 2;
+					while (IS_SLASH(state->cwd[state_cwd_length])) {
+						state_cwd_length++;
+					}						 
+					while (state->cwd[state_cwd_length] &&
+					       !IS_SLASH(state->cwd[state_cwd_length])) {
+						state_cwd_length++;
+					}						 
+					while (IS_SLASH(state->cwd[state_cwd_length])) {
+						state_cwd_length++;
+					}						 
+					while (state->cwd[state_cwd_length] &&
+					       !IS_SLASH(state->cwd[state_cwd_length])) {
+						state_cwd_length++;
+					}						 
+				}
 			}
 #endif
-			orig_path_len = path_length + state_cwd_length + 1;
-			if (orig_path_len >= MAXPATHLEN) {
+			if (path_length + state_cwd_length + 1 >= MAXPATHLEN-1) {
 				return 1;
 			}
-			memcpy(orig_path, state->cwd, state_cwd_length);
-			orig_path[state_cwd_length] = DEFAULT_SLASH;
-			memcpy(orig_path + state_cwd_length + 1, path, path_length + 1);
-			path = orig_path;
-			path_length = orig_path_len; 
+			memcpy(resolved_path, state->cwd, state_cwd_length);
+			resolved_path[state_cwd_length] = DEFAULT_SLASH;
+			memcpy(resolved_path + state_cwd_length + 1, path, path_length + 1);
+			path_length += state_cwd_length + 1;
 		}
+	} else {		
+#ifdef TSRM_WIN32
+		if (path_length > 2 && path[1] == ':' && !IS_SLASH(path[2])) {
+			resolved_path[0] = path[0];
+			resolved_path[1] = ':';
+			resolved_path[2] = DEFAULT_SLASH;
+			memcpy(resolved_path + 3, path + 2, path_length - 1);
+			path_length++;
+		} else
+#endif
+		memcpy(resolved_path, path, path_length + 1);
+	} 
+
+#ifdef TSRM_WIN32
+	if (memchr(resolved_path, '*', path_length) ||
+	    memchr(resolved_path, '?', path_length)) {
+		return 1;
 	}
+#endif
 
-	if (use_cache) {
-		t = CWDG(realpath_cache_ttl)?time(0):0;
-		if ((bucket = realpath_cache_find(path, path_length, t TSRMLS_CC)) != NULL) {		
-			int len = bucket->realpath_len;
-
-			CWD_STATE_COPY(&old_state, state);
-			state->cwd = (char *) realloc(state->cwd, len+1);
-			memcpy(state->cwd, bucket->realpath, len+1);
-			state->cwd_length = len;
-			if (verify_path && verify_path(state)) {
-				CWD_STATE_FREE(state);
-				*state = old_state;
-				return 1;
-			} else {
-				CWD_STATE_FREE(&old_state);
-				return 0;
+#ifdef TSRM_WIN32
+	if (IS_UNC_PATH(resolved_path, path_length)) {
+		/* skip UNC name */
+		resolved_path[0] = DEFAULT_SLASH;
+		resolved_path[1] = DEFAULT_SLASH;
+		start = 2;
+		while (!IS_SLASH(resolved_path[start])) {
+			if (resolved_path[start] == 0) {
+				goto verify;
 			}
+			resolved_path[start] = toupper(resolved_path[start]);
+			start++;
 		}
+		resolved_path[start++] = DEFAULT_SLASH;
+		while (!IS_SLASH(resolved_path[start])) {
+			if (resolved_path[start] == 0) {
+				goto verify;
+			}
+			resolved_path[start] = toupper(resolved_path[start]);
+			start++;
+		}
+		resolved_path[start++] = DEFAULT_SLASH;
+	} else if (IS_ABSOLUTE_PATH(resolved_path, path_length)) {
+		/* skip DRIVE name */
+		resolved_path[0] = toupper(resolved_path[0]);
+		resolved_path[2] = DEFAULT_SLASH;
+		start = 3;
 	}
-
-	if (use_realpath != CWD_EXPAND) {
-#if !defined(TSRM_WIN32) && !defined(NETWARE)
-		char resolved_path[MAXPATHLEN];
-
-		if (!realpath(path, resolved_path)) {  /* Note: Not threadsafe on older *BSD's */
-			if (use_realpath == CWD_REALPATH) {
-				return 1;
-			}
-			goto no_realpath;
+#elif defined(NETWARE)
+	if (IS_ABSOLUTE_PATH(resolved_path, path_length)) {
+		/* skip VOLUME name */
+		start = 0;
+		while (start != ':') {
+			if (resolved_path[start] == 0) return -1;
+			start++;
 		}
-		use_realpath = CWD_REALPATH;
+		start++;
+		if (!IS_SLASH(resolved_path[start])) return -1;
+		resolved_path[start++] = DEFAULT_SLASH;
+	}
+#endif
+
+	add_slash = (use_realpath != CWD_REALPATH) && path_length > 0 && IS_SLASH(resolved_path[path_length-1]);
+	t = CWDG(realpath_cache_ttl) ? 0 : -1;
+	path_length = tsrm_realpath_r(resolved_path, start, path_length, &ll, &t, use_realpath, 0, NULL TSRMLS_CC);
+	
+	if (path_length < 0) {
+		errno = ENOENT;
+		return 1;
+	}
+	
+	if (!start && !path_length) {
+		resolved_path[path_length++] = '.';
+	}
+	if (add_slash && path_length && !IS_SLASH(resolved_path[path_length-1])) {
+		if (path_length >= MAXPATHLEN-1) {
+			return -1;
+		}
+		resolved_path[path_length++] = DEFAULT_SLASH;
+	}
+	resolved_path[path_length] = 0;
+
+#ifdef TSRM_WIN32
+verify:
+#endif
+	if (verify_path) {
+		cwd_state old_state;
+
 		CWD_STATE_COPY(&old_state, state);
-
-		state->cwd_length = strlen(resolved_path);
+		state->cwd_length = path_length;
 		state->cwd = (char *) realloc(state->cwd, state->cwd_length+1);
 		memcpy(state->cwd, resolved_path, state->cwd_length+1);
-#else
-		goto no_realpath;
-#endif
-	} else {
-		char *ptr, *path_copy, *free_path;
-		char *tok;
-		int ptr_length;
-no_realpath:
-
-#ifdef TSRM_WIN32
-		if (memchr(path, '*', path_length) ||
-		    memchr(path, '?', path_length)) {
-			return 1;
-		}
-#endif
-
-		free_path = path_copy = tsrm_strndup(path, path_length);
-		CWD_STATE_COPY(&old_state, state);
-
-#ifdef TSRM_WIN32
-		exists = (use_realpath != CWD_EXPAND);
-		ret = 0;
-		is_unc = 0;
-		if (path_length >= 2 && path[1] == ':') {			
-			state->cwd = (char *) realloc(state->cwd, 2 + 1);
-			state->cwd[0] = toupper(path[0]);
-			state->cwd[1] = ':';
-			state->cwd[2] = '\0';
-			state->cwd_length = 2;
-			path_copy += 2;
-		} else if (IS_UNC_PATH(path, path_length)) {
-			state->cwd = (char *) realloc(state->cwd, 1 + 1);
-			state->cwd[0] = DEFAULT_SLASH;
-			state->cwd[1] = '\0';
-			state->cwd_length = 1;
-			path_copy += 2;
-			is_unc = 2;
+		if (verify_path(state)) {
+			CWD_STATE_FREE(state);
+			*state = old_state;
+			ret = 1;
 		} else {
-#endif
-			state->cwd = (char *) realloc(state->cwd, 1);
-			state->cwd[0] = '\0';
-			state->cwd_length = 0;
-#ifdef TSRM_WIN32
+			CWD_STATE_FREE(&old_state);
+			ret = 0;
 		}
-#endif
-		
-		tok = NULL;
-		ptr = tsrm_strtok_r(path_copy, TOKENIZER_STRING, &tok);
-		while (ptr) {
-			ptr_length = strlen(ptr);
-
-			if (IS_DIRECTORY_UP(ptr, ptr_length)) {
-				char save;
-
-				if (use_relative_path) {
-					CWD_STATE_FREE(state);
-					*state = old_state;
-					return 1;
-				}
-
-				save = DEFAULT_SLASH;
-
-#define PREVIOUS state->cwd[state->cwd_length - 1]
-
-				while (IS_ABSOLUTE_PATH(state->cwd, state->cwd_length) &&
-						!IS_SLASH(PREVIOUS)) {
-					save = PREVIOUS;
-					PREVIOUS = '\0';
-					state->cwd_length--;
-				}
-
-				if (!IS_ABSOLUTE_PATH(state->cwd, state->cwd_length)) {
-					state->cwd[state->cwd_length++] = save;
-					state->cwd[state->cwd_length] = '\0';
-				} else {
-					PREVIOUS = '\0';
-					state->cwd_length--;
-				}
-			} else if (!IS_DIRECTORY_CURRENT(ptr, ptr_length)) {
-				if (use_relative_path) {
-					state->cwd = (char *) realloc(state->cwd, state->cwd_length+ptr_length+1);
-					use_relative_path = 0;
-				} else {
-					state->cwd = (char *) realloc(state->cwd, state->cwd_length+ptr_length+1+1);
-#ifdef TSRM_WIN32
-					/* Windows 9x will consider C:\\Foo as a network path. Avoid it. */
-					if (state->cwd_length < 2 ||
-					    (state->cwd[state->cwd_length-1]!='\\' && state->cwd[state->cwd_length-1]!='/') ||
-							IsDBCSLeadByte(state->cwd[state->cwd_length-2])) {
-						state->cwd[state->cwd_length++] = DEFAULT_SLASH;
-					}
-#elif defined(NETWARE)
-					/* 
-					Below code keeps appending to state->cwd a File system seperator
-					cases where this appending should not happen is given below,
-					a) sys: should just be left as it is
-					b) sys:system should just be left as it is,
-						Colon is allowed only in the first token as volume names alone can have the : in their names.
-						Files and Directories cannot have : in their names
-						So the check goes like this,
-						For second token and above simply append the DEFAULT_SLASH to the state->cwd.
-						For first token check for the existence of : 
-						if it exists don't append the DEFAULT_SLASH to the state->cwd.
-					*/
-					if(((state->cwd_length == 0) && (strchr(ptr, ':') == NULL)) || (state->cwd_length > 0)) {
-						state->cwd[state->cwd_length++] = DEFAULT_SLASH;
-					}
-#else
-					state->cwd[state->cwd_length++] = DEFAULT_SLASH;
-#endif
-				}
-				memcpy(&state->cwd[state->cwd_length], ptr, ptr_length+1);
-
-#ifdef TSRM_WIN32
-				if (use_realpath != CWD_EXPAND) {
-					WIN32_FIND_DATA data;
-					HANDLE hFind;
-
-					if ((hFind = FindFirstFile(state->cwd, &data)) != INVALID_HANDLE_VALUE) {
-						int length = strlen(data.cFileName);
-
-						if (length != ptr_length) {
-							state->cwd = (char *) realloc(state->cwd, state->cwd_length+length+1);
-						}
-						memcpy(&state->cwd[state->cwd_length], data.cFileName, length+1);
-						ptr_length = length;
-						FindClose(hFind);
-						ret = 0;
-					} else {
-						if (is_unc) {
-							/* skip share name */
-							is_unc--;
-							ret = 0;
-						} else {
-							exists = 0;
-							if (use_realpath == CWD_REALPATH) {
-								ret = 1;
-							}
-						}
-					}
-				}
-#endif
-
-				state->cwd_length += ptr_length;
-			}
-			ptr = tsrm_strtok_r(NULL, TOKENIZER_STRING, &tok);
-		}
-		free(free_path);
-
-		if (use_realpath == CWD_REALPATH) {
-			if (ret) {
-				CWD_STATE_FREE(state);
-				*state = old_state;					
-				return 1;
-			}
-		} else {
-#if defined(TSRM_WIN32) || defined(NETWARE)
-			if (path[path_length-1] == '\\' || path[path_length-1] == '/') {
-#else 
-			if (path[path_length-1] == '/') {
-#endif
-				state->cwd = (char*)realloc(state->cwd, state->cwd_length + 2);
-				state->cwd[state->cwd_length++] = DEFAULT_SLASH;
-				state->cwd[state->cwd_length] = 0;
-			}
-		}
-
-		if (state->cwd_length == COPY_WHEN_ABSOLUTE(state->cwd)) {
-			state->cwd = (char *) realloc(state->cwd, state->cwd_length+1+1);
-			state->cwd[state->cwd_length] = DEFAULT_SLASH;
-			state->cwd[state->cwd_length+1] = '\0';
-			state->cwd_length++;
-		}
-	}
-
-	/* Store existent file in realpath cache. */
-#ifdef TSRM_WIN32
-	if (use_cache && !is_unc && exists) {
-#else
-	if (use_cache && (use_realpath == CWD_REALPATH)) {
-#endif
-		realpath_cache_add(path, path_length, state->cwd, state->cwd_length, t TSRMLS_CC);
-	}
-
-	if (verify_path && verify_path(state)) {
-		CWD_STATE_FREE(state);
-		*state = old_state;
-		ret = 1;
 	} else {
-		CWD_STATE_FREE(&old_state);
+		state->cwd_length = path_length;
+		state->cwd = (char *) realloc(state->cwd, state->cwd_length+1);
+		memcpy(state->cwd, resolved_path, state->cwd_length+1);
 		ret = 0;
 	}
 	
@@ -781,6 +911,7 @@ CWD_API int virtual_chdir_file(const char *path, int (*p_chdir)(const char *path
 	int length = strlen(path);
 	char *temp;
 	int retval;
+	TSRM_ALLOCA_FLAG(use_heap)
 
 	if (length == 0) {
 		return 1; /* Can't cd to empty string */
@@ -797,14 +928,14 @@ CWD_API int virtual_chdir_file(const char *path, int (*p_chdir)(const char *path
 	if (length == COPY_WHEN_ABSOLUTE(path) && IS_ABSOLUTE_PATH(path, length+1)) { /* Also use trailing slash if this is absolute */
 		length++;
 	}
-	temp = (char *) tsrm_do_alloca(length+1);
+	temp = (char *) tsrm_do_alloca(length+1, use_heap);
 	memcpy(temp, path, length);
 	temp[length] = 0;
 #if VIRTUAL_CWD_DEBUG
 	fprintf (stderr, "Changing directory to %s\n", temp);
 #endif
 	retval = p_chdir(temp TSRMLS_CC);
-	tsrm_free_alloca(temp);
+	tsrm_free_alloca(temp, use_heap);
 	return retval;
 }
 /* }}} */
@@ -914,6 +1045,56 @@ CWD_API int virtual_access(const char *pathname, int mode TSRMLS_DC) /* {{{ */
 /* }}} */
 
 #if HAVE_UTIME
+#ifdef TSRM_WIN32
+static void UnixTimeToFileTime(time_t t, LPFILETIME pft) /* {{{ */
+{
+	// Note that LONGLONG is a 64-bit value
+	LONGLONG ll;
+
+	ll = Int32x32To64(t, 10000000) + 116444736000000000;
+	pft->dwLowDateTime = (DWORD)ll;
+	pft->dwHighDateTime = ll >> 32;
+}
+/* }}} */
+
+static int win32_utime(const char *filename, struct utimbuf *buf) /* {{{ */
+{
+	FILETIME mtime, atime;
+	BOOL f;
+	HANDLE hFile; 
+
+	hFile = CreateFile(filename, GENERIC_WRITE, FILE_SHARE_WRITE|FILE_SHARE_READ, NULL,
+				 OPEN_ALWAYS, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+
+	/* OPEN_ALWAYS mode sets the last error to ERROR_ALREADY_EXISTS but 
+	   the CreateFile operation succeeds */
+	if (GetLastError() == ERROR_ALREADY_EXISTS) {
+		SetLastError(0);
+	}
+
+	if ( hFile == INVALID_HANDLE_VALUE ) {
+		return -1;
+	}
+
+	if (!buf) {
+		SYSTEMTIME st;
+		GetSystemTime(&st);
+		SystemTimeToFileTime(&st, &mtime);
+		atime = mtime;
+	} else {
+		UnixTimeToFileTime(buf->modtime, &mtime);
+		UnixTimeToFileTime(buf->actime, &atime);
+	}
+	if (!SetFileTime(hFile, NULL, &atime, &mtime)) {
+		CloseHandle(hFile);
+		return -1;
+	}
+	CloseHandle(hFile);
+	return 1;
+}
+/* }}} */
+#endif
+
 CWD_API int virtual_utime(const char *filename, struct utimbuf *buf TSRMLS_DC) /* {{{ */
 {
 	cwd_state new_state;
@@ -925,7 +1106,11 @@ CWD_API int virtual_utime(const char *filename, struct utimbuf *buf TSRMLS_DC) /
 		return -1;
 	}
 
+#ifdef TSRM_WIN32
+	ret = win32_utime(new_state.cwd, buf);
+#else
 	ret = utime(new_state.cwd, buf);
+#endif
 
 	CWD_STATE_FREE(&new_state);
 	return ret;
@@ -1045,8 +1230,14 @@ CWD_API int virtual_rename(char *oldname, char *newname TSRMLS_DC) /* {{{ */
 		return -1;
 	}
 	newname = new_state.cwd;
- 
+
+	/* rename on windows will fail if newname already exists.
+	   MoveFileEx has to be used */
+#ifdef TSRM_WIN32
+	retval = (MoveFileEx(oldname, newname, MOVEFILE_REPLACE_EXISTING) == 0) ? -1 : 0;
+#else
 	retval = rename(oldname, newname);
+#endif
 
 	CWD_STATE_FREE(&old_state);
 	CWD_STATE_FREE(&new_state);

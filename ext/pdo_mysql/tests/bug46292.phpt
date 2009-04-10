@@ -2,17 +2,17 @@
 Bug #46292 (PDO::setFetchMode() shouldn't requires the 2nd arg when using FETCH_CLASSTYPE)
 --SKIPIF--
 <?php
-if (!extension_loaded('pdo') || !extension_loaded('pdo_mysql')) die('skip not loaded');
-require dirname(__FILE__) . '/config.inc';
-require dirname(__FILE__) . '/../../../ext/pdo/tests/pdo_test.inc';
-PDOTest::skip();
+require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'skipif.inc');
+require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'mysql_pdo_test.inc');
+MySQLPDOTest::skip();
+if (version_compare(PHP_VERSION, '5.1.0', '<'))
+	die("skip Needs 5.1.0 and Interface Serializable");
 ?>
 --FILE--
-<?php
-	require dirname(__FILE__) . '/config.inc';
-	require dirname(__FILE__) . '/../../../ext/pdo/tests/pdo_test.inc';
-
-	$pdoDb = PDOTest::test_factory(dirname(__FILE__) . '/common.phpt');
+<?php	
+	
+	require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'mysql_pdo_test.inc');
+	$pdoDb = MySQLPDOTest::factory();
 	
 
 	class myclass implements Serializable {
@@ -34,6 +34,7 @@ PDOTest::skip();
 	class myclass2 extends myclass { }
 
 	$pdoDb->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+	$pdoDb->setAttribute(PDO::ATTR_STRINGIFY_FETCHES, true);
 	
 	$pdoDb->query('DROP TABLE IF EXISTS testz');
 	

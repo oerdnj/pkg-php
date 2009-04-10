@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: metaphone.c,v 1.28.2.1.2.8 2008/12/31 11:17:45 sebastian Exp $ */
+/* $Id: metaphone.c,v 1.28.2.1.2.4.2.5 2009/02/18 22:34:06 felipe Exp $ */
 
 /*
 	Based on CPANs "Text-Metaphone-1.96" by Michael G Schwern <schwern@pobox.com> 
@@ -421,7 +421,7 @@ static int metaphone(unsigned char *word, int word_len, long max_phonemes, char 
 			} else if (Next_Letter == 'H') {
 				Phonize(TH);
 				skip_letter++;
-			} else {
+			} else if (!(Next_Letter == 'C' && After_Next_Letter == 'H')) {
 				Phonize('T');
 			}
 			break;

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_win32.c,v 1.27.2.1.2.11 2008/12/31 11:17:32 sebastian Exp $ */
+/* $Id: tsrm_win32.c,v 1.27.2.1.2.7.2.3 2008/12/31 11:15:31 sebastian Exp $ */
 
 #include <stdio.h>
 #include <fcntl.h>
@@ -217,8 +217,8 @@ TSRM_API FILE *popen_ex(const char *command, const char *type, const char *cwd, 
 		startup.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
 	}
 
-	cmd = (char*)malloc(strlen(command)+strlen(TWG(comspec))+sizeof(" /c "));
-	sprintf(cmd, "%s /c %s", TWG(comspec), command);
+	cmd = (char*)malloc(strlen(command)+strlen(TWG(comspec))+sizeof(" /c ")+2);
+	sprintf(cmd, "%s /c \"%s\"", TWG(comspec), command);
 	if (!CreateProcess(NULL, cmd, &security, &security, security.bInheritHandle, NORMAL_PRIORITY_CLASS|CREATE_NO_WINDOW, env, cwd, &startup, &process)) {
 		return NULL;
 	}

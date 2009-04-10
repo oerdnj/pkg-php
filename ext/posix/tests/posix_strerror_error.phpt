@@ -24,7 +24,7 @@ var_dump( posix_strerror($errno, $extra_arg) );
 
 echo "\n-- Testing posix_strerror() function with invalid error number --\n";
 $errno = -999;
-echo gettype(posix_strerror($errno))."\n";
+echo gettype( posix_strerror($errno) )."\n";
 
 echo "Done";
 ?>

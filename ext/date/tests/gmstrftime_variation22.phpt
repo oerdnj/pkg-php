@@ -1,5 +1,5 @@
 --TEST--
-Test gmstrftime() function : usage variation - Checking Preferred date and time representation other than on Windows
+Test gmstrftime() function : usage variation - Checking Preferred date and time representation other than on Windows. 
 --SKIPIF--
 <?php
 if (strtoupper(substr(PHP_OS, 0, 3)) == 'WIN') {
@@ -18,7 +18,7 @@ echo "*** Testing gmstrftime() : usage variation ***\n";
 
 // Initialise function arguments not being substituted (if any)
 $timestamp = gmmktime(8, 8, 8, 8, 8, 2008);
-setlocale(LC_ALL, "en_US");
+setlocale(LC_ALL, "en_US.utf8", "en_US");
 date_default_timezone_set("Asia/Calcutta");
 
 //array of values to iterate over

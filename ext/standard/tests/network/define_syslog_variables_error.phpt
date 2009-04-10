@@ -22,6 +22,8 @@ var_dump( define_syslog_variables($extra_arg) );
 
 -- Testing define_syslog_variables() function with one argument --
 
-Warning: Wrong parameter count for define_syslog_variables() in %s on line %d
+Deprecated: Function define_syslog_variables() is deprecated in %s on line %d
+
+Warning: define_syslog_variables() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 ===DONE===

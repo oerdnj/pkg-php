@@ -36,11 +36,12 @@ echo "Done";
 
 -- Testing xml_set_end_namespace_decl_handler() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for xml_set_end_namespace_decl_handler() in %s on line %d
+Warning: xml_set_end_namespace_decl_handler() expects exactly 2 parameters, 3 given in %s on line %d
 NULL
 
 -- Testing xml_set_end_namespace_decl_handler() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for xml_set_end_namespace_decl_handler() in %s on line %d
+Warning: xml_set_end_namespace_decl_handler() expects exactly 2 parameters, 1 given in %s on line %d
 NULL
 Done
+

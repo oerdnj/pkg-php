@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_handlers.c,v 1.30.2.5.2.8 2008/12/31 11:17:36 sebastian Exp $ */
+/* $Id: com_handlers.c,v 1.30.2.5.2.6.2.5 2008/12/31 11:15:35 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -38,8 +38,8 @@ static zval *com_property_read(zval *object, zval *member, int type TSRMLS_DC)
 
 	MAKE_STD_ZVAL(return_value);
 	ZVAL_NULL(return_value);
-	return_value->refcount = 0;
-	return_value->is_ref = 0;
+	Z_SET_REFCOUNT_P(return_value, 0);
+	Z_UNSET_ISREF_P(return_value);
 
 	obj = CDNO_FETCH(object);
 
@@ -92,8 +92,8 @@ static zval *com_read_dimension(zval *object, zval *offset, int type TSRMLS_DC)
 
 	MAKE_STD_ZVAL(return_value);
 	ZVAL_NULL(return_value);
-	return_value->refcount = 0;
-	return_value->is_ref = 0;
+	Z_SET_REFCOUNT_P(return_value, 0);
+	Z_UNSET_ISREF_P(return_value);
 
 	obj = CDNO_FETCH(object);
 
@@ -255,7 +255,7 @@ static void function_dtor(void *pDest)
 static PHP_FUNCTION(com_method_handler)
 {
 	Z_OBJ_HANDLER_P(getThis(), call_method)(
-			((zend_internal_function*)EG(function_state_ptr)->function)->function_name,
+			((zend_internal_function*)EG(current_execute_data)->function_state.function)->function_name,
 			INTERNAL_FUNCTION_PARAM_PASSTHRU);
 }
 
@@ -566,8 +566,8 @@ zend_object_handlers php_com_object_handlers = {
 	com_read_dimension,
 	com_write_dimension,
 	NULL,
-	NULL, //com_object_get,
-	NULL, //com_object_set,
+	NULL, /* com_object_get, */
+	NULL, /* com_object_set, */
 	com_property_exists,
 	com_property_delete,
 	com_dimension_exists,

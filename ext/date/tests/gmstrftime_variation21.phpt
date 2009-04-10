@@ -3,7 +3,7 @@ Test gmstrftime() function : usage variation - Checking Preferred date and time 
 --SKIPIF--
 <?php
 if (strtoupper(substr(PHP_OS, 0, 3)) != 'WIN') {
-    die("skip Test is only valid for Windows");
+    die("skip Test is valid for Windows");
 }
 ?>
 --FILE--

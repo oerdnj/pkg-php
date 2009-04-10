@@ -25,17 +25,17 @@ var_dump($result);
 array(3) {
   ["0.1"]=>
   object(cr)#%d (1) {
-    ["priv_member:private"]=>
+    ["priv_member":"cr":private]=>
     int(9)
   }
   ["0.5"]=>
   object(cr)#%d (1) {
-    ["priv_member:private"]=>
+    ["priv_member":"cr":private]=>
     int(12)
   }
   [0]=>
   object(cr)#%d (1) {
-    ["priv_member:private"]=>
+    ["priv_member":"cr":private]=>
     int(23)
   }
 }

@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_dom.h,v 1.28.2.1.2.6 2008/12/31 11:17:37 sebastian Exp $ */
+/* $Id: php_dom.h,v 1.28.2.1.2.4.2.5 2008/12/31 11:15:36 sebastian Exp $ */
 
 #ifndef PHP_DOM_H
 #define PHP_DOM_H
@@ -66,6 +66,17 @@ extern zend_module_entry dom_module_entry;
 #define DOM_API_VERSION "20031129"
 /* Define a custom type for iterating using an unused nodetype */
 #define DOM_NODESET XML_XINCLUDE_START
+
+typedef struct _dom_xpath_object {
+	zend_object  std;
+	void *ptr;
+	php_libxml_ref_obj *document;
+	HashTable *prop_handler;
+	zend_object_handle handle;
+	int registerPhpFunctions;
+	HashTable *registered_phpfunctions;
+	HashTable *node_list;
+} dom_xpath_object;
 
 typedef struct _dom_nnodemap_object {
 	dom_object *baseobj;
@@ -127,8 +138,7 @@ entry = zend_register_internal_class_ex(&ce, parent_ce, NULL TSRMLS_CC);
 }
 
 #define DOM_NO_ARGS() \
-	if (ZEND_NUM_ARGS() != 0) { \
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Expects exactly 0 parameters, %d given", ZEND_NUM_ARGS()); \
+	if (zend_parse_parameters_none() == FAILURE) { \
 		return; \
 	}
 
@@ -144,3 +154,12 @@ PHP_MSHUTDOWN_FUNCTION(dom);
 PHP_MINFO_FUNCTION(dom);
 
 #endif /* PHP_DOM_H */
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

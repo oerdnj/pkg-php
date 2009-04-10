@@ -36,16 +36,14 @@ var_dump( imagecolorallocate($im, $red, $green) );
 
 -- Testing imagecolorallocate() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for imagecolorallocate() in %s on line %d
+Warning: imagecolorallocate() expects exactly 4 parameters, 5 given in %s on line %d
 NULL
 
 -- Testing imagecolorallocate() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for imagecolorallocate() in %s on line %d
+Warning: imagecolorallocate() expects exactly 4 parameters, 0 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for imagecolorallocate() in %s on line %d
+Warning: imagecolorallocate() expects exactly 4 parameters, 3 given in %s on line %d
 NULL
 ===DONE===
-
-

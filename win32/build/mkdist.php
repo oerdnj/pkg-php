@@ -1,4 +1,4 @@
-<?php # $Id: mkdist.php,v 1.13.4.1 2006/12/19 10:26:01 edink Exp $
+<?php # $Id: mkdist.php,v 1.13.4.1.2.7 2008/12/13 11:46:23 pajoye Exp $
 /* piece together a windows binary distro */
 
 $build_dir = $argv[1];
@@ -13,6 +13,7 @@ $is_debug = preg_match("/^debug/i", $build_dir);
 echo "Making dist for $build_dir\n";
 
 $dist_dir = $build_dir . "/php-" . phpversion();
+$test_dir = $build_dir . "/php-test-pack-" . phpversion();
 $pecl_dir = $build_dir . "/pecl-" . phpversion();
 
 @mkdir($dist_dir);
@@ -30,7 +31,7 @@ function get_depends($module)
 {
 	static $no_dist = array(
 		/* windows system dlls that should not be bundled */
-		'advapi32.dll', 'comdlg32.dll', 'gdi32.dll', 'kernel32.dll', 'ntdll.dll',
+		'advapi32.dll', 'comdlg32.dll', 'crypt32.dll', 'gdi32.dll', 'kernel32.dll', 'ntdll.dll',
 		'odbc32.dll', 'ole32.dll', 'oleaut32.dll', 'rpcrt4.dll',
 		'shell32.dll', 'shlwapi.dll', 'user32.dll', 'ws2_32.dll', 'ws2help.dll',
 		'comctl32.dll', 'winmm.dll', 'wsock32.dll', 'winspool.drv', 'msasn1.dll',
@@ -40,7 +41,7 @@ function get_depends($module)
 		'apachecore.dll',
 
 		/* apache 2 */
-		'libhttpd.dll', 'libapr.dll', 'libaprutil.dll',
+		'libhttpd.dll', 'libapr.dll', 'libaprutil.dll','libapr-1.dll', 'libaprutil-1.dll',
 
 		/* pi3web */
 		'piapi.dll', 'pi3api.dll',
@@ -58,7 +59,7 @@ function get_depends($module)
 		 * but the debug version (msvcrtd.dll) and those from visual studio.net
 		 * (msvcrt7x.dll) are not */
 		'msvcrt.dll',
-
+		'wldap32.dll'
 		);
 	global $build_dir, $extra_dll_deps, $ext_targets, $sapi_targets, $pecl_targets, $phpdll, $per_module_deps, $pecl_dll_deps;
 	
@@ -284,13 +285,26 @@ foreach ($extra_dll_deps as $dll) {
 		/* try template dir */
 		$tdll = $snapshot_template . "/dlls/" . basename($dll);
 		if (!file_exists($tdll)) {
-			echo "WARNING: distro depends on $dll, but could not find it on your system\n";
-			continue;
+			$tdll = '../deps/bin/' . basename($dll);
+			if (!file_exists($tdll)) {
+				echo "WARNING: distro depends on $dll, but could not find it on your system\n";
+				continue;
+			}
 		}
 		$dll = $tdll;
 	}
 	copy($dll, "$dist_dir/" . basename($dll));
 }
+
+/* TODO:
+add sanity check and test if all required DLLs are present, per version 
+This version works at least for 3.6, 3.8 and 4.0 (5.3-vc6, 5.3-vc9 and HEAD).
+*/
+$ICU_DLLS = '../deps/bin/' . 'icu*.dll';
+foreach (glob($ICU_DLLS) as $filename) {
+	copy($filename, "$dist_dir/" . basename($filename));
+}
+
 /* and those for pecl */
 foreach ($pecl_dll_deps as $dll) {
 	if (in_array($dll, $extra_dll_deps)) {
@@ -308,7 +322,6 @@ foreach ($pecl_dll_deps as $dll) {
 	}
 	copy($dll, "$pecl_dir/" . basename($dll));
 }
-
 function copy_dir($source, $dest)
 {
 	if (!is_dir($dest)) {
@@ -319,7 +332,7 @@ function copy_dir($source, $dest)
 
 	$d = opendir($source);
 	while (($f = readdir($d)) !== false) {
-		if ($f == '.' || $f == '..' || $f == 'CVS') {
+		if ($f == '.' || $f == '..' || $f == 'CVS' || $f == '.cvsignore') {
 			continue;
 		}
 		$fs = $source . '/' . $f;
@@ -333,6 +346,57 @@ function copy_dir($source, $dest)
 	closedir($d);
 }
 
+
+
+function copy_test_dir($directory, $dest)
+{
+	if(substr($directory,-1) == '/') {
+		$directory = substr($directory,0,-1);
+	}
+
+	if ($directory == 'tests') {
+		mkdir($dest . '/tests', 0775, true);
+		copy_dir($directory, $dest . '/tests/');
+
+		return false;
+	}
+
+	if(!file_exists($directory) || !is_dir($directory)) {
+		echo "failed... $directory\n";
+		return FALSE;
+	}
+
+	$directory_list = opendir($directory);
+
+	while (FALSE !== ($file = readdir($directory_list))) {
+		$full_path = $directory . '/' . $file;
+		if($file != '.' && $file != '..' && $file != 'CVS' && is_dir($full_path)) {
+			if ($file == 'tests') {
+				mkdir($dest . '/' . $full_path , 0775, true);
+				copy_dir($full_path, $dest . '/' . $full_path . '/');
+				continue;
+			} else {
+				copy_test_dir($full_path, $dest);
+			}
+		}
+	}
+
+	closedir($directory_list); 
+}
+
+if (!is_dir($test_dir)) {
+	mkdir($test_dir);
+}
+
+$dirs = array(
+	'ext',
+	'Sapi',
+	'Zend',
+	'tests'
+);
+foreach ($dirs as $dir) {
+	copy_test_dir($dir, $test_dir);
+}
 /* change this next line to true to use good-old
  * hand-assembled go-pear-bundle from the snapshot template */
 $use_pear_template = true;
@@ -344,7 +408,7 @@ if (!$use_pear_template) {
 
 	/* grab the bootstrap script */
 	echo "Downloading go-pear\n";
-	copy("http://go-pear.org/", "$dist_dir/PEAR/go-pear.php");
+	copy("http://pear.php.net/go-pear", "$dist_dir/PEAR/go-pear.php");
 
 	/* import the package list -- sets $packages variable */
 	include "pear/go-pear-list.php";

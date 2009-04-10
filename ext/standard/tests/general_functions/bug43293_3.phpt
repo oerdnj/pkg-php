@@ -1,12 +1,5 @@
 --TEST--
-Bug#43293 (Multiple segfaults in getopt())
---SKIPIF--
-<?php
-@getopt(null, array());
-if(error_get_last() !== null) {
-	echo "skip: longopts not enabled";
-}
-?>
+Bug #43293 (Multiple segfaults in getopt())
 --ARGS--
 -f --f
 --INI--

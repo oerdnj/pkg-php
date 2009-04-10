@@ -101,11 +101,17 @@ string(11) "Test string"
 -- Iteration 7 --
 string(1012) "Test string                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         "
 -- Iteration 8 --
-string(11) "Test string"
+
+Warning: str_pad() expects parameter 2 to be long, array given in %s on line %d
+NULL
 -- Iteration 9 --
-string(11) "Test string"
+
+Warning: str_pad() expects parameter 2 to be long, array given in %s on line %d
+NULL
 -- Iteration 10 --
-string(11) "Test string"
+
+Warning: str_pad() expects parameter 2 to be long, array given in %s on line %d
+NULL
 -- Iteration 11 --
 string(11) "Test string"
 -- Iteration 12 --
@@ -120,10 +126,12 @@ string(11) "Test string"
 string(11) "Test string"
 -- Iteration 17 --
 
-Notice: Object of class sample could not be converted to int in %s on line %d
-string(11) "Test string"
+Warning: str_pad() expects parameter 2 to be long, object given in %s on line %d
+NULL
 -- Iteration 18 --
-string(%d) "Test string%S"
+
+Warning: str_pad() expects parameter 2 to be long, resource given in %s on line %d
+NULL
 -- Iteration 19 --
 string(11) "Test string"
 -- Iteration 20 --

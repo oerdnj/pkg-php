@@ -1,12 +1,5 @@
 --TEST--
 Testing stream_get_meta_data() on a process stream.
---SKIPIF--
-<?php
-if (substr(PHP_OS, 0, 3) == 'WIN') {
-    // non-windows platforms discard the 'b' from the mode string
-    die('skip Not valid for Windows');
-}
-?>
 --FILE--
 <?php
  
@@ -28,7 +21,7 @@ array(7) {
   ["stream_type"]=>
   string(5) "STDIO"
   ["mode"]=>
-  string(1) "r"
+  string(2) "rb"
   ["unread_bytes"]=>
   int(0)
   ["seekable"]=>

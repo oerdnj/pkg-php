@@ -67,7 +67,7 @@ BEGIN {
 			
 
 	xmlhead = "<?xml version='1.0' encoding='iso-8859-1'?>\n" \
-    "<!-- $Revision: 1.27 $ -->\n" \
+    "<!-- $Revision: 1.27.8.1 $ -->\n" \
     " <reference id=\"ref." extname "\">\n" \
 		"  <title> functions</title>\n" \
 		"  <titleabbrev></titleabbrev>\n\n" \
@@ -197,7 +197,7 @@ END {
 			ints = ints "\tint argc = ZEND_NUM_ARGS();\n"
 			fetchargs = fetchargs "argc TSRMLS_CC, " specs[i]
 		} else {
-			fetchargs = fetchargs "\tif (ZEND_NUM_ARGS() != 0) {\n\t\tWRONG_PARAM_COUNT;\n\t}"
+			fetchargs = fetchargs "\tif (zend_parse_parameters_none() == FAILURE) {\n\t\treturn;\n\t}"
 	 		xmlparams = xmlparams "      <void/>\n"
 		}
 

@@ -25,6 +25,6 @@ echo "Done";
 --EXPECTF--
 *** Testing array_map() : non existent 'callback' function ***
 
-Warning: array_map(): The first argument, 'non_existent', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, function 'non_existent' not found or invalid function name in %s on line %d
 NULL
 Done

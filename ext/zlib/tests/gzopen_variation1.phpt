@@ -225,3 +225,4 @@ bool(false)
 Error: 2 - gzopen() expects parameter 1 to be string, resource given, %s(%d)
 NULL
 ===DONE===
+

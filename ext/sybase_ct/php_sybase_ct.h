@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_sybase_ct.h,v 1.19.2.2.2.3 2008/12/31 11:17:46 sebastian Exp $ */
+/* $Id: php_sybase_ct.h,v 1.19.2.2.2.1.2.2 2008/12/31 11:15:46 sebastian Exp $ */
 
 #ifndef PHP_SYBASE_CT_H
 #define PHP_SYBASE_CT_H

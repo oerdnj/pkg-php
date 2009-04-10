@@ -34,7 +34,7 @@
  * SUCH DAMAGE.
  */
 
-/* $Id: glob.c,v 1.6.6.1 2006/11/10 09:56:16 dmitry Exp $ */
+/* $Id: glob.c,v 1.6.6.1.2.1 2009/01/01 12:32:48 pajoye Exp $ */
 
 /*
  * glob(3) -- a superset of the one defined in POSIX 1003.2.
@@ -159,7 +159,7 @@ static int	 match(Char *, Char *, Char *);
 static void	 qprintf(const char *, Char *);
 #endif
 
-int
+PHPAPI int
 glob(pattern, flags, errfunc, pglob)
 	const char *pattern;
 	int flags, (*errfunc)(const char *, int);
@@ -811,7 +811,7 @@ match(name, pat, patend)
 }
 
 /* Free allocated data belonging to a glob_t structure. */
-void
+PHPAPI void
 globfree(pglob)
 	glob_t *pglob;
 {

@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: win32_socket_constants.h,v 1.5.2.1.2.3 2008/12/31 11:17:43 sebastian Exp $ */
+/* $Id: win32_socket_constants.h,v 1.5.2.1.2.1.2.2 2008/12/31 11:15:43 sebastian Exp $ */
 
 /* This file is to be included by sockets.c */
 

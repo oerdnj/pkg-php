@@ -33,12 +33,11 @@ var_dump( array_uintersect_assoc($arr1, $arr2) );
 
 -- Testing array_uintersect_assoc() function with more than expected no. of arguments --
 
-Warning: array_uintersect_assoc(): Not a valid callback 10 in %s on line %d
+Warning: array_uintersect_assoc() expects parameter 4 to be a valid callback, no array or string given in %sarray_uintersect_assoc_error.php on line %d
 NULL
 
 -- Testing array_uintersect_assoc() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for array_uintersect_assoc() in %s on line %d
+Warning: array_uintersect_assoc(): at least 3 parameters are required, 2 given in %sarray_uintersect_assoc_error.php on line %d
 NULL
 ===DONE===
-

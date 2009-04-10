@@ -105,16 +105,16 @@ string(20) "-20.5               "
 string(20) "101234567000        "
 -- Iteration 9 --
 
-Notice: Array to string conversion in %s on line %d
-string(20) "Array               "
+Warning: str_pad() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 10 --
 
-Notice: Array to string conversion in %s on line %d
-string(20) "Array               "
+Warning: str_pad() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 11 --
 
-Notice: Array to string conversion in %s on line %d
-string(20) "Array               "
+Warning: str_pad() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 12 --
 string(20) "1                   "
 -- Iteration 13 --
@@ -130,7 +130,9 @@ string(20) "                    "
 -- Iteration 18 --
 string(20) "sample object       "
 -- Iteration 19 --
-string(%d) "Resource id #%d%S"
+
+Warning: str_pad() expects parameter 1 to be string, resource given in %s on line %d
+NULL
 -- Iteration 20 --
 string(20) "                    "
 -- Iteration 21 --

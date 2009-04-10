@@ -19,8 +19,8 @@ $bases = array(23,
 				"23",
 				"23.45",
 				"2.345e1",	
-				PHP_INT_MAX,
-				-PHP_INT_MAX - 1);			
+				2147483647,
+				-2147483648);			
 
 $exponents = array(0,
                1,

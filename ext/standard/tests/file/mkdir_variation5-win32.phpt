@@ -2,6 +2,7 @@
 Test mkdir() function : variation: various valid and invalid paths
 --CREDITS--
 Dave Kelsey <d_kelsey@uk.ibm.com>
+--XFAIL--
 --SKIPIF--
 <?php
 if(substr(PHP_OS, 0, 3) != "WIN")

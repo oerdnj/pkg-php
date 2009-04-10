@@ -88,136 +88,137 @@ echo "Done";
 
 Arg value 0 
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, integer given in %s on line %d
 bool(false)
 
 Arg value 1 
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, integer given in %s on line %d
 bool(false)
 
 Arg value 12345 
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, integer given in %s on line %d
 bool(false)
 
 Arg value -2345 
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, integer given in %s on line %d
 bool(false)
 
 Arg value 10.5 
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, double given in %s on line %d
 bool(false)
 
 Arg value -10.5 
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, double given in %s on line %d
 bool(false)
 
 Arg value 101234567000 
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, double given in %s on line %d
 bool(false)
 
 Arg value 1.07654321E-9 
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, double given in %s on line %d
 bool(false)
 
 Arg value 0.5 
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, double given in %s on line %d
 bool(false)
 
 Arg value Array 
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, array given in %s on line %d
 bool(false)
 
 Arg value Array 
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, array given in %s on line %d
 bool(false)
 
 Arg value Array 
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, array given in %s on line %d
 bool(false)
 
 Arg value Array 
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, array given in %s on line %d
 bool(false)
 
 Arg value Array 
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, array given in %s on line %d
 bool(false)
 
 Arg value  
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, null given in %s on line %d
 bool(false)
 
 Arg value  
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, null given in %s on line %d
 bool(false)
 
 Arg value 1 
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, boolean given in %s on line %d
 bool(false)
 
 Arg value  
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, boolean given in %s on line %d
 bool(false)
 
 Arg value 1 
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, boolean given in %s on line %d
 bool(false)
 
 Arg value  
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, boolean given in %s on line %d
 bool(false)
 
 Arg value  
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, string given in %s on line %d
 bool(false)
 
 Arg value  
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, string given in %s on line %d
 bool(false)
 
 Arg value string 
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, string given in %s on line %d
 bool(false)
 
 Arg value string 
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, string given in %s on line %d
 bool(false)
 
 Arg value testClass 
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, object given in %s on line %d
 bool(false)
 
 Arg value  
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, null given in %s on line %d
 bool(false)
 
 Arg value  
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, null given in %s on line %d
 bool(false)
 Done
+

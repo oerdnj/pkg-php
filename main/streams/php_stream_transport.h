@@ -16,7 +16,11 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_stream_transport.h,v 1.10.2.1.2.6 2008/12/31 11:17:48 sebastian Exp $ */
+/* $Id: php_stream_transport.h,v 1.10.2.1.2.4.2.3 2009/02/02 09:41:46 pajoye Exp $ */
+#ifdef PHP_WIN32
+#include "config.w32.h"
+#include <Ws2tcpip.h>
+#endif
 
 #if HAVE_SYS_SOCKET_H
 # include <sys/socket.h>

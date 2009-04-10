@@ -34,12 +34,12 @@ var_dump(chmod($filename, 0777));
 
 -- Testing chmod() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for chmod() in %s on line %d
+Warning: chmod() expects exactly 2 parameters, 3 given in %s on line %d
 NULL
 
 -- Testing chmod() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for chmod() in %s on line %d
+Warning: chmod() expects exactly 2 parameters, 1 given in %s on line %d
 NULL
 
 Warning: chmod(): No such file or directory in %s on line %d

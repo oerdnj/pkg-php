@@ -136,27 +136,31 @@ int(502)
 
 --float 12.3456789000e10--
 int(0)
-int(8)
+int(%d)
 
 --float .5--
 int(0)
 int(0)
 
 --empty array--
-int(0)
-int(0)
+Error: 2 - umask() expects parameter 1 to be long, array given, %s(%d)
+bool(false)
+int(63)
 
 --int indexed array--
-int(0)
-int(1)
+Error: 2 - umask() expects parameter 1 to be long, array given, %s(%d)
+bool(false)
+int(63)
 
 --associative array--
-int(0)
-int(1)
+Error: 2 - umask() expects parameter 1 to be long, array given, %s(%d)
+bool(false)
+int(63)
 
 --nested arrays--
-int(0)
-int(1)
+Error: 2 - umask() expects parameter 1 to be long, array given, %s(%d)
+bool(false)
+int(63)
 
 --uppercase NULL--
 int(0)
@@ -183,38 +187,44 @@ int(0)
 int(0)
 
 --empty string DQ--
-int(0)
-int(0)
+Error: 2 - umask() expects parameter 1 to be long, string given, %s(%d)
+bool(false)
+int(63)
 
 --empty string SQ--
-int(0)
-int(0)
+Error: 2 - umask() expects parameter 1 to be long, string given, %s(%d)
+bool(false)
+int(63)
 
 --string DQ--
-int(0)
-int(0)
+Error: 2 - umask() expects parameter 1 to be long, string given, %s(%d)
+bool(false)
+int(63)
 
 --string SQ--
-int(0)
-int(0)
+Error: 2 - umask() expects parameter 1 to be long, string given, %s(%d)
+bool(false)
+int(63)
 
 --mixed case string--
-int(0)
-int(0)
+Error: 2 - umask() expects parameter 1 to be long, string given, %s(%d)
+bool(false)
+int(63)
 
 --heredoc--
-int(0)
-int(0)
+Error: 2 - umask() expects parameter 1 to be long, string given, %s(%d)
+bool(false)
+int(63)
 
 --instance of classWithToString--
-Error: 8 - Object of class classWithToString could not be converted to int, %s(%d)
-int(0)
-int(1)
+Error: 2 - umask() expects parameter 1 to be long, object given, %s(%d)
+bool(false)
+int(63)
 
 --instance of classWithoutToString--
-Error: 8 - Object of class classWithoutToString could not be converted to int, %s(%d)
-int(0)
-int(1)
+Error: 2 - umask() expects parameter 1 to be long, object given, %s(%d)
+bool(false)
+int(63)
 
 --undefined var--
 int(0)
@@ -224,3 +234,4 @@ int(0)
 int(0)
 int(0)
 ===DONE===
+

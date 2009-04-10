@@ -18,5 +18,5 @@ var_dump(ob_get_length($extra_arg));
 
 Too many arguments
 
-Warning: Wrong parameter count for ob_get_length() in %s on line 10
+Warning: ob_get_length() expects exactly 0 parameters, 1 given in %s on line 10
 NULL

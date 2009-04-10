@@ -34,11 +34,11 @@ echo "Done";
 
 -- Testing array_key_exists() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for array_key_exists() in %s on line %d
+Warning: array_key_exists() expects exactly 2 parameters, 3 given in %s on line %d
 NULL
 
 -- Testing array_key_exists() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for array_key_exists() in %s on line %d
+Warning: array_key_exists() expects exactly 2 parameters, 1 given in %s on line %d
 NULL
 Done

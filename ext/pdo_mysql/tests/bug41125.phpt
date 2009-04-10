@@ -2,16 +2,16 @@
 Bug #41125 (PDO mysql + quote() + prepare() can result in seg fault)
 --SKIPIF--
 <?php
-require dirname(__FILE__) . '/config.inc';
-require dirname(__FILE__) . '/../../../ext/pdo/tests/pdo_test.inc';
+require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'skipif.inc');
+require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'mysql_pdo_test.inc');
 MySQLPDOTest::skip();
 
 ?>
 --FILE--
 <?php
 
-require dirname(__FILE__) . '/config.inc';
-require dirname(__FILE__) . '/../../../ext/pdo/tests/pdo_test.inc';
+require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'mysql_pdo_test.inc');
+
 $db = PDOTest::test_factory(dirname(__FILE__) . '/common.phpt');
 
 $search = "o'";
@@ -85,78 +85,78 @@ foreach ($queries as $k => $query) {
 ?>
 --EXPECT--
 1
-00000
+00000 -  - 
 -------------------------------------------------------
 [1] Query: [[SELECT 1 FROM DUAL WHERE 1 = '?\'\'']]
 
-00000
+00000 -  - 
 --------
 [2] Query: [[SELECT 'a\'0' FROM DUAL WHERE 1 = ?]]
 a'0
-00000
+00000 -  - 
 --------
 [3] Query: [[SELECT 'a', 'b\'' FROM DUAL WHERE '''' LIKE '\'' AND ?]]
 a - b'
-00000
+00000 -  - 
 --------
 [4] Query: [[SELECT 'foo?bar', '', '''' FROM DUAL WHERE ?]]
 foo?bar -  - '
-00000
+00000 -  - 
 --------
 Query: [[SELECT upper(:id) FROM DUAL WHERE '1']]
 O'\0
-00000
+00000 -  - 
 -------------------------------------------------------
 [1] Query: [[SELECT 1, 'foo' FROM DUAL WHERE 1 = :id AND '\0' IS NULL AND  2 <> :id]]
 
-00000
+00000 -  - 
 --------
 [2] Query: [[SELECT 1 FROM DUAL WHERE 1 = :id AND '' AND  2 <> :id]]
 
-00000
+00000 -  - 
 --------
 [3] Query: [[SELECT 1 FROM DUAL WHERE 1 = :id AND '\'\'' = '''' AND  2 <> :id]]
 
-00000
+00000 -  - 
 --------
 [4] Query: [[SELECT 1 FROM DUAL WHERE 1 = :id AND '\'' = '''' AND  2 <> :id]]
 1
-00000
+00000 -  - 
 --------
 [5] Query: [[SELECT 'a', 'b\'' FROM DUAL WHERE '''' LIKE '\'' AND 1]]
 a - b'
-00000
+00000 -  - 
 --------
 [6] Query: [[SELECT 'a''', '\'b\'' FROM DUAL WHERE '''' LIKE '\'' AND 1]]
 a' - 'b'
-00000
+00000 -  - 
 --------
 [7] Query: [[SELECT UPPER(:id) FROM DUAL WHERE '1']]
 1
-00000
+00000 -  - 
 --------
 [8] Query: [[SELECT 1 FROM DUAL WHERE '\'']]
 
-00000
+00000 -  - 
 --------
 [9] Query: [[SELECT 1 FROM DUAL WHERE :id AND '\0' OR :id]]
 1
-00000
+00000 -  - 
 --------
 [10] Query: [[SELECT 1 FROM DUAL WHERE 'a\f\n\0' AND 1 >= :id]]
 
-00000
+00000 -  - 
 --------
 [11] Query: [[SELECT 1 FROM DUAL WHERE '\'' = '''']]
 1
-00000
+00000 -  - 
 --------
 [12] Query: [[SELECT '\n' '1 FROM DUAL WHERE '''' and :id']]
 
 1 FROM DUAL WHERE '' and :id
-00000
+00000 -  - 
 --------
 [13] Query: [[SELECT 1 'FROM DUAL WHERE :id AND '''' = '''' OR 1 = 1 AND ':id]]
 1
-00000
+00000 -  - 
 --------

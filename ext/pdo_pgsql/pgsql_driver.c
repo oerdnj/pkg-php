@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pgsql_driver.c,v 1.53.2.14.2.12 2008/12/31 11:17:42 sebastian Exp $ */
+/* $Id: pgsql_driver.c,v 1.53.2.14.2.9.2.4 2008/12/31 11:15:41 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -627,14 +627,14 @@ static PHP_METHOD(PDO, pgsqlLOBUnlink)
 /* }}} */
 
 
-static zend_function_entry dbh_methods[] = {
+static const zend_function_entry dbh_methods[] = {
 	PHP_ME(PDO, pgsqlLOBCreate, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PDO, pgsqlLOBOpen, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PDO, pgsqlLOBUnlink, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 
-static zend_function_entry *pdo_pgsql_get_driver_methods(pdo_dbh_t *dbh, int kind TSRMLS_DC)
+static const zend_function_entry *pdo_pgsql_get_driver_methods(pdo_dbh_t *dbh, int kind TSRMLS_DC)
 {
 	switch (kind) {
 		case PDO_DBH_DRIVER_METHOD_KIND_DBH:

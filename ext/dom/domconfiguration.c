@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: domconfiguration.c,v 1.5.2.1.2.5 2008/12/31 11:17:37 sebastian Exp $ */
+/* $Id: domconfiguration.c,v 1.5.2.1.2.1.2.9 2008/12/31 11:15:36 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -27,20 +27,16 @@
 #if HAVE_LIBXML && HAVE_DOM
 #include "php_dom.h"
 
-
 /* {{{ arginfo */
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_configuration_set_parameter, 0, 0, 2)
 	ZEND_ARG_INFO(0, name)
 	ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_configuration_get_parameter, 0, 0, 0)
 	ZEND_ARG_INFO(0, name)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_configuration_can_set_parameter, 0, 0, 0)
 	ZEND_ARG_INFO(0, name)
 	ZEND_ARG_INFO(0, value)
@@ -54,7 +50,7 @@ ZEND_END_ARG_INFO();
 * Since: DOM Level 3
 */
 
-zend_function_entry php_dom_domconfiguration_class_functions[] = {
+const zend_function_entry php_dom_domconfiguration_class_functions[] = {
 	PHP_FALIAS(setParameter, dom_domconfiguration_set_parameter, arginfo_dom_configuration_set_parameter)
 	PHP_FALIAS(getParameter, dom_domconfiguration_get_parameter, arginfo_dom_configuration_get_parameter)
 	PHP_FALIAS(canSetParameter, dom_domconfiguration_can_set_parameter, arginfo_dom_configuration_can_set_parameter)
@@ -62,7 +58,6 @@ zend_function_entry php_dom_domconfiguration_class_functions[] = {
 };
 
 /* {{{ attribute protos, not implemented yet */
-
 
 /* {{{ proto dom_void dom_domconfiguration_set_parameter(string name, domuserdata value);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#DOMConfiguration-property
@@ -74,7 +69,6 @@ PHP_FUNCTION(dom_domconfiguration_set_parameter)
 }
 /* }}} end dom_domconfiguration_set_parameter */
 
-
 /* {{{ proto domdomuserdata dom_domconfiguration_get_parameter(string name);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#DOMConfiguration-getParameter
 Since: 
@@ -85,7 +79,6 @@ PHP_FUNCTION(dom_domconfiguration_get_parameter)
 }
 /* }}} end dom_domconfiguration_get_parameter */
 
-
 /* {{{ proto boolean dom_domconfiguration_can_set_parameter(string name, domuserdata value);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#DOMConfiguration-canSetParameter
 Since: 
@@ -95,4 +88,16 @@ PHP_FUNCTION(dom_domconfiguration_can_set_parameter)
  DOM_NOT_IMPLEMENTED();
 }
 /* }}} end dom_domconfiguration_can_set_parameter */
+
+/* }}} */
+
 #endif
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

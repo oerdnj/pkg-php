@@ -29,15 +29,15 @@ base_convert(new classA(), 8, 10);
 *** Testing base_convert() : error conditions ***
 Incorrect number of arguments
 
-Warning: Wrong parameter count for base_convert() in %s on line %d
+Warning: base_convert() expects exactly 3 parameters, 0 given in %s on line %d
 
-Warning: Wrong parameter count for base_convert() in %s on line %d
+Warning: base_convert() expects exactly 3 parameters, 1 given in %s on line %d
 
-Warning: Wrong parameter count for base_convert() in %s on line %d
+Warning: base_convert() expects exactly 3 parameters, 2 given in %s on line %d
 
 Warning: base_convert(): Invalid `from base' (1) in %s on line %d
 
-Warning: base_convert(): Invalid `to base' (37) in %s on line %d
+Warning: base_convert(): Invalid `to base' (37) in %s on line %s
 Incorrect input
 
 Catchable fatal error: Object of class classA could not be converted to string in %s on line %d

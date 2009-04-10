@@ -99,119 +99,119 @@ fclose($fp);
 
 -- Iteration 1 --
 
-Warning: current(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: current() expects parameter 1 to be array, integer given in %s on line %d
+NULL
 
 -- Iteration 2 --
 
-Warning: current(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: current() expects parameter 1 to be array, integer given in %s on line %d
+NULL
 
 -- Iteration 3 --
 
-Warning: current(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: current() expects parameter 1 to be array, integer given in %s on line %d
+NULL
 
 -- Iteration 4 --
 
-Warning: current(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: current() expects parameter 1 to be array, integer given in %s on line %d
+NULL
 
 -- Iteration 5 --
 
-Warning: current(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: current() expects parameter 1 to be array, double given in %s on line %d
+NULL
 
 -- Iteration 6 --
 
-Warning: current(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: current() expects parameter 1 to be array, double given in %s on line %d
+NULL
 
 -- Iteration 7 --
 
-Warning: current(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: current() expects parameter 1 to be array, double given in %s on line %d
+NULL
 
 -- Iteration 8 --
 
-Warning: current(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: current() expects parameter 1 to be array, double given in %s on line %d
+NULL
 
 -- Iteration 9 --
 
-Warning: current(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: current() expects parameter 1 to be array, double given in %s on line %d
+NULL
 
 -- Iteration 10 --
 
-Warning: current(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: current() expects parameter 1 to be array, null given in %s on line %d
+NULL
 
 -- Iteration 11 --
 
-Warning: current(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: current() expects parameter 1 to be array, null given in %s on line %d
+NULL
 
 -- Iteration 12 --
 
-Warning: current(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: current() expects parameter 1 to be array, boolean given in %s on line %d
+NULL
 
 -- Iteration 13 --
 
-Warning: current(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: current() expects parameter 1 to be array, boolean given in %s on line %d
+NULL
 
 -- Iteration 14 --
 
-Warning: current(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: current() expects parameter 1 to be array, boolean given in %s on line %d
+NULL
 
 -- Iteration 15 --
 
-Warning: current(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: current() expects parameter 1 to be array, boolean given in %s on line %d
+NULL
 
 -- Iteration 16 --
 
-Warning: current(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: current() expects parameter 1 to be array, string given in %s on line %d
+NULL
 
 -- Iteration 17 --
 
-Warning: current(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: current() expects parameter 1 to be array, string given in %s on line %d
+NULL
 
 -- Iteration 18 --
 
-Warning: current(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: current() expects parameter 1 to be array, string given in %s on line %d
+NULL
 
 -- Iteration 19 --
 
-Warning: current(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: current() expects parameter 1 to be array, string given in %s on line %d
+NULL
 
 -- Iteration 20 --
 
-Warning: current(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: current() expects parameter 1 to be array, string given in %s on line %d
+NULL
 
 -- Iteration 21 --
 NULL
 
 -- Iteration 22 --
 
-Warning: current(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: current() expects parameter 1 to be array, null given in %s on line %d
+NULL
 
 -- Iteration 23 --
 
-Warning: current(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: current() expects parameter 1 to be array, null given in %s on line %d
+NULL
 
 -- Iteration 24 --
 
-Warning: current(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: current() expects parameter 1 to be array, resource given in %s on line %d
+NULL
 ===DONE===

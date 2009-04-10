@@ -50,7 +50,7 @@ function runtest() {
 	   unlink($tmpfile);
 	}
 	
-	$h = gzopen('dir1/'.$tmpfile, "r");
+	$h = @gzopen('dir1/'.$tmpfile, "r");
 	if ($h === false) {
 	   echo "Not created in dir1\n";
 	}
@@ -64,8 +64,8 @@ function runtest() {
 ===DONE===
 --EXPECT--
 *** Testing gzopen() : variation ***
-Not created in working dir
-created in dir1
-Not created in working dir
-created in dir1
+created in working dir
+Not created in dir1
+created in working dir
+Not created in dir1
 ===DONE===

@@ -1,7 +1,5 @@
 --TEST--
 ReflectionClass::getModifiers()
---SKIPIF--
-<?php extension_loaded('reflection') or die('skip'); ?>
 --CREDITS--
 Felix De Vliegher <felix.devliegher@gmail.com>
 --FILE--
@@ -34,6 +32,6 @@ int(0)
 int(32)
 int(64)
 int(128)
-int(0)
-int(128)
+int(524288)
+int(524416)
 int(0)

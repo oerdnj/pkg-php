@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php.h,v 1.221.2.4.2.10 2008/12/31 11:17:47 sebastian Exp $ */
+/* $Id: php.h,v 1.221.2.4.2.8.2.12 2008/12/31 11:15:47 sebastian Exp $ */
 
 #ifndef PHP_H
 #define PHP_H
@@ -45,17 +45,22 @@
 #define PHP_DEBUG ZEND_DEBUG
 
 #ifdef PHP_WIN32
-#include "tsrm_win32.h"
-#include "win95nt.h"
+#	include "tsrm_win32.h"
+#	include "win95nt.h"
 #	ifdef PHP_EXPORTS
-#	define PHPAPI __declspec(dllexport)
+#		define PHPAPI __declspec(dllexport)
 #	else
-#	define PHPAPI __declspec(dllimport)
+#		define PHPAPI __declspec(dllimport)
 #	endif
-#define PHP_DIR_SEPARATOR '\\'
-#define PHP_EOL "\r\n"
+#	define PHP_DIR_SEPARATOR '\\'
+#	define PHP_EOL "\r\n"
 #else
-#define PHPAPI
+#	if defined(__GNUC__) && __GNUC__ >= 4
+#		define PHPAPI __attribute__ ((visibility("default")))
+#	else
+#		define PHPAPI
+#	endif
+
 #define THREAD_LS
 #define PHP_DIR_SEPARATOR '/'
 #if defined(__MacOSX__)
@@ -70,8 +75,6 @@
 #define PHP_UNAME  "NetWare"
 #define PHP_OS      PHP_UNAME
 #endif
-
-#include "php_regex.h"
 
 #if HAVE_ASSERT_H
 #if PHP_DEBUG
@@ -170,6 +173,13 @@ typedef unsigned int socklen_t;
 # endif
 #endif
 
+#ifndef va_copy
+# ifdef __va_copy
+#  define va_copy(ap1, ap2)         __va_copy((ap1), (ap2))
+# else
+#  define va_copy(ap1, ap2)         memcpy((&ap1), (&ap2), sizeof(va_list))
+# endif
+#endif
 
 #include "zend_hash.h"
 #include "php3_compat.h"
@@ -191,10 +201,6 @@ typedef unsigned int socklen_t;
 
 #ifndef HAVE_STRERROR
 char *strerror(int);
-#endif
-
-#if (REGEX == 1 || REGEX == 0) && !defined(NO_REGEX_EXTRA_H)
-#include "regex/regex_extra.h"
 #endif
 
 #if HAVE_PWD_H
@@ -279,16 +285,14 @@ int cfgparse(void);
 END_EXTERN_C()
 
 #define php_error zend_error
-
-typedef enum {
-	EH_NORMAL = 0,
-	EH_SUPPRESS,
-	EH_THROW
-} error_handling_t;
+#define error_handling_t zend_error_handling_t
 
 BEGIN_EXTERN_C()
-PHPAPI void php_set_error_handling(error_handling_t error_handling, zend_class_entry *exception_class TSRMLS_DC);
-#define php_std_error_handling() php_set_error_handling(EH_NORMAL, NULL TSRMLS_CC)
+static inline ZEND_ATTRIBUTE_DEPRECATED void php_set_error_handling(error_handling_t error_handling, zend_class_entry *exception_class TSRMLS_DC)
+{
+	zend_replace_error_handling(error_handling, exception_class, NULL TSRMLS_CC);
+}
+static inline ZEND_ATTRIBUTE_DEPRECATED void php_std_error_handling() {}
 
 PHPAPI void php_verror(const char *docref, const char *params, int type, const char *format, va_list args TSRMLS_DC) PHP_ATTRIBUTE_FORMAT(printf, 4, 0);
 
@@ -320,12 +324,10 @@ END_EXTERN_C()
 
 /* functions */
 BEGIN_EXTERN_C()
-int php_register_internal_extensions(TSRMLS_D);
-
-int php_mergesort(void *base, size_t nmemb, register size_t size, int (*cmp)(const void *, const void * TSRMLS_DC) TSRMLS_DC);
-
+PHPAPI extern int (*php_register_internal_extensions_func)(TSRMLS_D);
+PHPAPI int php_register_internal_extensions(TSRMLS_D);
+PHPAPI int php_mergesort(void *base, size_t nmemb, register size_t size, int (*cmp)(const void *, const void * TSRMLS_DC) TSRMLS_DC);
 PHPAPI void php_register_pre_request_shutdown(void (*func)(void *), void *userdata);
-
 PHPAPI void php_com_initialize(TSRMLS_D);
 END_EXTERN_C()
 

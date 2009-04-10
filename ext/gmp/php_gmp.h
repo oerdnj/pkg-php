@@ -26,12 +26,6 @@
 extern zend_module_entry gmp_module_entry;
 #define phpext_gmp_ptr &gmp_module_entry
 
-#ifdef ZEND_WIN32
-#define GMP_API __declspec(dllexport)
-#else
-#define GMP_API
-#endif
-
 ZEND_MODULE_STARTUP_D(gmp);
 ZEND_MODULE_DEACTIVATE_D(gmp);
 ZEND_MODULE_INFO_D(gmp);
@@ -72,6 +66,7 @@ ZEND_FUNCTION(gmp_setbit);
 ZEND_FUNCTION(gmp_clrbit);
 ZEND_FUNCTION(gmp_scan0);
 ZEND_FUNCTION(gmp_scan1);
+ZEND_FUNCTION(gmp_testbit);
 ZEND_FUNCTION(gmp_popcount);
 ZEND_FUNCTION(gmp_hamdist);
 ZEND_FUNCTION(gmp_nextprime);

@@ -53,37 +53,37 @@ $bar->test();
 echo "Done\n";
 ?>
 --EXPECTF--	
-Warning: Wrong parameter count for property_exists() in %s on line %d
+Warning: property_exists() expects exactly 2 parameters, 0 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for property_exists() in %s on line %d
+Warning: property_exists() expects exactly 2 parameters, 1 given in %s on line %d
 NULL
+bool(true)
+bool(true)
 bool(true)
 bool(false)
 bool(false)
 bool(false)
 bool(false)
 bool(false)
-bool(false)
-bool(false)
+bool(true)
+bool(true)
 bool(true)
 bool(false)
 bool(false)
-bool(false)
-bool(false)
-
-Warning: First parameter must either be an object or the name of an existing class in %s on line %d
-NULL
 
 Warning: First parameter must either be an object or the name of an existing class in %s on line %d
 NULL
 
 Warning: First parameter must either be an object or the name of an existing class in %s on line %d
 NULL
+
+Warning: First parameter must either be an object or the name of an existing class in %s on line %d
+NULL
 bool(true)
 bool(true)
 bool(true)
 bool(true)
-bool(false)
+bool(true)
 bool(true)
 Done

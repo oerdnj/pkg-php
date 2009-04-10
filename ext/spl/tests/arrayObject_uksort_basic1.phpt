@@ -29,16 +29,19 @@ var_dump($ao);
 ===DONE===
 --EXPECTF--
 *** Testing ArrayObject::uksort() : basic functionality ***
-object(ArrayObject)#%d (5) {
-  [6]=>
-  int(3)
-  [5]=>
-  int(2)
-  [3]=>
-  int(0)
-  [2]=>
-  int(1)
-  [1]=>
-  int(4)
+object(ArrayObject)#1 (1) {
+  ["storage":"ArrayObject":private]=>
+  array(5) {
+    [6]=>
+    int(3)
+    [5]=>
+    int(2)
+    [3]=>
+    int(0)
+    [2]=>
+    int(1)
+    [1]=>
+    int(4)
+  }
 }
 ===DONE===

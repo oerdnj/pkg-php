@@ -55,6 +55,6 @@ array(3) {
 }
 -- with language construct --
 
-Warning: array_map(): The first argument, 'echo', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, function 'echo' not found or invalid function name in %s on line %d
 NULL
 Done

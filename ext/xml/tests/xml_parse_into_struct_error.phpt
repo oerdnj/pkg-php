@@ -38,11 +38,12 @@ echo "Done";
 
 -- Testing xml_parse_into_struct() function with more than expected no. of arguments --
 
-Warning: xml_parse_into_struct(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parse_into_struct() expects at most 4 parameters, 5 given in %s on line %d
+NULL
 
 -- Testing xml_parse_into_struct() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for xml_parse_into_struct() in %s on line %d
+Warning: xml_parse_into_struct() expects at least 3 parameters, 2 given in %s on line %d
 NULL
 Done
+

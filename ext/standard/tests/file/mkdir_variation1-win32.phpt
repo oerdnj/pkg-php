@@ -63,7 +63,6 @@ $inputs = array(
       'uppercase FALSE' =>FALSE,
 
       // empty data
-      // php and p8 output No Such File or Dir. Windows outputs Invalid Argument
       'empty string DQ' => "",
       'empty string SQ' => '',
 

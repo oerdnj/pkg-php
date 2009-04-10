@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: firebird_statement.c,v 1.18.2.1.2.8 2009/02/09 12:07:35 felipe Exp $ */
+/* $Id: firebird_statement.c,v 1.18.2.1.2.5.2.11 2009/02/09 12:07:23 felipe Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -92,18 +92,14 @@ static int firebird_stmt_execute(pdo_stmt_t *stmt TSRMLS_DC) /* {{{ */
 	pdo_firebird_db_handle *H = S->H;
 
 	do {
-		/* named cursors should be closed first */
-		if (*S->name && isc_dsql_free_statement(H->isc_status, &S->stmt, DSQL_close)) {
+		/* named or open cursors should be closed first */
+		if ((*S->name || S->cursor_open) && isc_dsql_free_statement(H->isc_status, &S->stmt, DSQL_close)) {
 			break;
 		}
-		
+		S->cursor_open = 0;
 		/* assume all params have been bound */
 	
-		if ((S->statement_type == isc_info_sql_stmt_exec_procedure &&
-				isc_dsql_execute2(H->isc_status, &H->tr, &S->stmt, PDO_FB_SQLDA_VERSION,
-					S->in_sqlda, &S->out_sqlda))
-				|| isc_dsql_execute(H->isc_status, &H->tr, &S->stmt, PDO_FB_SQLDA_VERSION,
-					S->in_sqlda)) {
+		if (isc_dsql_execute(H->isc_status, &H->tr, &S->stmt, PDO_FB_SQLDA_VERSION, S->in_sqlda)) {
 			break;
 		}
 		
@@ -113,7 +109,8 @@ static int firebird_stmt_execute(pdo_stmt_t *stmt TSRMLS_DC) /* {{{ */
 		}
 	
 		*S->name = 0;
-		S->exhausted = 0;
+		S->cursor_open = (S->out_sqlda.sqln > 0);	/* A cursor is opened, when more than zero columns returned */
+		S->exhausted = !S->cursor_open;
 		
 		return 1;
 	} while (0);
@@ -135,20 +132,16 @@ static int firebird_stmt_fetch(pdo_stmt_t *stmt, /* {{{ */
 		strcpy(stmt->error_code, "HY000");
 		H->last_app_error = "Cannot fetch from a closed cursor";
 	} else if (!S->exhausted) {
-
-		/* an EXECUTE PROCEDURE statement can be fetched from once, without calling the API, because
-		 * the result was returned in the execute call */
-		if (S->statement_type == isc_info_sql_stmt_exec_procedure) {
-			S->exhausted = 1;
-		} else {
-			if (isc_dsql_fetch(H->isc_status, &S->stmt, PDO_FB_SQLDA_VERSION, &S->out_sqlda)) {
-				if (H->isc_status[0] && H->isc_status[1]) {
-					RECORD_ERROR(stmt);
-				}
-				S->exhausted = 1;
-				return 0;
+		if (isc_dsql_fetch(H->isc_status, &S->stmt, PDO_FB_SQLDA_VERSION, &S->out_sqlda)) {
+			if (H->isc_status[0] && H->isc_status[1]) {
+				RECORD_ERROR(stmt);
 			}
+			S->exhausted = 1;
+			return 0;
 		}
+ 		if (S->statement_type == isc_info_sql_stmt_exec_procedure) {
+ 			S->exhausted = 1;
+ 		}
 		return 1;
 	}
 	return 0;
@@ -161,52 +154,32 @@ static int firebird_stmt_describe(pdo_stmt_t *stmt, int colno TSRMLS_DC) /* {{{ 
 	pdo_firebird_stmt *S = (pdo_firebird_stmt*)stmt->driver_data;
 	struct pdo_column_data *col = &stmt->columns[colno];
 	XSQLVAR *var = &S->out_sqlda.sqlvar[colno];
+	int colname_len;
+	char *cp;
 	
 	/* allocate storage for the column */
 	var->sqlind = (void*)emalloc(var->sqllen + 2*sizeof(short));
 	var->sqldata = &((char*)var->sqlind)[sizeof(short)];
 
+	colname_len = (S->H->fetch_table_names && var->relname_length)
+					? (var->aliasname_length + var->relname_length + 1)
+					: (var->aliasname_length);
 	col->precision = -var->sqlscale;
 	col->maxlen = var->sqllen;
-	col->namelen = var->aliasname_length;
-	col->name = estrndup(var->aliasname,var->aliasname_length);
-	
+	col->namelen = colname_len;
+	col->name = cp = emalloc(colname_len + 1);
+	if (colname_len > var->aliasname_length) {
+		memmove(cp, var->relname, var->relname_length);
+		cp += var->relname_length;
+		*cp++ = '.';
+	}
+	memmove(cp, var->aliasname, var->aliasname_length);
+	*(cp+var->aliasname_length) = '\0';
+	col->param_type = PDO_PARAM_STR;
+
 	return 1;
 }
 /* }}} */
-
-#if abies_0
-/* internal function to override return types of parameters */
-static void set_param_type(enum pdo_param_type *param_type, XSQLVAR const *var) /* {{{ */
-{
-	/* set the param type after the field type */
-	switch (var->sqltype & ~1) {
-		case SQL_INT64:
-#if SIZEOF_LONG < 8
-			if (0) /* always a string if its size exceeds native long */
-#endif
-		case SQL_SHORT:
-		case SQL_LONG:
-			if (var->sqlscale == 0) {
-				*param_type = PDO_PARAM_INT;
-				break;
-			}
-		case SQL_TEXT:
-		case SQL_VARYING:
-		case SQL_TYPE_DATE:
-		case SQL_TYPE_TIME:
-		case SQL_TIMESTAMP:
-		case SQL_BLOB:
-			*param_type = PDO_PARAM_STR;
-			break;
-		case SQL_FLOAT:
-		case SQL_DOUBLE:
-			*param_type = PDO_PARAM_DBL;
-			break;
-	}
-}
-/* }}} */
-#endif
 
 #define FETCH_BUF(buf,type,len,lenvar) ((buf) = (buf) ? (buf) : \
 	emalloc((len) ? (len * sizeof(type)) : ((*(unsigned long*)lenvar) = sizeof(type))))
@@ -302,15 +275,24 @@ static int firebird_stmt_get_col(pdo_stmt_t *stmt, int colno, char **ptr,  /* {{
 		*ptr = NULL;
 		*len = 0;
 	} else {
-		/* override the column param type */
-		/* set_param_type(&stmt->columns[colno].param_type,var); */
-		stmt->columns[colno].param_type = PDO_PARAM_STR;
-		
 		if (var->sqlscale < 0) {
-			static ISC_INT64 const scales[] = { 1, 10, 100, 1000, 10000, 100000, 1000000,
-				100000000, 1000000000, 1000000000, LL_LIT(10000000000),LL_LIT(100000000000),
-				LL_LIT(10000000000000), LL_LIT(100000000000000),LL_LIT(1000000000000000),
-				LL_LIT(1000000000000000),LL_LIT(1000000000000000000) };
+			static ISC_INT64 const scales[] = { 1, 10, 100, 1000, 
+				10000, 
+				100000, 
+				1000000, 
+				10000000,
+				100000000, 
+				1000000000, 
+				LL_LIT(10000000000), 
+				LL_LIT(100000000000),
+				LL_LIT(1000000000000), 
+				LL_LIT(10000000000000), 
+				LL_LIT(100000000000000),
+				LL_LIT(1000000000000000),
+				LL_LIT(10000000000000000), 
+				LL_LIT(100000000000000000), 
+				LL_LIT(1000000000000000000)
+			};
 			ISC_INT64 n, f = scales[-var->sqlscale];
 
 			switch (var->sqltype & ~1) {
@@ -340,11 +322,6 @@ static int firebird_stmt_get_col(pdo_stmt_t *stmt, int colno, char **ptr,  /* {{
 				struct tm t;
 				char *fmt;				
 
-/**
-* For the time being, this code has been changed to convert every returned value to a string
-* before passing it back up to the PDO driver.
-*/
-				
 				case SQL_VARYING:
 					*ptr = &var->sqldata[2];
 					*len = *(short*)var->sqldata;
@@ -353,7 +330,6 @@ static int firebird_stmt_get_col(pdo_stmt_t *stmt, int colno, char **ptr,  /* {{
 					*ptr = var->sqldata;
 					*len = var->sqllen;
 					break;
-/* --- cut here --- */
 				case SQL_SHORT:
 				    *ptr = FETCH_BUF(S->fetch_buf[colno], char, CHAR_BUF_LEN, NULL);
 					*len = slprintf(*ptr, CHAR_BUF_LEN, "%d", *(short*)var->sqldata);
@@ -374,51 +350,18 @@ static int firebird_stmt_get_col(pdo_stmt_t *stmt, int colno, char **ptr,  /* {{
 					*ptr = FETCH_BUF(S->fetch_buf[colno], char, CHAR_BUF_LEN, NULL);
 					*len = slprintf(*ptr, CHAR_BUF_LEN, "%F" , *(double*)var->sqldata);
 					break;
-/* --- cut here --- */
-#if abies_0
-				case SQL_SHORT:
-					*ptr = FETCH_BUF(S->fetch_buf[colno], long, 0, *len);
-					*(long*)*ptr = *(short*)var->sqldata;
-					break;
-				case SQL_LONG:
-#if SIZEOF_LONG == 8
-					*ptr = FETCH_BUF(S->fetch_buf[colno], long, 0, *len);
-					*(long*)*ptr = *(ISC_LONG*)var->sqldata;
-#else
-					*ptr = var->sqldata;
-#endif
-					break;
-				case SQL_INT64:
-					*len = sizeof(long);
-#if SIZEOF_LONG == 8
-					*ptr = var->sqldata;
-#else
-					*ptr = FETCH_BUF(S->fetch_buf[colno], char, CHAR_BUF_LEN, NULL);
-					*len = slprintf(*ptr, CHAR_BUF_LEN, "%" LL_MASK "d", *(ISC_INT64*)var->sqldata);
-#endif
-					break;
-				case SQL_FLOAT:
-					*ptr = FETCH_BUF(S->fetch_buf[colno], double, 0, *len);
-					*(double*)*ptr = *(float*)var->sqldata;
-					break;
-				case SQL_DOUBLE:
-					*ptr = var->sqldata;
-					*len = sizeof(double);
-					break;
-#endif
 				case SQL_TYPE_DATE:
 					isc_decode_sql_date((ISC_DATE*)var->sqldata, &t);
-					fmt = INI_STR("ibase.dateformat");
+					fmt = S->H->date_format ? S->H->date_format : PDO_FB_DEF_DATE_FMT;
 					if (0) {
 				case SQL_TYPE_TIME:
 						isc_decode_sql_time((ISC_TIME*)var->sqldata, &t);
-						fmt = INI_STR("ibase.timeformat");
+						fmt = S->H->time_format ? S->H->time_format : PDO_FB_DEF_TIME_FMT;
 					} else if (0) {
 				case SQL_TIMESTAMP:
 						isc_decode_timestamp((ISC_TIMESTAMP*)var->sqldata, &t);
-						fmt = INI_STR("ibase.timestampformat");
+						fmt = S->H->timestamp_format ? S->H->timestamp_format : PDO_FB_DEF_TIMESTAMP_FMT;
 					}
-
 					/* convert the timestamp into a string */
 					*ptr = FETCH_BUF(S->fetch_buf[colno], char, *len = 80, NULL);
 					*len = strftime(*ptr, *len, fmt, &t);
@@ -621,13 +564,6 @@ static int firebird_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_dat
 							ZVAL_LONG(param->parameter, *(long*)value);
 							break;
 						}
-#if abies_0
-					case PDO_PARAM_DBL:
-						if (value) {
-							ZVAL_DOUBLE(param->parameter, *(double*)value);
-							break;
-						}
-#endif
 					default:
 						ZVAL_NULL(param->parameter);
 				}
@@ -684,6 +620,22 @@ static int firebird_stmt_get_attribute(pdo_stmt_t *stmt, long attr, zval *val TS
 }
 /* }}} */
 
+static int firebird_stmt_cursor_closer(pdo_stmt_t *stmt TSRMLS_DC) /* {{{ */
+{
+	pdo_firebird_stmt *S = (pdo_firebird_stmt*)stmt->driver_data;
+	
+	/* close the statement handle */
+	if ((*S->name || S->cursor_open) && isc_dsql_free_statement(S->H->isc_status, &S->stmt, DSQL_close)) {
+		RECORD_ERROR(stmt);
+		return 0;
+	}
+	*S->name = 0;
+	S->cursor_open = 0;
+	return 1;
+}
+/* }}} */
+
+
 struct pdo_stmt_methods firebird_stmt_methods = { /* {{{ */
 	firebird_stmt_dtor,
 	firebird_stmt_execute,
@@ -692,7 +644,10 @@ struct pdo_stmt_methods firebird_stmt_methods = { /* {{{ */
 	firebird_stmt_get_col,
 	firebird_stmt_param_hook,
 	firebird_stmt_set_attribute,
-	firebird_stmt_get_attribute
+	firebird_stmt_get_attribute,
+	NULL, /* get_column_meta_func */
+	NULL, /* next_rowset_func */
+	firebird_stmt_cursor_closer
 };
 /* }}} */
 

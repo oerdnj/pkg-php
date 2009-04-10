@@ -15,7 +15,7 @@
    | Author: Hartmut Holzgraefe <hholzgra@php.net>                        |
    +----------------------------------------------------------------------+
  */
-/* $Id: url_scanner.c,v 1.44.2.1.2.5 2008/12/31 11:17:46 sebastian Exp $ */
+/* $Id: url_scanner.c,v 1.44.2.1.2.3.2.2 2008/12/31 11:15:46 sebastian Exp $ */
 
 #include "php.h"
 

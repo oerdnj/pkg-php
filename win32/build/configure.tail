@@ -1,6 +1,11 @@
 // vim:ft=javascript
-// $Id: configure.tail,v 1.1 2003/12/02 23:17:04 wez Exp $
+// $Id: configure.tail,v 1.1.8.1 2008/12/25 00:09:49 pajoye Exp $
 // tail end of configure
+
+if (sapi_enabled.length < 1) {
+	MESSAGE("");
+	ERROR("No SAPI selected, please enable at least one SAPI.");
+}
 
 generate_files();
 

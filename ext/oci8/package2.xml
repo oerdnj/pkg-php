@@ -5,9 +5,15 @@ http://pear.php.net/dtd/package-2.0
 http://pear.php.net/dtd/package-2.0.xsd">
  <name>oci8</name>
  <channel>pecl.php.net</channel>
- <summary>OCI8 functions</summary>
- <description>This extension allows you to access Oracle databases using the Oracle Call Interface (OCI8). It can be built using Oracle 9.2, 10.2 or 11.1 client libraries, and allows Oracle's standard cross-version connectivity.
+ <summary>Extension for Oracle Database</summary>
+ <description>This extension allows you to access Oracle databases using the Oracle Call Interface (OCI8). It can be built with PHP 4.3.9 to 5.x.  It can be linked with Oracle 9.2, 10.2 or 11.1 client libraries.
  </description>
+ <lead>
+  <name>Christopher Jones</name>
+  <user>sixd</user>
+  <email>sixd@php.net</email>
+  <active>yes</active>
+ </lead>
  <lead>
   <name>Antony Dovgal</name>
   <user>tony2001</user>
@@ -18,42 +24,34 @@ http://pear.php.net/dtd/package-2.0.xsd">
   <name>Wez Furlong</name>
   <user>wez</user>
   <email>wez@php.net</email>
-  <active>yes</active>
+  <active>no</active>
  </lead>
  <lead>
   <name>Andi Gutmans</name>
   <user>andi</user>
   <email>andi@zend.com</email>
-  <active>yes</active>
+  <active>no</active>
  </lead>
- <lead>
-  <name>Christopher Jones</name>
-  <user>sixd</user>
-  <email>sixd@php.net</email>
-  <active>yes</active>
- </lead>
- <date>2008-05-12</date>
- <time>15:00:00</time>
+
+ <date>2009-03-16</date>
+ <time>10:00:00</time>
+
  <version>
-  <release>1.2.5</release>
-  <api>1.2.5</api>
+  <release>1.3.5</release>
+  <api>1.3.4</api>
  </version>
  <stability>
   <release>stable</release>
   <api>stable</api>
  </stability>
  <license uri="http://www.php.net/license">PHP</license>
- <notes>
-This release is based on the OCI8 included in PHP 5.2.6, with the addition of the fix for  http://pecl.php.net/bugs/bug.php?id=13523.
---------
-Fixed bug #42496 (cursor leak selecting LOBs http://bugs.php.net/bug.php?id=42496
-Fixed bug #42841 (crash with REF CURSORS when statement caching enabled) http://bugs.php.net/bug.php?id=42841
-Fixed bug #43497 (Temporary LOB leak) http://bugs.php.net/bug.php?id=43497
-Fixed bug #44206 (OCI8 selecting ref cursors leads to ORA-1000 maximum open cursors reached).
-Fixed bug #44008 (OCI8 incorrect usage of OCI-Lob->close crashes PHP).
-Fixed bug #44113 (new collection creation can fail with OCI-22303) http://bugs.php.net/bug.php?id=44113
-Enhancement - make -with-oci8=instantclient with no directory specified look for RPM install
-Enhancement - compile with 64bit Instant Client RPMs (bug http://bugs.php.net/bug.php?id=41941, http://pecl.php.net/bugs/bug.php?id=13523)
+ <notes>Fixed Bug #47243 (Crash at end of request shutdown on Windows)
+Fixed Bug #46994 (CLOB size does not update when using CLOB IN OUT param in stored procedure)
+Fixed Bug #46623 (phpinfo doesn't show compile time ORACLE_HOME with phpize)
+Fixed bug #45458 (Numeric keys for associative arrays are not handled properly) Note: not fixed when building with PHP 4 due to lack of PHP internal helper.
+Fixed PECL Bug #16035 (oci_connect without ORACLE_HOME defined causes segfault)
+Fixed PECL Bug #15988 (sqlnet.ora isn't read with older Oracle libraries)
+Fixed PECL Bug #14268 (Allow "pecl install oci8" command to "autodetect" an Instant Client RPM install)
  </notes>
  <contents>
   <dir name="/">
@@ -80,6 +78,13 @@ Enhancement - compile with 64bit Instant Client RPMs (bug http://bugs.php.net/bu
     <file name="array_bind_int.phpt" role="test" />
     <file name="array_bind_str1.phpt" role="test" />
     <file name="array_bind_str.phpt" role="test" />
+    <file name="b47243_1.phpt" role="test" />
+    <file name="b47243_2.phpt" role="test" />
+    <file name="b47243_3.phpt" role="test" />
+    <file name="bind_char_1.phpt" role="test" />
+    <file name="bind_char_2.phpt" role="test" />
+    <file name="bind_char_3.phpt" role="test" />
+    <file name="bind_char_4.phpt" role="test" />
     <file name="bind_empty.phpt" role="test" />
     <file name="bind_long.phpt" role="test" />
     <file name="bind_long_raw.phpt" role="test" />
@@ -99,6 +104,7 @@ Enhancement - compile with 64bit Instant Client RPMs (bug http://bugs.php.net/bu
     <file name="bug38173.phpt" role="test" />
     <file name="bug40078.phpt" role="test" />
     <file name="bug40415.phpt" role="test" />
+    <file name="bug41069.phpt" role="test" />
     <file name="bug42134.phpt" role="test" />
     <file name="bug42173.phpt" role="test" />
     <file name="bug42496_1.phpt" role="test" />
@@ -111,6 +117,9 @@ Enhancement - compile with 64bit Instant Client RPMs (bug http://bugs.php.net/bu
     <file name="bug44008.phpt" role="test" />
     <file name="bug44113.phpt" role="test" />
     <file name="bug44206.phpt" role="test" />
+    <file name="bug45458.phpt" role="test" />
+    <file name="bug46994.phpt" role="test" />
+    <file name="bug47189.phpt" role="test" />
     <file name="bug6109.phpt" role="test" />
     <file name="close.phpt" role="test" />
     <file name="coll_001.phpt" role="test" />
@@ -182,10 +191,12 @@ Enhancement - compile with 64bit Instant Client RPMs (bug http://bugs.php.net/bu
     <file name="define.phpt" role="test" />
     <file name="descriptors.phpt" role="test" />
     <file name="details.inc" role="test" />
+    <file name="drcp_cclass1.phpt" role="test" />
     <file name="drcp_characterset.phpt" role="test" />
     <file name="drcp_conn_close1.phpt" role="test" />
     <file name="drcp_conn_close2.phpt" role="test" />
     <file name="drcp_connect1.phpt" role="test" />
+    <file name="drcp_connection_class.phpt" role="test" />
     <file name="drcp_functions.inc" role="test" />
     <file name="drcp_newconnect.phpt" role="test" />
     <file name="drcp_pconn_close1.phpt" role="test" />
@@ -204,6 +215,10 @@ Enhancement - compile with 64bit Instant Client RPMs (bug http://bugs.php.net/bu
     <file name="error.phpt" role="test" />
     <file name="exec_fetch.phpt" role="test" />
     <file name="execute_mode.phpt" role="test" />
+    <file name="extauth_01.phpt" role="test" />
+    <file name="extauth_02.phpt" role="test" />
+    <file name="extauth_03.phpt" role="test" />
+    <file name="extauth_04.phpt" role="test" />
     <file name="fetch_all2.phpt" role="test" />
     <file name="fetch_all3.phpt" role="test" />
     <file name="fetch_all.phpt" role="test" />
@@ -281,12 +296,15 @@ Enhancement - compile with 64bit Instant Client RPMs (bug http://bugs.php.net/bu
     <file name="pecl_bug10194_blob_64.phpt" role="test" />
     <file name="pecl_bug10194_blob.phpt" role="test" />
     <file name="pecl_bug10194.phpt" role="test" />
+    <file name="pecl_bug16035.phpt" role="test" />
     <file name="pecl_bug8816.phpt" role="test" />
     <file name="persistent.phpt" role="test" />
     <file name="prefetch_old.phpt" role="test" />
     <file name="prefetch.phpt" role="test" />
     <file name="privileged_connect1.phpt" role="test" />
     <file name="privileged_connect.phpt" role="test" />
+    <file name="reflection1.phpt" role="test" />
+    <file name="reflection2.phpt" role="test" />
     <file name="rowid_bind.phpt" role="test" />
     <file name="select_null.phpt" role="test" />
     <file name="serverversion.phpt" role="test" />
@@ -317,7 +335,7 @@ Enhancement - compile with 64bit Instant Client RPMs (bug http://bugs.php.net/bu
  <dependencies>
   <required>
    <php>
-    <min>4.3.10</min>
+    <min>4.3.9</min>
     <max>6.0.0</max>
     <exclude>6.0.0</exclude>
    </php>
@@ -328,9 +346,122 @@ Enhancement - compile with 64bit Instant Client RPMs (bug http://bugs.php.net/bu
  </dependencies>
  <providesextension>oci8</providesextension>
  <extsrcrelease>
-  <configureoption default="autodetect" name="with-oci8" prompt="Please provide the path to ORACLE_HOME dir. Use &apos;instantclient,/path/to/instant/client/lib&apos; if you&apos;re compiling against Oracle Instant Client" />
+  <configureoption default="autodetect" name="with-oci8" prompt="Please provide the path to the ORACLE_HOME directory. Use &apos;instantclient,/path/to/instant/client/lib&apos; if you&apos;re compiling with Oracle Instant Client" />
  </extsrcrelease>
  <changelog>
+
+<release>
+ <version>
+  <release>1.3.4</release>
+  <api>1.3.4</api>
+ </version>
+ <stability>
+  <release>stable</release>
+  <api>stable</api>
+ </stability>
+ <license uri="http://www.php.net/license">PHP</license>
+ <notes>
+Enhancement - Allow External Authentication (not supported on Windows)
+Enhancement - Reflection will show function and method arguments with PHP 5.x
+Increase default oci8.default_prefetch from 10 to 100
+Correctly define SQLT_BDOUBLE and SQLT_BFLOAT constants with Oracle 10g ORACLE_HOME builds
+ </notes>
+</release>
+
+<release>
+ <version>
+  <release>1.3.3</release>
+  <api>1.3.3</api>
+ </version>
+ <stability>
+  <release>stable</release>
+  <api>stable</api>
+ </stability>
+ <license uri="http://www.php.net/license">PHP</license>
+ <notes>
+Changed OCI NLS initialization for consistency and technical correctness
+Removed obsolete macros
+ </notes>
+</release>
+
+<release>
+ <version>
+  <release>1.3.2</release>
+  <api>1.3.2</api>
+ </version>
+ <stability>
+  <release>beta</release>
+  <api>beta</api>
+ </stability>
+ <license uri="http://www.php.net/license">PHP</license>
+ <notes>
+Refine DRCP connection pooling functionality
+Do scope-end release for oci_pconnect (oci8.old_oci_close_semantics=1 gives old behavior)
+Fixed bug #44372 (compilation with Oracle 10gR1 libraries)
+Fixed PECL bug #12431 (PEAR install using x86_64 RPM builds)
+Allow builds with PHP 4.3.9 onwards
+ </notes>
+</release>
+
+ <release>
+ <version>
+  <release>1.3.1</release>
+  <api>1.3.1</api>
+ </version>
+ <stability>
+  <release>beta</release>
+  <api>beta</api>
+ </stability>
+ <license uri="http://www.php.net/license">PHP</license>
+ <notes>Fixed bug #44113 (New collection creation can fail with OCI-22303)
+Fixed bug #42841 (Crash with REF CURSORS when statement caching enabled)
+Fixed bug #42496 (Cursor leak selecting LOBs
+Fixed bug #43497 (Temporary LOB leak)
+Fixed PECL bug #12431 (ping functionality is broken)
+Allow compilation with 64bit Instant Client RPMs
+Allow -with-oci8=instantclient with no directory specified look for RPM install
+Refine DRCP functionality
+ </notes>
+ </release>
+
+ <release>
+ <version>
+  <release>1.3.0</release>
+  <api>1.3.0</api>
+ </version>
+ <stability>
+  <release>beta</release>
+  <api>beta</api>
+ </stability>
+ <license uri="http://www.php.net/license">PHP</license>
+ <notes>Added DRCP and FAN support.
+ </notes>
+ </release>
+
+ <release>
+ <version>
+  <release>1.2.5</release>
+  <api>1.2.5</api>
+ </version>
+ <stability>
+  <release>stable</release>
+  <api>stable</api>
+ </stability>
+ <license uri="http://www.php.net/license">PHP</license>
+ <notes>
+This release is based on the OCI8 included in PHP 5.2.6, with the addition of the fix for  http://pecl.php.net/bugs/bug.php?id=13523.
+--------
+Fixed bug #42496 (cursor leak selecting LOBs http://bugs.php.net/bug.php?id=42496
+Fixed bug #42841 (crash with REF CURSORS when statement caching enabled) http://bugs.php.net/bug.php?id=42841
+Fixed bug #43497 (Temporary LOB leak) http://bugs.php.net/bug.php?id=43497
+Fixed bug #44206 (OCI8 selecting ref cursors leads to ORA-1000 maximum open cursors reached).
+Fixed bug #44008 (OCI8 incorrect usage of OCI-Lob->close crashes PHP).
+Fixed bug #44113 (new collection creation can fail with OCI-22303) http://bugs.php.net/bug.php?id=44113
+Enhancement - make -with-oci8=instantclient with no directory specified look for RPM install
+Enhancement - compile with 64bit Instant Client RPMs (bug http://bugs.php.net/bug.php?id=41941, http://pecl.php.net/bugs/bug.php?id=13523)
+ </notes>
+ </release>
+
  <release>
  <version>
   <release>1.2.4</release>
@@ -356,6 +487,7 @@ Changed oci_pconnect() to behave like oci_connect() when SYSDBA and SYSOPER priv
 Various minor improvements.
  </notes>
   </release>
+
   <release>
    <version>
     <release>1.2.3</release>
@@ -375,6 +507,7 @@ Fixed PECL bug #8816 (issue in php_oci_statement_fetch with more than one piecew
 Various minor improvements.
    </notes>
   </release>
+
   <release>
    <version>
     <release>1.2.2</release>
@@ -399,6 +532,7 @@ Fixed bug #34005 (oci_password_change() fails). Patch by pholdaway at technocom-
 Fixed PECL bug #8112 (Persistent connections misbehave when Apache process times out)
    </notes>
   </release>
+
   <release>
    <version>
     <release>1.2.1</release>
@@ -419,6 +553,7 @@ Fixed bug #36851 (Documentation and code discrepancies for NULL data)
 Fixed bug #36820 (Privileged connection with an Oracle password file fails)
    </notes>
   </release>
+
   <release>
    <version>
     <release>1.2.0</release>
@@ -439,6 +574,7 @@ Fixed PECL bug #5571 (oci_new_connect() not closed by oci_close())
 Fixed bug #33383 (crash when retrieving empty BLOBs)
    </notes>
   </release>
+
   <release>
    <version>
     <release>1.1.1</release>
@@ -454,6 +590,7 @@ Fixed bug #33383 (crash when retrieving empty BLOBs)
 Fixed problem with oci_error() without arguments.
    </notes>
   </release>
+
   <release>
    <version>
     <release>1.1</release>
@@ -465,11 +602,12 @@ Fixed problem with oci_error() without arguments.
    </stability>
    <date>2005-09-07</date>
    <license uri="http://www.php.net/license">PHP</license>
-   <notes>This release fixes a huge amount of bugs and adds support of 
+   <notes>This release fixes a huge amount of bugs and adds support of
 statement caching, external credentials etc.
 See official announce for details.
    </notes>
   </release>
+
   <release>
    <version>
     <release>1.0</release>
@@ -484,5 +622,6 @@ See official announce for details.
    <notes>package.xml added to support installation using pear installer
    </notes>
   </release>
+
  </changelog>
 </package>

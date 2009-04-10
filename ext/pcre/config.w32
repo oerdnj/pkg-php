@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.4.2.5.2.9 2009/01/02 05:00:35 andi Exp $
+// $Id: config.w32,v 1.4.2.5.2.7.2.4 2009/01/02 04:59:41 andi Exp $
 // vim:ft=javascript
 
 EXTENSION("pcre", "php_pcre.c", false /* never shared */,

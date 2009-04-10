@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_alloc.h,v 1.63.2.2.2.17 2009/01/25 13:42:39 dsp Exp $ */
+/* $Id: zend_alloc.h,v 1.63.2.2.2.12.2.9 2009/01/25 13:41:50 dsp Exp $ */
 
 #ifndef ZEND_ALLOC_H
 #define ZEND_ALLOC_H
@@ -191,7 +191,7 @@ END_EXTERN_C()
 typedef struct _zend_mm_heap zend_mm_heap;
 
 ZEND_API zend_mm_heap *zend_mm_startup(void);
-ZEND_API void zend_mm_shutdown(zend_mm_heap *heap, int full_shutdown, int silent);
+ZEND_API void zend_mm_shutdown(zend_mm_heap *heap, int full_shutdown, int silent TSRMLS_DC);
 ZEND_API void *_zend_mm_alloc(zend_mm_heap *heap, size_t size ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_DC) ZEND_ATTRIBUTE_MALLOC;
 ZEND_API void _zend_mm_free(zend_mm_heap *heap, void *p ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_DC);
 ZEND_API void *_zend_mm_realloc(zend_mm_heap *heap, void *p, size_t size ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_DC);
@@ -219,6 +219,7 @@ typedef struct _zend_mm_mem_handlers {
 	const char *name;
 	zend_mm_storage* (*init)(void *params);
 	void (*dtor)(zend_mm_storage *storage);
+	void (*compact)(zend_mm_storage *storage);
 	zend_mm_segment* (*_alloc)(zend_mm_storage *storage, size_t size);
 	zend_mm_segment* (*_realloc)(zend_mm_storage *storage, zend_mm_segment *ptr, size_t size);
 	void (*_free)(zend_mm_storage *storage, zend_mm_segment *ptr);
@@ -232,6 +233,11 @@ struct _zend_mm_storage {
 ZEND_API zend_mm_heap *zend_mm_startup_ex(const zend_mm_mem_handlers *handlers, size_t block_size, size_t reserve_size, int internal, void *params);
 ZEND_API zend_mm_heap *zend_mm_set_heap(zend_mm_heap *new_heap TSRMLS_DC);
 ZEND_API zend_mm_storage *zend_mm_get_storage(zend_mm_heap *heap);
+
+ZEND_API void zend_mm_set_custom_handlers(zend_mm_heap *heap,
+                                          void* (*_malloc)(size_t),
+                                          void  (*_free)(void*),
+                                          void* (*_realloc)(void*, size_t));
 
 #endif
 

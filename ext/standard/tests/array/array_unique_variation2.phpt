@@ -31,7 +31,7 @@ EOT;
 
 // heredoc with diferent whitespaces
 $diff_whitespaces = <<<EOT
-hello\r world
+hello\r world\t
 1111\t\t != 2222\v\v
 heredoc\ndouble quoted string. with\vdifferent\fwhite\vspaces
 EOT;
@@ -144,7 +144,7 @@ The quick brown fox jumped over;
 the lazy dog
 This is a double quoted string"
   ["h3"]=>
-  string(87) "hello world
+  string(88) "hello world	
 1111		 != 2222
 heredoc
 double quoted string. withdifferentwhitespaces"

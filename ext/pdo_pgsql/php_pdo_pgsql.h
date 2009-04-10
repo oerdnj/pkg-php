@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_pgsql.h,v 1.3.2.1.2.3 2008/12/31 11:17:42 sebastian Exp $ */
+/* $Id: php_pdo_pgsql.h,v 1.3.2.1.2.1.2.3 2008/12/31 11:15:41 sebastian Exp $ */
 
 #ifndef PHP_PDO_PGSQL_H
 #define PHP_PDO_PGSQL_H
@@ -25,12 +25,6 @@
 
 extern zend_module_entry pdo_pgsql_module_entry;
 #define phpext_pdo_pgsql_ptr &pdo_pgsql_module_entry
-
-#ifdef PHP_WIN32
-#define PHP_PDO_PGSQL_API __declspec(dllexport)
-#else
-#define PHP_PDO_PGSQL_API
-#endif
 
 #ifdef ZTS
 #include "TSRM.h"

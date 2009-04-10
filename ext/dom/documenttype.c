@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: documenttype.c,v 1.15.2.1.2.3 2008/12/31 11:17:37 sebastian Exp $ */
+/* $Id: documenttype.c,v 1.15.2.1.2.1.2.4 2008/12/31 11:15:36 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -34,7 +34,7 @@
 * Since: 
 */
 
-zend_function_entry php_dom_documenttype_class_functions[] = {
+const zend_function_entry php_dom_documenttype_class_functions[] = {
 	{NULL, NULL, NULL}
 };
 
@@ -61,8 +61,6 @@ int dom_documenttype_name_read(dom_object *obj, zval **retval TSRMLS_DC)
 }
 
 /* }}} */
-
-
 
 /* {{{ entities	DOMNamedNodeMap	
 readonly=yes 
@@ -95,8 +93,6 @@ int dom_documenttype_entities_read(dom_object *obj, zval **retval TSRMLS_DC)
 
 /* }}} */
 
-
-
 /* {{{ notations	DOMNamedNodeMap	
 readonly=yes 
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-ID-D46829EF
@@ -128,8 +124,6 @@ int dom_documenttype_notations_read(dom_object *obj, zval **retval TSRMLS_DC)
 
 /* }}} */
 
-
-
 /* {{{ publicId	string	
 readonly=yes 
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-ID-Core-DocType-publicId
@@ -158,8 +152,6 @@ int dom_documenttype_public_id_read(dom_object *obj, zval **retval TSRMLS_DC)
 
 /* }}} */
 
-
-
 /* {{{ systemId	string	
 readonly=yes 
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-ID-Core-DocType-systemId
@@ -186,8 +178,6 @@ int dom_documenttype_system_id_read(dom_object *obj, zval **retval TSRMLS_DC)
 }
 
 /* }}} */
-
-
 
 /* {{{ internalSubset	string	
 readonly=yes 
@@ -232,3 +222,12 @@ int dom_documenttype_internal_subset_read(dom_object *obj, zval **retval TSRMLS_
 /* }}} */
 
 #endif
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

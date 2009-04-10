@@ -110,7 +110,7 @@ int(1218197630)
 
 --int 1--
 string(5) "17:44"
-float(17.7496%d)
+float(17.749%d)
 int(1218197698)
 
 --int 12345--
@@ -179,7 +179,7 @@ int(1218197630)
 
 --lowercase true--
 string(5) "17:44"
-float(17.7496%d)
+float(17.749%d)
 int(1218197698)
 
 --lowercase false--
@@ -189,7 +189,7 @@ int(1218197630)
 
 --uppercase TRUE--
 string(5) "17:44"
-float(17.7496%d)
+float(17.749%d)
 int(1218197698)
 
 --uppercase FALSE--

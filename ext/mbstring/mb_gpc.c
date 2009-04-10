@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: mb_gpc.c,v 1.17.2.2.2.5 2008/12/31 11:17:39 sebastian Exp $ */
+/* $Id: mb_gpc.c,v 1.17.2.2.2.3.2.3 2009/03/15 20:42:56 moriyoshi Exp $ */
 
 /* {{{ includes */
 #ifdef HAVE_CONFIG_H
@@ -58,6 +58,11 @@ MBSTRING_API SAPI_TREAT_DATA_FUNC(mbstr_treat_data)
 	int free_buffer=0;
 	enum mbfl_no_encoding detected;
 	php_mb_encoding_handler_info_t info;
+
+	{
+		char *value = zend_ini_string("mbstring.internal_encoding", sizeof("mbstring.internal_encoding"), 0);
+		_php_mb_ini_mbstring_internal_encoding_set(value, value ? strlen(value): 0 TSRMLS_CC);
+	}
 
 	if (!MBSTRG(encoding_translation)) {
 		php_default_treat_data(arg, str, destArray TSRMLS_CC);

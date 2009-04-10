@@ -211,16 +211,16 @@ bool(false)
 object_class::func
 -- Innerloop iteration 10 of Outerloop iteration 1 --
 
-Strict Standards: Non-static method object_class::foo1() cannot be called statically in %s on line %d
+Strict Standards: Non-static method object_class::foo1() should not be called statically in %s on line %d
 bool(true)
 bool(true)
 
-Strict Standards: Non-static method object_class::foo1() cannot be called statically in %s on line %d
+Strict Standards: Non-static method object_class::foo1() should not be called statically in %s on line %d
 bool(true)
 bool(true)
 object_class::foo1
 
-Strict Standards: Non-static method object_class::foo1() cannot be called statically in %s on line %d
+Strict Standards: Non-static method object_class::foo1() should not be called statically in %s on line %d
 bool(true)
 object_class::foo1
 --- Outerloop iteration 2 ---
@@ -298,16 +298,16 @@ bool(false)
 no_member_class::func
 -- Innerloop iteration 10 of Outerloop iteration 2 --
 
-Strict Standards: Non-static method object_class::foo1() cannot be called statically in %s on line %d
+Strict Standards: Non-static method object_class::foo1() should not be called statically in %s on line %d
 bool(true)
 bool(true)
 
-Strict Standards: Non-static method object_class::foo1() cannot be called statically in %s on line %d
+Strict Standards: Non-static method object_class::foo1() should not be called statically in %s on line %d
 bool(true)
 bool(true)
 object_class::foo1
 
-Strict Standards: Non-static method object_class::foo1() cannot be called statically in %s on line %d
+Strict Standards: Non-static method object_class::foo1() should not be called statically in %s on line %d
 bool(true)
 object_class::foo1
 --- Outerloop iteration 3 ---
@@ -385,16 +385,16 @@ bool(true)
 contains_object_class::func
 -- Innerloop iteration 10 of Outerloop iteration 3 --
 
-Strict Standards: Non-static method object_class::foo1() cannot be called statically in %s on line %d
+Strict Standards: Non-static method object_class::foo1() should not be called statically in %s on line %d
 bool(true)
 bool(true)
 
-Strict Standards: Non-static method object_class::foo1() cannot be called statically in %s on line %d
+Strict Standards: Non-static method object_class::foo1() should not be called statically in %s on line %d
 bool(true)
 bool(true)
 object_class::foo1
 
-Strict Standards: Non-static method object_class::foo1() cannot be called statically in %s on line %d
+Strict Standards: Non-static method object_class::foo1() should not be called statically in %s on line %d
 bool(true)
 object_class::foo1
 --- Outerloop iteration 4 ---
@@ -472,16 +472,16 @@ bool(true)
 contains_object_class::func
 -- Innerloop iteration 10 of Outerloop iteration 4 --
 
-Strict Standards: Non-static method object_class::foo1() cannot be called statically in %s on line %d
+Strict Standards: Non-static method object_class::foo1() should not be called statically in %s on line %d
 bool(true)
 bool(true)
 
-Strict Standards: Non-static method object_class::foo1() cannot be called statically in %s on line %d
+Strict Standards: Non-static method object_class::foo1() should not be called statically in %s on line %d
 bool(true)
 bool(true)
 object_class::foo1
 
-Strict Standards: Non-static method object_class::foo1() cannot be called statically in %s on line %d
+Strict Standards: Non-static method object_class::foo1() should not be called statically in %s on line %d
 bool(true)
 object_class::foo1
 --- Outerloop iteration 5 ---
@@ -559,16 +559,16 @@ bool(false)
 object_class::func
 -- Innerloop iteration 10 of Outerloop iteration 5 --
 
-Strict Standards: Non-static method object_class::foo1() cannot be called statically in %s on line %d
+Strict Standards: Non-static method object_class::foo1() should not be called statically in %s on line %d
 bool(true)
 bool(true)
 
-Strict Standards: Non-static method object_class::foo1() cannot be called statically in %s on line %d
+Strict Standards: Non-static method object_class::foo1() should not be called statically in %s on line %d
 bool(true)
 bool(true)
 object_class::foo1
 
-Strict Standards: Non-static method object_class::foo1() cannot be called statically in %s on line %d
+Strict Standards: Non-static method object_class::foo1() should not be called statically in %s on line %d
 bool(true)
 object_class::foo1
 --- Outerloop iteration 6 ---
@@ -646,16 +646,16 @@ bool(false)
 no_member_class::func
 -- Innerloop iteration 10 of Outerloop iteration 6 --
 
-Strict Standards: Non-static method object_class::foo1() cannot be called statically in %s on line %d
+Strict Standards: Non-static method object_class::foo1() should not be called statically in %s on line %d
 bool(true)
 bool(true)
 
-Strict Standards: Non-static method object_class::foo1() cannot be called statically in %s on line %d
+Strict Standards: Non-static method object_class::foo1() should not be called statically in %s on line %d
 bool(true)
 bool(true)
 object_class::foo1
 
-Strict Standards: Non-static method object_class::foo1() cannot be called statically in %s on line %d
+Strict Standards: Non-static method object_class::foo1() should not be called statically in %s on line %d
 bool(true)
 object_class::foo1
 --- Outerloop iteration 7 ---
@@ -733,16 +733,16 @@ bool(false)
 object_class::func
 -- Innerloop iteration 10 of Outerloop iteration 7 --
 
-Strict Standards: Non-static method object_class::foo1() cannot be called statically in %s on line %d
+Strict Standards: Non-static method object_class::foo1() should not be called statically in %s on line %d
 bool(true)
 bool(true)
 
-Strict Standards: Non-static method object_class::foo1() cannot be called statically in %s on line %d
+Strict Standards: Non-static method object_class::foo1() should not be called statically in %s on line %d
 bool(true)
 bool(true)
 object_class::foo1
 
-Strict Standards: Non-static method object_class::foo1() cannot be called statically in %s on line %d
+Strict Standards: Non-static method object_class::foo1() should not be called statically in %s on line %d
 bool(true)
 object_class::foo1
 --- Outerloop iteration 8 ---
@@ -820,16 +820,16 @@ bool(false)
 Array
 -- Innerloop iteration 10 of Outerloop iteration 8 --
 
-Strict Standards: Non-static method object_class::foo1() cannot be called statically in %s on line %d
+Strict Standards: Non-static method object_class::foo1() should not be called statically in %s on line %d
 bool(true)
 bool(true)
 
-Strict Standards: Non-static method object_class::foo1() cannot be called statically in %s on line %d
+Strict Standards: Non-static method object_class::foo1() should not be called statically in %s on line %d
 bool(true)
 bool(true)
 object_class::foo1
 
-Strict Standards: Non-static method object_class::foo1() cannot be called statically in %s on line %d
+Strict Standards: Non-static method object_class::foo1() should not be called statically in %s on line %d
 bool(true)
 object_class::foo1
 ===DONE===

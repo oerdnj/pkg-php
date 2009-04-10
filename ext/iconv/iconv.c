@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: iconv.c,v 1.124.2.8.2.24 2008/12/31 11:17:38 sebastian Exp $ */
+/* $Id: iconv.c,v 1.124.2.8.2.20.2.14 2009/03/17 05:31:04 moriyoshi Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -63,13 +63,11 @@
   ((c) == sizeof(unsigned long) ? *((unsigned long *)(a)) == *((unsigned long *)(b)) : ((c) == sizeof(unsigned int) ? *((unsigned int *)(a)) == *((unsigned int *)(b)) : memcmp(a, b, c) == 0))
 
 /* {{{ arginfo */
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_iconv_strlen, 0, 0, 1)
 	ZEND_ARG_INFO(0, str)
 	ZEND_ARG_INFO(0, charset)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_iconv_substr, 0, 0, 2)
 	ZEND_ARG_INFO(0, str)
 	ZEND_ARG_INFO(0, offset)
@@ -77,7 +75,6 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_iconv_substr, 0, 0, 2)
 	ZEND_ARG_INFO(0, charset)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_iconv_strpos, 0, 0, 2)
 	ZEND_ARG_INFO(0, haystack)
 	ZEND_ARG_INFO(0, needle)
@@ -85,54 +82,46 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_iconv_strpos, 0, 0, 2)
 	ZEND_ARG_INFO(0, charset)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_iconv_strrpos, 0, 0, 2)
 	ZEND_ARG_INFO(0, haystack)
 	ZEND_ARG_INFO(0, needle)
 	ZEND_ARG_INFO(0, charset)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_iconv_mime_encode, 0, 0, 2)
 	ZEND_ARG_INFO(0, field_name)
 	ZEND_ARG_INFO(0, field_value)
 	ZEND_ARG_INFO(0, preference) /* ZEND_ARG_ARRAY_INFO(0, preference, 1) */
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_iconv_mime_decode, 0, 0, 1)
 	ZEND_ARG_INFO(0, encoded_string)
 	ZEND_ARG_INFO(0, mode)
 	ZEND_ARG_INFO(0, charset)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_iconv_mime_decode_headers, 0, 0, 1)
 	ZEND_ARG_INFO(0, headers)
 	ZEND_ARG_INFO(0, mode)
 	ZEND_ARG_INFO(0, charset)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO(arginfo_iconv, 0)
 	ZEND_ARG_INFO(0, in_charset)
 	ZEND_ARG_INFO(0, out_charset)
 	ZEND_ARG_INFO(0, str)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO(arginfo_ob_iconv_handler, 0)
 	ZEND_ARG_INFO(0, contents)
 	ZEND_ARG_INFO(0, status)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO(arginfo_iconv_set_encoding, 0)
 	ZEND_ARG_INFO(0, type)
 	ZEND_ARG_INFO(0, charset)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_iconv_get_encoding, 0, 0, 0)
 	ZEND_ARG_INFO(0, type)
 ZEND_END_ARG_INFO()
@@ -141,7 +130,7 @@ ZEND_END_ARG_INFO()
 
 /* {{{ iconv_functions[]
  */
-zend_function_entry iconv_functions[] = {
+const zend_function_entry iconv_functions[] = {
 	PHP_RAW_NAMED_FE(iconv,php_if_iconv,				arginfo_iconv)
 	PHP_FE(ob_iconv_handler,						arginfo_ob_iconv_handler)
 	PHP_FE(iconv_get_encoding,						arginfo_iconv_get_encoding)
@@ -228,7 +217,7 @@ static php_iconv_err_t php_iconv_stream_filter_unregister_factory(TSRMLS_D);
 /* }}} */
 
 /* {{{ static globals */
-static char _generic_superset_name[] = "UCS-4LE";
+static char _generic_superset_name[] = ICONV_UCS4_ENCODING;
 #define GENERIC_SUPERSET_NAME _generic_superset_name
 #define GENERIC_SUPERSET_NBYTES 4
 /* }}} */
@@ -1040,7 +1029,7 @@ static php_iconv_err_t _php_iconv_mime_encode(smart_str *pretval, const char *fn
 		goto out;
 	}
 
-	cd_pl = iconv_open("ASCII", enc);
+	cd_pl = iconv_open(ICONV_ASCII_ENCODING, enc);
 	if (cd_pl == (iconv_t)(-1)) {
 #if ICONV_SUPPORTS_ERRNO
 		if (errno == EINVAL) {
@@ -1295,7 +1284,6 @@ static php_iconv_err_t _php_iconv_mime_encode(smart_str *pretval, const char *fn
 						char_cnt -= 3;
 					}
 				}
-				prev_in_left = in_left;
 
 				smart_str_appendl(pretval, "?=", sizeof("?=") - 1);
 				char_cnt -= 2;
@@ -1351,7 +1339,7 @@ static php_iconv_err_t _php_iconv_mime_decode(smart_str *pretval, const char *st
 		*next_pos = NULL;
 	}
 
-	cd_pl = iconv_open(enc, "ASCII");
+	cd_pl = iconv_open(enc, ICONV_ASCII_ENCODING);
 
 	if (cd_pl == (iconv_t)(-1)) {
 #if ICONV_SUPPORTS_ERRNO
@@ -1874,7 +1862,7 @@ static void _php_iconv_show_error(php_iconv_err_t err, const char *out_charset, 
    Returns the character count of str */
 PHP_FUNCTION(iconv_strlen)
 {
-	char *charset;
+	char *charset = ICONVG(internal_encoding);
 	int charset_len = 0;
 	char *str;
 	int str_len; 
@@ -1882,8 +1870,6 @@ PHP_FUNCTION(iconv_strlen)
 	php_iconv_err_t err;
 
 	unsigned int retval;
-
-	charset = ICONVG(internal_encoding);
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|s",
 		&str, &str_len, &charset, &charset_len) == FAILURE) {
@@ -1909,17 +1895,15 @@ PHP_FUNCTION(iconv_strlen)
    Returns specified part of a string */
 PHP_FUNCTION(iconv_substr)
 {
-	char *charset;
+	char *charset = ICONVG(internal_encoding);
 	int charset_len = 0;
 	char *str;
 	int str_len; 
-	long offset, length;
+	long offset, length = 0;
 
 	php_iconv_err_t err;
 
 	smart_str retval = {0};
-
-	charset = ICONVG(internal_encoding);
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sl|ls",
 		&str, &str_len, &offset, &length,
@@ -1951,20 +1935,17 @@ PHP_FUNCTION(iconv_substr)
    Finds position of first occurrence of needle within part of haystack beginning with offset */
 PHP_FUNCTION(iconv_strpos)
 {
-	char *charset;
+	char *charset = ICONVG(internal_encoding);
 	int charset_len = 0;
 	char *haystk;
 	int haystk_len; 
 	char *ndl;
 	int ndl_len;
-	long offset;
+	long offset = 0;
 
 	php_iconv_err_t err;
 
 	unsigned int retval;
-
-	offset = 0;
-	charset = ICONVG(internal_encoding);
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss|ls",
 		&haystk, &haystk_len, &ndl, &ndl_len,
@@ -2002,7 +1983,7 @@ PHP_FUNCTION(iconv_strpos)
    Finds position of last occurrence of needle within part of haystack beginning with offset */
 PHP_FUNCTION(iconv_strrpos)
 {
-	char *charset;
+	char *charset = ICONVG(internal_encoding);
 	int charset_len = 0;
 	char *haystk;
 	int haystk_len; 
@@ -2012,8 +1993,6 @@ PHP_FUNCTION(iconv_strrpos)
 	php_iconv_err_t err;
 
 	unsigned int retval;
-
-	charset = ICONVG(internal_encoding);
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss|s",
 		&haystk, &haystk_len, &ndl, &ndl_len,
@@ -2168,15 +2147,13 @@ PHP_FUNCTION(iconv_mime_decode)
 {
 	char *encoded_str;
 	int encoded_str_len;
-	char *charset;
+	char *charset = ICONVG(internal_encoding);
 	int charset_len = 0;
 	long mode = 0;
 	
 	smart_str retval = {0};
 
 	php_iconv_err_t err;
-
-	charset = ICONVG(internal_encoding);
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|ls",
 		&encoded_str, &encoded_str_len, &mode, &charset, &charset_len) == FAILURE) {
@@ -2211,13 +2188,11 @@ PHP_FUNCTION(iconv_mime_decode_headers)
 {
 	const char *encoded_str;
 	int encoded_str_len;
-	char *charset;
+	char *charset = ICONVG(internal_encoding);
 	int charset_len = 0;
 	long mode = 0;
 	
 	php_iconv_err_t err = PHP_ICONV_ERR_SUCCESS;
-
-	charset = ICONVG(internal_encoding);
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|ls",
 		&encoded_str, &encoded_str_len, &mode, &charset, &charset_len) == FAILURE) {
@@ -2278,7 +2253,7 @@ PHP_FUNCTION(iconv_mime_decode_headers)
 					MAKE_STD_ZVAL(new_elem);
 					array_init(new_elem);
 
-					ZVAL_ADDREF(*elem);
+					Z_ADDREF_PP(elem);
 					add_next_index_zval(new_elem, *elem);
 
 					zend_hash_update(Z_ARRVAL_P(return_value), header_name, header_name_len, (void *)&new_elem, sizeof(new_elem), NULL);
@@ -2423,7 +2398,7 @@ PHP_FUNCTION(iconv_set_encoding)
 PHP_FUNCTION(iconv_get_encoding)
 {
 	char *type = "all";
-	int type_len;
+	int type_len = sizeof("all")-1;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &type, &type_len) == FAILURE)
 		return;
@@ -2784,7 +2759,7 @@ static php_stream_filter *php_iconv_stream_filter_factory_create(const char *nam
 		return NULL;
 	}
 	++from_charset;
-	if ((to_charset = strchr(from_charset, '/')) == NULL) {
+	if ((to_charset = strpbrk(from_charset, "/.")) == NULL) {
 		return NULL;
 	}
 	from_charset_len = to_charset - from_charset;

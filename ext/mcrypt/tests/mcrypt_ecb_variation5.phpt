@@ -151,20 +151,20 @@ string(32) "6438db90653c4d300909aa02fd6163c2"
 string(32) "6438db90653c4d300909aa02fd6163c2"
 
 --empty array--
-Error: 8 - Array to string conversion, %s(%d)
-string(32) "6438db90653c4d300909aa02fd6163c2"
+Error: 2 - mcrypt_ecb() expects parameter 5 to be string, array given, %s(%d)
+string(0) ""
 
 --int indexed array--
-Error: 8 - Array to string conversion, %s(%d)
-string(32) "6438db90653c4d300909aa02fd6163c2"
+Error: 2 - mcrypt_ecb() expects parameter 5 to be string, array given, %s(%d)
+string(0) ""
 
 --associative array--
-Error: 8 - Array to string conversion, %s(%d)
-string(32) "6438db90653c4d300909aa02fd6163c2"
+Error: 2 - mcrypt_ecb() expects parameter 5 to be string, array given, %s(%d)
+string(0) ""
 
 --nested arrays--
-Error: 8 - Array to string conversion, %s(%d)
-string(32) "6438db90653c4d300909aa02fd6163c2"
+Error: 2 - mcrypt_ecb() expects parameter 5 to be string, array given, %s(%d)
+string(0) ""
 
 --uppercase NULL--
 string(32) "6438db90653c4d300909aa02fd6163c2"
@@ -194,9 +194,8 @@ string(32) "6438db90653c4d300909aa02fd6163c2"
 string(32) "6438db90653c4d300909aa02fd6163c2"
 
 --instance of classWithoutToString--
-Error: 4096 - Object of class classWithoutToString could not be converted to string, %s(%d)
-Error: 8 - Object of class classWithoutToString to string conversion, %s(%d)
-string(32) "6438db90653c4d300909aa02fd6163c2"
+Error: 2 - mcrypt_ecb() expects parameter 5 to be string, object given, %s(%d)
+string(0) ""
 
 --undefined var--
 string(32) "6438db90653c4d300909aa02fd6163c2"
@@ -205,5 +204,7 @@ string(32) "6438db90653c4d300909aa02fd6163c2"
 string(32) "6438db90653c4d300909aa02fd6163c2"
 
 --resource--
-string(32) "6438db90653c4d300909aa02fd6163c2"
+Error: 2 - mcrypt_ecb() expects parameter 5 to be string, resource given, %s(%d)
+string(0) ""
 ===DONE===
+

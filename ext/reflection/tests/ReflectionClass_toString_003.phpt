@@ -91,10 +91,7 @@ Class [ <user> class C extends B ] {
   - Properties [0] {
   }
 
-  - Methods [1] {
-    Method [ <user, inherits B> private method f ] {
-      @@ %s 6 - 6
-    }
+  - Methods [0] {
   }
 }
 

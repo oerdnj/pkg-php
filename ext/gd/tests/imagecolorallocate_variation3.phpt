@@ -55,8 +55,8 @@ $values = array(
       // float data
       'float 10.5' => 10.5,
       'float -10.5' => -10.5,
-      'float 10.1234567e10' => 10.1234567e10,
-      'float 10.7654321E-10' => 10.7654321E-10,
+      'float 10.1234567e5' => 10.1234567e5,
+      'float 10.7654321E-5' => 10.7654321E-5,
       'float .5' => .5,
 
       // array data
@@ -114,26 +114,34 @@ int(657930)
 --float -10.5--
 int(652810)
 
---float 10.1234567e10--
-int(217143306)
+--float 10.1234567e5--
+int(259815690)
 
---float 10.7654321E-10--
+--float 10.7654321E-5--
 int(655370)
 
 --float .5--
 int(655370)
 
 --empty array--
-int(655370)
+
+Warning: imagecolorallocate() expects parameter 3 to be long, array given in %s on line %d
+NULL
 
 --int indexed array--
-int(655626)
+
+Warning: imagecolorallocate() expects parameter 3 to be long, array given in %s on line %d
+NULL
 
 --associative array--
-int(655626)
+
+Warning: imagecolorallocate() expects parameter 3 to be long, array given in %s on line %d
+NULL
 
 --nested arrays--
-int(655626)
+
+Warning: imagecolorallocate() expects parameter 3 to be long, array given in %s on line %d
+NULL
 
 --uppercase NULL--
 int(655370)
@@ -154,32 +162,44 @@ int(655626)
 int(655370)
 
 --empty string DQ--
-int(655370)
+
+Warning: imagecolorallocate() expects parameter 3 to be long, string given in %s on line %d
+NULL
 
 --empty string SQ--
-int(655370)
+
+Warning: imagecolorallocate() expects parameter 3 to be long, string given in %s on line %d
+NULL
 
 --string DQ--
-int(655370)
+
+Warning: imagecolorallocate() expects parameter 3 to be long, string given in %s on line %d
+NULL
 
 --string SQ--
-int(655370)
+
+Warning: imagecolorallocate() expects parameter 3 to be long, string given in %s on line %d
+NULL
 
 --mixed case string--
-int(655370)
+
+Warning: imagecolorallocate() expects parameter 3 to be long, string given in %s on line %d
+NULL
 
 --heredoc--
-int(655370)
+
+Warning: imagecolorallocate() expects parameter 3 to be long, string given in %s on line %d
+NULL
 
 --instance of classWithToString--
 
-Notice: Object of class classWithToString could not be converted to int in %s on line %d
-int(655626)
+Warning: imagecolorallocate() expects parameter 3 to be long, object given in %s on line %d
+NULL
 
 --instance of classWithoutToString--
 
-Notice: Object of class classWithoutToString could not be converted to int in %s on line %d
-int(655626)
+Warning: imagecolorallocate() expects parameter 3 to be long, object given in %s on line %d
+NULL
 
 --undefined var--
 int(655370)
@@ -188,5 +208,7 @@ int(655370)
 int(655370)
 
 --file resource--
-int(656650)
+
+Warning: imagecolorallocate() expects parameter 3 to be long, resource given in %s on line %d
+NULL
 ===DONE===

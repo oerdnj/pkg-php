@@ -61,7 +61,8 @@ bool(false)
 bool(false)
 bool(false)
 
-Notice: Array to string conversion in %s on line %d
-bool(false)
+Warning: is_readable() expects parameter 1 to be string, array given in %s on line %d
+NULL
 bool(false)
 Done
+

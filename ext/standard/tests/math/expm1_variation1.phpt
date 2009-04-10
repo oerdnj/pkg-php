@@ -2,10 +2,6 @@
 Test expm1() function : usage variations - different data types as $arg argument
 --INI--
 precision=14
---SKIPIF--
-<?php
-	function_exists('expm1') or die('skip expm1() is not supported in this build.');
-?>
 --FILE--
 <?php
 
@@ -146,33 +142,49 @@ float(1.718281828459)
 float(0)
 
 -- Iteration 16 --
-float(0)
+
+Warning: expm1() expects parameter 1 to be double, string given in %s on line %d
+NULL
 
 -- Iteration 17 --
-float(0)
+
+Warning: expm1() expects parameter 1 to be double, string given in %s on line %d
+NULL
 
 -- Iteration 18 --
-float(0)
+
+Warning: expm1() expects parameter 1 to be double, array given in %s on line %d
+NULL
 
 -- Iteration 19 --
-float(0)
+
+Warning: expm1() expects parameter 1 to be double, string given in %s on line %d
+NULL
 
 -- Iteration 20 --
-float(0)
+
+Warning: expm1() expects parameter 1 to be double, string given in %s on line %d
+NULL
 
 -- Iteration 21 --
-float(0)
+
+Warning: expm1() expects parameter 1 to be double, string given in %s on line %d
+NULL
 
 -- Iteration 22 --
-float(0)
+
+Warning: expm1() expects parameter 1 to be double, array given in %s on line %d
+NULL
 
 -- Iteration 23 --
-float(1.718281828459)
+
+Warning: expm1() expects parameter 1 to be double, array given in %s on line %d
+NULL
 
 -- Iteration 24 --
 
-Notice: Object of class classA could not be converted to double in %s on line %d
-float(1.718281828459)
+Warning: expm1() expects parameter 1 to be double, object given in %s on line %d
+NULL
 
 -- Iteration 25 --
 float(0)
@@ -181,5 +193,7 @@ float(0)
 float(0)
 
 -- Iteration 27 --
-float(%s)
+
+Warning: expm1() expects parameter 1 to be double, resource given in %s on line %d
+NULL
 ===Done===

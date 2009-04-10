@@ -3,7 +3,7 @@ Test array_diff_key() function : usage variation - Passing unexpected values to 
 --FILE--
 <?php
 /* Prototype  : array array_diff_key(array arr1, array arr2 [, array ...])
- * Description: Returns the entries of arr1 that have keys which are not present in any of the others arguments. This function is like array_diff() but works on the keys instead of the values.
+ * Description: Returns the entries of arr1 that have keys which are not present in any of the others arguments. 
  * Source code: ext/standard/array.c
  */
 
@@ -88,6 +88,7 @@ $inputs = array(
 );
 
 // loop through each element of the array for arr1
+
 foreach($inputs as $key =>$value) {
       echo "\n--$key--\n";
       var_dump( array_diff_key($array1, $array2, $value) );
