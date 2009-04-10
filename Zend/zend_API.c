@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2008 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2009 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_API.c,v 1.296.2.27.2.38 2008/03/06 17:28:47 tony2001 Exp $ */
+/* $Id: zend_API.c,v 1.296.2.27.2.41 2009/01/08 21:39:06 andrei Exp $ */
 
 #include "zend.h"
 #include "zend_execute.h"
@@ -1779,9 +1779,13 @@ ZEND_API int zend_register_functions(zend_class_entry *scope, zend_function_entr
 			efree(lc_class_name);
 		}
 		while (ptr->fname) {
-			if (zend_hash_exists(target_function_table, ptr->fname, strlen(ptr->fname)+1)) {
+			fname_len = strlen(ptr->fname);
+			lowercase_name = zend_str_tolower_dup(ptr->fname, fname_len);
+			if (zend_hash_exists(target_function_table, lowercase_name, fname_len+1)) {
+				efree(lowercase_name);
 				zend_error(error_type, "Function registration failed - duplicate name - %s%s%s", scope ? scope->name : "", scope ? "::" : "", ptr->fname);
 			}
+			efree(lowercase_name);
 			ptr++;
 		}
 		zend_unregister_functions(functions, count, target_function_table TSRMLS_CC);
@@ -2211,6 +2215,10 @@ static int zend_is_callable_check_func(int check_flags, zval ***zobj_ptr_ptr, ze
 					if (!zend_check_protected(fptr->common.scope, EG(scope))) {
 						retval = 0;
 					}
+				}
+				if (!retval && *zobj_ptr_ptr && *ce_ptr && (*ce_ptr)->__call != 0) {
+					retval = (*ce_ptr)->__call != NULL;
+					*fptr_ptr = (*ce_ptr)->__call;
 				}
 			}
 		}

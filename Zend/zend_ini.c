@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2008 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2009 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_ini.c,v 1.39.2.2.2.27 2008/03/13 15:56:21 iliaa Exp $ */
+/* $Id: zend_ini.c,v 1.39.2.2.2.28 2008/12/31 11:17:33 sebastian Exp $ */
 
 #include "zend.h"
 #include "zend_qsort.h"

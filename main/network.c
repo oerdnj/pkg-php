@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: network.c,v 1.118.2.2.2.9 2008/03/11 10:27:23 tony2001 Exp $ */
+/* $Id: network.c,v 1.118.2.2.2.16 2009/01/03 00:06:59 felipe Exp $ */
 
 /*#define DEBUG_MAIN_NETWORK 1*/
 
@@ -162,7 +162,9 @@ static int php_network_getaddresses(const char *host, int socktype, struct socka
 	struct sockaddr **sap;
 	int n;
 #if HAVE_GETADDRINFO
+# if HAVE_IPV6
 	static int ipv6_borked = -1; /* the way this is used *is* thread safe */
+# endif
 	struct addrinfo hints, *res, *sai;
 #else
 	struct hostent *host_info;
@@ -639,6 +641,7 @@ PHPAPI int php_network_get_peer_name(php_socket_t sock,
 {
 	php_sockaddr_storage sa;
 	socklen_t sl = sizeof(sa);
+	memset(&sa, 0, sizeof(sa));
 	
 	if (getpeername(sock, (struct sockaddr*)&sa, &sl) == 0) {
 		php_network_populate_name_from_sockaddr((struct sockaddr*)&sa, sl,
@@ -658,6 +661,7 @@ PHPAPI int php_network_get_sock_name(php_socket_t sock,
 {
 	php_sockaddr_storage sa;
 	socklen_t sl = sizeof(sa);
+	memset(&sa, 0, sizeof(sa));
 	
 	if (getsockname(sock, (struct sockaddr*)&sa, &sl) == 0) {
 		php_network_populate_name_from_sockaddr((struct sockaddr*)&sa, sl,
@@ -1049,7 +1053,11 @@ PHPAPI int php_set_sock_blocking(int socketd, int block TSRMLS_DC)
 	/* with ioctlsocket, a non-zero sets nonblocking, a zero sets blocking */
 	flags = !block;
 	if (ioctlsocket(socketd, FIONBIO, &flags) == SOCKET_ERROR) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", WSAGetLastError());
+		char *error_string;
+		
+		error_string = php_socket_strerror(WSAGetLastError(), NULL, 0);
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", error_string);
+		efree(error_string);
 		ret = FAILURE;
 	}
 #else
@@ -1133,6 +1141,12 @@ PHPAPI int php_poll2(php_pollfd *ufds, unsigned int nfds, int timeout)
 		tv.tv_sec = timeout / 1000;
 		tv.tv_usec = (timeout - (tv.tv_sec * 1000)) * 1000;
 	}
+/* Reseting/initializing */
+#ifdef PHP_WIN32
+	WSASetLastError(0);
+#else
+	errno = 0;
+#endif
 	n = select(max_fd + 1, &rset, &wset, &eset, timeout >= 0 ? &tv : NULL);
 
 	if (n >= 0) {

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: filter.c,v 1.17.2.3.2.11 2007/12/31 07:20:15 sebastian Exp $ */
+/* $Id: filter.c,v 1.17.2.3.2.14 2009/01/08 17:03:42 lbarnaud Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -313,7 +313,7 @@ PHPAPI void php_stream_filter_free(php_stream_filter *filter TSRMLS_DC)
 	pefree(filter, filter->is_persistent);
 }
 
-PHPAPI void _php_stream_filter_prepend(php_stream_filter_chain *chain, php_stream_filter *filter TSRMLS_DC)
+PHPAPI int php_stream_filter_prepend_ex(php_stream_filter_chain *chain, php_stream_filter *filter TSRMLS_DC)
 {
 	filter->next = chain->head;
 	filter->prev = NULL;
@@ -325,9 +325,16 @@ PHPAPI void _php_stream_filter_prepend(php_stream_filter_chain *chain, php_strea
 	}
 	chain->head = filter;
 	filter->chain = chain;
+
+	return SUCCESS;
 }
 
-PHPAPI void _php_stream_filter_append(php_stream_filter_chain *chain, php_stream_filter *filter TSRMLS_DC)
+PHPAPI void _php_stream_filter_prepend(php_stream_filter_chain *chain, php_stream_filter *filter TSRMLS_DC)
+{
+	php_stream_filter_prepend_ex(chain, filter TSRMLS_CC);
+}
+
+PHPAPI int php_stream_filter_append_ex(php_stream_filter_chain *chain, php_stream_filter *filter TSRMLS_DC)
 {
 	php_stream *stream = chain->stream;
 
@@ -349,7 +356,7 @@ PHPAPI void _php_stream_filter_append(php_stream_filter_chain *chain, php_stream
 		php_stream_bucket *bucket;
 		size_t consumed = 0;
 
-		bucket = php_stream_bucket_new(stream, stream->readbuf + stream->readpos, stream->writepos - stream->readpos, 0, 0 TSRMLS_CC);
+		bucket = php_stream_bucket_new(stream, (char*) stream->readbuf + stream->readpos, stream->writepos - stream->readpos, 0, 0 TSRMLS_CC);
 		php_stream_bucket_append(brig_inp, bucket TSRMLS_CC);
 		status = filter->fops->filter(stream, filter, brig_inp, brig_outp, &consumed, PSFS_FLAG_NORMAL TSRMLS_CC);
 
@@ -360,19 +367,18 @@ PHPAPI void _php_stream_filter_append(php_stream_filter_chain *chain, php_stream
 
 		switch (status) {
 			case PSFS_ERR_FATAL:
-				/* If this first cycle simply fails then there's something wrong with the filter.
-				   Pull the filter off the chain and leave the read buffer alone. */
-				if (chain->head == filter) {
-					chain->head = NULL;
-					chain->tail = NULL;
-				} else {
-					filter->prev->next = NULL;
-					chain->tail = filter->prev;
+				while (brig_in.head) {
+					bucket = brig_in.head;
+					php_stream_bucket_unlink(bucket TSRMLS_CC);
+					php_stream_bucket_delref(bucket TSRMLS_CC);
 				}
-				php_stream_bucket_unlink(bucket TSRMLS_CC);
-				php_stream_bucket_delref(bucket TSRMLS_CC);
-				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Filter failed to process pre-buffered data.  Not adding to filterchain.");
-				break;
+				while (brig_out.head) {
+					bucket = brig_out.head;
+					php_stream_bucket_unlink(bucket TSRMLS_CC);
+					php_stream_bucket_delref(bucket TSRMLS_CC);
+				}
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Filter failed to process pre-buffered data");
+				return FAILURE;
 			case PSFS_FEED_ME:
 				/* We don't actually need data yet,
 				   leave this filter in a feed me state until data is needed. 
@@ -381,15 +387,12 @@ PHPAPI void _php_stream_filter_append(php_stream_filter_chain *chain, php_stream
 				stream->writepos = 0;
 				break;
 			case PSFS_PASS_ON:
-				/* Put any filtered data onto the readbuffer stack.
-				   Previously read data has been at least partially consumed. */
-				stream->readpos += consumed;
-
-				if (stream->writepos == stream->readpos) {
-					/* Entirely consumed */
-					stream->writepos = 0;
-					stream->readpos = 0;
-				}
+				/* If any data is consumed, we cannot rely upon the existing read buffer,
+				   as the filtered data must replace the existing data, so invalidate the cache */
+				/* note that changes here should be reflected in
+				   main/streams/streams.c::php_stream_fill_read_buffer */
+				stream->writepos = 0;
+				stream->readpos = 0;
 
 				while (brig_outp->head) {
 					bucket = brig_outp->head;
@@ -409,6 +412,20 @@ PHPAPI void _php_stream_filter_append(php_stream_filter_chain *chain, php_stream
 		}
 	}
 
+	return SUCCESS;
+}
+
+PHPAPI void _php_stream_filter_append(php_stream_filter_chain *chain, php_stream_filter *filter TSRMLS_DC)
+{
+	if (php_stream_filter_append_ex(chain, filter TSRMLS_CC) != SUCCESS) {
+		if (chain->head == filter) {
+			chain->head = NULL;
+			chain->tail = NULL;
+		} else {
+			filter->prev->next = NULL;
+			chain->tail = filter->prev;
+		}
+	}
 }
 
 PHPAPI int _php_stream_filter_flush(php_stream_filter *filter, int finish TSRMLS_DC)

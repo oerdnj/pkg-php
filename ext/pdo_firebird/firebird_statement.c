@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2008 The PHP Group                                |
+  | Copyright (c) 1997-2009 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: firebird_statement.c,v 1.18.2.1.2.6 2007/12/31 07:20:09 sebastian Exp $ */
+/* $Id: firebird_statement.c,v 1.18.2.1.2.8 2009/02/09 12:07:35 felipe Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -527,6 +527,9 @@ static int firebird_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_dat
 		case PDO_PARAM_EVT_ALLOC:
 			if (param->is_param) {
 				/* allocate the parameter */
+				if (var->sqlind) {
+					efree(var->sqlind);
+				}
 				var->sqlind = (void*)emalloc(var->sqllen + 2*sizeof(short));
 				var->sqldata = &((char*)var->sqlind)[sizeof(short)];
 			}

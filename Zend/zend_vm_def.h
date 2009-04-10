@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2008 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2009 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_vm_def.h,v 1.59.2.29.2.56 2008/03/04 11:46:09 dmitry Exp $ */
+/* $Id: zend_vm_def.h,v 1.59.2.29.2.65 2009/02/15 14:31:17 iliaa Exp $ */
 
 /* If you change this file, please regenerate the zend_vm_execute.h and
  * zend_vm_opcodes.h files by running:
@@ -1182,6 +1182,8 @@ ZEND_VM_HELPER_EX(zend_fetch_property_address_read_helper, VAR|UNUSED|CV, CONST|
 	zval *container;
 	zval **retval;
 	zend_free_op free_op1;
+	zend_free_op free_op2;
+	zval *offset  = GET_OP2_ZVAL_PTR(BP_VAR_R);
 
 	retval = &EX_T(opline->result.u.var).var.ptr;
 	EX_T(opline->result.u.var).var.ptr_ptr = retval;
@@ -1194,6 +1196,7 @@ ZEND_VM_HELPER_EX(zend_fetch_property_address_read_helper, VAR|UNUSED|CV, CONST|
 			PZVAL_LOCK(*retval);
 			AI_USE_PTR(EX_T(opline->result.u.var).var);
 		}
+		FREE_OP2();
 		FREE_OP1();
 		ZEND_VM_NEXT_OPCODE();
 	}
@@ -1206,10 +1209,8 @@ ZEND_VM_HELPER_EX(zend_fetch_property_address_read_helper, VAR|UNUSED|CV, CONST|
 		*retval = EG(uninitialized_zval_ptr);
 		SELECTIVE_PZVAL_LOCK(*retval, &opline->result);
 		AI_USE_PTR(EX_T(opline->result.u.var).var);
+		FREE_OP2();
 	} else {
-		zend_free_op free_op2;
-		zval *offset  = GET_OP2_ZVAL_PTR(BP_VAR_R);
-
 		if (IS_OP2_TMP_FREE()) {
 			MAKE_REAL_ZVAL_PTR(offset);
 		}
@@ -1482,7 +1483,13 @@ ZEND_VM_HANDLER(39, ZEND_ASSIGN_REF, VAR|CV, VAR|CV)
 			PZVAL_LOCK(*value_ptr_ptr); /* undo the effect of get_zval_ptr_ptr() */
 		}
 		zend_error(E_STRICT, "Only variables should be assigned by reference");
+		if (EG(exception)) {
+			FREE_OP2_VAR_PTR();
+			ZEND_VM_NEXT_OPCODE();
+		}
 		ZEND_VM_DISPATCH_TO_HANDLER(ZEND_ASSIGN);
+	} else if (OP2_TYPE == IS_VAR && opline->extended_value == ZEND_RETURNS_NEW) {
+		PZVAL_LOCK(*value_ptr_ptr);
 	}
 	if (OP1_TYPE == IS_VAR && EX_T(opline->op1.u.var).var.ptr_ptr == &EX_T(opline->op1.u.var).var.ptr) {
 		zend_error(E_ERROR, "Cannot assign by reference to overloaded object");
@@ -1490,6 +1497,10 @@ ZEND_VM_HANDLER(39, ZEND_ASSIGN_REF, VAR|CV, VAR|CV)
 
 	variable_ptr_ptr = GET_OP1_ZVAL_PTR_PTR(BP_VAR_W);
 	zend_assign_to_variable_reference(variable_ptr_ptr, value_ptr_ptr TSRMLS_CC);
+
+	if (OP2_TYPE == IS_VAR && opline->extended_value == ZEND_RETURNS_NEW) {
+		(*variable_ptr_ptr)->refcount--;
+	}
 
 	if (!RETURN_VALUE_UNUSED(&opline->result)) {
 		EX_T(opline->result.u.var).var.ptr_ptr = variable_ptr_ptr;
@@ -1742,7 +1753,7 @@ ZEND_VM_HANDLER(112, ZEND_INIT_METHOD_CALL, TMP|VAR|UNUSED|CV, CONST|TMP|VAR|CV)
 		zend_error_noreturn(E_ERROR, "Call to a member function %s() on a non-object", function_name_strval);
 	}
 
-	if (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) {
+	if (!EX(object) || (EX(fbc) && (EX(fbc)->common.fn_flags & ZEND_ACC_STATIC) != 0)) {
 		EX(object) = NULL;
 	} else {
 		if (!PZVAL_IS_REF(EX(object))) {
@@ -1815,7 +1826,17 @@ ZEND_VM_HANDLER(113, ZEND_INIT_STATIC_METHOD_CALL, ANY, CONST|TMP|VAR|UNUSED|CV)
 		    !instanceof_function(Z_OBJCE_P(EG(This)), ce TSRMLS_CC)) {
 		    /* We are calling method of the other (incompatible) class,
 		       but passing $this. This is done for compatibility with php-4. */
-			zend_error(E_STRICT, "Non-static method %s::%s() should not be called statically, assuming $this from incompatible context", EX(fbc)->common.scope->name, EX(fbc)->common.function_name);
+			int severity;
+			char *verb;
+			if (EX(fbc)->common.fn_flags & ZEND_ACC_ALLOW_STATIC) {
+				severity = E_STRICT;
+				verb = "should not";
+			} else {
+				/* An internal function assumes $this is present and won't check that. So PHP would crash by allowing the call. */
+				severity = E_ERROR;
+				verb = "cannot";
+			}
+			zend_error(severity, "Non-static method %s::%s() %s be called statically, assuming $this from incompatible context", EX(fbc)->common.scope->name, EX(fbc)->common.function_name, verb);
 
 		}
 		if ((EX(object) = EG(This))) {
@@ -2310,7 +2331,9 @@ ZEND_VM_HANDLER(106, ZEND_SEND_VAR_NO_REF, VAR|CV, ANY)
 	} else {
 		zval *valptr;
 
-		zend_error(E_STRICT, "Only variables should be passed by reference");
+		if (!(opline->extended_value & ZEND_ARG_SEND_SILENT)) {
+			zend_error(E_STRICT, "Only variables should be passed by reference");
+		}
 		ALLOC_ZVAL(valptr);
 		INIT_PZVAL_COPY(valptr, varptr);
 		if (!IS_OP1_TMP_FREE()) {

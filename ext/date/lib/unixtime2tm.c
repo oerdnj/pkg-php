@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: unixtime2tm.c,v 1.12.2.4.2.4 2007/12/31 07:20:05 sebastian Exp $ */
+/* $Id: unixtime2tm.c,v 1.12.2.4.2.6 2008/12/31 11:17:36 sebastian Exp $ */
 
 #include "timelib.h"
 
@@ -76,12 +76,18 @@ void timelib_unixtime2gmt(timelib_time* tm, timelib_sll ts)
 		*/
 
 		while (tmp_days <= 0) {
-			cur_year--;
-			DEBUG(printf("tmp_days=%lld, year=%lld\n", tmp_days, cur_year););
-			if (timelib_is_leap(cur_year)) {
-				tmp_days += DAYS_PER_LYEAR;
+			if (tmp_days < -1460970) {
+				cur_year -= 4000;
+				DEBUG(printf("tmp_days=%lld, year=%lld\n", tmp_days, cur_year););
+				tmp_days += 1460970;
 			} else {
-				tmp_days += DAYS_PER_YEAR;
+				cur_year--;
+				DEBUG(printf("tmp_days=%lld, year=%lld\n", tmp_days, cur_year););
+				if (timelib_is_leap(cur_year)) {
+					tmp_days += DAYS_PER_LYEAR;
+				} else {
+					tmp_days += DAYS_PER_YEAR;
+				}
 			}
 		}
 		remainder += SECS_PER_DAY;

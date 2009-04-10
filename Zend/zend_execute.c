@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2008 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2009 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute.c,v 1.716.2.12.2.28 2008/03/04 11:48:53 dmitry Exp $ */
+/* $Id: zend_execute.c,v 1.716.2.12.2.32 2009/02/15 14:31:17 iliaa Exp $ */
 
 #define ZEND_INTENSIVE_DEBUGGING 0
 
@@ -1402,6 +1402,7 @@ ZEND_API void execute_internal(zend_execute_data *execute_data_ptr, int return_v
 	} \
 	EG(in_execution) = EX(original_in_execution); \
 	EG(current_execute_data) = EX(prev_execute_data); \
+	EG(opline_ptr) = NULL; \
 	ZEND_VM_RETURN()
 
 #include "zend_vm_execute.h"

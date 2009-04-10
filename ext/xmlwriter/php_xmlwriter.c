@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2008 The PHP Group                                |
+  | Copyright (c) 1997-2009 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_xmlwriter.c,v 1.20.2.12.2.17 2007/12/31 07:20:14 sebastian Exp $ */
+/* $Id: php_xmlwriter.c,v 1.20.2.12.2.20 2008/12/31 11:17:47 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -168,7 +168,7 @@ static zend_object_value xmlwriter_object_new(zend_class_entry *class_type TSRML
 
 #define XMLW_NAME_CHK(__err) \
 	if (xmlValidateName((xmlChar *) name, 0) != 0) {	\
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, __err);	\
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", __err);	\
 		RETURN_FALSE;	\
 	}	\
 
@@ -1483,6 +1483,9 @@ static PHP_FUNCTION(xmlwriter_open_uri)
 	intern->uri_output = out_buffer;
 #else
 	if (this) {
+		if (ze_obj->xmlwriter_ptr) {
+			xmlwriter_free_resource_ptr(ze_obj->xmlwriter_ptr TSRMLS_CC);
+		}
 		ze_obj->xmlwriter_ptr = intern;
 		RETURN_TRUE;
 	} else
@@ -1533,6 +1536,9 @@ static PHP_FUNCTION(xmlwriter_open_memory)
 	intern->uri_output = NULL;
 #else
 	if (this) {
+		if (ze_obj->xmlwriter_ptr) {
+			xmlwriter_free_resource_ptr(ze_obj->xmlwriter_ptr TSRMLS_CC);
+		}
 		ze_obj->xmlwriter_ptr = intern;
 		RETURN_TRUE;
 	} else

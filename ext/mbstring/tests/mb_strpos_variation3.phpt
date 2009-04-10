@@ -19,8 +19,8 @@ function_exists('mb_strpos') or die("skip mb_strpos() is not available in this b
 echo "*** Testing mb_strpos() : usage variations ***\n";
 
 // Initialise function arguments not being substituted
-$needle = 'a';
-$haystack = 'string_val';
+$needle = b'a';
+$haystack = b'string_val';
 $encoding = 'utf-8';
 
 //get an unset variable
@@ -114,12 +114,12 @@ int(8)
 
 -- Iteration 3 --
 
-Warning: mb_strpos(): Offset not contained in string. in %s on line %d
+Warning: mb_strpos(): Offset not contained in string in %s on line %d
 bool(false)
 
 -- Iteration 4 --
 
-Warning: mb_strpos(): Offset not contained in string. in %s on line %d
+Warning: mb_strpos(): Offset not contained in string in %s on line %d
 bool(false)
 
 -- Iteration 5 --
@@ -127,12 +127,12 @@ bool(false)
 
 -- Iteration 6 --
 
-Warning: mb_strpos(): Offset not contained in string. in %s on line %d
+Warning: mb_strpos(): Offset not contained in string in %s on line %d
 bool(false)
 
 -- Iteration 7 --
 
-Warning: mb_strpos(): Offset not contained in string. in %s on line %d
+Warning: mb_strpos(): Offset not contained in string in %s on line %d
 bool(false)
 
 -- Iteration 8 --

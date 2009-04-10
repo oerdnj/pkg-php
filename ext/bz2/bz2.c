@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2008 The PHP Group                                |
+  | Copyright (c) 1997-2009 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
  
-/* $Id: bz2.c,v 1.14.2.3.2.13 2007/12/31 07:20:04 sebastian Exp $ */
+/* $Id: bz2.c,v 1.14.2.3.2.16 2008/12/31 11:17:35 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -248,6 +248,7 @@ PHP_BZ2_API php_stream *_php_stream_bz2open(php_stream_wrapper *wrapper,
 				bz_file = BZ2_bzdopen(fd, mode);
 			}
 		}
+
 		/* remove the file created by php_stream_open_wrapper(), it is not needed since BZ2 functions
 		 * failed.
 		 */

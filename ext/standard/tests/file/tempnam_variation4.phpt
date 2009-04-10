@@ -20,22 +20,34 @@ if (substr(PHP_OS, 0, 3) == 'WIN') {
 echo "*** Testing tempnam() with dir of permissions from 0000 to 0777 ***\n";
 $file_path = dirname(__FILE__);
 $dir_name = $file_path."/tempnam_variation4";
+$prefix = "tempnamVar4.";
+
 mkdir($dir_name);
 
-for($mode = 0000; $mode<=0777; $mode++) {
+for($mode = 0000; $mode <= 0777; $mode++) {
   echo "-- dir perms ";
   printf("%o", $mode);
   echo " --\n";
   chmod($dir_name, $mode);
-  $file_name = tempnam($dir_name, "tempnam_variation4.tmp");
+  $file_name = tempnam($dir_name, $prefix);
 
   if(file_exists($file_name) ) {
-    print($file_name);
-    echo "\n";
+    if (realpath(dirname($file_name)) == realpath(sys_get_temp_dir())) {
+       $msg = " created in temp dir ";
+    }
+    else if (dirname($file_name) == $dir_name) {
+       $msg = " created in requested dir";
+    }
+    else {
+       $msg = " created in unexpected dir";
+    }   
+  
+    echo $msg."\n";
+    unlink($file_name);    
   }
-  else
-    print("-- File is not created --");
-  unlink($file_name);
+  else {
+    print("FAILED: File is not created\n");
+  }
 }
 
 rmdir($dir_name);
@@ -45,1027 +57,1027 @@ echo "*** Done ***\n";
 --EXPECTF--
 *** Testing tempnam() with dir of permissions from 0000 to 0777 ***
 -- dir perms 0 --
-%s
+ created in temp dir 
 -- dir perms 1 --
-%s
+ created in temp dir 
 -- dir perms 2 --
-%s
+ created in temp dir 
 -- dir perms 3 --
-%s
+ created in temp dir 
 -- dir perms 4 --
-%s
+ created in temp dir 
 -- dir perms 5 --
-%s
+ created in temp dir 
 -- dir perms 6 --
-%s
+ created in temp dir 
 -- dir perms 7 --
-%s
+ created in temp dir 
 -- dir perms 10 --
-%s
+ created in temp dir 
 -- dir perms 11 --
-%s
+ created in temp dir 
 -- dir perms 12 --
-%s
+ created in temp dir 
 -- dir perms 13 --
-%s
+ created in temp dir 
 -- dir perms 14 --
-%s
+ created in temp dir 
 -- dir perms 15 --
-%s
+ created in temp dir 
 -- dir perms 16 --
-%s
+ created in temp dir 
 -- dir perms 17 --
-%s
+ created in temp dir 
 -- dir perms 20 --
-%s
+ created in temp dir 
 -- dir perms 21 --
-%s
+ created in temp dir 
 -- dir perms 22 --
-%s
+ created in temp dir 
 -- dir perms 23 --
-%s
+ created in temp dir 
 -- dir perms 24 --
-%s
+ created in temp dir 
 -- dir perms 25 --
-%s
+ created in temp dir 
 -- dir perms 26 --
-%s
+ created in temp dir 
 -- dir perms 27 --
-%s
+ created in temp dir 
 -- dir perms 30 --
-%s
+ created in temp dir 
 -- dir perms 31 --
-%s
+ created in temp dir 
 -- dir perms 32 --
-%s
+ created in temp dir 
 -- dir perms 33 --
-%s
+ created in temp dir 
 -- dir perms 34 --
-%s
+ created in temp dir 
 -- dir perms 35 --
-%s
+ created in temp dir 
 -- dir perms 36 --
-%s
+ created in temp dir 
 -- dir perms 37 --
-%s
+ created in temp dir 
 -- dir perms 40 --
-%s
+ created in temp dir 
 -- dir perms 41 --
-%s
+ created in temp dir 
 -- dir perms 42 --
-%s
+ created in temp dir 
 -- dir perms 43 --
-%s
+ created in temp dir 
 -- dir perms 44 --
-%s
+ created in temp dir 
 -- dir perms 45 --
-%s
+ created in temp dir 
 -- dir perms 46 --
-%s
+ created in temp dir 
 -- dir perms 47 --
-%s
+ created in temp dir 
 -- dir perms 50 --
-%s
+ created in temp dir 
 -- dir perms 51 --
-%s
+ created in temp dir 
 -- dir perms 52 --
-%s
+ created in temp dir 
 -- dir perms 53 --
-%s
+ created in temp dir 
 -- dir perms 54 --
-%s
+ created in temp dir 
 -- dir perms 55 --
-%s
+ created in temp dir 
 -- dir perms 56 --
-%s
+ created in temp dir 
 -- dir perms 57 --
-%s
+ created in temp dir 
 -- dir perms 60 --
-%s
+ created in temp dir 
 -- dir perms 61 --
-%s
+ created in temp dir 
 -- dir perms 62 --
-%s
+ created in temp dir 
 -- dir perms 63 --
-%s
+ created in temp dir 
 -- dir perms 64 --
-%s
+ created in temp dir 
 -- dir perms 65 --
-%s
+ created in temp dir 
 -- dir perms 66 --
-%s
+ created in temp dir 
 -- dir perms 67 --
-%s
+ created in temp dir 
 -- dir perms 70 --
-%s
+ created in temp dir 
 -- dir perms 71 --
-%s
+ created in temp dir 
 -- dir perms 72 --
-%s
+ created in temp dir 
 -- dir perms 73 --
-%s
+ created in temp dir 
 -- dir perms 74 --
-%s
+ created in temp dir 
 -- dir perms 75 --
-%s
+ created in temp dir 
 -- dir perms 76 --
-%s
+ created in temp dir 
 -- dir perms 77 --
-%s
+ created in temp dir 
 -- dir perms 100 --
-%s
+ created in temp dir 
 -- dir perms 101 --
-%s
+ created in temp dir 
 -- dir perms 102 --
-%s
+ created in temp dir 
 -- dir perms 103 --
-%s
+ created in temp dir 
 -- dir perms 104 --
-%s
+ created in temp dir 
 -- dir perms 105 --
-%s
+ created in temp dir 
 -- dir perms 106 --
-%s
+ created in temp dir 
 -- dir perms 107 --
-%s
+ created in temp dir 
 -- dir perms 110 --
-%s
+ created in temp dir 
 -- dir perms 111 --
-%s
+ created in temp dir 
 -- dir perms 112 --
-%s
+ created in temp dir 
 -- dir perms 113 --
-%s
+ created in temp dir 
 -- dir perms 114 --
-%s
+ created in temp dir 
 -- dir perms 115 --
-%s
+ created in temp dir 
 -- dir perms 116 --
-%s
+ created in temp dir 
 -- dir perms 117 --
-%s
+ created in temp dir 
 -- dir perms 120 --
-%s
+ created in temp dir 
 -- dir perms 121 --
-%s
+ created in temp dir 
 -- dir perms 122 --
-%s
+ created in temp dir 
 -- dir perms 123 --
-%s
+ created in temp dir 
 -- dir perms 124 --
-%s
+ created in temp dir 
 -- dir perms 125 --
-%s
+ created in temp dir 
 -- dir perms 126 --
-%s
+ created in temp dir 
 -- dir perms 127 --
-%s
+ created in temp dir 
 -- dir perms 130 --
-%s
+ created in temp dir 
 -- dir perms 131 --
-%s
+ created in temp dir 
 -- dir perms 132 --
-%s
+ created in temp dir 
 -- dir perms 133 --
-%s
+ created in temp dir 
 -- dir perms 134 --
-%s
+ created in temp dir 
 -- dir perms 135 --
-%s
+ created in temp dir 
 -- dir perms 136 --
-%s
+ created in temp dir 
 -- dir perms 137 --
-%s
+ created in temp dir 
 -- dir perms 140 --
-%s
+ created in temp dir 
 -- dir perms 141 --
-%s
+ created in temp dir 
 -- dir perms 142 --
-%s
+ created in temp dir 
 -- dir perms 143 --
-%s
+ created in temp dir 
 -- dir perms 144 --
-%s
+ created in temp dir 
 -- dir perms 145 --
-%s
+ created in temp dir 
 -- dir perms 146 --
-%s
+ created in temp dir 
 -- dir perms 147 --
-%s
+ created in temp dir 
 -- dir perms 150 --
-%s
+ created in temp dir 
 -- dir perms 151 --
-%s
+ created in temp dir 
 -- dir perms 152 --
-%s
+ created in temp dir 
 -- dir perms 153 --
-%s
+ created in temp dir 
 -- dir perms 154 --
-%s
+ created in temp dir 
 -- dir perms 155 --
-%s
+ created in temp dir 
 -- dir perms 156 --
-%s
+ created in temp dir 
 -- dir perms 157 --
-%s
+ created in temp dir 
 -- dir perms 160 --
-%s
+ created in temp dir 
 -- dir perms 161 --
-%s
+ created in temp dir 
 -- dir perms 162 --
-%s
+ created in temp dir 
 -- dir perms 163 --
-%s
+ created in temp dir 
 -- dir perms 164 --
-%s
+ created in temp dir 
 -- dir perms 165 --
-%s
+ created in temp dir 
 -- dir perms 166 --
-%s
+ created in temp dir 
 -- dir perms 167 --
-%s
+ created in temp dir 
 -- dir perms 170 --
-%s
+ created in temp dir 
 -- dir perms 171 --
-%s
+ created in temp dir 
 -- dir perms 172 --
-%s
+ created in temp dir 
 -- dir perms 173 --
-%s
+ created in temp dir 
 -- dir perms 174 --
-%s
+ created in temp dir 
 -- dir perms 175 --
-%s
+ created in temp dir 
 -- dir perms 176 --
-%s
+ created in temp dir 
 -- dir perms 177 --
-%s
+ created in temp dir 
 -- dir perms 200 --
-%s
+ created in temp dir 
 -- dir perms 201 --
-%s
+ created in temp dir 
 -- dir perms 202 --
-%s
+ created in temp dir 
 -- dir perms 203 --
-%s
+ created in temp dir 
 -- dir perms 204 --
-%s
+ created in temp dir 
 -- dir perms 205 --
-%s
+ created in temp dir 
 -- dir perms 206 --
-%s
+ created in temp dir 
 -- dir perms 207 --
-%s
+ created in temp dir 
 -- dir perms 210 --
-%s
+ created in temp dir 
 -- dir perms 211 --
-%s
+ created in temp dir 
 -- dir perms 212 --
-%s
+ created in temp dir 
 -- dir perms 213 --
-%s
+ created in temp dir 
 -- dir perms 214 --
-%s
+ created in temp dir 
 -- dir perms 215 --
-%s
+ created in temp dir 
 -- dir perms 216 --
-%s
+ created in temp dir 
 -- dir perms 217 --
-%s
+ created in temp dir 
 -- dir perms 220 --
-%s
+ created in temp dir 
 -- dir perms 221 --
-%s
+ created in temp dir 
 -- dir perms 222 --
-%s
+ created in temp dir 
 -- dir perms 223 --
-%s
+ created in temp dir 
 -- dir perms 224 --
-%s
+ created in temp dir 
 -- dir perms 225 --
-%s
+ created in temp dir 
 -- dir perms 226 --
-%s
+ created in temp dir 
 -- dir perms 227 --
-%s
+ created in temp dir 
 -- dir perms 230 --
-%s
+ created in temp dir 
 -- dir perms 231 --
-%s
+ created in temp dir 
 -- dir perms 232 --
-%s
+ created in temp dir 
 -- dir perms 233 --
-%s
+ created in temp dir 
 -- dir perms 234 --
-%s
+ created in temp dir 
 -- dir perms 235 --
-%s
+ created in temp dir 
 -- dir perms 236 --
-%s
+ created in temp dir 
 -- dir perms 237 --
-%s
+ created in temp dir 
 -- dir perms 240 --
-%s
+ created in temp dir 
 -- dir perms 241 --
-%s
+ created in temp dir 
 -- dir perms 242 --
-%s
+ created in temp dir 
 -- dir perms 243 --
-%s
+ created in temp dir 
 -- dir perms 244 --
-%s
+ created in temp dir 
 -- dir perms 245 --
-%s
+ created in temp dir 
 -- dir perms 246 --
-%s
+ created in temp dir 
 -- dir perms 247 --
-%s
+ created in temp dir 
 -- dir perms 250 --
-%s
+ created in temp dir 
 -- dir perms 251 --
-%s
+ created in temp dir 
 -- dir perms 252 --
-%s
+ created in temp dir 
 -- dir perms 253 --
-%s
+ created in temp dir 
 -- dir perms 254 --
-%s
+ created in temp dir 
 -- dir perms 255 --
-%s
+ created in temp dir 
 -- dir perms 256 --
-%s
+ created in temp dir 
 -- dir perms 257 --
-%s
+ created in temp dir 
 -- dir perms 260 --
-%s
+ created in temp dir 
 -- dir perms 261 --
-%s
+ created in temp dir 
 -- dir perms 262 --
-%s
+ created in temp dir 
 -- dir perms 263 --
-%s
+ created in temp dir 
 -- dir perms 264 --
-%s
+ created in temp dir 
 -- dir perms 265 --
-%s
+ created in temp dir 
 -- dir perms 266 --
-%s
+ created in temp dir 
 -- dir perms 267 --
-%s
+ created in temp dir 
 -- dir perms 270 --
-%s
+ created in temp dir 
 -- dir perms 271 --
-%s
+ created in temp dir 
 -- dir perms 272 --
-%s
+ created in temp dir 
 -- dir perms 273 --
-%s
+ created in temp dir 
 -- dir perms 274 --
-%s
+ created in temp dir 
 -- dir perms 275 --
-%s
+ created in temp dir 
 -- dir perms 276 --
-%s
+ created in temp dir 
 -- dir perms 277 --
-%s
+ created in temp dir 
 -- dir perms 300 --
-%s
+ created in requested dir
 -- dir perms 301 --
-%s
+ created in requested dir
 -- dir perms 302 --
-%s
+ created in requested dir
 -- dir perms 303 --
-%s
+ created in requested dir
 -- dir perms 304 --
-%s
+ created in requested dir
 -- dir perms 305 --
-%s
+ created in requested dir
 -- dir perms 306 --
-%s
+ created in requested dir
 -- dir perms 307 --
-%s
+ created in requested dir
 -- dir perms 310 --
-%s
+ created in requested dir
 -- dir perms 311 --
-%s
+ created in requested dir
 -- dir perms 312 --
-%s
+ created in requested dir
 -- dir perms 313 --
-%s
+ created in requested dir
 -- dir perms 314 --
-%s
+ created in requested dir
 -- dir perms 315 --
-%s
+ created in requested dir
 -- dir perms 316 --
-%s
+ created in requested dir
 -- dir perms 317 --
-%s
+ created in requested dir
 -- dir perms 320 --
-%s
+ created in requested dir
 -- dir perms 321 --
-%s
+ created in requested dir
 -- dir perms 322 --
-%s
+ created in requested dir
 -- dir perms 323 --
-%s
+ created in requested dir
 -- dir perms 324 --
-%s
+ created in requested dir
 -- dir perms 325 --
-%s
+ created in requested dir
 -- dir perms 326 --
-%s
+ created in requested dir
 -- dir perms 327 --
-%s
+ created in requested dir
 -- dir perms 330 --
-%s
+ created in requested dir
 -- dir perms 331 --
-%s
+ created in requested dir
 -- dir perms 332 --
-%s
+ created in requested dir
 -- dir perms 333 --
-%s
+ created in requested dir
 -- dir perms 334 --
-%s
+ created in requested dir
 -- dir perms 335 --
-%s
+ created in requested dir
 -- dir perms 336 --
-%s
+ created in requested dir
 -- dir perms 337 --
-%s
+ created in requested dir
 -- dir perms 340 --
-%s
+ created in requested dir
 -- dir perms 341 --
-%s
+ created in requested dir
 -- dir perms 342 --
-%s
+ created in requested dir
 -- dir perms 343 --
-%s
+ created in requested dir
 -- dir perms 344 --
-%s
+ created in requested dir
 -- dir perms 345 --
-%s
+ created in requested dir
 -- dir perms 346 --
-%s
+ created in requested dir
 -- dir perms 347 --
-%s
+ created in requested dir
 -- dir perms 350 --
-%s
+ created in requested dir
 -- dir perms 351 --
-%s
+ created in requested dir
 -- dir perms 352 --
-%s
+ created in requested dir
 -- dir perms 353 --
-%s
+ created in requested dir
 -- dir perms 354 --
-%s
+ created in requested dir
 -- dir perms 355 --
-%s
+ created in requested dir
 -- dir perms 356 --
-%s
+ created in requested dir
 -- dir perms 357 --
-%s
+ created in requested dir
 -- dir perms 360 --
-%s
+ created in requested dir
 -- dir perms 361 --
-%s
+ created in requested dir
 -- dir perms 362 --
-%s
+ created in requested dir
 -- dir perms 363 --
-%s
+ created in requested dir
 -- dir perms 364 --
-%s
+ created in requested dir
 -- dir perms 365 --
-%s
+ created in requested dir
 -- dir perms 366 --
-%s
+ created in requested dir
 -- dir perms 367 --
-%s
+ created in requested dir
 -- dir perms 370 --
-%s
+ created in requested dir
 -- dir perms 371 --
-%s
+ created in requested dir
 -- dir perms 372 --
-%s
+ created in requested dir
 -- dir perms 373 --
-%s
+ created in requested dir
 -- dir perms 374 --
-%s
+ created in requested dir
 -- dir perms 375 --
-%s
+ created in requested dir
 -- dir perms 376 --
-%s
+ created in requested dir
 -- dir perms 377 --
-%s
+ created in requested dir
 -- dir perms 400 --
-%s
+ created in temp dir 
 -- dir perms 401 --
-%s
+ created in temp dir 
 -- dir perms 402 --
-%s
+ created in temp dir 
 -- dir perms 403 --
-%s
+ created in temp dir 
 -- dir perms 404 --
-%s
+ created in temp dir 
 -- dir perms 405 --
-%s
+ created in temp dir 
 -- dir perms 406 --
-%s
+ created in temp dir 
 -- dir perms 407 --
-%s
+ created in temp dir 
 -- dir perms 410 --
-%s
+ created in temp dir 
 -- dir perms 411 --
-%s
+ created in temp dir 
 -- dir perms 412 --
-%s
+ created in temp dir 
 -- dir perms 413 --
-%s
+ created in temp dir 
 -- dir perms 414 --
-%s
+ created in temp dir 
 -- dir perms 415 --
-%s
+ created in temp dir 
 -- dir perms 416 --
-%s
+ created in temp dir 
 -- dir perms 417 --
-%s
+ created in temp dir 
 -- dir perms 420 --
-%s
+ created in temp dir 
 -- dir perms 421 --
-%s
+ created in temp dir 
 -- dir perms 422 --
-%s
+ created in temp dir 
 -- dir perms 423 --
-%s
+ created in temp dir 
 -- dir perms 424 --
-%s
+ created in temp dir 
 -- dir perms 425 --
-%s
+ created in temp dir 
 -- dir perms 426 --
-%s
+ created in temp dir 
 -- dir perms 427 --
-%s
+ created in temp dir 
 -- dir perms 430 --
-%s
+ created in temp dir 
 -- dir perms 431 --
-%s
+ created in temp dir 
 -- dir perms 432 --
-%s
+ created in temp dir 
 -- dir perms 433 --
-%s
+ created in temp dir 
 -- dir perms 434 --
-%s
+ created in temp dir 
 -- dir perms 435 --
-%s
+ created in temp dir 
 -- dir perms 436 --
-%s
+ created in temp dir 
 -- dir perms 437 --
-%s
+ created in temp dir 
 -- dir perms 440 --
-%s
+ created in temp dir 
 -- dir perms 441 --
-%s
+ created in temp dir 
 -- dir perms 442 --
-%s
+ created in temp dir 
 -- dir perms 443 --
-%s
+ created in temp dir 
 -- dir perms 444 --
-%s
+ created in temp dir 
 -- dir perms 445 --
-%s
+ created in temp dir 
 -- dir perms 446 --
-%s
+ created in temp dir 
 -- dir perms 447 --
-%s
+ created in temp dir 
 -- dir perms 450 --
-%s
+ created in temp dir 
 -- dir perms 451 --
-%s
+ created in temp dir 
 -- dir perms 452 --
-%s
+ created in temp dir 
 -- dir perms 453 --
-%s
+ created in temp dir 
 -- dir perms 454 --
-%s
+ created in temp dir 
 -- dir perms 455 --
-%s
+ created in temp dir 
 -- dir perms 456 --
-%s
+ created in temp dir 
 -- dir perms 457 --
-%s
+ created in temp dir 
 -- dir perms 460 --
-%s
+ created in temp dir 
 -- dir perms 461 --
-%s
+ created in temp dir 
 -- dir perms 462 --
-%s
+ created in temp dir 
 -- dir perms 463 --
-%s
+ created in temp dir 
 -- dir perms 464 --
-%s
+ created in temp dir 
 -- dir perms 465 --
-%s
+ created in temp dir 
 -- dir perms 466 --
-%s
+ created in temp dir 
 -- dir perms 467 --
-%s
+ created in temp dir 
 -- dir perms 470 --
-%s
+ created in temp dir 
 -- dir perms 471 --
-%s
+ created in temp dir 
 -- dir perms 472 --
-%s
+ created in temp dir 
 -- dir perms 473 --
-%s
+ created in temp dir 
 -- dir perms 474 --
-%s
+ created in temp dir 
 -- dir perms 475 --
-%s
+ created in temp dir 
 -- dir perms 476 --
-%s
+ created in temp dir 
 -- dir perms 477 --
-%s
+ created in temp dir 
 -- dir perms 500 --
-%s
+ created in temp dir 
 -- dir perms 501 --
-%s
+ created in temp dir 
 -- dir perms 502 --
-%s
+ created in temp dir 
 -- dir perms 503 --
-%s
+ created in temp dir 
 -- dir perms 504 --
-%s
+ created in temp dir 
 -- dir perms 505 --
-%s
+ created in temp dir 
 -- dir perms 506 --
-%s
+ created in temp dir 
 -- dir perms 507 --
-%s
+ created in temp dir 
 -- dir perms 510 --
-%s
+ created in temp dir 
 -- dir perms 511 --
-%s
+ created in temp dir 
 -- dir perms 512 --
-%s
+ created in temp dir 
 -- dir perms 513 --
-%s
+ created in temp dir 
 -- dir perms 514 --
-%s
+ created in temp dir 
 -- dir perms 515 --
-%s
+ created in temp dir 
 -- dir perms 516 --
-%s
+ created in temp dir 
 -- dir perms 517 --
-%s
+ created in temp dir 
 -- dir perms 520 --
-%s
+ created in temp dir 
 -- dir perms 521 --
-%s
+ created in temp dir 
 -- dir perms 522 --
-%s
+ created in temp dir 
 -- dir perms 523 --
-%s
+ created in temp dir 
 -- dir perms 524 --
-%s
+ created in temp dir 
 -- dir perms 525 --
-%s
+ created in temp dir 
 -- dir perms 526 --
-%s
+ created in temp dir 
 -- dir perms 527 --
-%s
+ created in temp dir 
 -- dir perms 530 --
-%s
+ created in temp dir 
 -- dir perms 531 --
-%s
+ created in temp dir 
 -- dir perms 532 --
-%s
+ created in temp dir 
 -- dir perms 533 --
-%s
+ created in temp dir 
 -- dir perms 534 --
-%s
+ created in temp dir 
 -- dir perms 535 --
-%s
+ created in temp dir 
 -- dir perms 536 --
-%s
+ created in temp dir 
 -- dir perms 537 --
-%s
+ created in temp dir 
 -- dir perms 540 --
-%s
+ created in temp dir 
 -- dir perms 541 --
-%s
+ created in temp dir 
 -- dir perms 542 --
-%s
+ created in temp dir 
 -- dir perms 543 --
-%s
+ created in temp dir 
 -- dir perms 544 --
-%s
+ created in temp dir 
 -- dir perms 545 --
-%s
+ created in temp dir 
 -- dir perms 546 --
-%s
+ created in temp dir 
 -- dir perms 547 --
-%s
+ created in temp dir 
 -- dir perms 550 --
-%s
+ created in temp dir 
 -- dir perms 551 --
-%s
+ created in temp dir 
 -- dir perms 552 --
-%s
+ created in temp dir 
 -- dir perms 553 --
-%s
+ created in temp dir 
 -- dir perms 554 --
-%s
+ created in temp dir 
 -- dir perms 555 --
-%s
+ created in temp dir 
 -- dir perms 556 --
-%s
+ created in temp dir 
 -- dir perms 557 --
-%s
+ created in temp dir 
 -- dir perms 560 --
-%s
+ created in temp dir 
 -- dir perms 561 --
-%s
+ created in temp dir 
 -- dir perms 562 --
-%s
+ created in temp dir 
 -- dir perms 563 --
-%s
+ created in temp dir 
 -- dir perms 564 --
-%s
+ created in temp dir 
 -- dir perms 565 --
-%s
+ created in temp dir 
 -- dir perms 566 --
-%s
+ created in temp dir 
 -- dir perms 567 --
-%s
+ created in temp dir 
 -- dir perms 570 --
-%s
+ created in temp dir 
 -- dir perms 571 --
-%s
+ created in temp dir 
 -- dir perms 572 --
-%s
+ created in temp dir 
 -- dir perms 573 --
-%s
+ created in temp dir 
 -- dir perms 574 --
-%s
+ created in temp dir 
 -- dir perms 575 --
-%s
+ created in temp dir 
 -- dir perms 576 --
-%s
+ created in temp dir 
 -- dir perms 577 --
-%s
+ created in temp dir 
 -- dir perms 600 --
-%s
+ created in temp dir 
 -- dir perms 601 --
-%s
+ created in temp dir 
 -- dir perms 602 --
-%s
+ created in temp dir 
 -- dir perms 603 --
-%s
+ created in temp dir 
 -- dir perms 604 --
-%s
+ created in temp dir 
 -- dir perms 605 --
-%s
+ created in temp dir 
 -- dir perms 606 --
-%s
+ created in temp dir 
 -- dir perms 607 --
-%s
+ created in temp dir 
 -- dir perms 610 --
-%s
+ created in temp dir 
 -- dir perms 611 --
-%s
+ created in temp dir 
 -- dir perms 612 --
-%s
+ created in temp dir 
 -- dir perms 613 --
-%s
+ created in temp dir 
 -- dir perms 614 --
-%s
+ created in temp dir 
 -- dir perms 615 --
-%s
+ created in temp dir 
 -- dir perms 616 --
-%s
+ created in temp dir 
 -- dir perms 617 --
-%s
+ created in temp dir 
 -- dir perms 620 --
-%s
+ created in temp dir 
 -- dir perms 621 --
-%s
+ created in temp dir 
 -- dir perms 622 --
-%s
+ created in temp dir 
 -- dir perms 623 --
-%s
+ created in temp dir 
 -- dir perms 624 --
-%s
+ created in temp dir 
 -- dir perms 625 --
-%s
+ created in temp dir 
 -- dir perms 626 --
-%s
+ created in temp dir 
 -- dir perms 627 --
-%s
+ created in temp dir 
 -- dir perms 630 --
-%s
+ created in temp dir 
 -- dir perms 631 --
-%s
+ created in temp dir 
 -- dir perms 632 --
-%s
+ created in temp dir 
 -- dir perms 633 --
-%s
+ created in temp dir 
 -- dir perms 634 --
-%s
+ created in temp dir 
 -- dir perms 635 --
-%s
+ created in temp dir 
 -- dir perms 636 --
-%s
+ created in temp dir 
 -- dir perms 637 --
-%s
+ created in temp dir 
 -- dir perms 640 --
-%s
+ created in temp dir 
 -- dir perms 641 --
-%s
+ created in temp dir 
 -- dir perms 642 --
-%s
+ created in temp dir 
 -- dir perms 643 --
-%s
+ created in temp dir 
 -- dir perms 644 --
-%s
+ created in temp dir 
 -- dir perms 645 --
-%s
+ created in temp dir 
 -- dir perms 646 --
-%s
+ created in temp dir 
 -- dir perms 647 --
-%s
+ created in temp dir 
 -- dir perms 650 --
-%s
+ created in temp dir 
 -- dir perms 651 --
-%s
+ created in temp dir 
 -- dir perms 652 --
-%s
+ created in temp dir 
 -- dir perms 653 --
-%s
+ created in temp dir 
 -- dir perms 654 --
-%s
+ created in temp dir 
 -- dir perms 655 --
-%s
+ created in temp dir 
 -- dir perms 656 --
-%s
+ created in temp dir 
 -- dir perms 657 --
-%s
+ created in temp dir 
 -- dir perms 660 --
-%s
+ created in temp dir 
 -- dir perms 661 --
-%s
+ created in temp dir 
 -- dir perms 662 --
-%s
+ created in temp dir 
 -- dir perms 663 --
-%s
+ created in temp dir 
 -- dir perms 664 --
-%s
+ created in temp dir 
 -- dir perms 665 --
-%s
+ created in temp dir 
 -- dir perms 666 --
-%s
+ created in temp dir 
 -- dir perms 667 --
-%s
+ created in temp dir 
 -- dir perms 670 --
-%s
+ created in temp dir 
 -- dir perms 671 --
-%s
+ created in temp dir 
 -- dir perms 672 --
-%s
+ created in temp dir 
 -- dir perms 673 --
-%s
+ created in temp dir 
 -- dir perms 674 --
-%s
+ created in temp dir 
 -- dir perms 675 --
-%s
+ created in temp dir 
 -- dir perms 676 --
-%s
+ created in temp dir 
 -- dir perms 677 --
-%s
+ created in temp dir 
 -- dir perms 700 --
-%s
+ created in requested dir
 -- dir perms 701 --
-%s
+ created in requested dir
 -- dir perms 702 --
-%s
+ created in requested dir
 -- dir perms 703 --
-%s
+ created in requested dir
 -- dir perms 704 --
-%s
+ created in requested dir
 -- dir perms 705 --
-%s
+ created in requested dir
 -- dir perms 706 --
-%s
+ created in requested dir
 -- dir perms 707 --
-%s
+ created in requested dir
 -- dir perms 710 --
-%s
+ created in requested dir
 -- dir perms 711 --
-%s
+ created in requested dir
 -- dir perms 712 --
-%s
+ created in requested dir
 -- dir perms 713 --
-%s
+ created in requested dir
 -- dir perms 714 --
-%s
+ created in requested dir
 -- dir perms 715 --
-%s
+ created in requested dir
 -- dir perms 716 --
-%s
+ created in requested dir
 -- dir perms 717 --
-%s
+ created in requested dir
 -- dir perms 720 --
-%s
+ created in requested dir
 -- dir perms 721 --
-%s
+ created in requested dir
 -- dir perms 722 --
-%s
+ created in requested dir
 -- dir perms 723 --
-%s
+ created in requested dir
 -- dir perms 724 --
-%s
+ created in requested dir
 -- dir perms 725 --
-%s
+ created in requested dir
 -- dir perms 726 --
-%s
+ created in requested dir
 -- dir perms 727 --
-%s
+ created in requested dir
 -- dir perms 730 --
-%s
+ created in requested dir
 -- dir perms 731 --
-%s
+ created in requested dir
 -- dir perms 732 --
-%s
+ created in requested dir
 -- dir perms 733 --
-%s
+ created in requested dir
 -- dir perms 734 --
-%s
+ created in requested dir
 -- dir perms 735 --
-%s
+ created in requested dir
 -- dir perms 736 --
-%s
+ created in requested dir
 -- dir perms 737 --
-%s
+ created in requested dir
 -- dir perms 740 --
-%s
+ created in requested dir
 -- dir perms 741 --
-%s
+ created in requested dir
 -- dir perms 742 --
-%s
+ created in requested dir
 -- dir perms 743 --
-%s
+ created in requested dir
 -- dir perms 744 --
-%s
+ created in requested dir
 -- dir perms 745 --
-%s
+ created in requested dir
 -- dir perms 746 --
-%s
+ created in requested dir
 -- dir perms 747 --
-%s
+ created in requested dir
 -- dir perms 750 --
-%s
+ created in requested dir
 -- dir perms 751 --
-%s
+ created in requested dir
 -- dir perms 752 --
-%s
+ created in requested dir
 -- dir perms 753 --
-%s
+ created in requested dir
 -- dir perms 754 --
-%s
+ created in requested dir
 -- dir perms 755 --
-%s
+ created in requested dir
 -- dir perms 756 --
-%s
+ created in requested dir
 -- dir perms 757 --
-%s
+ created in requested dir
 -- dir perms 760 --
-%s
+ created in requested dir
 -- dir perms 761 --
-%s
+ created in requested dir
 -- dir perms 762 --
-%s
+ created in requested dir
 -- dir perms 763 --
-%s
+ created in requested dir
 -- dir perms 764 --
-%s
+ created in requested dir
 -- dir perms 765 --
-%s
+ created in requested dir
 -- dir perms 766 --
-%s
+ created in requested dir
 -- dir perms 767 --
-%s
+ created in requested dir
 -- dir perms 770 --
-%s
+ created in requested dir
 -- dir perms 771 --
-%s
+ created in requested dir
 -- dir perms 772 --
-%s
+ created in requested dir
 -- dir perms 773 --
-%s
+ created in requested dir
 -- dir perms 774 --
-%s
+ created in requested dir
 -- dir perms 775 --
-%s
+ created in requested dir
 -- dir perms 776 --
-%s
+ created in requested dir
 -- dir perms 777 --
-%s
+ created in requested dir
 *** Done ***

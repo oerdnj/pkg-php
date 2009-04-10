@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    |          Marcus Boerger <helly@php.net>                              |
    +----------------------------------------------------------------------+
 
-   $Id: sqlite.c,v 1.166.2.13.2.10 2007/12/31 07:20:11 sebastian Exp $
+   $Id: sqlite.c,v 1.166.2.13.2.12 2008/12/31 11:17:44 sebastian Exp $
 */
 
 #ifdef HAVE_CONFIG_H
@@ -1128,7 +1128,7 @@ PHP_MINFO_FUNCTION(sqlite)
 {
 	php_info_print_table_start();
 	php_info_print_table_header(2, "SQLite support", "enabled");
-	php_info_print_table_row(2, "PECL Module version", PHP_SQLITE_MODULE_VERSION " $Id: sqlite.c,v 1.166.2.13.2.10 2007/12/31 07:20:11 sebastian Exp $");
+	php_info_print_table_row(2, "PECL Module version", PHP_SQLITE_MODULE_VERSION " $Id: sqlite.c,v 1.166.2.13.2.12 2008/12/31 11:17:44 sebastian Exp $");
 	php_info_print_table_row(2, "SQLite Library", sqlite_libversion());
 	php_info_print_table_row(2, "SQLite Encoding", sqlite_libencoding());
 	php_info_print_table_end();
@@ -2917,11 +2917,13 @@ static enum callback_prep_t prep_callback_struct(struct php_sqlite_db *db, int i
 	MAKE_STD_ZVAL(alloc_funcs->step);
 	*(alloc_funcs->step)  = *step;
 	zval_copy_ctor(alloc_funcs->step);
+	INIT_PZVAL(alloc_funcs->step);
 
 	if (is_agg) {
 		MAKE_STD_ZVAL(alloc_funcs->fini);
 		*(alloc_funcs->fini) = *fini;
 		zval_copy_ctor(alloc_funcs->fini);
+		INIT_PZVAL(alloc_funcs->fini);
 	} else {
 		alloc_funcs->fini = NULL;
 	}

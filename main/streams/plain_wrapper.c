@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: plain_wrapper.c,v 1.52.2.6.2.27 2007/12/31 07:20:15 sebastian Exp $ */
+/* $Id: plain_wrapper.c,v 1.52.2.6.2.32 2009/02/10 16:14:27 iliaa Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -242,6 +242,7 @@ PHPAPI php_stream *_php_stream_fopen_from_fd(int fd, const char *mode, const cha
 #ifdef ESPIPE
 			if (stream->position == (off_t)-1 && errno == ESPIPE) {
 				stream->position = 0;
+				stream->flags |= PHP_STREAM_FLAG_NO_SEEK;
 				self->is_pipe = 1;
 			}
 #endif
@@ -1323,7 +1324,9 @@ not_relative_path:
 		/* getcwd() will return always return [DRIVE_LETTER]:/) on windows. */
 		*(cwd+3) = '\0';
 	
-		snprintf(trypath, MAXPATHLEN, "%s%s", cwd, filename);
+		if (snprintf(trypath, MAXPATHLEN, "%s%s", cwd, filename) >= MAXPATHLEN) {
+			php_error_docref(NULL TSRMLS_CC, E_NOTICE, "%s/%s path was truncated to %d", cwd, filename, MAXPATHLEN);
+		}
 		
 		free(cwd);
 		
@@ -1384,7 +1387,9 @@ not_relative_path:
 		if (*ptr == '\0') {
 			goto stream_skip;
 		}
-		snprintf(trypath, MAXPATHLEN, "%s/%s", ptr, filename);
+		if (snprintf(trypath, MAXPATHLEN, "%s/%s", ptr, filename) >= MAXPATHLEN) {
+			php_error_docref(NULL TSRMLS_CC, E_NOTICE, "%s/%s path was truncated to %d", ptr, filename, MAXPATHLEN);
+		}
 
 		if (((options & STREAM_DISABLE_OPEN_BASEDIR) == 0) && php_check_open_basedir_ex(trypath, 0 TSRMLS_CC)) {
 			goto stream_skip;

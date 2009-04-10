@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: info.c,v 1.249.2.10.2.17 2008/03/05 21:09:29 pajoye Exp $ */
+/* $Id: info.c,v 1.249.2.10.2.19 2008/12/31 11:17:45 sebastian Exp $ */
 
 #include "php.h"
 #include "php_ini.h"
@@ -57,6 +57,7 @@ ZEND_EXTERN_MODULE_GLOBALS(iconv)
 						} \
 
 PHPAPI extern char *php_ini_opened_path;
+PHPAPI extern char *php_ini_scanned_path;
 PHPAPI extern char *php_ini_scanned_files;
 	
 static int php_info_write_wrapper(const char *str, uint str_length)
@@ -501,14 +502,9 @@ PHPAPI void php_print_info(int flag TSRMLS_DC)
 
 		php_info_print_table_row(2, "Configuration File (php.ini) Path", PHP_CONFIG_FILE_PATH);
 		php_info_print_table_row(2, "Loaded Configuration File", php_ini_opened_path ? php_ini_opened_path : "(none)");
+		php_info_print_table_row(2, "Scan this dir for additional .ini files", php_ini_scanned_path ? php_ini_scanned_path : "(none)");
+		php_info_print_table_row(2, "additional .ini files parsed", php_ini_scanned_files ? php_ini_scanned_files : "(none)");
 
-		if (strlen(PHP_CONFIG_FILE_SCAN_DIR)) {
-			php_info_print_table_row(2, "Scan this dir for additional .ini files", PHP_CONFIG_FILE_SCAN_DIR);
-			if (php_ini_scanned_files) {
-				php_info_print_table_row(2, "additional .ini files parsed", php_ini_scanned_files);
-			}
-		}
-		
 		snprintf(temp_api, sizeof(temp_api), "%d", PHP_API_VERSION);
 		php_info_print_table_row(2, "PHP API", temp_api);
 

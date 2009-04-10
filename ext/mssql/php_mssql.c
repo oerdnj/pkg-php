@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_mssql.c,v 1.152.2.13.2.8 2008/03/05 23:53:23 iliaa Exp $ */
+/* $Id: php_mssql.c,v 1.152.2.13.2.12 2009/02/23 21:21:23 kalle Exp $ */
 
 #ifdef COMPILE_DL_MSSQL
 #define HAVE_MSSQL 1
@@ -876,11 +876,15 @@ static void php_mssql_get_column_content_with_type(mssql_link *mssql_ptr,int off
 			unsigned char *res_buf;
 			int res_length = dbdatlen(mssql_ptr->link, offset);
 
-			res_buf = (unsigned char *) emalloc(res_length+1);
-			bin = ((DBBINARY *)dbdata(mssql_ptr->link, offset));
-			memcpy(res_buf,bin,res_length);
-			res_buf[res_length] = '\0';
-			ZVAL_STRINGL(result, res_buf, res_length, 0);
+			if (!res_length) {
+				ZVAL_NULL(result);
+			} else {
+				bin = ((DBBINARY *)dbdata(mssql_ptr->link, offset));
+				res_buf = (unsigned char *) emalloc(res_length+1);
+				memcpy(res_buf,bin,res_length);
+				res_buf[res_length] = '\0';
+				ZVAL_STRINGL(result, res_buf, res_length, 0);
+			}
 			}
 			break;
 		case SQLNUMERIC:
@@ -934,7 +938,7 @@ static void php_mssql_get_column_content_with_type(mssql_link *mssql_ptr,int off
 	}
 }
 
-static void php_mssql_get_column_content_without_type(mssql_link *mssql_ptr,int offset,zval *result, int column_type TSRMLS_DC)
+static void php_mssql_get_column_content_without_type(mssql_link *mssql_ptr, int offset,zval *result, int column_type TSRMLS_DC)
 {
 	if (dbdatlen(mssql_ptr->link,offset) == 0) {
 		ZVAL_NULL(result);
@@ -2154,11 +2158,12 @@ PHP_FUNCTION(mssql_execute)
 	int num_fields;
 	int batchsize;
 	int ac = ZEND_NUM_ARGS();
+	int exec_retval;
 
 	batchsize = MS_SQL_G(batchsize);
 	if (ac < 1 || ac > 2 || zend_get_parameters_ex(ac, &stmt, &skip)==FAILURE) {
-        WRONG_PARAM_COUNT;
-    }
+		WRONG_PARAM_COUNT;
+	}
 	if (ac == 2) {
 		skip_results = Z_BVAL_PP(skip);
 	}
@@ -2166,10 +2171,15 @@ PHP_FUNCTION(mssql_execute)
 	ZEND_FETCH_RESOURCE(statement, mssql_statement *, stmt, -1, "MS SQL-Statement", le_statement);
 
 	mssql_ptr=statement->link;
+	exec_retval = dbrpcexec(mssql_ptr->link);
 
-	if (dbrpcexec(mssql_ptr->link)==FAIL || dbsqlok(mssql_ptr->link)==FAIL) {
+	if (exec_retval == FAIL || dbsqlok(mssql_ptr->link) == FAIL) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "stored procedure execution failed");
-		dbcancel(mssql_ptr->link);
+
+		if (exec_retval == FAIL) {
+			dbcancel(mssql_ptr->link);
+		}
+
 		RETURN_FALSE;
 	}
 

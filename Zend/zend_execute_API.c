@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2008 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2009 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute_API.c,v 1.331.2.20.2.27 2008/03/04 11:46:09 dmitry Exp $ */
+/* $Id: zend_execute_API.c,v 1.331.2.20.2.30 2009/01/15 14:23:42 dmitry Exp $ */
 
 #include <stdio.h>
 #include <signal.h>
@@ -824,7 +824,9 @@ int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci_cache TS
 			}
 			EX(function_state).function = 
 			  Z_OBJ_HT_PP(fci->object_pp)->get_method(fci->object_pp, fname, fname_len TSRMLS_CC);
-			if (EX(function_state).function && calling_scope != EX(function_state).function->common.scope) {
+			if (EX(function_state).function &&
+			    (EX(function_state).function->common.fn_flags & ZEND_ACC_PRIVATE) == 0 &&
+			    calling_scope != EX(function_state).function->common.scope) {
 				char *function_name_lc = zend_str_tolower_dup(fname, fname_len);
 				if (zend_hash_find(&calling_scope->function_table, function_name_lc, fname_len+1, (void **) &EX(function_state).function)==FAILURE) {
 					efree(function_name_lc);
@@ -896,6 +898,26 @@ int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci_cache TS
 				EX(function_state).function->common.scope ? EX(function_state).function->common.scope->name : "",
 				EX(function_state).function->common.scope ? "::" : "",
 				EX(function_state).function->common.function_name);
+		}
+	}
+
+	/* Prevent crash because of stack reallocation */
+	if (!call_via_handler &&
+	    fci->param_count &&
+	    EG(argument_stack).top + fci->param_count > EG(argument_stack).max &&
+	    *(void***)fci->params >= EG(argument_stack).elements &&
+	    *(void***)fci->params < EG(argument_stack).top_element) {
+
+		/* Manual stack reallocation */
+		void **prev_elements = EG(argument_stack).elements;
+		void **prev_top_element = EG(argument_stack).top_element;
+
+		ZEND_PTR_STACK_RESIZE_IF_NEEDED((&EG(argument_stack)), fci->param_count);
+		for (i=0; i<fci->param_count; i++) {
+			if ((void**)fci->params[i] >= prev_elements &&
+			    (void**)fci->params[i] < prev_top_element) {
+				fci->params[i] = (zval**)((void**)fci->params[i] - prev_elements + EG(argument_stack).elements);
+			}
 		}
 	}
 

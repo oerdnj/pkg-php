@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_virtual_cwd.c,v 1.74.2.9.2.38 2007/12/31 07:20:02 sebastian Exp $ */
+/* $Id: tsrm_virtual_cwd.c,v 1.74.2.9.2.41 2008/12/31 11:17:31 sebastian Exp $ */
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -491,6 +491,7 @@ CWD_API int virtual_file_ex(cwd_state *state, const char *path, verify_path_func
 	int use_relative_path = 0;
 #ifdef TSRM_WIN32
 	int is_unc;
+	int exists;
 #endif
 	TSRMLS_FETCH();
 
@@ -589,6 +590,7 @@ no_realpath:
 		CWD_STATE_COPY(&old_state, state);
 
 #ifdef TSRM_WIN32
+		exists = (use_realpath != CWD_EXPAND);
 		ret = 0;
 		is_unc = 0;
 		if (path_length >= 2 && path[1] == ':') {			
@@ -696,13 +698,16 @@ no_realpath:
 						ptr_length = length;
 						FindClose(hFind);
 						ret = 0;
-					} else if (use_realpath == CWD_REALPATH) {
+					} else {
 						if (is_unc) {
 							/* skip share name */
 							is_unc--;
 							ret = 0;
 						} else {
-							ret = 1;
+							exists = 0;
+							if (use_realpath == CWD_REALPATH) {
+								ret = 1;
+							}
 						}
 					}
 				}
@@ -742,7 +747,7 @@ no_realpath:
 
 	/* Store existent file in realpath cache. */
 #ifdef TSRM_WIN32
-	if (use_cache && !is_unc) {
+	if (use_cache && !is_unc && exists) {
 #else
 	if (use_cache && (use_realpath == CWD_REALPATH)) {
 #endif

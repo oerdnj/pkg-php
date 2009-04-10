@@ -31,7 +31,7 @@
 */
 
 
-static const char rcsid[] = "#(@) $Id: xml_element.c,v 1.9.4.1 2006/07/30 11:34:02 tony2001 Exp $";
+static const char rcsid[] = "#(@) $Id: xml_element.c,v 1.9.4.3 2008/12/17 21:45:31 iliaa Exp $";
 
 
 
@@ -44,6 +44,13 @@ static const char rcsid[] = "#(@) $Id: xml_element.c,v 1.9.4.1 2006/07/30 11:34:
  *   06/2000
  * HISTORY
  *   $Log: xml_element.c,v $
+ *   Revision 1.9.4.3  2008/12/17 21:45:31  iliaa
+ *   MFB: remove fprintf usage
+ *
+ *   Revision 1.9.4.2  2008/12/17 00:30:48  iliaa
+ *
+ *   MFH: removed unused var
+ *
  *   Revision 1.9.4.1  2006/07/30 11:34:02  tony2001
  *   MFH: fix compile warnings (#38257)
  *
@@ -378,7 +385,7 @@ static void xml_element_serialize(xml_element *el, int (*fptr)(void *data, const
    depth++;
 
    if(!el) {
-      fprintf(stderr, "Nothing to write\n");
+/*      fprintf(stderr, "Nothing to write\n"); */
       return;
    }
    if(!options) {
@@ -716,7 +723,7 @@ xml_element* xml_elem_parse_buf(const char* in_buf, int len, XML_ELEM_INPUT_OPTI
          int line_num = XML_GetCurrentLineNumber(parser);
          int col_num = XML_GetCurrentColumnNumber(parser);
          long byte_idx = XML_GetCurrentByteIndex(parser);
-         int byte_total = XML_GetCurrentByteCount(parser);
+/*         int byte_total = XML_GetCurrentByteCount(parser); */
          const char * error_str = XML_ErrorString(err_code);
          if(byte_idx >= 0) {
              snprintf(buf, 
@@ -725,7 +732,7 @@ xml_element* xml_elem_parse_buf(const char* in_buf, int len, XML_ELEM_INPUT_OPTI
                       byte_idx > 10  ? 10 : byte_idx,
                       in_buf + (byte_idx > 10 ? byte_idx - 10 : byte_idx));
          }
-
+/*
          fprintf(stderr, "expat reports error code %i\n"
                 "\tdescription: %s\n"
                 "\tline: %i\n"
@@ -734,7 +741,7 @@ xml_element* xml_elem_parse_buf(const char* in_buf, int len, XML_ELEM_INPUT_OPTI
                 "\ttotal bytes: %i\n%s ",
                 err_code, error_str, line_num, 
                 col_num, byte_idx, byte_total, buf);
-
+*/
 
           /* error condition */
           if(error) {

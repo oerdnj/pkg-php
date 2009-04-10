@@ -201,7 +201,7 @@ static const int state_transition_table[30][31] = {
 /*29*/ {29,29,-1,-1,-1,-1,-1,-1, 3,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}
 };
 
-#define JSON_PARSER_MAX_DEPTH 128
+#define JSON_PARSER_MAX_DEPTH 512
 
 
 /*
@@ -285,7 +285,7 @@ static void json_create_zval(zval **z, smart_str *buf, int type)
     if (type == IS_LONG)
     {
 	double d = zend_strtod(buf->c, NULL);
-	if (d > LONG_MAX || d < -LONG_MAX) {
+	if (d > LONG_MAX || d < LONG_MIN) {
 		ZVAL_DOUBLE(*z, d);
 	} else {
 		ZVAL_LONG(*z, (long)d);
@@ -494,9 +494,7 @@ JSON_parser(zval *z, unsigned short p[], int length, int assoc TSRMLS_DC)
     }
 */
             case -7:
-                if (type != -1 &&
-                    (JSON(the_stack)[JSON(the_top)] == MODE_OBJECT ||
-                     JSON(the_stack)[JSON(the_top)] == MODE_ARRAY))
+                if (type != -1 && JSON(the_stack)[JSON(the_top)] == MODE_OBJECT)
                 {
                     zval *mval;
                     smart_str_0(&buf);
@@ -566,9 +564,7 @@ JSON_parser(zval *z, unsigned short p[], int length, int assoc TSRMLS_DC)
 */
             case -5:
             {
-                if (type != -1 &&
-                    (JSON(the_stack)[JSON(the_top)] == MODE_OBJECT ||
-                     JSON(the_stack)[JSON(the_top)] == MODE_ARRAY))
+                if (type != -1 && JSON(the_stack)[JSON(the_top)] == MODE_ARRAY)
                 {
                     zval *mval;
                     smart_str_0(&buf);

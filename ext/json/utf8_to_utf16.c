@@ -40,13 +40,13 @@ utf8_to_utf16(unsigned short w[], char p[], int length)
     for (;;) {
         c = utf8_decode_next(&utf8);
         if (c < 0) {
-            return UTF8_END ? the_index : UTF8_ERROR;
+            return (c == UTF8_END) ? the_index : UTF8_ERROR;
         }
         if (c < 0x10000) {
             w[the_index] = (unsigned short)c;
             the_index += 1;
         } else {
-            c &= 0xFFFF;
+            c -= 0x10000;
             w[the_index] = (unsigned short)(0xD800 | (c >> 10));
             the_index += 1;
             w[the_index] = (unsigned short)(0xDC00 | (c & 0x3FF));

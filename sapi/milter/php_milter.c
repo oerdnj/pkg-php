@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,6 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
+/* $Id: php_milter.c,v 1.14.2.2.2.6 2008/12/31 11:17:49 sebastian Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -1006,13 +1007,6 @@ int main(int argc, char *argv[])
 
 		zend_uv.html_errors = 0; /* tell the engine we're in non-html mode */
 
-		if (milter_sapi_module.php_ini_path_override && milter_sapi_module.php_ini_ignore) {
-			SG(headers_sent) = 1;
-			SG(request_info).no_headers = 1;
-			PUTS("You cannot use both -n and -c switch. Use -h for help.\n");
-			exit(1);
-		}
-	
 		while ((c = ap_php_getopt(argc, argv, OPTSTRING)) != -1) {
 			switch (c) {
 
@@ -1065,7 +1059,7 @@ int main(int argc, char *argv[])
 				}
 				SG(headers_sent) = 1;
 				SG(request_info).no_headers = 1;
-				php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2008 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
+				php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2009 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 				php_end_ob_buffers(1 TSRMLS_CC);
 				exit(1);
 				break;

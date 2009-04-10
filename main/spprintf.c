@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: spprintf.c,v 1.25.2.2.2.12 2007/12/31 07:20:15 sebastian Exp $ */
+/* $Id: spprintf.c,v 1.25.2.2.2.15 2009/02/04 15:03:12 iliaa Exp $ */
 
 /* This is the spprintf implementation.
  * It has emerged from apache snprintf. See original header:
@@ -179,6 +179,13 @@
 } while (0)
 
 /* }}} */
+
+#if !HAVE_STRNLEN
+static size_t strnlen(const char *s, size_t maxlen) {
+	char *r = memchr(s, '\0', maxlen);
+	return r ? r-s : maxlen;
+}
+#endif
 
 /*
  * Do format conversion placing the output in buffer
@@ -547,9 +554,11 @@ static void xbuf_format_converter(smart_str *xbuf, const char *fmt, va_list ap) 
 				case 'v':
 					s = va_arg(ap, char *);
 					if (s != NULL) {
-						s_len = strlen(s);
-						if (adjust_precision && precision < s_len)
-							s_len = precision;
+						if (!adjust_precision) {
+							s_len = strlen(s);
+						} else {
+							s_len = strnlen(s, precision);
+						}
 					} else {
 						s = S_NULL;
 						s_len = S_NULL_LEN;

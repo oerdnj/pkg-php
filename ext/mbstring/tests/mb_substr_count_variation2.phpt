@@ -20,7 +20,6 @@ echo "*** Testing mb_substr_count() : usage variations ***\n";
 
 // Initialise function arguments not being substituted (if any)
 $haystack = 'hello, world';
-$encoding = 'utf-8';
 
 //get an unset variable
 $unset_var = 10;
@@ -94,7 +93,7 @@ $inputs = array(
 $iterator = 1;
 foreach($inputs as $input) {
   echo "\n-- Iteration $iterator --\n";
-  var_dump( mb_substr_count($haystack, $input, $encoding) );
+  var_dump( mb_substr_count($haystack, $input) );
   $iterator++;
 };
 
@@ -134,12 +133,12 @@ int(0)
 
 -- Iteration 10 --
 
-Warning: mb_substr_count(): Empty substring. in %s on line %d
+Warning: mb_substr_count(): Empty substring in %s on line %d
 bool(false)
 
 -- Iteration 11 --
 
-Warning: mb_substr_count(): Empty substring. in %s on line %d
+Warning: mb_substr_count(): Empty substring in %s on line %d
 bool(false)
 
 -- Iteration 12 --
@@ -147,7 +146,7 @@ int(0)
 
 -- Iteration 13 --
 
-Warning: mb_substr_count(): Empty substring. in %s on line %d
+Warning: mb_substr_count(): Empty substring in %s on line %d
 bool(false)
 
 -- Iteration 14 --
@@ -155,17 +154,17 @@ int(0)
 
 -- Iteration 15 --
 
-Warning: mb_substr_count(): Empty substring. in %s on line %d
+Warning: mb_substr_count(): Empty substring in %s on line %d
 bool(false)
 
 -- Iteration 16 --
 
-Warning: mb_substr_count(): Empty substring. in %s on line %d
+Warning: mb_substr_count(): Empty substring in %s on line %d
 bool(false)
 
 -- Iteration 17 --
 
-Warning: mb_substr_count(): Empty substring. in %s on line %d
+Warning: mb_substr_count(): Empty substring in %s on line %d
 bool(false)
 
 -- Iteration 18 --
@@ -182,12 +181,12 @@ int(1)
 
 -- Iteration 22 --
 
-Warning: mb_substr_count(): Empty substring. in %s on line %d
+Warning: mb_substr_count(): Empty substring in %s on line %d
 bool(false)
 
 -- Iteration 23 --
 
-Warning: mb_substr_count(): Empty substring. in %s on line %d
+Warning: mb_substr_count(): Empty substring in %s on line %d
 bool(false)
 
 -- Iteration 24 --

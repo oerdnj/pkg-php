@@ -19,7 +19,7 @@ function_exists('mb_strpos') or die("skip mb_strpos() is not available in this b
 echo "*** Testing mb_strpos() : usage variations ***\n";
 
 // Initialise function arguments not being substituted
-$haystack = 'string_val';
+$haystack = b'string_val';
 $offset = 0;
 $encoding = 'utf-8';
 
@@ -31,12 +31,12 @@ unset ($unset_var);
 class classA
 {
   public function __toString() {
-    return "Class A object";
+    return b"Class A object";
   }
 }
 
 // heredoc string
-$heredoc = <<<EOT
+$heredoc = b<<<EOT
 hello world
 EOT;
 
@@ -74,8 +74,8 @@ $inputs = array(
        '',
 
        // string data
-/*18*/ "string",
-       'string',
+/*18*/ b"string",
+       b'string',
        $heredoc,
        
        // object data
@@ -135,12 +135,12 @@ bool(false)
 
 -- Iteration 10 --
 
-Warning: mb_strpos(): Empty delimiter. in %s on line %d
+Warning: mb_strpos(): Empty delimiter in %s on line %d
 bool(false)
 
 -- Iteration 11 --
 
-Warning: mb_strpos(): Empty delimiter. in %s on line %d
+Warning: mb_strpos(): Empty delimiter in %s on line %d
 bool(false)
 
 -- Iteration 12 --
@@ -148,7 +148,7 @@ bool(false)
 
 -- Iteration 13 --
 
-Warning: mb_strpos(): Empty delimiter. in %s on line %d
+Warning: mb_strpos(): Empty delimiter in %s on line %d
 bool(false)
 
 -- Iteration 14 --
@@ -156,17 +156,17 @@ bool(false)
 
 -- Iteration 15 --
 
-Warning: mb_strpos(): Empty delimiter. in %s on line %d
+Warning: mb_strpos(): Empty delimiter in %s on line %d
 bool(false)
 
 -- Iteration 16 --
 
-Warning: mb_strpos(): Empty delimiter. in %s on line %d
+Warning: mb_strpos(): Empty delimiter in %s on line %d
 bool(false)
 
 -- Iteration 17 --
 
-Warning: mb_strpos(): Empty delimiter. in %s on line %d
+Warning: mb_strpos(): Empty delimiter in %s on line %d
 bool(false)
 
 -- Iteration 18 --
@@ -183,12 +183,12 @@ bool(false)
 
 -- Iteration 22 --
 
-Warning: mb_strpos(): Empty delimiter. in %s on line %d
+Warning: mb_strpos(): Empty delimiter in %s on line %d
 bool(false)
 
 -- Iteration 23 --
 
-Warning: mb_strpos(): Empty delimiter. in %s on line %d
+Warning: mb_strpos(): Empty delimiter in %s on line %d
 bool(false)
 
 -- Iteration 24 --

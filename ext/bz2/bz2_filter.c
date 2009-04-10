@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: bz2_filter.c,v 1.3.2.2.2.9 2008/01/12 22:04:03 cellog Exp $ */
+/* $Id: bz2_filter.c,v 1.3.2.2.2.12 2009/02/09 03:44:59 cellog Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -34,6 +34,7 @@ typedef struct _php_bz2_filter_data {
 	size_t inbuf_len;
 	char *outbuf;
 	size_t outbuf_len;
+	zend_bool finished;
 } php_bz2_filter_data;
 
 /* }}} */
@@ -82,6 +83,11 @@ static php_stream_filter_status_t php_bz2_decompress_filter(
 
 		bucket = php_stream_bucket_make_writeable(buckets_in->head TSRMLS_CC);
 		while (bin < bucket->buflen) {
+			if (data->finished) {
+				consumed += bucket->buflen;
+				break;
+			}
+
 			desired = bucket->buflen - bin;
 			if (desired > data->inbuf_len) {
 				desired = data->inbuf_len;
@@ -90,7 +96,11 @@ static php_stream_filter_status_t php_bz2_decompress_filter(
 			data->strm.avail_in = desired;
 
 			status = BZ2_bzDecompress(&(data->strm));
-			if (status != BZ_OK && status != BZ_STREAM_END) {
+
+			if (status == BZ_STREAM_END) {
+				BZ2_bzDecompressEnd(&(data->strm));
+				data->finished = '\1';
+			} else if (status != BZ_OK) {
 				/* Something bad happened */
 				php_stream_bucket_delref(bucket TSRMLS_CC);
 				return PSFS_ERR_FATAL;
@@ -115,10 +125,11 @@ static php_stream_filter_status_t php_bz2_decompress_filter(
 				return PSFS_PASS_ON;
 			}
 		}
+
 		php_stream_bucket_delref(bucket TSRMLS_CC);
 	}
 
-	if (flags & PSFS_FLAG_FLUSH_CLOSE) {
+	if (!data->finished && (flags & PSFS_FLAG_FLUSH_CLOSE)) {
 		/* Spit it out! */
 		status = BZ_OK;
 		while (status == BZ_OK) {
@@ -148,7 +159,9 @@ static void php_bz2_decompress_dtor(php_stream_filter *thisfilter TSRMLS_DC)
 {
 	if (thisfilter && thisfilter->abstract) {
 		php_bz2_filter_data *data = thisfilter->abstract;
-		BZ2_bzDecompressEnd(&(data->strm));
+		if (!data->finished) {
+			BZ2_bzDecompressEnd(&(data->strm));
+		}
 		pefree(data->inbuf, data->persistent);
 		pefree(data->outbuf, data->persistent);
 		pefree(data, data->persistent);
@@ -319,14 +332,18 @@ static php_stream_filter *php_bz2_filter_create(const char *filtername, zval *fi
 			}
 
 			if (tmpzval) {
-				SEPARATE_ZVAL(tmpzval);
-				convert_to_boolean_ex(tmpzval);
-				smallFootprint = Z_LVAL_PP(tmpzval);
-				zval_ptr_dtor(tmpzval);
+				zval tmp, *tmp2;
+
+				tmp = **tmpzval;
+				zval_copy_ctor(&tmp);
+				tmp2 = &tmp;
+				convert_to_boolean_ex(&tmp2);
+				smallFootprint = Z_LVAL(tmp);
 			}
 		}
 
 		status = BZ2_bzDecompressInit(&(data->strm), 0, smallFootprint);
+		data->finished = '\0';
 		fops = &php_bz2_decompress_ops;
 	} else if (strcasecmp(filtername, "bzip2.compress") == 0) {
 		int blockSize100k = PHP_BZ2_FILTER_DEFAULT_BLOCKSIZE;
@@ -338,26 +355,31 @@ static php_stream_filter *php_bz2_filter_create(const char *filtername, zval *fi
 			if (Z_TYPE_P(filterparams) == IS_ARRAY || Z_TYPE_P(filterparams) == IS_OBJECT) {
 				if (zend_hash_find(HASH_OF(filterparams), "blocks", sizeof("blocks"), (void**) &tmpzval) == SUCCESS) {
 					/* How much memory to allocate (1 - 9) x 100kb */
-					SEPARATE_ZVAL(tmpzval);
-					convert_to_long_ex(tmpzval);
-					if (Z_LVAL_PP(tmpzval) < 1 || Z_LVAL_PP(tmpzval) > 9) {
+					zval tmp;
+	
+					tmp = **tmpzval;
+					zval_copy_ctor(&tmp);
+					convert_to_long(&tmp);
+					if (Z_LVAL(tmp) < 1 || Z_LVAL(tmp) > 9) {
 						php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid parameter given for number of blocks to allocate. (%ld)", Z_LVAL_PP(tmpzval));
 					} else {
-						blockSize100k = Z_LVAL_PP(tmpzval);
+						blockSize100k = Z_LVAL(tmp);
 					}
-					zval_ptr_dtor(tmpzval);
 				}
 
 				if (zend_hash_find(HASH_OF(filterparams), "work", sizeof("work"), (void**) &tmpzval) == SUCCESS) {
 					/* Work Factor (0 - 250) */
-					SEPARATE_ZVAL(tmpzval);
-					convert_to_long_ex(tmpzval);
-					if (Z_LVAL_PP(tmpzval) < 0 || Z_LVAL_PP(tmpzval) > 250) {
-						php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid parameter given for work factor. (%ld)", Z_LVAL_PP(tmpzval));
+					zval tmp;
+	
+					tmp = **tmpzval;
+					zval_copy_ctor(&tmp);
+					convert_to_long(&tmp);
+
+					if (Z_LVAL(tmp) < 0 || Z_LVAL(tmp) > 250) {
+						php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid parameter given for work factor. (%ld)", Z_LVAL(tmp));
 					} else {
-						workFactor = Z_LVAL_PP(tmpzval);
+						workFactor = Z_LVAL(tmp);
 					}
-					zval_ptr_dtor(tmpzval);
 				}
 			}
 		}

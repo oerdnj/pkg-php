@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2008 The PHP Group                                |
+  | Copyright (c) 1997-2009 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -19,7 +19,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: filter.c,v 1.52.2.42 2008/02/24 18:34:30 felipe Exp $ */
+/* $Id: filter.c,v 1.52.2.45 2008/12/31 11:17:37 sebastian Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -275,7 +275,7 @@ PHP_MINFO_FUNCTION(filter)
 {
 	php_info_print_table_start();
 	php_info_print_table_row( 2, "Input Validation and Filtering", "enabled" );
-	php_info_print_table_row( 2, "Revision", "$Revision: 1.52.2.42 $");
+	php_info_print_table_row( 2, "Revision", "$Revision: 1.52.2.45 $");
 	php_info_print_table_end();
 
 	DISPLAY_INI_ENTRIES();
@@ -403,7 +403,7 @@ static unsigned int php_sapi_filter(int arg, char *var, char **val, unsigned int
 		Z_STRLEN(new_var) = val_len;
 		Z_TYPE(new_var) = IS_STRING;
 
-		if (!(IF_G(default_filter) == FILTER_UNSAFE_RAW)) {
+		if (IF_G(default_filter) != FILTER_UNSAFE_RAW) {
 			zval *tmp_new_var = &new_var;
 			Z_STRVAL(new_var) = estrndup(*val, val_len);
 			INIT_PZVAL(tmp_new_var);

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_curl.h,v 1.44.2.2.2.3 2007/12/31 07:20:05 sebastian Exp $ */
+/* $Id: php_curl.h,v 1.44.2.2.2.5 2008/12/31 11:17:36 sebastian Exp $ */
 
 #ifndef _PHP_CURL_H
 #define _PHP_CURL_H
@@ -114,7 +114,9 @@ struct _php_curl_send_headers {
 };
 
 struct _php_curl_free {
+#if LIBCURL_VERSION_NUM < 0x071100
 	zend_llist str;
+#endif
 	zend_llist post;
 	zend_llist slist;
 };

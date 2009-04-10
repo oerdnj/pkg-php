@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: html.c,v 1.111.2.2.2.20 2008/04/11 19:01:25 felipe Exp $ */
+/* $Id: html.c,v 1.111.2.2.2.23 2008/12/31 11:17:45 sebastian Exp $ */
 
 /*
  * HTML entity resources:
@@ -1199,14 +1199,25 @@ encode_amp:
 					} else {
 						if (*s == '#') { /* numeric entities */
 							s++;
-							while (s < e) {
-								if (!isdigit(*s++)) {
-									goto encode_amp;
+							/* Hex (&#x5A;) */
+							if (*s == 'x' || *s == 'X') {
+								s++;
+								while (s < e) {
+									if (!isxdigit((int)*(unsigned char *)s++)) {
+										goto encode_amp;
+									}
+								}
+							/* Dec (&#90;)*/
+							} else {
+								while (s < e) {
+									if (!isdigit((int)*(unsigned char *)s++)) {
+										goto encode_amp;
+									}
 								}
 							}
 						} else { /* text entities */
 							while (s < e) {
-								if (!isalnum(*s++)) {
+								if (!isalnum((int)*(unsigned char *)s++)) {
 									goto encode_amp;
 								}
 							}

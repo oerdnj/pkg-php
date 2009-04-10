@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2008 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2009 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_compile.h,v 1.316.2.8.2.13 2007/12/31 07:20:02 sebastian Exp $ */
+/* $Id: zend_compile.h,v 1.316.2.8.2.16 2009/01/21 10:15:46 dmitry Exp $ */
 
 #ifndef ZEND_COMPILE_H
 #define ZEND_COMPILE_H
@@ -600,6 +600,7 @@ int zendlex(znode *zendlval TSRMLS_DC);
 #define ZEND_PARSED_FUNCTION_CALL		(1<<3)
 #define ZEND_PARSED_VARIABLE			(1<<4)
 #define ZEND_PARSED_REFERENCE_VARIABLE	(1<<5)
+#define ZEND_PARSED_NEW					(1<<6)
 
 
 /* unset types */
@@ -658,6 +659,7 @@ int zendlex(znode *zendlval TSRMLS_DC);
 #define ZEND_ARG_SEND_BY_REF (1<<0)
 #define ZEND_ARG_COMPILE_TIME_BOUND (1<<1)
 #define ZEND_ARG_SEND_FUNCTION (1<<2)
+#define ZEND_ARG_SEND_SILENT   (1<<3)
 
 #define ZEND_SEND_BY_VAL     0
 #define ZEND_SEND_BY_REF     1
@@ -685,6 +687,7 @@ int zendlex(znode *zendlval TSRMLS_DC);
 
 
 #define ZEND_RETURNS_FUNCTION 1<<0
+#define ZEND_RETURNS_NEW      1<<1
 
 END_EXTERN_C()
 

@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2008 The PHP Group                                |
+  | Copyright (c) 1997-2009 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_prop.c,v 1.23.2.5.2.4 2007/12/31 07:20:08 sebastian Exp $ 
+  $Id: mysqli_prop.c,v 1.23.2.5.2.6 2009/02/17 10:40:18 johannes Exp $ 
 */
 
 #ifdef HAVE_CONFIG_H
@@ -30,7 +30,7 @@
 #include "php_mysqli.h"
 
 #define CHECK_STATUS(value) \
-	if (((MYSQLI_RESOURCE *)obj->ptr)->status < value ) { \
+	if (!obj->ptr || ((MYSQLI_RESOURCE *)obj->ptr)->status < value ) { \
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Property access is not allowed yet"); \
 		ZVAL_NULL(*retval); \
 		return SUCCESS; \
@@ -134,7 +134,6 @@ static int link_client_info_read(mysqli_object *obj, zval **retval TSRMLS_DC)
 static int link_connect_errno_read(mysqli_object *obj, zval **retval TSRMLS_DC)
 {
 	ALLOC_ZVAL(*retval);
-	CHECK_STATUS(MYSQLI_STATUS_INITIALIZED);
 	ZVAL_LONG(*retval, (long)MyG(error_no));
 	return SUCCESS;
 }
@@ -144,8 +143,11 @@ static int link_connect_errno_read(mysqli_object *obj, zval **retval TSRMLS_DC)
 static int link_connect_error_read(mysqli_object *obj, zval **retval TSRMLS_DC)
 {
 	ALLOC_ZVAL(*retval);
-	CHECK_STATUS(MYSQLI_STATUS_INITIALIZED);
-	ZVAL_STRING(*retval, MyG(error_msg), 1);
+	if (MyG(error_msg)) {
+		ZVAL_STRING(*retval, MyG(error_msg), 1);
+	} else {
+		ZVAL_NULL(*retval);
+	}
 	return SUCCESS;
 }
 /* }}} */

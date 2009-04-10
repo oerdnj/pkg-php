@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: string.c,v 1.445.2.14.2.73 2008/01/16 08:35:59 tony2001 Exp $ */
+/* $Id: string.c,v 1.445.2.14.2.81 2009/02/14 07:00:24 moriyoshi Exp $ */
 
 /* Synced with php 3.0 revision 1.193 1999-06-16 [ssb] */
 
@@ -592,14 +592,12 @@ PHP_FUNCTION(nl_langinfo)
 #endif
 #ifdef DECIMAL_POINT
 		case DECIMAL_POINT:
-#endif
-#ifdef RADIXCHAR
+#elif defined(RADIXCHAR)
 		case RADIXCHAR:
 #endif
 #ifdef THOUSANDS_SEP
 		case THOUSANDS_SEP:
-#endif
-#ifdef THOUSEP
+#elif defined(THOUSEP)
 		case THOUSEP:
 #endif
 #ifdef GROUPING
@@ -1035,7 +1033,9 @@ PHP_FUNCTION(explode)
 	array_init(return_value);
 
 	if (! Z_STRLEN_PP(str)) {
-		add_next_index_stringl(return_value, "", sizeof("") - 1, 1);
+	  	if (limit >= 0 || argc == 2) {
+			add_next_index_stringl(return_value, "", sizeof("") - 1, 1);
+		} 
 		return;
 	}
 
@@ -1949,14 +1949,14 @@ PHP_FUNCTION(strrpos)
 
 	if (offset >= 0) {
 		if (offset > haystack_len) {
-			php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Offset is greater than the length of haystack string");
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Offset is greater than the length of haystack string");
 			RETURN_FALSE;
 		}
 		p = haystack + offset;
 		e = haystack + haystack_len - needle_len;
 	} else {
 		if (-offset > haystack_len) {
-			php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Offset is greater than the length of haystack string");
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Offset is greater than the length of haystack string");
 			RETURN_FALSE;
 		}
 
@@ -2025,7 +2025,7 @@ PHP_FUNCTION(strripos)
 		   Can also avoid tolower emallocs */
 		if (offset >= 0) {
 			if (offset > haystack_len) {
-				php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Offset is greater than the length of haystack string");
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Offset is greater than the length of haystack string");
 				RETURN_FALSE;
 			}
 			p = haystack + offset;
@@ -2033,7 +2033,7 @@ PHP_FUNCTION(strripos)
 		} else {
 			p = haystack;
 			if (-offset > haystack_len || offset < -INT_MAX) {
-				php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Offset is greater than the length of haystack string");
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Offset is greater than the length of haystack string");
 				RETURN_FALSE;
 			}
 			e = haystack + haystack_len + offset;
@@ -2058,7 +2058,7 @@ PHP_FUNCTION(strripos)
 		if (offset > haystack_len) {
 			efree(needle_dup);
 			efree(haystack_dup);
-			php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Offset is greater than the length of haystack string");
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Offset is greater than the length of haystack string");
 			RETURN_FALSE;
 		}
 		p = haystack_dup + offset;
@@ -2067,7 +2067,7 @@ PHP_FUNCTION(strripos)
 		if (-offset > haystack_len || offset < -INT_MAX) {
 			efree(needle_dup);
 			efree(haystack_dup);
-			php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Offset is greater than the length of haystack string");
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Offset is greater than the length of haystack string");
 			RETURN_FALSE;
 		}
 		p = haystack_dup;
@@ -2262,8 +2262,10 @@ PHP_FUNCTION(substr)
 	}
 	
 	f = Z_LVAL_PP(from);
-	if (f > Z_STRLEN_PP(str) || (f < 0 && -f > Z_STRLEN_PP(str))) {
+	if (f > Z_STRLEN_PP(str)) {
 		RETURN_FALSE;
+	} else if (f < 0 && -f > Z_STRLEN_PP(str)) {
+		f = 0;
 	}
 
 	if (l < 0 && (l + Z_STRLEN_PP(str) - f) < 0) {
@@ -4357,6 +4359,9 @@ PHPAPI size_t php_strip_tags_ex(char *rbuf, int len, int *stateptr, char *allow,
 			case '\0':
 				break;
 			case '<':
+				if (in_q) {
+					break;
+				}
 				if (isspace(*(p + 1)) && !allow_tag_spaces) {
 					goto reg_char;
 				}
@@ -4521,12 +4526,13 @@ PHPAPI size_t php_strip_tags_ex(char *rbuf, int len, int *stateptr, char *allow,
 				/* fall-through */
 
 			case 'l':
+			case 'L':
 
 				/* swm: If we encounter '<?xml' then we shouldn't be in
 				 * state == 2 (PHP). Switch back to HTML.
 				 */
 
-				if (state == 2 && p > buf+2 && *(p-1) == 'm' && *(p-2) == 'x') {
+				if (state == 2 && p > buf+2 && strncasecmp(p-2, "xm", 2) == 0) {
 					state = 1;
 					break;
 				}
@@ -4916,7 +4922,7 @@ PHP_FUNCTION(str_pad)
 
 	/* If resulting string turns out to be shorter than input string,
 	   we simply copy the input and return. */
-	if (Z_LVAL_PP(pad_length) < 0 || num_pad_chars < 0) {
+	if (Z_LVAL_PP(pad_length) <= 0 || num_pad_chars <= 0) {
 		RETURN_ZVAL(*input, 1, 0);
 	}
 

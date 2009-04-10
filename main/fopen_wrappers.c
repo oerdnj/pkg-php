@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: fopen_wrappers.c,v 1.175.2.3.2.19 2008/01/29 14:23:19 dmitry Exp $ */
+/* $Id: fopen_wrappers.c,v 1.175.2.3.2.23 2009/02/10 16:14:27 iliaa Exp $ */
 
 /* {{{ includes
  */
@@ -528,7 +528,9 @@ PHPAPI FILE *php_fopen_with_path(const char *filename, const char *mode, const c
 			*end = '\0';
 			end++;
 		}
-		snprintf(trypath, MAXPATHLEN, "%s/%s", ptr, filename);
+		if (snprintf(trypath, MAXPATHLEN, "%s/%s", ptr, filename) >= MAXPATHLEN) {
+			php_error_docref(NULL TSRMLS_CC, E_NOTICE, "%s/%s path was truncated to %d", ptr, filename, MAXPATHLEN);
+		}
 		if (PG(safe_mode)) {
 			if (VCWD_STAT(trypath, &sb) == 0) {
 				/* file exists ... check permission */
@@ -601,6 +603,14 @@ PHPAPI char *php_strip_url_passwd(char *url)
  */
 PHPAPI char *expand_filepath(const char *filepath, char *real_path TSRMLS_DC)
 {
+	return expand_filepath_ex(filepath, real_path, NULL, 0 TSRMLS_CC);
+}
+/* }}} */
+
+/* {{{ expand_filepath_ex
+ */
+PHPAPI char *expand_filepath_ex(const char *filepath, char *real_path, const char *relative_to, size_t relative_to_len TSRMLS_DC)
+{
 	cwd_state new_state;
 	char cwd[MAXPATHLEN];
 	int copy_len;
@@ -611,7 +621,16 @@ PHPAPI char *expand_filepath(const char *filepath, char *real_path TSRMLS_DC)
 		cwd[0] = '\0';
 	} else {
 		const char *iam = SG(request_info).path_translated;
-		char *result = VCWD_GETCWD(cwd, MAXPATHLEN);
+		const char *result;
+		if (relative_to) {
+			if (relative_to_len > MAXPATHLEN-1U) {
+				return NULL;
+			}
+			result = relative_to;
+			memcpy(cwd, relative_to, relative_to_len+1U);
+		} else {
+			result = VCWD_GETCWD(cwd, MAXPATHLEN);
+		}
 
 		if (!result && (iam != filepath)) {
 			int fdtest = -1;

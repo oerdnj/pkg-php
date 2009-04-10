@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: credits.c,v 1.36.2.4.2.6 2008/04/10 05:32:26 philip Exp $ */
+/* $Id: credits.c,v 1.36.2.4.2.9 2008/12/31 11:17:44 sebastian Exp $ */
 
 #include "php.h"
 #include "info.h"
@@ -65,7 +65,7 @@ PHPAPI void php_print_credits(int flag TSRMLS_DC)
 		php_info_print_table_header(2, "Contribution", "Authors");
 		CREDIT_LINE("Zend Scripting Language Engine", "Andi Gutmans, Zeev Suraski");
 		CREDIT_LINE("Extension Module API", "Andi Gutmans, Zeev Suraski, Andrei Zmievski");
-		CREDIT_LINE("UNIX Build and Modularization", "Stig Bakken, Sascha Schumann");
+		CREDIT_LINE("UNIX Build and Modularization", "Stig Bakken, Sascha Schumann, Jani Taskinen");
 		CREDIT_LINE("Win32 Port", "Shane Caraveo, Zeev Suraski, Wez Furlong");
 		CREDIT_LINE("Server API (SAPI) Abstraction Layer", "Andi Gutmans, Shane Caraveo, Zeev Suraski");
 		CREDIT_LINE("Streams Abstraction Layer", "Wez Furlong, Sara Golemon");
@@ -114,7 +114,7 @@ PHPAPI void php_print_credits(int flag TSRMLS_DC)
 		/* Website Team */
 		php_info_print_table_start();
 		php_info_print_table_header(1, "PHP Website Team");
-		php_info_print_table_row(1, "Hannes Magnusson, Colin Viebrock, Jim Winstead");
+		php_info_print_table_row(1, "Rasmus Lerdorf, Hannes Magnusson, Philip Olson");
 		php_info_print_table_end();
 	}
 

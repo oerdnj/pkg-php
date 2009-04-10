@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2008 The PHP Group                                |
+   | Copyright (c) 1997-2009 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_streams.h,v 1.103.2.1.2.5 2007/12/31 07:20:15 sebastian Exp $ */
+/* $Id: php_streams.h,v 1.103.2.1.2.9 2008/12/31 11:17:47 sebastian Exp $ */
 
 #ifndef PHP_STREAMS_H
 #define PHP_STREAMS_H
@@ -181,6 +181,10 @@ struct _php_stream_wrapper	{
 
 #define PHP_STREAM_FLAG_NO_CLOSE					32
 	
+#define PHP_STREAM_FLAG_IS_DIR						64
+
+#define PHP_STREAM_FLAG_NO_FCLOSE					128
+
 struct _php_stream  {
 	php_stream_ops *ops;
 	void *abstract;  		/* convenience pointer for abstraction */
