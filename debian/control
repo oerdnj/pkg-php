@@ -5,7 +5,7 @@ Maintainer: Debian PHP Maintainers <pkg-php-maint@lists.alioth.debian.org>
 Uploaders: Adam Conrad <adconrad@0c3.net>, Jeroen van Wolffelaar <jeroen@wolffelaar.nl>, Ondřej Surý <ondrej@debian.org>, Sean Finney <seanius@debian.org>, Thijs Kinkhorst <thijs@debian.org>
 Build-Depends: apache2-prefork-dev, autoconf, automake1.4, bison, chrpath, debhelper (>= 5), firebird2.0-dev [i386 amd64 powerpc sparc] | firebird1.5-dev [i386 amd64] | firebird2-dev [i386 amd64], flex, freetds-dev, libapr1-dev (>= 1.2.7-8), libbz2-dev, libc-client-dev, libcurl4-openssl-dev | libcurl-dev, libdb4.7-dev | libdb4.6-dev, libexpat1-dev (>= 1.95.2-2.1), libfreetype6-dev, libgcrypt11-dev, libgd2-xpm-dev, libgmp3-dev, libjpeg62-dev, libkrb5-dev, libldap2-dev, libmcrypt-dev, libmhash-dev (>= 0.8.8), libmysqlclient15-dev, libncurses5-dev, libpam0g-dev, libpcre3-dev (>= 6.6), libpng12-dev, libpq-dev, libpspell-dev, librecode-dev, libsasl2-dev, libsnmp-dev, libsqlite0-dev, libssl-dev, libt1-dev, libtidy-dev, libtool, libwrap0-dev, libxmltok1-dev, libxml2-dev, libxslt1-dev (>= 1.0.18), quilt, re2c, unixodbc-dev, zlib1g-dev, tzdata
 Build-Conflicts: bind-dev
-Standards-Version: 3.8.0
+Standards-Version: 3.8.1
 Vcs-Git: git://git.debian.org/pkg-php/php.git
 Vcs-Browser: http://git.debian.org/?p=pkg-php/php.git
 Homepage: http://www.php.net/
