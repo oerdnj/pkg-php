@@ -116,6 +116,7 @@ Description: command-line interpreter for the php5 scripting language
 
 Package: php5-dev
 Depends: autoconf, automake1.4, libssl-dev, libtool, shtool, php5-common (>= ${binary:Version})
+Conflicts: ${libtool:Conflicts}
 Architecture: any
 Description: Files for PHP5 module development
  This package provides the files from the PHP5 source needed for compiling
