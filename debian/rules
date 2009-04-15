@@ -576,7 +576,7 @@ binary-arch: build install
 		echo "php:Provides=phpapi-$${phpapi}" >> debian/$$i.substvars; \
 	done; \
 	cat debian/modulelist | while read package extname dsoname; do \
-		echo "php:Depends=phpapi-$${phpapi}" >> debian/php5-$$package.substvars; \
+		echo "php:Depends=php5 | phpapi-$${phpapi}" >> debian/php5-$$package.substvars; \
 	done
 
 	for i in cgi cli; do \
