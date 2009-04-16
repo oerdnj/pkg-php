@@ -33,3 +33,4 @@ force_libmysqlclient_r.patch
 libedit_is_editline.patch
 bad_whatis_entries.patch
 sockets_spelling.patch
+curl_streams_sleep.patch
