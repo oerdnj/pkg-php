@@ -477,9 +477,9 @@ install: build
 	ext=`debian/php5-dev/usr/bin/php-config5 --extension-dir | cut -b2- `; \
 	for sapi in php5-cli php5-cgi libapache2-mod-php5 libapache2-mod-php5filter; do \
 		mkdir -p $(CURDIR)/debian/"$$sapi"/usr/share/lintian/overrides/; \
-		printf "%s: package-contains-empty-directory %s/\n" \
-			"$$sapi" "$${ext}" \
-			>> $(CURDIR)/debian/"$$sapi"/usr/share/lintian/overrides/"$$sapi"; \
+		sed "s/@sapi@/$$sapi/g;s,@extdir@,$$ext,g" \
+		    < $(CURDIR)/debian/php5-sapi.lintian-overrides \
+		    >> $(CURDIR)/debian/"$$sapi"/usr/share/lintian/overrides/"$$sapi"; \
 	done
 
 	# directories cleanup:
