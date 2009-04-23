@@ -59,6 +59,9 @@ ifeq ($(wildcard /usr/share/file/magic.mime), /usr/share/file/magic.mime)
 MAGIC_MIME = /usr/share/file/magic.mime
 endif
 
+# some other helpful (for readability at least) shorthand variables
+PHPIZE_BUILDDIR = debian/php5-dev/usr/lib/php5/build
+
 LTMAIN_DIR=$(shell dpkg -L libtool | sed -n 's,/ltmain\.sh$$,,g;T;s,^/usr/,,;p')
 ifeq ($(LTMAIN_DIR), share/libtool)
 LIBTOOL_CONFLICTS:=libtool (>= 2.2)
@@ -449,16 +452,11 @@ install: build
 	done
 	[ "$(LTMAIN_DIR)" ] || { echo "Could not determine the path to ltmain.sh" >&2 ; exit ; }
 	# shipping duplicate files from other packages is hell for security audits
-	rm debian/php5-dev/usr/lib/php5/build/config.guess && \
-	  ln -s ../../../share/misc/config.guess debian/php5-dev/usr/lib/php5/build/config.guess
-	rm debian/php5-dev/usr/lib/php5/build/config.sub && \
-	  ln -s ../../../share/misc/config.sub debian/php5-dev/usr/lib/php5/build/config.sub
-	rm debian/php5-dev/usr/lib/php5/build/libtool.m4 && \
-	  ln -s ../../../share/aclocal/libtool.m4 debian/php5-dev/usr/lib/php5/build/libtool.m4
-	rm debian/php5-dev/usr/lib/php5/build/ltmain.sh && \
-	  ln -s ../../../$(LTMAIN_DIR)/ltmain.sh debian/php5-dev/usr/lib/php5/build/ltmain.sh
-	rm debian/php5-dev/usr/lib/php5/build/shtool && \
-	  ln -s ../../../bin/shtool debian/php5-dev/usr/lib/php5/build/shtool
+	ln -sf /usr/share/misc/config.guess $(PHPIZE_BUILDDIR)/config.guess
+	ln -sf /usr/share/misc/config.sub $(PHPIZE_BUILDDIR)/config.sub
+	ln -sf /usr/share/aclocal/libtool.m4 $(PHPIZE_BUILDDIR)/libtool.m4
+	ln -sf /usr/$(LTMAIN_DIR)/ltmain.sh $(PHPIZE_BUILDDIR)/ltmain.sh
+	ln -sf /usr/bin/shtool $(PHPIZE_BUILDDIR)/shtool
 	# make php-dev stuff versioned
 	for i in php-config phpize; do \
 		mv debian/php5-dev/usr/bin/$$i debian/php5-dev/usr/bin/"$$i"5; \
