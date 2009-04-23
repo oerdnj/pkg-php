@@ -1,18 +1,20 @@
---- php5-5.2.9.dfsg.1.orig/build/build2.mk
-+++ php5-5.2.9.dfsg.1/build/build2.mk
-@@ -52,6 +52,15 @@ $(TOUCH_FILES):
+upstream ships an out of date version of libtool.  this ensures that
+we build against an up-to-date version of libtool by running libtoolize
+as part of our build process (this is called indirectly via ./buildconf.sh
+from debian/rules)
+
+note that we don't touch the libtool.m4 that they ship here, and this file 
+gets included in the build process as part of the phpize stuff.  however,
+this is solved in ./debian/rules where it's overwritten with a symlink.
+--- php.orig/build/build2.mk
++++ php/build/build2.mk
+@@ -52,7 +52,8 @@
  
  aclocal.m4: configure.in acinclude.m4
  	@echo rebuilding $@
-+	@libtoolize=`./build/shtool path glibtoolize libtoolize`; \
-+	if $$libtoolize --help | grep -q -- --install; then \
-+	  $$libtoolize --copy --install --automake --force; \
-+	else \
-+	  $$libtoolize --copy --automake --force; \
-+	fi; \
-+	ltpath=`dirname $$libtoolize`; \
-+	ltfile=`cd $$ltpath/../share/aclocal; pwd`/libtool.m4; \
-+	cp $$ltfile ./build/libtool.m4
- 	cat acinclude.m4 ./build/libtool.m4 > $@
+-	cat acinclude.m4 ./build/libtool.m4 > $@
++	libtoolize --copy --install --automake --force
++	aclocal
  
  configure: aclocal.m4 configure.in $(config_m4_files)
+ 	@echo rebuilding $@
