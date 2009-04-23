@@ -1,12 +1,30 @@
-php5 (5.2.9.dfsg.1-2) UNRELEASED; urgency=low
+php5 (5.2.9.dfsg.1-2) unstable; urgency=low
 
-  [ Sean Finney ]
-  * NOT RELEASED YET
+  [ Mark A. Hershberger ]
+  * fix up clean target
 
   [ Thijs Kinkhorst ]
   * Update package sections to match override.
 
- -- Thijs Kinkhorst <thijs@debian.org>  Thu, 26 Mar 2009 13:11:35 +0100
+  [ Raphael Geissert ]
+  * Detect the path to ltmain.sh at build time and set conflicts
+    appropriately
+  * Add libdb4.7-dev as an ORed build dependency to fix FTBFS
+  * Update the Vcs-* fields to reflect the move from svn to git
+  * Turn the phpapi dependencies into php5 | phpapi to fix
+    installability issues
+  * Bump Standards-Version to 3.8.1, no change needed
+  * Fix a typo in the code: s/adress/address
+  * Add a set of lintian overrides for some FP spelling-error-in-binary
+  * Avoid a useless 15 seconds sleep on php_curl_stream_read under heavy
+    load
+
+  [ Sean Finney ]
+  * update our libtool patching to be a little cleaner and smarter
+  * cleanup some of the phpize "cleanup" code in debian/rules
+  * slightly refined way for supporting old/new libtool dirs
+
+ -- Sean Finney <seanius@debian.org>  Thu, 23 Apr 2009 21:13:03 +0200
 
 php5 (5.2.9.dfsg.1-1) unstable; urgency=low
 
