@@ -62,13 +62,17 @@ endif
 # some other helpful (for readability at least) shorthand variables
 PHPIZE_BUILDDIR = debian/php5-dev/usr/lib/php5/build
 
-LTMAIN_DIR=$(shell dpkg -L libtool | sed -n 's,/ltmain\.sh$$,,g;T;s,^/usr/,,;p')
-ifeq ($(LTMAIN_DIR), share/libtool)
+# support new (>= 2.2) and older versions of libtool for backporting ease
+LIBTOOL_DIRS = /usr/share/libtool/config /usr/share/libtool
+LTMAIN = $(firstword $(wildcard $(foreach d,$(LIBTOOL_DIRS),$d/ltmain.sh)))
+LTMAIN_DIR = $(dir $(LTMAIN))
+
+ifeq ($(LTMAIN_DIR), /usr/share/libtool/)
 LIBTOOL_CONFLICTS:=libtool (>= 2.2)
-else ifeq ($(LTMAIN_DIR), share/libtool/config)
+else ifeq ($(LTMAIN_DIR), /usr/share/libtool/config/)
 LIBTOOL_CONFLICTS:=libtool (<< 2.2)
 else
-LIBTOOL_CONFLICTS:=
+LIBTOOL_CONFLICTS:=$(error "could not resolve path to ltmain.sh")
 endif
 
 # only enable interbase support for i386/amd64/powerpc/sparc
@@ -450,12 +454,11 @@ install: build
 	for i in Makefile.global acinclude.m4 mkdep.awk phpize.m4 scan_makefile_in.awk; do \
 		chmod 644 debian/php5-dev/usr/lib/php5/build/$$i; \
 	done
-	[ "$(LTMAIN_DIR)" ] || { echo "Could not determine the path to ltmain.sh" >&2 ; exit ; }
 	# shipping duplicate files from other packages is hell for security audits
 	ln -sf /usr/share/misc/config.guess $(PHPIZE_BUILDDIR)/config.guess
 	ln -sf /usr/share/misc/config.sub $(PHPIZE_BUILDDIR)/config.sub
 	ln -sf /usr/share/aclocal/libtool.m4 $(PHPIZE_BUILDDIR)/libtool.m4
-	ln -sf /usr/$(LTMAIN_DIR)/ltmain.sh $(PHPIZE_BUILDDIR)/ltmain.sh
+	ln -sf $(LTMAIN_DIR)ltmain.sh $(PHPIZE_BUILDDIR)/ltmain.sh
 	ln -sf /usr/bin/shtool $(PHPIZE_BUILDDIR)/shtool
 	# make php-dev stuff versioned
 	for i in php-config phpize; do \
