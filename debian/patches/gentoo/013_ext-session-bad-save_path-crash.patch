@@ -1,0 +1,17 @@
+013_ext-session-bad-save_path-crash.patch
+PHP_5_2
+http://cvs.php.net/viewvc.cgi/php-src/ext/session/mod_files.c?r1=1.100.2.3.2.12&r2=1.100.2.3.2.13&diff_format=u
+Fixed segfault on invalid session.save_path
+
+diff -r f582e5464d52 -r a2fba1cfd647 ext/session/mod_files.c
+--- a/ext/session/mod_files.c	Fri Apr 10 11:42:59 2009 +0200
++++ b/ext/session/mod_files.c	Fri Apr 10 11:44:25 2009 +0200
+@@ -295,7 +295,7 @@
+ 		argv[argc++] = last;
+ 		last = ++p;
+ 		p = strchr(p, ';');
+-		if (argc > 2) break;
++		if (argc > 1) break;
+ 	}
+ 	argv[argc++] = last;
+ 

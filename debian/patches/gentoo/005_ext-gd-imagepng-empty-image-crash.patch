@@ -1,0 +1,47 @@
+005_ext-gd-imagepng-empty-image-crash.patch
+PHP_5_2
+http://cvs.php.net/viewvc.cgi/php-src/ext/gd/libgd/gd_png.c?r1=1.17.4.2.2.6&r2=1.17.4.2.2.7&diff_format=u
+http://cvs.php.net/viewvc.cgi/php-src/ext/gd/tests/bug45799.phpt?view=markup&revision=1.1
+http://bugs.php.net/bug.php?id=45799
+Fixed bug #45799 (imagepng() crashes on empty image)
+diff -r de141004e0e2 -r 9db107056020 ext/gd/libgd/gd_png.c
+--- a/ext/gd/libgd/gd_png.c	Fri Apr 10 11:22:20 2009 +0200
++++ b/ext/gd/libgd/gd_png.c	Fri Apr 10 11:25:01 2009 +0200
+@@ -535,6 +535,10 @@
+ 				++colors;
+ 			}
+ 		}
++		if (colors == 0) {
++			php_gd_error("gd-png error: no colors in palette");
++			goto bail;
++		}
+ 		if (colors < im->colorsTotal) {
+ 			remap = TRUE;
+ 		}
+@@ -732,6 +736,7 @@
+ 		}
+ 	}
+ 	/* 1.6.3: maybe we should give that memory BACK! TBB */
++ bail:
+ 	png_destroy_write_struct(&png_ptr, &info_ptr);
+ }
+ 
+diff -r de141004e0e2 -r 9db107056020 ext/gd/tests/bug45799.phpt
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/ext/gd/tests/bug45799.phpt	Fri Apr 10 11:25:01 2009 +0200
+@@ -0,0 +1,15 @@
++--TEST--
++Bug #45799 (imagepng() crashes on empty image).
++--SKIPIF--
++<?php
++	if (!extension_loaded('gd')) die("skip gd extension not available\n");
++?>
++--FILE--
++<?php
++$img = imagecreate(500,500);
++imagepng($img);
++imagedestroy($img);
++?>
++--EXPECTF--
++
++Warning: imagepng(): gd-png error: no colors in palette in %s on line %d

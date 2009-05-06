@@ -1,0 +1,17 @@
+008_ext-mbstring-mem-alignment-fix.patch
+PHP_5_2
+http://cvs.php.net/viewvc.cgi/php-src/ext/mbstring/oniguruma/regint.h?r1=1.5.4.7&r2=1.5.4.8&diff_format=u
+http://bugs.php.net/bug.php?id=47721
+Fixed bug #47721 (Aligment issues in mbstring and sysvshm extension)
+diff -r c6515e04bd26 -r f5a102df944d ext/mbstring/oniguruma/regint.h
+--- a/ext/mbstring/oniguruma/regint.h	Fri Apr 10 11:34:09 2009 +0200
++++ b/ext/mbstring/oniguruma/regint.h	Fri Apr 10 11:35:06 2009 +0200
+@@ -256,7 +256,7 @@
+ #define NULL_UCHARP                   ((UChar* )0)
+ 
+ #ifndef PLATFORM_UNALIGNED_WORD_ACCESS
+-#define WORD_ALIGNMENT_SIZE       SIZEOF_INT
++#define WORD_ALIGNMENT_SIZE       SIZEOF_LONG
+ 
+ #define GET_ALIGNMENT_PAD_SIZE(addr,pad_size) do {\
+   (pad_size) = WORD_ALIGNMENT_SIZE \

@@ -1,0 +1,17 @@
+007_ext-sysvshm-mem-alignment-fix.patch
+PHP_5_2
+http://cvs.php.net/viewvc.cgi/php-src/ext/sysvshm/sysvshm.c?r1=1.70.2.2.2.7&r2=1.70.2.2.2.8&diff_format=u
+http://bugs.php.net/bug.php?id=47721
+Fixed bug #47721 (Aligment issues in mbstring and sysvshm extension)
+diff -r 85ef4c1844f0 -r c6515e04bd26 ext/sysvshm/sysvshm.c
+--- a/ext/sysvshm/sysvshm.c	Fri Apr 10 11:29:41 2009 +0200
++++ b/ext/sysvshm/sysvshm.c	Fri Apr 10 11:34:09 2009 +0200
+@@ -375,7 +375,7 @@
+ 	long total_size;
+ 	long shm_varpos;
+ 
+-	total_size = ((long) (len + sizeof(sysvshm_chunk) - 1) / 4) * 4 + 4; /* 4-byte alligment */
++	total_size = ((long) (len + sizeof(sysvshm_chunk) - 1) / sizeof(long)) * sizeof(long) + sizeof(long); /* long alligment */
+ 
+ 	if ((shm_varpos = php_check_shm_data(ptr, key)) > 0) {
+ 		php_remove_shm_data(ptr, shm_varpos);

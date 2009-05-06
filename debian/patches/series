@@ -34,3 +34,15 @@ libedit_is_editline.patch
 bad_whatis_entries.patch
 sockets_spelling.patch
 curl_streams_sleep.patch
+gentoo/003_ext-zip-memory-corruptions.patch
+gentoo/005_ext-gd-imagepng-empty-image-crash.patch
+gentoo/006_ext-curl-set_opt-crash.patch
+gentoo/007_ext-sysvshm-mem-alignment-fix.patch
+gentoo/008_ext-mbstring-mem-alignment-fix.patch
+gentoo/009_ob-memory-leaks.patch
+gentoo/010_ext-openssl-utf8-conversion-crash.patch
+gentoo/011_strnlen-compile-warning-fix.patch
+gentoo/013_ext-session-bad-save_path-crash.patch
+gentoo/015_zend-double-efree-fix.patch
+gentoo/016_ext-curl-open_basedir-bypass.patch
+gentoo/012_ext-xmlrpc-bad-callback-crash.patch
