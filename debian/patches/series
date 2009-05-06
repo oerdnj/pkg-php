@@ -28,3 +28,5 @@ manpage_spelling.patch
 force_libmysqlclient_r.patch
 libedit_is_editline.patch
 bad_whatis_entries.patch
+gentoo/006_ext-curl-set_opt-crash.patch
+gentoo/009_ob-memory-leaks.patch
