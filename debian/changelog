@@ -1,3 +1,15 @@
+php5 (5.2.9.dfsg.1-3) unstable; urgency=low
+
+  [ Sean Finney ]
+  * add gbp.conf for use with git-buildpackage
+
+  [ Raphael Geissert ]
+  * Pick some bug fixing patches from Gentoo (thanks!)
+  * Make phpize copy and use the separate m4 files needed by libtool 2.2
+    (Closes: #527004)
+
+ -- Sean Finney <seanius@debian.org>  Mon, 11 May 2009 22:09:11 +0200
+
 php5 (5.2.9.dfsg.1-2) unstable; urgency=low
 
   [ Mark A. Hershberger ]
