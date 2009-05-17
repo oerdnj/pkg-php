@@ -104,8 +104,7 @@ Provides: ${php:Provides}
 Suggests: php-pear
 Description: command-line interpreter for the php5 scripting language
  This package provides the /usr/bin/php5 command interpreter, useful for
- testing PHP scripts from a shell, or perhaps even performing general
- shell scripting tasks, if you're frightened of Perl and Python.
+ testing PHP scripts from a shell or performing general shell scripting tasks.
  .
  ${php:Extensions}
  .
