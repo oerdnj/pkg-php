@@ -16,7 +16,7 @@ Index: php/scripts/phpize.in
 +    LIBTOOL_FILES="libtool.m4 ltoptions.m4 ltsugar.m4 ltversion.m4 lt~obsolete.m4"
 +else
 +    LIBTOOL_FILES="libtool.m4"
-+f
++fi
  FILES="acinclude.m4 Makefile.global config.sub config.guess ltmain.sh run-tests*.php"
  CLEAN_FILES="$FILES *.o *.lo *.la .deps .libs/ build/ include/ modules/ install-sh \
  	mkinstalldirs missing config.nice config.sub config.guess configure configure.in \
