@@ -1,3 +1,9 @@
+php5 (5.2.10.dfsg.1-1) unstable; urgency=low
+
+  * New Upstream Version
+
+ -- Sean Finney <seanius@debian.org>  Tue, 23 Jun 2009 22:03:59 +0200
+
 php5 (5.2.9.dfsg.1-4) unstable; urgency=high
 
   [ Thijs Kinkhorst ]
