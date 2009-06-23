@@ -1,5 +1,5 @@
---- php5-5.2.9.dfsg.1.orig/ext/recode/recode.c
-+++ php5-5.2.9.dfsg.1/ext/recode/recode.c
+--- php.orig/ext/recode/recode.c
++++ php/ext/recode/recode.c
 @@ -136,7 +136,7 @@ PHP_FUNCTION(recode_string)
  	int req_len, str_len;
  	char *req, *str;

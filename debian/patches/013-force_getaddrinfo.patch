@@ -1,6 +1,6 @@
---- php5-5.2.9.dfsg.1.orig/configure.in
-+++ php5-5.2.9.dfsg.1/configure.in
-@@ -596,50 +596,50 @@ vsnprintf \
+--- php.orig/configure.in
++++ php/configure.in
+@@ -601,50 +601,50 @@ vsnprintf \
  
  dnl Check for getaddrinfo, should be a better way, but...
  dnl Also check for working getaddrinfo

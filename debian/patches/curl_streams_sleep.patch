@@ -1,8 +1,6 @@
-Index: php/ext/curl/streams.c
-===================================================================
 --- php.orig/ext/curl/streams.c
 +++ php/ext/curl/streams.c
-@@ -166,7 +166,8 @@ static size_t php_curl_stream_read(php_s
+@@ -167,7 +167,8 @@ static size_t php_curl_stream_read(php_s
  			tv.tv_sec = 15; /* TODO: allow this to be configured from the script */
  
  			/* wait for data */
@@ -12,7 +10,7 @@ Index: php/ext/curl/streams.c
  				case -1:
  					/* error */
  					return 0;
-@@ -179,7 +180,8 @@ static size_t php_curl_stream_read(php_s
+@@ -180,7 +181,8 @@ static size_t php_curl_stream_read(php_s
  						curlstream->mcode = curl_multi_perform(curlstream->multi, &curlstream->pending);
  					} while (curlstream->mcode == CURLM_CALL_MULTI_PERFORM);
  			}

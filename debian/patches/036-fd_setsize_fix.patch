@@ -1,6 +1,6 @@
---- php5-5.2.9.dfsg.1.orig/ext/sockets/sockets.c
-+++ php5-5.2.9.dfsg.1/ext/sockets/sockets.c
-@@ -569,6 +569,7 @@ static int php_sock_array_to_fd_set(zval
+--- php.orig/ext/sockets/sockets.c
++++ php/ext/sockets/sockets.c
+@@ -572,6 +572,7 @@ static int php_sock_array_to_fd_set(zval
  
  		php_sock = (php_socket*) zend_fetch_resource(element TSRMLS_CC, -1, le_socket_name, NULL, 1, le_socket);
  		if (!php_sock) continue; /* If element is not a resource, skip it */
@@ -8,9 +8,9 @@
  
  		PHP_SAFE_FD_SET(php_sock->bsd_socket, fds);
  		if (php_sock->bsd_socket > *max_fd) {
---- php5-5.2.9.dfsg.1.orig/ext/standard/streamsfuncs.c
-+++ php5-5.2.9.dfsg.1/ext/standard/streamsfuncs.c
-@@ -596,6 +596,9 @@ static int stream_array_to_fd_set(zval *
+--- php.orig/ext/standard/streamsfuncs.c
++++ php/ext/standard/streamsfuncs.c
+@@ -603,6 +603,9 @@ static int stream_array_to_fd_set(zval *
  		 * is not displayed.
  		 * */
  		if (SUCCESS == php_stream_cast(stream, PHP_STREAM_AS_FD_FOR_SELECT | PHP_STREAM_CAST_INTERNAL, (void*)&this_fd, 1) && this_fd >= 0) {

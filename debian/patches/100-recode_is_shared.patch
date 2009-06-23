@@ -1,5 +1,5 @@
---- php5-5.2.9.dfsg.1.orig/ext/recode/config9.m4
-+++ php5-5.2.9.dfsg.1/ext/recode/config9.m4
+--- php.orig/ext/recode/config9.m4
++++ php/ext/recode/config9.m4
 @@ -8,6 +8,6 @@ if test "$PHP_RECODE" != "no"; then
    test "$PHP_MYSQL" != "no" && recode_conflict="$recode_conflict mysql"
  

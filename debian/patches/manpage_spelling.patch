@@ -1,5 +1,5 @@
---- php5-5.2.9.dfsg.1.orig/sapi/cli/php.1.in
-+++ php5-5.2.9.dfsg.1/sapi/cli/php.1.in
+--- php.orig/sapi/cli/php.1.in
++++ php/sapi/cli/php.1.in
 @@ -69,7 +69,7 @@ specified by \-F to be executed.
  You can access the input line by \fB$argn\fP. While processing the input lines
  .B $argi 

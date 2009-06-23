@@ -1,6 +1,6 @@
---- php5-5.2.9.dfsg.1.orig/ext/readline/config.m4
-+++ php5-5.2.9.dfsg.1/ext/readline/config.m4
-@@ -64,7 +64,7 @@ if test "$PHP_READLINE" && test "$PHP_RE
+--- php.orig/ext/readline/config.m4
++++ php/ext/readline/config.m4
+@@ -55,7 +55,7 @@ if test "$PHP_READLINE" && test "$PHP_RE
  elif test "$PHP_LIBEDIT" != "no"; then
  
    for i in $PHP_LIBEDIT /usr/local /usr; do
@@ -9,8 +9,8 @@
    done
  
    if test -z "$LIBEDIT_DIR"; then
---- php5-5.2.9.dfsg.1.orig/ext/readline/readline.c
-+++ php5-5.2.9.dfsg.1/ext/readline/readline.c
+--- php.orig/ext/readline/readline.c
++++ php/ext/readline/readline.c
 @@ -33,8 +33,10 @@
  #define rl_completion_matches completion_matches
  #endif

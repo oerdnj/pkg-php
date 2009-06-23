@@ -1,5 +1,5 @@
---- php5-5.2.9.dfsg.1.orig/ext/soap/tests/server009.phpt
-+++ php5-5.2.9.dfsg.1/ext/soap/tests/server009.phpt
+--- php.orig/ext/soap/tests/server009.phpt
++++ php/ext/soap/tests/server009.phpt
 @@ -7,6 +7,10 @@ SOAP Server 9: setclass and setpersisten
  		die('skip this test needs session extension');
  	}
@@ -11,8 +11,8 @@
  --FILE--
  <?php
  class foo {
---- php5-5.2.9.dfsg.1.orig/ext/standard/tests/general_functions/phpinfo.phpt
-+++ php5-5.2.9.dfsg.1/ext/standard/tests/general_functions/phpinfo.phpt
+--- php.orig/ext/standard/tests/general_functions/phpinfo.phpt
++++ php/ext/standard/tests/general_functions/phpinfo.phpt
 @@ -1,5 +1,7 @@
  --TEST--
  phpinfo()
@@ -29,8 +29,8 @@
  PHP API => %d
  PHP Extension => %d
  Zend Extension => %d
---- php5-5.2.9.dfsg.1.orig/ext/standard/tests/strings/moneyformat.phpt
-+++ php5-5.2.9.dfsg.1/ext/standard/tests/strings/moneyformat.phpt
+--- php.orig/ext/standard/tests/strings/moneyformat.phpt
++++ php/ext/standard/tests/strings/moneyformat.phpt
 @@ -5,6 +5,8 @@ money_format test
  	if (!function_exists('money_format') || !function_exists('setlocale')) {
  		die("SKIP money_format - not supported\n");

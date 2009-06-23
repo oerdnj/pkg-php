@@ -1,6 +1,6 @@
---- php5-5.2.9.dfsg.1.orig/ext/ldap/ldap.c
-+++ php5-5.2.9.dfsg.1/ext/ldap/ldap.c
-@@ -1334,7 +1334,7 @@ PHP_FUNCTION(ldap_explode_dn)
+--- php.orig/ext/ldap/ldap.c
++++ php/ext/ldap/ldap.c
+@@ -1335,7 +1335,7 @@ PHP_FUNCTION(ldap_explode_dn)
  	}
  
  	i=0;
@@ -9,7 +9,7 @@
  	count = i;
  
  	array_init(return_value);
-@@ -1344,7 +1344,8 @@ PHP_FUNCTION(ldap_explode_dn)
+@@ -1345,7 +1345,8 @@ PHP_FUNCTION(ldap_explode_dn)
  		add_index_string(return_value, i, ldap_value[i], 1);
  	}
  

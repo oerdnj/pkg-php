@@ -1,5 +1,5 @@
 --- /dev/null
-+++ php5-5.2.9.dfsg.1/php.ini-paranoid
++++ php/php.ini-paranoid
 @@ -0,0 +1,1504 @@
 +[PHP]
 +

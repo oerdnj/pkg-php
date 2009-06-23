@@ -1,8 +1,8 @@
 
 Save and restore umask across requests correctly.
 
---- php5-5.2.9.dfsg.1.orig/sapi/apache2handler/sapi_apache2.c
-+++ php5-5.2.9.dfsg.1/sapi/apache2handler/sapi_apache2.c
+--- php.orig/sapi/apache2handler/sapi_apache2.c
++++ php/sapi/apache2handler/sapi_apache2.c
 @@ -432,6 +432,19 @@ static apr_status_t php_server_context_c
  	return APR_SUCCESS;
  }

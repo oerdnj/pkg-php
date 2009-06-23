@@ -1,5 +1,5 @@
---- php5-5.2.9.dfsg.1.orig/php.ini-dist
-+++ php5-5.2.9.dfsg.1/php.ini-dist
+--- php.orig/php.ini-dist
++++ php/php.ini-dist
 @@ -510,7 +510,8 @@ user_dir =
  ; Whether or not to enable the dl() function.  The dl() function does NOT work
  ; properly in multithreaded servers, such as IIS or Zeus, and is automatically
@@ -10,8 +10,8 @@
  
  ; cgi.force_redirect is necessary to provide security running PHP as a CGI under
  ; most web servers.  Left undefined, PHP turns this on by default.  You can
---- php5-5.2.9.dfsg.1.orig/php.ini-recommended
-+++ php5-5.2.9.dfsg.1/php.ini-recommended
+--- php.orig/php.ini-recommended
++++ php/php.ini-recommended
 @@ -544,7 +544,9 @@ user_dir =
  ; Whether or not to enable the dl() function.  The dl() function does NOT work
  ; properly in multithreaded servers, such as IIS or Zeus, and is automatically

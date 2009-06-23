@@ -1,5 +1,5 @@
---- php5-5.2.9.dfsg.1.orig/ext/reflection/config.m4
-+++ php5-5.2.9.dfsg.1/ext/reflection/config.m4
+--- php.orig/ext/reflection/config.m4
++++ php/ext/reflection/config.m4
 @@ -2,7 +2,7 @@ dnl $Id: config.m4,v 1.4.2.3.2.1 2006/08
  dnl config.m4 for extension reflection
  

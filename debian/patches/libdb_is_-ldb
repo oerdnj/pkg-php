@@ -1,5 +1,5 @@
---- php5-5.2.9.dfsg.1.orig/ext/dba/config.m4
-+++ php5-5.2.9.dfsg.1/ext/dba/config.m4
+--- php.orig/ext/dba/config.m4
++++ php/ext/dba/config.m4
 @@ -306,7 +306,7 @@ if test "$PHP_DB4" != "no"; then
        break
      fi

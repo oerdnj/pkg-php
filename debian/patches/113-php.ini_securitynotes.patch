@@ -1,5 +1,5 @@
---- php5-5.2.9.dfsg.1.orig/php.ini-dist
-+++ php5-5.2.9.dfsg.1/php.ini-dist
+--- php.orig/php.ini-dist
++++ php/php.ini-dist
 @@ -166,6 +166,11 @@ allow_call_time_pass_reference = On
  ;
  ; Safe Mode
