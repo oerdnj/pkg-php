@@ -1,6 +1,6 @@
---- php5-5.2.9.dfsg.1.orig/configure.in
-+++ php5-5.2.9.dfsg.1/configure.in
-@@ -977,7 +977,7 @@ if test "$PHP_CLI" = "no"; then
+--- php.orig/configure.in
++++ php/configure.in
+@@ -991,7 +991,7 @@ if test "$PHP_CLI" = "no"; then
  fi
  
  PHP_ARG_WITH(pear, [whether to install PEAR],
@@ -9,7 +9,7 @@
    --without-pear          Do not install PEAR], DEFAULT, yes)
  
  if test "$PHP_PEAR" != "no"; then
-@@ -1011,7 +1011,7 @@ dnl
+@@ -1025,7 +1025,7 @@ dnl
    if test "$PHP_PEAR" = "DEFAULT" || test "$PHP_PEAR" = "yes"; then
      case $PHP_LAYOUT in
        GNU) PEAR_INSTALLDIR=$datadir/pear;;
@@ -18,7 +18,7 @@
      esac
    fi
  
-@@ -1066,12 +1066,12 @@ test "$program_suffix" = "NONE" && progr
+@@ -1080,12 +1080,12 @@ test "$program_suffix" = "NONE" && progr
  
  case $libdir in
    '${exec_prefix}/lib')
@@ -33,7 +33,7 @@
      ;;
  esac
  
-@@ -1136,7 +1136,7 @@ EXPANDED_SYSCONFDIR=`eval echo $sysconfd
+@@ -1150,7 +1150,7 @@ EXPANDED_SYSCONFDIR=`eval echo $sysconfd
  EXPANDED_DATADIR=$datadir
  EXPANDED_PHP_CONFIG_FILE_PATH=`eval echo "$PHP_CONFIG_FILE_PATH"`
  EXPANDED_PHP_CONFIG_FILE_SCAN_DIR=`eval echo "$PHP_CONFIG_FILE_SCAN_DIR"`
@@ -42,8 +42,8 @@
  
  exec_prefix=$old_exec_prefix
  libdir=$old_libdir
---- php5-5.2.9.dfsg.1.orig/ext/ext_skel
-+++ php5-5.2.9.dfsg.1/ext/ext_skel
+--- php.orig/ext/ext_skel
++++ php/ext/ext_skel
 @@ -70,7 +70,7 @@ if test -d "$extname" ; then
  fi
  
@@ -53,9 +53,9 @@
  fi
  
  ## convert skel_dir to full path
---- php5-5.2.9.dfsg.1.orig/ext/session/session.c
-+++ php5-5.2.9.dfsg.1/ext/session/session.c
-@@ -181,11 +181,11 @@ static PHP_INI_MH(OnUpdateSaveDir)
+--- php.orig/ext/session/session.c
++++ php/ext/session/session.c
+@@ -684,11 +684,11 @@ static PHP_INI_MH(OnUpdateSaveDir) /* {{
  PHP_INI_BEGIN()
  	STD_PHP_INI_BOOLEAN("session.bug_compat_42",    "1",         PHP_INI_ALL, OnUpdateBool,   bug_compat,         php_ps_globals,    ps_globals)
  	STD_PHP_INI_BOOLEAN("session.bug_compat_warn",  "1",         PHP_INI_ALL, OnUpdateBool,   bug_compat_warn,    php_ps_globals,    ps_globals)
@@ -64,13 +64,13 @@
  	STD_PHP_INI_ENTRY("session.name",               "PHPSESSID", PHP_INI_ALL, OnUpdateString, session_name,       php_ps_globals,    ps_globals)
  	PHP_INI_ENTRY("session.save_handler",           "files",     PHP_INI_ALL, OnUpdateSaveHandler)
  	STD_PHP_INI_BOOLEAN("session.auto_start",       "0",         PHP_INI_ALL, OnUpdateBool,   auto_start,         php_ps_globals,    ps_globals)
--	STD_PHP_INI_ENTRY("session.gc_probability",     "1",         PHP_INI_ALL, OnUpdateLong,    gc_probability,     php_ps_globals,    ps_globals)
+-	STD_PHP_INI_ENTRY("session.gc_probability",     "1",         PHP_INI_ALL, OnUpdateLong,   gc_probability,     php_ps_globals,    ps_globals)
 +	STD_PHP_INI_ENTRY("session.gc_probability",     "0",         PHP_INI_ALL, OnUpdateLong,    gc_probability,     php_ps_globals,    ps_globals)
- 	STD_PHP_INI_ENTRY("session.gc_divisor",         "100",       PHP_INI_ALL, OnUpdateLong,    gc_divisor,        php_ps_globals,    ps_globals)
- 	STD_PHP_INI_ENTRY("session.gc_maxlifetime",     "1440",      PHP_INI_ALL, OnUpdateLong,    gc_maxlifetime,     php_ps_globals,    ps_globals)
+ 	STD_PHP_INI_ENTRY("session.gc_divisor",         "100",       PHP_INI_ALL, OnUpdateLong,   gc_divisor,         php_ps_globals,    ps_globals)
+ 	STD_PHP_INI_ENTRY("session.gc_maxlifetime",     "1440",      PHP_INI_ALL, OnUpdateLong,   gc_maxlifetime,     php_ps_globals,    ps_globals)
  	PHP_INI_ENTRY("session.serialize_handler",      "php",       PHP_INI_ALL, OnUpdateSerializer)
---- php5-5.2.9.dfsg.1.orig/php.ini-dist
-+++ php5-5.2.9.dfsg.1/php.ini-dist
+--- php.orig/php.ini-dist
++++ php/php.ini-dist
 @@ -471,7 +471,7 @@ default_mimetype = "text/html"
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
@@ -171,8 +171,8 @@
  session.gc_divisor     = 100
  
  ; After this number of seconds, stored data will be seen as 'garbage' and
---- php5-5.2.9.dfsg.1.orig/php.ini-recommended
-+++ php5-5.2.9.dfsg.1/php.ini-recommended
+--- php.orig/php.ini-recommended
++++ php/php.ini-recommended
 @@ -522,7 +522,7 @@ default_mimetype = "text/html"
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
@@ -273,8 +273,8 @@
  session.gc_divisor     = 1000
  
  ; After this number of seconds, stored data will be seen as 'garbage' and
---- php5-5.2.9.dfsg.1.orig/sapi/caudium/config.m4
-+++ php5-5.2.9.dfsg.1/sapi/caudium/config.m4
+--- php.orig/sapi/caudium/config.m4
++++ php/sapi/caudium/config.m4
 @@ -26,8 +26,8 @@ if test "$PHP_CAUDIUM" != "no"; then
      AC_MSG_ERROR([Could not find a pike in $PHP_CAUDIUM/bin/])
    fi
@@ -297,8 +297,8 @@
    RESULT="  *** Pike binary used:         $PIKE
    *** Pike include dir(s) used: $PIKE_INCLUDE_DIR
    *** Pike version:             $PIKE_VERSION"
---- php5-5.2.9.dfsg.1.orig/sapi/cli/php.1.in
-+++ php5-5.2.9.dfsg.1/sapi/cli/php.1.in
+--- php.orig/sapi/cli/php.1.in
++++ php/sapi/cli/php.1.in
 @@ -306,13 +306,14 @@ Shows configuration for extension
  .B name
  .SH FILES
@@ -319,8 +319,8 @@
  .SH EXAMPLES
  .TP 5
  \fIphp -r 'echo "Hello World\\n";'\fP
---- php5-5.2.9.dfsg.1.orig/scripts/Makefile.frag
-+++ php5-5.2.9.dfsg.1/scripts/Makefile.frag
+--- php.orig/scripts/Makefile.frag
++++ php/scripts/Makefile.frag
 @@ -3,8 +3,8 @@
  # Build environment install
  #
@@ -332,8 +332,8 @@
  
  BUILD_FILES = \
  	scripts/phpize.m4 \
---- php5-5.2.9.dfsg.1.orig/scripts/php-config.in
-+++ php5-5.2.9.dfsg.1/scripts/php-config.in
+--- php.orig/scripts/php-config.in
++++ php/scripts/php-config.in
 @@ -5,8 +5,8 @@ prefix="@prefix@"
  exec_prefix="@exec_prefix@"
  version="@PHP_VERSION@"
@@ -345,8 +345,8 @@
  ldflags="@PHP_LDFLAGS@"
  libs="@EXTRA_LIBS@"
  extension_dir='@EXTENSION_DIR@'
---- php5-5.2.9.dfsg.1.orig/scripts/phpize.in
-+++ php5-5.2.9.dfsg.1/scripts/phpize.in
+--- php.orig/scripts/phpize.in
++++ php/scripts/phpize.in
 @@ -3,8 +3,8 @@
  # Variable declaration
  prefix='@prefix@'
