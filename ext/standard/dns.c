@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: dns.c,v 1.70.2.7.2.9 2009/01/08 17:20:21 felipe Exp $ */
+/* $Id: dns.c,v 1.70.2.7.2.11 2009/05/20 12:09:33 jani Exp $ */
 
 /* {{{ includes */
 #include "php.h"
@@ -244,7 +244,7 @@ static char *php_gethostbyname(char *name)
 }
 /* }}} */
 
-#if HAVE_RES_SEARCH && !(defined(__BEOS__)||defined(PHP_WIN32) || defined(NETWARE))
+#if HAVE_RES_SEARCH && !(defined(__BEOS__) || defined(PHP_WIN32) || defined(NETWARE))
 
 /* {{{ proto int dns_check_record(string host [, string type])
    Check DNS records corresponding to a given Internet host name or IP address */
@@ -943,7 +943,7 @@ PHP_FUNCTION(dns_get_mx)
 /* }}} */
 #endif /* HAVE_DN_SKIPNAME && HAVE_DN_EXPAND */
 
-#endif /* HAVE_RES_SEARCH && !(defined(__BEOS__)||defined(PHP_WIN32) || defined(NETWARE)) */
+#endif /* HAVE_RES_SEARCH && !(defined(__BEOS__) || defined(PHP_WIN32) || defined(NETWARE)) */
 
 /*
  * Local variables:

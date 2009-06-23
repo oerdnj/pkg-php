@@ -3,7 +3,7 @@ show information about extension
 --SKIPIF--
 <?php 
 include "skipif.inc"; 
-if (!extension_loaded("reflection")) {
+if (!extension_loaded("reflection") || !extension_loaded("session")) {
 	die("skip");
 }
 ?>
@@ -26,10 +26,6 @@ string(44) "Exception: Extension unknown does not exist
 string(37) "Exception: Extension  does not exist
 "
 string(%d) "Extension [ <persistent> extension #%d date version %s ] {
-
-  - Dependencies {
-    Dependency [ session (Optional) ]
-  }
 
   - INI {
     Entry [ date.timezone <ALL> ]

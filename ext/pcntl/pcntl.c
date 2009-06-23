@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: pcntl.c,v 1.48.2.2.2.7 2008/12/31 11:17:41 sebastian Exp $ */
+/* $Id: pcntl.c,v 1.48.2.2.2.8 2009/05/26 14:02:34 lbarnaud Exp $ */
 
 #define PCNTL_DEBUG 0
 
@@ -374,9 +374,7 @@ PHP_FUNCTION(pcntl_wexitstatus)
 	
 	status_word = (int) Z_LVAL_PP(status);
 
-	/* WEXITSTATUS only returns 8 bits so we *MUST* cast this to signed char
-	   if you want to have valid negative exit codes */
-	RETURN_LONG((signed char) WEXITSTATUS(status_word));
+	RETURN_LONG(WEXITSTATUS(status_word));
 #else
 	RETURN_FALSE;
 #endif

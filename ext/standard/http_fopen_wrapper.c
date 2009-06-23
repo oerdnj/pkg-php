@@ -19,7 +19,7 @@
    |          Sara Golemon <pollita@php.net>                              |
    +----------------------------------------------------------------------+
  */
-/* $Id: http_fopen_wrapper.c,v 1.99.2.12.2.13 2008/12/31 11:17:45 sebastian Exp $ */ 
+/* $Id: http_fopen_wrapper.c,v 1.99.2.12.2.19 2009/05/28 13:20:22 lbarnaud Exp $ */ 
 
 #include "php.h"
 #include "php_globals.h"
@@ -81,7 +81,10 @@
 #define HTTP_HEADER_CONTENT_LENGTH	16
 #define HTTP_HEADER_TYPE			32
 
-php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path, char *mode, int options, char **opened_path, php_stream_context *context, int redirect_max, int header_init STREAMS_DC TSRMLS_DC)
+#define HTTP_WRAPPER_HEADER_INIT    1
+#define HTTP_WRAPPER_REDIRECTED     2
+
+php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path, char *mode, int options, char **opened_path, php_stream_context *context, int redirect_max, int flags STREAMS_DC TSRMLS_DC) /* {{{ */
 {
 	php_stream *stream = NULL;
 	php_url *resource = NULL;
@@ -101,11 +104,13 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 	size_t chunk_size = 0, file_size = 0;
 	int eol_detect = 0;
 	char *transport_string, *errstr = NULL;
-	int transport_len, have_header = 0, request_fulluri = 0;
+	int transport_len, have_header = 0, request_fulluri = 0, ignore_errors = 0;
 	char *protocol_version = NULL;
 	int protocol_version_len = 3; /* Default: "1.0" */
 	struct timeval timeout;
 	char *user_headers = NULL;
+	int header_init = ((flags & HTTP_WRAPPER_HEADER_INIT) != 0);
+	int redirected = ((flags & HTTP_WRAPPER_REDIRECTED) != 0);
 
 	tmp_line[0] = '\0';
 
@@ -251,10 +256,17 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 
 	if (context && php_stream_context_get_option(context, "http", "method", &tmpzval) == SUCCESS) {
 		if (Z_TYPE_PP(tmpzval) == IS_STRING && Z_STRLEN_PP(tmpzval) > 0) {
-			scratch_len = strlen(path) + 29 + Z_STRLEN_PP(tmpzval);
-			scratch = emalloc(scratch_len);
-			strlcpy(scratch, Z_STRVAL_PP(tmpzval), Z_STRLEN_PP(tmpzval) + 1);
-			strcat(scratch, " ");
+			/* As per the RFC, automatically redirected requests MUST NOT use other methods than
+			 * GET and HEAD unless it can be confirmed by the user */
+			if (!redirected
+				|| (Z_STRLEN_PP(tmpzval) == 3 && memcmp("GET", Z_STRVAL_PP(tmpzval), 3) == 0)
+				|| (Z_STRLEN_PP(tmpzval) == 4 && memcmp("HEAD",Z_STRVAL_PP(tmpzval), 4) == 0)
+			) {
+				scratch_len = strlen(path) + 29 + Z_STRLEN_PP(tmpzval);
+				scratch = emalloc(scratch_len);
+				strlcpy(scratch, Z_STRVAL_PP(tmpzval), Z_STRLEN_PP(tmpzval) + 1);
+				strcat(scratch, " ");
+			}
 		}
 	}
  
@@ -317,13 +329,31 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 	/* send it */
 	php_stream_write(stream, scratch, strlen(scratch));
 
-	if (context &&
-		php_stream_context_get_option(context, "http", "header", &tmpzval) == SUCCESS &&
-		Z_TYPE_PP(tmpzval) == IS_STRING && Z_STRLEN_PP(tmpzval)) {
-		/* Remove newlines and spaces from start and end,
-		   php_trim will estrndup() */
-		tmp = php_trim(Z_STRVAL_PP(tmpzval), Z_STRLEN_PP(tmpzval), NULL, 0, NULL, 3 TSRMLS_CC);
-		if (strlen(tmp) > 0) {
+	if (context && php_stream_context_get_option(context, "http", "header", &tmpzval) == SUCCESS) {
+		tmp = NULL;
+		
+		if (Z_TYPE_PP(tmpzval) == IS_ARRAY) {
+			HashPosition pos;
+			zval **tmpheader = NULL;
+			smart_str tmpstr = {0};
+
+			for (zend_hash_internal_pointer_reset_ex(Z_ARRVAL_PP(tmpzval), &pos);
+				SUCCESS == zend_hash_get_current_data_ex(Z_ARRVAL_PP(tmpzval), (void *)&tmpheader, &pos);
+				zend_hash_move_forward_ex(Z_ARRVAL_PP(tmpzval), &pos)
+			) {
+				if (Z_TYPE_PP(tmpheader) == IS_STRING) {
+					smart_str_appendl(&tmpstr, Z_STRVAL_PP(tmpheader), Z_STRLEN_PP(tmpheader));
+					smart_str_appendl(&tmpstr, "\r\n", sizeof("\r\n") - 1);
+				}
+			}
+			smart_str_0(&tmpstr);
+			tmp = tmpstr.c;
+		}
+		if (Z_TYPE_PP(tmpzval) == IS_STRING && Z_STRLEN_PP(tmpzval)) {
+			/* Remove newlines and spaces from start and end php_trim will estrndup() */
+			tmp = php_trim(Z_STRVAL_PP(tmpzval), Z_STRLEN_PP(tmpzval), NULL, 0, NULL, 3 TSRMLS_CC);
+		}
+		if (tmp && strlen(tmp) > 0) {
 			if (!header_init) { /* Remove post headers for redirects */
 				int l = strlen(tmp);
 				char *s, *s2, *tmp_c = estrdup(tmp);
@@ -376,7 +406,9 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 				 have_header |= HTTP_HEADER_TYPE;
 			}
 		}
-		efree(tmp);
+		if (tmp) {
+			efree(tmp);
+		}
 	}
 
 	/* auth header if it was specified */
@@ -390,7 +422,7 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 		strcat(scratch, ":");
 		strcat(scratch, resource->pass);
 
-		tmp = php_base64_encode((unsigned char*)scratch, strlen(scratch), NULL);
+		tmp = (char*)php_base64_encode((unsigned char*)scratch, strlen(scratch), NULL);
 		
 		if (snprintf(scratch, scratch_len, "Authorization: Basic %s\r\n", tmp) > 0) {
 			php_stream_write(stream, scratch, strlen(scratch));
@@ -520,8 +552,11 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 			} else {
 				response_code = 0;
 			}
+			if (context && SUCCESS==php_stream_context_get_option(context, "http", "ignore_errors", &tmpzval)) {
+				ignore_errors = zend_is_true(*tmpzval);
+			}
 			/* when we request only the header, don't fail even on error codes */
-			if (options & STREAM_ONLY_GET_HEADERS) {
+			if ((options & STREAM_ONLY_GET_HEADERS) || ignore_errors) {
 				reqok = 1;
 			}
 			switch(response_code) {
@@ -599,7 +634,7 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 	}
 	
 	if (!reqok || location[0] != '\0') {
-		if (options & STREAM_ONLY_GET_HEADERS && redirect_max <= 1) {
+		if (((options & STREAM_ONLY_GET_HEADERS) || ignore_errors) && redirect_max <= 1) {
 			goto out;
 		}
 
@@ -665,7 +700,7 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 		unsigned char *s, *e;	\
 		int l;	\
 		l = php_url_decode(val, strlen(val));	\
-		s = val; e = s + l;	\
+		s = (unsigned char*)val; e = s + l;	\
 		while (s < e) {	\
 			if (iscntrl(*s)) {	\
 				php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "Invalid redirect URL! %s", new_path);	\
@@ -681,7 +716,7 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 				CHECK_FOR_CNTRL_CHARS(resource->pass)
 				CHECK_FOR_CNTRL_CHARS(resource->path)
 			}
-			stream = php_stream_url_wrap_http_ex(wrapper, new_path, mode, options, opened_path, context, --redirect_max, 0 STREAMS_CC TSRMLS_CC);
+			stream = php_stream_url_wrap_http_ex(wrapper, new_path, mode, options, opened_path, context, --redirect_max, HTTP_WRAPPER_REDIRECTED STREAMS_CC TSRMLS_CC);
 		} else {
 			php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "HTTP request failed! %s", tmp_line);
 		}
@@ -724,22 +759,22 @@ out:
 
 	return stream;
 }
+/* }}} */
 
-php_stream *php_stream_url_wrap_http(php_stream_wrapper *wrapper, char *path, char *mode, int options, char **opened_path, php_stream_context *context STREAMS_DC TSRMLS_DC)
+php_stream *php_stream_url_wrap_http(php_stream_wrapper *wrapper, char *path, char *mode, int options, char **opened_path, php_stream_context *context STREAMS_DC TSRMLS_DC) /* {{{ */
 {
-	return php_stream_url_wrap_http_ex(wrapper, path, mode, options, opened_path, context, PHP_URL_REDIRECT_MAX, 1 STREAMS_CC TSRMLS_CC);
+	return php_stream_url_wrap_http_ex(wrapper, path, mode, options, opened_path, context, PHP_URL_REDIRECT_MAX, HTTP_WRAPPER_HEADER_INIT STREAMS_CC TSRMLS_CC);
 }
+/* }}} */
 
-static int php_stream_http_stream_stat(php_stream_wrapper *wrapper,
-		php_stream *stream,
-		php_stream_statbuf *ssb
-		TSRMLS_DC)
+static int php_stream_http_stream_stat(php_stream_wrapper *wrapper, php_stream *stream, php_stream_statbuf *ssb TSRMLS_DC) /* {{{ */
 {
 	/* one day, we could fill in the details based on Date: and Content-Length:
 	 * headers.  For now, we return with a failure code to prevent the underlying
 	 * file's details from being used instead. */
 	return -1;
 }
+/* }}} */
 
 static php_stream_wrapper_ops http_stream_wops = {
 	php_stream_url_wrap_http,

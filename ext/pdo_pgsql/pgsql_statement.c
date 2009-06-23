@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pgsql_statement.c,v 1.31.2.12.2.14 2008/12/31 11:17:42 sebastian Exp $ */
+/* $Id: pgsql_statement.c,v 1.31.2.12.2.15 2009/05/25 19:41:41 kalle Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -152,7 +152,7 @@ stmt_retry:
 					char *sqlstate = pdo_pgsql_sqlstate(S->result);
 					/* 42P05 means that the prepared statement already existed. this can happen if you use 
 					 * a connection pooling software line pgpool which doesn't close the db-connection once 
-					 * php disconnects. if php dies (no chanche to run RSHUTDOWN) during execution it has no 
+					 * php disconnects. if php dies (no chance to run RSHUTDOWN) during execution it has no 
 					 * chance to DEALLOCATE the prepared statements it has created. so, if we hit a 42P05 we 
 					 * deallocate it and retry ONCE (thies 2005.12.15)
 					 */

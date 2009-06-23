@@ -51,8 +51,6 @@ function do_deps(mod_idx,        module_name, mod_name_len, dep, ext, val, depid
 			do_deps(depidx);
 		}
 	}
-
-	#printf("	phpext_%s_ptr,\n", module_name);
 	printf("	phpext_%s_ptr,@NEWLINE@", module_name);
 	delete mods[mod_idx];
 }
@@ -79,8 +77,7 @@ END {
 	out_count = 0;
 	
 	while (count(mods)) {
-		# count down, since we need to assemble it in reverse order
-		for (i = mod_count-1; i >= 0; --i) {
+		for (i = 0; i <= mod_count - 1; i++) {
 			if (i in mods) {
 				do_deps(i);
 			}

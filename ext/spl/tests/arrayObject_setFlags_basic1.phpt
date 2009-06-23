@@ -1,7 +1,5 @@
 --TEST--
 SPL: ArrayObject::setFlags basic usage with ArrayObject::ARRAY_AS_PROPS. 
---XFAIL--
-Currently fails on php.net due to bug 45622.
 --FILE--
 <?php
 class C extends ArrayObject {

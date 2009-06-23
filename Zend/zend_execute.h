@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute.h,v 1.84.2.4.2.10 2008/12/31 11:17:33 sebastian Exp $ */
+/* $Id: zend_execute.h,v 1.84.2.4.2.12 2009/06/14 10:05:11 pajoye Exp $ */
 
 #ifndef ZEND_EXECUTE_H
 #define ZEND_EXECUTE_H
@@ -167,6 +167,27 @@ static inline int zend_ptr_stack_get_arg(int requested_arg, void **data TSRMLS_D
 	}
 	*data = (p-arg_count+requested_arg-1);
 	return SUCCESS;
+}
+
+static inline void zend_arg_types_stack_2_pop(zend_ptr_stack *stack, zval **object, zend_function **fbc)
+{
+	void *a, *b;
+
+	zend_ptr_stack_2_pop(stack, &a, &b);
+
+	*object =  (zval *) a;
+	*fbc = (zend_function *) b;
+}
+
+static inline void zend_arg_types_stack_3_pop(zend_ptr_stack *stack, zend_class_entry **called_scope, zval **object, zend_function **fbc)
+{
+	void *a, *b, *c;
+
+	zend_ptr_stack_3_pop(stack, &a, &b, &c);
+
+	*called_scope = (zend_class_entry *) a;
+	*object = (zval *) b;
+	*fbc = (zend_function *) c;
 }
 
 void execute_new_code(TSRMLS_D);

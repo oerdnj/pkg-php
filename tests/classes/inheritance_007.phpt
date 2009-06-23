@@ -1,5 +1,7 @@
 --TEST--
 Ensure inherited old-style constructor doesn't block other methods.
+--SKIPIF--
+<?php extension_loaded('reflection') or die('skip'); ?>
 --FILE--
 <?php
 class A {
@@ -21,17 +23,17 @@ $b->b();
 array(2) {
   [0]=>
   &object(ReflectionMethod)#%d (2) {
-    [%u|b%"name"]=>
-    %string|unicode%(1) "B"
-    [%u|b%"class"]=>
-    %string|unicode%(1) "B"
+    ["name"]=>
+    string(1) "B"
+    ["class"]=>
+    string(1) "A"
   }
   [1]=>
   &object(ReflectionMethod)#%d (2) {
-    [%u|b%"name"]=>
-    %string|unicode%(1) "A"
-    [%u|b%"class"]=>
-    %string|unicode%(1) "B"
+    ["name"]=>
+    string(1) "A"
+    ["class"]=>
+    string(1) "A"
   }
 }
 In A::A

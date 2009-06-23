@@ -24,7 +24,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: run-tests.php,v 1.226.2.37.2.57 2008/12/31 17:37:21 zoe Exp $ */
+/* $Id: run-tests.php,v 1.226.2.37.2.65 2009/05/20 09:23:15 lbarnaud Exp $ */
 
 /* Sanity check to ensure that pcre extension needed by this script is available.
  * In the event it is not, print a nice error message indicating that this script will
@@ -59,9 +59,25 @@ NO_PROC_OPEN_ERROR;
 exit;
 }
 
+// Version constants only available as of 5.2.8
+if (!defined("PHP_VERSION_ID")) {
+	list($major, $minor, $bug) = explode(".", phpversion(), 3);
+	$bug = (int)$bug; // Many distros make up their own versions
+	if ($bug < 10) {
+		$bug = "0$bug";
+	}
+
+	define("PHP_VERSION_ID", "{$major}0{$minor}$bug");
+	define("PHP_MAJOR_VERSION", $major);
+}
+
 // __DIR__ is available from 5.3.0
 if (PHP_VERSION_ID < 50300) {
 	define('__DIR__', realpath(dirname(__FILE__)));
+	// FILE_BINARY is available from 5.2.7
+	if (PHP_VERSION_ID < 50207) {
+		define('FILE_BINARY', 0);
+	}	
 }
 
 // If timezone is not set, use UTC.
@@ -214,6 +230,7 @@ $ini_overwrites = array(
 		'auto_append_file=',
 		'magic_quotes_runtime=0',
 		'ignore_repeated_errors=0',
+		'precision=14',
 		'unicode.runtime_encoding=ISO-8859-1',
 		'unicode.script_encoding=UTF-8',
 		'unicode.output_encoding=UTF-8',
@@ -617,7 +634,7 @@ if (isset($argc) && $argc > 1) {
 					$html_output = is_resource($html_file);
 					break;
 				case '--version':
-					echo '$Revision: 1.226.2.37.2.57 $' . "\n";
+					echo '$Revision: 1.226.2.37.2.65 $' . "\n";
 					exit(1);
 
 				default:
@@ -1338,7 +1355,6 @@ TEST $file
 	if (is_array($IN_REDIRECT)) {
 		$tested = $IN_REDIRECT['prefix'] . ' ' . trim($section_text['TEST']);
 		$tested_file = $tmp_relative_file;
-		$section_text['FILE'] = "# original source file: $shortname\n" . $section_text['FILE'];
 	}
 
 	// unlink old test results
@@ -1738,7 +1754,33 @@ COMMAND $cmd
 		$wanted_re = preg_replace('/\r\n/', "\n", $wanted);
 
 		if (isset($section_text['EXPECTF'])) {
-			$wanted_re = preg_quote($wanted_re, '/');
+
+			// do preg_quote, but miss out any %r delimited sections
+			$temp = "";
+			$r = "%r";
+			$startOffset = 0;
+			$length = strlen($wanted_re);
+			while($startOffset < $length) {
+				$start = strpos($wanted_re, $r, $startOffset);
+				if ($start !== false) {
+					// we have found a start tag
+					$end = strpos($wanted_re, $r, $start+2);
+					if ($end === false) {
+						// unbalanced tag, ignore it.
+						$end = $start = $length;
+					}
+				} else {
+					// no more %r sections
+					$start = $end = $length;
+				}
+				// quote a non re portion of the string
+				$temp = $temp . preg_quote(substr($wanted_re, $startOffset, ($start - $startOffset)),  '/');
+				// add the re unquoted.
+				$temp = $temp . '(' . substr($wanted_re, $start+2, ($end - $start-2)). ')';
+				$startOffset = $end + 2;
+			}
+			$wanted_re = $temp;
+		
 			$wanted_re = str_replace(
 				array('%binary_string_optional%'),
 				version_compare(PHP_VERSION, '6.0.0-dev') == -1 ? 'string' : 'binary string',
@@ -1787,14 +1829,14 @@ COMMAND $cmd
 				$php = $old_php;
 			}
 
-                        if (!$leaked && !$failed_headers) {
-                            if (isset($section_text['XFAIL'] )) {
-                                $warn = true;
-                                $info = " (warn: XFAIL section but test passes)";
-                            }else {
-                                show_result("PASS", $tested, $tested_file, '', $temp_filenames);
-                                return 'PASSED';
-                            }
+			if (!$leaked && !$failed_headers) {
+				if (isset($section_text['XFAIL'] )) {
+					$warn = true;
+					$info = " (warn: XFAIL section but test passes)";
+				}else {
+					show_result("PASS", $tested, $tested_file, '', $temp_filenames);
+					return 'PASSED';
+				}
 			}
 		}
 
@@ -1816,14 +1858,14 @@ COMMAND $cmd
 				$php = $old_php;
 			}
 
-                        if (!$leaked && !$failed_headers) {
-                            if (isset($section_text['XFAIL'] )) {
-                                $warn = true;
-                                $info = " (warn: XFAIL section but test passes)";
-                            }else {
-                                show_result("PASS", $tested, $tested_file, '', $temp_filenames);
-                                return 'PASSED';
-                            }
+			if (!$leaked && !$failed_headers) {
+				if (isset($section_text['XFAIL'] )) {
+					$warn = true;
+					$info = " (warn: XFAIL section but test passes)";
+				}else {
+					show_result("PASS", $tested, $tested_file, '', $temp_filenames);
+					return 'PASSED';
+				}
 			}
 		}
 
@@ -1871,6 +1913,9 @@ COMMAND $cmd
 
 		// write .diff
 		$diff = generate_diff($wanted, $wanted_re, $output);
+		if (is_array($IN_REDIRECT)) {
+			$diff = "# original source file: $shortname\n" . $diff;
+		}
 		show_file_block('diff', $diff);
 		if (strpos($log_format, 'D') !== false && file_put_contents($diff_filename, (binary) $diff, FILE_BINARY) === false) {
 			error("Cannot create test diff - $diff_filename");
@@ -2207,6 +2252,19 @@ EXPECTED FAILED TEST SUMMARY
 		foreach ($PHP_FAILED_TESTS['XFAILED'] as $failed_test_data) {
 			$failed_test_summary .= $failed_test_data['test_name'] . $failed_test_data['info'] . "\n";
 		}
+		$failed_test_summary .=  "=====================================================================\n";
+	}
+
+	if (count($PHP_FAILED_TESTS['WARNED'])) {
+		$failed_test_summary .= '
+=====================================================================
+WARNED TEST SUMMARY
+---------------------------------------------------------------------
+';
+		foreach ($PHP_FAILED_TESTS['WARNED'] as $failed_test_data) {
+			$failed_test_summary .= $failed_test_data['test_name'] . $failed_test_data['info'] . "\n";
+		}
+
 		$failed_test_summary .=  "=====================================================================\n";
 	}
 

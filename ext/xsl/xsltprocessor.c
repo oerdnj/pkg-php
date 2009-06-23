@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: xsltprocessor.c,v 1.39.2.2.2.16 2008/12/31 11:17:47 sebastian Exp $ */
+/* $Id: xsltprocessor.c,v 1.39.2.2.2.18 2009/05/23 14:31:15 felipe Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -157,11 +157,13 @@ static char **php_xsl_xslt_make_params(HashTable *parht, int xpath_params TSRMLS
 			if (!xpath_params) {
 				xpath_expr = php_xsl_xslt_string_to_xpathexpr(Z_STRVAL_PP(value) TSRMLS_CC);
 			} else {
-				xpath_expr = estrndup(Z_STRVAL_PP(value), strlen(Z_STRVAL_PP(value)));
+				xpath_expr = estrndup(Z_STRVAL_PP(value), Z_STRLEN_PP(value));
 			}
 			if (xpath_expr) {
 				params[i++] = string_key;
 				params[i++] = xpath_expr;
+			} else {
+				efree(string_key);
 			}
 		}
 	}
@@ -318,7 +320,7 @@ static void xsl_ext_function_php(xmlXPathParserContextPtr ctxt, int nargs, int t
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to call handler %s()", callable);
 		
 	} else if ( intern->registerPhpFunctions == 2 && zend_hash_exists(intern->registered_phpfunctions, callable, strlen(callable) + 1) == 0) { 
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Not allowed to call handler '%s()'.", callable);
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Not allowed to call handler '%s()'", callable);
 		/* Push an empty string, so that we at least have an xslt result... */
 		valuePush(ctxt, xmlXPathNewString(""));
 	} else {

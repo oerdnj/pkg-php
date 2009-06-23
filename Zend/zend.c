@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend.c,v 1.308.2.12.2.37 2008/12/31 11:17:32 sebastian Exp $ */
+/* $Id: zend.c,v 1.308.2.12.2.39 2009/06/16 16:09:04 rasmus Exp $ */
 
 #include "zend.h"
 #include "zend_extensions.h"
@@ -835,7 +835,7 @@ void zend_deactivate_modules(TSRMLS_D)
 	EG(opline_ptr) = NULL; /* we're no longer executing anything */
 
 	zend_try {
-		zend_hash_apply(&module_registry, (apply_func_t) module_registry_cleanup TSRMLS_CC);
+		zend_hash_reverse_apply(&module_registry, (apply_func_t) module_registry_cleanup TSRMLS_CC);
 	} zend_end_try();
 }
 
@@ -1078,7 +1078,7 @@ ZEND_API void zend_error(int type, const char *format, ...)
 	}
 }
 
-#if defined(__GNUC__) && !defined(__INTEL_COMPILER) && !defined(DARWIN) && !defined(__hpux) && !defined(_AIX) && !defined(__osf__)
+#if defined(__GNUC__) && __GNUC__ >= 3 && !defined(__INTEL_COMPILER) && !defined(DARWIN) && !defined(__hpux) && !defined(_AIX) && !defined(__osf__)
 void zend_error_noreturn(int type, const char *format, ...) __attribute__ ((alias("zend_error"),noreturn));
 #endif
 

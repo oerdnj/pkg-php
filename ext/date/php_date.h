@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_date.h,v 1.17.2.11.2.5 2008/12/31 11:17:36 sebastian Exp $ */
+/* $Id: php_date.h,v 1.17.2.11.2.6 2009/05/31 20:43:57 stas Exp $ */
 
 #ifndef PHP_DATE_H
 #define PHP_DATE_H
@@ -87,7 +87,7 @@ PHP_MINFO_FUNCTION(date);
 ZEND_BEGIN_MODULE_GLOBALS(date)
 	char      *default_timezone;
 	char      *timezone;
-	HashTable  tzcache;
+	HashTable *tzcache;
 ZEND_END_MODULE_GLOBALS(date)
 
 #ifdef ZTS

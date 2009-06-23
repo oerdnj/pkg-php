@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute_API.c,v 1.331.2.20.2.30 2009/01/15 14:23:42 dmitry Exp $ */
+/* $Id: zend_execute_API.c,v 1.331.2.20.2.31 2009/04/08 00:28:04 felipe Exp $ */
 
 #include <stdio.h>
 #include <signal.h>
@@ -835,11 +835,8 @@ int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci_cache TS
 				efree(function_name_lc);
 			}
 		} else if (calling_scope) {
-			char *function_name_lc = zend_str_tolower_dup(fname, fname_len);
+			EX(function_state).function = zend_std_get_static_method(calling_scope, fname, fname_len TSRMLS_CC);
 
-			EX(function_state).function = 
-				zend_std_get_static_method(calling_scope, function_name_lc, fname_len TSRMLS_CC);
-			efree(function_name_lc);
 			if (check_scope_or_static && EX(function_state).function
 			&& !(EX(function_state).function->common.fn_flags & ZEND_ACC_STATIC)
 			&& !instanceof_function(check_scope_or_static, calling_scope TSRMLS_CC)) {

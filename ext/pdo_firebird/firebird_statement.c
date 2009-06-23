@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: firebird_statement.c,v 1.18.2.1.2.8 2009/02/09 12:07:35 felipe Exp $ */
+/* $Id: firebird_statement.c,v 1.18.2.1.2.9 2009/04/03 22:14:05 felipe Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -170,6 +170,7 @@ static int firebird_stmt_describe(pdo_stmt_t *stmt, int colno TSRMLS_DC) /* {{{ 
 	col->maxlen = var->sqllen;
 	col->namelen = var->aliasname_length;
 	col->name = estrndup(var->aliasname,var->aliasname_length);
+	col->param_type = PDO_PARAM_STR;
 	
 	return 1;
 }
@@ -301,11 +302,7 @@ static int firebird_stmt_get_col(pdo_stmt_t *stmt, int colno, char **ptr,  /* {{
 		/* A NULL value */
 		*ptr = NULL;
 		*len = 0;
-	} else {
-		/* override the column param type */
-		/* set_param_type(&stmt->columns[colno].param_type,var); */
-		stmt->columns[colno].param_type = PDO_PARAM_STR;
-		
+	} else {		
 		if (var->sqlscale < 0) {
 			static ISC_INT64 const scales[] = { 1, 10, 100, 1000, 10000, 100000, 1000000,
 				100000000, 1000000000, 1000000000, LL_LIT(10000000000),LL_LIT(100000000000),

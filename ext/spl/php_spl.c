@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_spl.c,v 1.52.2.28.2.20 2008/12/31 11:17:43 sebastian Exp $ */
+/* $Id: php_spl.c,v 1.52.2.28.2.21 2009/06/13 17:35:37 cellog Exp $ */
 
 #ifdef HAVE_CONFIG_H
 	#include "config.h"
@@ -464,6 +464,7 @@ PHP_FUNCTION(spl_autoload_register)
 
 		if (obj_ptr && !(alfi.func_ptr->common.fn_flags & ZEND_ACC_STATIC)) {
 			/* add object id to the hash to ensure uniqueness, for more reference look at bug #40091 */
+			lc_name = erealloc(lc_name, func_name_len + 2 + sizeof(zend_object_handle));
 			memcpy(lc_name + func_name_len, &Z_OBJ_HANDLE_PP(obj_ptr), sizeof(zend_object_handle));
 			func_name_len += sizeof(zend_object_handle);
 			lc_name[func_name_len] = '\0';

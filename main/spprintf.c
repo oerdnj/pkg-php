@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: spprintf.c,v 1.25.2.2.2.15 2009/02/04 15:03:12 iliaa Exp $ */
+/* $Id: spprintf.c,v 1.25.2.2.2.16 2009/03/30 19:59:07 iliaa Exp $ */
 
 /* This is the spprintf implementation.
  * It has emerged from apache snprintf. See original header:
@@ -76,6 +76,7 @@
  * SIO stdio-replacement strx_* functions by Panos Tsirigotis
  * <panos@alumni.cs.colorado.edu> for xinetd.
  */
+#define _GNU_SOURCE
 #include "php.h"
 
 #include <stddef.h>

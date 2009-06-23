@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: oci_driver.c,v 1.24.2.4.2.11 2008/12/31 11:17:42 sebastian Exp $ */
+/* $Id: oci_driver.c,v 1.24.2.4.2.12 2009/05/12 21:57:40 mbeccati Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -70,15 +70,13 @@ ub4 _oci_error(OCIError *err, pdo_dbh_t *dbh, pdo_stmt_t *stmt, char *what, swor
 		S = (pdo_oci_stmt*)stmt->driver_data;
 		einfo = &S->einfo;
 		pdo_err = &stmt->error_code;
-		if (einfo->errmsg) {
-			efree(einfo->errmsg);
-		}
 	}
 	else {
 		einfo = &H->einfo;
-		if (einfo->errmsg) {
-			pefree(einfo->errmsg, dbh->is_persistent);
-		}
+	}
+
+	if (einfo->errmsg) {
+		pefree(einfo->errmsg, dbh->is_persistent);
 	}
 
 	einfo->errmsg = NULL;

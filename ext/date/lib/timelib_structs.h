@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: timelib_structs.h,v 1.13.2.6.2.6 2008/12/31 11:17:36 sebastian Exp $ */
+/* $Id: timelib_structs.h,v 1.13.2.6.2.7 2009/05/03 18:22:59 derick Exp $ */
 
 #ifndef __TIMELIB_STRUCTS_H__
 #define __TIMELIB_STRUCTS_H__
@@ -200,6 +200,9 @@ typedef struct _timelib_tzdb {
 #define SECS_PER_DAY   86400
 #define DAYS_PER_YEAR    365
 #define DAYS_PER_LYEAR   366
+/* 400*365 days + 97 leap days */
+#define DAYS_PER_LYEAR_PERIOD 146097
+#define YEARS_PER_LYEAR_PERIOD 400
 
 #define timelib_is_leap(y) ((y) % 4 == 0 && ((y) % 100 != 0 || (y) % 400 == 0))
 

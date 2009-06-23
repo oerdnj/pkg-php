@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: file.c,v 1.409.2.6.2.38 2008/12/31 11:17:44 sebastian Exp $ */
+/* $Id: file.c,v 1.409.2.6.2.43 2009/05/24 16:02:22 iliaa Exp $ */
 
 /* Synced with php 3.0 revision 1.218 1999-06-16 [ssb] */
 
@@ -629,9 +629,15 @@ PHP_FUNCTION(file_put_contents)
 	}
 
 	switch (Z_TYPE_P(data)) {
-		case IS_RESOURCE:
-			numbytes = php_stream_copy_to_stream(srcstream, stream, PHP_STREAM_COPY_ALL);
+		case IS_RESOURCE: {
+			size_t len;
+			if (php_stream_copy_to_stream_ex(srcstream, stream, PHP_STREAM_COPY_ALL, &len) != SUCCESS) {
+				numbytes = -1;
+			} else {
+				numbytes = len;
+			}
 			break;
+		}
 		case IS_NULL:
 		case IS_LONG:
 		case IS_DOUBLE:
@@ -782,16 +788,20 @@ parse_eol:
 	 		} while ((p = memchr(p, eol_marker, (e-p))));
 	 	} else {
 	 		do {
- 				if (skip_blank_lines && !(p-s)) {
+				int windows_eol = 0;
+				if (p != target_buf && eol_marker == '\n' && *(p - 1) == '\r') {
+					windows_eol++;
+				}
+				if (skip_blank_lines && !(p-s-windows_eol)) {
  					s = ++p;
  					continue;
  				}
  				if (PG(magic_quotes_runtime)) {
  					/* s is in target_buf which is freed at the end of the function */
- 					slashed = php_addslashes(s, (p-s), &len, 0 TSRMLS_CC);
+					slashed = php_addslashes(s, (p-s-windows_eol), &len, 0 TSRMLS_CC);
  					add_index_stringl(return_value, i++, slashed, len, 0);
  				} else {
- 					add_index_stringl(return_value, i++, estrndup(s, p-s), p-s, 0);
+					add_index_stringl(return_value, i++, estrndup(s, p-s-windows_eol), p-s-windows_eol, 0);
 				}
  				s = ++p;
 	 		} while ((p = memchr(p, eol_marker, (e-p))));
@@ -1836,7 +1846,7 @@ safe_to_copy:
 	deststream = php_stream_open_wrapper(dest, "wb", ENFORCE_SAFE_MODE | REPORT_ERRORS, NULL);
 
 	if (srcstream && deststream) {
-		ret = php_stream_copy_to_stream(srcstream, deststream, PHP_STREAM_COPY_ALL) == 0 ? FAILURE : SUCCESS;
+		ret = php_stream_copy_to_stream_ex(srcstream, deststream, PHP_STREAM_COPY_ALL, NULL);
 	}
 	if (srcstream) {
 		php_stream_close(srcstream);
@@ -2129,6 +2139,7 @@ PHPAPI void php_fgetcsv(php_stream *stream, char delimiter, char enclosure, size
 
 	size_t temp_len, line_end_len;
 	int inc_len;
+	zend_bool first_field = 1;
 
 	/* initialize internal state */
 	php_mblen(NULL, 0);
@@ -2180,6 +2191,11 @@ PHPAPI void php_fgetcsv(php_stream *stream, char delimiter, char enclosure, size
 		}
 
 	quit_loop_1:
+		if (first_field && bptr == line_end) {
+			add_next_index_null(return_value);
+			break;
+		}
+		first_field = 0;
 		/* 2. Read field, leaving bptr pointing at start of next field */
 		if (inc_len != 0 && *bptr == enclosure) {
 			int state = 0;

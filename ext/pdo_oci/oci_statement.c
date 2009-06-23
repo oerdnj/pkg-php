@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: oci_statement.c,v 1.16.2.10.2.9 2008/12/31 11:17:42 sebastian Exp $ */
+/* $Id: oci_statement.c,v 1.16.2.10.2.10 2009/05/12 21:57:41 mbeccati Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -87,7 +87,7 @@ static int oci_stmt_dtor(pdo_stmt_t *stmt TSRMLS_DC) /* {{{ */
 	}
 
 	if (S->einfo.errmsg) {
-		efree(S->einfo.errmsg);
+		pefree(S->einfo.errmsg, stmt->dbh->is_persistent);
 		S->einfo.errmsg = NULL;
 	}
 

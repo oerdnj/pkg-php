@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_operators.h,v 1.94.2.4.2.15 2009/02/15 14:31:17 iliaa Exp $ */
+/* $Id: zend_operators.h,v 1.94.2.4.2.16 2009/05/14 01:28:15 mattwil Exp $ */
 
 #ifndef ZEND_OPERATORS_H
 #define ZEND_OPERATORS_H
@@ -35,18 +35,6 @@
 #if 0&&HAVE_BCMATH
 #include "ext/bcmath/libbcmath/src/bcmath.h"
 #endif
-
-#if SIZEOF_LONG == 4
-#define MAX_LENGTH_OF_LONG 11
-static const char long_min_digits[] = "2147483648";
-#elif SIZEOF_LONG == 8
-#define MAX_LENGTH_OF_LONG 20
-static const char long_min_digits[] = "9223372036854775808";
-#else
-#error "Unknown SIZEOF_LONG"
-#endif
-
-#define MAX_LENGTH_OF_DOUBLE 32
 
 BEGIN_EXTERN_C()
 ZEND_API int add_function(zval *result, zval *op1, zval *op2 TSRMLS_DC);

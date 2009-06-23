@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: cgi_main.c,v 1.267.2.15.2.69 2009/01/19 18:17:59 dsp Exp $ */
+/* $Id: cgi_main.c,v 1.267.2.15.2.71 2009/06/09 13:29:39 dsp Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -461,6 +461,9 @@ static int sapi_cgi_send_headers(sapi_headers_struct *sapi_headers TSRMLS_DC)
 	return SAPI_HEADER_SENT_SUCCESSFULLY;
 }
 
+#ifndef STDIN_FILENO
+# define STDIN_FILENO 0
+#endif
 
 static int sapi_cgi_read_post(char *buffer, uint count_bytes TSRMLS_DC)
 {
@@ -473,10 +476,10 @@ static int sapi_cgi_read_post(char *buffer, uint count_bytes TSRMLS_DC)
 			fcgi_request *request = (fcgi_request*) SG(server_context);
 			tmp_read_bytes = fcgi_read(request, buffer + read_bytes, count_bytes - read_bytes);
 		} else {
-			tmp_read_bytes = read(0, buffer + read_bytes, count_bytes - read_bytes);
+			tmp_read_bytes = read(STDIN_FILENO, buffer + read_bytes, count_bytes - read_bytes);
 		}
 #else
-		tmp_read_bytes = read(0, buffer + read_bytes, count_bytes - read_bytes);
+		tmp_read_bytes = read(STDIN_FILENO, buffer + read_bytes, count_bytes - read_bytes);
 #endif
 
 		if (tmp_read_bytes <= 0) {
@@ -961,7 +964,8 @@ static void init_request_info(TSRMLS_D)
  			}
 
  			if (env_path_translated != NULL && env_redirect_url != NULL &&
- 			    orig_script_filename != NULL && script_path_translated != NULL) {
+  			    env_path_translated != script_path_translated &&
+  			    strcmp(env_path_translated, script_path_translated) != 0) {
 				/* 
 				   pretty much apache specific.  If we have a redirect_url
 				   then our script_filename and script_name point to the

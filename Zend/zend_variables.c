@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_variables.c,v 1.62.2.1.2.4 2008/12/31 11:17:34 sebastian Exp $ */
+/* $Id: zend_variables.c,v 1.62.2.1.2.5 2009/05/01 20:30:59 jani Exp $ */
 
 #include <stdio.h>
 #include "zend.h"
@@ -26,8 +26,7 @@
 #include "zend_constants.h"
 #include "zend_list.h"
 
-
-ZEND_API void _zval_dtor_func(zval *zvalue ZEND_FILE_LINE_DC)
+ZEND_API void _zval_dtor_func(zval *zvalue ZEND_FILE_LINE_DC) /* {{{ */
 {
 	switch (zvalue->type & ~IS_CONSTANT_INDEX) {
 		case IS_STRING:
@@ -69,9 +68,9 @@ ZEND_API void _zval_dtor_func(zval *zvalue ZEND_FILE_LINE_DC)
 			break;
 	}
 }
+/* }}} */
 
-
-ZEND_API void _zval_internal_dtor(zval *zvalue ZEND_FILE_LINE_DC)
+ZEND_API void _zval_internal_dtor(zval *zvalue ZEND_FILE_LINE_DC) /* {{{ */
 {
 	switch (zvalue->type & ~IS_CONSTANT_INDEX) {
 		case IS_STRING:
@@ -93,15 +92,15 @@ ZEND_API void _zval_internal_dtor(zval *zvalue ZEND_FILE_LINE_DC)
 			break;
 	}
 }
+/* }}} */
 
-
-ZEND_API void zval_add_ref(zval **p)
+ZEND_API void zval_add_ref(zval **p) /* {{{ */
 {
 	(*p)->refcount++;
 }
+/* }}} */
 
-
-ZEND_API void _zval_copy_ctor_func(zval *zvalue ZEND_FILE_LINE_DC)
+ZEND_API void _zval_copy_ctor_func(zval *zvalue ZEND_FILE_LINE_DC) /* {{{ */
 {
 	switch (zvalue->type) {
 		case IS_RESOURCE: {
@@ -143,43 +142,44 @@ ZEND_API void _zval_copy_ctor_func(zval *zvalue ZEND_FILE_LINE_DC)
 			break;
 	}
 }
+/* }}} */
 
-
-ZEND_API int zend_print_variable(zval *var) 
+ZEND_API int zend_print_variable(zval *var) /* {{{ */
 {
 	return zend_print_zval(var, 0);
 }
-
+/* }}} */
 
 #if ZEND_DEBUG
-ZEND_API void _zval_copy_ctor_wrapper(zval *zvalue)
+ZEND_API void _zval_copy_ctor_wrapper(zval *zvalue) /* {{{ */
 {
 	zval_copy_ctor(zvalue);
 }
+/* }}} */
 
-
-ZEND_API void _zval_dtor_wrapper(zval *zvalue)
+ZEND_API void _zval_dtor_wrapper(zval *zvalue) /* {{{ */
 {
 	zval_dtor(zvalue);
 }
+/* }}} */
 
-
-ZEND_API void _zval_internal_dtor_wrapper(zval *zvalue)
+ZEND_API void _zval_internal_dtor_wrapper(zval *zvalue) /* {{{ */
 {
 	zval_internal_dtor(zvalue);
 }
+/* }}} */
 
-
-ZEND_API void _zval_ptr_dtor_wrapper(zval **zval_ptr)
+ZEND_API void _zval_ptr_dtor_wrapper(zval **zval_ptr) /* {{{ */
 {
 	zval_ptr_dtor(zval_ptr);
 }
+/* }}} */
 
-
-ZEND_API void _zval_internal_ptr_dtor_wrapper(zval **zval_ptr)
+ZEND_API void _zval_internal_ptr_dtor_wrapper(zval **zval_ptr) /* {{{ */
 {
 	zval_internal_ptr_dtor(zval_ptr);
 }
+/* }}} */
 #endif
 
 /*

@@ -23,7 +23,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: ldap.c,v 1.161.2.3.2.14 2008/12/31 11:17:39 sebastian Exp $ */
+/* $Id: ldap.c,v 1.161.2.3.2.18 2009/06/15 15:18:48 patrickallaert Exp $ */
 #define IS_EXT_MODULE
 
 #ifdef HAVE_CONFIG_H
@@ -322,7 +322,7 @@ PHP_MINFO_FUNCTION(ldap)
 
 	php_info_print_table_start();
 	php_info_print_table_row(2, "LDAP Support", "enabled");
-	php_info_print_table_row(2, "RCS Version", "$Id: ldap.c,v 1.161.2.3.2.14 2008/12/31 11:17:39 sebastian Exp $");
+	php_info_print_table_row(2, "RCS Version", "$Id: ldap.c,v 1.161.2.3.2.18 2009/06/15 15:18:48 patrickallaert Exp $");
 
 	if (LDAPG(max_links) == -1) {
 		snprintf(tmp, 31, "%ld/unlimited", LDAPG(num_links));
@@ -641,13 +641,15 @@ PHP_FUNCTION(ldap_unbind)
 
 /* {{{ php_set_opts
  */
-static void php_set_opts(LDAP *ldap, int sizelimit, int timelimit, int deref)
+static void php_set_opts(LDAP *ldap, int sizelimit, int timelimit, int deref, int *old_sizelimit, int *old_timelimit, int *old_deref)
 {
 	/* sizelimit */
 	if (sizelimit > -1) {
 #if (LDAP_API_VERSION >= 2004) || HAVE_NSLDAP || HAVE_ORALDAP_10
+		ldap_get_option(ldap, LDAP_OPT_SIZELIMIT, old_sizelimit);
 		ldap_set_option(ldap, LDAP_OPT_SIZELIMIT, &sizelimit);
 #else
+		*old_sizelimit = ldap->ld_sizelimit; 
 		ldap->ld_sizelimit = sizelimit; 
 #endif
 	}
@@ -655,8 +657,10 @@ static void php_set_opts(LDAP *ldap, int sizelimit, int timelimit, int deref)
 	/* timelimit */
 	if (timelimit > -1) {
 #if (LDAP_API_VERSION >= 2004) || HAVE_NSLDAP || HAVE_ORALDAP_10
+		ldap_get_option(ldap, LDAP_OPT_SIZELIMIT, old_timelimit);
 		ldap_set_option(ldap, LDAP_OPT_TIMELIMIT, &timelimit);
 #else
+		*old_timelimit = ldap->ld_timelimit; 
 		ldap->ld_timelimit = timelimit; 
 #endif
 	}
@@ -664,8 +668,10 @@ static void php_set_opts(LDAP *ldap, int sizelimit, int timelimit, int deref)
 	/* deref */
 	if (deref > -1) {
 #if (LDAP_API_VERSION >= 2004) || HAVE_NSLDAP || HAVE_ORALDAP_10
+		ldap_get_option(ldap, LDAP_OPT_SIZELIMIT, old_deref);
 		ldap_set_option(ldap, LDAP_OPT_DEREF, &deref);
 #else
+		*old_deref = ldap->ld_deref; 
 		ldap->ld_deref = deref; 
 #endif
 	}
@@ -686,9 +692,13 @@ static void php_ldap_do_search(INTERNAL_FUNCTION_PARAMETERS, int scope)
 	int ldap_sizelimit = -1; 
 	int ldap_timelimit = -1; 
 	int ldap_deref = -1;	 
+	int old_ldap_sizelimit = -1; 
+	int old_ldap_timelimit = -1; 
+	int old_ldap_deref = -1;	 
 	int num_attribs = 0;
 	int i, errno;
 	int myargcount = ZEND_NUM_ARGS();
+	int ret = 1;
 
 	if (myargcount < 3 || myargcount > 8 || zend_get_parameters_ex(myargcount, &link, &base_dn, &filter, &attrs, &attrsonly, &sizelimit, &timelimit, &deref) == FAILURE) {
 		WRONG_PARAM_COUNT;
@@ -715,7 +725,8 @@ static void php_ldap_do_search(INTERNAL_FUNCTION_PARAMETERS, int scope)
 		case 4 : 
 			if (Z_TYPE_PP(attrs) != IS_ARRAY) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Expected Array as last element");
-				RETURN_FALSE;
+				ret = 0;
+				goto cleanup;
 			}
 
 			num_attribs = zend_hash_num_elements(Z_ARRVAL_PP(attrs));
@@ -724,8 +735,8 @@ static void php_ldap_do_search(INTERNAL_FUNCTION_PARAMETERS, int scope)
 			for (i = 0; i<num_attribs; i++) {
 				if (zend_hash_index_find(Z_ARRVAL_PP(attrs), i, (void **) &attr) == FAILURE) {
 					php_error_docref(NULL TSRMLS_CC, E_WARNING, "Array initialization wrong");
-					efree(ldap_attrs);
-					RETURN_FALSE;
+					ret = 0;
+					goto cleanup;
 				}
 
 				SEPARATE_ZVAL(attr);
@@ -735,16 +746,7 @@ static void php_ldap_do_search(INTERNAL_FUNCTION_PARAMETERS, int scope)
 			ldap_attrs[num_attribs] = NULL;
 		
 		case 3 :
-			/* parallel search? */
-			if (Z_TYPE_PP(link) != IS_ARRAY) {
-				convert_to_string_ex(filter);
-				ldap_filter = Z_STRVAL_PP(filter);
-
-				/* If anything else than string is passed, ldap_base_dn = NULL */
-				if (Z_TYPE_PP(base_dn) == IS_STRING) {
-					ldap_base_dn = Z_STRVAL_PP(base_dn);
-				}
-			}
+		
 		break;
 
 		default:
@@ -761,20 +763,16 @@ static void php_ldap_do_search(INTERNAL_FUNCTION_PARAMETERS, int scope)
 		nlinks = zend_hash_num_elements(Z_ARRVAL_PP(link));
 		if (nlinks == 0) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "No links in link array");
-			if (ldap_attrs != NULL) {
-				efree(ldap_attrs);
-			}
-			RETURN_FALSE;
+			ret = 0;
+			goto cleanup;
 		}
 
 		if (Z_TYPE_PP(base_dn) == IS_ARRAY) {
 			nbases = zend_hash_num_elements(Z_ARRVAL_PP(base_dn));
 			if (nbases != nlinks) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Base must either be a string, or an array with the same number of elements as the links array");
-				if (ldap_attrs != NULL) {
-					efree(ldap_attrs);
-				}
-				RETURN_FALSE;
+				ret = 0;
+				goto cleanup;
 			}
 			zend_hash_internal_pointer_reset(Z_ARRVAL_PP(base_dn));
 		} else {
@@ -791,10 +789,8 @@ static void php_ldap_do_search(INTERNAL_FUNCTION_PARAMETERS, int scope)
 			nfilters = zend_hash_num_elements(Z_ARRVAL_PP(filter));
 			if (nfilters != nlinks) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Filter must either be a string, or an array with the same number of elements as the links array");
-				if (ldap_attrs != NULL) {
-					efree(ldap_attrs);
-				}
-				RETURN_FALSE;
+				ret = 0;
+				goto cleanup;
 			}
 			zend_hash_internal_pointer_reset(Z_ARRVAL_PP(filter));
 		} else {
@@ -812,12 +808,8 @@ static void php_ldap_do_search(INTERNAL_FUNCTION_PARAMETERS, int scope)
 
 			ld = (ldap_linkdata *) zend_fetch_resource(entry TSRMLS_CC, -1, "ldap link", NULL, 1, le_link);
 			if (ld == NULL) {
-				efree(lds);
-				efree(rcs);
-				if (ldap_attrs != NULL) {
-					efree(ldap_attrs);
-				}
-				RETURN_FALSE;
+				ret = 0;
+				goto cleanup_parallel;
 			}
 			if (nbases != 0) { /* base_dn an array? */
 				zend_hash_get_current_data(Z_ARRVAL_PP(base_dn), (void **)&entry);
@@ -837,16 +829,12 @@ static void php_ldap_do_search(INTERNAL_FUNCTION_PARAMETERS, int scope)
 				ldap_filter = Z_STRVAL_PP(entry);
 			}
 
-			php_set_opts(ld->link, ldap_sizelimit, ldap_timelimit, ldap_deref);
+			php_set_opts(ld->link, ldap_sizelimit, ldap_timelimit, ldap_deref, &old_ldap_sizelimit, &old_ldap_timelimit, &old_ldap_deref);
 
 			/* Run the actual search */	
 			rcs[i] = ldap_search(ld->link, ldap_base_dn, scope, ldap_filter, ldap_attrs, ldap_attrsonly);
 			lds[i] = ld;
 			zend_hash_move_forward(Z_ARRVAL_PP(link));
-		}
-		
-		if (ldap_attrs != NULL) {
-			efree(ldap_attrs);
 		}
 		
 		array_init(return_value);
@@ -864,50 +852,63 @@ static void php_ldap_do_search(INTERNAL_FUNCTION_PARAMETERS, int scope)
 				add_next_index_bool(return_value, 0);
 			}
 		}
+
+cleanup_parallel:
 		efree(lds);
 		efree(rcs);
-		return;
-	}
+	} else {
+		convert_to_string_ex(filter);
+		ldap_filter = Z_STRVAL_PP(filter);
 
-	ld = (ldap_linkdata *) zend_fetch_resource(link TSRMLS_CC, -1, "ldap link", NULL, 1, le_link);
-	if (ld == NULL) {
-		if (ldap_attrs != NULL) {
-			efree(ldap_attrs);
+		/* If anything else than string is passed, ldap_base_dn = NULL */
+		if (Z_TYPE_PP(base_dn) == IS_STRING) {
+			ldap_base_dn = Z_STRVAL_PP(base_dn);
 		}
-		RETURN_FALSE;
+
+		ld = (ldap_linkdata *) zend_fetch_resource(link TSRMLS_CC, -1, "ldap link", NULL, 1, le_link);
+		if (ld == NULL) {
+			ret = 0;
+			goto cleanup;
+		}
+
+		php_set_opts(ld->link, ldap_sizelimit, ldap_timelimit, ldap_deref, &old_ldap_sizelimit, &old_ldap_timelimit, &old_ldap_deref);
+
+		/* Run the actual search */	
+		errno = ldap_search_s(ld->link, ldap_base_dn, scope, ldap_filter, ldap_attrs, ldap_attrsonly, &ldap_res);
+	
+		if (errno != LDAP_SUCCESS
+			&& errno != LDAP_SIZELIMIT_EXCEEDED
+#ifdef LDAP_ADMINLIMIT_EXCEEDED
+			&& errno != LDAP_ADMINLIMIT_EXCEEDED
+#endif
+#ifdef LDAP_REFERRAL
+			&& errno != LDAP_REFERRAL
+#endif
+		) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Search: %s", ldap_err2string(errno));
+			ret = 0;
+		} else {
+			if (errno == LDAP_SIZELIMIT_EXCEEDED) {
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Partial search results returned: Sizelimit exceeded");
+			}
+#ifdef LDAP_ADMINLIMIT_EXCEEDED
+			else if (errno == LDAP_ADMINLIMIT_EXCEEDED) {
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Partial search results returned: Adminlimit exceeded");
+			}
+#endif
+			
+			ZEND_REGISTER_RESOURCE(return_value, ldap_res, le_result);
+		}
 	}
 
-	php_set_opts(ld->link, ldap_sizelimit, ldap_timelimit, ldap_deref);
-
-	/* Run the actual search */	
-	errno = ldap_search_s(ld->link, ldap_base_dn, scope, ldap_filter, ldap_attrs, ldap_attrsonly, &ldap_res);
-
+cleanup:
+	// Restoring previous options
+	php_set_opts(ld->link, old_ldap_sizelimit, old_ldap_timelimit, old_ldap_deref, &ldap_sizelimit, &ldap_timelimit, &ldap_deref);
 	if (ldap_attrs != NULL) {
 		efree(ldap_attrs);
 	}
-
-	if (errno != LDAP_SUCCESS
-		&& errno != LDAP_SIZELIMIT_EXCEEDED
-#ifdef LDAP_ADMINLIMIT_EXCEEDED
-		&& errno != LDAP_ADMINLIMIT_EXCEEDED
-#endif
-#ifdef LDAP_REFERRAL
-		&& errno != LDAP_REFERRAL
-#endif
-	) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Search: %s", ldap_err2string(errno));
-		RETVAL_FALSE; 
-	} else {
-		if (errno == LDAP_SIZELIMIT_EXCEEDED) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Partial search results returned: Sizelimit exceeded");
-		}
-#ifdef LDAP_ADMINLIMIT_EXCEEDED
-		else if (errno == LDAP_ADMINLIMIT_EXCEEDED) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Partial search results returned: Adminlimit exceeded");
-		}
-#endif
-		
-		ZEND_REGISTER_RESOURCE(return_value, ldap_res, le_result);
+	if (!ret) {
+		RETVAL_BOOL(ret);
 	}
 }
 /* }}} */
@@ -1057,14 +1058,14 @@ PHP_FUNCTION(ldap_get_entries)
 	ldap = ld->link;
 	num_entries = ldap_count_entries(ldap, ldap_result);
 
-	array_init(return_value);
-	add_assoc_long(return_value, "count", num_entries);
-
 	if (num_entries == 0) return;
 	num_entries = 0;
 	
 	ldap_result_entry = ldap_first_entry(ldap, ldap_result);
 	if (ldap_result_entry == NULL) RETURN_FALSE;
+
+	array_init(return_value);
+	add_assoc_long(return_value, "count", num_entries);
 
 	while (ldap_result_entry != NULL) {
 

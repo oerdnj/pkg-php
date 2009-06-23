@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_types.h,v 1.6.2.2.2.5 2008/12/31 11:17:33 sebastian Exp $ */
+/* $Id: zend_types.h,v 1.6.2.2.2.7 2009/06/05 11:21:47 lbarnaud Exp $ */
 
 #ifndef ZEND_TYPES_H
 #define ZEND_TYPES_H

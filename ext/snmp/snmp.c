@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: snmp.c,v 1.106.2.2.2.8 2008/12/31 11:17:43 sebastian Exp $ */
+/* $Id: snmp.c,v 1.106.2.2.2.10 2009/06/01 13:10:56 iliaa Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -479,7 +479,7 @@ retry:
 						return;
 					} else if (st == SNMP_CMD_WALK) {
 						add_next_index_zval(return_value,snmpval); /* Add to returned array */
-					} else if (st == SNMP_CMD_REALWALK)  {
+					} else if (st == SNMP_CMD_REALWALK && vars->type != SNMP_ENDOFMIBVIEW && vars->type != SNMP_NOSUCHOBJECT && vars->type != SNMP_NOSUCHINSTANCE) {
 #ifdef HAVE_NET_SNMP
 						snprint_objid(buf2, sizeof(buf2), vars->name, vars->name_length);
 #else
@@ -490,9 +490,14 @@ retry:
 					if (st >= SNMP_CMD_WALK && st != SNMP_CMD_SET) {
 						if (vars->type != SNMP_ENDOFMIBVIEW && 
 							vars->type != SNMP_NOSUCHOBJECT && vars->type != SNMP_NOSUCHINSTANCE) {
-							memmove((char *)name, (char *)vars->name,vars->name_length * sizeof(oid));
-							name_length = vars->name_length;
-							keepwalking = 1;
+							if (snmp_oid_compare(name, name_length, vars->name, vars->name_length) >= 0) {
+								php_error_docref(NULL TSRMLS_CC, E_WARNING, "Error: OID not increasing: %s",name);
+								keepwalking = 0;
+							} else {
+								memmove((char *)name, (char *)vars->name,vars->name_length * sizeof(oid));
+								name_length = vars->name_length;
+								keepwalking = 1;
+							}
 						}
 					}
 				}	

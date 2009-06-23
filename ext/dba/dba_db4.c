@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: dba_db4.c,v 1.15.2.3.2.4 2008/12/31 11:17:36 sebastian Exp $ */
+/* $Id: dba_db4.c,v 1.15.2.3.2.5 2009/05/13 02:16:36 felipe Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -219,7 +219,7 @@ DBA_NEXTKEY_FUNC(db4)
 		gkey.flags |= DB_DBT_MALLOC;
 		gval.flags |= DB_DBT_MALLOC;
 	}
-	if (dba->cursor->c_get(dba->cursor, &gkey, &gval, DB_NEXT) == 0) {
+	if (dba->cursor && dba->cursor->c_get(dba->cursor, &gkey, &gval, DB_NEXT) == 0) {
 		if (gkey.data) {
 			nkey = estrndup(gkey.data, gkey.size);
 			if (newlen) *newlen = gkey.size;

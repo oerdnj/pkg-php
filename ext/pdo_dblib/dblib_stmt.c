@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: dblib_stmt.c,v 1.6.2.2.2.6 2008/12/31 11:17:41 sebastian Exp $ */
+/* $Id: dblib_stmt.c,v 1.6.2.2.2.7 2009/03/20 22:14:17 sfox Exp $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -113,18 +113,27 @@ static int pdo_dblib_stmt_execute(pdo_stmt_t *stmt TSRMLS_DC)
 		stmt->column_count = S->ncols;
 	
 		for (i = 0, j = 0; i < S->ncols; i++) {
+			char *tmp = NULL;
+
 			S->cols[i].coltype = dbcoltype(H->link, i+1);
-			S->cols[i].name = dbcolname(H->link, i+1);
-			if (S->cols[i].name) {
-				S->cols[i].name = estrdup(S->cols[i].name);
-			} else if (j) {
-				spprintf(&S->cols[i].name, 0, "computed%d", j++);
-			} else {
-				S->cols[i].name = estrdup("computed");
-				j++;
+			S->cols[i].name = (char*)dbcolname(H->link, i+1);
+
+			if (!strlen(S->cols[i].name)) {
+				if (j) {
+					spprintf(&tmp, 0, "computed%d", j++);
+					strlcpy(S->cols[i].name, tmp, strlen(tmp)+1);
+					efree(tmp);
+				} else {
+					S->cols[i].name = "computed";
+					j++;
+				}
 			}
-			S->cols[i].source = dbcolsource(H->link, i+1);
-			S->cols[i].source = estrdup(S->cols[i].source ? S->cols[i].source : "");
+
+			S->cols[i].source = (char*)dbcolsource(H->link, i+1);
+			tmp = estrdup(S->cols[i].source ? S->cols[i].source : "");
+			S->cols[i].source = tmp;
+			efree(tmp);
+
 			S->cols[i].maxlen = dbcollen(H->link, i+1);
 		}
 	}

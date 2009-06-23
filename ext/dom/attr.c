@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: attr.c,v 1.18.2.2.2.5 2008/12/31 11:17:37 sebastian Exp $ */
+/* $Id: attr.c,v 1.18.2.2.2.6 2009/03/13 13:41:42 rrichards Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -28,7 +28,6 @@
 #if HAVE_LIBXML && HAVE_DOM
 
 #include "php_dom.h"
-
 
 /* {{{ arginfo */
 static
@@ -99,7 +98,6 @@ PHP_METHOD(domattr, __construct)
 
 /* }}} end DOMAttr::__construct */
 
-
 /* {{{ name	string	
 readonly=yes 
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#ID-1112119403
@@ -124,8 +122,6 @@ int dom_attr_name_read(dom_object *obj, zval **retval TSRMLS_DC)
 
 /* }}} */
 
-
-
 /* {{{ specified	boolean	
 readonly=yes 
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#ID-862529273
@@ -140,8 +136,6 @@ int dom_attr_specified_read(dom_object *obj, zval **retval TSRMLS_DC)
 }
 
 /* }}} */
-
-
 
 /* {{{ value	string	
 readonly=no 
@@ -210,8 +204,6 @@ int dom_attr_value_write(dom_object *obj, zval *newval TSRMLS_DC)
 
 /* }}} */
 
-
-
 /* {{{ ownerElement	DOMElement	
 readonly=yes 
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#Attr-ownerElement
@@ -229,12 +221,13 @@ int dom_attr_owner_element_read(dom_object *obj, zval **retval TSRMLS_DC)
 		return FAILURE;
 	}
 
+	ALLOC_ZVAL(*retval);
+
 	nodeparent = nodep->parent;
 	if (!nodeparent) {
-		return FAILURE;
+		ZVAL_NULL(*retval);
+		return SUCCESS;
 	}
-
-	ALLOC_ZVAL(*retval);
 
 	if (NULL == (*retval = php_dom_create_object(nodeparent, &ret, NULL, *retval, obj TSRMLS_CC))) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING,  "Cannot create required DOM object");
@@ -245,8 +238,6 @@ int dom_attr_owner_element_read(dom_object *obj, zval **retval TSRMLS_DC)
 }
 
 /* }}} */
-
-
 
 /* {{{ schemaTypeInfo	DOMTypeInfo	
 readonly=yes 
@@ -262,8 +253,6 @@ int dom_attr_schema_type_info_read(dom_object *obj, zval **retval TSRMLS_DC)
 }
 
 /* }}} */
-
-
 
 /* {{{ proto boolean dom_attr_is_id();
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#Attr-isId

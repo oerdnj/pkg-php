@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend.h,v 1.293.2.11.2.12 2008/12/31 11:17:32 sebastian Exp $ */
+/* $Id: zend.h,v 1.293.2.11.2.16 2009/06/17 08:57:04 rasmus Exp $ */
 
 #ifndef ZEND_H
 #define ZEND_H
@@ -178,6 +178,12 @@ char *alloca ();
 #endif
 
 
+#if defined(__GNUC__) && ZEND_GCC_VERSION >= 3400
+#else
+# define __restrict__
+#endif
+#define restrict __restrict__
+
 #if (HAVE_ALLOCA || (defined (__GNUC__) && __GNUC__ >= 2)) && !(defined(ZTS) && defined(ZEND_WIN32)) && !(defined(ZTS) && defined(NETWARE)) && !(defined(ZTS) && defined(HPUX)) && !defined(DARWIN)
 # define do_alloca(p) alloca(p)
 # define free_alloca(p)
@@ -249,6 +255,18 @@ char *alloca ();
 #define LONG_MIN (- LONG_MAX - 1)
 #endif
 
+#if SIZEOF_LONG == 4
+#define MAX_LENGTH_OF_LONG 11
+static const char long_min_digits[] = "2147483648";
+#elif SIZEOF_LONG == 8
+#define MAX_LENGTH_OF_LONG 20
+static const char long_min_digits[] = "9223372036854775808";
+#else
+#error "Unknown SIZEOF_LONG"
+#endif
+
+#define MAX_LENGTH_OF_DOUBLE 32
+
 #undef SUCCESS
 #undef FAILURE
 #define SUCCESS 0
@@ -262,7 +280,7 @@ char *alloca ();
 #define INTERNAL_FUNCTION_PARAMETERS int ht, zval *return_value, zval **return_value_ptr, zval *this_ptr, int return_value_used TSRMLS_DC
 #define INTERNAL_FUNCTION_PARAM_PASSTHRU ht, return_value, return_value_ptr, this_ptr, return_value_used TSRMLS_CC
 
-#if defined(__GNUC__) && !defined(__INTEL_COMPILER) && !defined(DARWIN) && !defined(__hpux) && !defined(_AIX) && !defined(__osf__)
+#if defined(__GNUC__) && __GNUC__ >= 3 && !defined(__INTEL_COMPILER) && !defined(DARWIN) && !defined(__hpux) && !defined(_AIX) && !defined(__osf__) && __GNUC__ >= 3
 #  define ZEND_VM_ALWAYS_INLINE  __attribute__ ((always_inline))
 void zend_error_noreturn(int type, const char *format, ...) __attribute__ ((noreturn));
 #else
