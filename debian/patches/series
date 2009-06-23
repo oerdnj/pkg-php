@@ -33,7 +33,6 @@ manpage_spelling.patch
 force_libmysqlclient_r.patch
 libedit_is_editline.patch
 bad_whatis_entries.patch
-sockets_spelling.patch
 curl_streams_sleep.patch
 gentoo/003_ext-zip-memory-corruptions.patch
 gentoo/005_ext-gd-imagepng-empty-image-crash.patch
