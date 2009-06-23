@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_exceptions.c,v 1.79.2.6.2.11 2008/12/31 11:17:33 sebastian Exp $ */
+/* $Id: zend_exceptions.c,v 1.79.2.6.2.13 2009/05/11 15:13:35 felipe Exp $ */
 
 #include "zend.h"
 #include "zend_API.h"
@@ -428,8 +428,13 @@ static int _build_trace_string(zval **frame, int num_args, va_list args, zend_ha
 ZEND_METHOD(exception, getTraceAsString)
 {
 	zval *trace;
-	char *res = estrdup(""), **str = &res, *s_tmp;
+	char *res, **str, *s_tmp;
 	int res_len = 0, *len = &res_len, num = 0;
+
+	DEFAULT_0_PARAMS;
+	
+	res = estrdup("");
+	str = &res;
 
 	trace = zend_read_property(default_exception_ce, getThis(), "trace", sizeof("trace")-1, 1 TSRMLS_CC);
 	zend_hash_apply_with_arguments(Z_ARRVAL_P(trace), (apply_func_args_t)_build_trace_string, 3, str, len, &num);
@@ -465,6 +470,8 @@ ZEND_METHOD(exception, __toString)
 	int len;
 	zend_fcall_info fci;
 	zval fname;
+	
+	DEFAULT_0_PARAMS;
 
 	_default_exception_get_entry(getThis(), "message", sizeof("message")-1, &message TSRMLS_CC);
 	_default_exception_get_entry(getThis(), "file", sizeof("file")-1, &file TSRMLS_CC);

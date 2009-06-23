@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: nsapi.c,v 1.69.2.3.2.16 2009/01/06 13:46:49 thetaphi Exp $ */
+/* $Id: nsapi.c,v 1.69.2.3.2.18 2009/03/20 15:54:36 thetaphi Exp $ */
 
 /*
  * PHP includes
@@ -294,7 +294,7 @@ PHP_MSHUTDOWN_FUNCTION(nsapi)
 PHP_MINFO_FUNCTION(nsapi)
 {
 	php_info_print_table_start();
-	php_info_print_table_row(2, "NSAPI Module Revision", "$Revision: 1.69.2.3.2.16 $");
+	php_info_print_table_row(2, "NSAPI Module Revision", "$Revision: 1.69.2.3.2.18 $");
 	php_info_print_table_row(2, "Server Software", system_version());
 	php_info_print_table_row(2, "Sub-requests with nsapi_virtual()",
 	 (nsapi_servact_service)?((zend_ini_long("zlib.output_compression", sizeof("zlib.output_compression"), 0))?"not supported with zlib.output_compression":"enabled"):"not supported on this platform" );
@@ -455,6 +455,11 @@ static void sapi_nsapi_flush(void *server_context)
 {
 	nsapi_request_context *rc = (nsapi_request_context *)server_context;
 	TSRMLS_FETCH();
+	
+	if (!rc) {
+		/* we have no context, so no flushing needed. This fixes a SIGSEGV on shutdown */
+		return;
+	}
 
 	if (!SG(headers_sent)) {
 		sapi_send_headers(TSRMLS_C);
@@ -473,7 +478,7 @@ static int sapi_nsapi_header_handler(sapi_header_struct *sapi_header, sapi_heade
 	char *header_name, *header_content, *p;
 	nsapi_request_context *rc = (nsapi_request_context *)SG(server_context);
 
-	header_name = sapi_header->header;
+	header_name = nsapi_strdup(sapi_header->header);
 	header_content = p = strchr(header_name, ':');
 	if (p == NULL) {
 		efree(sapi_header->header);
@@ -497,9 +502,9 @@ static int sapi_nsapi_header_handler(sapi_header_struct *sapi_header, sapi_heade
 		pblock_nvinsert(header_name, header_content, rc->rq->srvhdrs);
 	}
 
-	sapi_free_header(sapi_header);
+	nsapi_free(header_name);
 
-	return 0;	/* don't use the default SAPI mechanism, NSAPI duplicates this functionality */
+	return SAPI_HEADER_ADD;
 }
 
 static int sapi_nsapi_send_headers(sapi_headers_struct *sapi_headers TSRMLS_DC)
@@ -826,6 +831,7 @@ void NSAPI_PUBLIC php5_close(void *vparam)
 	}
 #endif	
 
+	sapi_shutdown();
 	tsrm_shutdown();
 
 	log_error(LOG_INFORM, "php5_close", NULL, NULL, "Shutdown PHP Module");

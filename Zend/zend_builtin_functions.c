@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_builtin_functions.c,v 1.277.2.12.2.33 2008/12/31 11:17:33 sebastian Exp $ */
+/* $Id: zend_builtin_functions.c,v 1.277.2.12.2.39 2009/06/08 21:17:12 pajoye Exp $ */
 
 #include "zend.h"
 #include "zend_API.h"
@@ -461,6 +461,7 @@ ZEND_FUNCTION(define)
 	zend_bool non_cs = 0;
 	int case_sensitive = CONST_CS;
 	zend_constant c;
+	char *p;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sz|b", &name, &name_len, &val, &non_cs) == FAILURE) {
 		return;
@@ -468,6 +469,34 @@ ZEND_FUNCTION(define)
 
 	if(non_cs) {
 		case_sensitive = 0;
+	}
+
+	/* class constant, check if there is name and make sure class is valid & exists */
+	if ((p = zend_memnstr(name, "::", sizeof("::") - 1, name + name_len))) {
+		char *class_name;
+		int found;
+		zend_class_entry **ce;
+		ALLOCA_FLAG(use_heap)
+
+		if (p == (name + name_len - sizeof("::") + 1)) {
+			zend_error(E_WARNING, "Class constant must have a name");
+			RETURN_FALSE;
+		} else if (p == name) {
+			zend_error(E_WARNING, "Missing class name");
+			RETURN_FALSE;
+		}
+
+		class_name = do_alloca_with_limit((p - name + 1), use_heap);
+		zend_str_tolower_copy(class_name, name, (p - name));
+
+		found = zend_hash_find(EG(class_table), class_name, p - name + 1, (void **) &ce);
+
+		if (found != SUCCESS) {
+			zend_error(E_WARNING, "Class '%s' does not exist", class_name);
+			free_alloca_with_limit(class_name, use_heap);
+			RETURN_FALSE;
+		}
+		free_alloca_with_limit(class_name, use_heap);
 	}
 
 repeat:
@@ -706,27 +735,22 @@ static void add_class_vars(zend_class_entry *ce, HashTable *properties, zval *re
 		while (zend_hash_get_current_data_ex(properties, (void **) &prop, &pos) == SUCCESS) {
 			char *key, *class_name, *prop_name;
 			uint key_len;
-			ulong num_index, h;
+			ulong num_index;
 			int prop_name_len = 0;			
 			zval *prop_copy;
 			zend_property_info *property_info;
+			zval zprop_name;
 
 			zend_hash_get_current_key_ex(properties, &key, &key_len, &num_index, 0, &pos);
 			zend_hash_move_forward_ex(properties, &pos);
 
 			zend_unmangle_property_name(key, key_len-1, &class_name, &prop_name);
 			prop_name_len = strlen(prop_name);
-			
-			h = zend_get_hash_value(prop_name, prop_name_len+1);
-			if (zend_hash_quick_find(&ce->properties_info, prop_name, prop_name_len+1, h, (void **) &property_info) == FAILURE) {
-				continue;
-			}
-			
-			if (property_info->flags & ZEND_ACC_SHADOW) {
-				continue;
-			} else if ((property_info->flags & ZEND_ACC_PRIVATE) && EG(scope) != ce) {
-				continue;
-			} else if ((property_info->flags & ZEND_ACC_PROTECTED) && zend_check_protected(ce, EG(scope)) == 0) {
+
+			ZVAL_STRINGL(&zprop_name, prop_name, prop_name_len, 0);
+			property_info = zend_get_property_info(ce, &zprop_name, 1 TSRMLS_CC);
+
+			if (!property_info || property_info == &EG(std_property_info)) {
 				continue;
 			}
 
@@ -1617,7 +1641,8 @@ ZEND_FUNCTION(get_defined_constants)
 		module_names[0] = "internal";
 		zend_hash_internal_pointer_reset_ex(&module_registry, &pos);
 		while (zend_hash_get_current_data_ex(&module_registry, (void *) &module, &pos) != FAILURE) {
-			module_names[i++] = module->name;
+			module_names[module->module_number] = module->name;
+			i++;
 			zend_hash_move_forward_ex(&module_registry, &pos);
 		}
 		module_names[i] = "user";

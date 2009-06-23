@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_dblib.c,v 1.9.2.6.2.5 2008/12/31 11:17:41 sebastian Exp $ */
+/* $Id: pdo_dblib.c,v 1.9.2.6.2.7 2009/05/20 10:19:28 kalle Exp $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -46,7 +46,11 @@ static zend_module_dep pdo_dblib_deps[] = {
 };
 #endif
 
+#if PDO_DBLIB_IS_MSSQL
+zend_module_entry pdo_mssql_module_entry = {
+#else
 zend_module_entry pdo_dblib_module_entry = {
+#endif
 #if ZEND_MODULE_API_NO >= 20050922
 	STANDARD_MODULE_HEADER_EX, NULL,
 	pdo_dblib_deps,
@@ -75,7 +79,11 @@ zend_module_entry pdo_dblib_module_entry = {
 };
 
 #if defined(COMPILE_DL_PDO_DBLIB) || defined(COMPILE_DL_PDO_MSSQL)
+#if PDO_DBLIB_IS_MSSQL
+ZEND_GET_MODULE(pdo_mssql)
+#else
 ZEND_GET_MODULE(pdo_dblib)
+#endif
 #endif
 
 int error_handler(DBPROCESS *dbproc, int severity, int dberr,

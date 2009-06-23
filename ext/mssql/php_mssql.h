@@ -17,7 +17,7 @@
  */
 
 
-/* $Id: php_mssql.h,v 1.42.2.3.2.3 2008/12/31 11:17:40 sebastian Exp $ */
+/* $Id: php_mssql.h,v 1.42.2.3.2.4 2009/05/26 12:37:52 felipe Exp $ */
 
 #ifndef PHP_MSSQL_H
 #define PHP_MSSQL_H
@@ -66,7 +66,9 @@ typedef short TDS_SHORT;
 #define DBMSGHANDLE(a, b) dbmsghandle(b)
 #define DBSETOPT(a, b, c) dbsetopt(a, b, c, -1)
 #define NO_MORE_RPC_RESULTS 3
+#ifndef dbfreelogin
 #define dbfreelogin dbloginfree
+#endif
 #define dbrpcexec dbrpcsend
 typedef unsigned char	*LPBYTE;
 typedef float           DBFLT4;

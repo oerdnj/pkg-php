@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: basic_functions.c,v 1.725.2.31.2.80 2008/12/31 11:17:44 sebastian Exp $ */
+/* $Id: basic_functions.c,v 1.725.2.31.2.84 2009/05/20 12:09:33 jani Exp $ */
 
 #include "php.h"
 #include "php_streams.h"
@@ -1113,7 +1113,7 @@ ZEND_BEGIN_ARG_INFO(arginfo_gethostbynamel, 0)
 	ZEND_ARG_INFO(0, hostname)
 ZEND_END_ARG_INFO()
 
-#if HAVE_RES_SEARCH && !(defined(__BEOS__)||defined(PHP_WIN32) || defined(NETWARE))
+#if HAVE_RES_SEARCH && !(defined(__BEOS__) || defined(PHP_WIN32) || defined(NETWARE))
 static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dns_check_record, 0, 0, 1)
 	ZEND_ARG_INFO(0, host)
@@ -1138,7 +1138,7 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_dns_get_mx, 0, 0, 2)
 	ZEND_ARG_INFO(1, weight) /* ARRAY_INFO(1, weight, 1) */
 ZEND_END_ARG_INFO()
 # endif
-#endif /* HAVE_RES_SEARCH && !(defined(__BEOS__)||defined(PHP_WIN32) || defined(NETWARE)) */
+#endif /* HAVE_RES_SEARCH && !(defined(__BEOS__) || defined(PHP_WIN32) || defined(NETWARE)) */
 /* }}} */
 /* {{{ exec.c */
 static
@@ -4078,7 +4078,7 @@ PHP_MINIT_FUNCTION(basic)
 	php_register_url_stream_wrapper("ftp", &php_stream_ftp_wrapper TSRMLS_CC);
 #endif
 
-#if HAVE_RES_SEARCH && !(defined(__BEOS__)||defined(PHP_WIN32) || defined(NETWARE))
+#if HAVE_RES_SEARCH && !(defined(__BEOS__) ||defined(PHP_WIN32) || defined(NETWARE))
 # if HAVE_DNS_FUNCS
 	PHP_MINIT(dns)(INIT_FUNC_ARGS_PASSTHRU);
 # endif
@@ -4329,52 +4329,60 @@ PHP_NAMED_FUNCTION(php_inet_pton)
 /* }}} */
 #endif /* HAVE_INET_PTON */
 
-
-
 /* {{{ proto int ip2long(string ip_address)
    Converts a string containing an (IPv4) Internet Protocol dotted address into a proper address */
 PHP_FUNCTION(ip2long)
 {
-	zval **str;
+	char *addr;
+	int addr_len;
+#ifdef HAVE_INET_PTON
+	struct in_addr ip;
+#else
 	unsigned long int ip;
+#endif
 
-	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &str) == FAILURE) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &addr, &addr_len) == FAILURE) {
+		return;
 	}
 
-	convert_to_string_ex(str);
-
-	if (Z_STRLEN_PP(str) == 0 || (ip = inet_addr(Z_STRVAL_PP(str))) == INADDR_NONE) {
-		/* the only special case when we should return -1 ourselves,
-		 * because inet_addr() considers it wrong. We return 0xFFFFFFFF and
-		 * not -1 or ~0 because of 32/64bit issues.
-		 */
-		if (Z_STRLEN_PP(str) == sizeof("255.255.255.255") - 1 &&
-			!memcmp(Z_STRVAL_PP(str), "255.255.255.255", sizeof("255.255.255.255") - 1)) {
-			RETURN_LONG(0xFFFFFFFF);
-		}
-		
+#ifdef HAVE_INET_PTON
+	if (addr_len == 0 || inet_pton(AF_INET, addr, &ip) != 1) {
 		RETURN_FALSE;
 	}
-
+	RETURN_LONG(ntohl(ip.s_addr));
+#else
+	if (addr_len == 0 || (ip = inet_addr(addr)) == INADDR_NONE) {
+		/* The only special case when we should return -1 ourselves,
+		 * because inet_addr() considers it wrong. We return 0xFFFFFFFF and
+		 * not -1 or ~0 because of 32/64bit issues. */
+		if (addr_len == sizeof("255.255.255.255") - 1 &&
+			!memcmp(addr, "255.255.255.255", sizeof("255.255.255.255") - 1)
+		) {
+			RETURN_LONG(0xFFFFFFFF);
+		}
+		RETURN_FALSE;
+	}
 	RETURN_LONG(ntohl(ip));
+#endif
 }
 /* }}} */
+
 
 /* {{{ proto string long2ip(int proper_address)
    Converts an (IPv4) Internet network address into a string in Internet standard dotted format */
 PHP_FUNCTION(long2ip)
 {
-	zval **num;
+	/* "It's a long but it's not, PHP ints are signed */
+	char *ip;
+	int ip_len;
 	unsigned long n;
 	struct in_addr myaddr;
 
-	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &num) == FAILURE) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &ip, &ip_len) == FAILURE) {
+		return;
 	}
-	convert_to_string_ex(num);
-	
-	n = strtoul(Z_STRVAL_PP(num), NULL, 0);
+
+	n = strtoul(ip, NULL, 0);
 
 	myaddr.s_addr = htonl(n);
 	RETURN_STRING(inet_ntoa(myaddr), 1);

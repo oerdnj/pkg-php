@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: openssl.c,v 1.98.2.5.2.51 2008/12/31 11:17:41 sebastian Exp $ */
+/* $Id: openssl.c,v 1.98.2.5.2.53 2009/04/20 10:00:41 mkoppanen Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -301,7 +301,9 @@ static void add_assoc_name_entry(zval * val, char * key, X509_NAME * name, int s
 				str = X509_NAME_ENTRY_get_data(ne);
 				if (ASN1_STRING_type(str) != V_ASN1_UTF8STRING) {
 					to_add_len = ASN1_STRING_to_UTF8(&to_add, str);
-					add_next_index_stringl(subentries, (char *)to_add, to_add_len, 1);
+					if (to_add_len != -1) {
+						add_next_index_stringl(subentries, (char *)to_add, to_add_len, 1);
+					}
 				} else {
 					to_add = ASN1_STRING_data(str);
 					to_add_len = ASN1_STRING_length(str);
@@ -317,7 +319,7 @@ static void add_assoc_name_entry(zval * val, char * key, X509_NAME * name, int s
 		} else {
 			zval_dtor(subentries);
 			FREE_ZVAL(subentries);
-			if (obj_cnt && str) {
+			if (obj_cnt && str && to_add_len > -1) {
 				add_assoc_stringl(subitem, sname, (char *)to_add, to_add_len, 1);
 			}
 		}
@@ -3892,6 +3894,7 @@ SSL *php_SSL_new_from_context(SSL_CTX *ctx, php_stream *stream TSRMLS_DC) /* {{{
 	char *cipherlist = NULL;
 	int ok = 1;
 
+	ERR_clear_error();
 
 	/* look at context options in the stream and set appropriate verification flags */
 	if (GET_VER_OPT("verify_peer") && zval_is_true(*val)) {

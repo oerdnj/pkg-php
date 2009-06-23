@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_alloc.c,v 1.144.2.3.2.54 2009/01/25 14:04:09 dsp Exp $ */
+/* $Id: zend_alloc.c,v 1.144.2.3.2.56 2009/05/30 16:42:24 lbarnaud Exp $ */
 
 #include "zend.h"
 #include "zend_alloc.h"
@@ -148,7 +148,12 @@ static zend_mm_segment* zend_mm_mem_mmap_realloc(zend_mm_storage *storage, zend_
 {
 	zend_mm_segment *ret;
 #ifdef HAVE_MREMAP
+#if defined(__NetBSD__)
+	/* NetBSD 5 supports mremap but takes an extra newp argument */
+	ret = (zend_mm_segment*)mremap(segment, segment->size, segment, size, MREMAP_MAYMOVE);
+#else
 	ret = (zend_mm_segment*)mremap(segment, segment->size, size, MREMAP_MAYMOVE);
+#endif
 	if (ret == MAP_FAILED) {
 #endif
 		ret = storage->handlers->_alloc(storage, size);
@@ -2472,7 +2477,11 @@ ZEND_API size_t zend_memory_usage(int real_usage TSRMLS_DC)
 	if (real_usage) {
 		return AG(mm_heap)->real_size;
 	} else {
-		return AG(mm_heap)->size;
+		size_t usage = AG(mm_heap)->size;
+#if ZEND_MM_CACHE
+		usage -= AG(mm_heap)->cached;
+#endif
+		return usage;
 	}
 }
 

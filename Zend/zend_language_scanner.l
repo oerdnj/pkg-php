@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_language_scanner.l,v 1.131.2.11.2.17 2008/05/10 09:18:27 mattwil Exp $ */
+/* $Id: zend_language_scanner.l,v 1.131.2.11.2.18 2009/05/08 17:50:58 mattwil Exp $ */
 
 #define yyleng SCNG(yy_leng)
 #define yytext SCNG(yy_text)
@@ -2033,7 +2033,9 @@ wrong_label:
 
 <ST_COMMENT,ST_DOC_COMMENT><<EOF>> {
 	zend_error(E_COMPILE_WARNING,"Unterminated comment starting line %d", CG(comment_start_line));
-	return 0;
+	yyless(yyleng - 1);
+	BEGIN(ST_IN_SCRIPTING);
+	return T_COMMENT;
 }
 
 

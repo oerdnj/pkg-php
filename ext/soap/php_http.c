@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_http.c,v 1.77.2.11.2.17 2009/01/19 21:57:45 iliaa Exp $ */
+/* $Id: php_http.c,v 1.77.2.11.2.18 2009/06/03 12:41:46 iliaa Exp $ */
 
 #include "php_soap.h"
 #include "ext/standard/base64.h"
@@ -612,6 +612,11 @@ try_again:
 					if (zend_hash_find(Z_ARRVAL_PP(digest), "opaque", sizeof("opaque"), (void **)&tmp) == SUCCESS &&
 					    Z_TYPE_PP(tmp) == IS_STRING) {
 						smart_str_append_const(&soap_headers, "\", opaque=\"");
+						smart_str_appendl(&soap_headers, Z_STRVAL_PP(tmp), Z_STRLEN_PP(tmp));
+					}
+					if (zend_hash_find(Z_ARRVAL_PP(digest), "algorithm", sizeof("algorithm"), (void **)&tmp) == SUCCESS &&
+						Z_TYPE_PP(tmp) == IS_STRING) {
+						smart_str_append_const(&soap_headers, "\", algorithm=\"");
 						smart_str_appendl(&soap_headers, Z_STRVAL_PP(tmp), Z_STRLEN_PP(tmp));
 					}
 					smart_str_append_const(&soap_headers, "\"\r\n");

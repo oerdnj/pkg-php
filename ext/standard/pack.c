@@ -15,7 +15,7 @@
    | Author: Chris Schneider <cschneid@relog.ch>                          |
    +----------------------------------------------------------------------+
  */
-/* $Id: pack.c,v 1.57.2.5.2.8 2008/12/31 11:17:45 sebastian Exp $ */
+/* $Id: pack.c,v 1.57.2.5.2.9 2009/05/12 12:35:45 iliaa Exp $ */
 
 #include "php.h"
 
@@ -799,6 +799,13 @@ PHP_FUNCTION(unpack)
 						}
 
 						v |= php_unpack(&input[inputpos], 4, issigned, map);
+						if (sizeof(long) > 4) {
+ 							if (type == 'l') {
+								v = (signed int) v; 
+							} else {
+								v = (unsigned int) v;
+							}
+						}
 						add_assoc_long(return_value, n, v);
 						break;
 					}

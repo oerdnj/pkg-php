@@ -17,7 +17,7 @@
 */
 
 
-/* $Id: reg.h,v 1.21.2.1.2.3 2008/12/31 11:17:45 sebastian Exp $ */
+/* $Id: reg.h,v 1.21.2.1.2.4 2009/05/29 00:03:28 scottmac Exp $ */
 
 #ifndef REG_H
 #define REG_H
@@ -34,6 +34,7 @@ PHPAPI PHP_FUNCTION(sql_regcase);
 
 ZEND_BEGIN_MODULE_GLOBALS(reg)
 	HashTable ht_rc;
+	unsigned int lru_counter;
 ZEND_END_MODULE_GLOBALS(reg)
 
 PHP_MINIT_FUNCTION(regex);

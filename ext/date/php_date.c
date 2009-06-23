@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_date.c,v 1.43.2.45.2.64 2008/12/31 11:17:36 sebastian Exp $ */
+/* $Id: php_date.c,v 1.43.2.45.2.71 2009/06/05 22:34:30 rasmus Exp $ */
 
 #include "php.h"
 #include "php_streams.h"
@@ -29,6 +29,14 @@
 #include "php_date.h"
 #include "lib/timelib.h"
 #include <time.h>
+
+#ifdef PHP_WIN32
+static __inline __int64 llabs( __int64 i ) { return i >= 0? i: -i; }
+#endif
+
+#if defined(__GNUC__) && __GNUC__ < 3
+static __inline __int64_t llabs( __int64_t i ) { return i >= 0 ? i : -i; }
+#endif
 
 /* {{{ arginfo */
 static
@@ -312,17 +320,11 @@ static zend_object_value date_object_clone_date(zval *this_ptr TSRMLS_DC);
 static int date_object_compare_date(zval *d1, zval *d2 TSRMLS_DC);
 static zend_object_value date_object_clone_timezone(zval *this_ptr TSRMLS_DC);
 
-/* This is need to ensure that session extension request shutdown occurs 1st, because it uses the date extension */ 
-static zend_module_dep date_deps[] = {
-        ZEND_MOD_OPTIONAL("session")
-        {NULL, NULL, NULL}
-};
-
 /* {{{ Module struct */
 zend_module_entry date_module_entry = {
 	STANDARD_MODULE_HEADER_EX,
 	NULL,
-	date_deps,
+	NULL,
 	"date",                     /* extension name */
 	date_functions,             /* function list */
 	PHP_MINIT(date),            /* process startup */
@@ -345,6 +347,7 @@ static PHP_GINIT_FUNCTION(date)
 {
 	date_globals->default_timezone = NULL;
 	date_globals->timezone = NULL;
+	date_globals->tzcache = NULL;
 }
 /* }}} */
 
@@ -363,7 +366,7 @@ PHP_RINIT_FUNCTION(date)
 		efree(DATEG(timezone));
 	}
 	DATEG(timezone) = NULL;
-	zend_hash_init(&DATEG(tzcache), 4, NULL, _php_date_tzinfo_dtor, 0);
+	DATEG(tzcache) = NULL;
 
 	return SUCCESS;
 }
@@ -376,8 +379,11 @@ PHP_RSHUTDOWN_FUNCTION(date)
 		efree(DATEG(timezone));
 	}
 	DATEG(timezone) = NULL;
-	zend_hash_destroy(&DATEG(tzcache));
-
+	if(DATEG(tzcache)) {
+		zend_hash_destroy(DATEG(tzcache));
+		FREE_HASHTABLE(DATEG(tzcache));
+		DATEG(tzcache) = NULL;
+	}
 	return SUCCESS;
 }
 /* }}} */
@@ -554,13 +560,18 @@ static timelib_tzinfo *php_date_parse_tzfile(char *formal_tzname, const timelib_
 {
 	timelib_tzinfo *tzi, **ptzi;
 
-	if (zend_hash_find(&DATEG(tzcache), formal_tzname, strlen(formal_tzname) + 1, (void **) &ptzi) == SUCCESS) {
+	if(!DATEG(tzcache)) {
+		ALLOC_HASHTABLE(DATEG(tzcache));
+		zend_hash_init(DATEG(tzcache), 4, NULL, _php_date_tzinfo_dtor, 0);
+	}
+
+	if (zend_hash_find(DATEG(tzcache), formal_tzname, strlen(formal_tzname) + 1, (void **) &ptzi) == SUCCESS) {
 		return *ptzi;
 	}
 
 	tzi = timelib_parse_tzfile(formal_tzname, tzdb);
 	if (tzi) {
-		zend_hash_add(&DATEG(tzcache), formal_tzname, strlen(formal_tzname) + 1, (void *) &tzi, sizeof(timelib_tzinfo*), NULL);
+		zend_hash_add(DATEG(tzcache), formal_tzname, strlen(formal_tzname) + 1, (void *) &tzi, sizeof(timelib_tzinfo*), NULL);
 	}
 	return tzi;
 }
@@ -656,7 +667,7 @@ PHPAPI timelib_tzinfo *get_timezone_info(TSRMLS_D)
 {
 	char *tz;
 	timelib_tzinfo *tzi;
-	
+
 	tz = guess_timezone(DATE_TIMEZONEDB TSRMLS_CC);
 	tzi = php_date_parse_tzfile(tz, DATE_TIMEZONEDB TSRMLS_CC);
 	if (! tzi) {
@@ -787,7 +798,7 @@ static char *date_format(char *format, int format_len, timelib_time *t, int loca
 			/* year */
 			case 'L': length = slprintf(buffer, 32, "%d", timelib_is_leap((int) t->y)); break;
 			case 'y': length = slprintf(buffer, 32, "%02d", (int) t->y % 100); break;
-			case 'Y': length = slprintf(buffer, 32, "%s%04d", t->y < 0 ? "-" : "", abs((int) t->y)); break;
+			case 'Y': length = slprintf(buffer, 32, "%s%04ld", t->y < 0 ? "-" : "", llabs(t->y)); break;
 
 			/* time */
 			case 'a': length = slprintf(buffer, 32, "%s", t->h >= 12 ? "pm" : "am"); break;

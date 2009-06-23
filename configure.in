@@ -1,4 +1,4 @@
-## $Id: configure.in,v 1.579.2.52.2.131 2009/02/25 14:56:50 iliaa Exp $ -*- autoconf -*-
+## $Id: configure.in,v 1.579.2.52.2.139 2009/06/17 12:22:41 iliaa Exp $ -*- autoconf -*-
 dnl ## Process this file with autoconf to produce a configure script.
 
 divert(1)
@@ -41,7 +41,7 @@ AC_CONFIG_HEADER(main/php_config.h)
 
 PHP_MAJOR_VERSION=5
 PHP_MINOR_VERSION=2
-PHP_RELEASE_VERSION=9
+PHP_RELEASE_VERSION=10
 PHP_EXTRA_VERSION=""
 PHP_VERSION="$PHP_MAJOR_VERSION.$PHP_MINOR_VERSION.$PHP_RELEASE_VERSION$PHP_EXTRA_VERSION"
 PHP_VERSION_ID=`expr [$]PHP_MAJOR_VERSION \* 10000 + [$]PHP_MINOR_VERSION \* 100 + [$]PHP_RELEASE_VERSION`
@@ -140,8 +140,9 @@ esac
 dnl Checks for programs.
 dnl -------------------------------------------------------------------------
 
-AC_PROG_CC
+AC_PROG_CC([cc gcc])
 PHP_DETECT_ICC
+PHP_DETECT_SUNCC
 AC_PROG_CC_C_O
 dnl Change to AC_PROG_CC_STDC when we start requiring a post-2.13 autoconf
 dnl AC_PROG_CC_STDC
@@ -187,6 +188,10 @@ case $host_cpu in
       CFLAGS="$CFLAGS -ieee"
     fi
     ;;
+  sparc*)
+    if test "$SUNCC" = "yes"; then
+      CFLAGS="$CFLAGS -xmemalign=8s"
+    fi
 esac
 
 case $host_alias in
@@ -685,7 +690,7 @@ if test "$PHP_GCOV" = "yes"; then
     AC_MSG_ERROR([ccache must be disabled when --enable-gcov option is used. You can disable ccache by setting environment variable CCACHE_DISABLE=1.])
   fi
   
-  ltp_version_list="1.5 1.6"
+  ltp_version_list="1.5 1.6 1.7"
 
   AC_CHECK_PROG(LTP, lcov, lcov)
   AC_CHECK_PROG(LTP_GENHTML, genhtml, genhtml)
@@ -731,6 +736,15 @@ if test "$PHP_GCOV" = "yes"; then
   dnl Add the special gcc flags
   CFLAGS="$CFLAGS -O0 -fprofile-arcs -ftest-coverage"
   CXXFLAGS="$CXXFLAGS -O0 -fprofile-arcs -ftest-coverage"
+  if test "$SUNCC" = "yes"; then
+    if test -n "$auto_cflags"; then
+      CFLAGS="-g"
+      CXXFLAGS="-g"
+    else
+      CFLAGS="$CFLAGS -g"
+      CXXFLAGS="$CFLAGS -g"
+    fi
+  fi
 fi
 
 PHP_ARG_ENABLE(debug, whether to include debugging symbols,

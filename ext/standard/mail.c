@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: mail.c,v 1.87.2.1.2.11 2008/12/31 11:17:45 sebastian Exp $ */
+/* $Id: mail.c,v 1.87.2.1.2.12 2009/04/15 14:25:06 iliaa Exp $ */
 
 #include <stdlib.h>
 #include <ctype.h>
@@ -73,7 +73,7 @@
 PHP_FUNCTION(ezmlm_hash)
 {
 	char *str = NULL;
-	unsigned long h = 5381L;
+	unsigned int h = 5381;
 	int j, str_len;
 	
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s",

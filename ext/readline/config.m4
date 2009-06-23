@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.25.2.3 2005/11/28 23:04:01 sniper Exp $
+dnl $Id: config.m4,v 1.25.2.3.2.1 2009/05/14 13:43:52 jani Exp $
 dnl
 
 PHP_ARG_WITH(libedit,for libedit readline replacement, 
@@ -47,15 +47,6 @@ if test "$PHP_READLINE" && test "$PHP_READLINE" != "no"; then
   [
     AC_DEFINE(HAVE_RL_CALLBACK_READ_CHAR, 1, [ ])
   ],[],[
-    -L$READLINE_DIR/$PHP_LIBDIR $PHP_READLINE_LIBS
-  ])
-
-  PHP_CHECK_LIBRARY(history, add_history,
-  [
-    PHP_ADD_LIBRARY_WITH_PATH(history, $READLINE_DIR/$PHP_LIBDIR, READLINE_SHARED_LIBADD)
-  ], [
-    AC_MSG_ERROR(history library required by readline not found)
-  ], [
     -L$READLINE_DIR/$PHP_LIBDIR $PHP_READLINE_LIBS
   ])
 

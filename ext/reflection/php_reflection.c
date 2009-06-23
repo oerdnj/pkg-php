@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_reflection.c,v 1.164.2.33.2.55 2008/12/31 11:17:42 sebastian Exp $ */
+/* $Id: php_reflection.c,v 1.164.2.33.2.57 2009/05/21 16:05:11 lbarnaud Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1122,7 +1122,7 @@ static void reflection_method_factory(zend_class_entry *ce, zend_function *metho
 	MAKE_STD_ZVAL(name);
 	MAKE_STD_ZVAL(classname);
 	ZVAL_STRING(name, method->common.function_name, 1);
-	ZVAL_STRINGL(classname, ce->name, ce->name_length, 1);
+	ZVAL_STRINGL(classname, method->common.scope->name, method->common.scope->name_length, 1);
 	reflection_instantiate(reflection_method_ptr, object TSRMLS_CC);
 	intern = (reflection_object *) zend_object_store_get_object(object TSRMLS_CC);
 	intern->ptr = method;
@@ -1164,7 +1164,7 @@ static void reflection_property_factory(zend_class_entry *ce, zend_property_info
 	MAKE_STD_ZVAL(name);
 	MAKE_STD_ZVAL(classname);
 	ZVAL_STRING(name, prop_name, 1);
-	ZVAL_STRINGL(classname, ce->name, ce->name_length, 1);
+	ZVAL_STRINGL(classname, prop->ce->name, prop->ce->name_length, 1);
 
 	reflection_instantiate(reflection_property_ptr, object TSRMLS_CC);
 	intern = (reflection_object *) zend_object_store_get_object(object TSRMLS_CC);
@@ -2249,11 +2249,6 @@ ZEND_METHOD(reflection_method, __construct)
 		zval_dtor(&ztmp);
 	}
 
-	MAKE_STD_ZVAL(classname);
-	ZVAL_STRINGL(classname, ce->name, ce->name_length, 1);
-
-	zend_hash_update(Z_OBJPROP_P(object), "class", sizeof("class"), (void **) &classname, sizeof(zval *), NULL);
-	
 	lcname = zend_str_tolower_dup(name_str, name_len);
 
 	if (zend_hash_find(&ce->function_table, lcname, name_len + 1, (void **) &mptr) == FAILURE) {
@@ -2264,6 +2259,11 @@ ZEND_METHOD(reflection_method, __construct)
 	}
 	efree(lcname);
 
+	MAKE_STD_ZVAL(classname);
+	ZVAL_STRINGL(classname, mptr->common.scope->name, mptr->common.scope->name_length, 1);
+
+	zend_hash_update(Z_OBJPROP_P(object), "class", sizeof("class"), (void **) &classname, sizeof(zval *), NULL);
+	
 	MAKE_STD_ZVAL(name);
 	ZVAL_STRING(name, mptr->common.function_name, 1);
 	zend_hash_update(Z_OBJPROP_P(object), "name", sizeof("name"), (void **) &name, sizeof(zval *), NULL);
@@ -3866,17 +3866,18 @@ ZEND_METHOD(reflection_property, __construct)
 		}
 	}
 
-	MAKE_STD_ZVAL(classname);
-	ZVAL_STRINGL(classname, ce->name, ce->name_length, 1);
-	zend_hash_update(Z_OBJPROP_P(object), "class", sizeof("class"), (void **) &classname, sizeof(zval *), NULL);
-	
+	MAKE_STD_ZVAL(classname);	
 	MAKE_STD_ZVAL(propname);
+	
 	if (dynam_prop == 0) {
 		zend_unmangle_property_name(property_info->name, property_info->name_length, &class_name, &prop_name);
+		ZVAL_STRINGL(classname, property_info->ce->name, property_info->ce->name_length, 1);
 		ZVAL_STRING(propname, prop_name, 1);
 	} else {
+		ZVAL_STRINGL(classname, ce->name, ce->name_length, 1);	
 		ZVAL_STRINGL(propname, name_str, name_len, 1);
 	}
+	zend_hash_update(Z_OBJPROP_P(object), "class", sizeof("class"), (void **) &classname, sizeof(zval *), NULL);
 	zend_hash_update(Z_OBJPROP_P(object), "name", sizeof("name"), (void **) &propname, sizeof(zval *), NULL);
 
 	reference = (property_reference*) emalloc(sizeof(property_reference));
@@ -4125,6 +4126,10 @@ ZEND_METHOD(reflection_property, getDeclaringClass)
 			break;
 		}
 		ce = tmp_ce;
+		if (tmp_ce == tmp_info->ce) {
+			/* declared in this class, done */
+			break;
+		}
 		tmp_ce = tmp_ce->parent;
 	}
 
@@ -4947,7 +4952,7 @@ PHP_MINFO_FUNCTION(reflection) /* {{{ */
 	php_info_print_table_start();
 	php_info_print_table_header(2, "Reflection", "enabled");
 
-	php_info_print_table_row(2, "Version", "$Id: php_reflection.c,v 1.164.2.33.2.55 2008/12/31 11:17:42 sebastian Exp $");
+	php_info_print_table_row(2, "Version", "$Id: php_reflection.c,v 1.164.2.33.2.57 2009/05/21 16:05:11 lbarnaud Exp $");
 
 	php_info_print_table_end();
 } /* }}} */

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: cast.c,v 1.12.2.1.2.3 2008/12/31 11:17:48 sebastian Exp $ */
+/* $Id: cast.c,v 1.12.2.1.2.6 2009/06/03 08:59:19 kalle Exp $ */
 
 #define _GNU_SOURCE
 #include "php.h"
@@ -214,12 +214,12 @@ PHPAPI int _php_stream_cast(php_stream *stream, int castas, void **ret, int show
 
 			newstream = php_stream_fopen_tmpfile();
 			if (newstream) {
-				size_t copied = php_stream_copy_to_stream(stream, newstream, PHP_STREAM_COPY_ALL);
+				int ret = php_stream_copy_to_stream_ex(stream, newstream, PHP_STREAM_COPY_ALL, NULL);
 
-				if (copied == 0) {
+				if (ret != SUCCESS) {
 					php_stream_close(newstream);
 				} else {
-					int retcode = php_stream_cast(newstream, castas | flags, ret, show_err);
+					int retcode = php_stream_cast(newstream, castas | flags, (void **)ret, show_err);
 
 					if (retcode == SUCCESS)
 						rewind(*(FILE**)ret);
@@ -327,7 +327,7 @@ PHPAPI int _php_stream_make_seekable(php_stream *origstream, php_stream **newstr
 	if (*newstream == NULL)
 		return PHP_STREAM_FAILED;
 
-	if (php_stream_copy_to_stream(origstream, *newstream, PHP_STREAM_COPY_ALL) == 0) {
+	if (php_stream_copy_to_stream_ex(origstream, *newstream, PHP_STREAM_COPY_ALL, NULL) != SUCCESS) {
 		php_stream_close(*newstream);
 		*newstream = NULL;
 		return PHP_STREAM_CRITICAL;

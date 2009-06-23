@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_compile.c,v 1.647.2.27.2.54 2009/01/26 21:27:41 dsp Exp $ */
+/* $Id: zend_compile.c,v 1.647.2.27.2.57 2009/05/08 17:50:58 mattwil Exp $ */
 
 #include <zend_language_parser.h>
 #include "zend.h"
@@ -1536,11 +1536,8 @@ void zend_do_begin_class_member_function_call(znode *class_name, znode *method_n
 		    memcmp(lcname, ZEND_CONSTRUCTOR_FUNC_NAME, sizeof(ZEND_CONSTRUCTOR_FUNC_NAME)-1) == 0) {
 			zval_dtor(&opline->op2.u.constant);
 			SET_UNUSED(opline->op2);
-			efree(lcname);
-		} else {
-			efree(opline->op2.u.constant.value.str.val);
-			opline->op2.u.constant.value.str.val = lcname;
 		}
+		efree(lcname);
 	}
 
 	zend_stack_push(&CG(function_call_stack), (void *) &ptr, sizeof(zend_function *));
@@ -2138,7 +2135,7 @@ static zend_bool do_inherit_method_check(HashTable *child_function_table, zend_f
 		if (!zend_do_perform_implementation_check(child, child->common.prototype)) {
 			zend_error(E_COMPILE_ERROR, "Declaration of %s::%s() must be compatible with that of %s::%s()", ZEND_FN_SCOPE_NAME(child), child->common.function_name, ZEND_FN_SCOPE_NAME(child->common.prototype), child->common.prototype->common.function_name);
 		}
-	} else if (EG(error_reporting) & E_STRICT) { /* Check E_STRICT before the check so that we save some time */
+	} else if (EG(error_reporting) & E_STRICT || EG(user_error_handler)) { /* Check E_STRICT (or custom error handler) before the check so that we save some time */
 		if (!zend_do_perform_implementation_check(child, parent)) {
 			zend_error(E_STRICT, "Declaration of %s::%s() should be compatible with that of %s::%s()", ZEND_FN_SCOPE_NAME(child), child->common.function_name, ZEND_FN_SCOPE_NAME(parent), parent->common.function_name);
 		}
@@ -4195,8 +4192,6 @@ again:
 		case T_END_HEREDOC:
 			efree(Z_STRVAL(zendlval->u.constant));
 			break;
-		case EOF:
-			return EOF;
 	}
 
 	INIT_PZVAL(&zendlval->u.constant);

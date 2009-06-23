@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_api.c,v 1.118.2.22.2.22 2008/12/31 11:17:40 sebastian Exp $ 
+  $Id: mysqli_api.c,v 1.118.2.22.2.23 2009/06/09 01:00:47 scottmac Exp $ 
 */
 
 #ifdef HAVE_CONFIG_H
@@ -1099,7 +1099,13 @@ PHP_FUNCTION(mysqli_info)
 PHP_FUNCTION(mysqli_init)
 {
 	MYSQLI_RESOURCE *mysqli_resource;
-	MY_MYSQL *mysql = (MY_MYSQL *)ecalloc(1, sizeof(MY_MYSQL));
+	MY_MYSQL *mysql;
+
+	if (getThis() && ((mysqli_object *) zend_object_store_get_object(getThis() TSRMLS_CC))->ptr) {
+		return;
+	}
+
+	mysql = (MY_MYSQL *)ecalloc(1, sizeof(MY_MYSQL));
 
 	if (!(mysql->mysql = mysql_init(NULL))) {
 		efree(mysql);

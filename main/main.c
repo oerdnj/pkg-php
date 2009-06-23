@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: main.c,v 1.640.2.23.2.68 2008/12/31 11:17:47 sebastian Exp $ */
+/* $Id: main.c,v 1.640.2.23.2.70 2009/05/04 19:55:42 derick Exp $ */
 
 /* {{{ includes
  */
@@ -59,6 +59,7 @@
 #include "fopen_wrappers.h"
 #include "ext/standard/php_standard.h"
 #include "ext/standard/php_string.h"
+#include "ext/date/php_date.h"
 #include "php_variables.h"
 #include "ext/standard/credits.h"
 #ifdef PHP_WIN32
@@ -473,8 +474,6 @@ static int module_shutdown = 0;
 PHPAPI void php_log_err(char *log_message TSRMLS_DC)
 {
 	int fd = -1;
-	char error_time_str[128];
-	struct tm tmbuf;
 	time_t error_time;
 
 	/* Try to use the specified logging location. */
@@ -489,14 +488,17 @@ PHPAPI void php_log_err(char *log_message TSRMLS_DC)
 		if (fd != -1) {
 			char *tmp;
 			int len;
+			char *error_time_str;
+
 			time(&error_time);
-			strftime(error_time_str, sizeof(error_time_str), "%d-%b-%Y %H:%M:%S", php_localtime_r(&error_time, &tmbuf));
+			error_time_str = php_format_date("d-M-Y H:i:s", 11, error_time, 1 TSRMLS_CC);
 			len = spprintf(&tmp, 0, "[%s] %s%s", error_time_str, log_message, PHP_EOL);
 #ifdef PHP_WIN32
 			php_flock(fd, 2);
 #endif
 			write(fd, tmp, len);
 			efree(tmp);
+			efree(error_time_str);
 			close(fd);
 			return;
 		}

@@ -16,12 +16,14 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_json.h,v 1.8.2.4 2008/12/31 11:17:38 sebastian Exp $ */
+/* $Id: php_json.h,v 1.8.2.7 2009/06/01 14:03:24 tony2001 Exp $ */
 
 #ifndef PHP_JSON_H
 #define PHP_JSON_H
 
 #define PHP_JSON_VERSION "1.2.1"
+
+#include "ext/standard/php_smart_str.h"
 
 extern zend_module_entry json_module_entry;
 #define phpext_json_ptr &json_module_entry
@@ -41,6 +43,9 @@ extern zend_module_entry json_module_entry;
 #else
 #define JSON_G(v) (json_globals.v)
 #endif
+
+PHPAPI void php_json_encode(smart_str *buf, zval *val TSRMLS_DC);
+PHPAPI void php_json_decode(zval *return_value, char *buf, int buf_len, zend_bool assoc TSRMLS_DC);
 
 #endif  /* PHP_JSON_H */
 

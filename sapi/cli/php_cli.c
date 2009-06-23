@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_cli.c,v 1.129.2.13.2.30 2008/12/31 11:17:49 sebastian Exp $ */
+/* $Id: php_cli.c,v 1.129.2.13.2.34 2009/04/09 10:20:39 bjori Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -90,6 +90,12 @@
 #include "zend_exceptions.h"
 
 #include "php_getopt.h"
+
+#ifndef PHP_WIN32
+# define php_select(m, r, w, e, t)	select(m, r, w, e, t)
+#else
+# include "win32/select.h"
+#endif
 
 PHPAPI extern char *php_ini_opened_path;
 PHPAPI extern char *php_ini_scanned_files;
@@ -224,15 +230,38 @@ static void print_extensions(TSRMLS_D) /* {{{ */
 #define STDOUT_FILENO 1
 #endif
 
-static inline size_t sapi_cli_single_write(const char *str, uint str_length) /* {{{ */
+static inline int sapi_cli_select(int fd TSRMLS_DC)
+{
+	fd_set wfd, dfd;
+	struct timeval tv;
+	int ret;
+
+	FD_ZERO(&wfd);
+	FD_ZERO(&dfd);
+
+	PHP_SAFE_FD_SET(fd, &wfd);
+
+	tv.tv_sec = FG(default_socket_timeout);
+	tv.tv_usec = 0;
+
+	ret = php_select(fd+1, &dfd, &wfd, &dfd, &tv);
+
+	return ret != -1;
+}
+
+static inline size_t sapi_cli_single_write(const char *str, uint str_length TSRMLS_DC) /* {{{ */
 {
 #ifdef PHP_WRITE_STDOUT
 	long ret;
 
-	ret = write(STDOUT_FILENO, str, str_length);
+	do {
+		ret = write(STDOUT_FILENO, str, str_length);
+	} while (ret <= 0 && errno == EAGAIN && sapi_cli_select(STDOUT_FILENO TSRMLS_CC));
+
 	if (ret <= 0) {
 		return 0;
 	}
+
 	return ret;
 #else
 	size_t ret;
@@ -258,7 +287,7 @@ static int sapi_cli_ub_write(const char *str, uint str_length TSRMLS_DC) /* {{{ 
 
 	while (remaining > 0)
 	{
-		ret = sapi_cli_single_write(ptr, remaining);
+		ret = sapi_cli_single_write(ptr, remaining TSRMLS_CC);
 		if (!ret) {
 #ifndef PHP_CLI_WIN32_NO_CONSOLE
 			php_handle_aborted_connection();
@@ -456,9 +485,9 @@ static void php_cli_usage(char *argv0)
 				"  -F <file>        Parse and execute <file> for every input line\n"
 				"  -E <end_code>    Run PHP <end_code> after processing all input lines\n"
 				"  -H               Hide any passed arguments from external tools.\n"
-				"  -s               Display colour syntax highlighted source.\n"
+				"  -s               Output HTML syntax highlighted source.\n"
 				"  -v               Version number\n"
-				"  -w               Display source with stripped comments and whitespace.\n"
+				"  -w               Output source with stripped comments and whitespace.\n"
 				"  -z <file>        Load Zend extension <file>.\n"
 				"\n"
 				"  args...          Arguments passed to script. Use -- args when first argument\n"
@@ -1114,7 +1143,7 @@ int main(int argc, char *argv[])
 					pos = 0;
 					
 					if (php_last_char != '\0' && php_last_char != '\n') {
-						sapi_cli_single_write("\n", 1);
+						sapi_cli_single_write("\n", 1 TSRMLS_CC);
 					}
 
 					if (EG(exception)) {

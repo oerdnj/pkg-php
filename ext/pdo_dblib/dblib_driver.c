@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: dblib_driver.c,v 1.9.2.2.2.4 2008/12/31 11:17:41 sebastian Exp $ */
+/* $Id: dblib_driver.c,v 1.9.2.2.2.5 2009/03/20 22:14:17 sfox Exp $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -229,7 +229,11 @@ static int pdo_dblib_handle_factory(pdo_dbh_t *dbh, zval *driver_options TSRMLS_
 	if (H->link == NULL) {
 		goto cleanup;
 	}
-	
+
+	if (DBSETOPT(H->link, DBTEXTLIMIT, "2147483647") == FAIL) {
+		goto cleanup;
+	}
+
 	if (vars[3].optval && FAIL == dbuse(H->link, vars[3].optval)) {
 		goto cleanup;
 	}

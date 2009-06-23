@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_stmt.c,v 1.118.2.38.2.46 2008/12/31 11:17:41 sebastian Exp $ */
+/* $Id: pdo_stmt.c,v 1.118.2.38.2.47 2009/03/12 16:13:39 andrei Exp $ */
 
 /* The PDO Statement Handle Class */
 
@@ -2717,7 +2717,7 @@ static union _zend_function *row_get_ctor(zval *object TSRMLS_DC)
 
 static zend_class_entry *row_get_ce(zval *object TSRMLS_DC)
 {
-	return pdo_dbstmt_ce;
+	return pdo_row_ce;
 }
 
 static int row_get_classname(zval *object, char **class_name, zend_uint *class_name_len, int parent TSRMLS_DC)

@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.25.2.3 2005/11/29 18:26:02 tony2001 Exp $
+dnl $Id: config.m4,v 1.25.2.3.2.1 2009/04/27 18:38:58 scottmac Exp $
 dnl
 
 sinclude(ext/xmlrpc/libxmlrpc/acinclude.m4)
@@ -61,17 +61,21 @@ if test "$PHP_XMLRPC" != "no"; then
     fi
   fi
 
-  if test "$PHP_ICONV_DIR" != "no"; then
-    PHP_ICONV=$PHP_ICONV_DIR
-  fi
+  dnl if iconv is shared or missing then we should build iconv ourselves
+  if test "$PHP_ICONV_SHARED" = "yes" || test "$PHP_ICONV" = "no"; then
+
+    if test "$PHP_ICONV_DIR" != "no"; then
+      PHP_ICONV=$PHP_ICONV_DIR
+    fi
   
-  if test -z "$PHP_ICONV" || test "$PHP_ICONV" = "no"; then
-    PHP_ICONV=yes
-  fi
+    if test -z "$PHP_ICONV" || test "$PHP_ICONV" = "no"; then
+      PHP_ICONV=yes
+    fi
   
-  PHP_SETUP_ICONV(XMLRPC_SHARED_LIBADD, [], [
-    AC_MSG_ERROR([iconv not found, in order to build xmlrpc you need the iconv library])
-  ])
+    PHP_SETUP_ICONV(XMLRPC_SHARED_LIBADD, [], [
+      AC_MSG_ERROR([iconv not found, in order to build xmlrpc you need the iconv library])
+    ])
+  fi
 fi
 
 if test "$PHP_XMLRPC" = "yes"; then

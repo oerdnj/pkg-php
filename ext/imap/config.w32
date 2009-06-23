@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.4.4.2 2008/12/01 00:03:03 pajoye Exp $
+// $Id: config.w32,v 1.4.4.4 2009/05/05 13:49:05 pajoye Exp $
 // vim:ft=javascript
 
 ARG_WITH("imap", "IMAP Support", "no");
@@ -16,6 +16,7 @@ if (PHP_IMAP == "yes") {
 		ADD_FLAG("CFLAGS_IMAP", "/D HAVE_IMAP2000=1 /D HAVE_IMAP2004=1 /D HAVE_IMAP_SSL=1");
 		AC_DEFINE('HAVE_IMAP', 1, 'Have IMAP support', true);
 		AC_DEFINE('HAVE_RFC822_OUTPUT_ADDRESS_LIST', 1, 'Have rfc822_output_address_list', true);
+		AC_DEFINE('HAVE_NEW_MIME2TEXT', 1, 'Have utf8_mime2text', true);
 	} else {
 		WARNING("imap not enabled; libraries and headers not found");
 	}

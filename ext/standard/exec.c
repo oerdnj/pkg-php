@@ -16,7 +16,7 @@
    |         Ilia Alshanetsky <iliaa@php.net>                             |
    +----------------------------------------------------------------------+
  */
-/* $Id: exec.c,v 1.113.2.3.2.11 2008/12/31 11:17:44 sebastian Exp $ */
+/* $Id: exec.c,v 1.113.2.3.2.13 2009/04/30 15:25:05 pajoye Exp $ */
 
 #include <stdio.h>
 #include "php.h"
@@ -80,6 +80,12 @@ int php_exec(int type, char *cmd, zval *array, zval *return_value TSRMLS_DC)
 			goto err;
 		}
 		b = strrchr(cmd, PHP_DIR_SEPARATOR);
+#ifdef PHP_WIN32
+		if (b && *b == '\\' && b == cmd) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid absolute path.");
+			goto err;
+		}
+#endif
 		spprintf(&d, 0, "%s%s%s%s%s", PG(safe_mode_exec_dir), (b ? "" : "/"), (b ? b : cmd), (c ? " " : ""), (c ? c : ""));
 		if (c) {
 			*(c - 1) = ' ';
@@ -131,7 +137,9 @@ int php_exec(int type, char *cmd, zval *array, zval *return_value TSRMLS_DC)
 
 			if (type == 1) {
 				PHPWRITE(buf, bufl);
-				sapi_flush(TSRMLS_C);
+				if (OG(ob_nesting_level) < 1) {
+					sapi_flush(TSRMLS_C);
+				}
 			} else if (type == 2) {
 				/* strip trailing whitespaces */	
 				l = bufl;

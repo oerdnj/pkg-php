@@ -1208,6 +1208,15 @@
 /* Whether to enable IPv6 support */
 #undef HAVE_IPV6
 
+/*  Define if int32_t type is present.  */
+#undef HAVE_INT32_T
+
+/*  Define if uint32_t type is present.  */
+#undef HAVE_UINT32_T
+
+/* Whether to build date as dynamic module */
+#undef COMPILE_DL_DATE
+
 /*   */
 #undef HAVE_LIBXML
 
@@ -1294,15 +1303,6 @@
 
 /* Whether to build curl as dynamic module */
 #undef COMPILE_DL_CURL
-
-/*  Define if int32_t type is present.  */
-#undef HAVE_INT32_T
-
-/*  Define if uint32_t type is present.  */
-#undef HAVE_UINT32_T
-
-/* Whether to build date as dynamic module */
-#undef COMPILE_DL_DATE
 
 /*   */
 #undef QDBM_INCLUDE_FILE

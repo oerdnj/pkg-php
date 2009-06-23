@@ -114,19 +114,19 @@ fclose($res);
 *** Testing ip2long() : usage variation ***
 
 --int 0--
-int(0)
+bool(false)
 
 --int 1--
-int(1)
+bool(false)
 
 --int 12345--
-int(12345)
+bool(false)
 
 --int -12345--
 bool(false)
 
 --float 10.5--
-int(167772165)
+bool(false)
 
 --float -10.5--
 bool(false)
@@ -138,23 +138,23 @@ bool(false)
 bool(false)
 
 --float .5--
-int(5)
+bool(false)
 
 --empty array--
-Error: 8 - Array to string conversion, %s(%d)
-bool(false)
+Error: 2 - ip2long() expects parameter 1 to be string, array given, %s(%d)
+NULL
 
 --int indexed array--
-Error: 8 - Array to string conversion, %s(%d)
-bool(false)
+Error: 2 - ip2long() expects parameter 1 to be string, array given, %s(%d)
+NULL
 
 --associative array--
-Error: 8 - Array to string conversion, %s(%d)
-bool(false)
+Error: 2 - ip2long() expects parameter 1 to be string, array given, %s(%d)
+NULL
 
 --nested arrays--
-Error: 8 - Array to string conversion, %s(%d)
-bool(false)
+Error: 2 - ip2long() expects parameter 1 to be string, array given, %s(%d)
+NULL
 
 --uppercase NULL--
 bool(false)
@@ -163,13 +163,13 @@ bool(false)
 bool(false)
 
 --lowercase true--
-int(1)
+bool(false)
 
 --lowercase false--
 bool(false)
 
 --uppercase TRUE--
-int(1)
+bool(false)
 
 --uppercase FALSE--
 bool(false)
@@ -184,9 +184,8 @@ bool(false)
 bool(false)
 
 --instance of classWithoutToString--
-Error: 4096 - Object of class classWithoutToString could not be converted to string, %s(%d)
-Error: 8 - Object of class classWithoutToString to string conversion, %s(%d)
-bool(false)
+Error: 2 - ip2long() expects parameter 1 to be string, object given, %s(%d)
+NULL
 
 --undefined var--
 bool(false)
@@ -195,5 +194,6 @@ bool(false)
 bool(false)
 
 --resource--
-bool(false)
+Error: 2 - ip2long() expects parameter 1 to be string, resource given, %s(%d)
+NULL
 ===DONE===
