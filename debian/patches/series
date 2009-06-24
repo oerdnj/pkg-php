@@ -22,7 +22,6 @@
 112-proc_open.patch
 113-php.ini_securitynotes.patch
 libdb_is_-ldb
-suhosin.patch
 fix_broken_upstream_tests.patch
 use_embedded_timezonedb.patch
 manpage_spelling.patch
