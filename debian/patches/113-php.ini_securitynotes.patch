@@ -1,5 +1,5 @@
---- a/php.ini-development
-+++ b/php.ini-development
+--- php.orig/php.ini-development
++++ php/php.ini-development
 @@ -333,6 +333,11 @@ allow_call_time_pass_reference = Off
  
  ; Safe Mode
@@ -12,7 +12,7 @@
  safe_mode = Off
  
  ; By default, Safe Mode does a UID compare check when
-@@ -374,6 +379,12 @@ safe_mode_protected_env_vars = LD_LIBRARY_PATH
+@@ -374,6 +379,12 @@ safe_mode_protected_env_vars = LD_LIBRAR
  ; or per-virtualhost web server configuration file. This directive is
  ; *NOT* affected by whether Safe Mode is turned On or Off.
  ; http://www.php.net/manual/en/ini.sect.safe-mode.php#ini.open-basedir

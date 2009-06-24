@@ -1,5 +1,5 @@
---- php5-5.2.9.dfsg.1.orig/acinclude.m4
-+++ php5-5.2.9.dfsg.1/acinclude.m4
+--- php.orig/acinclude.m4
++++ php/acinclude.m4
 @@ -2370,9 +2370,7 @@ AC_DEFUN([PHP_SETUP_OPENSSL],[
  
      PHP_ADD_INCLUDE($OPENSSL_INCDIR)

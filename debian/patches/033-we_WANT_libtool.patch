@@ -1,5 +1,5 @@
---- php5-5.2.9.dfsg.1.orig/build/build2.mk
-+++ php5-5.2.9.dfsg.1/build/build2.mk
+--- php.orig/build/build2.mk
++++ php/build/build2.mk
 @@ -52,6 +52,15 @@ $(TOUCH_FILES):
  
  aclocal.m4: configure.in acinclude.m4

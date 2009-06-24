@@ -1,5 +1,5 @@
---- php5-5.2.9.dfsg.1.orig/acinclude.m4
-+++ php5-5.2.9.dfsg.1/acinclude.m4
+--- php.orig/acinclude.m4
++++ php/acinclude.m4
 @@ -1216,7 +1216,7 @@ $1
      }
  

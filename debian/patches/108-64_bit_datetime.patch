@@ -1,8 +1,8 @@
---- php5-5.2.9.dfsg.1.orig/ext/standard/datetime.c
-+++ php5-5.2.9.dfsg.1/ext/standard/datetime.c
+--- php.orig/ext/standard/datetime.c
++++ php/ext/standard/datetime.c
 @@ -20,6 +20,9 @@
  
- /* $Id: datetime.c,v 1.134.2.2.2.6 2008/12/31 11:17:44 sebastian Exp $ */
+ /* $Id: datetime.c,v 1.134.2.2.2.4.2.3 2008/12/31 11:15:44 sebastian Exp $ */
  
 +#define _XOPEN_SOURCE	/* needed to get strptime() declared */
 +#define _BSD_SOURCE		/* needed to get ulong declared */
