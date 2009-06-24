@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_pgsql_int.h,v 1.13.2.4.2.1.2.2 2008/12/31 11:15:41 sebastian Exp $ */
+/* $Id: php_pdo_pgsql_int.h,v 1.13.2.4.2.1.2.4 2009/05/12 22:18:14 mbeccati Exp $ */
 
 #ifndef PHP_PDO_PGSQL_INT_H
 #define PHP_PDO_PGSQL_INT_H
@@ -65,8 +65,8 @@ typedef struct {
 	int *param_lengths;
 	int *param_formats;
 	Oid *param_types;
-	zend_bool is_prepared;
 #endif
+	zend_bool is_prepared;
 } pdo_pgsql_stmt;
 
 typedef struct {
@@ -81,11 +81,7 @@ extern int _pdo_pgsql_error(pdo_dbh_t *dbh, pdo_stmt_t *stmt, int errcode, const
 
 extern struct pdo_stmt_methods pgsql_stmt_methods;
 
-#ifdef HAVE_PQRESULTERRORFIELD
 #define pdo_pgsql_sqlstate(r) PQresultErrorField(r, PG_DIAG_SQLSTATE)
-#else
-#define pdo_pgsql_sqlstate(r) (const char *)NULL
-#endif
 
 enum {
 	PDO_PGSQL_ATTR_DISABLE_NATIVE_PREPARED_STATEMENT = PDO_ATTR_DRIVER_SPECIFIC,

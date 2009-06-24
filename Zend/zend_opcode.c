@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_opcode.c,v 1.110.2.6.2.3.2.10 2008/12/31 11:15:32 sebastian Exp $ */
+/* $Id: zend_opcode.c,v 1.110.2.6.2.3.2.11 2009/06/05 23:20:59 shire Exp $ */
 
 #include <stdio.h>
 
@@ -359,7 +359,7 @@ static void zend_extension_op_array_handler(zend_extension *extension, zend_op_a
 	}
 }
 
-int pass_two(zend_op_array *op_array TSRMLS_DC)
+ZEND_API int pass_two(zend_op_array *op_array TSRMLS_DC)
 {
 	zend_op *opline, *end;
 

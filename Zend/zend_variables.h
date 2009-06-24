@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_variables.h,v 1.34.2.1.2.1.2.4 2008/12/31 11:15:32 sebastian Exp $ */
+/* $Id: zend_variables.h,v 1.34.2.1.2.1.2.5 2009/05/01 21:46:53 jani Exp $ */
 
 #ifndef ZEND_VARIABLES_H
 #define ZEND_VARIABLES_H
@@ -32,7 +32,7 @@ static inline void _zval_dtor(zval *zvalue ZEND_FILE_LINE_DC)
 	if (zvalue->type <= IS_BOOL) {
 		return;
 	}
-	_zval_dtor_func(zvalue ZEND_FILE_LINE_CC);
+	_zval_dtor_func(zvalue ZEND_FILE_LINE_RELAY_CC);
 }
 
 ZEND_API void _zval_copy_ctor_func(zval *zvalue ZEND_FILE_LINE_DC);
@@ -42,7 +42,7 @@ static inline void _zval_copy_ctor(zval *zvalue ZEND_FILE_LINE_DC)
 	if (zvalue->type <= IS_BOOL) {
 		return;
 	}
-	_zval_copy_ctor_func(zvalue ZEND_FILE_LINE_CC);
+	_zval_copy_ctor_func(zvalue ZEND_FILE_LINE_RELAY_CC);
 }
 
 

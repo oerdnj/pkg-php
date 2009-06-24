@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: fopen_wrappers.c,v 1.175.2.3.2.13.2.17 2009/02/10 16:14:18 iliaa Exp $ */
+/* $Id: fopen_wrappers.c,v 1.175.2.3.2.13.2.19 2009/06/18 06:38:30 rasmus Exp $ */
 
 /* {{{ includes
  */
@@ -451,7 +451,9 @@ PHPAPI int php_fopen_primary_script(zend_file_handle *file_handle TSRMLS_DC)
 		}
 	} /* if doc_root && path_info */
 
-	filename = zend_resolve_path(filename, strlen(filename) TSRMLS_CC);
+	if(filename) {
+		filename = zend_resolve_path(filename, strlen(filename) TSRMLS_CC);
+	}
 
 	if (!filename) {
 		/* we have to free SG(request_info).path_translated here because

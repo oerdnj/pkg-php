@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.69.4.7.2.2 2008/10/16 16:21:06 dmitry Exp $
+dnl $Id: config.m4,v 1.69.4.7.2.3 2009/05/05 01:22:44 jani Exp $
 dnl
 
 AC_DEFUN([IMAP_INC_CHK],[if test -r "$i$1/c-client.h"; then
@@ -228,13 +228,10 @@ if test "$PHP_IMAP" != "no"; then
       AC_DEFINE(HAVE_IMAP_AUTH_GSS, 1, [ ])
     ], [], $TST_LIBS)
 
-    AC_MSG_CHECKING(whether build with IMAP works)
-    PHP_IMAP_TEST_BUILD(mail_newbody, [
-      AC_MSG_RESULT(yes)
-    ], [
-      AC_MSG_RESULT(no)
-      AC_MSG_ERROR([build test failed. Please check the config.log for details.])
-    ], $TST_LIBS)
+    dnl Check if utf8_to_mutf7 exists
+    PHP_IMAP_TEST_BUILD(utf8_to_mutf7, [
+      AC_DEFINE(HAVE_IMAP_MUTF7, 1, [ ])
+    ], [], $TST_LIBS)
 
     AC_MSG_CHECKING(whether rfc822_output_address_list function present)
     PHP_TEST_BUILD(foobar, [
@@ -271,4 +268,11 @@ if test "$PHP_IMAP" != "no"; then
       char foobar () {f = rfc822_output_address_list;}
     ])
 
+    AC_MSG_CHECKING(whether build with IMAP works)
+    PHP_IMAP_TEST_BUILD(mail_newbody, [
+      AC_MSG_RESULT(yes)
+    ], [
+      AC_MSG_RESULT(no)
+      AC_MSG_ERROR([build test failed. Please check the config.log for details.])
+    ], $TST_LIBS)
 fi

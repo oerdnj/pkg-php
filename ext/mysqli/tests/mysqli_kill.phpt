@@ -1,9 +1,9 @@
 --TEST--
 mysqli_kill()
 --SKIPIF--
-<?php 
+<?php
 require_once('skipif.inc');
-require_once('skipifemb.inc'); 
+require_once('skipifemb.inc');
 require_once('skipifconnectfailure.inc');
 ?>
 --FILE--
@@ -40,23 +40,32 @@ require_once('skipifconnectfailure.inc');
 		printf("[007] Expecting string/any non empty, got %s/%s\n", gettype($error), $error);
 	var_dump($res);
 	var_dump($link);
+	if ($IS_MYSQLND) {
+		if ($link->info != 'Records: 6  Duplicates: 0  Warnings: 0') {
+			printf("[008] mysqlnd used to be more verbose and used to support SELECT");
+		}
+	} else {
+		if ($link->info != NULL) {
+			printf("[008] Time for wonders - libmysql has started to support SELECT, change test");
+		}
+	}
 
 	mysqli_close($link);
 
 	if (!$link = mysqli_connect($host, $user, $passwd, $db, $port, $socket))
-		printf("[008] Cannot connect, [%d] %s\n", mysqli_connect_errno(), mysqli_connect_error());
+		printf("[009] Cannot connect, [%d] %s\n", mysqli_connect_errno(), mysqli_connect_error());
 
 	mysqli_kill($link, -1);
 	if ((!$res = mysqli_query($link, "SELECT id FROM test LIMIT 1")) ||
 		(!$tmp = mysqli_fetch_assoc($res))) {
-		printf("[009] Connection should not be gone, [%d] %s\n", mysqli_errno($link), mysqli_error($link));
+		printf("[010] Connection should not be gone, [%d] %s\n", mysqli_errno($link), mysqli_error($link));
 	}
 	var_dump($tmp);
 	mysqli_free_result($res);
 	mysqli_close($link);
 
 	if (!$link = mysqli_connect($host, $user, $passwd, $db, $port, $socket))
-		printf("[010] Cannot connect, [%d] %s\n", mysqli_connect_errno(), mysqli_connect_error());
+		printf("[011] Cannot connect, [%d] %s\n", mysqli_connect_errno(), mysqli_connect_error());
 
 	mysqli_change_user($link, "This might work if you accept anonymous users in your setup", "password", $db);      mysqli_kill($link, -1);
 
@@ -66,64 +75,49 @@ require_once('skipifconnectfailure.inc');
 ?>
 --EXPECTF--
 Warning: mysqli_kill(): processid should have positive value in %s on line %d
-string(%d) "%s"
+%unicode|string%(%d) "%s"
 bool(false)
 object(mysqli)#%d (%d) {
-  ["affected_rows"]=>
+  [%u|b%"affected_rows"]=>
   int(-1)
-  ["client_info"]=>
-  string(%d) "%s"
-  ["client_version"]=>
+  [%u|b%"client_info"]=>
+  %unicode|string%(%d) "%s"
+  [%u|b%"client_version"]=>
   int(%d)
-  ["connect_errno"]=>
+  [%u|b%"connect_errno"]=>
   int(0)
-  ["connect_error"]=>
-  string(0) ""
-  ["errno"]=>
+  [%u|b%"connect_error"]=>
+  %unicode|string%(0) ""
+  [%u|b%"errno"]=>
   int(2006)
-  ["error"]=>
-  string(26) "MySQL server has gone away"
-  ["field_count"]=>
+  [%u|b%"error"]=>
+  %unicode|string%(%d) "%s"
+  [%u|b%"field_count"]=>
   int(0)
-  ["host_info"]=>
-  string(42) "MySQL host info: Localhost via UNIX socket"
-  ["info"]=>
-  string(38) "Records: 6  Duplicates: 0  Warnings: 0"
-  ["insert_id"]=>
+  [%u|b%"host_info"]=>
+  %unicode|string%(%d) "%s"
+  [%u|b%"info"]=>
+  %s
+  [%u|b%"insert_id"]=>
   int(0)
-  ["server_info"]=>
-  string(%d) "%s"
-  ["server_version"]=>
+  [%u|b%"server_info"]=>
+  %unicode|string%(%d) "%s"
+  [%u|b%"server_version"]=>
   int(%d)
-  ["sqlstate"]=>
-  string(5) "HY000"
-  ["protocol_version"]=>
+  [%u|b%"sqlstate"]=>
+  %unicode|string%(5) "HY000"
+  [%u|b%"protocol_version"]=>
   int(10)
-  ["thread_id"]=>
+  [%u|b%"thread_id"]=>
   int(%d)
-  ["warning_count"]=>
+  [%u|b%"warning_count"]=>
   int(0)
 }
 
 Warning: mysqli_kill(): processid should have positive value in %s on line %d
 array(1) {
-  ["id"]=>
-  string(1) "1"
-}
-
-Warning: mysqli_kill(): processid should have positive value in %s on line %d
-done!
---UEXPECTF--
-Warning: mysqli_kill(): processid should have positive value in %s on line %d
-unicode(%d) "%s"
-bool(false)
-object(mysqli)#%d (0) {
-}
-
-Warning: mysqli_kill(): processid should have positive value in %s on line %d
-array(1) {
-  [u"id"]=>
-  unicode(1) "1"
+  [%u|b%"id"]=>
+  %unicode|string%(1) "1"
 }
 
 Warning: mysqli_kill(): processid should have positive value in %s on line %d

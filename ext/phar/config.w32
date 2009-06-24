@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.27.2.9 2009/03/01 07:07:05 cellog Exp $
+// $Id: config.w32,v 1.27.2.10 2009/05/11 06:43:05 kalle Exp $
 // vim:ft=javascript
 
 ARG_ENABLE("phar", "disable phar support", "yes");
@@ -36,7 +36,7 @@ if (PHP_PHAR != "no") {
 		}
 	}
 	if (PHP_HASH != "no") {
-		if (PHP_HASH_SHARED == "no") {
+		if (!PHP_HASH_SHARED) {
 			AC_DEFINE("PHAR_HASH_OK", 1);
 		} else {
 			WARNING('Phar: sha256/sha512 signature support disabled if ext/hash is built shared');

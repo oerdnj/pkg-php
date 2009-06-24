@@ -19,7 +19,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: filter.c,v 1.52.2.39.2.13 2008/12/31 11:15:36 sebastian Exp $ */
+/* $Id: filter.c,v 1.52.2.39.2.16 2009/04/28 21:30:23 stas Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -76,6 +76,7 @@ static const filter_list_entry filter_list[] = {
 #endif
 
 static unsigned int php_sapi_filter(int arg, char *var, char **val, unsigned int val_len, unsigned int *new_val_len TSRMLS_DC);
+static unsigned int php_sapi_filter_init(TSRMLS_D);
 
 /* {{{ arginfo */
 ZEND_BEGIN_ARG_INFO_EX(arginfo_filter_input, 0, 0, 2)
@@ -270,7 +271,7 @@ PHP_MINIT_FUNCTION(filter)
 	REGISTER_LONG_CONSTANT("FILTER_FLAG_NO_RES_RANGE", FILTER_FLAG_NO_RES_RANGE, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("FILTER_FLAG_NO_PRIV_RANGE", FILTER_FLAG_NO_PRIV_RANGE, CONST_CS | CONST_PERSISTENT);
 
-	sapi_register_input_filter(php_sapi_filter);
+	sapi_register_input_filter(php_sapi_filter, php_sapi_filter_init);
 
 	return SUCCESS;
 }
@@ -312,7 +313,7 @@ PHP_MINFO_FUNCTION(filter)
 {
 	php_info_print_table_start();
 	php_info_print_table_row( 2, "Input Validation and Filtering", "enabled" );
-	php_info_print_table_row( 2, "Revision", "$Revision: 1.52.2.39.2.13 $");
+	php_info_print_table_row( 2, "Revision", "$Revision: 1.52.2.39.2.16 $");
 	php_info_print_table_end();
 
 	DISPLAY_INI_ENTRIES();
@@ -338,6 +339,17 @@ static filter_list_entry php_find_filter(long id) /* {{{ */
 	return filter_list[0];
 }
 /* }}} */
+
+static unsigned int php_sapi_filter_init(TSRMLS_D)
+{
+	IF_G(get_array) = NULL;
+	IF_G(post_array) = NULL;
+	IF_G(cookie_array) = NULL;
+	IF_G(server_array) = NULL;
+	IF_G(env_array) = NULL;
+	IF_G(session_array) = NULL;
+	return SUCCESS;
+}
 
 static void php_zval_filter(zval **value, long filter, long flags, zval *options, char* charset, zend_bool copy TSRMLS_DC) /* {{{ */
 {

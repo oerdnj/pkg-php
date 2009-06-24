@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_ini_scanner.l,v 1.41.2.2.2.2.2.16 2009/02/02 19:23:13 nlopess Exp $ */
+/* $Id: zend_ini_scanner.l,v 1.41.2.2.2.2.2.17 2009/05/19 15:59:36 shire Exp $ */
 
 #include <errno.h>
 #include "zend.h"
@@ -308,7 +308,7 @@ NEWLINE	("\r"|"\n"|"\r\n")
 TABS_AND_SPACES [ \t]
 WHITESPACE [ \t]+
 CONSTANT [a-zA-Z][a-zA-Z0-9_]*
-LABEL [a-zA-Z0-9_][a-zA-Z0-9*._-]*
+LABEL [a-zA-Z0-9*._-]*
 TOKENS [:,.\[\]"'()|^&+-/*=%$!~<>?@{}]
 OPERATORS [&|~()!]
 DOLLAR_CURLY "${"

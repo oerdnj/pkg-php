@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.22.2.1.2.2.2.4 2008/03/10 20:15:38 andrey Exp $
+dnl $Id: config.m4,v 1.22.2.1.2.2.2.5 2009/05/29 13:09:46 andrey Exp $
 dnl config.m4 for extension mysqli
 
 PHP_ARG_WITH(mysqli, for MySQLi support,
@@ -58,6 +58,16 @@ elif test "$PHP_MYSQLI" != "no"; then
     ],[$MYSQLI_LIBLINE])
   ],[
     AC_MSG_ERROR([wrong mysql library version or lib not found. Check config.log for more information.])
+  ],[
+    $MYSQLI_LIBLINE
+  ])
+  dnl
+  dnl Check the library for mysql_stmt_store_result
+  dnl
+  PHP_CHECK_LIBRARY($MYSQL_LIB_NAME, mysql_stmt_next_result,
+  [
+    AC_DEFINE(HAVE_STMT_NEXT_RESULT,             1, [ ])
+  ],[
   ],[
     $MYSQLI_LIBLINE
   ])

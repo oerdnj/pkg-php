@@ -42,7 +42,6 @@
 #define MYSQLND_DUMP_HEADER_N_BODY2
 #define MYSQLND_DUMP_HEADER_N_BODY_FULL2
 
-
 #define	PACKET_READ_HEADER_AND_BODY(packet, conn, buf, buf_size, packet_type_as_text, packet_type) \
 	{ \
 		if (FAIL == mysqlnd_read_header((conn), &((packet)->header) TSRMLS_CC)) {\
@@ -69,7 +68,6 @@
 											packet_type_to_statistic_packet_count[packet_type], \
 											1); \
 	}
-
 
 extern mysqlnd_packet_methods packet_methods[];
 
@@ -612,7 +610,7 @@ php_mysqlnd_greet_read(void *_packet, MYSQLND *conn TSRMLS_DC)
 	/* pad2 */
 	p+= 13;
 
-	if (p - buf < packet->header.size) {
+	if ((size_t)(p - buf) < packet->header.size) {
 		/* scramble_buf is split into two parts */
 		memcpy(packet->scramble_buf + SCRAMBLE_LENGTH_323,
 				p, SCRAMBLE_LENGTH - SCRAMBLE_LENGTH_323);
@@ -626,7 +624,7 @@ php_mysqlnd_greet_read(void *_packet, MYSQLND *conn TSRMLS_DC)
 	DBG_INF_FMT("server_capabilities=%d charset_no=%d server_status=%d",
 				packet->server_capabilities, packet->charset_no, packet->server_status);
 
-	if (p - begin > packet->header.size) {
+	if ((size_t)(p - begin) > packet->header.size) {
 		DBG_ERR_FMT("GREET packet %d bytes shorter than expected", p - begin - packet->header.size);
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "GREET packet "MYSQLND_SZ_T_SPEC" bytes shorter than expected",
 						 p - begin - packet->header.size);
@@ -811,7 +809,7 @@ php_mysqlnd_ok_read(void *_packet, MYSQLND *conn TSRMLS_DC)
 	p+= 2;
 
 	/* There is a message */
-	if (packet->header.size > p - buf && (i = php_mysqlnd_net_field_length(&p))) {
+	if (packet->header.size > (size_t) (p - buf) && (i = php_mysqlnd_net_field_length(&p))) {
 		packet->message = pestrndup((char *)p, MIN(i, sizeof(buf) - (p - buf)), conn->persistent);
 		packet->message_len = i;
 	} else {
@@ -822,7 +820,7 @@ php_mysqlnd_ok_read(void *_packet, MYSQLND *conn TSRMLS_DC)
 				packet->affected_rows, packet->last_insert_id, packet->server_status,
 				packet->warning_count);
 
-	if (p - begin > packet->header.size) {
+	if ((size_t)(p - begin) > packet->header.size) {
 		DBG_ERR_FMT("OK packet %d bytes shorter than expected", p - begin - packet->header.size);
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "OK packet "MYSQLND_SZ_T_SPEC" bytes shorter than expected",
 						 p - begin - packet->header.size);
@@ -895,7 +893,7 @@ php_mysqlnd_eof_read(void *_packet, MYSQLND *conn TSRMLS_DC)
 		packet->server_status = 0;
 	}
 
-	if (p - begin > packet->header.size) {
+	if ((size_t)(p - begin) > packet->header.size) {
 		DBG_ERR_FMT("EOF packet %d bytes shorter than expected", p - begin - packet->header.size);
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "EOF packet "MYSQLND_SZ_T_SPEC" bytes shorter than expected",
 						 p - begin - packet->header.size);
@@ -1045,7 +1043,7 @@ php_mysqlnd_rset_header_read(void *_packet, MYSQLND *conn TSRMLS_DC)
 			packet->warning_count = uint2korr(p);
 			p+=2;
 			/* Check for additional textual data */
-			if (packet->header.size  > (p - buf) && (len = php_mysqlnd_net_field_length(&p))) {
+			if (packet->header.size  > (size_t) (p - buf) && (len = php_mysqlnd_net_field_length(&p))) {
 				packet->info_or_local_file = mnd_pemalloc(len + 1, conn->persistent);
 				memcpy(packet->info_or_local_file, p, len);
 				packet->info_or_local_file[len] = '\0';
@@ -1060,7 +1058,7 @@ php_mysqlnd_rset_header_read(void *_packet, MYSQLND *conn TSRMLS_DC)
 			/* Result set */
 			break;
 	}
-	if (p - begin > packet->header.size) {
+	if ((size_t)(p - begin) > packet->header.size) {
 		DBG_ERR_FMT("RSET_HEADER packet %d bytes shorter than expected", p - begin - packet->header.size);
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "GREET packet "MYSQLND_SZ_T_SPEC" bytes shorter than expected",
 						 p - begin - packet->header.size);
@@ -1188,7 +1186,7 @@ php_mysqlnd_rset_field_read(void *_packet, MYSQLND *conn TSRMLS_DC)
 	  NULL_LENGTH (0xFB) comes from COM_FIELD_LIST when the default value is NULL.
 	  Otherwise the string is length encoded.
 	*/
-	if (packet->header.size > (p - buf) &&
+	if (packet->header.size > (size_t)(p - buf) &&
 		(len = php_mysqlnd_net_field_length(&p)) &&
 		len != MYSQLND_NULL_LENGTH)
 	{
@@ -1200,7 +1198,7 @@ php_mysqlnd_rset_field_read(void *_packet, MYSQLND *conn TSRMLS_DC)
 		p += len;
 	}
 
-	if (p - begin > packet->header.size) {
+	if ((size_t)(p - begin) > packet->header.size) {
 		DBG_ERR_FMT("RSET field packet %d bytes shorter than expected", p - begin - packet->header.size);
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Result set field packet "MYSQLND_SZ_T_SPEC" bytes "
 				 		"shorter than expected", p - begin - packet->header.size);
@@ -1328,7 +1326,7 @@ php_mysqlnd_read_row_ex(MYSQLND *conn, MYSQLND_MEMORY_POOL_CHUNK **buffer,
 			  We need a trailing \0 for the last string, in case of text-mode,
 			  to be able to implement read-only variables.
 			*/
-			(*buffer)->resize_chunk((*buffer), *data_size + 1 TSRMLS_CC);
+			mysqlnd_mempool_resize_chunk((*buffer), *data_size + 1 TSRMLS_CC);
 			/* The position could have changed, recalculate */
 			p = (*buffer)->ptr + (*data_size - header.size);
 		}
@@ -1344,8 +1342,8 @@ php_mysqlnd_read_row_ex(MYSQLND *conn, MYSQLND_MEMORY_POOL_CHUNK **buffer,
 			break;
 		}
 	}
-	if (ret == FAIL) {
-		(*buffer)->free_chunk((*buffer), TRUE TSRMLS_CC);
+	if (ret == FAIL && (*buffer)) {
+		mysqlnd_mempool_free_chunk(*buffer, TRUE TSRMLS_CC);
 		*buffer = NULL;
 	}
 	*data_size -= prealloc_more_bytes;
@@ -1363,8 +1361,10 @@ void php_mysqlnd_rowp_read_binary_protocol(MYSQLND_MEMORY_POOL_CHUNK * row_buffe
 	zend_uchar *null_ptr, bit;
 	zval **current_field, **end_field, **start_field;
 	zend_bool as_unicode = conn->options.numeric_and_datetime_as_unicode;
+#ifdef USE_ZVAL_CACHE
 	zend_bool allocated;
-	void *obj;
+	void *obj = NULL;
+#endif
 
 	DBG_ENTER("php_mysqlnd_rowp_read_binary_protocol");
 
@@ -1378,7 +1378,7 @@ void php_mysqlnd_rowp_read_binary_protocol(MYSQLND_MEMORY_POOL_CHUNK * row_buffe
 	bit	= 4;						/* first 2 bits are reserved */
 
 	for (i = 0; current_field < end_field; current_field++, i++) {
-#if 1
+#ifdef USE_ZVAL_CACHE
 		DBG_INF("Trying to use the zval cache");
 		obj = mysqlnd_palloc_get_zval(conn->zval_cache, &allocated TSRMLS_CC);
 		if (allocated) {
@@ -1474,11 +1474,12 @@ void php_mysqlnd_rowp_read_text_protocol(MYSQLND_MEMORY_POOL_CHUNK * row_buffer,
 	for (i = 0; current_field < end_field; current_field++, i++) {
 		/* Don't reverse the order. It is significant!*/
 		void *obj;
-		zend_bool allocated;
+		zend_bool allocated = TRUE;
 		zend_uchar *this_field_len_pos = p;
 		/* php_mysqlnd_net_field_length() call should be after *this_field_len_pos = p; */
 		unsigned long len = php_mysqlnd_net_field_length(&p);
 
+#ifdef USE_ZVAL_CACHE
 		obj = mysqlnd_palloc_get_zval(conn->zval_cache, &allocated TSRMLS_CC);
 		if (allocated) {
 			*current_field = (zval *) obj;
@@ -1487,6 +1488,10 @@ void php_mysqlnd_rowp_read_text_protocol(MYSQLND_MEMORY_POOL_CHUNK * row_buffer,
 			*current_field = &((mysqlnd_zval *) obj)->zv;	
 			((mysqlnd_zval *) obj)->point_type = MYSQLND_POINTS_FREE;
 		}
+#else
+		DBG_INF("Directly creating zval");
+		MAKE_STD_ZVAL(*current_field);
+#endif
 
 		if (current_field > start_field && last_field_was_string) {
 			/*
@@ -1821,7 +1826,7 @@ void php_mysqlnd_rowp_free_mem(void *_packet, zend_bool alloca TSRMLS_DC)
 	DBG_ENTER("php_mysqlnd_rowp_free_mem");
 	p = (php_mysql_packet_row *) _packet;
 	if (p->row_buffer) {
-		p->row_buffer->free_chunk(p->row_buffer, TRUE TSRMLS_CC);
+		mysqlnd_mempool_free_chunk(p->row_buffer, TRUE TSRMLS_CC);
 		p->row_buffer = NULL;
 	}
 	DBG_INF_FMT("alloca=%d persistent=%d", (int)alloca, (int)p->header.persistent);
@@ -1939,7 +1944,7 @@ php_mysqlnd_prepare_read(void *_packet, MYSQLND *conn TSRMLS_DC)
 	DBG_INF_FMT("Prepare packet read: stmt_id=%d fields=%d params=%d",
 				packet->stmt_id, packet->field_count, packet->param_count);
 
-	if (p - begin > packet->header.size) {
+	if ((size_t) (p - begin) > packet->header.size) {
 		DBG_ERR_FMT("PREPARE packet %d bytes shorter than expected", p - begin - packet->header.size);
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "PREPARE packet "MYSQLND_SZ_T_SPEC" bytes shorter than expected",
 						 p - begin - packet->header.size);
@@ -1999,7 +2004,7 @@ php_mysqlnd_chg_user_read(void *_packet, MYSQLND *conn TSRMLS_DC)
 										 packet->error_info.sqlstate
 										 TSRMLS_CC);
 	}
-	if (p - begin > packet->header.size) {
+	if ((size_t)(p - begin) > packet->header.size) {
 		DBG_ERR_FMT("CHANGE_USER packet %d bytes shorter than expected", p - begin - packet->header.size);
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "CHANGE_USER packet "MYSQLND_SZ_T_SPEC" bytes shorter than expected",
 						 p - begin - packet->header.size);

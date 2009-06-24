@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: userspace.c,v 1.31.2.3.2.7.2.8 2008/12/31 11:15:48 sebastian Exp $ */
+/* $Id: userspace.c,v 1.31.2.3.2.7.2.10 2009/05/08 11:35:12 bjori Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -249,6 +249,11 @@ typedef struct _php_userstream_data php_userstream_data_t;
 	function dir_rewinddir()
 	{
 		reset to start of dir list;
+	}
+
+	function stream_lock($operation)
+	{
+		return true / false;
 	}
   
 	}}} **/
@@ -1207,7 +1212,7 @@ static int user_wrapper_mkdir(php_stream_wrapper *wrapper, char *url, int mode, 
 		add_property_null(object, "context");
 	}
 
-	/* call the unlink method */
+	/* call the mkdir method */
 	MAKE_STD_ZVAL(zfilename);
 	ZVAL_STRING(zfilename, url, 1);
 	args[0] = &zfilename;
@@ -1272,7 +1277,7 @@ static int user_wrapper_rmdir(php_stream_wrapper *wrapper, char *url, int option
 		add_property_null(object, "context");
 	}
 
-	/* call the unlink method */
+	/* call the rmdir method */
 	MAKE_STD_ZVAL(zfilename);
 	ZVAL_STRING(zfilename, url, 1);
 	args[0] = &zfilename;
@@ -1332,9 +1337,7 @@ static int user_wrapper_stat_url(php_stream_wrapper *wrapper, char *url, int fla
 		add_property_null(object, "context");
 	}
 
-	/* call the stat_url method */
-	
-	/* call it's stream_open method - set up params first */
+	/* call it's stat_url method - set up params first */
 	MAKE_STD_ZVAL(zfilename);
 	ZVAL_STRING(zfilename, url, 1);
 	args[0] = &zfilename;

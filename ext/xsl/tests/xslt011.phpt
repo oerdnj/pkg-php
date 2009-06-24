@@ -1,7 +1,7 @@
 --TEST--
 Test 11: php:function Support
 --SKIPIF--
-<?php require_once('skipif.inc'); ?>
+<?php require_once dirname(__FILE__) .'/skipif.inc'; ?>
 --FILE--
 <?php
 print "Test 11: php:function Support\n";
@@ -49,7 +49,7 @@ $dom = new domDocument();
 --EXPECTF--
 Test 11: php:function Support
 
-Warning: XSLTProcessor::transformToXml(): A PHP Object can not be converted to a XPath-string in %s on line 16
+Warning: XSLTProcessor::transformToXml(): A PHP Object cannot be converted to a XPath-string in %s on line 16
 <?xml version="1.0"?>
 foobar - secondArg
 foobar - 

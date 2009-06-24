@@ -1,9 +1,11 @@
 /*
 	Build Configuration Template for Win32.
-	$Id: config.w32.h.in,v 1.7.2.4.2.3.2.11 2009/02/02 09:40:55 pajoye Exp $
+	$Id: config.w32.h.in,v 1.7.2.4.2.3.2.13 2009/05/29 08:11:36 pajoye Exp $
 */
 
 /* Define the minimum supported version */
+#undef _WIN32_WINNT
+#undef NTDDI_VERSION
 #define _WIN32_WINNT 0x500
 #define NTDDI_VERSION  _WIN32_WIN2K
 
@@ -158,7 +160,7 @@
 
 #undef HAVE_ATOF_ACCEPTS_NAN
 #undef HAVE_ATOF_ACCEPTS_INF
-#define HAVE_HUGE_VAL_NAN 1
+#define HAVE_HUGE_VAL_NAN 0
 
 /* vs.net 2005 has a 64-bit time_t.  This will likely break
  * 3rdParty libs that were built with older compilers; switch

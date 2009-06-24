@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: pgsql.c,v 1.331.2.13.2.24.2.27 2009/03/12 22:53:16 iliaa Exp $ */
+/* $Id: pgsql.c,v 1.331.2.13.2.24.2.28 2009/05/19 16:03:36 kalle Exp $ */
 
 #include <stdlib.h>
 
@@ -2650,7 +2650,7 @@ PHP_FUNCTION(pg_fetch_all_columns)
 	zval *result;
 	PGresult *pgsql_result;
 	pgsql_result_handle *pg_result;
-	long colno=0;
+	unsigned long colno=0;
 	int pg_numrows, pg_row;
 	size_t num_fields;
 

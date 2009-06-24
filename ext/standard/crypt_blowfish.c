@@ -1,5 +1,5 @@
 /*
-  $Id: crypt_blowfish.c,v 1.1.2.3 2008/07/29 01:20:28 scottmac Exp $ 
+  $Id: crypt_blowfish.c,v 1.1.2.4 2009/06/08 08:44:15 pajoye Exp $ 
 */
 /*
  * This code comes from John the Ripper password cracker, with reentrant
@@ -54,7 +54,7 @@
 #ifdef __i386__
 #define BF_ASM				0
 #define BF_SCALE			1
-#elif defined(__alpha__) || defined(__hppa__)
+#elif defined(__x86_64__) || defined(__alpha__) || defined(__hppa__)
 #define BF_ASM				0
 #define BF_SCALE			1
 #else

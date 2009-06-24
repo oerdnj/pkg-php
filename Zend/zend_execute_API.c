@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute_API.c,v 1.331.2.20.2.24.2.75 2009/03/19 18:34:16 mattwil Exp $ */
+/* $Id: zend_execute_API.c,v 1.331.2.20.2.24.2.78 2009/06/05 18:50:32 mattwil Exp $ */
 
 #include <stdio.h>
 #include <signal.h>
@@ -662,7 +662,7 @@ ZEND_API int zval_update_constant_ex(zval **pp, void *arg, zend_class_entry *sco
 					ret = zend_hash_update_current_key_ex(Z_ARRVAL_P(p), HASH_KEY_IS_LONG, NULL, 0, Z_LVAL(const_value), HASH_UPDATE_KEY_IF_BEFORE, NULL);
 					break;
 				case IS_DOUBLE:
-					ret = zend_hash_update_current_key_ex(Z_ARRVAL_P(p), HASH_KEY_IS_LONG, NULL, 0, (long)Z_DVAL(const_value), HASH_UPDATE_KEY_IF_BEFORE, NULL);
+					ret = zend_hash_update_current_key_ex(Z_ARRVAL_P(p), HASH_KEY_IS_LONG, NULL, 0, zend_dval_to_lval(Z_DVAL(const_value)), HASH_UPDATE_KEY_IF_BEFORE, NULL);
 					break;
 				case IS_NULL:
 					ret = zend_hash_update_current_key_ex(Z_ARRVAL_P(p), HASH_KEY_IS_STRING, "", 1, 0, HASH_UPDATE_KEY_IF_BEFORE, NULL);
@@ -1020,6 +1020,7 @@ ZEND_API int zend_lookup_class_ex(const char *name, int name_length, int use_aut
 	zend_fcall_info fcall_info;
 	zend_fcall_info_cache fcall_cache;
 	char dummy = 1;
+	ulong hash;
 	ALLOCA_FLAG(use_heap)
 
 	if (name == NULL || !name_length) {
@@ -1035,7 +1036,9 @@ ZEND_API int zend_lookup_class_ex(const char *name, int name_length, int use_aut
 		lc_length -= 1;
 	}
 
-	if (zend_hash_find(EG(class_table), lc_name, lc_length, (void **) ce) == SUCCESS) {
+	hash = zend_inline_hash_func(lc_name, lc_length);
+
+	if (zend_hash_quick_find(EG(class_table), lc_name, lc_length, hash, (void **) ce) == SUCCESS) {
 		free_alloca(lc_free, use_heap);
 		return SUCCESS;
 	}
@@ -1053,7 +1056,7 @@ ZEND_API int zend_lookup_class_ex(const char *name, int name_length, int use_aut
 		zend_hash_init(EG(in_autoload), 0, NULL, NULL, 0);
 	}
 
-	if (zend_hash_add(EG(in_autoload), lc_name, lc_length, (void**)&dummy, sizeof(char), NULL) == FAILURE) {
+	if (zend_hash_quick_add(EG(in_autoload), lc_name, lc_length, hash, (void**)&dummy, sizeof(char), NULL) == FAILURE) {
 		free_alloca(lc_free, use_heap);
 		return FAILURE;
 	}
@@ -1090,7 +1093,7 @@ ZEND_API int zend_lookup_class_ex(const char *name, int name_length, int use_aut
 
 	zval_ptr_dtor(&class_name_ptr);
 
-	zend_hash_del(EG(in_autoload), lc_name, lc_length);
+	zend_hash_quick_del(EG(in_autoload), lc_name, lc_length, hash);
 
 	if (retval_ptr) {
 		zval_ptr_dtor(&retval_ptr);
@@ -1101,7 +1104,7 @@ ZEND_API int zend_lookup_class_ex(const char *name, int name_length, int use_aut
 		return FAILURE;
 	}
 
-	retval = zend_hash_find(EG(class_table), lc_name, lc_length, (void **) ce);
+	retval = zend_hash_quick_find(EG(class_table), lc_name, lc_length, hash, (void **) ce);
 	free_alloca(lc_free, use_heap);
 	return retval;
 }
@@ -1113,7 +1116,7 @@ ZEND_API int zend_lookup_class(const char *name, int name_length, zend_class_ent
 }
 /* }}} */
 
-ZEND_API int zend_eval_string(char *str, zval *retval_ptr, char *string_name TSRMLS_DC) /* {{{ */
+ZEND_API int zend_eval_stringl(char *str, int str_len, zval *retval_ptr, char *string_name TSRMLS_DC) /* {{{ */
 {
 	zval pv;
 	zend_op_array *new_op_array;
@@ -1122,15 +1125,14 @@ ZEND_API int zend_eval_string(char *str, zval *retval_ptr, char *string_name TSR
 	int retval;
 
 	if (retval_ptr) {
-		int l = strlen(str);
-		Z_STRLEN(pv) = l + sizeof("return ;") - 1;
+		Z_STRLEN(pv) = str_len + sizeof("return ;") - 1;
 		Z_STRVAL(pv) = emalloc(Z_STRLEN(pv) + 1);
 		memcpy(Z_STRVAL(pv), "return ", sizeof("return ") - 1);
-		memcpy(Z_STRVAL(pv) + sizeof("return ") - 1, str, l);
+		memcpy(Z_STRVAL(pv) + sizeof("return ") - 1, str, str_len);
 		Z_STRVAL(pv)[Z_STRLEN(pv) - 1] = ';';
 		Z_STRVAL(pv)[Z_STRLEN(pv)] = '\0';
 	} else {
-		Z_STRLEN(pv) = strlen(str);
+		Z_STRLEN(pv) = str_len;
 		Z_STRVAL(pv) = str;
 	}
 	Z_TYPE(pv) = IS_STRING;
@@ -1185,16 +1187,28 @@ ZEND_API int zend_eval_string(char *str, zval *retval_ptr, char *string_name TSR
 }
 /* }}} */
 
-ZEND_API int zend_eval_string_ex(char *str, zval *retval_ptr, char *string_name, int handle_exceptions TSRMLS_DC) /* {{{ */
+ZEND_API int zend_eval_string(char *str, zval *retval_ptr, char *string_name TSRMLS_DC) /* {{{ */
+{
+	return zend_eval_stringl(str, strlen(str), retval_ptr, string_name TSRMLS_CC);
+}
+/* }}} */
+
+ZEND_API int zend_eval_stringl_ex(char *str, int str_len, zval *retval_ptr, char *string_name, int handle_exceptions TSRMLS_DC) /* {{{ */
 {
 	int result;
 
-	result = zend_eval_string(str, retval_ptr, string_name TSRMLS_CC);
+	result = zend_eval_stringl(str, str_len, retval_ptr, string_name TSRMLS_CC);
 	if (handle_exceptions && EG(exception)) {
 		zend_exception_error(EG(exception), E_ERROR TSRMLS_CC);
 		result = FAILURE;
 	}
 	return result;
+}
+/* }}} */
+
+ZEND_API int zend_eval_string_ex(char *str, zval *retval_ptr, char *string_name, int handle_exceptions TSRMLS_DC) /* {{{ */
+{
+	return zend_eval_stringl_ex(str, strlen(str), retval_ptr, string_name, handle_exceptions TSRMLS_CC);
 }
 /* }}} */
 

@@ -16,21 +16,23 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_win32.c,v 1.27.2.1.2.7.2.3 2008/12/31 11:15:31 sebastian Exp $ */
+/* $Id: tsrm_win32.c,v 1.27.2.1.2.7.2.11 2009/06/16 00:07:04 pajoye Exp $ */
 
 #include <stdio.h>
 #include <fcntl.h>
 #include <io.h>
 #include <process.h>
 #include <time.h>
+#include <errno.h>
 
 #define TSRM_INCLUDE_FULL_WINDOWS_HEADERS
-
+#include "SAPI.h"
 #include "TSRM.h"
 
 #ifdef TSRM_WIN32
 
 #include "tsrm_win32.h"
+#include "tsrm_virtual_cwd.h"
 
 #ifdef ZTS
 static ts_rsrc_id win32_globals_id;
@@ -40,11 +42,25 @@ static tsrm_win32_globals win32_globals;
 
 static void tsrm_win32_ctor(tsrm_win32_globals *globals TSRMLS_DC)
 {
+	HANDLE process_token = NULL;
+
 	globals->process = NULL;
 	globals->shm	 = NULL;
 	globals->process_size = 0;
 	globals->shm_size	  = 0;
 	globals->comspec = _strdup((GetVersion()<0x80000000)?"cmd.exe":"command.com");
+	globals->impersonation_token = NULL;
+
+	/* Access check requires impersonation token. Create a duplicate token. */
+	if(OpenProcessToken(GetCurrentProcess(), TOKEN_DUPLICATE | TOKEN_QUERY, &process_token)) {
+		DuplicateToken(process_token, SecurityImpersonation, &globals->impersonation_token);
+	}
+
+	/* impersonation_token will be closed when the process dies */
+	if(process_token != NULL) {
+		CloseHandle(process_token);
+		process_token = NULL;
+	}
 }
 
 static void tsrm_win32_dtor(tsrm_win32_globals *globals TSRMLS_DC)
@@ -66,6 +82,10 @@ static void tsrm_win32_dtor(tsrm_win32_globals *globals TSRMLS_DC)
 	}
 
 	free(globals->comspec);
+
+	if(globals->impersonation_token) {
+		CloseHandle(globals->impersonation_token);
+	}
 }
 
 TSRM_API void tsrm_win32_startup(void)
@@ -86,21 +106,127 @@ TSRM_API void tsrm_win32_shutdown(void)
 
 TSRM_API int tsrm_win32_access(const char *pathname, int mode)
 {
+	SECURITY_INFORMATION sec_info = OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION;
+	GENERIC_MAPPING gen_map = { FILE_GENERIC_READ, FILE_GENERIC_WRITE, FILE_GENERIC_EXECUTE, FILE_ALL_ACCESS };
+	DWORD priv_set_length = sizeof(PRIVILEGE_SET);
+
+	PRIVILEGE_SET privilege_set = {0};
+	DWORD sec_desc_length = 0, desired_access = 0, granted_access = 0;
+	BYTE * psec_desc = NULL;
+	BOOL fAccess = FALSE;
+	HANDLE process_token = NULL;
+
+	realpath_cache_bucket * bucket = NULL;
+	char * real_path = NULL;
+	time_t t;
+
+	TSRMLS_FETCH();
+
 	if (mode == 1 /*X_OK*/) {
-#if 1
-		/* This code is not supported by Windows 98,
-		 * but we don't support it anymore */
 		DWORD type;
-
-		return GetBinaryType(pathname, &type)?0:-1;
-#else
-		SHFILEINFO sfi;
-
-		return access(pathname, 0) == 0 &&
-			SHGetFileInfo(pathname, 0, &sfi, sizeof(SHFILEINFO), SHGFI_EXETYPE) != 0 ? 0 : -1;
-#endif
+		return GetBinaryType(pathname, &type) ? 0 : -1;
 	} else {
-		return access(pathname, mode);
+		if(access(pathname, mode)) {
+			return errno;
+		}
+
+		if(!IS_ABSOLUTE_PATH(pathname, strlen(pathname)+1)) {
+			real_path = (char *)malloc(MAX_PATH);
+			if(tsrm_realpath(pathname, real_path TSRMLS_CC) == NULL) {
+				goto Finished;
+			}
+			pathname = real_path;
+ 		}
+
+		if (CWDG(realpath_cache_size_limit)) {
+			t = time(0);
+			bucket = realpath_cache_lookup(pathname, strlen(pathname), t TSRMLS_CC);
+			if(bucket == NULL && real_path == NULL) {
+				/* We used the pathname directly. Call tsrm_realpath */
+				/* so that entry is created in realpath cache */
+				real_path = (char *)malloc(MAX_PATH);
+				if(tsrm_realpath(pathname, real_path TSRMLS_CC) != NULL) {
+					pathname = real_path;
+					bucket = realpath_cache_lookup(pathname, strlen(pathname), t TSRMLS_CC);
+				}
+			}
+ 		}
+ 
+ 		/* Do a full access check because access() will only check read-only attribute */
+ 		if(mode == 0 || mode > 6) {
+			if(bucket != NULL && bucket->is_rvalid) {
+				fAccess = bucket->is_readable;
+				goto Finished;
+			}
+ 			desired_access = FILE_GENERIC_READ;
+ 		} else if(mode <= 2) {
+			if(bucket != NULL && bucket->is_wvalid) {
+				fAccess = bucket->is_writable;
+				goto Finished;
+			}
+			desired_access = FILE_GENERIC_WRITE;
+ 		} else if(mode <= 4) {
+			if(bucket != NULL && bucket->is_rvalid) {
+				fAccess = bucket->is_readable;
+				goto Finished;
+			}
+			desired_access = FILE_GENERIC_READ;
+ 		} else { // if(mode <= 6)
+			if(bucket != NULL && bucket->is_rvalid && bucket->is_wvalid) {
+				fAccess = bucket->is_readable & bucket->is_writable;
+				goto Finished;
+			}
+			desired_access = FILE_GENERIC_READ | FILE_GENERIC_WRITE;
+ 		}
+
+		if(TWG(impersonation_token) == NULL) {
+			goto Finished;
+		}
+
+		/* Get size of security buffer. Call is expected to fail */
+		if(GetFileSecurity(pathname, sec_info, NULL, 0, &sec_desc_length)) {
+			goto Finished;
+		}
+
+		psec_desc = (BYTE *)malloc(sec_desc_length);
+		if(psec_desc == NULL ||
+			 !GetFileSecurity(pathname, sec_info, (PSECURITY_DESCRIPTOR)psec_desc, sec_desc_length, &sec_desc_length)) {
+			goto Finished;
+		}
+
+		if(!AccessCheck((PSECURITY_DESCRIPTOR)psec_desc, TWG(impersonation_token), desired_access, &gen_map, &privilege_set, &priv_set_length, &granted_access, &fAccess)) {
+				goto Finished;
+		}
+
+		/* Keep the result in realpath_cache */
+		if(bucket != NULL) {
+			if(desired_access == FILE_GENERIC_READ) {
+				bucket->is_rvalid = 1;
+				bucket->is_readable = fAccess;
+			}
+			else if(desired_access == FILE_GENERIC_WRITE) {
+				bucket->is_wvalid = 1;
+				bucket->is_writable = fAccess;
+			}
+		}
+
+Finished:
+		if(psec_desc != NULL) {
+			free(psec_desc);
+			psec_desc = NULL;
+		}
+
+		if(real_path != NULL) {
+			free(real_path);
+			real_path = NULL;
+		}
+
+		if(fAccess == FALSE) {
+			errno = EACCES;
+			return errno;
+		} else {
+			return 0;
+		}
 	}
 }
 
@@ -184,6 +310,7 @@ TSRM_API FILE *popen_ex(const char *command, const char *type, const char *cwd, 
 	PROCESS_INFORMATION process;
 	SECURITY_ATTRIBUTES security;
 	HANDLE in, out;
+	DWORD dwCreateFlags = 0;
 	char *cmd;
 	process_pair *proc;
 	TSRMLS_FETCH();
@@ -206,7 +333,6 @@ TSRM_API FILE *popen_ex(const char *command, const char *type, const char *cwd, 
 	read = (type[0] == 'r') ? TRUE : FALSE;
 	mode = ((str_len == 2) && (type[1] == 'b')) ? O_BINARY : O_TEXT;
 
-
 	if (read) {
 		in = dupHandle(in, FALSE);
 		startup.hStdInput  = GetStdHandle(STD_INPUT_HANDLE);
@@ -217,9 +343,14 @@ TSRM_API FILE *popen_ex(const char *command, const char *type, const char *cwd, 
 		startup.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
 	}
 
+	dwCreateFlags = NORMAL_PRIORITY_CLASS;
+	if (strcmp(sapi_module.name, "cli") != 0) {
+		dwCreateFlags |= CREATE_NO_WINDOW;
+	}
+
 	cmd = (char*)malloc(strlen(command)+strlen(TWG(comspec))+sizeof(" /c ")+2);
 	sprintf(cmd, "%s /c \"%s\"", TWG(comspec), command);
-	if (!CreateProcess(NULL, cmd, &security, &security, security.bInheritHandle, NORMAL_PRIORITY_CLASS|CREATE_NO_WINDOW, env, cwd, &startup, &process)) {
+	if (!CreateProcess(NULL, cmd, &security, &security, security.bInheritHandle, dwCreateFlags, env, cwd, &startup, &process)) {
 		return NULL;
 	}
 	free(cmd);
@@ -252,7 +383,7 @@ TSRM_API int pclose(FILE *stream)
 	}
 
 	fflush(process->stream);
-    fclose(process->stream);
+	fclose(process->stream);
 
 	WaitForSingleObject(process->prochnd, INFINITE);
 	GetExitCodeProcess(process->prochnd, &termstat);

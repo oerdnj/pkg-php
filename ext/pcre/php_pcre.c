@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_pcre.c,v 1.168.2.9.2.21.2.30 2009/01/28 22:39:30 nlopess Exp $ */
+/* $Id: php_pcre.c,v 1.168.2.9.2.21.2.32 2009/06/05 18:50:32 mattwil Exp $ */
 
 #include "php.h"
 #include "php_ini.h"
@@ -209,7 +209,7 @@ static char **make_subpats_table(int num_subpats, pcre_cache_entry *pce TSRMLS_D
 		}
 
 		while (ni++ < name_cnt) {
-			name_idx = 0xff * name_table[0] + name_table[1];
+			name_idx = 0xff * (unsigned char)name_table[0] + (unsigned char)name_table[1];
 			subpat_names[name_idx] = name_table + 2;
 			if (is_numeric_string(subpat_names[name_idx], strlen(subpat_names[name_idx]), NULL, NULL, 0) > 0) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Numeric named subpatterns are not allowed");
@@ -913,7 +913,7 @@ static int preg_do_eval(char *eval_str, int eval_str_len, char *subject,
 
 	compiled_string_description = zend_make_compiled_string_description("regexp code" TSRMLS_CC);
 	/* Run the code */
-	if (zend_eval_string(code.c, &retval, compiled_string_description TSRMLS_CC) == FAILURE) {
+	if (zend_eval_stringl(code.c, code.len, &retval, compiled_string_description TSRMLS_CC) == FAILURE) {
 		efree(compiled_string_description);
 		php_error_docref(NULL TSRMLS_CC,E_ERROR, "Failed evaluating code: %s%s", PHP_EOL, code.c);
 		/* zend_error() does not return in this case */

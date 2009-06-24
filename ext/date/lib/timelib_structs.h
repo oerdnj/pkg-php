@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: timelib_structs.h,v 1.13.2.6.2.3.2.8 2008/12/31 11:15:35 sebastian Exp $ */
+/* $Id: timelib_structs.h,v 1.13.2.6.2.3.2.11 2009/06/15 15:08:12 pajoye Exp $ */
 
 #ifndef __TIMELIB_STRUCTS_H__
 #define __TIMELIB_STRUCTS_H__
@@ -33,19 +33,25 @@
 #include <stdint.h>
 #endif
 
-#ifndef HAVE_INT32_T
-# if SIZEOF_INT == 4
+#ifdef PHP_WIN32
+/* TODO: Remove these hacks/defs once we have the int definitions in main/ 
+	 rathen than in each 2nd extension and win32/ */
+# include "win32/php_stdint.h"
+#else
+# ifndef HAVE_INT32_T
+#  if SIZEOF_INT == 4
 typedef int int32_t;
-# elif SIZEOF_LONG == 4
+#  elif SIZEOF_LONG == 4
 typedef long int int32_t;
+#  endif
 # endif
-#endif
 
-#ifndef HAVE_UINT32_T
-# if SIZEOF_INT == 4
+# ifndef HAVE_UINT32_T
+#  if SIZEOF_INT == 4
 typedef unsigned int uint32_t;
-# elif SIZEOF_LONG == 4
+#  elif SIZEOF_LONG == 4
 typedef unsigned long int uint32_t;
+#  endif
 # endif
 #endif
 
@@ -62,24 +68,14 @@ typedef unsigned long int uint32_t;
 #endif
 
 #if defined(_MSC_VER)
-typedef unsigned __int64 timelib_ull;
-typedef __int64 timelib_sll;
+typedef uint64_t timelib_ull;
+typedef int64_t timelib_sll;
+# define TIMELIB_LL_CONST(n) n ## i64
 #else
 typedef unsigned long long timelib_ull;
 typedef signed long long timelib_sll;
+# define TIMELIB_LL_CONST(n) n ## ll
 #endif
-
-#if defined(_MSC_VER)
-#define int32_t __int32
-#define uint32_t unsigned __int32
-#endif
-
-#if defined(_MSC_VER)
-#define TIMELIB_LL_CONST(n) n ## i64
-#else
-#define TIMELIB_LL_CONST(n) n ## ll
-#endif
-
 
 typedef struct ttinfo
 {
@@ -216,6 +212,9 @@ typedef struct _timelib_tzdb {
 #define SECS_PER_DAY   86400
 #define DAYS_PER_YEAR    365
 #define DAYS_PER_LYEAR   366
+/* 400*365 days + 97 leap days */
+#define DAYS_PER_LYEAR_PERIOD 146097
+#define YEARS_PER_LYEAR_PERIOD 400
 
 #define timelib_is_leap(y) ((y) % 4 == 0 && ((y) % 100 != 0 || (y) % 400 == 0))
 

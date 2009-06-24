@@ -349,7 +349,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_language_parser.y,v 1.160.2.4.2.8.2.34 2009/01/26 22:54:20 cseiler Exp $ */
+/* $Id: zend_language_parser.y,v 1.160.2.4.2.8.2.35 2009/03/26 12:37:17 dmitry Exp $ */
 
 /*
  * LALR shift/reduce conflicts and how they are resolved:
@@ -4889,12 +4889,12 @@ yyreduce:
 
   case 353:
 
-    { (yyval) = (yyvsp[(2) - (3)]); }
+    { (yyval) = (yyvsp[(2) - (3)]); CG(heredoc) = Z_STRVAL((yyvsp[(1) - (3)]).u.constant); CG(heredoc_len) = Z_STRLEN((yyvsp[(1) - (3)]).u.constant); }
     break;
 
   case 354:
 
-    { ZVAL_EMPTY_STRING(&(yyval).u.constant); INIT_PZVAL(&(yyval).u.constant); (yyval).op_type = IS_CONST; }
+    { ZVAL_EMPTY_STRING(&(yyval).u.constant); INIT_PZVAL(&(yyval).u.constant); (yyval).op_type = IS_CONST; CG(heredoc) = Z_STRVAL((yyvsp[(1) - (2)]).u.constant); CG(heredoc_len) = Z_STRLEN((yyvsp[(1) - (2)]).u.constant); }
     break;
 
   case 355:
@@ -4979,7 +4979,7 @@ yyreduce:
 
   case 371:
 
-    { (yyval) = (yyvsp[(2) - (3)]); }
+    { (yyval) = (yyvsp[(2) - (3)]); CG(heredoc) = Z_STRVAL((yyvsp[(1) - (3)]).u.constant); CG(heredoc_len) = Z_STRLEN((yyvsp[(1) - (3)]).u.constant); }
     break;
 
   case 372:

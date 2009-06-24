@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: sysvshm.c,v 1.70.2.2.2.5.2.12 2009/03/19 23:11:32 iliaa Exp $ */
+/* $Id: sysvshm.c,v 1.70.2.2.2.5.2.13 2009/06/06 02:40:49 mattwil Exp $ */
 
 /* This has been built and tested on Linux 2.2.14 
  *
@@ -157,7 +157,7 @@ PHP_FUNCTION(shm_attach)
 	}
 
 	if (shm_size < 1) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Segment size must be greater then zero.");
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Segment size must be greater than zero");
 		RETURN_FALSE;
   	}
 

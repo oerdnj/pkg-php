@@ -1,4 +1,4 @@
-<?php # $Id: mkdist.php,v 1.13.4.1.2.7 2008/12/13 11:46:23 pajoye Exp $
+<?php # $Id: mkdist.php,v 1.13.4.1.2.12 2009/06/11 14:39:37 cellog Exp $
 /* piece together a windows binary distro */
 
 $build_dir = $argv[1];
@@ -112,6 +112,13 @@ function copy_file_list($source_dir, $dest_dir, $list)
 	global $is_debug, $dist_dir;
 
 	foreach ($list as $item) {
+		if (empty($item)) {
+			continue;
+		} elseif (!is_file($source_dir . DIRECTORY_SEPARATOR . $item)) {
+			echo "WARNING: $item not found\n";
+			continue;
+		}
+
 		echo "Copying $item from $source_dir to $dest_dir\n";
 		copy($source_dir . DIRECTORY_SEPARATOR . $item, $dest_dir . DIRECTORY_SEPARATOR . $item);
 		if ($is_debug) {
@@ -214,14 +221,16 @@ copy_file_list($build_dir, "$dist_dir", $sapi_targets);
 copy_file_list($build_dir, "$dist_dir/ext", $ext_targets);
 
 /* pecl sapi and extensions */
-copy_file_list($build_dir, $pecl_dir, $pecl_targets);
+if(sizeof($pecl_targets)) {
+	copy_file_list($build_dir, $pecl_dir, $pecl_targets);
+}
 
 /* populate reading material */
 $text_files = array(
 	"LICENSE" => 		"license.txt",
 	"NEWS" => 			"news.txt",
-	"php.ini-dist" => 	"php.ini-dist",
-	"php.ini-recommended" => "php.ini-recommended",
+	"php.ini-development" => 	"php.ini-development",
+	"php.ini-production" => "php.ini-production",
 	"win32/install.txt" => 	"install.txt",
 	"win32/pws-php5cgi.reg" => "pws-php5cgi.reg",
 	"win32/pws-php5isapi.reg" => "pws-php5isapi.reg",
@@ -384,6 +393,27 @@ function copy_test_dir($directory, $dest)
 	closedir($directory_list); 
 }
 
+function make_phar_dot_phar($dist_dir)
+{
+  if (!extension_loaded('phar')) return;
+  $path_to_php = $dist_dir;
+  $path_to_phar = realpath(__DIR__ . '/../../ext/phar');
+  echo "Generating pharcommand.phar\n";
+  $phar = new Phar($path_to_php . '/pharcommand.phar', 0, 'pharcommand');
+  foreach (new DirectoryIterator($path_to_phar . '/phar') as $file) {
+    if ($file->isDir() || $file == 'phar.php') continue;
+    echo 'adding ', $file, "\n";
+    $phar[(string) $file] = file_get_contents($path_to_phar.  '/phar/' . $file);
+  }
+  $phar->setSignatureAlgorithm(Phar::SHA1);
+  $stub = file($path_to_phar . '/phar/phar.php');
+  unset($stub[0]); // remove hashbang
+  $phar->setStub(implode('', $stub));
+
+  echo "Creating phar.phar.bat\n";
+  file_put_contents($path_to_php . '/phar.phar.bat', "%~dp0php.exe %~dp0pharcommand.phar %1 %2 %3 %4 %5 %6 %7 %8 %9\r\n");
+}
+
 if (!is_dir($test_dir)) {
 	mkdir($test_dir);
 }
@@ -477,8 +507,8 @@ if (file_exists($snapshot_template)) {
 		}
 	}
 } else {
-	echo "WARNING: you don't have a snapshot template\n";
-	echo "         your dist will not be complete\n";
+	echo "WARNING: you don't have a snapshot template, your dist will not be complete\n";
 }
 
+make_phar_dot_phar($dist_dir);
 ?>

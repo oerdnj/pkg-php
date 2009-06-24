@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.154.2.1.2.6.2.2 2009/01/14 19:05:59 tabe Exp $
+dnl $Id: config.m4,v 1.154.2.1.2.6.2.8 2009/05/27 08:18:23 pajoye Exp $
 dnl
 
 dnl
@@ -184,6 +184,7 @@ AC_DEFUN([PHP_GD_FREETYPE2],[
       PHP_ADD_INCLUDE($FREETYPE2_INC_DIR)
       AC_DEFINE(USE_GD_IMGSTRTTF, 1, [ ])
       AC_DEFINE(HAVE_LIBFREETYPE,1,[ ])
+      AC_DEFINE(ENABLE_GD_TTF,1,[ ])
     ],[
       AC_MSG_ERROR([Problem with freetype.(a|so). Please check config.log for more information.])
     ],[
@@ -268,7 +269,8 @@ if test "$PHP_GD" = "yes"; then
                  libgd/gdxpm.c libgd/gdfontt.c libgd/gdfonts.c libgd/gdfontmb.c libgd/gdfontl.c \
                  libgd/gdfontg.c libgd/gdtables.c libgd/gdft.c libgd/gdcache.c libgd/gdkanji.c \
                  libgd/wbmp.c libgd/gd_wbmp.c libgd/gdhelpers.c libgd/gd_topal.c libgd/gd_gif_in.c \
-                 libgd/xbm.c libgd/gd_gif_out.c libgd/gd_security.c libgd/gd_pixelate.c"
+                 libgd/xbm.c libgd/gd_gif_out.c libgd/gd_security.c libgd/gd_filter.c \
+                 libgd/gd_pixelate.c libgd/gd_arc.c libgd/gd_rotate.c libgd/gd_color.c"
 
 dnl check for fabsf and floorf which are available since C99
   AC_CHECK_FUNCS(fabsf floorf)
@@ -328,7 +330,8 @@ dnl enable the support in bundled GD library
   if test -n "$FREETYPE2_DIR"; then
     AC_DEFINE(HAVE_GD_STRINGFT,   1, [ ])
     AC_DEFINE(HAVE_GD_STRINGFTEX, 1, [ ])
-    GDLIB_CFLAGS="$GDLIB_CFLAGS -DHAVE_LIBFREETYPE"
+    AC_DEFINE(ENABLE_GD_TTF, 1, [ ])
+    GDLIB_CFLAGS="$GDLIB_CFLAGS -DHAVE_LIBFREETYPE -DENABLE_GD_TTF"
   fi
 
   if test -n "$USE_GD_JIS_CONV"; then
@@ -340,7 +343,8 @@ else
 
  if test "$PHP_GD" != "no"; then
   GD_MODULE_TYPE=external
-  extra_sources="gdcache.c"
+  extra_sources="gdcache.c libgd/gd_compat.c libgd/gd_filter.c libgd/gd_pixelate.c libgd/gd_arc.c \
+                 libgd/gd_rotate.c libgd/gd_color.c"
 
 dnl Various checks for GD features
   PHP_GD_ZLIB
@@ -399,9 +403,10 @@ dnl
 if test "$PHP_GD" != "no"; then
   PHP_NEW_EXTENSION(gd, gd.c $extra_sources, $ext_shared,, \\$(GDLIB_CFLAGS))
 
+  PHP_ADD_BUILD_DIR($ext_builddir/libgd)
+
   if test "$GD_MODULE_TYPE" = "builtin"; then
     GDLIB_CFLAGS="-I$ext_srcdir/libgd $GDLIB_CFLAGS"
-    PHP_ADD_BUILD_DIR($ext_builddir/libgd)
     GD_HEADER_DIRS="ext/gd/ ext/gd/libgd/"
 
     PHP_TEST_BUILD(foobar, [], [
@@ -411,7 +416,6 @@ if test "$PHP_GD" != "no"; then
     GD_HEADER_DIRS="ext/gd/"
     GDLIB_CFLAGS="-I$GD_INCLUDE $GDLIB_CFLAGS"
     PHP_ADD_INCLUDE($GD_INCLUDE)
-
     PHP_CHECK_LIBRARY(gd, gdImageCreate, [], [
       AC_MSG_ERROR([GD build test failed. Please check the config.log for details.])
     ], [ -L$GD_LIB $GD_SHARED_LIBADD ])

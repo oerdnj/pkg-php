@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_debug.c,v 1.1.2.13 2008/12/31 11:15:39 sebastian Exp $ */
+/* $Id: mysqlnd_debug.c,v 1.1.2.17 2009/06/16 13:07:14 andrey Exp $ */
 
 #include "php.h"
 #include "mysqlnd.h"
@@ -618,7 +618,7 @@ MYSQLND_CLASS_METHODS_END;
 
 
 /* {{{ mysqlnd_debug_init */
-MYSQLND_DEBUG *mysqlnd_debug_init(TSRMLS_D)
+PHPAPI MYSQLND_DEBUG *mysqlnd_debug_init(TSRMLS_D)
 {
 	MYSQLND_DEBUG *ret = ecalloc(1, sizeof(MYSQLND_DEBUG));
 #ifdef ZTS
@@ -815,7 +815,7 @@ void * _mysqlnd_perealloc(void *ptr, size_t new_size, zend_bool persistent MYSQL
 	if (persistent == FALSE) {
 		DBG_INF_FMT("after : %lu", zend_memory_usage(persistent TSRMLS_CC));
 	}
-	MYSQLND_INC_GLOBAL_STATISTIC(persistent? STAT_MEM_EREALLOC_COUNT:STAT_MEM_REALLOC_COUNT);
+	MYSQLND_INC_GLOBAL_STATISTIC(persistent? STAT_MEM_REALLOC_COUNT:STAT_MEM_EREALLOC_COUNT);
 	if (MYSQLND_G(collect_memory_statistics)) {
 		enum mysqlnd_collected_stats s1 = persistent? STAT_MEM_REALLOC_COUNT:STAT_MEM_EREALLOC_COUNT;
 		enum mysqlnd_collected_stats s2 = persistent? STAT_MEM_REALLOC_AMMOUNT:STAT_MEM_EREALLOC_AMMOUNT;
@@ -830,6 +830,9 @@ void * _mysqlnd_perealloc(void *ptr, size_t new_size, zend_bool persistent MYSQL
 void _mysqlnd_efree(void *ptr MYSQLND_MEM_D)
 {
 	DBG_ENTER(mysqlnd_efree_name);
+	if (!ptr) {
+		DBG_VOID_RETURN;
+	}
 #ifdef MYSQLND_THREADED
 	if (MYSQLND_G(thread_id) != tsrm_thread_id()) {
 		DBG_RETURN(_mysqlnd_pefree(ptr, 1 TSRMLS_CC ZEND_FILE_LINE_CC ZEND_FILE_LINE_EMPTY_CC));
@@ -1107,6 +1110,7 @@ static int mysqlnd_build_trace_args(zval **arg TSRMLS_DC, int num_args, va_list 
 			TRACE_APPEND_STR("Array, ");
 			break;
 		case IS_OBJECT: {
+			zval tmp;
 			zstr class_name;
 			zend_uint class_name_len;
 			int dup;
@@ -1115,16 +1119,11 @@ static int mysqlnd_build_trace_args(zval **arg TSRMLS_DC, int num_args, va_list 
 
 			dup = zend_get_object_classname(*arg, &class_name, &class_name_len TSRMLS_CC);
 
-			if (UG(unicode)) {
-				zval tmp;
+			ZVAL_UNICODEL(&tmp, class_name.u, class_name_len, 1);
+			convert_to_string_with_converter(&tmp, ZEND_U_CONVERTER(UG(output_encoding_conv)));
+			TRACE_APPEND_STRL(Z_STRVAL(tmp), Z_STRLEN(tmp));
+			zval_dtor(&tmp);
 
-				ZVAL_UNICODEL(&tmp, class_name.u, class_name_len, 1);
-				convert_to_string_with_converter(&tmp, ZEND_U_CONVERTER(UG(output_encoding_conv)));
-				TRACE_APPEND_STRL(Z_STRVAL(tmp), Z_STRLEN(tmp));
-				zval_dtor(&tmp);
-			} else {
-				TRACE_APPEND_STRL(class_name.s, class_name_len);
-			}
 			if(!dup) {
 				efree(class_name.v);
 			}

@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_API.c,v 1.296.2.27.2.34.2.60 2009/01/14 11:56:08 dmitry Exp $ */
+/* $Id: zend_API.c,v 1.296.2.27.2.34.2.64 2009/06/04 18:20:42 mattwil Exp $ */
 
 #include "zend.h"
 #include "zend_execute.h"
@@ -313,6 +313,7 @@ static char *zend_parse_arg_impl(int arg_num, zval **arg, va_list *va, char **sp
 
 	switch (c) {
 		case 'l':
+		case 'L':
 			{
 				long *p = va_arg(*va, long *);
 				switch (Z_TYPE_PP(arg)) {
@@ -324,14 +325,33 @@ static char *zend_parse_arg_impl(int arg_num, zval **arg, va_list *va, char **sp
 							if ((type = is_numeric_string(Z_STRVAL_PP(arg), Z_STRLEN_PP(arg), p, &d, -1)) == 0) {
 								return "long";
 							} else if (type == IS_DOUBLE) {
-								*p = (long) d;
+								if (c == 'L') {
+									if (d > LONG_MAX) {
+										*p = LONG_MAX;
+										break;
+									} else if (d < LONG_MIN) {
+										*p = LONG_MIN;
+										break;
+									}
+								}
+
+								*p = zend_dval_to_lval(d);
 							}
 						}
 						break;
 
+					case IS_DOUBLE:
+						if (c == 'L') {
+							if (Z_DVAL_PP(arg) > LONG_MAX) {
+								*p = LONG_MAX;
+								break;
+							} else if (Z_DVAL_PP(arg) < LONG_MIN) {
+								*p = LONG_MIN;
+								break;
+							}
+						}
 					case IS_NULL:
 					case IS_LONG:
-					case IS_DOUBLE:
 					case IS_BOOL:
 						convert_to_long_ex(arg);
 						*p = Z_LVAL_PP(arg);
@@ -1929,7 +1949,6 @@ ZEND_API int zend_register_functions(zend_class_entry *scope, const zend_functio
 			fname_len = strlen(ptr->fname);
 			lowercase_name = zend_str_tolower_dup(ptr->fname, fname_len);
 			if (zend_hash_exists(target_function_table, lowercase_name, fname_len+1)) {
-				efree(lowercase_name);
 				zend_error(error_type, "Function registration failed - duplicate name - %s%s%s", scope ? scope->name : "", scope ? "::" : "", ptr->fname);
 			}
 			efree(lowercase_name);
@@ -2541,12 +2560,18 @@ get_function_via_handler:
 					fcc->object_ptr = EG(This);
 					if (error) {
 						zend_spprintf(error, 0, "non-static method %s::%s() %s be called statically, assuming $this from compatible context %s", fcc->calling_scope->name, fcc->function_handler->common.function_name, verb, Z_OBJCE_P(EG(This))->name);
+						if (severity == E_ERROR) {
+							retval = 0;
+						}
 					} else if (retval) {
 						zend_error(severity, "Non-static method %s::%s() %s be called statically, assuming $this from compatible context %s", fcc->calling_scope->name, fcc->function_handler->common.function_name, verb, Z_OBJCE_P(EG(This))->name);
 					}
 				} else {
 					if (error) {
 						zend_spprintf(error, 0, "non-static method %s::%s() %s be called statically", fcc->calling_scope->name, fcc->function_handler->common.function_name, verb);
+						if (severity == E_ERROR) {
+							retval = 0;
+						}
 					} else if (retval) {
 						zend_error(severity, "Non-static method %s::%s() %s be called statically", fcc->calling_scope->name, fcc->function_handler->common.function_name, verb);
 					}
@@ -2851,9 +2876,6 @@ ZEND_API int zend_fcall_info_init(zval *callable, uint check_flags, zend_fcall_i
 ZEND_API void zend_fcall_info_args_clear(zend_fcall_info *fci, int free_mem) /* {{{ */
 {
 	if (fci->params) {
-		while (fci->param_count) {
-			zval_ptr_dtor(fci->params[--fci->param_count]);
-		}
 		if (free_mem) {
 			efree(fci->params);
 			fci->params = NULL;
@@ -2901,7 +2923,6 @@ ZEND_API int zend_fcall_info_args(zend_fcall_info *fci, zval *args TSRMLS_DC) /*
 	zend_hash_internal_pointer_reset_ex(Z_ARRVAL_P(args), &pos);
 	while (zend_hash_get_current_data_ex(Z_ARRVAL_P(args), (void *) &arg, &pos) == SUCCESS) {
 		*params++ = arg;
-		Z_ADDREF_P(*arg);
 		zend_hash_move_forward_ex(Z_ARRVAL_P(args), &pos);
 	}
 
@@ -2924,7 +2945,6 @@ ZEND_API int zend_fcall_info_argp(zend_fcall_info *fci TSRMLS_DC, int argc, zval
 		fci->params = (zval ***) erealloc(fci->params, fci->param_count * sizeof(zval **));
 
 		for (i = 0; i < argc; ++i) {
-			Z_ADDREF_P(*(argv[i]));
 			fci->params[i] = argv[i];
 		}
 	}
@@ -2950,7 +2970,6 @@ ZEND_API int zend_fcall_info_argv(zend_fcall_info *fci TSRMLS_DC, int argc, va_l
 
 		for (i = 0; i < argc; ++i) {
 			arg = va_arg(*argv, zval **);
-			Z_ADDREF_P(*arg);
 			fci->params[i] = arg;
 		}
 	}

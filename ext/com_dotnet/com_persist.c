@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_persist.c,v 1.5.2.3.2.2.2.3 2008/12/31 11:15:35 sebastian Exp $ */
+/* $Id: com_persist.c,v 1.5.2.3.2.2.2.4 2009/05/19 17:38:29 kalle Exp $ */
 
 /* Infrastructure for working with persistent COM objects.
  * Implements: IStream* wrapper for PHP streams.
@@ -157,7 +157,7 @@ static HRESULT STDMETHODCALLTYPE stm_seek(IStream *This, LARGE_INTEGER dlibMove,
 		return STG_E_INVALIDFUNCTION;
 	}
 	
-	offset = dlibMove.QuadPart;
+	offset = (off_t) dlibMove.QuadPart;
 
 	ret = php_stream_seek(stm->stream, offset, whence);
 

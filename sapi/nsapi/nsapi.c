@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: nsapi.c,v 1.69.2.3.2.6.2.18 2009/01/11 13:47:01 thetaphi Exp $ */
+/* $Id: nsapi.c,v 1.69.2.3.2.6.2.19 2009/03/23 23:13:14 thetaphi Exp $ */
 
 /*
  * PHP includes
@@ -307,7 +307,7 @@ PHP_MSHUTDOWN_FUNCTION(nsapi)
 PHP_MINFO_FUNCTION(nsapi)
 {
 	php_info_print_table_start();
-	php_info_print_table_row(2, "NSAPI Module Revision", "$Revision: 1.69.2.3.2.6.2.18 $");
+	php_info_print_table_row(2, "NSAPI Module Revision", "$Revision: 1.69.2.3.2.6.2.19 $");
 	php_info_print_table_row(2, "Server Software", system_version());
 	php_info_print_table_row(2, "Sub-requests with nsapi_virtual()",
 	 (nsapi_servact_service)?((zend_ini_long("zlib.output_compression", sizeof("zlib.output_compression"), 0))?"not supported with zlib.output_compression":"enabled"):"not supported on this platform" );
@@ -468,6 +468,11 @@ static void sapi_nsapi_flush(void *server_context)
 {
 	nsapi_request_context *rc = (nsapi_request_context *)server_context;
 	TSRMLS_FETCH();
+	
+	if (!rc) {
+		/* we have no context, so no flushing needed. This fixes a SIGSEGV on shutdown */
+		return;
+	}
 
 	if (!SG(headers_sent)) {
 		sapi_send_headers(TSRMLS_C);
@@ -882,6 +887,7 @@ void NSAPI_PUBLIC php5_close(void *vparam)
 	}
 #endif	
 
+	sapi_shutdown();
 	tsrm_shutdown();
 
 	log_error(LOG_INFORM, "php5_close", NULL, NULL, "Shutdown PHP Module");

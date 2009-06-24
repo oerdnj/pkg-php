@@ -894,11 +894,10 @@ class PharCommand extends CLICommand
 		$target = $dir . '/' . $sub;
 
 		if (!file_exists(dirname($target))) {
-			if (!is_writable(dirname($target))) {
-				self::error("Operation could not be completed\n");
-			}
-
-			mkdir(dirname($target));
+			@mkdir(dirname($target), 0777, true);
+		}
+		if (!file_exists(dirname($target))) {
+			self::error("Operation could not be completed\n");
 		}
 
 		echo "$sub";
@@ -1555,7 +1554,7 @@ class PharCommand extends CLICommand
 		$use_ext = extension_loaded('phar');
 		$version = array(
 			'PHP Version' => phpversion(),
-			'phar.phar version' => '$Revision: 1.49.2.14 $',
+			'phar.phar version' => '$Revision: 1.49.2.15 $',
 			'Phar EXT version' => $use_ext ? phpversion('phar') : 'Not available',
 			'Phar API version' => Phar::apiVersion(),
 			'Phar-based phar archives' => true,

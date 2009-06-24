@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: assert.c,v 1.60.2.3.2.6.2.5 2008/12/31 11:15:44 sebastian Exp $ */
+/* $Id: assert.c,v 1.60.2.3.2.6.2.6 2009/06/05 18:50:32 mattwil Exp $ */
 
 /* {{{ includes */
 #include "php.h"
@@ -164,7 +164,7 @@ PHP_FUNCTION(assert)
 		}
 
 		compiled_string_description = zend_make_compiled_string_description("assert code" TSRMLS_CC);
-		if (zend_eval_string(myeval, &retval, compiled_string_description TSRMLS_CC) == FAILURE) {
+		if (zend_eval_stringl(myeval, Z_STRLEN_PP(assertion), &retval, compiled_string_description TSRMLS_CC) == FAILURE) {
 			efree(compiled_string_description);
 			php_error_docref(NULL TSRMLS_CC, E_RECOVERABLE_ERROR, "Failure evaluating code: %s%s", PHP_EOL, myeval);
 			if (ASSERTG(bail)) {

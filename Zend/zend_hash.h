@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_hash.h,v 1.78.2.2.2.2.2.11 2009/03/19 15:16:10 dmitry Exp $ */
+/* $Id: zend_hash.h,v 1.78.2.2.2.2.2.13 2009/05/25 01:18:00 pollita Exp $ */
 
 #ifndef ZEND_HASH_H
 #define ZEND_HASH_H
@@ -314,47 +314,29 @@ END_EXTERN_C()
 		const char *end = key + length - 1;									\
 		long idx;															\
 																			\
-		if (*end != '\0') { /* not a null terminated string */				\
+		if ((*end != '\0') /* not a null terminated string */				\
+		 || (*tmp == '0' && length > 2) /* numbers with leading zeros */	\
+		 || (end - tmp > MAX_LENGTH_OF_LONG - 1) /* number too long */		\
+		 || (SIZEOF_LONG == 4 &&											\
+		     end - tmp == MAX_LENGTH_OF_LONG - 1 &&							\
+		     *tmp > '2')) { /* overflow */									\
 			break;															\
-		} else if (*tmp == '0') {											\
-			if (end - tmp != 1) {											\
-				/* don't accept numbers with leading zeros */				\
-				break;														\
-			}																\
-			idx = 0;														\
-		} else if (end - tmp > MAX_LENGTH_OF_LONG - 1) {					\
-			/* don't accept too long strings */								\
-			break;															\
-		} else {															\
-			if (end - tmp == MAX_LENGTH_OF_LONG - 1) {						\
-				end--; /* check overflow in last digit later */				\
-			}																\
-			idx = (*tmp++ - '0');											\
-			while (tmp != end && *tmp >= '0' && *tmp <= '9') {				\
-				idx = (idx * 10) + (*tmp++ - '0');							\
-			}																\
-			if (tmp != end) {												\
-				break;														\
-			}																\
-			if (end != key + length - 1) {									\
-				/* last digit can cause overflow */							\
-				if (*tmp < '0' || *tmp > '9' || idx > LONG_MAX / 10) {		\
-					break;													\
-				}															\
-				idx = (idx * 10) + (*tmp - '0');							\
-				if (*key == '-') {											\
-					idx = -idx;												\
-					if (idx > 0) { /* overflow */							\
-						break;												\
-					}														\
-				} else if (idx < 0) { /* overflow */						\
-					break;													\
-				}															\
-			} else if (*key == '-') {										\
-				idx = -idx;													\
-			}																\
 		}																	\
-		return func;														\
+		idx = (*tmp - '0');													\
+		while (++tmp != end && *tmp >= '0' && *tmp <= '9') {				\
+			idx = (idx * 10) + (*tmp - '0');								\
+		}																	\
+		if (tmp == end) {													\
+			if (*key == '-') {												\
+				idx = -idx;													\
+				if (idx > 0) { /* overflow */								\
+					break;													\
+				}															\
+			} else if (idx < 0) { /* overflow */							\
+				break;														\
+			}																\
+			return func;													\
+		}																	\
 	}																		\
 } while (0)
 
@@ -385,11 +367,14 @@ static inline int zend_symtable_exists(HashTable *ht, const char *arKey, uint nK
 	return zend_hash_exists(ht, arKey, nKeyLength);
 }
 
-static inline int zend_symtable_update_current_key(HashTable *ht, const char *arKey, uint nKeyLength, int mode)
+static inline int zend_symtable_update_current_key_ex(HashTable *ht, const char *arKey, uint nKeyLength, int mode, HashPosition *pos)
 {
-	ZEND_HANDLE_NUMERIC(arKey, nKeyLength, zend_hash_update_current_key_ex(ht, HASH_KEY_IS_LONG, NULL, 0, idx, mode, NULL));
-	return zend_hash_update_current_key_ex(ht, HASH_KEY_IS_STRING, arKey, nKeyLength, 0, mode, NULL);
+	ZEND_HANDLE_NUMERIC(arKey, nKeyLength, zend_hash_update_current_key_ex(ht, HASH_KEY_IS_LONG, NULL, 0, idx, mode, pos));
+	return zend_hash_update_current_key_ex(ht, HASH_KEY_IS_STRING, arKey, nKeyLength, 0, mode, pos);
 }
+#define zend_symtable_update_current_key(ht,arKey,nKeyLength,mode) \
+	zend_symtable_update_current_key_ex(ht, arKey, nKeyLength, mode, NULL)
+
 
 #endif							/* ZEND_HASH_H */
 

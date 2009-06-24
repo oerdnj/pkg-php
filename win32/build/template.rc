@@ -1,5 +1,5 @@
 /* This is a template RC file.
- * $Id: template.rc,v 1.7.2.2.2.1.2.2 2008/11/03 19:25:42 auroraeosrose Exp $
+ * $Id: template.rc,v 1.7.2.2.2.1.2.3 2009/06/03 01:14:58 kalle Exp $
  * Do not edit with MSVC */
 #ifdef APSTUDIO_INVOKED
 # error dont edit with MSVC
@@ -28,7 +28,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #endif
 
 #ifndef URL
-#define URL "http://www.php.net"
+#define URL "http://www.php.net/"
 #endif
 
 #ifndef EXT_VERSION
@@ -65,7 +65,7 @@ BEGIN
 #endif
             VALUE "FileVersion", EXT_VERSION
             VALUE "InternalName", INTERNAL_NAME
-            VALUE "LegalCopyright", "Copyright © 1997-2008 The PHP Group"
+            VALUE "LegalCopyright", "Copyright © 1997-2009 The PHP Group"
             VALUE "LegalTrademarks", "PHP"
             VALUE "OriginalFilename", FILE_NAME
             VALUE "ProductName", "PHP"

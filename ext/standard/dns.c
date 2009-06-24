@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: dns.c,v 1.70.2.7.2.5.2.20 2009/01/12 20:07:28 felipe Exp $ */
+/* $Id: dns.c,v 1.70.2.7.2.5.2.24 2009/05/20 12:44:19 jani Exp $ */
 
 /* {{{ includes */
 #include "php.h"
@@ -277,7 +277,8 @@ static char *php_gethostbyname(char *name)
 # define PHP_DNS_ALL    (PHP_DNS_A|PHP_DNS_NS|PHP_DNS_CNAME|PHP_DNS_SOA|PHP_DNS_PTR|PHP_DNS_HINFO|PHP_DNS_MX|PHP_DNS_TXT|PHP_DNS_A6|PHP_DNS_SRV|PHP_DNS_NAPTR|PHP_DNS_AAAA)
 #endif /* HAVE_DNS_FUNCS || defined(PHP_WIN32) */
 
-#if HAVE_RES_SEARCH && !(defined(__BEOS__)||defined(PHP_WIN32) || defined(NETWARE))
+/* Note: These functions are defined in ext/standard/dns_win32.c for Windows! */
+#if !defined(PHP_WIN32) && (HAVE_RES_SEARCH && !(defined(__BEOS__) || defined(NETWARE)))
 
 /* {{{ proto bool dns_check_record(string host [, string type])
    Check DNS records corresponding to a given Internet host name or IP address */
@@ -916,11 +917,9 @@ PHP_FUNCTION(dns_get_mx)
 }
 /* }}} */
 #endif /* HAVE_DN_SKIPNAME && HAVE_DN_EXPAND */
-#endif /* HAVE_RES_SEARCH && !(defined(__BEOS__)||defined(PHP_WIN32) || defined(NETWARE)) */
-
+#endif /* !defined(PHP_WIN32) && (HAVE_RES_SEARCH && !(defined(__BEOS__) || defined(NETWARE))) */
 
 #if HAVE_DNS_FUNCS || defined(PHP_WIN32)
-
 PHP_MINIT_FUNCTION(dns) {
 	REGISTER_LONG_CONSTANT("DNS_A",     PHP_DNS_A,     CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("DNS_NS",    PHP_DNS_NS,    CONST_CS | CONST_PERSISTENT);

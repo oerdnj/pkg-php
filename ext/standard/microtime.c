@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: microtime.c,v 1.53.2.2.2.3.2.2 2008/12/31 11:15:45 sebastian Exp $ */
+/* $Id: microtime.c,v 1.53.2.2.2.3.2.3 2009/05/21 14:21:40 lbarnaud Exp $ */
 
 #include "php.h"
 
@@ -54,13 +54,12 @@ static void _php_gettimeofday(INTERNAL_FUNCTION_PARAMETERS, int mode)
 {
 	zend_bool get_as_float = 0;
 	struct timeval tp = {0};
-	struct timezone tz = {0};
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|b", &get_as_float) == FAILURE) {
 		return;
 	}
 
-	if (gettimeofday(&tp, &tz)) {
+	if (gettimeofday(&tp, NULL)) {
 		RETURN_FALSE;
 	}
 

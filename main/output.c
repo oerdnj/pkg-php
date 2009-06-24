@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: output.c,v 1.167.2.3.2.4.2.12 2009/02/13 11:48:17 davidc Exp $ */
+/* $Id: output.c,v 1.167.2.3.2.4.2.13 2009/03/25 23:59:45 cseiler Exp $ */
 
 #include "php.h"
 #include "ext/standard/head.h"
@@ -867,10 +867,12 @@ PHP_FUNCTION(ob_get_flush)
 	/* error checks */
 	if (!OG(ob_nesting_level)) {
 		php_error_docref("ref.outcontrol" TSRMLS_CC, E_NOTICE, "failed to delete and flush buffer. No buffer to delete or flush.");
+		zval_dtor(return_value);
 		RETURN_FALSE;
 	}
 	if (OG(ob_nesting_level) && !OG(active_ob_buffer).status && !OG(active_ob_buffer).erase) {
 		php_error_docref("ref.outcontrol" TSRMLS_CC, E_NOTICE, "failed to delete buffer %s.", OG(active_ob_buffer).handler_name);
+		zval_dtor(return_value);
 		RETURN_FALSE;
 	}
 	/* flush */
@@ -892,10 +894,12 @@ PHP_FUNCTION(ob_get_clean)
 	/* error checks */
 	if (!OG(ob_nesting_level)) {
 		php_error_docref("ref.outcontrol" TSRMLS_CC, E_NOTICE, "failed to delete buffer. No buffer to delete.");
+		zval_dtor(return_value);
 		RETURN_FALSE;
 	}
 	if (OG(ob_nesting_level) && !OG(active_ob_buffer).status && !OG(active_ob_buffer).erase) {
 		php_error_docref("ref.outcontrol" TSRMLS_CC, E_NOTICE, "failed to delete buffer %s.", OG(active_ob_buffer).handler_name);
+		zval_dtor(return_value);
 		RETURN_FALSE;
 	}
 	/* delete buffer */

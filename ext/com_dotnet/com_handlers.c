@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_handlers.c,v 1.30.2.5.2.6.2.5 2008/12/31 11:15:35 sebastian Exp $ */
+/* $Id: com_handlers.c,v 1.30.2.5.2.6.2.6 2009/05/19 17:38:29 kalle Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -434,7 +434,7 @@ static union _zend_function *com_constructor_get(zval *object TSRMLS_DC)
 	}
 }
 
-static zend_class_entry *com_class_entry_get(zval *object TSRMLS_DC)
+static zend_class_entry *com_class_entry_get(const zval *object TSRMLS_DC)
 {
 	php_com_dotnet_object *obj;
 	obj = CDNO_FETCH(object);
@@ -442,7 +442,7 @@ static zend_class_entry *com_class_entry_get(zval *object TSRMLS_DC)
 	return obj->ce;
 }
 
-static int com_class_name_get(zval *object, char **class_name, zend_uint *class_name_len, int parent TSRMLS_DC)
+static int com_class_name_get(const zval *object, char **class_name, zend_uint *class_name_len, int parent TSRMLS_DC)
 {
 	php_com_dotnet_object *obj;
 	obj = CDNO_FETCH(object);

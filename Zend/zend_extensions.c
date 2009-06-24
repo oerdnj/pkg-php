@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_extensions.c,v 1.48.2.1.2.3.2.4 2009/01/17 02:05:13 stas Exp $ */
+/* $Id: zend_extensions.c,v 1.48.2.1.2.3.2.6 2009/04/08 13:26:35 mattwil Exp $ */
 
 #include "zend_extensions.h"
 
@@ -79,8 +79,9 @@ int zend_load_extension(const char *path)
 			DL_UNLOAD(handle);
 			return FAILURE;
 		}
-	} else if (strcmp(ZEND_EXTENSION_BUILD_ID, extension_version_info->build_id)) {
-		fprintf(stderr, "Cannot load %s - it was build with configuration %s, whereas running engine is %s\n",
+	} else if (strcmp(ZEND_EXTENSION_BUILD_ID, extension_version_info->build_id) &&
+	           (!new_extension->build_id_check || new_extension->build_id_check(ZEND_EXTENSION_BUILD_ID) != SUCCESS)) {
+		fprintf(stderr, "Cannot load %s - it was built with configuration %s, whereas running engine is %s\n",
 					new_extension->name, extension_version_info->build_id, ZEND_EXTENSION_BUILD_ID);
 		DL_UNLOAD(handle);
 		return FAILURE;

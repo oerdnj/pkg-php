@@ -1,5 +1,5 @@
 // vim:ft=javascript
-// $Id: config.w32,v 1.40.2.8.2.10.2.45 2009/03/18 10:18:10 dmitry Exp $
+// $Id: config.w32,v 1.40.2.8.2.10.2.49 2009/06/04 18:20:45 mattwil Exp $
 // "Master" config file; think of it as a configure.in
 // equivalent.
 
@@ -146,8 +146,18 @@ if (VCVERS >= 1400) {
 	}
 }
 
-if (VCVERS >= 1500) {
-	ADD_FLAG('CFLAGS', ' /MP ');
+ARG_WITH('mp', 'Tell VC9 use up to [n,auto,disable] processes for compilation', 'auto');
+if (VCVERS >= 1500 && PHP_MP != 'disable') {
+		// no from disable-all 
+		if(PHP_MP == 'auto' || PHP_MP == 'no') {
+			 ADD_FLAG('CFLAGS', ' /MP ');
+		} else {
+			if(parseInt(PHP_MP) != 0) {
+				ADD_FLAG('CFLAGS', ' /MP'+ PHP_MP +' ');
+			} else {
+				STDOUT.WriteLine('WARNING: Invalid argument for MP: ' + PHP_MP);
+			}
+		}
 }
 
 // General link flags
@@ -313,6 +323,10 @@ ADD_SOURCES("Zend", "zend_language_parser.c zend_language_scanner.c \
 	zend_object_handlers.c zend_objects_API.c \
 	zend_default_classes.c zend_execute.c zend_strtod.c zend_gc.c zend_closures.c \
 	zend_float.c");
+
+if (VCVERS == 1200) {
+	AC_DEFINE('ZEND_DVAL_TO_LVAL_CAST_OK', 1);
+}
 
 ADD_SOURCES("main", "main.c snprintf.c spprintf.c safe_mode.c getopt.c fopen_wrappers.c \
 	php_scandir.c php_ini.c SAPI.c rfc1867.c php_content_types.c strlcpy.c \

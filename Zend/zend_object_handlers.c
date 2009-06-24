@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_object_handlers.c,v 1.135.2.6.2.22.2.26 2009/01/14 10:28:22 dmitry Exp $ */
+/* $Id: zend_object_handlers.c,v 1.135.2.6.2.22.2.30 2009/06/18 13:46:16 scottmac Exp $ */
 
 #include "zend.h"
 #include "zend_globals.h"
@@ -28,6 +28,7 @@
 #include "zend_object_handlers.h"
 #include "zend_interfaces.h"
 #include "zend_closures.h"
+#include "zend_compile.h"
 
 #define DEBUG_OBJECT_HANDLERS 0
 
@@ -578,8 +579,8 @@ static zval **zend_std_get_property_ptr_ptr(zval *object, zval *member TSRMLS_DC
 		zend_guard *guard;
 
 		if (!zobj->ce->__get ||
-		    zend_get_property_guard(zobj, property_info, member, &guard) != SUCCESS ||
-		    guard->in_get) {
+			zend_get_property_guard(zobj, property_info, member, &guard) != SUCCESS ||
+			(property_info && guard->in_get)) {
 			/* we don't have access controls - will just add it */
 			new_zval = &EG(uninitialized_zval);
 
@@ -777,15 +778,15 @@ static inline zend_class_entry * zend_get_function_root_class(zend_function *fbc
 }
 /* }}} */
 
-static inline union _zend_function *zend_get_user_call_function(zend_object *zobj, char *method_name, int method_len) /* {{{ */
+static inline union _zend_function *zend_get_user_call_function(zend_class_entry *ce, const char *method_name, int method_len) /* {{{ */
 {
 	zend_internal_function *call_user_call = emalloc(sizeof(zend_internal_function));
 	call_user_call->type = ZEND_INTERNAL_FUNCTION;
-	call_user_call->module = zobj->ce->module;
+	call_user_call->module = ce->module;
 	call_user_call->handler = zend_std_call_user_call;
 	call_user_call->arg_info = NULL;
 	call_user_call->num_args = 0;
-	call_user_call->scope = zobj->ce;
+	call_user_call->scope = ce;
 	call_user_call->fn_flags = ZEND_ACC_CALL_VIA_HANDLER;
 	call_user_call->function_name = estrndup(method_name, method_len);
 	call_user_call->pass_rest_by_reference = 0;
@@ -811,7 +812,7 @@ static union _zend_function *zend_std_get_method(zval **object_ptr, char *method
 	if (zend_hash_find(&zobj->ce->function_table, lc_method_name, method_len+1, (void **)&fbc) == FAILURE) {
 		free_alloca(lc_method_name, use_heap);
 		if (zobj->ce->__call) {
-			return zend_get_user_call_function(zobj, method_name, method_len);
+			return zend_get_user_call_function(zobj->ce, method_name, method_len);
 		} else {
 			return NULL;
 		}
@@ -829,7 +830,7 @@ static union _zend_function *zend_std_get_method(zval **object_ptr, char *method
 			fbc = updated_fbc;
 		} else {
 			if (zobj->ce->__call) {
-				fbc = zend_get_user_call_function(zobj, method_name, method_len);
+				fbc = zend_get_user_call_function(zobj->ce, method_name, method_len);
 			} else {
 				zend_error(E_ERROR, "Call to %s method %s::%s() from context '%s'", zend_visibility_string(fbc->common.fn_flags), ZEND_FN_SCOPE_NAME(fbc), method_name, EG(scope) ? EG(scope)->name : "");
 			}
@@ -855,7 +856,7 @@ static union _zend_function *zend_std_get_method(zval **object_ptr, char *method
 			 */
 			if (!zend_check_protected(zend_get_function_root_class(fbc), EG(scope))) {
 				if (zobj->ce->__call) {
-					fbc = zend_get_user_call_function(zobj, method_name, method_len);
+					fbc = zend_get_user_call_function(zobj->ce, method_name, method_len);
 				} else {
 					zend_error(E_ERROR, "Call to %s method %s::%s() from context '%s'", zend_visibility_string(fbc->common.fn_flags), ZEND_FN_SCOPE_NAME(fbc), method_name, EG(scope) ? EG(scope)->name : "");
 				}
@@ -912,6 +913,24 @@ ZEND_API void zend_std_callstatic_user_call(INTERNAL_FUNCTION_PARAMETERS) /* {{{
 }
 /* }}} */
 
+static inline union _zend_function *zend_get_user_callstatic_function(zend_class_entry *ce, const char *method_name, int method_len) /* {{{ */
+{
+	zend_internal_function *callstatic_user_call = emalloc(sizeof(zend_internal_function));
+	callstatic_user_call->type     = ZEND_INTERNAL_FUNCTION;
+	callstatic_user_call->module   = ce->module;
+	callstatic_user_call->handler  = zend_std_callstatic_user_call;
+	callstatic_user_call->arg_info = NULL;
+	callstatic_user_call->num_args = 0;
+	callstatic_user_call->scope    = ce;
+	callstatic_user_call->fn_flags = ZEND_ACC_STATIC | ZEND_ACC_PUBLIC | ZEND_ACC_CALL_VIA_HANDLER;
+	callstatic_user_call->function_name = estrndup(method_name, method_len);
+	callstatic_user_call->pass_rest_by_reference = 0;
+	callstatic_user_call->return_reference       = ZEND_RETURN_VALUE;
+
+	return (zend_function *)callstatic_user_call;
+}
+/* }}} */
+
 /* This is not (yet?) in the API, but it belongs in the built-in objects callbacks */
 
 ZEND_API zend_function *zend_std_get_static_method(zend_class_entry *ce, char *function_name_strval, int function_name_strlen TSRMLS_DC) /* {{{ */
@@ -923,7 +942,8 @@ ZEND_API zend_function *zend_std_get_static_method(zend_class_entry *ce, char *f
 
 	if (function_name_strlen == ce->name_length && ce->constructor) {
 		lc_class_name = zend_str_tolower_dup(ce->name, ce->name_length);
-		if (!memcmp(lc_class_name, function_name_strval, function_name_strlen)) {
+		/* Only change the method to the constructor if a __construct() method doesn't exist */
+		if (!memcmp(lc_class_name, function_name_strval, function_name_strlen) && memcmp(ce->constructor->common.function_name, ZEND_CONSTRUCTOR_FUNC_NAME, sizeof(ZEND_CONSTRUCTOR_FUNC_NAME))) {
 			fbc = ce->constructor;
 		}
 		efree(lc_class_name);
@@ -935,35 +955,9 @@ ZEND_API zend_function *zend_std_get_static_method(zend_class_entry *ce, char *f
 		    EG(This) &&
 		    Z_OBJ_HT_P(EG(This))->get_class_entry &&
 		    instanceof_function(Z_OBJCE_P(EG(This)), ce TSRMLS_CC)) {
-			zend_internal_function *call_user_call = emalloc(sizeof(zend_internal_function));
-
-			call_user_call->type = ZEND_INTERNAL_FUNCTION;
-			call_user_call->module = ce->module;
-			call_user_call->handler = zend_std_call_user_call;
-			call_user_call->arg_info = NULL;
-			call_user_call->num_args = 0;
-			call_user_call->scope = ce;
-			call_user_call->fn_flags = ZEND_ACC_CALL_VIA_HANDLER;
-			call_user_call->function_name = estrndup(function_name_strval, function_name_strlen);
-			call_user_call->pass_rest_by_reference = 0;
-			call_user_call->return_reference = ZEND_RETURN_VALUE;
-
-			return (union _zend_function *)call_user_call;
+			return zend_get_user_call_function(ce, function_name_strval, function_name_strlen);
 		} else if (ce->__callstatic) {
-			zend_internal_function *callstatic_user_call = emalloc(sizeof(zend_internal_function));
-
-			callstatic_user_call->type     = ZEND_INTERNAL_FUNCTION;
-			callstatic_user_call->module   = ce->module;
-			callstatic_user_call->handler  = zend_std_callstatic_user_call;
-			callstatic_user_call->arg_info = NULL;
-			callstatic_user_call->num_args = 0;
-			callstatic_user_call->scope    = ce;
-			callstatic_user_call->fn_flags = ZEND_ACC_STATIC | ZEND_ACC_PUBLIC | ZEND_ACC_CALL_VIA_HANDLER;
-			callstatic_user_call->function_name = estrndup(function_name_strval, function_name_strlen);
-			callstatic_user_call->pass_rest_by_reference = 0;
-			callstatic_user_call->return_reference       = ZEND_RETURN_VALUE;
-
-			return (zend_function *)callstatic_user_call;
+			return zend_get_user_callstatic_function(ce, function_name_strval, function_name_strlen);
 		} else {
 	   		return NULL;
 		}
@@ -985,14 +979,21 @@ ZEND_API zend_function *zend_std_get_static_method(zend_class_entry *ce, char *f
 		/* Ensure that if we're calling a private function, we're allowed to do so.
 		 */
 		updated_fbc = zend_check_private_int(fbc, EG(scope), function_name_strval, function_name_strlen TSRMLS_CC);
-		if (!updated_fbc) {
+		if (updated_fbc) {
+			fbc = updated_fbc;
+		} else {
+			if (ce->__callstatic) {
+				return zend_get_user_callstatic_function(ce, function_name_strval, function_name_strlen);
+			}
 			zend_error(E_ERROR, "Call to %s method %s::%s() from context '%s'", zend_visibility_string(fbc->common.fn_flags), ZEND_FN_SCOPE_NAME(fbc), function_name_strval, EG(scope) ? EG(scope)->name : "");
 		}
-		fbc = updated_fbc;
 	} else if ((fbc->common.fn_flags & ZEND_ACC_PROTECTED)) {
 		/* Ensure that if we're calling a protected function, we're allowed to do so.
 		 */
 		if (!zend_check_protected(zend_get_function_root_class(fbc), EG(scope))) {
+			if (ce->__callstatic) {
+				return zend_get_user_callstatic_function(ce, function_name_strval, function_name_strlen);
+			}
 			zend_error(E_ERROR, "Call to %s method %s::%s() from context '%s'", zend_visibility_string(fbc->common.fn_flags), ZEND_FN_SCOPE_NAME(fbc), function_name_strval, EG(scope) ? EG(scope)->name : "");
 		}
 	}

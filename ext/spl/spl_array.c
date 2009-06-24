@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_array.c,v 1.71.2.17.2.13.2.39 2009/03/19 03:01:37 colder Exp $ */
+/* $Id: spl_array.c,v 1.71.2.17.2.13.2.40 2009/05/21 13:26:14 lbarnaud Exp $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -745,12 +745,12 @@ static int spl_array_has_property(zval *object, zval *member, int has_set_exists
 {
 	spl_array_object *intern = (spl_array_object*)zend_object_store_get_object(object TSRMLS_CC);
 
-	if (std_object_handlers.has_property(object, member, has_set_exists TSRMLS_CC)) {
-		return 1;
-	} else if ((intern->ar_flags & SPL_ARRAY_ARRAY_AS_PROPS) != 0) {
+	if ((intern->ar_flags & SPL_ARRAY_ARRAY_AS_PROPS) != 0
+	&& !std_object_handlers.has_property(object, member, 2 TSRMLS_CC)) {
 		return spl_array_has_dimension(object, member, has_set_exists TSRMLS_CC);
 	}
-	return 0;
+	return std_object_handlers.has_property(object, member, has_set_exists TSRMLS_CC);
+
 } /* }}} */
 
 static void spl_array_unset_property(zval *object, zval *member TSRMLS_DC) /* {{{ */

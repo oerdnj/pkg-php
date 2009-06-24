@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: spl_fixedarray.c,v 1.1.2.10 2008/12/31 11:15:43 sebastian Exp $ */
+/* $Id: spl_fixedarray.c,v 1.1.2.11 2009/05/23 15:14:15 felipe Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -912,6 +912,10 @@ static void spl_fixedarray_it_move_forward(zend_object_iterator *iter TSRMLS_DC)
 SPL_METHOD(SplFixedArray, key)
 {
 	spl_fixedarray_object *intern = (spl_fixedarray_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
 
 	RETURN_LONG(intern->current);
 }
@@ -922,6 +926,10 @@ SPL_METHOD(SplFixedArray, key)
 SPL_METHOD(SplFixedArray, next)
 {
 	spl_fixedarray_object *intern = (spl_fixedarray_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
 
 	intern->current++;
 }
@@ -932,6 +940,10 @@ SPL_METHOD(SplFixedArray, next)
 SPL_METHOD(SplFixedArray, valid)
 {
 	spl_fixedarray_object *intern = (spl_fixedarray_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
 
 	RETURN_BOOL(intern->current >= 0 && intern->array && intern->current < intern->array->size);
 }
@@ -942,6 +954,10 @@ SPL_METHOD(SplFixedArray, valid)
 SPL_METHOD(SplFixedArray, rewind)
 {
 	spl_fixedarray_object *intern = (spl_fixedarray_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
 
 	intern->current = 0;
 }
@@ -953,7 +969,10 @@ SPL_METHOD(SplFixedArray, current)
 {
 	zval                 *zindex, **value_pp;
 	spl_fixedarray_object *intern  = (spl_fixedarray_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
-
+	
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
 
 	ALLOC_INIT_ZVAL(zindex);
 	ZVAL_LONG(zindex, intern->current);

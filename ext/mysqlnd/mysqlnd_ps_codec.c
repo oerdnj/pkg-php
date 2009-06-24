@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_ps_codec.c,v 1.3.2.14 2009/02/16 17:26:43 johannes Exp $ */
+/* $Id: mysqlnd_ps_codec.c,v 1.3.2.16 2009/05/28 16:35:41 andrey Exp $ */
 #include "php.h"
 #include "mysqlnd.h"
 #include "mysqlnd_wireprotocol.h"
@@ -405,12 +405,14 @@ void ps_fetch_string(zval *zv, const MYSQLND_FIELD * const field,
 	DBG_ENTER("ps_fetch_string");
 	DBG_INF_FMT("len = %lu", length);
 #if PHP_MAJOR_VERSION < 6
+	DBG_INF("copying from the row buffer");
 	ZVAL_STRINGL(zv, (char *)*row, length, 1);	
 #else
 	if (field->charsetnr == MYSQLND_BINARY_CHARSET_NR) {
 		DBG_INF("Binary charset");
 		ZVAL_STRINGL(zv, (char *)*row, length, 1);
 	} else {
+		DBG_INF_FMT("copying from the row buffer");
 		ZVAL_UTF8_STRINGL(zv, (char*)*row, length, ZSTR_DUPLICATE);
 	}
 #endif
@@ -685,7 +687,7 @@ mysqlnd_stmt_execute_store_params(MYSQLND_STMT *stmt, zend_uchar **buf, zend_uch
 #if PHP_MAJOR_VERSION < 6
 				if (Z_TYPE_P(the_var) != IS_STRING)
 #elif PHP_MAJOR_VERSION >= 6
-				if (Z_TYPE_P(the_var) != IS_STRING || (UG(unicode) && Z_TYPE_P(the_var) == IS_UNICODE))
+				if (Z_TYPE_P(the_var) != IS_STRING || Z_TYPE_P(the_var) == IS_UNICODE)
 #endif
 				{
 					if (!copies || !copies[i]) {
@@ -693,7 +695,7 @@ mysqlnd_stmt_execute_store_params(MYSQLND_STMT *stmt, zend_uchar **buf, zend_uch
 					}
 					the_var = copies[i];
 #if PHP_MAJOR_VERSION >= 6
-					if (UG(unicode) && Z_TYPE_P(the_var) == IS_UNICODE) {
+					if (Z_TYPE_P(the_var) == IS_UNICODE) {
 						zval_unicode_to_string_ex(the_var, UG(utf8_conv) TSRMLS_CC);
 					}
 #endif

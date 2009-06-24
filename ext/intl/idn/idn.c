@@ -15,7 +15,7 @@
    | Author: Pierre A. Joye <pierre@php.net>                              |
    +----------------------------------------------------------------------+
  */
-/* $Id: idn.c,v 1.1.2.1 2009/01/26 22:30:57 pajoye Exp $ */
+/* $Id: idn.c,v 1.1.2.2 2009/05/10 13:26:38 bjori Exp $ */
 
 /* {{{ includes */
 #ifdef HAVE_CONFIG_H
@@ -121,7 +121,7 @@ static void php_intl_idn_to(INTERNAL_FUNCTION_PARAMETERS, int mode)
 	RETURN_STRINGL(((char *)converted_utf8), converted_utf8_len, 0);
 }
 
-/* {{{ proto int idn_to_ascii(string domain)
+/* {{{ proto int idn_to_ascii(string domain[, int options [, int status]])
    Converts a UTF-8 domain to ASCII, as defined in the IDNA RFC */
 PHP_FUNCTION(idn_to_ascii)
 {
@@ -130,7 +130,7 @@ PHP_FUNCTION(idn_to_ascii)
 /* }}} */
 
 
-/* {{{ proto int idn_to_ascii(string domain)
+/* {{{ proto int idn_to_utf8(string domain[, int options[, int status]])
    Converts a UTF-8 domain to ASCII, as defined in the IDNA RFC */
 PHP_FUNCTION(idn_to_utf8)
 {

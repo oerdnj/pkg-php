@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: sockets.c,v 1.171.2.9.2.14.2.16 2009/02/03 19:22:55 iliaa Exp $ */
+/* $Id: sockets.c,v 1.171.2.9.2.14.2.20 2009/06/04 18:17:43 andrei Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -365,7 +365,7 @@ static int php_open_listen_sock(php_socket **php_sock, int port, int backlog TSR
 	sock->type = PF_INET;
 
 	if (bind(sock->bsd_socket, (struct sockaddr *)&la, sizeof(la)) < 0) {
-		PHP_SOCKET_ERROR(sock, "unable to bind to given adress", errno);
+		PHP_SOCKET_ERROR(sock, "unable to bind to given address", errno);
 		close(sock->bsd_socket);
 		efree(sock);
 		return 0;
@@ -620,6 +620,9 @@ PHP_MINIT_FUNCTION(sockets)
 	REGISTER_LONG_CONSTANT("SOCK_RDM",		SOCK_RDM,		CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("MSG_OOB",		MSG_OOB,		CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("MSG_WAITALL",	MSG_WAITALL,	CONST_CS | CONST_PERSISTENT);
+#ifdef MSG_DONTWAIT
+	REGISTER_LONG_CONSTANT("MSG_DONTWAIT",	MSG_DONTWAIT,	CONST_CS | CONST_PERSISTENT);
+#endif
 	REGISTER_LONG_CONSTANT("MSG_PEEK",		MSG_PEEK,		CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("MSG_DONTROUTE", MSG_DONTROUTE,	CONST_CS | CONST_PERSISTENT);
 #ifdef MSG_EOR
@@ -1563,6 +1566,7 @@ PHP_FUNCTION(socket_recvfrom)
 			sin.sin_family = AF_INET;
 
 			if (arg6 == NULL) {
+				efree(recv_buf);
 				WRONG_PARAM_COUNT;
 			}
 
@@ -1591,6 +1595,7 @@ PHP_FUNCTION(socket_recvfrom)
 			sin6.sin6_family = AF_INET6;
 
 			if (arg6 == NULL) {
+				efree(recv_buf);
 				WRONG_PARAM_COUNT;
 			}
 
@@ -1606,10 +1611,11 @@ PHP_FUNCTION(socket_recvfrom)
 			zval_dtor(arg5);
 			zval_dtor(arg6);
 
+			memset(addr6, 0, INET6_ADDRSTRLEN);
 			inet_ntop(AF_INET6, &sin6.sin6_addr, addr6, INET6_ADDRSTRLEN);
 
 			ZVAL_STRINGL(arg2, recv_buf, retval, 0);
-			ZVAL_STRING(arg5, addr6 ? addr6 : "::", 1);
+			ZVAL_STRING(arg5, addr6[0] ? addr6 : "::", 1);
 			ZVAL_LONG(arg6, ntohs(sin6.sin6_port));
 			break;
 #endif

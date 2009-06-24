@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_palloc.c,v 1.2.2.14 2008/12/31 11:15:39 sebastian Exp $ */
+/* $Id: mysqlnd_palloc.c,v 1.2.2.19 2009/06/16 07:53:35 andrey Exp $ */
 #include "php.h"
 #include "mysqlnd.h"
 #include "mysqlnd_priv.h"
@@ -36,13 +36,6 @@ char * mysqlnd_palloc_get_zval_name = "mysqlnd_palloc_get_zval";
 #else
 #define LOCK_PCACHE(cache)
 #define UNLOCK_PCACHE(cache)
-#endif
-
-
-#if PHP_MAJOR_VERSION < 6
-#define IS_UNICODE_DISABLED  (1)
-#else
-#define IS_UNICODE_DISABLED  (!UG(unicode))
 #endif
 
 
@@ -89,11 +82,26 @@ PHPAPI MYSQLND_ZVAL_PCACHE* _mysqlnd_palloc_init_cache(unsigned int cache_size T
 
 
 /* {{{ mysqlnd_palloc_get_cache_reference */
+static inline
 MYSQLND_ZVAL_PCACHE* mysqlnd_palloc_get_cache_reference(MYSQLND_ZVAL_PCACHE * const cache)
 {
 	if (cache) {
 		LOCK_PCACHE(cache);
 		cache->references++;
+		UNLOCK_PCACHE(cache);
+	}
+	return cache;
+}
+/* }}} */
+
+
+/* {{{ mysqlnd_palloc_release_cache_reference */
+static inline
+MYSQLND_ZVAL_PCACHE* mysqlnd_palloc_release_cache_reference(MYSQLND_ZVAL_PCACHE * const cache)
+{
+	if (cache) {
+		LOCK_PCACHE(cache);
+		cache->references--;
 		UNLOCK_PCACHE(cache);
 	}
 	return cache;
@@ -129,9 +137,9 @@ void _mysqlnd_palloc_free_cache(MYSQLND_ZVAL_PCACHE *cache TSRMLS_DC)
 
 
 /* {{{ _mysqlnd_palloc_init_thd_cache */
-PHPAPI MYSQLND_THD_ZVAL_PCACHE* _mysqlnd_palloc_init_thd_cache(MYSQLND_ZVAL_PCACHE * const cache TSRMLS_DC)
+MYSQLND_THD_ZVAL_PCACHE* mysqlnd_palloc_init_thd_cache(MYSQLND_ZVAL_PCACHE * const cache TSRMLS_DC)
 {
-	MYSQLND_THD_ZVAL_PCACHE *ret = calloc(1, sizeof(MYSQLND_THD_ZVAL_PCACHE));
+	MYSQLND_THD_ZVAL_PCACHE *ret = mnd_ecalloc(1, sizeof(MYSQLND_THD_ZVAL_PCACHE));
 	DBG_ENTER("_mysqlnd_palloc_init_thd_cache");
 	DBG_INF_FMT("ret = %p", ret);
 	
@@ -153,7 +161,7 @@ PHPAPI MYSQLND_THD_ZVAL_PCACHE* _mysqlnd_palloc_init_thd_cache(MYSQLND_ZVAL_PCAC
 	ret->references = 1;
 
 	/* 1. Initialize the GC list */
-	ret->gc_list.ptr_line = calloc(cache->max_items, sizeof(mysqlnd_zval *));
+	ret->gc_list.ptr_line = mnd_ecalloc(cache->max_items, sizeof(mysqlnd_zval *));
 	/* Backward and forward looping is possible */
 	ret->gc_list.last_added = ret->gc_list.ptr_line;
 	ret->gc_list.canary1 = (void*)0xCAFE;
@@ -170,17 +178,18 @@ MYSQLND_THD_ZVAL_PCACHE* _mysqlnd_palloc_get_thd_cache_reference(MYSQLND_THD_ZVA
 {
 	DBG_ENTER("_mysqlnd_palloc_get_thd_cache_reference");
 	if (cache) {
-		++cache->references;
 		DBG_INF_FMT("cache=%p new_refc=%d gc_list.canary1=%p gc_list.canary2=%p",
 					cache, cache->references, cache->gc_list.canary1, cache->gc_list.canary2);
 		mysqlnd_palloc_get_cache_reference(cache->parent);
+		/* No concurrency here, we are in the same thread */
+		++cache->references;
 	}
 	DBG_RETURN(cache);
 }
 /* }}} */
 
 
-/* {{{ mysqlnd_palloc_free_cache */
+/* {{{ mysqlnd_palloc_free_thd_cache */
 /*
   As this call will happen on MSHUTDOWN(), then we don't need to copy the zvals with
   copy_ctor but scrap what they point to with zval_dtor() and then just free our
@@ -224,8 +233,8 @@ void mysqlnd_palloc_free_thd_cache(MYSQLND_THD_ZVAL_PCACHE *thd_cache TSRMLS_DC)
 		UNLOCK_PCACHE(global_cache);
 
 	}
-	mnd_free(thd_cache->gc_list.ptr_line);
-	mnd_free(thd_cache);
+	mnd_efree(thd_cache->gc_list.ptr_line);
+	mnd_efree(thd_cache);
 
 	DBG_VOID_RETURN;
 }
@@ -237,7 +246,7 @@ PHPAPI void _mysqlnd_palloc_free_thd_cache_reference(MYSQLND_THD_ZVAL_PCACHE **c
 {
 	DBG_ENTER("_mysqlnd_palloc_free_thd_cache_reference");
 	if (*cache) {
-		--(*cache)->parent->references;
+		mysqlnd_palloc_release_cache_reference((*cache)->parent);
 		DBG_INF_FMT("cache=%p references_left=%d canary1=%p canary2=%p",
 					*cache, (*cache)->references, (*cache)->gc_list.canary1, (*cache)->gc_list.canary2);
 
@@ -404,6 +413,9 @@ void mysqlnd_palloc_zval_ptr_dtor(zval **zv, MYSQLND_THD_ZVAL_PCACHE * const thd
 {
 	MYSQLND_ZVAL_PCACHE *cache;
 	DBG_ENTER("mysqlnd_palloc_zval_ptr_dtor");
+	if (!*zv) {
+		DBG_VOID_RETURN;
+	}
 	if (thd_cache) {
 		DBG_INF_FMT("cache=%p parent_block=%p last_in_block=%p *zv=%p refc=%d type=%d ",
 					thd_cache,
@@ -504,9 +516,14 @@ void mysqlnd_palloc_zval_ptr_dtor(zval **zv, MYSQLND_THD_ZVAL_PCACHE * const thd
 		*(thd_cache->gc_list.last_added++) = (mysqlnd_zval *)*zv;
 		UNLOCK_PCACHE(cache);
 	} else {
+		DBG_INF("No user reference");
 		/* No user reference */
 		if (((mysqlnd_zval *)*zv)->point_type == MYSQLND_POINTS_EXT_BUFFER) {
-			/* PS are here and also in Unicode mode, for non-binary  */
+			DBG_INF("Points to external buffer. Calling zval_dtor");
+			/*
+			  PS are here
+			  Unicode mode goes also here if the column is not binary but a text
+			*/
 			zval_dtor(*zv);
 		}
 		LOCK_PCACHE(cache);
@@ -530,7 +547,7 @@ void mysqlnd_palloc_zval_ptr_dtor(zval **zv, MYSQLND_THD_ZVAL_PCACHE * const thd
 /* {{{ _mysqlnd_palloc_rinit */
 PHPAPI MYSQLND_THD_ZVAL_PCACHE * _mysqlnd_palloc_rinit(MYSQLND_ZVAL_PCACHE * cache TSRMLS_DC)
 {
-	return mysqlnd_palloc_init_thd_cache(cache);
+	return mysqlnd_palloc_init_thd_cache(cache TSRMLS_CC);
 }
 /* }}} */
 
@@ -551,48 +568,45 @@ PHPAPI void mysqlnd_palloc_stats(const MYSQLND_ZVAL_PCACHE * const cache, zval *
 {
 	if (cache) {
 #if PHP_MAJOR_VERSION >= 6
+		UChar *ustr;
+		int ulen;
+			
 		TSRMLS_FETCH();
 #endif
 
 		LOCK_PCACHE(cache);
 		array_init(return_value);
 #if PHP_MAJOR_VERSION >= 6
-		if (UG(unicode)) {
-			UChar *ustr;
-			int ulen;
-
-			zend_string_to_unicode(UG(utf8_conv), &ustr, &ulen, "put_hits", sizeof("put_hits") TSRMLS_CC);
-			add_u_assoc_long_ex(return_value, IS_UNICODE, ZSTR(ustr), ulen + 1, cache->put_hits);
-			efree(ustr);
-			zend_string_to_unicode(UG(utf8_conv), &ustr, &ulen, "put_misses", sizeof("put_misses") TSRMLS_CC);
-			add_u_assoc_long_ex(return_value, IS_UNICODE, ZSTR(ustr), ulen + 1, cache->put_hits);
-			efree(ustr);
-			zend_string_to_unicode(UG(utf8_conv), &ustr, &ulen, "get_hits", sizeof("get_hits") TSRMLS_CC);
-			add_u_assoc_long_ex(return_value, IS_UNICODE, ZSTR(ustr), ulen + 1, cache->put_hits);
-			efree(ustr);
-			zend_string_to_unicode(UG(utf8_conv), &ustr, &ulen, "get_misses", sizeof("get_misses") TSRMLS_CC);
-			add_u_assoc_long_ex(return_value, IS_UNICODE, ZSTR(ustr), ulen + 1, cache->put_hits);
-			efree(ustr);
-			zend_string_to_unicode(UG(utf8_conv), &ustr, &ulen, "size", sizeof("size") TSRMLS_CC);
-			add_u_assoc_long_ex(return_value, IS_UNICODE, ZSTR(ustr), ulen + 1, cache->put_hits);
-			efree(ustr);
-			zend_string_to_unicode(UG(utf8_conv), &ustr, &ulen, "free_items", sizeof("free_items") TSRMLS_CC);
-			add_u_assoc_long_ex(return_value, IS_UNICODE, ZSTR(ustr), ulen + 1, cache->put_hits);
-			efree(ustr);
-			zend_string_to_unicode(UG(utf8_conv), &ustr, &ulen, "references", sizeof("references") TSRMLS_CC);
-			add_u_assoc_long_ex(return_value, IS_UNICODE, ZSTR(ustr), ulen + 1, cache->put_hits);
-			efree(ustr);
-		} else
+		zend_string_to_unicode(UG(utf8_conv), &ustr, &ulen, "put_hits", sizeof("put_hits") TSRMLS_CC);
+		add_u_assoc_long_ex(return_value, IS_UNICODE, ZSTR(ustr), ulen + 1, cache->put_hits);
+		efree(ustr);
+		zend_string_to_unicode(UG(utf8_conv), &ustr, &ulen, "put_misses", sizeof("put_misses") TSRMLS_CC);
+		add_u_assoc_long_ex(return_value, IS_UNICODE, ZSTR(ustr), ulen + 1, cache->put_hits);
+		efree(ustr);
+		zend_string_to_unicode(UG(utf8_conv), &ustr, &ulen, "get_hits", sizeof("get_hits") TSRMLS_CC);
+		add_u_assoc_long_ex(return_value, IS_UNICODE, ZSTR(ustr), ulen + 1, cache->put_hits);
+		efree(ustr);
+		zend_string_to_unicode(UG(utf8_conv), &ustr, &ulen, "get_misses", sizeof("get_misses") TSRMLS_CC);
+		add_u_assoc_long_ex(return_value, IS_UNICODE, ZSTR(ustr), ulen + 1, cache->put_hits);
+		efree(ustr);
+		zend_string_to_unicode(UG(utf8_conv), &ustr, &ulen, "size", sizeof("size") TSRMLS_CC);
+		add_u_assoc_long_ex(return_value, IS_UNICODE, ZSTR(ustr), ulen + 1, cache->put_hits);
+		efree(ustr);
+		zend_string_to_unicode(UG(utf8_conv), &ustr, &ulen, "free_items", sizeof("free_items") TSRMLS_CC);
+		add_u_assoc_long_ex(return_value, IS_UNICODE, ZSTR(ustr), ulen + 1, cache->put_hits);
+		efree(ustr);
+		zend_string_to_unicode(UG(utf8_conv), &ustr, &ulen, "references", sizeof("references") TSRMLS_CC);
+		add_u_assoc_long_ex(return_value, IS_UNICODE, ZSTR(ustr), ulen + 1, cache->put_hits);
+		efree(ustr);
+#else
+		add_assoc_long_ex(return_value, "put_hits",		sizeof("put_hits"),		cache->put_hits);
+		add_assoc_long_ex(return_value, "put_misses",	sizeof("put_misses"),	cache->put_misses);
+		add_assoc_long_ex(return_value, "get_hits",		sizeof("get_hits"),		cache->get_hits);
+		add_assoc_long_ex(return_value, "get_misses",	sizeof("get_misses"),	cache->get_misses);
+		add_assoc_long_ex(return_value, "size",			sizeof("size"),			cache->max_items);
+		add_assoc_long_ex(return_value, "free_items",	sizeof("free_items"),	cache->free_items);
+		add_assoc_long_ex(return_value, "references",	sizeof("references"),	cache->references);
 #endif
-		{
-			add_assoc_long_ex(return_value, "put_hits",		sizeof("put_hits"),		cache->put_hits);
-			add_assoc_long_ex(return_value, "put_misses",	sizeof("put_misses"),	cache->put_misses);
-			add_assoc_long_ex(return_value, "get_hits",		sizeof("get_hits"),		cache->get_hits);
-			add_assoc_long_ex(return_value, "get_misses",	sizeof("get_misses"),	cache->get_misses);
-			add_assoc_long_ex(return_value, "size",			sizeof("size"),			cache->max_items);
-			add_assoc_long_ex(return_value, "free_items",	sizeof("free_items"),	cache->free_items);
-			add_assoc_long_ex(return_value, "references",	sizeof("references"),	cache->references);
-		}
 		UNLOCK_PCACHE(cache);
 	} else {
 		ZVAL_NULL(return_value);

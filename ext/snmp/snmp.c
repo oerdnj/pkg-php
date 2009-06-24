@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: snmp.c,v 1.106.2.2.2.5.2.10 2008/12/31 11:15:43 sebastian Exp $ */
+/* $Id: snmp.c,v 1.106.2.2.2.5.2.13 2009/06/01 13:10:18 iliaa Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -655,18 +655,18 @@ retry:
 						*return_value = *snmpval;
 						zval_copy_ctor(return_value);
 						zval_ptr_dtor(&snmpval);
-						snmp_free_pdu(pdu);
+						snmp_free_pdu(response);
 						snmp_close(ss);
 						return;
 					} else if (st == SNMP_CMD_GETNEXT) {
 						*return_value = *snmpval;
 						zval_copy_ctor(return_value);
-						snmp_free_pdu(pdu);
+						snmp_free_pdu(response);
 						snmp_close(ss);
 						return;
 					} else if (st == SNMP_CMD_WALK) {
 						add_next_index_zval(return_value,snmpval); /* Add to returned array */
-					} else if (st == SNMP_CMD_REALWALK)  {
+					} else if (st == SNMP_CMD_REALWALK && vars->type != SNMP_ENDOFMIBVIEW && vars->type != SNMP_NOSUCHOBJECT && vars->type != SNMP_NOSUCHINSTANCE) {
 #ifdef HAVE_NET_SNMP
 						snprint_objid(buf2, sizeof(buf2), vars->name, vars->name_length);
 #else
@@ -677,9 +677,14 @@ retry:
 					if (st >= SNMP_CMD_WALK && st != SNMP_CMD_SET) {
 						if (vars->type != SNMP_ENDOFMIBVIEW && 
 							vars->type != SNMP_NOSUCHOBJECT && vars->type != SNMP_NOSUCHINSTANCE) {
-							memmove((char *)name, (char *)vars->name,vars->name_length * sizeof(oid));
-							name_length = vars->name_length;
-							keepwalking = 1;
+							if (snmp_oid_compare(name, name_length, vars->name, vars->name_length) >= 0) {
+								php_error_docref(NULL TSRMLS_CC, E_WARNING, "Error: OID not increasing: %s",name);
+								keepwalking = 0;
+							} else {
+								memmove((char *)name, (char *)vars->name,vars->name_length * sizeof(oid));
+								name_length = vars->name_length;
+								keepwalking = 1;
+							}
 						}
 					}
 				}	
@@ -700,28 +705,28 @@ retry:
 					}
 					if (st == SNMP_CMD_GET) {
 						if ((pdu = snmp_fix_pdu(response, SNMP_MSG_GET)) != NULL) {
-							snmp_free_pdu(pdu);
+							snmp_free_pdu(response);
 							goto retry;
 						}
 					} else if (st == SNMP_CMD_SET) {
 						if ((pdu = snmp_fix_pdu(response, SNMP_MSG_SET)) != NULL) {
-							snmp_free_pdu(pdu);
+							snmp_free_pdu(response);
 							goto retry;
 						}
 					} else if (st == SNMP_CMD_GETNEXT) {
 						if ((pdu = snmp_fix_pdu(response, SNMP_MSG_GETNEXT)) != NULL) {
-							snmp_free_pdu(pdu);
+							snmp_free_pdu(response);
 							goto retry;
 						}
 					} else if (st >= SNMP_CMD_WALK) { /* Here we do walks. */
 						if ((pdu = snmp_fix_pdu(response, ((session->version == SNMP_VERSION_1)
 										? SNMP_MSG_GETNEXT
 										: SNMP_MSG_GETBULK))) != NULL) {
-							snmp_free_pdu(pdu);
+							snmp_free_pdu(response);
 							goto retry;
 						}
 					}
-					snmp_free_pdu(pdu);
+					snmp_free_pdu(response);
 					snmp_close(ss);
 					if (st == SNMP_CMD_WALK || st == SNMP_CMD_REALWALK) {
 						zval_dtor(return_value);

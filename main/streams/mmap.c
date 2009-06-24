@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mmap.c,v 1.8.2.1.2.1.2.5 2008/12/31 11:15:48 sebastian Exp $ */
+/* $Id: mmap.c,v 1.8.2.1.2.1.2.6 2009/05/17 14:58:10 lbarnaud Exp $ */
 
 /* Memory Mapping interface for streams */
 #include "php.h"
@@ -49,6 +49,20 @@ PHPAPI char *_php_stream_mmap_range(php_stream *stream, size_t offset, size_t le
 PHPAPI int _php_stream_mmap_unmap(php_stream *stream TSRMLS_DC)
 {
 	return php_stream_set_option(stream, PHP_STREAM_OPTION_MMAP_API, PHP_STREAM_MMAP_UNMAP, NULL) == PHP_STREAM_OPTION_RETURN_OK ? 1 : 0;
+}
+
+PHPAPI int _php_stream_mmap_unmap_ex(php_stream *stream, off_t readden TSRMLS_DC)
+{
+	int ret = 1;
+
+	if (php_stream_seek(stream, readden, SEEK_CUR) != 0) {
+		ret = 0;
+	}
+	if (php_stream_mmap_unmap(stream) == 0) {
+		ret = 0;
+	}
+
+	return ret;
 }
 
 /*

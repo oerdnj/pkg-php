@@ -290,7 +290,7 @@ static int ZEND_FASTCALL zend_do_fcall_common_helper_SPEC(ZEND_OPCODE_HANDLER_AR
 		EG(called_scope) = EX(called_scope);
 	}
 
-	zend_ptr_stack_3_pop(&EG(arg_types_stack), (void*)&EX(called_scope), (void**)&EX(current_object), (void**)&EX(fbc));
+	zend_arg_types_stack_3_pop(&EG(arg_types_stack), &EX(called_scope), &EX(current_object), &EX(fbc));
 	EX(function_state).arguments = zend_vm_stack_push_args(opline->extended_value TSRMLS_CC);
 
 	if (EX(function_state).function->type == ZEND_INTERNAL_FUNCTION) {
@@ -625,13 +625,18 @@ static int ZEND_FASTCALL  ZEND_HANDLE_EXCEPTION_SPEC_HANDLER(ZEND_OPCODE_HANDLER
 	while (EX(fbc)) {
 		EX(called_scope) = (zend_class_entry*)zend_ptr_stack_pop(&EG(arg_types_stack));
 		if (EX(object)) {
-			if (IS_CTOR_USED(EX(called_scope))) {
-				Z_DELREF_P(EX(object));
+			if (IS_CTOR_CALL(EX(called_scope))) {
+				if (IS_CTOR_USED(EX(called_scope))) {
+					Z_DELREF_P(EX(object));
+				}
+				if (Z_REFCOUNT_P(EX(object)) == 1) {
+					zend_object_store_ctor_failed(EX(object) TSRMLS_CC);
+				}
 			}
 			zval_ptr_dtor(&EX(object));
 		}
 		EX(called_scope) = DECODE_CTOR(EX(called_scope));
-		zend_ptr_stack_2_pop(&EG(arg_types_stack), (void**)&EX(object), (void**)&EX(fbc));
+		zend_arg_types_stack_2_pop(&EG(arg_types_stack), &EX(object), &EX(fbc));
 	}
 
 	for (i=0; i<EX(op_array)->last_brk_cont; i++) {
@@ -704,30 +709,25 @@ static int ZEND_FASTCALL  ZEND_USER_OPCODE_SPEC_HANDLER(ZEND_OPCODE_HANDLER_ARGS
 static int ZEND_FASTCALL  ZEND_FETCH_CLASS_SPEC_CONST_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 {
 	zend_op *opline = EX(opline);
-	zval *class_name;
-
 
 
 	if (IS_CONST == IS_UNUSED) {
 		EX_T(opline->result.u.var).class_entry = zend_fetch_class(NULL, 0, opline->extended_value TSRMLS_CC);
 		ZEND_VM_NEXT_OPCODE();
-	}
+	} else {
 
-	class_name = &opline->op2.u.constant;
+		zval *class_name = &opline->op2.u.constant;
 
-	switch (Z_TYPE_P(class_name)) {
-		case IS_OBJECT:
+		if (IS_CONST != IS_CONST && Z_TYPE_P(class_name) == IS_OBJECT) {
 			EX_T(opline->result.u.var).class_entry = Z_OBJCE_P(class_name);
-			break;
-		case IS_STRING:
+		} else if (Z_TYPE_P(class_name) == IS_STRING) {
 			EX_T(opline->result.u.var).class_entry = zend_fetch_class(Z_STRVAL_P(class_name), Z_STRLEN_P(class_name), opline->extended_value TSRMLS_CC);
-			break;
-		default:
+		} else {
 			zend_error_noreturn(E_ERROR, "Class name must be a valid object or a string");
-			break;
-	}
+		}
 
-	ZEND_VM_NEXT_OPCODE();
+		ZEND_VM_NEXT_OPCODE();
+	}
 }
 
 static int ZEND_FASTCALL  ZEND_INIT_FCALL_BY_NAME_SPEC_CONST_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
@@ -747,7 +747,8 @@ static int ZEND_FASTCALL  ZEND_INIT_FCALL_BY_NAME_SPEC_CONST_HANDLER(ZEND_OPCODE
 	} else {
 		function_name = &opline->op2.u.constant;
 
-		if (Z_TYPE_P(function_name) == IS_OBJECT &&
+		if (IS_CONST != IS_CONST &&
+		    Z_TYPE_P(function_name) == IS_OBJECT &&
 			Z_OBJ_HANDLER_P(function_name, get_closure) &&
 			Z_OBJ_HANDLER_P(function_name, get_closure)(function_name, &EX(called_scope), &EX(fbc), &EX(object) TSRMLS_CC) == SUCCESS) {
 			if (EX(object)) {
@@ -900,31 +901,26 @@ static int ZEND_FASTCALL  ZEND_ADD_INTERFACE_SPEC_CONST_HANDLER(ZEND_OPCODE_HAND
 static int ZEND_FASTCALL  ZEND_FETCH_CLASS_SPEC_TMP_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 {
 	zend_op *opline = EX(opline);
-	zval *class_name;
-	zend_free_op free_op2;
 
 
 	if (IS_TMP_VAR == IS_UNUSED) {
 		EX_T(opline->result.u.var).class_entry = zend_fetch_class(NULL, 0, opline->extended_value TSRMLS_CC);
 		ZEND_VM_NEXT_OPCODE();
-	}
+	} else {
+		zend_free_op free_op2;
+		zval *class_name = _get_zval_ptr_tmp(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
 
-	class_name = _get_zval_ptr_tmp(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
-
-	switch (Z_TYPE_P(class_name)) {
-		case IS_OBJECT:
+		if (IS_TMP_VAR != IS_CONST && Z_TYPE_P(class_name) == IS_OBJECT) {
 			EX_T(opline->result.u.var).class_entry = Z_OBJCE_P(class_name);
-			break;
-		case IS_STRING:
+		} else if (Z_TYPE_P(class_name) == IS_STRING) {
 			EX_T(opline->result.u.var).class_entry = zend_fetch_class(Z_STRVAL_P(class_name), Z_STRLEN_P(class_name), opline->extended_value TSRMLS_CC);
-			break;
-		default:
+		} else {
 			zend_error_noreturn(E_ERROR, "Class name must be a valid object or a string");
-			break;
-	}
+		}
 
-	zval_dtor(free_op2.var);
-	ZEND_VM_NEXT_OPCODE();
+		zval_dtor(free_op2.var);
+		ZEND_VM_NEXT_OPCODE();
+	}
 }
 
 static int ZEND_FASTCALL  ZEND_INIT_FCALL_BY_NAME_SPEC_TMP_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
@@ -944,7 +940,8 @@ static int ZEND_FASTCALL  ZEND_INIT_FCALL_BY_NAME_SPEC_TMP_HANDLER(ZEND_OPCODE_H
 	} else {
 		function_name = _get_zval_ptr_tmp(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
 
-		if (Z_TYPE_P(function_name) == IS_OBJECT &&
+		if (IS_TMP_VAR != IS_CONST &&
+		    Z_TYPE_P(function_name) == IS_OBJECT &&
 			Z_OBJ_HANDLER_P(function_name, get_closure) &&
 			Z_OBJ_HANDLER_P(function_name, get_closure)(function_name, &EX(called_scope), &EX(fbc), &EX(object) TSRMLS_CC) == SUCCESS) {
 			if (EX(object)) {
@@ -1005,31 +1002,26 @@ static int ZEND_FASTCALL  ZEND_CONT_SPEC_TMP_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 static int ZEND_FASTCALL  ZEND_FETCH_CLASS_SPEC_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 {
 	zend_op *opline = EX(opline);
-	zval *class_name;
-	zend_free_op free_op2;
 
 
 	if (IS_VAR == IS_UNUSED) {
 		EX_T(opline->result.u.var).class_entry = zend_fetch_class(NULL, 0, opline->extended_value TSRMLS_CC);
 		ZEND_VM_NEXT_OPCODE();
-	}
+	} else {
+		zend_free_op free_op2;
+		zval *class_name = _get_zval_ptr_var(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
 
-	class_name = _get_zval_ptr_var(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
-
-	switch (Z_TYPE_P(class_name)) {
-		case IS_OBJECT:
+		if (IS_VAR != IS_CONST && Z_TYPE_P(class_name) == IS_OBJECT) {
 			EX_T(opline->result.u.var).class_entry = Z_OBJCE_P(class_name);
-			break;
-		case IS_STRING:
+		} else if (Z_TYPE_P(class_name) == IS_STRING) {
 			EX_T(opline->result.u.var).class_entry = zend_fetch_class(Z_STRVAL_P(class_name), Z_STRLEN_P(class_name), opline->extended_value TSRMLS_CC);
-			break;
-		default:
+		} else {
 			zend_error_noreturn(E_ERROR, "Class name must be a valid object or a string");
-			break;
-	}
+		}
 
-	if (free_op2.var) {zval_ptr_dtor(&free_op2.var);};
-	ZEND_VM_NEXT_OPCODE();
+		if (free_op2.var) {zval_ptr_dtor(&free_op2.var);};
+		ZEND_VM_NEXT_OPCODE();
+	}
 }
 
 static int ZEND_FASTCALL  ZEND_INIT_FCALL_BY_NAME_SPEC_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
@@ -1049,7 +1041,8 @@ static int ZEND_FASTCALL  ZEND_INIT_FCALL_BY_NAME_SPEC_VAR_HANDLER(ZEND_OPCODE_H
 	} else {
 		function_name = _get_zval_ptr_var(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
 
-		if (Z_TYPE_P(function_name) == IS_OBJECT &&
+		if (IS_VAR != IS_CONST &&
+		    Z_TYPE_P(function_name) == IS_OBJECT &&
 			Z_OBJ_HANDLER_P(function_name, get_closure) &&
 			Z_OBJ_HANDLER_P(function_name, get_closure)(function_name, &EX(called_scope), &EX(fbc), &EX(object) TSRMLS_CC) == SUCCESS) {
 			if (EX(object)) {
@@ -1110,59 +1103,49 @@ static int ZEND_FASTCALL  ZEND_CONT_SPEC_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 static int ZEND_FASTCALL  ZEND_FETCH_CLASS_SPEC_UNUSED_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 {
 	zend_op *opline = EX(opline);
-	zval *class_name;
-
 
 
 	if (IS_UNUSED == IS_UNUSED) {
 		EX_T(opline->result.u.var).class_entry = zend_fetch_class(NULL, 0, opline->extended_value TSRMLS_CC);
 		ZEND_VM_NEXT_OPCODE();
-	}
+	} else {
 
-	class_name = NULL;
+		zval *class_name = NULL;
 
-	switch (Z_TYPE_P(class_name)) {
-		case IS_OBJECT:
+		if (IS_UNUSED != IS_CONST && Z_TYPE_P(class_name) == IS_OBJECT) {
 			EX_T(opline->result.u.var).class_entry = Z_OBJCE_P(class_name);
-			break;
-		case IS_STRING:
+		} else if (Z_TYPE_P(class_name) == IS_STRING) {
 			EX_T(opline->result.u.var).class_entry = zend_fetch_class(Z_STRVAL_P(class_name), Z_STRLEN_P(class_name), opline->extended_value TSRMLS_CC);
-			break;
-		default:
+		} else {
 			zend_error_noreturn(E_ERROR, "Class name must be a valid object or a string");
-			break;
-	}
+		}
 
-	ZEND_VM_NEXT_OPCODE();
+		ZEND_VM_NEXT_OPCODE();
+	}
 }
 
 static int ZEND_FASTCALL  ZEND_FETCH_CLASS_SPEC_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 {
 	zend_op *opline = EX(opline);
-	zval *class_name;
-
 
 
 	if (IS_CV == IS_UNUSED) {
 		EX_T(opline->result.u.var).class_entry = zend_fetch_class(NULL, 0, opline->extended_value TSRMLS_CC);
 		ZEND_VM_NEXT_OPCODE();
-	}
+	} else {
 
-	class_name = _get_zval_ptr_cv(&opline->op2, EX(Ts), BP_VAR_R TSRMLS_CC);
+		zval *class_name = _get_zval_ptr_cv(&opline->op2, EX(Ts), BP_VAR_R TSRMLS_CC);
 
-	switch (Z_TYPE_P(class_name)) {
-		case IS_OBJECT:
+		if (IS_CV != IS_CONST && Z_TYPE_P(class_name) == IS_OBJECT) {
 			EX_T(opline->result.u.var).class_entry = Z_OBJCE_P(class_name);
-			break;
-		case IS_STRING:
+		} else if (Z_TYPE_P(class_name) == IS_STRING) {
 			EX_T(opline->result.u.var).class_entry = zend_fetch_class(Z_STRVAL_P(class_name), Z_STRLEN_P(class_name), opline->extended_value TSRMLS_CC);
-			break;
-		default:
+		} else {
 			zend_error_noreturn(E_ERROR, "Class name must be a valid object or a string");
-			break;
-	}
+		}
 
-	ZEND_VM_NEXT_OPCODE();
+		ZEND_VM_NEXT_OPCODE();
+	}
 }
 
 static int ZEND_FASTCALL  ZEND_INIT_FCALL_BY_NAME_SPEC_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
@@ -1182,7 +1165,8 @@ static int ZEND_FASTCALL  ZEND_INIT_FCALL_BY_NAME_SPEC_CV_HANDLER(ZEND_OPCODE_HA
 	} else {
 		function_name = _get_zval_ptr_cv(&opline->op2, EX(Ts), BP_VAR_R TSRMLS_CC);
 
-		if (Z_TYPE_P(function_name) == IS_OBJECT &&
+		if (IS_CV != IS_CONST &&
+		    Z_TYPE_P(function_name) == IS_OBJECT &&
 			Z_OBJ_HANDLER_P(function_name, get_closure) &&
 			Z_OBJ_HANDLER_P(function_name, get_closure)(function_name, &EX(called_scope), &EX(fbc), &EX(object) TSRMLS_CC) == SUCCESS) {
 			if (EX(object)) {
@@ -1307,7 +1291,8 @@ static int ZEND_FASTCALL  ZEND_ECHO_SPEC_CONST_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 	zval z_copy;
 	zval *z = &opline->op1.u.constant;
 
-	if (Z_TYPE_P(z) == IS_OBJECT && Z_OBJ_HT_P(z)->get_method != NULL &&
+	if (IS_CONST != IS_CONST &&
+	    Z_TYPE_P(z) == IS_OBJECT && Z_OBJ_HT_P(z)->get_method != NULL &&
 		zend_std_cast_object_tostring(z, &z_copy, IS_STRING TSRMLS_CC) == SUCCESS) {
 		zend_print_variable(&z_copy);
 		zval_dtor(&z_copy);
@@ -1699,7 +1684,7 @@ static int ZEND_FASTCALL  ZEND_THROW_SPEC_CONST_HANDLER(ZEND_OPCODE_HANDLER_ARGS
 
 	value = &opline->op1.u.constant;
 
-	if (Z_TYPE_P(value) != IS_OBJECT) {
+	if (IS_CONST == IS_CONST || Z_TYPE_P(value) != IS_OBJECT) {
 		zend_error_noreturn(E_ERROR, "Can only throw objects");
 	}
 	zend_exception_save(TSRMLS_C);
@@ -1762,7 +1747,9 @@ static int ZEND_FASTCALL  ZEND_CLONE_SPEC_CONST_HANDLER(ZEND_OPCODE_HANDLER_ARGS
 	zend_function *clone;
 	zend_object_clone_obj_t clone_call;
 
-	if (!obj || Z_TYPE_P(obj) != IS_OBJECT) {
+	if (IS_CONST == IS_CONST ||
+	    (IS_CONST == IS_VAR && !obj) ||
+	    Z_TYPE_P(obj) != IS_OBJECT) {
 		zend_error_noreturn(E_ERROR, "__clone method called on non-object");
 	}
 
@@ -2093,7 +2080,7 @@ static int ZEND_FASTCALL  ZEND_FE_RESET_SPEC_CONST_HANDLER(ZEND_OPCODE_HANDLER_A
 			ALLOC_INIT_ZVAL(array_ptr);
 		} else if (Z_TYPE_PP(array_ptr_ptr) == IS_OBJECT) {
 			if(Z_OBJ_HT_PP(array_ptr_ptr)->get_class_entry == NULL) {
-				zend_error(E_WARNING, "foreach() can not iterate over objects without PHP class");
+				zend_error(E_WARNING, "foreach() cannot iterate over objects without PHP class");
 				ZEND_VM_JMP(EX(op_array)->opcodes+opline->op2.u.opline_num);
 			}
 
@@ -2690,7 +2677,7 @@ static int ZEND_FASTCALL  ZEND_INIT_STATIC_METHOD_CALL_SPEC_CONST_CONST_HANDLER(
 		}
 	} else {
 		if(!ce->constructor) {
-			zend_error_noreturn(E_ERROR, "Can not call constructor");
+			zend_error_noreturn(E_ERROR, "Cannot call constructor");
 		}
 		if (EG(This) && Z_OBJCE_P(EG(This)) != ce->constructor->common.scope && (ce->constructor->common.fn_flags & ZEND_ACC_PRIVATE)) {
 			zend_error(E_COMPILE_ERROR, "Cannot call private %s::__construct()", ce->name);
@@ -2863,11 +2850,9 @@ static int ZEND_FASTCALL  ZEND_ADD_ARRAY_ELEMENT_SPEC_CONST_CONST_HANDLER(ZEND_O
 		}
 	}
 	if (offset) {
-	  	long l;
 		switch (Z_TYPE_P(offset)) {
 			case IS_DOUBLE:
-			  	DVAL_TO_LVAL(Z_DVAL_P(offset), l);
-				zend_hash_index_update(Z_ARRVAL_P(array_ptr), l, &expr_ptr, sizeof(zval *), NULL);
+				zend_hash_index_update(Z_ARRVAL_P(array_ptr), zend_dval_to_lval(Z_DVAL_P(offset)), &expr_ptr, sizeof(zval *), NULL);
 				break;
 			case IS_LONG:
 			case IS_BOOL:
@@ -3263,7 +3248,7 @@ static int ZEND_FASTCALL  ZEND_INIT_STATIC_METHOD_CALL_SPEC_CONST_TMP_HANDLER(ZE
 		}
 	} else {
 		if(!ce->constructor) {
-			zend_error_noreturn(E_ERROR, "Can not call constructor");
+			zend_error_noreturn(E_ERROR, "Cannot call constructor");
 		}
 		if (EG(This) && Z_OBJCE_P(EG(This)) != ce->constructor->common.scope && (ce->constructor->common.fn_flags & ZEND_ACC_PRIVATE)) {
 			zend_error(E_COMPILE_ERROR, "Cannot call private %s::__construct()", ce->name);
@@ -3380,11 +3365,9 @@ static int ZEND_FASTCALL  ZEND_ADD_ARRAY_ELEMENT_SPEC_CONST_TMP_HANDLER(ZEND_OPC
 		}
 	}
 	if (offset) {
-	  	long l;
 		switch (Z_TYPE_P(offset)) {
 			case IS_DOUBLE:
-			  	DVAL_TO_LVAL(Z_DVAL_P(offset), l);
-				zend_hash_index_update(Z_ARRVAL_P(array_ptr), l, &expr_ptr, sizeof(zval *), NULL);
+				zend_hash_index_update(Z_ARRVAL_P(array_ptr), zend_dval_to_lval(Z_DVAL_P(offset)), &expr_ptr, sizeof(zval *), NULL);
 				break;
 			case IS_LONG:
 			case IS_BOOL:
@@ -3731,7 +3714,7 @@ static int ZEND_FASTCALL  ZEND_INIT_STATIC_METHOD_CALL_SPEC_CONST_VAR_HANDLER(ZE
 		}
 	} else {
 		if(!ce->constructor) {
-			zend_error_noreturn(E_ERROR, "Can not call constructor");
+			zend_error_noreturn(E_ERROR, "Cannot call constructor");
 		}
 		if (EG(This) && Z_OBJCE_P(EG(This)) != ce->constructor->common.scope && (ce->constructor->common.fn_flags & ZEND_ACC_PRIVATE)) {
 			zend_error(E_COMPILE_ERROR, "Cannot call private %s::__construct()", ce->name);
@@ -3848,11 +3831,9 @@ static int ZEND_FASTCALL  ZEND_ADD_ARRAY_ELEMENT_SPEC_CONST_VAR_HANDLER(ZEND_OPC
 		}
 	}
 	if (offset) {
-	  	long l;
 		switch (Z_TYPE_P(offset)) {
 			case IS_DOUBLE:
-			  	DVAL_TO_LVAL(Z_DVAL_P(offset), l);
-				zend_hash_index_update(Z_ARRVAL_P(array_ptr), l, &expr_ptr, sizeof(zval *), NULL);
+				zend_hash_index_update(Z_ARRVAL_P(array_ptr), zend_dval_to_lval(Z_DVAL_P(offset)), &expr_ptr, sizeof(zval *), NULL);
 				break;
 			case IS_LONG:
 			case IS_BOOL:
@@ -3955,7 +3936,7 @@ static int ZEND_FASTCALL  ZEND_INIT_STATIC_METHOD_CALL_SPEC_CONST_UNUSED_HANDLER
 		}
 	} else {
 		if(!ce->constructor) {
-			zend_error_noreturn(E_ERROR, "Can not call constructor");
+			zend_error_noreturn(E_ERROR, "Cannot call constructor");
 		}
 		if (EG(This) && Z_OBJCE_P(EG(This)) != ce->constructor->common.scope && (ce->constructor->common.fn_flags & ZEND_ACC_PRIVATE)) {
 			zend_error(E_COMPILE_ERROR, "Cannot call private %s::__construct()", ce->name);
@@ -4040,11 +4021,9 @@ static int ZEND_FASTCALL  ZEND_ADD_ARRAY_ELEMENT_SPEC_CONST_UNUSED_HANDLER(ZEND_
 		}
 	}
 	if (offset) {
-	  	long l;
 		switch (Z_TYPE_P(offset)) {
 			case IS_DOUBLE:
-			  	DVAL_TO_LVAL(Z_DVAL_P(offset), l);
-				zend_hash_index_update(Z_ARRVAL_P(array_ptr), l, &expr_ptr, sizeof(zval *), NULL);
+				zend_hash_index_update(Z_ARRVAL_P(array_ptr), zend_dval_to_lval(Z_DVAL_P(offset)), &expr_ptr, sizeof(zval *), NULL);
 				break;
 			case IS_LONG:
 			case IS_BOOL:
@@ -4391,7 +4370,7 @@ static int ZEND_FASTCALL  ZEND_INIT_STATIC_METHOD_CALL_SPEC_CONST_CV_HANDLER(ZEN
 		}
 	} else {
 		if(!ce->constructor) {
-			zend_error_noreturn(E_ERROR, "Can not call constructor");
+			zend_error_noreturn(E_ERROR, "Cannot call constructor");
 		}
 		if (EG(This) && Z_OBJCE_P(EG(This)) != ce->constructor->common.scope && (ce->constructor->common.fn_flags & ZEND_ACC_PRIVATE)) {
 			zend_error(E_COMPILE_ERROR, "Cannot call private %s::__construct()", ce->name);
@@ -4507,11 +4486,9 @@ static int ZEND_FASTCALL  ZEND_ADD_ARRAY_ELEMENT_SPEC_CONST_CV_HANDLER(ZEND_OPCO
 		}
 	}
 	if (offset) {
-	  	long l;
 		switch (Z_TYPE_P(offset)) {
 			case IS_DOUBLE:
-			  	DVAL_TO_LVAL(Z_DVAL_P(offset), l);
-				zend_hash_index_update(Z_ARRVAL_P(array_ptr), l, &expr_ptr, sizeof(zval *), NULL);
+				zend_hash_index_update(Z_ARRVAL_P(array_ptr), zend_dval_to_lval(Z_DVAL_P(offset)), &expr_ptr, sizeof(zval *), NULL);
 				break;
 			case IS_LONG:
 			case IS_BOOL:
@@ -4584,7 +4561,8 @@ static int ZEND_FASTCALL  ZEND_ECHO_SPEC_TMP_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 	zval z_copy;
 	zval *z = _get_zval_ptr_tmp(&opline->op1, EX(Ts), &free_op1 TSRMLS_CC);
 
-	if (Z_TYPE_P(z) == IS_OBJECT && Z_OBJ_HT_P(z)->get_method != NULL &&
+	if (IS_TMP_VAR != IS_CONST &&
+	    Z_TYPE_P(z) == IS_OBJECT && Z_OBJ_HT_P(z)->get_method != NULL &&
 		zend_std_cast_object_tostring(z, &z_copy, IS_STRING TSRMLS_CC) == SUCCESS) {
 		zend_print_variable(&z_copy);
 		zval_dtor(&z_copy);
@@ -4967,7 +4945,7 @@ static int ZEND_FASTCALL  ZEND_THROW_SPEC_TMP_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 
 	value = _get_zval_ptr_tmp(&opline->op1, EX(Ts), &free_op1 TSRMLS_CC);
 
-	if (Z_TYPE_P(value) != IS_OBJECT) {
+	if (IS_TMP_VAR == IS_CONST || Z_TYPE_P(value) != IS_OBJECT) {
 		zend_error_noreturn(E_ERROR, "Can only throw objects");
 	}
 	zend_exception_save(TSRMLS_C);
@@ -5031,7 +5009,9 @@ static int ZEND_FASTCALL  ZEND_CLONE_SPEC_TMP_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 	zend_function *clone;
 	zend_object_clone_obj_t clone_call;
 
-	if (!obj || Z_TYPE_P(obj) != IS_OBJECT) {
+	if (IS_TMP_VAR == IS_CONST ||
+	    (IS_TMP_VAR == IS_VAR && !obj) ||
+	    Z_TYPE_P(obj) != IS_OBJECT) {
 		zend_error_noreturn(E_ERROR, "__clone method called on non-object");
 	}
 
@@ -5362,7 +5342,7 @@ static int ZEND_FASTCALL  ZEND_FE_RESET_SPEC_TMP_HANDLER(ZEND_OPCODE_HANDLER_ARG
 			ALLOC_INIT_ZVAL(array_ptr);
 		} else if (Z_TYPE_PP(array_ptr_ptr) == IS_OBJECT) {
 			if(Z_OBJ_HT_PP(array_ptr_ptr)->get_class_entry == NULL) {
-				zend_error(E_WARNING, "foreach() can not iterate over objects without PHP class");
+				zend_error(E_WARNING, "foreach() cannot iterate over objects without PHP class");
 				ZEND_VM_JMP(EX(op_array)->opcodes+opline->op2.u.opline_num);
 			}
 
@@ -6096,11 +6076,9 @@ static int ZEND_FASTCALL  ZEND_ADD_ARRAY_ELEMENT_SPEC_TMP_CONST_HANDLER(ZEND_OPC
 		}
 	}
 	if (offset) {
-	  	long l;
 		switch (Z_TYPE_P(offset)) {
 			case IS_DOUBLE:
-			  	DVAL_TO_LVAL(Z_DVAL_P(offset), l);
-				zend_hash_index_update(Z_ARRVAL_P(array_ptr), l, &expr_ptr, sizeof(zval *), NULL);
+				zend_hash_index_update(Z_ARRVAL_P(array_ptr), zend_dval_to_lval(Z_DVAL_P(offset)), &expr_ptr, sizeof(zval *), NULL);
 				break;
 			case IS_LONG:
 			case IS_BOOL:
@@ -6564,11 +6542,9 @@ static int ZEND_FASTCALL  ZEND_ADD_ARRAY_ELEMENT_SPEC_TMP_TMP_HANDLER(ZEND_OPCOD
 		}
 	}
 	if (offset) {
-	  	long l;
 		switch (Z_TYPE_P(offset)) {
 			case IS_DOUBLE:
-			  	DVAL_TO_LVAL(Z_DVAL_P(offset), l);
-				zend_hash_index_update(Z_ARRVAL_P(array_ptr), l, &expr_ptr, sizeof(zval *), NULL);
+				zend_hash_index_update(Z_ARRVAL_P(array_ptr), zend_dval_to_lval(Z_DVAL_P(offset)), &expr_ptr, sizeof(zval *), NULL);
 				break;
 			case IS_LONG:
 			case IS_BOOL:
@@ -7032,11 +7008,9 @@ static int ZEND_FASTCALL  ZEND_ADD_ARRAY_ELEMENT_SPEC_TMP_VAR_HANDLER(ZEND_OPCOD
 		}
 	}
 	if (offset) {
-	  	long l;
 		switch (Z_TYPE_P(offset)) {
 			case IS_DOUBLE:
-			  	DVAL_TO_LVAL(Z_DVAL_P(offset), l);
-				zend_hash_index_update(Z_ARRVAL_P(array_ptr), l, &expr_ptr, sizeof(zval *), NULL);
+				zend_hash_index_update(Z_ARRVAL_P(array_ptr), zend_dval_to_lval(Z_DVAL_P(offset)), &expr_ptr, sizeof(zval *), NULL);
 				break;
 			case IS_LONG:
 			case IS_BOOL:
@@ -7127,11 +7101,9 @@ static int ZEND_FASTCALL  ZEND_ADD_ARRAY_ELEMENT_SPEC_TMP_UNUSED_HANDLER(ZEND_OP
 		}
 	}
 	if (offset) {
-	  	long l;
 		switch (Z_TYPE_P(offset)) {
 			case IS_DOUBLE:
-			  	DVAL_TO_LVAL(Z_DVAL_P(offset), l);
-				zend_hash_index_update(Z_ARRVAL_P(array_ptr), l, &expr_ptr, sizeof(zval *), NULL);
+				zend_hash_index_update(Z_ARRVAL_P(array_ptr), zend_dval_to_lval(Z_DVAL_P(offset)), &expr_ptr, sizeof(zval *), NULL);
 				break;
 			case IS_LONG:
 			case IS_BOOL:
@@ -7592,11 +7564,9 @@ static int ZEND_FASTCALL  ZEND_ADD_ARRAY_ELEMENT_SPEC_TMP_CV_HANDLER(ZEND_OPCODE
 		}
 	}
 	if (offset) {
-	  	long l;
 		switch (Z_TYPE_P(offset)) {
 			case IS_DOUBLE:
-			  	DVAL_TO_LVAL(Z_DVAL_P(offset), l);
-				zend_hash_index_update(Z_ARRVAL_P(array_ptr), l, &expr_ptr, sizeof(zval *), NULL);
+				zend_hash_index_update(Z_ARRVAL_P(array_ptr), zend_dval_to_lval(Z_DVAL_P(offset)), &expr_ptr, sizeof(zval *), NULL);
 				break;
 			case IS_LONG:
 			case IS_BOOL:
@@ -7827,7 +7797,8 @@ static int ZEND_FASTCALL  ZEND_ECHO_SPEC_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 	zval z_copy;
 	zval *z = _get_zval_ptr_var(&opline->op1, EX(Ts), &free_op1 TSRMLS_CC);
 
-	if (Z_TYPE_P(z) == IS_OBJECT && Z_OBJ_HT_P(z)->get_method != NULL &&
+	if (IS_VAR != IS_CONST &&
+	    Z_TYPE_P(z) == IS_OBJECT && Z_OBJ_HT_P(z)->get_method != NULL &&
 		zend_std_cast_object_tostring(z, &z_copy, IS_STRING TSRMLS_CC) == SUCCESS) {
 		zend_print_variable(&z_copy);
 		zval_dtor(&z_copy);
@@ -8204,7 +8175,7 @@ static int ZEND_FASTCALL  ZEND_THROW_SPEC_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 
 	value = _get_zval_ptr_var(&opline->op1, EX(Ts), &free_op1 TSRMLS_CC);
 
-	if (Z_TYPE_P(value) != IS_OBJECT) {
+	if (IS_VAR == IS_CONST || Z_TYPE_P(value) != IS_OBJECT) {
 		zend_error_noreturn(E_ERROR, "Can only throw objects");
 	}
 	zend_exception_save(TSRMLS_C);
@@ -8383,7 +8354,9 @@ static int ZEND_FASTCALL  ZEND_CLONE_SPEC_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 	zend_function *clone;
 	zend_object_clone_obj_t clone_call;
 
-	if (!obj || Z_TYPE_P(obj) != IS_OBJECT) {
+	if (IS_VAR == IS_CONST ||
+	    (IS_VAR == IS_VAR && !obj) ||
+	    Z_TYPE_P(obj) != IS_OBJECT) {
 		zend_error_noreturn(E_ERROR, "__clone method called on non-object");
 	}
 
@@ -8714,7 +8687,7 @@ static int ZEND_FASTCALL  ZEND_FE_RESET_SPEC_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARG
 			ALLOC_INIT_ZVAL(array_ptr);
 		} else if (Z_TYPE_PP(array_ptr_ptr) == IS_OBJECT) {
 			if(Z_OBJ_HT_PP(array_ptr_ptr)->get_class_entry == NULL) {
-				zend_error(E_WARNING, "foreach() can not iterate over objects without PHP class");
+				zend_error(E_WARNING, "foreach() cannot iterate over objects without PHP class");
 				ZEND_VM_JMP(EX(op_array)->opcodes+opline->op2.u.opline_num);
 			}
 
@@ -10450,7 +10423,7 @@ static int ZEND_FASTCALL  ZEND_INIT_STATIC_METHOD_CALL_SPEC_VAR_CONST_HANDLER(ZE
 		}
 	} else {
 		if(!ce->constructor) {
-			zend_error_noreturn(E_ERROR, "Can not call constructor");
+			zend_error_noreturn(E_ERROR, "Cannot call constructor");
 		}
 		if (EG(This) && Z_OBJCE_P(EG(This)) != ce->constructor->common.scope && (ce->constructor->common.fn_flags & ZEND_ACC_PRIVATE)) {
 			zend_error(E_COMPILE_ERROR, "Cannot call private %s::__construct()", ce->name);
@@ -10623,11 +10596,9 @@ static int ZEND_FASTCALL  ZEND_ADD_ARRAY_ELEMENT_SPEC_VAR_CONST_HANDLER(ZEND_OPC
 		}
 	}
 	if (offset) {
-	  	long l;
 		switch (Z_TYPE_P(offset)) {
 			case IS_DOUBLE:
-			  	DVAL_TO_LVAL(Z_DVAL_P(offset), l);
-				zend_hash_index_update(Z_ARRVAL_P(array_ptr), l, &expr_ptr, sizeof(zval *), NULL);
+				zend_hash_index_update(Z_ARRVAL_P(array_ptr), zend_dval_to_lval(Z_DVAL_P(offset)), &expr_ptr, sizeof(zval *), NULL);
 				break;
 			case IS_LONG:
 			case IS_BOOL:
@@ -10677,7 +10648,6 @@ static int ZEND_FASTCALL  ZEND_UNSET_DIM_SPEC_VAR_CONST_HANDLER(ZEND_OPCODE_HAND
 	zend_free_op free_op1;
 	zval **container = _get_zval_ptr_ptr_var(&opline->op1, EX(Ts), &free_op1 TSRMLS_CC);
 	zval *offset = &opline->op2.u.constant;
-	long index;
 
 	if (IS_VAR != IS_VAR || container) {
 		if (IS_VAR == IS_CV && container != &EG(uninitialized_zval_ptr)) {
@@ -10689,14 +10659,12 @@ static int ZEND_FASTCALL  ZEND_UNSET_DIM_SPEC_VAR_CONST_HANDLER(ZEND_OPCODE_HAND
 
 				switch (Z_TYPE_P(offset)) {
 					case IS_DOUBLE:
-						index = (long) Z_DVAL_P(offset);
-						zend_hash_index_del(ht, index);
+						zend_hash_index_del(ht, zend_dval_to_lval(Z_DVAL_P(offset)));
 						break;
 					case IS_RESOURCE:
 					case IS_BOOL:
 					case IS_LONG:
-						index = Z_LVAL_P(offset);
-						zend_hash_index_del(ht, index);
+						zend_hash_index_del(ht, Z_LVAL_P(offset));
 						break;
 					case IS_STRING:
 						if (IS_CONST == IS_CV || IS_CONST == IS_VAR) {
@@ -10808,7 +10776,6 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_VAR_CONST(
 	zval **container = _get_zval_ptr_ptr_var(&opline->op1, EX(Ts), &free_op1 TSRMLS_CC);
 	zval **value = NULL;
 	int result = 0;
-	long index;
 
 	if (IS_VAR != IS_VAR || container) {
 
@@ -10822,16 +10789,14 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_VAR_CONST(
 
 			switch (Z_TYPE_P(offset)) {
 				case IS_DOUBLE:
-					index = (long) Z_DVAL_P(offset);
-					if (zend_hash_index_find(ht, index, (void **) &value) == SUCCESS) {
+					if (zend_hash_index_find(ht, zend_dval_to_lval(Z_DVAL_P(offset)), (void **) &value) == SUCCESS) {
 						isset = 1;
 					}
 					break;
 				case IS_RESOURCE:
 				case IS_BOOL:
 				case IS_LONG:
-					index = Z_LVAL_P(offset);
-					if (zend_hash_index_find(ht, index, (void **) &value) == SUCCESS) {
+					if (zend_hash_index_find(ht, Z_LVAL_P(offset), (void **) &value) == SUCCESS) {
 						isset = 1;
 					}
 					break;
@@ -12263,7 +12228,7 @@ static int ZEND_FASTCALL  ZEND_INIT_STATIC_METHOD_CALL_SPEC_VAR_TMP_HANDLER(ZEND
 		}
 	} else {
 		if(!ce->constructor) {
-			zend_error_noreturn(E_ERROR, "Can not call constructor");
+			zend_error_noreturn(E_ERROR, "Cannot call constructor");
 		}
 		if (EG(This) && Z_OBJCE_P(EG(This)) != ce->constructor->common.scope && (ce->constructor->common.fn_flags & ZEND_ACC_PRIVATE)) {
 			zend_error(E_COMPILE_ERROR, "Cannot call private %s::__construct()", ce->name);
@@ -12380,11 +12345,9 @@ static int ZEND_FASTCALL  ZEND_ADD_ARRAY_ELEMENT_SPEC_VAR_TMP_HANDLER(ZEND_OPCOD
 		}
 	}
 	if (offset) {
-	  	long l;
 		switch (Z_TYPE_P(offset)) {
 			case IS_DOUBLE:
-			  	DVAL_TO_LVAL(Z_DVAL_P(offset), l);
-				zend_hash_index_update(Z_ARRVAL_P(array_ptr), l, &expr_ptr, sizeof(zval *), NULL);
+				zend_hash_index_update(Z_ARRVAL_P(array_ptr), zend_dval_to_lval(Z_DVAL_P(offset)), &expr_ptr, sizeof(zval *), NULL);
 				break;
 			case IS_LONG:
 			case IS_BOOL:
@@ -12434,7 +12397,6 @@ static int ZEND_FASTCALL  ZEND_UNSET_DIM_SPEC_VAR_TMP_HANDLER(ZEND_OPCODE_HANDLE
 	zend_free_op free_op1, free_op2;
 	zval **container = _get_zval_ptr_ptr_var(&opline->op1, EX(Ts), &free_op1 TSRMLS_CC);
 	zval *offset = _get_zval_ptr_tmp(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
-	long index;
 
 	if (IS_VAR != IS_VAR || container) {
 		if (IS_VAR == IS_CV && container != &EG(uninitialized_zval_ptr)) {
@@ -12446,14 +12408,12 @@ static int ZEND_FASTCALL  ZEND_UNSET_DIM_SPEC_VAR_TMP_HANDLER(ZEND_OPCODE_HANDLE
 
 				switch (Z_TYPE_P(offset)) {
 					case IS_DOUBLE:
-						index = (long) Z_DVAL_P(offset);
-						zend_hash_index_del(ht, index);
+						zend_hash_index_del(ht, zend_dval_to_lval(Z_DVAL_P(offset)));
 						break;
 					case IS_RESOURCE:
 					case IS_BOOL:
 					case IS_LONG:
-						index = Z_LVAL_P(offset);
-						zend_hash_index_del(ht, index);
+						zend_hash_index_del(ht, Z_LVAL_P(offset));
 						break;
 					case IS_STRING:
 						if (IS_TMP_VAR == IS_CV || IS_TMP_VAR == IS_VAR) {
@@ -12565,7 +12525,6 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_VAR_TMP(in
 	zval **container = _get_zval_ptr_ptr_var(&opline->op1, EX(Ts), &free_op1 TSRMLS_CC);
 	zval **value = NULL;
 	int result = 0;
-	long index;
 
 	if (IS_VAR != IS_VAR || container) {
 		zend_free_op free_op2;
@@ -12579,16 +12538,14 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_VAR_TMP(in
 
 			switch (Z_TYPE_P(offset)) {
 				case IS_DOUBLE:
-					index = (long) Z_DVAL_P(offset);
-					if (zend_hash_index_find(ht, index, (void **) &value) == SUCCESS) {
+					if (zend_hash_index_find(ht, zend_dval_to_lval(Z_DVAL_P(offset)), (void **) &value) == SUCCESS) {
 						isset = 1;
 					}
 					break;
 				case IS_RESOURCE:
 				case IS_BOOL:
 				case IS_LONG:
-					index = Z_LVAL_P(offset);
-					if (zend_hash_index_find(ht, index, (void **) &value) == SUCCESS) {
+					if (zend_hash_index_find(ht, Z_LVAL_P(offset), (void **) &value) == SUCCESS) {
 						isset = 1;
 					}
 					break;
@@ -14071,7 +14028,7 @@ static int ZEND_FASTCALL  ZEND_INIT_STATIC_METHOD_CALL_SPEC_VAR_VAR_HANDLER(ZEND
 		}
 	} else {
 		if(!ce->constructor) {
-			zend_error_noreturn(E_ERROR, "Can not call constructor");
+			zend_error_noreturn(E_ERROR, "Cannot call constructor");
 		}
 		if (EG(This) && Z_OBJCE_P(EG(This)) != ce->constructor->common.scope && (ce->constructor->common.fn_flags & ZEND_ACC_PRIVATE)) {
 			zend_error(E_COMPILE_ERROR, "Cannot call private %s::__construct()", ce->name);
@@ -14188,11 +14145,9 @@ static int ZEND_FASTCALL  ZEND_ADD_ARRAY_ELEMENT_SPEC_VAR_VAR_HANDLER(ZEND_OPCOD
 		}
 	}
 	if (offset) {
-	  	long l;
 		switch (Z_TYPE_P(offset)) {
 			case IS_DOUBLE:
-			  	DVAL_TO_LVAL(Z_DVAL_P(offset), l);
-				zend_hash_index_update(Z_ARRVAL_P(array_ptr), l, &expr_ptr, sizeof(zval *), NULL);
+				zend_hash_index_update(Z_ARRVAL_P(array_ptr), zend_dval_to_lval(Z_DVAL_P(offset)), &expr_ptr, sizeof(zval *), NULL);
 				break;
 			case IS_LONG:
 			case IS_BOOL:
@@ -14242,7 +14197,6 @@ static int ZEND_FASTCALL  ZEND_UNSET_DIM_SPEC_VAR_VAR_HANDLER(ZEND_OPCODE_HANDLE
 	zend_free_op free_op1, free_op2;
 	zval **container = _get_zval_ptr_ptr_var(&opline->op1, EX(Ts), &free_op1 TSRMLS_CC);
 	zval *offset = _get_zval_ptr_var(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
-	long index;
 
 	if (IS_VAR != IS_VAR || container) {
 		if (IS_VAR == IS_CV && container != &EG(uninitialized_zval_ptr)) {
@@ -14254,14 +14208,12 @@ static int ZEND_FASTCALL  ZEND_UNSET_DIM_SPEC_VAR_VAR_HANDLER(ZEND_OPCODE_HANDLE
 
 				switch (Z_TYPE_P(offset)) {
 					case IS_DOUBLE:
-						index = (long) Z_DVAL_P(offset);
-						zend_hash_index_del(ht, index);
+						zend_hash_index_del(ht, zend_dval_to_lval(Z_DVAL_P(offset)));
 						break;
 					case IS_RESOURCE:
 					case IS_BOOL:
 					case IS_LONG:
-						index = Z_LVAL_P(offset);
-						zend_hash_index_del(ht, index);
+						zend_hash_index_del(ht, Z_LVAL_P(offset));
 						break;
 					case IS_STRING:
 						if (IS_VAR == IS_CV || IS_VAR == IS_VAR) {
@@ -14373,7 +14325,6 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_VAR_VAR(in
 	zval **container = _get_zval_ptr_ptr_var(&opline->op1, EX(Ts), &free_op1 TSRMLS_CC);
 	zval **value = NULL;
 	int result = 0;
-	long index;
 
 	if (IS_VAR != IS_VAR || container) {
 		zend_free_op free_op2;
@@ -14387,16 +14338,14 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_VAR_VAR(in
 
 			switch (Z_TYPE_P(offset)) {
 				case IS_DOUBLE:
-					index = (long) Z_DVAL_P(offset);
-					if (zend_hash_index_find(ht, index, (void **) &value) == SUCCESS) {
+					if (zend_hash_index_find(ht, zend_dval_to_lval(Z_DVAL_P(offset)), (void **) &value) == SUCCESS) {
 						isset = 1;
 					}
 					break;
 				case IS_RESOURCE:
 				case IS_BOOL:
 				case IS_LONG:
-					index = Z_LVAL_P(offset);
-					if (zend_hash_index_find(ht, index, (void **) &value) == SUCCESS) {
+					if (zend_hash_index_find(ht, Z_LVAL_P(offset), (void **) &value) == SUCCESS) {
 						isset = 1;
 					}
 					break;
@@ -14973,7 +14922,7 @@ static int ZEND_FASTCALL  ZEND_INIT_STATIC_METHOD_CALL_SPEC_VAR_UNUSED_HANDLER(Z
 		}
 	} else {
 		if(!ce->constructor) {
-			zend_error_noreturn(E_ERROR, "Can not call constructor");
+			zend_error_noreturn(E_ERROR, "Cannot call constructor");
 		}
 		if (EG(This) && Z_OBJCE_P(EG(This)) != ce->constructor->common.scope && (ce->constructor->common.fn_flags & ZEND_ACC_PRIVATE)) {
 			zend_error(E_COMPILE_ERROR, "Cannot call private %s::__construct()", ce->name);
@@ -15058,11 +15007,9 @@ static int ZEND_FASTCALL  ZEND_ADD_ARRAY_ELEMENT_SPEC_VAR_UNUSED_HANDLER(ZEND_OP
 		}
 	}
 	if (offset) {
-	  	long l;
 		switch (Z_TYPE_P(offset)) {
 			case IS_DOUBLE:
-			  	DVAL_TO_LVAL(Z_DVAL_P(offset), l);
-				zend_hash_index_update(Z_ARRVAL_P(array_ptr), l, &expr_ptr, sizeof(zval *), NULL);
+				zend_hash_index_update(Z_ARRVAL_P(array_ptr), zend_dval_to_lval(Z_DVAL_P(offset)), &expr_ptr, sizeof(zval *), NULL);
 				break;
 			case IS_LONG:
 			case IS_BOOL:
@@ -16468,7 +16415,7 @@ static int ZEND_FASTCALL  ZEND_INIT_STATIC_METHOD_CALL_SPEC_VAR_CV_HANDLER(ZEND_
 		}
 	} else {
 		if(!ce->constructor) {
-			zend_error_noreturn(E_ERROR, "Can not call constructor");
+			zend_error_noreturn(E_ERROR, "Cannot call constructor");
 		}
 		if (EG(This) && Z_OBJCE_P(EG(This)) != ce->constructor->common.scope && (ce->constructor->common.fn_flags & ZEND_ACC_PRIVATE)) {
 			zend_error(E_COMPILE_ERROR, "Cannot call private %s::__construct()", ce->name);
@@ -16584,11 +16531,9 @@ static int ZEND_FASTCALL  ZEND_ADD_ARRAY_ELEMENT_SPEC_VAR_CV_HANDLER(ZEND_OPCODE
 		}
 	}
 	if (offset) {
-	  	long l;
 		switch (Z_TYPE_P(offset)) {
 			case IS_DOUBLE:
-			  	DVAL_TO_LVAL(Z_DVAL_P(offset), l);
-				zend_hash_index_update(Z_ARRVAL_P(array_ptr), l, &expr_ptr, sizeof(zval *), NULL);
+				zend_hash_index_update(Z_ARRVAL_P(array_ptr), zend_dval_to_lval(Z_DVAL_P(offset)), &expr_ptr, sizeof(zval *), NULL);
 				break;
 			case IS_LONG:
 			case IS_BOOL:
@@ -16638,7 +16583,6 @@ static int ZEND_FASTCALL  ZEND_UNSET_DIM_SPEC_VAR_CV_HANDLER(ZEND_OPCODE_HANDLER
 	zend_free_op free_op1;
 	zval **container = _get_zval_ptr_ptr_var(&opline->op1, EX(Ts), &free_op1 TSRMLS_CC);
 	zval *offset = _get_zval_ptr_cv(&opline->op2, EX(Ts), BP_VAR_R TSRMLS_CC);
-	long index;
 
 	if (IS_VAR != IS_VAR || container) {
 		if (IS_VAR == IS_CV && container != &EG(uninitialized_zval_ptr)) {
@@ -16650,14 +16594,12 @@ static int ZEND_FASTCALL  ZEND_UNSET_DIM_SPEC_VAR_CV_HANDLER(ZEND_OPCODE_HANDLER
 
 				switch (Z_TYPE_P(offset)) {
 					case IS_DOUBLE:
-						index = (long) Z_DVAL_P(offset);
-						zend_hash_index_del(ht, index);
+						zend_hash_index_del(ht, zend_dval_to_lval(Z_DVAL_P(offset)));
 						break;
 					case IS_RESOURCE:
 					case IS_BOOL:
 					case IS_LONG:
-						index = Z_LVAL_P(offset);
-						zend_hash_index_del(ht, index);
+						zend_hash_index_del(ht, Z_LVAL_P(offset));
 						break;
 					case IS_STRING:
 						if (IS_CV == IS_CV || IS_CV == IS_VAR) {
@@ -16769,7 +16711,6 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_VAR_CV(int
 	zval **container = _get_zval_ptr_ptr_var(&opline->op1, EX(Ts), &free_op1 TSRMLS_CC);
 	zval **value = NULL;
 	int result = 0;
-	long index;
 
 	if (IS_VAR != IS_VAR || container) {
 
@@ -16783,16 +16724,14 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_VAR_CV(int
 
 			switch (Z_TYPE_P(offset)) {
 				case IS_DOUBLE:
-					index = (long) Z_DVAL_P(offset);
-					if (zend_hash_index_find(ht, index, (void **) &value) == SUCCESS) {
+					if (zend_hash_index_find(ht, zend_dval_to_lval(Z_DVAL_P(offset)), (void **) &value) == SUCCESS) {
 						isset = 1;
 					}
 					break;
 				case IS_RESOURCE:
 				case IS_BOOL:
 				case IS_LONG:
-					index = Z_LVAL_P(offset);
-					if (zend_hash_index_find(ht, index, (void **) &value) == SUCCESS) {
+					if (zend_hash_index_find(ht, Z_LVAL_P(offset), (void **) &value) == SUCCESS) {
 						isset = 1;
 					}
 					break;
@@ -16917,7 +16856,9 @@ static int ZEND_FASTCALL  ZEND_CLONE_SPEC_UNUSED_HANDLER(ZEND_OPCODE_HANDLER_ARG
 	zend_function *clone;
 	zend_object_clone_obj_t clone_call;
 
-	if (!obj || Z_TYPE_P(obj) != IS_OBJECT) {
+	if (IS_UNUSED == IS_CONST ||
+	    (IS_UNUSED == IS_VAR && !obj) ||
+	    Z_TYPE_P(obj) != IS_OBJECT) {
 		zend_error_noreturn(E_ERROR, "__clone method called on non-object");
 	}
 
@@ -17834,7 +17775,6 @@ static int ZEND_FASTCALL  ZEND_UNSET_DIM_SPEC_UNUSED_CONST_HANDLER(ZEND_OPCODE_H
 
 	zval **container = _get_obj_zval_ptr_ptr_unused(TSRMLS_C);
 	zval *offset = &opline->op2.u.constant;
-	long index;
 
 	if (IS_UNUSED != IS_VAR || container) {
 		if (IS_UNUSED == IS_CV && container != &EG(uninitialized_zval_ptr)) {
@@ -17846,14 +17786,12 @@ static int ZEND_FASTCALL  ZEND_UNSET_DIM_SPEC_UNUSED_CONST_HANDLER(ZEND_OPCODE_H
 
 				switch (Z_TYPE_P(offset)) {
 					case IS_DOUBLE:
-						index = (long) Z_DVAL_P(offset);
-						zend_hash_index_del(ht, index);
+						zend_hash_index_del(ht, zend_dval_to_lval(Z_DVAL_P(offset)));
 						break;
 					case IS_RESOURCE:
 					case IS_BOOL:
 					case IS_LONG:
-						index = Z_LVAL_P(offset);
-						zend_hash_index_del(ht, index);
+						zend_hash_index_del(ht, Z_LVAL_P(offset));
 						break;
 					case IS_STRING:
 						if (IS_CONST == IS_CV || IS_CONST == IS_VAR) {
@@ -17963,7 +17901,6 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_UNUSED_CON
 	zval **container = _get_obj_zval_ptr_ptr_unused(TSRMLS_C);
 	zval **value = NULL;
 	int result = 0;
-	long index;
 
 	if (IS_UNUSED != IS_VAR || container) {
 
@@ -17977,16 +17914,14 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_UNUSED_CON
 
 			switch (Z_TYPE_P(offset)) {
 				case IS_DOUBLE:
-					index = (long) Z_DVAL_P(offset);
-					if (zend_hash_index_find(ht, index, (void **) &value) == SUCCESS) {
+					if (zend_hash_index_find(ht, zend_dval_to_lval(Z_DVAL_P(offset)), (void **) &value) == SUCCESS) {
 						isset = 1;
 					}
 					break;
 				case IS_RESOURCE:
 				case IS_BOOL:
 				case IS_LONG:
-					index = Z_LVAL_P(offset);
-					if (zend_hash_index_find(ht, index, (void **) &value) == SUCCESS) {
+					if (zend_hash_index_find(ht, Z_LVAL_P(offset), (void **) &value) == SUCCESS) {
 						isset = 1;
 					}
 					break;
@@ -18897,7 +18832,6 @@ static int ZEND_FASTCALL  ZEND_UNSET_DIM_SPEC_UNUSED_TMP_HANDLER(ZEND_OPCODE_HAN
 	zend_free_op free_op2;
 	zval **container = _get_obj_zval_ptr_ptr_unused(TSRMLS_C);
 	zval *offset = _get_zval_ptr_tmp(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
-	long index;
 
 	if (IS_UNUSED != IS_VAR || container) {
 		if (IS_UNUSED == IS_CV && container != &EG(uninitialized_zval_ptr)) {
@@ -18909,14 +18843,12 @@ static int ZEND_FASTCALL  ZEND_UNSET_DIM_SPEC_UNUSED_TMP_HANDLER(ZEND_OPCODE_HAN
 
 				switch (Z_TYPE_P(offset)) {
 					case IS_DOUBLE:
-						index = (long) Z_DVAL_P(offset);
-						zend_hash_index_del(ht, index);
+						zend_hash_index_del(ht, zend_dval_to_lval(Z_DVAL_P(offset)));
 						break;
 					case IS_RESOURCE:
 					case IS_BOOL:
 					case IS_LONG:
-						index = Z_LVAL_P(offset);
-						zend_hash_index_del(ht, index);
+						zend_hash_index_del(ht, Z_LVAL_P(offset));
 						break;
 					case IS_STRING:
 						if (IS_TMP_VAR == IS_CV || IS_TMP_VAR == IS_VAR) {
@@ -19026,7 +18958,6 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_UNUSED_TMP
 	zval **container = _get_obj_zval_ptr_ptr_unused(TSRMLS_C);
 	zval **value = NULL;
 	int result = 0;
-	long index;
 
 	if (IS_UNUSED != IS_VAR || container) {
 		zend_free_op free_op2;
@@ -19040,16 +18971,14 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_UNUSED_TMP
 
 			switch (Z_TYPE_P(offset)) {
 				case IS_DOUBLE:
-					index = (long) Z_DVAL_P(offset);
-					if (zend_hash_index_find(ht, index, (void **) &value) == SUCCESS) {
+					if (zend_hash_index_find(ht, zend_dval_to_lval(Z_DVAL_P(offset)), (void **) &value) == SUCCESS) {
 						isset = 1;
 					}
 					break;
 				case IS_RESOURCE:
 				case IS_BOOL:
 				case IS_LONG:
-					index = Z_LVAL_P(offset);
-					if (zend_hash_index_find(ht, index, (void **) &value) == SUCCESS) {
+					if (zend_hash_index_find(ht, Z_LVAL_P(offset), (void **) &value) == SUCCESS) {
 						isset = 1;
 					}
 					break;
@@ -19960,7 +19889,6 @@ static int ZEND_FASTCALL  ZEND_UNSET_DIM_SPEC_UNUSED_VAR_HANDLER(ZEND_OPCODE_HAN
 	zend_free_op free_op2;
 	zval **container = _get_obj_zval_ptr_ptr_unused(TSRMLS_C);
 	zval *offset = _get_zval_ptr_var(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
-	long index;
 
 	if (IS_UNUSED != IS_VAR || container) {
 		if (IS_UNUSED == IS_CV && container != &EG(uninitialized_zval_ptr)) {
@@ -19972,14 +19900,12 @@ static int ZEND_FASTCALL  ZEND_UNSET_DIM_SPEC_UNUSED_VAR_HANDLER(ZEND_OPCODE_HAN
 
 				switch (Z_TYPE_P(offset)) {
 					case IS_DOUBLE:
-						index = (long) Z_DVAL_P(offset);
-						zend_hash_index_del(ht, index);
+						zend_hash_index_del(ht, zend_dval_to_lval(Z_DVAL_P(offset)));
 						break;
 					case IS_RESOURCE:
 					case IS_BOOL:
 					case IS_LONG:
-						index = Z_LVAL_P(offset);
-						zend_hash_index_del(ht, index);
+						zend_hash_index_del(ht, Z_LVAL_P(offset));
 						break;
 					case IS_STRING:
 						if (IS_VAR == IS_CV || IS_VAR == IS_VAR) {
@@ -20089,7 +20015,6 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_UNUSED_VAR
 	zval **container = _get_obj_zval_ptr_ptr_unused(TSRMLS_C);
 	zval **value = NULL;
 	int result = 0;
-	long index;
 
 	if (IS_UNUSED != IS_VAR || container) {
 		zend_free_op free_op2;
@@ -20103,16 +20028,14 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_UNUSED_VAR
 
 			switch (Z_TYPE_P(offset)) {
 				case IS_DOUBLE:
-					index = (long) Z_DVAL_P(offset);
-					if (zend_hash_index_find(ht, index, (void **) &value) == SUCCESS) {
+					if (zend_hash_index_find(ht, zend_dval_to_lval(Z_DVAL_P(offset)), (void **) &value) == SUCCESS) {
 						isset = 1;
 					}
 					break;
 				case IS_RESOURCE:
 				case IS_BOOL:
 				case IS_LONG:
-					index = Z_LVAL_P(offset);
-					if (zend_hash_index_find(ht, index, (void **) &value) == SUCCESS) {
+					if (zend_hash_index_find(ht, Z_LVAL_P(offset), (void **) &value) == SUCCESS) {
 						isset = 1;
 					}
 					break;
@@ -21282,7 +21205,6 @@ static int ZEND_FASTCALL  ZEND_UNSET_DIM_SPEC_UNUSED_CV_HANDLER(ZEND_OPCODE_HAND
 
 	zval **container = _get_obj_zval_ptr_ptr_unused(TSRMLS_C);
 	zval *offset = _get_zval_ptr_cv(&opline->op2, EX(Ts), BP_VAR_R TSRMLS_CC);
-	long index;
 
 	if (IS_UNUSED != IS_VAR || container) {
 		if (IS_UNUSED == IS_CV && container != &EG(uninitialized_zval_ptr)) {
@@ -21294,14 +21216,12 @@ static int ZEND_FASTCALL  ZEND_UNSET_DIM_SPEC_UNUSED_CV_HANDLER(ZEND_OPCODE_HAND
 
 				switch (Z_TYPE_P(offset)) {
 					case IS_DOUBLE:
-						index = (long) Z_DVAL_P(offset);
-						zend_hash_index_del(ht, index);
+						zend_hash_index_del(ht, zend_dval_to_lval(Z_DVAL_P(offset)));
 						break;
 					case IS_RESOURCE:
 					case IS_BOOL:
 					case IS_LONG:
-						index = Z_LVAL_P(offset);
-						zend_hash_index_del(ht, index);
+						zend_hash_index_del(ht, Z_LVAL_P(offset));
 						break;
 					case IS_STRING:
 						if (IS_CV == IS_CV || IS_CV == IS_VAR) {
@@ -21411,7 +21331,6 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_UNUSED_CV(
 	zval **container = _get_obj_zval_ptr_ptr_unused(TSRMLS_C);
 	zval **value = NULL;
 	int result = 0;
-	long index;
 
 	if (IS_UNUSED != IS_VAR || container) {
 
@@ -21425,16 +21344,14 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_UNUSED_CV(
 
 			switch (Z_TYPE_P(offset)) {
 				case IS_DOUBLE:
-					index = (long) Z_DVAL_P(offset);
-					if (zend_hash_index_find(ht, index, (void **) &value) == SUCCESS) {
+					if (zend_hash_index_find(ht, zend_dval_to_lval(Z_DVAL_P(offset)), (void **) &value) == SUCCESS) {
 						isset = 1;
 					}
 					break;
 				case IS_RESOURCE:
 				case IS_BOOL:
 				case IS_LONG:
-					index = Z_LVAL_P(offset);
-					if (zend_hash_index_find(ht, index, (void **) &value) == SUCCESS) {
+					if (zend_hash_index_find(ht, Z_LVAL_P(offset), (void **) &value) == SUCCESS) {
 						isset = 1;
 					}
 					break;
@@ -21731,7 +21648,8 @@ static int ZEND_FASTCALL  ZEND_ECHO_SPEC_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 	zval z_copy;
 	zval *z = _get_zval_ptr_cv(&opline->op1, EX(Ts), BP_VAR_R TSRMLS_CC);
 
-	if (Z_TYPE_P(z) == IS_OBJECT && Z_OBJ_HT_P(z)->get_method != NULL &&
+	if (IS_CV != IS_CONST &&
+	    Z_TYPE_P(z) == IS_OBJECT && Z_OBJ_HT_P(z)->get_method != NULL &&
 		zend_std_cast_object_tostring(z, &z_copy, IS_STRING TSRMLS_CC) == SUCCESS) {
 		zend_print_variable(&z_copy);
 		zval_dtor(&z_copy);
@@ -22107,7 +22025,7 @@ static int ZEND_FASTCALL  ZEND_THROW_SPEC_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 
 	value = _get_zval_ptr_cv(&opline->op1, EX(Ts), BP_VAR_R TSRMLS_CC);
 
-	if (Z_TYPE_P(value) != IS_OBJECT) {
+	if (IS_CV == IS_CONST || Z_TYPE_P(value) != IS_OBJECT) {
 		zend_error_noreturn(E_ERROR, "Can only throw objects");
 	}
 	zend_exception_save(TSRMLS_C);
@@ -22276,7 +22194,9 @@ static int ZEND_FASTCALL  ZEND_CLONE_SPEC_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 	zend_function *clone;
 	zend_object_clone_obj_t clone_call;
 
-	if (!obj || Z_TYPE_P(obj) != IS_OBJECT) {
+	if (IS_CV == IS_CONST ||
+	    (IS_CV == IS_VAR && !obj) ||
+	    Z_TYPE_P(obj) != IS_OBJECT) {
 		zend_error_noreturn(E_ERROR, "__clone method called on non-object");
 	}
 
@@ -22607,7 +22527,7 @@ static int ZEND_FASTCALL  ZEND_FE_RESET_SPEC_CV_HANDLER(ZEND_OPCODE_HANDLER_ARGS
 			ALLOC_INIT_ZVAL(array_ptr);
 		} else if (Z_TYPE_PP(array_ptr_ptr) == IS_OBJECT) {
 			if(Z_OBJ_HT_PP(array_ptr_ptr)->get_class_entry == NULL) {
-				zend_error(E_WARNING, "foreach() can not iterate over objects without PHP class");
+				zend_error(E_WARNING, "foreach() cannot iterate over objects without PHP class");
 				ZEND_VM_JMP(EX(op_array)->opcodes+opline->op2.u.opline_num);
 			}
 
@@ -24207,11 +24127,9 @@ static int ZEND_FASTCALL  ZEND_ADD_ARRAY_ELEMENT_SPEC_CV_CONST_HANDLER(ZEND_OPCO
 		}
 	}
 	if (offset) {
-	  	long l;
 		switch (Z_TYPE_P(offset)) {
 			case IS_DOUBLE:
-			  	DVAL_TO_LVAL(Z_DVAL_P(offset), l);
-				zend_hash_index_update(Z_ARRVAL_P(array_ptr), l, &expr_ptr, sizeof(zval *), NULL);
+				zend_hash_index_update(Z_ARRVAL_P(array_ptr), zend_dval_to_lval(Z_DVAL_P(offset)), &expr_ptr, sizeof(zval *), NULL);
 				break;
 			case IS_LONG:
 			case IS_BOOL:
@@ -24261,7 +24179,6 @@ static int ZEND_FASTCALL  ZEND_UNSET_DIM_SPEC_CV_CONST_HANDLER(ZEND_OPCODE_HANDL
 
 	zval **container = _get_zval_ptr_ptr_cv(&opline->op1, EX(Ts), BP_VAR_UNSET TSRMLS_CC);
 	zval *offset = &opline->op2.u.constant;
-	long index;
 
 	if (IS_CV != IS_VAR || container) {
 		if (IS_CV == IS_CV && container != &EG(uninitialized_zval_ptr)) {
@@ -24273,14 +24190,12 @@ static int ZEND_FASTCALL  ZEND_UNSET_DIM_SPEC_CV_CONST_HANDLER(ZEND_OPCODE_HANDL
 
 				switch (Z_TYPE_P(offset)) {
 					case IS_DOUBLE:
-						index = (long) Z_DVAL_P(offset);
-						zend_hash_index_del(ht, index);
+						zend_hash_index_del(ht, zend_dval_to_lval(Z_DVAL_P(offset)));
 						break;
 					case IS_RESOURCE:
 					case IS_BOOL:
 					case IS_LONG:
-						index = Z_LVAL_P(offset);
-						zend_hash_index_del(ht, index);
+						zend_hash_index_del(ht, Z_LVAL_P(offset));
 						break;
 					case IS_STRING:
 						if (IS_CONST == IS_CV || IS_CONST == IS_VAR) {
@@ -24390,7 +24305,6 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_CV_CONST(i
 	zval **container = _get_zval_ptr_ptr_cv(&opline->op1, EX(Ts), BP_VAR_IS TSRMLS_CC);
 	zval **value = NULL;
 	int result = 0;
-	long index;
 
 	if (IS_CV != IS_VAR || container) {
 
@@ -24404,16 +24318,14 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_CV_CONST(i
 
 			switch (Z_TYPE_P(offset)) {
 				case IS_DOUBLE:
-					index = (long) Z_DVAL_P(offset);
-					if (zend_hash_index_find(ht, index, (void **) &value) == SUCCESS) {
+					if (zend_hash_index_find(ht, zend_dval_to_lval(Z_DVAL_P(offset)), (void **) &value) == SUCCESS) {
 						isset = 1;
 					}
 					break;
 				case IS_RESOURCE:
 				case IS_BOOL:
 				case IS_LONG:
-					index = Z_LVAL_P(offset);
-					if (zend_hash_index_find(ht, index, (void **) &value) == SUCCESS) {
+					if (zend_hash_index_find(ht, Z_LVAL_P(offset), (void **) &value) == SUCCESS) {
 						isset = 1;
 					}
 					break;
@@ -25855,11 +25767,9 @@ static int ZEND_FASTCALL  ZEND_ADD_ARRAY_ELEMENT_SPEC_CV_TMP_HANDLER(ZEND_OPCODE
 		}
 	}
 	if (offset) {
-	  	long l;
 		switch (Z_TYPE_P(offset)) {
 			case IS_DOUBLE:
-			  	DVAL_TO_LVAL(Z_DVAL_P(offset), l);
-				zend_hash_index_update(Z_ARRVAL_P(array_ptr), l, &expr_ptr, sizeof(zval *), NULL);
+				zend_hash_index_update(Z_ARRVAL_P(array_ptr), zend_dval_to_lval(Z_DVAL_P(offset)), &expr_ptr, sizeof(zval *), NULL);
 				break;
 			case IS_LONG:
 			case IS_BOOL:
@@ -25909,7 +25819,6 @@ static int ZEND_FASTCALL  ZEND_UNSET_DIM_SPEC_CV_TMP_HANDLER(ZEND_OPCODE_HANDLER
 	zend_free_op free_op2;
 	zval **container = _get_zval_ptr_ptr_cv(&opline->op1, EX(Ts), BP_VAR_UNSET TSRMLS_CC);
 	zval *offset = _get_zval_ptr_tmp(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
-	long index;
 
 	if (IS_CV != IS_VAR || container) {
 		if (IS_CV == IS_CV && container != &EG(uninitialized_zval_ptr)) {
@@ -25921,14 +25830,12 @@ static int ZEND_FASTCALL  ZEND_UNSET_DIM_SPEC_CV_TMP_HANDLER(ZEND_OPCODE_HANDLER
 
 				switch (Z_TYPE_P(offset)) {
 					case IS_DOUBLE:
-						index = (long) Z_DVAL_P(offset);
-						zend_hash_index_del(ht, index);
+						zend_hash_index_del(ht, zend_dval_to_lval(Z_DVAL_P(offset)));
 						break;
 					case IS_RESOURCE:
 					case IS_BOOL:
 					case IS_LONG:
-						index = Z_LVAL_P(offset);
-						zend_hash_index_del(ht, index);
+						zend_hash_index_del(ht, Z_LVAL_P(offset));
 						break;
 					case IS_STRING:
 						if (IS_TMP_VAR == IS_CV || IS_TMP_VAR == IS_VAR) {
@@ -26038,7 +25945,6 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_CV_TMP(int
 	zval **container = _get_zval_ptr_ptr_cv(&opline->op1, EX(Ts), BP_VAR_IS TSRMLS_CC);
 	zval **value = NULL;
 	int result = 0;
-	long index;
 
 	if (IS_CV != IS_VAR || container) {
 		zend_free_op free_op2;
@@ -26052,16 +25958,14 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_CV_TMP(int
 
 			switch (Z_TYPE_P(offset)) {
 				case IS_DOUBLE:
-					index = (long) Z_DVAL_P(offset);
-					if (zend_hash_index_find(ht, index, (void **) &value) == SUCCESS) {
+					if (zend_hash_index_find(ht, zend_dval_to_lval(Z_DVAL_P(offset)), (void **) &value) == SUCCESS) {
 						isset = 1;
 					}
 					break;
 				case IS_RESOURCE:
 				case IS_BOOL:
 				case IS_LONG:
-					index = Z_LVAL_P(offset);
-					if (zend_hash_index_find(ht, index, (void **) &value) == SUCCESS) {
+					if (zend_hash_index_find(ht, Z_LVAL_P(offset), (void **) &value) == SUCCESS) {
 						isset = 1;
 					}
 					break;
@@ -27553,11 +27457,9 @@ static int ZEND_FASTCALL  ZEND_ADD_ARRAY_ELEMENT_SPEC_CV_VAR_HANDLER(ZEND_OPCODE
 		}
 	}
 	if (offset) {
-	  	long l;
 		switch (Z_TYPE_P(offset)) {
 			case IS_DOUBLE:
-			  	DVAL_TO_LVAL(Z_DVAL_P(offset), l);
-				zend_hash_index_update(Z_ARRVAL_P(array_ptr), l, &expr_ptr, sizeof(zval *), NULL);
+				zend_hash_index_update(Z_ARRVAL_P(array_ptr), zend_dval_to_lval(Z_DVAL_P(offset)), &expr_ptr, sizeof(zval *), NULL);
 				break;
 			case IS_LONG:
 			case IS_BOOL:
@@ -27607,7 +27509,6 @@ static int ZEND_FASTCALL  ZEND_UNSET_DIM_SPEC_CV_VAR_HANDLER(ZEND_OPCODE_HANDLER
 	zend_free_op free_op2;
 	zval **container = _get_zval_ptr_ptr_cv(&opline->op1, EX(Ts), BP_VAR_UNSET TSRMLS_CC);
 	zval *offset = _get_zval_ptr_var(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
-	long index;
 
 	if (IS_CV != IS_VAR || container) {
 		if (IS_CV == IS_CV && container != &EG(uninitialized_zval_ptr)) {
@@ -27619,14 +27520,12 @@ static int ZEND_FASTCALL  ZEND_UNSET_DIM_SPEC_CV_VAR_HANDLER(ZEND_OPCODE_HANDLER
 
 				switch (Z_TYPE_P(offset)) {
 					case IS_DOUBLE:
-						index = (long) Z_DVAL_P(offset);
-						zend_hash_index_del(ht, index);
+						zend_hash_index_del(ht, zend_dval_to_lval(Z_DVAL_P(offset)));
 						break;
 					case IS_RESOURCE:
 					case IS_BOOL:
 					case IS_LONG:
-						index = Z_LVAL_P(offset);
-						zend_hash_index_del(ht, index);
+						zend_hash_index_del(ht, Z_LVAL_P(offset));
 						break;
 					case IS_STRING:
 						if (IS_VAR == IS_CV || IS_VAR == IS_VAR) {
@@ -27736,7 +27635,6 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_CV_VAR(int
 	zval **container = _get_zval_ptr_ptr_cv(&opline->op1, EX(Ts), BP_VAR_IS TSRMLS_CC);
 	zval **value = NULL;
 	int result = 0;
-	long index;
 
 	if (IS_CV != IS_VAR || container) {
 		zend_free_op free_op2;
@@ -27750,16 +27648,14 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_CV_VAR(int
 
 			switch (Z_TYPE_P(offset)) {
 				case IS_DOUBLE:
-					index = (long) Z_DVAL_P(offset);
-					if (zend_hash_index_find(ht, index, (void **) &value) == SUCCESS) {
+					if (zend_hash_index_find(ht, zend_dval_to_lval(Z_DVAL_P(offset)), (void **) &value) == SUCCESS) {
 						isset = 1;
 					}
 					break;
 				case IS_RESOURCE:
 				case IS_BOOL:
 				case IS_LONG:
-					index = Z_LVAL_P(offset);
-					if (zend_hash_index_find(ht, index, (void **) &value) == SUCCESS) {
+					if (zend_hash_index_find(ht, Z_LVAL_P(offset), (void **) &value) == SUCCESS) {
 						isset = 1;
 					}
 					break;
@@ -28320,11 +28216,9 @@ static int ZEND_FASTCALL  ZEND_ADD_ARRAY_ELEMENT_SPEC_CV_UNUSED_HANDLER(ZEND_OPC
 		}
 	}
 	if (offset) {
-	  	long l;
 		switch (Z_TYPE_P(offset)) {
 			case IS_DOUBLE:
-			  	DVAL_TO_LVAL(Z_DVAL_P(offset), l);
-				zend_hash_index_update(Z_ARRVAL_P(array_ptr), l, &expr_ptr, sizeof(zval *), NULL);
+				zend_hash_index_update(Z_ARRVAL_P(array_ptr), zend_dval_to_lval(Z_DVAL_P(offset)), &expr_ptr, sizeof(zval *), NULL);
 				break;
 			case IS_LONG:
 			case IS_BOOL:
@@ -29740,11 +29634,9 @@ static int ZEND_FASTCALL  ZEND_ADD_ARRAY_ELEMENT_SPEC_CV_CV_HANDLER(ZEND_OPCODE_
 		}
 	}
 	if (offset) {
-	  	long l;
 		switch (Z_TYPE_P(offset)) {
 			case IS_DOUBLE:
-			  	DVAL_TO_LVAL(Z_DVAL_P(offset), l);
-				zend_hash_index_update(Z_ARRVAL_P(array_ptr), l, &expr_ptr, sizeof(zval *), NULL);
+				zend_hash_index_update(Z_ARRVAL_P(array_ptr), zend_dval_to_lval(Z_DVAL_P(offset)), &expr_ptr, sizeof(zval *), NULL);
 				break;
 			case IS_LONG:
 			case IS_BOOL:
@@ -29794,7 +29686,6 @@ static int ZEND_FASTCALL  ZEND_UNSET_DIM_SPEC_CV_CV_HANDLER(ZEND_OPCODE_HANDLER_
 
 	zval **container = _get_zval_ptr_ptr_cv(&opline->op1, EX(Ts), BP_VAR_UNSET TSRMLS_CC);
 	zval *offset = _get_zval_ptr_cv(&opline->op2, EX(Ts), BP_VAR_R TSRMLS_CC);
-	long index;
 
 	if (IS_CV != IS_VAR || container) {
 		if (IS_CV == IS_CV && container != &EG(uninitialized_zval_ptr)) {
@@ -29806,14 +29697,12 @@ static int ZEND_FASTCALL  ZEND_UNSET_DIM_SPEC_CV_CV_HANDLER(ZEND_OPCODE_HANDLER_
 
 				switch (Z_TYPE_P(offset)) {
 					case IS_DOUBLE:
-						index = (long) Z_DVAL_P(offset);
-						zend_hash_index_del(ht, index);
+						zend_hash_index_del(ht, zend_dval_to_lval(Z_DVAL_P(offset)));
 						break;
 					case IS_RESOURCE:
 					case IS_BOOL:
 					case IS_LONG:
-						index = Z_LVAL_P(offset);
-						zend_hash_index_del(ht, index);
+						zend_hash_index_del(ht, Z_LVAL_P(offset));
 						break;
 					case IS_STRING:
 						if (IS_CV == IS_CV || IS_CV == IS_VAR) {
@@ -29923,7 +29812,6 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_CV_CV(int 
 	zval **container = _get_zval_ptr_ptr_cv(&opline->op1, EX(Ts), BP_VAR_IS TSRMLS_CC);
 	zval **value = NULL;
 	int result = 0;
-	long index;
 
 	if (IS_CV != IS_VAR || container) {
 
@@ -29937,16 +29825,14 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_CV_CV(int 
 
 			switch (Z_TYPE_P(offset)) {
 				case IS_DOUBLE:
-					index = (long) Z_DVAL_P(offset);
-					if (zend_hash_index_find(ht, index, (void **) &value) == SUCCESS) {
+					if (zend_hash_index_find(ht, zend_dval_to_lval(Z_DVAL_P(offset)), (void **) &value) == SUCCESS) {
 						isset = 1;
 					}
 					break;
 				case IS_RESOURCE:
 				case IS_BOOL:
 				case IS_LONG:
-					index = Z_LVAL_P(offset);
-					if (zend_hash_index_find(ht, index, (void **) &value) == SUCCESS) {
+					if (zend_hash_index_find(ht, Z_LVAL_P(offset), (void **) &value) == SUCCESS) {
 						isset = 1;
 					}
 					break;

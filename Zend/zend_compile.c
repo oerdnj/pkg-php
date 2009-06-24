@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_compile.c,v 1.647.2.27.2.41.2.103 2009/03/10 10:01:44 dmitry Exp $ */
+/* $Id: zend_compile.c,v 1.647.2.27.2.41.2.109 2009/06/07 15:46:51 mattwil Exp $ */
 
 #include <zend_language_parser.h>
 #include "zend.h"
@@ -1197,16 +1197,7 @@ void zend_do_begin_function_declaration(znode *function_token, znode *function_n
 
 	if (is_method) {
 		if (zend_hash_add(&CG(active_class_entry)->function_table, lcname, name_len+1, &op_array, sizeof(zend_op_array), (void **) &CG(active_op_array)) == FAILURE) {
-			zend_op_array *child_op_array, *parent_op_array;
-			if (CG(active_class_entry)->parent
-					&& (zend_hash_find(&CG(active_class_entry)->function_table, name, name_len+1, (void **) &child_op_array) == SUCCESS)
-					&& (zend_hash_find(&CG(active_class_entry)->parent->function_table, name, name_len+1, (void **) &parent_op_array) == SUCCESS)
-					&& (child_op_array == parent_op_array)) {
-				zend_hash_update(&CG(active_class_entry)->function_table, name, name_len+1, &op_array, sizeof(zend_op_array), (void **) &CG(active_op_array));
-			} else {
-				efree(lcname);
-				zend_error(E_COMPILE_ERROR, "Cannot redeclare %s::%s()", CG(active_class_entry)->name, name);
-			}
+			zend_error(E_COMPILE_ERROR, "Cannot redeclare %s::%s()", CG(active_class_entry)->name, name);
 		}
 
 		if (fn_flags & ZEND_ACC_ABSTRACT) {
@@ -1220,7 +1211,7 @@ void zend_do_begin_function_declaration(znode *function_token, znode *function_n
 		if (CG(active_class_entry)->ce_flags & ZEND_ACC_INTERFACE) {
 			if ((name_len == sizeof(ZEND_CALL_FUNC_NAME)-1) && (!memcmp(lcname, ZEND_CALL_FUNC_NAME, sizeof(ZEND_CALL_FUNC_NAME)-1))) {
 				if (fn_flags & ((ZEND_ACC_PPP_MASK | ZEND_ACC_STATIC) ^ ZEND_ACC_PUBLIC)) {
-					zend_error(E_WARNING, "The magic method __call() must have public visibility and can not be static");
+					zend_error(E_WARNING, "The magic method __call() must have public visibility and cannot be static");
 				}
 			} else if ((name_len == sizeof(ZEND_CALLSTATIC_FUNC_NAME)-1) && (!memcmp(lcname, ZEND_CALLSTATIC_FUNC_NAME, sizeof(ZEND_CALLSTATIC_FUNC_NAME)-1))) {
 				if ((fn_flags & (ZEND_ACC_PPP_MASK ^ ZEND_ACC_PUBLIC)) || (fn_flags & ZEND_ACC_STATIC) == 0) {
@@ -1228,23 +1219,23 @@ void zend_do_begin_function_declaration(znode *function_token, znode *function_n
 				}
 			} else if ((name_len == sizeof(ZEND_GET_FUNC_NAME)-1) && (!memcmp(lcname, ZEND_GET_FUNC_NAME, sizeof(ZEND_GET_FUNC_NAME)-1))) {
 				if (fn_flags & ((ZEND_ACC_PPP_MASK | ZEND_ACC_STATIC) ^ ZEND_ACC_PUBLIC)) {
-					zend_error(E_WARNING, "The magic method __get() must have public visibility and can not be static");
+					zend_error(E_WARNING, "The magic method __get() must have public visibility and cannot be static");
 				}
 			} else if ((name_len == sizeof(ZEND_SET_FUNC_NAME)-1) && (!memcmp(lcname, ZEND_SET_FUNC_NAME, sizeof(ZEND_SET_FUNC_NAME)-1))) {
 				if (fn_flags & ((ZEND_ACC_PPP_MASK | ZEND_ACC_STATIC) ^ ZEND_ACC_PUBLIC)) {
-					zend_error(E_WARNING, "The magic method __set() must have public visibility and can not be static");
+					zend_error(E_WARNING, "The magic method __set() must have public visibility and cannot be static");
 				}
 			} else if ((name_len == sizeof(ZEND_UNSET_FUNC_NAME)-1) && (!memcmp(lcname, ZEND_UNSET_FUNC_NAME, sizeof(ZEND_UNSET_FUNC_NAME)-1))) {
 				if (fn_flags & ((ZEND_ACC_PPP_MASK | ZEND_ACC_STATIC) ^ ZEND_ACC_PUBLIC)) {
-					zend_error(E_WARNING, "The magic method __unset() must have public visibility and can not be static");
+					zend_error(E_WARNING, "The magic method __unset() must have public visibility and cannot be static");
 				}
 			} else if ((name_len == sizeof(ZEND_ISSET_FUNC_NAME)-1) && (!memcmp(lcname, ZEND_ISSET_FUNC_NAME, sizeof(ZEND_ISSET_FUNC_NAME)-1))) {
 				if (fn_flags & ((ZEND_ACC_PPP_MASK | ZEND_ACC_STATIC) ^ ZEND_ACC_PUBLIC)) {
-					zend_error(E_WARNING, "The magic method __isset() must have public visibility and can not be static");
+					zend_error(E_WARNING, "The magic method __isset() must have public visibility and cannot be static");
 				}
 			} else if ((name_len == sizeof(ZEND_TOSTRING_FUNC_NAME)-1) && (!memcmp(lcname, ZEND_TOSTRING_FUNC_NAME, sizeof(ZEND_TOSTRING_FUNC_NAME)-1))) {
 				if (fn_flags & ((ZEND_ACC_PPP_MASK | ZEND_ACC_STATIC) ^ ZEND_ACC_PUBLIC)) {
-					zend_error(E_WARNING, "The magic method __toString() must have public visibility and can not be static");
+					zend_error(E_WARNING, "The magic method __toString() must have public visibility and cannot be static");
 				}
 			}
 		} else {
@@ -1280,7 +1271,7 @@ void zend_do_begin_function_declaration(znode *function_token, znode *function_n
 				CG(active_class_entry)->clone = (zend_function *) CG(active_op_array);
 			} else if ((name_len == sizeof(ZEND_CALL_FUNC_NAME)-1) && (!memcmp(lcname, ZEND_CALL_FUNC_NAME, sizeof(ZEND_CALL_FUNC_NAME)-1))) {
 				if (fn_flags & ((ZEND_ACC_PPP_MASK | ZEND_ACC_STATIC) ^ ZEND_ACC_PUBLIC)) {
-					zend_error(E_WARNING, "The magic method __call() must have public visibility and can not be static");
+					zend_error(E_WARNING, "The magic method __call() must have public visibility and cannot be static");
 				}
 				CG(active_class_entry)->__call = (zend_function *) CG(active_op_array);
 			} else if ((name_len == sizeof(ZEND_CALLSTATIC_FUNC_NAME)-1) && (!memcmp(lcname, ZEND_CALLSTATIC_FUNC_NAME, sizeof(ZEND_CALLSTATIC_FUNC_NAME)-1))) {
@@ -1290,27 +1281,27 @@ void zend_do_begin_function_declaration(znode *function_token, znode *function_n
 				CG(active_class_entry)->__callstatic = (zend_function *) CG(active_op_array);
 			} else if ((name_len == sizeof(ZEND_GET_FUNC_NAME)-1) && (!memcmp(lcname, ZEND_GET_FUNC_NAME, sizeof(ZEND_GET_FUNC_NAME)-1))) {
 				if (fn_flags & ((ZEND_ACC_PPP_MASK | ZEND_ACC_STATIC) ^ ZEND_ACC_PUBLIC)) {
-					zend_error(E_WARNING, "The magic method __get() must have public visibility and can not be static");
+					zend_error(E_WARNING, "The magic method __get() must have public visibility and cannot be static");
 				}
 				CG(active_class_entry)->__get = (zend_function *) CG(active_op_array);
 			} else if ((name_len == sizeof(ZEND_SET_FUNC_NAME)-1) && (!memcmp(lcname, ZEND_SET_FUNC_NAME, sizeof(ZEND_SET_FUNC_NAME)-1))) {
 				if (fn_flags & ((ZEND_ACC_PPP_MASK | ZEND_ACC_STATIC) ^ ZEND_ACC_PUBLIC)) {
-					zend_error(E_WARNING, "The magic method __set() must have public visibility and can not be static");
+					zend_error(E_WARNING, "The magic method __set() must have public visibility and cannot be static");
 				}
 				CG(active_class_entry)->__set = (zend_function *) CG(active_op_array);
 			} else if ((name_len == sizeof(ZEND_UNSET_FUNC_NAME)-1) && (!memcmp(lcname, ZEND_UNSET_FUNC_NAME, sizeof(ZEND_UNSET_FUNC_NAME)-1))) {
 				if (fn_flags & ((ZEND_ACC_PPP_MASK | ZEND_ACC_STATIC) ^ ZEND_ACC_PUBLIC)) {
-					zend_error(E_WARNING, "The magic method __unset() must have public visibility and can not be static");
+					zend_error(E_WARNING, "The magic method __unset() must have public visibility and cannot be static");
 				}
 				CG(active_class_entry)->__unset = (zend_function *) CG(active_op_array);
 			} else if ((name_len == sizeof(ZEND_ISSET_FUNC_NAME)-1) && (!memcmp(lcname, ZEND_ISSET_FUNC_NAME, sizeof(ZEND_ISSET_FUNC_NAME)-1))) {
 				if (fn_flags & ((ZEND_ACC_PPP_MASK | ZEND_ACC_STATIC) ^ ZEND_ACC_PUBLIC)) {
-					zend_error(E_WARNING, "The magic method __isset() must have public visibility and can not be static");
+					zend_error(E_WARNING, "The magic method __isset() must have public visibility and cannot be static");
 				}
 				CG(active_class_entry)->__isset = (zend_function *) CG(active_op_array);
 			} else if ((name_len == sizeof(ZEND_TOSTRING_FUNC_NAME)-1) && (!memcmp(lcname, ZEND_TOSTRING_FUNC_NAME, sizeof(ZEND_TOSTRING_FUNC_NAME)-1))) {
 				if (fn_flags & ((ZEND_ACC_PPP_MASK | ZEND_ACC_STATIC) ^ ZEND_ACC_PUBLIC)) {
-					zend_error(E_WARNING, "The magic method __toString() must have public visibility and can not be static");
+					zend_error(E_WARNING, "The magic method __toString() must have public visibility and cannot be static");
 				}				
 				CG(active_class_entry)->__tostring = (zend_function *) CG(active_op_array);
 			} else if (!(fn_flags & ZEND_ACC_STATIC)) {
@@ -2640,7 +2631,7 @@ static zend_bool do_inherit_method_check(HashTable *child_function_table, zend_f
 		if (!zend_do_perform_implementation_check(child, child->common.prototype)) {
 			zend_error(E_COMPILE_ERROR, "Declaration of %s::%s() must be compatible with that of %s::%s()", ZEND_FN_SCOPE_NAME(child), child->common.function_name, ZEND_FN_SCOPE_NAME(child->common.prototype), child->common.prototype->common.function_name);
 		}
-	} else if (EG(error_reporting) & E_STRICT) { /* Check E_STRICT before the check so that we save some time */
+	} else if (EG(error_reporting) & E_STRICT || EG(user_error_handler)) { /* Check E_STRICT (or custom error handler) before the check so that we save some time */
 		if (!zend_do_perform_implementation_check(child, parent)) {
 			zend_error(E_STRICT, "Declaration of %s::%s() should be compatible with that of %s::%s()", ZEND_FN_SCOPE_NAME(child), child->common.function_name, ZEND_FN_SCOPE_NAME(parent), parent->common.function_name);
 		}
@@ -2891,24 +2882,20 @@ ZEND_API int do_bind_function(zend_op *opline, HashTable *function_table, zend_b
 {
 	zend_function *function;
 
-	if (opline->opcode != ZEND_DECLARE_FUNCTION) {
-		zend_error(E_COMPILE_ERROR, "Internal compiler error.  Please report!");
-	}
-
 	zend_hash_find(function_table, opline->op1.u.constant.value.str.val, opline->op1.u.constant.value.str.len, (void *) &function);
 	if (zend_hash_add(function_table, opline->op2.u.constant.value.str.val, opline->op2.u.constant.value.str.len+1, function, sizeof(zend_function), NULL)==FAILURE) {
 		int error_level = compile_time ? E_COMPILE_ERROR : E_ERROR;
-		zend_function *function;
+		zend_function *old_function;
 
-		if (zend_hash_find(function_table, opline->op2.u.constant.value.str.val, opline->op2.u.constant.value.str.len+1, (void *) &function)==SUCCESS
-			&& function->type==ZEND_USER_FUNCTION
-			&& ((zend_op_array *) function)->last>0) {
+		if (zend_hash_find(function_table, opline->op2.u.constant.value.str.val, opline->op2.u.constant.value.str.len+1, (void *) &old_function)==SUCCESS
+			&& old_function->type == ZEND_USER_FUNCTION
+			&& old_function->op_array.last > 0) {
 			zend_error(error_level, "Cannot redeclare %s() (previously declared in %s:%d)",
-						opline->op2.u.constant.value.str.val,
-						((zend_op_array *) function)->filename,
-						((zend_op_array *) function)->opcodes[0].lineno);
+						function->common.function_name,
+						old_function->op_array.filename,
+						old_function->op_array.opcodes[0].lineno);
 		} else {
-			zend_error(error_level, "Cannot redeclare %s()", opline->op2.u.constant.value.str.val);
+			zend_error(error_level, "Cannot redeclare %s()", function->common.function_name);
 		}
 		return FAILURE;
 	} else {
@@ -2982,13 +2969,6 @@ ZEND_API zend_class_entry *do_bind_inherited_class(const zend_op *opline, HashTa
 	/* Register the derived class */
 	if (zend_hash_add(class_table, opline->op2.u.constant.value.str.val, opline->op2.u.constant.value.str.len+1, pce, sizeof(zend_class_entry *), NULL)==FAILURE) {
 		zend_error(E_COMPILE_ERROR, "Cannot redeclare class %s", ce->name);
-		ce->refcount--;
-		zend_hash_destroy(&ce->function_table);
-		zend_hash_destroy(&ce->default_properties);
-		zend_hash_destroy(&ce->properties_info);
-		zend_hash_destroy(&ce->default_static_members);
-		zend_hash_destroy(&ce->constants_table);
-		return NULL;
 	}
 	return ce;
 }
@@ -3456,8 +3436,6 @@ void zend_do_end_class_declaration(const znode *class_token, const znode *parent
 {
 	zend_class_entry *ce = CG(active_class_entry);
 
-	do_inherit_parent_constructor(ce);
-
 	if (ce->constructor) {
 		ce->constructor->common.fn_flags |= ZEND_ACC_CTOR;
 		if (ce->constructor->common.fn_flags & ZEND_ACC_STATIC) {
@@ -3482,7 +3460,7 @@ void zend_do_end_class_declaration(const znode *class_token, const znode *parent
 	if (!(ce->ce_flags & (ZEND_ACC_INTERFACE|ZEND_ACC_EXPLICIT_ABSTRACT_CLASS))
 		&& ((parent_token->op_type != IS_UNUSED) || (ce->num_interfaces > 0))) {
 		zend_verify_abstract_class(ce TSRMLS_CC);
-		if (ce->parent || ce->num_interfaces) {
+		if (ce->num_interfaces) {
 			do_verify_abstract_class(TSRMLS_C);
 		}
 	}
@@ -4041,7 +4019,7 @@ void zend_do_add_static_array_element(znode *result, znode *offset, const znode 
 				zend_hash_index_update(Z_ARRVAL(result->u.constant), Z_LVAL(offset->u.constant), &element, sizeof(zval *), NULL);
 				break;
 			case IS_DOUBLE:
-				zend_hash_index_update(Z_ARRVAL(result->u.constant), (long)Z_DVAL(offset->u.constant), &element, sizeof(zval *), NULL);
+				zend_hash_index_update(Z_ARRVAL(result->u.constant), zend_dval_to_lval(Z_DVAL(offset->u.constant)), &element, sizeof(zval *), NULL);
 				break;
 			case IS_CONSTANT_ARRAY:
 				zend_error(E_ERROR, "Illegal offset type");
@@ -4594,8 +4572,6 @@ void zend_do_declare_stmt(znode *var, znode *val TSRMLS_DC)
 	if (!zend_binary_strcasecmp(var->u.constant.value.str.val, var->u.constant.value.str.len, "ticks", sizeof("ticks")-1)) {
 		convert_to_long(&val->u.constant);
 		CG(declarables).ticks = val->u.constant;
-		
-		zend_error(E_DEPRECATED, "Ticks is deprecated and will be removed in PHP 6");
 #ifdef ZEND_MULTIBYTE
 	} else if (!zend_binary_strcasecmp(var->u.constant.value.str.val, var->u.constant.value.str.len, "encoding", sizeof("encoding")-1)) {
 		zend_encoding *new_encoding, *old_encoding;

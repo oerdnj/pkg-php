@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: link_win32.c,v 1.1.2.3 2009/01/16 14:10:16 pajoye Exp $ */
+/* $Id: link_win32.c,v 1.1.2.5 2009/06/16 16:50:13 pajoye Exp $ */
 #ifdef PHP_WIN32
 
 #include "php.h"
@@ -63,6 +63,7 @@ PHP_FUNCTION(readlink)
 	char *link;
 	int link_len;
 	TCHAR Path[MAXPATHLEN];
+	char path_resolved[MAXPATHLEN];
 	HANDLE hFile;
 	DWORD dwRet;
 
@@ -89,14 +90,17 @@ PHP_FUNCTION(readlink)
 	if (OPENBASEDIR_CHECKPATH(link)) {
 		RETURN_FALSE;
 	}
-
-	hFile = CreateFile(link,                  // file to open
-										 GENERIC_READ,          // open for reading
-										 FILE_SHARE_READ,       // share for reading
-										 NULL,                  // default security
-										 OPEN_EXISTING,         // existing file only
-										 FILE_FLAG_BACKUP_SEMANTICS, // normal file
-										 NULL);                 // no attr. template
+	if (!expand_filepath(link, path_resolved TSRMLS_CC)) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "No such file or directory");
+		RETURN_FALSE;
+	}
+	hFile = CreateFile(path_resolved,                  // file to open
+				 GENERIC_READ,          // open for reading
+				 FILE_SHARE_READ,       // share for reading
+				 NULL,                  // default security
+				 OPEN_EXISTING,         // existing file only
+				 FILE_FLAG_BACKUP_SEMANTICS, // normal file
+				 NULL);                 // no attr. template
 
 	if( hFile == INVALID_HANDLE_VALUE) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Could not open file (error %d)", GetLastError());
@@ -231,7 +235,9 @@ PHP_FUNCTION(link)
 	char source_p[MAXPATHLEN];
 	char dest_p[MAXPATHLEN];
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &topath, &topath_len, &frompath, &frompath_len) == FAILURE) {
+	/*First argument to link function is the target and hence should go to frompath
+	  Second argument to link function is the link itself and hence should go to topath */
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &frompath, &frompath_len, &topath, &topath_len) == FAILURE) {
 		return;
 	}
 
@@ -260,7 +266,8 @@ PHP_FUNCTION(link)
 #else 
 	ret = CreateHardLinkA(dest_p, source_p, NULL);	
 #endif	
-	if (ret == -1) {
+
+	if (ret == 0) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", strerror(errno));
 		RETURN_FALSE;
 	}

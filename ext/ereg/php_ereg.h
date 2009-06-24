@@ -17,7 +17,7 @@
 */
 
 
-/* $Id: php_ereg.h,v 1.24.2.4 2008/12/31 11:15:36 sebastian Exp $ */
+/* $Id: php_ereg.h,v 1.24.2.5 2009/05/28 21:57:24 scottmac Exp $ */
 
 #ifndef EREG_H
 #define EREG_H
@@ -39,6 +39,7 @@ PHPAPI PHP_FUNCTION(sql_regcase);
 
 ZEND_BEGIN_MODULE_GLOBALS(ereg)
 	HashTable ht_rc;
+	unsigned int lru_counter;
 ZEND_END_MODULE_GLOBALS(ereg)
 
 /* Module functions */

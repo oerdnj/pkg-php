@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: array.c,v 1.308.2.21.2.37.2.53 2009/02/13 22:34:15 andrei Exp $ */
+/* $Id: array.c,v 1.308.2.21.2.37.2.56 2009/05/15 17:03:03 moriyoshi Exp $ */
 
 #include "php.h"
 #include "php_ini.h"
@@ -2697,7 +2697,7 @@ PHP_FUNCTION(array_unique)
 	};
 	struct bucketindex *arTmp, *cmpdata, *lastkept;
 	unsigned int i;
-	long sort_type = PHP_SORT_REGULAR;
+	long sort_type = PHP_SORT_STRING;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a|l", &array, &sort_type) == FAILURE) {
 		return;
@@ -3789,7 +3789,7 @@ PHP_FUNCTION(array_multisort)
 		}
 	}
 
-	/* If all arrays are empty or have only one entry, we don't need to do anything. */
+	/* If all arrays are empty we don't need to do anything. */
 	if (array_size < 1) {
 		for (k = 0; k < MULTISORT_LAST; k++) {
 			efree(ARRAYG(multisort_flags)[k]);
@@ -3919,10 +3919,6 @@ PHP_FUNCTION(array_rand)
 		}
 		num_avail--;
 		zend_hash_move_forward_ex(Z_ARRVAL_P(input), &pos);
-	}
-
-	if (num_req == num_avail) {
-		php_array_data_shuffle(return_value TSRMLS_CC);
 	}
 }
 /* }}} */
