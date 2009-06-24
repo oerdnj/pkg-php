@@ -55,7 +55,7 @@
  ## convert skel_dir to full path
 --- php.orig/php.ini-development
 +++ php/php.ini-development
-@@ -779,7 +779,7 @@ default_mimetype = "text/html"
+@@ -785,7 +785,7 @@ default_mimetype = "text/html"
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
  ; UNIX: "/path1:/path2"
@@ -66,7 +66,7 @@
  ;include_path = ".;c:\php\includes"
 --- php.orig/php.ini-production
 +++ php/php.ini-production
-@@ -779,7 +779,7 @@ default_mimetype = "text/html"
+@@ -785,7 +785,7 @@ default_mimetype = "text/html"
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
  ; UNIX: "/path1:/path2"
@@ -75,7 +75,7 @@
  ;
  ; Windows: "\path1;\path2"
  ;include_path = ".;c:\php\includes"
-@@ -931,61 +931,6 @@ default_socket_timeout = 60
+@@ -939,54 +939,6 @@ default_socket_timeout = 60
  ; If you only provide the name of the extension, PHP will look for it in its
  ; default extension directory.
  ;
@@ -88,31 +88,24 @@
 -;extension=php_bz2.dll
 -;extension=php_curl.dll
 -;extension=php_dba.dll
--;extension=php_dbase.dll
 -;extension=php_exif.dll
 -;extension=php_fileinfo.dll
--;extension=php_fdf.dll
 -;extension=php_gd2.dll
 -;extension=php_gettext.dll
 -;extension=php_gmp.dll
--;extension=php_ifx.dll
 -;extension=php_intl.dll
 -;extension=php_imap.dll
 -;extension=php_interbase.dll
 -;extension=php_ldap.dll
 -;extension=php_mbstring.dll
--;extension=php_mcrypt.dll
--;extension=php_mhash.dll
 -;extension=php_mime_magic.dll
 -;extension=php_ming.dll
--;extension=php_msql.dll
 -;extension=php_mssql.dll
 -;extension=php_mysql.dll
 -;extension=php_mysqli.dll
 -;extension=php_oci8.dll      ; Use with Oracle 10gR2 Instant Client
 -;extension=php_oci8_11g.dll  ; Use with Oracle 11g Instant Client
 -;extension=php_openssl.dll
--;extension=php_pdo.dll
 -;extension=php_pdo_firebird.dll
 -;extension=php_pdo_mssql.dll
 -;extension=php_pdo_mysql.dll
