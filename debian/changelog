@@ -1,3 +1,18 @@
+php5 (5.3.0~RC4-1) UNRELEASED; urgency=low
+
+  ** SNAPSHOT build @dad87d2aa662e1558c76a0152369e28293131e8d **
+
+  * New Upstream Version
+
+  [ Sean Finney ]
+  * update debian patch 006-debian_quirks.patch
+  * update debian patch 113-php.ini_securitynotes.patch
+  * (temporarily) disable suhosin patch while it does not apply to 5.3
+  * quilt refresh 7 files in debian/patches
+  * copy the gbp.conf from debian-sid and adapt it for experimental
+
+ -- Sean Finney <seanius@debian.org>  Thu, 25 Jun 2009 00:34:12 +0200
+
 php5 (5.3.0~RC1-1) unstable; urgency=low
 
   * New Upstream Version
