@@ -1,9 +1,9 @@
 --- php.orig/php.ini-development
 +++ php/php.ini-development
-@@ -333,6 +333,11 @@ allow_call_time_pass_reference = Off
+@@ -335,6 +335,11 @@ allow_call_time_pass_reference = Off
  
  ; Safe Mode
- ; http://www.php.net/manual/en/ini.sect.safe-mode.php#ini.safe-mode
+ ; http://php.net/safe-mode
 +; NOTE: this is considered a "broken" security measure.
 +;       Applications relying on this feature will not recieve full
 +;       support by the security team.  For more information please
@@ -12,11 +12,11 @@
  safe_mode = Off
  
  ; By default, Safe Mode does a UID compare check when
-@@ -374,6 +379,12 @@ safe_mode_protected_env_vars = LD_LIBRAR
+@@ -376,6 +381,12 @@ safe_mode_protected_env_vars = LD_LIBRAR
  ; or per-virtualhost web server configuration file. This directive is
  ; *NOT* affected by whether Safe Mode is turned On or Off.
- ; http://www.php.net/manual/en/ini.sect.safe-mode.php#ini.open-basedir
-+
+ ; http://php.net/open-basedir
++ 
 +; NOTE: this is considered a "broken" security measure.
 +;       Applications relying on this feature will not recieve full
 +;       support by the security team.  For more information please
@@ -25,11 +25,11 @@
  ;open_basedir =
  
  ; This directive allows you to disable certain functions for security reasons.
-@@ -687,6 +698,11 @@ request_order = "GP"
+@@ -692,6 +703,11 @@ request_order = "GP"
  ; register_globals to be on;  Using form variables as globals can easily lead
  ; to possible security problems, if the code is not very well thought of.
- ; http://www.php.net/manual/en/ini.core.php#ini.register-globals
-+
+ ; http://php.net/register-globals
++ 
 +; NOTE: applications relying on this feature will not recieve full
 +;       support by the security team.  For more information please
 +;       see /usr/share/doc/php5-common/README.Debian.security
