@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_extensions.h,v 1.67.2.3.2.3.2.6 2009/01/17 16:14:59 johannes Exp $ */
+/* $Id: zend_extensions.h,v 1.67.2.3.2.3.2.8 2009/04/08 23:06:16 stas Exp $ */
 
 #ifndef ZEND_EXTENSIONS_H
 #define ZEND_EXTENSIONS_H
@@ -80,7 +80,7 @@ struct _zend_extension {
 	op_array_dtor_func_t op_array_dtor;
 
 	int (*api_no_check)(int api_no);
-	void *reserved2;
+	int (*build_id_check)(const char* build_id);
 	void *reserved3;
 	void *reserved4;
 	void *reserved5;
@@ -103,8 +103,9 @@ END_EXTERN_C()
 #define ZEND_EXTENSION()	\
 	ZEND_EXT_API zend_extension_version_info extension_version_info = { ZEND_EXTENSION_API_NO, ZEND_EXTENSION_BUILD_ID }
 
-#define STANDARD_ZEND_EXTENSION_PROPERTIES NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, -1
-#define COMPAT_ZEND_EXTENSION_PROPERTIES   NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, -1
+#define STANDARD_ZEND_EXTENSION_PROPERTIES       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, -1
+#define COMPAT_ZEND_EXTENSION_PROPERTIES         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, -1
+#define BUILD_COMPAT_ZEND_EXTENSION_PROPERTIES   NULL, NULL, NULL, NULL, NULL, NULL, NULL, -1
 
 
 ZEND_API extern zend_llist zend_extensions;

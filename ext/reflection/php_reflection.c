@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_reflection.c,v 1.164.2.33.2.45.2.53 2009/02/01 15:06:19 cseiler Exp $ */
+/* $Id: php_reflection.c,v 1.164.2.33.2.45.2.58 2009/06/16 14:33:33 felipe Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -191,7 +191,7 @@ typedef enum {
 	REF_TYPE_OTHER,      /* Must be 0 */
 	REF_TYPE_FUNCTION,
 	REF_TYPE_PARAMETER,
-	REF_TYPE_PROPERTY,
+	REF_TYPE_PROPERTY
 } reflection_type_t;
 
 /* Struct for reflection objects */
@@ -218,6 +218,7 @@ static void _default_get_entry(zval *object, char *name, int name_len, zval *ret
 	INIT_PZVAL(return_value);
 }
 
+#ifdef ilia_0
 static void _default_lookup_entry(zval *object, char *name, int name_len, zval **return_value TSRMLS_DC) /* {{{ */
 {
 	zval **value;
@@ -229,6 +230,7 @@ static void _default_lookup_entry(zval *object, char *name, int name_len, zval *
 	}
 }
 /* }}} */
+#endif
 
 static void reflection_register_implement(zend_class_entry *class_entry, zend_class_entry *interface_entry TSRMLS_DC)
 {
@@ -1236,7 +1238,7 @@ static void reflection_method_factory(zend_class_entry *ce, zend_function *metho
 	MAKE_STD_ZVAL(name);
 	MAKE_STD_ZVAL(classname);
 	ZVAL_STRING(name, method->common.function_name, 1);
-	ZVAL_STRINGL(classname, ce->name, ce->name_length, 1);
+	ZVAL_STRINGL(classname, method->common.scope->name, method->common.scope->name_length, 1);
 	reflection_instantiate(reflection_method_ptr, object TSRMLS_CC);
 	intern = (reflection_object *) zend_object_store_get_object(object TSRMLS_CC);
 	intern->ptr = method;
@@ -1279,7 +1281,7 @@ static void reflection_property_factory(zend_class_entry *ce, zend_property_info
 	MAKE_STD_ZVAL(name);
 	MAKE_STD_ZVAL(classname);
 	ZVAL_STRING(name, prop_name, 1);
-	ZVAL_STRINGL(classname, ce->name, ce->name_length, 1);
+	ZVAL_STRINGL(classname, prop->ce->name, prop->ce->name_length, 1);
 
 	reflection_instantiate(reflection_property_ptr, object TSRMLS_CC);
 	intern = (reflection_object *) zend_object_store_get_object(object TSRMLS_CC);
@@ -2480,11 +2482,6 @@ ZEND_METHOD(reflection_method, __construct)
 		zval_dtor(&ztmp);
 	}
 
-	MAKE_STD_ZVAL(classname);
-	ZVAL_STRINGL(classname, ce->name, ce->name_length, 1);
-
-	zend_hash_update(Z_OBJPROP_P(object), "class", sizeof("class"), (void **) &classname, sizeof(zval *), NULL);
-	
 	lcname = zend_str_tolower_dup(name_str, name_len);
 
 	if (ce == zend_ce_closure && orig_obj && (name_len == sizeof(ZEND_INVOKE_FUNC_NAME)-1)
@@ -2500,6 +2497,11 @@ ZEND_METHOD(reflection_method, __construct)
 	}
 	efree(lcname);
 
+	MAKE_STD_ZVAL(classname);
+	ZVAL_STRINGL(classname, mptr->common.scope->name, mptr->common.scope->name_length, 1);
+
+	zend_hash_update(Z_OBJPROP_P(object), "class", sizeof("class"), (void **) &classname, sizeof(zval *), NULL);
+	
 	MAKE_STD_ZVAL(name);
 	ZVAL_STRING(name, mptr->common.function_name, 1);
 	zend_hash_update(Z_OBJPROP_P(object), "name", sizeof("name"), (void **) &name, sizeof(zval *), NULL);
@@ -4324,17 +4326,18 @@ ZEND_METHOD(reflection_property, __construct)
 		}
 	}
 
-	MAKE_STD_ZVAL(classname);
-	ZVAL_STRINGL(classname, ce->name, ce->name_length, 1);
-	zend_hash_update(Z_OBJPROP_P(object), "class", sizeof("class"), (void **) &classname, sizeof(zval *), NULL);
-	
+	MAKE_STD_ZVAL(classname);	
 	MAKE_STD_ZVAL(propname);
+	
 	if (dynam_prop == 0) {
 		zend_unmangle_property_name(property_info->name, property_info->name_length, &class_name, &prop_name);
+		ZVAL_STRINGL(classname, property_info->ce->name, property_info->ce->name_length, 1);
 		ZVAL_STRING(propname, prop_name, 1);
 	} else {
+		ZVAL_STRINGL(classname, ce->name, ce->name_length, 1);	
 		ZVAL_STRINGL(propname, name_str, name_len, 1);
 	}
+	zend_hash_update(Z_OBJPROP_P(object), "class", sizeof("class"), (void **) &classname, sizeof(zval *), NULL);
 	zend_hash_update(Z_OBJPROP_P(object), "name", sizeof("name"), (void **) &propname, sizeof(zval *), NULL);
 
 	reference = (property_reference*) emalloc(sizeof(property_reference));
@@ -4489,7 +4492,7 @@ ZEND_METHOD(reflection_property, getValue)
 			return;
 		}
 		zend_unmangle_property_name(ref->prop.name, ref->prop.name_length, &class_name, &prop_name);
-		member_p = zend_read_property(Z_OBJCE_P(object), object, prop_name, strlen(prop_name), 1 TSRMLS_CC);
+		member_p = zend_read_property(ref->ce, object, prop_name, strlen(prop_name), 1 TSRMLS_CC);
 		*return_value= *member_p;
 		zval_copy_ctor(return_value);
 		INIT_PZVAL(return_value);
@@ -4567,7 +4570,7 @@ ZEND_METHOD(reflection_property, setValue)
 			return;
 		}
 		zend_unmangle_property_name(ref->prop.name, ref->prop.name_length, &class_name, &prop_name);
-		zend_update_property(Z_OBJCE_P(object), object, prop_name, strlen(prop_name), value TSRMLS_CC);
+		zend_update_property(ref->ce, object, prop_name, strlen(prop_name), value TSRMLS_CC);
 	}
 }
 /* }}} */
@@ -4600,6 +4603,10 @@ ZEND_METHOD(reflection_property, getDeclaringClass)
 			break;
 		}
 		ce = tmp_ce;
+		if (tmp_ce == tmp_info->ce) {
+			/* declared in this class, done */
+			break;
+		}
 		tmp_ce = tmp_ce->parent;
 	}
 
@@ -5435,7 +5442,7 @@ PHP_MINFO_FUNCTION(reflection) /* {{{ */
 	php_info_print_table_start();
 	php_info_print_table_header(2, "Reflection", "enabled");
 
-	php_info_print_table_row(2, "Version", "$Revision: 1.164.2.33.2.45.2.53 $");
+	php_info_print_table_row(2, "Version", "$Revision: 1.164.2.33.2.45.2.58 $");
 
 	php_info_print_table_end();
 } /* }}} */
@@ -5449,7 +5456,7 @@ zend_module_entry reflection_module_entry = { /* {{{ */
 	NULL,
 	NULL,
 	PHP_MINFO(reflection),
-	"$Revision: 1.164.2.33.2.45.2.53 $",
+	"$Revision: 1.164.2.33.2.45.2.58 $",
 	STANDARD_MODULE_PROPERTIES
 }; /* }}} */
 

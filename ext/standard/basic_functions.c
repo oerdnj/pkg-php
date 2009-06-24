@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: basic_functions.c,v 1.725.2.31.2.64.2.86 2009/01/19 02:35:21 pajoye Exp $ */
+/* $Id: basic_functions.c,v 1.725.2.31.2.64.2.91 2009/06/15 08:32:38 pajoye Exp $ */
 
 #include "php.h"
 #include "php_streams.h"
@@ -3897,12 +3897,22 @@ PHP_FUNCTION(ip2long)
 {
 	char *addr;
 	int addr_len;
+#ifdef HAVE_INET_PTON
+	struct in_addr ip;
+#else
 	unsigned long int ip;
+#endif
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &addr, &addr_len) == FAILURE) {
 		return;
 	}
 
+#ifdef HAVE_INET_PTON
+	if (addr_len == 0 || inet_pton(AF_INET, addr, &ip) != 1) {
+		RETURN_FALSE;
+	}
+	RETURN_LONG(ntohl(ip.s_addr));
+#else
 	if (addr_len == 0 || (ip = inet_addr(addr)) == INADDR_NONE) {
 		/* The only special case when we should return -1 ourselves,
 		 * because inet_addr() considers it wrong. We return 0xFFFFFFFF and
@@ -3915,6 +3925,7 @@ PHP_FUNCTION(ip2long)
 		RETURN_FALSE;
 	}
 	RETURN_LONG(ntohl(ip));
+#endif
 }
 /* }}} */
 
@@ -4162,7 +4173,7 @@ static void free_longopts(opt_struct *longopts)
 static int parse_opts(char * opts, opt_struct ** result)
 {
 	opt_struct * paras = NULL;
-	int i, count = 0;
+	unsigned int i, count = 0;
 
 	for (i = 0; i < strlen(opts); i++) {
 		if ((opts[i] >= 48 && opts[i] <= 57) ||
@@ -4780,7 +4791,9 @@ PHP_FUNCTION(call_user_method)
 	} else {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to call %s()", Z_STRVAL_P(callback));
 	}
-	efree(params);
+	if (n_params) {
+		efree(params);
+	}
 }
 /* }}} */
 
@@ -5640,8 +5653,6 @@ PHP_FUNCTION(register_tick_function)
 	if (tick_fe.arg_count < 1) {
 		WRONG_PARAM_COUNT;
 	}
-	
-	php_error_docref(NULL TSRMLS_CC, E_DEPRECATED, "Ticks is deprecated and will be removed in PHP 6");
 
 	tick_fe.arguments = (zval **) safe_emalloc(sizeof(zval *), tick_fe.arg_count, 0);
 
@@ -5906,7 +5917,7 @@ PHP_FUNCTION(parse_ini_file)
 	}
 
 	if (filename_len == 0) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Filename can not be empty!");
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Filename cannot be empty!");
 		RETURN_FALSE;
 	}
 

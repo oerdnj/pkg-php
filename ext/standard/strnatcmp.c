@@ -38,7 +38,7 @@
 
 #if 0
 static char const *version UNUSED =
-    "$Id: strnatcmp.c,v 1.10 2004/07/15 01:26:03 iliaa Exp $";
+    "$Id: strnatcmp.c,v 1.10.8.2 2009/04/09 15:55:46 rasmus Exp $";
 #endif
 /* {{{ compare_right
  */
@@ -116,10 +116,10 @@ PHPAPI int strnatcmp_ex(char const *a, size_t a_len, char const *b, size_t b_len
 		ca = *ap; cb = *bp;
 
 		/* skip over leading spaces or zeros */
-		while (isspace((int)(unsigned char)ca))
+		while (isspace((int)(unsigned char)ca) || (ca == '0' && (ap+1 < aend) && (*(ap+1)!='.')))
 			ca = *++ap;
 
-		while (isspace((int)(unsigned char)cb))
+		while (isspace((int)(unsigned char)cb) || (cb == '0' && (bp+1 < bend) && (*(bp+1)!='.')))
 			cb = *++bp;
 
 		/* process run of digits */

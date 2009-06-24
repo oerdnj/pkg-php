@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: php_mysqli_structs.h,v 1.4.2.18 2009/01/22 21:01:56 johannes Exp $ 
+  $Id: php_mysqli_structs.h,v 1.4.2.20 2009/05/27 20:05:37 andrey Exp $ 
 */
 
 #ifndef PHP_MYSQLI_STRUCTS_H
@@ -141,7 +141,7 @@ typedef struct _mysqli_property_entry {
 #if !defined(MYSQLI_USE_MYSQLND)
 typedef struct {
 	char	error_msg[LOCAL_INFILE_ERROR_LEN];
-	void	*userdata;
+  	void	*userdata;
 } mysqli_local_infile;
 #endif
 
@@ -161,10 +161,12 @@ typedef __int64 my_longlong;
 # else
 #  define PHP_MYSQLI_API
 # endif
-#define MYSQLI_LLU_SPEC "%llu"
-#define MYSQLI_LL_SPEC "%lld"
+/* we need this for PRIu64 and PRId64 */
+#include <inttypes.h>
+#define MYSQLI_LLU_SPEC "%" PRIu64
+#define MYSQLI_LL_SPEC "%" PRId64
 #define L64(x) x##LL
-typedef long long my_longlong;
+typedef int64_t my_longlong;
 #endif
 
 #ifdef ZTS
@@ -294,7 +296,7 @@ PHP_MYSQLI_EXPORT(zend_object_value) mysqli_objects_new(zend_class_entry * TSRML
 	} else {				\
 		char *ret;			\
 		/* always used with my_ulonglong -> %llu */ \
-		int l = spprintf(&ret, 0, "%llu", (__val));	\
+		int l = spprintf(&ret, 0, MYSQLI_LLU_SPEC, (__val));	\
 		RETURN_STRINGL(ret, l, 0);		\
 	}					\
 }

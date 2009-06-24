@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
  
-/* $Id: php_mysql.c,v 1.213.2.6.2.16.2.35 2009/02/18 16:34:47 johannes Exp $ */
+/* $Id: php_mysql.c,v 1.213.2.6.2.16.2.37 2009/05/20 08:30:12 kalle Exp $ */
 
 /* TODO:
  *
@@ -1166,7 +1166,7 @@ PHP_FUNCTION(mysql_thread_id)
 	}
 	ZEND_FETCH_RESOURCE2(mysql, php_mysql_conn *, &mysql_link, id, "MySQL-Link", le_link, le_plink);
 
-	RETURN_LONG(mysql_thread_id(mysql->conn));
+	RETURN_LONG((long) mysql_thread_id(mysql->conn));
 }
 /* }}} */
 
@@ -1472,9 +1472,7 @@ PHP_FUNCTION(mysql_db_query)
 		CHECK_LINK(id);
 	}
 
-	if (MySG(trace_mode) || !strcasecmp(get_active_function_name(TSRMLS_C), "mysql")) {
-		php_error_docref(NULL TSRMLS_CC, E_DEPRECATED, "This function is deprecated; use mysql_query() instead.");
-	}
+	php_error_docref(NULL TSRMLS_CC, E_DEPRECATED, "This function is deprecated; use mysql_query() instead");
 	
 	php_mysql_do_query_general(query, query_len, mysql_link, id, db, MYSQL_STORE_RESULT, return_value TSRMLS_CC);
 }

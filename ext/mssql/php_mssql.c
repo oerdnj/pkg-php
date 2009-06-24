@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_mssql.c,v 1.152.2.13.2.4.2.22 2009/02/23 21:21:02 kalle Exp $ */
+/* $Id: php_mssql.c,v 1.152.2.13.2.4.2.23 2009/05/26 12:35:46 felipe Exp $ */
 
 #ifdef COMPILE_DL_MSSQL
 #define HAVE_MSSQL 1
@@ -1834,7 +1834,7 @@ PHP_FUNCTION(mssql_result)
 	ZEND_FETCH_RESOURCE(result, mssql_result *, &mssql_result_index, -1, "MS SQL-result", le_result);	
 
 	if (row < 0 || row >= result->num_rows) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Bad row offset (%l)", row);
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Bad row offset (%ld)", row);
 		RETURN_FALSE;
 	}
 

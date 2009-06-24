@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_gd.h,v 1.59.2.3.2.5.2.5 2008/12/31 11:15:37 sebastian Exp $ */
+/* $Id: php_gd.h,v 1.59.2.3.2.5.2.9 2009/05/27 08:18:24 pajoye Exp $ */
 
 #ifndef PHP_GD_H
 #define PHP_GD_H
@@ -25,7 +25,9 @@
 #define HAVE_GDIMAGECREATEFROMPNG 1
 
 #if HAVE_LIBFREETYPE
-#define ENABLE_GD_TTF
+# ifndef ENABLE_GD_TTF
+#  define ENABLE_GD_TTF
+# endif
 #endif
 
 #if HAVE_LIBGD
@@ -119,8 +121,9 @@ PHP_FUNCTION(imagegrabwindow);
 PHP_FUNCTION(imagegrabscreen);
 #endif
 
-#ifdef HAVE_GD_BUNDLED
 PHP_FUNCTION(imagerotate);
+
+#ifdef HAVE_GD_BUNDLED
 PHP_FUNCTION(imageantialias);
 #endif
 
@@ -187,13 +190,15 @@ PHP_FUNCTION(jpeg2wbmp);
 PHP_FUNCTION(png2wbmp);
 PHP_FUNCTION(image2wbmp);
 
+PHP_FUNCTION(imagecolormatch);
+
 #if HAVE_GD_BUNDLED
 PHP_FUNCTION(imagelayereffect);
-PHP_FUNCTION(imagecolormatch);
-PHP_FUNCTION(imagefilter);
-PHP_FUNCTION(imageconvolution);
 PHP_FUNCTION(imagexbm);
 #endif
+
+PHP_FUNCTION(imagefilter);
+PHP_FUNCTION(imageconvolution);
 
 PHP_GD_API int phpi_get_le_gd(void);
 

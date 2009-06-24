@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute.h,v 1.84.2.4.2.8.2.12 2008/12/31 11:15:32 sebastian Exp $ */
+/* $Id: zend_execute.h,v 1.84.2.4.2.8.2.15 2009/06/09 09:26:02 pajoye Exp $ */
 
 #ifndef ZEND_EXECUTE_H
 #define ZEND_EXECUTE_H
@@ -73,7 +73,9 @@ static inline void safe_free_zval_ptr_rel(zval *p ZEND_FILE_LINE_DC ZEND_FILE_LI
 ZEND_API int zend_lookup_class(const char *name, int name_length, zend_class_entry ***ce TSRMLS_DC);
 ZEND_API int zend_lookup_class_ex(const char *name, int name_length, int use_autoload, zend_class_entry ***ce TSRMLS_DC);
 ZEND_API int zend_eval_string(char *str, zval *retval_ptr, char *string_name TSRMLS_DC);
+ZEND_API int zend_eval_stringl(char *str, int str_len, zval *retval_ptr, char *string_name TSRMLS_DC);
 ZEND_API int zend_eval_string_ex(char *str, zval *retval_ptr, char *string_name, int handle_exceptions TSRMLS_DC);
+ZEND_API int zend_eval_stringl_ex(char *str, int str_len, zval *retval_ptr, char *string_name, int handle_exceptions TSRMLS_DC);
 
 static inline int i_zend_is_true(zval *op)
 {
@@ -288,6 +290,27 @@ static inline zval** zend_vm_stack_get_arg(int requested_arg TSRMLS_DC)
 		return NULL;
 	}
 	return (zval**)p - arg_count + requested_arg - 1;
+}
+
+static inline void zend_arg_types_stack_2_pop(zend_ptr_stack *stack, zval **object, zend_function **fbc)
+{
+	void *a, *b;
+
+	zend_ptr_stack_2_pop(stack, &a, &b);
+
+	*object = (zval *) a;
+	*fbc = (zend_function *) b;
+}
+
+static inline void zend_arg_types_stack_3_pop(zend_ptr_stack *stack, zend_class_entry **called_scope, zval **object, zend_function **fbc)
+{
+	void *a, *b, *c;
+
+	zend_ptr_stack_3_pop(stack, &a, &b, &c);
+
+	*called_scope = (zend_class_entry *) a;
+	*object = (zval *) b;
+	*fbc = (zend_function *) c;
 }
 
 void execute_new_code(TSRMLS_D);

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: memory.c,v 1.8.2.6.2.17.2.3 2008/12/31 11:15:48 sebastian Exp $ */
+/* $Id: memory.c,v 1.8.2.6.2.17.2.4 2009/05/16 20:27:36 lbarnaud Exp $ */
 
 #define _GNU_SOURCE
 #include "php.h"
@@ -563,6 +563,7 @@ PHPAPI php_stream *_php_stream_temp_create(int mode, size_t max_memory_usage STR
 	stream = php_stream_alloc_rel(&php_stream_temp_ops, self, 0, mode & TEMP_STREAM_READONLY ? "rb" : "w+b");
 	stream->flags |= PHP_STREAM_FLAG_NO_BUFFER;
 	self->innerstream = php_stream_memory_create_rel(mode);
+	php_stream_auto_cleanup(self->innerstream); // do not warn if innerstream is GC'ed before stream
 	((php_stream_memory_data*)self->innerstream->abstract)->owner_ptr = &self->innerstream;
 
 	return stream;

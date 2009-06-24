@@ -1196,6 +1196,15 @@
 /* Whether to enable IPv6 support */
 #undef HAVE_IPV6
 
+/*  Define if int32_t type is present.  */
+#undef HAVE_INT32_T
+
+/*  Define if uint32_t type is present.  */
+#undef HAVE_UINT32_T
+
+/* Whether to build date as dynamic module */
+#undef COMPILE_DL_DATE
+
 /* Whether to build ereg as dynamic module */
 #undef COMPILE_DL_EREG
 
@@ -1312,15 +1321,6 @@
 
 /* Whether to build curl as dynamic module */
 #undef COMPILE_DL_CURL
-
-/*  Define if int32_t type is present.  */
-#undef HAVE_INT32_T
-
-/*  Define if uint32_t type is present.  */
-#undef HAVE_UINT32_T
-
-/* Whether to build date as dynamic module */
-#undef COMPILE_DL_DATE
 
 /*   */
 #undef QDBM_INCLUDE_FILE
@@ -1452,6 +1452,9 @@
 #undef HAVE_LIBFREETYPE
 
 /*   */
+#undef ENABLE_GD_TTF
+
+/*   */
 #undef HAVE_LIBT1
 
 /*   */
@@ -1530,6 +1533,9 @@
 #undef HAVE_GD_STRINGFTEX
 
 /*   */
+#undef ENABLE_GD_TTF
+
+/*   */
 #undef USE_GD_JISX0208
 
 /*   */
@@ -1540,6 +1546,9 @@
 
 /*   */
 #undef HAVE_LIBFREETYPE
+
+/*   */
+#undef ENABLE_GD_TTF
 
 /*   */
 #undef HAVE_LIBT1
@@ -1758,6 +1767,9 @@
 #undef HAVE_IMAP_AUTH_GSS
 
 /*   */
+#undef HAVE_IMAP_MUTF7
+
+/*   */
 #undef HAVE_RFC822_OUTPUT_ADDRESS_LIST
 
 /*   */
@@ -1879,6 +1891,9 @@
 
 /*   */
 #undef HAVE_MYSQLILIB
+
+/*   */
+#undef HAVE_STMT_NEXT_RESULT
 
 /* Whether to build mysqli as dynamic module */
 #undef COMPILE_DL_MYSQLI
@@ -2138,8 +2153,11 @@
 /* Whether to build PostgreSQL for PDO support or not */
 #undef HAVE_PDO_PGSQL
 
-/* PostgreSQL 7.2.0 or later */
-#undef HAVE_PQESCAPE
+/* PostgreSQL 7.4 or later */
+#undef HAVE_PQPARAMETERSTATUS
+
+/* PostgreSQL 8.0 or later */
+#undef HAVE_PQPREPARE
 
 /* PostgreSQL 8.1.4 or later */
 #undef HAVE_PQESCAPE_CONN
@@ -2147,41 +2165,8 @@
 /* PostgreSQL 8.1.4 or later */
 #undef HAVE_PQESCAPE_BYTEA_CONN
 
-/* PostgreSQL 7.0.x or later */
-#undef HAVE_PQSETNONBLOCKING
-
-/* Broken libpq under windows */
-#undef HAVE_PQCMDTUPLES
-
-/* Older PostgreSQL */
-#undef HAVE_PQOIDVALUE
-
-/* PostgreSQL 7.0.x or later */
-#undef HAVE_PQCLIENTENCODING
-
-/* PostgreSQL 7.4 or later */
-#undef HAVE_PQPARAMETERSTATUS
-
-/* PostgreSQL 7.4 or later */
-#undef HAVE_PQPROTOCOLVERSION
-
-/* PostgreSQL 7.4 or later */
-#undef HAVE_PGTRANSACTIONSTATUS
-
-/* PostgreSQL 7.4 or later */
-#undef HAVE_PQUNESCAPEBYTEA
-
-/* PostgreSQL 7.4 or later */
-#undef HAVE_PQEXECPARAMS
-
-/* PostgreSQL 7.4 or later */
-#undef HAVE_PQRESULTERRORFIELD
-
 /* Whether libpq is compiled with --enable-multibyte */
 #undef HAVE_PGSQL_WITH_MULTIBYTE_SUPPORT
-
-/* prepared statements */
-#undef HAVE_PQPREPARE
 
 /* Whether to build pdo_pgsql as dynamic module */
 #undef COMPILE_DL_PDO_PGSQL
@@ -2806,6 +2791,9 @@
 
 /* whether FPU control word can be manipulated by inline assembler */
 #undef HAVE_FPU_INLINE_ASM_X86
+
+/* Define if double cast to long preserves least significant bits */
+#undef ZEND_DVAL_TO_LVAL_CAST_OK
 
 /* Define if dlsym() requires a leading underscore in symbol names.  */
 #undef DLSYM_NEEDS_UNDERSCORE

@@ -107,10 +107,10 @@ string(4) "3039"
 string(16) "fffffffffffff6d7"
 
 -- Iteration 5 --
-string(16) "7fffffffffffffff"
+string(1) "0"
 
 -- Iteration 6 --
-string(16) "7fffffffffffffff"
+string(1) "0"
 
 -- Iteration 7 --
 string(1) "a"

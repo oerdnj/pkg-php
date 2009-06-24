@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_content_types.c,v 1.32.2.1.2.4.2.2 2008/12/31 11:15:47 sebastian Exp $ */
+/* $Id: php_content_types.c,v 1.32.2.1.2.4.2.3 2009/04/28 21:30:23 stas Exp $ */
 
 #include "php.h"
 #include "SAPI.h"
@@ -75,7 +75,7 @@ int php_startup_sapi_content_types(TSRMLS_D)
 {
 	sapi_register_default_post_reader(php_default_post_reader);
 	sapi_register_treat_data(php_default_treat_data);
-	sapi_register_input_filter(php_default_input_filter);
+	sapi_register_input_filter(php_default_input_filter, NULL);
 	return SUCCESS;
 }
 /* }}} */

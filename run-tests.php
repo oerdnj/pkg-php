@@ -24,7 +24,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: run-tests.php,v 1.226.2.37.2.35.2.63 2009/03/12 20:42:46 zoe Exp $ */
+/* $Id: run-tests.php,v 1.226.2.37.2.35.2.67 2009/05/20 09:22:50 lbarnaud Exp $ */
 
 /* Sanity check to ensure that pcre extension needed by this script is available.
  * In the event it is not, print a nice error message indicating that this script will
@@ -59,9 +59,25 @@ NO_PROC_OPEN_ERROR;
 exit;
 }
 
+// Version constants only available as of 5.2.8
+if (!defined("PHP_VERSION_ID")) {
+	list($major, $minor, $bug) = explode(".", phpversion(), 3);
+	$bug = (int)$bug; // Many distros make up their own versions
+	if ($bug < 10) {
+		$bug = "0$bug";
+	}
+
+	define("PHP_VERSION_ID", "{$major}0{$minor}$bug");
+	define("PHP_MAJOR_VERSION", $major);
+}
+
 // __DIR__ is available from 5.3.0
 if (PHP_VERSION_ID < 50300) {
 	define('__DIR__', realpath(dirname(__FILE__)));
+	// FILE_BINARY is available from 5.2.7
+	if (PHP_VERSION_ID < 50207) {
+		define('FILE_BINARY', 0);
+	}	
 }
 
 // If timezone is not set, use UTC.
@@ -214,6 +230,7 @@ $ini_overwrites = array(
 		'auto_append_file=',
 		'magic_quotes_runtime=0',
 		'ignore_repeated_errors=0',
+		'precision=14',
 		'unicode.runtime_encoding=ISO-8859-1',
 		'unicode.script_encoding=UTF-8',
 		'unicode.output_encoding=UTF-8',
@@ -617,7 +634,7 @@ if (isset($argc) && $argc > 1) {
 					$html_output = is_resource($html_file);
 					break;
 				case '--version':
-					echo '$Revision: 1.226.2.37.2.35.2.63 $' . "\n";
+					echo '$Revision: 1.226.2.37.2.35.2.67 $' . "\n";
 					exit(1);
 
 				default:
@@ -2235,6 +2252,19 @@ EXPECTED FAILED TEST SUMMARY
 		foreach ($PHP_FAILED_TESTS['XFAILED'] as $failed_test_data) {
 			$failed_test_summary .= $failed_test_data['test_name'] . $failed_test_data['info'] . "\n";
 		}
+		$failed_test_summary .=  "=====================================================================\n";
+	}
+
+	if (count($PHP_FAILED_TESTS['WARNED'])) {
+		$failed_test_summary .= '
+=====================================================================
+WARNED TEST SUMMARY
+---------------------------------------------------------------------
+';
+		foreach ($PHP_FAILED_TESTS['WARNED'] as $failed_test_data) {
+			$failed_test_summary .= $failed_test_data['test_name'] . $failed_test_data['info'] . "\n";
+		}
+
 		$failed_test_summary .=  "=====================================================================\n";
 	}
 

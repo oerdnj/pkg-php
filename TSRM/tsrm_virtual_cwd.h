@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_virtual_cwd.h,v 1.48.2.5.2.8.2.6 2008/12/31 11:15:31 sebastian Exp $ */
+/* $Id: tsrm_virtual_cwd.h,v 1.48.2.5.2.8.2.7 2009/06/16 00:07:04 pajoye Exp $ */
 
 #ifndef VIRTUAL_CWD_H
 #define VIRTUAL_CWD_H
@@ -210,6 +210,12 @@ typedef struct _realpath_cache_bucket {
 	int                            realpath_len;
 	int                            is_dir;
 	time_t                         expires;
+#ifdef PHP_WIN32
+	unsigned char                  is_rvalid;
+	unsigned char                  is_readable;
+	unsigned char                  is_wvalid;
+	unsigned char                  is_writable;
+#endif
 	struct _realpath_cache_bucket *next;	
 } realpath_cache_bucket;
 
@@ -231,6 +237,7 @@ extern virtual_cwd_globals cwd_globals;
 
 CWD_API void realpath_cache_clean(TSRMLS_D);
 CWD_API void realpath_cache_del(const char *path, int path_len TSRMLS_DC);
+CWD_API realpath_cache_bucket* realpath_cache_lookup(const char *path, int path_len, time_t t TSRMLS_DC);
 
 /* The actual macros to be used in programs using TSRM
  * If the program defines VIRTUAL_DIR it will use the

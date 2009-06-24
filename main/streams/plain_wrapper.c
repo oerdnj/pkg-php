@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: plain_wrapper.c,v 1.52.2.6.2.23.2.13 2009/02/10 16:14:18 iliaa Exp $ */
+/* $Id: plain_wrapper.c,v 1.52.2.6.2.23.2.14 2009/04/11 11:44:15 mkoppanen Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -70,7 +70,11 @@ PHPAPI int php_stream_parse_fopen_modes(const char *mode, int *open_flags)
 			/* unknown mode */
 			return FAILURE;
 	}
-
+#if defined(O_NONBLOCK)
+	if (strchr(mode, 'n')) {
+		flags |= O_NONBLOCK;
+	}
+#endif
 	if (strchr(mode, '+')) {
 		flags |= O_RDWR;
 	} else if (flags) {

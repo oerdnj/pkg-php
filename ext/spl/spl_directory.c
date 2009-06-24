@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_directory.c,v 1.45.2.27.2.23.2.41 2009/03/10 23:28:17 helly Exp $ */
+/* $Id: spl_directory.c,v 1.45.2.27.2.23.2.43 2009/06/04 14:46:26 colder Exp $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -1216,7 +1216,7 @@ SPL_METHOD(FilesystemIterator, getFlags)
 {
 	spl_filesystem_object *intern = (spl_filesystem_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
 
-	RETURN_LONG(intern->flags & (SPL_FILE_DIR_KEY_MODE_MASK | SPL_FILE_DIR_CURRENT_MODE_MASK));
+	RETURN_LONG(intern->flags & (SPL_FILE_DIR_KEY_MODE_MASK | SPL_FILE_DIR_CURRENT_MODE_MASK | SPL_FILE_DIR_OTHERS_MASK));
 } /* }}} */
 
 /* {{{ proto void FilesystemIterator::setFlags(long $flags)
@@ -1228,8 +1228,8 @@ SPL_METHOD(FilesystemIterator, setFlags)
 
 	zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &flags);
 
-	intern->flags &= ~(SPL_FILE_DIR_KEY_MODE_MASK|SPL_FILE_DIR_CURRENT_MODE_MASK);
-	intern->flags |= ((SPL_FILE_DIR_KEY_MODE_MASK|SPL_FILE_DIR_CURRENT_MODE_MASK) & flags);
+	intern->flags &= ~(SPL_FILE_DIR_KEY_MODE_MASK|SPL_FILE_DIR_CURRENT_MODE_MASK|SPL_FILE_DIR_OTHERS_MASK);
+	intern->flags |= ((SPL_FILE_DIR_KEY_MODE_MASK|SPL_FILE_DIR_CURRENT_MODE_MASK|SPL_FILE_DIR_OTHERS_MASK) & flags);
 } /* }}} */
 
 /* {{{ proto bool RecursiveDirectoryIterator::hasChildren([bool $allow_links = false])
@@ -1268,24 +1268,27 @@ SPL_METHOD(RecursiveDirectoryIterator, getChildren)
 	
 	spl_filesystem_object_get_file_name(intern TSRMLS_CC);
 
-	INIT_PZVAL(&zflags);
-	INIT_PZVAL(&zpath);
-	ZVAL_LONG(&zflags, intern->flags);
-	ZVAL_STRINGL(&zpath, intern->file_name, intern->file_name_len, 0);
-
-	spl_instantiate_arg_ex2(Z_OBJCE_P(getThis()), &return_value, 0, &zpath, &zflags TSRMLS_CC);
-	
-	subdir = (spl_filesystem_object*)zend_object_store_get_object(return_value TSRMLS_CC);
-	if (subdir) {
-		if (intern->u.dir.sub_path && intern->u.dir.sub_path[0]) {
-			subdir->u.dir.sub_path_len = spprintf(&subdir->u.dir.sub_path, 0, "%s%c%s", intern->u.dir.sub_path, slash, intern->u.dir.entry.d_name);
-		} else {
-			subdir->u.dir.sub_path_len = strlen(intern->u.dir.entry.d_name);
-			subdir->u.dir.sub_path = estrndup(intern->u.dir.entry.d_name, subdir->u.dir.sub_path_len);
+	if (SPL_HAS_FLAG(intern->flags, SPL_FILE_DIR_CURRENT_AS_PATHNAME)) {
+		RETURN_STRINGL(intern->file_name, intern->file_name_len, 1);
+	} else {
+		INIT_PZVAL(&zflags);
+		INIT_PZVAL(&zpath);
+		ZVAL_LONG(&zflags, intern->flags);
+		ZVAL_STRINGL(&zpath, intern->file_name, intern->file_name_len, 0);
+		spl_instantiate_arg_ex2(Z_OBJCE_P(getThis()), &return_value, 0, &zpath, &zflags TSRMLS_CC);
+		
+		subdir = (spl_filesystem_object*)zend_object_store_get_object(return_value TSRMLS_CC);
+		if (subdir) {
+			if (intern->u.dir.sub_path && intern->u.dir.sub_path[0]) {
+				subdir->u.dir.sub_path_len = spprintf(&subdir->u.dir.sub_path, 0, "%s%c%s", intern->u.dir.sub_path, slash, intern->u.dir.entry.d_name);
+			} else {
+				subdir->u.dir.sub_path_len = strlen(intern->u.dir.entry.d_name);
+				subdir->u.dir.sub_path = estrndup(intern->u.dir.entry.d_name, subdir->u.dir.sub_path_len);
+			}
+			subdir->info_class = intern->info_class;
+			subdir->file_class = intern->file_class;
+			subdir->oth = intern->oth;
 		}
-		subdir->info_class = intern->info_class;
-		subdir->file_class = intern->file_class;
-		subdir->oth = intern->oth;
 	}
 }
 /* }}} */

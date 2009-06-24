@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: network.c,v 1.118.2.2.2.6.2.14 2009/01/03 00:06:33 felipe Exp $ */
+/* $Id: network.c,v 1.118.2.2.2.6.2.17 2009/05/04 14:44:46 tony2001 Exp $ */
 
 /*#define DEBUG_MAIN_NETWORK 1*/
 
@@ -792,9 +792,14 @@ php_socket_t php_network_connect_socket_to_host(const char *host, unsigned short
 		switch (sa->sa_family) {
 #if HAVE_GETADDRINFO && HAVE_IPV6
 			case AF_INET6:
-				((struct sockaddr_in6 *)sa)->sin6_family = sa->sa_family;
-				((struct sockaddr_in6 *)sa)->sin6_port = htons(port);
-				socklen = sizeof(struct sockaddr_in6);
+				if (bindto && strchr(bindto, ':')) {
+					((struct sockaddr_in6 *)sa)->sin6_family = sa->sa_family;
+					((struct sockaddr_in6 *)sa)->sin6_port = htons(port);
+					socklen = sizeof(struct sockaddr_in6);
+				} else {
+					socklen = 0;
+					sa = NULL;
+				}
 				break;
 #endif
 			case AF_INET:
@@ -814,7 +819,7 @@ php_socket_t php_network_connect_socket_to_host(const char *host, unsigned short
 			if (bindto) {
 				struct sockaddr *local_address = NULL;
 				int local_address_len = 0;
-			
+
 				if (sa->sa_family == AF_INET) {
 					struct sockaddr_in *in4 = emalloc(sizeof(struct sockaddr_in));
 

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_sprintf.c,v 1.23.2.1.2.1.2.2 2008/12/31 11:15:47 sebastian Exp $ */
+/* $Id: php_sprintf.c,v 1.23.2.1.2.1.2.3 2009/05/14 08:21:54 dmitry Exp $ */
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -37,9 +37,7 @@ php_sprintf (char*s, const char* format, ...)
   s[0] = '\0';
   ret = vsprintf (s, format, args);
   va_end (args);
-  if (!ret)
-    return -1;
-  return strlen (s);
+  return (ret < 0) ? -1 : ret;
 }
 
 /*

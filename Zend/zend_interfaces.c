@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_interfaces.c,v 1.33.2.4.2.6.2.12 2008/12/31 11:15:32 sebastian Exp $ */
+/* $Id: zend_interfaces.c,v 1.33.2.4.2.6.2.13 2009/03/25 10:39:26 dmitry Exp $ */
 
 #include "zend.h"
 #include "zend_API.h"
@@ -84,7 +84,15 @@ ZEND_API zval* zend_call_method(zval **object_pp, zend_class_entry *obj_ce, zend
 			fcic.function_handler = *fn_proxy;
 		}
 		fcic.calling_scope = obj_ce;
-		fcic.called_scope = object_pp ? obj_ce : EG(called_scope);
+		if (object_pp) {
+			fcic.called_scope = Z_OBJCE_PP(object_pp);
+		} else if (obj_ce &&
+		           !(EG(called_scope) &&
+		             instanceof_function(EG(called_scope), obj_ce TSRMLS_CC))) {
+			fcic.called_scope = obj_ce;
+		} else {
+			fcic.called_scope = EG(called_scope);
+		}
 		fcic.object_ptr = object_pp ? *object_pp : NULL;
 		result = zend_call_function(&fci, &fcic TSRMLS_CC);
 	}

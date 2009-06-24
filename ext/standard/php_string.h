@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_string.h,v 1.87.2.2.2.3.2.4 2008/12/31 11:15:45 sebastian Exp $ */
+/* $Id: php_string.h,v 1.87.2.2.2.3.2.5 2009/04/01 17:05:35 mattwil Exp $ */
 
 /* Synced with php 3.0 revision 1.43 1999-06-16 [ssb] */
 
@@ -138,7 +138,7 @@ PHPAPI size_t php_strip_tags_ex(char *rbuf, int len, int *stateptr, char *allow,
 PHPAPI int php_char_to_str_ex(char *str, uint len, char from, char *to, int to_len, zval *result, int case_sensitivity, int *replace_count);
 PHPAPI int php_char_to_str(char *str, uint len, char from, char *to, int to_len, zval *result);
 PHPAPI void php_implode(zval *delim, zval *arr, zval *return_value TSRMLS_DC);
-PHPAPI void php_explode(zval *delim, zval *str, zval *return_value, int limit);
+PHPAPI void php_explode(zval *delim, zval *str, zval *return_value, long limit);
 
 PHPAPI size_t php_strspn(char *s1, char *s2, char *s1_end, char *s2_end); 
 PHPAPI size_t php_strcspn(char *s1, char *s2, char *s1_end, char *s2_end); 

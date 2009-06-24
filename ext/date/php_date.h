@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_date.h,v 1.17.2.11.2.3.2.11 2008/12/31 11:15:35 sebastian Exp $ */
+/* $Id: php_date.h,v 1.17.2.11.2.3.2.13 2009/05/31 21:28:38 stas Exp $ */
 
 #ifndef PHP_DATE_H
 #define PHP_DATE_H
@@ -79,6 +79,7 @@ PHP_FUNCTION(timezone_transitions_get);
 PHP_FUNCTION(timezone_location_get);
 PHP_FUNCTION(timezone_identifiers_list);
 PHP_FUNCTION(timezone_abbreviations_list);
+PHP_FUNCTION(timezone_version_get);
 
 PHP_METHOD(DateInterval, __construct);
 PHP_FUNCTION(date_interval_format);
@@ -148,7 +149,7 @@ struct _php_period_obj {
 ZEND_BEGIN_MODULE_GLOBALS(date)
 	char      *default_timezone;
 	char      *timezone;
-	HashTable  tzcache;
+	HashTable *tzcache;
 	timelib_error_container *last_errors;
 ZEND_END_MODULE_GLOBALS(date)
 

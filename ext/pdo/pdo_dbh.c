@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_dbh.c,v 1.82.2.31.2.17.2.22 2009/02/17 14:42:26 johannes Exp $ */
+/* $Id: pdo_dbh.c,v 1.82.2.31.2.17.2.25 2009/05/02 01:37:33 kalle Exp $ */
 
 /* The PDO Database Handle Class */
 
@@ -1065,6 +1065,12 @@ static PHP_METHOD(PDO, query)
 	char *statement;
 	int statement_len;
 
+	/* Return a meaningful error when no parameters were passed */
+	if (!ZEND_NUM_ARGS()) {
+		zend_parse_parameters(0 TSRMLS_CC, "z|z", NULL, NULL);
+		RETURN_FALSE;
+	}
+	
 	if (FAILURE == zend_parse_parameters(1 TSRMLS_CC, "s", &statement,
 			&statement_len)) {
 		RETURN_FALSE;
@@ -1095,8 +1101,8 @@ static PHP_METHOD(PDO, query)
 	ZVAL_NULL(&stmt->lazy_object_ref);
 
 	if (dbh->methods->preparer(dbh, statement, statement_len, stmt, NULL TSRMLS_CC)) {
+		PDO_STMT_CLEAR_ERR();
 		if (ZEND_NUM_ARGS() == 1 || SUCCESS == pdo_stmt_setup_fetch_mode(INTERNAL_FUNCTION_PARAM_PASSTHRU, stmt, 1)) {
-			PDO_STMT_CLEAR_ERR();
 
 			/* now execute the statement */
 			PDO_STMT_CLEAR_ERR();
@@ -1174,7 +1180,7 @@ static PHP_METHOD(PDO, __sleep)
 }
 /* }}} */
 
-/* {{{ proto array pdo_drivers()
+/* {{{ proto array PDO::getAvailableDrivers()
    Return array of available PDO drivers */
 static PHP_METHOD(PDO, getAvailableDrivers)
 {
@@ -1333,7 +1339,7 @@ static union _zend_function *dbh_method_get(
 	lc_method_name = emalloc(method_len + 1);
 	zend_str_tolower_copy(lc_method_name, method_name, method_len);
 
-	if (zend_hash_find(&dbh->ce->function_table, lc_method_name, method_len+1, (void**)&fbc) == FAILURE) {
+	if ((fbc = std_object_handlers.get_method(object_pp, method_name, method_len TSRMLS_CC)) == NULL) {
 		/* not a pre-defined method, nor a user-defined method; check
 		 * the driver specific methods */
 		if (!dbh->cls_methods[PDO_DBH_DRIVER_METHOD_KIND_DBH]) {
@@ -1346,23 +1352,13 @@ static union _zend_function *dbh_method_get(
 
 		if (zend_hash_find(dbh->cls_methods[PDO_DBH_DRIVER_METHOD_KIND_DBH],
 				lc_method_name, method_len+1, (void**)&fbc) == FAILURE) {
-
 			if (!fbc) {
 				fbc = NULL;
 			}
-
-			goto out;
 		}
-		/* got it */
 	}
 
 out:
-	if (!fbc) {
-		if (std_object_handlers.get_method) {
-			fbc = std_object_handlers.get_method(object_pp, method_name, method_len TSRMLS_CC);
-		}
-	}
-
 	efree(lc_method_name);
 	return fbc;
 }

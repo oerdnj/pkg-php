@@ -17,7 +17,7 @@
   |          Ulf Wendel <uw@php.net>                                     |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_api.c,v 1.118.2.22.2.16.2.24 2009/01/22 21:01:56 johannes Exp $ 
+  $Id: mysqli_api.c,v 1.118.2.22.2.16.2.28 2009/05/29 13:09:46 andrey Exp $ 
 */
 
 #ifdef HAVE_CONFIG_H
@@ -158,7 +158,7 @@ static
 int mysqli_stmt_bind_param_do_bind(MY_STMT *stmt, unsigned int argc, unsigned int num_vars,
 								   zval ***args, unsigned int start, const char * const types TSRMLS_DC)
 {
-	int					i;
+	unsigned int i;
 	MYSQLND_PARAM_BIND	*params;
 	enum_func_status	ret = FAIL;
 
@@ -1074,7 +1074,7 @@ PHP_FUNCTION(mysqli_fetch_field_direct)
 
 	MYSQLI_FETCH_RESOURCE(result, MYSQL_RES *, &mysql_result, "mysqli_result", MYSQLI_STATUS_VALID);
 	
-	if (offset < 0 || offset >= mysql_num_fields(result)) {
+	if (offset < 0 || offset >= (long) mysql_num_fields(result)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Field offset is invalid for resultset");
 		RETURN_FALSE; 
 	}
@@ -1484,7 +1484,7 @@ PHP_FUNCTION(mysqli_next_result) {
 /* }}} */
 
 
-#ifdef MYSQLI_USE_MYSQLND
+#ifdef HAVE_STMT_NEXT_RESULT
 /* {{{ proto bool mysqli_stmt_next_result(object link)
    check if there any more query results from a multi query */
 PHP_FUNCTION(mysqli_stmt_more_results)
@@ -2081,7 +2081,11 @@ PHP_FUNCTION(mysqli_refresh)
 		return;
 	}
 	MYSQLI_FETCH_RESOURCE(mysql, MY_MYSQL *, &mysql_link, "mysqli_link", MYSQLI_STATUS_INITIALIZED);
+#ifdef MYSQLI_USE_MYSQLND
+	RETURN_BOOL(!mysql_refresh(mysql->mysql, (uint8_t) options));
+#else
 	RETURN_BOOL(!mysql_refresh(mysql->mysql, options));
+#endif
 }
 /* }}} */
  
@@ -2354,7 +2358,7 @@ PHP_FUNCTION(mysqli_thread_id)
 	}
 	MYSQLI_FETCH_RESOURCE(mysql, MY_MYSQL *, &mysql_link, "mysqli_link", MYSQLI_STATUS_VALID);
 
-	RETURN_LONG(mysql_thread_id(mysql->mysql));
+	RETURN_LONG((long) mysql_thread_id(mysql->mysql));
 }
 /* }}} */
 

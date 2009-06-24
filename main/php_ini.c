@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_ini.c,v 1.136.2.4.2.15.2.13 2008/12/31 11:15:47 sebastian Exp $ */
+/* $Id: php_ini.c,v 1.136.2.4.2.15.2.14 2009/05/18 21:33:38 derick Exp $ */
 
 #include "php.h"
 #include "ext/standard/info.h"
@@ -170,19 +170,7 @@ PHPAPI void display_ini_entries(zend_module_entry *module)
 
 /* php.ini support */
 #define PHP_EXTENSION_TOKEN		"extension"
-#ifdef ZTS
-# if (ZEND_DEBUG)
-# define ZEND_EXTENSION_TOKEN	"zend_extension_debug_ts"
-# else
-# define ZEND_EXTENSION_TOKEN	"zend_extension_ts"
-# endif
-#else
-# if (ZEND_DEBUG)
-# define ZEND_EXTENSION_TOKEN	"zend_extension_debug"
-# else
-# define ZEND_EXTENSION_TOKEN	"zend_extension"
-# endif
-#endif
+#define ZEND_EXTENSION_TOKEN	"zend_extension"
 
 /* {{{ config_zval_dtor
  */

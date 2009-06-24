@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: cgi_main.c,v 1.267.2.15.2.50.2.37 2009/01/19 18:17:32 dsp Exp $ */
+/* $Id: cgi_main.c,v 1.267.2.15.2.50.2.43 2009/06/17 19:28:52 pajoye Exp $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -32,29 +32,37 @@
 
 #include <stdio.h>
 #include "php.h"
+
 #ifdef PHP_WIN32
-#include "win32/time.h"
-#include "win32/signal.h"
-#include <process.h>
+# include "win32/time.h"
+# include "win32/signal.h"
+# include <process.h>
 #endif
+
 #if HAVE_SYS_TIME_H
-#include <sys/time.h>
+# include <sys/time.h>
 #endif
+
 #if HAVE_UNISTD_H
-#include <unistd.h>
+# include <unistd.h>
 #endif
+
 #if HAVE_SIGNAL_H
-#include <signal.h>
+# include <signal.h>
 #endif
+
 #if HAVE_SETLOCALE
-#include <locale.h>
+# include <locale.h>
 #endif
+
 #if HAVE_SYS_TYPES_H
-#include <sys/types.h>
+# include <sys/types.h>
 #endif
+
 #if HAVE_SYS_WAIT_H
-#include <sys/wait.h>
+# include <sys/wait.h>
 #endif
+
 #include "zend.h"
 #include "zend_extensions.h"
 #include "php_ini.h"
@@ -62,14 +70,15 @@
 #include "php_main.h"
 #include "fopen_wrappers.h"
 #include "ext/standard/php_standard.h"
+
 #ifdef PHP_WIN32
-#include <io.h>
-#include <fcntl.h>
-#include "win32/php_registry.h"
+# include <io.h>
+# include <fcntl.h>
+# include "win32/php_registry.h"
 #endif
 
 #ifdef __riscos__
-#include <unixlib/local.h>
+# include <unixlib/local.h>
 int __riscosify_control = __RISCOSIFY_STRICT_UNIX_SPECS;
 #endif
 
@@ -164,7 +173,7 @@ typedef struct _php_cgi_globals_struct {
 /* {{{ user_config_cache
  *
  * Key for each cache entry is dirname(PATH_TRANSLATED).
- * 
+ *
  * NOTE: Each cache entry config_hash contains the combination from all user ini files found in
  *       the path starting from doc_root throught to dirname(PATH_TRANSLATED).  There is no point
  *       storing per-file entries as it would not be possible to detect added / deleted entries
@@ -412,7 +421,8 @@ static int sapi_cgi_send_headers(sapi_headers_struct *sapi_headers TSRMLS_DC)
 				h = (sapi_header_struct*)zend_llist_get_first_ex(&sapi_headers->headers, &pos);
 				while (h) {
 					if (h->header_len > sizeof("Status:")-1 &&
-					    strncasecmp(h->header, "Status:", sizeof("Status:")-1) == 0) {
+						strncasecmp(h->header, "Status:", sizeof("Status:")-1) == 0
+					) {
 						has_status = 1;
 						break;
 					}
@@ -422,7 +432,7 @@ static int sapi_cgi_send_headers(sapi_headers_struct *sapi_headers TSRMLS_DC)
 					http_error *err = (http_error*)http_error_codes;
 
 					while (err->code != 0) {
-					    if (err->code == SG(sapi_headers).http_response_code) {
+						if (err->code == SG(sapi_headers).http_response_code) {
 							break;
 						}
 						err++;
@@ -435,6 +445,7 @@ static int sapi_cgi_send_headers(sapi_headers_struct *sapi_headers TSRMLS_DC)
 				}
 			}
 		}
+
 		if (!has_status) {
 			PHPWRITE_H(buf, len);
 			ignore_status = 1;
@@ -445,15 +456,17 @@ static int sapi_cgi_send_headers(sapi_headers_struct *sapi_headers TSRMLS_DC)
 	while (h) {
 		/* prevent CRLFCRLF */
 		if (h->header_len) {
-			if (h->header_len > sizeof("Status:")-1 &&
-			    strncasecmp(h->header, "Status:", sizeof("Status:")-1) == 0) {
-			    if (!ignore_status) {
-				    ignore_status = 1;
+			if (h->header_len > sizeof("Status:")-1 && 
+				strncasecmp(h->header, "Status:", sizeof("Status:")-1) == 0
+			) {
+				if (!ignore_status) {
+					ignore_status = 1;
 					PHPWRITE_H(h->header, h->header_len);
 					PHPWRITE_H("\r\n", 2);
 				}
-			} else if (response_status == 304 && h->header_len > sizeof("Content-Type:")-1 && 
-					strncasecmp(h->header, "Content-Type:", sizeof("Content-Type:")-1) == 0) {
+			} else if (response_status == 304 && h->header_len > sizeof("Content-Type:")-1 &&
+				strncasecmp(h->header, "Content-Type:", sizeof("Content-Type:")-1) == 0
+			) {
 				h = (sapi_header_struct*)zend_llist_get_next_ex(&sapi_headers->headers, &pos);
 				continue;
 			} else {
@@ -468,10 +481,14 @@ static int sapi_cgi_send_headers(sapi_headers_struct *sapi_headers TSRMLS_DC)
 	return SAPI_HEADER_SENT_SUCCESSFULLY;
 }
 
+#ifndef STDIN_FILENO
+# define STDIN_FILENO 0
+#endif
 
 static int sapi_cgi_read_post(char *buffer, uint count_bytes TSRMLS_DC)
 {
-	int read_bytes=0, tmp_read_bytes;
+	uint read_bytes = 0;
+	int tmp_read_bytes;
 
 	count_bytes = MIN(count_bytes, (uint) SG(request_info).content_length - SG(read_post_bytes));
 	while (read_bytes < count_bytes) {
@@ -479,7 +496,7 @@ static int sapi_cgi_read_post(char *buffer, uint count_bytes TSRMLS_DC)
 			fcgi_request *request = (fcgi_request*) SG(server_context);
 			tmp_read_bytes = fcgi_read(request, buffer + read_bytes, count_bytes - read_bytes);
 		} else {
-			tmp_read_bytes = read(0, buffer + read_bytes, count_bytes - read_bytes);
+			tmp_read_bytes = read(STDIN_FILENO, buffer + read_bytes, count_bytes - read_bytes);
 		}
 		if (tmp_read_bytes <= 0) {
 			break;
@@ -492,9 +509,9 @@ static int sapi_cgi_read_post(char *buffer, uint count_bytes TSRMLS_DC)
 static char *sapi_cgibin_getenv(char *name, size_t name_len TSRMLS_DC)
 {
 	/* when php is started by mod_fastcgi, no regular environment
-	   is provided to PHP.  It is always sent to PHP at the start
-	   of a request.  So we have to do our own lookup to get env
-	   vars.  This could probably be faster somehow.  */
+	 * is provided to PHP.  It is always sent to PHP at the start
+	 * of a request.  So we have to do our own lookup to get env
+	 * vars.  This could probably be faster somehow.  */
 	if (fcgi_is_fastcgi()) {
 		fcgi_request *request = (fcgi_request*) SG(server_context);
 		return fcgi_getenv(request, name, name_len);
@@ -518,9 +535,9 @@ static char *_sapi_cgibin_putenv(char *name, char *value TSRMLS_DC)
 	name_len = strlen(name);
 
 	/* when php is started by mod_fastcgi, no regular environment
-	   is provided to PHP.  It is always sent to PHP at the start
-	   of a request.  So we have to do our own lookup to get env
-	   vars.  This could probably be faster somehow.  */
+	 * is provided to PHP.  It is always sent to PHP at the start
+	 * of a request.  So we have to do our own lookup to get env
+	 * vars.  This could probably be faster somehow.  */
 	if (fcgi_is_fastcgi()) {
 		fcgi_request *request = (fcgi_request*) SG(server_context);
 		return fcgi_putenv(request, name, name_len, value);
@@ -608,9 +625,9 @@ void cgi_php_import_environment_variables(zval *array_ptr TSRMLS_DC)
 		/* turn off magic_quotes while importing environment variables */
 		PG(magic_quotes_gpc) = 0;
 		for (zend_hash_internal_pointer_reset_ex(request->env, &pos);
-			 zend_hash_get_current_key_ex(request->env, &var, &var_len, &idx, 0, &pos) == HASH_KEY_IS_STRING &&
-			 zend_hash_get_current_data_ex(request->env, (void **) &val, &pos) == SUCCESS;
-			 zend_hash_move_forward_ex(request->env, &pos)
+			zend_hash_get_current_key_ex(request->env, &var, &var_len, &idx, 0, &pos) == HASH_KEY_IS_STRING &&
+			zend_hash_get_current_data_ex(request->env, (void **) &val, &pos) == SUCCESS;
+			zend_hash_move_forward_ex(request->env, &pos)
 		) {
 			unsigned int new_val_len;
 
@@ -689,7 +706,7 @@ static void sapi_cgi_log_message(char *message)
 
 /* {{{ php_cgi_ini_activate_user_config
  */
-static void php_cgi_ini_activate_user_config(char *path, int path_len, int start TSRMLS_DC)
+static void php_cgi_ini_activate_user_config(char *path, int path_len, const char *doc_root, int doc_root_len, int start TSRMLS_DC)
 {
 	char *ptr;
 	user_config_cache_entry *new_entry, *entry;
@@ -707,18 +724,47 @@ static void php_cgi_ini_activate_user_config(char *path, int path_len, int start
 
 	/* Check whether cache entry has expired and rescan if it is */
 	if (request_time > entry->expires) {
+		char * real_path;
+		int real_path_len;
+		char *s1, *s2;
+		int s_len;
 
 		/* Clear the expired config */
 		zend_hash_clean(entry->user_config);
 
-		/* Walk through each directory and apply entries to user_config hash */
-		ptr = path + start; /* start is the point where doc_root ends! */
-		while ((ptr = strchr(ptr, DEFAULT_SLASH)) != NULL) {
-			*ptr = 0;
-			php_parse_user_ini_file(path, PG(user_ini_filename), entry->user_config TSRMLS_CC);
-			*ptr = '/';
-			ptr++;
+		if (!IS_ABSOLUTE_PATH(path, path_len)) {
+			real_path = tsrm_realpath(path, NULL TSRMLS_CC);
+			real_path_len = strlen(real_path);
+			path = real_path;
+			path_len = real_path_len;
 		}
+
+		if (path_len > doc_root_len) {
+			s1 = (char *) doc_root;
+			s2 = path;
+			s_len = doc_root_len;
+		} else {
+			s1 = path;
+			s2 = (char *) doc_root;
+			s_len = path_len;
+		}
+
+		/* we have to test if path is part of DOCUMENT_ROOT.
+		  if it is inside the docroot, we scan the tree up to the docroot 
+			to find more user.ini, if not we only scan the current path.
+		  */
+		if (strncmp(s1, s2, s_len) == 0) {
+			ptr = s1 + start;  /* start is the point where doc_root ends! */
+			while ((ptr = strchr(ptr, DEFAULT_SLASH)) != NULL) {
+				*ptr = 0;
+				php_parse_user_ini_file(path, PG(user_ini_filename), entry->user_config TSRMLS_CC);
+				*ptr = '/';
+				ptr++;
+			}
+		} else {
+			php_parse_user_ini_file(path, PG(user_ini_filename), entry->user_config TSRMLS_CC);
+		}
+
 		entry->expires = request_time + PG(user_ini_cache_ttl);
 	}
 
@@ -746,8 +792,9 @@ static int sapi_cgi_activate(TSRMLS_D)
 		}
 	}
 
-	if (php_ini_has_per_dir_config() || 
-	    (PG(user_ini_filename) && *PG(user_ini_filename))) {
+	if (php_ini_has_per_dir_config() ||
+		(PG(user_ini_filename) && *PG(user_ini_filename))
+	) {
 		/* Prepare search path */
 		path_len = strlen(SG(request_info).path_translated);
 
@@ -772,10 +819,10 @@ static int sapi_cgi_activate(TSRMLS_D)
 			/* DOCUMENT_ROOT should also be defined at this stage..but better check it anyway */
 			if (doc_root) {
 				doc_root_len = strlen(doc_root);
-				if (doc_root[doc_root_len - 1] == '/') {
+				if (IS_SLASH(doc_root[doc_root_len - 1])) {
 					--doc_root_len;
 				}
-				php_cgi_ini_activate_user_config(path, path_len, doc_root_len - 1 TSRMLS_CC);
+				php_cgi_ini_activate_user_config(path, path_len, doc_root, doc_root_len, doc_root_len - 1 TSRMLS_CC);
 			}
 		}
 
@@ -844,7 +891,7 @@ static sapi_module_struct cgi_sapi_module = {
 	sapi_cgi_register_variables,	/* register server variables */
 	sapi_cgi_log_message,			/* Log message */
 	NULL,							/* Get request time */
-	NULL,							/* Child terminate */	
+	NULL,							/* Child terminate */
 
 	STANDARD_SAPI_MODULE_PROPERTIES
 };
@@ -913,7 +960,8 @@ static int is_valid_path(const char *path)
 	p = strstr(path, "..");
 	if (p) {
 		if ((p == path || IS_SLASH(*(p-1))) &&
-		    (*(p+2) == 0 || IS_SLASH(*(p+2)))) {
+			(*(p+2) == 0 || IS_SLASH(*(p+2)))
+		) {
 			return 0;
 		}
 		while (1) {
@@ -922,7 +970,8 @@ static int is_valid_path(const char *path)
 				break;
 			}
 			if (IS_SLASH(*(p-1)) &&
-			    (*(p+2) == 0 || IS_SLASH(*(p+2)))) {
+				(*(p+2) == 0 || IS_SLASH(*(p+2)))
+			) {
 					return 0;
 			}
 		}
@@ -1004,8 +1053,8 @@ static void init_request_info(TSRMLS_D)
 	char *script_path_translated = env_script_filename;
 
 	/* some broken servers do not have script_filename or argv0
-	   an example, IIS configured in some ways.  then they do more
-	   broken stuff and set path_translated to the cgi script location */
+	 * an example, IIS configured in some ways.  then they do more
+	 * broken stuff and set path_translated to the cgi script location */
 	if (!script_path_translated && env_path_translated) {
 		script_path_translated = env_path_translated;
 	}
@@ -1021,9 +1070,9 @@ static void init_request_info(TSRMLS_D)
 	SG(sapi_headers).http_response_code = 200;
 
 	/* script_path_translated being set is a good indication that
-	   we are running in a cgi environment, since it is always
-	   null otherwise.  otherwise, the filename
-	   of the script will be retreived later via argc/argv */
+	 * we are running in a cgi environment, since it is always
+	 * null otherwise.  otherwise, the filename
+	 * of the script will be retreived later via argc/argv */
 	if (script_path_translated) {
 		const char *auth;
 		char *content_length = sapi_cgibin_getenv("CONTENT_LENGTH", sizeof("CONTENT_LENGTH")-1 TSRMLS_CC);
@@ -1065,12 +1114,13 @@ static void init_request_info(TSRMLS_D)
 			}
 
 			if (env_path_translated != NULL && env_redirect_url != NULL &&
-			    orig_script_filename != NULL && script_path_translated != NULL) {
+ 			    env_path_translated != script_path_translated &&
+ 			    strcmp(env_path_translated, script_path_translated) != 0) {
 				/*
-				   pretty much apache specific.  If we have a redirect_url
-				   then our script_filename and script_name point to the
-				   php executable
-				*/
+				 * pretty much apache specific.  If we have a redirect_url
+				 * then our script_filename and script_name point to the
+				 * php executable
+				 */
 				script_path_translated = env_path_translated;
 				/* we correct SCRIPT_NAME now in case we don't have PATH_INFO */
 				env_script_name = env_redirect_url;
@@ -1091,7 +1141,7 @@ static void init_request_info(TSRMLS_D)
 				(script_path_translated_len = strlen(script_path_translated)) > 0 &&
 				(script_path_translated[script_path_translated_len-1] == '/' ||
 #ifdef PHP_WIN32
-				 script_path_translated[script_path_translated_len-1] == '\\' ||
+				script_path_translated[script_path_translated_len-1] == '\\' ||
 #endif
 				(real_path = tsrm_realpath(script_path_translated, NULL TSRMLS_CC)) == NULL)
 			) {
@@ -1151,9 +1201,8 @@ static void init_request_info(TSRMLS_D)
 						TRANSLATE_SLASHES(pt);
 
 						/* figure out docroot
-						   SCRIPT_FILENAME minus SCRIPT_NAME
-						*/
-
+						 * SCRIPT_FILENAME minus SCRIPT_NAME
+						 */
 						if (env_document_root) {
 							int l = strlen(env_document_root);
 							int path_translated_len = 0;
@@ -1436,11 +1485,10 @@ int main(int argc, char *argv[])
 
 #if 0 && defined(PHP_DEBUG)
 	/* IIS is always making things more difficult.  This allows
-	   us to stop PHP and attach a debugger before much gets started */
+	 * us to stop PHP and attach a debugger before much gets started */
 	{
 		char szMessage [256];
-		wsprintf (szMessage, "Please attach a debugger to the process 0x%X [%d] (%s) and click OK",
-			  GetCurrentProcessId(), GetCurrentProcessId(), argv[0]);
+		wsprintf (szMessage, "Please attach a debugger to the process 0x%X [%d] (%s) and click OK", GetCurrentProcessId(), GetCurrentProcessId(), argv[0]);
 		MessageBox(NULL, szMessage, "CGI Debug Time!", MB_OK|MB_SERVICE_NOTIFICATION);
 	}
 #endif
@@ -1473,7 +1521,7 @@ int main(int argc, char *argv[])
 
 	if (!fastcgi) {
 		/* Make sure we detect we are a cgi - a bit redundancy here,
-		   but the default case is that we have to check only the first one. */
+		 * but the default case is that we have to check only the first one. */
 		if (getenv("SERVER_SOFTWARE") ||
 			getenv("SERVER_NAME") ||
 			getenv("GATEWAY_INTERFACE") ||
@@ -1526,8 +1574,8 @@ int main(int argc, char *argv[])
 				break;
 			}
 			/* if we're started on command line, check to see if
-			   we are being started as an 'external' fastcgi
-			   server by accepting a bindpath parameter. */
+			 * we are being started as an 'external' fastcgi
+			 * server by accepting a bindpath parameter. */
 			case 'b':
 				if (!fastcgi) {
 					bindpath = strdup(php_optarg);
@@ -1569,7 +1617,7 @@ int main(int argc, char *argv[])
 		if (!getenv("REDIRECT_STATUS") &&
 			!getenv ("HTTP_REDIRECT_STATUS") &&
 			/* this is to allow a different env var to be configured
-			   in case some server does something different than above */
+			 * in case some server does something different than above */
 			(!CGIG(redirect_status_env) || !getenv(CGIG(redirect_status_env)))
 		) {
 			SG(sapi_headers).http_response_code = 400;
@@ -1585,11 +1633,11 @@ consult the installation file that came with this distribution, or visit \n\
 
 #if defined(ZTS) && !defined(PHP_DEBUG)
 			/* XXX we're crashing here in msvc6 debug builds at
-			   php_message_handler_for_zend:839 because
-			   SG(request_info).path_translated is an invalid pointer.
-			   It still happens even though I set it to null, so something
-			   weird is going on.
-			*/
+			 * php_message_handler_for_zend:839 because
+			 * SG(request_info).path_translated is an invalid pointer.
+			 * It still happens even though I set it to null, so something
+			 * weird is going on.
+			 */
 			tsrm_shutdown();
 #endif
 			return FAILURE;
@@ -1708,7 +1756,7 @@ consult the installation file that came with this distribution, or visit \n\
 						break;
 					} else if (exit_signal) {
 						break;
-					}						
+					}
 				}
 				if (exit_signal) {
 #if 0
@@ -1761,7 +1809,7 @@ consult the installation file that came with this distribution, or visit \n\
 		/* Initialise FastCGI request structure */
 #ifdef PHP_WIN32
 		/* attempt to set security impersonation for fastcgi
-		   will only happen on NT based OS, others will ignore it. */
+		 * will only happen on NT based OS, others will ignore it. */
 		if (fastcgi && CGIG(impersonate)) {
 			fcgi_impersonate();
 		}
@@ -1905,13 +1953,13 @@ consult the installation file that came with this distribution, or visit \n\
 				}
 
 				/* all remaining arguments are part of the query string
-				   this section of code concatenates all remaining arguments
-				   into a single string, seperating args with a &
-				   this allows command lines like:
-
-				   test.php v1=test v2=hello+world!
-				   test.php "v1=test&v2=hello world!"
-				   test.php v1=test "v2=hello world!"
+				 * this section of code concatenates all remaining arguments
+				 * into a single string, seperating args with a &
+				 * this allows command lines like:
+				 *
+				 *  test.php v1=test v2=hello+world!
+				 *  test.php "v1=test&v2=hello world!"
+				 *  test.php v1=test "v2=hello world!"
 				*/
 				if (!SG(request_info).query_string && argc > php_optind) {
 					int slen = strlen(PG(arg_separator).input);
@@ -1957,7 +2005,7 @@ consult the installation file that came with this distribution, or visit \n\
 			file_handle.free_filename = 0;
 
 			/* request startup only after we've done all we can to
-			   get path_translated */
+			 * get path_translated */
 			if (php_request_startup(TSRMLS_C) == FAILURE) {
 				if (fastcgi) {
 					fcgi_finish_request(&request, 1);
@@ -1986,8 +2034,8 @@ consult the installation file that came with this distribution, or visit \n\
 						PUTS("No input file specified.\n");
 					}
 					/* we want to serve more requests if this is fastcgi
-					   so cleanup and continue, request shutdown is
-					   handled later */
+					 * so cleanup and continue, request shutdown is
+					 * handled later */
 					if (fastcgi) {
 						goto fastcgi_request_done;
 					}
@@ -2062,8 +2110,8 @@ fastcgi_request_done:
 			{
 				char *path_translated;
 
-				/*	Go through this trouble so that the memory manager doesn't warn
-				 *	about SG(request_info).path_translated leaking
+				/* Go through this trouble so that the memory manager doesn't warn
+				 * about SG(request_info).path_translated leaking
 				 */
 				if (SG(request_info).path_translated) {
 					path_translated = strdup(SG(request_info).path_translated);

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: exif.c,v 1.173.2.5.2.20.2.14 2008/12/31 11:15:36 sebastian Exp $ */
+/* $Id: exif.c,v 1.173.2.5.2.20.2.16 2009/06/12 14:03:35 felipe Exp $ */
 
 /*  ToDos
  *
@@ -138,7 +138,7 @@ const zend_function_entry exif_functions[] = {
 };
 /* }}} */
 
-#define EXIF_VERSION "1.4 $Id: exif.c,v 1.173.2.5.2.20.2.14 2008/12/31 11:15:36 sebastian Exp $"
+#define EXIF_VERSION "1.4 $Id: exif.c,v 1.173.2.5.2.20.2.16 2009/06/12 14:03:35 felipe Exp $"
 
 /* {{{ PHP_MINFO_FUNCTION
  */
@@ -3210,6 +3210,10 @@ static void exif_process_TIFF_in_JPEG(image_info_type *ImageInfo, char *CharBuf,
 		exif_error_docref(NULL EXIFERR_CC, ImageInfo, E_WARNING, "Invalid TIFF start (1)");
 		return;
 	}
+	if (offset_of_ifd > length) {
+		exif_error_docref(NULL EXIFERR_CC, ImageInfo, E_WARNING, "Invalid IFD start");
+		return;
+	}
 
 	ImageInfo->sections_found |= FOUND_IFD0;
 	/* First directory starts at offset 8. Offsets starts at 0. */
@@ -3909,17 +3913,17 @@ PHP_FUNCTION(exif_read_data)
 	int p_name_len, p_sections_needed_len = 0;
 	zend_bool sub_arrays=0, read_thumbnail=0, read_all=0;
 
-	int i, ac = ZEND_NUM_ARGS(), ret, sections_needed=0;
+	int i, ret, sections_needed=0;
 	image_info_type ImageInfo;
 	char tmp[64], *sections_str, *s;
 
-	if (zend_parse_parameters(ac TSRMLS_CC, "s|sbb", &p_name, &p_name_len, &p_sections_needed, &p_sections_needed_len, &sub_arrays, &read_thumbnail) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|sbb", &p_name, &p_name_len, &p_sections_needed, &p_sections_needed_len, &sub_arrays, &read_thumbnail) == FAILURE) {
 		return;
 	}
 
 	memset(&ImageInfo, 0, sizeof(ImageInfo));
 
-	if (ac >= 2) {
+	if (p_sections_needed) {
 		spprintf(&sections_str, 0, ",%s,", p_sections_needed);
 		/* sections_str DOES start with , and SPACES are NOT allowed in names */
 		s = sections_str;

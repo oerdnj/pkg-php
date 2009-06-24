@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_builtin_functions.c,v 1.277.2.12.2.25.2.47 2009/03/16 09:51:31 dmitry Exp $ */
+/* $Id: zend_builtin_functions.c,v 1.277.2.12.2.25.2.52 2009/06/08 21:27:05 pajoye Exp $ */
 
 #include "zend.h"
 #include "zend_API.h"
@@ -629,6 +629,7 @@ ZEND_FUNCTION(define)
 	zend_bool non_cs = 0;
 	int case_sensitive = CONST_CS;
 	zend_constant c;
+	char *p;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sz|b", &name, &name_len, &val, &non_cs) == FAILURE) {
 		return;
@@ -636,6 +637,34 @@ ZEND_FUNCTION(define)
 
 	if(non_cs) {
 		case_sensitive = 0;
+	}
+
+	/* class constant, check if there is name and make sure class is valid & exists */
+	if ((p = zend_memnstr(name, "::", sizeof("::") - 1, name + name_len))) {
+		char *class_name;
+		int found;
+		zend_class_entry **ce;
+		ALLOCA_FLAG(use_heap)
+
+		if (p == (name + name_len - sizeof("::") + 1)) {
+			zend_error(E_WARNING, "Class constant must have a name");
+			RETURN_FALSE;
+		} else if (p == name) {
+			zend_error(E_WARNING, "Missing class name");
+			RETURN_FALSE;
+		}
+
+		class_name = do_alloca((p - name + 1), use_heap);
+		zend_str_tolower_copy(class_name, name, (p - name));
+
+		found = zend_hash_find(EG(class_table), class_name, p - name + 1, (void **) &ce);
+
+		if (found != SUCCESS) {
+			zend_error(E_WARNING, "Class '%s' does not exist", class_name);
+			free_alloca(class_name, use_heap);
+			RETURN_FALSE;
+		}
+		free_alloca(class_name, use_heap);
 	}
 
 repeat:
@@ -890,27 +919,22 @@ static void add_class_vars(zend_class_entry *ce, HashTable *properties, zval *re
 		while (zend_hash_get_current_data_ex(properties, (void **) &prop, &pos) == SUCCESS) {
 			char *key, *class_name, *prop_name;
 			uint key_len;
-			ulong num_index, h;
+			ulong num_index;
 			int prop_name_len = 0;			
 			zval *prop_copy;
 			zend_property_info *property_info;
+			zval zprop_name;
 
 			zend_hash_get_current_key_ex(properties, &key, &key_len, &num_index, 0, &pos);
 			zend_hash_move_forward_ex(properties, &pos);
 
 			zend_unmangle_property_name(key, key_len-1, &class_name, &prop_name);
 			prop_name_len = strlen(prop_name);
-			
-			h = zend_get_hash_value(prop_name, prop_name_len+1);
-			if (zend_hash_quick_find(&ce->properties_info, prop_name, prop_name_len+1, h, (void **) &property_info) == FAILURE) {
-				continue;
-			}
-			
-			if (property_info->flags & ZEND_ACC_SHADOW) {
-				continue;
-			} else if ((property_info->flags & ZEND_ACC_PRIVATE) && EG(scope) != ce) {
-				continue;
-			} else if ((property_info->flags & ZEND_ACC_PROTECTED) && zend_check_protected(ce, EG(scope)) == 0) {
+
+			ZVAL_STRINGL(&zprop_name, prop_name, prop_name_len, 0);
+			property_info = zend_get_property_info(ce, &zprop_name, 1 TSRMLS_CC);
+
+			if (!property_info || property_info == &EG(std_property_info)) {
 				continue;
 			}
 
@@ -1678,7 +1702,7 @@ ZEND_FUNCTION(get_defined_vars)
 ZEND_FUNCTION(create_function)
 {
 	char *eval_code, *function_name, *function_args, *function_code;
-	int function_name_length, function_args_len, function_code_len;
+	int eval_code_length, function_name_length, function_args_len, function_code_len;
 	int retval;
 	char *eval_name;
 
@@ -1686,10 +1710,29 @@ ZEND_FUNCTION(create_function)
 		return;
 	}
 
-	zend_spprintf(&eval_code, 0, "function " LAMBDA_TEMP_FUNCNAME "(%s){%s}", function_args, function_code);
+	eval_code = (char *) emalloc(sizeof("function " LAMBDA_TEMP_FUNCNAME)
+			+function_args_len
+			+2	/* for the args parentheses */
+			+2	/* for the curly braces */
+			+function_code_len);
+
+	eval_code_length = sizeof("function " LAMBDA_TEMP_FUNCNAME "(") - 1;
+	memcpy(eval_code, "function " LAMBDA_TEMP_FUNCNAME "(", eval_code_length);
+
+	memcpy(eval_code + eval_code_length, function_args, function_args_len);
+	eval_code_length += function_args_len;
+
+	eval_code[eval_code_length++] = ')';
+	eval_code[eval_code_length++] = '{';
+
+	memcpy(eval_code + eval_code_length, function_code, function_code_len);
+	eval_code_length += function_code_len;
+
+	eval_code[eval_code_length++] = '}';
+	eval_code[eval_code_length] = '\0';
 
 	eval_name = zend_make_compiled_string_description("runtime-created function" TSRMLS_CC);
-	retval = zend_eval_string(eval_code, NULL, eval_name TSRMLS_CC);
+	retval = zend_eval_stringl(eval_code, eval_code_length, NULL, eval_name TSRMLS_CC);
 	efree(eval_code);
 	efree(eval_name);
 
@@ -1704,10 +1747,10 @@ ZEND_FUNCTION(create_function)
 		function_add_ref(&new_function);
 
 		function_name = (char *) emalloc(sizeof("0lambda_")+MAX_LENGTH_OF_LONG);
+		function_name[0] = '\0';
 
 		do {
-			sprintf(function_name, "%clambda_%d", 0, ++EG(lambda_count));
-			function_name_length = strlen(function_name+1)+1;
+			function_name_length = 1 + sprintf(function_name + 1, "lambda_%d", ++EG(lambda_count));
 		} while (zend_hash_add(EG(function_table), function_name, function_name_length+1, &new_function, sizeof(zend_function), NULL)==FAILURE);
 		zend_hash_del(EG(function_table), LAMBDA_TEMP_FUNCNAME, sizeof(LAMBDA_TEMP_FUNCNAME));
 		RETURN_STRINGL(function_name, function_name_length, 0);
@@ -1805,19 +1848,19 @@ ZEND_FUNCTION(get_loaded_extensions)
 /* }}} */
 
 
-/* {{{ proto array get_defined_constants([mixed categorize])
+/* {{{ proto array get_defined_constants([bool categorize])
    Return an array containing the names and values of all defined constants */
 ZEND_FUNCTION(get_defined_constants)
 {
-	int argc = ZEND_NUM_ARGS();
-
-	if (argc != 0 && argc != 1) {
-		ZEND_WRONG_PARAM_COUNT();
+	zend_bool categorize = 0;
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|b", &categorize) == FAILURE) {
+		return;
 	}
 
 	array_init(return_value);
 
-	if (argc) {
+	if (categorize) {
 		HashPosition pos;
 		zend_constant *val;
 		int module_number;

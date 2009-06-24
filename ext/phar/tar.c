@@ -192,7 +192,7 @@ static int phar_tar_process_metadata(phar_entry_info *entry, php_stream *fp TSRM
 }
 /* }}} */
 
-int phar_parse_tarfile(php_stream* fp, char *fname, int fname_len, char *alias, int alias_len, phar_archive_data** pphar, php_uint32 compression, char **error TSRMLS_DC) /* {{{ */
+int phar_parse_tarfile(php_stream* fp, char *fname, int fname_len, char *alias, int alias_len, phar_archive_data** pphar, int is_data, php_uint32 compression, char **error TSRMLS_DC) /* {{{ */
 {
 	char buf[512], *actual_alias = NULL, *p;
 	phar_entry_info entry = {0};
@@ -330,16 +330,19 @@ bail:
 
 		if (!old && hdr->prefix[0] != 0) {
 			char name[256];
+			int i, j;
 
-			strcpy(name, hdr->prefix);
-			/* remove potential buffer overflow */
-			if (hdr->name[99]) {
-				strncat(name, hdr->name, 100);
-			} else {
-				strcat(name, hdr->name);
+			for (i = 0; i < 155; i++) {
+				name[i] = hdr->prefix[i];
+				if (name[i] == '\0') {
+					break;
+				}
+			}
+			for (j = 0; j < 100; j++) {
+				name[i+j] = hdr->name[j];
 			}
 
-			entry.filename_len = strlen(hdr->prefix) + 100;
+			entry.filename_len = i+j;
 
 			if (name[entry.filename_len - 1] == '/') {
 				/* some tar programs store directories with trailing slash */
@@ -347,8 +350,16 @@ bail:
 			}
 			entry.filename = pestrndup(name, entry.filename_len, myphar->is_persistent);
 		} else {
-			entry.filename = pestrdup(hdr->name, myphar->is_persistent);
-			entry.filename_len = strlen(entry.filename);
+			int i;
+
+			/* calculate strlen, which can be no longer than 100 */
+			for (i = 0; i < 100; i++) {
+				if (hdr->name[i] == '\0') {
+					break;
+				}
+			}
+			entry.filename_len = i;
+			entry.filename = pestrndup(hdr->name, i, myphar->is_persistent);
 
 			if (entry.filename[entry.filename_len - 1] == '/') {
 				/* some tar programs store directories with trailing slash */
@@ -496,8 +507,14 @@ bail:
 		}
 	} while (read != 0);
 
+	if (zend_hash_exists(&(myphar->manifest), ".phar/stub.php", sizeof(".phar/stub.php")-1)) {
+		myphar->is_data = 0;
+	} else {
+		myphar->is_data = 1;
+	}
+
 	/* ensure signature set */
-	if (PHAR_G(require_hash) && !myphar->signature) {
+	if (!myphar->is_data && PHAR_G(require_hash) && !myphar->signature) {
 		php_stream_close(fp);
 		phar_destroy_phar_data(myphar TSRMLS_CC);
 		if (error) {
@@ -513,12 +530,6 @@ bail:
 	myphar->fname_len = fname_len;
 	myphar->fp = fp;
 	p = strrchr(myphar->fname, '/');
-
-	if (zend_hash_exists(&(myphar->manifest), ".phar/stub.php", sizeof(".phar/stub.php")-1)) {
-		myphar->is_data = 0;
-	} else {
-		myphar->is_data = 1;
-	}
 
 	if (p) {
 		myphar->ext = memchr(p, '.', (myphar->fname + fname_len) - p);
@@ -696,7 +707,7 @@ static int phar_tar_writeheaders(void *pDest, void *argument TSRMLS_DC) /* {{{ *
 			return ZEND_HASH_APPLY_STOP;
 		}
 
-		if (entry->uncompressed_filesize != php_stream_copy_to_stream(phar_get_efp(entry, 0 TSRMLS_CC), fp->new, entry->uncompressed_filesize)) {
+		if (SUCCESS != phar_stream_copy_to_stream(phar_get_efp(entry, 0 TSRMLS_CC), fp->new, entry->uncompressed_filesize, NULL)) {
 			if (fp->error) {
 				spprintf(fp->error, 4096, "tar-based phar \"%s\" cannot be created, contents of file \"%s\" could not be written", entry->phar->fname, entry->filename);
 			}
@@ -1180,7 +1191,7 @@ nostub:
 
 			if (!filter) {
 				/* copy contents uncompressed rather than lose them */
-				php_stream_copy_to_stream(newfile, phar->fp, PHP_STREAM_COPY_ALL);
+				phar_stream_copy_to_stream(newfile, phar->fp, PHP_STREAM_COPY_ALL, NULL);
 				php_stream_close(newfile);
 				if (error) {
 					spprintf(error, 4096, "unable to compress all contents of phar \"%s\" using zlib, PHP versions older than 5.2.6 have a buggy zlib", phar->fname);
@@ -1189,7 +1200,7 @@ nostub:
 			}
 
 			php_stream_filter_append(&phar->fp->writefilters, filter);
-			php_stream_copy_to_stream(newfile, phar->fp, PHP_STREAM_COPY_ALL);
+			phar_stream_copy_to_stream(newfile, phar->fp, PHP_STREAM_COPY_ALL, NULL);
 			php_stream_filter_flush(filter, 1);
 			php_stream_filter_remove(filter, 1 TSRMLS_CC);
 			php_stream_close(phar->fp);
@@ -1200,14 +1211,14 @@ nostub:
 
 			filter = php_stream_filter_create("bzip2.compress", NULL, php_stream_is_persistent(phar->fp) TSRMLS_CC);
 			php_stream_filter_append(&phar->fp->writefilters, filter);
-			php_stream_copy_to_stream(newfile, phar->fp, PHP_STREAM_COPY_ALL);
+			phar_stream_copy_to_stream(newfile, phar->fp, PHP_STREAM_COPY_ALL, NULL);
 			php_stream_filter_flush(filter, 1);
 			php_stream_filter_remove(filter, 1 TSRMLS_CC);
 			php_stream_close(phar->fp);
 			/* use the temp stream as our base */
 			phar->fp = newfile;
 		} else {
-			php_stream_copy_to_stream(newfile, phar->fp, PHP_STREAM_COPY_ALL);
+			phar_stream_copy_to_stream(newfile, phar->fp, PHP_STREAM_COPY_ALL, NULL);
 			/* we could also reopen the file in "rb" mode but there is no need for that */
 			php_stream_close(newfile);
 		}

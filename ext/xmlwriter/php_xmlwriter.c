@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_xmlwriter.c,v 1.20.2.12.2.15.2.11 2008/12/31 11:15:47 sebastian Exp $ */
+/* $Id: php_xmlwriter.c,v 1.20.2.12.2.15.2.15 2009/05/26 08:10:49 pajoye Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -28,7 +28,7 @@
 #include "php_ini.h"
 #include "ext/standard/info.h"
 #include "php_xmlwriter.h"
-
+#include "ext/standard/php_string.h"
 
 #if LIBXML_VERSION >= 20605
 static PHP_FUNCTION(xmlwriter_set_indent);
@@ -614,7 +614,10 @@ static char *_xmlwriter_get_valid_file_path(char *source, char *resolved_path, i
 
 	if (uri->scheme != NULL) {
 		/* absolute file uris - libxml only supports localhost or empty host */
-		if (strncasecmp(source, "file:///",8) == 0) {
+		if (strncasecmp(source, "file:///", 8) == 0) {
+			if (source[sizeof("file:///") - 1] == '\0') {
+				return NULL;
+			}
 			isFileUri = 1;
 #ifdef PHP_WIN32
 			source += 8;
@@ -622,6 +625,10 @@ static char *_xmlwriter_get_valid_file_path(char *source, char *resolved_path, i
 			source += 7;
 #endif
 		} else if (strncasecmp(source, "file://localhost/",17) == 0) {
+			if (source[sizeof("file://localhost/") - 1] == '\0') {
+				return NULL;
+			}
+
 			isFileUri = 1;
 #ifdef PHP_WIN32
 			source += 17;
@@ -631,14 +638,29 @@ static char *_xmlwriter_get_valid_file_path(char *source, char *resolved_path, i
 		}
 	}
 
-	file_dest = source;
-
 	if ((uri->scheme == NULL || isFileUri)) {
+		char file_dirname[MAXPATHLEN];
+		size_t dir_len;
+
 		if (!VCWD_REALPATH(source, resolved_path) && !expand_filepath(source, resolved_path TSRMLS_CC)) {
 			xmlFreeURI(uri);
 			return NULL;
 		}
+
+		memcpy(file_dirname, source, strlen(source));
+		dir_len = php_dirname(file_dirname, strlen(source));
+
+		if (dir_len > 0) {
+			struct stat buf;
+			if (php_sys_stat(file_dirname, &buf) != 0) {
+				xmlFreeURI(uri);
+				return NULL;
+			}
+		}
+
 		file_dest = resolved_path;
+	} else {
+		file_dest = source;
 	}
 
 	xmlFreeURI(uri);
@@ -1755,9 +1777,13 @@ static PHP_FUNCTION(xmlwriter_open_uri)
 
 	valid_file = _xmlwriter_get_valid_file_path(source, resolved_path, MAXPATHLEN TSRMLS_CC);
 	if (!valid_file) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to resolve file path");
 		RETURN_FALSE;
 	}
 
+	/* TODO: Fix either the PHP stream or libxml APIs: it can then detect when a given 
+		 path is valid and not report out of memory error. Once it is done, remove the
+		 directory check in _xmlwriter_get_valid_file_path */
 #ifndef ZEND_ENGINE_2
 	ioctx = php_xmlwriter_streams_IO_open_write_wrapper(valid_file TSRMLS_CC);
 	if (ioctx == NULL) {

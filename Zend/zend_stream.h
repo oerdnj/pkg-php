@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_stream.h,v 1.8.2.1.2.1.2.5 2009/03/11 22:11:53 shire Exp $ */
+/* $Id: zend_stream.h,v 1.8.2.1.2.1.2.6 2009/06/16 14:33:33 felipe Exp $ */
 
 #ifndef ZEND_STREAM_H
 #define ZEND_STREAM_H
@@ -38,7 +38,7 @@ typedef enum {
 	ZEND_HANDLE_FD,
 	ZEND_HANDLE_FP,
 	ZEND_HANDLE_STREAM,
-	ZEND_HANDLE_MAPPED,
+	ZEND_HANDLE_MAPPED
 } zend_stream_type;
 
 typedef struct _zend_mmap {

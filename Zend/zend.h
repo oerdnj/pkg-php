@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend.h,v 1.293.2.11.2.9.2.33 2009/03/18 01:08:12 mattwil Exp $ */
+/* $Id: zend.h,v 1.293.2.11.2.9.2.37 2009/06/17 08:55:23 rasmus Exp $ */
 
 #ifndef ZEND_H
 #define ZEND_H
@@ -33,8 +33,6 @@
 #define BEGIN_EXTERN_C()
 #define END_EXTERN_C()
 #endif
-
-#include <stdio.h>
 
 /*
  * general definitions
@@ -66,6 +64,8 @@
 #endif
 
 /* all HAVE_XXX test have to be after the include of zend_config above */
+
+#include <stdio.h>
 
 #ifdef HAVE_UNIX_H
 # include <unix.h>
@@ -192,6 +192,12 @@ char *alloca ();
 # define ZEND_FASTCALL
 #endif
 
+#if defined(__GNUC__) && ZEND_GCC_VERSION >= 3400
+#else
+# define __restrict__
+#endif
+#define restrict __restrict__
+
 #if (HAVE_ALLOCA || (defined (__GNUC__) && __GNUC__ >= 2)) && !(defined(ZTS) && defined(ZEND_WIN32)) && !(defined(ZTS) && defined(NETWARE)) && !(defined(ZTS) && defined(HPUX)) && !defined(DARWIN)
 # define ZEND_ALLOCA_MAX_SIZE (32 * 1024)
 # define ALLOCA_FLAG(name) \
@@ -286,7 +292,7 @@ static const char long_min_digits[] = "9223372036854775808";
 #define INTERNAL_FUNCTION_PARAMETERS int ht, zval *return_value, zval **return_value_ptr, zval *this_ptr, int return_value_used TSRMLS_DC
 #define INTERNAL_FUNCTION_PARAM_PASSTHRU ht, return_value, return_value_ptr, this_ptr, return_value_used TSRMLS_CC
 
-#if defined(__GNUC__) && !defined(__INTEL_COMPILER) && !defined(DARWIN) && !defined(__hpux) && !defined(_AIX) && !defined(__osf__)
+#if defined(__GNUC__) && __GNUC__ >= 3 && !defined(__INTEL_COMPILER) && !defined(DARWIN) && !defined(__hpux) && !defined(_AIX) && !defined(__osf__)
 void zend_error_noreturn(int type, const char *format, ...) __attribute__ ((noreturn));
 #else
 #  define zend_error_noreturn zend_error
@@ -361,7 +367,12 @@ struct _zval_struct {
 #define Z_SET_ISREF_TO(z, isref)	Z_SET_ISREF_TO_P(&(z), isref)
 
 #if defined(__GNUC__)
+#if __GNUC__ >= 3
 #define zend_always_inline inline __attribute__((always_inline))
+#else
+#define zend_always_inline inline
+#endif
+
 #elif defined(_MSC_VER)
 #define zend_always_inline __forceinline
 #else

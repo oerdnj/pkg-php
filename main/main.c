@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: main.c,v 1.640.2.23.2.57.2.46 2009/02/09 09:20:34 dmitry Exp $ */
+/* $Id: main.c,v 1.640.2.23.2.57.2.55 2009/06/04 07:41:01 pajoye Exp $ */
 
 /* {{{ includes
  */
@@ -59,6 +59,7 @@
 #include "fopen_wrappers.h"
 #include "ext/standard/php_standard.h"
 #include "ext/standard/php_string.h"
+#include "ext/date/php_date.h"
 #include "php_variables.h"
 #include "ext/standard/credits.h"
 #ifdef PHP_WIN32
@@ -89,6 +90,16 @@
 
 #include "SAPI.h"
 #include "rfc1867.h"
+
+#if HAVE_SYS_MMAN_H
+# include <sys/mman.h>
+# ifndef PAGE_SIZE
+#  define PAGE_SIZE 4096
+# endif
+#endif
+#ifdef PHP_WIN32
+# define PAGE_SIZE 4096
+#endif
 /* }}} */
 
 PHPAPI int (*php_register_internal_extensions_func)(TSRMLS_D) = php_register_internal_extensions;
@@ -510,8 +521,6 @@ static int module_shutdown = 0;
 PHPAPI void php_log_err(char *log_message TSRMLS_DC)
 {
 	int fd = -1;
-	char error_time_str[128];
-	struct tm tmbuf;
 	time_t error_time;
 
 	/* Try to use the specified logging location. */
@@ -526,14 +535,17 @@ PHPAPI void php_log_err(char *log_message TSRMLS_DC)
 		if (fd != -1) {
 			char *tmp;
 			int len;
+			char *error_time_str;
+
 			time(&error_time);
-			strftime(error_time_str, sizeof(error_time_str), "%d-%b-%Y %H:%M:%S", php_localtime_r(&error_time, &tmbuf));
+			error_time_str = php_format_date("d-M-Y H:i:s", 11, error_time, 1 TSRMLS_CC);
 			len = spprintf(&tmp, 0, "[%s] %s%s", error_time_str, log_message, PHP_EOL);
 #ifdef PHP_WIN32
 			php_flock(fd, 2);
 #endif
 			write(fd, tmp, len);
 			efree(tmp);
+			efree(error_time_str);
 			close(fd);
 			return;
 		}
@@ -1134,8 +1146,10 @@ PHPAPI int php_stream_open_for_zend_ex(const char *filename, zend_file_handle *h
 		handle->handle.stream.isatty  = 0;
 		/* can we mmap immeadiately? */
 		memset(&handle->handle.stream.mmap, 0, sizeof(handle->handle.stream.mmap));
-		len = php_zend_stream_fsizer(stream TSRMLS_CC) + ZEND_MMAP_AHEAD;
-		if (php_stream_mmap_possible(stream)
+		len = php_zend_stream_fsizer(stream TSRMLS_CC);
+		if (len != 0
+		&& ((len - 1) % PAGE_SIZE) <= PAGE_SIZE - ZEND_MMAP_AHEAD
+		&& php_stream_mmap_possible(stream)
 		&& (p = php_stream_mmap_range(stream, 0, len, PHP_STREAM_MAP_MODE_SHARED_READONLY, &mapped_len)) != NULL) {
 			handle->handle.stream.closer   = php_zend_stream_mmap_closer;
 			handle->handle.stream.mmap.buf = p;
@@ -1262,7 +1276,7 @@ static void php_message_handler_for_zend(long message, void *data TSRMLS_DC)
 void php_on_timeout(int seconds TSRMLS_DC)
 {
 	PG(connection_status) |= PHP_CONNECTION_TIMEOUT;
-	zend_set_timeout(EG(timeout_seconds), 0);
+	zend_set_timeout(EG(timeout_seconds), 1);
 	if(PG(exit_on_timeout)) sapi_terminate_process(TSRMLS_C);
 }
 
@@ -1623,6 +1637,8 @@ static int php_body_write_wrapper(const char *str, uint str_length)
 static void core_globals_ctor(php_core_globals *core_globals TSRMLS_DC)
 {
 	memset(core_globals, 0, sizeof(*core_globals));
+
+	php_startup_ticks(TSRMLS_C);
 }
 /* }}} */
 #endif
@@ -1643,6 +1659,8 @@ static void core_globals_dtor(php_core_globals *core_globals TSRMLS_DC)
 	if (core_globals->disable_classes) {
 		free(core_globals->disable_classes);
 	}
+
+	php_shutdown_ticks(TSRMLS_C);
 }
 /* }}} */
 
@@ -1783,6 +1801,8 @@ int php_module_startup(sapi_module_struct *sf, zend_module_entry *additional_mod
 #ifdef PHP_WIN32
 	ts_allocate_id(&php_win32_core_globals_id, sizeof(php_win32_core_globals), (ts_allocate_ctor) php_win32_core_globals_ctor, (ts_allocate_dtor) php_win32_core_globals_dtor);
 #endif
+#else
+	php_startup_ticks(TSRMLS_C);
 #endif
 	gc_globals_ctor(TSRMLS_C);
 
@@ -1868,6 +1888,20 @@ int php_module_startup(sapi_module_struct *sf, zend_module_entry *additional_mod
 	REGISTER_MAIN_LONG_CONSTANT("PHP_INT_MAX", LONG_MAX, CONST_PERSISTENT | CONST_CS);
 	REGISTER_MAIN_LONG_CONSTANT("PHP_INT_SIZE", sizeof(long), CONST_PERSISTENT | CONST_CS);
 
+#ifdef PHP_WIN32
+	REGISTER_MAIN_LONG_CONSTANT("PHP_WINDOWS_VERSION_MAJOR",      EG(windows_version_info).dwMajorVersion, CONST_PERSISTENT | CONST_CS);
+	REGISTER_MAIN_LONG_CONSTANT("PHP_WINDOWS_VERSION_MINOR",      EG(windows_version_info).dwMinorVersion, CONST_PERSISTENT | CONST_CS);
+	REGISTER_MAIN_LONG_CONSTANT("PHP_WINDOWS_VERSION_BUILD",      EG(windows_version_info).dwBuildNumber, CONST_PERSISTENT | CONST_CS);
+	REGISTER_MAIN_LONG_CONSTANT("PHP_WINDOWS_VERSION_PLATFORM",   EG(windows_version_info).dwPlatformId, CONST_PERSISTENT | CONST_CS);
+	REGISTER_MAIN_LONG_CONSTANT("PHP_WINDOWS_VERSION_SP_MAJOR",   EG(windows_version_info).wServicePackMajor, CONST_PERSISTENT | CONST_CS);
+	REGISTER_MAIN_LONG_CONSTANT("PHP_WINDOWS_VERSION_SP_MINOR",   EG(windows_version_info).wServicePackMinor, CONST_PERSISTENT | CONST_CS);
+	REGISTER_MAIN_LONG_CONSTANT("PHP_WINDOWS_VERSION_SUITEMASK",  EG(windows_version_info).wSuiteMask, CONST_PERSISTENT | CONST_CS);
+	REGISTER_MAIN_LONG_CONSTANT("PHP_WINDOWS_VERSION_PRODUCTTYPE", EG(windows_version_info).wProductType, CONST_PERSISTENT | CONST_CS);
+	REGISTER_MAIN_LONG_CONSTANT("PHP_WINDOWS_NT_DOMAIN_CONTROLLER", VER_NT_DOMAIN_CONTROLLER, CONST_PERSISTENT | CONST_CS);
+	REGISTER_MAIN_LONG_CONSTANT("PHP_WINDOWS_NT_SERVER", VER_NT_SERVER, CONST_PERSISTENT | CONST_CS);
+	REGISTER_MAIN_LONG_CONSTANT("PHP_WINDOWS_NT_WORKSTATION", VER_NT_WORKSTATION, CONST_PERSISTENT | CONST_CS);
+#endif
+
 	php_output_register_constants(TSRMLS_C);
 	php_rfc1867_register_constants(TSRMLS_C);
 
@@ -1881,16 +1915,27 @@ int php_module_startup(sapi_module_struct *sf, zend_module_entry *additional_mod
 	/* Check for deprecated directives */
 	{
 		static const char *directives[] = {
-			"zend.ze1_compatibility_mode",
+			"define_syslog_variables", 
+			"register_globals", 
+			"register_long_arrays", 
+			"safe_mode", 
+			"magic_quotes_gpc", 
+			"magic_quotes_runtime", 
+			"magic_quotes_sybase", 
 			NULL};
 		const char **p = directives;
 		long val;
 
 		while (*p) {
 			if (cfg_get_long((char*)*p, &val) == SUCCESS && val) {
-				zend_error(E_WARNING, "Directive '%s' is no longer supported in PHP 5.3 and greater", *p);
+				zend_error(E_WARNING, "Directive '%s' is deprecated in PHP 5.3 and greater", *p);
 			}
 			++p;
+		}
+
+		/* This is not too nice, but since its the only one theres no need for extra stuff here */
+		if (cfg_get_long("zend.ze1_compatibility_mode", &val) == SUCCESS && val) {
+			zend_error(E_ERROR, "zend.ze1_compatibility_mode is no longer supported in PHP 5.3 and greater");
 		}
 	}
 
@@ -1926,11 +1971,6 @@ int php_module_startup(sapi_module_struct *sf, zend_module_entry *additional_mod
 	php_startup_auto_globals(TSRMLS_C);
 	zend_set_utility_values(&zuv);
 	php_startup_sapi_content_types(TSRMLS_C);
-
-	if (php_startup_ticks(TSRMLS_C) == FAILURE) {
-		php_printf("Unable to start PHP ticks\n");
-		return FAILURE;
-	}
 
 	/* startup extensions staticly compiled in */
 	if (php_register_internal_extensions_func(TSRMLS_C) == FAILURE) {
@@ -2032,7 +2072,6 @@ void php_module_shutdown(TSRMLS_D)
 	WSACleanup();
 #endif
 
-	php_shutdown_ticks(TSRMLS_C);
 	sapi_flush(TSRMLS_C);
 
 	zend_shutdown(TSRMLS_C);

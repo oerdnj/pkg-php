@@ -1,4 +1,4 @@
-## $Id: configure.in,v 1.579.2.52.2.77.2.47 2009/03/23 20:33:21 johannes Exp $ -*- autoconf -*-
+## $Id: configure.in,v 1.579.2.52.2.77.2.55 2009/06/18 21:01:03 johannes Exp $ -*- autoconf -*-
 dnl ## Process this file with autoconf to produce a configure script.
 
 divert(1)
@@ -42,7 +42,7 @@ AC_CONFIG_HEADER(main/php_config.h)
 PHP_MAJOR_VERSION=5
 PHP_MINOR_VERSION=3
 PHP_RELEASE_VERSION=0
-PHP_EXTRA_VERSION="RC1"
+PHP_EXTRA_VERSION="RC4"
 PHP_VERSION="$PHP_MAJOR_VERSION.$PHP_MINOR_VERSION.$PHP_RELEASE_VERSION$PHP_EXTRA_VERSION"
 PHP_VERSION_ID=`expr [$]PHP_MAJOR_VERSION \* 10000 + [$]PHP_MINOR_VERSION \* 100 + [$]PHP_RELEASE_VERSION`
 
@@ -728,7 +728,7 @@ if test "$PHP_GCOV" = "yes"; then
     AC_MSG_ERROR([ccache must be disabled when --enable-gcov option is used. You can disable ccache by setting environment variable CCACHE_DISABLE=1.])
   fi
   
-  ltp_version_list="1.5 1.6"
+  ltp_version_list="1.5 1.6 1.7"
 
   AC_CHECK_PROG(LTP, lcov, lcov)
   AC_CHECK_PROG(LTP_GENHTML, genhtml, genhtml)
@@ -1332,15 +1332,7 @@ if test "$PHP_THREAD_SAFETY" = "yes" && test "$PHP_MYSQL" = "yes"; then
   CPPFLAGS="$CPPFLAGS -DTHREAD=1"
 fi
 
-if test "$PHP_DEBUG" = "1" && test "$PHP_THREAD_SAFETY" = "yes"; then
-  ZEND_EXT_TYPE="zend_extension_debug_ts"
-elif test "$PHP_DEBUG" = "1"; then
-  ZEND_EXT_TYPE="zend_extension_debug"
-elif test "$PHP_THREAD_SAFETY" = "yes"; then
-  ZEND_EXT_TYPE="zend_extension_ts"
-else
-  ZEND_EXT_TYPE="zend_extension"
-fi
+ZEND_EXT_TYPE="zend_extension"
 PHP_SUBST(ZEND_EXT_TYPE)
 
 dnl

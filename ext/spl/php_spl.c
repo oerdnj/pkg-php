@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_spl.c,v 1.52.2.28.2.17.2.35 2009/01/26 11:38:03 colder Exp $ */
+/* $Id: php_spl.c,v 1.52.2.28.2.17.2.38 2009/06/13 17:30:50 cellog Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -353,6 +353,7 @@ PHP_FUNCTION(spl_autoload_extensions)
 typedef struct {
 	zend_function *func_ptr;
 	zval *obj;
+	zval *closure;
 	zend_class_entry *ce;
 } autoload_func_info;
 
@@ -360,6 +361,9 @@ static void autoload_func_info_dtor(autoload_func_info *alfi)
 {
 	if (alfi->obj) {
 		zval_ptr_dtor(&alfi->obj);
+	}
+	if (alfi->closure) {
+		zval_ptr_dtor(&alfi->closure);
 	}
 }
 
@@ -411,6 +415,7 @@ PHP_FUNCTION(spl_autoload_call)
 	(ht)->pListTail->pListNext = (ht)->pListHead;			\
 	(ht)->pListHead = (ht)->pListTail;						\
 	(ht)->pListTail = (ht)->pListHead->pListLast;			\
+	(ht)->pListHead->pListNext->pListLast = (ht)->pListHead;\
 	(ht)->pListTail->pListNext = NULL;						\
 	(ht)->pListHead->pListLast = NULL;
 
@@ -488,6 +493,7 @@ PHP_FUNCTION(spl_autoload_register)
 				RETURN_FALSE;
 			}
 		}
+		alfi.closure = NULL;
 		alfi.ce = fcc.calling_scope;
 		alfi.func_ptr = fcc.function_handler;
 		obj_ptr = fcc.object_ptr;
@@ -499,12 +505,27 @@ PHP_FUNCTION(spl_autoload_register)
 		zend_str_tolower_copy(lc_name, func_name, func_name_len);
 		efree(func_name);
 
+		if (Z_TYPE_P(zcallable) == IS_OBJECT) {
+			alfi.closure = zcallable;
+			Z_ADDREF_P(zcallable);
+
+			lc_name = erealloc(lc_name, func_name_len + 2 + sizeof(zcallable->value.obj.handle));
+			memcpy(lc_name + func_name_len, &(zcallable->value.obj.handle),
+				sizeof(zcallable->value.obj.handle));
+			func_name_len += sizeof(zcallable->value.obj.handle);
+			lc_name[func_name_len] = '\0';
+		}
+
 		if (SPL_G(autoload_functions) && zend_hash_exists(SPL_G(autoload_functions), (char*)lc_name, func_name_len+1)) {
+			if (alfi.closure) {
+				Z_DELREF_P(zcallable);
+			}
 			goto skip;
 		}
 
 		if (obj_ptr && !(alfi.func_ptr->common.fn_flags & ZEND_ACC_STATIC)) {
 			/* add object id to the hash to ensure uniqueness, for more reference look at bug #40091 */
+			lc_name = erealloc(lc_name, func_name_len + 2 + sizeof(zend_object_handle));
 			memcpy(lc_name + func_name_len, &Z_OBJ_HANDLE_P(obj_ptr), sizeof(zend_object_handle));
 			func_name_len += sizeof(zend_object_handle);
 			lc_name[func_name_len] = '\0';
@@ -527,6 +548,7 @@ PHP_FUNCTION(spl_autoload_register)
 			spl_alfi.func_ptr = spl_func_ptr;
 			spl_alfi.obj = NULL;
 			spl_alfi.ce = NULL;
+			spl_alfi.closure = NULL;
 			zend_hash_add(SPL_G(autoload_functions), "spl_autoload", sizeof("spl_autoload"), &spl_alfi, sizeof(autoload_func_info), NULL);
 			if (prepend && SPL_G(autoload_functions)->nNumOfElements > 1) {
 				/* Move the newly created element to the head of the hashtable */

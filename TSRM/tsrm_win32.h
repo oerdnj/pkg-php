@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_win32.h,v 1.19.2.1.2.1.2.2 2008/12/31 11:15:31 sebastian Exp $ */
+/* $Id: tsrm_win32.h,v 1.19.2.1.2.1.2.3 2009/05/17 19:42:53 pajoye Exp $ */
 
 #ifndef TSRM_WIN32_H
 #define TSRM_WIN32_H
@@ -63,6 +63,7 @@ typedef struct {
 	int				process_size;
 	int				shm_size;
 	char			*comspec;
+	HANDLE impersonation_token;
 } tsrm_win32_globals;
 
 #ifdef ZTS

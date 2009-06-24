@@ -334,7 +334,9 @@ function ut_main()
 		array( "abc", 0, 2, "ab" ),
 		array( "Abc", -4, 1, "false" ),
 		array( "ababc", 1, 2, "ba" ),
+		array( "ababc", 0, 10, "ababc" ),
 		
+		array( "a" . $char_a_ring_nfd . "bc" . $char_o_diaeresis_nfd . "Opq", 0, 10 , "a" . $char_a_ring_nfd . "bc" . $char_o_diaeresis_nfd . "Opq" ),
 		array( "a" . $char_a_ring_nfd . "bc" . $char_o_diaeresis_nfd . "Opq", 5, "Opq" ),
 		array( "a" . $char_a_ring_nfd . "bc" . $char_o_diaeresis_nfd . "Opq", 5, -1, "Op" ),
 		array( "a" . $char_a_ring_nfd . "bc" . $char_o_diaeresis_nfd . "Opq", 5, -2, "O" ),
@@ -558,7 +560,7 @@ function ut_main()
 		array( "abc", 1, 1, 2, "b" ),
 		array( "abc", 1, 2, 3, "c" ),
 		array( "abc", 0, 2, 2, "" ),
-
+        array( "http://news.bbc.co.uk/2/hi/middle_east/7831588.stm", 48, 48 , 50 , "tm" ),
 
 		array( $char_a_ring_nfd . "bc", 3, $char_a_ring_nfd . "bc" ),
 		array( $char_a_ring_nfd . "bc", 2, $char_a_ring_nfd . "b" ),
@@ -953,6 +955,8 @@ substring of "Abc" from "1" - grapheme_substr with length 1 = b == b
 substring of "abc" from "0" - grapheme_substr with length 2 = ab == ab
 substring of "Abc" from "-4" - grapheme_substr with length 1 = false == false
 substring of "ababc" from "1" - grapheme_substr with length 2 = ba == ba
+substring of "ababc" from "0" - grapheme_substr with length 10 = ababc == ababc
+substring of "aa%CC%8Abco%CC%88Opq" from "0" - grapheme_substr with length 10 = aa%CC%8Abco%CC%88Opq == aa%CC%8Abco%CC%88Opq
 substring of "aa%CC%8Abco%CC%88Opq" from "5" - grapheme_substr = Opq == Opq
 substring of "aa%CC%8Abco%CC%88Opq" from "5" - grapheme_substr with length -1 = Op == Op
 substring of "aa%CC%8Abco%CC%88Opq" from "5" - grapheme_substr with length -2 = O == O
@@ -1091,6 +1095,7 @@ extract from "abc" "1" graphemes - grapheme_extract starting at byte position 0 
 extract from "abc" "1" graphemes - grapheme_extract starting at byte position 1 with $next = b == b $next=2 == 2 
 extract from "abc" "1" graphemes - grapheme_extract starting at byte position 2 with $next = c == c $next=3 == 3 
 extract from "abc" "0" graphemes - grapheme_extract starting at byte position 2 with $next =  ==  $next=2 == 2 
+extract from "http%3A%2F%2Fnews.bbc.co.uk%2F2%2Fhi%2Fmiddle_east%2F7831588.stm" "48" graphemes - grapheme_extract starting at byte position 48 with $next = tm == tm $next=50 == 50 
 extract from "a%CC%8Abc" "3" graphemes - grapheme_extract = a%CC%8Abc == a%CC%8Abc
 extract from "a%CC%8Abc" "2" graphemes - grapheme_extract = a%CC%8Ab == a%CC%8Ab
 extract from "a%CC%8Abc" "1" graphemes - grapheme_extract = a%CC%8A == a%CC%8A

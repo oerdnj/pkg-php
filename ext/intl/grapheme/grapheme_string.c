@@ -542,7 +542,7 @@ PHP_FUNCTION(grapheme_substr)
 		length += iter_val;
 	}
 	
-	if ( UBRK_DONE == sub_str_end_pos ) {
+	if ( UBRK_DONE == sub_str_end_pos && length < 0) {
 	
 		intl_error_set( NULL, U_ILLEGAL_ARGUMENT_ERROR, "grapheme_substr: length not contained in string", 1 TSRMLS_CC );
 	
@@ -852,10 +852,11 @@ PHP_FUNCTION(grapheme_extract)
 	 */
 	
 	if ( -1 != grapheme_ascii_check(pstr, size + 1 < str_len ? size + 1 : str_len ) ) {
+        long nsize = ( size < str_len ? size : str_len ); 
 		if ( NULL != next ) {
-			ZVAL_LONG(next, start+size);
+			ZVAL_LONG(next, start+nsize);
 		}
-		RETURN_STRINGL(((char *)pstr), size, 1);
+		RETURN_STRINGL(((char *)pstr), nsize, 1);
 	}
 
 	/* convert the strings to UTF-16. */

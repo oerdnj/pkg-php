@@ -8,7 +8,8 @@ if (substr(PHP_OS, 0, 3) == 'WIN') {
     die('skip no /dev on Windows');
 }
 if (!file_exists("/dev/console")) {
-    die('skip /dev/console not available);
+    die('skip /dev/console not available');
+}    
 ?>
 --FILE--
 <?php

@@ -1,18 +1,18 @@
-// $Id: config.w32,v 1.10.2.1.2.4.2.4 2009/03/20 18:42:02 pajoye Exp $
+// $Id: config.w32,v 1.10.2.1.2.4.2.5 2009/06/12 16:15:51 kalle Exp $
 // vim:ft=javascript
 
 ARG_ENABLE("mbstring", "multibyte string functions", "no");
 ARG_ENABLE("mbregex", "multibyte regex support", "no");
 ARG_ENABLE("mbregex-backtrack", "check multibyte regex backtrack", "yes");
 
-if (PHP_MBSTRING == "yes") {
+if (PHP_MBSTRING != "no") {
 
 	FSO.CopyFile("ext\\mbstring\\libmbfl\\config.h.vc6",
 	   	"ext\\mbstring\\libmbfl\\config.h", true);
 	FSO.CopyFile("ext\\mbstring\\oniguruma\\win32\\config.h",
 		"ext\\mbstring\\oniguruma\\config.h", true);
 	
-	EXTENSION("mbstring", "mbstring.c php_unicode.c mb_gpc.c", true,
+	EXTENSION("mbstring", "mbstring.c php_unicode.c mb_gpc.c", PHP_MBSTRING_SHARED,
 		"-Iext/mbstring/libmbfl -Iext/mbstring/libmbfl/mbfl \
 		-Iext/mbstring/oniguruma /D NOT_RUBY=1 /D LIBMBFL_EXPORTS=1 \
 		/D HAVE_STDARG_PROTOTYPES=1 /D HAVE_CONFIG_H /D HAVE_STDLIB_H \

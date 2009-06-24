@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.1.6.2 2008/06/23 18:40:29 pajoye Exp $
+// $Id: config.w32,v 1.1.6.3 2009/04/23 18:03:05 pajoye Exp $
 // vim:ft=javascript
 
 ARG_WITH("pdo-odbc", "ODBC support for PDO", "no");
@@ -13,7 +13,7 @@ if (PHP_PDO_ODBC != "no") {
 
 	} else {
 		WARNING("pdo_odbc support can't be enabled, headers or libraries are missing (SDK)")
-		PHP_LIBXML = "no"
+		PHP_PDO_ODBC = "no"
 	}
 }
 

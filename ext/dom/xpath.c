@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: xpath.c,v 1.26.2.1.2.1.2.12 2008/12/31 11:15:36 sebastian Exp $ */
+/* $Id: xpath.c,v 1.26.2.1.2.1.2.13 2009/06/06 02:40:48 mattwil Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -232,7 +232,7 @@ static void dom_xpath_ext_function_php(xmlXPathParserContextPtr ctxt, int nargs,
 			} else if (retval->type == IS_BOOL) {
 				valuePush(ctxt, xmlXPathNewBoolean(retval->value.lval));
 			} else if (retval->type == IS_OBJECT) {
-				php_error_docref(NULL TSRMLS_CC, E_WARNING, "A PHP Object can not be converted to a XPath-string");
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "A PHP Object cannot be converted to a XPath-string");
 				valuePush(ctxt, xmlXPathNewString((xmlChar *)""));
 			} else {
 				convert_to_string_ex(&retval);

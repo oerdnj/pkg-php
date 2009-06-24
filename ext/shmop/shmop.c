@@ -16,7 +16,7 @@
    |          Ilia Alshanetsky <ilia@prohost.org>                         |
    +----------------------------------------------------------------------+
  */
-/* $Id: shmop.c,v 1.31.2.2.2.5.2.8 2008/12/31 11:15:42 sebastian Exp $ */
+/* $Id: shmop.c,v 1.31.2.2.2.5.2.9 2009/06/06 02:40:48 mattwil Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -203,7 +203,7 @@ PHP_FUNCTION(shmop_open)
 	}
 
 	if (shmop->shmflg & IPC_CREAT && shmop->size < 1) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Shared memory segment size must be greater then zero.");
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Shared memory segment size must be greater than zero");
 		goto err;
 	}
 

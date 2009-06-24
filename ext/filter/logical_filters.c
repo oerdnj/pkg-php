@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: logical_filters.c,v 1.1.2.22.2.8 2009/03/08 18:21:15 iliaa Exp $ */
+/* $Id: logical_filters.c,v 1.1.2.22.2.12 2009/06/10 19:01:17 felipe Exp $ */
 
 #include "php_filter.h"
 #include "filter_private.h"
@@ -29,8 +29,6 @@
 #if HAVE_ARPA_INET_H
 # include <arpa/inet.h>
 #endif
-
-#define LONG_SIGN_MASK (1L << (8*sizeof(long)-1))
 
 #ifndef INADDR_NONE
 # define INADDR_NONE ((unsigned long int) -1)
@@ -70,14 +68,12 @@
 
 static int php_filter_parse_int(const char *str, unsigned int str_len, long *ret TSRMLS_DC) { /* {{{ */
 	long ctx_value;
-	long sign = 1;
+	int sign = 0;
 	const char *end = str + str_len;
-	double dval;
-	long overflow;
 
 	switch (*str) {
 		case '-':
-			sign = -1;
+			sign = 1;
 		case '+':
 			str++;
 		default:
@@ -91,22 +87,29 @@ static int php_filter_parse_int(const char *str, unsigned int str_len, long *ret
 		return -1;
 	}
 
+	if ((end - str > MAX_LENGTH_OF_LONG - 1) /* number too long */
+	 || (SIZEOF_LONG == 4 && end - str == MAX_LENGTH_OF_LONG - 1 && *str > '2')) {
+		/* overflow */
+		return -1;
+	}
+
 	while (str < end) {
 		if (*str >= '0' && *str <= '9') {
-			ZEND_SIGNED_MULTIPLY_LONG(ctx_value, 10, ctx_value, dval, overflow);
-			if (overflow) {
-				return -1;
-			}
-			ctx_value += ((*(str++)) - '0');
-			if (ctx_value & LONG_SIGN_MASK) {
-				return -1;
-			}
+			ctx_value = (ctx_value * 10) + (*(str++) - '0');
 		} else {
 			return -1;
 		}
 	}
+	if (sign) {
+		ctx_value = -ctx_value;
+		if (ctx_value > 0) { /* overflow */
+			return -1;
+		}
+	} else if (ctx_value < 0) { /* overflow */
+		return -1;
+	}
 
-	*ret = ctx_value * sign;
+	*ret = ctx_value;
 	return 1;
 }
 /* }}} */
@@ -469,7 +472,7 @@ void php_filter_validate_url(PHP_INPUT_FILTER_PARAM_DECL) /* {{{ */
 void php_filter_validate_email(PHP_INPUT_FILTER_PARAM_DECL) /* {{{ */
 {
 	/* From http://cvs.php.net/co.php/pear/HTML_QuickForm/QuickForm/Rule/Email.php?r=1.4 */
-	const char regexp[] = "/^((\\\"[^\\\"\\f\\n\\r\\t\\b]+\\\")|([A-Za-z0-9_\\!\\#\\$\\%\\&\\'\\*\\+\\-\\~\\/\\^\\`\\|\\{\\}]+(\\.[A-Za-z0-9_\\!\\#\\$\\%\\&\\'\\*\\+\\-\\~\\/\\^\\`\\|\\{\\}]*)*))@((\\[(((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9])))\\])|(((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9])))|((([A-Za-z0-9])(([A-Za-z0-9\\-])*([A-Za-z0-9]))?\\.?)+[A-Za-z\\-]*))$/D";
+	const char regexp[] = "/^((\\\"[^\\\"\\f\\n\\r\\t\\b]+\\\")|([A-Za-z0-9_\\!\\#\\$\\%\\&\\'\\*\\+\\-\\~\\/\\^\\`\\|\\{\\}]+(\\.[A-Za-z0-9_\\!\\#\\$\\%\\&\\'\\*\\+\\-\\~\\/\\^\\`\\|\\{\\}]*)*))@((\\[(((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9])))\\])|(((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9])))|((([A-Za-z0-9])(([A-Za-z0-9\\-])*([A-Za-z0-9]))?(\\.(?=[A-Za-z\\-]))?)+[A-Za-z\\-]*))$/D";
 
 	pcre       *re = NULL;
 	pcre_extra *pcre_extra = NULL;
@@ -567,7 +570,7 @@ static int _php_filter_validate_ipv6(char *str, int str_len TSRMLS_DC) /* {{{ */
 			}
 			if (*str == ':') {
 				if (compressed || --blocks == 0) {
-					return ipv4 != NULL;
+					return 0;
 				}			
 				if (++str == end || (ipv4 && ipv4 == str)) {
 					return 1;

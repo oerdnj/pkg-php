@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: func_interceptors.c,v 1.20.2.21 2008/12/31 11:15:42 sebastian Exp $ */
+/* $Id: func_interceptors.c,v 1.20.2.22 2009/05/13 15:55:12 kalle Exp $ */
 
 #include "phar_internal.h"
 
@@ -98,7 +98,7 @@ PHAR_FUNC(phar_file_get_contents) /* {{{ */
 	char *contents;
 	zend_bool use_include_path = 0;
 	php_stream *stream;
-	int len, newlen;
+	int len;
 	long offset = -1;
 	long maxlen = PHP_STREAM_COPY_ALL;
 	zval *zcontext = NULL;
@@ -205,6 +205,7 @@ phar_it:
 			if ((len = php_stream_copy_to_mem(stream, &contents, maxlen, 0)) > 0) {
 #if PHP_MAJOR_VERSION < 6
 				if (PG(magic_quotes_runtime)) {
+					int newlen;
 					contents = php_addslashes(contents, len, &newlen, 1 TSRMLS_CC); /* 1 = free source string */
 					len = newlen;
 				}

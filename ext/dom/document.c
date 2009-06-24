@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: document.c,v 1.68.2.3.2.5.2.15 2009/03/13 13:43:29 rrichards Exp $ */
+/* $Id: document.c,v 1.68.2.3.2.5.2.17 2009/06/14 13:13:35 iliaa Exp $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1196,6 +1196,9 @@ PHP_FUNCTION(dom_document_import_node)
 	if (nodep->doc == docp) {
 		retnodep = nodep;
 	} else {
+		if ((recursive == 0) && (nodep->type == XML_ELEMENT_NODE)) {
+			recursive = 2;
+		}
 		retnodep = xmlDocCopyNode(nodep, docp, recursive);
 		if (!retnodep) {
 			RETURN_FALSE;
@@ -1933,11 +1936,7 @@ PHP_FUNCTION(dom_document_validate)
 	}
 
 	DOM_GET_OBJ(docp, id, xmlDocPtr, intern);
-	
-	if (docp->intSubset == NULL) {
-		php_error_docref(NULL TSRMLS_CC, E_NOTICE, "No DTD given in XML-Document");
-	}
-	
+
 	cvp = xmlNewValidCtxt();
 	
 	cvp->userData = NULL;
