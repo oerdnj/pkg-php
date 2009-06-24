@@ -12,7 +12,7 @@
  
 --- php.orig/configure.in
 +++ php/configure.in
-@@ -1362,9 +1362,6 @@ AC_PROVIDE_IFELSE([PHP_REQUIRE_CXX], [],
+@@ -1354,9 +1354,6 @@ AC_PROVIDE_IFELSE([PHP_REQUIRE_CXX], [],
  ])
  AC_PROG_LIBTOOL
  
