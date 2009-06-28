@@ -3,11 +3,10 @@ PHP_5_2
 http://cvs.php.net/viewvc.cgi/php-src/main/output.c?r1=1.167.2.3.2.8&r2=1.167.2.3.2.9&diff_format=u
 Fixed memory leak in ob_get_clean/ob_get_flush.
 
-diff -r f5a102df944d -r e2602e8d2936 main/output.c
---- a/main/output.c	Fri Apr 10 11:35:06 2009 +0200
-+++ b/main/output.c	Fri Apr 10 11:37:31 2009 +0200
-@@ -855,10 +855,12 @@
- 	/* error checks */
+--- php.orig/main/output.c
++++ php/main/output.c
+@@ -818,10 +818,12 @@ PHP_FUNCTION(ob_end_flush)
+ 	
  	if (!OG(ob_nesting_level)) {
  		php_error_docref("ref.outcontrol" TSRMLS_CC, E_NOTICE, "failed to delete and flush buffer. No buffer to delete or flush.");
 +		zval_dtor(return_value);
@@ -18,9 +17,9 @@ diff -r f5a102df944d -r e2602e8d2936 main/output.c
 +		zval_dtor(return_value);
  		RETURN_FALSE;
  	}
- 	/* flush */
-@@ -880,10 +882,12 @@
- 	/* error checks */
+ 	
+@@ -840,10 +842,12 @@ PHP_FUNCTION(ob_end_clean)
+ 		
  	if (!OG(ob_nesting_level)) {
  		php_error_docref("ref.outcontrol" TSRMLS_CC, E_NOTICE, "failed to delete buffer. No buffer to delete.");
 +		zval_dtor(return_value);
@@ -31,4 +30,4 @@ diff -r f5a102df944d -r e2602e8d2936 main/output.c
 +		zval_dtor(return_value);
  		RETURN_FALSE;
  	}
- 	/* delete buffer */
+ 	
