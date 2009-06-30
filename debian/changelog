@@ -1,6 +1,16 @@
-php5 (5.3.0~RC4-1) UNRELEASED; urgency=low
+php5 (5.3.0-1) experimental; urgency=low
 
-  ** SNAPSHOT build @dad87d2aa662e1558c76a0152369e28293131e8d **
+  * New Upstream Version
+
+  [ Sean Finney ]
+  * use ';' instead of '#' as comments in module ini files
+  * remove binary package for php5-mhash which is now built-in
+  * update removed windows modules in 006-debian_quirks.patch
+  * quilt refresh for new upstream release
+
+ -- Sean Finney <seanius@debian.org>  Tue, 30 Jun 2009 20:09:07 +0200
+
+php5 (5.3.0~RC4-1) UNRELEASED; urgency=low
 
   * New Upstream Version
 
