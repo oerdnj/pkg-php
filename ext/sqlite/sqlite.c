@@ -17,7 +17,7 @@
    |          Marcus Boerger <helly@php.net>                              |
    +----------------------------------------------------------------------+
 
-   $Id: sqlite.c,v 1.166.2.13.2.9.2.21 2009/03/22 15:05:20 iliaa Exp $
+   $Id: sqlite.c,v 1.166.2.13.2.9.2.22 2009/06/25 09:38:04 johannes Exp $
 */
 
 #ifdef HAVE_CONFIG_H
@@ -1458,7 +1458,7 @@ PHP_MINFO_FUNCTION(sqlite)
 {
 	php_info_print_table_start();
 	php_info_print_table_header(2, "SQLite support", "enabled");
-	php_info_print_table_row(2, "PECL Module version", PHP_SQLITE_MODULE_VERSION " $Id: sqlite.c,v 1.166.2.13.2.9.2.21 2009/03/22 15:05:20 iliaa Exp $");
+	php_info_print_table_row(2, "PECL Module version", PHP_SQLITE_MODULE_VERSION " $Id: sqlite.c,v 1.166.2.13.2.9.2.22 2009/06/25 09:38:04 johannes Exp $");
 	php_info_print_table_row(2, "SQLite Library", sqlite_libversion());
 	php_info_print_table_row(2, "SQLite Encoding", sqlite_libencoding());
 	php_info_print_table_end();
@@ -2818,6 +2818,11 @@ PHP_FUNCTION(sqlite_last_insert_rowid)
 static int sqlite_count_elements(zval *object, long *count TSRMLS_DC) /* {{{ */
 {
 	sqlite_object *obj = (sqlite_object*) zend_object_store_get_object(object TSRMLS_CC);
+
+	if (obj->u.res == NULL) {
+		zend_throw_exception(sqlite_ce_exception, "Row count is not available for this query", 0 TSRMLS_CC);
+		return FAILURE;
+	}
 
 	if (obj->u.res->buffered) {
 		* count = obj->u.res->nrows;

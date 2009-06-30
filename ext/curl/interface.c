@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: interface.c,v 1.62.2.14.2.27.2.57 2009/06/15 12:37:37 iliaa Exp $ */
+/* $Id: interface.c,v 1.62.2.14.2.27.2.58 2009/06/28 09:50:14 pajoye Exp $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 
@@ -2050,6 +2050,14 @@ PHP_FUNCTION(curl_exec)
 	if (ch->handlers->write->method == PHP_CURL_RETURN && ch->handlers->write->buf.len > 0) {
 		smart_str_0(&ch->handlers->write->buf);
 		RETURN_STRINGL(ch->handlers->write->buf.c, ch->handlers->write->buf.len, 1);
+	}
+
+	/* flush the file handle, so any remaining data is synched to disk */
+	if (ch->handlers->write->method == PHP_CURL_FILE && ch->handlers->write->fp) {
+		fflush(ch->handlers->write->fp);
+	}
+	if (ch->handlers->write_header->method == PHP_CURL_FILE && ch->handlers->write_header->fp) {
+		fflush(ch->handlers->write_header->fp);
 	}
 
 	if (ch->handlers->write->method == PHP_CURL_RETURN) {

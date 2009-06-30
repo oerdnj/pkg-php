@@ -2762,7 +2762,7 @@
 /* Whether to build mysqlnd as dynamic module */
 #undef COMPILE_DL_MYSQLND
 
-/* EXPERIMENTAL: Use mysqlnd internal threading */
+/* Use mysqlnd internal threading */
 #undef MYSQLND_THREADED
 
 /* Define if int32_t type is present.  */

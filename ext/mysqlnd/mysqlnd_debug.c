@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_debug.c,v 1.1.2.17 2009/06/16 13:07:14 andrey Exp $ */
+/* $Id: mysqlnd_debug.c,v 1.1.2.18 2009/06/25 19:03:51 johannes Exp $ */
 
 #include "php.h"
 #include "mysqlnd.h"
@@ -830,9 +830,6 @@ void * _mysqlnd_perealloc(void *ptr, size_t new_size, zend_bool persistent MYSQL
 void _mysqlnd_efree(void *ptr MYSQLND_MEM_D)
 {
 	DBG_ENTER(mysqlnd_efree_name);
-	if (!ptr) {
-		DBG_VOID_RETURN;
-	}
 #ifdef MYSQLND_THREADED
 	if (MYSQLND_G(thread_id) != tsrm_thread_id()) {
 		DBG_RETURN(_mysqlnd_pefree(ptr, 1 TSRMLS_CC ZEND_FILE_LINE_CC ZEND_FILE_LINE_EMPTY_CC));

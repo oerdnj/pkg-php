@@ -641,7 +641,7 @@ html_errors = On
 ; Data Handling ;
 ;;;;;;;;;;;;;;;;;
 
-; Note - track_vars is ALWAYS enabled as of PHP 4.0.3
+; Note - track_vars is ALWAYS enabled
 
 ; The separator used in PHP generated URLs to separate arguments.
 ; PHP's default setting is "&".
@@ -763,7 +763,7 @@ auto_prepend_file =
 ; http://php.net/auto-append-file
 auto_append_file =
 
-; As of 4.0b4, PHP always outputs a character encoding by default in
+; By default, PHP will output a character encoding using
 ; the Content-type: header.  To disable sending of the charset, simply
 ; set it to be empty.
 ;
@@ -958,7 +958,6 @@ default_socket_timeout = 60
 ;extension=php_interbase.dll
 ;extension=php_ldap.dll
 ;extension=php_mbstring.dll
-;extension=php_mime_magic.dll
 ;extension=php_ming.dll
 ;extension=php_mssql.dll
 ;extension=php_mysql.dll
@@ -1048,6 +1047,18 @@ default_socket_timeout = 60
 ; http://php.net/pdo-odbc.connection-pooling
 ;pdo_odbc.connection_pooling=strict
 
+;pdo_odbc.db2_instance_name
+
+[Pdo_mysql]
+; If mysqlnd is used: Number of cache slots for the internal result set cache
+; http://php.net/pdo_mysql.cache_size
+pdo_mysql.cache_size = 2000
+
+; Default socket name for local MySQL connects.  If empty, uses the built-in
+; MySQL defaults.
+; http://php.net/pdo_mysql.default-socket
+pdo_mysql.default_socket=
+
 [Phar]
 ; http://php.net/phar.readonly
 ;phar.readonly = On
@@ -1104,6 +1115,10 @@ sql.safe_mode = Off
 ; http://php.net/odbc.default-pw
 ;odbc.default_pw    =  Not yet implemented
 
+; Controls the ODBC cursor model. 
+; Default: SQL_CURSOR_STATIC (default).
+;odbc.default_cursortype
+
 ; Allow or prevent persistent links.
 ; http://php.net/odbc.allow-persistent
 odbc.allow_persistent = On
@@ -1133,10 +1148,49 @@ odbc.defaultbinmode = 1
 
 ;birdstep.max_links = -1
 
+[Interbase]
+; Allow or prevent persistent links.
+ibase.allow_persistent = 1
+
+; Maximum number of persistent links.  -1 means no limit.
+ibase.max_persistent = -1
+
+; Maximum number of links (persistent + non-persistent).  -1 means no limit.
+ibase.max_links = -1
+
+; Default database name for ibase_connect().
+;ibase.default_db =
+
+; Default username for ibase_connect().
+;ibase.default_user =
+
+; Default password for ibase_connect().
+;ibase.default_password =
+
+; Default charset for ibase_connect().
+;ibase.default_charset =
+
+; Default timestamp format.
+ibase.timestampformat = "%Y-%m-%d %H:%M:%S"
+
+; Default date format.
+ibase.dateformat = "%Y-%m-%d"
+
+; Default time format.
+ibase.timeformat = "%H:%M:%S"
+
 [MySQL]
+; Allow accessing, from PHP's perspective, local files with LOAD DATA statements
+; http://php.net/mysql.allow_local_infile
+mysql.allow_local_infile = On
+
 ; Allow or prevent persistent links.
 ; http://php.net/mysql.allow-persistent
 mysql.allow_persistent = On
+
+; If mysqlnd is used: Number of cache slots for the internal result set cache
+; http://php.net/mysql.cache_size
+mysql.cache_size = 2000
 
 ; Maximum number of persistent links.  -1 means no limit.
 ; http://php.net/mysql.max-persistent
@@ -1185,9 +1239,17 @@ mysql.trace_mode = Off
 
 [MySQLi]
 
+; Maximum number of persistent links.  -1 means no limit.
+; http://php.net/mysqli.max-persistent
+mysqli.max_persistent = -1
+
 ; Maximum number of links.  -1 means no limit.
 ; http://php.net/mysqli.max-links
 mysqli.max_links = -1
+
+; If mysqlnd is used: Number of cache slots for the internal result set cache
+; http://php.net/mysqli.cache_size
+mysqli.cache_size = 2000
 
 ; Default port number for mysqli_connect().  If unset, mysqli_connect() will use
 ; the $MYSQL_TCP_PORT or the mysql-tcp entry in /etc/services or the
@@ -1219,6 +1281,26 @@ mysqli.default_pw =
 
 ; Allow or prevent reconnect
 mysqli.reconnect = Off
+
+[mysqlnd]
+; Enable / Disable collection of general statstics by mysqlnd which can be
+; used to tune and monitor MySQL operations.
+; http://php.net/mysqlnd.collect_statistics
+mysqlnd.collect_statistics = On
+
+; Enable / Disable collection of memory usage statstics by mysqlnd which can be
+; used to tune and monitor MySQL operations.
+; http://php.net/mysqlnd.collect_memory_statistics
+mysqlnd.collect_memory_statistics = On
+
+; Size of a pre-allocated buffer used when sending commands to MySQL in bytes.
+; http://php.net/mysqlnd.net_cmd_buffer_size
+;mysqlnd.net_cmd_buffer_size = 2048
+
+; Size of a pre-allocated buffer used for reading data sent by the server in
+; bytes.
+; http://php.net/mysqlnd.net_read_buffer_size
+;mysqlnd.net_read_buffer_size = 32768
 
 [OCI8]
 
@@ -1328,6 +1410,18 @@ sybct.min_client_severity = 10
 
 ;sybct.packet_size
 
+; The maximum time in seconds to wait for a connection attempt to succeed before returning failure.
+; Default: one minute
+;sybct.login_timeout=
+
+; The name of the host you claim to be connecting from, for display by sp_who.
+; Default: none
+;sybct.hostname=
+
+; Allows you to define how often deadlocks are to be retried. -1 means "forever".
+; Default: 0
+;sybct.deadlock_retry_count=
+
 [bcmath]
 ; Number of decimal digits for all bcmath functions.
 ; http://php.net/bcmath.scale
@@ -1346,7 +1440,7 @@ session.save_handler = files
 ; where data files are stored. Note: Windows users have to change this
 ; variable in order to use PHP's session functions.
 ;
-; As of PHP 4.0.1, you can define the path as:
+; The path can be defined as:
 ;
 ;     session.save_path = "N;/path"
 ;
@@ -1641,6 +1735,10 @@ mssql.secure_connection = Off
 ; http://php.net/com.autoregister-verbose
 ;com.autoregister_verbose = true
 
+; The default character set code-page to use when passing strings to and from COM objects.
+; Default: system ANSI code page
+;com.code_page=
+
 [mbstring]
 ; language for internal character representation.
 ; http://php.net/mbstring.language
@@ -1698,6 +1796,10 @@ mssql.secure_connection = Off
 ; Default: mbstring.http_output_conv_mimetype=^(text/|application/xhtml\+xml)
 ;mbstring.http_output_conv_mimetype=
 
+; Allows to set script encoding. Only affects if PHP is compiled with --enable-zend-multibyte
+; Default: ""
+;mbstring.script_encoding=
+
 [gd]
 ; Tell the jpeg decode to ignore warnings and try to create
 ; a gd image. The warning will then be displayed as notices
@@ -1754,10 +1856,30 @@ soap.wsdl_cache_dir="/tmp"
 ; http://php.net/soap.wsdl-cache-ttl
 soap.wsdl_cache_ttl=86400
 
+; Sets the size of the cache limit. (Max. number of WSDL files to cache)
+soap.wsdl_cache_limit = 5
+
 [sysvshm]
 ; A default size of the shared memory segment
 ;sysvshm.init_mem = 10000
 
+[ldap]
+; Sets the maximum number of open links or -1 for unlimited.
+ldap.max_links = -1
+
+[mcrypt]
+; For more information about mcrypt settings see http://php.net/mcrypt-module-open
+
+; Directory where to load mcrypt algorithms
+; Default: Compiled in into libmcrypt (usually /usr/local/lib/libmcrypt)
+;mcrypt.algorithms_dir=
+
+; Directory where to load mcrypt modes
+; Default: Compiled in into libmcrypt (usually /usr/local/lib/libmcrypt)
+;mcrypt.modes_dir=
+
+[dba]
+;dba.default_handler=
 
 ; Local Variables:
 ; tab-width: 4

@@ -1,6 +1,6 @@
 /*
 	Build Configuration Template for Win32.
-	$Id: config.w32.h.in,v 1.7.2.4.2.3.2.13 2009/05/29 08:11:36 pajoye Exp $
+	$Id: config.w32.h.in,v 1.7.2.4.2.3.2.14 2009/06/23 06:56:45 kalle Exp $
 */
 
 /* Define the minimum supported version */
@@ -155,6 +155,10 @@
 
 /* Win32 support proc_open */
 #define PHP_CAN_SUPPORT_PROC_OPEN 1
+
+/* inet_ntop() / inet_pton() */
+#define HAVE_INET_PTON 1
+#define HAVE_INET_NTOP 1
 
 #define HAVE_MBLEN
 

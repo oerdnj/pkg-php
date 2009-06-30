@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.3.2.4 2007/07/03 17:25:33 sniper Exp $
+dnl $Id: config.m4,v 1.3.2.4.2.1 2009/06/23 13:09:34 johannes Exp $
 dnl
 
 PHP_ARG_ENABLE(json, whether to enable JavaScript Object Serialization support,
@@ -10,5 +10,6 @@ if test "$PHP_JSON" != "no"; then
   AC_HEADER_STDC
 
   PHP_NEW_EXTENSION(json, json.c utf8_to_utf16.c utf8_decode.c JSON_parser.c, $ext_shared)
+  PHP_INSTALL_HEADERS([ext/json], [php_json.h])
   PHP_SUBST(JSON_SHARED_LIBADD)
 fi

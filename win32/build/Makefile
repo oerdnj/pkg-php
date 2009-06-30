@@ -14,7 +14,7 @@
 #  | Author: Wez Furlong <wez@thebrainroom.com>                           |
 #  +----------------------------------------------------------------------+
 #
-# $Id: Makefile,v 1.35.2.1.2.6.2.13 2009/06/11 14:39:37 cellog Exp $
+# $Id: Makefile,v 1.35.2.1.2.6.2.14 2009/06/23 01:37:23 kalle Exp $
 # This is the makefile template for the win32 build
 
 CC="$(CL)"
@@ -146,7 +146,7 @@ dist: all build-dist
 snap: build-snap build-dist
 
 $(BUILD_DIR)\deplister.exe:	win32\build\deplister.c
-	$(CL) /Fo$(BUILD_DIR)\ /Fd$(BUILD_DIR)\ /Fp$(BUILD_DIR)\ /FR$(BUILD_DIR) -o$(BUILD_DIR)\deplister.exe win32\build\deplister.c imagehlp.lib
+	$(CL) /Fo$(BUILD_DIR)\ /Fd$(BUILD_DIR)\ /Fp$(BUILD_DIR)\ /FR$(BUILD_DIR) /Fe$(BUILD_DIR)\deplister.exe win32\build\deplister.c imagehlp.lib
 
 msi-installer: dist
 	$(BUILD_DIR)\php.exe ..\php-installer\build-installer.php "$(BUILD_DIR)" "$(PHPDLL)" "$(SAPI_TARGETS)" "$(EXT_TARGETS)" "$(PECL_TARGETS)"

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_date.c,v 1.43.2.45.2.51.2.79 2009/06/17 17:56:17 bjori Exp $ */
+/* $Id: php_date.c,v 1.43.2.45.2.51.2.84 2009/06/25 15:07:36 johannes Exp $ */
 
 #include "php.h"
 #include "php_streams.h"
@@ -37,6 +37,10 @@
 
 #if defined(__GNUC__) && __GNUC__ < 3
 static __inline __int64_t llabs( __int64_t i ) { return i >= 0 ? i : -i; }
+#endif
+
+#if defined(NETWARE) && defined(__MWERKS__)
+static __inline long long llabs( long long i ) { return i >= 0 ? i : -i; }
 #endif
 
 /* {{{ arginfo */
@@ -331,6 +335,7 @@ ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_timezone_identifiers_list, 0, 0, 0)
 	ZEND_ARG_INFO(0, what)
+	ZEND_ARG_INFO(0, country)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO(arginfo_timezone_abbreviations_list, 0)
@@ -1050,7 +1055,7 @@ static char *date_format(char *format, int format_len, timelib_time *t, int loca
 			/* year */
 			case 'L': length = slprintf(buffer, 32, "%d", timelib_is_leap((int) t->y)); break;
 			case 'y': length = slprintf(buffer, 32, "%02d", (int) t->y % 100); break;
-			case 'Y': length = slprintf(buffer, 32, "%s%04ld", t->y < 0 ? "-" : "", llabs((timelib_sll) t->y)); break;
+			case 'Y': length = slprintf(buffer, 32, "%s%04lld", t->y < 0 ? "-" : "", llabs((timelib_sll) t->y)); break;
 
 			/* time */
 			case 'a': length = slprintf(buffer, 32, "%s", t->h >= 12 ? "pm" : "am"); break;
@@ -2207,6 +2212,10 @@ static HashTable *date_object_get_properties_interval(zval *object TSRMLS_DC)
 	intervalobj = (php_interval_obj *) zend_object_store_get_object(object TSRMLS_CC);
 
 	props = intervalobj->std.properties;
+
+	if (!intervalobj->initialized) {
+		return props;
+	}
 
 #define PHP_DATE_INTERVAL_ADD_PROPERTY(n,f) \
 	MAKE_STD_ZVAL(zv); \
@@ -3737,7 +3746,7 @@ static int check_id_allowed(char *id, long what)
 	return 0;
 }
 
-/* {{{ proto array timezone_identifiers_list([long what])
+/* {{{ proto array timezone_identifiers_list([long what[, string country]])
    Returns numerically index array with all timezone identifiers.
 */
 PHP_FUNCTION(timezone_identifiers_list)

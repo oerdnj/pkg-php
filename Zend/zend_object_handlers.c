@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_object_handlers.c,v 1.135.2.6.2.22.2.30 2009/06/18 13:46:16 scottmac Exp $ */
+/* $Id: zend_object_handlers.c,v 1.135.2.6.2.22.2.31 2009/06/19 03:29:47 scottmac Exp $ */
 
 #include "zend.h"
 #include "zend_globals.h"
@@ -942,8 +942,10 @@ ZEND_API zend_function *zend_std_get_static_method(zend_class_entry *ce, char *f
 
 	if (function_name_strlen == ce->name_length && ce->constructor) {
 		lc_class_name = zend_str_tolower_dup(ce->name, ce->name_length);
-		/* Only change the method to the constructor if a __construct() method doesn't exist */
-		if (!memcmp(lc_class_name, function_name_strval, function_name_strlen) && memcmp(ce->constructor->common.function_name, ZEND_CONSTRUCTOR_FUNC_NAME, sizeof(ZEND_CONSTRUCTOR_FUNC_NAME))) {
+		/* Only change the method to the constructor if the constructor isn't called __construct
+		 * we check for __ so we can be binary safe for lowering, we should use ZEND_CONSTRUCTOR_FUNC_NAME
+		 */
+		if (!memcmp(lc_class_name, function_name_strval, function_name_strlen) && memcmp(ce->constructor->common.function_name, "__", sizeof("__") - 1)) {
 			fbc = ce->constructor;
 		}
 		efree(lc_class_name);
