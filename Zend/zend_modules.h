@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_modules.h,v 1.67.2.3.2.4.2.8 2009/01/17 02:05:13 stas Exp $ */
+/* $Id: zend_modules.h,v 1.67.2.3.2.4.2.9 2009/06/26 15:44:19 johannes Exp $ */
 
 #ifndef MODULES_H
 #define MODULES_H
@@ -33,7 +33,7 @@
 #define ZEND_MODULE_INFO_FUNC_ARGS zend_module_entry *zend_module TSRMLS_DC
 #define ZEND_MODULE_INFO_FUNC_ARGS_PASSTHRU zend_module TSRMLS_CC
 
-#define ZEND_MODULE_API_NO 20090115
+#define ZEND_MODULE_API_NO 20090626
 #ifdef ZTS
 #define USING_ZTS 1
 #else

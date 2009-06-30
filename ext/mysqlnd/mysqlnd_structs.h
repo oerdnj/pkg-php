@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_structs.h,v 1.2.2.20 2009/06/16 09:15:38 andrey Exp $ */
+/* $Id: mysqlnd_structs.h,v 1.2.2.21 2009/06/25 19:03:51 johannes Exp $ */
 
 #ifndef MYSQLND_STRUCTS_H
 #define MYSQLND_STRUCTS_H
@@ -45,10 +45,12 @@ struct st_mysqlnd_memory_pool
 
 struct st_mysqlnd_memory_pool_chunk
 {
-	uint32_t			app;
+	uint64_t			app;
 	MYSQLND_MEMORY_POOL *pool;
 	zend_uchar			*ptr;
-	uint32_t			size;
+	unsigned int				size;
+	void				(*resize_chunk)(MYSQLND_MEMORY_POOL_CHUNK * chunk, unsigned int size TSRMLS_DC);
+	void				(*free_chunk)(MYSQLND_MEMORY_POOL_CHUNK * chunk, zend_bool cache_it TSRMLS_DC);
 	zend_bool			from_pool;
 };
 

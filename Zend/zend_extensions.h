@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_extensions.h,v 1.67.2.3.2.3.2.8 2009/04/08 23:06:16 stas Exp $ */
+/* $Id: zend_extensions.h,v 1.67.2.3.2.3.2.9 2009/06/26 15:44:18 johannes Exp $ */
 
 #ifndef ZEND_EXTENSIONS_H
 #define ZEND_EXTENSIONS_H
@@ -28,7 +28,7 @@
 /* The first number is the engine version and the rest is the date.
  * This way engine 2/3 API no. is always greater than engine 1 API no..
  */
-#define ZEND_EXTENSION_API_NO	220090115
+#define ZEND_EXTENSION_API_NO	220090626
 
 typedef struct _zend_extension_version_info {
 	int zend_extension_api_no;

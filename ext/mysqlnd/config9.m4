@@ -1,11 +1,12 @@
 dnl
-dnl $Id: config9.m4,v 1.3.2.9 2009/03/17 10:05:19 johannes Exp $
+dnl $Id: config9.m4,v 1.3.2.10 2009/06/23 13:19:28 johannes Exp $
 dnl config.m4 for mysqlnd driver
 
 
 PHP_ARG_ENABLE(mysqlnd_threading, whether to enable threaded fetch in mysqlnd,
 [  --enable-mysqlnd-threading
-                            MYSQLND: Enable threaded fetch. Note: This forces ZTS on!], no, no)
+                            EXPERIMENTAL: Enable mysqlnd threaded fetch.
+                            Note: This forces ZTS on!], no, no)
 
 dnl If some extension uses mysqlnd it will get compiled in PHP core
 if test "$PHP_MYSQLND_ENABLED" = "yes"; then
@@ -23,7 +24,7 @@ if test "$PHP_MYSQLND_ENABLED" = "yes"; then
   dnl Windows uses config.w32 thus this code is safe for now
   if test "$PHP_MYSQLND_THREADING" = "yes"; then
     PHP_BUILD_THREAD_SAFE
-    AC_DEFINE([MYSQLND_THREADED], 1, [EXPERIMENTAL: Use mysqlnd internal threading])
+    AC_DEFINE([MYSQLND_THREADED], 1, [Use mysqlnd internal threading])
   fi
 
   dnl This creates a file so it has to be after above macros

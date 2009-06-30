@@ -1,4 +1,4 @@
-## $Id: configure.in,v 1.579.2.52.2.77.2.55 2009/06/18 21:01:03 johannes Exp $ -*- autoconf -*-
+## $Id: configure.in,v 1.579.2.52.2.77.2.58 2009/06/26 15:44:18 johannes Exp $ -*- autoconf -*-
 dnl ## Process this file with autoconf to produce a configure script.
 
 divert(1)
@@ -42,7 +42,7 @@ AC_CONFIG_HEADER(main/php_config.h)
 PHP_MAJOR_VERSION=5
 PHP_MINOR_VERSION=3
 PHP_RELEASE_VERSION=0
-PHP_EXTRA_VERSION="RC4"
+PHP_EXTRA_VERSION=""
 PHP_VERSION="$PHP_MAJOR_VERSION.$PHP_MINOR_VERSION.$PHP_RELEASE_VERSION$PHP_EXTRA_VERSION"
 PHP_VERSION_ID=`expr [$]PHP_MAJOR_VERSION \* 10000 + [$]PHP_MINOR_VERSION \* 100 + [$]PHP_RELEASE_VERSION`
 
@@ -217,8 +217,11 @@ case $host_cpu in
     ;;
   sparc*)
     if test "$SUNCC" = "yes"; then
-      CFLAGS="$CFLAGS -xmemalign=8s"
+      CFLAGS="$CFLAGS -xmemalign=8i"
+    else
+      CFLAGS=""
     fi
+    ;;
 esac
 
 dnl activate some gcc specific optimizations for gcc >= 4

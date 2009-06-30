@@ -1,4 +1,4 @@
-<?php # $Id: mkdist.php,v 1.13.4.1.2.12 2009/06/11 14:39:37 cellog Exp $
+<?php # $Id: mkdist.php,v 1.13.4.1.2.15 2009/06/24 11:51:05 pajoye Exp $
 /* piece together a windows binary distro */
 
 $build_dir = $argv[1];
@@ -227,11 +227,12 @@ if(sizeof($pecl_targets)) {
 
 /* populate reading material */
 $text_files = array(
-	"LICENSE" => 		"license.txt",
-	"NEWS" => 			"news.txt",
-	"php.ini-development" => 	"php.ini-development",
+	"LICENSE" => "license.txt",
+	"NEWS" => "news.txt",
+	"README.REDIST.BINS" => "readme-redist-bins.txt",
+	"php.ini-development" => "php.ini-development",
 	"php.ini-production" => "php.ini-production",
-	"win32/install.txt" => 	"install.txt",
+	"win32/install.txt" => "install.txt",
 	"win32/pws-php5cgi.reg" => "pws-php5cgi.reg",
 	"win32/pws-php5isapi.reg" => "pws-php5isapi.reg",
 );
@@ -381,7 +382,9 @@ function copy_test_dir($directory, $dest)
 		$full_path = $directory . '/' . $file;
 		if($file != '.' && $file != '..' && $file != 'CVS' && is_dir($full_path)) {
 			if ($file == 'tests') {
-				mkdir($dest . '/' . $full_path , 0775, true);
+				if (!is_dir($dest . '/' . $full_path)) {
+					mkdir($dest . '/' . $full_path , 0775, true);
+				}
 				copy_dir($full_path, $dest . '/' . $full_path . '/');
 				continue;
 			} else {
@@ -395,23 +398,32 @@ function copy_test_dir($directory, $dest)
 
 function make_phar_dot_phar($dist_dir)
 {
-  if (!extension_loaded('phar')) return;
-  $path_to_php = $dist_dir;
-  $path_to_phar = realpath(__DIR__ . '/../../ext/phar');
-  echo "Generating pharcommand.phar\n";
-  $phar = new Phar($path_to_php . '/pharcommand.phar', 0, 'pharcommand');
-  foreach (new DirectoryIterator($path_to_phar . '/phar') as $file) {
-    if ($file->isDir() || $file == 'phar.php') continue;
-    echo 'adding ', $file, "\n";
-    $phar[(string) $file] = file_get_contents($path_to_phar.  '/phar/' . $file);
-  }
-  $phar->setSignatureAlgorithm(Phar::SHA1);
-  $stub = file($path_to_phar . '/phar/phar.php');
-  unset($stub[0]); // remove hashbang
-  $phar->setStub(implode('', $stub));
+	if (!extension_loaded('phar')) {
+		return;
+	}
 
-  echo "Creating phar.phar.bat\n";
-  file_put_contents($path_to_php . '/phar.phar.bat', "%~dp0php.exe %~dp0pharcommand.phar %1 %2 %3 %4 %5 %6 %7 %8 %9\r\n");
+	$path_to_phar = realpath(__DIR__ . '/../../ext/phar');
+
+	echo "Generating pharcommand.phar\n";
+	$phar = new Phar($dist_dir . '/pharcommand.phar', 0, 'pharcommand');
+
+	foreach (new DirectoryIterator($path_to_phar . '/phar') as $file) {
+		if ($file->isDir() || $file == 'phar.php') {
+			continue;
+		}
+
+		echo 'adding ', $file, "\n";
+		$phar[(string) $file] = file_get_contents($path_to_phar.  '/phar/' . $file);
+	}
+
+	$phar->setSignatureAlgorithm(Phar::SHA1);
+	$stub = file($path_to_phar . '/phar/phar.php');
+
+	unset($stub[0]); // remove hashbang
+	$phar->setStub(implode('', $stub));
+
+	echo "Creating phar.phar.bat\n";
+	file_put_contents($dist_dir . '/phar.phar.bat', "%~dp0php.exe %~dp0pharcommand.phar %*\r\n");
 }
 
 if (!is_dir($test_dir)) {
