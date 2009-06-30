@@ -293,7 +293,7 @@ r1: initial revision
 +
 --- php.orig/ext/date/php_date.c
 +++ php/ext/date/php_date.c
-@@ -847,6 +847,11 @@ static char* guess_timezone(const timeli
+@@ -852,6 +852,11 @@ static char* guess_timezone(const timeli
  	if (DATEG(default_timezone) && (strlen(DATEG(default_timezone)) > 0) && timelib_timezone_id_is_valid(DATEG(default_timezone), tzdb)) {
  		return DATEG(default_timezone);
  	}
