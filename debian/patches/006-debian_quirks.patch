@@ -75,7 +75,7 @@
  ;
  ; Windows: "\path1;\path2"
  ;include_path = ".;c:\php\includes"
-@@ -939,54 +939,6 @@ default_socket_timeout = 60
+@@ -939,53 +939,6 @@ default_socket_timeout = 60
  ; If you only provide the name of the extension, PHP will look for it in its
  ; default extension directory.
  ;
@@ -98,7 +98,6 @@
 -;extension=php_interbase.dll
 -;extension=php_ldap.dll
 -;extension=php_mbstring.dll
--;extension=php_mime_magic.dll
 -;extension=php_ming.dll
 -;extension=php_mssql.dll
 -;extension=php_mysql.dll
