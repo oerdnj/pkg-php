@@ -115,6 +115,7 @@ COMMON_CONFIG=--build=$(DEB_BUILD_GNU_TYPE) \
 		--with-openssl=/usr \
 		--enable-soap \
 		--enable-zip \
+		--with-mhash=yes \
 		--with-mime-magic=$(MAGIC_MIME) \
 		--with-exec-dir=/usr/lib/php5/libexec \
 		--with-system-tzdata
@@ -229,7 +230,6 @@ configure-apache2-stamp: prepared-stamp
 		--with-ldap=shared,/usr \
 		--with-ldap-sasl=/usr \
 		--with-mcrypt=shared,/usr \
-		--with-mhash=shared,/usr \
 		--with-mysql=shared,/usr \
 		--with-mysqli=shared,/usr/bin/mysql_config \
 		--with-pspell=shared,/usr \

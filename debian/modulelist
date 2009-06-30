@@ -5,7 +5,6 @@ imap IMAP
 interbase Interbase
 ldap LDAP
 mcrypt MCrypt
-mhash MHASH
 mysql MySQL
 odbc ODBC
 pgsql PostgreSQL
