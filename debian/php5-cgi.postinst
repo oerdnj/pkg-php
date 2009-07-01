@@ -22,13 +22,13 @@ if dpkg --compare-versions "$2" le-nl "5.1.6-4"; then
 		oldmd5=`md5sum $phpini | cut -d' ' -f1`
 		if [ "$oldmd5" = "c85605baab79fbcd3c289e442eb3caa2" ]; then
 			# then silently update it before registering via ucf
-			cp /usr/share/php5/php.ini-dist $phpini
+			cp /usr/share/php5/php.ini-production $phpini
 		fi
 	fi
 fi
 # END LEGACY SUPPORT
 
-ucf /usr/share/php5/php.ini-dist $phpini
+ucf /usr/share/php5/php.ini-production $phpini
 
 update-alternatives \
         --install /usr/bin/php-cgi php-cgi /usr/bin/php5-cgi 50 \

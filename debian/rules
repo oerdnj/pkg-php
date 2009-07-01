@@ -378,11 +378,10 @@ install: build
 		debian/libapache2-mod-php5filter/etc/apache2/mods-available/php5filter.conf
 
 	# sanitize php.ini file
-	cat php.ini-dist | tr "\t" " " > debian/php5-common/usr/share/php5/php.ini-dist
-	cat php.ini-dist | tr "\t" " " | sed -e'/memory_limit =/ s/128M/32M/g' > debian/php5-common/usr/share/php5/php.ini-dist.cli
-	cat php.ini-dist | tr "\t" " " > debian/php5-common/usr/share/doc/php5-common/examples/php.ini-dist
-	cat php.ini-recommended | tr "\t" " " > debian/php5-common/usr/share/doc/php5-common/examples/php.ini-recommended
-	cat php.ini-paranoid | tr "\t" " " > debian/php5-common/usr/share/doc/php5-common/examples/php.ini-paranoid
+	cat php.ini-production | tr "\t" " " > debian/php5-common/usr/share/php5/php.ini-production
+	cat php.ini-production | tr "\t" " " | sed -e'/memory_limit =/ s/128M/32M/g' > debian/php5-common/usr/share/php5/php.ini-production.cli
+	cat php.ini-production | tr "\t" " " > debian/php5-common/usr/share/doc/php5-common/examples/php.ini-production
+	cat php.ini-development | tr "\t" " " > debian/php5-common/usr/share/doc/php5-common/examples/php.ini-development
 	cp test-results.txt debian/php5-common/usr/share/doc/php5-common/
 
 	# install the apache modules' files
