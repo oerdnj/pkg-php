@@ -1,3 +1,9 @@
+php5 (5.3.0-2) experimental; urgency=low
+
+  * update configuration file names to new upstream naming convention
+
+ -- Sean Finney <seanius@debian.org>  Wed, 01 Jul 2009 09:12:10 +0200
+
 php5 (5.3.0-1) experimental; urgency=low
 
   * New Upstream Version
