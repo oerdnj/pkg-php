@@ -145,8 +145,10 @@ Package: php-pear
 Architecture: all
 Depends: php5-common (>= ${source:Version}), php5-cli | php4-cli
 Recommends: gnupg
+Conflicts: php-xml-util
 Suggests: php5-dev | php4-dev
-Replaces: php4-pear (<< 4:4.4.0-0)
+Replaces: php4-pear (<< 4:4.4.0-0), php-xml-util
+Provides: php-xml-util
 Description: PEAR - PHP Extension and Application Repository
  This package contains the base PEAR classes for PHP, as well as the PEAR
  installer.  Many PEAR classes are already packaged for Debian, and can be
