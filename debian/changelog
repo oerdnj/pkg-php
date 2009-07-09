@@ -1,3 +1,16 @@
+php5 (5.2.10.dfsg.1-2) unstable; urgency=low
+
+  * Declare that PEAR replaces XML_UTIL (Closes: #534621)
+  * Bump standards-version, no change needed
+  * Fix an unconditional limit on dblib_driver.c (Closes: #534881)
+  * Fix a segfault on exif_data_read with corrupted jpg files (Closes: #535888)
+  * Recommend php5-suhosin, as suggested by Thijs (Closes: #529760)
+  * Set sysconfig to /etc, to avoid getting /usr/etc in PHP_SYSCONFDIR
+  * Add myself to uploaders
+  * Fix the path to PEAR's config, directly in rules (Closes: #507762)
+
+ -- Raphael Geissert <geissert@debian.org>  Thu, 09 Jul 2009 18:25:48 -0500
+
 php5 (5.2.10.dfsg.1-1) unstable; urgency=low
 
   * New Upstream Version
