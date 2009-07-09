@@ -38,3 +38,4 @@ gentoo/006_ext-curl-set_opt-crash.patch
 gentoo/009_ob-memory-leaks.patch
 mssql-null-exception.patch
 exif_read_data-segfault.patch
+pear-config-is-in-etc_pear.patch
