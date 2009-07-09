@@ -36,3 +36,4 @@ bad_whatis_entries.patch
 curl_streams_sleep.patch
 gentoo/006_ext-curl-set_opt-crash.patch
 gentoo/009_ob-memory-leaks.patch
+mssql-null-exception.patch
