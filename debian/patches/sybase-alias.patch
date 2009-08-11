@@ -13,7 +13,7 @@ Index: php/ext/mssql/php_mssql.c
 +        PHP_FALIAS(sybase_select_db, mssql_select_db,                         NULL)
 +        PHP_FALIAS(sybase_query, mssql_query,                                     NULL)
 +        PHP_FALIAS(sybase_fetch_batch, mssql_fetch_batch,                       NULL)
-+        PHP_FALIAS(sybase_rows_affected, mssql_rows_affected,                     NULL)
++        PHP_FALIAS(sybase_affected_rows, mssql_rows_affected,                     NULL)
 +        PHP_FALIAS(sybase_free_result, mssql_free_result,                       NULL)
 +        PHP_FALIAS(sybase_get_last_message, mssql_get_last_message,          NULL)
 +        PHP_FALIAS(sybase_num_rows, mssql_num_rows,                          NULL)
