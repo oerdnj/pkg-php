@@ -1,0 +1,103 @@
+Index: pkg-php/configure.in
+===================================================================
+--- pkg-php.orig/configure.in	2009-08-25 15:39:10.000000000 +0200
++++ pkg-php/configure.in	2009-08-25 15:39:21.000000000 +0200
+@@ -1,7 +1,7 @@
+ ## $Id: configure.in,v 1.579.2.52.2.77.2.58 2009/06/26 15:44:18 johannes Exp $ -*- autoconf -*-
+ dnl ## Process this file with autoconf to produce a configure script.
+ 
+-divert(1)
++dnl divert(1)
+ 
+ dnl ## Diversion 1 is the autoconf + automake setup phase. We also
+ dnl ## set the PHP version, deal with platform-specific compile
+@@ -23,16 +23,16 @@
+ dnl ## All of these are normally in the extension directories.
+ dnl ## Diversion 5 is the last one.  Here we generate files and clean up.
+ 
+-dnl include Zend specific macro definitions first
+-dnl -------------------------------------------------------------------------
+-sinclude(Zend/acinclude.m4)
+-
+ dnl Basic autoconf + automake initialization, generation of config.nice.
+ dnl -------------------------------------------------------------------------
+ 
+ AC_PREREQ(2.13)
+ AC_INIT(README.CVS-RULES)
+ 
++dnl include Zend specific macro definitions first
++dnl -------------------------------------------------------------------------
++sinclude(Zend/acinclude.m4)
++
+ PHP_CONFIG_NICE(config.nice)
+ 
+ PHP_CANONICAL_HOST_TARGET
+@@ -308,7 +308,7 @@
+ sinclude(TSRM/tsrm.m4)
+ 
+ 
+-divert(2)
++dnl divert(2)
+ 
+ dnl ## Diversion 2 is where we set PHP-specific options and come up
+ dnl ## with reasonable default values for them. We check for pthreads here
+@@ -347,7 +347,7 @@
+   PTHREADS_FLAGS
+ fi
+ 
+-divert(3)
++dnl divert(3)
+ 
+ dnl ## In diversion 3 we check for compile-time options to the PHP
+ dnl ## core and how to deal with different system dependencies. 
+@@ -702,7 +702,7 @@
+   PHP_CRYPT_R_STYLE
+ fi
+ 
+-divert(4)
++dnl divert(4)
+ 
+ dnl ## In diversion 4 we check user-configurable general settings.
+ 
+@@ -943,7 +943,7 @@
+   AC_MSG_RESULT([using system default])
+ fi
+ 
+-divert(5)
++dnl divert(5)
+ 
+ dnl ## In diversion 5 we check which extensions should be compiled.
+ dnl ## All of these are normally in the extension directories.
+Index: pkg-php/ext/standard/config.m4
+===================================================================
+--- pkg-php.orig/ext/standard/config.m4	2009-08-25 15:39:10.000000000 +0200
++++ pkg-php/ext/standard/config.m4	2009-08-25 15:39:23.000000000 +0200
+@@ -1,6 +1,6 @@
+ dnl $Id: config.m4,v 1.80.2.3.2.3.2.8 2009/01/11 23:37:16 scottmac Exp $ -*- autoconf -*-
+ 
+-divert(3)dnl
++dnl divert(3)dnl
+ 
+ dnl
+ dnl Check if flush should be called explicitly after buffered io
+@@ -220,7 +220,7 @@
+ AC_CHECK_FUNCS(getcwd getwd asinh acosh atanh log1p hypot glob strfmon nice fpclass isinf isnan)
+ AC_FUNC_FNMATCH	
+ 
+-divert(5)dnl
++dnl divert(5)dnl
+ 
+ dnl
+ dnl Check if there is a support means of creating a new process
+Index: pkg-php/scripts/phpize.m4
+===================================================================
+--- pkg-php.orig/scripts/phpize.m4	2009-08-25 15:39:10.000000000 +0200
++++ pkg-php/scripts/phpize.m4	2009-08-25 15:39:23.000000000 +0200
+@@ -1,6 +1,6 @@
+ dnl This file becomes configure.in for self-contained extensions.
+ 
+-divert(1)
++dnl divert(1)
+ 
+ AC_PREREQ(2.13)
+ AC_INIT(config.m4)

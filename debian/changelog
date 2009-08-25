@@ -3,8 +3,9 @@ php5 (5.3.0-3) unstable; urgency=low
   * Upload to unstable
   * Fix segmentation fault in php-gd (Closes: #543496)
   * Update suhosin patch to 0.9.8 *BETA* and enable it again
+  * Fix FTBFS with current autoconf/automake (Closes: #542906, #542088)
 
- -- Ondřej Surý <ondrej@debian.org>  Tue, 25 Aug 2009 14:46:40 +0200
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 25 Aug 2009 15:40:09 +0200
 
 php5 (5.3.0-2) experimental; urgency=low
 
