@@ -22,6 +22,7 @@ libtool2.2.patch
 108-64_bit_datetime.patch
 112-proc_open.patch
 113-php.ini_securitynotes.patch
+114-php_gd_segfault.patch
 libdb_is_-ldb
 fix_broken_upstream_tests.patch
 use_embedded_timezonedb.patch

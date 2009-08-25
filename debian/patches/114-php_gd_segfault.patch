@@ -1,0 +1,26 @@
+diff --git a/ext/gd/libgd/gd_compat.c b/ext/gd/libgd/gd_compat.c
+index bba6234..473ea20 100644
+--- a/ext/gd/libgd/gd_compat.c
++++ b/ext/gd/libgd/gd_compat.c
+@@ -14,7 +14,7 @@ int gdJpegGetVersionInt()
+ 	return JPEG_LIB_VERSION;
+ }
+ 
+-int gdJpegGetVersionString()
++const char * gdJpegGetVersionString()
+ {
+ 	switch(JPEG_LIB_VERSION) {
+ 		case 62:
+diff --git a/ext/gd/libgd/gd_compat.h b/ext/gd/libgd/gd_compat.h
+index 022d0a8..c084a00 100644
+--- a/ext/gd/libgd/gd_compat.h
++++ b/ext/gd/libgd/gd_compat.h
+@@ -8,7 +8,7 @@
+ #endif
+ 
+ const char * gdPngGetVersionString();
+-int gdJpegGetVersionString();
++const char * gdJpegGetVersionString();
+ int gdJpegGetVersionInt();
+ int overflow2(int a, int b);
+ 
