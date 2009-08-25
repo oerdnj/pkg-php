@@ -44,7 +44,7 @@ ifeq (alpha-linux-gnu,$(DEB_HOST_GNU_TYPE))
   CFLAGS += -mieee
 endif
 
-ifeq ($(DEB_HOST_GNU_TYPE), $(findstring $(DEB_HOST_GNU_TYPE), ia64-linux-gnu powerpc64-linux-gnu))
+ifeq ($(DEB_HOST_GNU_TYPE), $(findstring $(DEB_HOST_GNU_TYPE), ia64-linux-gnu powerpc64-linux-gnu avr32-linux-gnu))
   CFLAGS += -g
 else
   CFLAGS += -gstabs
