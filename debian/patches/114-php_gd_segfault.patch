@@ -1,8 +1,6 @@
-Index: pkg-php/ext/gd/libgd/gd_compat.c
-===================================================================
---- pkg-php.orig/ext/gd/libgd/gd_compat.c	2009-08-25 15:43:41.000000000 +0200
-+++ pkg-php/ext/gd/libgd/gd_compat.c	2009-08-25 15:44:03.000000000 +0200
-@@ -14,7 +14,7 @@
+--- pkg-php.orig/ext/gd/libgd/gd_compat.c
++++ pkg-php/ext/gd/libgd/gd_compat.c
+@@ -14,7 +14,7 @@ int gdJpegGetVersionInt()
  	return JPEG_LIB_VERSION;
  }
  
@@ -11,10 +9,8 @@ Index: pkg-php/ext/gd/libgd/gd_compat.c
  {
  	switch(JPEG_LIB_VERSION) {
  		case 62:
-Index: pkg-php/ext/gd/libgd/gd_compat.h
-===================================================================
---- pkg-php.orig/ext/gd/libgd/gd_compat.h	2009-08-25 15:43:41.000000000 +0200
-+++ pkg-php/ext/gd/libgd/gd_compat.h	2009-08-25 15:44:03.000000000 +0200
+--- pkg-php.orig/ext/gd/libgd/gd_compat.h
++++ pkg-php/ext/gd/libgd/gd_compat.h
 @@ -8,7 +8,7 @@
  #endif
  

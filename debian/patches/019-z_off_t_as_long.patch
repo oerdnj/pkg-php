@@ -1,7 +1,5 @@
-Index: pkg-php/ext/zlib/zconf.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ pkg-php/ext/zlib/zconf.h	2009-08-25 15:44:02.000000000 +0200
+--- /dev/null
++++ pkg-php/ext/zlib/zconf.h
 @@ -0,0 +1,326 @@
 +/* zconf.h -- configuration of the zlib compression library
 + * Copyright (C) 1995-2003 Jean-loup Gailly.
@@ -329,10 +327,8 @@ Index: pkg-php/ext/zlib/zconf.h
 +#endif
 +
 +#endif /* ZCONF_H */
-Index: pkg-php/ext/zlib/zlib.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ pkg-php/ext/zlib/zlib.h	2009-08-25 15:44:02.000000000 +0200
+--- /dev/null
++++ pkg-php/ext/zlib/zlib.h
 @@ -0,0 +1,1200 @@
 +/* zlib.h -- interface of the 'zlib' general purpose compression library
 +  version 1.2.1.1, January 9th, 2004

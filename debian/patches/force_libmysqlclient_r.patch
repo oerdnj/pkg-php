@@ -1,8 +1,6 @@
-Index: pkg-php/ext/mysql/config.m4
-===================================================================
---- pkg-php.orig/ext/mysql/config.m4	2009-08-25 15:43:40.000000000 +0200
-+++ pkg-php/ext/mysql/config.m4	2009-08-25 15:44:03.000000000 +0200
-@@ -90,7 +90,7 @@
+--- pkg-php.orig/ext/mysql/config.m4
++++ pkg-php/ext/mysql/config.m4
+@@ -90,7 +90,7 @@ elif test "$PHP_MYSQL" != "no"; then
  Note that the MySQL client library is not bundled anymore!])
    fi
  
@@ -11,11 +9,9 @@ Index: pkg-php/ext/mysql/config.m4
      MYSQL_LIBNAME=mysqlclient_r
    else
      MYSQL_LIBNAME=mysqlclient
-Index: pkg-php/ext/mysqli/config.m4
-===================================================================
---- pkg-php.orig/ext/mysqli/config.m4	2009-08-25 15:43:40.000000000 +0200
-+++ pkg-php/ext/mysqli/config.m4	2009-08-25 15:44:03.000000000 +0200
-@@ -29,7 +29,7 @@
+--- pkg-php.orig/ext/mysqli/config.m4
++++ pkg-php/ext/mysqli/config.m4
+@@ -29,7 +29,7 @@ elif test "$PHP_MYSQLI" != "no"; then
      MYSQL_LIB_CFG='--libmysqld-libs'
      dnl mysqlnd doesn't support embedded, so we have to add some extra stuff
      mysqli_extra_sources="mysqli_embedded.c"
@@ -24,11 +20,9 @@ Index: pkg-php/ext/mysqli/config.m4
      MYSQL_LIB_CFG='--libs_r'
      MYSQL_LIB_NAME='mysqlclient_r'
    else
-Index: pkg-php/ext/pdo_mysql/config.m4
-===================================================================
---- pkg-php.orig/ext/pdo_mysql/config.m4	2009-08-25 15:43:40.000000000 +0200
-+++ pkg-php/ext/pdo_mysql/config.m4	2009-08-25 15:44:03.000000000 +0200
-@@ -68,7 +68,7 @@
+--- pkg-php.orig/ext/pdo_mysql/config.m4
++++ pkg-php/ext/pdo_mysql/config.m4
+@@ -68,7 +68,7 @@ if test "$PHP_PDO_MYSQL" != "no"; then
          AC_PATH_PROG(SED, sed)
        fi
  

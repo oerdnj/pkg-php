@@ -1,7 +1,5 @@
-Index: pkg-php/ext/standard/proc_open.c
-===================================================================
---- pkg-php.orig/ext/standard/proc_open.c	2009-08-25 15:43:41.000000000 +0200
-+++ pkg-php/ext/standard/proc_open.c	2009-08-25 15:44:03.000000000 +0200
+--- pkg-php.orig/ext/standard/proc_open.c
++++ pkg-php/ext/standard/proc_open.c
 @@ -61,7 +61,7 @@
   * */
  #ifdef PHP_CAN_SUPPORT_PROC_OPEN

@@ -1,7 +1,5 @@
-Index: pkg-php/configure.in
-===================================================================
---- pkg-php.orig/configure.in	2009-08-25 15:44:03.000000000 +0200
-+++ pkg-php/configure.in	2009-08-25 15:44:28.000000000 +0200
+--- pkg-php.orig/configure.in
++++ pkg-php/configure.in
 @@ -1,7 +1,7 @@
  ## $Id: configure.in,v 1.579.2.52.2.77.2.58 2009/06/26 15:44:18 johannes Exp $ -*- autoconf -*-
  dnl ## Process this file with autoconf to produce a configure script.
@@ -11,7 +9,7 @@ Index: pkg-php/configure.in
  
  dnl ## Diversion 1 is the autoconf + automake setup phase. We also
  dnl ## set the PHP version, deal with platform-specific compile
-@@ -23,16 +23,16 @@
+@@ -23,16 +23,16 @@ dnl ## In diversion 5 we check which ext
  dnl ## All of these are normally in the extension directories.
  dnl ## Diversion 5 is the last one.  Here we generate files and clean up.
  
@@ -32,7 +30,7 @@ Index: pkg-php/configure.in
  PHP_CONFIG_NICE(config.nice)
  
  PHP_CANONICAL_HOST_TARGET
-@@ -308,7 +308,7 @@
+@@ -308,7 +308,7 @@ sinclude(TSRM/threads.m4)
  sinclude(TSRM/tsrm.m4)
  
  
@@ -41,7 +39,7 @@ Index: pkg-php/configure.in
  
  dnl ## Diversion 2 is where we set PHP-specific options and come up
  dnl ## with reasonable default values for them. We check for pthreads here
-@@ -347,7 +347,7 @@
+@@ -347,7 +347,7 @@ if test "$enable_maintainer_zts" = "yes"
    PTHREADS_FLAGS
  fi
  
@@ -50,7 +48,7 @@ Index: pkg-php/configure.in
  
  dnl ## In diversion 3 we check for compile-time options to the PHP
  dnl ## core and how to deal with different system dependencies. 
-@@ -702,7 +702,7 @@
+@@ -702,7 +702,7 @@ if test "x$php_crypt_r" = "x1"; then
    PHP_CRYPT_R_STYLE
  fi
  
@@ -59,7 +57,7 @@ Index: pkg-php/configure.in
  
  dnl ## In diversion 4 we check user-configurable general settings.
  
-@@ -943,7 +943,7 @@
+@@ -943,7 +943,7 @@ else
    AC_MSG_RESULT([using system default])
  fi
  
@@ -68,10 +66,8 @@ Index: pkg-php/configure.in
  
  dnl ## In diversion 5 we check which extensions should be compiled.
  dnl ## All of these are normally in the extension directories.
-Index: pkg-php/ext/standard/config.m4
-===================================================================
---- pkg-php.orig/ext/standard/config.m4	2009-08-25 15:43:40.000000000 +0200
-+++ pkg-php/ext/standard/config.m4	2009-08-25 15:44:03.000000000 +0200
+--- pkg-php.orig/ext/standard/config.m4
++++ pkg-php/ext/standard/config.m4
 @@ -1,6 +1,6 @@
  dnl $Id: config.m4,v 1.80.2.3.2.3.2.8 2009/01/11 23:37:16 scottmac Exp $ -*- autoconf -*-
  
@@ -80,7 +76,7 @@ Index: pkg-php/ext/standard/config.m4
  
  dnl
  dnl Check if flush should be called explicitly after buffered io
-@@ -220,7 +220,7 @@
+@@ -220,7 +220,7 @@ dnl
  AC_CHECK_FUNCS(getcwd getwd asinh acosh atanh log1p hypot glob strfmon nice fpclass isinf isnan)
  AC_FUNC_FNMATCH	
  
@@ -89,10 +85,8 @@ Index: pkg-php/ext/standard/config.m4
  
  dnl
  dnl Check if there is a support means of creating a new process
-Index: pkg-php/scripts/phpize.m4
-===================================================================
---- pkg-php.orig/scripts/phpize.m4	2009-08-25 15:43:41.000000000 +0200
-+++ pkg-php/scripts/phpize.m4	2009-08-25 15:44:03.000000000 +0200
+--- pkg-php.orig/scripts/phpize.m4
++++ pkg-php/scripts/phpize.m4
 @@ -1,6 +1,6 @@
  dnl This file becomes configure.in for self-contained extensions.
  

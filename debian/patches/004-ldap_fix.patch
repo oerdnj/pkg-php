@@ -1,8 +1,6 @@
-Index: pkg-php/ext/ldap/ldap.c
-===================================================================
---- pkg-php.orig/ext/ldap/ldap.c	2009-08-25 15:43:42.000000000 +0200
-+++ pkg-php/ext/ldap/ldap.c	2009-08-25 15:44:02.000000000 +0200
-@@ -1239,7 +1239,7 @@
+--- pkg-php.orig/ext/ldap/ldap.c
++++ pkg-php/ext/ldap/ldap.c
+@@ -1239,7 +1239,7 @@ PHP_FUNCTION(ldap_explode_dn)
  	}
  
  	i=0;
@@ -11,7 +9,7 @@ Index: pkg-php/ext/ldap/ldap.c
  	count = i;
  
  	array_init(return_value);
-@@ -1249,7 +1249,8 @@
+@@ -1249,7 +1249,8 @@ PHP_FUNCTION(ldap_explode_dn)
  		add_index_string(return_value, i, ldap_value[i], 1);
  	}
  

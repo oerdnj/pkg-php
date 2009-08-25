@@ -1,8 +1,6 @@
-Index: pkg-php/ext/recode/recode.c
-===================================================================
---- pkg-php.orig/ext/recode/recode.c	2009-08-25 15:43:41.000000000 +0200
-+++ pkg-php/ext/recode/recode.c	2009-08-25 15:44:03.000000000 +0200
-@@ -149,7 +149,7 @@
+--- pkg-php.orig/ext/recode/recode.c
++++ pkg-php/ext/recode/recode.c
+@@ -149,7 +149,7 @@ PHP_FUNCTION(recode_string)
  	int req_len, str_len;
  	char *req, *str;
  

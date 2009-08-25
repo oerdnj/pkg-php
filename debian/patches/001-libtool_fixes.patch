@@ -1,8 +1,6 @@
-Index: pkg-php/TSRM/configure.in
-===================================================================
---- pkg-php.orig/TSRM/configure.in	2009-08-25 15:43:42.000000000 +0200
-+++ pkg-php/TSRM/configure.in	2009-08-25 15:44:02.000000000 +0200
-@@ -13,9 +13,6 @@
+--- pkg-php.orig/TSRM/configure.in
++++ pkg-php/TSRM/configure.in
+@@ -13,9 +13,6 @@ TSRM_BASIC_CHECKS
  TSRM_THREADS_CHECKS
  	
  AM_PROG_LIBTOOL
@@ -12,11 +10,9 @@ Index: pkg-php/TSRM/configure.in
  
  dnl TSRM_PTHREAD
  
-Index: pkg-php/configure.in
-===================================================================
---- pkg-php.orig/configure.in	2009-08-25 15:43:42.000000000 +0200
-+++ pkg-php/configure.in	2009-08-25 15:44:43.000000000 +0200
-@@ -1357,9 +1357,6 @@
+--- pkg-php.orig/configure.in
++++ pkg-php/configure.in
+@@ -1357,9 +1357,6 @@ AC_PROVIDE_IFELSE([PHP_REQUIRE_CXX], [],
  ])
  AC_PROG_LIBTOOL
  

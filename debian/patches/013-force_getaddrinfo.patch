@@ -1,8 +1,6 @@
-Index: pkg-php/configure.in
-===================================================================
---- pkg-php.orig/configure.in	2009-08-25 15:44:02.000000000 +0200
-+++ pkg-php/configure.in	2009-08-25 15:44:35.000000000 +0200
-@@ -642,50 +642,50 @@
+--- pkg-php.orig/configure.in
++++ pkg-php/configure.in
+@@ -642,50 +642,50 @@ asprintf \
  
  dnl Check for getaddrinfo, should be a better way, but...
  dnl Also check for working getaddrinfo

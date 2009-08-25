@@ -1,8 +1,6 @@
-Index: pkg-php/ext/sqlite/config.m4
-===================================================================
---- pkg-php.orig/ext/sqlite/config.m4	2009-08-25 15:43:41.000000000 +0200
-+++ pkg-php/ext/sqlite/config.m4	2009-08-25 15:44:03.000000000 +0200
-@@ -84,7 +84,7 @@
+--- pkg-php.orig/ext/sqlite/config.m4
++++ pkg-php/ext/sqlite/config.m4
+@@ -84,7 +84,7 @@ if test "$PHP_SQLITE" != "no"; then
      ])
      SQLITE_MODULE_TYPE=external
      PHP_SQLITE_CFLAGS=$pdo_inc_path
