@@ -1,6 +1,8 @@
---- php.orig/ext/soap/tests/server009.phpt
-+++ php/ext/soap/tests/server009.phpt
-@@ -7,6 +7,10 @@ SOAP Server 9: setclass and setpersisten
+Index: pkg-php/ext/soap/tests/server009.phpt
+===================================================================
+--- pkg-php.orig/ext/soap/tests/server009.phpt	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/ext/soap/tests/server009.phpt	2009-08-25 15:44:03.000000000 +0200
+@@ -7,6 +7,10 @@
  		die('skip this test needs session extension');
  	}
  ?>
@@ -11,8 +13,10 @@
  --FILE--
  <?php
  class foo {
---- php.orig/ext/standard/tests/general_functions/phpinfo.phpt
-+++ php/ext/standard/tests/general_functions/phpinfo.phpt
+Index: pkg-php/ext/standard/tests/general_functions/phpinfo.phpt
+===================================================================
+--- pkg-php.orig/ext/standard/tests/general_functions/phpinfo.phpt	2009-08-25 15:44:03.000000000 +0200
++++ pkg-php/ext/standard/tests/general_functions/phpinfo.phpt	2009-08-25 15:44:03.000000000 +0200
 @@ -1,5 +1,7 @@
  --TEST--
  phpinfo()

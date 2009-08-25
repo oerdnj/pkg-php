@@ -10,8 +10,8 @@ the following modifications have been made:
  * "quilt refresh" has been run to clean up the offsets, etc
 Index: pkg-php/Zend/Makefile.am
 ===================================================================
---- pkg-php.orig/Zend/Makefile.am	2009-08-25 15:11:47.000000000 +0200
-+++ pkg-php/Zend/Makefile.am	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/Zend/Makefile.am	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/Zend/Makefile.am	2009-08-25 15:44:03.000000000 +0200
 @@ -17,7 +17,7 @@
  	zend_objects_API.c zend_ts_hash.c zend_stream.c \
  	zend_default_classes.c \
@@ -23,8 +23,8 @@ Index: pkg-php/Zend/Makefile.am
  libZend_la_LIBADD = @ZEND_EXTRA_LIBS@
 Index: pkg-php/Zend/Zend.dsp
 ===================================================================
---- pkg-php.orig/Zend/Zend.dsp	2009-08-25 15:11:46.000000000 +0200
-+++ pkg-php/Zend/Zend.dsp	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/Zend/Zend.dsp	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/Zend/Zend.dsp	2009-08-25 15:44:03.000000000 +0200
 @@ -247,6 +247,14 @@
  # End Source File
  # Begin Source File
@@ -42,8 +42,8 @@ Index: pkg-php/Zend/Zend.dsp
  # Begin Source File
 Index: pkg-php/Zend/ZendTS.dsp
 ===================================================================
---- pkg-php.orig/Zend/ZendTS.dsp	2009-08-25 15:11:47.000000000 +0200
-+++ pkg-php/Zend/ZendTS.dsp	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/Zend/ZendTS.dsp	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/Zend/ZendTS.dsp	2009-08-25 15:44:03.000000000 +0200
 @@ -277,6 +277,14 @@
  # End Source File
  # Begin Source File
@@ -61,8 +61,8 @@ Index: pkg-php/Zend/ZendTS.dsp
  # Begin Source File
 Index: pkg-php/Zend/zend.c
 ===================================================================
---- pkg-php.orig/Zend/zend.c	2009-08-25 15:11:47.000000000 +0200
-+++ pkg-php/Zend/zend.c	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/Zend/zend.c	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/Zend/zend.c	2009-08-25 15:44:03.000000000 +0200
 @@ -60,6 +60,10 @@
  ZEND_API char *(*zend_getenv)(char *name, size_t name_len TSRMLS_DC);
  ZEND_API char *(*zend_resolve_path)(const char *filename, int filename_len TSRMLS_DC);
@@ -151,8 +151,8 @@ Index: pkg-php/Zend/zend.c
  	STD_ZEND_INI_BOOLEAN("zend.enable_gc",				"1",	ZEND_INI_ALL,		OnUpdateGCEnabled,      gc_enabled,     zend_gc_globals,        gc_globals)
 Index: pkg-php/Zend/zend.h
 ===================================================================
---- pkg-php.orig/Zend/zend.h	2009-08-25 15:11:46.000000000 +0200
-+++ pkg-php/Zend/zend.h	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/Zend/zend.h	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/Zend/zend.h	2009-08-25 15:44:03.000000000 +0200
 @@ -645,6 +645,9 @@
  extern int (*zend_vspprintf)(char **pbuf, size_t max_len, const char *format, va_list ap);
  extern ZEND_API char *(*zend_getenv)(char *name, size_t name_len TSRMLS_DC);
@@ -180,8 +180,8 @@ Index: pkg-php/Zend/zend.h
  /*
 Index: pkg-php/Zend/zend_alloc.c
 ===================================================================
---- pkg-php.orig/Zend/zend_alloc.c	2009-08-25 15:11:47.000000000 +0200
-+++ pkg-php/Zend/zend_alloc.c	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/Zend/zend_alloc.c	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/Zend/zend_alloc.c	2009-08-25 15:44:03.000000000 +0200
 @@ -32,6 +32,10 @@
  # include <unistd.h>
  #endif
@@ -897,8 +897,8 @@ Index: pkg-php/Zend/zend_alloc.c
   * Local variables:
 Index: pkg-php/Zend/zend_alloc.h
 ===================================================================
---- pkg-php.orig/Zend/zend_alloc.h	2009-08-25 15:11:46.000000000 +0200
-+++ pkg-php/Zend/zend_alloc.h	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/Zend/zend_alloc.h	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/Zend/zend_alloc.h	2009-08-25 15:44:03.000000000 +0200
 @@ -189,6 +189,8 @@
  
  /* Heap functions */
@@ -911,7 +911,7 @@ Index: pkg-php/Zend/zend_alloc.h
 Index: pkg-php/Zend/zend_alloc_canary.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ pkg-php/Zend/zend_alloc_canary.c	2009-08-25 15:13:09.000000000 +0200
++++ pkg-php/Zend/zend_alloc_canary.c	2009-08-25 15:44:03.000000000 +0200
 @@ -0,0 +1,2441 @@
 +/*
 +   +----------------------------------------------------------------------+
@@ -3357,7 +3357,7 @@ Index: pkg-php/Zend/zend_alloc_canary.c
 Index: pkg-php/Zend/zend_canary.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ pkg-php/Zend/zend_canary.c	2009-08-25 15:13:09.000000000 +0200
++++ pkg-php/Zend/zend_canary.c	2009-08-25 15:44:03.000000000 +0200
 @@ -0,0 +1,64 @@
 +/*
 +   +----------------------------------------------------------------------+
@@ -3425,8 +3425,8 @@ Index: pkg-php/Zend/zend_canary.c
 + */
 Index: pkg-php/Zend/zend_compile.c
 ===================================================================
---- pkg-php.orig/Zend/zend_compile.c	2009-08-25 15:11:47.000000000 +0200
-+++ pkg-php/Zend/zend_compile.c	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/Zend/zend_compile.c	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/Zend/zend_compile.c	2009-08-25 15:44:03.000000000 +0200
 @@ -69,6 +69,11 @@
  	free(property_info->name);
  }
@@ -3441,8 +3441,8 @@ Index: pkg-php/Zend/zend_compile.c
  	char char_pos_buf[32];
 Index: pkg-php/Zend/zend_compile.h
 ===================================================================
---- pkg-php.orig/Zend/zend_compile.h	2009-08-25 15:11:47.000000000 +0200
-+++ pkg-php/Zend/zend_compile.h	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/Zend/zend_compile.h	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/Zend/zend_compile.h	2009-08-25 15:44:03.000000000 +0200
 @@ -606,6 +606,11 @@
  ZEND_API int zend_auto_global_disable_jit(const char *varname, zend_uint varname_length TSRMLS_DC);
  ZEND_API size_t zend_dirname(char *path, size_t len);
@@ -3457,8 +3457,8 @@ Index: pkg-php/Zend/zend_compile.h
  /* BEGIN: OPCODES */
 Index: pkg-php/Zend/zend_constants.c
 ===================================================================
---- pkg-php.orig/Zend/zend_constants.c	2009-08-25 15:11:46.000000000 +0200
-+++ pkg-php/Zend/zend_constants.c	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/Zend/zend_constants.c	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/Zend/zend_constants.c	2009-08-25 15:44:03.000000000 +0200
 @@ -113,6 +113,76 @@
  
  	REGISTER_MAIN_LONG_CONSTANT("E_ALL", E_ALL, CONST_PERSISTENT | CONST_CS);
@@ -3538,8 +3538,8 @@ Index: pkg-php/Zend/zend_constants.c
  		zend_constant c;
 Index: pkg-php/Zend/zend_errors.h
 ===================================================================
---- pkg-php.orig/Zend/zend_errors.h	2009-08-25 15:11:46.000000000 +0200
-+++ pkg-php/Zend/zend_errors.h	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/Zend/zend_errors.h	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/Zend/zend_errors.h	2009-08-25 15:44:03.000000000 +0200
 @@ -41,6 +41,20 @@
  #define E_ALL (E_ERROR | E_WARNING | E_PARSE | E_NOTICE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_USER_ERROR | E_USER_WARNING | E_USER_NOTICE | E_RECOVERABLE_ERROR | E_DEPRECATED | E_USER_DEPRECATED)
  #define E_CORE (E_CORE_ERROR | E_CORE_WARNING)
@@ -3563,8 +3563,8 @@ Index: pkg-php/Zend/zend_errors.h
  /*
 Index: pkg-php/Zend/zend_hash.c
 ===================================================================
---- pkg-php.orig/Zend/zend_hash.c	2009-08-25 15:11:47.000000000 +0200
-+++ pkg-php/Zend/zend_hash.c	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/Zend/zend_hash.c	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/Zend/zend_hash.c	2009-08-25 15:44:03.000000000 +0200
 @@ -20,6 +20,7 @@
  /* $Id: zend_hash.c,v 1.121.2.4.2.8.2.9 2009/06/07 19:28:15 mattwil Exp $ */
  
@@ -3831,8 +3831,8 @@ Index: pkg-php/Zend/zend_hash.c
  	}
 Index: pkg-php/Zend/zend_llist.c
 ===================================================================
---- pkg-php.orig/Zend/zend_llist.c	2009-08-25 15:11:47.000000000 +0200
-+++ pkg-php/Zend/zend_llist.c	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/Zend/zend_llist.c	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/Zend/zend_llist.c	2009-08-25 15:44:03.000000000 +0200
 @@ -23,6 +23,186 @@
  #include "zend_llist.h"
  #include "zend_qsort.h"
@@ -4054,8 +4054,8 @@ Index: pkg-php/Zend/zend_llist.c
  			old_tail->prev->next = NULL;
 Index: pkg-php/Zend/zend_operators.c
 ===================================================================
---- pkg-php.orig/Zend/zend_operators.c	2009-08-25 15:11:46.000000000 +0200
-+++ pkg-php/Zend/zend_operators.c	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/Zend/zend_operators.c	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/Zend/zend_operators.c	2009-08-25 15:44:03.000000000 +0200
 @@ -152,9 +152,14 @@
  		case IS_STRING:
  			{
@@ -4145,8 +4145,8 @@ Index: pkg-php/Zend/zend_operators.c
  			ALLOC_HASHTABLE(Z_ARRVAL_P(op));
 Index: pkg-php/Zend/zend_variables.c
 ===================================================================
---- pkg-php.orig/Zend/zend_variables.c	2009-08-25 15:11:46.000000000 +0200
-+++ pkg-php/Zend/zend_variables.c	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/Zend/zend_variables.c	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/Zend/zend_variables.c	2009-08-25 15:44:03.000000000 +0200
 @@ -34,6 +34,9 @@
  		case IS_CONSTANT:
  			CHECK_ZVAL_STRING_REL(zvalue);
@@ -4169,15 +4169,15 @@ Index: pkg-php/Zend/zend_variables.c
  		case IS_CONSTANT_ARRAY:
 Index: pkg-php/configure.in
 ===================================================================
---- pkg-php.orig/configure.in	2009-08-25 15:13:09.000000000 +0200
-+++ pkg-php/configure.in	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/configure.in	2009-08-25 15:44:03.000000000 +0200
++++ pkg-php/configure.in	2009-08-25 15:44:03.000000000 +0200
 @@ -307,6 +307,7 @@
  sinclude(TSRM/threads.m4)
  sinclude(TSRM/tsrm.m4)
  
 +sinclude(main/suhosin_patch.m4)
  
- divert(2)
+ dnl divert(2)
  
 @@ -1422,7 +1423,7 @@
         php_ini.c SAPI.c rfc1867.c php_content_types.c strlcpy.c \
@@ -4199,8 +4199,8 @@ Index: pkg-php/configure.in
    PHP_ADD_SOURCES(Zend, zend_objects.c zend_object_handlers.c zend_objects_API.c zend_default_classes.c)
 Index: pkg-php/ext/standard/dl.c
 ===================================================================
---- pkg-php.orig/ext/standard/dl.c	2009-08-25 15:13:09.000000000 +0200
-+++ pkg-php/ext/standard/dl.c	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/ext/standard/dl.c	2009-08-25 15:44:03.000000000 +0200
++++ pkg-php/ext/standard/dl.c	2009-08-25 15:44:03.000000000 +0200
 @@ -239,6 +239,23 @@
  			return FAILURE;
  		}
@@ -4227,8 +4227,8 @@ Index: pkg-php/ext/standard/dl.c
  /* }}} */
 Index: pkg-php/ext/standard/info.c
 ===================================================================
---- pkg-php.orig/ext/standard/info.c	2009-08-25 15:13:09.000000000 +0200
-+++ pkg-php/ext/standard/info.c	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/ext/standard/info.c	2009-08-25 15:44:03.000000000 +0200
++++ pkg-php/ext/standard/info.c	2009-08-25 15:44:03.000000000 +0200
 @@ -842,6 +842,33 @@
  		
  		php_info_print_table_end();
@@ -4265,8 +4265,8 @@ Index: pkg-php/ext/standard/info.c
  		if (expose_php && !sapi_module.phpinfo_as_text) {
 Index: pkg-php/ext/standard/syslog.c
 ===================================================================
---- pkg-php.orig/ext/standard/syslog.c	2009-08-25 15:11:46.000000000 +0200
-+++ pkg-php/ext/standard/syslog.c	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/ext/standard/syslog.c	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/ext/standard/syslog.c	2009-08-25 15:44:03.000000000 +0200
 @@ -42,6 +42,7 @@
   */
  PHP_MINIT_FUNCTION(syslog)
@@ -4285,8 +4285,8 @@ Index: pkg-php/ext/standard/syslog.c
  	return SUCCESS;
 Index: pkg-php/main/fopen_wrappers.c
 ===================================================================
---- pkg-php.orig/main/fopen_wrappers.c	2009-08-25 15:11:46.000000000 +0200
-+++ pkg-php/main/fopen_wrappers.c	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/main/fopen_wrappers.c	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/main/fopen_wrappers.c	2009-08-25 15:44:03.000000000 +0200
 @@ -85,15 +85,10 @@
  PHPAPI ZEND_INI_MH(OnUpdateBaseDir)
  {
@@ -4307,8 +4307,8 @@ Index: pkg-php/main/fopen_wrappers.c
  		return SUCCESS;
 Index: pkg-php/main/main.c
 ===================================================================
---- pkg-php.orig/main/main.c	2009-08-25 15:11:46.000000000 +0200
-+++ pkg-php/main/main.c	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/main/main.c	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/main/main.c	2009-08-25 15:44:03.000000000 +0200
 @@ -90,6 +90,9 @@
  
  #include "SAPI.h"
@@ -4365,8 +4365,8 @@ Index: pkg-php/main/main.c
  
 Index: pkg-php/main/php.h
 ===================================================================
---- pkg-php.orig/main/php.h	2009-08-25 15:11:46.000000000 +0200
-+++ pkg-php/main/php.h	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/main/php.h	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/main/php.h	2009-08-25 15:44:03.000000000 +0200
 @@ -450,6 +450,10 @@
  #endif
  #endif /* !XtOffsetOf */
@@ -4380,8 +4380,8 @@ Index: pkg-php/main/php.h
  /*
 Index: pkg-php/main/php_config.h.in
 ===================================================================
---- pkg-php.orig/main/php_config.h.in	2009-08-25 15:11:46.000000000 +0200
-+++ pkg-php/main/php_config.h.in	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/main/php_config.h.in	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/main/php_config.h.in	2009-08-25 15:44:03.000000000 +0200
 @@ -836,6 +836,9 @@
  /* Define if the target system has /dev/urandom device */
  #undef HAVE_DEV_URANDOM
@@ -4394,8 +4394,8 @@ Index: pkg-php/main/php_config.h.in
  
 Index: pkg-php/main/php_logos.c
 ===================================================================
---- pkg-php.orig/main/php_logos.c	2009-08-25 15:11:46.000000000 +0200
-+++ pkg-php/main/php_logos.c	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/main/php_logos.c	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/main/php_logos.c	2009-08-25 15:44:03.000000000 +0200
 @@ -50,6 +50,10 @@
  	return zend_hash_del(&phpinfo_logo_hash, logo_string, strlen(logo_string));
  }
@@ -4420,8 +4420,8 @@ Index: pkg-php/main/php_logos.c
  
 Index: pkg-php/main/snprintf.c
 ===================================================================
---- pkg-php.orig/main/snprintf.c	2009-08-25 15:11:46.000000000 +0200
-+++ pkg-php/main/snprintf.c	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/main/snprintf.c	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/main/snprintf.c	2009-08-25 15:44:03.000000000 +0200
 @@ -1091,7 +1091,11 @@
  
  
@@ -4436,8 +4436,8 @@ Index: pkg-php/main/snprintf.c
  					/*
 Index: pkg-php/main/spprintf.c
 ===================================================================
---- pkg-php.orig/main/spprintf.c	2009-08-25 15:11:46.000000000 +0200
-+++ pkg-php/main/spprintf.c	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/main/spprintf.c	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/main/spprintf.c	2009-08-25 15:44:03.000000000 +0200
 @@ -698,7 +698,11 @@
  
  
@@ -4453,7 +4453,7 @@ Index: pkg-php/main/spprintf.c
 Index: pkg-php/main/suhosin_globals.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ pkg-php/main/suhosin_globals.h	2009-08-25 15:13:09.000000000 +0200
++++ pkg-php/main/suhosin_globals.h	2009-08-25 15:44:03.000000000 +0200
 @@ -0,0 +1,61 @@
 +/*
 +   +----------------------------------------------------------------------+
@@ -4519,7 +4519,7 @@ Index: pkg-php/main/suhosin_globals.h
 Index: pkg-php/main/suhosin_logo.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ pkg-php/main/suhosin_logo.h	2009-08-25 15:13:09.000000000 +0200
++++ pkg-php/main/suhosin_logo.h	2009-08-25 15:44:03.000000000 +0200
 @@ -0,0 +1,178 @@
 +static unsigned char suhosin_logo[] =
 +	"\xff\xd8\xff\xe0\x00\x10\x4a\x46\x49\x46\x00\x01\x01\x01\x00\x48"
@@ -4702,7 +4702,7 @@ Index: pkg-php/main/suhosin_logo.h
 Index: pkg-php/main/suhosin_patch.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ pkg-php/main/suhosin_patch.c	2009-08-25 15:13:09.000000000 +0200
++++ pkg-php/main/suhosin_patch.c	2009-08-25 15:44:03.000000000 +0200
 @@ -0,0 +1,455 @@
 +/*
 +   +----------------------------------------------------------------------+
@@ -5162,7 +5162,7 @@ Index: pkg-php/main/suhosin_patch.c
 Index: pkg-php/main/suhosin_patch.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ pkg-php/main/suhosin_patch.h	2009-08-25 15:13:09.000000000 +0200
++++ pkg-php/main/suhosin_patch.h	2009-08-25 15:44:03.000000000 +0200
 @@ -0,0 +1,61 @@
 +/*
 +   +----------------------------------------------------------------------+
@@ -5228,7 +5228,7 @@ Index: pkg-php/main/suhosin_patch.h
 Index: pkg-php/main/suhosin_patch.m4
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ pkg-php/main/suhosin_patch.m4	2009-08-25 15:13:09.000000000 +0200
++++ pkg-php/main/suhosin_patch.m4	2009-08-25 15:44:03.000000000 +0200
 @@ -0,0 +1,8 @@
 +dnl
 +dnl $Id: suhosin_patch.m4,v 1.1 2004/11/14 13:24:24 ionic Exp $
@@ -5240,8 +5240,8 @@ Index: pkg-php/main/suhosin_patch.m4
 +
 Index: pkg-php/sapi/apache/mod_php5.c
 ===================================================================
---- pkg-php.orig/sapi/apache/mod_php5.c	2009-08-25 15:11:46.000000000 +0200
-+++ pkg-php/sapi/apache/mod_php5.c	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/sapi/apache/mod_php5.c	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/sapi/apache/mod_php5.c	2009-08-25 15:44:03.000000000 +0200
 @@ -967,7 +967,11 @@
  	{
  		TSRMLS_FETCH();
@@ -5256,8 +5256,8 @@ Index: pkg-php/sapi/apache/mod_php5.c
  #endif
 Index: pkg-php/sapi/apache2filter/sapi_apache2.c
 ===================================================================
---- pkg-php.orig/sapi/apache2filter/sapi_apache2.c	2009-08-25 15:11:46.000000000 +0200
-+++ pkg-php/sapi/apache2filter/sapi_apache2.c	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/sapi/apache2filter/sapi_apache2.c	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/sapi/apache2filter/sapi_apache2.c	2009-08-25 15:44:03.000000000 +0200
 @@ -581,7 +581,11 @@
  {
  	TSRMLS_FETCH();
@@ -5272,8 +5272,8 @@ Index: pkg-php/sapi/apache2filter/sapi_apache2.c
  
 Index: pkg-php/sapi/apache2handler/sapi_apache2.c
 ===================================================================
---- pkg-php.orig/sapi/apache2handler/sapi_apache2.c	2009-08-25 15:13:09.000000000 +0200
-+++ pkg-php/sapi/apache2handler/sapi_apache2.c	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/sapi/apache2handler/sapi_apache2.c	2009-08-25 15:44:03.000000000 +0200
++++ pkg-php/sapi/apache2handler/sapi_apache2.c	2009-08-25 15:44:03.000000000 +0200
 @@ -386,7 +386,11 @@
  {
  	TSRMLS_FETCH();
@@ -5288,8 +5288,8 @@ Index: pkg-php/sapi/apache2handler/sapi_apache2.c
  
 Index: pkg-php/sapi/apache_hooks/mod_php5.c
 ===================================================================
---- pkg-php.orig/sapi/apache_hooks/mod_php5.c	2009-08-25 15:11:46.000000000 +0200
-+++ pkg-php/sapi/apache_hooks/mod_php5.c	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/sapi/apache_hooks/mod_php5.c	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/sapi/apache_hooks/mod_php5.c	2009-08-25 15:44:03.000000000 +0200
 @@ -1256,7 +1256,11 @@
  	{
  		TSRMLS_FETCH();
@@ -5304,8 +5304,8 @@ Index: pkg-php/sapi/apache_hooks/mod_php5.c
  #endif
 Index: pkg-php/sapi/cgi/cgi_main.c
 ===================================================================
---- pkg-php.orig/sapi/cgi/cgi_main.c	2009-08-25 15:11:46.000000000 +0200
-+++ pkg-php/sapi/cgi/cgi_main.c	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/sapi/cgi/cgi_main.c	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/sapi/cgi/cgi_main.c	2009-08-25 15:44:03.000000000 +0200
 @@ -1907,11 +1907,19 @@
  								SG(headers_sent) = 1;
  								SG(request_info).no_headers = 1;
@@ -5328,8 +5328,8 @@ Index: pkg-php/sapi/cgi/cgi_main.c
  							goto out;
 Index: pkg-php/sapi/cli/php_cli.c
 ===================================================================
---- pkg-php.orig/sapi/cli/php_cli.c	2009-08-25 15:11:46.000000000 +0200
-+++ pkg-php/sapi/cli/php_cli.c	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/sapi/cli/php_cli.c	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/sapi/cli/php_cli.c	2009-08-25 15:44:03.000000000 +0200
 @@ -827,7 +827,11 @@
  				}
  
@@ -5345,8 +5345,8 @@ Index: pkg-php/sapi/cli/php_cli.c
  					"(DEBUG GCOV)",
 Index: pkg-php/sapi/litespeed/lsapi_main.c
 ===================================================================
---- pkg-php.orig/sapi/litespeed/lsapi_main.c	2009-08-25 15:11:46.000000000 +0200
-+++ pkg-php/sapi/litespeed/lsapi_main.c	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/sapi/litespeed/lsapi_main.c	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/sapi/litespeed/lsapi_main.c	2009-08-25 15:44:03.000000000 +0200
 @@ -545,11 +545,19 @@
  				break;
  			case 'v':
@@ -5369,8 +5369,8 @@ Index: pkg-php/sapi/litespeed/lsapi_main.c
  #else
 Index: pkg-php/sapi/milter/php_milter.c
 ===================================================================
---- pkg-php.orig/sapi/milter/php_milter.c	2009-08-25 15:11:46.000000000 +0200
-+++ pkg-php/sapi/milter/php_milter.c	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/sapi/milter/php_milter.c	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/sapi/milter/php_milter.c	2009-08-25 15:44:03.000000000 +0200
 @@ -1102,7 +1102,11 @@
  				}
  				SG(headers_sent) = 1;
@@ -5385,8 +5385,8 @@ Index: pkg-php/sapi/milter/php_milter.c
  				break;
 Index: pkg-php/win32/build/config.w32
 ===================================================================
---- pkg-php.orig/win32/build/config.w32	2009-08-25 15:11:46.000000000 +0200
-+++ pkg-php/win32/build/config.w32	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/win32/build/config.w32	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/win32/build/config.w32	2009-08-25 15:44:03.000000000 +0200
 @@ -322,7 +322,7 @@
  	zend_stream.c zend_iterators.c zend_interfaces.c zend_objects.c \
  	zend_object_handlers.c zend_objects_API.c \
@@ -5406,8 +5406,8 @@ Index: pkg-php/win32/build/config.w32
   * files that make up the snapshot template? */
 Index: pkg-php/win32/build/config.w32.h.in
 ===================================================================
---- pkg-php.orig/win32/build/config.w32.h.in	2009-08-25 15:11:46.000000000 +0200
-+++ pkg-php/win32/build/config.w32.h.in	2009-08-25 15:13:09.000000000 +0200
+--- pkg-php.orig/win32/build/config.w32.h.in	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/win32/build/config.w32.h.in	2009-08-25 15:44:03.000000000 +0200
 @@ -149,6 +149,9 @@
  /* Win32 supports strcoll */
  #define HAVE_STRCOLL 1

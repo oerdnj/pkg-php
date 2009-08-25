@@ -1,6 +1,8 @@
---- php.orig/sapi/cli/php.1.in
-+++ php/sapi/cli/php.1.in
-@@ -69,7 +69,7 @@ specified by \-F to be executed.
+Index: pkg-php/sapi/cli/php.1.in
+===================================================================
+--- pkg-php.orig/sapi/cli/php.1.in	2009-08-25 15:44:02.000000000 +0200
++++ pkg-php/sapi/cli/php.1.in	2009-08-25 15:44:23.000000000 +0200
+@@ -69,7 +69,7 @@
  You can access the input line by \fB$argn\fP. While processing the input lines
  .B $argi 
  contains the number of the actual line being processed. Further more
@@ -9,7 +11,7 @@
  .IR code
  (see \-r) before and
  after all input lines have been processed respectively. Notice that the
-@@ -316,7 +316,7 @@ The configuration file for the CGI versi
+@@ -316,7 +316,7 @@
  The configuration file for the version of PHP that apache2 uses.
  .SH EXAMPLES
  .TP 5
@@ -18,7 +20,7 @@
  This command simply writes the text "Hello World" to standard out.
  .TP
  \fIphp \-r 'print_r(gd_info());'\fP
-@@ -340,7 +340,7 @@ configuration information. If you then c
+@@ -340,7 +340,7 @@
  Using this PHP command you can count the lines being input.
  .TP
  \fIphp \-R '@$l+=count(file($argn));' \-E 'echo "Lines:$l\\n";'\fP

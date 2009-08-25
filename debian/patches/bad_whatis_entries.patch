@@ -1,5 +1,7 @@
---- php.orig/sapi/cli/php.1.in
-+++ php/sapi/cli/php.1.in
+Index: pkg-php/sapi/cli/php.1.in
+===================================================================
+--- pkg-php.orig/sapi/cli/php.1.in	2009-08-25 15:44:03.000000000 +0200
++++ pkg-php/sapi/cli/php.1.in	2009-08-25 15:44:03.000000000 +0200
 @@ -1,6 +1,5 @@
  .TH PHP 1 "2009" "The PHP Group" "Scripting Language"
  .SH NAME
@@ -7,8 +9,10 @@
  php \- PHP Command Line Interface 'CLI'
  .SH SYNOPSIS
  .B php
---- php.orig/scripts/man1/php-config.1.in
-+++ php/scripts/man1/php-config.1.in
+Index: pkg-php/scripts/man1/php-config.1.in
+===================================================================
+--- pkg-php.orig/scripts/man1/php-config.1.in	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/scripts/man1/php-config.1.in	2009-08-25 15:44:03.000000000 +0200
 @@ -1,6 +1,5 @@
  .TH php\-config 1 "2006" "The PHP Group" "Scripting Language"
  .SH NAME
@@ -16,8 +20,10 @@
  php\-config \- get information about PHP configuration and compile options
  .SH SYNOPSIS
  .B php\-config
---- php.orig/scripts/man1/phpize.1.in
-+++ php/scripts/man1/phpize.1.in
+Index: pkg-php/scripts/man1/phpize.1.in
+===================================================================
+--- pkg-php.orig/scripts/man1/phpize.1.in	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/scripts/man1/phpize.1.in	2009-08-25 15:44:03.000000000 +0200
 @@ -1,7 +1,6 @@
  .TH phpize 1 "2006" "The PHP Group" "Scripting Language"
  .SH NAME

@@ -1,6 +1,8 @@
---- php.orig/ext/standard/dl.c
-+++ php/ext/standard/dl.c
-@@ -77,12 +77,7 @@ PHPAPI PHP_FUNCTION(dl)
+Index: pkg-php/ext/standard/dl.c
+===================================================================
+--- pkg-php.orig/ext/standard/dl.c	2009-08-25 15:43:41.000000000 +0200
++++ pkg-php/ext/standard/dl.c	2009-08-25 15:44:28.000000000 +0200
+@@ -77,12 +77,7 @@
  		(strcmp(sapi_module.name, "cli") != 0) &&
  		(strncmp(sapi_module.name, "embed", 5) != 0)
  	) {

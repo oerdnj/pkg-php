@@ -1,6 +1,8 @@
---- php.orig/acinclude.m4
-+++ php/acinclude.m4
-@@ -2373,9 +2373,7 @@ AC_DEFUN([PHP_SETUP_OPENSSL],[
+Index: pkg-php/acinclude.m4
+===================================================================
+--- pkg-php.orig/acinclude.m4	2009-08-25 15:43:42.000000000 +0200
++++ pkg-php/acinclude.m4	2009-08-25 15:44:41.000000000 +0200
+@@ -2373,9 +2373,7 @@
  
      PHP_ADD_INCLUDE($OPENSSL_INCDIR)
    

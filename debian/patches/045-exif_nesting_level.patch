@@ -1,6 +1,8 @@
---- php.orig/ext/exif/exif.c
-+++ php/ext/exif/exif.c
-@@ -99,7 +99,7 @@ typedef unsigned char uchar;
+Index: pkg-php/ext/exif/exif.c
+===================================================================
+--- pkg-php.orig/ext/exif/exif.c	2009-08-25 15:43:41.000000000 +0200
++++ pkg-php/ext/exif/exif.c	2009-08-25 15:44:03.000000000 +0200
+@@ -99,7 +99,7 @@
  
  #define EFREE_IF(ptr)	if (ptr) efree(ptr)
  

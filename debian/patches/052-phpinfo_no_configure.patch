@@ -1,6 +1,8 @@
---- php.orig/ext/standard/info.c
-+++ php/ext/standard/info.c
-@@ -668,7 +668,7 @@ PHPAPI void php_print_info(int flag TSRM
+Index: pkg-php/ext/standard/info.c
+===================================================================
+--- pkg-php.orig/ext/standard/info.c	2009-08-25 15:43:41.000000000 +0200
++++ pkg-php/ext/standard/info.c	2009-08-25 15:44:28.000000000 +0200
+@@ -668,7 +668,7 @@
  #ifdef ARCHITECTURE
  		php_info_print_table_row(2, "Architecture", ARCHITECTURE);
  #endif
@@ -9,9 +11,11 @@
  		php_info_print_table_row(2, "Configure Command", CONFIGURE_COMMAND );
  #endif
  
---- php.orig/ext/standard/tests/general_functions/phpinfo.phpt
-+++ php/ext/standard/tests/general_functions/phpinfo.phpt
-@@ -20,7 +20,6 @@ PHP Version => %s
+Index: pkg-php/ext/standard/tests/general_functions/phpinfo.phpt
+===================================================================
+--- pkg-php.orig/ext/standard/tests/general_functions/phpinfo.phpt	2009-08-25 15:43:41.000000000 +0200
++++ pkg-php/ext/standard/tests/general_functions/phpinfo.phpt	2009-08-25 15:44:26.000000000 +0200
+@@ -20,7 +20,6 @@
  
  System => %s
  Build Date => %s%a

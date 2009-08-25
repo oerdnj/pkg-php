@@ -1,6 +1,8 @@
---- php.orig/sapi/apache2handler/config.m4
-+++ php/sapi/apache2handler/config.m4
-@@ -59,13 +59,13 @@ if test "$PHP_APXS2" != "no"; then
+Index: pkg-php/sapi/apache2handler/config.m4
+===================================================================
+--- pkg-php.orig/sapi/apache2handler/config.m4	2009-08-25 15:43:41.000000000 +0200
++++ pkg-php/sapi/apache2handler/config.m4	2009-08-25 15:44:03.000000000 +0200
+@@ -59,13 +59,13 @@
  
    APACHE_CFLAGS="$APACHE_CPPFLAGS -I$APXS_INCLUDEDIR $APR_CFLAGS $APU_CFLAGS"
  
@@ -21,9 +23,11 @@
  
    APXS_LIBEXECDIR='$(INSTALL_ROOT)'`$APXS -q LIBEXECDIR`
    if test -z `$APXS -q SYSCONFDIR`; then
---- php.orig/sapi/apache/config.m4
-+++ php/sapi/apache/config.m4
-@@ -56,11 +56,11 @@ if test "$PHP_APXS" != "no"; then
+Index: pkg-php/sapi/apache/config.m4
+===================================================================
+--- pkg-php.orig/sapi/apache/config.m4	2009-08-25 15:43:41.000000000 +0200
++++ pkg-php/sapi/apache/config.m4	2009-08-25 15:44:03.000000000 +0200
+@@ -56,11 +56,11 @@
    APXS_HTTPD=`$APXS -q SBINDIR`/`$APXS -q TARGET`
    APACHE_INCLUDE=-I$APXS_INCLUDEDIR
  
@@ -40,9 +44,11 @@
  
    for flag in $APXS_CFLAGS; do
      case $flag in
---- php.orig/sapi/apache2filter/config.m4
-+++ php/sapi/apache2filter/config.m4
-@@ -60,13 +60,13 @@ if test "$PHP_APXS2FILTER" != "no"; then
+Index: pkg-php/sapi/apache2filter/config.m4
+===================================================================
+--- pkg-php.orig/sapi/apache2filter/config.m4	2009-08-25 15:43:41.000000000 +0200
++++ pkg-php/sapi/apache2filter/config.m4	2009-08-25 15:44:03.000000000 +0200
+@@ -60,13 +60,13 @@
  
    APACHE_CFLAGS="$APACHE_CPPFLAGS -I$APXS_INCLUDEDIR $APR_CFLAGS $APU_CFLAGS"
  
@@ -63,9 +69,11 @@
  
    APXS_LIBEXECDIR='$(INSTALL_ROOT)'`$APXS -q LIBEXECDIR`
    if test -z `$APXS -q SYSCONFDIR`; then
---- php.orig/sapi/apache_hooks/config.m4
-+++ php/sapi/apache_hooks/config.m4
-@@ -57,11 +57,11 @@ if test "$PHP_APACHE_HOOKS" != "no"; the
+Index: pkg-php/sapi/apache_hooks/config.m4
+===================================================================
+--- pkg-php.orig/sapi/apache_hooks/config.m4	2009-08-25 15:43:41.000000000 +0200
++++ pkg-php/sapi/apache_hooks/config.m4	2009-08-25 15:44:03.000000000 +0200
+@@ -57,11 +57,11 @@
    APXS_HTTPD=`$APXS -q SBINDIR`/`$APXS -q TARGET`
    APACHE_INCLUDE=-I$APXS_INCLUDEDIR
  

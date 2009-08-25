@@ -1,7 +1,7 @@
 Index: pkg-php/configure.in
 ===================================================================
---- pkg-php.orig/configure.in	2009-08-25 15:39:10.000000000 +0200
-+++ pkg-php/configure.in	2009-08-25 15:39:21.000000000 +0200
+--- pkg-php.orig/configure.in	2009-08-25 15:44:03.000000000 +0200
++++ pkg-php/configure.in	2009-08-25 15:44:28.000000000 +0200
 @@ -1,7 +1,7 @@
  ## $Id: configure.in,v 1.579.2.52.2.77.2.58 2009/06/26 15:44:18 johannes Exp $ -*- autoconf -*-
  dnl ## Process this file with autoconf to produce a configure script.
@@ -70,8 +70,8 @@ Index: pkg-php/configure.in
  dnl ## All of these are normally in the extension directories.
 Index: pkg-php/ext/standard/config.m4
 ===================================================================
---- pkg-php.orig/ext/standard/config.m4	2009-08-25 15:39:10.000000000 +0200
-+++ pkg-php/ext/standard/config.m4	2009-08-25 15:39:23.000000000 +0200
+--- pkg-php.orig/ext/standard/config.m4	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/ext/standard/config.m4	2009-08-25 15:44:03.000000000 +0200
 @@ -1,6 +1,6 @@
  dnl $Id: config.m4,v 1.80.2.3.2.3.2.8 2009/01/11 23:37:16 scottmac Exp $ -*- autoconf -*-
  
@@ -91,8 +91,8 @@ Index: pkg-php/ext/standard/config.m4
  dnl Check if there is a support means of creating a new process
 Index: pkg-php/scripts/phpize.m4
 ===================================================================
---- pkg-php.orig/scripts/phpize.m4	2009-08-25 15:39:10.000000000 +0200
-+++ pkg-php/scripts/phpize.m4	2009-08-25 15:39:23.000000000 +0200
+--- pkg-php.orig/scripts/phpize.m4	2009-08-25 15:43:41.000000000 +0200
++++ pkg-php/scripts/phpize.m4	2009-08-25 15:44:03.000000000 +0200
 @@ -1,6 +1,6 @@
  dnl This file becomes configure.in for self-contained extensions.
  

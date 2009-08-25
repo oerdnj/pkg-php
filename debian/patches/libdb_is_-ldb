@@ -1,6 +1,8 @@
---- php.orig/ext/dba/config.m4
-+++ php/ext/dba/config.m4
-@@ -306,7 +306,7 @@ if test "$PHP_DB4" != "no"; then
+Index: pkg-php/ext/dba/config.m4
+===================================================================
+--- pkg-php.orig/ext/dba/config.m4	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/ext/dba/config.m4	2009-08-25 15:44:03.000000000 +0200
+@@ -306,7 +306,7 @@
        break
      fi
    done

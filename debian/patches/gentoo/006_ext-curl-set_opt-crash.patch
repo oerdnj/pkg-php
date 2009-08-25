@@ -3,9 +3,11 @@ PHP_5_2
 http://cvs.php.net/viewvc.cgi/php-src/ext/curl/interface.c?r1=1.62.2.14.2.42&r2=1.62.2.14.2.43&diff_format=u
 http://bugs.php.net/bug.php?id=47616
 Fixed bug #47616 (curl keeps crashing)
---- php.orig/ext/curl/interface.c
-+++ php/ext/curl/interface.c
-@@ -1850,6 +1850,7 @@ static int _php_curl_setopt(php_curl *ch
+Index: pkg-php/ext/curl/interface.c
+===================================================================
+--- pkg-php.orig/ext/curl/interface.c	2009-08-25 15:43:40.000000000 +0200
++++ pkg-php/ext/curl/interface.c	2009-08-25 15:44:03.000000000 +0200
+@@ -1850,6 +1850,7 @@
  #if LIBCURL_VERSION_NUM >= 0x071101
  				convert_to_string_ex(zvalue);
  				/* with curl 7.17.0 and later, we can use COPYPOSTFIELDS, but we have to provide size before */

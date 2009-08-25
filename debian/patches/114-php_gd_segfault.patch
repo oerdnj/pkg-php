@@ -1,8 +1,8 @@
-diff --git a/ext/gd/libgd/gd_compat.c b/ext/gd/libgd/gd_compat.c
-index bba6234..473ea20 100644
---- a/ext/gd/libgd/gd_compat.c
-+++ b/ext/gd/libgd/gd_compat.c
-@@ -14,7 +14,7 @@ int gdJpegGetVersionInt()
+Index: pkg-php/ext/gd/libgd/gd_compat.c
+===================================================================
+--- pkg-php.orig/ext/gd/libgd/gd_compat.c	2009-08-25 15:43:41.000000000 +0200
++++ pkg-php/ext/gd/libgd/gd_compat.c	2009-08-25 15:44:03.000000000 +0200
+@@ -14,7 +14,7 @@
  	return JPEG_LIB_VERSION;
  }
  
@@ -11,10 +11,10 @@ index bba6234..473ea20 100644
  {
  	switch(JPEG_LIB_VERSION) {
  		case 62:
-diff --git a/ext/gd/libgd/gd_compat.h b/ext/gd/libgd/gd_compat.h
-index 022d0a8..c084a00 100644
---- a/ext/gd/libgd/gd_compat.h
-+++ b/ext/gd/libgd/gd_compat.h
+Index: pkg-php/ext/gd/libgd/gd_compat.h
+===================================================================
+--- pkg-php.orig/ext/gd/libgd/gd_compat.h	2009-08-25 15:43:41.000000000 +0200
++++ pkg-php/ext/gd/libgd/gd_compat.h	2009-08-25 15:44:03.000000000 +0200
 @@ -8,7 +8,7 @@
  #endif
  

@@ -1,6 +1,8 @@
---- php.orig/configure.in
-+++ php/configure.in
-@@ -1141,8 +1141,13 @@ dnl Build extension directory path
+Index: pkg-php/configure.in
+===================================================================
+--- pkg-php.orig/configure.in	2009-08-25 15:44:02.000000000 +0200
++++ pkg-php/configure.in	2009-08-25 15:44:30.000000000 +0200
+@@ -1141,8 +1141,13 @@
  
  ZEND_MODULE_API_NO=`$EGREP '#define ZEND_MODULE_API_NO ' $srcdir/Zend/zend_modules.h|$SED 's/#define ZEND_MODULE_API_NO //'`
  
@@ -15,7 +17,7 @@
    if test "$oldstyleextdir" = "yes"; then
      if test "$PHP_DEBUG" = "1"; then
        part1=debug
-@@ -1287,6 +1292,7 @@ PHP_SUBST(CXX)
+@@ -1287,6 +1292,7 @@
  PHP_SUBST(CXXFLAGS)
  PHP_SUBST(CXXFLAGS_CLEAN)
  PHP_SUBST_OLD(DEBUG_CFLAGS)
@@ -23,9 +25,11 @@
  PHP_SUBST_OLD(EXTENSION_DIR)
  PHP_SUBST_OLD(EXTRA_LDFLAGS)
  PHP_SUBST_OLD(EXTRA_LDFLAGS_PROGRAM)
---- php.orig/scripts/php-config.in
-+++ php/scripts/php-config.in
-@@ -17,6 +17,7 @@ php_cli_binary=NONE
+Index: pkg-php/scripts/php-config.in
+===================================================================
+--- pkg-php.orig/scripts/php-config.in	2009-08-25 15:44:02.000000000 +0200
++++ pkg-php/scripts/php-config.in	2009-08-25 15:44:03.000000000 +0200
+@@ -17,6 +17,7 @@
  php_cgi_binary=NONE
  configure_options="@CONFIGURE_OPTIONS@"
  php_sapis="@PHP_INSTALLED_SAPIS@"
@@ -33,7 +37,7 @@
  
  # Set php_cli_binary and php_cgi_binary if available
  for sapi in $php_sapis; do
-@@ -55,6 +56,8 @@ case "$1" in
+@@ -55,6 +56,8 @@
    echo $include_dir;;
  --php-binary)
    echo $php_binary;;
@@ -42,7 +46,7 @@
  --php-sapis)
    echo $php_sapis;;
  --configure-options)
-@@ -75,6 +78,7 @@ Options:
+@@ -75,6 +78,7 @@
    --include-dir       [$include_dir]
    --php-binary        [$php_binary]
    --php-sapis         [$php_sapis]

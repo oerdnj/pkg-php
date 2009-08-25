@@ -1,6 +1,8 @@
---- php.orig/php.ini-development
-+++ php/php.ini-development
-@@ -335,6 +335,11 @@ allow_call_time_pass_reference = Off
+Index: pkg-php/php.ini-development
+===================================================================
+--- pkg-php.orig/php.ini-development	2009-08-25 15:44:02.000000000 +0200
++++ pkg-php/php.ini-development	2009-08-25 15:44:03.000000000 +0200
+@@ -335,6 +335,11 @@
  
  ; Safe Mode
  ; http://php.net/safe-mode
@@ -12,7 +14,7 @@
  safe_mode = Off
  
  ; By default, Safe Mode does a UID compare check when
-@@ -376,6 +381,12 @@ safe_mode_protected_env_vars = LD_LIBRAR
+@@ -376,6 +381,12 @@
  ; or per-virtualhost web server configuration file. This directive is
  ; *NOT* affected by whether Safe Mode is turned On or Off.
  ; http://php.net/open-basedir
@@ -25,7 +27,7 @@
  ;open_basedir =
  
  ; This directive allows you to disable certain functions for security reasons.
-@@ -692,6 +703,11 @@ request_order = "GP"
+@@ -692,6 +703,11 @@
  ; register_globals to be on;  Using form variables as globals can easily lead
  ; to possible security problems, if the code is not very well thought of.
  ; http://php.net/register-globals

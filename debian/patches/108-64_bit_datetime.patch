@@ -1,5 +1,7 @@
---- php.orig/ext/standard/datetime.c
-+++ php/ext/standard/datetime.c
+Index: pkg-php/ext/standard/datetime.c
+===================================================================
+--- pkg-php.orig/ext/standard/datetime.c	2009-08-25 15:43:41.000000000 +0200
++++ pkg-php/ext/standard/datetime.c	2009-08-25 15:44:03.000000000 +0200
 @@ -20,6 +20,9 @@
  
  /* $Id: datetime.c,v 1.134.2.2.2.4.2.3 2008/12/31 11:15:44 sebastian Exp $ */

@@ -6,9 +6,11 @@ from debian/rules)
 note that we don't touch the libtool.m4 that they ship here, and this file 
 gets included in the build process as part of the phpize stuff.  however,
 this is solved in ./debian/rules where it's overwritten with a symlink.
---- php.orig/build/build2.mk
-+++ php/build/build2.mk
-@@ -52,7 +52,8 @@ $(TOUCH_FILES):
+Index: pkg-php/build/build2.mk
+===================================================================
+--- pkg-php.orig/build/build2.mk	2009-08-25 15:43:41.000000000 +0200
++++ pkg-php/build/build2.mk	2009-08-25 15:44:02.000000000 +0200
+@@ -52,7 +52,8 @@
  
  aclocal.m4: configure.in acinclude.m4
  	@echo rebuilding $@

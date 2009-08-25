@@ -1,6 +1,8 @@
---- php.orig/configure.in
-+++ php/configure.in
-@@ -1032,7 +1032,7 @@ if test "$PHP_CLI" = "no"; then
+Index: pkg-php/configure.in
+===================================================================
+--- pkg-php.orig/configure.in	2009-08-25 15:44:02.000000000 +0200
++++ pkg-php/configure.in	2009-08-25 15:44:42.000000000 +0200
+@@ -1032,7 +1032,7 @@
  fi
  
  PHP_ARG_WITH(pear, [whether to install PEAR],
@@ -9,7 +11,7 @@
    --without-pear          Do not install PEAR], DEFAULT, yes)
  
  if test "$PHP_PEAR" != "no"; then
-@@ -1062,7 +1062,7 @@ dnl
+@@ -1062,7 +1062,7 @@
    if test "$PHP_PEAR" = "DEFAULT" || test "$PHP_PEAR" = "yes"; then
      case $PHP_LAYOUT in
        GNU) PEAR_INSTALLDIR=$datadir/pear;;
@@ -18,7 +20,7 @@
      esac
    fi
  
-@@ -1117,12 +1117,12 @@ test "$program_suffix" = "NONE" && progr
+@@ -1117,12 +1117,12 @@
  
  case $libdir in
    '${exec_prefix}/lib')
@@ -33,7 +35,7 @@
      ;;
  esac
  
-@@ -1187,7 +1187,7 @@ EXPANDED_SYSCONFDIR=`eval echo $sysconfd
+@@ -1187,7 +1187,7 @@
  EXPANDED_DATADIR=$datadir
  EXPANDED_PHP_CONFIG_FILE_PATH=`eval echo "$PHP_CONFIG_FILE_PATH"`
  EXPANDED_PHP_CONFIG_FILE_SCAN_DIR=`eval echo "$PHP_CONFIG_FILE_SCAN_DIR"`
@@ -42,9 +44,11 @@
  
  exec_prefix=$old_exec_prefix
  libdir=$old_libdir
---- php.orig/ext/ext_skel
-+++ php/ext/ext_skel
-@@ -70,7 +70,7 @@ if test -d "$extname" ; then
+Index: pkg-php/ext/ext_skel
+===================================================================
+--- pkg-php.orig/ext/ext_skel	2009-08-25 15:43:42.000000000 +0200
++++ pkg-php/ext/ext_skel	2009-08-25 15:44:02.000000000 +0200
+@@ -70,7 +70,7 @@
  fi
  
  if test -z "$skel_dir"; then
@@ -53,9 +57,11 @@
  fi
  
  ## convert skel_dir to full path
---- php.orig/php.ini-development
-+++ php/php.ini-development
-@@ -785,7 +785,7 @@ default_mimetype = "text/html"
+Index: pkg-php/php.ini-development
+===================================================================
+--- pkg-php.orig/php.ini-development	2009-08-25 15:43:42.000000000 +0200
++++ pkg-php/php.ini-development	2009-08-25 15:44:31.000000000 +0200
+@@ -785,7 +785,7 @@
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
  ; UNIX: "/path1:/path2"
@@ -64,9 +70,11 @@
  ;
  ; Windows: "\path1;\path2"
  ;include_path = ".;c:\php\includes"
---- php.orig/php.ini-production
-+++ php/php.ini-production
-@@ -785,7 +785,7 @@ default_mimetype = "text/html"
+Index: pkg-php/php.ini-production
+===================================================================
+--- pkg-php.orig/php.ini-production	2009-08-25 15:43:42.000000000 +0200
++++ pkg-php/php.ini-production	2009-08-25 15:44:02.000000000 +0200
+@@ -785,7 +785,7 @@
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
  ; UNIX: "/path1:/path2"
@@ -75,7 +83,7 @@
  ;
  ; Windows: "\path1;\path2"
  ;include_path = ".;c:\php\includes"
-@@ -939,53 +939,6 @@ default_socket_timeout = 60
+@@ -939,53 +939,6 @@
  ; If you only provide the name of the extension, PHP will look for it in its
  ; default extension directory.
  ;
@@ -129,9 +137,11 @@
  
  ;;;;;;;;;;;;;;;;;;;
  ; Module Settings ;
---- php.orig/sapi/caudium/config.m4
-+++ php/sapi/caudium/config.m4
-@@ -26,8 +26,8 @@ if test "$PHP_CAUDIUM" != "no"; then
+Index: pkg-php/sapi/caudium/config.m4
+===================================================================
+--- pkg-php.orig/sapi/caudium/config.m4	2009-08-25 15:43:42.000000000 +0200
++++ pkg-php/sapi/caudium/config.m4	2009-08-25 15:44:02.000000000 +0200
+@@ -26,8 +26,8 @@
      AC_MSG_ERROR([Could not find a pike in $PHP_CAUDIUM/bin/])
    fi
    if $PIKE -e 'float v; int rel;sscanf(version(), "Pike v%f release %d", v, rel);v += rel/10000.0; if(v < 7.0268) exit(1); exit(0);'; then
@@ -142,7 +152,7 @@
      if test -z "$PIKE_INCLUDE_DIR" || test -z "$PIKE_MODULE_DIR"; then
        AC_MSG_ERROR(Failed to figure out Pike module and include directories)
      fi
-@@ -84,7 +84,9 @@ if test "$PHP_CAUDIUM" != "no"; then
+@@ -84,7 +84,9 @@
    PIKE_VERSION=`$PIKE -e 'string v; int rel;sscanf(version(), "Pike v%s release %d", v, rel); write(v+"."+rel);'`   
    AC_DEFINE(HAVE_CAUDIUM,1,[Whether to compile with Caudium support])
    PHP_SELECT_SAPI(caudium, shared, caudium.c)
@@ -153,9 +163,11 @@
    RESULT="  *** Pike binary used:         $PIKE
    *** Pike include dir(s) used: $PIKE_INCLUDE_DIR
    *** Pike version:             $PIKE_VERSION"
---- php.orig/sapi/cli/php.1.in
-+++ php/sapi/cli/php.1.in
-@@ -306,13 +306,14 @@ Shows configuration for extension
+Index: pkg-php/sapi/cli/php.1.in
+===================================================================
+--- pkg-php.orig/sapi/cli/php.1.in	2009-08-25 15:43:42.000000000 +0200
++++ pkg-php/sapi/cli/php.1.in	2009-08-25 15:44:25.000000000 +0200
+@@ -306,13 +306,14 @@
  .B name
  .SH FILES
  .TP 15
@@ -175,8 +187,10 @@
  .SH EXAMPLES
  .TP 5
  \fIphp -r 'echo "Hello World\\n";'\fP
---- php.orig/scripts/Makefile.frag
-+++ php/scripts/Makefile.frag
+Index: pkg-php/scripts/Makefile.frag
+===================================================================
+--- pkg-php.orig/scripts/Makefile.frag	2009-08-25 15:43:42.000000000 +0200
++++ pkg-php/scripts/Makefile.frag	2009-08-25 15:44:02.000000000 +0200
 @@ -3,8 +3,8 @@
  # Build environment install
  #
@@ -188,9 +202,11 @@
  
  BUILD_FILES = \
  	scripts/phpize.m4 \
---- php.orig/scripts/php-config.in
-+++ php/scripts/php-config.in
-@@ -5,8 +5,8 @@ prefix="@prefix@"
+Index: pkg-php/scripts/php-config.in
+===================================================================
+--- pkg-php.orig/scripts/php-config.in	2009-08-25 15:43:42.000000000 +0200
++++ pkg-php/scripts/php-config.in	2009-08-25 15:44:35.000000000 +0200
+@@ -5,8 +5,8 @@
  exec_prefix="@exec_prefix@"
  version="@PHP_VERSION@"
  vernum="@PHP_VERSION_ID@"
@@ -201,8 +217,10 @@
  ldflags="@PHP_LDFLAGS@"
  libs="@EXTRA_LIBS@"
  extension_dir='@EXTENSION_DIR@'
---- php.orig/scripts/phpize.in
-+++ php/scripts/phpize.in
+Index: pkg-php/scripts/phpize.in
+===================================================================
+--- pkg-php.orig/scripts/phpize.in	2009-08-25 15:43:42.000000000 +0200
++++ pkg-php/scripts/phpize.in	2009-08-25 15:44:42.000000000 +0200
 @@ -3,8 +3,8 @@
  # Variable declaration
  prefix='@prefix@'
