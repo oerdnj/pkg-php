@@ -4,8 +4,9 @@ php5 (5.3.0-3) unstable; urgency=low
   * Fix segmentation fault in php-gd (Closes: #543496)
   * Update suhosin patch to 0.9.8 *BETA* and enable it again
   * Fix FTBFS with current autoconf/automake (Closes: #542906, #542088)
+  * Add avr32-linux-gnu to no -gstabs toolchains (Closes: #543278)
 
- -- Ondřej Surý <ondrej@debian.org>  Tue, 25 Aug 2009 15:40:09 +0200
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 25 Aug 2009 15:48:07 +0200
 
 php5 (5.3.0-2) experimental; urgency=low
 
