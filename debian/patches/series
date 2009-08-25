@@ -24,6 +24,7 @@ libtool2.2.patch
 113-php.ini_securitynotes.patch
 114-php_gd_segfault.patch
 115-autoconf_ftbfs.patch
+116-posixness_fix.patch
 libdb_is_-ldb
 suhosin.patch
 fix_broken_upstream_tests.patch
