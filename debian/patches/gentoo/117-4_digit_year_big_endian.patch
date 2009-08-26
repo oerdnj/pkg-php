@@ -1,0 +1,11 @@
+--- pkg-php.orig/ext/date/php_date.c
++++ pkg-php/ext/date/php_date.c
+@@ -803,7 +803,7 @@ static char *date_format(char *format, i
+ 			/* year */
+ 			case 'L': length = slprintf(buffer, 32, "%d", timelib_is_leap((int) t->y)); break;
+ 			case 'y': length = slprintf(buffer, 32, "%02d", (int) t->y % 100); break;
+-			case 'Y': length = slprintf(buffer, 32, "%s%04ld", t->y < 0 ? "-" : "", llabs(t->y)); break;
++			case 'Y': length = slprintf(buffer, 32, "%s%04lld", t->y < 0 ? "-" : "", llabs(t->y)); break;
+ 
+ 			/* time */
+ 			case 'a': length = slprintf(buffer, 32, "%s", t->h >= 12 ? "pm" : "am"); break;
