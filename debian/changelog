@@ -1,6 +1,9 @@
 php5 (5.2.10.dfsg.1-3) unstable; urgency=low
 
   * Fix 4-year digit year on big-endian platforms (Closes: #542301)
+  * Fix FTBFS on Debian Hurd (Closes: #530281)
+  * Add avr32-linux-gnu to no -gstabs toolchains (Closes: #543278)
+  * Fix FTBFS with current autoconf/automake (Closes: #542906, #542088)
 
  -- Ondřej Surý <ondrej@debian.org>  Wed, 26 Aug 2009 15:47:43 +0200
 
