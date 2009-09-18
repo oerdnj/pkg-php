@@ -25,3 +25,9 @@ fi
 #EXTRA#
 #DEBHELPER#
 
+reload_apache()
+{
+	echo "Run '/etc/init.d/apache2 restart' to activate new configuration!"
+}
+
+reload_apache
