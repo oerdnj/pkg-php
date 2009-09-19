@@ -3,7 +3,7 @@ Bug #27719 (mktime returns incorrect timestamp for dst days)
 --INI--
 error_reporting=2047
 --FILE--
-<?php /* $Id: bug27719.phpt,v 1.1 2005/07/03 14:36:59 derick Exp $ */
+<?php /* $Id: bug27719.phpt 189800 2005-07-03 14:36:59Z derick $ */
 	putenv("TZ=EST");  // No DST
 	$a = mktime(0, 0, 0, 4, 4, 2004, 0);
 	$b = mktime(0, 0, 0, 4, 4, 2004, 1);

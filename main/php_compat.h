@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_compat.h,v 1.25.2.3.2.7 2008/12/31 11:17:47 sebastian Exp $ */
+/* $Id: php_compat.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifndef PHP_COMPAT_H
 #define PHP_COMPAT_H

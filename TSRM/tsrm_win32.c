@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_win32.c,v 1.27.2.1.2.11 2008/12/31 11:17:32 sebastian Exp $ */
+/* $Id: tsrm_win32.c 287900 2009-08-30 17:13:45Z pajoye $ */
 
 #include <stdio.h>
 #include <fcntl.h>
@@ -179,20 +179,39 @@ TSRM_API FILE *popen(const char *command, const char *type)
 TSRM_API FILE *popen_ex(const char *command, const char *type, const char *cwd, char *env)
 {
 	FILE *stream = NULL;
-	int fno, str_len = strlen(type), read, mode;
+	int fno, type_len = strlen(type), read, mode;
 	STARTUPINFO startup;
 	PROCESS_INFORMATION process;
 	SECURITY_ATTRIBUTES security;
 	HANDLE in, out;
-	char *cmd;
 	process_pair *proc;
+	char *cmd;
+	int i;
+	char *ptype = (char *)type;
 	TSRMLS_FETCH();
+
+	if (!type) {
+		return NULL;
+	}
+
+	/*The following two checks can be removed once we drop XP support */
+	type_len = strlen(type);
+	if (type_len <1 || type_len > 2) {
+		return NULL;
+	}
+
+	for (i=0; i < type_len; i++) {
+		if (!(*ptype == 'r' || *ptype == 'w' || *ptype == 'b' || *ptype == 't')) {
+			return NULL;
+		}
+		ptype++;
+	}
 
 	security.nLength				= sizeof(SECURITY_ATTRIBUTES);
 	security.bInheritHandle			= TRUE;
 	security.lpSecurityDescriptor	= NULL;
 
-	if (!str_len || !CreatePipe(&in, &out, &security, 2048L)) {
+	if (!type_len || !CreatePipe(&in, &out, &security, 2048L)) {
 		return NULL;
 	}
 
@@ -204,7 +223,7 @@ TSRM_API FILE *popen_ex(const char *command, const char *type, const char *cwd, 
 	startup.hStdError	= GetStdHandle(STD_ERROR_HANDLE);
 
 	read = (type[0] == 'r') ? TRUE : FALSE;
-	mode = ((str_len == 2) && (type[1] == 'b')) ? O_BINARY : O_TEXT;
+	mode = ((type_len == 2) && (type[1] == 'b')) ? O_BINARY : O_TEXT;
 
 
 	if (read) {
@@ -220,6 +239,7 @@ TSRM_API FILE *popen_ex(const char *command, const char *type, const char *cwd, 
 	cmd = (char*)malloc(strlen(command)+strlen(TWG(comspec))+sizeof(" /c "));
 	sprintf(cmd, "%s /c %s", TWG(comspec), command);
 	if (!CreateProcess(NULL, cmd, &security, &security, security.bInheritHandle, NORMAL_PRIORITY_CLASS|CREATE_NO_WINDOW, env, cwd, &startup, &process)) {
+		free(cmd);
 		return NULL;
 	}
 	free(cmd);

@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: dba_qdbm.c,v 1.4.2.1.2.3 2008/12/31 11:17:36 sebastian Exp $ */
+/* $Id: dba_qdbm.c 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

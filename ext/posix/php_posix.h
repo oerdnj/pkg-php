@@ -17,7 +17,7 @@
  */
 
 
-/* $Id: php_posix.h,v 1.18.2.1.2.4 2008/12/31 11:17:42 sebastian Exp $ */
+/* $Id: php_posix.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifndef PHP_POSIX_H
 #define PHP_POSIX_H

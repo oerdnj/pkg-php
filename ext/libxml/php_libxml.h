@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_libxml.h,v 1.15.2.2.2.8 2008/12/31 11:17:39 sebastian Exp $ */
+/* $Id: php_libxml.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifndef PHP_LIBXML_H
 #define PHP_LIBXML_H

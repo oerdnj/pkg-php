@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: win95nt.h,v 1.20.2.2.2.4 2008/12/31 11:17:48 sebastian Exp $ */
+/* $Id: win95nt.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 /* Defines and types for Windows 95/NT */
 #define HAVE_DECLARED_TIMEZONE

@@ -6,7 +6,7 @@ if (!extension_loaded("ming")) die("skip");
 if (MING_NEW || MING_ZLIB) die("skip new ming");
 ?>
 --FILE--
-<?php /* $Id: swfaction.phpt,v 1.3 2005/07/18 00:14:53 helly Exp $ */
+<?php /* $Id: swfaction.phpt 190849 2005-07-18 00:14:54Z helly $ */
 
   $s = new SWFShape();
   $f = $s->addFill(0xff, 0, 0);

@@ -4,7 +4,7 @@ COM: General variant tests
 <?php # vim:ft=php
 if (!extension_loaded("com_dotnet")) print "skip COM/.Net support not present"; ?>
 --FILE--
-<?php // $Id: variants.phpt,v 1.3 2004/05/03 18:19:07 wez Exp $
+<?php // $Id: variants.phpt 157854 2004-05-03 18:19:07Z wez $
 error_reporting(E_ALL);
 
 $v = new VARIANT();

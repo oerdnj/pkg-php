@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.55.2.3.2.13 2008/05/13 16:06:55 sixd Exp $
+dnl $Id: config.m4 259694 2008-05-13 16:06:55Z sixd $
 dnl
 
 if test -z "$SED"; then

@@ -6,7 +6,7 @@ Sybase-CT unbuffered query without full fetching
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: test_unbuffered_no_full_fetch.phpt,v 1.1.4.2 2008/11/08 14:28:26 thekid Exp $
+ * $Id: test_unbuffered_no_full_fetch.phpt 268587 2008-11-08 14:28:26Z thekid $
  */
 
   require('test.inc');

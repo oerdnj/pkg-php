@@ -31,7 +31,7 @@
 */
 
 
-static const char rcsid[] = "#(@) $Id: xmlrpc.c,v 1.8.4.5 2008/12/17 21:45:31 iliaa Exp $";
+static const char rcsid[] = "#(@) $Id: xmlrpc.c 271433 2008-12-17 21:45:31Z iliaa $";
 
 
 /****h* ABOUT/xmlrpc
@@ -42,10 +42,7 @@ static const char rcsid[] = "#(@) $Id: xmlrpc.c,v 1.8.4.5 2008/12/17 21:45:31 il
  * CREATION DATE
  *   9/1999 - 10/2000
  * HISTORY
- *   $Log: xmlrpc.c,v $
- *   Revision 1.8.4.5  2008/12/17 21:45:31  iliaa
- *   MFB: remove fprintf usage
- *
+ *   $Log$
  *   Revision 1.8.4.4  2008/09/10 00:09:04  felipe
  *   MFH:
  *   - Merged fix from SF project (Import Jeff Lawsons patches for XML datetime bug fixes)

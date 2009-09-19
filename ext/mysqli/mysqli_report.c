@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_report.c,v 1.11.2.2.2.4 2008/12/31 11:17:40 sebastian Exp $ 
+  $Id: mysqli_report.c 272374 2008-12-31 11:17:49Z sebastian $ 
 */
 
 #ifdef HAVE_CONFIG_H

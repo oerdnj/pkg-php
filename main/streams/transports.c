@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: transports.c,v 1.16.2.1.2.6 2008/12/31 11:17:48 sebastian Exp $ */
+/* $Id: transports.c 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #include "php.h"
 #include "php_streams_int.h"

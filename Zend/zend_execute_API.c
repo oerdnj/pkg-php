@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute_API.c,v 1.331.2.20.2.31 2009/04/08 00:28:04 felipe Exp $ */
+/* $Id: zend_execute_API.c 288345 2009-09-15 00:09:13Z moriyoshi $ */
 
 #include <stdio.h>
 #include <signal.h>
@@ -921,6 +921,12 @@ int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci_cache TS
 	for (i=0; i<fci->param_count; i++) {
 		zval *param;
 
+		if (EX(function_state).function->type == ZEND_INTERNAL_FUNCTION
+			&& !ARG_SHOULD_BE_SENT_BY_REF(EX(function_state).function, i + 1)
+			&& PZVAL_IS_REF(*fci->params[i])) {
+			SEPARATE_ZVAL(fci->params[i]);
+		}
+
 		if (ARG_SHOULD_BE_SENT_BY_REF(EX(function_state).function, i+1)
 			&& !PZVAL_IS_REF(*fci->params[i])) {
 			if ((*fci->params[i])->refcount>1) {
@@ -1206,13 +1212,16 @@ ZEND_API int zend_eval_string(char *str, zval *retval_ptr, char *string_name TSR
 		zval *local_retval_ptr=NULL;
 		zval **original_return_value_ptr_ptr = EG(return_value_ptr_ptr);
 		zend_op **original_opline_ptr = EG(opline_ptr);
+		int orig_interactive = CG(interactive);
 
 		EG(return_value_ptr_ptr) = &local_retval_ptr;
 		EG(active_op_array) = new_op_array;
 		EG(no_extensions)=1;
+		CG(interactive) = 0;
 
 		zend_execute(new_op_array TSRMLS_CC);
 
+		CG(interactive) = orig_interactive;
 		if (local_retval_ptr) {
 			if (retval_ptr) {
 				COPY_PZVAL_TO_ZVAL(*retval_ptr, local_retval_ptr);
@@ -1259,6 +1268,7 @@ void execute_new_code(TSRMLS_D)
 	zend_op *opline, *end;
 	zend_op *ret_opline;
 	zval *local_retval=NULL;
+	int orig_interactive;
 
 	if (!(CG(active_op_array)->fn_flags & ZEND_ACC_INTERACTIVE)
 		|| CG(active_op_array)->backpatch_count>0
@@ -1308,7 +1318,10 @@ void execute_new_code(TSRMLS_D)
 
 	EG(return_value_ptr_ptr) = &local_retval;
 	EG(active_op_array) = CG(active_op_array);
+	orig_interactive = CG(interactive);
+	CG(interactive) = 0;
 	zend_execute(CG(active_op_array) TSRMLS_CC);
+	CG(interactive) = orig_interactive;
 	if (local_retval) {
 		zval_ptr_dtor(&local_retval);
 	}

@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.10.2.1.2.4 2007/02/04 00:21:51 fmk Exp $
+// $Id: config.w32 228924 2007-02-04 00:21:51Z fmk $
 // vim:ft=javascript
 
 ARG_ENABLE("mbstring", "multibyte string functions", "no");

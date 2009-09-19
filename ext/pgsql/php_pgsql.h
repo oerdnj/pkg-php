@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: php_pgsql.h,v 1.73.2.1.2.4 2008/12/31 11:17:42 sebastian Exp $ */
+/* $Id: php_pgsql.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifndef PHP_PGSQL_H
 #define PHP_PGSQL_H

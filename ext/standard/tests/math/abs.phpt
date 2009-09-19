@@ -1,7 +1,7 @@
 --TEST--
 Simple math tests
 --FILE--
-<?php // $Id: abs.phpt,v 1.4 2004/05/19 08:54:51 helly Exp $
+<?php // $Id: abs.phpt 158958 2004-05-19 08:56:50Z helly $
 
 define('LONG_MAX', is_int(5000000000)? 9223372036854775807 : 0x7FFFFFFF);
 define('LONG_MIN', -LONG_MAX - 1);

@@ -15,7 +15,7 @@
   | Author:                                                              |
   +----------------------------------------------------------------------+
 
-  $Id: phpmimemagic.h,v 1.3.2.2.2.3 2008/12/31 11:17:39 sebastian Exp $ 
+  $Id: phpmimemagic.h 272374 2008-12-31 11:17:49Z sebastian $ 
 */
 
 #ifndef PHPMIMEMAGIC_H

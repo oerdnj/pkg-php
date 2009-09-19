@@ -16,7 +16,7 @@
 ** separating it out, the code will be automatically omitted from
 ** static links that do not use it.
 **
-** $Id: complete.c,v 1.1.2.1 2006/08/14 16:15:28 iliaa Exp $
+** $Id: complete.c 218146 2006-08-14 16:15:29Z iliaa $
 */
 #include "sqliteInt.h"
 #ifndef SQLITE_OMIT_COMPLETE

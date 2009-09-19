@@ -19,7 +19,7 @@
    |          Sara Golemon <pollita@php.net>                              |
    +----------------------------------------------------------------------+
  */
-/* $Id: http_fopen_wrapper.c,v 1.99.2.12.2.19 2009/05/28 13:20:22 lbarnaud Exp $ */ 
+/* $Id: http_fopen_wrapper.c 286790 2009-08-04 09:24:48Z tony2001 $ */ 
 
 #include "php.h"
 #include "php_globals.h"
@@ -325,7 +325,6 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 		strlcat(scratch, " HTTP/1.0\r\n", scratch_len);
 	}
 
-
 	/* send it */
 	php_stream_write(stream, scratch, strlen(scratch));
 
@@ -347,7 +346,11 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 				}
 			}
 			smart_str_0(&tmpstr);
-			tmp = tmpstr.c;
+			/* Remove newlines and spaces from start and end. there's at least one extra \r\n at the end that needs to go. */
+			if (tmpstr.c) {
+				tmp = php_trim(tmpstr.c, strlen(tmpstr.c), NULL, 0, NULL, 3 TSRMLS_CC);
+				smart_str_free(&tmpstr);
+			}
 		}
 		if (Z_TYPE_PP(tmpzval) == IS_STRING && Z_STRLEN_PP(tmpzval)) {
 			/* Remove newlines and spaces from start and end php_trim will estrndup() */
@@ -755,6 +758,8 @@ out:
 		 * the stream */
 		stream->position = 0;
 
+		/* restore mode */
+		strlcpy(stream->mode, mode, sizeof(stream->mode));
 	}
 
 	return stream;

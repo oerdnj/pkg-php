@@ -3,7 +3,7 @@ InterBase: binding (may take a while)
 --SKIPIF--
 <?php include("skipif.inc"); ?>
 --FILE--
-<?php /* $Id: 006.phpt,v 1.11 2004/05/30 16:20:25 abies Exp $ */
+<?php /* $Id: 006.phpt 160078 2004-05-30 16:20:25Z abies $ */
 
 	require("interbase.inc");
 	

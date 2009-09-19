@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.3.2.4 2007/07/03 17:25:33 sniper Exp $
+dnl $Id: config.m4 239118 2007-07-03 17:25:43Z sniper $
 dnl
 
 PHP_ARG_ENABLE(json, whether to enable JavaScript Object Serialization support,

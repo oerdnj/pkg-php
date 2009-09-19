@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_content_types.c,v 1.32.2.1.2.6 2008/12/31 11:17:47 sebastian Exp $ */
+/* $Id: php_content_types.c 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #include "php.h"
 #include "SAPI.h"

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_extensions.h,v 1.67.2.3.2.5 2008/12/31 11:17:33 sebastian Exp $ */
+/* $Id: zend_extensions.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifndef ZEND_EXTENSIONS_H
 #define ZEND_EXTENSIONS_H

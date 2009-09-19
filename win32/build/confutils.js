@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-// $Id: confutils.js,v 1.60.2.1.2.10 2008/01/17 21:17:29 cellog Exp $
+// $Id: confutils.js,v 1.60.2.1.2.10 2008-01-17 21:17:29 cellog Exp $
 
 var STDOUT = WScript.StdOut;
 var STDERR = WScript.StdErr;
@@ -31,15 +31,15 @@ if (PROGRAM_FILES == null) {
 	PROGRAM_FILES = "C:\\Program Files";
 }
 
-if (!FSO.FileExists("README.CVS-RULES")) {
+if (!FSO.FileExists("README.SVN-RULES")) {
 	STDERR.WriteLine("Must be run from the root of the php source");
 	WScript.Quit(10);
 }
-	
+
 var CWD = WshShell.CurrentDirectory;
 
 if (typeof(CWD) == "undefined") {
-	CWD = FSO.GetParentFolderName(FSO.GetAbsolutePathName("README.CVS-RULES"));
+	CWD = FSO.GetParentFolderName(FSO.GetAbsolutePathName("README.SVN-RULES"));
 }
 
 /* defaults; we pick up the precise versions from configure.in */
@@ -1150,12 +1150,12 @@ function ADD_SOURCES(dir, file_list, target, obj_dir)
 	 * as either a child or a sibling */
 	if (obj_dir == null) {
 		var build_dir = dir.replace(new RegExp("^..\\\\"), "");
-		var mangle_dir = build_dir.replace(new RegExp("[\\\\/.]", "g"), "_");
+		var mangle_dir = build_dir.replace(new RegExp("[\\\\/.-]", "g"), "_");
 		var bd_flags_name = "CFLAGS_BD_" + mangle_dir.toUpperCase();
 	}
 	else {
 		var build_dir = obj_dir.replace(new RegExp("^..\\\\"), "");
-		var mangle_dir = build_dir.replace(new RegExp("[\\\\/.]", "g"), "_");
+		var mangle_dir = build_dir.replace(new RegExp("[\\\\/.-]", "g"), "_");
 		var bd_flags_name = "CFLAGS_BD_" + mangle_dir.toUpperCase();
 	}
 	

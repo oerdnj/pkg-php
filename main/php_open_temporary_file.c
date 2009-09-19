@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_open_temporary_file.c,v 1.34.2.1.2.12 2008/12/31 11:17:47 sebastian Exp $ */
+/* $Id: php_open_temporary_file.c 282742 2009-06-25 01:35:05Z iliaa $ */
 
 #include "php.h"
 
@@ -199,8 +199,15 @@ PHPAPI const char* php_get_temporary_directory(void)
 	/* On Unix use the (usual) TMPDIR environment variable. */
 	{
 		char* s = getenv("TMPDIR");
-		if (s) {
-			temporary_directory = strdup(s);
+		if (s && *s) {
+			int len = strlen(s);
+
+			if (s[len - 1] == DEFAULT_SLASH) {
+				temporary_directory = zend_strndup(s, len - 1);
+			} else {
+				temporary_directory = zend_strndup(s, len);
+			}
+
 			return temporary_directory;
 		}
 	}

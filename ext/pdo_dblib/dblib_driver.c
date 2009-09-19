@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: dblib_driver.c,v 1.9.2.2.2.5 2009/03/20 22:14:17 sfox Exp $ */
+/* $Id: dblib_driver.c 288215 2009-09-10 01:20:42Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -230,9 +230,11 @@ static int pdo_dblib_handle_factory(pdo_dbh_t *dbh, zval *driver_options TSRMLS_
 		goto cleanup;
 	}
 
-	if (DBSETOPT(H->link, DBTEXTLIMIT, "2147483647") == FAIL) {
-		goto cleanup;
-	}
+	/* dblib do not return more than this length from text/image */
+	DBSETOPT(H->link, DBTEXTLIMIT, "2147483647");
+	
+	/* limit text/image from network */
+	DBSETOPT(H->link, DBTEXTSIZE, "2147483647");
 
 	if (vars[3].optval && FAIL == dbuse(H->link, vars[3].optval)) {
 		goto cleanup;

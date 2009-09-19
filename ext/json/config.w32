@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.2.2.1 2006/07/22 15:33:02 rrichards Exp $
+// $Id: config.w32 216887 2006-07-22 15:33:02Z rrichards $
 // vim:ft=javascript
 
 ARG_ENABLE("json", "JavaScript Object Serialization support", "yes");

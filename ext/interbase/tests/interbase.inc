@@ -1,4 +1,4 @@
-<?php /* $Id: interbase.inc,v 1.10.6.1 2008/10/07 12:53:08 felipe Exp $ */
+<?php /* $Id: interbase.inc 267054 2008-10-07 12:53:08Z felipe $ */
 
 srand((double)microtime()*1000000);
 

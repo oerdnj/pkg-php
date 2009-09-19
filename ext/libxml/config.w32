@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.8.4.1 2008/01/11 13:37:24 rrichards Exp $
+// $Id: config.w32 250404 2008-01-11 13:37:24Z rrichards $
 // vim:ft=javascript
 
 ARG_WITH("libxml", "LibXML support", "yes");

@@ -17,7 +17,7 @@
    |          Rasmus Lerdorf <rasmus@php.net>                             |
    +----------------------------------------------------------------------+
  */
-/* $Id: crypt.c,v 1.62.2.1.2.8 2008/12/31 11:17:44 sebastian Exp $ */
+/* $Id: crypt.c 272374 2008-12-31 11:17:49Z sebastian $ */
 #include <stdlib.h>
 
 #include "php.h"

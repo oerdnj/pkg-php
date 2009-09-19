@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.2 2004/01/18 19:21:23 derick Exp $
+// $Id: config.w32 149140 2004-01-18 19:21:23Z derick $
 // vim:ft=javascript
 
 ARG_WITH("mcrypt", "mcrypt support", "no");

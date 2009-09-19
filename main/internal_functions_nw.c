@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: internal_functions_nw.c,v 1.9.2.1.2.4 2008/12/31 11:17:47 sebastian Exp $ */
+/* $Id: internal_functions_nw.c 272374 2008-12-31 11:17:49Z sebastian $ */
 
 /* {{{ includes
  */

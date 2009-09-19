@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_ini_scanner.l,v 1.41.2.2.2.2 2007/07/23 16:17:10 jani Exp $ */
+/* $Id: zend_ini_scanner.l 240224 2007-07-23 16:17:10Z jani $ */
 
 #define yyleng SCNG(yy_leng)
 #define yytext SCNG(yy_text)

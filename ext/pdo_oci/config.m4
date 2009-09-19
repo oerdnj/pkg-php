@@ -1,4 +1,4 @@
-dnl $Id: config.m4,v 1.14.2.5.2.6 2007/08/31 21:08:48 sixd Exp $
+dnl $Id: config.m4 242010 2007-08-31 21:08:48Z sixd $
 
 if test "$PHP_PDO" != "no"; then
 

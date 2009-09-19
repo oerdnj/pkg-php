@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_sqlite2.c,v 1.6.2.3.2.4 2008/12/31 11:17:44 sebastian Exp $ */
+/* $Id: pdo_sqlite2.c 272374 2008-12-31 11:17:49Z sebastian $ */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

@@ -4,7 +4,7 @@ COM: Loading typelib corrupts memory
 <?php # vim:ft=php
 if (!extension_loaded("com_dotnet")) print "skip COM/.Net support not present"; ?>
 --FILE--
-<?php // $Id: bug39606.phpt,v 1.1.2.1 2006/12/09 10:52:09 rrichards Exp $
+<?php // $Id: bug39606.phpt 224684 2006-12-09 10:52:09Z rrichards $
 error_reporting(E_ALL);
 
 $arEnv = array_change_key_case($_SERVER, CASE_UPPER);

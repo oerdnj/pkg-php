@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_language_scanner.l,v 1.131.2.11.2.18 2009/05/08 17:50:58 mattwil Exp $ */
+/* $Id: zend_language_scanner.l 280170 2009-05-08 17:50:58Z mattwil $ */
 
 #define yyleng SCNG(yy_leng)
 #define yytext SCNG(yy_text)

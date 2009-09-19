@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.5.2.1 2006/01/05 06:41:09 sebastian Exp $
+// $Id: config.w32 204602 2006-01-05 06:41:09Z sebastian $
 // vim:ft=javascript
 
 EXTENSION("date", "php_date.c", false, "-Iext/date/lib");

@@ -16,12 +16,10 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_bcmath.h,v 1.20.2.1.2.4 2008/12/31 11:17:35 sebastian Exp $ */
+/* $Id: php_bcmath.h 287499 2009-08-20 11:19:20Z jani $ */
 
 #ifndef PHP_BCMATH_H
 #define PHP_BCMATH_H
-
-#if HAVE_BCMATH
 
 #include "libbcmath/src/bcmath.h"
 
@@ -50,18 +48,12 @@ ZEND_BEGIN_MODULE_GLOBALS(bcmath)
 	long bc_precision;
 ZEND_END_MODULE_GLOBALS(bcmath)
 	
-#if ZTS
-#define BCG(v) TSRMG(bcmath_globals_id, zend_bcmath_globals *, v)
+#ifdef ZTS
+# define BCG(v) TSRMG(bcmath_globals_id, zend_bcmath_globals *, v)
 #else
-#define BCG(v) (bcmath_globals.v)
+# define BCG(v) (bcmath_globals.v)
 #endif
 
 ZEND_EXTERN_MODULE_GLOBALS(bcmath)
-
-#else
-
-#define phpext_bcmath_ptr NULL
-
-#endif
 
 #endif /* PHP_BCMATH_H */

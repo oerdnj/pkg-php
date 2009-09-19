@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: interface.c,v 1.62.2.14.2.57 2009/06/15 12:38:11 iliaa Exp $ */
+/* $Id: interface.c 287784 2009-08-26 22:24:10Z pajoye $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 
@@ -183,7 +183,7 @@ static int php_curl_option_url(php_curl *ch, const char *url, const int len) /* 
 			return 0;
 		}
 
-		if (!strncasecmp("file", uri->scheme, sizeof("file"))) {
+		if (uri->scheme && !strncasecmp("file", uri->scheme, sizeof("file"))) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Protocol 'file' disabled in cURL");
 			php_url_free(uri);
 			return 0;
@@ -696,13 +696,24 @@ PHP_MINIT_FUNCTION(curl)
 		char **p = (char **)info->protocols;
 
 		while (*p != NULL) {
-			php_register_url_stream_wrapper(*p++, &php_curl_wrapper TSRMLS_CC);
+			/* Do not enable cURL "file" protocol and make sure cURL is always used when --with-curlwrappers is enabled */
+			if (strncasecmp(*p, "file", sizeof("file")-1) != 0) {
+				php_unregister_url_stream_wrapper(*p TSRMLS_CC);
+				php_register_url_stream_wrapper(*p, &php_curl_wrapper TSRMLS_CC);
+			}
+			(void) *p++;
 		}
 	}
 # else
+	php_unregister_url_stream_wrapper("http");
 	php_register_url_stream_wrapper("http", &php_curl_wrapper TSRMLS_CC);
+	php_unregister_url_stream_wrapper("https");
 	php_register_url_stream_wrapper("https", &php_curl_wrapper TSRMLS_CC);
+	php_unregister_url_stream_wrapper("ftp");
 	php_register_url_stream_wrapper("ftp", &php_curl_wrapper TSRMLS_CC);
+	php_unregister_url_stream_wrapper("ftps");
+	php_register_url_stream_wrapper("ftps", &php_curl_wrapper TSRMLS_CC);
+	php_unregister_url_stream_wrapper("ldap");
 	php_register_url_stream_wrapper("ldap", &php_curl_wrapper TSRMLS_CC);
 # endif
 #endif
@@ -1131,6 +1142,7 @@ PHP_FUNCTION(curl_init)
 {
 	php_curl	*ch;
 	zval		**url;
+	zval		*clone;
 	CURL		*cp;
 	int			argc = ZEND_NUM_ARGS();
 
@@ -1159,6 +1171,9 @@ PHP_FUNCTION(curl_init)
 	ch->handlers->write_header->method = PHP_CURL_IGNORE;
 
 	ch->uses = 0;
+
+	MAKE_STD_ZVAL(clone);
+	ch->clone = clone;
 
 	curl_easy_setopt(ch->cp, CURLOPT_NOPROGRESS,        1);
 	curl_easy_setopt(ch->cp, CURLOPT_VERBOSE,           0);
@@ -1254,6 +1269,10 @@ PHP_FUNCTION(curl_copy_handle)
 #endif
 	zend_llist_copy(&dupch->to_free.slist, &ch->to_free.slist);
 	zend_llist_copy(&dupch->to_free.post, &ch->to_free.post);
+
+	/* Keep track of cloned copies to avoid invoking curl destructors for every clone */
+	ch->clone->refcount++;
+	dupch->clone = ch->clone;
 
 	ZEND_REGISTER_RESOURCE(return_value, dupch, le_curl);
 	dupch->id = Z_LVAL_P(return_value);
@@ -1436,7 +1455,7 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 			error = CURLE_OK;
 			switch (option) {
 				case CURLOPT_FILE:
-					if (((php_stream *) what)->mode[0] != 'r') {
+					if (((php_stream *) what)->mode[0] != 'r' || ((php_stream *) what)->mode[1] == '+') {
 						zend_list_addref(Z_LVAL_PP(zvalue));
 						ch->handlers->write->fp = fp;
 						ch->handlers->write->method = PHP_CURL_FILE;
@@ -1447,7 +1466,7 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 					}
 					break;
 				case CURLOPT_WRITEHEADER:
-					if (((php_stream *) what)->mode[0] != 'r') {
+					if (((php_stream *) what)->mode[0] != 'r' || ((php_stream *) what)->mode[1] == '+') {
 						zend_list_addref(Z_LVAL_PP(zvalue));
 						ch->handlers->write_header->fp = fp;
 						ch->handlers->write_header->method = PHP_CURL_FILE;
@@ -1463,7 +1482,7 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 					ch->handlers->read->fd = Z_LVAL_PP(zvalue);
 					break;
 				case CURLOPT_STDERR:
-					if (((php_stream *) what)->mode[0] != 'r') {
+					if (((php_stream *) what)->mode[0] != 'r' || ((php_stream *) what)->mode[1] == '+') {
 						if (ch->handlers->std_err) {
 							zval_ptr_dtor(&ch->handlers->std_err);
 						}
@@ -1573,35 +1592,32 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 					 * must be explicitly cast to long in curl_formadd
 					 * use since curl needs a long not an int. */
 					if (*postval == '@') {
-						char *type;
+						char *type, *filename;
 						++postval;
 
-						if ((type = php_memnstr(postval, ";type=", sizeof(";type=") - 1, postval + strlen(postval)))) {
+						if ((type = php_memnstr(postval, ";type=", sizeof(";type=") - 1, postval + Z_STRLEN_PP(current)))) {
 							*type = '\0';
+						}
+						if ((filename = php_memnstr(postval, ";filename=", sizeof(";filename=") - 1, postval + Z_STRLEN_PP(current)))) {
+							*filename = '\0';
 						}
 						/* safe_mode / open_basedir check */
 						if (php_check_open_basedir(postval TSRMLS_CC) || (PG(safe_mode) && !php_checkuid(postval, "rb+", CHECKUID_CHECK_MODE_PARAM))) {
-							if (type) {
-								*type = ';';
-							}
 							RETVAL_FALSE;
 							return 1;
 						}
+						error = curl_formadd(&first, &last,
+										CURLFORM_COPYNAME, string_key,
+										CURLFORM_NAMELENGTH, (long)string_key_len - 1,
+										CURLFORM_FILENAME, filename ? filename : postval,
+										CURLFORM_CONTENTTYPE, type ? type + sizeof(";type=") - 1 : "application/octet-stream",
+										CURLFORM_FILE, postval,
+										CURLFORM_END);
 						if (type) {
-							error = curl_formadd(&first, &last,
-											 CURLFORM_COPYNAME, string_key,
-											 CURLFORM_NAMELENGTH, (long)string_key_len - 1,
-											 CURLFORM_FILE, postval,
-											 CURLFORM_CONTENTTYPE, type + sizeof(";type=") - 1,
-											 CURLFORM_END);
 							*type = ';';
-						} else {
-							error = curl_formadd(&first, &last,
-											 CURLFORM_COPYNAME, string_key,
-											 CURLFORM_NAMELENGTH, (long)string_key_len - 1,
-											 CURLFORM_FILE, postval,
-											 CURLFORM_END);
-
+						}
+						if (filename) {
+							*filename = ';';
 						}
 					} else {
 						error = curl_formadd(&first, &last,
@@ -1827,6 +1843,14 @@ PHP_FUNCTION(curl_exec)
 	if (ch->handlers->write->method == PHP_CURL_RETURN && ch->handlers->write->buf.len > 0) {
 		smart_str_0(&ch->handlers->write->buf);
 		RETURN_STRINGL(ch->handlers->write->buf.c, ch->handlers->write->buf.len, 1);
+	}
+
+	/* flush the file handle, so any remaining data is synched to disk */
+	if (ch->handlers->write->method == PHP_CURL_FILE && ch->handlers->write->fp) {
+		fflush(ch->handlers->write->fp);
+	}
+	if (ch->handlers->write_header->method == PHP_CURL_FILE && ch->handlers->write_header->fp) {
+		fflush(ch->handlers->write_header->fp);
 	}
 
 	if (ch->handlers->write->method == PHP_CURL_RETURN) {
@@ -2068,8 +2092,19 @@ static void _php_curl_close_ex(php_curl *ch TSRMLS_DC)
 #if LIBCURL_VERSION_NUM < 0x071101
 	zend_llist_clean(&ch->to_free.str);
 #endif
-	zend_llist_clean(&ch->to_free.slist);
-	zend_llist_clean(&ch->to_free.post);
+
+	/* cURL destructors should be invoked only by last curl handle */
+	if (ch->clone->refcount <= 1) {
+		zend_llist_clean(&ch->to_free.slist);
+		zend_llist_clean(&ch->to_free.post);
+		FREE_ZVAL(ch->clone);
+	} else {
+		ch->clone->refcount--;
+		ch->to_free.slist.dtor = NULL;
+		ch->to_free.post.dtor = NULL;
+		zend_llist_clean(&ch->to_free.slist);
+		zend_llist_clean(&ch->to_free.post);
+	}
 
 	if (ch->handlers->write->buf.len > 0) {
 		smart_str_free(&ch->handlers->write->buf);

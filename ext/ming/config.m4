@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.22.2.6.2.4 2007/03/06 10:13:40 tony2001 Exp $
+dnl $Id: config.m4 231313 2007-03-06 10:13:54Z tony2001 $
 dnl
 
 PHP_ARG_WITH(ming, for MING support,

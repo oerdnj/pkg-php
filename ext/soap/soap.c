@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: soap.c,v 1.156.2.28.2.44 2009/02/18 13:25:32 dmitry Exp $ */
+/* $Id: soap.c 287746 2009-08-26 14:05:48Z dmitry $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1956,8 +1956,13 @@ PHP_METHOD(SoapServer, fault)
 	char *code, *string, *actor=NULL, *name=NULL;
 	int code_len, string_len, actor_len, name_len;
 	zval* details = NULL;
+	soapServicePtr service;
+	xmlCharEncodingHandlerPtr old_encoding;
 
 	SOAP_SERVER_BEGIN_CODE();
+	FETCH_THIS_SERVICE(service);
+	old_encoding = SOAP_GLOBAL(encoding);
+	SOAP_GLOBAL(encoding) = service->encoding;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss|szs",
 	    &code, &code_len, &string, &string_len, &actor, &actor_len, &details,
@@ -1966,6 +1971,8 @@ PHP_METHOD(SoapServer, fault)
 	}
 
 	soap_server_fault(code, string, actor, details, name TSRMLS_CC);
+
+	SOAP_GLOBAL(encoding) = old_encoding;
 	SOAP_SERVER_END_CODE();
 }
 /* }}} */

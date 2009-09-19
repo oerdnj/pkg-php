@@ -1,4 +1,4 @@
-<?php /* $Id: skipif.inc,v 1.3 2004/04/01 16:25:51 abies Exp $ */
+<?php /* $Id: skipif.inc 155152 2004-04-01 16:25:51Z abies $ */
 
 if (!extension_loaded("interbase")) print "skip"; 
 

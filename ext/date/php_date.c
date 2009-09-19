@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_date.c,v 1.43.2.45.2.71 2009/06/05 22:34:30 rasmus Exp $ */
+/* $Id: php_date.c 288356 2009-09-15 20:34:54Z rasmus $ */
 
 #include "php.h"
 #include "php_streams.h"
@@ -36,6 +36,10 @@ static __inline __int64 llabs( __int64 i ) { return i >= 0? i: -i; }
 
 #if defined(__GNUC__) && __GNUC__ < 3
 static __inline __int64_t llabs( __int64_t i ) { return i >= 0 ? i : -i; }
+#endif
+
+#if defined(NETWARE) && defined(__MWERKS__)
+static __inline long long llabs( long long i ) { return i >= 0 ? i : -i; }
 #endif
 
 /* {{{ arginfo */
@@ -798,7 +802,7 @@ static char *date_format(char *format, int format_len, timelib_time *t, int loca
 			/* year */
 			case 'L': length = slprintf(buffer, 32, "%d", timelib_is_leap((int) t->y)); break;
 			case 'y': length = slprintf(buffer, 32, "%02d", (int) t->y % 100); break;
-			case 'Y': length = slprintf(buffer, 32, "%s%04ld", t->y < 0 ? "-" : "", llabs(t->y)); break;
+			case 'Y': length = slprintf(buffer, 32, "%s%04lld", t->y < 0 ? "-" : "", llabs(t->y)); break;
 
 			/* time */
 			case 'a': length = slprintf(buffer, 32, "%s", t->h >= 12 ? "pm" : "am"); break;
@@ -1748,7 +1752,7 @@ static int date_initialize(php_date_obj *dateobj, /*const*/ char *time_str, int 
 	}
 	timelib_unixtime2local(now, (timelib_sll) time(NULL));
 
-	timelib_fill_holes(dateobj->time, now, 0);
+	timelib_fill_holes(dateobj->time, now, TIMELIB_NO_CLONE);
 	timelib_update_ts(dateobj->time, tzi);
 
 	dateobj->time->have_weekday_relative = dateobj->time->have_relative = 0;
@@ -2276,7 +2280,7 @@ PHP_FUNCTION(timezone_transitions_get)
 {
 	zval                *object, *element;
 	php_timezone_obj    *tzobj;
-	int                  i;
+	unsigned int         i;
 
 	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "O", &object, date_ce_timezone) == FAILURE) {
 		RETURN_FALSE;
@@ -2452,7 +2456,7 @@ static void php_do_date_sunrise_sunset(INTERNAL_FUNCTION_PARAMETERS, int calc_su
 	}
 
 	timelib_unixtime2local(t, time);
-	rs = timelib_astro_rise_set_altitude(t, longitude, latitude, altitude, altitude > -1 ? 1 : 0, &h_rise, &h_set, &rise, &set, &transit);
+	rs = timelib_astro_rise_set_altitude(t, longitude, latitude, altitude, calc_sunset?0:1, &h_rise, &h_set, &rise, &set, &transit);
 	timelib_time_dtor(t);
 	
 	if (rs != 0) {

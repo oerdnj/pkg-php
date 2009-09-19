@@ -2,7 +2,7 @@
 Bug #47667 (ZipArchive::OVERWRITE seems to have no effect)
 --SKIPIF--
 <?php
-/* $Id: bug47667.phpt,v 1.1.4.2 2009/03/16 10:22:13 mkoppanen Exp $ */
+/* $Id: bug47667.phpt 277254 2009-03-16 10:22:13Z mkoppanen $ */
 if(!extension_loaded('zip')) die('skip');
 ?>
 --FILE--

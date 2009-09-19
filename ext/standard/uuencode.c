@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: uuencode.c,v 1.5.2.1.2.7 2008/12/31 11:17:46 sebastian Exp $ */
+/* $Id: uuencode.c 272374 2008-12-31 11:17:49Z sebastian $ */
 
 /*
  * Portions of this code are based on Berkeley's uuencode/uudecode

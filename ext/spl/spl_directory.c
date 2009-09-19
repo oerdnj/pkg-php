@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_directory.c,v 1.45.2.27.2.30 2008/12/31 11:17:44 sebastian Exp $ */
+/* $Id: spl_directory.c 284648 2009-07-23 14:42:46Z jani $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -1032,7 +1032,7 @@ SPL_METHOD(RecursiveDirectoryIterator, hasChildren)
 			return;
 		}
 		spl_filesystem_object_get_file_name(intern TSRMLS_CC);
-		if (!allow_links) {
+		if (!allow_links && !(intern->flags & SPL_FILE_DIR_FOLLOW_SYMLINKS)) {
 			php_stat(intern->file_name, intern->file_name_len, FS_IS_LINK, return_value TSRMLS_CC);
 			if (zend_is_true(return_value)) {
 				RETURN_BOOL(0);
@@ -2264,8 +2264,9 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_file_object_fgetss, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
 static
-ZEND_BEGIN_ARG_INFO_EX(arginfo_file_object_fscanf, 0, 0, 1) 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_file_object_fscanf, 1, 0, 1)
 	ZEND_ARG_INFO(0, format)
+	ZEND_ARG_INFO(1, ...)
 ZEND_END_ARG_INFO()
 
 static
@@ -2354,6 +2355,7 @@ PHP_MINIT_FUNCTION(spl_directory)
 	REGISTER_SPL_CLASS_CONST_LONG(RecursiveDirectoryIterator, "CURRENT_AS_SELF",     SPL_FILE_DIR_CURRENT_AS_SELF);
 	REGISTER_SPL_CLASS_CONST_LONG(RecursiveDirectoryIterator, "KEY_MODE_MASK",       SPL_FILE_DIR_KEY_MODE_MASK);
 	REGISTER_SPL_CLASS_CONST_LONG(RecursiveDirectoryIterator, "KEY_AS_PATHNAME",     SPL_FILE_DIR_KEY_AS_PATHNAME);
+	REGISTER_SPL_CLASS_CONST_LONG(RecursiveDirectoryIterator, "FOLLOW_SYMLINKS",     SPL_FILE_DIR_FOLLOW_SYMLINKS);
 	REGISTER_SPL_CLASS_CONST_LONG(RecursiveDirectoryIterator, "KEY_AS_FILENAME",     SPL_FILE_DIR_KEY_AS_FILENAME);
 	REGISTER_SPL_CLASS_CONST_LONG(RecursiveDirectoryIterator, "NEW_CURRENT_AND_KEY", SPL_FILE_DIR_KEY_AS_FILENAME|SPL_FILE_DIR_CURRENT_AS_FILEINFO);
 

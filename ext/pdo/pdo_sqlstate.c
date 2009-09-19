@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_sqlstate.c,v 1.7.2.1.2.3 2008/12/31 11:17:41 sebastian Exp $ */
+/* $Id: pdo_sqlstate.c 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

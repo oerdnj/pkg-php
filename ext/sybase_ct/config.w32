@@ -1,5 +1,5 @@
 
-// $Id: config.w32,v 1.1 2003/12/19 17:00:13 wez Exp $
+// $Id: config.w32 146917 2003-12-19 17:00:14Z wez $
 // vim:ft=javascript
 
 ARG_WITH("sybase-ct", "SYBASE_CT support", "no");

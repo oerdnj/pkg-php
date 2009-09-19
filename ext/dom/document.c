@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: document.c,v 1.68.2.3.2.13 2009/04/07 15:33:20 rrichards Exp $ */
+/* $Id: document.c 278373 2009-04-07 15:33:20Z rrichards $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

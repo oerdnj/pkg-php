@@ -14,7 +14,7 @@
 #  | Author: Wez Furlong <wez@thebrainroom.com>                           |
 #  +----------------------------------------------------------------------+
 #
-# $Id: Makefile,v 1.35.2.1.2.7 2008/10/10 23:38:14 pajoye Exp $
+# $Id: Makefile 267174 2008-10-10 23:38:15Z pajoye $
 # This is the makefile template for the win32 build
 
 CC="$(CL)"

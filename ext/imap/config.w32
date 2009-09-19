@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.4.4.4 2009/05/05 13:49:05 pajoye Exp $
+// $Id: config.w32 279968 2009-05-05 13:49:05Z pajoye $
 // vim:ft=javascript
 
 ARG_WITH("imap", "IMAP Support", "no");

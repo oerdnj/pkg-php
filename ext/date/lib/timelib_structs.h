@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: timelib_structs.h,v 1.13.2.6.2.7 2009/05/03 18:22:59 derick Exp $ */
+/* $Id: timelib_structs.h 279800 2009-05-03 18:22:59Z derick $ */
 
 #ifndef __TIMELIB_STRUCTS_H__
 #define __TIMELIB_STRUCTS_H__

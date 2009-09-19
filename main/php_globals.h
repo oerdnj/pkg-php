@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_globals.h,v 1.98.2.1.2.9 2008/12/31 11:17:47 sebastian Exp $ */
+/* $Id: php_globals.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifndef PHP_GLOBALS_H
 #define PHP_GLOBALS_H

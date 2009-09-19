@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: rfc1867.c,v 1.173.2.1.2.15 2008/12/31 11:17:47 sebastian Exp $ */
+/* $Id: rfc1867.c 272374 2008-12-31 11:17:49Z sebastian $ */
 
 /*
  *  This product includes software developed by the Apache Group

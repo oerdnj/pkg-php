@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: streamsfuncs.h,v 1.13.2.1.2.6 2008/12/31 11:17:45 sebastian Exp $ */
+/* $Id: streamsfuncs.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 /* Flags for stream_socket_client */
 #define PHP_STREAM_CLIENT_PERSISTENT	1

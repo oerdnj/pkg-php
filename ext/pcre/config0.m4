@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config0.m4,v 1.38.2.3.2.12 2008/12/29 15:27:11 scottmac Exp $
+dnl $Id: config0.m4 287118 2009-08-11 21:40:15Z scottmac $
 dnl
 
 dnl By default we'll compile and link against the bundled PCRE library
@@ -16,7 +16,7 @@ if test "$PHP_PCRE_REGEX" != "no"; then
     PHP_INSTALL_HEADERS([ext/pcre], [php_pcre.h pcrelib/])
     AC_DEFINE(HAVE_BUNDLED_PCRE, 1, [ ])
   else
-    for i in $PHP_PCRE_REGEX $PHP_PCRE_REGEX/include $PHP_PCRE_REGEX/include/pcre; do
+    for i in $PHP_PCRE_REGEX $PHP_PCRE_REGEX/include $PHP_PCRE_REGEX/include/pcre $PHP_PCRE_REGEX/local/include; do
       test -f $i/pcre.h && PCRE_INCDIR=$i
     done
 

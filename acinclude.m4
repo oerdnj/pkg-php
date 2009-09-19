@@ -1,5 +1,5 @@
 dnl
-dnl $Id: acinclude.m4,v 1.332.2.14.2.29 2009/05/09 20:28:02 jani Exp $
+dnl $Id: acinclude.m4 287126 2009-08-11 23:45:35Z srinatar $
 dnl
 dnl This file contains local autoconf functions.
 dnl
@@ -2780,7 +2780,7 @@ AC_DEFUN([PHP_DETECT_SUNCC],[
     AC_MSG_RESULT([no]),
     SUNCC="yes"
     GCC="no"
-    test -n "$auto_cflags" && CFLAGS="-fsimple=2 -xnorunpath -xO4 -xalias_level=basic -xipo=1 -xlibmopt -xprefetch_level=1 -xprefetch=auto -xstrconst -xtarget=native -zlazyload"
+    test -n "$auto_cflags" && CFLAGS="-O -xs -xstrconst -zlazyload"
     GCC=""
     AC_MSG_RESULT([yes])
   )

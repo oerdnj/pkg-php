@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_functions.h,v 1.19.2.3.2.4 2008/12/31 11:17:44 sebastian Exp $ */
+/* $Id: spl_functions.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifndef PHP_FUNCTIONS_H
 #define PHP_FUNCTIONS_H

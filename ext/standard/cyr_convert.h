@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: cyr_convert.h,v 1.11.2.1.2.3 2008/12/31 11:17:44 sebastian Exp $ */
+/* $Id: cyr_convert.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifndef CYR_CONVERT_H
 #define CYR_CONVERT_H

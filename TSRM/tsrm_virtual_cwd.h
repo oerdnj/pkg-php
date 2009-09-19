@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_virtual_cwd.h,v 1.48.2.5.2.10 2008/12/31 11:17:32 sebastian Exp $ */
+/* $Id: tsrm_virtual_cwd.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifndef VIRTUAL_CWD_H
 #define VIRTUAL_CWD_H

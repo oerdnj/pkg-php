@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_cli.c,v 1.129.2.13.2.34 2009/04/09 10:20:39 bjori Exp $ */
+/* $Id: php_cli.c 284649 2009-07-23 14:54:04Z jani $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -298,7 +298,7 @@ static int sapi_cli_ub_write(const char *str, uint str_length TSRMLS_DC) /* {{{ 
 		remaining -= ret;
 	}
 
-	return str_length;
+	return (ptr - str);
 }
 /* }}} */
 

@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_http.c,v 1.77.2.11.2.18 2009/06/03 12:41:46 iliaa Exp $ */
+/* $Id: php_http.c 281592 2009-06-03 12:41:46Z iliaa $ */
 
 #include "php_soap.h"
 #include "ext/standard/base64.h"

@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_reflection.c,v 1.164.2.33.2.57 2009/05/21 16:05:11 lbarnaud Exp $ */
+/* $Id: php_reflection.c 287991 2009-09-03 14:02:51Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -481,23 +481,25 @@ static void _class_string(string *str, zend_class_entry *ce, zval *obj, char *in
 		string_init(&dyn);
 		count = 0;
 
-		zend_hash_internal_pointer_reset_ex(properties, &pos);
+		if (properties && zend_hash_num_elements(properties)) {
+			zend_hash_internal_pointer_reset_ex(properties, &pos);
 
-		while (zend_hash_get_current_data_ex(properties, (void **) &prop, &pos) == SUCCESS) {
-			char  *prop_name;
-			uint  prop_name_size;
-			ulong index;
+			while (zend_hash_get_current_data_ex(properties, (void **) &prop, &pos) == SUCCESS) {
+				char  *prop_name;
+				uint  prop_name_size;
+				ulong index;
 
-			if (zend_hash_get_current_key_ex(properties, &prop_name, &prop_name_size, &index, 1, &pos) == HASH_KEY_IS_STRING) {
-				if (prop_name_size && prop_name[0]) { /* skip all private and protected properties */
-					if (!zend_hash_quick_exists(&ce->properties_info, prop_name, prop_name_size, zend_get_hash_value(prop_name, prop_name_size))) {
+				if (zend_hash_get_current_key_ex(properties, &prop_name, &prop_name_size, &index, 1, &pos) == HASH_KEY_IS_STRING) {
+					if (prop_name_size && prop_name[0]) { /* skip all private and protected properties */
+						if (!zend_hash_quick_exists(&ce->properties_info, prop_name, prop_name_size, zend_get_hash_value(prop_name, prop_name_size))) {
 						count++;
-						_property_string(&dyn, NULL, prop_name, sub_indent.string TSRMLS_CC);	
+							_property_string(&dyn, NULL, prop_name, sub_indent.string TSRMLS_CC);	
+						}
 					}
+					efree(prop_name);
 				}
-				efree(prop_name);
+				zend_hash_move_forward_ex(properties, &pos);
 			}
-			zend_hash_move_forward_ex(properties, &pos);
 		}
 
 		string_printf(str, "\n%s  - Dynamic properties [%d] {\n", indent, count);
@@ -2420,11 +2422,11 @@ ZEND_METHOD(reflection_method, invokeArgs)
 		(mptr->common.fn_flags & ZEND_ACC_ABSTRACT)) {
 		if (mptr->common.fn_flags & ZEND_ACC_ABSTRACT) {
 			zend_throw_exception_ex(reflection_exception_ptr, 0 TSRMLS_CC, 
-				"Trying to invoke abstract method %s::%s", 
+				"Trying to invoke abstract method %s::%s()", 
 				mptr->common.scope->name, mptr->common.function_name);
 		} else {
 			zend_throw_exception_ex(reflection_exception_ptr, 0 TSRMLS_CC,
-				"Trying to invoke %s method %s::%s from scope %s", 
+				"Trying to invoke %s method %s::%s() from scope %s", 
 				mptr->common.fn_flags & ZEND_ACC_PROTECTED ? "protected" : "private",
 				mptr->common.scope->name, mptr->common.function_name,
 				Z_OBJCE_P(getThis())->name);
@@ -2451,7 +2453,7 @@ ZEND_METHOD(reflection_method, invokeArgs)
 		if (!object) {
 			efree(params);
 			zend_throw_exception_ex(reflection_exception_ptr, 0 TSRMLS_CC,
-				"Trying to invoke non static method %s::%s without an object", 
+				"Trying to invoke non static method %s::%s() without an object", 
 				mptr->common.scope->name, mptr->common.function_name);
 			return;
 		}
@@ -2723,12 +2725,20 @@ ZEND_METHOD(reflection_class, getStaticProperties)
 
 		if (zend_hash_get_current_key_ex(CE_STATIC_MEMBERS(ce), &key, &key_len, &num_index, 0, &pos) != FAILURE && key) {
 			char *prop_name, *class_name;
+			zval *prop_copy;
 
 			zend_unmangle_property_name(key, key_len-1, &class_name, &prop_name);
 
-			zval_add_ref(value);
+			/* filter privates from base classes */
+			if (!(class_name && class_name[0] != '*' && strcmp(class_name, ce->name))) {
+				/* copy: enforce read only access */
+				ALLOC_ZVAL(prop_copy);
+				*prop_copy = **value;
+				zval_copy_ctor(prop_copy);
+				INIT_PZVAL(prop_copy);
 
-			zend_hash_update(Z_ARRVAL_P(return_value), prop_name, strlen(prop_name)+1, value, sizeof(zval *), NULL);
+				add_assoc_zval(return_value, prop_name, prop_copy);
+			}
 		}
 		zend_hash_move_forward_ex(CE_STATIC_MEMBERS(ce), &pos);
 	}
@@ -4952,7 +4962,7 @@ PHP_MINFO_FUNCTION(reflection) /* {{{ */
 	php_info_print_table_start();
 	php_info_print_table_header(2, "Reflection", "enabled");
 
-	php_info_print_table_row(2, "Version", "$Id: php_reflection.c,v 1.164.2.33.2.57 2009/05/21 16:05:11 lbarnaud Exp $");
+	php_info_print_table_row(2, "Version", "$Id: php_reflection.c 287991 2009-09-03 14:02:51Z sebastian $");
 
 	php_info_print_table_end();
 } /* }}} */

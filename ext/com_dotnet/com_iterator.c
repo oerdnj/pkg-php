@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_iterator.c,v 1.9.2.2.2.4 2008/12/31 11:17:36 sebastian Exp $ */
+/* $Id: com_iterator.c 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

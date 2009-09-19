@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.7 2005/02/08 20:42:47 helly Exp $
+// $Id: config.w32 179257 2005-02-08 20:42:48Z helly $
 // vim:ft=javascript
 
 ARG_ENABLE("spl", "SPL (Standard PHP Library) support", "yes");

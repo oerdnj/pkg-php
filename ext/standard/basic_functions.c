@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: basic_functions.c,v 1.725.2.31.2.84 2009/05/20 12:09:33 jani Exp $ */
+/* $Id: basic_functions.c 286890 2009-08-06 14:07:16Z scottmac $ */
 
 #include "php.h"
 #include "php_streams.h"
@@ -31,7 +31,7 @@
 #include "ext/standard/info.h"
 #include "ext/session/php_session.h"
 #include "zend_operators.h"
-#include "ext/standard/dns.h"
+#include "ext/standard/php_dns.h"
 #include "ext/standard/php_uuencode.h"
 
 #ifdef PHP_WIN32
@@ -668,10 +668,9 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_array_filter, 0, 0, 1)
 ZEND_END_ARG_INFO()
 
 static
-ZEND_BEGIN_ARG_INFO_EX(arginfo_array_map, 0, 0, 3)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_array_map, 0, 0, 2)
 	ZEND_ARG_INFO(0, callback)
-	ZEND_ARG_INFO(0, arg1) /* ARRAY_INFO(0, arg1, 0) */
-	ZEND_ARG_INFO(0, arg2) /* ARRAY_INFO(0, arg2, 0) */
+	ZEND_ARG_INFO(0, arg) /* ARRAY_INFO(0, arg, 0) */
 	ZEND_ARG_INFO(0, ...)
 ZEND_END_ARG_INFO()
 
@@ -3910,7 +3909,6 @@ static void basic_globals_ctor(php_basic_globals *basic_globals_p TSRMLS_DC)
 	zend_hash_init(&BG(sm_protected_env_vars), 5, NULL, NULL, 1);
 	BG(sm_allowed_env_vars) = NULL;
 
-	memset(&BG(url_adapt_state), 0, sizeof(BG(url_adapt_state)));
 	memset(&BG(url_adapt_state_ex), 0, sizeof(BG(url_adapt_state_ex)));
 	
 #if defined(_REENTRANT) && defined(HAVE_MBRLEN) && defined(HAVE_MBSTATE_T)

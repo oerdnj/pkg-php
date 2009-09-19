@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: sanitizing_filters.c,v 1.11.2.11 2008/12/31 11:17:37 sebastian Exp $ */
+/* $Id: sanitizing_filters.c 288117 2009-09-07 02:35:25Z iliaa $ */
 
 #include "php_filter.h"
 #include "filter_private.h"
@@ -275,7 +275,7 @@ void php_filter_unsafe_raw(PHP_INPUT_FILTER_PARAM_DECL)
 void php_filter_email(PHP_INPUT_FILTER_PARAM_DECL)
 {
 	/* Check section 6 of rfc 822 http://www.faqs.org/rfcs/rfc822.html */
-	const unsigned char allowed_list[] = LOWALPHA HIALPHA DIGIT "!#$%&'*+-/=?^_`{|}~@.[]";
+	const unsigned char allowed_list[] = LOWALPHA HIALPHA DIGIT "!#$%&'*+-=?^_`{|}~@.[]";
 	filter_map     map;
 
 	filter_map_init(&map);

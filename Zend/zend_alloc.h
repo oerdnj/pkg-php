@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_alloc.h,v 1.63.2.2.2.17 2009/01/25 13:42:39 dsp Exp $ */
+/* $Id: zend_alloc.h 282918 2009-06-28 09:47:42Z pajoye $ */
 
 #ifndef ZEND_ALLOC_H
 #define ZEND_ALLOC_H
@@ -89,7 +89,7 @@ inline static void * __zend_malloc(size_t len)
 inline static void * __zend_calloc(size_t nmemb, size_t len)
 {
 	void *tmp = _safe_malloc(nmemb, len, 0);
-	memset(tmp, 0, len);
+	memset(tmp, 0, nmemb * len);
 	return tmp;
 }
 

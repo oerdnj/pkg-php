@@ -6,7 +6,7 @@ Sybase-CT connection-based server message handler
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: test_connectionbased_msghandler.phpt,v 1.1 2004/01/25 20:04:24 thekid Exp $ 
+ * $Id: test_connectionbased_msghandler.phpt 149694 2004-01-25 20:04:24Z thekid $ 
  */
 
   require('test.inc');

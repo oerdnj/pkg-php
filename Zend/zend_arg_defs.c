@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_arg_defs.c,v 1.2.2.2.2.4 2008/12/31 11:17:33 sebastian Exp $ */
+/* $Id: zend_arg_defs.c 272374 2008-12-31 11:17:49Z sebastian $ */
 
 ZEND_BEGIN_ARG_INFO(first_arg_force_ref, 0)
 	ZEND_ARG_PASS_INFO(1)

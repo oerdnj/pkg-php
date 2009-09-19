@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: posix.c,v 1.70.2.3.2.22 2009/01/04 15:08:34 tony2001 Exp $ */
+/* $Id: posix.c 286880 2009-08-06 11:11:15Z jani $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -152,7 +152,7 @@ zend_function_entry posix_functions[] = {
 static PHP_MINFO_FUNCTION(posix)
 {
 	php_info_print_table_start();
-	php_info_print_table_row(2, "Revision", "$Revision: 1.70.2.3.2.22 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 286880 $");
 	php_info_print_table_end();
 }
 /* }}} */
@@ -491,7 +491,7 @@ PHP_FUNCTION(posix_times)
 
 	PHP_POSIX_NO_ARGS;
 
-	if((ticks = times(&t)) < 0) {
+	if ((ticks = times(&t)) == -1) {
 		POSIX_G(last_error) = errno;
 		RETURN_FALSE;
 	}
@@ -1193,6 +1193,10 @@ PHP_FUNCTION(posix_initgroups)
 	int name_len;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sl", &name, &name_len, &basegid) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	if (name_len == 0) {
 		RETURN_FALSE;
 	}
 

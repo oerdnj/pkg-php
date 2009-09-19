@@ -1,4 +1,4 @@
-/* $Id: zip_stream.c,v 1.1.2.7 2008/07/23 11:25:50 tony2001 Exp $ */
+/* $Id: zip_stream.c 287095 2009-08-11 15:12:00Z pajoye $ */
 #ifdef HAVE_CONFIG_H
 #   include "config.h"
 #endif
@@ -35,8 +35,14 @@ static size_t php_zip_ops_read(php_stream *stream, char *buf, size_t count TSRML
 
 	if (self->za && self->zf) {
 		n = (size_t)zip_fread(self->zf, buf, (int)count);
-
-		if (n == 0) {
+		if (n < 0) {
+			int ze, se;
+			zip_file_error_get(self->zf, &ze, &se);
+			stream->eof = 1;
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Zip stream error: %s", zip_file_strerror(self->zf));
+			return 0;
+		}
+		if (n == 0 || n < count) {
 			stream->eof = 1;
 		} else {
 			self->cursor += n;

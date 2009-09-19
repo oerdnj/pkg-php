@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.4.2.1.2.3 2006/10/11 11:00:03 edink Exp $
+// $Id: config.w32 221557 2006-10-11 11:00:03Z edink $
 // vim:ft=javascript
 
 ARG_WITH("pdo-pgsql", "PostgreSQL support for PDO", "no");

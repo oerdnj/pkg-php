@@ -1,5 +1,5 @@
 The Win32 Build System.
-$Id: README.WIN32-BUILD-SYSTEM,v 1.4 2003/12/23 02:51:18 wez Exp $
+$Id: README.WIN32-BUILD-SYSTEM 147232 2003-12-23 02:51:18Z wez $
 Wez Furlong <wez@thebrainroom.com>
 
 If you need help with the build system, send mail to

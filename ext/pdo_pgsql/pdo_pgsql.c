@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_pgsql.c,v 1.7.2.11.2.3 2008/12/31 11:17:42 sebastian Exp $ */
+/* $Id: pdo_pgsql.c 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -123,7 +123,7 @@ PHP_MINFO_FUNCTION(pdo_pgsql)
 	php_info_print_table_row(2, "PostgreSQL(libpq) Version", PG_VERSION);
 #endif	
 	php_info_print_table_row(2, "Module version", pdo_pgsql_module_entry.version);
-	php_info_print_table_row(2, "Revision", " $Id: pdo_pgsql.c,v 1.7.2.11.2.3 2008/12/31 11:17:42 sebastian Exp $ ");
+	php_info_print_table_row(2, "Revision", " $Id: pdo_pgsql.c 272374 2008-12-31 11:17:49Z sebastian $ ");
 
 	php_info_print_table_end();
 }

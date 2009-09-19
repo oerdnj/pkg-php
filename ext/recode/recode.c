@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: recode.c,v 1.37.2.1.2.5 2008/12/31 11:17:42 sebastian Exp $ */
+/* $Id: recode.c 272374 2008-12-31 11:17:49Z sebastian $ */
 
 /* {{{ includes & prototypes */
 
@@ -122,7 +122,7 @@ PHP_MINFO_FUNCTION(recode)
 {
 	php_info_print_table_start();
 	php_info_print_table_row(2, "Recode Support", "enabled");
-	php_info_print_table_row(2, "Revision", "$Revision: 1.37.2.1.2.5 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 272374 $");
 	php_info_print_table_end();
 }
 

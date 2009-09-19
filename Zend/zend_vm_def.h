@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_vm_def.h,v 1.59.2.29.2.70 2009/06/05 11:21:47 lbarnaud Exp $ */
+/* $Id: zend_vm_def.h 287466 2009-08-18 20:51:49Z stas $ */
 
 /* If you change this file, please regenerate the zend_vm_execute.h and
  * zend_vm_opcodes.h files by running:
@@ -2371,6 +2371,10 @@ ZEND_VM_HANDLER(67, ZEND_SEND_REF, VAR|CV, ANY)
 		zend_error_noreturn(E_ERROR, "Only variables can be passed by reference");
 	}
 
+      	if (EX(function_state).function->type == ZEND_INTERNAL_FUNCTION && !ARG_SHOULD_BE_SENT_BY_REF(EX(fbc), opline->op2.u.opline_num)) {
+               ZEND_VM_DISPATCH_TO_HELPER(zend_send_by_var_helper);
+        }
+
 	SEPARATE_ZVAL_TO_MAKE_IS_REF(varptr_ptr);
 	varptr = *varptr_ptr;
 	varptr->refcount++;
@@ -3196,15 +3200,22 @@ ZEND_VM_HANDLER(77, ZEND_FE_RESET, CONST|TMP|VAR|CV, ANY)
 			ALLOC_ZVAL(tmp);
 			INIT_PZVAL_COPY(tmp, array_ptr);
 			array_ptr = tmp;
+			if (Z_TYPE_P(array_ptr) == IS_OBJECT) {
+				ce = Z_OBJCE_P(array_ptr);
+				if (ce && ce->get_iterator) {
+					array_ptr->refcount--;
+				}
+			}
 		} else if (Z_TYPE_P(array_ptr) == IS_OBJECT) {
 			ce = Z_OBJCE_P(array_ptr);
 			if (!ce || !ce->get_iterator) {
 				array_ptr->refcount++;
 			}
 		} else {
-			if ((OP1_TYPE == IS_CV || OP1_TYPE == IS_VAR) &&
+			if (OP1_TYPE == IS_CONST ||
+			    ((OP1_TYPE == IS_CV || OP1_TYPE == IS_VAR) &&
 			    !array_ptr->is_ref &&
-			    array_ptr->refcount > 1) {
+			    array_ptr->refcount > 1)) {
 				zval *tmp;
 
 				ALLOC_ZVAL(tmp);
@@ -3217,7 +3228,7 @@ ZEND_VM_HANDLER(77, ZEND_FE_RESET, CONST|TMP|VAR|CV, ANY)
 		}
 	}
 
-	if (OP1_TYPE != IS_TMP_VAR && ce && ce->get_iterator) {
+	if (ce && ce->get_iterator) {
 		iter = ce->get_iterator(ce, array_ptr, opline->extended_value & ZEND_FE_RESET_REFERENCE TSRMLS_CC);
 
 		if (iter && !EG(exception)) {

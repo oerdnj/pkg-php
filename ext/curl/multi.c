@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: multi.c,v 1.19.2.3.2.10 2008/12/31 11:17:36 sebastian Exp $ */
+/* $Id: multi.c 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 

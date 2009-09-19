@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: string.c,v 1.445.2.14.2.83 2009/04/01 17:07:46 mattwil Exp $ */
+/* $Id: string.c 287916 2009-08-31 12:28:46Z iliaa $ */
 
 /* Synced with php 3.0 revision 1.193 1999-06-16 [ssb] */
 
@@ -836,7 +836,7 @@ PHP_FUNCTION(wordwrap)
 		laststart = lastspace = 0;
 		for (current = 0; current < textlen; current++) {
 			if (text[current] == breakchar[0]) {
-				laststart = lastspace = current;
+				laststart = lastspace = current + 1;
 			} else if (text[current] == ' ') {
 				if (current - laststart >= linelength) {
 					newtext[current] = breakchar[0];
@@ -2183,7 +2183,7 @@ PHP_FUNCTION(chunk_split)
 	char *result;
 	char *end    = "\r\n";
 	int endlen   = 2;
-	int chunklen = 76;
+	long chunklen = 76;
 	int result_len;
 	int argc = ZEND_NUM_ARGS();
 

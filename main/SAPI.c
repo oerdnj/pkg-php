@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: SAPI.c,v 1.202.2.7.2.19 2008/12/31 11:17:47 sebastian Exp $ */
+/* $Id: SAPI.c 287423 2009-08-17 17:30:32Z jani $ */
 
 #include <ctype.h>
 #include <sys/stat.h>
@@ -31,9 +31,6 @@
 #include "ext/standard/pageinfo.h"
 #if (HAVE_PCRE || HAVE_BUNDLED_PCRE) && !defined(COMPILE_DL_PCRE)
 #include "ext/pcre/php_pcre.h"
-#endif
-#if HAVE_ZLIB
-#include "ext/zlib/php_zlib.h"
 #endif
 #ifdef ZTS
 #include "TSRM.h"
@@ -610,11 +607,12 @@ SAPI_API int sapi_header_op(sapi_header_op_enum op, void *arg TSRMLS_DC)
 					ptr++;
 					len--;
 				}
-#if HAVE_ZLIB
-				if(!strncmp(ptr, "image/", sizeof("image/")-1)) {
+
+				/* Disable possible output compression for images */
+				if (!strncmp(ptr, "image/", sizeof("image/")-1)) {
 					zend_alter_ini_entry("zlib.output_compression", sizeof("zlib.output_compression"), "0", sizeof("0") - 1, PHP_INI_USER, PHP_INI_STAGE_RUNTIME);
 				}
-#endif
+
 				mimetype = estrdup(ptr);
 				newlen = sapi_apply_default_charset(&mimetype, len TSRMLS_CC);
 				if (!SG(sapi_headers).mimetype){
@@ -763,36 +761,6 @@ SAPI_API int sapi_send_headers(TSRMLS_D)
 	if (SG(headers_sent) || SG(request_info).no_headers) {
 		return SUCCESS;
 	}
-
-#if HAVE_ZLIB
-	/* Add output compression headers at this late stage in order to make
-	   it possible to switch it off inside the script. */
-
-	if (zend_ini_long("zlib.output_compression", sizeof("zlib.output_compression"), 0)) {
-		zval nm_zlib_get_coding_type;
-		zval *uf_result = NULL;
-
-		ZVAL_STRINGL(&nm_zlib_get_coding_type, "zlib_get_coding_type", sizeof("zlib_get_coding_type") - 1, 0);
-
-		if (call_user_function_ex(CG(function_table), NULL, &nm_zlib_get_coding_type, &uf_result, 0, NULL, 1, NULL TSRMLS_CC) != FAILURE && uf_result != NULL && Z_TYPE_P(uf_result) == IS_STRING) {
-			char buf[128];
-			int len;
-
-			assert(Z_STRVAL_P(uf_result) != NULL);
-
-			len = slprintf(buf, sizeof(buf), "Content-Encoding: %s", Z_STRVAL_P(uf_result));
-			if (len <= 0 || sapi_add_header(buf, len, 1) == FAILURE) {
-				return FAILURE;
-			}
-			if (sapi_add_header_ex("Vary: Accept-Encoding", sizeof("Vary: Accept-Encoding") - 1, 1, 0 TSRMLS_CC) == FAILURE) {
-				return FAILURE;			
-			}
-		}
-		if (uf_result != NULL) {
-			zval_ptr_dtor(&uf_result);
-		}
-	}
-#endif
 
 	/* Success-oriented.  We set headers_sent to 1 here to avoid an infinite loop
 	 * in case of an error situation.

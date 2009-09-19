@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_crypt.h,v 1.18.2.1.2.3 2008/12/31 11:17:45 sebastian Exp $ */
+/* $Id: php_crypt.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifndef PHP_CRYPT_H
 #define PHP_CRYPT_H

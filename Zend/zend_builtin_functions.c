@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_builtin_functions.c,v 1.277.2.12.2.39 2009/06/08 21:17:12 pajoye Exp $ */
+/* $Id: zend_builtin_functions.c 282907 2009-06-28 01:16:36Z felipe $ */
 
 #include "zend.h"
 #include "zend_API.h"
@@ -33,7 +33,7 @@ static ZEND_FUNCTION(zend_version);
 static ZEND_FUNCTION(func_num_args);
 static ZEND_FUNCTION(func_get_arg);
 static ZEND_FUNCTION(func_get_args);
-static ZEND_NAMED_FUNCTION(zend_if_strlen);
+static ZEND_FUNCTION(strlen);
 static ZEND_FUNCTION(strcmp);
 static ZEND_FUNCTION(strncmp);
 static ZEND_FUNCTION(strcasecmp);
@@ -93,7 +93,7 @@ static zend_function_entry builtin_functions[] = {
 	ZEND_FE(func_num_args,		NULL)
 	ZEND_FE(func_get_arg,		NULL)
 	ZEND_FE(func_get_args,		NULL)
-	{ "strlen", zend_if_strlen, NULL },
+	ZEND_FE(strlen,				NULL)
 	ZEND_FE(strcmp,				NULL)
 	ZEND_FE(strncmp,			NULL)
 	ZEND_FE(strcasecmp,			NULL)
@@ -275,7 +275,7 @@ ZEND_FUNCTION(func_get_args)
 
 /* {{{ proto int strlen(string str)
    Get string length */
-ZEND_NAMED_FUNCTION(zend_if_strlen)
+ZEND_FUNCTION(strlen)
 {
 	zval **str;
 
@@ -1516,6 +1516,7 @@ ZEND_FUNCTION(create_function)
 		zend_hash_del(EG(function_table), LAMBDA_TEMP_FUNCNAME, sizeof(LAMBDA_TEMP_FUNCNAME));
 		RETURN_STRINGL(function_name, function_name_length, 0);
 	} else {
+		zend_hash_del(EG(function_table), LAMBDA_TEMP_FUNCNAME, sizeof(LAMBDA_TEMP_FUNCNAME));
 		RETURN_FALSE;
 	}
 }
@@ -1618,15 +1619,15 @@ ZEND_FUNCTION(get_loaded_extensions)
    Return an array containing the names and values of all defined constants */
 ZEND_FUNCTION(get_defined_constants)
 {
-	int argc = ZEND_NUM_ARGS();
+	zend_bool categorize = 0;
 
-	if (argc != 0 && argc != 1) {
-		ZEND_WRONG_PARAM_COUNT();
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|b", &categorize) == FAILURE) {
+		return;
 	}
 
 	array_init(return_value);
 
-	if (argc) {
+	if (categorize) {
 		HashPosition pos;
 		zend_constant *val;
 		int module_number;

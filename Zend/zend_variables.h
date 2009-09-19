@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_variables.h,v 1.34.2.1.2.4 2009/05/01 21:47:05 jani Exp $ */
+/* $Id: zend_variables.h 279682 2009-05-01 21:47:05Z jani $ */
 
 #ifndef ZEND_VARIABLES_H
 #define ZEND_VARIABLES_H

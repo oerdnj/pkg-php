@@ -16,7 +16,7 @@
    | Authors: Dmitry Stogov <dmitry@zend.com>                             |
    +----------------------------------------------------------------------+
 
-	 $Id: zend_vm_gen.php,v 1.12.2.5.2.6 2008/12/31 11:17:35 sebastian Exp $
+	 $Id: zend_vm_gen.php 272374 2008-12-31 11:17:49Z sebastian $
 */
 
 $header_text = <<< DATA

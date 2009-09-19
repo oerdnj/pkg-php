@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: url_scanner_ex.re,v 1.76.2.2.2.3 2008/03/12 19:33:46 felipe Exp $ */
+/* $Id: url_scanner_ex.re 286379 2009-07-26 23:20:34Z jani $ */
 
 #include "php.h"
 
@@ -401,7 +401,7 @@ static char *url_adapt_ext(const char *src, size_t srclen, size_t *newlen, zend_
 	return retval;
 }
 
-int php_url_scanner_ex_activate(TSRMLS_D)
+static int php_url_scanner_ex_activate(TSRMLS_D)
 {
 	url_adapt_state_ex_t *ctx;
 	
@@ -412,7 +412,7 @@ int php_url_scanner_ex_activate(TSRMLS_D)
 	return SUCCESS;
 }
 
-int php_url_scanner_ex_deactivate(TSRMLS_D)
+static int php_url_scanner_ex_deactivate(TSRMLS_D)
 {
 	url_adapt_state_ex_t *ctx;
 	
@@ -457,7 +457,7 @@ static void php_url_scanner_output_handler(char *output, uint output_len, char *
 	}
 }
 
-int php_url_scanner_add_var(char *name, int name_len, char *value, int value_len, int urlencode TSRMLS_DC)
+PHPAPI int php_url_scanner_add_var(char *name, int name_len, char *value, int value_len, int urlencode TSRMLS_DC)
 {
 	char *encoded;
 	int encoded_len;
@@ -497,7 +497,7 @@ int php_url_scanner_add_var(char *name, int name_len, char *value, int value_len
 	return SUCCESS;
 }
 
-int php_url_scanner_reset_vars(TSRMLS_D)
+PHPAPI int php_url_scanner_reset_vars(TSRMLS_D)
 {
 	BG(url_adapt_state_ex).form_app.len = 0;
 	BG(url_adapt_state_ex).url_app.len = 0;

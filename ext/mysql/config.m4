@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.67.2.1.2.1 2006/06/01 19:14:48 mike Exp $
+dnl $Id: config.m4 214114 2006-06-01 19:14:48Z mike $
 dnl
 
 AC_DEFUN([MYSQL_LIB_CHK], [

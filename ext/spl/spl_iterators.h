@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_iterators.h,v 1.18.2.7.2.15 2008/12/31 11:17:44 sebastian Exp $ */
+/* $Id: spl_iterators.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifndef SPL_ITERATORS_H
 #define SPL_ITERATORS_H

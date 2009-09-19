@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.6.6.2 2007/07/11 23:20:36 jani Exp $
+dnl $Id: config.m4 239540 2007-07-11 23:20:37Z jani $
 dnl
 
 PHP_ARG_WITH(milter, for Milter support,

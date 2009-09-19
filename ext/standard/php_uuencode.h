@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_uuencode.h,v 1.4.2.1.2.3 2008/12/31 11:17:45 sebastian Exp $ */
+/* $Id: php_uuencode.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifndef PHP_UUENCODE_H
 #define PHP_UUENCODE_H

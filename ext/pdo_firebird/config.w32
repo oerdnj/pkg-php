@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.6.4.1 2006/05/11 21:43:59 edink Exp $
+// $Id: config.w32 212867 2006-05-11 21:43:59Z edink $
 // vim:ft=javascript
 
 ARG_WITH("pdo-firebird", "Firebird support for PDO", "no");

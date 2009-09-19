@@ -3,7 +3,7 @@ BZ2 with strings
 --SKIPIF--
 <?php if (!extension_loaded("bz2")) print "skip"; ?>
 --FILE--
-<?php // $Id: with_strings.phpt,v 1.3 2004/05/19 08:56:50 helly Exp $
+<?php // $Id: with_strings.phpt 158958 2004-05-19 08:56:50Z helly $
 
 error_reporting(E_ALL);
 

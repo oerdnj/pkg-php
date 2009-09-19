@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.14.4.1 2007/07/03 17:25:34 sniper Exp $
+dnl $Id: config.m4 239118 2007-07-03 17:25:43Z sniper $
 dnl
 
 dnl

@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.70.2.2.2.9 2007/12/06 14:17:43 helly Exp $
+dnl $Id: config.m4 247694 2007-12-06 14:17:43Z helly $
 dnl
 
 dnl Suppose we need FlatFile if no support or only CDB is used.

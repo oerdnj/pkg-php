@@ -21,7 +21,7 @@
    allocating any.  It is a good idea to use alloca(0) in
    your main control loop, etc. to force garbage collection.  */
 
-/* $Id: alloca.c,v 1.8 2005/01/09 21:05:06 sniper Exp $ */
+/* $Id: alloca.c 176767 2005-01-09 21:05:06Z sniper $ */
 
 #include <php_config.h>
 

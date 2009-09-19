@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: fdf.c,v 1.89.2.2.2.11 2008/12/31 11:17:37 sebastian Exp $ */
+/* $Id: fdf.c 272374 2008-12-31 11:17:49Z sebastian $ */
 
 /* FdfTk lib 2.0 is a Complete C/C++ FDF Toolkit available from
    http://beta1.adobe.com/ada/acrosdk/forms.html. */

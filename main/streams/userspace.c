@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: userspace.c,v 1.31.2.3.2.10 2008/12/31 11:17:48 sebastian Exp $ */
+/* $Id: userspace.c 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #include "php.h"
 #include "php_globals.h"

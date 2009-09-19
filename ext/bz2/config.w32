@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.4 2004/07/20 05:26:33 pollita Exp $
+// $Id: config.w32 163711 2004-07-20 05:26:33Z pollita $
 // vim:ft=javascript
 
 ARG_WITH("bz2", "BZip2", "no");
