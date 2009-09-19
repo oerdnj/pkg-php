@@ -40,4 +40,3 @@ gentoo/009_ob-memory-leaks.patch
 mssql-null-exception.patch
 exif_read_data-segfault.patch
 sybase-alias.patch
-gentoo/117-4_digit_year_big_endian.patch
