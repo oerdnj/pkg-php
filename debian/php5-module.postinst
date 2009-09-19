@@ -2,26 +2,6 @@
 
 set -e
 
-# here we test for upgrades from versions prior to the config-file-scan-dir
-# migration.  
-#
-# to avoid lots of scary warnings about duplicate-loaded modules, each 
-# module will remove its "extension=" line from each SAPI's php.ini file
-# when upgrading from a "prior version".  this will be the last time we
-# ever muck with such files in maintainer scripts.  really.  promise :)
-
-if [ "$2" ] && dpkg --compare-versions "$2" lt "5.1.6-5"; then
-	extension_re='^[[:space:]]*extension[[:space:]]*=[[:space:]]*@dsoname@\.so$'
-	for SAPI in apache apache2 cgi cli; do
-		ini_file="/etc/php5/$SAPI/php.ini"
-		if [ -f "$ini_file" ]; then
-			if grep -q "$extension_re" $ini_file; then
-				sed -i -e "/$extension_re/d" $ini_file
-			fi
-		fi
-	done
-fi
-
 #EXTRA#
 #DEBHELPER#
 
