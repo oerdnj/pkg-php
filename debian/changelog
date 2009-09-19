@@ -1,32 +1,37 @@
-php5 (5.2.11.dfsg.1-1~1.gbp75df6c) UNRELEASED; urgency=low
+php5 (5.2.11.dfsg.1-1~2.gbpfc8473) UNRELEASED; urgency=low
 
-  ** SNAPSHOT build @75df6ce2033fe15047c522e517db2139793c3091 **
+  ** SNAPSHOT build @fc8473b95bd34a65de0385e5f16a75dede65602e **
 
   * New upstream release
 
+  [ Fixes incorporated upstream ]
+  * Fix 4-year digit year on big-endian platforms (Closes: #542301)
+  * patch curl_streams_sleep.patch
+  * patch strcmp_null-OnUpdateErrorLog.patch (partially addresses #540605)
+  * patch check_ini_on_modify_status.patch
+
   [ Raphael Geissert ]
-  * Add aliases to the mssql functions on the sybase extension (Closes:
-    #523073)
+  * Add aliases to the mssql functions on the sybase extension (Closes: #523073)
   * Fix the rows_affected alias, it should be affected_rows
-  * Don't strcmp a null value in ini_restore (partially addresses
-    #540605)
-  * Avoid possible memory dumps via PG on restored ini values (Closes:
-    #540605)
+  * Avoid possible memory dumps via PG on restored ini values (Closes: #540605)
 
   [ Ondrej Sury ]
-  * Fix 4-year digit year on big-endian platforms (Closes: #542301)
-  * Prepare changelog for the upload of 5.2.10.dfsg.1-3
   * Fix FTBFS with current autoconf/automake (Closes: #542906, #542088)
   * Add avr32-linux-gnu to no -gstabs toolchains (Closes: #543278)
   * Fix FTBFS on Debian Hurd (Closes: #530281)
-  * update release information for unstable/5.2.10.dfsg.1-3
   * add apache2 restart message to module postinst
   * fix whitespace in libapache2-mod-php5.postinst
 
   [ Sean Finney ]
-  * Imported Upstream version 5.2.11.dfsg.1
+  * update debian patch 115-autoconf_ftbfs.patch for new upstream version
+  * update debian patch fix_broken_upstream_tests.patch
+  * update debian patch mssql-null-exception.patch
+  * refresh various quilt patches against new upstream version
+  * remove no longer needed "legacy" support for conffile migration
+  * add dpkg trigger for reloading apache on extension updates 
+    (Closes: #490023, #524206)
 
- -- Sean Finney <seanius@debian.org>  Sat, 19 Sep 2009 23:20:53 +0200
+ -- Sean Finney <seanius@debian.org>  Sun, 20 Sep 2009 00:14:34 +0200
 
 php5 (5.2.10.dfsg.1-2) unstable; urgency=low
 
