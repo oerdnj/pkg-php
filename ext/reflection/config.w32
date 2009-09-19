@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.2.2.2.2.1 2006/09/02 19:13:23 johannes Exp $
+// $Id: config.w32 219270 2006-09-02 19:13:23Z johannes $
 // vim:ft=javascript
 
 ARG_ENABLE("reflection", "disable reflection support", "yes");

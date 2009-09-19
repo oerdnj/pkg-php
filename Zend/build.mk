@@ -5,7 +5,7 @@
 #
 # Written by Sascha Schumann
 #
-# $Id: build.mk,v 1.2 1999/10/10 02:02:13 sascha Exp $ 
+# $Id: build.mk 14329 1999-10-10 02:02:13Z sascha $ 
 
 
 LT_TARGETS = ltmain.sh ltconfig

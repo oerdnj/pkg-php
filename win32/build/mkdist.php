@@ -1,4 +1,4 @@
-<?php # $Id: mkdist.php,v 1.13.4.1 2006/12/19 10:26:01 edink Exp $
+<?php # $Id: mkdist.php 284011 2009-07-13 16:01:40Z pajoye $
 /* piece together a windows binary distro */
 
 $build_dir = $argv[1];
@@ -240,7 +240,7 @@ foreach ($general_files as $src => $dest) {
 }
 
 /* include a snapshot identifier */
-$branch = "HEAD"; // TODO - determine this from CVS/Entries 
+$branch = "HEAD"; // TODO - determine this from SVN branche name
 $fp = fopen("$dist_dir/snapshot.txt", "w");
 $now = date("r");
 $version = phpversion();
@@ -319,7 +319,7 @@ function copy_dir($source, $dest)
 
 	$d = opendir($source);
 	while (($f = readdir($d)) !== false) {
-		if ($f == '.' || $f == '..' || $f == 'CVS') {
+		if ($f == '.' || $f == '..' || $f == '.svn') {
 			continue;
 		}
 		$fs = $source . '/' . $f;

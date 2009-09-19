@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.4 2005/07/18 00:42:47 fmk Exp $
+// $Id: config.w32 190852 2005-07-18 00:42:48Z fmk $
 // vim:ft=javascript
 
 ARG_WITH("ming", "MING support", "no");

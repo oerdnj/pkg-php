@@ -16,7 +16,7 @@
 // | Authors: Shane Caraveo <Shane@Caraveo.com>                           |
 // +----------------------------------------------------------------------+
 //
-// $Id: client_round2_interop.php,v 1.17.2.2 2006/01/01 13:27:13 sniper Exp $
+// $Id: client_round2_interop.php 204216 2006-01-01 13:27:13Z sniper $
 //
 require_once 'DB.php'; // PEAR/DB
 require_once 'client_round2_params.php';

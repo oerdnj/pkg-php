@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_milter.c,v 1.14.2.2.2.6 2008/12/31 11:17:49 sebastian Exp $ */
+/* $Id: php_milter.c 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #include "php.h"
 #include "php_globals.h"

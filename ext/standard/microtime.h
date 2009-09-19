@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: microtime.h,v 1.14.2.1.2.3 2008/12/31 11:17:45 sebastian Exp $ */
+/* $Id: microtime.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifndef MICROTIME_H
 #define MICROTIME_H

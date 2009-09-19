@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: ftp.c,v 1.112.2.4.2.11 2008/12/31 11:17:37 sebastian Exp $ */
+/* $Id: ftp.c 288034 2009-09-04 07:59:48Z srinatar $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -147,7 +147,7 @@ ftp_open(const char *host, short port, long timeout_sec TSRMLS_DC)
 
 	size = sizeof(ftp->localaddr);
 	memset(&ftp->localaddr, 0, size);
-	if (getsockname(ftp->fd, (struct sockaddr*) &ftp->localaddr, &size) == -1) {
+	if (getsockname(ftp->fd, (struct sockaddr*) &ftp->localaddr, &size) != 0) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "getsockname failed: %s (%d)", strerror(errno), errno);
 		goto bail;
 	}
@@ -1387,7 +1387,7 @@ ftp_getdata(ftpbuf_t *ftp TSRMLS_DC)
 
 	sa = (struct sockaddr *) &ftp->localaddr;
 	/* bind/listen */
-	if ((fd = socket(sa->sa_family, SOCK_STREAM, 0)) == -1) {
+	if ((fd = socket(sa->sa_family, SOCK_STREAM, 0)) == SOCK_ERR) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "socket() failed: %s (%d)", strerror(errno), errno);
 		goto bail;
 	}
@@ -1420,17 +1420,17 @@ ftp_getdata(ftpbuf_t *ftp TSRMLS_DC)
 	php_any_addr(sa->sa_family, &addr, 0);
 	size = php_sockaddr_size(&addr);
 
-	if (bind(fd, (struct sockaddr*) &addr, size) == -1) {
+	if (bind(fd, (struct sockaddr*) &addr, size) != 0) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "bind() failed: %s (%d)", strerror(errno), errno);
 		goto bail;
 	}
 
-	if (getsockname(fd, (struct sockaddr*) &addr, &size) == -1) {
+	if (getsockname(fd, (struct sockaddr*) &addr, &size) != 0) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "getsockname() failed: %s (%d)", strerror(errno), errno);
 		goto bail;
 	}
 
-	if (listen(fd, 5) == -1) {
+	if (listen(fd, 5) != 0) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "listen() failed: %s (%d)", strerror(errno), errno);
 		goto bail;
 	}

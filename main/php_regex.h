@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_regex.h,v 1.16.2.1.2.3 2008/12/31 11:17:47 sebastian Exp $ */
+/* $Id: php_regex.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifndef PHP_REGEX_H
 #define PHP_REGEX_H

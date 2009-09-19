@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_ini.c,v 1.39.2.2.2.28 2008/12/31 11:17:33 sebastian Exp $ */
+/* $Id: zend_ini.c 284254 2009-07-17 11:49:50Z jani $ */
 
 #include "zend.h"
 #include "zend_qsort.h"
@@ -46,14 +46,20 @@ static int zend_remove_ini_entries(zend_ini_entry *ini_entry, int *module_number
 
 static int zend_restore_ini_entry_cb(zend_ini_entry *ini_entry, int stage TSRMLS_DC) /* {{{ */
 {
+	int result = FAILURE;
+
 	if (ini_entry->modified) {
 		if (ini_entry->on_modify) {
 			zend_try {
 			/* even if on_modify bails out, we have to continue on with restoring,
 				since there can be allocated variables that would be freed on MM shutdown
 				and would lead to memory corruption later ini entry is modified again */
-				ini_entry->on_modify(ini_entry, ini_entry->orig_value, ini_entry->orig_value_length, ini_entry->mh_arg1, ini_entry->mh_arg2, ini_entry->mh_arg3, stage TSRMLS_CC);
+				result = ini_entry->on_modify(ini_entry, ini_entry->orig_value, ini_entry->orig_value_length, ini_entry->mh_arg1, ini_entry->mh_arg2, ini_entry->mh_arg3, stage TSRMLS_CC);
 			} zend_end_try();
+		}
+		if (stage == ZEND_INI_STAGE_RUNTIME && result == FAILURE) {
+			/* runtime failure is OK */
+			return 1;
 		}
 		if (ini_entry->value != ini_entry->orig_value) {
 			efree(ini_entry->value);
@@ -310,8 +316,11 @@ ZEND_API int zend_restore_ini_entry(char *name, uint name_length, int stage) /* 
 	}
 
 	if (EG(modified_ini_directives)) {
-		zend_restore_ini_entry_cb(ini_entry, stage TSRMLS_CC);
-		zend_hash_del(EG(modified_ini_directives), name, name_length);
+		if (zend_restore_ini_entry_cb(ini_entry, stage TSRMLS_CC) == 0) {
+			zend_hash_del(EG(modified_ini_directives), name, name_length);
+		} else {
+			return FAILURE;
+		}
 	}
 
 	return SUCCESS;

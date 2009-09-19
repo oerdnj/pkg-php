@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: type.c,v 1.30.2.2.2.5 2008/12/31 11:17:46 sebastian Exp $ */
+/* $Id: type.c 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #include "php.h"
 #include "php_incomplete_class.h"

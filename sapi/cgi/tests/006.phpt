@@ -2,6 +2,8 @@
 syntax check
 --SKIPIF--
 <?php include "skipif.inc"; ?>
+--INI--
+display_errors=stdout
 --FILE--
 <?php
 include "include.inc";

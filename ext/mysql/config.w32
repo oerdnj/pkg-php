@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.2 2005/06/05 19:25:00 wez Exp $
+// $Id: config.w32 187690 2005-06-05 19:25:01Z wez $
 // vim:ft=javascript
 
 ARG_WITH("mysql", "MySQL support", "no");

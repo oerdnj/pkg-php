@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_variables.c,v 1.104.2.10.2.15 2008/12/31 11:17:47 sebastian Exp $ */
+/* $Id: php_variables.c 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #include <stdio.h>
 #include "php.h"

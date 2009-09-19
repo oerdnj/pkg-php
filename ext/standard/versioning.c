@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: versioning.c,v 1.19.2.1.2.5 2008/12/31 11:17:46 sebastian Exp $ */
+/* $Id: versioning.c 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #include <stdio.h>
 #include <sys/types.h>

@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_encoding.c,v 1.103.2.21.2.47 2009/06/15 17:36:00 felipe Exp $ */
+/* $Id: php_encoding.c 282179 2009-06-15 17:36:00Z felipe $ */
 
 #include <time.h>
 

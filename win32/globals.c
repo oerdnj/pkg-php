@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: globals.c,v 1.5.2.1.2.5 2008/12/31 11:17:49 sebastian Exp $ */
+/* $Id: globals.c 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #include "php.h"
 #include "php_win32_globals.h"

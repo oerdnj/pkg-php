@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_firebird.c,v 1.4.2.3.2.3 2008/12/31 11:17:41 sebastian Exp $ */
+/* $Id: pdo_firebird.c 284399 2009-07-19 23:33:50Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -35,8 +35,23 @@ zend_function_entry pdo_firebird_functions[] = { /* {{{ */
 };
 /* }}} */
 
+/* {{{ pdo_firebird_deps
+ */
+#if ZEND_MODULE_API_NO >= 20050922
+static const zend_module_dep pdo_firebird_deps[] = {
+	ZEND_MOD_REQUIRED("pdo")
+	{NULL, NULL, NULL}
+};
+#endif
+/* }}} */
+
 zend_module_entry pdo_firebird_module_entry = { /* {{{ */
+#if ZEND_MODULE_API_NO >= 20050922
+	STANDARD_MODULE_HEADER_EX, NULL,
+	pdo_firebird_deps,
+#else
 	STANDARD_MODULE_HEADER,
+#endif
 	"PDO_Firebird",
 	pdo_firebird_functions,
 	PHP_MINIT(pdo_firebird),

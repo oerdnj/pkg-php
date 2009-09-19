@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.25.2.3.2.1 2009/05/14 13:43:52 jani Exp $
+dnl $Id: config.m4 286797 2009-08-04 11:20:49Z jani $
 dnl
 
 PHP_ARG_WITH(libedit,for libedit readline replacement, 
@@ -8,6 +8,9 @@ PHP_ARG_WITH(libedit,for libedit readline replacement,
 if test "$PHP_LIBEDIT" = "no"; then
   PHP_ARG_WITH(readline,for readline support,
   [  --with-readline[=DIR]   Include readline support (CLI/CGI only)])
+else
+  dnl "register" the --with-readline option to preven invalid "unknown configure option" warning
+  php_with_readline=no
 fi
 
 if test "$PHP_READLINE" && test "$PHP_READLINE" != "no"; then
@@ -39,6 +42,13 @@ if test "$PHP_READLINE" && test "$PHP_READLINE" != "no"; then
     PHP_ADD_LIBRARY_WITH_PATH(readline, $READLINE_DIR/$PHP_LIBDIR, READLINE_SHARED_LIBADD)
   ], [
     AC_MSG_ERROR(readline library not found)
+  ], [
+    -L$READLINE_DIR/$PHP_LIBDIR $PHP_READLINE_LIBS
+  ])
+
+  PHP_CHECK_LIBRARY(readline, rl_pending_input,
+  [], [
+    AC_MSG_ERROR([invalid readline installation detected. Try --with-libedit instead.])
   ], [
     -L$READLINE_DIR/$PHP_LIBDIR $PHP_READLINE_LIBS
   ])

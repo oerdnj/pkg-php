@@ -591,7 +591,7 @@ void gdImageColorTransparent (gdImagePtr im, int color)
 		if (im->transparent != -1) {
 			im->alpha[im->transparent] = gdAlphaOpaque;
 		}
-		if (color > -1 && color<im->colorsTotal && color<=gdMaxColors) {
+		if (color > -1 && color < im->colorsTotal && color < gdMaxColors) {
 			im->alpha[color] = gdAlphaTransparent;
 		} else {
 			return;
@@ -1351,7 +1351,7 @@ void gdImageAALine (gdImagePtr im, int x1, int y1, int x2, int y2, int col)
 		x = x1 << 16;
 		y = y1 << 16;
 		inc = (dy * 65536) / dx;
-		while ((x >> 16) < x2) {
+		while ((x >> 16) <= x2) {
 			gdImageSetAAPixelColor(im, x >> 16, y >> 16, col, (y >> 8) & 0xFF);
 			if ((y >> 16) + 1 < im->sy) {
 				gdImageSetAAPixelColor(im, x >> 16, (y >> 16) + 1,col, (~y >> 8) & 0xFF);
@@ -1373,7 +1373,7 @@ void gdImageAALine (gdImagePtr im, int x1, int y1, int x2, int y2, int col)
 		x = x1 << 16;
 		y = y1 << 16;
 		inc = (dx * 65536) / dy;
-		while ((y>>16) < y2) {
+		while ((y>>16) <= y2) {
 			gdImageSetAAPixelColor(im, x >> 16, y >> 16, col, (x >> 8) & 0xFF);
 			if ((x >> 16) + 1 < im->sx) {
 				gdImageSetAAPixelColor(im, (x >> 16) + 1, (y >> 16),col, (~x >> 8) & 0xFF);
@@ -2205,31 +2205,37 @@ void gdImageFilledRectangle (gdImagePtr im, int x1, int y1, int x2, int y2, int 
 {
 	int x, y;
 
-	/* Nick Atty: limit the points at the edge.  Note that this also
-	 * nicely kills any plotting for rectangles completely outside the
-	 * window as it makes the tests in the for loops fail
-	 */
-	if (x1 < 0) {
-		x1 = 0;
+	if (x1 == x2 && y1 == y2) {
+		gdImageSetPixel(im, x1, y1, color);
+		return;
 	}
-	if (x1 > gdImageSX(im)) {
-		x1 = gdImageSX(im);
-	}
-	if(y1 < 0) {
-		y1 = 0;
-	}
-	if (y1 > gdImageSY(im)) {
-		y1 = gdImageSY(im);
-	}
+
 	if (x1 > x2) {
 		x = x1;
 		x1 = x2;
 		x2 = x;
 	}
+
 	if (y1 > y2) {
 		y = y1;
 		y1 = y2;
 		y2 = y;
+	}
+
+	if (x1 < 0) {
+		x1 = 0;
+	}
+
+	if (x2 >= gdImageSX(im)) {
+		x2 = gdImageSX(im) - 1;
+	}
+
+	if (y1 < 0) {
+		y1 = 0;
+	}
+
+	if (y2 >= gdImageSY(im)) {
+		y2 = gdImageSY(im) - 1;
 	}
 
 	for (y = y1; (y <= y2); y++) {
@@ -3864,7 +3870,7 @@ int gdImageConvolution(gdImagePtr src, float filter[3][3], float filter_div, flo
 	int         x, y, i, j, new_a;
 	float       new_r, new_g, new_b;
 	int         new_pxl, pxl=0;
-	gdImagePtr  srcback, srctrans;
+	gdImagePtr  srcback;
 	typedef int (*FuncPtr)(gdImagePtr, int, int);
 	FuncPtr f;
 
@@ -3877,9 +3883,9 @@ int gdImageConvolution(gdImagePtr src, float filter[3][3], float filter_div, flo
 	if (srcback==NULL) {
 		return 0;
 	}
-	srcback->saveAlphaFlag = 1;
-	srctrans = gdImageColorAllocateAlpha(srcback, 0, 0, 0, 127);
-	gdImageFill(srcback, 0, 0, srctrans);
+	gdImageSaveAlpha(srcback, 1);
+	new_pxl = gdImageColorAllocateAlpha(srcback, 0, 0, 0, 127);
+	gdImageFill(srcback, 0, 0, new_pxl);
 
 	gdImageCopy(srcback, src,0,0,0,0,src->sx,src->sy);
 

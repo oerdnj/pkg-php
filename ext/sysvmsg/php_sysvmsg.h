@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_sysvmsg.h,v 1.6.2.1.2.4 2008/12/31 11:17:46 sebastian Exp $ */
+/* $Id: php_sysvmsg.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifndef PHP_SYSVMSG_H
 #define PHP_SYSVMSG_H

@@ -1,5 +1,5 @@
 // vim:ft=javascript
-// $Id: config.w32,v 1.40.2.8.2.12 2009/03/13 14:39:08 rrichards Exp $
+// $Id: config.w32 277106 2009-03-13 14:39:08Z rrichards $
 // "Master" config file; think of it as a configure.in
 // equivalent.
 

@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.58.2.4.2.12 2008/07/15 18:07:42 moriyoshi Exp $
+dnl $Id: config.m4 262771 2008-07-15 18:07:42Z moriyoshi $
 dnl
 
 AC_DEFUN([PHP_MBSTRING_ADD_SOURCES], [

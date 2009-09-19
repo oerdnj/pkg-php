@@ -2,7 +2,7 @@
 zip_entry_compressionmethod() function
 --SKIPIF--
 <?php
-/* $Id: zip_entry_compressionmethod.phpt,v 1.1 2006/07/24 16:58:58 pajoye Exp $ */
+/* $Id: zip_entry_compressionmethod.phpt 216983 2006-07-24 16:58:58Z pajoye $ */
 if(!extension_loaded('zip')) die('skip');
 ?>
 --FILE--

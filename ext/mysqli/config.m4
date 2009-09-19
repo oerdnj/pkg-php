@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.22.2.1.2.2 2007/07/03 17:25:34 sniper Exp $
+dnl $Id: config.m4 239118 2007-07-03 17:25:43Z sniper $
 dnl config.m4 for extension mysqli
 
 PHP_ARG_WITH(mysqli, for MySQLi support,

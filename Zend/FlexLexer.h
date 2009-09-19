@@ -1,4 +1,4 @@
-// $Header: /repository/ZendEngine2/Attic/FlexLexer.h,v 1.4.18.1 2009/04/27 19:54:34 felipe Exp $
+// $Header$
 
 // FlexLexer.h -- define interfaces for lexical analyzer classes generated
 //		  by flex

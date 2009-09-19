@@ -2,7 +2,7 @@
 Bug #8009 (cannot add again same entry to an archive)
 --SKIPIF--
 <?php
-/* $Id: bug8009.phpt,v 1.1.2.1 2007/05/07 18:03:00 tony2001 Exp $ */
+/* $Id: bug8009.phpt 235158 2007-05-07 18:03:01Z tony2001 $ */
 if(!extension_loaded('zip')) die('skip');
 ?>
 --FILE--

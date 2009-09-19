@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: gd.c,v 1.312.2.20.2.40 2009/05/28 14:06:06 pajoye Exp $ */
+/* $Id: gd.c 282456 2009-06-19 22:15:44Z kalle $ */
 
 /* gd 1.2 is copyright 1994, 1995, Quest Protein Database Center,
    Cold Spring Harbor Labs. */
@@ -2189,7 +2189,6 @@ PHP_FUNCTION(imagegrabwindow)
 		pPrintWindow(window, memDC, (UINT) client_area);
 	} else {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Windows API too old");
-		RETURN_FALSE;
 		goto clean;
 	}
 

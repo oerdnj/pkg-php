@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.20.6.2 2007/07/31 13:02:00 jani Exp $
+dnl $Id: config.m4 240511 2007-07-31 13:02:00Z jani $
 dnl
 
 PHP_ARG_WITH(interbase,for InterBase support,

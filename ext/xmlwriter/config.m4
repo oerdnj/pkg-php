@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.4.2.6 2005/12/04 00:21:39 tony2001 Exp $
+dnl $Id: config.m4 201989 2005-12-04 00:21:39Z tony2001 $
 dnl
 
 PHP_ARG_ENABLE(xmlwriter, whether to enable XMLWriter support,

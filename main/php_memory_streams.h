@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_memory_streams.h,v 1.13.2.1.2.5 2008/12/31 11:17:47 sebastian Exp $ */
+/* $Id: php_memory_streams.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifndef PHP_MEMORY_STREAM_H
 #define PHP_MEMORY_STREAM_H

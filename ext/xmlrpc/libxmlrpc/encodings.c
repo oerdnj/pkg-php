@@ -41,7 +41,7 @@
 #include <stdlib.h>
 #endif
 
-static const char rcsid[] = "#(@) $Id: encodings.c,v 1.7.6.1 2007/09/19 00:33:43 stas Exp $";
+static const char rcsid[] = "#(@) $Id: encodings.c 242679 2007-09-19 00:33:43Z stas $";
 
 #include <errno.h>
 

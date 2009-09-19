@@ -7,7 +7,7 @@ if (LIBXML_VERSION < 20629) die("skip: libxml2 2.6.29+ required");
 ?>
 --FILE--
 <?php 
-/* $Id: OO_007.phpt,v 1.1.2.3.2.2 2007/06/26 12:12:31 tony2001 Exp $ */
+/* $Id: OO_007.phpt 238660 2007-06-26 12:12:31Z tony2001 $ */
 
 $xw = new XMLWriter();
 $xw->openMemory();

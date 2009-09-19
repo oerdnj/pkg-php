@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.1 2003/12/19 15:04:23 wez Exp $
+// $Id: config.w32 146884 2003-12-19 15:04:31Z wez $
 // vim:ft=javascript
 
 ARG_WITH("mime-magic", "Mime Magic support", "no");

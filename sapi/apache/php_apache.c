@@ -17,7 +17,7 @@
    |          David Sklar <sklar@student.net>                             |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_apache.c,v 1.89.2.4.2.8 2008/12/31 11:17:48 sebastian Exp $ */
+/* $Id: php_apache.c 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #include "php_apache_http.h"
 

@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: json.c,v 1.9.2.29 2009/06/01 14:03:24 tony2001 Exp $ */
+/* $Id: json.c 282593 2009-06-22 18:41:13Z stas $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -341,7 +341,7 @@ static void json_escape_string(smart_str *buf, char *s, int len TSRMLS_DC) /* {{
 }
 /* }}} */
 
-PHPAPI void php_json_encode(smart_str *buf, zval *val TSRMLS_DC) /* {{{ */
+PHP_JSON_API void php_json_encode(smart_str *buf, zval *val TSRMLS_DC) /* {{{ */
 {
     switch (Z_TYPE_P(val)) {
         case IS_NULL:
@@ -393,7 +393,7 @@ PHPAPI void php_json_encode(smart_str *buf, zval *val TSRMLS_DC) /* {{{ */
 }
 /* }}} */
 
-PHPAPI void php_json_decode(zval *return_value, char *buf, int buf_len, zend_bool assoc TSRMLS_DC) /* {{{ */
+PHP_JSON_API void php_json_decode(zval *return_value, char *buf, int buf_len, zend_bool assoc TSRMLS_DC) /* {{{ */
 {
 	unsigned short *utf16;
 	int utf16_len;

@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_xmlwriter.c,v 1.20.2.12.2.23 2009/05/26 08:09:37 pajoye Exp $ */
+/* $Id: php_xmlwriter.c 281143 2009-05-26 08:09:37Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

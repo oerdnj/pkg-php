@@ -15,7 +15,7 @@
   | Author: Hartmut Holzgraefe  <hholzgra@php.net>                       |
   +----------------------------------------------------------------------+
 
-  $Id: mime_magic.c,v 1.42.2.5.2.9 2008/12/31 11:17:39 sebastian Exp $ 
+  $Id: mime_magic.c 272374 2008-12-31 11:17:49Z sebastian $ 
 
   This module contains a lot of stuff taken from Apache mod_mime_magic,
   so the license section is a little bit longer than usual:

@@ -4,7 +4,7 @@ XMLReader: libxml2 XML Reader, attributes test
 <?php if (!extension_loaded("xmlreader")) print "skip"; ?>
 --FILE--
 <?php 
-/* $Id: 003.phpt,v 1.1.2.3 2006/01/04 19:44:46 rrichards Exp $ */
+/* $Id: 003.phpt 204555 2006-01-04 19:44:46Z rrichards $ */
 $filename = dirname(__FILE__) . '/_002.xml';
 
 $xmlstring = '<?xml version="1.0" encoding="UTF-8"?>

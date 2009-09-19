@@ -17,7 +17,7 @@
 */
 
 
-/* $Id: reg.h,v 1.21.2.1.2.4 2009/05/29 00:03:28 scottmac Exp $ */
+/* $Id: reg.h 281355 2009-05-29 00:03:28Z scottmac $ */
 
 #ifndef REG_H
 #define REG_H

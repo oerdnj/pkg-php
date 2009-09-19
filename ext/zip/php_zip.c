@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_zip.c,v 1.1.2.50 2009/03/01 17:35:25 iliaa Exp $ */
+/* $Id: php_zip.c 287723 2009-08-26 02:16:41Z guenter $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -148,51 +148,28 @@ static int php_zip_realpath_r(char *path, int start, int len, int *ll, time_t *t
 			}
 			return j;
 		}
-	
+
 		path[len] = 0;
 
-#ifdef PHP_WIN32
-		tmp = tsrm_do_alloca(len+1);
-		memcpy(tmp, path, len+1);
-#elif defined(NETWARE)
-
-		tmp = tsrm_do_alloca(len+1);
-		memcpy(tmp, path, len+1);
-#else
 		tmp = tsrm_do_alloca(len+1);
 		memcpy(tmp, path, len+1);
 
-		{
-#endif
-			if (i - 1 <= start) {
-				j = start;
-			} else {
-				/* some leading directories may be unaccessable */
-				j = php_zip_realpath_r(path, start, i-1, ll, t, use_realpath, 1, NULL TSRMLS_CC);
-				if (j > start) {
-					path[j++] = DEFAULT_SLASH;
-				}
+		if (i - 1 <= start) {
+			j = start;
+		} else {
+			/* some leading directories may be unaccessable */
+			j = php_zip_realpath_r(path, start, i-1, ll, t, use_realpath, 1, NULL TSRMLS_CC);
+			if (j > start) {
+				path[j++] = DEFAULT_SLASH;
 			}
-#ifdef PHP_WIN32
-			if (j < 0 || j + len - i >= MAXPATHLEN-1) {
-				tsrm_free_alloca(tmp);
-
-				return -1;
-			}
-			{
-				/* use the original file or directory name as it wasn't found */
-				memcpy(path+j, tmp+i, len-i+1);
-				j += (len-i);
-			}
-#else
-			if (j < 0 || j + len - i >= MAXPATHLEN-1) {
-				tsrm_free_alloca(tmp);
-				return -1;
-			}
-			memcpy(path+j, tmp+i, len-i+1);
-			j += (len-i);
 		}
-#endif
+		if (j < 0 || j + len - i >= MAXPATHLEN-1) {
+			tsrm_free_alloca(tmp);
+			return -1;
+		}
+		/* use the original file or directory name as it wasn't found */
+		memcpy(path+j, tmp+i, len-i+1);
+		j += (len-i);
 
 		tsrm_free_alloca(tmp);
 		return j;
@@ -2560,7 +2537,7 @@ static PHP_MINFO_FUNCTION(zip)
 	php_info_print_table_start();
 
 	php_info_print_table_row(2, "Zip", "enabled");
-	php_info_print_table_row(2, "Extension Version","$Id: php_zip.c,v 1.1.2.50 2009/03/01 17:35:25 iliaa Exp $");
+	php_info_print_table_row(2, "Extension Version","$Id: php_zip.c 287723 2009-08-26 02:16:41Z guenter $");
 	php_info_print_table_row(2, "Zip version", PHP_ZIP_VERSION_STRING);
 	php_info_print_table_row(2, "Libzip version", "0.9.0");
 

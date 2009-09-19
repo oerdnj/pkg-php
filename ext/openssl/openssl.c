@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: openssl.c,v 1.98.2.5.2.53 2009/04/20 10:00:41 mkoppanen Exp $ */
+/* $Id: openssl.c 288329 2009-09-14 12:50:30Z iliaa $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -227,8 +227,13 @@ inline static int php_openssl_safe_mode_chk(char *filename TSRMLS_DC)
 static char default_ssl_conf_filename[MAXPATHLEN];
 
 struct php_x509_request { /* {{{ */
-	LHASH * global_config;	/* Global SSL config */
-	LHASH * req_config;		/* SSL config for this request */
+#if OPENSSL_VERSION_NUMBER >= 0x10000002L
+	LHASH_OF(CONF_VALUE) * global_config;	/* Global SSL config */
+	LHASH_OF(CONF_VALUE) * req_config;		/* SSL config for this request */
+#else
+	LHASH * global_config;  /* Global SSL config */
+	LHASH * req_config;             /* SSL config for this request */
+#endif
 	const EVP_MD * md_alg;
 	const EVP_MD * digest;
 	char	* section_name,
@@ -406,12 +411,11 @@ static time_t asn1_time_to_time_t(ASN1_UTCTIME * timestr TSRMLS_DC) /* {{{ */
 }
 /* }}} */
 
-static inline int php_openssl_config_check_syntax(
-		const char * section_label,
-		const char * config_filename,
-		const char * section,
-		LHASH * config TSRMLS_DC
-		) /* {{{ */
+#if OPENSSL_VERSION_NUMBER >= 0x10000002L
+static inline int php_openssl_config_check_syntax(const char * section_label, const char * config_filename, const char * section, LHASH_OF(CONF_VALUE) * config TSRMLS_DC) /* {{{ */
+#else
+static inline int php_openssl_config_check_syntax(const char * section_label, const char * config_filename, const char * section, LHASH * config TSRMLS_DC) /* {{{ */
+#endif
 {
 	X509V3_CTX ctx;
 	
@@ -866,7 +870,11 @@ static X509 * php_openssl_x509_from_zval(zval ** val, int makeresource, long * r
 		if (in == NULL) {
 			return NULL;
 		}
+#ifdef TYPEDEF_D2I_OF
+		cert = (X509 *) PEM_ASN1_read_bio((d2i_of_void *)d2i_X509, PEM_STRING_X509, in, NULL, NULL, NULL);
+#else
 		cert = (X509 *) PEM_ASN1_read_bio((char *(*)())d2i_X509, PEM_STRING_X509, in, NULL, NULL, NULL);
+#endif
 		BIO_free(in);
 	}
 
@@ -2479,8 +2487,7 @@ static int php_openssl_is_private_key(EVP_PKEY* pkey TSRMLS_DC)
 		case EVP_PKEY_RSA:
 		case EVP_PKEY_RSA2:
 			assert(pkey->pkey.rsa != NULL);
-
-			if (NULL == pkey->pkey.rsa->p || NULL == pkey->pkey.rsa->q) {
+			if (pkey->pkey.rsa != NULL && (NULL == pkey->pkey.rsa->p || NULL == pkey->pkey.rsa->q)) {
 				return 0;
 			}
 			break;
@@ -3838,8 +3845,15 @@ int php_openssl_apply_verification_policy(SSL *ssl, X509 *peer, php_stream *stre
 	GET_VER_OPT_STRING("CN_match", cnmatch);
 	if (cnmatch) {
 		int match = 0;
+		int name_len = X509_NAME_get_text_by_NID(name, NID_commonName, buf, sizeof(buf));
 
-		X509_NAME_get_text_by_NID(name, NID_commonName, buf, sizeof(buf));
+		if (name_len == -1) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to locate peer certificate CN");
+			return FAILURE;
+		} else if (name_len != strlen(buf)) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Peer certificate CN=`%.*s' is malformed", name_len, buf);
+			return FAILURE;
+		}
 
 		match = strcmp(cnmatch, buf) == 0;
 		if (!match && strlen(buf) > 3 && buf[0] == '*' && buf[1] == '.') {
@@ -3854,10 +3868,7 @@ int php_openssl_apply_verification_policy(SSL *ssl, X509 *peer, php_stream *stre
 
 		if (!match) {
 			/* didn't match */
-			php_error_docref(NULL TSRMLS_CC, E_WARNING,
-					"Peer certificate CN=`%s' did not match expected CN=`%s'",
-					buf, cnmatch);
-
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Peer certificate CN=`%.*s' did not match expected CN=`%s'", name_len, buf, cnmatch);
 			return FAILURE;
 		}
 	}

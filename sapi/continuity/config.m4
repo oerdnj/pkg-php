@@ -1,4 +1,4 @@
-dnl ## $Id: config.m4,v 1.3.4.1 2007/07/11 23:20:36 jani Exp $ -*- sh -*-
+dnl ## $Id: config.m4 239540 2007-07-11 23:20:37Z jani $ -*- sh -*-
 
 PHP_ARG_WITH(continuity, for Continuity support,
 [  --with-continuity=DIR   Build PHP as Continuity Server module. 

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: xsltprocessor.c,v 1.39.2.2.2.18 2009/05/23 14:31:15 felipe Exp $ */
+/* $Id: xsltprocessor.c 287968 2009-09-02 13:07:44Z iliaa $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -666,7 +666,7 @@ PHP_FUNCTION(xsl_xsltprocessor_transform_to_xml)
 	ret = -1;
 	if (newdocp) {
 		ret = xsltSaveResultToString(&doc_txt_ptr, &doc_txt_len, newdocp, sheetp);
-		if (doc_txt_ptr) {
+		if (doc_txt_ptr && doc_txt_len) {
 			RETVAL_STRINGL(doc_txt_ptr, doc_txt_len, 1);
 			xmlFree(doc_txt_ptr);
 		}

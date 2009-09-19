@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_API.c,v 1.296.2.27.2.42 2009/03/24 16:36:20 dmitry Exp $ */
+/* $Id: zend_API.c 288089 2009-09-05 19:01:06Z pajoye $ */
 
 #include "zend.h"
 #include "zend_execute.h"
@@ -901,21 +901,21 @@ ZEND_API void zend_update_class_constants(zend_class_entry *class_type TSRMLS_DC
 
 				zend_hash_get_current_key_ex(&class_type->default_static_members, &str_index, &str_length, &num_index, 0, &pos);
 				if ((*p)->is_ref &&
-				    class_type->parent &&
-				    zend_hash_find(&class_type->parent->default_static_members, str_index, str_length, (void**)&q) == SUCCESS &&
-				    *p == *q &&
-				    zend_hash_find(CE_STATIC_MEMBERS(class_type->parent), str_index, str_length, (void**)&q) == SUCCESS) {
+					class_type->parent &&
+					zend_hash_find(&class_type->parent->default_static_members, str_index, str_length, (void**)&q) == SUCCESS &&
+					*p == *q &&
+					zend_hash_find(CE_STATIC_MEMBERS(class_type->parent), str_index, str_length, (void**)&q) == SUCCESS) {
 					(*q)->refcount++;
 					(*q)->is_ref = 1;
 					zend_hash_add(CE_STATIC_MEMBERS(class_type), str_index, str_length, (void**)q, sizeof(zval*), NULL);
 				} else {
-					zval *q;
+					zval *r;
 
-					ALLOC_ZVAL(q);
-					*q = **p;
-					INIT_PZVAL(q);
-					zval_copy_ctor(q);
-					zend_hash_add(CE_STATIC_MEMBERS(class_type), str_index, str_length, (void**)&q, sizeof(zval*), NULL);
+					ALLOC_ZVAL(r);
+					*r = **p;
+					INIT_PZVAL(r);
+					zval_copy_ctor(r);
+					zend_hash_add(CE_STATIC_MEMBERS(class_type), str_index, str_length, (void**)&r, sizeof(zval*), NULL);
 				}
 				zend_hash_move_forward_ex(&class_type->default_static_members, &pos);
 			}

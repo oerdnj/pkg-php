@@ -19,7 +19,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: filter.c,v 1.52.2.47 2009/04/14 14:18:49 tony2001 Exp $ */
+/* $Id: filter.c 288083 2009-09-05 17:35:26Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -275,7 +275,7 @@ PHP_MINFO_FUNCTION(filter)
 {
 	php_info_print_table_start();
 	php_info_print_table_row( 2, "Input Validation and Filtering", "enabled" );
-	php_info_print_table_row( 2, "Revision", "$Revision: 1.52.2.47 $");
+	php_info_print_table_row( 2, "Revision", "$Revision: 288083 $");
 	php_info_print_table_end();
 
 	DISPLAY_INI_ENTRIES();
@@ -316,6 +316,19 @@ static void php_zval_filter(zval **value, long filter, long flags, zval *options
 	if (copy) {
 		SEPARATE_ZVAL(value);
 	}
+
+	/* #49274, fatal error with object without a toString method
+	  Fails nicely instead of getting a recovarable fatal error. */
+	if (Z_TYPE_PP(value) == IS_OBJECT) {
+		zend_class_entry *ce;
+
+		ce = Z_OBJCE_PP(value);
+		if (!ce->__tostring) {
+			ZVAL_FALSE(*value);
+			return;
+		}
+	}
+
 	/* Here be strings */
 	convert_to_string(*value);
 

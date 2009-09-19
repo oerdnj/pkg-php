@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: hash_tiger.c,v 1.4.2.4.2.5 2008/12/31 11:17:38 sebastian Exp $ */
+/* $Id: hash_tiger.c 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #include "php_hash.h"
 #include "php_hash_tiger.h"

@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.2.4.1 2005/10/06 13:03:43 derick Exp $
+// $Id: config.w32 197743 2005-10-06 13:03:43Z derick $
 // vim:ft=javascript
 
 ARG_WITH("wddx", "WDDX support", "yes");

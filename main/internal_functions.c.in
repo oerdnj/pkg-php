@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: internal_functions.c.in,v 1.30.2.1.2.2 2007/01/01 19:32:09 iliaa Exp $ */
+/* $Id: internal_functions.c.in 226204 2007-01-01 19:32:10Z iliaa $ */
 
 #include "php.h"
 #include "php_main.h"

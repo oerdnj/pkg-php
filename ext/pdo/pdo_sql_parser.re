@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_sql_parser.re,v 1.28.2.4.2.18 2008/12/31 11:16:23 sebastian Exp $ */
+/* $Id: pdo_sql_parser.re 272372 2008-12-31 11:16:23Z sebastian $ */
 
 #include "php.h"
 #include "php_pdo_driver.h"

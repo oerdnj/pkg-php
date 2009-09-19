@@ -89,7 +89,7 @@
  *	directly -- and assumed always to succeed.
  */
 
-/* $Id: zend_strtod.c,v 1.17.2.2.2.15 2008/09/15 11:47:03 dmitry Exp $ */
+/* $Id: zend_strtod.c 266327 2008-09-15 11:47:03Z dmitry $ */
 
 #include <zend_operators.h>
 #include <zend_strtod.h>

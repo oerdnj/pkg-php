@@ -15,7 +15,7 @@
    | Author: Rasmus Lerdorf <rasmus@lerdorf.on.ca>                        |
    +----------------------------------------------------------------------+
  */
-/* $Id: head.c,v 1.84.2.1.2.11 2008/12/31 11:17:45 sebastian Exp $ */
+/* $Id: head.c 286508 2009-07-29 13:44:16Z iliaa $ */
 
 #include <stdio.h>
 #include "php.h"
@@ -110,8 +110,18 @@ PHPAPI int php_setcookie(char *name, int name_len, char *value, int value_len, t
 	} else {
 		snprintf(cookie, len + 100, "Set-Cookie: %s=%s", name, value ? encoded_value : "");
 		if (expires > 0) {
+			char *p;
 			strlcat(cookie, "; expires=", len + 100);
 			dt = php_format_date("D, d-M-Y H:i:s T", sizeof("D, d-M-Y H:i:s T")-1, expires, 0 TSRMLS_CC);
+			/* check to make sure that the year does not exceed 4 digits in length */
+			p = zend_memrchr(dt, '-', strlen(dt));
+			if (*(p + 5) != ' ') {
+				efree(dt);
+				efree(cookie);
+				efree(encoded_value);
+				zend_error(E_WARNING, "Expiry date cannot have a year greater then 9999");
+				return FAILURE;
+			}
 			strlcat(cookie, dt, len + 100);
 			efree(dt);
 		}

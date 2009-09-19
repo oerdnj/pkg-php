@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_sqlite.c,v 1.10.2.6.2.4 2008/12/31 11:17:42 sebastian Exp $ */
+/* $Id: pdo_sqlite.c 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -100,7 +100,7 @@ PHP_MINFO_FUNCTION(pdo_sqlite)
 	"(bundled) "
 #endif
 		PHP_PDO_SQLITE_MODULE_VERSION 
-		" $Id: pdo_sqlite.c,v 1.10.2.6.2.4 2008/12/31 11:17:42 sebastian Exp $");
+		" $Id: pdo_sqlite.c 272374 2008-12-31 11:17:49Z sebastian $");
 	php_info_print_table_row(2, "SQLite Library", sqlite3_libversion());
 	php_info_print_table_end();
 }

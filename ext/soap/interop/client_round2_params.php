@@ -16,7 +16,7 @@
 // | Authors: Shane Caraveo <Shane@Caraveo.com>                           |
 // +----------------------------------------------------------------------+
 //
-// $Id: client_round2_params.php,v 1.11.4.2 2006/01/01 13:27:13 sniper Exp $
+// $Id: client_round2_params.php 204216 2006-01-01 13:27:13Z sniper $
 //
 
 define('SOAP_TEST_ACTOR_OTHER','http://some/other/actor');

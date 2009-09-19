@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_curl.h,v 1.44.2.2.2.7 2009/05/27 22:38:53 pajoye Exp $ */
+/* $Id: php_curl.h 284557 2009-07-21 20:32:32Z srinatar $ */
 
 #ifndef _PHP_CURL_H
 #define _PHP_CURL_H
@@ -132,6 +132,7 @@ typedef struct {
 	long                     id;
 	unsigned int             uses;
 	zend_bool                in_callback;
+	zval                     *clone;
 } php_curl;
 
 typedef struct {

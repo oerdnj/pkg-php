@@ -31,7 +31,7 @@
 */
 
 
-static const char rcsid[] = "#(@) $Id: xml_element.c,v 1.9.4.3 2008/12/17 21:45:31 iliaa Exp $";
+static const char rcsid[] = "#(@) $Id: xml_element.c 271433 2008-12-17 21:45:31Z iliaa $";
 
 
 
@@ -43,10 +43,7 @@ static const char rcsid[] = "#(@) $Id: xml_element.c,v 1.9.4.3 2008/12/17 21:45:
  * CREATION DATE
  *   06/2000
  * HISTORY
- *   $Log: xml_element.c,v $
- *   Revision 1.9.4.3  2008/12/17 21:45:31  iliaa
- *   MFB: remove fprintf usage
- *
+ *   $Log$
  *   Revision 1.9.4.2  2008/12/17 00:30:48  iliaa
  *
  *   MFH: removed unused var

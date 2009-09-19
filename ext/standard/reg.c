@@ -17,7 +17,7 @@
    |          Jaakko Hyvätti <jaakko@hyvatti.iki.fi>                      | 
    +----------------------------------------------------------------------+
  */
-/* $Id: reg.c,v 1.82.2.3.2.7 2009/05/29 00:03:28 scottmac Exp $ */
+/* $Id: reg.c 281355 2009-05-29 00:03:28Z scottmac $ */
 
 #include <stdio.h>
 #include <ctype.h>

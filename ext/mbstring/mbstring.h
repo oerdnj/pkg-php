@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: mbstring.h,v 1.66.2.4.2.10 2009/03/15 20:44:17 moriyoshi Exp $ */
+/* $Id: mbstring.h 277212 2009-03-15 20:44:17Z moriyoshi $ */
 
 /*
  * PHP 4 Multibyte String module "mbstring" (currently only for Japanese)

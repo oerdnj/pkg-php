@@ -2,7 +2,7 @@
 Extending Zip class and array property
 --SKIPIF--
 <?php
-/* $Id: oo_ext_zip.phpt,v 1.1 2006/07/24 16:58:58 pajoye Exp $ */
+/* $Id: oo_ext_zip.phpt 216983 2006-07-24 16:58:58Z pajoye $ */
 if(!extension_loaded('zip')) die('skip');
 ?>
 --FILE--

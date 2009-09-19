@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: domstringlist.c,v 1.6.2.1.2.4 2008/12/31 11:17:37 sebastian Exp $ */
+/* $Id: domstringlist.c 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

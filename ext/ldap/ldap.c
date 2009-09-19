@@ -23,7 +23,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: ldap.c,v 1.161.2.3.2.18 2009/06/15 15:18:48 patrickallaert Exp $ */
+/* $Id: ldap.c 287936 2009-09-01 08:42:10Z patrickallaert $ */
 #define IS_EXT_MODULE
 
 #ifdef HAVE_CONFIG_H
@@ -221,6 +221,7 @@ static void _free_ldap_result_entry(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 
 	if (entry->ber != NULL) {
 		ber_free(entry->ber, 0);
+		entry->ber = NULL;
 	}
 	zend_list_delete(entry->id);
 	efree(entry);
@@ -322,7 +323,7 @@ PHP_MINFO_FUNCTION(ldap)
 
 	php_info_print_table_start();
 	php_info_print_table_row(2, "LDAP Support", "enabled");
-	php_info_print_table_row(2, "RCS Version", "$Id: ldap.c,v 1.161.2.3.2.18 2009/06/15 15:18:48 patrickallaert Exp $");
+	php_info_print_table_row(2, "RCS Version", "$Id: ldap.c 287936 2009-09-01 08:42:10Z patrickallaert $");
 
 	if (LDAPG(max_links) == -1) {
 		snprintf(tmp, 31, "%ld/unlimited", LDAPG(num_links));
@@ -686,7 +687,7 @@ static void php_ldap_do_search(INTERNAL_FUNCTION_PARAMETERS, int scope)
 	char *ldap_base_dn = NULL;
 	char *ldap_filter = NULL;
 	char **ldap_attrs = NULL; 
-	ldap_linkdata *ld;
+	ldap_linkdata *ld = NULL;
 	LDAPMessage *ldap_res;
 	int ldap_attrsonly = 0;
 	int ldap_sizelimit = -1; 
@@ -902,8 +903,10 @@ cleanup_parallel:
 	}
 
 cleanup:
-	// Restoring previous options
-	php_set_opts(ld->link, old_ldap_sizelimit, old_ldap_timelimit, old_ldap_deref, &ldap_sizelimit, &ldap_timelimit, &ldap_deref);
+	if (ld) {
+		/* Restoring previous options */	
+		php_set_opts(ld->link, old_ldap_sizelimit, old_ldap_timelimit, old_ldap_deref, &ldap_sizelimit, &ldap_timelimit, &ldap_deref);
+	}
 	if (ldap_attrs != NULL) {
 		efree(ldap_attrs);
 	}

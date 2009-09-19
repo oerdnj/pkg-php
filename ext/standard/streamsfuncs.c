@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: streamsfuncs.c,v 1.58.2.6.2.33 2009/04/19 17:10:52 lbarnaud Exp $ */
+/* $Id: streamsfuncs.c 286744 2009-08-03 15:58:18Z felipe $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -114,7 +114,7 @@ PHP_FUNCTION(stream_socket_client)
 	tv.tv_sec = conv / 1000000;
 	tv.tv_usec = conv % 1000000;
 
-	if (zerrno)	{
+	if (zerrno) {
 		zval_dtor(zerrno);
 		ZVAL_LONG(zerrno, 0);
 	}
@@ -155,11 +155,11 @@ PHP_FUNCTION(stream_socket_client)
 		}
 		RETURN_FALSE;
 	}
-	
+
 	if (errstr) {
 		efree(errstr);
 	}
-	
+
 	php_stream_to_zval(stream, return_value);
 
 	if (zcontext) {
@@ -565,7 +565,7 @@ PHP_FUNCTION(stream_get_wrappers)
 
 	if ((url_stream_wrappers_hash = php_stream_get_url_stream_wrappers_hash())) {
 		array_init(return_value);
-		for(zend_hash_internal_pointer_reset(url_stream_wrappers_hash);
+		for (zend_hash_internal_pointer_reset(url_stream_wrappers_hash);
 			(key_flags = zend_hash_get_current_key_ex(url_stream_wrappers_hash, &stream_protocol, &stream_protocol_len, &num_key, 0, NULL)) != HASH_KEY_NON_EXISTANT;
 			zend_hash_move_forward(url_stream_wrappers_hash)) {
 				if (key_flags == HASH_KEY_IS_STRING) {
@@ -1382,26 +1382,27 @@ PHP_FUNCTION(stream_socket_enable_crypto)
 */
 PHP_FUNCTION(stream_is_local)
 {
-	zval *zstream;
+	zval **zstream;
 	php_stream *stream = NULL;
 	php_stream_wrapper *wrapper = NULL;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &zstream) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "Z", &zstream) == FAILURE) {
 		RETURN_FALSE;
 	}
 
-	if(Z_TYPE_P(zstream) == IS_RESOURCE) {
-		php_stream_from_zval(stream, &zstream);
-		if(stream == NULL) {
+	if (Z_TYPE_PP(zstream) == IS_RESOURCE) {
+		php_stream_from_zval(stream, zstream);
+		if (stream == NULL) {
 			RETURN_FALSE;
 		}
 		wrapper = stream->wrapper;
 	} else {
-		convert_to_string_ex(&zstream);
-		wrapper = php_stream_locate_url_wrapper(Z_STRVAL_P(zstream), NULL, 0 TSRMLS_CC);
+		convert_to_string_ex(zstream);
+		
+		wrapper = php_stream_locate_url_wrapper(Z_STRVAL_PP(zstream), NULL, 0 TSRMLS_CC);
 	}
 
-	if(!wrapper) {
+	if (!wrapper) {
 		RETURN_FALSE;
 	}
 

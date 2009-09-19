@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: cdb_make.h,v 1.7.2.1.2.3 2008/12/31 11:17:36 sebastian Exp $ */
+/* $Id: cdb_make.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 /* incorporated from D.J.Bernstein's cdb-0.75 (http://cr.yp.to/cdb.html)*/
 

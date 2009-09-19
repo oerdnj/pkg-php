@@ -2,7 +2,7 @@
 Bug #14962 (::extractTo second argument is not really optional)
 --SKIPIF--
 <?php
-/* $Id: bug14962.phpt,v 1.1.4.2 2008/11/12 11:59:26 pajoye Exp $ */
+/* $Id: bug14962.phpt 268856 2008-11-12 11:59:26Z pajoye $ */
 if(!extension_loaded('zip')) die('skip');
 ?>
 --FILE--

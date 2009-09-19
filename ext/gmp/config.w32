@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.1 2005/01/04 22:39:29 fmk Exp $
+// $Id: config.w32 176467 2005-01-04 22:39:29Z fmk $
 // vim:ft=javascript
 
 ARG_WITH("gmp", "Include GNU MP support.", "no");

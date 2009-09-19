@@ -1,4 +1,4 @@
-/* $Id: gdttf.h,v 1.3 2000/02/26 03:20:50 zeev Exp $ */
+/* $Id: gdttf.h 20492 2000-02-26 03:20:55Z zeev $ */
 
 #ifdef _OSD_POSIX
 #ifndef APACHE

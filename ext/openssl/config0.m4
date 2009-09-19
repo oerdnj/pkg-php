@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config0.m4,v 1.4.4.1 2007/01/07 18:38:22 iliaa Exp $
+dnl $Id: config0.m4 226663 2007-01-07 18:38:22Z iliaa $
 dnl
 
 PHP_ARG_WITH(openssl, for OpenSSL support,

@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.1 2004/01/09 13:42:14 wez Exp $
+// $Id: config.w32 148305 2004-01-09 13:42:14Z wez $
 // vim:ft=javascript
 
 ARG_WITH("mhash", "mhash support", "no");

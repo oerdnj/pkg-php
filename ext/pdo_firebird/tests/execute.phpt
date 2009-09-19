@@ -5,7 +5,7 @@ PDO_Firebird: prepare/execute/binding
 --INI--
 ibase.timestampformat=%Y-%m-%d %H:%M:%S
 --FILE--
-<?php /* $Id: execute.phpt,v 1.4.4.1 2009/02/09 11:58:02 felipe Exp $ */
+<?php /* $Id: execute.phpt 275406 2009-02-09 11:58:02Z felipe $ */
 
 	require("testdb.inc");
     

@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: var_unserializer.re,v 1.52.2.2.2.10 2009/03/17 23:10:13 felipe Exp $ */
+/* $Id: var_unserializer.re 277375 2009-03-17 23:10:13Z felipe $ */
 
 #include "php.h"
 #include "ext/standard/php_var.h"

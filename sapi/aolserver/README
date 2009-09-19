@@ -1,4 +1,4 @@
-AOLserver README ($Id: README,v 1.6 2004/01/17 13:00:03 sniper Exp $)
+AOLserver README ($Id: README 149024 2004-01-17 13:00:38Z sniper $)
 
 To compile PHP 4.0 as a module for AOLserver, you need:
 

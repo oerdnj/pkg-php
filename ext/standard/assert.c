@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: assert.c,v 1.60.2.3.2.8 2008/12/31 11:17:44 sebastian Exp $ */
+/* $Id: assert.c 284154 2009-07-15 23:57:10Z stas $ */
 
 /* {{{ includes/startup/misc */
 
@@ -56,6 +56,7 @@ static PHP_INI_MH(OnChangeCallback)
 	if (EG(in_execution)) {
 		if (ASSERTG(callback)) {
 			zval_ptr_dtor(&ASSERTG(callback));
+			ASSERTG(callback) = NULL;
 		}
 		if (new_value && (ASSERTG(callback) || new_value_length)) {
 			MAKE_STD_ZVAL(ASSERTG(callback));

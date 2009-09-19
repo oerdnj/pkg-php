@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_hash_tiger_tables.h,v 1.2.2.3.2.3 2008/12/31 11:17:38 sebastian Exp $ */
+/* $Id: php_hash_tiger_tables.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #define t1 (table)
 #define t2 (table+256)

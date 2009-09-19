@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.3.4.1.2.2 2006/11/14 19:57:13 edink Exp $
+// $Id: config.w32 223346 2006-11-14 19:57:13Z edink $
 // vim:ft=javascript
 
 ARG_WITH("curl", "cURL support", "no");

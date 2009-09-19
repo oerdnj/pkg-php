@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.11.4.2 2007/07/03 17:25:35 sniper Exp $
+dnl $Id: config.m4 239118 2007-07-03 17:25:43Z sniper $
 dnl
 
 PHP_ARG_WITH(xsl, for XSL support,

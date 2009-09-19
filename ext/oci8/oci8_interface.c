@@ -25,7 +25,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: oci8_interface.c,v 1.8.2.7.2.17 2008/12/31 11:17:40 sebastian Exp $ */
+/* $Id: oci8_interface.c 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

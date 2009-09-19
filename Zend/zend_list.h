@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_list.h,v 1.48.2.1.2.5 2008/12/31 11:17:33 sebastian Exp $ */
+/* $Id: zend_list.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifndef ZEND_LIST_H
 #define ZEND_LIST_H

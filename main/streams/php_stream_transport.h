@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_stream_transport.h,v 1.10.2.1.2.6 2008/12/31 11:17:48 sebastian Exp $ */
+/* $Id: php_stream_transport.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #if HAVE_SYS_SOCKET_H
 # include <sys/socket.h>

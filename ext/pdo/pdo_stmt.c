@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_stmt.c,v 1.118.2.38.2.47 2009/03/12 16:13:39 andrei Exp $ */
+/* $Id: pdo_stmt.c 288013 2009-09-03 22:53:25Z mbeccati $ */
 
 /* The PDO Statement Handle Class */
 
@@ -329,7 +329,7 @@ static int really_register_bound_param(struct pdo_bound_param_data *param, pdo_s
 	if (PDO_PARAM_TYPE(param->param_type) == PDO_PARAM_STR && param->max_value_len <= 0 && ! ZVAL_IS_NULL(param->parameter)) {
 		if (Z_TYPE_P(param->parameter) == IS_DOUBLE) {
 			char *p;
-			int len = spprintf(&p, 0, "%F", Z_DVAL_P(param->parameter));
+			int len = spprintf(&p, 0, "%.*H", (int) EG(precision), Z_DVAL_P(param->parameter));
 			ZVAL_STRINGL(param->parameter, p, len, 0);
 		} else {
 			convert_to_string(param->parameter);
@@ -587,9 +587,8 @@ static inline void fetch_value(pdo_stmt_t *stmt, zval *dest, int colno, int *typ
 		case PDO_PARAM_LOB:
 			if (value == NULL) {
 				ZVAL_NULL(dest);
-			} else if (value[0] == '\0') {
-				ZVAL_EMPTY_STRING(dest);
 			} else if (value_len == 0) {
+				/* Warning, empty strings need to be passed as stream */
 				if (stmt->dbh->stringify || new_type == PDO_PARAM_STR) {
 					char *buf = NULL;
 					size_t len;

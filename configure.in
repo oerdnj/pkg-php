@@ -1,4 +1,4 @@
-## $Id: configure.in,v 1.579.2.52.2.139 2009/06/17 12:22:41 iliaa Exp $ -*- autoconf -*-
+## $Id: configure.in 288372 2009-09-16 12:54:51Z iliaa $ -*- autoconf -*-
 dnl ## Process this file with autoconf to produce a configure script.
 
 divert(1)
@@ -31,7 +31,7 @@ dnl Basic autoconf + automake initialization, generation of config.nice.
 dnl -------------------------------------------------------------------------
 
 AC_PREREQ(2.13)
-AC_INIT(README.CVS-RULES)
+AC_INIT(README.SVN-RULES)
 
 PHP_CONFIG_NICE(config.nice)
 
@@ -41,7 +41,7 @@ AC_CONFIG_HEADER(main/php_config.h)
 
 PHP_MAJOR_VERSION=5
 PHP_MINOR_VERSION=2
-PHP_RELEASE_VERSION=10
+PHP_RELEASE_VERSION=11
 PHP_EXTRA_VERSION=""
 PHP_VERSION="$PHP_MAJOR_VERSION.$PHP_MINOR_VERSION.$PHP_RELEASE_VERSION$PHP_EXTRA_VERSION"
 PHP_VERSION_ID=`expr [$]PHP_MAJOR_VERSION \* 10000 + [$]PHP_MINOR_VERSION \* 100 + [$]PHP_RELEASE_VERSION`
@@ -171,7 +171,7 @@ dnl Check if bison generated files exist when bison does not..
 case $php_cv_bison_version in
   ""|invalid[)]
     if ! test -f "$abs_srcdir/Zend/zend_language_parser.h" || ! test -f "$abs_srcdir/Zend/zend_language_parser.c" ; then
-      AC_MSG_ERROR([bison is required to build PHP/Zend when building a CVS checkout!])
+      AC_MSG_ERROR([bison is required to build PHP/Zend when building a SVN checkout!])
     fi
     ;;
 esac
@@ -1556,13 +1556,18 @@ X
     fi
 
     if test "$PHP_SIGCHILD" != "yes"; then
+      if test "$PHP_OCI8_INSTANT_CLIENT" = "no"; then
 cat <<X
 +--------------------------------------------------------------------+
 | Notice:                                                            |
-| If you encounter <defunc> processes when using a local Oracle-DB   |
-| please recompile PHP and specify --enable-sigchild when configuring|
-| (This problem has been reported under Linux using Oracle >= 8.1.5) |
+| If you encounter <defunc> processes when using a local Oracle      |
+| database, set the value BEQUEATH_DETACH=YES in Oracle Net's        |
+| sqlnet.ora file on the PHP host, or set the environment variable   |
+| BEQUEATH_DETACH to YES before starting Apache.  If the problem     |
+| still occurs, then recompile PHP and specify --enable-sigchild     |
+| when configuring.                                                  |
 X
+      fi
     fi
   fi
 

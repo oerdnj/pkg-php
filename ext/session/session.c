@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: session.c,v 1.417.2.8.2.48 2009/05/18 17:23:42 jani Exp $ */
+/* $Id: session.c 286443 2009-07-28 08:54:23Z tony2001 $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -2107,8 +2107,16 @@ static PHP_MINFO_FUNCTION(session) /* {{{ */
 }
 /* }}} */
 
+static const zend_module_dep session_deps[] = { /* {{{ */
+	ZEND_MOD_OPTIONAL("hash")
+	{NULL, NULL, NULL}
+};
+/* }}} */
+
 zend_module_entry session_module_entry = {
-	STANDARD_MODULE_HEADER,
+	STANDARD_MODULE_HEADER_EX,
+	NULL,
+	session_deps,
 	"session",
 	session_functions,
 	PHP_MINIT(session), PHP_MSHUTDOWN(session),

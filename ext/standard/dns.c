@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: dns.c,v 1.70.2.7.2.11 2009/05/20 12:09:33 jani Exp $ */
+/* $Id: dns.c 286890 2009-08-06 14:07:16Z scottmac $ */
 
 /* {{{ includes */
 #include "php.h"
@@ -68,7 +68,7 @@
 #define AF_INET 2   /* internetwork: UDP, TCP, etc. */
 #endif
 
-#include "dns.h"
+#include "php_dns.h"
 
 /* type compat */
 #ifndef DNS_T_A

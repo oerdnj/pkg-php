@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_iterators.c,v 1.73.2.30.2.36 2009/05/09 19:48:15 scottmac Exp $ */
+/* $Id: spl_iterators.c 280214 2009-05-09 19:48:15Z scottmac $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"

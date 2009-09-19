@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_network.h,v 1.56.2.1.2.4 2009/01/07 20:41:47 felipe Exp $ */
+/* $Id: php_network.h 273018 2009-01-07 20:41:47Z felipe $ */
 
 #ifndef _PHP_NETWORK_H
 #define _PHP_NETWORK_H

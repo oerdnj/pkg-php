@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_filestat.h,v 1.24.2.4.2.4 2008/12/31 11:17:45 sebastian Exp $ */
+/* $Id: php_filestat.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifndef PHP_FILESTAT_H
 #define PHP_FILESTAT_H

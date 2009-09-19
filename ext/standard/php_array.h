@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_array.h,v 1.50.2.2.2.5 2008/12/31 11:17:45 sebastian Exp $ */
+/* $Id: php_array.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifndef PHP_ARRAY_H
 #define PHP_ARRAY_H

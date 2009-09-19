@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: formatted_print.c,v 1.82.2.1.2.21 2009/01/20 18:03:19 iliaa Exp $ */
+/* $Id: formatted_print.c 284649 2009-07-23 14:54:04Z jani $ */
 
 #include <math.h>				/* modf() */
 #include "php.h"
@@ -700,14 +700,14 @@ PHP_FUNCTION(vsprintf)
 PHP_FUNCTION(user_printf)
 {
 	char *result;
-	int len;
+	int len, rlen;
 	
 	if ((result=php_formatted_print(ht, &len, 0, 0 TSRMLS_CC))==NULL) {
 		RETURN_FALSE;
 	}
-	PHPWRITE(result, len);
+	rlen = PHPWRITE(result, len);
 	efree(result);
-	RETURN_LONG(len);
+	RETURN_LONG(rlen);
 }
 /* }}} */
 
@@ -716,14 +716,14 @@ PHP_FUNCTION(user_printf)
 PHP_FUNCTION(vprintf)
 {
 	char *result;
-	int len;
+	int len, rlen;
 	
 	if ((result=php_formatted_print(ht, &len, 1, 0 TSRMLS_CC))==NULL) {
 		RETURN_FALSE;
 	}
-	PHPWRITE(result, len);
+	rlen = PHPWRITE(result, len);
 	efree(result);
-	RETURN_LONG(len);
+	RETURN_LONG(rlen);
 }
 /* }}} */
 

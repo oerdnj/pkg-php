@@ -26,7 +26,7 @@
    | PHP 4.0 updates:  Zeev Suraski <zeev@zend.com>                       |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_imap.c,v 1.208.2.7.2.51 2009/04/30 18:55:44 pajoye Exp $ */
+/* $Id: php_imap.c 286732 2009-08-03 13:02:53Z jani $ */
 
 #define IMAP41
 
@@ -221,7 +221,10 @@ static void mail_close_it(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 {
 	pils *imap_le_struct = (pils *)rsrc->ptr;
 
-	mail_close_full(imap_le_struct->imap_stream, imap_le_struct->flags);
+	/* Do not try to close prototype streams */
+	if (!(imap_le_struct->flags & OP_PROTOTYPE)) {
+		mail_close_full(imap_le_struct->imap_stream, imap_le_struct->flags);
+	}
 
 	if (IMAPG(imap_user)) {
 		efree(IMAPG(imap_user));
@@ -782,6 +785,9 @@ static void php_imap_do_open(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 		if (flags & PHP_EXPUNGE) {
 			cl_flags = CL_EXPUNGE;
 			flags ^= PHP_EXPUNGE;
+		}
+		if (flags & OP_PROTOTYPE) {
+			cl_flags |= OP_PROTOTYPE;
 		}
 	}
 
@@ -2670,7 +2676,7 @@ PHP_FUNCTION(imap_sort)
 
 	slst = mail_sort(imap_le_struct->imap_stream, (myargc == 6 ? Z_STRVAL_PP(charset) : NIL), spg, mypgm, (myargc >= 4 ? Z_LVAL_PP(flags) : NIL));
 
-	if (spg) {
+	if (spg && myargc >= 4 && !(Z_LVAL_PP(flags) & SE_FREE)) {
 		mail_free_searchpgm(&spg);
 	}
 
@@ -3712,7 +3718,7 @@ PHP_FUNCTION(imap_search)
 
 	mail_search_full(imap_le_struct->imap_stream, (argc == 4 ? Z_STRVAL_PP(charset) : NIL), pgm, flags);
 
-	if (pgm) {
+	if (pgm && !(flags & SE_FREE)) {
 		mail_free_searchpgm(&pgm);
 	}
 
@@ -4341,7 +4347,7 @@ PHP_FUNCTION(imap_thread)
 
 	pgm = mail_criteria(criteria);
 	top = mail_thread(imap_le_struct->imap_stream, "REFERENCES", NIL, pgm, flags);
-	if (pgm) {
+	if (pgm && !(flags & SE_FREE)) {
 		mail_free_searchpgm(&pgm);
 	}
 

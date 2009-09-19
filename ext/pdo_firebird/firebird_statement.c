@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: firebird_statement.c,v 1.18.2.1.2.9 2009/04/03 22:14:05 felipe Exp $ */
+/* $Id: firebird_statement.c 284404 2009-07-20 00:17:24Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -417,7 +417,8 @@ static int firebird_stmt_get_col(pdo_stmt_t *stmt, int colno, char **ptr,  /* {{
 					}
 
 					/* convert the timestamp into a string */
-					*ptr = FETCH_BUF(S->fetch_buf[colno], char, *len = 80, NULL);
+					*len = 80;
+					*ptr = FETCH_BUF(S->fetch_buf[colno], char, *len, NULL);
 					*len = strftime(*ptr, *len, fmt, &t);
 					break;
 				case SQL_BLOB:

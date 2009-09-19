@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.1 2005/12/01 00:48:13 sniper Exp $
+// $Id: config.w32 201777 2005-12-01 00:48:13Z sniper $
 // vim:ft=javascript
 
 ARG_ENABLE("filter", "Filter Support", "yes");

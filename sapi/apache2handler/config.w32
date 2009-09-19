@@ -1,5 +1,5 @@
 // vim:ft=javascript
-// $Id: config.w32,v 1.1.6.2 2007/05/04 18:17:55 edink Exp $
+// $Id: config.w32 234960 2007-05-04 18:17:55Z edink $
 
 ARG_ENABLE('apache2handler', 'Build Apache 2.x handler', 'no');
 

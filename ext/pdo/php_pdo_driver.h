@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_driver.h,v 1.66.2.11.2.9 2008/12/31 11:17:41 sebastian Exp $ */
+/* $Id: php_pdo_driver.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifndef PHP_PDO_DRIVER_H
 #define PHP_PDO_DRIVER_H

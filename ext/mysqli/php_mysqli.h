@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: php_mysqli.h,v 1.54.2.7.2.9 2008/12/31 11:17:40 sebastian Exp $ 
+  $Id: php_mysqli.h 288336 2009-09-14 16:51:11Z uw $ 
 */
 
 /* A little hack to prevent build break, when mysql is used together with
@@ -52,8 +52,9 @@ enum mysqli_status {
 };
 
 typedef struct {
+        char            *val;
 	ulong		buflen;
-	char		*val;
+        ulong           output_len;
 	ulong		type;
 } VAR_BUFFER;
 

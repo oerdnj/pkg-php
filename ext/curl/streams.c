@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: streams.c,v 1.14.2.2.2.14 2009/05/05 00:33:02 jani Exp $ */
+/* $Id: streams.c 284748 2009-07-25 13:09:03Z jani $ */
 
 /* This file implements cURL based wrappers.
  * NOTE: If you are implementing your own streams that are intended to
@@ -129,7 +129,7 @@ static int on_progress_avail(php_stream *stream, double dltotal, double dlnow, d
 
 	/* our notification system only works in a single direction; we should detect which
 	 * direction is important and use the correct values in this call */
-	php_stream_notify_progress(stream->context, dlnow, dltotal);
+	php_stream_notify_progress(stream->context, (size_t) dlnow, (size_t) dltotal);
 	return 0;
 }
 
@@ -167,7 +167,8 @@ static size_t php_curl_stream_read(php_stream *stream, char *buf, size_t count T
 			tv.tv_sec = 15; /* TODO: allow this to be configured from the script */
 
 			/* wait for data */
-			switch (select(curlstream->maxfd + 1, &curlstream->readfds, &curlstream->writefds, &curlstream->excfds, &tv)) {
+			switch ((curlstream->maxfd < 0) ? 1 : 
+					select(curlstream->maxfd + 1, &curlstream->readfds, &curlstream->writefds, &curlstream->excfds, &tv)) {
 				case -1:
 					/* error */
 					return 0;
@@ -180,7 +181,8 @@ static size_t php_curl_stream_read(php_stream *stream, char *buf, size_t count T
 						curlstream->mcode = curl_multi_perform(curlstream->multi, &curlstream->pending);
 					} while (curlstream->mcode == CURLM_CALL_MULTI_PERFORM);
 			}
-		} while (curlstream->readbuffer.readpos >= curlstream->readbuffer.writepos && curlstream->pending > 0);
+		} while (curlstream->maxfd >= 0 &&
+				curlstream->readbuffer.readpos >= curlstream->readbuffer.writepos && curlstream->pending > 0);
 
 	}
 
@@ -469,8 +471,7 @@ php_stream *php_curl_stream_opener(php_stream_wrapper *wrapper, char *filename, 
 #else 
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "There was an error mcode=%d", m);
 #endif
-			php_stream_close(stream);
-			return NULL;
+			goto exit_fail;
 		}
 		
 		/* we have only one curl handle here, even though we use multi syntax, 
@@ -488,14 +489,23 @@ php_stream *php_curl_stream_opener(php_stream_wrapper *wrapper, char *filename, 
 			}
 		}
 		if (msg_found) {
-			php_stream_close(stream);
-			return NULL;
+			goto exit_fail;
 		}
 	}
+
+	/* context headers are not needed anymore */
 	if (slist) {
+		curl_easy_setopt(curlstream->curl, CURLOPT_HTTPHEADER, NULL);
 		curl_slist_free_all(slist);
 	}
 	return stream;
+
+exit_fail:
+	php_stream_close(stream);
+	if (slist) {
+		curl_slist_free_all(slist);
+	}
+	return NULL;
 }
 
 static php_stream_wrapper_ops php_curl_wrapper_ops = {

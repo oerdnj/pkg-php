@@ -1,4 +1,4 @@
-dnl $Id: config.m4,v 1.10.2.4.2.1 2007/07/03 17:25:33 sniper Exp $
+dnl $Id: config.m4 239118 2007-07-03 17:25:43Z sniper $
 dnl config.m4 for extension hash
 
 PHP_ARG_ENABLE(hash, whether to enable hash support,

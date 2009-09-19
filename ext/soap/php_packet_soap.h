@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_packet_soap.h,v 1.10.2.1.2.3 2008/12/31 11:17:43 sebastian Exp $ */
+/* $Id: php_packet_soap.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifndef PHP_PACKET_SOAP_H
 #define PHP_PACKET_SOAP_H

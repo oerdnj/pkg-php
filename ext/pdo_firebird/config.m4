@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.8.4.2 2007/07/31 13:02:00 jani Exp $
+dnl $Id: config.m4 240511 2007-07-31 13:02:00Z jani $
 dnl
 
 if test "$PHP_PDO" != "no"; then

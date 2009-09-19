@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.1 2003/12/07 00:49:25 edink Exp $
+// $Id: config.w32 145847 2003-12-07 00:49:25Z edink $
 // vim:ft=javascript
 
 ARG_WITH("fdf", "Include FDF support.", "no");

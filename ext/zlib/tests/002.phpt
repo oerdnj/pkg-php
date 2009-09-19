@@ -3,7 +3,7 @@ gzcompress()/gzuncompress()
 --SKIPIF--
 <?php if (!extension_loaded("zlib")) print "skip"; ?>
 --FILE--
-<?php /* $Id: 002.phpt,v 1.3 2004/05/19 08:45:23 helly Exp $ */
+<?php /* $Id: 002.phpt 158952 2004-05-19 08:45:46Z helly $ */
 $original = str_repeat("hallo php",4096);
 $packed=gzcompress($original);
 echo strlen($packed)." ".strlen($original)."\n";

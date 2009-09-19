@@ -2,7 +2,7 @@
 getComment
 --SKIPIF--
 <?php
-/* $Id: oo_getcomment.phpt,v 1.1.2.3 2007/03/14 11:02:29 pajoye Exp $ */
+/* $Id: oo_getcomment.phpt 231831 2007-03-14 11:02:29Z pajoye $ */
 if(!extension_loaded('zip')) die('skip');
 ?>
 --FILE--

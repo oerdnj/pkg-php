@@ -1,4 +1,4 @@
-dnl $Id: config.m4,v 1.9.2.1 2005/10/01 15:41:37 helly Exp $
+dnl $Id: config.m4 197295 2005-10-01 15:41:37Z helly $
 dnl config.m4 for extension simplexml
 
 PHP_ARG_ENABLE(simplexml, whether to enable SimpleXML support,

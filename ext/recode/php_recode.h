@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_recode.h,v 1.17.2.1.2.3 2008/12/31 11:17:42 sebastian Exp $ */
+/* $Id: php_recode.h 272374 2008-12-31 11:17:49Z sebastian $ */
 
 #ifndef PHP_RECODE_H
 #define PHP_RECODE_H

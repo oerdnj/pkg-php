@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: nsapi.c,v 1.69.2.3.2.18 2009/03/20 15:54:36 thetaphi Exp $ */
+/* $Id: nsapi.c 286723 2009-08-03 10:14:20Z thetaphi $ */
 
 /*
  * PHP includes
@@ -56,6 +56,13 @@
 #endif
 #endif
 
+/*
+ * The manual define of HPUX is to fix bug #46020, nsapi.h needs this to detect HPUX
+ */
+#ifdef __hpux
+#define HPUX
+#endif
+ 
 /*
  * NSAPI includes
  */
@@ -294,7 +301,7 @@ PHP_MSHUTDOWN_FUNCTION(nsapi)
 PHP_MINFO_FUNCTION(nsapi)
 {
 	php_info_print_table_start();
-	php_info_print_table_row(2, "NSAPI Module Revision", "$Revision: 1.69.2.3.2.18 $");
+	php_info_print_table_row(2, "NSAPI Module Revision", "$Revision: 286723 $");
 	php_info_print_table_row(2, "Server Software", system_version());
 	php_info_print_table_row(2, "Sub-requests with nsapi_virtual()",
 	 (nsapi_servact_service)?((zend_ini_long("zlib.output_compression", sizeof("zlib.output_compression"), 0))?"not supported with zlib.output_compression":"enabled"):"not supported on this platform" );

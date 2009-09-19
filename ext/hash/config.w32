@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.8.2.3 2006/03/03 14:34:34 edink Exp $
+// $Id: config.w32 208549 2006-03-03 14:34:34Z edink $
 // vim:ft=javascript
 
 ARG_ENABLE("hash", "enable hash support", "yes");

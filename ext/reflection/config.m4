@@ -1,4 +1,4 @@
-dnl $Id: config.m4,v 1.4.2.3.2.1 2006/08/23 09:47:21 tony2001 Exp $
+dnl $Id: config.m4 218722 2006-08-23 09:47:21Z tony2001 $
 dnl config.m4 for extension reflection
 
 PHP_ARG_ENABLE(reflection, whether to enable reflection support,
