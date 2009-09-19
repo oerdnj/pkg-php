@@ -917,7 +917,7 @@ the following modifications have been made:
 --- php.orig/Zend/zend_hash.c
 +++ php/Zend/zend_hash.c
 @@ -20,6 +20,7 @@
- /* $Id: zend_hash.c,v 1.121.2.4.2.11 2009/06/07 19:28:32 mattwil Exp $ */
+ /* $Id: zend_hash.c 281779 2009-06-07 19:28:33Z mattwil $ */
  
  #include "zend.h"
 +#include "zend_compile.h"
@@ -1408,7 +1408,7 @@ the following modifications have been made:
  
 +sinclude(main/suhosin_patch.m4)
  
- divert(2)
+ dnl divert(2)
  
 @@ -1385,7 +1386,7 @@ PHP_ADD_SOURCES(main, main.c snprintf.c 
         php_ini.c SAPI.c rfc1867.c php_content_types.c strlcpy.c \
@@ -1430,7 +1430,7 @@ the following modifications have been made:
    PHP_ADD_SOURCES(Zend, zend_objects.c zend_object_handlers.c zend_objects_API.c zend_default_classes.c)
 --- php.orig/ext/standard/basic_functions.c
 +++ php/ext/standard/basic_functions.c
-@@ -3575,7 +3575,9 @@ zend_function_entry basic_functions[] = 
+@@ -3574,7 +3574,9 @@ zend_function_entry basic_functions[] = 
  	PHP_FALIAS(socket_get_status, stream_get_meta_data,						arginfo_stream_get_meta_data)
  
  #if (!defined(__BEOS__) && !defined(NETWARE) && HAVE_REALPATH) || defined(ZTS)
@@ -1628,7 +1628,7 @@ the following modifications have been made:
  /* }}} */
  
  #ifndef ZTS
-@@ -1376,7 +1379,7 @@ void php_request_shutdown_for_exec(void 
+@@ -1371,7 +1374,7 @@ void php_request_shutdown_for_exec(void 
  
  	/* used to close fd's in the 3..255 range here, but it's problematic
  	 */
@@ -1637,7 +1637,7 @@ the following modifications have been made:
  }
  /* }}} */
  
-@@ -1417,6 +1420,9 @@ void php_request_shutdown_for_hook(void 
+@@ -1412,6 +1415,9 @@ void php_request_shutdown_for_hook(void 
  
  	zend_try {
  		shutdown_memory_manager(CG(unclean_shutdown), 0 TSRMLS_CC);
@@ -1647,7 +1647,7 @@ the following modifications have been made:
  	} zend_end_try();
  
  	zend_try {
-@@ -1511,6 +1517,9 @@ void php_request_shutdown(void *dummy)
+@@ -1506,6 +1512,9 @@ void php_request_shutdown(void *dummy)
  	/* 11. Free Willy (here be crashes) */
  	zend_try {
  		shutdown_memory_manager(CG(unclean_shutdown) || !report_memleaks, 0 TSRMLS_CC);
@@ -1657,7 +1657,7 @@ the following modifications have been made:
  	} zend_end_try();
  
  	/* 12. Reset max_execution_time */
-@@ -1670,6 +1679,9 @@ int php_module_startup(sapi_module_struc
+@@ -1665,6 +1674,9 @@ int php_module_startup(sapi_module_struc
  #ifdef ZTS
  	tsrm_ls = ts_resource(0);
  #endif
@@ -1667,7 +1667,7 @@ the following modifications have been made:
  
  	module_shutdown = 0;
  	module_startup = 1;
-@@ -1811,6 +1823,10 @@ int php_module_startup(sapi_module_struc
+@@ -1806,6 +1818,10 @@ int php_module_startup(sapi_module_struc
  	REGISTER_MAIN_STRINGL_CONSTANT("PHP_CONFIG_FILE_PATH", PHP_CONFIG_FILE_PATH, strlen(PHP_CONFIG_FILE_PATH), CONST_PERSISTENT | CONST_CS);
  	REGISTER_MAIN_STRINGL_CONSTANT("PHP_CONFIG_FILE_SCAN_DIR", PHP_CONFIG_FILE_SCAN_DIR, sizeof(PHP_CONFIG_FILE_SCAN_DIR)-1, CONST_PERSISTENT | CONST_CS);
  	REGISTER_MAIN_STRINGL_CONSTANT("PHP_SHLIB_SUFFIX", PHP_SHLIB_SUFFIX, sizeof(PHP_SHLIB_SUFFIX)-1, CONST_PERSISTENT | CONST_CS);
@@ -1678,7 +1678,7 @@ the following modifications have been made:
  	REGISTER_MAIN_STRINGL_CONSTANT("PHP_EOL", PHP_EOL, sizeof(PHP_EOL)-1, CONST_PERSISTENT | CONST_CS);
  	REGISTER_MAIN_LONG_CONSTANT("PHP_INT_MAX", LONG_MAX, CONST_PERSISTENT | CONST_CS);
  	REGISTER_MAIN_LONG_CONSTANT("PHP_INT_SIZE", sizeof(long), CONST_PERSISTENT | CONST_CS);
-@@ -1860,7 +1876,9 @@ int php_module_startup(sapi_module_struc
+@@ -1855,7 +1871,9 @@ int php_module_startup(sapi_module_struc
  	module_startup = 0;
  
  	shutdown_memory_manager(1, 0 TSRMLS_CC);
@@ -1689,7 +1689,7 @@ the following modifications have been made:
  	/* we're done */
  	return SUCCESS;
  }
-@@ -1919,6 +1937,9 @@ void php_module_shutdown(TSRMLS_D)
+@@ -1914,6 +1932,9 @@ void php_module_shutdown(TSRMLS_D)
  #ifndef ZTS
  	zend_ini_shutdown(TSRMLS_C);
  	shutdown_memory_manager(CG(unclean_shutdown), 1 TSRMLS_CC);
@@ -1715,7 +1715,7 @@ the following modifications have been made:
  /* PHP's DEBUG value must match Zend's ZEND_DEBUG value */
  #undef PHP_DEBUG
  #define PHP_DEBUG ZEND_DEBUG
-@@ -448,6 +455,10 @@ END_EXTERN_C()
+@@ -452,6 +459,10 @@ END_EXTERN_C()
  #endif
  #endif /* !XtOffsetOf */
  

@@ -1,5 +1,3 @@
-Index: php/ext/mssql/php_mssql.c
-===================================================================
 --- php.orig/ext/mssql/php_mssql.c
 +++ php/ext/mssql/php_mssql.c
 @@ -78,6 +78,38 @@ zend_function_entry mssql_functions[] = 

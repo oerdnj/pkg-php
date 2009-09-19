@@ -1,6 +1,6 @@
 --- php.orig/ext/readline/config.m4
 +++ php/ext/readline/config.m4
-@@ -55,7 +55,7 @@ if test "$PHP_READLINE" && test "$PHP_RE
+@@ -65,7 +65,7 @@ if test "$PHP_READLINE" && test "$PHP_RE
  elif test "$PHP_LIBEDIT" != "no"; then
  
    for i in $PHP_LIBEDIT /usr/local /usr; do

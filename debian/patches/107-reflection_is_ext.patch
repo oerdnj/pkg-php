@@ -1,6 +1,6 @@
 --- php.orig/ext/reflection/config.m4
 +++ php/ext/reflection/config.m4
-@@ -2,7 +2,7 @@ dnl $Id: config.m4,v 1.4.2.3.2.1 2006/08
+@@ -2,7 +2,7 @@ dnl $Id: config.m4 218722 2006-08-23 09:
  dnl config.m4 for extension reflection
  
  PHP_ARG_ENABLE(reflection, whether to enable reflection support,

@@ -1,8 +1,6 @@
-Index: php/ext/pdo_dblib/dblib_driver.c
-===================================================================
 --- php.orig/ext/pdo_dblib/dblib_driver.c
 +++ php/ext/pdo_dblib/dblib_driver.c
-@@ -230,10 +230,12 @@ static int pdo_dblib_handle_factory(pdo_
+@@ -230,11 +230,13 @@ static int pdo_dblib_handle_factory(pdo_
  		goto cleanup;
  	}
  

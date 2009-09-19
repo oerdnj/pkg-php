@@ -1,5 +1,3 @@
-Index: php/ext/exif/exif.c
-===================================================================
 --- php.orig/ext/exif/exif.c
 +++ php/ext/exif/exif.c
 @@ -3219,6 +3219,10 @@ static void exif_process_TIFF_in_JPEG(im
