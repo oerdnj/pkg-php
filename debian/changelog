@@ -1,6 +1,4 @@
-php5 (5.2.11.dfsg.1-1~2.gbpfc8473) UNRELEASED; urgency=low
-
-  ** SNAPSHOT build @fc8473b95bd34a65de0385e5f16a75dede65602e **
+php5 (5.2.11.dfsg.1-1) unstable; urgency=low
 
   * New upstream release
 
@@ -19,19 +17,37 @@ php5 (5.2.11.dfsg.1-1~2.gbpfc8473) UNRELEASED; urgency=low
   * Fix FTBFS with current autoconf/automake (Closes: #542906, #542088)
   * Add avr32-linux-gnu to no -gstabs toolchains (Closes: #543278)
   * Fix FTBFS on Debian Hurd (Closes: #530281)
-  * add apache2 restart message to module postinst
   * fix whitespace in libapache2-mod-php5.postinst
 
   [ Sean Finney ]
+  * incorporate/ack previous NMU's, thanks Andreas.
   * update debian patch 115-autoconf_ftbfs.patch for new upstream version
   * update debian patch fix_broken_upstream_tests.patch
   * update debian patch mssql-null-exception.patch
   * refresh various quilt patches against new upstream version
   * remove no longer needed "legacy" support for conffile migration
-  * add dpkg trigger for reloading apache on extension updates 
-    (Closes: #490023, #524206)
+  * add dpkg trigger in the apache2 and apache2filter sapis for reloading
+    apache2 on extension updates (Closes: #490023, #524206)
+  * let libmysqlclient15-dev be a fallback alternative for libmysqlclient-dev
+    in case someone wants to backport the package.
+  * update list of installed documentation
 
- -- Sean Finney <seanius@debian.org>  Sun, 20 Sep 2009 00:14:34 +0200
+ -- Sean Finney <seanius@debian.org>  Sun, 20 Sep 2009 11:05:35 +0200
+
+php5 (5.2.10.dfsg.1-2.2) unstable; urgency=medium
+
+   * Non-maintainer upload.
+   * Drop hand-crafted dependency on libmysqlclient15.
+
+ -- Andreas Barth <aba@not.so.argh.org>  Mon, 31 Aug 2009 09:22:16 +0200
+
+php5 (5.2.10.dfsg.1-2.1) unstable; urgency=medium
+
+   * Non-maintainer upload.
+   * Fix FTBFS with new autoconf. Thanks to Russ Allbery for the patch.
+     Closes: #542906
+
+ -- Andreas Barth <aba@not.so.argh.org>  Sun, 30 Aug 2009 13:49:40 +0200 
 
 php5 (5.2.10.dfsg.1-2) unstable; urgency=low
 
