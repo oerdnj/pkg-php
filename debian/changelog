@@ -1,3 +1,17 @@
+php5 (5.2.11.dfsg.1-2) unstable; urgency=high
+
+  * max_file_uploads: limit the maximum number of file uploads to 50
+    + Reduces the chances of a temporary file exhaustion DoS
+  * Add libdb4.8-dev as an alternative dependency (Closes: #555945)
+  * Add libdb-dev as another alternative, hopefully the last one
+    (Closes: #548486)
+  * Add a versioned dependency on libtool 2.2 (Closes: #548015)
+  * Use FilesMatch and SetHandler on apache setups (Closes: #491928)
+  * Gentoo patch ext-curl-set_opt-crash has already been merged upstream
+  * Drop unused lintian override
+
+ -- Raphael Geissert <geissert@debian.org>  Sat, 21 Nov 2009 13:37:51 -0600
+
 php5 (5.2.11.dfsg.1-1) unstable; urgency=low
 
   * New upstream release
