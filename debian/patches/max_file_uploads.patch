@@ -1,0 +1,78 @@
+Index: php/main/main.c
+===================================================================
+--- php.orig/main/main.c
++++ php/main/main.c
+@@ -455,6 +455,7 @@ PHP_INI_BEGIN()
+ 	PHP_INI_ENTRY("mail.force_extra_parameters",NULL,		PHP_INI_SYSTEM|PHP_INI_PERDIR,		OnChangeMailForceExtra)
+ 	PHP_INI_ENTRY("disable_functions",			"",			PHP_INI_SYSTEM,		NULL)
+ 	PHP_INI_ENTRY("disable_classes",			"",			PHP_INI_SYSTEM,		NULL)
++	PHP_INI_ENTRY("max_file_uploads",			"50",			PHP_INI_SYSTEM,		NULL)
+ 
+ 	STD_PHP_INI_BOOLEAN("allow_url_fopen",		"1",		PHP_INI_SYSTEM,		OnUpdateBool,		allow_url_fopen,		php_core_globals,	core_globals)
+ 	STD_PHP_INI_BOOLEAN("allow_url_include",	"0",		PHP_INI_SYSTEM,		OnUpdateBool,		allow_url_include,		php_core_globals,	core_globals)
+Index: php/main/rfc1867.c
+===================================================================
+--- php.orig/main/rfc1867.c
++++ php/main/rfc1867.c
+@@ -32,6 +32,7 @@
+ #include "php_globals.h"
+ #include "php_variables.h"
+ #include "rfc1867.h"
++#include "php_ini.h"
+ 
+ #define DEBUG_FILE_UPLOAD ZEND_DEBUG
+ 
+@@ -794,6 +795,7 @@ SAPI_API SAPI_POST_HANDLER_FUNC(rfc1867_
+ 	zend_llist header;
+ 	void *event_extra_data = NULL;
+ 	int llen = 0;
++	int upload_cnt = INI_INT("max_file_uploads");
+ 
+ 	if (SG(request_info).content_length > SG(post_max_size)) {
+ 		sapi_module.sapi_error(E_WARNING, "POST Content-Length of %ld bytes exceeds the limit of %ld bytes", SG(request_info).content_length, SG(post_max_size));
+@@ -972,6 +974,9 @@ SAPI_API SAPI_POST_HANDLER_FUNC(rfc1867_
+ 			/* If file_uploads=off, skip the file part */
+ 			if (!PG(file_uploads)) {
+ 				skip_upload = 1;
++			} else if (upload_cnt <= 0) {
++				skip_upload = 1;
++				sapi_module.sapi_error(E_WARNING, "Maximum number of allowable file uploads has been exceeded");
+ 			}
+ 
+ 			/* Return with an error if the posted data is garbled */
+@@ -1016,6 +1021,7 @@ SAPI_API SAPI_POST_HANDLER_FUNC(rfc1867_
+ 			if (!skip_upload) {
+ 				/* Handle file */
+ 				fd = php_open_temporary_fd_ex(PG(upload_tmp_dir), "php", &temp_filename, 1 TSRMLS_CC);
++				upload_cnt--;
+ 				if (fd==-1) {
+ 					sapi_module.sapi_error(E_WARNING, "File upload error - unable to create a temporary file");
+ 					cancel_upload = UPLOAD_ERROR_E;
+Index: php/php.ini-dist
+===================================================================
+--- php.orig/php.ini-dist
++++ php/php.ini-dist
+@@ -570,6 +570,9 @@ file_uploads = On
+ upload_max_filesize = 2M
+ 
+ 
++; Maximum number of files that can be uploaded via a single request
++max_file_uploads = 50
++
+ ;;;;;;;;;;;;;;;;;;
+ ; Fopen wrappers ;
+ ;;;;;;;;;;;;;;;;;;
+Index: php/php.ini-recommended
+===================================================================
+--- php.orig/php.ini-recommended
++++ php/php.ini-recommended
+@@ -605,6 +605,9 @@ file_uploads = On
+ upload_max_filesize = 2M
+ 
+ 
++; Maximum number of files that can be uploaded via a single request
++max_file_uploads = 50
++
+ ;;;;;;;;;;;;;;;;;;
+ ; Fopen wrappers ;
+ ;;;;;;;;;;;;;;;;;;

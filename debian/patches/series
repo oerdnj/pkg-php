@@ -40,3 +40,4 @@ gentoo/009_ob-memory-leaks.patch
 mssql-null-exception.patch
 exif_read_data-segfault.patch
 sybase-alias.patch
+max_file_uploads.patch
