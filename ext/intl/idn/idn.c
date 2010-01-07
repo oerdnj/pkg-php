@@ -15,7 +15,7 @@
    | Author: Pierre A. Joye <pierre@php.net>                              |
    +----------------------------------------------------------------------+
  */
-/* $Id: idn.c,v 1.1.2.2 2009/05/10 13:26:38 bjori Exp $ */
+/* $Id: idn.c 283618 2009-07-06 23:48:27Z stas $ */
 
 /* {{{ includes */
 #ifdef HAVE_CONFIG_H
@@ -67,7 +67,7 @@ static void php_intl_idn_to(INTERNAL_FUNCTION_PARAMETERS, int mode)
 	UChar     converted[MAXPATHLEN];
 	int32_t   converted_ret_len;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|ll", (char **)&domain, &domain_len, &option, &status) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l", (char **)&domain, &domain_len, &option) == FAILURE) {
 		return;
 	}
 
@@ -121,8 +121,8 @@ static void php_intl_idn_to(INTERNAL_FUNCTION_PARAMETERS, int mode)
 	RETURN_STRINGL(((char *)converted_utf8), converted_utf8_len, 0);
 }
 
-/* {{{ proto int idn_to_ascii(string domain[, int options [, int status]])
-   Converts a UTF-8 domain to ASCII, as defined in the IDNA RFC */
+/* {{{ proto int idn_to_ascii(string domain[, int options])
+   Converts an Unicode domain to ASCII representation, as defined in the IDNA RFC */
 PHP_FUNCTION(idn_to_ascii)
 {
 	php_intl_idn_to(INTERNAL_FUNCTION_PARAM_PASSTHRU, INTL_IDN_TO_ASCII);
@@ -130,8 +130,8 @@ PHP_FUNCTION(idn_to_ascii)
 /* }}} */
 
 
-/* {{{ proto int idn_to_utf8(string domain[, int options[, int status]])
-   Converts a UTF-8 domain to ASCII, as defined in the IDNA RFC */
+/* {{{ proto int idn_to_utf8(string domain[, int options])
+   Converts an ASCII representation of the domain to Unicode (UTF-8), as defined in the IDNA RFC */
 PHP_FUNCTION(idn_to_utf8)
 {
 	php_intl_idn_to(INTERNAL_FUNCTION_PARAM_PASSTHRU, INTL_IDN_TO_UTF8);

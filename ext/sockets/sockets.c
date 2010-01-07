@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: sockets.c,v 1.171.2.9.2.14.2.20 2009/06/04 18:17:43 andrei Exp $ */
+/* $Id: sockets.c 289417 2009-10-09 14:22:29Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -323,6 +323,12 @@ ZEND_GET_MODULE(sockets)
 /* inet_ntop should be used instead of inet_ntoa */
 int inet_ntoa_lock = 0;
 
+PHP_SOCKETS_API int php_sockets_le_socket(void) /* {{{ */
+{
+	return le_socket;
+}
+/* }}} */
+
 static void php_destroy_socket(zend_rsrc_list_entry *rsrc TSRMLS_DC) /* {{{ */
 {
 	php_socket *php_sock = (php_socket *) rsrc->ptr;
@@ -364,14 +370,14 @@ static int php_open_listen_sock(php_socket **php_sock, int port, int backlog TSR
 
 	sock->type = PF_INET;
 
-	if (bind(sock->bsd_socket, (struct sockaddr *)&la, sizeof(la)) < 0) {
+	if (bind(sock->bsd_socket, (struct sockaddr *)&la, sizeof(la)) != 0) {
 		PHP_SOCKET_ERROR(sock, "unable to bind to given address", errno);
 		close(sock->bsd_socket);
 		efree(sock);
 		return 0;
 	}
 
-	if (listen(sock->bsd_socket, backlog) < 0) {
+	if (listen(sock->bsd_socket, backlog) != 0) {
 		PHP_SOCKET_ERROR(sock, "unable to listen on socket", errno);
 		close(sock->bsd_socket);
 		efree(sock);

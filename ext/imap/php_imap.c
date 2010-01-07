@@ -26,7 +26,7 @@
    | PHP 4.0 updates:  Zeev Suraski <zeev@zend.com>                       |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_imap.c,v 1.208.2.7.2.26.2.50 2009/06/22 14:09:55 pajoye Exp $ */
+/* $Id: php_imap.c 289435 2009-10-09 17:38:19Z pajoye $ */
 
 #define IMAP41
 
@@ -487,6 +487,7 @@ const zend_function_entry imap_functions[] = {
 	PHP_FE(imap_delete,								arginfo_imap_delete)
 	PHP_FE(imap_undelete,							arginfo_imap_undelete)
 	PHP_FE(imap_check,								arginfo_imap_check)
+	PHP_FE(imap_listscan,							arginfo_imap_listscan)
 	PHP_FE(imap_mail_copy,							arginfo_imap_mail_copy)
 	PHP_FE(imap_mail_move,							arginfo_imap_mail_move)
 	PHP_FE(imap_mail_compose,						arginfo_imap_mail_compose)
@@ -597,7 +598,10 @@ static void mail_close_it(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 {
 	pils *imap_le_struct = (pils *)rsrc->ptr;
 
-	mail_close_full(imap_le_struct->imap_stream, imap_le_struct->flags);
+	/* Do not try to close prototype streams */
+	if (!(imap_le_struct->flags & OP_PROTOTYPE)) {
+		mail_close_full(imap_le_struct->imap_stream, imap_le_struct->flags);
+	}
 
 	if (IMAPG(imap_user)) {
 		efree(IMAPG(imap_user));
@@ -1153,6 +1157,9 @@ static void php_imap_do_open(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 		if (flags & PHP_EXPUNGE) {
 			cl_flags = CL_EXPUNGE;
 			flags ^= PHP_EXPUNGE;
+		}
+		if (flags & OP_PROTOTYPE) {
+			cl_flags |= OP_PROTOTYPE;
 		}
 	}
 

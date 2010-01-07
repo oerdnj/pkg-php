@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_prop.c,v 1.23.2.5.2.2.2.13 2009/05/27 15:05:28 andrey Exp $ 
+  $Id: mysqli_prop.c 281235 2009-05-27 15:05:28Z andrey $ 
 */
 
 #ifdef HAVE_CONFIG_H

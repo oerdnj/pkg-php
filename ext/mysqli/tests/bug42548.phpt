@@ -5,7 +5,7 @@ Bug #42548 PROCEDURE xxx can't return a result set in the given context (works i
 require_once('skipif.inc');
 require_once('skipifconnectfailure.inc');
 require_once('connect.inc');
-if (!$link = mysqli_connect($host, $user, $passwd, $db, $port, $socket)) {
+if (!$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket)) {
 	die(sprintf('skip Cannot connect to MySQL, [%d] %s.', mysqli_connect_errno(), mysqli_connect_error()));
 }
 if (mysqli_get_server_version($link) <= 50000) {
@@ -49,6 +49,16 @@ if ($mysqli->multi_query("CALL p1();"))
 $mysqli->query("DROP PROCEDURE p1") or die($mysqli->error);
 $mysqli->close();
 print "done!";
+?>
+--CLEAN--
+<?php
+include "connect.inc";
+if (!$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket))
+   printf("[c001] [%d] %s\n", mysqli_connect_errno(), mysqli_connect_error());
+
+mysqli_query($link, "DROP PROCEDURE IF EXISTS p1");
+
+mysqli_close($link);
 ?>
 --EXPECT--
 Array

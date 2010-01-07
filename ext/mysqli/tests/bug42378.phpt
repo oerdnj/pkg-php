@@ -152,7 +152,7 @@ memory_limit=83886080
 		return true;
 	}
 
-	if (!$link = mysqli_connect($host, $user, $passwd, $db, $port, $socket))
+	if (!$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket))
 		printf("[001] Cannot connect - [%d] %s\n",
 			mysqli_connect_errno(),
 			mysqli_connect_error());
@@ -180,6 +180,10 @@ memory_limit=83886080
 
 	mysqli_close($link);
 	print "done!";
+?>
+--CLEAN--
+<?php
+	require_once("clean_table.inc");
 ?>
 --EXPECTF--
 FLOAT

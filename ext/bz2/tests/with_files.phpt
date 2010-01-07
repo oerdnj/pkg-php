@@ -3,7 +3,7 @@ BZ2 with files
 --SKIPIF--
 <?php if (!extension_loaded("bz2")) print "skip"; ?>
 --FILE--
-<?php // $Id: with_files.phpt,v 1.2 2004/05/19 08:56:50 helly Exp $
+<?php // $Id: with_files.phpt 242949 2007-09-26 15:44:16Z cvs2svn $
 
 error_reporting(E_ALL);
 

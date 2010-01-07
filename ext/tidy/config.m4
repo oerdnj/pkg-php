@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.5.4.1 2006/12/23 17:58:47 derick Exp $
+dnl $Id: config.m4 242949 2007-09-26 15:44:16Z cvs2svn $
 dnl
 
 PHP_ARG_WITH(tidy,for TIDY support,

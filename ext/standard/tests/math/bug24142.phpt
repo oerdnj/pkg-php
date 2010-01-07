@@ -1,7 +1,7 @@
 --TEST--
 Bug #24142 (round() problems)
 --FILE--
-<?php // $Id: bug24142.phpt,v 1.4 2003/08/09 16:44:33 iliaa Exp $ vim600:syn=php
+<?php // $Id: bug24142.phpt 242949 2007-09-26 15:44:16Z cvs2svn $ vim600:syn=php
 $v = 0.005;
 for ($i = 1; $i < 10; $i++) {
 	echo "round({$v}, 2) -> ".round($v, 2)."\n";

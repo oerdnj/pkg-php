@@ -22,7 +22,7 @@
 #ifndef PHP_SOCKETS_H
 #define PHP_SOCKETS_H
 
-/* $Id: php_sockets.h,v 1.36.2.1.2.4.2.6 2009/01/24 12:42:19 bjori Exp $ */
+/* $Id: php_sockets.h 289417 2009-10-09 14:22:29Z pajoye $ */
 
 #if HAVE_SOCKETS
 
@@ -73,7 +73,9 @@ PHP_FUNCTION(socket_clear_error);
 
 #ifndef PHP_WIN32
 typedef int PHP_SOCKET;
+# define PHP_SOCKETS_API PHPAPI
 #else
+# define PHP_SOCKETS_API __declspec(dllexport)
 typedef SOCKET PHP_SOCKET;
 #endif
 
@@ -90,6 +92,8 @@ struct	sockaddr_un {
 	char	sun_path[108];
 };
 #endif
+
+PHP_SOCKETS_API int php_sockets_le_socket(void);
 
 /* Prototypes */
 #ifdef ilia_0 /* not needed, only causes a compiler warning */

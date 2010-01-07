@@ -14,7 +14,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: locale_class.c,v 1.1.2.7 2008/11/17 11:27:56 felipe Exp $ */
+/* $Id: locale_class.c 269153 2008-11-17 11:28:01Z felipe $ */
 
 #include <unicode/uloc.h>
 #include "php_intl.h"

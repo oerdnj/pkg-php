@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.32.2.1.2.3 2007/07/31 13:02:00 jani Exp $
+dnl $Id: config.m4 240511 2007-07-31 13:02:00Z jani $
 dnl
 
 PHP_ARG_WITH(snmp,for SNMP support,

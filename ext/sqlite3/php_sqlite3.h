@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_sqlite3.h,v 1.1.2.6 2008/12/31 11:15:44 sebastian Exp $ */
+/* $Id: php_sqlite3.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_SQLITE3_H
 #define PHP_SQLITE3_H

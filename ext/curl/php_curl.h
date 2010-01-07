@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_curl.h,v 1.44.2.2.2.2.2.6 2009/05/27 22:35:26 pajoye Exp $ */
+/* $Id: php_curl.h 289496 2009-10-10 09:29:34Z pajoye $ */
 
 #ifndef _PHP_CURL_H
 #define _PHP_CURL_H
@@ -86,6 +86,7 @@ typedef struct {
 	smart_str       buf;
 	int             method;
 	int             type;
+	zval		*stream;
 } php_curl_write;
 
 typedef struct {
@@ -94,6 +95,7 @@ typedef struct {
 	FILE            *fp;
 	long            fd;
 	int             method;
+	zval		*stream;
 } php_curl_read;
 
 typedef struct {
@@ -139,6 +141,7 @@ typedef struct {
 	long                     id;
 	unsigned int             uses;
 	zend_bool                in_callback;
+	zval                     *clone;
 } php_curl;
 
 typedef struct {

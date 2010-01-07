@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: dba_db4.c,v 1.15.2.3.2.1.2.4 2009/05/13 02:14:53 felipe Exp $ */
+/* $Id: dba_db4.c 286636 2009-08-01 23:10:11Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -175,7 +175,15 @@ DBA_EXISTS_FUNC(db4)
 	DB4_GKEY;
 	
 	memset(&gval, 0, sizeof(gval));
+	
+	if (info->flags & DBA_PERSISTENT) {
+		gval.flags |= DB_DBT_MALLOC;
+	}
+
 	if (!dba->dbp->get(dba->dbp, NULL, &gkey, &gval, 0)) {
+		if (info->flags & DBA_PERSISTENT) {
+			free(gval.data);
+		}
 		return SUCCESS;
 	}
 	return FAILURE;

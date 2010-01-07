@@ -20,7 +20,7 @@ require_once('skipifconnectfailure.inc');
 
 	require('table.inc');
 
-	if (!$mysqli = new mysqli($host, $user, $passwd, $db, $port, $socket))
+	if (!$mysqli = new my_mysqli($host, $user, $passwd, $db, $port, $socket))
 		printf("[002] Cannot connect to the server using host=%s, user=%s, passwd=***, dbname=%s, port=%s, socket=%s\n",
 			$host, $user, $db, $port, $socket);
 
@@ -48,6 +48,10 @@ require_once('skipifconnectfailure.inc');
 
 	$mysqli->close();
 	print "done!";
+?>
+--CLEAN--
+<?php
+	require_once("clean_table.inc");
 ?>
 --EXPECTF--
 Warning: mysqli_result::fetch_field_direct(): Field offset is invalid for resultset in %s on line %d

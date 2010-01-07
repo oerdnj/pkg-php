@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_exceptions.c,v 1.6.2.1.2.2.2.2 2008/12/31 11:15:43 sebastian Exp $ */
+/* $Id: spl_exceptions.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"

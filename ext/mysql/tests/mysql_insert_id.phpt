@@ -1,9 +1,10 @@
 --TEST--
 mysql_insert_id()
 --SKIPIF--
-<?php 
-require_once('skipif.inc'); 
+<?php
+require_once('skipif.inc');
 require_once('skipifconnectfailure.inc');
+require_once('skipifdefaultconnectfailure.inc');
 ?>
 --FILE--
 <?php
@@ -12,8 +13,8 @@ include "connect.inc";
 $tmp    = NULL;
 $link   = NULL;
 
-if (false !== ($tmp = @mysql_insert_id()))
-	printf("[001] Expecting boolean/false, got %s/%s\n", gettype($tmp), $tmp);
+if (0 !== ($tmp = @mysql_insert_id()))
+	printf("[001] Expecting int/0, got %s/%s\n", gettype($tmp), $tmp);
 
 if (NULL !== ($tmp = @mysql_insert_id($link)))
 	printf("[002] Expecting NULL, got %s/%s\n", gettype($tmp), $tmp);
@@ -59,6 +60,10 @@ mysql_close($link);
 var_dump(mysql_insert_id($link));
 
 print "done!";
+?>
+--CLEAN--
+<?php
+require_once("clean_table.inc");
 ?>
 --EXPECTF--
 Warning: mysql_insert_id(): %d is not a valid MySQL-Link resource in %s on line %d

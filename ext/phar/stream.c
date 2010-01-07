@@ -207,18 +207,30 @@ static php_stream * phar_wrapper_open_url(php_stream_wrapper *wrapper, char *pat
 		fpf = php_stream_alloc(&phar_ops, idata, NULL, mode);
 		php_url_free(resource);
 		efree(internal_file);
+#if PHP_MAJOR_VERSION >= 6
+		if (context && context->options && phar_find_key(HASH_OF(context->options), "phar", sizeof("phar"), (void**)&pzoption TSRMLS_CC)) {
+#else
 		if (context && context->options && zend_hash_find(HASH_OF(context->options), "phar", sizeof("phar"), (void**)&pzoption) == SUCCESS) {
+#endif
 			pharcontext = HASH_OF(*pzoption);
 			if (idata->internal_file->uncompressed_filesize == 0
 				&& idata->internal_file->compressed_filesize == 0
+#if PHP_MAJOR_VERSION >= 6
+				&& phar_find_key(pharcontext, "compress", sizeof("compress"), (void**)&pzoption TSRMLS_CC)
+#else
 				&& zend_hash_find(pharcontext, "compress", sizeof("compress"), (void**)&pzoption) == SUCCESS
+#endif
 				&& Z_TYPE_PP(pzoption) == IS_LONG
 				&& (Z_LVAL_PP(pzoption) & ~PHAR_ENT_COMPRESSION_MASK) == 0
 			) {
 				idata->internal_file->flags &= ~PHAR_ENT_COMPRESSION_MASK;
 				idata->internal_file->flags |= Z_LVAL_PP(pzoption);
 			}
+#if PHP_MAJOR_VERSION >= 6
+			if (phar_find_key(pharcontext, "metadata", sizeof("metadata"), (void**)&pzoption TSRMLS_CC)) {
+#else
 			if (zend_hash_find(pharcontext, "metadata", sizeof("metadata"), (void**)&pzoption) == SUCCESS) {
+#endif
 				if (idata->internal_file->metadata) {
 					zval_ptr_dtor(&idata->internal_file->metadata);
 					idata->internal_file->metadata = NULL;
@@ -635,6 +647,7 @@ static int phar_wrapper_stat(php_stream_wrapper *wrapper, char *url, int flags,
 			PHAR_STR(key, str_key);
 			if ((int)keylen >= internal_file_len || strncmp(str_key, internal_file, keylen)) {
 				zend_hash_move_forward_ex(&phar->mounted_dirs, &pos);
+				PHAR_STR_FREE(str_key);
 				continue;
 			} else {
 				char *test;
@@ -642,8 +655,10 @@ static int phar_wrapper_stat(php_stream_wrapper *wrapper, char *url, int flags,
 				php_stream_statbuf ssbi;
 
 				if (SUCCESS != zend_hash_find(&phar->manifest, str_key, keylen, (void **) &entry)) {
+					PHAR_STR_FREE(str_key);
 					goto free_resource;
 				}
+				PHAR_STR_FREE(str_key);
 				if (!entry->tmp || !entry->is_mounted) {
 					goto free_resource;
 				}
@@ -939,6 +954,7 @@ static int phar_wrapper_rename(php_stream_wrapper *wrapper, char *url_from, char
 				zend_hash_update_current_key_ex(&phar->manifest, key_type, new_key, new_key_len, 0, HASH_UPDATE_KEY_ANYWAY, NULL);
 #endif
 			}
+			PHAR_STR_FREE(str_key);
 		}
 
 		for (zend_hash_internal_pointer_reset(&phar->virtual_dirs);
@@ -965,6 +981,7 @@ static int phar_wrapper_rename(php_stream_wrapper *wrapper, char *url_from, char
 #endif
 				efree(new_str_key);
 			}
+			PHAR_STR_FREE(str_key);
 		}
 
 		for (zend_hash_internal_pointer_reset(&phar->mounted_dirs);
@@ -992,6 +1009,7 @@ static int phar_wrapper_rename(php_stream_wrapper *wrapper, char *url_from, char
 #endif
 				efree(new_str_key);
 			}
+			PHAR_STR_FREE(str_key);
 		}
 	}
 

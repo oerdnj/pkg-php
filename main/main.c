@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: main.c,v 1.640.2.23.2.57.2.55 2009/06/04 07:41:01 pajoye Exp $ */
+/* $Id: main.c 290034 2009-10-28 15:19:32Z pajoye $ */
 
 /* {{{ includes
  */
@@ -349,8 +349,27 @@ static PHP_INI_DISP(display_errors_mode)
 static PHP_INI_MH(OnUpdateErrorLog)
 {
 	/* Only do the safemode/open_basedir check at runtime */
-	if ((stage == PHP_INI_STAGE_RUNTIME || stage == PHP_INI_STAGE_HTACCESS) &&
-		strcmp(new_value, "syslog")) {
+	if ((stage == PHP_INI_STAGE_RUNTIME || stage == PHP_INI_STAGE_HTACCESS) && new_value && strcmp(new_value, "syslog")) {
+		if (PG(safe_mode) && (!php_checkuid(new_value, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
+			return FAILURE;
+		}
+
+		if (PG(open_basedir) && php_check_open_basedir(new_value TSRMLS_CC)) {
+			return FAILURE;
+		}
+
+	}
+	OnUpdateString(entry, new_value, new_value_length, mh_arg1, mh_arg2, mh_arg3, stage TSRMLS_CC);
+	return SUCCESS;
+}
+/* }}} */
+
+/* {{{ PHP_INI_MH
+ */
+static PHP_INI_MH(OnUpdateMailLog)
+{
+	/* Only do the safemode/open_basedir check at runtime */
+	if ((stage == PHP_INI_STAGE_RUNTIME || stage == PHP_INI_STAGE_HTACCESS) && new_value) {
 		if (PG(safe_mode) && (!php_checkuid(new_value, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
 			return FAILURE;
 		}
@@ -487,7 +506,7 @@ PHP_INI_BEGIN()
 	PHP_INI_ENTRY("SMTP",						"localhost",PHP_INI_ALL,		NULL)
 	PHP_INI_ENTRY("smtp_port",					"25",		PHP_INI_ALL,		NULL)
 	STD_PHP_INI_BOOLEAN("mail.add_x_header",			"0",		PHP_INI_SYSTEM|PHP_INI_PERDIR,		OnUpdateBool,			mail_x_header,			php_core_globals,	core_globals)
-	STD_PHP_INI_ENTRY("mail.log",					NULL,		PHP_INI_SYSTEM|PHP_INI_PERDIR,		OnUpdateString,			mail_log,			php_core_globals,	core_globals)
+	STD_PHP_INI_ENTRY("mail.log",					NULL,		PHP_INI_SYSTEM|PHP_INI_PERDIR,		OnUpdateMailLog,			mail_log,			php_core_globals,	core_globals)
 	PHP_INI_ENTRY("browscap",					NULL,		PHP_INI_SYSTEM,		NULL)
 	PHP_INI_ENTRY("memory_limit",				"128M",		PHP_INI_ALL,		OnChangeMemoryLimit)
 	PHP_INI_ENTRY("precision",					"14",		PHP_INI_ALL,		OnSetPrecision)
@@ -496,6 +515,7 @@ PHP_INI_BEGIN()
 	PHP_INI_ENTRY("mail.force_extra_parameters",NULL,		PHP_INI_SYSTEM|PHP_INI_PERDIR,		OnChangeMailForceExtra)
 	PHP_INI_ENTRY("disable_functions",			"",			PHP_INI_SYSTEM,		NULL)
 	PHP_INI_ENTRY("disable_classes",			"",			PHP_INI_SYSTEM,		NULL)
+	PHP_INI_ENTRY("max_file_uploads",			"20",			PHP_INI_SYSTEM,		NULL)
 
 	STD_PHP_INI_BOOLEAN("allow_url_fopen",		"1",		PHP_INI_SYSTEM,		OnUpdateBool,		allow_url_fopen,		php_core_globals,		core_globals)
 	STD_PHP_INI_BOOLEAN("allow_url_include",	"0",		PHP_INI_SYSTEM,		OnUpdateBool,		allow_url_include,		php_core_globals,		core_globals)
@@ -516,6 +536,20 @@ static int module_initialized = 0;
 static int module_startup = 1;
 static int module_shutdown = 0;
 
+/* {{{ php_during_module_startup */
+static int php_during_module_startup(void)
+{
+	return module_startup;
+}
+/* }}} */
+
+/* {{{ php_during_module_shutdown */
+static int php_during_module_shutdown(void)
+{
+	return module_shutdown;
+}
+/* }}} */
+
 /* {{{ php_log_err
  */
 PHPAPI void php_log_err(char *log_message TSRMLS_DC)
@@ -523,11 +557,18 @@ PHPAPI void php_log_err(char *log_message TSRMLS_DC)
 	int fd = -1;
 	time_t error_time;
 
+	if (PG(in_error_log)) {
+		/* prevent recursive invocation */
+		return;
+	}
+	PG(in_error_log) = 1;
+
 	/* Try to use the specified logging location. */
 	if (PG(error_log) != NULL) {
 #ifdef HAVE_SYSLOG_H
 		if (!strcmp(PG(error_log), "syslog")) {
 			php_syslog(LOG_NOTICE, "%.500s", log_message);
+			PG(in_error_log) = 0;
 			return;
 		}
 #endif
@@ -547,6 +588,7 @@ PHPAPI void php_log_err(char *log_message TSRMLS_DC)
 			efree(tmp);
 			efree(error_time_str);
 			close(fd);
+			PG(in_error_log) = 0;
 			return;
 		}
 	}
@@ -556,6 +598,7 @@ PHPAPI void php_log_err(char *log_message TSRMLS_DC)
 	if (sapi_module.log_message) {
 		sapi_module.log_message(log_message);
 	}
+	PG(in_error_log) = 0;
 }
 /* }}} */
 
@@ -585,24 +628,6 @@ PHPAPI int php_printf(const char *format, ...)
 
 	return ret;
 }
-/* }}} */
-
-/* {{{ php_verror helpers */
-
-/* {{{ php_during_module_startup */
-static int php_during_module_startup(void)
-{
-	return module_startup;
-}
-/* }}} */
-
-/* {{{ php_during_module_shutdown */
-static int php_during_module_shutdown(void)
-{
-	return module_shutdown;
-}
-/* }}} */
-
 /* }}} */
 
 /* {{{ php_verror */
@@ -1337,6 +1362,7 @@ int php_request_startup(TSRMLS_D)
 #endif
 
 	zend_try {
+		PG(in_error_log) = 0;
 		PG(during_request_startup) = 1;
 
 		php_output_activate(TSRMLS_C);
@@ -1991,10 +2017,6 @@ int php_module_startup(sapi_module_struct *sf, zend_module_entry *additional_mod
 	php_ini_register_extensions(TSRMLS_C);
 	zend_startup_modules(TSRMLS_C);
 
-	/* disable certain classes and functions as requested by php.ini */
-	php_disable_functions(TSRMLS_C);
-	php_disable_classes(TSRMLS_C);
-
 	/* start Zend extensions */
 	zend_startup_extensions();
 
@@ -2007,11 +2029,16 @@ int php_module_startup(sapi_module_struct *sf, zend_module_entry *additional_mod
 		}
 	}
 	
+	/* disable certain classes and functions as requested by php.ini */
+	php_disable_functions(TSRMLS_C);
+	php_disable_classes(TSRMLS_C);
+
 	/* make core report what it should */
 	if (zend_hash_find(&module_registry, "core", sizeof("core"), (void**)&module)==SUCCESS) {
 		module->version = PHP_VERSION;
 		module->info_func = PHP_MINFO(php_core);
 	}
+
 
 #ifdef PHP_WIN32
 	/* Disable incompatible functions for the running platform */
@@ -2136,7 +2163,9 @@ PHPAPI int php_execute_script(zend_file_handle *primary_file TSRMLS_DC)
 		char realfile[MAXPATHLEN];
 
 #ifdef PHP_WIN32
-		UpdateIniFromRegistry(primary_file->filename TSRMLS_CC);
+		if(primary_file->filename) {
+			UpdateIniFromRegistry(primary_file->filename TSRMLS_CC);
+		}
 #endif
 
 		PG(during_request_startup) = 0;
@@ -2226,7 +2255,9 @@ PHPAPI int php_execute_simple_script(zend_file_handle *primary_file, zval **ret 
 
 	zend_try {
 #ifdef PHP_WIN32
-		UpdateIniFromRegistry(primary_file->filename TSRMLS_CC);
+		if(primary_file->filename) {
+			UpdateIniFromRegistry(primary_file->filename TSRMLS_CC);
+		}
 #endif
 
 		PG(during_request_startup) = 0;

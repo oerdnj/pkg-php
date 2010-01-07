@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_apache.h,v 1.8.2.1.2.2.2.3 2008/12/31 11:15:48 sebastian Exp $ */
+/* $Id: php_apache.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_APACHE_H
 #define PHP_APACHE_H

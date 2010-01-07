@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_mssql.c,v 1.152.2.13.2.4.2.23 2009/05/26 12:35:46 felipe Exp $ */
+/* $Id: php_mssql.c 284145 2009-07-15 19:09:15Z rasmus $ */
 
 #ifdef COMPILE_DL_MSSQL
 #define HAVE_MSSQL 1
@@ -548,6 +548,17 @@ static void php_mssql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|sssb", &host, &host_len, &user, &user_len, &passwd, &passwd_len, &new_link) == FAILURE) {
 		return;
+	}
+
+	/* Limit strings to 255 chars to prevent overflow issues in underlying libraries */
+	if(host_len>255) {
+		host[255] = '\0';
+	}
+	if(user_len>255) {
+		user[255] = '\0';
+	}
+	if(passwd_len>255) {
+		passwd[255] = '\0';
 	}
 
 	switch(ZEND_NUM_ARGS())

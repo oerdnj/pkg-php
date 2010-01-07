@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_alloc.c,v 1.144.2.3.2.43.2.24 2009/05/30 16:42:13 lbarnaud Exp $ */
+/* $Id: zend_alloc.c 287992 2009-09-03 14:33:11Z dmitry $ */
 
 #include "zend.h"
 #include "zend_alloc.h"
@@ -512,20 +512,7 @@ static unsigned int _zend_mm_cookie = 0;
 /* optimized access */
 #define ZEND_MM_FREE_BLOCK_SIZE(b)		(b)->info._size
 
-#ifndef ZEND_MM_ALIGNMENT
-# define ZEND_MM_ALIGNMENT 8
-# define ZEND_MM_ALIGNMENT_LOG2 3
-#elif ZEND_MM_ALIGNMENT < 4
-# undef ZEND_MM_ALIGNMENT
-# undef ZEND_MM_ALIGNMENT_LOG2
-# define ZEND_MM_ALIGNMENT 4
-# define ZEND_MM_ALIGNMENT_LOG2 2
-#endif
-
-#define ZEND_MM_ALIGNMENT_MASK ~(ZEND_MM_ALIGNMENT-1)
-
 /* Aligned header size */
-#define ZEND_MM_ALIGNED_SIZE(size)			((size + ZEND_MM_ALIGNMENT - 1) & ZEND_MM_ALIGNMENT_MASK)
 #define ZEND_MM_ALIGNED_HEADER_SIZE			ZEND_MM_ALIGNED_SIZE(sizeof(zend_mm_block))
 #define ZEND_MM_ALIGNED_FREE_HEADER_SIZE	ZEND_MM_ALIGNED_SIZE(sizeof(zend_mm_small_free_block))
 #define ZEND_MM_MIN_ALLOC_BLOCK_SIZE		ZEND_MM_ALIGNED_SIZE(ZEND_MM_ALIGNED_HEADER_SIZE + END_MAGIC_SIZE)
@@ -709,12 +696,14 @@ static inline unsigned int zend_mm_low_bit(size_t _size)
 	unsigned int n;
 	unsigned int index = 0;
 
-	do {
-		n = offset[_size & 15];
+	n = offset[_size & 15];
+	while (n == 4) {
 		_size >>= 4;
 		index += n;
-	} while (n == 4);
-	return index;
+		n = offset[_size & 15];
+	}
+
+	return index + n;
 #endif
 }
 

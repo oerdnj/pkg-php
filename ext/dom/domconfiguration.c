@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: domconfiguration.c,v 1.5.2.1.2.1.2.9 2008/12/31 11:15:36 sebastian Exp $ */
+/* $Id: domconfiguration.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

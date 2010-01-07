@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_result_meta.c,v 1.3.2.9 2009/05/28 17:47:38 andrey Exp $ */
+/* $Id: mysqlnd_result_meta.c 289630 2009-10-14 13:51:25Z johannes $ */
 #include "php.h"
 #include "mysqlnd.h"
 #include "mysqlnd_priv.h"
@@ -165,7 +165,15 @@ MYSQLND_METHOD(mysqlnd_res_meta, read_metadata)(MYSQLND_RES_METADATA * const met
 			PACKET_FREE_ALLOCA(field_packet);
 			DBG_RETURN(FAIL);
 		}
+		if (field_packet.error_info.error_no) {
+			conn->error_info = field_packet.error_info;
+			/* Return back from CONN_QUERY_SENT */
+			PACKET_FREE_ALLOCA(field_packet);
+			DBG_RETURN(FAIL);
+		}
+		
 		if (field_packet.stupid_list_fields_eof == TRUE) {
+			meta->field_count = i;
 			break;
 		}
 

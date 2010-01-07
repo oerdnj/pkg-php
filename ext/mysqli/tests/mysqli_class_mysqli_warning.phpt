@@ -21,7 +21,7 @@ if (!$TEST_EXPERIMENTAL)
 	$mysqli = new mysqli();
 	$warning = new mysqli_warning($mysqli);
 
-	$mysqli = new mysqli($host, $user, $passwd, $db, $port, $socket);
+	$mysqli = new my_mysqli($host, $user, $passwd, $db, $port, $socket);
 	$stmt = new mysqli_stmt($mysqli);
 	$warning = new mysqli_warning($stmt);
 
@@ -32,7 +32,7 @@ if (!$TEST_EXPERIMENTAL)
 	$warning = new mysqli_warning($obj);
 
 	include("table.inc");
-	$mysqli = new mysqli($host, $user, $passwd, $db, $port, $socket);
+	$mysqli = new my_mysqli($host, $user, $passwd, $db, $port, $socket);
 	$res = $mysqli->query('INSERT INTO test(id, label) VALUES (1, "zz")');
 	$warning = mysqli_get_warnings($mysqli);
 
@@ -88,6 +88,10 @@ if (!$TEST_EXPERIMENTAL)
 	printf("warning->unknown = '%s'\n", @$warning->unknown);
 
 	print "done!";
+?>
+--CLEAN--
+<?php
+	require_once("clean_table.inc");
 ?>
 --EXPECTF--
 Warning: Wrong parameter count for mysqli_warning::mysqli_warning() in %s on line %d

@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.3.2.2 2005/12/17 15:40:37 helly Exp $
+dnl $Id: config.m4 203045 2005-12-17 15:40:37Z helly $
 dnl
 
 PHP_ARG_ENABLE(xmlreader, whether to enable XMLReader support,

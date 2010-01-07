@@ -1,4 +1,4 @@
-static const char rcsid[] = "#(@) $Id: queue.c,v 1.4 2002/07/05 04:43:53 danda Exp $";
+static const char rcsid[] = "#(@) $Id: queue.c 87765 2002-07-05 04:43:55Z danda $";
 
 /* 
  * Date last modified: Jan 2001

@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: phar_path_check.c,v 1.9.2.2 2008/12/31 11:15:42 sebastian Exp $ */
+/* $Id: phar_path_check.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #include "phar_internal.h"
 

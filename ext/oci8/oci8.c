@@ -26,7 +26,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: oci8.c,v 1.269.2.16.2.38.2.32 2009/03/16 05:34:02 sixd Exp $ */
+/* $Id: oci8.c 289423 2009-10-09 14:44:43Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1248,7 +1248,7 @@ PHP_MINFO_FUNCTION(oci)
 	php_info_print_table_start();
 	php_info_print_table_row(2, "OCI8 Support", "enabled");
 	php_info_print_table_row(2, "Version", PHP_OCI8_VERSION);
-	php_info_print_table_row(2, "Revision", "$Revision: 1.269.2.16.2.38.2.32 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 289423 $");
 
 	snprintf(buf, sizeof(buf), "%ld", OCI_G(num_persistent));
 	php_info_print_table_row(2, "Active Persistent Connections", buf);
@@ -1529,6 +1529,12 @@ sb4 php_oci_error(OCIError *err_p, sword status TSRMLS_DC)
 			break;
 		case OCI_NO_DATA:
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "OCI_NO_DATA");
+			errcode = php_oci_fetch_errmsg(err_p, &errbuf TSRMLS_CC);
+			if (errbuf) {
+				efree(errbuf);
+			} else {
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "OCI_NO_DATA: failed to fetch error message");
+			}
 			break;
 		case OCI_ERROR:
 			errcode = php_oci_fetch_errmsg(err_p, &errbuf TSRMLS_CC);

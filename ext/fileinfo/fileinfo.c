@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: fileinfo.c,v 1.20.2.22 2009/03/15 23:04:18 scottmac Exp $ */
+/* $Id: fileinfo.c 287125 2009-08-11 23:05:13Z scottmac $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -414,7 +414,7 @@ static void _php_finfo_get_type(INTERNAL_FUNCTION_PARAMETERS, int mode, int mime
 				RETURN_FALSE;
 		}
 
-		magic = magic_open(MAGIC_MIME);
+		magic = magic_open(MAGIC_MIME_TYPE);
 		if (magic_load(magic, NULL) == -1) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to load magic database.");
 			goto common;

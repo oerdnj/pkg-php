@@ -1,4 +1,4 @@
-dnl $Id: config.m4,v 1.13.2.4.2.3.2.6 2008/11/06 00:37:12 colder Exp $
+dnl $Id: config.m4 268395 2008-11-06 00:37:13Z colder $
 dnl config.m4 for extension SPL
 
   AC_MSG_CHECKING(whether zend_object_value is packed)

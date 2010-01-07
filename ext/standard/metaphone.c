@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: metaphone.c,v 1.28.2.1.2.4.2.5 2009/02/18 22:34:06 felipe Exp $ */
+/* $Id: metaphone.c 283127 2009-06-30 11:46:20Z felipe $ */
 
 /*
 	Based on CPANs "Text-Metaphone-1.96" by Michael G Schwern <schwern@pobox.com> 
@@ -225,15 +225,14 @@ static int metaphone(unsigned char *word, int word_len, long max_phonemes, char 
 			w_idx += 2;
 		}
 		break;
-		/* WH becomes H, 
+		/* WH becomes W, 
 		   WR becomes R 
 		   W if followed by a vowel */
 	case 'W':
-		if (Next_Letter == 'H' ||
-			Next_Letter == 'R') {
+		if (Next_Letter == 'R') {
 			Phonize(Next_Letter);
 			w_idx += 2;
-		} else if (isvowel(Next_Letter)) {
+		} else if (Next_Letter == 'H' || isvowel(Next_Letter)) {
 			Phonize('W');
 			w_idx += 2;
 		}

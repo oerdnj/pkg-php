@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.7.22.3 2007/07/11 23:20:37 jani Exp $
+dnl $Id: config.m4 242949 2007-09-26 15:44:16Z cvs2svn $
 dnl 
 
 PHP_ARG_WITH(phttpd, for PHTTPD support,

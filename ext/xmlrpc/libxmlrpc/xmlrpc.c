@@ -31,7 +31,7 @@
 */
 
 
-static const char rcsid[] = "#(@) $Id: xmlrpc.c,v 1.8.4.3.2.2 2008/12/09 17:22:12 iliaa Exp $";
+static const char rcsid[] = "#(@) $Id: xmlrpc.c 270900 2008-12-09 17:22:12Z iliaa $";
 
 
 /****h* ABOUT/xmlrpc
@@ -42,12 +42,7 @@ static const char rcsid[] = "#(@) $Id: xmlrpc.c,v 1.8.4.3.2.2 2008/12/09 17:22:1
  * CREATION DATE
  *   9/1999 - 10/2000
  * HISTORY
- *   $Log: xmlrpc.c,v $
- *   Revision 1.8.4.3.2.2  2008/12/09 17:22:12  iliaa
- *
- *   MFH: Fixed bug #46746 (xmlrpc_decode_request outputs non-suppressable error
- *   when given bad data).
- *
+ *   $Log$
  *   Revision 1.8.4.3.2.1  2008/09/10 00:07:44  felipe
  *   MFH:
  *   - Merged fix from SF project (Import Jeff Lawsons patches for XML datetime bug fixes)

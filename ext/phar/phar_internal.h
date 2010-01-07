@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: phar_internal.h,v 1.109.2.31 2009/05/13 20:25:43 cellog Exp $ */
+/* $Id: phar_internal.h 286338 2009-07-26 01:03:47Z cellog $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -544,12 +544,47 @@ typedef zstr phar_zstr;
 	spprintf(&b, 0, "%s", a.s);
 #define PHAR_ZSTR(a, b)	\
 	b = ZSTR(a);
+#define PHAR_STR_FREE(a) \
+	efree(a);
+static inline int phar_make_unicode(zstr *c_var, char *arKey, uint nKeyLength TSRMLS_DC)
+{
+	int c_var_len;
+	UConverter *conv = ZEND_U_CONVERTER(UG(runtime_encoding_conv));
+
+	c_var->u = NULL;
+	if (zend_string_to_unicode(conv, &c_var->u, &c_var_len, arKey, nKeyLength TSRMLS_CC) == FAILURE) {
+
+		if (c_var->u) {
+			efree(c_var->u);
+		}
+		return 0;
+
+	}
+	return c_var_len;
+}
+static inline int phar_find_key(HashTable *_SERVER, char *key, int len, void **stuff TSRMLS_DC)
+{
+	if (SUCCESS == zend_hash_find(_SERVER, key, len, stuff)) {
+		return 1;
+	} else {
+		int s = len;
+		zstr var;
+		s = phar_make_unicode(&var, key, len TSRMLS_CC);
+		if (SUCCESS == zend_u_hash_find(_SERVER, IS_UNICODE, var, s, stuff)) {
+			efree(var.u);
+			return 1;
+		}
+		efree(var.u);
+		return 0;
+	}
+}
 #else
 typedef char *phar_zstr;
 #define PHAR_STR(a, b)	\
 	b = a;
 #define PHAR_ZSTR(a, b)	\
 	b = a;
+#define PHAR_STR_FREE(a)
 #endif
 
 BEGIN_EXTERN_C()

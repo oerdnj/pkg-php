@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.31.4.1 2006/12/23 17:58:47 derick Exp $
+dnl $Id: config.m4 225644 2006-12-23 17:58:47Z derick $
 dnl 
 
 AC_DEFUN([PHP_MCRYPT_CHECK_VERSION],[

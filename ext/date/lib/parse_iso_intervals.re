@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: parse_iso_intervals.re,v 1.1.2.4 2008/08/02 16:50:35 pajoye Exp $ */
+/* $Id: parse_iso_intervals.re 264095 2008-08-02 16:50:35Z pajoye $ */
 
 #include "timelib.h"
 

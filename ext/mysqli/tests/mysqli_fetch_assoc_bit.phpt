@@ -34,7 +34,7 @@ mysqli_fetch_assoc() - BIT
 		return $bin;
 	}
 
-	if (!$link = mysqli_connect($host, $user, $passwd, $db, $port, $socket))
+	if (!$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket))
 		printf("[001] Cannot connect to the server using host=%s, user=%s, passwd=***, dbname=%s, port=%s, socket=%s\n",
 			$host, $user, $db, $port, $socket);
 
@@ -108,6 +108,10 @@ mysqli_fetch_assoc() - BIT
 
 	mysqli_close($link);
 	print "done!";
+?>
+--CLEAN--
+<?php
+	require_once("clean_table.inc");
 ?>
 --EXPECTF--
 done!

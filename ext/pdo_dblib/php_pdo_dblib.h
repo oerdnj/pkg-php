@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_dblib.h,v 1.2.2.1.2.1.2.4 2009/05/19 10:22:25 kalle Exp $ */
+/* $Id: php_pdo_dblib.h 280765 2009-05-19 10:22:25Z kalle $ */
 
 #ifndef PHP_PDO_DBLIB_H
 #define PHP_PDO_DBLIB_H

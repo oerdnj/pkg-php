@@ -5,10 +5,7 @@
  * Patchlevel file for Ian Darwin's MAGIC command.
  * $File: patchlevel.h,v 1.68 2008/03/22 21:39:43 christos Exp $
  *
- * $Log: patchlevel.h,v $
- * Revision 1.1.2.4  2009/05/09 20:34:37  scottmac
- * MFH Update bundled libmagic to 5.03
- *
+ * $Log$
  * Revision 1.1.2.3  2009/05/04 20:54:53  scottmac
  * MFH Update libmagic to 5.02
  *

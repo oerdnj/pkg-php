@@ -6,7 +6,7 @@ if (PHP_OS == "WINNT") echo "skip";
 include("skipif.inc"); 
 ?>
 --FILE--
-<?php /* $Id: 008.phpt,v 1.3 2004/05/19 08:54:52 helly Exp $ */
+<?php /* $Id: 008.phpt 158958 2004-05-19 08:56:50Z helly $ */
 
 require("interbase.inc");
 

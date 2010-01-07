@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_default_classes.c,v 1.59.2.2.2.1.2.3 2008/12/31 11:15:32 sebastian Exp $ */
+/* $Id: zend_default_classes.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #include "zend.h"
 #include "zend_API.h"

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: assert.c,v 1.60.2.3.2.6.2.6 2009/06/05 18:50:32 mattwil Exp $ */
+/* $Id: assert.c 284153 2009-07-15 23:55:50Z stas $ */
 
 /* {{{ includes */
 #include "php.h"
@@ -56,6 +56,7 @@ static PHP_INI_MH(OnChangeCallback) /* {{{ */
 	if (EG(in_execution)) {
 		if (ASSERTG(callback)) {
 			zval_ptr_dtor(&ASSERTG(callback));
+			ASSERTG(callback) = NULL;
 		}
 		if (new_value && (ASSERTG(callback) || new_value_length)) {
 			MAKE_STD_ZVAL(ASSERTG(callback));

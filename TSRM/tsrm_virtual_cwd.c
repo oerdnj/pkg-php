@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_virtual_cwd.c,v 1.74.2.9.2.35.2.22 2009/06/26 07:39:42 pajoye Exp $ */
+/* $Id: tsrm_virtual_cwd.c 289780 2009-10-19 23:38:55Z pajoye $ */
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -271,9 +271,6 @@ CWD_API int php_sys_stat(const char *path, struct stat *buf) /* {{{ */
 	buf->st_atime = FileTimeToUnixTime(data.ftLastAccessTime);
 	buf->st_ctime = FileTimeToUnixTime(data.ftCreationTime);
 	buf->st_mtime = FileTimeToUnixTime(data.ftLastWriteTime);
-	if (buf->st_mtime != buf->st_atime) {
-		buf->st_atime = buf->st_mtime;
-	}
 	return 0;
 }
 /* }}} */
@@ -431,6 +428,31 @@ CWD_API char *virtual_getcwd(char *buf, size_t size TSRMLS_DC) /* {{{ */
 }
 /* }}} */
 
+#ifdef PHP_WIN32
+static inline unsigned long realpath_cache_key(const char *path, int path_len TSRMLS_DC) /* {{{ */
+{
+	register unsigned long h;
+	char *bucket_key = tsrm_win32_get_path_sid_key(path TSRMLS_CC);
+	char *bucket_key_start = (char *)bucket_key;
+	const char *e = bucket_key + strlen(bucket_key);
+
+	if (!bucket_key) {
+		return 0;
+	}
+
+	for (h = 2166136261U; bucket_key < e;) {
+		h *= 16777619;
+		h ^= *bucket_key++;
+	}
+	/* if no SID were present the path is returned. Otherwise a Heap 
+	   allocated string is returned. */
+	if (bucket_key_start != path) {
+		LocalFree(bucket_key_start);
+	}
+	return h;
+}
+/* }}} */
+#else
 static inline unsigned long realpath_cache_key(const char *path, int path_len) /* {{{ */
 {
 	register unsigned long h;
@@ -444,6 +466,7 @@ static inline unsigned long realpath_cache_key(const char *path, int path_len) /
 	return h;
 }
 /* }}} */
+#endif /* defined(PHP_WIN32) */
 
 CWD_API void realpath_cache_clean(TSRMLS_D) /* {{{ */
 {
@@ -464,7 +487,11 @@ CWD_API void realpath_cache_clean(TSRMLS_D) /* {{{ */
 
 CWD_API void realpath_cache_del(const char *path, int path_len TSRMLS_DC) /* {{{ */
 {
+#ifdef PHP_WIN32
+	unsigned long key = realpath_cache_key(path, path_len TSRMLS_CC);
+#else
 	unsigned long key = realpath_cache_key(path, path_len);
+#endif
 	unsigned long n = key % (sizeof(CWDG(realpath_cache)) / sizeof(CWDG(realpath_cache)[0]));
 	realpath_cache_bucket **bucket = &CWDG(realpath_cache)[n];
 
@@ -497,8 +524,12 @@ static inline void realpath_cache_add(const char *path, int path_len, const char
 	if (CWDG(realpath_cache_size) + size <= CWDG(realpath_cache_size_limit)) {
 		realpath_cache_bucket *bucket = malloc(size);
 		unsigned long n;
-	
+
+#ifdef PHP_WIN32
+		bucket->key = realpath_cache_key(path, path_len TSRMLS_CC);
+#else
 		bucket->key = realpath_cache_key(path, path_len);
+#endif
 		bucket->path = (char*)bucket + sizeof(realpath_cache_bucket);
 		memcpy(bucket->path, path, path_len+1);
 		bucket->path_len = path_len;
@@ -527,7 +558,12 @@ static inline void realpath_cache_add(const char *path, int path_len, const char
 
 static inline realpath_cache_bucket* realpath_cache_find(const char *path, int path_len, time_t t TSRMLS_DC) /* {{{ */
 {
+#ifdef PHP_WIN32
+	unsigned long key = realpath_cache_key(path, path_len TSRMLS_CC);
+#else
 	unsigned long key = realpath_cache_key(path, path_len);
+#endif
+
 	unsigned long n = key % (sizeof(CWDG(realpath_cache)) / sizeof(CWDG(realpath_cache)[0]));
 	realpath_cache_bucket **bucket = &CWDG(realpath_cache)[n];
 
@@ -564,13 +600,13 @@ static int tsrm_realpath_r(char *path, int start, int len, int *ll, time_t *t, i
 #ifdef TSRM_WIN32
 	WIN32_FIND_DATA data;
 	HANDLE hFind;
+	TSRM_ALLOCA_FLAG(use_heap_large)
 #else
 	struct stat st;
 #endif
 	realpath_cache_bucket *bucket;
 	char *tmp;
 	TSRM_ALLOCA_FLAG(use_heap)
-	TSRM_ALLOCA_FLAG(use_heap_large)
 
 	while (1) {
 		if (len <= start) {
@@ -670,9 +706,14 @@ static int tsrm_realpath_r(char *path, int start, int len, int *ll, time_t *t, i
 			/* File is a reparse point. Get the target */
 			HANDLE hLink = NULL;
 			REPARSE_DATA_BUFFER * pbuffer;
-			unsigned int retlength = 0, rname_off = 0;
-			int bufindex = 0, rname_len = 0, isabsolute = 0;
+			unsigned int retlength = 0;
+			int bufindex = 0, isabsolute = 0;
 			wchar_t * reparsetarget;
+			BOOL isVolume = FALSE;
+			char printname[MAX_PATH];
+			char substitutename[MAX_PATH];
+			int printname_len, substitutename_len;
+			int substitutename_off = 0;
 
 			if(++(*ll) > LINK_MAX) {
 				return -1;
@@ -693,37 +734,108 @@ static int tsrm_realpath_r(char *path, int start, int len, int *ll, time_t *t, i
 			CloseHandle(hLink);
 
 			if(pbuffer->ReparseTag == IO_REPARSE_TAG_SYMLINK) {
-				rname_len = pbuffer->SymbolicLinkReparseBuffer.PrintNameLength/2;
-				rname_off = pbuffer->SymbolicLinkReparseBuffer.PrintNameOffset/2;
 				reparsetarget = pbuffer->SymbolicLinkReparseBuffer.ReparseTarget;
+				printname_len = pbuffer->MountPointReparseBuffer.PrintNameLength / sizeof(WCHAR);
 				isabsolute = (pbuffer->SymbolicLinkReparseBuffer.Flags == 0) ? 1 : 0;
+				if (!WideCharToMultiByte(CP_THREAD_ACP, 0, 
+					reparsetarget + pbuffer->MountPointReparseBuffer.PrintNameOffset  / sizeof(WCHAR),
+					printname_len + 1,
+					printname, MAX_PATH, NULL, NULL
+				)) {
+					tsrm_free_alloca(pbuffer, use_heap_large);
+					return -1;
+				};
+				printname_len = pbuffer->MountPointReparseBuffer.PrintNameLength / sizeof(WCHAR);
+				printname[printname_len] = 0;
+
+				substitutename_len = pbuffer->MountPointReparseBuffer.SubstituteNameLength / sizeof(WCHAR);
+				if (!WideCharToMultiByte(CP_THREAD_ACP, 0, 
+					reparsetarget + pbuffer->MountPointReparseBuffer.SubstituteNameOffset / sizeof(WCHAR),
+					substitutename_len + 1,
+					substitutename, MAX_PATH, NULL, NULL
+				)) {
+					tsrm_free_alloca(pbuffer, use_heap_large);
+					return -1;
+				};
+				substitutename[substitutename_len] = 0;
 			}
 			else if(pbuffer->ReparseTag == IO_REPARSE_TAG_MOUNT_POINT) {
-				rname_len = pbuffer->MountPointReparseBuffer.PrintNameLength/2;
-				rname_off = pbuffer->MountPointReparseBuffer.PrintNameOffset/2;
-				reparsetarget = pbuffer->MountPointReparseBuffer.ReparseTarget;
 				isabsolute = 1;
-			}
-			else {
+				reparsetarget = pbuffer->MountPointReparseBuffer.ReparseTarget;
+				printname_len = pbuffer->MountPointReparseBuffer.PrintNameLength / sizeof(WCHAR);
+				if (!WideCharToMultiByte(CP_THREAD_ACP, 0, 
+					reparsetarget + pbuffer->MountPointReparseBuffer.PrintNameOffset  / sizeof(WCHAR),
+					printname_len + 1,
+					printname, MAX_PATH, NULL, NULL
+				)) {
+					tsrm_free_alloca(pbuffer, use_heap_large);
+					return -1;
+				};
+				printname[pbuffer->MountPointReparseBuffer.PrintNameLength / sizeof(WCHAR)] = 0;
+
+				substitutename_len = pbuffer->MountPointReparseBuffer.SubstituteNameLength / sizeof(WCHAR);
+				if (!WideCharToMultiByte(CP_THREAD_ACP, 0, 
+					reparsetarget + pbuffer->MountPointReparseBuffer.SubstituteNameOffset / sizeof(WCHAR),
+					substitutename_len + 1,
+					substitutename, MAX_PATH, NULL, NULL
+				)) {
+					tsrm_free_alloca(pbuffer, use_heap_large);
+					return -1;
+				};
+				substitutename[substitutename_len] = 0;
+			} else {
 				tsrm_free_alloca(pbuffer, use_heap_large);
 				return -1;
 			}
 
-			/* Convert wide string to narrow string */
-			for(bufindex = 0; bufindex < rname_len; bufindex++) {
-				*(path + bufindex) = (char)(reparsetarget[rname_off + bufindex]);
+			if(isabsolute && substitutename_len > 4) {
+				/* Do not resolve volumes (for now). A mounted point can 
+				   target a volume without a drive, it is not certain that
+				   all IO functions we use in php and its deps support 
+				   path with volume GUID instead of the DOS way, like:
+				   d:\test\mnt\foo
+				   \\?\Volume{62d1c3f8-83b9-11de-b108-806e6f6e6963}\foo
+				*/
+				if (strncmp(substitutename, "\\??\\Volume{",11) == 0 
+					|| strncmp(substitutename, "\\\\?\\Volume{",11) == 0) {
+					isVolume = TRUE;					
+					substitutename_off = 0;
+				} else
+					/* do not use the \??\ and \\?\ prefix*/
+					if (strncmp(substitutename, "\\??\\", 4) == 0 
+						|| strncmp(substitutename, "\\\\?\\", 4) == 0) {
+					substitutename_off = 4;
+				}
 			}
 
-			*(path + bufindex) = 0;
+			if (!isVolume) {
+				char * tmp = substitutename + substitutename_off;
+				for(bufindex = 0; bufindex < (substitutename_len - substitutename_off); bufindex++) {
+					*(path + bufindex) = *(tmp + bufindex);
+				}
+
+				*(path + bufindex) = 0;
+				j = bufindex;
+			} else {
+				j = len;
+			}
+
+
+#if VIRTUAL_CWD_DEBUG
+			fprintf(stderr, "reparse: print: %s ", printname);
+			fprintf(stderr, "sub: %s ", substitutename);
+			fprintf(stderr, "resolved: %s ", path);
+#endif
 			tsrm_free_alloca(pbuffer, use_heap_large);
-			j = bufindex;
 
 			if(isabsolute == 1) {
-				/* use_realpath is 0 in the call below coz path is absolute*/
-				j = tsrm_realpath_r(path, 0, j, ll, t, 0, is_dir, &directory TSRMLS_CC);
-				if(j < 0) {
-					tsrm_free_alloca(tmp, use_heap);
-					return -1;
+				if (!((j == 3) && (path[1] == ':') && (path[2] == '\\'))) {
+					/* use_realpath is 0 in the call below coz path is absolute*/
+					j = tsrm_realpath_r(path, 0, j, ll, t, 0, is_dir, &directory TSRMLS_CC);
+					if(j < 0) {
+						tsrm_free_alloca(tmp, use_heap);
+						return -1;
+					}
 				}
 			}
 			else {
@@ -741,6 +853,7 @@ static int tsrm_realpath_r(char *path, int start, int len, int *ll, time_t *t, i
 					return -1;
 				}
 			}
+			directory = (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
 
 			if(link_is_dir) {
 				*link_is_dir = directory;
@@ -1195,7 +1308,7 @@ static void UnixTimeToFileTime(time_t t, LPFILETIME pft) /* {{{ */
 }
 /* }}} */
 
-static int win32_utime(const char *filename, struct utimbuf *buf) /* {{{ */
+TSRM_API int win32_utime(const char *filename, struct utimbuf *buf) /* {{{ */
 {
 	FILETIME mtime, atime;
 	HANDLE hFile; 
@@ -1371,7 +1484,7 @@ CWD_API int virtual_rename(char *oldname, char *newname TSRMLS_DC) /* {{{ */
 	/* rename on windows will fail if newname already exists.
 	   MoveFileEx has to be used */
 #ifdef TSRM_WIN32
-	retval = (MoveFileEx(oldname, newname, MOVEFILE_REPLACE_EXISTING) == 0) ? -1 : 0;
+	retval = (MoveFileEx(oldname, newname, MOVEFILE_REPLACE_EXISTING|MOVEFILE_COPY_ALLOWED) == 0) ? -1 : 0;
 #else
 	retval = rename(oldname, newname);
 #endif

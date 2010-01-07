@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_ibase_includes.h,v 1.16.2.1.2.1.2.3 2008/12/31 11:15:38 sebastian Exp $ */
+/* $Id: php_ibase_includes.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_IBASE_INCLUDES_H
 #define PHP_IBASE_INCLUDES_H

@@ -35,10 +35,7 @@
  * AUTHOR
  *   Dan Libby, aka danda  (dan@libby.com)
  * HISTORY
- *   $Log: system_methods.c,v $
- *   Revision 1.2  2002/07/05 04:43:53  danda
- *   merged in updates from SF project.  bring php repository up to date with xmlrpc-epi version 0.51
- *
+ *   $Log$
  *   Revision 1.7  2001/09/29 21:58:05  danda
  *   adding cvs log to history section
  *

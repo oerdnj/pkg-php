@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: posix.c,v 1.70.2.3.2.16.2.15 2009/06/06 02:40:48 mattwil Exp $ */
+/* $Id: posix.c 289424 2009-10-09 14:46:48Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -310,7 +310,7 @@ const zend_function_entry posix_functions[] = {
 static PHP_MINFO_FUNCTION(posix)
 {
 	php_info_print_table_start();
-	php_info_print_table_row(2, "Revision", "$Revision: 1.70.2.3.2.16.2.15 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 289424 $");
 	php_info_print_table_end();
 }
 /* }}} */
@@ -651,7 +651,7 @@ PHP_FUNCTION(posix_times)
 
 	PHP_POSIX_NO_ARGS;
 
-	if((ticks = times(&t)) < 0) {
+	if ((ticks = times(&t)) == -1) {
 		POSIX_G(last_error) = errno;
 		RETURN_FALSE;
 	}
@@ -840,7 +840,8 @@ PHP_FUNCTION(posix_mkfifo)
 		RETURN_FALSE;
 	}
 
-	if (PG(safe_mode) && (!php_checkuid(path, NULL, CHECKUID_ALLOW_ONLY_DIR))) {
+	if (php_check_open_basedir_ex(path, 0 TSRMLS_CC) ||
+			(PG(safe_mode) && (!php_checkuid(path, NULL, CHECKUID_ALLOW_ONLY_DIR)))) {
 		RETURN_FALSE;
 	}
 
@@ -1358,6 +1359,10 @@ PHP_FUNCTION(posix_initgroups)
 	int name_len;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sl", &name, &name_len, &basegid) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	if (name_len == 0) {
 		RETURN_FALSE;
 	}
 

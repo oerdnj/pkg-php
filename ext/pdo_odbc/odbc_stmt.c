@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: odbc_stmt.c,v 1.26.2.2.2.3.2.5 2009/05/19 10:25:53 kalle Exp $ */
+/* $Id: odbc_stmt.c 284097 2009-07-15 02:32:43Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -763,7 +763,7 @@ static int odbc_stmt_set_param(pdo_stmt_t *stmt, long attr, zval *val TSRMLS_DC)
 		default:
 			strcpy(S->einfo.last_err_msg, "Unknown Attribute");
 			S->einfo.what = "setAttribute";
-			strcpy(S->einfo.last_state, "IM0001");
+			strcpy(S->einfo.last_state, "IM001");
 			return -1;
 	}
 }
@@ -795,7 +795,7 @@ static int odbc_stmt_get_attr(pdo_stmt_t *stmt, long attr, zval *val TSRMLS_DC)
 		default:
 			strcpy(S->einfo.last_err_msg, "Unknown Attribute");
 			S->einfo.what = "getAttribute";
-			strcpy(S->einfo.last_state, "IM0001");
+			strcpy(S->einfo.last_state, "IM001");
 			return -1;
 	}
 }

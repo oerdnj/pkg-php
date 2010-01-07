@@ -13,7 +13,7 @@ if (!$TEST_EXPERIMENTAL)
 <?php
 	include "connect.inc";
 
-	if (!$link = mysqli_connect($host, $user, $passwd, $db, $port, $socket))
+	if (!$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket))
 		printf("[001] Cannot connect to the server using host=%s, user=%s, passwd=***, dbname=%s, port=%s, socket=%s\n",
 			$host, $user, $db, $port, $socket);
 
@@ -32,6 +32,10 @@ if (!$TEST_EXPERIMENTAL)
 
 	$warning_clone = clone $warning;
 	print "done!";
+?>
+--CLEAN--
+<?php
+	require_once("clean_table.inc");
 ?>
 --EXPECTF--
 Fatal error: Trying to clone an uncloneable object of class mysqli_warning in %s on line %d

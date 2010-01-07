@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_pgsql_int.h,v 1.13.2.4.2.1.2.4 2009/05/12 22:18:14 mbeccati Exp $ */
+/* $Id: php_pdo_pgsql_int.h 280407 2009-05-12 22:18:15Z mbeccati $ */
 
 #ifndef PHP_PDO_PGSQL_INT_H
 #define PHP_PDO_PGSQL_INT_H

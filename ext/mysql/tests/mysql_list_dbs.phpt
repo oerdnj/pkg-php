@@ -1,8 +1,8 @@
 --TEST--
 mysql_list_dbs()
 --SKIPIF--
-<?php 
-require_once('skipif.inc'); 
+<?php
+require_once('skipif.inc');
 require_once('skipifconnectfailure.inc');
 ?>
 --FILE--
@@ -27,7 +27,7 @@ if (!$num = mysql_num_rows($res))
 	printf("[004] Empty database list? [%d] %s\n", mysql_errno($link), mysql_error($link));
 
 $row = mysql_fetch_array($res, MYSQL_NUM);
-if (ini_get('unicode.semantics') && !is_unicode($row[0])) {
+if ((version_compare(PHP_VERSION, '5.9.9', '>') == 1) && !is_unicode($row[0])) {
 	printf("[005] Check for unicode support\n");
 	var_inspect($row);
 }
@@ -45,6 +45,10 @@ assert($row === $row2);
 mysql_close($link);
 
 print "done!\n";
+?>
+--CLEAN--
+<?php
+require_once("clean_table.inc");
 ?>
 --EXPECTF--
 done!

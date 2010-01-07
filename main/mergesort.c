@@ -34,7 +34,7 @@
  * SUCH DAMAGE.
  */
 
-/* $Id: mergesort.c,v 1.15.6.1 2008/08/22 12:59:46 helly Exp $ */
+/* $Id: mergesort.c 265279 2008-08-22 12:59:46Z helly $ */
 
 #if defined(LIBC_SCCS) && !defined(lint)
 static char sccsid[] = "@(#)merge.c	8.2 (Berkeley) 2/14/94";

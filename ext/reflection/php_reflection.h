@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_reflection.h,v 1.4.2.3.2.2.2.2 2008/12/31 11:15:42 sebastian Exp $ */
+/* $Id: php_reflection.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_REFLECTION_H
 #define PHP_REFLECTION_H

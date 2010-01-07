@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: firebird_driver.c,v 1.17.2.2.2.4.2.8 2009/04/18 18:56:11 felipe Exp $ */
+/* $Id: firebird_driver.c 278929 2009-04-18 18:56:11Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

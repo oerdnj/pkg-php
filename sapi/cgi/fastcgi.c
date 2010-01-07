@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: fastcgi.c,v 1.4.2.13.2.28.2.11 2008/12/31 11:15:49 sebastian Exp $ */
+/* $Id: fastcgi.c 287777 2009-08-26 19:17:32Z pajoye $ */
 
 #include "php.h"
 #include "fastcgi.h"
@@ -398,20 +398,20 @@ int fcgi_listen(const char *path, int backlog)
 	} else {
 #ifdef _WIN32
 		SECURITY_DESCRIPTOR  sd;
-		SECURITY_ATTRIBUTES  sa;
+		SECURITY_ATTRIBUTES  saw;
 		PACL                 acl;
 		HANDLE namedPipe;
 
-		memset(&sa, 0, sizeof(sa));
-		sa.nLength = sizeof(sa);
-		sa.bInheritHandle = FALSE;
-		acl = prepare_named_pipe_acl(&sd, &sa);
+		memset(&sa, 0, sizeof(saw));
+		saw.nLength = sizeof(saw);
+		saw.bInheritHandle = FALSE;
+		acl = prepare_named_pipe_acl(&sd, &saw);
 
 		namedPipe = CreateNamedPipe(path,
 			PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
 			PIPE_TYPE_BYTE | PIPE_WAIT | PIPE_READMODE_BYTE,
 			PIPE_UNLIMITED_INSTANCES,
-			8192, 8192, 0, &sa);
+			8192, 8192, 0, &saw);
 		if (namedPipe == INVALID_HANDLE_VALUE) {
 			return -1;
 		}		

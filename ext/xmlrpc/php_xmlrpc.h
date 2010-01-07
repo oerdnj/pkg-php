@@ -51,7 +51,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_xmlrpc.h,v 1.11.2.1.2.2.2.3 2008/12/31 11:15:47 sebastian Exp $ */
+/* $Id: php_xmlrpc.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef _PHP_XMLRPC_H
 #define _PHP_XMLRPC_H

@@ -1,5 +1,5 @@
 dnl
-dnl $Id: Zend.m4,v 1.58.4.4.2.6 2009/06/04 18:20:42 mattwil Exp $
+dnl $Id: Zend.m4 286859 2009-08-06 01:33:54Z scottmac $
 dnl
 dnl This file contains Zend specific autoconf functions.
 dnl
@@ -61,18 +61,6 @@ signal.h \
 unix.h \
 stdlib.h \
 dlfcn.h)
-
-dnl Don't use mach-o/dyld.h on Darwin 8+, dl* is recommended by Apple from there on
-dnl See http://developer.apple.com/documentation/DeveloperTools/Conceptual/MachOTopics/Articles/loading_code.html
-case $host_alias in
-*darwin[[89]]*)
-    ;;
-*)
-    AC_CHECK_HEADERS([  \
-mach-o/dyld.h
-],[],[][])
-    ;;
-esac
 
 AC_TYPE_SIZE_T
 AC_TYPE_SIGNAL

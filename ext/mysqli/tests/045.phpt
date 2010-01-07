@@ -7,7 +7,7 @@ mysqli_bind_result (SHOW)
 	require_once('skipifconnectfailure.inc');
 
 	include "connect.inc";
-	$link = mysqli_connect($host, $user, $passwd);
+	$link = my_mysqli_connect($host, $user, $passwd);
 
 	$stmt = mysqli_prepare($link, "SHOW VARIABLES LIKE 'port'");
 	mysqli_execute($stmt);
@@ -23,7 +23,7 @@ mysqli_bind_result (SHOW)
 	include "connect.inc";
 
 	/*** test mysqli_connect 127.0.0.1 ***/
-	$link = mysqli_connect($host, $user, $passwd, $db, $port, $socket);
+	$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket);
 
 	$stmt = mysqli_prepare($link, "SHOW VARIABLES LIKE 'port'");
 	mysqli_execute($stmt);
@@ -31,7 +31,7 @@ mysqli_bind_result (SHOW)
 	mysqli_bind_result($stmt, $c1, $c2);
 	mysqli_fetch($stmt);
 	mysqli_stmt_close($stmt);
-	if (ini_get("unicode.semantics") && mysqli_get_server_version($link) < 50000) {
+	if ((version_compare(PHP_VERSION, '5.9.9', '>') == 1) && mysqli_get_server_version($link) < 50000) {
 		/* variables are binary */
 		settype($c1, "unicode");
 		settype($c2, "unicode");

@@ -6,7 +6,7 @@ function test: nested selects (cursors)
 	require_once('skipifconnectfailure.inc');
 	include "connect.inc";
 
-	if (!$link = mysqli_connect($host, $user, $passwd, $db, $port, $socket))
+	if (!$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket))
 		die("skip Cannot connect to check required version");
 
 	/* skip cursor test for versions < 50004 */
@@ -30,7 +30,7 @@ function test: nested selects (cursors)
 	}
 
 	include "connect.inc";
-	$mysql = new mysqli($host, $user, $passwd, $db, $port, $socket);
+	$mysql = new my_mysqli($host, $user, $passwd, $db, $port, $socket);
 
 	if ((!$IS_MYSQLND && mysqli_get_client_version() < 50009) ||
 		(mysqli_get_server_version($mysql) < 50009)) {
@@ -63,6 +63,19 @@ function test: nested selects (cursors)
 
 	$mysql->close();
 	var_dump($cnt);
+?>
+--CLEAN--
+<?php
+include "connect.inc";
+if (!$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket))
+   printf("[c001] [%d] %s\n", mysqli_connect_errno(), mysqli_connect_error());
+
+for ($i =0; $i < 3; $i++) {
+	if (!mysqli_query($link, sprintf("DROP TABLE IF EXISTS cursor%d", $i)))
+		printf("[c002] Cannot drop table, [%d] %s\n", mysqli_errno($link), mysqli_error($link));
+}
+
+mysqli_close($link);
 ?>
 --EXPECT--
 int(63)

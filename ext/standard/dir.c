@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: dir.c,v 1.147.2.3.2.12.2.13 2008/12/31 11:15:44 sebastian Exp $ */
+/* $Id: dir.c 286555 2009-07-30 12:06:40Z felipe $ */
 
 /* {{{ includes/startup/misc */
 
@@ -556,7 +556,9 @@ PHP_FUNCTION(scandir)
 		RETURN_FALSE;
 	}
 
-	context = php_stream_context_from_zval(zcontext, 0);
+	if (zcontext) {
+		context = php_stream_context_from_zval(zcontext, 0);
+	}
 
 	if (!flags) {
 		n = php_stream_scandir(dirn, &namelist, context, (void *) php_stream_dirent_alphasort);

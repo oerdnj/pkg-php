@@ -2,7 +2,7 @@
 zip_read() function
 --SKIPIF--
 <?php
-/* $Id: zip_read.phpt,v 1.1.4.1 2008/05/21 09:27:41 pajoye Exp $ */
+/* $Id: zip_read.phpt 260091 2008-05-21 09:27:41Z pajoye $ */
 if(!extension_loaded('zip')) die('skip');
 ?>
 --FILE--

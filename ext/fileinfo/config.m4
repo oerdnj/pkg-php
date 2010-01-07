@@ -1,4 +1,4 @@
-dnl $Id: config.m4,v 1.11.2.4 2009/03/15 23:03:50 scottmac Exp $
+dnl $Id: config.m4 277215 2009-03-15 23:04:19Z scottmac $
 dnl config.m4 for extension fileinfo
 
 PHP_ARG_ENABLE(fileinfo, for fileinfo support,

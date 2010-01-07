@@ -16,7 +16,7 @@
 // | Authors: Shane Caraveo <Shane@Caraveo.com>                           |
 // +----------------------------------------------------------------------+
 //
-// $Id: server_round2_groupC.php,v 1.7.4.2 2006/01/01 13:27:13 sniper Exp $
+// $Id: server_round2_groupC.php 242949 2007-09-26 15:44:16Z cvs2svn $
 //
 
 class SOAP_Interop_GroupC {

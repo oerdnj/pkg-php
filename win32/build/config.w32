@@ -1,5 +1,5 @@
 // vim:ft=javascript
-// $Id: config.w32,v 1.40.2.8.2.10.2.49 2009/06/04 18:20:45 mattwil Exp $
+// $Id: config.w32 289764 2009-10-19 19:05:58Z pajoye $
 // "Master" config file; think of it as a configure.in
 // equivalent.
 
@@ -82,6 +82,7 @@ if (VCVERS > 1200) {
 // stick objects somewhere outside of the source tree
 ARG_ENABLE('object-out-dir', 'Alternate location for binary objects during build', '');
 if (PHP_OBJECT_OUT_DIR.length) {
+	PHP_OBJECT_OUT_DIR = FSO.GetAbsolutePathName(PHP_OBJECT_OUT_DIR);
 	if (!FSO.FolderExists(PHP_OBJECT_OUT_DIR)) {
 		ERROR('you chosen output directory ' + PHP_OBJECT_OUT_DIR + ' does not exist');
 	}
@@ -250,6 +251,7 @@ if (PHP_PHP_BUILD == 'no') {
 			}
 		}
 	}
+	PHP_PHP_BUILD = FSO.GetAbsolutePathName(PHP_PHP_BUILD);
 }
 DEFINE("PHP_BUILD", PHP_PHP_BUILD);
 

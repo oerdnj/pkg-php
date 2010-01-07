@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: xml.c,v 1.157.2.4.2.5.2.16 2008/12/31 11:15:46 sebastian Exp $ */
+/* $Id: xml.c 287790 2009-08-27 05:05:42Z rasmus $ */
 
 #define IS_EXT_MODULE
 
@@ -664,7 +664,7 @@ PHPAPI char *xml_utf8_decode(const XML_Char *s, int len, int *newlen, const XML_
 {
 	int pos = len;
 	char *newbuf = emalloc(len + 1);
-	unsigned short c;
+	unsigned int c;
 	char (*decoder)(unsigned short) = NULL;
 	xml_encoding *enc = xml_get_encoding(encoding);
 

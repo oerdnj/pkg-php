@@ -1,5 +1,5 @@
 // vim:ft=javascript
-// $Id: config.w32,v 1.4.4.1.2.2 2007/10/05 16:00:30 rrichards Exp $
+// $Id: config.w32 243567 2007-10-05 16:00:30Z rrichards $
 
 ARG_ENABLE('cli', 'Build CLI version of PHP', 'yes');
 ARG_ENABLE('crt-debug', 'Extra CRT debugging', 'no');

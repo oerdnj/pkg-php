@@ -4,6 +4,11 @@ mysql_set_charset() - STUB, function usage not recommended
 <?php
 require_once('skipif.inc');
 require_once('skipifconnectfailure.inc');
+
+if (version_compare(PHP_VERSION, '5.9.9', '>') == 1) {
+	die('skip set character set not functional with PHP 6 (fomerly PHP 6 && unicode.semantics=On)');
+}
+
 if (!function_exists('mysql_set_charset'))
 	die("skip Function not available");
 ?>
@@ -33,7 +38,7 @@ if (!$link = my_mysql_connect($host, $user, $passwd, $db, $port, $socket))
 /* unicode mode should throw a warning */
 $tmp = mysql_set_charset('uFt8', $link);
 
-if (ini_get('unicode.semantics'))
+if ((version_compare(PHP_VERSION, '5.9.9', '>') == 1))
 	$expect = false;
 else
 	$expect = true;
@@ -53,7 +58,4 @@ mysql_close($link);
 print "done!";
 ?>
 --EXPECTF--
-done!
---UEXPECTF--
-Warning: mysql_set_charset(): Character set %s is not supported when running PHP with unicode.semantics=On. in %s on line %d
 done!

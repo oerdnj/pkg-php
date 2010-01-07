@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: php_mysqli_structs.h,v 1.4.2.20 2009/05/27 20:05:37 andrey Exp $ 
+  $Id: php_mysqli_structs.h 289630 2009-10-14 13:51:25Z johannes $ 
 */
 
 #ifndef PHP_MYSQLI_STRUCTS_H
@@ -73,8 +73,9 @@ enum mysqli_status {
 };
 
 typedef struct {
-	ulong		buflen;
 	char		*val;
+	ulong		buflen;
+	ulong		output_len;
 	ulong		type;
 } VAR_BUFFER;
 

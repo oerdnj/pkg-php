@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_object_handlers.c,v 1.135.2.6.2.22.2.31 2009/06/19 03:29:47 scottmac Exp $ */
+/* $Id: zend_object_handlers.c 282413 2009-06-19 03:29:47Z scottmac $ */
 
 #include "zend.h"
 #include "zend_globals.h"

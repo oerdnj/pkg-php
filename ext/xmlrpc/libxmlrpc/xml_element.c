@@ -31,7 +31,7 @@
 */
 
 
-static const char rcsid[] = "#(@) $Id: xml_element.c,v 1.9.4.1.2.2 2008/12/17 00:30:27 iliaa Exp $";
+static const char rcsid[] = "#(@) $Id: xml_element.c 271367 2008-12-17 00:30:27Z iliaa $";
 
 
 
@@ -43,11 +43,7 @@ static const char rcsid[] = "#(@) $Id: xml_element.c,v 1.9.4.1.2.2 2008/12/17 00
  * CREATION DATE
  *   06/2000
  * HISTORY
- *   $Log: xml_element.c,v $
- *   Revision 1.9.4.1.2.2  2008/12/17 00:30:27  iliaa
- *
- *   Removed unused variable
- *
+ *   $Log$
  *   Revision 1.9.4.1.2.1  2008/12/09 17:22:12  iliaa
  *
  *   MFH: Fixed bug #46746 (xmlrpc_decode_request outputs non-suppressable error

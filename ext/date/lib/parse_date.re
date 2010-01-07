@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: parse_date.re,v 1.26.2.27.2.12.2.26 2008/12/18 14:55:36 derick Exp $ */
+/* $Id: parse_date.re 286515 2009-07-29 15:34:59Z derick $ */
 
 #include "timelib.h"
 
@@ -1943,10 +1943,18 @@ timelib_time *timelib_parse_from_format(char *format, char *string, int len, tim
 					add_pbf_error(s, "A two digit second could not be found", string, begin);
 				}
 				break;
-			case 'u': /* five digit millisecond, with leading zero */
-				TIMELIB_CHECK_NUMBER;
-				if ((s->time->f = timelib_get_nr((char **) &ptr, 5)) == TIMELIB_UNSET) {
-					add_pbf_error(s, "A five digit millisecond could not be found", string, begin);
+			case 'u': /* six digit millisecond */
+				{
+					double f;
+					char *tptr;
+
+					TIMELIB_CHECK_NUMBER;
+					tptr = ptr;
+					if ((f = timelib_get_nr((char **) &ptr, 6)) == TIMELIB_UNSET || ptr - tptr != 6) {
+						add_pbf_error(s, "A six digit millisecond could not be found", string, begin);
+					} else {
+						s->time->f = (f / 1000000);
+					}
 				}
 				break;
 			case ' ': /* any sort of whitespace (' ' and \t) */

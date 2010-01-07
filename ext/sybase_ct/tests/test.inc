@@ -1,7 +1,7 @@
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: test.inc,v 1.4.6.3.2.2 2008/11/10 11:00:48 thekid Exp $ 
+ * $Id: test.inc 268732 2008-11-10 11:00:48Z thekid $ 
  */
 
   // Change if needed

@@ -2,7 +2,7 @@
 Bug #7658 (modify archive with general bit flag 3 set)
 --SKIPIF--
 <?php
-/* $Id: bug7658.phpt,v 1.1.2.2.2.2 2008/08/30 16:24:33 pajoye Exp $ */
+/* $Id: bug7658.phpt 265669 2008-08-30 16:24:33Z pajoye $ */
 if(!extension_loaded('zip')) die('skip');
 ?>
 --FILE--

@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: filters.c,v 1.44.2.6.2.4.2.4 2009/04/16 10:16:27 dmitry Exp $ */
+/* $Id: filters.c 284646 2009-07-23 12:18:40Z iliaa $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -2007,6 +2007,7 @@ static int php_dechunk(char *buf, int len, php_chunked_filter_data *data)
 						memmove(out, p, end - p);
 					}
 					data->chunk_size -= end - p;
+					data->state=CHUNK_BODY;
 					out_len += end - p;
 					return out_len;
 				}

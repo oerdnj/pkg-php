@@ -1,7 +1,7 @@
 #  +----------------------------------------------------------------------+
 #  | PHP Version 5                                                        |
 #  +----------------------------------------------------------------------+
-#  | Copyright (c) 1997-2007 The PHP Group                                |
+#  | Copyright (c) 1997-2006 The PHP Group                                |
 #  +----------------------------------------------------------------------+
 #  | This source file is subject to version 3.01 of the PHP license,      |
 #  | that is bundled with this package in the file LICENSE, and is        |
@@ -14,15 +14,13 @@
 #  | Author: Sascha Schumann <sascha@schumann.cx>                         |
 #  +----------------------------------------------------------------------+
 #
-# $Id: build.mk,v 1.26.2.2.2.2.2.1 2008/03/17 15:22:22 gwynne Exp $ 
+# $Id: build.mk 287074 2009-08-11 02:21:09Z dsp $ 
 #
 #
 # Makefile to generate build tools
 #
 
-ZENDDIR = Zend
-
-SUBDIRS = $(ZENDDIR) TSRM
+SUBDIRS = Zend TSRM
 
 STAMP = buildmk.stamp
 
@@ -33,11 +31,10 @@ all: $(STAMP) $(ALWAYS)
 	@$(MAKE) -s -f build/build2.mk
 
 generated_lists:
-	@echo makefile_am_files = $(ZENDDIR)/Makefile.am \
-		TSRM/Makefile.am > $@
-	@echo config_h_files = $(ZENDDIR)/acconfig.h TSRM/acconfig.h >> $@
-	@echo config_m4_files = $(ZENDDIR)/Zend.m4 TSRM/tsrm.m4 TSRM/threads.m4 \
-		$(ZENDDIR)/acinclude.m4 ext/*/config*.m4 sapi/*/config.m4 >> $@
+	@echo makefile_am_files = Zend/Makefile.am TSRM/Makefile.am > $@
+	@echo config_h_files = Zend/acconfig.h TSRM/acconfig.h >> $@
+	@echo config_m4_files = Zend/Zend.m4 TSRM/tsrm.m4 TSRM/threads.m4 \
+		Zend/acinclude.m4 ext/*/config*.m4 sapi/*/config.m4 >> $@
 
 $(STAMP): build/buildcheck.sh
 	@build/buildcheck.sh $(STAMP)
@@ -67,7 +64,18 @@ snapshot:
 
 cvsclean-work:
 	@for i in `find . -name .cvsignore`; do \
-		(cd `dirname $$i` 2>/dev/null && rm -rf `cat .cvsignore | grep -v config.nice | sed 's/[[:space:]]/ /g'` *.o *.a .libs || true); \
+		(cd `dirname $$i` 2>/dev/null && rm -rf `cat .cvsignore | grep -v config.nice | sed 's/[[:space:]]/ /g'` *.o *.a *.lo *.la *.gcno *.gcda .libs || true); \
 	done
+
+svnclean-work:
+	@for i in `find . -type d -not -path '*/.svn/*' | grep -v '.svn'`; do \
+		(cd $$i 2>/dev/null && rm -rf `svn propget svn:ignore . | grep -v config.nice` *.o *.a *.lo *.la *.gcno *.gcda .libs || true); \
+	done
+
+gitclean-work:
+	@if (test ! -f '.git/info/exclude' || grep -s "git-ls-files" .git/info/exclude); then \
+		(echo "Rebuild .git/info/exclude" && echo '*.o' > .git/info/exclude && git svn propget svn:ignore | grep -v config.nice >> .git/info/exclude); \
+	fi; \
+	git clean -X -f -d;
 
 .PHONY: $(ALWAYS) snapshot

@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.6.6.1 2008/07/06 16:59:13 pajoye Exp $
+// $Id: config.w32 262128 2008-07-06 16:59:13Z pajoye $
 // vim: ft=javascript
 
 ARG_WITH("iconv", "iconv support", "yes");

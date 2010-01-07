@@ -1,6 +1,6 @@
 /*
 	Build Configuration Template for Win32.
-	$Id: config.w32.h.in,v 1.7.2.4.2.3.2.14 2009/06/23 06:56:45 kalle Exp $
+	$Id: config.w32.h.in 282624 2009-06-23 06:56:45Z kalle $
 */
 
 /* Define the minimum supported version */

@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: user_filters.c,v 1.31.2.4.2.9.2.11 2009/01/08 18:40:27 lbarnaud Exp $ */
+/* $Id: user_filters.c 273098 2009-01-08 18:40:27Z lbarnaud $ */
 
 #include "php.h"
 #include "php_globals.h"

@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.1.2.1.2.6 2008/08/07 23:24:11 pajoye Exp $
+// $Id: config.w32 264425 2008-08-07 23:24:11Z pajoye $
 // vim:ft=javascript
 
 ARG_ENABLE("zip", "ZIP support", "yes");

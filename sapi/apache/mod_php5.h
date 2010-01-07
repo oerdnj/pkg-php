@@ -15,7 +15,7 @@
    | Author: Rasmus Lerdorf <rasmus@php.net>                              |
    +----------------------------------------------------------------------+
  */
-/* $Id: mod_php5.h,v 1.4.2.1.2.1.2.3 2008/12/31 11:15:48 sebastian Exp $ */
+/* $Id: mod_php5.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef MOD_PHP5_H
 #define MOD_PHP5_H

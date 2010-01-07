@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_ini_scanner.l,v 1.41.2.2.2.2.2.17 2009/05/19 15:59:36 shire Exp $ */
+/* $Id: zend_ini_scanner.l 286913 2009-08-07 15:44:37Z jani $ */
 
 #include <errno.h>
 #include "zend.h"
@@ -54,7 +54,9 @@
 #define YYSTATE      YYGETCONDITION()
 #define yytext       ((char*)SCNG(yy_text))
 #define yyleng       SCNG(yy_leng)
-#define yyless(x)    YYCURSOR = yytext + x
+#define yyless(x)    do {	YYCURSOR = (unsigned char*)yytext + x; \
+							yyleng   = (unsigned int)x; } while(0)
+
 /* #define yymore()     goto yymore_restart */
 
 /* perform sanity check. If this message is triggered you should
@@ -156,12 +158,28 @@ static void yy_scan_buffer(char *str, unsigned int len TSRMLS_DC)
 
 /* {{{ init_ini_scanner()
 */
-static void init_ini_scanner(TSRMLS_D)
+static int init_ini_scanner(int scanner_mode, zend_file_handle *fh TSRMLS_DC)
 {
+	/* Sanity check */
+	if (scanner_mode != ZEND_INI_SCANNER_NORMAL && scanner_mode != ZEND_INI_SCANNER_RAW) {
+		zend_error(E_WARNING, "Invalid scanner mode");
+		return FAILURE;
+	}
+
 	SCNG(lineno) = 1;
-	SCNG(scanner_mode) = ZEND_INI_SCANNER_NORMAL;
+	SCNG(scanner_mode) = scanner_mode;
+	SCNG(yy_in) = fh;
+
+	if (fh != NULL) {
+		ini_filename = zend_strndup(fh->filename, strlen(fh->filename));
+	} else {
+		ini_filename = NULL;
+	}
+
 	zend_stack_init(&SCNG(state_stack));
 	BEGIN(INITIAL);
+
+	return SUCCESS;
 }
 /* }}} */
 
@@ -199,15 +217,14 @@ int zend_ini_open_file_for_scanning(zend_file_handle *fh, int scanner_mode TSRML
 	char *buf;
 	size_t size;
 
-	if (zend_stream_fixup(fh, &buf, &size TSRMLS_CC) == FAILURE) {
+	if (zend_stream_fixup(fh, &buf, &size TSRMLS_CC) == FAILURE ||
+		init_ini_scanner(scanner_mode, fh TSRMLS_CC) == FAILURE
+	) {
 		return FAILURE;
 	}
 
-	init_ini_scanner(TSRMLS_C);
-	SCNG(scanner_mode) = scanner_mode;
-	SCNG(yy_in) = fh;
 	yy_scan_buffer(buf, size TSRMLS_CC);
-	ini_filename = zend_strndup(fh->filename, strlen(fh->filename));
+
 	return SUCCESS;
 }
 /* }}} */
@@ -218,11 +235,12 @@ int zend_ini_prepare_string_for_scanning(char *str, int scanner_mode TSRMLS_DC)
 {
 	int len = strlen(str);
 
-	init_ini_scanner(TSRMLS_C);
-	SCNG(scanner_mode) = scanner_mode;
-	SCNG(yy_in) = NULL;
+	if (init_ini_scanner(scanner_mode, NULL TSRMLS_CC) == FAILURE) {
+		return FAILURE;
+	}
+
 	yy_scan_buffer(str, len TSRMLS_CC);
-	ini_filename = NULL;
+
 	return SUCCESS;
 }
 /* }}} */
@@ -308,19 +326,18 @@ NEWLINE	("\r"|"\n"|"\r\n")
 TABS_AND_SPACES [ \t]
 WHITESPACE [ \t]+
 CONSTANT [a-zA-Z][a-zA-Z0-9_]*
-LABEL [a-zA-Z0-9*._-]*
+LABEL [^=\n\r\t ;|&$~(){}!"\[]+
 TOKENS [:,.\[\]"'()|^&+-/*=%$!~<>?@{}]
 OPERATORS [&|~()!]
 DOLLAR_CURLY "${"
 
 SECTION_RAW_CHARS [^\]\n\r]
 SINGLE_QUOTED_CHARS [^']
-RAW_VALUE_CHARS [^=\n\r;]
+RAW_VALUE_CHARS [^\n\r;]
 
 LITERAL_DOLLAR ("$"([^{\000]|("\\"{ANY_CHAR})))
 VALUE_CHARS         ([^$= \t\n\r;&|~()!"'\000]|{LITERAL_DOLLAR})
 SECTION_VALUE_CHARS ([^$\n\r;"'\]\\]|("\\"{ANY_CHAR})|{LITERAL_DOLLAR})
-DOUBLE_QUOTES_CHARS ([^$"\\]|("\\"[^"])|{LITERAL_DOLLAR}|"\\"["][^\r\n])
 
 <!*> := yyleng = YYCURSOR - SCNG(yy_text);
 
@@ -453,18 +470,45 @@ DOUBLE_QUOTES_CHARS ([^$"\\]|("\\"[^"])|{LITERAL_DOLLAR}|"\\"["][^\r\n])
 	return '"';
 }
 
-<ST_DOUBLE_QUOTES>{DOUBLE_QUOTES_CHARS}+("\\"["])? { /* Escape double quoted string contents */
-	if(yyleng > 1 && yytext[yyleng-1] == '"' && yytext[yyleng-2] == '\\') {
-		yyless(yyleng-1);
-		yyleng--;
-	}
-	zend_ini_escape_string(ini_lval, yytext, yyleng, '"' TSRMLS_CC);
-	return TC_QUOTED_STRING;
-}
-
 <ST_DOUBLE_QUOTES>["]{TABS_AND_SPACES}* { /* Double quoted '"' string ends */
 	yy_pop_state(TSRMLS_C);
 	return '"';
+}
+
+<ST_DOUBLE_QUOTES>[^] { /* Escape double quoted string contents */
+	if (YYCURSOR > YYLIMIT) {
+		return 0;
+	}
+	
+	while (YYCURSOR < YYLIMIT) {
+		switch (*YYCURSOR++) {
+			case '"':
+				if (YYCURSOR < YYLIMIT && YYCURSOR[-2] == '\\' && *YYCURSOR != '\r' && *YYCURSOR != '\n') {
+					continue;
+				}
+				break;
+			case '$':
+				if (*YYCURSOR == '{') {
+					break;
+				}
+				continue;
+			case '\\':
+				if (YYCURSOR < YYLIMIT && *YYCURSOR != '"') {
+					YYCURSOR++;
+				}
+				/* fall through */
+			default:
+				continue;
+		}
+		
+		YYCURSOR--;
+		break;
+	}
+
+	yyleng = YYCURSOR - SCNG(yy_text);
+	
+	zend_ini_escape_string(ini_lval, yytext, yyleng, '"' TSRMLS_CC);
+	return TC_QUOTED_STRING;
 }
 
 <ST_SECTION_VALUE,ST_VALUE,ST_OFFSET>{WHITESPACE} {

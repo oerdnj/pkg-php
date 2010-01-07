@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_xmlwriter.h,v 1.10.2.5.2.3.2.2 2008/12/31 11:15:47 sebastian Exp $ */
+/* $Id: php_xmlwriter.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_XMLWRITER_H
 #define PHP_XMLWRITER_H

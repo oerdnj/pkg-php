@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: util.c,v 1.55.2.42 2009/04/29 03:24:27 cellog Exp $ */
+/* $Id: util.c 284729 2009-07-24 23:53:24Z cellog $ */
 
 #include "phar_internal.h"
 #ifdef PHAR_HASH_OK
@@ -1551,6 +1551,7 @@ phar_entry_info *phar_get_entry_info_dir(phar_archive_data *phar, char *path, in
 			PHAR_STR(key, str_key);
 
 			if ((int)keylen >= path_len || strncmp(str_key, path, keylen)) {
+				PHAR_STR_FREE(str_key);
 				continue;
 			} else {
 				char *test;
@@ -1561,6 +1562,7 @@ phar_entry_info *phar_get_entry_info_dir(phar_archive_data *phar, char *path, in
 					if (error) {
 						spprintf(error, 4096, "phar internal error: mounted path \"%s\" could not be retrieved from manifest", str_key);
 					}
+					PHAR_STR_FREE(str_key);
 					return NULL;
 				}
 
@@ -1568,8 +1570,10 @@ phar_entry_info *phar_get_entry_info_dir(phar_archive_data *phar, char *path, in
 					if (error) {
 						spprintf(error, 4096, "phar internal error: mounted path \"%s\" is not properly initialized as a mounted path", str_key);
 					}
+					PHAR_STR_FREE(str_key);
 					return NULL;
 				}
+				PHAR_STR_FREE(str_key);
 
 				test_len = spprintf(&test, MAXPATHLEN, "%s%s", entry->tmp, path + keylen);
 
@@ -1661,10 +1665,19 @@ static int phar_call_openssl_signverify(int is_sign, php_stream *fp, off_t end, 
 	Z_TYPE_P(zdata) = IS_STRING;
 	Z_STRLEN_P(zdata) = end;
 
+#if PHP_MAJOR_VERSION > 5
+	if (end != (off_t) php_stream_copy_to_mem(fp, (void **) &(Z_STRVAL_P(zdata)), (size_t) end, 0)) {
+#else
 	if (end != (off_t) php_stream_copy_to_mem(fp, &(Z_STRVAL_P(zdata)), (size_t) end, 0)) {
+#endif
 		zval_dtor(zdata);
 		zval_dtor(zsig);
 		zval_dtor(zkey);
+		zval_dtor(openssl);
+		efree(openssl);
+		efree(zdata);
+		efree(zkey);
+		efree(zsig);
 		return FAILURE;
 	}
 
@@ -1678,6 +1691,9 @@ static int phar_call_openssl_signverify(int is_sign, php_stream *fp, off_t end, 
 		zval_dtor(zkey);
 		zval_dtor(openssl);
 		efree(openssl);
+		efree(zdata);
+		efree(zkey);
+		efree(zsig);
 		return FAILURE;
 	}
 
@@ -1796,7 +1812,14 @@ int phar_verify_signature(php_stream *fp, size_t end_of_phar, php_uint32 sig_typ
 			pfp = php_stream_open_wrapper(pfile, "rb", 0, NULL);
 			efree(pfile);
 
+#if PHP_MAJOR_VERSION > 5
+			if (!pfp || !(pubkey_len = php_stream_copy_to_mem(pfp, (void **) &pubkey, PHP_STREAM_COPY_ALL, 0)) || !pubkey) {
+#else
 			if (!pfp || !(pubkey_len = php_stream_copy_to_mem(pfp, &pubkey, PHP_STREAM_COPY_ALL, 0)) || !pubkey) {
+#endif
+				if (pfp) {
+					php_stream_close(pfp);
+				}
 				if (error) {
 					spprintf(error, 0, "openssl public key could not be read");
 				}

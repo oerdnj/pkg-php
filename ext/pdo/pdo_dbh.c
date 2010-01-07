@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_dbh.c,v 1.82.2.31.2.17.2.25 2009/05/02 01:37:33 kalle Exp $ */
+/* $Id: pdo_dbh.c 289775 2009-10-19 21:43:34Z johannes $ */
 
 /* The PDO Database Handle Class */
 
@@ -110,7 +110,7 @@ void pdo_handle_error(pdo_dbh_t *dbh, pdo_stmt_t *stmt TSRMLS_DC) /* {{{ */
 	char *message = NULL;
 	zval *info = NULL;
 
-	if (dbh->error_mode == PDO_ERRMODE_SILENT) {
+	if (dbh == NULL || dbh->error_mode == PDO_ERRMODE_SILENT) {
 		return;
 	}
 	

@@ -1,4 +1,4 @@
-dnl $Id: config.m4,v 1.10.2.4.2.1.2.4 2008/12/25 13:35:05 scottmac Exp $
+dnl $Id: config.m4 271856 2008-12-25 13:35:05Z scottmac $
 dnl config.m4 for extension hash
 
 PHP_ARG_WITH(mhash, for mhash support,

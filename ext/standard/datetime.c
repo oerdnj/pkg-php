@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: datetime.c,v 1.134.2.2.2.4.2.3 2008/12/31 11:15:44 sebastian Exp $ */
+/* $Id: datetime.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #include "php.h"
 #include "zend_operators.h"

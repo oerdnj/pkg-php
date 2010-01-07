@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: buildconf.js,v 1.13.2.2.2.1.2.5 2009/01/02 12:18:21 kalle Exp $ */
+/* $Id: buildconf.js,v 1.13.2.2.2.1.2.5 2009-01-02 12:18:21 kalle Exp $ */
 // This generates a configure script for win32 build
 
 WScript.StdOut.WriteLine("Rebuilding configure.js");
@@ -65,7 +65,7 @@ function find_config_w32(dirname)
 		 * if we have, don't include it here */
 		n = FSO.GetFileName(fc.item());
 		
-		if (n == 'CVS' || n == 'tests')
+		if (n == '.svn' || n == 'tests')
 			continue;
 			
 	//	WScript.StdOut.WriteLine("checking " + dirname + "/" + n);
@@ -175,13 +175,6 @@ function gen_modules()
 	output += emit_dep_modules(module_names);
 
 	return output;
-}
-
-if (FSO.FileExists("ZendEngine2\\OBJECTS2_HOWTO")) {
-	if (FSO.FolderExists("Zend")) {
-		FSO.MoveFolder("Zend", "ZendEngine1");
-	}
-	FSO.MoveFolder("ZendEngine2", "Zend");
 }
 
 // Process buildconf arguments

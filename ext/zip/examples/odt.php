@@ -1,5 +1,5 @@
 <?php
-/* $Id: odt.php,v 1.1.4.1 2008/05/21 09:27:41 pajoye Exp $ */
+/* $Id: odt.php 260091 2008-05-21 09:27:41Z pajoye $ */
 $reader = new XMLReader();
 
 $reader->open('zip://' . dirname(__FILE__) . '/test.odt#meta.xml');

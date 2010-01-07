@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: phar.c,v 1.370.2.62 2009/05/13 20:25:43 cellog Exp $ */
+/* $Id: phar.c 286338 2009-07-26 01:03:47Z cellog $ */
 
 #define PHAR_MAIN 1
 #include "phar_internal.h"
@@ -1972,11 +1972,13 @@ woohoo:
 
 				if (keylen > (uint) filename_len) {
 					zend_hash_move_forward(&(PHAR_GLOBALS->phar_fname_map));
+					PHAR_STR_FREE(str_key);
 					continue;
 				}
 
 				if (!memcmp(filename, str_key, keylen) && ((uint)filename_len == keylen
 					|| filename[keylen] == '/' || filename[keylen] == '\0')) {
+					PHAR_STR_FREE(str_key);
 					if (FAILURE == zend_hash_get_current_data(&(PHAR_GLOBALS->phar_fname_map), (void **) &pphar)) {
 						break;
 					}
@@ -1984,6 +1986,7 @@ woohoo:
 					goto woohoo;
 				}
 
+				PHAR_STR_FREE(str_key);
 				zend_hash_move_forward(&(PHAR_GLOBALS->phar_fname_map));
 			}
 
@@ -1999,17 +2002,20 @@ woohoo:
 
 					if (keylen > (uint) filename_len) {
 						zend_hash_move_forward(&cached_phars);
+						PHAR_STR_FREE(str_key);
 						continue;
 					}
 
 					if (!memcmp(filename, str_key, keylen) && ((uint)filename_len == keylen
 						|| filename[keylen] == '/' || filename[keylen] == '\0')) {
+						PHAR_STR_FREE(str_key);
 						if (FAILURE == zend_hash_get_current_data(&cached_phars, (void **) &pphar)) {
 							break;
 						}
 						*ext_str = filename + (keylen - (*pphar)->ext_len);
 						goto woohoo;
 					}
+					PHAR_STR_FREE(str_key);
 					zend_hash_move_forward(&cached_phars);
 				}
 			}
@@ -2407,6 +2413,7 @@ int phar_postprocess_file(phar_entry_data *idata, php_uint32 crc32, char **error
 	if (entry->is_zip && process_zip > 0) {
 		/* verify local file header */
 		phar_zip_file_header local;
+		phar_zip_data_desc desc;
 
 		if (SUCCESS != phar_open_archive_fp(idata->phar TSRMLS_CC)) {
 			spprintf(error, 0, "phar error: unable to open zip-based phar archive \"%s\" to verify local file header for file \"%s\"", idata->phar->fname, entry->filename);
@@ -2420,6 +2427,25 @@ int phar_postprocess_file(phar_entry_data *idata, php_uint32 crc32, char **error
 			return FAILURE;
 		}
 
+		/* check for data descriptor */
+		if (((PHAR_ZIP_16(local.flags)) & 0x8) == 0x8) {
+			php_stream_seek(phar_get_entrypfp(idata->internal_file TSRMLS_CC),
+					entry->header_offset + sizeof(local) +
+					PHAR_ZIP_16(local.filename_len) +
+					PHAR_ZIP_16(local.extra_len) +
+					entry->compressed_filesize, SEEK_SET);
+			if (sizeof(desc) != php_stream_read(phar_get_entrypfp(idata->internal_file TSRMLS_CC),
+							    (char *) &desc, sizeof(desc))) {
+				spprintf(error, 0, "phar error: internal corruption of zip-based phar \"%s\" (cannot read local data descriptor for file \"%s\")", idata->phar->fname, entry->filename);
+				return FAILURE;
+			}
+			if (desc.signature[0] == 'P' && desc.signature[1] == 'K') {
+				memcpy(&(local.crc32), &(desc.crc32), 12);
+			} else {
+				/* old data descriptors have no signature */
+				memcpy(&(local.crc32), &desc, 12);
+			}
+		}
 		/* verify local header */
 		if (entry->filename_len != PHAR_ZIP_16(local.filename_len) || entry->crc32 != PHAR_ZIP_32(local.crc32) || entry->uncompressed_filesize != PHAR_ZIP_32(local.uncompsize) || entry->compressed_filesize != PHAR_ZIP_32(local.compsize)) {
 			spprintf(error, 0, "phar error: internal corruption of zip-based phar \"%s\" (local header of file \"%s\" does not match central directory)", idata->phar->fname, entry->filename);
@@ -2621,7 +2647,11 @@ int phar_flush(phar_archive_data *phar, char *user_stub, long len, int convert, 
 				len = -len;
 			}
 			user_stub = 0;
+#if PHP_MAJOR_VERSION >= 6
+			if (!(len = php_stream_copy_to_mem(stubfile, (void **) &user_stub, len, 0)) || !user_stub) {
+#else
 			if (!(len = php_stream_copy_to_mem(stubfile, &user_stub, len, 0)) || !user_stub) {
+#endif
 				if (closeoldfile) {
 					php_stream_close(oldfile);
 				}
@@ -3635,7 +3665,7 @@ PHP_MINFO_FUNCTION(phar) /* {{{ */
 	php_info_print_table_header(2, "Phar: PHP Archive support", "enabled");
 	php_info_print_table_row(2, "Phar EXT version", PHP_PHAR_VERSION);
 	php_info_print_table_row(2, "Phar API version", PHP_PHAR_API_VERSION);
-	php_info_print_table_row(2, "CVS revision", "$Revision: 1.370.2.62 $");
+	php_info_print_table_row(2, "CVS revision", "$Revision: 286338 $");
 	php_info_print_table_row(2, "Phar-based phar archives", "enabled");
 	php_info_print_table_row(2, "Tar-based phar archives", "enabled");
 	php_info_print_table_row(2, "ZIP-based phar archives", "enabled");

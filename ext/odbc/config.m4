@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.78.2.2.2.4 2007/07/31 13:02:00 jani Exp $
+dnl $Id: config.m4 240511 2007-07-31 13:02:00Z jani $
 dnl
 
 AC_DEFUN([PHP_ODBC_CHECK_HEADER],[

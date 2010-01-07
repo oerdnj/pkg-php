@@ -1,5 +1,5 @@
 // vim:ft=javascript
-// $Id: config.w32,v 1.1 2003/12/22 15:01:05 wez Exp $
+// $Id: config.w32 147168 2003-12-22 15:01:05Z wez $
 
 if (CHECK_HEADER_ADD_INCLUDE("NewAPIs.h", "CFLAGS_PHP", php_usual_include_suspects)) {
 	// Need to add the flag directly, since TSRM doesn't include the config

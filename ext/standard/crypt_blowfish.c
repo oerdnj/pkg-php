@@ -1,5 +1,5 @@
 /*
-  $Id: crypt_blowfish.c,v 1.1.2.4 2009/06/08 08:44:15 pajoye Exp $ 
+  $Id: crypt_blowfish.c 281805 2009-06-08 08:44:15Z pajoye $ 
 */
 /*
  * This code comes from John the Ripper password cracker, with reentrant

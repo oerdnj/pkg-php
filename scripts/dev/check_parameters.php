@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: check_parameters.php,v 1.1.2.4 2007/01/01 19:32:09 iliaa Exp $ */
+/* $Id: check_parameters.php 226204 2007-01-01 19:32:10Z iliaa $ */
 
 
 define('REPORT_LEVEL', 2); // 0 reports less false-positives. up to level 5.

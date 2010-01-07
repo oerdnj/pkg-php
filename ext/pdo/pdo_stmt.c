@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_stmt.c,v 1.118.2.38.2.24.2.46 2009/04/23 13:26:09 mbeccati Exp $ */
+/* $Id: pdo_stmt.c 289775 2009-10-19 21:43:34Z johannes $ */
 
 /* The PDO Statement Handle Class */
 
@@ -317,7 +317,7 @@ static int really_register_bound_param(struct pdo_bound_param_data *param, pdo_s
 	if (PDO_PARAM_TYPE(param->param_type) == PDO_PARAM_STR && param->max_value_len <= 0 && ! ZVAL_IS_NULL(param->parameter)) {
 		if (Z_TYPE_P(param->parameter) == IS_DOUBLE) {
 			char *p;
-			int len = spprintf(&p, 0, "%F", Z_DVAL_P(param->parameter));
+			int len = spprintf(&p, 0, "%.*H", (int) EG(precision), Z_DVAL_P(param->parameter));
 			ZVAL_STRINGL(param->parameter, p, len, 0);
 		} else {
 			convert_to_string(param->parameter);
@@ -2663,26 +2663,28 @@ static zval *row_prop_or_dim_read(zval *object, zval *member, int type TSRMLS_DC
 
 	MAKE_STD_ZVAL(return_value);
 	RETVAL_NULL();
-		
-	if (Z_TYPE_P(member) == IS_LONG) {
-		if (Z_LVAL_P(member) >= 0 && Z_LVAL_P(member) < stmt->column_count) {
-			fetch_value(stmt, return_value, Z_LVAL_P(member), NULL TSRMLS_CC);
-		}
-	} else {
-		convert_to_string(member);
-		/* TODO: replace this with a hash of available column names to column
-		 * numbers */
-		for (colno = 0; colno < stmt->column_count; colno++) {
-			if (strcmp(stmt->columns[colno].name, Z_STRVAL_P(member)) == 0) {
-				fetch_value(stmt, return_value, colno, NULL TSRMLS_CC);
-				Z_SET_REFCOUNT_P(return_value, 0);
-				Z_UNSET_ISREF_P(return_value);
-				return return_value;
+
+	if (stmt) {
+		if (Z_TYPE_P(member) == IS_LONG) {
+			if (Z_LVAL_P(member) >= 0 && Z_LVAL_P(member) < stmt->column_count) {
+				fetch_value(stmt, return_value, Z_LVAL_P(member), NULL TSRMLS_CC);
 			}
-		}
-		if (strcmp(Z_STRVAL_P(member), "queryString") == 0) {
-			zval_ptr_dtor(&return_value);
-			return std_object_handlers.read_property(object, member, IS_STRING TSRMLS_CC);
+		} else {
+			convert_to_string(member);
+			/* TODO: replace this with a hash of available column names to column
+			 * numbers */
+			for (colno = 0; colno < stmt->column_count; colno++) {
+				if (strcmp(stmt->columns[colno].name, Z_STRVAL_P(member)) == 0) {
+					fetch_value(stmt, return_value, colno, NULL TSRMLS_CC);
+					Z_SET_REFCOUNT_P(return_value, 0);
+					Z_UNSET_ISREF_P(return_value);
+					return return_value;
+				}
+			}
+			if (strcmp(Z_STRVAL_P(member), "queryString") == 0) {
+				zval_ptr_dtor(&return_value);
+				return std_object_handlers.read_property(object, member, IS_STRING TSRMLS_CC);
+			}
 		}
 	}
 
@@ -2702,16 +2704,18 @@ static int row_prop_or_dim_exists(zval *object, zval *member, int check_empty TS
 	pdo_stmt_t * stmt = (pdo_stmt_t *) zend_object_store_get_object(object TSRMLS_CC);
 	int colno = -1;
 
-	if (Z_TYPE_P(member) == IS_LONG) {
-		return Z_LVAL_P(member) >= 0 && Z_LVAL_P(member) < stmt->column_count;
-	} else {
-		convert_to_string(member);
+	if (stmt) {
+		if (Z_TYPE_P(member) == IS_LONG) {
+			return Z_LVAL_P(member) >= 0 && Z_LVAL_P(member) < stmt->column_count;
+		} else {
+			convert_to_string(member);
 
-		/* TODO: replace this with a hash of available column names to column
-		 * numbers */
-		for (colno = 0; colno < stmt->column_count; colno++) {
-			if (strcmp(stmt->columns[colno].name, Z_STRVAL_P(member)) == 0) {
-				return 1;
+			/* TODO: replace this with a hash of available column names to column
+			 * numbers */
+			for (colno = 0; colno < stmt->column_count; colno++) {
+				if (strcmp(stmt->columns[colno].name, Z_STRVAL_P(member)) == 0) {
+					return 1;
+				}
 			}
 		}
 	}
@@ -2729,6 +2733,10 @@ static HashTable *row_get_properties(zval *object TSRMLS_DC)
 	pdo_stmt_t * stmt = (pdo_stmt_t *) zend_object_store_get_object(object TSRMLS_CC);
 	int i;
 
+	if (stmt == NULL) {
+		return NULL;
+	}
+	
 	for (i = 0; i < stmt->column_count; i++) {
 		zval *val;
 		MAKE_STD_ZVAL(val);

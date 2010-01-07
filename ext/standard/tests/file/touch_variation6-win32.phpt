@@ -18,6 +18,7 @@ if (substr(PHP_OS, 0, 3) != 'WIN') {
 
 $workDir = "touchVar5.tmp";
 $subDirOrFile = "aSubDirOrFile";
+chdir(__DIR__);
 mkdir($workDir);
 $cwd = getcwd();
 
@@ -216,48 +217,26 @@ PASSED: /%s/touchVar5.tmp/aSubDirOrFile - touched
 
 *** testing existing directories ***
 --- testing touchVar5.tmp\aSubDirOrFile ---
-
-Warning: touch(): Utime failed: Permission denied in %s on line %d
-FAILED: touchVar5.tmp\aSubDirOrFile - access time not changed
+PASSED: touchVar5.tmp\aSubDirOrFile - touched
 --- testing .\touchVar5.tmp\aSubDirOrFile ---
-
-Warning: touch(): Utime failed: Permission denied in %s on line %d
-FAILED: .\touchVar5.tmp\aSubDirOrFile - access time not changed
+PASSED: .\touchVar5.tmp\aSubDirOrFile - touched
 --- testing touchVar5.tmp\..\touchVar5.tmp\aSubDirOrFile ---
-
-Warning: touch(): Utime failed: Permission denied in %s on line %d
-FAILED: touchVar5.tmp\..\touchVar5.tmp\aSubDirOrFile - access time not changed
+PASSED: touchVar5.tmp\..\touchVar5.tmp\aSubDirOrFile - touched
 --- testing %s\touchVar5.tmp\aSubDirOrFile ---
-
-Warning: touch(): Utime failed: Permission denied in %s on line %d
-FAILED: %s\touchVar5.tmp\aSubDirOrFile - access time not changed
+PASSED: %s\touchVar5.tmp\aSubDirOrFile - touched
 --- testing %s\.\touchVar5.tmp\aSubDirOrFile ---
-
-Warning: touch(): Utime failed: Permission denied in %s on line %d
-FAILED: %s\.\touchVar5.tmp\aSubDirOrFile - access time not changed
+PASSED: %s\.\touchVar5.tmp\aSubDirOrFile - touched
 --- testing %s\touchVar5.tmp\..\touchVar5.tmp\aSubDirOrFile ---
-
-Warning: touch(): Utime failed: Permission denied in %s on line %d
-FAILED: %s\touchVar5.tmp\..\touchVar5.tmp\aSubDirOrFile - access time not changed
+PASSED: %s\touchVar5.tmp\..\touchVar5.tmp\aSubDirOrFile - touched
 --- testing touchVar5.tmp\aSubDirOrFile\ ---
-
-Warning: touch(): Utime failed: No such file or directory in %s on line %d
-FAILED: touchVar5.tmp\aSubDirOrFile\ - access time not changed
+PASSED: touchVar5.tmp\aSubDirOrFile\ - touched
 --- testing %s\touchVar5.tmp\aSubDirOrFile\ ---
-
-Warning: touch(): Utime failed: No such file or directory in %s on line %d
-FAILED: %s\touchVar5.tmp\aSubDirOrFile\ - access time not changed
+PASSED: %s\touchVar5.tmp\aSubDirOrFile\ - touched
 --- testing touchVar5.tmp\\aSubDirOrFile ---
-
-Warning: touch(): Utime failed: Permission denied in %s on line %d
-FAILED: touchVar5.tmp\\aSubDirOrFile - access time not changed
+PASSED: touchVar5.tmp\\aSubDirOrFile - touched
 --- testing %s\\touchVar5.tmp\\aSubDirOrFile ---
-
-Warning: touch(): Utime failed: Permission denied in %s on line %d
-FAILED: %s\\touchVar5.tmp\\aSubDirOrFile - access time not changed
+PASSED: %s\\touchVar5.tmp\\aSubDirOrFile - touched
 --- testing /%s/touchVar5.tmp/aSubDirOrFile ---
-
-Warning: touch(): Utime failed: Permission denied in %s on line %d
-FAILED: /%s/touchVar5.tmp/aSubDirOrFile - access time not changed
+PASSED: /%s/touchVar5.tmp/aSubDirOrFile - touched
 ===DONE===
 

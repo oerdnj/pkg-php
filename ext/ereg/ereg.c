@@ -17,7 +17,7 @@
    |          Jaakko Hyvätti <jaakko@hyvatti.iki.fi>                      | 
    +----------------------------------------------------------------------+
  */
-/* $Id: ereg.c,v 1.90.2.13 2009/05/28 21:57:24 scottmac Exp $ */
+/* $Id: ereg.c 281350 2009-05-28 21:57:24Z scottmac $ */
 
 #include <stdio.h>
 #include <ctype.h>

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: network.c,v 1.118.2.2.2.6.2.17 2009/05/04 14:44:46 tony2001 Exp $ */
+/* $Id: network.c 289498 2009-10-10 12:21:08Z pajoye $ */
 
 /*#define DEBUG_MAIN_NETWORK 1*/
 
@@ -314,7 +314,7 @@ PHPAPI int php_network_connect_socket(php_socket_t sockfd,
 
 	SET_SOCKET_BLOCKING_MODE(sockfd, orig_flags);
 	
-	if ((n = connect(sockfd, addr, addrlen)) < 0) {
+	if ((n = connect(sockfd, addr, addrlen)) != 0) {
 		error = php_socket_errno();
 
 		if (error_code) {
@@ -348,7 +348,7 @@ PHPAPI int php_network_connect_socket(php_socket_t sockfd,
 		   BSD-derived systems set errno correctly
 		   Solaris returns -1 from getsockopt in case of error
 		   */
-		if (getsockopt(sockfd, SOL_SOCKET, SO_ERROR, (char*)&error, &len) < 0) {
+		if (getsockopt(sockfd, SOL_SOCKET, SO_ERROR, (char*)&error, &len) != 0) {
 			ret = -1;
 		}
 	} else {
@@ -375,7 +375,7 @@ ok:
 	if (asynchronous) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Asynchronous connect() not supported on this platform");
 	}
-	return connect(sockfd, addr, addrlen);
+	return (connect(sockfd, addr, addrlen) == 0) ? 0 : -1;
 #endif
 }
 /* }}} */
@@ -715,7 +715,7 @@ PHPAPI php_socket_t php_network_accept_incoming(php_socket_t srvsock,
 
 		clisock = accept(srvsock, (struct sockaddr*)&sa, &sl);
 
-		if (clisock >= 0) {
+		if (clisock != SOCK_ERR) {
 			php_network_populate_name_from_sockaddr((struct sockaddr*)&sa, sl,
 					textaddr, textaddrlen,
 					addr, addrlen
@@ -792,7 +792,7 @@ php_socket_t php_network_connect_socket_to_host(const char *host, unsigned short
 		switch (sa->sa_family) {
 #if HAVE_GETADDRINFO && HAVE_IPV6
 			case AF_INET6:
-				if (bindto && strchr(bindto, ':')) {
+				if (!bindto || strchr(bindto, ':')) {
 					((struct sockaddr_in6 *)sa)->sin6_family = sa->sa_family;
 					((struct sockaddr_in6 *)sa)->sin6_port = htons(port);
 					socklen = sizeof(struct sockaddr_in6);
@@ -867,7 +867,7 @@ skip_bind:
 					timeout ? &working_timeout : NULL,
 					error_string, error_code);
 
-			if (n != SOCK_CONN_ERR) {
+			if (n != -1) {
 				goto connected;
 			}
 

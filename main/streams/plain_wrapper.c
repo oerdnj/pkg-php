@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: plain_wrapper.c,v 1.52.2.6.2.23.2.14 2009/04/11 11:44:15 mkoppanen Exp $ */
+/* $Id: plain_wrapper.c 290578 2009-11-12 15:05:03Z johannes $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -986,6 +986,10 @@ static php_stream *php_plain_files_stream_opener(php_stream_wrapper *wrapper, ch
 {
 	if (((options & STREAM_DISABLE_OPEN_BASEDIR) == 0) && php_check_open_basedir(path TSRMLS_CC)) {
 		return NULL;
+	}
+
+	if ((php_check_safe_mode_include_dir(path TSRMLS_CC)) == 0) {
+		return php_stream_fopen_rel(path, mode, opened_path, options);
 	}
 
 	if ((options & ENFORCE_SAFE_MODE) && PG(safe_mode) && (!php_checkuid(path, mode, CHECKUID_CHECK_MODE_PARAM)))

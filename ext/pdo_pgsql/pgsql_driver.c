@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pgsql_driver.c,v 1.53.2.14.2.9.2.8 2009/04/30 12:56:00 mbeccati Exp $ */
+/* $Id: pgsql_driver.c 279604 2009-04-30 12:56:00Z mbeccati $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

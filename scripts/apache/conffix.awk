@@ -1,4 +1,4 @@
-# $Id: conffix.awk,v 1.2 1999/08/07 15:31:57 zeev Exp $
+# $Id: conffix.awk 11765 1999-08-07 15:31:57Z zeev $
 
 /^[ \t]*php3_*/ {
 	phpcommand=substr($1,6)

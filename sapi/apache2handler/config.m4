@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.14.2.1.2.2.2.3 2008/03/11 22:47:39 lstrojny Exp $
+dnl $Id: config.m4 254930 2008-03-11 22:47:39Z lstrojny $
 dnl
 
 PHP_ARG_WITH(apxs2,,

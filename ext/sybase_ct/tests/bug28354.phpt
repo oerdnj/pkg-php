@@ -6,7 +6,7 @@ Sybase-CT bug #28354 (sybase_free_result crash)
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: bug28354.phpt,v 1.3.4.1 2007/05/22 11:35:47 thekid Exp $ 
+ * $Id: bug28354.phpt 236101 2007-05-22 11:35:47Z thekid $ 
  */
 
   require('test.inc');

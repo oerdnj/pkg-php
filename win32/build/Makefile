@@ -14,7 +14,7 @@
 #  | Author: Wez Furlong <wez@thebrainroom.com>                           |
 #  +----------------------------------------------------------------------+
 #
-# $Id: Makefile,v 1.35.2.1.2.6.2.14 2009/06/23 01:37:23 kalle Exp $
+# $Id: Makefile 289764 2009-10-19 19:05:58Z pajoye $
 # This is the makefile template for the win32 build
 
 CC="$(CL)"
@@ -128,7 +128,7 @@ build-dist: $(BUILD_DIR)\deplister.exe
 	-del /f /q $(BUILD_DIR)\php-$(PHP_VERSION_STRING)$(PHP_ZTS_ARCHIVE_POSTFIX)-Win32-$(PHP_COMPILER_SHORT)-$(PHP_ARCHITECTURE).zip
 	-del /f /q $(BUILD_DIR)\php-debug-pack-$(PHP_VERSION_STRING)$(PHP_ZTS_ARCHIVE_POSTFIX)-Win32-$(PHP_COMPILER_SHORT)-$(PHP_ARCHITECTURE).zip
 	-del /f /q $(BUILD_DIR)\pecl-$(PHP_VERSION_STRING)$(PHP_ZTS_ARCHIVE_POSTFIX)-Win32-$(PHP_COMPILER_SHORT)-$(PHP_ARCHITECTURE).zip
-	$(BUILD_DIR)\php.exe -d date.timezone=UTC -n -dphar.readonly=0 win32/build/mkdist.php "$(BUILD_DIR)" "$(PHPDLL)" "$(SAPI_TARGETS)" "$(EXT_TARGETS) $(PHP_EXTRA_DIST_FILES)" "$(PECL_TARGETS) $(PECL_EXTRA_DIST_FILES)" "$(SNAPSHOT_TEMPLATE)"
+	$(BUILD_DIR)\php.exe -d date.timezone=UTC -n -dphar.readonly=0 win32/build/mkdist.php "$(BUILD_DIR)" "$(PHP_BUILD)" "$(PHPDLL)" "$(SAPI_TARGETS)" "$(EXT_TARGETS) $(PHP_EXTRA_DIST_FILES)" "$(PECL_TARGETS) $(PECL_EXTRA_DIST_FILES)" "$(SNAPSHOT_TEMPLATE)"
 	cd $(BUILD_DIR)\php-$(PHP_VERSION_STRING)
 	-$(ZIP) -9 -q -r ..\php-$(PHP_VERSION_STRING)$(PHP_ZTS_ARCHIVE_POSTFIX)-Win32-$(PHP_COMPILER_SHORT)-$(PHP_ARCHITECTURE).zip .
 	cd ..\..

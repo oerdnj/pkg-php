@@ -26,7 +26,7 @@
  * @author     Vincent Lascaux <vincentlascaux@php.net>
  * @copyright  1997-2005 The PHP Group
  * @license    http://www.gnu.org/copyleft/lesser.html  LGPL
- * @version    CVS: $Id: corrupt_zipmaker.php.inc,v 1.5.2.2 2008/08/11 22:43:02 cellog Exp $
+ * @version    CVS: $Id: corrupt_zipmaker.php.inc 264655 2008-08-11 22:43:02Z cellog $
  * @link       http://pear.php.net/package/File_Archive
  */
 

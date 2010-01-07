@@ -1,7 +1,7 @@
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: skipif.inc,v 1.2.6.1 2008/11/08 15:39:01 felipe Exp $ 
+ * $Id: skipif.inc 268592 2008-11-08 15:39:01Z felipe $ 
  */
 
   require 'test.inc';

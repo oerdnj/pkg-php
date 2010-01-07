@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.6 2002/03/12 16:10:56 sas Exp $
+dnl $Id: config.m4 242949 2007-09-26 15:44:16Z cvs2svn $
 dnl
 
 PHP_ARG_ENABLE(calendar,whether to enable calendar conversion support,

@@ -18,7 +18,8 @@ class myPriorityQueue extends SplPriorityQueue{
 }
 
 $priorityQueue = new myPriorityQueue();
-$priorityQueue->insert("a", 1);
+$priorityQueue->insert("a", 1);
+
 try {
     //corrupt heap
     $priorityQueue->insert("b", 2);

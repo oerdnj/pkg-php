@@ -13,7 +13,7 @@ require_once('connect.inc');
 if (!$TEST_EXPERIMENTAL)
 	die("skip - experimental (= unsupported) feature");
 
-if (!$link = mysqli_connect($host, $user, $passwb, $db, $port, $socket))
+if (!$link = my_mysqli_connect($host, $user, $passwb, $db, $port, $socket))
 	die("skip Cannot connect to MySQL");
 
 if (!$res = mysqli_query($link, 'SHOW VARIABLES LIKE "local_infile"')) {
@@ -65,6 +65,10 @@ mysqli.allow_local_infile=1
 
 	mysqli_close($link);
 	print "done!";
+?>
+--CLEAN--
+<?php
+	require_once("clean_table.inc");
 ?>
 --EXPECTF--
 Callback set to 'callback_new_query'

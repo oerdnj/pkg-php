@@ -1,5 +1,5 @@
 // vim:ft=javascript
-// $Id: configure.tail,v 1.1.8.1 2008/12/25 00:09:49 pajoye Exp $
+// $Id: configure.tail 271838 2008-12-25 00:09:49Z pajoye $
 // tail end of configure
 
 if (sapi_enabled.length < 1) {

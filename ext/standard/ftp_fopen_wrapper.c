@@ -18,7 +18,7 @@
    |          Sara Golemon <pollita@php.net>                              |
    +----------------------------------------------------------------------+
  */
-/* $Id: ftp_fopen_wrapper.c,v 1.85.2.4.2.4.2.7 2008/12/31 11:15:45 sebastian Exp $ */
+/* $Id: ftp_fopen_wrapper.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #include "php.h"
 #include "php_globals.h"

@@ -20,7 +20,7 @@ if (version_compare(PHP_VERSION, '5.9.9', '>') == 1) {
 
 	$tmp	= NULL;
 	$link	= NULL;
-	if (!$link = mysqli_connect($host, $user, $passwd, $db, $port, $socket))
+	if (!$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket))
 		printf("[001] Cannot connect to the server using host=%s, user=%s, passwd=***, dbname=%s, port=%s, socket=%s\n",
 			$host, $user, $db, $port, $socket);
 
@@ -99,6 +99,10 @@ if (version_compare(PHP_VERSION, '5.9.9', '>') == 1) {
 	mysqli_close($link);
 
 	print "done!";
+?>
+--CLEAN--
+<?php
+	require_once("clean_table.inc");
 ?>
 --EXPECTF--
 done!

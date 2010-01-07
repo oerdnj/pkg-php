@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: odbc_driver.c,v 1.27.2.4.2.3.2.3 2008/12/31 11:15:41 sebastian Exp $ */
+/* $Id: odbc_driver.c 284099 2009-07-15 02:36:08Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -346,7 +346,7 @@ static int odbc_handle_set_attr(pdo_dbh_t *dbh, long attr, zval *val TSRMLS_DC)
 		default:
 			strcpy(H->einfo.last_err_msg, "Unknown Attribute");
 			H->einfo.what = "setAttribute";
-			strcpy(H->einfo.last_state, "IM0001");
+			strcpy(H->einfo.last_state, "IM001");
 			return -1;
 	}
 }

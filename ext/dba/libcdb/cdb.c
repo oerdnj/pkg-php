@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: cdb.c,v 1.10.2.1.2.3.2.2 2008/12/31 11:15:36 sebastian Exp $ */
+/* $Id: cdb.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 /* incorporated from D.J.Bernstein's cdb-0.75 (http://cr.yp.to/cdb.html)*/
 
@@ -189,6 +189,6 @@ int cdb_find(struct cdb *c, char *key, unsigned int len TSRMLS_DC)
 /* {{{ cdb_version */
 char *cdb_version() 
 {
-	return "0.75, $Revision: 1.10.2.1.2.3.2.2 $";
+	return "0.75, $Revision: 272370 $";
 }
 /* }}} */

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: namelist.c,v 1.7.2.1.2.1.2.8 2008/12/31 11:15:36 sebastian Exp $ */
+/* $Id: namelist.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

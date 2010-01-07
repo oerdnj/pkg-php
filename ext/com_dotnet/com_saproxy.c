@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_saproxy.c,v 1.15.2.2.2.3.2.5 2009/05/19 17:38:29 kalle Exp $ */
+/* $Id: com_saproxy.c 280806 2009-05-19 17:38:29Z kalle $ */
 
 /* This module implements a SafeArray proxy which is used internally
  * by the engine when resolving multi-dimensional array accesses on

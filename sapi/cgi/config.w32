@@ -1,5 +1,5 @@
 // vim:ft=javascript
-// $Id: config.w32,v 1.2.4.1.2.2.2.3 2007/10/05 16:00:30 rrichards Exp $
+// $Id: config.w32 243567 2007-10-05 16:00:30Z rrichards $
 
 ARG_ENABLE('cgi', 'Build CGI version of PHP', 'yes');
 

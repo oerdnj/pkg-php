@@ -14,7 +14,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: locale_methods.h,v 1.1.2.3 2008/08/03 11:33:45 jani Exp $ */
+/* $Id: locale_methods.h 264111 2008-08-03 11:33:45Z jani $ */
 
 #ifndef LOCALE_METHODS_H
 #define LOCALE_METHODS_H

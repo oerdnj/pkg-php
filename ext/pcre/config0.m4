@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config0.m4,v 1.38.2.3.2.10.2.4 2008/09/09 07:55:07 nlopess Exp $
+dnl $Id: config0.m4 287118 2009-08-11 21:40:15Z scottmac $
 dnl
 
 dnl By default we'll compile and link against the bundled PCRE library
@@ -11,7 +11,7 @@ PHP_ARG_WITH(pcre-regex,,
 
   if test "$PHP_PCRE_REGEX" != "yes" && test "$PHP_PCRE_REGEX" != "no"; then
     AC_MSG_CHECKING([for PCRE headers location])
-    for i in $PHP_PCRE_REGEX $PHP_PCRE_REGEX/include $PHP_PCRE_REGEX/include/pcre; do
+    for i in $PHP_PCRE_REGEX $PHP_PCRE_REGEX/include $PHP_PCRE_REGEX/include/pcre $PHP_PCRE_REGEX/local/include; do
       test -f $i/pcre.h && PCRE_INCDIR=$i
     done
 

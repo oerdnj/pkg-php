@@ -1,5 +1,5 @@
 <?php
-/* $Id: bench.php,v 1.1.2.2 2005/12/02 01:59:44 iliaa Exp $ */
+/* $Id: bench.php 201859 2005-12-02 01:59:48Z iliaa $ */
 
 /*
  This gives rather interesting results :)

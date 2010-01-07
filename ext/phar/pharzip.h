@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pharzip.h,v 1.2.2.3 2009/02/20 05:06:37 cellog Exp $ */
+/* $Id: pharzip.h 284658 2009-07-23 16:30:27Z cellog $ */
 
 typedef struct _phar_zip_file_header {
 	char signature[4];       /* local file header signature     4 bytes  (0x04034b50) */
@@ -37,6 +37,7 @@ typedef struct _phar_zip_file_header {
 
 /* unused in this release */
 typedef struct _phar_zip_file_datadesc {
+	char signature[4];  /* signature (optional)            4 bytes */
 	char crc32[4];      /* crc-32                          4 bytes */
 	char compsize[4];   /* compressed size                 4 bytes */
 	char uncompsize[4]; /* uncompressed size               4 bytes */
