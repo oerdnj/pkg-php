@@ -3,9 +3,9 @@ PHP_5_2
 http://cvs.php.net/viewvc.cgi/php-src/main/output.c?r1=1.167.2.3.2.8&r2=1.167.2.3.2.9&diff_format=u
 Fixed memory leak in ob_get_clean/ob_get_flush.
 
---- pkg-php.orig/main/output.c
-+++ pkg-php/main/output.c
-@@ -818,10 +818,12 @@ PHP_FUNCTION(ob_end_flush)
+--- a/main/output.c
++++ b/main/output.c
+@@ -812,10 +812,12 @@ PHP_FUNCTION(ob_end_flush)
  	
  	if (!OG(ob_nesting_level)) {
  		php_error_docref("ref.outcontrol" TSRMLS_CC, E_NOTICE, "failed to delete and flush buffer. No buffer to delete or flush.");
@@ -18,7 +18,7 @@ Fixed memory leak in ob_get_clean/ob_get_flush.
  		RETURN_FALSE;
  	}
  	
-@@ -840,10 +842,12 @@ PHP_FUNCTION(ob_end_clean)
+@@ -834,10 +836,12 @@ PHP_FUNCTION(ob_end_clean)
  		
  	if (!OG(ob_nesting_level)) {
  		php_error_docref("ref.outcontrol" TSRMLS_CC, E_NOTICE, "failed to delete buffer. No buffer to delete.");
