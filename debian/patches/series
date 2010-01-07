@@ -22,7 +22,6 @@ libtool2.2.patch
 108-64_bit_datetime.patch
 112-proc_open.patch
 113-php.ini_securitynotes.patch
-114-php_gd_segfault.patch
 115-autoconf_ftbfs.patch
 116-posixness_fix.patch
 libdb_is_-ldb
