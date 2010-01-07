@@ -1,6 +1,6 @@
---- pkg-php.orig/ext/ldap/ldap.c
-+++ pkg-php/ext/ldap/ldap.c
-@@ -1239,7 +1239,7 @@ PHP_FUNCTION(ldap_explode_dn)
+--- a/ext/ldap/ldap.c
++++ b/ext/ldap/ldap.c
+@@ -1211,7 +1211,7 @@ PHP_FUNCTION(ldap_explode_dn)
  	}
  
  	i=0;
@@ -9,7 +9,7 @@
  	count = i;
  
  	array_init(return_value);
-@@ -1249,7 +1249,8 @@ PHP_FUNCTION(ldap_explode_dn)
+@@ -1221,7 +1221,8 @@ PHP_FUNCTION(ldap_explode_dn)
  		add_index_string(return_value, i, ldap_value[i], 1);
  	}
  
