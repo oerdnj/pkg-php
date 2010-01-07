@@ -1,6 +1,6 @@
---- pkg-php.orig/configure.in
-+++ pkg-php/configure.in
-@@ -1032,7 +1032,7 @@ if test "$PHP_CLI" = "no"; then
+--- a/configure.in
++++ b/configure.in
+@@ -1021,7 +1021,7 @@ if test "$PHP_CLI" = "no"; then
  fi
  
  PHP_ARG_WITH(pear, [whether to install PEAR],
@@ -9,7 +9,7 @@
    --without-pear          Do not install PEAR], DEFAULT, yes)
  
  if test "$PHP_PEAR" != "no"; then
-@@ -1062,7 +1062,7 @@ dnl
+@@ -1051,7 +1051,7 @@ dnl
    if test "$PHP_PEAR" = "DEFAULT" || test "$PHP_PEAR" = "yes"; then
      case $PHP_LAYOUT in
        GNU) PEAR_INSTALLDIR=$datadir/pear;;
@@ -18,7 +18,7 @@
      esac
    fi
  
-@@ -1117,12 +1117,12 @@ test "$program_suffix" = "NONE" && progr
+@@ -1106,12 +1106,12 @@ test "$program_suffix" = "NONE" && progr
  
  case $libdir in
    '${exec_prefix}/lib')
@@ -33,7 +33,7 @@
      ;;
  esac
  
-@@ -1187,7 +1187,7 @@ EXPANDED_SYSCONFDIR=`eval echo $sysconfd
+@@ -1176,7 +1176,7 @@ EXPANDED_SYSCONFDIR=`eval echo $sysconfd
  EXPANDED_DATADIR=$datadir
  EXPANDED_PHP_CONFIG_FILE_PATH=`eval echo "$PHP_CONFIG_FILE_PATH"`
  EXPANDED_PHP_CONFIG_FILE_SCAN_DIR=`eval echo "$PHP_CONFIG_FILE_SCAN_DIR"`
@@ -42,8 +42,8 @@
  
  exec_prefix=$old_exec_prefix
  libdir=$old_libdir
---- pkg-php.orig/ext/ext_skel
-+++ pkg-php/ext/ext_skel
+--- a/ext/ext_skel
++++ b/ext/ext_skel
 @@ -70,7 +70,7 @@ if test -d "$extname" ; then
  fi
  
@@ -53,9 +53,9 @@
  fi
  
  ## convert skel_dir to full path
---- pkg-php.orig/php.ini-development
-+++ pkg-php/php.ini-development
-@@ -785,7 +785,7 @@ default_mimetype = "text/html"
+--- a/php.ini-development
++++ b/php.ini-development
+@@ -781,7 +781,7 @@ default_mimetype = "text/html"
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
  ; UNIX: "/path1:/path2"
@@ -64,9 +64,9 @@
  ;
  ; Windows: "\path1;\path2"
  ;include_path = ".;c:\php\includes"
---- pkg-php.orig/php.ini-production
-+++ pkg-php/php.ini-production
-@@ -785,7 +785,7 @@ default_mimetype = "text/html"
+--- a/php.ini-production
++++ b/php.ini-production
+@@ -781,7 +781,7 @@ default_mimetype = "text/html"
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
  ; UNIX: "/path1:/path2"
@@ -75,7 +75,7 @@
  ;
  ; Windows: "\path1;\path2"
  ;include_path = ".;c:\php\includes"
-@@ -939,53 +939,6 @@ default_socket_timeout = 60
+@@ -938,53 +938,6 @@ default_socket_timeout = 60
  ; If you only provide the name of the extension, PHP will look for it in its
  ; default extension directory.
  ;
@@ -84,7 +84,7 @@
 -; Note that many DLL files are located in the extensions/ (PHP 4) ext/ (PHP 5)
 -; extension folders as well as the separate PECL DLL download (PHP 5).
 -; Be sure to appropriately set the extension_dir directive.
--; 
+-;
 -;extension=php_bz2.dll
 -;extension=php_curl.dll
 -;extension=php_dba.dll
@@ -129,8 +129,8 @@
  
  ;;;;;;;;;;;;;;;;;;;
  ; Module Settings ;
---- pkg-php.orig/sapi/caudium/config.m4
-+++ pkg-php/sapi/caudium/config.m4
+--- a/sapi/caudium/config.m4
++++ b/sapi/caudium/config.m4
 @@ -26,8 +26,8 @@ if test "$PHP_CAUDIUM" != "no"; then
      AC_MSG_ERROR([Could not find a pike in $PHP_CAUDIUM/bin/])
    fi
@@ -153,8 +153,8 @@
    RESULT="  *** Pike binary used:         $PIKE
    *** Pike include dir(s) used: $PIKE_INCLUDE_DIR
    *** Pike version:             $PIKE_VERSION"
---- pkg-php.orig/sapi/cli/php.1.in
-+++ pkg-php/sapi/cli/php.1.in
+--- a/sapi/cli/php.1.in
++++ b/sapi/cli/php.1.in
 @@ -306,13 +306,14 @@ Shows configuration for extension
  .B name
  .SH FILES
@@ -175,8 +175,8 @@
  .SH EXAMPLES
  .TP 5
  \fIphp -r 'echo "Hello World\\n";'\fP
---- pkg-php.orig/scripts/Makefile.frag
-+++ pkg-php/scripts/Makefile.frag
+--- a/scripts/Makefile.frag
++++ b/scripts/Makefile.frag
 @@ -3,8 +3,8 @@
  # Build environment install
  #
@@ -188,8 +188,8 @@
  
  BUILD_FILES = \
  	scripts/phpize.m4 \
---- pkg-php.orig/scripts/php-config.in
-+++ pkg-php/scripts/php-config.in
+--- a/scripts/php-config.in
++++ b/scripts/php-config.in
 @@ -5,8 +5,8 @@ prefix="@prefix@"
  exec_prefix="@exec_prefix@"
  version="@PHP_VERSION@"
@@ -201,8 +201,8 @@
  ldflags="@PHP_LDFLAGS@"
  libs="@EXTRA_LIBS@"
  extension_dir='@EXTENSION_DIR@'
---- pkg-php.orig/scripts/phpize.in
-+++ pkg-php/scripts/phpize.in
+--- a/scripts/phpize.in
++++ b/scripts/phpize.in
 @@ -3,8 +3,8 @@
  # Variable declaration
  prefix='@prefix@'
