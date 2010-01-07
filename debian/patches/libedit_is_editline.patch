@@ -1,6 +1,6 @@
---- pkg-php.orig/ext/readline/config.m4
-+++ pkg-php/ext/readline/config.m4
-@@ -55,7 +55,7 @@ if test "$PHP_READLINE" && test "$PHP_RE
+--- a/ext/readline/config.m4
++++ b/ext/readline/config.m4
+@@ -65,7 +65,7 @@ if test "$PHP_READLINE" && test "$PHP_RE
  elif test "$PHP_LIBEDIT" != "no"; then
  
    for i in $PHP_LIBEDIT /usr/local /usr; do
@@ -9,8 +9,8 @@
    done
  
    if test -z "$LIBEDIT_DIR"; then
---- pkg-php.orig/ext/readline/readline.c
-+++ pkg-php/ext/readline/readline.c
+--- a/ext/readline/readline.c
++++ b/ext/readline/readline.c
 @@ -33,8 +33,10 @@
  #define rl_completion_matches completion_matches
  #endif
