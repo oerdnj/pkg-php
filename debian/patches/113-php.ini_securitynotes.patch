@@ -1,5 +1,5 @@
---- pkg-php.orig/php.ini-development
-+++ pkg-php/php.ini-development
+--- a/php.ini-development
++++ b/php.ini-development
 @@ -335,6 +335,11 @@ allow_call_time_pass_reference = Off
  
  ; Safe Mode
@@ -25,7 +25,7 @@
  ;open_basedir =
  
  ; This directive allows you to disable certain functions for security reasons.
-@@ -692,6 +703,11 @@ request_order = "GP"
+@@ -688,6 +699,11 @@ request_order = "GP"
  ; register_globals to be on;  Using form variables as globals can easily lead
  ; to possible security problems, if the code is not very well thought of.
  ; http://php.net/register-globals
