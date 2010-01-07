@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_statistics.c,v 1.2.2.12 2009/06/25 19:03:51 johannes Exp $ */
+/* $Id: mysqlnd_statistics.c 287807 2009-08-27 13:16:39Z andrey $ */
 #include "php.h"
 #include "mysqlnd.h"
 #include "mysqlnd_priv.h"
@@ -151,7 +151,9 @@ const MYSQLND_STRING mysqlnd_stats_values_names[STAT_LAST] =
 	{ STR_W_LEN("proto_binary_fetched_enum") },
 	{ STR_W_LEN("proto_binary_fetched_set") },
 	{ STR_W_LEN("proto_binary_fetched_geometry") },
-	{ STR_W_LEN("proto_binary_fetched_other") }	
+	{ STR_W_LEN("proto_binary_fetched_other") },
+	{ STR_W_LEN("init_command_executed_count") },
+	{ STR_W_LEN("init_command_failed_count") }	
 };
 /* }}} */
 

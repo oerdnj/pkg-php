@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_cli.c,v 1.129.2.13.2.22.2.26 2009/06/05 18:50:32 mattwil Exp $ */
+/* $Id: php_cli.c 287973 2009-09-02 20:02:17Z pajoye $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -298,7 +298,7 @@ static int sapi_cli_ub_write(const char *str, uint str_length TSRMLS_DC) /* {{{ 
 		remaining -= ret;
 	}
 
-	return str_length;
+	return (ptr - str);
 }
 /* }}} */
 
@@ -672,10 +672,12 @@ int main(int argc, char *argv[])
 #if defined(PHP_WIN32) && defined(_DEBUG) && defined(PHP_WIN32_DEBUG_HEAP)
 	{
 		int tmp_flag;
-		
+		_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
+		_CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
 		_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
 		_CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
-
+		_CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
+		_CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
 		tmp_flag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
 		tmp_flag |= _CRTDBG_DELAY_FREE_MEM_DF;
 		tmp_flag |= _CRTDBG_LEAK_CHECK_DF;

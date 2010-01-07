@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: uuencode.c,v 1.5.2.1.2.4.2.4 2009/05/13 16:29:26 kalle Exp $ */
+/* $Id: uuencode.c 280460 2009-05-13 16:29:26Z kalle $ */
 
 /*
  * Portions of this code are based on Berkeley's uuencode/uudecode

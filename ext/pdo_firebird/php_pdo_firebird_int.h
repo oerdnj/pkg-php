@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_firebird_int.h,v 1.10.2.1.2.1.2.5 2008/12/31 11:15:41 sebastian Exp $ */
+/* $Id: php_pdo_firebird_int.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_PDO_FIREBIRD_INT_H
 #define PHP_PDO_FIREBIRD_INT_H

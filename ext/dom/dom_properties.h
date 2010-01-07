@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: dom_properties.h,v 1.7.2.1.2.1.2.3 2008/12/31 11:15:36 sebastian Exp $ */
+/* $Id: dom_properties.h 272370 2008-12-31 11:15:49Z sebastian $ */
 #ifndef DOM_PROPERTIES_H
 #define DOM_PROPERTIES_H
 

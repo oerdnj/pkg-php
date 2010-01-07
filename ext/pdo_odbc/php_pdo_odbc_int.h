@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_odbc_int.h,v 1.9.2.1.2.2.2.3 2008/12/31 11:15:41 sebastian Exp $ */
+/* $Id: php_pdo_odbc_int.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifdef PHP_WIN32
 # define PDO_ODBC_TYPE	"Win32"

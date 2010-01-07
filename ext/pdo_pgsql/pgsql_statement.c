@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pgsql_statement.c,v 1.31.2.12.2.7.2.13 2009/05/25 19:41:13 kalle Exp $ */
+/* $Id: pgsql_statement.c 281107 2009-05-25 19:41:13Z kalle $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

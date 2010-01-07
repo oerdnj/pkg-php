@@ -11,7 +11,7 @@ require_once('skipifconnectfailure.inc');
 	include "connect.inc";
 
 	/*** test mysqli_connect 127.0.0.1 ***/
-	$link = mysqli_connect($host, $user, $passwd, $db, $port, $socket);
+	$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket);
 
 	mysqli_select_db($link, $db);
 
@@ -32,6 +32,17 @@ require_once('skipifconnectfailure.inc');
 
 	mysqli_query($link, "DROP TABLE IF EXISTS test_result");
 	mysqli_close($link);
+?>
+--CLEAN--
+<?php
+include "connect.inc";
+if (!$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket))
+   printf("[c001] [%d] %s\n", mysqli_connect_errno(), mysqli_connect_error());
+
+if (!mysqli_query($link, "DROP TABLE IF EXISTS test_result"))
+	printf("[c002] Cannot drop table, [%d] %s\n", mysqli_errno($link), mysqli_error($link));
+
+mysqli_close($link);
 ?>
 --EXPECT--
 int(2)

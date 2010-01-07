@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.58.2.4.2.11.2.8 2009/04/20 15:39:48 jani Exp $
+dnl $Id: config.m4 279059 2009-04-20 15:39:48Z jani $
 dnl
 
 AC_DEFUN([PHP_MBSTRING_ADD_SOURCES], [

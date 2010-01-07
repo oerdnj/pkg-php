@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: credits.c,v 1.36.2.4.2.4.2.8 2009/03/17 15:37:34 pajoye Exp $ */
+/* $Id: credits.c 289420 2009-10-09 14:34:18Z pajoye $ */
 
 #include "php.h"
 #include "info.h"
@@ -109,10 +109,17 @@ PHPAPI void php_print_credits(int flag TSRMLS_DC) /* {{{ */
 	}
 
 	if (flag & PHP_CREDITS_WEB) {
-		/* Website Team */
+		/* Websites and infrastructure */
+
 		php_info_print_table_start();
-		php_info_print_table_header(1, "PHP Website Team");
-		php_info_print_table_row(1, "Rasmus Lerdorf, Hannes Magnusson, Philip Olson");
+		php_info_print_table_colspan_header(2, "Websites and Infrastructure team");
+		/* www., wiki., windows., master., and others, I guess pecl. too? */
+		CREDIT_LINE("PHP Websites Team", "Rasmus Lerdorf, Hannes Magnusson, Philip Olson, Lukas Kahwe Smith, Pierre-Alain Joye, Kalle Sommer Nielsen");
+		CREDIT_LINE("Event Maintainers", "Damien Seguy, Daniel P. Brown");
+		/* Mirroring */
+		CREDIT_LINE("Network Infrastructure", "Daniel P. Brown");
+		/* Windows build boxes and such things */
+		CREDIT_LINE("Windows Infrastructure", "Alex Schoenmaker");
 		php_info_print_table_end();
 	}
 

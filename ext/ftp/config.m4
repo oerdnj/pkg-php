@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.7.20.3 2005/11/01 00:32:21 bfrance Exp $
+dnl $Id: config.m4 199642 2005-11-01 00:32:21Z bfrance $
 dnl
 
 PHP_ARG_ENABLE(ftp,whether to enable FTP support,

@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.10.4.4.2.15 2009/05/27 08:18:23 pajoye Exp $
+// $Id: config.w32 281216 2009-05-27 08:18:24Z pajoye $
 // vim:ft=javascript
 
 ARG_WITH("gd", "Bundled GD support", "yes,shared");

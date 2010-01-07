@@ -1,8 +1,8 @@
 --TEST--
 mysql_field_flags()
 --SKIPIF--
-<?php 
-require_once('skipif.inc'); 
+<?php
+require_once('skipif.inc');
 require_once('skipifconnectfailure.inc');
 ?>
 --FILE--
@@ -32,7 +32,7 @@ if (false !== ($tmp = mysql_field_flags($res, -1)))
 if (!is_string($tmp = mysql_field_flags($res, 0)) || empty($tmp))
 	printf("[006] Expecting non empty string, got %s/%s\n", gettype($tmp), $tmp);
 
-if (ini_get('unicode.semantics') && !is_unicode($tmp)) {
+if ((version_compare(PHP_VERSION, '5.9.9', '>') == 1) && !is_unicode($tmp)) {
 	printf("[007] Check the unicode support!\n");
 	var_inspect($tmp);
 }
@@ -53,11 +53,11 @@ $tables = array(
 								'label' => array(($version < 500) ? 'multiple_key' : 'unique_key')
 								),
 	'labela INT, label2 CHAR(1), KEY keyname (labela, label2)'      =>  array(
-								array('labela, label2', '1, "a"'),
+								array('labela, label2', "1, 'a'"),
 								'labela' => array('multiple_key'),
 								),
 	'label1 BLOB'                                           =>  array(
-								array('label1', '"blob"'),
+								array('label1', "'blob'"),
 								'label1' => array('blob', 'binary'),
 								),
 	'label1 INT UNSIGNED'                                   =>  array(
@@ -70,15 +70,15 @@ $tables = array(
 										'unsigned'),
 								),
 	'label1 ENUM("a", "b")'                                 =>  array(
-								array('label1', '"a"'),
+								array('label1', "'a'"),
 								'label1' => array('enum'),
 								),
 	'label1 SET("a", "b")'                                  =>  array(
-								array('label1', '"a"'),
+								array('label1', "'a'"),
 								'label1' => array('set'),
 								),
 	'label1 TIMESTAMP'                                      =>  array(
-								array('label1', sprintf('"%s"', @date("Y-m-d H:i:s"))),
+								array('label1', sprintf("'%s'", @date("Y-m-d H:i:s"))),
 								'label1' => array(
 										'timestamp',
 										'unsigned',
@@ -134,6 +134,10 @@ var_dump(mysql_field_flags($res, 0));
 
 mysql_close($link);
 print "done!";
+?>
+--CLEAN--
+<?php
+require_once("clean_table.inc");
 ?>
 --EXPECTF--
 Warning: mysql_field_flags() expects exactly 2 parameters, 1 given in %s on line %d

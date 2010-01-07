@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: xp_ssl.c,v 1.22.2.3.2.9.2.10 2008/12/31 11:15:40 sebastian Exp $ */
+/* $Id: xp_ssl.c 289416 2009-10-09 14:20:17Z pajoye $ */
 
 #include "php.h"
 #include "ext/standard/file.h"
@@ -48,6 +48,7 @@ int php_openssl_get_x509_list_id(void);
 typedef struct _php_openssl_netstream_data_t {
 	php_netstream_data_t s;
 	SSL *ssl_handle;
+	SSL_CTX *ctx;
 	struct timeval connect_timeout;
 	int enable_on_connect;
 	int is_client;
@@ -254,6 +255,14 @@ static int php_openssl_sockop_close(php_stream *stream, int close_handle TSRMLS_
 			SSL_free(sslsock->ssl_handle);
 			sslsock->ssl_handle = NULL;
 		}
+		if (sslsock->ctx) {
+			SSL_CTX_free(sslsock->ctx);
+			sslsock->ctx = NULL;
+		}
+#ifdef PHP_WIN32
+		if (sslsock->s.socket == -1)
+			sslsock->s.socket = SOCK_ERR;
+#endif
 		if (sslsock->s.socket != SOCK_ERR) {
 #ifdef PHP_WIN32
 			/* prevent more data from coming in */
@@ -295,7 +304,6 @@ static inline int php_openssl_setup_crypto(php_stream *stream,
 		php_stream_xport_crypto_param *cparam
 		TSRMLS_DC)
 {
-	SSL_CTX *ctx;
 	SSL_METHOD *method;
 	
 	if (sslsock->ssl_handle) {
@@ -344,18 +352,19 @@ static inline int php_openssl_setup_crypto(php_stream *stream,
 
 	}
 
-	ctx = SSL_CTX_new(method);
-	if (ctx == NULL) {
+	sslsock->ctx = SSL_CTX_new(method);
+	if (sslsock->ctx == NULL) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "failed to create an SSL context");
 		return -1;
 	}
 
-	SSL_CTX_set_options(ctx, SSL_OP_ALL);
+	SSL_CTX_set_options(sslsock->ctx, SSL_OP_ALL);
 
-	sslsock->ssl_handle = php_SSL_new_from_context(ctx, stream TSRMLS_CC);
+	sslsock->ssl_handle = php_SSL_new_from_context(sslsock->ctx, stream TSRMLS_CC);
 	if (sslsock->ssl_handle == NULL) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "failed to create an SSL handle");
-		SSL_CTX_free(ctx);
+		SSL_CTX_free(sslsock->ctx);
+		sslsock->ctx = NULL;
 		return -1;
 	}
 
@@ -672,7 +681,11 @@ static int php_openssl_sockop_set_option(php_stream *stream, int option, int val
 					 * we notice that the connect has actually been established */
 					php_stream_socket_ops.set_option(stream, option, value, ptrparam TSRMLS_CC);
 
-					if (xparam->outputs.returncode == 0 && sslsock->enable_on_connect) {
+					if ((sslsock->enable_on_connect) &&
+						((xparam->outputs.returncode == 0) ||
+						(xparam->op == STREAM_XPORT_OP_CONNECT_ASYNC && 
+						xparam->outputs.returncode == 1 && xparam->outputs.error_code == EINPROGRESS)))
+					{
 						if (php_stream_xport_crypto_setup(stream, sslsock->method, NULL TSRMLS_CC) < 0 ||
 								php_stream_xport_crypto_enable(stream, 1 TSRMLS_CC) < 0) {
 							php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to enable crypto");
@@ -771,6 +784,9 @@ php_stream *php_openssl_ssl_socket_factory(const char *proto, long protolen,
 	/* we don't know the socket until we have determined if we are binding or
 	 * connecting */
 	sslsock->s.socket = -1;
+	
+	/* Initialize context as NULL */
+	sslsock->ctx = NULL;	
 	
 	stream = php_stream_alloc_rel(&php_openssl_socket_ops, sslsock, persistent_id, "r+");
 

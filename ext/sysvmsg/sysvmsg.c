@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: sysvmsg.c,v 1.20.2.3.2.6.2.9 2008/12/31 11:15:46 sebastian Exp $ */
+/* $Id: sysvmsg.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -145,7 +145,7 @@ PHP_MINFO_FUNCTION(sysvmsg)
 {
 	php_info_print_table_start();
 	php_info_print_table_row(2, "sysvmsg support", "enabled");
-	php_info_print_table_row(2, "Revision", "$Revision: 1.20.2.3.2.6.2.9 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 272370 $");
 	php_info_print_table_end();
 }
 /* }}} */

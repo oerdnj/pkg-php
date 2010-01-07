@@ -19,7 +19,7 @@ require_once('skipifconnectfailure.inc');
 		printf("[001] Expecting NULL, got %s/%s\n", gettype($tmp), $tmp);
 
 	require('table.inc');
-	if (!$mysqli = new mysqli($host, $user, $passwd, $db, $port, $socket))
+	if (!$mysqli = new my_mysqli($host, $user, $passwd, $db, $port, $socket))
 		printf("[002] Cannot connect to the server using host=%s, user=%s, passwd=***, dbname=%s, port=%s, socket=%s\n",
 			$host, $user, $db, $port, $socket);
 
@@ -104,6 +104,10 @@ require_once('skipifconnectfailure.inc');
 
 	$mysqli->close();
 	print "done!";
+?>
+--CLEAN--
+<?php
+	require_once("clean_table.inc");
 ?>
 --EXPECTF--
 Warning: Missing argument 1 for mysqli_fetch_object_construct::__construct() in %s on line %d

@@ -2,7 +2,7 @@
 zip::close() function
 --SKIPIF--
 <?php
-/* $Id: oo_close.phpt,v 1.1.4.1 2008/05/21 09:27:41 pajoye Exp $ */
+/* $Id: oo_close.phpt 260091 2008-05-21 09:27:41Z pajoye $ */
 if(!extension_loaded('zip')) die('skip');
 ?>
 --FILE--

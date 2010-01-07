@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: json.c,v 1.9.2.19.2.24 2009/06/24 17:39:52 felipe Exp $ */
+/* $Id: json.c 286385 2009-07-27 03:43:38Z scottmac $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -301,6 +301,7 @@ static void json_escape_string(smart_str *buf, char *s, int len, int options TSR
 			efree(utf16);
 		}
 		if (len < 0) {
+			JSON_G(error_code) = PHP_JSON_ERROR_UTF8;
 			if (!PG(display_errors)) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid UTF-8 sequence in argument");
 			}
@@ -411,8 +412,9 @@ static void json_escape_string(smart_str *buf, char *s, int len, int options TSR
 }
 /* }}} */
 
-PHPAPI void php_json_encode(smart_str *buf, zval *val, int options TSRMLS_DC) /* {{{ */
+PHP_JSON_API void php_json_encode(smart_str *buf, zval *val, int options TSRMLS_DC) /* {{{ */
 {
+	JSON_G(error_code) = PHP_JSON_ERROR_NONE;
 	switch (Z_TYPE_P(val))
 	{
 		case IS_NULL:
@@ -467,7 +469,7 @@ PHPAPI void php_json_encode(smart_str *buf, zval *val, int options TSRMLS_DC) /*
 }
 /* }}} */
 
-PHPAPI void php_json_decode(zval *return_value, char *str, int str_len, zend_bool assoc, long depth TSRMLS_DC) /* {{{ */
+PHP_JSON_API void php_json_decode(zval *return_value, char *str, int str_len, zend_bool assoc, long depth TSRMLS_DC) /* {{{ */
 {
 	int utf16_len;
 	zval *z;

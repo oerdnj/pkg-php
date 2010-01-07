@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: acconfig.h,v 1.40.2.1.2.1.2.3 2008/12/31 11:15:31 sebastian Exp $ */
+/* $Id: acconfig.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #if defined(__GNUC__) && __GNUC__ >= 4
 # define ZEND_API __attribute__ ((visibility("default")))
@@ -434,9 +434,6 @@
 /* Define if you have the realpath function.  */
 #undef HAVE_REALPATH
 
-/* Define if you have the res_search function.  */
-#undef HAVE_RES_SEARCH
-
 /* Define if you have the rl_completion_matches function.  */
 #undef HAVE_RL_COMPLETION_MATCHES
 
@@ -623,6 +620,9 @@
 /* Define if you have the <arpa/nameser.h> header file.  */
 #undef HAVE_ARPA_NAMESER_H
 
+/* Define if you have the <arpa/nameser_compat.h> header file.  */
+#undef HAVE_ARPA_NAMESER_COMPAT_H
+
 /* Define if you have the <assert.h> header file.  */
 #undef HAVE_ASSERT_H
 
@@ -637,6 +637,9 @@
 
 /* Define if you have the <dlfcn.h> header file.  */
 #undef HAVE_DLFCN_H
+
+/* Define if you have the <dns.h> header file.  */
+#undef HAVE_DNS_H
 
 /* Define if you have the <errno.h> header file.  */
 #undef HAVE_ERRNO_H
@@ -661,9 +664,6 @@
 
 /* Define if you have the <locale.h> header file.  */
 #undef HAVE_LOCALE_H
-
-/* Define if you have the <mach-o/dyld.h> header file.  */
-#undef HAVE_MACH_O_DYLD_H
 
 /* Define if you have the <malloc.h> header file.  */
 #undef HAVE_MALLOC_H
@@ -829,9 +829,6 @@
 
 /* Define if you have the m library (-lm).  */
 #undef HAVE_LIBM
-
-/* Enabling BIND8 compatibility for Panther */
-#undef BIND_8_COMPAT
 
 /* Define if the target system has /dev/urandom device */
 #undef HAVE_DEV_URANDOM
@@ -1057,6 +1054,15 @@
 
 /*   */
 #undef HAVE_LIBBIND
+
+/*   */
+#undef HAVE_NANOSLEEP
+
+/*   */
+#undef HAVE_NANOSLEEP
+
+/*   */
+#undef HAVE_LIBRT
 
 /*   */
 #undef HAVE_FOPENCOOKIE
@@ -1423,6 +1429,12 @@
 
 /*   */
 #undef HAVE_ENCHANT
+
+/*   */
+#undef HAVE_ENCHANT_BROKER_SET_PARAM
+
+/*   */
+#undef ENCHANT_VERSION_STRING
 
 /* Whether you want EXIF (metadata from images) support */
 #undef HAVE_EXIF
@@ -2463,64 +2475,43 @@
 #undef ENABLE_CHROOT_FUNC
 
 /*   */
-#undef HAVE_RES_NMKQUERY
+#undef HAVE_RES_NSEARCH
 
 /*   */
-#undef HAVE_RES_NMKQUERY
+#undef HAVE_RES_NSEARCH
 
 /*   */
 #undef HAVE_LIBRESOLV
 
 /*   */
-#undef HAVE_RES_NMKQUERY
+#undef HAVE_RES_NSEARCH
 
 /*   */
 #undef HAVE_LIBBIND
 
 /*   */
-#undef HAVE_RES_NMKQUERY
+#undef HAVE_RES_NSEARCH
 
 /*   */
 #undef HAVE_LIBSOCKET
 
 /*   */
-#undef HAVE_RES_NSEND
+#undef HAVE_DNS_SEARCH
 
 /*   */
-#undef HAVE_RES_NSEND
-
-/*   */
-#undef HAVE_LIBRESOLV
-
-/*   */
-#undef HAVE_RES_NSEND
-
-/*   */
-#undef HAVE_LIBBIND
-
-/*   */
-#undef HAVE_RES_NSEND
-
-/*   */
-#undef HAVE_LIBSOCKET
-
-/*   */
-#undef HAVE_RES_SEARCH
-
-/*   */
-#undef HAVE_RES_SEARCH
+#undef HAVE_DNS_SEARCH
 
 /*   */
 #undef HAVE_LIBRESOLV
 
 /*   */
-#undef HAVE_RES_SEARCH
+#undef HAVE_DNS_SEARCH
 
 /*   */
 #undef HAVE_LIBBIND
 
 /*   */
-#undef HAVE_RES_SEARCH
+#undef HAVE_DNS_SEARCH
 
 /*   */
 #undef HAVE_LIBSOCKET
@@ -2568,43 +2559,22 @@
 #undef HAVE_LIBSOCKET
 
 /*   */
-#undef HAVE_RES_MKQUERY
+#undef HAVE_RES_SEARCH
 
 /*   */
-#undef HAVE_RES_MKQUERY
-
-/*   */
-#undef HAVE_LIBRESOLV
-
-/*   */
-#undef HAVE_RES_MKQUERY
-
-/*   */
-#undef HAVE_LIBBIND
-
-/*   */
-#undef HAVE_RES_MKQUERY
-
-/*   */
-#undef HAVE_LIBSOCKET
-
-/*   */
-#undef HAVE_RES_SEND
-
-/*   */
-#undef HAVE_RES_SEND
+#undef HAVE_RES_SEARCH
 
 /*   */
 #undef HAVE_LIBRESOLV
 
 /*   */
-#undef HAVE_RES_SEND
+#undef HAVE_RES_SEARCH
 
 /*   */
 #undef HAVE_LIBBIND
 
 /*   */
-#undef HAVE_RES_SEND
+#undef HAVE_RES_SEARCH
 
 /*   */
 #undef HAVE_LIBSOCKET

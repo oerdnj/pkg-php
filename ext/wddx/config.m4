@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.11.2.1.2.1 2006/07/27 01:18:55 sniper Exp $
+dnl $Id: config.m4 217130 2006-07-27 01:18:55Z sniper $
 dnl
 
 PHP_ARG_ENABLE(wddx,whether to enable WDDX support,

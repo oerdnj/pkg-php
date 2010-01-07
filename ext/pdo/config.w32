@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.5.2.2.4.1 2008/07/24 16:05:34 pajoye Exp $
+// $Id: config.w32 263427 2008-07-24 16:05:34Z pajoye $
 // vim:ft=javascript
 
 ARG_ENABLE("pdo", "Enable PHP Data Objects support", "no");

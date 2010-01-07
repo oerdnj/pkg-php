@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_date.c,v 1.43.2.45.2.51.2.84 2009/06/25 15:07:36 johannes Exp $ */
+/* $Id: php_date.c 289981 2009-10-27 10:41:45Z pajoye $ */
 
 #include "php.h"
 #include "php_streams.h"
@@ -619,6 +619,7 @@ PHP_RINIT_FUNCTION(date)
 	}
 	DATEG(timezone) = NULL;
 	DATEG(tzcache) = NULL;
+	DATEG(last_errors) = NULL;
 
 	return SUCCESS;
 }
@@ -636,6 +637,11 @@ PHP_RSHUTDOWN_FUNCTION(date)
 		FREE_HASHTABLE(DATEG(tzcache));
 		DATEG(tzcache) = NULL;
 	}
+	if (DATEG(last_errors)) {
+		timelib_error_container_dtor(DATEG(last_errors));
+		DATEG(last_errors) = NULL;
+	}
+
 	return SUCCESS;
 }
 /* }}} */
@@ -777,7 +783,6 @@ PHP_MINIT_FUNCTION(date)
 
 	php_date_global_timezone_db = NULL;
 	php_date_global_timezone_db_enabled = 0;
-
 	DATEG(last_errors) = NULL;
 	return SUCCESS;
 }
@@ -849,7 +854,17 @@ static char* guess_timezone(const timelib_tzdb *tzdb TSRMLS_DC)
 		return env;
 	}
 	/* Check config setting for default timezone */
-	if (DATEG(default_timezone) && (strlen(DATEG(default_timezone)) > 0) && timelib_timezone_id_is_valid(DATEG(default_timezone), tzdb)) {
+	if (!DATEG(default_timezone)) {
+		/* Special case: ext/date wasn't initialized yet */
+		zval ztz;
+		
+		if (SUCCESS == zend_get_configuration_directive("date.timezone", sizeof("date.timezone"), &ztz) &&
+		    Z_TYPE(ztz) == IS_STRING &&
+		    Z_STRLEN(ztz) > 0 &&
+		    timelib_timezone_id_is_valid(Z_STRVAL(ztz), tzdb)) {
+			return Z_STRVAL(ztz);
+		}
+	} else if (*DATEG(default_timezone) && timelib_timezone_id_is_valid(DATEG(default_timezone), tzdb)) {
 		return DATEG(default_timezone);
 	}
 #if HAVE_TM_ZONE
@@ -2414,7 +2429,7 @@ static int date_initialize(php_date_obj *dateobj, /*const*/ char *time_str, int 
 	}
 	timelib_unixtime2local(now, (timelib_sll) time(NULL));
 
-	timelib_fill_holes(dateobj->time, now, 0);
+	timelib_fill_holes(dateobj->time, now, TIMELIB_NO_CLONE);
 	timelib_update_ts(dateobj->time, tzi);
 
 	dateobj->time->have_relative = 0;
@@ -3270,7 +3285,7 @@ PHP_FUNCTION(timezone_transitions_get)
 {
 	zval                *object, *element;
 	php_timezone_obj    *tzobj;
-	int                  i, begin = 0, found;
+	unsigned int         i, begin = 0, found;
 	long                 timestamp_begin = LONG_MIN, timestamp_end = LONG_MAX;
 
 	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "O|ll", &object, date_ce_timezone, &timestamp_begin, &timestamp_end) == FAILURE) {
@@ -3927,7 +3942,7 @@ static void php_do_date_sunrise_sunset(INTERNAL_FUNCTION_PARAMETERS, int calc_su
 	}
 
 	timelib_unixtime2local(t, time);
-	rs = timelib_astro_rise_set_altitude(t, longitude, latitude, altitude, altitude > -1 ? 1 : 0, &h_rise, &h_set, &rise, &set, &transit);
+	rs = timelib_astro_rise_set_altitude(t, longitude, latitude, altitude, 1, &h_rise, &h_set, &rise, &set, &transit);
 	timelib_time_dtor(t);
 	
 	if (rs != 0) {

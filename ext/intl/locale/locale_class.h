@@ -14,7 +14,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: locale_class.h,v 1.1.2.2 2008/08/03 11:33:45 jani Exp $ */
+/* $Id: locale_class.h 264111 2008-08-03 11:33:45Z jani $ */
 
 #ifndef LOCALE_CLASS_H
 #define LOCALE_CLASS_H

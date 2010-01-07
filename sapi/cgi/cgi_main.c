@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: cgi_main.c,v 1.267.2.15.2.50.2.44 2009/06/22 14:10:40 pajoye Exp $ */
+/* $Id: cgi_main.c 289795 2009-10-20 12:57:44Z tony2001 $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -159,6 +159,7 @@ static const opt_struct OPTIONS[] = {
 typedef struct _php_cgi_globals_struct {
 	zend_bool rfc2616_headers;
 	zend_bool nph;
+	zend_bool check_shebang_line;
 	zend_bool fix_pathinfo;
 	zend_bool force_redirect;
 	zend_bool discard_path;
@@ -753,7 +754,11 @@ static void php_cgi_ini_activate_user_config(char *path, int path_len, const cha
 		  if it is inside the docroot, we scan the tree up to the docroot 
 			to find more user.ini, if not we only scan the current path.
 		  */
+#ifdef PHP_WIN32
+		if (strnicmp(s1, s2, s_len) == 0) {
+#else 
 		if (strncmp(s1, s2, s_len) == 0) {
+#endif
 			ptr = s2 + start;  /* start is the point where doc_root ends! */
 			while ((ptr = strchr(ptr, DEFAULT_SLASH)) != NULL) {
 				*ptr = 0;
@@ -776,7 +781,7 @@ static void php_cgi_ini_activate_user_config(char *path, int path_len, const cha
 static int sapi_cgi_activate(TSRMLS_D)
 {
 	char *path, *doc_root, *server_name;
-	uint path_len, doc_root_len;
+	uint path_len, doc_root_len, server_name_len;
 
 	/* PATH_TRANSLATED should be defined at this stage but better safe than sorry :) */
 	if (!SG(request_info).path_translated) {
@@ -788,7 +793,11 @@ static int sapi_cgi_activate(TSRMLS_D)
 		server_name = sapi_cgibin_getenv("SERVER_NAME", sizeof("SERVER_NAME") - 1 TSRMLS_CC);
 		/* SERVER_NAME should also be defined at this stage..but better check it anyway */
 		if (server_name) {
-			php_ini_activate_per_host_config(server_name, strlen(server_name) + 1 TSRMLS_CC);
+			server_name_len = strlen(server_name);
+			server_name = estrndup(server_name, server_name_len);
+			zend_str_tolower(server_name, server_name_len);
+			php_ini_activate_per_host_config(server_name, server_name_len + 1 TSRMLS_CC);
+			efree(server_name);
 		}
 	}
 
@@ -819,13 +828,21 @@ static int sapi_cgi_activate(TSRMLS_D)
 			/* DOCUMENT_ROOT should also be defined at this stage..but better check it anyway */
 			if (doc_root) {
 				doc_root_len = strlen(doc_root);
-				if (IS_SLASH(doc_root[doc_root_len - 1])) {
+				if (doc_root_len > 0 && IS_SLASH(doc_root[doc_root_len - 1])) {
 					--doc_root_len;
 				}
+#ifdef PHP_WIN32
+				/* paths on windows should be case-insensitive */
+				doc_root = estrndup(doc_root, doc_root_len);
+				zend_str_tolower(doc_root, doc_root_len);
+#endif
 				php_cgi_ini_activate_user_config(path, path_len, doc_root, doc_root_len, doc_root_len - 1 TSRMLS_CC);
 			}
 		}
 
+#ifdef PHP_WIN32
+		efree(doc_root);
+#endif
 		efree(path);
 	}
 
@@ -1279,9 +1296,6 @@ static void init_request_info(TSRMLS_D)
 				if (pt) {
 					efree(pt);
 				}
-				if (is_valid_path(script_path_translated)) {
-					SG(request_info).path_translated = estrdup(script_path_translated);
-				}
 			} else {
 				/* make sure path_info/translated are empty */
 				if (!orig_script_filename ||
@@ -1310,9 +1324,6 @@ static void init_request_info(TSRMLS_D)
 				} else {
 					SG(request_info).request_uri = env_script_name;
 				}
-				if (is_valid_path(script_path_translated)) {
-					SG(request_info).path_translated = estrdup(script_path_translated);
-				}
 				free(real_path);
 			}
 		} else {
@@ -1325,9 +1336,10 @@ static void init_request_info(TSRMLS_D)
 			if (!CGIG(discard_path) && env_path_translated) {
 				script_path_translated = env_path_translated;
 			}
-			if (is_valid_path(script_path_translated)) {
-				SG(request_info).path_translated = estrdup(script_path_translated);
-			}
+		}
+
+		if (is_valid_path(script_path_translated)) {
+			SG(request_info).path_translated = estrdup(script_path_translated);
 		}
 
 		SG(request_info).request_method = sapi_cgibin_getenv("REQUEST_METHOD", sizeof("REQUEST_METHOD")-1 TSRMLS_CC);
@@ -1369,6 +1381,7 @@ void fastcgi_cleanup(int signal)
 PHP_INI_BEGIN()
 	STD_PHP_INI_ENTRY("cgi.rfc2616_headers",     "0",  PHP_INI_ALL,    OnUpdateBool,   rfc2616_headers, php_cgi_globals_struct, php_cgi_globals)
 	STD_PHP_INI_ENTRY("cgi.nph",                 "0",  PHP_INI_ALL,    OnUpdateBool,   nph, php_cgi_globals_struct, php_cgi_globals)
+	STD_PHP_INI_ENTRY("cgi.check_shebang_line",  "1",  PHP_INI_SYSTEM, OnUpdateBool,   check_shebang_line, php_cgi_globals_struct, php_cgi_globals)
 	STD_PHP_INI_ENTRY("cgi.force_redirect",      "1",  PHP_INI_SYSTEM, OnUpdateBool,   force_redirect, php_cgi_globals_struct, php_cgi_globals)
 	STD_PHP_INI_ENTRY("cgi.redirect_status_env", NULL, PHP_INI_SYSTEM, OnUpdateString, redirect_status_env, php_cgi_globals_struct, php_cgi_globals)
 	STD_PHP_INI_ENTRY("cgi.fix_pathinfo",        "1",  PHP_INI_SYSTEM, OnUpdateBool,   fix_pathinfo, php_cgi_globals_struct, php_cgi_globals)
@@ -1385,6 +1398,7 @@ static void php_cgi_globals_ctor(php_cgi_globals_struct *php_cgi_globals TSRMLS_
 {
 	php_cgi_globals->rfc2616_headers = 0;
 	php_cgi_globals->nph = 0;
+	php_cgi_globals->check_shebang_line = 1;
 	php_cgi_globals->force_redirect = 1;
 	php_cgi_globals->redirect_status_env = NULL;
 	php_cgi_globals->fix_pathinfo = 1;
@@ -2024,7 +2038,7 @@ consult the installation file that came with this distribution, or visit \n\
 				1. we are running from shell and got filename was there
 				2. we are running as cgi or fastcgi
 			*/
-			if (cgi || SG(request_info).path_translated) {
+			if (cgi || fastcgi || SG(request_info).path_translated) {
 				if (php_fopen_primary_script(&file_handle TSRMLS_CC) == FAILURE) {
 					if (errno == EACCES) {
 						SG(sapi_headers).http_response_code = 403;
@@ -2055,6 +2069,26 @@ consult the installation file that came with this distribution, or visit \n\
 					tsrm_shutdown();
 #endif
 					return FAILURE;
+				}
+			}
+
+			if (CGIG(check_shebang_line) && file_handle.handle.fp && (file_handle.handle.fp != stdin)) {
+				/* #!php support */
+				c = fgetc(file_handle.handle.fp);
+				if (c == '#') {
+					while (c != '\n' && c != '\r' && c != EOF) {
+						c = fgetc(file_handle.handle.fp);	/* skip to end of line */
+					}
+					/* handle situations where line is terminated by \r\n */
+					if (c == '\r') {
+						if (fgetc(file_handle.handle.fp) != '\n') {
+							long pos = ftell(file_handle.handle.fp);
+							fseek(file_handle.handle.fp, pos - 1, SEEK_SET);
+						}
+					}
+					CG(start_lineno) = 2;
+				} else {
+					rewind(file_handle.handle.fp);
 				}
 			}
 
@@ -2108,26 +2142,14 @@ consult the installation file that came with this distribution, or visit \n\
 
 fastcgi_request_done:
 			{
-				char *path_translated;
-
-				/* Go through this trouble so that the memory manager doesn't warn
-				 * about SG(request_info).path_translated leaking
-				 */
-				if (SG(request_info).path_translated) {
-					path_translated = strdup(SG(request_info).path_translated);
-					STR_FREE(SG(request_info).path_translated);
-					SG(request_info).path_translated = path_translated;
-				}
+				STR_FREE(SG(request_info).path_translated);
 
 				php_request_shutdown((void *) 0);
+
 				if (exit_status == 0) {
 					exit_status = EG(exit_status);
 				}
 
-				if (SG(request_info).path_translated) {
-					free(SG(request_info).path_translated);
-					SG(request_info).path_translated = NULL;
-				}
 				if (free_query_string && SG(request_info).query_string) {
 					free(SG(request_info).query_string);
 					SG(request_info).query_string = NULL;

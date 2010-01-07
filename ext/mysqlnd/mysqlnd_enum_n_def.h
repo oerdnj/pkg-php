@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_enum_n_def.h,v 1.2.2.15 2009/06/25 19:03:51 johannes Exp $ */
+/* $Id: mysqlnd_enum_n_def.h 289630 2009-10-14 13:51:25Z johannes $ */
 #ifndef MYSQLND_ENUM_N_DEF_H
 #define MYSQLND_ENUM_N_DEF_H
 
@@ -27,6 +27,10 @@
 #define MYSQLND_ERRMSG_SIZE			512
 #define MYSQLND_SQLSTATE_LENGTH		5
 #define MYSQLND_SQLSTATE_NULL		"00000"
+
+
+#define MYSQLND_NET_CMD_BUFFER_MIN_SIZE			4096
+#define MYSQLND_NET_CMD_BUFFER_MIN_SIZE_STR		"4096"
 
 #define SERVER_STATUS_IN_TRANS					1	/* Transaction has started */
 #define SERVER_STATUS_AUTOCOMMIT				2	/* Server in auto_commit mode */
@@ -73,6 +77,7 @@
 #define CLIENT_SECURE_CONNECTION	32768	/* New 4.1 authentication */
 #define CLIENT_MULTI_STATEMENTS		(1UL << 16) /* Enable/disable multi-stmt support */
 #define CLIENT_MULTI_RESULTS		(1UL << 17) /* Enable/disable multi-results */
+#define CLIENT_PS_MULTI_RESULTS		(1UL << 18) /* Multi-results in PS-protocol */
 
 typedef enum mysqlnd_extension
 {
@@ -425,6 +430,8 @@ typedef enum mysqlnd_collected_stats
 	STAT_BINARY_TYPE_FETCHED_SET,
 	STAT_BINARY_TYPE_FETCHED_GEOMETRY,
 	STAT_BINARY_TYPE_FETCHED_OTHER,
+	STAT_INIT_COMMAND_EXECUTED_COUNT,
+	STAT_INIT_COMMAND_FAILED_COUNT,
 	STAT_LAST /* Should be always the last */
 } enum_mysqlnd_collected_stats;
 

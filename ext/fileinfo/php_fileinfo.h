@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_fileinfo.h,v 1.3.2.1 2008/08/29 13:29:42 derick Exp $ */
+/* $Id: php_fileinfo.h 265634 2008-08-29 13:29:42Z derick $ */
 
 #ifndef PHP_FILEINFO_H
 #define PHP_FILEINFO_H

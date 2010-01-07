@@ -13,7 +13,7 @@ if (!function_exists('mysqli_set_local_infile_handler'))
 if (!$TEST_EXPERIMENTAL)
     die("skip - experimental (= unsupported) feature");
 
-if (!$link = mysqli_connect($host, $user, $passwb, $db, $port, $socket))
+if (!$link = my_mysqli_connect($host, $user, $passwb, $db, $port, $socket))
 	die("skip Cannot connect to MySQL");
 
 if (!$res = mysqli_query($link, 'SHOW VARIABLES LIKE "local_infile"')) {
@@ -42,7 +42,7 @@ mysqli.allow_local_infile=1
 
 		printf("Callback: %d\n", $invocation++);
 
-		$num_chars = (ini_get('unicode.semantics')) ? (floor($buflen / 2) - 10) : ($buflen - 5);
+		$num_chars = (version_compare(PHP_VERSION, '5.9.9', '>') == 1) ? (floor($buflen / 2) - 10) : ($buflen - 5);
 		$part1 = floor($num_chars / 2);
 		$part2 = $num_chars - $part1;
 
@@ -68,6 +68,10 @@ mysqli.allow_local_infile=1
 
 	mysqli_close($link);
 	print "done!";
+?>
+--CLEAN--
+<?php
+	require_once("clean_table.inc");
 ?>
 --EXPECTF--
 Callback set to 'callback_bad_character'

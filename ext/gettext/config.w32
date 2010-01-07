@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.2.4.1.4.1 2008/08/01 21:20:08 pajoye Exp $
+// $Id: config.w32 264053 2008-08-01 21:20:08Z pajoye $
 // vim:ft=javascript
 
 ARG_WITH("gettext", "gettext support", "no");

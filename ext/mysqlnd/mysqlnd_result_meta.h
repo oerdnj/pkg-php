@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_result_meta.h,v 1.2.2.6 2008/12/31 11:15:39 sebastian Exp $ */
+/* $Id: mysqlnd_result_meta.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef MYSQLND_RESULT_META_H
 #define MYSQLND_RESULT_META_H

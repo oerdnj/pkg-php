@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: array.c,v 1.308.2.21.2.37.2.56 2009/05/15 17:03:03 moriyoshi Exp $ */
+/* $Id: array.c 287275 2009-08-14 06:20:21Z dmitry $ */
 
 #include "php.h"
 #include "php_ini.h"
@@ -629,6 +629,7 @@ static int php_array_user_compare(const void *a, const void *b TSRMLS_DC) /* {{{
 PHP_FUNCTION(usort)
 {
 	zval *array;
+	int refcount;
 	PHP_ARRAY_CMP_FUNC_VARS;
 
 	PHP_ARRAY_CMP_FUNC_BACKUP();
@@ -638,12 +639,31 @@ PHP_FUNCTION(usort)
 		return;
 	}
 
+	/* Clear the is_ref flag, so the attemts to modify the array in user
+	 * comaprison function will create a copy of array and won't affect the
+	 * original array. The fact of modification is detected using refcount
+	 * comparison. The result of sorting in such case is undefined and the
+	 * function returns FALSE.
+	 */
+	Z_UNSET_ISREF_P(array);
+	refcount = Z_REFCOUNT_P(array);
+
 	if (zend_hash_sort(Z_ARRVAL_P(array), zend_qsort, php_array_user_compare, 1 TSRMLS_CC) == FAILURE) {
-		PHP_ARRAY_CMP_FUNC_RESTORE();
-		RETURN_FALSE;
+		RETVAL_FALSE;
+	} else {
+		if (refcount > Z_REFCOUNT_P(array)) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Array was modified by the user comparison function");
+			RETVAL_FALSE;
+		} else {
+			RETVAL_TRUE;
+		}
 	}
+	
+	if (Z_REFCOUNT_P(array) > 1) {
+		Z_SET_ISREF_P(array);
+	}
+
 	PHP_ARRAY_CMP_FUNC_RESTORE();
-	RETURN_TRUE;
 }
 /* }}} */
 
@@ -652,6 +672,7 @@ PHP_FUNCTION(usort)
 PHP_FUNCTION(uasort)
 {
 	zval *array;
+	int refcount;
 	PHP_ARRAY_CMP_FUNC_VARS;
 
 	PHP_ARRAY_CMP_FUNC_BACKUP();
@@ -661,12 +682,31 @@ PHP_FUNCTION(uasort)
 		return;
 	}
 
+	/* Clear the is_ref flag, so the attemts to modify the array in user
+	 * comaprison function will create a copy of array and won't affect the
+	 * original array. The fact of modification is detected using refcount
+	 * comparison. The result of sorting in such case is undefined and the
+	 * function returns FALSE.
+	 */
+	Z_UNSET_ISREF_P(array);
+	refcount = Z_REFCOUNT_P(array);
+
 	if (zend_hash_sort(Z_ARRVAL_P(array), zend_qsort, php_array_user_compare, 0 TSRMLS_CC) == FAILURE) {
-		PHP_ARRAY_CMP_FUNC_RESTORE();
-		RETURN_FALSE;
+		RETVAL_FALSE;
+	} else {
+		if (refcount > Z_REFCOUNT_P(array)) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Array was modified by the user comparison function");
+			RETVAL_FALSE;
+		} else {
+			RETVAL_TRUE;
+		}
 	}
+
+	if (Z_REFCOUNT_P(array) > 1) {
+		Z_SET_ISREF_P(array);
+	}
+
 	PHP_ARRAY_CMP_FUNC_RESTORE();
-	RETURN_TRUE;
 }
 /* }}} */
 
@@ -2305,6 +2345,7 @@ static void php_array_merge_or_replace_wrapper(INTERNAL_FUNCTION_PARAMETERS, int
 	array_init_size(return_value, init_size);
 
 	for (i = 0; i < argc; i++) {
+		SEPARATE_ZVAL(args[i]);
 		if (!replace) {
 			php_array_merge(Z_ARRVAL_P(return_value), Z_ARRVAL_PP(args[i]), recursive TSRMLS_CC);
 		} else if (recursive && i > 0) { /* First array will be copied directly instead */

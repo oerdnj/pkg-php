@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: oci_statement.c,v 1.16.2.10.2.7.2.4 2008/12/31 11:15:41 sebastian Exp $ */
+/* $Id: oci_statement.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

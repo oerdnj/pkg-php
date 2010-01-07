@@ -38,7 +38,7 @@
 
 #if 0
 static char const *version UNUSED =
-    "$Id: strnatcmp.c,v 1.10.8.2 2009/04/09 15:55:46 rasmus Exp $";
+    "$Id: strnatcmp.c 289419 2009-10-09 14:33:38Z pajoye $";
 #endif
 /* {{{ compare_right
  */
@@ -101,11 +101,12 @@ compare_left(char const **a, char const *aend, char const **b, char const *bend)
  */
 PHPAPI int strnatcmp_ex(char const *a, size_t a_len, char const *b, size_t b_len, int fold_case)
 {
-	char ca, cb;
+	unsigned char ca, cb;
 	char const *ap, *bp;
 	char const *aend = a + a_len,
 			   *bend = b + b_len;
 	int fractional, result;
+	short leading = 1;
 
 	if (a_len == 0 || b_len == 0)
 		return a_len - b_len;
@@ -115,12 +116,25 @@ PHPAPI int strnatcmp_ex(char const *a, size_t a_len, char const *b, size_t b_len
 	while (1) {
 		ca = *ap; cb = *bp;
 
-		/* skip over leading spaces or zeros */
-		while (isspace((int)(unsigned char)ca) || (ca == '0' && (ap+1 < aend) && (*(ap+1)!='.')))
+		/* skip over leading zeros */
+		while (leading && ca == '0' && (ap+1 < aend) && isdigit(*(ap+1))) {
 			ca = *++ap;
+		}
 
-		while (isspace((int)(unsigned char)cb) || (cb == '0' && (bp+1 < bend) && (*(bp+1)!='.')))
+		while (leading && cb == '0' && (bp+1 < bend) && isdigit(*(bp+1))) {
 			cb = *++bp;
+		}
+
+		leading = 0;
+
+		/* Skip consecutive whitespace */
+		while (isspace((int)(unsigned char)ca)) {
+			ca = *++ap;
+		}
+
+		while (isspace((int)(unsigned char)cb)) {
+			cb = *++bp;
+		}
 
 		/* process run of digits */
 		if (isdigit((int)(unsigned char)ca)  &&  isdigit((int)(unsigned char)cb)) {

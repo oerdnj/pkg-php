@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_priv.h,v 1.4.2.17 2009/02/16 17:26:43 johannes Exp $ */
+/* $Id: mysqlnd_priv.h 289630 2009-10-14 13:51:25Z johannes $ */
 
 #ifndef MYSQLND_PRIV_H
 #define MYSQLND_PRIV_H
@@ -104,10 +104,12 @@
 		if ((buf)) { \
 			pefree((buf), (persistent)); \
 		} \
-		(buf) = (message); \
+		if ((message)) { \
+			(buf) = pestrndup((message), (len), (persistent)); \
+		} else { \
+			buf = NULL; \
+		} \
 		(buf_len) = (len); \
-		/* Transfer ownership*/ \
-		(message) = NULL; \
 	}
 
 #define SET_EMPTY_MESSAGE(buf, buf_len, persistent) \

@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.22.2.1.2.2.2.5 2009/05/29 13:09:46 andrey Exp $
+dnl $Id: config.m4 286640 2009-08-02 01:07:38Z jani $
 dnl config.m4 for extension mysqli
 
 PHP_ARG_WITH(mysqli, for MySQLi support,
@@ -62,7 +62,7 @@ elif test "$PHP_MYSQLI" != "no"; then
     $MYSQLI_LIBLINE
   ])
   dnl
-  dnl Check the library for mysql_stmt_store_result
+  dnl Check the library for mysql_stmt_next_result
   dnl
   PHP_CHECK_LIBRARY($MYSQL_LIB_NAME, mysql_stmt_next_result,
   [

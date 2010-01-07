@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: sqlite_driver.c,v 1.20.2.5.2.2.2.6 2008/12/31 11:15:41 sebastian Exp $ */
+/* $Id: sqlite_driver.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

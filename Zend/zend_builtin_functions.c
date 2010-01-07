@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_builtin_functions.c,v 1.277.2.12.2.25.2.52 2009/06/08 21:27:05 pajoye Exp $ */
+/* $Id: zend_builtin_functions.c 286878 2009-08-06 11:02:25Z jani $ */
 
 #include "zend.h"
 #include "zend_API.h"
@@ -747,7 +747,7 @@ ZEND_FUNCTION(get_class)
 	zend_uint name_len = 0;
 	int dup;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|o", &obj) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|o!", &obj) == FAILURE) {
 		RETURN_FALSE;
 	}
 
@@ -1755,6 +1755,7 @@ ZEND_FUNCTION(create_function)
 		zend_hash_del(EG(function_table), LAMBDA_TEMP_FUNCNAME, sizeof(LAMBDA_TEMP_FUNCNAME));
 		RETURN_STRINGL(function_name, function_name_length, 0);
 	} else {
+		zend_hash_del(EG(function_table), LAMBDA_TEMP_FUNCNAME, sizeof(LAMBDA_TEMP_FUNCNAME));
 		RETURN_FALSE;
 	}
 }

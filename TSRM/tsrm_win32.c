@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_win32.c,v 1.27.2.1.2.7.2.11 2009/06/16 00:07:04 pajoye Exp $ */
+/* $Id: tsrm_win32.c 290166 2009-11-03 10:48:12Z pajoye $ */
 
 #include <stdio.h>
 #include <fcntl.h>
@@ -30,7 +30,7 @@
 #include "TSRM.h"
 
 #ifdef TSRM_WIN32
-
+#include <Sddl.h>
 #include "tsrm_win32.h"
 #include "tsrm_virtual_cwd.h"
 
@@ -42,25 +42,21 @@ static tsrm_win32_globals win32_globals;
 
 static void tsrm_win32_ctor(tsrm_win32_globals *globals TSRMLS_DC)
 {
-	HANDLE process_token = NULL;
-
 	globals->process = NULL;
 	globals->shm	 = NULL;
 	globals->process_size = 0;
 	globals->shm_size	  = 0;
 	globals->comspec = _strdup((GetVersion()<0x80000000)?"cmd.exe":"command.com");
-	globals->impersonation_token = NULL;
 
-	/* Access check requires impersonation token. Create a duplicate token. */
-	if(OpenProcessToken(GetCurrentProcess(), TOKEN_DUPLICATE | TOKEN_QUERY, &process_token)) {
-		DuplicateToken(process_token, SecurityImpersonation, &globals->impersonation_token);
-	}
-
-	/* impersonation_token will be closed when the process dies */
-	if(process_token != NULL) {
-		CloseHandle(process_token);
-		process_token = NULL;
-	}
+	/* Set it to INVALID_HANDLE_VALUE
+	 * It will be initialized correctly in tsrm_win32_access or set to 
+	 * NULL if no impersonation has been done.
+	 * the impersonated token can't be set here as the impersonation
+	 * will happen later, in fcgi_accept_request (or whatever is the
+	 * SAPI being used).
+	 */
+	globals->impersonation_token = INVALID_HANDLE_VALUE;
+	globals->impersonation_token_sid = NULL;
 }
 
 static void tsrm_win32_dtor(tsrm_win32_globals *globals TSRMLS_DC)
@@ -83,8 +79,11 @@ static void tsrm_win32_dtor(tsrm_win32_globals *globals TSRMLS_DC)
 
 	free(globals->comspec);
 
-	if(globals->impersonation_token) {
+	if (globals->impersonation_token && globals->impersonation_token != INVALID_HANDLE_VALUE	) {
 		CloseHandle(globals->impersonation_token);
+	}
+	if (globals->impersonation_token_sid) {
+		free(globals->impersonation_token_sid);
 	}
 }
 
@@ -104,8 +103,97 @@ TSRM_API void tsrm_win32_shutdown(void)
 #endif
 }
 
+char * tsrm_win32_get_path_sid_key(const char *pathname TSRMLS_DC)
+{
+	PSID pSid = TWG(impersonation_token_sid);
+	DWORD sid_len = pSid ? GetLengthSid(pSid) : 0;
+	TCHAR *ptcSid = NULL;
+	char *bucket_key = NULL;
+
+	if (!pSid) {
+		bucket_key = (char *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, strlen(pathname) + 1);
+		if (!bucket_key) {
+			return NULL;
+		}
+		memcpy(bucket_key, pathname, strlen(pathname));
+		return bucket_key;
+	}
+
+	if (!ConvertSidToStringSid(pSid, &ptcSid)) {
+		return NULL;
+	}
+
+	bucket_key = (char *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, strlen(pathname) + strlen(ptcSid) + 1);
+	if (!bucket_key) {
+		LocalFree(ptcSid);
+		return NULL;
+	}
+
+	memcpy(bucket_key, ptcSid, strlen(ptcSid));
+	memcpy(bucket_key + strlen(ptcSid), pathname, strlen(pathname) + 1);
+
+	LocalFree(ptcSid);
+	return bucket_key;
+}
+
+
+PSID tsrm_win32_get_token_sid(HANDLE hToken)
+{
+	BOOL bSuccess = FALSE;
+	DWORD dwLength = 0;
+	PTOKEN_USER pTokenUser = NULL;
+	PSID sid;
+	PSID *ppsid = &sid;
+	DWORD sid_len;
+	PSID pResultSid = NULL;
+	
+	/* Get the actual size of the TokenUser structure */
+	if (!GetTokenInformation(
+			hToken, TokenUser, (LPVOID) pTokenUser, 0, &dwLength))  {
+		if (GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+			goto Finished;
+		}
+
+		pTokenUser = (PTOKEN_USER)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, dwLength);
+		if (pTokenUser == NULL) {
+			goto Finished;
+		}
+	}
+
+	/* and fetch it now */
+	if (!GetTokenInformation(
+		hToken, TokenUser, (LPVOID) pTokenUser, dwLength, &dwLength)) {
+		goto Finished;
+	}
+
+	sid_len = GetLengthSid(pTokenUser->User.Sid);
+
+	/* ConvertSidToStringSid(pTokenUser->User.Sid, &ptcSidOwner); */
+	pResultSid = malloc(sid_len);
+	if (!pResultSid) {
+		goto Finished;
+	}
+	if (!CopySid(sid_len, pResultSid, pTokenUser->User.Sid)) {
+		goto Finished;
+	}
+	return pResultSid;
+
+Finished:
+	if (pResultSid) {
+		free(pResultSid);
+	}
+	/* Free the buffer for the token groups. */
+	if (pTokenUser != NULL) {
+		HeapFree(GetProcessHeap(), 0, (LPVOID)pTokenUser);
+	}
+	return NULL;
+}
+
 TSRM_API int tsrm_win32_access(const char *pathname, int mode)
 {
+	time_t t;
+	HANDLE thread_token;
+	PSID token_sid;
 	SECURITY_INFORMATION sec_info = OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION;
 	GENERIC_MAPPING gen_map = { FILE_GENERIC_READ, FILE_GENERIC_WRITE, FILE_GENERIC_EXECUTE, FILE_ALL_ACCESS };
 	DWORD priv_set_length = sizeof(PRIVILEGE_SET);
@@ -114,11 +202,10 @@ TSRM_API int tsrm_win32_access(const char *pathname, int mode)
 	DWORD sec_desc_length = 0, desired_access = 0, granted_access = 0;
 	BYTE * psec_desc = NULL;
 	BOOL fAccess = FALSE;
-	HANDLE process_token = NULL;
 
+	BOOL bucket_key_alloc = FALSE;
 	realpath_cache_bucket * bucket = NULL;
 	char * real_path = NULL;
-	time_t t;
 
 	TSRMLS_FETCH();
 
@@ -126,10 +213,6 @@ TSRM_API int tsrm_win32_access(const char *pathname, int mode)
 		DWORD type;
 		return GetBinaryType(pathname, &type) ? 0 : -1;
 	} else {
-		if(access(pathname, mode)) {
-			return errno;
-		}
-
 		if(!IS_ABSOLUTE_PATH(pathname, strlen(pathname)+1)) {
 			real_path = (char *)malloc(MAX_PATH);
 			if(tsrm_realpath(pathname, real_path TSRMLS_CC) == NULL) {
@@ -137,6 +220,58 @@ TSRM_API int tsrm_win32_access(const char *pathname, int mode)
 			}
 			pathname = real_path;
  		}
+
+		if(access(pathname, mode)) {
+			return errno;
+		}
+
+ 		/* If only existence check is made, return now */
+ 		if (mode == 0) {
+			return 0;
+		}
+
+/* Only in NTS when impersonate==1 (aka FastCGI) */
+
+		/*
+		 AccessCheck() requires an impersonation token.  We first get a primary
+		 token and then create a duplicate impersonation token.  The
+		 impersonation token is not actually assigned to the thread, but is
+		 used in the call to AccessCheck.  Thus, this function itself never
+		 impersonates, but does use the identity of the thread.  If the thread
+		 was impersonating already, this function uses that impersonation context.
+		*/
+		if(!OpenThreadToken(GetCurrentThread(), TOKEN_ALL_ACCESS, TRUE, &thread_token)) {
+			DWORD err = GetLastError();
+			if (GetLastError() == ERROR_NO_TOKEN) {
+				if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ALL_ACCESS, &thread_token)) {
+					 TWG(impersonation_token) = NULL;
+					 goto Finished;
+				 }
+			}
+		}
+
+		/* token_sid will be freed in tsrmwin32_dtor */
+		token_sid = tsrm_win32_get_token_sid(thread_token);
+		if (!token_sid) {
+			if (TWG(impersonation_token_sid)) {
+				free(TWG(impersonation_token_sid));
+			}
+			TWG(impersonation_token_sid) = NULL;
+			goto Finished;
+		}
+
+		/* Different identity, we need a new impersontated token as well */
+		if (!TWG(impersonation_token_sid) || !EqualSid(token_sid, TWG(impersonation_token_sid))) {
+			if (TWG(impersonation_token_sid)) {
+				free(TWG(impersonation_token_sid));
+			}
+			TWG(impersonation_token_sid) = token_sid;
+
+			/* Duplicate the token as impersonated token */
+			if (!DuplicateToken(thread_token, SecurityImpersonation, &TWG(impersonation_token))) {
+				goto Finished;
+			}
+		}
 
 		if (CWDG(realpath_cache_size_limit)) {
 			t = time(0);
@@ -151,7 +286,7 @@ TSRM_API int tsrm_win32_access(const char *pathname, int mode)
 				}
 			}
  		}
- 
+
  		/* Do a full access check because access() will only check read-only attribute */
  		if(mode == 0 || mode > 6) {
 			if(bucket != NULL && bucket->is_rvalid) {
@@ -164,13 +299,13 @@ TSRM_API int tsrm_win32_access(const char *pathname, int mode)
 				fAccess = bucket->is_writable;
 				goto Finished;
 			}
-			desired_access = FILE_GENERIC_WRITE;
+			desired_access = FILE_GENERIC_READ | FILE_GENERIC_WRITE;
  		} else if(mode <= 4) {
 			if(bucket != NULL && bucket->is_rvalid) {
 				fAccess = bucket->is_readable;
 				goto Finished;
 			}
-			desired_access = FILE_GENERIC_READ;
+			desired_access = FILE_GENERIC_READ|FILE_FLAG_BACKUP_SEMANTICS;
  		} else { // if(mode <= 6)
 			if(bucket != NULL && bucket->is_rvalid && bucket->is_wvalid) {
 				fAccess = bucket->is_readable & bucket->is_writable;
@@ -194,13 +329,15 @@ TSRM_API int tsrm_win32_access(const char *pathname, int mode)
 			goto Finished;
 		}
 
+		MapGenericMask(&desired_access, &gen_map);
+
 		if(!AccessCheck((PSECURITY_DESCRIPTOR)psec_desc, TWG(impersonation_token), desired_access, &gen_map, &privilege_set, &priv_set_length, &granted_access, &fAccess)) {
-				goto Finished;
+			goto Finished_Impersonate;
 		}
 
 		/* Keep the result in realpath_cache */
 		if(bucket != NULL) {
-			if(desired_access == FILE_GENERIC_READ) {
+			if(desired_access == (FILE_GENERIC_READ|FILE_FLAG_BACKUP_SEMANTICS)) {
 				bucket->is_rvalid = 1;
 				bucket->is_readable = fAccess;
 			}
@@ -210,12 +347,13 @@ TSRM_API int tsrm_win32_access(const char *pathname, int mode)
 			}
 		}
 
-Finished:
+Finished_Impersonate:
 		if(psec_desc != NULL) {
 			free(psec_desc);
 			psec_desc = NULL;
 		}
 
+Finished:
 		if(real_path != NULL) {
 			free(real_path);
 			real_path = NULL;
@@ -305,21 +443,45 @@ TSRM_API FILE *popen(const char *command, const char *type)
 TSRM_API FILE *popen_ex(const char *command, const char *type, const char *cwd, char *env)
 {
 	FILE *stream = NULL;
-	int fno, str_len = strlen(type), read, mode;
+	int fno, type_len = strlen(type), read, mode;
 	STARTUPINFO startup;
 	PROCESS_INFORMATION process;
 	SECURITY_ATTRIBUTES security;
 	HANDLE in, out;
 	DWORD dwCreateFlags = 0;
-	char *cmd;
+	BOOL res;
 	process_pair *proc;
+	char *cmd;
+	int i;
+	char *ptype = (char *)type;
+	HANDLE thread_token = NULL;
+	HANDLE token_user = NULL;
+	BOOL asuser = TRUE;
+
 	TSRMLS_FETCH();
+
+	if (!type) {
+		return NULL;
+	}
+
+	/*The following two checks can be removed once we drop XP support */
+	type_len = strlen(type);
+	if (type_len <1 || type_len > 2) {
+		return NULL;
+	}
+
+	for (i=0; i < type_len; i++) {
+		if (!(*ptype == 'r' || *ptype == 'w' || *ptype == 'b' || *ptype == 't')) {
+			return NULL;
+		}
+		ptype++;
+	}
 
 	security.nLength				= sizeof(SECURITY_ATTRIBUTES);
 	security.bInheritHandle			= TRUE;
 	security.lpSecurityDescriptor	= NULL;
 
-	if (!str_len || !CreatePipe(&in, &out, &security, 2048L)) {
+	if (!type_len || !CreatePipe(&in, &out, &security, 2048L)) {
 		return NULL;
 	}
 
@@ -331,7 +493,7 @@ TSRM_API FILE *popen_ex(const char *command, const char *type, const char *cwd, 
 	startup.hStdError	= GetStdHandle(STD_ERROR_HANDLE);
 
 	read = (type[0] == 'r') ? TRUE : FALSE;
-	mode = ((str_len == 2) && (type[1] == 'b')) ? O_BINARY : O_TEXT;
+	mode = ((type_len == 2) && (type[1] == 'b')) ? O_BINARY : O_TEXT;
 
 	if (read) {
 		in = dupHandle(in, FALSE);
@@ -348,12 +510,30 @@ TSRM_API FILE *popen_ex(const char *command, const char *type, const char *cwd, 
 		dwCreateFlags |= CREATE_NO_WINDOW;
 	}
 
+	/* Get a token with the impersonated user. */
+	if(OpenThreadToken(GetCurrentThread(), TOKEN_ALL_ACCESS, TRUE, &thread_token)) {
+		DuplicateTokenEx(thread_token, MAXIMUM_ALLOWED, &security, SecurityImpersonation, TokenPrimary, &token_user);
+	} else {
+		DWORD err = GetLastError();
+		if (err == ERROR_NO_TOKEN) {
+			asuser = FALSE;
+		}
+
+	}
+
 	cmd = (char*)malloc(strlen(command)+strlen(TWG(comspec))+sizeof(" /c ")+2);
 	sprintf(cmd, "%s /c \"%s\"", TWG(comspec), command);
-	if (!CreateProcess(NULL, cmd, &security, &security, security.bInheritHandle, dwCreateFlags, env, cwd, &startup, &process)) {
-		return NULL;
+	if (asuser) {
+		res = CreateProcessAsUser(token_user, NULL, cmd, &security, &security, security.bInheritHandle, dwCreateFlags, env, cwd, &startup, &process);
+		CloseHandle(token_user);
+	} else {
+		res = CreateProcess(NULL, cmd, &security, &security, security.bInheritHandle, dwCreateFlags, env, cwd, &startup, &process);
 	}
 	free(cmd);
+
+	if (!res) {
+		return NULL;
+	}
 
 	CloseHandle(process.hThread);
 	proc = process_get(NULL TSRMLS_CC);

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: processinginstruction.c,v 1.17.2.1.2.1.2.12 2008/12/31 11:15:36 sebastian Exp $ */
+/* $Id: processinginstruction.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

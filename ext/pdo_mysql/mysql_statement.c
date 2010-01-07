@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysql_statement.c,v 1.48.2.14.2.6.2.5 2009/05/20 08:30:12 kalle Exp $ */
+/* $Id: mysql_statement.c 280838 2009-05-20 08:30:12Z kalle $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

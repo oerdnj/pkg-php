@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: func_interceptors.h,v 1.1.2.4 2008/12/31 11:15:42 sebastian Exp $ */
+/* $Id: func_interceptors.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 BEGIN_EXTERN_C()
 void phar_intercept_functions(TSRMLS_D);

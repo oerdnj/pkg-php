@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_wireprotocol.h,v 1.4.2.12 2008/12/31 11:15:39 sebastian Exp $ */
+/* $Id: mysqlnd_wireprotocol.h 289630 2009-10-14 13:51:25Z johannes $ */
 
 #ifndef MYSQLND_WIREPROTOCOL_H
 #define MYSQLND_WIREPROTOCOL_H
@@ -242,6 +242,8 @@ typedef struct st_php_mysql_packet_res_field {
 	/* For table definitions, empty for result sets */
 	zend_bool				skip_parsing;
 	zend_bool				stupid_list_fields_eof;
+
+	mysqlnd_error_info		error_info;
 } php_mysql_packet_res_field;
 
 

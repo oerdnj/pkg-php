@@ -1,4 +1,4 @@
-dnl $Id: config.m4,v 1.25.2.7.2.6.2.5 2008/11/06 11:12:21 johannes Exp $
+dnl $Id: config.m4 287424 2009-08-17 17:57:40Z jani $
 dnl config.m4 for extension pdo_mysql
 dnl vim: se ts=2 sw=2 et:
 
@@ -171,5 +171,6 @@ if test "$PHP_PDO_MYSQL" != "no"; then
   ])
   PDO_MYSQL_MODULE_TYPE=external
 
+  PHP_SUBST(PDO_MYSQL_SHARED_LIBADD)
   PHP_SUBST_OLD(PDO_MYSQL_MODULE_TYPE)
 fi

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_static_allocator.c,v 1.13.2.1.2.1.2.2 2008/12/31 11:15:32 sebastian Exp $ */
+/* $Id: zend_static_allocator.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #include "zend_static_allocator.h"
 

@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: func_interceptors.c,v 1.20.2.22 2009/05/13 15:55:12 kalle Exp $ */
+/* $Id: func_interceptors.c 280454 2009-05-13 15:55:12Z kalle $ */
 
 #include "phar_internal.h"
 

@@ -1,4 +1,4 @@
-## $Id: configure.in,v 1.579.2.52.2.77.2.58 2009/06/26 15:44:18 johannes Exp $ -*- autoconf -*-
+## $Id: configure.in 290928 2009-11-18 19:43:33Z johannes $ -*- autoconf -*-
 dnl ## Process this file with autoconf to produce a configure script.
 
 divert(1)
@@ -31,7 +31,7 @@ dnl Basic autoconf + automake initialization, generation of config.nice.
 dnl -------------------------------------------------------------------------
 
 AC_PREREQ(2.13)
-AC_INIT(README.CVS-RULES)
+AC_INIT(README.SVN-RULES)
 
 PHP_CONFIG_NICE(config.nice)
 
@@ -41,7 +41,7 @@ AC_CONFIG_HEADER(main/php_config.h)
 
 PHP_MAJOR_VERSION=5
 PHP_MINOR_VERSION=3
-PHP_RELEASE_VERSION=0
+PHP_RELEASE_VERSION=1
 PHP_EXTRA_VERSION=""
 PHP_VERSION="$PHP_MAJOR_VERSION.$PHP_MINOR_VERSION.$PHP_RELEASE_VERSION$PHP_EXTRA_VERSION"
 PHP_VERSION_ID=`expr [$]PHP_MAJOR_VERSION \* 10000 + [$]PHP_MINOR_VERSION \* 100 + [$]PHP_RELEASE_VERSION`
@@ -170,7 +170,7 @@ dnl Check if bison generated files exist when bison does not..
 case $php_cv_bison_version in
   ""|invalid[)]
     if ! test -f "$abs_srcdir/Zend/zend_language_parser.h" || ! test -f "$abs_srcdir/Zend/zend_language_parser.c" ; then
-      AC_MSG_ERROR([bison is required to build PHP/Zend when building a CVS checkout!])
+      AC_MSG_ERROR([bison is required to build PHP/Zend when building a SVN checkout!])
     fi
     ;;
 esac
@@ -217,9 +217,7 @@ case $host_cpu in
     ;;
   sparc*)
     if test "$SUNCC" = "yes"; then
-      CFLAGS="$CFLAGS -xmemalign=8i"
-    else
-      CFLAGS=""
+      CFLAGS="$CFLAGS -xmemalign=8s"
     fi
     ;;
 esac
@@ -256,7 +254,6 @@ case $host_alias in
         CPPFLAGS="$CPPFLAGS -no-cpp-precomp"
       fi
     fi
-    AC_DEFINE(BIND_8_COMPAT, 1, [Enabling BIND8 compatibility for Panther])
     php_multiple_shlib_versions_ok=yes
     ;;
   *beos*)
@@ -405,6 +402,8 @@ dnl Check for inet_aton
 dnl in -lc, -lbind and -lresolv
 PHP_CHECK_FUNC(inet_aton, resolv, bind)
 
+dnl Some systems (like OpenSolaris) do not have nanosleep in libc
+PHP_CHECK_FUNC(nanosleep, rt)
 
 dnl Then headers.
 dnl -------------------------------------------------------------------------
@@ -425,9 +424,11 @@ sys/time.h \
 netinet/in.h \
 alloca.h \
 arpa/inet.h \
+arpa/nameser_compat.h \
 arpa/nameser.h \
 assert.h \
 crypt.h \
+dns.h \
 fcntl.h \
 grp.h \
 ieeefp.h \
@@ -485,16 +486,6 @@ assert.h
 #include <arpa/nameser.h>
 #endif
 ])
-
-dnl Don't use mach-o/dyld.h on Darwin 8+, dl* is recommended by Apple from there on
-dnl See http://developer.apple.com/documentation/DeveloperTools/Conceptual/MachOTopics/Articles/loading_code.html
-case $host_alias in
-  *darwin[[89]]*)
-    ;;
-  *)
-    AC_CHECK_HEADERS([mach-o/dyld.h],[],[],[])
-    ;;
-esac
 
 PHP_FOPENCOOKIE
 PHP_BROKEN_GETCWD
@@ -601,7 +592,6 @@ putenv \
 realpath \
 random \
 rand_r \
-res_search \
 scandir \
 setitimer \
 setlocale \
@@ -633,7 +623,6 @@ tzset \
 unlockpt \
 unsetenv \
 usleep \
-nanosleep \
 utime \
 vsnprintf \
 vasprintf \
@@ -791,8 +780,8 @@ if test "$PHP_DEBUG" = "yes"; then
   changequote([,])
   dnl add -O0 only if GCC or ICC is used
   if test "$GCC" = "yes" || test "$ICC" = "yes"; then
-    CFLAGS="$CFLAGS -O0"
-    CXXFLAGS="$CXXFLAGS -O0"
+    CFLAGS="$CFLAGS -g -O0"
+    CXXFLAGS="$CXXFLAGS -g -O0"
   fi
   if test "$SUNCC" = "yes"; then
     if test -n "$auto_cflags"; then
@@ -1579,13 +1568,18 @@ X
     fi
 
     if test "$PHP_SIGCHILD" != "yes"; then
+      if test "$PHP_OCI8_INSTANT_CLIENT" = "no"; then
 cat <<X
 +--------------------------------------------------------------------+
 | Notice:                                                            |
-| If you encounter <defunc> processes when using a local Oracle-DB   |
-| please recompile PHP and specify --enable-sigchild when configuring|
-| (This problem has been reported under Linux using Oracle >= 8.1.5) |
+| If you encounter <defunc> processes when using a local Oracle      |
+| database, set the value BEQUEATH_DETACH=YES in Oracle Net's        |
+| sqlnet.ora file on the PHP host, or set the environment variable   |
+| BEQUEATH_DETACH to YES before starting Apache.  If the problem     |
+| still occurs, then recompile PHP and specify --enable-sigchild     |
+| when configuring.                                                  |
 X
+      fi
     fi
   fi
 

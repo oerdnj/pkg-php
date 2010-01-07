@@ -10,7 +10,7 @@ Test ngettext() functionality
 	}
 ?>
 --FILE--
-<?php // $Id: gettext_ngettext.phpt,v 1.1.2.2 2009/06/18 07:29:09 zoe Exp $
+<?php // $Id: gettext_ngettext.phpt 282362 2009-06-18 07:29:09Z zoe $
 chdir(dirname(__FILE__));
 setlocale(LC_ALL, 'en_US.UTF-8');
 bindtextdomain('dngettextTest', './locale');

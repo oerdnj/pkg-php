@@ -17,7 +17,7 @@
  *
  */
 
-/* $Id: sendmail.c,v 1.65.2.2.2.1 2007/02/24 02:17:28 helly Exp $ */
+/* $Id: sendmail.c 287783 2009-08-26 21:59:54Z pajoye $ */
 
 #include "php.h"				/*php specific */
 #include <stdio.h>
@@ -37,6 +37,7 @@
 #endif	/* NETWARE */
 #include "sendmail.h"
 #include "php_ini.h"
+#include "inet.h"
 
 #if HAVE_PCRE || HAVE_BUNDLED_PCRE
 #include "ext/pcre/php_pcre.h"
@@ -421,7 +422,7 @@ static int SendText(char *RPath, char *Subject, char *mailTo, char *mailCc, char
 	}
 
 	SMTP_SKIP_SPACE(RPath);
-	snprintf(Buffer, MAIL_BUFFER_SIZE, "MAIL FROM:<%s>\r\n", RPath);
+	FormatEmailAddress(Buffer, RPath, "MAIL FROM:<%s>\r\n");
 	if ((res = Post(Buffer)) != SUCCESS) {
 		return (res);
 	}
@@ -436,7 +437,7 @@ static int SendText(char *RPath, char *Subject, char *mailTo, char *mailCc, char
 	while (token != NULL)
 	{
 		SMTP_SKIP_SPACE(token);
-		snprintf(Buffer, MAIL_BUFFER_SIZE, "RCPT TO:<%s>\r\n", token);
+		FormatEmailAddress(Buffer, token, "RCPT TO:<%s>\r\n");
 		if ((res = Post(Buffer)) != SUCCESS) {
 			efree(tempMailTo);
 			return (res);
@@ -457,7 +458,7 @@ static int SendText(char *RPath, char *Subject, char *mailTo, char *mailCc, char
 		while (token != NULL)
 		{
 			SMTP_SKIP_SPACE(token);
-			snprintf(Buffer, MAIL_BUFFER_SIZE, "RCPT TO:<%s>\r\n", token);
+			FormatEmailAddress(Buffer, token, "RCPT TO:<%s>\r\n");
 			if ((res = Post(Buffer)) != SUCCESS) {
 				efree(tempMailTo);
 				return (res);
@@ -487,7 +488,7 @@ static int SendText(char *RPath, char *Subject, char *mailTo, char *mailCc, char
 		while (token != NULL)
 		{
 			SMTP_SKIP_SPACE(token);
-			snprintf(Buffer, MAIL_BUFFER_SIZE, "RCPT TO:<%s>\r\n", token);
+			FormatEmailAddress(Buffer, token, "RCPT TO:<%s>\r\n");
 			if ((res = Post(Buffer)) != SUCCESS) {
 				efree(tempMailTo);
 				return (res);
@@ -512,7 +513,7 @@ static int SendText(char *RPath, char *Subject, char *mailTo, char *mailCc, char
 		while (token != NULL)
 		{
 			SMTP_SKIP_SPACE(token);
-			snprintf(Buffer, MAIL_BUFFER_SIZE, "RCPT TO:<%s>\r\n", token);
+			FormatEmailAddress(Buffer, token, "RCPT TO:<%s>\r\n");
 			if ((res = Post(Buffer)) != SUCCESS) {
 				efree(tempMailTo);
 				return (res);
@@ -545,7 +546,7 @@ static int SendText(char *RPath, char *Subject, char *mailTo, char *mailCc, char
 			while (token != NULL)
 			{
 				SMTP_SKIP_SPACE(token);
-				snprintf(Buffer, MAIL_BUFFER_SIZE, "RCPT TO:<%s>\r\n", token);
+				FormatEmailAddress(Buffer, token, "RCPT TO:<%s>\r\n");
 				if ((res = Post(Buffer)) != SUCCESS) {
 					efree(tempMailTo);
 					return (res);
@@ -765,16 +766,52 @@ PostHeader_outofmem:
 static int MailConnect()
 {
 
-	int res;
+	int res, namelen;
 	short portnum;
+	struct hostent *ent;
+	IN_ADDR addr;
+#ifdef HAVE_IPV6
+	IN6_ADDR addr6;
+#endif
 
 	/* Create Socket */
-	if ((sc = socket(PF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
+	if ((sc = socket(PF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
 		return (FAILED_TO_OBTAIN_SOCKET_HANDLE);
+	}
 
 	/* Get our own host name */
-	if (gethostname(LocalHost, HOST_NAME_LEN))
+	if (gethostname(LocalHost, HOST_NAME_LEN)) {
 		return (FAILED_TO_GET_HOSTNAME);
+	}
+
+	ent = gethostbyname(LocalHost);
+
+	if (!ent) {
+		return (FAILED_TO_GET_HOSTNAME);
+	}
+
+	namelen = strlen(ent->h_name);
+
+#ifdef HAVE_IPV6
+	if (inet_pton(AF_INET, ent->h_name, &addr) == 1 || inet_pton(AF_INET6, ent->h_name, &addr6) == 1)
+#else
+	if (inet_pton(AF_INET, ent->h_name, &addr) == 1)
+#endif
+	{
+		if (namelen + 2 >= HOST_NAME_LEN) {
+			return (FAILED_TO_GET_HOSTNAME);
+		}
+
+		strcpy(LocalHost, "[");
+		strcpy(LocalHost + 1, ent->h_name);
+		strcpy(LocalHost + namelen + 1, "]");
+	} else {
+		if (namelen >= HOST_NAME_LEN) {
+			return (FAILED_TO_GET_HOSTNAME);
+		}
+
+		strcpy(LocalHost, ent->h_name);
+	}
 
 	/* Resolve the servers IP */
 	/*
@@ -794,8 +831,9 @@ static int MailConnect()
 	sock_in.sin_port = htons(portnum);
 	sock_in.sin_addr.S_un.S_addr = GetAddr(MailHost);
 
-	if (connect(sc, (LPSOCKADDR) & sock_in, sizeof(sock_in)))
+	if (connect(sc, (LPSOCKADDR) & sock_in, sizeof(sock_in))) {
 		return (FAILED_TO_CONNECT);
+	}
 
 	/* receive Server welcome message */
 	res = Ack(NULL);
@@ -922,3 +960,30 @@ static unsigned long GetAddr(LPSTR szHost)
 	}
 	return (lAddr);
 } /* end GetAddr() */
+
+
+/*********************************************************************
+// Name:  int FormatEmailAddress
+// Input: 
+// Output:
+// Description: Formats the email address to remove any content ouside
+//   of the angle brackets < > as per RFC 2821.
+//
+//   Returns the invalidly formatted mail address if the < > are 
+//   unbalanced (the SMTP server should reject it if it's out of spec.)
+//  
+// Author/Date:  garretts 08/18/2009
+// History:
+//********************************************************************/
+static int FormatEmailAddress(char* Buf, char* EmailAddress, char* FormatString) {
+	char *tmpAddress1, *tmpAddress2;
+	int result;
+
+	if( (tmpAddress1 = strchr(EmailAddress, '<')) && (tmpAddress2 = strchr(tmpAddress1, '>'))  ) {
+		*tmpAddress2 = 0; // terminate the string temporarily.
+		result = snprintf(Buf, MAIL_BUFFER_SIZE, FormatString , tmpAddress1+1);
+		*tmpAddress2 = '>'; // put it back the way it was.
+		return result;
+	} 
+	return snprintf(Buf, MAIL_BUFFER_SIZE , FormatString , EmailAddress );
+} /* end FormatEmailAddress() */

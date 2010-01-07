@@ -10,7 +10,7 @@ if (!function_exists('mysqli_set_local_infile_handler'))
 	die("skip - function not available.");
 
 require_once('connect.inc');
-if (!$link = mysqli_connect($host, $user, $passwb, $db, $port, $socket))
+if (!$link = my_mysqli_connect($host, $user, $passwb, $db, $port, $socket))
 	die("skip Cannot connect to MySQL");
 
 if (!$res = mysqli_query($link, 'SHOW VARIABLES LIKE "local_infile"')) {
@@ -163,6 +163,10 @@ mysqli.allow_local_infile=1
 		printf("[300] Expecting NULL/NULL got %s/%s\n", $tmp, gettype($tmp));
 
 	print "done!";
+?>
+--CLEAN--
+<?php
+	require_once("clean_table.inc");
 ?>
 --EXPECTF--
 Callback set to 'callback_simple'

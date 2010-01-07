@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: parse_iso_intervals.c,v 1.1.2.7 2009/05/05 07:45:18 derick Exp $ */
+/* $Id: parse_iso_intervals.c 279957 2009-05-05 07:45:18Z derick $ */
 
 #include "timelib.h"
 

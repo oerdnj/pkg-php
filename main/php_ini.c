@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_ini.c,v 1.136.2.4.2.15.2.14 2009/05/18 21:33:38 derick Exp $ */
+/* $Id: php_ini.c 289668 2009-10-15 13:28:55Z pajoye $ */
 
 #include "php.h"
 #include "ext/standard/info.h"
@@ -40,6 +40,21 @@
 #ifndef S_ISREG
 #define S_ISREG(mode)   (((mode) & S_IFMT) == S_IFREG)
 #endif
+
+#ifdef PHP_WIN32
+#define TRANSLATE_SLASHES_LOWER(path) \
+	{ \
+		char *tmp = path; \
+		while (*tmp) { \
+			if (*tmp == '\\') *tmp = '/'; \
+			else *tmp = tolower(*tmp); \
+				tmp++; \
+		} \
+	}
+#else
+#define TRANSLATE_SLASHES_LOWER(path)
+#endif
+
 
 typedef struct _php_extension_lists {
 	zend_llist engine;
@@ -274,6 +289,9 @@ static void php_ini_parser_cb(zval *arg1, zval *arg2, zval *arg3, int callback_t
 					is_special_section = 1;
 					has_per_dir_config = 1;
 
+					/* make the path lowercase on Windows, for case insensitivty. Does nothign for other platforms */
+					TRANSLATE_SLASHES_LOWER(key);
+
 				/* HOST sections */
 				} else if (!strncasecmp(Z_STRVAL_P(arg1), "HOST", sizeof("HOST") - 1)) {
 					key = Z_STRVAL_P(arg1);
@@ -281,6 +299,7 @@ static void php_ini_parser_cb(zval *arg1, zval *arg2, zval *arg3, int callback_t
 					key_len = Z_STRLEN_P(arg1) - sizeof("HOST") + 1;
 					is_special_section = 1;
 					has_per_host_config = 1;
+					zend_str_tolower(key, key_len); /* host names are case-insensitive. */
 
 				} else {
 					is_special_section = 0;
@@ -488,33 +507,18 @@ int php_init_config(TSRMLS_D)
 			}
 			strlcat(php_ini_search_path, default_location, search_path_size);
 		}
+
+		/* For people running under terminal services, GetWindowsDirectory will
+		 * return their personal Windows directory, so lets add the system
+		 * windows directory too */
+		if (0 < GetSystemWindowsDirectory(default_location, MAXPATHLEN)) {
+			if (*php_ini_search_path) {
+				strlcat(php_ini_search_path, paths_separator, search_path_size);
+			}
+			strlcat(php_ini_search_path, default_location, search_path_size);
+		}
 		efree(default_location);
 
-		{
-			/* For people running under terminal services, GetWindowsDirectory will
-			 * return their personal Windows directory, so lets add the system
-			 * windows directory too */
-			typedef UINT (WINAPI *get_system_windows_directory_func)(char *buffer, UINT size);
-			static get_system_windows_directory_func get_system_windows_directory = NULL;
-			HMODULE kern;
-
-			if (get_system_windows_directory == NULL) {
-				kern = LoadLibrary("kernel32.dll");
-				if (kern) {
-					get_system_windows_directory = (get_system_windows_directory_func)GetProcAddress(kern, "GetSystemWindowsDirectoryA");
-				}
-			}
-			if (get_system_windows_directory != NULL) {
-				default_location = (char *) emalloc(MAXPATHLEN + 1);
-				if (0 < get_system_windows_directory(default_location, MAXPATHLEN)) {
-					if (*php_ini_search_path) {
-						strlcat(php_ini_search_path, paths_separator, search_path_size);
-					}
-					strlcat(php_ini_search_path, default_location, search_path_size);
-				}
-				efree(default_location);
-			}
-		}
 #else
 		default_location = PHP_CONFIG_FILE_PATH;
 		if (*php_ini_search_path) {
@@ -789,10 +793,18 @@ PHPAPI void php_ini_activate_per_dir_config(char *path, uint path_len TSRMLS_DC)
 	zval *tmp;
 	char *ptr;
 
+#if PHP_WIN32
+	char path_bak[MAXPATHLEN];
+	memcpy(path_bak, path, path_len);
+	path_bak[path_len] = 0;
+	TRANSLATE_SLASHES_LOWER(path_bak);
+	path = path_bak;
+#endif
+
 	/* Walk through each directory in path and apply any found per-dir-system-configuration from configuration_hash */
 	if (has_per_dir_config && path && path_len) {
 		ptr = path + 1;
-		while ((ptr = strchr(ptr, DEFAULT_SLASH)) != NULL) {
+		while ((ptr = strchr(ptr, '/')) != NULL) {
 			*ptr = 0;
 			/* Search for source array matching the path from configuration_hash */
 			if (zend_hash_find(&configuration_hash, path, path_len, (void **) &tmp) == SUCCESS) {

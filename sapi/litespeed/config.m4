@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.2.2.4 2008/08/07 19:32:15 nlopess Exp $
+dnl $Id: config.m4 264419 2008-08-07 19:32:15Z nlopess $
 dnl
 
 AC_MSG_CHECKING(for LiteSpeed support)

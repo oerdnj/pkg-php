@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: sqlite_statement.c,v 1.18.2.4.2.3.2.10 2009/05/20 15:05:36 iliaa Exp $ */
+/* $Id: sqlite_statement.c 280873 2009-05-20 15:05:36Z iliaa $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

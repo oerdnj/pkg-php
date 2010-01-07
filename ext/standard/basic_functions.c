@@ -1,4 +1,3 @@
-
 /*
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
@@ -18,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: basic_functions.c,v 1.725.2.31.2.64.2.92 2009/06/20 06:07:35 kalle Exp $ */
+/* $Id: basic_functions.c 289669 2009-10-15 14:10:03Z pajoye $ */
 
 #include "php.h"
 #include "php_streams.h"
@@ -33,7 +32,7 @@
 #include "ext/standard/info.h"
 #include "ext/session/php_session.h"
 #include "zend_operators.h"
-#include "ext/standard/dns.h"
+#include "ext/standard/php_dns.h"
 #include "ext/standard/php_uuencode.h"
 #include "safe_mode.h"
 
@@ -996,22 +995,20 @@ ZEND_BEGIN_ARG_INFO(arginfo_gethostname, 0)
 ZEND_END_ARG_INFO()
 #endif
 
-#if defined(PHP_WIN32) || (HAVE_RES_SEARCH && !(defined(__BEOS__) || defined(NETWARE)))
+#if defined(PHP_WIN32) || (HAVE_DNS_SEARCH_FUNC && !(defined(__BEOS__) || defined(NETWARE)))
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dns_check_record, 0, 0, 1)
 	ZEND_ARG_INFO(0, host)
 	ZEND_ARG_INFO(0, type)
 ZEND_END_ARG_INFO()
 
-# if defined(PHP_WIN32) || HAVE_DNS_FUNCS
+# if defined(PHP_WIN32) || HAVE_FULL_DNS_FUNCS
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dns_get_record, 1, 0, 1)
 	ZEND_ARG_INFO(0, hostname)
 	ZEND_ARG_INFO(0, type)
 	ZEND_ARG_INFO(1, authns) /* ARRAY_INFO(1, authns, 1) */
 	ZEND_ARG_INFO(1, addtl)  /* ARRAY_INFO(1, addtl, 1) */
 ZEND_END_ARG_INFO()
-# endif
 
-# if defined(PHP_WIN32) || (HAVE_DN_SKIPNAME && HAVE_DN_EXPAND)
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dns_get_mx, 0, 0, 2)
 	ZEND_ARG_INFO(0, hostname)
 	ZEND_ARG_INFO(1, mxhosts) /* ARRAY_INFO(1, mxhosts, 1) */
@@ -1019,7 +1016,7 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_dns_get_mx, 0, 0, 2)
 ZEND_END_ARG_INFO()
 # endif
 
-#endif /* defined(PHP_WIN32) || (HAVE_RES_SEARCH && !(defined(__BEOS__) || defined(NETWARE))) */
+#endif /* defined(PHP_WIN32) || (HAVE_DNS_SEARCH_FUNC && !(defined(__BEOS__) || defined(NETWARE))) */
 /* }}} */
 
 /* {{{ exec.c */
@@ -3001,17 +2998,14 @@ const zend_function_entry basic_functions[] = { /* {{{ */
 	PHP_FE(gethostname,													arginfo_gethostname)
 #endif
 
-#if defined(PHP_WIN32) || (HAVE_RES_SEARCH && !(defined(__BEOS__) || defined(NETWARE)))
+#if defined(PHP_WIN32) || (HAVE_DNS_SEARCH_FUNC && !(defined(__BEOS__) || defined(NETWARE)))
 
 	PHP_FE(dns_check_record,												arginfo_dns_check_record)
 	PHP_FALIAS(checkdnsrr,			dns_check_record,						arginfo_dns_check_record)
 
-# if defined(PHP_WIN32) || (HAVE_DN_SKIPNAME && HAVE_DN_EXPAND)
+# if defined(PHP_WIN32) || HAVE_FULL_DNS_FUNCS
 	PHP_FE(dns_get_mx,														arginfo_dns_get_mx)
 	PHP_FALIAS(getmxrr,				dns_get_mx,					arginfo_dns_get_mx)
-# endif
-
-# if defined(PHP_WIN32) || HAVE_DNS_FUNCS
 	PHP_FE(dns_get_record,													arginfo_dns_get_record)
 # endif
 #endif
@@ -3462,7 +3456,6 @@ static void basic_globals_ctor(php_basic_globals *basic_globals_p TSRMLS_DC) /* 
 	zend_hash_init(&BG(sm_protected_env_vars), 5, NULL, NULL, 1);
 	BG(sm_allowed_env_vars) = NULL;
 
-	memset(&BG(url_adapt_state), 0, sizeof(BG(url_adapt_state)));
 	memset(&BG(url_adapt_state_ex), 0, sizeof(BG(url_adapt_state_ex)));
 
 #if defined(_REENTRANT) && defined(HAVE_MBRLEN) && defined(HAVE_MBSTATE_T)
@@ -3641,8 +3634,8 @@ PHP_MINIT_FUNCTION(basic) /* {{{ */
 	php_register_url_stream_wrapper("ftp", &php_stream_ftp_wrapper TSRMLS_CC);
 #endif
 
-#if defined(PHP_WIN32) || (HAVE_RES_SEARCH && !(defined(__BEOS__) || defined(NETWARE)))
-# if defined(PHP_WIN32) || HAVE_DNS_FUNCS
+#if defined(PHP_WIN32) || (HAVE_DNS_SEARCH_FUNC && !(defined(__BEOS__) || defined(NETWARE)))
+# if defined(PHP_WIN32) || HAVE_FULL_DNS_FUNCS
 	PHP_MINIT(dns)(INIT_FUNC_ARGS_PASSTHRU);
 # endif
 #endif
@@ -3685,7 +3678,9 @@ PHP_MSHUTDOWN_FUNCTION(basic) /* {{{ */
 #if defined(HAVE_LOCALECONV) && defined(ZTS)
 	PHP_MSHUTDOWN(localeconv)(SHUTDOWN_FUNC_ARGS_PASSTHRU);
 #endif
+#if HAVE_CRYPT
 	PHP_MSHUTDOWN(crypt)(SHUTDOWN_FUNC_ARGS_PASSTHRU);
+#endif
 
 	return SUCCESS;
 }
@@ -3937,6 +3932,9 @@ PHP_FUNCTION(long2ip)
 	int ip_len;
 	unsigned long n;
 	struct in_addr myaddr;
+#ifdef HAVE_INET_PTON
+	char str[40];
+#endif
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &ip, &ip_len) == FAILURE) {
 		return;
@@ -3945,7 +3943,15 @@ PHP_FUNCTION(long2ip)
 	n = strtoul(ip, NULL, 0);
 
 	myaddr.s_addr = htonl(n);
+#ifdef HAVE_INET_PTON
+	if (inet_ntop(AF_INET, &myaddr, str, sizeof(str))) {
+		RETURN_STRING(str, 1);
+	} else {
+		RETURN_FALSE;
+	}
+#else
 	RETURN_STRING(inet_ntoa(myaddr), 1);
+#endif
 }
 /* }}} */
 
@@ -6042,6 +6048,7 @@ PHP_FUNCTION(import_request_variables)
 	int types_len;
 	zval *prefix = NULL;
 	char *p;
+	zend_bool ok = 0;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|z/", &types, &types_len, &prefix) == FAILURE) {
 		return;
@@ -6064,17 +6071,20 @@ PHP_FUNCTION(import_request_variables)
 			case 'g':
 			case 'G':
 				zend_hash_apply_with_arguments(Z_ARRVAL_P(PG(http_globals)[TRACK_VARS_GET]) TSRMLS_CC, (apply_func_args_t) copy_request_variable, 1, prefix);
+				ok = 1;
 				break;
 
 			case 'p':
 			case 'P':
 				zend_hash_apply_with_arguments(Z_ARRVAL_P(PG(http_globals)[TRACK_VARS_POST]) TSRMLS_CC, (apply_func_args_t) copy_request_variable, 1, prefix);
 				zend_hash_apply_with_arguments(Z_ARRVAL_P(PG(http_globals)[TRACK_VARS_FILES]) TSRMLS_CC, (apply_func_args_t) copy_request_variable, 1, prefix);
+				ok = 1;
 				break;
 
 			case 'c':
 			case 'C':
 				zend_hash_apply_with_arguments(Z_ARRVAL_P(PG(http_globals)[TRACK_VARS_COOKIE]) TSRMLS_CC, (apply_func_args_t) copy_request_variable, 1, prefix);
+				ok = 1;
 				break;
 		}
 	}
@@ -6082,6 +6092,7 @@ PHP_FUNCTION(import_request_variables)
 	if (ZEND_NUM_ARGS() < 2) {
 		zval_ptr_dtor(&prefix);
 	}
+	RETURN_BOOL(ok);
 }
 /* }}} */
 

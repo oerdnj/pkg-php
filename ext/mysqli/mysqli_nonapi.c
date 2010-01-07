@@ -17,7 +17,7 @@
   |          Ulf Wendel <uw@php.net>                                     |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_nonapi.c,v 1.54.2.7.2.5.2.21 2009/01/27 15:35:34 johannes Exp $ 
+  $Id: mysqli_nonapi.c 290608 2009-11-12 17:48:36Z johannes $ 
 */
 
 #ifdef HAVE_CONFIG_H
@@ -46,7 +46,11 @@ static void php_mysqli_set_error(long mysql_errno, char *mysql_err TSRMLS_DC)
 	if (MyG(error_msg)) {
 		efree(MyG(error_msg));
 	}
-	MyG(error_msg) = estrdup(mysql_err);
+	if(mysql_err && *mysql_err) { 
+		MyG(error_msg) = estrdup(mysql_err);
+	} else {
+		MyG(error_msg) = NULL;
+	}
 }
 /* }}} */
 
@@ -217,7 +221,7 @@ void mysqli_common_connect(INTERNAL_FUNCTION_PARAMETERS, zend_bool is_real_conne
 								MyG(num_active_persistent) + MyG(num_inactive_persistent));
 		goto err;
 	}
-	if (!is_real_connect && !mysql->mysql) {
+	if (!mysql->mysql) {
 #if !defined(MYSQLI_USE_MYSQLND)
 		if (!(mysql->mysql = mysql_init(NULL))) {
 #else

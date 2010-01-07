@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_extension.c,v 1.17.2.2.2.6.2.7 2008/12/31 11:15:35 sebastian Exp $ */
+/* $Id: com_extension.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

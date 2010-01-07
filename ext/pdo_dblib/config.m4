@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.2.2.2.2.1.2.2 2008/10/04 12:52:58 felipe Exp $
+dnl $Id: config.m4 266959 2008-10-04 12:52:58Z felipe $
 dnl
 
 PHP_ARG_WITH(pdo-dblib, for PDO_DBLIB support via FreeTDS,

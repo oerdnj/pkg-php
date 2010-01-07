@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: hash.c,v 1.18.2.5.2.7.2.18 2009/05/04 16:37:31 scottmac Exp $ */
+/* $Id: hash.c 287429 2009-08-17 21:28:22Z garretts $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -643,8 +643,7 @@ static void mhash_init(INIT_FUNC_ARGS)
 		len = slprintf(buf, 127, "MHASH_%s", algorithm.mhash_name, strlen(algorithm.mhash_name));
 		zend_register_long_constant(buf, len + 1, algorithm.value, CONST_CS | CONST_PERSISTENT, module_number TSRMLS_CC);
 	}
-	
-	zend_register_module_ex(&mhash_module_entry TSRMLS_CC);
+	zend_register_internal_module(&mhash_module_entry TSRMLS_CC);
 }
 
 /* {{{ proto string mhash(int hash, string data [, string key])

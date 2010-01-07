@@ -2,7 +2,7 @@
 ziparchive::properties isset()/empty() checks
 --SKIPIF--
 <?php
-/* $Id: oo_properties.phpt,v 1.1.2.4.2.3 2009/01/08 22:03:32 tony2001 Exp $ */
+/* $Id: oo_properties.phpt 273126 2009-01-08 22:03:32Z tony2001 $ */
 if(!extension_loaded('zip')) die('skip');
 ?>
 --FILE--

@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_oci.h,v 1.2.2.1.2.1.2.3 2008/12/31 11:15:41 sebastian Exp $ */
+/* $Id: php_pdo_oci.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_PDO_OCI_H
 #define PHP_PDO_OCI_H

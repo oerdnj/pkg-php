@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_dllist.c,v 1.1.2.19 2009/06/17 13:27:09 scottmac Exp $ */
+/* $Id: spl_dllist.c 287266 2009-08-13 22:07:05Z colder $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -94,6 +94,7 @@ struct _spl_dllist_object {
 	zend_function         *fptr_offset_del;
 	zend_function         *fptr_count;
 	zend_class_entry      *ce_get_iterator;
+	HashTable             *debug_info;
 };
 
 /* define an overloaded iterator structure */
@@ -351,6 +352,11 @@ static void spl_dllist_object_free_storage(void *object TSRMLS_DC) /* {{{ */
 	SPL_LLIST_CHECK_DELREF(intern->traverse_pointer);
 	zval_ptr_dtor(&intern->retval);
 
+	if (intern->debug_info != NULL) {
+		zend_hash_destroy(intern->debug_info);
+		efree(intern->debug_info);
+	}
+
 	efree(object);
 }
 /* }}} */
@@ -374,6 +380,7 @@ static zend_object_value spl_dllist_object_new_ex(zend_class_entry *class_type, 
 
 	intern->flags = 0;
 	intern->traverse_position = 0;
+	intern->debug_info = NULL;
 
 	if (orig) {
 		spl_dllist_object *other = (spl_dllist_object*)zend_object_store_get_object(orig TSRMLS_CC);
@@ -383,6 +390,7 @@ static zend_object_value spl_dllist_object_new_ex(zend_class_entry *class_type, 
 			intern->llist = (spl_ptr_llist *)spl_ptr_llist_init(other->llist->ctor, other->llist->dtor);
 			spl_ptr_llist_copy(other->llist, intern->llist TSRMLS_CC);
 			intern->traverse_pointer  = intern->llist->head;
+			SPL_LLIST_CHECK_ADDREF(intern->traverse_pointer);
 		} else {
 			intern->llist = other->llist;
 			intern->traverse_pointer  = intern->llist->head;
@@ -499,44 +507,47 @@ static HashTable* spl_dllist_object_get_debug_info(zval *obj, int *is_temp TSRML
 {
 	spl_dllist_object     *intern  = (spl_dllist_object*)zend_object_store_get_object(obj TSRMLS_CC);
 	spl_ptr_llist_element *current = intern->llist->head, *next;
-	HashTable *rv;
 	zval *tmp, zrv, *dllist_array;
 	char *pnstr;
 	int  pnlen;
-	int  i = 0;;
+	int  i = 0;
 
-	*is_temp = 1;
+	*is_temp = 0;
 
-	ALLOC_HASHTABLE(rv);
-	ZEND_INIT_SYMTABLE_EX(rv, zend_hash_num_elements(intern->std.properties) + 1, 0);
-
-	INIT_PZVAL(&zrv);
-	Z_ARRVAL(zrv) = rv;
-
-	zend_hash_copy(rv, intern->std.properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
-
-	pnstr = spl_gen_private_prop_name(spl_ce_SplDoublyLinkedList, "flags", sizeof("flags")-1, &pnlen TSRMLS_CC);
-	add_assoc_long_ex(&zrv, pnstr, pnlen+1, intern->flags);
-	efree(pnstr);
-
-	ALLOC_INIT_ZVAL(dllist_array);
-	array_init(dllist_array);
-
-	while (current) {
-		next = current->next;
-
-		add_index_zval(dllist_array, i, (zval *)current->data);
-		Z_ADDREF_P(current->data);
-		i++;
-
-		current = next;
+	if (intern->debug_info == NULL) {
+		ALLOC_HASHTABLE(intern->debug_info);
+		zend_hash_init(intern->debug_info, 1, NULL, ZVAL_PTR_DTOR, 0);
 	}
 
-	pnstr = spl_gen_private_prop_name(spl_ce_SplDoublyLinkedList, "dllist", sizeof("dllist")-1, &pnlen TSRMLS_CC);
-	add_assoc_zval_ex(&zrv, pnstr, pnlen+1, dllist_array);
-	efree(pnstr);
+	if (intern->debug_info->nApplyCount == 0) {
+		INIT_PZVAL(&zrv);
+		Z_ARRVAL(zrv) = intern->debug_info;
 
-	return rv;
+		zend_hash_copy(intern->debug_info, intern->std.properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
+
+		pnstr = spl_gen_private_prop_name(spl_ce_SplDoublyLinkedList, "flags", sizeof("flags")-1, &pnlen TSRMLS_CC);
+		add_assoc_long_ex(&zrv, pnstr, pnlen+1, intern->flags);
+		efree(pnstr);
+
+		ALLOC_INIT_ZVAL(dllist_array);
+		array_init(dllist_array);
+
+		while (current) {
+			next = current->next;
+
+			add_index_zval(dllist_array, i, (zval *)current->data);
+			Z_ADDREF_P(current->data);
+			i++;
+
+			current = next;
+		}
+
+		pnstr = spl_gen_private_prop_name(spl_ce_SplDoublyLinkedList, "dllist", sizeof("dllist")-1, &pnlen TSRMLS_CC);
+		add_assoc_zval_ex(&zrv, pnstr, pnlen+1, dllist_array);
+		efree(pnstr);
+	}
+
+	return intern->debug_info;
 }
 /* }}}} */
 
@@ -1150,33 +1161,36 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_dllist_offsetSet, 0, 0, 2)
 	ZEND_ARG_INFO(0, newval)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO(arginfo_dllist_void, 0)
+ZEND_END_ARG_INFO()
+
 static const zend_function_entry spl_funcs_SplQueue[] = {
 	SPL_MA(SplQueue, enqueue, SplDoublyLinkedList, push,  arginfo_dllist_push, ZEND_ACC_PUBLIC)
-	SPL_MA(SplQueue, dequeue, SplDoublyLinkedList, shift, NULL,                ZEND_ACC_PUBLIC)
+	SPL_MA(SplQueue, dequeue, SplDoublyLinkedList, shift, arginfo_dllist_void, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 
 static const zend_function_entry spl_funcs_SplDoublyLinkedList[] = {
-	SPL_ME(SplDoublyLinkedList, pop,             NULL,                           ZEND_ACC_PUBLIC)
-	SPL_ME(SplDoublyLinkedList, shift,           NULL,                           ZEND_ACC_PUBLIC)
+	SPL_ME(SplDoublyLinkedList, pop,             arginfo_dllist_void,            ZEND_ACC_PUBLIC)
+	SPL_ME(SplDoublyLinkedList, shift,           arginfo_dllist_void,            ZEND_ACC_PUBLIC)
 	SPL_ME(SplDoublyLinkedList, push,            arginfo_dllist_push,            ZEND_ACC_PUBLIC)
 	SPL_ME(SplDoublyLinkedList, unshift,         arginfo_dllist_push,            ZEND_ACC_PUBLIC)
-	SPL_ME(SplDoublyLinkedList, top,             NULL,                           ZEND_ACC_PUBLIC)
-	SPL_ME(SplDoublyLinkedList, bottom,          NULL,                           ZEND_ACC_PUBLIC)
-	SPL_ME(SplDoublyLinkedList, count,           NULL,                           ZEND_ACC_PUBLIC)
-	SPL_ME(SplDoublyLinkedList, isEmpty,         NULL,                           ZEND_ACC_PUBLIC)
+	SPL_ME(SplDoublyLinkedList, top,             arginfo_dllist_void,            ZEND_ACC_PUBLIC)
+	SPL_ME(SplDoublyLinkedList, bottom,          arginfo_dllist_void,            ZEND_ACC_PUBLIC)
+	SPL_ME(SplDoublyLinkedList, count,           arginfo_dllist_void,            ZEND_ACC_PUBLIC)
+	SPL_ME(SplDoublyLinkedList, isEmpty,         arginfo_dllist_void,            ZEND_ACC_PUBLIC)
 	SPL_ME(SplDoublyLinkedList, setIteratorMode, arginfo_dllist_setiteratormode, ZEND_ACC_PUBLIC)
-	SPL_ME(SplDoublyLinkedList, getIteratorMode, NULL,                           ZEND_ACC_PUBLIC)
+	SPL_ME(SplDoublyLinkedList, getIteratorMode, arginfo_dllist_void,            ZEND_ACC_PUBLIC)
 	SPL_ME(SplDoublyLinkedList, offsetExists,    arginfo_dllist_offsetGet,       ZEND_ACC_PUBLIC)
 	SPL_ME(SplDoublyLinkedList, offsetGet,       arginfo_dllist_offsetGet,       ZEND_ACC_PUBLIC)
 	SPL_ME(SplDoublyLinkedList, offsetSet,       arginfo_dllist_offsetSet,       ZEND_ACC_PUBLIC)
 	SPL_ME(SplDoublyLinkedList, offsetUnset,     arginfo_dllist_offsetGet,       ZEND_ACC_PUBLIC)
-	SPL_ME(SplDoublyLinkedList, rewind,          NULL,                           ZEND_ACC_PUBLIC)
-	SPL_ME(SplDoublyLinkedList, current,         NULL,                           ZEND_ACC_PUBLIC)
-	SPL_ME(SplDoublyLinkedList, key,             NULL,                           ZEND_ACC_PUBLIC)
-	SPL_ME(SplDoublyLinkedList, next,            NULL,                           ZEND_ACC_PUBLIC)
-	SPL_ME(SplDoublyLinkedList, prev,            NULL,                           ZEND_ACC_PUBLIC)
-	SPL_ME(SplDoublyLinkedList, valid,           NULL,                           ZEND_ACC_PUBLIC)
+	SPL_ME(SplDoublyLinkedList, rewind,          arginfo_dllist_void,            ZEND_ACC_PUBLIC)
+	SPL_ME(SplDoublyLinkedList, current,         arginfo_dllist_void,            ZEND_ACC_PUBLIC)
+	SPL_ME(SplDoublyLinkedList, key,             arginfo_dllist_void,            ZEND_ACC_PUBLIC)
+	SPL_ME(SplDoublyLinkedList, next,            arginfo_dllist_void,            ZEND_ACC_PUBLIC)
+	SPL_ME(SplDoublyLinkedList, prev,            arginfo_dllist_void,            ZEND_ACC_PUBLIC)
+	SPL_ME(SplDoublyLinkedList, valid,           arginfo_dllist_void,            ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 /* }}} */

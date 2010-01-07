@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.2.4.1.2.1 2008/07/31 18:04:49 pajoye Exp $
+// $Id: config.w32 263930 2008-07-31 18:04:49Z pajoye $
 // vim:ft=javascript
 
 ARG_WITH("ldap", "LDAP support", "no");

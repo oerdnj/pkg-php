@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_simplexml.h,v 1.20.2.2.2.3.2.7 2008/12/31 11:15:43 sebastian Exp $ */
+/* $Id: php_simplexml.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_SIMPLEXML_H
 #define PHP_SIMPLEXML_H

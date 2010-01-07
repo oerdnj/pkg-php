@@ -200,6 +200,7 @@ int phar_parse_tarfile(php_stream* fp, char *fname, int fname_len, char *alias, 
 	tar_header *hdr;
 	php_uint32 sum1, sum2, size, old;
 	phar_archive_data *myphar, **actual;
+	int last_was_longlink = 0;
 
 	if (error) {
 		*error = NULL;
@@ -255,6 +256,8 @@ int phar_parse_tarfile(php_stream* fp, char *fname, int fname_len, char *alias, 
 			phar_tar_number(hdr->size, sizeof(hdr->size));
 
 		if (((!old && hdr->prefix[0] == 0) || old) && strlen(hdr->name) == sizeof(".phar/signature.bin")-1 && !strncmp(hdr->name, ".phar/signature.bin", sizeof(".phar/signature.bin")-1)) {
+			off_t curloc;
+
 			if (size > 511) {
 				if (error) {
 					spprintf(error, 4096, "phar error: tar-based phar \"%s\" has signature that is larger than 511 bytes, cannot process", fname);
@@ -264,6 +267,7 @@ bail:
 				phar_destroy_phar_data(myphar TSRMLS_CC);
 				return FAILURE;
 			}
+			curloc = php_stream_tell(fp);
 			read = php_stream_read(fp, buf, size);
 			if (read != size) {
 				if (error) {
@@ -280,7 +284,8 @@ bail:
 #else
 # define PHAR_GET_32(buffer) (php_uint32) *(buffer)
 #endif
-			if (FAILURE == phar_verify_signature(fp, php_stream_tell(fp) - size - 512, PHAR_GET_32(buf), buf + 8, PHAR_GET_32(buf + 4), fname, &myphar->signature, &myphar->sig_len, error TSRMLS_CC)) {
+			myphar->sig_flags = PHAR_GET_32(buf);
+			if (FAILURE == phar_verify_signature(fp, php_stream_tell(fp) - size - 512, myphar->sig_flags, buf + 8, size - 8, fname, &myphar->signature, &myphar->sig_len, error TSRMLS_CC)) {
 				if (error) {
 					char *save = *error;
 					spprintf(error, 4096, "phar error: tar-based phar \"%s\" signature cannot be verified: %s", fname, save);
@@ -288,11 +293,11 @@ bail:
 				}
 				goto bail;
 			}
+			php_stream_seek(fp, curloc + 512, SEEK_SET);
 			/* signature checked out, let's ensure this is the last file in the phar */
-			size = ((size+511)&~511) + 512;
 			if (((hdr->typeflag == '\0') || (hdr->typeflag == TAR_FILE)) && size > 0) {
 				/* this is not good enough - seek succeeds even on truncated tars */
-				php_stream_seek(fp, size, SEEK_CUR);
+				php_stream_seek(fp, 512, SEEK_CUR);
 				if ((uint)php_stream_tell(fp) > totalsize) {
 					if (error) {
 						spprintf(error, 4096, "phar error: \"%s\" is a corrupted tar file (truncated)", fname);
@@ -328,7 +333,52 @@ bail:
 			goto bail;
 		}
 
-		if (!old && hdr->prefix[0] != 0) {
+		if (!last_was_longlink && hdr->typeflag == 'L') {
+			last_was_longlink = 1;
+			/* support the ././@LongLink system for storing long filenames */
+			entry.filename_len = entry.uncompressed_filesize;
+			entry.filename = pemalloc(entry.filename_len+1, myphar->is_persistent);
+
+			read = php_stream_read(fp, entry.filename, entry.filename_len);
+			if (read != entry.filename_len) {
+				efree(entry.filename);
+				if (error) {
+					spprintf(error, 4096, "phar error: \"%s\" is a corrupted tar file (truncated)", fname);
+				}
+				php_stream_close(fp);
+				phar_destroy_phar_data(myphar TSRMLS_CC);
+				return FAILURE;
+			}
+			entry.filename[entry.filename_len] = '\0';
+
+			/* skip blank stuff */
+			size = ((size+511)&~511) - size;
+
+			/* this is not good enough - seek succeeds even on truncated tars */
+			php_stream_seek(fp, size, SEEK_CUR);
+			if ((uint)php_stream_tell(fp) > totalsize) {
+				efree(entry.filename);
+				if (error) {
+					spprintf(error, 4096, "phar error: \"%s\" is a corrupted tar file (truncated)", fname);
+				}
+				php_stream_close(fp);
+				phar_destroy_phar_data(myphar TSRMLS_CC);
+				return FAILURE;
+			}
+
+			read = php_stream_read(fp, buf, sizeof(buf));
+	
+			if (read != sizeof(buf)) {
+				efree(entry.filename);
+				if (error) {
+					spprintf(error, 4096, "phar error: \"%s\" is a corrupted tar file (truncated)", fname);
+				}
+				php_stream_close(fp);
+				phar_destroy_phar_data(myphar TSRMLS_CC);
+				return FAILURE;
+			}
+			continue;
+		} else if (!last_was_longlink && !old && hdr->prefix[0] != 0) {
 			char name[256];
 			int i, j;
 
@@ -338,8 +388,12 @@ bail:
 					break;
 				}
 			}
+			name[i++] = '/';
 			for (j = 0; j < 100; j++) {
 				name[i+j] = hdr->name[j];
+				if (name[i+j] == '\0') {
+					break;
+				}
 			}
 
 			entry.filename_len = i+j;
@@ -349,7 +403,7 @@ bail:
 				entry.filename_len--;
 			}
 			entry.filename = pestrndup(name, entry.filename_len, myphar->is_persistent);
-		} else {
+		} else if (!last_was_longlink) {
 			int i;
 
 			/* calculate strlen, which can be no longer than 100 */
@@ -367,6 +421,7 @@ bail:
 				entry.filename_len--;
 			}
 		}
+		last_was_longlink = 0;
 
 		phar_add_virtual_dirs(myphar, entry.filename, entry.filename_len TSRMLS_CC);
 
@@ -635,14 +690,25 @@ static int phar_tar_writeheaders(void *pDest, void *argument TSRMLS_DC) /* {{{ *
 	memset((char *) &header, 0, sizeof(header));
 
 	if (entry->filename_len > 100) {
-		if (entry->filename_len > 255) {
+		char *boundary;
+		if (entry->filename_len > 256) {
 			if (fp->error) {
 				spprintf(fp->error, 4096, "tar-based phar \"%s\" cannot be created, filename \"%s\" is too long for tar file format", entry->phar->fname, entry->filename);
 			}
 			return ZEND_HASH_APPLY_STOP;
 		}
-		memcpy(header.prefix, entry->filename+100, entry->filename_len - 100);
-		memcpy(header.name, entry->filename, 100);
+		boundary = entry->filename + entry->filename_len - 101;
+		while (*boundary && *boundary != '/') {
+			++boundary;
+		}
+		if (!*boundary || ((boundary - entry->filename) > 155)) {
+			if (fp->error) {
+				spprintf(fp->error, 4096, "tar-based phar \"%s\" cannot be created, filename \"%s\" is too long for tar file format", entry->phar->fname, entry->filename);
+			}
+			return ZEND_HASH_APPLY_STOP;
+		}
+		memcpy(header.prefix, entry->filename, boundary - entry->filename);
+		memcpy(header.name, boundary + 1, entry->filename_len - (boundary + 1 - entry->filename));
 	} else {
 		memcpy(header.name, entry->filename, entry->filename_len);
 	}
@@ -909,7 +975,11 @@ int phar_tar_flush(phar_archive_data *phar, char *user_stub, long len, int defau
 				len = -len;
 			}
 			user_stub = 0;
+#if PHP_MAJOR_VERSION >= 6
+			if (!(len = php_stream_copy_to_mem(stubfile, (void **) &user_stub, len, 0)) || !user_stub) {
+#else
 			if (!(len = php_stream_copy_to_mem(stubfile, &user_stub, len, 0)) || !user_stub) {
+#endif
 				if (error) {
 					spprintf(error, 0, "unable to read resource to copy stub to new tar-based phar \"%s\"", phar->fname);
 				}

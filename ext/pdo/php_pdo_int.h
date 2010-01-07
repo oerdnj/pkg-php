@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_int.h,v 1.17.2.6.2.2.2.3 2008/12/31 11:15:41 sebastian Exp $ */
+/* $Id: php_pdo_int.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 /* Stuff private to the PDO extension and not for consumption by PDO drivers
  * */

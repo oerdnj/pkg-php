@@ -11,13 +11,14 @@ Persistent connections and mysqli.max_links
 		die("skip mysqlnd only test");
 
 	// we need a second DB user to test for a possible flaw in the ext/mysql[i] code
-	if (!$link = mysqli_connect($host, $user, $passwd, $db, $port, $socket))
+	if (!$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket))
 		die(sprintf("skip Cannot connect [%d] %s", mysqli_connect_errno(), mysqli_connect_error()));
 
 	mysqli_query($link, 'DROP USER pcontest');
-    mysqli_query($link, 'DROP USER pcontest@localhost');
+	mysqli_query($link, 'DROP USER pcontest@localhost');
+
 	if (!mysqli_query($link, 'CREATE USER pcontest@"%" IDENTIFIED BY "pcontest"') ||
-        !mysqli_query($link, 'CREATE USER pcontest@localhost IDENTIFIED BY "pcontest"')) {
+		!mysqli_query($link, 'CREATE USER pcontest@localhost IDENTIFIED BY "pcontest"')) {
 		printf("skip Cannot create second DB user [%d] %s", mysqli_errno($link), mysqli_error($link));
 		mysqli_close($link);
 		die("skip CREATE USER failed");
@@ -25,21 +26,20 @@ Persistent connections and mysqli.max_links
 
 	// we might be able to specify the host using CURRENT_USER(), but...
 	if (!mysqli_query($link, sprintf("GRANT SELECT ON TABLE %s.test TO pcontest@'%%'", $db)) ||
-        !mysqli_query($link, sprintf("GRANT SELECT ON TABLE %s.test TO pcontest@'localhost'", $db))) {
+		!mysqli_query($link, sprintf("GRANT SELECT ON TABLE %s.test TO pcontest@'localhost'", $db))) {
 		printf("skip Cannot GRANT SELECT to second DB user [%d] %s", mysqli_errno($link), mysqli_error($link));
 		mysqli_query($link, 'REVOKE ALL PRIVILEGES, GRANT OPTION FROM pcontest');
-        mysqli_query($link, 'REVOKE ALL PRIVILEGES, GRANT OPTION FROM pcontest@localhost');
-        mysqli_query($link, 'DROP USER pcontest@localhost');
+		mysqli_query($link, 'REVOKE ALL PRIVILEGES, GRANT OPTION FROM pcontest@localhost');
+		mysqli_query($link, 'DROP USER pcontest@localhost');
 		mysqli_query($link, 'DROP USER pcontest');
 		mysqli_close($link);
 		die("skip GRANT failed");
 	}
 
-    if (!($link_pcontest = @mysqli_connect($host, 'pcontest', 'pcontest', $db, $port, $socket))) {
-        die(":)");
-        mysqli_query($link, 'REVOKE ALL PRIVILEGES, GRANT OPTION FROM pcontest');
-        mysqli_query($link, 'REVOKE ALL PRIVILEGES, GRANT OPTION FROM pcontest@localhost');
-        mysqli_query($link, 'DROP USER pcontest@localhost');
+	if (!($link_pcontest = @my_mysqli_connect($host, 'pcontest', 'pcontest', $db, $port, $socket))) {
+		mysqli_query($link, 'REVOKE ALL PRIVILEGES, GRANT OPTION FROM pcontest');
+		mysqli_query($link, 'REVOKE ALL PRIVILEGES, GRANT OPTION FROM pcontest@localhost');
+		mysqli_query($link, 'DROP USER pcontest@localhost');
 		mysqli_query($link, 'DROP USER pcontest');
 		mysqli_close($link);
 		die("skip CONNECT using new user failed");
@@ -54,7 +54,7 @@ mysqli.max_persistent=2
 	require_once("connect.inc");
 	require_once('table.inc');
 
-	if (!$plink = mysqli_connect('p:' . $host, 'pcontest', 'pcontest', $db, $port, $socket))
+	if (!$plink = my_mysqli_connect('p:' . $host, 'pcontest', 'pcontest', $db, $port, $socket))
 		printf("[001] Cannot connect using the second DB user created during SKIPIF, [%d] %s\n",
 			mysqli_connect_errno(), mysqli_connect_error());
 
@@ -107,7 +107,7 @@ mysqli.max_persistent=2
 		printf("[009] Persistent connection has not been killed\n");
 
 	// this fails and we have 0 (<= $num_plinks) connections
-	if ($plink = @mysqli_connect('p:' . $host, 'pcontest', 'pcontest', $db, $port, $socket))
+	if ($plink = @my_mysqli_connect('p:' . $host, 'pcontest', 'pcontest', $db, $port, $socket))
 		printf("[010] Can connect using the old password, [%d] %s\n",
 			mysqli_connect_errno($link), mysqli_connect_error($link));
 
@@ -123,7 +123,7 @@ mysqli.max_persistent=2
 	if ($num_plinks_kill > $num_plinks)
 		printf("[011] Expecting Active Persistent Links < %d, got %d\n", $num_plinks, $num_plinks_kill);
 
-	if (!$plink = mysqli_connect('p:' . $host, 'pcontest', 'newpass', $db, $port, $socket))
+	if (!$plink = my_mysqli_connect('p:' . $host, 'pcontest', 'newpass', $db, $port, $socket))
 		printf("[012] Cannot connect using the new password, [%d] %s\n",
 			mysqli_connect_errno(), mysqli_connect_error());
 
@@ -137,7 +137,7 @@ mysqli.max_persistent=2
 	mysqli_free_result($res);
 	var_dump($row);
 
-	if ($plink2 = mysqli_connect('p:' . $host, 'pcontest', 'newpass', $db, $port, $socket))
+	if ($plink2 = my_mysqli_connect('p:' . $host, 'pcontest', 'newpass', $db, $port, $socket))
 		printf("[015] Can open more persistent connections than allowed, [%d] %s\n",
 			mysqli_connect_errno(), mysqli_connect_error());
 
@@ -158,6 +158,22 @@ mysqli.max_persistent=2
 	mysqli_close($link);
 	print "done!";
 ?>
+--CLEAN--
+<?php
+include "connect.inc";
+if (!$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket))
+   printf("[c001] [%d] %s\n", mysqli_connect_errno(), mysqli_connect_error());
+
+if (!mysqli_query($link, "DROP TABLE IF EXISTS test"))
+	printf("[c002] Cannot drop table, [%d] %s\n", mysqli_errno($link), mysqli_error($link));
+
+mysqli_query($link, 'REVOKE ALL PRIVILEGES, GRANT OPTION FROM pcontest');
+mysqli_query($link, 'REVOKE ALL PRIVILEGES, GRANT OPTION FROM pcontest@localhost');
+mysqli_query($link, 'DROP USER pcontest@localhost');
+mysqli_query($link, 'DROP USER pcontest');
+
+mysqli_close($link);
+?>
 --EXPECTF--
 array(2) {
   [%u|b%"id"]=>
@@ -172,5 +188,5 @@ array(2) {
   %unicode|string%(1) "a"
 }
 
-Warning: mysqli_connect(): Too many open persistent links (%d) in %s on line %d
+Warning: my_mysqli_connect(): Too many open persistent links (%d) in %s on line %d
 done!

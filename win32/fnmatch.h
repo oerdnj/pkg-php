@@ -33,7 +33,7 @@
  *	@(#)fnmatch.h	8.1 (Berkeley) 6/2/93
  *
  * From FreeBSD fnmatch.h 1.7
- * $Id: fnmatch.h,v 1.1.2.2 2009/01/20 01:37:48 pajoye Exp $
+ * $Id: fnmatch.h 273994 2009-01-20 01:37:48Z pajoye $
  */
 
 #ifndef	_FNMATCH_H_

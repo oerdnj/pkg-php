@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_xmlreader.c,v 1.13.2.14.2.9.2.10 2008/12/31 11:15:46 sebastian Exp $ */
+/* $Id: php_xmlreader.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

@@ -17,7 +17,7 @@
    |          Marcus Boerger <helly@php.net>                              |
    +----------------------------------------------------------------------+
 
-   $Id: sqlite.c,v 1.166.2.13.2.9.2.22 2009/06/25 09:38:04 johannes Exp $
+   $Id: sqlite.c 289598 2009-10-12 22:37:52Z pajoye $
 */
 
 #ifdef HAVE_CONFIG_H
@@ -129,7 +129,7 @@ PHP_INI_END()
 #define RES_FROM_OBJECT(res, object) RES_FROM_OBJECT_RESTORE_ERH(res, object, NULL)
 
 #define PHP_SQLITE_EMPTY_QUERY \
-	if (!sql_len) { \
+	if (!sql_len || !*sql) { \
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Cannot execute empty query."); \
 		RETURN_FALSE; \
 	}
@@ -1458,7 +1458,7 @@ PHP_MINFO_FUNCTION(sqlite)
 {
 	php_info_print_table_start();
 	php_info_print_table_header(2, "SQLite support", "enabled");
-	php_info_print_table_row(2, "PECL Module version", PHP_SQLITE_MODULE_VERSION " $Id: sqlite.c,v 1.166.2.13.2.9.2.22 2009/06/25 09:38:04 johannes Exp $");
+	php_info_print_table_row(2, "PECL Module version", PHP_SQLITE_MODULE_VERSION " $Id: sqlite.c 289598 2009-10-12 22:37:52Z pajoye $");
 	php_info_print_table_row(2, "SQLite Library", sqlite_libversion());
 	php_info_print_table_row(2, "SQLite Encoding", sqlite_libencoding());
 	php_info_print_table_end();

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_wddx_api.h,v 1.23.2.3.2.1.2.3 2008/12/31 11:15:46 sebastian Exp $ */
+/* $Id: php_wddx_api.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_WDDX_API_H
 #define PHP_WDDX_API_H

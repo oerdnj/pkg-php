@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: link_win32.c,v 1.1.2.5 2009/06/16 16:50:13 pajoye Exp $ */
+/* $Id: link_win32.c 287813 2009-08-27 14:45:41Z pajoye $ */
 #ifdef PHP_WIN32
 
 #include "php.h"
@@ -53,6 +53,10 @@ TODO:
 
 #ifndef VOLUME_NAME_NT
 #define VOLUME_NAME_NT 0x2
+#endif
+
+#ifndef VOLUME_NAME_DOS
+#define VOLUME_NAME_DOS 0x0
 #endif
 
 /* {{{ proto string readlink(string filename)
@@ -107,7 +111,7 @@ PHP_FUNCTION(readlink)
 			RETURN_FALSE;
 	}
 
-	dwRet = pGetFinalPathNameByHandle(hFile, Path, MAXPATHLEN, VOLUME_NAME_NT);
+	dwRet = pGetFinalPathNameByHandle(hFile, Path, MAXPATHLEN, VOLUME_NAME_DOS);
 	if(dwRet >= MAXPATHLEN) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Can't resolve the full path, the path exceeds the MAX_PATH_LEN (%d) limit", MAXPATHLEN);
 		RETURN_FALSE;
@@ -118,7 +122,14 @@ PHP_FUNCTION(readlink)
 	/* Append NULL to the end of the string */
 	Path[dwRet] = '\0';
 
-	RETURN_STRING(Path, 1);
+	if(dwRet > 4) {
+		/* Skip first 4 characters if they are "\??\" */
+		if(Path[0] == '\\' && Path[1] == '\\' && Path[2] == '?' && Path[3] ==  '\\') {
+			RETURN_STRING(Path + 4, 1);
+		}
+	} else {
+		RETURN_STRING(Path, 1);
+	}
 }
 /* }}} */
 

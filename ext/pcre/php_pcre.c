@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_pcre.c,v 1.168.2.9.2.21.2.32 2009/06/05 18:50:32 mattwil Exp $ */
+/* $Id: php_pcre.c 289418 2009-10-09 14:25:51Z pajoye $ */
 
 #include "php.h"
 #include "php_ini.h"
@@ -1836,7 +1836,7 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_preg_match_all, 0, 0, 3)
     ZEND_ARG_INFO(0, offset)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_preg_replace, 0, 0, 2)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_preg_replace, 0, 0, 3)
     ZEND_ARG_INFO(0, regex)
     ZEND_ARG_INFO(0, replace)
     ZEND_ARG_INFO(0, subject)

@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: phar_path_check.re,v 1.8.2.2 2008/12/31 11:13:54 sebastian Exp $ */
+/* $Id: phar_path_check.re 272369 2008-12-31 11:13:54Z sebastian $ */
 
 #include "phar_internal.h"
 

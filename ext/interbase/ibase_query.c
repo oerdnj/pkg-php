@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: ibase_query.c,v 1.23.2.1.2.10.2.10 2009/01/11 23:52:29 iliaa Exp $ */
+/* $Id: ibase_query.c 286330 2009-07-25 23:37:47Z kalle $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1031,8 +1031,7 @@ static int _php_ibase_exec(INTERNAL_FUNCTION_PARAMETERS, ibase_result **ib_resul
 				if (affected_rows) {
 					RETVAL_LONG(affected_rows);
 				} else {
-					/* this return value evaluates to bool(true) and to int(0) */
-					RETVAL_STRINGL("0 ",2,1);
+					RETVAL_TRUE;
 				}
 				break;
 			}

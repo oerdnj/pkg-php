@@ -1,5 +1,5 @@
 // vim:ft=javascript
-// $Id: config.w32,v 1.2.8.1 2008/04/15 16:55:53 auroraeosrose Exp $
+// $Id: config.w32 257603 2008-04-15 16:55:53Z auroraeosrose $
 
 ARG_WITH('apache-hooks', 'Build Apache 1.3.x (hooks) version of PHP', 'no');
 

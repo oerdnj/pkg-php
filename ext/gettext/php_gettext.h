@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_gettext.h,v 1.20.2.1.2.1.2.2 2008/12/31 11:15:37 sebastian Exp $ */
+/* $Id: php_gettext.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_GETTEXT_H
 #define PHP_GETTEXT_H

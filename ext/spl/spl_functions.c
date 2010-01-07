@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_functions.c,v 1.28.2.3.2.3.2.5 2008/12/31 11:15:43 sebastian Exp $ */
+/* $Id: spl_functions.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 	#include "config.h"

@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd.c,v 1.5.2.38 2009/03/30 16:52:33 felipe Exp $ */
+/* $Id: mysqlnd.c 289630 2009-10-14 13:51:25Z johannes $ */
 #include "php.h"
 #include "mysqlnd.h"
 #include "mysqlnd_wireprotocol.h"
@@ -80,6 +80,56 @@ void mysqlnd_library_end(TSRMLS_D)
 	}
 }
 /* }}} */
+
+
+/* {{{ mysqlnd_conn::free_options */
+static void
+MYSQLND_METHOD(mysqlnd_conn, free_options)(MYSQLND *conn TSRMLS_DC)
+{
+	zend_bool pers = conn->persistent;
+
+	if (conn->options.charset_name) {
+		mnd_pefree(conn->options.charset_name, pers);
+		conn->options.charset_name = NULL;
+	}
+	if (conn->options.num_commands) {
+		unsigned int i;
+		for (i = 0; i < conn->options.num_commands; i++) {
+			/* allocated with pestrdup */
+			mnd_pefree(conn->options.init_commands[i], pers);
+		}
+		mnd_pefree(conn->options.init_commands, pers);
+		conn->options.init_commands = NULL;
+	}
+	if (conn->options.cfg_file) {
+		mnd_pefree(conn->options.cfg_file, pers);
+		conn->options.cfg_file = NULL;
+	}
+	if (conn->options.cfg_section) {
+		mnd_pefree(conn->options.cfg_section, pers);
+		conn->options.cfg_section = NULL;
+	}
+	if (conn->options.ssl_key) {
+		mnd_pefree(conn->options.ssl_key, pers);
+		conn->options.ssl_key = NULL;
+	}
+	if (conn->options.ssl_cert) {
+		mnd_pefree(conn->options.ssl_cert, pers);
+		conn->options.ssl_cert = NULL;
+	}
+	if (conn->options.ssl_ca) {
+		mnd_pefree(conn->options.ssl_ca, pers);
+		conn->options.ssl_ca = NULL;
+	}
+	if (conn->options.ssl_capath) {
+		mnd_pefree(conn->options.ssl_capath, pers);
+		conn->options.ssl_capath = NULL;
+	}
+	if (conn->options.ssl_cipher) {
+		mnd_pefree(conn->options.ssl_cipher, pers);
+		conn->options.ssl_cipher = NULL;
+	}
+}
 
 
 /* {{{ mysqlnd_conn::free_contents */
@@ -153,46 +203,6 @@ MYSQLND_METHOD(mysqlnd_conn, free_contents)(MYSQLND *conn TSRMLS_DC)
 		mnd_pefree(conn->last_message, pers);
 		conn->last_message = NULL;
 	}
-	if (conn->options.charset_name) {
-		mnd_pefree(conn->options.charset_name, pers);
-		conn->options.charset_name = NULL;
-	}
-	if (conn->options.num_commands) {
-		unsigned int i;
-		for (i = 0; i < conn->options.num_commands; i++) {
-			mnd_pefree(conn->options.init_commands[i], pers);
-		}
-		mnd_pefree(conn->options.init_commands, pers);
-		conn->options.init_commands = NULL;
-	}
-	if (conn->options.cfg_file) {
-		mnd_pefree(conn->options.cfg_file, pers);
-		conn->options.cfg_file = NULL;
-	}
-	if (conn->options.cfg_section) {
-		mnd_pefree(conn->options.cfg_section, pers);
-		conn->options.cfg_section = NULL;
-	}
-	if (conn->options.ssl_key) {
-		mnd_pefree(conn->options.ssl_key, pers);
-		conn->options.ssl_key = NULL;
-	}
-	if (conn->options.ssl_cert) {
-		mnd_pefree(conn->options.ssl_cert, pers);
-		conn->options.ssl_cert = NULL;
-	}
-	if (conn->options.ssl_ca) {
-		mnd_pefree(conn->options.ssl_ca, pers);
-		conn->options.ssl_ca = NULL;
-	}
-	if (conn->options.ssl_capath) {
-		mnd_pefree(conn->options.ssl_capath, pers);
-		conn->options.ssl_capath = NULL;
-	}
-	if (conn->options.ssl_cipher) {
-		mnd_pefree(conn->options.ssl_cipher, pers);
-		conn->options.ssl_cipher = NULL;
-	}
 	if (conn->zval_cache) {
 		DBG_INF("Freeing zval cache reference");
 		mysqlnd_palloc_free_thd_cache_reference(&conn->zval_cache);
@@ -229,6 +239,7 @@ MYSQLND_METHOD_PRIVATE(mysqlnd_conn, dtor)(MYSQLND *conn TSRMLS_DC)
 	DBG_INF_FMT("conn=%llu", conn->thread_id);
 
 	conn->m->free_contents(conn TSRMLS_CC);
+	conn->m->free_options(conn TSRMLS_CC);
 
 #ifdef MYSQLND_THREADED
 	if (conn->thread_is_running) {
@@ -497,8 +508,8 @@ PHPAPI MYSQLND *mysqlnd_connect(MYSQLND *conn,
 				host?host:"", user?user:"", db?db:"", port, mysql_flags,
 				conn? conn->persistent:0, conn? CONN_GET_STATE(conn):-1);
 
-	DBG_INF_FMT("state=%d", CONN_GET_STATE(conn));
 	if (conn && CONN_GET_STATE(conn) > CONN_ALLOCED && CONN_GET_STATE(conn) ) {
+		DBG_INF_FMT("state=%d", CONN_GET_STATE(conn));
 		DBG_INF("Connecting on a connected handle.");
 
 		if (CONN_GET_STATE(conn) < CONN_QUIT_SENT) {
@@ -616,6 +627,10 @@ PHPAPI MYSQLND *mysqlnd_connect(MYSQLND *conn,
 		mnd_efree(hashed_details);
 	}
 
+	if (!conn->options.timeout_read) {
+		/* should always happen because read_timeout cannot be set via API */
+		conn->options.timeout_read = (unsigned int) MYSQLND_G(net_read_timeout);
+	}
 	if (conn->options.timeout_read)
 	{
 		tv.tv_sec = conn->options.timeout_read;
@@ -654,7 +669,12 @@ PHPAPI MYSQLND *mysqlnd_connect(MYSQLND *conn,
 
 	conn->greet_charset = mysqlnd_find_charset_nr(greet_packet.charset_no);
 	/* we allow load data local infile by default */
-	mysql_flags  |= CLIENT_LOCAL_FILES;
+	mysql_flags  |= CLIENT_LOCAL_FILES | CLIENT_PS_MULTI_RESULTS;
+#ifndef MYSQLND_COMPRESSION_ENABLED
+	if (mysql_flags & CLIENT_COMPRESS) {
+		mysql_flags &= ~CLIENT_COMPRESS;
+	}
+#endif
 
 	auth_packet->user		= user;
 	auth_packet->password	= passwd;
@@ -736,13 +756,7 @@ PHPAPI MYSQLND *mysqlnd_connect(MYSQLND *conn,
 
 		SET_EMPTY_ERROR(conn->error_info);
 
-		PACKET_FREE_ALLOCA(greet_packet);
-		PACKET_FREE(auth_packet);
-		PACKET_FREE_ALLOCA(ok_packet);
-
 		conn->zval_cache = mysqlnd_palloc_get_thd_cache_reference(zval_cache);
-		conn->net.cmd_buffer.length = 128L*1024L;
-		conn->net.cmd_buffer.buffer = mnd_pemalloc(conn->net.cmd_buffer.length, conn->persistent);
 
 		mysqlnd_local_infile_default(conn);
 		{
@@ -756,13 +770,12 @@ PHPAPI MYSQLND *mysqlnd_connect(MYSQLND *conn,
 								   		(char *)&buf_size TSRMLS_CC);			
 		}
 
-		MYSQLND_INC_CONN_STATISTIC(&conn->stats, STAT_CONNECT_SUCCESS);
+		MYSQLND_INC_CONN_STATISTIC_W_VALUE2(&conn->stats, STAT_CONNECT_SUCCESS, 1, STAT_OPENED_CONNECTIONS, 1);
 		if (reconnect) {
 			MYSQLND_INC_GLOBAL_STATISTIC(STAT_RECONNECT);	
 		}
-		MYSQLND_INC_CONN_STATISTIC(&conn->stats, STAT_OPENED_CONNECTIONS);
 		if (conn->persistent) {
-			MYSQLND_INC_CONN_STATISTIC(&conn->stats, STAT_OPENED_PERSISTENT_CONNECTIONS);
+			MYSQLND_INC_CONN_STATISTIC_W_VALUE2(&conn->stats, STAT_PCONNECT_SUCCESS, 1, STAT_OPENED_PERSISTENT_CONNECTIONS, 1);
 		}
 
 		DBG_INF_FMT("connection_id=%llu", conn->thread_id);
@@ -791,6 +804,25 @@ PHPAPI MYSQLND *mysqlnd_connect(MYSQLND *conn,
 		}
 #endif
 
+		if (conn->options.init_commands) {
+			int current_command = 0;
+			for (; current_command < conn->options.num_commands; ++current_command) {
+				const char * const command = conn->options.init_commands[current_command];
+				MYSQLND_INC_CONN_STATISTIC(&conn->stats, STAT_INIT_COMMAND_EXECUTED_COUNT);
+				if (PASS != conn->m->query(conn, command, strlen(command) TSRMLS_CC)) {
+					MYSQLND_INC_CONN_STATISTIC(&conn->stats, STAT_INIT_COMMAND_FAILED_COUNT);
+					goto err;
+				}
+				if (conn->last_query_type == QUERY_SELECT) {
+					MYSQLND_RES * result = conn->m->use_result(conn TSRMLS_CC);
+					result->m.free_result(result, TRUE TSRMLS_CC);
+				}
+			}
+		}
+
+		PACKET_FREE_ALLOCA(greet_packet);
+		PACKET_FREE(auth_packet);
+		PACKET_FREE_ALLOCA(ok_packet);
 
 		DBG_RETURN(conn);
 	}
@@ -812,10 +844,6 @@ err:
 		conn->scheme = NULL;
 	}
 
-
-	/* This will also close conn->net.stream if it has been opened */
-	conn->m->free_contents(conn TSRMLS_CC);
-
 	if (self_alloced) {
 		/*
 		  We have alloced, thus there are no references to this
@@ -823,6 +851,8 @@ err:
 		*/
 		conn->m->dtor(conn TSRMLS_CC);
 	} else {
+		/* This will also close conn->net.stream if it has been opened */
+		conn->m->free_contents(conn TSRMLS_CC);
 		MYSQLND_INC_CONN_STATISTIC(&conn->stats, STAT_CONNECT_FAILURE);
 	}
 	DBG_RETURN(NULL);
@@ -1411,8 +1441,9 @@ mysqlnd_send_close(MYSQLND * conn TSRMLS_DC)
 	switch (CONN_GET_STATE(conn)) {
 		case CONN_READY:
 			DBG_INF("Connection clean, sending COM_QUIT");
-			ret =  mysqlnd_simple_command(conn, COM_QUIT, NULL, 0, PROT_LAST,
-										  TRUE, TRUE TSRMLS_CC);
+			if (conn->net.stream) {
+				ret =  mysqlnd_simple_command(conn, COM_QUIT, NULL, 0, PROT_LAST, TRUE, TRUE TSRMLS_CC);
+			}
 			/* Do nothing */
 			break;
 		case CONN_SENDING_LOAD_DATA:
@@ -1914,6 +1945,9 @@ MYSQLND_METHOD(mysqlnd_conn, set_client_option)(MYSQLND * const conn,
 			break;
 #endif
 		case MYSQLND_OPT_NET_CMD_BUFFER_SIZE:
+			if (*(unsigned int*) value < MYSQLND_NET_CMD_BUFFER_MIN_SIZE) {
+				DBG_RETURN(FAIL);
+			}
 			conn->net.cmd_buffer.length = *(unsigned int*) value;
 			if (!conn->net.cmd_buffer.buffer) {
 				conn->net.cmd_buffer.buffer = mnd_pemalloc(conn->net.cmd_buffer.length, conn->persistent);
@@ -1949,10 +1983,16 @@ MYSQLND_METHOD(mysqlnd_conn, set_client_option)(MYSQLND * const conn,
 				conn->options.flags &= ~CLIENT_LOCAL_FILES;
 			}
 			break;
+		case MYSQL_INIT_COMMAND:
+			/* when num_commands is 0, then realloc will be effectively a malloc call, internally */
+			conn->options.init_commands = mnd_perealloc(conn->options.init_commands, sizeof(char *) * (conn->options.num_commands + 1),
+														conn->persistent);
+			conn->options.init_commands[conn->options.num_commands] = pestrdup(value, conn->persistent);
+			++conn->options.num_commands;
+			break;
 #ifdef WHEN_SUPPORTED_BY_MYSQLI
 		case MYSQL_OPT_COMPRESS:
 #endif
-		case MYSQL_INIT_COMMAND:
 		case MYSQL_READ_DEFAULT_FILE:
 		case MYSQL_READ_DEFAULT_GROUP:
 #ifdef WHEN_SUPPORTED_BY_MYSQLI
@@ -2161,6 +2201,7 @@ MYSQLND_CLASS_METHODS_START(mysqlnd_conn)
 	MYSQLND_METHOD(mysqlnd_conn, set_server_option),
 	MYSQLND_METHOD(mysqlnd_conn, set_client_option),
 	MYSQLND_METHOD(mysqlnd_conn, free_contents),
+	MYSQLND_METHOD(mysqlnd_conn, free_options),
 	MYSQLND_METHOD(mysqlnd_conn, close),
 
 	MYSQLND_METHOD_PRIVATE(mysqlnd_conn, dtor),

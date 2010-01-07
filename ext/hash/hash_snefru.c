@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: hash_snefru.c,v 1.3.2.3.2.2.2.3 2008/12/31 11:15:37 sebastian Exp $ */
+/* $Id: hash_snefru.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #include "php_hash.h"
 #include "php_hash_snefru.h"

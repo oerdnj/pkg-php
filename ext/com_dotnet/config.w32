@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.6 2004/05/09 15:21:29 wez Exp $
+// $Id: config.w32 242949 2007-09-26 15:44:16Z cvs2svn $
 // vim:ft=javascript
 
 ARG_ENABLE("com-dotnet", "COM and .Net support", "yes");

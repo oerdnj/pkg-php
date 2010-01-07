@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_API.c,v 1.296.2.27.2.34.2.64 2009/06/04 18:20:42 mattwil Exp $ */
+/* $Id: zend_API.c 289431 2009-10-09 17:21:20Z pajoye $ */
 
 #include "zend.h"
 #include "zend_execute.h"
@@ -1038,13 +1038,13 @@ ZEND_API void zend_update_class_constants(zend_class_entry *class_type TSRMLS_DC
 					Z_SET_ISREF_PP(q);
 					zend_hash_add(CE_STATIC_MEMBERS(class_type), str_index, str_length, (void**)q, sizeof(zval*), NULL);
 				} else {
-					zval *q;
+					zval *r;
 
-					ALLOC_ZVAL(q);
-					*q = **p;
-					INIT_PZVAL(q);
-					zval_copy_ctor(q);
-					zend_hash_add(CE_STATIC_MEMBERS(class_type), str_index, str_length, (void**)&q, sizeof(zval*), NULL);
+					ALLOC_ZVAL(r);
+					*r = **p;
+					INIT_PZVAL(r);
+					zval_copy_ctor(r);
+					zend_hash_add(CE_STATIC_MEMBERS(class_type), str_index, str_length, (void**)&r, sizeof(zval*), NULL);
 				}
 				zend_hash_move_forward_ex(&class_type->default_static_members, &pos);
 			}
@@ -2114,7 +2114,7 @@ void module_destructor(zend_module_entry *module) /* {{{ */
 		zend_unregister_functions(module->functions, -1, NULL TSRMLS_CC);
 	}
 
-#if HAVE_LIBDL || defined(HAVE_MACH_O_DYLD_H)
+#if HAVE_LIBDL
 #if !(defined(NETWARE) && defined(APACHE_1_BUILD))
 	if (module->handle) {
 		DL_UNLOAD(module->handle);
@@ -2519,7 +2519,7 @@ static int zend_is_callable_check_func(int check_flags, zval *callable, zend_fca
 		}
 	} else {
 get_function_via_handler:
-		if (fcc->object_ptr) {
+		if (fcc->object_ptr && fcc->calling_scope == ce_org) {
 			if (Z_OBJ_HT_P(fcc->object_ptr)->get_method) {
 				fcc->function_handler = Z_OBJ_HT_P(fcc->object_ptr)->get_method(&fcc->object_ptr, mname, mlen TSRMLS_CC);
 				if (fcc->function_handler) {

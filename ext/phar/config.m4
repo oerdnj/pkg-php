@@ -1,4 +1,4 @@
-dnl $Id: config.m4,v 1.27.2.13 2009/02/16 16:41:40 cellog Exp $
+dnl $Id: config.m4 275933 2009-02-16 16:41:40Z cellog $
 dnl config.m4 for extension phar
 
 PHP_ARG_ENABLE(phar, for phar archive support,

@@ -10,7 +10,7 @@ if (!function_exists('mysqli_set_local_infile_handler'))
 	die("skip - function not available.");
 
 require_once('connect.inc');
-if (!$link = mysqli_connect($host, $user, $passwb, $db, $port, $socket))
+if (!$link = my_mysqli_connect($host, $user, $passwb, $db, $port, $socket))
 	die("skip Cannot connect to MySQL");
 
 if (!$res = mysqli_query($link, 'SHOW VARIABLES LIKE "local_infile"')) {
@@ -100,6 +100,10 @@ done!";
 	try_handler(10, $link, $file, 'callback_simple', $expected);
 	mysqli_close($link);
 	print "done!";
+?>
+--CLEAN--
+<?php
+	require_once("clean_table.inc");
 ?>
 --EXPECTF--
 Warning: tempnam(): open_basedir restriction in effect. File(%s) is not within the allowed path(s): (%s) in %s on line %d

@@ -6,7 +6,7 @@ if (!extension_loaded("xmlwriter")) die("skip");
 ?>
 --FILE--
 <?php 
-/* $Id: OO_008.phpt,v 1.1.2.3 2005/12/12 21:21:11 tony2001 Exp $ */
+/* $Id: OO_008.phpt 202733 2005-12-12 21:21:11Z tony2001 $ */
 
 $xw = new XMLWriter();
 $xw->openMemory();

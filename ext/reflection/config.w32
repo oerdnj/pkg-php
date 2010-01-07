@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.2.2.2.2.1.2.3 2008/06/23 10:22:42 pajoye Exp $
+// $Id: config.w32 261527 2008-06-23 10:22:42Z pajoye $
 // vim:ft=javascript
 
 EXTENSION("reflection", "php_reflection.c", false /* never shared */);

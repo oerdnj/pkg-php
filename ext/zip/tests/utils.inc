@@ -1,5 +1,5 @@
 <?php
-/* $Id: utils.inc,v 1.1.2.3.2.1 2008/05/21 09:27:41 pajoye Exp $ */
+/* $Id: utils.inc 260091 2008-05-21 09:27:41Z pajoye $ */
 function dump_entries_name($z) {
 	for($i=0; $i<$z->numFiles; $i++) {
 	    $sb = $z->statIndex($i);

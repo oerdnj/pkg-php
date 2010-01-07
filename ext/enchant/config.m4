@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.1 2004/03/08 20:12:12 pajoye Exp $
+dnl $Id: config.m4 289597 2009-10-12 22:35:36Z pajoye $
 dnl
 
 PHP_ARG_WITH(enchant,for ENCHANT support,
@@ -33,4 +33,10 @@ if test "$PHP_ENCHANT" != "no"; then
 	PHP_SUBST(ENCHANT_SHARED_LIBADD)
 	PHP_ADD_LIBRARY_WITH_PATH(enchant, $ENCHANT_LIBDIR, ENCHANT_SHARED_LIBADD)
 	PHP_ADD_INCLUDE($ENCHANT_INCDIR)
+	PHP_CHECK_LIBRARY(enchant, enchant_broker_set_param,
+	[
+	  AC_DEFINE(HAVE_ENCHANT_BROKER_SET_PARAM,             1, [ ])
+	  AC_DEFINE(ENCHANT_VERSION_STRING,             "1.5.x", [ ])
+	], [], [ -L$ENCHANT_LIB $ENCHANT_SHARED_LIBADD])
+
 fi

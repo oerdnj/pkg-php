@@ -11,7 +11,7 @@ Interface of the class mysqli_stmt
 	require('connect.inc');
 	require('table.inc');
 
-	$link = mysqli_connect($host, $user, $passwd, $db, $port, $socket);
+	$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket);
 	$stmt = new mysqli_stmt($link);
 
 	printf("Parent class:\n");
@@ -187,5 +187,5 @@ stmt->unknown = '13'
 
 Prepare using the constructor:
 
-Warning: mysqli_stmt::__construct() expects parameter 2 to be string, object given in %s on line %d
+Warning: mysqli_stmt::__construct() expects parameter 2 to be %binary_string_optional%, object given in %s on line %d
 done!

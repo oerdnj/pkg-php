@@ -16,7 +16,7 @@
 #  |          Sascha Schumann <sascha@schumann.cx>                        |
 #  +----------------------------------------------------------------------+
 #
-# $Id: buildcheck.sh,v 1.37.2.2.2.1 2007/01/01 19:32:10 iliaa Exp $ 
+# $Id: buildcheck.sh,v 1.37.2.2.2.1 2007-01-01 19:32:10 iliaa Exp $ 
 #
 
 echo "buildconf: checking installation..."
@@ -33,14 +33,14 @@ ac_version=`$PHP_AUTOCONF --version 2>/dev/null|head -n 1|sed -e 's/^[^0-9]*//' 
 if test -z "$ac_version"; then
 echo "buildconf: autoconf not found."
 echo "           You need autoconf version 2.13 or newer installed"
-echo "           to build PHP from CVS."
+echo "           to build PHP from SVN."
 exit 1
 fi
 IFS=.; set $ac_version; IFS=' '
 if test "$1" = "2" -a "$2" -lt "13" || test "$1" -lt "2"; then
 echo "buildconf: autoconf version $ac_version found."
 echo "           You need autoconf version 2.13 or newer installed"
-echo "           to build PHP from CVS."
+echo "           to build PHP from SVN."
 exit 1
 else
 echo "buildconf: autoconf version $ac_version (ok)"
@@ -48,9 +48,9 @@ fi
 
 if test "$1" = "2" && test "$2" -ge "50"; then
   echo "buildconf: Your version of autoconf likely contains buggy cache code."
-  echo "           Running cvsclean for you."
+  echo "           Running vcsclean for you."
   echo "           To avoid this, install autoconf-2.13."
-  ./cvsclean
+  ./vcsclean
   stamp=
 fi
 

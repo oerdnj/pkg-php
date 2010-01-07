@@ -1,8 +1,8 @@
 --TEST--
 mysql_unbuffered_query()
 --SKIPIF--
-<?php 
-require_once('skipif.inc'); 
+<?php
+require_once('skipif.inc');
 require_once('skipifconnectfailure.inc');
 ?>
 --FILE--
@@ -23,19 +23,19 @@ if (NULL !== ($tmp = @mysql_unbuffered_query("SELECT 1 AS a", $link, "foo")))
 if (false !== ($tmp = mysql_unbuffered_query('THIS IS NOT SQL', $link)))
 	printf("[003] Expecting boolean/false, got %s/%s\n", gettype($tmp), $tmp);
 
-if (false !== ($tmp = mysql_unbuffered_query('SELECT "this is sql but with backslash g"\g', $link)))
+if (false !== ($tmp = mysql_unbuffered_query("SELECT 'this is sql but with backslash g'\g", $link)))
 	printf("[004] Expecting boolean/false, got %s/%s\n", gettype($tmp), $tmp);
 
 if ((0 === mysql_errno($link)) || ('' == mysql_error($link)))
 	printf("[005] mysql_errno()/mysql_error should return some error\n");
 
-if (!$res = mysql_unbuffered_query('SELECT "this is sql but with semicolon" AS valid ; ', $link))
+if (!$res = mysql_unbuffered_query("SELECT 'this is sql but with semicolon' AS valid ; ", $link))
 	printf("[006] [%d] %s\n", mysql_errno($link), mysql_error($link));
 
 var_dump(mysql_fetch_assoc($res));
 mysql_free_result($res);
 
-if (false !== ($res = mysql_unbuffered_query('SELECT "this is sql but with semicolon" AS valid ; SHOW VARIABLES', $link)))
+if (false !== ($res = mysql_unbuffered_query("SELECT 'this is sql but with semicolon' AS valid ; SHOW VARIABLES", $link)))
 	printf("[007] [%d] %s\n", mysql_errno($link), mysql_error($link));
 
 if (mysql_unbuffered_query('DROP PROCEDURE IF EXISTS p', $link)) {
@@ -48,7 +48,7 @@ if (mysql_unbuffered_query('DROP PROCEDURE IF EXISTS p', $link)) {
 			printf("[008] Result seems wrong, dumping\n");
 			var_dump($tmp);
 		}
-		if (ini_get('unicode.semantics') && !is_unicode($tmp['p_version'])) {
+		if ((version_compare(PHP_VERSION, '5.9.9', '>') == 1) && !is_unicode($tmp['p_version'])) {
 			printf("[009] Expecting unicode string, dumping\n");
 			var_dump($tmp);
 		}
@@ -65,7 +65,7 @@ if (mysql_unbuffered_query('DROP PROCEDURE IF EXISTS p', $link)) {
 			printf("[011] Result seems wrong, dumping\n");
 			var_dump($tmp);
 		}
-		if (ini_get('unicode.semantics') && !is_unicode($tmp['f_version'])) {
+		if ((version_compare(PHP_VERSION, '5.9.9', '>') == 1) && !is_unicode($tmp['f_version'])) {
 			printf("[012] Expecting unicode string, dumping\n");
 			var_dump($tmp);
 		}
@@ -86,23 +86,30 @@ if (false !== ($tmp = mysql_unbuffered_query("SELECT id FROM test", $link)))
 
 print "done!";
 ?>
+--CLEAN--
+<?php
+require_once('connect.inc');
+
+// connect + select_db
+if (!$link = my_mysql_connect($host, $user, $passwd, $db, $port, $socket)) {
+	printf("[clean] Cannot connect to the server using host=%s/%s, user=%s, passwd=***, dbname=%s, port=%s, socket=%s\n",
+ 	  $host, $myhost, $user, $db, $port, $socket);
+}
+
+if (!mysql_query('DROP TABLE IF EXISTS test', $link)) {
+	printf("[clean] Failed to drop test table: [%d] %s\n", mysql_errno($link), mysql_error($link));
+}
+
+/* MySQL server may not support this - ignore errors */
+@mysql_query('DROP PROCEDURE IF EXISTS p', $link);
+@mysql_query('DROP FUNCTION IF EXISTS f', $link);
+
+mysql_close($link);
+?>
 --EXPECTF--
 array(1) {
-  ["valid"]=>
-  string(30) "this is sql but with semicolon"
-}
-bool(true)
-resource(%d) of type (mysql result)
-int(0)
-
-Notice: mysql_close(): Function called without first fetching all rows from a previous unbuffered query in %s on line %d
-
-Warning: mysql_unbuffered_query(): %d is not a valid MySQL-Link resource in %s on line %d
-done!
---UEXPECTF--
-array(1) {
-  [u"valid"]=>
-  unicode(30) "this is sql but with semicolon"
+  [%u|b%"valid"]=>
+  %unicode|string%(30) "this is sql but with semicolon"
 }
 bool(true)
 resource(%d) of type (mysql result)

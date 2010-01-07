@@ -1,4 +1,4 @@
-dnl $Id: acinclude.m4,v 1.15.2.2.2.2.2.4 2009/02/14 21:08:00 rasmus Exp $
+dnl $Id: acinclude.m4 275828 2009-02-14 21:08:02Z rasmus $
 dnl
 dnl This file contains local autoconf functions.
 

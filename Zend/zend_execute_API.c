@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute_API.c,v 1.331.2.20.2.24.2.78 2009/06/05 18:50:32 mattwil Exp $ */
+/* $Id: zend_execute_API.c 287466 2009-08-18 20:51:49Z stas $ */
 
 #include <stdio.h>
 #include <signal.h>
@@ -837,6 +837,12 @@ int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci_cache TS
 	for (i=0; i<fci->param_count; i++) {
 		zval *param;
 
+        	if(EX(function_state).function->type == ZEND_INTERNAL_FUNCTION 
+			&& !ARG_SHOULD_BE_SENT_BY_REF(EX(function_state).function, i + 1)
+			&& PZVAL_IS_REF(*fci->params[i])) {
+			SEPARATE_ZVAL(fci->params[i]);
+		}
+
 		if (ARG_SHOULD_BE_SENT_BY_REF(EX(function_state).function, i + 1)
 			&& !PZVAL_IS_REF(*fci->params[i])) {
 
@@ -1148,6 +1154,7 @@ ZEND_API int zend_eval_stringl(char *str, int str_len, zval *retval_ptr, char *s
 		zval *local_retval_ptr=NULL;
 		zval **original_return_value_ptr_ptr = EG(return_value_ptr_ptr);
 		zend_op **original_opline_ptr = EG(opline_ptr);
+		int orig_interactive = CG(interactive);
 
 		EG(return_value_ptr_ptr) = &local_retval_ptr;
 		EG(active_op_array) = new_op_array;
@@ -1155,9 +1162,11 @@ ZEND_API int zend_eval_stringl(char *str, int str_len, zval *retval_ptr, char *s
 		if (!EG(active_symbol_table)) {
 			zend_rebuild_symbol_table(TSRMLS_C);
 		}
+		CG(interactive) = 0;
 
 		zend_execute(new_op_array TSRMLS_CC);
 
+		CG(interactive) = orig_interactive;
 		if (local_retval_ptr) {
 			if (retval_ptr) {
 				COPY_PZVAL_TO_ZVAL(*retval_ptr, local_retval_ptr);
@@ -1216,6 +1225,7 @@ void execute_new_code(TSRMLS_D) /* {{{ */
 {
 	zend_op *opline, *end;
 	zend_op *ret_opline;
+	int orig_interactive;
 
 	if (!(CG(active_op_array)->fn_flags & ZEND_ACC_INTERACTIVE)
 		|| CG(active_op_array)->backpatch_count>0
@@ -1271,7 +1281,10 @@ void execute_new_code(TSRMLS_D) /* {{{ */
 	
 	EG(return_value_ptr_ptr) = NULL;
 	EG(active_op_array) = CG(active_op_array);
+	orig_interactive = CG(interactive);
+	CG(interactive) = 0;
 	zend_execute(CG(active_op_array) TSRMLS_CC);
+	CG(interactive) = orig_interactive;
 
 	if (EG(exception)) {
 		zend_exception_error(EG(exception), E_ERROR TSRMLS_CC);

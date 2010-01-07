@@ -1,4 +1,4 @@
-// $Id: config.w32,v 1.8.6.2 2008/06/22 21:55:59 pajoye Exp $
+// $Id: config.w32 261512 2008-06-22 21:55:59Z pajoye $
 // vim:ft=javascript
 
 ARG_ENABLE("zlib", "ZLIB support", "yes");

@@ -37,10 +37,11 @@ $(builddir)/phar.phar: $(builddir)/phar.php $(builddir)/phar/phar.inc $(srcdir)/
 	-@echo "Generating phar.phar"
 	-@rm -f $(builddir)/phar.phar
 	-@rm -f $(srcdir)/phar.phar
-	@$(PHP_PHARCMD_EXECUTABLE) $(PHP_PHARCMD_SETTINGS) $(builddir)/phar.php pack -f $(builddir)/phar.phar -a pharcommand -c auto -x CVS -p 0 -s $(srcdir)/phar/phar.php -h sha1 -b "$(PHP_PHARCMD_BANG)"  $(srcdir)/phar/
+	@$(PHP_PHARCMD_EXECUTABLE) $(PHP_PHARCMD_SETTINGS) $(builddir)/phar.php pack -f $(builddir)/phar.phar -a pharcommand -c auto -x \\.svn -p 0 -s $(srcdir)/phar/phar.php -h sha1 -b "$(PHP_PHARCMD_BANG)"  $(srcdir)/phar/
 	-@chmod +x $(builddir)/phar.phar
 
 install-pharcmd: pharcmd
 	-@$(mkinstalldirs) $(INSTALL_ROOT)$(bindir)
 	$(INSTALL) $(builddir)/phar.phar $(INSTALL_ROOT)$(bindir)
-	$(LN_S) -f $(INSTALL_ROOT)$(bindir)/phar.phar $(INSTALL_ROOT)$(bindir)/phar
+	-@rm -f $(INSTALL_ROOT)$(bindir)/phar
+	$(LN_S) -f $(bindir)/phar.phar $(INSTALL_ROOT)$(bindir)/phar

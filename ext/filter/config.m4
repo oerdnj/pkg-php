@@ -1,4 +1,4 @@
-dnl $Id: config.m4,v 1.6.2.3 2006/12/05 23:51:30 tony2001 Exp $
+dnl $Id: config.m4 224446 2006-12-05 23:51:30Z tony2001 $
 dnl config.m4 for input filtering extension
 
 PHP_ARG_ENABLE(filter, whether to enable input filter support,

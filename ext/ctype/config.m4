@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.5 2002/03/12 16:44:00 sas Exp $
+dnl $Id: config.m4 72968 2002-03-12 16:44:00Z sas $
 dnl
 
 PHP_ARG_ENABLE(ctype, whether to enable ctype functions,

@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: file.c,v 1.409.2.6.2.28.2.36 2009/06/22 11:37:30 felipe Exp $ */
+/* $Id: file.c 289422 2009-10-09 14:37:45Z pajoye $ */
 
 /* Synced with php 3.0 revision 1.218 1999-06-16 [ssb] */
 
@@ -846,6 +846,10 @@ PHP_FUNCTION(tempnam)
 		return;
 	}
 
+	if (PG(safe_mode) &&(!php_checkuid(dir, NULL, CHECKUID_ALLOW_ONLY_DIR))) {
+		RETURN_FALSE;
+	}
+
 	if (php_check_open_basedir(dir TSRMLS_CC)) {
 		RETURN_FALSE;
 	}
@@ -854,6 +858,8 @@ PHP_FUNCTION(tempnam)
 	if (p_len > 64) {
 		p[63] = '\0';
 	}
+	
+	RETVAL_FALSE;
 
 	if ((fd = php_open_temporary_fd(dir, p, &opened_path TSRMLS_CC)) >= 0) {
 		close(fd);

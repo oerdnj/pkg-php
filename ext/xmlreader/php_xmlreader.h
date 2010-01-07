@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_xmlreader.h,v 1.3.2.2.2.2.2.3 2008/12/31 11:15:46 sebastian Exp $ */
+/* $Id: php_xmlreader.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_XMLREADER_H
 #define PHP_XMLREADER_H

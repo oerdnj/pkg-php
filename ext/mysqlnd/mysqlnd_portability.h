@@ -9,6 +9,9 @@ This file is public domain and comes with NO WARRANTY of any kind */
   were added to improve the header file, to get it more consistent.
 */
 
+#ifndef MYSQLND_PORTABILITY_H
+#define MYSQLND_PORTABILITY_H
+
 /* Comes from global.h as OFFSET, renamed to STRUCT_OFFSET */
 #define STRUCT_OFFSET(t, f)   ((size_t)(char *)&((t *)0)->f)
 
@@ -30,9 +33,9 @@ This file is public domain and comes with NO WARRANTY of any kind */
 #endif /* __CYGWIN__ */
 
 #if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(WIN32)
-#  include <ext/mysqlnd/config-win.h>
+#  include "ext/mysqlnd/config-win.h"
 #else 
-#  include "ext/mysqlnd/php_mysqlnd_config.h"
+#  include <ext/mysqlnd/php_mysqlnd_config.h>
 #endif /* _WIN32... */
 
 #ifdef HAVE_SYS_TYPES_H
@@ -174,9 +177,14 @@ typedef unsigned long long uint64_t;
 #define MYSQLND_LLU_SPEC "%lu"
 #endif
 
-#if __powerpc64__
+#if __powerpc64__ || __ppc64__
 #define MYSQLND_LL_SPEC	"%li"
 #define MYSQLND_LLU_SPEC "%lu"
+#endif
+
+#if (__powerpc__ || __ppc__ ) && !(__powerpc64__ || __ppc64__)
+#define MYSQLND_LL_SPEC	"%lli"
+#define MYSQLND_LLU_SPEC "%llu"
 #endif
 
 #if __x86_64__
@@ -189,11 +197,6 @@ typedef unsigned long long uint64_t;
 #define MYSQLND_LLU_SPEC "%lu"
 #endif
 
-#if __powerpc__ && !__powerpc64__
-#define MYSQLND_LL_SPEC	"%lli"
-#define MYSQLND_LLU_SPEC "%llu"
-#endif
-
 #if __s390__ && !__s390x__
 #define MYSQLND_LL_SPEC	"%lli"
 #define MYSQLND_LLU_SPEC "%llu"
@@ -203,6 +206,23 @@ typedef unsigned long long uint64_t;
 #define MYSQLND_LL_SPEC "%lli"
 #define MYSQLND_LLU_SPEC "%llu"
 #endif
+
+#ifndef MYSQLND_LL_SPEC
+  #if SIZEOF_LONG == 8
+    #define MYSQLND_LL_SPEC "%li"
+  #elif SIZEOF_LONG == 4
+    #define MYSQLND_LL_SPEC "%lli"
+  #endif
+#endif
+
+#ifndef MYSQLND_LLU_SPEC
+  #if SIZEOF_LONG == 8
+    #define MYSQLND_LLU_SPEC "%lu"
+  #elif SIZEOF_LONG == 4
+    #define MYSQLND_LLU_SPEC "%llu"
+   #endif
+#endif /* MYSQLND_LLU_SPEC*/
+
 
 #define MYSQLND_SZ_T_SPEC "%zd"
 #ifndef L64
@@ -480,6 +500,7 @@ typedef union {
 
 #endif /* WORDS_BIGENDIAN */
 
+#endif /* MYSQLND_PORTABILITY_H */
 
 
 /*

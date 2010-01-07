@@ -1,5 +1,5 @@
 /*
-  $Id: crypt_freesec.c,v 1.1.2.6 2008/08/25 13:42:54 jani Exp $ 
+  $Id: crypt_freesec.c 265468 2008-08-25 13:42:55Z jani $ 
 */
 /*
  * This version is derived from the original implementation of FreeSec
@@ -40,7 +40,7 @@
  * SUCH DAMAGE.
  *
  *	$Owl: Owl/packages/glibc/crypt_freesec.c,v 1.4 2005/11/16 13:08:32 solar Exp $
- *	$Id: crypt_freesec.c,v 1.1.2.6 2008/08/25 13:42:54 jani Exp $
+ *	$Id: crypt_freesec.c 265468 2008-08-25 13:42:55Z jani $
  *
  * This is an original implementation of the DES and the crypt(3) interfaces
  * by David Burren <davidb at werj.com.au>.

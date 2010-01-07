@@ -6,7 +6,7 @@ Sybase-CT connectivity
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: test_connect.phpt,v 1.1 2004/01/24 02:18:13 thekid Exp $ 
+ * $Id: test_connect.phpt 242949 2007-09-26 15:44:16Z cvs2svn $ 
  */
 
   require('test.inc');

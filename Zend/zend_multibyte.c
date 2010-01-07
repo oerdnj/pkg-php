@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_multibyte.c,v 1.4.2.4.2.1.2.7 2009/03/18 17:44:25 moriyoshi Exp $ */
+/* $Id: zend_multibyte.c 277438 2009-03-18 17:44:25Z moriyoshi $ */
 
 #include "zend.h"
 #include "zend_compile.h"

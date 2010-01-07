@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_xml.h,v 1.17.2.1.2.2.2.2 2008/12/31 11:15:43 sebastian Exp $ */
+/* $Id: php_xml.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_SOAP_XML_H
 #define PHP_SOAP_XML_H

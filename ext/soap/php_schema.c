@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_schema.c,v 1.58.2.6.2.6.2.2 2008/12/31 11:15:43 sebastian Exp $ */
+/* $Id: php_schema.c 287425 2009-08-17 18:23:48Z dmitry $ */
 
 #include "php_soap.h"
 #include "libxml/uri.h"
@@ -102,7 +102,10 @@ static void schema_load_file(sdlCtx *ctx, xmlAttrPtr ns, xmlChar *location, xmlA
 		xmlNodePtr schema;
 		xmlAttrPtr new_tns;
 
+		sdl_set_uri_credentials(ctx, (char*)location TSRMLS_CC);
 		doc = soap_xmlParseFile((char*)location TSRMLS_CC);
+		sdl_restore_uri_credentials(ctx TSRMLS_CC);
+
 		if (doc == NULL) {
 			soap_error1(E_ERROR, "Parsing Schema: can't import schema from '%s'", location);
 		}

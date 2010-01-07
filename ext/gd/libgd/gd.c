@@ -595,7 +595,7 @@ void gdImageColorTransparent (gdImagePtr im, int color)
 		if (im->transparent != -1) {
 			im->alpha[im->transparent] = gdAlphaOpaque;
 		}
-		if (color > -1 && color<im->colorsTotal && color<=gdMaxColors) {
+		if (color > -1 && color < im->colorsTotal && color < gdMaxColors) {
 			im->alpha[color] = gdAlphaTransparent;
 		} else {
 			return;
@@ -1093,8 +1093,7 @@ void gdImageLine (gdImagePtr im, int x1, int y1, int x2, int y2, int color)
 	int w, wstart;
 	int thick = im->thick;
 
-	if (color == gdAntiAliased)
-	{
+	if (color == gdAntiAliased) {
 		/* 
 		   gdAntiAliased passed as color: use the much faster, much cheaper
 		   and equally attractive gdImageAALine implementation. That
@@ -1191,7 +1190,7 @@ TBB: but watch out for /0! */
 	} else {
 		/* More-or-less vertical. use wid for horizontal stroke */
 		/* 2.0.12: Michael Schwartz: divide rather than multiply;
-           TBB: but watch out for /0! */
+		   TBB: but watch out for /0! */
 		double as = sin (atan2 (dy, dx));
 		if (as != 0) {
 			wid = thick / as;
@@ -1359,7 +1358,7 @@ void gdImageAALine (gdImagePtr im, int x1, int y1, int x2, int y2, int col)
 		x = x1 << 16;
 		y = y1 << 16;
 		inc = (dy * 65536) / dx;
-		while ((x >> 16) < x2) {
+		while ((x >> 16) <= x2) {
 			gdImageSetAAPixelColor(im, x >> 16, y >> 16, col, (y >> 8) & 0xFF);
 			if ((y >> 16) + 1 < im->sy) {
 				gdImageSetAAPixelColor(im, x >> 16, (y >> 16) + 1,col, (~y >> 8) & 0xFF);
@@ -1381,7 +1380,7 @@ void gdImageAALine (gdImagePtr im, int x1, int y1, int x2, int y2, int col)
 		x = x1 << 16;
 		y = y1 << 16;
 		inc = (dx * 65536) / dy;
-		while ((y>>16) < y2) {
+		while ((y>>16) <= y2) {
 			gdImageSetAAPixelColor(im, x >> 16, y >> 16, col, (x >> 8) & 0xFF);
 			if ((x >> 16) + 1 < im->sx) {
 				gdImageSetAAPixelColor(im, (x >> 16) + 1, (y >> 16),col, (~x >> 8) & 0xFF);
@@ -1681,27 +1680,26 @@ void gdImageFilledArc (gdImagePtr im, int cx, int cy, int w, int h, int s, int e
 
     if ((s % 360)  == (e % 360)) {
 		s = 0; e = 360;
-    } else {
-        if (s > 360) {
-            s = s % 360;
-        }
+	} else {
+		if (s > 360) {
+			s = s % 360;
+		}
 
-        if (e > 360) {
-            e = e % 360;
-        }
+		if (e > 360) {
+			e = e % 360;
+		}
 
-        while (s < 0) {
-            s += 360;
-        }
+		while (s < 0) {
+			s += 360;
+		}
 
-        while (e < s) {
-            e += 360;
-        }
-
-        if (s == e) {
+		while (e < s) {
+			e += 360;
+		}
+		if (s == e) {
 			s = 0; e = 360;
-        }
-    }
+		}
+	}
 
 	for (i = s; i <= e; i++) {
 		int x, y;
@@ -1987,7 +1985,7 @@ static void _gdImageFillTiled(gdImagePtr im, int x, int y, int nc)
 
 	oc = gdImageGetPixel(im, x, y);
 
-/* required! */
+	/* required! */
 	FILL_PUSH(y,x,x,1);
 	/* seed segment (popped 1st) */
  	FILL_PUSH(y+1, x, x, -1);
@@ -2114,31 +2112,38 @@ void gdImageFilledRectangle (gdImagePtr im, int x1, int y1, int x2, int y2, int 
 {
 	int x, y;
 
-	/* Nick Atty: limit the points at the edge.  Note that this also
-	 * nicely kills any plotting for rectangles completely outside the
-	 * window as it makes the tests in the for loops fail
-	 */
-	if (x1 < 0) {
-		x1 = 0;
+
+	if (x1 == x2 && y1 == y2) {
+		gdImageSetPixel(im, x1, y1, color);
+		return;
 	}
-	if (x1 > gdImageSX(im)) {
-		x1 = gdImageSX(im);
-	}
-	if(y1 < 0) {
-		y1 = 0;
-	}
-	if (y1 > gdImageSY(im)) {
-		y1 = gdImageSY(im);
-	}
+
 	if (x1 > x2) {
 		x = x1;
 		x1 = x2;
 		x2 = x;
 	}
+
 	if (y1 > y2) {
 		y = y1;
 		y1 = y2;
 		y2 = y;
+	}
+
+	if (x1 < 0) {
+		x1 = 0;
+	}
+
+	if (x2 >= gdImageSX(im)) {
+		x2 = gdImageSX(im) - 1;
+	}
+
+	if (y1 < 0) {
+		y1 = 0;
+	}
+
+	if (y2 >= gdImageSY(im)) {
+		y2 = gdImageSY(im) - 1;
 	}
 
 	for (y = y1; (y <= y2); y++) {
@@ -2301,7 +2306,6 @@ void gdImageCopyMergeGray (gdImagePtr dst, gdImagePtr src, int dstX, int dstY, i
 		for (x = srcX; (x < (srcX + w)); x++) {
 			int nc;
 			c = gdImageGetPixel (src, x, y);
-
 			/* Added 7/24/95: support transparent copies */
 			if (gdImageGetTransparent(src) == c) {
 				tox++;

@@ -6,7 +6,7 @@ Sybase-CT bug #30312 (sybase_unbuffered_query calls)
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: bug30312.phpt,v 1.1.4.1.2.1 2008/11/08 13:21:30 thekid Exp $
+ * $Id: bug30312.phpt 268581 2008-11-08 13:21:30Z thekid $
  */
 
   require('test.inc');

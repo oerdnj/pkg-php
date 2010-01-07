@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: dom_iterators.c,v 1.9.2.3.2.5.2.4 2008/12/31 11:15:36 sebastian Exp $ */
+/* $Id: dom_iterators.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

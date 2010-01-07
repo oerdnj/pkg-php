@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_sqlite3_structs.h,v 1.1.2.8 2009/04/27 18:16:46 scottmac Exp $ */
+/* $Id: php_sqlite3_structs.h 279456 2009-04-27 18:16:46Z scottmac $ */
 
 #ifndef PHP_SQLITE_STRUCTS_H
 #define PHP_SQLITE_STRUCTS_H

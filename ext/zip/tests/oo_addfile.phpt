@@ -2,7 +2,7 @@
 ziparchive::addFile() function
 --SKIPIF--
 <?php
-/* $Id: oo_addfile.phpt,v 1.1.2.1.2.1 2008/05/21 09:27:41 pajoye Exp $ */
+/* $Id: oo_addfile.phpt 260091 2008-05-21 09:27:41Z pajoye $ */
 if(!extension_loaded('zip')) die('skip');
 ?>
 --FILE--

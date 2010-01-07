@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4,v 1.46.2.1.2.5.2.2 2008/07/23 21:44:25 hholzgra Exp $
+dnl $Id: config.m4 263340 2008-07-23 21:44:25Z hholzgra $
 dnl
 
 PHP_ARG_WITH(pgsql,for PostgreSQL support,

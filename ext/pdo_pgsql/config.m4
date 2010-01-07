@@ -1,4 +1,4 @@
-dnl $Id: config.m4,v 1.13.4.6.2.2 2009/04/30 12:38:43 mbeccati Exp $
+dnl $Id: config.m4 279602 2009-04-30 12:38:43Z mbeccati $
 dnl config.m4 for extension pdo_pgsql
 dnl vim:et:sw=2:ts=2:
 

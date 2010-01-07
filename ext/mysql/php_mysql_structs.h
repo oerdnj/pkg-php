@@ -18,7 +18,7 @@
 */
 
 
-/* $Id: php_mysql_structs.h,v 1.1.2.7 2008/12/31 11:15:38 sebastian Exp $ */
+/* $Id: php_mysql_structs.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_MYSQL_STRUCTS_H
 #define PHP_MYSQL_STRUCTS_H

@@ -35,10 +35,7 @@
  * AUTHOR
  *   Dan Libby, aka danda  (dan@libby.com)
  * HISTORY
- *   $Log: xmlrpc_introspection.c,v $
- *   Revision 1.4.4.1  2005/12/18 22:59:57  sniper
- *   MFH: - Fixed bug #35723 (xmlrpc_introspection.c fails compile per C99 std)
- *
+ *   $Log$
  *   Revision 1.4  2003/12/16 21:00:21  sniper
  *   Fix some compile warnings (patch by Joe Orton)
  *

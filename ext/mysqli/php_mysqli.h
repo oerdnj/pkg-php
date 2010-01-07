@@ -17,7 +17,7 @@
   |          Ulf Wendel <uw@php.net>                                     |
   +----------------------------------------------------------------------+
 
-  $Id: php_mysqli.h,v 1.54.2.7.2.6.2.5 2008/12/31 11:15:39 sebastian Exp $ 
+  $Id: php_mysqli.h 272370 2008-12-31 11:15:49Z sebastian $ 
 */
 
 #ifndef PHP_MYSQLI_H

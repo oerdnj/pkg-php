@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: ftp.c,v 1.112.2.4.2.9.2.3 2008/12/31 11:15:37 sebastian Exp $ */
+/* $Id: ftp.c 289416 2009-10-09 14:20:17Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -147,7 +147,7 @@ ftp_open(const char *host, short port, long timeout_sec TSRMLS_DC)
 
 	size = sizeof(ftp->localaddr);
 	memset(&ftp->localaddr, 0, size);
-	if (getsockname(ftp->fd, (struct sockaddr*) &ftp->localaddr, &size) == -1) {
+	if (getsockname(ftp->fd, (struct sockaddr*) &ftp->localaddr, &size) != 0) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "getsockname failed: %s (%d)", strerror(errno), errno);
 		goto bail;
 	}

@@ -17,7 +17,7 @@
 // | Authors: Dietrich Ayala <dietrich@ganx4.com> Original Author         |
 // +----------------------------------------------------------------------+
 //
-// $Id: server_round2_groupB.php,v 1.7.4.2 2006/01/01 13:27:13 sniper Exp $
+// $Id: server_round2_groupB.php 242949 2007-09-26 15:44:16Z cvs2svn $
 //
 
 class SOAP_Interop_GroupB {

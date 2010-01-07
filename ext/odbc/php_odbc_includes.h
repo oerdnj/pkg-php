@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_odbc_includes.h,v 1.12.2.1.2.4.2.4 2008/12/31 11:15:40 sebastian Exp $ */
+/* $Id: php_odbc_includes.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_ODBC_INCLUDES_H
 #define PHP_ODBC_INCLUDES_H

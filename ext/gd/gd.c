@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: gd.c,v 1.312.2.20.2.32.2.43 2009/06/19 22:15:28 kalle Exp $ */
+/* $Id: gd.c 282455 2009-06-19 22:15:28Z kalle $ */
 
 /* gd 1.2 is copyright 1994, 1995, Quest Protein Database Center,
    Cold Spring Harbor Labs. */

@@ -85,13 +85,17 @@ require_once('skipifconnectfailure.inc');
 			}
 
 			if (!is_string($tmp = mysqli_info($link)) || ('' == $tmp))
-				printf("[015] Expecting string/any_non_empty, got %s/%s\n", gettype($tmp), $tmp);
+				printf("[016] Expecting string/any_non_empty, got %s/%s\n", gettype($tmp), $tmp);
 
 			unlink($file);
 		} while (false);
 	}
 
 	print "done!";
+?>
+--CLEAN--
+<?php
+	require_once("clean_table.inc");
 ?>
 --EXPECTF--
 done!

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: interbase.rc,v 1.7.2.1.2.1 2007/01/01 19:32:10 iliaa Exp $ */
+/* $Id: interbase.rc 242949 2007-09-26 15:44:16Z cvs2svn $ */
 
 #ifdef APSTUDIO_INVOKED
 #error This file cannot be opened from the Visual Studio IDE

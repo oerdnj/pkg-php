@@ -1,4 +1,4 @@
-dnl $Id: config.m4,v 1.14.2.5.2.6.2.5 2008/10/22 19:29:24 stas Exp $
+dnl $Id: config.m4 267636 2008-10-22 19:29:24Z stas $
 dnl config.m4 for extension pdo_oci
 dnl vim:et:sw=2:ts=2:
 

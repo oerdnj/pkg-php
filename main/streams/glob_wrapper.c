@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: glob_wrapper.c,v 1.6.2.6 2008/12/31 11:15:48 sebastian Exp $ */
+/* $Id: glob_wrapper.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #include "php.h"
 #include "php_streams_int.h"
