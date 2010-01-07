@@ -1,3 +1,31 @@
+php5 (5.3.1-1) experimental; urgency=low
+
+  * Imported Upstream version 5.3.1
+  * Change dependcy to libdb-dev instead on arbitrary version of
+    libdb4.x-dev
+  * Refreshed 006-debian_quirks patch to apply cleanly.
+  * Removed 114-php_gd_segfault.patch, merged upstream.
+  * Refreshed 115-autoconf_ftbfs.patch to apply cleanly
+  * Updated suhosin.patch to 0.9.8 version for php-5.3.1
+  * Refreshed 001-libtool_fixes.patch
+  * Refreshed 004-ldap_fix.patch
+  * Refreshed 013-force_getaddrinfo.patch
+  * Refreshed 036-fd_setsize_fix.patch
+  * Refreshed 052-phpinfo_no_configure.patch
+  * Refreshed 053-extension_api.patch
+  * Refreshed 108-64_bit_datetime.patch
+  * Refreshed 113-php.ini_securitynotes.patch
+  * Refreshed 116-posixness_fix.patch
+  * Refreshed gentoo/006_ext-curl-set_opt-crash.patch
+  * Refreshed gentoo/009_ob-memory-leaks.patch
+  * Refreshed libedit_is_editline.patch
+  * Refreshed suhosin.patch
+  * Add .gitignore file to ignore .pc/ directory
+  * Removed README.CVS-RULES from debian/php5-common.docs, file is no
+    longer shipped by upstream.
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 07 Jan 2010 17:21:47 +0100
+
 php5 (5.3.0-3) experimental; urgency=low
 
   * Fix segmentation fault in php-gd (Closes: #543496)
