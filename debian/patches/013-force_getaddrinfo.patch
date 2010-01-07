@@ -1,6 +1,6 @@
---- pkg-php.orig/configure.in
-+++ pkg-php/configure.in
-@@ -642,50 +642,50 @@ asprintf \
+--- a/configure.in
++++ b/configure.in
+@@ -631,50 +631,50 @@ asprintf \
  
  dnl Check for getaddrinfo, should be a better way, but...
  dnl Also check for working getaddrinfo
