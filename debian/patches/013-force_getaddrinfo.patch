@@ -1,6 +1,6 @@
---- php.orig/configure.in
-+++ php/configure.in
-@@ -601,50 +601,50 @@ vsnprintf \
+--- a/configure.in
++++ b/configure.in
+@@ -596,50 +596,50 @@ AC_CACHE_CHECK([for nanosleep], ac_cv_fu
  
  dnl Check for getaddrinfo, should be a better way, but...
  dnl Also check for working getaddrinfo
