@@ -1,5 +1,5 @@
---- php.orig/ext/pdo_dblib/dblib_driver.c
-+++ php/ext/pdo_dblib/dblib_driver.c
+--- a/ext/pdo_dblib/dblib_driver.c
++++ b/ext/pdo_dblib/dblib_driver.c
 @@ -230,11 +230,13 @@ static int pdo_dblib_handle_factory(pdo_
  		goto cleanup;
  	}
