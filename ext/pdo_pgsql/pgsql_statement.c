@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pgsql_statement.c 288013 2009-09-03 22:53:25Z mbeccati $ */
+/* $Id: pgsql_statement.c 290214 2009-11-04 19:32:27Z mbeccati $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -157,7 +157,7 @@ stmt_retry:
 					 * deallocate it and retry ONCE (thies 2005.12.15)
 					 */
 					if (!strcmp(sqlstate, "42P05")) {
-						char buf[100]; /* stmt_name == "pdo_pgsql_cursor_%08x" */
+						char buf[100]; /* stmt_name == "pdo_crsr_%08x" */
 						PGresult *res;
 						snprintf(buf, sizeof(buf), "DEALLOCATE %s", S->stmt_name);
 						res = PQexec(H->server, buf);

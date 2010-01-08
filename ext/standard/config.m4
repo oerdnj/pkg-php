@@ -1,4 +1,4 @@
-dnl $Id: config.m4 286890 2009-08-06 14:07:16Z scottmac $ -*- autoconf -*-
+dnl $Id: config.m4 291364 2009-11-27 23:41:13Z rasmus $ -*- autoconf -*-
 
 divert(3)dnl
 
@@ -282,13 +282,13 @@ dnl
 dnl Check if there is a support means of creating a new process
 dnl and defining which handles it receives
 dnl
-AC_CACHE_VAL(php_can_support_proc_open,[
 AC_CHECK_FUNCS(fork CreateProcess, [
   php_can_support_proc_open=yes
   break
 ],[
   php_can_support_proc_open=no
-])])
+])
+
 AC_MSG_CHECKING([if your OS can spawn processes with inherited handles])
 if test "$php_can_support_proc_open" = "yes"; then
   AC_MSG_RESULT(yes)
@@ -314,6 +314,18 @@ dnl
 PHP_CHECK_FUNC(res_nmkquery, resolv, bind, socket)
 PHP_CHECK_FUNC(res_nsend, resolv, bind, socket)
 PHP_CHECK_FUNC(dn_expand, resolv, bind, socket)
+
+dnl OSX has the dns functions in libc but remaps them in resolv.h for bind so linking fails
+case $host_alias in
+  *darwin*)
+    macosx_major=`sw_vers -productVersion | cut -d . -f 1`
+    macosx_minor=`sw_vers -productVersion | cut -d . -f 2`
+
+    if test "$macosx_major" -ge "10" && test "$macosx_minor" -ge "6" ; then
+      LIBS="$LIBS -lresolv"
+    fi
+  ;;
+esac
 
 dnl
 dnl Check if atof() accepts NAN

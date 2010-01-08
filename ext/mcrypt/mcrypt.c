@@ -16,7 +16,7 @@
    |          Derick Rethans <derick@derickrethans.nl>                    |
    +----------------------------------------------------------------------+
  */
-/* $Id: mcrypt.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: mcrypt.c 289076 2009-10-02 00:13:53Z srinatar $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -613,6 +613,7 @@ PHP_FUNCTION(mcrypt_generic_deinit)
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Could not terminate encryption specifier");
 		RETURN_FALSE
 	}
+	pm->init = 0;
 	RETURN_TRUE
 }
 /* }}} */

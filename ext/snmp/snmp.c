@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: snmp.c 281502 2009-06-01 13:10:57Z iliaa $ */
+/* $Id: snmp.c 289918 2009-10-25 20:17:04Z jani $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -817,7 +817,6 @@ static int netsnmp_session_set_sec_level(struct snmp_session *s, char *level TSR
 			s->securityLevel = SNMP_SEC_LEVEL_AUTHPRIV;
 			return (0);
 		}
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid security level: %s", level);
 	}
 	return (-1);
 }
@@ -836,8 +835,6 @@ static int netsnmp_session_set_auth_protocol(struct snmp_session *s, char *prot 
 			s->securityAuthProto = usmHMACSHA1AuthProtocol;
 			s->securityAuthProtoLen = OIDSIZE(usmHMACSHA1AuthProtocol);
 			return (0);
-		} else if (strlen(prot)) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid authentication protocol: %s", prot);
 		}
 	}
 	return (-1);
@@ -889,8 +886,6 @@ static int netsnmp_session_set_sec_protocol(struct snmp_session *s, char *prot T
 			return (0);
 #endif
 #endif
-		} else if (strlen(prot)) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid privacy protocol: %s", prot);
 		}
 	}
 	return (-1);

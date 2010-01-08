@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: array.c 287274 2009-08-14 06:18:47Z dmitry $ */
+/* $Id: array.c 291415 2009-11-29 08:35:01Z stas $ */
 
 #include "php.h"
 #include "php_ini.h"
@@ -656,20 +656,22 @@ static int array_user_compare(const void *a, const void *b TSRMLS_DC) /* {{{ */
    Sort an array by values using a user-defined comparison function */
 PHP_FUNCTION(usort)
 {
-	zval **array;
+	zval **array_ptr, *array;
 	int refcount;
 	HashTable *target_hash;
+	zval *func_name;
 	PHP_ARRAY_CMP_FUNC_VARS;
 
 	PHP_ARRAY_CMP_FUNC_BACKUP();
 
 
-	if (ZEND_NUM_ARGS() != 2 || zend_get_parameters_ex(2, &array, &BG(user_compare_func_name)) == FAILURE) {
+	if (ZEND_NUM_ARGS() != 2 || zend_get_parameters_ex(2, &array_ptr, &BG(user_compare_func_name)) == FAILURE) {
 		PHP_ARRAY_CMP_FUNC_RESTORE();
 		WRONG_PARAM_COUNT;
 	}
+	array = *array_ptr;
 
-	target_hash = HASH_OF(*array);
+	target_hash = HASH_OF(array);
 	if (!target_hash) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "The argument should be an array");
 		PHP_ARRAY_CMP_FUNC_RESTORE();
@@ -677,6 +679,8 @@ PHP_FUNCTION(usort)
 	}
 
 	PHP_ARRAY_CMP_FUNC_CHECK(BG(user_compare_func_name))
+	func_name = *BG(user_compare_func_name);
+	BG(user_compare_func_name) = &func_name;
 	BG(user_compare_fci_cache).initialized = 0;
 	
 	/* Clear the is_ref flag, so the attemts to modify the array in user
@@ -685,13 +689,13 @@ PHP_FUNCTION(usort)
 	 * comparison. The result of sorting in such case is undefined and the
 	 * function returns FALSE.
 	 */
-	(*array)->is_ref = 0;
-	refcount = (*array)->refcount;
+	array->is_ref = 0;
+	refcount = array->refcount;
 
 	if (zend_hash_sort(target_hash, zend_qsort, array_user_compare, 1 TSRMLS_CC) == FAILURE) {
 		RETVAL_FALSE;
 	} else {
-		if (refcount > (*array)->refcount) {
+		if (refcount > array->refcount) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Array was modified by the user comparison function");
 			RETVAL_FALSE;
 		} else {
@@ -699,8 +703,8 @@ PHP_FUNCTION(usort)
 		}
 	}
 
-	if ((*array)->refcount > 1) {
-		(*array)->is_ref = 1;
+	if (array->refcount > 1) {
+		array->is_ref = 1;
 	}
 	
 	PHP_ARRAY_CMP_FUNC_RESTORE();
@@ -711,18 +715,20 @@ PHP_FUNCTION(usort)
    Sort an array with a user-defined comparison function and maintain index association */
 PHP_FUNCTION(uasort)
 {
-	zval **array;
+	zval **array_ptr, *array;
 	int refcount;
 	HashTable *target_hash;
+	zval *func_name;
 	PHP_ARRAY_CMP_FUNC_VARS;
 
 	PHP_ARRAY_CMP_FUNC_BACKUP();
 
-	if (ZEND_NUM_ARGS() != 2 || zend_get_parameters_ex(2, &array, &BG(user_compare_func_name)) == FAILURE) {
+	if (ZEND_NUM_ARGS() != 2 || zend_get_parameters_ex(2, &array_ptr, &BG(user_compare_func_name)) == FAILURE) {
 		PHP_ARRAY_CMP_FUNC_RESTORE();
 		WRONG_PARAM_COUNT;
 	}
-	target_hash = HASH_OF(*array);
+	array = *array_ptr;
+	target_hash = HASH_OF(array);
 	if (!target_hash) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "The argument should be an array");
 		PHP_ARRAY_CMP_FUNC_RESTORE();
@@ -730,6 +736,8 @@ PHP_FUNCTION(uasort)
 	}
 
 	PHP_ARRAY_CMP_FUNC_CHECK(BG(user_compare_func_name))
+	func_name = *BG(user_compare_func_name);
+	BG(user_compare_func_name) = &func_name;
 	BG(user_compare_fci_cache).initialized = 0;
 
 	/* Clear the is_ref flag, so the attemts to modify the array in user
@@ -738,13 +746,13 @@ PHP_FUNCTION(uasort)
 	 * comparison. The result of sorting in such case is undefined and the
 	 * function returns FALSE.
 	 */
-	(*array)->is_ref = 0;
-	refcount = (*array)->refcount;
+	array->is_ref = 0;
+	refcount = array->refcount;
 
 	if (zend_hash_sort(target_hash, zend_qsort, array_user_compare, 0 TSRMLS_CC) == FAILURE) {
 		RETVAL_FALSE;
 	} else {
-		if (refcount > (*array)->refcount) {
+		if (refcount > array->refcount) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Array was modified by the user comparison function");
 			RETVAL_FALSE;
 		} else {
@@ -752,8 +760,8 @@ PHP_FUNCTION(uasort)
 		}
 	}
 
-	if ((*array)->refcount > 1) {
-		(*array)->is_ref = 1;
+	if (array->refcount > 1) {
+		array->is_ref = 1;
 	}
 
 	PHP_ARRAY_CMP_FUNC_RESTORE();
@@ -762,17 +770,17 @@ PHP_FUNCTION(uasort)
 
 static int array_user_key_compare(const void *a, const void *b TSRMLS_DC) /* {{{ */
 {
+	zend_fcall_info fci;
 	Bucket *f;
 	Bucket *s;
 	zval *key1, *key2;
-	zval *args[2];
-	zval retval;
-	int status;
+	zval **args[2];
+	zval *retval_ptr = NULL;
 
 	ALLOC_INIT_ZVAL(key1);
 	ALLOC_INIT_ZVAL(key2);
-	args[0] = key1;
-	args[1] = key2;
+	args[0] = &key1;
+	args[1] = &key2;
 	
 	f = *((Bucket **) a);
 	s = *((Bucket **) b);
@@ -793,16 +801,30 @@ static int array_user_key_compare(const void *a, const void *b TSRMLS_DC) /* {{{
 		Z_LVAL_P(key2) = s->h;
 		Z_TYPE_P(key2) = IS_LONG;
 	}
+	
+	fci.size = sizeof(fci);
+	fci.function_table = EG(function_table);
+	fci.function_name = *BG(user_compare_func_name);
+	fci.symbol_table = NULL;
+	fci.object_pp = NULL;
+	fci.retval_ptr_ptr = &retval_ptr;
+	fci.param_count = 2;
+	fci.params = args;
+	fci.no_separation = 0;
 
-	status = call_user_function(EG(function_table), NULL, *BG(user_compare_func_name), &retval, 2, args TSRMLS_CC);
-	
-	zval_ptr_dtor(&key1);
-	zval_ptr_dtor(&key2);
-	
-	if (status == SUCCESS) {
-		convert_to_long(&retval);
-		return Z_LVAL(retval);
+	if (zend_call_function(&fci, &BG(user_compare_fci_cache) TSRMLS_CC)== SUCCESS
+		&& retval_ptr) {
+		long retval;
+
+		convert_to_long_ex(&retval_ptr);
+		retval = Z_LVAL_P(retval_ptr);
+		zval_ptr_dtor(&retval_ptr);
+		zval_ptr_dtor(&key1);
+		zval_ptr_dtor(&key2);
+		return retval;
 	} else {
+		zval_ptr_dtor(&key1);
+		zval_ptr_dtor(&key2);
 		return 0;
 	}
 }
@@ -812,18 +834,21 @@ static int array_user_key_compare(const void *a, const void *b TSRMLS_DC) /* {{{
    Sort an array by keys using a user-defined comparison function */
 PHP_FUNCTION(uksort)
 {
-	zval **array;
+	zval **array_ptr, *array;
+	int refcount;
 	HashTable *target_hash;
+	zval *func_name;
 	PHP_ARRAY_CMP_FUNC_VARS;
 
 
 	PHP_ARRAY_CMP_FUNC_BACKUP();
 
-	if (ZEND_NUM_ARGS() != 2 || zend_get_parameters_ex(2, &array, &BG(user_compare_func_name)) == FAILURE) {
+	if (ZEND_NUM_ARGS() != 2 || zend_get_parameters_ex(2, &array_ptr, &BG(user_compare_func_name)) == FAILURE) {
 		PHP_ARRAY_CMP_FUNC_RESTORE();
 		WRONG_PARAM_COUNT;
 	}
-	target_hash = HASH_OF(*array);
+	array = *array_ptr;
+	target_hash = HASH_OF(array);
 	if (!target_hash) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "The argument should be an array");
 		PHP_ARRAY_CMP_FUNC_RESTORE();
@@ -832,16 +857,35 @@ PHP_FUNCTION(uksort)
 	}
 
 	PHP_ARRAY_CMP_FUNC_CHECK(BG(user_compare_func_name))
+	func_name = *BG(user_compare_func_name);
+	BG(user_compare_func_name) = &func_name;
 	BG(user_compare_fci_cache).initialized = 0;
 
-	if (zend_hash_sort(target_hash, zend_qsort, array_user_key_compare, 0 TSRMLS_CC) == FAILURE) {
-		PHP_ARRAY_CMP_FUNC_RESTORE();
+	/* Clear the is_ref flag, so the attemts to modify the array in user
+	 * comaprison function will create a copy of array and won't affect the
+	 * original array. The fact of modification is detected using refcount
+	 * comparison. The result of sorting in such case is undefined and the
+	 * function returns FALSE.
+	 */
+	array->is_ref = 0;
+	refcount = array->refcount;
 
-		RETURN_FALSE;
+	if (zend_hash_sort(target_hash, zend_qsort, array_user_key_compare, 0 TSRMLS_CC) == FAILURE) {
+		RETVAL_FALSE;
+	} else {
+		if (refcount > array->refcount) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Array was modified by the user comparison function");
+			RETVAL_FALSE;
+		} else {
+			RETVAL_TRUE;
+		}
+	}
+
+	if (array->refcount > 1) {
+		array->is_ref = 1;
 	}
 
 	PHP_ARRAY_CMP_FUNC_RESTORE();
-	RETURN_TRUE;
 }
 /* }}} */
 

@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: gd.c 282456 2009-06-19 22:15:44Z kalle $ */
+/* $Id: gd.c 292109 2009-12-14 04:09:18Z pierrick $ */
 
 /* gd 1.2 is copyright 1994, 1995, Quest Protein Database Center,
    Cold Spring Harbor Labs. */
@@ -4503,7 +4503,7 @@ PHP_FUNCTION(imagepsencodefont)
 	T1_DeleteAllSizes(*f_ind);
 	if (T1_ReencodeFont(*f_ind, enc_vector)) {
 		T1_DeleteEncoding(enc_vector);
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Couldn't reencode font");
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Couldn't re-encode font");
 		RETURN_FALSE;
 	}
 

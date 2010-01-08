@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_cli_readline.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: php_cli_readline.c 292081 2009-12-13 17:06:47Z felipe $ */
 
 #include "php.h"
 
@@ -49,8 +49,10 @@
 #include <unixlib/local.h>
 #endif
 
+#if HAVE_LIBEDIT
+#include <editline/readline.h>
+#else
 #include <readline/readline.h>
-#if !HAVE_LIBEDIT
 #include <readline/history.h>
 #endif
 

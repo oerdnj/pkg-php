@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_dbh.c 279722 2009-05-02 15:58:39Z iliaa $ */
+/* $Id: pdo_dbh.c 292083 2009-12-13 19:53:44Z felipe $ */
 
 /* The PDO Database Handle Class */
 
@@ -44,7 +44,7 @@ void pdo_raise_impl_error(pdo_dbh_t *dbh, pdo_stmt_t *stmt, const char *sqlstate
 	char *message = NULL;
 	const char *msg;
 
-	if (dbh->error_mode == PDO_ERRMODE_SILENT) {
+	if (dbh && dbh->error_mode == PDO_ERRMODE_SILENT) {
 #if 0
 		/* BUG: if user is running in silent mode and hits an error at the driver level
 		 * when they use the PDO methods to call up the error information, they may
@@ -71,7 +71,7 @@ void pdo_raise_impl_error(pdo_dbh_t *dbh, pdo_stmt_t *stmt, const char *sqlstate
 		spprintf(&message, 0, "SQLSTATE[%s]: %s", *pdo_err, msg);
 	}
 
-	if (dbh->error_mode != PDO_ERRMODE_EXCEPTION) {
+	if (dbh && dbh->error_mode != PDO_ERRMODE_EXCEPTION) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", message);
 	} else {
 		zval *ex, *info;
@@ -110,7 +110,7 @@ void pdo_handle_error(pdo_dbh_t *dbh, pdo_stmt_t *stmt TSRMLS_DC) /* {{{ */
 	char *message = NULL;
 	zval *info = NULL;
 
-	if (dbh->error_mode == PDO_ERRMODE_SILENT) {
+	if (dbh == NULL || dbh->error_mode == PDO_ERRMODE_SILENT) {
 		return;
 	}
 	
@@ -1091,8 +1091,7 @@ static PHP_METHOD(PDO, quote)
 	char *qstr;
 	int qlen;
 
-	if (FAILURE == zend_parse_parameters(1 TSRMLS_CC, "s|l", &str, &str_len,
-			&paramtype)) {
+	if (FAILURE == zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l", &str, &str_len, &paramtype)) {
 		RETURN_FALSE;
 	}
 	

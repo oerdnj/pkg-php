@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: readline.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: readline.c 292081 2009-12-13 17:06:47Z felipe $ */
 
 /* {{{ includes & prototypes */
 
@@ -33,8 +33,10 @@
 #define rl_completion_matches completion_matches
 #endif
 
+#ifdef HAVE_LIBEDIT
+#include <editline/readline.h>
+#else
 #include <readline/readline.h>
-#ifndef HAVE_LIBEDIT
 #include <readline/history.h>
 #endif
 

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_observer.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: spl_observer.c 289250 2009-10-06 13:34:56Z colder $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -348,7 +348,7 @@ SPL_METHOD(SplObjectStorage, unserialize)
 	++p;
 
 	ALLOC_INIT_ZVAL(pcount);
-	if (!php_var_unserialize(&pcount, &p, s + buf_len, &var_hash TSRMLS_CC) || Z_TYPE_P(pcount) != IS_LONG) {
+	if (!php_var_unserialize(&pcount, &p, s + buf_len, NULL TSRMLS_CC) || Z_TYPE_P(pcount) != IS_LONG) {
 		zval_ptr_dtor(&pcount);
 		goto outexcept;
 	}

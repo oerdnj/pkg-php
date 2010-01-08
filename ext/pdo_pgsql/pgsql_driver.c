@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pgsql_driver.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: pgsql_driver.c 290214 2009-11-04 19:32:27Z mbeccati $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -233,19 +233,18 @@ static int pgsql_handle_preparer(pdo_dbh_t *dbh, const char *sql, long sql_len, 
 			efree(S->cursor_name);
 		}
 		/* TODO: check how scrollable cursors related to prepared statements */
-		spprintf(&S->cursor_name, 0, "pdo_pgsql_cursor_%08x", (unsigned int) stmt);
+		spprintf(&S->cursor_name, 0, "pdo_crsr_%08x", ++H->stmt_counter);
 	}
 
 #if HAVE_PQPREPARE
 
 	if (driver_options) {
-		if (pdo_attr_lval(driver_options,
-				PDO_PGSQL_ATTR_DISABLE_NATIVE_PREPARED_STATEMENT, 0 TSRMLS_CC) == 1) {
-			emulate = 1;
-		} else if (pdo_attr_lval(driver_options, PDO_ATTR_EMULATE_PREPARES,
-				0 TSRMLS_CC) == 1) {
+		if (pdo_attr_lval(driver_options, PDO_PGSQL_ATTR_DISABLE_NATIVE_PREPARED_STATEMENT, H->disable_native_prepares TSRMLS_CC) == 1 ||
+			pdo_attr_lval(driver_options, PDO_ATTR_EMULATE_PREPARES, H->emulate_prepares TSRMLS_CC) == 1) {
 			emulate = 1;
 		}
+	} else {
+		emulate = H->disable_native_prepares || H->emulate_prepares;
 	}
 
 	if (!emulate && PQprotocolVersion(H->server) > 2) {
@@ -262,7 +261,7 @@ static int pgsql_handle_preparer(pdo_dbh_t *dbh, const char *sql, long sql_len, 
 			return 0;
 		}
 
-		spprintf(&S->stmt_name, 0, "pdo_pgsql_stmt_%08x", (unsigned int)stmt);
+		spprintf(&S->stmt_name, 0, "pdo_stmt_%08x", ++H->stmt_counter);
 		/* that's all for now; we'll defer the actual prepare until the first execute call */
 	
 		if (nsql) {
@@ -646,7 +645,21 @@ static zend_function_entry *pdo_pgsql_get_driver_methods(pdo_dbh_t *dbh, int kin
 
 static int pdo_pgsql_set_attr(pdo_dbh_t *dbh, long attr, zval *val TSRMLS_DC)
 {
-	return 0;
+	pdo_pgsql_db_handle *H = (pdo_pgsql_db_handle *)dbh->driver_data;
+
+	switch (attr) {
+#if HAVE_PQPREPARE
+		case PDO_ATTR_EMULATE_PREPARES:
+			H->emulate_prepares = Z_LVAL_P(val);
+			return 1;
+		case PDO_PGSQL_ATTR_DISABLE_NATIVE_PREPARED_STATEMENT:
+			H->disable_native_prepares = Z_LVAL_P(val);
+			return 1;
+#endif
+
+		default:
+			return 0;
+	}
 }
 
 static struct pdo_dbh_methods pgsql_methods = {

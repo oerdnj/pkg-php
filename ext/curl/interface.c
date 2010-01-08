@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: interface.c 287784 2009-08-26 22:24:10Z pajoye $ */
+/* $Id: interface.c 289934 2009-10-26 12:57:01Z iliaa $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 
@@ -1228,10 +1228,22 @@ PHP_FUNCTION(curl_copy_handle)
 
 	dupch->cp = cp;
 	dupch->uses = 0;
+	if (ch->handlers->write->stream) {
+		zval_add_ref(dupch->handlers->write->stream);
+		dupch->handlers->write->stream = ch->handlers->write->stream;
+	}
 	dupch->handlers->write->method = ch->handlers->write->method;
 	dupch->handlers->write->type   = ch->handlers->write->type;
+	if (ch->handlers->read->stream) {
+		zval_add_ref(ch->handlers->read->stream);
+	}
+	dupch->handlers->read->stream  = ch->handlers->read->stream;
 	dupch->handlers->read->method  = ch->handlers->read->method;
 	dupch->handlers->write_header->method = ch->handlers->write_header->method;
+	if (ch->handlers->write_header->stream) {
+		zval_add_ref(ch->handlers->write_header->stream);
+	}
+	dupch->handlers->write_header->stream = ch->handlers->write_header->stream;
 
 	dupch->handlers->write->fp = ch->handlers->write->fp;
 	dupch->handlers->write_header->fp = ch->handlers->write_header->fp;
@@ -1361,7 +1373,8 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 #endif
 			convert_to_long_ex(zvalue);
 #if LIBCURL_VERSION_NUM >= 0x71304
-			if (((PG(open_basedir) && *PG(open_basedir)) || PG(safe_mode)) && (Z_LVAL_PP(zvalue) & CURLPROTO_FILE)) {
+			if ((option == CURLOPT_PROTOCOLS || option == CURLOPT_REDIR_PROTOCOLS) &&
+				((PG(open_basedir) && *PG(open_basedir)) || PG(safe_mode)) && (Z_LVAL_PP(zvalue) & CURLPROTO_FILE)) {
 					php_error_docref(NULL TSRMLS_CC, E_WARNING, "CURLPROTO_FILE cannot be activated when in safe_mode or an open_basedir is set");
 					RETVAL_FALSE;
 					return 1;
@@ -1456,9 +1469,10 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 			switch (option) {
 				case CURLOPT_FILE:
 					if (((php_stream *) what)->mode[0] != 'r' || ((php_stream *) what)->mode[1] == '+') {
-						zend_list_addref(Z_LVAL_PP(zvalue));
+						zval_add_ref(zvalue);
 						ch->handlers->write->fp = fp;
 						ch->handlers->write->method = PHP_CURL_FILE;
+						ch->handlers->write->stream = *zvalue;
 					} else {
 						php_error_docref(NULL TSRMLS_CC, E_WARNING, "the provided file handle is not writable");
 						RETVAL_FALSE;
@@ -1467,9 +1481,10 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 					break;
 				case CURLOPT_WRITEHEADER:
 					if (((php_stream *) what)->mode[0] != 'r' || ((php_stream *) what)->mode[1] == '+') {
-						zend_list_addref(Z_LVAL_PP(zvalue));
+						zval_add_ref(zvalue);
 						ch->handlers->write_header->fp = fp;
 						ch->handlers->write_header->method = PHP_CURL_FILE;
+						ch->handlers->write_header->stream = *zvalue;
 					} else {
 						php_error_docref(NULL TSRMLS_CC, E_WARNING, "the provided file handle is not writable");
 						RETVAL_FALSE;
@@ -1477,9 +1492,10 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 					}
 					break;
 				case CURLOPT_INFILE:
-					zend_list_addref(Z_LVAL_PP(zvalue));
+					zval_add_ref(zvalue);
 					ch->handlers->read->fp = fp;
 					ch->handlers->read->fd = Z_LVAL_PP(zvalue);
+					ch->handlers->read->stream = *zvalue;
 					break;
 				case CURLOPT_STDERR:
 					if (((php_stream *) what)->mode[0] != 'r' || ((php_stream *) what)->mode[1] == '+') {
@@ -1609,7 +1625,7 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 						error = curl_formadd(&first, &last,
 										CURLFORM_COPYNAME, string_key,
 										CURLFORM_NAMELENGTH, (long)string_key_len - 1,
-										CURLFORM_FILENAME, filename ? filename : postval,
+										CURLFORM_FILENAME, filename ? filename + sizeof(";filename=") - 1 : postval,
 										CURLFORM_CONTENTTYPE, type ? type + sizeof(";type=") - 1 : "application/octet-stream",
 										CURLFORM_FILE, postval,
 										CURLFORM_END);
@@ -2126,6 +2142,16 @@ static void _php_curl_close_ex(php_curl *ch TSRMLS_DC)
 	}
 	if (ch->header.str_len > 0) {
 		efree(ch->header.str);
+	}
+
+	if (ch->handlers->write_header->stream) {
+		zval_ptr_dtor(&ch->handlers->write_header->stream);
+	}
+	if (ch->handlers->write->stream) {
+		zval_ptr_dtor(&ch->handlers->write->stream);
+	}
+	if (ch->handlers->read->stream) {
+		zval_ptr_dtor(&ch->handlers->read->stream);
 	}
 
 	efree(ch->handlers->write);

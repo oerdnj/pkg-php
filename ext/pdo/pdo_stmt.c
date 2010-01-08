@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_stmt.c 288013 2009-09-03 22:53:25Z mbeccati $ */
+/* $Id: pdo_stmt.c 292003 2009-12-11 22:30:46Z felipe $ */
 
 /* The PDO Statement Handle Class */
 
@@ -509,6 +509,7 @@ static PHP_METHOD(PDOStatement, execute)
 			/* no changes were made */
 			stmt->active_query_string = stmt->query_string;
 			stmt->active_query_stringlen = stmt->query_stringlen;
+			ret = 1;
 		} else if (ret == -1) {
 			/* something broke */
 			PDO_HANDLE_STMT_ERR();
@@ -1102,6 +1103,32 @@ static int do_fetch(pdo_stmt_t *stmt, int do_bind, zval *return_value,
 			}
 		}
 
+		switch (how) {
+			case PDO_FETCH_CLASS:
+				if (ce->constructor && !(flags & PDO_FETCH_PROPS_LATE)) {
+					stmt->fetch.cls.fci.object_pp = &return_value;
+					stmt->fetch.cls.fcc.object_pp = &return_value;
+					if (zend_call_function(&stmt->fetch.cls.fci, &stmt->fetch.cls.fcc TSRMLS_CC) == FAILURE) {
+						pdo_raise_impl_error(stmt->dbh, stmt, "HY000", "could not call class constructor" TSRMLS_CC);
+						return 0;
+					} else {
+						if (stmt->fetch.cls.retval_ptr) {
+							zval_ptr_dtor(&stmt->fetch.cls.retval_ptr);
+						}
+					}
+				}
+				if (flags & PDO_FETCH_CLASSTYPE) {
+					do_fetch_opt_finish(stmt, 0 TSRMLS_CC);
+					stmt->fetch.cls.ce = old_ce;
+					stmt->fetch.cls.ctor_args = old_ctor_args;
+					stmt->fetch.cls.fci.param_count = old_arg_count;
+				}
+				break;
+
+			default:
+				break;
+		}
+
 		for (idx = 0; i < stmt->column_count; i++, idx++) {
 			zval *val;
 			MAKE_STD_ZVAL(val);
@@ -1235,27 +1262,6 @@ static int do_fetch(pdo_stmt_t *stmt, int do_bind, zval *return_value,
 		}
 		
 		switch (how) {
-			case PDO_FETCH_CLASS:
-				if (ce->constructor && !(flags & PDO_FETCH_PROPS_LATE)) {
-					stmt->fetch.cls.fci.object_pp = &return_value;
-					stmt->fetch.cls.fcc.object_pp = &return_value;
-					if (zend_call_function(&stmt->fetch.cls.fci, &stmt->fetch.cls.fcc TSRMLS_CC) == FAILURE) {
-						pdo_raise_impl_error(stmt->dbh, stmt, "HY000", "could not call class constructor" TSRMLS_CC);
-						return 0;
-					} else {
-						if (stmt->fetch.cls.retval_ptr) {
-							zval_ptr_dtor(&stmt->fetch.cls.retval_ptr);
-						}
-					}
-				}
-				if (flags & PDO_FETCH_CLASSTYPE) {
-					do_fetch_opt_finish(stmt, 0 TSRMLS_CC);
-					stmt->fetch.cls.ce = old_ce;
-					stmt->fetch.cls.ctor_args = old_ctor_args;
-					stmt->fetch.cls.fci.param_count = old_arg_count;
-				}
-				break;
-
 			case PDO_FETCH_FUNC:
 				stmt->fetch.func.fci.param_count = idx;
 				stmt->fetch.func.fci.retval_ptr_ptr = &retval;
@@ -1653,19 +1659,21 @@ static PHP_METHOD(PDOStatement, fetchAll)
 static int register_bound_param(INTERNAL_FUNCTION_PARAMETERS, pdo_stmt_t *stmt, int is_param) /* {{{ */
 {
 	struct pdo_bound_param_data param = {0};
+	long param_type = PDO_PARAM_STR;
 
 	param.paramno = -1;
-	param.param_type = PDO_PARAM_STR;
 
 	if (FAILURE == zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC,
-			"lz|llz!", &param.paramno, &param.parameter, &param.param_type, &param.max_value_len,
+			"lz|llz!", &param.paramno, &param.parameter, &param_type, &param.max_value_len,
 			&param.driver_params)) {
 		if (FAILURE == zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sz|llz!", &param.name,
-				&param.namelen, &param.parameter, &param.param_type, &param.max_value_len, 
+				&param.namelen, &param.parameter, &param_type, &param.max_value_len, 
 				&param.driver_params)) {
 			return 0;
 		}	
 	}
+	
+	param.param_type = (int) param_type;
 
 	if (param.paramno > 0) {
 		--param.paramno; /* make it zero-based internally */
@@ -2597,26 +2605,28 @@ static zval *row_prop_or_dim_read(zval *object, zval *member, int type TSRMLS_DC
 
 	MAKE_STD_ZVAL(return_value);
 	RETVAL_NULL();
-		
-	if (Z_TYPE_P(member) == IS_LONG) {
-		if (Z_LVAL_P(member) >= 0 && Z_LVAL_P(member) < stmt->column_count) {
-			fetch_value(stmt, return_value, Z_LVAL_P(member), NULL TSRMLS_CC);
-		}
-	} else {
-		convert_to_string(member);
-		/* TODO: replace this with a hash of available column names to column
-		 * numbers */
-		for (colno = 0; colno < stmt->column_count; colno++) {
-			if (strcmp(stmt->columns[colno].name, Z_STRVAL_P(member)) == 0) {
-				fetch_value(stmt, return_value, colno, NULL TSRMLS_CC);
-				return_value->refcount = 0;
-				return_value->is_ref = 0;
-				return return_value;
+	
+	if (stmt) {
+		if (Z_TYPE_P(member) == IS_LONG) {
+			if (Z_LVAL_P(member) >= 0 && Z_LVAL_P(member) < stmt->column_count) {
+				fetch_value(stmt, return_value, Z_LVAL_P(member), NULL TSRMLS_CC);
 			}
-		}
-		if (strcmp(Z_STRVAL_P(member), "queryString") == 0) {
-			zval_ptr_dtor(&return_value);
-			return std_object_handlers.read_property(object, member, IS_STRING TSRMLS_CC);
+		} else {
+			convert_to_string(member);
+			/* TODO: replace this with a hash of available column names to column
+			 * numbers */
+			for (colno = 0; colno < stmt->column_count; colno++) {
+				if (strcmp(stmt->columns[colno].name, Z_STRVAL_P(member)) == 0) {
+					fetch_value(stmt, return_value, colno, NULL TSRMLS_CC);
+					return_value->refcount = 0;
+					return_value->is_ref = 0;
+					return return_value;
+				}
+			}
+			if (strcmp(Z_STRVAL_P(member), "queryString") == 0) {
+				zval_ptr_dtor(&return_value);
+				return std_object_handlers.read_property(object, member, IS_STRING TSRMLS_CC);
+			}
 		}
 	}
 
@@ -2636,16 +2646,18 @@ static int row_prop_or_dim_exists(zval *object, zval *member, int check_empty TS
 	pdo_stmt_t * stmt = (pdo_stmt_t *) zend_object_store_get_object(object TSRMLS_CC);
 	int colno = -1;
 
-	if (Z_TYPE_P(member) == IS_LONG) {
-		return Z_LVAL_P(member) >= 0 && Z_LVAL_P(member) < stmt->column_count;
-	} else {
-		convert_to_string(member);
+	if (stmt) {
+		if (Z_TYPE_P(member) == IS_LONG) {
+			return Z_LVAL_P(member) >= 0 && Z_LVAL_P(member) < stmt->column_count;
+		} else {
+			convert_to_string(member);
 
-		/* TODO: replace this with a hash of available column names to column
-		 * numbers */
-		for (colno = 0; colno < stmt->column_count; colno++) {
-			if (strcmp(stmt->columns[colno].name, Z_STRVAL_P(member)) == 0) {
-				return 1;
+			/* TODO: replace this with a hash of available column names to column
+			 * numbers */
+			for (colno = 0; colno < stmt->column_count; colno++) {
+				if (strcmp(stmt->columns[colno].name, Z_STRVAL_P(member)) == 0) {
+					return 1;
+				}
 			}
 		}
 	}
@@ -2663,6 +2675,10 @@ static HashTable *row_get_properties(zval *object TSRMLS_DC)
 	pdo_stmt_t * stmt = (pdo_stmt_t *) zend_object_store_get_object(object TSRMLS_CC);
 	int i;
 
+	if (stmt == NULL) {
+		return NULL;
+	}
+	
 	for (i = 0; i < stmt->column_count; i++) {
 		zval *val;
 		MAKE_STD_ZVAL(val);

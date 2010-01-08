@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: file.c 281040 2009-05-24 16:02:22Z iliaa $ */
+/* $Id: file.c 290184 2009-11-03 18:56:47Z guenter $ */
 
 /* Synced with php 3.0 revision 1.218 1999-06-16 [ssb] */
 
@@ -48,16 +48,6 @@
 #define O_RDONLY _O_RDONLY
 #include "win32/param.h"
 #include "win32/winutil.h"
-#elif defined(NETWARE)
-#include <sys/param.h>
-#include <sys/select.h>
-#ifdef USE_WINSOCK
-#include <novsock2.h>
-#else
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#endif
 #else
 #if HAVE_SYS_PARAM_H
 #include <sys/param.h>
@@ -837,6 +827,10 @@ PHP_FUNCTION(tempnam)
 	}
 	convert_to_string_ex(arg1);
 	convert_to_string_ex(arg2);
+
+	if (PG(safe_mode) &&(!php_checkuid(Z_STRVAL_PP(arg1), NULL, CHECKUID_ALLOW_ONLY_DIR))) {
+		RETURN_FALSE;
+	}
 
 	if (php_check_open_basedir(Z_STRVAL_PP(arg1) TSRMLS_CC)) {
 		RETURN_FALSE;
@@ -1689,16 +1683,9 @@ PHP_NAMED_FUNCTION(php_if_fstat)
 	MAKE_LONG_ZVAL_INCREF(stat_rdev, -1); 
 #endif
 	MAKE_LONG_ZVAL_INCREF(stat_size, stat_ssb.sb.st_size);
-#ifdef NETWARE
-	MAKE_LONG_ZVAL_INCREF(stat_atime, stat_ssb.sb.st_atime.tv_sec);
-	MAKE_LONG_ZVAL_INCREF(stat_mtime, stat_ssb.sb.st_mtime.tv_sec);
-	MAKE_LONG_ZVAL_INCREF(stat_ctime, stat_ssb.sb.st_ctime.tv_sec);
-#else
 	MAKE_LONG_ZVAL_INCREF(stat_atime, stat_ssb.sb.st_atime);
 	MAKE_LONG_ZVAL_INCREF(stat_mtime, stat_ssb.sb.st_mtime);
 	MAKE_LONG_ZVAL_INCREF(stat_ctime, stat_ssb.sb.st_ctime);
-#endif
-
 #ifdef HAVE_ST_BLKSIZE
 	MAKE_LONG_ZVAL_INCREF(stat_blksize, stat_ssb.sb.st_blksize); 
 #else

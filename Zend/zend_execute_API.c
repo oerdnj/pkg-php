@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute_API.c 288345 2009-09-15 00:09:13Z moriyoshi $ */
+/* $Id: zend_execute_API.c 290231 2009-11-05 09:33:19Z dmitry $ */
 
 #include <stdio.h>
 #include <signal.h>
@@ -1511,7 +1511,7 @@ void zend_unset_timeout(TSRMLS_D)
 	}
 #else
 #	ifdef HAVE_SETITIMER
-	{
+	if (EG(timeout_seconds)) {
 		struct itimerval no_timeout;
 
 		no_timeout.it_value.tv_sec = no_timeout.it_value.tv_usec = no_timeout.it_interval.tv_sec = no_timeout.it_interval.tv_usec = 0;

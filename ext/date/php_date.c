@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_date.c 288356 2009-09-15 20:34:54Z rasmus $ */
+/* $Id: php_date.c 291371 2009-11-28 00:38:05Z jani $ */
 
 #include "php.h"
 #include "php_streams.h"
@@ -30,16 +30,14 @@
 #include "lib/timelib.h"
 #include <time.h>
 
-#ifdef PHP_WIN32
+#ifndef HAVE_LLABS
+# ifdef PHP_WIN32
 static __inline __int64 llabs( __int64 i ) { return i >= 0? i: -i; }
-#endif
-
-#if defined(__GNUC__) && __GNUC__ < 3
+# elif defined(__GNUC__) && __GNUC__ < 3
 static __inline __int64_t llabs( __int64_t i ) { return i >= 0 ? i : -i; }
-#endif
-
-#if defined(NETWARE) && defined(__MWERKS__)
+# elif defined(NETWARE) && defined(__MWERKS__)
 static __inline long long llabs( long long i ) { return i >= 0 ? i : -i; }
+# endif
 #endif
 
 /* {{{ arginfo */
@@ -388,6 +386,7 @@ PHP_RSHUTDOWN_FUNCTION(date)
 		FREE_HASHTABLE(DATEG(tzcache));
 		DATEG(tzcache) = NULL;
 	}
+
 	return SUCCESS;
 }
 /* }}} */
@@ -596,7 +595,17 @@ static char* guess_timezone(const timelib_tzdb *tzdb TSRMLS_DC)
 		return env;
 	}
 	/* Check config setting for default timezone */
-	if (DATEG(default_timezone) && (strlen(DATEG(default_timezone)) > 0) && timelib_timezone_id_is_valid(DATEG(default_timezone), tzdb)) {
+	if (!DATEG(default_timezone)) {
+		/* Special case: ext/date wasn't initialized yet */
+		zval ztz;
+		
+		if (SUCCESS == zend_get_configuration_directive("date.timezone", sizeof("date.timezone"), &ztz) &&
+		    Z_TYPE(ztz) == IS_STRING &&
+		    Z_STRLEN(ztz) > 0 &&
+		    timelib_timezone_id_is_valid(Z_STRVAL(ztz), tzdb)) {
+			return Z_STRVAL(ztz);
+		}
+	} else if (*DATEG(default_timezone) && timelib_timezone_id_is_valid(DATEG(default_timezone), tzdb)) {
 		return DATEG(default_timezone);
 	}
 #if HAVE_TM_ZONE
@@ -2456,7 +2465,7 @@ static void php_do_date_sunrise_sunset(INTERNAL_FUNCTION_PARAMETERS, int calc_su
 	}
 
 	timelib_unixtime2local(t, time);
-	rs = timelib_astro_rise_set_altitude(t, longitude, latitude, altitude, calc_sunset?0:1, &h_rise, &h_set, &rise, &set, &transit);
+	rs = timelib_astro_rise_set_altitude(t, longitude, latitude, altitude, 1, &h_rise, &h_set, &rise, &set, &transit);
 	timelib_time_dtor(t);
 	
 	if (rs != 0) {

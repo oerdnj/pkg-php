@@ -24,7 +24,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: run-tests.php 286503 2009-07-29 10:06:55Z cellog $ */
+/* $Id: run-tests.php 291972 2009-12-11 07:34:06Z jani $ */
 
 /* Sanity check to ensure that pcre extension needed by this script is available.
  * In the event it is not, print a nice error message indicating that this script will
@@ -634,7 +634,7 @@ if (isset($argc) && $argc > 1) {
 					$html_output = is_resource($html_file);
 					break;
 				case '--version':
-					echo '$Revision: 286503 $' . "\n";
+					echo '$Revision: 291972 $' . "\n";
 					exit(1);
 
 				default:
@@ -1426,7 +1426,7 @@ TEST $file
 				$env['USE_ZEND_ALLOC'] = '1';
 			}
 
-			$output = system_with_timeout("$extra $php $pass_options -q $ini_settings $test_skipif", $env);
+			$output = system_with_timeout("$extra $php $pass_options -q $ini_settings -d display_errors=0 $test_skipif", $env);
 
 			if (!$cfg['keep']['skip']) {
 				@unlink($test_skipif);

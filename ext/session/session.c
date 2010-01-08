@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: session.c 286443 2009-07-28 08:54:23Z tony2001 $ */
+/* $Id: session.c 291681 2009-12-04 01:21:32Z stas $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -60,12 +60,6 @@ PHPAPI ZEND_DECLARE_MODULE_GLOBALS(ps);
 /* ***********
    * Helpers *
    *********** */
-
-#ifdef NETWARE
-# define SESS_SB_MTIME(sb)	((sb).st_mtime.tv_sec)
-#else
-# define SESS_SB_MTIME(sb)	((sb).st_mtime)
-#endif
 
 #define IF_SESSION_VARS() \
 	if (PS(http_session_vars) && PS(http_session_vars)->type == IS_ARRAY)
@@ -1013,7 +1007,7 @@ static inline void last_modified(TSRMLS_D) /* {{{ */
 
 #define LAST_MODIFIED "Last-Modified: "
 		memcpy(buf, LAST_MODIFIED, sizeof(LAST_MODIFIED) - 1);
-		strcpy_gmt(buf + sizeof(LAST_MODIFIED) - 1, &SESS_SB_MTIME(sb));
+		strcpy_gmt(buf + sizeof(LAST_MODIFIED) - 1, &sb.st_mtime);
 		ADD_HEADER(buf);
 	}
 }
@@ -1823,7 +1817,10 @@ static PHP_FUNCTION(session_unset)
 	}
 
 	IF_SESSION_VARS() {
-		HashTable *ht = Z_ARRVAL_P(PS(http_session_vars));
+		HashTable *ht;
+
+		SEPARATE_ZVAL_IF_NOT_REF(&PS(http_session_vars));
+		ht = Z_ARRVAL_P(PS(http_session_vars));
 
 		if (PG(register_globals)) {
 			uint str_len;
@@ -1905,7 +1902,10 @@ static PHP_FUNCTION(session_unregister)
 	}
 	convert_to_string_ex(p_name);
 
-	PS_DEL_VARL(Z_STRVAL_PP(p_name), Z_STRLEN_PP(p_name));
+	IF_SESSION_VARS() {
+		SEPARATE_ZVAL_IF_NOT_REF(&PS(http_session_vars));
+		PS_DEL_VARL(Z_STRVAL_PP(p_name), Z_STRLEN_PP(p_name));
+	}
 
 	RETURN_TRUE;
 }
@@ -2107,7 +2107,7 @@ static PHP_MINFO_FUNCTION(session) /* {{{ */
 }
 /* }}} */
 
-static const zend_module_dep session_deps[] = { /* {{{ */
+static zend_module_dep session_deps[] = { /* {{{ */
 	ZEND_MOD_OPTIONAL("hash")
 	{NULL, NULL, NULL}
 };

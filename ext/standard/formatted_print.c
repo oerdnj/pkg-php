@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: formatted_print.c 284649 2009-07-23 14:54:04Z jani $ */
+/* $Id: formatted_print.c 290150 2009-11-02 17:37:32Z felipe $ */
 
 #include <math.h>				/* modf() */
 #include "php.h"
@@ -232,14 +232,14 @@ php_sprintf_appenddouble(char **buffer, int *pos,
 	if (zend_isnan(number)) {
 		is_negative = (number<0);
 		php_sprintf_appendstring(buffer, pos, size, "NaN", 3, 0, padding,
-								 alignment, precision, is_negative, 0, always_sign);
+								 alignment, 3, is_negative, 0, always_sign);
 		return;
 	}
 
 	if (zend_isinf(number)) {
 		is_negative = (number<0);
 		php_sprintf_appendstring(buffer, pos, size, "INF", 3, 0, padding,
-								 alignment, precision, is_negative, 0, always_sign);
+								 alignment, 3, is_negative, 0, always_sign);
 		return;
 	}
 

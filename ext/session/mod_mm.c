@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: mod_mm.c 280733 2009-05-18 17:23:42Z jani $ */
+/* $Id: mod_mm.c 289338 2009-10-08 10:33:26Z jani $ */
 
 #include "php.h"
 
@@ -219,9 +219,6 @@ static int ps_mm_initialize(ps_mm *data, const char *path)
 	data->owner = getpid();
 	data->mm = mm_create(0, path);
 	if (!data->mm) {
-		TSRMLS_FETCH();
-
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "mm_create(0, %s) failed, err %s", path, mm_error());
 		return FAILURE;
 	}
 

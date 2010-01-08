@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: openssl.c 288329 2009-09-14 12:50:30Z iliaa $ */
+/* $Id: openssl.c 290180 2009-11-03 18:24:57Z guenter $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -48,6 +48,10 @@
 
 /* Common */
 #include <time.h>
+
+#ifdef NETWARE
+#define timezone _timezone	/* timezone is called _timezone in LibC */
+#endif
 
 #define DEFAULT_KEY_LENGTH	512
 #define MIN_KEY_LENGTH		384
@@ -1444,18 +1448,18 @@ PHP_FUNCTION(openssl_pkcs12_export_to_file)
 	int filename_len;
 	char * pass;
 	int pass_len;
-	zval *zcert = NULL, *zpkey = NULL, *args = NULL;
+	zval **zcert = NULL, *zpkey = NULL, *args = NULL;
 	EVP_PKEY *priv_key = NULL;
 	long certresource, keyresource;
 	zval ** item;
 	STACK_OF(X509) *ca = NULL;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zszs|a", &zcert, &filename, &filename_len, &zpkey, &pass, &pass_len, &args) == FAILURE)
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "Zszs|a", &zcert, &filename, &filename_len, &zpkey, &pass, &pass_len, &args) == FAILURE)
 		return;
 
 	RETVAL_FALSE;
 	
-	cert = php_openssl_x509_from_zval(&zcert, 0, &certresource TSRMLS_CC);
+	cert = php_openssl_x509_from_zval(zcert, 0, &certresource TSRMLS_CC);
 	if (cert == NULL) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "cannot get cert from parameter 1");
 		return;

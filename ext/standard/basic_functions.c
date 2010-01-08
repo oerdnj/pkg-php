@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: basic_functions.c 286890 2009-08-06 14:07:16Z scottmac $ */
+/* $Id: basic_functions.c 291144 2009-11-22 18:31:01Z jani $ */
 
 #include "php.h"
 #include "php_streams.h"
@@ -4375,6 +4375,9 @@ PHP_FUNCTION(long2ip)
 	int ip_len;
 	unsigned long n;
 	struct in_addr myaddr;
+#ifdef HAVE_INET_PTON
+	char str[40];
+#endif
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &ip, &ip_len) == FAILURE) {
 		return;
@@ -4383,7 +4386,15 @@ PHP_FUNCTION(long2ip)
 	n = strtoul(ip, NULL, 0);
 
 	myaddr.s_addr = htonl(n);
+#ifdef HAVE_INET_PTON
+	if (inet_ntop(AF_INET, &myaddr, str, sizeof(str))) {
+		RETURN_STRING(str, 1);
+	} else {
+		RETURN_FALSE;
+	}
+#else
 	RETURN_STRING(inet_ntoa(myaddr), 1);
+#endif
 }
 /* }}} */
 
@@ -4963,7 +4974,7 @@ error options:
 PHP_FUNCTION(error_log)
 {
 	zval **string, **erropt = NULL, **option = NULL, **emailhead = NULL;
-	int opt_err = 0;
+	int opt_err = 0, message_len = 0;
 	char *message, *opt = NULL, *headers = NULL;
 
 	switch (ZEND_NUM_ARGS()) {
@@ -5007,6 +5018,7 @@ PHP_FUNCTION(error_log)
 
 	convert_to_string_ex(string);
 	message = Z_STRVAL_PP(string);
+	message_len = Z_STRLEN_PP(string);
 
 	if (erropt != NULL) {
 		convert_to_long_ex(erropt);
@@ -5023,7 +5035,7 @@ PHP_FUNCTION(error_log)
 		headers = Z_STRVAL_PP(emailhead);
 	}
 
-	if (_php_error_log(opt_err, message, opt, headers TSRMLS_CC) == FAILURE) {
+	if (_php_error_log_ex(opt_err, message, message_len, opt, headers TSRMLS_CC) == FAILURE) {
 		RETURN_FALSE;
 	}
 	
@@ -5031,18 +5043,21 @@ PHP_FUNCTION(error_log)
 }
 /* }}} */
 
-
+/* For BC (not binary safe!) */
 PHPAPI int _php_error_log(int opt_err, char *message, char *opt, char *headers TSRMLS_DC)
+{
+	return _php_error_log_ex(opt_err, message, (opt_err == 3) ? strlen(message) : 0, opt, headers TSRMLS_CC);
+}
+
+PHPAPI int _php_error_log_ex(int opt_err, char *message, int message_len, char *opt, char *headers TSRMLS_DC)
 {
 	php_stream *stream = NULL;
 
-	switch (opt_err) {
-
+	switch (opt_err)
+	{
 		case 1:		/*send an email */
-			{
-				if (!php_mail(opt, "PHP error_log message", message, headers, NULL TSRMLS_CC)) {
-					return FAILURE;
-				}
+			if (!php_mail(opt, "PHP error_log message", message, headers, NULL TSRMLS_CC)) {
+				return FAILURE;
 			}
 			break;
 
@@ -5053,11 +5068,13 @@ PHPAPI int _php_error_log(int opt_err, char *message, char *opt, char *headers T
 
 		case 3:		/*save to a file */
 			stream = php_stream_open_wrapper(opt, "a", IGNORE_URL_WIN | ENFORCE_SAFE_MODE | REPORT_ERRORS, NULL);
-			if (!stream)
+			if (!stream) {
 				return FAILURE;
-			php_stream_write(stream, message, strlen(message));
+			}
+			php_stream_write(stream, message, message_len);
 			php_stream_close(stream);
 			break;
+
 		case 4: /* send to SAPI */
 			if (sapi_module.log_message) {
 				sapi_module.log_message(message);
@@ -5065,6 +5082,7 @@ PHPAPI int _php_error_log(int opt_err, char *message, char *opt, char *headers T
 				return FAILURE;
 			}
 			break;
+
 		default:
 			php_log_err(message TSRMLS_CC);
 			break;
@@ -6381,6 +6399,7 @@ PHP_FUNCTION(import_request_variables)
 	char *types, *prefix;
 	uint prefix_len;
 	char *p;
+	zend_bool ok = 0;
 
 	switch (ZEND_NUM_ARGS()) {
 
@@ -6418,20 +6437,24 @@ PHP_FUNCTION(import_request_variables)
 			case 'g':
 			case 'G':
 				zend_hash_apply_with_arguments(Z_ARRVAL_P(PG(http_globals)[TRACK_VARS_GET]), (apply_func_args_t) copy_request_variable, 2, prefix, prefix_len);
+				ok = 1;
 				break;
 	
 			case 'p':
 			case 'P':
 				zend_hash_apply_with_arguments(Z_ARRVAL_P(PG(http_globals)[TRACK_VARS_POST]), (apply_func_args_t) copy_request_variable, 2, prefix, prefix_len);
 				zend_hash_apply_with_arguments(Z_ARRVAL_P(PG(http_globals)[TRACK_VARS_FILES]), (apply_func_args_t) copy_request_variable, 2, prefix, prefix_len);
+				ok = 1;
 				break;
 
 			case 'c':
 			case 'C':
 				zend_hash_apply_with_arguments(Z_ARRVAL_P(PG(http_globals)[TRACK_VARS_COOKIE]), (apply_func_args_t) copy_request_variable, 2, prefix, prefix_len);
+				ok = 1;
 				break;
 		}
 	}
+	RETURN_BOOL(ok);
 }
 /* }}} */
 

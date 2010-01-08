@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_compile.c 280170 2009-05-08 17:50:58Z mattwil $ */
+/* $Id: zend_compile.c 291642 2009-12-03 12:34:50Z felipe $ */
 
 #include <zend_language_parser.h>
 #include "zend.h"
@@ -2333,20 +2333,28 @@ ZEND_API void zend_do_inheritance(zend_class_entry *ce, zend_class_entry *parent
 	}
 }
 
-
 static zend_bool do_inherit_constant_check(HashTable *child_constants_table, zval **parent_constant, zend_hash_key *hash_key, zend_class_entry *iface)
 {
 	zval **old_constant;
 
 	if (zend_hash_quick_find(child_constants_table, hash_key->arKey, hash_key->nKeyLength, hash_key->h, (void**)&old_constant) == SUCCESS) {
-	  if (*old_constant != *parent_constant) {
-			zend_error(E_COMPILE_ERROR, "Cannot inherit previously-inherited constant %s from interface %s", hash_key->arKey, iface->name);
+		if (*old_constant != *parent_constant) {
+			zend_error(E_COMPILE_ERROR, "Cannot inherit previously-inherited or override constant %s from interface %s", hash_key->arKey, iface->name);
 		}
 		return 0;
 	}
 	return 1;
 }
 
+static int do_interface_constant_check(zval **val, int num_args, va_list args, zend_hash_key *key) /* {{{ */
+{
+	zend_class_entry **iface = va_arg(args, zend_class_entry**);
+
+	do_inherit_constant_check(&(*iface)->constants_table, val, key, *iface);
+
+	return ZEND_HASH_APPLY_KEEP;
+}
+/* }}} */
 
 ZEND_API void zend_do_implement_interface(zend_class_entry *ce, zend_class_entry *iface TSRMLS_DC)
 {
@@ -2366,7 +2374,10 @@ ZEND_API void zend_do_implement_interface(zend_class_entry *ce, zend_class_entry
 			}
 		}
 	}
-	if (!ignore) {
+	if (ignore) {
+		/* Check for attempt to redeclare interface constants */
+		zend_hash_apply_with_arguments(&ce->constants_table, (apply_func_args_t) do_interface_constant_check, 1, &iface);
+	} else {
 		if (ce->num_interfaces >= current_iface_num) {
 			if (ce->type == ZEND_INTERNAL_CLASS) {
 				ce->interfaces = (zend_class_entry **) realloc(ce->interfaces, sizeof(zend_class_entry *) * (++current_iface_num));
@@ -3103,6 +3114,12 @@ void zend_do_declare_class_constant(znode *var_name, znode *value TSRMLS_DC)
 		zend_error(E_COMPILE_ERROR, "Cannot redefine class constant %s::%s", CG(active_class_entry)->name, var_name->u.constant.value.str.val);
 	}
 	FREE_PNODE(var_name);
+	
+	if (CG(doc_comment)) {
+		efree(CG(doc_comment));
+		CG(doc_comment) = NULL;
+		CG(doc_comment_len) = 0;
+	}
 }
 
 

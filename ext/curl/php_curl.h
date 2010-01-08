@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_curl.h 284557 2009-07-21 20:32:32Z srinatar $ */
+/* $Id: php_curl.h 288973 2009-09-30 02:34:17Z iliaa $ */
 
 #ifndef _PHP_CURL_H
 #define _PHP_CURL_H
@@ -86,6 +86,7 @@ typedef struct {
 	smart_str       buf;
 	int             method;
 	int             type;
+	zval		*stream;
 } php_curl_write;
 
 typedef struct {
@@ -94,6 +95,7 @@ typedef struct {
 	FILE            *fp;
 	long            fd;
 	int             method;
+	zval		*stream;
 } php_curl_read;
 
 typedef struct {

@@ -1,4 +1,4 @@
-dnl $Id: config.m4 239334 2007-07-09 12:38:02Z jani $
+dnl $Id: config.m4 291414 2009-11-29 06:13:22Z rasmus $
 dnl config.m4 for extension pdo_odbc
 dnl vim:et:sw=2:ts=2:
 

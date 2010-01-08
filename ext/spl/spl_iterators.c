@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_iterators.c 280214 2009-05-09 19:48:15Z scottmac $ */
+/* $Id: spl_iterators.c 290392 2009-11-07 21:27:15Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -818,7 +818,7 @@ static union _zend_function *spl_dual_it_get_method(zval **object_ptr, char *met
 	intern = (spl_dual_it_object*)zend_object_store_get_object(*object_ptr TSRMLS_CC);
 
 	function_handler = std_object_handlers.get_method(object_ptr, method, method_len TSRMLS_CC);
-	if (!function_handler) {
+	if (!function_handler && intern->inner.ce) {
 		if (zend_hash_find(&intern->inner.ce->function_table, method, method_len+1, (void **) &function_handler) == FAILURE) {
 			if (Z_OBJ_HT_P(intern->inner.zobject)->get_method) {
 				*object_ptr = intern->inner.zobject;
@@ -982,7 +982,7 @@ static spl_dual_it_object* spl_dual_it_construct(INTERNAL_FUNCTION_PARAMETERS, z
 						return NULL;
 					}
 					if (!retval || Z_TYPE_P(retval) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(retval), zend_ce_traversable TSRMLS_CC)) {
-						zend_throw_exception_ex(spl_ce_LogicException, 0 TSRMLS_CC, "%s::getIterator() must return an object that implememnts Traversable", ce->name);
+						zend_throw_exception_ex(spl_ce_LogicException, 0 TSRMLS_CC, "%s::getIterator() must return an object that implements Traversable", ce->name);
 						php_set_error_handling(EH_NORMAL, NULL TSRMLS_CC);
 						return NULL;
 					}
@@ -1735,7 +1735,7 @@ static inline void spl_limit_it_seek(spl_dual_it_object *intern, long pos TSRMLS
 		return;
 	}
 	if (pos >= intern->u.limit.offset + intern->u.limit.count && intern->u.limit.count != -1) {
-		zend_throw_exception_ex(spl_ce_OutOfBoundsException, 0 TSRMLS_CC, "Cannot seek to %ld which is behind offest %ld plus count %ld", pos, intern->u.limit.offset, intern->u.limit.count);
+		zend_throw_exception_ex(spl_ce_OutOfBoundsException, 0 TSRMLS_CC, "Cannot seek to %ld which is behind offset %ld plus count %ld", pos, intern->u.limit.offset, intern->u.limit.count);
 		return;
 	}
 	if (instanceof_function(intern->inner.ce, spl_ce_SeekableIterator TSRMLS_CC)) {

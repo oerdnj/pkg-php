@@ -51,7 +51,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: xmlrpc-epi-php.c 280954 2009-05-22 12:50:44Z felipe $ */
+/* $Id: xmlrpc-epi-php.c 291285 2009-11-25 02:03:02Z felipe $ */
 
 /**********************************************************************
 * BUGS:                                                               *
@@ -428,7 +428,7 @@ static void set_output_options(php_output_options* options, zval* output_opts)
 static XMLRPC_VECTOR_TYPE determine_vector_type (HashTable *ht)
 {
 	int bArray = 0, bStruct = 0, bMixed = 0;
-	unsigned long num_index;
+	unsigned long num_index, last_num = 0;
 	char* my_key;
 
 	zend_hash_internal_pointer_reset(ht);
@@ -438,8 +438,12 @@ static XMLRPC_VECTOR_TYPE determine_vector_type (HashTable *ht)
 			if(bStruct) {
 				bMixed = 1;
 				break;
+			} else if (last_num > 0 && last_num != num_index-1) {
+				bStruct = 1;
+				break;
 			}
 			bArray = 1;
+			last_num = num_index;
 		}
 		else if(res == HASH_KEY_NON_EXISTANT) {
 			break;
@@ -499,6 +503,8 @@ static XMLRPC_VALUE PHP_to_XMLRPC_worker (const char* key, zval* in_val, int dep
 					zval** pIter;
 					char* my_key;
 					HashTable *ht = NULL;
+					zval *val_arr;
+					XMLRPC_VECTOR_TYPE vtype;
 
 					ht = HASH_OF(val);
 					if (ht && ht->nApplyCount > 1) {
@@ -506,12 +512,18 @@ static XMLRPC_VALUE PHP_to_XMLRPC_worker (const char* key, zval* in_val, int dep
 						return NULL;
 					}
 
-					convert_to_array(val);
-					xReturn = XMLRPC_CreateVector(key, determine_vector_type(Z_ARRVAL_P(val)));
+					MAKE_STD_ZVAL(val_arr);
+					*val_arr = *val;
+					zval_copy_ctor(val_arr);
+					INIT_PZVAL(val_arr);
+					convert_to_array(val_arr);
+					
+					vtype = determine_vector_type(Z_ARRVAL_P(val_arr));
+					xReturn = XMLRPC_CreateVector(key, vtype);
 
-					zend_hash_internal_pointer_reset(Z_ARRVAL_P(val));
-					while(zend_hash_get_current_data(Z_ARRVAL_P(val), (void**)&pIter) == SUCCESS) {
-						int res = my_zend_hash_get_current_key(Z_ARRVAL_P(val), &my_key, &num_index);
+					zend_hash_internal_pointer_reset(Z_ARRVAL_P(val_arr));
+					while(zend_hash_get_current_data(Z_ARRVAL_P(val_arr), (void**)&pIter) == SUCCESS) {
+						int res = my_zend_hash_get_current_key(Z_ARRVAL_P(val_arr), &my_key, &num_index);
                     
 						switch (res) {
 							case HASH_KEY_NON_EXISTANT:
@@ -523,7 +535,15 @@ static XMLRPC_VALUE PHP_to_XMLRPC_worker (const char* key, zval* in_val, int dep
 									ht->nApplyCount++;
 								}
 								if (res == HASH_KEY_IS_LONG) {
-									XMLRPC_AddValueToVector(xReturn, PHP_to_XMLRPC_worker(0, *pIter, depth++ TSRMLS_CC));
+									char *num_str = NULL;
+									
+									if (vtype != xmlrpc_vector_array) {
+										spprintf(&num_str, 0, "%ld", num_index);
+									}
+									XMLRPC_AddValueToVector(xReturn, PHP_to_XMLRPC_worker(num_str, *pIter, depth++ TSRMLS_CC));
+									if (num_str) {
+										efree(num_str);
+									}
 								} else {
 									XMLRPC_AddValueToVector(xReturn, PHP_to_XMLRPC_worker(my_key, *pIter, depth++ TSRMLS_CC));
 								}
@@ -532,8 +552,9 @@ static XMLRPC_VALUE PHP_to_XMLRPC_worker (const char* key, zval* in_val, int dep
 								}
 								break;
 						}
-						zend_hash_move_forward(Z_ARRVAL_P(val));
+						zend_hash_move_forward(Z_ARRVAL_P(val_arr));
 					}
+					zval_ptr_dtor(&val_arr);
 				}
 				break;
 			default:

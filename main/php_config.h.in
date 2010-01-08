@@ -335,6 +335,9 @@
 /* Define if you have the link function.  */
 #undef HAVE_LINK
 
+/* Define if you have the llabs function.  */
+#undef HAVE_LLABS
+
 /* Define if you have the localeconv function.  */
 #undef HAVE_LOCALECONV
 
@@ -595,6 +598,9 @@
 
 /* Define if you have the <arpa/nameser.h> header file.  */
 #undef HAVE_ARPA_NAMESER_H
+
+/* Define if you have the <arpa/nameser_compat.h> header file.  */
+#undef HAVE_ARPA_NAMESER_COMPAT_H
 
 /* Define if you have the <assert.h> header file.  */
 #undef HAVE_ASSERT_H
@@ -1138,6 +1144,12 @@
 
 /* Whether struct sockaddr has field sa_len */
 #undef HAVE_SOCKADDR_SA_LEN
+
+/*   */
+#undef HAVE_NANOSLEEP
+
+/*   */
+#undef HAVE_LIBRT
 
 /* Define if you have the getaddrinfo function */
 #undef HAVE_GETADDRINFO
