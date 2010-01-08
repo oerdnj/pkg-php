@@ -1,7 +1,7 @@
---- php.orig/configure.in
-+++ php/configure.in
+--- a/configure.in
++++ b/configure.in
 @@ -1,7 +1,7 @@
- ## $Id: configure.in 288372 2009-09-16 12:54:51Z iliaa $ -*- autoconf -*-
+ ## $Id: configure.in 292200 2009-12-16 12:45:18Z iliaa $ -*- autoconf -*-
  dnl ## Process this file with autoconf to produce a configure script.
  
 -divert(1)
@@ -30,7 +30,7 @@
  PHP_CONFIG_NICE(config.nice)
  
  PHP_CANONICAL_HOST_TARGET
-@@ -263,7 +263,7 @@ sinclude(TSRM/threads.m4)
+@@ -256,7 +256,7 @@ sinclude(TSRM/threads.m4)
  sinclude(TSRM/tsrm.m4)
  
  
@@ -39,7 +39,7 @@
  
  dnl ## Diversion 2 is where we set PHP-specific options and come up
  dnl ## with reasonable default values for them. We check for pthreads here
-@@ -302,7 +302,7 @@ if test "$enable_maintainer_zts" = "yes"
+@@ -295,7 +295,7 @@ if test "$enable_maintainer_zts" = "yes"
    PTHREADS_FLAGS
  fi
  
@@ -48,7 +48,7 @@
  
  dnl ## In diversion 3 we check for compile-time options to the PHP
  dnl ## core and how to deal with different system dependencies.
-@@ -661,7 +661,7 @@ if test "x$php_crypt_r" = "x1"; then
+@@ -656,7 +656,7 @@ if test "x$php_crypt_r" = "x1"; then
    PHP_CRYPT_R_STYLE
  fi
  
@@ -57,7 +57,7 @@
  
  dnl ## In diversion 4 we check user-configurable general settings.
  
-@@ -902,7 +902,7 @@ else
+@@ -897,7 +897,7 @@ else
    AC_MSG_RESULT([using system default])
  fi
  
@@ -66,10 +66,10 @@
  
  dnl ## In diversion 5 we check which extensions should be compiled.
  dnl ## All of these are normally in the extension directories.
---- php.orig/ext/standard/config.m4
-+++ php/ext/standard/config.m4
+--- a/ext/standard/config.m4
++++ b/ext/standard/config.m4
 @@ -1,6 +1,6 @@
- dnl $Id: config.m4 286890 2009-08-06 14:07:16Z scottmac $ -*- autoconf -*-
+ dnl $Id: config.m4 291364 2009-11-27 23:41:13Z rasmus $ -*- autoconf -*-
  
 -divert(3)dnl
 +dnl divert(3)dnl
@@ -85,8 +85,8 @@
  
  dnl
  dnl Check for regex library type
---- php.orig/scripts/phpize.m4
-+++ php/scripts/phpize.m4
+--- a/scripts/phpize.m4
++++ b/scripts/phpize.m4
 @@ -1,6 +1,6 @@
  dnl This file becomes configure.in for self-contained extensions.
  
