@@ -31,7 +31,6 @@ libdb_is_-ldb
 suhosin.patch
 fix_broken_upstream_tests.patch
 use_embedded_timezonedb.patch
-manpage_spelling.patch
 force_libmysqlclient_r.patch
 libedit_is_editline.patch
 bad_whatis_entries.patch
