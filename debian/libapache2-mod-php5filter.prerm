@@ -9,7 +9,7 @@ if [ "$1" != "remove" -a "$1" != "purge" ]; then
 fi
 
 if [ -e /etc/apache2/apache2.conf ]; then
-	if [ -e /etc/apache2/mods-enabled/php5.load ]; then
+	if [ -e /etc/apache2/mods-enabled/php5.load ] && [ "$1" != "purge" ]; then
 	    # set a flag to remember the original state
 	    #  useful when reinstalling the same version.
 	    touch /etc/php5/apache2filter/.start
