@@ -37,3 +37,4 @@ sybase-alias.patch
 strcmp_null-OnUpdateErrorLog.patch
 check_ini_on_modify_status.patch
 gentoo/117-4_digit_year_big_endian.patch
+max_file_uploads.patch
