@@ -32,7 +32,6 @@ suhosin.patch
 fix_broken_upstream_tests.patch
 use_embedded_timezonedb.patch
 force_libmysqlclient_r.patch
-libedit_is_editline.patch
 bad_whatis_entries.patch
 gentoo/009_ob-memory-leaks.patch
 mssql-null-exception.patch
