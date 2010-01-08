@@ -21,8 +21,8 @@ php5 (5.2.12.dfsg.1-1) unstable; urgency=low
     (Ubuntu: #493761)
   * Short open tags are On again in php.ini-dist (Closes: #537099)
   * Don't leave .start if we are purging (Closes: #561739)
-  * Add dummy placeholder file to /usr/share/doc/php-pear/PEAR (Closes:
-    #563437, #542483)
+  * Add README.Debian file to /usr/share/doc/php-pear/PEAR, so the
+    directory is not deleted (Closes: #563437, #542483)
 
   [ Upstream ]
   * Fix default pear.php.net channel definitions (Closes: #559029)
