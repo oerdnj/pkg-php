@@ -418,6 +418,8 @@ install: build
 		$(RM) -r debian/php-pear/usr/share/php/doc; \
 		ln -s ../doc/php-pear/PEAR debian/php-pear/usr/share/php/doc; \
 	}
+	# add /usr/share/doc/php-pear/PEAR
+	touch /usr/share/doc/php-pear/PEAR/.placeholder
 
 	# install extensions
 	ext=`./debian/libapache2-mod-php5/usr/bin/php-config --extension-dir`;\
