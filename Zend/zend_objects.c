@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_objects.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: zend_objects.c 289581 2009-10-12 17:09:11Z felipe $ */
 
 #include "zend.h"
 #include "zend_globals.h"
@@ -49,7 +49,7 @@ ZEND_API void zend_object_std_dtor(zend_object *object TSRMLS_DC)
 
 ZEND_API void zend_objects_destroy_object(zend_object *object, zend_object_handle handle TSRMLS_DC)
 {
-	zend_function *destructor = object->ce->destructor;
+	zend_function *destructor = object ? object->ce->destructor : NULL;
 
 	if (destructor) {
 		zval *obj;

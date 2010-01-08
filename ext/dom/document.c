@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: document.c 278373 2009-04-07 15:33:20Z rrichards $ */
+/* $Id: document.c 291669 2009-12-03 20:19:38Z rrichards $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1251,6 +1251,18 @@ PHP_FUNCTION(dom_document_import_node)
 		retnodep = xmlDocCopyNode(nodep, docp, recursive);
 		if (!retnodep) {
 			RETURN_FALSE;
+		}
+
+		if ((retnodep->type == XML_ATTRIBUTE_NODE) && (nodep->ns != NULL)) {
+			xmlNsPtr nsptr = NULL;
+			xmlNodePtr root = xmlDocGetRootElement(docp);
+
+			nsptr = xmlSearchNsByHref (nodep->doc, root, nodep->ns->href);
+			if (nsptr == NULL) {
+				int errorcode;
+				nsptr = dom_get_ns(root, nodep->ns->href, &errorcode, nodep->ns->prefix);
+			}
+			xmlSetNs(retnodep, nsptr);
 		}
 		
 	}

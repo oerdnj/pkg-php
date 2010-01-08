@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: pgsql.c 277070 2009-03-12 22:54:15Z iliaa $ */
+/* $Id: pgsql.c 291335 2009-11-27 03:02:01Z iliaa $ */
 
 #include <stdlib.h>
 
@@ -363,7 +363,7 @@ static void _php_pgsql_notice_handler(void *resource_id, const char *message)
 		if (PGG(log_notices)) {
 			php_error_docref(NULL TSRMLS_CC, E_NOTICE, "%s", notice->message);
 		}
-		zend_hash_index_update(&PGG(notices), (int)resource_id, (void **)&notice, sizeof(php_pgsql_notice *), NULL);
+		zend_hash_index_update(&PGG(notices), (ulong)resource_id, (void **)&notice, sizeof(php_pgsql_notice *), NULL);
 	}
 }
 /* }}} */
@@ -761,13 +761,14 @@ static void php_pgsql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 		 */
 		if (!(connect_type & PGSQL_CONNECT_FORCE_NEW)
 			&& zend_hash_find(&EG(regular_list),str.c,str.len+1,(void **) &index_ptr)==SUCCESS) {
-			int type,link;
+			int type;
+			ulong link;
 			void *ptr;
 
 			if (Z_TYPE_P(index_ptr) != le_index_ptr) {
 				RETURN_FALSE;
 			}
-			link = (int) index_ptr->ptr;
+			link = (ulong) index_ptr->ptr;
 			ptr = zend_list_find(link,&type);   /* check if the link is still there */
 			if (ptr && (type==le_link || type==le_plink)) {
 				Z_LVAL_P(return_value) = link;
@@ -1754,14 +1755,15 @@ PHP_FUNCTION(pg_field_table)
 
 
 	if (return_oid) {
+#if UINT_MAX > LONG_MAX /* Oid is unsigned int, we don't need this code, where LONG is wider */
 		if (oid > LONG_MAX) {
 			smart_str oidstr = {0};
 			smart_str_append_unsigned(&oidstr, oid);
 			smart_str_0(&oidstr);
 			RETURN_STRINGL(oidstr.c, oidstr.len, 0);
-		} else {
+		} else
+#endif
 			RETURN_LONG((long)oid);
-		}
 	}
 
 	/* try to lookup the table name in the resource list */
@@ -1859,7 +1861,7 @@ static void php_pgsql_get_field_info(INTERNAL_FUNCTION_PARAMETERS, int entry_typ
 		case PHP_PG_FIELD_TYPE_OID:
 			
 			oid = PQftype(pgsql_result, Z_LVAL_PP(field));
-
+#if UINT_MAX > LONG_MAX
 			if (oid > LONG_MAX) {
 				smart_str s = {0};
 				smart_str_append_unsigned(&s, oid);
@@ -1867,8 +1869,8 @@ static void php_pgsql_get_field_info(INTERNAL_FUNCTION_PARAMETERS, int entry_typ
 				Z_STRVAL_P(return_value) = s.c;
 				Z_STRLEN_P(return_value) = s.len;
 				Z_TYPE_P(return_value) = IS_STRING;
-			}
-			else
+			} else
+#endif
 			{
 				Z_LVAL_P(return_value) = (long)oid;
 				Z_TYPE_P(return_value) = IS_LONG;
@@ -3339,7 +3341,11 @@ PHP_FUNCTION(pg_copy_to)
 		pg_null_as = safe_estrdup("\\\\N");
 	}
 
-	spprintf(&query, 0, "COPY \"%s\" TO STDOUT DELIMITERS '%c' WITH NULL AS '%s'", table_name, *pg_delim, pg_null_as);
+	if (memchr(table_name, '.', table_name_len)) {
+		spprintf(&query, 0, "COPY %s TO STDOUT DELIMITERS '%c' WITH NULL AS '%s'", table_name, *pg_delim, pg_null_as);
+	} else {
+		spprintf(&query, 0, "COPY \"%s\" TO STDOUT DELIMITERS '%c' WITH NULL AS '%s'", table_name, *pg_delim, pg_null_as);
+	}
 
 	while ((pgsql_result = PQgetResult(pgsql))) {
 		PQclear(pgsql_result);
@@ -5767,8 +5773,8 @@ PHP_PGSQL_API int php_pgsql_result2array(PGresult *pg_result, zval *ret_array TS
 {
 	zval *row;
 	char *field_name, *element, *data;
-	size_t num_fields, element_len, data_len;
-	int pg_numrows, pg_row;
+	size_t num_fields, element_len;
+	int data_len, pg_numrows, pg_row;
 	uint i;
 	assert(Z_TYPE_P(ret_array) == IS_ARRAY);
 

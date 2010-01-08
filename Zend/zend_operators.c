@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_operators.c 276004 2009-02-17 15:15:36Z mattwil $ */
+/* $Id: zend_operators.c 291172 2009-11-23 04:12:36Z iliaa $ */
 
 #include <ctype.h>
 
@@ -1202,6 +1202,12 @@ ZEND_API int concat_function(zval *result, zval *op1, zval *op2 TSRMLS_DC)
 	}
 	if (result==op1) {	/* special case, perform operations on result */
 		uint res_len = op1->value.str.len + op2->value.str.len;
+
+		if (Z_STRLEN_P(result) < 0 || (int) (Z_STRLEN_P(op1) + Z_STRLEN_P(op2)) < 0) {
+			efree(Z_STRVAL_P(result));
+			ZVAL_EMPTY_STRING(result);
+			zend_error(E_ERROR, "String size overflow");
+		}
 		
 		result->value.str.val = erealloc(result->value.str.val, res_len+1);
 

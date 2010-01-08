@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: exif.c 287371 2009-08-16 14:31:27Z iliaa $ */
+/* $Id: exif.c 290173 2009-11-03 17:11:09Z guenter $ */
 
 /*  ToDos
  *
@@ -142,7 +142,7 @@ zend_function_entry exif_functions[] = {
 };
 /* }}} */
 
-#define EXIF_VERSION "1.4 $Id: exif.c 287371 2009-08-16 14:31:27Z iliaa $"
+#define EXIF_VERSION "1.4 $Id: exif.c 290173 2009-11-03 17:11:09Z guenter $"
 
 /* {{{ PHP_MINFO_FUNCTION
  */
@@ -3881,11 +3881,7 @@ static int exif_read_file(image_info_type *ImageInfo, char *FileName, int read_t
 			}
 
 			/* Store file date/time. */
-#ifdef NETWARE
-			ImageInfo->FileDateTime = st.st_mtime.tv_sec;
-#else
 			ImageInfo->FileDateTime = st.st_mtime;
-#endif
 			ImageInfo->FileSize = st.st_size;
 			/*exif_error_docref(NULL EXIFERR_CC, ImageInfo, E_NOTICE, "Opened stream is file: %d", ImageInfo->FileSize);*/
 		}

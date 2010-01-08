@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_reflection.c 287991 2009-09-03 14:02:51Z sebastian $ */
+/* $Id: php_reflection.c 290127 2009-11-01 15:12:34Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -3104,6 +3104,7 @@ ZEND_METHOD(reflection_class, getMethods)
 ZEND_METHOD(reflection_class, hasProperty)
 {
 	reflection_object *intern;
+	zend_property_info *property_info;
 	zend_class_entry *ce;
 	char *name; 
 	int name_len;
@@ -3115,11 +3116,13 @@ ZEND_METHOD(reflection_class, hasProperty)
 	}
 
 	GET_REFLECTION_OBJECT_PTR(ce);
-	if (zend_hash_exists(&ce->properties_info, name, name_len + 1)) {
+	if (zend_hash_find(&ce->properties_info, name, name_len+1, (void **) &property_info) == SUCCESS) {
+		if (property_info->flags & ZEND_ACC_SHADOW) {
+			RETURN_FALSE;
+		}
 		RETURN_TRUE;
 	} else {
-		if (intern->obj && Z_OBJ_HANDLER_P(intern->obj, has_property))
-		{
+		if (intern->obj && Z_OBJ_HANDLER_P(intern->obj, has_property)) {
 			MAKE_STD_ZVAL(property);
 			ZVAL_STRINGL(property, name, name_len, 1);
 			if (Z_OBJ_HANDLER_P(intern->obj, has_property)(intern->obj, property, 2 TSRMLS_CC)) {
@@ -4962,7 +4965,7 @@ PHP_MINFO_FUNCTION(reflection) /* {{{ */
 	php_info_print_table_start();
 	php_info_print_table_header(2, "Reflection", "enabled");
 
-	php_info_print_table_row(2, "Version", "$Id: php_reflection.c 287991 2009-09-03 14:02:51Z sebastian $");
+	php_info_print_table_row(2, "Version", "$Id: php_reflection.c 290127 2009-11-01 15:12:34Z felipe $");
 
 	php_info_print_table_end();
 } /* }}} */

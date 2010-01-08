@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: build-defs.h.in 239769 2007-07-15 15:10:04Z jani $ */
+/* $Id: build-defs.h.in 292156 2009-12-15 11:17:47Z jani $ */
 
 #define CONFIGURE_COMMAND "@CONFIGURE_COMMAND@"
 #define PHP_ADA_INCLUDE		""
@@ -80,6 +80,7 @@
 #define PHP_EXTENSION_DIR       "@EXPANDED_EXTENSION_DIR@"
 #define PHP_PREFIX              "@prefix@"
 #define PHP_BINDIR              "@EXPANDED_BINDIR@"
+#define PHP_SBINDIR             "@EXPANDED_SBINDIR@"
 #define PHP_LIBDIR              "@EXPANDED_LIBDIR@"
 #define PHP_DATADIR             "@EXPANDED_DATADIR@"
 #define PHP_SYSCONFDIR          "@EXPANDED_SYSCONFDIR@"

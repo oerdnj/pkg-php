@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_pgsql_int.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: php_pdo_pgsql_int.h 290214 2009-11-04 19:32:27Z mbeccati $ */
 
 #ifndef PHP_PDO_PGSQL_INT_H
 #define PHP_PDO_PGSQL_INT_H
@@ -43,6 +43,14 @@ typedef struct {
 	unsigned 	_reserved:31;
 	pdo_pgsql_error_info	einfo;
 	Oid 		pgoid;
+#if HAVE_PQPREPARE
+	/* The following two variables have the same purpose. Unfortunately we need
+	   to keep track of two different attributes having the same effect.
+	   It might be worth to deprecate the driver specific one soon. */
+	int		emulate_prepares;
+	int		disable_native_prepares;
+#endif
+	unsigned int stmt_counter;
 } pdo_pgsql_db_handle;
 
 typedef struct {

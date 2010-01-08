@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: documenttype.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: documenttype.c 288652 2009-09-24 12:40:59Z rrichards $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -200,7 +200,6 @@ int dom_documenttype_internal_subset_read(dom_object *obj, zval **retval TSRMLS_
 	xmlDtdPtr dtdptr;
 	xmlDtd *intsubset;
 	xmlOutputBuffer *buff = NULL;
-	xmlChar *strintsubset;
 
 	dtdptr = (xmlDtdPtr) dom_object_get_node(obj);
 
@@ -216,9 +215,8 @@ int dom_documenttype_internal_subset_read(dom_object *obj, zval **retval TSRMLS_
 		if (buff != NULL) {
 			xmlNodeDumpOutput (buff, NULL, (xmlNodePtr) intsubset, 0, 0, NULL);
 			xmlOutputBufferFlush(buff);
-			strintsubset = xmlStrndup(buff->buffer->content, buff->buffer->use);
+			ZVAL_STRINGL(*retval, buff->buffer->content, buff->buffer->use, 1);
 			(void)xmlOutputBufferClose(buff);
-			ZVAL_STRING(*retval, (char *) strintsubset, 1);
 			return SUCCESS;
 		}
 	}

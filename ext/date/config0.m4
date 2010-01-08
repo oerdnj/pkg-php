@@ -1,4 +1,4 @@
-dnl $Id: config0.m4 280533 2009-05-14 18:34:27Z jani $
+dnl $Id: config0.m4 291371 2009-11-28 00:38:05Z jani $
 dnl config.m4 for date extension
 
 sinclude(ext/date/lib/timelib.m4)
@@ -15,6 +15,8 @@ PHP_ADD_INCLUDE([$ext_builddir/lib])
 PHP_ADD_INCLUDE([$ext_srcdir/lib])
 
 PHP_INSTALL_HEADERS([ext/date], [php_date.h lib/timelib.h lib/timelib_structs.h lib/timelib_config.h])
+
+AC_CHECK_FUNCS([llabs])
 
 cat > $ext_builddir/lib/timelib_config.h <<EOF
 #ifdef PHP_WIN32

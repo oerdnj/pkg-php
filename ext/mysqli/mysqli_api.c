@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_api.c 288336 2009-09-14 16:51:11Z uw $ 
+  $Id: mysqli_api.c 288895 2009-09-28 13:11:21Z iliaa $ 
 */
 
 #ifdef HAVE_CONFIG_H
@@ -1848,14 +1848,13 @@ PHP_FUNCTION(mysqli_stmt_attr_set)
 	zval 	*mysql_stmt;
 	ulong   mode;
 	ulong	attr;
-	int		rc;
 
 	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "Oll", &mysql_stmt, mysqli_stmt_class_entry, &attr, &mode) == FAILURE) {
 		return;
 	}
 	MYSQLI_FETCH_RESOURCE(stmt, MY_STMT *, &mysql_stmt, "mysqli_stmt", MYSQLI_STATUS_VALID);
 
-	if ((rc = mysql_stmt_attr_set(stmt->stmt, attr, (void *)&mode))) {
+	if (!mysql_stmt_attr_set(stmt->stmt, attr, (void *)&mode)) {
 		RETURN_FALSE;
 	}
 	RETURN_TRUE;

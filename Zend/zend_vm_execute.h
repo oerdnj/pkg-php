@@ -1531,6 +1531,7 @@ static int zend_fetch_var_address_helper_SPEC_CONST(int type, ZEND_OPCODE_HANDLE
 
 	if (opline->op2.u.EA.type == ZEND_FETCH_STATIC_MEMBER) {
 		retval = zend_std_get_static_property(EX_T(opline->op2.u.var).class_entry, Z_STRVAL_P(varname), Z_STRLEN_P(varname), 0 TSRMLS_CC);
+
 	} else {
 		target_symbol_table = zend_get_target_symbol_table(opline, EX(Ts), type, varname TSRMLS_CC);
 /*
@@ -4111,6 +4112,7 @@ static int zend_fetch_var_address_helper_SPEC_TMP(int type, ZEND_OPCODE_HANDLER_
 
 	if (opline->op2.u.EA.type == ZEND_FETCH_STATIC_MEMBER) {
 		retval = zend_std_get_static_property(EX_T(opline->op2.u.var).class_entry, Z_STRVAL_P(varname), Z_STRLEN_P(varname), 0 TSRMLS_CC);
+		zval_dtor(free_op1.var);
 	} else {
 		target_symbol_table = zend_get_target_symbol_table(opline, EX(Ts), type, varname TSRMLS_CC);
 /*
@@ -7166,6 +7168,7 @@ static int zend_fetch_var_address_helper_SPEC_VAR(int type, ZEND_OPCODE_HANDLER_
 
 	if (opline->op2.u.EA.type == ZEND_FETCH_STATIC_MEMBER) {
 		retval = zend_std_get_static_property(EX_T(opline->op2.u.var).class_entry, Z_STRVAL_P(varname), Z_STRLEN_P(varname), 0 TSRMLS_CC);
+		if (free_op1.var) {zval_ptr_dtor(&free_op1.var);};
 	} else {
 		target_symbol_table = zend_get_target_symbol_table(opline, EX(Ts), type, varname TSRMLS_CC);
 /*
@@ -9747,7 +9750,7 @@ static int zend_isset_isempty_dim_prop_obj_handler_SPEC_VAR_CONST(int prop_dim, 
 
 		zval *offset = &opline->op2.u.constant;
 
-		if (Z_TYPE_PP(container) == IS_ARRAY) {
+		if (Z_TYPE_PP(container) == IS_ARRAY && !prop_dim) {
 			HashTable *ht;
 			int isset = 0;
 
@@ -11280,7 +11283,7 @@ static int zend_isset_isempty_dim_prop_obj_handler_SPEC_VAR_TMP(int prop_dim, ZE
 		zend_free_op free_op2;
 		zval *offset = _get_zval_ptr_tmp(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
 
-		if (Z_TYPE_PP(container) == IS_ARRAY) {
+		if (Z_TYPE_PP(container) == IS_ARRAY && !prop_dim) {
 			HashTable *ht;
 			int isset = 0;
 
@@ -12861,7 +12864,7 @@ static int zend_isset_isempty_dim_prop_obj_handler_SPEC_VAR_VAR(int prop_dim, ZE
 		zend_free_op free_op2;
 		zval *offset = _get_zval_ptr_var(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
 
-		if (Z_TYPE_PP(container) == IS_ARRAY) {
+		if (Z_TYPE_PP(container) == IS_ARRAY && !prop_dim) {
 			HashTable *ht;
 			int isset = 0;
 
@@ -14887,7 +14890,7 @@ static int zend_isset_isempty_dim_prop_obj_handler_SPEC_VAR_CV(int prop_dim, ZEN
 
 		zval *offset = _get_zval_ptr_cv(&opline->op2, EX(Ts), BP_VAR_R TSRMLS_CC);
 
-		if (Z_TYPE_PP(container) == IS_ARRAY) {
+		if (Z_TYPE_PP(container) == IS_ARRAY && !prop_dim) {
 			HashTable *ht;
 			int isset = 0;
 
@@ -16006,7 +16009,7 @@ static int zend_isset_isempty_dim_prop_obj_handler_SPEC_UNUSED_CONST(int prop_di
 
 		zval *offset = &opline->op2.u.constant;
 
-		if (Z_TYPE_PP(container) == IS_ARRAY) {
+		if (Z_TYPE_PP(container) == IS_ARRAY && !prop_dim) {
 			HashTable *ht;
 			int isset = 0;
 
@@ -16999,7 +17002,7 @@ static int zend_isset_isempty_dim_prop_obj_handler_SPEC_UNUSED_TMP(int prop_dim,
 		zend_free_op free_op2;
 		zval *offset = _get_zval_ptr_tmp(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
 
-		if (Z_TYPE_PP(container) == IS_ARRAY) {
+		if (Z_TYPE_PP(container) == IS_ARRAY && !prop_dim) {
 			HashTable *ht;
 			int isset = 0;
 
@@ -17992,7 +17995,7 @@ static int zend_isset_isempty_dim_prop_obj_handler_SPEC_UNUSED_VAR(int prop_dim,
 		zend_free_op free_op2;
 		zval *offset = _get_zval_ptr_var(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
 
-		if (Z_TYPE_PP(container) == IS_ARRAY) {
+		if (Z_TYPE_PP(container) == IS_ARRAY && !prop_dim) {
 			HashTable *ht;
 			int isset = 0;
 
@@ -19253,7 +19256,7 @@ static int zend_isset_isempty_dim_prop_obj_handler_SPEC_UNUSED_CV(int prop_dim, 
 
 		zval *offset = _get_zval_ptr_cv(&opline->op2, EX(Ts), BP_VAR_R TSRMLS_CC);
 
-		if (Z_TYPE_PP(container) == IS_ARRAY) {
+		if (Z_TYPE_PP(container) == IS_ARRAY && !prop_dim) {
 			HashTable *ht;
 			int isset = 0;
 
@@ -19600,6 +19603,7 @@ static int zend_fetch_var_address_helper_SPEC_CV(int type, ZEND_OPCODE_HANDLER_A
 
 	if (opline->op2.u.EA.type == ZEND_FETCH_STATIC_MEMBER) {
 		retval = zend_std_get_static_property(EX_T(opline->op2.u.var).class_entry, Z_STRVAL_P(varname), Z_STRLEN_P(varname), 0 TSRMLS_CC);
+
 	} else {
 		target_symbol_table = zend_get_target_symbol_table(opline, EX(Ts), type, varname TSRMLS_CC);
 /*
@@ -22014,7 +22018,7 @@ static int zend_isset_isempty_dim_prop_obj_handler_SPEC_CV_CONST(int prop_dim, Z
 
 		zval *offset = &opline->op2.u.constant;
 
-		if (Z_TYPE_PP(container) == IS_ARRAY) {
+		if (Z_TYPE_PP(container) == IS_ARRAY && !prop_dim) {
 			HashTable *ht;
 			int isset = 0;
 
@@ -23539,7 +23543,7 @@ static int zend_isset_isempty_dim_prop_obj_handler_SPEC_CV_TMP(int prop_dim, ZEN
 		zend_free_op free_op2;
 		zval *offset = _get_zval_ptr_tmp(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
 
-		if (Z_TYPE_PP(container) == IS_ARRAY) {
+		if (Z_TYPE_PP(container) == IS_ARRAY && !prop_dim) {
 			HashTable *ht;
 			int isset = 0;
 
@@ -25111,7 +25115,7 @@ static int zend_isset_isempty_dim_prop_obj_handler_SPEC_CV_VAR(int prop_dim, ZEN
 		zend_free_op free_op2;
 		zval *offset = _get_zval_ptr_var(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
 
-		if (Z_TYPE_PP(container) == IS_ARRAY) {
+		if (Z_TYPE_PP(container) == IS_ARRAY && !prop_dim) {
 			HashTable *ht;
 			int isset = 0;
 
@@ -27127,7 +27131,7 @@ static int zend_isset_isempty_dim_prop_obj_handler_SPEC_CV_CV(int prop_dim, ZEND
 
 		zval *offset = _get_zval_ptr_cv(&opline->op2, EX(Ts), BP_VAR_R TSRMLS_CC);
 
-		if (Z_TYPE_PP(container) == IS_ARRAY) {
+		if (Z_TYPE_PP(container) == IS_ARRAY && !prop_dim) {
 			HashTable *ht;
 			int isset = 0;
 

@@ -23,7 +23,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: ldap.c 287936 2009-09-01 08:42:10Z patrickallaert $ */
+/* $Id: ldap.c 290923 2009-11-18 17:44:58Z jani $ */
 #define IS_EXT_MODULE
 
 #ifdef HAVE_CONFIG_H
@@ -323,7 +323,7 @@ PHP_MINFO_FUNCTION(ldap)
 
 	php_info_print_table_start();
 	php_info_print_table_row(2, "LDAP Support", "enabled");
-	php_info_print_table_row(2, "RCS Version", "$Id: ldap.c 287936 2009-09-01 08:42:10Z patrickallaert $");
+	php_info_print_table_row(2, "RCS Version", "$Id: ldap.c 290923 2009-11-18 17:44:58Z jani $");
 
 	if (LDAPG(max_links) == -1) {
 		snprintf(tmp, 31, "%ld/unlimited", LDAPG(num_links));
@@ -1061,17 +1061,21 @@ PHP_FUNCTION(ldap_get_entries)
 	ldap = ld->link;
 	num_entries = ldap_count_entries(ldap, ldap_result);
 
-	if (num_entries == 0) return;
-	num_entries = 0;
-	
-	ldap_result_entry = ldap_first_entry(ldap, ldap_result);
-	if (ldap_result_entry == NULL) RETURN_FALSE;
-
 	array_init(return_value);
 	add_assoc_long(return_value, "count", num_entries);
 
-	while (ldap_result_entry != NULL) {
+	if (num_entries == 0) {
+		return;
+	}
+	
+	ldap_result_entry = ldap_first_entry(ldap, ldap_result);
+	if (ldap_result_entry == NULL) {
+		zval_dtor(return_value);
+		RETURN_FALSE;
+	}
 
+	num_entries = 0;
+	while (ldap_result_entry != NULL) {
 		MAKE_STD_ZVAL(tmp1);
 		array_init(tmp1);
 

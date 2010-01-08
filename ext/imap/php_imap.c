@@ -26,7 +26,7 @@
    | PHP 4.0 updates:  Zeev Suraski <zeev@zend.com>                       |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_imap.c 286732 2009-08-03 13:02:53Z jani $ */
+/* $Id: php_imap.c 288585 2009-09-22 18:18:57Z felipe $ */
 
 #define IMAP41
 
@@ -115,6 +115,7 @@ zend_function_entry imap_functions[] = {
 	PHP_FE(imap_delete,								NULL)
 	PHP_FE(imap_undelete,							NULL)
 	PHP_FE(imap_check,								NULL)
+	PHP_FE(imap_listscan,							NULL)
 	PHP_FE(imap_mail_copy,							NULL)
 	PHP_FE(imap_mail_move,							NULL)
 	PHP_FE(imap_mail_compose,						NULL)

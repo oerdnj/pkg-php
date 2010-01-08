@@ -15,7 +15,7 @@
   | Author: Hartmut Holzgraefe  <hholzgra@php.net>                       |
   +----------------------------------------------------------------------+
 
-  $Id: mime_magic.c 272374 2008-12-31 11:17:49Z sebastian $ 
+  $Id: mime_magic.c 290183 2009-11-03 18:44:11Z guenter $ 
 
   This module contains a lot of stuff taken from Apache mod_mime_magic,
   so the license section is a little bit longer than usual:
@@ -166,6 +166,8 @@
 
 #ifdef PHP_WIN32
 #define PHP_MIME_MAGIC_FILE_PATH PHP_PREFIX "\\magic.mime"
+#elif NETWARE
+#define PHP_MIME_MAGIC_FILE_PATH PHP_PREFIX "/magic.mime"
 #endif
 
 #define BYTE	1

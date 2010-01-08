@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli.c 275985 2009-02-17 10:40:18Z johannes $ 
+  $Id: mysqli.c 290573 2009-11-12 08:20:57Z rasmus $ 
 */
 
 #ifdef HAVE_CONFIG_H
@@ -1003,7 +1003,11 @@ PHP_MYSQLI_API void php_mysqli_set_error(long mysql_errno, char *mysql_err TSRML
 	if (MyG(error_msg)) {
 		efree(MyG(error_msg));
 	}
-	MyG(error_msg) = estrdup(mysql_err);
+	if(mysql_err && *mysql_err) {
+		MyG(error_msg) = estrdup(mysql_err);
+	} else {
+		MyG(error_msg) = NULL;
+	}
 }
 /* }}} */
 

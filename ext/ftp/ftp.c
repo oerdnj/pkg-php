@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: ftp.c 288034 2009-09-04 07:59:48Z srinatar $ */
+/* $Id: ftp.c 291264 2009-11-24 13:57:39Z rasmus $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1699,7 +1699,7 @@ ftp_nb_get(ftpbuf_t *ftp, php_stream *outstream, const char *path, ftptype_t typ
 	char			arg[11];
 
 	if (ftp == NULL) {
-		goto bail;
+		return PHP_FTP_FAILED;
 	}
 
 	if (!ftp_type(ftp, type)) {

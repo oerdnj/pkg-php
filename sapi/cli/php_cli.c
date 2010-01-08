@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_cli.c 284649 2009-07-23 14:54:04Z jani $ */
+/* $Id: php_cli.c 292081 2009-12-13 17:06:47Z felipe $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -76,8 +76,11 @@
 #endif
 
 #if (HAVE_LIBREADLINE || HAVE_LIBEDIT) && !defined(COMPILE_DL_READLINE)
+
+#if HAVE_LIBEDIT
+#include <editline/readline.h>
+#else
 #include <readline/readline.h>
-#if !HAVE_LIBEDIT
 #include <readline/history.h>
 #endif
 #include "php_cli_readline.h"

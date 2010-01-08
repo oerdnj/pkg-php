@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: dns.c 286890 2009-08-06 14:07:16Z scottmac $ */
+/* $Id: dns.c 289700 2009-10-16 16:09:49Z scottmac $ */
 
 /* {{{ includes */
 #include "php.h"
@@ -54,6 +54,9 @@
 #ifdef _OSD_POSIX
 #undef STATUS
 #undef T_UNSPEC
+#endif
+#if HAVE_ARPA_NAMESER_COMPAT_H
+#include <arpa/nameser_compat.h>
 #endif
 #if HAVE_ARPA_NAMESER_H
 #include <arpa/nameser.h>

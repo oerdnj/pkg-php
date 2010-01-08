@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_typeinfo.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: com_typeinfo.c 289996 2009-10-27 19:16:55Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -309,7 +309,7 @@ ITypeInfo *php_com_locate_typeinfo(char *typelibname, php_com_dotnet_object *obj
 		}
 	} else if (typelibname) {
 		/* Fetch the typelibrary and use that to look things up */
-		typelib = php_com_load_typelib(typelibname, obj->code_page TSRMLS_CC);
+		typelib = php_com_load_typelib(typelibname, CP_THREAD_ACP TSRMLS_CC);
 	} 
 
 	if (!gotguid && dispname && typelib) {
