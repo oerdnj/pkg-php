@@ -35,4 +35,3 @@ mssql-null-exception.patch
 exif_read_data-segfault.patch
 sybase-alias.patch
 strcmp_null-OnUpdateErrorLog.patch
-max_file_uploads.patch
