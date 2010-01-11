@@ -259,7 +259,7 @@ Description: IMAP module for php5
  generated pages quickly. This version of PHP5 was built with the Suhosin patch.
 
 Package: php5-interbase
-Architecture: i386 amd64 powerpc sparc
+Architecture: amd64 armel i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 sparc
 Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${binary:Version})
 Description: interbase/firebird module for php5
  This package provides a module for interbase/firebird functions in PHP scripts.
