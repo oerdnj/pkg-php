@@ -35,8 +35,6 @@ Depends: sed (>= 4.1.1-1), ${shlibs:Depends}
 Recommends: php5-suhosin
 Provides: php5-json, php5-mhash
 Conflicts: php5-json, php5-mhash
-Provides: php5-json
-Conflicts: php5-json
 Description: Common files for packages built from the php5 source
  This package contains the documentation and example files relevant to all
  the other packages built from the php5 source.
