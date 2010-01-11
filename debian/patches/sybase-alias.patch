@@ -1,11 +1,9 @@
-Index: php/ext/mssql/php_mssql.c
-===================================================================
---- php.orig/ext/mssql/php_mssql.c
-+++ php/ext/mssql/php_mssql.c
-@@ -78,6 +78,38 @@ zend_function_entry mssql_functions[] = 
-  	PHP_FE(mssql_execute,				NULL)
- 	PHP_FE(mssql_free_statement,		NULL)
-  	PHP_FE(mssql_guid_string,			NULL)
+--- a/ext/mssql/php_mssql.c
++++ b/ext/mssql/php_mssql.c
+@@ -178,6 +178,38 @@ const zend_function_entry mssql_function
+  	PHP_FE(mssql_execute,				arginfo_mssql_execute)
+ 	PHP_FE(mssql_free_statement,		arginfo_mssql_free_statement)
+  	PHP_FE(mssql_guid_string,			arginfo_mssql_guid_string)
 +#if !defined(PHP_WIN32) && !defined(HAVE_SYBASE_CT)
 +        PHP_FALIAS(sybase_connect, mssql_connect,                           NULL)
 +        PHP_FALIAS(sybase_pconnect, mssql_pconnect,                          NULL)
@@ -40,4 +38,4 @@ Index: php/ext/mssql/php_mssql.c
 +#endif
  	{NULL, NULL, NULL}
  };
- 
+ /* }}} */
