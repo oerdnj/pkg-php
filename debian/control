@@ -2,9 +2,7 @@ Source: php5
 Section: php
 Priority: optional
 Maintainer: Debian PHP Maintainers <pkg-php-maint@lists.alioth.debian.org>
-Uploaders: Adam Conrad <adconrad@0c3.net>,
-           Jeroen van Wolffelaar <jeroen@wolffelaar.nl>,
-           Ondřej Surý <ondrej@debian.org>,
+Uploaders: Ondřej Surý <ondrej@debian.org>,
 	   Sean Finney <seanius@debian.org>,
 	   Thijs Kinkhorst <thijs@debian.org>,
 	   Raphael Geissert <geissert@debian.org>
