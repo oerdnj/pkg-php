@@ -1,8 +1,6 @@
-Index: php/ext/exif/exif.c
-===================================================================
---- php.orig/ext/exif/exif.c
-+++ php/ext/exif/exif.c
-@@ -3219,6 +3219,10 @@ static void exif_process_TIFF_in_JPEG(im
+--- a/ext/exif/exif.c
++++ b/ext/exif/exif.c
+@@ -3214,6 +3214,10 @@ static void exif_process_TIFF_in_JPEG(im
  		exif_error_docref(NULL EXIFERR_CC, ImageInfo, E_WARNING, "Invalid IFD start");
  		return;
  	}
