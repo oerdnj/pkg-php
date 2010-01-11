@@ -1,3 +1,27 @@
+php5 (5.3.1-2) experimental; urgency=low
+
+  * Merged changes from 5.2.x sid branch.  
+  * Adapt mssql-null-exception.patch and sybase-alias.patch to 5.3.1
+  * Update strcmp_null-OnUpdateErrorLog.patch; merged upstream, leave a
+    patch with a test case
+  * Removed check_ini_on_modify_status.patch and gentoo/117-
+    4_digit_year_big_endian.patch; merged upstream
+  * Removed max_file_uploads.patch; no need for backwards compatibility
+    between major releases
+  * Refreshed 112-proc_open.patch,exif_read_data-segfault.patch
+  * Fix duplicate Provides: in debian/control introduced by cherry-
+    picking 94f0ec3
+  * Update sybase aliases to include correct arguments, needed for 5.3.x
+  * Update Build-Depends: to include firefox2.1-dev as preferred
+    alternative (Closes: #564691)
+  * Reformat Build-Depends: to one-dependency-per-line
+  * Reduce number of libdb*-dev to include only version in
+    stable/testing/unstable
+  * Switch to automake (>= 1.11) | automake1.11, depend on autoconf >=
+    2.63 (Closes: #549148)
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 11 Jan 2010 16:56:01 +0100
+
 php5 (5.3.1-1) experimental; urgency=low
 
   * Imported Upstream version 5.3.1
