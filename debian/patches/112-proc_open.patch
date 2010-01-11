@@ -1,6 +1,6 @@
---- pkg-php.orig/ext/standard/proc_open.c
-+++ pkg-php/ext/standard/proc_open.c
-@@ -61,7 +61,7 @@
+--- a/ext/standard/proc_open.c
++++ b/ext/standard/proc_open.c
+@@ -62,7 +62,7 @@
   * */
  #ifdef PHP_CAN_SUPPORT_PROC_OPEN
  
