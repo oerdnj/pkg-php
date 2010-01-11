@@ -95,7 +95,7 @@
 +; be found by running:
 +;
 +; $  diff -u /usr/share/doc/php5-common/examples/php.ini-dist \
-+     /usr/share/doc/php5-common/examples/php.ini-paranoid  |less
++;     /usr/share/doc/php5-common/examples/php.ini-paranoid  |less
 +;
 +;
 +; This is a (not complete) list of some of the changes introduced in this file:
