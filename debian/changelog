@@ -1,6 +1,6 @@
 php5 (5.2.12.dfsg.1-2) unstable; urgency=low
 
-  * Update Build-Depends: to include firefox2.1-dev as preferred
+  * Update Build-Depends: to include firebird2.1-dev as preferred
     alternative (Closes: #564691)
   * Reformat Build-Depends: to one-dependency-per-line
   * Reduce number of firebird*-dev to include only version in
