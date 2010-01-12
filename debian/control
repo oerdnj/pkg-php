@@ -62,7 +62,7 @@ Homepage: http://www.php.net/
 
 Package: php5
 Architecture: all
-Depends: libapache2-mod-php5 (>= ${source:Version}) | libapache2-mod-php5filter (>= ${source:Version}) | php5-cgi (>= ${source:Version}), php5-common (>= ${source:Version})
+Depends: ${misc:Depends}, libapache2-mod-php5 (>= ${source:Version}) | libapache2-mod-php5filter (>= ${source:Version}) | php5-cgi (>= ${source:Version}), php5-common (>= ${source:Version})
 Description: server-side, HTML-embedded scripting language (metapackage)
  This package is a metapackage that, when installed, guarantees that you
  have at least one of the three server-side versions of the PHP5 interpreter
@@ -76,7 +76,7 @@ Description: server-side, HTML-embedded scripting language (metapackage)
 
 Package: php5-common
 Architecture: any
-Depends: sed (>= 4.1.1-1), ${shlibs:Depends}
+Depends: ${misc:Depends}, sed (>= 4.1.1-1), ${shlibs:Depends}
 Recommends: php5-suhosin
 Provides: php5-json, php5-mhash
 Conflicts: php5-json, php5-mhash
@@ -165,7 +165,7 @@ Description: command-line interpreter for the php5 scripting language
  generated pages quickly. This version of PHP5 was built with the Suhosin patch.
 
 Package: php5-dev
-Depends: autoconf (>= 2.63), automake (>= 1.11), libssl-dev, libtool (>= 2.2), shtool, php5-common (>= ${binary:Version})
+Depends: ${misc:Depends}, autoconf (>= 2.63), automake (>= 1.11), libssl-dev, libtool (>= 2.2), shtool, php5-common (>= ${binary:Version})
 Conflicts: ${libtool:Conflicts}
 Architecture: any
 Description: Files for PHP5 module development
@@ -178,7 +178,7 @@ Description: Files for PHP5 module development
  generated pages quickly. This version of PHP5 was built with the Suhosin patch.
 
 Package: php5-dbg
-Depends: php5-common (= ${binary:Version}), libapache2-mod-php5 (= ${binary:Version}) | libapache2-mod-php5filter (= ${binary:Version}) | php5-cgi (= ${binary:Version}) | php5-cli (= ${binary:Version}) | php5-curl (= ${binary:Version}) | php5-gd (= ${binary:Version}) | php5-gmp (= ${binary:Version}) | php5-imap (= ${binary:Version}) | php5-interbase (= ${binary:Version}) | php5-ldap (= ${binary:Version}) | php5-mcrypt (= ${binary:Version}) | php5-mysql (= ${binary:Version}) | php5-odbc (= ${binary:Version}) | php5-pgsql (= ${binary:Version}) | php5-pspell (= ${binary:Version}) | php5-recode (= ${binary:Version}) | php5-snmp (= ${binary:Version}) | php5-sqlite (= ${binary:Version}) | php5-sybase (= ${binary:Version}) | php5-tidy (= ${binary:Version}) | php5-xmlrpc (= ${binary:Version}) | php5-xsl (= ${binary:Version})
+Depends: ${misc:Depends}, php5-common (= ${binary:Version}), libapache2-mod-php5 (= ${binary:Version}) | libapache2-mod-php5filter (= ${binary:Version}) | php5-cgi (= ${binary:Version}) | php5-cli (= ${binary:Version}) | php5-curl (= ${binary:Version}) | php5-gd (= ${binary:Version}) | php5-gmp (= ${binary:Version}) | php5-imap (= ${binary:Version}) | php5-interbase (= ${binary:Version}) | php5-ldap (= ${binary:Version}) | php5-mcrypt (= ${binary:Version}) | php5-mysql (= ${binary:Version}) | php5-odbc (= ${binary:Version}) | php5-pgsql (= ${binary:Version}) | php5-pspell (= ${binary:Version}) | php5-recode (= ${binary:Version}) | php5-snmp (= ${binary:Version}) | php5-sqlite (= ${binary:Version}) | php5-sybase (= ${binary:Version}) | php5-tidy (= ${binary:Version}) | php5-xmlrpc (= ${binary:Version}) | php5-xsl (= ${binary:Version})
 Recommends: gdb
 Section: debug
 Priority: extra
@@ -194,7 +194,7 @@ Description: Debug symbols for PHP5
 
 Package: php-pear
 Architecture: all
-Depends: php5-common (>= ${source:Version}), php5-cli | php4-cli
+Depends: ${misc:Depends}, php5-common (>= ${source:Version}), php5-cli | php4-cli
 Recommends: gnupg
 Conflicts: php-xml-util
 Suggests: php5-dev | php4-dev
