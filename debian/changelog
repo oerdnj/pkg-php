@@ -12,7 +12,7 @@ php5 (5.3.1-2) experimental; urgency=low
   * Fix duplicate Provides: in debian/control introduced by cherry-
     picking 94f0ec3
   * Update sybase aliases to include correct arguments, needed for 5.3.x
-  * Update Build-Depends: to include firefox2.1-dev as preferred
+  * Update Build-Depends: to include firebird2.1-dev as preferred
     alternative (Closes: #564691)
   * Reformat Build-Depends: to one-dependency-per-line
   * Reduce number of libdb*-dev to include only version in
