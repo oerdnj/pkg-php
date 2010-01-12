@@ -165,7 +165,7 @@ Description: command-line interpreter for the php5 scripting language
  generated pages quickly. This version of PHP5 was built with the Suhosin patch.
 
 Package: php5-dev
-Depends: autoconf, automake1.4, libssl-dev, libtool, shtool, php5-common (>= ${binary:Version})
+Depends: autoconf (>= 2.63), automake (>= 1.11), libssl-dev, libtool (>= 2.2), shtool, php5-common (>= ${binary:Version})
 Conflicts: ${libtool:Conflicts}
 Architecture: any
 Description: Files for PHP5 module development
