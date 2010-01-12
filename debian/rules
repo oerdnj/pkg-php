@@ -75,8 +75,8 @@ else
 LIBTOOL_CONFLICTS:=$(error "could not resolve path to ltmain.sh")
 endif
 
-# only enable interbase support for i386/amd64/powerpc/sparc
-ifneq (,$(filter $(DEB_HOST_ARCH),amd64 i386 powerpc sparc))
+# only enable interbase support on archs where it is supported
+ifneq (,$(filter $(DEB_HOST_ARCH),amd64 armel i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 sparc))
 	IBFLAGS=--with-interbase=shared,/usr \
 		--with-pdo-firebird=shared,/usr
 endif
@@ -217,6 +217,7 @@ configure-apache2-stamp: prepared-stamp
 		$(COMMON_CONFIG) \
 		--without-mm \
 		--with-curl=shared,/usr \
+		--with-enchant=shared,/usr \
 		--with-zlib-dir=/usr \
 		--with-gd=shared,/usr --enable-gd-native-ttf \
 		--with-gmp=shared,/usr \
