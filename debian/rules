@@ -217,6 +217,7 @@ configure-apache2-stamp: prepared-stamp
 		$(COMMON_CONFIG) \
 		--without-mm \
 		--with-curl=shared,/usr \
+		--with-enchant=shared,/usr \
 		--with-zlib-dir=/usr \
 		--with-gd=shared,/usr --enable-gd-native-ttf \
 		--with-gmp=shared,/usr \

@@ -20,6 +20,7 @@ Build-Depends: apache2-prefork-dev,
 	       libc-client-dev,
 	       libcurl4-openssl-dev | libcurl-dev,
 	       libdb-dev (>= 4.7) | libdb4.8-dev | libdb4.6-dev,
+	       libenchant-dev,
 	       libexpat1-dev (>= 1.95.2-2.1),
 	       libfreetype6-dev,
 	       libgcrypt11-dev,
@@ -217,6 +218,18 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
 Description: CURL module for php5
  CURL is a library for getting files from  FTP, GOPHER, HTTP server.
+ .
+ PHP5 is an HTML-embedded scripting language. Much of its syntax is borrowed
+ from C, Java and Perl with a couple of unique PHP-specific features thrown
+ in. The goal of the language is to allow web developers to write dynamically
+ generated pages quickly. This version of PHP5 was built with the Suhosin patch.
+
+Package: php5-enchant
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
+Description: Enchant module for php5
+ This package provides a module for the generic spell checking library
+ Enchant, which can use engines such as ispell, aspell and myspells.
  .
  PHP5 is an HTML-embedded scripting language. Much of its syntax is borrowed
  from C, Java and Perl with a couple of unique PHP-specific features thrown
