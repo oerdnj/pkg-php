@@ -105,6 +105,7 @@ COMMON_CONFIG=--build=$(DEB_BUILD_GNU_TYPE) \
 		--enable-exif \
 		--enable-ftp \
 		--with-gettext \
+		--enable-intl \
 		--enable-mbstring \
 		--with-pcre-regex=/usr \
 		--enable-shmop \

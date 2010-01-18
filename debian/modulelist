@@ -4,6 +4,7 @@ gd GD
 gmp GMP
 imap IMAP
 interbase Interbase
+intl Internationalisation
 ldap LDAP
 mcrypt MCrypt
 mysql MySQL
