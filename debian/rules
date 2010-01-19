@@ -81,6 +81,11 @@ ifneq (,$(filter $(DEB_HOST_ARCH),amd64 armel i386 ia64 kfreebsd-amd64 kfreebsd-
 		--with-pdo-firebird=shared,/usr
 endif
 
+ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+    NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+    MAKEFLAGS += -j$(NUMJOBS)
+endif
+
 # enable the hardening wrapper
 DEB_BUILD_HARDENING = 1
 # but disable PIE
