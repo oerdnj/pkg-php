@@ -1,3 +1,8 @@
+Description: Disable installed-apache configure check
+Origin: vendor
+Forwarded: no
+Last-Update: 2010-01-18
+
 --- pkg-php.orig/sapi/apache2handler/config.m4
 +++ pkg-php/sapi/apache2handler/config.m4
 @@ -59,13 +59,13 @@ if test "$PHP_APXS2" != "no"; then

@@ -1,3 +1,8 @@
+Description: Fixes misuse of FD_SET()
+Origin: vendor
+Forwarded: no
+Last-Update: 2010-01-18
+
 --- a/ext/sockets/sockets.c
 +++ b/ext/sockets/sockets.c
 @@ -714,6 +714,7 @@ static int php_sock_array_to_fd_set(zval

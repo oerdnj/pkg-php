@@ -1,3 +1,11 @@
+Description: Force linking to mysqlclient_r to avoid symbol conflicts.
+ apr-util's mysql driver is linked against that version of the library
+ but due to missing proper symbols versioning we are forced to link to
+ the re-entrant library too.
+Origin: other, http://bugs.debian.org/469081
+Forwarded: not-needed
+Last-Update: 2010-01-18
+
 --- pkg-php.orig/ext/mysql/config.m4
 +++ pkg-php/ext/mysql/config.m4
 @@ -90,7 +90,7 @@ elif test "$PHP_MYSQL" != "no"; then

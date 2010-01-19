@@ -1,3 +1,10 @@
+Description: Always use getaddrinfo
+ .
+ The patch should probably be dropped and the configure check verified.
+Origin: vendor
+Forwarded: no
+Last-Update: 2010-01-18
+
 --- a/configure.in
 +++ b/configure.in
 @@ -631,50 +631,50 @@ asprintf \

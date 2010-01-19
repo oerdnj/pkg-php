@@ -1,3 +1,15 @@
+Description: Disable configure parameters on phpinfo() output
+ .
+ Patch needs to be discussed with upstream and the issues that lead to
+ its addition re-checked.  Quoting changelog entry:
+ .
+ Add [...], which disables the display of our "Configure Command" in
+ phpinfo(), which was the source of many bogus bug reports over the
+ years, due to people misinterpreting its meaning.
+Origin: vendor
+Forwarded: no
+Last-Update: 2010-01-18
+
 --- a/ext/standard/info.c
 +++ b/ext/standard/info.c
 @@ -693,7 +693,7 @@ PHPAPI void php_print_info(int flag TSRM

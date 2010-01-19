@@ -1,3 +1,9 @@
+Description: Changes to make php use versioned paths and other minor
+ cleanup changes.
+Origin: vendor
+Forwarded: not-needed
+Last-Update: 2010-01-18
+
 --- a/configure.in
 +++ b/configure.in
 @@ -1021,7 +1021,7 @@ if test "$PHP_CLI" = "no"; then

@@ -1,3 +1,10 @@
+Description: Adds --phpapi argument to php-config(1)
+ .
+ TODO: make it more generic and add it to the man page.
+Origin: vendor
+Forwarded: no
+Last-Update: 2010-01-18
+
 --- a/configure.in
 +++ b/configure.in
 @@ -1130,8 +1130,13 @@ dnl Build extension directory path
