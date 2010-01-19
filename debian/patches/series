@@ -34,4 +34,4 @@ gentoo/009_ob-memory-leaks.patch
 mssql-null-exception.patch
 sybase-alias.patch
 strcmp_null-OnUpdateErrorLog.patch
-deprecate_short_open_tag
+#deprecate_short_open_tag
