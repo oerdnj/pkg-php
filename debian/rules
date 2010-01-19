@@ -111,7 +111,6 @@ COMMON_CONFIG=--build=$(DEB_BUILD_GNU_TYPE) \
 		--enable-exif \
 		--enable-ftp \
 		--with-gettext \
-		--enable-intl \
 		--enable-mbstring \
 		--with-pcre-regex=/usr \
 		--enable-shmop \
@@ -234,6 +233,7 @@ configure-apache2-stamp: prepared-stamp
 		--with-imap=shared,/usr \
 		--with-imap-ssl \
 		$(IBFLAGS) \
+		--enable-intl \
 		--with-ttf=shared,/usr \
 		--with-t1lib=shared,/usr \
 		--with-ldap=shared,/usr \
