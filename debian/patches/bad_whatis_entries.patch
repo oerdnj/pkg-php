@@ -1,6 +1,6 @@
 Description: Fix whatis entries of the man pages
 Origin: vendor
-Forwarded: no
+Forwarded: http://bugs.php.net/50795
 Last-Update: 2010-01-18
 
 --- pkg-php.orig/sapi/cli/php.1.in

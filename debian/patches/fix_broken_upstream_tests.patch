@@ -1,6 +1,6 @@
 Description: Add missing settings to fix upstream tests
 Origin: vendor
-Forwarded: no
+Forwarded: http://bugs.php.net/50796
 Last-Update: 2010-01-18
 
 --- pkg-php.orig/ext/soap/tests/server009.phpt
