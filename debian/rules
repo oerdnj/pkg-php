@@ -81,6 +81,12 @@ ifneq (,$(filter $(DEB_HOST_ARCH),amd64 armel i386 ia64 kfreebsd-amd64 kfreebsd-
 		--with-pdo-firebird=shared,/usr
 endif
 
+# enable the hardening wrapper
+DEB_BUILD_HARDENING = 1
+# but disable PIE
+DEB_BUILD_HARDENING_PIE = 0
+export DEB_BUILD_HARDENING DEB_BUILD_HARDENING_PIE
+
 COMMON_CONFIG=--build=$(DEB_BUILD_GNU_TYPE) \
 		--host=$(DEB_HOST_GNU_TYPE) \
 		--sysconfdir=/etc \
