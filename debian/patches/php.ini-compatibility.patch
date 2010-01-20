@@ -1,0 +1,28 @@
+Description: Change the default php.ini settings to be more compatible
+ with older releases.
+Origin: vendor
+Forwarded: not-needed
+Last-Update: 2010-01-19
+
+Index: php/php.ini-production
+===================================================================
+--- php.orig/php.ini-production
++++ php/php.ini-production
+@@ -223,7 +223,7 @@ engine = On
+ ; Development Value: Off
+ ; Production Value: Off
+ ; http://php.net/short-open-tag
+-short_open_tag = Off
++short_open_tag = On
+ 
+ ; Allow ASP-style <% %> tags.
+ ; http://php.net/asp-tags
+@@ -679,7 +679,7 @@ variables_order = "GPCS"
+ ; Development Value: "GP"
+ ; Production Value: "GP"
+ ; http://php.net/request-order
+-request_order = "GP"
++request_order = "GPC"
+ 
+ ; Whether or not to register the EGPCS variables as global variables.  You may
+ ; want to turn this off if you don't want to clutter your scripts' global scope
