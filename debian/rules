@@ -143,10 +143,10 @@ unprepared:
 test-results.txt: build-apache2-stamp build-cli-stamp build-cgi-stamp
 ifeq (,$(findstring nocheck,$(DEB_BUILD_OPTIONS)))
 	mkdir -p temp_session_store
-	env NO_INTERACTION=1 TEST_PHP_CGI_EXECUTABLE=./cgi-build/sapi/cgi/cgi-bin.php5 TEST_PHP_EXECUTABLE=./apache2-build/sapi/cli/php ./apache2-build/sapi/cli/php run-tests.php | test-results.txt
+	env NO_INTERACTION=1 TEST_PHP_CGI_EXECUTABLE=./cgi-build/sapi/cgi/cgi-bin.php5 TEST_PHP_EXECUTABLE=./apache2-build/sapi/cli/php ./apache2-build/sapi/cli/php run-tests.php | tee test-results.txt
 	rm -rf temp_session_store
 else
-	echo 'nocheck found in DEB_BUILD_OPTIONS' | test-results.txt
+	echo 'nocheck found in DEB_BUILD_OPTIONS' | tee test-results.txt
 endif
 
 build: build-apache2-stamp build-apache2filter-stamp build-cgi-stamp build-cli-stamp build-pear-stamp test-results.txt
