@@ -1,0 +1,18 @@
+Description: Fix a regression where reference arguments are converted to
+ value in __call.
+Origin: upstream, http://svn.php.net/viewvc?view=revision&revision=292295
+Bug: http://bugs.php.net/50394
+Last-Update: 2010-01-19
+
+Index: php/Zend/zend_execute_API.c
+===================================================================
+--- php.orig/Zend/zend_execute_API.c
++++ php/Zend/zend_execute_API.c
+@@ -838,6 +838,7 @@ int zend_call_function(zend_fcall_info *
+ 		zval *param;
+ 
+         	if(EX(function_state).function->type == ZEND_INTERNAL_FUNCTION 
++			&& (EX(function_state).function->common.fn_flags & ZEND_ACC_CALL_VIA_HANDLER) == 0
+ 			&& !ARG_SHOULD_BE_SENT_BY_REF(EX(function_state).function, i + 1)
+ 			&& PZVAL_IS_REF(*fci->params[i])) {
+ 			SEPARATE_ZVAL(fci->params[i]);
