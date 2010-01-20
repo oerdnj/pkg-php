@@ -238,7 +238,7 @@ configure-apache2-stamp: prepared-stamp
 		--with-imap=shared,/usr \
 		--with-imap-ssl \
 		$(IBFLAGS) \
-		--enable-intl \
+		--enable-intl=shared \
 		--with-ttf=shared,/usr \
 		--with-t1lib=shared,/usr \
 		--with-ldap=shared,/usr \
