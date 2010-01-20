@@ -198,10 +198,10 @@ Description: Debug symbols for PHP5
 
 Package: php-pear
 Architecture: all
-Depends: ${misc:Depends}, php5-common (>= ${source:Version}), php5-cli | php4-cli
+Depends: ${misc:Depends}, php5-common (>= ${source:Version}), php5-cli
 Recommends: gnupg
 Conflicts: php-xml-util
-Suggests: php5-dev | php4-dev
+Suggests: php5-dev
 Replaces: php4-pear (<< 4:4.4.0-0), php-xml-util
 Provides: php-xml-util
 Description: PEAR - PHP Extension and Application Repository
