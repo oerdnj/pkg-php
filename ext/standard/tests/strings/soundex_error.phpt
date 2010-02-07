@@ -1,5 +1,5 @@
 --TEST--
-Test soundex() function : error conditions 
+Test soundex() function : error conditions
 --FILE--
 <?php
 /* Prototype  : string soundex  ( string $str  )

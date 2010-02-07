@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_sqlite.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: php_pdo_sqlite.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 
 #ifndef PHP_PDO_SQLITE_H
@@ -24,12 +24,6 @@
 
 extern zend_module_entry pdo_sqlite_module_entry;
 #define phpext_pdo_sqlite_ptr &pdo_sqlite_module_entry
-
-#ifdef PHP_WIN32
-#define PHP_PDO_SQLITE_API __declspec(dllexport)
-#else
-#define PHP_PDO_SQLITE_API
-#endif
 
 #ifdef ZTS
 #include "TSRM.h"

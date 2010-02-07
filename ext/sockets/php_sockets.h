@@ -22,7 +22,7 @@
 #ifndef PHP_SOCKETS_H
 #define PHP_SOCKETS_H
 
-/* $Id: php_sockets.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: php_sockets.h 289417 2009-10-09 14:22:29Z pajoye $ */
 
 #if HAVE_SOCKETS
 
@@ -30,10 +30,8 @@ extern zend_module_entry sockets_module_entry;
 #define phpext_sockets_ptr &sockets_module_entry
 
 #ifdef PHP_WIN32
-#define PHP_SOCKETS_API __declspec(dllexport)
 #include <winsock.h>
 #else
-#define PHP_SOCKETS_API
 #if HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
 #endif
@@ -75,7 +73,9 @@ PHP_FUNCTION(socket_clear_error);
 
 #ifndef PHP_WIN32
 typedef int PHP_SOCKET;
+# define PHP_SOCKETS_API PHPAPI
 #else
+# define PHP_SOCKETS_API __declspec(dllexport)
 typedef SOCKET PHP_SOCKET;
 #endif
 
@@ -85,6 +85,15 @@ typedef struct {
 	int		error;
 	int		blocking;
 } php_socket;
+
+#ifdef PHP_WIN32
+struct	sockaddr_un {
+	short	sun_family;
+	char	sun_path[108];
+};
+#endif
+
+PHP_SOCKETS_API int php_sockets_le_socket(void);
 
 /* Prototypes */
 #ifdef ilia_0 /* not needed, only causes a compiler warning */

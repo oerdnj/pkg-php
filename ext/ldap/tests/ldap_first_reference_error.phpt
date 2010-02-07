@@ -16,10 +16,10 @@ var_dump(ldap_first_reference($link, $link));
 ?>
 ===DONE===
 --EXPECTF--
-Warning: Wrong parameter count for ldap_first_reference() in %s on line %d
+Warning: ldap_first_reference() expects exactly 2 parameters, 1 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for ldap_first_reference() in %s on line %d
+Warning: ldap_first_reference() expects exactly 2 parameters, 3 given in %s on line %d
 NULL
 
 Warning: ldap_first_reference(): supplied resource is not a valid ldap result resource in %s on line %d

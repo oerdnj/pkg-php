@@ -36,16 +36,16 @@ $link = ldap_connect_and_bind($host, $port, $user, $passwd, $protocol_version);
 remove_dummy_data($link);
 ?>
 --EXPECTF--
-Warning: Wrong parameter count for ldap_compare() in %s on line %d
+Warning: ldap_compare() expects exactly 4 parameters, 1 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for ldap_compare() in %s on line %d
+Warning: ldap_compare() expects exactly 4 parameters, 2 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for ldap_compare() in %s on line %d
+Warning: ldap_compare() expects exactly 4 parameters, 3 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for ldap_compare() in %s on line %d
+Warning: ldap_compare() expects exactly 4 parameters, 5 given in %s on line %d
 NULL
 
 Warning: ldap_compare(): Compare: No such object in %s on line %d

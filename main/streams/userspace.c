@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: userspace.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: userspace.c 280151 2009-05-08 11:35:12Z bjori $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -86,6 +86,19 @@ PHP_MINIT_FUNCTION(user_streams)
 	REGISTER_LONG_CONSTANT("STREAM_MKDIR_RECURSIVE",	PHP_STREAM_MKDIR_RECURSIVE,		CONST_CS|CONST_PERSISTENT);
 
 	REGISTER_LONG_CONSTANT("STREAM_IS_URL",	PHP_STREAM_IS_URL,		CONST_CS|CONST_PERSISTENT);
+
+	REGISTER_LONG_CONSTANT("STREAM_OPTION_BLOCKING",	PHP_STREAM_OPTION_BLOCKING,		CONST_CS|CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("STREAM_OPTION_READ_TIMEOUT",	PHP_STREAM_OPTION_READ_TIMEOUT,		CONST_CS|CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("STREAM_OPTION_READ_BUFFER",	PHP_STREAM_OPTION_READ_BUFFER,		CONST_CS|CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("STREAM_OPTION_WRITE_BUFFER",	PHP_STREAM_OPTION_WRITE_BUFFER,		CONST_CS|CONST_PERSISTENT);
+
+	REGISTER_LONG_CONSTANT("STREAM_BUFFER_NONE",		PHP_STREAM_BUFFER_NONE,			CONST_CS|CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("STREAM_BUFFER_LINE",		PHP_STREAM_BUFFER_LINE,			CONST_CS|CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("STREAM_BUFFER_FULL",		PHP_STREAM_BUFFER_FULL,			CONST_CS|CONST_PERSISTENT);
+
+	REGISTER_LONG_CONSTANT("STREAM_CAST_AS_STREAM",		PHP_STREAM_AS_STDIO,			CONST_CS|CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("STREAM_CAST_FOR_SELECT",	PHP_STREAM_AS_FD_FOR_SELECT,		CONST_CS|CONST_PERSISTENT);
+
 	return SUCCESS;
 }
 
@@ -115,6 +128,8 @@ typedef struct _php_userstream_data php_userstream_data_t;
 #define USERSTREAM_DIR_REWIND	"dir_rewinddir"
 #define USERSTREAM_DIR_CLOSE	"dir_closedir"
 #define USERSTREAM_LOCK     "stream_lock"
+#define USERSTREAM_CAST		"stream_cast"
+#define USERSTREAM_SET_OPTION	"stream_set_option"
 
 /* {{{ class should have methods like these:
  
@@ -164,6 +179,33 @@ typedef struct _php_userstream_data php_userstream_data_t;
 		return array( just like that returned by fstat() );
 	}
 
+	function stream_cast($castas)
+	{
+		if ($castas == STREAM_CAST_FOR_SELECT) {
+			return $this->underlying_stream;
+		}
+		return false;
+	}
+
+	function stream_set_option($option, $arg1, $arg2)
+	{
+		switch($option) {
+		case STREAM_OPTION_BLOCKING:
+			$blocking = $arg1;
+			...
+		case STREAM_OPTION_READ_TIMEOUT:
+			$sec = $arg1;
+			$usec = $arg2;
+			...
+		case STREAM_OPTION_WRITE_BUFFER:
+			$mode = $arg1;
+			$size = $arg2;
+			...
+		default:
+			return false;
+		}
+	}
+
 	function url_stat(string $url, int $flags)
 	{
 		return array( just like that returned by stat() );
@@ -208,6 +250,11 @@ typedef struct _php_userstream_data php_userstream_data_t;
 	{
 		reset to start of dir list;
 	}
+
+	function stream_lock($operation)
+	{
+		return true / false;
+	}
   
 	}}} **/
 
@@ -219,7 +266,6 @@ static php_stream *user_wrapper_opener(php_stream_wrapper *wrapper, char *filena
 	zval **args[4];	
 	int call_result;
 	php_stream *stream = NULL;
-	zval *zcontext = NULL;
 	zend_bool old_in_user_include;
 
 	/* Try to catch bad usage without preventing flexibility */
@@ -246,8 +292,8 @@ static php_stream *user_wrapper_opener(php_stream_wrapper *wrapper, char *filena
 	/* create an instance of our class */
 	ALLOC_ZVAL(us->object);
 	object_init_ex(us->object, uwrap->ce);
-	ZVAL_REFCOUNT(us->object) = 1;
-	PZVAL_IS_REF(us->object) = 1;
+	Z_SET_REFCOUNT_P(us->object, 1);
+	Z_SET_ISREF_P(us->object);
 	
 	if (uwrap->ce->constructor) {
 		zend_fcall_info fci;
@@ -258,7 +304,7 @@ static php_stream *user_wrapper_opener(php_stream_wrapper *wrapper, char *filena
 		fci.function_table = &uwrap->ce->function_table;
 		fci.function_name = NULL;
 		fci.symbol_table = NULL;
-		fci.object_pp = &us->object;
+		fci.object_ptr = us->object;
 		fci.retval_ptr_ptr = &retval_ptr;
 		fci.param_count = 0;
 		fci.params = NULL;
@@ -267,7 +313,8 @@ static php_stream *user_wrapper_opener(php_stream_wrapper *wrapper, char *filena
 		fcc.initialized = 1;
 		fcc.function_handler = uwrap->ce->constructor;
 		fcc.calling_scope = EG(scope);
-		fcc.object_pp = &us->object;
+		fcc.called_scope = Z_OBJCE_P(us->object);
+		fcc.object_ptr = us->object;
 
 		if (zend_call_function(&fci, &fcc TSRMLS_CC) == FAILURE) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Could not execute %s::%s()", uwrap->ce->name, uwrap->ce->constructor->common.function_name);
@@ -285,12 +332,8 @@ static php_stream *user_wrapper_opener(php_stream_wrapper *wrapper, char *filena
 	}
 
 	if (context) {
-		MAKE_STD_ZVAL(zcontext);
-		php_stream_context_to_zval(context, zcontext);
-		add_property_zval(us->object, "context", zcontext);
-		/* The object property should be the only reference,
-		   'get rid' of our local reference. */
-		zval_ptr_dtor(&zcontext);
+		add_property_resource(us->object, "context", context->rsrc_id);
+		zend_list_addref(context->rsrc_id);
 	} else {
 		add_property_null(us->object, "context");
 	}
@@ -309,8 +352,8 @@ static php_stream *user_wrapper_opener(php_stream_wrapper *wrapper, char *filena
 	args[2] = &zoptions;
 
 	MAKE_STD_ZVAL(zopened);
-	ZVAL_REFCOUNT(zopened) = 1;
-	PZVAL_IS_REF(zopened) = 1;
+	Z_SET_REFCOUNT_P(zopened, 1);
+	Z_SET_ISREF_P(zopened);
 	ZVAL_NULL(zopened);
 	args[3] = &zopened;
 
@@ -366,7 +409,7 @@ static php_stream *user_wrapper_opendir(php_stream_wrapper *wrapper, char *filen
 {
 	struct php_user_stream_wrapper *uwrap = (struct php_user_stream_wrapper*)wrapper->abstract;
 	php_userstream_data_t *us;
-	zval *zfilename, *zoptions, *zretval = NULL, *zfuncname, *zcontext;
+	zval *zfilename, *zoptions, *zretval = NULL, *zfuncname;
 	zval **args[2];	
 	int call_result;
 	php_stream *stream = NULL;
@@ -384,16 +427,12 @@ static php_stream *user_wrapper_opendir(php_stream_wrapper *wrapper, char *filen
 	/* create an instance of our class */
 	ALLOC_ZVAL(us->object);
 	object_init_ex(us->object, uwrap->ce);
-	ZVAL_REFCOUNT(us->object) = 1;
-	PZVAL_IS_REF(us->object) = 1;
+	Z_SET_REFCOUNT_P(us->object, 1);
+	Z_SET_ISREF_P(us->object);
 
 	if (context) {
-		MAKE_STD_ZVAL(zcontext);
-		php_stream_context_to_zval(context, zcontext);
-		add_property_zval(us->object, "context", zcontext);
-		/* The object property should be the only reference,
-		   'get rid' of our local reference. */
-		zval_ptr_dtor(&zcontext);
+		add_property_resource(us->object, "context", context->rsrc_id);
+		zend_list_addref(context->rsrc_id);
 	} else {
 		add_property_null(us->object, "context");
 	}
@@ -894,7 +933,7 @@ static int php_userstreamop_set_option(php_stream *stream, int option, int value
 	php_userstream_data_t *us = (php_userstream_data_t *)stream->abstract;
 	int ret = -1;
 	zval *zvalue = NULL;
-	zval **args[1];
+	zval **args[3];
 
 	switch (option) {
 	case PHP_STREAM_OPTION_CHECK_LIVENESS:
@@ -953,6 +992,75 @@ static int php_userstreamop_set_option(php_stream *stream, int option, int value
 		}
 
 		break;
+	
+	case PHP_STREAM_OPTION_READ_BUFFER:
+	case PHP_STREAM_OPTION_WRITE_BUFFER:
+	case PHP_STREAM_OPTION_READ_TIMEOUT:
+	case PHP_STREAM_OPTION_BLOCKING: {
+		zval *zoption = NULL;
+		zval *zptrparam = NULL;
+		
+		ZVAL_STRINGL(&func_name, USERSTREAM_SET_OPTION, sizeof(USERSTREAM_SET_OPTION)-1, 0);
+
+		ALLOC_INIT_ZVAL(zoption);
+		ZVAL_LONG(zoption, option);
+
+		ALLOC_INIT_ZVAL(zvalue);
+		ALLOC_INIT_ZVAL(zptrparam);
+
+		args[0] = &zoption;
+		args[1] = &zvalue;
+		args[2] = &zptrparam;
+
+		switch(option) {
+		case PHP_STREAM_OPTION_READ_BUFFER:
+		case PHP_STREAM_OPTION_WRITE_BUFFER:
+			ZVAL_LONG(zvalue, value);
+			if (ptrparam) {
+				ZVAL_LONG(zptrparam, *(long *)ptrparam);
+			} else {
+				ZVAL_LONG(zptrparam, BUFSIZ);
+			}
+			break;
+		case PHP_STREAM_OPTION_READ_TIMEOUT: {
+			struct timeval tv = *(struct timeval*)ptrparam;
+			ZVAL_LONG(zvalue, tv.tv_sec);
+			ZVAL_LONG(zptrparam, tv.tv_usec);
+			break;
+			}
+		case PHP_STREAM_OPTION_BLOCKING:
+			ZVAL_LONG(zvalue, value);
+			break;
+		default:
+			break;
+		}
+
+		call_result = call_user_function_ex(NULL,
+			&us->object,
+			&func_name,
+			&retval,
+			3, args, 0, NULL TSRMLS_CC);
+	
+		do {
+			if (call_result == FAILURE) {
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s::" USERSTREAM_SET_OPTION " is not implemented!",
+						us->wrapper->classname);
+				break;
+			}
+			if (retval && zend_is_true(retval)) {
+				ret = PHP_STREAM_OPTION_RETURN_OK;
+			}
+		} while (0);
+
+		if (zoption) {
+			zval_ptr_dtor(&zoption);
+		}
+		if (zptrparam) {
+			zval_ptr_dtor(&zptrparam);
+		}
+
+		break;
+		}
 	}
 
 	/* clean up */
@@ -972,7 +1080,7 @@ static int php_userstreamop_set_option(php_stream *stream, int option, int value
 static int user_wrapper_unlink(php_stream_wrapper *wrapper, char *url, int options, php_stream_context *context TSRMLS_DC)
 {
 	struct php_user_stream_wrapper *uwrap = (struct php_user_stream_wrapper*)wrapper->abstract;
-	zval *zfilename, *zfuncname, *zretval, *zcontext;
+	zval *zfilename, *zfuncname, *zretval;
 	zval **args[1];
 	int call_result;
 	zval *object;
@@ -981,16 +1089,12 @@ static int user_wrapper_unlink(php_stream_wrapper *wrapper, char *url, int optio
 	/* create an instance of our class */
 	ALLOC_ZVAL(object);
 	object_init_ex(object, uwrap->ce);
-	ZVAL_REFCOUNT(object) = 1;
-	PZVAL_IS_REF(object) = 1;
+	Z_SET_REFCOUNT_P(object, 1);
+	Z_SET_ISREF_P(object);
 
 	if (context) {
-		MAKE_STD_ZVAL(zcontext);
-		php_stream_context_to_zval(context, zcontext);
-		add_property_zval(object, "context", zcontext);
-		/* The object property should be the only reference,
-		   'get rid' of our local reference. */
-		zval_ptr_dtor(&zcontext);
+		add_property_resource(object, "context", context->rsrc_id);
+		zend_list_addref(context->rsrc_id);
 	} else {
 		add_property_null(object, "context");
 	}
@@ -1030,7 +1134,7 @@ static int user_wrapper_unlink(php_stream_wrapper *wrapper, char *url, int optio
 static int user_wrapper_rename(php_stream_wrapper *wrapper, char *url_from, char *url_to, int options, php_stream_context *context TSRMLS_DC)
 {
 	struct php_user_stream_wrapper *uwrap = (struct php_user_stream_wrapper*)wrapper->abstract;
-	zval *zold_name, *znew_name, *zfuncname, *zretval, *zcontext;
+	zval *zold_name, *znew_name, *zfuncname, *zretval;
 	zval **args[2];
 	int call_result;
 	zval *object;
@@ -1039,16 +1143,12 @@ static int user_wrapper_rename(php_stream_wrapper *wrapper, char *url_from, char
 	/* create an instance of our class */
 	ALLOC_ZVAL(object);
 	object_init_ex(object, uwrap->ce);
-	ZVAL_REFCOUNT(object) = 1;
-	PZVAL_IS_REF(object) = 1;
+	Z_SET_REFCOUNT_P(object, 1);
+	Z_SET_ISREF_P(object);
 
 	if (context) {
-		MAKE_STD_ZVAL(zcontext);
-		php_stream_context_to_zval(context, zcontext);
-		add_property_zval(object, "context", zcontext);
-		/* The object property should be the only reference,
-		   'get rid' of our local reference. */
-		zval_ptr_dtor(&zcontext);
+		add_property_resource(object, "context", context->rsrc_id);
+		zend_list_addref(context->rsrc_id);
 	} else {
 		add_property_null(object, "context");
 	}
@@ -1093,7 +1193,7 @@ static int user_wrapper_rename(php_stream_wrapper *wrapper, char *url_from, char
 static int user_wrapper_mkdir(php_stream_wrapper *wrapper, char *url, int mode, int options, php_stream_context *context TSRMLS_DC)
 {
 	struct php_user_stream_wrapper *uwrap = (struct php_user_stream_wrapper*)wrapper->abstract;
-	zval *zfilename, *zmode, *zoptions, *zfuncname, *zretval, *zcontext;
+	zval *zfilename, *zmode, *zoptions, *zfuncname, *zretval;
 	zval **args[3];
 	int call_result;
 	zval *object;
@@ -1102,21 +1202,17 @@ static int user_wrapper_mkdir(php_stream_wrapper *wrapper, char *url, int mode, 
 	/* create an instance of our class */
 	ALLOC_ZVAL(object);
 	object_init_ex(object, uwrap->ce);
-	ZVAL_REFCOUNT(object) = 1;
-	PZVAL_IS_REF(object) = 1;
+	Z_SET_REFCOUNT_P(object, 1);
+	Z_SET_ISREF_P(object);
 
 	if (context) {
-		MAKE_STD_ZVAL(zcontext);
-		php_stream_context_to_zval(context, zcontext);
-		add_property_zval(object, "context", zcontext);
-		/* The object property should be the only reference,
-		   'get rid' of our local reference. */
-		zval_ptr_dtor(&zcontext);
+		add_property_resource(object, "context", context->rsrc_id);
+		zend_list_addref(context->rsrc_id);
 	} else {
 		add_property_null(object, "context");
 	}
 
-	/* call the unlink method */
+	/* call the mkdir method */
 	MAKE_STD_ZVAL(zfilename);
 	ZVAL_STRING(zfilename, url, 1);
 	args[0] = &zfilename;
@@ -1162,7 +1258,7 @@ static int user_wrapper_mkdir(php_stream_wrapper *wrapper, char *url, int mode, 
 static int user_wrapper_rmdir(php_stream_wrapper *wrapper, char *url, int options, php_stream_context *context TSRMLS_DC)
 {
 	struct php_user_stream_wrapper *uwrap = (struct php_user_stream_wrapper*)wrapper->abstract;
-	zval *zfilename, *zoptions, *zfuncname, *zretval, *zcontext;
+	zval *zfilename, *zoptions, *zfuncname, *zretval;
 	zval **args[3];
 	int call_result;
 	zval *object;
@@ -1171,21 +1267,17 @@ static int user_wrapper_rmdir(php_stream_wrapper *wrapper, char *url, int option
 	/* create an instance of our class */
 	ALLOC_ZVAL(object);
 	object_init_ex(object, uwrap->ce);
-	ZVAL_REFCOUNT(object) = 1;
-	PZVAL_IS_REF(object) = 1;
+	Z_SET_REFCOUNT_P(object, 1);
+	Z_SET_ISREF_P(object);
 
 	if (context) {
-		MAKE_STD_ZVAL(zcontext);
-		php_stream_context_to_zval(context, zcontext);
-		add_property_zval(object, "context", zcontext);
-		/* The object property should be the only reference,
-		   'get rid' of our local reference. */
-		zval_ptr_dtor(&zcontext);
+		add_property_resource(object, "context", context->rsrc_id);
+		zend_list_addref(context->rsrc_id);
 	} else {
 		add_property_null(object, "context");
 	}
 
-	/* call the unlink method */
+	/* call the rmdir method */
 	MAKE_STD_ZVAL(zfilename);
 	ZVAL_STRING(zfilename, url, 1);
 	args[0] = &zfilename;
@@ -1226,7 +1318,7 @@ static int user_wrapper_rmdir(php_stream_wrapper *wrapper, char *url, int option
 static int user_wrapper_stat_url(php_stream_wrapper *wrapper, char *url, int flags, php_stream_statbuf *ssb, php_stream_context *context TSRMLS_DC)
 {
 	struct php_user_stream_wrapper *uwrap = (struct php_user_stream_wrapper*)wrapper->abstract;
-	zval *zfilename, *zfuncname, *zretval, *zflags, *zcontext;
+	zval *zfilename, *zfuncname, *zretval, *zflags;
 	zval **args[2];	
 	int call_result;
 	zval *object;
@@ -1235,23 +1327,17 @@ static int user_wrapper_stat_url(php_stream_wrapper *wrapper, char *url, int fla
 	/* create an instance of our class */
 	ALLOC_ZVAL(object);
 	object_init_ex(object, uwrap->ce);
-	ZVAL_REFCOUNT(object) = 1;
-	PZVAL_IS_REF(object) = 1;
+	Z_SET_REFCOUNT_P(object, 1);
+	Z_SET_ISREF_P(object);
 
 	if (context) {
-		MAKE_STD_ZVAL(zcontext);
-		php_stream_context_to_zval(context, zcontext);
-		add_property_zval(object, "context", zcontext);
-		/* The object property should be the only reference,
-		   'get rid' of our local reference. */
-		zval_ptr_dtor(&zcontext);
+		add_property_resource(object, "context", context->rsrc_id);
+		zend_list_addref(context->rsrc_id);
 	} else {
 		add_property_null(object, "context");
 	}
 
-	/* call the stat_url method */
-	
-	/* call it's stream_open method - set up params first */
+	/* call it's stat_url method - set up params first */
 	MAKE_STD_ZVAL(zfilename);
 	ZVAL_STRING(zfilename, url, 1);
 	args[0] = &zfilename;
@@ -1379,12 +1465,76 @@ static int php_userstreamop_rewinddir(php_stream *stream, off_t offset, int when
 
 }
 
+static int php_userstreamop_cast(php_stream *stream, int castas, void **retptr TSRMLS_DC)
+{
+	php_userstream_data_t *us = (php_userstream_data_t *)stream->abstract;
+	zval func_name;
+	zval *retval = NULL;
+	zval *zcastas = NULL;
+	zval **args[1];
+	php_stream * intstream = NULL;
+	int call_result;
+	int ret = FAILURE;
+
+	ZVAL_STRINGL(&func_name, USERSTREAM_CAST, sizeof(USERSTREAM_CAST)-1, 0);
+
+	ALLOC_INIT_ZVAL(zcastas);
+	switch(castas) {
+	case PHP_STREAM_AS_FD_FOR_SELECT:
+		ZVAL_LONG(zcastas, PHP_STREAM_AS_FD_FOR_SELECT);
+		break;
+	default:
+		ZVAL_LONG(zcastas, PHP_STREAM_AS_STDIO);
+		break;
+	}
+	args[0] = &zcastas;
+
+	call_result = call_user_function_ex(NULL,
+			&us->object,
+			&func_name,
+			&retval,
+			1, args, 0, NULL TSRMLS_CC);
+
+	do {
+		if (call_result == FAILURE) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s::" USERSTREAM_CAST " is not implemented!",
+					us->wrapper->classname);
+			break;
+		}
+		if (retval == NULL || !zend_is_true(retval)) {
+			break;
+		}
+		php_stream_from_zval_no_verify(intstream, &retval);
+		if (!intstream) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s::" USERSTREAM_CAST " must return a stream resource",
+					us->wrapper->classname);
+			break;
+		}
+		if (intstream == stream) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s::" USERSTREAM_CAST " must not return itself",
+					us->wrapper->classname);
+			intstream = NULL;
+			break;
+		}
+		ret = php_stream_cast(intstream, castas, retptr, 1);
+	} while (0);
+
+	if (retval) {
+		zval_ptr_dtor(&retval);
+	}
+	if (zcastas) {
+		zval_ptr_dtor(&zcastas);
+	}
+
+	return ret;
+}
+
 php_stream_ops php_stream_userspace_ops = {
 	php_userstreamop_write, php_userstreamop_read,
 	php_userstreamop_close, php_userstreamop_flush,
 	"user-space",
 	php_userstreamop_seek,
-	NULL, /* cast */
+	php_userstreamop_cast,
 	php_userstreamop_stat, 
 	php_userstreamop_set_option,
 };

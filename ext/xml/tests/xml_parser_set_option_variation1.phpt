@@ -100,128 +100,128 @@ echo "Done";
 
 Arg value 0 
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, integer given in %s on line %d
+NULL
 
 Arg value 1 
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, integer given in %s on line %d
+NULL
 
 Arg value 12345 
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, integer given in %s on line %d
+NULL
 
 Arg value -2345 
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, integer given in %s on line %d
+NULL
 
 Arg value 10.5 
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, double given in %s on line %d
+NULL
 
 Arg value -10.5 
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, double given in %s on line %d
+NULL
 
 Arg value 101234567000 
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, double given in %s on line %d
+NULL
 
 Arg value 1.07654321E-9 
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, double given in %s on line %d
+NULL
 
 Arg value 0.5 
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, double given in %s on line %d
+NULL
 
 Arg value Array 
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, array given in %s on line %d
+NULL
 
 Arg value Array 
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, array given in %s on line %d
+NULL
 
 Arg value Array 
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, array given in %s on line %d
+NULL
 
 Arg value Array 
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, array given in %s on line %d
+NULL
 
 Arg value Array 
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, array given in %s on line %d
+NULL
 
 Arg value  
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, null given in %s on line %d
+NULL
 
 Arg value  
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, null given in %s on line %d
+NULL
 
 Arg value 1 
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, boolean given in %s on line %d
+NULL
 
 Arg value  
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, boolean given in %s on line %d
+NULL
 
 Arg value 1 
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, boolean given in %s on line %d
+NULL
 
 Arg value  
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, boolean given in %s on line %d
+NULL
 
 Arg value  
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, string given in %s on line %d
+NULL
 
 Arg value  
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, string given in %s on line %d
+NULL
 
 Arg value string 
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, string given in %s on line %d
+NULL
 
 Arg value string 
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, string given in %s on line %d
+NULL
 
 Arg value Some Ascii Data 
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, object given in %s on line %d
+NULL
 
 Arg value Resource id %s
 
@@ -230,11 +230,12 @@ bool(false)
 
 Arg value  
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, null given in %s on line %d
+NULL
 
 Arg value  
 
-Warning: xml_parser_set_option(): supplied argument is not a valid XML Parser resource in %s on line %d
-bool(false)
+Warning: xml_parser_set_option() expects parameter 1 to be resource, null given in %s on line %d
+NULL
 Done
+

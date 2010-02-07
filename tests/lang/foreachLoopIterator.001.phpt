@@ -64,14 +64,13 @@ foreach ($f as $k=>$v) {
 	
 }
 
-
 ?>
 ===DONE===
 --EXPECTF--
 object(MealIterator)#%d (2) {
-  ["pos:private"]=>
+  ["pos":"MealIterator":private]=>
   int(0)
-  ["myContent:private"]=>
+  ["myContent":"MealIterator":private]=>
   array(3) {
     [0]=>
     string(9) "breakfast"
@@ -130,6 +129,6 @@ meal 0 => breakfast
      --> MealIterator::valid (3)
  --> MealIterator::next (3)
 
-Notice: Undefined offset:  3 in %s on line %d
+Notice: Undefined offset: 3 in %s on line %d
  --> MealIterator::valid (4)
 ===DONE===

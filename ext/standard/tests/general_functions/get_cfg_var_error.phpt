@@ -20,8 +20,8 @@ var_dump(get_cfg_var(  ) );
 --EXPECTF--
 *** Test by calling method or function with incorrect numbers of arguments ***
 
-Warning: Wrong parameter count for get_cfg_var() in %s.php on line %d
+Warning: get_cfg_var() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for get_cfg_var() in %s.php on line %d
+Warning: get_cfg_var() expects exactly 1 parameter, 0 given in %s on line %d
 NULL

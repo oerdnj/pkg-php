@@ -22,9 +22,9 @@ var_dump(gzgets());
 ===DONE===
 --EXPECTF--
 
-Warning: Wrong parameter count for gzgets() in %s on line %d
-NULL
+Warning: gzgets() expects at most 2 parameters, 3 given in %s on line %d
+bool(false)
 
-Warning: Wrong parameter count for gzgets() in %s on line %d
-NULL
+Warning: gzgets() expects at least 1 parameter, 0 given in %s on line %d
+bool(false)
 ===DONE===

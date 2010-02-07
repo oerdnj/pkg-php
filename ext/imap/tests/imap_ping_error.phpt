@@ -19,9 +19,9 @@ imap_ping(false);
 --EXPECTF--
 Checking with no parameters
 
-Warning: Wrong parameter count for imap_ping() in %s on line %d
+Warning: imap_ping() expects exactly 1 parameter, 0 given in %s on line %d
 Checking with incorrect parameter type
 
-Warning: imap_ping(): supplied argument is not a valid imap resource in %s on line %d
+Warning: imap_ping() expects parameter 1 to be resource, %unicode_string_optional% given in %s on line %d
 
-Warning: imap_ping(): supplied argument is not a valid imap resource in %s on line %d
+Warning: imap_ping() expects parameter 1 to be resource, boolean given in %s on line %d

@@ -41,13 +41,13 @@ require "connect.inc";
 $link = ldap_connect_and_bind($host, $port, $user, $passwd, $protocol_version);
 ?>
 --EXPECTF--
-Warning: Wrong parameter count for ldap_delete() in %s on line %d
+Warning: ldap_delete() expects exactly 2 parameters, 0 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for ldap_delete() in %s on line %d
+Warning: ldap_delete() expects exactly 2 parameters, 1 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for ldap_delete() in %s on line %d
+Warning: ldap_delete() expects exactly 2 parameters, 3 given in %s on line %d
 NULL
 
 Warning: ldap_delete(): Delete: Invalid DN syntax in %s on line %d

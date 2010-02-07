@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_pgsql.c 289287 2009-10-07 17:40:16Z mbeccati $ */
+/* $Id: pdo_pgsql.c 277898 2009-03-28 01:58:49Z mbeccati $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -31,11 +31,16 @@
 #include "php_pdo_pgsql_int.h"
 
 #ifdef HAVE_PG_CONFIG_H
+#undef PACKAGE_BUGREPORT
+#undef PACKAGE_NAME
+#undef PACKAGE_STRING
+#undef PACKAGE_TARNAME
+#undef PACKAGE_VERSION
 #include <pg_config.h>
 #endif
 
 /* {{{ pdo_pgsql_functions[] */
-zend_function_entry pdo_pgsql_functions[] = {
+const zend_function_entry pdo_pgsql_functions[] = {
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -43,7 +48,7 @@ zend_function_entry pdo_pgsql_functions[] = {
 /* {{{ pdo_sqlite_deps
  */
 #if ZEND_MODULE_API_NO >= 20050922
-static zend_module_dep pdo_pgsql_deps[] = {
+static const zend_module_dep pdo_pgsql_deps[] = {
 	ZEND_MOD_REQUIRED("pdo")
 	{NULL, NULL, NULL}
 };
@@ -80,8 +85,8 @@ ZEND_GET_MODULE(pdo_pgsql)
  */
 PHP_MINIT_FUNCTION(pdo_pgsql)
 {
-	REGISTER_PDO_CLASS_CONST_LONG("PGSQL_ATTR_DISABLE_NATIVE_PREPARED_STATEMENT", PDO_PGSQL_ATTR_DISABLE_NATIVE_PREPARED_STATEMENT);
 	php_pdo_register_driver(&pdo_pgsql_driver);
+	REGISTER_PDO_CLASS_CONST_LONG("PGSQL_ATTR_DISABLE_NATIVE_PREPARED_STATEMENT", PDO_PGSQL_ATTR_DISABLE_NATIVE_PREPARED_STATEMENT);
 	return SUCCESS;
 }
 /* }}} */
@@ -123,7 +128,7 @@ PHP_MINFO_FUNCTION(pdo_pgsql)
 	php_info_print_table_row(2, "PostgreSQL(libpq) Version", PG_VERSION);
 #endif	
 	php_info_print_table_row(2, "Module version", pdo_pgsql_module_entry.version);
-	php_info_print_table_row(2, "Revision", " $Id: pdo_pgsql.c 289287 2009-10-07 17:40:16Z mbeccati $ ");
+	php_info_print_table_row(2, "Revision", " $Id: pdo_pgsql.c 277898 2009-03-28 01:58:49Z mbeccati $ ");
 
 	php_info_print_table_end();
 }

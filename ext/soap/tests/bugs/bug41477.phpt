@@ -1,10 +1,7 @@
 --TEST--
 Bug #41477 (no arginfo about SoapClient::__soapCall())
 --SKIPIF--
-<?php
-if (!extension_loaded("reflection")) die("skip");
-require_once('skipif.inc');
-?>
+<?php require_once('skipif.inc'); ?>
 --FILE--
 <?php
 $objRfClass = new ReflectionClass('SoapClient');
@@ -12,7 +9,7 @@ $objRfMethod = $objRfClass->getMethod('__soapCall');
 $arrParams = $objRfMethod->getParameters();
 foreach($arrParams as $objRfParam)
 {
-	var_dump($objRfParam->getName());
+        var_dump($objRfParam->getName());
 }
 ?>
 --EXPECT--

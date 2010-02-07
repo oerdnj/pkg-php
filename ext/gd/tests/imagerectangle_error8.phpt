@@ -16,4 +16,4 @@ $image = imagecreatetruecolor( 100, 100 );
 imagerectangle( $image, 0, 0, 50, 50 );
 ?> 
 --EXPECTF--
-Warning: Wrong parameter count for imagerectangle() in %s.php on line %d
+Warning: imagerectangle() expects exactly 6 parameters, %d given in %s on line %d

@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: safe_mode.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: safe_mode.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef SAFE_MODE_H
 #define SAFE_MODE_H

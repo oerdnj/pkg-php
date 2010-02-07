@@ -18,8 +18,8 @@ imagecolorallocatealpha(null, 255, 255, 255, 50);
 --EXPECTF--
 Warning: imagecolorallocatealpha(): supplied resource is not a valid Image resource in %s on line %d
 
-Warning: imagecolorallocatealpha(): supplied argument is not a valid Image resource in %s on line %d
+Warning: imagecolorallocatealpha() expects parameter 1 to be resource, %s given in %s on line %d
 
-Warning: imagecolorallocatealpha(): supplied argument is not a valid Image resource in %s on line %d
+Warning: imagecolorallocatealpha() expects parameter 1 to be resource, array given in %s on line %d
 
-Warning: imagecolorallocatealpha(): supplied argument is not a valid Image resource in %s on line %d
+Warning: imagecolorallocatealpha() expects parameter 1 to be resource, null given in %s on line %d

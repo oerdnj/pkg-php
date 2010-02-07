@@ -1,5 +1,7 @@
 --TEST--
 Test touch() function : basic functionality 
+--CREDITS--
+Dave Kelsey <d_kelsey@uk.ibm.com>
 --SKIPIF--
 <?php
 if (substr(PHP_OS, 0, 3) != 'WIN') {
@@ -13,12 +15,6 @@ if (substr(PHP_OS, 0, 3) != 'WIN') {
  * Source code: ext/standard/filestat.c
  * Alias to functions: 
  */
-
- /*
-  * NOTE: Windows UTime functionality is influenced by DST so outputs 
-  * different values during DST. This is WAD according to Microsoft. The test has been
-  * modified to reflect this in the expected output
-  */
 
 echo "*** Testing touch() : basic functionality ***\n";
 
@@ -94,6 +90,7 @@ stat data differs at mtime
  --- testing touch using all parameters ---
 bool(true)
 ctime=%d
-mtime=%r10000|6400%r
-atime=%r20470|16870%r
+mtime=10000
+atime=20470
 Done
+

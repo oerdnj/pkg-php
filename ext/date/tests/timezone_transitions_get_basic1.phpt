@@ -25,7 +25,7 @@ var_dump( gettype($tran) );
 echo "\n-- Total number of transitions: " . count($tran). " --\n"; 
 
 echo "\n-- Format a sample entry pfor Spring 1963 --\n";
-var_dump( $tran[96] );	
+var_dump( $tran[97] );	
 
 ?>
 ===DONE===
@@ -35,7 +35,7 @@ var_dump( $tran[96] );
 -- Get all transitions --
 string(5) "array"
 
--- Total number of transitions: 242 --
+-- Total number of transitions: 243 --
 
 -- Format a sample entry pfor Spring 1963 --
 array(5) {

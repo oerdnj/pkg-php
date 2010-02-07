@@ -114,13 +114,12 @@ var_dump( is_scalar( $scalar_variables[2], $scalar_variables[2]) );
 var_dump( is_scalar( new stdclass, new stdclass) );
 
 echo "Done\n";  
-?>
 
---CLEAN--
 // close the resources used
 fclose($fp);
 closedir($dfp);
 
+?>
 --EXPECTF--
 *** Testing basic operations ***
 -- Iteration 1 --
@@ -230,12 +229,12 @@ bool(false)
 
 *** Testing error conditions ***
 
-Warning: Wrong parameter count for is_scalar() in %s on line %d
+Warning: is_scalar() expects exactly 1 parameter, 0 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for is_scalar() in %s on line %d
+Warning: is_scalar() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for is_scalar() in %s on line %d
+Warning: is_scalar() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
 Done

@@ -17,25 +17,25 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_extensions.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: zend_extensions.h 282827 2009-06-26 15:44:19Z johannes $ */
 
 #ifndef ZEND_EXTENSIONS_H
 #define ZEND_EXTENSIONS_H
 
 #include "zend_compile.h"
+#include "zend_build.h"
 
 /* The first number is the engine version and the rest is the date.
  * This way engine 2/3 API no. is always greater than engine 1 API no..
  */
-#define ZEND_EXTENSION_API_NO	220060519
+#define ZEND_EXTENSION_API_NO	220090626
 
 typedef struct _zend_extension_version_info {
 	int zend_extension_api_no;
-	char *required_zend_version;
-	unsigned char thread_safe;
-	unsigned char debug;
+	char *build_id;
 } zend_extension_version_info;
 
+#define ZEND_EXTENSION_BUILD_ID "API" ZEND_TOSTR(ZEND_EXTENSION_API_NO) ZEND_BUILD_TS ZEND_BUILD_DEBUG ZEND_BUILD_SYSTEM ZEND_BUILD_EXTRA
 
 typedef struct _zend_extension zend_extension;
 
@@ -80,7 +80,7 @@ struct _zend_extension {
 	op_array_dtor_func_t op_array_dtor;
 
 	int (*api_no_check)(int api_no);
-	void *reserved2;
+	int (*build_id_check)(const char* build_id);
 	void *reserved3;
 	void *reserved4;
 	void *reserved5;
@@ -101,24 +101,25 @@ END_EXTERN_C()
 
 
 #define ZEND_EXTENSION()	\
-	ZEND_EXT_API zend_extension_version_info extension_version_info = { ZEND_EXTENSION_API_NO, ZEND_VERSION, ZTS_V, ZEND_DEBUG }
+	ZEND_EXT_API zend_extension_version_info extension_version_info = { ZEND_EXTENSION_API_NO, ZEND_EXTENSION_BUILD_ID }
 
-#define STANDARD_ZEND_EXTENSION_PROPERTIES NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, -1
-#define COMPAT_ZEND_EXTENSION_PROPERTIES   NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, -1
+#define STANDARD_ZEND_EXTENSION_PROPERTIES       NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, -1
+#define COMPAT_ZEND_EXTENSION_PROPERTIES         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, -1
+#define BUILD_COMPAT_ZEND_EXTENSION_PROPERTIES   NULL, NULL, NULL, NULL, NULL, NULL, NULL, -1
 
 
 ZEND_API extern zend_llist zend_extensions;
 
 void zend_extension_dtor(zend_extension *extension);
-void zend_append_version_info(zend_extension *extension);
+void zend_append_version_info(const zend_extension *extension);
 int zend_startup_extensions_mechanism(void);
 int zend_startup_extensions(void);
 void zend_shutdown_extensions(TSRMLS_D);
 
 BEGIN_EXTERN_C()
-ZEND_API int zend_load_extension(char *path);
+ZEND_API int zend_load_extension(const char *path);
 ZEND_API int zend_register_extension(zend_extension *new_extension, DL_HANDLE handle);
-ZEND_API zend_extension *zend_get_extension(char *extension_name);
+ZEND_API zend_extension *zend_get_extension(const char *extension_name);
 END_EXTERN_C()
 
 #endif /* ZEND_EXTENSIONS_H */

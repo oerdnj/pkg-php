@@ -1,5 +1,5 @@
 --TEST--
-Test imap_fetchheader() function : basic functions 
+Test imap_fetchheader() function : basic function
 --SKIPIF--
 <?php
 require_once(dirname(__FILE__).'/skipif.inc');

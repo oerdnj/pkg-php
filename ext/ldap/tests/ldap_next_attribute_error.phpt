@@ -29,7 +29,7 @@ $link = ldap_connect_and_bind($host, $port, $user, $passwd, $protocol_version);
 remove_dummy_data($link);
 ?>
 --EXPECTF--
-Warning: Wrong parameter count for ldap_next_attribute() %s on line %d
+Warning: ldap_next_attribute() expects %s 2 parameters, 1 given in %s on line %d
 
 Warning: ldap_next_attribute(): supplied resource is not a valid ldap result entry resource in %s on line %d
 

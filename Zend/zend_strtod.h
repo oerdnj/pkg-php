@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_strtod.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: zend_strtod.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 /* This is a header file for the strtod implementation by David M. Gay which
  * can be found in zend_strtod.c */

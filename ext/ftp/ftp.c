@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: ftp.c 291264 2009-11-24 13:57:39Z rasmus $ */
+/* $Id: ftp.c 289416 2009-10-09 14:20:17Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1387,7 +1387,7 @@ ftp_getdata(ftpbuf_t *ftp TSRMLS_DC)
 
 	sa = (struct sockaddr *) &ftp->localaddr;
 	/* bind/listen */
-	if ((fd = socket(sa->sa_family, SOCK_STREAM, 0)) == SOCK_ERR) {
+	if ((fd = socket(sa->sa_family, SOCK_STREAM, 0)) == -1) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "socket() failed: %s (%d)", strerror(errno), errno);
 		goto bail;
 	}
@@ -1420,24 +1420,24 @@ ftp_getdata(ftpbuf_t *ftp TSRMLS_DC)
 	php_any_addr(sa->sa_family, &addr, 0);
 	size = php_sockaddr_size(&addr);
 
-	if (bind(fd, (struct sockaddr*) &addr, size) != 0) {
+	if (bind(fd, (struct sockaddr*) &addr, size) == -1) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "bind() failed: %s (%d)", strerror(errno), errno);
 		goto bail;
 	}
 
-	if (getsockname(fd, (struct sockaddr*) &addr, &size) != 0) {
+	if (getsockname(fd, (struct sockaddr*) &addr, &size) == -1) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "getsockname() failed: %s (%d)", strerror(errno), errno);
 		goto bail;
 	}
 
-	if (listen(fd, 5) != 0) {
+	if (listen(fd, 5) == -1) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "listen() failed: %s (%d)", strerror(errno), errno);
 		goto bail;
 	}
 
 	data->listener = fd;
 
-#if HAVE_IPV6
+#if HAVE_IPV6 && HAVE_INET_NTOP
 	if (sa->sa_family == AF_INET6) {
 		/* need to use EPRT */
 		char eprtarg[INET6_ADDRSTRLEN + sizeof("|x||xxxxx|")];
@@ -1699,7 +1699,7 @@ ftp_nb_get(ftpbuf_t *ftp, php_stream *outstream, const char *path, ftptype_t typ
 	char			arg[11];
 
 	if (ftp == NULL) {
-		return PHP_FTP_FAILED;
+		goto bail;
 	}
 
 	if (!ftp_type(ftp, type)) {

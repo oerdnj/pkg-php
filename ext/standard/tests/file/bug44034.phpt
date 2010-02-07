@@ -17,23 +17,23 @@ foreach($urls as $url) {
 data://text/plain,foo\r\nbar\r\n
 array(2) {
   [0]=>
-  string(3) "foo"
+  %unicode|string%(3) "foo"
   [1]=>
-  string(3) "bar"
+  %unicode|string%(3) "bar"
 }
 data://text/plain,\r\nfoo\r\nbar\r\n
 array(3) {
   [0]=>
-  string(0) ""
+  %unicode|string%(0) ""
   [1]=>
-  string(3) "foo"
+  %unicode|string%(3) "foo"
   [2]=>
-  string(3) "bar"
+  %unicode|string%(3) "bar"
 }
 data://text/plain,foo\r\nbar
 array(2) {
   [0]=>
-  string(3) "foo"
+  %unicode|string%(3) "foo"
   [1]=>
-  string(3) "bar"
+  %unicode|string%(3) "bar"
 }

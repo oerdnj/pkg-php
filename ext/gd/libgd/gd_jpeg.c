@@ -102,6 +102,23 @@ static void fatal_jpeg_error (j_common_ptr cinfo)
 	exit (99);
 }
 
+int gdJpegGetVersionInt()
+{
+	return JPEG_LIB_VERSION;
+}
+
+const char * gdJpegGetVersionString()
+{
+	switch(JPEG_LIB_VERSION) {
+		case 62:
+			return "6b";
+			break;
+		default:
+			return "unknown";
+	}
+}
+
+
 /*
  * Write IM to OUTFILE as a JFIF-formatted JPEG image, using quality
  * QUALITY.  If QUALITY is in the range 0-100, increasing values

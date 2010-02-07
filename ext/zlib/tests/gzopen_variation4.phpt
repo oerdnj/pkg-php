@@ -77,7 +77,7 @@ function test_gzopen($mode) {
    unlink($firstFile);
    unlink($secondFile);
    
-   //should fail to read the file
+   //should read the file in working dir
    $h = gzopen($filename, $mode, true);
    gzpassthru($h);
    gzclose($h);
@@ -111,63 +111,51 @@ function test_gzopen($mode) {
 This is a file in dir2
 This is a file in dir1
 This is a file in dir1
-
-Warning: gzopen(afile.txt.gz): failed to open stream: No such file or directory in %s on line %d
-
-Warning: gzpassthru(): supplied argument is not a valid stream resource in %s on line %d
-
-Warning: gzclose(): supplied argument is not a valid stream resource in %s on line %d
-
+This is a file in working dir
 This is a file in script dir
 
 ** testing with mode=r+ **
 
 Warning: gzopen(): cannot open a zlib stream for reading and writing at the same time! in %s on line %d
 
-Warning: gzpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: gzpassthru() expects parameter 1 to be resource, boolean given in %s on line %d
 
-Warning: gzclose(): supplied argument is not a valid stream resource in %s on line %d
-
-
-Warning: gzopen(): cannot open a zlib stream for reading and writing at the same time! in %s on line %d
-
-Warning: gzpassthru(): supplied argument is not a valid stream resource in %s on line %d
-
-Warning: gzclose(): supplied argument is not a valid stream resource in %s on line %d
+Warning: gzclose() expects parameter 1 to be resource, boolean given in %s on line %d
 
 
 Warning: gzopen(): cannot open a zlib stream for reading and writing at the same time! in %s on line %d
 
-Warning: gzpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: gzpassthru() expects parameter 1 to be resource, boolean given in %s on line %d
 
-Warning: gzclose(): supplied argument is not a valid stream resource in %s on line %d
-
-
-Warning: gzopen(): cannot open a zlib stream for reading and writing at the same time! in %s on line %d
-
-Warning: gzpassthru(): supplied argument is not a valid stream resource in %s on line %d
-
-Warning: gzclose(): supplied argument is not a valid stream resource in %s on line %d
+Warning: gzclose() expects parameter 1 to be resource, boolean given in %s on line %d
 
 
 Warning: gzopen(): cannot open a zlib stream for reading and writing at the same time! in %s on line %d
 
-Warning: gzpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: gzpassthru() expects parameter 1 to be resource, boolean given in %s on line %d
 
-Warning: gzclose(): supplied argument is not a valid stream resource in %s on line %d
+Warning: gzclose() expects parameter 1 to be resource, boolean given in %s on line %d
+
+
+Warning: gzopen(): cannot open a zlib stream for reading and writing at the same time! in %s on line %d
+
+Warning: gzpassthru() expects parameter 1 to be resource, boolean given in %s on line %d
+
+Warning: gzclose() expects parameter 1 to be resource, boolean given in %s on line %d
+
+
+Warning: gzopen(): cannot open a zlib stream for reading and writing at the same time! in %s on line %d
+
+Warning: gzpassthru() expects parameter 1 to be resource, boolean given in %s on line %d
+
+Warning: gzclose() expects parameter 1 to be resource, boolean given in %s on line %d
 
 
 ** testing with mode=rt **
 This is a file in dir2
 This is a file in dir1
 This is a file in dir1
-
-Warning: gzopen(afile.txt.gz): failed to open stream: No such file or directory in %s on line %d
-
-Warning: gzpassthru(): supplied argument is not a valid stream resource in %s on line %d
-
-Warning: gzclose(): supplied argument is not a valid stream resource in %s on line %d
-
+This is a file in working dir
 This is a file in script dir
 ===DONE===
 

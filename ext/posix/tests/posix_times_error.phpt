@@ -26,6 +26,6 @@ echo "Done";
 
 -- Testing posix_times() function with one argument --
 
-Warning: Wrong parameter count for posix_times() in %s on line %d
+Warning: posix_times() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 Done

@@ -201,6 +201,7 @@ string(24) "68656c6c6f2c20776f726c64"
 
 -- Iteration 24 --
 
-Warning: mb_convert_encoding(): Unknown encoding "Resource id #%d" in %s on line %d
+Warning: mb_convert_encoding() expects parameter 2 to be string, resource given in %s on line %d
 string(0) ""
 Done
+

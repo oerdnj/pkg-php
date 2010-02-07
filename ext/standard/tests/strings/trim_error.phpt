@@ -33,12 +33,12 @@ var_dump(trim($hello, "a..b..c"));
 
 -- Testing trim() function with no arguments --
 
-Warning: Wrong parameter count for trim() in %s on line %d
+Warning: trim() expects at least 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing trim() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for trim() in %s on line %d
+Warning: trim() expects at most 2 parameters, 3 given in %s on line %d
 NULL
 
 -- Test trim function with various invalid charlists --

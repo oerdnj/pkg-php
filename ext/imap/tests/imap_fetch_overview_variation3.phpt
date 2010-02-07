@@ -24,7 +24,8 @@ require_once(dirname(__FILE__).'/imap_include.inc');
 // Initialise required variables
 $stream_id = setup_test_mailbox('', 1); // set up temporary mailbox with one simple message
 $msg_no = 1;
-$msg_uid=imap_uid($stream_id, $msg_no);
+$msg_uid = imap_uid($stream_id, $msg_no);
+
 $options = array ('1',
                   true,
                   1.000000000000001, 
@@ -57,7 +58,7 @@ require_once(dirname(__FILE__).'/clean.inc');
 Create a temporary mailbox and add 1 msgs
 .. mailbox '{localhost/norsh}INBOX.phpttest' created
 
-Testing with option value:string(1) "1"
+Testing with option value:%string|unicode%(1) "1"
 imap_fetch_overview() returns an object
 
 Testing with option value:bool(true)

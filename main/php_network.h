@@ -16,26 +16,13 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_network.h 273018 2009-01-07 20:41:47Z felipe $ */
+/* $Id: php_network.h 273010 2009-01-07 20:21:46Z felipe $ */
 
 #ifndef _PHP_NETWORK_H
 #define _PHP_NETWORK_H
 
 #ifdef PHP_WIN32
-# ifndef WINNT
-#  define WINNT 1
-# endif
-# undef FD_SETSIZE
-# include "arpa/inet.h"
-  /* Apache folks decided that strtoul was evil and redefined
-   * it to something that breaks the windows headers */
-# undef strtoul
-/* defines socklen_t and some IPV6 stuff */
-# include <ws2tcpip.h>
-# if HAVE_WSPIAPI_H
-   /* getaddrinfo */
-#  include <wspiapi.h>
-# endif
+# include "win32/inet.h"
 #else
 # undef closesocket
 # define closesocket close
@@ -125,12 +112,14 @@ typedef struct _php_pollfd {
 
 PHPAPI int php_poll2(php_pollfd *ufds, unsigned int nfds, int timeout);
 
+#ifndef POLLIN
 # define POLLIN      0x0001    /* There is data to read */
 # define POLLPRI     0x0002    /* There is urgent data to read */
 # define POLLOUT     0x0004    /* Writing now will not block */
 # define POLLERR     0x0008    /* Error condition */
 # define POLLHUP     0x0010    /* Hung up */
 # define POLLNVAL    0x0020    /* Invalid request: fd not open */
+#endif
 
 # ifndef PHP_USE_POLL_2_EMULATION
 #  define PHP_USE_POLL_2_EMULATION 1

@@ -23,4 +23,4 @@ imagefilltoborder( $image, 50, 50 );
 
 ?> 
 --EXPECTF--
-Warning: Wrong parameter count for imagefilltoborder() in %s.php on line %d
+Warning: imagefilltoborder() expects exactly 5 parameters, %d given in %s on line %d

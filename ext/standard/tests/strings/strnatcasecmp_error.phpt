@@ -22,12 +22,12 @@ var_dump( strnatcasecmp( $str1, $str2, $extra_arg) );
 *** Testing strnatcasecmp() : error conditions ***
 -- Testing strnatcmp() function with Zero arguments --
 
-Warning: Wrong parameter count for strnatcasecmp() in %s on line %d
+Warning: strnatcasecmp() expects exactly 2 parameters, 0 given in %s on line %d
 NULL
 
 
 -- Testing strnatcasecmp() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for strnatcasecmp() in %s on line %d
+Warning: strnatcasecmp() expects exactly 2 parameters, 3 given in %s on line %d
 NULL
 ===DONE===

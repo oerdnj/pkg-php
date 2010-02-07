@@ -34,7 +34,7 @@ Class [ <internal:Reflection> class ReflectionClass implements Reflector ] {
     Property [ <default> public $name ]
   }
 
-  - Methods [40] {
+  - Methods [43] {
     Method [ <internal:Reflection> final private method __clone ] {
     }
 
@@ -219,6 +219,15 @@ Class [ <internal:Reflection> class ReflectionClass implements Reflector ] {
     }
 
     Method [ <internal:Reflection> public method getExtensionName ] {
+    }
+
+    Method [ <internal:Reflection> public method inNamespace ] {
+    }
+
+    Method [ <internal:Reflection> public method getNamespaceName ] {
+    }
+
+    Method [ <internal:Reflection> public method getShortName ] {
     }
   }
 }

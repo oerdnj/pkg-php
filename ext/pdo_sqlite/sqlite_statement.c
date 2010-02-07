@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: sqlite_statement.c 280872 2009-05-20 15:03:16Z iliaa $ */
+/* $Id: sqlite_statement.c 280873 2009-05-20 15:05:36Z iliaa $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -104,6 +104,21 @@ static int pdo_sqlite_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_d
 						pdo_sqlite_error_stmt(stmt);
 						return 0;
 					
+					case PDO_PARAM_INT:
+					case PDO_PARAM_BOOL:
+						if (Z_TYPE_P(param->parameter) == IS_NULL) {
+							if (sqlite3_bind_null(S->stmt, param->paramno + 1) == SQLITE_OK) {
+								return 1;
+							}
+						} else {
+							convert_to_long(param->parameter);
+							if (SQLITE_OK == sqlite3_bind_int(S->stmt, param->paramno + 1, Z_LVAL_P(param->parameter))) {
+								return 1;
+							}
+						}
+						pdo_sqlite_error_stmt(stmt);
+						return 0;
+					
 					case PDO_PARAM_LOB:
 						if (Z_TYPE_P(param->parameter) == IS_RESOURCE) {
 							php_stream *stm;
@@ -117,9 +132,25 @@ static int pdo_sqlite_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_d
 								pdo_raise_impl_error(stmt->dbh, stmt, "HY105", "Expected a stream resource" TSRMLS_CC);
 								return 0;
 							}
+						} else if (Z_TYPE_P(param->parameter) == IS_NULL) {
+							if (sqlite3_bind_null(S->stmt, param->paramno + 1) == SQLITE_OK) {
+								return 1;
+							}
+							pdo_sqlite_error_stmt(stmt);
+							return 0;
+						} else {
+							convert_to_string(param->parameter);
 						}
-						/* fall through */
-		
+						
+						if (SQLITE_OK == sqlite3_bind_blob(S->stmt, param->paramno + 1,
+								Z_STRVAL_P(param->parameter),
+								Z_STRLEN_P(param->parameter),
+								SQLITE_STATIC)) {
+							return 1;	
+						}
+						pdo_sqlite_error_stmt(stmt);
+						return 0;
+							
 					case PDO_PARAM_STR:
 					default:
 						if (Z_TYPE_P(param->parameter) == IS_NULL) {
@@ -241,7 +272,7 @@ static int pdo_sqlite_stmt_get_col(pdo_stmt_t *stmt, int colno, char **ptr, unsi
 static int pdo_sqlite_stmt_col_meta(pdo_stmt_t *stmt, long colno, zval *return_value TSRMLS_DC)
 {
 	pdo_sqlite_stmt *S = (pdo_sqlite_stmt*)stmt->driver_data;
-	char *str;
+	const char *str;
 	zval *flags;
 	
 	if (!S->stmt) {
@@ -277,10 +308,17 @@ static int pdo_sqlite_stmt_col_meta(pdo_stmt_t *stmt, long colno, zval *return_v
 			break;
 	}
 
-	str = (char*)sqlite3_column_decltype(S->stmt, colno);
+	str = sqlite3_column_decltype(S->stmt, colno);
 	if (str) {
-		add_assoc_string(return_value, "sqlite:decl_type", str, 1);
+		add_assoc_string(return_value, "sqlite:decl_type", (char *)str, 1);
 	}
+
+#ifdef SQLITE_ENABLE_COLUMN_METADATA
+	str = sqlite3_column_table_name(S->stmt, colno);
+	if (str) {
+		add_assoc_string(return_value, "table", (char *)str, 1);
+	}
+#endif
 
 	add_assoc_zval(return_value, "flags", flags);
 

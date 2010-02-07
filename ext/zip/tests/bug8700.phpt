@@ -2,7 +2,7 @@
 Bug #8700 (getFromIndex(0) fails)
 --SKIPIF--
 <?php
-/* $Id: bug8700.phpt 235158 2007-05-07 18:03:01Z tony2001 $ */
+/* $Id: bug8700.phpt 260091 2008-05-21 09:27:41Z pajoye $ */
 if(!extension_loaded('zip')) die('skip');
 ?>
 --FILE--

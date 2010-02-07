@@ -18,11 +18,11 @@ require_once('fopen_include_path.inc');
 // this doesn't create the include dirs in this directory
 // we change to this to ensure we are not part of the
 // include paths.
-$thisTestDir = "fileGetContentsVar7.dir";
+$thisTestDir = "FileGetContentsVar2.dir";
 mkdir($thisTestDir);
 chdir($thisTestDir);
 
-$filename = "readFileVar7.tmp";
+$filename = 'FileGetContentsVar2.tmp';
 $scriptLocFile = dirname(__FILE__)."/".$filename;
 
 $newpath = create_include_path();

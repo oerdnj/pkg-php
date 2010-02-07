@@ -34,7 +34,6 @@ $a[0] = &$a;
 $a[1] = 1;
 $a[2] = 1;
 check($a);
-$a[0] = null;
 
 echo "\n\n--- 1,2 ref container:\n";
 $a = array();
@@ -42,8 +41,6 @@ $a[0] = &$a;
 $a[1] = &$a;
 $a[2] = 1;
 check($a);
-$a[0] = null;
-$a[1] = null;
 
 echo "\n\n--- 1,2,3 ref container:\n";
 $a = array();
@@ -51,10 +48,6 @@ $a[0] = &$a;
 $a[1] = &$a;
 $a[2] = &$a;
 check($a);
-$a[0] = null;
-$a[1] = null;
-$a[2] = null;
-
 
 echo "Done";
 ?>

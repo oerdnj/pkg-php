@@ -16,8 +16,8 @@ var_dump(key_exists('foo', $a, 'baz'));
 --EXPECTF--
 *** Test by calling method or function with incorrect numbers of arguments ***
 
-Warning: Wrong parameter count for key_exists() in %s.php on line %d
+Warning: key_exists() expects exactly 2 parameters, 0 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for key_exists() in %s.php on line %d
+Warning: key_exists() expects exactly 2 parameters, 3 given in %s on line %d
 NULL

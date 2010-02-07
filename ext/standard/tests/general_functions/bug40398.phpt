@@ -77,14 +77,8 @@ new Derived_6('6');
 --EXPECTF--
 Base::__construct(1)
 Base::__construct(2)
-
-Warning: call_user_func_array(): First argument is expected to be a valid callback, 'Base::__construct' was given in %sbug40398.php on line %d
-
-Warning: call_user_func_array(): First argument is expected to be a valid callback, 'parent::__construct' was given in %sbug40398.php on line %d
-
-Strict Standards: Non-static method Base::__construct() cannot be called statically, assuming $this from compatible context Derived_5 in %sbug40398.php on line %d
+Base::__construct(3)
+Base::__construct(4)
 Base::__construct(5)
-
-Strict Standards: Non-static method Base::__construct() cannot be called statically, assuming $this from compatible context Derived_6 in %sbug40398.php on line %d
 Base::__construct(6)
 ===DONE===

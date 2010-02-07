@@ -25,9 +25,9 @@ var_dump($proc->registerPHPFunctions(array('strrev', 'array_key_exists')));
 var_dump($proc->registerPHPFunctions(array()));
 var_dump($proc->transformToXml($dom));
 --EXPECTF--
-bool(true)
-bool(true)
-bool(true)
+NULL
+NULL
+NULL
 string(18) "This Is An Example"
 --CREDITS--
 Christian Weiske, cweiske@php.net

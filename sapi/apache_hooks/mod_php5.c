@@ -17,17 +17,13 @@
    | PHP 4.0 patches by Zeev Suraski <zeev@zend.com>					  |
    +----------------------------------------------------------------------+
  */
-/* $Id: mod_php5.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: mod_php5.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #include "php_apache_http.h"
 
 #ifdef NETWARE
 #define SIGPIPE SIGINT
 #endif
-
-#if defined(ZEND_MULTIBYTE) && defined(HAVE_MBSTRING)
-#include "ext/mbstring/mbstring.h"
-#endif /* defined(ZEND_MULTIBYTE) && defined(HAVE_MBSTRING) */
 
 #undef shutdown
 
@@ -38,7 +34,7 @@ static void php_save_umask(void);
 static void php_restore_umask(void);
 static int sapi_apache_read_post(char *buffer, uint count_bytes TSRMLS_DC);
 static char *sapi_apache_read_cookies(TSRMLS_D);
-static int sapi_apache_header_handler(sapi_header_struct *sapi_header, sapi_headers_struct *sapi_headers TSRMLS_DC);
+static int sapi_apache_header_handler(sapi_header_struct *sapi_header, sapi_header_op_enum op, sapi_headers_struct *sapi_headers TSRMLS_DC);
 static int sapi_apache_send_headers(sapi_headers_struct *sapi_headers TSRMLS_DC);
 static int send_php(request_rec *r, int display_source_mode, char *filename);
 static int send_parsed_php(request_rec * r);
@@ -312,35 +308,54 @@ static char *sapi_apache_read_cookies(TSRMLS_D)
 
 /* {{{ sapi_apache_header_handler
  */
-static int sapi_apache_header_handler(sapi_header_struct *sapi_header, sapi_headers_struct *sapi_headers TSRMLS_DC)
+static int sapi_apache_header_handler(sapi_header_struct *sapi_header, sapi_header_op_enum op, sapi_headers_struct *sapi_headers TSRMLS_DC)
 {
 	char *header_name, *header_content, *p;
 	request_rec *r = (request_rec *) SG(server_context);
-
-	header_name = sapi_header->header;
-
-	header_content = p = strchr(header_name, ':');
-	if (!p) {
-		efree(sapi_header->header);
+	if(!r) {
 		return 0;
 	}
 
-	*p = 0;
-	do {
-		header_content++;
-	} while (*header_content==' ');
+	switch(op) {
+		case SAPI_HEADER_DELETE_ALL:
+			clear_table(r->headers_out);
+			return 0;
 
-	if (!strcasecmp(header_name, "Content-Type")) {
-		r->content_type = pstrdup(r->pool, header_content);
-	} else if (!strcasecmp(header_name, "Set-Cookie")) {
-		table_add(r->headers_out, header_name, header_content);
-	} else {
-		table_set(r->headers_out, header_name, header_content);
+		case SAPI_HEADER_DELETE:
+			table_unset(r->headers_out, sapi_header->header);
+			return 0;
+
+		case SAPI_HEADER_ADD:
+		case SAPI_HEADER_REPLACE:
+			header_name = sapi_header->header;
+
+			header_content = p = strchr(header_name, ':');
+			if (!p) {
+				return 0;
+			}
+
+			*p = 0;
+			do {
+				header_content++;
+			} while (*header_content==' ');
+
+			if (!strcasecmp(header_name, "Content-Type")) {
+				r->content_type = pstrdup(r->pool, header_content);
+			} else if (!strcasecmp(header_name, "Set-Cookie")) {
+				table_add(r->headers_out, header_name, header_content);
+			} else if (op == SAPI_HEADER_REPLACE) {
+				table_set(r->headers_out, header_name, header_content);
+			} else {
+				table_add(r->headers_out, header_name, header_content);
+			}
+
+			*p = ':';  /* a well behaved header handler shouldn't change its original arguments */
+
+			return SAPI_HEADER_ADD;
+
+		default:
+			return 0;
 	}
-
-	*p = ':';  /* a well behaved header handler shouldn't change its original arguments */
-
-	return SAPI_HEADER_ADD;
 }
 /* }}} */
 
@@ -528,6 +543,7 @@ static sapi_module_struct apache_sapi_module = {
 	sapi_apache_register_server_variables,		/* register server variables */
 	php_apache_log_message,			/* Log message */
 	NULL,							/* Get request time */
+	NULL,					/* child terminate */
 
 	NULL,							/* php.ini path override */
 
@@ -644,10 +660,6 @@ static int send_php(request_rec *r, int display_source_mode, char *filename)
 		fh.opened_path = NULL;
 		fh.free_filename = 0;
 		fh.type = ZEND_HANDLE_FILENAME;
-
-#if defined(ZEND_MULTIBYTE) && defined(HAVE_MBSTRING)
-		php_mbstring_set_zend_encoding(TSRMLS_C);
-#endif /* defined(ZEND_MULTIBYTE) && defined(HAVE_MBSTRING) */
 
 		zend_execute_scripts(ZEND_INCLUDE TSRMLS_CC, NULL, 1, &fh);
 		return OK;

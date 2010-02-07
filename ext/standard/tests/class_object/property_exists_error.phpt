@@ -32,12 +32,12 @@ var_dump( property_exists(10, $property_name) );
 
 -- Testing property_exists() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for property_exists() in %sproperty_exists_error.php on line %d
+Warning: property_exists() expects exactly 2 parameters, 3 given in %sproperty_exists_error.php on line %d
 NULL
 
 -- Testing property_exists() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for property_exists() in %sproperty_exists_error.php on line %d
+Warning: property_exists() expects exactly 2 parameters, 1 given in %sproperty_exists_error.php on line %d
 NULL
 
 -- Testing property_exists() function with incorrect arguments --

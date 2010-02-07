@@ -114,9 +114,13 @@ bool(false)
 Warning: count_chars(): Unknown mode in %s on line %d
 bool(false)
 -- Iteration 11 --
-bool(true)
+
+Warning: count_chars() expects parameter 2 to be long, array given in %s on line %d
+bool(false)
 -- Iteration 12 --
-bool(true)
+
+Warning: count_chars() expects parameter 2 to be long, array given in %s on line %d
+bool(false)
 -- Iteration 13 --
 bool(true)
 -- Iteration 14 --
@@ -130,19 +134,27 @@ bool(true)
 -- Iteration 18 --
 bool(true)
 -- Iteration 19 --
-bool(true)
+
+Warning: count_chars() expects parameter 2 to be long, string given in %s on line %d
+bool(false)
 -- Iteration 20 --
-bool(true)
+
+Warning: count_chars() expects parameter 2 to be long, string given in %s on line %d
+bool(false)
 -- Iteration 21 --
+
+Notice: A non well formed numeric value encountered in %s on line %d
 bool(true)
 -- Iteration 22 --
+
+Notice: A non well formed numeric value encountered in %s on line %d
 
 Warning: count_chars(): Unknown mode in %s on line %d
 bool(false)
 -- Iteration 23 --
 
-Notice: Object of class sample could not be converted to int in %s on line %d
-bool(true)
+Warning: count_chars() expects parameter 2 to be long, object given in %s on line %d
+bool(false)
 -- Iteration 24 --
 bool(true)
 -- Iteration 25 --

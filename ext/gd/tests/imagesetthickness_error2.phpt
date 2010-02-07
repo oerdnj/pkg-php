@@ -11,14 +11,14 @@ Rafael Dohms <rdohms [at] gmail [dot] com>
 <?php
 $image = imagecreatetruecolor(200, 100);
 
-$a = imagesetthickness($image, 's');
-$b = imagesetthickness($image, array());
-$c = imagesetthickness($image, $image);
+imagesetthickness($image, 's');
+imagesetthickness($image, array());
+imagesetthickness($image, $image);
 
-var_dump($a, $b, $c);
-//All should be true because 5,2 does not check parameters
 ?>
 --EXPECTF--
-bool(true)
-bool(true)
-bool(true)
+Warning: imagesetthickness() expects parameter 2 to be long, string given in %s on line %d
+
+Warning: imagesetthickness() expects parameter 2 to be long, array given in %s on line %d
+
+Warning: imagesetthickness() expects parameter 2 to be long, resource given in %s on line %d

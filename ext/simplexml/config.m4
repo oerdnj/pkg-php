@@ -1,4 +1,4 @@
-dnl $Id: config.m4 197295 2005-10-01 15:41:37Z helly $
+dnl $Id: config.m4 268395 2008-11-06 00:37:13Z colder $
 dnl config.m4 for extension simplexml
 
 PHP_ARG_ENABLE(simplexml, whether to enable SimpleXML support,
@@ -17,7 +17,7 @@ if test "$PHP_SIMPLEXML" != "no"; then
 
   PHP_SETUP_LIBXML(SIMPLEXML_SHARED_LIBADD, [
     AC_DEFINE(HAVE_SIMPLEXML,1,[ ])
-    PHP_NEW_EXTENSION(simplexml, simplexml.c, $ext_shared)
+    PHP_NEW_EXTENSION(simplexml, simplexml.c sxe.c, $ext_shared)
     PHP_SUBST(SIMPLEXML_SHARED_LIBADD)
   ], [
     AC_MSG_ERROR([xml2-config not found. Please check your libxml2 installation.])

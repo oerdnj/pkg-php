@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: formatted_print.c 290150 2009-11-02 17:37:32Z felipe $ */
+/* $Id: formatted_print.c 284649 2009-07-23 14:54:04Z jani $ */
 
 #include <math.h>				/* modf() */
 #include "php.h"
@@ -232,14 +232,14 @@ php_sprintf_appenddouble(char **buffer, int *pos,
 	if (zend_isnan(number)) {
 		is_negative = (number<0);
 		php_sprintf_appendstring(buffer, pos, size, "NaN", 3, 0, padding,
-								 alignment, 3, is_negative, 0, always_sign);
+								 alignment, precision, is_negative, 0, always_sign);
 		return;
 	}
 
 	if (zend_isinf(number)) {
 		is_negative = (number<0);
 		php_sprintf_appendstring(buffer, pos, size, "INF", 3, 0, padding,
-								 alignment, 3, is_negative, 0, always_sign);
+								 alignment, precision, is_negative, 0, always_sign);
 		return;
 	}
 
@@ -380,16 +380,13 @@ php_formatted_print(int ht, int *len, int use_array, int format_offset TSRMLS_DC
 	char *format, *result, padding;
 	int always_sign;
 
-	argc = ZEND_NUM_ARGS();
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "+", &args, &argc) == FAILURE) {
+		return NULL;
+	}
 
 	/* verify the number of args */
 	if ((use_array && argc != (2 + format_offset)) 
 			|| (!use_array && argc < (1 + format_offset))) {
-		WRONG_PARAM_COUNT_WITH_RETVAL(NULL);
-	}
-	args = (zval ***)safe_emalloc(argc, sizeof(zval *), 0);
-
-	if (zend_get_parameters_array_ex(argc, args) == FAILURE) {
 		efree(args);
 		WRONG_PARAM_COUNT_WITH_RETVAL(NULL);
 	}
@@ -732,7 +729,7 @@ PHP_FUNCTION(vprintf)
 PHP_FUNCTION(fprintf)
 {
 	php_stream *stream;
-	zval **arg1;
+	zval *arg1;
 	char *result;
 	int len;
 	
@@ -740,11 +737,11 @@ PHP_FUNCTION(fprintf)
 		WRONG_PARAM_COUNT;
 	}
 	
-	if (zend_get_parameters_ex(1, &arg1)==FAILURE) {
+	if (zend_parse_parameters(1 TSRMLS_CC, "r", &arg1) == FAILURE) {
 		RETURN_FALSE;
 	}
 	
-	php_stream_from_zval(stream, arg1);
+	php_stream_from_zval(stream, &arg1);
 
 	if ((result=php_formatted_print(ht, &len, 0, 1 TSRMLS_CC))==NULL) {
 		RETURN_FALSE;
@@ -763,7 +760,7 @@ PHP_FUNCTION(fprintf)
 PHP_FUNCTION(vfprintf)
 {
 	php_stream *stream;
-	zval **arg1;
+	zval *arg1;
 	char *result;
 	int len;
 	
@@ -771,11 +768,11 @@ PHP_FUNCTION(vfprintf)
 		WRONG_PARAM_COUNT;
 	}
 	
-	if (zend_get_parameters_ex(1, &arg1)==FAILURE) {
+	if (zend_parse_parameters(1 TSRMLS_CC, "r", &arg1) == FAILURE) {
 		RETURN_FALSE;
 	}
 	
-	php_stream_from_zval(stream, arg1);
+	php_stream_from_zval(stream, &arg1);
 
 	if ((result=php_formatted_print(ht, &len, 1, 1 TSRMLS_CC))==NULL) {
 		RETURN_FALSE;

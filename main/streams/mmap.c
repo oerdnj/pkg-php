@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mmap.c 280679 2009-05-17 14:59:24Z lbarnaud $ */
+/* $Id: mmap.c 280678 2009-05-17 14:58:10Z lbarnaud $ */
 
 /* Memory Mapping interface for streams */
 #include "php.h"
@@ -31,9 +31,9 @@ PHPAPI char *_php_stream_mmap_range(php_stream *stream, size_t offset, size_t le
 	range.mode = mode;
 	range.mapped = NULL;
 
-	/* For now, we impose an arbitrary 2MB limit to avoid
+	/* For now, we impose an arbitrary limit to avoid
 	 * runaway swapping when large files are passed thru. */
-	if (length > 2 * 1024 * 1024) {
+	if (length > 4 * 1024 * 1024) {
 		return NULL;
 	}
 	

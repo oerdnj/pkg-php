@@ -1,12 +1,6 @@
-// $Id: config.w32 179257 2005-02-08 20:42:48Z helly $
+// $Id: config.w32 268395 2008-11-06 00:37:13Z colder $
 // vim:ft=javascript
 
-ARG_ENABLE("spl", "SPL (Standard PHP Library) support", "yes");
-
-if (PHP_SPL != "no") {
-	if (PHP_SPL_SHARED) {
-		ERROR("SPL cannot be compiled as a shared ext");
-	}
-	EXTENSION("spl", "php_spl.c spl_functions.c spl_engine.c spl_iterators.c spl_array.c spl_directory.c spl_sxe.c spl_exceptions.c spl_observer.c");
-	AC_DEFINE('HAVE_SPL', 1);
-}
+EXTENSION("spl", "php_spl.c spl_functions.c spl_engine.c spl_iterators.c spl_array.c spl_directory.c spl_exceptions.c spl_observer.c spl_dllist.c spl_heap.c spl_fixedarray.c", false /*never shared */);
+AC_DEFINE('HAVE_SPL', 1);
+PHP_SPL="yes";

@@ -16,19 +16,13 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_com_dotnet.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: php_com_dotnet.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_COM_DOTNET_H
 #define PHP_COM_DOTNET_H
 
 extern zend_module_entry com_dotnet_module_entry;
 #define phpext_com_dotnet_ptr &com_dotnet_module_entry
-
-#ifdef PHP_WIN32
-# define PHP_COM_DOTNET_API __declspec(dllexport)
-#else
-# define PHP_COM_DOTNET_API
-#endif
 
 #ifdef ZTS
 #include "TSRM.h"

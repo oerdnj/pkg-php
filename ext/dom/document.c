@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: document.c 291669 2009-12-03 20:19:38Z rrichards $ */
+/* $Id: document.c 282119 2009-06-14 13:13:35Z iliaa $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -42,175 +42,142 @@ struct _idsIterator {
 #define DOM_LOAD_FILE 1
 
 /* {{{ arginfo */
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_create_element, 0, 0, 1)
 	ZEND_ARG_INFO(0, tagName)
 	ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_create_document_fragment, 0, 0, 0)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_create_text_node, 0, 0, 1)
 	ZEND_ARG_INFO(0, data)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_create_comment, 0, 0, 1)
 	ZEND_ARG_INFO(0, data)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_create_cdatasection, 0, 0, 1)
 	ZEND_ARG_INFO(0, data)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_create_processing_instruction, 0, 0, 2)
 	ZEND_ARG_INFO(0, target)
 	ZEND_ARG_INFO(0, data)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_create_attribute, 0, 0, 1)
 	ZEND_ARG_INFO(0, name)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_create_entity_reference, 0, 0, 1)
 	ZEND_ARG_INFO(0, name)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_get_elements_by_tag_name, 0, 0, 1)
 	ZEND_ARG_INFO(0, tagName)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_import_node, 0, 0, 2)
 	ZEND_ARG_OBJ_INFO(0, importedNode, DOMNode, 0)
 	ZEND_ARG_INFO(0, deep)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_create_element_ns, 0, 0, 2)
 	ZEND_ARG_INFO(0, namespaceURI)
 	ZEND_ARG_INFO(0, qualifiedName)
 	ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_create_attribute_ns, 0, 0, 2)
 	ZEND_ARG_INFO(0, namespaceURI)
 	ZEND_ARG_INFO(0, qualifiedName)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_get_elements_by_tag_name_ns, 0, 0, 2)
 	ZEND_ARG_INFO(0, namespaceURI)
 	ZEND_ARG_INFO(0, localName)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_get_element_by_id, 0, 0, 1)
 	ZEND_ARG_INFO(0, elementId)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_adopt_node, 0, 0, 1)
 	ZEND_ARG_OBJ_INFO(0, source, DOMNode, 0)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_normalize_document, 0, 0, 0)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_rename_node, 0, 0, 3)
 	ZEND_ARG_OBJ_INFO(0, node, DOMNode, 0)
 	ZEND_ARG_INFO(0, namespaceURI)
 	ZEND_ARG_INFO(0, qualifiedName)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_load, 0, 0, 1)
 	ZEND_ARG_INFO(0, source)
 	ZEND_ARG_INFO(0, options)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_save, 0, 0, 1)
 	ZEND_ARG_INFO(0, file)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_loadxml, 0, 0, 1)
 	ZEND_ARG_INFO(0, source)
 	ZEND_ARG_INFO(0, options)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_savexml, 0, 0, 0)
 	ZEND_ARG_OBJ_INFO(0, node, DOMNode, 1)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_construct, 0, 0, 0)
 	ZEND_ARG_INFO(0, version)
 	ZEND_ARG_INFO(0, encoding)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_validate, 0, 0, 0)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_xinclude, 0, 0, 0)
 	ZEND_ARG_INFO(0, options)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_loadhtml, 0, 0, 1)
 	ZEND_ARG_INFO(0, source)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_loadhtmlfile, 0, 0, 1)
 	ZEND_ARG_INFO(0, source)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_savehtml, 0, 0, 0)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_savehtmlfile, 0, 0, 1)
 	ZEND_ARG_INFO(0, file)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_schema_validate_file, 0, 0, 1)
 	ZEND_ARG_INFO(0, filename)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_schema_validate_xml, 0, 0, 1)
 	ZEND_ARG_INFO(0, source)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_relaxNG_validate_file, 0, 0, 1)
 	ZEND_ARG_INFO(0, filename)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_relaxNG_validate_xml, 0, 0, 1)
 	ZEND_ARG_INFO(0, source)
 ZEND_END_ARG_INFO();
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_document_registernodeclass, 0, 0, 2)
 	ZEND_ARG_INFO(0, baseClass)
 	ZEND_ARG_INFO(0, extendedClass)
@@ -224,7 +191,7 @@ ZEND_END_ARG_INFO();
 * Since: 
 */
 
-zend_function_entry php_dom_document_class_functions[] = {
+const zend_function_entry php_dom_document_class_functions[] = { /* {{{ */
 	PHP_FALIAS(createElement, dom_document_create_element, arginfo_dom_document_create_element)
 	PHP_FALIAS(createDocumentFragment, dom_document_create_document_fragment, arginfo_dom_document_create_document_fragment)
 	PHP_FALIAS(createTextNode, dom_document_create_text_node, arginfo_dom_document_create_text_node)
@@ -264,6 +231,7 @@ zend_function_entry php_dom_document_class_functions[] = {
 	PHP_ME(domdocument, registerNodeClass, arginfo_dom_document_registernodeclass, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
+/* }}} */
 
 /* {{{ docType	DOMDocumentType	
 readonly=yes 
@@ -392,7 +360,7 @@ int dom_document_encoding_write(dom_object *obj, zval *newval TSRMLS_DC)
 	}
 
 	if (newval->type != IS_STRING) {
-		if(newval->refcount > 1) {
+		if(Z_REFCOUNT_P(newval) > 1) {
 			value_copy = *newval;
 			zval_copy_ctor(&value_copy);
 			newval = &value_copy;
@@ -458,7 +426,7 @@ int dom_document_standalone_write(dom_object *obj, zval *newval TSRMLS_DC)
 		return FAILURE;
 	}
 
-	if(newval->refcount > 1) {
+	if(Z_REFCOUNT_P(newval) > 1) {
 		value_copy = *newval;
 		zval_copy_ctor(&value_copy);
 		newval = &value_copy;
@@ -531,7 +499,7 @@ int dom_document_version_write(dom_object *obj, zval *newval TSRMLS_DC)
 	}
 
 	if (newval->type != IS_STRING) {
-		if(newval->refcount > 1) {
+		if(Z_REFCOUNT_P(newval) > 1) {
 			value_copy = *newval;
 			zval_copy_ctor(&value_copy);
 			newval = &value_copy;
@@ -574,7 +542,7 @@ int dom_document_strict_error_checking_write(dom_object *obj, zval *newval TSRML
 	zval value_copy;
 	dom_doc_propsptr doc_prop;
 
-	if(newval->refcount > 1) {
+	if(Z_REFCOUNT_P(newval) > 1) {
 		value_copy = *newval;
 		zval_copy_ctor(&value_copy);
 		newval = &value_copy;
@@ -617,7 +585,7 @@ int dom_document_format_output_write(dom_object *obj, zval *newval TSRMLS_DC)
 	zval value_copy;
 	dom_doc_propsptr doc_prop;
 
-	if(newval->refcount > 1) {
+	if(Z_REFCOUNT_P(newval) > 1) {
 		value_copy = *newval;
 		zval_copy_ctor(&value_copy);
 		newval = &value_copy;
@@ -659,7 +627,7 @@ int dom_document_validate_on_parse_write(dom_object *obj, zval *newval TSRMLS_DC
 	zval value_copy;
 	dom_doc_propsptr doc_prop;
 
-	if(newval->refcount > 1) {
+	if(Z_REFCOUNT_P(newval) > 1) {
 		value_copy = *newval;
 		zval_copy_ctor(&value_copy);
 		newval = &value_copy;
@@ -678,7 +646,6 @@ int dom_document_validate_on_parse_write(dom_object *obj, zval *newval TSRMLS_DC
 	return SUCCESS;
 }
 /* }}} */
-
 
 /* {{{ resolveExternals	boolean	
 readonly=no
@@ -702,7 +669,7 @@ int dom_document_resolve_externals_write(dom_object *obj, zval *newval TSRMLS_DC
 	zval value_copy;
 	dom_doc_propsptr doc_prop;
 
-	if(newval->refcount > 1) {
+	if(Z_REFCOUNT_P(newval) > 1) {
 		value_copy = *newval;
 		zval_copy_ctor(&value_copy);
 		newval = &value_copy;
@@ -721,7 +688,6 @@ int dom_document_resolve_externals_write(dom_object *obj, zval *newval TSRMLS_DC
 	return SUCCESS;
 }
 /* }}} */
-
 
 /* {{{ preserveWhiteSpace	boolean	
 readonly=no
@@ -745,7 +711,7 @@ int dom_document_preserve_whitespace_write(dom_object *obj, zval *newval TSRMLS_
 	zval value_copy;
 	dom_doc_propsptr doc_prop;
 
-	if(newval->refcount > 1) {
+	if(Z_REFCOUNT_P(newval) > 1) {
 		value_copy = *newval;
 		zval_copy_ctor(&value_copy);
 		newval = &value_copy;
@@ -787,7 +753,7 @@ int dom_document_recover_write(dom_object *obj, zval *newval TSRMLS_DC)
 	zval value_copy;
 	dom_doc_propsptr doc_prop;
 
-	if(newval->refcount > 1) {
+	if(Z_REFCOUNT_P(newval) > 1) {
 		value_copy = *newval;
 		zval_copy_ctor(&value_copy);
 		newval = &value_copy;
@@ -806,7 +772,6 @@ int dom_document_recover_write(dom_object *obj, zval *newval TSRMLS_DC)
 	return SUCCESS;
 }
 /* }}} */
-
 
 /* {{{ substituteEntities	boolean	
 readonly=no
@@ -830,7 +795,7 @@ int dom_document_substitue_entities_write(dom_object *obj, zval *newval TSRMLS_D
 	zval value_copy;
 	dom_doc_propsptr doc_prop;
 
-	if(newval->refcount > 1) {
+	if(Z_REFCOUNT_P(newval) > 1) {
 		value_copy = *newval;
 		zval_copy_ctor(&value_copy);
 		newval = &value_copy;
@@ -849,7 +814,6 @@ int dom_document_substitue_entities_write(dom_object *obj, zval *newval TSRMLS_D
 	return SUCCESS;
 }
 /* }}} */
-
 
 /* {{{ documentURI	string	
 readonly=no 
@@ -896,7 +860,7 @@ int dom_document_document_uri_write(dom_object *obj, zval *newval TSRMLS_DC)
 	}
 
 	if (newval->type != IS_STRING) {
-		if(newval->refcount > 1) {
+		if(Z_REFCOUNT_P(newval) > 1) {
 			value_copy = *newval;
 			zval_copy_ctor(&value_copy);
 			newval = &value_copy;
@@ -915,8 +879,6 @@ int dom_document_document_uri_write(dom_object *obj, zval *newval TSRMLS_DC)
 
 /* }}} */
 
-
-
 /* {{{ config	DOMConfiguration	
 readonly=yes 
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-Document3-config
@@ -930,8 +892,6 @@ int dom_document_config_read(dom_object *obj, zval **retval TSRMLS_DC)
 }
 
 /* }}} */
-
-
 
 /* {{{ proto DOMElement dom_document_create_element(string tagName [, string value]);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-ID-2141741547
@@ -966,7 +926,6 @@ PHP_FUNCTION(dom_document_create_element)
 }
 /* }}} end dom_document_create_element */
 
-
 /* {{{ proto DOMDocumentFragment dom_document_create_document_fragment();
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-ID-35CB04B5
 Since: 
@@ -993,7 +952,6 @@ PHP_FUNCTION(dom_document_create_document_fragment)
 	DOM_RET_OBJ(rv, node, &ret, intern);
 }
 /* }}} end dom_document_create_document_fragment */
-
 
 /* {{{ proto DOMText dom_document_create_text_node(string data);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-ID-1975348127
@@ -1023,7 +981,6 @@ PHP_FUNCTION(dom_document_create_text_node)
 }
 /* }}} end dom_document_create_text_node */
 
-
 /* {{{ proto DOMComment dom_document_create_comment(string data);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-ID-1334481328
 Since: 
@@ -1052,7 +1009,6 @@ PHP_FUNCTION(dom_document_create_comment)
 }
 /* }}} end dom_document_create_comment */
 
-
 /* {{{ proto DOMCdataSection dom_document_create_cdatasection(string data);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-ID-D26C0AF8
 Since: 
@@ -1080,7 +1036,6 @@ PHP_FUNCTION(dom_document_create_cdatasection)
 	DOM_RET_OBJ(rv, node, &ret, intern);
 }
 /* }}} end dom_document_create_cdatasection */
-
 
 /* {{{ proto DOMProcessingInstruction dom_document_create_processing_instruction(string target, string data);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-ID-135944439
@@ -1117,7 +1072,6 @@ PHP_FUNCTION(dom_document_create_processing_instruction)
 }
 /* }}} end dom_document_create_processing_instruction */
 
-
 /* {{{ proto DOMAttr dom_document_create_attribute(string name);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-ID-1084891198
 Since: 
@@ -1152,7 +1106,6 @@ PHP_FUNCTION(dom_document_create_attribute)
 }
 /* }}} end dom_document_create_attribute */
 
-
 /* {{{ proto DOMEntityReference dom_document_create_entity_reference(string name);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-ID-392B75AE
 Since: 
@@ -1186,7 +1139,6 @@ PHP_FUNCTION(dom_document_create_entity_reference)
 }
 /* }}} end dom_document_create_entity_reference */
 
-
 /* {{{ proto DOMNodeList dom_document_get_elements_by_tag_name(string tagname);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-ID-A6C9094
 Since: 
@@ -1212,7 +1164,6 @@ PHP_FUNCTION(dom_document_get_elements_by_tag_name)
 	dom_namednode_iter(intern, 0, namednode, NULL, local, NULL TSRMLS_CC);
 }
 /* }}} end dom_document_get_elements_by_tag_name */
-
 
 /* {{{ proto DOMNode dom_document_import_node(DOMNode importedNode, boolean deep);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#Core-Document-importNode
@@ -1252,25 +1203,12 @@ PHP_FUNCTION(dom_document_import_node)
 		if (!retnodep) {
 			RETURN_FALSE;
 		}
-
-		if ((retnodep->type == XML_ATTRIBUTE_NODE) && (nodep->ns != NULL)) {
-			xmlNsPtr nsptr = NULL;
-			xmlNodePtr root = xmlDocGetRootElement(docp);
-
-			nsptr = xmlSearchNsByHref (nodep->doc, root, nodep->ns->href);
-			if (nsptr == NULL) {
-				int errorcode;
-				nsptr = dom_get_ns(root, nodep->ns->href, &errorcode, nodep->ns->prefix);
-			}
-			xmlSetNs(retnodep, nsptr);
-		}
 		
 	}
 
 	DOM_RET_OBJ(rv, (xmlNodePtr) retnodep, &ret, intern);
 }
 /* }}} end dom_document_import_node */
-
 
 /* {{{ proto DOMElement dom_document_create_element_ns(string namespaceURI, string qualifiedName [,string value]);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-ID-DocCrElNS
@@ -1334,7 +1272,6 @@ PHP_FUNCTION(dom_document_create_element_ns)
 	DOM_RET_OBJ(rv, nodep, &ret, intern);
 }
 /* }}} end dom_document_create_element_ns */
-
 
 /* {{{ proto DOMAttr dom_document_create_attribute_ns(string namespaceURI, string qualifiedName);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-ID-DocCrAttrNS
@@ -1401,7 +1338,6 @@ PHP_FUNCTION(dom_document_create_attribute_ns)
 }
 /* }}} end dom_document_create_attribute_ns */
 
-
 /* {{{ proto DOMNodeList dom_document_get_elements_by_tag_name_ns(string namespaceURI, string localName);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-ID-getElBTNNS
 Since: DOM Level 2
@@ -1428,7 +1364,6 @@ PHP_FUNCTION(dom_document_get_elements_by_tag_name_ns)
 	dom_namednode_iter(intern, 0, namednode, NULL, local, nsuri TSRMLS_CC);
 }
 /* }}} end dom_document_get_elements_by_tag_name_ns */
-
 
 /* {{{ proto DOMElement dom_document_get_element_by_id(string elementId);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-ID-getElBId
@@ -1460,7 +1395,6 @@ PHP_FUNCTION(dom_document_get_element_by_id)
 }
 /* }}} end dom_document_get_element_by_id */
 
-
 /* {{{ proto DOMNode dom_document_adopt_node(DOMNode source);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-Document3-adoptNode
 Since: DOM Level 3
@@ -1470,7 +1404,6 @@ PHP_FUNCTION(dom_document_adopt_node)
  DOM_NOT_IMPLEMENTED();
 }
 /* }}} end dom_document_adopt_node */
-
 
 /* {{{ proto void dom_document_normalize_document();
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-Document3-normalizeDocument
@@ -1492,7 +1425,6 @@ PHP_FUNCTION(dom_document_normalize_document)
 }
 /* }}} end dom_document_normalize_document */
 
-
 /* {{{ proto DOMNode dom_document_rename_node(node n, string namespaceURI, string qualifiedName);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-Document3-renameNode
 Since: DOM Level 3
@@ -1512,14 +1444,15 @@ PHP_METHOD(domdocument, __construct)
 	dom_object *intern;
 	char *encoding, *version = NULL;
 	int encoding_len = 0, version_len = 0, refcount;
+	zend_error_handling error_handling;
 
-	php_set_error_handling(EH_THROW, dom_domexception_class_entry TSRMLS_CC);
+	zend_replace_error_handling(EH_THROW, dom_domexception_class_entry, &error_handling TSRMLS_CC);
 	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "O|ss", &id, dom_document_class_entry, &version, &version_len, &encoding, &encoding_len) == FAILURE) {
-		php_std_error_handling();
+		zend_restore_error_handling(&error_handling TSRMLS_CC);
 		return;
 	}
 
-	php_std_error_handling();
+	zend_restore_error_handling(&error_handling TSRMLS_CC);
 	docp = xmlNewDoc(version);
 
 	if (!docp) {
@@ -1550,7 +1483,8 @@ PHP_METHOD(domdocument, __construct)
 }
 /* }}} end DOMDocument::__construct */
 
-char *_dom_get_valid_file_path(char *source, char *resolved_path, int resolved_path_len  TSRMLS_DC) {
+char *_dom_get_valid_file_path(char *source, char *resolved_path, int resolved_path_len  TSRMLS_DC) /* {{{ */
+{
 	xmlURI *uri;
 	xmlChar *escsource;
 	char *file_dest;
@@ -1595,10 +1529,10 @@ char *_dom_get_valid_file_path(char *source, char *resolved_path, int resolved_p
 
 	return file_dest;
 }
+/* }}} */
 
-
-/* {{{ */
-static xmlDocPtr dom_document_parser(zval *id, int mode, char *source, int options TSRMLS_DC) {
+static xmlDocPtr dom_document_parser(zval *id, int mode, char *source, int options TSRMLS_DC) /* {{{ */
+{
     xmlDocPtr ret;
     xmlParserCtxtPtr ctxt = NULL;
 	dom_doc_propsptr doc_props;
@@ -1906,7 +1840,8 @@ PHP_FUNCTION(dom_document_savexml)
 }
 /* }}} end dom_document_savexml */
 
-static xmlNodePtr php_dom_free_xinclude_node(xmlNodePtr cur TSRMLS_DC) {
+static xmlNodePtr php_dom_free_xinclude_node(xmlNodePtr cur TSRMLS_DC) /* {{{ */
+{
 	xmlNodePtr xincnode;
 
 	xincnode = cur;
@@ -1916,8 +1851,10 @@ static xmlNodePtr php_dom_free_xinclude_node(xmlNodePtr cur TSRMLS_DC) {
 
 	return cur;
 }
+/* }}} */
 
-static void php_dom_remove_xinclude_nodes(xmlNodePtr cur TSRMLS_DC) {
+static void php_dom_remove_xinclude_nodes(xmlNodePtr cur TSRMLS_DC) /* {{{ */
+{
 	while(cur) {
 		if (cur->type == XML_XINCLUDE_START) {
 			cur = php_dom_free_xinclude_node(cur TSRMLS_CC);
@@ -1942,6 +1879,7 @@ static void php_dom_remove_xinclude_nodes(xmlNodePtr cur TSRMLS_DC) {
 		}
 	}
 }
+/* }}} */
 
 /* {{{ proto int dom_document_xinclude([int options])
    Substitutues xincludes in a DomDocument */
@@ -1981,7 +1919,7 @@ PHP_FUNCTION(dom_document_xinclude)
 	}
     
 }
-
+/* }}} */
 
 /* {{{ proto boolean dom_document_validate();
 Since: DOM extended
@@ -1998,11 +1936,7 @@ PHP_FUNCTION(dom_document_validate)
 	}
 
 	DOM_GET_OBJ(docp, id, xmlDocPtr, intern);
-	
-	if (docp->intSubset == NULL) {
-		php_error_docref(NULL TSRMLS_CC, E_NOTICE, "No DTD given in XML-Document");
-	}
-	
+
 	cvp = xmlNewValidCtxt();
 	
 	cvp->userData = NULL;
@@ -2018,11 +1952,10 @@ PHP_FUNCTION(dom_document_validate)
 	xmlFreeValidCtxt(cvp);
 	
 }
- 
+/* }}} */
 
 #if defined(LIBXML_SCHEMAS_ENABLED)
-static void
-_dom_document_schema_validate(INTERNAL_FUNCTION_PARAMETERS, int type)
+static void _dom_document_schema_validate(INTERNAL_FUNCTION_PARAMETERS, int type) /* {{{ */
 {
 	zval *id;
 	xmlDoc *docp;
@@ -2095,6 +2028,7 @@ _dom_document_schema_validate(INTERNAL_FUNCTION_PARAMETERS, int type)
 		RETURN_FALSE;
 	}
 }
+/* }}} */
 
 /* {{{ proto boolean dom_document_schema_validate_file(string filename); */
 PHP_FUNCTION(dom_document_schema_validate_file)
@@ -2110,9 +2044,7 @@ PHP_FUNCTION(dom_document_schema_validate_xml)
 }
 /* }}} end dom_document_schema_validate */
 
-
-static void
-_dom_document_relaxNG_validate(INTERNAL_FUNCTION_PARAMETERS, int type)
+static void _dom_document_relaxNG_validate(INTERNAL_FUNCTION_PARAMETERS, int type) /* {{{ */
 {
 	zval *id;
 	xmlDoc *docp;
@@ -2185,6 +2117,7 @@ _dom_document_relaxNG_validate(INTERNAL_FUNCTION_PARAMETERS, int type)
 		RETURN_FALSE;
 	}
 }
+/* }}} */
 
 /* {{{ proto boolean dom_document_relaxNG_validate_file(string filename); */
 PHP_FUNCTION(dom_document_relaxNG_validate_file)
@@ -2204,7 +2137,7 @@ PHP_FUNCTION(dom_document_relaxNG_validate_xml)
 
 #if defined(LIBXML_HTML_ENABLED)
 
-static void dom_load_html(INTERNAL_FUNCTION_PARAMETERS, int mode)
+static void dom_load_html(INTERNAL_FUNCTION_PARAMETERS, int mode) /* {{{ */
 {
 	zval *id, *rv = NULL;
 	xmlDoc *docp = NULL, *newdoc;
@@ -2277,6 +2210,7 @@ static void dom_load_html(INTERNAL_FUNCTION_PARAMETERS, int mode)
 		DOM_RET_OBJ(rv, (xmlNodePtr) newdoc, &ret, NULL);
 	}
 }
+/* }}} */
 
 /* {{{ proto DOMNode dom_document_load_html_file(string source);
 Since: DOM extended
@@ -2416,3 +2350,12 @@ PHP_METHOD(domdocument, registerNodeClass)
 /* }}} */
 
 #endif  /* HAVE_LIBXML && HAVE_DOM */
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

@@ -137,27 +137,39 @@ float(0)
 float(-INF)
 
 -- Iteration 17 --
-float(-INF)
+
+Warning: log() expects parameter 1 to be double, string given in %s on line %d
+NULL
 
 -- Iteration 18 --
-float(-INF)
+
+Warning: log() expects parameter 1 to be double, string given in %s on line %d
+NULL
 
 -- Iteration 19 --
-float(-INF)
+
+Warning: log() expects parameter 1 to be double, array given in %s on line %d
+NULL
 
 -- Iteration 20 --
-float(-INF)
+
+Warning: log() expects parameter 1 to be double, string given in %s on line %d
+NULL
 
 -- Iteration 21 --
-float(-INF)
+
+Warning: log() expects parameter 1 to be double, string given in %s on line %d
+NULL
 
 -- Iteration 22 --
-float(-INF)
+
+Warning: log() expects parameter 1 to be double, string given in %s on line %d
+NULL
 
 -- Iteration 23 --
 
-Notice: Object of class classA could not be converted to double in %s on line %d
-float(0)
+Warning: log() expects parameter 1 to be double, object given in %s on line %d
+NULL
 
 -- Iteration 24 --
 float(-INF)
@@ -166,5 +178,7 @@ float(-INF)
 float(-INF)
 
 -- Iteration 26 --
-float(%f)
+
+Warning: log() expects parameter 1 to be double, resource given in %s on line %d
+NULL
 ===Done===

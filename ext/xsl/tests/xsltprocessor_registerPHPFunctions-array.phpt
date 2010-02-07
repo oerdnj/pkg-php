@@ -19,7 +19,7 @@ $proc->importStylesheet($phpfuncxsl);
 var_dump($proc->registerPHPFunctions(array('ucwords')));
 var_dump($proc->transformToXml($dom));
 --EXPECTF--
-bool(true)
+NULL
 string(18) "This Is An Example"
 --CREDITS--
 Christian Weiske, cweiske@php.net

@@ -31,11 +31,11 @@ var_dump( usort($array_arg) );
 
 -- Testing usort() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for usort() in %s on line %d
+Warning: usort() expects exactly 2 parameters, 3 given in %s on line %d
 NULL
 
 -- Testing usort() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for usort() in %s on line %d
+Warning: usort() expects exactly 2 parameters, 1 given in %s on line %d
 NULL
 ===DONE===

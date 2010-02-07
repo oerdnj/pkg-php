@@ -250,6 +250,12 @@ gdImagePtr gdImageCreateFromWBMPCtx(gdIOCtx *infile);
 gdImagePtr gdImageCreateFromJpeg(FILE *infile, int ignore_warning);
 gdImagePtr gdImageCreateFromJpegCtx(gdIOCtx *infile, int ignore_warning);
 
+int gdJpegGetVersionInt();
+const char * gdPngGetVersionString();
+
+int gdJpegGetVersionInt();
+const char * gdJpegGetVersionString();
+
 /* A custom data source. */
 /* The source function must return -1 on error, otherwise the number
         of bytes fetched. 0 is EOF, not an error! */
@@ -287,6 +293,7 @@ void gdImageDestroy(gdImagePtr im);
 
 void gdImageSetPixel(gdImagePtr im, int x, int y, int color);
 
+int gdImageGetTrueColorPixel (gdImagePtr im, int x, int y);
 int gdImageGetPixel(gdImagePtr im, int x, int y);
 
 void gdImageAABlend(gdImagePtr im);
@@ -577,6 +584,13 @@ void gdImageInterlace(gdImagePtr im, int interlaceArg);
 void gdImageAlphaBlending(gdImagePtr im, int alphaBlendingArg);
 void gdImageAntialias(gdImagePtr im, int antialias);
 void gdImageSaveAlpha(gdImagePtr im, int saveAlphaArg);
+
+enum gdPixelateMode {
+	GD_PIXELATE_UPPERLEFT,
+	GD_PIXELATE_AVERAGE
+};
+
+int gdImagePixelate(gdImagePtr im, int block_size, const unsigned int mode);
 
 /* Macros to access information about images. */
 

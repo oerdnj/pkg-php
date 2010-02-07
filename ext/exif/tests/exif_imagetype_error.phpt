@@ -30,16 +30,17 @@ var_dump( exif_imagetype(dirname(__FILE__).'/foo.jpg') );
 
 -- Testing exif_imagetype() function with no arguments --
 
-Warning: Wrong parameter count for exif_imagetype() in %s on line %d
+Warning: exif_imagetype() expects exactly 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing exif_imagetype() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for exif_imagetype() in %s on line %d
+Warning: exif_imagetype() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
 
 -- Testing exif_imagetype() function with an unknown file  --
 
-Warning: exif_imagetype(%sfoo.jpg): failed to open stream: No such file or directory in %s on line %d
+Warning: exif_imagetype(%s/foo.jpg): failed to open stream: No such file or directory in %s on line %d
 bool(false)
 ===Done===
+

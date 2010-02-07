@@ -79,13 +79,13 @@ echo "Done";
 --EXPECTF--
 *** Testing array_map() : associative array with diff. keys for 'arr1' argument ***
 
-Warning: Illegal offset type in %s on line %d
+Warning: Illegal offset type in %s on line %d%d
 
-Warning: Illegal offset type in %s on line %d
+Warning: Illegal offset type in %s on line %d%d
 
-Warning: Illegal offset type in %s on line %d
+Warning: Illegal offset type in %s on line %d%d
 
-Warning: Illegal offset type in %s on line %d
+Warning: Illegal offset type in %s on line %d%d
 -- Iteration 1 --
 array(0) {
 }

@@ -15,7 +15,7 @@ var_dump(ldap_first_attribute($link, $link));
 ?>
 ===DONE===
 --EXPECTF--
-Warning: Wrong parameter count for ldap_first_attribute() in %s on line %d
+Warning: ldap_first_attribute() expects %s 2 parameters, 1 given in %s on line %d
 NULL
 
 Warning: ldap_first_attribute(): supplied resource is not a valid ldap result entry resource in %s on line %d

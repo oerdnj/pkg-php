@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: hash_md.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: hash_md.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #include "php_hash.h"
 #include "php_hash_md.h"
@@ -25,6 +25,7 @@ const php_hash_ops php_hash_md5_ops = {
 	(php_hash_init_func_t) PHP_MD5Init,
 	(php_hash_update_func_t) PHP_MD5Update,
 	(php_hash_final_func_t) PHP_MD5Final,
+	(php_hash_copy_func_t) php_hash_copy,
 	16,
 	64,
 	sizeof(PHP_MD5_CTX)
@@ -34,6 +35,7 @@ const php_hash_ops php_hash_md4_ops = {
 	(php_hash_init_func_t) PHP_MD4Init,
 	(php_hash_update_func_t) PHP_MD4Update,
 	(php_hash_final_func_t) PHP_MD4Final,
+	(php_hash_copy_func_t) php_hash_copy,
 	16,
 	64,
 	sizeof(PHP_MD4_CTX)
@@ -43,6 +45,7 @@ const php_hash_ops php_hash_md2_ops = {
 	(php_hash_init_func_t) PHP_MD2Init,
 	(php_hash_update_func_t) PHP_MD2Update,
 	(php_hash_final_func_t) PHP_MD2Final,
+	(php_hash_copy_func_t) php_hash_copy,
 	16,
 	16,
 	sizeof(PHP_MD2_CTX)
@@ -442,8 +445,8 @@ const unsigned char block[64];
 
 /* MD4 */
 
-#define MD4_F(x,y,z)			(((x) & (y)) | ((~(x)) & (z)))
-#define MD4_G(x,y,z)			(((x) & (y)) | ((x) & (z)) | ((y) & (z)))
+#define MD4_F(x,y,z)			((z) ^ ((x) & ((y) ^ (z))))
+#define MD4_G(x,y,z)			(((x) & ((y) | (z))) | ((y) & (z)))
 #define MD4_H(x,y,z)			((x) ^ (y) ^ (z))
 
 #define ROTL32(s,v)				(((v) << (s)) | ((v) >> (32 - (s))))
@@ -518,8 +521,23 @@ static void MD4Transform(php_hash_uint32 state[4], const unsigned char block[64]
 	state[3] += d;
 }
 
+/* {{{ PHP_MD4Init
+ * MD4 initialization. Begins an MD4 operation, writing a new context.
+ */
+PHP_HASH_API void PHP_MD4Init(PHP_MD4_CTX * context)
+{
+	context->count[0] = context->count[1] = 0;
+	/* Load magic initialization constants.
+	 */
+	context->state[0] = 0x67452301;
+	context->state[1] = 0xefcdab89;
+	context->state[2] = 0x98badcfe;
+	context->state[3] = 0x10325476;
+}
+/* }}} */
+
 /* {{{ PHP_MD4Update
-   MD4 block update operation. Continues an MD5 message-digest
+   MD4 block update operation. Continues an MD4 message-digest
    operation, processing another message block, and updating the
    context.
  */
@@ -675,7 +693,6 @@ PHP_HASH_API void PHP_MD2Final(unsigned char output[16], PHP_MD2_CTX *context)
 
 	memcpy(output, context->state, 16);
 }
-
 
 /*
  * Local variables:

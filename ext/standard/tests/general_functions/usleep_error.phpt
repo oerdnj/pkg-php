@@ -6,9 +6,10 @@ Test usleep() function : error conditions
  * Description: Delays program execution for the given number of micro seconds. 
  * Source code: ext/standard/basic_functions.c
  */
-echo "*** Testing usleep() : error conditions ***\n";
-
+ 
 set_time_limit(20); 
+
+echo "*** Testing usleep() : error conditions ***\n";
 
 echo "\n-- Testing usleep() function with zero arguments --\n";
 var_dump( usleep() );

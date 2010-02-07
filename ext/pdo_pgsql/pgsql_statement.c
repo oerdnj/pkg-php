@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pgsql_statement.c 290214 2009-11-04 19:32:27Z mbeccati $ */
+/* $Id: pgsql_statement.c 281107 2009-05-25 19:41:13Z kalle $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -129,6 +129,34 @@ static int pgsql_stmt_execute(pdo_stmt_t *stmt TSRMLS_DC)
 	
 	S->current_row = 0;
 
+	if (S->cursor_name) {
+		char *q = NULL;
+
+		if (S->is_prepared) {
+			spprintf(&q, 0, "CLOSE %s", S->cursor_name);
+			S->result = PQexec(H->server, q);
+			efree(q);
+		}
+
+		spprintf(&q, 0, "DECLARE %s SCROLL CURSOR WITH HOLD FOR %s", S->cursor_name, stmt->active_query_string);
+		S->result = PQexec(H->server, q);
+		efree(q);
+
+		/* check if declare failed */
+		status = PQresultStatus(S->result);
+		if (status != PGRES_COMMAND_OK && status != PGRES_TUPLES_OK) {
+			pdo_pgsql_error_stmt(stmt, status, pdo_pgsql_sqlstate(S->result));
+			return 0;
+		}
+
+		/* the cursor was declared correctly */
+		S->is_prepared = 1;
+
+		/* fetch to be able to get the number of tuples later, but don't advance the cursor pointer */
+		spprintf(&q, 0, "FETCH FORWARD 0 FROM %s", S->cursor_name);
+		S->result = PQexec(H->server, q);
+		efree(q);
+	} else
 #if HAVE_PQPREPARE
 	if (S->stmt_name) {
 		/* using a prepared statement */
@@ -157,7 +185,7 @@ stmt_retry:
 					 * deallocate it and retry ONCE (thies 2005.12.15)
 					 */
 					if (!strcmp(sqlstate, "42P05")) {
-						char buf[100]; /* stmt_name == "pdo_crsr_%08x" */
+						char buf[100]; /* stmt_name == "pdo_crsr_%016lx" */
 						PGresult *res;
 						snprintf(buf, sizeof(buf), "DEALLOCATE %s", S->stmt_name);
 						res = PQexec(H->server, buf);
@@ -182,12 +210,7 @@ stmt_retry:
 				0);
 	} else
 #endif
-	if (S->cursor_name) {
-		char *q = NULL;
-		spprintf(&q, 0, "DECLARE %s CURSOR FOR %s", S->cursor_name, stmt->active_query_string);
-		S->result = PQexec(H->server, q);
-		efree(q);
-	} else {
+	{
 		S->result = PQexec(H->server, stmt->active_query_string);
 	}
 	status = PQresultStatus(S->result);
@@ -350,19 +373,23 @@ static int pgsql_stmt_fetch(pdo_stmt_t *stmt,
 	pdo_pgsql_stmt *S = (pdo_pgsql_stmt*)stmt->driver_data;
 
 	if (S->cursor_name) {
-		char *ori_str;
+		char *ori_str = NULL;
 		char *q = NULL;
 		ExecStatusType status;
 
 		switch (ori) {
-			case PDO_FETCH_ORI_NEXT: 	ori_str = "FORWARD"; break;
-			case PDO_FETCH_ORI_PRIOR:	ori_str = "BACKWARD"; break;
-			case PDO_FETCH_ORI_REL:		ori_str = "RELATIVE"; break;
+			case PDO_FETCH_ORI_NEXT: 	spprintf(&ori_str, 0, "NEXT"); break;
+			case PDO_FETCH_ORI_PRIOR:	spprintf(&ori_str, 0, "BACKWARD"); break;
+			case PDO_FETCH_ORI_FIRST:	spprintf(&ori_str, 0, "FIRST"); break;
+			case PDO_FETCH_ORI_LAST:	spprintf(&ori_str, 0, "LAST"); break;
+			case PDO_FETCH_ORI_ABS:		spprintf(&ori_str, 0, "ABSOLUTE %ld", offset); break;
+			case PDO_FETCH_ORI_REL:		spprintf(&ori_str, 0, "RELATIVE %ld", offset); break;
 			default:
 				return 0;
 		}
 		
-		spprintf(&q, 0, "FETCH %s %ld FROM %s", ori_str, offset, S->cursor_name);
+		spprintf(&q, 0, "FETCH %s FROM %s", ori_str, S->cursor_name);
+		efree(ori_str);
 		S->result = PQexec(S->H->server, q);
 		efree(q);
 		status = PQresultStatus(S->result);
@@ -372,9 +399,12 @@ static int pgsql_stmt_fetch(pdo_stmt_t *stmt,
 			return 0;
 		}
 
-		S->current_row = 1;
-		return 1;	
-		
+		if (PQntuples(S->result)) {
+			S->current_row = 1;
+			return 1;
+		} else {
+			return 0;
+		}
 	} else {
 		if (S->current_row < stmt->row_count) {
 			S->current_row++;
@@ -447,110 +477,6 @@ static int pgsql_stmt_describe(pdo_stmt_t *stmt, int colno TSRMLS_DC)
 	return 1;
 }
 
-/* PQunescapeBytea() from PostgreSQL 7.3 to provide bytea unescape feature to 7.2 users.
-   Renamed to php_pdo_pgsql_unescape_bytea() */
-/*
- *		PQunescapeBytea - converts the null terminated string representation
- *		of a bytea, strtext, into binary, filling a buffer. It returns a
- *		pointer to the buffer which is NULL on error, and the size of the
- *		buffer in retbuflen. The pointer may subsequently be used as an
- *		argument to the function free(3). It is the reverse of PQescapeBytea.
- *
- *		The following transformations are reversed:
- *		'\0' == ASCII  0 == \000
- *		'\'' == ASCII 39 == \'
- *		'\\' == ASCII 92 == \\
- *
- *		States:
- *		0	normal		0->1->2->3->4
- *		1	\			   1->5
- *		2	\0			   1->6
- *		3	\00
- *		4	\000
- *		5	\'
- *		6	\\
- */
-static unsigned char *php_pdo_pgsql_unescape_bytea(unsigned char *strtext, size_t *retbuflen)
-{
-	size_t		buflen;
-	unsigned char *buffer,
-			   *sp,
-			   *bp;
-	unsigned int state = 0;
-
-	if (strtext == NULL)
-		return NULL;
-	buflen = strlen(strtext);	/* will shrink, also we discover if
-								 * strtext */
-	buffer = (unsigned char *) emalloc(buflen);	/* isn't NULL terminated */
-	for (bp = buffer, sp = strtext; *sp != '\0'; bp++, sp++)
-	{
-		switch (state)
-		{
-			case 0:
-				if (*sp == '\\')
-					state = 1;
-				*bp = *sp;
-				break;
-			case 1:
-				if (*sp == '\'')	/* state=5 */
-				{				/* replace \' with 39 */
-					bp--;
-					*bp = '\'';
-					buflen--;
-					state = 0;
-				}
-				else if (*sp == '\\')	/* state=6 */
-				{				/* replace \\ with 92 */
-					bp--;
-					*bp = '\\';
-					buflen--;
-					state = 0;
-				}
-				else
-				{
-					if (isdigit(*sp))
-						state = 2;
-					else
-						state = 0;
-					*bp = *sp;
-				}
-				break;
-			case 2:
-				if (isdigit(*sp))
-					state = 3;
-				else
-					state = 0;
-				*bp = *sp;
-				break;
-			case 3:
-				if (isdigit(*sp))		/* state=4 */
-				{
-					unsigned char *start, *end, buf[4]; /* 000 + '\0' */
-					
-					bp -= 3;
-					memcpy(buf, sp-2, 3);
-					buf[3] = '\0';
-					start = buf;
- 					*bp = (unsigned char)strtoul(start, (char **)&end, 8);
-					buflen -= 3;
-					state = 0;
-				}
-				else
-				{
-					*bp = *sp;
-					state = 0;
-				}
-				break;
-		}
-	}
-	buffer = erealloc(buffer, buflen+1);
-	buffer[buflen] = '\0';
-
-	*retbuflen = buflen;
-	return buffer;
-}
-
 static int pgsql_stmt_get_col(pdo_stmt_t *stmt, int colno, char **ptr, unsigned long *len, int *caller_frees  TSRMLS_DC)
 {
 	pdo_pgsql_stmt *S = (pdo_pgsql_stmt*)stmt->driver_data;
@@ -598,12 +524,20 @@ static int pgsql_stmt_get_col(pdo_stmt_t *stmt, int colno, char **ptr, unsigned 
 					*len = 0;
 					return 0;
 				} else {
-					*ptr = php_pdo_pgsql_unescape_bytea(*ptr, &tmp_len);
+					char *tmp_ptr = PQunescapeBytea(*ptr, &tmp_len);
+					if (!tmp_ptr) {
+						/* PQunescapeBytea returned an error */
+						*len = 0;
+						return 0;
+					}
 					if (!tmp_len) {
 						/* Empty string, return as empty stream */
 						*ptr = (char *)php_stream_memory_open(TEMP_STREAM_READONLY, "", 0);
+						PQfreemem(tmp_ptr);
 						*len = 0;
 					} else {
+						*ptr = estrndup(tmp_ptr, tmp_len);
+						PQfreemem(tmp_ptr);
 						*len = tmp_len;
 						*caller_frees = 1;
 					}
@@ -613,6 +547,7 @@ static int pgsql_stmt_get_col(pdo_stmt_t *stmt, int colno, char **ptr, unsigned 
 			case PDO_PARAM_STR:
 			case PDO_PARAM_STMT:
 			case PDO_PARAM_INPUT_OUTPUT:
+			case PDO_PARAM_ZVAL:
 			default:
 				break;
 		}
@@ -650,18 +585,16 @@ static int pgsql_stmt_get_column_meta(pdo_stmt_t *stmt, long colno, zval *return
 		/* Failed to get system catalogue, but return success
 		 * with the data we have collected so far
 		 */
-		PQclear(res);
-		return 1;
+		goto done;
 	}
 
 	/* We want exactly one row returned */
 	if (1 != PQntuples(res)) {
-		PQclear(res);
-		return 1;
+		goto done;
 	}
 
 	add_assoc_string(return_value, "native_type", PQgetvalue(res, 0, 0), 1);
-
+done:
 	PQclear(res);		
 	return 1;
 }

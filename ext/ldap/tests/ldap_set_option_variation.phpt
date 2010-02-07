@@ -31,6 +31,11 @@ var_dump(
 ldap_get_option($link, LDAP_OPT_TIMELIMIT, $option);
 var_dump(
 	$option,
+	ldap_set_option($link, LDAP_OPT_NETWORK_TIMEOUT, 44)
+);
+ldap_get_option($link, LDAP_OPT_NETWORK_TIMEOUT, $option);
+var_dump(
+	$option,
 	ldap_set_option($link, LDAP_OPT_REFERRALS, true)
 );
 ldap_get_option($link, LDAP_OPT_REFERRALS, $option);
@@ -64,6 +69,8 @@ bool(true)
 int(123)
 bool(true)
 int(33)
+bool(true)
+int(44)
 bool(true)
 bool(true)
 bool(true)

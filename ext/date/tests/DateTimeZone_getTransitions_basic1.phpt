@@ -25,14 +25,14 @@ if (!is_array($tran)) {
 echo "\n-- Total number of transitions: " . count($tran). " --\n"; 
 
 echo "\n-- Format a sample entry for Spring 1963 --\n";
-var_dump( $tran[96] );	
+var_dump( $tran[97] );	
 
 ?>
 ===DONE===
 --EXPECT--
 *** Testing DateTimeZone::getTransitions() : basic functionality ***
 
--- Total number of transitions: 242 --
+-- Total number of transitions: 243 --
 
 -- Format a sample entry for Spring 1963 --
 array(5) {

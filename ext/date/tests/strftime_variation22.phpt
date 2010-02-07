@@ -5,8 +5,8 @@ Test strftime() function : usage variation - Checking Preferred date and time re
 if (strtoupper(substr(PHP_OS, 0, 3)) == 'WIN') {
     die("skip Test is not valid for Windows");
 }
-if (!setlocale(LC_ALL, "en_US")) {
-    die("skip The en_US locale is not available");
+if(!setlocale(LC_ALL, "en_US.utf8", "en_US")) {
+	die("skip Locale en_US.utf8 or en_US is  needed by test and is not available");
 }
 ?>
 --FILE--
@@ -20,7 +20,7 @@ if (!setlocale(LC_ALL, "en_US")) {
 echo "*** Testing strftime() : usage variation ***\n";
 
 // Initialise function arguments not being substituted (if any)
-setlocale(LC_ALL, "en_US");
+setlocale(LC_ALL, "en_US.utf8", "en_US");
 date_default_timezone_set("Asia/Calcutta");
 $timestamp = mktime(8, 8, 8, 8, 8, 2008);
 

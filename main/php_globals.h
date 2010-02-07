@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_globals.h 289214 2009-10-05 13:56:49Z dmitry $ */
+/* $Id: php_globals.h 289442 2009-10-09 19:06:10Z pajoye $ */
 
 #ifndef PHP_GLOBALS_H
 #define PHP_GLOBALS_H
@@ -150,17 +150,25 @@ struct _php_core_globals {
 	char *last_error_message;
 	char *last_error_file;
 	int  last_error_lineno;
-	error_handling_t  error_handling;
-	zend_class_entry *exception_class;
 
 	char *disable_functions;
 	char *disable_classes;
 	zend_bool allow_url_include;
+	zend_bool exit_on_timeout;
 #ifdef PHP_WIN32
 	zend_bool com_initialized;
 #endif
 	long max_input_nesting_level;
 	zend_bool in_user_include;
+
+	char *user_ini_filename;
+	long user_ini_cache_ttl;
+
+	char *request_order;
+
+	zend_bool mail_x_header;
+	char *mail_log;
+
 	zend_bool in_error_log;
 };
 

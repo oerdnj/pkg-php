@@ -1,7 +1,5 @@
 --TEST--
 Test DateTimeZone class registration
---SKIPIF--
-<?php if (!extension_loaded("reflection")) die("skip"); ?>
 --FILE--
 <?php
 
@@ -28,7 +26,7 @@ object(ReflectionClass)#%d (1) {
   string(12) "DateTimeZone"
 }
 ..and get names of all its methods
-array(6) {
+array(7) {
   [0]=>
   &object(ReflectionMethod)#%d (2) {
     ["name"]=>
@@ -60,11 +58,18 @@ array(6) {
   [4]=>
   &object(ReflectionMethod)#%d (2) {
     ["name"]=>
-    string(17) "listAbbreviations"
+    string(11) "getLocation"
     ["class"]=>
     string(12) "DateTimeZone"
   }
   [5]=>
+  &object(ReflectionMethod)#%d (2) {
+    ["name"]=>
+    string(17) "listAbbreviations"
+    ["class"]=>
+    string(12) "DateTimeZone"
+  }
+  [6]=>
   &object(ReflectionMethod)#%d (2) {
     ["name"]=>
     string(15) "listIdentifiers"
@@ -73,6 +78,34 @@ array(6) {
   }
 }
 ..and get names of all its class constants
-array(0) {
+array(14) {
+  ["AFRICA"]=>
+  int(1)
+  ["AMERICA"]=>
+  int(2)
+  ["ANTARCTICA"]=>
+  int(4)
+  ["ARCTIC"]=>
+  int(8)
+  ["ASIA"]=>
+  int(16)
+  ["ATLANTIC"]=>
+  int(32)
+  ["AUSTRALIA"]=>
+  int(64)
+  ["EUROPE"]=>
+  int(128)
+  ["INDIAN"]=>
+  int(256)
+  ["PACIFIC"]=>
+  int(512)
+  ["UTC"]=>
+  int(1024)
+  ["ALL"]=>
+  int(2047)
+  ["ALL_WITH_BC"]=>
+  int(4095)
+  ["PER_COUNTRY"]=>
+  int(4096)
 }
 ===DONE===

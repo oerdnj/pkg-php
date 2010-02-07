@@ -16,4 +16,4 @@ $image = imagecreatetruecolor( 100, 100 );
 imagerectangle( 'wrong param', 0, 0, 50, 50, imagecolorallocate($image, 255, 255, 255) );
 ?> 
 --EXPECTF--
-Warning: imagerectangle(): supplied argument is not a valid Image resource in %s.php on line %d
+Warning: imagerectangle() expects parameter 1 to be resource, %s given in %s on line %d

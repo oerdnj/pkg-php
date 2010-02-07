@@ -1,11 +1,5 @@
 --TEST--
 Test return type and value for expected input atanh()
---SKIPIF--
-<?php
-if (!function_exists("atanh")) {
-	die("SKIP atanh - not supported\n");
-}
-?> 
 --INI--
 precision = 14
 --FILE--

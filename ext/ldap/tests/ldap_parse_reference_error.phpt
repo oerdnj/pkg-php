@@ -19,11 +19,11 @@ var_dump(
 ?>
 ===DONE===
 --EXPECTF--
-Warning: Wrong parameter count for ldap_parse_reference() in %s on line %d
+Warning: ldap_parse_reference() expects exactly 3 parameters, 2 given in %s on line %d
 
 Warning: ldap_parse_reference(): supplied resource is not a valid ldap result entry resource in %s on line %d
 
-Warning: Wrong parameter count for ldap_parse_reference() in %s on line %d
+Warning: ldap_parse_reference() expects exactly 3 parameters, 4 given in %s on line %d
 NULL
 bool(false)
 NULL

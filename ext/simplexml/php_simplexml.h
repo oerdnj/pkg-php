@@ -16,19 +16,13 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_simplexml.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: php_simplexml.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_SIMPLEXML_H
 #define PHP_SIMPLEXML_H
 
 extern zend_module_entry simplexml_module_entry;
 #define phpext_simplexml_ptr &simplexml_module_entry
-
-#ifdef PHP_WIN32
-#define PHP_SIMPLEXML_API __declspec(dllexport)
-#else
-#define PHP_SIMPLEXML_API
-#endif
 
 #ifdef ZTS
 #include "TSRM.h"
@@ -74,6 +68,7 @@ typedef struct {
 		zval                  *data;
 	} iter;
 	zval *tmp;
+	zend_function *fptr_count;
 } php_sxe_object;
 
 #ifdef ZTS
@@ -82,7 +77,17 @@ typedef struct {
 #define SIMPLEXML_G(v) (simplexml_globals.v)
 #endif
 
-ZEND_API zend_class_entry *sxe_get_element_class_entry();
+#ifdef PHP_WIN32
+#	ifdef PHP_SIMPLEXML_EXPORTS
+#		define PHP_SXE_API __declspec(dllexport)
+#	else
+#		define PHP_SXE_API __declspec(dllimport)
+#	endif
+#else
+#	define PHP_SXE_API ZEND_API
+#endif
+
+PHP_SXE_API zend_class_entry *sxe_get_element_class_entry();
 
 #endif
 

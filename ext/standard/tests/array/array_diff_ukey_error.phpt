@@ -40,16 +40,16 @@ var_dump( array_diff_ukey() );
 
 -- Testing array_diff_ukey() function with more than expected no. of arguments --
 
-Warning: array_diff_ukey(): Not a valid callback 10 in %s on line %d
+Warning: array_diff_ukey() expects parameter 4 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 -- Testing array_diff_ukey() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for array_diff_ukey() in %s on line %d
+Warning: array_diff_ukey(): at least 3 parameters are required, 2 given in %s on line %d
 NULL
 
 -- Testing array_diff_ukey() function with no arguments --
 
-Warning: Wrong parameter count for array_diff_ukey() in %s on line %d
+Warning: array_diff_ukey(): at least 3 parameters are required, 0 given in %s on line %d
 NULL
 ===DONE===

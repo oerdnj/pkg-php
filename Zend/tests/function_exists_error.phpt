@@ -25,12 +25,12 @@ var_dump(function_exists());
 
 Too many arguments
 
-Warning: Wrong parameter count for function_exists() in %s on line %d
+Warning: function_exists() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
 
 Too few arguments
 
-Warning: Wrong parameter count for function_exists() in %s on line %d
+Warning: function_exists() expects exactly 1 parameter, 0 given in %s on line %d
 NULL
 ===Done===
 

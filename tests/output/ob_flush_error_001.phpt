@@ -22,6 +22,6 @@ echo "Done";
 
 -- Testing ob_flush() function with one argument --
 
-Warning: Wrong parameter count for ob_flush() in %s on line 13
+Warning: ob_flush() expects exactly 0 parameters, 1 given in %s on line 13
 NULL
 Done

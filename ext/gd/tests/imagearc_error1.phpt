@@ -25,5 +25,5 @@ ob_end_clean();
 echo md5(base64_encode($img));
 ?>
 --EXPECTF--
-Warning: Wrong parameter count for imagearc() in %s on line %d
+Warning: imagearc() expects exactly 8 parameters, 7 given in %s on line %d
 abebb25b5a2813cfbf92f1f24365786a

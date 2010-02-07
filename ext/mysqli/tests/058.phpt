@@ -1,21 +1,24 @@
 --TEST--
 multiple binds
 --SKIPIF--
-<?php require_once('skipif.inc'); ?>
+<?php
+require_once('skipif.inc');
+require_once('skipifconnectfailure.inc');
+?>
 --FILE--
 <?php
 	include "connect.inc";
-	
+
 	/*** test mysqli_connect 127.0.0.1 ***/
-	$link = mysqli_connect($host, $user, $passwd);
+	$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket);
 
-	mysqli_select_db($link, "test");
+	mysqli_select_db($link, $db);
 
-  	mysqli_query($link,"DROP TABLE IF EXISTS mbind");
-  	mysqli_query($link,"CREATE TABLE mbind (a int, b varchar(10))");
+	mysqli_query($link,"DROP TABLE IF EXISTS mbind");
+	mysqli_query($link,"CREATE TABLE mbind (a int, b varchar(10))");
 
 	$stmt = mysqli_prepare($link, "INSERT INTO mbind VALUES (?,?)");
-	
+
 	mysqli_bind_param($stmt, "is", $a, $b);
 
 	$a = 1;
@@ -43,15 +46,28 @@ multiple binds
 	var_dump((array($e,$f,$g,$h)));
 
 	mysqli_close($link);
+	print "done!";
 ?>
---EXPECT--
+--CLEAN--
+<?php
+include "connect.inc";
+if (!$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket))
+   printf("[c001] [%d] %s\n", mysqli_connect_errno(), mysqli_connect_error());
+
+if (!mysqli_query($link, "DROP TABLE IF EXISTS mbind"))
+	printf("[c002] Cannot drop table, [%d] %s\n", mysqli_errno($link), mysqli_error($link));
+
+mysqli_close($link);
+?>
+--EXPECTF--
 array(4) {
   [0]=>
   int(1)
   [1]=>
-  string(3) "foo"
+  %unicode|string%(3) "foo"
   [2]=>
   int(2)
   [3]=>
-  string(3) "bar"
+  %unicode|string%(3) "bar"
 }
+done!

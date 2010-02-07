@@ -179,31 +179,17 @@ string(109) ".The hebrev function converts logical Hebrew text to visual text
 .The function tries to avoid breaking words
 "
 -- Iteration 10 --
-string(109) ".The hebrev function converts logical Hebrew text to visual text
-.The function tries to avoid breaking words
-"
+
+Warning: hebrev() expects parameter 2 to be long, array given in %s on line %d
+NULL
 -- Iteration 11 --
-string(109) "xttel uaisv
-tot ext
-ewbrHel cagilos rtveonc
-ontincfuv reebh
-he.Ts
-rdwog inakreb
-idvoa
-tos ietrn ioctunf
-he.T
-"
+
+Warning: hebrev() expects parameter 2 to be long, array given in %s on line %d
+NULL
 -- Iteration 12 --
-string(109) "xttel uaisv
-tot ext
-ewbrHel cagilos rtveonc
-ontincfuv reebh
-he.Ts
-rdwog inakreb
-idvoa
-tos ietrn ioctunf
-he.T
-"
+
+Warning: hebrev() expects parameter 2 to be long, array given in %s on line %d
+NULL
 -- Iteration 13 --
 string(109) "xttel uaisv
 tot ext
@@ -243,14 +229,16 @@ string(109) ".The hebrev function converts logical Hebrew text to visual text
 .The function tries to avoid breaking words
 "
 -- Iteration 19 --
-string(109) ".The hebrev function converts logical Hebrew text to visual text
-.The function tries to avoid breaking words
-"
+
+Warning: hebrev() expects parameter 2 to be long, string given in %s on line %d
+NULL
 -- Iteration 20 --
-string(109) ".The hebrev function converts logical Hebrew text to visual text
-.The function tries to avoid breaking words
-"
+
+Warning: hebrev() expects parameter 2 to be long, string given in %s on line %d
+NULL
 -- Iteration 21 --
+
+Notice: A non well formed numeric value encountered in %s on line %d
 string(109) "textual vis
 to
 textrew Heb
@@ -265,28 +253,33 @@ riest
 tionfuncThe .
 "
 -- Iteration 22 --
+
+Notice: A non well formed numeric value encountered in %s on line %d
 string(109) ".The hebrev function converts logical Hebrew text to visual text
 .The function tries to avoid breaking words
 "
 -- Iteration 23 --
-string(109) ".The hebrev function converts logical Hebrew text to visual text
-.The function tries to avoid breaking words
+string(109) "textual vis
+to
+textrew Heb
+icallog
+ertsconvion unctf
+brevhe
+.Therds
+wo
+kingbreaoid av
+to
+riest
+tionfuncThe .
 "
 -- Iteration 24 --
 
-Notice: Object of class sample could not be converted to int in %s on line %d
-string(109) "xttel uaisv
-tot ext
-ewbrHel cagilos rtveonc
-ontincfuv reebh
-he.Ts
-rdwog inakreb
-idvoa
-tos ietrn ioctunf
-he.T
-"
+Warning: hebrev() expects parameter 2 to be long, object given in %s on line %d
+NULL
 -- Iteration 25 --
-string(109) "%a"
+
+Warning: hebrev() expects parameter 2 to be long, resource given in %s on line %d
+NULL
 -- Iteration 26 --
 string(109) ".The hebrev function converts logical Hebrew text to visual text
 .The function tries to avoid breaking words

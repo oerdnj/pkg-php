@@ -24,9 +24,9 @@ parse_str($s1, $res_array, true);
 
 -- Testing htmlentities() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for parse_str() in %s on line %d
+Warning: parse_str() expects at least 1 parameter, 0 given in %s on line %d
 
 -- Testing htmlentities() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for parse_str() in %s on line %d
+Warning: parse_str() expects at most 2 parameters, 3 given in %s on line %d
 ===DONE===

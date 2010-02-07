@@ -14,4 +14,4 @@ imagecopymerge();
 
 ?>
 --EXPECTF--
-Warning: Wrong parameter count for imagecopymerge() in %s on line %d
+Warning: imagecopymerge() expects exactly 9 parameters, 0 given in %s on line %d

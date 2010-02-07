@@ -126,9 +126,9 @@ Warning: imap_fetchheader(): Bad message number in %s on line %d
 bool(false)
 
 -- Iteration 2 --
-string(%d) "From: foo@anywhere.com
+%unicode|string%(%d) "From: foo@anywhere.com
 Subject: Test msg 1
-To: %s
+To: webmaster@something.com
 MIME-Version: 1.0
 Content-Type: MULTIPART/mixed; BOUNDARY="%s"
 
@@ -180,9 +180,9 @@ Warning: imap_fetchheader(): Bad message number in %s on line %d
 bool(false)
 
 -- Iteration 12 --
-string(%d) "From: foo@anywhere.com
+%unicode|string%(%d) "From: foo@anywhere.com
 Subject: Test msg 1
-To: %s
+To: webmaster@something.com
 MIME-Version: 1.0
 Content-Type: MULTIPART/mixed; BOUNDARY="%s"
 
@@ -194,9 +194,9 @@ Warning: imap_fetchheader(): Bad message number in %s on line %d
 bool(false)
 
 -- Iteration 14 --
-string(%d) "From: foo@anywhere.com
+%unicode|string%(%d) "From: foo@anywhere.com
 Subject: Test msg 1
-To: %s
+To: webmaster@something.com
 MIME-Version: 1.0
 Content-Type: MULTIPART/mixed; BOUNDARY="%s"
 
@@ -209,71 +209,53 @@ bool(false)
 
 -- Iteration 16 --
 
-Warning: imap_fetchheader(): Bad message number in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 2 to be long, %unicode_string_optional% given in %s on line %d
+NULL
 
 -- Iteration 17 --
 
-Warning: imap_fetchheader(): Bad message number in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 2 to be long, %unicode_string_optional% given in %s on line %d
+NULL
 
 -- Iteration 18 --
 
-Warning: imap_fetchheader(): Bad message number in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 2 to be long, %unicode_string_optional% given in %s on line %d
+NULL
 
 -- Iteration 19 --
 
-Warning: imap_fetchheader(): Bad message number in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 2 to be long, %unicode_string_optional% given in %s on line %d
+NULL
 
 -- Iteration 20 --
 
-Warning: imap_fetchheader(): Bad message number in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 2 to be long, %unicode_string_optional% given in %s on line %d
+NULL
 
 -- Iteration 21 --
 
-Warning: imap_fetchheader(): Bad message number in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 2 to be long, array given in %s on line %d
+NULL
 
 -- Iteration 22 --
-string(%d) "From: foo@anywhere.com
-Subject: Test msg 1
-To: %s
-MIME-Version: 1.0
-Content-Type: MULTIPART/mixed; BOUNDARY="%s"
 
-"
+Warning: imap_fetchheader() expects parameter 2 to be long, array given in %s on line %d
+NULL
 
 -- Iteration 23 --
-string(%d) "From: foo@anywhere.com
-Subject: Test msg 1
-To: %s
-MIME-Version: 1.0
-Content-Type: MULTIPART/mixed; BOUNDARY="%s"
 
-"
+Warning: imap_fetchheader() expects parameter 2 to be long, array given in %s on line %d
+NULL
 
 -- Iteration 24 --
-string(%d) "From: foo@anywhere.com
-Subject: Test msg 1
-To: %s
-MIME-Version: 1.0
-Content-Type: MULTIPART/mixed; BOUNDARY="%s"
 
-"
+Warning: imap_fetchheader() expects parameter 2 to be long, array given in %s on line %d
+NULL
 
 -- Iteration 25 --
 
-Notice: Object of class classA could not be converted to int in %s on line %d
-string(%d) "From: foo@anywhere.com
-Subject: Test msg 1
-To: %s
-MIME-Version: 1.0
-Content-Type: MULTIPART/mixed; BOUNDARY="%s"
-
-"
+Warning: imap_fetchheader() expects parameter 2 to be long, object given in %s on line %d
+NULL
 
 -- Iteration 26 --
 
@@ -287,6 +269,6 @@ bool(false)
 
 -- Iteration 28 --
 
-Warning: imap_fetchheader(): Bad message number in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 2 to be long, resource given in %s on line %d
+NULL
 ===DONE===

@@ -99,122 +99,122 @@ fclose($fp);
 
 -- Iteration 1 --
 
-Warning: key(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: key() expects parameter 1 to be array, integer given in %s on line %d
+NULL
 
 -- Iteration 2 --
 
-Warning: key(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: key() expects parameter 1 to be array, integer given in %s on line %d
+NULL
 
 -- Iteration 3 --
 
-Warning: key(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: key() expects parameter 1 to be array, integer given in %s on line %d
+NULL
 
 -- Iteration 4 --
 
-Warning: key(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: key() expects parameter 1 to be array, integer given in %s on line %d
+NULL
 
 -- Iteration 5 --
 
-Warning: key(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: key() expects parameter 1 to be array, double given in %s on line %d
+NULL
 
 -- Iteration 6 --
 
-Warning: key(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: key() expects parameter 1 to be array, double given in %s on line %d
+NULL
 
 -- Iteration 7 --
 
-Warning: key(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: key() expects parameter 1 to be array, double given in %s on line %d
+NULL
 
 -- Iteration 8 --
 
-Warning: key(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: key() expects parameter 1 to be array, double given in %s on line %d
+NULL
 
 -- Iteration 9 --
 
-Warning: key(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: key() expects parameter 1 to be array, double given in %s on line %d
+NULL
 
 -- Iteration 10 --
 
-Warning: key(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: key() expects parameter 1 to be array, null given in %s on line %d
+NULL
 
 -- Iteration 11 --
 
-Warning: key(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: key() expects parameter 1 to be array, null given in %s on line %d
+NULL
 
 -- Iteration 12 --
 
-Warning: key(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: key() expects parameter 1 to be array, boolean given in %s on line %d
+NULL
 
 -- Iteration 13 --
 
-Warning: key(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: key() expects parameter 1 to be array, boolean given in %s on line %d
+NULL
 
 -- Iteration 14 --
 
-Warning: key(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: key() expects parameter 1 to be array, boolean given in %s on line %d
+NULL
 
 -- Iteration 15 --
 
-Warning: key(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: key() expects parameter 1 to be array, boolean given in %s on line %d
+NULL
 
 -- Iteration 16 --
 
-Warning: key(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: key() expects parameter 1 to be array, string given in %s on line %d
+NULL
 
 -- Iteration 17 --
 
-Warning: key(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: key() expects parameter 1 to be array, string given in %s on line %d
+NULL
 
 -- Iteration 18 --
 NULL
 
 -- Iteration 19 --
 
-Warning: key(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: key() expects parameter 1 to be array, string given in %s on line %d
+NULL
 
 -- Iteration 20 --
 
-Warning: key(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: key() expects parameter 1 to be array, string given in %s on line %d
+NULL
 
 -- Iteration 21 --
 
-Warning: key(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: key() expects parameter 1 to be array, string given in %s on line %d
+NULL
 
 -- Iteration 22 --
 string(4) "var1"
 
 -- Iteration 23 --
 
-Warning: key(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: key() expects parameter 1 to be array, null given in %s on line %d
+NULL
 
 -- Iteration 24 --
 
-Warning: key(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: key() expects parameter 1 to be array, null given in %s on line %d
+NULL
 
 -- Iteration 25 --
 
-Warning: key(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: key() expects parameter 1 to be array, resource given in %s on line %d
+NULL
 ===DONE===

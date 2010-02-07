@@ -56,18 +56,16 @@ array(13) {
   ["fraction"]=>
   float(0)
   ["warning_count"]=>
-  int(2)
+  int(1)
   ["warnings"]=>
-  array(2) {
+  array(1) {
     [4]=>
-    string(29) "Double timezone specification"
-    [8]=>
     string(29) "Double timezone specification"
   }
   ["error_count"]=>
-  int(6)
+  int(7)
   ["errors"]=>
-  array(6) {
+  array(7) {
     [0]=>
     string(20) "Unexpected character"
     [1]=>
@@ -76,6 +74,8 @@ array(13) {
     string(20) "Unexpected character"
     [7]=>
     string(20) "Unexpected character"
+    [8]=>
+    string(29) "Double timezone specification"
     [17]=>
     string(20) "Unexpected character"
     [18]=>

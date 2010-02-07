@@ -40,34 +40,34 @@ echo "Done";
 *** Testing array_map() : non-permmited built-in functions ***
 -- Iteration 1 --
 
-Warning: array_map(): The first argument, 'echo', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, function 'echo' not found or invalid function name in %s on line %d
 NULL
 -- Iteration 2 --
 
-Warning: array_map(): The first argument, 'array', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, function 'array' not found or invalid function name in %s on line %d
 NULL
 -- Iteration 3 --
 
-Warning: array_map(): The first argument, 'empty', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, function 'empty' not found or invalid function name in %s on line %d
 NULL
 -- Iteration 4 --
 
-Warning: array_map(): The first argument, 'eval', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, function 'eval' not found or invalid function name in %s on line %d
 NULL
 -- Iteration 5 --
 
-Warning: array_map(): The first argument, 'exit', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, function 'exit' not found or invalid function name in %s on line %d
 NULL
 -- Iteration 6 --
 
-Warning: array_map(): The first argument, 'isset', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, function 'isset' not found or invalid function name in %s on line %d
 NULL
 -- Iteration 7 --
 
-Warning: array_map(): The first argument, 'list', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, function 'list' not found or invalid function name in %s on line %d
 NULL
 -- Iteration 8 --
 
-Warning: array_map(): The first argument, 'print', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, function 'print' not found or invalid function name in %s on line %d
 NULL
 Done

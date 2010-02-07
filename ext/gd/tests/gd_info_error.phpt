@@ -30,9 +30,9 @@ var_dump(gd_info($extra_arg_string, $extra_arg_number));
 
 -- Testing gd_info() function with more than expected number of arguments --
 
-Warning: Wrong parameter count for gd_info() in %s on line %d
-NULL
+Warning: gd_info() expects exactly 0 parameters, 1 given in %s on line %d
+bool(false)
 
-Warning: Wrong parameter count for gd_info() in %s on line %d
-NULL
+Warning: gd_info() expects exactly 0 parameters, 2 given in %s on line %d
+bool(false)
 ===DONE===

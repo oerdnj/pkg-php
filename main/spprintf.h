@@ -16,9 +16,9 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spprintf.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: spprintf.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
-/* 
+/*
 
 The pbuf parameter of all spprintf version receives a pointer to the allocated
 buffer. This buffer must be freed manually after usage using efree() function.

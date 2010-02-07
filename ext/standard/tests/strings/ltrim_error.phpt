@@ -33,12 +33,12 @@ var_dump(ltrim($hello, "a..b..c"));
 
 -- Testing ltrim() function with no arguments --
 
-Warning: Wrong parameter count for ltrim() in %s on line %d
+Warning: ltrim() expects at least 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing ltrim() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for ltrim() in %s on line %d
+Warning: ltrim() expects at most 2 parameters, 3 given in %s on line %d
 NULL
 
 -- Test ltrim function with various invalid charlists

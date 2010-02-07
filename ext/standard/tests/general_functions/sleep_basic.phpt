@@ -18,7 +18,7 @@ $time_start = microtime(true);
 // Sleep for a while
 sleep($sleeptime);
 
-// Test passes if sleeps for at least 98 of specified time 
+// Test passes if sleeps for at least 98% of specified time 
 $sleeplow = $sleeptime - ($sleeptime * 2 /100);
 
 $time_end = microtime(true);

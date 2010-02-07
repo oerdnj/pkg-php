@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: xml_common.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: xml_common.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_XML_COMMON_H
 #define PHP_XML_COMMON_H
@@ -35,14 +35,19 @@ typedef struct _dom_object {
 } dom_object;
 
 #ifdef PHP_WIN32
-#ifdef PHPAPI
-#undef PHPAPI
-#endif
-#ifdef DOM_EXPORTS
-#define PHPAPI __declspec(dllexport)
-#else
-#define PHPAPI __declspec(dllimport)
-#endif /* DOM_EXPORTS */
+#	ifdef PHPAPI
+#		undef PHPAPI
+#	endif
+#	ifdef DOM_EXPORTS
+#		define PHPAPI __declspec(dllexport)
+#	else
+#		define PHPAPI __declspec(dllimport)
+#	endif /* DOM_EXPORTS */
+#elif defined(__GNUC__) && __GNUC__ >= 4
+#	ifdef PHPAPI
+#		undef PHPAPI
+#	endif
+#	define PHPAPI __attribute__ ((visibility("default")))
 #endif /* PHP_WIN32 */
 
 #define PHP_DOM_EXPORT PHPAPI
@@ -90,3 +95,12 @@ PHP_DOM_EXPORT xmlNodePtr dom_object_get_node(dom_object *obj);
 	DOM_GET_OBJ(__ptr, __id, __prtype, __intern);
 
 #endif
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

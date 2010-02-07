@@ -158,40 +158,25 @@ array(2) {
   int(2)
 }
 -- Iteration 7 --
-array(2) {
-  [0]=>
-  int(1)
-  [1]=>
-  int(2)
-}
+
+Warning: array_pad() expects parameter 2 to be long, array given in %s on line %d
+NULL
 -- Iteration 8 --
-array(2) {
-  [0]=>
-  int(1)
-  [1]=>
-  int(2)
-}
+
+Warning: array_pad() expects parameter 2 to be long, array given in %s on line %d
+NULL
 -- Iteration 9 --
-array(2) {
-  [0]=>
-  int(1)
-  [1]=>
-  int(2)
-}
+
+Warning: array_pad() expects parameter 2 to be long, array given in %s on line %d
+NULL
 -- Iteration 10 --
-array(2) {
-  [0]=>
-  int(1)
-  [1]=>
-  int(2)
-}
+
+Warning: array_pad() expects parameter 2 to be long, array given in %s on line %d
+NULL
 -- Iteration 11 --
-array(2) {
-  [0]=>
-  int(1)
-  [1]=>
-  int(2)
-}
+
+Warning: array_pad() expects parameter 2 to be long, array given in %s on line %d
+NULL
 -- Iteration 12 --
 array(2) {
   [0]=>
@@ -235,42 +220,25 @@ array(2) {
   int(2)
 }
 -- Iteration 18 --
-array(2) {
-  [0]=>
-  int(1)
-  [1]=>
-  int(2)
-}
+
+Warning: array_pad() expects parameter 2 to be long, string given in %s on line %d
+NULL
 -- Iteration 19 --
-array(2) {
-  [0]=>
-  int(1)
-  [1]=>
-  int(2)
-}
+
+Warning: array_pad() expects parameter 2 to be long, string given in %s on line %d
+NULL
 -- Iteration 20 --
-array(2) {
-  [0]=>
-  int(1)
-  [1]=>
-  int(2)
-}
+
+Warning: array_pad() expects parameter 2 to be long, string given in %s on line %d
+NULL
 -- Iteration 21 --
-array(2) {
-  [0]=>
-  int(1)
-  [1]=>
-  int(2)
-}
+
+Warning: array_pad() expects parameter 2 to be long, string given in %s on line %d
+NULL
 -- Iteration 22 --
 
-Notice: Object of class classA could not be converted to int in %s on line %d
-array(2) {
-  [0]=>
-  int(1)
-  [1]=>
-  int(2)
-}
+Warning: array_pad() expects parameter 2 to be long, object given in %s on line %d
+NULL
 -- Iteration 23 --
 array(2) {
   [0]=>

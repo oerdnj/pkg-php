@@ -40,8 +40,8 @@ $values = array(
   // float data
   10.5,
   -10.5,
-  10.1234567e10,
-  10.7654321E-10,
+  10.5e10,
+  10.6E-10,
   .5,
 
   // array data
@@ -85,8 +85,8 @@ foreach($values as $value) {
 //closing the file handle
 fclose( $file_handle );
 
+echo "Done";
 ?>
-===DONE===
 --EXPECTF--
 *** Testing nl2br() : usage variations ***
 -- Iteration 1 --
@@ -102,31 +102,31 @@ string(4) "10.5"
 -- Iteration 6 --
 string(5) "-10.5"
 -- Iteration 7 --
-string(12) "101234567000"
+string(12) "105000000000"
 -- Iteration 8 --
-string(13) "1.07654321E-9"
+string(7) "1.06E-9"
 -- Iteration 9 --
 string(3) "0.5"
 -- Iteration 10 --
 
-Notice: Array to string conversion in %s on line %d
-string(5) "Array"
+Warning: nl2br() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 11 --
 
-Notice: Array to string conversion in %s on line %d
-string(5) "Array"
+Warning: nl2br() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 12 --
 
-Notice: Array to string conversion in %s on line %d
-string(5) "Array"
+Warning: nl2br() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 13 --
 
-Notice: Array to string conversion in %s on line %d
-string(5) "Array"
+Warning: nl2br() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 14 --
 
-Notice: Array to string conversion in %s on line %d
-string(5) "Array"
+Warning: nl2br() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 15 --
 string(0) ""
 -- Iteration 16 --
@@ -140,11 +140,13 @@ string(1) "1"
 -- Iteration 20 --
 string(0) ""
 -- Iteration 21 --
-string(%d) "Resource id #%d"
+
+Warning: nl2br() expects parameter 1 to be string, resource given in %s on line %d
+NULL
 -- Iteration 22 --
 string(9) "My String"
 -- Iteration 23 --
 string(0) ""
 -- Iteration 24 --
 string(0) ""
-===DONE===
+Done

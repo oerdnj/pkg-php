@@ -22,6 +22,6 @@ var_dump( closelog($extra_arg) );
 
 -- Testing closelog() function with one argument --
 
-Warning: Wrong parameter count for closelog() in %s on line %d
+Warning: closelog() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 ===DONE===

@@ -14,6 +14,7 @@ $latitude = 38.4;
 $longitude = -9;
 $zenith = 90;
 $gmt_offset = 1;
+$format = SUNFUNCS_RET_STRING;
 date_default_timezone_set("Asia/Calcutta");
 
 //get an unset variable

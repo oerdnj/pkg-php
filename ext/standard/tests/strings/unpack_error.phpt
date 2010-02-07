@@ -27,12 +27,12 @@ var_dump(unpack("Z", pack("I", 65534)));
 
 -- Testing unpack() function with no arguments --
 
-Warning: Wrong parameter count for unpack() in %s on line %d
+Warning: unpack() expects exactly 2 parameters, 0 given in %s on line %d
 NULL
 
 -- Testing unpack() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for unpack() in %s on line %d
+Warning: unpack() expects exactly 2 parameters, 3 given in %s on line %d
 NULL
 
 -- Testing unpack() function with invalid format character --

@@ -1,4 +1,4 @@
-static const char rcsid[] = "#(@) $Id: base64.c 231156 2007-03-04 18:24:49Z iliaa $";
+static const char rcsid[] = "#(@) $Id: base64.c 242949 2007-09-26 15:44:16Z cvs2svn $";
 
 /*
 

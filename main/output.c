@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: output.c 288518 2009-09-21 11:22:13Z dmitry $ */
+/* $Id: output.c 289444 2009-10-09 19:13:33Z pajoye $ */
 
 #include "php.h"
 #include "ext/standard/head.h"
@@ -412,7 +412,7 @@ static int php_ob_init_named(uint initial_size, uint block_size, char *handler_n
 {
 	php_ob_buffer tmp_buf;
 
-	if (output_handler && !zend_is_callable(output_handler, 0, NULL)) {
+	if (output_handler && !zend_is_callable(output_handler, 0, NULL TSRMLS_CC)) {
 		return FAILURE;
 	}
 	
@@ -502,9 +502,9 @@ static int php_ob_init(uint initial_size, uint block_size, zval *output_handler,
 		}
 	} else if (output_handler && output_handler->type == IS_ARRAY) {
 		/* do we have array(object,method) */
-		if (zend_is_callable(output_handler, 0, &handler_name)) {
+		if (zend_is_callable(output_handler, 0, &handler_name TSRMLS_CC)) {
 			SEPARATE_ZVAL(&output_handler);
-			output_handler->refcount++;
+			Z_ADDREF_P(output_handler);
 			result = php_ob_init_named(initial_size, block_size, handler_name, output_handler, chunk_size, erase TSRMLS_CC);
 			efree(handler_name);
 		} else {
@@ -520,8 +520,17 @@ static int php_ob_init(uint initial_size, uint block_size, zval *output_handler,
 			}
 		}
 	} else if (output_handler && output_handler->type == IS_OBJECT) {
-		php_error_docref(NULL TSRMLS_CC, E_ERROR, "No method name given: use ob_start(array($object,'method')) to specify instance $object and the name of a method of class %s to use as output handler", Z_OBJCE_P(output_handler)->name);
-		result = FAILURE;
+		/* do we have callable object */
+		if (zend_is_callable(output_handler, 0, &handler_name TSRMLS_CC)) {
+			SEPARATE_ZVAL(&output_handler);
+			Z_ADDREF_P(output_handler);
+			result = php_ob_init_named(initial_size, block_size, handler_name, output_handler, chunk_size, erase TSRMLS_CC);
+			efree(handler_name);
+		} else {
+			efree(handler_name);
+			php_error_docref(NULL TSRMLS_CC, E_ERROR, "No method name given: use ob_start(array($object,'method')) to specify instance $object and the name of a method of class %s to use as output handler", Z_OBJCE_P(output_handler)->name);
+			result = FAILURE;
+		}
 	} else {
 		result = php_ob_init_named(initial_size, block_size, OB_DEFAULT_HANDLER_NAME, NULL, chunk_size, erase TSRMLS_CC);
 	}
@@ -543,11 +552,10 @@ static int php_ob_list_each(php_ob_buffer *ob_buffer, zval *ob_handler_array)
  */
 PHP_FUNCTION(ob_list_handlers)
 {
-	if (ZEND_NUM_ARGS()!=0) {
-		ZEND_WRONG_PARAM_COUNT();
-		RETURN_FALSE;
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
-
+	
 	array_init(return_value);
 	if (OG(ob_nesting_level)) {
 		if (OG(ob_nesting_level)>1) {
@@ -732,15 +740,14 @@ PHP_FUNCTION(ob_start)
 	zval *output_handler=NULL;
 	long chunk_size=0;
 	zend_bool erase=1;
-	int argc = ZEND_NUM_ARGS();
-	
-	if (zend_parse_parameters(argc TSRMLS_CC, "|zlb", &output_handler, &chunk_size, &erase) == FAILURE) {
-		RETURN_FALSE;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|zlb", &output_handler, &chunk_size, &erase) == FAILURE) {
+		return;
 	}
 
 	if (chunk_size < 0)
 		chunk_size = 0;
-	
+
 	if (php_start_ob_buffer(output_handler, chunk_size, erase TSRMLS_CC)==FAILURE) {
 		RETURN_FALSE;
 	}
@@ -752,12 +759,17 @@ PHP_FUNCTION(ob_start)
    Flush (send) contents of the output buffer. The last buffer content is sent to next buffer */
 PHP_FUNCTION(ob_flush)
 {
-	if (ZEND_NUM_ARGS() != 0) {
-		ZEND_WRONG_PARAM_COUNT();
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 
 	if (!OG(ob_nesting_level)) {
 		php_error_docref("ref.outcontrol" TSRMLS_CC, E_NOTICE, "failed to flush buffer. No buffer to flush.");
+		RETURN_FALSE;
+	}
+	
+	if (!OG(active_ob_buffer).status && !OG(active_ob_buffer).erase) {
+		php_error_docref("ref.outcontrol" TSRMLS_CC, E_NOTICE, "failed to flush buffer %s.", OG(active_ob_buffer).handler_name);
 		RETURN_FALSE;
 	}
 	
@@ -771,8 +783,8 @@ PHP_FUNCTION(ob_flush)
    Clean (delete) the current output buffer */
 PHP_FUNCTION(ob_clean)
 {
-	if (ZEND_NUM_ARGS() != 0) {
-		ZEND_WRONG_PARAM_COUNT();
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 	
 	if (!OG(ob_nesting_level)) {
@@ -794,8 +806,8 @@ PHP_FUNCTION(ob_clean)
    Flush (send) the output buffer, and delete current output buffer */
 PHP_FUNCTION(ob_end_flush)
 {
-	if (ZEND_NUM_ARGS() != 0) {
-		ZEND_WRONG_PARAM_COUNT();
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 	
 	if (!OG(ob_nesting_level)) {
@@ -816,8 +828,8 @@ PHP_FUNCTION(ob_end_flush)
    Clean the output buffer, and delete current output buffer */
 PHP_FUNCTION(ob_end_clean)
 {
-	if (ZEND_NUM_ARGS() != 0) {
-		ZEND_WRONG_PARAM_COUNT();
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 		
 	if (!OG(ob_nesting_level)) {
@@ -838,8 +850,8 @@ PHP_FUNCTION(ob_end_clean)
    Get current buffer contents, flush (send) the output buffer, and delete current output buffer */
 PHP_FUNCTION(ob_get_flush)
 {
-	if (ZEND_NUM_ARGS() != 0) {
-		ZEND_WRONG_PARAM_COUNT();
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 
 	/* get contents */
@@ -866,9 +878,9 @@ PHP_FUNCTION(ob_get_flush)
    Get current buffer contents and delete current output buffer */
 PHP_FUNCTION(ob_get_clean)
 {
-	if (ZEND_NUM_ARGS() != 0)
-			ZEND_WRONG_PARAM_COUNT();
-		
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
 	/* get contents */
 	if (php_ob_get_buffer(return_value TSRMLS_CC)==FAILURE) {
 		RETURN_FALSE;
@@ -893,8 +905,8 @@ PHP_FUNCTION(ob_get_clean)
    Return the contents of the output buffer */
 PHP_FUNCTION(ob_get_contents)
 {
-	if (ZEND_NUM_ARGS() != 0) {
-		ZEND_WRONG_PARAM_COUNT();
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 		
 	if (php_ob_get_buffer(return_value TSRMLS_CC)==FAILURE) {
@@ -907,8 +919,8 @@ PHP_FUNCTION(ob_get_contents)
    Return the nesting level of the output buffer */
 PHP_FUNCTION(ob_get_level)
 {
-	if (ZEND_NUM_ARGS() != 0) {
-		ZEND_WRONG_PARAM_COUNT();
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 		
 	RETURN_LONG (OG(ob_nesting_level));
@@ -919,8 +931,8 @@ PHP_FUNCTION(ob_get_level)
    Return the length of the output buffer */
 PHP_FUNCTION(ob_get_length)
 {
-	if (ZEND_NUM_ARGS() != 0) {
-		ZEND_WRONG_PARAM_COUNT();
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 		
 	if (php_ob_get_length(return_value TSRMLS_CC)==FAILURE) {
@@ -963,12 +975,12 @@ static int php_ob_buffer_status(php_ob_buffer *ob_buffer, zval *result)
    Return the status of the active or all output buffers */
 PHP_FUNCTION(ob_get_status)
 {
-	int argc = ZEND_NUM_ARGS();
 	zend_bool full_status = 0;
-	
-	if (zend_parse_parameters(argc TSRMLS_CC, "|b", &full_status) == FAILURE )
-		RETURN_FALSE;
-	
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|b", &full_status) == FAILURE ) {
+		return;
+	}
+
 	array_init(return_value);
 
 	if (full_status) {
@@ -997,24 +1009,12 @@ PHP_FUNCTION(ob_get_status)
    Turn implicit flush on/off and is equivalent to calling flush() after every output call */
 PHP_FUNCTION(ob_implicit_flush)
 {
-	zval **zv_flag;
-	int flag;
+	long flag = 1;
 
-	switch(ZEND_NUM_ARGS()) {
-		case 0:
-			flag = 1;
-			break;
-		case 1:
-			if (zend_get_parameters_ex(1, &zv_flag)==FAILURE) {
-				RETURN_FALSE;
-			}
-			convert_to_long_ex(zv_flag);
-			flag = Z_LVAL_PP(zv_flag);
-			break;
-		default:
-			ZEND_WRONG_PARAM_COUNT();
-			break;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &flag) == FAILURE) {
+		return;
 	}
+
 	if (flag) {
 		php_start_implicit_flush(TSRMLS_C);
 	} else {
@@ -1063,7 +1063,7 @@ PHP_FUNCTION(output_add_rewrite_var)
 	int name_len, value_len;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &name, &name_len, &value, &value_len) == FAILURE) {
-		RETURN_FALSE;
+		return;
 	}
 
 	if (php_url_scanner_add_var(name, name_len, value, value_len, 1 TSRMLS_CC) == SUCCESS) {

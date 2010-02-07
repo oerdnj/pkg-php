@@ -39,7 +39,7 @@ var_dump( printf($format3) );
 
 -- Testing printf() function with Zero arguments --
 
-Warning: Wrong parameter count for printf() in %s on line %d
+Warning: printf() expects at least 1 parameter, 0 given in %s on line %d
 bool(false)
 
 -- Testing printf() function with less than expected no. of arguments --

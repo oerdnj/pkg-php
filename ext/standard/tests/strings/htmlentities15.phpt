@@ -3,7 +3,7 @@ htmlentities() test 15 (setlocale / KOI8-R)
 --INI--
 output_handler=
 default_charset=
-mbstring.internal_encoding=pass
+mbstring.internal_encoding=none
 --SKIPIF--
 <?php
 $result = (bool)setlocale(LC_CTYPE, "ru_RU.koi8r", "ru_RU.KOI8-R");

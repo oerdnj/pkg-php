@@ -24,15 +24,15 @@ imap_open('', '', '', -1);
 --EXPECTF--
 Checking with no parameters
 
-Warning: Wrong parameter count for imap_open() in %s on line %d
+Warning: imap_open() expects at least 3 parameters, 0 given in %s on line %d
 
-Warning: Wrong parameter count for imap_open() in %s on line %d
+Warning: imap_open() expects at least 3 parameters, 1 given in %s on line %d
 
-Warning: Wrong parameter count for imap_open() in %s on line %d
+Warning: imap_open() expects at least 3 parameters, 2 given in %s on line %d
 
-Warning: Wrong parameter count for imap_open() in %s on line %d
+Warning: imap_open() expects at least 3 parameters, 1 given in %s on line %d
 
-Warning: Wrong parameter count for imap_open() in %s on line %d
+Warning: imap_open() expects at least 3 parameters, 2 given in %s on line %d
 Checking with incorrect parameters
 
 Warning: imap_open(): Couldn't open stream  in %s on line %d

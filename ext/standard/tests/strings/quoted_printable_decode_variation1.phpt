@@ -128,28 +128,28 @@ string(6) "302e35"
 
 -- Iteration 10 --
 
-Notice: Array to string conversion in %s on line %d
-string(10) "4172726179"
+Warning: quoted_printable_decode() expects parameter 1 to be string, array given in %s on line %d
+string(0) ""
 
 -- Iteration 11 --
 
-Notice: Array to string conversion in %s on line %d
-string(10) "4172726179"
+Warning: quoted_printable_decode() expects parameter 1 to be string, array given in %s on line %d
+string(0) ""
 
 -- Iteration 12 --
 
-Notice: Array to string conversion in %s on line %d
-string(10) "4172726179"
+Warning: quoted_printable_decode() expects parameter 1 to be string, array given in %s on line %d
+string(0) ""
 
 -- Iteration 13 --
 
-Notice: Array to string conversion in %s on line %d
-string(10) "4172726179"
+Warning: quoted_printable_decode() expects parameter 1 to be string, array given in %s on line %d
+string(0) ""
 
 -- Iteration 14 --
 
-Notice: Array to string conversion in %s on line %d
-string(10) "4172726179"
+Warning: quoted_printable_decode() expects parameter 1 to be string, array given in %s on line %d
+string(0) ""
 
 -- Iteration 15 --
 string(0) ""
@@ -185,5 +185,7 @@ string(0) ""
 string(0) ""
 
 -- Iteration 26 --
-string(%d) "%s"
+
+Warning: quoted_printable_decode() expects parameter 1 to be string, resource given in %s on line %d
+string(0) ""
 ===DONE===

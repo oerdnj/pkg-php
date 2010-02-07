@@ -29,4 +29,4 @@ this is a protected method.
 this is a private method.
 foo
 
-Fatal error: Call to protected method test::isprotected() from context '' in %s on line %d
+Fatal error: Call to protected method test::isProtected() from context '' in %s on line %d

@@ -98,126 +98,126 @@ foreach($inputs as $key =>$value) {
 
 --int 0--
 
-Warning: array_product(): The argument should be an array in %sarray_product_variation5.php on line %d
+Warning: array_product() expects parameter 1 to be array, integer given in %sarray_product_variation5.php on line %d
 NULL
 
 --int 1--
 
-Warning: array_product(): The argument should be an array in %sarray_product_variation5.php on line %d
+Warning: array_product() expects parameter 1 to be array, integer given in %sarray_product_variation5.php on line %d
 NULL
 
 --int 12345--
 
-Warning: array_product(): The argument should be an array in %sarray_product_variation5.php on line %d
+Warning: array_product() expects parameter 1 to be array, integer given in %sarray_product_variation5.php on line %d
 NULL
 
 --int -12345--
 
-Warning: array_product(): The argument should be an array in %sarray_product_variation5.php on line %d
+Warning: array_product() expects parameter 1 to be array, integer given in %sarray_product_variation5.php on line %d
 NULL
 
 --float 10.5--
 
-Warning: array_product(): The argument should be an array in %sarray_product_variation5.php on line %d
+Warning: array_product() expects parameter 1 to be array, double given in %sarray_product_variation5.php on line %d
 NULL
 
 --float -10.5--
 
-Warning: array_product(): The argument should be an array in %sarray_product_variation5.php on line %d
+Warning: array_product() expects parameter 1 to be array, double given in %sarray_product_variation5.php on line %d
 NULL
 
 --float 12.3456789000e10--
 
-Warning: array_product(): The argument should be an array in %sarray_product_variation5.php on line %d
+Warning: array_product() expects parameter 1 to be array, double given in %sarray_product_variation5.php on line %d
 NULL
 
 --float -12.3456789000e10--
 
-Warning: array_product(): The argument should be an array in %sarray_product_variation5.php on line %d
+Warning: array_product() expects parameter 1 to be array, double given in %sarray_product_variation5.php on line %d
 NULL
 
 --float .5--
 
-Warning: array_product(): The argument should be an array in %sarray_product_variation5.php on line %d
+Warning: array_product() expects parameter 1 to be array, double given in %sarray_product_variation5.php on line %d
 NULL
 
 --uppercase NULL--
 
-Warning: array_product(): The argument should be an array in %sarray_product_variation5.php on line %d
+Warning: array_product() expects parameter 1 to be array, null given in %sarray_product_variation5.php on line %d
 NULL
 
 --lowercase null--
 
-Warning: array_product(): The argument should be an array in %sarray_product_variation5.php on line %d
+Warning: array_product() expects parameter 1 to be array, null given in %sarray_product_variation5.php on line %d
 NULL
 
 --lowercase true--
 
-Warning: array_product(): The argument should be an array in %sarray_product_variation5.php on line %d
+Warning: array_product() expects parameter 1 to be array, boolean given in %sarray_product_variation5.php on line %d
 NULL
 
 --lowercase false--
 
-Warning: array_product(): The argument should be an array in %sarray_product_variation5.php on line %d
+Warning: array_product() expects parameter 1 to be array, boolean given in %sarray_product_variation5.php on line %d
 NULL
 
 --uppercase TRUE--
 
-Warning: array_product(): The argument should be an array in %sarray_product_variation5.php on line %d
+Warning: array_product() expects parameter 1 to be array, boolean given in %sarray_product_variation5.php on line %d
 NULL
 
 --uppercase FALSE--
 
-Warning: array_product(): The argument should be an array in %sarray_product_variation5.php on line %d
+Warning: array_product() expects parameter 1 to be array, boolean given in %sarray_product_variation5.php on line %d
 NULL
 
 --empty string DQ--
 
-Warning: array_product(): The argument should be an array in %sarray_product_variation5.php on line %d
+Warning: array_product() expects parameter 1 to be array, string given in %sarray_product_variation5.php on line %d
 NULL
 
 --empty string SQ--
 
-Warning: array_product(): The argument should be an array in %sarray_product_variation5.php on line %d
+Warning: array_product() expects parameter 1 to be array, string given in %sarray_product_variation5.php on line %d
 NULL
 
 --string DQ--
 
-Warning: array_product(): The argument should be an array in %sarray_product_variation5.php on line %d
+Warning: array_product() expects parameter 1 to be array, string given in %sarray_product_variation5.php on line %d
 NULL
 
 --string SQ--
 
-Warning: array_product(): The argument should be an array in %sarray_product_variation5.php on line %d
+Warning: array_product() expects parameter 1 to be array, string given in %sarray_product_variation5.php on line %d
 NULL
 
 --mixed case string--
 
-Warning: array_product(): The argument should be an array in %sarray_product_variation5.php on line %d
+Warning: array_product() expects parameter 1 to be array, string given in %sarray_product_variation5.php on line %d
 NULL
 
 --heredoc--
 
-Warning: array_product(): The argument should be an array in %sarray_product_variation5.php on line %d
+Warning: array_product() expects parameter 1 to be array, string given in %sarray_product_variation5.php on line %d
 NULL
 
 --instance of classWithToString--
 
-Warning: array_product(): The argument should be an array in %sarray_product_variation5.php on line %d
+Warning: array_product() expects parameter 1 to be array, object given in %sarray_product_variation5.php on line %d
 NULL
 
 --instance of classWithoutToString--
 
-Warning: array_product(): The argument should be an array in %sarray_product_variation5.php on line %d
+Warning: array_product() expects parameter 1 to be array, object given in %sarray_product_variation5.php on line %d
 NULL
 
 --undefined var--
 
-Warning: array_product(): The argument should be an array in %sarray_product_variation5.php on line %d
+Warning: array_product() expects parameter 1 to be array, null given in %sarray_product_variation5.php on line %d
 NULL
 
 --unset var--
 
-Warning: array_product(): The argument should be an array in %sarray_product_variation5.php on line %d
+Warning: array_product() expects parameter 1 to be array, null given in %sarray_product_variation5.php on line %d
 NULL
 ===DONE===

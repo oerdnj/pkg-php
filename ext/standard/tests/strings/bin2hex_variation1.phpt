@@ -93,16 +93,16 @@ string(10) "2d32302e35"
 string(24) "313031323334353637303030"
 -- Iteration 7 --
 
-Notice: Array to string conversion in %s on line %d
-string(10) "4172726179"
+Warning: bin2hex() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 8 --
 
-Notice: Array to string conversion in %s on line %d
-string(10) "4172726179"
+Warning: bin2hex() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 9 --
 
-Notice: Array to string conversion in %s on line %d
-string(10) "4172726179"
+Warning: bin2hex() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 10 --
 string(2) "31"
 -- Iteration 11 --
@@ -118,7 +118,9 @@ string(0) ""
 -- Iteration 16 --
 string(26) "73616d706c65206f626a656374"
 -- Iteration 17 --
-string(%d) "%s"
+
+Warning: bin2hex() expects parameter 1 to be string, resource given in %s on line %d
+NULL
 -- Iteration 18 --
 string(0) ""
 -- Iteration 19 --

@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 279461 2009-04-27 18:38:58Z scottmac $
+dnl $Id: config.m4 279452 2009-04-27 17:49:32Z scottmac $
 dnl
 
 sinclude(ext/xmlrpc/libxmlrpc/acinclude.m4)

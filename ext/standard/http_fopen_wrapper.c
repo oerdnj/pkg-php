@@ -111,6 +111,7 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 	char *user_headers = NULL;
 	int header_init = ((flags & HTTP_WRAPPER_HEADER_INIT) != 0);
 	int redirected = ((flags & HTTP_WRAPPER_REDIRECTED) != 0);
+	php_stream_filter *transfer_encoding = NULL;
 
 	tmp_line[0] = '\0';
 
@@ -529,6 +530,10 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 
 	location[0] = '\0';
 
+	if (!EG(active_symbol_table)) {
+		zend_rebuild_symbol_table(TSRMLS_C);
+	}
+
 	if (header_init) {
 		zval *tmp;
 		MAKE_STD_ZVAL(tmp);
@@ -562,25 +567,25 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 			if ((options & STREAM_ONLY_GET_HEADERS) || ignore_errors) {
 				reqok = 1;
 			}
-			switch(response_code) {
-				case 200:
-				case 206: /* partial content */
-				case 302:
-				case 303:
-				case 301:
-					reqok = 1;
-					break;
-				case 403:
-					php_stream_notify_error(context, PHP_STREAM_NOTIFY_AUTH_RESULT,
-							tmp_line, response_code);
-					break;
-				default:
-					/* safety net in the event tmp_line == NULL */
-					if (!tmp_line_len) {
-						tmp_line[0] = '\0';
-					}
-					php_stream_notify_error(context, PHP_STREAM_NOTIFY_FAILURE,
-							tmp_line, response_code);
+			/* all status codes in the 2xx range are defined by the specification as successful;
+			 * all status codes in the 3xx range are for redirection, and so also should never
+			 * fail */
+			if (response_code >= 200 && response_code < 400) {
+				reqok = 1;
+			} else {
+				switch(response_code) {
+					case 403:
+						php_stream_notify_error(context, PHP_STREAM_NOTIFY_AUTH_RESULT,
+								tmp_line, response_code);
+						break;
+					default:
+						/* safety net in the event tmp_line == NULL */
+						if (!tmp_line_len) {
+							tmp_line[0] = '\0';
+						}
+						php_stream_notify_error(context, PHP_STREAM_NOTIFY_FAILURE,
+								tmp_line, response_code);
+				}
 			}
 			if (tmp_line[tmp_line_len - 1] == '\n') {
 				--tmp_line_len;
@@ -618,6 +623,25 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 			} else if (!strncasecmp(http_header_line, "Content-Length: ", 16)) {
 				file_size = atoi(http_header_line + 16);
 				php_stream_notify_file_size(context, file_size, http_header_line, 0);
+			} else if (!strncasecmp(http_header_line, "Transfer-Encoding: chunked", sizeof("Transfer-Encoding: chunked"))) {
+
+				/* create filter to decode response body */
+				if (!(options & STREAM_ONLY_GET_HEADERS)) {
+					long decode = 1;
+
+					if (context && php_stream_context_get_option(context, "http", "auto_decode", &tmpzval) == SUCCESS) {
+						SEPARATE_ZVAL(tmpzval);
+						convert_to_boolean(*tmpzval);
+						decode = Z_LVAL_PP(tmpzval);
+					}
+					if (decode) {
+						transfer_encoding = php_stream_filter_create("dechunk", NULL, php_stream_is_persistent(stream) TSRMLS_CC);
+						if (transfer_encoding) {
+							/* don't store transfer-encodeing header */
+							continue;
+						}
+					}
+				}
 			}
 
 			if (http_header_line[0] == '\0') {
@@ -644,6 +668,9 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 		if (location[0] != '\0')
 			php_stream_notify_info(context, PHP_STREAM_NOTIFY_REDIRECTED, location, 0);
 
+		if (context) { /* keep the context for the next try */
+			zend_list_addref(context->rsrc_id);
+		}
 		php_stream_close(stream);
 		stream = NULL;
 
@@ -747,6 +774,7 @@ out:
 			stream->wrapperdata = response_header;
 		}
 		php_stream_notify_progress_init(context, 0, file_size);
+		
 		/* Restore original chunk size now that we're done with headers */
 		if (options & STREAM_WILL_CAST)
 			php_stream_set_chunk_size(stream, chunk_size);
@@ -760,6 +788,12 @@ out:
 
 		/* restore mode */
 		strlcpy(stream->mode, mode, sizeof(stream->mode));
+
+		if (transfer_encoding) {
+			php_stream_filter_append(&stream->readfilters, transfer_encoding);
+		}
+	} else if (transfer_encoding) {
+		php_stream_filter_free(transfer_encoding TSRMLS_CC);
 	}
 
 	return stream;

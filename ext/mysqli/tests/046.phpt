@@ -1,18 +1,21 @@
 --TEST--
 mysqli_stmt_affected_rows (delete)
 --SKIPIF--
-<?php require_once('skipif.inc'); ?>
+<?php
+require_once('skipif.inc');
+require_once('skipifconnectfailure.inc');
+?>
 --FILE--
 <?php
 	include "connect.inc";
-	
-	/*** test mysqli_connect 127.0.0.1 ***/
-	$link = mysqli_connect($host, $user, $passwd);
 
-	mysqli_select_db($link, "test");
+	/*** test mysqli_connect 127.0.0.1 ***/
+	$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket);
+
+	mysqli_select_db($link, $db);
 
 	mysqli_query($link, "DROP TABLE IF EXISTS test_affected");
-	mysqli_query($link, "CREATE TABLE test_affected (foo int)");
+	mysqli_query($link, "CREATE TABLE test_affected (foo int) ENGINE=" . $engine);
 
 	mysqli_query($link, "INSERT INTO test_affected VALUES (1),(2),(3),(4),(5)");
 
@@ -24,10 +27,24 @@ mysqli_stmt_affected_rows (delete)
 	mysqli_execute($stmt);
 	$x = mysqli_stmt_affected_rows($stmt);
 
-	mysqli_stmt_close($stmt);	
+	mysqli_stmt_close($stmt);
 	var_dump($x==1);
 
+	mysqli_query($link, "DROP TABLE IF EXISTS test_affected");
 	mysqli_close($link);
+	print "done!";
+?>
+--CLEAN--
+<?php
+include "connect.inc";
+if (!$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket))
+   printf("[c001] [%d] %s\n", mysqli_connect_errno(), mysqli_connect_error());
+
+if (!mysqli_query($link, "DROP TABLE IF EXISTS test_affected"))
+	printf("[c002] Cannot drop table, [%d] %s\n", mysqli_errno($link), mysqli_error($link));
+
+mysqli_close($link);
 ?>
 --EXPECT--
 bool(true)
+done!

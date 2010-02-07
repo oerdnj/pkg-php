@@ -31,7 +31,7 @@ var_dump( gmmktime($hour, $min, $sec, $mon, $day, $year, $extra_arg1, $extra_arg
 
 -- Testing gmmktime() function with more than expected no. of arguments --
 
-Strict Standards: gmmktime(): The is_dst parameter is deprecated in %s on line %d
+Deprecated: gmmktime(): The is_dst parameter is deprecated in %s on line %d
 int(1218182888)
 
 Warning: gmmktime() expects at most 7 parameters, 8 given in %s on line %d

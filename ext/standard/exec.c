@@ -16,7 +16,7 @@
    |         Ilia Alshanetsky <iliaa@php.net>                             |
    +----------------------------------------------------------------------+
  */
-/* $Id: exec.c 289624 2009-10-14 01:32:07Z iliaa $ */
+/* $Id: exec.c 289688 2009-10-15 21:36:42Z pajoye $ */
 
 #include <stdio.h>
 #include "php.h"
@@ -58,7 +58,7 @@
  * If type==3, output will be printed binary, no lines will be saved or returned (passthru)
  *
  */
-int php_exec(int type, char *cmd, zval *array, zval *return_value TSRMLS_DC)
+PHPAPI int php_exec(int type, char *cmd, zval *array, zval *return_value TSRMLS_DC)
 {
 	FILE *fp;
 	char *buf, *tmp=NULL;
@@ -79,13 +79,16 @@ int php_exec(int type, char *cmd, zval *array, zval *return_value TSRMLS_DC)
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "No '..' components allowed in path");
 			goto err;
 		}
+		
 		b = strrchr(cmd, PHP_DIR_SEPARATOR);
+
 #ifdef PHP_WIN32
 		if (b && *b == '\\' && b == cmd) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid absolute path.");
 			goto err;
 		}
 #endif
+
 		spprintf(&d, 0, "%s%s%s%s%s", PG(safe_mode_exec_dir), (b ? "" : "/"), (b ? b : cmd), (c ? " " : ""), (c ? c : ""));
 		if (c) {
 			*(c - 1) = ' ';
@@ -118,7 +121,7 @@ int php_exec(int type, char *cmd, zval *array, zval *return_value TSRMLS_DC)
 
 	if (type != 3) {
 		b = buf;
-		
+
 		while (php_stream_get_line(stream, b, EXEC_INPUT_BUF, &bufl)) {
 			/* no new line found, let's read some more */
 			if (b[bufl - 1] != '\n' && !php_stream_eof(stream)) {
@@ -141,7 +144,7 @@ int php_exec(int type, char *cmd, zval *array, zval *return_value TSRMLS_DC)
 					sapi_flush(TSRMLS_C);
 				}
 			} else if (type == 2) {
-				/* strip trailing whitespaces */	
+				/* strip trailing whitespaces */
 				l = bufl;
 				while (l-- && isspace(((unsigned char *)buf)[l]));
 				if (l != (int)(bufl - 1)) {
@@ -153,7 +156,7 @@ int php_exec(int type, char *cmd, zval *array, zval *return_value TSRMLS_DC)
 			b = buf;
 		}
 		if (bufl) {
-			/* strip trailing whitespaces if we have not done so already */	
+			/* strip trailing whitespaces if we have not done so already */
 			if ((type == 2 && bufl && !l) || type != 2) {
 				l = bufl;
 				while (l-- && isspace(((unsigned char *)buf)[l]));
@@ -169,7 +172,7 @@ int php_exec(int type, char *cmd, zval *array, zval *return_value TSRMLS_DC)
 			/* Return last line from the shell command */
 			if (PG(magic_quotes_runtime)) {
 				int len;
-	
+
 				tmp = php_addslashes(buf, bufl, &len, 0 TSRMLS_CC);
 				RETVAL_STRINGL(tmp, len, 0);
 			} else {
@@ -184,7 +187,7 @@ int php_exec(int type, char *cmd, zval *array, zval *return_value TSRMLS_DC)
 		}
 	}
 
-	pclose_return = php_stream_close(stream); 
+	pclose_return = php_stream_close(stream);
 	efree(buf);
 
 done:
@@ -203,7 +206,7 @@ err:
 }
 /* }}} */
 
-static void php_exec_ex(INTERNAL_FUNCTION_PARAMETERS, int mode)
+static void php_exec_ex(INTERNAL_FUNCTION_PARAMETERS, int mode) /* {{{ */
 {
 	char *cmd;
 	int cmd_len;
@@ -238,6 +241,7 @@ static void php_exec_ex(INTERNAL_FUNCTION_PARAMETERS, int mode)
 		ZVAL_LONG(ret_code, ret);
 	}
 }
+/* }}} */
 
 /* {{{ proto string exec(string command [, array &output [, int &return_value]])
    Execute an external program */
@@ -245,7 +249,6 @@ PHP_FUNCTION(exec)
 {
 	php_exec_ex(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
 }
-
 /* }}} */
 
 /* {{{ proto int system(string command [, int &return_value])
@@ -273,16 +276,17 @@ PHP_FUNCTION(passthru)
 
    *NOT* safe for binary strings
 */
-char *php_escape_shell_cmd(char *str) {
-	register int x, y, l;
+PHPAPI char *php_escape_shell_cmd(char *str)
+{
+	register int x, y, l = strlen(str);
 	char *cmd;
 	char *p = NULL;
-	
+	size_t estimate = (2 * l) + 1;
+
 	TSRMLS_FETCH();
 
-	l = strlen(str);
 	cmd = safe_emalloc(2, l, 1);
-	
+
 	for (x = 0, y = 0; x < l; x++) {
 		int mb_len = php_mblen(str + x, (l - x));
 
@@ -297,9 +301,9 @@ char *php_escape_shell_cmd(char *str) {
 		}
 
 		switch (str[x]) {
+#ifndef PHP_WIN32
 			case '"':
 			case '\'':
-#ifndef PHP_WIN32
 				if (!p && (p = memchr(str + x + 1, str[x], l - x - 1))) {
 					/* noop */
 				} else if (p && *p == str[x]) {
@@ -309,6 +313,13 @@ char *php_escape_shell_cmd(char *str) {
 				}
 				cmd[y++] = str[x];
 				break;
+#else
+			/* % is Windows specific for enviromental variables, ^%PATH% will 
+				output PATH whil ^%PATH^% not. escapeshellcmd will escape all %.
+			*/
+			case '%':
+			case '"':
+			case '\'':
 #endif
 			case '#': /* This is character-set independent */
 			case '&':
@@ -332,12 +343,10 @@ char *php_escape_shell_cmd(char *str) {
 			case '\x0A': /* excluding these two */
 			case '\xFF':
 #ifdef PHP_WIN32
-			/* since Windows does not allow us to escape these chars, just remove them */
-			case '%':
-				cmd[y++] = ' ';
-				break;
-#endif
+				cmd[y++] = '^';
+#else
 				cmd[y++] = '\\';
+#endif
 				/* fall-through */
 			default:
 				cmd[y++] = str[x];
@@ -345,22 +354,29 @@ char *php_escape_shell_cmd(char *str) {
 		}
 	}
 	cmd[y] = '\0';
+
+	if ((estimate - y) > 4096) {
+		/* realloc if the estimate was way overill
+		 * Arbitrary cutoff point of 4096 */
+		cmd = erealloc(cmd, y + 1);
+	}
+
 	return cmd;
 }
 /* }}} */
 
 /* {{{ php_escape_shell_arg
  */
-char *php_escape_shell_arg(char *str) {
-	int x, y, l;
+PHPAPI char *php_escape_shell_arg(char *str)
+{
+	int x, y = 0, l = strlen(str);
 	char *cmd;
+	size_t estimate = (4 * l) + 3;
+
 	TSRMLS_FETCH();
 
-	y = 0;
-	l = strlen(str);
-	
 	cmd = safe_emalloc(4, l, 3); /* worst case */
-	
+
 #ifdef PHP_WIN32
 	cmd[y++] = '"';
 #else
@@ -403,6 +419,12 @@ char *php_escape_shell_arg(char *str) {
 	cmd[y++] = '\'';
 #endif
 	cmd[y] = '\0';
+
+	if ((estimate - y) > 4096) {
+		/* realloc if the estimate was way overill
+		 * Arbitrary cutoff point of 4096 */
+		cmd = erealloc(cmd, y + 1);
+	}
 	return cmd;
 }
 /* }}} */
@@ -453,37 +475,35 @@ PHP_FUNCTION(shell_exec)
 {
 	FILE *in;
 	size_t total_readbytes;
-	zval **cmd;
+	char *command;
+	int command_len;
 	char *ret;
 	php_stream *stream;
 
-	if (ZEND_NUM_ARGS()!=1 || zend_get_parameters_ex(1, &cmd)==FAILURE) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &command, &command_len) == FAILURE) {
+		return;
 	}
-	
+
 	if (PG(safe_mode)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Cannot execute using backquotes in Safe Mode");
 		RETURN_FALSE;
 	}
 
-	convert_to_string_ex(cmd);
 #ifdef PHP_WIN32
-	if ((in=VCWD_POPEN(Z_STRVAL_PP(cmd), "rt"))==NULL) {
+	if ((in=VCWD_POPEN(command, "rt"))==NULL) {
 #else
-	if ((in=VCWD_POPEN(Z_STRVAL_PP(cmd), "r"))==NULL) {
+	if ((in=VCWD_POPEN(command, "r"))==NULL) {
 #endif
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to execute '%s'", Z_STRVAL_PP(cmd));
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to execute '%s'", command);
 		RETURN_FALSE;
 	}
 
 	stream = php_stream_fopen_from_pipe(in, "rb");
 	total_readbytes = php_stream_copy_to_mem(stream, &ret, PHP_STREAM_COPY_ALL, 0);
-	php_stream_close(stream); 
-	
+	php_stream_close(stream);
+
 	if (total_readbytes > 0) {
-		RETURN_STRINGL(ret, total_readbytes, 0);
-	} else {
-		RETURN_NULL();	
+		RETVAL_STRINGL(ret, total_readbytes, 0);
 	}
 }
 /* }}} */
@@ -505,7 +525,7 @@ PHP_FUNCTION(proc_nice)
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Only a super user may attempt to increase the priority of a process");
 		RETURN_FALSE;
 	}
-	
+
 	RETURN_TRUE;
 }
 /* }}} */

@@ -34,4 +34,5 @@ foreach ( $variation_array as $var ) {
 *** Test substituting argument 1 with object values ***
 bool(false)
 
-Catchable fatal error: Object of class classWithoutToString could not be converted to string in %s.php on line %d
+Warning: getservbyname() expects parameter 1 to be string, object given in %s.php on line %d
+NULL

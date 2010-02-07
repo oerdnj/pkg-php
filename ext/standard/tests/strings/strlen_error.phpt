@@ -23,11 +23,11 @@ var_dump( strlen("abc def", $extra_arg) );
 *** Testing strlen() : unexpected number of arguments ***
 -- Testing strlen() function with no arguments --
 
-Warning: Wrong parameter count for strlen() in %s on line %d
+Warning: strlen() expects exactly 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing strlen() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for strlen() in %s on line %d
+Warning: strlen() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
 ===DONE===

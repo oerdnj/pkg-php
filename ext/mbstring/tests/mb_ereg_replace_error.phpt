@@ -15,7 +15,6 @@ function_exists('mb_ereg_replace') or die("skip mb_ereg_replace() is not availab
 
 echo "*** Testing mb_ereg_replace() : error conditions ***\n";
 
-
 //Test mb_ereg_replace with one more than the expected number of arguments
 echo "\n-- Testing mb_ereg_replace() function with more than expected no. of arguments --\n";
 $pattern = b'[a-k]';

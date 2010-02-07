@@ -1,5 +1,7 @@
 --TEST--
-Test is_a() function : usage variations  - wrong type for arg 2 
+Test is_a() function : usage variations  - wrong type for arg 2
+--INI--
+error_reporting=E_ALL | E_STRICT | E_DEPRECATED 
 --FILE--
 <?php
 /* Prototype  : proto bool is_a(object object, string class_name)
@@ -87,137 +89,87 @@ Notice: Undefined variable: undefined_var in %s on line 64
 Notice: Undefined variable: unset_var in %s on line 67
 
 Arg value 0 
-
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 74
 bool(false)
 
 Arg value 1 
-
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 74
 bool(false)
 
 Arg value 12345 
-
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 74
 bool(false)
 
 Arg value -2345 
-
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 74
 bool(false)
 
 Arg value 10.5 
-
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 74
 bool(false)
 
 Arg value -10.5 
-
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 74
 bool(false)
 
 Arg value 101234567000 
-
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 74
 bool(false)
 
 Arg value 1.07654321E-9 
-
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 74
 bool(false)
 
 Arg value 0.5 
-
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 74
 bool(false)
 
 Arg value Array 
 
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 74
-
-Notice: Array to string conversion in %s on line 74
-bool(false)
+Warning: is_a() expects parameter 2 to be string, array given in %s on line %d
+NULL
 
 Arg value Array 
 
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 74
-
-Notice: Array to string conversion in %s on line 74
-bool(false)
+Warning: is_a() expects parameter 2 to be string, array given in %s on line %d
+NULL
 
 Arg value Array 
 
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 74
-
-Notice: Array to string conversion in %s on line 74
-bool(false)
+Warning: is_a() expects parameter 2 to be string, array given in %s on line %d
+NULL
 
 Arg value Array 
 
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 74
-
-Notice: Array to string conversion in %s on line 74
-bool(false)
+Warning: is_a() expects parameter 2 to be string, array given in %s on line %d
+NULL
 
 Arg value Array 
 
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 74
+Warning: is_a() expects parameter 2 to be string, array given in %s on line %d
+NULL
 
-Notice: Array to string conversion in %s on line 74
+Arg value  
 bool(false)
 
 Arg value  
-
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 74
-bool(false)
-
-Arg value  
-
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 74
 bool(false)
 
 Arg value 1 
-
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 74
 bool(false)
 
 Arg value  
-
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 74
 bool(false)
 
 Arg value 1 
-
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 74
 bool(false)
 
 Arg value  
-
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 74
 bool(false)
 
 Arg value  
-
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 74
 bool(false)
 
 Arg value  
-
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 74
 bool(false)
 
 Arg value C Instance 
-
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 74
 bool(false)
 
 Arg value  
-
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 74
 bool(false)
 
 Arg value  
-
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 74
 bool(false)
 Done

@@ -33,11 +33,12 @@ echo "Done";
 
 -- Testing utf8_encode() function with Zero arguments --
 
-Warning: Wrong parameter count for utf8_encode() in %s on line %d
+Warning: utf8_encode() expects exactly 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing utf8_encode() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for utf8_encode() in %s on line %d
+Warning: utf8_encode() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
 Done
+

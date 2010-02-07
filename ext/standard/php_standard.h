@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_standard.h 286890 2009-08-06 14:07:16Z scottmac $ */
+/* $Id: php_standard.h 286857 2009-08-05 23:20:17Z scottmac $ */
 
 #include "basic_functions.h"
 #include "php_math.h"
@@ -24,7 +24,6 @@
 #include "base64.h"
 #include "php_dir.h"
 #include "php_dns.h"
-#include "reg.h"
 #include "php_mail.h"
 #include "md5.h"
 #include "sha1.h"

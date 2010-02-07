@@ -1,5 +1,5 @@
 <?php
-/* $Id: ext_skel_win32.php 143314 2003-10-29 05:42:26Z fmk $ */
+/* $Id: ext_skel_win32.php 242949 2007-09-26 15:44:16Z cvs2svn $ */
 
 if (php_sapi_name() != "cli") {
 	echo "Please run this script using the CLI version of PHP\n";

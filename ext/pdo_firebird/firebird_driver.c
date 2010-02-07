@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: firebird_driver.c 278930 2009-04-18 18:56:58Z felipe $ */
+/* $Id: firebird_driver.c 278929 2009-04-18 18:56:11Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -117,6 +117,16 @@ static int firebird_handle_closer(pdo_dbh_t *dbh TSRMLS_DC) /* {{{ */
 		RECORD_ERROR(dbh);
 	}
 
+	if (H->date_format) {
+		efree(H->date_format);
+	}
+	if (H->time_format) {
+		efree(H->time_format);
+	}
+	if (H->timestamp_format) {
+		efree(H->timestamp_format);
+	}
+	
 	pefree(H, dbh->is_persistent);
 
 	return 0;
@@ -267,38 +277,38 @@ static int firebird_handle_quoter(pdo_dbh_t *dbh, const char *unquoted, int unqu
 	char **quoted, int *quotedlen, enum pdo_param_type paramtype TSRMLS_DC)
 {
 	int qcount = 0;
-	char const *c;
+	char const *co, *l, *r;
+	char *c;
 	
-	/* Firebird only requires single quotes to be doubled if string lengths are used */
-	
-	/* count the number of ' characters */
-	for (c = unquoted; (c = strchr(c,'\'')); qcount++, c++);
-	
-	if (!qcount) {
-		return 0;
-	} else {
-		char const *l, *r;
-		char *c;
-		
-		*quotedlen = unquotedlen + qcount;
-		*quoted = c = emalloc(*quotedlen+1);
-		
-		/* foreach (chunk that ends in a quote) */
-		for (l = unquoted; (r = strchr(l,'\'')); l = r+1) {
-			
-			/* copy the chunk */
-			strncpy(c, l, r-l);
-			c += (r-l);
-			
-			/* add the second quote */
-			*c++ = '\'';
-		}
-		
-		/* copy the remainder */
-		strncpy(c, l, *quotedlen-(c-*quoted));
-		
+	if (!unquotedlen) {
+		*quotedlen = 2;
+		*quoted = emalloc(*quotedlen+1);
+		strcpy(*quoted, "''");
 		return 1;
-	}			
+	}
+			
+	/* Firebird only requires single quotes to be doubled if string lengths are used */
+	/* count the number of ' characters */
+	for (co = unquoted; (co = strchr(co,'\'')); qcount++, co++);
+	
+	*quotedlen = unquotedlen + qcount + 2;
+	*quoted = c = emalloc(*quotedlen+1);		
+	*c++ = '\'';
+	
+	/* foreach (chunk that ends in a quote) */
+	for (l = unquoted; (r = strchr(l,'\'')); l = r+1) {			
+		strncpy(c, l, r-l+1);
+		c += (r-l+1);			
+		/* add the second quote */
+		*c++ = '\'';
+	}
+		
+	/* copy the remainder */
+	strncpy(c, l, *quotedlen-(c-*quoted)-1);
+	(*quoted)[*quotedlen-1] = '\''; 
+	(*quoted)[*quotedlen]   = '\0';
+	
+	return 1;
 }
 /* }}} */
 
@@ -485,6 +495,35 @@ static int firebird_handle_set_attribute(pdo_dbh_t *dbh, long attr, zval *val TS
 				dbh->auto_commit = Z_BVAL_P(val);
 			}
 			return 1;
+
+		case PDO_ATTR_FETCH_TABLE_NAMES:
+			convert_to_boolean(val);
+			H->fetch_table_names = Z_BVAL_P(val);
+			return 1;
+
+		case PDO_FB_ATTR_DATE_FORMAT:
+			convert_to_string(val);
+			if (H->date_format) {
+				efree(H->date_format);
+			}
+			spprintf(&H->date_format, 0, "%s", Z_STRVAL_P(val)); 
+			return 1;
+
+		case PDO_FB_ATTR_TIME_FORMAT:
+			convert_to_string(val);
+			if (H->time_format) {
+				efree(H->time_format);
+			}
+			spprintf(&H->time_format, 0, "%s", Z_STRVAL_P(val)); 
+			return 1;
+
+		case PDO_FB_ATTR_TIMESTAMP_FORMAT:
+			convert_to_string(val);
+			if (H->timestamp_format) {
+				efree(H->timestamp_format);
+			}
+			spprintf(&H->timestamp_format, 0, "%s", Z_STRVAL_P(val)); 
+			return 1;
 	}
 	return 0;
 }
@@ -503,7 +542,7 @@ static void firebird_info_cb(void *arg, char const *s) /* {{{ */
 /* }}} */
 
 /* called by PDO to get a driver-specific dbh attribute */
-static int firebird_handle_get_attribute(pdo_dbh_t const *dbh, long attr, zval *val TSRMLS_DC) /* {{{ */
+static int firebird_handle_get_attribute(pdo_dbh_t *dbh, long attr, zval *val TSRMLS_DC) /* {{{ */
 {
 	pdo_firebird_db_handle *H = (pdo_firebird_db_handle *)dbh->driver_data;
 
@@ -572,7 +611,7 @@ static int pdo_firebird_fetch_error_func(pdo_dbh_t *dbh, pdo_stmt_t *stmt, zval 
 			strcpy(&buf[i++], " ");
 		}
 		add_next_index_string(info, buf, 1);
-	} else {
+	} else if (H->last_app_error) {
 		add_next_index_long(info, -999);
 		add_next_index_string(info, const_cast(H->last_app_error),1);
 	}
@@ -618,7 +657,7 @@ static int pdo_firebird_handle_factory(pdo_dbh_t *dbh, zval *driver_options TSRM
 		char dpb_buffer[256] = { isc_dpb_version1 }, *dpb;
 		
 		dpb = dpb_buffer + 1; 
-		
+
 		/* loop through all the provided arguments and set dpb fields accordingly */
 		for (i = 0; i < sizeof(dpb_flags); ++i) {
 			if (dpb_values[i] && buf_len > 0) {
@@ -630,15 +669,14 @@ static int pdo_firebird_handle_factory(pdo_dbh_t *dbh, zval *driver_options TSRM
 		}
 		
 		/* fire it up baby! */
-		if (isc_attach_database(H->isc_status, 0, vars[0].optval, &H->db,(short)(dpb-dpb_buffer),
-				dpb_buffer)) {
+		if (isc_attach_database(H->isc_status, 0, vars[0].optval, &H->db,(short)(dpb-dpb_buffer), dpb_buffer)) {
 			break;
 		}
 		
 		dbh->methods = &firebird_methods;
 		dbh->native_case = PDO_CASE_UPPER;
 		dbh->alloc_own_columns = 1;
-
+		
 		ret = 1;
 		
 	} while (0);
@@ -649,6 +687,14 @@ static int pdo_firebird_handle_factory(pdo_dbh_t *dbh, zval *driver_options TSRM
 		}
 	}
 
+	if (!dbh->methods) {
+		char errmsg[512];
+		ISC_STATUS *s = H->isc_status;
+		isc_interprete(errmsg, &s);
+		zend_throw_exception_ex(php_pdo_get_exception(), 0 TSRMLS_CC, "SQLSTATE[%s] [%d] %s",
+				"HY000", H->isc_status[1], errmsg);
+	}
+
 	if (!ret) {
 		firebird_handle_closer(dbh TSRMLS_CC);
 	}
@@ -656,6 +702,7 @@ static int pdo_firebird_handle_factory(pdo_dbh_t *dbh, zval *driver_options TSRM
 	return ret;
 }
 /* }}} */
+
 
 pdo_driver_t pdo_firebird_driver = { /* {{{ */
 	PDO_DRIVER_HEADER(firebird),

@@ -6,9 +6,9 @@ Test sleep() function : error conditions
  * Description: Delays the program execution for the given number of seconds . 
  * Source code: ext/standard/basic_functions.c
  */
+ set_time_limit(20);
+ 
 echo "*** Testing sleep() : error conditions ***\n";
-
-set_time_limit(20); 
 
 echo "\n-- Testing sleep() function with zero arguments --\n";
 var_dump( sleep() );

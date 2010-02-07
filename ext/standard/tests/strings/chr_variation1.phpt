@@ -36,7 +36,7 @@ $inputs =  array (
 		  // float values
 /*5*/	  10.5,
 		  -20.5,
-		  10.1234567e10,
+		  1.1234e6,
 		
 		  // array values
 /*8*/	  array(),
@@ -93,13 +93,13 @@ string(2) "0a"
 -- Iteration 6 --
 string(2) "ec"
 -- Iteration 7 --
-string(2) "58"
+string(2) "48"
 -- Iteration 8 --
 string(2) "00"
 -- Iteration 9 --
-string(2) "01"
+string(2) "00"
 -- Iteration 10 --
-string(2) "01"
+string(2) "00"
 -- Iteration 11 --
 string(2) "01"
 -- Iteration 12 --
@@ -113,11 +113,9 @@ string(2) "00"
 -- Iteration 16 --
 string(2) "00"
 -- Iteration 17 --
-
-Notice: Object of class sample could not be converted to int in %s on line %d
-string(2) "01"
+string(2) "00"
 -- Iteration 18 --
-string(%d) "%s"
+string(2) "00"
 -- Iteration 19 --
 string(2) "00"
 -- Iteration 20 --

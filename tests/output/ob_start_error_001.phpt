@@ -34,7 +34,7 @@ var_dump(ob_start("justPrint", 0, "this should be a bool"));
 - Too many arguments
 
 Warning: ob_start() expects at most 3 parameters, 4 given in %s on line 17
-bool(false)
+NULL
 
 - Arg 1 wrong type
 bool(true)
@@ -42,7 +42,7 @@ bool(true)
 - Arg 2 wrong type
 
 Warning: ob_start() expects parameter 2 to be long, string given in %s on line 23
-bool(false)
+NULL
 
 - Arg 3 wrong type
 bool(true)

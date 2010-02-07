@@ -35,12 +35,11 @@ var_dump( array_uintersect($arr1, $arr2) );
 
 -- Testing array_uintersect() function with more than expected no. of arguments --
 
-Warning: array_uintersect(): Not a valid callback 10 in %s on line %d
+Warning: array_uintersect() expects parameter 4 to be a valid callback, no array or string given in %sarray_uintersect_error.php on line %d
 NULL
 
 -- Testing array_uintersect() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for array_uintersect() in %s on line %d
+Warning: array_uintersect(): at least 3 parameters are required, 2 given in %sarray_uintersect_error.php on line %d
 NULL
 ===DONE===
-

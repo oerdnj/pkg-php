@@ -17,40 +17,40 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: dom_fe.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: dom_fe.h 273468 2009-01-13 18:06:48Z rrichards $ */
 #ifndef DOM_FE_H
 #define DOM_FE_H
 
-extern zend_function_entry php_dom_domexception_class_functions[];
-extern zend_function_entry php_dom_domstringlist_class_functions[];
-extern zend_function_entry php_dom_namelist_class_functions[];
-extern zend_function_entry php_dom_domimplementationlist_class_functions[];
-extern zend_function_entry php_dom_domimplementationsource_class_functions[];
-extern zend_function_entry php_dom_domimplementation_class_functions[];
-extern zend_function_entry php_dom_documentfragment_class_functions[];
-extern zend_function_entry php_dom_document_class_functions[];
-extern zend_function_entry php_dom_node_class_functions[];
-extern zend_function_entry php_dom_nodelist_class_functions[];
-extern zend_function_entry php_dom_namednodemap_class_functions[];
-extern zend_function_entry php_dom_characterdata_class_functions[];
-extern zend_function_entry php_dom_attr_class_functions[];
-extern zend_function_entry php_dom_element_class_functions[];
-extern zend_function_entry php_dom_text_class_functions[];
-extern zend_function_entry php_dom_comment_class_functions[];
-extern zend_function_entry php_dom_typeinfo_class_functions[];
-extern zend_function_entry php_dom_userdatahandler_class_functions[];
-extern zend_function_entry php_dom_domerror_class_functions[];
-extern zend_function_entry php_dom_domerrorhandler_class_functions[];
-extern zend_function_entry php_dom_domlocator_class_functions[];
-extern zend_function_entry php_dom_domconfiguration_class_functions[];
-extern zend_function_entry php_dom_cdatasection_class_functions[];
-extern zend_function_entry php_dom_documenttype_class_functions[];
-extern zend_function_entry php_dom_notation_class_functions[];
-extern zend_function_entry php_dom_entity_class_functions[];
-extern zend_function_entry php_dom_entityreference_class_functions[];
-extern zend_function_entry php_dom_processinginstruction_class_functions[];
-extern zend_function_entry php_dom_string_extend_class_functions[];
-extern zend_function_entry php_dom_xpath_class_functions[];
+extern const zend_function_entry php_dom_domexception_class_functions[];
+extern const zend_function_entry php_dom_domstringlist_class_functions[];
+extern const zend_function_entry php_dom_namelist_class_functions[];
+extern const zend_function_entry php_dom_domimplementationlist_class_functions[];
+extern const zend_function_entry php_dom_domimplementationsource_class_functions[];
+extern const zend_function_entry php_dom_domimplementation_class_functions[];
+extern const zend_function_entry php_dom_documentfragment_class_functions[];
+extern const zend_function_entry php_dom_document_class_functions[];
+extern const zend_function_entry php_dom_node_class_functions[];
+extern const zend_function_entry php_dom_nodelist_class_functions[];
+extern const zend_function_entry php_dom_namednodemap_class_functions[];
+extern const zend_function_entry php_dom_characterdata_class_functions[];
+extern const zend_function_entry php_dom_attr_class_functions[];
+extern const zend_function_entry php_dom_element_class_functions[];
+extern const zend_function_entry php_dom_text_class_functions[];
+extern const zend_function_entry php_dom_comment_class_functions[];
+extern const zend_function_entry php_dom_typeinfo_class_functions[];
+extern const zend_function_entry php_dom_userdatahandler_class_functions[];
+extern const zend_function_entry php_dom_domerror_class_functions[];
+extern const zend_function_entry php_dom_domerrorhandler_class_functions[];
+extern const zend_function_entry php_dom_domlocator_class_functions[];
+extern const zend_function_entry php_dom_domconfiguration_class_functions[];
+extern const zend_function_entry php_dom_cdatasection_class_functions[];
+extern const zend_function_entry php_dom_documenttype_class_functions[];
+extern const zend_function_entry php_dom_notation_class_functions[];
+extern const zend_function_entry php_dom_entity_class_functions[];
+extern const zend_function_entry php_dom_entityreference_class_functions[];
+extern const zend_function_entry php_dom_processinginstruction_class_functions[];
+extern const zend_function_entry php_dom_string_extend_class_functions[];
+extern const zend_function_entry php_dom_xpath_class_functions[];
 
 /* domexception errors */
 typedef enum {
@@ -168,6 +168,7 @@ PHP_FUNCTION(dom_node_get_user_data);
 PHP_METHOD(domnode, C14N);
 PHP_METHOD(domnode, C14NFile);
 PHP_METHOD(domnode, getNodePath);
+PHP_METHOD(domnode, getLineNo);
 
 /* domnodelist methods */
 PHP_FUNCTION(dom_nodelist_item);
@@ -264,6 +265,16 @@ PHP_METHOD(domxpath, __construct);
 PHP_FUNCTION(dom_xpath_register_ns);
 PHP_FUNCTION(dom_xpath_query);
 PHP_FUNCTION(dom_xpath_evaluate);
+PHP_FUNCTION(dom_xpath_register_php_functions);
 #endif
 
 #endif /* DOM_FE_H */
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

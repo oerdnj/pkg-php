@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_pgsql_int.h 290214 2009-11-04 19:32:27Z mbeccati $ */
+/* $Id: php_pdo_pgsql_int.h 280407 2009-05-12 22:18:15Z mbeccati $ */
 
 #ifndef PHP_PDO_PGSQL_INT_H
 #define PHP_PDO_PGSQL_INT_H
@@ -43,14 +43,6 @@ typedef struct {
 	unsigned 	_reserved:31;
 	pdo_pgsql_error_info	einfo;
 	Oid 		pgoid;
-#if HAVE_PQPREPARE
-	/* The following two variables have the same purpose. Unfortunately we need
-	   to keep track of two different attributes having the same effect.
-	   It might be worth to deprecate the driver specific one soon. */
-	int		emulate_prepares;
-	int		disable_native_prepares;
-#endif
-	unsigned int stmt_counter;
 } pdo_pgsql_db_handle;
 
 typedef struct {
@@ -73,8 +65,8 @@ typedef struct {
 	int *param_lengths;
 	int *param_formats;
 	Oid *param_types;
-	zend_bool is_prepared;
 #endif
+	zend_bool is_prepared;
 } pdo_pgsql_stmt;
 
 typedef struct {
@@ -89,11 +81,7 @@ extern int _pdo_pgsql_error(pdo_dbh_t *dbh, pdo_stmt_t *stmt, int errcode, const
 
 extern struct pdo_stmt_methods pgsql_stmt_methods;
 
-#ifdef HAVE_PQRESULTERRORFIELD
 #define pdo_pgsql_sqlstate(r) PQresultErrorField(r, PG_DIAG_SQLSTATE)
-#else
-#define pdo_pgsql_sqlstate(r) (const char *)NULL
-#endif
 
 enum {
 	PDO_PGSQL_ATTR_DISABLE_NATIVE_PREPARED_STATEMENT = PDO_ATTR_DRIVER_SPECIFIC,

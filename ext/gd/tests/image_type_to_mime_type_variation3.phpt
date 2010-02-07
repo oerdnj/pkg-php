@@ -39,7 +39,7 @@ string\(29\) "application\/x-shockwave-flash"
 string\(9\) "image\/psd"
 
 -- Iteration 6 --
-string\(9\) "image\/bmp"
+string\(14\) "image\/x-ms-bmp"
 
 -- Iteration 7 --
 string\(10\) "image\/tiff"
@@ -72,5 +72,5 @@ string\(18\) "image\/vnd.wap.wbmp"
 string\(9\) "image\/xbm"
 
 -- Iteration 17 --
-string\(24\) "application\/octet-stream"
+string\(24\) "image\/vnd.microsoft.icon"
 ===DONE===

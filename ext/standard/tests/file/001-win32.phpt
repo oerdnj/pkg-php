@@ -1,5 +1,7 @@
 --TEST--
 File type functions
+--CREDITS--
+Dave Kelsey <d_kelsey@uk.ibm.com>
 --SKIPIF--
 <?php
 if (substr(PHP_OS, 0, 3) != 'WIN') {

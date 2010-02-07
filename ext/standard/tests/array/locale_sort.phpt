@@ -2,10 +2,16 @@
 Sort with SORT_LOCALE_STRING
 --SKIPIF--
 <?php
+if (substr(PHP_OS, 0, 3) == 'WIN') {
+  die("skip Unix locale name only, not available on windows (and crashes with VC6)\n");
+}
 if (false == setlocale(LC_CTYPE, "fr_FR", "fr_FR.ISO8859-1")) {
   die("skip setlocale() failed\n");
 }
 ?>
+--INI--
+unicode.script_encoding=ISO8859-1
+unicode.output_encoding=ISO8859-1
 --FILE--
 <?php
 setlocale(LC_ALL, 'fr_FR', 'fr_FR.ISO8859-1');

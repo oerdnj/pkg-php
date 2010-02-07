@@ -140,9 +140,21 @@ FAILED: DateTime::__construct(): Failed to parse time string (-12345) at positio
 FAILED: DateTime::__construct(): Failed to parse time string (-12345) at position 5 (5): Unexpected character
 
 -- float 10.5 --
-object(DateTime)#%d (0) {
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "%s"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
 }
-object(DateTime)#%d (0) {
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "%s"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
 }
 
 -- float -10.5 --
@@ -150,9 +162,21 @@ FAILED: DateTime::__construct(): Failed to parse time string (-10.5) at position
 FAILED: DateTime::__construct(): Failed to parse time string (-10.5) at position 4 (5): Unexpected character
 
 -- float .5 --
-object(DateTime)#%d (0) {
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "%s"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
 }
-object(DateTime)#%d (0) {
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "%s"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
 }
 
 -- empty array --
@@ -172,15 +196,39 @@ FAILED: DateTime::__construct() expects parameter 1 to be string, array given
 FAILED: DateTime::__construct() expects parameter 1 to be string, array given
 
 -- uppercase NULL --
-object(DateTime)#%d (0) {
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "%s"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
 }
-object(DateTime)#%d (0) {
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "%s"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
 }
 
 -- lowercase null --
-object(DateTime)#%d (0) {
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "%s"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
 }
-object(DateTime)#%d (0) {
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "%s"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
 }
 
 -- lowercase true --
@@ -188,9 +236,21 @@ FAILED: DateTime::__construct(): Failed to parse time string (1) at position 0 (
 FAILED: DateTime::__construct(): Failed to parse time string (1) at position 0 (1): Unexpected character
 
 -- lowercase false --
-object(DateTime)#%d (0) {
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "%s"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
 }
-object(DateTime)#%d (0) {
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "%s"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
 }
 
 -- uppercase TRUE --
@@ -198,21 +258,57 @@ FAILED: DateTime::__construct(): Failed to parse time string (1) at position 0 (
 FAILED: DateTime::__construct(): Failed to parse time string (1) at position 0 (1): Unexpected character
 
 -- uppercase FALSE --
-object(DateTime)#%d (0) {
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "%s"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
 }
-object(DateTime)#%d (0) {
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "%s"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
 }
 
 -- empty string DQ --
-object(DateTime)#%d (0) {
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "%s"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
 }
-object(DateTime)#%d (0) {
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "%s"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
 }
 
 -- empty string SQ --
-object(DateTime)#%d (0) {
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "%s"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
 }
-object(DateTime)#%d (0) {
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "%s"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
 }
 
 -- string DQ --
@@ -240,15 +336,39 @@ FAILED: DateTime::__construct() expects parameter 1 to be string, object given
 FAILED: DateTime::__construct() expects parameter 1 to be string, object given
 
 -- undefined var --
-object(DateTime)#%d (0) {
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "%s"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
 }
-object(DateTime)#%d (0) {
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "%s"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
 }
 
 -- unset var --
-object(DateTime)#%d (0) {
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "%s"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
 }
-object(DateTime)#%d (0) {
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "%s"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
 }
 
 -- resource --

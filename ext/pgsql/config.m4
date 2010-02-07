@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 239529 2007-07-11 21:51:55Z jani $
+dnl $Id: config.m4 263340 2008-07-23 21:44:25Z hholzgra $
 dnl
 
 PHP_ARG_WITH(pgsql,for PostgreSQL support,
@@ -66,7 +66,7 @@ if test "$PHP_PGSQL" != "no"; then
   AC_DEFINE(HAVE_PGSQL,1,[Whether to build PostgreSQL support or not])
   old_LIBS=$LIBS
   old_LDFLAGS=$LDFLAGS
-  LDFLAGS="$LDFLAGS -L$PGSQL_LIBDIR"
+  LDFLAGS="-L$PGSQL_LIBDIR $LDFLAGS"
   AC_CHECK_LIB(pq, PQescapeString,AC_DEFINE(HAVE_PQESCAPE,1,[PostgreSQL 7.2.0 or later]))
   AC_CHECK_LIB(pq, PQunescapeBytea,AC_DEFINE(HAVE_PQUNESCAPEBYTEA,1,[PostgreSQL 7.3.0 or later]))
   AC_CHECK_LIB(pq, PQsetnonblocking,AC_DEFINE(HAVE_PQSETNONBLOCKING,1,[PostgreSQL 7.0.x or later]))
@@ -92,6 +92,8 @@ if test "$PHP_PGSQL" != "no"; then
   AC_CHECK_LIB(pq, PQescapeStringConn, AC_DEFINE(HAVE_PQESCAPE_CONN,1,[PostgreSQL 8.1.4 or later]))
   AC_CHECK_LIB(pq, PQescapeByteaConn, AC_DEFINE(HAVE_PQESCAPE_BYTEA_CONN,1,[PostgreSQL 8.1.4 or later]))
   AC_CHECK_LIB(pq, pg_encoding_to_char,AC_DEFINE(HAVE_PGSQL_WITH_MULTIBYTE_SUPPORT,1,[Whether libpq is compiled with --enable-multibyte]))
+  AC_CHECK_LIB(pq, lo_create, AC_DEFINE(HAVE_PG_LO_CREATE,1,[PostgreSQL 8.1 or later]))
+  AC_CHECK_LIB(pq, lo_import_with_oid, AC_DEFINE(HAVE_PG_LO_IMPORT_WITH_OID,1,[PostgreSQL 8.4 or later]))
   LIBS=$old_LIBS
   LDFLAGS=$old_LDFLAGS
 

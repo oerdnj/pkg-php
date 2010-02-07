@@ -1,18 +1,22 @@
 --TEST--
-mysqli fetch char/text long 
+mysqli fetch char/text long
 --SKIPIF--
-<?php require_once('skipif.inc'); ?>
+<?php
+require_once('skipif.inc');
+require_once('skipifconnectfailure.inc');
+?>
 --FILE--
 <?php
 	include "connect.inc";
-	
+
 	/*** test mysqli_connect 127.0.0.1 ***/
-	$link = mysqli_connect($host, $user, $passwd);
+	$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket);
 
-	mysqli_select_db($link, "test");
+	if (!mysqli_query($link, "DROP TABLE IF EXISTS test_bind_fetch"))
+		printf("[001] [%d] %s\n", mysqli_errno($link), mysqli_error($link));
 
-  	mysqli_query($link,"DROP TABLE IF EXISTS test_bind_fetch");
-  	mysqli_query($link,"CREATE TABLE test_bind_fetch(c1 char(10), c2 text)");
+	if (!mysqli_query($link, "CREATE TABLE test_bind_fetch(c1 char(10), c2 text) ENGINE=" . $engine))
+		printf("[002] [%d] %s\n", mysqli_errno($link), mysqli_error($link));
 
 	$a = str_repeat("A1", 32000);
 
@@ -28,13 +32,30 @@ mysqli fetch char/text long
 
 	var_dump($test);
 
+	/* this will crash with libmysql from PHP 5.0.6 (or earlier) to 5.3.0 */
+	mysqli_fetch($stmt);
+
 	mysqli_stmt_close($stmt);
+	mysqli_query($link, "DROP TABLE IF EXISTS test_bind_fetch");
 	mysqli_close($link);
+	print "done!";
 ?>
---EXPECT--
+--CLEAN--
+<?php
+include "connect.inc";
+if (!$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket))
+   printf("[c001] [%d] %s\n", mysqli_connect_errno(), mysqli_connect_error());
+
+if (!mysqli_query($link, "DROP TABLE IF EXISTS test_bind_fetch"))
+	printf("[c002] Cannot drop table, [%d] %s\n", mysqli_errno($link), mysqli_error($link));
+
+mysqli_close($link);
+?>
+--EXPECTF--
 array(2) {
   [0]=>
-  string(10) "1234567890"
+  %unicode|string%(10) "1234567890"
   [1]=>
-  string(13) "32K String ok"
+  %unicode|string%(13) "32K String ok"
 }
+done!

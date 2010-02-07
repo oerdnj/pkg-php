@@ -1,7 +1,7 @@
 --TEST--
 gzfile(), gzreadfile()
 --SKIPIF--
-<?php /* $Id: gzfilegzreadfile.phpt 158952 2004-05-19 08:45:46Z helly $ */
+<?php /* $Id: gzfilegzreadfile.phpt 242949 2007-09-26 15:44:16Z cvs2svn $ */
 if (!extension_loaded("zlib")) print "skip"; ?>
 --FILE--
 <?php

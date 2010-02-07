@@ -135,13 +135,12 @@ var_dump( is_bool() );
 var_dump( is_bool(TRUE, FALSE) );
  
 echo "Done\n";
-?>
 
---CLEAN--
 // close resources
 fclose($fp);
 closedir($dfp);
 
+?>
 --EXPECTF--
 *** Testing is_bool() with valid boolean values ***
 -- Iteration 1 --
@@ -287,9 +286,9 @@ bool(false)
 
 *** Testing error conditions ***
 
-Warning: is_bool(): Only one argument expected in %s on line %d
+Warning: is_bool() expects exactly 1 parameter, 0 given in %s on line %d
 bool(false)
 
-Warning: is_bool(): Only one argument expected in %s on line %d
+Warning: is_bool() expects exactly 1 parameter, 2 given in %s on line %d
 bool(false)
 Done

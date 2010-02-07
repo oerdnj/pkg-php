@@ -22,7 +22,7 @@
  * - CGI/1.1 conformance
  */
 
-/* $Id: aolserver.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: aolserver.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 /* conflict between PHP and AOLserver headers */
 #define Debug php_Debug
@@ -205,7 +205,7 @@ static void php_info_aolserver(ZEND_MODULE_INFO_FUNC_ARGS)
 	int i;
 	
 	php_info_print_table_start();
-	php_info_print_table_row(2, "SAPI module version", "$Id: aolserver.c 272374 2008-12-31 11:17:49Z sebastian $");
+	php_info_print_table_row(2, "SAPI module version", "$Id: aolserver.c 272370 2008-12-31 11:15:49Z sebastian $");
 	php_info_print_table_row(2, "Build date", Ns_InfoBuildDate());
 	php_info_print_table_row(2, "Config file path", Ns_InfoConfigFile());
 	php_info_print_table_row(2, "Error Log path", Ns_InfoErrorLog());
@@ -240,8 +240,13 @@ static void php_info_aolserver(ZEND_MODULE_INFO_FUNC_ARGS)
 
 PHP_FUNCTION(getallheaders);
 
-static zend_function_entry aolserver_functions[] = {
-	PHP_FE(getallheaders, NULL)
+/* {{{ arginfo */
+ZEND_BEGIN_ARG_INFO(arginfo_aolserver_getallheaders, 0)
+ZEND_END_ARG_INFO()
+/* }}} */
+
+const static zend_function_entry aolserver_functions[] = {
+	PHP_FE(getallheaders, arginfo_aolserver_getallheaders)
 	{NULL, NULL, NULL}
 };
 
@@ -386,6 +391,7 @@ static sapi_module_struct aolserver_sapi_module = {
 	php_ns_sapi_register_variables,
 	NULL,									/* Log message */
 	NULL,									/* Get request time */
+	NULL,							/* child terminate */
 
 	STANDARD_SAPI_MODULE_PROPERTIES
 };

@@ -2,10 +2,6 @@
 Test log1p() function : usage variations - different data types as $arg argument
 --INI--
 precision=14
---SKIPIF--
-<?php
-	function_exists('log1p') or die('skip log1p() is not supported in this build.');
-?>
 --FILE--
 <?php
 /* Prototype  : float log1p  ( float $arg  )
@@ -148,27 +144,39 @@ float(0.69314718055995)
 float(0)
 
 -- Iteration 18 --
-float(0)
+
+Warning: log1p() expects parameter 1 to be double, string given in %s on line %d
+NULL
 
 -- Iteration 19 --
-float(0)
+
+Warning: log1p() expects parameter 1 to be double, string given in %s on line %d
+NULL
 
 -- Iteration 20 --
-float(0)
+
+Warning: log1p() expects parameter 1 to be double, array given in %s on line %d
+NULL
 
 -- Iteration 21 --
-float(0)
+
+Warning: log1p() expects parameter 1 to be double, string given in %s on line %d
+NULL
 
 -- Iteration 22 --
-float(0)
+
+Warning: log1p() expects parameter 1 to be double, string given in %s on line %d
+NULL
 
 -- Iteration 23 --
-float(0)
+
+Warning: log1p() expects parameter 1 to be double, string given in %s on line %d
+NULL
 
 -- Iteration 24 --
 
-Notice: Object of class classA could not be converted to double in %s on line %d
-float(0.69314718055995)
+Warning: log1p() expects parameter 1 to be double, object given in %s on line %d
+NULL
 
 -- Iteration 25 --
 float(0)
@@ -177,5 +185,7 @@ float(0)
 float(0)
 
 -- Iteration 27 --
-float(%f)
+
+Warning: log1p() expects parameter 1 to be double, resource given in %s on line %d
+NULL
 ===Done===

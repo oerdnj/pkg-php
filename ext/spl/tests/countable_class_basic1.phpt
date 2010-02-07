@@ -1,7 +1,13 @@
 --TEST--
 SPL: Test shape of interface Countable.
 --SKIPIF--
-<?php if (!extension_loaded('spl') || !extension_loaded('reflection')) print 'skip'; ?>
+<?php 
+// Skip the test case if Standard PHP Library(spl) is not installed
+  if( !extension_loaded('spl'))
+  {
+     die('skip spl is not installed');
+  }
+?>
 --FILE--
 <?php
 ReflectionClass::export('Countable');
@@ -23,6 +29,9 @@ Interface [ <internal%s> interface Countable ] {
 
   - Methods [1] {
     Method [ <internal%s> abstract public method count ] {
+
+      - Parameters [0] {
+      }
     }
   }
 }

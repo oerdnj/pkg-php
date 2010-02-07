@@ -24,6 +24,6 @@ echo "Done";
 
 -- Testing ob_implicit_flush() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for ob_implicit_flush() in %s on line 15
+Warning: ob_implicit_flush() expects at most 1 parameter, 2 given in %s on line 15
 NULL
 Done

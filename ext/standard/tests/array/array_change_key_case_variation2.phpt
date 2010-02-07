@@ -237,64 +237,34 @@ array(3) {
 }
 
 -- Iteration 16 --
-array(3) {
-  ["one"]=>
-  int(1)
-  ["two"]=>
-  int(2)
-  ["three"]=>
-  int(3)
-}
+
+Warning: array_change_key_case() expects parameter 2 to be long, string given in %s on line %d
+NULL
 
 -- Iteration 17 --
-array(3) {
-  ["one"]=>
-  int(1)
-  ["two"]=>
-  int(2)
-  ["three"]=>
-  int(3)
-}
+
+Warning: array_change_key_case() expects parameter 2 to be long, string given in %s on line %d
+NULL
 
 -- Iteration 18 --
-array(3) {
-  ["one"]=>
-  int(1)
-  ["two"]=>
-  int(2)
-  ["three"]=>
-  int(3)
-}
+
+Warning: array_change_key_case() expects parameter 2 to be long, array given in %s on line %d
+NULL
 
 -- Iteration 19 --
-array(3) {
-  ["one"]=>
-  int(1)
-  ["two"]=>
-  int(2)
-  ["three"]=>
-  int(3)
-}
+
+Warning: array_change_key_case() expects parameter 2 to be long, string given in %s on line %d
+NULL
 
 -- Iteration 20 --
-array(3) {
-  ["one"]=>
-  int(1)
-  ["two"]=>
-  int(2)
-  ["three"]=>
-  int(3)
-}
+
+Warning: array_change_key_case() expects parameter 2 to be long, string given in %s on line %d
+NULL
 
 -- Iteration 21 --
-array(3) {
-  ["one"]=>
-  int(1)
-  ["two"]=>
-  int(2)
-  ["three"]=>
-  int(3)
-}
+
+Warning: array_change_key_case() expects parameter 2 to be long, string given in %s on line %d
+NULL
 
 -- Iteration 22 --
 array(3) {

@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_xml.c 291533 2009-12-01 02:05:28Z felipe $ */
+/* $Id: php_xml.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #include "php_soap.h"
 #include "libxml/parser.h"
@@ -138,9 +138,6 @@ xmlDocPtr soap_xmlParseMemory(const void *buf, size_t buf_size)
 		ctxt->sax->warning = NULL;
 		ctxt->sax->error = NULL;
 		/*ctxt->sax->fatalError = NULL;*/
-#if LIBXML_VERSION >= 20703
-		ctxt->options |= XML_PARSE_HUGE;
-#endif
 		xmlParseDocument(ctxt);
 		if (ctxt->wellFormed) {
 			ret = ctxt->myDoc;

@@ -131,11 +131,11 @@ foreach ($f as $k=>$v) {
 ===DONE===
 --EXPECTF--
 object(EuropeanMeals)#%d (2) {
-  ["storedEnglishMealIterator:private"]=>
+  ["storedEnglishMealIterator":"EuropeanMeals":private]=>
   object(EnglishMealIterator)#%d (2) {
-    ["pos:private"]=>
+    ["pos":"EnglishMealIterator":private]=>
     int(0)
-    ["myContent:private"]=>
+    ["myContent":"EnglishMealIterator":private]=>
     array(3) {
       [0]=>
       string(9) "breakfast"
@@ -145,18 +145,18 @@ object(EuropeanMeals)#%d (2) {
       string(3) "tea"
     }
   }
-  ["storedFrenchMealIterator:private"]=>
+  ["storedFrenchMealIterator":"EuropeanMeals":private]=>
   object(FrenchMealIterator)#%d (2) {
-    ["pos:private"]=>
+    ["pos":"FrenchMealIterator":private]=>
     int(0)
-    ["myContent:private"]=>
+    ["myContent":"FrenchMealIterator":private]=>
     array(4) {
       [0]=>
-      string(%d) "petit dejeuner"
+      string(14) "petit dejeuner"
       [1]=>
-      string(%d) "dejeuner"
+      string(8) "dejeuner"
       [2]=>
-      string(%d) "gouter"
+      string(6) "gouter"
       [3]=>
       string(6) "dinner"
     }

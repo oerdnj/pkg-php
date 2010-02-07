@@ -260,9 +260,9 @@ static void proc_open_rsrc_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC)
 		wait_pid = waitpid(proc->child, &wstatus, 0);
 	} while (wait_pid == -1 && errno == EINTR);
 	
-	if (wait_pid == -1)
+	if (wait_pid == -1) {
 		FG(pclose_ret) = -1;
-	else {
+	} else {
 		if (WIFEXITED(wstatus))
 			wstatus = WEXITSTATUS(wstatus);
 		FG(pclose_ret) = wstatus;
@@ -495,7 +495,7 @@ struct php_proc_open_descriptor_item {
 PHP_FUNCTION(proc_open)
 {
 	char *command, *cwd=NULL;
-	int command_len, cwd_len;
+	int command_len, cwd_len = 0;
 	zval *descriptorspec;
 	zval *pipes;
 	zval *environment = NULL;
@@ -512,6 +512,7 @@ PHP_FUNCTION(proc_open)
 	STARTUPINFO si;
 	BOOL newprocok;
 	SECURITY_ATTRIBUTES security;
+	DWORD dwCreateFlags = 0;
 	char *command_with_cmd;
 	UINT old_error_mode;
 #endif
@@ -783,12 +784,17 @@ PHP_FUNCTION(proc_open)
 		old_error_mode = SetErrorMode(SEM_FAILCRITICALERRORS|SEM_NOGPFAULTERRORBOX);
 	}
 	
+	dwCreateFlags = NORMAL_PRIORITY_CLASS;
+	if(strcmp(sapi_module.name, "cli") != 0) {
+		dwCreateFlags |= CREATE_NO_WINDOW;
+	}
+
 	if (bypass_shell) {
-		newprocok = CreateProcess(NULL, command, &security, &security, TRUE, NORMAL_PRIORITY_CLASS|CREATE_NO_WINDOW, env.envp, cwd, &si, &pi);
+		newprocok = CreateProcess(NULL, command, &security, &security, TRUE, dwCreateFlags, env.envp, cwd, &si, &pi);
 	} else {
 		spprintf(&command_with_cmd, 0, "%s /c %s", GetVersion() < 0x80000000 ? COMSPEC_NT : COMSPEC_9X, command);
 
-		newprocok = CreateProcess(NULL, command_with_cmd, &security, &security, TRUE, NORMAL_PRIORITY_CLASS|CREATE_NO_WINDOW, env.envp, cwd, &si, &pi);
+		newprocok = CreateProcess(NULL, command_with_cmd, &security, &security, TRUE, dwCreateFlags, env.envp, cwd, &si, &pi);
 		
 		efree(command_with_cmd);
 	}

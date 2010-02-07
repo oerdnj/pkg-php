@@ -139,27 +139,39 @@ float(1.527345431)
 float(1.570796327)
 
 -- Iteration 17 --
-float(1.570796327)
+
+Warning: atan2() expects parameter 2 to be double, string given in %s on line %d
+NULL
 
 -- Iteration 18 --
-float(1.570796327)
+
+Warning: atan2() expects parameter 2 to be double, string given in %s on line %d
+NULL
 
 -- Iteration 19 --
-float(1.570796327)
+
+Warning: atan2() expects parameter 2 to be double, array given in %s on line %d
+NULL
 
 -- Iteration 20 --
-float(1.570796327)
+
+Warning: atan2() expects parameter 2 to be double, string given in %s on line %d
+NULL
 
 -- Iteration 21 --
-float(1.570796327)
+
+Warning: atan2() expects parameter 2 to be double, string given in %s on line %d
+NULL
 
 -- Iteration 22 --
-float(1.570796327)
+
+Warning: atan2() expects parameter 2 to be double, string given in %s on line %d
+NULL
 
 -- Iteration 23 --
 
-Notice: Object of class classA could not be converted to double in %s on line %d
-float(1.527345431)
+Warning: atan2() expects parameter 2 to be double, object given in %s on line %d
+NULL
 
 -- Iteration 24 --
 float(1.570796327)
@@ -168,5 +180,7 @@ float(1.570796327)
 float(1.570796327)
 
 -- Iteration 26 --
-float(%f)
+
+Warning: atan2() expects parameter 2 to be double, resource given in %s on line %d
+NULL
 ===Done===

@@ -1,4 +1,4 @@
-dnl $Id: config.m4 291364 2009-11-27 23:41:13Z rasmus $ -*- autoconf -*-
+dnl $Id: config.m4 287120 2009-08-11 22:07:35Z scottmac $ -*- autoconf -*-
 
 divert(3)dnl
 
@@ -84,12 +84,6 @@ main() {
 ],[
   ac_cv_crypt_des=yes
 ])])
-if test "$ac_cv_crypt_des" = "yes"; then
-  ac_result=1
-else
-  ac_result=0
-fi
-AC_DEFINE_UNQUOTED(PHP_STD_DES_CRYPT, $ac_result, [Whether the system supports standard DES salt])
 
 AC_CACHE_CHECK(for extended DES crypt, ac_cv_crypt_ext_des,[
   AC_TRY_RUN([
@@ -114,12 +108,6 @@ main() {
 ],[
   ac_cv_crypt_ext_des=no
 ])])
-if test "$ac_cv_crypt_ext_des" = "yes"; then
-  ac_result=1
-else
-  ac_result=0
-fi
-AC_DEFINE_UNQUOTED(PHP_EXT_DES_CRYPT, $ac_result, [Whether the system supports extended DES salt])
 
 AC_CACHE_CHECK(for MD5 crypt, ac_cv_crypt_md5,[
 AC_TRY_RUN([
@@ -153,15 +141,6 @@ main() {
 ],[
   ac_cv_crypt_md5=no
 ])])
-if test "$ac_cv_crypt_md5" = "yes"; then
-  ac_result=1
-else
-  if test "$ac_cv_crypt_des" != "yes"; then
-    PHP_DEBUG_MACRO(debug.log)
-  fi
-  ac_result=0
-fi
-AC_DEFINE_UNQUOTED(PHP_MD5_CRYPT, $ac_result, [Whether the system supports MD5 salt])
 
 AC_CACHE_CHECK(for Blowfish crypt, ac_cv_crypt_blowfish,[
 AC_TRY_RUN([
@@ -192,12 +171,48 @@ main() {
 ],[
   ac_cv_crypt_blowfish=no
 ])])
-if test "$ac_cv_crypt_blowfish" = "yes"; then
-  ac_result=1
+
+dnl
+dnl If one of them is missing, use our own implementation, portable code is then possible
+dnl
+if test "$ac_cv_crypt_blowfish" = "no" || test "$ac_cv_crypt_des" = "no" || test "$ac_cv_crypt_ext_des" = "no" || test "x$php_crypt_r" = "x0"; then
+  AC_DEFINE_UNQUOTED(PHP_USE_PHP_CRYPT_R, 1, [Whether PHP has to use its own crypt_r for blowfish, des, ext des and md5])
+  AC_DEFINE_UNQUOTED(PHP_STD_DES_CRYPT, 1, [Whether the system supports standard DES salt])
+  AC_DEFINE_UNQUOTED(PHP_BLOWFISH_CRYPT, 1, [Whether the system supports BlowFish salt])
+  AC_DEFINE_UNQUOTED(PHP_EXT_DES_CRYPT, 1, [Whether the system supports extended DES salt])
+  AC_DEFINE_UNQUOTED(PHP_MD5_CRYPT, 1, [Whether the system supports extended DES salt])
+
+  PHP_ADD_SOURCES(PHP_EXT_DIR(standard), crypt_freesec.c crypt_blowfish.c php_crypt_r.c)
 else
-  ac_result=0
+  if test "$ac_cv_crypt_des" = "yes"; then
+    ac_result=1
+    ac_crypt_des=1
+  else
+    ac_result=0
+    ac_crypt_des=0
+  fi
+  AC_DEFINE_UNQUOTED(PHP_STD_DES_CRYPT, $ac_result, [Whether the system supports standard DES salt])
+
+  if test "$ac_cv_crypt_blowfish" = "yes"; then
+    ac_result=1
+    ac_crypt_blowfish=1
+  else
+    ac_result=0
+    ac_crypt_blowfish=0
+  fi
+  AC_DEFINE_UNQUOTED(PHP_BLOWFISH_CRYPT, $ac_result, [Whether the system supports BlowFish salt])
+
+  if test "$ac_cv_crypt_ext_des" = "yes"; then
+    ac_result=1
+    ac_crypt_edes=1
+  else
+    ac_result=0
+    ac_crypt_edes=0
+  fi
+  AC_DEFINE_UNQUOTED(PHP_EXT_DES_CRYPT, $ac_result, [Whether the system supports extended DES salt])
+
+  AC_DEFINE_UNQUOTED(PHP_USE_PHP_CRYPT_R, 0, [Whether PHP has to use its own crypt_r for blowfish, des and ext des])
 fi
-AC_DEFINE_UNQUOTED(PHP_BLOWFISH_CRYPT, $ac_result, [Whether the system supports BlowFish salt])
 
 dnl
 dnl Check for available functions
@@ -208,87 +223,16 @@ AC_FUNC_FNMATCH
 divert(5)dnl
 
 dnl
-dnl Check for regex library type
-dnl
-PHP_ARG_WITH(regex,,
-[  --with-regex=TYPE       regex library type: system, apache, php. [TYPE=php]
-                          WARNING: Do NOT use unless you know what you are doing!], php, no)
-
-case $PHP_REGEX in
-  system)
-    if test "$PHP_SAPI" = "apache" || test "$PHP_SAPI" = "apache2filter" || test "$PHP_SAPI" = "apache2handler"; then
-      REGEX_TYPE=php
-    else
-      REGEX_TYPE=system
-    fi
-    ;;
-  apache)
-    REGEX_TYPE=apache
-    ;;
-  php)
-    REGEX_TYPE=php
-    ;;
-  *)
-    REGEX_TYPE=php
-    AC_MSG_WARN(Invalid regex library type selected. Using default value: php)
-    ;;
-esac
-
-if test "$REGEX_TYPE" = "php"; then
-  AC_DEFINE(HAVE_REGEX_T_RE_MAGIC, 1, [ ])
-  AC_DEFINE(HSREGEX,1,[ ])
-  AC_DEFINE(REGEX,1,[ ])  
-  PHP_ADD_SOURCES(regex, regcomp.c regexec.c regerror.c regfree.c)
-elif test "$REGEX_TYPE" = "system"; then
-  AC_DEFINE(REGEX,0,[ ])
-  dnl Check if field re_magic exists in struct regex_t
-  AC_CACHE_CHECK([whether field re_magic exists in struct regex_t], ac_cv_regex_t_re_magic, [
-  AC_TRY_COMPILE([#include <sys/types.h>
-#include <regex.h>], [regex_t rt; rt.re_magic;],
-  [ac_cv_regex_t_re_magic=yes], [ac_cv_regex_t_re_magic=no])])
-  if test "$ac_cv_regex_t_re_magic" = "yes"; then
-    AC_DEFINE([HAVE_REGEX_T_RE_MAGIC], [ ], 1)   
-  fi 
-fi   
-AC_MSG_CHECKING([which regex library to use])
-AC_MSG_RESULT([$REGEX_TYPE])
-
-dnl
-dnl round fuzz
-dnl
-AC_MSG_CHECKING([whether rounding works as expected])
-AC_TRY_RUN([
-#include <math.h>
-  /* keep this out-of-line to prevent use of gcc inline floor() */
-  double somefn(double n) {
-    return floor(n*pow(10,2) + 0.5);
-  }
-  int main() {
-    return somefn(0.045)/10.0 != 0.5;
-  }
-],[
-  PHP_ROUND_FUZZ=0.5
-  AC_MSG_RESULT(yes)
-],[
-  PHP_ROUND_FUZZ=0.50000000001
-  AC_MSG_RESULT(no)
-],[
-  PHP_ROUND_FUZZ=0.50000000001
-  AC_MSG_RESULT(cross compile)
-])
-AC_DEFINE_UNQUOTED(PHP_ROUND_FUZZ, $PHP_ROUND_FUZZ, [ see #24142 ])
-
-dnl
 dnl Check if there is a support means of creating a new process
 dnl and defining which handles it receives
 dnl
+AC_CACHE_VAL(php_can_support_proc_open,[
 AC_CHECK_FUNCS(fork CreateProcess, [
   php_can_support_proc_open=yes
   break
 ],[
   php_can_support_proc_open=no
-])
-
+])])
 AC_MSG_CHECKING([if your OS can spawn processes with inherited handles])
 if test "$php_can_support_proc_open" = "yes"; then
   AC_MSG_RESULT(yes)
@@ -297,35 +241,24 @@ else
   AC_MSG_RESULT(no)
 fi
 
-dnl getopt long options disabled for now
-dnl as we can't be sure that we get the right getopt.h here
-dnl using the standard AC_CHECK macros
-dnl AC_CHECK_HEADERS(getopt.h)
-dnl AC_CHECK_FUNCS(getopt_long getopt_long_only)
-
 if test "$PHP_SAPI" = "cgi" || test "$PHP_SAPI" = "cli" || test "$PHP_SAPI" = "embed"; then
   AC_DEFINE(ENABLE_CHROOT_FUNC, 1, [Whether to enable chroot() function])
 fi
 
 dnl
 dnl Detect library functions needed by php dns_xxx functions
-dnl ext/standard/php_dns.h will collect these in a single define: HAVE_DNS_FUNCS
+dnl ext/standard/php_dns.h will collect these in a single define: HAVE_FULL_DNS_FUNCS
 dnl
-PHP_CHECK_FUNC(res_nmkquery, resolv, bind, socket)
-PHP_CHECK_FUNC(res_nsend, resolv, bind, socket)
+PHP_CHECK_FUNC(res_nsearch, resolv, bind, socket)
+PHP_CHECK_FUNC(dns_search, resolv, bind, socket)
 PHP_CHECK_FUNC(dn_expand, resolv, bind, socket)
+PHP_CHECK_FUNC(dn_skipname, resolv, bind, socket)
 
-dnl OSX has the dns functions in libc but remaps them in resolv.h for bind so linking fails
-case $host_alias in
-  *darwin*)
-    macosx_major=`sw_vers -productVersion | cut -d . -f 1`
-    macosx_minor=`sw_vers -productVersion | cut -d . -f 2`
+dnl
+dnl These are old deprecated functions
+dnl
 
-    if test "$macosx_major" -ge "10" && test "$macosx_minor" -ge "6" ; then
-      LIBS="$LIBS -lresolv"
-    fi
-  ;;
-esac
+PHP_CHECK_FUNC(res_search, resolv, bind, socket)
 
 dnl
 dnl Check if atof() accepts NAN
@@ -520,7 +453,7 @@ PHP_NEW_EXTENSION(standard, array.c base64.c basic_functions.c browscap.c crc32.
                             flock_compat.c formatted_print.c fsock.c head.c html.c image.c \
                             info.c iptc.c lcg.c link.c mail.c math.c md5.c metaphone.c \
                             microtime.c pack.c pageinfo.c quot_print.c rand.c \
-                            reg.c soundex.c string.c scanf.c syslog.c type.c uniqid.c url.c \
+                            soundex.c string.c scanf.c syslog.c type.c uniqid.c url.c \
                             var.c versioning.c assert.c strnatcmp.c levenshtein.c \
                             incomplete_class.c url_scanner_ex.c ftp_fopen_wrapper.c \
                             http_fopen_wrapper.c php_fopen_wrapper.c credits.c css.c \

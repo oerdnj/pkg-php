@@ -83,8 +83,8 @@ foreach ($obj as &$v) {
 var_dump($obj);
 
 ?>
+===DONE===
 --EXPECTF--
-
 Directly changing object values.
 string(10) "Original a"
 string(10) "Original b"
@@ -96,9 +96,9 @@ object(C)#%d (5) {
   string(9) "changed.b"
   ["c"]=>
   string(9) "changed.c"
-  ["d:protected"]=>
+  ["d":protected]=>
   string(10) "Original d"
-  ["e:private"]=>
+  ["e":"C":private]=>
   string(10) "Original e"
 }
 
@@ -110,9 +110,9 @@ object(C)#%d (5) {
   string(10) "Original b"
   ["c"]=>
   string(10) "Original c"
-  ["d:protected"]=>
+  ["d":protected]=>
   string(10) "Original d"
-  ["e:private"]=>
+  ["e":"C":private]=>
   string(10) "Original e"
 }
 
@@ -124,9 +124,9 @@ object(C)#%d (5) {
   string(9) "changed.b"
   ["c"]=>
   &string(9) "changed.c"
-  ["d:protected"]=>
+  ["d":protected]=>
   string(10) "Original d"
-  ["e:private"]=>
+  ["e":"C":private]=>
   string(10) "Original e"
 }
 
@@ -150,9 +150,9 @@ object(C)#%d (17) {
   string(10) "Original b"
   ["c"]=>
   string(10) "Original c"
-  ["d:protected"]=>
+  ["d":protected]=>
   string(10) "Original d"
-  ["e:private"]=>
+  ["e":"C":private]=>
   string(10) "Original e"
   ["new0"]=>
   string(16) "Added property 0"
@@ -200,9 +200,9 @@ object(C)#%d (17) {
   string(10) "Original b"
   ["c"]=>
   string(10) "Original c"
-  ["d:protected"]=>
+  ["d":protected]=>
   string(10) "Original d"
-  ["e:private"]=>
+  ["e":"C":private]=>
   string(10) "Original e"
   ["new0"]=>
   string(16) "Added property 0"
@@ -233,17 +233,18 @@ object(C)#%d (17) {
 Removing properties from an object.
 string(10) "Original a"
 object(C)#%d (2) {
-  ["d:protected"]=>
+  ["d":protected]=>
   string(10) "Original d"
-  ["e:private"]=>
+  ["e":"C":private]=>
   string(10) "Original e"
 }
 
 Removing properties from an object, using &$value.
 string(10) "Original a"
 object(C)#%d (2) {
-  ["d:protected"]=>
+  ["d":protected]=>
   string(10) "Original d"
-  ["e:private"]=>
+  ["e":"C":private]=>
   string(10) "Original e"
 }
+===DONE===

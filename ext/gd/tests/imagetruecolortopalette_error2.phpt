@@ -12,12 +12,11 @@ Rafael Dohms <rdohms [at] gmail [dot] com>
 $image = imagecreatetruecolor(50, 50);
 $resource = tmpfile();
 
-$a = imagetruecolortopalette($image, $resource, 2);
-$b = imagetruecolortopalette($image, array(), 2);
+imagetruecolortopalette($image, $resource, 2);
+imagetruecolortopalette($image, array(), 2);
 
-var_dump($a, $b);
-//Both will return true in 5.2.x due to lack of parameter validation
 ?>
 --EXPECTF--
-bool(true)
-bool(true)
+Warning: imagetruecolortopalette() expects parameter 2 to be boolean, resource given in %s on line %d
+
+Warning: imagetruecolortopalette() expects parameter 2 to be boolean, array given in %s on line %d

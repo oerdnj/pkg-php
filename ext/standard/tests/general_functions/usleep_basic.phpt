@@ -7,9 +7,9 @@ Test usleep() function
  * Source code: ext/standard/basic_functions.c
  */
  
+set_time_limit(20);
+ 
 echo "*** Testing usleep() : basic functionality ***\n";
-
-set_time_limit(20); 
 
 $sleeptime = 5000000; // == 5 seconds
 // Test passes if sleeps for at least 98% of specified time 
@@ -28,7 +28,7 @@ echo "Thread slept for " . $time . " micro-seconds\n";
 if ($time >= $sleeplow) {
 	echo "TEST PASSED\n";
 } else {
-	echo "TEST FAILED - time is ${time} micro-seconds and sleep was ${sleeptime} micro-seconds\n";
+	echo "TEST FAILED\n";
 }
 ?>
 ===DONE===

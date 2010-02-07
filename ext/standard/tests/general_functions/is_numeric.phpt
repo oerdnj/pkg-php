@@ -154,13 +154,12 @@ var_dump( is_numeric() );
 var_dump( is_numeric("10", "20") );
  
 echo "Done\n";
-?>
 
---CLEAN--
 // close the resources used
 fclose($fp);
 closedir($dfp);
 
+?>
 --EXPECTF--
 *** Testing is_numeric() with valid numeric values ***
 -- Iteration 1 --
@@ -380,9 +379,9 @@ bool(false)
 
 *** Testing error conditions ***
 
-Warning: Wrong parameter count for is_numeric() in %s on line %d
+Warning: is_numeric() expects exactly 1 parameter, 0 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for is_numeric() in %s on line %d
+Warning: is_numeric() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
 Done

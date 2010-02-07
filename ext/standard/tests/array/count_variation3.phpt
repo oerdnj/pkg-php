@@ -24,8 +24,6 @@ var_dump(count ($array1));
 echo "\n-- \$mode = 1: --\n";
 var_dump(count ($array1, 1));
 
-$array1[3] = null;
-
 echo "Done";
 ?>
 --EXPECTF--

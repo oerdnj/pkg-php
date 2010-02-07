@@ -12,13 +12,9 @@ echo "Simple testcase for getmypid() function\n";
 
 var_dump(getmypid());
 
-// getmypid has not checks for spurious args 
-var_dump(getmypid("foo"));
-
 echo "Done\n";
 ?>
 --EXPECTF--
 Simple testcase for getmypid() function
-int(%d)
 int(%d)
 Done

@@ -60,7 +60,7 @@ $input_values = array(
        // null data
 /*10*/ NULL,
        null,
-
+      
        // boolean data
 /*12*/ true,
        false,
@@ -80,7 +80,7 @@ $input_values = array(
 
        // undefined data
        @$undefined_var,
-
+ 
        // unset data
 /*22*/ @$unset_var,
 );
@@ -99,90 +99,90 @@ echo "Done"
 *** Testing uasort() : unexpected values for 'array_arg' ***
 -- Iteration 1 --
 
-Warning: uasort(): The argument should be an array in %s on line %d
-bool(false)
+Warning: uasort() expects parameter 1 to be array, integer given in %s on line %d
+NULL
 -- Iteration 2 --
 
-Warning: uasort(): The argument should be an array in %s on line %d
-bool(false)
+Warning: uasort() expects parameter 1 to be array, integer given in %s on line %d
+NULL
 -- Iteration 3 --
 
-Warning: uasort(): The argument should be an array in %s on line %d
-bool(false)
+Warning: uasort() expects parameter 1 to be array, integer given in %s on line %d
+NULL
 -- Iteration 4 --
 
-Warning: uasort(): The argument should be an array in %s on line %d
-bool(false)
+Warning: uasort() expects parameter 1 to be array, integer given in %s on line %d
+NULL
 -- Iteration 5 --
 
-Warning: uasort(): The argument should be an array in %s on line %d
-bool(false)
+Warning: uasort() expects parameter 1 to be array, double given in %s on line %d
+NULL
 -- Iteration 6 --
 
-Warning: uasort(): The argument should be an array in %s on line %d
-bool(false)
+Warning: uasort() expects parameter 1 to be array, double given in %s on line %d
+NULL
 -- Iteration 7 --
 
-Warning: uasort(): The argument should be an array in %s on line %d
-bool(false)
+Warning: uasort() expects parameter 1 to be array, double given in %s on line %d
+NULL
 -- Iteration 8 --
 
-Warning: uasort(): The argument should be an array in %s on line %d
-bool(false)
+Warning: uasort() expects parameter 1 to be array, double given in %s on line %d
+NULL
 -- Iteration 9 --
 
-Warning: uasort(): The argument should be an array in %s on line %d
-bool(false)
+Warning: uasort() expects parameter 1 to be array, double given in %s on line %d
+NULL
 -- Iteration 10 --
 
-Warning: uasort(): The argument should be an array in %s on line %d
-bool(false)
+Warning: uasort() expects parameter 1 to be array, null given in %s on line %d
+NULL
 -- Iteration 11 --
 
-Warning: uasort(): The argument should be an array in %s on line %d
-bool(false)
+Warning: uasort() expects parameter 1 to be array, null given in %s on line %d
+NULL
 -- Iteration 12 --
 
-Warning: uasort(): The argument should be an array in %s on line %d
-bool(false)
+Warning: uasort() expects parameter 1 to be array, boolean given in %s on line %d
+NULL
 -- Iteration 13 --
 
-Warning: uasort(): The argument should be an array in %s on line %d
-bool(false)
+Warning: uasort() expects parameter 1 to be array, boolean given in %s on line %d
+NULL
 -- Iteration 14 --
 
-Warning: uasort(): The argument should be an array in %s on line %d
-bool(false)
+Warning: uasort() expects parameter 1 to be array, boolean given in %s on line %d
+NULL
 -- Iteration 15 --
 
-Warning: uasort(): The argument should be an array in %s on line %d
-bool(false)
+Warning: uasort() expects parameter 1 to be array, boolean given in %s on line %d
+NULL
 -- Iteration 16 --
 
-Warning: uasort(): The argument should be an array in %s on line %d
-bool(false)
+Warning: uasort() expects parameter 1 to be array, string given in %s on line %d
+NULL
 -- Iteration 17 --
 
-Warning: uasort(): The argument should be an array in %s on line %d
-bool(false)
+Warning: uasort() expects parameter 1 to be array, string given in %s on line %d
+NULL
 -- Iteration 18 --
 
-Warning: uasort(): The argument should be an array in %s on line %d
-bool(false)
+Warning: uasort() expects parameter 1 to be array, string given in %s on line %d
+NULL
 -- Iteration 19 --
 
-Warning: uasort(): The argument should be an array in %s on line %d
-bool(false)
+Warning: uasort() expects parameter 1 to be array, string given in %s on line %d
+NULL
 -- Iteration 20 --
 
-Warning: uasort(): The argument should be an array in %s on line %d
-bool(false)
+Warning: uasort() expects parameter 1 to be array, resource given in %s on line %d
+NULL
 -- Iteration 21 --
 
-Warning: uasort(): The argument should be an array in %s on line %d
-bool(false)
+Warning: uasort() expects parameter 1 to be array, null given in %s on line %d
+NULL
 -- Iteration 22 --
 
-Warning: uasort(): The argument should be an array in %s on line %d
-bool(false)
+Warning: uasort() expects parameter 1 to be array, null given in %s on line %d
+NULL
 Done

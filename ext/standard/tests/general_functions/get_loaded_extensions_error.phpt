@@ -12,7 +12,7 @@ echo "*** Testing get_loaded_extensions() : error conditions ***\n";
 echo "\n-- Testing get_loaded_extensions() function with more than expected no. of arguments --\n";
 $res = fopen(__FILE__, "r");
 $extra_arg = 10;
-var_dump( get_loaded_extensions(true, $extra_arg) );
+var_dump( get_resource_type(true, $extra_arg) );
 
 ?>
 ===DONE===
@@ -21,6 +21,6 @@ var_dump( get_loaded_extensions(true, $extra_arg) );
 
 -- Testing get_loaded_extensions() function with more than expected no. of arguments --
 
-Warning: get_loaded_extensions() expects at most 1 parameter, 2 given in %s on line %d
+Warning: get_resource_type() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
 ===DONE===

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_math.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: php_math.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_MATH_H
 #define PHP_MATH_H
@@ -72,23 +72,15 @@ PHP_FUNCTION(rad2deg);
    */
 PHP_FUNCTION(hypot);
 PHP_FUNCTION(expm1);
-#ifdef HAVE_LOG1P
 PHP_FUNCTION(log1p);
-#endif
 
 PHP_FUNCTION(sinh);
 PHP_FUNCTION(cosh);
 PHP_FUNCTION(tanh);
 
-#ifdef HAVE_ASINH
 PHP_FUNCTION(asinh);
-#endif
-#ifdef HAVE_ACOSH
 PHP_FUNCTION(acosh);
-#endif
-#ifdef HAVE_ATANH
 PHP_FUNCTION(atanh);
-#endif
 
 #include <math.h>
 
@@ -158,6 +150,23 @@ PHP_FUNCTION(atanh);
 
 #ifndef M_SQRT3
 #define M_SQRT3	       1.73205080756887729352  /* sqrt(3) */
+#endif
+
+/* Define rounding modes (all are round-to-nearest) */
+#ifndef PHP_ROUND_HALF_UP
+#define PHP_ROUND_HALF_UP        0x01    /* Arithmetic rounding, up == away from zero */
+#endif
+
+#ifndef PHP_ROUND_HALF_DOWN
+#define PHP_ROUND_HALF_DOWN      0x02    /* Down == towards zero */
+#endif
+
+#ifndef PHP_ROUND_HALF_EVEN
+#define PHP_ROUND_HALF_EVEN      0x03    /* Banker's rounding */
+#endif
+
+#ifndef PHP_ROUND_HALF_ODD
+#define PHP_ROUND_HALF_ODD       0x04
 #endif
 
 #endif /* PHP_MATH_H */

@@ -15,7 +15,7 @@
    | Author: Rasmus Lerdorf <rasmus@php.net>                              |
    +----------------------------------------------------------------------+
  */
-/* $Id: mod_php5.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: mod_php5.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef MOD_PHP5_H
 #define MOD_PHP5_H
@@ -70,6 +70,13 @@ extern php_apache_info_struct php_apache_info;
 #define AP_RESPONSE 9
 #define AP_LOGGING 10
 #define AP_CLEANUP 11
+
+
+/* fix for gcc4 visibility patch */
+#ifndef PHP_WIN32
+# undef MODULE_VAR_EXPORT
+# define MODULE_VAR_EXPORT PHPAPI
+#endif
 
 #endif							/* MOD_PHP5_H */
 

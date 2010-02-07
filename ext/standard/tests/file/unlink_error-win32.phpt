@@ -28,7 +28,7 @@ echo "-- Testing unlink() on unexpected no. of arguments --\n";
 var_dump( unlink() );
 // args > expected
 var_dump( unlink($filename, $context, true) );
-var_dump( file_exists($filename) );
+var_dump( file_exists($filename) ); // expected: true
 
 echo "\n-- Testing unlink() on invalid arguments --\n";
 // invalid arguments
@@ -58,7 +58,6 @@ mkdir($dirname);
 var_dump( unlink($dirname) );  // expected: false as unlink() does not work on dir
 
 echo "Done\n";
-
 ?>
 --CLEAN--
 <?php

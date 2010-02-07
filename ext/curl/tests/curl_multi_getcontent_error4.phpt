@@ -50,11 +50,11 @@ if (!extension_loaded('curl')) print 'skip';
 --EXPECTF--
 Notice: Undefined variable: ch1 in %s on line %d
 
-Warning: curl_setopt(): supplied argument is not a valid cURL handle resource in %s on line %d
+Warning: curl_setopt() expects parameter 1 to be resource, null given in %s on line %d
 
 Notice: Undefined variable: ch1 in %s on line %d
 
-Warning: curl_setopt(): supplied argument is not a valid cURL handle resource in %s on line %d
+Warning: curl_setopt() expects parameter 1 to be resource, null given in %s on line %d
 
 Notice: Undefined variable: ch1 in %s on line %d
 

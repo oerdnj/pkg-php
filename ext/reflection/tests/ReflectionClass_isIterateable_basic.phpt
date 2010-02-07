@@ -1,7 +1,5 @@
 --TEST--
 ReflectionClass::isIterateable() basic
---SKIPIF--
-<?php (extension_loaded('reflection') && extension_loaded('spl')) or die('skip'); ?>
 --CREDITS--
 Felix De Vliegher <felix.devliegher@gmail.com>, Marc Veldman <marc@ibuildings.nl>
 --FILE--

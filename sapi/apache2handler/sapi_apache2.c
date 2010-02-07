@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: sapi_apache2.c 291305 2009-11-25 12:35:42Z jani $ */
+/* $Id: sapi_apache2.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 
@@ -83,40 +83,55 @@ php_apache_sapi_ub_write(const char *str, uint str_length TSRMLS_DC)
 }
 
 static int
-php_apache_sapi_header_handler(sapi_header_struct *sapi_header,sapi_headers_struct *sapi_headers TSRMLS_DC)
+php_apache_sapi_header_handler(sapi_header_struct *sapi_header, sapi_header_op_enum op, sapi_headers_struct *sapi_headers TSRMLS_DC)
 {
 	php_struct *ctx;
 	char *val, *ptr;
 
 	ctx = SG(server_context);
 
-	val = strchr(sapi_header->header, ':');
+	switch (op) {
+		case SAPI_HEADER_DELETE:
+			apr_table_unset(ctx->r->headers_out, sapi_header->header);
+			return 0;
 
-	if (!val) {
-		sapi_free_header(sapi_header);
-		return 0;
+		case SAPI_HEADER_DELETE_ALL:
+			apr_table_clear(ctx->r->headers_out);
+			return 0;
+
+		case SAPI_HEADER_ADD:
+		case SAPI_HEADER_REPLACE:
+			val = strchr(sapi_header->header, ':');
+
+			if (!val) {
+				return 0;
+			}
+			ptr = val;
+
+			*val = '\0';
+	
+			do {
+				val++;
+			} while (*val == ' ');
+
+			if (!strcasecmp(sapi_header->header, "content-type")) {
+				if (ctx->content_type) {
+					efree(ctx->content_type);
+				}
+				ctx->content_type = estrdup(val);
+			} else if (op == SAPI_HEADER_REPLACE) {
+				apr_table_set(ctx->r->headers_out, sapi_header->header, val);
+			} else {
+				apr_table_add(ctx->r->headers_out, sapi_header->header, val);
+			}
+
+			*ptr = ':';
+
+			return SAPI_HEADER_ADD;
+
+		default:
+			return 0;
 	}
-	ptr = val;
-
-	*val = '\0';
-
-	do {
-		val++;
-	} while (*val == ' ');
-
-	if (!strcasecmp(sapi_header->header, "content-type")) {
-		if (ctx->content_type) {
-			efree(ctx->content_type);
-		}
-		ctx->content_type = estrdup(val);
-	} else if (sapi_header->replace) {
-		apr_table_set(ctx->r->headers_out, sapi_header->header, val);
-	} else {
-		apr_table_add(ctx->r->headers_out, sapi_header->header, val);
-	}
-	*ptr = ':';
-
-	return SAPI_HEADER_ADD;
 }
 
 static int
@@ -136,8 +151,8 @@ php_apache_sapi_send_headers(sapi_headers_struct *sapi_headers TSRMLS_DC)
 			apr_table_set(ctx->r->subprocess_env, "force-response-1.0", "true");
 		}
 	}
-
-	/*	call ap_set_content_type only once, else each time we call it,
+	
+	/*	call ap_set_content_type only once, else each time we call it, 
 		configured output filters for that content type will be added */
 	if (!ctx->content_type) {
 		ctx->content_type = sapi_get_default_content_type(TSRMLS_C);
@@ -177,7 +192,7 @@ php_apache_sapi_read_post(char *buf, uint count_bytes TSRMLS_DC)
 		buf += len;
 		len = count_bytes - tlen;
 	}
-
+	
 	return tlen;
 }
 
@@ -223,10 +238,6 @@ php_apache_sapi_getenv(char *name, size_t name_len TSRMLS_DC)
 {
 	php_struct *ctx = SG(server_context);
 	const char *env_var;
-
-	if (ctx == NULL) {
-		return NULL;
-	}
 	
 	env_var = apr_table_get(ctx->r->subprocess_env, name);
 
@@ -305,8 +316,7 @@ static void php_apache_sapi_log_message_ex(char *msg, request_rec *r)
 	}
 }
 
-static time_t php_apache_sapi_get_request_time(TSRMLS_D)
-{
+static time_t php_apache_sapi_get_request_time(TSRMLS_D) {
 	php_struct *ctx = SG(server_context);
 	return apr_time_sec(ctx->r->request_time);
 }
@@ -348,6 +358,7 @@ static sapi_module_struct apache2_sapi_module = {
 	php_apache_sapi_register_variables,
 	php_apache_sapi_log_message,			/* Log message */
 	php_apache_sapi_get_request_time,		/* Request Time */
+	NULL,						/* Child Terminate */
 
 	STANDARD_SAPI_MODULE_PROPERTIES
 };
@@ -385,7 +396,7 @@ static int php_pre_config(apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t *ptemp
 	int threaded_mpm;
 
 	ap_mpm_query(AP_MPMQ_IS_THREADED, &threaded_mpm);
-	if (threaded_mpm) {
+	if(threaded_mpm) {
 		ap_log_error(APLOG_MARK, APLOG_CRIT, 0, 0, "Apache is running a threaded MPM, but your PHP Module is not compiled to be threadsafe.  You need to recompile PHP.");
 		return DONE;
 	}
@@ -489,12 +500,12 @@ typedef struct {
 		uint str_len;
 		php_conf_rec *c = ap_get_module_config(r->per_dir_config, &php5_module);
 
-		for (zend_hash_internal_pointer_reset(&c->config);
-			zend_hash_get_current_key_ex(&c->config, &str, &str_len, NULL, 0, NULL) == HASH_KEY_IS_STRING;
-			zend_hash_move_forward(&c->config)
+		for (zend_hash_internal_pointer_reset(&c->config); 
+				zend_hash_get_current_key_ex(&c->config, &str, &str_len, NULL, 0,  NULL) == HASH_KEY_IS_STRING;
+				zend_hash_move_forward(&c->config)
 		) {
 			zend_restore_ini_entry(str, str_len, ZEND_INI_STAGE_SHUTDOWN);
-		}
+		}	
 	}
 	if (p) {
 		((php_struct *)SG(server_context))->r = p;
@@ -544,7 +555,7 @@ normal:
 	}
 
 	/* Give a 404 if PATH_INFO is used but is explicitly disabled in
-	 * the configuration; default behaviour is to accept. */
+	 * the configuration; default behaviour is to accept. */ 
 	if (r->used_path_info == AP_REQ_REJECT_PATH_INFO
 		&& r->path_info && r->path_info[0]) {
 		PHPAP_INI_OFF;
@@ -592,17 +603,17 @@ zend_first_try {
 		if (!parent_req) {
 			parent_req = ctx->r;
 		}
-		if (parent_req && parent_req->handler &&
-				strcmp(parent_req->handler, PHP_MAGIC_TYPE) &&
-				strcmp(parent_req->handler, PHP_SOURCE_MAGIC_TYPE) &&
+		if (parent_req && parent_req->handler && 
+				strcmp(parent_req->handler, PHP_MAGIC_TYPE) && 
+				strcmp(parent_req->handler, PHP_SOURCE_MAGIC_TYPE) && 
 				strcmp(parent_req->handler, PHP_SCRIPT)) {
 			if (php_apache_request_ctor(r, ctx TSRMLS_CC)!=SUCCESS) {
 				zend_bailout();
 			}
 		}
-
-		/*
-		 * check if comming due to ErrorDocument
+		
+		/* 
+		 * check if comming due to ErrorDocument 
 		 * We make a special exception of 413 (Invalid POST request) as the invalidity of the request occurs
 		 * during processing of the request by PHP during POST processing. Therefor we need to re-use the exiting
 		 * PHP instance to handle the request rather then creating a new one.

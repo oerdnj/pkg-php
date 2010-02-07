@@ -18,4 +18,4 @@ imageellipse( $image, 200, 150, 300, 200 );
 
 ?>
 --EXPECTF--
-Warning: Wrong parameter count for imageellipse() in %s.php on line %d
+Warning: imageellipse() expects exactly 6 parameters, %d given in %s on line %d

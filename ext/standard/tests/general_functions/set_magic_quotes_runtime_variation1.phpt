@@ -84,73 +84,121 @@ fclose($fp);
 
 ?>
 ===DONE===
---EXPECT--
+--EXPECTF--
 Simple testcase for set_magic_quotes_runtime() function
 magic quotes runtime set in INI file: 0
 -- Iterator 1 --
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 New value of magic_quotes_runtime after last set is 0
 -- Iterator 2 --
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 New value of magic_quotes_runtime after last set is 1
 -- Iterator 3 --
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 New value of magic_quotes_runtime after last set is 1
 -- Iterator 4 --
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 New value of magic_quotes_runtime after last set is 1
 -- Iterator 5 --
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 New value of magic_quotes_runtime after last set is 0
 -- Iterator 6 --
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 New value of magic_quotes_runtime after last set is 1
 -- Iterator 7 --
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 New value of magic_quotes_runtime after last set is 1
 -- Iterator 8 --
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 New value of magic_quotes_runtime after last set is 1
 -- Iterator 9 --
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 New value of magic_quotes_runtime after last set is 1
 -- Iterator 10 --
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 New value of magic_quotes_runtime after last set is 1
 -- Iterator 11 --
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 New value of magic_quotes_runtime after last set is 0
 -- Iterator 12 --
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 New value of magic_quotes_runtime after last set is 0
 -- Iterator 13 --
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 New value of magic_quotes_runtime after last set is 1
 -- Iterator 14 --
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 New value of magic_quotes_runtime after last set is 0
 -- Iterator 15 --
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 New value of magic_quotes_runtime after last set is 1
 -- Iterator 16 --
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 New value of magic_quotes_runtime after last set is 0
 -- Iterator 17 --
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 New value of magic_quotes_runtime after last set is 0
 -- Iterator 18 --
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 New value of magic_quotes_runtime after last set is 0
 -- Iterator 19 --
-bool(true)
-New value of magic_quotes_runtime after last set is 1
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
+
+Warning: set_magic_quotes_runtime() expects parameter 1 to be boolean, object given in %s on line %d
+NULL
+New value of magic_quotes_runtime after last set is 0
 -- Iterator 20 --
-bool(true)
-New value of magic_quotes_runtime after last set is 1
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
+
+Warning: set_magic_quotes_runtime() expects parameter 1 to be boolean, resource given in %s on line %d
+NULL
+New value of magic_quotes_runtime after last set is 0
 -- Iterator 21 --
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 New value of magic_quotes_runtime after last set is 0
 -- Iterator 22 --
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 New value of magic_quotes_runtime after last set is 0
 ===DONE===

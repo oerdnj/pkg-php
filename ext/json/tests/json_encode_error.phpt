@@ -8,7 +8,7 @@ if (!extension_loaded("json")) {
 ?>
 --FILE--
 <?php
-/* Prototype  : string json_encode  ( mixed $value  )
+/* Prototype  : string json_encode  ( mixed $value  [, int $options=0  ] )
  * Description: Returns the JSON representation of a value
  * Source code: ext/json/php_json.c
  * Alias to functions: 
@@ -21,7 +21,7 @@ var_dump( json_encode() );
 
 echo "\n-- Testing json_encode() function with more than expected no. of arguments --\n";
 $extra_arg = 10;
-var_dump( json_encode("abc", $extra_arg) );
+var_dump( json_encode("abc", 0, $extra_arg) );
 
 ?>
 ===Done===
@@ -30,11 +30,11 @@ var_dump( json_encode("abc", $extra_arg) );
 
 -- Testing json_encode() function with no arguments --
 
-Warning: json_encode() expects exactly 1 parameter, 0 given in %s on line %d
+Warning: json_encode() expects at least 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing json_encode() function with more than expected no. of arguments --
 
-Warning: json_encode() expects exactly 1 parameter, 2 given in %s on line %d
+Warning: json_encode() expects at most 2 parameters, 3 given in %s on line %d
 NULL
 ===Done===

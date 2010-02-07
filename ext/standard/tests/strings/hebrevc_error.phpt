@@ -24,12 +24,12 @@ var_dump( hebrevc("Hello World", 5, $extra_arg) );
 
 -- Testing hebrevc() function with no arguments --
 
-Warning: Wrong parameter count for hebrevc() in %s on line %s
+Warning: hebrevc() expects at least 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing hebrevc() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for hebrevc() in %s on line %d
+Warning: hebrevc() expects at most 2 parameters, 3 given in %s on line %d
 NULL
  
 ===DONE===

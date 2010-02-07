@@ -123,15 +123,25 @@ bool(false)
 -- Iteration 9 --
 bool(false)
 -- Iteration 10 --
-bool(false)
+
+Warning: exif_tagname() expects parameter 1 to be long, array given in %s on line %d
+NULL
 -- Iteration 11 --
-bool(false)
+
+Warning: exif_tagname() expects parameter 1 to be long, array given in %s on line %d
+NULL
 -- Iteration 12 --
-bool(false)
+
+Warning: exif_tagname() expects parameter 1 to be long, array given in %s on line %d
+NULL
 -- Iteration 13 --
-bool(false)
+
+Warning: exif_tagname() expects parameter 1 to be long, array given in %s on line %d
+NULL
 -- Iteration 14 --
-bool(false)
+
+Warning: exif_tagname() expects parameter 1 to be long, array given in %s on line %d
+NULL
 -- Iteration 15 --
 bool(false)
 -- Iteration 16 --
@@ -141,19 +151,25 @@ bool(false)
 -- Iteration 18 --
 bool(false)
 -- Iteration 19 --
-bool(false)
+
+Warning: exif_tagname() expects parameter 1 to be long, string given in %s on line %d
+NULL
 -- Iteration 20 --
-bool(false)
+
+Warning: exif_tagname() expects parameter 1 to be long, string given in %s on line %d
+NULL
 -- Iteration 21 --
 bool(false)
 -- Iteration 22 --
 bool(false)
 -- Iteration 23 --
 
-Notice: Object of class sample could not be converted to int in %s on line %d
-bool(false)
+Warning: exif_tagname() expects parameter 1 to be long, object given in %s on line %d
+NULL
 -- Iteration 24 --
-%s
+
+Warning: exif_tagname() expects parameter 1 to be long, resource given in %s on line %d
+NULL
 -- Iteration 25 --
 bool(false)
 -- Iteration 26 --
@@ -162,3 +178,4 @@ Done
 
 ?>
 ===Done===
+

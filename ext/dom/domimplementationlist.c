@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: domimplementationlist.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: domimplementationlist.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -27,9 +27,7 @@
 #if HAVE_LIBXML && HAVE_DOM
 #include "php_dom.h"
 
-
 /* {{{ arginfo */
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_implementationlist_item, 0, 0, 1)
 	ZEND_ARG_INFO(0, index)
 ZEND_END_ARG_INFO();
@@ -42,7 +40,7 @@ ZEND_END_ARG_INFO();
 * Since: DOM Level 3
 */
 
-zend_function_entry php_dom_domimplementationlist_class_functions[] = {
+const zend_function_entry php_dom_domimplementationlist_class_functions[] = {
 	PHP_FALIAS(item, dom_domimplementationlist_item, arginfo_dom_implementationlist_item)
 	{NULL, NULL, NULL}
 };
@@ -63,9 +61,6 @@ int dom_domimplementationlist_length_read(dom_object *obj, zval **retval TSRMLS_
 
 /* }}} */
 
-
-
-
 /* {{{ proto domdomimplementation dom_domimplementationlist_item(int index);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#DOMImplementationList-item
 Since: 
@@ -75,4 +70,16 @@ PHP_FUNCTION(dom_domimplementationlist_item)
  DOM_NOT_IMPLEMENTED();
 }
 /* }}} end dom_domimplementationlist_item */
+
+/* }}} */
+
 #endif
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

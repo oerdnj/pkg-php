@@ -34,12 +34,11 @@ var_dump( array_udiff_uassoc($arr1, $arr2, $data_comp_func) );
 
 -- Testing array_udiff_uassoc() function with more than expected no. of arguments --
 
-Warning: array_udiff_uassoc(): Not a valid callback 10 in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 5 to be a valid callback, no array or string given in %sarray_udiff_uassoc_error.php on line %d
 NULL
 
 -- Testing array_udiff_uassoc() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for array_udiff_uassoc() in %s on line %d
+Warning: array_udiff_uassoc(): at least 4 parameters are required, 3 given in %sarray_udiff_uassoc_error.php on line %d
 NULL
 ===DONE===
-

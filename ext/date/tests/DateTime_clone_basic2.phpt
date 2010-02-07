@@ -31,19 +31,31 @@ var_dump($d2_clone);
 ===DONE===
 --EXPECTF--
 *** Testing clone on objects whoose class derived from DateTime class ***
-object(DateTimeExt1)#%d (2) {
+object(DateTimeExt1)#%d (5) {
   ["property1"]=>
   int(99)
   ["property2"]=>
   string(5) "Hello"
+  ["date"]=>
+  string(19) "2009-02-03 12:34:41"
+  ["timezone_type"]=>
+  int(2)
+  ["timezone"]=>
+  string(3) "GMT"
 }
-object(DateTimeExt1)#%d (2) {
+object(DateTimeExt1)#%d (5) {
   ["property1"]=>
   int(99)
   ["property2"]=>
   string(5) "Hello"
+  ["date"]=>
+  string(19) "2009-02-03 12:34:41"
+  ["timezone_type"]=>
+  int(2)
+  ["timezone"]=>
+  string(3) "GMT"
 }
-object(DateTimeExt2)#%d (4) {
+object(DateTimeExt2)#%d (7) {
   ["property3"]=>
   bool(true)
   ["property4"]=>
@@ -52,8 +64,14 @@ object(DateTimeExt2)#%d (4) {
   int(99)
   ["property2"]=>
   string(5) "Hello"
+  ["date"]=>
+  string(19) "2009-02-03 12:34:41"
+  ["timezone_type"]=>
+  int(2)
+  ["timezone"]=>
+  string(3) "GMT"
 }
-object(DateTimeExt2)#%d (4) {
+object(DateTimeExt2)#%d (7) {
   ["property3"]=>
   bool(true)
   ["property4"]=>
@@ -62,5 +80,11 @@ object(DateTimeExt2)#%d (4) {
   int(99)
   ["property2"]=>
   string(5) "Hello"
+  ["date"]=>
+  string(19) "2009-02-03 12:34:41"
+  ["timezone_type"]=>
+  int(2)
+  ["timezone"]=>
+  string(3) "GMT"
 }
 ===DONE===

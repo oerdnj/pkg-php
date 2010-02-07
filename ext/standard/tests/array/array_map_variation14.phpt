@@ -116,10 +116,10 @@ array(2) {
 }
 -- with empty string --
 
-Warning: array_map(): The first argument, '', should be either NULL or a valid callback in %s line %d
+Warning: array_map() expects parameter 1 to be a valid callback, function '' not found or invalid function name in %s on line %d
 NULL
 -- with empty array --
 
-Warning: array_map(): The first argument, 'Array', should be either NULL or a valid callback in %s on line %d
+Warning: array_map() expects parameter 1 to be a valid callback, array must have exactly two members in %s on line %d
 NULL
 Done

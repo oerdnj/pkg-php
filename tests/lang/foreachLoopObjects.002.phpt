@@ -166,6 +166,7 @@ foreach ($myE as $k=>&$v) {
 }
 var_dump($myE);
 ?>
+===DONE===
 --EXPECTF--
 Iterate over various generations from within overridden methods:
 
@@ -183,9 +184,9 @@ object(C)#%d (5) {
   string(9) "changed.b"
   ["c"]=>
   string(9) "changed.c"
-  ["d:protected"]=>
+  ["d":protected]=>
   string(9) "changed.d"
-  ["e:private"]=>
+  ["e":"C":private]=>
   string(9) "changed.e"
 }
 
@@ -198,9 +199,9 @@ string(10) "Original b"
 string(10) "Original c"
 string(10) "Original d"
 object(D)#%d (7) {
-  ["f:private"]=>
+  ["f":"D":private]=>
   string(9) "changed.f"
-  ["g:protected"]=>
+  ["g":protected]=>
   string(9) "changed.g"
   ["a"]=>
   string(9) "changed.a"
@@ -208,9 +209,9 @@ object(D)#%d (7) {
   string(9) "changed.b"
   ["c"]=>
   string(9) "changed.c"
-  ["d:protected"]=>
+  ["d":protected]=>
   string(9) "changed.d"
-  ["e:private"]=>
+  ["e":"C":private]=>
   string(10) "Original e"
 }
 
@@ -229,15 +230,15 @@ object(E)#%d (8) {
   string(9) "changed.b"
   ["c"]=>
   string(9) "changed.c"
-  ["d:protected"]=>
+  ["d":protected]=>
   string(9) "changed.d"
-  ["e:private"]=>
+  ["e":"E":private]=>
   string(9) "changed.e"
-  ["f:private"]=>
+  ["f":"D":private]=>
   string(10) "Original f"
-  ["g:protected"]=>
+  ["g":protected]=>
   string(9) "changed.g"
-  ["e:private"]=>
+  ["e":"C":private]=>
   string(10) "Original e"
 }
 
@@ -258,9 +259,9 @@ object(C)#%d (5) {
   string(9) "changed.b"
   ["c"]=>
   string(9) "changed.c"
-  ["d:protected"]=>
+  ["d":protected]=>
   string(9) "changed.d"
-  ["e:private"]=>
+  ["e":"C":private]=>
   string(9) "changed.e"
 }
 
@@ -273,9 +274,9 @@ string(10) "Original c"
 string(10) "Original d"
 string(10) "Original e"
 object(D)#%d (7) {
-  ["f:private"]=>
+  ["f":"D":private]=>
   string(10) "Original f"
-  ["g:protected"]=>
+  ["g":protected]=>
   string(9) "changed.g"
   ["a"]=>
   string(9) "changed.a"
@@ -283,9 +284,9 @@ object(D)#%d (7) {
   string(9) "changed.b"
   ["c"]=>
   string(9) "changed.c"
-  ["d:protected"]=>
+  ["d":protected]=>
   string(9) "changed.d"
-  ["e:private"]=>
+  ["e":"C":private]=>
   string(9) "changed.e"
 }
 
@@ -304,15 +305,15 @@ object(E)#%d (8) {
   string(9) "changed.b"
   ["c"]=>
   string(9) "changed.c"
-  ["d:protected"]=>
+  ["d":protected]=>
   string(9) "changed.d"
-  ["e:private"]=>
+  ["e":"E":private]=>
   string(12) "Overridden e"
-  ["f:private"]=>
+  ["f":"D":private]=>
   string(10) "Original f"
-  ["g:protected"]=>
+  ["g":protected]=>
   string(9) "changed.g"
-  ["e:private"]=>
+  ["e":"C":private]=>
   string(9) "changed.e"
 }
 
@@ -333,9 +334,9 @@ object(C)#%d (5) {
   string(9) "changed.b"
   ["c"]=>
   string(9) "changed.c"
-  ["d:protected"]=>
+  ["d":protected]=>
   string(9) "changed.d"
-  ["e:private"]=>
+  ["e":"C":private]=>
   string(9) "changed.e"
 }
 in D::doForEach
@@ -350,9 +351,9 @@ object(C)#%d (5) {
   string(9) "changed.b"
   ["c"]=>
   string(9) "changed.c"
-  ["d:protected"]=>
+  ["d":protected]=>
   string(9) "changed.d"
-  ["e:private"]=>
+  ["e":"C":private]=>
   string(10) "Original e"
 }
 in E::doForEach
@@ -367,9 +368,9 @@ object(C)#%d (5) {
   string(9) "changed.b"
   ["c"]=>
   string(9) "changed.c"
-  ["d:protected"]=>
+  ["d":protected]=>
   string(9) "changed.d"
-  ["e:private"]=>
+  ["e":"C":private]=>
   string(10) "Original e"
 }
 
@@ -382,9 +383,9 @@ string(10) "Original c"
 string(10) "Original d"
 string(10) "Original e"
 object(D)#%d (7) {
-  ["f:private"]=>
+  ["f":"D":private]=>
   string(10) "Original f"
-  ["g:protected"]=>
+  ["g":protected]=>
   string(9) "changed.g"
   ["a"]=>
   string(9) "changed.a"
@@ -392,9 +393,9 @@ object(D)#%d (7) {
   string(9) "changed.b"
   ["c"]=>
   string(9) "changed.c"
-  ["d:protected"]=>
+  ["d":protected]=>
   string(9) "changed.d"
-  ["e:private"]=>
+  ["e":"C":private]=>
   string(9) "changed.e"
 }
 in D::doForEach
@@ -405,9 +406,9 @@ string(10) "Original b"
 string(10) "Original c"
 string(10) "Original d"
 object(D)#%d (7) {
-  ["f:private"]=>
+  ["f":"D":private]=>
   string(9) "changed.f"
-  ["g:protected"]=>
+  ["g":protected]=>
   string(9) "changed.g"
   ["a"]=>
   string(9) "changed.a"
@@ -415,9 +416,9 @@ object(D)#%d (7) {
   string(9) "changed.b"
   ["c"]=>
   string(9) "changed.c"
-  ["d:protected"]=>
+  ["d":protected]=>
   string(9) "changed.d"
-  ["e:private"]=>
+  ["e":"C":private]=>
   string(10) "Original e"
 }
 in E::doForEach
@@ -427,9 +428,9 @@ string(10) "Original b"
 string(10) "Original c"
 string(10) "Original d"
 object(D)#%d (7) {
-  ["f:private"]=>
+  ["f":"D":private]=>
   string(10) "Original f"
-  ["g:protected"]=>
+  ["g":protected]=>
   string(9) "changed.g"
   ["a"]=>
   string(9) "changed.a"
@@ -437,9 +438,9 @@ object(D)#%d (7) {
   string(9) "changed.b"
   ["c"]=>
   string(9) "changed.c"
-  ["d:protected"]=>
+  ["d":protected]=>
   string(9) "changed.d"
-  ["e:private"]=>
+  ["e":"C":private]=>
   string(10) "Original e"
 }
 
@@ -458,15 +459,15 @@ object(E)#%d (8) {
   string(9) "changed.b"
   ["c"]=>
   string(9) "changed.c"
-  ["d:protected"]=>
+  ["d":protected]=>
   string(9) "changed.d"
-  ["e:private"]=>
+  ["e":"E":private]=>
   string(12) "Overridden e"
-  ["f:private"]=>
+  ["f":"D":private]=>
   string(10) "Original f"
-  ["g:protected"]=>
+  ["g":protected]=>
   string(9) "changed.g"
-  ["e:private"]=>
+  ["e":"C":private]=>
   string(9) "changed.e"
 }
 in D::doForEach
@@ -483,15 +484,15 @@ object(E)#%d (8) {
   string(9) "changed.b"
   ["c"]=>
   string(9) "changed.c"
-  ["d:protected"]=>
+  ["d":protected]=>
   string(9) "changed.d"
-  ["e:private"]=>
+  ["e":"E":private]=>
   string(12) "Overridden e"
-  ["f:private"]=>
+  ["f":"D":private]=>
   string(9) "changed.f"
-  ["g:protected"]=>
+  ["g":protected]=>
   string(9) "changed.g"
-  ["e:private"]=>
+  ["e":"C":private]=>
   string(10) "Original e"
 }
 in E::doForEach
@@ -508,15 +509,15 @@ object(E)#%d (8) {
   string(9) "changed.b"
   ["c"]=>
   string(9) "changed.c"
-  ["d:protected"]=>
+  ["d":protected]=>
   string(9) "changed.d"
-  ["e:private"]=>
+  ["e":"E":private]=>
   string(9) "changed.e"
-  ["f:private"]=>
+  ["f":"D":private]=>
   string(10) "Original f"
-  ["g:protected"]=>
+  ["g":protected]=>
   string(9) "changed.g"
-  ["e:private"]=>
+  ["e":"C":private]=>
   string(10) "Original e"
 }
 
@@ -534,9 +535,9 @@ object(C)#%d (5) {
   string(9) "changed.b"
   ["c"]=>
   &string(9) "changed.c"
-  ["d:protected"]=>
+  ["d":protected]=>
   string(10) "Original d"
-  ["e:private"]=>
+  ["e":"C":private]=>
   string(10) "Original e"
 }
 
@@ -545,9 +546,9 @@ string(10) "Original a"
 string(10) "Original b"
 string(10) "Original c"
 object(D)#%d (7) {
-  ["f:private"]=>
+  ["f":"D":private]=>
   string(10) "Original f"
-  ["g:protected"]=>
+  ["g":protected]=>
   string(10) "Original g"
   ["a"]=>
   string(9) "changed.a"
@@ -555,9 +556,9 @@ object(D)#%d (7) {
   string(9) "changed.b"
   ["c"]=>
   &string(9) "changed.c"
-  ["d:protected"]=>
+  ["d":protected]=>
   string(10) "Original d"
-  ["e:private"]=>
+  ["e":"C":private]=>
   string(10) "Original e"
 }
 
@@ -572,14 +573,15 @@ object(E)#%d (8) {
   string(9) "changed.b"
   ["c"]=>
   &string(9) "changed.c"
-  ["d:protected"]=>
+  ["d":protected]=>
   string(12) "Overridden d"
-  ["e:private"]=>
+  ["e":"E":private]=>
   string(12) "Overridden e"
-  ["f:private"]=>
+  ["f":"D":private]=>
   string(10) "Original f"
-  ["g:protected"]=>
+  ["g":protected]=>
   string(10) "Original g"
-  ["e:private"]=>
+  ["e":"C":private]=>
   string(10) "Original e"
 }
+===DONE===

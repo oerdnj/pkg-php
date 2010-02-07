@@ -26,14 +26,14 @@ var_dump( array_intersect_uassoc($array1, $array2, unknown_function) );
 --EXPECTF--
 *** Testing array_intersect_uassoc() : usage variation ***
 
-Warning: array_intersect_uassoc(): Not a valid callback unknown_function in %s on line %d
+Warning: array_intersect_uassoc() expects parameter 3 to be a valid callback, function 'unknown_function' not found or invalid function name in %s on line %d
 NULL
 
-Warning: array_intersect_uassoc(): Not a valid callback unknown_function in %s on line %d
+Warning: array_intersect_uassoc() expects parameter 3 to be a valid callback, function 'unknown_function' not found or invalid function name in %s on line %d
 NULL
 
 Notice: Use of undefined constant unknown_function - assumed 'unknown_function' in %s on line %d
 
-Warning: array_intersect_uassoc(): Not a valid callback unknown_function in %s on line %d
+Warning: array_intersect_uassoc() expects parameter 3 to be a valid callback, function 'unknown_function' not found or invalid function name in %s on line %d
 NULL
 ===DONE===

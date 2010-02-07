@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_dblib.c 280856 2009-05-20 10:19:28Z kalle $ */
+/* $Id: pdo_dblib.c 280855 2009-05-20 10:18:51Z kalle $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -35,12 +35,12 @@
 ZEND_DECLARE_MODULE_GLOBALS(dblib)
 static PHP_GINIT_FUNCTION(dblib);
 
-zend_function_entry pdo_dblib_functions[] = {
+const zend_function_entry pdo_dblib_functions[] = {
 	{NULL, NULL, NULL}
 };
 
 #if ZEND_MODULE_API_NO >= 20050922
-static zend_module_dep pdo_dblib_deps[] = {
+static const zend_module_dep pdo_dblib_deps[] = {
 	ZEND_MOD_REQUIRED("pdo")
 	{NULL, NULL, NULL}
 };

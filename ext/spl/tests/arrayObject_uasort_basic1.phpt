@@ -30,12 +30,15 @@ var_dump($ao);
 ===DONE===
 --EXPECTF--
 *** Testing ArrayObject::uasort() : basic functionality ***
-object(ArrayObject)#%d (3) {
-  [1]=>
-  int(3)
-  [0]=>
-  int(2)
-  [2]=>
-  int(1)
+object(ArrayObject)#1 (1) {
+  ["storage":"ArrayObject":private]=>
+  array(3) {
+    [1]=>
+    int(3)
+    [0]=>
+    int(2)
+    [2]=>
+    int(1)
+  }
 }
 ===DONE===

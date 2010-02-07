@@ -1,6 +1,6 @@
 --TEST--
 globals in local scope - 3 
---INIT--
+--INI--
 variables_order="egpcs"
 --FILE--
 <?php
@@ -20,7 +20,7 @@ string(5) "array"
 int(%d)
 string(%d) "%s"
 
-Notice: Undefined index:  PHP_SELF in %s on line %d
+Notice: Undefined index: PHP_SELF in %s on line %d
 NULL
 
 Notice: Undefined variable: _SERVER in %s on line %d

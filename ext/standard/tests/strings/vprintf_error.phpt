@@ -31,7 +31,7 @@ var_dump( vprintf($format, $args, $extra_arg) );
 
 -- Testing vprintf() function with Zero arguments --
 
-Warning: Wrong parameter count for vprintf() in %s on line %d
+Warning: vprintf() expects at least 1 parameter, 0 given in %s on line %d
 bool(false)
 
 -- Testing vprintf() function with less than expected no. of arguments --

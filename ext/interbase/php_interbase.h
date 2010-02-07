@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_interbase.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: php_interbase.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_INTERBASE_H
 #define PHP_INTERBASE_H

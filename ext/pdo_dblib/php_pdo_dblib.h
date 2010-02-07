@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_dblib.h 280766 2009-05-19 10:22:31Z kalle $ */
+/* $Id: php_pdo_dblib.h 280765 2009-05-19 10:22:25Z kalle $ */
 
 #ifndef PHP_PDO_DBLIB_H
 #define PHP_PDO_DBLIB_H
@@ -28,12 +28,6 @@ extern zend_module_entry pdo_mssql_module_entry;
 #else
 extern zend_module_entry pdo_dblib_module_entry;
 #define phpext_pdo_dblib_ptr &pdo_dblib_module_entry
-#endif
-
-#ifdef PHP_WIN32
-# define PHP_PDO_DBLIB_API __declspec(dllexport)
-#else
-# define PHP_PDO_DBLIB_API
 #endif
 
 #ifdef ZTS

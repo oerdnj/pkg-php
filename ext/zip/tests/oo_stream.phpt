@@ -2,7 +2,7 @@
 getStream
 --SKIPIF--
 <?php
-/* $Id: oo_stream.phpt 222773 2006-11-03 16:46:19Z pajoye $ */
+/* $Id: oo_stream.phpt 260091 2008-05-21 09:27:41Z pajoye $ */
 if(!extension_loaded('zip')) die('skip');
 ?>
 --FILE--

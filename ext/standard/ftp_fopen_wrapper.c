@@ -18,7 +18,7 @@
    |          Sara Golemon <pollita@php.net>                              |
    +----------------------------------------------------------------------+
  */
-/* $Id: ftp_fopen_wrapper.c 290178 2009-11-03 17:58:17Z guenter $ */
+/* $Id: ftp_fopen_wrapper.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -359,7 +359,6 @@ static unsigned short php_fopen_do_pasv(php_stream *stream, char *ip, size_t ip_
 		tpath++;
 		/* pull out the LSB of the port */
 		portno += (unsigned short) strtoul(tpath, &ttpath, 10);
-
 #ifdef HAVE_IPV6
 	} else {
 		/* parse epsv command (|||6446|) */
@@ -376,8 +375,7 @@ static unsigned short php_fopen_do_pasv(php_stream *stream, char *ip, size_t ip_
 		/* pull out the port */
 		portno = (unsigned short) strtoul(tpath + 1, &ttpath, 10);
 	}
-#endif
-
+#endif	
 	if (ttpath == NULL) {
 		/* didn't get correct response from EPSV/PASV */
 		return 0;
@@ -777,13 +775,13 @@ static int php_stream_ftp_url_stat(php_stream_wrapper *wrapper, char *url, int f
 	}
 
 	php_stream_write_string(stream, "TYPE I\r\n"); /* we need this since some servers refuse to accept SIZE command in ASCII mode */
-
+	
 	result = GET_FTP_RESULT(stream);
 
 	if(result < 200 || result > 299) {
 		goto stat_errexit;
 	}
-
+	
 	php_stream_printf(stream TSRMLS_CC, "SIZE %s\r\n", (resource->path != NULL ? resource->path : "/"));
 	result = GET_FTP_RESULT(stream);
 	if (result < 200 || result > 299) {
@@ -836,19 +834,32 @@ static int php_stream_ftp_url_stat(php_stream_wrapper *wrapper, char *url, int f
 		tm.tm_sec += stamp - mktime(gmt);
 		tm.tm_isdst = gmt->tm_isdst;
 
+#ifdef NETWARE
+		ssb->sb.st_mtime.tv_sec = mktime(&tm);
+#else
 		ssb->sb.st_mtime = mktime(&tm);
+#endif
 	} else {
 		/* error or unsupported command */
 mdtm_error:
+#ifdef NETWARE
+		ssb->sb.st_mtime.tv_sec = -1;
+#else
 		ssb->sb.st_mtime = -1;
+#endif
 	}
 
 	ssb->sb.st_ino = 0;						/* Unknown values */
 	ssb->sb.st_dev = 0;
 	ssb->sb.st_uid = 0;
 	ssb->sb.st_gid = 0;
+#ifdef NETWARE
+	ssb->sb.st_atime.tv_sec = -1;
+	ssb->sb.st_ctime.tv_sec = -1;
+#else
 	ssb->sb.st_atime = -1;
 	ssb->sb.st_ctime = -1;
+#endif
 
 	ssb->sb.st_nlink = 1;
 	ssb->sb.st_rdev = -1;

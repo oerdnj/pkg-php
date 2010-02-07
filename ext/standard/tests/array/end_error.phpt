@@ -29,11 +29,11 @@ var_dump( end($array_arg, $extra_arg) );
 
 -- Testing end() function with Zero arguments --
 
-Warning: Wrong parameter count for end() in %s on line %d
+Warning: end() expects exactly 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing end() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for end() in %s on line %d
+Warning: end() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
 ===DONE===

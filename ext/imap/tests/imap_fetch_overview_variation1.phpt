@@ -99,123 +99,123 @@ foreach($inputs as $input) {
 
 -- Testing with first argument value: int(0)
 
-Warning: imap_fetch_overview(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetch_overview() expects parameter 1 to be resource, integer given in %s on line %d
+NULL
 
 -- Testing with first argument value: int(1)
 
-Warning: imap_fetch_overview(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetch_overview() expects parameter 1 to be resource, integer given in %s on line %d
+NULL
 
 -- Testing with first argument value: int(12345)
 
-Warning: imap_fetch_overview(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetch_overview() expects parameter 1 to be resource, integer given in %s on line %d
+NULL
 
 -- Testing with first argument value: int(-2345)
 
-Warning: imap_fetch_overview(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetch_overview() expects parameter 1 to be resource, integer given in %s on line %d
+NULL
 
 -- Testing with first argument value: float(10.5)
 
-Warning: imap_fetch_overview(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetch_overview() expects parameter 1 to be resource, double given in %s on line %d
+NULL
 
 -- Testing with first argument value: float(-10.5)
 
-Warning: imap_fetch_overview(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetch_overview() expects parameter 1 to be resource, double given in %s on line %d
+NULL
 
 -- Testing with first argument value: float(123456789000)
 
-Warning: imap_fetch_overview(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetch_overview() expects parameter 1 to be resource, double given in %s on line %d
+NULL
 
 -- Testing with first argument value: float(1.23456789E-9)
 
-Warning: imap_fetch_overview(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetch_overview() expects parameter 1 to be resource, double given in %s on line %d
+NULL
 
 -- Testing with first argument value: float(0.5)
 
-Warning: imap_fetch_overview(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetch_overview() expects parameter 1 to be resource, double given in %s on line %d
+NULL
 
 -- Testing with first argument value: NULL
 
-Warning: imap_fetch_overview(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetch_overview() expects parameter 1 to be resource, null given in %s on line %d
+NULL
 
 -- Testing with first argument value: NULL
 
-Warning: imap_fetch_overview(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetch_overview() expects parameter 1 to be resource, null given in %s on line %d
+NULL
 
 -- Testing with first argument value: bool(true)
 
-Warning: imap_fetch_overview(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetch_overview() expects parameter 1 to be resource, boolean given in %s on line %d
+NULL
 
 -- Testing with first argument value: bool(false)
 
-Warning: imap_fetch_overview(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetch_overview() expects parameter 1 to be resource, boolean given in %s on line %d
+NULL
 
 -- Testing with first argument value: bool(true)
 
-Warning: imap_fetch_overview(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetch_overview() expects parameter 1 to be resource, boolean given in %s on line %d
+NULL
 
 -- Testing with first argument value: bool(false)
 
-Warning: imap_fetch_overview(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetch_overview() expects parameter 1 to be resource, boolean given in %s on line %d
+NULL
 
--- Testing with first argument value: string(0) ""
+-- Testing with first argument value: %string|unicode%(0) ""
 
-Warning: imap_fetch_overview(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetch_overview() expects parameter 1 to be resource, %unicode_string_optional% given in %s on line %d
+NULL
 
--- Testing with first argument value: string(0) ""
+-- Testing with first argument value: %string|unicode%(0) ""
 
-Warning: imap_fetch_overview(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetch_overview() expects parameter 1 to be resource, %unicode_string_optional% given in %s on line %d
+NULL
 
 -- Testing with first argument value: array(0) {
 }
 
-Warning: imap_fetch_overview(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetch_overview() expects parameter 1 to be resource, array given in %s on line %d
+NULL
 
--- Testing with first argument value: string(6) "string"
+-- Testing with first argument value: %string|unicode%(6) "string"
 
-Warning: imap_fetch_overview(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetch_overview() expects parameter 1 to be resource, %unicode_string_optional% given in %s on line %d
+NULL
 
--- Testing with first argument value: string(6) "string"
+-- Testing with first argument value: %string|unicode%(6) "string"
 
-Warning: imap_fetch_overview(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetch_overview() expects parameter 1 to be resource, %unicode_string_optional% given in %s on line %d
+NULL
 
--- Testing with first argument value: string(11) "hello world"
+-- Testing with first argument value: %string|unicode%(11) "hello world"
 
-Warning: imap_fetch_overview(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetch_overview() expects parameter 1 to be resource, %unicode_string_optional% given in %s on line %d
+NULL
 
 -- Testing with first argument value: object(classA)#1 (0) {
 }
 
-Warning: imap_fetch_overview(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetch_overview() expects parameter 1 to be resource, object given in %s on line %d
+NULL
 
 -- Testing with first argument value: NULL
 
-Warning: imap_fetch_overview(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetch_overview() expects parameter 1 to be resource, null given in %s on line %d
+NULL
 
 -- Testing with first argument value: NULL
 
-Warning: imap_fetch_overview(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetch_overview() expects parameter 1 to be resource, null given in %s on line %d
+NULL
 ===DONE===

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: nsapi.c 286723 2009-08-03 10:14:20Z thetaphi $ */
+/* $Id: nsapi.c 286722 2009-08-03 10:13:49Z thetaphi $ */
 
 /*
  * PHP includes
@@ -169,18 +169,31 @@ ZEND_DECLARE_MODULE_GLOBALS(nsapi)
 
 #define NSAPI_G(v) TSRMG(nsapi_globals_id, zend_nsapi_globals *, v)
 
+
+/* {{{ arginfo */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_nsapi_virtual, 0, 0, 1)
+	ZEND_ARG_INFO(0, uri)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(arginfo_nsapi_request_headers, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(arginfo_nsapi_response_headers, 0)
+ZEND_END_ARG_INFO()
+/* }}} */
+
 /* {{{ nsapi_functions[]
  *
  * Every user visible function must have an entry in nsapi_functions[].
  */
-zend_function_entry nsapi_functions[] = {
-	PHP_FE(nsapi_virtual,	NULL)										/* Make subrequest */
-	PHP_FALIAS(virtual, nsapi_virtual, NULL)							/* compatibility */
-	PHP_FE(nsapi_request_headers, NULL)									/* get request headers */
-	PHP_FALIAS(getallheaders, nsapi_request_headers, NULL)				/* compatibility */
-	PHP_FALIAS(apache_request_headers, nsapi_request_headers, NULL)		/* compatibility */
-	PHP_FE(nsapi_response_headers, NULL)								/* get response headers */
-	PHP_FALIAS(apache_response_headers, nsapi_response_headers, NULL)	/* compatibility */
+const zend_function_entry nsapi_functions[] = {
+	PHP_FE(nsapi_virtual,	arginfo_nsapi_virtual)						/* Make subrequest */
+	PHP_FALIAS(virtual, nsapi_virtual, arginfo_nsapi_virtual)			/* compatibility */
+	PHP_FE(nsapi_request_headers, arginfo_nsapi_request_headers)		/* get request headers */
+	PHP_FALIAS(getallheaders, nsapi_request_headers, arginfo_nsapi_request_headers)	/* compatibility */
+	PHP_FALIAS(apache_request_headers, nsapi_request_headers, arginfo_nsapi_request_headers)	/* compatibility */
+	PHP_FE(nsapi_response_headers, arginfo_nsapi_response_headers)		/* get response headers */
+	PHP_FALIAS(apache_response_headers, nsapi_response_headers, arginfo_nsapi_response_headers)	/* compatibility */
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -301,7 +314,7 @@ PHP_MSHUTDOWN_FUNCTION(nsapi)
 PHP_MINFO_FUNCTION(nsapi)
 {
 	php_info_print_table_start();
-	php_info_print_table_row(2, "NSAPI Module Revision", "$Revision: 286723 $");
+	php_info_print_table_row(2, "NSAPI Module Revision", "$Revision: 286722 $");
 	php_info_print_table_row(2, "Server Software", system_version());
 	php_info_print_table_row(2, "Sub-requests with nsapi_virtual()",
 	 (nsapi_servact_service)?((zend_ini_long("zlib.output_compression", sizeof("zlib.output_compression"), 0))?"not supported with zlib.output_compression":"enabled"):"not supported on this platform" );
@@ -394,10 +407,10 @@ PHP_FUNCTION(nsapi_request_headers)
 	struct pb_entry *entry;
 	nsapi_request_context *rc = (nsapi_request_context *)SG(server_context);
 
-	if (ZEND_NUM_ARGS()) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
-
+	
 	array_init(return_value);
 
 	for (i=0; i < rc->rq->headers->hsize; i++) {
@@ -420,10 +433,10 @@ PHP_FUNCTION(nsapi_response_headers)
 	struct pb_entry *entry;
 	nsapi_request_context *rc = (nsapi_request_context *)SG(server_context);
 
-	if (ZEND_NUM_ARGS()) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
-
+	
 	array_init(return_value);
 
 	for (i=0; i < rc->rq->srvhdrs->hsize; i++) {
@@ -480,38 +493,80 @@ static void sapi_nsapi_flush(void *server_context)
 #endif
 }
 
-static int sapi_nsapi_header_handler(sapi_header_struct *sapi_header, sapi_headers_struct *sapi_headers TSRMLS_DC)
+/* callback for zend_llist_apply on SAPI_HEADER_DELETE_ALL operation */
+static int php_nsapi_remove_header(sapi_header_struct *sapi_header TSRMLS_DC)
+{
+	char *header_name, *p;
+	nsapi_request_context *rc = (nsapi_request_context *)SG(server_context);
+	
+	/* copy the header, because NSAPI needs reformatting and we do not want to change the parameter */
+	header_name = nsapi_strdup(sapi_header->header);
+
+	/* extract name, this works, if only the header without ':' is given, too */
+	if (p = strchr(header_name, ':')) {
+		*p = 0;
+	}
+	
+	/* header_name to lower case because NSAPI reformats the headers and wants lowercase */
+	for (p=header_name; *p; p++) {
+		*p=tolower(*p);
+	}
+	
+	/* remove the header */
+	param_free(pblock_remove(header_name, rc->rq->srvhdrs));
+	nsapi_free(header_name);
+	
+	return ZEND_HASH_APPLY_KEEP;
+}
+
+static int sapi_nsapi_header_handler(sapi_header_struct *sapi_header, sapi_header_op_enum op, sapi_headers_struct *sapi_headers TSRMLS_DC)
 {
 	char *header_name, *header_content, *p;
 	nsapi_request_context *rc = (nsapi_request_context *)SG(server_context);
 
-	header_name = nsapi_strdup(sapi_header->header);
-	header_content = p = strchr(header_name, ':');
-	if (p == NULL) {
-		efree(sapi_header->header);
-		return 0;
+	switch(op) {
+		case SAPI_HEADER_DELETE_ALL:
+			/* this only deletes headers set or overwritten by PHP, headers previously set by NSAPI are left intact */
+			zend_llist_apply(&sapi_headers->headers, (llist_apply_func_t) php_nsapi_remove_header TSRMLS_CC);
+			return 0;
+
+		case SAPI_HEADER_DELETE:
+			/* reuse the zend_llist_apply callback function for this, too */
+			php_nsapi_remove_header(sapi_header TSRMLS_CC);
+			return 0;
+
+		case SAPI_HEADER_ADD:
+		case SAPI_HEADER_REPLACE:
+			/* copy the header, because NSAPI needs reformatting and we do not want to change the parameter */
+			header_name = nsapi_strdup(sapi_header->header);
+
+			/* split header and align pointer for content */
+			header_content = strchr(header_name, ':');
+			if (header_content) {
+				*header_content = 0;
+				do {
+					header_content++;
+				} while (*header_content==' ');
+				
+				/* header_name to lower case because NSAPI reformats the headers and wants lowercase */
+				for (p=header_name; *p; p++) {
+					*p=tolower(*p);
+				}
+
+				/* if REPLACE, remove first.  "Content-type" is always removed, as SAPI has a bug according to this */
+				if (op==SAPI_HEADER_REPLACE || strcmp(header_name, "content-type")==0) {
+					param_free(pblock_remove(header_name, rc->rq->srvhdrs));
+				}
+				/* ADD header to nsapi table */
+				pblock_nvinsert(header_name, header_content, rc->rq->srvhdrs);
+			}
+			
+			nsapi_free(header_name);
+			return SAPI_HEADER_ADD;
+			
+		default:
+			return 0;
 	}
-
-	*p = 0;
-	do {
-		header_content++;
-	} while (*header_content == ' ');
-
-	if (!strcasecmp(header_name, "Content-Type")) {
-		param_free(pblock_remove("content-type", rc->rq->srvhdrs));
-		pblock_nvinsert("content-type", header_content, rc->rq->srvhdrs);
-	} else {
-		/* to lower case because NSAPI reformats the headers and wants lowercase */
-		for (p=header_name; *p; p++) {
-			*p=tolower(*p);
-		}
-		if (sapi_header->replace) param_free(pblock_remove(header_name, rc->rq->srvhdrs));
-		pblock_nvinsert(header_name, header_content, rc->rq->srvhdrs);
-	}
-
-	nsapi_free(header_name);
-
-	return SAPI_HEADER_ADD;
 }
 
 static int sapi_nsapi_send_headers(sapi_headers_struct *sapi_headers TSRMLS_DC)
@@ -787,6 +842,7 @@ static sapi_module_struct nsapi_sapi_module = {
 	sapi_nsapi_register_server_variables,   /* register server variables */
 	nsapi_log_message,                      /* Log message */
 	sapi_nsapi_get_request_time,			/* Get request time */
+	NULL,									/* Child terminate */
 
 	NULL,                                   /* Block interruptions */
 	NULL,                                   /* Unblock interruptions */

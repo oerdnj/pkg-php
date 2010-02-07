@@ -13,7 +13,7 @@ if (false === getenv('PHP_CURL_HTTP_REMOTE_SERVER'))  {
 }
 $curl_version = curl_version(); 
 if ($curl_version['version_number'] < 0x071100) {
-	exit("skip: test works only with curl >= 7.17.0");
+	exit("skip: test works only with curl >= 7.17.0"); 
 }
 ?>
 --FILE--

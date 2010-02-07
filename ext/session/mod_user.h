@@ -16,22 +16,10 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: mod_user.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: mod_user.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef MOD_USER_H
 #define MOD_USER_H
-
-typedef union {
-	zval *names[6];
-	struct {
-		zval *ps_open;
-		zval *ps_close;
-		zval *ps_read;
-		zval *ps_write;
-		zval *ps_destroy;
-		zval *ps_gc;
-	} name;
-} ps_user;
 
 extern ps_module ps_mod_user;
 #define ps_user_ptr &ps_mod_user

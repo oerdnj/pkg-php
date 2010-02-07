@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_objects_API.c 275562 2009-02-11 09:58:58Z tony2001 $ */
+/* $Id: zend_objects_API.c 275561 2009-02-11 09:58:23Z tony2001 $ */
 
 #include "zend.h"
 #include "zend_globals.h"
@@ -85,6 +85,8 @@ ZEND_API void zend_objects_store_free_object_storage(zend_objects_store *objects
 		if (objects->object_buckets[i].valid) {
 			struct _store_object *obj = &objects->object_buckets[i].bucket.obj;
 
+			GC_REMOVE_ZOBJ_FROM_BUFFER(obj);
+
 			objects->object_buckets[i].valid = 0;
 			if (obj->free_storage) {
 				obj->free_storage(obj->object TSRMLS_CC);
@@ -117,11 +119,12 @@ ZEND_API zend_object_handle zend_objects_store_put(void *object, zend_objects_st
 	EG(objects_store).object_buckets[handle].valid = 1;
 
 	obj->refcount = 1;
+	GC_OBJ_INIT(obj);
 	obj->object = object;
 	obj->dtor = dtor?dtor:(zend_objects_store_dtor_t)zend_objects_destroy_object;
 	obj->free_storage = free_storage;
-
 	obj->clone = clone;
+	obj->handlers = NULL;
 
 #if ZEND_DEBUG_OBJECTS
 	fprintf(stderr, "Allocated object id #%d\n", handle);
@@ -165,15 +168,17 @@ ZEND_API void zend_objects_store_del_ref(zval *zobject TSRMLS_DC)
 
 	handle = Z_OBJ_HANDLE_P(zobject);
 
-	zobject->refcount++;
-	zend_objects_store_del_ref_by_handle(handle TSRMLS_CC);
-	zobject->refcount--;
+	Z_ADDREF_P(zobject);
+	zend_objects_store_del_ref_by_handle_ex(handle, Z_OBJ_HT_P(zobject) TSRMLS_CC);
+	Z_DELREF_P(zobject);
+
+	GC_ZOBJ_CHECK_POSSIBLE_ROOT(zobject);
 }
 
 /*
  * Delete a reference to an objects store entry given the object handle.
  */
-ZEND_API void zend_objects_store_del_ref_by_handle(zend_object_handle handle TSRMLS_DC)
+ZEND_API void zend_objects_store_del_ref_by_handle_ex(zend_object_handle handle, const zend_object_handlers *handlers TSRMLS_DC) /* {{{ */
 {
 	struct _store_object *obj;
 	int failure = 0;
@@ -194,6 +199,9 @@ ZEND_API void zend_objects_store_del_ref_by_handle(zend_object_handle handle TSR
 				EG(objects_store).object_buckets[handle].destructor_called = 1;
 
 				if (obj->dtor) {
+					if (handlers && !obj->handlers) {
+						obj->handlers = handlers;
+					}
 					zend_try {
 						obj->dtor(obj->object, handle TSRMLS_CC);
 					} zend_catch {
@@ -201,11 +209,12 @@ ZEND_API void zend_objects_store_del_ref_by_handle(zend_object_handle handle TSR
 					} zend_end_try();
 				}
 			}
-
+			
 			/* re-read the object from the object store as the store might have been reallocated in the dtor */
 			obj = &EG(objects_store).object_buckets[handle].bucket.obj;
 
 			if (obj->refcount == 1) {
+				GC_REMOVE_ZOBJ_FROM_BUFFER(obj);
 				if (obj->free_storage) {
 					zend_try {
 						obj->free_storage(obj->object TSRMLS_CC);
@@ -231,6 +240,7 @@ ZEND_API void zend_objects_store_del_ref_by_handle(zend_object_handle handle TSR
 		zend_bailout();
 	}
 }
+/* }}} */
 
 ZEND_API zend_object_value zend_objects_store_clone_obj(zval *zobject TSRMLS_DC)
 {
@@ -250,11 +260,12 @@ ZEND_API zend_object_value zend_objects_store_clone_obj(zval *zobject TSRMLS_DC)
 
 	retval.handle = zend_objects_store_put(new_object, obj->dtor, obj->free_storage, obj->clone TSRMLS_CC);
 	retval.handlers = Z_OBJ_HT_P(zobject);
+	EG(objects_store).object_buckets[handle].bucket.obj.handlers = retval.handlers;
 
 	return retval;
 }
 
-ZEND_API void *zend_object_store_get_object(zval *zobject TSRMLS_DC)
+ZEND_API void *zend_object_store_get_object(const zval *zobject TSRMLS_DC)
 {
 	zend_object_handle handle = Z_OBJ_HANDLE_P(zobject);
 
@@ -288,8 +299,10 @@ ZEND_API void zend_object_store_set_object(zval *zobject, void *object TSRMLS_DC
 ZEND_API void zend_object_store_ctor_failed(zval *zobject TSRMLS_DC)
 {
 	zend_object_handle handle = Z_OBJ_HANDLE_P(zobject);
-
-	EG(objects_store).object_buckets[handle].destructor_called = 1;
+	zend_object_store_bucket *obj_bucket = &EG(objects_store).object_buckets[handle];
+	
+	obj_bucket->bucket.obj.handlers = Z_OBJ_HT_P(zobject);;
+	obj_bucket->destructor_called = 1;
 }
 
 

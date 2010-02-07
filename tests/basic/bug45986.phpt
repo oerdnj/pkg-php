@@ -8,6 +8,5 @@ Testfest 2009 Munich
 <?php
 rename('foo', 'bar');
 ?>
---CLEAN--
 --EXPECTREGEX--
 .*No such.*

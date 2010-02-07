@@ -5,6 +5,7 @@ Test popen() and pclose function: error conditions
 if(substr(PHP_OS, 0, 3) == 'WIN' || strtoupper( substr(PHP_OS, 0, 3) ) == 'SUN')
   die("skip Not Valid for Windows & Sun Solaris");
 ?>
+
 --FILE--
 <?php
 /*
@@ -34,22 +35,22 @@ unlink($file_path."/popen.tmp");
 --EXPECTF--
 *** Testing for error conditions ***
 
-Warning: Wrong parameter count for popen() in %s on line %d
+Warning: popen() expects exactly 2 parameters, 0 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for popen() in %s on line %d
+Warning: popen() expects exactly 2 parameters, 1 given in %s on line %d
 NULL
 
 Warning: popen(abc.txt,rw): %s on line %d
 bool(false)
 
-Warning: Wrong parameter count for pclose() in %s on line %d
-NULL
+Warning: pclose() expects exactly 1 parameter, 0 given in %s on line %d
+bool(false)
 
-Warning: Wrong parameter count for pclose() in %s on line %d
-NULL
+Warning: pclose() expects exactly 1 parameter, 2 given in %s on line %d
+bool(false)
 
-Warning: pclose(): supplied argument is not a valid stream resource in %s on line %d
+Warning: pclose() expects parameter 1 to be resource, integer given in %s on line %d
 bool(false)
 
 --- Done ---

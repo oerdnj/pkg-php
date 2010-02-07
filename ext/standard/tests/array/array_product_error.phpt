@@ -30,16 +30,16 @@ var_dump( array_product("bob") );
 
 -- Testing array_product() function with Zero arguments --
 
-Warning: Wrong parameter count for array_product() in %sarray_product_error.php on line %d
+Warning: array_product() expects exactly 1 parameter, 0 given in %sarray_product_error.php on line %d
 NULL
 
 -- Testing array_product() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for array_product() in %sarray_product_error.php on line %d
+Warning: array_product() expects exactly 1 parameter, 2 given in %sarray_product_error.php on line %d
 NULL
 
 -- Testing array_product() function incorrect argument type --
 
-Warning: array_product(): The argument should be an array in %sarray_product_error.php on line %d
+Warning: array_product() expects parameter 1 to be array, string given in %sarray_product_error.php on line %d
 NULL
 ===DONE===

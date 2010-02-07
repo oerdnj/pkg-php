@@ -151,20 +151,20 @@ string(32) "caa892cb5d28b53c2b75b1e0799427c3"
 string(16) "99880c86884385d9"
 
 --empty array--
-Error: 8 - Array to string conversion, %s(%d)
-string(16) "262d0f1667fc7d74"
+Error: 2 - mcrypt_decrypt() expects parameter 3 to be string, array given, %s(%d)
+string(0) ""
 
 --int indexed array--
-Error: 8 - Array to string conversion, %s(%d)
-string(16) "262d0f1667fc7d74"
+Error: 2 - mcrypt_decrypt() expects parameter 3 to be string, array given, %s(%d)
+string(0) ""
 
 --associative array--
-Error: 8 - Array to string conversion, %s(%d)
-string(16) "262d0f1667fc7d74"
+Error: 2 - mcrypt_decrypt() expects parameter 3 to be string, array given, %s(%d)
+string(0) ""
 
 --nested arrays--
-Error: 8 - Array to string conversion, %s(%d)
-string(16) "262d0f1667fc7d74"
+Error: 2 - mcrypt_decrypt() expects parameter 3 to be string, array given, %s(%d)
+string(0) ""
 
 --uppercase NULL--
 string(16) "d27689f6fd9700f4"
@@ -194,9 +194,8 @@ string(16) "d27689f6fd9700f4"
 string(32) "46677e368bc07ef375bd580e0c4b2594"
 
 --instance of classWithoutToString--
-Error: 4096 - Object of class classWithoutToString could not be converted to string, %s(%d)
-Error: 8 - Object of class classWithoutToString to string conversion, %s(%d)
-string(16) "c4595fa6833ba9e3"
+Error: 2 - mcrypt_decrypt() expects parameter 3 to be string, object given, %s(%d)
+string(0) ""
 
 --undefined var--
 string(16) "d27689f6fd9700f4"
@@ -205,5 +204,7 @@ string(16) "d27689f6fd9700f4"
 string(16) "d27689f6fd9700f4"
 
 --resource--
-string(%d) %s
+Error: 2 - mcrypt_decrypt() expects parameter 3 to be string, resource given, %s(%d)
+string(0) ""
 ===DONE===
+

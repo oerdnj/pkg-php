@@ -18,6 +18,6 @@ var_dump(ldap_free_result($link, "Additional data"));
 Warning: ldap_free_result(): supplied resource is not a valid ldap result resource in %s on line %d
 bool(false)
 
-Warning: Wrong parameter count for ldap_free_result() in %s on line %d
+Warning: ldap_free_result() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
 ===DONE===

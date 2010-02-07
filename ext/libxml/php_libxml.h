@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_libxml.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: php_libxml.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_LIBXML_H
 #define PHP_LIBXML_H
@@ -27,9 +27,11 @@ extern zend_module_entry libxml_module_entry;
 #define libxml_module_ptr &libxml_module_entry
 
 #ifdef PHP_WIN32
-#define PHP_LIBXML_API __declspec(dllexport)
+#	define PHP_LIBXML_API __declspec(dllexport)
+#elif defined(__GNUC__) && __GNUC__ >= 4
+#	define PHP_LIBXML_API __attribute__ ((visibility("default")))
 #else
-#define PHP_LIBXML_API
+#	define PHP_LIBXML_API
 #endif
 
 #include "ext/standard/php_smart_str.h"
@@ -82,12 +84,12 @@ PHP_LIBXML_API int php_libxml_decrement_doc_ref(php_libxml_node_object *object T
 PHP_LIBXML_API xmlNodePtr php_libxml_import_node(zval *object TSRMLS_DC);
 PHP_LIBXML_API int php_libxml_register_export(zend_class_entry *ce, php_libxml_export_node export_function);
 /* When an explicit freeing of node and children is required */
-void php_libxml_node_free_resource(xmlNodePtr node TSRMLS_DC);
+PHP_LIBXML_API void php_libxml_node_free_resource(xmlNodePtr node TSRMLS_DC);
 /* When object dtor is called as node may still be referenced */
-void php_libxml_node_decrement_resource(php_libxml_node_object *object TSRMLS_DC);
+PHP_LIBXML_API void php_libxml_node_decrement_resource(php_libxml_node_object *object TSRMLS_DC);
 PHP_LIBXML_API void php_libxml_error_handler(void *ctx, const char *msg, ...);
-void php_libxml_ctx_warning(void *ctx, const char *msg, ...);
-void php_libxml_ctx_error(void *ctx, const char *msg, ...);
+PHP_LIBXML_API void php_libxml_ctx_warning(void *ctx, const char *msg, ...);
+PHP_LIBXML_API void php_libxml_ctx_error(void *ctx, const char *msg, ...);
 PHP_LIBXML_API int php_libxml_xmlCheckUTF8(const unsigned char *s);
 PHP_LIBXML_API zval *php_libxml_switch_context(zval *context TSRMLS_DC);
 PHP_LIBXML_API void php_libxml_issue_error(int level, const char *msg TSRMLS_DC);

@@ -35,11 +35,11 @@ var_dump( imap_close($stream_id, $options, $extra_arg) );
 
 -- Testing imap_close() function with Zero arguments --
 
-Warning: Wrong parameter count for imap_close() in %s on line %d
+Warning: imap_close() expects at least 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing imap_close() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for imap_close() in %s on line %d
+Warning: imap_close() expects at most 2 parameters, 3 given in %s on line %d
 NULL
 ===DONE===

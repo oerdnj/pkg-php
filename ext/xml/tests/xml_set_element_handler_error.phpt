@@ -36,11 +36,12 @@ echo "Done";
 
 -- Testing xml_set_element_handler() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for xml_set_element_handler() in %s on line %d
+Warning: xml_set_element_handler() expects exactly 3 parameters, 4 given in %s on line %d
 NULL
 
 -- Testing xml_set_element_handler() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for xml_set_element_handler() in %s on line %d
+Warning: xml_set_element_handler() expects exactly 3 parameters, 1 given in %s on line %d
 NULL
 Done
+

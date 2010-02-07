@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 240880 2007-08-08 11:37:44Z nlopess $
+dnl $Id: config.m4 242949 2007-09-26 15:44:16Z cvs2svn $
 dnl
 
 AC_DEFUN([PHP_LDAP_CHECKS], [

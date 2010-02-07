@@ -26,19 +26,19 @@ var_dump( strcoll("Hello World",  "World", $extra_arg) );
 
 -- Testing strcoll() function with no arguments --
 
-Warning: Wrong parameter count for strcoll() in %s on line %d
+Warning: strcoll() expects exactly 2 parameters, 0 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for strcoll() in %s on line %d
+Warning: strcoll() expects exactly 2 parameters, 1 given in %s on line %d
 NULL
 
 -- Testing strcoll() function with one argument --
 
-Warning: Wrong parameter count for strcoll() in %s on line %d
+Warning: strcoll() expects exactly 2 parameters, 1 given in %s on line %d
 NULL
 
 -- Testing strcoll() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for strcoll() in %s on line %d
+Warning: strcoll() expects exactly 2 parameters, 3 given in %s on line %d
 NULL
 ===Done===

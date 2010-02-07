@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: domerrorhandler.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: domerrorhandler.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -27,9 +27,7 @@
 #if HAVE_LIBXML && HAVE_DOM
 #include "php_dom.h"
 
-
 /* {{{ arginfo */
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_domerrorhandler_handle_error, 0, 0, 1)
 	ZEND_ARG_OBJ_INFO(0, error, DOMError, 0)
 ZEND_END_ARG_INFO();
@@ -42,13 +40,12 @@ ZEND_END_ARG_INFO();
 * Since: DOM Level 3
 */
 
-zend_function_entry php_dom_domerrorhandler_class_functions[] = {
+const zend_function_entry php_dom_domerrorhandler_class_functions[] = {
 	PHP_FALIAS(handleError, dom_domerrorhandler_handle_error, arginfo_dom_domerrorhandler_handle_error)
 	{NULL, NULL, NULL}
 };
 
 /* {{{ attribute protos, not implemented yet */
-
 
 /* {{{ proto dom_boolean dom_domerrorhandler_handle_error(domerror error);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#ID-ERRORS-DOMErrorHandler-handleError
@@ -59,4 +56,16 @@ PHP_FUNCTION(dom_domerrorhandler_handle_error)
  DOM_NOT_IMPLEMENTED();
 }
 /* }}} end dom_domerrorhandler_handle_error */
+
+/* }}} */
+
 #endif
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

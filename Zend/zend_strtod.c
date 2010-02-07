@@ -89,7 +89,7 @@
  *	directly -- and assumed always to succeed.
  */
 
-/* $Id: zend_strtod.c 266327 2008-09-15 11:47:03Z dmitry $ */
+/* $Id: zend_strtod.c 277398 2009-03-18 10:18:10Z dmitry $ */
 
 #include <zend_operators.h>
 #include <zend_strtod.h>
@@ -2621,7 +2621,7 @@ ZEND_API double zend_oct_strtod(const char *str, char **endptr)
 	s++;
 
 	while ((c = *s++)) {
-		if (c > '7') {
+		if (c < '0' || c > '7') {
 			/* break and return the current value if the number is not well-formed
 			 * that's what Linux strtol() does 
 			 */

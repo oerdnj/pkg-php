@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: plain_wrapper.c 275506 2009-02-10 16:14:27Z iliaa $ */
+/* $Id: plain_wrapper.c 290578 2009-11-12 15:05:03Z johannes $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -70,7 +70,11 @@ PHPAPI int php_stream_parse_fopen_modes(const char *mode, int *open_flags)
 			/* unknown mode */
 			return FAILURE;
 	}
-
+#if defined(O_NONBLOCK)
+	if (strchr(mode, 'n')) {
+		flags |= O_NONBLOCK;
+	}
+#endif
 	if (strchr(mode, '+')) {
 		flags |= O_RDWR;
 	} else if (flags) {
@@ -342,7 +346,7 @@ static size_t php_stdiop_read(php_stream *stream, char *buf, size_t count TSRMLS
 			   so script can retry if desired */
 			ret = read(data->fd, buf, count);
 		}
-
+		
 		stream->eof = (ret == 0 || (ret == (size_t)-1 && errno != EWOULDBLOCK && errno != EINTR && errno != EBADF));
 				
 	} else {
@@ -847,6 +851,10 @@ static php_stream *php_plain_files_dir_opener(php_stream_wrapper *wrapper, char 
 	DIR *dir = NULL;
 	php_stream *stream = NULL;
 
+	if (options & STREAM_USE_GLOB_DIR_OPEN) {
+		return php_glob_stream_wrapper.wops->dir_opener(&php_glob_stream_wrapper, path, mode, options, opened_path, context STREAMS_REL_CC TSRMLS_CC);
+	}
+
 	if (((options & STREAM_DISABLE_OPEN_BASEDIR) == 0) && php_check_open_basedir(path TSRMLS_CC)) {
 		return NULL;
 	}
@@ -889,9 +897,13 @@ PHPAPI php_stream *_php_stream_fopen(const char *filename, const char *mode, cha
 		}
 		return NULL;
 	}
-	
-	if ((realpath = expand_filepath(filename, NULL TSRMLS_CC)) == NULL) {
-		return NULL;
+
+	if (options & STREAM_ASSUME_REALPATH) {
+		realpath = estrdup(filename);
+	} else {
+		if ((realpath = expand_filepath(filename, NULL TSRMLS_CC)) == NULL) {
+			return NULL;
+		}
 	}
 
 	if (persistent) {
@@ -972,12 +984,12 @@ PHPAPI php_stream *_php_stream_fopen(const char *filename, const char *mode, cha
 static php_stream *php_plain_files_stream_opener(php_stream_wrapper *wrapper, char *path, char *mode,
 		int options, char **opened_path, php_stream_context *context STREAMS_DC TSRMLS_DC)
 {
-	if ((options & USE_PATH) && PG(include_path) != NULL) {
-		return php_stream_fopen_with_path_rel(path, mode, PG(include_path), opened_path, options);
-	}
-
 	if (((options & STREAM_DISABLE_OPEN_BASEDIR) == 0) && php_check_open_basedir(path TSRMLS_CC)) {
 		return NULL;
+	}
+
+	if ((php_check_safe_mode_include_dir(path TSRMLS_CC)) == 0) {
+		return php_stream_fopen_rel(path, mode, opened_path, options);
 	}
 
 	if ((options & ENFORCE_SAFE_MODE) && PG(safe_mode) && (!php_checkuid(path, mode, CHECKUID_CHECK_MODE_PARAM)))
@@ -1036,8 +1048,8 @@ static int php_plain_files_unlink(php_stream_wrapper *wrapper, char *url, int op
 		return 0;
 	}
 
-	/* Clear stat cache */
-	php_clear_stat_cache(TSRMLS_C);
+	/* Clear stat cache (and realpath cache) */
+	php_clear_stat_cache(1, NULL, 0 TSRMLS_CC);
 
 	return 1;
 }
@@ -1108,8 +1120,8 @@ static int php_plain_files_rename(php_stream_wrapper *wrapper, char *url_from, c
         return 0;
 	}
 
-	/* Clear stat cache */
-	php_clear_stat_cache(TSRMLS_C);
+	/* Clear stat cache (and realpath cache) */
+	php_clear_stat_cache(1, NULL, 0 TSRMLS_CC);
 
 	return 1;
 }
@@ -1222,8 +1234,8 @@ static int php_plain_files_rmdir(php_stream_wrapper *wrapper, char *url, int opt
 		return 0;
 	}
 
-	/* Clear stat cache */
-	php_clear_stat_cache(TSRMLS_C);
+	/* Clear stat cache (and realpath cache) */
+	php_clear_stat_cache(1, NULL, 0 TSRMLS_CC);
 
 	return 1;
 }

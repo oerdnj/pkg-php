@@ -1,5 +1,5 @@
 dnl
-dnl $Id: acinclude.m4 291414 2009-11-29 06:13:22Z rasmus $
+dnl $Id: acinclude.m4 287126 2009-08-11 23:45:35Z srinatar $
 dnl
 dnl This file contains local autoconf functions.
 dnl
@@ -1688,7 +1688,7 @@ dnl PHP_BROKEN_GLIBC_FOPEN_APPEND
 dnl
 AC_DEFUN([PHP_BROKEN_GLIBC_FOPEN_APPEND], [
   AC_MSG_CHECKING([for broken libc stdio])
-  AC_CACHE_VAL(_cv_have_broken_glibc_fopen_append,[
+  AC_CACHE_VAL(have_broken_glibc_fopen_append,[
   AC_TRY_RUN([
 #include <stdio.h>
 int main(int argc, char *argv[])
@@ -1714,8 +1714,8 @@ int main(int argc, char *argv[])
   return 0;
 }
 ],
-[_cv_have_broken_glibc_fopen_append=no],
-[_cv_have_broken_glibc_fopen_append=yes ],
+[have_broken_glibc_fopen_append=no],
+[have_broken_glibc_fopen_append=yes ],
 AC_TRY_COMPILE([
 #include <features.h>
 ],[
@@ -1723,11 +1723,11 @@ AC_TRY_COMPILE([
 choke me
 #endif
 ],
-[_cv_have_broken_glibc_fopen_append=yes],
-[_cv_have_broken_glibc_fopen_append=no ])
+[have_broken_glibc_fopen_append=yes],
+[have_broken_glibc_fopen_append=no ])
 )])
 
-  if test "$_cv_have_broken_glibc_fopen_append" = "yes"; then
+  if test "$have_broken_glibc_fopen_append" = "yes"; then
     AC_MSG_RESULT(yes)
     AC_DEFINE(HAVE_BROKEN_GLIBC_FOPEN_APPEND,1, [Define if your glibc borks on fopen with mode a+])
   else

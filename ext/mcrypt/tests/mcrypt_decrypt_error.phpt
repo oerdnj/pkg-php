@@ -41,11 +41,12 @@ var_dump( mcrypt_decrypt($cipher, $key, $data) );
 
 -- Testing mcrypt_decrypt() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for mcrypt_decrypt() in %s on line %d
+Warning: mcrypt_decrypt() expects at most 5 parameters, 6 given in %s on line %d
 NULL
 
 -- Testing mcrypt_decrypt() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for mcrypt_decrypt() in %s on line %d
+Warning: mcrypt_decrypt() expects at least 4 parameters, 3 given in %s on line %d
 NULL
 ===DONE===
+

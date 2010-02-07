@@ -29,11 +29,12 @@ var_dump( dirname($path, $extra_arg) );
 
 -- Testing dirname() function with Zero arguments --
 
-Warning: Wrong parameter count for dirname() in %s on line %d
+Warning: dirname() expects exactly 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing dirname() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for dirname() in %s on line %d
+Warning: dirname() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
 ===DONE===
+

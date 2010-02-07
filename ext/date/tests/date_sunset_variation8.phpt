@@ -16,9 +16,11 @@ $time_date = array (
 
 		//Date at which Sun is up all day at North Pole
 		"12 Aug 2008" => mktime(8, 8, 8, 8, 12, 2008),
+		"13 Aug 2008" => mktime(8, 8, 8, 8, 13, 2008),
 
 		//Date at which Sun is up all day at South Pole
 		"12 Nov 2008" => mktime(8, 8, 8, 11, 12, 2008),
+		"13 Nov 2008" => mktime(8, 8, 8, 11, 13, 2008),
 );
 
 //Iterate over different date and time
@@ -45,7 +47,23 @@ bool(false)
 bool(false)
 bool(false)
 
+--13 Aug 2008--
+bool(false)
+bool(false)
+bool(false)
+bool(false)
+bool(false)
+bool(false)
+
 --12 Nov 2008--
+bool(false)
+bool(false)
+bool(false)
+bool(false)
+bool(false)
+bool(false)
+
+--13 Nov 2008--
 bool(false)
 bool(false)
 bool(false)

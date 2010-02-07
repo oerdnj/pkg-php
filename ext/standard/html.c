@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: html.c 291821 2009-12-07 15:41:43Z moriyoshi $ */
+/* $Id: html.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 /*
  * HTML entity resources:
@@ -37,7 +37,6 @@
 #else
 #include <php_config.h>
 #endif
-#include "reg.h"
 #include "html.h"
 #include "php_string.h"
 #include "SAPI.h"
@@ -484,31 +483,16 @@ struct basic_entities_dec {
 			}                        \
 			mbseq[mbpos++] = (mbchar); }
 
-/* skip one byte and return */
-#define MB_FAILURE(pos) do { \
-	*newpos = pos + 1; \
-	*status = FAILURE; \
-	return 0; \
-} while (0)
-
 #define CHECK_LEN(pos, chars_need)			\
-	if (chars_need < 1) {						\
-		if((str_len - (pos)) < chars_need) {	\
-			*newpos = pos;						\
-			*status = FAILURE;					\
-			return 0;							\
-		}										\
-	} else {									\
-		if((str_len - (pos)) < chars_need) {	\
-			*newpos = pos + 1;					\
-			*status = FAILURE;					\
-			return 0;							\
-		}										\
+	if((str_len - (pos)) < chars_need) {	\
+		*newpos = pos;						\
+		*status = FAILURE;					\
+		return 0;							\
 	}
 
 /* {{{ get_next_char
  */
-inline static unsigned int get_next_char(enum entity_charset charset,
+inline static unsigned short get_next_char(enum entity_charset charset,
 		unsigned char * str,
 		int str_len,
 		int * newpos,
@@ -519,191 +503,206 @@ inline static unsigned int get_next_char(enum entity_charset charset,
 	int pos = *newpos;
 	int mbpos = 0;
 	int mbspace = *mbseqlen;
-	unsigned int this_char = 0;
+	unsigned short this_char = str[pos++];
 	unsigned char next_char;
 
 	*status = SUCCESS;
-
+	
 	if (mbspace <= 0) {
 		*mbseqlen = 0;
-		CHECK_LEN(pos, 1);
-		*newpos = pos + 1;
-		return str[pos];
+		return this_char;
 	}
-
+	
+	MB_WRITE((unsigned char)this_char);
+	
 	switch (charset) {
 		case cs_utf_8:
 			{
-				unsigned char c;
-				CHECK_LEN(pos, 1);
-				c = str[pos];
-				if (c < 0x80) {
-					MB_WRITE(c);
-					this_char = c;
-					pos++;
-				} else if (c < 0xc0) {
-					MB_FAILURE(pos);
-				} else if (c < 0xe0) {
-					CHECK_LEN(pos, 2);
-					if (str[pos + 1] < 0x80 || str[pos + 1] > 0xbf) {
-						MB_FAILURE(pos);
-					}
-					this_char = ((c & 0x1f) << 6) | (str[pos + 1] & 0x3f);
+				unsigned long utf = 0;
+				int stat = 0;
+				int more = 1;
+
+				/* unpack utf-8 encoding into a wide char.
+				 * Code stolen from the mbstring extension */
+
+				do {
 					if (this_char < 0x80) {
-						MB_FAILURE(pos);
+						more = 0;
+						if(stat) {
+							/* we didn't finish the UTF sequence correctly */
+							--pos;
+							*status = FAILURE;
+						}
+						break;
+					} else if (this_char < 0xc0) {
+						switch (stat) {
+							case 0x10:	/* 2, 2nd */
+							case 0x21:	/* 3, 3rd */
+							case 0x32:	/* 4, 4th */
+							case 0x43:	/* 5, 5th */
+							case 0x54:	/* 6, 6th */
+								/* last byte in sequence */
+								more = 0;
+								utf |= (this_char & 0x3f);
+								this_char = (unsigned short)utf;
+								break;
+							case 0x20:	/* 3, 2nd */
+							case 0x31:	/* 4, 3rd */
+							case 0x42:	/* 5, 4th */
+							case 0x53:	/* 6, 5th */
+								/* penultimate char */
+								utf |= ((this_char & 0x3f) << 6);
+								stat++;
+								break;
+							case 0x30:	/* 4, 2nd */
+							case 0x41:	/* 5, 3rd */
+							case 0x52:	/* 6, 4th */
+								utf |= ((this_char & 0x3f) << 12);
+								stat++;
+								break;
+							case 0x40:	/* 5, 2nd */
+							case 0x51:
+								utf |= ((this_char & 0x3f) << 18);
+								stat++;
+								break;
+							case 0x50:	/* 6, 2nd */
+								utf |= ((this_char & 0x3f) << 24);
+								stat++;
+								break;
+							default:
+								/* invalid */
+								*status = FAILURE;
+								more = 0;
+						}
 					}
-					MB_WRITE((unsigned char)c);
-					MB_WRITE((unsigned char)str[pos + 1]);
-					pos += 2;
-				} else if (c < 0xf0) {
-					CHECK_LEN(pos, 3);
-					if (str[pos + 1] < 0x80 || str[pos + 1] > 0xbf) {
-						MB_FAILURE(pos);
+					/* lead byte */
+					else if (this_char < 0xe0) {
+						stat = 0x10;	/* 2 byte */
+						utf = (this_char & 0x1f) << 6;
+						CHECK_LEN(pos, 1);
+					} else if (this_char < 0xf0) {
+						stat = 0x20;	/* 3 byte */
+						utf = (this_char & 0xf) << 12;
+						CHECK_LEN(pos, 2);
+					} else if (this_char < 0xf8) {
+						stat = 0x30;	/* 4 byte */
+						utf = (this_char & 0x7) << 18;
+						CHECK_LEN(pos, 3);
+					} else if (this_char < 0xfc) {
+						stat = 0x40;	/* 5 byte */
+						utf = (this_char & 0x3) << 24;
+						CHECK_LEN(pos, 4);
+					} else if (this_char < 0xfe) {
+						stat = 0x50;	/* 6 byte */
+						utf = (this_char & 0x1) << 30;
+						CHECK_LEN(pos, 5);
+					} else {
+						/* invalid; bail */
+						more = 0;
+						*status = FAILURE;
+						break;
 					}
-					if (str[pos + 2] < 0x80 || str[pos + 2] > 0xbf) {
-						MB_FAILURE(pos);
+
+					if (more) {
+						this_char = str[pos++];
+						MB_WRITE((unsigned char)this_char);
 					}
-					this_char = ((c & 0x0f) << 12) | ((str[pos + 1] & 0x3f) << 6) | (str[pos + 2] & 0x3f);
-					if (this_char < 0x800) {
-						MB_FAILURE(pos);
-					} else if (this_char >= 0xd800 && this_char <= 0xdfff) {
-						MB_FAILURE(pos);
-					}
-					MB_WRITE((unsigned char)c);
-					MB_WRITE((unsigned char)str[pos + 1]);
-					MB_WRITE((unsigned char)str[pos + 2]);
-					pos += 3;
-				} else if (c < 0xf8) {
-					CHECK_LEN(pos, 4);
-					if (str[pos + 1] < 0x80 || str[pos + 1] > 0xbf) {
-						MB_FAILURE(pos);
-					}
-					if (str[pos + 2] < 0x80 || str[pos + 2] > 0xbf) {
-						MB_FAILURE(pos);
-					}
-					if (str[pos + 3] < 0x80 || str[pos + 3] > 0xbf) {
-						MB_FAILURE(pos);
-					}
-					this_char = ((c & 0x07) << 18) | ((str[pos + 1] & 0x3f) << 12) | ((str[pos + 2] & 0x3f) << 6) | (str[pos + 3] & 0x3f);
-					if (this_char < 0x10000) {
-						MB_FAILURE(pos);
-					}
-					MB_WRITE((unsigned char)c);
-					MB_WRITE((unsigned char)str[pos + 1]);
-					MB_WRITE((unsigned char)str[pos + 2]);
-					MB_WRITE((unsigned char)str[pos + 3]);
-					pos += 4;
-				} else {
-					MB_FAILURE(pos);
-				}
+				} while (more);
 			}
 			break;
 		case cs_big5:
 		case cs_gb2312:
 		case cs_big5hkscs:
 			{
-				CHECK_LEN(pos, 1);
-				this_char = str[pos++];
 				/* check if this is the first of a 2-byte sequence */
-				if (this_char >= 0x81 && this_char <= 0xfe) {
+				if (this_char >= 0xa1 && this_char <= 0xfe) {
 					/* peek at the next char */
 					CHECK_LEN(pos, 1);
-					next_char = str[pos++];
+					next_char = str[pos];
 					if ((next_char >= 0x40 && next_char <= 0x7e) ||
 							(next_char >= 0xa1 && next_char <= 0xfe)) {
 						/* yes, this a wide char */
-						MB_WRITE(this_char);
+						this_char <<= 8;
 						MB_WRITE(next_char);
-						this_char = (this_char << 8) | next_char;
-					} else {
-						MB_FAILURE(pos);
+						this_char |= next_char;
+						pos++;
 					}
-				} else {
-					MB_WRITE(this_char);
+					
 				}
+				break;
 			}
-			break;
 		case cs_sjis:
 			{
-				CHECK_LEN(pos, 1);
-				this_char = str[pos++];
 				/* check if this is the first of a 2-byte sequence */
-				if ((this_char >= 0x81 && this_char <= 0x9f) ||
-					(this_char >= 0xe0 && this_char <= 0xfc)) {
+				if ( (this_char >= 0x81 && this_char <= 0x9f) ||
+					 (this_char >= 0xe0 && this_char <= 0xef)
+					) {
 					/* peek at the next char */
 					CHECK_LEN(pos, 1);
-					next_char = str[pos++];
+					next_char = str[pos];
 					if ((next_char >= 0x40 && next_char <= 0x7e) ||
 						(next_char >= 0x80 && next_char <= 0xfc))
 					{
 						/* yes, this a wide char */
-						MB_WRITE(this_char);
+						this_char <<= 8;
 						MB_WRITE(next_char);
-						this_char = (this_char << 8) | next_char;
-					} else {
-						MB_FAILURE(pos);
+						this_char |= next_char;
+						pos++;
 					}
-				} else {
-					MB_WRITE(this_char);
+					
 				}
 				break;
 			}
 		case cs_eucjp:
 			{
-				CHECK_LEN(pos, 1);
-				this_char = str[pos++];
 				/* check if this is the first of a multi-byte sequence */
 				if (this_char >= 0xa1 && this_char <= 0xfe) {
 					/* peek at the next char */
 					CHECK_LEN(pos, 1);
-					next_char = str[pos++];
+					next_char = str[pos];
 					if (next_char >= 0xa1 && next_char <= 0xfe) {
 						/* yes, this a jis kanji char */
-						MB_WRITE(this_char);
+						this_char <<= 8;
 						MB_WRITE(next_char);
-						this_char = (this_char << 8) | next_char;
-					} else {
-						MB_FAILURE(pos);
+						this_char |= next_char;
+						pos++;
 					}
+					
 				} else if (this_char == 0x8e) {
 					/* peek at the next char */
 					CHECK_LEN(pos, 1);
-					next_char = str[pos++];
+					next_char = str[pos];
 					if (next_char >= 0xa1 && next_char <= 0xdf) {
 						/* JIS X 0201 kana */
-						MB_WRITE(this_char);
+						this_char <<= 8;
 						MB_WRITE(next_char);
-						this_char = (this_char << 8) | next_char;
-					} else {
-						MB_FAILURE(pos);
+						this_char |= next_char;
+						pos++;
 					}
+					
 				} else if (this_char == 0x8f) {
 					/* peek at the next two char */
 					unsigned char next2_char;
 					CHECK_LEN(pos, 2);
 					next_char = str[pos];
-					next2_char = str[pos + 1];
-					pos += 2;
+					next2_char = str[pos+1];
 					if ((next_char >= 0xa1 && next_char <= 0xfe) &&
 						(next2_char >= 0xa1 && next2_char <= 0xfe)) {
 						/* JIS X 0212 hojo-kanji */
-						MB_WRITE(this_char);
+						this_char <<= 8;
 						MB_WRITE(next_char);
+						this_char |= next_char;
+						pos++;
+						this_char <<= 8;
 						MB_WRITE(next2_char);
-						this_char = (this_char << 16) | (next_char << 8) | next2_char;
-					} else {
-						MB_FAILURE(pos);
+						this_char |= next2_char;
+						pos++;
 					}
-				} else {
-					MB_WRITE(this_char);
+					
 				}
 				break;
 			}
 		default:
-			/* single-byte charsets */
-			CHECK_LEN(pos, 1);
-			this_char = str[pos++];
-			MB_WRITE(this_char);
 			break;
 	}
 	MB_RETURN;
@@ -1042,8 +1041,6 @@ PHPAPI char *php_unescape_html_entities(unsigned char *old, int oldlen, int *new
 								break;
 
 							case cs_cp1252:
-							case cs_cp1251:
-							case cs_cp866:
 								if (code > 0xff) {
 									invalid_code = 1;
 								} else {
@@ -1051,6 +1048,8 @@ PHPAPI char *php_unescape_html_entities(unsigned char *old, int oldlen, int *new
 								}
 								break;
 
+							case cs_cp1251:
+							case cs_cp866:
 							case cs_big5:
 							case cs_big5hkscs:
 							case cs_sjis:
@@ -1134,10 +1133,13 @@ PHPAPI char *php_escape_html_entities_ex(unsigned char *old, int oldlen, int *ne
 		unsigned char mbsequence[16];	/* allow up to 15 characters in a multibyte sequence */
 		int mbseqlen = sizeof(mbsequence);
 		int status = SUCCESS;
-		unsigned int this_char = get_next_char(charset, old, oldlen, &i, mbsequence, &mbseqlen, &status);
+		unsigned short this_char = get_next_char(charset, old, oldlen, &i, mbsequence, &mbseqlen, &status);
 
 		if(status == FAILURE) {
 			/* invalid MB sequence */
+			if (quote_style & ENT_HTML_IGNORE_ERRORS) {
+				continue;
+			}
 			efree(replaced);
 			if(!PG(display_errors)) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid multibyte sequence in argument");
@@ -1296,6 +1298,7 @@ void register_html_constants(INIT_FUNC_ARGS)
 	REGISTER_LONG_CONSTANT("ENT_COMPAT", ENT_COMPAT, CONST_PERSISTENT|CONST_CS);
 	REGISTER_LONG_CONSTANT("ENT_QUOTES", ENT_QUOTES, CONST_PERSISTENT|CONST_CS);
 	REGISTER_LONG_CONSTANT("ENT_NOQUOTES", ENT_NOQUOTES, CONST_PERSISTENT|CONST_CS);
+	REGISTER_LONG_CONSTANT("ENT_IGNORE", ENT_IGNORE, CONST_PERSISTENT|CONST_CS);
 }
 /* }}} */
 
@@ -1378,7 +1381,7 @@ done:
 PHP_FUNCTION(html_entity_decode)
 {
 	char *str, *hint_charset = NULL;
-	int str_len, hint_charset_len, len;
+	int str_len, hint_charset_len = 0, len;
 	long quote_style = ENT_COMPAT;
 	char *replaced;
 

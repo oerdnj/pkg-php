@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pgsql_driver.c 290214 2009-11-04 19:32:27Z mbeccati $ */
+/* $Id: pgsql_driver.c 279604 2009-04-30 12:56:00Z mbeccati $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -232,19 +232,22 @@ static int pgsql_handle_preparer(pdo_dbh_t *dbh, const char *sql, long sql_len, 
 		if (S->cursor_name) {
 			efree(S->cursor_name);
 		}
-		/* TODO: check how scrollable cursors related to prepared statements */
-		spprintf(&S->cursor_name, 0, "pdo_crsr_%08x", ++H->stmt_counter);
+		spprintf(&S->cursor_name, 0, "pdo_crsr_%016lx", (unsigned long) stmt);
+#if HAVE_PQPREPARE
+		emulate = 1;
+#endif
 	}
 
 #if HAVE_PQPREPARE
 
-	if (driver_options) {
-		if (pdo_attr_lval(driver_options, PDO_PGSQL_ATTR_DISABLE_NATIVE_PREPARED_STATEMENT, H->disable_native_prepares TSRMLS_CC) == 1 ||
-			pdo_attr_lval(driver_options, PDO_ATTR_EMULATE_PREPARES, H->emulate_prepares TSRMLS_CC) == 1) {
+	else if (driver_options) {
+		if (pdo_attr_lval(driver_options,
+				PDO_PGSQL_ATTR_DISABLE_NATIVE_PREPARED_STATEMENT, 0 TSRMLS_CC) == 1) {
+			emulate = 1;
+		} else if (pdo_attr_lval(driver_options, PDO_ATTR_EMULATE_PREPARES,
+				0 TSRMLS_CC) == 1) {
 			emulate = 1;
 		}
-	} else {
-		emulate = H->disable_native_prepares || H->emulate_prepares;
 	}
 
 	if (!emulate && PQprotocolVersion(H->server) > 2) {
@@ -261,7 +264,7 @@ static int pgsql_handle_preparer(pdo_dbh_t *dbh, const char *sql, long sql_len, 
 			return 0;
 		}
 
-		spprintf(&S->stmt_name, 0, "pdo_stmt_%08x", ++H->stmt_counter);
+		spprintf(&S->stmt_name, 0, "pdo_stmt_%016lx", (unsigned long)stmt);
 		/* that's all for now; we'll defer the actual prepare until the first execute call */
 	
 		if (nsql) {
@@ -297,9 +300,7 @@ static long pgsql_handle_doer(pdo_dbh_t *dbh, const char *sql, long sql_len TSRM
 		return -1;
 	}
 	H->pgoid = PQoidValue(res);
-#if HAVE_PQCMDTUPLES
 	ret = atol(PQcmdTuples(res));
-#endif
 	PQclear(res);
 
 	return ret;
@@ -309,16 +310,17 @@ static int pgsql_handle_quoter(pdo_dbh_t *dbh, const char *unquoted, int unquote
 {
 	unsigned char *escaped;
 	pdo_pgsql_db_handle *H = (pdo_pgsql_db_handle *)dbh->driver_data;
+	size_t tmp_len;
 	
 	switch (paramtype) {
 		case PDO_PARAM_LOB:
 			/* escapedlen returned by PQescapeBytea() accounts for trailing 0 */
 #ifdef HAVE_PQESCAPE_BYTEA_CONN
-			escaped = PQescapeByteaConn(H->server, unquoted, unquotedlen, quotedlen);
+			escaped = PQescapeByteaConn(H->server, unquoted, unquotedlen, &tmp_len);
 #else
-			escaped = PQescapeBytea(unquoted, unquotedlen, quotedlen);
+			escaped = PQescapeBytea(unquoted, unquotedlen, &tmp_len);
 #endif
-			*quotedlen += 1;
+			*quotedlen = (int)tmp_len + 1;
 			*quoted = emalloc(*quotedlen + 1);
 			memcpy((*quoted)+1, escaped, *quotedlen-2);
 			(*quoted)[0] = '\'';
@@ -354,25 +356,9 @@ static char *pdo_pgsql_last_insert_id(pdo_dbh_t *dbh, const char *name, unsigned
 	} else {
 		PGresult *res;
 		ExecStatusType status;
-#ifdef HAVE_PQEXECPARAMS
 		const char *q[1];
 		q[0] = name;
 		res = PQexecParams(H->server, "SELECT CURRVAL($1)", 1, NULL, q, NULL, NULL, 0);
-#else
-		char *name_escaped, *q;
-		size_t l = strlen(name);
-        
-		name_escaped = safe_emalloc(l, 2, 1);
-#ifndef HAVE_PQESCAPE_CONN
-		PQescapeString(name_escaped, name, l);
-#else
-		PQescapeStringConn(H->server, name_escaped, name, l, NULL);
-#endif
-		spprintf(&q, 0, "SELECT CURRVAL('%s')", name_escaped);
-		res = PQexec(H->server, q);
-		efree(name_escaped); 
-		efree(q);
-#endif
 		status = PQresultStatus(res);
 
 		if (res && (status == PGRES_TUPLES_OK)) {
@@ -399,11 +385,9 @@ static int pdo_pgsql_get_attribute(pdo_dbh_t *dbh, long attr, zval *return_value
 			break;
 
 		case PDO_ATTR_SERVER_VERSION:
-#ifdef HAVE_PQPROTOCOLVERSION
 			if (PQprotocolVersion(H->server) >= 3) { /* PostgreSQL 7.4 or later */
 				ZVAL_STRING(return_value, (char*)PQparameterStatus(H->server, "server_version"), 1);
 			} else /* emulate above via a query */
-#endif
 			{
 				PGresult *res = PQexec(H->server, "SELECT VERSION()");
 				if (res && PQresultStatus(res) == PGRES_TUPLES_OK) {
@@ -453,7 +437,6 @@ static int pdo_pgsql_get_attribute(pdo_dbh_t *dbh, long attr, zval *return_value
 		case PDO_ATTR_SERVER_INFO: {
 			int spid = PQbackendPID(H->server);
 			char *tmp;
-#ifdef HAVE_PQPROTOCOLVERSION
 			spprintf(&tmp, 0, 
 				"PID: %d; Client Encoding: %s; Is Superuser: %s; Session Authorization: %s; Date Style: %s", 
 				spid,
@@ -461,9 +444,6 @@ static int pdo_pgsql_get_attribute(pdo_dbh_t *dbh, long attr, zval *return_value
 				(char*)PQparameterStatus(H->server, "is_superuser"),
 				(char*)PQparameterStatus(H->server, "session_authorization"),
 				(char*)PQparameterStatus(H->server, "DateStyle"));
-#else 
-			spprintf(&tmp, 0, "PID: %d", spid);
-#endif
 			ZVAL_STRING(return_value, tmp, 0);
 		}
 			break;
@@ -626,14 +606,14 @@ static PHP_METHOD(PDO, pgsqlLOBUnlink)
 /* }}} */
 
 
-static zend_function_entry dbh_methods[] = {
+static const zend_function_entry dbh_methods[] = {
 	PHP_ME(PDO, pgsqlLOBCreate, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PDO, pgsqlLOBOpen, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(PDO, pgsqlLOBUnlink, NULL, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
 
-static zend_function_entry *pdo_pgsql_get_driver_methods(pdo_dbh_t *dbh, int kind TSRMLS_DC)
+static const zend_function_entry *pdo_pgsql_get_driver_methods(pdo_dbh_t *dbh, int kind TSRMLS_DC)
 {
 	switch (kind) {
 		case PDO_DBH_DRIVER_METHOD_KIND_DBH:
@@ -645,21 +625,7 @@ static zend_function_entry *pdo_pgsql_get_driver_methods(pdo_dbh_t *dbh, int kin
 
 static int pdo_pgsql_set_attr(pdo_dbh_t *dbh, long attr, zval *val TSRMLS_DC)
 {
-	pdo_pgsql_db_handle *H = (pdo_pgsql_db_handle *)dbh->driver_data;
-
-	switch (attr) {
-#if HAVE_PQPREPARE
-		case PDO_ATTR_EMULATE_PREPARES:
-			H->emulate_prepares = Z_LVAL_P(val);
-			return 1;
-		case PDO_PGSQL_ATTR_DISABLE_NATIVE_PREPARED_STATEMENT:
-			H->disable_native_prepares = Z_LVAL_P(val);
-			return 1;
-#endif
-
-		default:
-			return 0;
-	}
+	return 0;
 }
 
 static struct pdo_dbh_methods pgsql_methods = {

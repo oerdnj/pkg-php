@@ -1,7 +1,7 @@
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: test.inc 268574 2008-11-08 11:59:57Z thekid $ 
+ * $Id: test.inc 268732 2008-11-10 11:00:48Z thekid $ 
  */
 
   // Change if needed
@@ -49,11 +49,11 @@
     var_dump(sybase_set_message_handler($handler));
   }
   
-  // {{{ resource sybase_connect_ex(string charset= NULL, string appname= NULL)
+  // {{{ resource sybase_connect_ex(string charset= NULL, string appname= NULL, bool new= FALSE)
   //     Connect to the sybase server using the defines HOST, USER and PASSWORD
-  function sybase_connect_ex($charset= NULL, $appname= NULL) {
+  function sybase_connect_ex($charset= NULL, $appname= NULL, $new= FALSE) {
     sybase_min_server_severity(11);       // Suppress "changed database context"
-    if (!($db= sybase_connect(HOST, USER, PASSWORD, $charset ? $charset : 'iso_1', $appname))) {
+    if (!($db= sybase_connect(HOST, USER, PASSWORD, $charset ? $charset : 'iso_1', $appname, $new))) {
       die('Connect to '.USER.'@'.HOST.' failed (using password: '.(PASSWORD ? 'yes' : 'no').')');
     }
     return $db;

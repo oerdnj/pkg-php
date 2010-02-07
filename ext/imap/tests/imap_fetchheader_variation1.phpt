@@ -110,136 +110,136 @@ foreach($inputs as $input) {
 
 -- Iteration 1 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, integer given in %s on line %d
+NULL
 
 -- Iteration 2 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, integer given in %s on line %d
+NULL
 
 -- Iteration 3 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, integer given in %s on line %d
+NULL
 
 -- Iteration 4 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, integer given in %s on line %d
+NULL
 
 -- Iteration 5 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, double given in %s on line %d
+NULL
 
 -- Iteration 6 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, double given in %s on line %d
+NULL
 
 -- Iteration 7 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, double given in %s on line %d
+NULL
 
 -- Iteration 8 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, double given in %s on line %d
+NULL
 
 -- Iteration 9 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, double given in %s on line %d
+NULL
 
 -- Iteration 10 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, null given in %s on line %d
+NULL
 
 -- Iteration 11 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, null given in %s on line %d
+NULL
 
 -- Iteration 12 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, boolean given in %s on line %d
+NULL
 
 -- Iteration 13 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, boolean given in %s on line %d
+NULL
 
 -- Iteration 14 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, boolean given in %s on line %d
+NULL
 
 -- Iteration 15 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, boolean given in %s on line %d
+NULL
 
 -- Iteration 16 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, %unicode_string_optional% given in %s on line %d
+NULL
 
 -- Iteration 17 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, %unicode_string_optional% given in %s on line %d
+NULL
 
 -- Iteration 18 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, %unicode_string_optional% given in %s on line %d
+NULL
 
 -- Iteration 19 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, %unicode_string_optional% given in %s on line %d
+NULL
 
 -- Iteration 20 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, %unicode_string_optional% given in %s on line %d
+NULL
 
 -- Iteration 21 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, array given in %s on line %d
+NULL
 
 -- Iteration 22 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, array given in %s on line %d
+NULL
 
 -- Iteration 23 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, array given in %s on line %d
+NULL
 
 -- Iteration 24 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, array given in %s on line %d
+NULL
 
 -- Iteration 25 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, object given in %s on line %d
+NULL
 
 -- Iteration 26 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, null given in %s on line %d
+NULL
 
 -- Iteration 27 --
 
-Warning: imap_fetchheader(): supplied argument is not a valid imap resource in %s on line %d
-bool(false)
+Warning: imap_fetchheader() expects parameter 1 to be resource, null given in %s on line %d
+NULL
 ===DONE===

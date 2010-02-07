@@ -14,8 +14,8 @@ var_dump(getservbyname($service, $protocol, $extra_arg ) );
 var_dump(getservbyname($service));
 ?>
 --EXPECTF--
-Warning: Wrong parameter count for getservbyname() in %s.php on line %d
+Warning: getservbyname() expects exactly 2 parameters, %d given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for getservbyname() in %s.php on line %d
+Warning: getservbyname() expects exactly 2 parameters, %d given in %s on line %d
 NULL

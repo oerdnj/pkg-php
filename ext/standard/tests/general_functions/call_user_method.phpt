@@ -16,6 +16,5 @@ $res = call_user_method('b', $a);
 var_dump($res);
 ?>
 --EXPECTF--
-Strict Standards: Function call_user_method() is deprecated in %s
+Deprecated: Function call_user_method() is deprecated in %s on line 8
 bool(true)
-

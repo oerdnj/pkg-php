@@ -33,11 +33,12 @@ echo "Done";
 
 -- Testing xml_get_current_byte_index() function with Zero arguments --
 
-Warning: Wrong parameter count for xml_get_current_byte_index() in %s on line %d
+Warning: xml_get_current_byte_index() expects exactly 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing xml_get_current_byte_index() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for xml_get_current_byte_index() in %s on line %d
+Warning: xml_get_current_byte_index() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
 Done
+

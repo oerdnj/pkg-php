@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: fopen_wrappers.c 275506 2009-02-10 16:14:27Z iliaa $ */
+/* $Id: fopen_wrappers.c 289428 2009-10-09 17:03:56Z pajoye $ */
 
 /* {{{ includes
  */
@@ -77,6 +77,62 @@
 #if defined(AF_UNIX)
 #include <sys/un.h>
 #endif
+/* }}} */
+
+/* {{{ OnUpdateBaseDir
+Allows any change to open_basedir setting in during Startup and Shutdown events,
+or a tightening during activation/runtime/deactivation */
+PHPAPI ZEND_INI_MH(OnUpdateBaseDir)
+{
+	char **p, *pathbuf, *ptr, *end;
+#ifndef ZTS
+	char *base = (char *) mh_arg2;
+#else
+	char *base = (char *) ts_resource(*((int *) mh_arg2));
+#endif
+
+	p = (char **) (base + (size_t) mh_arg1);
+
+	if (stage == PHP_INI_STAGE_STARTUP || stage == PHP_INI_STAGE_SHUTDOWN || stage == PHP_INI_STAGE_ACTIVATE || stage == PHP_INI_STAGE_DEACTIVATE) {
+		/* We're in a PHP_INI_SYSTEM context, no restrictions */
+		*p = new_value;
+		return SUCCESS;
+	}
+
+	/* Otherwise we're in runtime */
+	if (!*p || !**p) {
+		/* open_basedir not set yet, go ahead and give it a value */
+		*p = new_value;
+		return SUCCESS;
+	}
+
+	/* Shortcut: When we have a open_basedir and someone tries to unset, we know it'll fail */
+	if (!new_value || !*new_value) {
+		return FAILURE;
+	}
+
+	/* Is the proposed open_basedir at least as restrictive as the current setting? */
+	ptr = pathbuf = estrdup(new_value);
+	while (ptr && *ptr) {
+		end = strchr(ptr, DEFAULT_DIR_SEPARATOR);
+		if (end != NULL) {
+			*end = '\0';
+			end++;
+		}
+		if (php_check_open_basedir_ex(ptr, 0 TSRMLS_CC) != 0) {
+			/* At least one portion of this open_basedir is less restrictive than the prior one, FAIL */
+			efree(pathbuf);
+			return FAILURE;
+		}
+		ptr = end;
+	}
+	efree(pathbuf);
+
+	/* Everything checks out, set it */
+	*p = new_value;
+
+	return SUCCESS;
+}
 /* }}} */
 
 /* {{{ php_check_specific_open_basedir
@@ -398,6 +454,10 @@ PHPAPI int php_fopen_primary_script(zend_file_handle *file_handle TSRMLS_DC)
 		}
 	} /* if doc_root && path_info */
 
+	if (filename) {
+		filename = zend_resolve_path(filename, strlen(filename) TSRMLS_CC);
+	}
+
 	if (!filename) {
 		/* we have to free SG(request_info).path_translated here because
 		 * php_destroy_request_info assumes that it will get
@@ -425,9 +485,7 @@ PHPAPI int php_fopen_primary_script(zend_file_handle *file_handle TSRMLS_DC)
 
 	file_handle->opened_path = expand_filepath(filename, NULL TSRMLS_CC);
 
-	if (!(SG(options) & SAPI_OPTION_NO_CHDIR)) {
-		VCWD_CHDIR_FILE(filename);
-	}
+	STR_FREE(SG(request_info).path_translated);	/* for same reason as above */
 	SG(request_info).path_translated = filename;
 
 	file_handle->filename = SG(request_info).path_translated;
@@ -436,6 +494,143 @@ PHPAPI int php_fopen_primary_script(zend_file_handle *file_handle TSRMLS_DC)
 	file_handle->type = ZEND_HANDLE_FP;
 
 	return SUCCESS;
+}
+/* }}} */
+
+/* {{{ php_resolve_path
+ * Returns the realpath for given filename according to include path
+ */
+PHPAPI char *php_resolve_path(const char *filename, int filename_length, const char *path TSRMLS_DC)
+{
+	char resolved_path[MAXPATHLEN];
+	char trypath[MAXPATHLEN];
+	const char *ptr, *end, *p;
+	char *actual_path;
+	php_stream_wrapper *wrapper;
+
+	if (!filename) {
+		return NULL;
+	}
+
+	/* Don't resolve paths which contain protocol (except of file://) */
+	for (p = filename; isalnum((int)*p) || *p == '+' || *p == '-' || *p == '.'; p++);
+	if ((*p == ':') && (p - filename > 1) && (p[1] == '/') && (p[2] == '/')) {
+		wrapper = php_stream_locate_url_wrapper(filename, &actual_path, STREAM_OPEN_FOR_INCLUDE TSRMLS_CC);
+		if (wrapper == &php_plain_files_wrapper) {
+			if (tsrm_realpath(actual_path, resolved_path TSRMLS_CC)) {
+				return estrdup(resolved_path);
+			}
+		}
+		return NULL;
+	}
+
+	if ((*filename == '.' && 
+	     (IS_SLASH(filename[1]) || 
+	      ((filename[1] == '.') && IS_SLASH(filename[2])))) ||
+	    IS_ABSOLUTE_PATH(filename, filename_length) ||
+	    !path ||
+	    !*path) {
+		if (tsrm_realpath(filename, resolved_path TSRMLS_CC)) {
+			return estrdup(resolved_path);
+		} else {
+			return NULL;
+		}
+	}
+
+	ptr = path;
+	while (ptr && *ptr) {
+		/* Check for stream wrapper */
+		int is_stream_wrapper = 0;
+
+		for (p = ptr; isalnum((int)*p) || *p == '+' || *p == '-' || *p == '.'; p++);
+		if ((*p == ':') && (p - ptr > 1) && (p[1] == '/') && (p[2] == '/')) {
+			/* .:// or ..:// is not a stream wrapper */
+			if (p[-1] != '.' || p[-2] != '.' || p - 2 != ptr) {
+				p += 3;
+				is_stream_wrapper = 1;
+			}
+		}
+		end = strchr(p, DEFAULT_DIR_SEPARATOR);
+		if (end) {
+			if ((end-ptr) + 1 + filename_length + 1 >= MAXPATHLEN) {
+				ptr = end + 1;
+				continue;
+			}
+			memcpy(trypath, ptr, end-ptr);
+			trypath[end-ptr] = '/';
+			memcpy(trypath+(end-ptr)+1, filename, filename_length+1);
+			ptr = end+1;
+		} else {
+			int len = strlen(ptr);
+
+			if (len + 1 + filename_length + 1 >= MAXPATHLEN) {
+				break;
+			}
+			memcpy(trypath, ptr, len);
+			trypath[len] = '/';
+			memcpy(trypath+len+1, filename, filename_length+1);
+			ptr = NULL;
+		}
+		actual_path = trypath;
+		if (is_stream_wrapper) {
+			wrapper = php_stream_locate_url_wrapper(trypath, &actual_path, STREAM_OPEN_FOR_INCLUDE TSRMLS_CC);
+			if (!wrapper) {
+				continue;
+			} else if (wrapper != &php_plain_files_wrapper) {
+				if (wrapper->wops->url_stat) {
+					php_stream_statbuf ssb;
+
+					if (SUCCESS == wrapper->wops->url_stat(wrapper, trypath, 0, &ssb, NULL TSRMLS_CC)) {
+						return estrdup(trypath);
+					}
+				}
+				continue;
+			}
+		}
+		if (tsrm_realpath(actual_path, resolved_path TSRMLS_CC)) {
+			return estrdup(resolved_path);
+		}
+	} /* end provided path */
+
+	/* check in calling scripts' current working directory as a fall back case
+	 */
+	if (zend_is_executing(TSRMLS_C)) {
+		char *exec_fname = zend_get_executed_filename(TSRMLS_C);
+		int exec_fname_length = strlen(exec_fname);
+
+		while ((--exec_fname_length >= 0) && !IS_SLASH(exec_fname[exec_fname_length]));
+		if (exec_fname && exec_fname[0] != '[' &&
+		    exec_fname_length > 0 &&
+		    exec_fname_length + 1 + filename_length + 1 < MAXPATHLEN) {
+			memcpy(trypath, exec_fname, exec_fname_length + 1);
+			memcpy(trypath+exec_fname_length + 1, filename, filename_length+1);
+			actual_path = trypath;
+
+			/* Check for stream wrapper */
+			for (p = trypath; isalnum((int)*p) || *p == '+' || *p == '-' || *p == '.'; p++);
+			if ((*p == ':') && (p - trypath > 1) && (p[1] == '/') && (p[2] == '/')) {
+				wrapper = php_stream_locate_url_wrapper(trypath, &actual_path, STREAM_OPEN_FOR_INCLUDE TSRMLS_CC);
+				if (!wrapper) {
+					return NULL;
+				} else if (wrapper != &php_plain_files_wrapper) {
+					if (wrapper->wops->url_stat) {
+						php_stream_statbuf ssb;
+
+						if (SUCCESS == wrapper->wops->url_stat(wrapper, trypath, 0, &ssb, NULL TSRMLS_CC)) {
+							return estrdup(trypath);
+						}
+					}
+					return NULL;
+				}
+			}
+
+			if (tsrm_realpath(actual_path, resolved_path TSRMLS_CC)) {
+				return estrdup(resolved_path);
+			}
+		}
+	}
+
+	return NULL;
 }
 /* }}} */
 

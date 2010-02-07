@@ -122,16 +122,20 @@ int(1)
 int(1)
 
 --empty array--
-int(1)
+Error: 2 - intval() expects parameter 2 to be long, array given, %s(%d)
+NULL
 
 --int indexed array--
-int(1)
+Error: 2 - intval() expects parameter 2 to be long, array given, %s(%d)
+NULL
 
 --associative array--
-int(1)
+Error: 2 - intval() expects parameter 2 to be long, array given, %s(%d)
+NULL
 
 --nested arrays--
-int(1)
+Error: 2 - intval() expects parameter 2 to be long, array given, %s(%d)
+NULL
 
 --uppercase NULL--
 int(1)
@@ -152,30 +156,36 @@ int(1)
 int(1)
 
 --empty string DQ--
-int(1)
+Error: 2 - intval() expects parameter 2 to be long, string given, %s(%d)
+NULL
 
 --empty string SQ--
-int(1)
+Error: 2 - intval() expects parameter 2 to be long, string given, %s(%d)
+NULL
 
 --string DQ--
-int(1)
+Error: 2 - intval() expects parameter 2 to be long, string given, %s(%d)
+NULL
 
 --string SQ--
-int(1)
+Error: 2 - intval() expects parameter 2 to be long, string given, %s(%d)
+NULL
 
 --mixed case string--
-int(1)
+Error: 2 - intval() expects parameter 2 to be long, string given, %s(%d)
+NULL
 
 --heredoc--
-int(1)
+Error: 2 - intval() expects parameter 2 to be long, string given, %s(%d)
+NULL
 
 --instance of classWithToString--
-Error: 8 - Object of class classWithToString could not be converted to int, %s(%d)
-int(1)
+Error: 2 - intval() expects parameter 2 to be long, object given, %s(%d)
+NULL
 
 --instance of classWithoutToString--
-Error: 8 - Object of class classWithoutToString could not be converted to int, %s(%d)
-int(1)
+Error: 2 - intval() expects parameter 2 to be long, object given, %s(%d)
+NULL
 
 --undefined var--
 int(1)

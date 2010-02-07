@@ -3,7 +3,7 @@ Test DateTime::setISODate () function : error conditions
 --FILE--
 <?php
 
-/* Prototype  : public void DateTime::setISODate  ( int $year  , int $week  [, int $day  ] )
+/* Prototype  : public DateTime DateTime::setISODate  ( int $year  , int $week  [, int $day  ] )
  * Description: Set a date according to the ISO 8601 standard - using weeks and day offsets rather than specific dates. 
  * Source code: ext/date/php_date.c
  * Alias to functions: date_isodate_set

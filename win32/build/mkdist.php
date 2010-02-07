@@ -1,18 +1,20 @@
-<?php # $Id: mkdist.php 284011 2009-07-13 16:01:40Z pajoye $
+<?php # $Id: mkdist.php 289905 2009-10-24 19:52:23Z pajoye $
 /* piece together a windows binary distro */
 
 $build_dir = $argv[1];
-$phpdll = $argv[2];
-$sapi_targets = explode(" ", $argv[3]);
-$ext_targets = explode(" ", $argv[4]);
-$pecl_targets = explode(" ", $argv[5]);
-$snapshot_template = $argv[6];
+$php_build_dir = $argv[2];
+$phpdll = $argv[3];
+$sapi_targets = explode(" ", $argv[4]);
+$ext_targets = explode(" ", $argv[5]);
+$pecl_targets = explode(" ", $argv[6]);
+$snapshot_template = $argv[7];
 
 $is_debug = preg_match("/^debug/i", $build_dir);
 
 echo "Making dist for $build_dir\n";
 
 $dist_dir = $build_dir . "/php-" . phpversion();
+$test_dir = $build_dir . "/php-test-pack-" . phpversion();
 $pecl_dir = $build_dir . "/pecl-" . phpversion();
 
 @mkdir($dist_dir);
@@ -30,7 +32,7 @@ function get_depends($module)
 {
 	static $no_dist = array(
 		/* windows system dlls that should not be bundled */
-		'advapi32.dll', 'comdlg32.dll', 'gdi32.dll', 'kernel32.dll', 'ntdll.dll',
+		'advapi32.dll', 'comdlg32.dll', 'crypt32.dll', 'gdi32.dll', 'kernel32.dll', 'ntdll.dll',
 		'odbc32.dll', 'ole32.dll', 'oleaut32.dll', 'rpcrt4.dll',
 		'shell32.dll', 'shlwapi.dll', 'user32.dll', 'ws2_32.dll', 'ws2help.dll',
 		'comctl32.dll', 'winmm.dll', 'wsock32.dll', 'winspool.drv', 'msasn1.dll',
@@ -40,7 +42,7 @@ function get_depends($module)
 		'apachecore.dll',
 
 		/* apache 2 */
-		'libhttpd.dll', 'libapr.dll', 'libaprutil.dll',
+		'libhttpd.dll', 'libapr.dll', 'libaprutil.dll','libapr-1.dll', 'libaprutil-1.dll',
 
 		/* pi3web */
 		'piapi.dll', 'pi3api.dll',
@@ -58,7 +60,8 @@ function get_depends($module)
 		 * but the debug version (msvcrtd.dll) and those from visual studio.net
 		 * (msvcrt7x.dll) are not */
 		'msvcrt.dll',
-
+		'msvcr90.dll',
+		'wldap32.dll'
 		);
 	global $build_dir, $extra_dll_deps, $ext_targets, $sapi_targets, $pecl_targets, $phpdll, $per_module_deps, $pecl_dll_deps;
 	
@@ -111,6 +114,13 @@ function copy_file_list($source_dir, $dest_dir, $list)
 	global $is_debug, $dist_dir;
 
 	foreach ($list as $item) {
+		if (empty($item)) {
+			continue;
+		} elseif (!is_file($source_dir . DIRECTORY_SEPARATOR . $item)) {
+			echo "WARNING: $item not found\n";
+			continue;
+		}
+
 		echo "Copying $item from $source_dir to $dest_dir\n";
 		copy($source_dir . DIRECTORY_SEPARATOR . $item, $dest_dir . DIRECTORY_SEPARATOR . $item);
 		if ($is_debug) {
@@ -213,15 +223,18 @@ copy_file_list($build_dir, "$dist_dir", $sapi_targets);
 copy_file_list($build_dir, "$dist_dir/ext", $ext_targets);
 
 /* pecl sapi and extensions */
-copy_file_list($build_dir, $pecl_dir, $pecl_targets);
+if(sizeof($pecl_targets)) {
+	copy_file_list($build_dir, $pecl_dir, $pecl_targets);
+}
 
 /* populate reading material */
 $text_files = array(
-	"LICENSE" => 		"license.txt",
-	"NEWS" => 			"news.txt",
-	"php.ini-dist" => 	"php.ini-dist",
-	"php.ini-recommended" => "php.ini-recommended",
-	"win32/install.txt" => 	"install.txt",
+	"LICENSE" => "license.txt",
+	"NEWS" => "news.txt",
+	"README.REDIST.BINS" => "readme-redist-bins.txt",
+	"php.ini-development" => "php.ini-development",
+	"php.ini-production" => "php.ini-production",
+	"win32/install.txt" => "install.txt",
 	"win32/pws-php5cgi.reg" => "pws-php5cgi.reg",
 	"win32/pws-php5isapi.reg" => "pws-php5isapi.reg",
 );
@@ -284,13 +297,38 @@ foreach ($extra_dll_deps as $dll) {
 		/* try template dir */
 		$tdll = $snapshot_template . "/dlls/" . basename($dll);
 		if (!file_exists($tdll)) {
-			echo "WARNING: distro depends on $dll, but could not find it on your system\n";
-			continue;
+			$tdll = $php_build_dir . '/bin/' . basename($dll);
+			if (!file_exists($tdll)) {
+				echo "WARNING: distro depends on $dll, but could not find it on your system\n";
+				continue;
+			}
 		}
 		$dll = $tdll;
 	}
 	copy($dll, "$dist_dir/" . basename($dll));
 }
+
+/* TODO:
+add sanity check and test if all required DLLs are present, per version 
+This version works at least for 3.6, 3.8 and 4.0 (5.3-vc6, 5.3-vc9 and HEAD).
+Add ADD_DLLS to add extra DLLs like dynamic dependencies for standard 
+deps. For example, libenchant.dll loads libenchant_myspell.dll or
+libenchant_ispell.dll
+*/
+$ICU_DLLS = $php_build_dir . '/bin/icu*.dll';
+foreach (glob($ICU_DLLS) as $filename) {
+	copy($filename, "$dist_dir/" . basename($filename));
+}
+$ENCHANT_DLLS = array(
+	'glib-2.dll',
+	'gmodule-2.dll',
+	'libenchant_myspell.dll',
+	'libenchant_ispell.dll',
+);
+foreach ($ENCHANT_DLLS as $filename) {
+	copy($php_build_dir . '/bin/' . $filename, "$dist_dir/" . basename($filename));
+}
+
 /* and those for pecl */
 foreach ($pecl_dll_deps as $dll) {
 	if (in_array($dll, $extra_dll_deps)) {
@@ -333,6 +371,92 @@ function copy_dir($source, $dest)
 	closedir($d);
 }
 
+
+
+function copy_test_dir($directory, $dest)
+{
+	if(substr($directory,-1) == '/') {
+		$directory = substr($directory,0,-1);
+	}
+
+	if ($directory == 'tests') {
+		if (!is_dir($dest . '/tests')) {
+			mkdir($dest . '/tests', 0775, true);
+		}
+		copy_dir($directory, $dest . '/tests/');
+
+		return false;
+	}
+
+	if(!file_exists($directory) || !is_dir($directory)) {
+		echo "failed... $directory\n";
+		return FALSE;
+	}
+
+	$directory_list = opendir($directory);
+
+	while (FALSE !== ($file = readdir($directory_list))) {
+		$full_path = $directory . '/' . $file;
+		if($file != '.' && $file != '..' && $file != '.svn' && is_dir($full_path)) {
+			if ($file == 'tests') {
+				if (!is_dir($dest . '/' . $full_path)) {
+					mkdir($dest . '/' . $full_path , 0775, true);
+				}
+				copy_dir($full_path, $dest . '/' . $full_path . '/');
+				continue;
+			} else {
+				copy_test_dir($full_path, $dest);
+			}
+		}
+	}
+
+	closedir($directory_list); 
+}
+
+function make_phar_dot_phar($dist_dir)
+{
+	if (!extension_loaded('phar')) {
+		return;
+	}
+
+	$path_to_phar = realpath(__DIR__ . '/../../ext/phar');
+
+	echo "Generating pharcommand.phar\n";
+	$phar = new Phar($dist_dir . '/pharcommand.phar', 0, 'pharcommand');
+
+	foreach (new DirectoryIterator($path_to_phar . '/phar') as $file) {
+		if ($file->isDir() || $file == 'phar.php') {
+			continue;
+		}
+
+		echo 'adding ', $file, "\n";
+		$phar[(string) $file] = file_get_contents($path_to_phar.  '/phar/' . $file);
+	}
+
+	$phar->setSignatureAlgorithm(Phar::SHA1);
+	$stub = file($path_to_phar . '/phar/phar.php');
+
+	unset($stub[0]); // remove hashbang
+	$phar->setStub(implode('', $stub));
+
+	echo "Creating phar.phar.bat\n";
+	file_put_contents($dist_dir . '/phar.phar.bat', "%~dp0php.exe %~dp0pharcommand.phar %*\r\n");
+}
+
+if (!is_dir($test_dir)) {
+	mkdir($test_dir);
+}
+
+$dirs = array(
+	'ext',
+	'Sapi',
+	'Zend',
+	'tests'
+);
+foreach ($dirs as $dir) {
+	copy_test_dir($dir, $test_dir);
+}
+
 /* change this next line to true to use good-old
  * hand-assembled go-pear-bundle from the snapshot template */
 $use_pear_template = true;
@@ -344,7 +468,7 @@ if (!$use_pear_template) {
 
 	/* grab the bootstrap script */
 	echo "Downloading go-pear\n";
-	copy("http://go-pear.org/", "$dist_dir/PEAR/go-pear.php");
+	copy("http://pear.php.net/go-pear", "$dist_dir/PEAR/go-pear.php");
 
 	/* import the package list -- sets $packages variable */
 	include "pear/go-pear-list.php";
@@ -413,8 +537,8 @@ if (file_exists($snapshot_template)) {
 		}
 	}
 } else {
-	echo "WARNING: you don't have a snapshot template\n";
-	echo "         your dist will not be complete\n";
+	echo "WARNING: you don't have a snapshot template, your dist will not be complete\n";
 }
 
+make_phar_dot_phar($dist_dir);
 ?>

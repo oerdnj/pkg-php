@@ -153,33 +153,33 @@ bool(false)
 
 -- Iteration 17 --
 
-Warning: base_convert(): Invalid `from base' (0) in %s on line %d
-bool(false)
+Warning: base_convert() expects parameter 2 to be long, string given in %s on line %d
+NULL
 
 -- Iteration 18 --
 
-Warning: base_convert(): Invalid `from base' (0) in %s on line %d
-bool(false)
+Warning: base_convert() expects parameter 2 to be long, string given in %s on line %d
+NULL
 
 -- Iteration 19 --
 
-Warning: base_convert(): Invalid `from base' (0) in %s on line %d
-bool(false)
+Warning: base_convert() expects parameter 2 to be long, array given in %s on line %d
+NULL
 
 -- Iteration 20 --
 
-Warning: base_convert(): Invalid `from base' (0) in %s on line %d
-bool(false)
+Warning: base_convert() expects parameter 2 to be long, string given in %s on line %d
+NULL
 
 -- Iteration 21 --
 
-Warning: base_convert(): Invalid `from base' (0) in %s on line %d
-bool(false)
+Warning: base_convert() expects parameter 2 to be long, string given in %s on line %d
+NULL
 
 -- Iteration 22 --
 
-Warning: base_convert(): Invalid `from base' (0) in %s on line %d
-bool(false)
+Warning: base_convert() expects parameter 2 to be long, string given in %s on line %d
+NULL
 
 -- Iteration 23 --
 

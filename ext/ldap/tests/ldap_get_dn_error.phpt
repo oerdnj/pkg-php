@@ -15,7 +15,7 @@ var_dump(ldap_get_dn($link, $link));
 ?>
 ===DONE===
 --EXPECTF--
-Warning: Wrong parameter count for ldap_get_dn() in %s on line %d
+Warning: ldap_get_dn() expects exactly 2 parameters, 1 given in %s on line %d
 NULL
 
 Warning: ldap_get_dn(): supplied resource is not a valid ldap result entry resource in %s on line %d

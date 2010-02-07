@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_handlers.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: com_handlers.c 280806 2009-05-19 17:38:29Z kalle $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -38,8 +38,8 @@ static zval *com_property_read(zval *object, zval *member, int type TSRMLS_DC)
 
 	MAKE_STD_ZVAL(return_value);
 	ZVAL_NULL(return_value);
-	return_value->refcount = 0;
-	return_value->is_ref = 0;
+	Z_SET_REFCOUNT_P(return_value, 0);
+	Z_UNSET_ISREF_P(return_value);
 
 	obj = CDNO_FETCH(object);
 
@@ -92,8 +92,8 @@ static zval *com_read_dimension(zval *object, zval *offset, int type TSRMLS_DC)
 
 	MAKE_STD_ZVAL(return_value);
 	ZVAL_NULL(return_value);
-	return_value->refcount = 0;
-	return_value->is_ref = 0;
+	Z_SET_REFCOUNT_P(return_value, 0);
+	Z_UNSET_ISREF_P(return_value);
 
 	obj = CDNO_FETCH(object);
 
@@ -255,7 +255,7 @@ static void function_dtor(void *pDest)
 static PHP_FUNCTION(com_method_handler)
 {
 	Z_OBJ_HANDLER_P(getThis(), call_method)(
-			((zend_internal_function*)EG(function_state_ptr)->function)->function_name,
+			((zend_internal_function*)EG(current_execute_data)->function_state.function)->function_name,
 			INTERNAL_FUNCTION_PARAM_PASSTHRU);
 }
 
@@ -434,7 +434,7 @@ static union _zend_function *com_constructor_get(zval *object TSRMLS_DC)
 	}
 }
 
-static zend_class_entry *com_class_entry_get(zval *object TSRMLS_DC)
+static zend_class_entry *com_class_entry_get(const zval *object TSRMLS_DC)
 {
 	php_com_dotnet_object *obj;
 	obj = CDNO_FETCH(object);
@@ -442,7 +442,7 @@ static zend_class_entry *com_class_entry_get(zval *object TSRMLS_DC)
 	return obj->ce;
 }
 
-static int com_class_name_get(zval *object, char **class_name, zend_uint *class_name_len, int parent TSRMLS_DC)
+static int com_class_name_get(const zval *object, char **class_name, zend_uint *class_name_len, int parent TSRMLS_DC)
 {
 	php_com_dotnet_object *obj;
 	obj = CDNO_FETCH(object);
@@ -566,8 +566,8 @@ zend_object_handlers php_com_object_handlers = {
 	com_read_dimension,
 	com_write_dimension,
 	NULL,
-	NULL, //com_object_get,
-	NULL, //com_object_set,
+	NULL, /* com_object_get, */
+	NULL, /* com_object_set, */
 	com_property_exists,
 	com_property_delete,
 	com_dimension_exists,

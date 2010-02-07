@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: type.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: type.c 278172 2009-04-02 09:56:33Z dmitry $ */
 
 #include "php.h"
 #include "php_incomplete_class.h"
@@ -27,8 +27,8 @@ PHP_FUNCTION(gettype)
 {
 	zval **arg;
 
-	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &arg) == FAILURE) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "Z", &arg) == FAILURE) {
+		return;
 	}
 
 	switch (Z_TYPE_PP(arg)) {
@@ -90,37 +90,35 @@ PHP_FUNCTION(gettype)
    Set the type of the variable */
 PHP_FUNCTION(settype)
 {
-	zval **var, **type;
-	char *new_type;
+	zval **var;
+	char *type;
+	int type_len = 0;
 
-	if (ZEND_NUM_ARGS() != 2 || zend_get_parameters_ex(2, &var, &type) == FAILURE) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "Zs", &var, &type, &type_len) == FAILURE) {
+		return;
 	}
 
-	convert_to_string_ex(type);
-	new_type = Z_STRVAL_PP(type);
-
-	if (!strcasecmp(new_type, "integer")) {
+	if (!strcasecmp(type, "integer")) {
 		convert_to_long(*var);
-	} else if (!strcasecmp(new_type, "int")) {
+	} else if (!strcasecmp(type, "int")) {
 		convert_to_long(*var);
-	} else if (!strcasecmp(new_type, "float")) {
+	} else if (!strcasecmp(type, "float")) {
 		convert_to_double(*var);
-	} else if (!strcasecmp(new_type, "double")) { /* deprecated */
+	} else if (!strcasecmp(type, "double")) { /* deprecated */
 		convert_to_double(*var);
-	} else if (!strcasecmp(new_type, "string")) {
+	} else if (!strcasecmp(type, "string")) {
 		convert_to_string(*var);
-	} else if (!strcasecmp(new_type, "array")) {
+	} else if (!strcasecmp(type, "array")) {
 		convert_to_array(*var);
-	} else if (!strcasecmp(new_type, "object")) {
+	} else if (!strcasecmp(type, "object")) {
 		convert_to_object(*var);
-	} else if (!strcasecmp(new_type, "bool")) {
+	} else if (!strcasecmp(type, "bool")) {
 		convert_to_boolean(*var);
-	} else if (!strcasecmp(new_type, "boolean")) {
+	} else if (!strcasecmp(type, "boolean")) {
 		convert_to_boolean(*var);
-	} else if (!strcasecmp(new_type, "null")) {
+	} else if (!strcasecmp(type, "null")) {
 		convert_to_null(*var);
-	} else if (!strcasecmp(new_type, "resource")) {
+	} else if (!strcasecmp(type, "resource")) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Cannot convert to resource type");
 		RETURN_FALSE;
 	} else {
@@ -135,23 +133,23 @@ PHP_FUNCTION(settype)
    Get the integer value of a variable using the optional base for the conversion */
 PHP_FUNCTION(intval)
 {
-	zval **num, **arg_base;
+	zval **num;
+	long arg_base;
 	int base;
 
 	switch (ZEND_NUM_ARGS()) {
 		case 1:
-			if (zend_get_parameters_ex(1, &num) == FAILURE) {
-				WRONG_PARAM_COUNT;
+			if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "Z", &num) == FAILURE) {
+				return;
 			}
 			base = 10;
 			break;
 
 		case 2:
-			if (zend_get_parameters_ex(2, &num, &arg_base) == FAILURE) {
-				WRONG_PARAM_COUNT;
+			if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "Zl", &num, &arg_base) == FAILURE) {
+				return;
 			}
-			convert_to_long_ex(arg_base);
-			base = Z_LVAL_PP(arg_base);
+			base = arg_base;
 			break;
 
 		default:
@@ -169,8 +167,8 @@ PHP_FUNCTION(floatval)
 {
 	zval **num;
 
-	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &num) == FAILURE) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "Z", &num) == FAILURE) {
+		return;
 	}
 
 	RETVAL_ZVAL(*num, 1, 0);
@@ -186,8 +184,8 @@ PHP_FUNCTION(strval)
 	zval expr_copy;
 	int use_copy;
 
-	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &num) == FAILURE) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "Z", &num) == FAILURE) {
+		return;
 	}
 
 	zend_make_printable_zval(*num, &expr_copy, &use_copy);
@@ -204,8 +202,7 @@ static void php_is_type(INTERNAL_FUNCTION_PARAMETERS, int type)
 {
 	zval **arg;
 
-	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &arg) == FAILURE) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Only one argument expected");
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "Z", &arg) == FAILURE) {
 		RETURN_FALSE;
 	}
 
@@ -305,8 +302,8 @@ PHP_FUNCTION(is_numeric)
 {
 	zval **arg;
 
-	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &arg) == FAILURE) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "Z", &arg) == FAILURE) {
+		return;
 	}
 
 	switch (Z_TYPE_PP(arg)) {
@@ -336,8 +333,8 @@ PHP_FUNCTION(is_scalar)
 {
 	zval **arg;
 
-	if (ZEND_NUM_ARGS() != 1 || zend_get_parameters_ex(1, &arg) == FAILURE) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "Z", &arg) == FAILURE) {
+		return;
 	}
 
 	switch (Z_TYPE_PP(arg)) {
@@ -359,27 +356,31 @@ PHP_FUNCTION(is_scalar)
    Returns true if var is callable. */
 PHP_FUNCTION(is_callable)
 {
-	zval **var, **syntax_only, **callable_name;
+	zval *var, **callable_name = NULL;
 	char *name;
+	char *error;
 	zend_bool retval;
-	zend_bool syntax = 0;
-	int argc=ZEND_NUM_ARGS();
+	zend_bool syntax_only = 0;
+	int check_flags = 0;
 
-	if (argc < 1 || argc > 3 || zend_get_parameters_ex(argc, &var, &syntax_only, &callable_name) == FAILURE) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z|bZ", &var,
+							  &syntax_only, &callable_name) == FAILURE) {
+		return;
 	}
-
-	if (argc > 1) {
-		convert_to_boolean_ex(syntax_only);
-		syntax = Z_BVAL_PP(syntax_only);
+	
+	if (syntax_only) {
+		check_flags |= IS_CALLABLE_CHECK_SYNTAX_ONLY;
 	}
-
-	if (argc > 2) {
-		retval = zend_is_callable(*var, syntax, &name);
+	if (ZEND_NUM_ARGS() > 2) {
+		retval = zend_is_callable_ex(var, NULL, check_flags, &name, NULL, NULL, &error TSRMLS_CC);
 		zval_dtor(*callable_name);
 		ZVAL_STRING(*callable_name, name, 0);
 	} else {
-		retval = zend_is_callable(*var, syntax, NULL);
+		retval = zend_is_callable_ex(var, NULL, check_flags, NULL, NULL, NULL, &error TSRMLS_CC);
+	}
+	if (error) {
+		/* ignore errors */
+		efree(error);
 	}
 
 	RETURN_BOOL(retval);

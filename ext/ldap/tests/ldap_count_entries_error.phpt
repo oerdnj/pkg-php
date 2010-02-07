@@ -15,7 +15,7 @@ var_dump(ldap_count_entries($link, $link));
 ?>
 ===DONE===
 --EXPECTF--
-Warning: Wrong parameter count for ldap_count_entries() in %s on line %d
+Warning: ldap_count_entries() expects exactly 2 parameters, 1 given in %s on line %d
 NULL
 
 Warning: ldap_count_entries(): supplied resource is not a valid ldap result resource in %s on line %d

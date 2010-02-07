@@ -105,10 +105,10 @@ File permissions are => 100600
 File created in => directory specified
 -- Iteration 7 --
 
-Notice: Array to string conversion in %s on line %d
-File name is => %s/Array%s
-File permissions are => 100600
-File created in => directory specified
+Warning: tempnam() expects parameter 2 to be string, array given in %s on line %d
+-- File is not created --
+
+Warning: unlink(): No such file or directory in %s on line %d
 -- Iteration 8 --
 File name is => %s/dir%s
 File permissions are => 100600
@@ -119,3 +119,4 @@ File permissions are => 100600
 File created in => directory specified
 
 *** Done ***
+

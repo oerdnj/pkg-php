@@ -17,14 +17,14 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_extensions.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: zend_extensions.c 286859 2009-08-06 01:33:54Z scottmac $ */
 
 #include "zend_extensions.h"
 
 ZEND_API zend_llist zend_extensions;
 static int last_resource_number;
 
-int zend_load_extension(char *path)
+int zend_load_extension(const char *path)
 {
 #if ZEND_EXTENSIONS_SUPPORT
 	DL_HANDLE handle;
@@ -79,18 +79,10 @@ int zend_load_extension(char *path)
 			DL_UNLOAD(handle);
 			return FAILURE;
 		}
-	} else if (ZTS_V!=extension_version_info->thread_safe) {
-		fprintf(stderr, "Cannot load %s - it %s thread safe, whereas Zend %s\n",
-					new_extension->name,
-					(extension_version_info->thread_safe?"is":"isn't"),
-					(ZTS_V?"is":"isn't"));
-		DL_UNLOAD(handle);
-		return FAILURE;
-	} else if (ZEND_DEBUG!=extension_version_info->debug) {
-		fprintf(stderr, "Cannot load %s - it %s debug information, whereas Zend %s\n",
-					new_extension->name,
-					(extension_version_info->debug?"contains":"does not contain"),
-					(ZEND_DEBUG?"does":"does not"));
+	} else if (strcmp(ZEND_EXTENSION_BUILD_ID, extension_version_info->build_id) &&
+	           (!new_extension->build_id_check || new_extension->build_id_check(ZEND_EXTENSION_BUILD_ID) != SUCCESS)) {
+		fprintf(stderr, "Cannot load %s - it was built with configuration %s, whereas running engine is %s\n",
+					new_extension->name, extension_version_info->build_id, ZEND_EXTENSION_BUILD_ID);
 		DL_UNLOAD(handle);
 		return FAILURE;
 	}
@@ -178,7 +170,7 @@ void zend_extension_dtor(zend_extension *extension)
 }
 
 
-static void zend_extension_message_dispatcher(zend_extension *extension, int num_args, va_list args TSRMLS_DC)
+static void zend_extension_message_dispatcher(const zend_extension *extension, int num_args, va_list args TSRMLS_DC)
 {
 	int message;
 	void *arg;
@@ -211,7 +203,7 @@ ZEND_API int zend_get_resource_handle(zend_extension *extension)
 }
 
 
-ZEND_API zend_extension *zend_get_extension(char *extension_name)
+ZEND_API zend_extension *zend_get_extension(const char *extension_name)
 {
 	zend_llist_element *element;
 
@@ -224,67 +216,6 @@ ZEND_API zend_extension *zend_get_extension(char *extension_name)
 	}
 	return NULL;
 }
-
-/*
- * Support for dynamic loading of MH_BUNDLEs on Darwin / Mac OS X
- *
- */
-
-#if HAVE_MACH_O_DYLD_H
-
-void *zend_mh_bundle_load(char* bundle_path)
-{
-	NSObjectFileImage bundle_image;
-	NSModule bundle_handle;
-	NSSymbol bundle_init_nssymbol;
-	void (*bundle_init)(void);
-
-	if (NSCreateObjectFileImageFromFile(bundle_path, &bundle_image) != NSObjectFileImageSuccess) {
-		return NULL;
-	}
-
-	bundle_handle = NSLinkModule(bundle_image, bundle_path, NSLINKMODULE_OPTION_NONE);
-	NSDestroyObjectFileImage(bundle_image);
-
-	/* call the init function of the bundle */
-	bundle_init_nssymbol = NSLookupSymbolInModule(bundle_handle, "__init");
-	if (bundle_init_nssymbol != NULL) {
-		bundle_init = NSAddressOfSymbol(bundle_init_nssymbol);
-		bundle_init();
-	}
-
-	return bundle_handle;
-}
-
-int zend_mh_bundle_unload(void *bundle_handle)
-{
-	NSSymbol bundle_fini_nssymbol;
-	void (*bundle_fini)(void);
-
-	/* call the fini function of the bundle */
-	bundle_fini_nssymbol = NSLookupSymbolInModule(bundle_handle, "__fini");
-	if (bundle_fini_nssymbol != NULL) {
-		bundle_fini = NSAddressOfSymbol(bundle_fini_nssymbol);
-		bundle_fini();
-	}
-
-	return (int) NSUnLinkModule(bundle_handle, NULL);
-}
-
-void *zend_mh_bundle_symbol(void *bundle_handle, const char *symbol_name)
-{
-	NSSymbol symbol;
-	symbol = NSLookupSymbolInModule(bundle_handle, symbol_name);
-	return NSAddressOfSymbol(symbol);
-}
-
-const char *zend_mh_bundle_error(void)
-{
-	/* Witness the state of the art error reporting */
-	return NULL;
-}
-
-#endif /* HAVE_MACH_O_DYLD_H */
 
 /*
  * Local variables:

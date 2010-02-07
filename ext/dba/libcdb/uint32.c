@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: uint32.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: uint32.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 /* incorporated from D.J.Bernstein's cdb-0.75 (http://cr.yp.to/cdb.html)*/
 

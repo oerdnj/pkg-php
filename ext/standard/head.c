@@ -50,6 +50,20 @@ PHP_FUNCTION(header)
 }
 /* }}} */
 
+/* {{{ proto void header_remove([string name])
+   Removes an HTTP header previously set using header() */
+PHP_FUNCTION(header_remove)
+{
+	sapi_header_line ctr = {0};
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &ctr.line,
+	                          &ctr.line_len) == FAILURE)
+		return;
+
+	sapi_header_op(ZEND_NUM_ARGS() == 0 ? SAPI_HEADER_DELETE_ALL : SAPI_HEADER_DELETE, &ctr TSRMLS_CC);
+}
+/* }}} */
+
 PHPAPI int php_header(TSRMLS_D)
 {
 	if (sapi_send_headers(TSRMLS_C)==FAILURE || SG(request_info).headers_only) {
@@ -69,12 +83,12 @@ PHPAPI int php_setcookie(char *name, int name_len, char *value, int value_len, t
 	int result;
 	
 	if (name && strpbrk(name, "=,; \t\r\n\013\014") != NULL) {   /* man isspace for \013 and \014 */
-		zend_error( E_WARNING, "Cookie names can not contain any of the following '=,; \\t\\r\\n\\013\\014'" );
+		zend_error( E_WARNING, "Cookie names cannot contain any of the following '=,; \\t\\r\\n\\013\\014'" );
 		return FAILURE;
 	}
 
 	if (!url_encode && value && strpbrk(value, ",; \t\r\n\013\014") != NULL) { /* man isspace for \013 and \014 */
-		zend_error( E_WARNING, "Cookie values can not contain any of the following ',; \\t\\r\\n\\013\\014'" );
+		zend_error( E_WARNING, "Cookie values cannot contain any of the following ',; \\t\\r\\n\\013\\014'" );
 		return FAILURE;
 	}
 
@@ -207,7 +221,7 @@ PHP_FUNCTION(setrawcookie)
    Returns true if headers have already been sent, false otherwise */
 PHP_FUNCTION(headers_sent)
 {
-	zval *arg1, *arg2;
+	zval *arg1 = NULL, *arg2 = NULL;
 	char *file="";
 	int line=0;
 
@@ -256,8 +270,8 @@ static void php_head_apply_header_list_to_hash(void *data, void *arg TSRMLS_DC)
    Return list of headers to be sent / already sent */
 PHP_FUNCTION(headers_list)
 {
-	if (ZEND_NUM_ARGS() > 0) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 
 	if (!&SG(sapi_headers).headers) {

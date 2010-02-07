@@ -1,7 +1,5 @@
 --TEST--
 Test chmod() function : first parameter variation 
---CREDITS--
-Dave Kelsey <d_kelsey@uk.ibm.com>
 --FILE--
 <?php
 /* Prototype  : bool chmod(string filename, int mode)
@@ -145,24 +143,20 @@ Error: 2 - chmod(): No such file or directory, %s(%d)
 bool(false)
 
 --empty array--
-Error: 8 - Array to string conversion, %s(%d)
-Error: 2 - chmod(): No such file or directory, %s(%d)
-bool(false)
+Error: 2 - chmod() expects parameter 1 to be string, array given, %s(%d)
+NULL
 
 --int indexed array--
-Error: 8 - Array to string conversion, %s(%d)
-Error: 2 - chmod(): No such file or directory, %s(%d)
-bool(false)
+Error: 2 - chmod() expects parameter 1 to be string, array given, %s(%d)
+NULL
 
 --associative array--
-Error: 8 - Array to string conversion, %s(%d)
-Error: 2 - chmod(): No such file or directory, %s(%d)
-bool(false)
+Error: 2 - chmod() expects parameter 1 to be string, array given, %s(%d)
+NULL
 
 --nested arrays--
-Error: 8 - Array to string conversion, %s(%d)
-Error: 2 - chmod(): No such file or directory, %s(%d)
-bool(false)
+Error: 2 - chmod() expects parameter 1 to be string, array given, %s(%d)
+NULL
 
 --uppercase NULL--
 Error: 2 - chmod(): No such file or directory, %s(%d)
@@ -201,10 +195,8 @@ Error: 2 - chmod(): No such file or directory, %s(%d)
 bool(false)
 
 --instance of classWithoutToString--
-Error: 4096 - Object of class classWithoutToString could not be converted to string, %s(%d)
-Error: 8 - Object of class classWithoutToString to string conversion, %s(%d)
-Error: 2 - chmod(): No such file or directory, %s(%d)
-bool(false)
+Error: 2 - chmod() expects parameter 1 to be string, object given, %s(%d)
+NULL
 
 --undefined var--
 Error: 2 - chmod(): No such file or directory, %s(%d)
@@ -214,3 +206,4 @@ bool(false)
 Error: 2 - chmod(): No such file or directory, %s(%d)
 bool(false)
 ===DONE===
+

@@ -2,7 +2,7 @@
 Delete entries
 --SKIPIF--
 <?php
-/* $Id: oo_delete.phpt 268856 2008-11-12 11:59:26Z pajoye $ */
+/* $Id: oo_delete.phpt 265694 2008-08-30 23:55:04Z pajoye $ */
 if(!extension_loaded('zip')) die('skip');
 ?>
 --FILE--

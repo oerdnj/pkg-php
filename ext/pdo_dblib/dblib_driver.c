@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: dblib_driver.c 288215 2009-09-10 01:20:42Z felipe $ */
+/* $Id: dblib_driver.c 289440 2009-10-09 18:56:19Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"

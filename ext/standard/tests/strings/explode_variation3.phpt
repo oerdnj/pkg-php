@@ -81,7 +81,7 @@ foreach($limits as $limit) {
 fclose($file_handle);  //closing the file handle
 
 ?>
-===DONE===
+===Done===
 --EXPECTF--
 *** Testing explode() function: with unexpected inputs for 'limit' argument ***
 -- Iteration 1 --
@@ -176,20 +176,17 @@ array(6) {
   string(6) "piece6"
 }
 -- Iteration 10 --
-array(1) {
-  [0]=>
-  string(41) "piece1 piece2 piece3 piece4 piece5 piece6"
-}
+
+Warning: explode() expects parameter 3 to be long, array given in %s on line %d
+NULL
 -- Iteration 11 --
-array(1) {
-  [0]=>
-  string(41) "piece1 piece2 piece3 piece4 piece5 piece6"
-}
+
+Warning: explode() expects parameter 3 to be long, array given in %s on line %d
+NULL
 -- Iteration 12 --
-array(1) {
-  [0]=>
-  string(41) "piece1 piece2 piece3 piece4 piece5 piece6"
-}
+
+Warning: explode() expects parameter 3 to be long, array given in %s on line %d
+NULL
 -- Iteration 13 --
 array(1) {
   [0]=>
@@ -222,15 +219,12 @@ array(1) {
 }
 -- Iteration 19 --
 
-Notice: Object of class sample could not be converted to int in %s on line %d
-array(1) {
-  [0]=>
-  string(41) "piece1 piece2 piece3 piece4 piece5 piece6"
-}
+Warning: explode() expects parameter 3 to be long, object given in %s on line %d
+NULL
 -- Iteration 20 --
-array(%d) {
-%a
-}
+
+Warning: explode() expects parameter 3 to be long, resource given in %s on line %d
+NULL
 -- Iteration 21 --
 array(1) {
   [0]=>
@@ -241,4 +235,4 @@ array(1) {
   [0]=>
   string(41) "piece1 piece2 piece3 piece4 piece5 piece6"
 }
-===DONE===
+===Done===

@@ -45,7 +45,7 @@ $numbers =  array (
 		  1,
 		  255,
 		  256,
-	      2147483647,
+		  2147483647,
 		  -2147483648,
 		
 		  // float values
@@ -99,9 +99,10 @@ foreach($numbers as $number) {
 }
 
 // close the file handle
-fclose($file_handle);  
+fclose($file_handle);
+
 ?>
-===DONE===
+===Done===
 --EXPECTF--
 *** Testing money_format() function: with unexpected inputs for 'number' argument ***
 -- Iteration 1 --
@@ -176,4 +177,4 @@ NULL
 string
 -- Iteration 27 --
 string
-===DONE===
+===Done===

@@ -24,9 +24,9 @@ echo "Done\n";
 --EXPECTF--
 *** Testing ob_get_contents() : error cases ***
 
-Warning: Wrong parameter count for ob_get_contents() in %s on line 11
+Warning: ob_get_contents() expects exactly 0 parameters, 1 given in %s on line 11
 NULL
 
-Warning: Wrong parameter count for ob_get_contents() in %s on line 15
+Warning: ob_get_contents() expects exactly 0 parameters, 2 given in %s on line 15
 NULL
 Done

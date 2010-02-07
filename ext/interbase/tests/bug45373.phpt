@@ -33,7 +33,7 @@ array(2) {
   string(32) "test table not created with isql"
 }
 
-Notice: ibase_execute(): Statement expects 2 arguments, 3 given in %sbug45373.php on line %d
+Notice: ibase_execute(): Statement expects 2 arguments, 3 given in %s on line %d
 array(2) {
   ["I"]=>
   int(1)
@@ -41,9 +41,7 @@ array(2) {
   string(32) "test table not created with isql"
 }
 
-Warning: ibase_execute(): Statement expects 2 arguments, 1 given in %sbug45373.php on line %d
+Warning: ibase_execute(): Statement expects 2 arguments, 1 given in %s on line %d
 
-Warning: ibase_fetch_assoc(): supplied argument is not a valid Firebird/InterBase result resource in %sbug45373.php on line %d
-bool(false)
-
-Warning: Unknown: invalid statement handle  in Unknown on line 0
+Warning: ibase_fetch_assoc() expects parameter 1 to be resource, boolean given in %s on line %d
+NULL

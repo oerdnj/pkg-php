@@ -1,7 +1,5 @@
 --TEST--
 SPL: RegexIterator::ALL_MATCHES
---SKIPIF--
-<?php if (!extension_loaded("spl")) print "skip"; ?>
 --FILE--
 <?php
 
@@ -290,25 +288,28 @@ array(2) {
     string(1) "8"
   }
 }
-object(ArrayIterator)#%d (9) {
-  [0]=>
-  %s(1) "1"
-  [1]=>
-  %s(3) "1,2"
-  [2]=>
-  %s(5) "1,2,3"
-  [3]=>
-  %s(0) ""
-  [4]=>
-  NULL
-  [5]=>
-  array(0) {
+object(ArrayIterator)#%d (1) {
+  ["storage":"ArrayIterator":private]=>
+  array(9) {
+    [0]=>
+    %s(1) "1"
+    [1]=>
+    %s(3) "1,2"
+    [2]=>
+    %s(5) "1,2,3"
+    [3]=>
+    %s(0) ""
+    [4]=>
+    NULL
+    [5]=>
+    array(0) {
+    }
+    [6]=>
+    %s(6) "FooBar"
+    [7]=>
+    %s(1) ","
+    [8]=>
+    %s(2) ",,"
   }
-  [6]=>
-  %s(6) "FooBar"
-  [7]=>
-  %s(1) ","
-  [8]=>
-  %s(2) ",,"
 }
 ===DONE===

@@ -24,9 +24,9 @@ gzclose($h);
 ===DONE===
 --EXPECTF--
 
-Warning: Wrong parameter count for gzread() in %s on line %d
-NULL
+Warning: gzread() expects exactly 2 parameters, 3 given in %s on line %d
+bool(false)
 
-Warning: Wrong parameter count for gzread() in %s on line %d
-NULL
+Warning: gzread() expects exactly 2 parameters, 0 given in %s on line %d
+bool(false)
 ===DONE===

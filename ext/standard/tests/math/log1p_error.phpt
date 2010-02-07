@@ -1,9 +1,5 @@
 --TEST--
 Test log1p() - Error conditions
---SKIPIF--
-<?php
-	function_exists('log1p') or die('skip log1p() is not supported in this build.');
-?>
 --FILE--
 <?php
 /* Prototype  : float log1p  ( float $arg  )
@@ -25,9 +21,9 @@ log1p(36, true);
 
 -- Testing log1p() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for log1p() in %s on line %d
+Warning: log1p() expects exactly 1 parameter, 0 given in %s on line %d
 
 -- Testing log1p() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for log1p() in %s on line %d
+Warning: log1p() expects exactly 1 parameter, 2 given in %s on line %d
 ===Done===

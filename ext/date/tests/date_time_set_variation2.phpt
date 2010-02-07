@@ -2,7 +2,7 @@
 Test date_time_set() function : usage variation - Passing unexpected values to second argument $hour.
 --FILE--
 <?php
-/* Prototype  : void date_time_set  ( DateTime $object  , int $hour  , int $minute  [, int $second  ] )
+/* Prototype  : DateTime date_time_set  ( DateTime $object  , int $hour  , int $minute  [, int $second  ] )
  * Description: Resets the current time of the DateTime object to a different time. 
  * Source code: ext/date/php_date.c
  * Alias to functions: DateTime::setTime
@@ -113,112 +113,217 @@ fclose( $file_handle );
 *** Testing date_time_set() : usage variation -  unexpected values to second argument $hour***
 
 -- int 0 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-31 00:13:45"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- int 1 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-31 01:13:45"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- int 12345 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2010-06-29 09:13:45"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- int -12345 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-30 15:13:45"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- float 10.5 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-30 10:13:45"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- float -10.5 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-29 14:13:45"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- float .5 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-29 00:13:45"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- empty array --
 
-Warning: date_time_set() expects parameter 2 to be long, array given in %s on line %d
+Warning: date_time_set() expects parameter 2 to be long, array given in %s
 bool(false)
 
 -- int indexed array --
 
-Warning: date_time_set() expects parameter 2 to be long, array given in %s on line %d
+Warning: date_time_set() expects parameter 2 to be long, array given in %s
 bool(false)
 
 -- associative array --
 
-Warning: date_time_set() expects parameter 2 to be long, array given in %s on line %d
+Warning: date_time_set() expects parameter 2 to be long, array given in %s
 bool(false)
 
 -- nested arrays --
 
-Warning: date_time_set() expects parameter 2 to be long, array given in %s on line %d
+Warning: date_time_set() expects parameter 2 to be long, array given in %s
 bool(false)
 
 -- uppercase NULL --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-29 00:13:45"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- lowercase null --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-29 00:13:45"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- lowercase true --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-29 01:13:45"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- lowercase false --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-29 00:13:45"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- uppercase TRUE --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-29 01:13:45"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- uppercase FALSE --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-29 00:13:45"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- empty string DQ --
 
-Warning: date_time_set() expects parameter 2 to be long, string given in %s on line %d
+Warning: date_time_set() expects parameter 2 to be long, string given in %s
 bool(false)
 
 -- empty string SQ --
 
-Warning: date_time_set() expects parameter 2 to be long, string given in %s on line %d
+Warning: date_time_set() expects parameter 2 to be long, string given in %s
 bool(false)
 
 -- string DQ --
 
-Warning: date_time_set() expects parameter 2 to be long, string given in %s on line %d
+Warning: date_time_set() expects parameter 2 to be long, string given in %s
 bool(false)
 
 -- string SQ --
 
-Warning: date_time_set() expects parameter 2 to be long, string given in %s on line %d
+Warning: date_time_set() expects parameter 2 to be long, string given in %s
 bool(false)
 
 -- mixed case string --
 
-Warning: date_time_set() expects parameter 2 to be long, string given in %s on line %d
+Warning: date_time_set() expects parameter 2 to be long, string given in %s
 bool(false)
 
 -- heredoc --
 
-Warning: date_time_set() expects parameter 2 to be long, string given in %s on line %d
+Warning: date_time_set() expects parameter 2 to be long, string given in %s
 bool(false)
 
 -- instance of classWithToString --
 
-Warning: date_time_set() expects parameter 2 to be long, object given in %s on line %d
+Warning: date_time_set() expects parameter 2 to be long, object given in %s
 bool(false)
 
 -- instance of classWithoutToString --
 
-Warning: date_time_set() expects parameter 2 to be long, object given in %s on line %d
+Warning: date_time_set() expects parameter 2 to be long, object given in %s
 bool(false)
 
 -- undefined var --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-29 00:13:45"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- unset var --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-29 00:13:45"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- resource --
 
-Warning: date_time_set() expects parameter 2 to be long, resource given in %s on line %d
+Warning: date_time_set() expects parameter 2 to be long, resource given in %s
 bool(false)
 ===DONE===
