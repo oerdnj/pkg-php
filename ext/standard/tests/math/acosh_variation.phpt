@@ -1,11 +1,5 @@
 --TEST--
 Test variations in usage of acosh()
---SKIPIF--
-<?php
-if (!function_exists("acosh")) {
-	die("SKIP acosh - not supported\n");
-}
-?>  
 --INI--
 precision = 10
 --FILE--
@@ -40,7 +34,7 @@ for ($i = 0; $i < count($values); $i++) {
 }
 
 ?>
---EXPECT--
+--EXPECTF--
 float(3.828168471)
 float(NAN)
 float(3.847562739)
@@ -50,8 +44,12 @@ float(3.828168471)
 float(3.828168471)
 float(3.847562739)
 float(3.847562739)
-float(NAN)
+
+Warning: acosh() expects parameter 1 to be double, string given in %s on line %d
+NULL
 float(7.60090221)
+
+Notice: A non well formed numeric value encountered in %s on line %d
 float(7.60090221)
 float(NAN)
 float(0)

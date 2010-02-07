@@ -31,7 +31,7 @@
 */
 
 
-static const char rcsid[] = "#(@) $Id: xml_element.c 271433 2008-12-17 21:45:31Z iliaa $";
+static const char rcsid[] = "#(@) $Id: xml_element.c 271367 2008-12-17 00:30:27Z iliaa $";
 
 
 
@@ -44,9 +44,10 @@ static const char rcsid[] = "#(@) $Id: xml_element.c 271433 2008-12-17 21:45:31Z
  *   06/2000
  * HISTORY
  *   $Log$
- *   Revision 1.9.4.2  2008/12/17 00:30:48  iliaa
+ *   Revision 1.9.4.1.2.1  2008/12/09 17:22:12  iliaa
  *
- *   MFH: removed unused var
+ *   MFH: Fixed bug #46746 (xmlrpc_decode_request outputs non-suppressable error
+ *   when given bad data).
  *
  *   Revision 1.9.4.1  2006/07/30 11:34:02  tony2001
  *   MFH: fix compile warnings (#38257)
@@ -382,7 +383,7 @@ static void xml_element_serialize(xml_element *el, int (*fptr)(void *data, const
    depth++;
 
    if(!el) {
-/*      fprintf(stderr, "Nothing to write\n"); */
+      /* fprintf(stderr, "Nothing to write\n"); */
       return;
    }
    if(!options) {

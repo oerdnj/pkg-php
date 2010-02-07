@@ -83,7 +83,7 @@ foreach($values as $value) {
 
 echo "Done";
 ?>
---EXPECT--
+--EXPECTF--
 *** Testing xml_error_string() : usage variations ***
 
 Arg value 10.5 
@@ -102,19 +102,29 @@ Arg value 0.5
 string(8) "No error"
 
 Arg value Array 
-string(8) "No error"
+
+Warning: xml_error_string() expects parameter 1 to be long, array given in %s on line %d
+NULL
 
 Arg value Array 
-string(9) "No memory"
+
+Warning: xml_error_string() expects parameter 1 to be long, array given in %s on line %d
+NULL
 
 Arg value Array 
-string(9) "No memory"
+
+Warning: xml_error_string() expects parameter 1 to be long, array given in %s on line %d
+NULL
 
 Arg value Array 
-string(9) "No memory"
+
+Warning: xml_error_string() expects parameter 1 to be long, array given in %s on line %d
+NULL
 
 Arg value Array 
-string(9) "No memory"
+
+Warning: xml_error_string() expects parameter 1 to be long, array given in %s on line %d
+NULL
 
 Arg value  
 string(8) "No error"
@@ -135,19 +145,29 @@ Arg value
 string(8) "No error"
 
 Arg value  
-string(8) "No error"
+
+Warning: xml_error_string() expects parameter 1 to be long, string given in %s on line %d
+NULL
 
 Arg value  
-string(8) "No error"
+
+Warning: xml_error_string() expects parameter 1 to be long, string given in %s on line %d
+NULL
 
 Arg value string 
-string(8) "No error"
+
+Warning: xml_error_string() expects parameter 1 to be long, string given in %s on line %d
+NULL
 
 Arg value string 
-string(8) "No error"
+
+Warning: xml_error_string() expects parameter 1 to be long, string given in %s on line %d
+NULL
 
 Arg value Some Ascii Data 
-string(9) "No memory"
+
+Warning: xml_error_string() expects parameter 1 to be long, object given in %s on line %d
+NULL
 
 Arg value  
 string(8) "No error"
@@ -155,3 +175,5 @@ string(8) "No error"
 Arg value  
 string(8) "No error"
 Done
+
+

@@ -1,4 +1,4 @@
-// $Id: config.w32 196803 2005-09-24 15:13:13Z edink $
+// $Id: config.w32 242949 2007-09-26 15:44:16Z cvs2svn $
 // vim:ft=javascript
 
 ARG_WITH("sqlite", "SQLite support", "no");

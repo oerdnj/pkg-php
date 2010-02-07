@@ -1,5 +1,5 @@
 --TEST--
-Test array_intersect_ukey() function : usage variation - Intersection of integers with floats and strings.
+Test array_intersect_uassoc() function : usage variation - Intersection of integers with floats and strings.
 --FILE--
 <?php
 /* Prototype  : array array_intersect_uassoc(array arr1, array arr2 [, array ...], callback key_compare_func)

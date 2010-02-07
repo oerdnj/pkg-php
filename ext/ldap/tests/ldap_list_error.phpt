@@ -21,15 +21,15 @@ var_dump(ldap_list($link, "dc=my-domain,dc=com", "(objectClass=*)", array(), 0, 
 ?>
 ===DONE===
 --EXPECTF--
-Warning: Wrong parameter count for ldap_list() in %s on line %d
+Warning: ldap_list() expects at least 3 parameters, 0 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for ldap_list() in %s on line %d
+Warning: ldap_list() expects at least 3 parameters, 1 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for ldap_list() in %s on line %d
+Warning: ldap_list() expects at least 3 parameters, 2 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for ldap_list() in %s on line %d
+Warning: ldap_list() expects at most 8 parameters, 9 given in %s on line %d
 NULL
 ===DONE===

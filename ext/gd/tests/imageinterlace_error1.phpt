@@ -16,5 +16,5 @@ $image = imagecreatetruecolor(100, 100);
 var_dump(imageinterlace());
 ?>
 --EXPECTF--
-Warning: Wrong parameter count for imageinterlace() in %s on line %d
+Warning: imageinterlace() expects at least 1 parameter, 0 given in %s on line %d
 NULL

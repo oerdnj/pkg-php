@@ -94,136 +94,137 @@ echo "Done";
 
 Arg value 0 
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, integer given in %s on line %d
+NULL
 
 Arg value 1 
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, integer given in %s on line %d
+NULL
 
 Arg value 12345 
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, integer given in %s on line %d
+NULL
 
 Arg value -2345 
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, integer given in %s on line %d
+NULL
 
 Arg value 10.5 
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, double given in %s on line %d
+NULL
 
 Arg value -10.5 
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, double given in %s on line %d
+NULL
 
 Arg value 101234567000 
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, double given in %s on line %d
+NULL
 
 Arg value 1.07654321E-9 
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, double given in %s on line %d
+NULL
 
 Arg value 0.5 
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, double given in %s on line %d
+NULL
 
 Arg value Array 
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, array given in %s on line %d
+NULL
 
 Arg value Array 
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, array given in %s on line %d
+NULL
 
 Arg value Array 
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, array given in %s on line %d
+NULL
 
 Arg value Array 
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, array given in %s on line %d
+NULL
 
 Arg value Array 
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, array given in %s on line %d
+NULL
 
 Arg value  
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, null given in %s on line %d
+NULL
 
 Arg value  
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, null given in %s on line %d
+NULL
 
 Arg value 1 
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, boolean given in %s on line %d
+NULL
 
 Arg value  
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, boolean given in %s on line %d
+NULL
 
 Arg value 1 
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, boolean given in %s on line %d
+NULL
 
 Arg value  
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, boolean given in %s on line %d
+NULL
 
 Arg value  
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, string given in %s on line %d
+NULL
 
 Arg value  
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, string given in %s on line %d
+NULL
 
 Arg value string 
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, string given in %s on line %d
+NULL
 
 Arg value string 
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, string given in %s on line %d
+NULL
 
 Arg value Resource id %s
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, resource given in %s on line %d
+NULL
 
 Arg value  
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, null given in %s on line %d
+NULL
 
 Arg value  
 
-Warning: xml_set_object(): Argument 2 has wrong type in %s on line %d
-bool(false)
+Warning: xml_set_object() expects parameter 2 to be object, null given in %s on line %d
+NULL
 Done
+

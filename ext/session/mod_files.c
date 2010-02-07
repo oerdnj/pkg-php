@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: mod_files.c 290174 2009-11-03 17:16:45Z guenter $ */
+/* $Id: mod_files.c 280729 2009-05-18 16:10:09Z jani $ */
 
 #include "php.h"
 
@@ -244,7 +244,11 @@ static int ps_files_cleanup_dir(const char *dirname, int maxlifetime TSRMLS_DC)
 
 				/* check whether its last access was more than maxlifet ago */
 				if (VCWD_STAT(buf, &sbuf) == 0 &&
+#ifdef NETWARE
+						(now - sbuf.st_mtime.tv_sec) > maxlifetime) {
+#else
 						(now - sbuf.st_mtime) > maxlifetime) {
+#endif
 					VCWD_UNLINK(buf);
 					nrdels++;
 				}
@@ -272,13 +276,11 @@ PS_OPEN_FUNC(files)
 		/* if save path is an empty string, determine the temporary dir */
 		save_path = php_get_temporary_directory();
 
-		if (strcmp(save_path, "/tmp")) {
-			if (PG(safe_mode) && (!php_checkuid(save_path, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
-				return FAILURE;
-			}
-			if (php_check_open_basedir(save_path TSRMLS_CC)) {
-				return FAILURE;
-			}
+		if (PG(safe_mode) && (!php_checkuid(save_path, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
+			return FAILURE;
+		}
+		if (php_check_open_basedir(save_path TSRMLS_CC)) {
+			return FAILURE;
 		}
 	}
 

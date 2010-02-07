@@ -2,6 +2,12 @@
 Test open_basedir configuration
 --INI--
 open_basedir=.
+--SKIPIF--
+<?php
+if (substr(PHP_OS, 0, 3) != 'WIN') {
+    die('skip Windows only variation');
+}
+?>
 --FILE--
 <?php
 require_once "open_basedir.inc";
@@ -31,37 +37,46 @@ bool(true)
 bool(true)
 bool(true)
 
-Warning: parse_ini_file(): open_basedir restriction in effect. File(../bad) is not within the allowed path(s): (.) in %s on line %d
+Warning: parse_ini_file(): open_basedir restriction in effect. File(%s\test\bad) is not within the allowed path(s): (.) in %s on line %d
 
-Warning: parse_ini_file(../bad): failed to open stream: %s in %s on line %d
-bool(false)
+Warning: parse_ini_file(%s\test\bad): failed to open stream: %s in %s on line %d
+array(0) {
+}
 
-Warning: parse_ini_file(): open_basedir restriction in effect. File(../bad/bad.txt) is not within the allowed path(s): (.) in %s on line %d
+Warning: parse_ini_file(): open_basedir restriction in effect. File(%s\test\bad\bad.txt) is not within the allowed path(s): (.) in %s on line %d
 
-Warning: parse_ini_file(../bad/bad.txt): failed to open stream: %s in %s on line %d
-bool(false)
+Warning: parse_ini_file(%s\test\bad\bad.txt): failed to open stream: %s in %s on line %d
+array(0) {
+}
 
-Warning: parse_ini_file(..): failed to open stream: %s in %s on line %d
-bool(false)
+Warning: parse_ini_file(): open_basedir restriction in effect. File(%s\test) is not within the allowed path(s): (.) in %s on line %d
 
-Warning: parse_ini_file(): open_basedir restriction in effect. File(../) is not within the allowed path(s): (.) in %s on line %d
+Warning: parse_ini_file(%s\test): failed to open stream: %s in %s on line %d
+array(0) {
+}
 
-Warning: parse_ini_file(../): failed to open stream: %s in %s on line %d
-bool(false)
+Warning: parse_ini_file(): open_basedir restriction in effect. File(%s\test) is not within the allowed path(s): (.) in %s on line %d
 
-Warning: parse_ini_file(): open_basedir restriction in effect. File(../bad/.) is not within the allowed path(s): (.) in %s on line %d
+Warning: parse_ini_file(%s\test): failed to open stream: %s in %s on line %d
+array(0) {
+}
 
-Warning: parse_ini_file(../bad/.): failed to open stream: %s in %s on line %d
-bool(false)
+Warning: parse_ini_file(): open_basedir restriction in effect. File(%s\test\bad) is not within the allowed path(s): (.) in %s on line %d
 
-Warning: parse_ini_file(): open_basedir restriction in effect. File(../bad/./bad.txt) is not within the allowed path(s): (.) in %s on line %d
+Warning: parse_ini_file(%s\test\bad): failed to open stream: %s in %s on line %d
+array(0) {
+}
 
-Warning: parse_ini_file(../bad/./bad.txt): failed to open stream: %s in %s on line %d
-bool(false)
+Warning: parse_ini_file(): open_basedir restriction in effect. File(%s\test\bad\bad.txt) is not within the allowed path(s): (.) in %s on line %d
 
-Warning: parse_ini_file(): open_basedir restriction in effect. File(./../.) is not within the allowed path(s): (.) in %s on line %d
+Warning: parse_ini_file(%s\test\bad\bad.txt): failed to open stream: %s in %s on line %d
+array(0) {
+}
 
-Warning: parse_ini_file(./../.): failed to open stream: %s in %s on line %d
-bool(false)
+Warning: parse_ini_file(): open_basedir restriction in effect. File(%s\test) is not within the allowed path(s): (.) in %s on line %d
+
+Warning: parse_ini_file(%s\test): failed to open stream: %s in %s on line %d
+array(0) {
+}
 *** Finished testing open_basedir configuration [parse_ini_file] ***
 

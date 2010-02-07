@@ -22,12 +22,11 @@ $sourcestring = 'hello, world';
 $encoding = 'unknown-encoding';
 
 var_dump( mb_strtolower($sourcestring, $encoding) );
-
-echo "Done";
 ?>
+===DONE===
 --EXPECTF--
 *** Testing mb_strtolower() : error conditions***
 
 Warning: mb_strtolower(): Unknown encoding "unknown-encoding" in %s on line %d
 bool(false)
-Done
+===DONE===

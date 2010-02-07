@@ -14,5 +14,5 @@ $background_color = imagecolorallocate($ima, 0, 0, 0);
 var_dump(imagecolormatch($ima));
 ?>
 --EXPECTF--
-Warning: Wrong parameter count for imagecolormatch() in %s on line %d
+Warning: imagecolormatch() expects exactly 2 parameters, %d given in %s on line %d
 NULL

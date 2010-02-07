@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_persist.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: com_persist.c 280806 2009-05-19 17:38:29Z kalle $ */
 
 /* Infrastructure for working with persistent COM objects.
  * Implements: IStream* wrapper for PHP streams.
@@ -157,7 +157,7 @@ static HRESULT STDMETHODCALLTYPE stm_seek(IStream *This, LARGE_INTEGER dlibMove,
 		return STG_E_INVALIDFUNCTION;
 	}
 	
-	offset = dlibMove.QuadPart;
+	offset = (off_t) dlibMove.QuadPart;
 
 	ret = php_stream_seek(stm->stream, offset, whence);
 
@@ -681,7 +681,7 @@ CPH_METHOD(__construct)
 
 
 
-static zend_function_entry com_persist_helper_methods[] = {
+static const zend_function_entry com_persist_helper_methods[] = {
 	CPH_ME(__construct, NULL)
 	CPH_ME(GetCurFileName, NULL)
 	CPH_ME(SaveToFile, NULL)

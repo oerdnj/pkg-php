@@ -14,4 +14,4 @@ $gamma = imagegammacorrect('string', 1, 5);
 
 ?>
 --EXPECTF--
-Warning: imagegammacorrect(): supplied argument is not a valid Image resource in %s on line %d
+Warning: imagegammacorrect() expects parameter 1 to be resource, %s given in %s on line %d

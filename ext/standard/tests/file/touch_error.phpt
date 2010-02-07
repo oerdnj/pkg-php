@@ -11,11 +11,12 @@ var_dump(touch("/no/such/file/or/directory"));
 
 ?>
 --EXPECTF--	
-Warning: Wrong parameter count for touch() in %s on line %d
+Warning: touch() expects at least 1 parameter, 0 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for touch() in %s on line %d
+Warning: touch() expects at most 3 parameters, 4 given in %s on line %d
 NULL
 
-Warning: touch(): Unable to create file /no/such/file/or/directory because %s in %s on line %d
+Warning: touch(): Unable to create file /no/such/file/or/directory because No such file or directory in %s on line %d
 bool(false)
+

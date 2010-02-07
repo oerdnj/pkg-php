@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_filestat.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: php_filestat.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_FILESTAT_H
 #define PHP_FILESTAT_H
@@ -62,7 +62,7 @@ PHP_FUNCTION(clearstatcache);
 #define MAKE_LONG_ZVAL_INCREF(name, val)\
 	MAKE_STD_ZVAL(name); \
 	ZVAL_LONG(name, val); \
-	name->refcount++; 
+	Z_ADDREF_P(name); 
 
 #ifdef PHP_WIN32
 #define S_IRUSR S_IREAD
@@ -87,7 +87,7 @@ typedef unsigned int php_stat_len;
 typedef int php_stat_len;
 #endif
 
-PHPAPI void php_clear_stat_cache(TSRMLS_D);
+PHPAPI void php_clear_stat_cache(zend_bool clear_realpath_cache, const char *filename, int filename_len TSRMLS_DC);
 PHPAPI void php_stat(const char *filename, php_stat_len filename_length, int type, zval *return_value TSRMLS_DC);
 
 /* Switches for various filestat functions: */

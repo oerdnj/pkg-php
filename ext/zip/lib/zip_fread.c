@@ -63,7 +63,7 @@ zip_fread(struct zip_file *zf, void *outbuf, size_t toread)
 	}
 	return 0;
     }
-    
+ 
     if ((zf->flags & ZIP_ZF_DECOMP) == 0) {
 	ret = _zip_file_fillbuf(outbuf, toread, zf);
 	if (ret > 0) {

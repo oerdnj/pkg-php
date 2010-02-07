@@ -27,9 +27,9 @@ create_files($path_top, 2);
 create_files($path_sub, 2);
 
 $dir_handle = opendir($path_top);
-$contents = array();
 while(FALSE !== ($file = readdir($dir_handle))) {
-		// different OS order files differently so will
+	
+	// different OS order files differently so will
 	// store file names into an array so can use sorted in expected output
 	$contents[] = $file;
 }

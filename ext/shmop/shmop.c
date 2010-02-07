@@ -16,7 +16,7 @@
    |          Ilia Alshanetsky <ilia@prohost.org>                         |
    +----------------------------------------------------------------------+
  */
-/* $Id: shmop.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: shmop.c 281742 2009-06-06 02:40:49Z mattwil $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -45,15 +45,48 @@ php_shmop_globals shmop_globals;
 
 int shm_type;
 
+/* {{{ arginfo */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_shmop_open, 0, 0, 4)
+	ZEND_ARG_INFO(0, key)
+	ZEND_ARG_INFO(0, flags)
+	ZEND_ARG_INFO(0, mode)
+	ZEND_ARG_INFO(0, size)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_shmop_read, 0, 0, 3)
+	ZEND_ARG_INFO(0, shmid)
+	ZEND_ARG_INFO(0, start)
+	ZEND_ARG_INFO(0, count)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_shmop_close, 0, 0, 1)
+	ZEND_ARG_INFO(0, shmid)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_shmop_size, 0, 0, 1)
+	ZEND_ARG_INFO(0, shmid)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_shmop_write, 0, 0, 3)
+	ZEND_ARG_INFO(0, shmid)
+	ZEND_ARG_INFO(0, data)
+	ZEND_ARG_INFO(0, offset)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_shmop_delete, 0, 0, 1)
+	ZEND_ARG_INFO(0, shmid)
+ZEND_END_ARG_INFO()
+/* }}} */
+
 /* {{{ shmop_functions[] 
  */
-zend_function_entry shmop_functions[] = {
-	PHP_FE(shmop_open, NULL)
-	PHP_FE(shmop_read, NULL)
-	PHP_FE(shmop_close, NULL)
-	PHP_FE(shmop_size, NULL)
-	PHP_FE(shmop_write, NULL)
-	PHP_FE(shmop_delete, NULL)
+const zend_function_entry shmop_functions[] = {
+	PHP_FE(shmop_open, 		arginfo_shmop_open)
+	PHP_FE(shmop_read, 		arginfo_shmop_read)
+	PHP_FE(shmop_close, 	arginfo_shmop_close)
+	PHP_FE(shmop_size, 		arginfo_shmop_size)
+	PHP_FE(shmop_write, 	arginfo_shmop_write)
+	PHP_FE(shmop_delete, 	arginfo_shmop_delete)
 	{NULL, NULL, NULL}	/* Must be the last line in shmop_functions[] */
 };
 /* }}} */
@@ -69,7 +102,7 @@ zend_module_entry shmop_module_entry = {
 	NULL,
 	NULL,
 	PHP_MINFO(shmop),
-    NO_VERSION_YET,
+	NO_VERSION_YET,
 	STANDARD_MODULE_PROPERTIES
 };
 /* }}} */
@@ -170,7 +203,7 @@ PHP_FUNCTION(shmop_open)
 	}
 
 	if (shmop->shmflg & IPC_CREAT && shmop->size < 1) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Shared memory segment size must be greater then zero.");
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Shared memory segment size must be greater than zero");
 		goto err;
 	}
 

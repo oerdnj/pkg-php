@@ -1,4 +1,4 @@
-/*      $Id: glob.h 82761 2002-05-19 14:32:24Z edink $ */
+/*      $Id: glob.h 272473 2009-01-01 12:32:49Z pajoye $ */
 /*	OpenBSD: glob.h,v 1.7 2002/02/17 19:42:21 millert Exp 	*/
 /*	NetBSD: glob.h,v 1.5 1994/10/26 00:55:56 cgd Exp 	*/
 
@@ -43,7 +43,9 @@
 #ifndef _GLOB_H_
 #define	_GLOB_H_
 
-#include <sys/cdefs.h>
+#ifndef PHP_WIN32
+# include <sys/cdefs.h>
+#endif
 
 struct stat;
 typedef struct {
@@ -93,9 +95,8 @@ typedef struct {
 #define	GLOB_NOSYS	(-4)	/* Function not supported. */
 #define GLOB_ABEND	GLOB_ABORTED
 
-__BEGIN_DECLS
-int	glob(const char *, int, int (*)(const char *, int), glob_t *);
-void	globfree(glob_t *);
-__END_DECLS
-
+BEGIN_EXTERN_C()
+PHPAPI int	glob(const char *, int, int (*)(const char *, int), glob_t *);
+PHPAPI void	globfree(glob_t *);
+END_EXTERN_C()
 #endif /* !_GLOB_H_ */

@@ -12,6 +12,6 @@ var_dump(ldap_parse_result(null, null));
 ?>
 ===DONE===
 --EXPECTF--
-Warning: Wrong parameter count for ldap_parse_result() in %s on line %d
+Warning: ldap_parse_result() expects at least 3 parameters, 2 given in %s on line %d
 NULL
 ===DONE===

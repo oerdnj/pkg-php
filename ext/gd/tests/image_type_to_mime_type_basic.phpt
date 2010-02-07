@@ -2,7 +2,8 @@
 image_type_to_mime_type()
 --SKIPIF--
 <?php 
-	if (!function_exists('image_type_to_mime_type')) die('skip image_type_to_mime_type() not available');
+	if (!function_exists('image_type_to_mime_type')) die('skip image_type_to_mime_type() not available'); 
+	require_once('skipif_imagetype.inc');
 ?>
 --FILE--
 <?php
@@ -48,7 +49,7 @@ string(10) "image/jpeg"
 string(9) "image/png"
 string(29) "application/x-shockwave-flash"
 string(9) "image/psd"
-string(9) "image/bmp"
+string(14) "image/x-ms-bmp"
 string(10) "image/tiff"
 string(10) "image/tiff"
 string(24) "application/octet-stream"

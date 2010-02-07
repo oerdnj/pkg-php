@@ -22,29 +22,59 @@ $ao = new MyArrayObject(array(1,2,3), ArrayObject::STD_PROP_LIST);
 var_dump($ao);
 ?>
 --EXPECTF--
-object(ArrayObject)#%d (3) {
-  [0]=>
-  int(1)
-  [1]=>
-  int(2)
-  [2]=>
-  int(3)
-}
-object(ArrayObject)#%d (1) {
+object(ArrayObject)#1 (2) {
   ["p"]=>
   int(1)
+  ["storage":"ArrayObject":private]=>
+  array(3) {
+    [0]=>
+    int(1)
+    [1]=>
+    int(2)
+    [2]=>
+    int(3)
+  }
 }
-object(MyArrayObject)#%d (3) {
-  [0]=>
+object(ArrayObject)#2 (2) {
+  ["p"]=>
   int(1)
-  [1]=>
-  int(2)
-  [2]=>
-  int(3)
+  ["storage":"ArrayObject":private]=>
+  array(3) {
+    [0]=>
+    int(1)
+    [1]=>
+    int(2)
+    [2]=>
+    int(3)
+  }
 }
-object(MyArrayObject)#%d (2) {
-  ["priv1:private"]=>
+object(MyArrayObject)#1 (3) {
+  ["priv1":"MyArrayObject":private]=>
   string(7) "secret1"
   ["pub1"]=>
   string(7) "public1"
+  ["storage":"ArrayObject":private]=>
+  array(3) {
+    [0]=>
+    int(1)
+    [1]=>
+    int(2)
+    [2]=>
+    int(3)
+  }
+}
+object(MyArrayObject)#2 (3) {
+  ["priv1":"MyArrayObject":private]=>
+  string(7) "secret1"
+  ["pub1"]=>
+  string(7) "public1"
+  ["storage":"ArrayObject":private]=>
+  array(3) {
+    [0]=>
+    int(1)
+    [1]=>
+    int(2)
+    [2]=>
+    int(3)
+  }
 }

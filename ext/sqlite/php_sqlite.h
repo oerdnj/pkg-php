@@ -17,7 +17,7 @@
    |          Marcus Boerger <helly@php.net>                              |
    +----------------------------------------------------------------------+
 
-   $Id: php_sqlite.h 272374 2008-12-31 11:17:49Z sebastian $ 
+   $Id: php_sqlite.h 272370 2008-12-31 11:15:49Z sebastian $ 
 */
 
 #ifndef PHP_SQLITE_H
@@ -25,12 +25,6 @@
 
 extern zend_module_entry sqlite_module_entry;
 #define phpext_sqlite_ptr &sqlite_module_entry
-
-#ifdef PHP_WIN32
-#define PHP_SQLITE_API __declspec(dllexport)
-#else
-#define PHP_SQLITE_API
-#endif
 
 #ifdef ZTS
 #include "TSRM.h"

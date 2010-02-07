@@ -103,16 +103,16 @@ string(5) "-20.5"
 string(12) "101234567000"
 -- Iteration 10 --
 
-Notice: Array to string conversion in %s on line %d
-string(5) "Array"
+Warning: rtrim() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 11 --
 
-Notice: Array to string conversion in %s on line %d
-string(5) "Array"
+Warning: rtrim() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 12 --
 
-Notice: Array to string conversion in %s on line %d
-string(5) "Array"
+Warning: rtrim() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 13 --
 string(1) "1"
 -- Iteration 14 --
@@ -128,7 +128,9 @@ string(0) ""
 -- Iteration 19 --
 string(19) "  !---sample object"
 -- Iteration 20 --
-string(%d) "Resource id #%d"
+
+Warning: rtrim() expects parameter 1 to be string, resource given in %s on line %d
+NULL
 -- Iteration 21 --
 string(0) ""
 -- Iteration 22 --

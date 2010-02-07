@@ -27,14 +27,14 @@ foreach ( $variation_array as $var ) {
 --EXPECTF--
 *** Test substituting argument 2 with array values ***
 
-Notice: Array to string conversion in %s.php on line %d
-bool(false)
+Warning: getservbyname() expects parameter 2 to be string, array given in %s on line %d
+NULL
 
-Notice: Array to string conversion in %s.php on line %d
-bool(false)
+Warning: getservbyname() expects parameter 2 to be string, array given in %s on line %d
+NULL
 
-Notice: Array to string conversion in %s.php on line %d
-bool(false)
+Warning: getservbyname() expects parameter 2 to be string, array given in %s on line %d
+NULL
 
-Notice: Array to string conversion in %s.php on line %d
-bool(false)
+Warning: getservbyname() expects parameter 2 to be string, array given in %s on line %d
+NULL

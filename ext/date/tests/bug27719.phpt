@@ -1,10 +1,10 @@
 --TEST--
 Bug #27719 (mktime returns incorrect timestamp for dst days)
 --INI--
+date.timezone=EST
 error_reporting=2047
 --FILE--
-<?php /* $Id: bug27719.phpt 189800 2005-07-03 14:36:59Z derick $ */
-	putenv("TZ=EST");  // No DST
+<?php /* $Id: bug27719.phpt 280398 2009-05-12 19:46:58Z felipe $ */
 	$a = mktime(0, 0, 0, 4, 4, 2004, 0);
 	$b = mktime(0, 0, 0, 4, 4, 2004, 1);
 	$c = mktime(0, 0, 0, 4, 4, 2004, -1);
@@ -12,7 +12,7 @@ error_reporting=2047
 	echo "$b ".date("m/d/y h:i:s\n",$b);
 	echo "$c ".date("m/d/y h:i:s\n",$c);
 	echo "\n";
-	putenv("TZ=EST5EDT");  // DST not in effect
+	date_default_timezone_set('EST5EDT');  // DST not in effect
 	$a = mktime(0, 0, 0, 2, 4, 2004, 0);
 	$b = mktime(0, 0, 0, 2, 4, 2004, 1);
 	$c = mktime(0, 0, 0, 2, 4, 2004, -1);
@@ -20,7 +20,7 @@ error_reporting=2047
 	echo "$b ".date("m/d/y h:i:s\n",$b);
 	echo "$c ".date("m/d/y h:i:s\n",$c);
 	echo "\n";
-	putenv("TZ=EST5EDT");  // Just before DST changeover
+	date_default_timezone_set('EST5EDT');
 	$a = mktime(0, 0, 0, 4, 4, 2004, 0);
 	$b = mktime(0, 0, 0, 4, 4, 2004, 1);
 	$c = mktime(0, 0, 0, 4, 4, 2004, -1);
@@ -28,7 +28,7 @@ error_reporting=2047
 	echo "$b ".date("m/d/y h:i:s\n",$b);
 	echo "$c ".date("m/d/y h:i:s\n",$c);
 	echo "\n";
-	putenv("TZ=EST5EDT");  // Just after DST changeover
+	date_default_timezone_set('EST5EDT');
 	$a = mktime(3, 0, 0, 4, 4, 2004, 0);
 	$b = mktime(3, 0, 0, 4, 4, 2004, 1);
 	$c = mktime(3, 0, 0, 4, 4, 2004, -1);
@@ -36,7 +36,7 @@ error_reporting=2047
 	echo "$b ".date("m/d/y h:i:s\n",$b);
 	echo "$c ".date("m/d/y h:i:s\n",$c);
 	echo "\n";
-	putenv("TZ=EST5EDT");  // DST in effect
+	date_default_timezone_set('EST5EDT');
 	$a = mktime(0, 0, 0, 6, 4, 2004, 0);
 	$b = mktime(0, 0, 0, 6, 4, 2004, 1);
 	$c = mktime(0, 0, 0, 6, 4, 2004, -1);

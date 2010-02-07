@@ -110,7 +110,7 @@ bool(false)
 Warning: rename() expects parameter 2 to be string, array given in %s on line %d
 bool(false)
 
-Notice: Array to string conversion in %s on line %d
+Warning: file_exists() expects parameter 1 to be string, array given in %s on line %d
 
 Warning: rename() expects parameter 1 to be string, array given in %s on line %d
 bool(false)

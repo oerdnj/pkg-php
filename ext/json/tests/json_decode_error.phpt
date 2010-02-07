@@ -8,7 +8,7 @@ if (!extension_loaded("json")) {
 ?>
 --FILE--
 <?php
-/* Prototype  : mixed json_decode  ( string $json  [, bool $assoc  ] )
+/* Prototype  : mixed json_decode  ( string $json  [, bool $assoc=false  [, int $depth=512  ]] )
  * Description: Decodes a JSON string
  * Source code: ext/json/php_json.c
  * Alias to functions: 
@@ -20,7 +20,7 @@ var_dump( json_decode() );
 
 echo "\n-- Testing json_decode() function with more than expected no. of arguments --\n";
 $extra_arg = 10;
-var_dump( json_decode('"abc"', TRUE, $extra_arg) );
+var_dump( json_decode('"abc"', TRUE, 512, $extra_arg) );
 
 ?>
 ===Done===
@@ -34,6 +34,6 @@ NULL
 
 -- Testing json_decode() function with more than expected no. of arguments --
 
-Warning: json_decode() expects at most 2 parameters, 3 given in %s on line %d
+Warning: json_decode() expects at most 3 parameters, 4 given in %s on line %d
 NULL
 ===Done===

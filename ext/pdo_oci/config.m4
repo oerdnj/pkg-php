@@ -1,30 +1,17 @@
-dnl $Id: config.m4 291414 2009-11-29 06:13:22Z rasmus $
+dnl $Id: config.m4 267636 2008-10-22 19:29:24Z stas $
+dnl config.m4 for extension pdo_oci
+dnl vim:et:sw=2:ts=2:
 
-if test "$PHP_PDO" != "no"; then
-
+SUPPORTED_LIB_VERS="9.0 10.1 11.1"  # This caters for all Oracle 9.x, 10.x and 11.1 installs
 AC_DEFUN([AC_PDO_OCI_VERSION],[
   AC_MSG_CHECKING([Oracle version])
-  if test -s "$PDO_OCI_DIR/orainst/unix.rgs"; then
-    PDO_OCI_VERSION=`grep '"ocommon"' $PDO_OCI_DIR/orainst/unix.rgs | sed 's/[ ][ ]*/:/g' | cut -d: -f 6 | cut -c 2-4`
-    test -z "$PDO_OCI_VERSION" && PDO_OCI_VERSION=7.3
-  elif test -f $PDO_OCI_LIB_DIR/libclntsh.$SHLIB_SUFFIX_NAME.11.1; then
-    PDO_OCI_VERSION=11.1    
-  elif test -f $PDO_OCI_LIB_DIR/libclntsh.$SHLIB_SUFFIX_NAME.10.1; then
-    PDO_OCI_VERSION=10.1    
-  elif test -f $PDO_OCI_LIB_DIR/libclntsh.$SHLIB_SUFFIX_NAME.9.0; then
-    PDO_OCI_VERSION=9.0
-  elif test -f $PDO_OCI_LIB_DIR/libclntsh.$SHLIB_SUFFIX_NAME.8.0; then
-    PDO_OCI_VERSION=8.1
-  elif test -f $PDO_OCI_LIB_DIR/libclntsh.$SHLIB_SUFFIX_NAME.1.0; then
-    PDO_OCI_VERSION=8.0
-  elif test -f $PDO_OCI_LIB_DIR/libclntsh.a; then 
-    if test -f $PDO_OCI_LIB_DIR/libcore4.a; then 
-      PDO_OCI_VERSION=8.0
-    else
-      PDO_OCI_VERSION=8.1
+  for OCI_VER in $SUPPORTED_LIB_VERS; do
+    if test -f $PDO_OCI_DIR/lib/libclntsh.$SHLIB_SUFFIX_NAME.$OCI_VER; then
+      PDO_OCI_VERSION="$OCI_VER"
     fi
-  else
-    AC_MSG_ERROR(Oracle OCI libraries not found under $PDO_OCI_DIR)
+  done
+  if test -z "$PDO_OCI_VERSION"; then
+    AC_MSG_ERROR([Oracle required OCI8 libraries not found under $PDO_OCI_DIR])
   fi
   AC_MSG_RESULT($PDO_OCI_VERSION)
 ])                                                                                                                                                                
@@ -48,7 +35,7 @@ AC_DEFUN([AC_PDO_OCI_CHECK_LIB_DIR],[
   elif test -d "$PDO_OCI_DIR/lib" && test -d "$PDO_OCI_DIR/lib32"; then
     PDO_OCI_LIB_DIR=$TMP_PDO_OCI_LIB_DIR
   else
-    AC_MSG_ERROR([Oracle (OCI8) required libraries not found])
+    AC_MSG_ERROR([Oracle required OCI8 libraries not found])
   fi
   AC_MSG_RESULT($PDO_OCI_LIB_DIR)
 ])
@@ -61,6 +48,11 @@ PHP_ARG_WITH(pdo-oci, Oracle OCI support for PDO,
                             --with-pdo-oci=instantclient,/usr,10.2.0.3])
 
 if test "$PHP_PDO_OCI" != "no"; then
+
+  if test "$PHP_PDO" = "no" && test "$ext_shared" = "no"; then
+    AC_MSG_ERROR([PDO is not enabled! Add --enable-pdo to your configure line.])
+  fi
+
   AC_MSG_CHECKING([Oracle Install-Dir])
   if test "$PHP_PDO_OCI" = "yes" || test -z "$PHP_PDO_OCI"; then
     PDO_OCI_DIR=$ORACLE_HOME
@@ -98,7 +90,7 @@ You need to tell me where to find your Oracle Instant Client SDK, or set ORACLE_
       AC_MSG_ERROR([I'm too dumb to figure out where the include dir is in your Instant Client install])
     fi
     if test -f "$PDO_OCI_IC_PREFIX/lib/oracle/$PDO_OCI_IC_VERS/client/lib/libclntsh.so" ; then
-      PDO_OCI_LIB_DIR="$PDO_OCI_IC_PREFIX/lib/oracle/$PDO_OCI_IC_VERS/client/lib"
+    PDO_OCI_LIB_DIR="$PDO_OCI_IC_PREFIX/lib/oracle/$PDO_OCI_IC_VERS/client/lib"
     elif test -f "$PDO_OCI_IC_PREFIX/client/lib/libclntsh.so" ; then
       PDO_OCI_LIB_DIR="$PDO_OCI_IC_PREFIX/client/lib"
     elif test -f "$PDO_OCI_IC_PREFIX/libclntsh.so" ; then
@@ -140,35 +132,12 @@ You need to tell me where to find your Oracle Instant Client SDK, or set ORACLE_
   fi
 
   case $PDO_OCI_VERSION in
-    8.0)
-      PHP_ADD_LIBRARY_WITH_PATH(nlsrtl3, "", PDO_OCI_SHARED_LIBADD)
-      PHP_ADD_LIBRARY_WITH_PATH(core4, "", PDO_OCI_SHARED_LIBADD)
-      PHP_ADD_LIBRARY_WITH_PATH(psa, "", PDO_OCI_SHARED_LIBADD)
-      PHP_ADD_LIBRARY_WITH_PATH(clntsh, $PDO_OCI_LIB_DIR, PDO_OCI_SHARED_LIBADD)
-      ;;
-
-    8.1)
-      PHP_ADD_LIBRARY(clntsh, 1, PDO_OCI_SHARED_LIBADD)
-      ;;
-
-    9.0)
-      PHP_ADD_LIBRARY(clntsh, 1, PDO_OCI_SHARED_LIBADD)
-      ;;
-
-    10.1)
-      PHP_ADD_LIBRARY(clntsh, 1, PDO_OCI_SHARED_LIBADD)
-      ;;
-
-    10.2)
-      PHP_ADD_LIBRARY(clntsh, 1, PDO_OCI_SHARED_LIBADD)
-      ;;
-
-    11.1)
+    9.0|10.1|10.2|11.1)
       PHP_ADD_LIBRARY(clntsh, 1, PDO_OCI_SHARED_LIBADD)
       ;;
 
     *)
-      AC_MSG_ERROR(Unsupported Oracle version! $PDO_OCI_VERSION)
+      AC_MSG_ERROR(Unsupported Oracle version $PDO_OCI_VERSION)
       ;;
   esac
 
@@ -255,4 +224,3 @@ You need to tell me where to find your Oracle Instant Client SDK, or set ORACLE_
   AC_DEFINE_UNQUOTED(PHP_PDO_OCI_CLIENT_VERSION, "$PDO_OCI_VERSION", [ ])
 fi
 
-fi

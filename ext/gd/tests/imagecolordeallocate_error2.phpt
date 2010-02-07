@@ -16,4 +16,4 @@ $result = imagecolordeallocate('image', $white);
 
 ?>
 --EXPECTF--
-Warning: imagecolordeallocate(): supplied argument is not a valid Image resource %s on line %d
+Warning: imagecolordeallocate() expects parameter 1 to be resource, %s given %s on line %d

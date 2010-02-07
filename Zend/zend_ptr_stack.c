@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_ptr_stack.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: zend_ptr_stack.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #include "zend.h"
 #include "zend_ptr_stack.h"
@@ -25,11 +25,17 @@
 # include <stdarg.h>
 #endif
 
-ZEND_API void zend_ptr_stack_init(zend_ptr_stack *stack)
+ZEND_API void zend_ptr_stack_init_ex(zend_ptr_stack *stack, zend_bool persistent)
 {
-	stack->top_element = stack->elements = (void **) emalloc(sizeof(void *)*PTR_STACK_BLOCK_SIZE);
+	stack->top_element = stack->elements = (void **) pemalloc(sizeof(void *)*PTR_STACK_BLOCK_SIZE, persistent);
 	stack->max = PTR_STACK_BLOCK_SIZE;
 	stack->top = 0;
+	stack->persistent = persistent;
+}
+
+ZEND_API void zend_ptr_stack_init(zend_ptr_stack *stack)
+{
+	zend_ptr_stack_init_ex(stack, 0);
 }
 
 
@@ -71,7 +77,7 @@ ZEND_API void zend_ptr_stack_n_pop(zend_ptr_stack *stack, int count, ...)
 ZEND_API void zend_ptr_stack_destroy(zend_ptr_stack *stack)
 {
 	if (stack->elements) {
-		efree(stack->elements);
+		pefree(stack->elements, stack->persistent);
 	}
 }
 
@@ -93,7 +99,7 @@ ZEND_API void zend_ptr_stack_clean(zend_ptr_stack *stack, void (*func)(void *), 
 		int i = stack->top;
 
 		while (--i >= 0) {
-			efree(stack->elements[i]);
+			pefree(stack->elements[i], stack->persistent);
 		}
 	}
 	stack->top = 0;

@@ -1,7 +1,5 @@
 --TEST--
 SPL: ArrayIterator with NULL key
---SKIPIF--
-<?php if (!extension_loaded("spl")) print "skip"; ?>
 --FILE--
 <?php
 
@@ -14,8 +12,11 @@ var_dump($ar->getArrayCopy());
 <?php exit(0); ?>
 --EXPECTF--
 object(ArrayIterator)#%d (1) {
-  [""]=>
-  NULL
+  ["storage":"ArrayIterator":private]=>
+  array(1) {
+    [""]=>
+    NULL
+  }
 }
 array(1) {
   [""]=>

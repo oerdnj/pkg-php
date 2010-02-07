@@ -14,9 +14,7 @@ PHP Testfest Berlin 2009-05-10
 ?>
 --FILE--
 <?php
-    $uname = posix_uname();
-    unset($uname['domainname']);
-    var_dump($uname);
+    var_dump(posix_uname());
 ?>
 ===DONE===
 --EXPECTF--

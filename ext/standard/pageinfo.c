@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: pageinfo.c 290179 2009-11-03 18:03:02Z guenter $ */
+/* $Id: pageinfo.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #include "php.h"
 #include "pageinfo.h"
@@ -68,7 +68,11 @@ PHPAPI void php_statpage(TSRMLS_D)
 			BG(page_uid)   = pstat->st_uid;
 			BG(page_gid)   = pstat->st_gid;
 			BG(page_inode) = pstat->st_ino;
+#ifdef NETWARE
+			BG(page_mtime) = (pstat->st_mtime).tv_sec;
+#else
 			BG(page_mtime) = pstat->st_mtime;
+#endif
 		} else { /* handler for situations where there is no source file, ex. php -r */
 			BG(page_uid) = getuid();
 			BG(page_gid) = getgid();

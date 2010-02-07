@@ -5,7 +5,7 @@ PDO_sqlite: Testing lastInsertId()
 --FILE--
 <?php
 
-$db = new pdo('sqlite:memory');
+$db = new pdo('sqlite::memory:');
 $db->query('CREATE TABLE IF NOT EXISTS foo (id INT AUTO INCREMENT, name TEXT)');
 $db->query('INSERT INTO foo VALUES (NULL, "PHP")');
 $db->query('INSERT INTO foo VALUES (NULL, "PHP6")');
@@ -21,8 +21,12 @@ object(PDOStatement)#2 (1) {
   ["queryString"]=>
   %string|unicode%(17) "SELECT * FROM foo"
 }
-array(1) {
+array(3) {
   [0]=>
   %string|unicode%(5) "00000"
+  [1]=>
+  NULL
+  [2]=>
+  NULL
 }
 %string|unicode%(1) "2"

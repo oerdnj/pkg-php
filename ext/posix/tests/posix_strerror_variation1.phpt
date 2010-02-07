@@ -69,7 +69,7 @@ $values = array(
 
 foreach($values as $value) {
       echo "\nArg value $value \n";
-      echo gettype(posix_strerror($value))."\n";
+      echo gettype( posix_strerror($value) )."\n";
 };
 
 echo "Done";

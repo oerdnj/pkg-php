@@ -21,7 +21,7 @@
 #
 # Written by Stig Bakken <ssb@guardian.no> 1997-05-28.
 #
-# $Id: makedist 284086 2009-07-14 21:49:36Z gwynne $
+# $Id: makedist 284087 2009-07-14 21:49:44Z gwynne $
 #
 
 if test "$#" != "2"; then

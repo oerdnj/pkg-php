@@ -49,4 +49,3 @@ Notice: session_encode(): Skipping numeric key -1234567890 in %s on line %d
 bool(false)
 bool(true)
 Done
-

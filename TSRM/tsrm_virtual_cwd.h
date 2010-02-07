@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_virtual_cwd.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: tsrm_virtual_cwd.h 287673 2009-08-25 09:16:53Z pajoye $ */
 
 #ifndef VIRTUAL_CWD_H
 #define VIRTUAL_CWD_H
@@ -117,13 +117,15 @@ typedef unsigned short mode_t;
 #endif
 
 #ifdef TSRM_WIN32
-#       ifdef CWD_EXPORTS
-#       define CWD_API __declspec(dllexport)
-#       else
-#       define CWD_API __declspec(dllimport)
-#       endif
+#	ifdef CWD_EXPORTS
+#		define CWD_API __declspec(dllexport)
+#	else
+#		define CWD_API __declspec(dllimport)
+#	endif
+#elif defined(__GNUC__) && __GNUC__ >= 4
+#	define CWD_API __attribute__ ((visibility("default")))
 #else
-#define CWD_API
+#	define CWD_API
 #endif
 
 #ifdef TSRM_WIN32
@@ -206,7 +208,14 @@ typedef struct _realpath_cache_bucket {
 	int                            path_len;
 	char                          *realpath;
 	int                            realpath_len;
+	int                            is_dir;
 	time_t                         expires;
+#ifdef PHP_WIN32
+	unsigned char                  is_rvalid;
+	unsigned char                  is_readable;
+	unsigned char                  is_wvalid;
+	unsigned char                  is_writable;
+#endif
 	struct _realpath_cache_bucket *next;	
 } realpath_cache_bucket;
 
@@ -228,6 +237,7 @@ extern virtual_cwd_globals cwd_globals;
 
 CWD_API void realpath_cache_clean(TSRMLS_D);
 CWD_API void realpath_cache_del(const char *path, int path_len TSRMLS_DC);
+CWD_API realpath_cache_bucket* realpath_cache_lookup(const char *path, int path_len, time_t t TSRMLS_DC);
 
 /* The actual macros to be used in programs using TSRM
  * If the program defines VIRTUAL_DIR it will use the
@@ -249,7 +259,7 @@ CWD_API void realpath_cache_del(const char *path, int path_len TSRMLS_DC);
 #define VCWD_RENAME(oldname, newname) virtual_rename(oldname, newname TSRMLS_CC)
 #define VCWD_STAT(path, buff) virtual_stat(path, buff TSRMLS_CC)
 #if !defined(TSRM_WIN32)
-#define VCWD_LSTAT(path, buff) virtual_lstat(path, buff TSRMLS_CC)
+# define VCWD_LSTAT(path, buff) virtual_lstat(path, buff TSRMLS_CC)
 #endif
 #define VCWD_UNLINK(path) virtual_unlink(path TSRMLS_CC)
 #define VCWD_MKDIR(pathname, mode) virtual_mkdir(pathname, mode TSRMLS_CC)
@@ -275,7 +285,13 @@ CWD_API void realpath_cache_del(const char *path, int path_len TSRMLS_DC);
 #define VCWD_OPEN(path, flags) open(path, flags)
 #define VCWD_OPEN_MODE(path, flags, mode)	open(path, flags, mode)
 #define VCWD_CREAT(path, mode) creat(path, mode)
-#define VCWD_RENAME(oldname, newname) rename(oldname, newname)
+/* rename on windows will fail if newname already exists.
+   MoveFileEx has to be used */
+#if defined(TSRM_WIN32)
+# define VCWD_RENAME(oldname, newname) (MoveFileEx(oldname, newname, MOVEFILE_REPLACE_EXISTING|MOVEFILE_COPY_ALLOWED) == 0 ? -1 : 0)
+#else
+# define VCWD_RENAME(oldname, newname) rename(oldname, newname)
+#endif
 #define VCWD_CHDIR(path) chdir(path)
 #define VCWD_CHDIR_FILE(path) virtual_chdir_file(path, chdir)
 #define VCWD_GETWD(buf) getwd(buf)
@@ -295,8 +311,13 @@ CWD_API void realpath_cache_del(const char *path, int path_len TSRMLS_DC);
 #define VCWD_REALPATH(path, real_path) tsrm_realpath(path, real_path TSRMLS_CC)
 
 #if HAVE_UTIME
-#define VCWD_UTIME(path, time) utime(path, time)
+# ifdef TSRM_WIN32
+#  define VCWD_UTIME(path, time) win32_utime(path, time)
+# else
+#  define VCWD_UTIME(path, time) utime(path, time)
+# endif
 #endif
+
 #define VCWD_CHMOD(path, mode) chmod(path, mode)
 #if !defined(TSRM_WIN32) && !defined(NETWARE)
 #define VCWD_CHOWN(path, owner, group) chown(path, owner, group)

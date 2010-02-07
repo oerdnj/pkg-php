@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_interfaces.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: zend_interfaces.c 277750 2009-03-25 10:39:26Z dmitry $ */
 
 #include "zend.h"
 #include "zend_API.h"
@@ -46,7 +46,7 @@ ZEND_API zval* zend_call_method(zval **object_pp, zend_class_entry *obj_ce, zend
 
 	fci.size = sizeof(fci);
 	/*fci.function_table = NULL; will be read form zend_class_entry of object if needed */
-	fci.object_pp = object_pp;
+	fci.object_ptr = object_pp ? *object_pp : NULL;
 	fci.function_name = &z_fname;
 	fci.retval_ptr_ptr = retval_ptr_ptr ? retval_ptr_ptr : &retval;
 	fci.param_count = param_count;
@@ -84,7 +84,16 @@ ZEND_API zval* zend_call_method(zval **object_pp, zend_class_entry *obj_ce, zend
 			fcic.function_handler = *fn_proxy;
 		}
 		fcic.calling_scope = obj_ce;
-		fcic.object_pp = object_pp;
+		if (object_pp) {
+			fcic.called_scope = Z_OBJCE_PP(object_pp);
+		} else if (obj_ce &&
+		           !(EG(called_scope) &&
+		             instanceof_function(EG(called_scope), obj_ce TSRMLS_CC))) {
+			fcic.called_scope = obj_ce;
+		} else {
+			fcic.called_scope = EG(called_scope);
+		}
+		fcic.object_ptr = object_pp ? *object_pp : NULL;
 		result = zend_call_function(&fci, &fcic TSRMLS_CC);
 	}
 	if (result == FAILURE) {
@@ -274,7 +283,7 @@ static zend_object_iterator *zend_user_it_get_iterator(zend_class_entry *ce, zva
 
 	iterator = emalloc(sizeof(zend_user_iterator));
 
-	object->refcount++;
+	Z_ADDREF_P(object);
 	iterator->it.data = (void*)object;
 	iterator->it.funcs = ce->iterator_funcs.funcs;
 	iterator->ce = Z_OBJCE_P(object);
@@ -404,7 +413,7 @@ static int zend_implement_arrayaccess(zend_class_entry *interface, zend_class_en
 /* }}}*/
 
 /* {{{ zend_user_serialize */
-int zend_user_serialize(zval *object, unsigned char **buffer, zend_uint *buf_len, zend_serialize_data *data TSRMLS_DC)
+ZEND_API int zend_user_serialize(zval *object, unsigned char **buffer, zend_uint *buf_len, zend_serialize_data *data TSRMLS_DC)
 {
 	zend_class_entry * ce = Z_OBJCE_P(object);
 	zval *retval;
@@ -422,7 +431,7 @@ int zend_user_serialize(zval *object, unsigned char **buffer, zend_uint *buf_len
 			zval_ptr_dtor(&retval);
 			return FAILURE;
 		case IS_STRING:
-			*buffer = estrndup(Z_STRVAL_P(retval), Z_STRLEN_P(retval));
+			*buffer = (unsigned char*)estrndup(Z_STRVAL_P(retval), Z_STRLEN_P(retval));
 			*buf_len = Z_STRLEN_P(retval);
 			result = SUCCESS;
 			break;
@@ -441,7 +450,7 @@ int zend_user_serialize(zval *object, unsigned char **buffer, zend_uint *buf_len
 /* }}} */
 
 /* {{{ zend_user_unserialize */
-int zend_user_unserialize(zval **object, zend_class_entry *ce, const unsigned char *buf, zend_uint buf_len, zend_unserialize_data *data TSRMLS_DC)
+ZEND_API int zend_user_unserialize(zval **object, zend_class_entry *ce, const unsigned char *buf, zend_uint buf_len, zend_unserialize_data *data TSRMLS_DC)
 {
 	zval * zdata;
 
@@ -462,27 +471,46 @@ int zend_user_unserialize(zval **object, zend_class_entry *ce, const unsigned ch
 }
 /* }}} */
 
+ZEND_API int zend_class_serialize_deny(zval *object, unsigned char **buffer, zend_uint *buf_len, zend_serialize_data *data TSRMLS_DC) /* {{{ */
+{
+	zend_class_entry *ce = Z_OBJCE_P(object);
+	zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "Serialization of '%s' is not allowed", ce->name);
+	return FAILURE;
+}
+/* }}} */
+
+ZEND_API int zend_class_unserialize_deny(zval **object, zend_class_entry *ce, const unsigned char *buf, zend_uint buf_len, zend_unserialize_data *data TSRMLS_DC) /* {{{ */
+{
+	zend_throw_exception_ex(NULL, 0 TSRMLS_CC, "Unserialization of '%s' is not allowed", ce->name);
+	return FAILURE;
+}
+/* }}} */
+
 /* {{{ zend_implement_serializable */
 static int zend_implement_serializable(zend_class_entry *interface, zend_class_entry *class_type TSRMLS_DC)
 {
-	if ((class_type->serialize   && class_type->serialize   != zend_user_serialize)
-	||  (class_type->unserialize && class_type->unserialize != zend_user_unserialize)
-	) {
+	if (class_type->parent
+		&& (class_type->parent->serialize || class_type->parent->unserialize)
+		&& !instanceof_function_ex(class_type->parent, zend_ce_serializable, 1 TSRMLS_CC)) {
 		return FAILURE;
 	}
-	class_type->serialize = zend_user_serialize;
-	class_type->unserialize = zend_user_unserialize;
+	if (!class_type->serialize) {
+		class_type->serialize = zend_user_serialize;
+	}
+	if (!class_type->unserialize) {
+		class_type->unserialize = zend_user_unserialize;
+	}
 	return SUCCESS;
 }
 /* }}}*/
 
 /* {{{ function tables */
-zend_function_entry zend_funcs_aggregate[] = {
+const zend_function_entry zend_funcs_aggregate[] = {
 	ZEND_ABSTRACT_ME(iterator, getIterator, NULL)
 	{NULL, NULL, NULL}
 };
 
-zend_function_entry zend_funcs_iterator[] = {
+const zend_function_entry zend_funcs_iterator[] = {
 	ZEND_ABSTRACT_ME(iterator, current,  NULL)
 	ZEND_ABSTRACT_ME(iterator, next,     NULL)
 	ZEND_ABSTRACT_ME(iterator, key,      NULL)
@@ -491,25 +519,22 @@ zend_function_entry zend_funcs_iterator[] = {
 	{NULL, NULL, NULL}
 };
 
-zend_function_entry *zend_funcs_traversable    = NULL;
+const zend_function_entry *zend_funcs_traversable    = NULL;
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_arrayaccess_offset, 0, 0, 1)
 	ZEND_ARG_INFO(0, offset)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_arrayaccess_offset_get, 0, 0, 1) /* actually this should be return by ref but atm cannot be */
 	ZEND_ARG_INFO(0, offset)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_arrayaccess_offset_value, 0, 0, 2)
 	ZEND_ARG_INFO(0, offset)
 	ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
 
-zend_function_entry zend_funcs_arrayaccess[] = {
+const zend_function_entry zend_funcs_arrayaccess[] = {
 	ZEND_ABSTRACT_ME(arrayaccess, offsetExists, arginfo_arrayaccess_offset)
 	ZEND_ABSTRACT_ME(arrayaccess, offsetGet,    arginfo_arrayaccess_offset_get)
 	ZEND_ABSTRACT_ME(arrayaccess, offsetSet,    arginfo_arrayaccess_offset_value)
@@ -517,12 +542,11 @@ zend_function_entry zend_funcs_arrayaccess[] = {
 	{NULL, NULL, NULL}
 };
 
-static
 ZEND_BEGIN_ARG_INFO(arginfo_serializable_serialize, 0)
 	ZEND_ARG_INFO(0, serialized)
 ZEND_END_ARG_INFO()
 
-zend_function_entry zend_funcs_serializable[] = {
+const zend_function_entry zend_funcs_serializable[] = {
 	ZEND_ABSTRACT_ME(serializable, serialize,   NULL)
 	ZEND_FENTRY(unserialize, NULL, arginfo_serializable_serialize, ZEND_ACC_PUBLIC|ZEND_ACC_ABSTRACT|ZEND_ACC_CTOR)
 	{NULL, NULL, NULL}

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_variables.c 279676 2009-05-01 20:30:59Z jani $ */
+/* $Id: zend_variables.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #include <stdio.h>
 #include "zend.h"
@@ -26,9 +26,10 @@
 #include "zend_constants.h"
 #include "zend_list.h"
 
-ZEND_API void _zval_dtor_func(zval *zvalue ZEND_FILE_LINE_DC) /* {{{ */
+
+ZEND_API void _zval_dtor_func(zval *zvalue ZEND_FILE_LINE_DC)
 {
-	switch (zvalue->type & ~IS_CONSTANT_INDEX) {
+	switch (Z_TYPE_P(zvalue) & IS_CONSTANT_TYPE_MASK) {
 		case IS_STRING:
 		case IS_CONSTANT:
 			CHECK_ZVAL_STRING_REL(zvalue);
@@ -68,11 +69,11 @@ ZEND_API void _zval_dtor_func(zval *zvalue ZEND_FILE_LINE_DC) /* {{{ */
 			break;
 	}
 }
-/* }}} */
 
-ZEND_API void _zval_internal_dtor(zval *zvalue ZEND_FILE_LINE_DC) /* {{{ */
+
+ZEND_API void _zval_internal_dtor(zval *zvalue ZEND_FILE_LINE_DC)
 {
-	switch (zvalue->type & ~IS_CONSTANT_INDEX) {
+	switch (Z_TYPE_P(zvalue) & IS_CONSTANT_TYPE_MASK) {
 		case IS_STRING:
 		case IS_CONSTANT:
 			CHECK_ZVAL_STRING_REL(zvalue);
@@ -92,17 +93,17 @@ ZEND_API void _zval_internal_dtor(zval *zvalue ZEND_FILE_LINE_DC) /* {{{ */
 			break;
 	}
 }
-/* }}} */
 
-ZEND_API void zval_add_ref(zval **p) /* {{{ */
+
+ZEND_API void zval_add_ref(zval **p)
 {
-	(*p)->refcount++;
+	Z_ADDREF_PP(p);
 }
-/* }}} */
 
-ZEND_API void _zval_copy_ctor_func(zval *zvalue ZEND_FILE_LINE_DC) /* {{{ */
+
+ZEND_API void _zval_copy_ctor_func(zval *zvalue ZEND_FILE_LINE_DC)
 {
-	switch (zvalue->type) {
+	switch (Z_TYPE_P(zvalue) & IS_CONSTANT_TYPE_MASK) {
 		case IS_RESOURCE: {
 				TSRMLS_FETCH();
 
@@ -142,44 +143,43 @@ ZEND_API void _zval_copy_ctor_func(zval *zvalue ZEND_FILE_LINE_DC) /* {{{ */
 			break;
 	}
 }
-/* }}} */
 
-ZEND_API int zend_print_variable(zval *var) /* {{{ */
+
+ZEND_API int zend_print_variable(zval *var) 
 {
 	return zend_print_zval(var, 0);
 }
-/* }}} */
+
 
 #if ZEND_DEBUG
-ZEND_API void _zval_copy_ctor_wrapper(zval *zvalue) /* {{{ */
+ZEND_API void _zval_copy_ctor_wrapper(zval *zvalue)
 {
 	zval_copy_ctor(zvalue);
 }
-/* }}} */
 
-ZEND_API void _zval_dtor_wrapper(zval *zvalue) /* {{{ */
+
+ZEND_API void _zval_dtor_wrapper(zval *zvalue)
 {
 	zval_dtor(zvalue);
 }
-/* }}} */
 
-ZEND_API void _zval_internal_dtor_wrapper(zval *zvalue) /* {{{ */
+
+ZEND_API void _zval_internal_dtor_wrapper(zval *zvalue)
 {
 	zval_internal_dtor(zvalue);
 }
-/* }}} */
 
-ZEND_API void _zval_ptr_dtor_wrapper(zval **zval_ptr) /* {{{ */
+
+ZEND_API void _zval_ptr_dtor_wrapper(zval **zval_ptr)
 {
 	zval_ptr_dtor(zval_ptr);
 }
-/* }}} */
 
-ZEND_API void _zval_internal_ptr_dtor_wrapper(zval **zval_ptr) /* {{{ */
+
+ZEND_API void _zval_internal_ptr_dtor_wrapper(zval **zval_ptr)
 {
 	zval_internal_ptr_dtor(zval_ptr);
 }
-/* }}} */
 #endif
 
 /*

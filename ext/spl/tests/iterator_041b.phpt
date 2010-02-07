@@ -1,7 +1,5 @@
 --TEST--
 SPL: iterator_to_array() and exceptions from delayed destruct
---SKIPIF--
-<?php if (!extension_loaded("spl")) print "skip"; ?>
 --FILE--
 <?php
 
@@ -103,5 +101,10 @@ State 3: valid()
 State 4: current()
 State 5: key()
 State 6: next()
-
-Fatal error: Ignoring exception from MyArrayIterator::__destruct() while an exception is already active (Uncaught Exception in %s on line %d) in %siterator_041b.php on line %d
+===iterator_count===
+State 0: __construct()
+State 1: __construct()
+State 2: rewind()
+State 3: valid()
+State 6: next()
+===DONE===

@@ -13,6 +13,8 @@ session.save_handler=files
 
 echo "*** Test substituting argument 1 with object values ***\n";
 
+
+
 class classWithToString
 {
         public function __toString() {
@@ -38,4 +40,5 @@ foreach ( $variation_array as $var ) {
 *** Test substituting argument 1 with object values ***
 string(1) "0"
 
-Catchable fatal error: Object of class classWithoutToString could not be converted to string in %s.php on line %d
+Warning: get_cfg_var() expects parameter 1 to be string, object given in %s.php on line %d
+NULL

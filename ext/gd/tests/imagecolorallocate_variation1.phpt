@@ -117,148 +117,148 @@ foreach($values as $key => $value) {
 
 -- int 0 --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, integer given in %s on line %d
+NULL
 
 -- int 1 --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, integer given in %s on line %d
+NULL
 
 -- int 12345 --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, integer given in %s on line %d
+NULL
 
 -- int -12345 --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, integer given in %s on line %d
+NULL
 
 -- float 10.5 --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, double given in %s on line %d
+NULL
 
 -- float -10.5 --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, double given in %s on line %d
+NULL
 
 -- float 10.1234567e10 --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, double given in %s on line %d
+NULL
 
 -- float 10.7654321E-10 --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, double given in %s on line %d
+NULL
 
 -- float .5 --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, double given in %s on line %d
+NULL
 
 -- empty array --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, array given in %s on line %d
+NULL
 
 -- int indexed array --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, array given in %s on line %d
+NULL
 
 -- associative array --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, array given in %s on line %d
+NULL
 
 -- nested arrays --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, array given in %s on line %d
+NULL
 
 -- uppercase NULL --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, null given in %s on line %d
+NULL
 
 -- lowercase null --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, null given in %s on line %d
+NULL
 
 -- lowercase true --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, boolean given in %s on line %d
+NULL
 
 -- lowercase false --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, boolean given in %s on line %d
+NULL
 
 -- uppercase TRUE --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, boolean given in %s on line %d
+NULL
 
 -- uppercase FALSE --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, boolean given in %s on line %d
+NULL
 
 -- empty string DQ --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, string given in %s on line %d
+NULL
 
 -- empty string SQ --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, string given in %s on line %d
+NULL
 
 -- string DQ --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, string given in %s on line %d
+NULL
 
 -- string SQ --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, string given in %s on line %d
+NULL
 
 -- mixed case string --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, string given in %s on line %d
+NULL
 
 -- heredoc --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, string given in %s on line %d
+NULL
 
 -- instance of classWithToString --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, object given in %s on line %d
+NULL
 
 -- instance of classWithoutToString --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, object given in %s on line %d
+NULL
 
 -- undefined var --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, null given in %s on line %d
+NULL
 
 -- unset var --
 
-Warning: imagecolorallocate(): supplied argument is not a valid Image resource in %s on line %d
-bool(false)
+Warning: imagecolorallocate() expects parameter 1 to be resource, null given in %s on line %d
+NULL
 
 -- file resource --
 

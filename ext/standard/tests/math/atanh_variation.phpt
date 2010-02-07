@@ -1,11 +1,5 @@
 --TEST--
 Test variations in usage of atanh()
---SKIPIF--
-<?php
-if (!function_exists("atanh")) {
-	die("SKIP atanh - not supported\n");
-}
-?> 
 --INI--
 precision = 10
 --FILE--
@@ -40,7 +34,7 @@ for ($i = 0; $i < count($values); $i++) {
 }
 
 ?>
---EXPECT--
+--EXPECTF--
 float(NAN)
 float(NAN)
 float(NAN)
@@ -50,8 +44,12 @@ float(NAN)
 float(NAN)
 float(NAN)
 float(NAN)
-float(0)
+
+Warning: atanh() expects parameter 1 to be double, string given in %s on line %d
+NULL
 float(NAN)
+
+Notice: A non well formed numeric value encountered in %s on line %d
 float(NAN)
 float(0)
 float(INF)

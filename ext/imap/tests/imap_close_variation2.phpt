@@ -188,15 +188,21 @@ bool(true)
 CL_EXPUNGE was not set, 3 msgs in mailbox
 
 -- Iteration 16 --
-bool(true)
+
+Warning: imap_close() expects parameter 2 to be long, %unicode_string_optional% given in %s on line %d
+NULL
 CL_EXPUNGE was not set, 3 msgs in mailbox
 
 -- Iteration 17 --
-bool(true)
+
+Warning: imap_close() expects parameter 2 to be long, %unicode_string_optional% given in %s on line %d
+NULL
 CL_EXPUNGE was not set, 3 msgs in mailbox
 
 -- Iteration 18 --
-bool(true)
+
+Warning: imap_close() expects parameter 2 to be long, array given in %s on line %d
+NULL
 CL_EXPUNGE was not set, 3 msgs in mailbox
 
 -- Iteration 19 --

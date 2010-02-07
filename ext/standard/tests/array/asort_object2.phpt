@@ -98,36 +98,36 @@ array(4) {
   object(for_integer_asort)#%d (3) {
     ["public_class_value"]=>
     int(-88)
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_integer_asort":private]=>
     int(-5)
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     int(-4)
   }
   [1]=>
   object(for_integer_asort)#%d (3) {
     ["public_class_value"]=>
     int(11)
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_integer_asort":private]=>
     int(33)
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     int(2)
   }
   [3]=>
   object(for_integer_asort)#%d (3) {
     ["public_class_value"]=>
     int(23)
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_integer_asort":private]=>
     int(32)
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     int(6)
   }
   [2]=>
   object(for_integer_asort)#%d (3) {
     ["public_class_value"]=>
     int(44)
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_integer_asort":private]=>
     int(66)
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     int(3)
   }
 }
@@ -137,36 +137,36 @@ array(4) {
   object(for_string_asort)#%d (3) {
     ["public_class_value"]=>
     string(2) "PY"
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_string_asort":private]=>
     string(2) "py"
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     string(1) "s"
   }
   ["b"]=>
   object(for_string_asort)#%d (3) {
     ["public_class_value"]=>
     string(1) "T"
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_string_asort":private]=>
     string(1) "t"
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     string(1) "q"
   }
   ["a"]=>
   object(for_string_asort)#%d (3) {
     ["public_class_value"]=>
     string(3) "axx"
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_string_asort":private]=>
     string(3) "AXX"
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     string(1) "d"
   }
   ["c"]=>
   object(for_string_asort)#%d (3) {
     ["public_class_value"]=>
     string(1) "w"
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_string_asort":private]=>
     string(1) "W"
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     string(1) "c"
   }
 }
@@ -178,36 +178,36 @@ array(4) {
   object(for_integer_asort)#%d (3) {
     ["public_class_value"]=>
     int(-88)
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_integer_asort":private]=>
     int(-5)
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     int(-4)
   }
   [1]=>
   object(for_integer_asort)#%d (3) {
     ["public_class_value"]=>
     int(11)
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_integer_asort":private]=>
     int(33)
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     int(2)
   }
   [3]=>
   object(for_integer_asort)#%d (3) {
     ["public_class_value"]=>
     int(23)
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_integer_asort":private]=>
     int(32)
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     int(6)
   }
   [2]=>
   object(for_integer_asort)#%d (3) {
     ["public_class_value"]=>
     int(44)
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_integer_asort":private]=>
     int(66)
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     int(3)
   }
 }
@@ -217,36 +217,36 @@ array(4) {
   object(for_string_asort)#%d (3) {
     ["public_class_value"]=>
     string(2) "PY"
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_string_asort":private]=>
     string(2) "py"
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     string(1) "s"
   }
   ["b"]=>
   object(for_string_asort)#%d (3) {
     ["public_class_value"]=>
     string(1) "T"
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_string_asort":private]=>
     string(1) "t"
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     string(1) "q"
   }
   ["a"]=>
   object(for_string_asort)#%d (3) {
     ["public_class_value"]=>
     string(3) "axx"
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_string_asort":private]=>
     string(3) "AXX"
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     string(1) "d"
   }
   ["c"]=>
   object(for_string_asort)#%d (3) {
     ["public_class_value"]=>
     string(1) "w"
-    ["private_class_value:private"]=>
+    ["private_class_value":"for_string_asort":private]=>
     string(1) "W"
-    ["protected_class_value:protected"]=>
+    ["protected_class_value":protected]=>
     string(1) "c"
   }
 }

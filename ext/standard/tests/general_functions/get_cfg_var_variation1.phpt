@@ -33,14 +33,14 @@ foreach ( $variation_array as $var ) {
 --EXPECTF--
 *** Test substituting argument 1 with array values ***
 
-Notice: Array to string conversion in %s.php on line %d
-bool(false)
+Warning: get_cfg_var() expects parameter 1 to be string, array given in %s on line %d
+NULL
 
-Notice: Array to string conversion in %s.php on line %d
-bool(false)
+Warning: get_cfg_var() expects parameter 1 to be string, array given in %s on line %d
+NULL
 
-Notice: Array to string conversion in %s.php on line %d
-bool(false)
+Warning: get_cfg_var() expects parameter 1 to be string, array given in %s on line %d
+NULL
 
-Notice: Array to string conversion in %s.php on line %d
-bool(false)
+Warning: get_cfg_var() expects parameter 1 to be string, array given in %s on line %d
+NULL

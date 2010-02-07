@@ -16,10 +16,10 @@ var_dump(ldap_next_entry($link, $link));
 ?>
 ===DONE===
 --EXPECTF--
-Warning: Wrong parameter count for ldap_next_entry() in %s on line %d
+Warning: ldap_next_entry() expects exactly 2 parameters, 1 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for ldap_next_entry() in %s on line %d
+Warning: ldap_next_entry() expects exactly 2 parameters, 3 given in %s on line %d
 NULL
 
 Warning: ldap_next_entry(): supplied resource is not a valid ldap result entry resource in %s on line %d

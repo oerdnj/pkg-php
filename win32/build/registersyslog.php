@@ -3,7 +3,7 @@
 /* This script sets up an event source for use by the php syslog() function. */
 
 if (!extension_loaded("win32std")) {
-	dl("php_win32std.dll");
+	@dl("php_win32std.dll");
 }
 
 $PATH = "SYSTEM\\CurrentControlSet\\Services\\Eventlog\\Application\\PHP-" . phpversion();
@@ -20,7 +20,6 @@ if (extension_loaded("win32std")) {
 		reg_set_value($key, "TypesSupported", REG_DWORD, 7) or die("Types");
 		reg_set_value($key, "EventMessageFile", REG_SZ, $dll) or die("EventMessageFile");
 
-		define_syslog_variables();
 		syslog(LOG_NOTICE, "Registered PHP Event source");
 	} else {
 		echo "Could not register event source\n";

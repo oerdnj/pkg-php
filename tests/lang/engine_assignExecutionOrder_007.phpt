@@ -12,12 +12,11 @@ $o->a->b =& new $a[$i=2][++$i];
 print_r($o);
 ?>
 --EXPECTF--
+Deprecated: Assigning the return value of new by reference is deprecated in %s.php on line 3
 
-Strict Standards: Assigning the return value of new by reference is deprecated in %s on line 3
+Deprecated: Assigning the return value of new by reference is deprecated in %s.php on line 7
 
-Strict Standards: Assigning the return value of new by reference is deprecated in %s on line 7
-
-Strict Standards: Assigning the return value of new by reference is deprecated in %s on line 8
+Deprecated: Assigning the return value of new by reference is deprecated in %s.php on line 8
 Array
 (
     [2] => Array

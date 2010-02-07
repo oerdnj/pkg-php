@@ -29,12 +29,12 @@ var_dump( sscanf($str, $format, $str1, $str2, $extra_str) );
 
 -- Testing sscanf() function with no arguments --
 
-Warning: Wrong parameter count for sscanf() in %s on line %d
+Warning: sscanf() expects at least 2 parameters, 0 given in %s on line %d
 NULL
 
 -- Testing sscanf() function with one argument --
 
-Warning: Wrong parameter count for sscanf() in %s on line %d
+Warning: sscanf() expects at least 2 parameters, 1 given in %s on line %d
 NULL
 
 -- Testing sscanf() function with more than expected no. of arguments --

@@ -33,35 +33,35 @@ shm_remove($s);
 echo "Done\n";
 ?>
 --EXPECTF--	
-Warning: Wrong parameter count for shm_attach() in %s/sysvshm/tests/002.php on line %d
+Warning: shm_attach() expects at least 1 parameter, 0 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for shm_attach() in %s/sysvshm/tests/002.php on line %d
+Warning: shm_attach() expects at most 3 parameters, 4 given in %s on line %d
 NULL
 
-Warning: shm_attach(): Segment size must be greater then zero. in %s/sysvshm/tests/002.php on line %d
+Warning: shm_attach(): Segment size must be greater than zero in %s on line %d
 bool(false)
 
-Warning: shm_attach(): Segment size must be greater then zero. in %s/sysvshm/tests/002.php on line %d
+Warning: shm_attach(): Segment size must be greater than zero in %s on line %d
 bool(false)
 
-Warning: shm_attach(): Segment size must be greater then zero. in %s/sysvshm/tests/002.php on line %d
+Warning: shm_attach(): Segment size must be greater than zero in %s on line %d
 bool(false)
 
-Warning: shm_attach(): Segment size must be greater then zero. in %s/sysvshm/tests/002.php on line %d
+Warning: shm_attach(): Segment size must be greater than zero in %s on line %d
 bool(false)
 
-Warning: shm_remove(): The parameter is not a valid shm_identifier in %s/sysvshm/tests/002.php on line %d
+Warning: shm_remove() expects parameter 1 to be resource, boolean given in %s on line %d
 
-Warning: shm_attach(): Segment size must be greater then zero. in %s/sysvshm/tests/002.php on line %d
+Warning: shm_attach(): Segment size must be greater than zero in %s on line %d
 bool(false)
 
-Warning: shm_remove(): The parameter is not a valid shm_identifier in %s/sysvshm/tests/002.php on line %d
-int(%d)
+Warning: shm_remove() expects parameter 1 to be resource, boolean given in %s on line %d
+resource(%d) of type (sysvshm)
 
-Warning: shm_remove(): The parameter is not a valid shm_identifier in %s/sysvshm/tests/002.php on line %d
-int(%d)
-int(%d)
-int(%d)
-int(%d)
+Warning: shm_remove() expects parameter 1 to be resource, integer given in %s on line %d
+resource(%d) of type (sysvshm)
+resource(%d) of type (sysvshm)
+resource(%d) of type (sysvshm)
+resource(%d) of type (sysvshm)
 Done

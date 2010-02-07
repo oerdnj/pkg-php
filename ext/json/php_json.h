@@ -16,39 +16,41 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_json.h 282593 2009-06-22 18:41:13Z stas $ */
+/* $Id: php_json.h 283185 2009-06-30 17:52:21Z stas $ */
 
 #ifndef PHP_JSON_H
 #define PHP_JSON_H
 
 #define PHP_JSON_VERSION "1.2.1"
-
 #include "ext/standard/php_smart_str.h"
 
 extern zend_module_entry json_module_entry;
 #define phpext_json_ptr &json_module_entry
 
-#ifdef PHP_WIN32
+#if defined(PHP_WIN32) && defined(JSON_EXPORTS)
 #define PHP_JSON_API __declspec(dllexport)
 #else
-#define PHP_JSON_API
+#define PHP_JSON_API PHPAPI
 #endif
 
 #ifdef ZTS
 #include "TSRM.h"
 #endif
 
+ZEND_BEGIN_MODULE_GLOBALS(json)
+	int error_code;
+ZEND_END_MODULE_GLOBALS(json)
+
 #ifdef ZTS
-#define JSON_G(v) TSRMG(json_globals_id, zend_json_globals *, v)
+# define JSON_G(v) TSRMG(json_globals_id, zend_json_globals *, v)
 #else
-#define JSON_G(v) (json_globals.v)
+# define JSON_G(v) (json_globals.v)
 #endif
 
-PHP_JSON_API void php_json_encode(smart_str *buf, zval *val TSRMLS_DC);
-PHP_JSON_API void php_json_decode(zval *return_value, char *buf, int buf_len, zend_bool assoc TSRMLS_DC);
+PHP_JSON_API void php_json_encode(smart_str *buf, zval *val, int options TSRMLS_DC);
+PHP_JSON_API void php_json_decode(zval *return_value, char *str, int str_len, zend_bool assoc, long depth TSRMLS_DC);
 
 #endif  /* PHP_JSON_H */
-
 
 /*
  * Local variables:

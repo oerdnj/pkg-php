@@ -16,7 +16,7 @@
    |          Derick Rethans <derick@derickrethans.nl>                    |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_mcrypt.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: php_mcrypt.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_MCRYPT_H
 #define PHP_MCRYPT_H

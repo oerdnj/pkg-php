@@ -50,7 +50,6 @@ echo "Done\n";
 --CLEAN--
 <?php
 rmdir(dirname(__FILE__)."/mkdir_variation2/test/");
-rmdir(dirname(__FILE__)."/mkdir_variation2/test1/");
 rmdir(dirname(__FILE__)."/mkdir_variation2/");
 ?>
 --EXPECTF--
@@ -71,7 +70,7 @@ bool(true)
 *** Testing mkdir() with miscelleneous input ***
 bool(true)
 
-Warning: mkdir(): Permission denied in %s on line %d
+Warning: mkdir(): Permission denied in %sfile/mkdir_rmdir_variation2.php on line %d
 bool(false)
 bool(true)
 Done

@@ -120,29 +120,24 @@ Error: 2 - getimagesize(0.5): failed to open stream: No such file or directory, 
 bool(false)
 
 -- Arg value: array() --
-Error: 8 - Array to string conversion, %s(%d)
-Error: 2 - getimagesize(Array): failed to open stream: No such file or directory, %s(%d)
-bool(false)
+Error: 2 - getimagesize() expects parameter 1 to be string, array given, %s(%d)
+NULL
 
 -- Arg value: array(0) --
-Error: 8 - Array to string conversion, %s(%d)
-Error: 2 - getimagesize(Array): failed to open stream: No such file or directory, %s(%d)
-bool(false)
+Error: 2 - getimagesize() expects parameter 1 to be string, array given, %s(%d)
+NULL
 
 -- Arg value: array(1) --
-Error: 8 - Array to string conversion, %s(%d)
-Error: 2 - getimagesize(Array): failed to open stream: No such file or directory, %s(%d)
-bool(false)
+Error: 2 - getimagesize() expects parameter 1 to be string, array given, %s(%d)
+NULL
 
 -- Arg value: array(1, 2) --
-Error: 8 - Array to string conversion, %s(%d)
-Error: 2 - getimagesize(Array): failed to open stream: No such file or directory, %s(%d)
-bool(false)
+Error: 2 - getimagesize() expects parameter 1 to be string, array given, %s(%d)
+NULL
 
 -- Arg value: array('color' => 'red', 'item' => 'pen') --
-Error: 8 - Array to string conversion, %s(%d)
-Error: 2 - getimagesize(Array): failed to open stream: No such file or directory, %s(%d)
-bool(false)
+Error: 2 - getimagesize() expects parameter 1 to be string, array given, %s(%d)
+NULL
 
 -- Arg value: NULL --
 Error: 2 - getimagesize(): Filename cannot be empty, %s(%d)
@@ -177,10 +172,8 @@ Error: 2 - getimagesize(): Filename cannot be empty, %s(%d)
 bool(false)
 
 -- Arg value: new stdclass() --
-Error: 4096 - Object of class stdClass could not be converted to string, %s(%d)
-Error: 8 - Object of class stdClass to string conversion, %s(%d)
-Error: 2 - getimagesize(Object): failed to open stream: No such file or directory, %s(%d)
-bool(false)
+Error: 2 - getimagesize() expects parameter 1 to be string, object given, %s(%d)
+NULL
 
 -- Arg value: undefined_var --
 Error: 2 - getimagesize(): Filename cannot be empty, %s(%d)

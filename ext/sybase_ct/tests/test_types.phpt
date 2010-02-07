@@ -6,7 +6,7 @@ Sybase-CT select and types
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: test_types.phpt 163063 2004-07-11 16:57:12Z thekid $ 
+ * $Id: test_types.phpt 242949 2007-09-26 15:44:16Z cvs2svn $ 
  */
 
   require('test.inc');

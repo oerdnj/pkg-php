@@ -14,8 +14,8 @@ var_dump(getservbyport( $port, $protocol, $extra_arg ) );
 var_dump(getservbyport($port));
 ?>
 --EXPECTF--
-Warning: Wrong parameter count for getservbyport() in %s.php on line %d
+Warning: getservbyport() expects exactly 2 parameters, %d given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for getservbyport() in %s.php on line %d
+Warning: getservbyport() expects exactly 2 parameters, %d given in %s on line %d
 NULL

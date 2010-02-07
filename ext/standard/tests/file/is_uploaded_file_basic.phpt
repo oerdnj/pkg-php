@@ -40,9 +40,9 @@ bool(false)
 bool(false)
 bool(false)
 
-Warning: Wrong parameter count for is_uploaded_file() in %s on line %d
+Warning: is_uploaded_file() expects exactly 1 parameter, 0 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for is_uploaded_file() in %s on line %d
+Warning: is_uploaded_file() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
 

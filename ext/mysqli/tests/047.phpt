@@ -1,18 +1,21 @@
 --TEST--
 mysqli_get_metadata
 --SKIPIF--
-<?php require_once('skipif.inc'); ?>
+<?php
+require_once('skipif.inc');
+require_once('skipifconnectfailure.inc');
+?>
 --FILE--
 <?php
 	include "connect.inc";
-	
-	/*** test mysqli_connect 127.0.0.1 ***/
-	$link = mysqli_connect($host, $user, $passwd);
 
-	mysqli_select_db($link, "test");
+	/*** test mysqli_connect 127.0.0.1 ***/
+	$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket);
+
+	mysqli_select_db($link, $db);
 
 	mysqli_query($link, "DROP TABLE IF EXISTS test_affected");
-	mysqli_query($link, "CREATE TABLE test_affected (foo int, bar varchar(10) character set latin1)");
+	mysqli_query($link, "CREATE TABLE test_affected (foo int, bar varchar(10) character set latin1) ENGINE=" . $engine);
 
 	mysqli_query($link, "INSERT INTO test_affected VALUES (1, 'Zak'),(2, 'Greant')");
 
@@ -31,166 +34,180 @@ mysqli_get_metadata
 	while ($field = mysqli_fetch_field($result)) {
 		var_dump($field);
 	}
-    
+
 	print_r(mysqli_fetch_lengths($result));
-    
+
 	mysqli_free_result($result);
 
 
-	mysqli_stmt_close($stmt);	
+	mysqli_stmt_close($stmt);
+	mysqli_query($link, "DROP TABLE IF EXISTS test_affected");
 	mysqli_close($link);
+	print "done!";
+?>
+--CLEAN--
+<?php
+include "connect.inc";
+if (!$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket))
+   printf("[c001] [%d] %s\n", mysqli_connect_errno(), mysqli_connect_error());
+
+if (!mysqli_query($link, "DROP TABLE IF EXISTS test_affected"))
+	printf("[c002] Cannot drop table, [%d] %s\n", mysqli_errno($link), mysqli_error($link));
+
+mysqli_close($link);
 ?>
 --EXPECTF--
 === fetch_fields ===
 array(2) {
   [0]=>
   object(stdClass)#5 (11) {
-    ["name"]=>
-    string(3) "foo"
-    ["orgname"]=>
-    string(3) "foo"
-    ["table"]=>
-    string(13) "test_affected"
-    ["orgtable"]=>
-    string(13) "test_affected"
-    ["def"]=>
-    string(0) ""
-    ["max_length"]=>
+    [%u|b%"name"]=>
+    %unicode|string%(3) "foo"
+    [%u|b%"orgname"]=>
+    %unicode|string%(3) "foo"
+    [%u|b%"table"]=>
+    %unicode|string%(13) "test_affected"
+    [%u|b%"orgtable"]=>
+    %unicode|string%(13) "test_affected"
+    [%u|b%"def"]=>
+    %unicode|string%(0) ""
+    [%u|b%"max_length"]=>
     int(0)
-    ["length"]=>
+    [%u|b%"length"]=>
     int(%d)
-    ["charsetnr"]=>
+    [%u|b%"charsetnr"]=>
     int(%d)
-    ["flags"]=>
+    [%u|b%"flags"]=>
     int(32768)
-    ["type"]=>
+    [%u|b%"type"]=>
     int(3)
-    ["decimals"]=>
+    [%u|b%"decimals"]=>
     int(0)
   }
   [1]=>
   object(stdClass)#6 (11) {
-    ["name"]=>
-    string(3) "bar"
-    ["orgname"]=>
-    string(3) "bar"
-    ["table"]=>
-    string(13) "test_affected"
-    ["orgtable"]=>
-    string(13) "test_affected"
-    ["def"]=>
-    string(0) ""
-    ["max_length"]=>
+    [%u|b%"name"]=>
+    %unicode|string%(3) "bar"
+    [%u|b%"orgname"]=>
+    %unicode|string%(3) "bar"
+    [%u|b%"table"]=>
+    %unicode|string%(13) "test_affected"
+    [%u|b%"orgtable"]=>
+    %unicode|string%(13) "test_affected"
+    [%u|b%"def"]=>
+    %unicode|string%(0) ""
+    [%u|b%"max_length"]=>
     int(0)
-    ["length"]=>
+    [%u|b%"length"]=>
     int(%d)
-    ["charsetnr"]=>
+    [%u|b%"charsetnr"]=>
     int(%d)
-    ["flags"]=>
+    [%u|b%"flags"]=>
     int(0)
-    ["type"]=>
+    [%u|b%"type"]=>
     int(253)
-    ["decimals"]=>
+    [%u|b%"decimals"]=>
     int(0)
   }
 }
 
 === fetch_field_direct ===
 object(stdClass)#6 (11) {
-  ["name"]=>
-  string(3) "foo"
-  ["orgname"]=>
-  string(3) "foo"
-  ["table"]=>
-  string(13) "test_affected"
-  ["orgtable"]=>
-  string(13) "test_affected"
-  ["def"]=>
-  string(0) ""
-  ["max_length"]=>
+  [%u|b%"name"]=>
+  %unicode|string%(3) "foo"
+  [%u|b%"orgname"]=>
+  %unicode|string%(3) "foo"
+  [%u|b%"table"]=>
+  %unicode|string%(13) "test_affected"
+  [%u|b%"orgtable"]=>
+  %unicode|string%(13) "test_affected"
+  [%u|b%"def"]=>
+  %unicode|string%(0) ""
+  [%u|b%"max_length"]=>
   int(0)
-  ["length"]=>
+  [%u|b%"length"]=>
   int(%d)
-  ["charsetnr"]=>
+  [%u|b%"charsetnr"]=>
   int(%d)
-  ["flags"]=>
+  [%u|b%"flags"]=>
   int(32768)
-  ["type"]=>
+  [%u|b%"type"]=>
   int(3)
-  ["decimals"]=>
+  [%u|b%"decimals"]=>
   int(0)
 }
 object(stdClass)#6 (11) {
-  ["name"]=>
-  string(3) "bar"
-  ["orgname"]=>
-  string(3) "bar"
-  ["table"]=>
-  string(13) "test_affected"
-  ["orgtable"]=>
-  string(13) "test_affected"
-  ["def"]=>
-  string(0) ""
-  ["max_length"]=>
+  [%u|b%"name"]=>
+  %unicode|string%(3) "bar"
+  [%u|b%"orgname"]=>
+  %unicode|string%(3) "bar"
+  [%u|b%"table"]=>
+  %unicode|string%(13) "test_affected"
+  [%u|b%"orgtable"]=>
+  %unicode|string%(13) "test_affected"
+  [%u|b%"def"]=>
+  %unicode|string%(0) ""
+  [%u|b%"max_length"]=>
   int(0)
-  ["length"]=>
+  [%u|b%"length"]=>
   int(%d)
-  ["charsetnr"]=>
+  [%u|b%"charsetnr"]=>
   int(%d)
-  ["flags"]=>
+  [%u|b%"flags"]=>
   int(0)
-  ["type"]=>
+  [%u|b%"type"]=>
   int(253)
-  ["decimals"]=>
+  [%u|b%"decimals"]=>
   int(0)
 }
 
 === fetch_field ===
 object(stdClass)#6 (11) {
-  ["name"]=>
-  string(3) "foo"
-  ["orgname"]=>
-  string(3) "foo"
-  ["table"]=>
-  string(13) "test_affected"
-  ["orgtable"]=>
-  string(13) "test_affected"
-  ["def"]=>
-  string(0) ""
-  ["max_length"]=>
+  [%u|b%"name"]=>
+  %unicode|string%(3) "foo"
+  [%u|b%"orgname"]=>
+  %unicode|string%(3) "foo"
+  [%u|b%"table"]=>
+  %unicode|string%(13) "test_affected"
+  [%u|b%"orgtable"]=>
+  %unicode|string%(13) "test_affected"
+  [%u|b%"def"]=>
+  %unicode|string%(0) ""
+  [%u|b%"max_length"]=>
   int(0)
-  ["length"]=>
+  [%u|b%"length"]=>
   int(%d)
-  ["charsetnr"]=>
+  [%u|b%"charsetnr"]=>
   int(%d)
-  ["flags"]=>
+  [%u|b%"flags"]=>
   int(32768)
-  ["type"]=>
+  [%u|b%"type"]=>
   int(3)
-  ["decimals"]=>
+  [%u|b%"decimals"]=>
   int(0)
 }
 object(stdClass)#5 (11) {
-  ["name"]=>
-  string(3) "bar"
-  ["orgname"]=>
-  string(3) "bar"
-  ["table"]=>
-  string(13) "test_affected"
-  ["orgtable"]=>
-  string(13) "test_affected"
-  ["def"]=>
-  string(0) ""
-  ["max_length"]=>
+  [%u|b%"name"]=>
+  %unicode|string%(3) "bar"
+  [%u|b%"orgname"]=>
+  %unicode|string%(3) "bar"
+  [%u|b%"table"]=>
+  %unicode|string%(13) "test_affected"
+  [%u|b%"orgtable"]=>
+  %unicode|string%(13) "test_affected"
+  [%u|b%"def"]=>
+  %unicode|string%(0) ""
+  [%u|b%"max_length"]=>
   int(0)
-  ["length"]=>
+  [%u|b%"length"]=>
   int(%d)
-  ["charsetnr"]=>
+  [%u|b%"charsetnr"]=>
   int(%d)
-  ["flags"]=>
+  [%u|b%"flags"]=>
   int(0)
-  ["type"]=>
+  [%u|b%"type"]=>
   int(253)
-  ["decimals"]=>
+  [%u|b%"decimals"]=>
   int(0)
 }
+done!

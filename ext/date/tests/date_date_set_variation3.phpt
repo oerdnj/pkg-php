@@ -2,7 +2,7 @@
 Test date_date_set() function : usage variation - Passing unexpected values to third argument $month.
 --FILE--
 <?php
-/* Prototype  : void date_date_set  ( DateTime $object  , int $year  , int $month  , int $day  )
+/* Prototype  : DateTime date_date_set  ( DateTime $object  , int $year  , int $month  , int $day  )
  * Description: Resets the current date of the DateTime object to a different date. 
  * Source code: ext/date/php_date.c
  * Alias to functions: DateTime::setDate
@@ -113,25 +113,74 @@ fclose( $file_handle );
 *** Testing date_date_set() : usage variation -  unexpected values to third argument $month***
 
 -- int 0 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1962-12-02 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- int 1 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1963-01-02 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- int 12345 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2991-09-02 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- int -12345 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "0934-03-02 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- float 10.5 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1963-10-02 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- float -10.5 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1962-02-02 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- float .5 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1962-12-02 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- empty array --
 
@@ -154,22 +203,64 @@ Warning: date_date_set() expects parameter 3 to be long, array given in %s on li
 bool(false)
 
 -- uppercase NULL --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1962-12-02 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- lowercase null --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1962-12-02 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- lowercase true --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1963-01-02 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- lowercase false --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1962-12-02 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- uppercase TRUE --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1963-01-02 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- uppercase FALSE --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1962-12-02 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- empty string DQ --
 
@@ -212,10 +303,24 @@ Warning: date_date_set() expects parameter 3 to be long, object given in %s on l
 bool(false)
 
 -- undefined var --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1962-12-02 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- unset var --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1962-12-02 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- resource --
 

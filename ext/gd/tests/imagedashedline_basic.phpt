@@ -3,7 +3,7 @@ imagedashedline()
 --SKIPIF--
 <?php 
 	if (!function_exists('imagedashedline')) die('skip imagedashedline() not available'); 
-	if (!(imagetype() & IMG_PNG)) die('skip PNG Support is not enabled');
+	require_once('skipif_imagetype.inc');
 ?>
 --FILE--
 <?php

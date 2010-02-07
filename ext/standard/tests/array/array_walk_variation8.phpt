@@ -37,6 +37,6 @@ bool(true)
 bool(true)
 -- With 'echo' language construct --
 
-Warning: array_walk(): Unable to call echo() - function does not exist in %s on line %d
-bool(true)
+Warning: array_walk() expects parameter 2 to be a valid callback, function 'echo' not found or invalid function name in %s on line %d
+NULL
 Done

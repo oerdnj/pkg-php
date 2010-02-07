@@ -2,15 +2,15 @@
 Bug #44327 (PDORow::queryString property & numeric offsets / Crash)
 --SKIPIF--
 <?php
-require dirname(__FILE__) . '/config.inc';
-require dirname(__FILE__) . '/../../../ext/pdo/tests/pdo_test.inc';
+require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'skipif.inc');
+require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'mysql_pdo_test.inc');
 MySQLPDOTest::skip();
+$db = MySQLPDOTest::factory();
 ?>
 --FILE--
 <?php
-	require dirname(__FILE__) . '/config.inc';
-	require dirname(__FILE__) . '/../../../ext/pdo/tests/pdo_test.inc';
-	$db = PDOTest::test_factory(dirname(__FILE__) . '/common.phpt');
+	require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'mysql_pdo_test.inc');
+	$db = MySQLPDOTest::factory();
 
 	$stmt = $db->prepare("SELECT 1 AS \"one\""); 
 	$stmt->execute(); 

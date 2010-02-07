@@ -30,6 +30,9 @@ class FileStream {
 
     function stream_eof() 
     {
+        if (!$this->fp) {
+            return true;
+        }
         return feof($this->fp);
     }
 
@@ -42,13 +45,20 @@ class FileStream {
 stream_wrapper_register("myFile", "FileStream")
     or die("Failed to register protocol");
 
-$tn = tempnam('/tmp', 'foo');
+$tmp_dir = __DIR__;
+$tn = (binary) tempnam($tmp_dir, 'foo');
+if (!$tn) {
+  die("tempnam failed");
+}
 
 $fp = fopen("myFile://" . urlencode($tn), "w+");
+if (!$fp) {
+  die("fopen failed");
+}
 
-fwrite($fp, "line1\n");
-fwrite($fp, "line2\n");
-fwrite($fp, "line3\n");
+fwrite($fp, b"line1\n");
+fwrite($fp, b"line2\n");
+fwrite($fp, b"line3\n");
 
 debug_zval_dump(feof($fp));
 rewind($fp);

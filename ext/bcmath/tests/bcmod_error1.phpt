@@ -10,4 +10,4 @@ antoni@solucionsinternet.com
 echo bcmod('1', '2', '3');
 ?>
 --EXPECTF--
-Warning: Wrong parameter count for bcmod() in %s.php on line %d
+Warning: bcmod() expects exactly 2 parameters, 3 given in %s.php on line %d

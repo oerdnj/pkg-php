@@ -4,12 +4,6 @@ Test exp() - basic function test for exp()
 precision=14
 --FILE--
 <?php
-/* Prototype  : float exp  ( float $arg  )
- * Description: Returns e raised to the power of arg.
- * Source code: ext/standard/math.c
- */
-
-echo "*** Testing exp() : basic functionality ***\n";
 $values = array(10,
 				10.3,
 				3.9505e3,
@@ -25,17 +19,16 @@ $values = array(10,
 				null, 
 				);	
 
-// loop through each element of $values to check the behaviour of exp()
 $iterator = 1;
 foreach($values as $value) {
 	echo "\n-- Iteration $iterator --\n";
 	var_dump(exp($value));
 	$iterator++;
 };
+
 ?>
 ===Done===
 --EXPECTF--
-*** Testing exp() : basic functionality ***
 
 -- Iteration 1 --
 float(22026.465794807)

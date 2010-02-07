@@ -16,22 +16,28 @@
    |          Zeev Suraski <zeev@zend.com>                                |
    |          Rasmus Lerdorf <rasmus@php.net>                             |
    +----------------------------------------------------------------------+
- */
-/* $Id: crypt.c 272374 2008-12-31 11:17:49Z sebastian $ */
+*/
+
+/* $Id: crypt.c 272370 2008-12-31 11:15:49Z sebastian $ */
+
 #include <stdlib.h>
 
 #include "php.h"
-
 #if HAVE_CRYPT
 
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#if HAVE_CRYPT_H
-#if defined(CRYPT_R_GNU_SOURCE) && !defined(_GNU_SOURCE)
-#define _GNU_SOURCE
-#endif
-#include <crypt.h>
+#ifdef PHP_USE_PHP_CRYPT_R
+# include "php_crypt_r.h"
+# include "crypt_freesec.h"
+#else
+# if HAVE_CRYPT_H
+#  if defined(CRYPT_R_GNU_SOURCE) && !defined(_GNU_SOURCE)
+#   define _GNU_SOURCE
+#  endif
+#  include <crypt.h>
+# endif
 #endif
 #if TM_IN_SYS_TIME
 #include <sys/time.h>
@@ -46,19 +52,17 @@
 
 #ifdef PHP_WIN32
 #include <process.h>
-extern char *crypt(char *__key, char *__salt);
 #endif
 
 #include "php_lcg.h"
 #include "php_crypt.h"
 #include "php_rand.h"
 
-/* 
-   The capabilities of the crypt() function is determined by the test programs
-   run by configure from aclocal.m4.  They will set PHP_STD_DES_CRYPT,
-   PHP_EXT_DES_CRYPT, PHP_MD5_CRYPT and PHP_BLOWFISH_CRYPT as appropriate 
-   for the target platform
-*/
+/* The capabilities of the crypt() function is determined by the test programs
+ * run by configure from aclocal.m4.  They will set PHP_STD_DES_CRYPT,
+ * PHP_EXT_DES_CRYPT, PHP_MD5_CRYPT and PHP_BLOWFISH_CRYPT as appropriate
+ * for the target platform. */
+
 #if PHP_STD_DES_CRYPT
 #define PHP_MAX_SALT_LEN 2
 #endif
@@ -78,10 +82,8 @@ extern char *crypt(char *__key, char *__salt);
 #define PHP_MAX_SALT_LEN 60
 #endif
 
- /*
-  * If the configure-time checks fail, we provide DES.
-  * XXX: This is a hack. Fix the real problem
-  */
+/* If the configure-time checks fail, we provide DES.
+ * XXX: This is a hack. Fix the real problem! */
 
 #ifndef PHP_MAX_SALT_LEN
 #define PHP_MAX_SALT_LEN 2
@@ -89,10 +91,9 @@ extern char *crypt(char *__key, char *__salt);
 #define PHP_STD_DES_CRYPT 1
 #endif
 
-
 #define PHP_CRYPT_RAND php_rand(TSRMLS_C)
 
-PHP_MINIT_FUNCTION(crypt)
+PHP_MINIT_FUNCTION(crypt) /* {{{ */
 {
 	REGISTER_LONG_CONSTANT("CRYPT_SALT_LENGTH", PHP_MAX_SALT_LEN, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("CRYPT_STD_DES", PHP_STD_DES_CRYPT, CONST_CS | CONST_PERSISTENT);
@@ -100,35 +101,50 @@ PHP_MINIT_FUNCTION(crypt)
 	REGISTER_LONG_CONSTANT("CRYPT_MD5", PHP_MD5_CRYPT, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("CRYPT_BLOWFISH", PHP_BLOWFISH_CRYPT, CONST_CS | CONST_PERSISTENT);
 
+#ifdef PHP_USE_PHP_CRYPT_R
+	php_init_crypt_r();
+#endif
+
 	return SUCCESS;
 }
+/* }}} */
 
+PHP_MSHUTDOWN_FUNCTION(crypt) /* {{{ */
+{
+#ifdef PHP_USE_PHP_CRYPT_R
+	php_shutdown_crypt_r();
+#endif
+
+	return SUCCESS;
+}
+/* }}} */
 
 static unsigned char itoa64[] = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-static void php_to64(char *s, long v, int n)
+static void php_to64(char *s, long v, int n) /* {{{ */
 {
 	while (--n >= 0) {
-		*s++ = itoa64[v&0x3f]; 		
+		*s++ = itoa64[v&0x3f];
 		v >>= 6;
-	} 
-} 
+	}
+}
+/* }}} */
 
 /* {{{ proto string crypt(string str [, string salt])
-   Encrypt a string */
+   Hash a string */
 PHP_FUNCTION(crypt)
 {
-	char salt[PHP_MAX_SALT_LEN+1];
+	char salt[PHP_MAX_SALT_LEN + 1];
 	char *str, *salt_in = NULL;
-	int str_len, salt_in_len;
+	int str_len, salt_in_len = 0;
 
-	salt[0]=salt[PHP_MAX_SALT_LEN]='\0';
+	salt[0] = salt[PHP_MAX_SALT_LEN] = '\0';
+
 	/* This will produce suitable results if people depend on DES-encryption
-	   available (passing always 2-character salt). At least for glibc6.1 */
-	memset(&salt[1], '$', PHP_MAX_SALT_LEN-1);
+	 * available (passing always 2-character salt). At least for glibc6.1 */
+	memset(&salt[1], '$', PHP_MAX_SALT_LEN - 1);
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|s", &str, &str_len,
-							  &salt_in, &salt_in_len) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|s", &str, &str_len, &salt_in, &salt_in_len) == FAILURE) {
 		return;
 	}
 
@@ -136,8 +152,8 @@ PHP_FUNCTION(crypt)
 		memcpy(salt, salt_in, MIN(PHP_MAX_SALT_LEN, salt_in_len));
 	}
 
-	/* The automatic salt generation only covers standard DES and md5-crypt */
-	if(!*salt) {
+	/* The automatic salt generation covers standard DES, md5-crypt and Blowfish (simple) */
+	if (!*salt) {
 #if PHP_MD5_CRYPT
 		strcpy(salt, "$1$");
 		php_to64(&salt[3], PHP_CRYPT_RAND, 4);
@@ -148,21 +164,54 @@ PHP_FUNCTION(crypt)
 		salt[2] = '\0';
 #endif
 	}
-#if defined(HAVE_CRYPT_R) && (defined(_REENTRANT) || defined(_THREAD_SAFE))
+
+/* Windows (win32/crypt) has a stripped down version of libxcrypt and 
+	a CryptoApi md5_crypt implementation */
+#if PHP_USE_PHP_CRYPT_R
 	{
-#if defined(CRYPT_R_STRUCT_CRYPT_DATA)
+		struct php_crypt_extended_data buffer;
+
+		if (salt[0]=='$' && salt[1]=='1' && salt[2]=='$') {
+			char output[MD5_HASH_MAX_LEN];
+
+			RETURN_STRING(php_md5_crypt_r(str, salt, output), 1);
+		} else  if (
+				salt[0] == '$' &&
+				salt[1] == '2' &&
+				salt[2] == 'a' &&
+				salt[3] == '$' &&
+				salt[4] >= '0' && salt[4] <= '3' &&
+				salt[5] >= '0' && salt[5] <= '9' &&
+				salt[6] == '$') {
+			char output[PHP_MAX_SALT_LEN + 1];
+
+			memset(output, 0, PHP_MAX_SALT_LEN + 1);
+			php_crypt_blowfish_rn(str, salt, output, sizeof(output));
+
+			RETVAL_STRING(output, 1);
+			memset(output, 0, PHP_MAX_SALT_LEN + 1);
+		} else {
+			memset(&buffer, 0, sizeof(buffer));
+			_crypt_extended_init_r();
+			RETURN_STRING(_crypt_extended_r(str, salt, &buffer), 1);
+		}
+	}
+#else
+
+# if defined(HAVE_CRYPT_R) && (defined(_REENTRANT) || defined(_THREAD_SAFE))
+	{
+#  if defined(CRYPT_R_STRUCT_CRYPT_DATA)
 		struct crypt_data buffer;
 		memset(&buffer, 0, sizeof(buffer));
-#elif defined(CRYPT_R_CRYPTD)
+#  elif defined(CRYPT_R_CRYPTD)
 		CRYPTD buffer;
-#else 
-#error Data struct used by crypt_r() is unknown. Please report.
-#endif
+#  else
+#    error Data struct used by crypt_r() is unknown. Please report.
+#  endif
 
 		RETURN_STRING(crypt_r(str, salt, &buffer), 1);
 	}
-#else
-	RETURN_STRING(crypt(str, salt), 1);
+# endif
 #endif
 }
 /* }}} */

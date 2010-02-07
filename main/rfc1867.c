@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: rfc1867.c 290885 2009-11-17 20:33:51Z rasmus $ */
+/* $Id: rfc1867.c 290025 2009-10-28 11:03:36Z pajoye $ */
 
 /*
  *  This product includes software developed by the Apache Group
@@ -32,7 +32,6 @@
 #include "php_globals.h"
 #include "php_variables.h"
 #include "rfc1867.h"
-#include "php_ini.h"
 
 #define DEBUG_FILE_UPLOAD ZEND_DEBUG
 
@@ -204,7 +203,8 @@ static void normalize_protected_variable(char *varname TSRMLS_DC)
 			index = NULL;
 		}	
 	}
-	*s++='\0';
+
+	*s = '\0';
 }
 
 
@@ -611,7 +611,7 @@ static char *substring_conf(char *start, int len, char quote TSRMLS_DC)
 		}
 	}
 
-	*resp++ = '\0';
+	*resp = '\0';
 	return result;
 }
 
@@ -795,9 +795,14 @@ SAPI_API SAPI_POST_HANDLER_FUNC(rfc1867_post_handler)
 	zend_llist header;
 	void *event_extra_data = NULL;
 	int llen = 0;
-	int upload_cnt = INI_INT("max_file_uploads");
+	char *max_uploads = INI_STR("max_file_uploads");
+	int upload_cnt = 0;
 
-	if (SG(post_max_size) > 0 && SG(request_info).content_length > SG(post_max_size)) {
+	if (max_uploads && *max_uploads) {
+		upload_cnt = atoi(max_uploads);
+	}
+
+	if (SG(request_info).content_length > SG(post_max_size)) {
 		sapi_module.sapi_error(E_WARNING, "POST Content-Length of %ld bytes exceeds the limit of %ld bytes", SG(request_info).content_length, SG(post_max_size));
 		return;
 	}
@@ -1095,7 +1100,7 @@ SAPI_API SAPI_POST_HANDLER_FUNC(rfc1867_post_handler)
 				} else if (blen > 0) {
 				
 					wlen = write(fd, buff, blen);
-
+			
 					if (wlen == -1) {
 						/* write failed */
 #if DEBUG_FILE_UPLOAD

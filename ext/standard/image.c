@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: image.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: image.c 277324 2009-03-17 03:25:57Z scottmac $ */
 
 #include "php.h"
 #include <stdio.h>
@@ -51,6 +51,7 @@ PHPAPI const char php_sig_jp2[12] = {(char)0x00, (char)0x00, (char)0x00, (char)0
                                      (char)0x6a, (char)0x50, (char)0x20, (char)0x20,
                                      (char)0x0d, (char)0x0a, (char)0x87, (char)0x0a};
 PHPAPI const char php_sig_iff[4] = {'F','O','R','M'};
+PHPAPI const char php_sig_ico[3] = {(char)0x00, (char)0x00, (char)0x01};
 
 /* REMEMBER TO ADD MIME-TYPE TO FUNCTION php_image_type_to_mime_type */
 /* PCX must check first 64bytes and byte 0=0x0a and byte2 < 0x06 */
@@ -87,6 +88,9 @@ PHP_MINIT_FUNCTION(imagetypes)
 	REGISTER_LONG_CONSTANT("IMAGETYPE_WBMP",    IMAGE_FILETYPE_WBMP,    CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("IMAGETYPE_JPEG2000",IMAGE_FILETYPE_JPC,     CONST_CS | CONST_PERSISTENT); /* keep alias */
 	REGISTER_LONG_CONSTANT("IMAGETYPE_XBM",     IMAGE_FILETYPE_XBM,     CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("IMAGETYPE_ICO",     IMAGE_FILETYPE_ICO,     CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("IMAGETYPE_UNKNOWN", IMAGE_FILETYPE_UNKNOWN, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("IMAGETYPE_COUNT",   IMAGE_FILETYPE_COUNT,   CONST_CS | CONST_PERSISTENT);
 	return SUCCESS;
 }
 /* }}} */
@@ -649,7 +653,7 @@ static struct gfxinfo *php_handle_jpc(php_stream * stream TSRMLS_DC)
 	}
 
 	/* Collect bit depth info */
-	highest_bit_depth = bit_depth = 0;
+	highest_bit_depth = 0;
 	for (i = 0; i < result->channels; i++) {
 		bit_depth = php_stream_getc(stream); /* Ssiz[i] */
 		bit_depth++;
@@ -1076,6 +1080,42 @@ static struct gfxinfo *php_handle_xbm(php_stream * stream TSRMLS_DC)
 }
 /* }}} */
 
+/* {{{ php_handle_ico
+ */
+static struct gfxinfo *php_handle_ico(php_stream * stream TSRMLS_DC)
+{
+	struct gfxinfo *result = NULL;
+	unsigned char dim[16];
+	int num_icons = 0;
+
+	if (php_stream_read(stream, dim, 2) != 2)
+		return NULL;
+
+	num_icons = (((unsigned int)dim[1]) << 8) + ((unsigned int) dim[0]);
+
+	if (num_icons < 1 || num_icons > 255)
+		return NULL;
+
+	result = (struct gfxinfo *) ecalloc(1, sizeof(struct gfxinfo));
+
+	while (num_icons > 0)
+	{
+		if (php_stream_read(stream, dim, sizeof(dim)) != sizeof(dim))
+			break;
+
+		if ((((unsigned int)dim[7]) <<  8) +  ((unsigned int)dim[6]) >= result->bits)
+		{
+			result->width    =  (unsigned int)dim[0];
+			result->height   =  (unsigned int)dim[1];
+			result->bits     =  (((unsigned int)dim[7]) <<  8) +  ((unsigned int)dim[6]);
+		}
+		num_icons--;
+	}
+
+	return result;
+}
+/* }}} */
+
 /* {{{ php_image_type_to_mime_type
  * Convert internal image_type to mime type */
 PHPAPI char * php_image_type_to_mime_type(int image_type)
@@ -1093,7 +1133,7 @@ PHPAPI char * php_image_type_to_mime_type(int image_type)
 		case IMAGE_FILETYPE_PSD:
 			return "image/psd";
 		case IMAGE_FILETYPE_BMP:
-			return "image/bmp";
+			return "image/x-ms-bmp";
 		case IMAGE_FILETYPE_TIFF_II:
 		case IMAGE_FILETYPE_TIFF_MM:
 			return "image/tiff";
@@ -1107,6 +1147,8 @@ PHPAPI char * php_image_type_to_mime_type(int image_type)
 			return "image/jp2";
 		case IMAGE_FILETYPE_XBM:
 			return "image/xbm";
+		case IMAGE_FILETYPE_ICO:
+			return "image/vnd.microsoft.icon";
 		default:
 		case IMAGE_FILETYPE_UNKNOWN:
 			return "application/octet-stream"; /* suppose binary format */
@@ -1118,15 +1160,13 @@ PHPAPI char * php_image_type_to_mime_type(int image_type)
    Get Mime-Type for image-type returned by getimagesize, exif_read_data, exif_thumbnail, exif_imagetype */
 PHP_FUNCTION(image_type_to_mime_type)
 {
-	zval **p_image_type;
-	int arg_c = ZEND_NUM_ARGS();
+	long p_image_type;
 
-	if ((arg_c!=1) || zend_get_parameters_ex(arg_c, &p_image_type) == FAILURE) {
-		RETVAL_FALSE;
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &p_image_type) == FAILURE) {
+		return;
 	}
-	convert_to_long_ex(p_image_type);
-	ZVAL_STRING(return_value, (char*)php_image_type_to_mime_type(Z_LVAL_PP(p_image_type)), 1);
+
+	ZVAL_STRING(return_value, (char*)php_image_type_to_mime_type(p_image_type), 1);
 }
 /* }}} */
 
@@ -1171,6 +1211,8 @@ PHP_FUNCTION(image_type_to_extension)
 			RETURN_STRING(".jb2" + !inc_dot, 1);
 		case IMAGE_FILETYPE_XBM:
 			RETURN_STRING(".xbm" + !inc_dot, 1);
+		case IMAGE_FILETYPE_ICO:
+			RETURN_STRING(".ico" + !inc_dot, 1);
 	}
 
 	RETURN_FALSE;
@@ -1224,12 +1266,12 @@ PHPAPI int php_getimagetype(php_stream * stream, char *filetype TSRMLS_DC)
 /* BYTES READ: 4 */
 	if (!memcmp(filetype, php_sig_tif_ii, 4)) {
 		return IMAGE_FILETYPE_TIFF_II;
-	} else
-	if (!memcmp(filetype, php_sig_tif_mm, 4)) {
+	} else if (!memcmp(filetype, php_sig_tif_mm, 4)) {
 		return IMAGE_FILETYPE_TIFF_MM;
-	}
-	if (!memcmp(filetype, php_sig_iff, 4)) {
+	} else if (!memcmp(filetype, php_sig_iff, 4)) {
 		return IMAGE_FILETYPE_IFF;
+	} else if (!memcmp(filetype, php_sig_ico, 3)) {
+		return IMAGE_FILETYPE_ICO;
 	}
 
 	if (php_stream_read(stream, filetype+4, 8) != 8) {
@@ -1256,40 +1298,22 @@ PHPAPI int php_getimagetype(php_stream * stream, char *filetype TSRMLS_DC)
    Get the size of an image as 4-element array */
 PHP_FUNCTION(getimagesize)
 {
-	zval **arg1, **info = NULL;
-	int itype = 0;
-	char *temp;
+	zval **info = NULL;
+	char *arg1, *temp;
+	int arg1_len, itype = 0, argc = ZEND_NUM_ARGS();
 	struct gfxinfo *result = NULL;
 	php_stream * stream = NULL;
 
-	switch(ZEND_NUM_ARGS()) {
-
-	case 1:
-		if (zend_get_parameters_ex(1, &arg1) == FAILURE) {
-			RETVAL_FALSE;
-			WRONG_PARAM_COUNT;
-		}
-		convert_to_string_ex(arg1);
-		break;
-
-	case 2:
-		if (zend_get_parameters_ex(2, &arg1, &info) == FAILURE) {
-			RETVAL_FALSE;
-			WRONG_PARAM_COUNT;
-		}
+	if (zend_parse_parameters(argc TSRMLS_CC, "s|Z", &arg1, &arg1_len, &info) == FAILURE) {
+		return;
+	}
+	
+	if (argc == 2) {
 		zval_dtor(*info);
-
 		array_init(*info);
-
-		convert_to_string_ex(arg1);
-		break;
-
-	default:
-		RETVAL_FALSE;
-		WRONG_PARAM_COUNT;
 	}
 
-	stream = php_stream_open_wrapper(Z_STRVAL_PP(arg1), "rb", STREAM_MUST_SEEK|REPORT_ERRORS|IGNORE_PATH|ENFORCE_SAFE_MODE, NULL);
+	stream = php_stream_open_wrapper(arg1, "rb", STREAM_MUST_SEEK|REPORT_ERRORS|IGNORE_PATH|ENFORCE_SAFE_MODE, NULL);
 
 	if (!stream) {
 		RETURN_FALSE;
@@ -1298,7 +1322,7 @@ PHP_FUNCTION(getimagesize)
 	itype = php_getimagetype(stream, NULL TSRMLS_CC);
 	switch( itype) {
 		case IMAGE_FILETYPE_GIF:
-			result = php_handle_gif (stream TSRMLS_CC);
+			result = php_handle_gif(stream TSRMLS_CC);
 			break;
 		case IMAGE_FILETYPE_JPEG:
 			if (info) {
@@ -1346,6 +1370,9 @@ PHP_FUNCTION(getimagesize)
 			break;
 		case IMAGE_FILETYPE_XBM:
 			result = php_handle_xbm(stream TSRMLS_CC);
+			break;
+		case IMAGE_FILETYPE_ICO:
+			result = php_handle_ico(stream TSRMLS_CC);
 			break;
 		default:
 		case IMAGE_FILETYPE_UNKNOWN:

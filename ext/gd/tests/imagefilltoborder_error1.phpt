@@ -23,4 +23,4 @@ imagefilltoborder( 'wrong param', 50, 50, imagecolorallocate( $image, 0, 0, 0 ),
 
 ?> 
 --EXPECTF--
-Warning: imagefilltoborder(): supplied argument is not a valid Image resource in %s on line %d
+Warning: imagefilltoborder() expects parameter 1 to be resource, %s given in %s on line %d

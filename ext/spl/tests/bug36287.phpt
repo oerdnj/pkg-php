@@ -1,7 +1,5 @@
 --TEST--
 Bug #36287 (Segfault with SplFileInfo conversion)
---SKIPIF--
-<?php if (!extension_loaded("spl")) print "skip"; ?>
 --FILE--
 <?php
 
@@ -11,15 +9,9 @@ $idx = 0;
 foreach($it as $file)
 {
 	echo "First\n";
-	if("." != $file && ".." != $file)
-	{
-		var_Dump($file->getFilename());
-	}
+	var_Dump($file->getFilename());
 	echo "Second\n";
-	if($file != "." && $file != "..")
-	{
-		var_dump($file->getFilename());
-	}
+	var_dump($file->getFilename());
 	if (++$idx > 1)
 	{
 		break;

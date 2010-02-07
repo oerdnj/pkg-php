@@ -10,7 +10,6 @@ PHP Testfest Berlin 2009-05-10
 if (!extension_loaded('posix')) {
     die('SKIP The posix extension is not loaded.');
 }
-
 if (posix_geteuid() == 0) {
     die('SKIP Cannot run test as root.');
 }
@@ -44,6 +43,7 @@ chmod ($filename, 0700);
 unlink($filename);
 ?>
 --EXPECTF--
+PHP Warning:  Directive 'safe_mode' is deprecated in PHP 5.3 and greater in %s on line %d
 bool(true)
 bool(true)
 bool(true)

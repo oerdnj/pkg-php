@@ -41,7 +41,7 @@ int(%i)
 int(%i)
 int(%i)
 
-Strict Standards: mktime(): The is_dst parameter is deprecated in %s on line %d
+Deprecated: mktime(): The is_dst parameter is deprecated in %s on line %d
 int(%i)
 ===DONE===
 

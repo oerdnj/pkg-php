@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_saproxy.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: com_saproxy.c 280806 2009-05-19 17:38:29Z kalle $ */
 
 /* This module implements a SafeArray proxy which is used internally
  * by the engine when resolving multi-dimensional array accesses on
@@ -92,10 +92,9 @@ static zval *saproxy_read_dimension(zval *object, zval *offset, int type TSRMLS_
 {
 	php_com_saproxy *proxy = SA_FETCH(object);
 	zval *return_value;
-	UINT dims;
+	UINT dims, i;
 	SAFEARRAY *sa;
 	LONG ubound, lbound;
-	int i;
 	HRESULT res;
 	
 	MAKE_STD_ZVAL(return_value);
@@ -110,7 +109,7 @@ static zval *saproxy_read_dimension(zval *object, zval *offset, int type TSRMLS_
 
 		args = safe_emalloc(proxy->dimensions + 1, sizeof(zval *), 0);
 
-		for (i = 1; i < proxy->dimensions; i++) {
+		for (i = 1; i < (UINT) proxy->dimensions; i++) {
 			args[i-1] = proxy->indices[i];
 		}
 		args[i-1] = offset;
@@ -145,7 +144,7 @@ static zval *saproxy_read_dimension(zval *object, zval *offset, int type TSRMLS_
 	sa = V_ARRAY(&proxy->obj->v);
 	dims = SafeArrayGetDim(sa);
 
-	if (proxy->dimensions >= dims) {
+	if ((UINT) proxy->dimensions >= dims) {
 		/* too many dimensions */
 		php_com_throw_exception(E_INVALIDARG, "too many dimensions!" TSRMLS_CC);
 		return return_value;
@@ -212,8 +211,7 @@ static zval *saproxy_read_dimension(zval *object, zval *offset, int type TSRMLS_
 static void saproxy_write_dimension(zval *object, zval *offset, zval *value TSRMLS_DC)
 {
 	php_com_saproxy *proxy = SA_FETCH(object);
-	UINT dims;
-	int i;
+	UINT dims, i;
 	HRESULT res;
 	VARIANT v;
 	
@@ -223,7 +221,7 @@ static void saproxy_write_dimension(zval *object, zval *offset, zval *value TSRM
 		 * the final value */
 		zval **args = safe_emalloc(proxy->dimensions + 2, sizeof(zval *), 0);
 
-		for (i = 1; i < proxy->dimensions; i++) {
+		for (i = 1; i < (UINT) proxy->dimensions; i++) {
 			args[i-1] = proxy->indices[i];
 		}
 		args[i-1] = offset;
@@ -340,12 +338,12 @@ static union _zend_function *saproxy_constructor_get(zval *object TSRMLS_DC)
 	return NULL;
 }
 
-static zend_class_entry *saproxy_class_entry_get(zval *object TSRMLS_DC)
+static zend_class_entry *saproxy_class_entry_get(const zval *object TSRMLS_DC)
 {
 	return php_com_saproxy_class_entry;
 }
 
-static int saproxy_class_name_get(zval *object, char **class_name, zend_uint *class_name_len, int parent TSRMLS_DC)
+static int saproxy_class_name_get(const zval *object, char **class_name, zend_uint *class_name_len, int parent TSRMLS_DC)
 {
 	*class_name = estrndup(php_com_saproxy_class_entry->name, php_com_saproxy_class_entry->name_length);
 	*class_name_len = php_com_saproxy_class_entry->name_length;
@@ -386,8 +384,8 @@ zend_object_handlers php_com_saproxy_handlers = {
 	saproxy_read_dimension,
 	saproxy_write_dimension,
 	NULL,
-	NULL, //saproxy_object_get,
-	NULL, //saproxy_object_set,
+	NULL, /* saproxy_object_get, */
+	NULL, /* saproxy_object_set, */
 	saproxy_property_exists,
 	saproxy_property_delete,
 	saproxy_dimension_exists,
@@ -427,7 +425,7 @@ static void saproxy_clone(void *object, void **clone_ptr TSRMLS_DC)
 	cloneproxy = emalloc(sizeof(*cloneproxy));
 	memcpy(cloneproxy, proxy, sizeof(*cloneproxy));
 
-	ZVAL_ADDREF(cloneproxy->zobj);
+	Z_ADDREF_P(cloneproxy->zobj);
 	cloneproxy->indices = safe_emalloc(cloneproxy->dimensions, sizeof(zval *), 0);
 	clone_indices(cloneproxy, proxy, proxy->dimensions);
 
@@ -451,7 +449,7 @@ int php_com_saproxy_create(zval *com_object, zval *proxy_out, zval *index TSRMLS
 		proxy->zobj = com_object;
 	}
 
-	ZVAL_ADDREF(proxy->zobj);
+	Z_ADDREF_P(proxy->zobj);
 	proxy->indices = safe_emalloc(proxy->dimensions, sizeof(zval *), 0);
 
 	if (rel) {
@@ -570,7 +568,7 @@ zend_object_iterator *php_com_saproxy_iter_get(zend_class_entry *ce, zval *objec
 
 	I->proxy = proxy;
 	I->proxy_obj = object;
-	ZVAL_ADDREF(I->proxy_obj);
+	Z_ADDREF_P(I->proxy_obj);
 
 	I->indices = safe_emalloc(proxy->dimensions + 1, sizeof(LONG), 0);
 	for (i = 0; i < proxy->dimensions; i++) {

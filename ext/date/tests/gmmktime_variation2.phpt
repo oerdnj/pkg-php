@@ -48,7 +48,7 @@ $inputs = array(
       // float data
       'float 10.5' => 10.5,
       'float -10.5' => -10.5,
-      'float .5' => .5,
+	  'float .5' => .5,
 
       // array data
       'empty array' => array(),

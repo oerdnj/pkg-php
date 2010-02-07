@@ -29,7 +29,7 @@ var_dump( array_multisort($ar1, SORT_STRING, SORT_NUMERIC) );
 
 -- Testing array_multisort() function with Zero arguments --
 
-Warning: Wrong parameter count for array_multisort() in %sarray_multisort_error.php on line %d
+Warning: array_multisort() expects at least 1 parameter, 0 given in %sarray_multisort_error.php on line %d
 NULL
 
 -- Testing array_multisort() function with repeated flags --

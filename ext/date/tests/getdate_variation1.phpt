@@ -93,7 +93,6 @@ foreach($inputs as $key =>$value) {
 ?>
 ===DONE===
 --EXPECTF--
-
 *** Testing getdate() : usage variation ***
 
 --float 10.5--

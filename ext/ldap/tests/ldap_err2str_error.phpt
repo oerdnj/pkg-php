@@ -12,12 +12,17 @@ var_dump(ldap_err2str());
 
 // Too many args
 var_dump(ldap_err2str(1, "Additional data"));
+
+var_dump(ldap_err2str("weird"));
 ?>
 ===DONE===
 --EXPECTF--
-Warning: Wrong parameter count for ldap_err2str() in %s on line %d
+Warning: ldap_err2str() expects exactly 1 parameter, 0 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for ldap_err2str() in %s on line %d
+Warning: ldap_err2str() expects exactly 1 parameter, 2 given in %s on line %d
+NULL
+
+Warning: ldap_err2str() expects parameter 1 to be long, %unicode_string_optional% given in %s on line %d
 NULL
 ===DONE===

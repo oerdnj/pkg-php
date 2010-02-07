@@ -1,5 +1,5 @@
 --TEST--
-SPL: ArrayObject::setIteratorClass with bad iterator class.
+SPL: ArrayObject with bad iterator class.
 --FILE--
 <?php
 try {
@@ -43,7 +43,6 @@ try {
 
 ?>
 --EXPECTF--
-
 Warning: ArrayObject::setIteratorClass() expects parameter 1 to be a class name derived from Iterator, 'nonExistentClass' given in %s on line 4
   a=>1
   b=>2

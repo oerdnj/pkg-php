@@ -15,16 +15,16 @@ $x->getcode(1);
 
 ?>
 --EXPECTF--
-Warning: Wrong parameter count for Exception::getTraceAsString() in %s on line %d
+Warning: Exception::getTraceAsString() expects exactly 0 parameters, 1 given in %s on line %d
 
-Warning: Wrong parameter count for Exception::__toString() in %s on line %d
+Warning: Exception::__toString() expects exactly 0 parameters, 1 given in %s on line %d
 
-Warning: Wrong parameter count for Exception::getTrace() in %s on line %d
+Warning: Exception::getTrace() expects exactly 0 parameters, 1 given in %s on line %d
 
-Warning: Wrong parameter count for Exception::getLine() in %s on line %d
+Warning: Exception::getLine() expects exactly 0 parameters, 1 given in %s on line %d
 
-Warning: Wrong parameter count for Exception::getFile() in %s on line %d
+Warning: Exception::getFile() expects exactly 0 parameters, 1 given in %s on line %d
 
-Warning: Wrong parameter count for Exception::getMessage() in %s on line %d
+Warning: Exception::getMessage() expects exactly 0 parameters, 1 given in %s on line %d
 
-Warning: Wrong parameter count for Exception::getCode() in %s on line %d
+Warning: Exception::getCode() expects exactly 0 parameters, 1 given in %s on line %d

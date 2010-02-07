@@ -25,16 +25,16 @@ var_dump(
 ?>
 ===DONE===
 --EXPECTF--
-Warning: Wrong parameter count for ldap_get_option() in %s on line %d
+Warning: ldap_get_option() expects exactly 3 parameters, 0 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for ldap_get_option() in %s on line %d
+Warning: ldap_get_option() expects exactly 3 parameters, 1 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for ldap_get_option() in %s on line %d
+Warning: ldap_get_option() expects exactly 3 parameters, 2 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for ldap_get_option() in %s on line %d
+Warning: ldap_get_option() expects exactly 3 parameters, 4 given in %s on line %d
 NULL
 NULL
 ===DONE===

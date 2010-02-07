@@ -18,6 +18,7 @@
 /* $Id: php_embed.c 286569 2009-07-30 20:20:56Z garretts $ */
 
 #include "php_embed.h"
+#include "ext/standard/php_standard.h"
 
 #ifdef PHP_WIN32
 #include <io.h>
@@ -134,10 +135,22 @@ extern EMBED_SAPI_API sapi_module_struct php_embed_module = {
 	php_embed_register_variables,   /* register server variables */
 	php_embed_log_message,          /* Log message */
 	NULL,							/* Get request time */
+	NULL,							/* Child terminate */
   
 	STANDARD_SAPI_MODULE_PROPERTIES
 };
 /* }}} */
+
+/* {{{ arginfo ext/standard/dl.c */
+ZEND_BEGIN_ARG_INFO(arginfo_dl, 0)
+	ZEND_ARG_INFO(0, extension_filename)
+ZEND_END_ARG_INFO()
+/* }}} */
+
+static const zend_function_entry additional_functions[] = {
+	ZEND_FE(dl, arginfo_dl)
+	{NULL, NULL, NULL}
+};
 
 EMBED_SAPI_API int php_embed_init(int argc, char **argv PTSRMLS_DC)
 {
@@ -174,6 +187,8 @@ EMBED_SAPI_API int php_embed_init(int argc, char **argv PTSRMLS_DC)
 
   php_embed_module.ini_entries = malloc(sizeof(HARDCODED_INI));
   memcpy(php_embed_module.ini_entries, HARDCODED_INI, sizeof(HARDCODED_INI));
+
+  php_embed_module.additional_functions = additional_functions;
 
   if (argv) {
 	php_embed_module.executable_location = argv[0];

@@ -28,11 +28,11 @@ var_dump( getimagesize($imagefile, $info, $extra_arg) );
 
 -- Testing getimagesize() function with Zero arguments --
 
-Warning: Wrong parameter count for getimagesize() in %s on line 12
-bool(false)
+Warning: getimagesize() expects at least 1 parameter, 0 given in %s on line %d
+NULL
 
 -- Testing getimagesize() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for getimagesize() in %s on line 19
-bool(false)
+Warning: getimagesize() expects at most 2 parameters, 3 given in %s on line %d
+NULL
 ===DONE===

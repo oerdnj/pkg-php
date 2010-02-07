@@ -31,13 +31,13 @@ $link = ldap_connect_and_bind($host, $port, $user, $passwd, $protocol_version);
 remove_dummy_data($link);
 ?>
 --EXPECTF--
-Warning: Wrong parameter count for ldap_get_values_len() in %s on line %d
+Warning: ldap_get_values_len() expects exactly 3 parameters, 1 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for ldap_get_values_len() in %s on line %d
+Warning: ldap_get_values_len() expects exactly 3 parameters, 2 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for ldap_get_values_len() in %s on line %d
+Warning: ldap_get_values_len() expects exactly 3 parameters, 4 given in %s on line %d
 NULL
 
 Warning: ldap_get_values_len(): Cannot get the value(s) of attribute %s in %s on line %d

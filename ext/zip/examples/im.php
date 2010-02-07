@@ -1,5 +1,5 @@
 <?php
-/* $Id: im.php 216983 2006-07-24 16:58:58Z pajoye $ */
+/* $Id: im.php 260091 2008-05-21 09:27:41Z pajoye $ */
 $im = imagecreatefromgif('zip://' . dirname(__FILE__) . '/test_im.zip#pear_item.gif');
 imagepng($im, 'a.png');
 

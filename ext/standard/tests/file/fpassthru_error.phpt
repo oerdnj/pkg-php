@@ -20,28 +20,21 @@ var_dump( fpassthru() );
 /* No.of args greaer than expected */
 var_dump( fpassthru("", "") );
 
-/* fpassthru on a closed file */
-$h = fopen(__FILE__,'r');
-fclose($h);
-fpassthru($h);
-
 echo "\n*** Done ***\n";
 
 ?>
 --EXPECTF--
 *** Test error conditions of fpassthru() function ***
 
-Warning: fread(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fread() expects parameter 1 to be resource, string given in %s on line %d
 
-Warning: fpassthru(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects parameter 1 to be resource, boolean given in %s on line %d
 bool(false)
 
-Warning: Wrong parameter count for fpassthru() in %s on line %d
-NULL
+Warning: fpassthru() expects exactly 1 parameter, 0 given in %s on line %d
+bool(false)
 
-Warning: Wrong parameter count for fpassthru() in %s on line %d
-NULL
-
-Warning: fpassthru(): %d is not a valid stream resource in %s on line %d
+Warning: fpassthru() expects exactly 1 parameter, 2 given in %s on line %d
+bool(false)
 
 *** Done ***

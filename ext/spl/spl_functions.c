@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_functions.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: spl_functions.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 	#include "config.h"
@@ -27,32 +27,22 @@
 #include "ext/standard/info.h"
 #include "php_spl.h"
 
-/* {{{ spl_destroy_class */
-void spl_destroy_class(zend_class_entry ** ppce)
-{                           
-	SPL_DEBUG(fprintf(stderr, "Destroy(%s): %s\n", (*ppce)->type == ZEND_USER_CLASS ? "user" : "other", (*ppce)->name);)
-	destroy_zend_class(ppce);
-}
-/* }}} */
-
 /* {{{ spl_register_interface */
-void spl_register_interface(zend_class_entry ** ppce, char * class_name, zend_function_entry * functions TSRMLS_DC)
+void spl_register_interface(zend_class_entry ** ppce, char * class_name, const zend_function_entry * functions TSRMLS_DC)
 {
 	zend_class_entry ce;
 	
-	INIT_CLASS_ENTRY(ce, class_name, functions);
-	ce.name_length = strlen(class_name);
+	INIT_CLASS_ENTRY_EX(ce, class_name, strlen(class_name), functions);
 	*ppce = zend_register_internal_interface(&ce TSRMLS_CC);
 }
 /* }}} */
 
 /* {{{ spl_register_std_class */
-PHPAPI void spl_register_std_class(zend_class_entry ** ppce, char * class_name, void * obj_ctor, zend_function_entry * function_list TSRMLS_DC)
+PHPAPI void spl_register_std_class(zend_class_entry ** ppce, char * class_name, void * obj_ctor, const zend_function_entry * function_list TSRMLS_DC)
 {
 	zend_class_entry ce;
 	
-	INIT_CLASS_ENTRY(ce, class_name, function_list);
-	ce.name_length = strlen(class_name);
+	INIT_CLASS_ENTRY_EX(ce, class_name, strlen(class_name), function_list);
 	*ppce = zend_register_internal_class(&ce TSRMLS_CC);
 
 	/* entries changed by initialize */
@@ -63,12 +53,11 @@ PHPAPI void spl_register_std_class(zend_class_entry ** ppce, char * class_name, 
 /* }}} */
 
 /* {{{ spl_register_sub_class */
-PHPAPI void spl_register_sub_class(zend_class_entry ** ppce, zend_class_entry * parent_ce, char * class_name, void *obj_ctor, zend_function_entry * function_list TSRMLS_DC)
+PHPAPI void spl_register_sub_class(zend_class_entry ** ppce, zend_class_entry * parent_ce, char * class_name, void *obj_ctor, const zend_function_entry * function_list TSRMLS_DC)
 {
 	zend_class_entry ce;
 	
-	INIT_CLASS_ENTRY(ce, class_name, function_list);
-	ce.name_length = strlen(class_name);
+	INIT_CLASS_ENTRY_EX(ce, class_name, strlen(class_name), function_list);
 	*ppce = zend_register_internal_class_ex(&ce, parent_ce, NULL TSRMLS_CC);
 
 	/* entries changed by initialize */
@@ -77,20 +66,6 @@ PHPAPI void spl_register_sub_class(zend_class_entry ** ppce, zend_class_entry * 
 	} else {
 		(*ppce)->create_object = parent_ce->create_object;
 	}
-}
-/* }}} */
-
-/* {{{ spl_register_parent_ce */
-void spl_register_parent_ce(zend_class_entry * class_entry, zend_class_entry * parent_class TSRMLS_DC)
-{
-	class_entry->parent = parent_class;
-}
-/* }}} */
-
-/* {{{ spl_register_functions */
-void spl_register_functions(zend_class_entry * class_entry, zend_function_entry * function_list TSRMLS_DC)
-{
-	zend_register_functions(class_entry, function_list, &class_entry->function_table, MODULE_PERSISTENT TSRMLS_CC);
 }
 /* }}} */
 
@@ -105,12 +80,12 @@ void spl_register_property( zend_class_entry * class_entry, char *prop_name, int
 void spl_add_class_name(zval *list, zend_class_entry * pce, int allow, int ce_flags TSRMLS_DC)
 {
 	if (!allow || (allow > 0 && pce->ce_flags & ce_flags) || (allow < 0 && !(pce->ce_flags & ce_flags))) {
-		size_t len = strlen(pce->name);
+		size_t len = pce->name_length;
 		zval *tmp;
 
 		if (zend_hash_find(Z_ARRVAL_P(list), pce->name, len+1, (void*)&tmp) == FAILURE) {
 			MAKE_STD_ZVAL(tmp);
-			ZVAL_STRING(tmp, pce->name, 1);
+			ZVAL_STRINGL(tmp, pce->name, pce->name_length, 1);
 			zend_hash_add(Z_ARRVAL_P(list), pce->name, len+1, &tmp, sizeof(zval *), NULL);
 		}
 	}
@@ -129,10 +104,8 @@ void spl_add_interfaces(zval *list, zend_class_entry * pce, int allow, int ce_fl
 /* }}} */
 
 /* {{{ spl_add_classes */
-int spl_add_classes(zend_class_entry ** ppce, zval *list, int sub, int allow, int ce_flags TSRMLS_DC)
+int spl_add_classes(zend_class_entry *pce, zval *list, int sub, int allow, int ce_flags TSRMLS_DC)
 {
-	zend_class_entry *pce = *ppce;
-
 	if (!pce) {
 		return 0;
 	}
@@ -141,10 +114,20 @@ int spl_add_classes(zend_class_entry ** ppce, zval *list, int sub, int allow, in
 		spl_add_interfaces(list, pce, allow, ce_flags TSRMLS_CC);
 		while (pce->parent) {
 			pce = pce->parent;
-			spl_add_classes(&pce, list, sub, allow, ce_flags TSRMLS_CC);
+			spl_add_classes(pce, list, sub, allow, ce_flags TSRMLS_CC);
 		}
 	}
 	return 0;
+}
+/* }}} */
+
+char * spl_gen_private_prop_name(zend_class_entry *ce, char *prop_name, int prop_len, int *name_len TSRMLS_DC) /* {{{ */
+{
+	char *rv;
+
+	zend_mangle_property_name(&rv, name_len, ce->name, ce->name_length, prop_name, prop_len, 0);
+
+	return rv;
 }
 /* }}} */
 

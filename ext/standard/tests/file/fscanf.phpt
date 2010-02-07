@@ -11,17 +11,17 @@ var_dump(fscanf(array(), array(), new stdclass));
 
 file_put_contents($filename, "data");
 
-$fp = fopen($filename, "r");
+$fp = fopen($filename, "rt");
 var_dump(fscanf($fp, "%d", $v));
 var_dump($v);
 fclose($fp);
 
-$fp = fopen($filename, "r");
+$fp = fopen($filename, "rt");
 var_dump(fscanf($fp, "%s", $v));
 var_dump($v);
 fclose($fp);
 
-$fp = fopen($filename, "r");
+$fp = fopen($filename, "rt");
 var_dump(fscanf($fp, "%s", $v, $v1));
 var_dump($v);
 var_dump($v1);
@@ -29,7 +29,7 @@ fclose($fp);
 
 $v = array();
 $v1 = array();
-$fp = fopen($filename, "r");
+$fp = fopen($filename, "rt");
 var_dump(fscanf($fp, "", $v, $v1));
 var_dump($v);
 var_dump($v1);
@@ -37,7 +37,7 @@ fclose($fp);
 
 $v = array();
 $v1 = array();
-$fp = fopen($filename, "r");
+$fp = fopen($filename, "rt");
 var_dump(fscanf($fp, "%.a", $v, $v1));
 var_dump($v);
 var_dump($v1);
@@ -46,28 +46,28 @@ fclose($fp);
 @unlink($filename);
 touch($filename);
 
-$fp = fopen($filename, "r");
+$fp = fopen($filename, "rt");
 var_dump(fscanf($fp, "%s", $v));
 var_dump($v);
 fclose($fp);
 
 file_put_contents($filename, "data");
 
-$fp = fopen($filename, "r");
+$fp = fopen($filename, "rt");
 var_dump(fscanf($fp, "%s%d", $v));
 
 @unlink($filename);
 echo "Done\n";
 ?>
 --EXPECTF--	
-Warning: Wrong parameter count for fscanf() in %s on line %d
+Warning: fscanf() expects at least 2 parameters, 0 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for fscanf() in %s on line %d
+Warning: fscanf() expects at least 2 parameters, 1 given in %s on line %d
 NULL
 
-Warning: fscanf(): supplied argument is not a valid File-Handle resource in %s on line %d
-bool(false)
+Warning: fscanf() expects parameter 1 to be resource, array given in %s on line %d
+NULL
 int(0)
 NULL
 int(1)

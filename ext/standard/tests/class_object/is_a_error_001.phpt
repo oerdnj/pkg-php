@@ -1,5 +1,7 @@
 --TEST--
 Test is_a() function : error conditions - wrong number of args
+--INI--
+error_reporting=E_ALL | E_STRICT | E_DEPRECATED
 --FILE--
 <?php
 /* Prototype  : proto bool is_a(object object, string class_name)
@@ -30,15 +32,11 @@ echo "Done";
 
 -- Testing is_a() function with more than expected no. of arguments --
 
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 16
-
-Warning: Wrong parameter count for is_a() in %s on line 16
+Warning: is_a() expects exactly 2 parameters, 3 given in %s on line 16
 NULL
 
 -- Testing is_a() function with less than expected no. of arguments --
 
-Strict Standards: is_a(): Deprecated. Please use the instanceof operator in %s on line 21
-
-Warning: Wrong parameter count for is_a() in %s on line 21
+Warning: is_a() expects exactly 2 parameters, 1 given in %s on line 21
 NULL
 Done

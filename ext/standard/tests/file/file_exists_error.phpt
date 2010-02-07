@@ -29,11 +29,12 @@ echo "Done";
 
 -- Testing file_exists() function with Zero arguments --
 
-Warning: Wrong parameter count for file_exists() in %s on line %d
+Warning: file_exists() expects exactly 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing file_exists() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for file_exists() in %s on line %d
+Warning: file_exists() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
 Done
+

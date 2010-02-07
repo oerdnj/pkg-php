@@ -23,7 +23,7 @@ var_dump( get_defined_functions($extra_arg) );
 
 -- Testing get_defined_functions() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for get_defined_functions() in %s on line %d
+Warning: get_defined_functions() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
  
 ===Done===

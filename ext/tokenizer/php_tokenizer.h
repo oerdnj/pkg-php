@@ -16,19 +16,13 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_tokenizer.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: php_tokenizer.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_TOKENIZER_H
 #define PHP_TOKENIZER_H
 
 extern zend_module_entry tokenizer_module_entry;
 #define phpext_tokenizer_ptr &tokenizer_module_entry
-
-#ifdef PHP_WIN32
-#define PHP_TOKENIZER_API __declspec(dllexport)
-#else
-#define PHP_TOKENIZER_API
-#endif
 
 #ifdef ZTS
 #include "TSRM.h"

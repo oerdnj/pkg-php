@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 214114 2006-06-01 19:14:48Z mike $
+dnl $Id: config.m4 263087 2008-07-21 12:58:51Z andrey $
 dnl
 
 AC_DEFUN([MYSQL_LIB_CHK], [
@@ -31,7 +31,7 @@ AC_DEFUN([PHP_MYSQL_SOCKET_SEARCH], [
   done
 
   if test -n "$MYSQL_SOCK"; then
-    AC_DEFINE_UNQUOTED(MYSQL_UNIX_ADDR, "$MYSQL_SOCK", [ ])
+    AC_DEFINE_UNQUOTED(PHP_MYSQL_UNIX_SOCK_ADDR, "$MYSQL_SOCK", [ ])
     AC_MSG_RESULT([$MYSQL_SOCK])
   else
     AC_MSG_RESULT([no])
@@ -40,10 +40,12 @@ AC_DEFUN([PHP_MYSQL_SOCKET_SEARCH], [
 
 
 PHP_ARG_WITH(mysql, for MySQL support,
-[  --with-mysql[=DIR]      Include MySQL support. DIR is the MySQL base directory])
+[  --with-mysql[=DIR]      Include MySQL support.  DIR is the MySQL base
+                          directory.  If mysqlnd is passed as DIR, 
+                          the MySQL native driver will be used [/usr/local]])
 
 PHP_ARG_WITH(mysql-sock, for specified location of the MySQL UNIX socket,
-[  --with-mysql-sock[=DIR]   MySQL: Location of the MySQL unix socket pointer.
+[  --with-mysql-sock[=DIR]   MySQL/MySQLi/PDO_MYSQL: Location of the MySQL unix socket pointer.
                             If unspecified, the default locations are searched], no, no)
 
 if test -z "$PHP_ZLIB_DIR"; then
@@ -51,14 +53,16 @@ if test -z "$PHP_ZLIB_DIR"; then
   [  --with-zlib-dir[=DIR]     MySQL: Set the path to libz install prefix], no, no)
 fi
 
+if test "$PHP_MYSQL" = "mysqlnd"; then
+  dnl enables build of mysqnd library
+  PHP_MYSQLND_ENABLED=yes
 
-if test "$PHP_MYSQL" != "no"; then
-  AC_DEFINE(HAVE_MYSQL, 1, [Whether you have MySQL])
+elif test "$PHP_MYSQL" != "no"; then
 
   AC_MSG_CHECKING([for MySQL UNIX socket location])
   if test "$PHP_MYSQL_SOCK" != "no" && test "$PHP_MYSQL_SOCK" != "yes"; then
     MYSQL_SOCK=$PHP_MYSQL_SOCK
-    AC_DEFINE_UNQUOTED(MYSQL_UNIX_ADDR, "$MYSQL_SOCK", [ ])
+    AC_DEFINE_UNQUOTED(PHP_MYSQL_UNIX_SOCK_ADDR, "$MYSQL_SOCK", [ ])
     AC_MSG_RESULT([$MYSQL_SOCK])
   elif test "$PHP_MYSQL" = "yes" || test "$PHP_MYSQL_SOCK" = "yes"; then
     PHP_MYSQL_SOCKET_SEARCH
@@ -137,14 +141,23 @@ Note that the MySQL client library is not bundled anymore!])
   PHP_ADD_LIBRARY_WITH_PATH($MYSQL_LIBNAME, $MYSQL_LIB_DIR, MYSQL_SHARED_LIBADD)
   PHP_ADD_INCLUDE($MYSQL_INC_DIR)
 
-  PHP_NEW_EXTENSION(mysql, php_mysql.c, $ext_shared)
-
   MYSQL_MODULE_TYPE=external
   MYSQL_LIBS="-L$MYSQL_LIB_DIR -l$MYSQL_LIBNAME $MYSQL_LIBS"
   MYSQL_INCLUDE=-I$MYSQL_INC_DIR
  
-  PHP_SUBST(MYSQL_SHARED_LIBADD)
   PHP_SUBST_OLD(MYSQL_MODULE_TYPE)
   PHP_SUBST_OLD(MYSQL_LIBS)
   PHP_SUBST_OLD(MYSQL_INCLUDE)
+fi
+
+dnl Enable extension
+if test "$PHP_MYSQL" != "no"; then
+  AC_DEFINE(HAVE_MYSQL, 1, [Whether you have MySQL])
+  PHP_NEW_EXTENSION(mysql, php_mysql.c, $ext_shared)
+  PHP_SUBST(MYSQL_SHARED_LIBADD)
+
+  if test "$PHP_MYSQL" = "mysqlnd"; then
+    PHP_ADD_EXTENSION_DEP(mysql, mysqlnd)
+    AC_DEFINE([MYSQL_USE_MYSQLND], 1, [Whether mysqlnd is enabled])
+  fi
 fi

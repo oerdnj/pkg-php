@@ -1,11 +1,11 @@
-// $Id: config.w32 176467 2005-01-04 22:39:29Z fmk $
+// $Id: config.w32 281914 2009-06-10 09:59:21Z pajoye $
 // vim:ft=javascript
 
 ARG_WITH("gmp", "Include GNU MP support.", "no");
 
 if (PHP_GMP != "no") {
-	if (CHECK_LIB("libgmp_a.lib", "gmp", PHP_GMP) &&
-		CHECK_HEADER_ADD_INCLUDE("gmp.h", "CFLAGS_GMP", PHP_GMP)) {
+	if (CHECK_LIB("mpir_a.lib", "gmp", PHP_GMP) &&
+		CHECK_HEADER_ADD_INCLUDE("gmp.h", "CFLAGS_GMP", PHP_GMP +  ";" + PHP_PHP_BUILD + "\\include\\mpir")) {
 		EXTENSION("gmp", "gmp.c");
 		AC_DEFINE('HAVE_GMP', 1, 'GMP support');
 	} else {

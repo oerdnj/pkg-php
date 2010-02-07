@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_iterator.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: com_iterator.c 280806 2009-05-19 17:38:29Z kalle $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -111,7 +111,7 @@ static int com_iter_move_forwards(zend_object_iterator *iter TSRMLS_DC)
 		}
 	} else {
 		/* safe array */
-		if (I->key >= I->sa_max) {
+		if (I->key >= (ULONG) I->sa_max) {
 			I->key = (ulong)-1;
 			return FAILURE;
 		}

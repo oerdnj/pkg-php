@@ -123,7 +123,6 @@ static php_stream_filter_status_t php_zlib_inflate_filter(
 				php_stream_bucket_delref(bucket TSRMLS_CC);
 				return PSFS_PASS_ON;
 			}
-
 		}
 		php_stream_bucket_delref(bucket TSRMLS_CC);
 	}

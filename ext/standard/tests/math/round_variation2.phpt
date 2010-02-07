@@ -140,27 +140,39 @@ float(123.4)
 float(123)
 
 -- Iteration 17 --
-float(123)
+
+Warning: round() expects parameter 2 to be long, string given in %s on line %d
+NULL
 
 -- Iteration 18 --
-float(123)
+
+Warning: round() expects parameter 2 to be long, string given in %s on line %d
+NULL
 
 -- Iteration 19 --
-float(123)
+
+Warning: round() expects parameter 2 to be long, array given in %s on line %d
+NULL
 
 -- Iteration 20 --
-float(123)
+
+Warning: round() expects parameter 2 to be long, string given in %s on line %d
+NULL
 
 -- Iteration 21 --
-float(123)
+
+Warning: round() expects parameter 2 to be long, string given in %s on line %d
+NULL
 
 -- Iteration 22 --
-float(123)
+
+Warning: round() expects parameter 2 to be long, string given in %s on line %d
+NULL
 
 -- Iteration 23 --
 
-Notice: Object of class classA could not be converted to int in %s on line %d
-float(123.4)
+Warning: round() expects parameter 2 to be long, object given in %s on line %d
+NULL
 
 -- Iteration 24 --
 float(123)
@@ -169,5 +181,7 @@ float(123)
 float(123)
 
 -- Iteration 26 --
-float(%f)
+
+Warning: round() expects parameter 2 to be long, resource given in %s on line %d
+NULL
 ===Done===

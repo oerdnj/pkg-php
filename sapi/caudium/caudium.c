@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: caudium.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: caudium.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #include "php.h"
 #ifdef HAVE_CAUDIUM
@@ -444,7 +444,7 @@ static void php_info_caudium(ZEND_MODULE_INFO_FUNC_ARGS)
 {
   /*  char buf[512]; */
   php_info_print_table_start();
-  php_info_print_table_row(2, "SAPI module version", "$Id: caudium.c 272374 2008-12-31 11:17:49Z sebastian $");
+  php_info_print_table_row(2, "SAPI module version", "$Id: caudium.c 272370 2008-12-31 11:15:49Z sebastian $");
   /*  php_info_print_table_row(2, "Build date", Ns_InfoBuildDate());
       php_info_print_table_row(2, "Config file path", Ns_InfoConfigFile());
       php_info_print_table_row(2, "Error Log path", Ns_InfoErrorLog());
@@ -551,6 +551,7 @@ static sapi_module_struct caudium_sapi_module = {
   sapi_caudium_register_variables,	/* register server variables */
   NULL,					/* Log message */
   NULL,					/* Get request time */
+  NULL,					/* Child terminate */
 
   STANDARD_SAPI_MODULE_PROPERTIES
 };
@@ -638,15 +639,6 @@ static void php_caudium_module_main(php_caudium_request *ureq)
   THREADS_ALLOW();
 #endif
 
-#ifdef VIRTUAL_DIR
-  /* Change virtual directory, if the feature is enabled, which is
-   * (almost) a requirement for PHP in Caudium. Might want to fail if it
-   * isn't. Not a problem though, since it's on by default when using ZTS
-   * which we require.
-   */
-  VCWD_CHDIR_FILE(THIS->filename->str);
-#endif
-  
   file_handle.type = ZEND_HANDLE_FILENAME;
   file_handle.filename = THIS->filename->str;
   file_handle.opened_path = NULL;

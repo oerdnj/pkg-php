@@ -16,8 +16,8 @@ $array3 = array("a"=>"green", "brown");
 $extra_arg = 10;
 
 //Callback function
-function key_compare_func($key1, $key2) {
-    if ($key1 === $key2) {
+function key_compare_func($a, $b) {
+    if ($a === $b) {
         return 0;
     }
     return ($a > $b) ? 1 : -1;
@@ -42,19 +42,19 @@ var_dump( array_intersect_uassoc() );
 
 -- Testing array_intersect_uassoc() function with more than expected no. of arguments --
 
-Warning: array_intersect_uassoc(): Not a valid callback 10 in %s on line %d
+Warning: array_intersect_uassoc() expects parameter 4 to be a valid callback, no array or string given in %s on line %d
 NULL
 
 -- Testing array_intersect_uassoc() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for array_intersect_uassoc() in %s on line %d
+Warning: array_intersect_uassoc(): at least 3 parameters are required, 2 given in %s on line %d
 NULL
 
-Warning: array_intersect_uassoc(): Not a valid callback Array in %s on line %d
+Warning: array_intersect_uassoc() expects parameter 3 to be a valid callback, second array member is not a valid method in %s on line %d
 NULL
 
 -- Testing array_intersect_uassoc() function with no arguments --
 
-Warning: Wrong parameter count for array_intersect_uassoc() in %s on line %d
+Warning: array_intersect_uassoc(): at least 3 parameters are required, 0 given in %s on line %d
 NULL
 ===DONE===

@@ -19,7 +19,7 @@ decoct(23,2,true);
 *** Testing decoct() :  error conditions ***
 Incorrect number of arguments
 
-Warning: Wrong parameter count for decoct() in %s on line %d
+Warning: decoct() expects exactly 1 parameter, 0 given in %s on line %d
 
-Warning: Wrong parameter count for decoct() in %s on line %d
+Warning: decoct() expects exactly 1 parameter, 3 given in %s on line %d
 ===Done===

@@ -2,10 +2,6 @@
 Test expm1() - basic function test for expm1()
 --INI--
 precision=14
---SKIPIF--
-<?php
-	function_exists('expm1') or die('skip expm1() is not supported in this build.');
-?>
 --FILE--
 <?php
 /* Prototype  : float expm1 ( float $arg  )
@@ -70,7 +66,7 @@ float(INF)
 float(8.6593400423994E+16)
 
 -- Iteration 10 --
-float(0)
+float(1.811239082889E+41)
 
 -- Iteration 11 --
 float(1.718281828459)

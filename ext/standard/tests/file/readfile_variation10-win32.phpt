@@ -19,7 +19,7 @@ echo "*** Testing readfile() : variation ***\n";
 
 /* An array of files */ 
 $names_arr = array(
-  /* Invalid args */
+  /* Invalid args */ 
   "-1" => -1,
   "TRUE" => TRUE,
   "FALSE" => FALSE,

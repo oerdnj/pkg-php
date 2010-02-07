@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: scanf.c 275270 2009-02-06 10:22:34Z felipe $ */
+/* $Id: scanf.c 278157 2009-04-02 05:17:36Z kalle $ */
 
 /*
 	scanf.c --
@@ -394,7 +394,7 @@ notXpg:
 		gotSequential = 1;
 		if (gotXpg) {
 mixedXPG:
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", "cannot mix \"\%\" and \"\%n$\" conversion specifiers");
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", "cannot mix \"%\" and \"%n$\" conversion specifiers");
 			goto error;
 		}
 
@@ -745,11 +745,11 @@ literal:
 						zend_uint refcount;
 
 						current = args[objIndex++];
-						refcount = (*current)->refcount;
+						refcount = Z_REFCOUNT_PP(current);
 						zval_dtor( *current );
 						ZVAL_LONG( *current, (long)(string - baseString) );
-						(*current)->refcount = refcount;
-						(*current)->is_ref = 1;
+						Z_SET_REFCOUNT_PP(current, refcount);
+						Z_SET_ISREF_PP(current);
 					} else {
 						add_index_long(*return_value, objIndex++, string - baseString);
 					}
@@ -869,11 +869,11 @@ literal:
 						zend_uint refcount;
 
 						current = args[objIndex++];
-						refcount = (*current)->refcount;
+						refcount = Z_REFCOUNT_PP(current);
 						zval_dtor( *current );
 						ZVAL_STRINGL( *current, string, end-string, 1);
-						(*current)->refcount = refcount;
-						(*current)->is_ref = 1;
+						Z_SET_REFCOUNT_PP(current, refcount);
+						Z_SET_ISREF_PP(current);
 					} else {
 						add_index_stringl( *return_value, objIndex++, string, end-string, 1);
 					}
@@ -934,7 +934,7 @@ literal:
 						__buf[0] = sch;
 						__buf[1] = '\0';;
 						current = args[objIndex++];
-						convert_to_string_ex( current );
+						zval_dtor(*current);
 						ZVAL_STRINGL( *current, __buf, 1, 1);
 					} else {
 						add_index_stringl(*return_value, objIndex++, &sch, 1, 1);

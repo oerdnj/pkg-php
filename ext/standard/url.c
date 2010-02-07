@@ -15,7 +15,7 @@
    | Author: Jim Winstead <jimw@php.net>                                  |
    +----------------------------------------------------------------------+
  */
-/* $Id: url.c 290199 2009-11-04 13:44:10Z iliaa $ */
+/* $Id: url.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -201,21 +201,10 @@ PHPAPI php_url *php_url_parse_ex(char const *str, int length)
 	e = ue;
 	
 	if (!(p = memchr(s, '/', (ue - s)))) {
-		char *query, *fragment;
-
-		query = memchr(s, '?', (ue - s));
-		fragment = memchr(s, '#', (ue - s));
-
-		if (query && fragment) {
-			if (query > fragment) {
-				p = e = fragment;
-			} else {
-				p = e = query;
-			}
-		} else if (query) {
-			p = e = query;
-		} else if (fragment) {
-			p = e = fragment;
+		if ((p = memchr(s, '?', (ue - s)))) {
+			e = p;
+		} else if ((p = memchr(s, '#', (ue - s)))) {
+			e = p;
 		}
 	} else {
 		e = p;
@@ -296,10 +285,10 @@ PHPAPI php_url *php_url_parse_ex(char const *str, int length)
 	
 	if ((p = memchr(s, '?', (ue - s)))) {
 		pp = strchr(s, '#');
-
+		
 		if (pp && pp < p) {
 			p = pp;
-			goto label_parse;
+			pp = strchr(pp+2, '#');
 		}
 	
 		if (p - s) {
@@ -461,8 +450,8 @@ PHPAPI char *php_url_encode(char const *s, int len, int *new_length)
 	unsigned char *to, *start;
 	unsigned char const *from, *end;
 	
-	from = s;
-	end = s + len;
+	from = (unsigned char *)s;
+	end = (unsigned char *)s + len;
 	start = to = (unsigned char *) safe_emalloc(3, len, 1);
 
 	while (from < end) {
@@ -580,7 +569,7 @@ PHPAPI char *php_raw_url_encode(char const *s, int len, int *new_length)
 		if ((str[y] < '0' && str[y] != '-' && str[y] != '.') ||
 			(str[y] < 'A' && str[y] > '9') ||
 			(str[y] > 'Z' && str[y] < 'a' && str[y] != '_') ||
-			(str[y] > 'z')) {
+			(str[y] > 'z' && str[y] != '~')) {
 			str[y++] = '%';
 			str[y++] = hexchars[(unsigned char) s[x] >> 4];
 			str[y] = hexchars[(unsigned char) s[x] & 15];

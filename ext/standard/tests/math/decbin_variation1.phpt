@@ -38,8 +38,9 @@ $inputs = array(
        1,
        12345,
        -2345,
-	   4294967295,  // largest decimal  
-       4294967296, 	
+       4294967295,  // largest decimal  
+       4294967296, 
+
        // float data
 /*7*/  10.5,
        -10.5,

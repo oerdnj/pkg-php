@@ -1,7 +1,5 @@
 --TEST--
 SPL: AppendIterator and its ArrayIterator
---SKIPIF--
-<?php if (!extension_loaded("spl")) print "skip"; ?>
 --FILE--
 <?php
 
@@ -40,41 +38,62 @@ foreach($it as $k => $v)
 <?php exit(0); ?>
 --EXPECTF--
 Error Argument 1 passed to AppendIterator::append() must implement interface Iterator, array given in %siterator_042.php on line %d
-object(ArrayIterator)#%d (2) {
-  [0]=>
-  object(ArrayIterator)#%d (1) {
+object(ArrayIterator)#%d (1) {
+  %s"storage"%s"ArrayIterator":private]=>
+  array(2) {
     [0]=>
-    int(1)
-  }
-  [1]=>
-  object(ArrayIterator)#%d (2) {
-    [0]=>
-    int(21)
+    object(ArrayIterator)#%d (1) {
+      %s"storage"%s"ArrayIterator":private]=>
+      array(1) {
+        [0]=>
+        int(1)
+      }
+    }
     [1]=>
-    int(22)
+    object(ArrayIterator)#%d (1) {
+      %s"storage"%s"ArrayIterator":private]=>
+      array(2) {
+        [0]=>
+        int(21)
+        [1]=>
+        int(22)
+      }
+    }
   }
 }
-object(ArrayIterator)#%d (3) {
-  [0]=>
-  object(ArrayIterator)#%d (1) {
+object(ArrayIterator)#%d (1) {
+  %s"storage"%s"ArrayIterator":private]=>
+  array(3) {
     [0]=>
-    int(1)
-  }
-  [1]=>
-  object(ArrayIterator)#%d (2) {
-    [0]=>
-    int(21)
+    object(ArrayIterator)#%d (1) {
+      %s"storage"%s"ArrayIterator":private]=>
+      array(1) {
+        [0]=>
+        int(1)
+      }
+    }
     [1]=>
-    int(22)
-  }
-  [2]=>
-  object(ArrayIterator)#5 (3) {
-    [0]=>
-    int(31)
-    [1]=>
-    int(32)
+    object(ArrayIterator)#%d (1) {
+      %s"storage"%s"ArrayIterator":private]=>
+      array(2) {
+        [0]=>
+        int(21)
+        [1]=>
+        int(22)
+      }
+    }
     [2]=>
-    int(33)
+    object(ArrayIterator)#5 (1) {
+      %s"storage"%s"ArrayIterator":private]=>
+      array(3) {
+        [0]=>
+        int(31)
+        [1]=>
+        int(32)
+        [2]=>
+        int(33)
+      }
+    }
   }
 }
 ===0===

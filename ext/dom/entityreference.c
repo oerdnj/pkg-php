@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: entityreference.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: entityreference.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -27,9 +27,7 @@
 #if HAVE_LIBXML && HAVE_DOM
 #include "php_dom.h"
 
-
 /* {{{ arginfo */
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_dom_entityreference_construct, 0, 0, 1)
 	ZEND_ARG_INFO(0, name)
 ZEND_END_ARG_INFO();
@@ -42,7 +40,7 @@ ZEND_END_ARG_INFO();
 * Since: 
 */
 
-zend_function_entry php_dom_entityreference_class_functions[] = {
+const zend_function_entry php_dom_entityreference_class_functions[] = {
 	PHP_ME(domentityreference, __construct, arginfo_dom_entityreference_construct, ZEND_ACC_PUBLIC)
 	{NULL, NULL, NULL}
 };
@@ -56,14 +54,15 @@ PHP_METHOD(domentityreference, __construct)
 	dom_object *intern;
 	char *name;
 	int name_len, name_valid;
+	zend_error_handling error_handling;
 
-	php_set_error_handling(EH_THROW, dom_domexception_class_entry TSRMLS_CC);
+	zend_replace_error_handling(EH_THROW, dom_domexception_class_entry, &error_handling TSRMLS_CC);
 	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "Os", &id, dom_entityreference_class_entry, &name, &name_len) == FAILURE) {
-		php_std_error_handling();
+		zend_restore_error_handling(&error_handling TSRMLS_CC);
 		return;
 	}
 
-	php_std_error_handling();
+	zend_restore_error_handling(&error_handling TSRMLS_CC);
 
 	name_valid = xmlValidateName((xmlChar *) name, 0);
 	if (name_valid != 0) {
@@ -87,6 +86,15 @@ PHP_METHOD(domentityreference, __construct)
 		php_libxml_increment_node_ptr((php_libxml_node_object *)intern, node, (void *)intern TSRMLS_CC);
 	}
 }
-
 /* }}} end DOMEntityReference::__construct */
+
 #endif
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

@@ -92,21 +92,21 @@ file in root
 Warning: fopen(c\fopen_variation11.tmp): failed to open stream: No such file or directory in %s on line %d
 file not opened for read
 
-Warning: fclose(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fclose() expects parameter 1 to be resource, boolean given in %s on line %d
 
 --\--
 
-Warning: fopen(\\fopen_variation11.tmp): failed to open stream: Invalid argument in %s on line %d
+Warning: fopen(\\FOPEN_VARIATION11.TMP): failed to open stream: Invalid argument in %s on line %d
 file not opened for read
 
-Warning: fclose(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fclose() expects parameter 1 to be resource, boolean given in %s on line %d
 
 --/--
 
-Warning: fopen(/\fopen_variation11.tmp): failed to open stream: Invalid argument in %s on line %d
+Warning: fopen(\\FOPEN_VARIATION11.TMP): failed to open stream: Invalid argument in %s on line %d
 file not opened for read
 
-Warning: fclose(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fclose() expects parameter 1 to be resource, boolean given in %s on line %d
 
 --c:fopen11.tmpdirTwo--
 file in fopen11.tmpdirTwo
@@ -116,7 +116,7 @@ file in fopen11.tmpdirTwo
 Warning: fopen(c:adir\fopen_variation11.tmp): failed to open stream: No such file or directory in %s on line %d
 file not opened for read
 
-Warning: fclose(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fclose() expects parameter 1 to be resource, boolean given in %s on line %d
 
 --c:\/--
 file in root
@@ -130,7 +130,7 @@ file in fopen11.tmpdirTwo
 --c:\fopen11.tmpdirTwo/--
 file in fopen11.tmpdirTwo
 
---/%s/fopen11.tmpDir--
+--%s/fopen11.tmpDir--
 file in fopen11.tmpDir
 
 --/sortout--
@@ -138,5 +138,6 @@ file in fopen11.tmpDir
 Warning: fopen(/sortout\fopen_variation11.tmp): failed to open stream: No such file or directory in %s on line %d
 file not opened for read
 
-Warning: fclose(): supplied argument is not a valid stream resource in %s on line %d
+Warning: fclose() expects parameter 1 to be resource, boolean given in %s on line %d
 ===DONE===
+

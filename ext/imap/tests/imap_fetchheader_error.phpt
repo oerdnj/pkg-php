@@ -39,11 +39,11 @@ imap_close($stream_id);
 
 -- Testing imap_fetchheader() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for imap_fetchheader() in %s on line %d
+Warning: imap_fetchheader() expects at most 3 parameters, 4 given in %s on line %d
 NULL
 
 -- Testing imap_fetchheader() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for imap_fetchheader() in %s on line %d
+Warning: imap_fetchheader() expects at least 2 parameters, 1 given in %s on line %d
 NULL
 ===DONE===

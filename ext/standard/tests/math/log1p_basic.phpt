@@ -2,10 +2,6 @@
 Test log1p() - basic function test log1p()
 --INI--
 precision=14
---SKIPIF--
-<?php
-	function_exists('log1p') or die('skip log1p() is not supported in this build.');
-?>
 --FILE--
 <?php
 /* Prototype  : float log1p  ( float $arg  )

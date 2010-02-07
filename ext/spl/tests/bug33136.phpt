@@ -1,7 +1,5 @@
 --TEST--
 Bug #33136 (method offsetSet in class extended from ArrayObject crash PHP)
---SKIPIF--
-<?php if (!extension_loaded("spl")) print "skip"; ?>
 --FILE--
 <?php
 
@@ -66,9 +64,17 @@ Collection::offsetGet(foo)
 string(3) "baz"
 Collection Object
 (
-    [0] => foo
-    [1] => bar
-    [foo] => baz
+    [data:Collection:private] => Array
+        (
+        )
+
+    [storage:ArrayObject:private] => Array
+        (
+            [0] => foo
+            [1] => bar
+            [foo] => baz
+        )
+
 )
 int(3)
 ===DONE===

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: exif.c 290173 2009-11-03 17:11:09Z guenter $ */
+/* $Id: exif.c 287372 2009-08-16 14:32:32Z iliaa $ */
 
 /*  ToDos
  *
@@ -102,12 +102,10 @@ typedef unsigned char uchar;
 #define MAX_IFD_NESTING_LEVEL 100
 
 /* {{{ arginfo */
-static
 ZEND_BEGIN_ARG_INFO(arginfo_exif_tagname, 0)
 	ZEND_ARG_INFO(0, index)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_exif_read_data, 0, 0, 1)
 	ZEND_ARG_INFO(0, filename)
 	ZEND_ARG_INFO(0, sections_needed)
@@ -115,7 +113,6 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_exif_read_data, 0, 0, 1)
 	ZEND_ARG_INFO(0, read_thumbnail)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO_EX(arginfo_exif_thumbnail, 0, 0, 1)
 	ZEND_ARG_INFO(0, filename)
 	ZEND_ARG_INFO(1, width)
@@ -123,7 +120,6 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_exif_thumbnail, 0, 0, 1)
 	ZEND_ARG_INFO(1, imagetype)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO(arginfo_exif_imagetype, 0)
 	ZEND_ARG_INFO(0, imagefile)
 ZEND_END_ARG_INFO()
@@ -132,7 +128,7 @@ ZEND_END_ARG_INFO()
 
 /* {{{ exif_functions[]
  */
-zend_function_entry exif_functions[] = {
+const zend_function_entry exif_functions[] = {
 	PHP_FE(exif_read_data, arginfo_exif_read_data)
 	PHP_FALIAS(read_exif_data, exif_read_data, arginfo_exif_read_data)
 	PHP_FE(exif_tagname, arginfo_exif_tagname)
@@ -142,7 +138,7 @@ zend_function_entry exif_functions[] = {
 };
 /* }}} */
 
-#define EXIF_VERSION "1.4 $Id: exif.c 290173 2009-11-03 17:11:09Z guenter $"
+#define EXIF_VERSION "1.4 $Id: exif.c 287372 2009-08-16 14:32:32Z iliaa $"
 
 /* {{{ PHP_MINFO_FUNCTION
  */
@@ -154,6 +150,7 @@ PHP_MINFO_FUNCTION(exif)
 	php_info_print_table_row(2, "Supported EXIF Version", "0220");
 	php_info_print_table_row(2, "Supported filetypes", "JPEG,TIFF");
 	php_info_print_table_end();
+	DISPLAY_INI_ENTRIES();
 }
 /* }}} */
 
@@ -242,7 +239,7 @@ PHP_MSHUTDOWN_FUNCTION(exif)
 /* }}} */
 
 /* {{{ exif dependencies */
-static zend_module_dep exif_module_deps[] = {
+static const zend_module_dep exif_module_deps[] = {
 	ZEND_MOD_REQUIRED("standard")
 #if EXIF_USE_MBSTRING
 	ZEND_MOD_REQUIRED("mbstring")
@@ -2360,22 +2357,20 @@ static char * exif_get_markername(int marker)
 	Get headername for index or false if not defined */
 PHP_FUNCTION(exif_tagname)
 {
-	zval **p_num;
-	int tag, ac = ZEND_NUM_ARGS();
+	long tag;
 	char *szTemp;
 
-	if ((ac < 1 || ac > 1) || zend_get_parameters_ex(ac, &p_num) == FAILURE) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &tag) == FAILURE) {
+		return;
 	}
 
-	convert_to_long_ex(p_num);
-	tag = Z_LVAL_PP(p_num);
 	szTemp = exif_get_tagname(tag, NULL, 0, tag_table_IFD TSRMLS_CC);
-	if (tag<0 || !szTemp || !szTemp[0]) {
-		RETURN_BOOL(FALSE);
-	} else {
-		RETURN_STRING(szTemp, 1)
+
+	if (tag < 0 || !szTemp || !szTemp[0]) {
+		RETURN_FALSE;
 	}
+
+	RETURN_STRING(szTemp, 1)
 }
 /* }}} */
 
@@ -3881,7 +3876,11 @@ static int exif_read_file(image_info_type *ImageInfo, char *FileName, int read_t
 			}
 
 			/* Store file date/time. */
+#ifdef NETWARE
+			ImageInfo->FileDateTime = st.st_mtime.tv_sec;
+#else
 			ImageInfo->FileDateTime = st.st_mtime;
+#endif
 			ImageInfo->FileSize = st.st_size;
 			/*exif_error_docref(NULL EXIFERR_CC, ImageInfo, E_NOTICE, "Opened stream is file: %d", ImageInfo->FileSize);*/
 		}
@@ -3920,30 +3919,31 @@ static int exif_read_file(image_info_type *ImageInfo, char *FileName, int read_t
    Reads header data from the JPEG/TIFF image filename and optionally reads the internal thumbnails */
 PHP_FUNCTION(exif_read_data)
 {
-	zval **p_name, **p_sections_needed, **p_sub_arrays, **p_read_thumbnail, **p_read_all;
-	int i, ac = ZEND_NUM_ARGS(), ret, sections_needed=0, sub_arrays=0, read_thumbnail=0, read_all=0;
+	char *p_name, *p_sections_needed = NULL;
+	int p_name_len, p_sections_needed_len = 0;
+	zend_bool sub_arrays=0, read_thumbnail=0, read_all=0;
+
+	int i, ret, sections_needed=0;
 	image_info_type ImageInfo;
 	char tmp[64], *sections_str, *s;
 
-	memset(&ImageInfo, 0, sizeof(ImageInfo));
-
-	if ((ac < 1 || ac > 4) || zend_get_parameters_ex(ac, &p_name, &p_sections_needed, &p_sub_arrays, &p_read_thumbnail, &p_read_all) == FAILURE) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|sbb", &p_name, &p_name_len, &p_sections_needed, &p_sections_needed_len, &sub_arrays, &read_thumbnail) == FAILURE) {
+		return;
 	}
 
-	convert_to_string_ex(p_name);
+	memset(&ImageInfo, 0, sizeof(ImageInfo));
 
-	if(ac >= 2) {
-		convert_to_string_ex(p_sections_needed);
-		spprintf(&sections_str, 0, ",%s,", Z_STRVAL_PP(p_sections_needed));
+	if (p_sections_needed) {
+		spprintf(&sections_str, 0, ",%s,", p_sections_needed);
 		/* sections_str DOES start with , and SPACES are NOT allowed in names */
 		s = sections_str;
-		while(*++s) {
-			if(*s==' ') {
+		while (*++s) {
+			if (*s == ' ') {
 				*s = ',';
 			}
 		}
-		for (i=0; i<SECTION_COUNT; i++) {
+
+		for (i = 0; i < SECTION_COUNT; i++) {
 			snprintf(tmp, sizeof(tmp), ",%s,", exif_get_sectionname(i));
 			if (strstr(sections_str, tmp)) {
 				sections_needed |= 1<<i;
@@ -3960,24 +3960,9 @@ PHP_FUNCTION(exif_read_data)
 		EFREE_IF(sections_str);
 #endif
 	}
-	if(ac >= 3) {
-		convert_to_long_ex(p_sub_arrays);
-		sub_arrays = Z_LVAL_PP(p_sub_arrays);
-	}
-	if(ac >= 4) {
-		convert_to_long_ex(p_read_thumbnail);
-		read_thumbnail = Z_LVAL_PP(p_read_thumbnail);
-	}
-	if(ac >= 5) {
-		convert_to_long_ex(p_read_all);
-		read_all = Z_LVAL_PP(p_read_all);
-	}
-	/* parameters 3,4 will be working in later versions.... */
-	read_all = 0;       /* just to make function work for 4.2 tree */
 
-	ret = exif_read_file(&ImageInfo, Z_STRVAL_PP(p_name), read_thumbnail, read_all TSRMLS_CC);
-
-   	sections_str = exif_get_sectionlist(ImageInfo.sections_found TSRMLS_CC);
+	ret = exif_read_file(&ImageInfo, p_name, read_thumbnail, read_all TSRMLS_CC);
+	sections_str = exif_get_sectionlist(ImageInfo.sections_found TSRMLS_CC);
 
 #ifdef EXIF_DEBUG
 	if (sections_str) 
@@ -3986,7 +3971,7 @@ PHP_FUNCTION(exif_read_data)
 
 	ImageInfo.sections_found |= FOUND_COMPUTED|FOUND_FILE;/* do not inform about in debug*/
 
-	if (ret==FALSE || (sections_needed && !(sections_needed&ImageInfo.sections_found))) {
+	if (ret == FALSE || (sections_needed && !(sections_needed&ImageInfo.sections_found))) {
 		/* array_init must be checked at last! otherwise the array must be freed if a later test fails. */
 		exif_discard_imageinfo(&ImageInfo);
 	   	EFREE_IF(sections_str);
@@ -4176,18 +4161,16 @@ PHP_FUNCTION(exif_thumbnail)
    Get the type of an image */
 PHP_FUNCTION(exif_imagetype)
 {
-	zval **arg1;
+	char *imagefile;
+	int imagefile_len;
 	php_stream * stream;
  	int itype = 0;
 
-	if (ZEND_NUM_ARGS() != 1)
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &imagefile, &imagefile_len) == FAILURE) {
+		return;
+	}
 
-	if (zend_get_parameters_ex(1, &arg1) == FAILURE)
-		WRONG_PARAM_COUNT;
-
-	convert_to_string_ex(arg1);
-	stream = php_stream_open_wrapper(Z_STRVAL_PP(arg1), "rb", IGNORE_PATH|ENFORCE_SAFE_MODE|REPORT_ERRORS, NULL);
+	stream = php_stream_open_wrapper(imagefile, "rb", IGNORE_PATH|ENFORCE_SAFE_MODE|REPORT_ERRORS, NULL);
 
 	if (stream == NULL) {
 		RETURN_FALSE;

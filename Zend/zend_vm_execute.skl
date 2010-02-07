@@ -2,7 +2,9 @@
 
 ZEND_API void {%EXECUTOR_NAME%}(zend_op_array *op_array TSRMLS_DC)
 {
-	zend_execute_data execute_data;
+	zend_execute_data *execute_data;
+	zend_bool nested = 0;
+	zend_bool original_in_execution = EG(in_execution);
 	{%HELPER_VARS%}
 
 	{%INTERNAL_LABELS%}
@@ -11,47 +13,51 @@ ZEND_API void {%EXECUTOR_NAME%}(zend_op_array *op_array TSRMLS_DC)
 		return;
 	}
 
+	EG(in_execution) = 1;
+
+zend_vm_enter:
 	/* Initialize execute_data */
+	execute_data = (zend_execute_data *)zend_vm_stack_alloc(
+		ZEND_MM_ALIGNED_SIZE(sizeof(zend_execute_data)) +
+		ZEND_MM_ALIGNED_SIZE(sizeof(zval**) * op_array->last_var * (EG(active_symbol_table) ? 1 : 2)) +
+		ZEND_MM_ALIGNED_SIZE(sizeof(temp_variable)) * op_array->T TSRMLS_CC);
+
+	EX(CVs) = (zval***)((char*)execute_data + ZEND_MM_ALIGNED_SIZE(sizeof(zend_execute_data)));
+	memset(EX(CVs), 0, sizeof(zval**) * op_array->last_var);
+	EX(Ts) = (temp_variable *)(((char*)EX(CVs)) + ZEND_MM_ALIGNED_SIZE(sizeof(zval**) * op_array->last_var * (EG(active_symbol_table) ? 1 : 2)));
 	EX(fbc) = NULL;
+	EX(called_scope) = NULL;
 	EX(object) = NULL;
 	EX(old_error_reporting) = NULL;
-	if (op_array->T < TEMP_VAR_STACK_LIMIT) {
-		EX(Ts) = (temp_variable *) do_alloca(sizeof(temp_variable) * op_array->T);
-	} else {
-		EX(Ts) = (temp_variable *) safe_emalloc(sizeof(temp_variable), op_array->T, 0);
-	}
-	EX(CVs) = (zval***)do_alloca(sizeof(zval**) * op_array->last_var);
-	memset(EX(CVs), 0, sizeof(zval**) * op_array->last_var);
 	EX(op_array) = op_array;
-	EX(original_in_execution) = EG(in_execution);
 	EX(symbol_table) = EG(active_symbol_table);
 	EX(prev_execute_data) = EG(current_execute_data);
-	EG(current_execute_data) = &execute_data;
+	EG(current_execute_data) = execute_data;
+	EX(nested) = nested;
+	nested = 1;
 
-	EG(in_execution) = 1;
 	if (op_array->start_op) {
 		ZEND_VM_SET_OPCODE(op_array->start_op);
 	} else {
 		ZEND_VM_SET_OPCODE(op_array->opcodes);
 	}
 
-	if (op_array->uses_this && EG(This)) {
-		EG(This)->refcount++; /* For $this pointer */
-		if (zend_hash_add(EG(active_symbol_table), "this", sizeof("this"), &EG(This), sizeof(zval *), NULL)==FAILURE) {
-			EG(This)->refcount--;
+	if (op_array->this_var != -1 && EG(This)) {
+ 		Z_ADDREF_P(EG(This)); /* For $this pointer */
+		if (!EG(active_symbol_table)) {
+			EX(CVs)[op_array->this_var] = (zval**)EX(CVs) + (op_array->last_var + op_array->this_var);
+			*EX(CVs)[op_array->this_var] = EG(This);
+		} else {
+			if (zend_hash_add(EG(active_symbol_table), "this", sizeof("this"), &EG(This), sizeof(zval *), (void**)&EX(CVs)[op_array->this_var])==FAILURE) {
+				Z_DELREF_P(EG(This));
+			}
 		}
 	}
 
 	EG(opline_ptr) = &EX(opline);
 
 	EX(function_state).function = (zend_function *) op_array;
-	EG(function_state_ptr) = &EX(function_state);
-#if ZEND_DEBUG
-	/* function_state.function_symbol_table is saved as-is to a stack,
-	 * which is an intentional UMR.  Shut it up if we're in DEBUG.
-	 */
-	EX(function_state).function_symbol_table = NULL;
-#endif
+	EX(function_state).arguments = NULL;
 	
 	while (1) {
     {%ZEND_VM_CONTINUE_LABEL%}
@@ -62,7 +68,7 @@ ZEND_API void {%EXECUTOR_NAME%}(zend_op_array *op_array TSRMLS_DC)
 #endif
 
 		{%ZEND_VM_DISPATCH%} {
-      {%INTERNAL_EXECUTOR%}
+			{%INTERNAL_EXECUTOR%}
 		}
 
 	}

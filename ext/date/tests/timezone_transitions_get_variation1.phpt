@@ -2,7 +2,7 @@
 Test timezone_transitions_get() function : usage variation - Passing unexpected values to first argument $object.
 --FILE--
 <?php
-/* Prototype  : array timezone_transitions_get  ( DateTimeZone $object )
+/* Prototype  : array timezone_transitions_get  ( DateTimeZone $object, [ int $timestamp_begin  [, int $timestamp_end  ]]  )
  * Description: Returns all transitions for the timezone
  * Source code: ext/date/php_date.c
  * Alias to functions: DateTimeZone::getTransitions()

@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: sysvmsg.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: sysvmsg.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -39,39 +39,62 @@
 /* True global resources - no need for thread safety here */
 static int le_sysvmsg;
 
-static
-	ZEND_BEGIN_ARG_INFO(sixth_arg_force_ref, 0)
-		ZEND_ARG_PASS_INFO(0)
-		ZEND_ARG_PASS_INFO(0)
-		ZEND_ARG_PASS_INFO(0)
-		ZEND_ARG_PASS_INFO(0)
-		ZEND_ARG_PASS_INFO(0)
-		ZEND_ARG_PASS_INFO(1)
-	ZEND_END_ARG_INFO();
+/* {{{ arginfo */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_msg_get_queue, 0, 0, 1)
+	ZEND_ARG_INFO(0, key)
+	ZEND_ARG_INFO(0, perms)
+ZEND_END_ARG_INFO()
 
-static
-	ZEND_BEGIN_ARG_INFO(msg_receive_args_force_ref, 0)
-		ZEND_ARG_PASS_INFO(0)
-		ZEND_ARG_PASS_INFO(0)
-		ZEND_ARG_PASS_INFO(1)
-		ZEND_ARG_PASS_INFO(0)
-		ZEND_ARG_PASS_INFO(1)
-		ZEND_ARG_PASS_INFO(0)
-		ZEND_ARG_PASS_INFO(0)
-		ZEND_ARG_PASS_INFO(1)
-	ZEND_END_ARG_INFO();
+ZEND_BEGIN_ARG_INFO_EX(arginfo_msg_send, 0, 0, 3)
+	ZEND_ARG_INFO(0, queue)
+	ZEND_ARG_INFO(0, msgtype)
+	ZEND_ARG_INFO(0, message)
+	ZEND_ARG_INFO(0, serialize)
+	ZEND_ARG_INFO(0, blocking)
+	ZEND_ARG_INFO(1, errorcode)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_msg_receive, 0, 0, 5)
+	ZEND_ARG_INFO(0, queue)
+	ZEND_ARG_INFO(0, desiredmsgtype)
+	ZEND_ARG_INFO(1, msgtype)
+	ZEND_ARG_INFO(0, maxsize)
+	ZEND_ARG_INFO(1, message)
+	ZEND_ARG_INFO(0, unserialize)
+	ZEND_ARG_INFO(0, flags)
+	ZEND_ARG_INFO(1, errorcode)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_msg_remove_queue, 0, 0, 1)
+	ZEND_ARG_INFO(0, queue)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_msg_stat_queue, 0, 0, 1)
+	ZEND_ARG_INFO(0, queue)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_msg_set_queue, 0, 0, 2)
+	ZEND_ARG_INFO(0, queue)
+	ZEND_ARG_INFO(0, data)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_msg_queue_exists, 0, 0, 1)
+	ZEND_ARG_INFO(0, key)
+ZEND_END_ARG_INFO()
+/* }}} */
 
 /* {{{ sysvmsg_functions[]
  *
  * Every user visible function must have an entry in sysvmsg_functions[].
  */
-zend_function_entry sysvmsg_functions[] = {
-	PHP_FE(msg_get_queue,				NULL)
-	PHP_FE(msg_send,					sixth_arg_force_ref)
-	PHP_FE(msg_receive,					msg_receive_args_force_ref)
-	PHP_FE(msg_remove_queue,			NULL)
-	PHP_FE(msg_stat_queue,				NULL)
-	PHP_FE(msg_set_queue,				NULL)
+const zend_function_entry sysvmsg_functions[] = {
+	PHP_FE(msg_get_queue,				arginfo_msg_get_queue)
+	PHP_FE(msg_send,					arginfo_msg_send)
+	PHP_FE(msg_receive,					arginfo_msg_receive)
+	PHP_FE(msg_remove_queue,			arginfo_msg_remove_queue)
+	PHP_FE(msg_stat_queue,				arginfo_msg_stat_queue)
+	PHP_FE(msg_set_queue,				arginfo_msg_set_queue)
+	PHP_FE(msg_queue_exists,			arginfo_msg_queue_exists)
 	{NULL, NULL, NULL}	/* Must be the last line in sysvmsg_functions[] */
 };
 /* }}} */
@@ -94,9 +117,6 @@ zend_module_entry sysvmsg_module_entry = {
 
 #ifdef COMPILE_DL_SYSVMSG
 ZEND_GET_MODULE(sysvmsg)
-# ifdef PHP_WIN32
-# include "zend_arg_defs.c"
-# endif
 #endif
 
 static void sysvmsg_release(zend_rsrc_list_entry *rsrc TSRMLS_DC)
@@ -125,7 +145,7 @@ PHP_MINFO_FUNCTION(sysvmsg)
 {
 	php_info_print_table_start();
 	php_info_print_table_row(2, "sysvmsg support", "enabled");
-	php_info_print_table_row(2, "Revision", "$Revision: 272374 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 272370 $");
 	php_info_print_table_end();
 }
 /* }}} */
@@ -205,6 +225,26 @@ PHP_FUNCTION(msg_stat_queue)
 	}
 }
 /* }}} */
+
+
+/* {{{ proto bool msg_queue_exists(int key)
+   Check wether a message queue exists */
+PHP_FUNCTION(msg_queue_exists)
+{
+	long key;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &key) == FAILURE)	{
+		return;
+	}
+
+	if (msgget(key, 0) < 0) {
+		RETURN_FALSE;
+	}
+
+	RETURN_TRUE;
+}
+/* }}} */
+
 
 /* {{{ proto resource msg_get_queue(int key [, int perms])
    Attach to a message queue */

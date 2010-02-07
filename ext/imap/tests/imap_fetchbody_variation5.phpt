@@ -33,14 +33,14 @@ closedir($dir_handle);
 *** Testing imap_fetchbody() : usage variations ***
 
 -- File Resource opened with fopen() --
-resource(%d) of type (stream)
+resource(5) of type (stream)
 
-Warning: Wrong parameter count for imap_fetchbody() in %s on line %d
+Warning: imap_fetchbody() expects at least 3 parameters, 2 given in %s on line %d
 NULL
 
 -- Directory Resource opened with opendir() --
-resource(%d) of type (stream)
+resource(6) of type (stream)
 
-Warning: Wrong parameter count for imap_fetchbody() in %s on line %d
+Warning: imap_fetchbody() expects at least 3 parameters, 2 given in %s on line %d
 NULL
 ===DONE===

@@ -1,6 +1,6 @@
 --TEST--
 ReflectionClass::hasProperty()
---CREDIT--
+--CREDITS--
 Marc Veldman <marc@ibuildings.nl>
 #testfest roosendaal on 2008-05-10
 --FILE-- 

@@ -1,7 +1,5 @@
 --TEST--
-reflectionExtension::info()
---SKIPIF--
-<?php extension_loaded('reflection') or die('skip'); ?>
+ReflectionExtension::info()
 --FILE--
 <?php
 $r = new ReflectionExtension("reflection");
@@ -12,7 +10,7 @@ $r = new ReflectionExtension("date");
 $r->info();
 
 echo "\nDone!\n";
-
+?>
 --EXPECTF--
 Reflection
 

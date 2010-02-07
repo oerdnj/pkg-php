@@ -138,27 +138,39 @@ float(5.0990195135928)
 float(5)
 
 -- Iteration 17 --
-float(5)
+
+Warning: hypot() expects parameter 1 to be double, string given in %s on line %d
+NULL
 
 -- Iteration 18 --
-float(5)
+
+Warning: hypot() expects parameter 1 to be double, string given in %s on line %d
+NULL
 
 -- Iteration 19 --
-float(5)
+
+Warning: hypot() expects parameter 1 to be double, array given in %s on line %d
+NULL
 
 -- Iteration 20 --
-float(5)
+
+Warning: hypot() expects parameter 1 to be double, string given in %s on line %d
+NULL
 
 -- Iteration 21 --
-float(5)
+
+Warning: hypot() expects parameter 1 to be double, string given in %s on line %d
+NULL
 
 -- Iteration 22 --
-float(5)
+
+Warning: hypot() expects parameter 1 to be double, string given in %s on line %d
+NULL
 
 -- Iteration 23 --
 
-Notice: Object of class classA could not be converted to double in %s on line %d
-float(5.0990195135928)
+Warning: hypot() expects parameter 1 to be double, object given in %s on line %d
+NULL
 
 -- Iteration 24 --
 float(5)
@@ -167,5 +179,7 @@ float(5)
 float(5)
 
 -- Iteration 26 --
-float(%f)
+
+Warning: hypot() expects parameter 1 to be double, resource given in %s on line %d
+NULL
 ===Done===

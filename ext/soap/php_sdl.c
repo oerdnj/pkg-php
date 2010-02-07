@@ -264,7 +264,7 @@ void sdl_set_uri_credentials(sdlCtx *ctx, char *uri TSRMLS_DC)
 						memcpy(Z_STRVAL(new_header), Z_STRVAL_PP(header), s - Z_STRVAL_PP(header));
 						memcpy(Z_STRVAL(new_header) + (s - Z_STRVAL_PP(header)), rest, Z_STRLEN_PP(header) - (rest - Z_STRVAL_PP(header)) + 1);
 						ctx->old_header = *header;
-						ctx->old_header->refcount++;
+						Z_ADDREF_P(ctx->old_header);
 						php_stream_context_set_option(ctx->context, "http", "header", &new_header);
 						zval_dtor(&new_header);
 					}
@@ -301,6 +301,7 @@ static void load_wsdl_ex(zval *this_ptr, char *struri, sdlCtx *ctx, int include 
 	
 	if (!wsdl) {
 		xmlErrorPtr xmlErrorPtr = xmlGetLastError();
+
 		if (xmlErrorPtr) {
 			soap_error2(E_ERROR, "Parsing WSDL: Couldn't load from '%s' : %s", struri, xmlErrorPtr->message);
 		} else {
@@ -2080,7 +2081,7 @@ static void add_sdl_to_cache(const char *fn, const char *uri, time_t t, sdlPtr s
 #ifdef ZEND_WIN32
 	f = open(fn,O_CREAT|O_WRONLY|O_EXCL|O_BINARY,S_IREAD|S_IWRITE);
 #else
-	f = open(fn,O_CREAT|O_WRONLY|O_EXCL|O_BINARY,S_IREAD|S_IWRITE|S_IROTH|S_IWOTH|S_IRGRP|S_IWGRP);
+	f = open(fn,O_CREAT|O_WRONLY|O_EXCL|O_BINARY,S_IREAD|S_IWRITE);
 #endif
 	if (f < 0) {return;}
 
@@ -3182,16 +3183,24 @@ sdlPtr get_sdl(zval *this_ptr, char *uri, long cache_wsdl TSRMLS_DC)
 		unsigned char digest[16];
 		int len = strlen(SOAP_GLOBAL(cache_dir));
 		time_t cached;
+		char *user = php_get_current_user();
+		int user_len = user ? strlen(user) + 1 : 0;
 
 		md5str[0] = '\0';
 		PHP_MD5Init(&context);
 		PHP_MD5Update(&context, (unsigned char*)uri, uri_len);
 		PHP_MD5Final(digest, &context);
 		make_digest(md5str, digest);
-		key = emalloc(len+sizeof("/wsdl-")-1+sizeof(md5str));
+		key = emalloc(len+sizeof("/wsdl-")-1+user_len+sizeof(md5str));
 		memcpy(key,SOAP_GLOBAL(cache_dir),len);
 		memcpy(key+len,"/wsdl-",sizeof("/wsdl-")-1);
-		memcpy(key+len+sizeof("/wsdl-")-1,md5str,sizeof(md5str));
+		len += sizeof("/wsdl-")-1;
+		if (user_len) {
+			memcpy(key+len, user, user_len-1);
+			len += user_len-1;
+			key[len++] = '-';
+		}
+		memcpy(key+len,md5str,sizeof(md5str));
 
 		if ((sdl = get_sdl_from_cache(key, uri, t-SOAP_GLOBAL(cache_ttl), &cached TSRMLS_CC)) != NULL) {
 			t = cached;
@@ -3203,6 +3212,8 @@ sdlPtr get_sdl(zval *this_ptr, char *uri, long cache_wsdl TSRMLS_DC)
 	if (SUCCESS == zend_hash_find(Z_OBJPROP_P(this_ptr),
 			"_stream_context", sizeof("_stream_context"), (void**)&tmp)) {
 		context = php_stream_context_from_zval(*tmp, 0);
+	} else {
+		context = php_stream_context_alloc();
 	}
 
 	if (zend_hash_find(Z_OBJPROP_P(this_ptr), "_proxy_host", sizeof("_proxy_host"), (void **) &proxy_host) == SUCCESS &&
@@ -3239,6 +3250,16 @@ sdlPtr get_sdl(zval *this_ptr, char *uri, long cache_wsdl TSRMLS_DC)
 	}
 
 	basic_authentication(this_ptr, &headers TSRMLS_CC);
+
+	/* Use HTTP/1.1 with "Connection: close" by default */
+	if (php_stream_context_get_option(context, "http", "protocol_version", &tmp) == FAILURE) {
+    	zval *http_version;
+		MAKE_STD_ZVAL(http_version);
+		ZVAL_DOUBLE(http_version, 1.1);
+		php_stream_context_set_option(context, "http", "protocol_version", http_version);
+		zval_ptr_dtor(&http_version);
+		smart_str_appendl(&headers, "Connection: close", sizeof("Connection: close")-1);
+	}
 
 	if (headers.len > 0) {
 		zval *str_headers;

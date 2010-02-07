@@ -1,7 +1,7 @@
 --TEST--
 Operator precedence
 --FILE--
-<?php /* $Id: zend_operators.phpt 152904 2004-03-04 10:58:49Z derick $ */
+<?php /* $Id: zend_operators.phpt 242949 2007-09-26 15:44:16Z cvs2svn $ */
 
 var_dump((object)1 instanceof stdClass);
 var_dump(! (object)1 instanceof Exception);

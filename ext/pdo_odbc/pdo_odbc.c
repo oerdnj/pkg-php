@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_odbc.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: pdo_odbc.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -31,14 +31,14 @@
 #include "php_pdo_odbc_int.h"
 
 /* {{{ pdo_odbc_functions[] */
-function_entry pdo_odbc_functions[] = {
+const function_entry pdo_odbc_functions[] = {
 	{NULL, NULL, NULL}
 };
 /* }}} */
 
 /* {{{ pdo_odbc_deps[] */
 #if ZEND_MODULE_API_NO >= 20050922
-static zend_module_dep pdo_odbc_deps[] = {
+static const zend_module_dep pdo_odbc_deps[] = {
 	ZEND_MOD_REQUIRED("pdo")
 	{NULL, NULL, NULL}
 };
@@ -134,6 +134,7 @@ PHP_MINIT_FUNCTION(pdo_odbc)
 #endif
 
 	REGISTER_PDO_CLASS_CONST_LONG("ODBC_ATTR_USE_CURSOR_LIBRARY", PDO_ODBC_ATTR_USE_CURSOR_LIBRARY);
+	REGISTER_PDO_CLASS_CONST_LONG("ODBC_ATTR_ASSUME_UTF8", PDO_ODBC_ATTR_ASSUME_UTF8);
 	REGISTER_PDO_CLASS_CONST_LONG("ODBC_SQL_USE_IF_NEEDED", SQL_CUR_USE_IF_NEEDED);
 	REGISTER_PDO_CLASS_CONST_LONG("ODBC_SQL_USE_DRIVER", SQL_CUR_USE_DRIVER);
 	REGISTER_PDO_CLASS_CONST_LONG("ODBC_SQL_USE_ODBC", SQL_CUR_USE_ODBC);

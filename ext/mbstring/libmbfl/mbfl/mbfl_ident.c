@@ -56,11 +56,13 @@
 #include "filters/mbfilter_euc_jp_win.h"
 #include "filters/mbfilter_ascii.h"
 #include "filters/mbfilter_koi8r.h"
+#include "filters/mbfilter_koi8u.h"
 #include "filters/mbfilter_cp866.h"
 #include "filters/mbfilter_cp932.h"
 #include "filters/mbfilter_cp936.h"
 #include "filters/mbfilter_cp1251.h"
 #include "filters/mbfilter_cp1252.h"
+#include "filters/mbfilter_cp1254.h"
 #include "filters/mbfilter_cp51932.h"
 #include "filters/mbfilter_iso8859_1.h"
 #include "filters/mbfilter_iso8859_2.h"
@@ -90,6 +92,7 @@
 #include "filters/mbfilter_ucs2.h"
 #include "filters/mbfilter_htmlent.h"
 #include "filters/mbfilter_armscii8.h"
+#include "filters/mbfilter_cp850.h"
 
 static const struct mbfl_identify_vtbl vtbl_identify_false = {
 	mbfl_no_encoding_pass,
@@ -121,7 +124,9 @@ static const struct mbfl_identify_vtbl *mbfl_identify_filter_list[] = {
 	&vtbl_identify_cp1251,
 	&vtbl_identify_cp866,
 	&vtbl_identify_koi8r,
+	&vtbl_identify_koi8u,
 	&vtbl_identify_cp1252,
+	&vtbl_identify_cp1254,
 	&vtbl_identify_8859_1,
 	&vtbl_identify_8859_2,
 	&vtbl_identify_8859_3,
@@ -136,6 +141,7 @@ static const struct mbfl_identify_vtbl *mbfl_identify_filter_list[] = {
 	&vtbl_identify_8859_14,
 	&vtbl_identify_8859_15,
 	&vtbl_identify_armscii8,
+	&vtbl_identify_cp850,
 	&vtbl_identify_false,
 	NULL
 };

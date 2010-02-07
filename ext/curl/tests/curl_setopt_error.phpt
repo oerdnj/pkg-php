@@ -26,16 +26,19 @@ curl_setopt($ch, -1, 0);
 --EXPECTF--
 *** curl_setopt() call with incorrect parameters
 
-Warning: Wrong parameter count for curl_setopt() in %s on line %d
+Warning: curl_setopt() expects exactly 3 parameters, 0 given in %s on line %d
 
-Warning: Wrong parameter count for curl_setopt() in %s on line %d
+Warning: curl_setopt() expects exactly 3 parameters, 1 given in %s on line %d
 
-Warning: Wrong parameter count for curl_setopt() in %s on line %d
+Warning: curl_setopt() expects exactly 3 parameters, 1 given in %s on line %d
 
-Warning: Wrong parameter count for curl_setopt() in %s on line %d
+Warning: curl_setopt() expects exactly 3 parameters, 2 given in %s on line %d
 
-Warning: Wrong parameter count for curl_setopt() in %s on line %d
+Warning: curl_setopt() expects exactly 3 parameters, 2 given in %s on line %d
 
-Warning: Wrong parameter count for curl_setopt() in %s on line %d
+Warning: curl_setopt() expects exactly 3 parameters, 2 given in %s on line %d
 
-Warning: curl_setopt(): supplied argument is not a valid cURL handle resource in %s on line %d
+Warning: curl_setopt() expects parameter 1 to be resource, boolean given in %s on line %d
+
+Warning: curl_setopt() expects parameter 2 to be long, %unicode_string_optional% given in %s on line %d
+

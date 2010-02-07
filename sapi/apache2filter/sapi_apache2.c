@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: sapi_apache2.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: sapi_apache2.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #include <fcntl.h>
 
@@ -91,7 +91,7 @@ php_apache_sapi_ub_write(const char *str, uint str_length TSRMLS_DC)
 }
 
 static int
-php_apache_sapi_header_handler(sapi_header_struct *sapi_header, sapi_headers_struct *sapi_headers TSRMLS_DC)
+php_apache_sapi_header_handler(sapi_header_struct *sapi_header, sapi_header_op_enum op, sapi_headers_struct *sapi_headers TSRMLS_DC)
 {
 	php_struct *ctx;
 	ap_filter_t *f;
@@ -100,29 +100,44 @@ php_apache_sapi_header_handler(sapi_header_struct *sapi_header, sapi_headers_str
 	ctx = SG(server_context);
 	f = ctx->r->output_filters;
 
-	val = strchr(sapi_header->header, ':');
+	switch(op) {
+		case SAPI_HEADER_DELETE:
+			apr_table_unset(ctx->r->headers_out, sapi_header->header);
+			return 0;
 
-	if (!val) {
-		sapi_free_header(sapi_header);
-		return 0;
+		case SAPI_HEADER_DELETE_ALL:
+			apr_table_clear(ctx->r->headers_out);
+			return 0;
+
+		case SAPI_HEADER_ADD:
+		case SAPI_HEADER_REPLACE:
+			val = strchr(sapi_header->header, ':');
+
+			if (!val) {
+				sapi_free_header(sapi_header);
+				return 0;
+			}
+			ptr = val;
+
+			*val = '\0';
+			
+			do {
+				val++;
+			} while (*val == ' ');
+
+			if (!strcasecmp(sapi_header->header, "content-type"))
+				ctx->r->content_type = apr_pstrdup(ctx->r->pool, val);
+			else if (op == SAPI_HEADER_REPLACE)
+				apr_table_set(ctx->r->headers_out, sapi_header->header, val);
+			else
+				apr_table_add(ctx->r->headers_out, sapi_header->header, val);
+			
+			*ptr = ':';
+			return SAPI_HEADER_ADD;
+
+		default:
+			return 0;
 	}
-	ptr = val;
-
-	*val = '\0';
-	
-	do {
-		val++;
-	} while (*val == ' ');
-
-	if (!strcasecmp(sapi_header->header, "content-type"))
-		ctx->r->content_type = apr_pstrdup(ctx->r->pool, val);
-	else if (sapi_header->replace)
-		apr_table_set(ctx->r->headers_out, sapi_header->header, val);
-	else
-		apr_table_add(ctx->r->headers_out, sapi_header->header, val);
-	
-	*ptr = ':';
-	return SAPI_HEADER_ADD;
 }
 
 static int
@@ -210,7 +225,7 @@ php_apache_sapi_register_variables(zval *track_vars_array TSRMLS_DC)
 	php_struct *ctx = SG(server_context);
 	const apr_array_header_t *arr = apr_table_elts(ctx->r->subprocess_env);
 	char *key, *val;
-	int new_val_len;
+	unsigned int new_val_len;
 	
 	APR_ARRAY_FOREACH_OPEN(arr, key, val)
 		if (!val) {
@@ -335,6 +350,7 @@ static sapi_module_struct apache2_sapi_module = {
 	php_apache_sapi_register_variables,
 	php_apache_sapi_log_message,			/* Log message */
 	php_apache_sapi_get_request_time,		/* Get Request Time */
+	NULL,						/* Child terminate */
 
 	STANDARD_SAPI_MODULE_PROPERTIES
 };
@@ -471,17 +487,16 @@ static int php_output_filter(ap_filter_t *f, apr_bucket_brigade *bb)
 	} else {
 		pbb = f->ctx = apr_palloc(f->r->pool, sizeof(*pbb));
 		pbb->bb = apr_brigade_create(f->r->pool, f->c->bucket_alloc);
-		pbb->total_len = 0;
 	}
 
 	if(ap_save_brigade(NULL, &pbb->bb, &bb, f->r->pool) != APR_SUCCESS) {
-		// Bad
+		/* Bad */
 	}
 	
 	apr_brigade_cleanup(bb);
 	
-	// Check to see if the last bucket in this brigade, it not
-	// we have to wait until then.
+	/* Check to see if the last bucket in this brigade, it not
+	 * we have to wait until then. */
 	if(!APR_BUCKET_IS_EOS(APR_BRIGADE_LAST(pbb->bb))) {
 		return 0;
 	}	
@@ -518,16 +533,16 @@ static int php_output_filter(ap_filter_t *f, apr_bucket_brigade *bb)
 	apply_config(conf);
 	php_apache_request_ctor(f, ctx TSRMLS_CC);
 	
-	// It'd be nice if we could highlight based of a zend_file_handle here....
-	// ...but we can't.
+	/* It'd be nice if we could highlight based of a zend_file_handle here....
+	 * ...but we can't. */
 	
 	zfd.type = ZEND_HANDLE_STREAM;
 	
 	zfd.handle.stream.handle = pbb;
 	zfd.handle.stream.reader = php_apache_read_stream;
-	zfd.handle.stream.closer = php_apache_close_stream;
-	zfd.handle.stream.fteller = php_apache_fteller_stream;
-	zfd.handle.stream.interactive = 0;
+	zfd.handle.stream.closer = NULL;
+	zfd.handle.stream.fsizer = php_apache_fsizer_stream;
+	zfd.handle.stream.isatty = 0;
 	
 	zfd.filename = f->r->filename;
 	zfd.opened_path = NULL;
@@ -713,20 +728,20 @@ static size_t php_apache_read_stream(void *handle, char *buf, size_t wantlen TSR
 	readlen = wantlen;
 	apr_brigade_flatten(rbb, buf, &readlen);
 	apr_brigade_cleanup(rbb);
-	pbb->total_len += readlen;
 	
 	return readlen;
 }
 
-static void php_apache_close_stream(void *handle TSRMLS_DC)
-{
-	return;	
-}
-
-static long php_apache_fteller_stream(void *handle TSRMLS_DC)
+static size_t php_apache_fsizer_stream(void *handle TSRMLS_DC)
 {
 	php_apr_bucket_brigade *pbb = (php_apr_bucket_brigade *)handle;
-	return pbb->total_len;
+	apr_off_t actual = 0;
+
+	if (apr_brigade_length(pbb->bb, 1, &actual) == APR_SUCCESS) {
+		return actual;
+	}
+
+	return 0;
 }
 
 AP_MODULE_DECLARE_DATA module php5_module = {

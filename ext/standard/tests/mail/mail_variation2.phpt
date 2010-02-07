@@ -1,8 +1,8 @@
 --TEST--
 Test mail() function : variation force extra parameters
 --INI--
-sendmail_path="sed > /tmp/php_test_mailVariation2.out"
-mail.force_extra_parameters="-e4a---forced-params"
+sendmail_path="echo --- > /tmp/php_test_mailVariation2.out"
+mail.force_extra_parameters="forced params"
 --SKIPIF--
 <?php
 if(substr(PHP_OS, 0, 3) == "WIN")
@@ -35,9 +35,5 @@ unlink($outFile);
 --EXPECT--
 *** Testing mail() : basic functionality ***
 bool(true)
-To: user@company.com
-Subject: Test Subject
-
-A Message
----forced-params
+--- forced params
 ===DONE===

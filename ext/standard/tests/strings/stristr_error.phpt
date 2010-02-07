@@ -3,7 +3,7 @@ Test stristr() function : error conditions
 --FILE--
 <?php
 
-/* Prototype: string stristr ( string $haystack, string $needle );
+/* Prototype: string stristr  ( string $haystack  , mixed $needle  [, bool $before_needle  ] )
    Description: Case-insensitive strstr()
 */
 echo "*** Testing stristr() : error conditions ***\n";
@@ -17,7 +17,7 @@ var_dump( stristr("Hello World") );  // without "needle"
 
 echo "\n-- Testing stristr() function with more than expected no. of arguments --\n";
 $extra_arg = 10;
-var_dump( stristr("Hello World",  "World", $extra_arg) );
+var_dump( stristr("Hello World",  "World", true, $extra_arg) );
 
 echo "\n-- Testing stristr() function with empty haystack --\n";
 var_dump( stristr(NULL, "") );
@@ -32,20 +32,20 @@ var_dump( stristr("Hello World", "") );
 
 -- Testing stristr() function with no arguments --
 
-Warning: Wrong parameter count for stristr() in %s on line %d
+Warning: stristr() expects at least 2 parameters, 0 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for stristr() in %s on line %d
+Warning: stristr() expects at least 2 parameters, 1 given in %s on line %d
 NULL
 
 -- Testing stristr() function with no needle --
 
-Warning: Wrong parameter count for stristr() in %s on line %d
+Warning: stristr() expects at least 2 parameters, 1 given in %s on line %d
 NULL
 
 -- Testing stristr() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for stristr() in %s on line %d
+Warning: stristr() expects at most 3 parameters, 4 given in %s on line %d
 NULL
 
 -- Testing stristr() function with empty haystack --

@@ -39,16 +39,16 @@ $link = ldap_connect_and_bind($host, $port, $user, $passwd, $protocol_version);
 ldap_delete($link, "dc=my-domain,dc=com");
 ?>
 --EXPECTF--
-Warning: Wrong parameter count for ldap_mod_replace() in %s on line %d
+Warning: ldap_mod_replace() expects exactly 3 parameters, 0 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for ldap_mod_replace() in %s on line %d
+Warning: ldap_mod_replace() expects exactly 3 parameters, 1 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for ldap_mod_replace() in %s on line %d
+Warning: ldap_mod_replace() expects exactly 3 parameters, 2 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for ldap_mod_replace() in %s on line %d
+Warning: ldap_mod_replace() expects exactly 3 parameters, 4 given in %s on line %d
 NULL
 
 Warning: ldap_mod_replace(): Modify: No such object in %s on line %d

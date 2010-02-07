@@ -70,30 +70,33 @@ var_dump($ao);
 --EXPECTF--
 --> Write existent, non-existent and dynamic:
   Original wrapped object:
-object(UsesMagic)#%d (5) {
+object(UsesMagic)#1 (5) {
   ["a"]=>
   string(7) "changed"
   ["b"]=>
   int(2)
   ["c"]=>
   int(3)
-  ["priv:private"]=>
+  ["priv":"UsesMagic":private]=>
   string(6) "secret"
   ["dynamic"]=>
   string(11) "new.changed"
 }
   Wrapping ArrayObject:
-object(ArrayObject)#%d (5) {
-  ["a"]=>
-  string(7) "changed"
-  ["b"]=>
-  int(2)
-  ["c"]=>
-  int(3)
-  ["priv:private"]=>
-  string(6) "secret"
-  ["dynamic"]=>
-  string(11) "new.changed"
+object(ArrayObject)#2 (1) {
+  ["storage":"ArrayObject":private]=>
+  object(UsesMagic)#1 (5) {
+    ["a"]=>
+    string(7) "changed"
+    ["b"]=>
+    int(2)
+    ["c"]=>
+    int(3)
+    ["priv":"UsesMagic":private]=>
+    string(6) "secret"
+    ["dynamic"]=>
+    string(11) "new.changed"
+  }
 }
 
 --> Read existent, non-existent and dynamic:
@@ -103,30 +106,33 @@ Notice: Undefined index:  nonexistent in %s on line 42
 NULL
 string(11) "new.changed"
   Original wrapped object:
-object(UsesMagic)#%d (5) {
+object(UsesMagic)#1 (5) {
   ["a"]=>
   string(7) "changed"
   ["b"]=>
   int(2)
   ["c"]=>
   int(3)
-  ["priv:private"]=>
+  ["priv":"UsesMagic":private]=>
   string(6) "secret"
   ["dynamic"]=>
   string(11) "new.changed"
 }
   Wrapping ArrayObject:
-object(ArrayObject)#%d (5) {
-  ["a"]=>
-  string(7) "changed"
-  ["b"]=>
-  int(2)
-  ["c"]=>
-  int(3)
-  ["priv:private"]=>
-  string(6) "secret"
-  ["dynamic"]=>
-  string(11) "new.changed"
+object(ArrayObject)#2 (1) {
+  ["storage":"ArrayObject":private]=>
+  object(UsesMagic)#1 (5) {
+    ["a"]=>
+    string(7) "changed"
+    ["b"]=>
+    int(2)
+    ["c"]=>
+    int(3)
+    ["priv":"UsesMagic":private]=>
+    string(6) "secret"
+    ["dynamic"]=>
+    string(11) "new.changed"
+  }
 }
 
 --> isset existent, non-existent and dynamic:
@@ -134,50 +140,56 @@ bool(true)
 bool(false)
 bool(true)
   Original wrapped object:
-object(UsesMagic)#%d (5) {
+object(UsesMagic)#1 (5) {
   ["a"]=>
   string(7) "changed"
   ["b"]=>
   int(2)
   ["c"]=>
   int(3)
-  ["priv:private"]=>
+  ["priv":"UsesMagic":private]=>
   string(6) "secret"
   ["dynamic"]=>
   string(11) "new.changed"
 }
   Wrapping ArrayObject:
-object(ArrayObject)#%d (5) {
-  ["a"]=>
-  string(7) "changed"
-  ["b"]=>
-  int(2)
-  ["c"]=>
-  int(3)
-  ["priv:private"]=>
-  string(6) "secret"
-  ["dynamic"]=>
-  string(11) "new.changed"
+object(ArrayObject)#2 (1) {
+  ["storage":"ArrayObject":private]=>
+  object(UsesMagic)#1 (5) {
+    ["a"]=>
+    string(7) "changed"
+    ["b"]=>
+    int(2)
+    ["c"]=>
+    int(3)
+    ["priv":"UsesMagic":private]=>
+    string(6) "secret"
+    ["dynamic"]=>
+    string(11) "new.changed"
+  }
 }
 
 --> Unset existent, non-existent and dynamic:
 
 Notice: Undefined index:  nonexistent in %s on line 60
   Original wrapped object:
-object(UsesMagic)#%d (3) {
+object(UsesMagic)#1 (3) {
   ["b"]=>
   int(2)
   ["c"]=>
   int(3)
-  ["priv:private"]=>
+  ["priv":"UsesMagic":private]=>
   string(6) "secret"
 }
   Wrapping ArrayObject:
-object(ArrayObject)#%d (3) {
-  ["b"]=>
-  int(2)
-  ["c"]=>
-  int(3)
-  ["priv:private"]=>
-  string(6) "secret"
+object(ArrayObject)#2 (1) {
+  ["storage":"ArrayObject":private]=>
+  object(UsesMagic)#1 (3) {
+    ["b"]=>
+    int(2)
+    ["c"]=>
+    int(3)
+    ["priv":"UsesMagic":private]=>
+    string(6) "secret"
+  }
 }

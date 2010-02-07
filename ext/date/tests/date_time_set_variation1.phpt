@@ -2,7 +2,7 @@
 Test date_time_set() function : usage variation - Passing unexpected values to first argument $object.
 --FILE--
 <?php
-/* Prototype  : void date_time_set  ( DateTime $object  , int $hour  , int $minute  [, int $second  ] )
+/* Prototype  : DateTime date_time_set  ( DateTime $object  , int $hour  , int $minute  [, int $second  ] )
  * Description: Resets the current time of the DateTime object to a different time. 
  * Source code: ext/date/php_date.c
  * Alias to functions: DateTime::setTime

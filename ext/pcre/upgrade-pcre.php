@@ -58,7 +58,6 @@ function recurse($path)
 
 
 		if (!is_file($newfile)) {
-			continue;
 			die("$newfile is not available any more\n");
 		}
 
@@ -106,6 +105,16 @@ $prepend_config_h = '
 
 #define SUPPORT_UCP
 #define SUPPORT_UTF8
+
+#if defined(__GNUC__) && __GNUC__ >= 4
+# ifdef __cplusplus
+#  define PCRE_EXP_DECL		extern "C" __attribute__ ((visibility("default")))
+# else
+#  define PCRE_EXP_DECL		extern __attribute__ ((visibility("default")))
+# endif
+# define PCRE_EXP_DEFN		__attribute__ ((visibility("default")))
+# define PCRE_EXP_DATA_DEFN	__attribute__ ((visibility("default")))
+#endif
 
 
 ';

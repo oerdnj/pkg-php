@@ -16,7 +16,7 @@ print_r(error_get_last());
 Array
 (
     [type] => 2
-    [message] => Wrong parameter count for str_rot13()
+    [message] => str_rot13() expects exactly 1 parameter, 2 given
     [file] => %s
     [line] => 7
 )

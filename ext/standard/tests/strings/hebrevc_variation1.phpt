@@ -103,16 +103,16 @@ string(5) "-20.5"
 string(10) "1012345.67"
 -- Iteration 10 --
 
-Notice: Array to string conversion in %s on line %d
-string(5) "Array"
+Warning: hebrevc() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 11 --
 
-Notice: Array to string conversion in %s on line %d
-string(5) "Array"
+Warning: hebrevc() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 12 --
 
-Notice: Array to string conversion in %s on line %d
-string(5) "Array"
+Warning: hebrevc() expects parameter 1 to be string, array given in %s on line %d
+NULL
 -- Iteration 13 --
 string(1) "1"
 -- Iteration 14 --
@@ -128,7 +128,9 @@ bool(false)
 -- Iteration 19 --
 string(13) "sample object"
 -- Iteration 20 --
-string(%d) "Resource id #%d"
+
+Warning: hebrevc() expects parameter 1 to be string, resource given in %s on line %d
+NULL
 -- Iteration 21 --
 bool(false)
 -- Iteration 22 --

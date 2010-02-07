@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_soap.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: php_soap.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_SOAP_H
 #define PHP_SOAP_H
@@ -175,11 +175,6 @@ ZEND_BEGIN_MODULE_GLOBALS(soap)
 	HashTable *ref_map;
 ZEND_END_MODULE_GLOBALS(soap)
 
-#ifdef PHP_WIN32
-#define PHP_SOAP_API __declspec(dllexport)
-#else
-#define PHP_SOAP_API
-#endif
 #ifdef ZTS
 #include "TSRM.h"
 #endif

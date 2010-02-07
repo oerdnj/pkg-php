@@ -121,28 +121,28 @@ int(%i)
 
 -- int 12345 --
 
-Strict Standards: mktime(): The is_dst parameter is deprecated in %s on line %d
+Deprecated: mktime(): The is_dst parameter is deprecated in %s on line %d
 int(%i)
 
 -- int -12345 --
 
-Strict Standards: mktime(): The is_dst parameter is deprecated in %s on line %d
+Deprecated: mktime(): The is_dst parameter is deprecated in %s on line %d
 int(%i)
 
 -- float 10.5 --
 
-Strict Standards: mktime(): The is_dst parameter is deprecated in %s on line %d
-int(%i)
+Deprecated: mktime(): The is_dst parameter is deprecated in %s on line %d
+int(-205165755)
 
 -- float -10.5 --
 
-Strict Standards: mktime(): The is_dst parameter is deprecated in %s on line %d
+Deprecated: mktime(): The is_dst parameter is deprecated in %s on line %d
 int(%i)
 
 -- float .5 --
 
-Strict Standards: mktime(): The is_dst parameter is deprecated in %s on line %d
-int(%i)
+Deprecated: mktime(): The is_dst parameter is deprecated in %s on line %d
+int(-205162155)
 
 -- empty array --
 
@@ -166,32 +166,32 @@ bool(false)
 
 -- uppercase NULL --
 
-Strict Standards: mktime(): The is_dst parameter is deprecated in %s on line %d
+Deprecated: mktime(): The is_dst parameter is deprecated in %s on line %d
 int(%i)
 
 -- lowercase null --
 
-Strict Standards: mktime(): The is_dst parameter is deprecated in %s on line %d
+Deprecated: mktime(): The is_dst parameter is deprecated in %s on line %d
 int(%i)
 
 -- lowercase true --
 
-Strict Standards: mktime(): The is_dst parameter is deprecated in %s on line %d
+Deprecated: mktime(): The is_dst parameter is deprecated in %s on line %d
 int(%i)
 
 -- lowercase false --
 
-Strict Standards: mktime(): The is_dst parameter is deprecated in %s on line %d
+Deprecated: mktime(): The is_dst parameter is deprecated in %s on line %d
 int(%i)
 
 -- uppercase TRUE --
 
-Strict Standards: mktime(): The is_dst parameter is deprecated in %s on line %d
+Deprecated: mktime(): The is_dst parameter is deprecated in %s on line %d
 int(%i)
 
 -- uppercase FALSE --
 
-Strict Standards: mktime(): The is_dst parameter is deprecated in %s on line %d
+Deprecated: mktime(): The is_dst parameter is deprecated in %s on line %d
 int(%i)
 
 -- empty string DQ --
@@ -236,12 +236,12 @@ bool(false)
 
 -- undefined var --
 
-Strict Standards: mktime(): The is_dst parameter is deprecated in %s on line %d
+Deprecated: mktime(): The is_dst parameter is deprecated in %s on line %d
 int(%i)
 
 -- unset var --
 
-Strict Standards: mktime(): The is_dst parameter is deprecated in %s on line %d
+Deprecated: mktime(): The is_dst parameter is deprecated in %s on line %d
 int(%i)
 
 -- resource --

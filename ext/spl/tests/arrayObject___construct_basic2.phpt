@@ -67,9 +67,12 @@ Notice: Undefined index:  prop in %s on line 40
 NULL
 NULL
   - After:
-object(ArrayObject)#%d (0) {
+object(ArrayObject)#2 (1) {
+  ["storage":"ArrayObject":private]=>
+  object(C)#1 (0) {
+  }
 }
-object(C)#%d (0) {
+object(C)#1 (0) {
 }
 
 --> Access prop on instance of MyArrayObject:
@@ -92,7 +95,10 @@ Notice: Undefined index:  prop in %s on line 40
 NULL
 NULL
   - After:
-object(MyArrayObject)#%d (0) {
+object(MyArrayObject)#3 (1) {
+  ["storage":"ArrayObject":private]=>
+  object(C)#4 (0) {
+  }
 }
-object(C)#%d (0) {
+object(C)#4 (0) {
 }

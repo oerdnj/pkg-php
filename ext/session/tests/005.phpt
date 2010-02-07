@@ -84,7 +84,8 @@ var_dump($baz); var_dump($arr); var_dump($c);
 
 session_destroy();
 ?>
---EXPECT--
+--EXPECTF--
+PHP Warning:  Directive 'register_globals' is deprecated in PHP 5.3 and greater in Unknown on line 0
 OPEN: PHPSESSID
 READ: abtest
 object(foo)#2 (2) {
@@ -106,6 +107,8 @@ WRITE: abtest, baz|O:3:"foo":2:{s:3:"bar";s:2:"ok";s:3:"yes";i:2;}arr|a:1:{i:3;O
 CLOSE
 OPEN: PHPSESSID
 READ: abtest
+
+Deprecated: Function session_register() is deprecated in %s on line %d
 object(foo)#4 (2) {
   ["bar"]=>
   string(2) "ok"
@@ -144,3 +147,4 @@ array(1) {
 int(123)
 DESTROY: abtest
 CLOSE
+

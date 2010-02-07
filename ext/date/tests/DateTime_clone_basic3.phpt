@@ -30,11 +30,23 @@ var_dump($d2_clone);
 *** Testing clone on DateTime objects ***
 
 -- Create a DateTime object --
-object(DateTime)#%d (0) {
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-02-03 12:34:41"
+  ["timezone_type"]=>
+  int(2)
+  ["timezone"]=>
+  string(3) "GMT"
 }
 
 -- Add some properties --
-object(DateTime)#%d (2) {
+object(DateTime)#%d (5) {
+  ["date"]=>
+  string(19) "2009-02-03 12:34:41"
+  ["timezone_type"]=>
+  int(2)
+  ["timezone"]=>
+  string(3) "GMT"
   ["property1"]=>
   int(99)
   ["property2"]=>
@@ -42,7 +54,13 @@ object(DateTime)#%d (2) {
 }
 
 -- clone it --
-object(DateTime)#%d (2) {
+object(DateTime)#%d (5) {
+  ["date"]=>
+  string(19) "2009-02-03 12:34:41"
+  ["timezone_type"]=>
+  int(2)
+  ["timezone"]=>
+  string(3) "GMT"
   ["property1"]=>
   int(99)
   ["property2"]=>
@@ -50,7 +68,13 @@ object(DateTime)#%d (2) {
 }
 
 -- Add some more properties --
-object(DateTime)#%d (4) {
+object(DateTime)#%d (7) {
+  ["date"]=>
+  string(19) "2009-02-03 12:34:41"
+  ["timezone_type"]=>
+  int(2)
+  ["timezone"]=>
+  string(3) "GMT"
   ["property1"]=>
   int(99)
   ["property2"]=>
@@ -62,7 +86,13 @@ object(DateTime)#%d (4) {
 }
 
 -- clone it --
-object(DateTime)#%d (4) {
+object(DateTime)#%d (7) {
+  ["date"]=>
+  string(19) "2009-02-03 12:34:41"
+  ["timezone_type"]=>
+  int(2)
+  ["timezone"]=>
+  string(3) "GMT"
   ["property1"]=>
   int(99)
   ["property2"]=>

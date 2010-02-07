@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_apache_http.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: php_apache_http.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #define NO_REGEX_EXTRA_H
 
@@ -31,7 +31,7 @@
 #endif
 
 #include "zend.h"
-#include "php_regex.h"
+#include "ext/ereg/php_regex.h"
 #include "php_compat.h"
 
 #ifdef HAVE_OPENSSL_EXT

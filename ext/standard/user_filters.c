@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: user_filters.c 273099 2009-01-08 18:40:56Z lbarnaud $ */
+/* $Id: user_filters.c 273098 2009-01-08 18:40:27Z lbarnaud $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -54,7 +54,6 @@ static int le_bucket;
 PHP_FUNCTION(user_filter_nop)
 {
 }
-static
 ZEND_BEGIN_ARG_INFO(arginfo_php_user_filter_filter, 0)
 	ZEND_ARG_INFO(0, in)
 	ZEND_ARG_INFO(0, out)
@@ -62,15 +61,13 @@ ZEND_BEGIN_ARG_INFO(arginfo_php_user_filter_filter, 0)
 	ZEND_ARG_INFO(0, closing)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO(arginfo_php_user_filter_onCreate, 0)
 ZEND_END_ARG_INFO()
 
-static
 ZEND_BEGIN_ARG_INFO(arginfo_php_user_filter_onClose, 0)
 ZEND_END_ARG_INFO()
 
-static zend_function_entry user_filter_class_funcs[] = {
+static const zend_function_entry user_filter_class_funcs[] = {
 	PHP_NAMED_FE(filter,	PHP_FN(user_filter_nop),		arginfo_php_user_filter_filter)
 	PHP_NAMED_FE(onCreate,	PHP_FN(user_filter_nop),		arginfo_php_user_filter_onCreate)
 	PHP_NAMED_FE(onClose,	PHP_FN(user_filter_nop),		arginfo_php_user_filter_onClose)
@@ -352,8 +349,8 @@ static php_stream_filter *user_filter_factory_create(const char *filtername,
 	/* create the object */
 	ALLOC_ZVAL(obj);
 	object_init_ex(obj, fdat->ce);
-	ZVAL_REFCOUNT(obj) = 1;
-	PZVAL_IS_REF(obj) = 1;
+	Z_SET_REFCOUNT_P(obj, 1);
+	Z_SET_ISREF_P(obj);
 
 	/* filtername */
 	add_property_string(obj, "filtername", (char*)filtername, 1);
@@ -551,8 +548,8 @@ PHP_FUNCTION(stream_get_filters)
 	HashTable *filters_hash;
 	ulong num_key;
 
-	if (ZEND_NUM_ARGS() != 0) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 
 	array_init(return_value);
@@ -601,7 +598,7 @@ PHP_FUNCTION(stream_filter_register)
 		zend_hash_init(BG(user_filter_map), 5, NULL, (dtor_func_t) filter_item_dtor, 0);
 	}
 
-	fdat = ecalloc(1, sizeof(*fdat) + classname_len);
+	fdat = ecalloc(1, sizeof(struct php_user_filter_data) + classname_len);
 	memcpy(fdat->classname, classname, classname_len);
 
 	if (zend_hash_add(BG(user_filter_map), filtername, filtername_len + 1, (void*)fdat,

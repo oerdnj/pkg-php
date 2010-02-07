@@ -1,14 +1,17 @@
-dnl
-dnl $Id: config.m4 291414 2009-11-29 06:13:22Z rasmus $
-dnl
-
-if test "$PHP_PDO" != "no"; then
+dnl $Id: config.m4 279602 2009-04-30 12:38:43Z mbeccati $
+dnl config.m4 for extension pdo_pgsql
+dnl vim:et:sw=2:ts=2:
 
 PHP_ARG_WITH(pdo-pgsql,for PostgreSQL support for PDO,
 [  --with-pdo-pgsql[=DIR]    PDO: PostgreSQL support.  DIR is the PostgreSQL base
                             install directory or the path to pg_config])
 
 if test "$PHP_PDO_PGSQL" != "no"; then
+
+  if test "$PHP_PDO" = "no" && test "$ext_shared" = "no"; then
+    AC_MSG_ERROR([PDO is not enabled! Add --enable-pdo to your configure line.])
+  fi
+
   PHP_EXPAND_PATH($PGSQL_INCLUDE, PGSQL_INCLUDE)
 
   AC_MSG_CHECKING(for pg_config)
@@ -79,23 +82,18 @@ if test "$PHP_PDO_PGSQL" != "no"; then
 
   old_LIBS=$LIBS
   old_LDFLAGS=$LDFLAGS
-  LDFLAGS="$LDFLAGS -L$PGSQL_LIBDIR"
-  AC_CHECK_LIB(pq, PQescapeString,AC_DEFINE(HAVE_PQESCAPE,1,[PostgreSQL 7.2.0 or later]))
+  LDFLAGS="-L$PGSQL_LIBDIR $LDFLAGS"
+  AC_CHECK_LIB(pq, PQparameterStatus,AC_DEFINE(HAVE_PQPARAMETERSTATUS,1,[PostgreSQL 7.4 or later]), [
+    echo "Unable to build the PDO PostgreSQL driver: libpq 7.4+ is required"
+    exit 1
+  ])
+
+  AC_CHECK_LIB(pq, PQprepare,AC_DEFINE(HAVE_PQPREPARE,1,[PostgreSQL 8.0 or later]))
   AC_CHECK_LIB(pq, PQescapeStringConn, AC_DEFINE(HAVE_PQESCAPE_CONN,1,[PostgreSQL 8.1.4 or later]))
   AC_CHECK_LIB(pq, PQescapeByteaConn, AC_DEFINE(HAVE_PQESCAPE_BYTEA_CONN,1,[PostgreSQL 8.1.4 or later]))
-  AC_CHECK_LIB(pq, PQsetnonblocking,AC_DEFINE(HAVE_PQSETNONBLOCKING,1,[PostgreSQL 7.0.x or later]))
-  AC_CHECK_LIB(pq, PQcmdTuples,AC_DEFINE(HAVE_PQCMDTUPLES,1,[Broken libpq under windows]))
-  AC_CHECK_LIB(pq, PQoidValue,AC_DEFINE(HAVE_PQOIDVALUE,1,[Older PostgreSQL]))
-  AC_CHECK_LIB(pq, PQclientEncoding,AC_DEFINE(HAVE_PQCLIENTENCODING,1,[PostgreSQL 7.0.x or later]))
-  AC_CHECK_LIB(pq, PQparameterStatus,AC_DEFINE(HAVE_PQPARAMETERSTATUS,1,[PostgreSQL 7.4 or later]))
-  AC_CHECK_LIB(pq, PQprotocolVersion,AC_DEFINE(HAVE_PQPROTOCOLVERSION,1,[PostgreSQL 7.4 or later]))
-  AC_CHECK_LIB(pq, PQtransactionStatus,AC_DEFINE(HAVE_PGTRANSACTIONSTATUS,1,[PostgreSQL 7.4 or later]))
-  AC_CHECK_LIB(pq, PQunescapeBytea,AC_DEFINE(HAVE_PQUNESCAPEBYTEA,1,[PostgreSQL 7.4 or later]))
-  AC_CHECK_LIB(pq, PQExecParams,AC_DEFINE(HAVE_PQEXECPARAMS,1,[PostgreSQL 7.4 or later]))
-  AC_CHECK_LIB(pq, PQresultErrorField,AC_DEFINE(HAVE_PQRESULTERRORFIELD,1,[PostgreSQL 7.4 or later]))
+
   AC_CHECK_LIB(pq, pg_encoding_to_char,AC_DEFINE(HAVE_PGSQL_WITH_MULTIBYTE_SUPPORT,1,[Whether libpq is compiled with --enable-multibyte]))
   
-  AC_CHECK_LIB(pq, PQprepare,AC_DEFINE(HAVE_PQPREPARE,1,[prepared statements]))
 
   LIBS=$old_LIBS
   LDFLAGS=$old_LDFLAGS
@@ -127,6 +125,4 @@ if test "$PHP_PDO_PGSQL" != "no"; then
   [
     PHP_ADD_EXTENSION_DEP(pdo_pgsql, pdo) 
   ])
-fi
-
 fi

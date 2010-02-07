@@ -3,7 +3,7 @@ Test stat() function: basic functionality
 --SKIPIF--
 <?php
 if (substr(PHP_OS, 0, 3) != 'WIN') {
-    die('skip.. stat() only for windows');
+    die('skip.. valid only for Windows');
 }
 ?>
 --FILE--
@@ -80,15 +80,15 @@ array(26) {
   [0]=>
   int(%d)
   [1]=>
-  int(%d)
+  int(0)
   [2]=>
   int(%d)
   [3]=>
   int(%d)
   [4]=>
-  int(%d)
+  int(0)
   [5]=>
-  int(%d)
+  int(0)
   [6]=>
   int(%d)
   [7]=>
@@ -106,15 +106,15 @@ array(26) {
   ["dev"]=>
   int(%d)
   ["ino"]=>
-  int(%d)
+  int(0)
   ["mode"]=>
   int(%d)
   ["nlink"]=>
   int(%d)
   ["uid"]=>
-  int(%d)
+  int(0)
   ["gid"]=>
-  int(%d)
+  int(0)
   ["rdev"]=>
   int(%d)
   ["size"]=>
@@ -189,3 +189,4 @@ bool(true)
 bool(true)
 
 ---Done---
+

@@ -38,8 +38,5 @@ $count = loopElements(array($doc->documentElement));
 
 var_dump($count);
 ?>
-===DONE===
 --EXPECT--
 int(13)
-===DONE===
-	

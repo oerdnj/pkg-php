@@ -622,7 +622,7 @@ mbfl_identify_encoding(mbfl_string *string, enum mbfl_no_encoding *elist, int el
 	if (!encoding) {
 		for (i = 0; i < num; i++) {
 			filter = &flist[i];
-			if (!filter->flag && (!strict || !filter->status)) {
+			if (!filter->flag) {
 				encoding = filter->encoding;
 				break;
 			}

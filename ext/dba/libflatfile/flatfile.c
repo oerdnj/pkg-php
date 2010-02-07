@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: flatfile.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: flatfile.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -307,7 +307,7 @@ datum flatfile_nextkey(flatfile *dba TSRMLS_DC) {
 /* {{{ flatfile_version */
 char *flatfile_version() 
 {
-	return "1.0, $Revision: 272374 $";
+	return "1.0, $Revision: 272370 $";
 }
 /* }}} */ 
 

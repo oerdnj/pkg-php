@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: flock_compat.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: flock_compat.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef FLOCK_COMPAT_H
 #define FLOCK_COMPAT_H
@@ -55,7 +55,9 @@ PHPAPI int flock(int fd, int operation);
 #include <arpa/inet.h>
 #endif
 
-extern int inet_aton(const char *, struct in_addr *);
+#ifndef PHP_WIN32
+extern int inet_aton(const char *, struct in_addr *); 
+#endif
 #endif
 
 #endif	/* FLOCK_COMPAT_H */

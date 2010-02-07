@@ -1,4 +1,4 @@
-## $Id: configure.in 292200 2009-12-16 12:45:18Z iliaa $ -*- autoconf -*-
+## $Id: configure.in 290928 2009-11-18 19:43:33Z johannes $ -*- autoconf -*-
 dnl ## Process this file with autoconf to produce a configure script.
 
 divert(1)
@@ -11,9 +11,9 @@ dnl ## Diversion 2 is the initial checking of OS features, programs,
 dnl ## libraries and so on.
 
 dnl ## In diversion 3 we check for compile-time options to the PHP
-dnl ## core and how to deal with different system dependencies.
-dnl ## This includes what regex library is used and whether debugging or short
-dnl ## tags are enabled, and the default behaviour of php.ini options.
+dnl ## core and how to deal with different system dependencies. 
+dnl ## This includes whether debugging or short tags are enabled
+dnl ## and the default behaviour of php.ini options.
 dnl ## This is also where an SAPI interface is selected (choosing between
 dnl ## Apache module, CGI etc.)
 
@@ -40,8 +40,8 @@ PHP_CANONICAL_HOST_TARGET
 AC_CONFIG_HEADER(main/php_config.h)
 
 PHP_MAJOR_VERSION=5
-PHP_MINOR_VERSION=2
-PHP_RELEASE_VERSION=12
+PHP_MINOR_VERSION=3
+PHP_RELEASE_VERSION=1
 PHP_EXTRA_VERSION=""
 PHP_VERSION="$PHP_MAJOR_VERSION.$PHP_MINOR_VERSION.$PHP_RELEASE_VERSION$PHP_EXTRA_VERSION"
 PHP_VERSION_ID=`expr [$]PHP_MAJOR_VERSION \* 10000 + [$]PHP_MINOR_VERSION \* 100 + [$]PHP_RELEASE_VERSION`
@@ -122,6 +122,21 @@ dnl or the contents of libs.
 $php_shtool mkdir -p libs
 rm -f libs/*
 
+dnl Darwin 9 hack
+dnl Because the default debugging format used by Apple's GCC on Mac OS 10.5
+dnl causes errors in all current and past versions of Autoconf, we do a little
+dnl messing with the CFLAGS here to trick it.
+php_did_darwin9_cheat=0
+case $host_alias in
+*darwin9*)
+  hasg=`echo $CFLAGS | grep -E '(^-g)|([[:space:]]-g)'`
+  if test x"$hasg" = "x"; then
+    php_did_darwin9_cheat=1
+    CFLAGS="$CFLAGS -gstabs"
+  fi
+  ;;
+esac
+
 dnl Checks for programs.
 dnl -------------------------------------------------------------------------
 
@@ -149,7 +164,6 @@ PHP_RUNPATH_SWITCH
 dnl Checks for some support/generator progs
 PHP_PROG_AWK
 PHP_PROG_BISON
-PHP_PROG_LEX
 PHP_PROG_RE2C
 
 dnl Check if bison generated files exist when bison does not..
@@ -160,6 +174,34 @@ case $php_cv_bison_version in
     fi
     ;;
 esac
+
+PHP_ARG_ENABLE(re2c-cgoto, whether to enable computed goto gcc extension with re2c,
+[  --enable-re2c-cgoto     Enable -g flag to re2c to use computed goto gcc extension], no, no)
+
+if test "$PHP_RE2C_CGOTO" = "no"; then
+  RE2C_FLAGS=""
+else
+  AC_MSG_CHECKING([whether re2c -g works])
+  AC_TRY_COMPILE([],[
+int main(int argc, const char **argv)
+{
+  argc = argc;
+  argv = argv;
+label1:
+label2:
+  static void *adr[] = { &&label1, &&label2};
+  goto *adr[0];
+  return 0;
+}
+  ],[
+    RE2C_FLAGS=""
+    AC_MSG_RESULT([no])
+  ],[
+    RE2C_FLAGS="-g"
+    AC_MSG_RESULT([yes])
+  ])
+fi
+PHP_SUBST(RE2C_FLAGS)
 
 dnl Platform-specific compile settings.
 dnl -------------------------------------------------------------------------
@@ -180,6 +222,21 @@ case $host_cpu in
     ;;
 esac
 
+dnl activate some gcc specific optimizations for gcc >= 4
+if test "$GCC" = "yes"; then
+  case $host_alias in
+  *darwin*)
+    GCC_MAJOR_VERSION=`$CC -dumpversion | /usr/bin/sed -nE '1s/([[0-9]]+)\.[[0-9]]+\..*/\1/;1p'`
+    ;;
+  *)
+    GCC_MAJOR_VERSION=`$CC --version | $SED -n '1s/[[^0-9]]*//;1s/\..*//;1p'`
+    ;;
+  esac
+  if test $GCC_MAJOR_VERSION -ge 4; then
+    CFLAGS="$CFLAGS -fvisibility=hidden"
+  fi
+fi
+
 case $host_alias in
   *solaris*)
     CPPFLAGS="$CPPFLAGS -D_POSIX_PTHREAD_SEMANTICS"
@@ -197,14 +254,6 @@ case $host_alias in
         CPPFLAGS="$CPPFLAGS -no-cpp-precomp"
       fi
     fi
-
-    macosx_major=`sw_vers -productVersion | cut -d . -f 1`
-    macosx_minor=`sw_vers -productVersion | cut -d . -f 2`
-
-    if test "$macosx_major" -ge "10" && test "$macosx_minor" -lt "6" ; then
-      AC_DEFINE(BIND_8_COMPAT, 1, [Enabling BIND8 compatibility for Panther])
-    fi
-
     php_multiple_shlib_versions_ok=yes
     ;;
   *beos*)
@@ -298,9 +347,9 @@ fi
 divert(3)
 
 dnl ## In diversion 3 we check for compile-time options to the PHP
-dnl ## core and how to deal with different system dependencies.
-dnl ## This includes what regex library is used and whether debugging or short
-dnl ## tags are enabled, and the default behaviour of php.ini options.
+dnl ## core and how to deal with different system dependencies. 
+dnl ## This includes whether debugging or short tags are enabled
+dnl ## and the default behaviour of php.ini options.
 
 dnl Starting system checks.
 dnl -------------------------------------------------------------------------
@@ -349,15 +398,12 @@ if test "$ac_cv_func_dlopen" = "yes"; then
 fi
 AC_CHECK_LIB(m, sin)
 
-dnl Check for resolver routines.
-dnl Need to check for both res_search and __res_search
-dnl in -lc, -lbind, -lresolv and -lsocket
-PHP_CHECK_FUNC(res_search, resolv, bind, socket)
-
-dnl Check for inet_aton and dn_skipname
+dnl Check for inet_aton
 dnl in -lc, -lbind and -lresolv
 PHP_CHECK_FUNC(inet_aton, resolv, bind)
-PHP_CHECK_FUNC(dn_skipname, resolv, bind)
+
+dnl Some systems (like OpenSolaris) do not have nanosleep in libc
+PHP_CHECK_FUNC(nanosleep, rt)
 
 dnl Then headers.
 dnl -------------------------------------------------------------------------
@@ -382,6 +428,7 @@ arpa/nameser_compat.h \
 arpa/nameser.h \
 assert.h \
 crypt.h \
+dns.h \
 fcntl.h \
 grp.h \
 ieeefp.h \
@@ -439,16 +486,6 @@ assert.h
 #include <arpa/nameser.h>
 #endif
 ])
-
-dnl Don't use mach-o/dyld.h on Darwin 8+, dl* is recommended by Apple from there on
-dnl See http://developer.apple.com/documentation/DeveloperTools/Conceptual/MachOTopics/Articles/loading_code.html
-case $host_alias in
-  *darwin[[89]]*)
-    ;;
-  *)
-    AC_CHECK_HEADERS([mach-o/dyld.h],[],[],[])
-    ;;
-esac
 
 PHP_FOPENCOOKIE
 PHP_BROKEN_GETCWD
@@ -526,6 +563,7 @@ getprotobyname \
 getprotobynumber \
 getservbyname \
 getservbyport \
+gethostname \
 getrusage \
 gettimeofday \
 gmtime_r \
@@ -554,8 +592,6 @@ putenv \
 realpath \
 random \
 rand_r \
-regcomp \
-res_search \
 scandir \
 setitimer \
 setlocale \
@@ -589,10 +625,9 @@ unsetenv \
 usleep \
 utime \
 vsnprintf \
+vasprintf \
+asprintf \
 )
-
-dnl Some systems (like OpenSolaris) do not have nanosleep in libc
-AC_CACHE_CHECK([for nanosleep], ac_cv_func_nanosleep, [PHP_CHECK_FUNC_LIB(nanosleep, rt)])
 
 dnl Check for getaddrinfo, should be a better way, but...
 dnl Also check for working getaddrinfo
@@ -960,7 +995,6 @@ case $php_build_target in
 esac
 
 EXTRA_LIBS="$EXTRA_LIBS $DLIBS $LIBS"
-EXTRA_LDFLAGS="$EXTRA_LDFLAGS $LDFLAGS"
 
 dnl this has to be here to prevent the openssl crypt() from
 dnl overriding the system provided crypt().
@@ -995,10 +1029,6 @@ if test "$PHP_PEAR" != "no"; then
   dnl
   dnl PEAR dependancies
   dnl
-  if test "$PHP_PCRE_REGEX" = "no"; then
-    pear_error_msg="$pear_error_msg 
-                    PEAR requires PCRE to be enabled.    Add --with-pcre-regex to the configure line. (or --without-pear)"
-  fi
   if test "$PHP_XML" = "no"; then
     pear_error_msg="$pear_error_msg 
                     PEAR requires XML to be enabled.     Add --enable-xml to the configure line. (or --without-pear)"
@@ -1141,7 +1171,6 @@ EXPANDED_PEAR_INSTALLDIR=`eval echo $PEAR_INSTALLDIR`
 EXPANDED_EXTENSION_DIR=`eval echo $EXTENSION_DIR`
 EXPANDED_LOCALSTATEDIR=`eval echo $localstatedir`
 EXPANDED_BINDIR=`eval echo $bindir`
-EXPANDED_SBINDIR=`eval echo $sbindir`
 EXPANDED_LIBDIR=$libdir
 EXPANDED_SYSCONFDIR=`eval echo $sysconfdir`
 EXPANDED_DATADIR=$datadir
@@ -1157,7 +1186,6 @@ AC_SUBST(INCLUDE_PATH)
 AC_SUBST(EXPANDED_PEAR_INSTALLDIR)
 AC_SUBST(EXPANDED_EXTENSION_DIR)
 AC_SUBST(EXPANDED_BINDIR)
-AC_SUBST(EXPANDED_SBINDIR)
 AC_SUBST(EXPANDED_LIBDIR)
 AC_SUBST(EXPANDED_DATADIR)
 AC_SUBST(EXPANDED_SYSCONFDIR)
@@ -1200,16 +1228,14 @@ esac
 if test "$PHP_CLI" != "no"; then
   PHP_CLI_TARGET="\$(SAPI_CLI_PATH)"
   PHP_INSTALL_CLI_TARGET="install-cli"
-  PHP_ADD_SOURCES(sapi/cli, php_cli.c php_cli_readline.c getopt.c,, cli)
+  PHP_ADD_SOURCES(sapi/cli, php_cli.c php_cli_readline.c,, cli)
   PHP_INSTALLED_SAPIS="cli $PHP_SAPI"
-  PHP_EXECUTABLE="\$(top_builddir)/\$(SAPI_CLI_PATH)"
 else
   PHP_INSTALLED_SAPIS="$PHP_SAPI"
 fi
 
 PHP_SUBST_OLD(PHP_INSTALLED_SAPIS)
 
-PHP_SUBST(PHP_EXECUTABLE)
 PHP_SUBST(PHP_CLI_TARGET)
 PHP_SUBST(PHP_SAPI_OBJS)
 PHP_SUBST(PHP_CLI_OBJS)
@@ -1226,7 +1252,6 @@ PHP_SUBST_OLD(php_abs_top_builddir)
 PHP_SUBST_OLD(php_abs_top_srcdir)
 
 PHP_SUBST(bindir)
-PHP_SUBST(sbindir)
 PHP_SUBST(exec_prefix)
 PHP_SUBST_OLD(program_prefix)
 PHP_SUBST_OLD(program_suffix)
@@ -1299,15 +1324,7 @@ if test "$PHP_THREAD_SAFETY" = "yes" && test "$PHP_MYSQL" = "yes"; then
   CPPFLAGS="$CPPFLAGS -DTHREAD=1"
 fi
 
-if test "$PHP_DEBUG" = "1" && test "$PHP_THREAD_SAFETY" = "yes"; then
-  ZEND_EXT_TYPE="zend_extension_debug_ts"
-elif test "$PHP_DEBUG" = "1"; then
-  ZEND_EXT_TYPE="zend_extension_debug"
-elif test "$PHP_THREAD_SAFETY" = "yes"; then
-  ZEND_EXT_TYPE="zend_extension_ts"
-else
-  ZEND_EXT_TYPE="zend_extension"
-fi
+ZEND_EXT_TYPE="zend_extension"
 PHP_SUBST(ZEND_EXT_TYPE)
 
 dnl
@@ -1318,14 +1335,6 @@ PHP_HELP_SEPARATOR([Libtool:])
 PHP_CONFIGURE_PART(Configuring libtool)
 
 LDFLAGS="$LDFLAGS $PHP_AIX_LDFLAGS"
-
-dnl Autoconf 2.13's libtool checks go slightly nuts on Mac OS X 10.5 and 10.6.
-dnl This hack works around it. Ugly.
-case $host_alias in
-*darwin9*|*darwin10*)
-	ac_cv_exeext=
-	;;
-esac
 
 dnl Only allow AC_PROG_CXX and AC_PROG_CXXCPP if they are explicitly called (by PHP_REQUIRE_CXX).
 dnl Otherwise AC_PROG_LIBTOOL fails if there is no working C++ compiler.
@@ -1350,6 +1359,15 @@ SHARED_LIBTOOL='$(LIBTOOL)'
 
 CC=$old_CC
 
+dnl Finish the Darwin hack
+if test "$php_did_darwin9_cheat" -eq 1; then
+  if test "$PHP_DEBUG" = "1"; then
+    CFLAGS=`echo "$CFLAGS" | $SED -e 's/-gstabs/-g/g'`
+  else
+    CFLAGS=`echo "-O2 $CFLAGS" | $SED -e 's/-gstabs//g'`
+  fi
+fi
+
 PHP_CONFIGURE_PART(Generating files)
 
 CXXFLAGS_CLEAN=$CXXFLAGS
@@ -1358,8 +1376,16 @@ CFLAGS="\$(CFLAGS_CLEAN) $standard_libtool_flag"
 INLINE_CFLAGS="$INLINE_CFLAGS $standard_libtool_flag"
 CXXFLAGS="$CXXFLAGS $standard_libtool_flag"
 
-all_targets="$lcov_target \$(OVERALL_TARGET) \$(PHP_MODULES) \$(PHP_ZEND_EX) \$(PHP_CLI_TARGET)"
-install_targets="$install_modules install-build install-headers install-programs $install_pear"
+if test "$PHP_PHAR" != "no" && test "$PHP_CLI" != "no"; then
+  pharcmd=pharcmd
+  pharcmd_install=install-pharcmd
+else
+  pharcmd=
+  pharcmd_install=
+fi;
+
+all_targets="$lcov_target \$(OVERALL_TARGET) \$(PHP_MODULES) \$(PHP_ZEND_EX) \$(PHP_CLI_TARGET) $pharcmd"
+install_targets="$install_modules install-build install-headers install-programs $install_pear $pharcmd_install"
 
 case $PHP_SAPI in
   cli)
@@ -1373,7 +1399,7 @@ esac
 PHP_SUBST(all_targets)
 PHP_SUBST(install_targets)
 
-PHP_INSTALL_HEADERS([Zend/ TSRM/ include/ main/ main/streams/ regex/])
+PHP_INSTALL_HEADERS([Zend/ TSRM/ include/ main/ main/streams/])
 
 PHP_ADD_SOURCES(TSRM, TSRM.c tsrm_strtok_r.c tsrm_virtual_cwd.c)
 
@@ -1382,10 +1408,11 @@ PHP_ADD_SOURCES(main, main.c snprintf.c spprintf.c php_sprintf.c \
        php_ini.c SAPI.c rfc1867.c php_content_types.c strlcpy.c \
        strlcat.c mergesort.c reentrancy.c php_variables.c php_ticks.c \
        network.c php_open_temporary_file.c php_logos.c \
-       output.c )
+       output.c getopt.c)
 
 PHP_ADD_SOURCES(main/streams, streams.c cast.c memory.c filter.c \
-       plain_wrapper.c userspace.c transports.c xp_socket.c mmap.c)
+       plain_wrapper.c userspace.c transports.c xp_socket.c mmap.c \
+       glob_wrapper.c)
 
 PHP_ADD_SOURCES(/main, internal_functions.c,, sapi)
 
@@ -1408,7 +1435,8 @@ PHP_ADD_SOURCES(Zend, \
     zend_variables.c zend.c zend_API.c zend_extensions.c zend_hash.c \
     zend_list.c zend_indent.c zend_builtin_functions.c zend_sprintf.c \
     zend_ini.c zend_qsort.c zend_multibyte.c zend_ts_hash.c zend_stream.c \
-    zend_iterators.c zend_interfaces.c zend_exceptions.c zend_strtod.c)
+    zend_iterators.c zend_interfaces.c zend_exceptions.c zend_strtod.c zend_gc.c \
+    zend_closures.c zend_float.c)
 
 if test -r "$abs_srcdir/Zend/zend_objects.c"; then
   PHP_ADD_SOURCES(Zend, zend_objects.c zend_object_handlers.c zend_objects_API.c zend_default_classes.c)
@@ -1425,7 +1453,6 @@ fi
 PHP_ADD_SOURCES_X(Zend, zend_execute.c,,PHP_GLOBAL_OBJS,,$flag)
 
 PHP_ADD_BUILD_DIR(main main/streams)
-PHP_ADD_BUILD_DIR(regex)
 PHP_ADD_BUILD_DIR(sapi/$PHP_SAPI sapi/cli)
 PHP_ADD_BUILD_DIR(TSRM)
 PHP_ADD_BUILD_DIR(Zend)
@@ -1507,21 +1534,6 @@ dnl mv -f main/internal_functions.c main/internal_functions.c.old 2>/dev/null
     echo "| Please go read http://www.php.net/faq.build#faq.build.apxs         |"
     echo "| and make the changes described there and try again.                |"
   fi
-
-  # Warn about CGI version with no extra security options.
-  if test "$PHP_SAPI" = "cgi"; then
-    if test "$PHP_FORCE_CGI_REDIRECT" = "no" && test "$PHP_DISCARD_PATH" = "no"; then
-      echo "+--------------------------------------------------------------------+"
-      echo "|                        *** WARNING ***                             |"
-      echo "|                                                                    |"
-      echo "| You will be compiling the CGI version of PHP without any           |"
-      echo "| redirection checking.  By putting this cgi binary somewhere in     |"
-      echo "| your web space, users may be able to circumvent existing .htaccess |"
-      echo "| security by loading files directly through the parser.  See        |"
-      echo "| http://www.php.net/manual/security.php for more details.           |"
-    fi
-  fi
-
 
   if test -n "$DEBUG_LOG"; then
     rm -f config.cache

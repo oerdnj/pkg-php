@@ -9,7 +9,7 @@ $grandchild = $xml->addChild('child', null, 'http://myns')->addChild('grandchild
 
 $gchild = $xml->xpath("//grandchild");
 if (count($gchild) > 0) {
-    echo $gchild[0] . "\n";
+    echo $gchild[0]."\n";
 }
 ?>
 ===DONE===

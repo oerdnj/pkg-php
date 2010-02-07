@@ -24,7 +24,7 @@ $stream_id = setup_test_mailbox('', 3, $mailbox, 'notSimple'); // set up temp ma
 
 $sequences = array (0,     4, // out of range
                     '1,3', '1:3', // message sequences instead of numbers
-                    );
+                    ); 
 
 foreach($sequences as $msg_no) {
 	echo "\n-- \$msg_no is $msg_no --\n";
@@ -60,18 +60,22 @@ bool(false)
 
 
 -- $msg_no is 1,3 --
-string(%d) "From: foo@anywhere.com
+
+Notice: A non well formed numeric value encountered in %s on line %d
+%unicode|string%(%d) "From: foo@anywhere.com
 Subject: Test msg 1
-To: %s
+To: webmaster@something.com
 MIME-Version: 1.0
 Content-Type: MULTIPART/mixed; BOUNDARY="%s"
 
 "
 
 -- $msg_no is 1:3 --
-string(%d) "From: foo@anywhere.com
+
+Notice: A non well formed numeric value encountered in %s on line %d
+%unicode|string%(%d) "From: foo@anywhere.com
 Subject: Test msg 1
-To: %s
+To: webmaster@something.com
 MIME-Version: 1.0
 Content-Type: MULTIPART/mixed; BOUNDARY="%s"
 

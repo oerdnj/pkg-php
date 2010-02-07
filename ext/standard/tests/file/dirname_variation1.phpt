@@ -135,20 +135,20 @@ string(1) "."
 string(1) "."
 
 --empty array--
-Error: 8 - Array to string conversion, %s(%d)
-string(1) "."
+Error: 2 - dirname() expects parameter 1 to be string, array given, %s(%d)
+NULL
 
 --int indexed array--
-Error: 8 - Array to string conversion, %s(%d)
-string(1) "."
+Error: 2 - dirname() expects parameter 1 to be string, array given, %s(%d)
+NULL
 
 --associative array--
-Error: 8 - Array to string conversion, %s(%d)
-string(1) "."
+Error: 2 - dirname() expects parameter 1 to be string, array given, %s(%d)
+NULL
 
 --nested arrays--
-Error: 8 - Array to string conversion, %s(%d)
-string(1) "."
+Error: 2 - dirname() expects parameter 1 to be string, array given, %s(%d)
+NULL
 
 --uppercase NULL--
 string(0) ""
@@ -178,9 +178,8 @@ string(0) ""
 string(1) "."
 
 --instance of classWithoutToString--
-Error: 4096 - Object of class classWithoutToString could not be converted to string, %s(%d)
-Error: 8 - Object of class classWithoutToString to string conversion, %s(%d)
-string(1) "."
+Error: 2 - dirname() expects parameter 1 to be string, object given, %s(%d)
+NULL
 
 --undefined var--
 string(0) ""
@@ -188,3 +187,4 @@ string(0) ""
 --unset var--
 string(0) ""
 ===DONE===
+

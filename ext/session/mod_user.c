@@ -1,4 +1,4 @@
-/*
+/* 
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: mod_user.c 280733 2009-05-18 17:23:42Z jani $ */
+/* $Id: mod_user.c 280729 2009-05-18 16:10:09Z jani $ */
 
 #include "php.h"
 #include "php_session.h"
@@ -62,14 +62,16 @@ static zval *ps_call_handler(zval *func, int argc, zval **argv TSRMLS_DC)
 	return retval;
 }
 
-#define STDVARS								\
+#define STDVARS1							\
 	zval *retval;							\
-	int ret = FAILURE;						\
-	ps_user *mdata = PS_GET_MOD_DATA();		\
-	if (!mdata)								\
-		return FAILURE
+	int ret = FAILURE
 
-#define PSF(a) mdata->name.ps_##a
+#define STDVARS								\
+	STDVARS1;								\
+	char *mdata = PS_GET_MOD_DATA();		\
+	if (!mdata) { return FAILURE; }
+
+#define PSF(a) PS(mod_user_names).name.ps_##a
 
 #define FINISH								\
 	if (retval) {							\
@@ -82,27 +84,30 @@ static zval *ps_call_handler(zval *func, int argc, zval **argv TSRMLS_DC)
 PS_OPEN_FUNC(user)
 {
 	zval *args[2];
-	STDVARS;
+	static char dummy = 0;
+	STDVARS1;
 
 	SESS_ZVAL_STRING((char*)save_path, args[0]);
 	SESS_ZVAL_STRING((char*)session_name, args[1]);
 
 	retval = ps_call_handler(PSF(open), 2, args TSRMLS_CC);
+	if (retval) {
+		/* This is necessary to fool the session module. Yes, it's safe to
+		 * use a static. Neither mod_user nor the session module itself will
+		 * ever touch this pointer. It could be set to 0xDEADBEEF for all the
+		 * difference it makes, but for the sake of paranoia it's set to some
+		 * valid value. */
+		PS_SET_MOD_DATA(&dummy);
+	}
 
 	FINISH;
 }
 
 PS_CLOSE_FUNC(user)
 {
-	int i;
-	STDVARS;
+	STDVARS1;
 
 	retval = ps_call_handler(PSF(close), 0, NULL TSRMLS_CC);
-
-	for (i = 0; i < 6; i++) {
-		zval_ptr_dtor(&mdata->names[i]);
-	}
-	efree(mdata);
 
 	PS_SET_MOD_DATA(NULL);
 

@@ -1,13 +1,15 @@
 --TEST--
 mysqli warning_count, get_warnings
 --SKIPIF--
-<?php require_once('skipif.inc'); ?>
-<?php die('skip mysqli_warning class not functional yet?'); ?>
+<?php
+require_once('skipif.inc');
+require_once('skipifconnectfailure.inc');
+?>
 --FILE--
 <?php
 	include "connect.inc";
 
-	$mysql = new mysqli($host, $user, $passwd, "test");
+	$mysql = new my_mysqli($host, $user, $passwd, $db, $port, $socket);
 
 	$mysql->query("DROP TABLE IF EXISTS not_exists");
 
@@ -17,11 +19,14 @@ mysqli warning_count, get_warnings
 
 	var_dump($w->errno);
 	var_dump($w->message);
-#	var_dump($w->sqlstate);
+	var_dump($w->sqlstate);
 
 	$mysql->close();
+	echo "done!"
 ?>
---EXPECT--
-1
-1051
-Unknown table 'not_exists'
+--EXPECTF--
+int(1)
+int(1051)
+%unicode|string%(26) "Unknown table 'not_exists'"
+%unicode|string%(5) "HY000"
+done!

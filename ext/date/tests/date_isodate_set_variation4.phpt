@@ -2,7 +2,7 @@
 Test date_isodate_set() function : usage variation - Passing unexpected values to forth argument $day.
 --FILE--
 <?php
-/* Prototype  : void date_isodate_set  ( DateTime $object  , int $year  , int $week  [, int $day  ] )
+/* Prototype  : DateTime date_isodate_set  ( DateTime $object  , int $year  , int $week  [, int $day  ] )
  * Description: Set a date according to the ISO 8601 standard - using weeks and day offsets rather than specific dates. 
  * Source code: ext/date/php_date.c
  * Alias to functions: DateTime::setISODate
@@ -113,25 +113,74 @@ fclose( $file_handle );
 *** Testing date_isodate_set() : usage variation -  unexpected values to forth argument $day***
 
 -- int 0 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1963-02-10 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- int 1 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1963-02-11 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- int 12345 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1996-11-28 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- int -12345 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1929-04-24 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- float 10.5 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1963-02-20 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- float -10.5 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1963-01-31 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- float .5 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1963-02-10 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- empty array --
 
@@ -154,22 +203,64 @@ Warning: date_isodate_set() expects parameter 4 to be long, array given in %s on
 bool(false)
 
 -- uppercase NULL --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1963-02-10 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- lowercase null --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1963-02-10 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- lowercase true --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1963-02-11 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- lowercase false --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1963-02-10 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- uppercase TRUE --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1963-02-11 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- uppercase FALSE --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1963-02-10 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- empty string DQ --
 
@@ -212,10 +303,24 @@ Warning: date_isodate_set() expects parameter 4 to be long, object given in %s o
 bool(false)
 
 -- undefined var --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1963-02-10 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- unset var --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "1963-02-10 08:34:10"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- resource --
 

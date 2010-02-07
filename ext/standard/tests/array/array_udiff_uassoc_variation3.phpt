@@ -29,6 +29,10 @@ class classWithToString
 	}
 }
 
+class classWithoutToString
+{
+}
+
 // heredoc string
 $heredoc = <<<EOT
 hello world
@@ -82,6 +86,7 @@ $inputs = array(
 
       // object data
       'instance of classWithToString' => new classWithToString(),
+      'instance of classWithoutToString' => new classWithoutToString(),
 
       // undefined data
       'undefined var' => @$undefined_var,
@@ -104,142 +109,146 @@ foreach($inputs as $key =>$value) {
 
 --int 0--
 
-Warning: array_udiff_uassoc(): Not a valid callback 0 in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, no array or string given in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --int 1--
 
-Warning: array_udiff_uassoc(): Not a valid callback 1 in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, no array or string given in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --int 12345--
 
-Warning: array_udiff_uassoc(): Not a valid callback 12345 in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, no array or string given in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --int -12345--
 
-Warning: array_udiff_uassoc(): Not a valid callback -2345 in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, no array or string given in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --float 10.5--
 
-Warning: array_udiff_uassoc(): Not a valid callback 10.5 in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, no array or string given in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --float -10.5--
 
-Warning: array_udiff_uassoc(): Not a valid callback -10.5 in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, no array or string given in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --float 12.3456789000e10--
 
-Warning: array_udiff_uassoc(): Not a valid callback 123456789000 in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, no array or string given in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --float -12.3456789000e10--
 
-Warning: array_udiff_uassoc(): Not a valid callback -123456789000 in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, no array or string given in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --float .5--
 
-Warning: array_udiff_uassoc(): Not a valid callback 0.5 in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, no array or string given in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --empty array--
 
-Warning: array_udiff_uassoc(): Not a valid callback Array in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, array must have exactly two members in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --int indexed array--
 
-Warning: array_udiff_uassoc(): Not a valid callback Array in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, array must have exactly two members in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --associative array--
 
-Warning: array_udiff_uassoc(): Not a valid callback Array in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, first array member is not a valid class name or object in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --nested arrays--
 
-Warning: array_udiff_uassoc(): Not a valid callback Array in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, array must have exactly two members in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --uppercase NULL--
 
-Warning: array_udiff_uassoc(): Not a valid callback  in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, no array or string given in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --lowercase null--
 
-Warning: array_udiff_uassoc(): Not a valid callback  in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, no array or string given in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --lowercase true--
 
-Warning: array_udiff_uassoc(): Not a valid callback 1 in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, no array or string given in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --lowercase false--
 
-Warning: array_udiff_uassoc(): Not a valid callback  in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, no array or string given in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --uppercase TRUE--
 
-Warning: array_udiff_uassoc(): Not a valid callback 1 in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, no array or string given in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --uppercase FALSE--
 
-Warning: array_udiff_uassoc(): Not a valid callback  in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, no array or string given in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --empty string DQ--
 
-Warning: array_udiff_uassoc(): Not a valid callback  in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, function '' not found or invalid function name in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --empty string SQ--
 
-Warning: array_udiff_uassoc(): Not a valid callback  in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, function '' not found or invalid function name in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --string DQ--
 
-Warning: array_udiff_uassoc(): Not a valid callback string in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, function 'string' not found or invalid function name in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --string SQ--
 
-Warning: array_udiff_uassoc(): Not a valid callback string in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, function 'string' not found or invalid function name in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --mixed case string--
 
-Warning: array_udiff_uassoc(): Not a valid callback sTrInG in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, function 'sTrInG' not found or invalid function name in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --heredoc--
 
-Warning: array_udiff_uassoc(): Not a valid callback hello world in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, function 'hello world' not found or invalid function name in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --instance of classWithToString--
 
-Warning: array_udiff_uassoc(): Not a valid callback Class A object in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, no array or string given in %sarray_udiff_uassoc_variation3.php on line %d
+NULL
+
+--instance of classWithoutToString--
+
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, no array or string given in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --undefined var--
 
-Warning: array_udiff_uassoc(): Not a valid callback  in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, no array or string given in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 
 --unset var--
 
-Warning: array_udiff_uassoc(): Not a valid callback  in %s on line %d
+Warning: array_udiff_uassoc() expects parameter 3 to be a valid callback, no array or string given in %sarray_udiff_uassoc_variation3.php on line %d
 NULL
 ===DONE===
-

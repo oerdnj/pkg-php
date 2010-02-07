@@ -28,11 +28,11 @@ var_dump( quoted_printable_decode($str, $extra_arg) );
 
 -- Testing quoted_printable_decode() function with no arguments --
 
-Warning: Wrong parameter count for quoted_printable_decode() in %s on line %d
+Warning: quoted_printable_decode() expects exactly 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing quoted_printable_decode() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for quoted_printable_decode() in %s on line %d
+Warning: quoted_printable_decode() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
 ===DONE===

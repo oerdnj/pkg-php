@@ -15,5 +15,5 @@ var_dump( posix_ctermid( 'foo' ) );
 
 ?>
 --EXPECTF--
-Warning: Wrong parameter count for posix_ctermid() in %s.php on line %d
+Warning: posix_ctermid() expects exactly 0 parameters, 1 given in %s on line %d
 NULL

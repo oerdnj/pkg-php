@@ -116,19 +116,29 @@ Arg value 0.5
 string(3) "0.5"
 
 Arg value Array 
-string(5) "Array"
+
+Warning: utf8_encode() expects parameter 1 to be string, array given in %s on line %d
+NULL
 
 Arg value Array 
-string(5) "Array"
+
+Warning: utf8_encode() expects parameter 1 to be string, array given in %s on line %d
+NULL
 
 Arg value Array 
-string(5) "Array"
+
+Warning: utf8_encode() expects parameter 1 to be string, array given in %s on line %d
+NULL
 
 Arg value Array 
-string(5) "Array"
+
+Warning: utf8_encode() expects parameter 1 to be string, array given in %s on line %d
+NULL
 
 Arg value Array 
-string(5) "Array"
+
+Warning: utf8_encode() expects parameter 1 to be string, array given in %s on line %d
+NULL
 
 Arg value  
 string(0) ""
@@ -163,3 +173,4 @@ string(0) ""
 Arg value  
 string(0) ""
 Done
+

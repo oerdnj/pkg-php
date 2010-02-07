@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_sqlite.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: pdo_sqlite.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -34,7 +34,7 @@
 #define PHP_PDO_SQLITE_MODULE_VERSION	"1.0.1"
 
 /* {{{ pdo_sqlite_functions[] */
-zend_function_entry pdo_sqlite_functions[] = {
+const zend_function_entry pdo_sqlite_functions[] = {
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -42,7 +42,7 @@ zend_function_entry pdo_sqlite_functions[] = {
 /* {{{ pdo_sqlite_deps
  */
 #if ZEND_MODULE_API_NO >= 20050922
-static zend_module_dep pdo_sqlite_deps[] = {
+static const zend_module_dep pdo_sqlite_deps[] = {
 	ZEND_MOD_REQUIRED("pdo")
 	{NULL, NULL, NULL}
 };
@@ -95,12 +95,6 @@ PHP_MINFO_FUNCTION(pdo_sqlite)
 {
 	php_info_print_table_start();
 	php_info_print_table_header(2, "PDO Driver for SQLite 3.x", "enabled");
-	php_info_print_table_row(2, "PECL Module version",
-#if PDO_SQLITE_BUNDLED
-	"(bundled) "
-#endif
-		PHP_PDO_SQLITE_MODULE_VERSION 
-		" $Id: pdo_sqlite.c 272374 2008-12-31 11:17:49Z sebastian $");
 	php_info_print_table_row(2, "SQLite Library", sqlite3_libversion());
 	php_info_print_table_end();
 }

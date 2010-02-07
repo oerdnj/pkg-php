@@ -18,12 +18,22 @@ var_dump( $date2->format( "F j, Y, g:i a") );
 ?>
 ===DONE=== 
 --EXPECTF--
-object(DateTime)#%d (0) {
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2005-07-14 22:30:41"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
 }
-string(19) "O:8:"DateTime":0:{}"
-object(DateTime)#%d (0) {
+string(118) "O:8:"DateTime":3:{s:4:"date";s:19:"2005-07-14 22:30:41";s:13:"timezone_type";i:3;s:8:"timezone";s:13:"Europe/London";}"
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2005-07-14 22:30:41"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
 }
-
-Warning: DateTime::format(): The DateTime object has not been correctly initialized by its constructor in %s on line %d
-bool(false)
+string(23) "July 14, 2005, 10:30 pm"
 ===DONE===

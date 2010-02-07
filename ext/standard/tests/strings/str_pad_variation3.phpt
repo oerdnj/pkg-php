@@ -106,16 +106,16 @@ string(20) "Test string-20.5-20."
 string(20) "Test string101234567"
 -- Iteration 9 --
 
-Notice: Array to string conversion in %s on line %d
-string(20) "Test stringArrayArra"
+Warning: str_pad() expects parameter 3 to be string, array given in %s on line %d
+NULL
 -- Iteration 10 --
 
-Notice: Array to string conversion in %s on line %d
-string(20) "Test stringArrayArra"
+Warning: str_pad() expects parameter 3 to be string, array given in %s on line %d
+NULL
 -- Iteration 11 --
 
-Notice: Array to string conversion in %s on line %d
-string(20) "Test stringArrayArra"
+Warning: str_pad() expects parameter 3 to be string, array given in %s on line %d
+NULL
 -- Iteration 12 --
 string(20) "Test string111111111"
 -- Iteration 13 --
@@ -139,7 +139,9 @@ NULL
 -- Iteration 18 --
 string(20) "Test stringsample ob"
 -- Iteration 19 --
-string(20) "Test stringResource "
+
+Warning: str_pad() expects parameter 3 to be string, resource given in %s on line %d
+NULL
 -- Iteration 20 --
 
 Warning: str_pad(): Padding string cannot be empty in %s on line %d

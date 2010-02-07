@@ -1,7 +1,5 @@
 --TEST--
 SPL: CachingIterator::hasNext()
---SKIPIF--
-<?php if (!extension_loaded("spl")) print "skip"; ?>
 --FILE--
 <?php
 
@@ -20,7 +18,7 @@ foreach($it as $k=>$v)
 ?>
 ===DONE===
 <?php exit(0); ?>
---EXPECT--
+--EXPECTF--
 0=>1
 hasNext: yes
 1=>2

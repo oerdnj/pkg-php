@@ -14,4 +14,4 @@ $result = imagechar('string', 1, 5, 5, 'C', 1);
 
 ?>
 --EXPECTF--
-Warning: imagechar(): supplied argument is not a valid Image resource in %s on line %d
+Warning: imagechar() expects parameter 1 to be resource, %s given in %s on line %d

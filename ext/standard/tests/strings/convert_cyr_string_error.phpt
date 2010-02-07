@@ -40,17 +40,17 @@ var_dump(bin2hex( convert_cyr_string($str, ">", "?")) );
 
 -- Testing convert_cyr_string() function with no arguments --
 
-Warning: Wrong parameter count for convert_cyr_string() in %s on line %d
+Warning: convert_cyr_string() expects exactly 3 parameters, 0 given in %s on line %d
 NULL
 
 -- Testing convert_cyr_string() function with no 'to' character set --
 
-Warning: Wrong parameter count for convert_cyr_string() in %s on line %d
+Warning: convert_cyr_string() expects exactly 3 parameters, 2 given in %s on line %d
 NULL
 
 -- Testing convert_cyr_string() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for convert_cyr_string() in %s on line %d
+Warning: convert_cyr_string() expects exactly 3 parameters, 4 given in %s on line %d
 NULL
 
 -- Testing convert_cyr_string() function with invalid 'from' character set --

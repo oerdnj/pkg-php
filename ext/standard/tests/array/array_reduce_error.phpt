@@ -31,12 +31,11 @@ var_dump( array_reduce($input) );
 
 -- Testing array_reduce() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for array_reduce() in %s on line %d
+Warning: array_reduce() expects at most 3 parameters, 4 given in %sarray_reduce_error.php on line %d
 NULL
 
 -- Testing array_reduce() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for array_reduce() in %s on line %d
+Warning: array_reduce() expects at least 2 parameters, 1 given in %sarray_reduce_error.php on line %d
 NULL
 ===DONE===
-

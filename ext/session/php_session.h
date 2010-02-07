@@ -16,12 +16,16 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_session.h 280733 2009-05-18 17:23:42Z jani $ */
+/* $Id: php_session.h 280729 2009-05-18 16:10:09Z jani $ */
 
 #ifndef PHP_SESSION_H
 #define PHP_SESSION_H
 
 #include "ext/standard/php_var.h"
+
+#if defined(HAVE_HASH_EXT) && !defined(COMPILE_DL_HASH)
+# include "ext/hash/php_hash.h"
+#endif
 
 #define PHP_SESSION_API 20020330
 
@@ -112,6 +116,17 @@ typedef struct _php_ps_globals {
 	long gc_maxlifetime;
 	int module_number;
 	long cache_expire;
+	union {
+		zval *names[6];
+		struct {
+			zval *ps_open;
+			zval *ps_close;
+			zval *ps_read;
+			zval *ps_write;
+			zval *ps_destroy;
+			zval *ps_gc;
+		} name;
+	} mod_user_names;
 	zend_bool bug_compat; /* Whether to behave like PHP 4.2 and earlier */
 	zend_bool bug_compat_warn; /* Whether to warn about it */
 	const struct ps_serializer_struct *serializer;
@@ -123,6 +138,9 @@ typedef struct _php_ps_globals {
 	zend_bool apply_trans_sid;	/* whether or not to enable trans-sid for the current request */
 
 	long hash_func;
+#if defined(HAVE_HASH_EXT) && !defined(COMPILE_DL_HASH)
+	php_hash_ops *hash_ops;
+#endif
 	long hash_bits_per_character;
 	int send_cookie;
 	int define_sid;

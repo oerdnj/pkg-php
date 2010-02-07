@@ -10,13 +10,15 @@ oci8.old_oci_close_semantics=0
 require dirname(__FILE__)."/drcp_functions.inc";
 require dirname(__FILE__)."/details.inc";
 
-// The expected behavior of this test is different between PHP 5.2 and
-// PHP 5.3
+// The default expected behavior of this test is different between PHP
+// 5.2 and PHP 5.3
 //
-// In PHP 5.2, the test opens a connection within function1 and
+// In PHP 5.3, the test opens a connection within function1 and
 // updates a table (without committing).  Another connection is opened
-// from function 2, and the table queried.  The connections should
-// share the same resource, so the new data is visible in function2.
+// from function 2, and the table queried.  When function1 ends, the
+// txn is rolled back and hence the updated value will not be
+// reflected in function2.  Use oci8.old_oci_close_semantics=1 to
+// get old behavior
 
 // Create the table
 $c = oci_new_connect($user,$password,$dbase);
@@ -56,7 +58,5 @@ This is with a OCI_PCONNECT
 resource(%d) of type (oci8 persistent connection)
 Update done-- DEPT value has been set to NEWDEPT
 resource(%d) of type (oci8 persistent connection)
-The value of DEPT for id 105 is NEWDEPT
-
-Warning: oci_execute(): ORA-00054: %s
+The value of DEPT for id 105 is HR
 Done

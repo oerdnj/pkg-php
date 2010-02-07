@@ -24,8 +24,8 @@ var_dump(ibase_drop_db(NULL));
 resource(%d) of type (Firebird/InterBase link)
 bool(true)
 
-Warning: ibase_drop_db(): supplied resource is not a valid Firebird/InterBase link resource in %s on line %d
-bool(false)
+Warning: ibase_drop_db() expects parameter 1 to be resource, integer given in %s on line %d
+NULL
 
-Warning: ibase_drop_db(): %d is not a valid Firebird/InterBase link resource in %s on line %d
-bool(false)
+Warning: ibase_drop_db() expects parameter 1 to be resource, null given in %s on line %d
+NULL

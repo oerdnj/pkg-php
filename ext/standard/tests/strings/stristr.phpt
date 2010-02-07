@@ -19,17 +19,17 @@ stristr() function
 	var_dump(stristr("tEsT sTrInG", " "));
 ?>
 --EXPECTF--
-Warning: Wrong parameter count for stristr() in %s on line %d
+Warning: stristr() expects at least 2 parameters, 0 given in %s on line %d
 NULL
 
-Notice: Array to string conversion in %s on line %d
+Warning: stristr() expects parameter 1 to be string, array given in %s on line %d
+NULL
 
-Warning: stristr(): Empty delimiter in %s on line %d
-bool(false)
+Warning: stristr(): needle is not a string or an integer in %s on line %d
 bool(false)
 
-Notice: Array to string conversion in %s on line %d
-bool(false)
+Warning: stristr() expects parameter 1 to be string, array given in %s on line %d
+NULL
 string(11) "tEsT sTrInG"
 string(6) "sTrInG"
 string(6) "sTrInG"

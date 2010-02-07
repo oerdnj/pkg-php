@@ -16,19 +16,13 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_odbc.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: php_pdo_odbc.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_PDO_ODBC_H
 #define PHP_PDO_ODBC_H
 
 extern zend_module_entry pdo_odbc_module_entry;
 #define phpext_pdo_odbc_ptr &pdo_odbc_module_entry
-
-#ifdef PHP_WIN32
-#define PHP_PDO_ODBC_API __declspec(dllexport)
-#else
-#define PHP_PDO_ODBC_API
-#endif
 
 #ifdef ZTS
 #include "TSRM.h"

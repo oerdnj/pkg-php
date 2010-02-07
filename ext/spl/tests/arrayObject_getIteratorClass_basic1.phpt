@@ -61,13 +61,19 @@ foreach($ao as $key=>$value) {
 --EXPECTF--
 --> Access using MyIterator:
 string(10) "MyIterator"
-object(MyIterator)#%d (3) {
-  ["a"]=>
-  int(1)
-  ["b"]=>
-  int(2)
-  ["c"]=>
-  int(3)
+object(MyIterator)#2 (1) {
+  ["storage":"ArrayIterator":private]=>
+  object(ArrayObject)#1 (1) {
+    ["storage":"ArrayObject":private]=>
+    array(3) {
+      ["a"]=>
+      int(1)
+      ["b"]=>
+      int(2)
+      ["c"]=>
+      int(3)
+    }
+  }
 }
    In MyIterator::rewind()
    In MyIterator::valid()
@@ -91,13 +97,19 @@ object(MyIterator)#%d (3) {
 --> Access using ArrayIterator:
 NULL
 string(13) "ArrayIterator"
-object(ArrayIterator)#%d (3) {
-  ["a"]=>
-  int(1)
-  ["b"]=>
-  int(2)
-  ["c"]=>
-  int(3)
+object(ArrayIterator)#3 (1) {
+  ["storage":"ArrayIterator":private]=>
+  object(ArrayObject)#1 (1) {
+    ["storage":"ArrayObject":private]=>
+    array(3) {
+      ["a"]=>
+      int(1)
+      ["b"]=>
+      int(2)
+      ["c"]=>
+      int(3)
+    }
+  }
 }
 a=>1
 b=>2

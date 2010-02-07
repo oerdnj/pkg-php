@@ -17,15 +17,17 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_gd.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: php_gd.h 281216 2009-05-27 08:18:24Z pajoye $ */
 
 #ifndef PHP_GD_H
 #define PHP_GD_H
 
 #define HAVE_GDIMAGECREATEFROMPNG 1
 
-#if HAVE_LIBTTF|HAVE_LIBFREETYPE
-#define ENABLE_GD_TTF
+#if HAVE_LIBFREETYPE
+# ifndef ENABLE_GD_TTF
+#  define ENABLE_GD_TTF
+# endif
 #endif
 
 #if HAVE_LIBGD
@@ -51,9 +53,11 @@
 #define PHP_GDIMG_TYPE_GD2PART 10
 
 #ifdef PHP_WIN32
-#define PHP_GD_API __declspec(dllexport)
+#	define PHP_GD_API __declspec(dllexport)
+#elif defined(__GNUC__) && __GNUC__ >= 4
+#	define PHP_GD_API __attribute__ ((visibility("default")))
 #else
-#define PHP_GD_API
+#	define PHP_GD_API
 #endif
 
 PHPAPI extern const char php_sig_gif[3];
@@ -69,7 +73,7 @@ PHP_MINIT_FUNCTION(gd);
 #if HAVE_LIBT1 || HAVE_GD_FONTMUTEX
 PHP_MSHUTDOWN_FUNCTION(gd);
 #endif
-#if HAVE_LIBGD20 && HAVE_GD_STRINGFT
+#if HAVE_GD_STRINGFT
 PHP_RSHUTDOWN_FUNCTION(gd);
 #endif
 
@@ -99,7 +103,6 @@ PHP_FUNCTION(imagecreate);
 PHP_FUNCTION(imageftbbox);
 PHP_FUNCTION(imagefttext);
 
-#ifdef HAVE_LIBGD20
 PHP_FUNCTION(imagecreatetruecolor);
 PHP_FUNCTION(imagetruecolortopalette);
 PHP_FUNCTION(imagesetthickness);
@@ -112,15 +115,15 @@ PHP_FUNCTION(imagecolorresolvealpha);
 PHP_FUNCTION(imagecolorclosestalpha);
 PHP_FUNCTION(imagecolorexactalpha);
 PHP_FUNCTION(imagecopyresampled);
-#endif
 
 #ifdef PHP_WIN32
 PHP_FUNCTION(imagegrabwindow);
 PHP_FUNCTION(imagegrabscreen);
 #endif
 
-#ifdef HAVE_GD_BUNDLED
 PHP_FUNCTION(imagerotate);
+
+#ifdef HAVE_GD_BUNDLED
 PHP_FUNCTION(imageantialias);
 #endif
 
@@ -187,13 +190,15 @@ PHP_FUNCTION(jpeg2wbmp);
 PHP_FUNCTION(png2wbmp);
 PHP_FUNCTION(image2wbmp);
 
+PHP_FUNCTION(imagecolormatch);
+
 #if HAVE_GD_BUNDLED
 PHP_FUNCTION(imagelayereffect);
-PHP_FUNCTION(imagecolormatch);
-PHP_FUNCTION(imagefilter);
-PHP_FUNCTION(imageconvolution);
 PHP_FUNCTION(imagexbm);
 #endif
+
+PHP_FUNCTION(imagefilter);
+PHP_FUNCTION(imageconvolution);
 
 PHP_GD_API int phpi_get_le_gd(void);
 

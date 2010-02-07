@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 266963 2008-10-04 13:19:22Z felipe $
+dnl $Id: config.m4 266961 2008-10-04 12:55:21Z felipe $
 dnl
 
 PHP_ARG_WITH(mssql,for MSSQL support via FreeTDS,

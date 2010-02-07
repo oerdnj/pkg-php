@@ -20,5 +20,5 @@ var_dump(posix_errno('bar'));
 --EXPECTF--
 *** Test by calling method or function with more than expected arguments ***
 
-Warning: Wrong parameter count for posix_errno() in %s.php on line %d
+Warning: posix_errno() expects exactly 0 parameters, 1 given in %s on line %d
 NULL

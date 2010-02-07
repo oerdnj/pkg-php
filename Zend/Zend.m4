@@ -1,5 +1,5 @@
 dnl
-dnl $Id: Zend.m4 225360 2006-12-20 10:49:33Z dmitry $
+dnl $Id: Zend.m4 286859 2009-08-06 01:33:54Z scottmac $
 dnl
 dnl This file contains Zend specific autoconf functions.
 dnl
@@ -31,7 +31,6 @@ AC_DEFUN([LIBZEND_BASIC_CHECKS],[
 AC_REQUIRE([AC_PROG_YACC])
 AC_REQUIRE([AC_PROG_CC])
 AC_REQUIRE([AC_PROG_CC_C_O])
-AC_REQUIRE([AC_PROG_LEX])
 AC_REQUIRE([AC_HEADER_STDC])
 
 LIBZEND_BISON_CHECK
@@ -61,7 +60,6 @@ sys/time.h \
 signal.h \
 unix.h \
 stdlib.h \
-mach-o/dyld.h \
 dlfcn.h)
 
 AC_TYPE_SIZE_T
@@ -99,12 +97,46 @@ dnl Checks for library functions.
 AC_FUNC_VPRINTF
 AC_FUNC_MEMCMP
 AC_FUNC_ALLOCA
-AC_CHECK_FUNCS(memcpy strdup getpid kill strtod strtol finite fpclass)
+AC_CHECK_FUNCS(memcpy strdup getpid kill strtod strtol finite fpclass sigsetjmp)
 AC_ZEND_BROKEN_SPRINTF
 
 AC_CHECK_FUNCS(finite isfinite isinf isnan)
 
 ZEND_FP_EXCEPT
+
+ZEND_CHECK_FLOAT_PRECISION
+
+dnl test whether double cast to long preserves least significant bits
+AC_MSG_CHECKING(whether double cast to long preserves least significant bits)
+
+AC_TRY_RUN([
+#include <limits.h>
+
+int main()
+{
+	if (sizeof(long) == 4) {
+		double d = (double) LONG_MIN * LONG_MIN + 2e9;
+
+		if ((long) d == 2e9 && (long) -d == -2e9) {
+			exit(0);
+		}
+	} else if (sizeof(long) == 8) {
+		double correct = 18e18 - ((double) LONG_MIN * -2); /* Subtract ULONG_MAX + 1 */
+
+		if ((long) 18e18 == correct) { /* On 64-bit, only check between LONG_MAX and ULONG_MAX */
+			exit(0);
+		}
+	}
+	exit(1);
+}
+], [
+  AC_DEFINE([ZEND_DVAL_TO_LVAL_CAST_OK], 1, [Define if double cast to long preserves least significant bits])
+  AC_MSG_RESULT(yes)
+], [
+  AC_MSG_RESULT(no)
+], [
+  AC_MSG_RESULT(no)
+])
 	
 ])
 
@@ -165,7 +197,7 @@ AC_MSG_RESULT($ZEND_DEBUG)
 
 AC_MSG_CHECKING(whether to enable Zend multibyte)
 AC_MSG_RESULT($ZEND_MULTIBYTE)
-	
+
 case $PHP_ZEND_VM in
   SWITCH)
     AC_DEFINE(ZEND_VM_KIND,ZEND_VM_KIND_SWITCH,[virtual machine dispatch method])

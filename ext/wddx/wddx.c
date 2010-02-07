@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: wddx.c 282201 2009-06-16 02:59:10Z felipe $ */
+/* $Id: wddx.c 282200 2009-06-16 02:54:26Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -102,15 +102,45 @@ typedef struct {
 
 static void php_wddx_process_data(void *user_data, const XML_Char *s, int len);
 
+/* {{{ arginfo */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_wddx_serialize_value, 0, 0, 1)
+	ZEND_ARG_INFO(0, var)
+	ZEND_ARG_INFO(0, comment)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_wddx_serialize_vars, 0, 0, 1)
+	ZEND_ARG_INFO(0, var_name)
+	ZEND_ARG_INFO(0, ...)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_wddx_serialize_start, 0, 0, 0)
+	ZEND_ARG_INFO(0, comment)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_wddx_packet_end, 0, 0, 1)
+	ZEND_ARG_INFO(0, packet_id)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_wddx_add_vars, 0, 0, 2)
+	ZEND_ARG_INFO(0, packet_id)
+	ZEND_ARG_INFO(0, var_name)
+	ZEND_ARG_INFO(0, ...)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_wddx_deserialize, 0, 0, 1)
+	ZEND_ARG_INFO(0, packet)
+ZEND_END_ARG_INFO()
+/* }}} */
+
 /* {{{ wddx_functions[]
  */
-zend_function_entry wddx_functions[] = {
-	PHP_FE(wddx_serialize_value, NULL)
-	PHP_FE(wddx_serialize_vars, NULL)
-	PHP_FE(wddx_packet_start, NULL)
-	PHP_FE(wddx_packet_end, NULL)
-	PHP_FE(wddx_add_vars, NULL)
-	PHP_FE(wddx_deserialize, NULL)
+const zend_function_entry wddx_functions[] = {
+	PHP_FE(wddx_serialize_value, arginfo_wddx_serialize_value)
+	PHP_FE(wddx_serialize_vars,	arginfo_wddx_serialize_vars)
+	PHP_FE(wddx_packet_start,	arginfo_wddx_serialize_start)
+	PHP_FE(wddx_packet_end,		arginfo_wddx_packet_end)
+	PHP_FE(wddx_add_vars,		arginfo_wddx_add_vars)
+	PHP_FE(wddx_deserialize,	arginfo_wddx_deserialize)
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -202,12 +232,12 @@ static int wddx_stack_destroy(wddx_stack *stack)
 
 	if (stack->elements) {
 		for (i = 0; i < stack->top; i++) {
-			if (((st_entry *)stack->elements[i])->data)
-			{
+			if (((st_entry *)stack->elements[i])->data)	{
 				zval_ptr_dtor(&((st_entry *)stack->elements[i])->data);
 			}
-			if (((st_entry *)stack->elements[i])->varname)
+			if (((st_entry *)stack->elements[i])->varname) {
 				efree(((st_entry *)stack->elements[i])->varname);
+			}
 			efree(stack->elements[i]);
 		}		
 		efree(stack->elements);
@@ -250,8 +280,9 @@ PS_SERIALIZER_ENCODE_FUNC(wddx)
 	*newstr = php_wddx_gather(packet);
 	php_wddx_destructor(packet);
 	
-	if (newlen)
+	if (newlen) {
 		*newlen = strlen(*newstr);
+	}
 
 	return SUCCESS;
 }
@@ -270,8 +301,9 @@ PS_SERIALIZER_DECODE_FUNC(wddx)
 	int hash_type;
 	int ret;
 
-	if (vallen == 0) 
+	if (vallen == 0) {
 		return SUCCESS;
+	}
 	
 	MAKE_STD_ZVAL(retval);
 
@@ -343,8 +375,9 @@ void php_wddx_packet_start(wddx_packet *packet, char *comment, int comment_len)
 		php_wddx_add_chunk_ex(packet, comment, comment_len);
 		php_wddx_add_chunk_static(packet, WDDX_COMMENT_E);
 		php_wddx_add_chunk_static(packet, WDDX_HEADER_E);
-	} else
+	} else {
 		php_wddx_add_chunk_static(packet, WDDX_HEADER);
+	}
 	php_wddx_add_chunk_static(packet, WDDX_DATA_S);
 }
 /* }}} */
@@ -405,10 +438,7 @@ static void php_wddx_serialize_number(wddx_packet *packet, zval *var)
  */
 static void php_wddx_serialize_boolean(wddx_packet *packet, zval *var)
 {
-	char tmp_buf[WDDX_BUF_LEN];
-
-	snprintf(tmp_buf, sizeof(tmp_buf), WDDX_BOOLEAN, Z_LVAL_P(var) ? "true" : "false");
-	php_wddx_add_chunk(packet, tmp_buf);
+	php_wddx_add_chunk(packet, Z_LVAL_P(var) ? WDDX_BOOLEAN_TRUE : WDDX_BOOLEAN_FALSE);
 }
 /* }}} */
 
@@ -566,8 +596,9 @@ static void php_wddx_serialize_array(wddx_packet *packet, zval *arr)
 	for (zend_hash_internal_pointer_reset(target_hash);
 		 zend_hash_get_current_data(target_hash, (void**)&ent) == SUCCESS;
 		 zend_hash_move_forward(target_hash)) {
-		if (*ent == arr)
+		if (*ent == arr) {
 			continue;
+		}
 
 		if (is_struct) {
 			ent_type = zend_hash_get_current_key_ex(target_hash, &key, &key_len, &idx, 0, NULL);
@@ -578,8 +609,9 @@ static void php_wddx_serialize_array(wddx_packet *packet, zval *arr)
 				key_len = slprintf(tmp_buf, sizeof(tmp_buf), "%ld", idx);
 				php_wddx_serialize_var(packet, *ent, tmp_buf, key_len TSRMLS_CC);
 			}
-		} else
+		} else {
 			php_wddx_serialize_var(packet, *ent, NULL, 0 TSRMLS_CC);
+		}
 	}
 	
 	if (is_struct) {
@@ -662,32 +694,32 @@ static void php_wddx_add_var(wddx_packet *packet, zval *name_var)
 	zval **val;
 	HashTable *target_hash;
 	TSRMLS_FETCH();
-	
-	if (Z_TYPE_P(name_var) == IS_STRING)
-	{
+
+	if (Z_TYPE_P(name_var) == IS_STRING) {
+		if (!EG(active_symbol_table)) {
+			zend_rebuild_symbol_table(TSRMLS_C);
+		}
 		if (zend_hash_find(EG(active_symbol_table), Z_STRVAL_P(name_var),
 							Z_STRLEN_P(name_var)+1, (void**)&val) != FAILURE) {
 			php_wddx_serialize_var(packet, *val, Z_STRVAL_P(name_var), Z_STRLEN_P(name_var) TSRMLS_CC);
 		}		
-	}
-	else if (Z_TYPE_P(name_var) == IS_ARRAY || Z_TYPE_P(name_var) == IS_OBJECT)
-	{
+	} else if (Z_TYPE_P(name_var) == IS_ARRAY || Z_TYPE_P(name_var) == IS_OBJECT)	{
 		int is_array = Z_TYPE_P(name_var) == IS_ARRAY;
 		
 		target_hash = HASH_OF(name_var);
-
+		
 		if (is_array && target_hash->nApplyCount > 1) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "recursion detected");
 			return;
 		}
-		
+
 		zend_hash_internal_pointer_reset(target_hash);
 
 		while(zend_hash_get_current_data(target_hash, (void**)&val) == SUCCESS) {
 			if (is_array) {
 				target_hash->nApplyCount++;
 			}
-			
+
 			php_wddx_add_var(packet, *val);
 
 			if (is_array) {
@@ -889,8 +921,9 @@ static void php_wddx_pop_element(void *user_data, const XML_Char *name)
 	TSRMLS_FETCH();
 
 /* OBJECTS_FIXME */
-	if (stack->top == 0)
+	if (stack->top == 0) {
 		return;
+	}
 
 	if (!strcmp(name, EL_STRING) || !strcmp(name, EL_NUMBER) ||
 		!strcmp(name, EL_BOOLEAN) || !strcmp(name, EL_NULL) ||
@@ -920,8 +953,9 @@ static void php_wddx_pop_element(void *user_data, const XML_Char *name)
 
 			zval_dtor(fname);
 			FREE_ZVAL(fname);
-			if (retval)
+			if (retval) {
 				zval_ptr_dtor(&retval);
+			}
 		}
 
 		if (stack->top > 1) {
@@ -975,8 +1009,8 @@ static void php_wddx_pop_element(void *user_data, const XML_Char *name)
 					} else if (Z_TYPE_P(ent2->data) == IS_OBJECT) {
 						zend_class_entry *old_scope = EG(scope);
 	
-		    				EG(scope) = Z_OBJCE_P(ent2->data);
-						ent1->data->refcount--;
+						EG(scope) = Z_OBJCE_P(ent2->data);
+						Z_DELREF_P(ent1->data);
 						add_property_zval(ent2->data, ent1->varname, ent1->data);
 						EG(scope) = old_scope;
 					} else {
@@ -984,14 +1018,13 @@ static void php_wddx_pop_element(void *user_data, const XML_Char *name)
 					}
 					efree(ent1->varname);
 				} else	{
-					zend_hash_next_index_insert(target_hash,
-												&ent1->data,
-												sizeof(zval *), NULL);
+					zend_hash_next_index_insert(target_hash, &ent1->data, sizeof(zval *), NULL);
 				}
 			}
 			efree(ent1);
-		} else
+		} else {
 			stack->done = 1;
+		}
 	} else if (!strcmp(name, EL_VAR) && stack->varname) {
 		efree(stack->varname);
 	} else if (!strcmp(name, EL_FIELD)) {
@@ -1047,11 +1080,11 @@ static void php_wddx_process_data(void *user_data, const XML_Char *s, int len)
 				break;
 
 			case ST_BOOLEAN:
-				if (!strcmp(s, "true"))
+				if (!strcmp(s, "true")) {
 					Z_LVAL_P(ent->data) = 1;
-				else if (!strcmp(s, "false"))
+				} else if (!strcmp(s, "false")) {
 					Z_LVAL_P(ent->data) = 0;
-				else {
+				} else {
 					stack->top--;
 					zval_ptr_dtor(&ent->data);
 					if (ent->varname)
@@ -1110,8 +1143,9 @@ int php_wddx_deserialize_ex(char *value, int vallen, zval *return_value)
 		*return_value = *(ent->data);
 		zval_copy_ctor(return_value);
 		retval = SUCCESS;
-	} else
+	} else {
 		retval = FAILURE;
+	}
 		
 	wddx_stack_destroy(&stack);
 
@@ -1128,9 +1162,9 @@ PHP_FUNCTION(wddx_serialize_value)
 	int comment_len = 0;
 	wddx_packet *packet;
 	
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z|s",
-							  &var, &comment, &comment_len) == FAILURE)
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z|s", &var, &comment, &comment_len) == FAILURE) {
 		return;
+	}
 	
 	packet = php_wddx_constructor();
 
@@ -1148,20 +1182,12 @@ PHP_FUNCTION(wddx_serialize_value)
    Creates a new packet and serializes given variables into a struct */
 PHP_FUNCTION(wddx_serialize_vars)
 {
-	int argc, i;
+	int num_args, i;
 	wddx_packet *packet;
-	zval ***args;
-		
-	argc = ZEND_NUM_ARGS();
-	if (argc < 1) {
-		WRONG_PARAM_COUNT;
-	}
+	zval ***args = NULL;
 
-	/* Allocate arguments array and get the arguments, checking for errors. */
-	args = (zval ***)safe_emalloc(argc, sizeof(zval **), 0);
-	if (zend_get_parameters_array_ex(argc, args) == FAILURE) {
-		efree(args);
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "+", &args, &num_args) == FAILURE) {
+		return;
 	}
 		
 	packet = php_wddx_constructor();
@@ -1169,9 +1195,10 @@ PHP_FUNCTION(wddx_serialize_vars)
 	php_wddx_packet_start(packet, NULL, 0);
 	php_wddx_add_chunk_static(packet, WDDX_STRUCT_S);
 	
-	for (i=0; i<argc; i++) {
-		if (Z_TYPE_PP(args[i]) != IS_ARRAY && Z_TYPE_PP(args[i]) != IS_OBJECT)
+	for (i=0; i<num_args; i++) {
+		if (Z_TYPE_PP(args[i]) != IS_ARRAY && Z_TYPE_PP(args[i]) != IS_OBJECT) {
 			convert_to_string_ex(args[i]);
+		}
 		php_wddx_add_var(packet, *args[i]);
 	}	
 	
@@ -1208,7 +1235,7 @@ void php_wddx_destructor(wddx_packet *packet)
 }
 /* }}} */
 
-/* {{{ proto int wddx_packet_start([string comment])
+/* {{{ proto resource wddx_packet_start([string comment])
    Starts a WDDX packet with optional comment and returns the packet id */
 PHP_FUNCTION(wddx_packet_start)
 {
@@ -1218,8 +1245,9 @@ PHP_FUNCTION(wddx_packet_start)
 
 	comment = NULL;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &comment, &comment_len) == FAILURE)
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &comment, &comment_len) == FAILURE) {
 		return;
+	}
 
 	packet = php_wddx_constructor();
 	
@@ -1230,15 +1258,16 @@ PHP_FUNCTION(wddx_packet_start)
 }
 /* }}} */
 
-/* {{{ proto string wddx_packet_end(int packet_id)
+/* {{{ proto string wddx_packet_end(resource packet_id)
    Ends specified WDDX packet and returns the string containing the packet */
 PHP_FUNCTION(wddx_packet_end)
 {
 	zval *packet_id;
 	wddx_packet *packet = NULL;
 	
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &packet_id) == FAILURE)
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &packet_id) == FAILURE) {
 		return;
+	}
 
 	ZEND_FETCH_RESOURCE(packet, wddx_packet *, &packet_id, -1, "WDDX packet ID", le_wddx);
 			
@@ -1252,43 +1281,37 @@ PHP_FUNCTION(wddx_packet_end)
 }
 /* }}} */
 
-/* {{{ proto int wddx_add_vars(int packet_id,  mixed var_names [, mixed ...])
+/* {{{ proto int wddx_add_vars(resource packet_id,  mixed var_names [, mixed ...])
    Serializes given variables and adds them to packet given by packet_id */
 PHP_FUNCTION(wddx_add_vars)
 {
-	int argc, i;
-	zval ***args;
-	zval **packet_id;
+	int num_args, i;
+	zval ***args = NULL;
+	zval *packet_id;
 	wddx_packet *packet = NULL;
 	
-	argc = ZEND_NUM_ARGS();
-	if (argc < 2) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r+", &packet_id, &args, &num_args) == FAILURE) {
+		return;
 	}
-	
-	/* Allocate arguments array and get the arguments, checking for errors. */
-	args = (zval ***)safe_emalloc(argc, sizeof(zval **), 0);
-	if (zend_get_parameters_array_ex(argc, args) == FAILURE) {
-		efree(args);
-		WRONG_PARAM_COUNT;
-	}
-	
-	packet_id = args[0];
 
-	packet = (wddx_packet *)zend_fetch_resource(packet_id TSRMLS_CC, -1, "WDDX packet ID", NULL, 1, le_wddx);
-	if (!packet)
-	{
+	if (!ZEND_FETCH_RESOURCE_NO_RETURN(packet, wddx_packet *, &packet_id, -1, "WDDX packet ID", le_wddx)) {
+		efree(args);
+		RETURN_FALSE;
+	}
+	
+	if (!packet) {
 		efree(args);
 		RETURN_FALSE;
 	}
 		
-	for (i=1; i<argc; i++) {
-		if (Z_TYPE_PP(args[i]) != IS_ARRAY && Z_TYPE_PP(args[i]) != IS_OBJECT)
+	for (i=0; i<num_args; i++) {
+		if (Z_TYPE_PP(args[i]) != IS_ARRAY && Z_TYPE_PP(args[i]) != IS_OBJECT) {
 			convert_to_string_ex(args[i]);
+		}
 		php_wddx_add_var(packet, (*args[i]));
 	}
 
-	efree(args);	
+	efree(args);
 	RETURN_TRUE;
 }
 /* }}} */
@@ -1302,14 +1325,14 @@ PHP_FUNCTION(wddx_deserialize)
 	int payload_len;
 	php_stream *stream = NULL;
 	
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &packet) == FAILURE)
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &packet) == FAILURE) {
 		return;
+	}
 
 	if (Z_TYPE_P(packet) == IS_STRING) {
 		payload 	= Z_STRVAL_P(packet);
 		payload_len = Z_STRLEN_P(packet);
-	}
-	else if (Z_TYPE_P(packet) == IS_RESOURCE) {
+	} else if (Z_TYPE_P(packet) == IS_RESOURCE) {
 		php_stream_from_zval(stream, &packet);
 		if (stream) {
 			payload_len = php_stream_copy_to_mem(stream, &payload, PHP_STREAM_COPY_ALL, 0);
@@ -1319,13 +1342,15 @@ PHP_FUNCTION(wddx_deserialize)
 		return;
 	}
 
-	if (payload_len == 0)
+	if (payload_len == 0) {
 		return;
+	}
 
 	php_wddx_deserialize_ex(payload, payload_len, return_value);
 		
-	if (stream)
+	if (stream) {
 		pefree(payload, 0);
+	}
 }
 /* }}} */
 

@@ -243,9 +243,11 @@ array(1) {
 }
 
 -- instance of classWithToString --
-array(1) {
+array(2) {
   [0]=>
   string(47) "The timezone could not be found in the database"
+  [8]=>
+  string(29) "Double timezone specification"
 }
 
 -- instance of classWithoutToString --

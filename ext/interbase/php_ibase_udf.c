@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_ibase_udf.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: php_ibase_udf.c 281727 2009-06-05 18:50:32Z mattwil $ */
 
 /**
 * This UDF library adds the ability to call PHP functions from SQL
@@ -165,7 +165,7 @@ void exec_php(BLOBCALLBACK b, PARAMDSC *res, ISC_SHORT *init)
 #endif
 			/* feed it to the parser */
 			zend_first_try {
-				result = zend_eval_string(code, NULL, "Firebird Embedded PHP engine" TSRMLS_CC);
+				result = zend_eval_stringl(code, b->blob_total_length, NULL, "Firebird Embedded PHP engine" TSRMLS_CC);
 			} zend_end_try();
 	}
 	
@@ -192,10 +192,14 @@ static void call_php(char *name, PARAMDSC *r, int argc, PARAMDSC **argv)
 		INIT_ZVAL(callback);
 		ZVAL_STRING(&callback,name,0);
 
+		LOCK();
+		
 		/* check if the requested function exists */
-		if (!zend_is_callable(&callback, 0, NULL)) {
+		if (!zend_is_callable(&callback, 0, NULL TSRMLS_CC)) {
 			break;
 		}
+		
+		UNLOCK();
 	
 		/* create the argument array */
 		for (i = 0; i < argc; ++i) {

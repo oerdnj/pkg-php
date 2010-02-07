@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: sanitizing_filters.c 288117 2009-09-07 02:35:25Z iliaa $ */
+/* $Id: sanitizing_filters.c 289438 2009-10-09 17:50:17Z pajoye $ */
 
 #include "php_filter.h"
 #include "filter_private.h"

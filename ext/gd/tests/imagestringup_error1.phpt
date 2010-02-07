@@ -14,4 +14,4 @@ $result = imagestringup('string', 1, 5, 5, 'String', 1);
 
 ?>
 --EXPECTF--
-Warning: imagestringup(): supplied argument is not a valid Image resource in %s on line %d
+Warning: imagestringup() expects parameter 1 to be resource, %s given in %s on line %d

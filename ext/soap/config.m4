@@ -1,4 +1,4 @@
-dnl $Id: config.m4 187290 2005-05-29 23:17:16Z sniper $
+dnl $Id: config.m4 242949 2007-09-26 15:44:16Z cvs2svn $
 dnl config.m4 for extension soap
 
 PHP_ARG_ENABLE(soap, whether to enable SOAP support,

@@ -1,5 +1,7 @@
 --TEST--
 Test setlocale() function : error condition
+--INI--
+error_reporting=14335
 --SKIPIF--
 <?php
 if (substr(PHP_OS, 0, 3) == 'WIN') {
@@ -41,15 +43,14 @@ var_dump( setlocale($invalid_category,"en_US.utf8") );
 echo "\nDone";
 ?>
 --EXPECTF--
-
 *** Testing setlocale() : error conditions ***
 
 -- Testing setlocale() function with Zero arguments --
-Warning: Wrong parameter count for setlocale() in %s on line %d
+Warning: setlocale() expects at least 2 parameters, 0 given in %s on line %d
 NULL
 
 -- Testing setlocale() function with One argument, 'category' = LC_ALL --
-Warning: Wrong parameter count for setlocale() in %s on line %d
+Warning: setlocale() expects at least 2 parameters, 1 given in %s on line %d
 NULL
 
 -- Testing setlocale() function with invalid locale array, 'category' = LC_ALL --
@@ -60,7 +61,7 @@ bool(false)
 
 -- Testing setlocale() function with invalid category --
 
-Warning: setlocale(): Passing locale category name as string is deprecated. Use the LC_* -constants instead in %s on line %d
+Deprecated: setlocale(): Passing locale category name as string is deprecated. Use the LC_* -constants instead in %s on line %d
 
 Warning: setlocale(): Invalid locale category name TEST, must be one of LC_ALL, LC_COLLATE, LC_CTYPE, LC_MONETARY, LC_NUMERIC, or LC_TIME in %s on line %d
 bool(false)

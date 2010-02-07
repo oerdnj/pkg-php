@@ -2,7 +2,7 @@
 Locate entries by name
 --SKIPIF--
 <?php
-/* $Id: oo_namelocate.phpt 220923 2006-10-02 14:31:04Z tony2001 $ */
+/* $Id: oo_namelocate.phpt 260091 2008-05-21 09:27:41Z pajoye $ */
 if(!extension_loaded('zip')) die('skip');
 ?>
 --FILE--

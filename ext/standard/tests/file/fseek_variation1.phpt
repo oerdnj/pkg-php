@@ -84,7 +84,7 @@ fclose($fp);
 
 echo "Done";
 ?>
---EXPECT--
+--EXPECTF--
 *** Testing fseek() : usage variations ***
 
 Arg value 10.5 
@@ -104,24 +104,34 @@ int(0)
 int(0)
 
 Arg value Array 
-int(0)
+
+Warning: fseek() expects parameter 2 to be long, array given in %s on line %d
+bool(false)
 int(0)
 
 Arg value Array 
+
+Warning: fseek() expects parameter 2 to be long, array given in %s on line %d
+bool(false)
 int(0)
-int(1)
 
 Arg value Array 
+
+Warning: fseek() expects parameter 2 to be long, array given in %s on line %d
+bool(false)
 int(0)
-int(1)
 
 Arg value Array 
+
+Warning: fseek() expects parameter 2 to be long, array given in %s on line %d
+bool(false)
 int(0)
-int(1)
 
 Arg value Array 
+
+Warning: fseek() expects parameter 2 to be long, array given in %s on line %d
+bool(false)
 int(0)
-int(1)
 
 Arg value  
 int(0)
@@ -148,24 +158,34 @@ int(0)
 int(0)
 
 Arg value  
-int(0)
+
+Warning: fseek() expects parameter 2 to be long, string given in %s on line %d
+bool(false)
 int(0)
 
 Arg value  
-int(0)
+
+Warning: fseek() expects parameter 2 to be long, string given in %s on line %d
+bool(false)
 int(0)
 
 Arg value string 
-int(0)
+
+Warning: fseek() expects parameter 2 to be long, string given in %s on line %d
+bool(false)
 int(0)
 
 Arg value string 
-int(0)
+
+Warning: fseek() expects parameter 2 to be long, string given in %s on line %d
+bool(false)
 int(0)
 
 Arg value testClass 
+
+Warning: fseek() expects parameter 2 to be long, object given in %s on line %d
+bool(false)
 int(0)
-int(1)
 
 Arg value  
 int(0)
@@ -175,3 +195,4 @@ Arg value
 int(0)
 int(0)
 Done
+

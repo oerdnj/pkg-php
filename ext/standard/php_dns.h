@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2008 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,30 +18,63 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_dns.h 286890 2009-08-06 14:07:16Z scottmac $ */
+/* $Id: php_dns.h 287120 2009-08-11 22:07:35Z scottmac $ */
 
 #ifndef PHP_DNS_H
 #define PHP_DNS_H
 
-#if HAVE_RES_NMKQUERY && HAVE_RES_NSEND && HAVE_DN_EXPAND && HAVE_DN_SKIPNAME
-#define HAVE_DNS_FUNCS 1
+#if defined(HAVE_DNS_SEARCH)
+#define php_dns_search(res, dname, class, type, answer, anslen) \
+    	((int)dns_search(res, dname, class, type, answer, anslen, (struct sockaddr *)&from, &fromsize))
+#define php_dns_free_handle(res) \
+		dns_free(res)
+#define php_dns_errno(_res) \
+			(NO_DATA)
+
+#elif defined(HAVE_RES_NSEARCH)
+#define php_dns_search(res, dname, class, type, answer, anslen) \
+			res_nsearch(res, dname, class, type, answer, anslen);
+#define php_dns_free_handle(res) \
+			res_nclose(res); \
+			php_dns_free_res(*res)
+#define php_dns_errno(res) \
+			(res->res_h_errno)
+
+#elif defined(HAVE_RES_SEARCH)
+#define php_dns_search(res, dname, class, type, answer, anslen) \
+			res_search(dname, class, type, answer, anslen)
+#define php_dns_free_handle(res) /* noop */
+#define php_dns_errno(res) \
+			(_res.res_h_errno)
+
+#endif
+
+#if defined(HAVE_DNS_SEARCH) || defined(HAVE_RES_NSEARCH) || defined(HAVE_RES_SEARCH)
+#define HAVE_DNS_SEARCH_FUNC 1
+#endif
+
+#if HAVE_DNS_SEARCH_FUNC && HAVE_DN_EXPAND && HAVE_DN_SKIPNAME
+#define HAVE_FULL_DNS_FUNCS 1
 #endif
 
 PHP_FUNCTION(gethostbyaddr);
 PHP_FUNCTION(gethostbyname);
 PHP_FUNCTION(gethostbynamel);
 
-#if HAVE_RES_SEARCH && !(defined(__BEOS__) || defined(PHP_WIN32) || defined(NETWARE))
-PHP_FUNCTION(dns_check_record);
-# if HAVE_DN_SKIPNAME && HAVE_DN_EXPAND
-PHP_FUNCTION(dns_get_mx);
-# endif
+#ifdef HAVE_GETHOSTNAME
+PHP_FUNCTION(gethostname);
+#endif
 
-# if HAVE_DNS_FUNCS
+#if defined(PHP_WIN32) || (HAVE_DNS_SEARCH_FUNC && !(defined(__BEOS__) || defined(NETWARE)))
+PHP_FUNCTION(dns_check_record);
+
+# if defined(PHP_WIN32) || HAVE_FULL_DNS_FUNCS
+PHP_FUNCTION(dns_get_mx);
 PHP_FUNCTION(dns_get_record);
 PHP_MINIT_FUNCTION(dns);
 # endif
-#endif
+
+#endif /* defined(PHP_WIN32) || (HAVE_DNS_SEARCH_FUNC && !(defined(__BEOS__) || defined(NETWARE))) */
 
 #ifndef INT16SZ
 #define INT16SZ		2

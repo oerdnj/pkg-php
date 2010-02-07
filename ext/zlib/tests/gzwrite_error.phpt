@@ -24,12 +24,12 @@ unlink($filename);
 ===DONE===
 --EXPECTF--
 
-Warning: Wrong parameter count for gzwrite() in %s on line %d
-NULL
+Warning: gzwrite() expects at most 3 parameters, 4 given in %s on line %d
+bool(false)
 
-Warning: Wrong parameter count for gzwrite() in %s on line %d
-NULL
+Warning: gzwrite() expects at least 2 parameters, 1 given in %s on line %d
+bool(false)
 
-Warning: Wrong parameter count for gzwrite() in %s on line %d
-NULL
+Warning: gzwrite() expects at least 2 parameters, 0 given in %s on line %d
+bool(false)
 ===DONE===

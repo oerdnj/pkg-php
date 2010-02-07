@@ -1,5 +1,7 @@
 --TEST--
 various magic quotes tests
+--INI--
+error_reporting=14335
 --FILE--
 <?php
 
@@ -40,22 +42,36 @@ var_dump(file_get_contents($filename));
 
 echo "Done\n";
 ?>
---EXPECTF--	
+--EXPECTF-- 
 int(0)
 int(0)
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 int(1)
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 int(1)
 string(30) "some\'content\'here\"and}there"
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 int(0)
 string(27) "some'content'here"and}there"
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
 int(1)
 string(30) "some\'content\'here\"and}there"
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
 bool(true)
-bool(false)
+
+Deprecated: Function set_magic_quotes_runtime() is deprecated in %s on line %d
+
+Warning: set_magic_quotes_runtime() expects exactly 1 parameter, 0 given in %s on line %d
+NULL
 int(0)
 string(27) "some'content'here"and}there"
 Done

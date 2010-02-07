@@ -23,12 +23,12 @@ var_dump( strnatcmp( $str1, $str2, $extra_arg) );
 *** Testing strnatcmp() : error conditions ***
 -- Testing strnatcmp() function with Zero arguments --
 
-Warning: Wrong parameter count for strnatcmp() in %s on line %d
+Warning: strnatcmp() expects exactly 2 parameters, 0 given in %s on line %d
 NULL
 
 
 -- Testing strnatcmp() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for strnatcmp() in %s on line %d
+Warning: strnatcmp() expects exactly 2 parameters, 3 given in %s on line %d
 NULL
 ===DONE===

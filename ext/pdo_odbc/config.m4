@@ -1,13 +1,11 @@
-dnl $Id: config.m4 291414 2009-11-29 06:13:22Z rasmus $
+dnl $Id: config.m4 263549 2008-07-25 13:46:24Z jani $
 dnl config.m4 for extension pdo_odbc
 dnl vim:et:sw=2:ts=2:
-
-if test "$PHP_PDO" != "no"; then
 
 define([PDO_ODBC_HELP_TEXT],[[
                             include and lib dirs are looked for under 'dir'.
                             
-                            'flavour' can be one of:  ibm-db2, unixODBC, generic
+                            'flavour' can be one of:  ibm-db2, iODBC, unixODBC, generic
                             If ',dir' part is omitted, default for the flavour 
                             you have selected will used. e.g.:
                             
@@ -38,6 +36,10 @@ AC_DEFUN([PDO_ODBC_CHECK_HEADER],[
 ])
                                   
 if test "$PHP_PDO_ODBC" != "no"; then
+
+  if test "$PHP_PDO" = "no" && test "$ext_shared" = "no"; then
+    AC_MSG_ERROR([PDO is not enabled! Add --enable-pdo to your configure line.])
+  fi
 
   ifdef([PHP_CHECK_PDO_INCLUDES],
   [
@@ -70,6 +72,12 @@ if test "$PHP_PDO_ODBC" != "no"; then
         pdo_odbc_def_libdir=/home/db2inst1/sqllib/lib
         pdo_odbc_def_incdir=/home/db2inst1/sqllib/include
         pdo_odbc_def_lib=db2
+        ;;
+
+    iODBC|iodbc)
+        pdo_odbc_def_libdir=/usr/local/$PHP_LIBDIR
+        pdo_odbc_def_incdir=/usr/local/include
+        pdo_odbc_def_lib=iodbc
         ;;
 
     unixODBC|unixodbc)
@@ -149,7 +157,7 @@ if test "$PHP_PDO_ODBC" != "no"; then
     [], [
       AC_MSG_ERROR([
 Your ODBC library does not appear to be ODBC 3 compatible.
-You should consider using unixODBC instead, and loading your
+You should consider using iODBC or unixODBC instead, and loading your
 libraries as a driver in that environment; it will emulate the
 functions required for PDO support.
 ])], $PDO_ODBC_LDFLAGS)
@@ -163,6 +171,4 @@ functions required for PDO support.
   [
     PHP_ADD_EXTENSION_DEP(pdo_odbc, pdo)
   ])
-fi
-
 fi

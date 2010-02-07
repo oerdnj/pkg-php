@@ -24,14 +24,14 @@ foreach ( $extra_args as $arg )
 --EXPECTF--
 *** Test by calling method or function with incorrect numbers of arguments ***
 
-Warning: Wrong parameter count for posix_geteuid() in %s.php on line %d
+Warning: posix_geteuid() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for posix_geteuid() in %s.php on line %d
+Warning: posix_geteuid() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for posix_geteuid() in %s.php on line %d
+Warning: posix_geteuid() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for posix_geteuid() in %s.php on line %d
+Warning: posix_geteuid() expects exactly 0 parameters, 1 given in %s on line %d
 NULL

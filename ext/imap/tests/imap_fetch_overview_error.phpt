@@ -42,13 +42,13 @@ require_once(dirname(__FILE__).'/clean.inc');
 
 -- Testing imap_fetch_overview() function with more than expected no. of arguments --
 Create a temporary mailbox and add 2 msgs
-.. mailbox '%s.phpttest' created
+.. mailbox '{localhost/norsh}INBOX.phpttest' created
 
-Warning: Wrong parameter count for imap_fetch_overview() in %s on line %d
+Warning: imap_fetch_overview() expects at most 3 parameters, 4 given in %s on line %d
 NULL
 
 -- Testing imap_fetch_overview() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for imap_fetch_overview() in %s on line %d
+Warning: imap_fetch_overview() expects at least 2 parameters, 1 given in %s on line %d
 NULL
 ===DONE===

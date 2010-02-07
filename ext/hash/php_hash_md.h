@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_hash_md.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: php_hash_md.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_HASH_MD_H
 #define PHP_HASH_MD_H
@@ -81,7 +81,7 @@ typedef struct {
 	unsigned char buffer[64];
 } PHP_MD4_CTX;
 
-#define PHP_MD4Init			PHP_MD5Init
+PHP_HASH_API void PHP_MD4Init(PHP_MD4_CTX *);
 PHP_HASH_API void PHP_MD4Update(PHP_MD4_CTX *context, const unsigned char *, unsigned int);
 PHP_HASH_API void PHP_MD4Final(unsigned char[16], PHP_MD4_CTX *);
 

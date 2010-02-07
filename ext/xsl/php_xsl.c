@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_xsl.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: php_xsl.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -27,7 +27,6 @@
 #include "ext/standard/info.h"
 #include "php_xsl.h"
 
-
 zend_class_entry *xsl_xsltprocessor_class_entry;
 static zend_object_handlers xsl_object_handlers;
 
@@ -35,12 +34,12 @@ static zend_object_handlers xsl_object_handlers;
  *
  * Every user visible function must have an entry in xsl_functions[].
  */
-zend_function_entry xsl_functions[] = {
+const zend_function_entry xsl_functions[] = {
 	{NULL, NULL, NULL}  /* Must be the last line in xsl_functions[] */
 };
 /* }}} */
 
-static zend_module_dep xsl_deps[] = {
+static const zend_module_dep xsl_deps[] = {
 	ZEND_MOD_REQUIRED("libxml")
 	{NULL, NULL, NULL}
 };
@@ -104,9 +103,13 @@ void xsl_objects_free_storage(void *object TSRMLS_DC)
 		xsltFreeStylesheet((xsltStylesheetPtr) intern->ptr);
 		intern->ptr = NULL;
 	}
+	if (intern->profiling) {
+		efree(intern->profiling);
+	}
 	efree(object);
 }
 /* }}} */
+
 /* {{{ xsl_objects_new */
 zend_object_value xsl_objects_new(zend_class_entry *class_type TSRMLS_DC)
 {
@@ -123,6 +126,7 @@ zend_object_value xsl_objects_new(zend_class_entry *class_type TSRMLS_DC)
 	intern->registered_phpfunctions = NULL;
 	intern->node_list = NULL;
 	intern->doc = NULL;
+	intern->profiling = NULL;
 
 	zend_object_std_init(&intern->std, class_type TSRMLS_CC);
 	zend_hash_copy(intern->std.properties, &class_type->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
@@ -243,9 +247,6 @@ zval *php_xsl_create_object(xsltStylesheetPtr obj, int *found, zval *wrapper_in,
 }
 /* }}} */
 
-
-
-
 /* {{{ PHP_MSHUTDOWN_FUNCTION
  */
 PHP_MSHUTDOWN_FUNCTION(xsl)
@@ -307,7 +308,6 @@ PHP_MINFO_FUNCTION(xsl)
 	php_info_print_table_end();
 }
 /* }}} */
-
 
 /*
  * Local variables:

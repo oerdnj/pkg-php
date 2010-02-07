@@ -2,7 +2,7 @@
 Test date_modify() function : usage variation - Passing unexpected values to second argument $format.
 --FILE--
 <?php
-/* Prototype  : void date_modify  ( DateTime $object  , string $modify  )
+/* Prototype  : DateTime date_modify  ( DateTime $object  , string $modify  )
  * Description: Alter the timestamp of a DateTime object by incrementing or decrementing in a format accepted by strtotime(). 
  * Source code: ext/date/php_date.c
  * Alias to functions: public DateTime DateTime::modify()
@@ -111,25 +111,74 @@ fclose( $file_handle );
 *** Testing date_modify() : usage variation -  unexpected values to second argument $format***
 
 -- int 0 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-31 14:28:41"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- int 1 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-31 14:28:41"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- int 12345 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-31 14:28:41"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- int -12345 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-31 14:28:41"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- float 10.5 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-31 14:28:41"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- float -10.5 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-31 14:28:41"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- float .5 --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-31 14:28:41"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- empty array --
 
@@ -152,43 +201,134 @@ Warning: date_modify() expects parameter 2 to be string, array given in %s on li
 bool(false)
 
 -- uppercase NULL --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-31 14:28:41"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- lowercase null --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-31 14:28:41"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- lowercase true --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-31 14:28:41"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- lowercase false --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-31 14:28:41"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- uppercase TRUE --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-31 14:28:41"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- uppercase FALSE --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-31 14:28:41"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- empty string DQ --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-31 14:28:41"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- empty string SQ --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-31 14:28:41"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- string DQ --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-31 14:28:41"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- string SQ --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-31 14:28:41"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- mixed case string --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-31 14:28:41"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- heredoc --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-31 14:28:41"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- instance of classWithToString --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-31 14:28:41"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- instance of classWithoutToString --
 
@@ -196,10 +336,24 @@ Warning: date_modify() expects parameter 2 to be string, object given in %s on l
 bool(false)
 
 -- undefined var --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-31 14:28:41"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- unset var --
-NULL
+object(DateTime)#%d (3) {
+  ["date"]=>
+  string(19) "2009-01-31 14:28:41"
+  ["timezone_type"]=>
+  int(3)
+  ["timezone"]=>
+  string(13) "Europe/London"
+}
 
 -- resource --
 

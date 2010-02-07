@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_dblib_int.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: php_pdo_dblib_int.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifndef PHP_PDO_DBLIB_INT_H
 #define PHP_PDO_DBLIB_INT_H

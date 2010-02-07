@@ -18,7 +18,7 @@ class Hello {
 $res = fopen(__FILE__, "r");
 
 $vars = array(
-	"bool"=>false,
+	"bool"=>true,
 	"int 10"=>10,
 	"float 10.5"=>10.5,
 	"string"=>"Hello World",
@@ -39,36 +39,36 @@ foreach($vars as $variation =>$object) {
 
 -- bool --
 
-Warning: Supplied argument is not a valid resource handle in %s on line %d
-bool(false)
+Warning: get_resource_type() expects parameter 1 to be resource, boolean given in %s on line %d
+NULL
 
 -- int 10 --
 
-Warning: Supplied argument is not a valid resource handle in %s on line %d
-bool(false)
+Warning: get_resource_type() expects parameter 1 to be resource, integer given in %s on line %d
+NULL
 
 -- float 10.5 --
 
-Warning: Supplied argument is not a valid resource handle in %s on line %d
-bool(false)
+Warning: get_resource_type() expects parameter 1 to be resource, double given in %s on line %d
+NULL
 
 -- string --
 
-Warning: Supplied argument is not a valid resource handle in %s on line %d
-bool(false)
+Warning: get_resource_type() expects parameter 1 to be resource, string given in %s on line %d
+NULL
 
 -- array --
 
-Warning: Supplied argument is not a valid resource handle in %s on line %d
-bool(false)
+Warning: get_resource_type() expects parameter 1 to be resource, array given in %s on line %d
+NULL
 
 -- NULL --
 
-Warning: Supplied argument is not a valid resource handle in %s on line %d
-bool(false)
+Warning: get_resource_type() expects parameter 1 to be resource, null given in %s on line %d
+NULL
 
 -- Object --
 
-Warning: Supplied argument is not a valid resource handle in %s on line %d
-bool(false)
+Warning: get_resource_type() expects parameter 1 to be resource, object given in %s on line %d
+NULL
 ===DONE===

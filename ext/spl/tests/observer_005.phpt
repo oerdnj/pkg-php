@@ -1,7 +1,5 @@
 --TEST--
 SPL: SplObjectStorage serialization & visibility
---SKIPIF--
-<?php if (!extension_loaded("spl")) print "skip"; ?>
 --FILE--
 <?php
 
@@ -83,9 +81,9 @@ object(TestClass)#%d (4) {
   int(24)
   ["pub"]=>
   int(4)
-  ["pro:protected"]=>
+  ["pro":protected]=>
   int(5)
-  ["pri:private"]=>
+  ["pri":"TestClass":private]=>
   int(6)
 }
 object(TestClass)#%d (4) {
@@ -93,20 +91,55 @@ object(TestClass)#%d (4) {
   int(24)
   ["pub"]=>
   int(7)
-  ["pro:protected"]=>
+  ["pro":protected]=>
   int(8)
-  ["pri:private"]=>
+  ["pri":"TestClass":private]=>
   int(9)
 }
-object(MyStorage)#%d (4) {
+object(MyStorage)#%d (5) {
   ["def"]=>
   int(24)
   ["pub"]=>
   int(1)
-  ["pro:protected"]=>
+  ["pro":protected]=>
   int(2)
-  ["pri:private"]=>
+  ["pri":"MyStorage":private]=>
   int(3)
+  ["storage":"SplObjectStorage":private]=>
+  array(2) {
+    ["%s"]=>
+    array(2) {
+      ["obj"]=>
+      object(TestClass)#%d (4) {
+        ["def"]=>
+        int(24)
+        ["pub"]=>
+        int(4)
+        ["pro":protected]=>
+        int(5)
+        ["pri":"TestClass":private]=>
+        int(6)
+      }
+      ["inf"]=>
+      NULL
+    }
+    ["%s"]=>
+    array(2) {
+      ["obj"]=>
+      object(TestClass)#%d (4) {
+        ["def"]=>
+        int(24)
+        ["pub"]=>
+        int(7)
+        ["pro":protected]=>
+        int(8)
+        ["pri":"TestClass":private]=>
+        int(9)
+      }
+      ["inf"]=>
+      NULL
+    }
+  }
 }
 string(%d) "%s"
 ===UNSERIALIZE===
@@ -116,9 +149,9 @@ object(TestClass)#%d (4) {
   int(24)
   ["pub"]=>
   int(4)
-  ["pro:protected"]=>
+  ["pro":protected]=>
   int(5)
-  ["pri:private"]=>
+  ["pri":"TestClass":private]=>
   int(6)
 }
 object(TestClass)#%d (4) {
@@ -126,19 +159,54 @@ object(TestClass)#%d (4) {
   int(24)
   ["pub"]=>
   int(7)
-  ["pro:protected"]=>
+  ["pro":protected]=>
   int(8)
-  ["pri:private"]=>
+  ["pri":"TestClass":private]=>
   int(9)
 }
-object(MyStorage)#%d (4) {
+object(MyStorage)#%d (5) {
   ["def"]=>
   int(24)
   ["pub"]=>
   int(1)
-  ["pro:protected"]=>
+  ["pro":protected]=>
   int(2)
-  ["pri:private"]=>
+  ["pri":"MyStorage":private]=>
   int(3)
+  ["storage":"SplObjectStorage":private]=>
+  array(2) {
+    ["%s"]=>
+    array(2) {
+      ["obj"]=>
+      object(TestClass)#%d (4) {
+        ["def"]=>
+        int(24)
+        ["pub"]=>
+        int(4)
+        ["pro":protected]=>
+        int(5)
+        ["pri":"TestClass":private]=>
+        int(6)
+      }
+      ["inf"]=>
+      NULL
+    }
+    ["%s"]=>
+    array(2) {
+      ["obj"]=>
+      object(TestClass)#%d (4) {
+        ["def"]=>
+        int(24)
+        ["pub"]=>
+        int(7)
+        ["pro":protected]=>
+        int(8)
+        ["pri":"TestClass":private]=>
+        int(9)
+      }
+      ["inf"]=>
+      NULL
+    }
+  }
 }
 ===DONE===

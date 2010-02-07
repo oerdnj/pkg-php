@@ -9,7 +9,7 @@ part is making it acceptable for inclusion into our repository. :-)
 How to create patch?  
 -------------------- 
 We use Subversion (SVN) for revision control.  You need to get the
-source from SVN in order to create a patch.  Read
+source from SVN in order to create a patch.  Read 
 http://www.php.net/svn.php for help on using SVN.  You can check out
 older branches, but make sure you get trunk as well and make your
 patch work there.
@@ -98,7 +98,7 @@ these questions:
 
 What happens when your patch is applied?
 ---------------------------------------- 
-Your name will be included together with your email address in the SVN 
+Your name will be included together with your email address in the SVN
 commit log. If your patch affects end-users, a brief description
 and your name might be added to the NEWS file.
 

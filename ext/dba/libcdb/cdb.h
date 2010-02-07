@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: cdb.h 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: cdb.h 272370 2008-12-31 11:15:49Z sebastian $ */
 
 /* incorporated from D.J.Bernstein's cdb-0.75 (http://cr.yp.to/cdb.html)*/
 

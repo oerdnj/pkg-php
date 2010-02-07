@@ -1,12 +1,15 @@
 --TEST--
-resultset constructor 
+resultset constructor
 --SKIPIF--
-<?php require_once('skipif.inc'); ?>
+<?php
+require_once('skipif.inc');
+require_once('skipifconnectfailure.inc');
+?>
 --FILE--
 <?php
 	include "connect.inc";
 
-	$mysql = new mysqli($host, $user, $passwd);
+	$mysql = new my_mysqli($host, $user, $passwd, $db, $port, $socket);
 
 	$stmt = new mysqli_stmt($mysql, "SELECT 'foo' FROM DUAL");
 	$stmt->execute();
@@ -17,5 +20,5 @@ resultset constructor
 
 	var_dump($foo);
 ?>
---EXPECT--
-string(3) "foo"
+--EXPECTF--
+%unicode|string%(3) "foo"

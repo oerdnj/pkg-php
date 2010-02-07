@@ -39,12 +39,12 @@ Testing gethostbyaddr : error conditions
 
 -- Testing gethostbyaddr function with Zero arguments --
 
-Warning: Wrong parameter count for gethostbyaddr\(\) in .* on line \d+
+Warning: gethostbyaddr\(\) expects exactly 1 parameter, 0 given in .* on line \d+
 NULL
 
 -- Testing gethostbyaddr function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for gethostbyaddr\(\) in .* on line \d+
+Warning: gethostbyaddr\(\) expects exactly 1 parameter, 2 given in .* on line \d+
 NULL
 
 -- Testing gethostbyaddr function with invalid addresses --

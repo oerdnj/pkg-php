@@ -1,11 +1,5 @@
 --TEST--
 Test expm1() - Error conditions
---INI--
-precision=14
---SKIPIF--
-<?php
-	function_exists('expm1') or die('skip expm1() is not supported in this build.');
-?>
 --FILE--
 <?php
 /* Prototype  : float expm1  ( float $arg  )
@@ -28,10 +22,9 @@ expm1(23,true);
 
 -- Testing expm1() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for expm1() in %s on line %d
+Warning: expm1() expects exactly 1 parameter, 0 given in %s on line %d
 
 -- Testing expm1() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for expm1() in %s on line %d
+Warning: expm1() expects exactly 1 parameter, 2 given in %s on line %d
 ===Done===
-

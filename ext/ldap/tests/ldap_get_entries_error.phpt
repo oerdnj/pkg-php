@@ -22,12 +22,12 @@ var_dump(ldap_get_entries($link, "string"));
 ?>
 ===DONE===
 --EXPECTF--
-Warning: Wrong parameter count for ldap_get_entries() in %s on line %d
+Warning: ldap_get_entries() expects exactly 2 parameters, 1 given in %s on line %d
 NULL
 
-Warning: Wrong parameter count for ldap_get_entries() in %s on line %d
+Warning: ldap_get_entries() expects exactly 2 parameters, 3 given in %s on line %d
 NULL
 
-Warning: ldap_get_entries(): supplied argument is not a valid ldap result resource in %s on line %d
-bool(false)
+Warning: ldap_get_entries() expects parameter 2 to be resource, %unicode_string_optional% given in %s on line %d
+NULL
 ===DONE===

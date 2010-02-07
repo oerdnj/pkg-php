@@ -99,122 +99,122 @@ fclose($fp);
 
 -- Iteration 1 --
 
-Warning: end(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: end() expects parameter 1 to be array, integer given in %s on line %d
+NULL
 
 -- Iteration 2 --
 
-Warning: end(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: end() expects parameter 1 to be array, integer given in %s on line %d
+NULL
 
 -- Iteration 3 --
 
-Warning: end(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: end() expects parameter 1 to be array, integer given in %s on line %d
+NULL
 
 -- Iteration 4 --
 
-Warning: end(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: end() expects parameter 1 to be array, integer given in %s on line %d
+NULL
 
 -- Iteration 5 --
 
-Warning: end(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: end() expects parameter 1 to be array, double given in %s on line %d
+NULL
 
 -- Iteration 6 --
 
-Warning: end(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: end() expects parameter 1 to be array, double given in %s on line %d
+NULL
 
 -- Iteration 7 --
 
-Warning: end(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: end() expects parameter 1 to be array, double given in %s on line %d
+NULL
 
 -- Iteration 8 --
 
-Warning: end(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: end() expects parameter 1 to be array, double given in %s on line %d
+NULL
 
 -- Iteration 9 --
 
-Warning: end(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: end() expects parameter 1 to be array, double given in %s on line %d
+NULL
 
 -- Iteration 10 --
 
-Warning: end(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: end() expects parameter 1 to be array, null given in %s on line %d
+NULL
 
 -- Iteration 11 --
 
-Warning: end(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: end() expects parameter 1 to be array, null given in %s on line %d
+NULL
 
 -- Iteration 12 --
 
-Warning: end(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: end() expects parameter 1 to be array, boolean given in %s on line %d
+NULL
 
 -- Iteration 13 --
 
-Warning: end(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: end() expects parameter 1 to be array, boolean given in %s on line %d
+NULL
 
 -- Iteration 14 --
 
-Warning: end(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: end() expects parameter 1 to be array, boolean given in %s on line %d
+NULL
 
 -- Iteration 15 --
 
-Warning: end(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: end() expects parameter 1 to be array, boolean given in %s on line %d
+NULL
 
 -- Iteration 16 --
 
-Warning: end(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: end() expects parameter 1 to be array, string given in %s on line %d
+NULL
 
 -- Iteration 17 --
 
-Warning: end(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: end() expects parameter 1 to be array, string given in %s on line %d
+NULL
 
 -- Iteration 18 --
 bool(false)
 
 -- Iteration 19 --
 
-Warning: end(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: end() expects parameter 1 to be array, string given in %s on line %d
+NULL
 
 -- Iteration 20 --
 
-Warning: end(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: end() expects parameter 1 to be array, string given in %s on line %d
+NULL
 
 -- Iteration 21 --
 
-Warning: end(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: end() expects parameter 1 to be array, string given in %s on line %d
+NULL
 
 -- Iteration 22 --
 string(12) "hello, world"
 
 -- Iteration 23 --
 
-Warning: end(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: end() expects parameter 1 to be array, null given in %s on line %d
+NULL
 
 -- Iteration 24 --
 
-Warning: end(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: end() expects parameter 1 to be array, null given in %s on line %d
+NULL
 
 -- Iteration 25 --
 
-Warning: end(): Passed variable is not an array or object in %s on line %d
-bool(false)
+Warning: end() expects parameter 1 to be array, resource given in %s on line %d
+NULL
 ===DONE===

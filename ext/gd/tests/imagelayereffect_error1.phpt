@@ -13,4 +13,4 @@ Rafael Dohms <rdohms [at] gmail [dot] com>
 $layer = imagelayereffect('invalid_resource', IMG_EFFECT_REPLACE);
 ?>
 --EXPECTF--
-Warning: imagelayereffect(): supplied argument is not a valid Image resource in %s on line %d
+Warning: imagelayereffect() expects parameter 1 to be resource, %s given in %s on line %d

@@ -29,11 +29,11 @@ var_dump( key($array_arg, $extra_arg) );
 
 -- Testing key() function with Zero arguments --
 
-Warning: Wrong parameter count for key() in %s on line %d
+Warning: key() expects exactly 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing key() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for key() in %s on line %d
+Warning: key() expects exactly 1 parameter, 2 given in %s on line %d
 NULL
 ===DONE===

@@ -22,18 +22,20 @@ class A {
 
 $ob = new A();
 
-$fp = fopen(dirname(__FILE__) . "/array_count_file", "w+");
+$fp = fopen("array_count_file", "w+");
 
 $arrays = array ("bobk" => "bobv", "val", 6 => "val6",  $fp, $ob);
 
 var_dump (@array_count_values ($arrays));
+echo "\n";
 
-fclose($fp);
-echo "\nDone\n";
+
+echo "Done";
 ?>
+
 --CLEAN--
 <?php
-unlink (dirname(__FILE__) . "/array_count_file");
+unlink("array_count_file");
 ?>
 --EXPECTF--
 *** Testing array_count_values() : parameter variations ***

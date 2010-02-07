@@ -10,7 +10,7 @@ Check how textdomain() with wrong parameters behaves.
 	}
 ?>
 --FILE--
-<?php // $Id: gettext_textdomain-wrongparams.phpt 282363 2009-06-18 07:31:10Z zoe $
+<?php // $Id: gettext_textdomain-wrongparams.phpt 282362 2009-06-18 07:29:09Z zoe $
 
 chdir(dirname(__FILE__));
 setlocale(LC_ALL, 'en_US.UTF-8');

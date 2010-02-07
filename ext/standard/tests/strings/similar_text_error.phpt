@@ -21,9 +21,9 @@ similar_text("abc");
 --EXPECTF--
 -- Testing similar_text() function with more than expected no. of arguments --
 
-Warning: Wrong parameter count for similar_text() in %s on line %d
+Warning: similar_text() expects at most 3 parameters, 4 given in %s on line %d
 
 -- Testing similar_text() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for similar_text() in %s on line %d
+Warning: similar_text() expects at least 2 parameters, 1 given in %s on line %d
 ===DONE===

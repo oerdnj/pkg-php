@@ -41,6 +41,8 @@ array(1) {
   string(8) "original"
 }
 ------ Calling by_ref() with unreferenced argument ------
+
+Warning: Parameter 1 to by_ref() expected to be a reference, value given in %s on line %d
 array(1) {
   [0]=>
   string(8) "original"

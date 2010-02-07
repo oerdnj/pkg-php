@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: domlocator.c 272374 2008-12-31 11:17:49Z sebastian $ */
+/* $Id: domlocator.c 272370 2008-12-31 11:15:49Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -35,7 +35,7 @@
 * Since: DOM Level 3
 */
 
-zend_function_entry php_dom_domlocator_class_functions[] = {
+const zend_function_entry php_dom_domlocator_class_functions[] = {
 	{NULL, NULL, NULL}
 };
 
@@ -55,8 +55,6 @@ int dom_domlocator_line_number_read(dom_object *obj, zval **retval TSRMLS_DC)
 
 /* }}} */
 
-
-
 /* {{{ column_number	long	
 readonly=yes 
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#DOMLocator-column-number
@@ -70,8 +68,6 @@ int dom_domlocator_column_number_read(dom_object *obj, zval **retval TSRMLS_DC)
 }
 
 /* }}} */
-
-
 
 /* {{{ offset	long	
 readonly=yes 
@@ -87,8 +83,6 @@ int dom_domlocator_offset_read(dom_object *obj, zval **retval TSRMLS_DC)
 
 /* }}} */
 
-
-
 /* {{{ related_node	node	
 readonly=yes 
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#DOMLocator-node
@@ -102,8 +96,6 @@ int dom_domlocator_related_node_read(dom_object *obj, zval **retval TSRMLS_DC)
 }
 
 /* }}} */
-
-
 
 /* {{{ uri	string	
 readonly=yes 
@@ -119,5 +111,15 @@ int dom_domlocator_uri_read(dom_object *obj, zval **retval TSRMLS_DC)
 
 /* }}} */
 
+/* }}} */
 
 #endif
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */

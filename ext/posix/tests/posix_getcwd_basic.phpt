@@ -17,6 +17,6 @@ var_dump(posix_getcwd(1));
 Basic test of POSIX posix_getcwd function
 string(%d) "%s"
 
-Warning: Wrong parameter count for posix_getcwd() in %s on line %d
+Warning: posix_getcwd() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 ===DONE===

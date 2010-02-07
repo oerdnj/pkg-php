@@ -31,6 +31,7 @@ foreach($standard_types as $logtype)
 }
 ?>
 --EXPECTF--
+Deprecated: Function define_syslog_variables() is deprecated in %s on line %d
 bool(true)
 bool(true)
 bool(true)

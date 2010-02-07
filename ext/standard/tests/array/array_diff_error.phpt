@@ -30,11 +30,11 @@ echo "Done";
 
 -- Testing array_diff() function with zero arguments --
 
-Warning: Wrong parameter count for array_diff() in %s on line %d
+Warning: array_diff(): at least 2 parameters are required, 0 given in %s on line %d
 NULL
 
 -- Testing array_diff() function with less than expected no. of arguments --
 
-Warning: Wrong parameter count for array_diff() in %s on line %d
+Warning: array_diff(): at least 2 parameters are required, 1 given in %s on line %d
 NULL
 Done

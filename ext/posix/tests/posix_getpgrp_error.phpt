@@ -26,6 +26,6 @@ echo "Done";
 
 -- Testing posix_getpgrp() function with one argument --
 
-Warning: Wrong parameter count for posix_getpgrp() in %s on line %d
+Warning: posix_getpgrp() expects exactly 0 parameters, 1 given in %s on line %d
 NULL
 Done
