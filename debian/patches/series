@@ -16,15 +16,12 @@ libtool2.2.patch
 047-zts_with_dl.patch
 052-phpinfo_no_configure.patch
 053-extension_api.patch
-056-mime_magic_liberal.patch
 057-no_apache_installed.patch
 100-recode_is_shared.patch
 101-sqlite_is_shared.patch
-107-reflection_is_ext.patch
 108-64_bit_datetime.patch
 112-proc_open.patch
 113-php.ini_securitynotes.patch
-disable_dl_by_default.patch
 115-autoconf_ftbfs.patch
 116-posixness_fix.patch
 libdb_is_-ldb
@@ -35,6 +32,7 @@ force_libmysqlclient_r.patch
 bad_whatis_entries.patch
 gentoo/009_ob-memory-leaks.patch
 mssql-null-exception.patch
-exif_read_data-segfault.patch
 sybase-alias.patch
-max_file_uploads.patch
+strcmp_null-OnUpdateErrorLog.patch
+#deprecate_short_open_tag
+ref-converted-to-value-in-_call.patch

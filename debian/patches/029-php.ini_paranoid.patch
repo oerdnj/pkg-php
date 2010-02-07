@@ -1,5 +1,10 @@
+Description: php.ini with paranoid settings
+Origin: other
+Forwarded: no
+Last-Update: 2010-01-18
+
 --- /dev/null
-+++ php/php.ini-paranoid
++++ pkg-php/php.ini-paranoid
 @@ -0,0 +1,1504 @@
 +[PHP]
 +

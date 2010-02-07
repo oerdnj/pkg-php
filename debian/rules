@@ -81,6 +81,17 @@ ifneq (,$(filter $(DEB_HOST_ARCH),amd64 armel i386 ia64 kfreebsd-amd64 kfreebsd-
 		--with-pdo-firebird=shared,/usr
 endif
 
+ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+    NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+    MAKEFLAGS += -j$(NUMJOBS)
+endif
+
+# enable the hardening wrapper
+DEB_BUILD_HARDENING = 1
+# but disable PIE
+DEB_BUILD_HARDENING_PIE = 0
+export DEB_BUILD_HARDENING DEB_BUILD_HARDENING_PIE
+
 COMMON_CONFIG=--build=$(DEB_BUILD_GNU_TYPE) \
 		--host=$(DEB_HOST_GNU_TYPE) \
 		--sysconfdir=/etc \
@@ -116,6 +127,7 @@ COMMON_CONFIG=--build=$(DEB_BUILD_GNU_TYPE) \
 		--with-openssl=/usr \
 		--enable-soap \
 		--enable-zip \
+		--with-mhash=yes \
 		--with-mime-magic=$(MAGIC_MIME) \
 		--with-exec-dir=/usr/lib/php5/libexec \
 		--with-system-tzdata
@@ -215,6 +227,7 @@ configure-apache2-stamp: prepared-stamp
 		$(COMMON_CONFIG) \
 		--without-mm \
 		--with-curl=shared,/usr \
+		--with-enchant=shared,/usr \
 		--with-zlib-dir=/usr \
 		--with-gd=shared,/usr --enable-gd-native-ttf \
 		--with-gmp=shared,/usr \
@@ -225,12 +238,12 @@ configure-apache2-stamp: prepared-stamp
 		--with-imap=shared,/usr \
 		--with-imap-ssl \
 		$(IBFLAGS) \
+		--enable-intl=shared \
 		--with-ttf=shared,/usr \
 		--with-t1lib=shared,/usr \
 		--with-ldap=shared,/usr \
 		--with-ldap-sasl=/usr \
 		--with-mcrypt=shared,/usr \
-		--with-mhash=shared,/usr \
 		--with-mysql=shared,/usr \
 		--with-mysqli=shared,/usr/bin/mysql_config \
 		--with-pspell=shared,/usr \
@@ -379,11 +392,10 @@ install: build
 		debian/libapache2-mod-php5filter/etc/apache2/mods-available/php5filter.conf
 
 	# sanitize php.ini file
-	cat php.ini-dist | tr "\t" " " > debian/php5-common/usr/share/php5/php.ini-dist
-	cat php.ini-dist | tr "\t" " " | sed -e'/memory_limit =/ s/128M/32M/g' > debian/php5-common/usr/share/php5/php.ini-dist.cli
-	cat php.ini-dist | tr "\t" " " > debian/php5-common/usr/share/doc/php5-common/examples/php.ini-dist
-	cat php.ini-recommended | tr "\t" " " > debian/php5-common/usr/share/doc/php5-common/examples/php.ini-recommended
-	cat php.ini-paranoid | tr "\t" " " > debian/php5-common/usr/share/doc/php5-common/examples/php.ini-paranoid
+	cat php.ini-production | tr "\t" " " | sed -e'/short_open_tag =/ s/Off/On/g' > debian/php5-common/usr/share/php5/php.ini-production
+	cat php.ini-production | tr "\t" " " | sed -e'/memory_limit =/ s/128M/32M/g' > debian/php5-common/usr/share/php5/php.ini-production.cli
+	cat php.ini-production | tr "\t" " " > debian/php5-common/usr/share/doc/php5-common/examples/php.ini-production
+	cat php.ini-development | tr "\t" " " > debian/php5-common/usr/share/doc/php5-common/examples/php.ini-development
 	cp test-results.txt debian/php5-common/usr/share/doc/php5-common/
 
 	# install the apache modules' files
@@ -580,7 +592,7 @@ binary-arch: build install
 		echo "php:Provides=phpapi-$${phpapi}" >> debian/$$i.substvars; \
 	done; \
 	cat debian/modulelist | while read package extname dsoname; do \
-		echo "php:Depends=php5 | phpapi-$${phpapi}" >> debian/php5-$$package.substvars; \
+		echo "php:Depends=phpapi-$${phpapi}" >> debian/php5-$$package.substvars; \
 	done
 
 	for i in cgi cli; do \

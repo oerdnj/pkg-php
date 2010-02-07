@@ -1,6 +1,14 @@
---- php.orig/ext/mysql/config.m4
-+++ php/ext/mysql/config.m4
-@@ -86,7 +86,7 @@ if test "$PHP_MYSQL" != "no"; then
+Description: Force linking to mysqlclient_r to avoid symbol conflicts.
+ apr-util's mysql driver is linked against that version of the library
+ but due to missing proper symbols versioning we are forced to link to
+ the re-entrant library too.
+Origin: other, http://bugs.debian.org/469081
+Forwarded: not-needed
+Last-Update: 2010-01-18
+
+--- pkg-php.orig/ext/mysql/config.m4
++++ pkg-php/ext/mysql/config.m4
+@@ -90,7 +90,7 @@ elif test "$PHP_MYSQL" != "no"; then
  Note that the MySQL client library is not bundled anymore!])
    fi
  
@@ -9,25 +17,25 @@
      MYSQL_LIBNAME=mysqlclient_r
    else
      MYSQL_LIBNAME=mysqlclient
---- php.orig/ext/mysqli/config.m4
-+++ php/ext/mysqli/config.m4
-@@ -26,7 +26,7 @@ dnl  fi
-   if test "$PHP_EMBEDDED_MYSQLI" = "yes"; then
-     AC_DEFINE(HAVE_EMBEDDED_MYSQLI, 1, [embedded MySQL support enabled])
+--- pkg-php.orig/ext/mysqli/config.m4
++++ pkg-php/ext/mysqli/config.m4
+@@ -29,7 +29,7 @@ elif test "$PHP_MYSQLI" != "no"; then
      MYSQL_LIB_CFG='--libmysqld-libs'
+     dnl mysqlnd doesn't support embedded, so we have to add some extra stuff
+     mysqli_extra_sources="mysqli_embedded.c"
 -  elif test "$enable_maintainer_zts" = "yes"; then
 +  elif true || test "$enable_maintainer_zts" = "yes"; then
      MYSQL_LIB_CFG='--libs_r'
      MYSQL_LIB_NAME='mysqlclient_r'
    else
---- php.orig/ext/pdo_mysql/config.m4
-+++ php/ext/pdo_mysql/config.m4
-@@ -58,7 +58,7 @@ if test "$PHP_PDO_MYSQL" != "no"; then
-     if test "x$SED" = "x"; then
-       AC_PATH_PROG(SED, sed)
-     fi
--    if test "$enable_maintainer_zts" = "yes"; then
-+    if true || test "$enable_maintainer_zts" = "yes"; then
-       PDO_MYSQL_LIBNAME=mysqlclient_r
-       PDO_MYSQL_LIBS=`$PDO_MYSQL_CONFIG --libs_r | $SED -e "s/'//g"`
-     else
+--- pkg-php.orig/ext/pdo_mysql/config.m4
++++ pkg-php/ext/pdo_mysql/config.m4
+@@ -68,7 +68,7 @@ if test "$PHP_PDO_MYSQL" != "no"; then
+         AC_PATH_PROG(SED, sed)
+       fi
+ 
+-      if test "$enable_maintainer_zts" = "yes"; then
++      if true || test "$enable_maintainer_zts" = "yes"; then
+         PDO_MYSQL_LIBNAME=mysqlclient_r
+         PDO_MYSQL_LIBS=`$PDO_MYSQL_CONFIG --libs_r | $SED -e "s/'//g"`
+       else

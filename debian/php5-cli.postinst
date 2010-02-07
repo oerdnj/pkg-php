@@ -10,7 +10,7 @@ fi
 
 phpini="/etc/php5/cli/php.ini"
 
-ucf /usr/share/php5/php.ini-dist.cli $phpini
+ucf /usr/share/php5/php.ini-production.cli $phpini
 
 update-alternatives \
 	--install /usr/bin/php php /usr/bin/php5 50 \

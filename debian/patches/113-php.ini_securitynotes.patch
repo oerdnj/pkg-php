@@ -1,9 +1,14 @@
---- php.orig/php.ini-dist
-+++ php/php.ini-dist
-@@ -166,6 +166,11 @@ allow_call_time_pass_reference = On
- ;
+Description: Adds security notices to php.ini settings
+Origin: vendor
+Forwarded: not-needed
+Last-Update: 2010-01-18
+
+--- a/php.ini-development
++++ b/php.ini-development
+@@ -335,6 +335,11 @@ allow_call_time_pass_reference = Off
+ 
  ; Safe Mode
- ;
+ ; http://php.net/safe-mode
 +; NOTE: this is considered a "broken" security measure.
 +;       Applications relying on this feature will not recieve full
 +;       support by the security team.  For more information please
@@ -12,29 +17,28 @@
  safe_mode = Off
  
  ; By default, Safe Mode does a UID compare check when
-@@ -202,6 +207,13 @@ safe_mode_protected_env_vars = LD_LIBRAR
- ; and below.  This directive makes most sense if used in a per-directory
+@@ -376,6 +381,12 @@ safe_mode_protected_env_vars = LD_LIBRAR
  ; or per-virtualhost web server configuration file. This directive is
  ; *NOT* affected by whether Safe Mode is turned On or Off.
-+
+ ; http://php.net/open-basedir
++ 
 +; NOTE: this is considered a "broken" security measure.
 +;       Applications relying on this feature will not recieve full
 +;       support by the security team.  For more information please
 +;       see /usr/share/doc/php5-common/README.Debian.security
 +;
-+
  ;open_basedir =
  
  ; This directive allows you to disable certain functions for security reasons.
-@@ -416,6 +428,11 @@ variables_order = "EGPCS"
- ; You should do your best to write your scripts so that they do not require
+@@ -688,6 +699,11 @@ request_order = "GP"
  ; register_globals to be on;  Using form variables as globals can easily lead
  ; to possible security problems, if the code is not very well thought of.
-+
+ ; http://php.net/register-globals
++ 
 +; NOTE: applications relying on this feature will not recieve full
 +;       support by the security team.  For more information please
 +;       see /usr/share/doc/php5-common/README.Debian.security
 +;
  register_globals = Off
  
- ; Whether or not to register the old-style input arrays, HTTP_GET_VARS
+ ; Determines whether the deprecated long $HTTP_*_VARS type predefined variables

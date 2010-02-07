@@ -1,8 +1,8 @@
---- php.orig/ext/standard/datetime.c
-+++ php/ext/standard/datetime.c
+--- a/ext/standard/datetime.c
++++ b/ext/standard/datetime.c
 @@ -20,6 +20,9 @@
  
- /* $Id: datetime.c 272374 2008-12-31 11:17:49Z sebastian $ */
+ /* $Id: datetime.c 272370 2008-12-31 11:15:49Z sebastian $ */
  
 +#define _XOPEN_SOURCE	/* needed to get strptime() declared */
 +#define _BSD_SOURCE		/* needed to get ulong declared */

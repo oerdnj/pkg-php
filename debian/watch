@@ -2,4 +2,4 @@ version=3
 opts=downloadurlmangle=s#/a/#/this/#,\
 filenamemangle=s#/get/(php-(5\.[0-9\.]*)\.tar\.gz)/.*#$1#,\
 dversionmangle=s/\.dfsg\.\d+// \
-http://www.php.net/downloads.php /get/php-(5\.[0-9\.]*)\.tar\.gz/from/a/mirror debian bash debian/dfsg-repack.sh
+http://www.php.net/downloads.php /get/php-(5\.[0-9\.]*)\.tar\.gz/from/a/mirror debian

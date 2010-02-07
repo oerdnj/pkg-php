@@ -1,5 +1,10 @@
---- php.orig/sapi/cli/php.1.in
-+++ php/sapi/cli/php.1.in
+Description: Fix whatis entries of the man pages
+Origin: vendor
+Forwarded: http://bugs.php.net/50795
+Last-Update: 2010-01-18
+
+--- pkg-php.orig/sapi/cli/php.1.in
++++ pkg-php/sapi/cli/php.1.in
 @@ -1,6 +1,5 @@
  .TH PHP 1 "2009" "The PHP Group" "Scripting Language"
  .SH NAME
@@ -7,8 +12,8 @@
  php \- PHP Command Line Interface 'CLI'
  .SH SYNOPSIS
  .B php
---- php.orig/scripts/man1/php-config.1.in
-+++ php/scripts/man1/php-config.1.in
+--- pkg-php.orig/scripts/man1/php-config.1.in
++++ pkg-php/scripts/man1/php-config.1.in
 @@ -1,6 +1,5 @@
  .TH php\-config 1 "2006" "The PHP Group" "Scripting Language"
  .SH NAME
@@ -16,8 +21,8 @@
  php\-config \- get information about PHP configuration and compile options
  .SH SYNOPSIS
  .B php\-config
---- php.orig/scripts/man1/phpize.1.in
-+++ php/scripts/man1/phpize.1.in
+--- pkg-php.orig/scripts/man1/phpize.1.in
++++ pkg-php/scripts/man1/phpize.1.in
 @@ -1,7 +1,6 @@
  .TH phpize 1 "2006" "The PHP Group" "Scripting Language"
  .SH NAME

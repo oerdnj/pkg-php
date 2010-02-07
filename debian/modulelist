@@ -1,11 +1,12 @@
 curl CURL
+enchant Enchant
 gd GD
 gmp GMP
 imap IMAP
 interbase Interbase
+intl Internationalisation
 ldap LDAP
 mcrypt MCrypt
-mhash MHASH
 mysql MySQL
 odbc ODBC
 pgsql PostgreSQL

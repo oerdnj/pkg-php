@@ -1,5 +1,10 @@
---- php.orig/ext/exif/exif.c
-+++ php/ext/exif/exif.c
+Description: Increase maximum exif nesting level.
+Origin: vendor
+Forwarded: no
+Last-Update: 2010-01-18
+
+--- pkg-php.orig/ext/exif/exif.c
++++ pkg-php/ext/exif/exif.c
 @@ -99,7 +99,7 @@ typedef unsigned char uchar;
  
  #define EFREE_IF(ptr)	if (ptr) efree(ptr)
@@ -8,4 +13,4 @@
 +#define MAX_IFD_NESTING_LEVEL 250
  
  /* {{{ arginfo */
- static
+ ZEND_BEGIN_ARG_INFO(arginfo_exif_tagname, 0)

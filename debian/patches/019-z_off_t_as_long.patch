@@ -1,5 +1,14 @@
+Description: Include some zlib headers to make sure z_off_t is a long on
+ the gzip file functions. Issue caused by LFS support.
+ .
+ Needs to be re-checked.
+Origin: vendor
+Bug-Debian: http://bugs.debian.org/208608
+Forwarded: no
+Last-Update: 2010-01-18
+
 --- /dev/null
-+++ php/ext/zlib/zconf.h
++++ pkg-php/ext/zlib/zconf.h
 @@ -0,0 +1,326 @@
 +/* zconf.h -- configuration of the zlib compression library
 + * Copyright (C) 1995-2003 Jean-loup Gailly.
@@ -328,7 +337,7 @@
 +
 +#endif /* ZCONF_H */
 --- /dev/null
-+++ php/ext/zlib/zlib.h
++++ pkg-php/ext/zlib/zlib.h
 @@ -0,0 +1,1200 @@
 +/* zlib.h -- interface of the 'zlib' general purpose compression library
 +  version 1.2.1.1, January 9th, 2004
