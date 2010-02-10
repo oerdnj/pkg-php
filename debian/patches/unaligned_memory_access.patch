@@ -1,0 +1,18 @@
+Description: Fix unaligned memory access.
+Origin: vendor
+Forwarded: http://bugs.php.net/50987
+Last-Update: 2010-02-09
+
+Index: php/ext/phar/phar.c
+===================================================================
+--- php.orig/ext/phar/phar.c
++++ php/ext/phar/phar.c
+@@ -2491,7 +2491,7 @@ static inline void phar_set_32(char *buf
+ 	*((buffer) + 1) = (unsigned char) (((var) >> 8) & 0xFF);
+ 	*((buffer) + 0) = (unsigned char) ((var) & 0xFF);
+ #else
+-	*(php_uint32 *)(buffer) = (php_uint32)(var);
++	memcpy(buffer, &var, sizeof(var));
+ #endif
+ } /* }}} */
+ 

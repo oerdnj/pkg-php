@@ -38,3 +38,4 @@ sybase-alias.patch
 strcmp_null-OnUpdateErrorLog.patch
 #deprecate_short_open_tag
 ref-converted-to-value-in-_call.patch
+unaligned_memory_access.patch
