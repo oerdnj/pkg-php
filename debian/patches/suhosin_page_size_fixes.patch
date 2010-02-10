@@ -1,0 +1,83 @@
+Description: Don't assume the value of PAGE_SIZE.
+ The len argument of mprotect(2) is rounded up if necessary to result
+ in an integer number of pages.  If PAGE_SIZE is lower than the real
+ page size, the call to mprotect(2) marks more memory as non-writeable
+ than desired, leading to all sorts of errors.
+Origin: vendor
+Forwarded: no
+Last-Update: 2010-02-09
+
+Index: php/main/suhosin_patch.c
+===================================================================
+--- php.orig/main/suhosin_patch.c
++++ php/main/suhosin_patch.c
+@@ -21,6 +21,7 @@
+ 
+ #include <stdio.h>
+ #include <stdlib.h>
++#include <sys/mman.h>
+ 
+ #if HAVE_UNISTD_H
+ #include <unistd.h>
+@@ -59,19 +60,7 @@ int suhosin_patch_globals_id;
+ struct _suhosin_patch_globals suhosin_patch_globals;
+ #endif
+ 
+-/* hack that needs to be fixed */
+-#ifndef PAGE_SIZE
+-#define PAGE_SIZE 4096
+-#endif
+-
+-#ifdef ZEND_WIN32
+-__declspec(align(PAGE_SIZE))
+-#endif
+-char suhosin_config[PAGE_SIZE] 
+-#if defined(__GNUC__) 
+-    __attribute__ ((aligned(PAGE_SIZE)))
+-#endif
+-;
++char *suhosin_config = NULL;
+ 
+ static void php_security_log(int loglevel, char *fmt, ...);
+ 
+@@ -135,7 +124,7 @@ static void suhosin_read_configuration_f
+ static void suhosin_write_protect_configuration()
+ {
+ #if defined(__GNUC__)
+-        mprotect(suhosin_config, PAGE_SIZE, PROT_READ);
++        mprotect(suhosin_config, sysconf(_SC_PAGESIZE), PROT_READ);
+ #endif
+ }
+ 
+@@ -148,6 +137,13 @@ PHPAPI void suhosin_startup()
+ #endif
+ 	zend_suhosin_log = php_security_log;
+ 	
++	if (!suhosin_config) {
++		suhosin_config = mmap(NULL, sysconf(_SC_PAGESIZE), PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
++		if (suhosin_config == MAP_FAILED) {
++			perror("suhosin");
++			_exit(1);
++		}
++	}
+ 	if (!SUHOSIN_CONFIG(SUHOSIN_CONFIG_SET)) {
+         suhosin_read_configuration_from_environment();
+         suhosin_write_protect_configuration();
+Index: php/main/suhosin_patch.h
+===================================================================
+--- php.orig/main/suhosin_patch.h
++++ php/main/suhosin_patch.h
+@@ -44,12 +44,7 @@
+ #include <mach/vm_param.h>
+ #endif
+ 
+-/* hack that needs to be fixed */
+-#ifndef PAGE_SIZE
+-#define PAGE_SIZE 4096
+-#endif
+-
+-extern char suhosin_config[PAGE_SIZE];
++extern char *suhosin_config;
+ 
+ #endif
+ 

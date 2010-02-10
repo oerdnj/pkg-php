@@ -27,6 +27,7 @@ libtool2.2.patch
 libdb_is_-ldb
 page_size_fixes.patch
 suhosin.patch
+suhosin_page_size_fixes.patch
 fix_broken_upstream_tests.patch
 use_embedded_timezonedb.patch
 force_libmysqlclient_r.patch
