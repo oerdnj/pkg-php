@@ -7,6 +7,15 @@ Index: php/ext/phar/phar.c
 ===================================================================
 --- php.orig/ext/phar/phar.c
 +++ php/ext/phar/phar.c
+@@ -512,7 +512,7 @@ void phar_entry_remove(phar_entry_data *
+ 	(buffer) += 2
+ #else
+ # define PHAR_GET_32(buffer, var) \
+-	var = *(php_uint32*)(buffer); \
++	memcpy(&var, buffer, sizeof(var)); \
+ 	buffer += 4
+ # define PHAR_GET_16(buffer, var) \
+ 	var = *(php_uint16*)(buffer); \
 @@ -2491,7 +2491,7 @@ static inline void phar_set_32(char *buf
  	*((buffer) + 1) = (unsigned char) (((var) >> 8) & 0xFF);
  	*((buffer) + 0) = (unsigned char) ((var) & 0xFF);
