@@ -434,13 +434,13 @@ install: build
 	# we don't want test suites
 	$(RM) -r debian/php-pear/usr/share/php/test/
 	[ -d debian/php-pear/usr/share/php/doc ] && { \
-		mkdir -p debian/php-pear/usr/share/php5-common/PEAR; \
+		mkdir -p debian/php-pear/usr/share/doc/php5-common/PEAR; \
 		mv debian/php-pear/usr/share/php/doc/* \
 			debian/php-pear/usr/share/doc/php5-common/PEAR/; \
 		$(RM) -r debian/php-pear/usr/share/php/doc; \
 		ln -s ../doc/php-pear/PEAR debian/php-pear/usr/share/php/doc; \
 		echo "Dummy placeholder to prevent the directory's deletion" > \
-			debian/php-pear/usr/share/php/doc/php5-common/PEAR/.placeholder; \
+			debian/php-pear/usr/share/doc/php5-common/PEAR/.placeholder; \
 	}
 
 	# install extensions
