@@ -260,6 +260,7 @@ configure-apache2-stamp: prepared-stamp
 		--with-xsl=shared,/usr \
 		--with-snmp=shared,/usr \
 		--with-sqlite=shared,/usr \
+		--with-sqlite3=shared,/usr \
 		--with-mssql=shared,/usr \
 		--with-tidy=shared,/usr \
 		--with-xmlrpc=shared \
@@ -291,7 +292,7 @@ configure-apache2filter-stamp: prepared-stamp
 		--without-mm \
 		--disable-pdo \
 		--without-mysql --without-sybase-ct --without-mssql \
-		--without-sqlite
+		--without-sqlite --without-sqlite3
 	cd apache2filter-build && \
 	cp ../Zend/zend_ini_scanner.c ../Zend/zend_language_scanner.c \
 	   ../Zend/zend_ini_parser.h ../Zend/zend_language_parser.h \
@@ -312,7 +313,7 @@ configure-cgi-stamp: prepared-stamp
 		--without-mm \
 		--disable-pdo \
 		--without-mysql --without-sybase-ct --without-mssql \
-		--without-sqlite
+		--without-sqlite --without-sqlite3
 	cd cgi-build && \
 	cp ../Zend/zend_ini_scanner.c ../Zend/zend_language_scanner.c \
 	   ../Zend/zend_ini_parser.h ../Zend/zend_language_parser.h \
@@ -333,7 +334,7 @@ configure-cli-stamp: prepared-stamp
 		--without-mm \
 		--disable-pdo \
 		--without-mysql --without-sybase-ct --without-sqlite \
-		--without-mssql --enable-pcntl \
+		--without-mssql --without-sqlite3 --enable-pcntl \
 		--with-ncurses=/usr
 	cd cli-build && \
 	cp ../Zend/zend_ini_scanner.c ../Zend/zend_language_scanner.c \
