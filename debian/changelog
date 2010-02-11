@@ -1,3 +1,21 @@
+php5 (5.3.1-4) unstable; urgency=low
+
+  [ Raphael Geissert ]
+  * Pass -O0 when using 'noopt' to actually disable any optimization
+  * Add patch to use sysconf() to determine the page size
+  * Add patch to remove PAGE_SIZE assumptions in suhosin code
+  * Fix an unaligned memory access in the phar extension
+  * Fix another unaligned memory access
+  * Print the expected/actual output of failed test
+  * Add missing PEAR directory (Closes: #542483)
+  * Build sqlite3 as shared (Closes: #568956)
+  * Add some more documentation about the source package
+
+  [ Sean Finney ]
+  * New debian patch fix_broken_5.3_tests.patch
+
+ -- Raphael Geissert <geissert@debian.org>  Thu, 11 Feb 2010 02:22:47 -0600
+
 php5 (5.3.1-3) unstable; urgency=low
 
   [ Ondřej Surý ]
