@@ -1,0 +1,66 @@
+Author: Sean Finney <seanius@debian.org>
+Description: Fix another small batch of broken test cases
+ * ext/standard/tests/php_ini_loaded_file.phpt: this test only works if
+   you call run-tests directly, but the included Makefile invokes the
+   test in such a way that it fails (it explicitly loads an ini file,
+   and the test assumes that none are loaded).  since it therefore seems
+   like a somewhat useless test it has been removed.
+ * cli/tests/006.phpt: $subject is <required> according to the docs for
+   the two pcre functions that report it as such, so the expected string has
+   been updated to match the output.
+ * php.orig/ext/posix/tests/posix_errno_variation2.phpt: SIGKILL is not
+   a defined constant unless the pcntl extension is loaded.  As was
+   done elsewhere (posix_kill_basic.phpt, which oddly seems to do the
+   same *incredibly sketchy* test that's done here), it's passed as a
+   variable hardcoded to 9 instead.  Did i mention that this test is
+   sketchy?
+Origin: vendor
+--- php.orig/ext/standard/tests/php_ini_loaded_file.phpt
++++ /dev/null
+@@ -1,13 +0,0 @@
+---TEST--
+-Check the php_ini_loaded_file() function. No file is loaded in test, so false ins returned
+---CREDITS--
+-Sebastian Schürmann
+-sschuermann@chip.de
+-Testfest 2009 Munich
+---FILE--
+-<?php
+-var_dump(php_ini_loaded_file());
+-?>
+---EXPECT--
+-bool(false)
+-
+--- php.orig/sapi/cli/tests/006.phpt
++++ php/sapi/cli/tests/006.phpt
+@@ -79,7 +79,7 @@ string(%d) "Extension [ <persistent> ext
+       - Parameters [5] {
+         Parameter #0 [ <required> $regex ]
+         Parameter #1 [ <required> $replace ]
+-        Parameter #2 [ <optional> $subject ]
++        Parameter #2 [ <required> $subject ]
+         Parameter #3 [ <optional> $limit ]
+         Parameter #4 [ <optional> &$count ]
+       }
+@@ -99,7 +99,7 @@ string(%d) "Extension [ <persistent> ext
+       - Parameters [5] {
+         Parameter #0 [ <required> $regex ]
+         Parameter #1 [ <required> $replace ]
+-        Parameter #2 [ <optional> $subject ]
++        Parameter #2 [ <required> $subject ]
+         Parameter #3 [ <optional> $limit ]
+         Parameter #4 [ <optional> &$count ]
+       }
+--- php.orig/ext/posix/tests/posix_errno_variation2.phpt
++++ php/ext/posix/tests/posix_errno_variation2.phpt
+@@ -20,7 +20,9 @@ do {
+   $result = shell_exec("ps -p " . $pid);
+ } while (strstr($pid, $result)); 
+ 
+-posix_kill($pid, SIGKILL);
++/* don't depend on SIGKILL being defined (pcntl might not not be loaded) */
++$SIGKILL = 9;
++posix_kill($pid, $SIGKILL);
+ var_dump(posix_errno());
+ 
+ ?>
