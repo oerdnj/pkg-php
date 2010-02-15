@@ -157,7 +157,7 @@ unprepared:
 test-results.txt: build-apache2-stamp build-cli-stamp build-cgi-stamp
 ifeq (,$(findstring nocheck,$(DEB_BUILD_OPTIONS)))
 	mkdir -p temp_session_store
-	env NO_INTERACTION=1 TEST_PHP_CGI_EXECUTABLE=./cgi-build/sapi/cgi/cgi-bin.php5 TEST_PHP_EXECUTABLE=./apache2-build/sapi/cli/php ./apache2-build/sapi/cli/php run-tests.php | tee test-results.txt
+	env NO_INTERACTION=1 TEST_PHP_CGI_EXECUTABLE=$(CURDIR)/cgi-build/sapi/cgi/cgi-bin.php5 TEST_PHP_EXECUTABLE=$(CURDIR)/apache2-build/sapi/cli/php $(CURDIR)/apache2-build/sapi/cli/php run-tests.php | tee test-results.txt
 	rm -rf temp_session_store
 	@for test in `find . -name '*.log' -a '!' -name 'config.log'`; do \
 	    echo; \
