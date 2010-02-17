@@ -1,8 +1,8 @@
 Description: Don't assume value of PAGE_SIZE if sys/mman.h does not
  define it. Instead, use sysconf() at runtime if available.
 Origin: vendor
-Forwarded: no
-Last-Update: 2010-02-09
+Bug: http://bugs.php.net/bug.php?id=50982
+Last-Update: 2010-02-17
 
 Index: php/Zend/zend_stream.c
 ===================================================================
