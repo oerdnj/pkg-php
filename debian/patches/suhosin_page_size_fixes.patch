@@ -4,8 +4,8 @@ Description: Don't assume the value of PAGE_SIZE.
  page size, the call to mprotect(2) marks more memory as non-writeable
  than desired, leading to all sorts of errors.
 Origin: vendor
-Forwarded: no
-Last-Update: 2010-02-09
+Forwarded: yes
+Last-Update: 2010-02-18
 
 Index: php/main/suhosin_patch.c
 ===================================================================
