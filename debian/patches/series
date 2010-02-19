@@ -42,3 +42,4 @@ unaligned_memory_access.patch
 fix_broken_5.3_tests.patch
 dont-gitclean-in-build.patch
 broken_5.3_test-posix_uname.patch
+shtool_mkdir_-p_-race-condition.patch
