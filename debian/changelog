@@ -1,3 +1,27 @@
+php5 (5.3.1-5) unstable; urgency=low
+
+  [ Sean Finney ]
+  * Pass full path to php cli executable for unit tests
+  * dont-gitclean-in-build.patch: Don't run git-clean via buildconf
+  * update debian patch page_size_fixes.patch with upstream bug ref
+  * new debian patch broken_5.3_test-posix_uname.patch (Closes: #570286)
+
+  [ Raphael Geissert ]
+  * Add build-dependency on netbase to fix a test (Closes: #570291)
+  * Suhosin PAGE_SIZE fixes have been already forwarded
+  * Fix a race condition on shtool's mkdir -p (Closes: #570111)
+  * Actually test the binary that is to be shipped in the -cli package
+  * Add some more documentation about the build system
+  * Documentation updates
+  * Update the suhosin patch version information
+  * Build-dep on locales-all to enable multiple tests
+  * Don't ship empty maintainer scripts
+  * Add patch to allow building with qdbm
+  * Test the extensions that don't require a special setup
+  * Get the correct list of built-in extensions of apache2filter
+
+ -- Raphael Geissert <geissert@debian.org>  Mon, 22 Feb 2010 10:41:51 -0600
+
 php5 (5.3.1-4) unstable; urgency=low
 
   [ Raphael Geissert ]
