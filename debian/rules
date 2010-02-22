@@ -159,9 +159,9 @@ ifeq (,$(findstring nocheck,$(DEB_BUILD_OPTIONS)))
 	mkdir -p temp_session_store
 	extensions=""; \
 	for f in $(CURDIR)/apache2-build/modules/*.so; do \
-	    ext=`basename "$${f%.so}"`; \
-	    test ! -f "$(CURDIR)/ext/$$ext/tests/config.inc" || continue; \
-	    test ! -f "$(CURDIR)/ext/$$ext/tests/README" || continue; \
+	    ext=`basename "$$f"`; \
+	    test ! -f "$(CURDIR)/ext/$${ext%.so}/tests/config.inc" || continue; \
+	    test ! -f "$(CURDIR)/ext/$${ext%.so}/tests/README" || continue; \
 	    test "$${ext#pdo}" = "$$ext" || continue; \
 	    extensions="$$extensions -d extension=$$ext"; \
 	done; \
@@ -561,7 +561,7 @@ binary-arch: build install
 		  < debian/php5-module.postinst \
 		| sed -e'/#EXTRA#/ d' \
 		  > debian/php5-$${package}.postinst; \
-		c=`grep -vE '^(#|set|$)' < debian/php5-$${package}.postinst | wc -l`; \
+		c=`grep -vE '^(#|set|$$)' < debian/php5-$${package}.postinst | wc -l`; \
 		[ "$$c" != "0" ] || $(RM) debian/php5-$${package}.postinst; \
 	done
 
