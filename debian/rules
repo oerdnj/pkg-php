@@ -622,7 +622,7 @@ binary-arch: build install
 	for i in apache2; do \
 		"$$i"-build/sapi/cli/php -n -r '$(BUILTIN_EXTENSION_CHECK)' \
 			>> debian/lib"$$i"-mod-php5.substvars; \
-		"$$i"-build/sapi/cli/php -n -r '$(BUILTIN_EXTENSION_CHECK)' \
+		"$$i"filter-build/sapi/cli/php -n -r '$(BUILTIN_EXTENSION_CHECK)' \
 			>> debian/lib"$$i"-mod-php5filter.substvars; \
 	done
 
