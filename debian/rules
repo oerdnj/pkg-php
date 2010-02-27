@@ -113,6 +113,7 @@ COMMON_CONFIG=--build=$(DEB_BUILD_GNU_TYPE) \
 		--with-bz2 \
 		--enable-ctype \
 		--with-db4 \
+		--with-qdbm=/usr \
 		--without-gdbm \
 		--with-iconv \
 		--enable-exif \
