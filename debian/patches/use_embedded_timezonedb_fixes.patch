@@ -1,0 +1,18 @@
+Author: Sean Finney <seanius@debian.org>
+Forwarded: no (upstream doesn't want it)
+Description: Silence warnings about using the default system timezone info
+ In vanilla upstream php, this is considered an error (i.e. the user must
+ set the timezone explicitly), though with our use of the system timezonedb
+ patch, we actually feel quite comfortable using the default timezone info.
+Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=571762
+--- php.orig/ext/date/php_date.c
++++ php/ext/date/php_date.c
+@@ -883,7 +883,7 @@ static char* guess_timezone(const timeli
+ 			tzid = "UTC";
+ 		}
+ 		
+-		php_error_docref(NULL TSRMLS_CC, E_WARNING, DATE_TZ_ERRMSG "We selected '%s' for '%s/%.1f/%s' instead", tzid, ta ? ta->tm_zone : "Unknown", ta ? (float) (ta->tm_gmtoff / 3600) : 0, ta ? (ta->tm_isdst ? "DST" : "no DST") : "Unknown");
++		// php_error_docref(NULL TSRMLS_CC, E_WARNING, DATE_TZ_ERRMSG "We selected '%s' for '%s/%.1f/%s' instead", tzid, ta ? ta->tm_zone : "Unknown", ta ? (float) (ta->tm_gmtoff / 3600) : 0, ta ? (ta->tm_isdst ? "DST" : "no DST") : "Unknown");
+ 		return tzid;
+ 	}
+ #endif

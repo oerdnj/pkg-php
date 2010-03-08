@@ -48,3 +48,4 @@ filter_validate_int.patch
 zend_int_overflow.patch
 fix_filter_var_email_test.patch
 fix_var_dump_64bit.phpt.patch
+use_embedded_timezonedb_fixes.patch
