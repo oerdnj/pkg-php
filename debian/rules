@@ -161,11 +161,14 @@ ifeq (,$(findstring nocheck,$(DEB_BUILD_OPTIONS)))
 	extensions=""; \
 	for f in $(CURDIR)/apache2-build/modules/*.so; do \
 	    ext=`basename "$$f"`; \
+	    test -d "$(CURDIR)/ext/$${ext%.so}/tests" || continue; \
 	    test ! -f "$(CURDIR)/ext/$${ext%.so}/tests/config.inc" || continue; \
 	    test ! -f "$(CURDIR)/ext/$${ext%.so}/tests/README" || continue; \
-	    test "$${ext#pdo}" = "$$ext" || continue; \
-	    test "$$ext" = "sqlite.so" || continue; \
-	    test "$$ext" = "snmp.so" || continue; \
+	    test "$${ext#pdo}" = "$$ext" || test "$${ext#pdo}" = ".so" || continue; \
+	    test "$$ext" != "mysql.so" || continue; \
+	    test "$$ext" != "mysqli.so" || continue; \
+	    test "$$ext" != "snmp.so" || continue; \
+	    test "$$ext" != "interbase.so" || continue; \
 	    extensions="$$extensions -d extension=$$ext"; \
 	done; \
 	env NO_INTERACTION=1 TEST_PHP_CGI_EXECUTABLE=$(CURDIR)/cgi-build/sapi/cgi/cgi-bin.php5 TEST_PHP_EXECUTABLE=$(CURDIR)/cli-build/sapi/cli/php $(CURDIR)/cli-build/sapi/cli/php run-tests.php -d extension_dir=$(CURDIR)/apache2-build/modules/ $$extensions| tee test-results.txt
