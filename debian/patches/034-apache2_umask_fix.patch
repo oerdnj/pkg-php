@@ -7,9 +7,9 @@ Bug-Debian: http://bugs.debian.org/286225
 Forwarded: no
 Last-Update: 2010-01-18
 
---- pkg-php.orig/sapi/apache2handler/sapi_apache2.c
-+++ pkg-php/sapi/apache2handler/sapi_apache2.c
-@@ -448,6 +448,19 @@ static apr_status_t php_server_context_c
+--- a/sapi/apache2handler/sapi_apache2.c
++++ b/sapi/apache2handler/sapi_apache2.c
+@@ -455,6 +455,19 @@ static apr_status_t php_server_context_c
  	return APR_SUCCESS;
  }
  
@@ -29,7 +29,7 @@ Last-Update: 2010-01-18
  static int php_apache_request_ctor(request_rec *r, php_struct *ctx TSRMLS_DC)
  {
  	char *content_length;
-@@ -639,6 +652,8 @@ zend_first_try {
+@@ -646,6 +659,8 @@ zend_first_try {
  	} else {
  		zend_file_handle zfd;
  
@@ -38,7 +38,7 @@ Last-Update: 2010-01-18
  		zfd.type = ZEND_HANDLE_FILENAME;
  		zfd.filename = (char *) r->filename;
  		zfd.free_filename = 0;
-@@ -650,6 +665,9 @@ zend_first_try {
+@@ -657,6 +672,9 @@ zend_first_try {
  			zend_execute_scripts(ZEND_INCLUDE TSRMLS_CC, NULL, 1, &zfd);
  		}
  

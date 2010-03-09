@@ -7,7 +7,7 @@ Last-Update: 2010-01-18
 
 --- a/configure.in
 +++ b/configure.in
-@@ -1130,8 +1130,13 @@ dnl Build extension directory path
+@@ -1114,8 +1114,13 @@ dnl Build extension directory path
  
  ZEND_MODULE_API_NO=`$EGREP '#define ZEND_MODULE_API_NO ' $srcdir/Zend/zend_modules.h|$SED 's/#define ZEND_MODULE_API_NO //'`
  
@@ -22,7 +22,7 @@ Last-Update: 2010-01-18
    if test "$oldstyleextdir" = "yes"; then
      if test "$PHP_DEBUG" = "1"; then
        part1=debug
-@@ -1276,6 +1281,7 @@ PHP_SUBST(CXX)
+@@ -1265,6 +1270,7 @@ PHP_SUBST(CXX)
  PHP_SUBST(CXXFLAGS)
  PHP_SUBST(CXXFLAGS_CLEAN)
  PHP_SUBST_OLD(DEBUG_CFLAGS)

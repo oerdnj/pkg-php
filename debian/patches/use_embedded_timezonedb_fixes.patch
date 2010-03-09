@@ -5,9 +5,9 @@ Description: Silence warnings about using the default system timezone info
  set the timezone explicitly), though with our use of the system timezonedb
  patch, we actually feel quite comfortable using the default timezone info.
 Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=571762
---- php.orig/ext/date/php_date.c
-+++ php/ext/date/php_date.c
-@@ -883,7 +883,7 @@ static char* guess_timezone(const timeli
+--- a/ext/date/php_date.c
++++ b/ext/date/php_date.c
+@@ -879,7 +879,7 @@ static char* guess_timezone(const timeli
  			tzid = "UTC";
  		}
  		

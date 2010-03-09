@@ -3,21 +3,18 @@ Origin: vendor
 Forwarded: http://bugs.php.net/50796
 Last-Update: 2010-01-18
 
---- pkg-php.orig/ext/soap/tests/server009.phpt
-+++ pkg-php/ext/soap/tests/server009.phpt
-@@ -7,6 +7,10 @@ SOAP Server 9: setclass and setpersisten
- 		die('skip this test needs session extension');
- 	}
- ?>
-+--INI--
-+session.auto_start=1
-+session.save_handler=files
+--- a/ext/soap/tests/server009.phpt
++++ b/ext/soap/tests/server009.phpt
+@@ -10,6 +10,7 @@ SOAP Server 9: setclass and setpersisten
+ --INI--
+ session.auto_start=1
+ session.save_handler=files
 +session.save_path=temp_session_store
  --FILE--
  <?php
  class foo {
---- pkg-php.orig/ext/standard/tests/general_functions/phpinfo.phpt
-+++ pkg-php/ext/standard/tests/general_functions/phpinfo.phpt
+--- a/ext/standard/tests/general_functions/phpinfo.phpt
++++ b/ext/standard/tests/general_functions/phpinfo.phpt
 @@ -1,5 +1,7 @@
  --TEST--
  phpinfo()

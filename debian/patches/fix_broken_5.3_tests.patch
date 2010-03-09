@@ -15,45 +15,9 @@ Description: Fix another small batch of broken test cases
    variable hardcoded to 9 instead.  Did i mention that this test is
    sketchy?
 Origin: vendor
---- php.orig/ext/standard/tests/php_ini_loaded_file.phpt
-+++ /dev/null
-@@ -1,13 +0,0 @@
----TEST--
--Check the php_ini_loaded_file() function. No file is loaded in test, so false ins returned
----CREDITS--
--Sebastian Schürmann
--sschuermann@chip.de
--Testfest 2009 Munich
----FILE--
--<?php
--var_dump(php_ini_loaded_file());
--?>
----EXPECT--
--bool(false)
--
---- php.orig/sapi/cli/tests/006.phpt
-+++ php/sapi/cli/tests/006.phpt
-@@ -79,7 +79,7 @@ string(%d) "Extension [ <persistent> ext
-       - Parameters [5] {
-         Parameter #0 [ <required> $regex ]
-         Parameter #1 [ <required> $replace ]
--        Parameter #2 [ <optional> $subject ]
-+        Parameter #2 [ <required> $subject ]
-         Parameter #3 [ <optional> $limit ]
-         Parameter #4 [ <optional> &$count ]
-       }
-@@ -99,7 +99,7 @@ string(%d) "Extension [ <persistent> ext
-       - Parameters [5] {
-         Parameter #0 [ <required> $regex ]
-         Parameter #1 [ <required> $replace ]
--        Parameter #2 [ <optional> $subject ]
-+        Parameter #2 [ <required> $subject ]
-         Parameter #3 [ <optional> $limit ]
-         Parameter #4 [ <optional> &$count ]
-       }
---- php.orig/ext/posix/tests/posix_errno_variation2.phpt
-+++ php/ext/posix/tests/posix_errno_variation2.phpt
-@@ -20,7 +20,9 @@ do {
+--- a/ext/posix/tests/posix_errno_variation2.phpt
++++ b/ext/posix/tests/posix_errno_variation2.phpt
+@@ -21,7 +21,9 @@ do {
    $result = shell_exec("ps -p " . $pid);
  } while (strstr($pid, $result)); 
  
@@ -64,3 +28,18 @@ Origin: vendor
  var_dump(posix_errno());
  
  ?>
+--- a/ext/standard/tests/php_ini_loaded_file.phpt
++++ /dev/null
+@@ -1,12 +0,0 @@
+---TEST--
+-Check the php_ini_loaded_file() function. No file is loaded in test, so false ins returned
+---CREDITS--
+-Sebastian Schürmann
+-sschuermann@chip.de
+-Testfest 2009 Munich
+---FILE--
+-<?php
+-var_dump(php_ini_loaded_file());
+-?>
+---EXPECTF--
+-string(%d) "%s/tmp-php.ini"

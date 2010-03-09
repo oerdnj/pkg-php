@@ -4,9 +4,9 @@ Description: Fix two failing tests
  * ext/posix/tests/posix_uname_basic.phpt: backported fix from upstream.
 Bug: http://bugs.php.net/bug.php?id=50982
 Bug-Debian: http://bugs.debian.org/570286
---- php.orig/ext/posix/tests/posix_uname.phpt
+--- a/ext/posix/tests/posix_uname.phpt
 +++ /dev/null
-@@ -1,33 +0,0 @@
+@@ -1,35 +0,0 @@
 ---TEST--
 -Test posix_uname()
 ---DESCRIPTION--
@@ -23,7 +23,9 @@ Bug-Debian: http://bugs.debian.org/570286
 -?>
 ---FILE--
 -<?php
--    var_dump(posix_uname());
+-    $uname = posix_uname();
+-    unset($uname['domainname']);
+-    var_dump($uname);
 -?>
 -===DONE===
 ---EXPECTF--
@@ -40,17 +42,8 @@ Bug-Debian: http://bugs.debian.org/570286
 -  string(%d) "%s"
 -}
 -===DONE===
---- php.orig/ext/posix/tests/posix_uname_basic.phpt
-+++ php/ext/posix/tests/posix_uname_basic.phpt
-@@ -9,7 +9,7 @@ Test posix_uname() function : basic func
-   echo "Basic test of POSIX uname function\n"; 
-   	
-   $uname = posix_uname();  
--  
-+  unset($uname['domainname']); 
-   print_r($uname);
-   
- ?>
+--- a/ext/posix/tests/posix_uname_basic.phpt
++++ b/ext/posix/tests/posix_uname_basic.phpt
 @@ -25,4 +25,4 @@ Array
      [machine] => %s
  )

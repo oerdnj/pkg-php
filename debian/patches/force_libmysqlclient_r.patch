@@ -6,9 +6,9 @@ Origin: other, http://bugs.debian.org/469081
 Forwarded: not-needed
 Last-Update: 2010-01-18
 
---- pkg-php.orig/ext/mysql/config.m4
-+++ pkg-php/ext/mysql/config.m4
-@@ -90,7 +90,7 @@ elif test "$PHP_MYSQL" != "no"; then
+--- a/ext/mysql/config.m4
++++ b/ext/mysql/config.m4
+@@ -78,7 +78,7 @@ elif test "$PHP_MYSQL" != "no"; then
  Note that the MySQL client library is not bundled anymore!])
    fi
  
@@ -17,8 +17,8 @@ Last-Update: 2010-01-18
      MYSQL_LIBNAME=mysqlclient_r
    else
      MYSQL_LIBNAME=mysqlclient
---- pkg-php.orig/ext/mysqli/config.m4
-+++ pkg-php/ext/mysqli/config.m4
+--- a/ext/mysqli/config.m4
++++ b/ext/mysqli/config.m4
 @@ -29,7 +29,7 @@ elif test "$PHP_MYSQLI" != "no"; then
      MYSQL_LIB_CFG='--libmysqld-libs'
      dnl mysqlnd doesn't support embedded, so we have to add some extra stuff
@@ -28,12 +28,12 @@ Last-Update: 2010-01-18
      MYSQL_LIB_CFG='--libs_r'
      MYSQL_LIB_NAME='mysqlclient_r'
    else
---- pkg-php.orig/ext/pdo_mysql/config.m4
-+++ pkg-php/ext/pdo_mysql/config.m4
-@@ -68,7 +68,7 @@ if test "$PHP_PDO_MYSQL" != "no"; then
+--- a/ext/pdo_mysql/config.m4
++++ b/ext/pdo_mysql/config.m4
+@@ -64,7 +64,7 @@ if test "$PHP_PDO_MYSQL" != "no"; then
+       if test "x$SED" = "x"; then
          AC_PATH_PROG(SED, sed)
        fi
- 
 -      if test "$enable_maintainer_zts" = "yes"; then
 +      if true || test "$enable_maintainer_zts" = "yes"; then
          PDO_MYSQL_LIBNAME=mysqlclient_r

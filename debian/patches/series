@@ -36,7 +36,6 @@ mssql-null-exception.patch
 sybase-alias.patch
 strcmp_null-OnUpdateErrorLog.patch
 #deprecate_short_open_tag
-ref-converted-to-value-in-_call.patch
 unaligned_memory_access.patch
 fix_broken_5.3_tests.patch
 dont-gitclean-in-build.patch
@@ -45,6 +44,5 @@ shtool_mkdir_-p_-race-condition.patch
 qdbm-is-usr_include_qdbm.patch
 filter_validate_int.patch
 zend_int_overflow.patch
-fix_filter_var_email_test.patch
 fix_var_dump_64bit.phpt.patch
 use_embedded_timezonedb_fixes.patch

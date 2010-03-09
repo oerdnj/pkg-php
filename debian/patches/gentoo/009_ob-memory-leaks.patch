@@ -5,7 +5,7 @@ Fixed memory leak in ob_get_clean/ob_get_flush.
 
 --- a/main/output.c
 +++ b/main/output.c
-@@ -812,10 +812,12 @@ PHP_FUNCTION(ob_end_flush)
+@@ -816,10 +816,12 @@ PHP_FUNCTION(ob_end_flush)
  	
  	if (!OG(ob_nesting_level)) {
  		php_error_docref("ref.outcontrol" TSRMLS_CC, E_NOTICE, "failed to delete and flush buffer. No buffer to delete or flush.");
@@ -18,7 +18,7 @@ Fixed memory leak in ob_get_clean/ob_get_flush.
  		RETURN_FALSE;
  	}
  	
-@@ -834,10 +836,12 @@ PHP_FUNCTION(ob_end_clean)
+@@ -838,10 +840,12 @@ PHP_FUNCTION(ob_end_clean)
  		
  	if (!OG(ob_nesting_level)) {
  		php_error_docref("ref.outcontrol" TSRMLS_CC, E_NOTICE, "failed to delete buffer. No buffer to delete.");
