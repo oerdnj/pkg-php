@@ -1,3 +1,28 @@
+php5 (5.3.2-1) unstable; urgency=low
+
+  [ Sean Finney ]
+  * Fix improper signed overflow detection in filter extension (Closes:
+    #570287)
+  * Another integer overflow/underflow logic fix. (Closes: #570144)
+  * new debian patch fix_filter_var_email_test.patch (Closes: #571764)
+  * New debian patch fix_var_dump_64bit.phpt.patch (Closes: #571772)
+
+  [ Raphael Geissert ]
+  * Build with qdbm support
+
+  [ Sean Finney ]
+  * New debian patch use_embedded_timezonedb_fixes.patch (Closes:
+    #571762)
+
+  [ Ondřej Surý ]
+  * New Upstream version 5.3.2 (Closes: #557546, #572561)
+  * Updated suhosin patch to 0.9.9.1 version.
+  * Removed debian/patches/suhosin_page_size_fixes.patch. (Closes:
+    #571974)
+  * Adapt debian patches to 5.3.2.
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 09 Mar 2010 12:53:14 +0100
+
 php5 (5.3.1-5) unstable; urgency=low
 
   [ Sean Finney ]
