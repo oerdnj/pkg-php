@@ -16,12 +16,16 @@ php5 (5.3.2-1) unstable; urgency=low
 
   [ Ondřej Surý ]
   * New Upstream version 5.3.2 (Closes: #557546, #572561)
+  * Adapt debian patches to 5.3.2.
   * Updated suhosin patch to 0.9.9.1 version.
   * Removed debian/patches/suhosin_page_size_fixes.patch. (Closes:
     #571974)
-  * Adapt debian patches to 5.3.2.
+  * Always use system crypt() function
+    - New debian patch always_use_system_crypt.patch (Closes: #572601)
+  * Fix broken SHA-2 family tests in crypt() function
+    - New debian patch fix_broken_sha2_test.patch
 
- -- Ondřej Surý <ondrej@debian.org>  Tue, 09 Mar 2010 12:53:14 +0100
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 09 Mar 2010 15:27:27 +0100
 
 php5 (5.3.1-5) unstable; urgency=low
 
