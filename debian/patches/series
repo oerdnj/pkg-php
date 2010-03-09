@@ -47,4 +47,4 @@ zend_int_overflow.patch
 fix_var_dump_64bit.phpt.patch
 use_embedded_timezonedb_fixes.patch
 fix_broken_sha2_test.patch
-always_use_system_crypt.patch
+php_crypt_revamped.patch
