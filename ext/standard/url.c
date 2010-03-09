@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -15,7 +15,7 @@
    | Author: Jim Winstead <jimw@php.net>                                  |
    +----------------------------------------------------------------------+
  */
-/* $Id: url.c 272370 2008-12-31 11:15:49Z sebastian $ */
+/* $Id: url.c 293036 2010-01-03 09:23:27Z sebastian $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -201,10 +201,21 @@ PHPAPI php_url *php_url_parse_ex(char const *str, int length)
 	e = ue;
 	
 	if (!(p = memchr(s, '/', (ue - s)))) {
-		if ((p = memchr(s, '?', (ue - s)))) {
-			e = p;
-		} else if ((p = memchr(s, '#', (ue - s)))) {
-			e = p;
+		char *query, *fragment;
+
+		query = memchr(s, '?', (ue - s));
+		fragment = memchr(s, '#', (ue - s));
+
+		if (query && fragment) {
+			if (query > fragment) {
+				p = e = fragment;
+			} else {
+				p = e = query;
+			}
+		} else if (query) {
+			p = e = query;
+		} else if (fragment) {
+			p = e = fragment;
 		}
 	} else {
 		e = p;
@@ -285,10 +296,10 @@ PHPAPI php_url *php_url_parse_ex(char const *str, int length)
 	
 	if ((p = memchr(s, '?', (ue - s)))) {
 		pp = strchr(s, '#');
-		
+
 		if (pp && pp < p) {
 			p = pp;
-			pp = strchr(pp+2, '#');
+			goto label_parse;
 		}
 	
 		if (p - s) {

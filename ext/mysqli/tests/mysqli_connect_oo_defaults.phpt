@@ -5,11 +5,15 @@ new mysqli()
 <?php require_once('skipifemb.inc'); ?>
 --FILE--
 <?php
-	include "connect.inc";
+	require_once("connect.inc");
 
 	$tmp    = NULL;
 	$link   = NULL;
-	ini_set('mysqli.default_socket', 'socket');
+
+	if ($socket != "")
+		/* mysqli.default_socket requires non-empty string */
+		ini_set('mysqli.default_socket', 'socket');
+
 	ini_set('mysqli.default_port', 9999);
 	ini_set('mysqli.default_pw', 'password');
 	ini_set('mysqli.default_user', 'user');
@@ -18,21 +22,28 @@ new mysqli()
 	mysqli_report(MYSQLI_REPORT_OFF);
 	mysqli_report(MYSQLI_REPORT_STRICT);
 
-	ini_set('mysqli.default_socket', $socket);
-	try {
-		$mysqli = mysqli_init();
-		$mysqli->real_connect($host, $user, $passwd, $db, $port);
+	if ($socket != "") {
+		ini_set('mysqli.default_socket', $socket);
+		try {
+			$mysqli = mysqli_init();
+			$mysqli->real_connect($host, $user, $passwd, $db, $port);
 
-		if (!$res = $mysqli->query("SELECT 'mysqli.default_socket' AS testing"))
-			printf("[001] [%d] %s\n", $mysqli->errno, $mysqli->error);
-		var_dump($res->fetch_assoc());
-		$res->free_result();
+			if (!$res = $mysqli->query("SELECT 'mysqli.default_socket' AS testing"))
+				printf("[001] [%d] %s\n", $mysqli->errno, $mysqli->error);
+			$tmp = $res->fetch_assoc();
+			$res->free_result();
 
-		$mysqli->close();
+			if (!isset($tmp['testing']) || $tmp['testing'] != $socket) {
+				printf("[002] mysqli.default_socket not properly set?\n");
+				var_dump($tmp);
+			}
 
-	} catch (mysqli_sql_exception $e) {
-		printf("%s\n", $e->getMessage());
-		printf("[002] Usage of mysqli.default_socket failed\n");
+			$mysqli->close();
+
+		} catch (mysqli_sql_exception $e) {
+			printf("%s\n", $e->getMessage());
+			printf("[002] Usage of mysqli.default_socket failed\n");
+		}
 	}
 
 	ini_set('mysqli.default_port', $port);
@@ -143,10 +154,6 @@ new mysqli()
 	print "done!";
 ?>
 --EXPECTF--
-array(1) {
-  [%u|b%"testing"]=>
-  %unicode|string%(21) "mysqli.default_socket"
-}
 array(1) {
   [%u|b%"testing"]=>
   %unicode|string%(19) "mysqli.default_port"

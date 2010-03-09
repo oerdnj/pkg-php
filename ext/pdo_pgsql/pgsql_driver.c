@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2009 The PHP Group                                |
+  | Copyright (c) 1997-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pgsql_driver.c 279604 2009-04-30 12:56:00Z mbeccati $ */
+/* $Id: pgsql_driver.c 294444 2010-02-03 19:48:04Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -87,7 +87,7 @@ int _pdo_pgsql_error(pdo_dbh_t *dbh, pdo_stmt_t *stmt, int errcode, const char *
 	}
 
 	if (!dbh->methods) {
-		zend_throw_exception_ex(php_pdo_get_exception(), 0 TSRMLS_CC, "SQLSTATE[%s] [%d] %s",
+		zend_throw_exception_ex(php_pdo_get_exception(), einfo->errcode TSRMLS_CC, "SQLSTATE[%s] [%d] %s",
 				*pdo_err, einfo->errcode, einfo->errmsg);
 	}
 	
@@ -232,22 +232,20 @@ static int pgsql_handle_preparer(pdo_dbh_t *dbh, const char *sql, long sql_len, 
 		if (S->cursor_name) {
 			efree(S->cursor_name);
 		}
-		spprintf(&S->cursor_name, 0, "pdo_crsr_%016lx", (unsigned long) stmt);
+		spprintf(&S->cursor_name, 0, "pdo_crsr_%08x", ++H->stmt_counter);
 #if HAVE_PQPREPARE
 		emulate = 1;
 #endif
 	}
 
 #if HAVE_PQPREPARE
-
 	else if (driver_options) {
-		if (pdo_attr_lval(driver_options,
-				PDO_PGSQL_ATTR_DISABLE_NATIVE_PREPARED_STATEMENT, 0 TSRMLS_CC) == 1) {
-			emulate = 1;
-		} else if (pdo_attr_lval(driver_options, PDO_ATTR_EMULATE_PREPARES,
-				0 TSRMLS_CC) == 1) {
+		if (pdo_attr_lval(driver_options, PDO_PGSQL_ATTR_DISABLE_NATIVE_PREPARED_STATEMENT, H->disable_native_prepares TSRMLS_CC) == 1 ||
+			pdo_attr_lval(driver_options, PDO_ATTR_EMULATE_PREPARES, H->emulate_prepares TSRMLS_CC) == 1) {
 			emulate = 1;
 		}
+	} else {
+		emulate = H->disable_native_prepares || H->emulate_prepares;
 	}
 
 	if (!emulate && PQprotocolVersion(H->server) > 2) {
@@ -264,7 +262,7 @@ static int pgsql_handle_preparer(pdo_dbh_t *dbh, const char *sql, long sql_len, 
 			return 0;
 		}
 
-		spprintf(&S->stmt_name, 0, "pdo_stmt_%016lx", (unsigned long)stmt);
+		spprintf(&S->stmt_name, 0, "pdo_stmt_%08x", ++H->stmt_counter);
 		/* that's all for now; we'll defer the actual prepare until the first execute call */
 	
 		if (nsql) {
@@ -625,7 +623,21 @@ static const zend_function_entry *pdo_pgsql_get_driver_methods(pdo_dbh_t *dbh, i
 
 static int pdo_pgsql_set_attr(pdo_dbh_t *dbh, long attr, zval *val TSRMLS_DC)
 {
-	return 0;
+	pdo_pgsql_db_handle *H = (pdo_pgsql_db_handle *)dbh->driver_data;
+
+	switch (attr) {
+#if HAVE_PQPREPARE
+		case PDO_ATTR_EMULATE_PREPARES:
+			H->emulate_prepares = Z_LVAL_P(val);
+			return 1;
+		case PDO_PGSQL_ATTR_DISABLE_NATIVE_PREPARED_STATEMENT:
+			H->disable_native_prepares = Z_LVAL_P(val);
+			return 1;
+#endif
+
+		default:
+			return 0;
+	}
 }
 
 static struct pdo_dbh_methods pgsql_methods = {

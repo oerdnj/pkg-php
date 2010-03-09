@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -22,7 +22,7 @@
 #ifndef PHP_SOCKETS_H
 #define PHP_SOCKETS_H
 
-/* $Id: php_sockets.h 289417 2009-10-09 14:22:29Z pajoye $ */
+/* $Id: php_sockets.h 294029 2010-01-25 23:12:42Z johannes $ */
 
 #if HAVE_SOCKETS
 
@@ -94,6 +94,8 @@ struct	sockaddr_un {
 #endif
 
 PHP_SOCKETS_API int php_sockets_le_socket(void);
+
+#define php_sockets_le_socket_name "Socket"
 
 /* Prototypes */
 #ifdef ilia_0 /* not needed, only causes a compiler warning */

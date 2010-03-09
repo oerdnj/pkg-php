@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: sqlite3.c 281793 2009-06-08 02:15:54Z scottmac $ */
+/* $Id: sqlite3.c 293036 2010-01-03 09:23:27Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -851,9 +851,7 @@ PHP_METHOD(sqlite3, createFunction)
 		func->func_name = estrdup(sql_func);
 
 		MAKE_STD_ZVAL(func->func);
-		*(func->func) = *callback_func;
-		zval_copy_ctor(func->func);
-		INIT_PZVAL(func->func);
+		MAKE_COPY_ZVAL(&callback_func, func->func);
 
 		func->argc = sql_func_num_args;
 		func->next = db_obj->funcs;
@@ -910,14 +908,10 @@ PHP_METHOD(sqlite3, createAggregate)
 		func->func_name = estrdup(sql_func);
 
 		MAKE_STD_ZVAL(func->step);
-		*(func->step) = *step_callback;
-		zval_copy_ctor(func->step);
-		INIT_PZVAL(func->step);
+		MAKE_COPY_ZVAL(&step_callback, func->step);
 
 		MAKE_STD_ZVAL(func->fini);
-		*(func->fini) = *fini_callback;
-		zval_copy_ctor(func->fini);
-		INIT_PZVAL(func->fini);
+		MAKE_COPY_ZVAL(&fini_callback, func->fini);
 
 		func->argc = sql_func_num_args;
 		func->next = db_obj->funcs;

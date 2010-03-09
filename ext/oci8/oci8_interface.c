@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -25,7 +25,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: oci8_interface.c 276933 2009-03-09 20:20:07Z sixd $ */
+/* $Id: oci8_interface.c 294441 2010-02-03 19:37:35Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1066,9 +1066,7 @@ PHP_FUNCTION(oci_rollback)
 	PHP_OCI_ZVAL_TO_CONNECTION(z_connection, connection);
 
 	if (connection->descriptors) {
-		zend_hash_destroy(connection->descriptors);
-		efree(connection->descriptors);
-		connection->descriptors = NULL;
+		php_oci_connection_descriptors_free(connection TSRMLS_CC);
 	}
 
 	if (php_oci_connection_rollback(connection TSRMLS_CC)) {
@@ -1092,9 +1090,7 @@ PHP_FUNCTION(oci_commit)
 	PHP_OCI_ZVAL_TO_CONNECTION(z_connection, connection);
 
 	if (connection->descriptors) {
-		zend_hash_destroy(connection->descriptors);
-		efree(connection->descriptors);
-		connection->descriptors = NULL;
+		php_oci_connection_descriptors_free(connection TSRMLS_CC);
 	}
 	
 	if (php_oci_connection_commit(connection TSRMLS_CC)) {
@@ -1584,7 +1580,7 @@ PHP_FUNCTION(oci_pconnect)
    Return the last error of stmt|connection|global. If no error happened returns false. */
 PHP_FUNCTION(oci_error)
 {
-	zval *arg;
+	zval *arg = NULL;
 	php_oci_statement *statement;
 	php_oci_connection *connection;
 	text *errbuf;
@@ -1716,12 +1712,162 @@ PHP_FUNCTION(oci_set_prefetch)
 }
 /* }}} */
 
+/* {{{ proto bool oci_set_client_identifier(resource connection, string value)
+  Sets the client identifier attribute on the connection */
+PHP_FUNCTION(oci_set_client_identifier)
+{
+	zval *z_connection;
+	php_oci_connection *connection;
+	char *client_id;
+	long client_id_len;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &z_connection, &client_id, &client_id_len) == FAILURE) {
+		return;
+	}
+
+	PHP_OCI_ZVAL_TO_CONNECTION(z_connection, connection);
+
+	PHP_OCI_CALL_RETURN(OCI_G(errcode), OCIAttrSet, ((dvoid *) connection->session, (ub4) OCI_HTYPE_SESSION, (dvoid *) client_id, (ub4) client_id_len, (ub4) OCI_ATTR_CLIENT_IDENTIFIER, OCI_G(err)));
+
+	if (OCI_G(errcode) != OCI_SUCCESS) {
+		php_oci_error(OCI_G(err), OCI_G(errcode) TSRMLS_CC);
+		RETURN_FALSE;
+	}
+
+	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto bool oci_set_edition(string value)
+  Sets the edition attribute for all subsequent connections created */
+PHP_FUNCTION(oci_set_edition)
+{
+#if ((OCI_MAJOR_VERSION > 11) || ((OCI_MAJOR_VERSION == 11) && (OCI_MINOR_VERSION >= 2)))
+	char *edition;
+	long edition_len;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &edition, &edition_len) == FAILURE) {
+		return;
+	}
+
+	if (OCI_G(edition)) {
+		efree(OCI_G(edition));
+		OCI_G(edition) = NULL;
+	}
+
+	if (edition) {
+		OCI_G(edition) = (char *)safe_emalloc(edition_len+1, sizeof(text), 0);
+		memcpy(OCI_G(edition), edition, edition_len);
+		OCI_G(edition)[edition_len] = '\0';
+	}
+
+	RETURN_TRUE;
+#else
+	php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Unsupported attribute type");
+	RETURN_FALSE;
+#endif
+}
+/* }}} */
+
+/* {{{ proto bool oci_set_module_name(resource connection, string value)
+  Sets the module attribute on the connection */
+PHP_FUNCTION(oci_set_module_name)
+{
+#if (OCI_MAJOR_VERSION >= 10)
+	zval *z_connection;
+	php_oci_connection *connection;
+	char *module;
+	long module_len;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &z_connection, &module, &module_len) == FAILURE) {
+		return;
+	}
+
+	PHP_OCI_ZVAL_TO_CONNECTION(z_connection, connection);
+
+	PHP_OCI_CALL_RETURN(OCI_G(errcode), OCIAttrSet, ((dvoid *) connection->session, (ub4) OCI_HTYPE_SESSION, (dvoid *) module, (ub4) module_len, (ub4) OCI_ATTR_MODULE, OCI_G(err)));
+
+	if (OCI_G(errcode) != OCI_SUCCESS) {
+		php_oci_error(OCI_G(err), OCI_G(errcode) TSRMLS_CC);
+		RETURN_FALSE;
+	}
+
+	RETURN_TRUE;
+#else
+	php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Unsupported attribute type");
+	RETURN_FALSE;
+#endif
+}
+/* }}} */
+
+/* {{{ proto bool oci_set_action(resource connection, string value)
+  Sets the action attribute on the connection */
+PHP_FUNCTION(oci_set_action)
+{
+#if (OCI_MAJOR_VERSION >= 10)
+	zval *z_connection;
+	php_oci_connection *connection;
+	char *action;
+	long action_len;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &z_connection, &action, &action_len) == FAILURE) {
+		return;
+	}
+
+	PHP_OCI_ZVAL_TO_CONNECTION(z_connection, connection);
+
+	PHP_OCI_CALL_RETURN(OCI_G(errcode), OCIAttrSet, ((dvoid *) connection->session, (ub4) OCI_HTYPE_SESSION, (dvoid *) action, (ub4) action_len, (ub4) OCI_ATTR_ACTION, OCI_G(err)));
+
+	if (OCI_G(errcode) != OCI_SUCCESS) {
+		php_oci_error(OCI_G(err), OCI_G(errcode) TSRMLS_CC);
+		RETURN_FALSE;
+	}
+
+	RETURN_TRUE;
+#else
+	php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Unsupported attribute type");
+	RETURN_FALSE;
+#endif
+}
+/* }}} */
+
+/* {{{ proto bool oci_set_client_info(resource connection, string value)
+  Sets the client info attribute on the connection */
+PHP_FUNCTION(oci_set_client_info)
+{
+#if (OCI_MAJOR_VERSION >= 10)
+	zval *z_connection;
+	php_oci_connection *connection;
+	char *client_info;
+	long client_info_len;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &z_connection, &client_info, &client_info_len) == FAILURE) {
+		return;
+	}
+
+	PHP_OCI_ZVAL_TO_CONNECTION(z_connection, connection);
+
+	PHP_OCI_CALL_RETURN(OCI_G(errcode), OCIAttrSet, ((dvoid *) connection->session, (ub4) OCI_HTYPE_SESSION, (dvoid *) client_info, (ub4) client_info_len, (ub4) OCI_ATTR_CLIENT_INFO, OCI_G(err)));
+
+	if (OCI_G(errcode) != OCI_SUCCESS) {
+		php_oci_error(OCI_G(err), OCI_G(errcode) TSRMLS_CC);
+		RETURN_FALSE;
+	}
+
+	RETURN_TRUE;
+#else
+	php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Unsupported attribute type");
+	RETURN_FALSE;
+#endif
+}
+/* }}} */
+
 /* {{{ proto bool oci_password_change(resource connection, string username, string old_password, string new_password)
   Changes the password of an account */
 PHP_FUNCTION(oci_password_change)
 {
 	zval *z_connection;
-	text *user, *pass_old, *pass_new, *dbname;
+	char *user, *pass_old, *pass_new, *dbname;
 	int user_len, pass_old_len, pass_new_len, dbname_len;
 	php_oci_connection *connection;
 
@@ -1747,7 +1893,7 @@ PHP_FUNCTION(oci_password_change)
 			RETURN_FALSE;
 		}
 
-		if (php_oci_password_change(connection, (char *)user, user_len, (char *)pass_old, pass_old_len, (char *)pass_new, pass_new_len TSRMLS_CC)) {
+		if (php_oci_password_change(connection, user, user_len, pass_old, pass_old_len, pass_new, pass_new_len TSRMLS_CC)) {
 			RETURN_FALSE;
 		}
 		RETURN_TRUE;
@@ -1766,7 +1912,7 @@ PHP_FUNCTION(oci_password_change)
 			RETURN_FALSE;
 		}
 
-		connection = php_oci_do_connect_ex((char *)user, user_len, (char *)pass_old, pass_old_len, (char *)pass_new, pass_new_len, (char *)dbname, dbname_len, NULL, OCI_DEFAULT, 0, 0 TSRMLS_CC);
+		connection = php_oci_do_connect_ex(user, user_len, pass_old, pass_old_len, pass_new, pass_new_len, dbname, dbname_len, NULL, OCI_DEFAULT, 0, 0 TSRMLS_CC);
 		if (!connection) {
 			RETURN_FALSE;
 		}

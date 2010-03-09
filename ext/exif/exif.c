@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: exif.c 287372 2009-08-16 14:32:32Z iliaa $ */
+/* $Id: exif.c 293036 2010-01-03 09:23:27Z sebastian $ */
 
 /*  ToDos
  *
@@ -138,7 +138,7 @@ const zend_function_entry exif_functions[] = {
 };
 /* }}} */
 
-#define EXIF_VERSION "1.4 $Id: exif.c 287372 2009-08-16 14:32:32Z iliaa $"
+#define EXIF_VERSION "1.4 $Id: exif.c 293036 2010-01-03 09:23:27Z sebastian $"
 
 /* {{{ PHP_MINFO_FUNCTION
  */
@@ -3876,11 +3876,7 @@ static int exif_read_file(image_info_type *ImageInfo, char *FileName, int read_t
 			}
 
 			/* Store file date/time. */
-#ifdef NETWARE
-			ImageInfo->FileDateTime = st.st_mtime.tv_sec;
-#else
 			ImageInfo->FileDateTime = st.st_mtime;
-#endif
 			ImageInfo->FileSize = st.st_size;
 			/*exif_error_docref(NULL EXIFERR_CC, ImageInfo, E_NOTICE, "Opened stream is file: %d", ImageInfo->FileSize);*/
 		}

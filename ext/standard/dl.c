@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: dl.c 286859 2009-08-06 01:33:54Z scottmac $ */
+/* $Id: dl.c 293036 2010-01-03 09:23:27Z sebastian $ */
 
 #include "php.h"
 #include "dl.h"
@@ -146,8 +146,18 @@ PHPAPI int php_load_extension(char *filename, int type, int start_now TSRMLS_DC)
 	/* load dynamic symbol */
 	handle = DL_LOAD(libpath);
 	if (!handle) {
+#if PHP_WIN32
+		char *err = GET_DL_ERROR();
+		if (err) {
+			php_error_docref(NULL TSRMLS_CC, error_type, "Unable to load dynamic library '%s' - %s", libpath, err);
+			LocalFree(err);
+		} else {
+			php_error_docref(NULL TSRMLS_CC, error_type, "Unable to load dynamic library '%s' - %s", libpath, "Unknown reason");
+		}
+#else
 		php_error_docref(NULL TSRMLS_CC, error_type, "Unable to load dynamic library '%s' - %s", libpath, GET_DL_ERROR());
 		GET_DL_ERROR(); /* free the buffer storing the error */
+#endif
 		efree(libpath);
 		return FAILURE;
 	}

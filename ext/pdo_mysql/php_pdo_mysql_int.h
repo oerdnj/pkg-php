@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2009 The PHP Group                                |
+  | Copyright (c) 1997-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_mysql_int.h 289630 2009-10-14 13:51:25Z johannes $ */
+/* $Id: php_pdo_mysql_int.h 294514 2010-02-04 09:37:38Z pajoye $ */
 
 #ifndef PHP_PDO_MYSQL_INT_H
 #define PHP_PDO_MYSQL_INT_H
@@ -61,10 +61,7 @@ static inline void PDO_DBG_ENTER(char *func_name) {}
 #include "ext/mysqlnd/mysqlnd_debug.h"
 #endif
 
-#ifdef PDO_USE_MYSQLND
 ZEND_BEGIN_MODULE_GLOBALS(pdo_mysql)
-	MYSQLND_THD_ZVAL_PCACHE *mysqlnd_thd_zval_cache;
-	long          cache_size;
 #ifndef PHP_WIN32
 	char          *default_socket;
 #endif
@@ -72,10 +69,15 @@ ZEND_BEGIN_MODULE_GLOBALS(pdo_mysql)
 	char          *debug; /* The actual string */
 	MYSQLND_DEBUG *dbg;	/* The DBG object */
 #endif
+#if defined(PHP_WIN32) && !PDO_DBG_ENABLED
+	/* dummy member so we get at least one member in the struct
+	 * and avoids build errors.
+	 */
+	void *dummymemmber;
+#endif
 ZEND_END_MODULE_GLOBALS(pdo_mysql)
 
-ZEND_EXTERN_MODULE_GLOBALS(pdo_mysql);
-#endif
+ZEND_EXTERN_MODULE_GLOBALS(pdo_mysql)
 
 #ifdef ZTS
 #define PDO_MYSQL_G(v) TSRMG(pdo_mysql_globals_id, zend_pdo_mysql_globals *, v)

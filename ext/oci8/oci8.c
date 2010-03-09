@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -26,7 +26,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: oci8.c 289423 2009-10-09 14:44:43Z pajoye $ */
+/* $Id: oci8.c 294447 2010-02-03 20:08:42Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -91,7 +91,7 @@ zend_class_entry *oci_coll_class_entry_ptr;
 #define SQLT_CFILEE 115
 #endif
 
-#define PHP_OCI_ERRBUF_LEN 512
+#define PHP_OCI_ERRBUF_LEN 1024
 
 #if ZEND_MODULE_API_NO > 20020429
 #define ONUPDATELONGFUNC OnUpdateLong
@@ -407,6 +407,30 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_oci_set_prefetch, 0, 0, 2)
 	ZEND_ARG_INFO(0, number_of_rows)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_oci_set_client_identifier, 0, 0, 2)
+	ZEND_ARG_INFO(0, connection_resource)
+	ZEND_ARG_INFO(0, client_identifier)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_oci_set_edition, 0, 0, 1)
+	ZEND_ARG_INFO(0, edition_name)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_oci_set_module_name, 0, 0, 2)
+	ZEND_ARG_INFO(0, connection_resource)
+	ZEND_ARG_INFO(0, module_name)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_oci_set_action, 0, 0, 2)
+	ZEND_ARG_INFO(0, connection_resource)
+	ZEND_ARG_INFO(0, action)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_oci_set_client_info, 0, 0, 2)
+	ZEND_ARG_INFO(0, connection_resource)
+	ZEND_ARG_INFO(0, client_information)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_oci_password_change, 0, 0, 4)
 	ZEND_ARG_INFO(0, connection_resource_or_connection_string)
 	ZEND_ARG_INFO(0, username)
@@ -649,6 +673,11 @@ static unsigned char arginfo_oci_bind_array_by_name[] = { 3, BYREF_NONE, BYREF_N
 #define arginfo_oci_num_fields							NULL
 #define arginfo_oci_parse								NULL
 #define arginfo_oci_set_prefetch						NULL
+#define arginfo_oci_set_client_identifier				NULL
+#define arginfo_oci_set_edition							NULL
+#define arginfo_oci_set_module_name						NULL
+#define arginfo_oci_set_action							NULL
+#define arginfo_oci_set_client_info						NULL
 #define arginfo_oci_password_change						NULL
 #define arginfo_oci_new_cursor							NULL
 #define arginfo_oci_result								NULL
@@ -736,6 +765,11 @@ PHP_FUNCTION(oci_server_version);
 PHP_FUNCTION(oci_statement_type);
 PHP_FUNCTION(oci_num_rows);
 PHP_FUNCTION(oci_set_prefetch);
+PHP_FUNCTION(oci_set_client_identifier);
+PHP_FUNCTION(oci_set_edition);
+PHP_FUNCTION(oci_set_module_name);
+PHP_FUNCTION(oci_set_action);
+PHP_FUNCTION(oci_set_client_info);
 PHP_FUNCTION(oci_password_change);
 PHP_FUNCTION(oci_lob_save);
 PHP_FUNCTION(oci_lob_import);
@@ -834,6 +868,11 @@ zend_function_entry php_oci_functions[] = {
 	PHP_FE(oci_rollback,				arginfo_oci_rollback)
 	PHP_FE(oci_new_descriptor,			arginfo_oci_new_descriptor)
 	PHP_FE(oci_set_prefetch,			arginfo_oci_set_prefetch)
+	PHP_FE(oci_set_client_identifier,	arginfo_oci_set_client_identifier)
+	PHP_FE(oci_set_edition,				arginfo_oci_set_edition)
+	PHP_FE(oci_set_module_name,			arginfo_oci_set_module_name)
+	PHP_FE(oci_set_action,				arginfo_oci_set_action)
+	PHP_FE(oci_set_client_info,			arginfo_oci_set_client_info)
 	PHP_FE(oci_password_change,			arginfo_oci_password_change)
 	PHP_FE(oci_free_collection,			arginfo_oci_free_collection)
 	PHP_FE(oci_collection_append,		arginfo_oci_collection_append)
@@ -1128,6 +1167,7 @@ PHP_MINIT_FUNCTION(oci)
 	REGISTER_LONG_CONSTANT("OCI_CRED_EXT",PHP_OCI_CRED_EXT, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("OCI_DESCRIBE_ONLY",OCI_DESCRIBE_ONLY, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("OCI_COMMIT_ON_SUCCESS",OCI_COMMIT_ON_SUCCESS, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("OCI_NO_AUTO_COMMIT",OCI_DEFAULT, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("OCI_EXACT_FETCH",OCI_EXACT_FETCH, CONST_CS | CONST_PERSISTENT);
 
 /* for $LOB->seek() */
@@ -1210,6 +1250,7 @@ PHP_RINIT_FUNCTION(oci)
 	OCI_G(debug_mode) = 0; /* start "fresh" */
 	OCI_G(num_links) = OCI_G(num_persistent);
 	OCI_G(errcode) = 0;
+	OCI_G(edition) = NULL;
 
 	return SUCCESS;
 }
@@ -1238,6 +1279,10 @@ PHP_RSHUTDOWN_FUNCTION(oci)
 	 */
 	zend_hash_apply(&EG(persistent_list), (apply_func_t) php_oci_persistent_helper TSRMLS_CC);
 
+	if (OCI_G(edition)) {
+		efree(OCI_G(edition));
+	}
+
 	return SUCCESS;
 }
 
@@ -1248,7 +1293,7 @@ PHP_MINFO_FUNCTION(oci)
 	php_info_print_table_start();
 	php_info_print_table_row(2, "OCI8 Support", "enabled");
 	php_info_print_table_row(2, "Version", PHP_OCI8_VERSION);
-	php_info_print_table_row(2, "Revision", "$Revision: 289423 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 294447 $");
 
 	snprintf(buf, sizeof(buf), "%ld", OCI_G(num_persistent));
 	php_info_print_table_row(2, "Active Persistent Connections", buf);
@@ -1485,23 +1530,21 @@ void php_oci_descriptor_flush_hash_dtor(void *data)
 }
 /* }}} */
 
-/* {{{ php_oci_descriptor_delete_from_hash()
- *
- * Delete descriptor from the hash
- */
-int php_oci_descriptor_delete_from_hash(void *data, void *id TSRMLS_DC)
-{
-	php_oci_descriptor *descriptor = *(php_oci_descriptor **)data;
-	int *desc_id = (int *) id;
+/* }}} */
 
-	if (descriptor && desc_id && descriptor->id == *desc_id) {
-		return 1;
-	}
-	return 0;
+/* {{{ php_oci_connection_descriptors_free()
+ *
+ * Free descriptors for a connection
+ */
+void php_oci_connection_descriptors_free(php_oci_connection *connection TSRMLS_DC)
+{
+	zend_hash_destroy(connection->descriptors);
+	efree(connection->descriptors);
+	connection->descriptors = NULL;
+	connection->descriptor_count = 0;
 }
 /* }}} */
 
-/* }}} */
 
 /* {{{ php_oci_error()
  *
@@ -1570,8 +1613,6 @@ sb4 php_oci_fetch_errmsg(OCIError *error_handle, text **error_buf TSRMLS_DC)
 {
 	sb4 error_code = 0;
 	text err_buf[PHP_OCI_ERRBUF_LEN];
-
-	err_buf[0] = '\0';
 
 	memset(err_buf, 0, sizeof(err_buf));
 	PHP_OCI_CALL(OCIErrorGet, (error_handle, (ub4)1, NULL, &error_code, err_buf, (ub4)PHP_OCI_ERRBUF_LEN, (ub4)OCI_HTYPE_ERROR));
@@ -1732,6 +1773,12 @@ php_oci_connection *php_oci_do_connect_ex(char *username, int username_len, char
 	/* DRCP: connection_class is an attribute of a connection */
 	if (OCI_G(connection_class)){
 		smart_str_appendl_ex(&hashed_details, OCI_G(connection_class), strlen(OCI_G(connection_class)), 0);
+	}
+	smart_str_appendl_ex(&hashed_details, "**", sizeof("**") - 1, 0);
+
+	/* Add edition attribute to the hash */
+	if (OCI_G(edition)){
+		smart_str_appendl_ex(&hashed_details, OCI_G(edition), strlen(OCI_G(edition)), 0);
 	}
 	smart_str_appendl_ex(&hashed_details, "**", sizeof("**") - 1, 0);
 
@@ -2220,9 +2267,7 @@ int php_oci_connection_release(php_oci_connection *connection TSRMLS_DC)
 	}
 
 	if (connection->descriptors) {
-		zend_hash_destroy(connection->descriptors);
-		efree(connection->descriptors);
-		connection->descriptors = NULL;
+		php_oci_connection_descriptors_free(connection TSRMLS_CC);
 	}
 
 	if (connection->svc) {
@@ -2555,6 +2600,7 @@ static php_oci_spool *php_oci_create_spool(char *username, int username_len, cha
 	php_oci_spool *session_pool = NULL;
 	zend_bool iserror = 0;
 	ub4 poolmode = OCI_DEFAULT;	/* Mode to be passed to OCISessionPoolCreate */
+	OCIAuthInfo *spoolAuth = NULL;
 
 	/*Allocate sessionpool out of persistent memory */
 	session_pool = (php_oci_spool *) calloc(1, sizeof(php_oci_spool));
@@ -2598,6 +2644,46 @@ static php_oci_spool *php_oci_create_spool(char *username, int username_len, cha
 	poolmode = OCI_SPC_HOMOGENEOUS;
 #endif
 
+#if ((OCI_MAJOR_VERSION > 11) || ((OCI_MAJOR_VERSION == 11) && (OCI_MINOR_VERSION >= 2)))
+	/* Allocate auth handle for session pool {{{ */
+	PHP_OCI_CALL_RETURN(OCI_G(errcode), OCIHandleAlloc, (session_pool->env, (dvoid **)&(spoolAuth), OCI_HTYPE_AUTHINFO, 0, NULL));
+
+	if (OCI_G(errcode) != OCI_SUCCESS) {
+		php_oci_error(OCI_G(err), OCI_G(errcode) TSRMLS_CC);
+		iserror = 1;
+		goto exit_create_spool;
+ 	} /* }}} */
+
+	/* Set the edition attribute on the auth handle {{{ */
+	if (OCI_G(edition)) {
+		PHP_OCI_CALL_RETURN(OCI_G(errcode),OCIAttrSet, ((dvoid *) spoolAuth, (ub4) OCI_HTYPE_AUTHINFO, (dvoid *) OCI_G(edition), (ub4)(strlen(OCI_G(edition))), (ub4)OCI_ATTR_EDITION, OCI_G(err)));
+
+		if (OCI_G(errcode) != OCI_SUCCESS) {
+			php_oci_error(OCI_G(err), OCI_G(errcode) TSRMLS_CC);
+			iserror = 1;
+			goto exit_create_spool;
+		}
+	} /* }}} */
+
+	/* Set the driver name attribute on the auth handle {{{ */
+	PHP_OCI_CALL_RETURN(OCI_G(errcode), OCIAttrSet, ((dvoid *) spoolAuth, (ub4) OCI_HTYPE_AUTHINFO, (dvoid *) PHP_OCI8_DRIVER_NAME, (ub4) sizeof(PHP_OCI8_DRIVER_NAME)-1, (ub4) OCI_ATTR_DRIVER_NAME, OCI_G(err)));
+
+	if (OCI_G(errcode) != OCI_SUCCESS) {
+		php_oci_error(OCI_G(err), OCI_G(errcode) TSRMLS_CC);
+		iserror = 1;
+		goto exit_create_spool;
+	} /* }}} */
+
+	/* Set the auth handle on the session pool {{{ */
+	PHP_OCI_CALL_RETURN(OCI_G(errcode),OCIAttrSet, ((dvoid *) (session_pool->poolh),(ub4) OCI_HTYPE_SPOOL, (dvoid *) spoolAuth, (ub4)0, (ub4)OCI_ATTR_SPOOL_AUTH, OCI_G(err)));
+
+	if (OCI_G(errcode) != OCI_SUCCESS) {
+		php_oci_error(OCI_G(err), OCI_G(errcode) TSRMLS_CC);
+		iserror = 1;
+		goto exit_create_spool;
+	} /* }}} */
+#endif
+
 	/* Create the homogeneous session pool - We have different session pools for every different
 	 * username, password, charset and dbname.
 	 */
@@ -2628,6 +2714,10 @@ exit_create_spool:
 		session_pool = NULL;
 	}
 
+	if (spoolAuth) {
+		PHP_OCI_CALL(OCIHandleFree, ((dvoid *) spoolAuth, (ub4) OCI_HTYPE_AUTHINFO));
+	}
+
 	if (OCI_G(debug_mode)) {
 		php_printf ("OCI8 DEBUG L1: create_spool: (%p) at (%s:%d) \n", session_pool, __FILE__, __LINE__);
 	}
@@ -2652,6 +2742,11 @@ static php_oci_spool *php_oci_get_spool(char *username, int username_len, char *
 	smart_str_appendl_ex(&spool_hashed_details, "oci8spool***", sizeof("oci8spool***") - 1, 0);
 	smart_str_appendl_ex(&spool_hashed_details, username, username_len, 0);
 	smart_str_appendl_ex(&spool_hashed_details, "**", sizeof("**") - 1, 0);
+	/* Add edition attribute to the hash */
+	if (OCI_G(edition)){
+		smart_str_appendl_ex(&spool_hashed_details, OCI_G(edition), strlen(OCI_G(edition)), 0);
+	}
+	smart_str_appendl_ex(&spool_hashed_details, "**", sizeof("**") - 1, 0);
 	if (password_len) {
 		ulong password_hash;
 		password_hash = zend_inline_hash_func(password, password_len);
@@ -2666,7 +2761,7 @@ static php_oci_spool *php_oci_get_spool(char *username, int username_len, char *
 
 	smart_str_append_unsigned_ex(&spool_hashed_details, charsetid, 0);
 
-	/* Session Pool Hash Key : oci8spool***username**hashedpassword**dbname**charset */
+	/* Session Pool Hash Key : oci8spool***username**edition**hashedpassword**dbname**charset */
 
 	smart_str_0(&spool_hashed_details);
 	php_strtolower(spool_hashed_details.c, spool_hashed_details.len);
@@ -2802,6 +2897,28 @@ static int php_oci_old_create_session(php_oci_connection *connection, char *dbna
 			return 1;
 		}
 	}/* }}} */
+
+	/* Set the edition attribute on the session handle {{{ */
+#if ((OCI_MAJOR_VERSION > 11) || ((OCI_MAJOR_VERSION == 11) && (OCI_MINOR_VERSION >= 2)))
+	if (OCI_G(edition)) {
+		PHP_OCI_CALL_RETURN(OCI_G(errcode), OCIAttrSet, ((dvoid *) connection->session, (ub4) OCI_HTYPE_SESSION, (dvoid *) OCI_G(edition), (ub4) (strlen(OCI_G(edition))), (ub4) OCI_ATTR_EDITION, OCI_G(err)));
+
+		if (OCI_G(errcode) != OCI_SUCCESS) {
+			php_oci_error(OCI_G(err), OCI_G(errcode) TSRMLS_CC);
+			return 1;
+		}
+	}
+#endif /* }}} */
+
+	/* Set the driver name attribute on the session handle {{{ */
+#if (OCI_MAJOR_VERSION >= 11)
+	PHP_OCI_CALL_RETURN(OCI_G(errcode), OCIAttrSet, ((dvoid *) connection->session, (ub4) OCI_HTYPE_SESSION, (dvoid *) PHP_OCI8_DRIVER_NAME, (ub4) sizeof(PHP_OCI8_DRIVER_NAME)-1, (ub4) OCI_ATTR_DRIVER_NAME, OCI_G(err)));
+
+	if (OCI_G(errcode) != OCI_SUCCESS) {
+		php_oci_error(OCI_G(err), OCI_G(errcode) TSRMLS_CC);
+		return 1;
+	}
+#endif /* }}} */
 
 	/* Set the server handle in the service handle {{{ */
 	PHP_OCI_CALL_RETURN(OCI_G(errcode), OCIAttrSet, (connection->svc, OCI_HTYPE_SVCCTX, connection->server, 0, OCI_ATTR_SERVER, OCI_G(err)));

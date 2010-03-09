@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: winutil.c 272370 2008-12-31 11:15:49Z sebastian $ */
+/* $Id: winutil.c 294726 2010-02-07 20:45:46Z pajoye $ */
 
 #include "php.h"
 
@@ -30,4 +30,19 @@ PHPAPI char *php_win_err(int error)
 	);
 
 	return (buf ? (char *) buf : "");
+}
+
+int php_win32_check_trailing_space(const char * path, const int path_len) {
+	if (path_len < 1) {
+		return 1;
+	}
+	if (path) {
+		if (path[0] == ' ' || path[path_len - 1] == ' ') {
+			return 0;
+		} else {
+			return 1;
+		}
+	} else {
+		return 0;
+	}
 }

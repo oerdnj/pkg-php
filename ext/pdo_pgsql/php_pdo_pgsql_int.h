@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2009 The PHP Group                                |
+  | Copyright (c) 1997-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_pgsql_int.h 280407 2009-05-12 22:18:15Z mbeccati $ */
+/* $Id: php_pdo_pgsql_int.h 293036 2010-01-03 09:23:27Z sebastian $ */
 
 #ifndef PHP_PDO_PGSQL_INT_H
 #define PHP_PDO_PGSQL_INT_H
@@ -43,6 +43,14 @@ typedef struct {
 	unsigned 	_reserved:31;
 	pdo_pgsql_error_info	einfo;
 	Oid 		pgoid;
+#if HAVE_PQPREPARE
+	/* The following two variables have the same purpose. Unfortunately we need
+	   to keep track of two different attributes having the same effect.
+	   It might be worth to deprecate the driver specific one soon. */
+	int		emulate_prepares;
+	int		disable_native_prepares;
+#endif
+	unsigned int stmt_counter;
 } pdo_pgsql_db_handle;
 
 typedef struct {

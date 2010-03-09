@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2009 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2010 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_vm_def.h 290152 2009-11-02 18:11:33Z pajoye $ */
+/* $Id: zend_vm_def.h 293155 2010-01-05 20:46:53Z sebastian $ */
 
 /* If you change this file, please regenerate the zend_vm_execute.h and
  * zend_vm_opcodes.h files by running:
@@ -1100,7 +1100,7 @@ ZEND_VM_HANDLER(84, ZEND_FETCH_DIM_W, VAR|CV, CONST|TMP|VAR|UNUSED|CV)
 	FREE_OP1_VAR_PTR();
 
 	/* We are going to assign the result by reference */
-	if (opline->extended_value) {
+	if (opline->extended_value && EX_T(opline->result.u.var).var.ptr_ptr) {
 		Z_DELREF_PP(EX_T(opline->result.u.var).var.ptr_ptr);
 		SEPARATE_ZVAL_TO_MAKE_IS_REF(EX_T(opline->result.u.var).var.ptr_ptr);
 		Z_ADDREF_PP(EX_T(opline->result.u.var).var.ptr_ptr);
@@ -3691,7 +3691,7 @@ ZEND_VM_HANDLER(78, ZEND_FE_FETCH, VAR, ANY)
 {
 	zend_op *opline = EX(opline);
 	zend_free_op free_op1;
-	zval *array = GET_OP1_ZVAL_PTR(BP_VAR_R);
+	zval *array = EX_T(opline->op1.u.var).var.ptr;
 	zval **value;
 	char *str_key;
 	uint str_key_len;
@@ -3700,8 +3700,6 @@ ZEND_VM_HANDLER(78, ZEND_FE_FETCH, VAR, ANY)
 	zend_object_iterator *iter = NULL;
 	int key_type = 0;
 	zend_bool use_key = (zend_bool)(opline->extended_value & ZEND_FE_FETCH_WITH_KEY);
-
-	PZVAL_LOCK(array);
 
 	switch (zend_iterator_unwrap(array, &iter TSRMLS_CC)) {
 		default:
@@ -3915,7 +3913,7 @@ ZEND_VM_HELPER_EX(zend_isset_isempty_dim_prop_obj_handler, VAR|UNUSED|CV, CONST|
 		zend_free_op free_op2;
 		zval *offset = GET_OP2_ZVAL_PTR(BP_VAR_R);
 
-		if (Z_TYPE_PP(container) == IS_ARRAY) {
+		if (Z_TYPE_PP(container) == IS_ARRAY && !prop_dim) {
 			HashTable *ht;
 			int isset = 0;
 

@@ -59,10 +59,6 @@ if (MySQLPDOTest::isPDOMySQLnd())
 					$tmp, gettype($tmp));
 		}
 
-		set_option_and_check(23, PDO::MYSQL_ATTR_INIT_COMMAND, 'SET @a=1', 'PDO::MYSQL_ATTR_INIT_COMMAND');
-		set_option_and_check(24, PDO::MYSQL_ATTR_INIT_COMMAND, '', 'PDO::MYSQL_ATTR_INIT_COMMAND');
-		set_option_and_check(25, PDO::MYSQL_ATTR_INIT_COMMAND, 'INSERT INTO nonexistent(invalid) VALUES (1)', 'PDO::MYSQL_ATTR_INIT_COMMAND');
-
 		set_option_and_check(26, PDO::MYSQL_ATTR_READ_DEFAULT_FILE, true, 'PDO::MYSQL_ATTR_READ_DEFAULT_FILE');
 		set_option_and_check(27, PDO::MYSQL_ATTR_READ_DEFAULT_FILE, false, 'PDO::MYSQL_ATTR_READ_DEFAULT_FILE');
 
@@ -79,10 +75,8 @@ if (MySQLPDOTest::isPDOMySQLnd())
 	}
 
 	print "done!";
+?>
 --EXPECTF--
 [001] Expecting default value for 'PDO::MYSQL_ATTR_INIT_COMMAND' of ''/string, getAttribute() reports setting ''/boolean
-[023] Execting 'SET @a=1'/string got ''/boolean' for options 'PDO::MYSQL_ATTR_INIT_COMMAND'
-[024] SQLSTATE[42000] [1065] Query was empty
-[025] SQLSTATE[42S02] [1146] Table '%snonexistent' doesn't exist
 [026] Execting '1'/boolean got ''/boolean' for options 'PDO::MYSQL_ATTR_READ_DEFAULT_FILE'
 done!

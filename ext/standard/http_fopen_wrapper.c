@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -19,7 +19,7 @@
    |          Sara Golemon <pollita@php.net>                              |
    +----------------------------------------------------------------------+
  */
-/* $Id: http_fopen_wrapper.c 286790 2009-08-04 09:24:48Z tony2001 $ */ 
+/* $Id: http_fopen_wrapper.c 294506 2010-02-04 09:17:20Z pajoye $ */ 
 
 #include "php.h"
 #include "php_globals.h"
@@ -416,15 +416,19 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 	}
 
 	/* auth header if it was specified */
-	if (((have_header & HTTP_HEADER_AUTH) == 0) && resource->user && resource->pass)	{
+	if (((have_header & HTTP_HEADER_AUTH) == 0) && resource->user) {
 		/* decode the strings first */
 		php_url_decode(resource->user, strlen(resource->user));
-		php_url_decode(resource->pass, strlen(resource->pass));
 
 		/* scratch is large enough, since it was made large enough for the whole URL */
 		strcpy(scratch, resource->user);
 		strcat(scratch, ":");
-		strcat(scratch, resource->pass);
+
+		/* Note: password is optional! */
+		if (resource->pass) {
+			php_url_decode(resource->pass, strlen(resource->pass));
+			strcat(scratch, resource->pass);
+		}
 
 		tmp = (char*)php_base64_encode((unsigned char*)scratch, strlen(scratch), NULL);
 		
@@ -610,6 +614,13 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 		size_t http_header_line_length;
 		if (php_stream_get_line(stream, http_header_line, HTTP_HEADER_BLOCK_SIZE, &http_header_line_length) && *http_header_line != '\n' && *http_header_line != '\r') {
 			char *e = http_header_line + http_header_line_length - 1;
+			if (*e != '\n') {
+				do { /* partial header */
+					php_stream_get_line(stream, http_header_line, HTTP_HEADER_BLOCK_SIZE, &http_header_line_length);
+					e = http_header_line + http_header_line_length - 1;
+				} while (*e != '\n');
+				continue;
+			}
 			while (*e == '\n' || *e == '\r') {
 				e--;
 			}
@@ -739,7 +750,7 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 			s++;	\
 		}	\
 	}	\
-}	\
+}
 			/* check for control characters in login, password & path */
 			if (strncasecmp(new_path, "http://", sizeof("http://") - 1) || strncasecmp(new_path, "https://", sizeof("https://") - 1)) {
 				CHECK_FOR_CNTRL_CHARS(resource->user)

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -26,7 +26,7 @@
    | PHP 4.0 updates:  Zeev Suraski <zeev@zend.com>                       |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_imap.c 289435 2009-10-09 17:38:19Z pajoye $ */
+/* $Id: php_imap.c 294699 2010-02-07 13:06:54Z pajoye $ */
 
 #define IMAP41
 
@@ -41,6 +41,7 @@
 #include "ext/standard/info.h"
 #include "ext/standard/file.h"
 #include "ext/standard/php_smart_str.h"
+#include "ext/pcre/php_pcre.h"
 
 #ifdef ERROR
 #undef ERROR
@@ -104,6 +105,7 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_imap_open, 0, 0, 3)
 	ZEND_ARG_INFO(0, password)
 	ZEND_ARG_INFO(0, options)
 	ZEND_ARG_INFO(0, n_retries)
+	ZEND_ARG_INFO(0, params)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_imap_reopen, 0, 0, 2)
@@ -118,6 +120,7 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_imap_append, 0, 0, 3)
 	ZEND_ARG_INFO(0, folder)
 	ZEND_ARG_INFO(0, message)
 	ZEND_ARG_INFO(0, options)
+	ZEND_ARG_INFO(0, date)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_imap_num_msg, 0, 0, 1)
@@ -1146,10 +1149,11 @@ static void php_imap_do_open(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 	long retries = 0, flags = NIL, cl_flags = NIL;
 	MAILSTREAM *imap_stream;
 	pils *imap_le_struct;
+	zval *params = NULL;
 	int argc = ZEND_NUM_ARGS();
 
-	if (zend_parse_parameters(argc TSRMLS_CC, "sss|ll", &mailbox, &mailbox_len, &user, &user_len,
-		&passwd, &passwd_len, &flags, &retries) == FAILURE) {
+	if (zend_parse_parameters(argc TSRMLS_CC, "sss|lla", &mailbox, &mailbox_len, &user, &user_len,
+		&passwd, &passwd_len, &flags, &retries, &params) == FAILURE) {
 		return;
 	}
 
@@ -1160,6 +1164,46 @@ static void php_imap_do_open(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 		}
 		if (flags & OP_PROTOTYPE) {
 			cl_flags |= OP_PROTOTYPE;
+		}
+	}
+
+	if (params) {
+		zval **disabled_auth_method;
+
+		if (zend_hash_find(HASH_OF(params), "DISABLE_AUTHENTICATOR", sizeof("DISABLE_AUTHENTICATOR"), (void **)&disabled_auth_method) == SUCCESS) {
+			switch (Z_TYPE_PP(disabled_auth_method)) {
+				case IS_STRING:
+					if (Z_STRLEN_PP(disabled_auth_method) > 1) {
+						mail_parameters (NIL, DISABLE_AUTHENTICATOR, (void *)Z_STRVAL_PP(disabled_auth_method));
+					}
+					break;
+				case IS_ARRAY:
+					{
+						zval **z_auth_method;
+						int i;
+						int nelems = zend_hash_num_elements(Z_ARRVAL_PP(disabled_auth_method));
+
+						if (nelems == 0 ) {
+							break;
+						}
+						for (i = 0; i < nelems; i++) {
+							if (zend_hash_index_find(Z_ARRVAL_PP(disabled_auth_method), i, (void **) &z_auth_method) == SUCCESS) {
+								if (Z_TYPE_PP(z_auth_method) == IS_STRING) {
+									if (Z_STRLEN_PP(z_auth_method) > 1) {
+										mail_parameters (NIL, DISABLE_AUTHENTICATOR, (void *)Z_STRVAL_PP(disabled_auth_method));
+									}
+								} else {
+									php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid argument, expect string or array of strings");
+								}
+							}
+						}
+					}
+					break;
+				case IS_LONG:
+				default:
+					php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid argument, expect string or array of strings");
+					break;
+			}
 		}
 	}
 
@@ -1265,25 +1309,47 @@ PHP_FUNCTION(imap_reopen)
 }
 /* }}} */
 
-/* {{{ proto bool imap_append(resource stream_id, string folder, string message [, string options])
+/* {{{ proto bool imap_append(resource stream_id, string folder, string message [, string options [, string internal_date]])
    Append a new message to a specified mailbox */
 PHP_FUNCTION(imap_append)
 {
 	zval *streamind;
-	char *folder, *message, *flags = NULL;
-	int folder_len, message_len, flags_len = 0;
+	char *folder, *message, *internal_date = NULL, *flags = NULL;
+	int folder_len, message_len, internal_date_len = 0, flags_len = 0;
 	pils *imap_le_struct;
 	STRING st;
+	char* regex = "/[0-3][0-9]-((Jan)|(Feb)|(Mar)|(Apr)|(May)|(Jun)|(Jul)|(Aug)|(Sep)|(Oct)|(Nov)|(Dec))-[0-9]{4} [0-2][0-9]:[0-5][0-9]:[0-5][0-9] [+-][0-9]{4}/";
+	const int regex_len = strlen(regex);
+	pcre_cache_entry *pce;				/* Compiled regex */
+	zval *subpats = NULL;				/* Parts (not used) */
+	long regex_flags = 0;				/* Flags (not used) */
+	long start_offset = 0;				/* Start offset (not used) */
+	int global = 0;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rss|s", &streamind, &folder, &folder_len, &message, &message_len, &flags, &flags_len) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rss|ss", &streamind, &folder, &folder_len, &message, &message_len, &flags, &flags_len, &internal_date, &internal_date_len) == FAILURE) {
 		return;
+	}
+
+	if (internal_date) {
+		/* Make sure the given internal_date string matches the RFC specifiedformat */
+		if ((pce = pcre_get_compiled_regex_cache(regex, regex_len TSRMLS_CC))== NULL) {
+			RETURN_FALSE;
+		}
+
+		php_pcre_match_impl(pce, internal_date, internal_date_len, return_value, subpats, global,
+			0, regex_flags, start_offset TSRMLS_CC);
+
+		if (!Z_LVAL_P(return_value)) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "internal date not correctly formatted");
+			internal_date = NULL;
+		}
 	}
 
 	ZEND_FETCH_RESOURCE(imap_le_struct, pils *, &streamind, -1, "imap", le_imap);
 
 	INIT (&st, mail_string, (void *) message, message_len);
 
-	if (mail_append_full(imap_le_struct->imap_stream, folder, (flags ? flags : NIL), NIL, &st)) {
+	if (mail_append_full(imap_le_struct->imap_stream, folder, (flags ? flags : NIL), (internal_date ? internal_date : NIL), &st)) {
 		RETURN_TRUE;
 	} else {
 		RETURN_FALSE;
@@ -2598,7 +2664,7 @@ PHP_FUNCTION(imap_utf8)
 #ifndef HAVE_NEW_MIME2TEXT
 	utf8_mime2text(&src, &dest);
 #else
-	utf8_mime2text(&src, &dest, U8T_CANONICAL);
+	utf8_mime2text(&src, &dest, U8T_DECOMPOSE);
 #endif
 	RETVAL_STRINGL(dest.data, dest.size, 1);
 	if (dest.data) {

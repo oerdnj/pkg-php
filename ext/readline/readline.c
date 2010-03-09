@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: readline.c 274222 2009-01-22 14:40:20Z iliaa $ */
+/* $Id: readline.c 293036 2010-01-03 09:23:27Z sebastian $ */
 
 /* {{{ includes & prototypes */
 
@@ -33,8 +33,10 @@
 #define rl_completion_matches completion_matches
 #endif
 
+#ifdef HAVE_LIBEDIT
+#include <editline/readline.h>
+#else
 #include <readline/readline.h>
-#ifndef HAVE_LIBEDIT
 #include <readline/history.h>
 #endif
 

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: plain_wrapper.c 290578 2009-11-12 15:05:03Z johannes $ */
+/* $Id: plain_wrapper.c 295417 2010-02-23 15:04:29Z pajoye $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -39,6 +39,9 @@
 #include "SAPI.h"
 
 #include "php_streams_int.h"
+#ifdef PHP_WIN32
+# include "win32/winutil.h"
+#endif
 
 #define php_stream_fopen_from_fd_int(fd, mode, persistent_id)	_php_stream_fopen_from_fd_int((fd), (mode), (persistent_id) STREAMS_CC TSRMLS_CC)
 #define php_stream_fopen_from_fd_int_rel(fd, mode, persistent_id)	 _php_stream_fopen_from_fd_int((fd), (mode), (persistent_id) STREAMS_REL_CC TSRMLS_CC)
@@ -387,9 +390,6 @@ static int php_stdiop_close(php_stream *stream, int close_handle TSRMLS_DC)
 #endif
 	
 	if (close_handle) {
-		if (data->lock_flag != LOCK_UN) {
-			php_stream_lock(stream, LOCK_UN);
-		}
 		if (data->file) {
 			if (data->is_process_pipe) {
 				errno = 0;
@@ -866,6 +866,10 @@ static php_stream *php_plain_files_dir_opener(php_stream_wrapper *wrapper, char 
 	dir = VCWD_OPENDIR(path);
 
 #ifdef PHP_WIN32
+	if (!dir) {
+		php_win32_docref2_from_error(GetLastError(), path, path TSRMLS_CC);
+	}
+
 	if (dir && dir->finished) {
 		closedir(dir);
 		dir = NULL;
@@ -1063,6 +1067,17 @@ static int php_plain_files_rename(php_stream_wrapper *wrapper, char *url_from, c
 		return 0;
 	}
 
+#ifdef PHP_WIN32
+	if (!php_win32_check_trailing_space(url_from, strlen(url_from))) {
+		php_win32_docref2_from_error(ERROR_INVALID_NAME, url_from, url_to TSRMLS_CC);
+		return 0;
+	}
+	if (!php_win32_check_trailing_space(url_to, strlen(url_to))) {
+		php_win32_docref2_from_error(ERROR_INVALID_NAME, url_from, url_to TSRMLS_CC);
+		return 0;
+	}
+#endif
+
 	if ((p = strstr(url_from, "://")) != NULL) {
 		url_from = p + 3;
 	}
@@ -1083,12 +1098,13 @@ static int php_plain_files_rename(php_stream_wrapper *wrapper, char *url_from, c
 	ret = VCWD_RENAME(url_from, url_to);
 
 	if (ret == -1) {
-#ifdef EXDEV
+#ifndef PHP_WIN32
+# ifdef EXDEV
 		if (errno == EXDEV) {
 			struct stat sb;
 			if (php_copy_file(url_from, url_to TSRMLS_CC) == SUCCESS) {
 				if (VCWD_STAT(url_from, &sb) == 0) {
-#if !defined(TSRM_WIN32) && !defined(NETWARE)
+#  if !defined(TSRM_WIN32) && !defined(NETWARE)
 					if (VCWD_CHMOD(url_to, sb.st_mode)) {
 						if (errno == EPERM) {
 							php_error_docref2(NULL TSRMLS_CC, url_from, url_to, E_WARNING, "%s", strerror(errno));
@@ -1107,7 +1123,7 @@ static int php_plain_files_rename(php_stream_wrapper *wrapper, char *url_from, c
 						php_error_docref2(NULL TSRMLS_CC, url_from, url_to, E_WARNING, "%s", strerror(errno));
 						return 0;
 					}
-#endif
+#  endif
 					VCWD_UNLINK(url_from);
 					return 1;
 				}
@@ -1115,8 +1131,14 @@ static int php_plain_files_rename(php_stream_wrapper *wrapper, char *url_from, c
 			php_error_docref2(NULL TSRMLS_CC, url_from, url_to, E_WARNING, "%s", strerror(errno));
 			return 0;
 		}
+# endif
 #endif
+
+#ifdef PHP_WIN32
+		php_win32_docref2_from_error(GetLastError(), url_from, url_to TSRMLS_CC);
+#else
 		php_error_docref2(NULL TSRMLS_CC, url_from, url_to, E_WARNING, "%s", strerror(errno));
+#endif
         return 0;
 	}
 
@@ -1221,6 +1243,9 @@ static int php_plain_files_mkdir(php_stream_wrapper *wrapper, char *dir, int mod
 
 static int php_plain_files_rmdir(php_stream_wrapper *wrapper, char *url, int options, php_stream_context *context TSRMLS_DC)
 {
+#if PHP_WIN32
+	int url_len = strlen(url);
+#endif
 	if (PG(safe_mode) &&(!php_checkuid(url, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
 		return 0;
 	}
@@ -1228,6 +1253,13 @@ static int php_plain_files_rmdir(php_stream_wrapper *wrapper, char *url, int opt
 	if (php_check_open_basedir(url TSRMLS_CC)) {
 		return 0;
 	}
+
+#if PHP_WIN32
+	if (!php_win32_check_trailing_space(url, url_len)) {
+		php_error_docref1(NULL TSRMLS_CC, url, E_WARNING, "%s", strerror(ENOENT));
+		return 0;
+	}
+#endif
 
 	if (VCWD_RMDIR(url) < 0) {
 		php_error_docref1(NULL TSRMLS_CC, url, E_WARNING, "%s", strerror(errno));

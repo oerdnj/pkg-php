@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: document.c 282119 2009-06-14 13:13:35Z iliaa $ */
+/* $Id: document.c 294436 2010-02-03 18:41:27Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1203,7 +1203,18 @@ PHP_FUNCTION(dom_document_import_node)
 		if (!retnodep) {
 			RETURN_FALSE;
 		}
-		
+
+		if ((retnodep->type == XML_ATTRIBUTE_NODE) && (nodep->ns != NULL)) {
+			xmlNsPtr nsptr = NULL;
+			xmlNodePtr root = xmlDocGetRootElement(docp);
+
+			nsptr = xmlSearchNsByHref (nodep->doc, root, nodep->ns->href);
+			if (nsptr == NULL) {
+				int errorcode;
+				nsptr = dom_get_ns(root, nodep->ns->href, &errorcode, nodep->ns->prefix);
+			}
+			xmlSetNs(retnodep, nsptr);
+		}
 	}
 
 	DOM_RET_OBJ(rv, (xmlNodePtr) retnodep, &ret, intern);
@@ -1531,7 +1542,7 @@ char *_dom_get_valid_file_path(char *source, char *resolved_path, int resolved_p
 }
 /* }}} */
 
-static xmlDocPtr dom_document_parser(zval *id, int mode, char *source, int options TSRMLS_DC) /* {{{ */
+static xmlDocPtr dom_document_parser(zval *id, int mode, char *source, int source_len, int options TSRMLS_DC) /* {{{ */
 {
     xmlDocPtr ret;
     xmlParserCtxtPtr ctxt = NULL;
@@ -1568,7 +1579,7 @@ static xmlDocPtr dom_document_parser(zval *id, int mode, char *source, int optio
 		}
 		
 	} else {
-		ctxt = xmlCreateDocParserCtxt(source);
+		ctxt = xmlCreateMemoryParserCtxt(source, source_len);
 	}
 
 	if (ctxt == NULL) {
@@ -1671,7 +1682,7 @@ static void dom_parse_document(INTERNAL_FUNCTION_PARAMETERS, int mode) {
 		RETURN_FALSE;
 	}
 
-	newdoc = dom_document_parser(id, mode, source, options TSRMLS_CC);
+	newdoc = dom_document_parser(id, mode, source, source_len, options TSRMLS_CC);
 
 	if (!newdoc)
 		RETURN_FALSE;

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: main.c 290034 2009-10-28 15:19:32Z pajoye $ */
+/* $Id: main.c 294507 2010-02-04 09:21:02Z pajoye $ */
 
 /* {{{ includes
  */
@@ -244,12 +244,13 @@ static void php_disable_classes(TSRMLS_D)
  */
 static PHP_INI_MH(OnUpdateTimeout)
 {
-	EG(timeout_seconds) = atoi(new_value);
 	if (stage==PHP_INI_STAGE_STARTUP) {
 		/* Don't set a timeout on startup, only per-request */
+		EG(timeout_seconds) = atoi(new_value);
 		return SUCCESS;
 	}
 	zend_unset_timeout(TSRMLS_C);
+	EG(timeout_seconds) = atoi(new_value);
 	zend_set_timeout(EG(timeout_seconds), 0);
 	return SUCCESS;
 }
@@ -847,6 +848,27 @@ PHPAPI void php_error_docref2(const char *docref TSRMLS_DC, const char *param1, 
 }
 /* }}} */
 
+#ifdef PHP_WIN32
+#define PHP_WIN32_ERROR_MSG_BUFFER_SIZE 512
+PHPAPI void php_win32_docref2_from_error(DWORD error, const char *param1, const char *param2 TSRMLS_DC) {
+	if (error == 0) {
+		php_error_docref2(NULL TSRMLS_CC, param1, param2, E_WARNING, "%s", strerror(errno));
+	} else {
+		char buf[PHP_WIN32_ERROR_MSG_BUFFER_SIZE + 1];
+		int buf_len;
+
+		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, error, 0, buf, PHP_WIN32_ERROR_MSG_BUFFER_SIZE, NULL);
+		buf_len = strlen(buf);
+		if (buf_len >= 2) {
+			buf[buf_len - 1] = '\0';
+			buf[buf_len - 2] = '\0';
+		}
+		php_error_docref2(NULL TSRMLS_CC, param1, param2, E_WARNING, "%s (code: %lu)", (char *)buf, error);
+	}
+}
+#undef PHP_WIN32_ERROR_MSG_BUFFER_SIZE
+#endif
+
 /* {{{ php_html_puts */
 PHPAPI void php_html_puts(const char *str, uint size TSRMLS_DC)
 {
@@ -887,6 +909,9 @@ static void php_error_cb(int type, const char *error_filename, const uint error_
 		}
 		if (PG(last_error_file)) {
 			free(PG(last_error_file));
+		}
+		if (!error_filename) {
+			error_filename = "Unknown";
 		}
 		PG(last_error_type) = type;
 		PG(last_error_message) = strdup(buffer);
@@ -976,6 +1001,7 @@ static void php_error_cb(int type, const char *error_filename, const uint error_
 			php_log_err(log_buffer TSRMLS_CC);
 			efree(log_buffer);
 		}
+
 		if (PG(display_errors)
 			&& ((module_initialized && !PG(during_request_startup))
 				|| (PG(display_startup_errors) 
@@ -1004,7 +1030,12 @@ static void php_error_cb(int type, const char *error_filename, const uint error_
 					if ((!strcmp(sapi_module.name, "cli") || !strcmp(sapi_module.name, "cgi")) &&
 						PG(display_errors) == PHP_DISPLAY_ERRORS_STDERR
 					) {
+#ifdef PHP_WIN32
+						fprintf(stderr, "%s: %s in %s on line%d\n", error_type_str, buffer, error_filename, error_lineno);
+						fflush(stderr);
+#else
 						fprintf(stderr, "%s: %s in %s on line %d\n", error_type_str, buffer, error_filename, error_lineno);
+#endif
 					} else {
 						php_printf("%s\n%s: %s in %s on line %d\n%s", STR_PRINT(prepend_string), error_type_str, buffer, error_filename, error_lineno, STR_PRINT(append_string));
 					}
@@ -1846,7 +1877,7 @@ int php_module_startup(sapi_module_struct *sf, zend_module_entry *additional_mod
 #endif
 	EG(bailout) = NULL;
 	EG(error_reporting) = E_ALL & ~E_NOTICE;
-
+	EG(active_symbol_table) = NULL;
 	PG(header_is_being_sent) = 0;
 	SG(request_info).headers_only = 0;
 	SG(request_info).argv0 = NULL;
@@ -1938,33 +1969,6 @@ int php_module_startup(sapi_module_struct *sf, zend_module_entry *additional_mod
 		return FAILURE;
 	}
 
-	/* Check for deprecated directives */
-	{
-		static const char *directives[] = {
-			"define_syslog_variables", 
-			"register_globals", 
-			"register_long_arrays", 
-			"safe_mode", 
-			"magic_quotes_gpc", 
-			"magic_quotes_runtime", 
-			"magic_quotes_sybase", 
-			NULL};
-		const char **p = directives;
-		long val;
-
-		while (*p) {
-			if (cfg_get_long((char*)*p, &val) == SUCCESS && val) {
-				zend_error(E_WARNING, "Directive '%s' is deprecated in PHP 5.3 and greater", *p);
-			}
-			++p;
-		}
-
-		/* This is not too nice, but since its the only one theres no need for extra stuff here */
-		if (cfg_get_long("zend.ze1_compatibility_mode", &val) == SUCCESS && val) {
-			zend_error(E_ERROR, "zend.ze1_compatibility_mode is no longer supported in PHP 5.3 and greater");
-		}
-	}
-
 	/* Register PHP core ini entries */
 	REGISTER_INI_ENTRIES();
 
@@ -2053,6 +2057,36 @@ int php_module_startup(sapi_module_struct *sf, zend_module_entry *additional_mod
 #endif
 
 	module_initialized = 1;
+
+	/* Check for deprecated directives */
+	/* NOTE: If you add anything here, remember to add it also in Makefile.global! */
+	{
+		static const char *directives[] = {
+			"define_syslog_variables", 
+			"register_globals", 
+			"register_long_arrays", 
+			"safe_mode", 
+			"magic_quotes_gpc", 
+			"magic_quotes_runtime", 
+			"magic_quotes_sybase", 
+			NULL
+		};
+		const char **p = directives;
+		long val;
+
+		while (*p) {
+			if (cfg_get_long((char*)*p, &val) == SUCCESS && val) {
+				zend_error(E_WARNING, "Directive '%s' is deprecated in PHP 5.3 and greater", *p);
+			}
+			++p;
+		}
+
+		/* This is not too nice, but since its the only one theres no need for extra stuff here */
+		if (cfg_get_long("zend.ze1_compatibility_mode", &val) == SUCCESS && val) {
+			zend_error(E_ERROR, "zend.ze1_compatibility_mode is no longer supported in PHP 5.3 and greater");
+		}
+	}
+	
 	sapi_deactivate(TSRMLS_C);
 	module_startup = 0;
 
@@ -2184,6 +2218,7 @@ PHPAPI int php_execute_script(zend_file_handle *primary_file TSRMLS_DC)
 		 *   otherwise it will get opened and added to the included_files list in zend_execute_scripts
 		 */
  		if (primary_file->filename &&
+ 		    (primary_file->filename[0] != '-' || primary_file->filename[1] != 0) &&
  			primary_file->opened_path == NULL &&
  			primary_file->type != ZEND_HANDLE_FILENAME
 		) {
@@ -2220,7 +2255,7 @@ PHPAPI int php_execute_script(zend_file_handle *primary_file TSRMLS_DC)
 #ifdef PHP_WIN32
 			zend_unset_timeout(TSRMLS_C);
 #endif
-			zend_set_timeout(EG(timeout_seconds), 0);
+			zend_set_timeout(INI_INT("max_execution_time"), 0);
 		}
 		retval = (zend_execute_scripts(ZEND_REQUIRE TSRMLS_CC, NULL, 3, prepend_file_p, primary_file, append_file_p) == SUCCESS);
 

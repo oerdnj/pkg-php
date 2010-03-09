@@ -1,4 +1,4 @@
-dnl $Id: config.m4 267636 2008-10-22 19:29:24Z stas $
+dnl $Id: config.m4 294541 2010-02-04 19:50:49Z pajoye $
 dnl config.m4 for extension pdo_oci
 dnl vim:et:sw=2:ts=2:
 
@@ -132,7 +132,7 @@ You need to tell me where to find your Oracle Instant Client SDK, or set ORACLE_
   fi
 
   case $PDO_OCI_VERSION in
-    9.0|10.1|10.2|11.1)
+    9.0|10.1|10.2|11.1|11.2)
       PHP_ADD_LIBRARY(clntsh, 1, PDO_OCI_SHARED_LIBADD)
       ;;
 

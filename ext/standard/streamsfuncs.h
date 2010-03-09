@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2009 The PHP Group                                |
+  | Copyright (c) 1997-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: streamsfuncs.h 274392 2009-01-23 15:49:49Z kalle $ */
+/* $Id: streamsfuncs.h 293995 2010-01-25 15:57:24Z johannes $ */
 
 /* Flags for stream_socket_client */
 #define PHP_STREAM_CLIENT_PERSISTENT	1
@@ -56,6 +56,7 @@ PHP_FUNCTION(stream_filter_append);
 PHP_FUNCTION(stream_filter_remove);
 PHP_FUNCTION(stream_socket_enable_crypto);
 PHP_FUNCTION(stream_socket_shutdown);
+PHP_FUNCTION(stream_resolve_include_path);
 PHP_FUNCTION(stream_is_local);
 PHP_FUNCTION(stream_supports_lock);
 

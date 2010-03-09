@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2009 The PHP Group                                |
+  | Copyright (c) 1997-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   |          Ulf Wendel <uw@php.net>                                     |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_api.c 289630 2009-10-14 13:51:25Z johannes $ 
+  $Id: mysqli_api.c 294543 2010-02-04 20:28:55Z johannes $ 
 */
 
 #ifdef HAVE_CONFIG_H
@@ -31,7 +31,6 @@
 #include "php_globals.h"
 #include "ext/standard/info.h"
 #include "php_mysqli_structs.h"
-#include "ext/mysqlnd/mysqlnd_portability.h"
 
 /* {{{ proto mixed mysqli_affected_rows(object link)
    Get number of affected rows in previous MySQL operation */
@@ -552,6 +551,33 @@ PHP_FUNCTION(mysqli_character_set_name)
 }
 /* }}} */
 
+
+/* {{{ php_mysqli_close */
+void php_mysqli_close(MY_MYSQL * mysql, int close_type TSRMLS_DC)
+{
+	if (!mysql->persistent) {
+		mysqli_close(mysql->mysql, close_type);
+	} else {
+		zend_rsrc_list_entry *le;
+		if (zend_hash_find(&EG(persistent_list), mysql->hash_key, strlen(mysql->hash_key) + 1, (void **)&le) == SUCCESS) {
+			if (Z_TYPE_P(le) == php_le_pmysqli()) {
+				mysqli_plist_entry *plist = (mysqli_plist_entry *) le->ptr;
+				zend_ptr_stack_push(&plist->free_links, mysql->mysql);
+
+				MyG(num_links)--;
+				MyG(num_active_persistent)--;
+				MyG(num_inactive_persistent)++;
+			}
+		}
+		mysql->persistent = FALSE;
+	}
+	mysql->mysql = NULL;
+
+	php_clear_mysql(mysql);
+}
+/* }}} */
+
+
 /* {{{ proto bool mysqli_close(object link)
    Close connection */
 PHP_FUNCTION(mysqli_close)
@@ -565,24 +591,7 @@ PHP_FUNCTION(mysqli_close)
 
 	MYSQLI_FETCH_RESOURCE(mysql, MY_MYSQL *, &mysql_link, "mysqli_link", MYSQLI_STATUS_INITIALIZED);
 
-	if (!mysql->persistent) {
-		mysqli_close(mysql->mysql, MYSQLI_CLOSE_EXPLICIT);
-		mysql->mysql = NULL;
-	} else {
-		zend_rsrc_list_entry *le;
-		if (zend_hash_find(&EG(persistent_list), mysql->hash_key, strlen(mysql->hash_key) + 1, (void **)&le) == SUCCESS) {
-			if (Z_TYPE_P(le) == php_le_pmysqli()) {
-				mysqli_plist_entry *plist = (mysqli_plist_entry *) le->ptr;
-				zend_ptr_stack_push(&plist->free_links, mysql->mysql);
-
-				MyG(num_links)--;
-				MyG(num_active_persistent)--;
-				MyG(num_inactive_persistent)++;
-			}
-		}
-	}
-
-	php_clear_mysql(mysql);
+	php_mysqli_close(mysql, MYSQLI_CLOSE_EXPLICIT TSRMLS_CC);
 
 	MYSQLI_CLEAR_RESOURCE(&mysql_link);
 	efree(mysql);
@@ -1324,9 +1333,9 @@ PHP_FUNCTION(mysqli_info)
 }
 /* }}} */
 
-/* {{{ proto resource mysqli_init(void)
-   Initialize mysqli and return a resource for use with mysql_real_connect */
-PHP_FUNCTION(mysqli_init)
+
+/* {{{ php_mysqli_init() */
+void php_mysqli_init(INTERNAL_FUNCTION_PARAMETERS)
 {
 	MYSQLI_RESOURCE *mysqli_resource;
 	MY_MYSQL *mysql;
@@ -1360,6 +1369,15 @@ PHP_FUNCTION(mysqli_init)
 	} else {
 		((mysqli_object *) zend_object_store_get_object(getThis() TSRMLS_CC))->ptr = mysqli_resource;
 	}
+}
+/* }}} */
+
+
+/* {{{ proto resource mysqli_init(void)
+   Initialize mysqli and return a resource for use with mysql_real_connect */
+PHP_FUNCTION(mysqli_init)
+{
+	php_mysqli_init(INTERNAL_FUNCTION_PARAM_PASSTHRU);
 }
 /* }}} */
 
@@ -1579,6 +1597,68 @@ PHP_FUNCTION(mysqli_num_rows)
 }
 /* }}} */
 
+/* {{{ mysqli_options_get_option_zval_type */
+static int mysqli_options_get_option_zval_type(int option)
+{
+	switch (option) {
+#ifdef MYSQLI_USE_MYSQLND
+#if PHP_MAJOR_VERSION >= 6
+		case MYSQLND_OPT_NUMERIC_AND_DATETIME_AS_UNICODE:
+#endif
+		case MYSQLND_OPT_NET_CMD_BUFFER_SIZE:
+		case MYSQLND_OPT_NET_READ_BUFFER_SIZE:
+#ifdef MYSQLND_STRING_TO_INT_CONVERSION
+		case MYSQLND_OPT_INT_AND_FLOAT_NATIVE:
+#endif
+#endif /* MYSQLI_USE_MYSQLND */
+		case MYSQL_OPT_CONNECT_TIMEOUT:
+#ifdef MYSQL_REPORT_DATA_TRUNCATION
+                case MYSQL_REPORT_DATA_TRUNCATION:
+#endif
+                case MYSQL_OPT_LOCAL_INFILE:
+                case MYSQL_OPT_NAMED_PIPE:
+#ifdef MYSQL_OPT_PROTOCOL
+                case MYSQL_OPT_PROTOCOL:
+#endif /* MySQL 4.1.0 */
+#ifdef MYSQL_OPT_READ_TIMEOUT
+		case MYSQL_OPT_READ_TIMEOUT:
+		case MYSQL_OPT_WRITE_TIMEOUT:
+		case MYSQL_OPT_GUESS_CONNECTION:
+		case MYSQL_OPT_USE_EMBEDDED_CONNECTION:
+		case MYSQL_OPT_USE_REMOTE_CONNECTION:
+		case MYSQL_SECURE_AUTH:
+#endif /* MySQL 4.1.1 */
+#ifdef MYSQL_OPT_RECONNECT
+		case MYSQL_OPT_RECONNECT:
+#endif /* MySQL 5.0.13 */
+#ifdef MYSQL_OPT_SSL_VERIFY_SERVER_CERT
+                case MYSQL_OPT_SSL_VERIFY_SERVER_CERT:
+#endif /* MySQL 5.0.23 */
+#ifdef MYSQL_OPT_COMPRESS
+		case MYSQL_OPT_COMPRESS:
+#endif /* mysqlnd @ PHP 5.3.2 */
+			return IS_LONG;
+
+#ifdef MYSQL_SHARED_MEMORY_BASE_NAME
+                case MYSQL_SHARED_MEMORY_BASE_NAME:
+#endif /* MySQL 4.1.0 */
+#ifdef MYSQL_SET_CLIENT_IP
+		case MYSQL_SET_CLIENT_IP:
+#endif /* MySQL 4.1.1 */
+		case MYSQL_READ_DEFAULT_FILE:
+		case MYSQL_READ_DEFAULT_GROUP:
+		case MYSQL_INIT_COMMAND:
+		case MYSQL_SET_CHARSET_NAME:
+		case MYSQL_SET_CHARSET_DIR:
+			return IS_STRING;
+
+		default:
+			return IS_NULL;
+	}
+}
+/* }}} */
+
+
 /* {{{ proto bool mysqli_options(object link, int flags, mixed values)
    Set options */
 PHP_FUNCTION(mysqli_options)
@@ -1589,6 +1669,7 @@ PHP_FUNCTION(mysqli_options)
 	long			mysql_option;
 	unsigned int	l_value;
 	long			ret;
+	int				expected_type;
 
 	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "Olz", &mysql_link, mysqli_link_class_entry, &mysql_option, &mysql_value) == FAILURE) {
 		return;
@@ -1600,15 +1681,29 @@ PHP_FUNCTION(mysqli_options)
 			RETURN_FALSE;
 		}
 	}
-
-	switch (Z_TYPE_PP(&mysql_value)) {
+	expected_type = mysqli_options_get_option_zval_type(mysql_option);
+	if (expected_type != Z_TYPE_P(mysql_value)) {
+		switch (expected_type) {
+			case IS_STRING:
+				convert_to_string_ex(&mysql_value);
+				break;
+			case IS_LONG:
+				convert_to_long_ex(&mysql_value);
+				break;
+			default:
+				break;
+		}
+	}
+	switch (expected_type) {
 		case IS_STRING:
 			ret = mysql_options(mysql->mysql, mysql_option, Z_STRVAL_PP(&mysql_value));
 			break;
-		default:
-			convert_to_long_ex(&mysql_value);
+		case IS_LONG:
 			l_value = Z_LVAL_PP(&mysql_value);
 			ret = mysql_options(mysql->mysql, mysql_option, (char *)&l_value);
+			break;
+		default:
+			ret = 1;
 			break;
 	}
 
@@ -1673,7 +1768,7 @@ PHP_FUNCTION(mysqli_prepare)
 			memcpy(last_error, stmt->stmt->last_error, MYSQL_ERRMSG_SIZE);
 			memcpy(sqlstate, mysql->mysql->net.sqlstate, SQLSTATE_LENGTH+1);
 #else
-			mysqlnd_error_info error_info = mysql->mysql->error_info;
+			MYSQLND_ERROR_INFO error_info = mysql->mysql->error_info;
 #endif
 			mysqli_stmt_close(stmt->stmt, FALSE);
 			stmt->stmt = NULL;

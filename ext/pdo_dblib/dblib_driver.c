@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2009 The PHP Group                                |
+  | Copyright (c) 1997-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: dblib_driver.c 289440 2009-10-09 18:56:19Z pajoye $ */
+/* $Id: dblib_driver.c 294444 2010-02-03 19:48:04Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -255,7 +255,7 @@ cleanup:
 	dbh->driver_data = H;
 
 	if (!ret) {
-		zend_throw_exception_ex(php_pdo_get_exception(), 0 TSRMLS_CC,
+		zend_throw_exception_ex(php_pdo_get_exception(), DBLIB_G(err).dberr TSRMLS_CC,
 			"SQLSTATE[%s] %s (severity %d)",
 			DBLIB_G(err).sqlstate,
 			DBLIB_G(err).dberrstr,

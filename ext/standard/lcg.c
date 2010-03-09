@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: lcg.c 272370 2008-12-31 11:15:49Z sebastian $ */
+/* $Id: lcg.c 294448 2010-02-03 20:10:35Z pajoye $ */
 
 #include "php.h"
 #include "php_lcg.h"
@@ -78,7 +78,7 @@ static void lcg_seed(TSRMLS_D) /* {{{ */
 	struct timeval tv;
 
 	if (gettimeofday(&tv, NULL) == 0) {
-		LCG(s1) = tv.tv_sec ^ (~tv.tv_usec);
+		LCG(s1) = tv.tv_sec ^ (tv.tv_usec<<11);
 	} else {
 		LCG(s1) = 1;
 	}
@@ -87,6 +87,11 @@ static void lcg_seed(TSRMLS_D) /* {{{ */
 #else
 	LCG(s2) = (long) getpid();
 #endif
+
+	/* Add entropy to s2 by calling gettimeofday() again */
+	if (gettimeofday(&tv, NULL) == 0) {
+		LCG(s2) ^= (tv.tv_usec<<11);
+	}
 
 	LCG(seeded) = 1;
 }

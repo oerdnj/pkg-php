@@ -1,7 +1,10 @@
 --TEST--
 PostgreSQL pg_insert()
 --SKIPIF--
-<?php include("skipif.inc"); ?>
+<?php
+include("skipif.inc");
+skip_server_version('8.5dev', '>=');
+?>
 --FILE--
 <?php
 error_reporting(E_ALL);

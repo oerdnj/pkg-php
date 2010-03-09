@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_virtual_cwd.c 289780 2009-10-19 23:38:55Z pajoye $ */
+/* $Id: tsrm_virtual_cwd.c 294520 2010-02-04 09:57:30Z pajoye $ */
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -432,8 +432,8 @@ CWD_API char *virtual_getcwd(char *buf, size_t size TSRMLS_DC) /* {{{ */
 static inline unsigned long realpath_cache_key(const char *path, int path_len TSRMLS_DC) /* {{{ */
 {
 	register unsigned long h;
-	char *bucket_key = tsrm_win32_get_path_sid_key(path TSRMLS_CC);
-	char *bucket_key_start = (char *)bucket_key;
+	char *bucket_key_start = tsrm_win32_get_path_sid_key(path TSRMLS_CC);
+	char *bucket_key = (char *)bucket_key_start;
 	const char *e = bucket_key + strlen(bucket_key);
 
 	if (!bucket_key) {
@@ -444,11 +444,7 @@ static inline unsigned long realpath_cache_key(const char *path, int path_len TS
 		h *= 16777619;
 		h ^= *bucket_key++;
 	}
-	/* if no SID were present the path is returned. Otherwise a Heap 
-	   allocated string is returned. */
-	if (bucket_key_start != path) {
-		LocalFree(bucket_key_start);
-	}
+	HeapFree(GetProcessHeap(), 0, (LPVOID)bucket_key_start);
 	return h;
 }
 /* }}} */
@@ -590,6 +586,22 @@ CWD_API realpath_cache_bucket* realpath_cache_lookup(const char *path, int path_
 }
 /* }}} */
 
+CWD_API int realpath_cache_size(TSRMLS_D) 
+{
+	return CWDG(realpath_cache_size);
+}
+
+CWD_API int realpath_cache_max_buckets(TSRMLS_D) 
+{
+	return (sizeof(CWDG(realpath_cache)) / sizeof(CWDG(realpath_cache)[0]));
+}
+
+CWD_API realpath_cache_bucket** realpath_cache_get_buckets(TSRMLS_D) 
+{
+	return CWDG(realpath_cache);
+}
+
+
 #undef LINK_MAX
 #define LINK_MAX 32
 
@@ -702,7 +714,9 @@ static int tsrm_realpath_r(char *path, int start, int len, int *ll, time_t *t, i
 		tmp = tsrm_do_alloca(len+1, use_heap);
 		memcpy(tmp, path, len+1);
 
-		if(save && (data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)) {
+		if(save && 
+		!(IS_UNC_PATH(path, len) && len >= 3 && path[2] != '?') &&
+		(data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)) {
 			/* File is a reparse point. Get the target */
 			HANDLE hLink = NULL;
 			REPARSE_DATA_BUFFER * pbuffer;
@@ -983,9 +997,19 @@ CWD_API int virtual_file_ex(cwd_state *state, const char *path, verify_path_func
 	time_t t;
 	int ret;
 	int add_slash;
+	void *tmp;
 	TSRMLS_FETCH();
 
 	if (path_length == 0 || path_length >= MAXPATHLEN-1) {
+#ifdef TSRM_WIN32
+# if _MSC_VER < 1300
+		errno = EINVAL;
+# else
+		_set_errno(EINVAL);
+# endif
+#else
+		errno = EINVAL;
+#endif
 		return 1;
 	}
 
@@ -1127,7 +1151,16 @@ verify:
 
 		CWD_STATE_COPY(&old_state, state);
 		state->cwd_length = path_length;
-		state->cwd = (char *) realloc(state->cwd, state->cwd_length+1);
+
+		tmp = realloc(state->cwd, state->cwd_length+1);
+		if (tmp == NULL) {
+#if VIRTUAL_CWD_DEBUG
+			fprintf (stderr, "Out of memory\n");
+#endif
+			return 1;
+		}
+		state->cwd = (char *) tmp;
+
 		memcpy(state->cwd, resolved_path, state->cwd_length+1);
 		if (verify_path(state)) {
 			CWD_STATE_FREE(state);
@@ -1139,7 +1172,15 @@ verify:
 		}
 	} else {
 		state->cwd_length = path_length;
-		state->cwd = (char *) realloc(state->cwd, state->cwd_length+1);
+		tmp = realloc(state->cwd, state->cwd_length+1);
+		if (tmp == NULL) {
+#if VIRTUAL_CWD_DEBUG
+			fprintf (stderr, "Out of memory\n");
+#endif
+			return 1;
+		}
+		state->cwd = (char *) tmp;
+
 		memcpy(state->cwd, resolved_path, state->cwd_length+1);
 		ret = 0;
 	}

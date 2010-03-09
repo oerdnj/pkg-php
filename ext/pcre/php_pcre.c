@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_pcre.c 289418 2009-10-09 14:25:51Z pajoye $ */
+/* $Id: php_pcre.c 293036 2010-01-03 09:23:27Z sebastian $ */
 
 #include "php.h"
 #include "php_ini.h"
@@ -1314,9 +1314,7 @@ static void preg_replace_impl(INTERNAL_FUNCTION_PARAMETERS, int is_callable_repl
 		if (!zend_is_callable(*replace, 0, &callback_name TSRMLS_CC)) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Requires argument 2, '%s', to be a valid callback", callback_name);
 			efree(callback_name);
-			*return_value = **subject;
-			zval_copy_ctor(return_value);
-			INIT_PZVAL(return_value);
+			MAKE_COPY_ZVAL(subject, return_value);
 			return;
 		}
 		efree(callback_name);

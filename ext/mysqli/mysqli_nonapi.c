@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2009 The PHP Group                                |
+  | Copyright (c) 1997-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   |          Ulf Wendel <uw@php.net>                                     |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_nonapi.c 290608 2009-11-12 17:48:36Z johannes $ 
+  $Id: mysqli_nonapi.c 294543 2010-02-04 20:28:55Z johannes $ 
 */
 
 #ifdef HAVE_CONFIG_H
@@ -80,7 +80,8 @@ void mysqli_common_connect(INTERNAL_FUNCTION_PARAMETERS, zend_bool is_real_conne
 #endif
 
 	if (getThis() && !ZEND_NUM_ARGS() && in_ctor) {
-		RETURN_NULL();
+		php_mysqli_init(INTERNAL_FUNCTION_PARAM_PASSTHRU);
+		return;
 	}
 	hostname = username = dbname = passwd = socket = NULL;
 
@@ -93,14 +94,7 @@ void mysqli_common_connect(INTERNAL_FUNCTION_PARAMETERS, zend_bool is_real_conne
 		if (object && instanceof_function(Z_OBJCE_P(object), mysqli_link_class_entry TSRMLS_CC)) {
 			mysqli_resource = ((mysqli_object *) zend_object_store_get_object(object TSRMLS_CC))->ptr;
 			if (mysqli_resource && mysqli_resource->ptr) {
-				mysql = (MY_MYSQL*) mysqli_resource->ptr;			
-				if (mysqli_resource->status > MYSQLI_STATUS_INITIALIZED) {
-					php_clear_mysql(mysql);
-					if (mysql->mysql) {
-						mysqli_close(mysql->mysql, MYSQLI_CLOSE_EXPLICIT);
-						mysql->mysql = NULL;
-					}
-				}
+				mysql = (MY_MYSQL*) mysqli_resource->ptr;
 			}
 		}
 		if (!mysql) {
@@ -126,7 +120,10 @@ void mysqli_common_connect(INTERNAL_FUNCTION_PARAMETERS, zend_bool is_real_conne
 			flags &= ~CLIENT_LOCAL_FILES;
 		}
 	}
-
+	if (mysql->mysql && mysqli_resource && mysqli_resource->status > MYSQLI_STATUS_INITIALIZED) {
+		/* already connected, we should close the connection */
+		php_mysqli_close(mysql, MYSQLI_CLOSE_IMPLICIT TSRMLS_CC);
+	}
 
 	if (!socket_len || !socket) {
 		socket = MyG(default_socket);
@@ -165,15 +162,6 @@ void mysqli_common_connect(INTERNAL_FUNCTION_PARAMETERS, zend_bool is_real_conne
 
 					do {
 						if (zend_ptr_stack_num_elements(&plist->free_links)) {
-							if (is_real_connect) {
-								/*
-								  Gotcha! If there are some options set on the handle with mysqli_options()
-								  they will be lost. We will fetch other handle with other options. This could
-								  be a source of bug reports of people complaining but...nothing else could be
-								  done, if they want PCONN!
-								*/
-								mysqli_close(mysql->mysql, MYSQLI_CLOSE_IMPLICIT);
-							}
 							mysql->mysql = zend_ptr_stack_pop(&plist->free_links);
 
 							MyG(num_inactive_persistent)--;
@@ -183,12 +171,12 @@ void mysqli_common_connect(INTERNAL_FUNCTION_PARAMETERS, zend_bool is_real_conne
 							/* reset variables */
 
 #ifndef MYSQLI_NO_CHANGE_USER_ON_PCONNECT
-							if (!mysql_change_user(mysql->mysql, username, passwd, dbname)) {
+							if (!mysqli_change_user_silent(mysql->mysql, username, passwd, dbname)) {
 #else
 							if (!mysql_ping(mysql->mysql)) {
 #endif
 #ifdef MYSQLI_USE_MYSQLND
-								mysqlnd_restart_psession(mysql->mysql, MyG(mysqlnd_thd_zval_cache));
+								mysqlnd_restart_psession(mysql->mysql);
 #endif
 								MyG(num_active_persistent)++;
 								goto end;
@@ -245,7 +233,7 @@ void mysqli_common_connect(INTERNAL_FUNCTION_PARAMETERS, zend_bool is_real_conne
 	if (mysql_real_connect(mysql->mysql, hostname, username, passwd, dbname, port, socket, CLIENT_MULTI_RESULTS) == NULL)
 #else
 	if (mysqlnd_connect(mysql->mysql, hostname, username, passwd, passwd_len, dbname, dbname_len,
-						port, socket, flags, MyG(mysqlnd_thd_zval_cache) TSRMLS_CC) == NULL)
+						port, socket, flags TSRMLS_CC) == NULL)
 #endif
 	{
 		/* Save error messages - for mysqli_connect_error() & mysqli_connect_errno() */
@@ -302,6 +290,7 @@ err:
 	if (mysql->hash_key) {
 		efree(mysql->hash_key);
 		mysql->hash_key = NULL;
+		mysql->persistent = FALSE;
 	}
 	if (!is_real_connect) {
 		efree(mysql);
@@ -428,7 +417,7 @@ PHP_FUNCTION(mysqli_get_cache_stats)
 	if (zend_parse_parameters_none() == FAILURE) {
 		return;
 	}
-	mysqlnd_palloc_stats(mysqli_mysqlnd_zval_cache, return_value);
+	array_init(return_value);
 }
 /* }}} */
 
@@ -498,7 +487,7 @@ PHP_FUNCTION(mysqli_multi_query)
 		strcpy(s_sqlstate, mysql_sqlstate(mysql->mysql));
 		s_errno = mysql_errno(mysql->mysql);
 #else
-		mysqlnd_error_info error_info = mysql->mysql->error_info;
+		MYSQLND_ERROR_INFO error_info = mysql->mysql->error_info;
 #endif
 		MYSQLI_REPORT_MYSQL_ERROR(mysql->mysql);
 		MYSQLI_DISABLE_MQ;
@@ -536,11 +525,7 @@ PHP_FUNCTION(mysqli_query)
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Empty query");
 		RETURN_FALSE;
 	}
-	if ((resultmode & ~MYSQLI_ASYNC) != MYSQLI_USE_RESULT && (resultmode & ~MYSQLI_ASYNC) != MYSQLI_STORE_RESULT
-#if defined(MYSQLI_USE_MYSQLND) && defined(MYSQLND_THREADED)
-		&& (resultmode & ~MYSQLI_ASYNC) != MYSQLI_BG_STORE_RESULT
-#endif
-	) {
+	if ((resultmode & ~MYSQLI_ASYNC) != MYSQLI_USE_RESULT && (resultmode & ~MYSQLI_ASYNC) != MYSQLI_STORE_RESULT) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid value for resultmode");
 		RETURN_FALSE;
 	}
@@ -581,11 +566,6 @@ PHP_FUNCTION(mysqli_query)
 		case MYSQLI_USE_RESULT:
 			result = mysql_use_result(mysql->mysql);
 			break;
-#if defined(MYSQLI_USE_MYSQLND) && defined(MYSQLND_THREADED)
-		case MYSQLI_BG_STORE_RESULT:
-			result = mysqli_bg_store_result(mysql->mysql);
-			break;
-#endif
 	}
 	if (!result) {
 		php_mysqli_throw_sql_exception((char *)mysql_sqlstate(mysql->mysql), mysql_errno(mysql->mysql) TSRMLS_CC,
@@ -819,11 +799,6 @@ PHP_FUNCTION(mysqli_reap_async_query)
 		case MYSQLI_USE_RESULT:
 			result = mysql_use_result(mysql->mysql);
 			break;
-#if defined(MYSQLI_USE_MYSQLND) && defined(MYSQLND_THREADED)
-		case MYSQLI_BG_STORE_RESULT:
-			result = mysqli_bg_store_result(mysql->mysql);
-			break;
-#endif
 	}
 
 	if (!result) {

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: fastcgi.c 287777 2009-08-26 19:17:32Z pajoye $ */
+/* $Id: fastcgi.c 293777 2010-01-20 16:02:28Z johannes $ */
 
 #include "php.h"
 #include "fastcgi.h"
@@ -255,6 +255,9 @@ void fcgi_shutdown(void)
 		zend_hash_destroy(&fcgi_mgmt_vars);
 	}
 	is_fastcgi = 0;
+	if (allowed_clients) {
+		free(allowed_clients);
+	}
 }
 
 #ifdef _WIN32

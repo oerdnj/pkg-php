@@ -1,4 +1,4 @@
-// $Id: config.w32 274681 2009-01-26 22:34:49Z pajoye $
+// $Id: config.w32 294108 2010-01-27 17:29:38Z johannes $
 // vim:ft=javascript
 
 ARG_ENABLE("intl", "Enable internationalization support", "no");
@@ -65,6 +65,11 @@ if (PHP_INTL != "no") {
 				", "intl");
 		ADD_SOURCES(configure_module_dirname + "/idn", "\
 				idn.c",
+				"intl");
+		ADD_SOURCES(configure_module_dirname + "/resourcebundle", "\
+				resourcebundle.c \
+				resourcebundle_class.c \
+				resourcebundle_iterator.c",
 				"intl");
 		ADD_FLAG("LIBS_INTL", "icudt.lib icuin.lib icuio.lib icule.lib iculx.lib");
 		AC_DEFINE("HAVE_INTL", 1, "Internationalization support enabled");

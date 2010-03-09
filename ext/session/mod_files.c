@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: mod_files.c 280729 2009-05-18 16:10:09Z jani $ */
+/* $Id: mod_files.c 294027 2010-01-25 23:06:09Z johannes $ */
 
 #include "php.h"
 
@@ -87,7 +87,9 @@ static int ps_files_valid_key(const char *key)
 
 	len = p - key;
 
-	if (len == 0) {
+	/* Somewhat arbitrary length limit here, but should be way more than
+	   anyone needs and avoids file-level warnings later on if we exceed MAX_PATH */
+	if (len == 0 || len > 128) {
 		ret = 0;
 	}
 
@@ -154,7 +156,7 @@ static void ps_files_open(ps_files *data, const char *key TSRMLS_DC)
 		ps_files_close(data);
 
 		if (!ps_files_valid_key(key)) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "The session id contains illegal characters, valid characters are a-z, A-Z, 0-9 and '-,'");
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "The session id is too long or contains illegal characters, valid characters are a-z, A-Z, 0-9 and '-,'");
 			PS(invalid_session_id) = 1;
 			return;
 		}
@@ -244,11 +246,7 @@ static int ps_files_cleanup_dir(const char *dirname, int maxlifetime TSRMLS_DC)
 
 				/* check whether its last access was more than maxlifet ago */
 				if (VCWD_STAT(buf, &sbuf) == 0 &&
-#ifdef NETWARE
-						(now - sbuf.st_mtime.tv_sec) > maxlifetime) {
-#else
 						(now - sbuf.st_mtime) > maxlifetime) {
-#endif
 					VCWD_UNLINK(buf);
 					nrdels++;
 				}

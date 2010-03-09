@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2009 The PHP Group                                |
+  | Copyright (c) 1997-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_mysql.c 289630 2009-10-14 13:51:25Z johannes $ */
+/* $Id: pdo_mysql.c 294514 2010-02-04 09:37:38Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -35,43 +35,37 @@
 ZEND_GET_MODULE(pdo_mysql)
 #endif
 
-#if PDO_USE_MYSQLND
 ZEND_DECLARE_MODULE_GLOBALS(pdo_mysql);
 
 #ifndef PHP_WIN32
 # ifndef PDO_MYSQL_UNIX_ADDR
-#  define PDO_MYSQL_UNIX_ADDR  "/tmp/mysql.sock"
+#  ifdef PHP_MYSQL_UNIX_SOCK_ADDR
+#   define PDO_MYSQL_UNIX_ADDR PHP_MYSQL_UNIX_SOCK_ADDR
+#  else
+#   define PDO_MYSQL_UNIX_ADDR "/tmp/mysql.sock"
+#  endif
 # endif
 #endif
-
 
 /* {{{ PHP_INI_BEGIN
 */
 PHP_INI_BEGIN()
 #ifndef PHP_WIN32
-	STD_PHP_INI_ENTRY("pdo_mysql.default_socket", PDO_MYSQL_UNIX_ADDR, PHP_INI_SYSTEM, OnUpdateString, default_socket, zend_pdo_mysql_globals, pdo_mysql_globals)
+	STD_PHP_INI_ENTRY("pdo_mysql.default_socket", PDO_MYSQL_UNIX_ADDR, PHP_INI_SYSTEM, OnUpdateStringUnempty, default_socket, zend_pdo_mysql_globals, pdo_mysql_globals)
 #endif
 #if PDO_DBG_ENABLED
 	STD_PHP_INI_ENTRY("pdo_mysql.debug",	NULL, PHP_INI_SYSTEM, OnUpdateString, debug, zend_pdo_mysql_globals, pdo_mysql_globals)
 #endif
-	STD_PHP_INI_ENTRY("pdo_mysql.cache_size",			"2000",	PHP_INI_SYSTEM,		OnUpdateLong,		cache_size,			zend_pdo_mysql_globals,		pdo_mysql_globals)
 PHP_INI_END()
 /* }}} */
-#endif
 
-/* true global environment */
-#ifdef PDO_USE_MYSQLND
-static MYSQLND_ZVAL_PCACHE *pdo_mysqlnd_zval_cache;
-#endif
-		
+/* true global environment */		
 		
 /* {{{ PHP_MINIT_FUNCTION
  */
 static PHP_MINIT_FUNCTION(pdo_mysql)
 {
-#if PDO_USE_MYSQLND
 	REGISTER_INI_ENTRIES();
-#endif
 
 	REGISTER_PDO_CLASS_CONST_LONG("MYSQL_ATTR_USE_BUFFERED_QUERY", (long)PDO_MYSQL_ATTR_USE_BUFFERED_QUERY);
 	REGISTER_PDO_CLASS_CONST_LONG("MYSQL_ATTR_LOCAL_INFILE", (long)PDO_MYSQL_ATTR_LOCAL_INFILE);	
@@ -86,10 +80,6 @@ static PHP_MINIT_FUNCTION(pdo_mysql)
 	REGISTER_PDO_CLASS_CONST_LONG("MYSQL_ATTR_FOUND_ROWS", (long)PDO_MYSQL_ATTR_FOUND_ROWS);
 	REGISTER_PDO_CLASS_CONST_LONG("MYSQL_ATTR_IGNORE_SPACE", (long)PDO_MYSQL_ATTR_IGNORE_SPACE);
 
-#ifdef PDO_USE_MYSQLND
-	pdo_mysqlnd_zval_cache = mysqlnd_palloc_init_cache(PDO_MYSQL_G(cache_size));
-#endif
-	
 	return php_pdo_register_driver(&pdo_mysql_driver);
 }
 /* }}} */
@@ -100,7 +90,6 @@ static PHP_MSHUTDOWN_FUNCTION(pdo_mysql)
 {
 	php_pdo_unregister_driver(&pdo_mysql_driver);
 #if PDO_USE_MYSQLND
-	mysqlnd_palloc_free_cache(pdo_mysqlnd_zval_cache);
 	UNREGISTER_INI_ENTRIES();
 #endif
 
@@ -117,20 +106,6 @@ static PHP_MINFO_FUNCTION(pdo_mysql)
 	php_info_print_table_header(2, "PDO Driver for MySQL", "enabled");
 	php_info_print_table_row(2, "Client API version", mysql_get_client_info());
 
-#ifdef PDO_USE_MYSQLND
-	{
-		zval values;
-
-		php_info_print_table_header(2, "Persistent cache", pdo_mysqlnd_zval_cache ? "enabled":"disabled");
-		
-		if (pdo_mysqlnd_zval_cache) {
-			/* Now report cache status */
-			mysqlnd_palloc_stats(pdo_mysqlnd_zval_cache, &values);
-			mysqlnd_minfo_print_hash(&values);
-			zval_dtor(&values);
-		}
-	}
-#endif
 	php_info_print_table_end();
 
 #ifdef PDO_USE_MYSQLND
@@ -144,12 +119,10 @@ static PHP_MINFO_FUNCTION(pdo_mysql)
 /* {{{ PHP_RINIT_FUNCTION
  */
 static PHP_RINIT_FUNCTION(pdo_mysql)
-{
-	PDO_MYSQL_G(mysqlnd_thd_zval_cache) = mysqlnd_palloc_rinit(pdo_mysqlnd_zval_cache);
-	
+{	
 #if PDO_DBG_ENABLED
 	if (PDO_MYSQL_G(debug)) {
-		MYSQLND_DEBUG *dbg = mysqlnd_debug_init(TSRMLS_C);
+		MYSQLND_DEBUG *dbg = mysqlnd_debug_init(mysqlnd_debug_std_no_trace_funcs TSRMLS_CC);
 		if (!dbg) {
 			return FAILURE;
 		}
@@ -167,8 +140,6 @@ static PHP_RINIT_FUNCTION(pdo_mysql)
  */
 static PHP_RSHUTDOWN_FUNCTION(pdo_mysql)
 {
-	mysqlnd_palloc_rshutdown(PDO_MYSQL_G(mysqlnd_thd_zval_cache));
-	
 #if PDO_DBG_ENABLED
 	MYSQLND_DEBUG *dbg = PDO_MYSQL_G(dbg);
 	PDO_DBG_ENTER("RSHUTDOWN");
@@ -187,8 +158,6 @@ static PHP_RSHUTDOWN_FUNCTION(pdo_mysql)
  */
 static PHP_GINIT_FUNCTION(pdo_mysql)
 {
-	pdo_mysql_globals->mysqlnd_thd_zval_cache = NULL; /* zval cache */
-	pdo_mysql_globals->cache_size = 0;
 #ifndef PHP_WIN32
 	pdo_mysql_globals->default_socket = NULL;
 #endif
@@ -227,7 +196,7 @@ zend_module_entry pdo_mysql_module_entry = {
 	pdo_mysql_functions,
 	PHP_MINIT(pdo_mysql),
 	PHP_MSHUTDOWN(pdo_mysql),
-#if PDO_USE_MYSQLND
+#if PDO_USE_MYSQLND && PDO_DBG_ENABLED
 	PHP_RINIT(pdo_mysql),
 	PHP_RSHUTDOWN(pdo_mysql),
 #else

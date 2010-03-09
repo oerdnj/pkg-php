@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: node.c 277102 2009-03-13 13:43:29Z rrichards $ */
+/* $Id: node.c 293036 2010-01-03 09:23:27Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1730,7 +1730,7 @@ PHP_FUNCTION(dom_node_get_feature)
 }
 /* }}} end dom_node_get_feature */
 
-/* {{{ proto DomUserData dom_node_set_user_data(string key, DomUserData data, userdatahandler handler);
+/* {{{ proto mixed dom_node_set_user_data(string key, mixed data, userdatahandler handler);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#Node3-setUserData
 Since: DOM Level 3
 */
@@ -1740,7 +1740,7 @@ PHP_FUNCTION(dom_node_set_user_data)
 }
 /* }}} end dom_node_set_user_data */
 
-/* {{{ proto DomUserData dom_node_get_user_data(string key);
+/* {{{ proto mixed dom_node_get_user_data(string key);
 URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#Node3-getUserData
 Since: DOM Level 3
 */

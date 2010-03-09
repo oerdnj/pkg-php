@@ -171,7 +171,7 @@ static unsigned int check_mb_eucjpms(const char *start, const char *end)
 	if (valid_eucjpms_ss2(start[0]) && (end - start) > 1 && valid_eucjpms_kata(start[1])) {
 		return 2;
 	}
-	if (valid_eucjpms_ss3(start[0]) && (end - start) > 2 && valid_eucjpms(start[1]) && 
+	if (valid_eucjpms_ss3(start[0]) && (end - start) > 2 && valid_eucjpms(start[1]) &&
 		valid_eucjpms(start[2])) {
 		return 2;
 	}
@@ -199,7 +199,7 @@ static unsigned int mysqlnd_mbcharlen_eucjpms(unsigned int jpms)
 
 static unsigned int check_mb_gb2312(const char *start, const char *end)
 {
-	return (valid_gb2312_head((unsigned int)start[0]) && end - start > 1 && 
+	return (valid_gb2312_head((unsigned int)start[0]) && end - start > 1 &&
 			valid_gb2312_tail((unsigned int)start[1])) ? 2 : 0;
 }
 
@@ -311,12 +311,12 @@ const MYSQLND_CHARSET mysqlnd_charsets[] =
 	{  19, "euckr", "euckr_korean_ci", 1, 2, "", mysqlnd_mbcharlen_euckr, check_mb_euckr},
 	{  22, "koi8u", "koi8u_general_ci", 1, 1, "", NULL, NULL},
 	{  24, "gb2312", "gb2312_chinese_ci", 1, 2, "", mysqlnd_mbcharlen_gb2312, check_mb_gb2312},
-	{  25, "greek", "greek_general_ci", 1, 1, "", NULL, NULL},	
+	{  25, "greek", "greek_general_ci", 1, 1, "", NULL, NULL},
 	{  26, "cp1250", "cp1250_general_ci", 1, 1, "", NULL, NULL},
 	{  28, "gbk", "gbk_chinese_ci", 1, 2, "", mysqlnd_mbcharlen_gbk, check_mb_gbk},
 	{  30, "latin5", "latin5_turkish_ci", 1, 1, "", NULL, NULL},
 	{  32, "armscii8", "armscii8_general_ci", 1, 1, "", NULL, NULL},
-	{  33, "utf8", "utf8_general_ci", 1, 2, "UTF-8 Unicode", mysqlnd_mbcharlen_utf8,  check_mb_utf8_valid},
+	{  33, "utf8", "utf8_general_ci", 1, 3, "UTF-8 Unicode", mysqlnd_mbcharlen_utf8,  check_mb_utf8_valid},
 	{  35, "ucs2", "ucs2_general_ci", 2, 2, "UCS-2 Unicode", mysqlnd_mbcharlen_ucs2, check_mb_ucs2},
 	{  36, "cp866", "cp866_general_ci", 1, 1, "", NULL, NULL},
 	{  37, "keybcs2", "keybcs2_general_ci", 1, 1, "", NULL, NULL},
@@ -372,7 +372,7 @@ const MYSQLND_CHARSET mysqlnd_charsets[] =
 	{  81, "cp852", "cp852_bin", 1, 1, "", NULL, NULL},
 	{  82, "swe7", "swe7_bin", 1, 1, "", NULL, NULL},
 	{  93, "geostd8", "geostd8_bin", 1, 1, "", NULL, NULL},
-	{  83, "utf8", "utf8_bin", 1, 2, "UTF-8 Unicode", mysqlnd_mbcharlen_utf8,  check_mb_utf8_valid},
+	{  83, "utf8", "utf8_bin", 1, 3, "UTF-8 Unicode", mysqlnd_mbcharlen_utf8,  check_mb_utf8_valid},
 	{  84, "big5", "big5_bin", 1, 2, "", mysqlnd_mbcharlen_big5, check_mb_big5},
 	{  85, "euckr", "euckr_bin", 1, 2, "", mysqlnd_mbcharlen_euckr, check_mb_euckr},
 	{  86, "gb2312", "gb2312_bin", 1, 2, "", mysqlnd_mbcharlen_gb2312, check_mb_gb2312},
@@ -424,7 +424,47 @@ const MYSQLND_CHARSET mysqlnd_charsets[] =
 	{ 208, "utf8", "utf8_persian_ci", 1, 3, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
 	{ 209, "utf8", "utf8_esperanto_ci", 1, 3, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
 	{ 210, "utf8", "utf8_hungarian_ci", 1, 3, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
-	{ 254, "utf8", "utf8_general_cs", 1, 3, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 192, "utf8mb3", "utf8mb3_general_ci", 1, 3, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 193, "utf8mb3", "utf8mb3_icelandic_ci", 1, 3, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 194, "utf8mb3", "utf8mb3_latvian_ci", 1, 3, "", mysqlnd_mbcharlen_utf8,  check_mb_utf8_valid},
+	{ 195, "utf8mb3", "utf8mb3_romanian_ci", 1, 3, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 196, "utf8mb3", "utf8mb3_slovenian_ci", 1, 3, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 197, "utf8mb3", "utf8mb3_polish_ci", 1, 3, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 198, "utf8mb3", "utf8mb3_estonian_ci", 1, 3, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 119, "utf8mb3", "utf8mb3_spanish_ci", 1, 3, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 200, "utf8mb3", "utf8mb3_swedish_ci", 1, 3, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 201, "utf8mb3", "utf8mb3_turkish_ci", 1, 3, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 202, "utf8mb3", "utf8mb3_czech_ci", 1, 3, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 203, "utf8mb3", "utf8mb3_danish_ci", 1, 3, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid },
+	{ 204, "utf8mb3", "utf8mb3_lithunian_ci", 1, 3, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid },
+	{ 205, "utf8mb3", "utf8mb3_slovak_ci", 1, 3, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 206, "utf8mb3", "utf8mb3_spanish2_ci", 1, 3, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 207, "utf8mb3", "utf8mb3_roman_ci", 1, 3, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 208, "utf8mb3", "utf8mb3_persian_ci", 1, 3, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 209, "utf8mb3", "utf8mb3_esperanto_ci", 1, 3, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 210, "utf8mb3", "utf8mb3_hungarian_ci", 1, 3, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 211, "utf8mb3", "utf8mb3_sinhala_ci", 1, 3, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 224, "utf8", "utf8_unicode_ci", 1, 4, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 225, "utf8", "utf8_icelandic_ci", 1, 4, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 226, "utf8", "utf8_latvian_ci", 1, 4, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 227, "utf8", "utf8_romanian_ci", 1, 4, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 228, "utf8", "utf8_slovenian_ci", 1, 4, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 229, "utf8", "utf8_polish_ci", 1, 4, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 230, "utf8", "utf8_estonian_ci", 1, 4, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 231, "utf8", "utf8_spanish_ci", 1, 4, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 232, "utf8", "utf8_swedish_ci", 1, 4, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 233, "utf8", "utf8_turkish_ci", 1, 4, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 234, "utf8", "utf8_czech_ci", 1, 4, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 235, "utf8", "utf8_danish_ci", 1, 4, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 236, "utf8", "utf8_lithuanian_ci", 1, 4, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 237, "utf8", "utf8_slovak_ci", 1, 4, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 238, "utf8", "utf8_spanish2_ci", 1, 4, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 239, "utf8", "utf8_roman_ci", 1, 4, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 240, "utf8", "utf8_persian_ci", 1, 4, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 241, "utf8", "utf8_esperanto_ci", 1, 4, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 242, "utf8", "utf8_hungarian_ci", 1, 4, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 243, "utf8", "utf8_sinhala_ci", 1, 4, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
+	{ 254, "utf8mb3", "utf8mb3_general_cs", 1, 3, "", mysqlnd_mbcharlen_utf8, check_mb_utf8_valid},
 	{   0, NULL, NULL, 0, 0, NULL, NULL, NULL}
 };
 /* }}} */
@@ -449,7 +489,7 @@ const MYSQLND_CHARSET mysqlnd_charsets60[] =
 	{  19, "euckr", "euckr_korean_ci", 1, 2, "", mysqlnd_mbcharlen_euckr, check_mb_euckr},
 	{  22, "koi8u", "koi8u_general_ci", 1, 1, "", NULL, NULL},
 	{  24, "gb2312", "gb2312_chinese_ci", 1, 2, "", mysqlnd_mbcharlen_gb2312, check_mb_gb2312},
-	{  25, "greek", "greek_general_ci", 1, 1, "", NULL, NULL},	
+	{  25, "greek", "greek_general_ci", 1, 1, "", NULL, NULL},
 	{  26, "cp1250", "cp1250_general_ci", 1, 1, "", NULL, NULL},
 	{  28, "gbk", "gbk_chinese_ci", 1, 2, "", mysqlnd_mbcharlen_gbk, check_mb_gbk},
 	{  30, "latin5", "latin5_turkish_ci", 1, 1, "", NULL, NULL},
@@ -635,7 +675,7 @@ PHPAPI ulong mysqlnd_cset_escape_quotes(const MYSQLND_CHARSET * const cset, char
 	for (;escapestr < end; escapestr++) {
 		unsigned int len = 0;
 		/* check unicode characters */
-		
+
 		if (cset->char_maxlen > 1 && (len = cset->mb_valid(escapestr, end))) {
 
 			/* check possible overflow */
@@ -685,7 +725,8 @@ PHPAPI ulong mysqlnd_cset_escape_slashes(const MYSQLND_CHARSET * const cset, cha
 	zend_bool	escape_overflow = FALSE;
 
 	DBG_ENTER("mysqlnd_cset_escape_slashes");
-	
+	DBG_INF_FMT("charset=%s", cset->name);
+
 	for (;escapestr < end; escapestr++) {
 		char esc = '\0';
 		unsigned int len = 0;

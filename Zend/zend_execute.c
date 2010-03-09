@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2009 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2010 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute.c 281670 2009-06-04 18:20:45Z mattwil $ */
+/* $Id: zend_execute.c 294505 2010-02-04 09:13:14Z pajoye $ */
 
 #define ZEND_INTENSIVE_DEBUGGING 0
 
@@ -1232,6 +1232,10 @@ static int zend_check_symbol(zval **pz TSRMLS_DC)
 {
 	if (Z_TYPE_PP(pz) > 9) {
 		fprintf(stderr, "Warning!  %x has invalid type!\n", *pz);
+/* See http://support.microsoft.com/kb/190351 */
+#ifdef PHP_WIN32
+		fflush(stderr);
+#endif
 	} else if (Z_TYPE_PP(pz) == IS_ARRAY) {
 		zend_hash_apply(Z_ARRVAL_PP(pz), (apply_func_t) zend_check_symbol TSRMLS_CC);
 	} else if (Z_TYPE_PP(pz) == IS_OBJECT) {

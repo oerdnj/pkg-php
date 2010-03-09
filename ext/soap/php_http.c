@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2009 The PHP Group                                |
+  | Copyright (c) 1997-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_http.c 281589 2009-06-03 12:39:50Z iliaa $ */
+/* $Id: php_http.c 294456 2010-02-03 20:29:09Z pajoye $ */
 
 #include "php_soap.h"
 #include "ext/standard/base64.h"
@@ -207,6 +207,7 @@ int make_http_soap_request(zval  *this_ptr,
 	int http_1_1;
 	int http_status;
 	int content_type_xml = 0;
+	long redirect_max = 20;
 	char *content_encoding;
 	char *http_msg = NULL;
 	zend_bool old_allow_url_fopen;
@@ -281,6 +282,14 @@ int make_http_soap_request(zval  *this_ptr,
 	if (SUCCESS == zend_hash_find(Z_OBJPROP_P(this_ptr),
 			"_stream_context", sizeof("_stream_context"), (void**)&tmp)) {
 		context = php_stream_context_from_zval(*tmp, 0);
+	}
+
+	if (context && 
+		php_stream_context_get_option(context, "http", "max_redirects", &tmp) == SUCCESS) {
+		if (Z_TYPE_PP(tmp) != IS_STRING || !is_numeric_string(Z_STRVAL_PP(tmp), Z_STRLEN_PP(tmp), &redirect_max, NULL, 1)) {
+			if (Z_TYPE_PP(tmp) == IS_LONG)
+				redirect_max = Z_LVAL_PP(tmp);
+		}
 	}
 
 try_again:
@@ -752,16 +761,15 @@ try_again:
 		err = php_stream_write(stream, soap_headers.c, soap_headers.len);
 		if (err != soap_headers.len) {
 			if (request != buf) {efree(request);}
-			smart_str_free(&soap_headers);
 			php_stream_close(stream);
 			zend_hash_del(Z_OBJPROP_P(this_ptr), "httpurl", sizeof("httpurl"));
 			zend_hash_del(Z_OBJPROP_P(this_ptr), "httpsocket", sizeof("httpsocket"));
 			zend_hash_del(Z_OBJPROP_P(this_ptr), "_use_proxy", sizeof("_use_proxy"));
 			add_soap_fault(this_ptr, "HTTP", "Failed Sending HTTP SOAP request", NULL, NULL TSRMLS_CC);
+			smart_str_free(&soap_headers_z);
 			return FALSE;
 		}
 		smart_str_free(&soap_headers);
-
 	} else {
 		add_soap_fault(this_ptr, "HTTP", "Failed to create stream??", NULL, NULL TSRMLS_CC);
 		smart_str_free(&soap_headers_z);
@@ -990,12 +998,20 @@ try_again:
 					new_url->host = phpurl->host ? estrdup(phpurl->host) : NULL;
 					new_url->port = phpurl->port;
 					if (new_url->path && new_url->path[0] != '/') {
-						char *t = phpurl->path;
-						char *p = strrchr(t, '/');
-						if (p) {
-							char *s = emalloc((p - t) + strlen(new_url->path) + 2);
-							strncpy(s, t, (p - t) + 1);
-							s[(p - t) + 1] = 0;
+						if (phpurl->path) {
+							char *t = phpurl->path;
+							char *p = strrchr(t, '/');
+							if (p) {
+								char *s = emalloc((p - t) + strlen(new_url->path) + 2);
+								strncpy(s, t, (p - t) + 1);
+								s[(p - t) + 1] = 0;
+								strcat(s, new_url->path);
+								efree(new_url->path);
+								new_url->path = s;
+							} 
+						} else {
+							char *s = emalloc(strlen(new_url->path) + 2);
+							s[0] = '/'; s[1] = 0;
 							strcat(s, new_url->path);
 							efree(new_url->path);
 							new_url->path = s;
@@ -1003,6 +1019,12 @@ try_again:
 					}
 				}
 				phpurl = new_url;
+
+				if (--redirect_max < 1) {
+					add_soap_fault(this_ptr, "HTTP", "Redirection limit reached, aborting", NULL, NULL TSRMLS_CC);
+					smart_str_free(&soap_headers_z);
+					return FALSE;
+				}
 
 				goto try_again;
 			}

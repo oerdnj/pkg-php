@@ -1,5 +1,5 @@
 --TEST--
-Bug #20934 (html_entity_decode() crash when "" is passed)
+Bug #50052 (Different Hashes on Windows and Linux on wrong Salt size)
 --FILE--
 <?php
 $salt = '$1$f+uslYF01$';

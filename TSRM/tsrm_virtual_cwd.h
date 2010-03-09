@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_virtual_cwd.h 287673 2009-08-25 09:16:53Z pajoye $ */
+/* $Id: tsrm_virtual_cwd.h 293036 2010-01-03 09:23:27Z sebastian $ */
 
 #ifndef VIRTUAL_CWD_H
 #define VIRTUAL_CWD_H
@@ -238,6 +238,9 @@ extern virtual_cwd_globals cwd_globals;
 CWD_API void realpath_cache_clean(TSRMLS_D);
 CWD_API void realpath_cache_del(const char *path, int path_len TSRMLS_DC);
 CWD_API realpath_cache_bucket* realpath_cache_lookup(const char *path, int path_len, time_t t TSRMLS_DC);
+CWD_API int realpath_cache_size(TSRMLS_D);
+CWD_API int realpath_cache_max_buckets(TSRMLS_D);
+CWD_API realpath_cache_bucket** realpath_cache_get_buckets(TSRMLS_D);
 
 /* The actual macros to be used in programs using TSRM
  * If the program defines VIRTUAL_DIR it will use the

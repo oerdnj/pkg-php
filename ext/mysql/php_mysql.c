@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
  
-/* $Id: php_mysql.c 289630 2009-10-14 13:51:25Z johannes $ */
+/* $Id: php_mysql.c 294891 2010-02-11 17:14:44Z johannes $ */
 
 /* TODO:
  *
@@ -125,10 +125,6 @@ typedef struct _php_mysql_conn {
 	int multi_query;
 } php_mysql_conn;
 
-#ifdef MYSQL_USE_MYSQLND
-static MYSQLND_ZVAL_PCACHE *mysql_mysqlnd_zval_cache;
-static MYSQLND_QCACHE		*mysql_mysqlnd_qcache;
-#endif
 
 #if MYSQL_VERSION_ID >= 40101
 #define MYSQL_DISABLE_MQ if (mysql->multi_query) { \
@@ -411,9 +407,6 @@ PHP_INI_BEGIN()
 	STD_PHP_INI_ENTRY("mysql.connect_timeout",		"60",	PHP_INI_ALL,		OnUpdateLong,		connect_timeout, 	zend_mysql_globals,		mysql_globals)
 	STD_PHP_INI_BOOLEAN("mysql.trace_mode",			"0",	PHP_INI_ALL,		OnUpdateLong,		trace_mode, 		zend_mysql_globals,		mysql_globals)
 	STD_PHP_INI_BOOLEAN("mysql.allow_local_infile",	"1",	PHP_INI_SYSTEM,		OnUpdateLong,		allow_local_infile, zend_mysql_globals,		mysql_globals)
-#ifdef MYSQL_USE_MYSQLND
-	STD_PHP_INI_ENTRY("mysql.cache_size",			"2000",	PHP_INI_SYSTEM,		OnUpdateLong,		cache_size,			zend_mysql_globals,		mysql_globals)
-#endif
 PHP_INI_END()
 /* }}} */
 
@@ -432,10 +425,6 @@ static PHP_GINIT_FUNCTION(mysql)
 	mysql_globals->trace_mode = 0;
 	mysql_globals->allow_local_infile = 1;
 	mysql_globals->result_allocated = 0;
-#ifdef MYSQL_USE_MYSQLND
-	mysql_globals->cache_size = 0;
-	mysql_globals->mysqlnd_thd_zval_cache = NULL;
-#endif
 }
 /* }}} */
 
@@ -465,9 +454,6 @@ ZEND_MODULE_STARTUP_D(mysql)
 		return FAILURE;
 	}
 #endif
-#else
-	mysql_mysqlnd_zval_cache = mysqlnd_palloc_init_cache(MySG(cache_size));
-	mysql_mysqlnd_qcache = mysqlnd_qcache_init_cache();
 #endif
 
 	return SUCCESS;
@@ -493,9 +479,6 @@ PHP_MSHUTDOWN_FUNCTION(mysql)
 	mysql_server_end();
 #endif
 #endif
-#else
-	mysqlnd_palloc_free_cache(mysql_mysqlnd_zval_cache);
-	mysqlnd_qcache_free_cache_reference(&mysql_mysqlnd_qcache);
 #endif
 
 	UNREGISTER_INI_ENTRIES();
@@ -518,10 +501,6 @@ PHP_RINIT_FUNCTION(mysql)
 	MySG(connect_error) = NULL;
 	MySG(connect_errno) =0;
 	MySG(result_allocated) = 0;
-
-#ifdef MYSQL_USE_MYSQLND
-	MySG(mysqlnd_thd_zval_cache) = mysqlnd_palloc_rinit(mysql_mysqlnd_zval_cache);
-#endif
 
 	return SUCCESS;
 }
@@ -559,7 +538,6 @@ PHP_RSHUTDOWN_FUNCTION(mysql)
 
 #ifdef MYSQL_USE_MYSQLND
 	zend_hash_apply(&EG(persistent_list), (apply_func_t) php_mysql_persistent_helper TSRMLS_CC);
-	mysqlnd_palloc_rshutdown(MySG(mysqlnd_thd_zval_cache));
 #endif
 
 	return SUCCESS;
@@ -584,20 +562,6 @@ PHP_MINFO_FUNCTION(mysql)
 	php_info_print_table_row(2, "MYSQL_SOCKET", MYSQL_UNIX_ADDR);
 	php_info_print_table_row(2, "MYSQL_INCLUDE", PHP_MYSQL_INCLUDE);
 	php_info_print_table_row(2, "MYSQL_LIBS", PHP_MYSQL_LIBS);
-#endif
-#if defined(MYSQL_USE_MYSQLND)
-	{
-		zval values;
-
-		php_info_print_table_header(2, "Persistent cache", mysql_mysqlnd_zval_cache? "enabled":"disabled");
-		
-		if (mysql_mysqlnd_zval_cache) {
-			/* Now report cache status */
-			mysqlnd_palloc_stats(mysql_mysqlnd_zval_cache, &values);
-			mysqlnd_minfo_print_hash(&values);
-			zval_dtor(&values);
-		}
-	}
 #endif
 
 	php_info_print_table_end();
@@ -704,6 +668,9 @@ static void php_mysql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 			client_flags ^= CLIENT_LOCAL_FILES;
 		}
 
+#ifdef CLIENT_MULTI_RESULTS
+		client_flags |= CLIENT_MULTI_RESULTS; /* compatibility with 5.2, see bug#50416 */
+#endif
 #ifdef CLIENT_MULTI_STATEMENTS
 		client_flags &= ~CLIENT_MULTI_STATEMENTS;   /* don't allow multi_queries via connect parameter */
 #endif
@@ -776,8 +743,7 @@ static void php_mysql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 #ifndef MYSQL_USE_MYSQLND
 			if (mysql_real_connect(mysql->conn, host, user, passwd, NULL, port, socket, client_flags)==NULL)
 #else
-			if (mysqlnd_connect(mysql->conn, host, user, passwd, 0, NULL, 0, 
-								port, socket, client_flags, MySG(mysqlnd_thd_zval_cache) TSRMLS_CC) == NULL)
+			if (mysqlnd_connect(mysql->conn, host, user, passwd, 0, NULL, 0, port, socket, client_flags TSRMLS_CC) == NULL)
 #endif
 			{
 				/* Populate connect error globals so that the error functions can read them */
@@ -825,8 +791,7 @@ static void php_mysql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 #ifndef MYSQL_USE_MYSQLND
 					if (mysql_real_connect(mysql->conn, host, user, passwd, NULL, port, socket, client_flags)==NULL)
 #else
-					if (mysqlnd_connect(mysql->conn, host, user, passwd, 0, NULL, 0, 
-										port, socket, client_flags, MySG(mysqlnd_thd_zval_cache) TSRMLS_CC) == NULL)
+					if (mysqlnd_connect(mysql->conn, host, user, passwd, 0, NULL, 0, port, socket, client_flags TSRMLS_CC) == NULL)
 #endif
 					{
 						php_error_docref(NULL TSRMLS_CC, E_WARNING, "Link to server lost, unable to reconnect");
@@ -838,7 +803,7 @@ static void php_mysql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 				}
 			} else {
 #ifdef MYSQL_USE_MYSQLND
-				mysqlnd_restart_psession(mysql->conn, MySG(mysqlnd_thd_zval_cache));
+				mysqlnd_restart_psession(mysql->conn);
 #endif
 			}
 		}
@@ -897,8 +862,7 @@ static void php_mysql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 #ifndef MYSQL_USE_MYSQLND
 		if (mysql_real_connect(mysql->conn, host, user, passwd, NULL, port, socket, client_flags)==NULL) 
 #else
-		if (mysqlnd_connect(mysql->conn, host, user, passwd, 0, NULL, 0, 
-							port, socket, client_flags, MySG(mysqlnd_thd_zval_cache) TSRMLS_CC) == NULL)
+		if (mysqlnd_connect(mysql->conn, host, user, passwd, 0, NULL, 0, port, socket, client_flags TSRMLS_CC) == NULL)
 #endif
 		{
 			/* Populate connect error globals so that the error functions can read them */

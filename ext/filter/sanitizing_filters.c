@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2009 The PHP Group                                |
+  | Copyright (c) 1997-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: sanitizing_filters.c 289438 2009-10-09 17:50:17Z pajoye $ */
+/* $Id: sanitizing_filters.c 293036 2010-01-03 09:23:27Z sebastian $ */
 
 #include "php_filter.h"
 #include "filter_private.h"
@@ -123,6 +123,7 @@ static void php_filter_strip(zval *value, long flags)
 	for (i = 0; i < Z_STRLEN_P(value); i++) {
 		if ((str[i] > 127) && (flags & FILTER_FLAG_STRIP_HIGH)) {
 		} else if ((str[i] < 32) && (flags & FILTER_FLAG_STRIP_LOW)) {
+		} else if ((str[i] == '`') && (flags & FILTER_FLAG_STRIP_BACKTICK)) {
 		} else {
 			buf[c] = str[i];
 			++c;

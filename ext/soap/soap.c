@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2009 The PHP Group                                |
+  | Copyright (c) 1997-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: soap.c 287746 2009-08-26 14:05:48Z dmitry $ */
+/* $Id: soap.c 293036 2010-01-03 09:23:27Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1416,9 +1416,7 @@ PHP_METHOD(SoapServer, setObject)
 	service->type = SOAP_OBJECT;
 
 	MAKE_STD_ZVAL(service->soap_object);
-	*service->soap_object = *obj;
-	zval_copy_ctor(service->soap_object);
-	INIT_PZVAL(service->soap_object);
+	MAKE_COPY_ZVAL(&obj, service->soap_object);
 
 	SOAP_SERVER_END_CODE();
 }
@@ -2335,9 +2333,7 @@ static void soap_error_handler(int error_num, const char *error_filename, const 
 			}
 			fault = add_soap_fault(SOAP_GLOBAL(error_object), code, buffer, NULL, NULL TSRMLS_CC);
 			MAKE_STD_ZVAL(exception);
-			*exception = *fault;
-			zval_copy_ctor(exception);
-			INIT_PZVAL(exception);
+			MAKE_COPY_ZVAL(&fault, exception);
 			zend_throw_exception_object(exception TSRMLS_CC);
 
 			old_objects = EG(objects_store).object_buckets;
@@ -2623,9 +2619,7 @@ PHP_METHOD(SoapClient, SoapClient)
 			zval *class_map;
 
 			MAKE_STD_ZVAL(class_map);
-			*class_map = **tmp;
-			INIT_PZVAL(class_map);
-			zval_copy_ctor(class_map);
+			MAKE_COPY_ZVAL(tmp, class_map);
 #ifdef ZEND_ENGINE_2
 			Z_DELREF_P(class_map);
 #endif
@@ -2955,9 +2949,7 @@ static void do_soap_call(zval* this_ptr,
 		zval *exception;
 
 		MAKE_STD_ZVAL(exception);
-		*exception = *return_value;
-		zval_copy_ctor(exception);
-		INIT_PZVAL(exception);
+		MAKE_COPY_ZVAL(&return_value, exception);
 		zend_throw_exception_object(exception TSRMLS_CC);
 	}
 #endif

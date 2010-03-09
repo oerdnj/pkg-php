@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: file.c 289422 2009-10-09 14:37:45Z pajoye $ */
+/* $Id: file.c 294896 2010-02-11 18:03:57Z johannes $ */
 
 /* Synced with php 3.0 revision 1.218 1999-06-16 [ssb] */
 
@@ -50,16 +50,6 @@
 # include "win32/param.h"
 # include "win32/winutil.h"
 # include "win32/fnmatch.h"
-#elif defined(NETWARE)
-# include <sys/param.h>
-# include <sys/select.h>
-# ifdef USE_WINSOCK
-#  include <novsock2.h>
-# else
-#  include <sys/socket.h>
-#  include <netinet/in.h>
-#  include <netdb.h>
-# endif
 #else
 # if HAVE_SYS_PARAM_H
 #  include <sys/param.h>
@@ -846,7 +836,7 @@ PHP_FUNCTION(tempnam)
 		return;
 	}
 
-	if (PG(safe_mode) &&(!php_checkuid(dir, NULL, CHECKUID_ALLOW_ONLY_DIR))) {
+	if (PG(safe_mode) &&(!php_checkuid(dir, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
 		RETURN_FALSE;
 	}
 
@@ -1636,16 +1626,9 @@ PHP_NAMED_FUNCTION(php_if_fstat)
 	MAKE_LONG_ZVAL_INCREF(stat_rdev, -1);
 #endif
 	MAKE_LONG_ZVAL_INCREF(stat_size, stat_ssb.sb.st_size);
-#ifdef NETWARE
-	MAKE_LONG_ZVAL_INCREF(stat_atime, stat_ssb.sb.st_atime.tv_sec);
-	MAKE_LONG_ZVAL_INCREF(stat_mtime, stat_ssb.sb.st_mtime.tv_sec);
-	MAKE_LONG_ZVAL_INCREF(stat_ctime, stat_ssb.sb.st_ctime.tv_sec);
-#else
 	MAKE_LONG_ZVAL_INCREF(stat_atime, stat_ssb.sb.st_atime);
 	MAKE_LONG_ZVAL_INCREF(stat_mtime, stat_ssb.sb.st_mtime);
 	MAKE_LONG_ZVAL_INCREF(stat_ctime, stat_ssb.sb.st_ctime);
-#endif
-
 #ifdef HAVE_ST_BLKSIZE
 	MAKE_LONG_ZVAL_INCREF(stat_blksize, stat_ssb.sb.st_blksize);
 #else

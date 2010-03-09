@@ -59,6 +59,10 @@ function ut_coll_sort_with_sort_keys( $coll, &$arr )
 {
     return $GLOBALS['oo-mode'] ? $coll->sortWithSortKeys( $arr ) : collator_sort_with_sort_keys( $coll, $arr );
 }
+function ut_coll_get_sort_key( $coll, $str )
+{
+    return $GLOBALS['oo-mode'] ? $coll->getSortKey( $str ) : collator_get_sort_key( $coll, $str );
+}
 function ut_coll_asort( $coll, &$arr, $sort_flag = Collator::SORT_REGULAR )
 {
     return $GLOBALS['oo-mode'] ? $coll->asort( $arr, $sort_flag ) : collator_asort( $coll, $arr, $sort_flag );
@@ -385,4 +389,28 @@ function ut_datefmt_localtime( $fmt , $value , &$parse_pos=0 )
 {
     return $GLOBALS['oo-mode'] ? $fmt->localtime(  $value , $parse_pos ) : datefmt_localtime( $fmt ,  $value , $parse_pos );
 }
-?>
+
+function ut_resourcebundle_create( $locale, $bundle, $fallback=true )
+{
+    return $GLOBALS['oo-mode'] ? new ResourceBundle($locale, $bundle, $fallback): resourcebundle_create($locale, $bundle, $fallback);
+}
+function ut_resourcebundle_count($bundle )
+{
+    return $GLOBALS['oo-mode'] ? $bundle->count():resourcebundle_count($bundle);
+}
+function ut_resourcebundle_locales($bundle )
+{
+    return $GLOBALS['oo-mode'] ? ResourceBundle::getLocales($bundle):resourcebundle_locales($bundle);
+}
+function ut_resourcebundle_get($bundle, $idx )
+{
+    return $GLOBALS['oo-mode'] ? $bundle->get($idx):resourcebundle_get($bundle, $idx);
+}
+function ut_resourcebundle_get_error_code($bundle )
+{
+    return $GLOBALS['oo-mode'] ? $bundle->getErrorCode():resourcebundle_get_error_code($bundle);
+}
+function ut_resourcebundle_get_error_message($bundle )
+{
+    return $GLOBALS['oo-mode'] ? $bundle->getErrorMessage():resourcebundle_get_error_message($bundle);
+}

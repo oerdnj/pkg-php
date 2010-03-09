@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: var.c 287123 2009-08-11 22:46:07Z stas $ */
+/* $Id: var.c 293036 2010-01-03 09:23:27Z sebastian $ */
 
 /* {{{ includes
 */
@@ -612,9 +612,9 @@ static void php_var_serialize_class(smart_str *buf, zval *struc, zval *retval_pt
 							break;
 						}
 						pefree(prot_name, ce->type & ZEND_INTERNAL_CLASS);
-						php_error_docref(NULL TSRMLS_CC, E_NOTICE, "\"%s\" returned as member variable from __sleep() but does not exist", Z_STRVAL_PP(name));
 						php_var_serialize_string(buf, Z_STRVAL_PP(name), Z_STRLEN_PP(name));
 						php_var_serialize_intern(buf, nvalp, var_hash TSRMLS_CC);
+						php_error_docref(NULL TSRMLS_CC, E_NOTICE, "\"%s\" returned as member variable from __sleep() but does not exist", Z_STRVAL_PP(name));
 					} while (0);
 				} else {
 					php_var_serialize_string(buf, Z_STRVAL_PP(name), Z_STRLEN_PP(name));

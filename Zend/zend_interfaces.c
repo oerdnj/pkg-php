@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2009 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2010 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_interfaces.c 277750 2009-03-25 10:39:26Z dmitry $ */
+/* $Id: zend_interfaces.c 294549 2010-02-05 00:37:07Z pajoye $ */
 
 #include "zend.h"
 #include "zend_API.h"
@@ -353,6 +353,10 @@ static int zend_implement_aggregate(zend_class_entry *interface, zend_class_entr
 			if (class_type->num_interfaces) {
 				for (i = 0; i < class_type->num_interfaces; i++) {
 					if (class_type->interfaces[i] == zend_ce_iterator) {
+						zend_error(E_ERROR, "Class %s cannot implement both %s and %s at the same time",
+									class_type->name,
+									interface->name,
+									zend_ce_iterator->name);
 						return FAILURE;
 					}
 					if (class_type->interfaces[i] == zend_ce_traversable) {
@@ -378,8 +382,14 @@ static int zend_implement_iterator(zend_class_entry *interface, zend_class_entry
 		if (class_type->type == ZEND_INTERNAL_CLASS) {
 			/* inheritance ensures the class has the necessary userland methods */
 			return SUCCESS;
-		} else if (class_type->get_iterator != zend_user_it_get_new_iterator) {
+		} else {
 			/* c-level get_iterator cannot be changed */
+			if (class_type->get_iterator == zend_user_it_get_new_iterator) {
+				zend_error(E_ERROR, "Class %s cannot implement both %s and %s at the same time",
+							class_type->name,
+							interface->name,
+							zend_ce_aggregate->name);
+			}
 			return FAILURE;
 		}
 	}

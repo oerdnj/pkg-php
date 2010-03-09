@@ -10,7 +10,7 @@ require_once('skipifconnectfailure.inc');
 
 class DbConnection {
 	public function connect() {
-		include "connect.inc";
+		require_once("connect.inc");
 
 		$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket);
 		var_dump($link);
@@ -35,7 +35,7 @@ echo "Done\n";
 ?>
 --CLEAN--
 <?php
-include "connect.inc";
+require_once("connect.inc");
 if (!$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket))
    printf("[c001] [%d] %s\n", mysqli_connect_errno(), mysqli_connect_error());
 
@@ -55,7 +55,7 @@ object(mysqli)#%d (%d) {
   [%u|b%"connect_errno"]=>
   int(0)
   [%u|b%"connect_error"]=>
-  %unicode|string%(0) ""
+  NULL
   [%u|b%"errno"]=>
   int(0)
   [%u|b%"error"]=>
@@ -91,7 +91,7 @@ object(mysqli)#%d (%d) {
   [%u|b%"connect_errno"]=>
   int(0)
   [%u|b%"connect_error"]=>
-  %unicode|string%(0) ""
+  NULL
   [%u|b%"errno"]=>
   int(0)
   [%u|b%"error"]=>

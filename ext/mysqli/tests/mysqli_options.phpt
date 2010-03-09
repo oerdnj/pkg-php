@@ -8,7 +8,7 @@ require_once('skipifconnectfailure.inc');
 ?>
 --FILE--
 <?php
-	include "connect.inc";
+	require_once("connect.inc");
 
 /*
 TODO: ext/mysqli might lack support for those options which are available
@@ -111,6 +111,8 @@ bool(true)
 bool(true)
 %s(23) "MYSQLI_OPT_LOCAL_INFILE"
 bool(true)
+
+Notice: Array to string conversion in %s on line %d
 %s(19) "MYSQLI_INIT_COMMAND"
 bool(true)
 %s(25) "MYSQLI_READ_DEFAULT_GROUP"

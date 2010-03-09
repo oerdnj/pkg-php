@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: openssl.c 289443 2009-10-09 19:08:56Z pajoye $ */
+/* $Id: openssl.c 294508 2010-02-04 09:23:22Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -51,13 +51,19 @@
 /* Common */
 #include <time.h>
 
+#ifdef NETWARE
+#define timezone _timezone	/* timezone is called _timezone in LibC */
+#endif
+
 #define DEFAULT_KEY_LENGTH	512
 #define MIN_KEY_LENGTH		384
 
 #define OPENSSL_ALGO_SHA1 	1
 #define OPENSSL_ALGO_MD5	2
 #define OPENSSL_ALGO_MD4	3
+#ifdef HAVE_OPENSSL_MD2_H
 #define OPENSSL_ALGO_MD2	4
+#endif
 #define OPENSSL_ALGO_DSS1	5
 
 #define DEBUG_SMIME	0
@@ -913,9 +919,11 @@ static EVP_MD * php_openssl_get_evp_md_from_algo(long algo) { /* {{{ */
 		case OPENSSL_ALGO_MD4:
 			mdtype = (EVP_MD *) EVP_md4();
 			break;
+#ifdef HAVE_OPENSSL_MD2_H
 		case OPENSSL_ALGO_MD2:
 			mdtype = (EVP_MD *) EVP_md2();
 			break;
+#endif
 		case OPENSSL_ALGO_DSS1:
 			mdtype = (EVP_MD *) EVP_dss1();
 			break;
@@ -997,7 +1005,9 @@ PHP_MINIT_FUNCTION(openssl)
 	REGISTER_LONG_CONSTANT("OPENSSL_ALGO_SHA1", OPENSSL_ALGO_SHA1, CONST_CS|CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("OPENSSL_ALGO_MD5", OPENSSL_ALGO_MD5, CONST_CS|CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("OPENSSL_ALGO_MD4", OPENSSL_ALGO_MD4, CONST_CS|CONST_PERSISTENT);
+#ifdef HAVE_OPENSSL_MD2_H
 	REGISTER_LONG_CONSTANT("OPENSSL_ALGO_MD2", OPENSSL_ALGO_MD2, CONST_CS|CONST_PERSISTENT);
+#endif
 	REGISTER_LONG_CONSTANT("OPENSSL_ALGO_DSS1", OPENSSL_ALGO_DSS1, CONST_CS|CONST_PERSISTENT);
 
 	/* flags for S/MIME */
@@ -1035,6 +1045,11 @@ PHP_MINIT_FUNCTION(openssl)
 	REGISTER_LONG_CONSTANT("OPENSSL_KEYTYPE_DH", OPENSSL_KEYTYPE_DH, CONST_CS|CONST_PERSISTENT);
 #ifdef EVP_PKEY_EC
 	REGISTER_LONG_CONSTANT("OPENSSL_KEYTYPE_EC", OPENSSL_KEYTYPE_EC, CONST_CS|CONST_PERSISTENT);
+#endif
+
+#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
+	/* SNI support included in OpenSSL >= 0.9.8j */
+	REGISTER_LONG_CONSTANT("OPENSSL_TLSEXT_SERVER_NAME", 1, CONST_CS|CONST_PERSISTENT);
 #endif
 
 	/* Determine default SSL configuration file */
@@ -1738,18 +1753,18 @@ PHP_FUNCTION(openssl_pkcs12_export_to_file)
 	int filename_len;
 	char * pass;
 	int pass_len;
-	zval *zcert = NULL, *zpkey = NULL, *args = NULL;
+	zval **zcert = NULL, *zpkey = NULL, *args = NULL;
 	EVP_PKEY *priv_key = NULL;
 	long certresource, keyresource;
 	zval ** item;
 	STACK_OF(X509) *ca = NULL;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zszs|a", &zcert, &filename, &filename_len, &zpkey, &pass, &pass_len, &args) == FAILURE)
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "Zszs|a", &zcert, &filename, &filename_len, &zpkey, &pass, &pass_len, &args) == FAILURE)
 		return;
 
 	RETVAL_FALSE;
 	
-	cert = php_openssl_x509_from_zval(&zcert, 0, &certresource TSRMLS_CC);
+	cert = php_openssl_x509_from_zval(zcert, 0, &certresource TSRMLS_CC);
 	if (cert == NULL) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "cannot get cert from parameter 1");
 		return;

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2009 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2010 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_ini_scanner.l 286913 2009-08-07 15:44:37Z jani $ */
+/* $Id: zend_ini_scanner.l 294698 2010-02-07 12:08:22Z pajoye $ */
 
 #include <errno.h>
 #include "zend.h"
@@ -104,6 +104,17 @@ ZEND_API ts_rsrc_id ini_scanner_globals_id;
 #else
 ZEND_API zend_ini_scanner_globals ini_scanner_globals;
 #endif
+
+/* Eat leading whitespace */
+#define EAT_LEADING_WHITESPACE()                     \
+	while (yytext[0]) {                              \
+		if (yytext[0] == ' ' || yytext[0] == '\t') { \
+			SCNG(yy_text)++;                         \
+			yyleng--;                                \
+		} else {                                     \
+			break;                                   \
+		}                                            \
+	}
 
 /* Eat trailing whitespace + extra char */
 #define EAT_TRAILING_WHITESPACE_EX(ch)              \
@@ -325,8 +336,8 @@ ANY_CHAR (.|[\n\t])
 NEWLINE	("\r"|"\n"|"\r\n")
 TABS_AND_SPACES [ \t]
 WHITESPACE [ \t]+
-CONSTANT [a-zA-Z][a-zA-Z0-9_]*
-LABEL [^=\n\r\t ;|&$~(){}!"\[]+
+CONSTANT [a-zA-Z_][a-zA-Z0-9_]*
+LABEL [^=\n\r\t;|&$~(){}!"\[]+
 TOKENS [:,.\[\]"'()|^&+-/*=%$!~<>?@{}]
 OPERATORS [&|~()!]
 DOLLAR_CURLY "${"
@@ -367,6 +378,9 @@ SECTION_VALUE_CHARS ([^$\n\r;"'\]\\]|("\\"{ANY_CHAR})|{LITERAL_DOLLAR})
 }
 
 <INITIAL>{LABEL}"["{TABS_AND_SPACES}* { /* Start of option with offset */
+	/* Eat leading whitespace */
+	EAT_LEADING_WHITESPACE();
+	
 	/* Eat trailing whitespace and [ */
 	EAT_TRAILING_WHITESPACE_EX('[');
 
@@ -387,6 +401,12 @@ SECTION_VALUE_CHARS ([^$\n\r;"'\]\\]|("\\"{ANY_CHAR})|{LITERAL_DOLLAR})
 }
 
 <ST_VARNAME>{LABEL} { /* Variable name */
+	/* Eat leading whitespace */
+	EAT_LEADING_WHITESPACE();
+
+	/* Eat trailing whitespace */
+	EAT_TRAILING_WHITESPACE();
+
 	RETURN_TOKEN(TC_VARNAME, yytext, yyleng);
 }
 
@@ -404,6 +424,12 @@ SECTION_VALUE_CHARS ([^$\n\r;"'\]\\]|("\\"{ANY_CHAR})|{LITERAL_DOLLAR})
 }
 
 <INITIAL>{LABEL} { /* Get option name */
+	/* Eat leading whitespace */
+	EAT_LEADING_WHITESPACE();
+
+	/* Eat trailing whitespace */
+	EAT_TRAILING_WHITESPACE();
+
 	RETURN_TOKEN(TC_LABEL, yytext, yyleng);
 }
 

@@ -38,7 +38,7 @@
 
 #if 0
 static char const *version UNUSED =
-    "$Id: strnatcmp.c 289419 2009-10-09 14:33:38Z pajoye $";
+    "$Id: strnatcmp.c 288896 2009-09-28 13:29:53Z rasmus $";
 #endif
 /* {{{ compare_right
  */

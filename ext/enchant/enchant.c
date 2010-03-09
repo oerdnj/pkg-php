@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2009 The PHP Group                                |
+  | Copyright (c) 1997-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   |         Ilia Alshanetsky <ilia@prohost.org>                          |
   +----------------------------------------------------------------------+
 
-  $Id: enchant.c 289597 2009-10-12 22:35:36Z pajoye $
+  $Id: enchant.c 293036 2010-01-03 09:23:27Z sebastian $
 */
 
 #ifdef HAVE_CONFIG_H
@@ -327,7 +327,7 @@ PHP_MINFO_FUNCTION(enchant)
 #elif defined(HAVE_ENCHANT_BROKER_SET_PARAM)
 	php_info_print_table_row(2, "Libenchant Version", "1.5.0 or later");
 #endif
-	php_info_print_table_row(2, "Revision", "$Revision: 289597 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 293036 $");
 	php_info_print_table_end();
 
 	php_info_print_table_start();

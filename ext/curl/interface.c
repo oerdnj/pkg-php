@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: interface.c 289495 2009-10-10 09:24:59Z pajoye $ */
+/* $Id: interface.c 294464 2010-02-03 20:53:31Z pajoye $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 
@@ -629,6 +629,9 @@ PHP_MINIT_FUNCTION(curl)
 	REGISTER_CURL_CONSTANT(CURLINFO_REDIRECT_COUNT);
 	REGISTER_CURL_CONSTANT(CURLINFO_HEADER_OUT);
 	REGISTER_CURL_CONSTANT(CURLINFO_PRIVATE);
+#if LIBCURL_VERSION_NUM >  0x071301
+	REGISTER_CURL_CONSTANT(CURLINFO_CERTINFO);
+#endif
 
 	/* cURL protocol constants (curl_version) */
 	REGISTER_CURL_CONSTANT(CURL_VERSION_IPV6);
@@ -745,6 +748,11 @@ PHP_MINIT_FUNCTION(curl)
 	REGISTER_CURL_CONSTANT(CURLFTPSSL_ALL);
 #endif
 
+#if LIBCURL_VERSION_NUM > 0x071301
+	REGISTER_CURL_CONSTANT(CURLOPT_CERTINFO);
+	REGISTER_CURL_CONSTANT(CURLOPT_POSTREDIR);
+#endif
+
 /* SSH support works in 7.19.0+ using libssh2 */
 #if LIBCURL_VERSION_NUM >= 0x071300
 	REGISTER_CURL_CONSTANT(CURLSSH_AUTH_NONE);
@@ -781,6 +789,7 @@ PHP_MINIT_FUNCTION(curl)
 
 #if LIBCURL_VERSION_NUM >= 0x070f01
 	REGISTER_CURL_CONSTANT(CURLOPT_FTP_FILEMETHOD);
+	REGISTER_CURL_CONSTANT(CURLOPT_FTP_SKIP_PASV_IP);
 #endif
 
 #if LIBCURL_VERSION_NUM >= 0x071001
@@ -1336,6 +1345,83 @@ static void alloc_curl_handle(php_curl **ch)
 }
 /* }}} */
 
+#if LIBCURL_VERSION_NUM > 0x071301
+/* {{{ split_certinfo
+ */
+static void split_certinfo(char *string, zval *hash)
+{
+	char *org = estrdup(string);
+	char *s = org;
+	char *split;
+
+	if(org) {
+        do {
+			char *key;
+			char *val;
+			char *tmp;
+
+            split = strstr(s, "; ");
+            if(split)
+                *split = '\0';
+			
+			key = s;
+			tmp = memchr(key, '=', 64);
+			if(tmp) {
+				*tmp = '\0';
+				val = tmp+1;
+				add_assoc_string(hash, key, val, 1);
+			}
+			s = split+2;
+		} while(split);
+		efree(org);
+	}
+}
+
+/* {{{ create_certinfo
+ */
+static void create_certinfo(struct curl_certinfo *ci, zval *listcode TSRMLS_DC)
+{
+	int i;
+			
+	if(ci) {
+		zval *certhash = NULL;
+		
+		for(i=0; i<ci->num_of_certs; i++) {
+			struct curl_slist *slist;
+			
+			MAKE_STD_ZVAL(certhash);
+			array_init(certhash);
+			for(slist = ci->certinfo[i]; slist; slist = slist->next) {
+				int len;
+				char s[64];
+				char *tmp;
+				strncpy(s, slist->data, 64);
+				tmp = memchr(s, ':', 64);
+				if(tmp) {
+					*tmp = '\0';
+					len = strlen(s);
+					if(!strcmp(s, "Subject") || !strcmp(s, "Issuer")) {
+						zval *hash;
+
+						MAKE_STD_ZVAL(hash);
+						array_init(hash);
+						
+						split_certinfo(&slist->data[len+1], hash);
+						add_assoc_zval(certhash, s, hash);
+					} else {
+						add_assoc_string(certhash, s, &slist->data[len+1], 1);
+					}
+				} else {
+					php_error_docref(NULL TSRMLS_CC, E_WARNING, "Could not extract hash key from certificate info"); 
+				}
+			}
+			add_next_index_zval(listcode, certhash);
+		}
+	}
+}
+/* }}} */
+#endif
+
 /* {{{ proto resource curl_init([string url])
    Initialize a cURL session */
 PHP_FUNCTION(curl_init)
@@ -1572,6 +1658,10 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 #endif
 #if LIBCURL_VERSION_NUM >= 0x070f01
 		case CURLOPT_FTP_FILEMETHOD:
+		case CURLOPT_FTP_SKIP_PASV_IP:
+#endif
+#if LIBCURL_VERSION_NUM >  0x071301
+		case CURLOPT_CERTINFO:
 #endif
 			convert_to_long_ex(zvalue);
 #if LIBCURL_VERSION_NUM >= 0x71304
@@ -1595,6 +1685,12 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 			}
 			error = curl_easy_setopt(ch->cp, option, Z_LVAL_PP(zvalue));
 			break;
+#if LIBCURL_VERSION_NUM > 0x071301
+		case CURLOPT_POSTREDIR:
+			convert_to_long_ex(zvalue);
+			error = curl_easy_setopt(ch->cp, CURLOPT_POSTREDIR, Z_LVAL_PP(zvalue) & CURL_REDIR_POST_ALL);
+			break;
+#endif
 		case CURLOPT_PRIVATE:
 		case CURLOPT_URL:
 		case CURLOPT_PROXY:
@@ -1852,7 +1948,7 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 						error = curl_formadd(&first, &last,
 										CURLFORM_COPYNAME, string_key,
 										CURLFORM_NAMELENGTH, (long)string_key_len - 1,
-										CURLFORM_FILENAME, filename ? filename : postval,
+										CURLFORM_FILENAME, filename ? filename + sizeof(";filename=") - 1 : postval,
 										CURLFORM_CONTENTTYPE, type ? type + sizeof(";type=") - 1 : "application/octet-stream",
 										CURLFORM_FILE, postval,
 										CURLFORM_END);
@@ -2121,6 +2217,10 @@ PHP_FUNCTION(curl_getinfo)
 		char   *s_code;
 		long    l_code;
 		double  d_code;
+#if LIBCURL_VERSION_NUM >  0x071301
+		struct curl_certinfo *ci = NULL;
+		zval *listcode;
+#endif
 
 		array_init(return_value);
 
@@ -2191,6 +2291,14 @@ PHP_FUNCTION(curl_getinfo)
 		if (curl_easy_getinfo(ch->cp, CURLINFO_REDIRECT_TIME, &d_code) == CURLE_OK) {
 			CAAD("redirect_time", d_code);
 		}
+#if LIBCURL_VERSION_NUM > 0x071301
+		if (curl_easy_getinfo(ch->cp, CURLINFO_CERTINFO, &ci) == CURLE_OK) {
+			MAKE_STD_ZVAL(listcode);
+			array_init(listcode);
+			create_certinfo(ci, listcode TSRMLS_CC);
+			CAAZ("certinfo", listcode);
+		}
+#endif
 		if (ch->header.str_len > 0) {
 			CAAS("request_header", ch->header.str);
 		}
@@ -2250,6 +2358,20 @@ PHP_FUNCTION(curl_getinfo)
 				} else {
 					RETURN_FALSE;
 				}
+#if LIBCURL_VERSION_NUM > 0x071301
+			case CURLINFO_CERTINFO: {
+				struct curl_certinfo *ci = NULL;
+
+				array_init(return_value);
+				
+				if (curl_easy_getinfo(ch->cp, CURLINFO_CERTINFO, &ci) == CURLE_OK) {
+					create_certinfo(ci, return_value TSRMLS_CC);
+				} else {
+					RETURN_FALSE;
+				}
+				break;
+			}
+#endif
 		}
 	}
 }

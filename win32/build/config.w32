@@ -1,5 +1,5 @@
 // vim:ft=javascript
-// $Id: config.w32 289764 2009-10-19 19:05:58Z pajoye $
+// $Id: config.w32 291639 2009-12-03 11:50:32Z kalle $
 // "Master" config file; think of it as a configure.in
 // equivalent.
 
@@ -15,6 +15,7 @@ if (!CL) {
 // 1310 is vs.net 2003
 // 1400 is vs.net 2005
 // 1500 is vs.net 2008
+// 1600 is vs.net 2010
 // Which version of the compiler do we have?
 VCVERS = probe_binary(CL).substr(0, 5).replace('.', '');
 STDOUT.WriteLine("  Detected compiler " + VC_VERSIONS[VCVERS]);
@@ -113,13 +114,13 @@ DEFINE("BASE_INCLUDES", "/I . /I main /I Zend /I TSRM /I ext ");
 
 // CFLAGS for building the PHP dll
 DEFINE("CFLAGS_PHP", "/D _USRDLL /D PHP5DLLTS_EXPORTS /D PHP_EXPORTS \
-/D LIBZEND_EXPORTS /D TSRM_EXPORTS /D SAPI_EXPORTS /D WINVER=0x400");
+/D LIBZEND_EXPORTS /D TSRM_EXPORTS /D SAPI_EXPORTS /D WINVER=0x500");
 
 DEFINE('CFLAGS_PHP_OBJ', '$(CFLAGS_PHP) $(STATIC_EXT_CFLAGS)');
 
 // General CFLAGS for building objects
 DEFINE("CFLAGS", "/nologo /FD $(BASE_INCLUDES) /D _WINDOWS \
-/D ZEND_WIN32=1 /D PHP_WIN32=1 /D WIN32 /D _MBCS");
+/D ZEND_WIN32=1 /D PHP_WIN32=1 /D WIN32 /D _MBCS /W3 ");
 
 if (VCVERS < 1400) {
 	// Enable automatic precompiled headers
@@ -147,7 +148,7 @@ if (VCVERS >= 1400) {
 	}
 }
 
-ARG_WITH('mp', 'Tell VC9 use up to [n,auto,disable] processes for compilation', 'auto');
+ARG_WITH('mp', 'Tell VC9+ use up to [n,auto,disable] processes for compilation', 'auto');
 if (VCVERS >= 1500 && PHP_MP != 'disable') {
 		// no from disable-all 
 		if(PHP_MP == 'auto' || PHP_MP == 'no') {
@@ -177,7 +178,7 @@ DEFINE("LIBS", "kernel32.lib ole32.lib user32.lib advapi32.lib shell32.lib ws2_3
 
 // Set some debug/release specific options
 if (PHP_DEBUG == "yes") {
-	ADD_FLAG("CFLAGS", "/LDd /MDd /Gm /Od /D _DEBUG /D ZEND_DEBUG=1 " +
+	ADD_FLAG("CFLAGS", "/LDd /MDd /W3 /Gm /Od /D _DEBUG /D ZEND_DEBUG=1 " +
 		(X64?"/Zi":"/ZI"));
 	ADD_FLAG("LDFLAGS", "/debug");
 	// Avoid problems when linking to release libraries that use the release

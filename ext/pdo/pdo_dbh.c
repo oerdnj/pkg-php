@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2009 The PHP Group                                |
+  | Copyright (c) 1997-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_dbh.c 289775 2009-10-19 21:43:34Z johannes $ */
+/* $Id: pdo_dbh.c 293036 2010-01-03 09:23:27Z sebastian $ */
 
 /* The PDO Database Handle Class */
 
@@ -44,7 +44,7 @@ void pdo_raise_impl_error(pdo_dbh_t *dbh, pdo_stmt_t *stmt, const char *sqlstate
 	char *message = NULL;
 	const char *msg;
 
-	if (dbh->error_mode == PDO_ERRMODE_SILENT) {
+	if (dbh && dbh->error_mode == PDO_ERRMODE_SILENT) {
 #if 0
 		/* BUG: if user is running in silent mode and hits an error at the driver level
 		 * when they use the PDO methods to call up the error information, they may
@@ -71,7 +71,7 @@ void pdo_raise_impl_error(pdo_dbh_t *dbh, pdo_stmt_t *stmt, const char *sqlstate
 		spprintf(&message, 0, "SQLSTATE[%s]: %s", *pdo_err, msg);
 	}
 
-	if (dbh->error_mode != PDO_ERRMODE_EXCEPTION) {
+	if (dbh && dbh->error_mode != PDO_ERRMODE_EXCEPTION) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", message);
 	} else {
 		zval *ex, *info;
@@ -1144,8 +1144,7 @@ static PHP_METHOD(PDO, quote)
 	char *qstr;
 	int qlen;
 
-	if (FAILURE == zend_parse_parameters(1 TSRMLS_CC, "s|l", &str, &str_len,
-			&paramtype)) {
+	if (FAILURE == zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l", &str, &str_len, &paramtype)) {
 		RETURN_FALSE;
 	}
 	

@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2009 The PHP Group                                |
+  | Copyright (c) 1997-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_xml.c 272370 2008-12-31 11:15:49Z sebastian $ */
+/* $Id: php_xml.c 293036 2010-01-03 09:23:27Z sebastian $ */
 
 #include "php_soap.h"
 #include "libxml/parser.h"
@@ -138,6 +138,9 @@ xmlDocPtr soap_xmlParseMemory(const void *buf, size_t buf_size)
 		ctxt->sax->warning = NULL;
 		ctxt->sax->error = NULL;
 		/*ctxt->sax->fatalError = NULL;*/
+#if LIBXML_VERSION >= 20703
+		ctxt->options |= XML_PARSE_HUGE;
+#endif
 		xmlParseDocument(ctxt);
 		if (ctxt->wellFormed) {
 			ret = ctxt->myDoc;

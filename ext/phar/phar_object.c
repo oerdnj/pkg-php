@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: phar_object.c 286518 2009-07-29 16:17:57Z felipe $ */
+/* $Id: phar_object.c 290647 2009-11-13 00:58:11Z cellog $ */
 
 #include "phar_internal.h"
 #include "func_interceptors.h"
@@ -2945,7 +2945,7 @@ PHP_METHOD(Phar, isBuffering)
 {
 	PHAR_ARCHIVE_OBJECT();
 
-	RETURN_BOOL(!phar_obj->arc.archive->donotflush);
+	RETURN_BOOL(phar_obj->arc.archive->donotflush);
 }
 /* }}} */
 

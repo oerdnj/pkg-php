@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: sockets.c 289417 2009-10-09 14:22:29Z pajoye $ */
+/* $Id: sockets.c 294029 2010-01-25 23:12:42Z johannes $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -41,6 +41,12 @@
 # include "php_sockets.h"
 # include "win32/sockets.h"
 # define IS_INVALID_SOCKET(a)	(a->bsd_socket == INVALID_SOCKET)
+# ifdef EPROTONOSUPPORT
+#  undef EPROTONOSUPPORT
+# endif
+# ifdef ECONNRESET
+#  undef ECONNRESET
+# endif
 # define EPROTONOSUPPORT	WSAEPROTONOSUPPORT
 # define ECONNRESET		WSAECONNRESET
 # ifdef errno
@@ -104,7 +110,7 @@ static char *php_strerror(int error TSRMLS_DC);
 						php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s [%d]: %s", msg, errn, php_strerror(errn TSRMLS_CC))
 
 static int le_socket;
-#define le_socket_name "Socket"
+#define le_socket_name php_sockets_le_socket_name
 
 /* {{{ arginfo */
 ZEND_BEGIN_ARG_INFO_EX(arginfo_socket_select, 0, 0, 4)

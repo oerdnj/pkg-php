@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: session.c 286443 2009-07-28 08:54:23Z tony2001 $ */
+/* $Id: session.c 294515 2010-02-04 09:40:38Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -60,12 +60,6 @@ PHPAPI ZEND_DECLARE_MODULE_GLOBALS(ps);
 /* ***********
    * Helpers *
    *********** */
-
-#ifdef NETWARE
-# define SESS_SB_MTIME(sb)	((sb).st_mtime.tv_sec)
-#else
-# define SESS_SB_MTIME(sb)	((sb).st_mtime)
-#endif
 
 #define IF_SESSION_VARS() \
 	if (PS(http_session_vars) && PS(http_session_vars)->type == IS_ARRAY)
@@ -693,17 +687,22 @@ static PHP_INI_MH(OnUpdateSaveDir) /* {{{ */
 			return FAILURE;
 		}
 
-		if ((p = zend_memrchr(new_value, ';', new_value_length))) {
+		/* we do not use zend_memrchr() since path can contain ; itself */
+		if ((p = strchr(new_value, ';'))) {
+			char *p2;
 			p++;
+			if ((p2 = strchr(p, ';'))) {
+				p = p2 + 1;
+			}
 		} else {
 			p = new_value;
 		}
 
-		if (PG(safe_mode) && (!php_checkuid(p, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
+		if (PG(safe_mode) && *p && (!php_checkuid(p, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
 			return FAILURE;
 		}
 
-		if (PG(open_basedir) && php_check_open_basedir(p TSRMLS_CC)) {
+		if (PG(open_basedir) && *p && php_check_open_basedir(p TSRMLS_CC)) {
 			return FAILURE;
 		}
 	}
@@ -1095,7 +1094,7 @@ static inline void last_modified(TSRMLS_D) /* {{{ */
 
 #define LAST_MODIFIED "Last-Modified: "
 		memcpy(buf, LAST_MODIFIED, sizeof(LAST_MODIFIED) - 1);
-		strcpy_gmt(buf + sizeof(LAST_MODIFIED) - 1, &SESS_SB_MTIME(sb));
+		strcpy_gmt(buf + sizeof(LAST_MODIFIED) - 1, &sb.st_mtime);
 		ADD_HEADER(buf);
 	}
 }
@@ -1888,7 +1887,10 @@ static PHP_FUNCTION(session_unset)
 	}
 
 	IF_SESSION_VARS() {
-		HashTable *ht = Z_ARRVAL_P(PS(http_session_vars));
+		HashTable *ht;
+
+		SEPARATE_ZVAL_IF_NOT_REF(&PS(http_session_vars));
+		ht = Z_ARRVAL_P(PS(http_session_vars));
 
 		if (PG(register_globals)) {
 			uint str_len;
@@ -1966,7 +1968,10 @@ static PHP_FUNCTION(session_unregister)
 		return;
 	}
 
-	PS_DEL_VARL(p_name, p_name_len);
+	IF_SESSION_VARS() {
+		SEPARATE_ZVAL_IF_NOT_REF(&PS(http_session_vars));
+		PS_DEL_VARL(p_name, p_name_len);
+	}
 
 	RETURN_TRUE;
 }

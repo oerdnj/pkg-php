@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: filestat.c 272370 2008-12-31 11:15:49Z sebastian $ */
+/* $Id: filestat.c 293036 2010-01-03 09:23:27Z sebastian $ */
 
 #include "php.h"
 #include "safe_mode.h"
@@ -386,7 +386,7 @@ PHP_FUNCTION(disk_free_space)
 }
 /* }}} */
 
-#if !defined(WINDOWS)
+#if !defined(WINDOWS) && !defined(NETWARE)
 static void php_do_chgrp(INTERNAL_FUNCTION_PARAMETERS, int do_lchgrp) /* {{{ */
 {
 	char *filename;
@@ -487,7 +487,7 @@ PHP_FUNCTION(lchgrp)
 /* }}} */
 #endif /* !NETWARE */
 
-#if !defined(WINDOWS)
+#if !defined(WINDOWS) && !defined(NETWARE)
 static void php_do_chown(INTERNAL_FUNCTION_PARAMETERS, int do_lchown) /* {{{ */
 {
 	char *filename;
@@ -899,23 +899,11 @@ PHPAPI void php_stat(const char *filename, php_stat_len filename_length, int typ
 	case FS_GROUP:
 		RETURN_LONG((long)ssb.sb.st_gid);
 	case FS_ATIME:
-#ifdef NETWARE
-		RETURN_LONG((long)ssb.sb.st_atime.tv_sec);
-#else
 		RETURN_LONG((long)ssb.sb.st_atime);
-#endif
 	case FS_MTIME:
-#ifdef NETWARE
-		RETURN_LONG((long)ssb.sb.st_mtime.tv_sec);
-#else
 		RETURN_LONG((long)ssb.sb.st_mtime);
-#endif
 	case FS_CTIME:
-#ifdef NETWARE
-		RETURN_LONG((long)ssb.sb.st_ctime.tv_sec);
-#else
 		RETURN_LONG((long)ssb.sb.st_ctime);
-#endif
 	case FS_TYPE:
 		if (S_ISLNK(ssb.sb.st_mode)) {
 			RETURN_STRING("link", 1);
@@ -963,15 +951,9 @@ PHPAPI void php_stat(const char *filename, php_stat_len filename_length, int typ
 		MAKE_LONG_ZVAL_INCREF(stat_rdev, -1);
 #endif
 		MAKE_LONG_ZVAL_INCREF(stat_size, stat_sb->st_size);
-#ifdef NETWARE
-		MAKE_LONG_ZVAL_INCREF(stat_atime, (stat_sb->st_atime).tv_sec);
-		MAKE_LONG_ZVAL_INCREF(stat_mtime, (stat_sb->st_mtime).tv_sec);
-		MAKE_LONG_ZVAL_INCREF(stat_ctime, (stat_sb->st_ctime).tv_sec);
-#else
 		MAKE_LONG_ZVAL_INCREF(stat_atime, stat_sb->st_atime);
 		MAKE_LONG_ZVAL_INCREF(stat_mtime, stat_sb->st_mtime);
 		MAKE_LONG_ZVAL_INCREF(stat_ctime, stat_sb->st_ctime);
-#endif
 #ifdef HAVE_ST_BLKSIZE
 		MAKE_LONG_ZVAL_INCREF(stat_blksize, stat_sb->st_blksize);
 #else
@@ -1124,6 +1106,51 @@ FileFunction(php_if_lstat, FS_LSTAT)
    Give information about a file */
 FileFunction(php_if_stat, FS_STAT)
 /* }}} */
+
+/* {{{ proto bool realpath_cache_size()
+   Get current size of realpath cache */
+PHP_FUNCTION(realpath_cache_size)
+{
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
+	RETURN_LONG(realpath_cache_size(TSRMLS_C));
+}
+
+/* {{{ proto bool realpath_cache_get()
+   Get current size of realpath cache */
+PHP_FUNCTION(realpath_cache_get)
+{
+	realpath_cache_bucket **buckets = realpath_cache_get_buckets(TSRMLS_C), **end = buckets + realpath_cache_max_buckets(TSRMLS_C);
+
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
+
+	array_init(return_value);
+	while(buckets < end) {
+		realpath_cache_bucket *bucket = *buckets;
+		while(bucket) {
+			zval *entry;
+			MAKE_STD_ZVAL(entry);
+			array_init(entry);
+
+			add_assoc_long(entry, "key", bucket->key);
+			add_assoc_bool(entry, "is_dir", bucket->is_dir);
+			add_assoc_stringl(entry, "realpath", bucket->realpath, bucket->realpath_len, 1);
+			add_assoc_long(entry, "expires", bucket->expires);
+#ifdef PHP_WIN32
+			add_assoc_bool(entry, "is_rvalid", bucket->is_rvalid);
+			add_assoc_bool(entry, "is_wvalid", bucket->is_wvalid);
+			add_assoc_bool(entry, "is_readable", bucket->is_readable);
+			add_assoc_bool(entry, "is_writable", bucket->is_writable);
+#endif
+			zend_hash_update(Z_ARRVAL_P(return_value), bucket->path, bucket->path_len+1, &entry, sizeof(zval *), NULL);
+			bucket = bucket->next;
+		}
+		buckets++;
+	}
+}
 
 /*
  * Local variables:
