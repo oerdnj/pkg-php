@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: output.c 289444 2009-10-09 19:13:33Z pajoye $ */
+/* $Id: output.c 294505 2010-02-04 09:13:14Z pajoye $ */
 
 #include "php.h"
 #include "ext/standard/head.h"
@@ -50,6 +50,10 @@ php_output_globals output_globals;
 PHPAPI int php_default_output_func(const char *str, uint str_len TSRMLS_DC)
 {
 	fwrite(str, 1, str_len, stderr);
+/* See http://support.microsoft.com/kb/190351 */
+#ifdef PHP_WIN32
+	fflush(stderr);
+#endif
 	return str_len;
 }
 /* }}} */

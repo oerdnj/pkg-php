@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2009 The PHP Group                                |
+  | Copyright (c) 1997-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: filter_private.h 272370 2008-12-31 11:15:49Z sebastian $ */
+/* $Id: filter_private.h 293036 2010-01-03 09:23:27Z sebastian $ */
 
 #ifndef FILTER_PRIVATE_H
 #define FILTER_PRIVATE_H
@@ -39,6 +39,7 @@
 #define FILTER_FLAG_ENCODE_AMP              0x0040
 #define FILTER_FLAG_NO_ENCODE_QUOTES        0x0080
 #define FILTER_FLAG_EMPTY_STRING_NULL       0x0100
+#define FILTER_FLAG_STRIP_BACKTICK          0x0200
 
 #define FILTER_FLAG_ALLOW_FRACTION          0x1000
 #define FILTER_FLAG_ALLOW_THOUSAND          0x2000

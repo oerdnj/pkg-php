@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2009 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2010 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -1332,6 +1332,7 @@ static int ZEND_FASTCALL zend_fetch_var_address_helper_SPEC_CONST(int type, ZEND
 
 	if (opline->op2.u.EA.type == ZEND_FETCH_STATIC_MEMBER) {
 		retval = zend_std_get_static_property(EX_T(opline->op2.u.var).class_entry, Z_STRVAL_P(varname), Z_STRLEN_P(varname), 0 TSRMLS_CC);
+
 	} else {
 		target_symbol_table = zend_get_target_symbol_table(opline, EX(Ts), type, varname TSRMLS_CC);
 /*
@@ -8850,8 +8851,8 @@ static int ZEND_FASTCALL  ZEND_FE_RESET_SPEC_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARG
 static int ZEND_FASTCALL  ZEND_FE_FETCH_SPEC_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 {
 	zend_op *opline = EX(opline);
-	zend_free_op free_op1;
-	zval *array = _get_zval_ptr_var(&opline->op1, EX(Ts), &free_op1 TSRMLS_CC);
+
+	zval *array = EX_T(opline->op1.u.var).var.ptr;
 	zval **value;
 	char *str_key;
 	uint str_key_len;
@@ -8860,8 +8861,6 @@ static int ZEND_FASTCALL  ZEND_FE_FETCH_SPEC_VAR_HANDLER(ZEND_OPCODE_HANDLER_ARG
 	zend_object_iterator *iter = NULL;
 	int key_type = 0;
 	zend_bool use_key = (zend_bool)(opline->extended_value & ZEND_FE_FETCH_WITH_KEY);
-
-	PZVAL_LOCK(array);
 
 	switch (zend_iterator_unwrap(array, &iter TSRMLS_CC)) {
 		default:
@@ -9865,7 +9864,7 @@ static int ZEND_FASTCALL  ZEND_FETCH_DIM_W_SPEC_VAR_CONST_HANDLER(ZEND_OPCODE_HA
 	if (free_op1.var) {zval_ptr_dtor(&free_op1.var);};
 
 	/* We are going to assign the result by reference */
-	if (opline->extended_value) {
+	if (opline->extended_value && EX_T(opline->result.u.var).var.ptr_ptr) {
 		Z_DELREF_PP(EX_T(opline->result.u.var).var.ptr_ptr);
 		SEPARATE_ZVAL_TO_MAKE_IS_REF(EX_T(opline->result.u.var).var.ptr_ptr);
 		Z_ADDREF_PP(EX_T(opline->result.u.var).var.ptr_ptr);
@@ -10805,7 +10804,7 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_VAR_CONST(
 
 		zval *offset = &opline->op2.u.constant;
 
-		if (Z_TYPE_PP(container) == IS_ARRAY) {
+		if (Z_TYPE_PP(container) == IS_ARRAY && !prop_dim) {
 			HashTable *ht;
 			int isset = 0;
 
@@ -11668,7 +11667,7 @@ static int ZEND_FASTCALL  ZEND_FETCH_DIM_W_SPEC_VAR_TMP_HANDLER(ZEND_OPCODE_HAND
 	if (free_op1.var) {zval_ptr_dtor(&free_op1.var);};
 
 	/* We are going to assign the result by reference */
-	if (opline->extended_value) {
+	if (opline->extended_value && EX_T(opline->result.u.var).var.ptr_ptr) {
 		Z_DELREF_PP(EX_T(opline->result.u.var).var.ptr_ptr);
 		SEPARATE_ZVAL_TO_MAKE_IS_REF(EX_T(opline->result.u.var).var.ptr_ptr);
 		Z_ADDREF_PP(EX_T(opline->result.u.var).var.ptr_ptr);
@@ -12554,7 +12553,7 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_VAR_TMP(in
 		zend_free_op free_op2;
 		zval *offset = _get_zval_ptr_tmp(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
 
-		if (Z_TYPE_PP(container) == IS_ARRAY) {
+		if (Z_TYPE_PP(container) == IS_ARRAY && !prop_dim) {
 			HashTable *ht;
 			int isset = 0;
 
@@ -13417,7 +13416,7 @@ static int ZEND_FASTCALL  ZEND_FETCH_DIM_W_SPEC_VAR_VAR_HANDLER(ZEND_OPCODE_HAND
 	if (free_op1.var) {zval_ptr_dtor(&free_op1.var);};
 
 	/* We are going to assign the result by reference */
-	if (opline->extended_value) {
+	if (opline->extended_value && EX_T(opline->result.u.var).var.ptr_ptr) {
 		Z_DELREF_PP(EX_T(opline->result.u.var).var.ptr_ptr);
 		SEPARATE_ZVAL_TO_MAKE_IS_REF(EX_T(opline->result.u.var).var.ptr_ptr);
 		Z_ADDREF_PP(EX_T(opline->result.u.var).var.ptr_ptr);
@@ -14354,7 +14353,7 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_VAR_VAR(in
 		zend_free_op free_op2;
 		zval *offset = _get_zval_ptr_var(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
 
-		if (Z_TYPE_PP(container) == IS_ARRAY) {
+		if (Z_TYPE_PP(container) == IS_ARRAY && !prop_dim) {
 			HashTable *ht;
 			int isset = 0;
 
@@ -14757,7 +14756,7 @@ static int ZEND_FASTCALL  ZEND_FETCH_DIM_W_SPEC_VAR_UNUSED_HANDLER(ZEND_OPCODE_H
 	if (free_op1.var) {zval_ptr_dtor(&free_op1.var);};
 
 	/* We are going to assign the result by reference */
-	if (opline->extended_value) {
+	if (opline->extended_value && EX_T(opline->result.u.var).var.ptr_ptr) {
 		Z_DELREF_PP(EX_T(opline->result.u.var).var.ptr_ptr);
 		SEPARATE_ZVAL_TO_MAKE_IS_REF(EX_T(opline->result.u.var).var.ptr_ptr);
 		Z_ADDREF_PP(EX_T(opline->result.u.var).var.ptr_ptr);
@@ -15808,7 +15807,7 @@ static int ZEND_FASTCALL  ZEND_FETCH_DIM_W_SPEC_VAR_CV_HANDLER(ZEND_OPCODE_HANDL
 	if (free_op1.var) {zval_ptr_dtor(&free_op1.var);};
 
 	/* We are going to assign the result by reference */
-	if (opline->extended_value) {
+	if (opline->extended_value && EX_T(opline->result.u.var).var.ptr_ptr) {
 		Z_DELREF_PP(EX_T(opline->result.u.var).var.ptr_ptr);
 		SEPARATE_ZVAL_TO_MAKE_IS_REF(EX_T(opline->result.u.var).var.ptr_ptr);
 		Z_ADDREF_PP(EX_T(opline->result.u.var).var.ptr_ptr);
@@ -16740,7 +16739,7 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_VAR_CV(int
 
 		zval *offset = _get_zval_ptr_cv(&opline->op2, EX(Ts), BP_VAR_R TSRMLS_CC);
 
-		if (Z_TYPE_PP(container) == IS_ARRAY) {
+		if (Z_TYPE_PP(container) == IS_ARRAY && !prop_dim) {
 			HashTable *ht;
 			int isset = 0;
 
@@ -17930,7 +17929,7 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_UNUSED_CON
 
 		zval *offset = &opline->op2.u.constant;
 
-		if (Z_TYPE_PP(container) == IS_ARRAY) {
+		if (Z_TYPE_PP(container) == IS_ARRAY && !prop_dim) {
 			HashTable *ht;
 			int isset = 0;
 
@@ -18987,7 +18986,7 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_UNUSED_TMP
 		zend_free_op free_op2;
 		zval *offset = _get_zval_ptr_tmp(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
 
-		if (Z_TYPE_PP(container) == IS_ARRAY) {
+		if (Z_TYPE_PP(container) == IS_ARRAY && !prop_dim) {
 			HashTable *ht;
 			int isset = 0;
 
@@ -20044,7 +20043,7 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_UNUSED_VAR
 		zend_free_op free_op2;
 		zval *offset = _get_zval_ptr_var(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
 
-		if (Z_TYPE_PP(container) == IS_ARRAY) {
+		if (Z_TYPE_PP(container) == IS_ARRAY && !prop_dim) {
 			HashTable *ht;
 			int isset = 0;
 
@@ -21360,7 +21359,7 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_UNUSED_CV(
 
 		zval *offset = _get_zval_ptr_cv(&opline->op2, EX(Ts), BP_VAR_R TSRMLS_CC);
 
-		if (Z_TYPE_PP(container) == IS_ARRAY) {
+		if (Z_TYPE_PP(container) == IS_ARRAY && !prop_dim) {
 			HashTable *ht;
 			int isset = 0;
 
@@ -21712,6 +21711,7 @@ static int ZEND_FASTCALL zend_fetch_var_address_helper_SPEC_CV(int type, ZEND_OP
 
 	if (opline->op2.u.EA.type == ZEND_FETCH_STATIC_MEMBER) {
 		retval = zend_std_get_static_property(EX_T(opline->op2.u.var).class_entry, Z_STRVAL_P(varname), Z_STRLEN_P(varname), 0 TSRMLS_CC);
+
 	} else {
 		target_symbol_table = zend_get_target_symbol_table(opline, EX(Ts), type, varname TSRMLS_CC);
 /*
@@ -23567,7 +23567,7 @@ static int ZEND_FASTCALL  ZEND_FETCH_DIM_W_SPEC_CV_CONST_HANDLER(ZEND_OPCODE_HAN
 	}
 
 	/* We are going to assign the result by reference */
-	if (opline->extended_value) {
+	if (opline->extended_value && EX_T(opline->result.u.var).var.ptr_ptr) {
 		Z_DELREF_PP(EX_T(opline->result.u.var).var.ptr_ptr);
 		SEPARATE_ZVAL_TO_MAKE_IS_REF(EX_T(opline->result.u.var).var.ptr_ptr);
 		Z_ADDREF_PP(EX_T(opline->result.u.var).var.ptr_ptr);
@@ -24345,7 +24345,7 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_CV_CONST(i
 
 		zval *offset = &opline->op2.u.constant;
 
-		if (Z_TYPE_PP(container) == IS_ARRAY) {
+		if (Z_TYPE_PP(container) == IS_ARRAY && !prop_dim) {
 			HashTable *ht;
 			int isset = 0;
 
@@ -25204,7 +25204,7 @@ static int ZEND_FASTCALL  ZEND_FETCH_DIM_W_SPEC_CV_TMP_HANDLER(ZEND_OPCODE_HANDL
 	}
 
 	/* We are going to assign the result by reference */
-	if (opline->extended_value) {
+	if (opline->extended_value && EX_T(opline->result.u.var).var.ptr_ptr) {
 		Z_DELREF_PP(EX_T(opline->result.u.var).var.ptr_ptr);
 		SEPARATE_ZVAL_TO_MAKE_IS_REF(EX_T(opline->result.u.var).var.ptr_ptr);
 		Z_ADDREF_PP(EX_T(opline->result.u.var).var.ptr_ptr);
@@ -25985,7 +25985,7 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_CV_TMP(int
 		zend_free_op free_op2;
 		zval *offset = _get_zval_ptr_tmp(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
 
-		if (Z_TYPE_PP(container) == IS_ARRAY) {
+		if (Z_TYPE_PP(container) == IS_ARRAY && !prop_dim) {
 			HashTable *ht;
 			int isset = 0;
 
@@ -26844,7 +26844,7 @@ static int ZEND_FASTCALL  ZEND_FETCH_DIM_W_SPEC_CV_VAR_HANDLER(ZEND_OPCODE_HANDL
 	}
 
 	/* We are going to assign the result by reference */
-	if (opline->extended_value) {
+	if (opline->extended_value && EX_T(opline->result.u.var).var.ptr_ptr) {
 		Z_DELREF_PP(EX_T(opline->result.u.var).var.ptr_ptr);
 		SEPARATE_ZVAL_TO_MAKE_IS_REF(EX_T(opline->result.u.var).var.ptr_ptr);
 		Z_ADDREF_PP(EX_T(opline->result.u.var).var.ptr_ptr);
@@ -27675,7 +27675,7 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_CV_VAR(int
 		zend_free_op free_op2;
 		zval *offset = _get_zval_ptr_var(&opline->op2, EX(Ts), &free_op2 TSRMLS_CC);
 
-		if (Z_TYPE_PP(container) == IS_ARRAY) {
+		if (Z_TYPE_PP(container) == IS_ARRAY && !prop_dim) {
 			HashTable *ht;
 			int isset = 0;
 
@@ -28074,7 +28074,7 @@ static int ZEND_FASTCALL  ZEND_FETCH_DIM_W_SPEC_CV_UNUSED_HANDLER(ZEND_OPCODE_HA
 	}
 
 	/* We are going to assign the result by reference */
-	if (opline->extended_value) {
+	if (opline->extended_value && EX_T(opline->result.u.var).var.ptr_ptr) {
 		Z_DELREF_PP(EX_T(opline->result.u.var).var.ptr_ptr);
 		SEPARATE_ZVAL_TO_MAKE_IS_REF(EX_T(opline->result.u.var).var.ptr_ptr);
 		Z_ADDREF_PP(EX_T(opline->result.u.var).var.ptr_ptr);
@@ -29026,7 +29026,7 @@ static int ZEND_FASTCALL  ZEND_FETCH_DIM_W_SPEC_CV_CV_HANDLER(ZEND_OPCODE_HANDLE
 	}
 
 	/* We are going to assign the result by reference */
-	if (opline->extended_value) {
+	if (opline->extended_value && EX_T(opline->result.u.var).var.ptr_ptr) {
 		Z_DELREF_PP(EX_T(opline->result.u.var).var.ptr_ptr);
 		SEPARATE_ZVAL_TO_MAKE_IS_REF(EX_T(opline->result.u.var).var.ptr_ptr);
 		Z_ADDREF_PP(EX_T(opline->result.u.var).var.ptr_ptr);
@@ -29852,7 +29852,7 @@ static int ZEND_FASTCALL zend_isset_isempty_dim_prop_obj_handler_SPEC_CV_CV(int 
 
 		zval *offset = _get_zval_ptr_cv(&opline->op2, EX(Ts), BP_VAR_R TSRMLS_CC);
 
-		if (Z_TYPE_PP(container) == IS_ARRAY) {
+		if (Z_TYPE_PP(container) == IS_ARRAY && !prop_dim) {
 			HashTable *ht;
 			int isset = 0;
 

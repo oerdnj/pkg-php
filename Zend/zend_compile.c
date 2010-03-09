@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2009 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2010 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_compile.c 289432 2009-10-09 17:23:01Z pajoye $ */
+/* $Id: zend_compile.c 293155 2010-01-05 20:46:53Z sebastian $ */
 
 #include <zend_language_parser.h>
 #include "zend.h"
@@ -161,6 +161,7 @@ void zend_init_compiler_data_structures(TSRMLS_D) /* {{{ */
 	CG(encoding_detector) = NULL;
 	CG(encoding_converter) = NULL;
 	CG(encoding_oddlen) = NULL;
+	CG(encoding_declared) = 0;
 #endif /* ZEND_MULTIBYTE */
 }
 /* }}} */
@@ -2875,12 +2876,22 @@ static zend_bool do_inherit_constant_check(HashTable *child_constants_table, con
 	zval **old_constant;
 
 	if (zend_hash_quick_find(child_constants_table, hash_key->arKey, hash_key->nKeyLength, hash_key->h, (void**)&old_constant) == SUCCESS) {
-	  if (*old_constant != *parent_constant) {
-			zend_error(E_COMPILE_ERROR, "Cannot inherit previously-inherited constant %s from interface %s", hash_key->arKey, iface->name);
+		if (*old_constant != *parent_constant) {
+			zend_error(E_COMPILE_ERROR, "Cannot inherit previously-inherited or override constant %s from interface %s", hash_key->arKey, iface->name);
 		}
 		return 0;
 	}
 	return 1;
+}
+/* }}} */
+
+static int do_interface_constant_check(zval **val TSRMLS_DC, int num_args, va_list args, const zend_hash_key *key) /* {{{ */
+{
+	zend_class_entry **iface = va_arg(args, zend_class_entry**);
+
+	do_inherit_constant_check(&(*iface)->constants_table, (const zval **) val, key, *iface);
+
+	return ZEND_HASH_APPLY_KEEP;
 }
 /* }}} */
 
@@ -2902,7 +2913,10 @@ ZEND_API void zend_do_implement_interface(zend_class_entry *ce, zend_class_entry
 			}
 		}
 	}
-	if (!ignore) {
+	if (ignore) {
+		/* Check for attempt to redeclare interface constants */
+		zend_hash_apply_with_arguments(&ce->constants_table TSRMLS_CC, (apply_func_args_t) do_interface_constant_check, 1, &iface);
+	} else {
 		if (ce->num_interfaces >= current_iface_num) {
 			if (ce->type == ZEND_INTERNAL_CLASS) {
 				ce->interfaces = (zend_class_entry **) realloc(ce->interfaces, sizeof(zend_class_entry *) * (++current_iface_num));
@@ -3658,6 +3672,12 @@ void zend_do_declare_class_constant(znode *var_name, const znode *value TSRMLS_D
 		zend_error(E_COMPILE_ERROR, "Cannot redefine class constant %s::%s", CG(active_class_entry)->name, var_name->u.constant.value.str.val);
 	}
 	FREE_PNODE(var_name);
+	
+	if (CG(doc_comment)) {
+		efree(CG(doc_comment));
+		CG(doc_comment) = NULL;
+		CG(doc_comment_len) = 0;
+	}
 }
 /* }}} */
 
@@ -4644,7 +4664,7 @@ void zend_do_declare_stmt(znode *var, znode *val TSRMLS_DC) /* {{{ */
 				--num;
 			}
 
-			if (num > 0 || CG(encoding_declared)) {
+			if (num > 0) {
 				zend_error(E_COMPILE_ERROR, "Encoding declaration pragma must be the very first statement in the script");
 			}
 		}

@@ -1,4 +1,4 @@
-## $Id: configure.in 290928 2009-11-18 19:43:33Z johannes $ -*- autoconf -*-
+## $Id: configure.in 295792 2010-03-03 16:36:07Z johannes $ -*- autoconf -*-
 dnl ## Process this file with autoconf to produce a configure script.
 
 divert(1)
@@ -41,7 +41,7 @@ AC_CONFIG_HEADER(main/php_config.h)
 
 PHP_MAJOR_VERSION=5
 PHP_MINOR_VERSION=3
-PHP_RELEASE_VERSION=1
+PHP_RELEASE_VERSION=2
 PHP_EXTRA_VERSION=""
 PHP_VERSION="$PHP_MAJOR_VERSION.$PHP_MINOR_VERSION.$PHP_RELEASE_VERSION$PHP_EXTRA_VERSION"
 PHP_VERSION_ID=`expr [$]PHP_MAJOR_VERSION \* 10000 + [$]PHP_MINOR_VERSION \* 100 + [$]PHP_RELEASE_VERSION`
@@ -121,21 +121,6 @@ dnl or the contents of libs.
 
 $php_shtool mkdir -p libs
 rm -f libs/*
-
-dnl Darwin 9 hack
-dnl Because the default debugging format used by Apple's GCC on Mac OS 10.5
-dnl causes errors in all current and past versions of Autoconf, we do a little
-dnl messing with the CFLAGS here to trick it.
-php_did_darwin9_cheat=0
-case $host_alias in
-*darwin9*)
-  hasg=`echo $CFLAGS | grep -E '(^-g)|([[:space:]]-g)'`
-  if test x"$hasg" = "x"; then
-    php_did_darwin9_cheat=1
-    CFLAGS="$CFLAGS -gstabs"
-  fi
-  ;;
-esac
 
 dnl Checks for programs.
 dnl -------------------------------------------------------------------------
@@ -402,9 +387,6 @@ dnl Check for inet_aton
 dnl in -lc, -lbind and -lresolv
 PHP_CHECK_FUNC(inet_aton, resolv, bind)
 
-dnl Some systems (like OpenSolaris) do not have nanosleep in libc
-PHP_CHECK_FUNC(nanosleep, rt)
-
 dnl Then headers.
 dnl -------------------------------------------------------------------------
 
@@ -424,7 +406,6 @@ sys/time.h \
 netinet/in.h \
 alloca.h \
 arpa/inet.h \
-arpa/nameser_compat.h \
 arpa/nameser.h \
 assert.h \
 crypt.h \
@@ -628,6 +609,9 @@ vsnprintf \
 vasprintf \
 asprintf \
 )
+
+dnl Some systems (like OpenSolaris) do not have nanosleep in libc
+AC_CACHE_CHECK([for nanosleep], ac_cv_func_nanosleep, [PHP_CHECK_FUNC_LIB(nanosleep, rt)])
 
 dnl Check for getaddrinfo, should be a better way, but...
 dnl Also check for working getaddrinfo
@@ -1171,6 +1155,7 @@ EXPANDED_PEAR_INSTALLDIR=`eval echo $PEAR_INSTALLDIR`
 EXPANDED_EXTENSION_DIR=`eval echo $EXTENSION_DIR`
 EXPANDED_LOCALSTATEDIR=`eval echo $localstatedir`
 EXPANDED_BINDIR=`eval echo $bindir`
+EXPANDED_SBINDIR=`eval echo $sbindir`
 EXPANDED_LIBDIR=$libdir
 EXPANDED_SYSCONFDIR=`eval echo $sysconfdir`
 EXPANDED_DATADIR=$datadir
@@ -1186,6 +1171,7 @@ AC_SUBST(INCLUDE_PATH)
 AC_SUBST(EXPANDED_PEAR_INSTALLDIR)
 AC_SUBST(EXPANDED_EXTENSION_DIR)
 AC_SUBST(EXPANDED_BINDIR)
+AC_SUBST(EXPANDED_SBINDIR)
 AC_SUBST(EXPANDED_LIBDIR)
 AC_SUBST(EXPANDED_DATADIR)
 AC_SUBST(EXPANDED_SYSCONFDIR)
@@ -1230,12 +1216,14 @@ if test "$PHP_CLI" != "no"; then
   PHP_INSTALL_CLI_TARGET="install-cli"
   PHP_ADD_SOURCES(sapi/cli, php_cli.c php_cli_readline.c,, cli)
   PHP_INSTALLED_SAPIS="cli $PHP_SAPI"
+  PHP_EXECUTABLE="\$(top_builddir)/\$(SAPI_CLI_PATH)"
 else
   PHP_INSTALLED_SAPIS="$PHP_SAPI"
 fi
 
 PHP_SUBST_OLD(PHP_INSTALLED_SAPIS)
 
+PHP_SUBST(PHP_EXECUTABLE)
 PHP_SUBST(PHP_CLI_TARGET)
 PHP_SUBST(PHP_SAPI_OBJS)
 PHP_SUBST(PHP_CLI_OBJS)
@@ -1252,6 +1240,7 @@ PHP_SUBST_OLD(php_abs_top_builddir)
 PHP_SUBST_OLD(php_abs_top_srcdir)
 
 PHP_SUBST(bindir)
+PHP_SUBST(sbindir)
 PHP_SUBST(exec_prefix)
 PHP_SUBST_OLD(program_prefix)
 PHP_SUBST_OLD(program_suffix)
@@ -1336,6 +1325,14 @@ PHP_CONFIGURE_PART(Configuring libtool)
 
 LDFLAGS="$LDFLAGS $PHP_AIX_LDFLAGS"
 
+dnl Autoconf 2.13's libtool checks go slightly nuts on Mac OS X 10.5 and 10.6.
+dnl This hack works around it. Ugly.
+case $host_alias in
+*darwin9*|*darwin10*)
+	ac_cv_exeext=
+	;;
+esac
+
 dnl Only allow AC_PROG_CXX and AC_PROG_CXXCPP if they are explicitly called (by PHP_REQUIRE_CXX).
 dnl Otherwise AC_PROG_LIBTOOL fails if there is no working C++ compiler.
 AC_PROVIDE_IFELSE([PHP_REQUIRE_CXX], [], [
@@ -1358,15 +1355,6 @@ test -z "$CXX_PHP_COMPILE" && CXX_PHP_COMPILE='$(LIBTOOL) --mode=compile $(CXX_C
 SHARED_LIBTOOL='$(LIBTOOL)'
 
 CC=$old_CC
-
-dnl Finish the Darwin hack
-if test "$php_did_darwin9_cheat" -eq 1; then
-  if test "$PHP_DEBUG" = "1"; then
-    CFLAGS=`echo "$CFLAGS" | $SED -e 's/-gstabs/-g/g'`
-  else
-    CFLAGS=`echo "-O2 $CFLAGS" | $SED -e 's/-gstabs//g'`
-  fi
-fi
 
 PHP_CONFIGURE_PART(Generating files)
 

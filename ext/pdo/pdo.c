@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2009 The PHP Group                                |
+  | Copyright (c) 1997-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo.c 284394 2009-07-19 22:46:03Z felipe $ */
+/* $Id: pdo.c 293036 2010-01-03 09:23:27Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -222,6 +222,7 @@ PDO_API int php_pdo_parse_data_source(const char *data_source,
 	int optstart = 0;
 	int nlen;
 	int n_matches = 0;
+	int n_semicolumns = 0;
 
 	i = 0;
 	while (i < data_source_len) {
@@ -240,14 +241,21 @@ PDO_API int php_pdo_parse_data_source(const char *data_source,
 
 		/* now we're looking for VALUE; or just VALUE<NUL> */
 		semi = -1;
+		n_semicolumns = 0;
 		while (i < data_source_len) {
 			if (data_source[i] == '\0') {
 				semi = i++;
 				break;
 			}
 			if (data_source[i] == ';') {
-				semi = i++;
-				break;
+				if ((i + 1 >= data_source_len) || data_source[i+1] != ';') {
+					semi = i++;
+					break;
+				} else {
+					n_semicolumns++; 
+					i += 2;
+					continue;
+				}
 			}
 			++i;
 		}
@@ -264,7 +272,31 @@ PDO_API int php_pdo_parse_data_source(const char *data_source,
 				if (parsed[j].freeme) {
 					efree(parsed[j].optval);
 				}
-				parsed[j].optval = estrndup(data_source + valstart, semi - valstart);
+
+				if (n_semicolumns == 0) {
+					parsed[j].optval = estrndup(data_source + valstart, semi - valstart - n_semicolumns);
+				} else {
+					int vlen = semi - valstart;
+					char *orig_val = data_source + valstart;
+					char *new_val  = (char *) emalloc(vlen - n_semicolumns + 1);
+				
+					parsed[j].optval = new_val;
+
+					while (vlen && *orig_val) {
+						*new_val = *orig_val;
+						new_val++;
+
+						if (*orig_val == ';') {
+							orig_val+=2; 
+							vlen-=2;
+						} else {
+							orig_val++;
+							vlen--;
+						}
+					}
+					*new_val = '\0';
+				}
+
 				parsed[j].freeme = 1;
 				++n_matches;
 				break;

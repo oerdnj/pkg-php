@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: streams.c 280678 2009-05-17 14:58:10Z lbarnaud $ */
+/* $Id: streams.c 294550 2010-02-05 00:39:31Z pajoye $ */
 
 #define _GNU_SOURCE
 #include "php.h"
@@ -1396,7 +1396,7 @@ PHPAPI size_t _php_stream_copy_to_stream_ex(php_stream *src, php_stream *dest, s
 	/* we've got at least 1 byte to read. 
 	 * less than 1 is an error */
 
-	if (haveread > 0) {
+	if (haveread > 0 || src->eof) {
 		return SUCCESS;
 	}
 	return FAILURE;
@@ -1858,22 +1858,9 @@ PHPAPI php_stream *_php_stream_open_wrapper_ex(char *path, char *mode, int optio
 			php_stream_wrapper_log_error(wrapper, options ^ REPORT_ERRORS TSRMLS_CC,
 					"wrapper does not support stream open");
 		} else {
-			/* refcount++ to make sure the context doesn't get destroyed 
-			 * if open() fails and stream is closed */
-			if (context) {
-				zend_list_addref(context->rsrc_id);
-			}
-
 			stream = wrapper->wops->stream_opener(wrapper,
 				path_to_open, mode, options ^ REPORT_ERRORS,
 				opened_path, context STREAMS_REL_CC TSRMLS_CC);
-
-			/* if open() succeeded and context was not used, do refcount-- 
-			 * XXX if a wrapper didn't actually use context (no way to know that) 
-			 * and open() failed, refcount will stay increased */
-			if (context && stream && !stream->context) {
-				zend_list_delete(context->rsrc_id);
-			}
 		}
 
 		/* if the caller asked for a persistent stream but the wrapper did not
@@ -1974,7 +1961,17 @@ PHPAPI php_stream *_php_stream_open_wrapper_ex(char *path, char *mode, int optio
 PHPAPI php_stream_context *php_stream_context_set(php_stream *stream, php_stream_context *context)
 {
 	php_stream_context *oldcontext = stream->context;
+	TSRMLS_FETCH();
+
 	stream->context = context;
+
+	if (context) {
+		zend_list_addref(context->rsrc_id);
+	}
+	if (oldcontext) {
+		zend_list_delete(oldcontext->rsrc_id);
+	}
+
 	return oldcontext;
 }
 

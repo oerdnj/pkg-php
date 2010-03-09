@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2009 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2010 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_closures.c 287043 2009-08-10 15:18:13Z colder $ */
+/* $Id: zend_closures.c 293155 2010-01-05 20:46:53Z sebastian $ */
 
 #include "zend.h"
 #include "zend_API.h"
@@ -152,7 +152,9 @@ static zval **zend_closure_get_property_ptr_ptr(zval *object, zval *member TSRML
 
 static int zend_closure_has_property(zval *object, zval *member, int has_set_exists TSRMLS_DC) /* {{{ */
 {
-	ZEND_CLOSURE_PROPERTY_ERROR();
+	if (has_set_exists != 2) {
+		ZEND_CLOSURE_PROPERTY_ERROR();
+	}
 	return 0;
 }
 /* }}} */

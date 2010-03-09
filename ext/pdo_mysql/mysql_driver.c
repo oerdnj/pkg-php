@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2009 The PHP Group                                |
+  | Copyright (c) 1997-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysql_driver.c 289630 2009-10-14 13:51:25Z johannes $ */
+/* $Id: mysql_driver.c 294543 2010-02-04 20:28:55Z johannes $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -127,7 +127,7 @@ int _pdo_mysql_error(pdo_dbh_t *dbh, pdo_stmt_t *stmt, const char *file, int lin
 
 	if (!dbh->methods) {
 		PDO_DBG_INF("Throwing exception");
-		zend_throw_exception_ex(php_pdo_get_exception(), 0 TSRMLS_CC, "SQLSTATE[%s] [%d] %s",
+		zend_throw_exception_ex(php_pdo_get_exception(), einfo->errcode TSRMLS_CC, "SQLSTATE[%s] [%d] %s",
 				*pdo_err, einfo->errcode, einfo->errmsg);
 	}
 
@@ -462,7 +462,7 @@ static int pdo_mysql_get_attribute(pdo_dbh_t *dbh, long attr, zval *return_value
 		case PDO_ATTR_SERVER_INFO: {
 			char *tmp;
 #if PDO_USE_MYSQLND
-			int tmp_len;
+			unsigned int tmp_len;
 
 			if (mysqlnd_stat(H->server, &tmp, &tmp_len) == PASS) {
 				ZVAL_STRINGL(return_value, tmp, tmp_len, 0);
@@ -731,7 +731,7 @@ static int pdo_mysql_handle_factory(pdo_dbh_t *dbh, zval *driver_options TSRMLS_
 	}
 
 	if (mysqlnd_connect(H->server, host, dbh->username, dbh->password, password_len, dbname, dbname_len,
-						port, unix_socket, connect_opts, PDO_MYSQL_G(mysqlnd_thd_zval_cache) TSRMLS_CC) == NULL) {
+						port, unix_socket, connect_opts TSRMLS_CC) == NULL) {
 #else
 	if (mysql_real_connect(H->server, host, dbh->username, dbh->password, dbname, port, unix_socket, connect_opts) == NULL) {
 #endif

@@ -2,7 +2,7 @@
 Bug #47667 (ZipArchive::OVERWRITE seems to have no effect)
 --SKIPIF--
 <?php
-/* $Id: bug47667.phpt 277253 2009-03-16 10:19:43Z mkoppanen $ */
+/* $Id: bug47667.phpt 294522 2010-02-04 10:09:25Z pajoye $ */
 if(!extension_loaded('zip')) die('skip');
 ?>
 --FILE--
@@ -33,6 +33,7 @@ if ($zip->open($filename, ZipArchive::CREATE) !== true) {
 }
 
 echo "files: " , $zip->numFiles;
+$zip->close();
 
 unlink($filename);
 

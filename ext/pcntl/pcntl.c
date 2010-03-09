@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: pcntl.c 281177 2009-05-26 14:01:39Z lbarnaud $ */
+/* $Id: pcntl.c 293036 2010-01-03 09:23:27Z sebastian $ */
 
 #define PCNTL_DEBUG 0
 
@@ -727,16 +727,19 @@ PHP_FUNCTION(pcntl_exec)
 			if (return_val == HASH_KEY_IS_LONG) efree(key);
 		}
 		*(pair) = NULL;
-	}
+
+		if (execve(path, argv, envp) == -1) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Error has occured: (errno %d) %s", errno, strerror(errno));
+		}
 	
-	if (execve(path, argv, envp) == -1) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Error has occured: (errno %d) %s", errno, strerror(errno));
-	}
-	
-	/* Cleanup */
-	if (envp != NULL) {
+		/* Cleanup */
 		for (pair = envp; *pair != NULL; pair++) efree(*pair);
 		efree(envp);
+	} else {
+
+		if (execv(path, argv) == -1) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Error has occured: (errno %d) %s", errno, strerror(errno));
+		}
 	}
 
 	efree(argv);

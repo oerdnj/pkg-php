@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: array.c 287275 2009-08-14 06:20:21Z dmitry $ */
+/* $Id: array.c 293982 2010-01-25 14:11:32Z johannes $ */
 
 #include "php.h"
 #include "php_ini.h"
@@ -768,6 +768,7 @@ static int php_array_user_key_compare(const void *a, const void *b TSRMLS_DC) /*
 PHP_FUNCTION(uksort)
 {
 	zval *array;
+	int refcount;
 	PHP_ARRAY_CMP_FUNC_VARS;
 
 	PHP_ARRAY_CMP_FUNC_BACKUP();
@@ -777,13 +778,31 @@ PHP_FUNCTION(uksort)
 		return;
 	}
 
+	/* Clear the is_ref flag, so the attemts to modify the array in user
+	 * comaprison function will create a copy of array and won't affect the
+	 * original array. The fact of modification is detected using refcount
+	 * comparison. The result of sorting in such case is undefined and the
+	 * function returns FALSE.
+	 */
+	Z_UNSET_ISREF_P(array);
+	refcount = Z_REFCOUNT_P(array);
+
 	if (zend_hash_sort(Z_ARRVAL_P(array), zend_qsort, php_array_user_key_compare, 0 TSRMLS_CC) == FAILURE) {
-		PHP_ARRAY_CMP_FUNC_RESTORE();
-		RETURN_FALSE;
+		RETVAL_FALSE;
+	} else {
+		if (refcount > Z_REFCOUNT_P(array)) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Array was modified by the user comparison function");
+			RETVAL_FALSE;
+		} else {
+			RETVAL_TRUE;
+		}
+	}
+
+	if (Z_REFCOUNT_P(array) > 1) {
+		Z_SET_ISREF_P(array);
 	}
 
 	PHP_ARRAY_CMP_FUNC_RESTORE();
-	RETURN_TRUE;
 }
 /* }}} */
 
@@ -1364,6 +1383,9 @@ PHP_FUNCTION(extract)
 				if (var_exists && var_name_len == sizeof("GLOBALS") && !strcmp(var_name, "GLOBALS")) {
 					break;
 				}
+				if (var_exists && var_name_len == sizeof("this")  && !strcmp(var_name, "this") && EG(scope) && EG(scope)->name_length != 0) {
+					break;
+				}
 				ZVAL_STRINGL(&final_name, var_name, var_name_len, 1);
 				break;
 
@@ -1445,9 +1467,7 @@ static void php_compact_var(HashTable *eg_active_symbol_table, zval *return_valu
 		if (zend_hash_find(eg_active_symbol_table, Z_STRVAL_P(entry), Z_STRLEN_P(entry) + 1, (void **)&value_ptr) != FAILURE) {
 			value = *value_ptr;
 			ALLOC_ZVAL(data);
-			*data = *value;
-			zval_copy_ctor(data);
-			INIT_PZVAL(data);
+			MAKE_COPY_ZVAL(&value, data);
 
 			zend_hash_update(Z_ARRVAL_P(return_value), Z_STRVAL_P(entry), Z_STRLEN_P(entry) + 1, &data, sizeof(zval *), NULL);
 		}
@@ -4070,9 +4090,7 @@ PHP_FUNCTION(array_reduce)
 
 	if (ZEND_NUM_ARGS() > 2) {
 		ALLOC_ZVAL(result);
-		*result = *initial;
-		zval_copy_ctor(result);
-		INIT_PZVAL(result);
+		MAKE_COPY_ZVAL(&initial, result);
 	} else {
 		MAKE_STD_ZVAL(result);
 		ZVAL_NULL(result);

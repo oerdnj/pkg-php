@@ -8,7 +8,7 @@ require_once('skipifconnectfailure.inc');
 ?>
 --FILE--
 <?php
-	include "connect.inc";
+	require_once("connect.inc");
 
 	$tmp    = NULL;
 	$link   = NULL;
@@ -91,7 +91,7 @@ object(mysqli)#%d (%d) {
   [%u|b%"connect_errno"]=>
   int(0)
   [%u|b%"connect_error"]=>
-  %unicode|string%(0) ""
+  NULL
   [%u|b%"errno"]=>
   int(2006)
   [%u|b%"error"]=>

@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: dns.c 287120 2009-08-11 22:07:35Z scottmac $ */
+/* $Id: dns.c 292413 2009-12-21 15:22:40Z jani $ */
 
 /* {{{ includes */
 #include "php.h"
@@ -44,10 +44,10 @@
 #undef T_UNSPEC
 #endif
 #if HAVE_ARPA_NAMESER_H
-#include <arpa/nameser.h>
+#ifdef DARWIN
+# define BIND_8_COMPAT 1
 #endif
-#if HAVE_ARPA_NAMESER_COMPAT_H
-#include <arpa/nameser_compat.h>
+#include <arpa/nameser.h>
 #endif
 #if HAVE_RESOLV_H
 #include <resolv.h>
@@ -810,14 +810,8 @@ PHP_FUNCTION(dns_get_record)
 			n = php_dns_search(handle, hostname, C_IN, type_to_fetch, answer.qb2, sizeof answer);
 
 			if (n < 0) {
-				if (php_dns_errno(handle) == NO_DATA) {
-					php_dns_free_handle(handle);
-					continue;
-				}
-
 				php_dns_free_handle(handle);
-				zval_dtor(return_value);
-				RETURN_FALSE;
+				continue;
 			}
 
 			cp = answer.qb2 + HFIXEDSZ;

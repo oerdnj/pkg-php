@@ -1,4 +1,4 @@
-// $Id: config.w32 281914 2009-06-10 09:59:21Z pajoye $
+// $Id: config.w32 291937 2009-12-10 02:25:47Z pajoye $
 // vim:ft=javascript
 
 ARG_WITH("gmp", "Include GNU MP support.", "no");
@@ -8,6 +8,7 @@ if (PHP_GMP != "no") {
 		CHECK_HEADER_ADD_INCLUDE("gmp.h", "CFLAGS_GMP", PHP_GMP +  ";" + PHP_PHP_BUILD + "\\include\\mpir")) {
 		EXTENSION("gmp", "gmp.c");
 		AC_DEFINE('HAVE_GMP', 1, 'GMP support');
+		AC_DEFINE('HAVE_MPIR', 1, 'MPIR support');
 	} else {
 		WARNING("GMP not enabled; libraries and headers not found");
 	}

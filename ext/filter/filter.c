@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2009 The PHP Group                                |
+  | Copyright (c) 1997-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -19,7 +19,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: filter.c 289434 2009-10-09 17:32:53Z pajoye $ */
+/* $Id: filter.c 294106 2010-01-27 17:22:54Z johannes $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -251,6 +251,7 @@ PHP_MINIT_FUNCTION(filter)
 
 	REGISTER_LONG_CONSTANT("FILTER_FLAG_STRIP_LOW", FILTER_FLAG_STRIP_LOW, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("FILTER_FLAG_STRIP_HIGH", FILTER_FLAG_STRIP_HIGH, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("FILTER_FLAG_STRIP_BACKTICK", FILTER_FLAG_STRIP_BACKTICK, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("FILTER_FLAG_ENCODE_LOW", FILTER_FLAG_ENCODE_LOW, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("FILTER_FLAG_ENCODE_HIGH", FILTER_FLAG_ENCODE_HIGH, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("FILTER_FLAG_ENCODE_AMP", FILTER_FLAG_ENCODE_AMP, CONST_CS | CONST_PERSISTENT);
@@ -313,7 +314,7 @@ PHP_MINFO_FUNCTION(filter)
 {
 	php_info_print_table_start();
 	php_info_print_table_row( 2, "Input Validation and Filtering", "enabled" );
-	php_info_print_table_row( 2, "Revision", "$Revision: 289434 $");
+	php_info_print_table_row( 2, "Revision", "$Revision: 294106 $");
 	php_info_print_table_end();
 
 	DISPLAY_INI_ENTRIES();
@@ -391,9 +392,7 @@ static void php_zval_filter(zval **value, long filter, long flags, zval *options
 	) {
 		zval **tmp; 
 		if (zend_hash_find(HASH_OF(options), "default", sizeof("default"), (void **)&tmp) == SUCCESS) {
-			**value = **tmp;
-			zval_copy_ctor(*value);
-			INIT_PZVAL(*value);
+			MAKE_COPY_ZVAL(tmp, *value);
 		}
 	}
 }
@@ -678,9 +677,7 @@ static void php_filter_call(zval **filtered, long filter, zval **filter_args, co
 		zval *tmp;
 
 		ALLOC_ZVAL(tmp);
-		*tmp = **filtered;
-		zval_copy_ctor(tmp);
-		INIT_PZVAL(tmp);
+		MAKE_COPY_ZVAL(filtered, tmp);
 
 		zval_dtor(*filtered);
 
@@ -700,15 +697,11 @@ static void php_filter_array_handler(zval *input, zval **op, zval *return_value 
 
 	if (!op) {
 		zval_dtor(return_value);
-		*return_value = *input;
-		zval_copy_ctor(return_value);
-		INIT_PZVAL(return_value);
+		MAKE_COPY_ZVAL(&input, return_value);
 		php_filter_call(&return_value, FILTER_DEFAULT, NULL, 0, FILTER_REQUIRE_ARRAY TSRMLS_CC);
 	} else if (Z_TYPE_PP(op) == IS_LONG) {
 		zval_dtor(return_value);
-		*return_value = *input;
-		zval_copy_ctor(return_value);
-		INIT_PZVAL(return_value);
+		MAKE_COPY_ZVAL(&input, return_value);
 		php_filter_call(&return_value, Z_LVAL_PP(op), NULL, 0, FILTER_REQUIRE_ARRAY TSRMLS_CC);
 	} else if (Z_TYPE_PP(op) == IS_ARRAY) {
 		array_init(return_value);
@@ -734,9 +727,7 @@ static void php_filter_array_handler(zval *input, zval **op, zval *return_value 
 				zval *nval;
 
 				ALLOC_ZVAL(nval);
-				*nval = **tmp;
-				zval_copy_ctor(nval);
-				INIT_PZVAL(nval);
+				MAKE_COPY_ZVAL(tmp, nval);
 
 				php_filter_call(&nval, -1, arg_elm, 0, FILTER_REQUIRE_SCALAR TSRMLS_CC);
 				add_assoc_zval_ex(return_value, arg_key, arg_key_len, nval);
@@ -777,14 +768,13 @@ PHP_FUNCTION(filter_input)
 				filter_flags = Z_LVAL_PP(filter_args);
 			} else if (Z_TYPE_PP(filter_args) == IS_ARRAY && zend_hash_find(HASH_OF(*filter_args), "flags", sizeof("flags"), (void **)&option) == SUCCESS) {
 				PHP_FILTER_GET_LONG_OPT(option, filter_flags);
-			} else if (Z_TYPE_PP(filter_args) == IS_ARRAY && 
+			}
+			if (Z_TYPE_PP(filter_args) == IS_ARRAY && 
 				zend_hash_find(HASH_OF(*filter_args), "options", sizeof("options"), (void **)&opt) == SUCCESS &&
 				Z_TYPE_PP(opt) == IS_ARRAY &&
 				zend_hash_find(HASH_OF(*opt), "default", sizeof("default"), (void **)&def) == SUCCESS
 			) {
-				*return_value = **def;
-				zval_copy_ctor(return_value);
-				INIT_PZVAL(return_value);
+				MAKE_COPY_ZVAL(def, return_value);
 				return;
 			}
 		}
@@ -795,9 +785,7 @@ PHP_FUNCTION(filter_input)
 		}
 	}
 
-	*return_value = **tmp;
-	zval_copy_ctor(return_value);  /* Watch out for empty strings */
-	INIT_PZVAL(return_value);
+	MAKE_COPY_ZVAL(tmp, return_value);
 
 	php_filter_call(&return_value, filter, filter_args, 1, FILTER_REQUIRE_SCALAR TSRMLS_CC);
 }
@@ -819,9 +807,7 @@ PHP_FUNCTION(filter_var)
 		RETURN_FALSE;
 	}
 
-	*return_value = *data;
-	zval_copy_ctor(data);
-	INIT_PZVAL(return_value);
+	MAKE_COPY_ZVAL(&data, return_value);
 
 	php_filter_call(&return_value, filter, filter_args, 1, FILTER_REQUIRE_SCALAR TSRMLS_CC);
 }

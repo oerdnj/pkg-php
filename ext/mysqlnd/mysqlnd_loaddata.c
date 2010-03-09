@@ -25,12 +25,6 @@
 #include "mysqlnd_priv.h"
 #include "mysqlnd_debug.h"
 
-enum_func_status mysqlnd_simple_command_handle_response(MYSQLND *conn,
-										enum php_mysql_packet_type ok_packet,
-										zend_bool silent, enum php_mysqlnd_server_command command,
-										zend_bool ignore_upsert_status
-									  	TSRMLS_DC);
-
 
 #define ALLOC_CALLBACK_ARGS(a, b, c)\
 if (c) {\
@@ -75,7 +69,7 @@ int mysqlnd_local_infile_init(void **ptr, char *filename, void **userdata TSRMLS
 
 	if (info->fd == NULL) {
 		snprintf((char *)info->error_msg, sizeof(info->error_msg), "Can't find file '%-.64s'.", filename);
-		info->error_no = MYSQLND_EE_FILENOTFOUND; 
+		info->error_no = MYSQLND_EE_FILENOTFOUND;
 		DBG_RETURN(1);
 	}
 
@@ -188,7 +182,7 @@ mysqlnd_handle_local_infile(MYSQLND *conn, const char *filename, zend_bool *is_w
 	if (!(conn->options.flags & CLIENT_LOCAL_FILES)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "LOAD DATA LOCAL INFILE forbidden");
 		/* write empty packet to server */
-		ret = mysqlnd_stream_write_w_header(conn, empty_packet, 0 TSRMLS_CC);
+		ret = conn->net->m.send(conn, empty_packet, 0 TSRMLS_CC);
 		*is_warning = TRUE;
 		goto infile_error;
 	}
@@ -196,7 +190,7 @@ mysqlnd_handle_local_infile(MYSQLND *conn, const char *filename, zend_bool *is_w
 	infile = conn->infile;
 	/* allocate buffer for reading data */
 	buf = (char *)mnd_ecalloc(1, buflen);
-	
+
 	*is_warning = FALSE;
 
 	/* init handler: allocate read buffer and open file */
@@ -208,14 +202,14 @@ mysqlnd_handle_local_infile(MYSQLND *conn, const char *filename, zend_bool *is_w
 				infile.local_infile_error(info, conn->error_info.error,
 										  sizeof(conn->error_info.error) TSRMLS_CC);
 		/* write empty packet to server */
-		ret = mysqlnd_stream_write_w_header(conn, empty_packet, 0 TSRMLS_CC);
+		ret = conn->net->m.send(conn, empty_packet, 0 TSRMLS_CC);
 		goto infile_error;
 	}
 
 	/* read data */
 	while ((bufsize = infile.local_infile_read (info, buf + MYSQLND_HEADER_SIZE,
 												buflen - MYSQLND_HEADER_SIZE TSRMLS_CC)) > 0) {
-		if ((ret = mysqlnd_stream_write_w_header(conn, buf, bufsize TSRMLS_CC)) < 0) {
+		if ((ret = conn->net->m.send(conn, buf, bufsize TSRMLS_CC)) < 0) {
 			DBG_ERR_FMT("Error during read : %d %s %s", CR_SERVER_LOST, UNKNOWN_SQLSTATE, lost_conn);
 			SET_CLIENT_ERROR(conn->error_info, CR_SERVER_LOST, UNKNOWN_SQLSTATE, lost_conn);
 			goto infile_error;
@@ -223,7 +217,7 @@ mysqlnd_handle_local_infile(MYSQLND *conn, const char *filename, zend_bool *is_w
 	}
 
 	/* send empty packet for eof */
-	if ((ret = mysqlnd_stream_write_w_header(conn, empty_packet, 0 TSRMLS_CC)) < 0) {
+	if ((ret = conn->net->m.send(conn, empty_packet, 0 TSRMLS_CC)) < 0) {
 		SET_CLIENT_ERROR(conn->error_info, CR_SERVER_LOST, UNKNOWN_SQLSTATE, lost_conn);
 		goto infile_error;
 	}
@@ -242,7 +236,7 @@ mysqlnd_handle_local_infile(MYSQLND *conn, const char *filename, zend_bool *is_w
 
 infile_error:
 	/* get response from server and update upsert values */
-	if (FAIL == mysqlnd_simple_command_handle_response(conn, PROT_OK_PACKET, FALSE, COM_QUERY, FALSE TSRMLS_CC)) {
+	if (FAIL == conn->m->simple_command_handle_response(conn, PROT_OK_PACKET, FALSE, COM_QUERY, FALSE TSRMLS_CC)) {
 		result = FAIL;
 	}
 

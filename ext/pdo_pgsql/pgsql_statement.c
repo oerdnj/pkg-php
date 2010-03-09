@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2009 The PHP Group                                |
+  | Copyright (c) 1997-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pgsql_statement.c 281107 2009-05-25 19:41:13Z kalle $ */
+/* $Id: pgsql_statement.c 293036 2010-01-03 09:23:27Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -185,7 +185,7 @@ stmt_retry:
 					 * deallocate it and retry ONCE (thies 2005.12.15)
 					 */
 					if (!strcmp(sqlstate, "42P05")) {
-						char buf[100]; /* stmt_name == "pdo_crsr_%016lx" */
+						char buf[100]; /* stmt_name == "pdo_crsr_%08x" */
 						PGresult *res;
 						snprintf(buf, sizeof(buf), "DEALLOCATE %s", S->stmt_name);
 						res = PQexec(H->server, buf);

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: streams.c 284747 2009-07-25 13:00:25Z jani $ */
+/* $Id: streams.c 294462 2010-02-03 20:49:03Z pajoye $ */
 
 /* This file implements cURL based wrappers.
  * NOTE: If you are implementing your own streams that are intended to
@@ -280,7 +280,7 @@ php_stream *php_curl_stream_opener(php_stream_wrapper *wrapper, char *filename, 
 	 * have a FILE* associated with it.
 	 * Otherwise, use the "smart" memory stream that will turn itself into a file
 	 * when it gets large */
-#if !HAVE_FOPENCOOKIE
+#ifndef HAVE_FOPENCOOKIE
 	if (options & STREAM_WILL_CAST) {
 		curlstream->readbuffer.buf = php_stream_fopen_tmpfile();
 	} else
@@ -445,7 +445,7 @@ php_stream *php_curl_stream_opener(php_stream_wrapper *wrapper, char *filename, 
 	php_stream_to_zval(curlstream->readbuffer.buf, tmp);
 	add_assoc_zval(stream->wrapperdata, "readbuf", tmp);
 
-#if !HAVE_FOPENCOOKIE
+#ifndef HAVE_FOPENCOOKIE
 	if (options & STREAM_WILL_CAST) {
 		/* we will need to download the whole resource now,
 		 * since we cannot get the actual FD for the download,

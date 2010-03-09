@@ -1,6 +1,6 @@
 /*
 	Build Configuration Template for Win32.
-	$Id: config.w32.h.in 282624 2009-06-23 06:56:45Z kalle $
+	$Id: config.w32.h.in 291951 2009-12-10 14:08:19Z pajoye $
 */
 
 /* Define the minimum supported version */
@@ -28,6 +28,8 @@
 #define PHP_EXT_DES_CRYPT 1
 #define PHP_MD5_CRYPT 1
 #define PHP_BLOWFISH_CRYPT 1
+#define PHP_SHA512_CRYPT 1
+#define PHP_SHA256_CRYPT 1
 
 /* PHP Runtime Configuration */
 #define PHP_URL_FOPEN 1

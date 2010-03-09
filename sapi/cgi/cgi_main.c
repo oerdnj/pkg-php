@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: cgi_main.c 289795 2009-10-20 12:57:44Z tony2001 $ */
+/* $Id: cgi_main.c 293036 2010-01-03 09:23:27Z sebastian $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -1634,8 +1634,9 @@ int main(int argc, char *argv[])
 			 * in case some server does something different than above */
 			(!CGIG(redirect_status_env) || !getenv(CGIG(redirect_status_env)))
 		) {
-			SG(sapi_headers).http_response_code = 400;
-			PUTS("<b>Security Alert!</b> The PHP CGI cannot be accessed directly.\n\n\
+			zend_try {
+				SG(sapi_headers).http_response_code = 400;
+				PUTS("<b>Security Alert!</b> The PHP CGI cannot be accessed directly.\n\n\
 <p>This PHP CGI binary was compiled with force-cgi-redirect enabled.  This\n\
 means that a page will only be served up if the REDIRECT_STATUS CGI variable is\n\
 set, e.g. via an Apache Action directive.</p>\n\
@@ -1644,7 +1645,8 @@ manual page for CGI security</a>.</p>\n\
 <p>For more information about changing this behaviour or re-enabling this webserver,\n\
 consult the installation file that came with this distribution, or visit \n\
 <a href=\"http://php.net/install.windows\">the manual page</a>.</p>\n");
-
+			} zend_catch {
+			} zend_end_try();
 #if defined(ZTS) && !defined(PHP_DEBUG)
 			/* XXX we're crashing here in msvc6 debug builds at
 			 * php_message_handler_for_zend:839 because
@@ -1922,9 +1924,9 @@ consult the installation file that came with this distribution, or visit \n\
 								SG(request_info).no_headers = 1;
 							}
 #if ZEND_DEBUG
-							php_printf("PHP %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2009 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
+							php_printf("PHP %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2010 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 #else
-							php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2009 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
+							php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2010 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 #endif
 							php_request_shutdown((void *) 0);
 							exit_status = 0;
@@ -2040,13 +2042,16 @@ consult the installation file that came with this distribution, or visit \n\
 			*/
 			if (cgi || fastcgi || SG(request_info).path_translated) {
 				if (php_fopen_primary_script(&file_handle TSRMLS_CC) == FAILURE) {
-					if (errno == EACCES) {
-						SG(sapi_headers).http_response_code = 403;
-						PUTS("Access denied.\n");
-					} else {
-						SG(sapi_headers).http_response_code = 404;
-						PUTS("No input file specified.\n");
-					}
+					zend_try {
+						if (errno == EACCES) {
+							SG(sapi_headers).http_response_code = 403;
+							PUTS("Access denied.\n");
+						} else {
+							SG(sapi_headers).http_response_code = 404;
+							PUTS("No input file specified.\n");
+						}
+					} zend_catch {
+					} zend_end_try();
 					/* we want to serve more requests if this is fastcgi
 					 * so cleanup and continue, request shutdown is
 					 * handled later */

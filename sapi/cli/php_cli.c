@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_cli.c 287973 2009-09-02 20:02:17Z pajoye $ */
+/* $Id: php_cli.c 293036 2010-01-03 09:23:27Z sebastian $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -76,8 +76,10 @@
 #endif
 
 #if (HAVE_LIBREADLINE || HAVE_LIBEDIT) && !defined(COMPILE_DL_READLINE)
+#if HAVE_LIBEDIT
+#include <editline/readline.h>
+#else
 #include <readline/readline.h>
-#if !HAVE_LIBEDIT
 #include <readline/history.h>
 #endif
 #include "php_cli_readline.h"
@@ -829,7 +831,7 @@ int main(int argc, char *argv[])
 				}
 
 				request_started = 1;
-				php_printf("PHP %s (%s) (built: %s %s) %s\nCopyright (c) 1997-2009 The PHP Group\n%s",
+				php_printf("PHP %s (%s) (built: %s %s) %s\nCopyright (c) 1997-2010 The PHP Group\n%s",
 					PHP_VERSION, sapi_module.name, __DATE__, __TIME__,
 #if ZEND_DEBUG && defined(HAVE_GCOV)
 					"(DEBUG GCOV)",

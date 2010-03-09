@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -356,6 +356,9 @@ ZEND_MODULE_STARTUP_D(gmp)
 	REGISTER_LONG_CONSTANT("GMP_ROUND_ZERO", GMP_ROUND_ZERO, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("GMP_ROUND_PLUSINF", GMP_ROUND_PLUSINF, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("GMP_ROUND_MINUSINF", GMP_ROUND_MINUSINF, CONST_CS | CONST_PERSISTENT);
+#ifdef mpir_version
+	REGISTER_STRING_CONSTANT("GMP_MPIR_VERSION", (char *)mpir_version, CONST_CS | CONST_PERSISTENT);
+#endif
 	REGISTER_STRING_CONSTANT("GMP_VERSION", (char *)gmp_version, CONST_CS | CONST_PERSISTENT);
 
 	mp_set_memory_functions(gmp_emalloc, gmp_erealloc, gmp_efree);
@@ -383,7 +386,11 @@ ZEND_MODULE_INFO_D(gmp)
 {
 	php_info_print_table_start();
 	php_info_print_table_row(2, "gmp support", "enabled");
+#ifdef mpir_version
+	php_info_print_table_row(2, "MPIR version", mpir_version);
+#else
 	php_info_print_table_row(2, "GMP version", gmp_version);
+#endif
 	php_info_print_table_end();
 }
 /* }}} */
@@ -746,7 +753,11 @@ ZEND_FUNCTION(gmp_init)
 		return;
 	}
 
+#if (__GNU_MP_VERSION >= 4 && __GNU_MP_VERSION_MINOR >= 2)
+	if (base && (base < 2 || base > 62)) {
+#else
 	if (base && (base < 2 || base > 36)) {
+#endif
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Bad base for conversion: %ld (should be between 2 and 36)", base);
 		RETURN_FALSE;
 	}
@@ -796,14 +807,18 @@ ZEND_FUNCTION(gmp_strval)
 		return;
 	}
 
+#if __GNU_MP_VERSION >= 4 && __GNU_MP_VERSION_MINOR >= 2
+	if ((base < 2 && base > -2) || base > 62 || base < -36) {
+#else
 	if (base < 2 || base > 36) {
+#endif
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Bad base for conversion: %ld", base);
 		RETURN_FALSE;
 	}
 
 	FETCH_GMP_ZVAL(gmpnum, gmpnumber_arg, temp_a);
 
-	num_len = mpz_sizeinbase(*gmpnum, base);
+	num_len = mpz_sizeinbase(*gmpnum, abs(base));
 	out_string = emalloc(num_len+2);
 	if (mpz_sgn(*gmpnum) < 0) {
 		num_len++;
@@ -1359,8 +1374,11 @@ ZEND_FUNCTION(gmp_random)
 
 		GMPG(rand_initialized) = 1;
 	}
+#ifdef GMP_LIMB_BITS
+	mpz_urandomb(*gmpnum_result, GMPG(rand_state), GMP_ABS (limiter) * GMP_LIMB_BITS);
+#else
 	mpz_urandomb(*gmpnum_result, GMPG(rand_state), GMP_ABS (limiter) * __GMP_BITS_PER_MP_LIMB);
-
+#endif
 	ZEND_REGISTER_RESOURCE(return_value, gmpnum_result, le_gmp);
 }
 /* }}} */

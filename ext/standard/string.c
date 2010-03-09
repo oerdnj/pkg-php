@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: string.c 287916 2009-08-31 12:28:46Z iliaa $ */
+/* $Id: string.c 294517 2010-02-04 09:44:16Z pajoye $ */
 
 /* Synced with php 3.0 revision 1.193 1999-06-16 [ssb] */
 
@@ -3530,9 +3530,7 @@ static void php_str_replace_in_subject(zval *search, zval *replace, zval **subje
 	/* If search is an array */
 	if (Z_TYPE_P(search) == IS_ARRAY) {
 		/* Duplicate subject string for repeated replacement */
-		*result = **subject;
-		zval_copy_ctor(result);
-		INIT_PZVAL(result);
+		MAKE_COPY_ZVAL(subject, result);
 		
 		zend_hash_internal_pointer_reset(Z_ARRVAL_P(search));
 
@@ -3616,9 +3614,7 @@ static void php_str_replace_in_subject(zval *search, zval *replace, zval **subje
 													Z_STRVAL_P(search), Z_STRLEN_P(search),
 													Z_STRVAL_P(replace), Z_STRLEN_P(replace), &Z_STRLEN_P(result), case_sensitivity, replace_count);
 		} else {
-			*result = **subject;
-			zval_copy_ctor(result);
-			INIT_PZVAL(result);
+			MAKE_COPY_ZVAL(subject, result);
 		}
 	}
 }
@@ -3918,7 +3914,7 @@ PHP_FUNCTION(nl2br)
 	tmp = str;
 	end = str + str_len;
 	
-	/* it is really faster to scan twice and allocate mem once insted scanning once
+	/* it is really faster to scan twice and allocate mem once instead of scanning once
 	   and constantly reallocing */
 	while (tmp < end) {
 		if (*tmp == '\r') {
@@ -4247,7 +4243,7 @@ PHPAPI size_t php_strip_tags_ex(char *rbuf, int len, int *stateptr, char *allow,
 {
 	char *tbuf, *buf, *p, *tp, *rp, c, lc;
 	int br, i=0, depth=0, in_q = 0;
-	int state = 0;
+	int state = 0, pos;
 
 	if (stateptr)
 		state = *stateptr;
@@ -4260,7 +4256,7 @@ PHPAPI size_t php_strip_tags_ex(char *rbuf, int len, int *stateptr, char *allow,
 	br = 0;
 	if (allow) {
 		php_strtolower(allow, allow_len);
-		tbuf = emalloc(PHP_TAG_BUF_SIZE+1);
+		tbuf = emalloc(PHP_TAG_BUF_SIZE + 1);
 		tp = tbuf;
 	} else {
 		tbuf = tp = NULL;
@@ -4281,7 +4277,11 @@ PHPAPI size_t php_strip_tags_ex(char *rbuf, int len, int *stateptr, char *allow,
 					lc = '<';
 					state = 1;
 					if (allow) {
-						tp = ((tp-tbuf) >= PHP_TAG_BUF_SIZE ? tbuf: tp);
+						if (tp - tbuf >= PHP_TAG_BUF_SIZE) {
+							pos = tp - tbuf;
+							tbuf = erealloc(tbuf, (tp - tbuf) + PHP_TAG_BUF_SIZE + 1);
+							tp = tbuf + pos;
+						}
 						*(tp++) = '<';
 				 	}
 				} else if (state == 1) {
@@ -4296,7 +4296,11 @@ PHPAPI size_t php_strip_tags_ex(char *rbuf, int len, int *stateptr, char *allow,
 						br++;
 					}
 				} else if (allow && state == 1) {
-					tp = ((tp-tbuf) >= PHP_TAG_BUF_SIZE ? tbuf: tp);
+					if (tp - tbuf >= PHP_TAG_BUF_SIZE) {
+						pos = tp - tbuf;
+						tbuf = erealloc(tbuf, (tp - tbuf) + PHP_TAG_BUF_SIZE + 1);
+						tp = tbuf + pos;
+					}
 					*(tp++) = c;
 				} else if (state == 0) {
 					*(rp++) = c;
@@ -4310,7 +4314,11 @@ PHPAPI size_t php_strip_tags_ex(char *rbuf, int len, int *stateptr, char *allow,
 						br--;
 					}
 				} else if (allow && state == 1) {
-					tp = ((tp-tbuf) >= PHP_TAG_BUF_SIZE ? tbuf: tp);
+					if (tp - tbuf >= PHP_TAG_BUF_SIZE) {
+						pos = tp - tbuf;
+						tbuf = erealloc(tbuf, (tp - tbuf) + PHP_TAG_BUF_SIZE + 1);
+						tp = tbuf + pos;
+					}
 					*(tp++) = c;
 				} else if (state == 0) {
 					*(rp++) = c;
@@ -4332,7 +4340,11 @@ PHPAPI size_t php_strip_tags_ex(char *rbuf, int len, int *stateptr, char *allow,
 						lc = '>';
 						in_q = state = 0;
 						if (allow) {
-							tp = ((tp-tbuf) >= PHP_TAG_BUF_SIZE ? tbuf: tp);
+							if (tp - tbuf >= PHP_TAG_BUF_SIZE) {
+								pos = tp - tbuf;
+								tbuf = erealloc(tbuf, (tp - tbuf) + PHP_TAG_BUF_SIZE + 1);
+								tp = tbuf + pos;
+							}
 							*(tp++) = '>';
 							*tp='\0';
 							if (php_tag_find(tbuf, tp-tbuf, allow)) {
@@ -4382,10 +4394,14 @@ PHPAPI size_t php_strip_tags_ex(char *rbuf, int len, int *stateptr, char *allow,
 				} else if (state == 0) {
 					*(rp++) = c;
 				} else if (allow && state == 1) {
-					tp = ((tp-tbuf) >= PHP_TAG_BUF_SIZE ? tbuf: tp);
+					if (tp - tbuf >= PHP_TAG_BUF_SIZE) {
+						pos = tp - tbuf;
+						tbuf = erealloc(tbuf, (tp - tbuf) + PHP_TAG_BUF_SIZE + 1);
+						tp = tbuf + pos;
+					}
 					*(tp++) = c;
 				}
-				if (state && p != buf && *(p-1) != '\\' && (!in_q || *p == in_q)) {
+				if (state && p != buf && (state == 1 || *(p-1) != '\\') && (!in_q || *p == in_q)) {
 					if (in_q) {
 						in_q = 0;
 					} else {
@@ -4403,7 +4419,11 @@ PHPAPI size_t php_strip_tags_ex(char *rbuf, int len, int *stateptr, char *allow,
 					if (state == 0) {
 						*(rp++) = c;
 					} else if (allow && state == 1) {
-						tp = ((tp-tbuf) >= PHP_TAG_BUF_SIZE ? tbuf: tp);
+						if (tp - tbuf >= PHP_TAG_BUF_SIZE) {
+							pos = tp - tbuf;
+							tbuf = erealloc(tbuf, (tp - tbuf) + PHP_TAG_BUF_SIZE + 1);
+							tp = tbuf + pos;
+						}
 						*(tp++) = c;
 					}
 				}
@@ -4458,7 +4478,11 @@ reg_char:
 				if (state == 0) {
 					*(rp++) = c;
 				} else if (allow && state == 1) {
-					tp = ((tp-tbuf) >= PHP_TAG_BUF_SIZE ? tbuf: tp);
+					if (tp - tbuf >= PHP_TAG_BUF_SIZE) {
+						pos = tp - tbuf;
+						tbuf = erealloc(tbuf, (tp - tbuf) + PHP_TAG_BUF_SIZE + 1);
+						tp = tbuf + pos;
+					}
 					*(tp++) = c;
 				} 
 				break;

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: sapi_apache2.c 272370 2008-12-31 11:15:49Z sebastian $ */
+/* $Id: sapi_apache2.c 294572 2010-02-05 19:34:47Z pajoye $ */
 
 #include <fcntl.h>
 
@@ -127,6 +127,8 @@ php_apache_sapi_header_handler(sapi_header_struct *sapi_header, sapi_header_op_e
 
 			if (!strcasecmp(sapi_header->header, "content-type"))
 				ctx->r->content_type = apr_pstrdup(ctx->r->pool, val);
+                       else if (!strcasecmp(sapi_header->header, "content-length"))
+                               ap_set_content_length(ctx->r, strtol(val, (char **)NULL, 10));
 			else if (op == SAPI_HEADER_REPLACE)
 				apr_table_set(ctx->r->headers_out, sapi_header->header, val);
 			else

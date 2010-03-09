@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2009 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2010 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_operators.c 281670 2009-06-04 18:20:45Z mattwil $ */
+/* $Id: zend_operators.c 293155 2010-01-05 20:46:53Z sebastian $ */
 
 #include <ctype.h>
 
@@ -1226,6 +1226,12 @@ ZEND_API int concat_function(zval *result, zval *op1, zval *op2 TSRMLS_DC) /* {{
 	}
 	if (result==op1) {	/* special case, perform operations on result */
 		uint res_len = Z_STRLEN_P(op1) + Z_STRLEN_P(op2);
+
+		if (Z_STRLEN_P(result) < 0 || (int) (Z_STRLEN_P(op1) + Z_STRLEN_P(op2)) < 0) {
+			efree(Z_STRVAL_P(result));
+			ZVAL_EMPTY_STRING(result);
+			zend_error(E_ERROR, "String size overflow");
+		}
 
 		Z_STRVAL_P(result) = erealloc(Z_STRVAL_P(result), res_len+1);
 

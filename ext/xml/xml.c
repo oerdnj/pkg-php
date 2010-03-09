@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: xml.c 287790 2009-08-27 05:05:42Z rasmus $ */
+/* $Id: xml.c 294434 2010-02-03 18:35:58Z pajoye $ */
 
 #define IS_EXT_MODULE
 
@@ -804,7 +804,7 @@ void _xml_startElementHandler(void *userData, const XML_Char *name, const XML_Ch
 
 		if (parser->startElementHandler) {
 			args[0] = _xml_resource_zval(parser->index);
-			args[1] = _xml_string_zval(tag_name);
+			args[1] = _xml_string_zval(((char *) tag_name) + parser->toffset);
 			MAKE_STD_ZVAL(args[2]);
 			array_init(args[2]);
 
@@ -884,7 +884,7 @@ void _xml_endElementHandler(void *userData, const XML_Char *name)
 
 		if (parser->endElementHandler) {
 			args[0] = _xml_resource_zval(parser->index);
-			args[1] = _xml_string_zval(tag_name);
+			args[1] = _xml_string_zval(((char *) tag_name) + parser->toffset);
 
 			if ((retval = xml_call_handler(parser, parser->endElementHandler, parser->endElementPtr, 2, args))) {
 				zval_ptr_dtor(&retval);
@@ -1270,9 +1270,7 @@ PHP_FUNCTION(xml_set_object)
 #endif */
 
 	ALLOC_ZVAL(parser->object);
-	*parser->object = *mythis;
-	zval_copy_ctor(parser->object);
-	INIT_PZVAL(parser->object);
+	MAKE_COPY_ZVAL(&mythis, parser->object);
 
 	RETVAL_TRUE;
 }

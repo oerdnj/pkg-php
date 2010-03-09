@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_ini.c 289668 2009-10-15 13:28:55Z pajoye $ */
+/* $Id: php_ini.c 294449 2010-02-03 20:13:18Z pajoye $ */
 
 #include "php.h"
 #include "ext/standard/info.h"
@@ -807,7 +807,7 @@ PHPAPI void php_ini_activate_per_dir_config(char *path, uint path_len TSRMLS_DC)
 		while ((ptr = strchr(ptr, '/')) != NULL) {
 			*ptr = 0;
 			/* Search for source array matching the path from configuration_hash */
-			if (zend_hash_find(&configuration_hash, path, path_len, (void **) &tmp) == SUCCESS) {
+			if (zend_hash_find(&configuration_hash, path, strlen(path) + 1, (void **) &tmp) == SUCCESS) {
 				php_ini_activate_config(Z_ARRVAL_P(tmp), PHP_INI_SYSTEM, PHP_INI_STAGE_ACTIVATE TSRMLS_CC);
 			}
 			*ptr = '/';

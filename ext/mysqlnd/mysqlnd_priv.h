@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_priv.h 289630 2009-10-14 13:51:25Z johannes $ */
+/* $Id: mysqlnd_priv.h 293779 2010-01-20 17:09:28Z johannes $ */
 
 #ifndef MYSQLND_PRIV_H
 #define MYSQLND_PRIV_H
@@ -37,21 +37,12 @@
 #include "TSRM.h"
 #endif
 
-#ifndef TRUE
-#define TRUE 1
-#endif
-
-#ifndef FALSE
-#define FALSE 0
-#endif
-
 #ifndef pestrndup
 #define pestrndup(s, length, persistent) ((persistent)?zend_strndup((s),(length)):estrndup((s),(length)))
 #endif
 
 #define MYSQLND_CLASS_METHOD_TABLE_NAME(class) mysqlnd_##class##_methods
-#define MYSQLND_CLASS_METHODS_START(class) static \
-									 struct st_##class##_methods MYSQLND_CLASS_METHOD_TABLE_NAME(class) = {
+#define MYSQLND_CLASS_METHODS_START(class) struct st_##class##_methods MYSQLND_CLASS_METHOD_TABLE_NAME(class) = {
 #define MYSQLND_CLASS_METHODS_END  				}							 
 
 #if PHP_MAJOR_VERSION < 6
@@ -163,9 +154,9 @@ struct st_mysqlnd_perm_bind {
 
 extern struct st_mysqlnd_perm_bind mysqlnd_ps_fetch_functions[MYSQL_TYPE_LAST + 1];
 
-extern const char * const mysqlnd_old_passwd;
-extern const char * const mysqlnd_out_of_sync;
-extern const char * const mysqlnd_server_gone;
+PHPAPI extern const char * const mysqlnd_old_passwd;
+PHPAPI extern const char * const mysqlnd_out_of_sync;
+PHPAPI extern const char * const mysqlnd_server_gone;
 
 enum_func_status mysqlnd_handle_local_infile(MYSQLND *conn, const char *filename, zend_bool *is_warning TSRMLS_DC);
 
@@ -178,9 +169,6 @@ void ps_fetch_from_1_to_8_bytes(zval *zv, const MYSQLND_FIELD * const field,
 								unsigned int pack_len, zend_uchar **row, zend_bool as_unicode,
 								unsigned int byte_count TSRMLS_DC);
 
-
-
-int mysqlnd_set_sock_no_delay(php_stream *stream);
 #endif	/* MYSQLND_PRIV_H */
 
 

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_win32.c 290166 2009-11-03 10:48:12Z pajoye $ */
+/* $Id: tsrm_win32.c 294728 2010-02-07 21:09:19Z pajoye $ */
 
 #include <stdio.h>
 #include <fcntl.h>
@@ -176,6 +176,7 @@ PSID tsrm_win32_get_token_sid(HANDLE hToken)
 	if (!CopySid(sid_len, pResultSid, pTokenUser->User.Sid)) {
 		goto Finished;
 	}
+	HeapFree(GetProcessHeap(), 0, (LPVOID)pTokenUser);
 	return pResultSid;
 
 Finished:
@@ -222,11 +223,13 @@ TSRM_API int tsrm_win32_access(const char *pathname, int mode)
  		}
 
 		if(access(pathname, mode)) {
+			free(real_path);
 			return errno;
 		}
 
  		/* If only existence check is made, return now */
  		if (mode == 0) {
+			free(real_path);
 			return 0;
 		}
 
@@ -271,6 +274,9 @@ TSRM_API int tsrm_win32_access(const char *pathname, int mode)
 			if (!DuplicateToken(thread_token, SecurityImpersonation, &TWG(impersonation_token))) {
 				goto Finished;
 			}
+		} else {
+			/* we already have it, free it then */
+			free(token_sid);
 		}
 
 		if (CWDG(realpath_cache_size_limit)) {
@@ -299,7 +305,7 @@ TSRM_API int tsrm_win32_access(const char *pathname, int mode)
 				fAccess = bucket->is_writable;
 				goto Finished;
 			}
-			desired_access = FILE_GENERIC_READ | FILE_GENERIC_WRITE;
+			desired_access = FILE_GENERIC_WRITE;
  		} else if(mode <= 4) {
 			if(bucket != NULL && bucket->is_rvalid) {
 				fAccess = bucket->is_readable;
@@ -342,6 +348,11 @@ TSRM_API int tsrm_win32_access(const char *pathname, int mode)
 				bucket->is_readable = fAccess;
 			}
 			else if(desired_access == FILE_GENERIC_WRITE) {
+				bucket->is_wvalid = 1;
+				bucket->is_writable = fAccess;
+			} else if (desired_access == (FILE_GENERIC_READ | FILE_GENERIC_WRITE)) {
+				bucket->is_rvalid = 1;
+				bucket->is_readable = fAccess;
 				bucket->is_wvalid = 1;
 				bucket->is_writable = fAccess;
 			}
@@ -518,7 +529,6 @@ TSRM_API FILE *popen_ex(const char *command, const char *type, const char *cwd, 
 		if (err == ERROR_NO_TOKEN) {
 			asuser = FALSE;
 		}
-
 	}
 
 	cmd = (char*)malloc(strlen(command)+strlen(TWG(comspec))+sizeof(" /c ")+2);

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
 */
 
 
-/* $Id: php_mysql_structs.h 272370 2008-12-31 11:15:49Z sebastian $ */
+/* $Id: php_mysql_structs.h 293036 2010-01-03 09:23:27Z sebastian $ */
 
 #ifndef PHP_MYSQL_STRUCTS_H
 #define PHP_MYSQL_STRUCTS_H
@@ -124,11 +124,6 @@ ZEND_BEGIN_MODULE_GLOBALS(mysql)
 	long result_allocated;
 	long trace_mode;
 	long allow_local_infile;
-#ifdef MYSQL_USE_MYSQLND
-	MYSQLND_THD_ZVAL_PCACHE *mysqlnd_thd_zval_cache;
-	MYSQLND_QCACHE			*mysqlnd_qcache;
-	long					cache_size;
-#endif
 ZEND_END_MODULE_GLOBALS(mysql)
 
 #ifdef ZTS

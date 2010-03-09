@@ -18,13 +18,13 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_block_alloc.h 282779 2009-06-25 19:03:52Z johannes $ */
+/* $Id: mysqlnd_block_alloc.h 293779 2010-01-20 17:09:28Z johannes $ */
 
 #ifndef MYSQLND_BLOCK_ALLOC_H
 #define MYSQLND_BLOCK_ALLOC_H
 
-MYSQLND_MEMORY_POOL *	mysqlnd_mempool_create(size_t arena_size TSRMLS_DC);
-void 					mysqlnd_mempool_destroy(MYSQLND_MEMORY_POOL * pool TSRMLS_DC);
+PHPAPI MYSQLND_MEMORY_POOL *	mysqlnd_mempool_create(size_t arena_size TSRMLS_DC);
+PHPAPI void 					mysqlnd_mempool_destroy(MYSQLND_MEMORY_POOL * pool TSRMLS_DC);
 
 #endif	/* MYSQLND_BLOCK_ALLOC_H */
 

@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2009 The PHP Group                                |
+  | Copyright (c) 1997-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: streamsfuncs.c 286744 2009-08-03 15:58:18Z felipe $ */
+/* $Id: streamsfuncs.c 293995 2010-01-25 15:57:24Z johannes $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -484,9 +484,7 @@ PHP_FUNCTION(stream_get_meta_data)
 	
 	if (stream->wrapperdata) {
 		MAKE_STD_ZVAL(newval);
-		*newval = *(stream->wrapperdata);
-		zval_copy_ctor(newval);
-		INIT_PZVAL(newval);
+		MAKE_COPY_ZVAL(&stream->wrapperdata, newval);
 
 		add_assoc_zval(return_value, "wrapper_data", newval);
 	}
@@ -1441,6 +1439,26 @@ PHP_FUNCTION(stream_socket_enable_crypto)
 		default:
 			RETURN_TRUE;
 	}
+}
+/* }}} */
+
+/* {{{ proto string stream_resolve_include_path(string filename)
+Determine what file will be opened by calls to fopen() with a relative path */
+PHP_FUNCTION(stream_resolve_include_path)
+{
+	char *filename, *resolved_path; 
+	int filename_len;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &filename, &filename_len) == FAILURE) {
+		return;
+	}
+
+	resolved_path = zend_resolve_path(filename, filename_len TSRMLS_CC);
+
+	if (resolved_path) {
+		RETURN_STRING(resolved_path, 0);
+	}
+	RETURN_FALSE;
 }
 /* }}} */
 

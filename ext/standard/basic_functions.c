@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: basic_functions.c 289669 2009-10-15 14:10:03Z pajoye $ */
+/* $Id: basic_functions.c 294503 2010-02-04 09:08:57Z pajoye $ */
 
 #include "php.h"
 #include "php_streams.h"
@@ -1301,6 +1301,12 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_clearstatcache, 0, 0, 0)
 	ZEND_ARG_INFO(0, filename)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO(arginfo_realpath_cache_size, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(arginfo_realpath_cache_get, 0)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO(arginfo_fileperms, 0)
 	ZEND_ARG_INFO(0, filename)
 ZEND_END_ARG_INFO()
@@ -2002,6 +2008,10 @@ ZEND_BEGIN_ARG_INFO(arginfo_stream_get_transports, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO(arginfo_stream_get_wrappers, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(arginfo_stream_resolve_include_path, 0)
+	ZEND_ARG_INFO(0, filename)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO(arginfo_stream_is_local, 0)
@@ -3109,6 +3119,7 @@ const zend_function_entry basic_functions[] = { /* {{{ */
 	PHP_FE(stream_wrapper_restore,											arginfo_stream_wrapper_restore)
 	PHP_FE(stream_get_wrappers,												arginfo_stream_get_wrappers)
 	PHP_FE(stream_get_transports,											arginfo_stream_get_transports)
+	PHP_FE(stream_resolve_include_path,										arginfo_stream_resolve_include_path)
 	PHP_FE(stream_is_local,												arginfo_stream_is_local)
 	PHP_FE(get_headers,														arginfo_get_headers)
 
@@ -3198,6 +3209,8 @@ const zend_function_entry basic_functions[] = { /* {{{ */
 	PHP_FE(disk_total_space,												arginfo_disk_total_space)
 	PHP_FE(disk_free_space,													arginfo_disk_free_space)
 	PHP_FALIAS(diskfreespace,		disk_free_space,						arginfo_disk_free_space)
+	PHP_FE(realpath_cache_size,												arginfo_realpath_cache_size)
+	PHP_FE(realpath_cache_get,												arginfo_realpath_cache_get)
 
 	/* functions from mail.c */
 	PHP_FE(mail,															arginfo_mail)
@@ -4043,7 +4056,7 @@ PHP_FUNCTION(putenv)
 		pe.key_len = strlen(pe.key);
 #ifdef PHP_WIN32
 		if (equals) {
-			if (pe.key_len < setting_len - 2) {
+			if (pe.key_len < setting_len - 1) {
 				value = p + 1;
 			} else {
 				/* empty string*/
@@ -4652,7 +4665,7 @@ PHP_FUNCTION(error_log)
 		opt_err = erropt;
 	}
 
-	if (_php_error_log(opt_err, message, opt, headers TSRMLS_CC) == FAILURE) {
+	if (_php_error_log_ex(opt_err, message, message_len, opt, headers TSRMLS_CC) == FAILURE) {
 		RETURN_FALSE;
 	}
 
@@ -4660,17 +4673,22 @@ PHP_FUNCTION(error_log)
 }
 /* }}} */
 
+/* For BC (not binary-safe!) */
 PHPAPI int _php_error_log(int opt_err, char *message, char *opt, char *headers TSRMLS_DC) /* {{{ */
+{
+	return _php_error_log_ex(opt_err, message, (opt_err == 3) ? strlen(message) : 0, opt, headers TSRMLS_CC);
+}
+/* }}} */
+
+PHPAPI int _php_error_log_ex(int opt_err, char *message, int message_len, char *opt, char *headers TSRMLS_DC) /* {{{ */
 {
 	php_stream *stream = NULL;
 
-	switch (opt_err) {
-
+	switch (opt_err)
+	{
 		case 1:		/*send an email */
-			{
-				if (!php_mail(opt, "PHP error_log message", message, headers, NULL TSRMLS_CC)) {
-					return FAILURE;
-				}
+			if (!php_mail(opt, "PHP error_log message", message, headers, NULL TSRMLS_CC)) {
+				return FAILURE;
 			}
 			break;
 
@@ -4681,11 +4699,13 @@ PHPAPI int _php_error_log(int opt_err, char *message, char *opt, char *headers T
 
 		case 3:		/*save to a file */
 			stream = php_stream_open_wrapper(opt, "a", IGNORE_URL_WIN | ENFORCE_SAFE_MODE | REPORT_ERRORS, NULL);
-			if (!stream)
+			if (!stream) {
 				return FAILURE;
-			php_stream_write(stream, message, strlen(message));
+			}
+			php_stream_write(stream, message, message_len);
 			php_stream_close(stream);
 			break;
+
 		case 4: /* send to SAPI */
 			if (sapi_module.log_message) {
 				sapi_module.log_message(message);
@@ -4693,6 +4713,7 @@ PHPAPI int _php_error_log(int opt_err, char *message, char *opt, char *headers T
 				return FAILURE;
 			}
 			break;
+
 		default:
 			php_log_err(message TSRMLS_CC);
 			break;
@@ -5561,6 +5582,15 @@ PHP_FUNCTION(getservbyname)
 		return;
 	}
 
+
+/* empty string behaves like NULL on windows implementation of 
+   getservbyname. Let be portable instead. */
+#ifdef PHP_WIN32
+	if (proto_len == 0) {
+		RETURN_FALSE;
+	}
+#endif
+
 	serv = getservbyname(name, proto);
 
 	if (serv == NULL) {
@@ -5821,9 +5851,7 @@ static void php_simple_ini_parser_cb(zval *arg1, zval *arg2, zval *arg3, int cal
 				break;
 			}
 			ALLOC_ZVAL(element);
-			*element = *arg2;
-			zval_copy_ctor(element);
-			INIT_PZVAL(element);
+			MAKE_COPY_ZVAL(&arg2, element);
 			zend_symtable_update(Z_ARRVAL_P(arr), Z_STRVAL_P(arg1), Z_STRLEN_P(arg1) + 1, &element, sizeof(zval *), NULL);
 			break;
 
@@ -5866,9 +5894,7 @@ static void php_simple_ini_parser_cb(zval *arg1, zval *arg2, zval *arg3, int cal
 			}
 
 			ALLOC_ZVAL(element);
-			*element = *arg2;
-			zval_copy_ctor(element);
-			INIT_PZVAL(element);
+			MAKE_COPY_ZVAL(&arg2, element);
 
 			if (arg3 && Z_STRLEN_P(arg3) > 0) {
 				add_assoc_zval_ex(hash, Z_STRVAL_P(arg3), Z_STRLEN_P(arg3) + 1, element);

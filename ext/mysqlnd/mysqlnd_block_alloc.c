@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_block_alloc.c 282779 2009-06-25 19:03:52Z johannes $ */
+/* $Id: mysqlnd_block_alloc.c 293779 2010-01-20 17:09:28Z johannes $ */
 
 #include "php.h"
 #include "mysqlnd.h"
@@ -160,7 +160,7 @@ MYSQLND_MEMORY_POOL_CHUNK * mysqlnd_mempool_get_chunk(MYSQLND_MEMORY_POOL * pool
 
 
 /* {{{ mysqlnd_mempool_create */
-MYSQLND_MEMORY_POOL *
+PHPAPI MYSQLND_MEMORY_POOL *
 mysqlnd_mempool_create(size_t arena_size TSRMLS_DC)
 {
 	/* We calloc, because we free(). We don't mnd_calloc()  for a reason. */
@@ -179,7 +179,7 @@ mysqlnd_mempool_create(size_t arena_size TSRMLS_DC)
 
 
 /* {{{ mysqlnd_mempool_destroy */
-void
+PHPAPI void
 mysqlnd_mempool_destroy(MYSQLND_MEMORY_POOL * pool TSRMLS_DC)
 {
 	DBG_ENTER("mysqlnd_mempool_destroy");

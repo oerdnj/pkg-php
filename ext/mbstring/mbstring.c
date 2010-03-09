@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: mbstring.c 281226 2009-05-27 13:42:17Z tony2001 $ */
+/* $Id: mbstring.c 293036 2010-01-03 09:23:27Z sebastian $ */
 
 /*
  * PHP 4 Multibyte String module "mbstring"
@@ -2663,10 +2663,6 @@ PHP_FUNCTION(mb_strcut)
 
 	if ((unsigned int)from > string.len) {
 		RETURN_FALSE;
-	}
-
-	if (((unsigned int)from + (unsigned int)len) > string.len) {
-		len = string.len - from;
 	}
 
 	ret = mbfl_strcut(&string, &result, from, len);

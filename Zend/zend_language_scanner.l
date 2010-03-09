@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2009 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2010 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_language_scanner.l 279941 2009-05-05 01:35:44Z mattwil $ */
+/* $Id: zend_language_scanner.l 293154 2010-01-05 20:40:23Z sebastian $ */
 
 #if 0
 # define YYDEBUG(s, c) printf("state: %d char: %c\n", s, c)
@@ -683,12 +683,12 @@ ZEND_API int zend_multibyte_read_script(unsigned char *buf, size_t n TSRMLS_DC)
 {
 	if (SCNG(script_org)) {
 		efree(SCNG(script_org));
+		SCNG(script_org) = NULL;
 	}
-	SCNG(script_org_size) = n;
-	SCNG(script_org) = (unsigned char*)erealloc(SCNG(script_org), SCNG(script_org_size));
-	memcpy(SCNG(script_org) + SCNG(script_org_size) - n, buf, n);
+	SCNG(script_org_size) = n;	
 	
-	SCNG(script_org) = (unsigned char*)erealloc(SCNG(script_org), SCNG(script_org_size) + 1);
+	SCNG(script_org) = (unsigned char*)emalloc(SCNG(script_org_size) + 1);
+	memcpy(SCNG(script_org), buf, n);
 	*(SCNG(script_org)+SCNG(script_org_size)) = '\0';
 
 	return 0;

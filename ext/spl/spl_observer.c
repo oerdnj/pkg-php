@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is SplSubject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_observer.c 287266 2009-08-13 22:07:05Z colder $ */
+/* $Id: spl_observer.c 293036 2010-01-03 09:23:27Z sebastian $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -622,7 +622,7 @@ SPL_METHOD(SplObjectStorage, unserialize)
 	++p;
 
 	ALLOC_INIT_ZVAL(pcount);
-	if (!php_var_unserialize(&pcount, &p, s + buf_len, &var_hash TSRMLS_CC) || Z_TYPE_P(pcount) != IS_LONG) {
+	if (!php_var_unserialize(&pcount, &p, s + buf_len, NULL TSRMLS_CC) || Z_TYPE_P(pcount) != IS_LONG) {
 		zval_ptr_dtor(&pcount);
 		goto outexcept;
 	}

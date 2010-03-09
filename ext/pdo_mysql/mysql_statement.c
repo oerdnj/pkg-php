@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2009 The PHP Group                                |
+  | Copyright (c) 1997-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysql_statement.c 280838 2009-05-20 08:30:12Z kalle $ */
+/* $Id: mysql_statement.c 294543 2010-02-04 20:28:55Z johannes $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -120,7 +120,7 @@ static int pdo_mysql_stmt_dtor(pdo_stmt_t *stmt TSRMLS_DC) /* {{{ */
 }
 /* }}} */
 
-static void pdo_mysql_stmt_set_row_count(pdo_stmt_t *stmt) /* {{{ */
+static void pdo_mysql_stmt_set_row_count(pdo_stmt_t *stmt TSRMLS_DC) /* {{{ */
 {
 	long row_count;
 	pdo_mysql_stmt *S = stmt->driver_data;
@@ -237,7 +237,7 @@ static int pdo_mysql_stmt_execute_prepared_libmysql(pdo_stmt_t *stmt TSRMLS_DC) 
 		}
 	}
 	
-	pdo_mysql_stmt_set_row_count(stmt);
+	pdo_mysql_stmt_set_row_count(stmt TSRMLS_CC);
 	PDO_DBG_RETURN(1);
 }
 /* }}} */
@@ -280,7 +280,7 @@ static int pdo_mysql_stmt_execute_prepared_mysqlnd(pdo_stmt_t *stmt TSRMLS_DC) /
 		}
 	}
 	
-	pdo_mysql_stmt_set_row_count(stmt);
+	pdo_mysql_stmt_set_row_count(stmt TSRMLS_CC);
 	PDO_DBG_RETURN(1);
 }
 /* }}} */

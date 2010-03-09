@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    |         Ilia Alshanetsky <iliaa@php.net>                             |
    +----------------------------------------------------------------------+
  */
-/* $Id: exec.c 289688 2009-10-15 21:36:42Z pajoye $ */
+/* $Id: exec.c 294429 2010-02-03 18:11:24Z pajoye $ */
 
 #include <stdio.h>
 #include "php.h"
@@ -121,7 +121,7 @@ PHPAPI int php_exec(int type, char *cmd, zval *array, zval *return_value TSRMLS_
 
 	if (type != 3) {
 		b = buf;
-
+		
 		while (php_stream_get_line(stream, b, EXEC_INPUT_BUF, &bufl)) {
 			/* no new line found, let's read some more */
 			if (b[bufl - 1] != '\n' && !php_stream_eof(stream)) {
@@ -157,7 +157,7 @@ PHPAPI int php_exec(int type, char *cmd, zval *array, zval *return_value TSRMLS_
 		}
 		if (bufl) {
 			/* strip trailing whitespaces if we have not done so already */
-			if ((type == 2 && bufl && !l) || type != 2) {
+			if ((type == 2 && buf != b) || type != 2) {
 				l = bufl;
 				while (l-- && isspace(((unsigned char *)buf)[l]));
 				if (l != (int)(bufl - 1)) {

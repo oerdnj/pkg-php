@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    | PHP 4.0 patches by Zeev Suraski <zeev@zend.com>                      |
    +----------------------------------------------------------------------+
  */
-/* $Id: mod_php5.c 272370 2008-12-31 11:15:49Z sebastian $ */
+/* $Id: mod_php5.c 294572 2010-02-05 19:34:47Z pajoye $ */
 
 #include "php_apache_http.h"
 #include "http_conf_globals.h"
@@ -196,6 +196,8 @@ static int sapi_apache_header_handler(sapi_header_struct *sapi_header, sapi_head
 
 			if (!strcasecmp(header_name, "Content-Type")) {
 				r->content_type = pstrdup(r->pool, header_content);
+                       } else if (!strcasecmp(header_name, "Content-Length")) {
+                               ap_set_content_length(r, strtol(header_content, (char **)NULL, 10));
 			} else if (!strcasecmp(header_name, "Set-Cookie")) {
 				table_add(r->headers_out, header_name, header_content);
 			} else if (op == SAPI_HEADER_REPLACE) {

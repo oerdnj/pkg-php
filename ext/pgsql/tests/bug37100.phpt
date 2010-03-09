@@ -1,7 +1,10 @@
 --TEST--
 Bug #37100 (data is returned truncated with BINARY CURSOR)
 --SKIPIF--
-<?php include("skipif.inc"); ?>
+<?php
+include("skipif.inc");
+skip_server_version('8.5dev', '>=');
+?>
 --FILE--
 <?php
 

@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2009 The PHP Group                                |
+  | Copyright (c) 1997-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: php_mysqli_structs.h 289630 2009-10-14 13:51:25Z johannes $ 
+  $Id: php_mysqli_structs.h 294543 2010-02-04 20:28:55Z johannes $ 
 */
 
 #ifndef PHP_MYSQLI_STRUCTS_H
@@ -196,11 +196,6 @@ extern zend_property_info mysqli_stmt_property_info_entries[];
 extern zend_property_info mysqli_driver_property_info_entries[];
 extern zend_property_info mysqli_warning_property_info_entries[];
 
-#ifdef MYSQLI_USE_MYSQLND
-extern MYSQLND_ZVAL_PCACHE	*mysqli_mysqlnd_zval_cache;
-extern MYSQLND_QCACHE		*mysqli_mysqlnd_qcache;
-#endif
-
 extern void php_mysqli_fetch_into_hash(INTERNAL_FUNCTION_PARAMETERS, int override_flag, int into_object);
 extern void php_clear_stmt_bind(MY_STMT *stmt TSRMLS_DC);
 extern void php_clear_mysql(MY_MYSQL *);
@@ -219,6 +214,9 @@ extern zend_class_entry *mysqli_warning_class_entry;
 extern zend_class_entry *mysqli_exception_class_entry;
 extern int php_le_pmysqli(void);
 extern void php_mysqli_dtor_p_elements(void *data);
+
+extern void php_mysqli_close(MY_MYSQL * mysql, int close_type TSRMLS_DC);
+
 
 #ifdef HAVE_SPL
 extern PHPAPI zend_class_entry *spl_ce_RuntimeException;
@@ -305,9 +303,6 @@ PHP_MYSQLI_EXPORT(zend_object_value) mysqli_objects_new(zend_class_entry * TSRML
 #define MYSQLI_STORE_RESULT 0
 #define MYSQLI_USE_RESULT 	1
 #ifdef MYSQLI_USE_MYSQLND
-#ifdef MYSQLND_THREADED
-#define MYSQLI_BG_STORE_RESULT 	4
-#endif
 #define MYSQLI_ASYNC	 	8
 #else
 /* libmysql */
@@ -343,6 +338,8 @@ if ((MyG(report_mode) & MYSQLI_REPORT_ERROR) && mysql_stmt_errno(stmt)) { \
 
 void mysqli_common_connect(INTERNAL_FUNCTION_PARAMETERS, zend_bool is_real_connect, zend_bool in_ctor);
 
+void php_mysqli_init(INTERNAL_FUNCTION_PARAMETERS);
+
 
 ZEND_BEGIN_MODULE_GLOBALS(mysqli)
 	long			default_link;
@@ -367,9 +364,6 @@ ZEND_BEGIN_MODULE_GLOBALS(mysqli)
 	HashTable		*report_ht;
 	unsigned long	multi_query;
 	unsigned long	embedded;
-#ifdef MYSQLI_USE_MYSQLND
-	MYSQLND_THD_ZVAL_PCACHE	*mysqlnd_thd_zval_cache;
-#endif
 ZEND_END_MODULE_GLOBALS(mysqli)
 
 

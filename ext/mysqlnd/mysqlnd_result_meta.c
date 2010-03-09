@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_result_meta.c 289630 2009-10-14 13:51:25Z johannes $ */
+/* $Id: mysqlnd_result_meta.c 294543 2010-02-04 20:28:55Z johannes $ */
 #include "php.h"
 #include "mysqlnd.h"
 #include "mysqlnd_priv.h"
@@ -138,11 +138,10 @@ zend_bool mysqlnd_unicode_is_key_numeric(UChar *key, size_t length, long *idx)
 
 /* {{{ mysqlnd_res_meta::read_metadata */
 static enum_func_status
-MYSQLND_METHOD(mysqlnd_res_meta, read_metadata)(MYSQLND_RES_METADATA * const meta,
-												MYSQLND *conn TSRMLS_DC)
+MYSQLND_METHOD(mysqlnd_res_meta, read_metadata)(MYSQLND_RES_METADATA * const meta, MYSQLND *conn TSRMLS_DC)
 {
 	unsigned int i = 0;
-	php_mysql_packet_res_field field_packet;
+	MYSQLND_PACKET_RES_FIELD * field_packet;
 #if PHP_MAJOR_VERSION >= 6
 	UChar *ustr;
 	int ulen;
@@ -150,7 +149,7 @@ MYSQLND_METHOD(mysqlnd_res_meta, read_metadata)(MYSQLND_RES_METADATA * const met
 
 	DBG_ENTER("mysqlnd_res_meta::read_metadata");
 
-	PACKET_INIT_ALLOCA(field_packet, PROT_RSET_FLD_PACKET);
+	field_packet = conn->protocol->m.get_result_field_packet(conn->protocol, FALSE TSRMLS_CC);
 	for (;i < meta->field_count; i++) {
 		long idx;
 
@@ -160,19 +159,19 @@ MYSQLND_METHOD(mysqlnd_res_meta, read_metadata)(MYSQLND_RES_METADATA * const met
 			meta->fields[i].root = NULL;
 		}
 
-		field_packet.metadata = &(meta->fields[i]);
-		if (FAIL == PACKET_READ_ALLOCA(field_packet, conn)) {
-			PACKET_FREE_ALLOCA(field_packet);
+		field_packet->metadata = &(meta->fields[i]);
+		if (FAIL == PACKET_READ(field_packet, conn)) {
+			PACKET_FREE(field_packet);
 			DBG_RETURN(FAIL);
 		}
-		if (field_packet.error_info.error_no) {
-			conn->error_info = field_packet.error_info;
+		if (field_packet->error_info.error_no) {
+			conn->error_info = field_packet->error_info;
 			/* Return back from CONN_QUERY_SENT */
-			PACKET_FREE_ALLOCA(field_packet);
+			PACKET_FREE(field_packet);
 			DBG_RETURN(FAIL);
 		}
 		
-		if (field_packet.stupid_list_fields_eof == TRUE) {
+		if (field_packet->stupid_list_fields_eof == TRUE) {
 			meta->field_count = i;
 			break;
 		}
@@ -184,7 +183,7 @@ MYSQLND_METHOD(mysqlnd_res_meta, read_metadata)(MYSQLND_RES_METADATA * const met
 							 "Unknown type %d sent by the server. "
 							 "Please send a report to the developers",
 							 meta->fields[i].type);
-			PACKET_FREE_ALLOCA(field_packet);
+			PACKET_FREE(field_packet);
 			DBG_RETURN(FAIL);
 		}
 		if (meta->fields[i].type == MYSQL_TYPE_BIT) {
@@ -240,19 +239,19 @@ MYSQLND_METHOD(mysqlnd_res_meta, read_metadata)(MYSQLND_RES_METADATA * const met
 #else
 		/* For BC we have to check whether the key is numeric and use it like this */
 		if ((meta->zend_hash_keys[i].is_numeric =
-					mysqlnd_is_key_numeric(field_packet.metadata->name,
-										   field_packet.metadata->name_length + 1,
+					mysqlnd_is_key_numeric(field_packet->metadata->name,
+										   field_packet->metadata->name_length + 1,
 										   &idx)))
 		{
 			meta->zend_hash_keys[i].key = idx;
 		} else {
 			meta->zend_hash_keys[i].key =
-					zend_get_hash_value(field_packet.metadata->name,
-										field_packet.metadata->name_length + 1);
+					zend_get_hash_value(field_packet->metadata->name,
+										field_packet->metadata->name_length + 1);
 		}
 #endif
 	}
-	PACKET_FREE_ALLOCA(field_packet);
+	PACKET_FREE(field_packet);
 
 	DBG_RETURN(PASS);
 }
@@ -303,8 +302,7 @@ MYSQLND_METHOD(mysqlnd_res_meta, free)(MYSQLND_RES_METADATA *meta, zend_bool per
 
 /* {{{ mysqlnd_res::clone_metadata */
 static MYSQLND_RES_METADATA *
-MYSQLND_METHOD(mysqlnd_res_meta, clone_metadata)(const MYSQLND_RES_METADATA * const meta,
-												 zend_bool persistent TSRMLS_DC)
+MYSQLND_METHOD(mysqlnd_res_meta, clone_metadata)(const MYSQLND_RES_METADATA * const meta, zend_bool persistent TSRMLS_DC)
 {
 	unsigned int i;
 	/* +1 is to have empty marker at the end */
@@ -393,8 +391,7 @@ MYSQLND_METHOD(mysqlnd_res_meta, fetch_field)(MYSQLND_RES_METADATA * const meta 
 
 /* {{{ mysqlnd_res_meta::fetch_field_direct */
 static const MYSQLND_FIELD *
-MYSQLND_METHOD(mysqlnd_res_meta, fetch_field_direct)(const MYSQLND_RES_METADATA * const meta,
-													 MYSQLND_FIELD_OFFSET fieldnr TSRMLS_DC)
+MYSQLND_METHOD(mysqlnd_res_meta, fetch_field_direct)(const MYSQLND_RES_METADATA * const meta, MYSQLND_FIELD_OFFSET fieldnr TSRMLS_DC)
 {
 	DBG_ENTER("mysqlnd_res_meta::fetch_field_direct");
 	DBG_INF_FMT("fieldnr=%d", fieldnr);
@@ -418,7 +415,7 @@ MYSQLND_METHOD(mysqlnd_res_meta, fetch_fields)(MYSQLND_RES_METADATA * const meta
 
 /* {{{ mysqlnd_res_meta::field_tell */
 static MYSQLND_FIELD_OFFSET
-MYSQLND_METHOD(mysqlnd_res_meta, field_tell)(const MYSQLND_RES_METADATA * const meta)
+MYSQLND_METHOD(mysqlnd_res_meta, field_tell)(const MYSQLND_RES_METADATA * const meta TSRMLS_DC)
 {
 	return meta->current_field;
 }
@@ -437,7 +434,7 @@ MYSQLND_CLASS_METHODS_END;
 
 
 /* {{{ mysqlnd_result_meta_init */
-MYSQLND_RES_METADATA *
+PHPAPI MYSQLND_RES_METADATA *
 mysqlnd_result_meta_init(unsigned int field_count TSRMLS_DC)
 {
 	MYSQLND_RES_METADATA *ret;

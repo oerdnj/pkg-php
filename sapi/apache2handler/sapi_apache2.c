@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: sapi_apache2.c 272370 2008-12-31 11:15:49Z sebastian $ */
+/* $Id: sapi_apache2.c 294572 2010-02-05 19:34:47Z pajoye $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 
@@ -109,7 +109,7 @@ php_apache_sapi_header_handler(sapi_header_struct *sapi_header, sapi_header_op_e
 			ptr = val;
 
 			*val = '\0';
-	
+
 			do {
 				val++;
 			} while (*val == ' ');
@@ -119,6 +119,8 @@ php_apache_sapi_header_handler(sapi_header_struct *sapi_header, sapi_header_op_e
 					efree(ctx->content_type);
 				}
 				ctx->content_type = estrdup(val);
+                       } else if (!strcasecmp(sapi_header->header, "content-length")) {
+                               ap_set_content_length(ctx->r, strtol(val, (char **)NULL, 10));
 			} else if (op == SAPI_HEADER_REPLACE) {
 				apr_table_set(ctx->r->headers_out, sapi_header->header, val);
 			} else {
@@ -151,8 +153,8 @@ php_apache_sapi_send_headers(sapi_headers_struct *sapi_headers TSRMLS_DC)
 			apr_table_set(ctx->r->subprocess_env, "force-response-1.0", "true");
 		}
 	}
-	
-	/*	call ap_set_content_type only once, else each time we call it, 
+
+	/*	call ap_set_content_type only once, else each time we call it,
 		configured output filters for that content type will be added */
 	if (!ctx->content_type) {
 		ctx->content_type = sapi_get_default_content_type(TSRMLS_C);
@@ -192,7 +194,7 @@ php_apache_sapi_read_post(char *buf, uint count_bytes TSRMLS_DC)
 		buf += len;
 		len = count_bytes - tlen;
 	}
-	
+
 	return tlen;
 }
 
@@ -238,7 +240,11 @@ php_apache_sapi_getenv(char *name, size_t name_len TSRMLS_DC)
 {
 	php_struct *ctx = SG(server_context);
 	const char *env_var;
-	
+
+	if (ctx == NULL) {
+		return NULL;
+	}
+
 	env_var = apr_table_get(ctx->r->subprocess_env, name);
 
 	return (char *) env_var;
@@ -316,7 +322,8 @@ static void php_apache_sapi_log_message_ex(char *msg, request_rec *r)
 	}
 }
 
-static time_t php_apache_sapi_get_request_time(TSRMLS_D) {
+static time_t php_apache_sapi_get_request_time(TSRMLS_D)
+{
 	php_struct *ctx = SG(server_context);
 	return apr_time_sec(ctx->r->request_time);
 }
@@ -500,12 +507,12 @@ typedef struct {
 		uint str_len;
 		php_conf_rec *c = ap_get_module_config(r->per_dir_config, &php5_module);
 
-		for (zend_hash_internal_pointer_reset(&c->config); 
-				zend_hash_get_current_key_ex(&c->config, &str, &str_len, NULL, 0,  NULL) == HASH_KEY_IS_STRING;
-				zend_hash_move_forward(&c->config)
+		for (zend_hash_internal_pointer_reset(&c->config);
+			zend_hash_get_current_key_ex(&c->config, &str, &str_len, NULL, 0,  NULL) == HASH_KEY_IS_STRING;
+			zend_hash_move_forward(&c->config)
 		) {
 			zend_restore_ini_entry(str, str_len, ZEND_INI_STAGE_SHUTDOWN);
-		}	
+		}
 	}
 	if (p) {
 		((php_struct *)SG(server_context))->r = p;
@@ -555,7 +562,7 @@ normal:
 	}
 
 	/* Give a 404 if PATH_INFO is used but is explicitly disabled in
-	 * the configuration; default behaviour is to accept. */ 
+	 * the configuration; default behaviour is to accept. */
 	if (r->used_path_info == AP_REQ_REJECT_PATH_INFO
 		&& r->path_info && r->path_info[0]) {
 		PHPAP_INI_OFF;
@@ -603,17 +610,17 @@ zend_first_try {
 		if (!parent_req) {
 			parent_req = ctx->r;
 		}
-		if (parent_req && parent_req->handler && 
-				strcmp(parent_req->handler, PHP_MAGIC_TYPE) && 
-				strcmp(parent_req->handler, PHP_SOURCE_MAGIC_TYPE) && 
+		if (parent_req && parent_req->handler &&
+				strcmp(parent_req->handler, PHP_MAGIC_TYPE) &&
+				strcmp(parent_req->handler, PHP_SOURCE_MAGIC_TYPE) &&
 				strcmp(parent_req->handler, PHP_SCRIPT)) {
 			if (php_apache_request_ctor(r, ctx TSRMLS_CC)!=SUCCESS) {
 				zend_bailout();
 			}
 		}
-		
-		/* 
-		 * check if comming due to ErrorDocument 
+
+		/*
+		 * check if comming due to ErrorDocument
 		 * We make a special exception of 413 (Invalid POST request) as the invalidity of the request occurs
 		 * during processing of the request by PHP during POST processing. Therefor we need to re-use the exiting
 		 * PHP instance to handle the request rather then creating a new one.

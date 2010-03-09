@@ -4,6 +4,10 @@ LOAD DATA INFILE - open_basedir
 <?php
 require_once('skipif.inc');
 require_once('skipifconnectfailure.inc');
+require_once("connect.inc");
+
+if (!$IS_MYSQLND)
+	die("skip mysqlnd only, libmysql does not know about open_basedir restrictions");
 
 if (file_exists('./simple.csv') && !unlink('./simple.csv'))
 	die("skip Cannot remove previous CSV file");
@@ -13,6 +17,13 @@ if (!$fp = fopen('./simple.csv', 'w'))
 
 fclose($fp);
 @unlink('./simple.csv');
+
+if ($socket == "" && $host != NULL && $host != 'localhost' && $host != '.') {
+	/* could be a remote TCP/IP connection. LOCAL INFILE may not work */
+	if (gethostbyaddr($host) != gethostname()) {
+		die("skip LOAD DATA LOCAL INFILE will fail if connecting to remote MySQL");
+	}
+}
 ?>
 --INI--
 safe_mode=0

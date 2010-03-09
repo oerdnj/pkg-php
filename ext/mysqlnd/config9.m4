@@ -1,27 +1,40 @@
 dnl
-dnl $Id: config9.m4 289630 2009-10-14 13:51:25Z johannes $
+dnl $Id: config9.m4 292495 2009-12-22 19:30:09Z johannes $
 dnl config.m4 for mysqlnd driver
 
-PHP_ARG_ENABLE(mysqlnd_threading, whether to enable threaded fetch in mysqlnd,
-[  --enable-mysqlnd-threading
-                            EXPERIMENTAL: Enable mysqlnd threaded fetch.
-                            Note: This forces ZTS on!], no, no)
+
+PHP_ARG_ENABLE(disable_mysqlnd_compression_support, whether to disable compressed protocol support in mysqlnd,
+[  --disable-mysqlnd-compression-support
+                            Enable support for the MySQL compressed protocol in mysqlnd], yes)
+
+if test -z "$PHP_ZLIB_DIR"; then
+  PHP_ARG_WITH(zlib-dir, for the location of libz,
+  [  --with-zlib-dir[=DIR]       mysqlnd: Set the path to libz install prefix], no, no)
+fi
 
 dnl If some extension uses mysqlnd it will get compiled in PHP core
 if test "$PHP_MYSQLND_ENABLED" = "yes"; then
   mysqlnd_sources="mysqlnd.c mysqlnd_charset.c mysqlnd_wireprotocol.c \
-                   mysqlnd_ps.c mysqlnd_loaddata.c mysqlnd_palloc.c \
-                   mysqlnd_ps_codec.c mysqlnd_statistics.c mysqlnd_qcache.c\
+                   mysqlnd_ps.c mysqlnd_loaddata.c mysqlnd_net.c \
+                   mysqlnd_ps_codec.c mysqlnd_statistics.c \
 				   mysqlnd_result.c mysqlnd_result_meta.c mysqlnd_debug.c\
 				   mysqlnd_block_alloc.c php_mysqlnd.c"
 
   PHP_NEW_EXTENSION(mysqlnd, $mysqlnd_sources, no)
   PHP_ADD_BUILD_DIR([ext/mysqlnd], 1)
+  PHP_INSTALL_HEADERS([ext/mysqlnd/])
 
   dnl Windows uses config.w32 thus this code is safe for now
-  if test "$PHP_MYSQLND_THREADING" = "yes"; then
-    PHP_BUILD_THREAD_SAFE
-    AC_DEFINE([MYSQLND_THREADED], 1, [Use mysqlnd internal threading])
+
+  if test "$PHP_MYSQLND_COMPRESSION_SUPPORT" != "no"; then
+    AC_DEFINE([MYSQLND_COMPRESSION_ENABLED], 1, [Enable compressed protocol support])
+    if test "$PHP_ZLIB_DIR" != "no"; then
+      PHP_ADD_LIBRARY_WITH_PATH(z, $PHP_ZLIB_DIR, MYSQLND_SHARED_LIBADD)
+      MYSQLND_LIBS="$MYSQLND_LIBS -L$PHP_ZLIB_DIR/$PHP_LIBDIR -lz"
+    else
+      PHP_ADD_LIBRARY(z,, MYSQLND_SHARED_LIBADD)
+      MYSQLND_LIBS="$MYSQLND_LIBS -lz"
+    fi
   fi
 fi
 

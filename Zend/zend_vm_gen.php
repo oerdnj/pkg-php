@@ -3,7 +3,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2009 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2010 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    | Authors: Dmitry Stogov <dmitry@zend.com>                             |
    +----------------------------------------------------------------------+
 
-	 $Id: zend_vm_gen.php 272370 2008-12-31 11:15:49Z sebastian $
+	 $Id: zend_vm_gen.php 293155 2010-01-05 20:46:53Z sebastian $
 */
 
 $header_text = <<< DATA
@@ -24,7 +24,7 @@ $header_text = <<< DATA
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2009 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2010 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |

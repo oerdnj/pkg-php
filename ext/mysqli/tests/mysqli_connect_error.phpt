@@ -8,7 +8,7 @@ require_once('skipifconnectfailure.inc');
 ?>
 --FILE--
 <?php
-	include "connect.inc";
+	require_once("connect.inc");
 
 	$tmp    = NULL;
 	$link   = NULL;
@@ -21,8 +21,8 @@ require_once('skipifconnectfailure.inc');
 		printf("[002] Cannot connect to the server using host=%s, user=%s, passwd=***, dbname=%s, port=%s, socket=%s\n",
 			$host, $user, $db, $port, $socket);
 
-	if ('' !== ($tmp = mysqli_connect_error()))
-		printf("[003] Expecting string/'', got %s/%s\n", gettype($tmp), $tmp);
+	if (NULL !== ($tmp = mysqli_connect_error()))
+		printf("[003] Expecting NULL, got %s/%s\n", gettype($tmp), $tmp);
 
 	mysqli_close($link);
 

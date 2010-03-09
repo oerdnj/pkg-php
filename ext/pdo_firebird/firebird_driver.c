@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2009 The PHP Group                                |
+  | Copyright (c) 1997-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: firebird_driver.c 278929 2009-04-18 18:56:11Z felipe $ */
+/* $Id: firebird_driver.c 294444 2010-02-03 19:48:04Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -691,7 +691,7 @@ static int pdo_firebird_handle_factory(pdo_dbh_t *dbh, zval *driver_options TSRM
 		char errmsg[512];
 		ISC_STATUS *s = H->isc_status;
 		isc_interprete(errmsg, &s);
-		zend_throw_exception_ex(php_pdo_get_exception(), 0 TSRMLS_CC, "SQLSTATE[%s] [%d] %s",
+		zend_throw_exception_ex(php_pdo_get_exception(), H->isc_status[1] TSRMLS_CC, "SQLSTATE[%s] [%d] %s",
 				"HY000", H->isc_status[1], errmsg);
 	}
 

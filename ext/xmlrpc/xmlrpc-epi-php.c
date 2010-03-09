@@ -37,7 +37,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2009 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -51,7 +51,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: xmlrpc-epi-php.c 287434 2009-08-18 00:41:43Z stas $ */
+/* $Id: xmlrpc-epi-php.c 294452 2010-02-03 20:19:05Z pajoye $ */
 
 /**********************************************************************
 * BUGS:                                                               *
@@ -484,7 +484,7 @@ static void set_output_options(php_output_options* options, zval* output_opts)
 static XMLRPC_VECTOR_TYPE determine_vector_type (HashTable *ht)
 {
 	int bArray = 0, bStruct = 0, bMixed = 0;
-	unsigned long num_index;
+	unsigned long num_index, last_num = 0;
 	char* my_key;
 
 	zend_hash_internal_pointer_reset(ht);
@@ -495,8 +495,12 @@ static XMLRPC_VECTOR_TYPE determine_vector_type (HashTable *ht)
 			if (bStruct) {
 				bMixed = 1;
 				break;
+			} else if (last_num > 0 && last_num != num_index-1) {
+				bStruct = 1;
+				break;
 			}
 			bArray = 1;
+			last_num = num_index;
 		} else if (res == HASH_KEY_NON_EXISTANT) {
 			break;
 		} else if (res == HASH_KEY_IS_STRING) {
@@ -556,6 +560,8 @@ static XMLRPC_VALUE PHP_to_XMLRPC_worker (const char* key, zval* in_val, int dep
 						zval** pIter;
 						char* my_key;
 						HashTable *ht = NULL;
+						zval *val_arr;
+						XMLRPC_VECTOR_TYPE vtype;
 
 						ht = HASH_OF(val);
 						if (ht && ht->nApplyCount > 1) {
@@ -563,12 +569,16 @@ static XMLRPC_VALUE PHP_to_XMLRPC_worker (const char* key, zval* in_val, int dep
 							return NULL;
 						}
 
-						convert_to_array(val);
-						xReturn = XMLRPC_CreateVector(key, determine_vector_type(Z_ARRVAL_P(val)));
+						MAKE_STD_ZVAL(val_arr);
+						MAKE_COPY_ZVAL(&val, val_arr);
+						convert_to_array(val_arr);
+						
+						vtype = determine_vector_type(Z_ARRVAL_P(val_arr));
+						xReturn = XMLRPC_CreateVector(key, vtype);
 
-						zend_hash_internal_pointer_reset(Z_ARRVAL_P(val));
-						while(zend_hash_get_current_data(Z_ARRVAL_P(val), (void**)&pIter) == SUCCESS) {
-							int res = my_zend_hash_get_current_key(Z_ARRVAL_P(val), &my_key, &num_index);
+						zend_hash_internal_pointer_reset(Z_ARRVAL_P(val_arr));
+						while(zend_hash_get_current_data(Z_ARRVAL_P(val_arr), (void**)&pIter) == SUCCESS) {
+							int res = my_zend_hash_get_current_key(Z_ARRVAL_P(val_arr), &my_key, &num_index);
 
 							switch (res) {
 								case HASH_KEY_NON_EXISTANT:
@@ -580,7 +590,15 @@ static XMLRPC_VALUE PHP_to_XMLRPC_worker (const char* key, zval* in_val, int dep
 										ht->nApplyCount++;
 									}
 									if (res == HASH_KEY_IS_LONG) {
-										XMLRPC_AddValueToVector(xReturn, PHP_to_XMLRPC_worker(0, *pIter, depth++ TSRMLS_CC));
+										char *num_str = NULL;
+										
+										if (vtype != xmlrpc_vector_array) {
+											spprintf(&num_str, 0, "%ld", num_index);
+										}
+										XMLRPC_AddValueToVector(xReturn, PHP_to_XMLRPC_worker(num_str, *pIter, depth++ TSRMLS_CC));
+										if (num_str) {
+											efree(num_str);
+										}
 									} else {
 										XMLRPC_AddValueToVector(xReturn, PHP_to_XMLRPC_worker(my_key, *pIter, depth++ TSRMLS_CC));
 									}
@@ -589,8 +607,9 @@ static XMLRPC_VALUE PHP_to_XMLRPC_worker (const char* key, zval* in_val, int dep
 									}
 									break;
 							}
-							zend_hash_move_forward(Z_ARRVAL_P(val));
-						}
+							zend_hash_move_forward(Z_ARRVAL_P(val_arr));
+						}	
+						zval_ptr_dtor(&val_arr);
 					}
 					break;
 				default:
@@ -892,12 +911,26 @@ PHP_FUNCTION(xmlrpc_server_destroy)
 static XMLRPC_VALUE php_xmlrpc_callback(XMLRPC_SERVER server, XMLRPC_REQUEST xRequest, void* data) /* {{{ */
 {
 	xmlrpc_callback_data* pData = (xmlrpc_callback_data*)data;
+	zval** php_function;
 	zval* xmlrpc_params;
 	zval* callback_params[3];
 	TSRMLS_FETCH();
 
+	zval_dtor(pData->xmlrpc_method);
+	zval_dtor(pData->return_data);
+
 	/* convert xmlrpc to native php types */
+	ZVAL_STRING(pData->xmlrpc_method, XMLRPC_RequestGetMethodName(xRequest), 1);
 	xmlrpc_params = XMLRPC_to_PHP(XMLRPC_RequestGetData(xRequest));
+	
+	/* check if the called method has been previous registered */
+	if(zend_hash_find(Z_ARRVAL_P(pData->server->method_map),
+                      Z_STRVAL_P(pData->xmlrpc_method), 
+                      Z_STRLEN_P(pData->xmlrpc_method) + 1, 
+                      (void**)&php_function) == SUCCESS) {
+
+		pData->php_function = *php_function;
+	}
 
 	/* setup data hoojum */
 	callback_params[0] = pData->xmlrpc_method;
@@ -913,7 +946,7 @@ static XMLRPC_VALUE php_xmlrpc_callback(XMLRPC_SERVER server, XMLRPC_REQUEST xRe
 
 	zval_ptr_dtor(&xmlrpc_params);
 
-	return NULL;
+	return PHP_to_XMLRPC(pData->return_data TSRMLS_CC);
 }
 /* }}} */
 
@@ -1082,33 +1115,16 @@ PHP_FUNCTION(xmlrpc_server_call_method)
 
 		if (xRequest) {
 			const char* methodname = XMLRPC_RequestGetMethodName(xRequest);
-			zval **php_function;
 			XMLRPC_VALUE xAnswer = NULL;
 			MAKE_STD_ZVAL(data.xmlrpc_method); /* init. very important.  spent a frustrating day finding this out. */
 			MAKE_STD_ZVAL(data.return_data);
 			Z_TYPE_P(data.return_data) = IS_NULL;  /* in case value is never init'd, we don't dtor to think it is a string or something */
 			Z_TYPE_P(data.xmlrpc_method) = IS_NULL;
 
-			if (!methodname) {
-				methodname = "";
-			}
-            
 			/* setup some data to pass to the callback function */
-			Z_STRVAL_P(data.xmlrpc_method) = estrdup(methodname);
-			Z_STRLEN_P(data.xmlrpc_method) = strlen(methodname);
-			Z_TYPE_P(data.xmlrpc_method) = IS_STRING;
 			data.caller_params = *caller_params;
 			data.php_executed = 0;
 			data.server = server;
-
-			/* check if the called method has been previous registered */
-			if (zend_hash_find(Z_ARRVAL_P(server->method_map),
-								Z_STRVAL_P(data.xmlrpc_method), 
-								Z_STRLEN_P(data.xmlrpc_method) + 1, 
-								(void**)&php_function) == SUCCESS) {
-
-				data.php_function = *php_function;
-			}
 
 			/* We could just call the php method directly ourselves at this point, but we do this 
 			 * with a C callback in case the xmlrpc library ever implements some cool usage stats,
@@ -1119,7 +1135,7 @@ PHP_FUNCTION(xmlrpc_server_call_method)
 				zval_dtor(data.return_data);
 				FREE_ZVAL(data.return_data);
 				data.return_data = XMLRPC_to_PHP(xAnswer);
-			} else if (data.php_executed && !out.b_php_out) {
+			} else if (data.php_executed && !out.b_php_out && !xAnswer) {
 				xAnswer = PHP_to_XMLRPC(data.return_data TSRMLS_CC);
 			}
 

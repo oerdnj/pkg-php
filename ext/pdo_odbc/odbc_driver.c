@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2009 The PHP Group                                |
+  | Copyright (c) 1997-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: odbc_driver.c 284099 2009-07-15 02:36:08Z felipe $ */
+/* $Id: odbc_driver.c 294444 2010-02-03 19:48:04Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -104,7 +104,7 @@ void pdo_odbc_error(pdo_dbh_t *dbh, pdo_stmt_t *stmt, PDO_ODBC_HSTMT statement, 
 	strcpy(*pdo_err, einfo->last_state);
 /* printf("@@ SQLSTATE[%s] %s\n", *pdo_err, einfo->last_err_msg); */
 	if (!dbh->methods) {
-		zend_throw_exception_ex(php_pdo_get_exception(), 0 TSRMLS_CC, "SQLSTATE[%s] %s: %d %s",
+		zend_throw_exception_ex(php_pdo_get_exception(), einfo->last_error TSRMLS_CC, "SQLSTATE[%s] %s: %d %s",
 				*pdo_err, what, einfo->last_error, einfo->last_err_msg);
 	}
 

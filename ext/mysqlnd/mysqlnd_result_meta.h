@@ -18,13 +18,13 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_result_meta.h 272370 2008-12-31 11:15:49Z sebastian $ */
+/* $Id: mysqlnd_result_meta.h 293779 2010-01-20 17:09:28Z johannes $ */
 
 #ifndef MYSQLND_RESULT_META_H
 #define MYSQLND_RESULT_META_H
 
 
-MYSQLND_RES_METADATA *mysqlnd_result_meta_init(unsigned int field_count TSRMLS_DC);
+PHPAPI MYSQLND_RES_METADATA * mysqlnd_result_meta_init(unsigned int field_count TSRMLS_DC);
 
 
 

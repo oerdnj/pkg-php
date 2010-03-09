@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2009 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2010 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute_API.c 287466 2009-08-18 20:51:49Z stas $ */
+/* $Id: zend_execute_API.c 294505 2010-02-04 09:13:14Z pajoye $ */
 
 #include <stdio.h>
 #include <signal.h>
@@ -74,6 +74,10 @@ static void zend_handle_sigsegv(int dummy) /* {{{ */
 				get_active_function_name(TSRMLS_C),
 				zend_get_executed_filename(TSRMLS_C),
 				zend_get_executed_lineno(TSRMLS_C));
+/* See http://support.microsoft.com/kb/190351 */
+#ifdef PHP_WIN32
+		fflush(stderr);
+#endif
 	}
 	if (original_sigsegv_handler!=zend_handle_sigsegv) {
 		original_sigsegv_handler(dummy);
@@ -837,7 +841,8 @@ int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci_cache TS
 	for (i=0; i<fci->param_count; i++) {
 		zval *param;
 
-        	if(EX(function_state).function->type == ZEND_INTERNAL_FUNCTION 
+		if (EX(function_state).function->type == ZEND_INTERNAL_FUNCTION 
+			&& (EX(function_state).function->common.fn_flags & ZEND_ACC_CALL_VIA_HANDLER) == 0 
 			&& !ARG_SHOULD_BE_SENT_BY_REF(EX(function_state).function, i + 1)
 			&& PZVAL_IS_REF(*fci->params[i])) {
 			SEPARATE_ZVAL(fci->params[i]);
@@ -1481,7 +1486,7 @@ void zend_unset_timeout(TSRMLS_D) /* {{{ */
 	}
 #else
 #	ifdef HAVE_SETITIMER
-	{
+	if (EG(timeout_seconds)) {
 		struct itimerval no_timeout;
 
 		no_timeout.it_value.tv_sec = no_timeout.it_value.tv_usec = no_timeout.it_interval.tv_sec = no_timeout.it_interval.tv_usec = 0;
