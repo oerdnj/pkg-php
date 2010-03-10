@@ -3,7 +3,7 @@ php5 (5.3.1-3) unstable; urgency=low
   * mod_php disabled in userdirs.
 
   The default Debian libapache2-mod-php5 package now disables the PHP
-  engine on ~public_html directories when mod_userdir is enabled, for
+  engine on ~/public_html directories when mod_userdir is enabled, for
   security reasons.  Although discouraged, it can be re-enabled by
   commenting the <IfModule mod_userdir.c> block in
   /etc/apache2/mods-available/php5.conf
