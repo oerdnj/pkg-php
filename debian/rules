@@ -441,6 +441,8 @@ install: build
 		$(RM) debian/php-pear/usr/share/php/data/Structures_Graph/LICENSE
 	[ ! -f debian/php-pear/usr/share/php/doc/PEAR/INSTALL ] || \
 		$(RM) debian/php-pear/usr/share/php/doc/PEAR/INSTALL
+	[ ! -f debian/php-pear/usr/share/php/doc/Structures_Graph/docs/generate.sh ] || \
+		$(RM) debian/php-pear/usr/share/php/doc/Structures_Graph/docs/generate.sh
 	for f in Structures_Graph/publish.sh Structures_Graph/package.sh \
 		Structures_Graph/genpackage.xml.pl; do \
 		$(RM) debian/php-pear/usr/share/php/data/$$f; \
