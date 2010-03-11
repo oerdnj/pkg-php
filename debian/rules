@@ -416,7 +416,7 @@ install: build
 
 	# sanitize php.ini file
 	cat php.ini-production | tr "\t" " " | sed -e'/short_open_tag =/ s/Off/On/g' > debian/php5-common/usr/share/php5/php.ini-production
-	cat php.ini-production | tr "\t" " " | sed -e'/memory_limit =/ s/128M/32M/g;/short_open_tag =/ s/Off/On/g' > debian/php5-common/usr/share/php5/php.ini-production.cli
+	cat php.ini-production | tr "\t" " " | sed -e'/memory_limit =/ s/128M/-1/g;/short_open_tag =/ s/Off/On/g' > debian/php5-common/usr/share/php5/php.ini-production.cli
 	cat php.ini-production | tr "\t" " " > debian/php5-common/usr/share/doc/php5-common/examples/php.ini-production
 	cat php.ini-development | tr "\t" " " > debian/php5-common/usr/share/doc/php5-common/examples/php.ini-development
 	cp test-results.txt debian/php5-common/usr/share/doc/php5-common/
