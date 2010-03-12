@@ -48,3 +48,4 @@ fix_var_dump_64bit.phpt.patch
 use_embedded_timezonedb_fixes.patch
 fix_broken_sha2_test.patch
 php_crypt_revamped.patch
+fix_broken_locale_tests.patch
