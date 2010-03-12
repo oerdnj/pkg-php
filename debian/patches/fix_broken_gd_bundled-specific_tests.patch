@@ -1,0 +1,92 @@
+Description: Backport upstream fix for tests that require the bundled 
+ gd library but are not skipped in case the external library is used.
+Origin: upstream
+
+Index: php/ext/gd/tests/bug42434.phpt
+===================================================================
+--- php.orig/ext/gd/tests/bug42434.phpt
++++ php/ext/gd/tests/bug42434.phpt
+@@ -5,6 +5,7 @@ Bug #42434 (ImageLine w/ antialias = 1px
+ if (!extension_loaded('gd')) {
+ 	die('skip gd extension not available');
+ }
++if (!GD_BUNDLED) die("skip requires bundled GD library\n");
+ ?>
+ --FILE--
+ <?php
+Index: php/ext/gd/tests/imageantialias_error1.phpt
+===================================================================
+--- php.orig/ext/gd/tests/imageantialias_error1.phpt
++++ php/ext/gd/tests/imageantialias_error1.phpt
+@@ -6,6 +6,7 @@ Guilherme Blanco <guilhermeblanco [at] h
+ --SKIPIF--
+ <?php 
+ if (!extension_loaded("gd")) die("skip GD not present");
++if (!GD_BUNDLED) die("skip requires bundled GD library\n");
+ ?>
+ --FILE--
+ <?php
+Index: php/ext/gd/tests/imageantialias_error2.phpt
+===================================================================
+--- php.orig/ext/gd/tests/imageantialias_error2.phpt
++++ php/ext/gd/tests/imageantialias_error2.phpt
+@@ -6,6 +6,7 @@ Guilherme Blanco <guilhermeblanco [at] h
+ --SKIPIF--
+ <?php 
+ if (!extension_loaded("gd")) die("skip GD not present");
++if (!GD_BUNDLED) die("skip requires bundled GD library\n");
+ ?>
+ --FILE--
+ <?php
+Index: php/ext/gd/tests/imagelayereffect_basic.phpt
+===================================================================
+--- php.orig/ext/gd/tests/imagelayereffect_basic.phpt
++++ php/ext/gd/tests/imagelayereffect_basic.phpt
+@@ -6,7 +6,7 @@ Rafael Dohms <rdohms [at] gmail [dot] co
+ --SKIPIF--
+ <?php 
+ 	if (!extension_loaded("gd")) die("skip GD not present");
+-	if (!GD_BUNDLED) die('function only available in bundled, external GD detected');
++	if (!GD_BUNDLED) die('skip function only available in bundled, external GD detected');
+ ?>
+ --FILE--
+ <?php
+Index: php/ext/gd/tests/imagelayereffect_error1.phpt
+===================================================================
+--- php.orig/ext/gd/tests/imagelayereffect_error1.phpt
++++ php/ext/gd/tests/imagelayereffect_error1.phpt
+@@ -6,7 +6,7 @@ Rafael Dohms <rdohms [at] gmail [dot] co
+ --SKIPIF--
+ <?php 
+ 	if (!extension_loaded("gd")) die("skip GD not present");
+-	if (!GD_BUNDLED) die('function only available in bundled, external GD detected');
++	if (!GD_BUNDLED) die('skip function only available in bundled, external GD detected');
+ ?>
+ --FILE--
+ <?php
+Index: php/ext/gd/tests/imagelayereffect_error2.phpt
+===================================================================
+--- php.orig/ext/gd/tests/imagelayereffect_error2.phpt
++++ php/ext/gd/tests/imagelayereffect_error2.phpt
+@@ -6,7 +6,7 @@ Rafael Dohms <rdohms [at] gmail [dot] co
+ --SKIPIF--
+ <?php 
+ 	if (!extension_loaded("gd")) die("skip GD not present");
+-	if (!GD_BUNDLED) die('function only available in bundled, external GD detected');
++	if (!GD_BUNDLED) die('skip function only available in bundled, external GD detected');
+ ?>
+ --FILE--
+ <?php
+Index: php/ext/gd/tests/imagelayereffect_error3.phpt
+===================================================================
+--- php.orig/ext/gd/tests/imagelayereffect_error3.phpt
++++ php/ext/gd/tests/imagelayereffect_error3.phpt
+@@ -6,7 +6,7 @@ Rafael Dohms <rdohms [at] gmail [dot] co
+ --SKIPIF--
+ <?php 
+ 	if (!extension_loaded("gd")) die("skip GD not present");
+-	if (!GD_BUNDLED) die('function only available in bundled, external GD detected');
++	if (!GD_BUNDLED) die('skip function only available in bundled, external GD detected');
+ ?>
+ --FILE--
+ <?php
