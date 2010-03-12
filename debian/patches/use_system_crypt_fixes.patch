@@ -1,0 +1,35 @@
+--- a/ext/standard/tests/strings/bug51059.phpt
++++ b/ext/standard/tests/strings/bug51059.phpt
+@@ -3,7 +3,7 @@ Bug #51059 crypt() segfaults on certain 
+ --FILE--
+ <?php
+ $res = crypt('a', '_');
+-if ($res == '*0' || $res == '*1') echo 'OK';
++if ($res == '__DAZ.Z4ErJDo') echo 'OK';
+ else echo 'Not OK';
+ 
+ ?>
+--- a/ext/standard/tests/strings/crypt_blowfish_invalid_rounds.phpt
++++ b/ext/standard/tests/strings/crypt_blowfish_invalid_rounds.phpt
+@@ -3,8 +3,8 @@ Test Blowfish crypt() with invalid round
+ --FILE--
+ <?php
+ 
+-foreach(range(32, 38) as $i) {
+-  if (crypt('U*U', '$2a$'.$i.'$CCCCCCCCCCCCCCCCCCCCCC$') === FALSE) {
++foreach(array_merge(range(00, 03), range(32, 38)) as $i) {
++  if (crypt('U*U', '$2a$'.$i.'$CCCCCCCCCCCCCCCCCCCCCC$') === '$2SHYF.wPGyfE') {
+     echo "$i. OK\n";
+   } else {
+     echo "$i. Not OK\n";
+@@ -13,6 +13,10 @@ foreach(range(32, 38) as $i) {
+ 
+ ?>
+ --EXPECT--
++0. OK
++1. OK
++2. OK
++3. OK
+ 32. OK
+ 33. OK
+ 34. OK
