@@ -52,15 +52,6 @@ else
   CFLAGS += -gstabs
 endif
 
-# Old magic.mime location:
-ifeq ($(wildcard /usr/share/misc/file/magic.mime), /usr/share/misc/file/magic.mime)
-MAGIC_MIME = /usr/share/misc/file/magic.mime
-endif
-# New magic.mime location:
-ifeq ($(wildcard /usr/share/file/magic.mime), /usr/share/file/magic.mime)
-MAGIC_MIME = /usr/share/file/magic.mime
-endif
-
 # some other helpful (for readability at least) shorthand variables
 PHPIZE_BUILDDIR = debian/php5-dev/usr/lib/php5/build
 
@@ -131,7 +122,6 @@ COMMON_CONFIG=--build=$(DEB_BUILD_GNU_TYPE) \
 		--enable-soap \
 		--enable-zip \
 		--with-mhash=yes \
-		--with-mime-magic=$(MAGIC_MIME) \
 		--with-exec-dir=/usr/lib/php5/libexec \
 		--with-system-tzdata
 
@@ -349,8 +339,7 @@ configure-cli-stamp: prepared-stamp
 		--without-mm \
 		--disable-pdo \
 		--without-mysql --without-sybase-ct --without-sqlite \
-		--without-mssql --without-sqlite3 --enable-pcntl \
-		--with-ncurses=/usr
+		--without-mssql --without-sqlite3 --enable-pcntl
 	cd cli-build && \
 	cp ../Zend/zend_ini_scanner.c ../Zend/zend_language_scanner.c \
 	   ../Zend/zend_ini_parser.h ../Zend/zend_language_parser.h \
