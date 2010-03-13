@@ -7,7 +7,25 @@ Index: php/ext/enchant/enchant.c
 ===================================================================
 --- php.orig/ext/enchant/enchant.c
 +++ php/ext/enchant/enchant.c
-@@ -777,6 +777,7 @@ PHP_FUNCTION(enchant_dict_suggest)
+@@ -724,6 +724,7 @@ PHP_FUNCTION(enchant_dict_quick_check)
+ 
+ 	if (enchant_dict_check(pdict->pdict, word, wordlen) > 0) {
+ 		int n_sugg;
++		size_t n_sugg_st;
+ 		char **suggs;
+ 
+ 		if (!sugg && ZEND_NUM_ARGS() == 2) {
+@@ -732,7 +733,8 @@ PHP_FUNCTION(enchant_dict_quick_check)
+ 
+ 		array_init(sugg);
+ 
+-		suggs = enchant_dict_suggest(pdict->pdict, word, wordlen, (size_t *) &n_sugg);
++		suggs = enchant_dict_suggest(pdict->pdict, word, wordlen, n_sugg_st);
++		memcpy(&n_sugg, &n_sugg_st, sizeof(n_sugg));
+ 		if (suggs && n_sugg) {
+ 			int i;
+ 			for (i = 0; i < n_sugg; i++) {
+@@ -777,6 +779,7 @@ PHP_FUNCTION(enchant_dict_suggest)
  	char **suggs;
  	enchant_dict *pdict;
  	int n_sugg;
@@ -15,7 +33,7 @@ Index: php/ext/enchant/enchant.c
  
  	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &dict, &word, &wordlen) == FAILURE) {
  		RETURN_FALSE;
-@@ -784,7 +785,8 @@ PHP_FUNCTION(enchant_dict_suggest)
+@@ -784,7 +787,8 @@ PHP_FUNCTION(enchant_dict_suggest)
  
  	PHP_ENCHANT_GET_DICT;
  
