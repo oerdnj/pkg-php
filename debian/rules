@@ -111,6 +111,7 @@ COMMON_CONFIG=--build=$(DEB_BUILD_GNU_TYPE) \
 		--enable-ftp \
 		--with-gettext \
 		--enable-mbstring \
+		--with-onig=/usr \
 		--with-pcre-regex=/usr \
 		--enable-shmop \
 		--enable-sockets \
