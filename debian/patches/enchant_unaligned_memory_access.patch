@@ -1,6 +1,6 @@
 Description: Fix an unaligned memory access in enchant_dict_suggest()
 Origin: vendor
-Forwarded: no
+Forwarded: http://bugs.php.net/51289
 Last-Update: 2010-03-12
 
 Index: php/ext/enchant/enchant.c
