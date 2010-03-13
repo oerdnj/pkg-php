@@ -171,6 +171,7 @@ ifeq (,$(findstring nocheck,$(DEB_BUILD_OPTIONS)))
 	    test "$$ext" != "interbase.so" || continue; \
 	    extensions="$$extensions -d extension=$$ext"; \
 	done; \
+	[ "$$extensions" ] || { echo "extensions list is empty"; exit 1; }; \
 	env NO_INTERACTION=1 TEST_PHP_CGI_EXECUTABLE=$(CURDIR)/cgi-build/sapi/cgi/cgi-bin.php5 TEST_PHP_EXECUTABLE=$(CURDIR)/cli-build/sapi/cli/php $(CURDIR)/cli-build/sapi/cli/php run-tests.php -d extension_dir=$(CURDIR)/apache2-build/modules/ $$extensions| tee test-results.txt
 	rm -rf temp_session_store
 	@for test in `find . -name '*.log' -a '!' -name 'config.log'`; do \
