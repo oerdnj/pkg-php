@@ -1,31 +1,49 @@
-php5 (5.3.2-1) unstable; urgency=low
+php5 (5.3.2-1) unstable; urgency=high
 
   [ Sean Finney ]
-  * Fix improper signed overflow detection in filter extension (Closes:
-    #570287)
+  * Fix improper signed overflow detection in filter extension
+    (Closes: #570287)
   * Another integer overflow/underflow logic fix. (Closes: #570144)
   * new debian patch fix_filter_var_email_test.patch (Closes: #571764)
   * New debian patch fix_var_dump_64bit.phpt.patch (Closes: #571772)
+  * New debian patch use_embedded_timezonedb_fixes.patch (Closes: #571762)
 
   [ Raphael Geissert ]
   * Build with qdbm support
-
-  [ Sean Finney ]
-  * New debian patch use_embedded_timezonedb_fixes.patch (Closes:
-    #571762)
+  * Really run extensions' tests
+  * Add a note about user_dirs in apache conf file (Closes: #571714)
+  * Fix typo in debian/NEWS
+  * Don't install a(nother) useless Structures_Graph sh script
+  * Re-enable short_open_tag for CLI too (Closes: #573367)
+  * Disable memory limit in CLI, letting ulimit do its job (Closes: #407425)
+  * Fix the locale name in some tests (Closes: #573511)
+  * Fix some gd tests that need the bundled library
+  * Fix a null pointer dereference when processing invalid XML-RPC
+    requests (CVE-2010-0397, Closes: #573573)
+  * Fix an unaligned memory access in enchant_dict_suggest()
+  * Fix another unaligned memory access in enchant
+  * Test that the list of extensions to test is never empty
+  * Update the list of alternative dependencies of php5-dbg
+  * debian/rules cleanup
+  * debian/control cleanup
+  * Build against the system oniguruma library
+  * Add libjpeg-dev as an alternative to libjpeg62-dev for future
+    transitions
 
   [ Ondřej Surý ]
-  * New Upstream version 5.3.2 (Closes: #557546, #572561)
-  * Adapt debian patches to 5.3.2.
+  * Imported Upstream version 5.3.2
   * Updated suhosin patch to 0.9.9.1 version.
-  * Removed debian/patches/suhosin_page_size_fixes.patch. (Closes:
-    #571974)
-  * Always use system crypt() function
-    - New debian patch always_use_system_crypt.patch (Closes: #572601)
-  * Fix broken SHA-2 family tests in crypt() function
-    - New debian patch fix_broken_sha2_test.patch
+  * Removed debian/patches/suhosin_page_size_fixes.patch. (Closes: #571974)
+  * Refreshed debian/patches/001-libtool_fixes.patch
+  * Refreshed debian/patches/006-debian_quirks.patch
+  * Adapt debian patches to 5.3.2.
+  * Remove "binary" contents from
+    debian/patches/fix_var_dump_64bit.phpt.patch
+  * New debian patch fix_broken_sha2_test.patch
+  * New debian patch always_use_system_crypt.patch (Closes: #572601)
+  * New debian patch php_crypt_revamped.patch (Closes: #572601)
 
- -- Ondřej Surý <ondrej@debian.org>  Tue, 09 Mar 2010 15:27:27 +0100
+ -- Raphael Geissert <geissert@debian.org>  Sat, 13 Mar 2010 15:11:48 -0600
 
 php5 (5.3.1-5) unstable; urgency=low
 
