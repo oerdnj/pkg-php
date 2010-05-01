@@ -54,3 +54,4 @@ CVE-2010-0397.patch
 enchant_unaligned_memory_access.patch
 use_system_crypt_fixes.patch
 upstream/mysqli_ssl.patch
+upstream/pdo_reset_error_beginTransaction.patch

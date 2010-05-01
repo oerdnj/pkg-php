@@ -1,0 +1,16 @@
+Description: Reset error state on PDO's beginTransaction()
+Origin: http://svn.php.net/viewvc?view=revision&revision=297273
+Last-Update: 2010-05-01
+
+Index: php/ext/pdo/pdo_dbh.c
+===================================================================
+--- php.orig/ext/pdo/pdo_dbh.c
++++ php/ext/pdo/pdo_dbh.c
+@@ -851,6 +851,7 @@ static PHP_METHOD(PDO, setAttribute)
+ 		RETURN_FALSE;
+ 	}
+ 
++	PDO_DBH_CLEAR_ERR();
+ 	PDO_CONSTRUCT_CHECK;
+ 
+ 	if (pdo_dbh_attribute_set(dbh, attr, value TSRMLS_CC) != FAILURE) {
