@@ -53,3 +53,4 @@ fix_broken_gd_bundled-specific_tests.patch
 CVE-2010-0397.patch
 enchant_unaligned_memory_access.patch
 use_system_crypt_fixes.patch
+upstream/mysqli_ssl.patch
