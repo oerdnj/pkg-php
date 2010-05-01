@@ -1,0 +1,40 @@
+Description: SplFileInfo::getPathName() should return the parent
+ directory name.
+Origin: http://svn.php.net/viewvc?view=revision&revision=298647
+Last-Update: 2010-05-01
+
+Index: php/ext/spl/spl_directory.c
+===================================================================
+--- php.orig/ext/spl/spl_directory.c
++++ php/ext/spl/spl_directory.c
+@@ -1178,7 +1178,10 @@ SPL_METHOD(SplFileInfo, getPathInfo)
+ 		int path_len;
+ 		char *path = spl_filesystem_object_get_pathname(intern, &path_len TSRMLS_CC);
+ 		if (path) {
+-			spl_filesystem_object_create_info(intern, path, path_len, 1, ce, return_value TSRMLS_CC);
++			char *dpath = estrndup(path, path_len);
++			path_len = php_dirname(dpath, path_len);
++			spl_filesystem_object_create_info(intern, dpath, path_len, 1, ce, return_value TSRMLS_CC);
++			efree(dpath);
+ 		}
+ 	}
+ 
+Index: php/ext/spl/tests/bug48361.phpt
+===================================================================
+--- /dev/null
++++ php/ext/spl/tests/bug48361.phpt
+@@ -0,0 +1,14 @@
++--TEST--
++SPL: Bug #48361 SpleFileInfo::getPathName should return the dirname's path
++--FILE--
++<?php
++$info = new SplFileInfo(__FILE__);
++var_dump($info->getRealPath());
++var_dump($info->getPathInfo()->getRealPath());
++?>
++===DONE===
++--EXPECTF--
++string(%d) "%stests%sbug48361.php"
++string(%d) "%stests"
++===DONE===
++
