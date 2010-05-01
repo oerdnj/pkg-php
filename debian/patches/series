@@ -58,3 +58,4 @@ upstream/pdo_reset_error_beginTransaction.patch
 upstream/define_json_error_utf8.patch
 upstream/SplFileInfo_getPathName_parent.patch
 upstream/gc_memory_leak.patch
+upstream/date_mem_leak.patch
