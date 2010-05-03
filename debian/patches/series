@@ -63,3 +63,4 @@ upstream/dba_unaligned_mem_access.patch
 upstream/mysqli_options_mem_issue.patch
 session_save_path.patch
 upstream/multiple_typos.patch
+upstream/db4.8_workarounds.patch
