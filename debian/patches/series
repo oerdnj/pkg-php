@@ -66,3 +66,4 @@ upstream/multiple_typos.patch
 upstream/db4.8_workarounds.patch
 upstream/mssql_per_query_timeout.patch
 upstream/incorrect_docroot_eval.patch
+upstream/soap_mem_leak.patch
