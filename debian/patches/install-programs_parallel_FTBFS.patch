@@ -1,0 +1,16 @@
+Description: Explicitly create a directory to avoid FTBFS with parallel builds
+
+Origin: vendor
+Forwarded: yes
+Bug: http://bugs.php.net/bug.php?id=52037
+Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=584348
+--- php.orig/scripts/Makefile.frag
++++ php/scripts/Makefile.frag
+@@ -33,6 +33,7 @@ install-build:
+ 
+ install-programs: $(builddir)/phpize $(builddir)/php-config
+ 	@echo "Installing helper programs:       $(INSTALL_ROOT)$(bindir)/"
++	@$(mkinstalldirs) $(INSTALL_ROOT)$(bindir)
+ 	@for prog in $(bin_SCRIPTS); do \
+ 		echo "  program: $(program_prefix)$${prog}$(program_suffix)"; \
+ 		$(INSTALL) -m 755 $(builddir)/$${prog} $(INSTALL_ROOT)$(bindir)/$(program_prefix)$${prog}$(program_suffix); \
