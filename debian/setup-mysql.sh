@@ -28,7 +28,7 @@ fi
 
 rm -rf $datadir
 mkdir -p $datadir
-chown go-rx $datadir
+chmod go-rx $datadir
 
 mysql_install_db --datadir=$datadir --rpm --force >> $datadir/bootstrap.log 2>&1
 
