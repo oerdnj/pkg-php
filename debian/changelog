@@ -1,3 +1,42 @@
+php5 (5.3.2-2) unstable; urgency=low
+
+  [ Ondřej Surý ]
+  * Fix unittest about failing crypt() calls with invalid salt
+
+  [ Raphael Geissert ]
+  * Cherry pick upstream fix for mysqli_ssl_set (Closes: #572122)
+  * Cherry pick patch to reset error status on beginTransaction()
+  * Cherry pick patch to add missing definition of JSON_ERROR_UTF8
+  * Cherry pick patch to fix SplFileInfo::getPathName()
+  * Cherry pick patch to fix a memory leak in the cyclical gc
+  * Cherry pick fix for memory leak in date when gc is enabled
+  * Cherry pick patch to fix an unaligned mem access in the dba ext
+  * Cherry pick fix for memory issues in mysqli_options (Closes: #577784)
+  * Set default session.save_path to /var/lib/php5 (Closes: #576593)
+  * Don't install an extra copy of php.ini-production
+  * Remove obsolete TODO list
+  * Add debian/source/format and set it to 1.0
+  * Add doc-base registration for Structuctures_Graph documentation
+  * Cherry pick patch to fix multiple typos
+  * Synchronize enchant patch with changes committed upstream
+  * Cherry pick patch to workaround BDB 4.8 bc changes (Closes: #570149)
+  * Cherry pick patch to allow the timeout on mssql to be effective p/query
+  * Cherry pick patch to correctly determine length of doc_root
+  * Cherry pick patch to fix a memory leak in SoapServer::handle
+  * Cherry pick patch to fix SplFileInf::fscanf()'s prototype
+  * Test the mysql extensions too
+  * Update the security policy for Squeeze and greater
+  * Include ext_skel script (Closes: #530757)
+
+  [ Sean Finney ]
+  * Fix for parallel FTBFS in (Closes: #584348)
+  * Import upstream fix for pdo_mysql segfaults (Closes: #581911)
+    - thanks to Richard van den Berg <richard@vdberg.org>
+  * Dynamically determine maxlifetime if possible. (Closes: #504053)
+    - thanks to Chris Butler <chrisb@debian.org>
+
+ -- Raphael Geissert <geissert@debian.org>  Sun, 18 Jul 2010 15:35:06 -0500
+
 php5 (5.3.2-1) unstable; urgency=high
 
   [ Sean Finney ]
