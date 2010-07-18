@@ -499,6 +499,10 @@ install: build
 	for i in Makefile.global acinclude.m4 mkdep.awk phpize.m4 scan_makefile_in.awk; do \
 		chmod 644 debian/php5-dev/usr/lib/php5/build/$$i; \
 	done
+	mkdir -p debian/php5-dev/usr/share/php5
+	cp -a ext/skeleton ext/ext_skel debian/php5-dev/usr/share/php5
+	sed -i 's/skel_dir="skeleton"/skel_dir="\/usr\/share\/php5\/skeleton"/' \
+	    debian/php5-dev/usr/share/php5/ext_skel
 	# shipping duplicate files from other packages is hell for security audits
 	ln -sf /usr/share/misc/config.guess $(PHPIZE_BUILDDIR)/config.guess
 	ln -sf /usr/share/misc/config.sub $(PHPIZE_BUILDDIR)/config.sub
