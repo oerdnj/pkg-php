@@ -1,25 +1,0 @@
-Description: Backport upstream fix for broken var_dump test
-Origin: http://svn.php.net/viewvc/php/php-src/trunk/ext/standard/tests/general_functions/var_dump_64bit.phpt?r1=279276&r2=295009&view=patch
-Bug-Debian: http://bugs.debian.org/571772
---- php.orig/ext/standard/tests/general_functions/var_dump_64bit.phpt
-+++ php/ext/standard/tests/general_functions/var_dump_64bit.phpt
-@@ -462,8 +462,7 @@
- -- Iteration 14 --
- string(22) "1234	
- 5678
--	9100
--abcda"
-+	9100abcda"
- 
- *** Testing var_dump() on boolean variables ***
- -- Iteration 1 --
-@@ -1303,8 +1302,7 @@ array(14) {
-   [13]=>
-   string(22) "1234	
- 5678
--	9100
--abcda"
-+	9100abcda"
- }
- array(15) {
-   [0]=>

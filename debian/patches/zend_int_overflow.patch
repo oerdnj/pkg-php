@@ -54,7 +54,7 @@ Bug-Debian: http://bugs.debian.org/570144
  --TEST--
  Bug #45877 (Array key '2147483647' left as string)
 ---INI--
--precision=20
+-precision=16
  --FILE--
  <?php
 -$keys = array(PHP_INT_MAX,
@@ -87,7 +87,7 @@ Bug-Debian: http://bugs.debian.org/570144
 -  int(1)
 -  [-%d8]=>
 -  int(1)
--  ["%d8"]=>
+-  ["%s"]=>
 -  int(1)
 +function test_value($val, $msg) {
 +	$a = array($val => 1);

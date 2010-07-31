@@ -3,14 +3,14 @@
 @@ -3,7 +3,7 @@ Bug #51059 crypt() segfaults on certain 
  --FILE--
  <?php
- $res = crypt('a', '_');
--if ($res == '*0' || $res == '*1') echo 'OK';
-+if ($res == '__DAZ.Z4ErJDo') echo 'OK';
+ $res = crypt(b'a', b'_');
+-if ($res === b'*0' || $res === b'*1') echo 'OK';
++if ($res === b'__DAZ.Z4ErJDo') echo 'OK';
  else echo 'Not OK';
  
  ?>
---- a/ext/standard/tests/strings/crypt_blowfish_invalid_rounds.phpt
-+++ b/ext/standard/tests/strings/crypt_blowfish_invalid_rounds.phpt
+--- a/ext/standard/tests/strings/crypt_blowfish_variation1.phpt
++++ b/ext/standard/tests/strings/crypt_blowfish_variation1.phpt
 @@ -3,8 +3,8 @@ Test Blowfish crypt() with invalid round
  --FILE--
  <?php

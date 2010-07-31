@@ -1,3 +1,17 @@
+php5 (5.3.3-1) experimental; urgency=low
+
+  * Upload PHP 5.3.3 to experimental for further testing
+    + Fixes odbc_autocommit (Closes: #586570)
+    + Adds support for sqlite3_busy_timout (Closes: #589473)
+    + Fixes CVE-2010-2225, CVE-2010-2094, CVE-2010-1917, CVE-2010-1866
+      and other CVEs that do not apply to the Debian packages or are
+      irrelevant as per the pre-5.3.2-2 security policy.
+  * Changes pending update from unstable:
+    + Use system crypt
+  * Build the FPM SAPI.
+
+ -- Raphael Geissert <geissert@debian.org>  Sat, 31 Jul 2010 15:53:12 -0400
+
 php5 (5.3.2-2) unstable; urgency=low
 
   [ Ondřej Surý ]
