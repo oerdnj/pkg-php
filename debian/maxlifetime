@@ -3,7 +3,7 @@
 max=1440
 
 if which php5 >/dev/null 2>&1 && [ -e /etc/php5/apache2/php.ini ]; then
-  cur=$(php5 -c /etc/php5/apache2/php.ini -r 'print ini_get("session.gc_maxlifetime");')
+  cur=$(php5 -c /etc/php5/apache2/php.ini -d "error_reporting='E_ALL & ~E_DEPRECATED'" -r 'print ini_get("session.gc_maxlifetime");')
   [ -z "$cur" ] && cur=0
   [ "$cur" -gt "$max" ] && max=$cur
 else
