@@ -1,10 +1,15 @@
 php5 (5.3.3-2) unstable; urgency=low
 
+  * Upload 5.3.3 to unstable
+    + Fixes CVE-2010-2225, CVE-2010-2094, CVE-2010-1917, CVE-2010-1866,
+      CVE-2010-2531, CVE-2010-3065.
   * Don't build FPM SAPI now
   * Bump standards version to 3.9.1
   * Synchronize system crypt patch
+  * Cherry pick upstream fix for format vulnerability in phar/stream.c
+    + Fixes CVE-2010-2950.
 
- -- Ondřej Surý <ondrej@debian.org>  Thu, 21 Oct 2010 10:18:45 +0200
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 21 Oct 2010 12:36:54 +0200
 
 php5 (5.3.3-1) experimental; urgency=low
 
