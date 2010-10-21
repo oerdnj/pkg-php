@@ -73,10 +73,10 @@ Homepage: http://www.php.net/
 
 Package: php5
 Architecture: all
-Depends: ${misc:Depends}, libapache2-mod-php5 (>= ${source:Version}) | libapache2-mod-php5filter (>= ${source:Version}) | php5-cgi (>= ${source:Version}) | php5-fpm (>= ${source:Version}), php5-common (>= ${source:Version})
+Depends: ${misc:Depends}, libapache2-mod-php5 (>= ${source:Version}) | libapache2-mod-php5filter (>= ${source:Version}) | php5-cgi (>= ${source:Version}), php5-common (>= ${source:Version})
 Description: server-side, HTML-embedded scripting language (metapackage)
  This package is a metapackage that, when installed, guarantees that you
- have at least one of the four server-side versions of the PHP5 interpreter
+ have at least one of the three server-side versions of the PHP5 interpreter
  installed. Removing this package won't remove PHP5 from your system, however
  it may remove other packages that depend on this one.
  .
@@ -176,23 +176,6 @@ Description: command-line interpreter for the php5 scripting language
  in. The goal of the language is to allow web developers to write dynamically
  generated pages quickly. This version of PHP5 was built with the Suhosin patch.
 
-Package: php5-fpm
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support, php5-common (= ${binary:Version}), libmagic1, ucf, tzdata
-Provides: ${php:Provides}
-Suggests: php-pear
-Description: server-side, HTML-embedded scripting language (FPM-CGI binary)
- This package provides the Fast Process Manager interpreter that runs
- as a daemon and receives Fast/CGI requests.  Note that MOST Apache users
- probably want the libapache2-mod-php5 package.
- .
- ${php:Extensions}
- .
- PHP5 is an HTML-embedded scripting language. Much of its syntax is borrowed
- from C, Java and Perl with a couple of unique PHP-specific features thrown
- in. The goal of the language is to allow web developers to write dynamically
- generated pages quickly. This version of PHP5 was built with the Suhosin patch.
-
 Package: php5-dev
 Depends: ${misc:Depends}, autoconf (>= 2.63), automake (>= 1.11), libssl-dev, libtool (>= 2.2), shtool, php5-common (>= ${binary:Version})
 Conflicts: ${libtool:Conflicts}
@@ -207,7 +190,7 @@ Description: Files for PHP5 module development
  generated pages quickly. This version of PHP5 was built with the Suhosin patch.
 
 Package: php5-dbg
-Depends: ${misc:Depends}, php5-common (= ${binary:Version}), libapache2-mod-php5 (= ${binary:Version}) | libapache2-mod-php5filter (= ${binary:Version}) | php5-cgi (= ${binary:Version}) | php5-cli (= ${binary:Version}) | php5-fpm (= ${binary:Version}) | php5-curl (= ${binary:Version}) | php5-enchant (= ${binary:Version}) | php5-gd (= ${binary:Version}) | php5-gmp (= ${binary:Version}) | php5-imap (= ${binary:Version}) | php5-interbase (= ${binary:Version}) | php5-intl (= ${binary:Version}) | php5-ldap (= ${binary:Version}) | php5-mcrypt (= ${binary:Version}) | php5-mysql (= ${binary:Version}) | php5-odbc (= ${binary:Version}) | php5-pgsql (= ${binary:Version}) | php5-pspell (= ${binary:Version}) | php5-recode (= ${binary:Version}) | php5-snmp (= ${binary:Version}) | php5-sqlite (= ${binary:Version}) | php5-sybase (= ${binary:Version}) | php5-tidy (= ${binary:Version}) | php5-xmlrpc (= ${binary:Version}) | php5-xsl (= ${binary:Version})
+Depends: ${misc:Depends}, php5-common (= ${binary:Version}), libapache2-mod-php5 (= ${binary:Version}) | libapache2-mod-php5filter (= ${binary:Version}) | php5-cgi (= ${binary:Version}) | php5-cli (= ${binary:Version}) | php5-curl (= ${binary:Version}) | php5-enchant (= ${binary:Version}) | php5-gd (= ${binary:Version}) | php5-gmp (= ${binary:Version}) | php5-imap (= ${binary:Version}) | php5-interbase (= ${binary:Version}) | php5-intl (= ${binary:Version}) | php5-ldap (= ${binary:Version}) | php5-mcrypt (= ${binary:Version}) | php5-mysql (= ${binary:Version}) | php5-odbc (= ${binary:Version}) | php5-pgsql (= ${binary:Version}) | php5-pspell (= ${binary:Version}) | php5-recode (= ${binary:Version}) | php5-snmp (= ${binary:Version}) | php5-sqlite (= ${binary:Version}) | php5-sybase (= ${binary:Version}) | php5-tidy (= ${binary:Version}) | php5-xmlrpc (= ${binary:Version}) | php5-xsl (= ${binary:Version})
 Recommends: gdb
 Section: debug
 Priority: extra
