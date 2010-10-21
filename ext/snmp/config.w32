@@ -1,4 +1,4 @@
-// $Id: config.w32 294815 2010-02-09 16:42:40Z pajoye $
+// $Id: config.w32 294814 2010-02-09 16:38:24Z pajoye $
 // vim:ft=javascript
 
 ARG_WITH("snmp", "SNMP support", "no");

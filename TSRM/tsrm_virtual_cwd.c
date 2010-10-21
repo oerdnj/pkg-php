@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_virtual_cwd.c 294520 2010-02-04 09:57:30Z pajoye $ */
+/* $Id: tsrm_virtual_cwd.c 300276 2010-06-08 13:27:30Z tony2001 $ */
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -298,19 +298,19 @@ static int php_is_file_ok(const cwd_state *state)  /* {{{ */
 }
 /* }}} */
 
-static void cwd_globals_ctor(virtual_cwd_globals *cwd_globals TSRMLS_DC) /* {{{ */
+static void cwd_globals_ctor(virtual_cwd_globals *cwd_g TSRMLS_DC) /* {{{ */
 {
-	CWD_STATE_COPY(&cwd_globals->cwd, &main_cwd_state);
-	cwd_globals->realpath_cache_size = 0;
-	cwd_globals->realpath_cache_size_limit = REALPATH_CACHE_SIZE;
-	cwd_globals->realpath_cache_ttl = REALPATH_CACHE_TTL;
-	memset(cwd_globals->realpath_cache, 0, sizeof(cwd_globals->realpath_cache));
+	CWD_STATE_COPY(&cwd_g->cwd, &main_cwd_state);
+	cwd_g->realpath_cache_size = 0;
+	cwd_g->realpath_cache_size_limit = REALPATH_CACHE_SIZE;
+	cwd_g->realpath_cache_ttl = REALPATH_CACHE_TTL;
+	memset(cwd_g->realpath_cache, 0, sizeof(cwd_g->realpath_cache));
 }
 /* }}} */
 
-static void cwd_globals_dtor(virtual_cwd_globals *cwd_globals TSRMLS_DC) /* {{{ */
+static void cwd_globals_dtor(virtual_cwd_globals *cwd_g TSRMLS_DC) /* {{{ */
 {
-	CWD_STATE_FREE(&cwd_globals->cwd);
+	CWD_STATE_FREE(&cwd_g->cwd);
 	realpath_cache_clean(TSRMLS_C);
 }
 /* }}} */
@@ -1525,6 +1525,7 @@ CWD_API int virtual_rename(char *oldname, char *newname TSRMLS_DC) /* {{{ */
 	/* rename on windows will fail if newname already exists.
 	   MoveFileEx has to be used */
 #ifdef TSRM_WIN32
+	/* MoveFileEx returns 0 on failure, other way 'round for this function */
 	retval = (MoveFileEx(oldname, newname, MOVEFILE_REPLACE_EXISTING|MOVEFILE_COPY_ALLOWED) == 0) ? -1 : 0;
 #else
 	retval = rename(oldname, newname);

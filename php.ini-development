@@ -1381,7 +1381,7 @@ pgsql.max_links = -1
 ; http://php.net/pgsql.ignore-notice
 pgsql.ignore_notice = 0
 
-; Log PostgreSQL backends Noitce message or not.
+; Log PostgreSQL backends Notice message or not.
 ; Unless pgsql.ignore_notice=0, module cannot log notice message.
 ; http://php.net/pgsql.log-notice
 pgsql.log_notice = 0
@@ -1586,11 +1586,11 @@ session.entropy_length = 0
 
 ; Specified here to create the session id.
 ; http://php.net/session.entropy-file
+; On systems that don't have /dev/urandom /dev/arandom can be used
+; On windows, setting the entropy_length setting will activate the 
+; Windows random source (using the CryptoAPI)
 ;session.entropy_file = /dev/urandom
 session.entropy_file =
-
-; http://php.net/session.entropy-length
-;session.entropy_length = 16
 
 ; Set to {nocache,private,public,} to determine HTTP caching aspects
 ; or leave this empty to avoid sending anti-caching headers.
@@ -1618,7 +1618,7 @@ session.use_trans_sid = 0
 ;   0  (MD5 128 bits)
 ;   1  (SHA-1 160 bits)
 ; This option may also be set to the name of any hash function supported by
-; the hash extension. A list of available hashes is returned by the hash_alogs()
+; the hash extension. A list of available hashes is returned by the hash_algos()
 ; function.
 ; http://php.net/session.hash-function
 session.hash_function = 0

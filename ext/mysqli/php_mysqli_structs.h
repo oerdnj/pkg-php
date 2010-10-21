@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: php_mysqli_structs.h 294543 2010-02-04 20:28:55Z johannes $ 
+  $Id: php_mysqli_structs.h 300436 2010-06-14 18:19:13Z andrey $ 
 */
 
 #ifndef PHP_MYSQLI_STRUCTS_H
@@ -40,8 +40,44 @@
 #include "ext/mysqlnd/mysqlnd.h"
 #include "mysqli_mysqlnd.h"
 #else
+
+/*
+  The libmysql headers (a PITA) also define it and there will be an warning.
+  Undef it and later we might need to define it again.
+*/
+#ifdef HAVE_MBRLEN
+#undef HAVE_MBRLEN
+#define WE_HAD_MBRLEN
+#endif
+#ifdef HAVE_MBSTATE_T
+#undef HAVE_MBSTATE_T
+#define WE_HAD_MBSTATE_T
+#endif
+
+#include <my_global.h>
+
+#if !defined(HAVE_MBRLEN) && defined(WE_HAD_MBRLEN)
+#define HAVE_MBRLEN 1
+#endif
+
+#if !defined(HAVE_MBSTATE_T) && defined(WE_HAD_MBSTATE_T)
+#define HAVE_MBSTATE_T 1
+#endif
+
+/*
+  We need more than mysql.h because we need CHARSET_INFO in one place.
+  This order has been borrowed from the ODBC driver. Nothing can be removed
+  from the list of headers :(
+*/
+
+#include <my_sys.h>
 #include <mysql.h>
 #include <errmsg.h>
+#include <my_list.h>
+#include <m_string.h>
+#include <mysqld_error.h>
+#include <my_list.h>
+#include <m_ctype.h>
 #include "mysqli_libmysql.h"
 #endif
 
@@ -215,7 +251,7 @@ extern zend_class_entry *mysqli_exception_class_entry;
 extern int php_le_pmysqli(void);
 extern void php_mysqli_dtor_p_elements(void *data);
 
-extern void php_mysqli_close(MY_MYSQL * mysql, int close_type TSRMLS_DC);
+extern void php_mysqli_close(MY_MYSQL * mysql, int close_type, int resource_status TSRMLS_DC);
 
 
 #ifdef HAVE_SPL
@@ -274,6 +310,27 @@ PHP_MYSQLI_EXPORT(zend_object_value) mysqli_objects_new(zend_class_entry * TSRML
 		RETURN_NULL();\
 	}\
 }
+
+#define MYSQLI_FETCH_RESOURCE_CONN(__ptr, __id, __check) \
+{ \
+	MYSQLI_FETCH_RESOURCE((__ptr), MY_MYSQL *, (__id), "mysqli_link", (__check)); \
+	if (!(__ptr)->mysql) { \
+		mysqli_object *intern = (mysqli_object *)zend_object_store_get_object(*(__id) TSRMLS_CC);\
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "invalid object or resource %s\n", intern->zo.ce->name); \
+		RETURN_NULL();\
+	} \
+}
+
+#define MYSQLI_FETCH_RESOURCE_STMT(__ptr, __id, __check) \
+{ \
+	MYSQLI_FETCH_RESOURCE((__ptr), MY_STMT *, (__id), "mysqli_stmt", (__check)); \
+	if (!(__ptr)->stmt) { \
+		mysqli_object *intern = (mysqli_object *)zend_object_store_get_object(*(__id) TSRMLS_CC);\
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "invalid object or resource %s\n", intern->zo.ce->name); \
+		RETURN_NULL();\
+	} \
+}
+
 
 #define MYSQLI_SET_STATUS(__id, __value) \
 { \

@@ -16,7 +16,7 @@
    |          Derick Rethans <derick@derickrethans.nl>                    |
    +----------------------------------------------------------------------+
  */
-/* $Id: mcrypt.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: mcrypt.c 300289 2010-06-08 18:27:23Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -27,8 +27,7 @@
 #if HAVE_LIBMCRYPT
 
 #if PHP_WIN32
-# include <Wincrypt.h>
-# include <Ntsecapi.h>
+# include "win32/winutil.h"
 #endif
 
 #include "php_mcrypt.h"
@@ -41,6 +40,7 @@
 #include "php_globals.h"
 #include "ext/standard/info.h"
 #include "ext/standard/php_rand.h"
+#include "php_mcrypt_filter.h"
 
 static int le_mcrypt;
 
@@ -419,16 +419,16 @@ static void php_mcrypt_module_dtor(zend_rsrc_list_entry *rsrc TSRMLS_DC) /* {{{ 
 static PHP_MINIT_FUNCTION(mcrypt) /* {{{ */
 {
 	le_mcrypt = zend_register_list_destructors_ex(php_mcrypt_module_dtor, NULL, "mcrypt", module_number);
-    
+
 	/* modes for mcrypt_??? routines */
 	REGISTER_LONG_CONSTANT("MCRYPT_ENCRYPT", 0, CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("MCRYPT_DECRYPT", 1, CONST_PERSISTENT);
-	
+
 	/* sources for mcrypt_create_iv */
 	REGISTER_LONG_CONSTANT("MCRYPT_DEV_RANDOM", 0, CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("MCRYPT_DEV_URANDOM", 1, CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("MCRYPT_RAND", 2, CONST_PERSISTENT);
-	
+
 	/* ciphers */
 	MCRYPT_ENTRY2_2_4(3DES, "tripledes");
 	MCRYPT_ENTRY2_2_4(ARCFOUR_IV, "arcfour-iv");
@@ -469,12 +469,19 @@ static PHP_MINIT_FUNCTION(mcrypt) /* {{{ */
 	MCRYPT_ENTRY2_2_4(MODE_OFB, "ofb");
 	MCRYPT_ENTRY2_2_4(MODE_STREAM, "stream");
 	REGISTER_INI_ENTRIES();
+
+	php_stream_filter_register_factory("mcrypt.*", &php_mcrypt_filter_factory TSRMLS_CC);
+	php_stream_filter_register_factory("mdecrypt.*", &php_mcrypt_filter_factory TSRMLS_CC);
+
 	return SUCCESS;
 }
 /* }}} */
 
 static PHP_MSHUTDOWN_FUNCTION(mcrypt) /* {{{ */
 {
+	php_stream_filter_unregister_factory("mcrypt.*" TSRMLS_CC);
+	php_stream_filter_unregister_factory("mdecrypt.*" TSRMLS_CC);
+
 	UNREGISTER_INI_ENTRIES();
 	return SUCCESS;
 }
@@ -516,6 +523,7 @@ PHP_MINFO_FUNCTION(mcrypt) /* {{{ */
 
 	php_info_print_table_start();
 	php_info_print_table_header(2, "mcrypt support", "enabled");
+	php_info_print_table_header(2, "mcrypt_filter support", "enabled");
 	php_info_print_table_row(2, "Version", LIBMCRYPT_VERSION);
 	php_info_print_table_row(2, "Api No", mcrypt_api_no);
 	php_info_print_table_row(2, "Supported ciphers", tmp1.c);
@@ -1382,21 +1390,14 @@ PHP_FUNCTION(mcrypt_create_iv)
 	
 	if (source == RANDOM || source == URANDOM) {
 #if PHP_WIN32
-			/* random/urandom equivalent on Windows */
-			HCRYPTPROV     hCryptProv;
-			BYTE *iv_b = (BYTE *) iv;
-
-			/* It could be done using LoadLibrary but as we rely on 2k+ for 5.3, cleaner to use a clear dependency (Advapi32) and a 
-				standard API call (no f=getAddr..; f();) */
-			if(!CryptAcquireContext(&hCryptProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT)) {
-				php_error_docref(NULL TSRMLS_CC, E_ERROR, "Cannot open random device");
-				RETURN_FALSE;
-			}
-			if(!CryptGenRandom(hCryptProv, size,  iv_b)) {
-				php_error_docref(NULL TSRMLS_CC, E_ERROR, "Could not gather sufficient random data");
-				RETURN_FALSE;
-			}
-			n = size;
+		/* random/urandom equivalent on Windows */
+		BYTE *iv_b = (BYTE *) iv;
+		if (php_win32_get_random_bytes(iv_b, (size_t) size) == FAILURE){
+			efree(iv);
+			php_error_docref(NULL TSRMLS_CC, E_ERROR, "Could not gather sufficient random data");
+			RETURN_FALSE;
+		}
+		n = size;
 #else
 		int    fd;
 		size_t read_bytes = 0;

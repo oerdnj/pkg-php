@@ -1,4 +1,4 @@
-dnl $Id: config0.m4 277992 2009-03-29 21:34:13Z scottmac $
+dnl $Id: config0.m4 300694 2010-06-23 15:11:02Z johannes $
 dnl config.m4 for extension sqlite3
 dnl vim:et:ts=2:sw=2
 
@@ -80,6 +80,7 @@ if test $PHP_SQLITE3 != "no"; then
     fi
 
     PHP_SQLITE3_CFLAGS="-I@ext_srcdir@/libsqlite $other_flags $threadsafe_flags $debug_flags"
+    PHP_INSTALL_HEADERS([ext/sqlite3/libsqlite/sqlite3.h])
   fi
 
   AC_DEFINE(HAVE_SQLITE3,1,[ ])

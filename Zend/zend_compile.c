@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_compile.c 293155 2010-01-05 20:46:53Z sebastian $ */
+/* $Id: zend_compile.c 300817 2010-06-28 16:37:57Z felipe $ */
 
 #include <zend_language_parser.h>
 #include "zend.h"
@@ -1270,25 +1270,14 @@ void zend_do_begin_function_declaration(znode *function_token, znode *function_n
 				}
 			}
 		} else {
-			char *short_class_name;
-			int short_class_name_length;
-			char *short_class_lcname;
-
-			if ((short_class_name = zend_memrchr(CG(active_class_entry)->name, '\\', CG(active_class_entry)->name_length))) {
-				short_class_name_length = CG(active_class_entry)->name_length - (short_class_name - CG(active_class_entry)->name) - 1;
-				++short_class_name;
-			} else {
-				short_class_name = CG(active_class_entry)->name;
-				short_class_name_length = CG(active_class_entry)->name_length;
-			}
-			short_class_lcname = do_alloca(short_class_name_length + 1, use_heap);
-			zend_str_tolower_copy(short_class_lcname, short_class_name, short_class_name_length);
+			char *class_lcname;
+			
+			class_lcname = do_alloca(CG(active_class_entry)->name_length + 1, use_heap);
+			zend_str_tolower_copy(class_lcname, CG(active_class_entry)->name, CG(active_class_entry)->name_length);
 			/* Improve after RC: cache the lowercase class name */
 
-			if ((short_class_name_length == name_len) && (!memcmp(short_class_lcname, lcname, name_len))) {
-				if (CG(active_class_entry)->constructor) {
-					zend_error(E_STRICT, "Redefining already defined constructor for class %s", CG(active_class_entry)->name);
-				} else {
+			if ((CG(active_class_entry)->name_length == name_len) && (!memcmp(class_lcname, lcname, name_len))) {
+				if (!CG(active_class_entry)->constructor) {
 					CG(active_class_entry)->constructor = (zend_function *) CG(active_op_array);
 				}
 			} else if ((name_len == sizeof(ZEND_CONSTRUCTOR_FUNC_NAME)-1) && (!memcmp(lcname, ZEND_CONSTRUCTOR_FUNC_NAME, sizeof(ZEND_CONSTRUCTOR_FUNC_NAME)))) {
@@ -1338,7 +1327,7 @@ void zend_do_begin_function_declaration(znode *function_token, znode *function_n
 			} else if (!(fn_flags & ZEND_ACC_STATIC)) {
 				CG(active_op_array)->fn_flags |= ZEND_ACC_ALLOW_STATIC;
 			}
-			free_alloca(short_class_lcname, use_heap);
+			free_alloca(class_lcname, use_heap);
 		}
 
 		efree(lcname);
@@ -2543,13 +2532,16 @@ static zend_bool zend_do_perform_implementation_check(const zend_function *fe, c
 {
 	zend_uint i;
 
-	/* If it's a user function then arg_info == NULL means we don't have any parameters but we still need to do the arg number checks.  We are only willing to ignore this for internal functions because extensions don't always define arg_info. */
+	/* If it's a user function then arg_info == NULL means we don't have any parameters but
+	 * we still need to do the arg number checks.  We are only willing to ignore this for internal
+	 * functions because extensions don't always define arg_info.
+	 */
 	if (!proto || (!proto->common.arg_info && proto->common.type != ZEND_USER_FUNCTION)) {
 		return 1;
 	}
 
 	/* Checks for constructors only if they are declared in an interface */
-	if ((fe->common.fn_flags & ZEND_ACC_CTOR) && !(proto->common.scope->ce_flags & ZEND_ACC_INTERFACE)) {
+	if ((fe->common.fn_flags & ZEND_ACC_CTOR) && (proto->common.scope->ce_flags & ZEND_ACC_INTERFACE) == 0) {
 		return 1;
 	}
 

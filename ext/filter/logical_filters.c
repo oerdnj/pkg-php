@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: logical_filters.c 293996 2010-01-25 16:14:28Z johannes $ */
+/* $Id: logical_filters.c 297353 2010-04-02 18:27:48Z rasmus $ */
 
 #include "php_filter.h"
 #include "filter_private.h"
@@ -68,7 +68,7 @@
 
 static int php_filter_parse_int(const char *str, unsigned int str_len, long *ret TSRMLS_DC) { /* {{{ */
 	long ctx_value;
-	int sign = 0;
+	int sign = 0, digit = 0;
 	const char *end = str + str_len;
 
 	switch (*str) {
@@ -82,7 +82,7 @@ static int php_filter_parse_int(const char *str, unsigned int str_len, long *ret
 
 	/* must start with 1..9*/
 	if (str < end && *str >= '1' && *str <= '9') {
-		ctx_value = ((*(str++)) - '0');
+		ctx_value = ((sign)?-1:1) * ((*(str++)) - '0');
 	} else {
 		return -1;
 	}
@@ -95,18 +95,17 @@ static int php_filter_parse_int(const char *str, unsigned int str_len, long *ret
 
 	while (str < end) {
 		if (*str >= '0' && *str <= '9') {
-			ctx_value = (ctx_value * 10) + (*(str++) - '0');
+			digit = (*(str++) - '0');
+			if ( (!sign) && ctx_value <= (LONG_MAX-digit)/10 ) {
+				ctx_value = (ctx_value * 10) + digit;
+			} else if ( sign && ctx_value >= (LONG_MIN+digit)/10) {
+				ctx_value = (ctx_value * 10) - digit;
+			} else {
+				return -1;
+			}
 		} else {
 			return -1;
 		}
-	}
-	if (sign) {
-		ctx_value = -ctx_value;
-		if (ctx_value > 0) { /* overflow */
-			return -1;
-		}
-	} else if (ctx_value < 0) { /* overflow */
-		return -1;
 	}
 
 	*ret = ctx_value;
@@ -466,8 +465,13 @@ void php_filter_validate_url(PHP_INPUT_FILTER_PARAM_DECL) /* {{{ */
 		e = url->host + strlen(url->host);
 		s = url->host;
 
+		/* First char of hostname must be alphanumeric */
+		if(!isalnum((int)*(unsigned char *)s)) { 
+			goto bad_url;
+		}
+
 		while (s < e) {
-			if (!isalnum((int)*(unsigned char *)s) && *s != '_' && *s != '.') {
+			if (!isalnum((int)*(unsigned char *)s) && *s != '-' && *s != '.') {
 				goto bad_url;
 			}
 			s++;
@@ -494,8 +498,31 @@ bad_url:
 
 void php_filter_validate_email(PHP_INPUT_FILTER_PARAM_DECL) /* {{{ */
 {
-	/* From http://cvs.php.net/co.php/pear/HTML_QuickForm/QuickForm/Rule/Email.php?r=1.4 */
-	const char regexp[] = "/^((\\\"[^\\\"\\f\\n\\r\\t\\b]+\\\")|([A-Za-z0-9_][A-Za-z0-9_\\!\\#\\$\\%\\&\\'\\*\\+\\-\\~\\/\\=\\?\\^\\`\\|\\{\\}]*(\\.[A-Za-z0-9_\\!\\#\\$\\%\\&\\'\\*\\+\\-\\~\\/\\=\\?\\^\\`\\|\\{\\}]*)*))@((\\[(((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9])))\\])|(((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9]))\\.((25[0-5])|(2[0-4][0-9])|([0-1]?[0-9]?[0-9])))|((([A-Za-z0-9])(([A-Za-z0-9\\-])*([A-Za-z0-9]))?(\\.(?=[A-Za-z0-9\\-]))?)+[A-Za-z]+))$/D";
+	/*
+	 * The regex below is based on a regex by Michael Rushton.
+	 * However, it is not identical.  I changed it to only consider routeable
+	 * addresses as valid.  Michael's regex considers a@b a valid address
+	 * which conflicts with section 2.3.5 of RFC 5321 which states that:
+	 *
+	 *   Only resolvable, fully-qualified domain names (FQDNs) are permitted
+	 *   when domain names are used in SMTP.  In other words, names that can
+	 *   be resolved to MX RRs or address (i.e., A or AAAA) RRs (as discussed
+	 *   in Section 5) are permitted, as are CNAME RRs whose targets can be
+	 *   resolved, in turn, to MX or address RRs.  Local nicknames or
+	 *   unqualified names MUST NOT be used.
+	 *
+	 * This regex does not handle comments and folding whitespace.  While
+	 * this is technically valid in an email address, these parts aren't
+	 * actually part of the address itself.
+	 *
+	 * Michael's regex carries this copyright:
+	 *
+	 * Copyright © Michael Rushton 2009-10
+	 * http://squiloople.com/
+	 * Feel free to use and redistribute this code. But please keep this copyright notice.
+	 *
+	 */
+	const char regexp[] = "/^(?!(?:(?:\\x22?\\x5C[\\x00-\\x7E]\\x22?)|(?:\\x22?[^\\x5C\\x22]\\x22?)){255,})(?!(?:(?:\\x22?\\x5C[\\x00-\\x7E]\\x22?)|(?:\\x22?[^\\x5C\\x22]\\x22?)){65,}@)(?:(?:[\\x21\\x23-\\x27\\x2A\\x2B\\x2D\\x2F-\\x39\\x3D\\x3F\\x5E-\\x7E]+)|(?:\\x22(?:[\\x01-\\x08\\x0B\\x0C\\x0E-\\x1F\\x21\\x23-\\x5B\\x5D-\\x7F]|(?:\\x5C[\\x00-\\x7F]))*\\x22))(?:\\.(?:(?:[\\x21\\x23-\\x27\\x2A\\x2B\\x2D\\x2F-\\x39\\x3D\\x3F\\x5E-\\x7E]+)|(?:\\x22(?:[\\x01-\\x08\\x0B\\x0C\\x0E-\\x1F\\x21\\x23-\\x5B\\x5D-\\x7F]|(?:\\x5C[\\x00-\\x7F]))*\\x22)))*@(?:(?:(?!.*[^.]{64,})(?:(?:(?:xn--)?[a-z0-9]+(?:-[a-z0-9]+)*\\.){1,126}){1,}(?:(?:[a-z][a-z0-9]*)|(?:(?:xn--)[a-z0-9]+))(?:-[a-z0-9]+)*)|(?:\\[(?:(?:IPv6:(?:(?:[a-f0-9]{1,4}(?::[a-f0-9]{1,4}){7})|(?:(?!(?:.*[a-f0-9][:\\]]){7,})(?:[a-f0-9]{1,4}(?::[a-f0-9]{1,4}){0,5})?::(?:[a-f0-9]{1,4}(?::[a-f0-9]{1,4}){0,5})?)))|(?:(?:IPv6:(?:(?:[a-f0-9]{1,4}(?::[a-f0-9]{1,4}){5}:)|(?:(?!(?:.*[a-f0-9]:){5,})(?:[a-f0-9]{1,4}(?::[a-f0-9]{1,4}){0,3})?::(?:[a-f0-9]{1,4}(?::[a-f0-9]{1,4}){0,3}:)?)))?(?:(?:25[0-5])|(?:2[0-4][0-9])|(?:1[0-9]{2})|(?:[1-9]?[0-9]))(?:\\.(?:(?:25[0-5])|(?:2[0-4][0-9])|(?:1[0-9]{2})|(?:[1-9]?[0-9]))){3}))\\]))$/iD";
 
 	pcre       *re = NULL;
 	pcre_extra *pcre_extra = NULL;

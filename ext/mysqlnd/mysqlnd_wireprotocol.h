@@ -1,8 +1,8 @@
 /*
   +----------------------------------------------------------------------+
-  | PHP Version 6                                                        |
+  | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 2006-2009 The PHP Group                                |
+  | Copyright (c) 2006-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_wireprotocol.h 293779 2010-01-20 17:09:28Z johannes $ */
+/* $Id: mysqlnd_wireprotocol.h 299998 2010-05-31 17:57:03Z andrey $ */
 
 #ifndef MYSQLND_WIREPROTOCOL_H
 #define MYSQLND_WIREPROTOCOL_H
@@ -41,7 +41,9 @@ PHPAPI extern const char mysqlnd_read_body_name[];
 #define PACKET_FREE(packet) \
 	do { \
 		DBG_INF_FMT("PACKET_FREE(%p)", packet); \
-		((packet)->header.m->free_mem((packet), FALSE TSRMLS_CC)); \
+		if ((packet)) { \
+			((packet)->header.m->free_mem((packet), FALSE TSRMLS_CC)); \
+		} \
 	} while (0);
 
 PHPAPI extern const char * const mysqlnd_command_to_text[COM_END];
@@ -99,6 +101,7 @@ typedef struct st_mysqlnd_packet_auth {
 	/* +1 for \0 because of scramble() */
 	unsigned char	*server_scramble_buf;
 	size_t			db_len;
+	zend_bool		send_half_packet;
 } MYSQLND_PACKET_AUTH;
 
 /* OK packet */
@@ -174,6 +177,7 @@ typedef struct st_mysqlnd_packet_res_field {
 	/* For table definitions, empty for result sets */
 	zend_bool				skip_parsing;
 	zend_bool				stupid_list_fields_eof;
+	zend_bool				persistent_alloc;
 
 	MYSQLND_ERROR_INFO		error_info;
 } MYSQLND_PACKET_RES_FIELD;
@@ -241,6 +245,7 @@ typedef struct st_mysqlnd_packet_chg_user_resp {
 	uint16_t			server_capabilities;
 	/* If error packet, we use these */
 	MYSQLND_ERROR_INFO	error_info;
+	zend_bool			server_asked_323_auth;
 } MYSQLND_PACKET_CHG_USER_RESPONSE;
 
 
@@ -249,17 +254,17 @@ PHPAPI void php_mysqlnd_scramble(zend_uchar * const buffer, const zend_uchar * c
 unsigned long	php_mysqlnd_net_field_length(zend_uchar **packet);
 zend_uchar *	php_mysqlnd_net_store_length(zend_uchar *packet, uint64_t length);
 
-PHPAPI extern char * const mysqlnd_empty_string;
+PHPAPI const extern char * const mysqlnd_empty_string;
 
 
-void php_mysqlnd_rowp_read_binary_protocol(MYSQLND_MEMORY_POOL_CHUNK * row_buffer, zval ** fields,
+enum_func_status php_mysqlnd_rowp_read_binary_protocol(MYSQLND_MEMORY_POOL_CHUNK * row_buffer, zval ** fields,
 										 unsigned int field_count, MYSQLND_FIELD *fields_metadata,
 										 zend_bool persistent,
 										 zend_bool as_unicode, zend_bool as_int_or_float,
 										 MYSQLND_STATS * stats TSRMLS_DC);
 
 
-void php_mysqlnd_rowp_read_text_protocol(MYSQLND_MEMORY_POOL_CHUNK * row_buffer, zval ** fields,
+enum_func_status php_mysqlnd_rowp_read_text_protocol(MYSQLND_MEMORY_POOL_CHUNK * row_buffer, zval ** fields,
 										 unsigned int field_count, MYSQLND_FIELD *fields_metadata,
 										 zend_bool persistent,
 										 zend_bool as_unicode, zend_bool as_int_or_float,
@@ -267,8 +272,8 @@ void php_mysqlnd_rowp_read_text_protocol(MYSQLND_MEMORY_POOL_CHUNK * row_buffer,
 
 
 PHPAPI MYSQLND_PROTOCOL * mysqlnd_protocol_init(zend_bool persistent TSRMLS_DC);
-PHPAPI void mysqlnd_protocol_free(MYSQLND_PROTOCOL * net TSRMLS_DC);
-
+PHPAPI void mysqlnd_protocol_free(MYSQLND_PROTOCOL * const protocol TSRMLS_DC);
+PHPAPI struct st_mysqlnd_protocol_methods * mysqlnd_protocol_get_methods();
 
 #endif /* MYSQLND_WIREPROTOCOL_H */
 

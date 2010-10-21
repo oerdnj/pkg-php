@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: scanf.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: scanf.c 299484 2010-05-19 11:28:08Z mike $ */
 
 /*
 	scanf.c --
@@ -581,7 +581,8 @@ PHPAPI int php_sscanf_internal( char *string, char *format,
 				int varStart, zval **return_value TSRMLS_DC)
 {
 	int  numVars, nconversions, totalVars = -1;
-	int  i, value, result;
+	int  i, result;
+	long value;
 	int  objIndex;
 	char *end, *baseString;
 	zval **current;
@@ -1059,9 +1060,9 @@ addToInt:
 				 */
 				if (!(flags & SCAN_SUPPRESS)) {
 					*end = '\0';
-					value = (int) (*fn)(buf, NULL, base);
+					value = (long) (*fn)(buf, NULL, base);
 					if ((flags & SCAN_UNSIGNED) && (value < 0)) {
-						snprintf(buf, sizeof(buf), "%u", value); /* INTL: ISO digit */
+						snprintf(buf, sizeof(buf), "%lu", value); /* INTL: ISO digit */
 						if (numVars && objIndex >= argCount) {
 							break;
 						} else if (numVars) {

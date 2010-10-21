@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: posix.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: posix.c 300764 2010-06-26 16:03:39Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -295,7 +295,7 @@ const zend_function_entry posix_functions[] = {
 #endif
 
 	PHP_FE(posix_get_last_error,					arginfo_posix_get_last_error)
-	PHP_FALIAS(posix_errno, posix_get_last_error,	NULL)
+	PHP_FALIAS(posix_errno, posix_get_last_error,	arginfo_posix_get_last_error)
 	PHP_FE(posix_strerror,							arginfo_posix_strerror)
 #ifdef HAVE_INITGROUPS
 	PHP_FE(posix_initgroups,	arginfo_posix_initgroups)
@@ -310,7 +310,7 @@ const zend_function_entry posix_functions[] = {
 static PHP_MINFO_FUNCTION(posix)
 {
 	php_info_print_table_start();
-	php_info_print_table_row(2, "Revision", "$Revision: 293036 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 300764 $");
 	php_info_print_table_end();
 }
 /* }}} */
@@ -703,7 +703,9 @@ static int php_posix_stream_get_fd(zval *zfp, int *fd TSRMLS_DC) /* {{{ */
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "expects argument 1 to be a valid stream resource");
 		return 0;
 	}
-	if (php_stream_can_cast(stream, PHP_STREAM_AS_FD) == SUCCESS) {
+	if (php_stream_can_cast(stream, PHP_STREAM_AS_FD_FOR_SELECT) == SUCCESS) {
+		php_stream_cast(stream, PHP_STREAM_AS_FD_FOR_SELECT, (void*)fd, 0);
+	} else if (php_stream_can_cast(stream, PHP_STREAM_AS_FD) == SUCCESS) {
 		php_stream_cast(stream, PHP_STREAM_AS_FD, (void*)fd, 0);
 	} else {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "could not use stream of type '%s'", 

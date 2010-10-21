@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: filter_private.h 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: filter_private.h 297245 2010-03-31 22:59:09Z rasmus $ */
 
 #ifndef FILTER_PRIVATE_H
 #define FILTER_PRIVATE_H
@@ -78,7 +78,8 @@
 #define FILTER_SANITIZE_NUMBER_INT    0x0207
 #define FILTER_SANITIZE_NUMBER_FLOAT  0x0208
 #define FILTER_SANITIZE_MAGIC_QUOTES  0x0209
-#define FILTER_SANITIZE_LAST          0x0209
+#define FILTER_SANITIZE_FULL_SPECIAL_CHARS 0x020a
+#define FILTER_SANITIZE_LAST          0x020a
 
 #define FILTER_SANITIZE_ALL           0x0200
 

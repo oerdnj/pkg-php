@@ -19,7 +19,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: filter.c 294106 2010-01-27 17:22:54Z johannes $ */
+/* $Id: filter.c 298196 2010-04-20 04:31:11Z aharvey $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -52,6 +52,7 @@ static const filter_list_entry filter_list[] = {
 	{ "stripped",        FILTER_SANITIZE_STRING,        php_filter_string          },
 	{ "encoded",         FILTER_SANITIZE_ENCODED,       php_filter_encoded         },
 	{ "special_chars",   FILTER_SANITIZE_SPECIAL_CHARS, php_filter_special_chars   },
+	{ "full_special_chars",   FILTER_SANITIZE_FULL_SPECIAL_CHARS, php_filter_full_special_chars   },
 	{ "unsafe_raw",      FILTER_UNSAFE_RAW,             php_filter_unsafe_raw      },
 	{ "email",           FILTER_SANITIZE_EMAIL,         php_filter_email           },
 	{ "url",             FILTER_SANITIZE_URL,           php_filter_url             },
@@ -238,6 +239,7 @@ PHP_MINIT_FUNCTION(filter)
 	REGISTER_LONG_CONSTANT("FILTER_SANITIZE_STRIPPED", FILTER_SANITIZE_STRING, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("FILTER_SANITIZE_ENCODED", FILTER_SANITIZE_ENCODED, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("FILTER_SANITIZE_SPECIAL_CHARS", FILTER_SANITIZE_SPECIAL_CHARS, CONST_CS | CONST_PERSISTENT);
+	REGISTER_LONG_CONSTANT("FILTER_SANITIZE_FULL_SPECIAL_CHARS", FILTER_SANITIZE_SPECIAL_CHARS, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("FILTER_SANITIZE_EMAIL", FILTER_SANITIZE_EMAIL, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("FILTER_SANITIZE_URL", FILTER_SANITIZE_URL, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("FILTER_SANITIZE_NUMBER_INT", FILTER_SANITIZE_NUMBER_INT, CONST_CS | CONST_PERSISTENT);
@@ -314,7 +316,7 @@ PHP_MINFO_FUNCTION(filter)
 {
 	php_info_print_table_start();
 	php_info_print_table_row( 2, "Input Validation and Filtering", "enabled" );
-	php_info_print_table_row( 2, "Revision", "$Revision: 294106 $");
+	php_info_print_table_row( 2, "Revision", "$Revision: 298196 $");
 	php_info_print_table_end();
 
 	DISPLAY_INI_ENTRIES();
@@ -778,6 +780,12 @@ PHP_FUNCTION(filter_input)
 				return;
 			}
 		}
+
+		/* The FILTER_NULL_ON_FAILURE flag inverts the usual return values of
+		 * the function: normally when validation fails false is returned, and
+		 * when the input value doesn't exist NULL is returned. With the flag
+		 * set, NULL and false should be returned, respectively. Ergo, although
+		 * the code below looks incorrect, it's actually right. */
 		if (filter_flags & FILTER_NULL_ON_FAILURE) {
 			RETURN_FALSE;
 		} else {
@@ -844,6 +852,12 @@ PHP_FUNCTION(filter_input_array)
 				PHP_FILTER_GET_LONG_OPT(option, filter_flags);
 			}
 		}
+
+		/* The FILTER_NULL_ON_FAILURE flag inverts the usual return values of
+		 * the function: normally when validation fails false is returned, and
+		 * when the input value doesn't exist NULL is returned. With the flag
+		 * set, NULL and false should be returned, respectively. Ergo, although
+		 * the code below looks incorrect, it's actually right. */
 		if (filter_flags & FILTER_NULL_ON_FAILURE) {
 			RETURN_FALSE;
 		} else {

@@ -3,7 +3,7 @@ zlib.inflate of gzip-encoded stream
 --SKIPIF--
 <?php if (!extension_loaded("zlib")) print "skip"; ?>
 --FILE--
-<?php /* $Id: zlib_filter_inflate2.phpt 250201 2008-01-09 06:45:36Z cellog $ */
+<?php /* $Id: zlib_filter_inflate2.phpt 296107 2010-03-12 10:28:59Z jani $ */
 
 $a = gzopen(dirname(__FILE__) . '/test.txt.gz', 'w');
 fwrite($a, "This is quite the thing ain't it\n");

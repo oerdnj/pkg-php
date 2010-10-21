@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: soap.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: soap.c 300317 2010-06-09 15:48:22Z iliaa $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1699,6 +1699,7 @@ PHP_METHOD(SoapServer, handle)
 				doc_request = soap_xmlParseMemory(post_data, post_data_length);
 			}
 		} else {
+			zval_ptr_dtor(&retval);
 			return;
 		}
 	} else {
@@ -1873,6 +1874,7 @@ PHP_METHOD(SoapServer, handle)
 			soapHeader *h = header;
 
 			header = header->next;
+#if 0
 			if (service->sdl && !h->function && !h->hdr) {
 				if (h->mustUnderstand) {
 					soap_server_fault("MustUnderstand","Header not understood", NULL, NULL, NULL TSRMLS_CC);
@@ -1880,7 +1882,7 @@ PHP_METHOD(SoapServer, handle)
 					continue;
 				}
 			}
-
+#endif
 			fn_name = estrndup(Z_STRVAL(h->function_name),Z_STRLEN(h->function_name));
 			if (zend_hash_exists(function_table, php_strtolower(fn_name, Z_STRLEN(h->function_name)), Z_STRLEN(h->function_name) + 1) ||
 			    ((service->type == SOAP_CLASS || service->type == SOAP_OBJECT) &&
@@ -3420,12 +3422,12 @@ static void set_soap_fault(zval *obj, char *fault_code_ns, char *fault_code, cha
 	if (Z_TYPE_P(obj) != IS_OBJECT) {
 		object_init_ex(obj, soap_fault_class_entry);
 	}
-	if (fault_string != NULL) {
-		add_property_string(obj, "faultstring", fault_string, 1);
+	
+	add_property_string(obj, "faultstring", fault_string ? fault_string : "", 1);
 #ifdef ZEND_ENGINE_2
-		zend_update_property_string(zend_exception_get_default(TSRMLS_C), obj, "message", sizeof("message")-1, fault_string TSRMLS_CC);
+	zend_update_property_string(zend_exception_get_default(TSRMLS_C), obj, "message", sizeof("message")-1, (fault_string ? fault_string : "") TSRMLS_CC);
 #endif
-	}
+	
 	if (fault_code != NULL) {
 		int soap_version = SOAP_GLOBAL(soap_version);
 

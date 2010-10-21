@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: dblib_stmt.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: dblib_stmt.c 295958 2010-03-08 12:39:44Z iliaa $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -166,7 +166,14 @@ static int pdo_dblib_stmt_execute(pdo_stmt_t *stmt TSRMLS_DC)
 						memcpy(val->data, dbdata(H->link, i+1), val->len);
 						val->data[val->len] = '\0';
 						break;
-
+					case SQLMONEY:
+					case SQLMONEY4:
+					case SQLMONEYN: {
+						DBFLT8 money_value;
+						dbconvert(NULL, S->cols[i].coltype, dbdata(H->link, i+1), dbdatlen(H->link, i+1), SQLFLT8, (LPBYTE)&money_value, val->len);
+						val->len = spprintf(val->data, 0, "%.4f", money_value);
+						}
+						break;
 					default:
 						if (dbwillconvert(S->cols[i].coltype, SQLCHAR)) {
 							val->len = 32 + (2 * dbdatlen(H->link, i+1));

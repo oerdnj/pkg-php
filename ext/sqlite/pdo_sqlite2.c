@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_sqlite2.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: pdo_sqlite2.c 300612 2010-06-20 14:12:06Z felipe $ */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -515,7 +515,7 @@ static struct pdo_dbh_methods sqlite2_methods = {
 
 static char *make_filename_safe(const char *filename TSRMLS_DC)
 {
-	if (strncmp(filename, ":memory:", sizeof(":memory:")-1)) {
+	if (*filename && strncmp(filename, ":memory:", sizeof(":memory:")-1)) {
 		char *fullpath = expand_filepath(filename, NULL TSRMLS_CC);
 
 		if (!fullpath) {
@@ -594,6 +594,7 @@ static int pdo_sqlite2_handle_factory(pdo_dbh_t *dbh, zval *driver_options TSRML
 	efree(filename);
 
 	if (!H->db) {
+		H->einfo.errcode = SQLITE_ERROR;
 		pdo_sqlite2_error(errmsg, dbh);
 		goto cleanup;
 	}

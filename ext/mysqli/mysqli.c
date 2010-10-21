@@ -17,7 +17,7 @@
   |          Ulf Wendel <uw@php.net>                                     |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli.c 293779 2010-01-20 17:09:28Z johannes $ 
+  $Id: mysqli.c 299771 2010-05-26 07:28:43Z andrey $ 
 */
 
 #ifdef HAVE_CONFIG_H
@@ -222,10 +222,11 @@ static void mysqli_link_free_storage(void *object TSRMLS_DC)
 	if (my_res && my_res->ptr) {
 		MY_MYSQL *mysql = (MY_MYSQL *)my_res->ptr;
 		if (mysql->mysql) {
-			php_mysqli_close(mysql, MYSQLI_CLOSE_EXPLICIT TSRMLS_CC);
+			php_mysqli_close(mysql, MYSQLI_CLOSE_EXPLICIT, my_res->status TSRMLS_CC);
 		}
 		php_clear_mysql(mysql);
 		efree(mysql);
+		my_res->status = MYSQLI_STATUS_UNKNOWN;
 	}
 	mysqli_objects_free_storage(object TSRMLS_CC);
 }
@@ -981,7 +982,7 @@ PHP_FUNCTION(mysqli_stmt_construct)
 			if (zend_parse_parameters(1 TSRMLS_CC, "O", &mysql_link, mysqli_link_class_entry)==FAILURE) {
 				return;
 			}
-			MYSQLI_FETCH_RESOURCE(mysql, MY_MYSQL *, &mysql_link, "mysqli_link", MYSQLI_STATUS_VALID);
+			MYSQLI_FETCH_RESOURCE_CONN(mysql, &mysql_link, MYSQLI_STATUS_VALID);
 
 			stmt = (MY_STMT *)ecalloc(1,sizeof(MY_STMT));
 
@@ -991,7 +992,7 @@ PHP_FUNCTION(mysqli_stmt_construct)
 			if (zend_parse_parameters(2 TSRMLS_CC, "Os", &mysql_link, mysqli_link_class_entry, &statement, &statement_len)==FAILURE) {
 				return;
 			}
-			MYSQLI_FETCH_RESOURCE(mysql, MY_MYSQL *, &mysql_link, "mysqli_link", MYSQLI_STATUS_VALID);
+			MYSQLI_FETCH_RESOURCE_CONN(mysql, &mysql_link, MYSQLI_STATUS_VALID);
 
 			stmt = (MY_STMT *)ecalloc(1,sizeof(MY_STMT));
 
@@ -1045,7 +1046,7 @@ PHP_FUNCTION(mysqli_result_construct)
 			WRONG_PARAM_COUNT;
 	}
 
-	MYSQLI_FETCH_RESOURCE(mysql, MY_MYSQL *, &mysql_link, "mysqli_link", MYSQLI_STATUS_VALID);
+	MYSQLI_FETCH_RESOURCE_CONN(mysql, &mysql_link, MYSQLI_STATUS_VALID);
 
 	switch (resmode) {
 		case MYSQLI_STORE_RESULT:
@@ -1194,7 +1195,7 @@ void php_mysqli_fetch_into_hash(INTERNAL_FUNCTION_PARAMETERS, int override_flags
 		}
 	}
 #else
-	mysqlnd_fetch_into(result, MYSQLND_FETCH_ASSOC, return_value, MYSQLND_MYSQLI);
+	mysqlnd_fetch_into(result, ((fetchtype & MYSQLI_NUM)? MYSQLND_FETCH_NUM:0) | ((fetchtype & MYSQLI_ASSOC)? MYSQLND_FETCH_ASSOC:0), return_value, MYSQLND_MYSQLI);
 #endif
 
 	if (into_object && Z_TYPE_P(return_value) != IS_NULL) {

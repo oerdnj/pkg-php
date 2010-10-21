@@ -16,7 +16,7 @@
    | Authors: Dmitry Stogov <dmitry@zend.com>                             |
    +----------------------------------------------------------------------+
 
-	 $Id: zend_vm_gen.php 293155 2010-01-05 20:46:53Z sebastian $
+	 $Id: zend_vm_gen.php 300264 2010-06-07 23:04:30Z felipe $
 */
 
 $header_text = <<< DATA
@@ -1124,6 +1124,9 @@ function gen_vm($def, $skel) {
 
 	// Insert header
 	out($f, $GLOBALS['header_text']);
+	
+	// Suppress free_op1 warnings on Windows
+	out($f, "#ifdef ZEND_WIN32\n# pragma warning(once : 4101)\n#endif\n");
 
 	// Support for ZEND_USER_OPCODE
 	out($f, "static user_opcode_handler_t zend_user_opcode_handlers[256] = {");

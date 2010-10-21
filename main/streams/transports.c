@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: transports.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: transports.c 296079 2010-03-11 16:37:24Z mike $ */
 
 #include "php.h"
 #include "php_streams_int.h"
@@ -157,7 +157,20 @@ PHPAPI php_stream *_php_stream_xport_create(const char *name, long namelen, int 
 					ERR_RETURN(error_string, error_text, "bind() failed: %s");
 					failed = 1;
 				} else if (flags & STREAM_XPORT_LISTEN) {
-					if (0 != php_stream_xport_listen(stream, 5, &error_text TSRMLS_CC)) {
+					zval **zbacklog = NULL;
+					int backlog = 32;
+					
+					if (stream->context && php_stream_context_get_option(stream->context, "socket", "backlog", &zbacklog) == SUCCESS) {
+						zval *ztmp = *zbacklog;
+						
+						convert_to_long_ex(&ztmp);
+						backlog = Z_LVAL_P(ztmp);
+						if (ztmp != *zbacklog) {
+							zval_ptr_dtor(&ztmp);
+						}
+					}
+					
+					if (0 != php_stream_xport_listen(stream, backlog, &error_text TSRMLS_CC)) {
 						ERR_RETURN(error_string, error_text, "listen() failed: %s");
 						failed = 1;
 					}

@@ -1,4 +1,4 @@
-// $Id: config.w32 263930 2008-07-31 18:04:49Z pajoye $
+// $Id: config.w32 299434 2010-05-17 20:09:42Z pajoye $
 // vim:ft=javascript
 
 ARG_WITH("ldap", "LDAP support", "no");
@@ -11,13 +11,17 @@ if (PHP_LDAP != "no") {
 			CHECK_LIB("ssleay32.lib", "ldap", PHP_LDAP) &&
 			CHECK_LIB("libeay32.lib", "ldap", PHP_LDAP) &&
 			CHECK_LIB("oldap32_a.lib", "ldap", PHP_LDAP) &&
-			CHECK_LIB("olber32_a.lib", "ldap", PHP_LDAP)) {
+			CHECK_LIB("olber32_a.lib", "ldap", PHP_LDAP)&&
+			CHECK_LIB("libsasl.lib", "ldap", PHP_LDAP)) {
 		EXTENSION('ldap', 'ldap.c');
 
 		AC_DEFINE('HAVE_LDAP_PARSE_RESULT', 1);
 		AC_DEFINE('HAVE_LDAP_PARSE_REFERENCE', 1);
 		AC_DEFINE('HAVE_LDAP_START_TLS_S', 1);
 		AC_DEFINE('HAVE_LDAP', 1);
+		AC_DEFINE('HAVE_LDAP_SASL', 1);
+		AC_DEFINE('HAVE_LDAP_SASL_SASL_H', 1);
+		AC_DEFINE('LDAP_DEPRECATED', 1);
 
 	} else {
 		WARNING("ldap not enabled; libraries and headers not found");

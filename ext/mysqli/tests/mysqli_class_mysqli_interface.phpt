@@ -50,6 +50,7 @@ require_once('skipifconnectfailure.inc');
 		'select_db'			=> true,
 		'set_charset'			=> true,
 		'set_opt'			=> true,
+		'ssl_set'			=> true,
 		'stat'				=> true,
 		'stmt_init'			=> true,
 		'store_result'			=> true,
@@ -61,7 +62,6 @@ require_once('skipifconnectfailure.inc');
 		/* $expected_methods['get_cache_stats']		= true; */
 		/* $expected_methods['get_client_stats']	= true; */
 		$expected_methods['get_connection_stats']	= true;
-		$expected_methods['poll']	= true;
 		$expected_methods['reap_async_query']	= true;
 	} else {
 		// libmysql only

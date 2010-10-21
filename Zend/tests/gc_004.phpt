@@ -1,5 +1,7 @@
 --TEST--
 GC 004: Simple array cycle
+--INI--
+zend.enable_gc=1
 --FILE--
 <?php
 $a = array();
@@ -14,10 +16,7 @@ array(1) {
   [0]=>
   &array(1) {
     [0]=>
-    &array(1) {
-      [0]=>
-      *RECURSION*
-    }
+    *RECURSION*
   }
 }
 int(1)

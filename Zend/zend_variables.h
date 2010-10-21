@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_variables.h 294427 2010-02-03 18:07:25Z pajoye $ */
+/* $Id: zend_variables.h 293400 2010-01-11 10:07:10Z dmitry $ */
 
 #ifndef ZEND_VARIABLES_H
 #define ZEND_VARIABLES_H

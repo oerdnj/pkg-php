@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: simplexml.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: simplexml.c 299424 2010-05-17 07:50:33Z dmitry $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -988,9 +988,14 @@ static void sxe_dimension_delete(zval *object, zval *offset TSRMLS_DC)
 static inline char * sxe_xmlNodeListGetString(xmlDocPtr doc, xmlNodePtr list, int inLine) /* {{{ */
 {
 	xmlChar *tmp = xmlNodeListGetString(doc, list, inLine);
-	char    *res = estrdup((char*)tmp);
-
-	xmlFree(tmp);
+	char    *res;
+	
+	if (tmp) {
+		res = estrdup((char*)tmp);
+		xmlFree(tmp);
+	} else {
+		res = STR_EMPTY_ALLOC();
+	}
 
 	return res;
 }
@@ -1078,6 +1083,9 @@ static HashTable * sxe_get_prop_hash(zval *object, int is_debug TSRMLS_DC) /* {{
 		zend_hash_clean(sxe->properties);
 		rv = sxe->properties;
 	} else {
+		if (GC_G(gc_active)) {
+			return NULL;
+		}
 		ALLOC_HASHTABLE(rv);
 		zend_hash_init(rv, 0, NULL, ZVAL_PTR_DTOR, 0);
 		sxe->properties = rv;
@@ -1253,31 +1261,29 @@ SXE_METHOD(xpath)
 	}
 
 	result = retval->nodesetval;
-	if (!result) {
-		xmlXPathFreeObject(retval);
-		RETURN_FALSE;
-	}
 
 	array_init(return_value);
 
-	for (i = 0; i < result->nodeNr; ++i) {
-		nodeptr = result->nodeTab[i];
-		if (nodeptr->type == XML_TEXT_NODE || nodeptr->type == XML_ELEMENT_NODE || nodeptr->type == XML_ATTRIBUTE_NODE) {
-			MAKE_STD_ZVAL(value);
-			/**
-			 * Detect the case where the last selector is text(), simplexml
-			 * always accesses the text() child by default, therefore we assign
-			 * to the parent node.
-			 */
-			if (nodeptr->type == XML_TEXT_NODE) {
-				_node_as_zval(sxe, nodeptr->parent, value, SXE_ITER_NONE, NULL, NULL, 0 TSRMLS_CC);
-			} else if (nodeptr->type == XML_ATTRIBUTE_NODE) {
-				_node_as_zval(sxe, nodeptr->parent, value, SXE_ITER_ATTRLIST, (char*)nodeptr->name, nodeptr->ns ? (xmlChar *)nodeptr->ns->href : NULL, 0 TSRMLS_CC);
-			} else {
-				_node_as_zval(sxe, nodeptr, value, SXE_ITER_NONE, NULL, NULL, 0 TSRMLS_CC);
-			}
+	if (result != NULL) {
+		for (i = 0; i < result->nodeNr; ++i) {
+			nodeptr = result->nodeTab[i];
+			if (nodeptr->type == XML_TEXT_NODE || nodeptr->type == XML_ELEMENT_NODE || nodeptr->type == XML_ATTRIBUTE_NODE) {
+				MAKE_STD_ZVAL(value);
+				/**
+				 * Detect the case where the last selector is text(), simplexml
+				 * always accesses the text() child by default, therefore we assign
+				 * to the parent node.
+				 */
+				if (nodeptr->type == XML_TEXT_NODE) {
+					_node_as_zval(sxe, nodeptr->parent, value, SXE_ITER_NONE, NULL, NULL, 0 TSRMLS_CC);
+				} else if (nodeptr->type == XML_ATTRIBUTE_NODE) {
+					_node_as_zval(sxe, nodeptr->parent, value, SXE_ITER_ATTRLIST, (char*)nodeptr->name, nodeptr->ns ? (xmlChar *)nodeptr->ns->href : NULL, 0 TSRMLS_CC);
+				} else {
+					_node_as_zval(sxe, nodeptr, value, SXE_ITER_NONE, NULL, NULL, 0 TSRMLS_CC);
+				}
 
-			add_next_index_zval(return_value, value);
+				add_next_index_zval(return_value, value);
+			}
 		}
 	}
 
@@ -1863,12 +1869,16 @@ static int sxe_count_elements(zval *object, long *count TSRMLS_DC) /* {{{ */
 }
 /* }}} */
 
-/* {{{ proto int SimpleXMLIterator::count()
+/* {{{ proto int SimpleXMLElement::count()
  Get number of child elements */
 SXE_METHOD(count)
 {
 	long count = 0;
 	php_sxe_object *sxe = php_sxe_fetch_object(getThis() TSRMLS_CC);
+
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
 
 	php_sxe_count_elements_helper(sxe, &count TSRMLS_CC);
 	
@@ -2557,7 +2567,7 @@ PHP_MINFO_FUNCTION(simplexml)
 {
 	php_info_print_table_start();
 	php_info_print_table_header(2, "Simplexml support", "enabled");
-	php_info_print_table_row(2, "Revision", "$Revision: 293036 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 299424 $");
 	php_info_print_table_row(2, "Schema support",
 #ifdef LIBXML_SCHEMAS_ENABLED
 		"enabled");

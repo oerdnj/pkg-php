@@ -19,7 +19,7 @@
    |          Sara Golemon <pollita@php.net>                              |
    +----------------------------------------------------------------------+
  */
-/* $Id: http_fopen_wrapper.c 294506 2010-02-04 09:17:20Z pajoye $ */ 
+/* $Id: http_fopen_wrapper.c 293998 2010-01-25 16:28:13Z jani $ */ 
 
 #include "php.h"
 #include "php_globals.h"

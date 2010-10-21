@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_variables.c 294427 2010-02-03 18:07:25Z pajoye $ */
+/* $Id: zend_variables.c 293400 2010-01-11 10:07:10Z dmitry $ */
 
 #include <stdio.h>
 #include "zend.h"

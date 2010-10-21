@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_stmt.c 294942 2010-02-12 00:19:10Z johannes $ */
+/* $Id: pdo_stmt.c 300503 2010-06-16 23:13:29Z felipe $ */
 
 /* The PDO Statement Handle Class */
 
@@ -2080,6 +2080,8 @@ static int pdo_stmt_do_next_rowset(pdo_stmt_t *stmt TSRMLS_DC)
 	}
 
 	if (!stmt->methods->next_rowset(stmt TSRMLS_CC)) {
+		/* Set the executed flag to 0 to reallocate columns on next execute */
+		stmt->executed = 0;
 		return 0;
 	}
 
@@ -2280,6 +2282,10 @@ static union _zend_function *dbstmt_method_get(
 	if (zend_hash_find(&Z_OBJCE_P(object)->function_table, lc_method_name, 
 			method_len+1, (void**)&fbc) == FAILURE) {
 		pdo_stmt_t *stmt = (pdo_stmt_t*)zend_object_store_get_object(object TSRMLS_CC);
+		/* instance not created by PDO object */
+		if (!stmt->dbh) {
+			goto out;
+		}
 		/* not a pre-defined method, nor a user-defined method; check
 		 * the driver specific methods */
 		if (!stmt->dbh->cls_methods[PDO_DBH_DRIVER_METHOD_KIND_STMT]) {

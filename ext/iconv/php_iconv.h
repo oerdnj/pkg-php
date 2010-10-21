@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Revision: 293978 $ */
+/* $Revision: 295968 $ */
 
 #ifndef PHP_ICONV_H
 #define PHP_ICONV_H
@@ -37,6 +37,7 @@
 #ifdef PHP_ATOM_INC
 #include "ext/iconv/php_have_iconv.h"
 #include "ext/iconv/php_have_libiconv.h"
+#include "ext/iconv/php_iconv_aliased_libiconv.h"
 #include "ext/iconv/php_have_glibc_iconv.h"
 #include "ext/iconv/php_have_bsd_iconv.h"
 #include "ext/iconv/php_have_ibm_iconv.h"

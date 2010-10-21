@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: var_unserializer.re 293035 2010-01-03 08:22:14Z sebastian $ */
+/* $Id: var_unserializer.re 300843 2010-06-29 00:58:31Z stas $ */
 
 #include "php.h"
 #include "ext/standard/php_var.h"
@@ -54,7 +54,7 @@ static inline void var_push(php_unserialize_data_t *var_hashx, zval **rval)
 	var_hash->data[var_hash->used_slots++] = *rval;
 }
 
-static inline void var_push_dtor(php_unserialize_data_t *var_hashx, zval **rval)
+PHPAPI void var_push_dtor(php_unserialize_data_t *var_hashx, zval **rval)
 {
 	var_entries *var_hash = var_hashx->first_dtor, *prev = NULL;
 

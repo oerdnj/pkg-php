@@ -1,8 +1,8 @@
 /*
   +----------------------------------------------------------------------+
-  | PHP Version 6                                                        |
+  | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 2006-2009 The PHP Group                                |
+  | Copyright (c) 2006-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_statistics.c 293779 2010-01-20 17:09:28Z johannes $ */
+/* $Id: mysqlnd_statistics.c 298217 2010-04-20 13:50:34Z felipe $ */
 #include "php.h"
 #include "mysqlnd.h"
 #include "mysqlnd_priv.h"
@@ -99,19 +99,25 @@ const MYSQLND_STRING mysqlnd_stats_values_names[STAT_LAST] =
 	{ STR_W_LEN("explicit_stmt_close") },
 	{ STR_W_LEN("implicit_stmt_close") },
 	{ STR_W_LEN("mem_emalloc_count") },
-	{ STR_W_LEN("mem_emalloc_ammount") },
+	{ STR_W_LEN("mem_emalloc_amount") },
 	{ STR_W_LEN("mem_ecalloc_count") },
-	{ STR_W_LEN("mem_ecalloc_ammount") },
+	{ STR_W_LEN("mem_ecalloc_amount") },
 	{ STR_W_LEN("mem_erealloc_count") },
-	{ STR_W_LEN("mem_erealloc_ammount") },
+	{ STR_W_LEN("mem_erealloc_amount") },
 	{ STR_W_LEN("mem_efree_count") },
+	{ STR_W_LEN("mem_efree_amount") },
 	{ STR_W_LEN("mem_malloc_count") },
-	{ STR_W_LEN("mem_malloc_ammount") },
+	{ STR_W_LEN("mem_malloc_amount") },
 	{ STR_W_LEN("mem_calloc_count") },
-	{ STR_W_LEN("mem_calloc_ammount") },
+	{ STR_W_LEN("mem_calloc_amount") },
 	{ STR_W_LEN("mem_realloc_count") },
-	{ STR_W_LEN("mem_realloc_ammount") },
+	{ STR_W_LEN("mem_realloc_amount") },
 	{ STR_W_LEN("mem_free_count") },
+	{ STR_W_LEN("mem_free_amount") },
+	{ STR_W_LEN("mem_estrndup_count") },
+	{ STR_W_LEN("mem_strndup_count") },
+	{ STR_W_LEN("mem_estndup_count") },
+	{ STR_W_LEN("mem_strdup_count") },
 	{ STR_W_LEN("proto_text_fetched_null") },
 	{ STR_W_LEN("proto_text_fetched_bit") },
 	{ STR_W_LEN("proto_text_fetched_tinyint") },
@@ -219,7 +225,8 @@ mysqlnd_fill_stats_hash(const MYSQLND_STATS * const stats, const MYSQLND_STRING 
 
 
 /* {{{ _mysqlnd_get_client_stats */
-PHPAPI void _mysqlnd_get_client_stats(zval *return_value TSRMLS_DC ZEND_FILE_LINE_DC)
+PHPAPI void
+_mysqlnd_get_client_stats(zval *return_value TSRMLS_DC ZEND_FILE_LINE_DC)
 {
 	MYSQLND_STATS stats, *stats_ptr = mysqlnd_global_stats;
 	DBG_ENTER("_mysqlnd_get_client_stats");

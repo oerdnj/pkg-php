@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_reflection.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: php_reflection.c 300393 2010-06-11 23:37:55Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -79,7 +79,7 @@ ZEND_DECLARE_MODULE_GLOBALS(reflection)
 
 #define METHOD_NOTSTATIC(ce)                                                                                \
 	if (!this_ptr || !instanceof_function(Z_OBJCE_P(this_ptr), ce TSRMLS_CC)) {                             \
-		zend_error(E_ERROR, "%s() cannot be called statically", get_active_function_name(TSRMLS_C));        \
+		php_error_docref(NULL TSRMLS_CC, E_ERROR, "%s() cannot be called statically", get_active_function_name(TSRMLS_C));        \
 		return;                                                                                             \
 	}                                                                                                       \
 
@@ -97,7 +97,7 @@ ZEND_DECLARE_MODULE_GLOBALS(reflection)
 	intern = (reflection_object *) zend_object_store_get_object(getThis() TSRMLS_CC);                       \
 	if (intern == NULL || intern->ptr == NULL) {                                                            \
 		RETURN_ON_EXCEPTION                                                                                 \
-		zend_error(E_ERROR, "Internal error: Failed to retrieve the reflection object");                    \
+		php_error_docref(NULL TSRMLS_CC, E_ERROR, "Internal error: Failed to retrieve the reflection object");                    \
 	}                                                                                                       \
 	target = intern->ptr;                                                                                   \
 
@@ -1079,7 +1079,7 @@ static void _extension_string(string *str, zend_module_entry *module, char *inde
 		/* Is there a better way of doing this? */
 		while (func->fname) {
 			if (zend_hash_find(EG(function_table), func->fname, strlen(func->fname) + 1, (void**) &fptr) == FAILURE) {
-				zend_error(E_WARNING, "Internal error: Cannot find extension function %s in global function table", func->fname);
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Internal error: Cannot find extension function %s in global function table", func->fname);
 				func++;
 				continue;
 			}
@@ -1427,7 +1427,7 @@ ZEND_METHOD(reflection, export)
 	}
 
 	if (!retval_ptr) {
-		zend_error(E_WARNING, "%s::__toString() did not return anything", Z_OBJCE_P(object)->name);
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s::__toString() did not return anything", Z_OBJCE_P(object)->name);
 		RETURN_FALSE;
 	}
 
@@ -2408,7 +2408,7 @@ ZEND_METHOD(reflection_parameter, getDefaultValue)
 
 	*return_value = precv->op2.u.constant;
 	INIT_PZVAL(return_value);
-	if (Z_TYPE_P(return_value) != IS_CONSTANT) {
+	if (Z_TYPE_P(return_value) != IS_CONSTANT && Z_TYPE_P(return_value) != IS_CONSTANT_ARRAY) {
 		zval_copy_ctor(return_value);
 	}
 	zval_update_constant_ex(&return_value, (void*)0, param->fptr->common.scope TSRMLS_CC);
@@ -3002,7 +3002,7 @@ static void reflection_class_object_ctor(INTERNAL_FUNCTION_PARAMETERS, int is_ob
 			return;
 		}
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &argument) == FAILURE) {
+		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z/", &argument) == FAILURE) {
 			return;
 		}
 	}
@@ -3384,7 +3384,9 @@ ZEND_METHOD(reflection_class, hasMethod)
 
 	GET_REFLECTION_OBJECT_PTR(ce);
 	lc_name = zend_str_tolower_dup(name, name_len);
-	if (zend_hash_exists(&ce->function_table, lc_name, name_len + 1)) {
+	if ((ce == zend_ce_closure && (name_len == sizeof(ZEND_INVOKE_FUNC_NAME)-1)
+		&& memcmp(lc_name, ZEND_INVOKE_FUNC_NAME, sizeof(ZEND_INVOKE_FUNC_NAME)-1) == 0)
+		|| zend_hash_exists(&ce->function_table, lc_name, name_len + 1)) {
 		efree(lc_name);
 		RETURN_TRUE;
 	} else {
@@ -3401,6 +3403,7 @@ ZEND_METHOD(reflection_class, getMethod)
 	reflection_object *intern;
 	zend_class_entry *ce;
 	zend_function *mptr;
+	zval obj_tmp;
 	char *name, *lc_name; 
 	int name_len;
 
@@ -3418,6 +3421,14 @@ ZEND_METHOD(reflection_class, getMethod)
 		/* don't assign closure_object since we only reflect the invoke handler
 		   method and not the closure definition itself */
 		reflection_method_factory(ce, mptr, NULL, return_value TSRMLS_CC);
+		efree(lc_name);
+	} else if (ce == zend_ce_closure && !intern->obj && (name_len == sizeof(ZEND_INVOKE_FUNC_NAME)-1)
+		&& memcmp(lc_name, ZEND_INVOKE_FUNC_NAME, sizeof(ZEND_INVOKE_FUNC_NAME)-1) == 0
+		&& object_init_ex(&obj_tmp, ce) == SUCCESS && (mptr = zend_get_closure_invoke_method(&obj_tmp TSRMLS_CC)) != NULL) {
+		/* don't assign closure_object since we only reflect the invoke handler
+		   method and not the closure definition itself */
+		reflection_method_factory(ce, mptr, NULL, return_value TSRMLS_CC);
+		zval_dtor(&obj_tmp);
 		efree(lc_name);
 	} else if (zend_hash_find(&ce->function_table, lc_name, name_len + 1, (void**) &mptr) == SUCCESS) {
 		reflection_method_factory(ce, mptr, NULL, return_value TSRMLS_CC);
@@ -3895,7 +3906,7 @@ ZEND_METHOD(reflection_class, newInstance)
 			if (retval_ptr) {
 				zval_ptr_dtor(&retval_ptr);
 			}
-			zend_error(E_WARNING, "Invocation of %s's constructor failed", ce->name);
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invocation of %s's constructor failed", ce->name);
 			RETURN_NULL();
 		}
 		if (retval_ptr) {
@@ -3975,7 +3986,7 @@ ZEND_METHOD(reflection_class, newInstanceArgs)
 			if (retval_ptr) {
 				zval_ptr_dtor(&retval_ptr);
 			}
-			zend_error(E_WARNING, "Invocation of %s's constructor failed", ce->name);
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invocation of %s's constructor failed", ce->name);
 			RETURN_NULL();
 		}
 		if (retval_ptr) {
@@ -4090,7 +4101,7 @@ ZEND_METHOD(reflection_class, isSubclassOf)
 			if (instanceof_function(Z_OBJCE_P(class_name), reflection_class_ptr TSRMLS_CC)) {
 				argument = (reflection_object *) zend_object_store_get_object(class_name TSRMLS_CC);
 				if (argument == NULL || argument->ptr == NULL) {
-					zend_error(E_ERROR, "Internal error: Failed to retrieve the argument's reflection object");
+					php_error_docref(NULL TSRMLS_CC, E_ERROR, "Internal error: Failed to retrieve the argument's reflection object");
 					/* Bails out */
 				}
 				class_ce = argument->ptr;
@@ -4135,7 +4146,7 @@ ZEND_METHOD(reflection_class, implementsInterface)
 			if (instanceof_function(Z_OBJCE_P(interface), reflection_class_ptr TSRMLS_CC)) {
 				argument = (reflection_object *) zend_object_store_get_object(interface TSRMLS_CC);
 				if (argument == NULL || argument->ptr == NULL) {
-					zend_error(E_ERROR, "Internal error: Failed to retrieve the argument's reflection object");
+					php_error_docref(NULL TSRMLS_CC, E_ERROR, "Internal error: Failed to retrieve the argument's reflection object");
 					/* Bails out */
 				}
 				interface_ce = argument->ptr;
@@ -4520,7 +4531,7 @@ ZEND_METHOD(reflection_property, getValue)
 	if ((ref->prop.flags & ZEND_ACC_STATIC)) {
 		zend_update_class_constants(intern->ce TSRMLS_CC);
 		if (zend_hash_quick_find(CE_STATIC_MEMBERS(intern->ce), ref->prop.name, ref->prop.name_length + 1, ref->prop.h, (void **) &member) == FAILURE) {
-			zend_error(E_ERROR, "Internal error: Could not find the property %s::%s", intern->ce->name, ref->prop.name);
+			php_error_docref(NULL TSRMLS_CC, E_ERROR, "Internal error: Could not find the property %s::%s", intern->ce->name, ref->prop.name);
 			/* Bails out */
 		}
 		MAKE_COPY_ZVAL(member, return_value);
@@ -4575,7 +4586,7 @@ ZEND_METHOD(reflection_property, setValue)
 		prop_table = CE_STATIC_MEMBERS(intern->ce);
 
 		if (zend_hash_quick_find(prop_table, ref->prop.name, ref->prop.name_length + 1, ref->prop.h, (void **) &variable_ptr) == FAILURE) {
-			zend_error(E_ERROR, "Internal error: Could not find the property %s::%s", intern->ce->name, ref->prop.name);
+			php_error_docref(NULL TSRMLS_CC, E_ERROR, "Internal error: Could not find the property %s::%s", intern->ce->name, ref->prop.name);
 			/* Bails out */
 		}
 		if (*variable_ptr == value) {
@@ -4809,7 +4820,7 @@ ZEND_METHOD(reflection_extension, getFunctions)
 		/* Is there a better way of doing this? */
 		while (func->fname) {
 			if (zend_hash_find(EG(function_table), func->fname, strlen(func->fname) + 1, (void**) &fptr) == FAILURE) {
-				zend_error(E_WARNING, "Internal error: Cannot find extension function %s in global function table", func->fname);
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Internal error: Cannot find extension function %s in global function table", func->fname);
 				func++;
 				continue;
 			}
@@ -5285,7 +5296,7 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_reflection_property_export, 0, 0, 2)
 	ZEND_ARG_INFO(0, return)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_reflection_property___construct, 0, 0, 0)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_reflection_property___construct, 0, 0, 2)
 	ZEND_ARG_INFO(0, class)
 	ZEND_ARG_INFO(0, name)
 ZEND_END_ARG_INFO()
@@ -5494,7 +5505,7 @@ PHP_MINFO_FUNCTION(reflection) /* {{{ */
 	php_info_print_table_start();
 	php_info_print_table_header(2, "Reflection", "enabled");
 
-	php_info_print_table_row(2, "Version", "$Revision: 293036 $");
+	php_info_print_table_row(2, "Version", "$Revision: 300393 $");
 
 	php_info_print_table_end();
 } /* }}} */
@@ -5508,7 +5519,7 @@ zend_module_entry reflection_module_entry = { /* {{{ */
 	NULL,
 	NULL,
 	PHP_MINFO(reflection),
-	"$Revision: 293036 $",
+	"$Revision: 300393 $",
 	STANDARD_MODULE_PROPERTIES
 }; /* }}} */
 

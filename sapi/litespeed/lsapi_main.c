@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: lsapi_main.c 265533 2008-08-26 22:05:17Z gwang $ */
+/* $Id: lsapi_main.c 300764 2010-06-26 16:03:39Z felipe $ */
 
 #include "php.h"
 #include "SAPI.h"
@@ -787,7 +787,10 @@ int main( int argc, char * argv[] )
 
 /*   LiteSpeed PHP module starts here */
 
-
+/* {{{ arginfo */
+ZEND_BEGIN_ARG_INFO(arginfo_litespeed__void, 0)
+ZEND_END_ARG_INFO()
+/* }}} */
 
 PHP_FUNCTION(litespeed_request_headers);
 PHP_FUNCTION(litespeed_response_headers);
@@ -795,11 +798,11 @@ PHP_FUNCTION(litespeed_response_headers);
 PHP_MINFO_FUNCTION(litespeed);
 
 zend_function_entry litespeed_functions[] = {
-	PHP_FE(litespeed_request_headers, NULL)
-	PHP_FE(litespeed_response_headers, NULL)
-	PHP_FALIAS(getallheaders, litespeed_request_headers, NULL)
-	PHP_FALIAS(apache_request_headers, litespeed_request_headers, NULL)
-	PHP_FALIAS(apache_response_headers, litespeed_response_headers, NULL)
+	PHP_FE(litespeed_request_headers, 	arginfo_litespeed__void)
+	PHP_FE(litespeed_response_headers, 	arginfo_litespeed__void)
+	PHP_FALIAS(getallheaders, 			litespeed_request_headers, 	arginfo_litespeed__void)
+	PHP_FALIAS(apache_request_headers, 	litespeed_request_headers, 	arginfo_litespeed__void)
+	PHP_FALIAS(apache_response_headers, litespeed_response_headers, arginfo_litespeed__void)
 	{NULL, NULL, NULL}
 };
 

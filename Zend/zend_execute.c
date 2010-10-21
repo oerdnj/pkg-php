@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute.c 294505 2010-02-04 09:13:14Z pajoye $ */
+/* $Id: zend_execute.c 298213 2010-04-20 12:30:35Z dmitry $ */
 
 #define ZEND_INTENSIVE_DEBUGGING 0
 
@@ -708,6 +708,7 @@ static inline zval* zend_assign_to_variable(zval **variable_ptr_ptr, zval *value
 				return variable_ptr;
 			}
 		} else { /* we need to split */
+			GC_ZVAL_CHECK_POSSIBLE_ROOT(*variable_ptr_ptr);
 			if (!is_tmp_var) {
 				if (PZVAL_IS_REF(value) && Z_REFCOUNT_P(value) > 0) {
 					ALLOC_ZVAL(variable_ptr);

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_object_handlers.c 293155 2010-01-05 20:46:53Z sebastian $ */
+/* $Id: zend_object_handlers.c 300407 2010-06-12 15:30:21Z felipe $ */
 
 #include "zend.h"
 #include "zend_globals.h"
@@ -945,7 +945,7 @@ ZEND_API zend_function *zend_std_get_static_method(zend_class_entry *ce, char *f
 		/* Only change the method to the constructor if the constructor isn't called __construct
 		 * we check for __ so we can be binary safe for lowering, we should use ZEND_CONSTRUCTOR_FUNC_NAME
 		 */
-		if (!memcmp(lc_class_name, function_name_strval, function_name_strlen) && memcmp(ce->constructor->common.function_name, "__", sizeof("__") - 1)) {
+		if (!memcmp(lc_class_name, lc_function_name, function_name_strlen) && memcmp(ce->constructor->common.function_name, "__", sizeof("__") - 1)) {
 			fbc = ce->constructor;
 		}
 		efree(lc_class_name);
@@ -953,13 +953,13 @@ ZEND_API zend_function *zend_std_get_static_method(zend_class_entry *ce, char *f
 	if (!fbc && zend_hash_find(&ce->function_table, lc_function_name, function_name_strlen+1, (void **) &fbc)==FAILURE) {
 		efree(lc_function_name);
 
-		if (ce->__call &&
+		if (ce->__callstatic) {
+			return zend_get_user_callstatic_function(ce, function_name_strval, function_name_strlen);
+		} else if (ce->__call &&
 		    EG(This) &&
 		    Z_OBJ_HT_P(EG(This))->get_class_entry &&
 		    instanceof_function(Z_OBJCE_P(EG(This)), ce TSRMLS_CC)) {
 			return zend_get_user_call_function(ce, function_name_strval, function_name_strlen);
-		} else if (ce->__callstatic) {
-			return zend_get_user_callstatic_function(ce, function_name_strval, function_name_strlen);
 		} else {
 	   		return NULL;
 		}

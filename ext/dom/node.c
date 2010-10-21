@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: node.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: node.c 298841 2010-05-01 18:30:38Z geissert $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1871,7 +1871,7 @@ static void dom_canonicalization(INTERNAL_FUNCTION_PARAMETERS, int mode) /* {{{ 
 			inclusive_ns_prefixes[nscount] = NULL;
 		} else {
 			php_error_docref(NULL TSRMLS_CC, E_NOTICE, 
-				"Inclusive namespace prefixes only allowed in exlcusive mode.");
+				"Inclusive namespace prefixes only allowed in exclusive mode.");
 		}
 	}
 

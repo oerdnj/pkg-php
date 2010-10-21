@@ -176,6 +176,9 @@
 /* Define if you have the chroot function.  */
 #undef HAVE_CHROOT
 
+/* Define if you have the clearenv function.  */
+#undef HAVE_CLEARENV
+
 /* Define if you have the crypt function.  */
 #undef HAVE_CRYPT
 
@@ -629,6 +632,9 @@
 /* Define if you have the <assert.h> header file.  */
 #undef HAVE_ASSERT_H
 
+/* Define if you have the <atomic.h> header file.  */
+#undef HAVE_ATOMIC_H
+
 /* Define if you have the <crypt.h> header file.  */
 #undef HAVE_CRYPT_H
 
@@ -710,6 +716,9 @@
 /* Define if you have the <stdint.h> header file.  */
 #undef HAVE_STDINT_H
 
+/* Define if you have the <stdio.h> header file.  */
+#undef HAVE_STDIO_H
+
 /* Define if you have the <stdlib.h> header file.  */
 #undef HAVE_STDLIB_H
 
@@ -781,6 +790,9 @@
 
 /* Define if you have the <sys/types.h> header file.  */
 #undef HAVE_SYS_TYPES_H
+
+/* Define if you have the <sys/uio.h> header file.  */
+#undef HAVE_SYS_UIO_H
 
 /* Define if you have the <sys/un.h> header file.  */
 #undef HAVE_SYS_UN_H
@@ -940,6 +952,36 @@
 
 /* Whether you have a Continuity Server */
 #undef HAVE_CONTINUITY
+
+/* define if libevent is available */
+#undef HAVE_LIBEVENT
+
+/* do we have prctl? */
+#undef HAVE_PRCTL
+
+/* do we have clock_gettime? */
+#undef HAVE_CLOCK_GETTIME
+
+/* do we have clock_get_time? */
+#undef HAVE_CLOCK_GET_TIME
+
+/* do we have ptrace? */
+#undef HAVE_PTRACE
+
+/* do we have mach_vm_read? */
+#undef HAVE_MACH_VM_READ
+
+/* /proc/pid/mem interface */
+#undef PROC_MEM_FILE
+
+/* fpm version */
+#undef PHP_FPM_VERSION
+
+/* fpm user name */
+#undef PHP_FPM_USER
+
+/* fpm group name */
+#undef PHP_FPM_GROUP
 
 /*   */
 #undef WITH_ZEUS
@@ -1126,6 +1168,9 @@
 
 /* Whether struct sockaddr has field sa_len */
 #undef HAVE_SOCKADDR_SA_LEN
+
+/*   */
+#undef HAVE_NANOSLEEP
 
 /*   */
 #undef HAVE_NANOSLEEP
@@ -1690,6 +1735,9 @@
 
 /*   */
 #undef HAVE_LIBICONV
+
+/* iconv() is aliased to libiconv() in -liconv */
+#undef ICONV_ALIASED_LIBICONV
 
 /*   */
 #undef HAVE_ICONV
@@ -2477,11 +2525,14 @@
 /* Whether the system supports extended DES salt */
 #undef PHP_EXT_DES_CRYPT
 
+/* Whether the system supports MD5 salt */
+#undef PHP_MD5_CRYPT
+
 /* Whether the system supports SHA512 salt */
-#undef PHP_EXT_SHA512_CRYPT
+#undef PHP_SHA512_CRYPT
 
 /* Whether the system supports SHA256 salt */
-#undef PHP_EXT_SHA256_CRYPT
+#undef PHP_SHA256_CRYPT
 
 /* Whether PHP has to use its own crypt_r for blowfish, des and ext des */
 #undef PHP_USE_PHP_CRYPT_R
@@ -2711,6 +2762,9 @@
 /*   */
 #undef HAVE_LIBICONV
 
+/* iconv() is aliased to libiconv() in -liconv */
+#undef ICONV_ALIASED_LIBICONV
+
 /*   */
 #undef HAVE_ICONV
 
@@ -2752,6 +2806,9 @@
 
 /* Enable compressed protocol support */
 #undef MYSQLND_COMPRESSION_ENABLED
+
+/* Enable SSL support */
+#undef MYSQLND_SSL_SUPPORTED
 
 /* Define if int32_t type is present.  */
 #undef HAVE_INT32_T

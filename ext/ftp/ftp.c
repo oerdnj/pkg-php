@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: ftp.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: ftp.c 295820 2010-03-04 12:52:58Z iliaa $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -948,7 +948,7 @@ ftp_put(ftpbuf_t *ftp, const char *path, php_stream *instream, ftptype_t type, i
 	}
 	ftp->data = data = data_close(ftp, data);
 
-	if (!ftp_getresp(ftp) || (ftp->resp != 226 && ftp->resp != 250)) {
+	if (!ftp_getresp(ftp) || (ftp->resp != 226 && ftp->resp != 250 && ftp->resp != 200)) {
 		goto bail;
 	}
 	return 1;

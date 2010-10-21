@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_ldap.h 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: php_ldap.h 299434 2010-05-17 20:09:42Z pajoye $ */
 
 #ifndef PHP_LDAP_H
 #define PHP_LDAP_H
@@ -26,6 +26,7 @@
 #ifndef HAVE_ORALDAP
 #include <lber.h>
 #endif
+
 #include <ldap.h>
 
 extern zend_module_entry ldap_module_entry;

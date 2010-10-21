@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_globals.h 293155 2010-01-05 20:46:53Z sebastian $ */
+/* $Id: zend_globals.h 300854 2010-06-29 11:37:13Z felipe $ */
 
 #ifndef ZEND_GLOBALS_H
 #define ZEND_GLOBALS_H

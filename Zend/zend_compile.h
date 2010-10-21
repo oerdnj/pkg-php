@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_compile.h 293155 2010-01-05 20:46:53Z sebastian $ */
+/* $Id: zend_compile.h 300345 2010-06-10 09:13:22Z dmitry $ */
 
 #ifndef ZEND_COMPILE_H
 #define ZEND_COMPILE_H
@@ -687,9 +687,9 @@ int zendlex(znode *zendlval TSRMLS_DC);
 #define ZEND_CT	(1<<0)
 #define ZEND_RT (1<<1)
 
-#define ZEND_FETCH_STANDARD		0
-#define ZEND_FETCH_ADD_LOCK		(1<<0)
-#define ZEND_FETCH_MAKE_REF		(1<<1)
+#define ZEND_FETCH_STANDARD	    0x00000000
+#define ZEND_FETCH_ADD_LOCK	    0x08000000
+#define ZEND_FETCH_MAKE_REF	    0x04000000
 
 #define ZEND_FE_FETCH_BYREF	1
 #define ZEND_FE_FETCH_WITH_KEY	2

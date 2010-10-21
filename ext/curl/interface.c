@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: interface.c 294464 2010-02-03 20:53:31Z pajoye $ */
+/* $Id: interface.c 298299 2010-04-22 08:58:07Z pajoye $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 
@@ -370,7 +370,7 @@ PHP_MINFO_FUNCTION(curl)
 #ifdef CURL_VERSION_IPV6
 			{"IPv6", CURL_VERSION_IPV6},
 #endif
-#if LIBCURL_VERSION_NUM > 0x070a09 /* 7.10.1 */
+#if LIBCURL_VERSION_NUM > 0x070b00 /* 7.11.1 */
 			{"Largefile", CURL_VERSION_LARGEFILE},
 #endif
 #if LIBCURL_VERSION_NUM > 0x070a05 /* 7.10.6 */
@@ -1678,7 +1678,7 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 			convert_to_long_ex(zvalue);
 			if ((PG(open_basedir) && *PG(open_basedir)) || PG(safe_mode)) {
 				if (Z_LVAL_PP(zvalue) != 0) {
-					php_error_docref(NULL TSRMLS_CC, E_WARNING, "CURLOPT_FOLLOWLOCATION cannot be activated when in safe_mode or an open_basedir is set");
+					php_error_docref(NULL TSRMLS_CC, E_WARNING, "CURLOPT_FOLLOWLOCATION cannot be activated when safe_mode is enabled or an open_basedir is set");
 					RETVAL_FALSE;
 					return 1;
 				}
@@ -1970,7 +1970,7 @@ static int _php_curl_setopt(php_curl *ch, long option, zval **zvalue, zval *retu
 
 				SAVE_CURL_ERROR(ch, error);
 				if (error != CURLE_OK) {
-					RETVAL_FALSE
+					RETVAL_FALSE;
 					return 1;
 				}
 
@@ -2094,6 +2094,11 @@ PHP_FUNCTION(curl_setopt)
 	}
 
 	ZEND_FETCH_RESOURCE(ch, php_curl *, &zid, -1, le_curl_name, le_curl);
+
+	if (options <= 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid curl configuration option");
+		RETURN_FALSE;
+	}
 
 	if (!_php_curl_setopt(ch, options, zvalue, return_value TSRMLS_CC)) {
 		RETURN_TRUE;

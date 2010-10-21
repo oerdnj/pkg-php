@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: crypt.c 295421 2010-02-23 17:49:00Z pajoye $ */
+/* $Id: crypt.c 300429 2010-06-14 09:56:50Z pajoye $ */
 
 #include <stdlib.h>
 
@@ -29,7 +29,7 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#ifdef PHP_USE_PHP_CRYPT_R
+#if PHP_USE_PHP_CRYPT_R
 # include "php_crypt_r.h"
 # include "crypt_freesec.h"
 #else
@@ -107,11 +107,16 @@ PHP_MINIT_FUNCTION(crypt) /* {{{ */
 	REGISTER_LONG_CONSTANT("CRYPT_EXT_DES", PHP_EXT_DES_CRYPT, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("CRYPT_MD5", PHP_MD5_CRYPT, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("CRYPT_BLOWFISH", PHP_BLOWFISH_CRYPT, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("CRYPT_SHA256", PHP_SHA256_CRYPT, CONST_CS | CONST_PERSISTENT);
-	REGISTER_LONG_CONSTANT("CRYPT_SHA512", PHP_SHA512_CRYPT, CONST_CS | CONST_PERSISTENT);
 
+#ifdef PHP_SHA256_CRYPT
+   REGISTER_LONG_CONSTANT("CRYPT_SHA256", PHP_SHA256_CRYPT, CONST_CS | CONST_PERSISTENT);
+#endif
 
-#ifdef PHP_USE_PHP_CRYPT_R
+#ifdef PHP_SHA512_CRYPT
+   REGISTER_LONG_CONSTANT("CRYPT_SHA512", PHP_SHA512_CRYPT, CONST_CS | CONST_PERSISTENT);
+#endif
+
+#if PHP_USE_PHP_CRYPT_R
 	php_init_crypt_r();
 #endif
 
@@ -121,7 +126,7 @@ PHP_MINIT_FUNCTION(crypt) /* {{{ */
 
 PHP_MSHUTDOWN_FUNCTION(crypt) /* {{{ */
 {
-#ifdef PHP_USE_PHP_CRYPT_R
+#if PHP_USE_PHP_CRYPT_R
 	php_shutdown_crypt_r();
 #endif
 

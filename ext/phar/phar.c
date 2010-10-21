@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: phar.c 290435 2009-11-09 17:21:15Z rasmus $ */
+/* $Id: phar.c 298908 2010-05-03 14:41:40Z iliaa $ */
 
 #define PHAR_MAIN 1
 #include "phar_internal.h"
@@ -1327,7 +1327,7 @@ int phar_create_or_parse_filename(char *fname, int fname_len, char *alias, int a
 	if (!pphar) {
 		pphar = &mydata;
 	}
-#if PHP_MAJOR_VERSION < 6
+#if PHP_API_VERSION < 20100412
 	if (PG(safe_mode) && (!php_checkuid(fname, NULL, CHECKUID_ALLOW_ONLY_FILE))) {
 		return FAILURE;
 	}
@@ -1369,7 +1369,7 @@ int phar_create_or_parse_filename(char *fname, int fname_len, char *alias, int a
 	if (PHAR_G(readonly) && !is_data) {
 		if (options & REPORT_ERRORS) {
 			if (error) {
-				spprintf(error, 0, "creating archive \"%s\" disabled by INI setting", fname);
+				spprintf(error, 0, "creating archive \"%s\" disabled by the php.ini setting phar.readonly", fname);
 			}
 		}
 		return FAILURE;
@@ -1491,7 +1491,7 @@ int phar_open_from_filename(char *fname, int fname_len, char *alias, int alias_l
 	} else if (error && *error) {
 		return FAILURE;
 	}
-#if PHP_MAJOR_VERSION < 6
+#if PHP_API_VERSION < 20100412
 	if (PG(safe_mode) && (!php_checkuid(fname, NULL, CHECKUID_ALLOW_ONLY_FILE))) {
 		return FAILURE;
 	}
@@ -2359,7 +2359,7 @@ int phar_open_executed_filename(char *alias, int alias_len, char **error TSRMLS_
 
 	FREE_ZVAL(halt_constant);
 
-#if PHP_MAJOR_VERSION < 6
+#if PHP_API_VERSION < 20100412
 	if (PG(safe_mode) && (!php_checkuid(fname, NULL, CHECKUID_ALLOW_ONLY_FILE))) {
 		return FAILURE;
 	}
@@ -2563,8 +2563,8 @@ char *phar_create_default_stub(const char *index_php, const char *web_index, siz
  */
 int phar_flush(phar_archive_data *phar, char *user_stub, long len, int convert, char **error TSRMLS_DC) /* {{{ */
 {
-/*	static const char newstub[] = "<?php __HALT_COMPILER(); ?>\r\n"; */
-	char *newstub;
+	char halt_stub[] = "__HALT_COMPILER();";
+	char *newstub, *tmp;
 	phar_entry_info *entry, *newentry;
 	int halt_offset, restore_alias_len, global_flags = 0, closeoldfile;
 	char *pos, has_dirs = 0;
@@ -2665,8 +2665,9 @@ int phar_flush(phar_archive_data *phar, char *user_stub, long len, int convert, 
 		} else {
 			free_user_stub = 0;
 		}
-		if ((pos = strstr(user_stub, "__HALT_COMPILER();")) == NULL)
-		{
+		tmp = estrndup(user_stub, len);
+		if ((pos = php_stristr(tmp, halt_stub, len, sizeof(halt_stub) - 1)) == NULL) {
+			efree(tmp);
 			if (closeoldfile) {
 				php_stream_close(oldfile);
 			}
@@ -2679,6 +2680,8 @@ int phar_flush(phar_archive_data *phar, char *user_stub, long len, int convert, 
 			}
 			return EOF;
 		}
+		pos = user_stub + (pos - tmp);
+		efree(tmp);
 		len = pos - user_stub + 18;
 		if ((size_t)len != php_stream_write(newfile, user_stub, len)
 		||			  5 != php_stream_write(newfile, " ?>\r\n", 5)) {
@@ -3665,7 +3668,7 @@ PHP_MINFO_FUNCTION(phar) /* {{{ */
 	php_info_print_table_header(2, "Phar: PHP Archive support", "enabled");
 	php_info_print_table_row(2, "Phar EXT version", PHP_PHAR_VERSION);
 	php_info_print_table_row(2, "Phar API version", PHP_PHAR_API_VERSION);
-	php_info_print_table_row(2, "SVN revision", "$Revision: 290435 $");
+	php_info_print_table_row(2, "SVN revision", "$Revision: 298908 $");
 	php_info_print_table_row(2, "Phar-based phar archives", "enabled");
 	php_info_print_table_row(2, "Tar-based phar archives", "enabled");
 	php_info_print_table_row(2, "ZIP-based phar archives", "enabled");

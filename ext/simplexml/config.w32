@@ -1,4 +1,4 @@
-// $Id: config.w32 272005 2008-12-27 12:22:38Z rrichards $
+// $Id: config.w32 295508 2010-02-25 17:08:17Z kalle $
 // vim:ft=javascript
 
 ARG_WITH("simplexml", "Simple XML support", "yes");
@@ -17,7 +17,7 @@ if (PHP_SIMPLEXML == "yes") {
 		}
 		ADD_FLAG("CFLAGS_SIMPLEXML", "/D PHP_SIMPLEXML_EXPORTS ");
 	} else {
-		PHP_SIMPLEXML == "no";
+		PHP_SIMPLEXML = "no";
 		WARNING("simplexml not enabled; libraries and headers not found");
 	}
 }

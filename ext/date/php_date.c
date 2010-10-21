@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_date.c 294906 2010-02-11 22:37:50Z pajoye $ */
+/* $Id: php_date.c 300294 2010-06-08 21:23:48Z srinatar $ */
 
 #include "php.h"
 #include "php_streams.h"
@@ -36,7 +36,7 @@ static __inline __int64 php_date_llabs( __int64 i ) { return i >= 0? i: -i; }
 #elif defined(__GNUC__) && __GNUC__ < 3
 static __inline __int64_t php_date_llabs( __int64_t i ) { return i >= 0 ? i : -i; }
 #else
-static __inline long long php_date_llabs( long long i ) { return i >= 0 ? i : -i; }
+static inline long long php_date_llabs( long long i ) { return i >= 0 ? i : -i; }
 #endif
 
 /* {{{ arginfo */
@@ -1362,10 +1362,16 @@ PHPAPI void php_date_set_tzdb(timelib_tzdb *tzdb)
 PHPAPI signed long php_parse_date(char *string, signed long *now)
 {
 	timelib_time *parsed_time;
+	timelib_error_container *error = NULL;
 	int           error2;
 	signed long   retval;
 
-	parsed_time = timelib_strtotime(string, strlen(string), NULL, DATE_TIMEZONEDB);
+	parsed_time = timelib_strtotime(string, strlen(string), &error, DATE_TIMEZONEDB);
+	if (error->error_count) {
+		timelib_error_container_dtor(error);
+		return -1;
+	}
+	timelib_error_container_dtor(error);
 	timelib_update_ts(parsed_time, NULL);
 	retval = timelib_date_to_int(parsed_time, &error2);
 	timelib_time_dtor(parsed_time);
@@ -2081,7 +2087,7 @@ static HashTable *date_object_get_properties(zval *object TSRMLS_DC)
 
 	props = dateobj->std.properties;
 
-	if (!dateobj->time) {
+	if (!dateobj->time || GC_G(gc_active)) {
 		return props;
 	}
 
@@ -2224,7 +2230,7 @@ static HashTable *date_object_get_properties_interval(zval *object TSRMLS_DC)
 
 	props = intervalobj->std.properties;
 
-	if (!intervalobj->initialized) {
+	if (!intervalobj->initialized || GC_G(gc_active)) {
 		return props;
 	}
 
@@ -2240,7 +2246,13 @@ static HashTable *date_object_get_properties_interval(zval *object TSRMLS_DC)
 	PHP_DATE_INTERVAL_ADD_PROPERTY("i", i);
 	PHP_DATE_INTERVAL_ADD_PROPERTY("s", s);
 	PHP_DATE_INTERVAL_ADD_PROPERTY("invert", invert);
-	PHP_DATE_INTERVAL_ADD_PROPERTY("days", days);
+	if (intervalobj->diff->days != -99999) {
+		PHP_DATE_INTERVAL_ADD_PROPERTY("days", days);
+	} else {
+		MAKE_STD_ZVAL(zv);
+		ZVAL_FALSE(zv);
+		zend_hash_update(props, "days", 5, &zv, sizeof(zval), NULL);
+	}
 
 	return props;
 }
@@ -2851,6 +2863,11 @@ PHP_FUNCTION(date_sub)
 	intobj = (php_interval_obj *) zend_object_store_get_object(interval TSRMLS_CC);
 	DATE_CHECK_INITIALIZED(intobj->initialized, DateInterval);
 
+	if (intobj->diff->have_special_relative) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Only non-special relative time specifications are supported for subtraction");
+		return;
+	}
+
 	if (intobj->diff->invert) {
 		bias = -1;
 	}
@@ -2868,6 +2885,8 @@ PHP_FUNCTION(date_sub)
 
 	timelib_update_ts(dateobj->time, NULL);
 	timelib_update_from_sse(dateobj->time);
+
+	dateobj->time->have_relative = 0;
 
 	RETURN_ZVAL(object, 1, 0);
 }
@@ -3593,7 +3612,13 @@ static char *date_interval_format(char *format, int format_len, timelib_rel_time
 				case 'S': length = slprintf(buffer, 32, "%02d", (int) t->s); break;
 				case 's': length = slprintf(buffer, 32, "%d", (int) t->s); break;
 
-				case 'a': length = slprintf(buffer, 32, "%d", (int) t->days); break;
+				case 'a': {
+					if ((int) t->days != -99999) {
+						length = slprintf(buffer, 32, "%d", (int) t->days);
+					} else {
+						length = slprintf(buffer, 32, "(unknown)");
+					}
+				} break;
 				case 'r': length = slprintf(buffer, 32, "%s", t->invert ? "-" : ""); break;
 				case 'R': length = slprintf(buffer, 32, "%c", t->invert ? '-' : '+'); break;
 

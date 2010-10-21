@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_API.c 293980 2010-01-25 14:02:09Z johannes $ */
+/* $Id: zend_API.c 299395 2010-05-14 23:48:03Z felipe $ */
 
 #include "zend.h"
 #include "zend_execute.h"
@@ -251,22 +251,18 @@ ZEND_API int zend_get_object_classname(const zval *object, char **class_name, ze
 }
 /* }}} */
 
-static int parse_arg_object_to_string(zval **arg, char **p, int *pl, int type TSRMLS_DC) /* {{{ */
+static int parse_arg_object_to_string(zval **arg TSRMLS_DC) /* {{{ */
 {
 	if (Z_OBJ_HANDLER_PP(arg, cast_object)) {
 		SEPARATE_ZVAL_IF_NOT_REF(arg);
-		if (Z_OBJ_HANDLER_PP(arg, cast_object)(*arg, *arg, type TSRMLS_CC) == SUCCESS) {
-			*pl = Z_STRLEN_PP(arg);
-			*p = Z_STRVAL_PP(arg);
+		if (Z_OBJ_HANDLER_PP(arg, cast_object)(*arg, *arg, IS_STRING TSRMLS_CC) == SUCCESS) {
 			return SUCCESS;
 		}
 	}
 	/* Standard PHP objects */
 	if (Z_OBJ_HT_PP(arg) == &std_object_handlers || !Z_OBJ_HANDLER_PP(arg, cast_object)) {
 		SEPARATE_ZVAL_IF_NOT_REF(arg);
-		if (zend_std_cast_object_tostring(*arg, *arg, type TSRMLS_CC) == SUCCESS) {
-			*pl = Z_STRLEN_PP(arg);
-			*p = Z_STRVAL_PP(arg);
+		if (zend_std_cast_object_tostring(*arg, *arg, IS_STRING TSRMLS_CC) == SUCCESS) {
 			return SUCCESS;
 		}
 	}
@@ -281,8 +277,6 @@ static int parse_arg_object_to_string(zval **arg, char **p, int *pl, int type TS
 			if (!use_copy) {
 				ZVAL_ZVAL(*arg, z, 1, 1);
 			}
-			*pl = Z_STRLEN_PP(arg);
-			*p = Z_STRVAL_PP(arg);
 			return SUCCESS;
 		}
 		zval_ptr_dtor(&z);
@@ -418,15 +412,17 @@ static char *zend_parse_arg_impl(int arg_num, zval **arg, va_list *va, char **sp
 					case IS_DOUBLE:
 					case IS_BOOL:
 						convert_to_string_ex(arg);
+						if (UNEXPECTED(Z_ISREF_PP(arg) != 0)) {
+							/* it's dangerous to return pointers to string
+							   buffer of referenced variable, because it can
+							   be clobbered throug magic callbacks */
+							SEPARATE_ZVAL(arg);
+						}
 						*p = Z_STRVAL_PP(arg);
 						*pl = Z_STRLEN_PP(arg);
 						break;
 
 					case IS_OBJECT:
-						if (parse_arg_object_to_string(arg, p, pl, IS_STRING TSRMLS_CC) == SUCCESS) {
-							break;
-						}
-
 					case IS_ARRAY:
 					case IS_RESOURCE:
 					default:
@@ -680,7 +676,7 @@ static int zend_parse_va_args(int num_args, char *type_spec, va_list *va, int fl
 	int max_num_args = 0;
 	int post_varargs = 0;
 	zval **arg;
-	int arg_count;
+	int arg_count = (int)(zend_uintptr_t) *(zend_vm_stack_top(TSRMLS_C) - 1);
 	int quiet = flags & ZEND_PARSE_PARAMS_QUIET;
 	zend_bool have_varargs = 0;
 	zval ****varargs = NULL;
@@ -689,14 +685,21 @@ static int zend_parse_va_args(int num_args, char *type_spec, va_list *va, int fl
 	for (spec_walk = type_spec; *spec_walk; spec_walk++) {
 		c = *spec_walk;
 		switch (c) {
+			case 's':
+				if (max_num_args < arg_count) {
+					arg = (zval **) (zend_vm_stack_top(TSRMLS_C) - 1 - (arg_count - max_num_args));
+					if (Z_TYPE_PP(arg) == IS_OBJECT) {
+						parse_arg_object_to_string(arg TSRMLS_CC);
+					}
+				}
+				/* break missing intentionally */
 			case 'l': case 'd':
-			case 's': case 'b':
+			case 'H': case 'b':
 			case 'r': case 'a':
 			case 'o': case 'O':
 			case 'z': case 'Z':
 			case 'C': case 'h':
 			case 'f': case 'A':
-			case 'H':
 				max_num_args++;
 				break;
 
@@ -718,7 +721,7 @@ static int zend_parse_va_args(int num_args, char *type_spec, va_list *va, int fl
 						zend_error(E_WARNING, "%s%s%s(): only one varargs specifier (* or +) is permitted",
 								class_name,
 								class_name[0] ? "::" : "",
-								get_active_function_name(TSRMLS_C));
+								active_function->common.function_name);
 					}
 					return FAILURE;
 				}
@@ -738,7 +741,7 @@ static int zend_parse_va_args(int num_args, char *type_spec, va_list *va, int fl
 					zend_error(E_WARNING, "%s%s%s(): bad type specifier while parsing parameters",
 							class_name,
 							class_name[0] ? "::" : "",
-							get_active_function_name(TSRMLS_C));
+							active_function->common.function_name);
 				}
 				return FAILURE;
 		}
@@ -761,7 +764,7 @@ static int zend_parse_va_args(int num_args, char *type_spec, va_list *va, int fl
 			zend_error(E_WARNING, "%s%s%s() expects %s %d parameter%s, %d given",
 					class_name,
 					class_name[0] ? "::" : "",
-					get_active_function_name(TSRMLS_C),
+					active_function->common.function_name,
 					min_num_args == max_num_args ? "exactly" : num_args < min_num_args ? "at least" : "at most",
 					num_args < min_num_args ? min_num_args : max_num_args,
 					(num_args < min_num_args ? min_num_args : max_num_args) == 1 ? "" : "s",
@@ -769,8 +772,6 @@ static int zend_parse_va_args(int num_args, char *type_spec, va_list *va, int fl
 		}
 		return FAILURE;
 	}
-
-	arg_count = (int)(zend_uintptr_t) *(zend_vm_stack_top(TSRMLS_C) - 1);
 
 	if (num_args > arg_count) {
 		zend_error(E_WARNING, "%s(): could not obtain parameters for parsing",
@@ -1607,7 +1608,6 @@ ZEND_API int zend_startup_module_ex(zend_module_entry *module TSRMLS_DC) /* {{{ 
 		}
 #endif
 	}
-
 	if (module->module_startup_func) {
 		EG(current_module) = module;
 		if (module->module_startup_func(module->type, module->module_number TSRMLS_CC)==FAILURE) {

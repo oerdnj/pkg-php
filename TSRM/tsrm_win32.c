@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_win32.c 294728 2010-02-07 21:09:19Z pajoye $ */
+/* $Id: tsrm_win32.c 294532 2010-02-04 15:34:19Z pajoye $ */
 
 #include <stdio.h>
 #include <fcntl.h>
@@ -146,7 +146,7 @@ PSID tsrm_win32_get_token_sid(HANDLE hToken)
 	PSID *ppsid = &sid;
 	DWORD sid_len;
 	PSID pResultSid = NULL;
-	
+
 	/* Get the actual size of the TokenUser structure */
 	if (!GetTokenInformation(
 			hToken, TokenUser, (LPVOID) pTokenUser, 0, &dwLength))  {

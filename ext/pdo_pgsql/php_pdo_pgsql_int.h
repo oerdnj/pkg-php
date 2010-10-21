@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_pgsql_int.h 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: php_pdo_pgsql_int.h 300351 2010-06-10 12:11:19Z iliaa $ */
 
 #ifndef PHP_PDO_PGSQL_INT_H
 #define PHP_PDO_PGSQL_INT_H
@@ -102,6 +102,13 @@ struct pdo_pgsql_lob_self {
 	Oid oid;
 };
 
+enum pdo_pgsql_specific_constants {
+	PGSQL_TRANSACTION_IDLE = PQTRANS_IDLE,
+	PGSQL_TRANSACTION_ACTIVE = PQTRANS_ACTIVE,
+	PGSQL_TRANSACTION_INTRANS = PQTRANS_INTRANS,
+	PGSQL_TRANSACTION_INERROR = PQTRANS_INERROR,
+	PGSQL_TRANSACTION_UNKNOWN = PQTRANS_UNKNOWN
+};
 
 php_stream *pdo_pgsql_create_lob_stream(pdo_dbh_t *stmt, int lfd, Oid oid TSRMLS_DC);
 extern php_stream_ops pdo_pgsql_lob_stream_ops;
