@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_functions.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: php_functions.c 296107 2010-03-12 10:28:59Z jani $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 

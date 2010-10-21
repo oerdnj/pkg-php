@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_dllist.h 294892 2010-02-11 17:24:43Z johannes $ */
+/* $Id: spl_dllist.h 293730 2010-01-19 13:24:02Z johannes $ */
 
 #ifndef SPL_DLLIST_H
 #define SPL_DLLIST_H

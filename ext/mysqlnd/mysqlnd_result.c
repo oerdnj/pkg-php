@@ -1,8 +1,8 @@
 /*
   +----------------------------------------------------------------------+
-  | PHP Version 6                                                        |
+  | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 2006-2009 The PHP Group                                |
+  | Copyright (c) 2006-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_result.c 294543 2010-02-04 20:28:55Z johannes $ */
+/* $Id: mysqlnd_result.c 301234 2010-07-13 13:02:00Z andrey $ */
 #include "php.h"
 #include "mysqlnd.h"
 #include "mysqlnd_wireprotocol.h"
@@ -35,31 +35,36 @@
 
 
 /* {{{ mysqlnd_res::initialize_result_set_rest */
-static void
+static enum_func_status
 MYSQLND_METHOD(mysqlnd_res, initialize_result_set_rest)(MYSQLND_RES * const result TSRMLS_DC)
 {
 	unsigned int i;
-	zval **data_cursor = result->stored_data->data;
-	zval **data_begin = result->stored_data->data;
-	unsigned int field_count = result->meta->field_count;
-	unsigned int row_count = result->stored_data->row_count;
+	zval **data_cursor = result->stored_data? result->stored_data->data:NULL;
+	zval **data_begin = result->stored_data? result->stored_data->data:NULL;
+	unsigned int field_count = result->meta? result->meta->field_count : 0;
+	unsigned int row_count = result->stored_data? result->stored_data->row_count:0;
+	enum_func_status ret = PASS;
 	DBG_ENTER("mysqlnd_res::initialize_result_set_rest");
 
 	if (!data_cursor || row_count == result->stored_data->initialized_rows) {
-		DBG_VOID_RETURN;
+		DBG_RETURN(ret);
 	}
 	while ((data_cursor - data_begin) < (row_count * field_count)) {
 		if (NULL == data_cursor[0]) {
+			enum_func_status rc = result->m.row_decoder(
+									result->stored_data->row_buffers[(data_cursor - data_begin) / field_count],
+									data_cursor,
+									result->meta->field_count,
+									result->meta->fields,
+									result->stored_data->persistent,
+									result->conn->options.numeric_and_datetime_as_unicode,
+									result->conn->options.int_and_float_native,
+									result->conn->stats TSRMLS_CC);
+			if (rc != PASS) {
+				ret = FAIL;
+				break;
+			}
 			result->stored_data->initialized_rows++;
-			result->m.row_decoder(
-						result->stored_data->row_buffers[(data_cursor - data_begin) / field_count],
-						data_cursor,
-						result->meta->field_count,
-						result->meta->fields,
-						result->stored_data->persistent,
-						result->conn->options.numeric_and_datetime_as_unicode,
-						result->conn->options.int_and_float_native,
-						result->conn->stats TSRMLS_CC);
 			for (i = 0; i < result->field_count; i++) {
 				/*
 				  NULL fields are 0 length, 0 is not more than 0
@@ -76,7 +81,7 @@ MYSQLND_METHOD(mysqlnd_res, initialize_result_set_rest)(MYSQLND_RES * const resu
 		}
 		data_cursor += field_count;
 	}
-	DBG_VOID_RETURN;
+	DBG_RETURN(ret);
 }
 /* }}} */
 
@@ -87,42 +92,39 @@ void mysqlnd_palloc_zval_ptr_dtor(zval **zv, enum_mysqlnd_res_type type, zend_bo
 {
 	DBG_ENTER("mysqlnd_palloc_zval_ptr_dtor");
 	*copy_ctor_called = FALSE;
-	{
+
+	/*
+	  This zval is not from the cache block.
+	  Thus the refcount is -1 than of a zval from the cache,
+	  because the zvals from the cache are owned by it.
+	*/
+	if (type == MYSQLND_RES_PS_BUF || type == MYSQLND_RES_PS_UNBUF) {
+		; /* do nothing, zval_ptr_dtor will do the job*/
+	} else if (Z_REFCOUNT_PP(zv) > 1) {
 		/*
-		  This zval is not from the cache block.
-		  Thus the refcount is -1 than of a zval from the cache,
-		  because the zvals from the cache are owned by it.
+		  Not a prepared statement, then we have to
+		  call copy_ctor and then zval_ptr_dtor()
+
+		  In Unicode mode the destruction  of the zvals should not call
+		  zval_copy_ctor() because then we will leak.
+		  I suppose we can use UG(unicode) in mysqlnd.c when freeing a result set
+		  to check if we need to call copy_ctor().
+
+		  If the type is IS_UNICODE, which can happen with PHP6, then we don't
+		  need to copy_ctor, as the data doesn't point to our internal buffers.
+		  If it's string (in PHP5 always) and in PHP6 if data is binary, then
+		  it still points to internal buffers and has to be copied.
 		*/
-		if (type == MYSQLND_RES_PS_BUF || type == MYSQLND_RES_PS_UNBUF) {
-			; /* do nothing, zval_ptr_dtor will do the job*/
-		} else if (Z_REFCOUNT_PP(zv) > 1) {
-			/*
-			  Not a prepared statement, then we have to
-			  call copy_ctor and then zval_ptr_dtor()
-
-			  In Unicode mode the destruction  of the zvals should not call
-			  zval_copy_ctor() because then we will leak.
-			  I suppose we can use UG(unicode) in mysqlnd.c when freeing a result set
-			  to check if we need to call copy_ctor().
-
-			  If the type is IS_UNICODE, which can happen with PHP6, then we don't
-			  need to copy_ctor, as the data doesn't point to our internal buffers.
-			  If it's string (in PHP5 always) and in PHP6 if data is binary, then
-			  it still points to internal buffers and has to be copied.
-			*/
-			if (Z_TYPE_PP(zv) == IS_STRING) {
-				zval_copy_ctor(*zv);
-			}
-			*copy_ctor_called = TRUE;
-		} else {
-			if (Z_TYPE_PP(zv) == IS_STRING) {
-				ZVAL_NULL(*zv);
-			}
+		if (Z_TYPE_PP(zv) == IS_STRING) {
+			zval_copy_ctor(*zv);
 		}
-		zval_ptr_dtor(zv);
-		DBG_VOID_RETURN;
+		*copy_ctor_called = TRUE;
+	} else {
+		if (Z_TYPE_PP(zv) == IS_STRING) {
+			ZVAL_NULL(*zv);
+		}
 	}
-
+	zval_ptr_dtor(zv);
 	DBG_VOID_RETURN;
 }
 /* }}} */
@@ -169,7 +171,7 @@ MYSQLND_METHOD(mysqlnd_res, unbuffered_free_last_data)(MYSQLND_RES * result TSRM
 	if (unbuf->last_row_buffer) {
 		DBG_INF("Freeing last row buffer");
 		/* Nothing points to this buffer now, free it */
-		unbuf->last_row_buffer->free_chunk(unbuf->last_row_buffer, TRUE TSRMLS_CC);
+		unbuf->last_row_buffer->free_chunk(unbuf->last_row_buffer TSRMLS_CC);
 		unbuf->last_row_buffer = NULL;
 	}
 
@@ -180,7 +182,7 @@ MYSQLND_METHOD(mysqlnd_res, unbuffered_free_last_data)(MYSQLND_RES * result TSRM
 
 /* {{{ mysqlnd_res::free_buffered_data */
 static void
-MYSQLND_METHOD(mysqlnd_res, free_buffered_data)(MYSQLND_RES *result TSRMLS_DC)
+MYSQLND_METHOD(mysqlnd_res, free_buffered_data)(MYSQLND_RES * result TSRMLS_DC)
 {
 	MYSQLND_RES_BUFFERED *set = result->stored_data;
 	unsigned int field_count = result->field_count;
@@ -189,34 +191,37 @@ MYSQLND_METHOD(mysqlnd_res, free_buffered_data)(MYSQLND_RES *result TSRMLS_DC)
 	DBG_ENTER("mysqlnd_res::free_buffered_data");
 	DBG_INF_FMT("Freeing "MYSQLND_LLU_SPEC" row(s)", set->row_count);
 
-	DBG_INF_FMT("before: real_usage=%lu  usage=%lu", zend_memory_usage(TRUE TSRMLS_CC), zend_memory_usage(FALSE TSRMLS_CC));
-	for (row = set->row_count - 1; row >= 0; row--) {
-		zval **current_row = set->data + row * field_count;
-		MYSQLND_MEMORY_POOL_CHUNK *current_buffer = set->row_buffers[row];
-		int col;
-
-		for (col = field_count - 1; col >= 0; --col) {
-			zend_bool copy_ctor_called;
-			if (current_row[0] == NULL) {
-				break;/* row that was never initialized */
-			}
-			mysqlnd_palloc_zval_ptr_dtor(&(current_row[col]), result->type, &copy_ctor_called TSRMLS_CC);
-#if MYSQLND_DEBUG_MEMORY
-			DBG_INF_FMT("Copy_ctor_called=%d", copy_ctor_called);
-#endif
-			MYSQLND_INC_GLOBAL_STATISTIC(copy_ctor_called? STAT_COPY_ON_WRITE_PERFORMED:
-														   STAT_COPY_ON_WRITE_SAVED);
-		}
-#if MYSQLND_DEBUG_MEMORY
-		DBG_INF("Freeing current_row & current_buffer");
-#endif
-		current_buffer->free_chunk(current_buffer, TRUE TSRMLS_CC);
-	}
 	DBG_INF("Freeing data & row_buffer");
 	if (set->data) {
+
+		DBG_INF_FMT("before: real_usage=%lu  usage=%lu", zend_memory_usage(TRUE TSRMLS_CC), zend_memory_usage(FALSE TSRMLS_CC));
+		for (row = set->row_count - 1; row >= 0; row--) {
+			zval **current_row = set->data + row * field_count;
+			MYSQLND_MEMORY_POOL_CHUNK *current_buffer = set->row_buffers[row];
+			int col;
+
+			for (col = field_count - 1; col >= 0; --col) {
+				zend_bool copy_ctor_called;
+				if (current_row == NULL || current_row[0] == NULL) {
+					break;/* row that was never initialized */
+				}
+			mysqlnd_palloc_zval_ptr_dtor(&(current_row[col]), result->type, &copy_ctor_called TSRMLS_CC);
+#if MYSQLND_DEBUG_MEMORY
+				DBG_INF_FMT("Copy_ctor_called=%u", copy_ctor_called);
+#endif
+				MYSQLND_INC_GLOBAL_STATISTIC(copy_ctor_called? STAT_COPY_ON_WRITE_PERFORMED:
+														   STAT_COPY_ON_WRITE_SAVED);
+			}
+#if MYSQLND_DEBUG_MEMORY
+			DBG_INF("Freeing current_row & current_buffer");
+#endif
+			current_buffer->free_chunk(current_buffer TSRMLS_CC);
+		}
+
 		mnd_pefree(set->data, set->persistent);
 		set->data = NULL;
 	}
+
 	if (set->row_buffers) {
 		mnd_pefree(set->row_buffers, set->persistent);
 		set->row_buffers	= NULL;
@@ -235,7 +240,7 @@ MYSQLND_METHOD(mysqlnd_res, free_buffered_data)(MYSQLND_RES *result TSRMLS_DC)
 
 /* {{{ mysqlnd_res::free_result_buffers */
 static void
-MYSQLND_METHOD(mysqlnd_res, free_result_buffers)(MYSQLND_RES *result TSRMLS_DC)
+MYSQLND_METHOD(mysqlnd_res, free_result_buffers)(MYSQLND_RES * result TSRMLS_DC)
 {
 	DBG_ENTER("mysqlnd_res::free_result_buffers");
 	DBG_INF_FMT("%s", result->unbuf? "unbuffered":(result->stored_data? "buffered":"unknown"));
@@ -263,7 +268,7 @@ MYSQLND_METHOD(mysqlnd_res, free_result_buffers)(MYSQLND_RES *result TSRMLS_DC)
 	if (result->result_set_memory_pool) {
 		DBG_INF("Freeing memory pool");
 		mysqlnd_mempool_destroy(result->result_set_memory_pool TSRMLS_CC);
-		result->result_set_memory_pool = NULL;	
+		result->result_set_memory_pool = NULL;
 	}
 
 	DBG_VOID_RETURN;
@@ -273,14 +278,14 @@ MYSQLND_METHOD(mysqlnd_res, free_result_buffers)(MYSQLND_RES *result TSRMLS_DC)
 
 /* {{{ mysqlnd_internal_free_result_contents */
 static
-void mysqlnd_internal_free_result_contents(MYSQLND_RES *result TSRMLS_DC)
+void mysqlnd_internal_free_result_contents(MYSQLND_RES * result TSRMLS_DC)
 {
 	DBG_ENTER("mysqlnd_internal_free_result_contents");
 
 	result->m.free_result_buffers(result TSRMLS_CC);
 
 	if (result->meta) {
-		result->meta->m->free_metadata(result->meta, FALSE TSRMLS_CC);
+		result->meta->m->free_metadata(result->meta TSRMLS_CC);
 		result->meta = NULL;
 	}
 
@@ -291,7 +296,7 @@ void mysqlnd_internal_free_result_contents(MYSQLND_RES *result TSRMLS_DC)
 
 /* {{{ mysqlnd_internal_free_result */
 static
-void mysqlnd_internal_free_result(MYSQLND_RES *result TSRMLS_DC)
+void mysqlnd_internal_free_result(MYSQLND_RES * result TSRMLS_DC)
 {
 	DBG_ENTER("mysqlnd_internal_free_result");
 	result->m.free_result_contents(result TSRMLS_CC);
@@ -301,7 +306,7 @@ void mysqlnd_internal_free_result(MYSQLND_RES *result TSRMLS_DC)
 		result->conn = NULL;
 	}
 
-	mnd_efree(result);
+	mnd_pefree(result, result->persistent);
 
 	DBG_VOID_RETURN;
 }
@@ -310,7 +315,7 @@ void mysqlnd_internal_free_result(MYSQLND_RES *result TSRMLS_DC)
 
 /* {{{ mysqlnd_res::read_result_metadata */
 static enum_func_status
-MYSQLND_METHOD(mysqlnd_res, read_result_metadata)(MYSQLND_RES *result, MYSQLND *conn TSRMLS_DC)
+MYSQLND_METHOD(mysqlnd_res, read_result_metadata)(MYSQLND_RES * result, MYSQLND *conn TSRMLS_DC)
 {
 	DBG_ENTER("mysqlnd_res::read_result_metadata");
 
@@ -321,11 +326,15 @@ MYSQLND_METHOD(mysqlnd_res, read_result_metadata)(MYSQLND_RES *result, MYSQLND *
 	  infrastructure!
 	*/
 	if (result->meta) {
-		result->meta->m->free_metadata(result->meta, FALSE TSRMLS_CC);
+		result->meta->m->free_metadata(result->meta TSRMLS_CC);
 		result->meta = NULL;
 	}
 
-	result->meta = mysqlnd_result_meta_init(result->field_count TSRMLS_CC);
+	result->meta = result->m.result_meta_init(result->field_count, result->persistent TSRMLS_CC);
+	if (!result->meta) {
+		SET_OOM_ERROR(conn->error_info);
+		DBG_RETURN(FAIL);
+	}
 
 	/* 1. Read all fields metadata */
 
@@ -339,9 +348,9 @@ MYSQLND_METHOD(mysqlnd_res, read_result_metadata)(MYSQLND_RES *result, MYSQLND *
 
 	/*
 	  2. Follows an EOF packet, which the client of mysqlnd_read_result_metadata()
-		 should consume.
+	     should consume.
 	  3. If there is a result set, it follows. The last packet will have 'eof' set
-	  	 If PS, then no result set follows.
+	     If PS, then no result set follows.
 	*/
 
 	DBG_RETURN(PASS);
@@ -351,18 +360,27 @@ MYSQLND_METHOD(mysqlnd_res, read_result_metadata)(MYSQLND_RES *result, MYSQLND *
 
 /* {{{ mysqlnd_query_read_result_set_header */
 enum_func_status
-mysqlnd_query_read_result_set_header(MYSQLND *conn, MYSQLND_STMT *stmt TSRMLS_DC)
+mysqlnd_query_read_result_set_header(MYSQLND *conn, MYSQLND_STMT * s TSRMLS_DC)
 {
+	MYSQLND_STMT_DATA * stmt = s ? s->data:NULL;
 	enum_func_status ret;
-	MYSQLND_PACKET_RSET_HEADER * rset_header;
+	MYSQLND_PACKET_RSET_HEADER * rset_header = NULL;
+	MYSQLND_PACKET_EOF * fields_eof = NULL;
 
 	DBG_ENTER("mysqlnd_query_read_result_set_header");
-	DBG_INF_FMT("stmt=%d", stmt? stmt->stmt_id:0);
+	DBG_INF_FMT("stmt=%lu", stmt? stmt->stmt_id:0);
 
 	ret = FAIL;
-	rset_header = conn->protocol->m.get_rset_header_packet(conn->protocol, FALSE TSRMLS_CC);
 	do {
+		rset_header = conn->protocol->m.get_rset_header_packet(conn->protocol, FALSE TSRMLS_CC);
+		if (!rset_header) {
+			SET_OOM_ERROR(conn->error_info);
+			ret = FAIL;
+			break;		
+		}
+
 		SET_ERROR_AFF_ROWS(conn);
+
 		if (FAIL == (ret = PACKET_READ(rset_header, conn))) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Error reading result set's header");
 			break;
@@ -385,6 +403,7 @@ mysqlnd_query_read_result_set_header(MYSQLND *conn, MYSQLND_STMT *stmt TSRMLS_DC
 			*/
 			conn->error_info = rset_header->error_info;
 			ret = FAIL;
+			DBG_ERR_FMT("error=%s", rset_header->error_info.error);
 			/* Return back from CONN_QUERY_SENT */
 			CONN_SET_STATE(conn, CONN_READY);
 			break;
@@ -422,9 +441,8 @@ mysqlnd_query_read_result_set_header(MYSQLND *conn, MYSQLND_STMT *stmt TSRMLS_DC
 				ret = PASS;
 				MYSQLND_INC_CONN_STATISTIC(conn->stats, STAT_NON_RSET_QUERY);
 				break;
-			default:{			/* Result set	*/
-				MYSQLND_PACKET_EOF * fields_eof;
-				MYSQLND_RES *result;
+			default: do {			/* Result set */
+				MYSQLND_RES * result;
 				enum_mysqlnd_collected_stats stat = STAT_LAST;
 
 				DBG_INF("Result set pending");
@@ -440,7 +458,7 @@ mysqlnd_query_read_result_set_header(MYSQLND *conn, MYSQLND_STMT *stmt TSRMLS_DC
 				/* PS has already allocated it */
 				conn->field_count = rset_header->field_count;
 				if (!stmt) {
-					result = conn->current_result = mysqlnd_result_init(rset_header->field_count TSRMLS_CC);
+					result = conn->current_result = conn->m->result_init(rset_header->field_count, conn->persistent TSRMLS_CC);
 				} else {
 					if (!stmt->result) {
 						DBG_INF("This is 'SHOW'/'EXPLAIN'-like query.");
@@ -449,7 +467,7 @@ mysqlnd_query_read_result_set_header(MYSQLND *conn, MYSQLND_STMT *stmt TSRMLS_DC
 						  prepared statements can't send result set metadata for these queries
 						  on prepare stage. Read it now.
 						*/
-						result = stmt->result = mysqlnd_result_init(rset_header->field_count TSRMLS_CC);
+						result = stmt->result = conn->m->result_init(rset_header->field_count, stmt->persistent TSRMLS_CC);
 					} else {
 						/*
 						  Update result set metadata if it for some reason changed between
@@ -462,14 +480,19 @@ mysqlnd_query_read_result_set_header(MYSQLND *conn, MYSQLND_STMT *stmt TSRMLS_DC
 						  Note, that now (4.1.3) we always send metadata in reply to
 						  COM_STMT_EXECUTE (even if it is not necessary), so either this or
 						  previous branch always works.
-						*/	
+						*/
 					}
 					result = stmt->result;
 				}
-
+				if (!result) {
+					SET_OOM_ERROR(conn->error_info);
+					ret = FAIL;
+					break;
+				}
+				
 				if (FAIL == (ret = result->m.read_result_metadata(result, conn TSRMLS_CC))) {
 					/* For PS, we leave them in Prepared state */
-					if (!stmt) {
+					if (!stmt && conn->current_result) {
 						mnd_efree(conn->current_result);
 						conn->current_result = NULL;
 					}
@@ -479,6 +502,11 @@ mysqlnd_query_read_result_set_header(MYSQLND *conn, MYSQLND_STMT *stmt TSRMLS_DC
 
 				/* Check for SERVER_STATUS_MORE_RESULTS if needed */
 				fields_eof = conn->protocol->m.get_eof_packet(conn->protocol, FALSE TSRMLS_CC);
+				if (!fields_eof) {
+					SET_OOM_ERROR(conn->error_info);
+					ret = FAIL;
+					break;				
+				}
 				if (FAIL == (ret = PACKET_READ(fields_eof, conn))) {
 					DBG_ERR("Error ocurred while reading the EOF packet");
 					result->m.free_result_contents(result TSRMLS_CC);
@@ -519,11 +547,9 @@ mysqlnd_query_read_result_set_header(MYSQLND *conn, MYSQLND_STMT *stmt TSRMLS_DC
 					}
 					MYSQLND_INC_CONN_STATISTIC(conn->stats, stat);
 				}
-
-				PACKET_FREE(fields_eof);
-
-				break;
-			}
+			} while (0);
+			PACKET_FREE(fields_eof);
+			break; /* switch break */
 		}
 	} while (0);
 	PACKET_FREE(rset_header);
@@ -541,8 +567,8 @@ mysqlnd_query_read_result_set_header(MYSQLND *conn, MYSQLND_STMT *stmt TSRMLS_DC
   of PHP, to be called as separate function. But let's have it for
   completeness.
 */
-static 
-unsigned long * mysqlnd_fetch_lengths_buffered(MYSQLND_RES * const result TSRMLS_DC)
+static unsigned long *
+mysqlnd_fetch_lengths_buffered(MYSQLND_RES * const result TSRMLS_DC)
 {
 	unsigned int i;
 	zval **previous_row;
@@ -572,12 +598,13 @@ unsigned long * mysqlnd_fetch_lengths_buffered(MYSQLND_RES * const result TSRMLS
 
 
 /* {{{ mysqlnd_fetch_lengths_unbuffered */
-static
-unsigned long * mysqlnd_fetch_lengths_unbuffered(MYSQLND_RES * const result TSRMLS_DC)
+static unsigned long *
+mysqlnd_fetch_lengths_unbuffered(MYSQLND_RES * const result TSRMLS_DC)
 {
 	return result->lengths;
 }
 /* }}} */
+
 
 #if !defined(MYSQLND_USE_OPTIMISATIONS) || MYSQLND_USE_OPTIMISATIONS == 0
 /* {{{ mysqlnd_res::fetch_lengths */
@@ -588,16 +615,17 @@ PHPAPI unsigned long * _mysqlnd_fetch_lengths(MYSQLND_RES * const result TSRMLS_
 /* }}} */
 #endif
 
+
 /* {{{ mysqlnd_fetch_row_unbuffered_c */
 static MYSQLND_ROW_C
-mysqlnd_fetch_row_unbuffered_c(MYSQLND_RES *result TSRMLS_DC)
+mysqlnd_fetch_row_unbuffered_c(MYSQLND_RES * result TSRMLS_DC)
 {
-	enum_func_status		ret;
-	MYSQLND_ROW_C 			retrow = NULL;
-	unsigned int			i,
-							field_count = result->field_count;
+	enum_func_status	ret;
+	MYSQLND_ROW_C		retrow = NULL;
+	unsigned int		i,
+						field_count = result->field_count;
 	MYSQLND_PACKET_ROW	*row_packet = result->row_packet;
-	unsigned long			*lengths = result->lengths;
+	unsigned long		*lengths = result->lengths;
 
 	DBG_ENTER("mysqlnd_fetch_row_unbuffered_c");
 
@@ -608,6 +636,10 @@ mysqlnd_fetch_row_unbuffered_c(MYSQLND_RES *result TSRMLS_DC)
 	if (CONN_GET_STATE(result->conn) != CONN_FETCHING_DATA) {
 		SET_CLIENT_ERROR(result->conn->error_info, CR_COMMANDS_OUT_OF_SYNC,
 						 UNKNOWN_SQLSTATE, mysqlnd_out_of_sync); 
+		DBG_RETURN(retrow);
+	}
+	if (!row_packet) {
+		/* Not fully initialized object that is being cleaned up */
 		DBG_RETURN(retrow);
 	}
 	/* Let the row packet fill our buffer and skip additional mnd_malloc + memcpy */
@@ -633,43 +665,49 @@ mysqlnd_fetch_row_unbuffered_c(MYSQLND_RES *result TSRMLS_DC)
 			MYSQLND_FIELD *field = result->meta->fields;
 			struct mysqlnd_field_hash_key *zend_hash_key = result->meta->zend_hash_keys;
 
-			result->m.row_decoder(result->unbuf->last_row_buffer,
-								  result->unbuf->last_row_data,
-								  row_packet->field_count,
-								  row_packet->fields_metadata,
-								  FALSE,
-								  result->conn->options.numeric_and_datetime_as_unicode,
-								  result->conn->options.int_and_float_native,
-								  result->conn->stats TSRMLS_CC);
+			enum_func_status rc = result->m.row_decoder(result->unbuf->last_row_buffer,
+										  result->unbuf->last_row_data,
+										  row_packet->field_count,
+										  row_packet->fields_metadata,
+										  FALSE,
+										  result->conn->options.numeric_and_datetime_as_unicode,
+										  result->conn->options.int_and_float_native,
+										  result->conn->stats TSRMLS_CC);
+			if (PASS != rc) {
+				DBG_RETURN(retrow);
+			}
 
 			retrow = mnd_malloc(result->field_count * sizeof(char *));
+			if (retrow) {
+				for (i = 0; i < field_count; i++, field++, zend_hash_key++) {
+					zval *data = result->unbuf->last_row_data[i];
+					unsigned int len;
 
-			for (i = 0; i < field_count; i++, field++, zend_hash_key++) {
-				zval *data = result->unbuf->last_row_data[i];
-				int len;
+					if (Z_TYPE_P(data) != IS_NULL) {
+						convert_to_string(data);
+						retrow[i] = Z_STRVAL_P(data);
+						len = Z_STRLEN_P(data);
+					} else {
+						retrow[i] = NULL;
+						len = 0;
+					}
 
-				if (Z_TYPE_P(data) != IS_NULL) {
-					convert_to_string(data);
-					retrow[i] = Z_STRVAL_P(data);
-					len = Z_STRLEN_P(data);
-				} else {
-					retrow[i] = NULL;
-					len = 0;
+					if (lengths) {
+						lengths[i] = len;
+					}
+
+					if (field->max_length < len) {
+						field->max_length = len;
+					}
 				}
-
-				if (lengths) {
-					lengths[i] = len;
-				}
-
-				if (field->max_length < len) {
-					field->max_length = len;
-				}
+			} else {
+				SET_OOM_ERROR(result->conn->error_info);
 			}
 		}
 	} else if (ret == FAIL) {
 		if (row_packet->error_info.error_no) {
 			result->conn->error_info = row_packet->error_info;
-			DBG_ERR_FMT("errorno=%d error=%s", row_packet->error_info.error_no, row_packet->error_info.error); 
+			DBG_ERR_FMT("errorno=%u error=%s", row_packet->error_info.error_no, row_packet->error_info.error);
 		}
 		CONN_SET_STATE(result->conn, CONN_READY);
 		result->unbuf->eof_reached = TRUE; /* so next time we won't get an error */
@@ -698,23 +736,26 @@ mysqlnd_fetch_row_unbuffered_c(MYSQLND_RES *result TSRMLS_DC)
 
 /* {{{ mysqlnd_fetch_row_unbuffered */
 static enum_func_status
-mysqlnd_fetch_row_unbuffered(MYSQLND_RES *result, void *param, unsigned int flags, zend_bool *fetched_anything TSRMLS_DC)
+mysqlnd_fetch_row_unbuffered(MYSQLND_RES * result, void *param, unsigned int flags, zend_bool *fetched_anything TSRMLS_DC)
 {
-	enum_func_status		ret;
-	zval 					*row = (zval *) param;
+	enum_func_status	ret;
+	zval				*row = (zval *) param;
 	MYSQLND_PACKET_ROW	*row_packet = result->row_packet;
 
 	DBG_ENTER("mysqlnd_fetch_row_unbuffered");
-	DBG_INF_FMT("flags=%d", flags);
+	DBG_INF_FMT("flags=%u", flags);
 
+	*fetched_anything = FALSE;
 	if (result->unbuf->eof_reached) {
 		/* No more rows obviously */
-		*fetched_anything = FALSE;
 		DBG_RETURN(PASS);
 	}
 	if (CONN_GET_STATE(result->conn) != CONN_FETCHING_DATA) {
-		SET_CLIENT_ERROR(result->conn->error_info, CR_COMMANDS_OUT_OF_SYNC,
-						 UNKNOWN_SQLSTATE, mysqlnd_out_of_sync); 
+		SET_CLIENT_ERROR(result->conn->error_info, CR_COMMANDS_OUT_OF_SYNC, UNKNOWN_SQLSTATE, mysqlnd_out_of_sync);
+		DBG_RETURN(FAIL);
+	}
+	if (!row_packet) {
+		/* Not fully initialized object that is being cleaned up */
 		DBG_RETURN(FAIL);
 	}
 	/* Let the row packet fill our buffer and skip additional mnd_malloc + memcpy */
@@ -725,16 +766,12 @@ mysqlnd_fetch_row_unbuffered(MYSQLND_RES *result, void *param, unsigned int flag
 	  result->m.unbuffered_free_last_data() before it. The function returns always true.
 	*/
 	if (PASS == (ret = PACKET_READ(row_packet, result->conn)) && !row_packet->eof) {
-		result->unbuf->row_count++;
-		*fetched_anything = TRUE;
-
 		result->m.unbuffered_free_last_data(result TSRMLS_CC);
 
 		result->unbuf->last_row_data = row_packet->fields;
 		result->unbuf->last_row_buffer = row_packet->row_buffer;
 		row_packet->fields = NULL;
 		row_packet->row_buffer = NULL;
-
 
 		MYSQLND_INC_CONN_STATISTIC(result->conn->stats, STAT_ROWS_FETCHED_FROM_CLIENT_NORMAL_UNBUF);
 
@@ -745,18 +782,20 @@ mysqlnd_fetch_row_unbuffered(MYSQLND_RES *result, void *param, unsigned int flag
 			unsigned int i, field_count = result->field_count;
 			unsigned long *lengths = result->lengths;
 
-			result->m.row_decoder(result->unbuf->last_row_buffer,
-								  result->unbuf->last_row_data,
-								  field_count,
-								  row_packet->fields_metadata,
-								  FALSE,
-								  result->conn->options.numeric_and_datetime_as_unicode,
-								  result->conn->options.int_and_float_native,
-								  result->conn->stats TSRMLS_CC);
-
+			enum_func_status rc = result->m.row_decoder(result->unbuf->last_row_buffer,
+											result->unbuf->last_row_data,
+											field_count,
+											row_packet->fields_metadata,
+											FALSE,
+											result->conn->options.numeric_and_datetime_as_unicode,
+											result->conn->options.int_and_float_native,
+											result->conn->stats TSRMLS_CC);
+			if (PASS != rc) {
+				DBG_RETURN(FAIL);
+			}
 			for (i = 0; i < field_count; i++, field++, zend_hash_key++) {
 				zval *data = result->unbuf->last_row_data[i];
-				int len = (Z_TYPE_P(data) == IS_NULL)? 0:Z_STRLEN_P(data);
+				unsigned int len = (Z_TYPE_P(data) == IS_NULL)? 0:Z_STRLEN_P(data);
 
 				if (lengths) {
 					lengths[i] = len;
@@ -800,12 +839,13 @@ mysqlnd_fetch_row_unbuffered(MYSQLND_RES *result, void *param, unsigned int flag
 				}
 			}
 		}
+		*fetched_anything = TRUE;
+		result->unbuf->row_count++;
 	} else if (ret == FAIL) {
 		if (row_packet->error_info.error_no) {
 			result->conn->error_info = row_packet->error_info;
-			DBG_ERR_FMT("errorno=%d error=%s", row_packet->error_info.error_no, row_packet->error_info.error); 
+			DBG_ERR_FMT("errorno=%u error=%s", row_packet->error_info.error_no, row_packet->error_info.error);
 		}
-		*fetched_anything = FALSE;
 		CONN_SET_STATE(result->conn, CONN_READY);
 		result->unbuf->eof_reached = TRUE; /* so next time we won't get an error */
 	} else if (row_packet->eof) {
@@ -824,10 +864,9 @@ mysqlnd_fetch_row_unbuffered(MYSQLND_RES *result, void *param, unsigned int flag
 			CONN_SET_STATE(result->conn, CONN_READY);
 		}
 		result->m.unbuffered_free_last_data(result TSRMLS_CC);
-		*fetched_anything = FALSE;
 	}
 
-	DBG_INF_FMT("ret=%s fetched=%d", ret == PASS? "PASS":"FAIL", *fetched_anything);
+	DBG_INF_FMT("ret=%s fetched=%u", ret == PASS? "PASS":"FAIL", *fetched_anything);
 	DBG_RETURN(PASS);
 }
 /* }}} */
@@ -838,26 +877,34 @@ static MYSQLND_RES *
 MYSQLND_METHOD(mysqlnd_res, use_result)(MYSQLND_RES * const result, zend_bool ps TSRMLS_DC)
 {
 	DBG_ENTER("mysqlnd_res::use_result");
-	DBG_INF_FMT("ps=%d", ps);
+	DBG_INF_FMT("ps=%u", ps);
 
 	SET_EMPTY_ERROR(result->conn->error_info);
+
 
 	if (ps == FALSE) {
 		result->type			= MYSQLND_RES_NORMAL;
 		result->m.fetch_row		= result->m.fetch_row_normal_unbuffered;
 		result->m.fetch_lengths	= mysqlnd_fetch_lengths_unbuffered;
-		result->lengths			= mnd_ecalloc(result->field_count, sizeof(unsigned long));
 		result->m.row_decoder	= php_mysqlnd_rowp_read_text_protocol;
+		result->lengths			= mnd_ecalloc(result->field_count, sizeof(unsigned long));
+		if (!result->lengths) {
+			goto oom;
+		}
 	} else {
 		result->type			= MYSQLND_RES_PS_UNBUF;
+		result->m.fetch_row		= NULL;
 		/* result->m.fetch_row() will be set in mysqlnd_ps.c */
 		result->m.fetch_lengths	= NULL; /* makes no sense */
-		result->lengths 		= NULL;
 		result->m.row_decoder	= php_mysqlnd_rowp_read_binary_protocol;
+		result->lengths 		= NULL;
 	}
-	result->unbuf = mnd_ecalloc(1, sizeof(MYSQLND_RES_UNBUFFERED));
 
-	result->result_set_memory_pool = mysqlnd_mempool_create(16000 TSRMLS_CC);
+	result->result_set_memory_pool = mysqlnd_mempool_create(MYSQLND_G(mempool_default_size) TSRMLS_CC);
+	result->unbuf = mnd_ecalloc(1, sizeof(MYSQLND_RES_UNBUFFERED));
+	if (!result->result_set_memory_pool || !result->unbuf) {
+		goto oom;
+	}
 
 	/*
 	  Will be freed in the mysqlnd_internal_free_result_contents() called
@@ -866,6 +913,9 @@ MYSQLND_METHOD(mysqlnd_res, use_result)(MYSQLND_RES * const result, zend_bool ps
 	*/
 	/* FALSE = non-persistent */
 	result->row_packet = result->conn->protocol->m.get_row_packet(result->conn->protocol, FALSE TSRMLS_CC);
+	if (!result->row_packet) {
+		goto oom;
+	}
 	result->row_packet->result_set_memory_pool = result->result_set_memory_pool;
 	result->row_packet->field_count = result->field_count;
 	result->row_packet->binary_protocol = ps;
@@ -874,13 +924,16 @@ MYSQLND_METHOD(mysqlnd_res, use_result)(MYSQLND_RES * const result, zend_bool ps
 	result->row_packet->bit_fields_total_len = result->meta->bit_fields_total_len;
 
 	DBG_RETURN(result);
+oom:
+	SET_OOM_ERROR(result->conn->error_info);
+	DBG_RETURN(NULL);
 }
 /* }}} */
 
 
 /* {{{ mysqlnd_fetch_row_buffered_c */
 static MYSQLND_ROW_C
-mysqlnd_fetch_row_buffered_c(MYSQLND_RES *result TSRMLS_DC)
+mysqlnd_fetch_row_buffered_c(MYSQLND_RES * result TSRMLS_DC)
 {
 	MYSQLND_ROW_C ret = NULL;
 	MYSQLND_RES_BUFFERED *set = result->stored_data;
@@ -898,15 +951,18 @@ mysqlnd_fetch_row_buffered_c(MYSQLND_RES *result TSRMLS_DC)
 
 		if (NULL == current_row[0]) {
 			uint64_t row_num = (set->data_cursor - set->data) / result->meta->field_count;
+			enum_func_status rc = result->m.row_decoder(set->row_buffers[row_num],
+											current_row,
+											result->meta->field_count,
+											result->meta->fields,
+											FALSE,
+											result->conn->options.numeric_and_datetime_as_unicode,
+											result->conn->options.int_and_float_native,
+											result->conn->stats TSRMLS_CC);
+			if (rc != PASS) {
+				DBG_RETURN(ret);
+			}
 			set->initialized_rows++;
-			result->m.row_decoder(set->row_buffers[row_num],
-								  current_row,
-								  result->meta->field_count,
-								  result->meta->fields,
-								  FALSE,
-								  result->conn->options.numeric_and_datetime_as_unicode,
-								  result->conn->options.int_and_float_native,
-								  result->conn->stats TSRMLS_CC);
 			for (i = 0; i < result->field_count; i++) {
 				/*
 				  NULL fields are 0 length, 0 is not more than 0
@@ -922,20 +978,23 @@ mysqlnd_fetch_row_buffered_c(MYSQLND_RES *result TSRMLS_DC)
 			}
 		}
 
-		ret = mnd_malloc(result->field_count * sizeof(char *));
-
-		for (i = 0; i < result->field_count; i++, field++, zend_hash_key++) {
-			zval *data = current_row[i];
-
-			if (Z_TYPE_P(data) != IS_NULL) {
-				convert_to_string(data);
-				ret[i] = Z_STRVAL_P(data);
-			} else {
-				ret[i] = NULL;
-			}
-		}
 		set->data_cursor += result->meta->field_count;
 		MYSQLND_INC_GLOBAL_STATISTIC(STAT_ROWS_FETCHED_FROM_CLIENT_NORMAL_BUF);
+
+		ret = mnd_malloc(result->field_count * sizeof(char *));
+		if (ret) {
+			for (i = 0; i < result->field_count; i++, field++, zend_hash_key++) {
+				zval *data = current_row[i];
+
+				if (Z_TYPE_P(data) != IS_NULL) {
+					convert_to_string(data);
+					ret[i] = Z_STRVAL_P(data);
+				} else {
+					ret[i] = NULL;
+				}
+			}
+		}
+		/* there is no conn handle in this function thus we can't set OOM in error_info */
 	} else {
 		set->data_cursor = NULL;
 		DBG_INF("EOF reached");
@@ -947,11 +1006,12 @@ mysqlnd_fetch_row_buffered_c(MYSQLND_RES *result TSRMLS_DC)
 
 /* {{{ mysqlnd_fetch_row_buffered */
 static enum_func_status
-mysqlnd_fetch_row_buffered(MYSQLND_RES *result, void *param, unsigned int flags, zend_bool *fetched_anything TSRMLS_DC)
+mysqlnd_fetch_row_buffered(MYSQLND_RES * result, void *param, unsigned int flags, zend_bool *fetched_anything TSRMLS_DC)
 {
 	unsigned int i;
 	zval *row = (zval *) param;
 	MYSQLND_RES_BUFFERED *set = result->stored_data;
+	enum_func_status ret = FAIL;
 
 	DBG_ENTER("mysqlnd_fetch_row_buffered");
 	DBG_INF_FMT("flags=%u row=%p", flags, row);
@@ -966,15 +1026,18 @@ mysqlnd_fetch_row_buffered(MYSQLND_RES *result, void *param, unsigned int flags,
 
 		if (NULL == current_row[0]) {
 			uint64_t row_num = (set->data_cursor - set->data) / result->meta->field_count;
+			enum_func_status rc = result->m.row_decoder(set->row_buffers[row_num],
+											current_row,
+											result->meta->field_count,
+											result->meta->fields,
+											result->stored_data->persistent,
+											result->conn->options.numeric_and_datetime_as_unicode,
+											result->conn->options.int_and_float_native,
+											result->conn->stats TSRMLS_CC);
+			if (rc != PASS) {
+				DBG_RETURN(FAIL);
+			}
 			set->initialized_rows++;
-			result->m.row_decoder(set->row_buffers[row_num],
-								  current_row,
-								  result->meta->field_count,
-								  result->meta->fields,
-								  result->stored_data->persistent,
-								  result->conn->options.numeric_and_datetime_as_unicode,
-								  result->conn->options.int_and_float_native,
-								  result->conn->stats TSRMLS_CC);
 			for (i = 0; i < result->field_count; i++) {
 				/*
 				  NULL fields are 0 length, 0 is not more than 0
@@ -1030,13 +1093,15 @@ mysqlnd_fetch_row_buffered(MYSQLND_RES *result, void *param, unsigned int flags,
 		set->data_cursor += result->meta->field_count;
 		*fetched_anything = TRUE;
 		MYSQLND_INC_GLOBAL_STATISTIC(STAT_ROWS_FETCHED_FROM_CLIENT_NORMAL_BUF);
+		ret = PASS;
 	} else {
 		set->data_cursor = NULL;
 		*fetched_anything = FALSE;
+		ret = PASS;
 		DBG_INF("EOF reached");
 	}
-	DBG_INF_FMT("ret=PASS fetched=%d", *fetched_anything);
-	DBG_RETURN(PASS);
+	DBG_INF_FMT("ret=PASS fetched=%u", *fetched_anything);
+	DBG_RETURN(ret);
 }
 /* }}} */
 
@@ -1045,23 +1110,33 @@ mysqlnd_fetch_row_buffered(MYSQLND_RES *result, void *param, unsigned int flags,
 
 /* {{{ mysqlnd_res::store_result_fetch_data */
 enum_func_status
-MYSQLND_METHOD(mysqlnd_res, store_result_fetch_data)(MYSQLND * const conn, MYSQLND_RES *result,
+MYSQLND_METHOD(mysqlnd_res, store_result_fetch_data)(MYSQLND * const conn, MYSQLND_RES * result,
 													MYSQLND_RES_METADATA *meta,
 													zend_bool binary_protocol,
 													zend_bool to_cache TSRMLS_DC)
 {
 	enum_func_status ret;
-	MYSQLND_PACKET_ROW *row_packet;
+	MYSQLND_PACKET_ROW *row_packet = NULL;
 	unsigned int next_extend = STORE_RESULT_PREALLOCATED_SET_IF_NOT_EMPTY, free_rows = 1;
 	MYSQLND_RES_BUFFERED *set;
 
 	DBG_ENTER("mysqlnd_res::store_result_fetch_data");
-	DBG_INF_FMT("conn=%llu binary_proto=%d to_cache=%d",
+	DBG_INF_FMT("conn=%llu binary_proto=%u to_cache=%u",
 				conn->thread_id, binary_protocol, to_cache);
 
 	result->stored_data	= set = mnd_pecalloc(1, sizeof(MYSQLND_RES_BUFFERED), to_cache);
+	if (!set) {
+		SET_OOM_ERROR(conn->error_info);
+		ret = FAIL;
+		goto end;	
+	}
 	if (free_rows) {
 		set->row_buffers = mnd_pemalloc(free_rows * sizeof(MYSQLND_MEMORY_POOL_CHUNK *), to_cache);
+		if (!set->row_buffers) {
+			SET_OOM_ERROR(conn->error_info);
+			ret = FAIL;
+			goto end;	
+		}
 	}
 	set->persistent	= to_cache;
 	set->references	= 1;
@@ -1071,6 +1146,11 @@ MYSQLND_METHOD(mysqlnd_res, store_result_fetch_data)(MYSQLND * const conn, MYSQL
 
 	/* non-persistent */
 	row_packet = conn->protocol->m.get_row_packet(conn->protocol, FALSE TSRMLS_CC);
+	if (!row_packet) {
+		SET_OOM_ERROR(conn->error_info);
+		ret = FAIL;
+		goto end;	
+	}
 	row_packet->result_set_memory_pool = result->result_set_memory_pool;
 	row_packet->field_count = meta->field_count;
 	row_packet->binary_protocol = binary_protocol;
@@ -1083,10 +1163,17 @@ MYSQLND_METHOD(mysqlnd_res, store_result_fetch_data)(MYSQLND * const conn, MYSQL
 	while (FAIL != (ret = PACKET_READ(row_packet, conn)) && !row_packet->eof) {
 		if (!free_rows) {
 			uint64_t total_allocated_rows = free_rows = next_extend = next_extend * 11 / 10; /* extend with 10% */
+			MYSQLND_MEMORY_POOL_CHUNK ** new_row_buffers;
 			total_allocated_rows += set->row_count;
-			set->row_buffers = mnd_perealloc(set->row_buffers,
-											 total_allocated_rows * sizeof(MYSQLND_MEMORY_POOL_CHUNK *),
-											 set->persistent);
+			new_row_buffers = mnd_perealloc(set->row_buffers,
+											total_allocated_rows * sizeof(MYSQLND_MEMORY_POOL_CHUNK *),
+											set->persistent);
+			if (!new_row_buffers) {
+				SET_OOM_ERROR(conn->error_info);
+				ret = FAIL;
+				goto end;
+			}
+			set->row_buffers = new_row_buffers;
 		}
 		free_rows--;
 		set->row_buffers[set->row_count] = row_packet->row_buffer;
@@ -1108,6 +1195,11 @@ MYSQLND_METHOD(mysqlnd_res, store_result_fetch_data)(MYSQLND * const conn, MYSQL
 	if (set->row_count) {
 		/* if pecalloc is used valgrind barks gcc version 4.3.1 20080507 (prerelease) [gcc-4_3-branch revision 135036] (SUSE Linux) */
 		set->data = mnd_pemalloc(set->row_count * meta->field_count * sizeof(zval *), to_cache);
+		if (!set->data) {
+			SET_OOM_ERROR(conn->error_info);
+			ret = FAIL;
+			goto end;
+		}
 		memset(set->data, 0, set->row_count * meta->field_count * sizeof(zval *));
 	}
 
@@ -1138,15 +1230,16 @@ MYSQLND_METHOD(mysqlnd_res, store_result_fetch_data)(MYSQLND * const conn, MYSQL
 		set->error_info = row_packet->error_info;
 	} else {
 		/* Position at the first row */
-		set->data_cursor = set->data;	
+		set->data_cursor = set->data;
 
 		/* libmysql's documentation says it should be so for SELECT statements */
 		conn->upsert_status.affected_rows = set->row_count;
 	}
-	PACKET_FREE(row_packet);
-
 	DBG_INF_FMT("ret=%s row_count=%u warnings=%u server_status=%u", ret == PASS? "PASS":"FAIL",
 				set->row_count, conn->upsert_status.warning_count, conn->upsert_status.server_status);
+end:
+	PACKET_FREE(row_packet);
+
 	DBG_RETURN(ret);
 }
 /* }}} */
@@ -1162,7 +1255,7 @@ MYSQLND_METHOD(mysqlnd_res, store_result)(MYSQLND_RES * result,
 	zend_bool to_cache = FALSE;
 
 	DBG_ENTER("mysqlnd_res::store_result");
-	DBG_INF_FMT("conn=%d ps_protocol=%d", conn->thread_id, ps_protocol);
+	DBG_INF_FMT("conn=%u ps_protocol=%u", conn->thread_id, ps_protocol);
 
 	/* We need the conn because we are doing lazy zval initialization in buffered_fetch_row */
 	result->conn 			= conn->m->get_reference(conn TSRMLS_CC);
@@ -1170,20 +1263,26 @@ MYSQLND_METHOD(mysqlnd_res, store_result)(MYSQLND_RES * result,
 	result->m.fetch_row		= result->m.fetch_row_normal_buffered;
 	result->m.fetch_lengths	= mysqlnd_fetch_lengths_buffered;
 
+	result->result_set_memory_pool = mysqlnd_mempool_create(MYSQLND_G(mempool_default_size) TSRMLS_CC);
+	result->lengths = mnd_ecalloc(result->field_count, sizeof(unsigned long));
+	if (!result->result_set_memory_pool || !result->lengths) {
+		SET_OOM_ERROR(conn->error_info);
+		DBG_RETURN(NULL);
+	}
+
 	CONN_SET_STATE(conn, CONN_FETCHING_DATA);
 
-	result->result_set_memory_pool = mysqlnd_mempool_create(16000 TSRMLS_CC);
-	result->lengths = mnd_ecalloc(result->field_count, sizeof(unsigned long));
-
 	ret = result->m.store_result_fetch_data(conn, result, result->meta, ps_protocol, to_cache TSRMLS_CC);
-	if (PASS == ret) {
-		/* libmysql's documentation says it should be so for SELECT statements */
-		conn->upsert_status.affected_rows = result->stored_data->row_count;
-	} else {
-		conn->error_info = result->stored_data->error_info;
-		result->m.free_result_internal(result TSRMLS_CC);
-		result = NULL;
+	if (FAIL == ret) {
+		if (result->stored_data) {
+			conn->error_info = result->stored_data->error_info;
+		} else {
+			SET_OOM_ERROR(conn->error_info);		
+		}
+		DBG_RETURN(NULL);
 	}
+	/* libmysql's documentation says it should be so for SELECT statements */
+	conn->upsert_status.affected_rows = result->stored_data->row_count;
 
 	DBG_RETURN(result);
 }
@@ -1224,10 +1323,10 @@ MYSQLND_METHOD(mysqlnd_res, skip_result)(MYSQLND_RES * const result TSRMLS_DC)
 
 /* {{{ mysqlnd_res::free_result */
 static enum_func_status
-MYSQLND_METHOD(mysqlnd_res, free_result)(MYSQLND_RES *result, zend_bool implicit TSRMLS_DC)
+MYSQLND_METHOD(mysqlnd_res, free_result)(MYSQLND_RES * result, zend_bool implicit TSRMLS_DC)
 {
 	DBG_ENTER("mysqlnd_res::free_result");
-	DBG_INF_FMT("implicit=%d", implicit);
+	DBG_INF_FMT("implicit=%u", implicit);
 
 	result->m.skip_result(result TSRMLS_CC);
 	MYSQLND_INC_CONN_STATISTIC(result->conn? result->conn->stats : NULL,
@@ -1242,7 +1341,7 @@ MYSQLND_METHOD(mysqlnd_res, free_result)(MYSQLND_RES *result, zend_bool implicit
 
 /* {{{ mysqlnd_res::data_seek */
 static enum_func_status
-MYSQLND_METHOD(mysqlnd_res, data_seek)(MYSQLND_RES *result, uint64_t row TSRMLS_DC)
+MYSQLND_METHOD(mysqlnd_res, data_seek)(MYSQLND_RES * result, uint64_t row TSRMLS_DC)
 {
 	DBG_ENTER("mysqlnd_res::data_seek");
 	DBG_INF_FMT("row=%lu", row);
@@ -1287,24 +1386,28 @@ static const MYSQLND_FIELD *
 MYSQLND_METHOD(mysqlnd_res, fetch_field)(MYSQLND_RES * const result TSRMLS_DC)
 {
 	DBG_ENTER("mysqlnd_res::fetch_field");
-	if (result->meta) {
-		/*
-		  We optimize the result set, so we don't convert all the data from raw buffer format to
-		  zval arrays during store. In the case someone doesn't read all the lines this will
-		  save time. However, when a metadata call is done, we need to calculate max_length.
-		  We don't have control whether max_length will be used, unfortunately. Otherwise we
-		  could have been able to skip that step.
-		  Well, if the mysqli API switches from returning stdClass to class like mysqli_field_metadata,
-		  then we can have max_length as dynamic property, which will be calculated during runtime and
-		  not during mysqli_fetch_field() time.
-		*/
-		if (result->stored_data && (result->stored_data->initialized_rows < result->stored_data->row_count)) {
-			DBG_INF_FMT("We have decode the whole result set to be able to satisfy this meta request");
-			/* we have to initialize the rest to get the updated max length */
-			result->m.initialize_result_set_rest(result TSRMLS_CC);
+	do {
+		if (result->meta) {
+			/*
+			  We optimize the result set, so we don't convert all the data from raw buffer format to
+			  zval arrays during store. In the case someone doesn't read all the lines this will
+			  save time. However, when a metadata call is done, we need to calculate max_length.
+			  We don't have control whether max_length will be used, unfortunately. Otherwise we
+			  could have been able to skip that step.
+			  Well, if the mysqli API switches from returning stdClass to class like mysqli_field_metadata,
+			  then we can have max_length as dynamic property, which will be calculated during runtime and
+			  not during mysqli_fetch_field() time.
+			*/
+			if (result->stored_data && (result->stored_data->initialized_rows < result->stored_data->row_count)) {
+				DBG_INF_FMT("We have decode the whole result set to be able to satisfy this meta request");
+				/* we have to initialize the rest to get the updated max length */
+				if (PASS != result->m.initialize_result_set_rest(result TSRMLS_CC)) {
+					break;
+				}
+			}
+			DBG_RETURN(result->meta->m->fetch_field(result->meta TSRMLS_CC));
 		}
-		DBG_RETURN(result->meta->m->fetch_field(result->meta TSRMLS_CC));
-	}
+	} while (0);
 	DBG_RETURN(NULL);
 }
 /* }}} */
@@ -1315,24 +1418,28 @@ static const MYSQLND_FIELD *
 MYSQLND_METHOD(mysqlnd_res, fetch_field_direct)(MYSQLND_RES * const result, MYSQLND_FIELD_OFFSET fieldnr TSRMLS_DC)
 {
 	DBG_ENTER("mysqlnd_res::fetch_field_direct");
-	if (result->meta) {
-		/*
-		  We optimize the result set, so we don't convert all the data from raw buffer format to
-		  zval arrays during store. In the case someone doesn't read all the lines this will
-		  save time. However, when a metadata call is done, we need to calculate max_length.
-		  We don't have control whether max_length will be used, unfortunately. Otherwise we
-		  could have been able to skip that step.
-		  Well, if the mysqli API switches from returning stdClass to class like mysqli_field_metadata,
-		  then we can have max_length as dynamic property, which will be calculated during runtime and
-		  not during mysqli_fetch_field_direct() time.
-		*/
-		if (result->stored_data && (result->stored_data->initialized_rows < result->stored_data->row_count)) {
-			DBG_INF_FMT("We have decode the whole result set to be able to satisfy this meta request");
-			/* we have to initialized the rest to get the updated max length */
-			result->m.initialize_result_set_rest(result TSRMLS_CC);
+	do {
+		if (result->meta) {
+			/*
+			  We optimize the result set, so we don't convert all the data from raw buffer format to
+			  zval arrays during store. In the case someone doesn't read all the lines this will
+			  save time. However, when a metadata call is done, we need to calculate max_length.
+			  We don't have control whether max_length will be used, unfortunately. Otherwise we
+			  could have been able to skip that step.
+			  Well, if the mysqli API switches from returning stdClass to class like mysqli_field_metadata,
+			  then we can have max_length as dynamic property, which will be calculated during runtime and
+			  not during mysqli_fetch_field_direct() time.
+			*/
+			if (result->stored_data && (result->stored_data->initialized_rows < result->stored_data->row_count)) {
+				DBG_INF_FMT("We have decode the whole result set to be able to satisfy this meta request");
+				/* we have to initialized the rest to get the updated max length */
+				if (PASS != result->m.initialize_result_set_rest(result TSRMLS_CC)) {
+					break;
+				}
+			}
+			DBG_RETURN(result->meta->m->fetch_field_direct(result->meta, fieldnr TSRMLS_CC));
 		}
-		DBG_RETURN(result->meta->m->fetch_field_direct(result->meta, fieldnr TSRMLS_CC));
-	}
+	} while (0);
 
 	DBG_RETURN(NULL);
 }
@@ -1344,13 +1451,17 @@ static const MYSQLND_FIELD *
 MYSQLND_METHOD(mysqlnd_res, fetch_fields)(MYSQLND_RES * const result TSRMLS_DC)
 {
 	DBG_ENTER("mysqlnd_res::fetch_fields");
-	if (result->meta) {
-		if (result->stored_data && (result->stored_data->initialized_rows < result->stored_data->row_count)) {
-			/* we have to initialize the rest to get the updated max length */
-			result->m.initialize_result_set_rest(result TSRMLS_CC);
+	do {
+		if (result->meta) {
+			if (result->stored_data && (result->stored_data->initialized_rows < result->stored_data->row_count)) {
+				/* we have to initialize the rest to get the updated max length */
+				if (PASS != result->m.initialize_result_set_rest(result TSRMLS_CC)) {
+					break;
+				}
+			}
+			DBG_RETURN(result->meta->m->fetch_fields(result->meta TSRMLS_CC));
 		}
-		DBG_RETURN(result->meta->m->fetch_fields(result->meta TSRMLS_CC));
-	}
+	} while (0);
 	DBG_RETURN(NULL);
 }
 /* }}} */
@@ -1382,14 +1493,14 @@ MYSQLND_METHOD(mysqlnd_res, field_tell)(const MYSQLND_RES * const result TSRMLS_
 
 /* {{{ mysqlnd_res::fetch_into */
 static void
-MYSQLND_METHOD(mysqlnd_res, fetch_into)(MYSQLND_RES *result, unsigned int flags,
+MYSQLND_METHOD(mysqlnd_res, fetch_into)(MYSQLND_RES * result, unsigned int flags,
 										zval *return_value,
 										enum_mysqlnd_extension extension TSRMLS_DC ZEND_FILE_LINE_DC)
 {
 	zend_bool fetched_anything;
 
 	DBG_ENTER("mysqlnd_res::fetch_into");
-	DBG_INF_FMT("flags=%u mysqlnd_extension=%d", flags, extension);
+	DBG_INF_FMT("flags=%u mysqlnd_extension=%u", flags, extension);
 
 	if (!result->m.fetch_row) {
 		RETVAL_NULL();
@@ -1426,7 +1537,7 @@ MYSQLND_METHOD(mysqlnd_res, fetch_into)(MYSQLND_RES *result, unsigned int flags,
 
 /* {{{ mysqlnd_res::fetch_row_c */
 static MYSQLND_ROW_C
-MYSQLND_METHOD(mysqlnd_res, fetch_row_c)(MYSQLND_RES *result TSRMLS_DC)
+MYSQLND_METHOD(mysqlnd_res, fetch_row_c)(MYSQLND_RES * result TSRMLS_DC)
 {
 	MYSQLND_ROW_C ret = NULL;
 	DBG_ENTER("mysqlnd_res::fetch_row_c");
@@ -1447,7 +1558,7 @@ MYSQLND_METHOD(mysqlnd_res, fetch_row_c)(MYSQLND_RES *result TSRMLS_DC)
 
 /* {{{ mysqlnd_res::fetch_all */
 static void
-MYSQLND_METHOD(mysqlnd_res, fetch_all)(MYSQLND_RES *result, unsigned int flags, zval *return_value TSRMLS_DC ZEND_FILE_LINE_DC)
+MYSQLND_METHOD(mysqlnd_res, fetch_all)(MYSQLND_RES * result, unsigned int flags, zval *return_value TSRMLS_DC ZEND_FILE_LINE_DC)
 {
 	zval  *row;
 	ulong i = 0;
@@ -1457,15 +1568,20 @@ MYSQLND_METHOD(mysqlnd_res, fetch_all)(MYSQLND_RES *result, unsigned int flags, 
 	DBG_INF_FMT("flags=%u", flags);
 
 	/* mysqlnd_res::fetch_all works with buffered resultsets only */
-	if (!set ||
-		!set->row_count || !set->data_cursor ||
-		set->data_cursor >= set->data + set->row_count)
-	{
+	if (result->unbuf || (!result->unbuf && !set)) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "fetch_all can be used only with buffered sets");
+		if (result->conn) {
+			SET_CLIENT_ERROR(result->conn->error_info, CR_NOT_IMPLEMENTED, UNKNOWN_SQLSTATE, "fetch_all can be used only with buffered sets");
+		}
 		RETVAL_NULL();
 		DBG_VOID_RETURN;
-	}	
+	}
 
 	mysqlnd_array_init(return_value, (unsigned int) set->row_count);
+
+	if (!set->row_count || !set->data_cursor || set->data_cursor >= set->data + set->row_count) {
+		DBG_VOID_RETURN;
+	}	
 
 	while (set->data_cursor &&
 		   (set->data_cursor - set->data) < (set->row_count * result->meta->field_count))
@@ -1482,7 +1598,7 @@ MYSQLND_METHOD(mysqlnd_res, fetch_all)(MYSQLND_RES *result, unsigned int flags, 
 
 /* {{{ mysqlnd_res::fetch_field_data */
 static void
-MYSQLND_METHOD(mysqlnd_res, fetch_field_data)(MYSQLND_RES *result, unsigned int offset, zval *return_value TSRMLS_DC)
+MYSQLND_METHOD(mysqlnd_res, fetch_field_data)(MYSQLND_RES * result, unsigned int offset, zval *return_value TSRMLS_DC)
 {
 	zval row;
 	zval **entry;
@@ -1524,48 +1640,60 @@ MYSQLND_METHOD(mysqlnd_res, fetch_field_data)(MYSQLND_RES *result, unsigned int 
 /* }}} */
 
 
+static 
+MYSQLND_CLASS_METHODS_START(mysqlnd_res)
+	NULL, /* fetch_row */
+	mysqlnd_fetch_row_buffered,
+	mysqlnd_fetch_row_unbuffered,
+	MYSQLND_METHOD(mysqlnd_res, use_result),
+	MYSQLND_METHOD(mysqlnd_res, store_result),
+	MYSQLND_METHOD(mysqlnd_res, fetch_into),
+	MYSQLND_METHOD(mysqlnd_res, fetch_row_c),
+	MYSQLND_METHOD(mysqlnd_res, fetch_all),
+	MYSQLND_METHOD(mysqlnd_res, fetch_field_data),
+	MYSQLND_METHOD(mysqlnd_res, num_rows),
+	MYSQLND_METHOD(mysqlnd_res, num_fields),
+	MYSQLND_METHOD(mysqlnd_res, skip_result),
+	MYSQLND_METHOD(mysqlnd_res, data_seek),
+	MYSQLND_METHOD(mysqlnd_res, field_seek),
+	MYSQLND_METHOD(mysqlnd_res, field_tell),
+	MYSQLND_METHOD(mysqlnd_res, fetch_field),
+	MYSQLND_METHOD(mysqlnd_res, fetch_field_direct),
+	MYSQLND_METHOD(mysqlnd_res, fetch_fields),
+	MYSQLND_METHOD(mysqlnd_res, read_result_metadata),
+	NULL, /* fetch_lengths */
+	MYSQLND_METHOD(mysqlnd_res, store_result_fetch_data),
+	MYSQLND_METHOD(mysqlnd_res, initialize_result_set_rest),
+	MYSQLND_METHOD(mysqlnd_res, free_result_buffers),
+	MYSQLND_METHOD(mysqlnd_res, free_result),
+
+	mysqlnd_internal_free_result, /* free_result_internal */
+	mysqlnd_internal_free_result_contents, /* free_result_contents */
+	MYSQLND_METHOD(mysqlnd_res, free_buffered_data),
+	MYSQLND_METHOD(mysqlnd_res, unbuffered_free_last_data),
+
+	NULL /* row_decoder */,
+	mysqlnd_result_meta_init
+MYSQLND_CLASS_METHODS_END;
+
+
 /* {{{ mysqlnd_result_init */
 PHPAPI MYSQLND_RES *
-mysqlnd_result_init(unsigned int field_count TSRMLS_DC)
+mysqlnd_result_init(unsigned int field_count, zend_bool persistent TSRMLS_DC)
 {
 	size_t alloc_size = sizeof(MYSQLND_RES) + mysqlnd_plugin_count() * sizeof(void *);
-	MYSQLND_RES *ret = mnd_ecalloc(1, alloc_size);
+	MYSQLND_RES *ret = mnd_pecalloc(1, alloc_size, persistent);
 
 	DBG_ENTER("mysqlnd_result_init");
 	DBG_INF_FMT("field_count=%u", field_count);
+	
+	if (!ret) {
+		DBG_RETURN(NULL);
+	}
 
+	ret->persistent		= persistent;
 	ret->field_count	= field_count;
-
-	ret->m.use_result	= MYSQLND_METHOD(mysqlnd_res, use_result);
-	ret->m.store_result	= MYSQLND_METHOD(mysqlnd_res, store_result);
-	ret->m.free_result	= MYSQLND_METHOD(mysqlnd_res, free_result);
-	ret->m.seek_data	= MYSQLND_METHOD(mysqlnd_res, data_seek);
-	ret->m.num_rows		= MYSQLND_METHOD(mysqlnd_res, num_rows);
-	ret->m.num_fields	= MYSQLND_METHOD(mysqlnd_res, num_fields);
-	ret->m.fetch_into	= MYSQLND_METHOD(mysqlnd_res, fetch_into);
-	ret->m.fetch_row_c	= MYSQLND_METHOD(mysqlnd_res, fetch_row_c);
-	ret->m.fetch_all	= MYSQLND_METHOD(mysqlnd_res, fetch_all);
-	ret->m.fetch_field_data	= MYSQLND_METHOD(mysqlnd_res, fetch_field_data);
-	ret->m.seek_field	= MYSQLND_METHOD(mysqlnd_res, field_seek);
-	ret->m.field_tell	= MYSQLND_METHOD(mysqlnd_res, field_tell);
-	ret->m.fetch_field	= MYSQLND_METHOD(mysqlnd_res, fetch_field);
-	ret->m.fetch_field_direct = MYSQLND_METHOD(mysqlnd_res, fetch_field_direct);
-	ret->m.fetch_fields	= MYSQLND_METHOD(mysqlnd_res, fetch_fields);
-
-	ret->m.skip_result	= MYSQLND_METHOD(mysqlnd_res, skip_result);
-	ret->m.free_result_buffers	= MYSQLND_METHOD(mysqlnd_res, free_result_buffers);
-	ret->m.free_result_internal = mysqlnd_internal_free_result;
-	ret->m.free_result_contents = mysqlnd_internal_free_result_contents;
-	ret->m.free_buffered_data = MYSQLND_METHOD(mysqlnd_res, free_buffered_data);
-	ret->m.unbuffered_free_last_data = MYSQLND_METHOD(mysqlnd_res, unbuffered_free_last_data);
-
-	ret->m.read_result_metadata = MYSQLND_METHOD(mysqlnd_res, read_result_metadata);
-	ret->m.store_result_fetch_data = MYSQLND_METHOD(mysqlnd_res, store_result_fetch_data);
-	ret->m.initialize_result_set_rest = MYSQLND_METHOD(mysqlnd_res, initialize_result_set_rest);
-
-	ret->m.fetch_row_normal_buffered	= mysqlnd_fetch_row_buffered;
-	ret->m.fetch_row_normal_unbuffered	= mysqlnd_fetch_row_unbuffered;
-	ret->m.row_decoder = NULL;
+	ret->m = mysqlnd_mysqlnd_res_methods;
 
 	DBG_RETURN(ret);
 }
@@ -1581,6 +1709,15 @@ PHPAPI void ** _mysqlnd_plugin_get_plugin_result_data(const MYSQLND_RES * result
 		return NULL;
 	}
 	DBG_RETURN((void *)((char *)result + sizeof(MYSQLND_RES) + plugin_id * sizeof(void *)));
+}
+/* }}} */
+
+
+/* {{{ mysqlnd_result_get_methods */
+PHPAPI struct st_mysqlnd_res_methods *
+mysqlnd_result_get_methods()
+{
+	return &mysqlnd_mysqlnd_res_methods;
 }
 /* }}} */
 

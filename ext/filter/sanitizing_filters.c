@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: sanitizing_filters.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: sanitizing_filters.c 297245 2010-03-31 22:59:09Z rasmus $ */
 
 #include "php_filter.h"
 #include "filter_private.h"
@@ -242,6 +242,24 @@ void php_filter_special_chars(PHP_INPUT_FILTER_PARAM_DECL)
 }
 /* }}} */
 
+/* {{{ php_filter_full_special_chars */
+void php_filter_full_special_chars(PHP_INPUT_FILTER_PARAM_DECL)
+{
+	char *buf;
+	int   len, quotes;
+	
+	if (!(flags & FILTER_FLAG_NO_ENCODE_QUOTES)) {
+		quotes = ENT_QUOTES;
+	} else {
+		quotes = ENT_NOQUOTES;
+	}
+	buf = php_escape_html_entities_ex(Z_STRVAL_P(value), Z_STRLEN_P(value), &len, 1, quotes, SG(default_charset), 0 TSRMLS_CC);
+	efree(Z_STRVAL_P(value));
+	Z_STRVAL_P(value) = buf;
+	Z_STRLEN_P(value) = len;
+}
+/* }}} */
+
 /* {{{ php_filter_unsafe_raw */
 void php_filter_unsafe_raw(PHP_INPUT_FILTER_PARAM_DECL)
 {
@@ -265,6 +283,8 @@ void php_filter_unsafe_raw(PHP_INPUT_FILTER_PARAM_DECL)
 	}
 }
 /* }}} */
+
+
 
 /* {{{ php_filter_email */
 #define SAFE        "$-_.+"

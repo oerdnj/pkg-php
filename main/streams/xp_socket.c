@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: xp_socket.c 294453 2010-02-03 20:21:40Z pajoye $ */
+/* $Id: xp_socket.c 296079 2010-03-11 16:37:24Z mike $ */
 
 #include "php.h"
 #include "ext/standard/file.h"
@@ -324,7 +324,7 @@ static int php_sockop_set_option(php_stream *stream, int option, int value, void
 
 			switch (xparam->op) {
 				case STREAM_XPORT_OP_LISTEN:
-					xparam->outputs.returncode = (listen(sock->socket, 5) == 0) ?  0: -1;
+					xparam->outputs.returncode = (listen(sock->socket, xparam->inputs.backlog) == 0) ?  0: -1;
 					return PHP_STREAM_OPTION_RETURN_OK;
 
 				case STREAM_XPORT_OP_GET_NAME:

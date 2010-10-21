@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_ini.c 294449 2010-02-03 20:13:18Z pajoye $ */
+/* $Id: php_ini.c 300272 2010-06-08 12:54:11Z tony2001 $ */
 
 #include "php.h"
 #include "ext/standard/info.h"
@@ -346,7 +346,9 @@ static void php_ini_parser_cb(zval *arg1, zval *arg2, zval *arg3, int callback_t
  */
 static void php_load_php_extension_cb(void *arg TSRMLS_DC)
 {
+#ifdef HAVE_LIBDL
 	php_load_extension(*((char **) arg), MODULE_PERSISTENT, 0 TSRMLS_CC);
+#endif
 }
 /* }}} */
 

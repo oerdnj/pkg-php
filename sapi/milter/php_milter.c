@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_milter.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: php_milter.c 296107 2010-03-12 10:28:59Z jani $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -92,7 +92,7 @@ extern char *ap_php_optarg;
 extern int ap_php_optind;
 
 static int flag_debug=0;
-static char *filename;
+static char *filename = NULL;
 
 /* per thread */
 ZEND_BEGIN_MODULE_GLOBALS(milter)
@@ -127,6 +127,11 @@ static int mlfi_init()
 	/* disable headers */
 	SG(headers_sent) = 1;
 	SG(request_info).no_headers = 1;
+	 
+	if (filename == NULL) {
+		php_printf("No input file specified");
+		return SMFIS_TEMPFAIL;
+	}
 
 	if (!(file_handle.handle.fp = VCWD_FOPEN(filename, "rb"))) {
 		php_printf("Could not open input file: %s\n", filename);
@@ -188,6 +193,11 @@ static sfsistat	mlfi_connect(SMFICTX *ctx, char *hostname, _SOCK_ADDR *hostaddr)
 	/* disable headers */
 	SG(headers_sent) = 1;
 	SG(request_info).no_headers = 1;
+	
+	if (filename == NULL) {
+		php_printf("No input file specified");
+		return SMFIS_TEMPFAIL;
+	}
 	
 	if (!(file_handle.handle.fp = VCWD_FOPEN(filename, "rb"))) {
 		php_printf("Could not open input file: %s\n", filename);
@@ -939,7 +949,6 @@ static void php_milter_usage(char *argv0)
 	}
 
 	printf(     "Usage: %s [options] [-f] <file> [args...]\n"
-	            "       %s [options] -r <code> [args...]\n"
 	            "       %s [options] [-- args...]\n"
 				"  -a               Run interactively\n"
 				"  -c <path>|<file> Look for php.ini file in this directory\n"
@@ -955,7 +964,7 @@ static void php_milter_usage(char *argv0)
 				"  -z <file>        Load Zend extension <file>.\n"
 				"  args...          Arguments passed to script. Use -- args when first argument \n"
 				"                   starts with - or script is read from stdin\n"
-				, prog, prog, prog);
+				, prog, prog);
 }
 /* }}} */
 

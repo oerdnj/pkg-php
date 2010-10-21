@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_prop.c 293036 2010-01-03 09:23:27Z sebastian $ 
+  $Id: mysqli_prop.c 296270 2010-03-16 12:36:57Z andrey $ 
 */
 
 #ifdef HAVE_CONFIG_H
@@ -266,7 +266,7 @@ static int stmt_id_read(mysqli_object *obj, zval **retval TSRMLS_DC)
 	if (!p) {
 		ZVAL_NULL(*retval);
 	} else {
-		ZVAL_LONG(*retval, p->stmt->stmt_id);
+		ZVAL_LONG(*retval, mysqli_stmt_get_id(p->stmt));
 	}
 	return SUCCESS;
 }

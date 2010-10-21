@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: nsapi.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: nsapi.c 300707 2010-06-23 19:06:33Z srinatar $ */
 
 /*
  * PHP includes
@@ -312,7 +312,7 @@ PHP_MSHUTDOWN_FUNCTION(nsapi)
 PHP_MINFO_FUNCTION(nsapi)
 {
 	php_info_print_table_start();
-	php_info_print_table_row(2, "NSAPI Module Revision", "$Revision: 293036 $");
+	php_info_print_table_row(2, "NSAPI Module Revision", "$Revision: 300707 $");
 	php_info_print_table_row(2, "Server Software", system_version());
 	php_info_print_table_row(2, "Sub-requests with nsapi_virtual()",
 	 (nsapi_servact_service)?((zend_ini_long("zlib.output_compression", sizeof("zlib.output_compression"), 0))?"not supported with zlib.output_compression":"enabled"):"not supported on this platform" );
@@ -687,7 +687,7 @@ static void sapi_nsapi_register_server_variables(zval *track_vars_array TSRMLS_D
 				if (value) {
 					for(p = value + pos; *p; p++) {
 						*p = toupper(*p);
-						if (*p < 'A' || *p > 'Z') {
+						if (!isalnum(*p)) {
 							*p = '_';
 						}
 					}

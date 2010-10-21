@@ -25,7 +25,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_oci8.h 294445 2010-02-03 20:00:49Z pajoye $ */
+/* $Id: php_oci8.h 300753 2010-06-25 21:18:09Z sixd $ */
 
 #if HAVE_OCI8
 # ifndef PHP_OCI8_H
@@ -46,7 +46,7 @@
  */
 #undef PHP_OCI8_VERSION
 #endif
-#define PHP_OCI8_VERSION "1.4.1"
+#define PHP_OCI8_VERSION "1.4.2"
 
 extern zend_module_entry oci8_module_entry;
 #define phpext_oci8_ptr &oci8_module_entry

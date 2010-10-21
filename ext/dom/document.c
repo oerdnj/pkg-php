@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: document.c 294436 2010-02-03 18:41:27Z pajoye $ */
+/* $Id: document.c 297374 2010-04-02 20:08:15Z rrichards $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -2252,6 +2252,7 @@ PHP_FUNCTION(dom_document_save_html_file)
 	dom_object *intern;
 	dom_doc_propsptr doc_props;
 	char *file;
+	const char *encoding;
 
 	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "Os", &id, dom_document_class_entry, &file, &file_len) == FAILURE) {
 		return;
@@ -2264,11 +2265,12 @@ PHP_FUNCTION(dom_document_save_html_file)
 
 	DOM_GET_OBJ(docp, id, xmlDocPtr, intern);
 
-	/* encoding handled by property on doc */
+
+	encoding = (const char *) htmlGetMetaEncoding(docp);
 
 	doc_props = dom_get_doc_props(intern->document);
 	format = doc_props->formatoutput;
-	bytes = htmlSaveFileFormat(file, docp, NULL, format);
+	bytes = htmlSaveFileFormat(file, docp, encoding, format);
 
 	if (bytes == -1) {
 		RETURN_FALSE;
@@ -2286,7 +2288,8 @@ PHP_FUNCTION(dom_document_save_html)
 	xmlDoc *docp;
 	dom_object *intern;
 	xmlChar *mem;
-	int size;
+	int size, format;
+	dom_doc_propsptr doc_props;
 
 	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "O", &id, dom_document_class_entry) == FAILURE) {
 		return;
@@ -2294,7 +2297,13 @@ PHP_FUNCTION(dom_document_save_html)
 
 	DOM_GET_OBJ(docp, id, xmlDocPtr, intern);
 
+#if LIBXML_VERSION >= 20623
+	doc_props = dom_get_doc_props(intern->document);
+	format = doc_props->formatoutput;
+	htmlDocDumpMemoryFormat(docp, &mem, &size, format);
+#else
 	htmlDocDumpMemory(docp, &mem, &size);
+#endif
 	if (!size) {
 		if (mem)
 			xmlFree(mem);

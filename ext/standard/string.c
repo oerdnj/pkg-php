@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: string.c 294517 2010-02-04 09:44:16Z pajoye $ */
+/* $Id: string.c 300105 2010-06-02 19:26:10Z rasmus $ */
 
 /* Synced with php 3.0 revision 1.193 1999-06-16 [ssb] */
 
@@ -36,8 +36,19 @@
 #ifdef HAVE_MONETARY_H
 # include <monetary.h>
 #endif
+/* 
+ * This define is here because some versions of libintl redefine setlocale
+ * to point to libintl_setlocale.  That's a ridiculous thing to do as far
+ * as I am concerned, but with this define and the subsequent undef we
+ * limit the damage to just the actual setlocale() call in this file
+ * without turning zif_setlocale into zif_libintl_setlocale.  -Rasmus
+ */
+#define php_my_setlocale setlocale
 #ifdef HAVE_LIBINTL
 # include <libintl.h> /* For LC_MESSAGES */
+ #ifdef setlocale
+ # undef setlocale
+ #endif
 #endif
 
 #include "scanf.h"
@@ -2219,12 +2230,21 @@ PHP_FUNCTION(substr_replace)
 	}
 	
 	if (Z_TYPE_PP(str) != IS_ARRAY) {
+		if (Z_ISREF_PP(str)) {
+			SEPARATE_ZVAL(str);
+		}
 		convert_to_string_ex(str);
 	}
 	if (Z_TYPE_PP(repl) != IS_ARRAY) {
+		if (Z_ISREF_PP(repl)) {
+			SEPARATE_ZVAL(repl);
+		}
 		convert_to_string_ex(repl);
 	}
 	if (Z_TYPE_PP(from) != IS_ARRAY) {
+		if (Z_ISREF_PP(from)) {
+			SEPARATE_ZVAL(from);
+		}
 		convert_to_long_ex(from);
 	}
 
@@ -4083,7 +4103,7 @@ PHP_FUNCTION(setlocale)
 			}
 		}
 
-		retval = setlocale(cat, loc);
+		retval = php_my_setlocale(cat, loc);
 		zend_update_current_locale();
 		if (retval) {
 			/* Remember if locale was changed */
@@ -4137,11 +4157,14 @@ PHP_FUNCTION(parse_str)
 		Z_ARRVAL(tmp) = EG(active_symbol_table);
 		sapi_module.treat_data(PARSE_STRING, res, &tmp TSRMLS_CC);
 	} else 	{
+		zval ret;
+		
+		array_init(&ret);
+		sapi_module.treat_data(PARSE_STRING, res, &ret TSRMLS_CC);
 		/* Clear out the array that was passed in. */
 		zval_dtor(arrayArg);
-		array_init(arrayArg);
-		
-		sapi_module.treat_data(PARSE_STRING, res, arrayArg TSRMLS_CC);
+		arrayArg->type = ret.type;
+		arrayArg->value = ret.value;
 	}
 }
 /* }}} */

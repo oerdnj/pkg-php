@@ -26,7 +26,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: oci8.c 294447 2010-02-03 20:08:42Z pajoye $ */
+/* $Id: oci8.c 300752 2010-06-25 21:09:13Z sixd $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1293,26 +1293,33 @@ PHP_MINFO_FUNCTION(oci)
 	php_info_print_table_start();
 	php_info_print_table_row(2, "OCI8 Support", "enabled");
 	php_info_print_table_row(2, "Version", PHP_OCI8_VERSION);
-	php_info_print_table_row(2, "Revision", "$Revision: 294447 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 300752 $");
 
 	snprintf(buf, sizeof(buf), "%ld", OCI_G(num_persistent));
 	php_info_print_table_row(2, "Active Persistent Connections", buf);
 	snprintf(buf, sizeof(buf), "%ld", OCI_G(num_links));
 	php_info_print_table_row(2, "Active Connections", buf);
 
-#if !defined(PHP_WIN32) && !defined(HAVE_OCI_INSTANT_CLIENT)
-#ifdef PHP_OCI8_ORACLE_VERSION
-	php_info_print_table_row(2, "Oracle Version", PHP_OCI8_ORACLE_VERSION);
+#if	defined(OCI_MAJOR_VERSION) && defined(OCI_MINOR_VERSION)
+	snprintf(buf, sizeof(buf), "%d.%d", OCI_MAJOR_VERSION, OCI_MINOR_VERSION);
+#elif defined(PHP_OCI8_ORACLE_VERSION)
+	snprintf(buf, sizeof(buf), "%s", PHP_OCI8_ORACLE_VERSION);
+#else
+	snprintf(buf, sizeof(buf), "Unknown");
 #endif
-#ifdef PHP_OCI8_DEF_DIR
+#if defined(HAVE_OCI_INSTANT_CLIENT)
+	php_info_print_table_row(2, "Oracle Instant Client Version", buf);
+#else
+	php_info_print_table_row(2, "Oracle Version", buf);
+#endif
+
+#if !defined(PHP_WIN32) && !defined(HAVE_OCI_INSTANT_CLIENT)
+#if defined(PHP_OCI8_DEF_DIR)
 	php_info_print_table_row(2, "Compile-time ORACLE_HOME", PHP_OCI8_DEF_DIR);
 #endif
-#ifdef PHP_OCI8_DEF_SHARED_LIBADD
+#if defined(PHP_OCI8_DEF_SHARED_LIBADD)
 	php_info_print_table_row(2, "Libraries Used", PHP_OCI8_DEF_SHARED_LIBADD);
 #endif
-#elif defined(HAVE_OCI_INSTANT_CLIENT) && defined(OCI_MAJOR_VERSION) && defined(OCI_MINOR_VERSION)
-	snprintf(buf, sizeof(buf), "%d.%d", OCI_MAJOR_VERSION, OCI_MINOR_VERSION);
-	php_info_print_table_row(2, "Oracle Instant Client Version", buf);
 #endif
 
 	php_info_print_table_row(2, "Temporary Lob support", "enabled");
@@ -1549,6 +1556,7 @@ void php_oci_connection_descriptors_free(php_oci_connection *connection TSRMLS_D
 /* {{{ php_oci_error()
  *
  * Fetch & print out error message if we get an error
+ * Returns an Oracle error number
  */
 sb4 php_oci_error(OCIError *err_p, sword status TSRMLS_DC)
 {
@@ -1637,21 +1645,22 @@ sb4 php_oci_fetch_errmsg(OCIError *error_handle, text **error_buf TSRMLS_DC)
  */
 int php_oci_fetch_sqltext_offset(php_oci_statement *statement, text **sqltext, ub2 *error_offset TSRMLS_DC)
 {
+	sword errstatus;
+
 	*sqltext = NULL;
 	*error_offset = 0;
+	PHP_OCI_CALL_RETURN(errstatus, OCIAttrGet, ((dvoid *)statement->stmt, OCI_HTYPE_STMT, (dvoid *) sqltext, (ub4 *)0, OCI_ATTR_STATEMENT, statement->err));
 
-	PHP_OCI_CALL_RETURN(statement->errcode, OCIAttrGet, ((dvoid *)statement->stmt, OCI_HTYPE_STMT, (dvoid *) sqltext, (ub4 *)0, OCI_ATTR_STATEMENT, statement->err));
-
-	if (statement->errcode != OCI_SUCCESS) {
-		statement->errcode = php_oci_error(statement->err, statement->errcode TSRMLS_CC);
+	if (errstatus != OCI_SUCCESS) {
+		statement->errcode = php_oci_error(statement->err, errstatus TSRMLS_CC);
 		PHP_OCI_HANDLE_ERROR(statement->connection, statement->errcode);
 		return 1;
 	}
 
-	PHP_OCI_CALL_RETURN(statement->errcode, OCIAttrGet, ((dvoid *)statement->stmt, OCI_HTYPE_STMT, (ub2 *)error_offset, (ub4 *)0, OCI_ATTR_PARSE_ERROR_OFFSET, statement->err));
+	PHP_OCI_CALL_RETURN(errstatus, OCIAttrGet, ((dvoid *)statement->stmt, OCI_HTYPE_STMT, (ub2 *)error_offset, (ub4 *)0, OCI_ATTR_PARSE_ERROR_OFFSET, statement->err));
 
-	if (statement->errcode != OCI_SUCCESS) {
-		statement->errcode = php_oci_error(statement->err, statement->errcode TSRMLS_CC);
+	if (errstatus != OCI_SUCCESS) {
+		statement->errcode = php_oci_error(statement->err, errstatus TSRMLS_CC);
 		PHP_OCI_HANDLE_ERROR(statement->connection, statement->errcode);
 		return 1;
 	}

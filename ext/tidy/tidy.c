@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: tidy.c 294893 2010-02-11 17:36:40Z johannes $ */
+/* $Id: tidy.c 296107 2010-03-12 10:28:59Z jani $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1085,7 +1085,7 @@ static PHP_MINFO_FUNCTION(tidy)
 	php_info_print_table_start();
 	php_info_print_table_header(2, "Tidy support", "enabled");
 	php_info_print_table_row(2, "libTidy Release", (char *)tidyReleaseDate());
-	php_info_print_table_row(2, "Extension Version", PHP_TIDY_MODULE_VERSION " ($Id: tidy.c 294893 2010-02-11 17:36:40Z johannes $)");
+	php_info_print_table_row(2, "Extension Version", PHP_TIDY_MODULE_VERSION " ($Id: tidy.c 296107 2010-03-12 10:28:59Z jani $)");
 	php_info_print_table_end();
 
 	DISPLAY_INI_ENTRIES();

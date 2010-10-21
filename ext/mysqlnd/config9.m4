@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config9.m4 292495 2009-12-22 19:30:09Z johannes $
+dnl $Id: config9.m4 298023 2010-04-15 11:01:30Z andrey $
 dnl config.m4 for mysqlnd driver
 
 
@@ -36,6 +36,7 @@ if test "$PHP_MYSQLND_ENABLED" = "yes"; then
       MYSQLND_LIBS="$MYSQLND_LIBS -lz"
     fi
   fi
+  AC_DEFINE([MYSQLND_SSL_SUPPORTED], 1, [Enable SSL support])
 fi
 
 if test "$PHP_MYSQLND_ENABLED" = "yes" || test "$PHP_MYSQLI" != "no"; then

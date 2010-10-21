@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_builtin_functions.c 294034 2010-01-25 23:41:18Z johannes $ */
+/* $Id: zend_builtin_functions.c 300392 2010-06-11 23:20:13Z felipe $ */
 
 #include "zend.h"
 #include "zend_API.h"
@@ -26,6 +26,7 @@
 #include "zend_ini.h"
 #include "zend_exceptions.h"
 #include "zend_extensions.h"
+#include "zend_closures.h"
 
 #undef ZEND_TEST_EXCEPTIONS
 
@@ -179,7 +180,7 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_class_alias, 0, 0, 2)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_trigger_error, 0, 0, 1)
-	ZEND_ARG_INFO(0, messsage)
+	ZEND_ARG_INFO(0, message)
 	ZEND_ARG_INFO(0, error_type)
 ZEND_END_ARG_INFO()
 
@@ -1098,22 +1099,29 @@ ZEND_FUNCTION(method_exists)
 		RETURN_TRUE;
 	} else {
 		union _zend_function *func = NULL;
-		efree(lcname);
 
 		if (Z_TYPE_P(klass) == IS_OBJECT 
 		&& Z_OBJ_HT_P(klass)->get_method != NULL
 		&& (func = Z_OBJ_HT_P(klass)->get_method(&klass, method_name, method_len TSRMLS_CC)) != NULL
 		) {
 			if (func->type == ZEND_INTERNAL_FUNCTION 
-			&& ((zend_internal_function*)func)->handler == zend_std_call_user_call
+			&& (func->common.fn_flags & ZEND_ACC_CALL_VIA_HANDLER) != 0
 			) {
+				/* Returns true to the fake Closure's __invoke */
+				RETVAL_BOOL((func->common.scope == zend_ce_closure
+					&& (method_len == sizeof(ZEND_INVOKE_FUNC_NAME)-1)
+					&& memcmp(lcname, ZEND_INVOKE_FUNC_NAME, sizeof(ZEND_INVOKE_FUNC_NAME)-1) == 0) ? 1 : 0);
+
+				efree(lcname);
 				efree(((zend_internal_function*)func)->function_name);
 				efree(func);
-				RETURN_FALSE;
+				return;
 			}
+			efree(lcname);
 			RETURN_TRUE;
 		}
 	}
+	efree(lcname);
 	RETURN_FALSE;
 }
 /* }}} */
@@ -1151,10 +1159,8 @@ ZEND_FUNCTION(property_exists)
 	}
 
 	h = zend_get_hash_value(property, property_len+1);
-	if (zend_hash_quick_find(&ce->properties_info, property, property_len+1, h, (void **) &property_info) == SUCCESS) {
-		if (property_info->flags & ZEND_ACC_SHADOW) {
-			RETURN_FALSE;
-		}
+	if (zend_hash_quick_find(&ce->properties_info, property, property_len+1, h, (void **) &property_info) == SUCCESS
+		&& (property_info->flags & ZEND_ACC_SHADOW) == 0) {
 		RETURN_TRUE;
 	}
 
@@ -1386,7 +1392,7 @@ ZEND_FUNCTION(get_included_files)
 /* }}} */
 
 
-/* {{{ proto void trigger_error(string messsage [, int error_type])
+/* {{{ proto void trigger_error(string message [, int error_type])
    Generates a user-level error/warning/notice message */
 ZEND_FUNCTION(trigger_error)
 {
@@ -2150,7 +2156,9 @@ ZEND_API void zend_fetch_debug_backtrace(zval *return_value, int skip_last, int 
 
 			while (prev) {
 				if (prev->function_state.function &&
-					prev->function_state.function->common.type != ZEND_USER_FUNCTION) {
+					prev->function_state.function->common.type != ZEND_USER_FUNCTION &&
+					!(prev->function_state.function->common.type == ZEND_INTERNAL_FUNCTION &&
+						(prev->function_state.function->common.fn_flags & ZEND_ACC_CALL_VIA_HANDLER))) {
 					break;
 				}				    
 				if (prev->op_array) {

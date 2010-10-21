@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: dba.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: dba.c 295764 2010-03-03 00:29:38Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -250,7 +250,7 @@ static size_t php_dba_make_key(zval *key, char **key_str, char **key_free TSRMLS
 	zval *key;													\
 	char *key_str, *key_free;									\
 	size_t key_len; 											\
-	int skip = 0;  												\
+	long skip = 0;  											\
 	switch(ac) {												\
 	case 2: 													\
 		if (zend_parse_parameters(ac TSRMLS_CC, "zr", &key, &id) == FAILURE) { \

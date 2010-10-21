@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_odbc.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: php_odbc.c 296467 2010-03-20 18:19:16Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -2864,7 +2864,7 @@ PHP_FUNCTION(odbc_autocommit)
 
 	ZEND_FETCH_RESOURCE2(conn, odbc_connection *, &pv_conn, -1, "ODBC-Link", le_conn, le_pconn);
 	
-	if (pv_onoff) {
+	if (ZEND_NUM_ARGS() > 1) {
 		rc = SQLSetConnectOption(conn->hdbc, SQL_AUTOCOMMIT, (pv_onoff) ? SQL_AUTOCOMMIT_ON : SQL_AUTOCOMMIT_OFF);
 		if (rc != SQL_SUCCESS && rc != SQL_SUCCESS_WITH_INFO) {
 			odbc_sql_error(conn, SQL_NULL_HSTMT, "Set autocommit");

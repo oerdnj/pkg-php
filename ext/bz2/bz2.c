@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
  
-/* $Id: bz2.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: bz2.c 300764 2010-06-26 16:03:39Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -85,14 +85,23 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_bzdecompress, 0, 0, 1)
 	ZEND_ARG_INFO(0, small)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_bzwrite, 0, 0, 2)
+	ZEND_ARG_INFO(0, fp)
+	ZEND_ARG_INFO(0, str)
+	ZEND_ARG_INFO(0, length)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(arginfo_bzflush, 0)
+	ZEND_ARG_INFO(0, fp)
+ZEND_END_ARG_INFO()
 /* }}} */
 
 static const zend_function_entry bz2_functions[] = {
 	PHP_FE(bzopen,       arginfo_bzopen)
 	PHP_FE(bzread,       arginfo_bzread)
-	PHP_FALIAS(bzwrite,   fwrite,		NULL)
-	PHP_FALIAS(bzflush,   fflush,		NULL)
-	PHP_FALIAS(bzclose,   fclose,		NULL)
+	PHP_FALIAS(bzwrite,   fwrite,		arginfo_bzwrite)
+	PHP_FALIAS(bzflush,   fflush,		arginfo_bzflush)
+	PHP_FALIAS(bzclose,   fclose,		arginfo_bzflush)
 	PHP_FE(bzerrno,      arginfo_bzerrno)
 	PHP_FE(bzerrstr,     arginfo_bzerrstr)
 	PHP_FE(bzerror,      arginfo_bzerror)

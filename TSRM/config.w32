@@ -1,10 +1,5 @@
 // vim:ft=javascript
-// $Id: config.w32 147168 2003-12-22 15:01:05Z wez $
+// $Id: config.w32 298737 2010-04-28 22:25:31Z pajoye $
 
-if (CHECK_HEADER_ADD_INCLUDE("NewAPIs.h", "CFLAGS_PHP", php_usual_include_suspects)) {
-	// Need to add the flag directly, since TSRM doesn't include the config
-	// header
-	ADD_FLAG("CFLAGS_PHP", "/DHAVE_NEWAPIS_H=1");
-}
 ADD_SOURCES("TSRM", "TSRM.c tsrm_strtok_r.c tsrm_virtual_cwd.c tsrm_win32.c");
 

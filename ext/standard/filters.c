@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: filters.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: filters.c 298700 2010-04-28 14:10:01Z pajoye $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -1914,7 +1914,7 @@ typedef enum _php_chunked_filter_state {
 
 typedef struct _php_chunked_filter_data {
 	php_chunked_filter_state state;
-	int chunk_size;
+	size_t chunk_size;
 	int persistent;
 } php_chunked_filter_data;
 
@@ -1991,7 +1991,7 @@ static int php_dechunk(char *buf, int len, php_chunked_filter_data *data)
 					continue;
 				}
 			case CHUNK_BODY:
-				if (end - p >= data->chunk_size) {
+				if ((size_t) (end - p) >= data->chunk_size) {
 					if (p != out) {
 						memmove(out, p, data->chunk_size);
 					}

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_spl.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: php_spl.c 300176 2010-06-04 00:10:15Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -230,6 +230,17 @@ static int spl_autoload(const char *class_name, const char * lc_name, int class_
 	int ret;
 
 	class_file_len = spprintf(&class_file, 0, "%s%s", lc_name, file_extension);
+
+#if DEFAULT_SLASH != '\\'
+	{
+		char *ptr = class_file;
+		char *end = ptr + class_file_len;
+		
+		while ((ptr = memchr(ptr, '\\', (end - ptr))) != NULL) {
+			*ptr = DEFAULT_SLASH;
+		}
+	}
+#endif
 
 	ret = php_stream_open_for_zend_ex(class_file, &file_handle, ENFORCE_SAFE_MODE|USE_PATH|STREAM_OPEN_FOR_INCLUDE TSRMLS_CC);
 

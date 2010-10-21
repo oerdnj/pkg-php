@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: openssl.c 294508 2010-02-04 09:23:22Z pajoye $ */
+/* $Id: openssl.c 300764 2010-06-26 16:03:39Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -99,6 +99,7 @@ PHP_FUNCTION(openssl_get_cipher_methods);
 PHP_FUNCTION(openssl_digest);
 PHP_FUNCTION(openssl_encrypt);
 PHP_FUNCTION(openssl_decrypt);
+PHP_FUNCTION(openssl_cipher_iv_length);
 
 PHP_FUNCTION(openssl_dh_compute_key);
 PHP_FUNCTION(openssl_random_pseudo_bytes);
@@ -347,6 +348,7 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_openssl_encrypt, 0, 0, 3)
     ZEND_ARG_INFO(0, method)
     ZEND_ARG_INFO(0, password)
     ZEND_ARG_INFO(0, raw_output)
+    ZEND_ARG_INFO(0, iv)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_openssl_decrypt, 0, 0, 3)
@@ -354,6 +356,11 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_openssl_decrypt, 0, 0, 3)
     ZEND_ARG_INFO(0, method)
     ZEND_ARG_INFO(0, password)
     ZEND_ARG_INFO(0, raw_input)
+    ZEND_ARG_INFO(0, iv)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(arginfo_openssl_cipher_iv_length, 0)
+    ZEND_ARG_INFO(0, method)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO(arginfo_openssl_dh_compute_key, 0)
@@ -379,9 +386,9 @@ const zend_function_entry openssl_functions[] = {
 	PHP_FE(openssl_pkey_get_public,		arginfo_openssl_pkey_get_public)
 	PHP_FE(openssl_pkey_get_details,	arginfo_openssl_pkey_get_details)
 
-	PHP_FALIAS(openssl_free_key,		openssl_pkey_free, 			NULL)
-	PHP_FALIAS(openssl_get_privatekey,	openssl_pkey_get_private,	NULL)
-	PHP_FALIAS(openssl_get_publickey,	openssl_pkey_get_public,	NULL)
+	PHP_FALIAS(openssl_free_key,		openssl_pkey_free, 			arginfo_openssl_pkey_free)
+	PHP_FALIAS(openssl_get_privatekey,	openssl_pkey_get_private,	arginfo_openssl_pkey_get_private)
+	PHP_FALIAS(openssl_get_publickey,	openssl_pkey_get_public,	arginfo_openssl_pkey_get_public)
 
 /* x.509 cert funcs */
 	PHP_FE(openssl_x509_read,				arginfo_openssl_x509_read)
@@ -408,6 +415,7 @@ const zend_function_entry openssl_functions[] = {
 	PHP_FE(openssl_digest,				arginfo_openssl_digest)
 	PHP_FE(openssl_encrypt,				arginfo_openssl_encrypt)
 	PHP_FE(openssl_decrypt,				arginfo_openssl_decrypt)
+	PHP_FE(openssl_cipher_iv_length,	arginfo_openssl_cipher_iv_length)
 	PHP_FE(openssl_sign,				arginfo_openssl_sign)
 	PHP_FE(openssl_verify,				arginfo_openssl_verify)
 	PHP_FE(openssl_seal,				arginfo_openssl_seal)
@@ -4435,7 +4443,9 @@ SSL *php_SSL_new_from_context(SSL_CTX *ctx, php_stream *stream TSRMLS_DC) /* {{{
 	if (!cipherlist) {
 		cipherlist = "DEFAULT";
 	}
-	SSL_CTX_set_cipher_list(ctx, cipherlist);
+	if (SSL_CTX_set_cipher_list(ctx, cipherlist) != 1) {
+		return NULL;
+	}
 
 	GET_VER_OPT_STRING("local_cert", certfile);
 	if (certfile) {
@@ -4443,6 +4453,7 @@ SSL *php_SSL_new_from_context(SSL_CTX *ctx, php_stream *stream TSRMLS_DC) /* {{{
 		EVP_PKEY *key = NULL;
 		SSL *tmpssl;
 		char resolved_path_buff[MAXPATHLEN];
+		const char * private_key = NULL;
 
 		if (VCWD_REALPATH(certfile, resolved_path_buff)) {
 			/* a certificate to use for authentication */
@@ -4450,10 +4461,21 @@ SSL *php_SSL_new_from_context(SSL_CTX *ctx, php_stream *stream TSRMLS_DC) /* {{{
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to set local cert chain file `%s'; Check that your cafile/capath settings include details of your certificate and its issuer", certfile);
 				return NULL;
 			}
+			GET_VER_OPT_STRING("local_pk", private_key);
 
-			if (SSL_CTX_use_PrivateKey_file(ctx, resolved_path_buff, SSL_FILETYPE_PEM) != 1) {
-				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to set private key file `%s'", resolved_path_buff);
-				return NULL;
+			if (private_key) {
+				char resolved_path_buff_pk[MAXPATHLEN];
+				if (VCWD_REALPATH(private_key, resolved_path_buff_pk)) {
+					if (SSL_CTX_use_PrivateKey_file(ctx, resolved_path_buff_pk, SSL_FILETYPE_PEM) != 1) {
+						php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to set private key file `%s'", resolved_path_buff_pk);
+						return NULL;
+					}
+				}
+			} else {
+				if (SSL_CTX_use_PrivateKey_file(ctx, resolved_path_buff, SSL_FILETYPE_PEM) != 1) {
+					php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to set private key file `%s'", resolved_path_buff);
+					return NULL;
+				}		
 			}
 
 			tmpssl = SSL_new(ctx);
@@ -4576,19 +4598,54 @@ PHP_FUNCTION(openssl_digest)
 }
 /* }}} */
 
-/* {{{ proto string openssl_encrypt(string data, string method, string password [, bool raw_output=false])
+static zend_bool php_openssl_validate_iv(char **piv, int *piv_len, int iv_required_len TSRMLS_DC)
+{
+	char *iv_new;
+
+	/* Best case scenario, user behaved */
+	if (*piv_len == iv_required_len) {
+		return 0;
+	}
+
+	iv_new = ecalloc(1, iv_required_len + 1);
+
+	if (*piv_len <= 0) {
+		/* BC behavior */
+		*piv_len = iv_required_len;
+		*piv     = iv_new;
+		return 1;
+	}
+
+	if (*piv_len < iv_required_len) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "IV passed is only %d bytes long, cipher expects an IV of precisely %d bytes, padding with \\0", *piv_len, iv_required_len);
+		memcpy(iv_new, *piv, *piv_len);
+		*piv_len = iv_required_len;
+		*piv     = iv_new;
+		return 1;
+	}
+
+	php_error_docref(NULL TSRMLS_CC, E_WARNING, "IV passed is %d bytes long which is longer than the %d expected by selected cipher, truncating", *piv_len, iv_required_len);
+	memcpy(iv_new, *piv, iv_required_len);
+	*piv_len = iv_required_len;
+	*piv     = iv_new;
+	return 1;
+
+}
+
+/* {{{ proto string openssl_encrypt(string data, string method, string password [, bool raw_output=false [, string $iv='']])
    Encrypts given data with given method and key, returns raw or base64 encoded string */
 PHP_FUNCTION(openssl_encrypt)
 {
 	zend_bool raw_output = 0;
-	char *data, *method, *password;
-	int data_len, method_len, password_len;
+	char *data, *method, *password, *iv = "";
+	int data_len, method_len, password_len, iv_len = 0;
 	const EVP_CIPHER *cipher_type;
 	EVP_CIPHER_CTX cipher_ctx;
-	int i, outlen, keylen, ivlen;
-	unsigned char *outbuf, *key, *iv;
+	int i, outlen, keylen;
+	unsigned char *outbuf, *key;
+	zend_bool free_iv;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sss|b", &data, &data_len, &method, &method_len, &password, &password_len, &raw_output) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sss|bs", &data, &data_len, &method, &method_len, &password, &password_len, &raw_output, &iv, &iv_len) == FAILURE) {
 		return;
 	}
 	cipher_type = EVP_get_cipherbyname(method);
@@ -4606,14 +4663,15 @@ PHP_FUNCTION(openssl_encrypt)
 		key = (unsigned char*)password;
 	}
 
-	ivlen = EVP_CIPHER_iv_length(cipher_type);
-	iv = emalloc(ivlen);
-	memset(iv, 0, ivlen);
+	if (iv_len <= 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Using an empty Initialization Vector (iv) is potentially insecure and not recommended");
+	}
+	free_iv = php_openssl_validate_iv(&iv, &iv_len, EVP_CIPHER_iv_length(cipher_type) TSRMLS_CC);
 
 	outlen = data_len + EVP_CIPHER_block_size(cipher_type);
 	outbuf = emalloc(outlen + 1);
 
-	EVP_EncryptInit(&cipher_ctx, cipher_type, key, iv);
+	EVP_EncryptInit(&cipher_ctx, cipher_type, key, (unsigned char *)iv);
 	EVP_EncryptUpdate(&cipher_ctx, outbuf, &i, (unsigned char *)data, data_len);
 	outlen = i;
 	if (EVP_EncryptFinal(&cipher_ctx, (unsigned char *)outbuf + i, &i)) {
@@ -4636,25 +4694,28 @@ PHP_FUNCTION(openssl_encrypt)
 	if (key != (unsigned char*)password) {
 		efree(key);
 	}
-	efree(iv);
+	if (free_iv) {
+		efree(iv);
+	}
 }
 /* }}} */
 
-/* {{{ proto string openssl_decrypt(string data, string method, string password [, bool raw_input=false])
+/* {{{ proto string openssl_decrypt(string data, string method, string password [, bool raw_input=false [, string $iv = '']])
    Takes raw or base64 encoded string and dectupt it using given method and key */
 PHP_FUNCTION(openssl_decrypt)
 {
 	zend_bool raw_input = 0;
-	char *data, *method, *password;
-	int data_len, method_len, password_len;
+	char *data, *method, *password, *iv = "";
+	int data_len, method_len, password_len, iv_len = 0;
 	const EVP_CIPHER *cipher_type;
 	EVP_CIPHER_CTX cipher_ctx;
-	int i, outlen, keylen, ivlen;
-	unsigned char *outbuf, *key, *iv;
+	int i, outlen, keylen;
+	unsigned char *outbuf, *key;
 	int base64_str_len;
 	char *base64_str = NULL;
+	zend_bool free_iv;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sss|b", &data, &data_len, &method, &method_len, &password, &password_len, &raw_input) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sss|bs", &data, &data_len, &method, &method_len, &password, &password_len, &raw_input, &iv, &iv_len) == FAILURE) {
 		return;
 	}
 
@@ -4684,14 +4745,12 @@ PHP_FUNCTION(openssl_decrypt)
 		key = (unsigned char*)password;
 	}
 
-	ivlen = EVP_CIPHER_iv_length(cipher_type);
-	iv = emalloc(ivlen);
-	memset(iv, 0, ivlen);
+	free_iv = php_openssl_validate_iv(&iv, &iv_len, EVP_CIPHER_iv_length(cipher_type) TSRMLS_CC);
 
 	outlen = data_len + EVP_CIPHER_block_size(cipher_type);
 	outbuf = emalloc(outlen + 1);
 
-	EVP_DecryptInit(&cipher_ctx, cipher_type, key, iv);
+	EVP_DecryptInit(&cipher_ctx, cipher_type, key, (unsigned char *)iv);
 	EVP_DecryptUpdate(&cipher_ctx, outbuf, &i, (unsigned char *)data, data_len);
 	outlen = i;
 	if (EVP_DecryptFinal(&cipher_ctx, (unsigned char *)outbuf + i, &i)) {
@@ -4705,12 +4764,41 @@ PHP_FUNCTION(openssl_decrypt)
 	if (key != (unsigned char*)password) {
 		efree(key);
 	}
-	efree(iv);
+	if (free_iv) {
+		efree(iv);
+	}
 	if (base64_str) {
 		efree(base64_str);
 	}
 }
 /* }}} */
+
+/* {{{ proto int openssl_cipher_iv_length(string $method) */
+PHP_FUNCTION(openssl_cipher_iv_length)
+{
+	char *method;
+	int method_len;
+	const EVP_CIPHER *cipher_type;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &method, &method_len) == FAILURE) {
+		return;
+	}
+
+	if (!method_len) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unknown cipher algorithm");
+		RETURN_FALSE;
+	}
+
+	cipher_type = EVP_get_cipherbyname(method);
+	if (!cipher_type) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unknown cipher algorithm");
+		RETURN_FALSE;
+	}
+
+	RETURN_LONG(EVP_CIPHER_iv_length(cipher_type));
+}
+/* }}} */
+
 
 /* {{{ proto string openssl_dh_compute_key(string pub_key, resource dh_key)
    Computes shared sicret for public value of remote DH key and local DH key */
@@ -4771,27 +4859,23 @@ PHP_FUNCTION(openssl_random_pseudo_bytes)
 		ZVAL_BOOL(zstrong_result_returned, 0);
 	}
 
-	buffer = emalloc(buffer_length);
-
-	if (!buffer) {
-		RETURN_FALSE;
-	}
+	buffer = emalloc(buffer_length + 1);
 
 #ifdef WINDOWS
         RAND_screen();
 #endif
 
 	if ((strong_result = RAND_pseudo_bytes(buffer, buffer_length)) < 0) {
-		RETVAL_FALSE;
-	} else {
-		RETVAL_STRINGL((char *)buffer, buffer_length, 1);
-
-		if (zstrong_result_returned) {
-			ZVAL_BOOL(zstrong_result_returned, strong_result);
-		}
-
+		efree(buffer);
+		RETURN_FALSE;
 	}
-	efree(buffer);
+
+	buffer[buffer_length] = 0;
+	RETVAL_STRINGL((char *)buffer, buffer_length, 0);
+
+	if (zstrong_result_returned) {
+		ZVAL_BOOL(zstrong_result_returned, strong_result);
+	}
 }
 /* }}} */
 

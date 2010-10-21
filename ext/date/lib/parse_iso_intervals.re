@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: parse_iso_intervals.re 264095 2008-08-02 16:50:35Z pajoye $ */
+/* $Id: parse_iso_intervals.re 296828 2010-03-26 04:31:26Z aharvey $ */
 
 #include "timelib.h"
 
@@ -181,7 +181,7 @@ static long timelib_parse_tz_cor(char **ptr)
 	char *begin = *ptr, *end;
 	long  tmp;
 
-	while (**ptr != '\0') {
+	while (isdigit(**ptr) || **ptr == ':') {
 		++*ptr;
 	}
 	end = *ptr;
@@ -512,6 +512,7 @@ void timelib_strtointerval(char *s, int len,
 	in.period->weekday = 0;
 	in.period->weekday_behavior = 0;
 	in.period->first_last_day_of = 0;
+	in.period->days = TIMELIB_UNSET;
 
 	in.recurrences = 1;
 

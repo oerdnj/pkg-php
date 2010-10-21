@@ -15,7 +15,7 @@
    | Author: Pierre A. Joye <pierre@php.net>                              |
    +----------------------------------------------------------------------+
  */
-/* $Id: idn.c 293979 2010-01-25 13:59:35Z johannes $ */
+/* $Id: idn.c 292566 2009-12-23 21:41:05Z stas $ */
 
 /* {{{ includes */
 #ifdef HAVE_CONFIG_H

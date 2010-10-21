@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: streams.c 294462 2010-02-03 20:49:03Z pajoye $ */
+/* $Id: streams.c 293732 2010-01-19 13:44:08Z jani $ */
 
 /* This file implements cURL based wrappers.
  * NOTE: If you are implementing your own streams that are intended to

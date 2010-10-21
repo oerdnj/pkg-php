@@ -23,7 +23,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: ldap.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: ldap.c 299434 2010-05-17 20:09:42Z pajoye $ */
 #define IS_EXT_MODULE
 
 #ifdef HAVE_CONFIG_H
@@ -46,6 +46,7 @@
 
 #ifdef PHP_WIN32
 #include <string.h>
+#include "config.w32.h"
 #if HAVE_NSLDAP
 #include <winsock2.h>
 #endif
@@ -225,7 +226,7 @@ PHP_MINFO_FUNCTION(ldap)
 
 	php_info_print_table_start();
 	php_info_print_table_row(2, "LDAP Support", "enabled");
-	php_info_print_table_row(2, "RCS Version", "$Id: ldap.c 293036 2010-01-03 09:23:27Z sebastian $");
+	php_info_print_table_row(2, "RCS Version", "$Id: ldap.c 299434 2010-05-17 20:09:42Z pajoye $");
 
 	if (LDAPG(max_links) == -1) {
 		snprintf(tmp, 31, "%ld/unlimited", LDAPG(num_links));

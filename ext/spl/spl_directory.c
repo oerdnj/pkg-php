@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_directory.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: spl_directory.c 298647 2010-04-27 08:56:01Z colder $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -397,6 +397,9 @@ static spl_filesystem_object * spl_filesystem_object_create_info(spl_filesystem_
 	zend_replace_error_handling(EH_THROW, spl_ce_RuntimeException, &error_handling TSRMLS_CC);
 
 	ce = ce ? ce : source->info_class;
+
+	zend_update_class_constants(ce TSRMLS_CC);
+
 	return_value->value.obj = spl_filesystem_object_new_ex(ce, &intern TSRMLS_CC);
 	Z_TYPE_P(return_value) = IS_OBJECT;
 
@@ -437,6 +440,9 @@ static spl_filesystem_object * spl_filesystem_object_create_type(int ht, spl_fil
 	switch (type) {
 	case SPL_FS_INFO:
 		ce = ce ? ce : source->info_class;
+
+		zend_update_class_constants(ce TSRMLS_CC);
+
 		return_value->value.obj = spl_filesystem_object_new_ex(ce, &intern TSRMLS_CC);
 		Z_TYPE_P(return_value) = IS_OBJECT;
 
@@ -455,6 +461,9 @@ static spl_filesystem_object * spl_filesystem_object_create_type(int ht, spl_fil
 		break;
 	case SPL_FS_FILE:
 		ce = ce ? ce : source->file_class;
+
+		zend_update_class_constants(ce TSRMLS_CC);
+
 		return_value->value.obj = spl_filesystem_object_new_ex(ce, &intern TSRMLS_CC);
 		Z_TYPE_P(return_value) = IS_OBJECT;
 	
@@ -1178,7 +1187,10 @@ SPL_METHOD(SplFileInfo, getPathInfo)
 		int path_len;
 		char *path = spl_filesystem_object_get_pathname(intern, &path_len TSRMLS_CC);
 		if (path) {
-			spl_filesystem_object_create_info(intern, path, path_len, 1, ce, return_value TSRMLS_CC);
+			char *dpath = estrndup(path, path_len);
+			path_len = php_dirname(dpath, path_len);
+			spl_filesystem_object_create_info(intern, dpath, path_len, 1, ce, return_value TSRMLS_CC);
+			efree(dpath);
 		}
 	}
 
@@ -2567,9 +2579,8 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_file_object_fgetss, 0, 0, 0)
 	ZEND_ARG_INFO(0, allowable_tags)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_file_object_fscanf, 1, 0, 1) 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_file_object_fscanf, 0, 0, 1) 
 	ZEND_ARG_INFO(0, format)
-	ZEND_ARG_INFO(1, ...)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_file_object_fwrite, 0, 0, 1) 

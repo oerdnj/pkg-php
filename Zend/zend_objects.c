@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_objects.c 293155 2010-01-05 20:46:53Z sebastian $ */
+/* $Id: zend_objects.c 299254 2010-05-11 16:09:43Z dmitry $ */
 
 #include "zend.h"
 #include "zend_globals.h"
@@ -52,6 +52,7 @@ ZEND_API void zend_objects_destroy_object(zend_object *object, zend_object_handl
 	zend_function *destructor = object ? object->ce->destructor : NULL;
 
 	if (destructor) {
+		zval *old_exception;
 		zval *obj;
 		zend_object_store_bucket *obj_bucket;
 
@@ -99,12 +100,25 @@ ZEND_API void zend_objects_destroy_object(zend_object *object, zend_object_handl
 		 * For example, if an exception was thrown in a function and when the function's
 		 * local variable destruction results in a destructor being called.
 		 */
-		if (EG(exception) && Z_OBJ_HANDLE_P(EG(exception)) == handle) {
-			zend_error(E_ERROR, "Attempt to destruct pending exception");
+		old_exception = NULL;
+		if (EG(exception)) {
+			if (Z_OBJ_HANDLE_P(EG(exception)) == handle) {
+				zend_error(E_ERROR, "Attempt to destruct pending exception");
+			} else {
+				old_exception = EG(exception);
+				Z_ADDREF_P(old_exception);
+			}
 		}
 		zend_exception_save(TSRMLS_C);
 		zend_call_method_with_0_params(&obj, object->ce, &destructor, ZEND_DESTRUCTOR_FUNC_NAME, NULL);
 		zend_exception_restore(TSRMLS_C);
+		if (old_exception) {
+			if (EG(exception)) {
+				zval_ptr_dtor(&old_exception);				
+			} else {
+				EG(exception) = old_exception;
+			}
+		}
 		zval_ptr_dtor(&obj);
 	}
 }

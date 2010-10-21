@@ -14,7 +14,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: locale_methods.c 293979 2010-01-25 13:59:35Z johannes $ */
+/* $Id: locale_methods.c 292566 2009-12-23 21:41:05Z stas $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

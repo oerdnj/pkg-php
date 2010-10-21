@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: session.c 294515 2010-02-04 09:40:38Z pajoye $ */
+/* $Id: session.c 300296 2010-06-08 22:30:16Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -26,7 +26,8 @@
 #include "php.h"
 
 #ifdef PHP_WIN32
-#include "win32/time.h"
+# include "win32/winutil.h"
+# include "win32/time.h"
 #else
 #include <sys/time.h>
 #endif
@@ -402,6 +403,28 @@ PHPAPI char *php_session_create_id(PS_CREATE_SID_ARGS) /* {{{ */
 	efree(buf);
 
 	if (PS(entropy_length) > 0) {
+		unsigned char rbuf[2048];
+
+#ifdef PHP_WIN32
+		size_t toread = PS(entropy_length);
+
+		if (php_win32_get_random_bytes(rbuf, (size_t) toread) == SUCCESS){
+
+			switch (PS(hash_func)) {
+				case PS_HASH_FUNC_MD5:
+					PHP_MD5Update(&md5_context, rbuf, toread);
+					break;
+				case PS_HASH_FUNC_SHA1:
+					PHP_SHA1Update(&sha1_context, rbuf, toread);
+					break;
+# if defined(HAVE_HASH_EXT) && !defined(COMPILE_DL_HASH)
+				case PS_HASH_FUNC_OTHER:
+					PS(hash_ops)->hash_update(hash_context, rbuf, toread);
+					break;
+# endif /* HAVE_HASH_EXT */
+			}
+		}
+#else
 		int fd;
 
 		fd = VCWD_OPEN(PS(entropy_file), O_RDONLY);
@@ -431,6 +454,7 @@ PHPAPI char *php_session_create_id(PS_CREATE_SID_ARGS) /* {{{ */
 			}
 			close(fd);
 		}
+#endif
 	}
 
 	digest = emalloc(digest_len + 1);
@@ -456,8 +480,8 @@ PHPAPI char *php_session_create_id(PS_CREATE_SID_ARGS) /* {{{ */
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "The ini setting hash_bits_per_character is out of range (should be 4, 5, or 6) - using 4 for now");
 	}
 	
-	outid = emalloc((digest_len + 2) * ((8.0f / PS(hash_bits_per_character)) + 0.5));
-	j = (int) (bin_to_readable((char *)digest, digest_len, outid, PS(hash_bits_per_character)) - outid);
+	outid = emalloc((size_t)((digest_len + 2) * ((8.0f / PS(hash_bits_per_character)) + 0.5)));
+	j = (int) (bin_to_readable((char *)digest, digest_len, outid, (char)PS(hash_bits_per_character)) - outid);
 	efree(digest);
 
 	if (newlen) {
@@ -895,7 +919,7 @@ PS_SERIALIZER_ENCODE_FUNC(php) /* {{{ */
 
 	PS_ENCODE_LOOP(
 			smart_str_appendl(&buf, key, key_length);
-			if (memchr(key, PS_DELIMITER, key_length)) {
+			if (memchr(key, PS_DELIMITER, key_length) || memchr(key, PS_UNDEF_MARKER, key_length)) {
 				PHP_VAR_SERIALIZE_DESTROY(var_hash);
 				smart_str_free(&buf);
 				return FAILURE;
@@ -1343,7 +1367,11 @@ PHPAPI void php_session_start(TSRMLS_D) /* {{{ */
 	int nrand;
 	int lensess;
 
-	PS(apply_trans_sid) = PS(use_trans_sid);
+	if (PS(use_only_cookies)) {
+		PS(apply_trans_sid) = 0;
+	} else {
+		PS(apply_trans_sid) = PS(use_trans_sid);
+	}
 
 	switch (PS(session_status)) {
 		case php_session_active:
@@ -1445,7 +1473,7 @@ PHPAPI void php_session_start(TSRMLS_D) /* {{{ */
 		efree(PS(id));
 		PS(id) = NULL;
 		PS(send_cookie) = 1;
-		if (PS(use_trans_sid)) {
+		if (PS(use_trans_sid) && !PS(use_only_cookies)) {
 			PS(apply_trans_sid) = 1;
 		}
 	}
@@ -1453,7 +1481,7 @@ PHPAPI void php_session_start(TSRMLS_D) /* {{{ */
 	php_session_initialize(TSRMLS_C);
 
 	if (!PS(use_cookies) && PS(send_cookie)) {
-		if (PS(use_trans_sid)) {
+		if (PS(use_trans_sid) && !PS(use_only_cookies)) {
 			PS(apply_trans_sid) = 1;
 		}
 		PS(send_cookie) = 0;

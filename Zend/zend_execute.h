@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute.h 294526 2010-02-04 10:21:05Z pajoye $ */
+/* $Id: zend_execute.h 299766 2010-05-26 00:00:58Z felipe $ */
 
 #ifndef ZEND_EXECUTE_H
 #define ZEND_EXECUTE_H
@@ -135,6 +135,8 @@ static inline int i_zend_is_true(zval *op)
 }
 
 ZEND_API int zval_update_constant(zval **pp, void *arg TSRMLS_DC);
+ZEND_API int zval_update_constant_inline_change(zval **pp, void *arg TSRMLS_DC);
+ZEND_API int zval_update_constant_no_inline_change(zval **pp, void *arg TSRMLS_DC);
 ZEND_API int zval_update_constant_ex(zval **pp, void *arg, zend_class_entry *scope TSRMLS_DC);
 
 /* dedicated Zend executor functions - do not use! */

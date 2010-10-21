@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: file.c 294896 2010-02-11 18:03:57Z johannes $ */
+/* $Id: file.c 298882 2010-05-02 20:11:22Z felipe $ */
 
 /* Synced with php 3.0 revision 1.218 1999-06-16 [ssb] */
 
@@ -136,7 +136,7 @@ php_file_globals file_globals;
 
 /* {{{ ZTS-stuff / Globals / Prototypes */
 
-/* sharing globals is *evil* */
+/* sharing globals is *evil* */		
 static int le_stream_context = FAILURE;
 
 PHPAPI int php_le_stream_context(void)
@@ -2519,6 +2519,10 @@ PHP_FUNCTION(fnmatch)
 
 	if (filename_len >= MAXPATHLEN) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Filename exceeds the maximum allowed length of %d characters", MAXPATHLEN);
+		RETURN_FALSE;
+	}
+	if (pattern_len >= MAXPATHLEN) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Pattern exceeds the maximum allowed length of %d characters", MAXPATHLEN);
 		RETURN_FALSE;
 	}
 

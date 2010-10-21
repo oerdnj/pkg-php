@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
  
-/* $Id: php_mysql.c 294891 2010-02-11 17:14:44Z johannes $ */
+/* $Id: php_mysql.c 300792 2010-06-28 01:19:08Z felipe $ */
 
 /* TODO:
  *
@@ -135,90 +135,191 @@ typedef struct _php_mysql_conn {
 #define MYSQL_DISABLE_MQ
 #endif
 
+/* {{{ arginfo */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_mysql_connect, 0, 0, 0)
+	ZEND_ARG_INFO(0, hostname)
+	ZEND_ARG_INFO(0, username)
+	ZEND_ARG_INFO(0, password)
+	ZEND_ARG_INFO(0, new)
+	ZEND_ARG_INFO(0, flags)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_mysql_pconnect, 0, 0, 0)
+	ZEND_ARG_INFO(0, hostname)
+	ZEND_ARG_INFO(0, username)
+	ZEND_ARG_INFO(0, password)
+	ZEND_ARG_INFO(0, flags)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo__optional_mysql_link, 0, 0, 0)
+	ZEND_ARG_INFO(0, link_identifier)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_mysql_select_db, 0, 0, 1)
+	ZEND_ARG_INFO(0, database_name)
+	ZEND_ARG_INFO(0, link_identifier)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(arginfo__void_mysql_arg, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_mysql_set_charset, 0, 0, 1)
+	ZEND_ARG_INFO(0, charset_name)
+	ZEND_ARG_INFO(0, link_identifier)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_mysql_query, 0, 0, 1)
+	ZEND_ARG_INFO(0, query)
+	ZEND_ARG_INFO(0, link_identifier)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_mysql_db_query, 0, 0, 2)
+	ZEND_ARG_INFO(0, database_name)
+	ZEND_ARG_INFO(0, query)
+	ZEND_ARG_INFO(0, link_identifier)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_mysql_list_fields, 0, 0, 2)
+	ZEND_ARG_INFO(0, database_name)
+	ZEND_ARG_INFO(0, table_name)
+	ZEND_ARG_INFO(0, link_identifier)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_mysql_escape_string, 0, 0, 1)
+	ZEND_ARG_INFO(0, string)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_mysql_real_escape_string, 0, 0, 1)
+	ZEND_ARG_INFO(0, string)
+	ZEND_ARG_INFO(0, link_identifier)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_mysql_result, 0, 0, 2)
+	ZEND_ARG_INFO(0, result)
+	ZEND_ARG_INFO(0, row)
+	ZEND_ARG_INFO(0, field)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo__result_mysql_arg, 0, 0, 1)
+	ZEND_ARG_INFO(0, result)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_mysql_fetch_object, 0, 0, 1)
+	ZEND_ARG_INFO(0, result)
+	ZEND_ARG_INFO(0, class_name)
+	ZEND_ARG_INFO(0, ctor_params)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_mysql_fetch_array, 0, 0, 1)
+	ZEND_ARG_INFO(0, result)
+	ZEND_ARG_INFO(0, result_type)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_mysql_data_seek, 0, 0, 2)
+	ZEND_ARG_INFO(0, result)
+	ZEND_ARG_INFO(0, row_number)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_mysql_fetch_field, 0, 0, 1)
+	ZEND_ARG_INFO(0, result)
+	ZEND_ARG_INFO(0, field_offset)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_mysql_field_seek, 0, 0, 2)
+	ZEND_ARG_INFO(0, result)
+	ZEND_ARG_INFO(0, field_offset)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_mysql_field_name, 0, 0, 2)
+	ZEND_ARG_INFO(0, result)
+	ZEND_ARG_INFO(0, field_index)
+ZEND_END_ARG_INFO()
+/* }}} */
+
 /* {{{ mysql_functions[]
  */
 static const zend_function_entry mysql_functions[] = {
-	PHP_FE(mysql_connect,								NULL)
-	PHP_FE(mysql_pconnect,								NULL)
-	PHP_FE(mysql_close,									NULL)
-	PHP_FE(mysql_select_db,								NULL)
+	PHP_FE(mysql_connect,								arginfo_mysql_connect)
+	PHP_FE(mysql_pconnect,								arginfo_mysql_pconnect)
+	PHP_FE(mysql_close,									arginfo__optional_mysql_link)
+	PHP_FE(mysql_select_db,								arginfo_mysql_select_db)
 #ifndef NETWARE		/* The below two functions not supported on NetWare */
 #if MYSQL_VERSION_ID < 40000
-	PHP_DEP_FE(mysql_create_db,							NULL)
-	PHP_DEP_FE(mysql_drop_db,							NULL)
+	PHP_DEP_FE(mysql_create_db,							arginfo_mysql_select_db)
+	PHP_DEP_FE(mysql_drop_db,							arginfo_mysql_select_db)
 #endif
 #endif	/* NETWARE */
-	PHP_FE(mysql_query,									NULL)
-	PHP_FE(mysql_unbuffered_query,						NULL)
-	PHP_FE(mysql_db_query,								NULL)
-	PHP_FE(mysql_list_dbs,								NULL)
-	PHP_DEP_FE(mysql_list_tables,						NULL)
-	PHP_FE(mysql_list_fields,							NULL)
-	PHP_FE(mysql_list_processes,						NULL)
-	PHP_FE(mysql_error,									NULL)
+	PHP_FE(mysql_query,									arginfo_mysql_query)
+	PHP_FE(mysql_unbuffered_query,						arginfo_mysql_query)
+	PHP_FE(mysql_db_query,								arginfo_mysql_db_query)
+	PHP_FE(mysql_list_dbs,								arginfo__optional_mysql_link)
+	PHP_DEP_FE(mysql_list_tables,						arginfo_mysql_select_db)
+	PHP_FE(mysql_list_fields,							arginfo_mysql_list_fields)
+	PHP_FE(mysql_list_processes,						arginfo__optional_mysql_link)
+	PHP_FE(mysql_error,									arginfo__optional_mysql_link)
 #ifdef HAVE_MYSQL_ERRNO
-	PHP_FE(mysql_errno,									NULL)
+	PHP_FE(mysql_errno,									arginfo__optional_mysql_link)
 #endif
-	PHP_FE(mysql_affected_rows,							NULL)
-	PHP_FE(mysql_insert_id,								NULL)
-	PHP_FE(mysql_result,								NULL)
-	PHP_FE(mysql_num_rows,								NULL)
-	PHP_FE(mysql_num_fields,							NULL)
-	PHP_FE(mysql_fetch_row,								NULL)
-	PHP_FE(mysql_fetch_array,							NULL)
-	PHP_FE(mysql_fetch_assoc,							NULL)
-	PHP_FE(mysql_fetch_object,							NULL)
-	PHP_FE(mysql_data_seek,								NULL)
-	PHP_FE(mysql_fetch_lengths,							NULL)
-	PHP_FE(mysql_fetch_field,							NULL)
-	PHP_FE(mysql_field_seek,							NULL)
-	PHP_FE(mysql_free_result,							NULL)
-	PHP_FE(mysql_field_name,							NULL)
-	PHP_FE(mysql_field_table,							NULL)
-	PHP_FE(mysql_field_len,								NULL)
-	PHP_FE(mysql_field_type,							NULL)
-	PHP_FE(mysql_field_flags,							NULL)
-	PHP_FE(mysql_escape_string,							NULL)
-	PHP_FE(mysql_real_escape_string,					NULL)
-	PHP_FE(mysql_stat,									NULL)
-	PHP_FE(mysql_thread_id,								NULL)
-	PHP_FE(mysql_client_encoding,					NULL)
-	PHP_FE(mysql_ping,									NULL)
+	PHP_FE(mysql_affected_rows,							arginfo__optional_mysql_link)
+	PHP_FE(mysql_insert_id,								arginfo__optional_mysql_link)
+	PHP_FE(mysql_result,								arginfo_mysql_result)
+	PHP_FE(mysql_num_rows,								arginfo__result_mysql_arg)
+	PHP_FE(mysql_num_fields,							arginfo__result_mysql_arg)
+	PHP_FE(mysql_fetch_row,								arginfo__result_mysql_arg)
+	PHP_FE(mysql_fetch_array,							arginfo_mysql_fetch_array)
+	PHP_FE(mysql_fetch_assoc,							arginfo__result_mysql_arg)
+	PHP_FE(mysql_fetch_object,							arginfo_mysql_fetch_object)
+	PHP_FE(mysql_data_seek,								arginfo_mysql_data_seek)
+	PHP_FE(mysql_fetch_lengths,							arginfo__result_mysql_arg)
+	PHP_FE(mysql_fetch_field,							arginfo_mysql_fetch_field)
+	PHP_FE(mysql_field_seek,							arginfo_mysql_field_seek)
+	PHP_FE(mysql_free_result,							arginfo__result_mysql_arg)
+	PHP_FE(mysql_field_name,							arginfo_mysql_field_name)
+	PHP_FE(mysql_field_table,							arginfo_mysql_field_seek)
+	PHP_FE(mysql_field_len,								arginfo_mysql_field_seek)
+	PHP_FE(mysql_field_type,							arginfo_mysql_field_seek)
+	PHP_FE(mysql_field_flags,							arginfo_mysql_field_seek)
+	PHP_FE(mysql_escape_string,							arginfo_mysql_escape_string)
+	PHP_FE(mysql_real_escape_string,					arginfo_mysql_real_escape_string)
+	PHP_FE(mysql_stat,									arginfo__optional_mysql_link)
+	PHP_FE(mysql_thread_id,								arginfo__optional_mysql_link)
+	PHP_FE(mysql_client_encoding,						arginfo__optional_mysql_link)
+	PHP_FE(mysql_ping,									arginfo__optional_mysql_link)
 #ifdef HAVE_GETINFO_FUNCS
-	PHP_FE(mysql_get_client_info,						NULL)
-	PHP_FE(mysql_get_host_info,							NULL)
-	PHP_FE(mysql_get_proto_info,						NULL)
-	PHP_FE(mysql_get_server_info,						NULL)
+	PHP_FE(mysql_get_client_info,						arginfo__void_mysql_arg)
+	PHP_FE(mysql_get_host_info,							arginfo__optional_mysql_link)
+	PHP_FE(mysql_get_proto_info,						arginfo__optional_mysql_link)
+	PHP_FE(mysql_get_server_info,						arginfo__optional_mysql_link)
 #endif
 
-	PHP_FE(mysql_info,									NULL)
+	PHP_FE(mysql_info,									arginfo__optional_mysql_link)
 #ifdef MYSQL_HAS_SET_CHARSET
-	PHP_FE(mysql_set_charset,							NULL)
+	PHP_FE(mysql_set_charset,							arginfo_mysql_set_charset)
 #endif	 
 	/* for downwards compatability */
-	PHP_FALIAS(mysql,				mysql_db_query,		NULL)
-	PHP_FALIAS(mysql_fieldname,		mysql_field_name,	NULL)
-	PHP_FALIAS(mysql_fieldtable,	mysql_field_table,	NULL)
-	PHP_FALIAS(mysql_fieldlen,		mysql_field_len,	NULL)
-	PHP_FALIAS(mysql_fieldtype,		mysql_field_type,	NULL)
-	PHP_FALIAS(mysql_fieldflags,	mysql_field_flags,	NULL)
-	PHP_FALIAS(mysql_selectdb,		mysql_select_db,	NULL)
+	PHP_FALIAS(mysql,				mysql_db_query,		arginfo_mysql_db_query)
+	PHP_FALIAS(mysql_fieldname,		mysql_field_name,	arginfo_mysql_field_name)
+	PHP_FALIAS(mysql_fieldtable,	mysql_field_table,	arginfo_mysql_field_seek)
+	PHP_FALIAS(mysql_fieldlen,		mysql_field_len,	arginfo_mysql_field_seek)
+	PHP_FALIAS(mysql_fieldtype,		mysql_field_type,	arginfo_mysql_field_seek)
+	PHP_FALIAS(mysql_fieldflags,	mysql_field_flags,	arginfo_mysql_field_seek)
+	PHP_FALIAS(mysql_selectdb,		mysql_select_db,	arginfo_mysql_select_db)
 #ifndef NETWARE		/* The below two functions not supported on NetWare */
 #if MYSQL_VERSION_ID < 40000
-	PHP_DEP_FALIAS(mysql_createdb,	mysql_create_db,	NULL)
-	PHP_DEP_FALIAS(mysql_dropdb,	mysql_drop_db,		NULL)
+	PHP_DEP_FALIAS(mysql_createdb,	mysql_create_db,	arginfo_mysql_select_db)
+	PHP_DEP_FALIAS(mysql_dropdb,	mysql_drop_db,		arginfo_mysql_select_db)
 #endif
 #endif	/* NETWARE */
-	PHP_FALIAS(mysql_freeresult,	mysql_free_result,	NULL)
-	PHP_FALIAS(mysql_numfields,		mysql_num_fields,	NULL)
-	PHP_FALIAS(mysql_numrows,		mysql_num_rows,		NULL)
-	PHP_FALIAS(mysql_listdbs,		mysql_list_dbs,		NULL)
-	PHP_DEP_FALIAS(mysql_listtables,mysql_list_tables,	NULL)
-	PHP_FALIAS(mysql_listfields,	mysql_list_fields,	NULL)
-	PHP_FALIAS(mysql_db_name,		mysql_result,		NULL)
-	PHP_FALIAS(mysql_dbname,		mysql_result,		NULL)
-	PHP_FALIAS(mysql_tablename,		mysql_result,		NULL)
-	PHP_FALIAS(mysql_table_name,	mysql_result,		NULL)
+	PHP_FALIAS(mysql_freeresult,	mysql_free_result,	arginfo__result_mysql_arg)
+	PHP_FALIAS(mysql_numfields,		mysql_num_fields,	arginfo__result_mysql_arg)
+	PHP_FALIAS(mysql_numrows,		mysql_num_rows,		arginfo__result_mysql_arg)
+	PHP_FALIAS(mysql_listdbs,		mysql_list_dbs,		arginfo__optional_mysql_link)
+	PHP_DEP_FALIAS(mysql_listtables,mysql_list_tables,	arginfo_mysql_select_db)
+	PHP_FALIAS(mysql_listfields,	mysql_list_fields,	arginfo_mysql_list_fields)
+	PHP_FALIAS(mysql_db_name,		mysql_result,		arginfo_mysql_result)
+	PHP_FALIAS(mysql_dbname,		mysql_result,		arginfo_mysql_result)
+	PHP_FALIAS(mysql_tablename,		mysql_result,		arginfo_mysql_result)
+	PHP_FALIAS(mysql_table_name,	mysql_result,		arginfo_mysql_result)
 	{NULL, NULL, NULL}
 };
 /* }}} */
@@ -664,7 +765,11 @@ static void php_mysql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 		}
 
 		/* disable local infile option for open_basedir */
+#if PHP_API_VERSION < 20100412
 		if (((PG(open_basedir) && PG(open_basedir)[0] != '\0') || PG(safe_mode)) && (client_flags & CLIENT_LOCAL_FILES)) {
+#else
+		if ((PG(open_basedir) && PG(open_basedir)[0] != '\0') && (client_flags & CLIENT_LOCAL_FILES)) {
+#endif
 			client_flags ^= CLIENT_LOCAL_FILES;
 		}
 
@@ -855,9 +960,17 @@ static void php_mysql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 #else
 		mysql->conn = mysql_init(persistent);
 #endif
+		if (!mysql->conn) {
+			MySG(connect_error) = estrdup("OOM");
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "OOM");
+			efree(hashed_details);
+			efree(mysql);
+			MYSQL_DO_CONNECT_RETURN_FALSE();
+		}
 
-		if (connect_timeout != -1)
-				mysql_options(mysql->conn, MYSQL_OPT_CONNECT_TIMEOUT, (const char *)&connect_timeout);
+		if (connect_timeout != -1) {
+			mysql_options(mysql->conn, MYSQL_OPT_CONNECT_TIMEOUT, (const char *)&connect_timeout);
+		}
 
 #ifndef MYSQL_USE_MYSQLND
 		if (mysql_real_connect(mysql->conn, host, user, passwd, NULL, port, socket, client_flags)==NULL) 
@@ -1989,7 +2102,7 @@ static void php_mysql_fetch_hash(INTERNAL_FUNCTION_PARAMETERS, int result_type, 
 		}
 	}
 #else
-	mysqlnd_fetch_into(mysql_result, MYSQLND_FETCH_ASSOC, return_value, MYSQLND_MYSQL);
+	mysqlnd_fetch_into(mysql_result, ((result_type & MYSQL_NUM)? MYSQLND_FETCH_NUM:0) | ((result_type & MYSQL_ASSOC)? MYSQLND_FETCH_ASSOC:0), return_value, MYSQLND_MYSQL);
 #endif
 
 #ifdef ZEND_ENGINE_2
@@ -2067,19 +2180,7 @@ static void php_mysql_fetch_hash(INTERNAL_FUNCTION_PARAMETERS, int result_type, 
    Gets a result row as an enumerated array */
 PHP_FUNCTION(mysql_fetch_row)
 {
-#ifdef MYSQL_USE_MYSQLND
-	MYSQL_RES		*result;
-	zval			*mysql_result;
-
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &mysql_result) == FAILURE) {
-		return;
-	}
-	ZEND_FETCH_RESOURCE(result, MYSQL_RES *, &mysql_result, -1, "MySQL result", le_result);
-
-	mysqlnd_fetch_into(result, MYSQLND_FETCH_NUM, return_value, MYSQLND_MYSQL); 
-#else
 	php_mysql_fetch_hash(INTERNAL_FUNCTION_PARAM_PASSTHRU, MYSQL_NUM, 1, 0);
-#endif
 }
 /* }}} */
 
@@ -2101,25 +2202,7 @@ PHP_FUNCTION(mysql_fetch_object)
    Fetch a result row as an array (associative, numeric or both) */
 PHP_FUNCTION(mysql_fetch_array)
 {
-#ifndef MYSQL_USE_MYSQLND
 	php_mysql_fetch_hash(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0, 2, 0);
-#else
-	MYSQL_RES		*result;
-	zval			*mysql_result;
-	long			mode = MYSQLND_FETCH_BOTH;
-
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r|l", &mysql_result, &mode) == FAILURE) {
-		return;
-	}
-	ZEND_FETCH_RESOURCE(result, MYSQL_RES *, &mysql_result, -1, "MySQL result", le_result);
-
-	if (mode & ~MYSQL_BOTH) {
-                php_error_docref(NULL TSRMLS_CC, E_WARNING, "The result type should be either MYSQL_NUM, MYSQL_ASSOC or MYSQL_BOTH");
-                mode = MYSQL_BOTH;
-        }
-
-	mysqlnd_fetch_into(result, mode, return_value, MYSQLND_MYSQL);
-#endif
 }
 /* }}} */
 
@@ -2128,19 +2211,7 @@ PHP_FUNCTION(mysql_fetch_array)
    Fetch a result row as an associative array */
 PHP_FUNCTION(mysql_fetch_assoc)
 {
-#ifndef MYSQL_USE_MYSQLND
 	php_mysql_fetch_hash(INTERNAL_FUNCTION_PARAM_PASSTHRU, MYSQL_ASSOC, 1, 0);
-#else
-	MYSQL_RES		*result;
-	zval			*mysql_result;
-
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &mysql_result) == FAILURE) {
-		return;
-	}
-	ZEND_FETCH_RESOURCE(result, MYSQL_RES *, &mysql_result, -1, "MySQL result", le_result);
-
-	mysqlnd_fetch_into(result, MYSQLND_FETCH_ASSOC, return_value, MYSQLND_MYSQL);
-#endif
 }
 /* }}} */
 

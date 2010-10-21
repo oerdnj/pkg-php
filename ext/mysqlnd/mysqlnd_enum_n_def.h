@@ -1,8 +1,8 @@
 /*
   +----------------------------------------------------------------------+
-  | PHP Version 6                                                        |
+  | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 2006-2009 The PHP Group                                |
+  | Copyright (c) 2006-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_enum_n_def.h 293779 2010-01-20 17:09:28Z johannes $ */
+/* $Id: mysqlnd_enum_n_def.h 298650 2010-04-27 11:02:51Z andrey $ */
 #ifndef MYSQLND_ENUM_N_DEF_H
 #define MYSQLND_ENUM_N_DEF_H
 
@@ -39,6 +39,8 @@
 #define MYSQLND_SQLSTATE_LENGTH		5
 #define MYSQLND_SQLSTATE_NULL		"00000"
 
+#define MYSQLND_MAX_ALLOWED_USER_LEN	256		/* 64 char * 4byte . MySQL supports now only 16 char, but let it be forward compatible */
+#define MYSQLND_MAX_ALLOWED_DB_LEN		1024	/* 256 char * 4byte. MySQL supports now only 64 char in the tables, but on the FS could be different. Forward compatible. */
 
 #define MYSQLND_NET_CMD_BUFFER_MIN_SIZE			4096
 #define MYSQLND_NET_CMD_BUFFER_MIN_SIZE_STR		"4096"
@@ -89,6 +91,8 @@
 #define CLIENT_MULTI_STATEMENTS		(1UL << 16) /* Enable/disable multi-stmt support */
 #define CLIENT_MULTI_RESULTS		(1UL << 17) /* Enable/disable multi-results */
 #define CLIENT_PS_MULTI_RESULTS		(1UL << 18) /* Multi-results in PS-protocol */
+
+#define CLIENT_SSL_VERIFY_SERVER_CERT (1UL << 30)
 
 typedef enum mysqlnd_extension
 {
@@ -156,6 +160,12 @@ typedef enum mysqlnd_option
 #endif
 	MYSQLND_OPT_NET_CMD_BUFFER_SIZE = 202,
 	MYSQLND_OPT_NET_READ_BUFFER_SIZE = 203,
+	MYSQLND_OPT_SSL_KEY = 204,
+	MYSQLND_OPT_SSL_CERT = 205,
+	MYSQLND_OPT_SSL_CA = 206,
+	MYSQLND_OPT_SSL_CAPATH = 207,
+	MYSQLND_OPT_SSL_CIPHER = 208,
+	MYSQLND_OPT_SSL_PASSPHRASE = 209
 } enum_mysqlnd_option;
 
 
@@ -259,11 +269,11 @@ typedef enum mysqlnd_server_option
 
 
 /*
-          /-----> CONN_CLOSE  <---------------\
-         |           ^                         \
-         |           |                         \
+		/-----> CONN_CLOSE  <---------------\
+		|           ^                         \
+		|           |                         \
 	CONN_READY -> CONN_QUERY_SENT -> CONN_FETCHING_DATA
-	    ^                                      |
+		^                                      |
 		\-------------------------------------/
 */
 typedef enum mysqlnd_connection_state
@@ -388,19 +398,25 @@ typedef enum mysqlnd_collected_stats
 	STAT_STMT_CLOSE_EXPLICIT,
 	STAT_STMT_CLOSE_IMPLICIT,
 	STAT_MEM_EMALLOC_COUNT,
-	STAT_MEM_EMALLOC_AMMOUNT,
+	STAT_MEM_EMALLOC_AMOUNT,
 	STAT_MEM_ECALLOC_COUNT,
-	STAT_MEM_ECALLOC_AMMOUNT,
+	STAT_MEM_ECALLOC_AMOUNT,
 	STAT_MEM_EREALLOC_COUNT,
-	STAT_MEM_EREALLOC_AMMOUNT,
+	STAT_MEM_EREALLOC_AMOUNT,
 	STAT_MEM_EFREE_COUNT,
+	STAT_MEM_EFREE_AMOUNT,
 	STAT_MEM_MALLOC_COUNT,
-	STAT_MEM_MALLOC_AMMOUNT,
+	STAT_MEM_MALLOC_AMOUNT,
 	STAT_MEM_CALLOC_COUNT,
-	STAT_MEM_CALLOC_AMMOUNT,
+	STAT_MEM_CALLOC_AMOUNT,
 	STAT_MEM_REALLOC_COUNT,
-	STAT_MEM_REALLOC_AMMOUNT,
+	STAT_MEM_REALLOC_AMOUNT,
 	STAT_MEM_FREE_COUNT,
+	STAT_MEM_FREE_AMOUNT,
+	STAT_MEM_ESTRNDUP_COUNT,
+	STAT_MEM_STRNDUP_COUNT,
+	STAT_MEM_ESTRDUP_COUNT,
+	STAT_MEM_STRDUP_COUNT,
 	STAT_TEXT_TYPE_FETCHED_NULL,
 	STAT_TEXT_TYPE_FETCHED_BIT,
 	STAT_TEXT_TYPE_FETCHED_INT8,
@@ -534,15 +550,15 @@ enum php_mysqlnd_server_command
 
 #define MYSQLND_DEFAULT_PREFETCH_ROWS (ulong) 1
 
-#define MYSQLND_REFRESH_GRANT      1	/* Refresh grant tables */
-#define MYSQLND_REFRESH_LOG        2	/* Start on new log file */
-#define MYSQLND_REFRESH_TABLES     4	/* close all tables */
-#define MYSQLND_REFRESH_HOSTS	   8	/* Flush host cache */
-#define MYSQLND_REFRESH_STATUS     16	/* Flush status variables */
-#define MYSQLND_REFRESH_THREADS    32	/* Flush thread cache */
-#define MYSQLND_REFRESH_SLAVE      64	/* Reset master info and restart slave */
-#define MYSQLND_REFRESH_MASTER     128	/* Remove all bin logs in the index */
-#define MYSQLND_REFRESH_BACKUP_LOG 0x200000L
+#define MYSQLND_REFRESH_GRANT		1	/* Refresh grant tables */
+#define MYSQLND_REFRESH_LOG			2	/* Start on new log file */
+#define MYSQLND_REFRESH_TABLES		4	/* close all tables */
+#define MYSQLND_REFRESH_HOSTS		8	/* Flush host cache */
+#define MYSQLND_REFRESH_STATUS		16	/* Flush status variables */
+#define MYSQLND_REFRESH_THREADS		32	/* Flush thread cache */
+#define MYSQLND_REFRESH_SLAVE		64	/* Reset master info and restart slave */
+#define MYSQLND_REFRESH_MASTER		128	/* Remove all bin logs in the index */
+#define MYSQLND_REFRESH_BACKUP_LOG	0x200000L
 
 #endif	/* MYSQLND_ENUM_N_DEF_H */
 

@@ -5,13 +5,16 @@ SELECT oci_bind_by_name with SQLT_AFC aka CHAR
 if (!extension_loaded('oci8')) die ("skip no oci8 extension");
 require(dirname(__FILE__)."/connect.inc");
 $sv = oci_server_version($c);
-$sv = preg_match('/Release 1[12]\./', $sv, $matches);
+$sv = preg_match('/Release 1[01]\.2\./', $sv, $matches);
 if ($sv !== 1) {
-	die ("skip expected output only valid when using Oracle 11g+ database");
+	die ("skip expected output only valid when using Oracle 10gR2 or 11gR2 databases");
 }
 ?>
 --FILE--
 <?php
+
+// Note: expected output is valid for 32bit clients to 32bit 10gR2 XE or 11.2.0.1 64bit DBs.
+// It will diff on the undefined cases with a 32bit 11.2.0.1 DB
 
 require(dirname(__FILE__).'/connect.inc');
 
@@ -219,7 +222,9 @@ Test 1.2: Type: AFC.  Length: default
     ::
 Test 1.3: Type: AFC:  Length: 0
   Querying:
-    Oci_execute error ORA-1460 Exiting Query
+    :1:
+    :abc       :
+    ::
 Test 1.4: Type: AFC:  Length: strlen
   Querying:
     :1:
@@ -227,7 +232,9 @@ Test 1.4: Type: AFC:  Length: strlen
     ::
 Test 1.5: Type: AFC.  Length: strlen-1
   Querying:
-    Oci_execute error ORA-1460 Exiting Query
+    :1:
+    :abc       :
+    ::
 Test 1.6: Type: AFC.  Length: strlen+1
   Querying:
     :1:
@@ -263,7 +270,9 @@ Test 3.2: Type: AFC.  Length: default
     :abc:
 Test 3.3: Type: AFC:  Length: 0
   Querying:
-    Oci_execute error ORA-1460 Exiting Query
+    :2:
+    ::
+    :abc:
 Test 3.4: Type: AFC:  Length: strlen
   Querying:
     :2:
@@ -271,7 +280,9 @@ Test 3.4: Type: AFC:  Length: strlen
     :abc:
 Test 3.5: Type: AFC.  Length: strlen-1
   Querying:
-    Oci_execute error ORA-1460 Exiting Query
+    :2:
+    ::
+    :abc:
 Test 3.6: Type: AFC.  Length: strlen+1
   Querying:
     :2:

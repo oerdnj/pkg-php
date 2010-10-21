@@ -17,7 +17,7 @@
    |          Marcus Boerger <helly@php.net>                              |
    +----------------------------------------------------------------------+
 
-   $Id: sqlite.c 293036 2010-01-03 09:23:27Z sebastian $
+   $Id: sqlite.c 298697 2010-04-28 12:10:10Z iliaa $
 */
 
 #ifdef HAVE_CONFIG_H
@@ -1458,7 +1458,7 @@ PHP_MINFO_FUNCTION(sqlite)
 {
 	php_info_print_table_start();
 	php_info_print_table_header(2, "SQLite support", "enabled");
-	php_info_print_table_row(2, "PECL Module version", PHP_SQLITE_MODULE_VERSION " $Id: sqlite.c 293036 2010-01-03 09:23:27Z sebastian $");
+	php_info_print_table_row(2, "PECL Module version", PHP_SQLITE_MODULE_VERSION " $Id: sqlite.c 298697 2010-04-28 12:10:10Z iliaa $");
 	php_info_print_table_row(2, "SQLite Library", sqlite_libversion());
 	php_info_print_table_row(2, "SQLite Encoding", sqlite_libencoding());
 	php_info_print_table_end();
@@ -2508,7 +2508,7 @@ PHP_FUNCTION(sqlite_array_query)
 		return;
 	}
 
-	rres = (struct php_sqlite_result *)emalloc(sizeof(*rres));
+	rres = (struct php_sqlite_result *)ecalloc(1, sizeof(*rres));
 	sqlite_query(NULL, db, sql, sql_len, (int)mode, 0, NULL, &rres, NULL TSRMLS_CC);
 	if (db->last_err_code != SQLITE_OK) {
 		if (rres) {
@@ -2624,7 +2624,7 @@ PHP_FUNCTION(sqlite_single_query)
 		return;
 	}
 
-	rres = (struct php_sqlite_result *)emalloc(sizeof(*rres));
+	rres = (struct php_sqlite_result *)ecalloc(1, sizeof(*rres));
 	sqlite_query(NULL, db, sql, sql_len, PHPSQLITE_NUM, 0, NULL, &rres, NULL TSRMLS_CC);
 	if (db->last_err_code != SQLITE_OK) {
 		if (rres) {

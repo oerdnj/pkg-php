@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: rfc1867.c 294031 2010-01-25 23:26:15Z johannes $ */
+/* $Id: rfc1867.c 296362 2010-03-18 22:37:25Z andrei $ */
 
 /*
  *  This product includes software developed by the Apache Group

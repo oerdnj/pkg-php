@@ -108,7 +108,7 @@ php_url* phar_parse_url(php_stream_wrapper *wrapper, char *filename, char *mode,
 		}
 		if (PHAR_G(readonly) && (!pphar || !(*pphar)->is_data)) {
 			if (!(options & PHP_STREAM_URL_STAT_QUIET)) {
-				php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "phar error: write operations disabled by INI setting");
+				php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "phar error: write operations disabled by the php.ini setting phar.readonly");
 			}
 			php_url_free(resource);
 			return NULL;
@@ -117,7 +117,7 @@ php_url* phar_parse_url(php_stream_wrapper *wrapper, char *filename, char *mode,
 		{
 			if (error) {
 				if (!(options & PHP_STREAM_URL_STAT_QUIET)) {
-					php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, error);
+					php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "%s", error);
 				}
 				efree(error);
 			}
@@ -128,7 +128,7 @@ php_url* phar_parse_url(php_stream_wrapper *wrapper, char *filename, char *mode,
 			if (error) {
 				spprintf(&error, 0, "Cannot open cached phar '%s' as writeable, copy on write failed", resource->host);
 				if (!(options & PHP_STREAM_URL_STAT_QUIET)) {
-					php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, error);
+					php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "%s", error);
 				}
 				efree(error);
 			}
@@ -140,7 +140,7 @@ php_url* phar_parse_url(php_stream_wrapper *wrapper, char *filename, char *mode,
 		{
 			if (error) {
 				if (!(options & PHP_STREAM_URL_STAT_QUIET)) {
-					php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, error);
+					php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "%s", error);
 				}
 				efree(error);
 			}
@@ -192,7 +192,7 @@ static php_stream * phar_wrapper_open_url(php_stream_wrapper *wrapper, char *pat
 	if (mode[0] == 'w' || (mode[0] == 'r' && mode[1] == '+')) {
 		if (NULL == (idata = phar_get_or_create_entry_data(resource->host, host_len, internal_file, strlen(internal_file), mode, 0, &error, 1 TSRMLS_CC))) {
 			if (error) {
-				php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, error);
+				php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "%s", error);
 				efree(error);
 			} else {
 				php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "phar error: file \"%s\" could not be created in phar \"%s\"", internal_file, resource->host);
@@ -297,7 +297,7 @@ static php_stream * phar_wrapper_open_url(php_stream_wrapper *wrapper, char *pat
 		if ((FAILURE == phar_get_entry_data(&idata, resource->host, host_len, internal_file, strlen(internal_file), "r", 0, &error, 0 TSRMLS_CC)) || !idata) {
 idata_error:
 			if (error) {
-				php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, error);
+				php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "%s", error);
 				efree(error);
 			} else {
 				php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "phar error: \"%s\" is not a file in phar \"%s\"", internal_file, resource->host);
@@ -320,7 +320,7 @@ idata_error:
 
 	/* check length, crc32 */
 	if (!idata->internal_file->is_crc_checked && phar_postprocess_file(idata, idata->internal_file->crc32, &error, 2 TSRMLS_CC) != SUCCESS) {
-		php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, error);
+		php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "%s", error);
 		efree(error);
 		phar_entry_delref(idata TSRMLS_CC);
 		efree(internal_file);
@@ -727,7 +727,7 @@ static int phar_wrapper_unlink(php_stream_wrapper *wrapper, char *url, int optio
 	}
 	if (PHAR_G(readonly) && (!pphar || !(*pphar)->is_data)) {
 		php_url_free(resource);
-		php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "phar error: write operations disabled by INI setting");
+		php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "phar error: write operations disabled by the php.ini setting phar.readonly");
 		return 0;
 	}
 
@@ -761,7 +761,7 @@ static int phar_wrapper_unlink(php_stream_wrapper *wrapper, char *url, int optio
 	efree(internal_file);
 	phar_entry_remove(idata, &error TSRMLS_CC);
 	if (error) {
-		php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, error);
+		php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "%s", error);
 		efree(error);
 	}
 	return 1;
@@ -792,7 +792,7 @@ static int phar_wrapper_rename(php_stream_wrapper *wrapper, char *url_from, char
 	}
 	if (PHAR_G(readonly) && (!pfrom || !pfrom->is_data)) {
 		php_url_free(resource_from);
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "phar error: write operations disabled by phar.readonly INI setting");
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "phar error: Write operations disabled by the php.ini setting phar.readonly");
 		return 0;
 	}
 
@@ -809,7 +809,7 @@ static int phar_wrapper_rename(php_stream_wrapper *wrapper, char *url_from, char
 	}
 	if (PHAR_G(readonly) && (!pto || !pto->is_data)) {
 		php_url_free(resource_from);
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "phar error: write operations disabled by phar.readonly INI setting");
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "phar error: Write operations disabled by the php.ini setting phar.readonly");
 		return 0;
 	}
 

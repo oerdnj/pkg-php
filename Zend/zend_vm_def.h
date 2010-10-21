@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_vm_def.h 293155 2010-01-05 20:46:53Z sebastian $ */
+/* $Id: zend_vm_def.h 300990 2010-07-05 09:08:35Z dmitry $ */
 
 /* If you change this file, please regenerate the zend_vm_execute.h and
  * zend_vm_opcodes.h files by running:
@@ -2493,6 +2493,12 @@ ZEND_VM_C_LABEL(return_by_value):
 				INIT_PZVAL_COPY(ret, retval_ptr);
 				zval_copy_ctor(ret);
 				*EG(return_value_ptr_ptr) = ret;
+			} else if ((OP1_TYPE == IS_CV || OP1_TYPE == IS_VAR) &&
+			           retval_ptr == &EG(uninitialized_zval)) {
+				zval *ret;
+
+				ALLOC_INIT_ZVAL(ret);
+				*EG(return_value_ptr_ptr) = ret;
 			} else {
 				*EG(return_value_ptr_ptr) = retval_ptr;
 				Z_ADDREF_P(retval_ptr);
@@ -2687,9 +2693,16 @@ ZEND_VM_HANDLER(67, ZEND_SEND_REF, VAR|CV, ANY)
 		zend_error_noreturn(E_ERROR, "Only variables can be passed by reference");
 	}
 
-      	if (EX(function_state).function->type == ZEND_INTERNAL_FUNCTION && !ARG_SHOULD_BE_SENT_BY_REF(EX(fbc), opline->op2.u.opline_num)) {
-               ZEND_VM_DISPATCH_TO_HELPER(zend_send_by_var_helper);
-        }
+	if (OP1_TYPE == IS_VAR && *varptr_ptr == EG(error_zval_ptr)) {
+		Z_DELREF_PP(varptr_ptr);
+		ALLOC_ZVAL(*varptr_ptr);
+		INIT_ZVAL(**varptr_ptr);
+		Z_SET_REFCOUNT_PP(varptr_ptr, 0);
+	}
+
+	if (EX(function_state).function->type == ZEND_INTERNAL_FUNCTION && !ARG_SHOULD_BE_SENT_BY_REF(EX(fbc), opline->op2.u.opline_num)) {
+		ZEND_VM_DISPATCH_TO_HELPER(zend_send_by_var_helper);
+	}
 
 	SEPARATE_ZVAL_TO_MAKE_IS_REF(varptr_ptr);
 	varptr = *varptr_ptr;

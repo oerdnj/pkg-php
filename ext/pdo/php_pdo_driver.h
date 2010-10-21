@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_driver.h 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: php_pdo_driver.h 301252 2010-07-13 23:59:54Z kalle $ */
 
 #ifndef PHP_PDO_DRIVER_H
 #define PHP_PDO_DRIVER_H
@@ -188,7 +188,7 @@ enum pdo_case_conversion {
 enum pdo_null_handling {
 	PDO_NULL_NATURAL = 0,
 	PDO_NULL_EMPTY_STRING = 1,
-	PDO_NULL_TO_STRING = 2,
+	PDO_NULL_TO_STRING = 2
 };
 
 /* {{{ utils for reading attributes set as driver_options */
@@ -348,7 +348,7 @@ enum pdo_param_event {
 	PDO_PARAM_EVT_EXEC_POST,
 	PDO_PARAM_EVT_FETCH_PRE,
 	PDO_PARAM_EVT_FETCH_POST,
-	PDO_PARAM_EVT_NORMALIZE,
+	PDO_PARAM_EVT_NORMALIZE
 };
 
 typedef int (*pdo_stmt_param_hook_func)(pdo_stmt_t *stmt, struct pdo_bound_param_data *param, enum pdo_param_event event_type TSRMLS_DC);

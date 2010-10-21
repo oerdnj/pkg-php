@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_stream.c 293155 2010-01-05 20:46:53Z sebastian $ */
+/* $Id: zend_stream.c 300225 2010-06-06 12:32:25Z pajoye $ */
 
 
 #include "zend.h"
@@ -269,7 +269,9 @@ ZEND_API int zend_stream_fixup(zend_file_handle *file_handle, char **buf, size_t
 		memset(file_handle->handle.stream.mmap.buf + file_handle->handle.stream.mmap.len, 0, ZEND_MMAP_AHEAD);
 	}
 
+#if HAVE_MMAP
 return_mapped:
+#endif
 	file_handle->type = ZEND_HANDLE_MAPPED;
 	file_handle->handle.stream.mmap.pos        = 0;
 	file_handle->handle.stream.mmap.old_handle = file_handle->handle.stream.handle;

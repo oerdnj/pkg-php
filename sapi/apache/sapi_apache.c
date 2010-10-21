@@ -19,7 +19,7 @@
    | Stig Bakken <ssb@php.net>                                            |
    +----------------------------------------------------------------------+
  */
-/* $Id: sapi_apache.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: sapi_apache.c 296107 2010-03-12 10:28:59Z jani $ */
 
 #include "php_apache_http.h"
 

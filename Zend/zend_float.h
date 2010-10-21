@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_float.h 293155 2010-01-05 20:46:53Z sebastian $ */
+/* $Id: zend_float.h 301274 2010-07-15 00:13:20Z pajoye $ */
 
 #ifndef ZEND_FLOAT_H
 #define ZEND_FLOAT_H
@@ -78,7 +78,9 @@ extern ZEND_API void zend_ensure_fpu_mode(TSRMLS_D);
 #  define HAVE__CONTROLFP
 # endif /* MSC_VER >= 1500 */
   /* Tell MSVC optimizer that we access FP environment */
-# pragma fenv_access (on)
+# if _MSC_VER >= 1500
+#  pragma fenv_access (on)
+# endif
 #endif /* _MSC_VER */
 
 #ifdef HAVE__CONTROLFP_S

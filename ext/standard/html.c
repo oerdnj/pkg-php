@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: html.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: html.c 296121 2010-03-12 16:19:25Z moriyoshi $ */
 
 /*
  * HTML entity resources:
@@ -741,8 +741,8 @@ static enum entity_charset determine_charset(char *charset_hint TSRMLS_DC)
 			return cs_eucjp;
 
 		case mbfl_no_encoding_sjis:
-		case mbfl_no_encoding_sjis_win:
-		case mbfl_no_encoding_sjis_mac:
+		case mbfl_no_encoding_sjis_open:
+		case mbfl_no_encoding_cp932:
 			return cs_sjis;
 
 		case mbfl_no_encoding_cp1252:

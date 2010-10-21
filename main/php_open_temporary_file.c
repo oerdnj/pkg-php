@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_open_temporary_file.c 294726 2010-02-07 20:45:46Z pajoye $ */
+/* $Id: php_open_temporary_file.c 294724 2010-02-07 20:15:58Z pajoye $ */
 
 #include "php.h"
 

@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: sqlite_driver.c 294444 2010-02-03 19:48:04Z pajoye $ */
+/* $Id: sqlite_driver.c 300612 2010-06-20 14:12:06Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -636,7 +636,7 @@ static struct pdo_dbh_methods sqlite_methods = {
 
 static char *make_filename_safe(const char *filename TSRMLS_DC)
 {
-	if (strncmp(filename, ":memory:", sizeof(":memory:")-1)) {
+	if (*filename && strncmp(filename, ":memory:", sizeof(":memory:")-1)) {
 		char *fullpath = expand_filepath(filename, NULL TSRMLS_CC);
 
 		if (!fullpath) {

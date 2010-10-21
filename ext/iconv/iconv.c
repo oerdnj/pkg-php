@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: iconv.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: iconv.c 298963 2010-05-04 11:56:59Z aharvey $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -182,7 +182,7 @@ static PHP_GINIT_FUNCTION(iconv)
 }
 /* }}} */
 
-#ifdef HAVE_LIBICONV
+#if defined(HAVE_LIBICONV) && defined(ICONV_ALIASED_LIBICONV)
 #define iconv libiconv
 #endif
 
@@ -1206,7 +1206,7 @@ static php_iconv_err_t _php_iconv_mime_encode(smart_str *pretval, const char *fn
 				prev_in_left = ini_in_left = in_left;
 				ini_in_p = in_p;
 
-				for (out_size = char_cnt; out_size > 0;) {
+				for (out_size = (char_cnt - 2) / 3; out_size > 0;) {
 					size_t prev_out_left;
 
 					nbytes_required = 0;
@@ -1267,7 +1267,7 @@ static php_iconv_err_t _php_iconv_mime_encode(smart_str *pretval, const char *fn
 						break;
 					}
 
-					out_size -= ((nbytes_required - (char_cnt - 2)) + 1) / (3 - 1);
+					out_size -= ((nbytes_required - (char_cnt - 2)) + 1) / 3;
 					in_left = ini_in_left;
 					in_p = ini_in_p;
 				}

@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_ini_scanner.l 294698 2010-02-07 12:08:22Z pajoye $ */
+/* $Id: zend_ini_scanner.l 299767 2010-05-26 02:18:17Z felipe $ */
 
 #include <errno.h>
 #include "zend.h"
@@ -315,7 +315,7 @@ restart:
 	if (YYCURSOR >= YYLIMIT) {
 		if (YYSTATE == STATE(ST_VALUE) || YYSTATE == STATE(ST_RAW)) {
 			BEGIN(INITIAL);
-			return 0;
+			return END_OF_LINE;
 		}
 		return 0;
 	}

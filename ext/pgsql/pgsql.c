@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: pgsql.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: pgsql.c 298840 2010-05-01 18:27:42Z geissert $ */
 
 #include <stdlib.h>
 
@@ -434,12 +434,12 @@ ZEND_END_ARG_INFO()
 #endif
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_pg_connection_status, 0, 0, 1)
-	ZEND_ARG_INFO(0, connnection)
+	ZEND_ARG_INFO(0, connection)
 ZEND_END_ARG_INFO()
 
 #if HAVE_PGTRANSACTIONSTATUS
 ZEND_BEGIN_ARG_INFO_EX(arginfo_pg_transaction_status, 0, 0, 1)
-	ZEND_ARG_INFO(0, connnection)
+	ZEND_ARG_INFO(0, connection)
 ZEND_END_ARG_INFO()
 #endif
 
@@ -3303,7 +3303,7 @@ PHP_FUNCTION(pg_lo_read_all)
 
 	tbytes = 0;
 	while ((nbytes = lo_read((PGconn *)pgsql->conn, pgsql->lofd, buf, PGSQL_LO_READ_BUF_SIZE))>0) {
-		php_body_write(buf, nbytes TSRMLS_CC);
+		PHPWRITE(buf, nbytes);
 		tbytes += nbytes;
 	}
 	RETURN_LONG(tbytes);
@@ -3735,7 +3735,7 @@ PHP_FUNCTION(pg_copy_to)
 {
 	zval *pgsql_link;
 	char *table_name, *pg_delim = NULL, *pg_null_as = NULL;
-	int table_name_len, pg_delim_len, pg_null_as_len;
+	int table_name_len, pg_delim_len, pg_null_as_len, free_pg_null = 0;
 	char *query;
 	int id = -1;
 	PGconn *pgsql;
@@ -3762,19 +3762,18 @@ PHP_FUNCTION(pg_copy_to)
 
 	if (!pg_null_as) {
 		pg_null_as = safe_estrdup("\\\\N");
+		free_pg_null = 1;
 	}
 
-	if (memchr(table_name, '.', table_name_len)) {
-		spprintf(&query, 0, "COPY %s TO STDOUT DELIMITERS '%c' WITH NULL AS '%s'", table_name, *pg_delim, pg_null_as);
-	} else {
-		spprintf(&query, 0, "COPY \"%s\" TO STDOUT DELIMITERS '%c' WITH NULL AS '%s'", table_name, *pg_delim, pg_null_as);
-	}
+	spprintf(&query, 0, "COPY %s TO STDOUT DELIMITERS E'%c' WITH NULL AS E'%s'", table_name, *pg_delim, pg_null_as);
 
 	while ((pgsql_result = PQgetResult(pgsql))) {
 		PQclear(pgsql_result);
 	}
 	pgsql_result = PQexec(pgsql, query);
-	efree(pg_null_as);
+	if (free_pg_null) {
+		efree(pg_null_as);
+	}
 	efree(query);
 
 	if (pgsql_result) {
@@ -3898,7 +3897,7 @@ PHP_FUNCTION(pg_copy_from)
 
 	ZEND_FETCH_RESOURCE2(pgsql, PGconn *, &pgsql_link, id, "PostgreSQL link", le_link, le_plink);
 
-	spprintf(&query, 0, "COPY \"%s\" FROM STDIN DELIMITERS E'%c' WITH NULL AS E'%s'", table_name, *pg_delim, pg_null_as);
+	spprintf(&query, 0, "COPY %s FROM STDIN DELIMITERS E'%c' WITH NULL AS E'%s'", table_name, *pg_delim, pg_null_as);
 	while ((pgsql_result = PQgetResult(pgsql))) {
 		PQclear(pgsql_result);
 	}
@@ -4279,7 +4278,7 @@ PHP_FUNCTION(pg_result_error_field)
 /* }}} */
 #endif
 
-/* {{{ proto int pg_connection_status(resource connnection)
+/* {{{ proto int pg_connection_status(resource connection)
    Get connection status */
 PHP_FUNCTION(pg_connection_status)
 {
@@ -4300,7 +4299,7 @@ PHP_FUNCTION(pg_connection_status)
 /* }}} */
 
 #if HAVE_PGTRANSACTIONSTATUS
-/* {{{ proto int pg_transaction_status(resource connnection)
+/* {{{ proto int pg_transaction_status(resource connection)
    Get transaction status */
 PHP_FUNCTION(pg_transaction_status)
 {

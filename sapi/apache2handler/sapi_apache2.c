@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: sapi_apache2.c 294572 2010-02-05 19:34:47Z pajoye $ */
+/* $Id: sapi_apache2.c 298951 2010-05-04 09:51:03Z pajoye $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 
@@ -52,6 +52,12 @@
 #include "ap_mpm.h"
 
 #include "php_apache.h"
+
+#ifdef PHP_WIN32
+# if _MSC_VER <= 1300
+#  include "win32/php_strtoi64.h"
+# endif
+#endif
 
 /* UnixWare and Netware define shutdown to _shutdown, which causes problems later
  * on when using a structure member named shutdown. Since this source
@@ -119,8 +125,16 @@ php_apache_sapi_header_handler(sapi_header_struct *sapi_header, sapi_header_op_e
 					efree(ctx->content_type);
 				}
 				ctx->content_type = estrdup(val);
-                       } else if (!strcasecmp(sapi_header->header, "content-length")) {
-                               ap_set_content_length(ctx->r, strtol(val, (char **)NULL, 10));
+			} else if (!strcasecmp(sapi_header->header, "content-length")) {
+#ifdef PHP_WIN32
+# ifdef APR_HAS_LARGE_FILES
+				ap_set_content_length(ctx->r, (apr_off_t) _strtoui64(val, (char **)NULL, 10));
+# else
+				ap_set_content_length(ctx->r, (apr_off_t) strtol(val, (char **)NULL, 10));
+# endif
+#else
+				ap_set_content_length(ctx->r, (apr_off_t) strtol(val, (char **)NULL, 10));
+#endif
 			} else if (op == SAPI_HEADER_REPLACE) {
 				apr_table_set(ctx->r->headers_out, sapi_header->header, val);
 			} else {

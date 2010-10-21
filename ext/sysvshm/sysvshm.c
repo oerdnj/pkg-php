@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: sysvshm.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: sysvshm.c 299328 2010-05-13 08:34:06Z dmitry $ */
 
 /* This has been built and tested on Linux 2.2.14 
  *
@@ -251,13 +251,18 @@ PHP_FUNCTION(shm_put_var)
 	if (SUCCESS != zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rlz", &shm_id, &shm_key, &arg_var)) {
 		return;
 	}
-	SHM_FETCH_RESOURCE(shm_list_ptr, shm_id);
 	
 	/* setup string-variable and serialize */
 	PHP_VAR_SERIALIZE_INIT(var_hash);
 	php_var_serialize(&shm_var, &arg_var, &var_hash TSRMLS_CC);
 	PHP_VAR_SERIALIZE_DESTROY(var_hash);
 	
+	shm_list_ptr = zend_fetch_resource(&shm_id TSRMLS_CC, -1, PHP_SHM_RSRC_NAME, NULL, 1, php_sysvshm.le_shm);
+	if (!shm_list_ptr) {
+		smart_str_free(&shm_var);
+		RETURN_FALSE;
+	}
+
 	/* insert serialized variable into shared memory */
 	ret = php_put_shm_data(shm_list_ptr->ptr, shm_key, shm_var.c, shm_var.len);
 

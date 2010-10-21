@@ -1,4 +1,4 @@
-// $Id: config.w32 262128 2008-07-06 16:59:13Z pajoye $
+// $Id: config.w32 295968 2010-03-08 15:51:08Z kalle $
 // vim: ft=javascript
 
 ARG_WITH("iconv", "iconv support", "yes");
@@ -12,6 +12,7 @@ if (PHP_ICONV != "no") {
 		
 		AC_DEFINE("HAVE_ICONV", 1, "Define if iconv extension is enabled");
 		AC_DEFINE("HAVE_LIBICONV", 1, "Define if libiconv is available");
+		AC_DEFINE("ICONV_ALIASED_LIBICONV", 1, "The iconv function is called iconv() in libiconv");
 		AC_DEFINE("PHP_ICONV_IMPL", "\"libiconv\"", "Which iconv implementation to use");
 		AC_DEFINE("ICONV_SUPPORTS_ERRNO", 1, "Whether iconv supports errno or not");
 		ADD_FLAG("CFLAGS_ICONV", "/D PHP_ICONV_EXPORTS ");

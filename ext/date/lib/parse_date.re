@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2006 The PHP Group                                |
+   | Copyright (c) 1997-2010 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,12 +16,13 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: parse_date.re 294880 2010-02-11 11:11:47Z pajoye $ */
+/* $Id: parse_date.re 301253 2010-07-14 00:04:43Z kalle $ */
 
 #include "timelib.h"
 
 #include <stdio.h>
 #include <ctype.h>
+#include <math.h>
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
@@ -88,6 +89,8 @@
 
 #define TIMELIB_ERROR          999
 
+/* Some compilers like AIX, defines uchar in sys/types.h */
+#undef uchar
 typedef unsigned char uchar;
 
 #define   BSIZE	   8192
@@ -523,7 +526,7 @@ static long timelib_parse_tz_cor(char **ptr)
 	char *begin = *ptr, *end;
 	long  tmp;
 
-	while (**ptr != '\0') {
+	while (isdigit(**ptr) || **ptr == ':') {
 		++*ptr;
 	}
 	end = *ptr;
@@ -854,7 +857,7 @@ minutelz = [0-5][0-9];
 second = minute | "60";
 secondlz = minutelz | "60";
 meridian = ([AaPp] "."? [Mm] "."?) [\000\t ];
-tz = "("? [A-Za-z]{1,6} ")"? | [A-Z][a-z]+([_/][A-Z][a-z]+)+;
+tz = "("? [A-Za-z]{1,6} ")"? | [A-Z][a-z]+([_/-][A-Za-z]+)+;
 tzcorrection = "GMT"? [+-] hour24 ":"? minute?;
 
 daysuf = "st" | "nd" | "rd" | "th";
@@ -931,8 +934,8 @@ mssqltime        = hour12 ":" minutelz ":" secondlz [:.] [0-9]+ meridian;
 isoweekday       = year4 "-"? "W" weekofyear "-"? [0-7];
 isoweek          = year4 "-"? "W" weekofyear;
 exif             = year4 ":" monthlz ":" daylz " " hour24lz ":" minutelz ":" secondlz;
-firstdayof       = 'first day' ' of'?;
-lastdayof        = 'last day' ' of'?;
+firstdayof       = 'first day of'?;
+lastdayof        = 'last day of'?;
 backof           = 'back of ' hour24 space? meridian?;
 frontof          = 'front of ' hour24 space? meridian?;
 
@@ -1951,10 +1954,10 @@ timelib_time *timelib_parse_from_format(char *format, char *string, int len, tim
 
 					TIMELIB_CHECK_NUMBER;
 					tptr = ptr;
-					if ((f = timelib_get_nr((char **) &ptr, 6)) == TIMELIB_UNSET || ptr - tptr != 6) {
+					if ((f = timelib_get_nr((char **) &ptr, 6)) == TIMELIB_UNSET || (ptr - tptr < 1)) {
 						add_pbf_error(s, "A six digit millisecond could not be found", string, begin);
 					} else {
-						s->time->f = (f / 1000000);
+						s->time->f = (f / pow(10, (ptr - tptr)));
 					}
 				}
 				break;

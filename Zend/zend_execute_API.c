@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute_API.c 294505 2010-02-04 09:13:14Z pajoye $ */
+/* $Id: zend_execute_API.c 299766 2010-05-26 00:00:58Z felipe $ */
 
 #include <stdio.h>
 #include <signal.h>
@@ -411,6 +411,10 @@ ZEND_API char *zend_get_executed_filename(TSRMLS_D) /* {{{ */
 
 ZEND_API uint zend_get_executed_lineno(TSRMLS_D) /* {{{ */
 {
+	if(EG(exception) && EG(opline_ptr) && active_opline->opcode == ZEND_HANDLE_EXCEPTION && 
+		active_opline->lineno == 0 && EG(opline_before_exception)) {
+		return EG(opline_before_exception)->lineno;
+	}
 	if (EG(opline_ptr)) {
 		return active_opline->lineno;
 	} else {
@@ -680,10 +684,22 @@ ZEND_API int zval_update_constant_ex(zval **pp, void *arg, zend_class_entry *sco
 			}
 			zval_dtor(&const_value);
 		}
-		zend_hash_apply_with_argument(Z_ARRVAL_P(p), (apply_func_arg_t) zval_update_constant, (void *) 1 TSRMLS_CC);
+		zend_hash_apply_with_argument(Z_ARRVAL_P(p), (apply_func_arg_t) zval_update_constant_inline_change, (void *) scope TSRMLS_CC);
 		zend_hash_internal_pointer_reset(Z_ARRVAL_P(p));
 	}
 	return 0;
+}
+/* }}} */
+
+ZEND_API int zval_update_constant_inline_change(zval **pp, void *scope TSRMLS_DC) /* {{{ */
+{
+	return zval_update_constant_ex(pp, (void*)1, scope TSRMLS_CC);
+}
+/* }}} */
+
+ZEND_API int zval_update_constant_no_inline_change(zval **pp, void *scope TSRMLS_DC) /* {{{ */
+{
+	return zval_update_constant_ex(pp, (void*)0, scope TSRMLS_CC);
 }
 /* }}} */
 
@@ -1076,7 +1092,11 @@ ZEND_API int zend_lookup_class_ex(const char *name, int name_length, int use_aut
 
 	ALLOC_ZVAL(class_name_ptr);
 	INIT_PZVAL(class_name_ptr);
-	ZVAL_STRINGL(class_name_ptr, name, name_length, 1);
+	if (name[0] == '\\') {
+		ZVAL_STRINGL(class_name_ptr, name+1, name_length-1, 1);
+	} else {
+		ZVAL_STRINGL(class_name_ptr, name, name_length, 1);
+	}
 
 	args[0] = &class_name_ptr;
 

@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_filter.h 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: php_filter.h 297245 2010-03-31 22:59:09Z rasmus $ */
 
 #ifndef PHP_FILTER_H
 #define PHP_FILTER_H
@@ -28,6 +28,7 @@
 #include "php_ini.h"
 #include "ext/standard/info.h"
 #include "ext/standard/php_string.h"
+#include "ext/standard/html.h"
 #include "php_variables.h"
 
 extern zend_module_entry filter_module_entry;
@@ -81,6 +82,7 @@ void php_filter_validate_ip(PHP_INPUT_FILTER_PARAM_DECL);
 void php_filter_string(PHP_INPUT_FILTER_PARAM_DECL);
 void php_filter_encoded(PHP_INPUT_FILTER_PARAM_DECL);
 void php_filter_special_chars(PHP_INPUT_FILTER_PARAM_DECL);
+void php_filter_full_special_chars(PHP_INPUT_FILTER_PARAM_DECL);
 void php_filter_unsafe_raw(PHP_INPUT_FILTER_PARAM_DECL);
 void php_filter_email(PHP_INPUT_FILTER_PARAM_DECL);
 void php_filter_url(PHP_INPUT_FILTER_PARAM_DECL);

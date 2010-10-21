@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: xp_ssl.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: xp_ssl.c 300617 2010-06-20 16:33:16Z pajoye $ */
 
 #include "php.h"
 #include "ext/standard/file.h"
@@ -312,8 +312,12 @@ static inline int php_openssl_setup_crypto(php_stream *stream,
 	SSL_METHOD *method;
 	
 	if (sslsock->ssl_handle) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "SSL/TLS already set-up for this stream");
-		return -1;
+		if (sslsock->s.is_blocked) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "SSL/TLS already set-up for this stream");
+			return -1;
+		} else {
+			return 0;
+		}
 	}
 
 	/* need to do slightly different things, based on client/server method,
@@ -435,7 +439,8 @@ static inline int php_openssl_enable_crypto(php_stream *stream,
 			}
 
 			if (n <= 0) {
-				retry = handle_ssl_error(stream, n, 1 TSRMLS_CC);
+				retry = handle_ssl_error(stream, n, sslsock->is_client || sslsock->s.is_blocked TSRMLS_CC);
+
 			} else {
 				break;
 			}
@@ -585,6 +590,8 @@ static inline int php_openssl_tcp_sockop_accept(php_stream *stream, php_openssl_
 					break;
 				case STREAM_CRYPTO_METHOD_TLS_CLIENT:
 					sock->method = STREAM_CRYPTO_METHOD_TLS_SERVER;
+					break;
+				default:
 					break;
 			}
 

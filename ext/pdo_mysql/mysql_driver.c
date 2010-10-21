@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysql_driver.c 294543 2010-02-04 20:28:55Z johannes $ */
+/* $Id: mysql_driver.c 298626 2010-04-26 23:55:03Z kalle $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -649,7 +649,7 @@ static int pdo_mysql_handle_factory(pdo_dbh_t *dbh, zval *driver_options TSRMLS_
 			goto cleanup;
 		}
 
-#if PHP_MAJOR_VERSION < 6
+#if PHP_API_VERSION < 20100412
 		if ((PG(open_basedir) && PG(open_basedir)[0] != '\0') || PG(safe_mode))
 #else
 		if (PG(open_basedir) && PG(open_basedir)[0] != '\0') 

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: interval.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: interval.c 298973 2010-05-04 15:11:41Z derick $ */
 
 #include "timelib.h"
 
@@ -56,7 +56,7 @@ timelib_rel_time *timelib_diff(timelib_time *one, timelib_time *two)
 	rt->s = two->s - one->s;
 	rt->days = abs(floor((one->sse - two->sse - (dst_h_corr * 3600) - (dst_m_corr * 60)) / 86400));
 
-	timelib_do_rel_normalize(one, rt);
+	timelib_do_rel_normalize(rt->invert ? one : two, rt);
 
     timelib_apply_localtime(one, 1);
     timelib_apply_localtime(two, 1);

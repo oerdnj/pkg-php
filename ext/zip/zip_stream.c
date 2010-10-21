@@ -1,4 +1,4 @@
-/* $Id: zip_stream.c 287101 2009-08-11 17:08:23Z pajoye $ */
+/* $Id: zip_stream.c 298626 2010-04-26 23:55:03Z kalle $ */
 #ifdef HAVE_CONFIG_H
 #   include "config.h"
 #endif
@@ -120,7 +120,7 @@ php_stream *php_stream_zip_open(char *filename, char *path, char *mode STREAMS_D
 	}
 
 	if (filename) {
-		if (OPENBASEDIR_CHECKPATH(filename)) {
+		if (ZIP_OPENBASEDIR_CHECKPATH(filename)) {
 			return NULL;
 		}
 
@@ -201,7 +201,7 @@ php_stream *php_stream_zip_opener(php_stream_wrapper *wrapper,
 	php_basename(path, path_len - fragment_len, NULL, 0, &file_basename, &file_basename_len TSRMLS_CC);
 	fragment++;
 
-	if (OPENBASEDIR_CHECKPATH(file_dirname)) {
+	if (ZIP_OPENBASEDIR_CHECKPATH(file_dirname)) {
 		efree(file_basename);
 		return NULL;
 	}

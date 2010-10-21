@@ -1,8 +1,8 @@
 /*
   +----------------------------------------------------------------------+
-  | PHP Version 6                                                        |
+  | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 2006-2009 The PHP Group                                |
+  | Copyright (c) 2006-2010 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_priv.h 293779 2010-01-20 17:09:28Z johannes $ */
+/* $Id: mysqlnd_priv.h 298781 2010-04-29 15:49:51Z andrey $ */
 
 #ifndef MYSQLND_PRIV_H
 #define MYSQLND_PRIV_H
@@ -42,8 +42,8 @@
 #endif
 
 #define MYSQLND_CLASS_METHOD_TABLE_NAME(class) mysqlnd_##class##_methods
-#define MYSQLND_CLASS_METHODS_START(class) struct st_##class##_methods MYSQLND_CLASS_METHOD_TABLE_NAME(class) = {
-#define MYSQLND_CLASS_METHODS_END  				}							 
+#define MYSQLND_CLASS_METHODS_START(class)	struct st_##class##_methods MYSQLND_CLASS_METHOD_TABLE_NAME(class) = {
+#define MYSQLND_CLASS_METHODS_END			}
 
 #if PHP_MAJOR_VERSION < 6
 #define mysqlnd_array_init(arg, field_count) \
@@ -93,10 +93,10 @@
 #define SET_NEW_MESSAGE(buf, buf_len, message, len, persistent) \
 	{\
 		if ((buf)) { \
-			pefree((buf), (persistent)); \
+			mnd_pefree((buf), (persistent)); \
 		} \
 		if ((message)) { \
-			(buf) = pestrndup((message), (len), (persistent)); \
+			(buf) = mnd_pestrndup((message), (len), (persistent)); \
 		} else { \
 			buf = NULL; \
 		} \
@@ -106,7 +106,7 @@
 #define SET_EMPTY_MESSAGE(buf, buf_len, persistent) \
 	{\
 		if ((buf)) { \
-			pefree((buf), (persistent)); \
+			mnd_pefree((buf), (persistent)); \
 			(buf) = NULL; \
 		} \
 		(buf_len) = 0; \
@@ -127,6 +127,9 @@
 		strlcpy(error_info.error, (c), sizeof(error_info.error)); \
 	}
 
+#define SET_OOM_ERROR(error_info) SET_CLIENT_ERROR(error_info, CR_OUT_OF_MEMORY, UNKNOWN_SQLSTATE, mysqlnd_out_of_memory)
+
+
 #define SET_STMT_ERROR(stmt, a, b, c)	SET_CLIENT_ERROR(stmt->error_info, a, b, c)
 
 
@@ -134,8 +137,8 @@
 #define CONN_GET_STATE(c)		(c)->m->get_state((c) TSRMLS_CC)
 #define CONN_SET_STATE(c, s)	(c)->m->set_state((c), (s) TSRMLS_CC)
 #else
-#define CONN_GET_STATE(c)		(c)->state
-#define CONN_SET_STATE(c, s)	(c)->state = s
+#define CONN_GET_STATE(c)		((c)->state)
+#define CONN_SET_STATE(c, s)	((c)->state = s)
 #endif
 
 
@@ -157,6 +160,7 @@ extern struct st_mysqlnd_perm_bind mysqlnd_ps_fetch_functions[MYSQL_TYPE_LAST + 
 PHPAPI extern const char * const mysqlnd_old_passwd;
 PHPAPI extern const char * const mysqlnd_out_of_sync;
 PHPAPI extern const char * const mysqlnd_server_gone;
+PHPAPI extern const char * const mysqlnd_out_of_memory;
 
 enum_func_status mysqlnd_handle_local_infile(MYSQLND *conn, const char *filename, zend_bool *is_warning TSRMLS_DC);
 

@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: hash.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: hash.c 300972 2010-07-03 13:06:14Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -556,8 +556,10 @@ PHP_FUNCTION(hash_copy)
 	copy_hash->ops = hash->ops;
 	copy_hash->context = context;
 	copy_hash->options = hash->options;
-	copy_hash->key = hash->key;
-
+	copy_hash->key = ecalloc(1, hash->ops->block_size);
+	if (hash->key) {
+		memcpy(copy_hash->key, hash->key, hash->ops->block_size);
+	}
 	ZEND_REGISTER_RESOURCE(return_value, copy_hash, php_hash_le_hash);
 }
 /* }}} */
@@ -739,15 +741,17 @@ PHP_FUNCTION(mhash_get_block_size)
    Generates a key using hash functions */
 PHP_FUNCTION(mhash_keygen_s2k)
 {
-	long algorithm, bytes;
+	long algorithm, l_bytes;
+	int bytes;
 	char *password, *salt;
 	int password_len, salt_len;
 	char padded_salt[SALT_SIZE];
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "lssl", &algorithm, &password, &password_len, &salt, &salt_len, &bytes) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "lssl", &algorithm, &password, &password_len, &salt, &salt_len, &l_bytes) == FAILURE) {
 		return;
 	}
 
+	bytes = (int)l_bytes;
 	if (bytes <= 0){
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "the byte parameter must be greater than 0");
 		RETURN_FALSE;

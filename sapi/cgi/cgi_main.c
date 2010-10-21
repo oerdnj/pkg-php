@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: cgi_main.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: cgi_main.c 300854 2010-06-29 11:37:13Z felipe $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -735,6 +735,10 @@ static void php_cgi_ini_activate_user_config(char *path, int path_len, const cha
 
 		if (!IS_ABSOLUTE_PATH(path, path_len)) {
 			real_path = tsrm_realpath(path, NULL TSRMLS_CC);
+			/* see #51688, looks like we may get invalid path as doc root using cgi with apache */
+			if (real_path == NULL) {
+				return;
+			}
 			real_path_len = strlen(real_path);
 			path = real_path;
 			path_len = real_path_len;
@@ -1875,6 +1879,7 @@ consult the installation file that came with this distribution, or visit \n\
 							}
 							php_print_info(0xFFFFFFFF TSRMLS_CC);
 							php_request_shutdown((void *) 0);
+							fcgi_shutdown();
 							exit_status = 0;
 							goto out;
 
@@ -1896,6 +1901,7 @@ consult the installation file that came with this distribution, or visit \n\
 							print_extensions(TSRMLS_C);
 							php_printf("\n");
 							php_end_ob_buffers(1 TSRMLS_CC);
+							fcgi_shutdown();
 							exit_status = 0;
 							goto out;
 
@@ -1929,6 +1935,7 @@ consult the installation file that came with this distribution, or visit \n\
 							php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2010 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 #endif
 							php_request_shutdown((void *) 0);
+							fcgi_shutdown();
 							exit_status = 0;
 							goto out;
 

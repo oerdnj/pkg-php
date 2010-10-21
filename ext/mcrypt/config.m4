@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 225644 2006-12-23 17:58:47Z derick $
+dnl $Id: config.m4 293594 2010-01-15 21:02:20Z stas $
 dnl 
 
 AC_DEFUN([PHP_MCRYPT_CHECK_VERSION],[
@@ -55,5 +55,5 @@ if test "$PHP_MCRYPT" != "no"; then
   PHP_ADD_INCLUDE($MCRYPT_DIR/include)
 
   PHP_SUBST(MCRYPT_SHARED_LIBADD)
-  PHP_NEW_EXTENSION(mcrypt, mcrypt.c, $ext_shared)
+  PHP_NEW_EXTENSION(mcrypt, mcrypt.c mcrypt_filter.c, $ext_shared)
 fi
