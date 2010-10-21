@@ -8,8 +8,15 @@ php5 (5.3.3-2) unstable; urgency=low
   * Synchronize system crypt patch
   * Cherry pick upstream fix for format vulnerability in phar/stream.c
     + Fixes CVE-2010-2950.
+  * Set explicit error level to hide warnings on systems with modified
+    php.ini (Closes: #590485)
+  * Apply patch to fix loading of extensions without [PHP] section
+    (Closes: #595761)
+  * Set session.gc_probability back to 0 (Closes: #595706)
+  * Update PHP5 description to not include references to C, Java and
+    Perl (Closes: #351032)
 
- -- Ondřej Surý <ondrej@debian.org>  Thu, 21 Oct 2010 12:36:54 +0200
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 21 Oct 2010 16:57:53 +0200
 
 php5 (5.3.3-1) experimental; urgency=low
 
