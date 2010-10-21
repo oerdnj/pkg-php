@@ -1,3 +1,11 @@
+php5 (5.3.3-2) unstable; urgency=low
+
+  * Don't build FPM SAPI now
+  * Bump standards version to 3.9.1
+  * Synchronize system crypt patch
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 21 Oct 2010 10:18:45 +0200
+
 php5 (5.3.3-1) experimental; urgency=low
 
   * Upload PHP 5.3.3 to experimental for further testing
