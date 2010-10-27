@@ -1,4 +1,4 @@
-php5 (5.3.3-3) unstable; urgency=low
+php5 (5.3.3-3) unstable; urgency=high
 
   * Fix segfault in filter_var with FILTER_VALIDATE_EMAIL with large
     amount of data (CVE-2010-3710, Closes: #601619)
