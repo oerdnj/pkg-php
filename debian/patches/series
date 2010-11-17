@@ -68,3 +68,4 @@ CVE-2010-3436.patch
 bug52947.patch
 fix_crash_in_GC.patch
 bug53070.patch
+bug53323.patch
