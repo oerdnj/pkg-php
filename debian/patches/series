@@ -63,3 +63,4 @@ bug52487.patch
 bug50481.patch
 fix_crash_in__php_mssql_get_column_content_without_type.patch
 bug52827.patch
+bug52843.patch
