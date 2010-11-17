@@ -61,3 +61,4 @@ CVE-2010-4156.patch
 bug52573.patch
 bug52487.patch
 bug50481.patch
+fix_crash_in__php_mssql_get_column_content_without_type.patch
