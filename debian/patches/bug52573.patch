@@ -1,0 +1,15 @@
+--- a/ext/spl/spl_directory.c	2010/08/10 21:52:14	302084
++++ b/ext/spl/spl_directory.c	2010/08/10 22:37:24	302085
+@@ -1862,7 +1862,11 @@
+ 
+ 	result = zend_call_function(&fci, &fcic TSRMLS_CC);
+ 	
+-	ZVAL_ZVAL(return_value, retval, 1, 1);
++	if (result == FAILURE) {
++		RETVAL_FALSE;
++	} else {
++		ZVAL_ZVAL(return_value, retval, 1, 1);
++	}
+ 
+ 	efree(params);
+ 	return result;
