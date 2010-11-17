@@ -1,3 +1,25 @@
+php5 (5.3.3-4) unstable; urgency=low
+
+  * Cherry pick patches for (Closes: #603751):
+    + NULL pointer dereference in ZipArchive::getArchiveComment
+      (CVE-2010-3709)
+    + utf8_decode xml_utf8_decode vulnerability (CVE-2010-3870)
+    + mb_strcut() returns garbage with the excessive length parameter
+    (CVE-2010-4156)
+    + possible flaw in open_basedir (CVE-2010-3436)
+    + segfault in SplFileObject::fscanf
+    + memory leak in PDO::FETCH_INTO
+    + crash when storing many SPLFixedArray in an array
+    + possible crash in php_mssql_get_column_content_without_type()
+    + cURL leaks handle and causes assertion error (CURLOPT_STDERR)
+    + segfault when optional parameters are not passed in to mssql_connect
+    + segfault when ssl stream option capture_peer_cert_chain used
+    + crash in GC because of incorrect reference counting
+    + crash when calling enchant_broker_get_dict_path before set_path
+    + crash in pdo_firebird getAttribute()
+
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 17 Nov 2010 10:31:58 +0100
+
 php5 (5.3.3-3) unstable; urgency=high
 
   * Fix segfault in filter_var with FILTER_VALIDATE_EMAIL with large
