@@ -1,0 +1,45 @@
+--- a/ext/curl/interface.c
++++ b/ext/curl/interface.c
+@@ -1816,7 +1816,6 @@ static int _php_curl_setopt(php_curl *ch
+ 						}
+ 						zval_add_ref(zvalue);
+ 						ch->handlers->std_err = *zvalue;
+-						zend_list_addref(Z_LVAL_PP(zvalue));
+ 					} else {
+ 						php_error_docref(NULL TSRMLS_CC, E_WARNING, "the provided file handle is not writable");
+ 						RETVAL_FALSE;
+--- /dev/null
++++ b/ext/curl/tests/bug52827.phpt
+@@ -0,0 +1,32 @@
++--TEST--
++Bug #52827 (curl_setopt with CURLOPT_STDERR erroneously increments the resource refcount)
++--SKIPIF--
++<?php
++
++if (!extension_loaded('curl')) {
++	exit("skip curl extension not loaded");
++}
++
++?>
++--FILE--
++<?php
++$s = fopen('php://temp/maxmemory=1024','wb+');
++
++/* force conversion of inner stream to STDIO.
++ * This is not necessary in Windows because the
++ * cast to a FILE* handle in curl_setopt already
++ * forces the conversion in that platform. The
++ * reason for this conversion is that the memory
++ * stream has an ugly but working mechanism to
++ * prevent being double freed when it's encapsulated,
++ * while STDIO streams don't. */
++$i = 0;
++while ($i++ < 5000) {
++fwrite($s, str_repeat('a',1024));
++}
++$handle=curl_init('http://www.example.com');
++curl_setopt($handle, CURLOPT_STDERR, $s);
++
++echo "Done.";
++--EXPECTF--
++Done.
