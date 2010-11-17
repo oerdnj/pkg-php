@@ -55,3 +55,6 @@ fpm-config.patch
 CVE-2010-2950.patch
 php-5.3.4-ini.patch
 CVE-2010-3710.patch
+CVE-2010-3709.patch
+CVE-2010-3870.patch
+CVE-2010-4156.patch
