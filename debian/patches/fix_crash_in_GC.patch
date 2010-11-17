@@ -1,0 +1,55 @@
+--- a/Zend/zend_execute.c
++++ b/Zend/zend_execute.c
+@@ -714,8 +714,8 @@ static inline zval* zend_assign_to_varia
+ 					ALLOC_ZVAL(variable_ptr);
+ 					*variable_ptr_ptr = variable_ptr;
+ 					*variable_ptr = *value;
+-					zval_copy_ctor(variable_ptr);
+ 					Z_SET_REFCOUNT_P(variable_ptr, 1);
++					zval_copy_ctor(variable_ptr);
+ 				} else {
+ 					*variable_ptr_ptr = value;
+ 					Z_ADDREF_P(value);
+--- /dev/null
++++ b/Zend/tests/gc_032.phpt
+@@ -0,0 +1,40 @@
++--TEST--
++GC 032: Crash in GC because of invalid reference counting
++--FILE--
++<?php
++$a = array();
++$b =& $a;
++$a[0] = $a;
++debug_zval_dump($a);
++$a = array(array());
++$b =& $a;
++$a[0][0] = $a;
++debug_zval_dump($a);
++?>
++--EXPECT--
++array(1) refcount(1){
++  [0]=>
++  array(1) refcount(3){
++    [0]=>
++    array(1) refcount(3){
++      [0]=>
++      *RECURSION*
++    }
++  }
++}
++array(1) refcount(1){
++  [0]=>
++  array(1) refcount(3){
++    [0]=>
++    array(1) refcount(1){
++      [0]=>
++      array(1) refcount(3){
++        [0]=>
++        array(1) refcount(1){
++          [0]=>
++          *RECURSION*
++        }
++      }
++    }
++  }
++}
