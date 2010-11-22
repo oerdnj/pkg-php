@@ -12,7 +12,7 @@ Build-Depends: apache2-prefork-dev,
 	       bison,
 	       chrpath,
 	       debhelper (>= 5),
-	       firebird2.1-dev [amd64 armel i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 sparc] | firebird2.0-dev [i386 amd64 powerpc sparc],
+	       firebird2.1-dev [amd64 armel armhf i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 sparc] | firebird2.0-dev [i386 amd64 powerpc sparc],
 	       flex,
 	       freetds-dev,
 	       hardening-wrapper,
@@ -297,7 +297,7 @@ Description: IMAP module for php5
  with the Suhosin patch.
 
 Package: php5-interbase
-Architecture: amd64 armel i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 sparc
+Architecture: amd64 armel armhf i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 sparc
 Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${binary:Version})
 Description: interbase/firebird module for php5
  This package provides a module for interbase/firebird functions in PHP scripts.

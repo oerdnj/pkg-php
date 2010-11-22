@@ -76,7 +76,7 @@ LIBTOOL_CONFLICTS:=$(error "could not resolve path to ltmain.sh")
 endif
 
 # only enable interbase support on archs where it is supported
-ifneq (,$(filter $(DEB_HOST_ARCH),amd64 armel i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 sparc))
+ifneq (,$(filter $(DEB_HOST_ARCH),amd64 armel armhf i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 sparc))
 	IBFLAGS=--with-interbase=shared,/usr \
 		--with-pdo-firebird=shared,/usr
 endif
