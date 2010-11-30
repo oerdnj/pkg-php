@@ -1,0 +1,13 @@
+--- a/main/fopen_wrappers.c
++++ b/main/fopen_wrappers.c
+@@ -519,6 +519,10 @@ PHPAPI char *php_resolve_path(const char
+ 		return NULL;
+ 	}
+ 
++	if (strlen(filename) != filename_length) {
++		return NULL;
++	}
++
+ 	/* Don't resolve paths which contain protocol (except of file://) */
+ 	for (p = filename; isalnum((int)*p) || *p == '+' || *p == '-' || *p == '.'; p++);
+ 	if ((*p == ':') && (p - filename > 1) && (p[1] == '/') && (p[2] == '/')) {

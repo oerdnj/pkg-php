@@ -69,3 +69,5 @@ bug52947.patch
 fix_crash_in_GC.patch
 bug53070.patch
 bug53323.patch
+reject-filenames-with-null-r305507.patch
+fix-open_basedir-with-separator-r305698.patch
