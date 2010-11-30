@@ -1,3 +1,10 @@
+php5 (5.3.3-5) unstable; urgency=high
+
+  * Add firebird support for armhf (Closes: #604526)
+  * More updates to open_basedir (Closes: #605391)
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 30 Nov 2010 12:00:37 +0100
+
 php5 (5.3.3-4) unstable; urgency=low
 
   * Cherry pick patches for (Closes: #603751):
