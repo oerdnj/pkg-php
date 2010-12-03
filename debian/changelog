@@ -12,7 +12,7 @@ php5 (5.3.3-4) unstable; urgency=low
       (CVE-2010-3709)
     + utf8_decode xml_utf8_decode vulnerability (CVE-2010-3870)
     + mb_strcut() returns garbage with the excessive length parameter
-    (CVE-2010-4156)
+      (CVE-2010-4156)
     + possible flaw in open_basedir (CVE-2010-3436)
     + segfault in SplFileObject::fscanf
     + memory leak in PDO::FETCH_INTO
