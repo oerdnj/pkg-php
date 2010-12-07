@@ -72,3 +72,4 @@ bug53323.patch
 reject-filenames-with-null-r305507.patch
 fix-open_basedir-with-separator-r305698.patch
 CVE-2010-4409.patch
+crash_in_zip_extract.patch
