@@ -1,3 +1,10 @@
+php5 (5.3.3-7) unstable; urgency=low
+
+  * Cherry pick fix for double free vulnerability in the imap_do_open
+    function in the IMAP extension (CVE-2010-4150)
+
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 22 Dec 2010 17:31:26 +0100
+
 php5 (5.3.3-6) unstable; urgency=medium
 
   * Cherry-pick fix for crashes on invalid parameters in intl extension.
