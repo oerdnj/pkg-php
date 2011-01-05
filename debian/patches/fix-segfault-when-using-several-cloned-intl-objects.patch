@@ -1,0 +1,130 @@
+--- a/ext/intl/collator/collator_class.c
++++ b/ext/intl/collator/collator_class.c
+@@ -29,6 +29,7 @@
+ #include <unicode/ucol.h>
+ 
+ zend_class_entry *Collator_ce_ptr = NULL;
++static zend_object_handlers Collator_handlers;
+ 
+ /*
+  * Auxiliary functions needed by objects of 'Collator' class
+@@ -73,7 +74,7 @@ zend_object_value Collator_object_create
+ 		(zend_objects_free_object_storage_t)Collator_objects_free,
+ 		NULL TSRMLS_CC );
+ 
+-	retval.handlers = zend_get_std_object_handlers();
++	retval.handlers = &Collator_handlers;
+ 
+ 	return retval;
+ }
+@@ -142,6 +143,10 @@ void collator_register_Collator_class( T
+ 	ce.create_object = Collator_object_create;
+ 	Collator_ce_ptr = zend_register_internal_class( &ce TSRMLS_CC );
+ 
++	memcpy(&Collator_handlers, zend_get_std_object_handlers(),
++		sizeof Collator_handlers);
++	Collator_handlers.clone_obj = NULL;
++
+ 	/* Declare 'Collator' class properties. */
+ 	if( !Collator_ce_ptr )
+ 	{
+--- a/ext/intl/resourcebundle/resourcebundle_class.c
++++ b/ext/intl/resourcebundle/resourcebundle_class.c
+@@ -420,6 +420,7 @@ void resourcebundle_register_class( TSRM
+ 	}
+ 
+ 	ResourceBundle_object_handlers = std_object_handlers;
++	ResourceBundle_object_handlers.clone_obj	  = NULL;
+ 	ResourceBundle_object_handlers.read_dimension = resourcebundle_array_get;
+ 	ResourceBundle_object_handlers.count_elements = resourcebundle_array_count;
+ }
+--- a/ext/intl/dateformat/dateformat_class.c
++++ b/ext/intl/dateformat/dateformat_class.c
+@@ -24,6 +24,7 @@
+ #include "dateformat_attr.h"
+ 
+ zend_class_entry *IntlDateFormatter_ce_ptr = NULL;
++static zend_object_handlers IntlDateFormatter_handlers;
+ 
+ /*
+  * Auxiliary functions needed by objects of 'IntlDateFormatter' class
+@@ -73,7 +74,7 @@ zend_object_value IntlDateFormatter_obje
+ 		(zend_objects_free_object_storage_t)IntlDateFormatter_object_free,
+ 		NULL TSRMLS_CC );
+ 
+-	retval.handlers = zend_get_std_object_handlers();
++	retval.handlers = &IntlDateFormatter_handlers;
+ 
+ 	return retval;
+ }
+@@ -161,6 +162,10 @@ void dateformat_register_IntlDateFormatt
+ 	ce.create_object = IntlDateFormatter_object_create;
+ 	IntlDateFormatter_ce_ptr = zend_register_internal_class( &ce TSRMLS_CC );
+ 
++	memcpy(&IntlDateFormatter_handlers, zend_get_std_object_handlers(),
++		sizeof IntlDateFormatter_handlers);
++	IntlDateFormatter_handlers.clone_obj = NULL;
++
+ 	/* Declare 'IntlDateFormatter' class properties. */
+ 	if( !IntlDateFormatter_ce_ptr )
+ 	{
+--- a/ext/intl/msgformat/msgformat_class.c
++++ b/ext/intl/msgformat/msgformat_class.c
+@@ -25,6 +25,7 @@
+ #include "msgformat_attr.h"
+ 
+ zend_class_entry *MessageFormatter_ce_ptr = NULL;
++static zend_object_handlers MessageFormatter_handlers;
+ 
+ /*
+  * Auxiliary functions needed by objects of 'MessageFormatter' class
+@@ -66,7 +67,7 @@ zend_object_value MessageFormatter_objec
+ 		(zend_objects_free_object_storage_t)MessageFormatter_object_free,
+ 		NULL TSRMLS_CC );
+ 
+-	retval.handlers = zend_get_std_object_handlers();
++	retval.handlers = &MessageFormatter_handlers;
+ 
+ 	return retval;
+ }
+@@ -135,6 +136,10 @@ void msgformat_register_class( TSRMLS_D
+ 	ce.create_object = MessageFormatter_object_create;
+ 	MessageFormatter_ce_ptr = zend_register_internal_class( &ce TSRMLS_CC );
+ 
++	memcpy(&MessageFormatter_handlers, zend_get_std_object_handlers(),
++		sizeof MessageFormatter_handlers);
++	MessageFormatter_handlers.clone_obj = NULL;
++
+ 	/* Declare 'MessageFormatter' class properties. */
+ 	if( !MessageFormatter_ce_ptr )
+ 	{
+--- a/ext/intl/formatter/formatter_class.c
++++ b/ext/intl/formatter/formatter_class.c
+@@ -25,6 +25,7 @@
+ #include "formatter_attr.h"
+ 
+ zend_class_entry *NumberFormatter_ce_ptr = NULL;
++static zend_object_handlers NumberFormatter_handlers;
+ 
+ /*
+  * Auxiliary functions needed by objects of 'NumberFormatter' class
+@@ -69,7 +70,7 @@ zend_object_value NumberFormatter_object
+ 		(zend_objects_free_object_storage_t)NumberFormatter_object_free,
+ 		NULL TSRMLS_CC );
+ 
+-	retval.handlers = zend_get_std_object_handlers();
++	retval.handlers = &NumberFormatter_handlers;
+ 
+ 	return retval;
+ }
+@@ -171,6 +172,10 @@ void formatter_register_class( TSRMLS_D
+ 	ce.create_object = NumberFormatter_object_create;
+ 	NumberFormatter_ce_ptr = zend_register_internal_class( &ce TSRMLS_CC );
+ 
++	memcpy(&NumberFormatter_handlers, zend_get_std_object_handlers(),
++		sizeof NumberFormatter_handlers);
++	NumberFormatter_handlers.clone_obj = NULL;
++
+ 	/* Declare 'NumberFormatter' class properties. */
+ 	if( !NumberFormatter_ce_ptr )
+ 	{
