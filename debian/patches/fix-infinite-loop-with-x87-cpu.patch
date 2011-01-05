@@ -1,0 +1,24 @@
+--- /dev/null
++++ b/Zend/tests/bug53632.phpt
+@@ -0,0 +1,10 @@
++--TEST--
++zend_strtod() hangs with 2.2250738585072011e-308
++--FILE--
++<?php
++$d = 2.2250738585072011e-308;
++
++echo "Done\n";
++?>
++--EXPECTF--	
++Done
+--- a/Zend/zend_strtod.c
++++ b/Zend/zend_strtod.c
+@@ -2045,7 +2045,7 @@ ZEND_API double zend_strtod (CONST char
+ 	int bb2, bb5, bbe, bd2, bd5, bbbits, bs2, c, dsign,
+ 		e, e1, esign, i, j, k, nd, nd0, nf, nz, nz0, sign;
+ 	CONST char *s, *s0, *s1;
+-	double aadj, aadj1, adj;
++	volatile double aadj, aadj1, adj;
+ 	volatile _double rv, rv0;
+ 	Long L;
+ 	ULong y, z;
