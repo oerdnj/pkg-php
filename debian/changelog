@@ -1,9 +1,27 @@
 php5 (5.3.3-7) unstable; urgency=low
 
-  * Cherry pick fix for double free vulnerability in the imap_do_open
-    function in the IMAP extension (CVE-2010-4150)
+  * Cherry pick patches for:
+    + double free vulnerability in the imap_do_open function in the IMAP
+      extension (CVE-2010-4150)
+    + infinite loop with x87 CPU
+    + extract() to not overwrite $GLOBALS and $this when using
+      EXTR_OVERWRITE
+    + crash if aa steps are invalid in GD extension
+    + crash with entitity declaration in simplexml.c
+    + NULL dereference in Zend language scanner
+    + integer overflow in SdnToJulian
+    + memory leaks and possible crash introduced by NULL poisoning patch
+    + leaks and crash when passing the callback as a variable
+    + leak in highlight_string
+    + segmentation fault in pgsql_stmt_execute when postgres is down
+    + segmentation fault when extending SplFixedArray
+    + segmentation fault when node is NULL in simplexml.c
+    + segmentation fault when using several cloned intl objects
+    + segmentation fault when using bad column_number in sqlite3 columnName
+  * Add comment about cherry picked patches (and last revision) from
+    upstream SVN to README.source
 
- -- Ondřej Surý <ondrej@debian.org>  Wed, 22 Dec 2010 17:31:26 +0100
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 05 Jan 2011 11:06:20 +0100
 
 php5 (5.3.3-6) unstable; urgency=medium
 
