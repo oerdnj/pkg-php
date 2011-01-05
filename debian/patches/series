@@ -86,3 +86,4 @@ fix-leaks-and-crash-bug-when-passing-the-callback-as-variable.patch
 fix-memory-leak-inside-highlight_string.patch
 fix-segfault-in-pgsql_stmt_execute-when-postgres-is-down.patch
 fix-segfault-when-extending-SplFixedArray.patch
+fix-segfault-when-node-is-NULL-in-simplexml.patch
