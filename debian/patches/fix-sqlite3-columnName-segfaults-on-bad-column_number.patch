@@ -1,0 +1,57 @@
+--- /dev/null
++++ b/ext/sqlite3/tests/bug53463.phpt
+@@ -0,0 +1,28 @@
++--TEST--
++Bug #53463 (sqlite3 columnName() segfaults on bad column_number)
++--FILE--
++<?php
++
++$db = new SQLite3(':memory:');
++
++$db->exec('CREATE TABLE test (whatever INTEGER)');
++$db->exec('INSERT INTO test (whatever) VALUES (1)');
++
++$result = $db->query('SELECT * FROM test');
++while ($row = $result->fetchArray(SQLITE3_NUM)) {
++    var_dump($result->columnName(0));  // string(8) "whatever"
++
++    // Seems returning false will be most appropriate.
++    var_dump($result->columnName(3));  // Segmentation fault
++}
++
++$result->finalize();
++$db->close();
++
++echo "Done\n";
++
++?>
++--EXPECT--
++string(8) "whatever"
++bool(false)
++Done
+\ No newline at end of file
+--- a/ext/sqlite3/sqlite3.c
++++ b/ext/sqlite3/sqlite3.c
+@@ -1532,6 +1532,7 @@ PHP_METHOD(sqlite3result, columnName)
+ 	php_sqlite3_result *result_obj;
+ 	zval *object = getThis();
+ 	long column = 0;
++	char *column_name;
+ 	result_obj = (php_sqlite3_result *)zend_object_store_get_object(object TSRMLS_CC);
+ 
+ 	SQLITE3_CHECK_INITIALIZED(result_obj->db_obj, result_obj->stmt_obj->initialised, SQLite3Result)
+@@ -1539,8 +1540,13 @@ PHP_METHOD(sqlite3result, columnName)
+ 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &column) == FAILURE) {
+ 		return;
+ 	}
++	column_name = (char*) sqlite3_column_name(result_obj->stmt_obj->stmt, column);
+ 
+-	RETVAL_STRING((char*)sqlite3_column_name(result_obj->stmt_obj->stmt, column), 1);
++	if (column_name == NULL) {
++		RETURN_FALSE;
++	}
++		
++	RETVAL_STRING(column_name, 1);
+ }
+ /* }}} */
+ 
