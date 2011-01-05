@@ -81,3 +81,4 @@ fix-crash-if-aa-steps-are-invalid.patch
 fix-crash-with-entity-declarations-in-simplexml.patch
 fix-for-NULL-deref-in-zend_language_scanner.patch
 fix-integer-overflow-in-SdnToJulian.patch
+fix-leak-and-possible-crash-introduced-by-the-null-poisoning-patch.patch
