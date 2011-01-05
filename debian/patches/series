@@ -76,3 +76,4 @@ crash_in_zip_extract.patch
 unaligned_memory_access_in_hash_tiger.c.patch
 CVE-2010-4150.patch
 fix-infinite-loop-with-x87-cpu.patch
+do-not-overwrite-GLOBALS-and-this.patch
