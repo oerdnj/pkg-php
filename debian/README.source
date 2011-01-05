@@ -1,3 +1,7 @@
+ == Cherry picked ==
+
+This source has cherry picked patches up to r307103 in PHP_5_3 branch
+
  == Generation of the php5-dbg package Depends ==
 
 The following command can be used to generate a heuristic list of
@@ -49,3 +53,5 @@ mysql MySQL_PDO pdo_mysql"
 * The shared extensions are built under the apache2 target (see above).
 * The CLI SAPI is built on the build-cli-stamp AND build-cgi-stamp, with
   different configure options.
+
+ -- Ondřej Surý <ondrej@debian.org>, Wed,  5 Jan 2011 11:05:15 +0100
