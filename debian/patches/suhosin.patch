@@ -4500,18 +4500,6 @@ the following modifications have been made:
  
  if test -r "$abs_srcdir/Zend/zend_objects.c"; then
    PHP_ADD_SOURCES(Zend, zend_objects.c zend_object_handlers.c zend_objects_API.c zend_default_classes.c)
---- a/ext/phar/stream.c
-+++ b/ext/phar/stream.c
-@@ -470,7 +470,8 @@ static int phar_stream_flush(php_stream
- 	if (stream->mode[0] == 'w' || (stream->mode[0] == 'r' && stream->mode[1] == '+')) {
- 		ret = phar_flush(((phar_entry_data *)stream->abstract)->phar, 0, 0, 0, &error TSRMLS_CC);
- 		if (error) {
--			php_stream_wrapper_log_error(stream->wrapper, REPORT_ERRORS TSRMLS_CC, error);
-+			/* Fix format string vulnerability here, too because PHP.net did not */
-+			php_stream_wrapper_log_error(stream->wrapper, REPORT_ERRORS TSRMLS_CC, "%s", error);
- 			efree(error);
- 		}
- 		return ret;
 --- a/ext/standard/dl.c
 +++ b/ext/standard/dl.c
 @@ -249,6 +249,23 @@ PHPAPI int php_load_extension(char *file
