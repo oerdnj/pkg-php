@@ -311,6 +311,7 @@ Description: interbase/firebird module for php5
 Package: php5-intl
 Architecture: any
 Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${binary:Version})
+Conflicts: php5-idn
 Description: internationalisation module for php5
  This package provides a module to ease internationalisation of PHP scripts.
  .
