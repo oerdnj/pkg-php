@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: var_unserializer.re 300843 2010-06-29 00:58:31Z stas $ */
+/* $Id: var_unserializer.re 301935 2010-08-06 18:20:41Z rasmus $ */
 
 #include "php.h"
 #include "ext/standard/php_var.h"
@@ -216,7 +216,7 @@ static inline long parse_iv2(const unsigned char *p, const unsigned char **q)
 	while (1) {
 		cursor = (char)*p;
 		if (cursor >= '0' && cursor <= '9') {
-			result = result * 10 + cursor - '0';
+			result = result * 10 + (size_t)(cursor - (unsigned char)'0');
 		} else {
 			break;
 		}

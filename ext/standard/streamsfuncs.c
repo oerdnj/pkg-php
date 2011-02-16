@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: streamsfuncs.c 297895 2010-04-12 13:10:05Z pajoye $ */
+/* $Id: streamsfuncs.c 304384 2010-10-14 03:15:15Z cataphract $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -116,9 +116,13 @@ PHP_FUNCTION(stream_socket_client)
 
 	/* prepare the timeout value for use */
 	conv = (php_timeout_ull) (timeout * 1000000.0);
+#ifdef PHP_WIN32
+	tv.tv_sec = (long)(conv / 1000000);
+	tv.tv_usec =(long)(conv % 1000000);
+#else
 	tv.tv_sec = conv / 1000000;
 	tv.tv_usec = conv % 1000000;
-
+#endif
 	if (zerrno)	{
 		zval_dtor(zerrno);
 		ZVAL_LONG(zerrno, 0);
@@ -258,9 +262,13 @@ PHP_FUNCTION(stream_socket_accept)
 
 	/* prepare the timeout value for use */
 	conv = (php_timeout_ull) (timeout * 1000000.0);
+#ifdef PHP_WIN32
+	tv.tv_sec = (long)(conv / 1000000);
+	tv.tv_usec = (long)(conv % 1000000);
+#else
 	tv.tv_sec = conv / 1000000;
 	tv.tv_usec = conv % 1000000;
-
+#endif
 	if (zpeername) {
 		zval_dtor(zpeername);
 		ZVAL_NULL(zpeername);
@@ -407,7 +415,7 @@ PHP_FUNCTION(stream_get_contents)
 {
 	php_stream *stream;
 	zval *zsrc;
-	long maxlen = PHP_STREAM_COPY_ALL, pos = 0;
+	long maxlen = PHP_STREAM_COPY_ALL, pos = -1L;
 	int len, newlen;
 	char *contents = NULL;
 
@@ -417,9 +425,19 @@ PHP_FUNCTION(stream_get_contents)
 
 	php_stream_from_zval(stream, &zsrc);
 
-	if ((pos > 0 || (pos == 0 && ZEND_NUM_ARGS() > 2)) && php_stream_seek(stream, pos, SEEK_SET) < 0) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to seek to position %ld in the stream", pos);
-		RETURN_FALSE;
+	if (pos >= 0) {
+		int seek_res = 0;
+		if (pos > stream->position) {
+			/* use SEEK_CUR to allow emulation in streams that don't support seeking */
+			seek_res = php_stream_seek(stream, pos - stream->position, SEEK_CUR);
+		} else if (pos < stream->position)  {
+			seek_res = php_stream_seek(stream, pos, SEEK_SET);
+		}
+
+		if (seek_res != 0) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to seek to position %ld in the stream", pos);
+			RETURN_FALSE;
+		}
 	}
 
 	len = php_stream_copy_to_mem(stream, &contents, maxlen, 0);

@@ -19,6 +19,7 @@
 #include "fpm_request.h"
 #include "fpm_worker_pool.h"
 #include "fpm_status.h"
+#include "fpm_sockets.h"
 #include "zlog.h"
 
 
@@ -48,36 +49,25 @@ static void fpm_pctl_cleanup(int which, void *arg) /* {{{ */
 }
 /* }}} */
 
-static struct event pctl_event;
+static struct fpm_event_s pctl_event;
 
-static void fpm_pctl_action(int fd, short which, void *arg) /* {{{ */
+static void fpm_pctl_action(struct fpm_event_s *ev, short which, void *arg) /* {{{ */
 {
-	struct event_base *base = (struct event_base *)arg;
-
-	evtimer_del(&pctl_event);
-	memset(&pctl_event, 0, sizeof(pctl_event));
-	fpm_pctl(FPM_PCTL_STATE_UNSPECIFIED, FPM_PCTL_ACTION_TIMEOUT, base);
+	fpm_pctl(FPM_PCTL_STATE_UNSPECIFIED, FPM_PCTL_ACTION_TIMEOUT);
 }
 /* }}} */
 
-static int fpm_pctl_timeout_set(int sec, struct event_base *base) /* {{{ */
+static int fpm_pctl_timeout_set(int sec) /* {{{ */
 {
-	struct timeval tv = { .tv_sec = sec, .tv_usec = 0 };
-
-	if (evtimer_initialized(&pctl_event)) {
-		evtimer_del(&pctl_event);
-	}
-
-	evtimer_set(&pctl_event, &fpm_pctl_action, base);
-	event_base_set(base, &pctl_event);
-	evtimer_add(&pctl_event, &tv);
+	fpm_event_set_timer(&pctl_event, 0, &fpm_pctl_action, NULL);
+	fpm_event_add(&pctl_event, sec * 1000);
 	return 0;
 }
 /* }}} */
 
 static void fpm_pctl_exit() /* {{{ */
 {
-	zlog(ZLOG_STUFF, ZLOG_NOTICE, "exiting, bye-bye!");
+	zlog(ZLOG_NOTICE, "exiting, bye-bye!");
 
 	fpm_conf_unlink_pid();
 	fpm_cleanups_run(FPM_CLEANUP_PARENT_EXIT_MAIN);
@@ -90,7 +80,7 @@ static void fpm_pctl_exit() /* {{{ */
 static void fpm_pctl_exec() /* {{{ */
 {
 
-	zlog(ZLOG_STUFF, ZLOG_NOTICE, "reloading: execvp(\"%s\", {\"%s\""
+	zlog(ZLOG_NOTICE, "reloading: execvp(\"%s\", {\"%s\""
 			"%s%s%s" "%s%s%s" "%s%s%s" "%s%s%s" "%s%s%s"
 			"%s%s%s" "%s%s%s" "%s%s%s" "%s%s%s" "%s%s%s"
 		"})",
@@ -109,7 +99,7 @@ static void fpm_pctl_exec() /* {{{ */
 
 	fpm_cleanups_run(FPM_CLEANUP_PARENT_EXEC);
 	execvp(saved_argv[0], saved_argv);
-	zlog(ZLOG_STUFF, ZLOG_SYSERROR, "execvp() failed");
+	zlog(ZLOG_SYSERROR, "execvp() failed");
 	exit(1);
 }
 /* }}} */
@@ -143,6 +133,9 @@ int fpm_pctl_kill(pid_t pid, int how) /* {{{ */
 		case FPM_PCTL_CONT :
 			s = SIGCONT;
 			break;
+		case FPM_PCTL_QUIT :
+			s = SIGQUIT;
+			break;
 		default :
 			break;
 	}
@@ -161,7 +154,7 @@ static void fpm_pctl_kill_all(int signo) /* {{{ */
 		for (child = wp->children; child; child = child->next) {
 			int res = kill(child->pid, signo);
 
-			zlog(ZLOG_STUFF, ZLOG_DEBUG, "[pool %s] sending signal %d %s to child %d",
+			zlog(ZLOG_DEBUG, "[pool %s] sending signal %d %s to child %d",
 				child->wp->config->name, signo,
 				fpm_signal_names[signo] ? fpm_signal_names[signo] : "", (int) child->pid);
 
@@ -172,12 +165,12 @@ static void fpm_pctl_kill_all(int signo) /* {{{ */
 	}
 
 	if (alive_children) {
-		zlog(ZLOG_STUFF, ZLOG_DEBUG, "%d child(ren) still alive", alive_children);
+		zlog(ZLOG_DEBUG, "%d child(ren) still alive", alive_children);
 	}
 }
 /* }}} */
 
-static void fpm_pctl_action_next(struct event_base *base) /* {{{ */
+static void fpm_pctl_action_next() /* {{{ */
 {
 	int sig, timeout;
 
@@ -203,11 +196,11 @@ static void fpm_pctl_action_next(struct event_base *base) /* {{{ */
 
 	fpm_pctl_kill_all(sig);
 	fpm_signal_sent = sig;
-	fpm_pctl_timeout_set(timeout, base);
+	fpm_pctl_timeout_set(timeout);
 }
 /* }}} */
 
-void fpm_pctl(int new_state, int action, struct event_base *base) /* {{{ */
+void fpm_pctl(int new_state, int action) /* {{{ */
 {
 	switch (action) {
 		case FPM_PCTL_ACTION_SET :
@@ -227,7 +220,7 @@ void fpm_pctl(int new_state, int action, struct event_base *base) /* {{{ */
 					if (new_state == FPM_PCTL_STATE_TERMINATING) break;
 				case FPM_PCTL_STATE_TERMINATING :
 					/* nothing can override 'terminating' state */
-					zlog(ZLOG_STUFF, ZLOG_DEBUG, "not switching to '%s' state, because already in '%s' state",
+					zlog(ZLOG_DEBUG, "not switching to '%s' state, because already in '%s' state",
 						fpm_state_names[new_state], fpm_state_names[fpm_state]);
 					return;
 			}
@@ -235,11 +228,11 @@ void fpm_pctl(int new_state, int action, struct event_base *base) /* {{{ */
 			fpm_signal_sent = 0;
 			fpm_state = new_state;
 
-			zlog(ZLOG_STUFF, ZLOG_DEBUG, "switching to '%s' state", fpm_state_names[fpm_state]);
+			zlog(ZLOG_DEBUG, "switching to '%s' state", fpm_state_names[fpm_state]);
 			/* fall down */
 
 		case FPM_PCTL_ACTION_TIMEOUT :
-			fpm_pctl_action_next(base);
+			fpm_pctl_action_next();
 			break;
 		case FPM_PCTL_ACTION_LAST_CHILD_EXITED :
 			fpm_pctl_action_last();
@@ -255,14 +248,14 @@ int fpm_pctl_can_spawn_children() /* {{{ */
 }
 /* }}} */
 
-int fpm_pctl_child_exited(struct event_base *base) /* {{{ */
+int fpm_pctl_child_exited() /* {{{ */
 {
 	if (fpm_state == FPM_PCTL_STATE_NORMAL) {
 		return 0;
 	}
 
 	if (!fpm_globals.running_children) {
-		fpm_pctl(FPM_PCTL_STATE_UNSPECIFIED, FPM_PCTL_ACTION_LAST_CHILD_EXITED, base);
+		fpm_pctl(FPM_PCTL_STATE_UNSPECIFIED, FPM_PCTL_ACTION_LAST_CHILD_EXITED);
 	}
 	return 0;
 }
@@ -314,51 +307,49 @@ static void fpm_pctl_check_request_timeout(struct timeval *now) /* {{{ */
 }
 /* }}} */
 
-static void fpm_pctl_perform_idle_server_maintenance(struct timeval *now, struct event_base *base) /* {{{ */
+static void fpm_pctl_perform_idle_server_maintenance(struct timeval *now) /* {{{ */
 {
 	struct fpm_worker_pool_s *wp;
-	struct fpm_child_s *last_idle_child = NULL;
-	int i;
 
 	for (wp = fpm_worker_all_pools; wp; wp = wp->next) {
 		struct fpm_child_s *child;
+		struct fpm_child_s *last_idle_child = NULL;
 		int idle = 0;
 		int active = 0;
+		int children_to_fork;
+		unsigned cur_lq;
 
 		if (wp->config == NULL) continue;
 
 		for (child = wp->children; child; child = child->next) {
-			int ret = fpm_request_is_idle(child);
-			if (ret == 1) {
+			if (fpm_request_is_idle(child)) {
 				if (last_idle_child == NULL) {
 					last_idle_child = child;
 				} else {
-					if (child->started.tv_sec < last_idle_child->started.tv_sec) {
+					if (timercmp(&child->started, &last_idle_child->started, <)) {
 						last_idle_child = child;
 					}
 				}
 				idle++;
-			} else if (ret == 0) {
+			} else {
 				active++;
 			}
 		}
 
-		if ((active + idle) != wp->running_children) {
-			zlog(ZLOG_STUFF, ZLOG_ERROR, "[pool %s] unable to retrieve process activity of one or more child(ren). Will try again later.", wp->config->name);
-			continue;
-		}
-
 		/* update status structure for all PMs */
-		fpm_status_update_activity(wp->shm_status, idle, active, idle + active, 0);
+		if (0 > fpm_socket_get_listening_queue(wp, &cur_lq, NULL)) {
+			cur_lq = 0;
+		}
+		fpm_status_update_activity(wp->shm_status, idle, active, idle + active, cur_lq, wp->listening_queue_len, 0);
 
 		/* the rest is only used by PM_STYLE_DYNAMIC */
 		if (wp->config->pm != PM_STYLE_DYNAMIC) continue;
 
-		zlog(ZLOG_STUFF, ZLOG_DEBUG, "[pool %s] currently %d active children, %d spare children, %d running children. Spawning rate %d", wp->config->name, active, idle, wp->running_children, wp->idle_spawn_rate);
+		zlog(ZLOG_DEBUG, "[pool %s] currently %d active children, %d spare children, %d running children. Spawning rate %d", wp->config->name, active, idle, wp->running_children, wp->idle_spawn_rate);
 
 		if (idle > wp->config->pm_max_spare_servers && last_idle_child) {
 			last_idle_child->idle_kill = 1;
-			fpm_pctl_kill(last_idle_child->pid, FPM_PCTL_TERM);
+			fpm_pctl_kill(last_idle_child->pid, FPM_PCTL_QUIT);
 			wp->idle_spawn_rate = 1;
 			continue;
 		}
@@ -366,7 +357,8 @@ static void fpm_pctl_perform_idle_server_maintenance(struct timeval *now, struct
 		if (idle < wp->config->pm_min_spare_servers) {
 			if (wp->running_children >= wp->config->pm_max_children) {
 				if (!wp->warn_max_children) {
-					zlog(ZLOG_STUFF, ZLOG_WARNING, "[pool %s] server reached max_children setting (%d), consider raising it", wp->config->name, wp->config->pm_max_children);
+					fpm_status_increment_max_children_reached(wp->shm_status);
+					zlog(ZLOG_WARNING, "[pool %s] server reached max_children setting (%d), consider raising it", wp->config->name, wp->config->pm_max_children);
 					wp->warn_max_children = 1;
 				}
 				wp->idle_spawn_rate = 1;
@@ -374,17 +366,18 @@ static void fpm_pctl_perform_idle_server_maintenance(struct timeval *now, struct
 			}
 
 			if (wp->idle_spawn_rate >= 8) {
-				zlog(ZLOG_STUFF, ZLOG_WARNING, "[pool %s] seems busy (you may need to increase start_servers, or min/max_spare_servers), spawning %d children, there are %d idle, and %d total children", wp->config->name, wp->idle_spawn_rate, idle, wp->running_children);
+				zlog(ZLOG_WARNING, "[pool %s] seems busy (you may need to increase start_servers, or min/max_spare_servers), spawning %d children, there are %d idle, and %d total children", wp->config->name, wp->idle_spawn_rate, idle, wp->running_children);
 			}
 
 			/* compute the number of idle process to spawn */
-			i = MIN(wp->idle_spawn_rate, wp->config->pm_min_spare_servers - idle);
+			children_to_fork = MIN(wp->idle_spawn_rate, wp->config->pm_min_spare_servers - idle);
 
 			/* get sure it won't exceed max_children */
-			i = MIN(i, wp->config->pm_max_children - wp->running_children);
-			if (i <= 0) {
+			children_to_fork = MIN(children_to_fork, wp->config->pm_max_children - wp->running_children);
+			if (children_to_fork <= 0) {
 				if (!wp->warn_max_children) {
-					zlog(ZLOG_STUFF, ZLOG_WARNING, "[pool %s] server reached max_children setting (%d), consider raising it", wp->config->name, wp->config->pm_max_children);
+					fpm_status_increment_max_children_reached(wp->shm_status);
+					zlog(ZLOG_WARNING, "[pool %s] server reached max_children setting (%d), consider raising it", wp->config->name, wp->config->pm_max_children);
 					wp->warn_max_children = 1;
 				}
 				wp->idle_spawn_rate = 1;
@@ -392,7 +385,7 @@ static void fpm_pctl_perform_idle_server_maintenance(struct timeval *now, struct
 			}
 			wp->warn_max_children = 0;
 
-			fpm_children_make(wp, 1, i, 1, base);
+			fpm_children_make(wp, 1, children_to_fork, 1);
 
 			/* if it's a child, stop here without creating the next event
 			 * this event is reserved to the master process
@@ -401,7 +394,7 @@ static void fpm_pctl_perform_idle_server_maintenance(struct timeval *now, struct
 				return;
 			}
 
-			zlog(ZLOG_STUFF, ZLOG_DEBUG, "[pool %s] %d child(ren) have been created dynamically", wp->config->name, i);	
+			zlog(ZLOG_DEBUG, "[pool %s] %d child(ren) have been created dynamically", wp->config->name, children_to_fork);	
 
 			/* Double the spawn rate for the next iteration */
 			if (wp->idle_spawn_rate < FPM_MAX_SPAWN_RATE) {
@@ -414,37 +407,40 @@ static void fpm_pctl_perform_idle_server_maintenance(struct timeval *now, struct
 }
 /* }}} */
 
-void fpm_pctl_heartbeat(int fd, short which, void *arg) /* {{{ */
+void fpm_pctl_heartbeat(struct fpm_event_s *ev, short which, void *arg) /* {{{ */
 {
-	static struct event heartbeat;
-	struct timeval tv = { .tv_sec = 0, .tv_usec = 130000 };
+	static struct fpm_event_s heartbeat;
 	struct timeval now;
-	struct event_base *base = (struct event_base *)arg;
 
-	if (which == EV_TIMEOUT) {
-		evtimer_del(&heartbeat);
-		fpm_clock_get(&now);
-		fpm_pctl_check_request_timeout(&now);
+	if (fpm_globals.parent_pid != getpid()) {
+		return; /* sanity check */
 	}
 
-	evtimer_set(&heartbeat, &fpm_pctl_heartbeat, base);
-	event_base_set(base, &heartbeat);
-	evtimer_add(&heartbeat, &tv);
+	if (which == FPM_EV_TIMEOUT) {
+		fpm_clock_get(&now);
+		fpm_pctl_check_request_timeout(&now);
+		return;
+	}
+
+	/* first call without setting to initialize the timer */
+	fpm_event_set_timer(&heartbeat, FPM_EV_PERSIST, &fpm_pctl_heartbeat, NULL);
+	fpm_event_add(&heartbeat, FPM_PCTL_HEARTBEAT);
 }
 /* }}} */
 
-void fpm_pctl_perform_idle_server_maintenance_heartbeat(int fd, short which, void *arg) /* {{{ */
+void fpm_pctl_perform_idle_server_maintenance_heartbeat(struct fpm_event_s *ev, short which, void *arg) /* {{{ */
 {
-	static struct event heartbeat;
-	struct timeval tv = { .tv_sec = 0, .tv_usec = FPM_IDLE_SERVER_MAINTENANCE_HEARTBEAT };
+	static struct fpm_event_s heartbeat;
 	struct timeval now;
-	struct event_base *base = (struct event_base *)arg;
 
-	if (which == EV_TIMEOUT) {
-		evtimer_del(&heartbeat);
+	if (fpm_globals.parent_pid != getpid()) {
+		return; /* sanity check */
+	}
+
+	if (which == FPM_EV_TIMEOUT) {
 		fpm_clock_get(&now);
 		if (fpm_pctl_can_spawn_children()) {
-			fpm_pctl_perform_idle_server_maintenance(&now, base);
+			fpm_pctl_perform_idle_server_maintenance(&now);
 
 			/* if it's a child, stop here without creating the next event
 			 * this event is reserved to the master process
@@ -453,11 +449,12 @@ void fpm_pctl_perform_idle_server_maintenance_heartbeat(int fd, short which, voi
 				return;
 			}
 		}
+		return;
 	}
 
-	evtimer_set(&heartbeat, &fpm_pctl_perform_idle_server_maintenance_heartbeat, base);
-	event_base_set(base, &heartbeat);
-	evtimer_add(&heartbeat, &tv);
+	/* first call without setting which to initialize the timer */
+	fpm_event_set_timer(&heartbeat, FPM_EV_PERSIST, &fpm_pctl_perform_idle_server_maintenance_heartbeat, NULL);
+	fpm_event_add(&heartbeat, FPM_IDLE_SERVER_MAINTENANCE_HEARTBEAT);
 }
 /* }}} */
 

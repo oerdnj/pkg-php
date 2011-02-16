@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_hash.c 298914 2010-05-03 16:36:04Z felipe $ */
+/* $Id: zend_hash.c 303364 2010-09-14 14:26:37Z johannes $ */
 
 #include "zend.h"
 
@@ -62,6 +62,9 @@ static void _zend_is_inconsistent(const HashTable *ht, const char *file, int lin
 			break;
 		case HT_CLEANING:
 			zend_output_debug_string(1, "%s(%d) : ht=%p is being cleaned", file, line, ht);
+			break;
+		default:
+			zend_output_debug_string(1, "%s(%d) : ht=%p is inconsistent", file, line, ht);
 			break;
 	}
 	zend_bailout();

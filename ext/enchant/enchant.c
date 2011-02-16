@@ -16,7 +16,7 @@
   |         Ilia Alshanetsky <ilia@prohost.org>                          |
   +----------------------------------------------------------------------+
 
-  $Id: enchant.c 298870 2010-05-02 05:01:51Z geissert $
+  $Id: enchant.c 305507 2010-11-18 15:22:22Z pajoye $
 */
 
 #ifdef HAVE_CONFIG_H
@@ -327,7 +327,7 @@ PHP_MINFO_FUNCTION(enchant)
 #elif defined(HAVE_ENCHANT_BROKER_SET_PARAM)
 	php_info_print_table_row(2, "Libenchant Version", "1.5.0 or later");
 #endif
-	php_info_print_table_row(2, "Revision", "$Revision: 298870 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 305507 $");
 	php_info_print_table_end();
 
 	php_info_print_table_start();
@@ -433,6 +433,8 @@ PHP_FUNCTION(enchant_broker_set_dict_path)
 	if (!value_len) {
 		RETURN_FALSE;
 	}
+	
+	PHP_ENCHANT_GET_BROKER;
 
 	switch (dict_type) {
 		case PHP_ENCHANT_MYSPELL:
@@ -466,6 +468,8 @@ PHP_FUNCTION(enchant_broker_get_dict_path)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rl", &broker, &dict_type) == FAILURE) {
 		RETURN_FALSE;
 	}
+	
+	PHP_ENCHANT_GET_BROKER;
 
 	switch (dict_type) {
 		case PHP_ENCHANT_MYSPELL:
@@ -584,6 +588,10 @@ PHP_FUNCTION(enchant_broker_request_pwl_dict)
 	int pos;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &broker, &pwl, &pwllen) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	if (strlen(pwl) != pwllen) {
 		RETURN_FALSE;
 	}
 

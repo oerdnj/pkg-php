@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: session.c 300296 2010-06-08 22:30:16Z pajoye $ */
+/* $Id: session.c 305034 2010-11-02 18:34:56Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -403,9 +403,8 @@ PHPAPI char *php_session_create_id(PS_CREATE_SID_ARGS) /* {{{ */
 	efree(buf);
 
 	if (PS(entropy_length) > 0) {
-		unsigned char rbuf[2048];
-
 #ifdef PHP_WIN32
+		unsigned char rbuf[2048];
 		size_t toread = PS(entropy_length);
 
 		if (php_win32_get_random_bytes(rbuf, (size_t) toread) == SUCCESS){
@@ -2283,6 +2282,7 @@ static PHP_MINFO_FUNCTION(session) /* {{{ */
 
 static const zend_module_dep session_deps[] = { /* {{{ */
 	ZEND_MOD_OPTIONAL("hash")
+	ZEND_MOD_REQUIRED("spl")
 	{NULL, NULL, NULL}
 };
 /* }}} */

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_signal.h 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: php_signal.h 305020 2010-11-01 22:43:59Z lbarnaud $ */
 
 #include <signal.h>
 #ifndef PHP_SIGNAL_H
@@ -31,5 +31,6 @@
 
 typedef void Sigfunc(int);
 Sigfunc *php_signal(int signo, Sigfunc *func, int restart);
+Sigfunc *php_signal4(int signo, Sigfunc *func, int restart, int mask_all);
 
 #endif

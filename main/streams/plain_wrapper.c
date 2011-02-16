@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: plain_wrapper.c 295308 2010-02-21 17:44:25Z pajoye $ */
+/* $Id: plain_wrapper.c 305108 2010-11-05 18:53:48Z cataphract $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -490,7 +490,9 @@ static int php_stdiop_cast(php_stream *stream, int castas, void **ret TSRMLS_DC)
 				if (data->file == NULL) {
 					/* we were opened as a plain file descriptor, so we
 					 * need fdopen now */
-					data->file = fdopen(data->fd, stream->mode);
+					char fixed_mode[5];
+					php_stream_mode_sanitize_fdopen_fopencookie(stream, fixed_mode);
+					data->file = fdopen(data->fd, fixed_mode);
 					if (data->file == NULL) {
 						return FAILURE;
 					}
@@ -1017,10 +1019,18 @@ static int php_plain_files_url_stater(php_stream_wrapper *wrapper, char *url, in
 		return -1;
 	}
 
-#ifdef HAVE_SYMLINK
+#ifdef PHP_WIN32
+	if (EG(windows_version_info).dwMajorVersion >= 5) {
+		if (flags & PHP_STREAM_URL_STAT_LINK) {
+			return VCWD_LSTAT(url, &ssb->sb);
+		}
+	}
+#else
+# ifdef HAVE_SYMLINK
 	if (flags & PHP_STREAM_URL_STAT_LINK) {
 		return VCWD_LSTAT(url, &ssb->sb);
 	} else
+# endif
 #endif
 		return VCWD_STAT(url, &ssb->sb);
 }
@@ -1139,7 +1149,7 @@ static int php_plain_files_rename(php_stream_wrapper *wrapper, char *url_from, c
 #else
 		php_error_docref2(NULL TSRMLS_CC, url_from, url_to, E_WARNING, "%s", strerror(errno));
 #endif
-        return 0;
+		return 0;
 	}
 
 	/* Clear stat cache (and realpath cache) */
@@ -1221,7 +1231,7 @@ static int php_plain_files_mkdir(php_stream_wrapper *wrapper, char *dir, int mod
 				if (*p == '\0') {
 					*p = DEFAULT_SLASH;
 					if ((*(p+1) != '\0') &&
-					    (ret = VCWD_MKDIR(buf, (mode_t)mode)) < 0) {
+						(ret = VCWD_MKDIR(buf, (mode_t)mode)) < 0) {
 						if (options & REPORT_ERRORS) {
 							php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", strerror(errno));
 						}
@@ -1298,7 +1308,6 @@ PHPAPI php_stream *_php_stream_fopen_with_path(char *filename, char *mode, char 
 	char *pathbuf, *ptr, *end;
 	char *exec_fname;
 	char trypath[MAXPATHLEN];
-	struct stat sb;
 	php_stream *stream;
 	int path_length;
 	int filename_length;
@@ -1440,6 +1449,8 @@ not_relative_path:
 		}
 		
 		if (PG(safe_mode)) {
+			struct stat sb;
+
 			if (VCWD_STAT(trypath, &sb) == 0) {
 				/* file exists ... check permission */
 				if ((php_check_safe_mode_include_dir(trypath TSRMLS_CC) == 0) ||

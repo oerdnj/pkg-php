@@ -17,12 +17,12 @@
   |          Ulf Wendel <uwendel@mysql.com>                              |
   +----------------------------------------------------------------------+
 */
-/* $Id: mysqlnd.h 300533 2010-06-17 16:56:48Z pajoye $ */
+/* $Id: mysqlnd.h 304625 2010-10-22 14:34:33Z andrey $ */
 
 #ifndef MYSQLND_H
 #define MYSQLND_H
 
-#define MYSQLND_VERSION "mysqlnd 5.0.7-dev - 091210 - $Revision: 300533 $"
+#define MYSQLND_VERSION "mysqlnd 5.0.7-dev - 091210 - $Revision: 304625 $"
 #define MYSQLND_VERSION_ID 50007
 
 /* This forces inlining of some accessor functions */
@@ -44,7 +44,7 @@
 #define MYSQLND_DO_WIRE_CHECK_BEFORE_COMMAND 1
 #endif
 
-#if PHP_DEBUG && !defined(PHP_WIN32)
+#if PHP_DEBUG
 #define MYSQLND_DBG_ENABLED 1
 #else
 #define MYSQLND_DBG_ENABLED 0
@@ -85,10 +85,8 @@ PHPAPI struct st_mysqlnd_stmt_methods * mysqlnd_stmt_get_methods();
 PHPAPI void mysqlnd_stmt_set_methods(struct st_mysqlnd_stmt_methods *methods);
 
 
-#define mysqlnd_restart_psession(conn) _mysqlnd_restart_psession((conn) TSRMLS_CC)
-PHPAPI void _mysqlnd_restart_psession(MYSQLND * conn TSRMLS_DC);
-#define mysqlnd_end_psession(conn) _mysqlnd_end_psession((conn) TSRMLS_CC)
-PHPAPI void _mysqlnd_end_psession(MYSQLND *conn TSRMLS_DC);
+#define mysqlnd_restart_psession(conn)	(conn)->m->restart_psession((conn) TSRMLS_CC)
+#define mysqlnd_end_psession(conn)		(conn)->m->end_psession((conn) TSRMLS_CC)
 PHPAPI void mysqlnd_minfo_print_hash(zval *values);
 #define mysqlnd_thread_safe()	TRUE
 
@@ -104,7 +102,7 @@ PHPAPI MYSQLND * mysqlnd_connect(MYSQLND *conn,
 						  const char *passwd, unsigned int passwd_len,
 						  const char *db, unsigned int db_len,
 						  unsigned int port,
-						  const char *socket,
+						  const char *socket_or_pipe,
 						  unsigned int mysql_flags
 						  TSRMLS_DC);
 
@@ -286,7 +284,7 @@ ZEND_BEGIN_MODULE_GLOBALS(mysqlnd)
 	long			debug_realloc_fail_threshold;
 ZEND_END_MODULE_GLOBALS(mysqlnd)
 
-PHPAPI ZEND_DECLARE_MODULE_GLOBALS(mysqlnd);
+PHPAPI ZEND_EXTERN_MODULE_GLOBALS(mysqlnd)
 
 #ifdef ZTS
 #define MYSQLND_G(v) TSRMG(mysqlnd_globals_id, zend_mysqlnd_globals *, v)

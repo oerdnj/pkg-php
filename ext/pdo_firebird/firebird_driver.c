@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: firebird_driver.c 293447 2010-01-12 12:46:54Z iliaa $ */
+/* $Id: firebird_driver.c 305416 2010-11-16 21:02:14Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -547,7 +547,7 @@ static int firebird_handle_get_attribute(pdo_dbh_t *dbh, long attr, zval *val TS
 	pdo_firebird_db_handle *H = (pdo_firebird_db_handle *)dbh->driver_data;
 
 	switch (attr) {
-		char tmp[200];
+		char tmp[512];
 		
 		case PDO_ATTR_AUTOCOMMIT:
 			ZVAL_LONG(val,dbh->auto_commit);
@@ -590,6 +590,10 @@ static int firebird_handle_get_attribute(pdo_dbh_t *dbh, long attr, zval *val TS
 				ZVAL_STRING(val,tmp,1);
 				return 1;
 			}
+			
+		case PDO_ATTR_FETCH_TABLE_NAMES:
+			ZVAL_BOOL(val, H->fetch_table_names);
+			return 1;
 	}
 	return 0;
 }       

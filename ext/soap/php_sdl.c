@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_sdl.c 299013 2010-05-05 07:43:45Z dmitry $ */
+/* $Id: php_sdl.c 305198 2010-11-08 11:34:32Z dmitry $ */
 
 #include "php_soap.h"
 #include "ext/libxml/php_libxml.h"
@@ -373,7 +373,7 @@ static void load_wsdl_ex(zval *this_ptr, char *struri, sdlCtx *ctx, int include 
 					soap_error1(E_ERROR, "Parsing WSDL: <message> '%s' already defined", name->children->content);
 				}
 			} else {
-				soap_error0(E_ERROR, "Parsing WSDL: <message> hasn't name attribute");
+				soap_error0(E_ERROR, "Parsing WSDL: <message> has no name attribute");
 			}
 
 		} else if (node_is_equal(trav,"portType")) {
@@ -383,7 +383,7 @@ static void load_wsdl_ex(zval *this_ptr, char *struri, sdlCtx *ctx, int include 
 					soap_error1(E_ERROR, "Parsing WSDL: <portType> '%s' already defined", name->children->content);
 				}
 			} else {
-				soap_error0(E_ERROR, "Parsing WSDL: <portType> hasn't name attribute");
+				soap_error0(E_ERROR, "Parsing WSDL: <portType> has no name attribute");
 			}
 
 		} else if (node_is_equal(trav,"binding")) {
@@ -393,7 +393,7 @@ static void load_wsdl_ex(zval *this_ptr, char *struri, sdlCtx *ctx, int include 
 					soap_error1(E_ERROR, "Parsing WSDL: <binding> '%s' already defined", name->children->content);
 				}
 			} else {
-				soap_error0(E_ERROR, "Parsing WSDL: <binding> hasn't name attribute");
+				soap_error0(E_ERROR, "Parsing WSDL: <binding> has no name attribute");
 			}
 
 		} else if (node_is_equal(trav,"service")) {
@@ -403,7 +403,7 @@ static void load_wsdl_ex(zval *this_ptr, char *struri, sdlCtx *ctx, int include 
 					soap_error1(E_ERROR, "Parsing WSDL: <service> '%s' already defined", name->children->content);
 				}
 			} else {
-				soap_error0(E_ERROR, "Parsing WSDL: <service> hasn't name attribute");
+				soap_error0(E_ERROR, "Parsing WSDL: <service> has no name attribute");
 			}
 		} else if (!node_is_equal(trav,"documentation")) {
 			soap_error1(E_ERROR, "Parsing WSDL: Unexpected WSDL element <%s>", trav->name);
@@ -3250,10 +3250,13 @@ sdlPtr get_sdl(zval *this_ptr, char *uri, long cache_wsdl TSRMLS_DC)
 		php_stream_context_set_option(context, "http", "proxy", str_proxy);
 		zval_ptr_dtor(&str_proxy);
 
-		MAKE_STD_ZVAL(str_proxy);
-		ZVAL_BOOL(str_proxy, 1);
-		php_stream_context_set_option(context, "http", "request_fulluri", str_proxy);
-		zval_ptr_dtor(&str_proxy);
+		if (uri_len < sizeof("https://")-1 ||
+		    strncasecmp(uri, "https://", sizeof("https://")-1) != 0) {
+			MAKE_STD_ZVAL(str_proxy);
+			ZVAL_BOOL(str_proxy, 1);
+			php_stream_context_set_option(context, "http", "request_fulluri", str_proxy);
+			zval_ptr_dtor(&str_proxy);
+		}
 
 		proxy_authentication(this_ptr, &headers TSRMLS_CC);
 	}

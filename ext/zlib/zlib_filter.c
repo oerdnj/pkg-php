@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zlib_filter.c 296107 2010-03-12 10:28:59Z jani $ */
+/* $Id: zlib_filter.c 303878 2010-09-29 18:58:58Z cataphract $ */
 
 #include "php.h"
 #include "php_zlib.h"
@@ -102,6 +102,9 @@ static php_stream_filter_status_t php_zlib_inflate_filter(
 			} else if (status != Z_OK) {
 				/* Something bad happened */
 				php_stream_bucket_delref(bucket TSRMLS_CC);
+				/* reset these because despite the error the filter may be used again */
+				data->strm.next_in = data->inbuf;
+				data->strm.avail_in = 0;
 				return PSFS_ERR_FATAL;
 			}
 			desired -= data->strm.avail_in; /* desired becomes what we consumed this round through */

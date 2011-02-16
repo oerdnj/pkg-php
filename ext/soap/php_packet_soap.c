@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_packet_soap.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: php_packet_soap.c 303034 2010-09-03 22:24:08Z rasmus $ */
 
 #include "php_soap.h"
 
@@ -340,7 +340,7 @@ int parse_packet_soap(zval *this_ptr, char *buffer, int buffer_size, sdlFunction
 				}
 			}
 		} else {
-		  /* Function hasn't WSDL description */
+		  /* Function has no WSDL description */
 			xmlNodePtr val;
 			val = resp->children;
 			while (val != NULL) {

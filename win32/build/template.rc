@@ -1,5 +1,5 @@
 /* This is a template RC file.
- * $Id: template.rc 281570 2009-06-03 01:14:58Z kalle $
+ * $Id: template.rc 302265 2010-08-15 13:40:29Z pajoye $
  * Do not edit with MSVC */
 #ifdef APSTUDIO_INVOKED
 # error dont edit with MSVC
@@ -65,7 +65,7 @@ BEGIN
 #endif
             VALUE "FileVersion", EXT_VERSION
             VALUE "InternalName", INTERNAL_NAME
-            VALUE "LegalCopyright", "Copyright © 1997-2009 The PHP Group"
+            VALUE "LegalCopyright", "Copyright © 1997-2010 The PHP Group"
             VALUE "LegalTrademarks", "PHP"
             VALUE "OriginalFilename", FILE_NAME
             VALUE "ProductName", "PHP"

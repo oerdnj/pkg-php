@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: ftok.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: ftok.c 305507 2010-11-18 15:22:22Z pajoye $ */
 
 #include "php.h"
 
@@ -37,6 +37,10 @@ PHP_FUNCTION(ftok)
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &pathname, &pathname_len, &proj, &proj_len) == FAILURE) {
 		return;
+	}
+
+	if (strlen(pathname) != pathname_len) {
+		RETURN_FALSE;
 	}
 
 	if (pathname_len == 0){

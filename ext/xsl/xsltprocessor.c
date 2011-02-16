@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: xsltprocessor.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: xsltprocessor.c 305507 2010-11-18 15:22:22Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -642,6 +642,9 @@ PHP_FUNCTION(xsl_xsltprocessor_transform_to_uri)
 
 	ret = -1;
 	if (newdocp) {
+		if (strlen(uri) != uri_len) {
+			RETURN_FALSE;
+		}
 		ret = xsltSaveResultToFilename(uri, newdocp, sheetp, 0);
 		xmlFreeDoc(newdocp);
 	}
@@ -845,7 +848,7 @@ PHP_FUNCTION(xsl_xsltprocessor_set_profiling)
 		if (intern->profiling) {
 			efree(intern->profiling);
 		}
-		if (filename != NULL) {
+		if (filename != NULL && strlen(filename) == filename_len) {
 			intern->profiling = estrndup(filename,filename_len);
 		} else {
 			intern->profiling = NULL;

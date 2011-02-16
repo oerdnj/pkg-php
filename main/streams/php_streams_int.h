@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_streams_int.h 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: php_streams_int.h 305108 2010-11-05 18:53:48Z cataphract $ */
 
 
 #if ZEND_DEBUG
@@ -58,6 +58,13 @@
 #ifndef S_ISREG
 #define S_ISREG(mode)	(((mode)&S_IFMT) == S_IFREG)
 #endif
+
+/* This functions transforms the first char to 'w' if it's not 'r', 'a' or 'w'
+ * and strips any subsequent chars except '+' and 'b'.
+ * Use this to sanitize stream->mode if you call e.g. fdopen, fopencookie or
+ * any other function that expects standard modes and you allow non-standard
+ * ones. result should be a char[5]. */
+void php_stream_mode_sanitize_fdopen_fopencookie(php_stream *stream, char *result);
 
 void php_stream_tidy_wrapper_error_log(php_stream_wrapper *wrapper TSRMLS_DC);
 void php_stream_display_wrapper_errors(php_stream_wrapper *wrapper, const char *path, const char *caption TSRMLS_DC);

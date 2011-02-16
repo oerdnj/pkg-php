@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: glob_wrapper.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: glob_wrapper.c 303265 2010-09-10 21:33:50Z felipe $ */
 
 #include "php.h"
 #include "php_streams_int.h"
@@ -29,6 +29,7 @@
 # endif
 #endif
 
+#ifdef HAVE_GLOB
 #ifndef GLOB_ONLYDIR
 #define GLOB_ONLYDIR (1<<30)
 #define GLOB_FLAGMASK (~GLOB_ONLYDIR)
@@ -278,6 +279,7 @@ php_stream_wrapper  php_glob_stream_wrapper = {
 	NULL,
 	0
 };
+#endif /* HAVE_GLOB */
 
 /*
  * Local variables:

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_ini.c 300272 2010-06-08 12:54:11Z tony2001 $ */
+/* $Id: php_ini.c 303199 2010-09-09 05:11:05Z aharvey $ */
 
 #include "php.h"
 #include "ext/standard/info.h"
@@ -201,6 +201,7 @@ PHPAPI void config_zval_dtor(zval *zvalue)
 /* Reset / free active_ini_sectin global */
 #define RESET_ACTIVE_INI_HASH() do { \
 	active_ini_hash = NULL;          \
+	is_special_section = 0;          \
 } while (0)
 /* }}} */
 
@@ -398,13 +399,39 @@ int php_init_config(TSRMLS_D)
 		static const char paths_separator[] = { ZEND_PATHS_SEPARATOR, 0 };
 #ifdef PHP_WIN32
 		char *reg_location;
+		char phprc_path[MAXPATHLEN];
 #endif
 
 		env_location = getenv("PHPRC");
+
+#ifdef PHP_WIN32
+		if (!env_location) {
+			char dummybuf;
+			int size;
+
+			SetLastError(0);
+
+			/*If the given bugger is not large enough to hold the data, the return value is 
+			the buffer size,  in characters, required to hold the string and its terminating 
+			null character. We use this return value to alloc the final buffer. */
+			size = GetEnvironmentVariableA("PHPRC", &dummybuf, 0);
+			if (GetLastError() == ERROR_ENVVAR_NOT_FOUND) {
+				/* The environment variable doesn't exist. */
+				env_location = "";
+			} else {
+				if (size == 0) {
+					env_location = "";
+				} else {
+					size = GetEnvironmentVariableA("PHPRC", phprc_path, size);
+					env_location = phprc_path;
+				}
+			}
+		}
+#else
 		if (!env_location) {
 			env_location = "";
 		}
-
+#endif
 		/*
 		 * Prepare search path
 		 */
@@ -628,9 +655,6 @@ int php_init_config(TSRMLS_D)
 		zend_llist_element *element;
 		int l, total_l = 0;
 
-		/* Reset active ini section */
-		RESET_ACTIVE_INI_HASH();
-
 		if ((ndir = php_scandir(php_ini_scanned_path, &namelist, 0, php_alphasort)) > 0) {
 			zend_llist_init(&scanned_ini_list, sizeof(char *), (llist_dtor_func_t) free_estring, 1);
 			memset(&fh, 0, sizeof(fh));
@@ -642,6 +666,9 @@ int php_init_config(TSRMLS_D)
 					free(namelist[i]);
 					continue;
 				}
+				/* Reset active ini section */
+				RESET_ACTIVE_INI_HASH();
+
 				if (IS_SLASH(php_ini_scanned_path[php_ini_scanned_path_len - 1])) {
 					snprintf(ini_file, MAXPATHLEN, "%s%s", php_ini_scanned_path, namelist[i]->d_name);
 				} else {

@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_priv.h 298781 2010-04-29 15:49:51Z andrey $ */
+/* $Id: mysqlnd_priv.h 304984 2010-10-29 15:02:39Z andrey $ */
 
 #ifndef MYSQLND_PRIV_H
 #define MYSQLND_PRIV_H
@@ -33,6 +33,12 @@
 #define Z_DELREF_PP(ppz)			Z_DELREF_P(*(ppz))
 #endif
 
+#if PHP_MAJOR_VERSION >= 6
+#define MYSQLND_UNICODE 1
+#else
+#define MYSQLND_UNICODE 0
+#endif
+
 #ifdef ZTS
 #include "TSRM.h"
 #endif
@@ -45,24 +51,33 @@
 #define MYSQLND_CLASS_METHODS_START(class)	struct st_##class##_methods MYSQLND_CLASS_METHOD_TABLE_NAME(class) = {
 #define MYSQLND_CLASS_METHODS_END			}
 
-#if PHP_MAJOR_VERSION < 6
-#define mysqlnd_array_init(arg, field_count) \
-{ \
-	ALLOC_HASHTABLE_REL(Z_ARRVAL_P(arg));\
-	zend_hash_init(Z_ARRVAL_P(arg), (field_count), NULL, ZVAL_PTR_DTOR, 0); \
-	Z_TYPE_P(arg) = IS_ARRAY;\
-}
-#else
+#if MYSQLND_UNICODE
 #define mysqlnd_array_init(arg, field_count) \
 { \
 	ALLOC_HASHTABLE_REL(Z_ARRVAL_P(arg));\
 	zend_u_hash_init(Z_ARRVAL_P(arg), (field_count), NULL, ZVAL_PTR_DTOR, 0, 0);\
 	Z_TYPE_P(arg) = IS_ARRAY;\
 }
+#else
+#define mysqlnd_array_init(arg, field_count) \
+{ \
+	ALLOC_HASHTABLE_REL(Z_ARRVAL_P(arg));\
+	zend_hash_init(Z_ARRVAL_P(arg), (field_count), NULL, ZVAL_PTR_DTOR, 0); \
+	Z_TYPE_P(arg) = IS_ARRAY;\
+}
 #endif
 
 
-
+#define MYSQLND_DEBUG_DUMP_TIME				1
+#define MYSQLND_DEBUG_DUMP_TRACE			2
+#define MYSQLND_DEBUG_DUMP_PID				4
+#define MYSQLND_DEBUG_DUMP_LINE				8
+#define MYSQLND_DEBUG_DUMP_FILE				16
+#define MYSQLND_DEBUG_DUMP_LEVEL			32
+#define MYSQLND_DEBUG_APPEND				64
+#define MYSQLND_DEBUG_FLUSH					128
+#define MYSQLND_DEBUG_TRACE_MEMORY_CALLS	256
+#define MYSQLND_DEBUG_PROFILE_CALLS			512
 
 
 /* Client Error codes */

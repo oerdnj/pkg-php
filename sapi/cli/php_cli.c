@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_cli.c 300854 2010-06-29 11:37:13Z felipe $ */
+/* $Id: php_cli.c 303357 2010-09-14 10:36:21Z pajoye $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -100,6 +100,7 @@
 #endif
 
 PHPAPI extern char *php_ini_opened_path;
+PHPAPI extern char *php_ini_scanned_path;
 PHPAPI extern char *php_ini_scanned_files;
 
 #ifndef O_BINARY

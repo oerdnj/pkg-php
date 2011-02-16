@@ -1,4 +1,4 @@
-## $Id: configure.in 301439 2010-07-21 10:50:07Z johannes $ -*- autoconf -*-
+## $Id: configure.in 307133 2011-01-05 16:35:33Z johannes $ -*- autoconf -*-
 dnl ## Process this file with autoconf to produce a configure script.
 
 divert(1)
@@ -41,7 +41,7 @@ AC_CONFIG_HEADER(main/php_config.h)
 
 PHP_MAJOR_VERSION=5
 PHP_MINOR_VERSION=3
-PHP_RELEASE_VERSION=3
+PHP_RELEASE_VERSION=5
 PHP_EXTRA_VERSION=""
 PHP_VERSION="$PHP_MAJOR_VERSION.$PHP_MINOR_VERSION.$PHP_RELEASE_VERSION$PHP_EXTRA_VERSION"
 PHP_VERSION_ID=`expr [$]PHP_MAJOR_VERSION \* 10000 + [$]PHP_MINOR_VERSION \* 100 + [$]PHP_RELEASE_VERSION`
@@ -611,7 +611,7 @@ asprintf \
 )
 
 dnl Some systems (like OpenSolaris) do not have nanosleep in libc
-PHP_CHECK_FUNC(nanosleep, rt)
+PHP_CHECK_FUNC_LIB(nanosleep, rt)
 
 dnl Check for getaddrinfo, should be a better way, but...
 dnl Also check for working getaddrinfo
@@ -764,7 +764,7 @@ if test "$PHP_DEBUG" = "yes"; then
   changequote([,])
   dnl add -O0 only if GCC or ICC is used
   if test "$GCC" = "yes" || test "$ICC" = "yes"; then
-    CFLAGS="$CFLAGS -g -O0"
+    CFLAGS="$CFLAGS -O0"
     CXXFLAGS="$CXXFLAGS -g -O0"
   fi
   if test "$SUNCC" = "yes"; then
@@ -1329,8 +1329,8 @@ dnl Autoconf 2.13's libtool checks go slightly nuts on Mac OS X 10.5 and 10.6.
 dnl This hack works around it. Ugly.
 case $host_alias in
 *darwin9*|*darwin10*)
-	ac_cv_exeext=
-	;;
+  ac_cv_exeext=
+  ;;
 esac
 
 dnl Only allow AC_PROG_CXX and AC_PROG_CXXCPP if they are explicitly called (by PHP_REQUIRE_CXX).

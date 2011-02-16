@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: gd.c 293588 2010-01-15 17:09:14Z tabe $ */
+/* $Id: gd.c 306075 2010-12-08 08:45:56Z pajoye $ */
 
 /* gd 1.2 is copyright 1994, 1995, Quest Protein Database Center,
    Cold Spring Harbor Labs. */
@@ -2642,6 +2642,9 @@ static void _php_image_output(INTERNAL_FUNCTION_PARAMETERS, int image_type, char
 	}
 
 	if (argc >= 2 && file_len) {
+		if (strlen(file) != file_len) {
+			RETURN_FALSE;
+		}
 		PHP_GD_CHECK_OPEN_BASEDIR(fn, "Invalid filename");
 
 		fp = VCWD_FOPEN(fn, "wb");
@@ -4225,6 +4228,11 @@ PHP_FUNCTION(imagepstext)
 		return;
 	}
 
+	if (aa_steps != 4 || aa_steps != 16) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "AA steps must be 4 or 16");
+		RETURN_FALSE;
+	}
+
 	ZEND_FETCH_RESOURCE(bg_img, gdImagePtr, &img, -1, "Image", le_gd);
 	ZEND_FETCH_RESOURCE(f_ind, int *, &fnt, -1, "Type 1 font", le_ps_font);
 
@@ -4551,6 +4559,14 @@ static void _php_image_convert(INTERNAL_FUNCTION_PARAMETERS, int image_type )
 	dest_height = height;
 	dest_width = width;
 	int_threshold = threshold;
+
+	if (strlen(f_org) != f_org_len) {
+		RETURN_FALSE;
+	}
+
+	if (strlen(f_dest) != f_dest_len) {
+		RETURN_FALSE;
+	}
 
 	/* Check threshold value */
 	if (int_threshold < 0 || int_threshold > 8) {

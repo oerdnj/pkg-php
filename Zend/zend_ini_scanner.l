@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_ini_scanner.l 299767 2010-05-26 02:18:17Z felipe $ */
+/* $Id: zend_ini_scanner.l 301758 2010-08-01 15:26:54Z felipe $ */
 
 #include <errno.h>
 #include "zend.h"
@@ -344,7 +344,7 @@ DOLLAR_CURLY "${"
 
 SECTION_RAW_CHARS [^\]\n\r]
 SINGLE_QUOTED_CHARS [^']
-RAW_VALUE_CHARS [^\n\r;]
+RAW_VALUE_CHARS [^\n\r;\000]
 
 LITERAL_DOLLAR ("$"([^{\000]|("\\"{ANY_CHAR})))
 VALUE_CHARS         ([^$= \t\n\r;&|~()!"'\000]|{LITERAL_DOLLAR})

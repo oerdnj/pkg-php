@@ -12,6 +12,8 @@ This file is public domain and comes with NO WARRANTY of any kind */
 #ifndef MYSQLND_PORTABILITY_H
 #define MYSQLND_PORTABILITY_H
 
+
+
 /* Comes from global.h as OFFSET, renamed to STRUCT_OFFSET */
 #define STRUCT_OFFSET(t, f)   ((size_t)(char *)&((t *)0)->f)
 
@@ -479,19 +481,17 @@ typedef union {
    short/long to/from some place in memory V should be a (not
    register) variable, M is a pointer to byte */
 
-#ifdef WORDS_BIGENDIAN
+#ifndef float8get
 
+#ifdef WORDS_BIGENDIAN
 #define float8get(V,M)		memcpy((char*) &(V),(char*)  (M), sizeof(double))
 #define float8store(T,V)	memcpy((char*)  (T),(char*) &(V), sizeof(double))
-
 #else
-
-#ifndef float8get
 #define float8get(V,M)    memcpy((char*) &(V),(char*) (M),sizeof(double))
 #define float8store(T,V)  memcpy((char*) (T),(char*) &(V),sizeof(double))
-#endif /* float8get */
-
 #endif /* WORDS_BIGENDIAN */
+
+#endif /* float8get */
 
 #endif /* MYSQLND_PORTABILITY_H */
 

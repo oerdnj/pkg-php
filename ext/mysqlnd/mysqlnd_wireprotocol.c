@@ -243,7 +243,7 @@ php_mysqlnd_read_error_from_line(zend_uchar *buf, size_t buf_len,
 			}
 		}
 		if ((buf_len - (p - buf)) > 0) {
-			error_msg_len = MIN((buf_len - (p - buf)), error_buf_len - 1);
+			error_msg_len = MIN((int)((buf_len - (p - buf))), (int) (error_buf_len - 1));
 			memcpy(error, p, error_msg_len);
 		}
 	}
@@ -391,14 +391,14 @@ premature_end:
 
 /* {{{ php_mysqlnd_greet_free_mem */
 static
-void php_mysqlnd_greet_free_mem(void *_packet, zend_bool alloca TSRMLS_DC)
+void php_mysqlnd_greet_free_mem(void *_packet, zend_bool stack_allocation TSRMLS_DC)
 {
 	MYSQLND_PACKET_GREET *p= (MYSQLND_PACKET_GREET *) _packet;
 	if (p->server_version) {
 		efree(p->server_version);
 		p->server_version = NULL;
 	}
-	if (!alloca) {
+	if (!stack_allocation) {
 		mnd_pefree(p, p->header.persistent);
 	}
 }
@@ -508,9 +508,9 @@ size_t php_mysqlnd_auth_write(void *_packet, MYSQLND * conn TSRMLS_DC)
 
 /* {{{ php_mysqlnd_auth_free_mem */
 static
-void php_mysqlnd_auth_free_mem(void *_packet, zend_bool alloca TSRMLS_DC)
+void php_mysqlnd_auth_free_mem(void *_packet, zend_bool stack_allocation TSRMLS_DC)
 {
-	if (!alloca) {
+	if (!stack_allocation) {
 		MYSQLND_PACKET_AUTH * p = (MYSQLND_PACKET_AUTH *) _packet;
 		mnd_pefree(p, p->header.persistent);
 	}
@@ -591,14 +591,14 @@ premature_end:
 
 /* {{{ php_mysqlnd_ok_free_mem */
 static void
-php_mysqlnd_ok_free_mem(void *_packet, zend_bool alloca TSRMLS_DC)
+php_mysqlnd_ok_free_mem(void *_packet, zend_bool stack_allocation TSRMLS_DC)
 {
 	MYSQLND_PACKET_OK *p= (MYSQLND_PACKET_OK *) _packet;
 	if (p->message) {
 		mnd_efree(p->message);
 		p->message = NULL;
 	}
-	if (!alloca) {
+	if (!stack_allocation) {
 		mnd_pefree(p, p->header.persistent);
 	}
 }
@@ -674,9 +674,9 @@ premature_end:
 
 /* {{{ php_mysqlnd_eof_free_mem */
 static
-void php_mysqlnd_eof_free_mem(void *_packet, zend_bool alloca TSRMLS_DC)
+void php_mysqlnd_eof_free_mem(void *_packet, zend_bool stack_allocation TSRMLS_DC)
 {
-	if (!alloca) {
+	if (!stack_allocation) {
 		mnd_pefree(_packet, ((MYSQLND_PACKET_EOF *)_packet)->header.persistent);
 	}
 }
@@ -748,9 +748,9 @@ end:
 
 /* {{{ php_mysqlnd_cmd_free_mem */
 static
-void php_mysqlnd_cmd_free_mem(void *_packet, zend_bool alloca TSRMLS_DC)
+void php_mysqlnd_cmd_free_mem(void *_packet, zend_bool stack_allocation TSRMLS_DC)
 {
-	if (!alloca) {
+	if (!stack_allocation) {
 		MYSQLND_PACKET_COMMAND * p = (MYSQLND_PACKET_COMMAND *) _packet;
 		mnd_pefree(p, p->header.persistent);
 	}
@@ -864,7 +864,7 @@ premature_end:
 
 /* {{{ php_mysqlnd_rset_header_free_mem */
 static
-void php_mysqlnd_rset_header_free_mem(void *_packet, zend_bool alloca TSRMLS_DC)
+void php_mysqlnd_rset_header_free_mem(void *_packet, zend_bool stack_allocation TSRMLS_DC)
 {
 	MYSQLND_PACKET_RSET_HEADER *p= (MYSQLND_PACKET_RSET_HEADER *) _packet;
 	DBG_ENTER("php_mysqlnd_rset_header_free_mem");
@@ -872,7 +872,7 @@ void php_mysqlnd_rset_header_free_mem(void *_packet, zend_bool alloca TSRMLS_DC)
 		mnd_efree(p->info_or_local_file);
 		p->info_or_local_file = NULL;
 	}
-	if (!alloca) {
+	if (!stack_allocation) {
 		mnd_pefree(p, p->header.persistent);
 	}
 	DBG_VOID_RETURN;
@@ -1091,11 +1091,11 @@ premature_end:
 
 /* {{{ php_mysqlnd_rset_field_free_mem */
 static
-void php_mysqlnd_rset_field_free_mem(void *_packet, zend_bool alloca TSRMLS_DC)
+void php_mysqlnd_rset_field_free_mem(void *_packet, zend_bool stack_allocation TSRMLS_DC)
 {
 	MYSQLND_PACKET_RES_FIELD *p= (MYSQLND_PACKET_RES_FIELD *) _packet;
 	/* p->metadata was passed to us as temporal buffer */
-	if (!alloca) {
+	if (!stack_allocation) {
 		mnd_pefree(p, p->header.persistent);
 	}
 }
@@ -1106,7 +1106,7 @@ void php_mysqlnd_rset_field_free_mem(void *_packet, zend_bool alloca TSRMLS_DC)
 static enum_func_status
 php_mysqlnd_read_row_ex(MYSQLND * conn, MYSQLND_MEMORY_POOL * result_set_memory_pool,
 						MYSQLND_MEMORY_POOL_CHUNK **buffer,
-						uint64_t *data_size, zend_bool persistent_alloc,
+						size_t *data_size, zend_bool persistent_alloc,
 						unsigned int prealloc_more_bytes TSRMLS_DC)
 {
 	enum_func_status ret = PASS;
@@ -1201,10 +1201,11 @@ php_mysqlnd_rowp_read_binary_protocol(MYSQLND_MEMORY_POOL_CHUNK * row_buffer, zv
 
 	DBG_ENTER("php_mysqlnd_rowp_read_binary_protocol");
 
-	end_field = (current_field = start_field = fields) + field_count;
-	if (!current_field) {
+	if (!fields) {
 		DBG_RETURN(FAIL);
 	}
+
+	end_field = (start_field = fields) + field_count;
 
 	/* skip the first byte, not EODATA_MARKER -> 0x0, status */
 	p++;
@@ -1212,12 +1213,17 @@ php_mysqlnd_rowp_read_binary_protocol(MYSQLND_MEMORY_POOL_CHUNK * row_buffer, zv
 	p += (field_count + 9)/8;	/* skip null bits */
 	bit	= 4;					/* first 2 bits are reserved */
 
-	for (i = 0; current_field < end_field; current_field++, i++) {
+	for (i = 0, current_field = start_field; current_field < end_field; current_field++, i++) {
 		DBG_INF("Directly creating zval");
 		MAKE_STD_ZVAL(*current_field);
 		if (!*current_field) {
 			DBG_RETURN(FAIL);
 		}
+	}
+
+	for (i = 0, current_field = start_field; current_field < end_field; current_field++, i++) {
+		enum_mysqlnd_collected_stats statistic;
+		zend_uchar * orig_p = p;
 
 		DBG_INF_FMT("Into zval=%p decoding column %u [%s.%s.%s] type=%u field->flags&unsigned=%u flags=%u is_bit=%u as_unicode=%u",
 			*current_field, i,
@@ -1226,13 +1232,12 @@ php_mysqlnd_rowp_read_binary_protocol(MYSQLND_MEMORY_POOL_CHUNK * row_buffer, zv
 		if (*null_ptr & bit) {
 			DBG_INF("It's null");
 			ZVAL_NULL(*current_field);
-			MYSQLND_INC_CONN_STATISTIC(stats, STAT_BINARY_TYPE_FETCHED_NULL);
+			statistic = STAT_BINARY_TYPE_FETCHED_NULL;
 		} else {
 			enum_mysqlnd_field_types type = fields_metadata[i].type;
 			mysqlnd_ps_fetch_functions[type].func(*current_field, &fields_metadata[i], 0, &p, as_unicode TSRMLS_CC);
 
 			if (MYSQLND_G(collect_statistics)) {
-				enum_mysqlnd_collected_stats statistic;
 				switch (fields_metadata[i].type) {
 					case MYSQL_TYPE_DECIMAL:	statistic = STAT_BINARY_TYPE_FETCHED_DECIMAL; break;
 					case MYSQL_TYPE_TINY:		statistic = STAT_BINARY_TYPE_FETCHED_INT8; break;
@@ -1263,9 +1268,13 @@ php_mysqlnd_rowp_read_binary_protocol(MYSQLND_MEMORY_POOL_CHUNK * row_buffer, zv
 					case MYSQL_TYPE_GEOMETRY:	statistic = STAT_BINARY_TYPE_FETCHED_GEOMETRY; break;
 					default: statistic = STAT_BINARY_TYPE_FETCHED_OTHER; break;
 				}
-				MYSQLND_INC_CONN_STATISTIC(stats, statistic);
 			}
 		}
+		MYSQLND_INC_CONN_STATISTIC_W_VALUE2(stats, statistic, 1,
+										STAT_BYTES_RECEIVED_PURE_DATA_PS,
+										(Z_TYPE_PP(current_field) == IS_STRING)?
+											Z_STRLEN_PP(current_field) : (p - orig_p));
+
 		if (!((bit<<=1) & 255)) {
 			bit = 1;	/* to the following byte */
 			null_ptr++;
@@ -1294,22 +1303,25 @@ php_mysqlnd_rowp_read_text_protocol(MYSQLND_MEMORY_POOL_CHUNK * row_buffer, zval
 
 	DBG_ENTER("php_mysqlnd_rowp_read_text_protocol");
 
-	end_field = (current_field = start_field = fields) + field_count;
-	if (!current_field) {
+	if (!fields) {
 		DBG_RETURN(FAIL);
 	}
 
-	for (i = 0; current_field < end_field; current_field++, i++) {
-		/* Don't reverse the order. It is significant!*/
-		zend_uchar *this_field_len_pos = p;
-		/* php_mysqlnd_net_field_length() call should be after *this_field_len_pos = p; */
-		unsigned long len = php_mysqlnd_net_field_length(&p);
+	end_field = (start_field = fields) + field_count;
 
+	for (i = 0, current_field = start_field; current_field < end_field; current_field++, i++) {
 		DBG_INF("Directly creating zval");
 		MAKE_STD_ZVAL(*current_field);
 		if (!*current_field) {
 			DBG_RETURN(FAIL);
 		}
+	}
+
+	for (i = 0, current_field = start_field; current_field < end_field; current_field++, i++) {
+		/* Don't reverse the order. It is significant!*/
+		zend_uchar *this_field_len_pos = p;
+		/* php_mysqlnd_net_field_length() call should be after *this_field_len_pos = p; */
+		unsigned long len = php_mysqlnd_net_field_length(&p);
 
 		if (current_field > start_field && last_field_was_string) {
 			/*
@@ -1332,7 +1344,7 @@ php_mysqlnd_rowp_read_text_protocol(MYSQLND_MEMORY_POOL_CHUNK * row_buffer, zval
 			ZVAL_NULL(*current_field);
 			last_field_was_string = FALSE;
 		} else {
-#if PHP_MAJOR_VERSION >= 6 || defined(MYSQLND_STRING_TO_INT_CONVERSION)
+#if MYSQLND_UNICODE || defined(MYSQLND_STRING_TO_INT_CONVERSION)
 			struct st_mysqlnd_perm_bind perm_bind =
 					mysqlnd_ps_fetch_functions[fields_metadata[i].type];
 #endif
@@ -1368,9 +1380,8 @@ php_mysqlnd_rowp_read_text_protocol(MYSQLND_MEMORY_POOL_CHUNK * row_buffer, zval
 					case MYSQL_TYPE_GEOMETRY:	statistic = STAT_TEXT_TYPE_FETCHED_GEOMETRY; break;
 					default: statistic = STAT_TEXT_TYPE_FETCHED_OTHER; break;
 				}
-				MYSQLND_INC_CONN_STATISTIC(stats, statistic);
+				MYSQLND_INC_CONN_STATISTIC_W_VALUE2(stats, statistic, 1, STAT_BYTES_RECEIVED_PURE_DATA_TEXT, len);
 			}
-
 #ifdef MYSQLND_STRING_TO_INT_CONVERSION
 			if (as_int_or_float && perm_bind.php_type == IS_LONG) {
 				zend_uchar save = *(p + len);
@@ -1384,7 +1395,7 @@ php_mysqlnd_rowp_read_text_protocol(MYSQLND_MEMORY_POOL_CHUNK * row_buffer, zval
 #else
 						_atoi64((char *) p);
 #endif
-					ZVAL_LONG(*current_field, v);
+					ZVAL_LONG(*current_field, (long) v); /* the cast is safe */
 				} else {
 					uint64_t v =
 #ifndef PHP_WIN32
@@ -1406,7 +1417,7 @@ php_mysqlnd_rowp_read_text_protocol(MYSQLND_MEMORY_POOL_CHUNK * row_buffer, zval
 					{
 						ZVAL_STRINGL(*current_field, (char *)p, len, 0);
 					} else {
-						ZVAL_LONG(*current_field, (int64_t)v);
+						ZVAL_LONG(*current_field, (long) v); /* the cast is safe */
 					}
 				}
 				*(p + len) = save;
@@ -1437,7 +1448,7 @@ php_mysqlnd_rowp_read_text_protocol(MYSQLND_MEMORY_POOL_CHUNK * row_buffer, zval
 				p -= len;
 				if (Z_TYPE_PP(current_field) == IS_LONG) {
 					bit_area += 1 + sprintf((char *)start, "%ld", Z_LVAL_PP(current_field));
-#if PHP_MAJOR_VERSION >= 6
+#if MYSQLND_UNICODE
 					if (as_unicode) {
 						ZVAL_UTF8_STRINGL(*current_field, start, bit_area - start - 1, 0);
 					} else
@@ -1450,7 +1461,7 @@ php_mysqlnd_rowp_read_text_protocol(MYSQLND_MEMORY_POOL_CHUNK * row_buffer, zval
 					bit_area += Z_STRLEN_PP(current_field);
 					*bit_area++ = '\0';
 					zval_dtor(*current_field);
-#if PHP_MAJOR_VERSION >= 6
+#if MYSQLND_UNICODE
 					if (as_unicode) {
 						ZVAL_UTF8_STRINGL(*current_field, start, bit_area - start - 1, 0);
 					} else
@@ -1464,7 +1475,7 @@ php_mysqlnd_rowp_read_text_protocol(MYSQLND_MEMORY_POOL_CHUNK * row_buffer, zval
 				  the buffers are not referenced - everything is copied.
 				*/
 			} else
-#if PHP_MAJOR_VERSION < 6
+#if MYSQLND_UNICODE == 0
 			{
 				ZVAL_STRINGL(*current_field, (char *)p, len, 0);
 			}
@@ -1519,7 +1530,7 @@ php_mysqlnd_rowp_read(void *_packet, MYSQLND *conn TSRMLS_DC)
 	size_t old_chunk_size = net->stream->chunk_size;
 	MYSQLND_PACKET_ROW *packet= (MYSQLND_PACKET_ROW *) _packet;
 	size_t post_alloc_for_bit_fields = 0;
-	uint64_t data_size = 0;
+	size_t data_size = 0;
 
 	DBG_ENTER("php_mysqlnd_rowp_read");
 
@@ -1606,7 +1617,7 @@ end:
 
 /* {{{ php_mysqlnd_rowp_free_mem */
 static void
-php_mysqlnd_rowp_free_mem(void *_packet, zend_bool alloca TSRMLS_DC)
+php_mysqlnd_rowp_free_mem(void *_packet, zend_bool stack_allocation TSRMLS_DC)
 {
 	MYSQLND_PACKET_ROW *p;
 
@@ -1616,7 +1627,7 @@ php_mysqlnd_rowp_free_mem(void *_packet, zend_bool alloca TSRMLS_DC)
 		p->row_buffer->free_chunk(p->row_buffer TSRMLS_CC);
 		p->row_buffer = NULL;
 	}
-	DBG_INF_FMT("alloca=%u persistent=%u", (int)alloca, (int)p->header.persistent);
+	DBG_INF_FMT("stack_allocation=%u persistent=%u", (int)stack_allocation, (int)p->header.persistent);
 	/*
 	  Don't free packet->fields :
 	  - normal queries -> store_result() | fetch_row_unbuffered() will transfer
@@ -1624,7 +1635,7 @@ php_mysqlnd_rowp_free_mem(void *_packet, zend_bool alloca TSRMLS_DC)
 	  - PS will pass in it the bound variables, we have to use them! and of course
 	    not free the array. As it is passed to us, we should not clean it ourselves.
 	*/
-	if (!alloca) {
+	if (!stack_allocation) {
 		mnd_pefree(p, p->header.persistent);
 	}
 	DBG_VOID_RETURN;
@@ -1656,14 +1667,14 @@ php_mysqlnd_stats_read(void *_packet, MYSQLND *conn TSRMLS_DC)
 
 /* {{{ php_mysqlnd_stats_free_mem */
 static
-void php_mysqlnd_stats_free_mem(void *_packet, zend_bool alloca TSRMLS_DC)
+void php_mysqlnd_stats_free_mem(void *_packet, zend_bool stack_allocation TSRMLS_DC)
 {
 	MYSQLND_PACKET_STATS *p= (MYSQLND_PACKET_STATS *) _packet;
 	if (p->message) {
 		mnd_efree(p->message);
 		p->message = NULL;
 	}
-	if (!alloca) {
+	if (!stack_allocation) {
 		mnd_pefree(p, p->header.persistent);
 	}
 }
@@ -1752,10 +1763,10 @@ premature_end:
 
 /* {{{ php_mysqlnd_prepare_free_mem */
 static void
-php_mysqlnd_prepare_free_mem(void *_packet, zend_bool alloca TSRMLS_DC)
+php_mysqlnd_prepare_free_mem(void *_packet, zend_bool stack_allocation TSRMLS_DC)
 {
 	MYSQLND_PACKET_PREPARE_RESPONSE *p= (MYSQLND_PACKET_PREPARE_RESPONSE *) _packet;
-	if (!alloca) {
+	if (!stack_allocation) {
 		mnd_pefree(p, p->header.persistent);
 	}
 }
@@ -1815,9 +1826,9 @@ premature_end:
 
 /* {{{ php_mysqlnd_chg_user_free_mem */
 static void
-php_mysqlnd_chg_user_free_mem(void *_packet, zend_bool alloca TSRMLS_DC)
+php_mysqlnd_chg_user_free_mem(void *_packet, zend_bool stack_allocation TSRMLS_DC)
 {
-	if (!alloca) {
+	if (!stack_allocation) {
 		mnd_pefree(_packet, ((MYSQLND_PACKET_CHG_USER_RESPONSE *)_packet)->header.persistent);
 	}
 }

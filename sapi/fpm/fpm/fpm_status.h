@@ -1,5 +1,5 @@
 
-	/* $Id: fpm_status.h 298380 2010-04-23 15:09:28Z fat $ */
+	/* $Id: fpm_status.h 305267 2010-11-11 02:34:47Z fat $ */
 	/* (c) 2009 Jerome Loyet */
 
 #ifndef FPM_STATUS_H
@@ -14,15 +14,20 @@ struct fpm_status_s {
 	int idle;
 	int active;
 	int total;
+	unsigned cur_lq;
+	int max_lq;
 	unsigned long int accepted_conn;
+	unsigned int max_children_reached;
 	struct timeval last_update;
 };
 
 int fpm_status_init_child(struct fpm_worker_pool_s *wp);
-void fpm_status_update_activity(struct fpm_shm_s *shm, int idle, int active, int total, int clear_last_update);
+void fpm_status_update_activity(struct fpm_shm_s *shm, int idle, int active, int total, unsigned cur_lq, int max_lq, int clear_last_update);
 void fpm_status_update_accepted_conn(struct fpm_shm_s *shm, unsigned long int accepted_conn);
 void fpm_status_increment_accepted_conn(struct fpm_shm_s *shm);
 void fpm_status_set_pm(struct fpm_shm_s *shm, int pm);
+void fpm_status_update_max_children_reached(struct fpm_shm_s *shm, unsigned int max_children_reached);
+void fpm_status_increment_max_children_reached(struct fpm_shm_s *shm);
 int fpm_status_handle_status(char *uri, char *query_string, char **output, char **content_type);
 char* fpm_status_handle_ping(char *uri);
 

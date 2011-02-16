@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_objects.c 299254 2010-05-11 16:09:43Z dmitry $ */
+/* $Id: zend_objects.c 302323 2010-08-16 09:20:46Z dmitry $ */
 
 #include "zend.h"
 #include "zend_globals.h"
@@ -106,15 +106,13 @@ ZEND_API void zend_objects_destroy_object(zend_object *object, zend_object_handl
 				zend_error(E_ERROR, "Attempt to destruct pending exception");
 			} else {
 				old_exception = EG(exception);
-				Z_ADDREF_P(old_exception);
+				EG(exception) = NULL;
 			}
 		}
-		zend_exception_save(TSRMLS_C);
 		zend_call_method_with_0_params(&obj, object->ce, &destructor, ZEND_DESTRUCTOR_FUNC_NAME, NULL);
-		zend_exception_restore(TSRMLS_C);
 		if (old_exception) {
 			if (EG(exception)) {
-				zval_ptr_dtor(&old_exception);				
+				zend_exception_set_previous(EG(exception), old_exception TSRMLS_CC);
 			} else {
 				EG(exception) = old_exception;
 			}
@@ -148,7 +146,7 @@ ZEND_API zend_object *zend_objects_get_address(const zval *zobject TSRMLS_DC)
 
 ZEND_API void zend_objects_clone_members(zend_object *new_object, zend_object_value new_obj_val, zend_object *old_object, zend_object_handle handle TSRMLS_DC)
 {
-	zend_hash_copy(new_object->properties, old_object->properties, (copy_ctor_func_t) zval_add_ref, (void *) NULL /* Not used anymore */, sizeof(zval *));
+	zend_hash_copy(new_object->properties, old_object->properties, zval_copy_property_ctor(old_object->ce), (void *) NULL /* Not used anymore */, sizeof(zval *));
 
 	if (old_object->ce->clone) {
 		zval *new_obj;

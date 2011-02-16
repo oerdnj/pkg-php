@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: zlib_fopen_wrapper.c 296107 2010-03-12 10:28:59Z jani $ */
+/* $Id: zlib_fopen_wrapper.c 303772 2010-09-26 20:46:54Z pajoye $ */
 
 #define _GNU_SOURCE
 
@@ -128,7 +128,7 @@ php_stream *php_stream_gzopen(php_stream_wrapper *wrapper, char *path, char *mod
 		path += 5;
 	}
 	
-	innerstream = php_stream_open_wrapper(path, mode, STREAM_MUST_SEEK | options | STREAM_WILL_CAST, opened_path);
+	innerstream = php_stream_open_wrapper_ex(path, mode, STREAM_MUST_SEEK | options | STREAM_WILL_CAST, opened_path, context);
 	
 	if (innerstream) {
 		int fd;

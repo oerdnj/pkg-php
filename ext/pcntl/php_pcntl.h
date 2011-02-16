@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_pcntl.h 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: php_pcntl.h 305016 2010-11-01 20:22:23Z lbarnaud $ */
 
 #ifndef PHP_PCNTL_H
 #define PHP_PCNTL_H
@@ -42,6 +42,8 @@ PHP_FUNCTION(pcntl_wtermsig);
 PHP_FUNCTION(pcntl_wstopsig);
 PHP_FUNCTION(pcntl_signal);
 PHP_FUNCTION(pcntl_signal_dispatch);
+PHP_FUNCTION(pcntl_get_last_error);
+PHP_FUNCTION(pcntl_strerror);
 #ifdef HAVE_SIGPROCMASK
 PHP_FUNCTION(pcntl_sigprocmask);
 #endif
@@ -66,6 +68,7 @@ ZEND_BEGIN_MODULE_GLOBALS(pcntl)
 	HashTable php_signal_table;
 	int processing_signal_queue;
 	struct php_pcntl_pending_signal *head, *tail, *spares;
+	int last_error;
 ZEND_END_MODULE_GLOBALS(pcntl)
 
 #ifdef ZTS
@@ -73,6 +76,8 @@ ZEND_END_MODULE_GLOBALS(pcntl)
 #else
 #define PCNTL_G(v)	(pcntl_globals.v)
 #endif
+
+#define REGISTER_PCNTL_ERRNO_CONSTANT(name) REGISTER_LONG_CONSTANT("PCNTL_" #name, name, CONST_CS | CONST_PERSISTENT)
 
 #endif	/* PHP_PCNTL_H */
 

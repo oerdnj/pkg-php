@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_structs.h 300735 2010-06-24 19:52:13Z andrey $ */
+/* $Id: mysqlnd_structs.h 304112 2010-10-05 16:27:49Z andrey $ */
 
 #ifndef MYSQLND_STRUCTS_H
 #define MYSQLND_STRUCTS_H
@@ -44,7 +44,7 @@ struct st_mysqlnd_memory_pool
 
 struct st_mysqlnd_memory_pool_chunk
 {
-	uint64_t			app;
+	size_t				app;
 	MYSQLND_MEMORY_POOL	*pool;
 	zend_uchar			*ptr;
 	unsigned int		size;
@@ -161,7 +161,8 @@ typedef struct st_mysqlnd_options
 	char		* unused3;
 	char		* unused4;
 	char		* unused5;
-	zend_bool	unused6;
+
+	enum_mysqlnd_protocol_type protocol;
 
 	char 		*charset_name;
 	/* maximum allowed packet size for communication */
@@ -190,6 +191,7 @@ typedef struct st_mysqlnd_net_options
 	char		*ssl_cipher;
 	char		*ssl_passphrase;
 	zend_bool	ssl_verify_peer;
+	uint64_t	flags;
 } MYSQLND_NET_OPTIONS;
 
 
@@ -335,7 +337,7 @@ struct st_mysqlnd_protocol_methods
 
 
 typedef enum_func_status	(*func_mysqlnd_conn__init)(MYSQLND * conn TSRMLS_DC);
-typedef enum_func_status	(*func_mysqlnd_conn__connect)(MYSQLND *conn, const char *host, const char * user, const char * passwd, unsigned int passwd_len, const char * db, unsigned int db_len, unsigned int port, const char * socket, unsigned int mysql_flags TSRMLS_DC);
+typedef enum_func_status	(*func_mysqlnd_conn__connect)(MYSQLND *conn, const char *host, const char * user, const char * passwd, unsigned int passwd_len, const char * db, unsigned int db_len, unsigned int port, const char * socket_or_pipe, unsigned int mysql_flags TSRMLS_DC);
 typedef ulong				(*func_mysqlnd_conn__escape_string)(const MYSQLND * const conn, char *newstr, const char *escapestr, size_t escapestr_len TSRMLS_DC);
 typedef enum_func_status	(*func_mysqlnd_conn__set_charset)(MYSQLND * const conn, const char * const charset TSRMLS_DC);
 typedef enum_func_status	(*func_mysqlnd_conn__query)(MYSQLND *conn, const char *query, unsigned int query_len TSRMLS_DC);
@@ -400,7 +402,7 @@ typedef enum_func_status	(*func_mysqlnd_conn__restart_psession)(MYSQLND *conn TS
 typedef enum_func_status	(*func_mysqlnd_conn__end_psession)(MYSQLND *conn TSRMLS_DC);
 typedef enum_func_status	(*func_mysqlnd_conn__send_close)(MYSQLND * conn TSRMLS_DC);
 
-typedef void				(*func_mysqlnd_conn__ssl_set)(MYSQLND * const conn, const char * key, const char * const cert, const char * const ca, const char * const capath, const char * const cipher TSRMLS_DC);
+typedef enum_func_status    (*func_mysqlnd_conn__ssl_set)(MYSQLND * const conn, const char * key, const char * const cert, const char * const ca, const char * const capath, const char * const cipher TSRMLS_DC);
 
 typedef MYSQLND_RES * 		(*func_mysqlnd_conn__result_init)(unsigned int field_count, zend_bool persistent TSRMLS_DC);
 
@@ -625,6 +627,7 @@ typedef	void 				(*func_mysqlnd_stmt__free_result_bind)(MYSQLND_STMT * const stm
 typedef unsigned int		(*func_mysqlnd_stmt__server_status)(const MYSQLND_STMT * const stmt TSRMLS_DC);
 typedef enum_func_status 	(*func_mysqlnd_stmt__generate_execute_request)(MYSQLND_STMT * const s, zend_uchar ** request, size_t *request_len, zend_bool * free_buffer TSRMLS_DC);
 typedef enum_func_status	(*func_mysqlnd_stmt__parse_execute_response)(MYSQLND_STMT * const s TSRMLS_DC);
+typedef void 				(*func_mysqlnd_stmt__free_stmt_content)(MYSQLND_STMT * const s TSRMLS_DC);
 
 struct st_mysqlnd_stmt_methods
 {
@@ -676,6 +679,8 @@ struct st_mysqlnd_stmt_methods
 
 	func_mysqlnd_stmt__generate_execute_request generate_execute_request;
 	func_mysqlnd_stmt__parse_execute_response parse_execute_response;
+
+	func_mysqlnd_stmt__free_stmt_content free_stmt_content;
 };
 
 
@@ -788,7 +793,7 @@ struct mysqlnd_field_hash_key
 {
 	zend_bool		is_numeric;
 	unsigned long	key;
-#if PHP_MAJOR_VERSION >= 6
+#if MYSQLND_UNICODE
 	zstr			ustr;
 	unsigned int	ulen;
 #endif

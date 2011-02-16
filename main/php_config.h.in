@@ -467,6 +467,9 @@
 /* Define if you have the setpriority function.  */
 #undef HAVE_SETPRIORITY
 
+/* Define if you have the setproctitle function.  */
+#undef HAVE_SETPROCTITLE
+
 /* Define if you have the setsid function.  */
 #undef HAVE_SETSID
 
@@ -953,9 +956,6 @@
 /* Whether you have a Continuity Server */
 #undef HAVE_CONTINUITY
 
-/* define if libevent is available */
-#undef HAVE_LIBEVENT
-
 /* do we have prctl? */
 #undef HAVE_PRCTL
 
@@ -974,8 +974,14 @@
 /* /proc/pid/mem interface */
 #undef PROC_MEM_FILE
 
-/* fpm version */
-#undef PHP_FPM_VERSION
+/* Define to 1 if gcc supports __sync_bool_compare_and_swap() a.o. */
+#undef HAVE_BUILTIN_ATOMIC
+
+/* do we have TCP_INFO? */
+#undef HAVE_LQ_TCP_INFO
+
+/* do we have SO_LISTENQxxx? */
+#undef HAVE_LQ_SO_LISTENQ
 
 /* fpm user name */
 #undef PHP_FPM_USER
@@ -1168,9 +1174,6 @@
 
 /* Whether struct sockaddr has field sa_len */
 #undef HAVE_SOCKADDR_SA_LEN
-
-/*   */
-#undef HAVE_NANOSLEEP
 
 /*   */
 #undef HAVE_NANOSLEEP

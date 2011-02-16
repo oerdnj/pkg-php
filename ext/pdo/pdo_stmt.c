@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_stmt.c 300503 2010-06-16 23:13:29Z felipe $ */
+/* $Id: pdo_stmt.c 305381 2010-11-15 18:48:48Z felipe $ */
 
 /* The PDO Statement Handle Class */
 
@@ -1624,18 +1624,20 @@ static int register_bound_param(INTERNAL_FUNCTION_PARAMETERS, pdo_stmt_t *stmt, 
 static PHP_METHOD(PDOStatement, bindValue)
 {
 	struct pdo_bound_param_data param = {0};
+	long param_type = PDO_PARAM_STR;
 	PHP_STMT_GET_OBJ;
 
 	param.paramno = -1;
-	param.param_type = PDO_PARAM_STR;
 	
 	if (FAILURE == zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC,
-			"lz/|l", &param.paramno, &param.parameter, &param.param_type)) {
+			"lz/|l", &param.paramno, &param.parameter, &param_type)) {
 		if (FAILURE == zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sz/|l", &param.name,
-				&param.namelen, &param.parameter, &param.param_type)) {
+				&param.namelen, &param.parameter, &param_type)) {
 			RETURN_FALSE;
 		}
 	}
+
+	param.param_type = (int) param_type;
 	
 	if (param.paramno > 0) {
 		--param.paramno; /* make it zero-based internally */
@@ -1887,7 +1889,7 @@ int pdo_stmt_setup_fetch_mode(INTERNAL_FUNCTION_PARAMETERS, pdo_stmt_t *stmt, in
 	switch (stmt->default_fetch_type) {
 		case PDO_FETCH_INTO:
 			if (stmt->fetch.into) {
-				Z_DELREF_P(stmt->fetch.into);
+				zval_ptr_dtor(&stmt->fetch.into);
 				stmt->fetch.into = NULL;
 			}
 			break;
@@ -2619,7 +2621,7 @@ static zval *row_prop_or_dim_read(zval *object, zval *member, int type TSRMLS_DC
 			}
 			if (strcmp(Z_STRVAL_P(member), "queryString") == 0) {
 				zval_ptr_dtor(&return_value);
-				return std_object_handlers.read_property(object, member, IS_STRING TSRMLS_CC);
+				return std_object_handlers.read_property(object, member, type TSRMLS_CC);
 			}
 		}
 	}

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: gd_ctx.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: gd_ctx.c 305507 2010-11-18 15:22:22Z pajoye $ */
 
 #include "php_gd.h"
 
@@ -91,6 +91,9 @@ static void _php_image_output_ctx(INTERNAL_FUNCTION_PARAMETERS, int image_type, 
 	}
 
 	if (argc > 1 && file_len) {
+		if (strlen(file) != file_len) {
+			RETURN_FALSE;
+		}
 		PHP_GD_CHECK_OPEN_BASEDIR(file, "Invalid filename");
 
 		fp = VCWD_FOPEN(file, "wb");

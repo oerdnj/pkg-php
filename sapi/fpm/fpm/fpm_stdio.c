@@ -26,12 +26,12 @@ int fpm_stdio_init_main() /* {{{ */
 	int fd = open("/dev/null", O_RDWR);
 
 	if (0 > fd) {
-		zlog(ZLOG_STUFF, ZLOG_SYSERROR, "open(\"/dev/null\") failed");
+		zlog(ZLOG_SYSERROR, "open(\"/dev/null\") failed");
 		return -1;
 	}
 
 	if (0 > dup2(fd, STDIN_FILENO) || 0 > dup2(fd, STDOUT_FILENO)) {
-		zlog(ZLOG_STUFF, ZLOG_SYSERROR, "dup2() failed");
+		zlog(ZLOG_SYSERROR, "dup2() failed");
 		return -1;
 	}
 	close(fd);
@@ -41,17 +41,16 @@ int fpm_stdio_init_main() /* {{{ */
 
 int fpm_stdio_init_final() /* {{{ */
 {
-	zlog_set_level(fpm_globals.log_level);
 	if (fpm_global_config.daemonize) {
 		if (fpm_globals.error_log_fd != STDERR_FILENO) {
 			/* there might be messages to stderr from libevent, we need to log them all */
 			if (0 > dup2(fpm_globals.error_log_fd, STDERR_FILENO)) {
-				zlog(ZLOG_STUFF, ZLOG_SYSERROR, "dup2() failed");
+				zlog(ZLOG_SYSERROR, "dup2() failed");
 				return -1;
 			}
 		}
-		zlog_set_fd(fpm_globals.error_log_fd);
 	}
+	zlog_set_launched();
 	return 0;
 }
 /* }}} */
@@ -64,7 +63,7 @@ int fpm_stdio_init_child(struct fpm_worker_pool_s *wp) /* {{{ */
 
 	if (wp->listening_socket != STDIN_FILENO) {
 		if (0 > dup2(wp->listening_socket, STDIN_FILENO)) {
-			zlog(ZLOG_STUFF, ZLOG_SYSERROR, "dup2() failed");
+			zlog(ZLOG_SYSERROR, "dup2() failed");
 			return -1;
 		}
 	}
@@ -72,17 +71,29 @@ int fpm_stdio_init_child(struct fpm_worker_pool_s *wp) /* {{{ */
 }
 /* }}} */
 
-static void fpm_stdio_child_said(int fd, short which, void *arg) /* {{{ */
+static void fpm_stdio_child_said(struct fpm_event_s *ev, short which, void *arg) /* {{{ */
 {
 	static const int max_buf_size = 1024;
+	int fd = ev->fd;
 	char buf[max_buf_size];
-	struct fpm_child_s *child = arg;
-	int is_stdout = fd == child->fd_stdout;
-	struct event *ev = is_stdout ? &child->ev_stdout : &child->ev_stderr;
+	struct fpm_child_s *child;
+	int is_stdout;
+	struct fpm_event_s *event;
 	int fifo_in = 1, fifo_out = 1;
 	int is_last_message = 0;
 	int in_buf = 0;
 	int res;
+
+	if (!arg) {
+		return;
+	}
+	child = (struct fpm_child_s *)arg;
+	is_stdout = (fd == child->fd_stdout);
+	if (is_stdout) {
+		event = &child->ev_stdout;
+	} else {
+		event = &child->ev_stderr;
+	}
 
 	while (fifo_in || fifo_out) {
 		if (fifo_in) {
@@ -94,10 +105,10 @@ static void fpm_stdio_child_said(int fd, short which, void *arg) /* {{{ */
 				} else { /* error or pipe is closed */
 
 					if (res < 0) { /* error */
-						zlog(ZLOG_STUFF, ZLOG_SYSERROR, "read() failed");
+						zlog(ZLOG_SYSERROR, "read() failed");
 					}
 
-					fpm_event_del(ev);
+					fpm_event_del(event);
 					is_last_message = 1;
 
 					if (is_stdout) {
@@ -140,7 +151,7 @@ static void fpm_stdio_child_said(int fd, short which, void *arg) /* {{{ */
 						*nl = '\0';
 					}
 
-					zlog(ZLOG_STUFF, ZLOG_WARNING, "[pool %s] child %d said into %s: \"%s\"%s", child->wp->config->name,
+					zlog(ZLOG_WARNING, "[pool %s] child %d said into %s: \"%s\"%s", child->wp->config->name,
 					  (int) child->pid, is_stdout ? "stdout" : "stderr", buf, is_last_message ? ", pipe is closed" : "");
 
 					if (nl) {
@@ -164,18 +175,18 @@ int fpm_stdio_prepare_pipes(struct fpm_child_s *child) /* {{{ */
 	}
 
 	if (0 > pipe(fd_stdout)) {
-		zlog(ZLOG_STUFF, ZLOG_SYSERROR, "pipe() failed");
+		zlog(ZLOG_SYSERROR, "pipe() failed");
 		return -1;
 	}
 
 	if (0 > pipe(fd_stderr)) {
-		zlog(ZLOG_STUFF, ZLOG_SYSERROR, "pipe() failed");
+		zlog(ZLOG_SYSERROR, "pipe() failed");
 		close(fd_stdout[0]); close(fd_stdout[1]);
 		return -1;
 	}
 
 	if (0 > fd_set_blocked(fd_stdout[0], 0) || 0 > fd_set_blocked(fd_stderr[0], 0)) {
-		zlog(ZLOG_STUFF, ZLOG_SYSERROR, "fd_set_blocked() failed");
+		zlog(ZLOG_SYSERROR, "fd_set_blocked() failed");
 		close(fd_stdout[0]); close(fd_stdout[1]);
 		close(fd_stderr[0]); close(fd_stderr[1]);
 		return -1;
@@ -184,7 +195,7 @@ int fpm_stdio_prepare_pipes(struct fpm_child_s *child) /* {{{ */
 }
 /* }}} */
 
-int fpm_stdio_parent_use_pipes(struct fpm_child_s *child, struct event_base *base) /* {{{ */
+int fpm_stdio_parent_use_pipes(struct fpm_child_s *child) /* {{{ */
 {
 	if (0 == child->wp->config->catch_workers_output) { /* not required */
 		return 0;
@@ -196,8 +207,11 @@ int fpm_stdio_parent_use_pipes(struct fpm_child_s *child, struct event_base *bas
 	child->fd_stdout = fd_stdout[0];
 	child->fd_stderr = fd_stderr[0];
 
-	fpm_event_add(child->fd_stdout, base, &child->ev_stdout, fpm_stdio_child_said, child);
-	fpm_event_add(child->fd_stderr, base, &child->ev_stderr, fpm_stdio_child_said, child);
+	fpm_event_set(&child->ev_stdout, child->fd_stdout, FPM_EV_READ, fpm_stdio_child_said, child);
+	fpm_event_add(&child->ev_stdout, 0);
+
+	fpm_event_set(&child->ev_stderr, child->fd_stderr, FPM_EV_READ, fpm_stdio_child_said, child);
+	fpm_event_add(&child->ev_stderr, 0);
 	return 0;
 }
 /* }}} */
@@ -237,7 +251,7 @@ int fpm_stdio_open_error_log(int reopen) /* {{{ */
 
 	fd = open(fpm_global_config.error_log, O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);
 	if (0 > fd) {
-		zlog(ZLOG_STUFF, ZLOG_SYSERROR, "open(\"%s\") failed", fpm_global_config.error_log);
+		zlog(ZLOG_SYSERROR, "open(\"%s\") failed", fpm_global_config.error_log);
 		return -1;
 	}
 
@@ -251,6 +265,9 @@ int fpm_stdio_open_error_log(int reopen) /* {{{ */
 		fd = fpm_globals.error_log_fd; /* for FD_CLOSEXEC to work */
 	} else {
 		fpm_globals.error_log_fd = fd;
+		if (fpm_global_config.daemonize) {
+			zlog_set_fd(fpm_globals.error_log_fd);
+		}
 	}
 	fcntl(fd, F_SETFD, fcntl(fd, F_GETFD) | FD_CLOEXEC);
 	return 0;

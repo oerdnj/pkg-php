@@ -17,7 +17,7 @@
    |          Marcus Boerger <helly@php.net>                              |
    +----------------------------------------------------------------------+
 
-   $Id: sqlite.c 298697 2010-04-28 12:10:10Z iliaa $
+   $Id: sqlite.c 305507 2010-11-18 15:22:22Z pajoye $
 */
 
 #ifdef HAVE_CONFIG_H
@@ -1458,7 +1458,7 @@ PHP_MINFO_FUNCTION(sqlite)
 {
 	php_info_print_table_start();
 	php_info_print_table_header(2, "SQLite support", "enabled");
-	php_info_print_table_row(2, "PECL Module version", PHP_SQLITE_MODULE_VERSION " $Id: sqlite.c 298697 2010-04-28 12:10:10Z iliaa $");
+	php_info_print_table_row(2, "PECL Module version", PHP_SQLITE_MODULE_VERSION " $Id: sqlite.c 305507 2010-11-18 15:22:22Z pajoye $");
 	php_info_print_table_row(2, "SQLite Library", sqlite_libversion());
 	php_info_print_table_row(2, "SQLite Encoding", sqlite_libencoding());
 	php_info_print_table_end();
@@ -1560,6 +1560,9 @@ PHP_FUNCTION(sqlite_popen)
 		ZVAL_NULL(errmsg);
 	}
 
+	if (strlen(filename) != filename_len) {
+		RETURN_FALSE;
+	}
 	if (strncmp(filename, ":memory:", sizeof(":memory:") - 1)) {
 		/* resolve the fully-qualified path name to use as the hash key */
 		if (!(fullpath = expand_filepath(filename, NULL TSRMLS_CC))) {
@@ -1637,6 +1640,9 @@ PHP_FUNCTION(sqlite_open)
 		ZVAL_NULL(errmsg);
 	}
 
+	if (strlen(filename) != filename_len) {
+		RETURN_FALSE;
+	}
 	if (strncmp(filename, ":memory:", sizeof(":memory:") - 1)) {
 		/* resolve the fully-qualified path name to use as the hash key */
 		if (!(fullpath = expand_filepath(filename, NULL TSRMLS_CC))) {
@@ -1688,6 +1694,10 @@ PHP_FUNCTION(sqlite_factory)
 	if (errmsg) {
 		zval_dtor(errmsg);
 		ZVAL_NULL(errmsg);
+	}
+
+	if (strlen(filename) != filename_len) {
+		RETURN_FALSE;
 	}
 
 	if (strncmp(filename, ":memory:", sizeof(":memory:") - 1)) {

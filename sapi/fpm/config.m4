@@ -2,225 +2,13 @@ dnl
 dnl $Id$
 dnl
 
-fpm_version="0.6.5"
-minimum_libevent_version="1.4.11"
-
 PHP_ARG_ENABLE(fpm,,
 [  --enable-fpm              EXPERIMENTAL: Enable building of the fpm SAPI executable], no, no)
-
-dnl libevent check function {{{
-dnl @synopsis AC_LIB_EVENT([MINIMUM-VERSION])
-dnl
-dnl Test for the libevent library of a particular version (or newer).
-dnl Source: http://svn.apache.org/repos/asf/incubator/thrift/trunk/aclocal/ax_lib_event.m4
-dnl Modified: This file was modified for autoconf-2.13 and the PHP_ARG_WITH macro.
-dnl
-dnl If no path to the installed libevent is given, the macro will first try
-dnl using no -I or -L flags, then searches under /usr, /usr/local, /opt,
-dnl and /opt/libevent.
-dnl If these all fail, it will try the $LIBEVENT_ROOT environment variable.
-dnl
-dnl This macro requires that #include <sys/types.h> works and defines u_char.
-dnl
-dnl This macro calls:
-dnl   AC_SUBST(LIBEVENT_CFLAGS)
-dnl   AC_SUBST(LIBEVENT_LIBS)
-dnl
-dnl And (if libevent is found):
-dnl   AC_DEFINE(HAVE_LIBEVENT)
-dnl
-dnl It also leaves the shell variables "success" and "ac_have_libevent"
-dnl set to "yes" or "no".
-dnl
-dnl NOTE: This macro does not currently work for cross-compiling,
-dnl       but it can be easily modified to allow it.  (grep "cross").
-dnl
-dnl @category InstalledPackages
-dnl @category C
-dnl @version 2007-09-12
-dnl @license AllPermissive
-dnl
-dnl Copyright (C) 2009 David Reiss
-dnl Copying and distribution of this file, with or without modification,
-dnl are permitted in any medium without royalty provided the copyright
-dnl notice and this notice are preserved.
-
-AC_DEFUN([AC_LIB_EVENT_DO_CHECK],
-[
-# Save our flags.
-CPPFLAGS_SAVED="$CPPFLAGS"
-LDFLAGS_SAVED="$LDFLAGS"
-LIBS_SAVED="$LIBS"
-LD_LIBRARY_PATH_SAVED="$LD_LIBRARY_PATH"
-
-# Set our flags if we are checking a specific directory.
-if test -n "$ac_libevent_path" ; then
-  LIBEVENT_CPPFLAGS="-I$ac_libevent_path/include"
- 
-  if test -z "$PHP_LIBDIR"; then
-    LIBEVENT_LDFLAGS="-L$ac_libevent_path/lib"
-  else 
-    LIBEVENT_LDFLAGS="-L$ac_libevent_path/$PHP_LIBDIR"
-  fi
-
-  LD_LIBRARY_PATH="$ac_libevent_path/lib:$LD_LIBRARY_PATH"
-else
-  LIBEVENT_CPPFLAGS=""
-  LIBEVENT_LDFLAGS=""
-fi
-
-# Required flag for libevent.
-LIBEVENT_LIBS="-levent"
-
-# Prepare the environment for compilation.
-CPPFLAGS="$CPPFLAGS $LIBEVENT_CPPFLAGS"
-LDFLAGS="$LDFLAGS $LIBEVENT_LDFLAGS"
-LIBS="$LIBS $LIBEVENT_LIBS"
-export CPPFLAGS
-export LDFLAGS
-export LIBS
-export LD_LIBRARY_PATH
-
-success=no
-
-# Compile, link, and run the program.  This checks:
-# - event.h is available for including.
-# - event_get_version() is available for linking.
-# - The event version string is lexicographically greater
-#   than the required version.
-AC_TRY_RUN([
-#include <sys/types.h>
-#include <event.h>
-
-int main(int argc, char *argv[])
-{
-	const char* lib_version = event_get_version();
-	const char* wnt_version = "$WANT_LIBEVENT_VERSION";
-	for (;;) {
-		/* If we reached the end of the want version.  We have it. */
-		if (*wnt_version == '\0' || *wnt_version == '-') {
-			return 0;
-		}
-		/* If the want version continues but the lib version does not, */
-		/* we are missing a letter.  We don't have it. */
-		if (*lib_version == '\0' || *lib_version == '-') {
-			return 1;
-		}
-
-		/* In the 1.4 version numbering style, if there are more digits */
-		/* in one version than the other, that one is higher. */
-		int lib_digits;
-		for (lib_digits = 0;
-		lib_version[lib_digits] >= '0' &&
-		lib_version[lib_digits] <= '9';
-		lib_digits++)
-		;
-		int wnt_digits;
-		for (wnt_digits = 0;
-		wnt_version[wnt_digits] >= '0' &&
-		wnt_version[wnt_digits] <= '9';
-		wnt_digits++)
-		;
-		if (lib_digits > wnt_digits) {
-			return 0;
-		}
-		if (lib_digits < wnt_digits) {
-			return 1;
-		}
-		/* If we have greater than what we want.  We have it. */
-		if (*lib_version > *wnt_version) {
-			return 0;
-		}
-		/* If we have less, we don't. */
-		if (*lib_version < *wnt_version) {
-			return 1;
-		}
-		lib_version++;
-		wnt_version++;
-	}
-	return 0;
-}
-],[
-success=yes
-])
-
-# Restore flags.
-CPPFLAGS="$CPPFLAGS_SAVED"
-LDFLAGS="$LDFLAGS_SAVED"
-LIBS="$LIBS_SAVED"
-LD_LIBRARY_PATH="$LD_LIBRARY_PATH_SAVED"
-])
-
-AC_DEFUN([AC_LIB_EVENT],
-[
-
-PHP_ARG_WITH(libevent-dir,,
-[  --with-libevent-dir[=PATH]  libevent install prefix, for fpm SAPI. (default: /usr/local)], /usr/local, yes)
-
-if test "$PHP_LIBEVENT_DIR" != "no"; then
-  WANT_LIBEVENT_VERSION=ifelse([$1], ,1.2,$1)
-
-  AC_MSG_CHECKING(for libevent >= $WANT_LIBEVENT_VERSION install prefix)
-
-  libevent_prefix=$ac_default_prefix
-  if test $prefix != "NONE" -a $prefix != "" -a $prefix != "no" ; then 
-    libevent_prefix=$prefix
-  fi
-
-  if test "$PHP_LIBEVENT_DIR" = "yes"; then
-    PHP_LIBEVENT_DIR=$libevent_prefix
-  fi
-
-  if test "$PHP_LIBEVENT_DIR" != "yes" && test "$PHP_LIBEVENT_DIR" != "/usr/local"; then
-    dnl don't try to be too smart, check only $PHP_LIBEVENT_DIR if specified
-    ac_libevent_path=$PHP_LIBEVENT_DIR
-    AC_LIB_EVENT_DO_CHECK
-    if test "$success" = "no"; then
-      AC_MSG_ERROR([Could not find libevent >= $WANT_LIBEVENT_VERSION in $PHP_LIBEVENT_DIR])
-    fi
-   else 
-    dnl check default prefixes then
-    for ac_libevent_path in "" $PHP_LIBEVENT_DIR /usr /usr/local /opt /opt/local /opt/libevent ; do
-      AC_LIB_EVENT_DO_CHECK
-      if test "$success" = "yes"; then
-        break;
-      fi
-    done
-  fi
-
-  if test "$success" != "yes" ; then
-    AC_MSG_RESULT(no)
-    ac_have_libevent=no
-    AC_MSG_ERROR([libevent >= $WANT_LIBEVENT_VERSION could not be found])
-  else
-    AC_MSG_RESULT($ac_libevent_path)
-    ac_have_libevent=yes
-    AC_DEFINE(HAVE_LIBEVENT, 1, [define if libevent is available])
-  fi
-
-  LIBEVENT_LIBS="-levent"
-
-  if test -n "$ac_libevent_path"; then
-    LIBEVENT_CFLAGS="-I$ac_libevent_path/include"
-    LIBEVENT_LIBS="-L$ac_libevent_path/$PHP_LIBDIR $LIBEVENT_LIBS"
-    LIBEVENT_PATH="$ac_libevent_path/$PHP_LIBDIR"
-  fi
-
-  AC_SUBST(LIBEVENT_CFLAGS)
-  AC_SUBST(LIBEVENT_LIBS)
-  AC_SUBST(LIBEVENT_PATH)
-
-else
-  AC_MSG_ERROR([FPM requires libevent >= $WANT_LIBEVENT_VERSION. Please specify libevent install prefix with --with-libevent-dir=yes])
-fi
-
-])
-dnl }}}
 
 dnl configure checks {{{
 AC_DEFUN([AC_FPM_STDLIBS],
 [
-  AC_CHECK_FUNCS(setenv clearenv)
+  AC_CHECK_FUNCS(setenv clearenv setproctitle)
 
   AC_SEARCH_LIBS(socket, socket)
   AC_SEARCH_LIBS(inet_addr, nsl)
@@ -499,25 +287,69 @@ AC_DEFUN([AC_FPM_TRACE],
   fi
   
 ])
+
+AC_DEFUN([AC_FPM_BUILTIN_ATOMIC],
+[
+  AC_MSG_CHECKING([if gcc supports __sync_bool_compare_and_swap])
+  AC_TRY_LINK(,
+  [
+    int variable = 1;
+    return (__sync_bool_compare_and_swap(&variable, 1, 2)
+           && __sync_add_and_fetch(&variable, 1)) ? 1 : 0;
+  ],
+  [
+    AC_MSG_RESULT([yes])
+    AC_DEFINE(HAVE_BUILTIN_ATOMIC, 1, [Define to 1 if gcc supports __sync_bool_compare_and_swap() a.o.])
+  ],
+  [
+    AC_MSG_RESULT([no])
+  ])
+])
+
+AC_DEFUN([AC_FPM_LQ],
+[
+  have_lq=no
+
+  AC_MSG_CHECKING([for TCP_INFO])
+
+  AC_TRY_COMPILE([ #include <netinet/tcp.h> ], [struct tcp_info ti; int x = TCP_INFO;], [
+    have_lq=tcp_info
+    AC_MSG_RESULT([yes])
+  ], [
+    AC_MSG_RESULT([no])
+  ])
+
+  if test "$have_lq" = "tcp_info"; then
+    AC_DEFINE([HAVE_LQ_TCP_INFO], 1, [do we have TCP_INFO?])
+  fi
+
+  if test "$have_lq" = "no" ; then
+    AC_MSG_CHECKING([for SO_LISTENQLEN])
+
+    AC_TRY_COMPILE([ #include <sys/socket.h> ], [int x = SO_LISTENQLIMIT; int y = SO_LISTENQLEN;], [
+      have_lq=so_listenq
+      AC_MSG_RESULT([yes])
+    ], [
+      AC_MSG_RESULT([no])
+    ])
+
+    if test "$have_lq" = "tcp_info"; then
+      AC_DEFINE([HAVE_LQ_SO_LISTENQ], 1, [do we have SO_LISTENQxxx?])
+    fi
+  fi
+])
 dnl }}}
 
 AC_MSG_CHECKING(for FPM build)
 if test "$PHP_FPM" != "no"; then
   AC_MSG_RESULT($PHP_FPM)
 
-  AC_LIB_EVENT([$minimum_libevent_version])
-
-  PHP_ADD_LIBRARY_WITH_PATH(event, $LIBEVENT_PATH)
-
-  PHP_TEST_BUILD(event_init, [ ], [
-    AC_MSG_RESULT(no)
-    AC_MSG_ERROR([build test failed. Please check the config.log for details.])
-  ], $LIBEVENT_LIBS)
-
   AC_FPM_STDLIBS
   AC_FPM_PRCTL
   AC_FPM_CLOCK
   AC_FPM_TRACE
+  AC_FPM_BUILTIN_ATOMIC
+  AC_FPM_LQ
 
   PHP_ARG_WITH(fpm-user,,
   [  --with-fpm-user[=USER]  Set the user for php-fpm to run as. (default: nobody)], nobody, no)
@@ -538,19 +370,19 @@ if test "$PHP_FPM" != "no"; then
     php_fpm_group="$PHP_FPM_GROUP"
   fi
 
-  PHP_SUBST_OLD(fpm_version)
   PHP_SUBST_OLD(php_fpm_user)
   PHP_SUBST_OLD(php_fpm_group)
   php_fpm_sysconfdir=`eval echo $sysconfdir`
   PHP_SUBST_OLD(php_fpm_sysconfdir)
   php_fpm_localstatedir=`eval echo $localstatedir`
   PHP_SUBST_OLD(php_fpm_localstatedir)
+  php_fpm_prefix=`eval echo $prefix`
+  PHP_SUBST_OLD(php_fpm_prefix)
 
-  AC_DEFINE_UNQUOTED(PHP_FPM_VERSION, "$fpm_version", [fpm version])
   AC_DEFINE_UNQUOTED(PHP_FPM_USER, "$php_fpm_user", [fpm user name])
   AC_DEFINE_UNQUOTED(PHP_FPM_GROUP, "$php_fpm_group", [fpm group name])
 
-  PHP_OUTPUT(sapi/fpm/php-fpm.conf sapi/fpm/init.d.php-fpm sapi/fpm/php-fpm.1)
+  PHP_OUTPUT(sapi/fpm/php-fpm.conf sapi/fpm/init.d.php-fpm sapi/fpm/php-fpm.8)
   PHP_ADD_MAKEFILE_FRAGMENT([$abs_srcdir/sapi/fpm/Makefile.frag], [$abs_srcdir/sapi/fpm], [sapi/fpm])
 
   SAPI_FPM_PATH=sapi/fpm/php-fpm
@@ -560,10 +392,7 @@ if test "$PHP_FPM" != "no"; then
     PHP_FPM_TRACE_FILES="fpm/fpm_trace.c fpm/fpm_trace_$fpm_trace_type.c"
   fi
   
-  PHP_FPM_CFLAGS="$LIBEVENT_CFLAGS -I$abs_srcdir/sapi/fpm"
-
-  SAPI_EXTRA_LIBS="$LIBEVENT_LIBS"
-  PHP_SUBST(SAPI_EXTRA_LIBS)
+  PHP_FPM_CFLAGS="-I$abs_srcdir/sapi/fpm"
  
   INSTALL_IT=":"
   PHP_FPM_FILES="fpm/fastcgi.c \

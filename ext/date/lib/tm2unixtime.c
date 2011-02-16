@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: tm2unixtime.c 298973 2010-05-04 15:11:41Z derick $ */
+/* $Id: tm2unixtime.c 302890 2010-08-30 16:25:52Z derick $ */
 
 #include "timelib.h"
 
@@ -444,6 +444,7 @@ void timelib_update_ts(timelib_time* time, timelib_tzinfo* tzi)
 	time->sse = res;
 
 	time->sse_uptodate = 1;
+	time->have_relative = time->relative.have_weekday_relative = time->relative.have_special_relative = 0;
 }
 
 #if 0

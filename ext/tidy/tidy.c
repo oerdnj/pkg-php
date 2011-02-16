@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: tidy.c 296107 2010-03-12 10:28:59Z jani $ */
+/* $Id: tidy.c 305507 2010-11-18 15:22:22Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -567,6 +567,9 @@ static void php_tidy_quick_repair(INTERNAL_FUNCTION_PARAMETERS, zend_bool is_fil
 	}
 	
 	if (is_file) {
+		if (strlen(arg1) != arg1_len) {
+			RETURN_FALSE;
+		}
 		if (!(data = php_tidy_file_to_mem(arg1, use_include_path, &data_len TSRMLS_CC))) {
 			RETURN_FALSE;
 		}
@@ -1085,7 +1088,7 @@ static PHP_MINFO_FUNCTION(tidy)
 	php_info_print_table_start();
 	php_info_print_table_header(2, "Tidy support", "enabled");
 	php_info_print_table_row(2, "libTidy Release", (char *)tidyReleaseDate());
-	php_info_print_table_row(2, "Extension Version", PHP_TIDY_MODULE_VERSION " ($Id: tidy.c 296107 2010-03-12 10:28:59Z jani $)");
+	php_info_print_table_row(2, "Extension Version", PHP_TIDY_MODULE_VERSION " ($Id: tidy.c 305507 2010-11-18 15:22:22Z pajoye $)");
 	php_info_print_table_end();
 
 	DISPLAY_INI_ENTRIES();
@@ -1221,6 +1224,9 @@ static PHP_FUNCTION(tidy_parse_file)
 		RETURN_FALSE;
 	}
 
+	if (strlen(inputfile) != input_len) {
+		RETURN_FALSE;
+	}
 	tidy_instanciate(tidy_ce_doc, return_value TSRMLS_CC);
 	obj = (PHPTidyObj *) zend_object_store_get_object(return_value TSRMLS_CC);
 
@@ -1534,10 +1540,13 @@ static TIDY_DOC_METHOD(__construct)
 							  &options, &enc, &enc_len, &use_include_path) == FAILURE) {
 		RETURN_FALSE;
 	}
-	
+
 	obj = (PHPTidyObj *)zend_object_store_get_object(object TSRMLS_CC);
 	
 	if (inputfile) {
+		if (strlen(inputfile) != input_len) {
+			RETURN_FALSE;
+		}
 		if (!(contents = php_tidy_file_to_mem(inputfile, use_include_path, &contents_len TSRMLS_CC))) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Cannot Load '%s' into memory %s", inputfile, (use_include_path) ? "(Using include path)" : "");
 			return;
@@ -1568,7 +1577,10 @@ static TIDY_DOC_METHOD(parseFile)
 							  &options, &enc, &enc_len, &use_include_path) == FAILURE) {
 		RETURN_FALSE;
 	}
-	
+
+	if (strlen(inputfile) != input_len) {
+		RETURN_FALSE;
+	}
 	if (!(contents = php_tidy_file_to_mem(inputfile, use_include_path, &contents_len TSRMLS_CC))) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Cannot Load '%s' into memory %s", inputfile, (use_include_path) ? "(Using include path)" : "");
 		RETURN_FALSE;

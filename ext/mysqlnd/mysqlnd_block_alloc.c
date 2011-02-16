@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_block_alloc.c 298917 2010-05-03 17:07:18Z andrey $ */
+/* $Id: mysqlnd_block_alloc.c 303734 2010-09-23 16:03:22Z andrey $ */
 
 #include "php.h"
 #include "mysqlnd.h"
@@ -104,7 +104,6 @@ mysqlnd_mempool_resize_chunk(MYSQLND_MEMORY_POOL_CHUNK * chunk, unsigned int siz
 			DBG_RETURN(FAIL);
 		}
 		chunk->ptr = new_ptr;
-		
 	}
 	DBG_RETURN(PASS);
 }

@@ -152,6 +152,8 @@ static const opt_struct OPTIONS[] = {
 	{'?', 0, "usage"},/* help alias (both '?' and 'usage') */
 	{'v', 0, "version"},
 	{'y', 1, "fpm-config"},
+	{'t', 0, "test"},
+	{'p', 1, "prefix"},
 	{'-', 0, NULL} /* end of args */
 };
 
@@ -166,7 +168,6 @@ typedef struct _php_cgi_globals_struct {
 	HashTable user_config_cache;
 	char *error_header;
 	char *fpm_config;
-	struct event_base *event_base;
 } php_cgi_globals_struct;
 
 /* {{{ user_config_cache
@@ -959,7 +960,7 @@ static void php_cgi_usage(char *argv0)
 		prog = "php";
 	}
 
-	php_printf(	"Usage: %s [-n] [-e] [-h] [-i] [-m] [-v] [-c <file>] [-d foo[=bar]] [-y <file>]\n"
+	php_printf(	"Usage: %s [-n] [-e] [-h] [-i] [-m] [-v] [-t] [-p <prefix> ] [-c <file>] [-d foo[=bar]] [-y <file>]\n"
 				"  -c <path>|<file> Look for php.ini file in this directory\n"
 				"  -n               No php.ini file will be used\n"
 				"  -d foo[=bar]     Define INI entry foo with value 'bar'\n"
@@ -968,9 +969,12 @@ static void php_cgi_usage(char *argv0)
 				"  -i               PHP information\n"
 				"  -m               Show compiled in modules\n"
 				"  -v               Version number\n"
+				"  -p, --prefix <dir>\n"
+				"                   Specify alternative prefix path to FastCGI process manager (default: %s).\n"
 				"  -y, --fpm-config <file>\n"
-				"                   Specify alternative path to FastCGI process manager config file.\n",
-				prog);
+				"                   Specify alternative path to FastCGI process manager config file.\n"
+				"  -t, --test       Test FPM configuration and exit\n",
+				prog, PHP_PREFIX);
 }
 /* }}} */
 
@@ -1372,7 +1376,7 @@ static void init_request_info(TSRMLS_D)
 		int mode = ZEND_INI_USER;
 		char *tmp;
 		spprintf(&tmp, 0, "%s\n", ini);
-		zend_parse_ini_string(tmp, 1, ZEND_INI_SCANNER_RAW, (zend_ini_parser_cb_t)fastcgi_ini_parser, &mode TSRMLS_CC);
+		zend_parse_ini_string(tmp, 1, ZEND_INI_SCANNER_NORMAL, (zend_ini_parser_cb_t)fastcgi_ini_parser, &mode TSRMLS_CC);
 		efree(tmp);
 	}
 
@@ -1381,7 +1385,7 @@ static void init_request_info(TSRMLS_D)
 		int mode = ZEND_INI_SYSTEM;
 		char *tmp;
 		spprintf(&tmp, 0, "%s\n", ini);
-		zend_parse_ini_string(tmp, 1, ZEND_INI_SCANNER_RAW, (zend_ini_parser_cb_t)fastcgi_ini_parser, &mode TSRMLS_CC);
+		zend_parse_ini_string(tmp, 1, ZEND_INI_SCANNER_NORMAL, (zend_ini_parser_cb_t)fastcgi_ini_parser, &mode TSRMLS_CC);
 		efree(tmp);
 	}
 }
@@ -1406,7 +1410,7 @@ static void fastcgi_ini_parser(zval *arg1, zval *arg2, zval *arg3, int callback_
 		return;
 	}
 
-	if (!value || strlen(value) < 1) {
+	if (!value) {
 		fprintf(stderr, "Passing INI directive through FastCGI: empty value for key '%s'\n", key);
 		return;
 	}
@@ -1480,7 +1484,6 @@ static PHP_MINFO_FUNCTION(cgi)
 {
 	php_info_print_table_start();
 	php_info_print_table_row(2, "php-fpm", "active");
-	php_info_print_table_row(2, "php-fpm version", PHP_FPM_VERSION);
 	php_info_print_table_end();
 
 	DISPLAY_INI_ENTRIES();
@@ -1548,6 +1551,8 @@ int main(int argc, char *argv[])
 	int fcgi_fd = 0;
 	fcgi_request request;
 	char *fpm_config = NULL;
+	char *fpm_prefix = NULL;
+	int test_conf = 0;
 
 	fcgi_init();
 
@@ -1585,9 +1590,11 @@ int main(int argc, char *argv[])
 				}
 				cgi_sapi_module.php_ini_path_override = strdup(php_optarg);
 				break;
+
 			case 'n':
 				cgi_sapi_module.php_ini_ignore = 1;
 				break;
+
 			case 'd': {
 				/* define ini entries on command line */
 				int len = strlen(php_optarg);
@@ -1619,12 +1626,21 @@ int main(int argc, char *argv[])
 				}
 				break;
 			}
+
 			case 'y':
 				fpm_config = php_optarg;
 				break;
 
+			case 'p':
+				fpm_prefix = php_optarg;
+				break;
+
 			case 'e': /* enable extended info output */
 				CG(compiler_options) |= ZEND_COMPILE_EXTENDED_INFO;
+				break;
+
+			case 't': 
+				test_conf++;
 				break;
 
 			case 'm': /* list compiled in modules */
@@ -1763,11 +1779,11 @@ consult the installation file that came with this distribution, or visit \n\
 		}
 	}
 
-	if (0 > fpm_init(argc, argv, fpm_config ? fpm_config : CGIG(fpm_config), &CGIG(event_base))) {
+	if (0 > fpm_init(argc, argv, fpm_config ? fpm_config : CGIG(fpm_config), fpm_prefix, test_conf)) {
 		return FAILURE;
 	}
 
-	fcgi_fd = fpm_run(&max_requests, CGIG(event_base));
+	fcgi_fd = fpm_run(&max_requests);
 	parent = 0;
 	fcgi_set_is_fastcgi(1);
 
@@ -1920,8 +1936,10 @@ fastcgi_request_done:
 out:
 
 	SG(server_context) = NULL;
-	php_module_shutdown(TSRMLS_C);
-	sapi_shutdown();
+	if (parent) {
+		php_module_shutdown(TSRMLS_C);
+		sapi_shutdown();
+	}
 
 #ifdef ZTS
 	tsrm_shutdown();

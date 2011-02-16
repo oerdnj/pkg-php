@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_wireprotocol.h 299998 2010-05-31 17:57:03Z andrey $ */
+/* $Id: mysqlnd_wireprotocol.h 304116 2010-10-05 17:20:00Z andrey $ */
 
 #ifndef MYSQLND_WIREPROTOCOL_H
 #define MYSQLND_WIREPROTOCOL_H
@@ -53,7 +53,7 @@ typedef struct st_mysqlnd_packet_methods {
 	size_t				struct_size;
 	enum_func_status	(*read_from_net)(void *packet, MYSQLND *conn TSRMLS_DC);
 	size_t				(*write_to_net)(void *packet, MYSQLND *conn TSRMLS_DC);
-	void				(*free_mem)(void *packet, zend_bool alloca TSRMLS_DC);
+	void				(*free_mem)(void *packet, zend_bool stack_allocation TSRMLS_DC);
 } mysqlnd_packet_methods;
 
 

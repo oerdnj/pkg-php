@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: html.c 296121 2010-03-12 16:19:25Z moriyoshi $ */
+/* $Id: html.c 304404 2010-10-14 19:14:06Z cataphract $ */
 
 /*
  * HTML entity resources:
@@ -540,7 +540,7 @@ inline static unsigned int get_next_char(enum entity_charset charset,
 					MB_WRITE(c);
 					this_char = c;
 					pos++;
-				} else if (c < 0xc0) {
+				} else if (c < 0xc2) {
 					MB_FAILURE(pos);
 				} else if (c < 0xe0) {
 					CHECK_LEN(pos, 2);
@@ -572,7 +572,7 @@ inline static unsigned int get_next_char(enum entity_charset charset,
 					MB_WRITE((unsigned char)str[pos + 1]);
 					MB_WRITE((unsigned char)str[pos + 2]);
 					pos += 3;
-				} else if (c < 0xf8) {
+				} else if (c < 0xf5) {
 					CHECK_LEN(pos, 4);
 					if (str[pos + 1] < 0x80 || str[pos + 1] > 0xbf) {
 						MB_FAILURE(pos);
@@ -584,7 +584,7 @@ inline static unsigned int get_next_char(enum entity_charset charset,
 						MB_FAILURE(pos);
 					}
 					this_char = ((c & 0x07) << 18) | ((str[pos + 1] & 0x3f) << 12) | ((str[pos + 2] & 0x3f) << 6) | (str[pos + 3] & 0x3f);
-					if (this_char < 0x10000) {
+					if (this_char < 0x10000 || this_char > 0x10FFFF) {
 						MB_FAILURE(pos);
 					}
 					MB_WRITE((unsigned char)c);
@@ -867,7 +867,7 @@ det_charset:
 /* }}} */
 
 /* {{{ php_utf32_utf8 */
-size_t php_utf32_utf8(unsigned char *buf, int k)
+size_t php_utf32_utf8(unsigned char *buf, unsigned k)
 {
 	size_t retval = 0;
 
@@ -1020,7 +1020,12 @@ PHPAPI char *php_unescape_html_entities(unsigned char *old, int oldlen, int *new
 						code = strtol(p + 2, &next, 10);
 					}
 
-					if (next != NULL && *next == ';') {
+					if (code == '\'' && !(quote_style & ENT_HTML_QUOTE_SINGLE) ||
+						code == '"' && !(quote_style & ENT_HTML_QUOTE_DOUBLE)) {
+						invalid_code = 1;
+					}
+
+					if (next != NULL && *next == ';' && !invalid_code) {
 						switch (charset) {
 							case cs_utf_8:
 								q += php_utf32_utf8(q, code);
@@ -1032,11 +1037,7 @@ PHPAPI char *php_unescape_html_entities(unsigned char *old, int oldlen, int *new
 								if ((code >= 0x80 && code < 0xa0) || code > 0xff) {
 									invalid_code = 1;
 								} else {
-									if (code == 39 || !quote_style) {
-										invalid_code = 1;
-									} else {
-										*(q++) = code;
-									}
+									*(q++) = code;
 								}
 								break;
 
@@ -1407,54 +1408,86 @@ PHP_FUNCTION(htmlentities)
 }
 /* }}} */
 
-/* {{{ proto array get_html_translation_table([int table [, int quote_style]])
+/* {{{ proto array get_html_translation_table([int table [, int quote_style [, string charset_hint]]])
    Returns the internal translation table used by htmlspecialchars and htmlentities */
 PHP_FUNCTION(get_html_translation_table)
 {
 	long which = HTML_SPECIALCHARS, quote_style = ENT_COMPAT;
-	int i, j;
-	char ind[2];
-	enum entity_charset charset = determine_charset(NULL TSRMLS_CC);
+	unsigned int i;
+	int j;
+	unsigned char ind[5]; /* max # of 8-bit code units (4; for UTF-8) + 1 for \0 */
+	void *dummy;
+	char *charset_hint = NULL;
+	int charset_hint_len;
+	enum entity_charset charset;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|ll", &which, &quote_style) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|lls",
+			&which, &quote_style, &charset_hint, &charset_hint_len) == FAILURE) {
 		return;
 	}
 
+	charset = determine_charset(charset_hint TSRMLS_CC);
+
 	array_init(return_value);
 
-	ind[1] = 0;
-
 	switch (which) {
-		case HTML_ENTITIES:
-			for (j=0; entity_map[j].charset != cs_terminator; j++) {
-				if (entity_map[j].charset != charset)
+	case HTML_ENTITIES:
+		for (j = 0; entity_map[j].charset != cs_terminator; j++) {
+			if (entity_map[j].charset != charset)
+				continue;
+			for (i = 0; i <= entity_map[j].endchar - entity_map[j].basechar; i++) {
+				char buffer[16];
+				unsigned k;
+				size_t written;
+
+				if (entity_map[j].table[i] == NULL)
 					continue;
-				for (i = 0; i <= entity_map[j].endchar - entity_map[j].basechar; i++) {
-					char buffer[16];
+					
+				k = i + entity_map[j].basechar;
 
-					if (entity_map[j].table[i] == NULL)
-						continue;
-					/* what about wide chars here ?? */
-					ind[0] = i + entity_map[j].basechar;
-					snprintf(buffer, sizeof(buffer), "&%s;", entity_map[j].table[i]);
-					add_assoc_string(return_value, ind, buffer, 1);
+				switch (charset) {
+				case cs_utf_8:
+					written = php_utf32_utf8(ind, k);
+					ind[written] = '\0';
+					break;
+				case cs_big5:
+				case cs_gb2312:
+				case cs_big5hkscs:
+				case cs_sjis:
+					/* we have no mappings for these, but if we had... */
+					/* break through */
+				default: /* one byte */
+					written = 1;
+					ind[0] = (unsigned char)k;
+					ind[1] = '\0';
+					break;
+				}
 
+				snprintf(buffer, sizeof(buffer), "&%s;", entity_map[j].table[i]);
+				if (zend_hash_find(Z_ARRVAL_P(return_value), (const char*)ind, written+1, &dummy) == FAILURE) {
+					/* in case of the single quote, which is repeated, the first one wins,
+						* so don't replace the existint mapping */
+					add_assoc_string(return_value, (const char*)ind, buffer, 1);
 				}
 			}
-			/* break thru */
+		}
+		/* break thru */
 
-		case HTML_SPECIALCHARS:
-			for (j = 0; basic_entities[j].charcode != 0; j++) {
-
-				if (basic_entities[j].flags && (quote_style & basic_entities[j].flags) == 0)
-					continue;
+	case HTML_SPECIALCHARS:
+		add_assoc_stringl(return_value, "&", "&amp;", sizeof("&amp;") - 1, 1);
+		for (j = 0; basic_entities[j].charcode != 0; j++) {
+			if (basic_entities[j].flags && (quote_style & basic_entities[j].flags) == 0)
+				continue;
 				
-				ind[0] = (unsigned char)basic_entities[j].charcode;
-				add_assoc_stringl(return_value, ind, basic_entities[j].entity, basic_entities[j].entitylen, 1);
+			ind[0] = (unsigned char)basic_entities[j].charcode;
+			ind[1] = '\0';
+			if (zend_hash_find(Z_ARRVAL_P(return_value), (const char*)ind, 2, &dummy) == FAILURE) {
+				add_assoc_stringl(return_value, ind, basic_entities[j].entity,
+					basic_entities[j].entitylen, 1);
 			}
-			add_assoc_stringl(return_value, "&", "&amp;", sizeof("&amp;") - 1, 1);
+		}
 
-			break;
+		break;
 	}
 }
 /* }}} */

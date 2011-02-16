@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: phar.c 298908 2010-05-03 14:41:40Z iliaa $ */
+/* $Id: phar.c 305584 2010-11-20 20:59:28Z kalle $ */
 
 #define PHAR_MAIN 1
 #include "phar_internal.h"
@@ -512,7 +512,7 @@ void phar_entry_remove(phar_entry_data *idata, char **error TSRMLS_DC) /* {{{ */
 	(buffer) += 2
 #else
 # define PHAR_GET_32(buffer, var) \
-	var = *(php_uint32*)(buffer); \
+	memcpy(&var, buffer, sizeof(var)); \
 	buffer += 4
 # define PHAR_GET_16(buffer, var) \
 	var = *(php_uint16*)(buffer); \
@@ -2491,7 +2491,7 @@ static inline void phar_set_32(char *buffer, int var) /* {{{ */
 	*((buffer) + 1) = (unsigned char) (((var) >> 8) & 0xFF);
 	*((buffer) + 0) = (unsigned char) ((var) & 0xFF);
 #else
-	*(php_uint32 *)(buffer) = (php_uint32)(var);
+	 memcpy(buffer, &var, sizeof(var));
 #endif
 } /* }}} */
 
@@ -3668,7 +3668,7 @@ PHP_MINFO_FUNCTION(phar) /* {{{ */
 	php_info_print_table_header(2, "Phar: PHP Archive support", "enabled");
 	php_info_print_table_row(2, "Phar EXT version", PHP_PHAR_VERSION);
 	php_info_print_table_row(2, "Phar API version", PHP_PHAR_API_VERSION);
-	php_info_print_table_row(2, "SVN revision", "$Revision: 298908 $");
+	php_info_print_table_row(2, "SVN revision", "$Revision: 305584 $");
 	php_info_print_table_row(2, "Phar-based phar archives", "enabled");
 	php_info_print_table_row(2, "Tar-based phar archives", "enabled");
 	php_info_print_table_row(2, "ZIP-based phar archives", "enabled");

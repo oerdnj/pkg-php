@@ -1,4 +1,4 @@
-.TH PHP-FPM 1 "2009" "The PHP Group" "Scripting Language"
+.TH PHP-FPM 8 "2009" "The PHP Group" "Scripting Language"
 .SH NAME
 .TP 15
 php-fpm \- PHP FastCGI Process Manager 'PHP-FPM'
@@ -77,13 +77,26 @@ Show compiled in modules
 .PD 1
 .B \-v
 Version number
+.B \-\-prefix \fIpath\fP
+.TP
+.PD 1
+.B \-p
+Specify alternative prefix path (the default is @php_fpm_prefix@)
 .TP
 .PD 0
 .B \-\-fpm\-config \fIfile\fP
 .TP
 .PD 1
-.B \-\-y
+.B \-y
 Specify alternative path to FastCGI process manager configuration file (the default is @php_fpm_sysconfdir@/php-fpm.conf)
+.TP
+.PD 0
+.B \-\-test
+.TP
+.PD 1
+.B \-t
+Test FPM configuration file and exit
+If called twice (-tt), the configuration is dumped before exiting.
 .TP
 .PD 0
 .B \-\-zend\-extension \fIfile\fP
@@ -164,7 +177,7 @@ A List of active developers can be found here:
 And last but not least PHP was developed with the help of a huge amount of 
 contributors all around the world.
 .SH VERSION INFORMATION
-This manpage describes \fBphp\fP, version @PHP_VERSION@, \fBfpm\fP, version @fpm_version@.
+This manpage describes \fBphp-fpm\fP, version @PHP_VERSION@.
 .SH COPYRIGHT
 Copyright \(co 1997\-2009 The PHP Group
 .PD 0

@@ -26,7 +26,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: oci8.c 300752 2010-06-25 21:09:13Z sixd $ */
+/* $Id: oci8.c 305257 2010-11-10 18:59:56Z sixd $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1040,6 +1040,12 @@ static void php_oci_init_global_handles(TSRMLS_D)
 #else
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "OCIEnvNlsCreate() failed. There is something wrong with your system - please check that ORACLE_HOME and " PHP_OCI8_LIB_PATH_MSG " are set and point to the right directories");
 #endif
+		if (OCI_G(env)
+			&& OCIErrorGet(OCI_G(env), (ub4)1, NULL, &ora_error_code, tmp_buf, (ub4)PHP_OCI_ERRBUF_LEN, (ub4)OCI_HTYPE_ENV) == OCI_SUCCESS
+  			&& *tmp_buf) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", tmp_buf);
+		}
+		
 		OCI_G(env) = NULL;
 		OCI_G(err) = NULL;
 		return;
@@ -1293,7 +1299,7 @@ PHP_MINFO_FUNCTION(oci)
 	php_info_print_table_start();
 	php_info_print_table_row(2, "OCI8 Support", "enabled");
 	php_info_print_table_row(2, "Version", PHP_OCI8_VERSION);
-	php_info_print_table_row(2, "Revision", "$Revision: 300752 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 305257 $");
 
 	snprintf(buf, sizeof(buf), "%ld", OCI_G(num_persistent));
 	php_info_print_table_row(2, "Active Persistent Connections", buf);
@@ -2701,20 +2707,6 @@ static php_oci_spool *php_oci_create_spool(char *username, int username_len, cha
 	if (OCI_G(errcode) != OCI_SUCCESS) {
 		php_oci_error(OCI_G(err), OCI_G(errcode) TSRMLS_CC);
 		iserror = 1;
-		goto exit_create_spool;
-	}
-
-	/* Set the session pool's timeout to the oci8.persistent_timeout param */
-	if (OCI_G(persistent_timeout)) {
-		ub4 timeout = OCI_G(persistent_timeout);
-
-		PHP_OCI_CALL_RETURN(OCI_G(errcode), OCIAttrSet, ((dvoid *) session_pool->poolh, (ub4) OCI_HTYPE_SPOOL, (void *) &timeout, (ub4) sizeof(timeout), (ub4) OCI_ATTR_SPOOL_TIMEOUT, OCI_G(err)));
-
-		if (OCI_G(errcode) != OCI_SUCCESS) {
-			php_oci_error(OCI_G(err), OCI_G(errcode) TSRMLS_CC);
-			iserror = 1;
-			goto exit_create_spool;
-		}
 	}
 
 exit_create_spool:

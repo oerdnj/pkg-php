@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: basic_functions.c 299320 2010-05-13 02:13:30Z felipe $ */
+/* $Id: basic_functions.c 305507 2010-11-18 15:22:22Z pajoye $ */
 
 #include "php.h"
 #include "php_streams.h"
@@ -1209,9 +1209,11 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO(arginfo_fstat, 0)
 	ZEND_ARG_INFO(0, fp)
 ZEND_END_ARG_INFO()
-ZEND_BEGIN_ARG_INFO(arginfo_copy, 0)
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_copy, 0, 0, 2)
 	ZEND_ARG_INFO(0, source_file)
 	ZEND_ARG_INFO(0, destination_file)
+	ZEND_ARG_INFO(0, context)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO(arginfo_fread, 0)
@@ -4671,6 +4673,12 @@ PHP_FUNCTION(error_log)
 		opt_err = erropt;
 	}
 
+	if (opt_err == 3) {
+		if (strlen(opt) != opt_len) {
+			RETURN_FALSE;
+		}
+	}
+
 	if (_php_error_log_ex(opt_err, message, message_len, opt, headers TSRMLS_CC) == FAILURE) {
 		RETURN_FALSE;
 	}
@@ -5159,6 +5167,10 @@ PHP_FUNCTION(highlight_file)
 		RETURN_FALSE;
 	}
 
+	if (strlen(filename) != filename_len) {
+		RETURN_FALSE;
+	}
+
 	if (i) {
 		php_start_ob_buffer (NULL, 0, 1 TSRMLS_CC);
 	}
@@ -5202,6 +5214,10 @@ PHP_FUNCTION(php_strip_whitespace)
 	zend_file_handle file_handle = {0};
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &filename, &filename_len) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	if (strlen(filename) != filename_len) {
 		RETURN_FALSE;
 	}
 
@@ -5463,6 +5479,11 @@ PHP_FUNCTION(set_include_path)
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &new_value, &new_value_len) == FAILURE) {
 		return;
+	}
+
+	/* No nulls allowed in paths */
+	if (strlen(new_value) != new_value_len) {
+		RETURN_FALSE;
 	}
 
 	old_value = zend_ini_string("include_path", sizeof("include_path"), 0);
@@ -5775,6 +5796,10 @@ PHP_FUNCTION(is_uploaded_file)
 		return;
 	}
 
+	if (strlen(path) != path_len) {
+		RETURN_FALSE;
+	}
+
 	if (zend_hash_exists(SG(rfc1867_uploaded_files), path, path_len + 1)) {
 		RETURN_TRUE;
 	} else {
@@ -5812,6 +5837,14 @@ PHP_FUNCTION(move_uploaded_file)
 	}
 
 	if (php_check_open_basedir(new_path TSRMLS_CC)) {
+		RETURN_FALSE;
+	}
+
+	if (strlen(path) != path_len) {
+		RETURN_FALSE;
+	}
+
+	if (strlen(new_path) != new_path_len) {
 		RETURN_FALSE;
 	}
 
@@ -5955,6 +5988,10 @@ PHP_FUNCTION(parse_ini_file)
 
 	if (filename_len == 0) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Filename cannot be empty!");
+		RETURN_FALSE;
+	}
+
+	if (strlen(filename) != filename_len) {
 		RETURN_FALSE;
 	}
 

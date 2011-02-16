@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: sqlite3.c 300631 2010-06-21 11:06:31Z iliaa $ */
+/* $Id: sqlite3.c 305954 2010-12-03 21:05:44Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -114,6 +114,9 @@ PHP_METHOD(sqlite3, open)
 		zend_throw_exception(zend_exception_get_default(TSRMLS_C), "Already initialised DB Object", 0 TSRMLS_CC);
 	}
 
+	if (strlen(filename) != filename_len) {
+		return;
+	}
 	if (strncmp(filename, ":memory:", 8) != 0) {
 		if (!(fullpath = expand_filepath(filename, NULL TSRMLS_CC))) {
 			zend_throw_exception(zend_exception_get_default(TSRMLS_C), "Unable to expand filepath", 0 TSRMLS_CC);
@@ -1529,6 +1532,7 @@ PHP_METHOD(sqlite3result, columnName)
 	php_sqlite3_result *result_obj;
 	zval *object = getThis();
 	long column = 0;
+	char *column_name;
 	result_obj = (php_sqlite3_result *)zend_object_store_get_object(object TSRMLS_CC);
 
 	SQLITE3_CHECK_INITIALIZED(result_obj->db_obj, result_obj->stmt_obj->initialised, SQLite3Result)
@@ -1536,8 +1540,13 @@ PHP_METHOD(sqlite3result, columnName)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &column) == FAILURE) {
 		return;
 	}
+	column_name = (char*) sqlite3_column_name(result_obj->stmt_obj->stmt, column);
 
-	RETVAL_STRING((char*)sqlite3_column_name(result_obj->stmt_obj->stmt, column), 1);
+	if (column_name == NULL) {
+		RETURN_FALSE;
+	}
+		
+	RETVAL_STRING(column_name, 1);
 }
 /* }}} */
 

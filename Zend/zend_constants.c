@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_constants.c 293155 2010-01-05 20:46:53Z sebastian $ */
+/* $Id: zend_constants.c 305332 2010-11-14 01:38:52Z felipe $ */
 
 #include "zend.h"
 #include "zend_constants.h"
@@ -434,8 +434,16 @@ ZEND_API int zend_register_constant(zend_constant *c TSRMLS_DC)
 		}
 	}
 
-	if ((strncmp(name, "__COMPILER_HALT_OFFSET__", sizeof("__COMPILER_HALT_OFFSET__") - 1) == 0) ||
-			zend_hash_add(EG(zend_constants), name, c->name_len, (void *) c, sizeof(zend_constant), NULL)==FAILURE) {
+	/* Check if the user is trying to define the internal pseudo constant name __COMPILER_HALT_OFFSET__ */
+	if ((c->name_len == sizeof("__COMPILER_HALT_OFFSET__")
+		&& !memcmp(name, "__COMPILER_HALT_OFFSET__", sizeof("__COMPILER_HALT_OFFSET__")-1))
+		|| zend_hash_add(EG(zend_constants), name, c->name_len, (void *) c, sizeof(zend_constant), NULL)==FAILURE) {
+		
+		/* The internal __COMPILER_HALT_OFFSET__ is prefixed by NULL byte */
+		if (c->name[0] == '\0' && c->name_len > sizeof("\0__COMPILER_HALT_OFFSET__")
+			&& memcmp(name, "\0__COMPILER_HALT_OFFSET__", sizeof("\0__COMPILER_HALT_OFFSET__")) == 0) {
+			name++;
+		}
 		zend_error(E_NOTICE,"Constant %s already defined", name);
 		free(c->name);
 		if (!(c->flags & CONST_PERSISTENT)) {
