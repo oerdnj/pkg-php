@@ -2,7 +2,7 @@ suhosin hardening patch
 
 this patch was downloaded from:
 
- http://download.suhosin.org/suhosin-patch-5.3.2-0.9.9.1.patch.gz
+ http://download.suhosin.org/suhosin-patch-5.3.4-0.9.10.patch.gz
 
 the following modifications have been made:
 
@@ -3861,14 +3861,14 @@ the following modifications have been made:
 --- a/Zend/zend_hash.c
 +++ b/Zend/zend_hash.c
 @@ -20,6 +20,7 @@
- /* $Id: zend_hash.c 298914 2010-05-03 16:36:04Z felipe $ */
+ /* $Id: zend_hash.c 303364 2010-09-14 14:26:37Z johannes $ */
  
  #include "zend.h"
 +#include "zend_compile.h"
  
  #define CONNECT_TO_BUCKET_DLLIST(element, list_head)		\
  	(element)->pNext = (list_head);							\
-@@ -133,6 +134,199 @@ ZEND_API ulong zend_hash_func(const char
+@@ -136,6 +137,199 @@ ZEND_API ulong zend_hash_func(const char
  	}
  
  
@@ -4068,7 +4068,7 @@ the following modifications have been made:
  
  ZEND_API int _zend_hash_init(HashTable *ht, uint nSize, hash_func_t pHashFunction, dtor_func_t pDestructor, zend_bool persistent ZEND_FILE_LINE_DC)
  {
-@@ -153,6 +347,7 @@ ZEND_API int _zend_hash_init(HashTable *
+@@ -156,6 +350,7 @@ ZEND_API int _zend_hash_init(HashTable *
  
  	ht->nTableMask = ht->nTableSize - 1;
  	ht->pDestructor = pDestructor;
@@ -4076,7 +4076,7 @@ the following modifications have been made:
  	ht->arBuckets = NULL;
  	ht->pListHead = NULL;
  	ht->pListTail = NULL;
-@@ -230,6 +425,7 @@ ZEND_API int _zend_hash_add_or_update(Ha
+@@ -233,6 +428,7 @@ ZEND_API int _zend_hash_add_or_update(Ha
  					return FAILURE;
  				}
  #endif
@@ -4084,7 +4084,7 @@ the following modifications have been made:
  				if (ht->pDestructor) {
  					ht->pDestructor(p->pData);
  				}
-@@ -295,6 +491,7 @@ ZEND_API int _zend_hash_quick_add_or_upd
+@@ -298,6 +494,7 @@ ZEND_API int _zend_hash_quick_add_or_upd
  					return FAILURE;
  				}
  #endif
@@ -4092,7 +4092,7 @@ the following modifications have been made:
  				if (ht->pDestructor) {
  					ht->pDestructor(p->pData);
  				}
-@@ -370,6 +567,7 @@ ZEND_API int _zend_hash_index_update_or_
+@@ -373,6 +570,7 @@ ZEND_API int _zend_hash_index_update_or_
  				return FAILURE;
  			}
  #endif
@@ -4100,7 +4100,7 @@ the following modifications have been made:
  			if (ht->pDestructor) {
  				ht->pDestructor(p->pData);
  			}
-@@ -493,6 +691,7 @@ ZEND_API int zend_hash_del_key_or_index(
+@@ -496,6 +694,7 @@ ZEND_API int zend_hash_del_key_or_index(
  			if (ht->pInternalPointer == p) {
  				ht->pInternalPointer = p->pListNext;
  			}
@@ -4108,7 +4108,7 @@ the following modifications have been made:
  			if (ht->pDestructor) {
  				ht->pDestructor(p->pData);
  			}
-@@ -519,6 +718,7 @@ ZEND_API void zend_hash_destroy(HashTabl
+@@ -522,6 +721,7 @@ ZEND_API void zend_hash_destroy(HashTabl
  	SET_INCONSISTENT(HT_IS_DESTROYING);
  
  	p = ht->pListHead;
@@ -4116,7 +4116,7 @@ the following modifications have been made:
  	while (p != NULL) {
  		q = p;
  		p = p->pListNext;
-@@ -545,6 +745,7 @@ ZEND_API void zend_hash_clean(HashTable
+@@ -548,6 +748,7 @@ ZEND_API void zend_hash_clean(HashTable
  	SET_INCONSISTENT(HT_CLEANING);
  
  	p = ht->pListHead;
@@ -4124,7 +4124,7 @@ the following modifications have been made:
  	while (p != NULL) {
  		q = p;
  		p = p->pListNext;
-@@ -607,6 +808,7 @@ static Bucket *zend_hash_apply_deleter(H
+@@ -610,6 +811,7 @@ static Bucket *zend_hash_apply_deleter(H
  	ht->nNumOfElements--;
  	HANDLE_UNBLOCK_INTERRUPTIONS();
  
@@ -4652,7 +4652,7 @@ the following modifications have been made:
 +        REGISTER_MAIN_LONG_CONSTANT("PHP_MAXPATHLEN", MAXPATHLEN, CONST_PERSISTENT | CONST_CS);
  	REGISTER_MAIN_LONG_CONSTANT("PHP_INT_MAX", LONG_MAX, CONST_PERSISTENT | CONST_CS);
  	REGISTER_MAIN_LONG_CONSTANT("PHP_INT_SIZE", sizeof(long), CONST_PERSISTENT | CONST_CS);
- 
+ #ifdef ZEND_MULTIBYTE
 --- a/main/php.h
 +++ b/main/php.h
 @@ -457,6 +457,10 @@ END_EXTERN_C()
@@ -5628,7 +5628,7 @@ the following modifications have been made:
  							fcgi_shutdown();
 --- a/sapi/cli/php_cli.c
 +++ b/sapi/cli/php_cli.c
-@@ -831,7 +831,11 @@ int main(int argc, char *argv[])
+@@ -832,7 +832,11 @@ int main(int argc, char *argv[])
  				}
  
  				request_started = 1;
@@ -5699,7 +5699,7 @@ the following modifications have been made:
   * files that make up the snapshot template? */
 --- a/win32/build/config.w32.h.in
 +++ b/win32/build/config.w32.h.in
-@@ -151,6 +151,9 @@
+@@ -152,6 +152,9 @@
  /* Win32 supports strcoll */
  #define HAVE_STRCOLL 1
  
