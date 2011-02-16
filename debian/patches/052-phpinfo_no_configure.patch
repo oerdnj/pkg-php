@@ -12,7 +12,7 @@ Last-Update: 2010-01-18
 
 --- a/ext/standard/info.c
 +++ b/ext/standard/info.c
-@@ -693,7 +693,7 @@ PHPAPI void php_print_info(int flag TSRM
+@@ -704,7 +704,7 @@ PHPAPI void php_print_info(int flag TSRM
  #ifdef ARCHITECTURE
  		php_info_print_table_row(2, "Architecture", ARCHITECTURE);
  #endif

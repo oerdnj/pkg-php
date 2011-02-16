@@ -1,6 +1,6 @@
 --- a/ext/standard/tests/strings/bug51059.phpt
 +++ b/ext/standard/tests/strings/bug51059.phpt
-@@ -3,7 +3,7 @@ Bug #51059 crypt() segfaults on certain 
+@@ -3,7 +3,7 @@ Bug #51059 crypt() segfaults on certain
  --FILE--
  <?php
  $res = crypt(b'a', b'_');

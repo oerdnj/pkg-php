@@ -1,7 +1,7 @@
 --- a/ext/gd/gd.c
 +++ b/ext/gd/gd.c
-@@ -4228,6 +4228,11 @@ PHP_FUNCTION(imagepstext)
- 		return;
+@@ -4233,6 +4233,11 @@ PHP_FUNCTION(imagepstext)
+ 		RETURN_FALSE;
  	}
  
 +	if (aa_steps != 4 && aa_steps != 16) {

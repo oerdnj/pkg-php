@@ -5,10 +5,8 @@ Origin: vendor
 Forwarded: not-needed
 Last-Update: 2010-02-21
 
-Index: php/ext/dba/config.m4
-===================================================================
---- php.orig/ext/dba/config.m4
-+++ php/ext/dba/config.m4
+--- a/ext/dba/config.m4
++++ b/ext/dba/config.m4
 @@ -109,6 +109,10 @@ if test "$PHP_QDBM" != "no"; then
        THIS_PREFIX=$i
        THIS_INCLUDE=$i/include/depot.h

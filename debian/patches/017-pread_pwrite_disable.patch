@@ -6,9 +6,9 @@ Bug-Debian: http://bugs.debian.org/261311
 Forwarded: no
 Last-Update: 2010-01-18
 
---- pkg-php.orig/acinclude.m4
-+++ pkg-php/acinclude.m4
-@@ -1219,7 +1219,7 @@ $1
+--- a/acinclude.m4
++++ b/acinclude.m4
+@@ -1224,7 +1224,7 @@ $1
      }
  
    ],[
@@ -17,7 +17,7 @@ Last-Update: 2010-01-18
    ],[
      ac_cv_pwrite=no
    ],[
-@@ -1248,7 +1248,7 @@ $1
+@@ -1253,7 +1253,7 @@ $1
      exit(0);
      }
    ],[

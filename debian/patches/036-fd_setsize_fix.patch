@@ -3,10 +3,8 @@ Origin: vendor
 Forwarded: no
 Last-Update: 2010-01-18
 
-Index: php-5.3.3RC3/ext/sockets/sockets.c
-===================================================================
---- php-5.3.3RC3.orig/ext/sockets/sockets.c
-+++ php-5.3.3RC3/ext/sockets/sockets.c
+--- a/ext/sockets/sockets.c
++++ b/ext/sockets/sockets.c
 @@ -720,6 +720,7 @@ static int php_sock_array_to_fd_set(zval
  
  		php_sock = (php_socket*) zend_fetch_resource(element TSRMLS_CC, -1, le_socket_name, NULL, 1, le_socket);
@@ -15,11 +13,9 @@ Index: php-5.3.3RC3/ext/sockets/sockets.c
  
  		PHP_SAFE_FD_SET(php_sock->bsd_socket, fds);
  		if (php_sock->bsd_socket > *max_fd) {
-Index: php-5.3.3RC3/ext/standard/streamsfuncs.c
-===================================================================
---- php-5.3.3RC3.orig/ext/standard/streamsfuncs.c
-+++ php-5.3.3RC3/ext/standard/streamsfuncs.c
-@@ -610,6 +610,8 @@ static int stream_array_to_fd_set(zval *
+--- a/ext/standard/streamsfuncs.c
++++ b/ext/standard/streamsfuncs.c
+@@ -628,6 +628,8 @@ static int stream_array_to_fd_set(zval *
  		 * is not displayed.
  		 * */
  		if (SUCCESS == php_stream_cast(stream, PHP_STREAM_AS_FD_FOR_SELECT | PHP_STREAM_CAST_INTERNAL, (void*)&this_fd, 1) && this_fd >= 0) {

@@ -5,11 +5,9 @@ Origin: vendor
 Forwarded: not-needed
 Last-Update: 2010-05-01
 
-Index: php/ext/session/session.c
-===================================================================
---- php.orig/ext/session/session.c
-+++ php/ext/session/session.c
-@@ -765,7 +765,7 @@ static PHP_INI_MH(OnUpdateHashFunc) /* {
+--- a/ext/session/session.c
++++ b/ext/session/session.c
+@@ -788,7 +788,7 @@ static PHP_INI_MH(OnUpdateHashFunc) /* {
  PHP_INI_BEGIN()
  	STD_PHP_INI_BOOLEAN("session.bug_compat_42",    "1",         PHP_INI_ALL, OnUpdateBool,   bug_compat,         php_ps_globals,    ps_globals)
  	STD_PHP_INI_BOOLEAN("session.bug_compat_warn",  "1",         PHP_INI_ALL, OnUpdateBool,   bug_compat_warn,    php_ps_globals,    ps_globals)

@@ -4,34 +4,33 @@ Origin: vendor
 Forwarded: not-needed
 Last-Update: 2010-07-30
 
-Index: php-5.3.3/sapi/fpm/php-fpm.conf.in
-===================================================================
---- php-5.3.3.orig/sapi/fpm/php-fpm.conf.in
-+++ php-5.3.3/sapi/fpm/php-fpm.conf.in
-@@ -8,7 +8,7 @@
- ; Include one or more files. If glob(3) exists, it is used to include a bunch of
- ; files from a glob(3) pattern. This directive can be used everywhere in the
- ; file.
--;include=@EXPANDED_SYSCONFDIR@/fpm.d/*.conf
+--- a/sapi/fpm/php-fpm.conf.in
++++ b/sapi/fpm/php-fpm.conf.in
+@@ -12,7 +12,7 @@
+ ; Relative path can also be used. They will be prefixed by:
+ ;  - the global prefix if it's been set (-p arguement)
+ ;  - @prefix@ otherwise
+-;include=etc/fpm.d/*.conf
 +;include=@EXPANDED_SYSCONFDIR@/php5/fpm/*.conf
  
  ;;;;;;;;;;;;;;;;;;
  ; Global Options ;
-@@ -17,11 +17,11 @@
- [global]
+@@ -22,12 +22,12 @@
  ; Pid file
+ ; Note: the default prefix is @EXPANDED_LOCALSTATEDIR@
  ; Default Value: none
--;pid = @EXPANDED_LOCALSTATEDIR@/run/php-fpm.pid
+-;pid = run/php-fpm.pid
 +pid = @EXPANDED_LOCALSTATEDIR@/run/php5-fpm.pid
  
  ; Error log file
- ; Default Value: @EXPANDED_LOCALSTATEDIR@/log/php-fpm.log
--;error_log = @EXPANDED_LOCALSTATEDIR@/log/php-fpm.log
+ ; Note: the default prefix is @EXPANDED_LOCALSTATEDIR@
+ ; Default Value: log/php-fpm.log
+-;error_log = log/php-fpm.log
 +error_log = @EXPANDED_LOCALSTATEDIR@/log/php5-fpm.log
  
  ; Log level
  ; Possible Values: alert, error, warning, notice, debug
-@@ -61,6 +61,10 @@
+@@ -67,6 +67,10 @@
  ; used in logs and stats. There is no limitation on the number of pools which
  ; FPM can handle. Your system will tell you anyway :)
  
@@ -40,9 +39,9 @@ Index: php-5.3.3/sapi/fpm/php-fpm.conf.in
 +include=@EXPANDED_SYSCONFDIR@/php5/fpm/pool.d/*.conf
 +
  ; Start a new pool named 'www'.
- [www]
- 
-@@ -138,12 +142,12 @@ pm.max_children = 50
+ ; the variable $pool can we used in any directive and will be replaced by the
+ ; pool name ('www' here)
+@@ -159,12 +163,12 @@ pm.max_children = 50
  ; The desired minimum number of idle server processes.
  ; Note: Used only when pm is set to 'dynamic'
  ; Note: Mandatory when pm is set to 'dynamic'
@@ -57,9 +56,9 @@ Index: php-5.3.3/sapi/fpm/php-fpm.conf.in
   
  ; The number of requests each child process should execute before respawning.
  ; This can be useful to work around memory leaks in 3rd party libraries. For
-@@ -234,7 +238,7 @@ pm.max_children = 50
-  
- ; Chdir to this directory at the start. This value must be an absolute path.
+@@ -264,7 +268,7 @@ pm.max_children = 50
+ ; Chdir to this directory at the start.
+ ; Note: relative path can be used.
  ; Default Value: current directory or / when chroot
 -;chdir = /var/www
 +chdir = /var/www

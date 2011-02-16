@@ -4,10 +4,8 @@ Origin: vendor
 Forwarded: no
 Last-Update: 2010-01-18
 
-Index: php-5.3.3RC3/ext/dba/config.m4
-===================================================================
---- php-5.3.3RC3.orig/ext/dba/config.m4
-+++ php-5.3.3RC3/ext/dba/config.m4
+--- a/ext/dba/config.m4
++++ b/ext/dba/config.m4
 @@ -323,7 +323,7 @@ if test "$PHP_DB4" != "no"; then
        break
      fi

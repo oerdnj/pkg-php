@@ -9,7 +9,7 @@ Last-Update: 2010-01-18
 
 --- a/sapi/apache2handler/sapi_apache2.c
 +++ b/sapi/apache2handler/sapi_apache2.c
-@@ -455,6 +455,19 @@ static apr_status_t php_server_context_c
+@@ -469,6 +469,19 @@ static apr_status_t php_server_context_c
  	return APR_SUCCESS;
  }
  
@@ -29,7 +29,7 @@ Last-Update: 2010-01-18
  static int php_apache_request_ctor(request_rec *r, php_struct *ctx TSRMLS_DC)
  {
  	char *content_length;
-@@ -646,6 +659,8 @@ zend_first_try {
+@@ -660,6 +673,8 @@ zend_first_try {
  	} else {
  		zend_file_handle zfd;
  
@@ -38,7 +38,7 @@ Last-Update: 2010-01-18
  		zfd.type = ZEND_HANDLE_FILENAME;
  		zfd.filename = (char *) r->filename;
  		zfd.free_filename = 0;
-@@ -657,6 +672,9 @@ zend_first_try {
+@@ -671,6 +686,9 @@ zend_first_try {
  			zend_execute_scripts(ZEND_INCLUDE TSRMLS_CC, NULL, 1, &zfd);
  		}
  

@@ -1,105 +1,6 @@
---- a/ext/standard/ftok.c
-+++ b/ext/standard/ftok.c
-@@ -39,6 +39,10 @@ PHP_FUNCTION(ftok)
- 		return;
- 	}
- 
-+	if (strlen(pathname) != pathname_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	if (pathname_len == 0){
- 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Pathname is invalid");
- 		RETURN_LONG(-1);
---- a/ext/standard/basic_functions.c
-+++ b/ext/standard/basic_functions.c
-@@ -4671,6 +4671,12 @@ PHP_FUNCTION(error_log)
- 		opt_err = erropt;
- 	}
- 
-+	if (opt_err == 3) {
-+		if (strlen(opt) != opt_len) {
-+			RETURN_FALSE;
-+		}
-+	}
-+
- 	if (_php_error_log_ex(opt_err, message, message_len, opt, headers TSRMLS_CC) == FAILURE) {
- 		RETURN_FALSE;
- 	}
-@@ -5159,6 +5165,10 @@ PHP_FUNCTION(highlight_file)
- 		RETURN_FALSE;
- 	}
- 
-+	if (strlen(filename) != filename_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	if (i) {
- 		php_start_ob_buffer (NULL, 0, 1 TSRMLS_CC);
- 	}
-@@ -5205,6 +5215,10 @@ PHP_FUNCTION(php_strip_whitespace)
- 		RETURN_FALSE;
- 	}
- 
-+	if (strlen(filename) != filename_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	file_handle.type = ZEND_HANDLE_FILENAME;
- 	file_handle.filename = filename;
- 	file_handle.free_filename = 0;
-@@ -5465,6 +5479,11 @@ PHP_FUNCTION(set_include_path)
- 		return;
- 	}
- 
-+	/* No nulls allowed in paths */
-+	if (strlen(new_value) != new_value_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	old_value = zend_ini_string("include_path", sizeof("include_path"), 0);
- 	/* copy to return here, because alter might free it! */
- 	if (old_value) {
-@@ -5775,6 +5794,10 @@ PHP_FUNCTION(is_uploaded_file)
- 		return;
- 	}
- 
-+	if (strlen(path) != path_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	if (zend_hash_exists(SG(rfc1867_uploaded_files), path, path_len + 1)) {
- 		RETURN_TRUE;
- 	} else {
-@@ -5815,6 +5838,14 @@ PHP_FUNCTION(move_uploaded_file)
- 		RETURN_FALSE;
- 	}
- 
-+	if (strlen(path) != path_len) {
-+		RETURN_FALSE;
-+	}
-+
-+	if (strlen(new_path) != new_path_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	VCWD_UNLINK(new_path);
- 	if (VCWD_RENAME(path, new_path) == 0) {
- 		successful = 1;
-@@ -5958,6 +5989,10 @@ PHP_FUNCTION(parse_ini_file)
- 		RETURN_FALSE;
- 	}
- 
-+	if (strlen(filename) != filename_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	/* Set callback function */
- 	if (process_sections) {
- 		BG(active_ini_file_section) = NULL;
 --- a/ext/standard/dir.c
 +++ b/ext/standard/dir.c
-@@ -325,6 +325,10 @@ PHP_FUNCTION(chdir)
+@@ -329,6 +329,10 @@ PHP_FUNCTION(chdir)
  		RETURN_FALSE;
  	}
  
@@ -110,8 +11,8 @@
  	if ((PG(safe_mode) && !php_checkuid(str, NULL, CHECKUID_CHECK_FILE_AND_DIR)) || php_check_open_basedir(str TSRMLS_CC)) {
  		RETURN_FALSE;
  	}
-@@ -436,6 +440,10 @@ PHP_FUNCTION(glob)
- 		return;
+@@ -444,6 +448,10 @@ PHP_FUNCTION(glob)
+ 		RETURN_FALSE;
  	}
  
 +	if (strlen(pattern) != pattern_len) {
@@ -121,33 +22,20 @@
  	if (pattern_len >= MAXPATHLEN) {
  		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Pattern exceeds the maximum allowed length of %d characters", MAXPATHLEN);
  		RETURN_FALSE;
-@@ -557,6 +565,10 @@ PHP_FUNCTION(scandir)
- 		return;
+@@ -566,6 +574,10 @@ PHP_FUNCTION(scandir)
  	}
  
+ 	if (strlen(dirn) != dirn_len) {
++		RETURN_FALSE;
++	}
++
 +	if (strlen(dirn) != dirn_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	if (dirn_len < 1) {
- 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Directory name cannot be empty");
  		RETURN_FALSE;
---- a/ext/standard/iptc.c
-+++ b/ext/standard/iptc.c
-@@ -190,6 +190,10 @@ PHP_FUNCTION(iptcembed)
- 		return;
  	}
  
-+	if (strlen(jpeg_file) != jpeg_file_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	if (PG(safe_mode) && (!php_checkuid(jpeg_file, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
- 		RETURN_FALSE;
- 	}
 --- a/ext/standard/filestat.c
 +++ b/ext/standard/filestat.c
-@@ -379,6 +379,10 @@ PHP_FUNCTION(disk_free_space)
+@@ -383,6 +383,10 @@ PHP_FUNCTION(disk_free_space)
  		RETURN_FALSE;
  	}
  
@@ -158,7 +46,7 @@
  	if (php_disk_free_space(path, &bytesfree TSRMLS_CC) == SUCCESS) {
  		RETURN_DOUBLE(bytesfree);
  	}
-@@ -399,6 +403,10 @@ static void php_do_chgrp(INTERNAL_FUNCTI
+@@ -407,6 +411,10 @@ static void php_do_chgrp(INTERNAL_FUNCTI
  		RETURN_FALSE;
  	}
  
@@ -169,8 +57,8 @@
  	if (Z_TYPE_P(group) == IS_LONG) {
  		gid = (gid_t)Z_LVAL_P(group);
  	} else if (Z_TYPE_P(group) == IS_STRING) {
-@@ -500,6 +508,10 @@ static void php_do_chown(INTERNAL_FUNCTI
- 		return;
+@@ -512,6 +520,10 @@ static void php_do_chown(INTERNAL_FUNCTI
+ 		RETURN_FALSE;
  	}
  
 +	if (strlen(filename) != filename_len) {
@@ -180,7 +68,7 @@
  	if (Z_TYPE_P(user) == IS_LONG) {
  		uid = (uid_t)Z_LVAL_P(user);
  	} else if (Z_TYPE_P(user) == IS_STRING) {
-@@ -607,6 +619,10 @@ PHP_FUNCTION(chmod)
+@@ -623,6 +635,10 @@ PHP_FUNCTION(chmod)
  		RETURN_FALSE;
  	}
  
@@ -191,8 +79,8 @@
  	/* Check the basedir */
  	if (php_check_open_basedir(filename TSRMLS_CC)) {
  		RETURN_FALSE;
-@@ -660,6 +676,10 @@ PHP_FUNCTION(touch)
- 		return;
+@@ -680,6 +696,10 @@ PHP_FUNCTION(touch)
+ 		RETURN_FALSE;
  	}
  
 +	if (strlen(filename) != filename_len) {
@@ -202,18 +90,7 @@
  	switch (argc) {
  		case 1:
  #ifdef HAVE_UTIME_NULL
-@@ -715,8 +735,9 @@ PHP_FUNCTION(touch)
- PHPAPI void php_clear_stat_cache(zend_bool clear_realpath_cache, const char *filename, int filename_len TSRMLS_DC)
- {
- 	/* always clear CurrentStatFile and CurrentLStatFile even if filename is not NULL
--	 * as it may contains outdated data (e.g. "nlink" for a directory when deleting a file
-+	 * as it may contain outdated data (e.g. "nlink" for a directory when deleting a file
- 	 * in this directory, as shown by lstat_stat_variation9.phpt) */
-+
- 	if (BG(CurrentStatFile)) {
- 		efree(BG(CurrentStatFile));
- 		BG(CurrentStatFile) = NULL;
-@@ -777,6 +798,10 @@ PHPAPI void php_stat(const char *filenam
+@@ -798,6 +818,10 @@ PHPAPI void php_stat(const char *filenam
  		RETURN_FALSE;
  	}
  
@@ -221,434 +98,12 @@
 +		RETURN_FALSE;
 +	}
 +
- 	if ((wrapper = php_stream_locate_url_wrapper(filename, &local, 0 TSRMLS_CC)) == &php_plain_files_wrapper) {
- 		if (php_check_open_basedir(local TSRMLS_CC)) {
- 			RETURN_FALSE;
---- a/ext/standard/file.c
-+++ b/ext/standard/file.c
-@@ -385,6 +385,10 @@ PHP_FUNCTION(get_meta_tags)
- 		return;
- 	}
- 
-+	if (strlen(filename) != filename_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	md.stream = php_stream_open_wrapper(filename, "rb",
- 			(use_include_path ? USE_PATH : 0) | ENFORCE_SAFE_MODE | REPORT_ERRORS,
- 			NULL);
-@@ -538,6 +542,10 @@ PHP_FUNCTION(file_get_contents)
- 		return;
- 	}
- 
-+	if (strlen(filename) != filename_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	if (ZEND_NUM_ARGS() == 5 && maxlen < 0) {
- 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "length must be greater than or equal to zero");
- 		RETURN_FALSE;
-@@ -595,6 +603,10 @@ PHP_FUNCTION(file_put_contents)
- 		return;
- 	}
- 
-+	if (strlen(filename) != filename_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	if (Z_TYPE_P(data) == IS_RESOURCE) {
- 		php_stream_from_zval(srcstream, &data);
- 	}
-@@ -739,6 +751,11 @@ PHP_FUNCTION(file)
- 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|lr!", &filename, &filename_len, &flags, &zcontext) == FAILURE) {
- 		return;
- 	}
-+
-+	if (strlen(filename) != filename_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	if (flags < 0 || flags > (PHP_FILE_USE_INCLUDE_PATH | PHP_FILE_IGNORE_NEW_LINES | PHP_FILE_SKIP_EMPTY_LINES | PHP_FILE_NO_DEFAULT_CONTEXT)) {
- 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "'%ld' flag is not supported", flags);
- 		RETURN_FALSE;
-@@ -836,6 +853,14 @@ PHP_FUNCTION(tempnam)
- 		return;
- 	}
- 
-+	if (strlen(dir) != dir_len) {
-+		RETURN_FALSE;
-+	}
-+
-+	if (strlen(prefix) != prefix_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	if (PG(safe_mode) &&(!php_checkuid(dir, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
+ 	if (strlen(filename) != filename_length) {
  		RETURN_FALSE;
  	}
-@@ -894,6 +919,10 @@ PHP_NAMED_FUNCTION(php_if_fopen)
- 		RETURN_FALSE;
- 	}
- 
-+	if (strlen(filename) != filename_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	context = php_stream_context_from_zval(zcontext, 0);
- 
- 	stream = php_stream_open_wrapper_ex(filename, mode, (use_include_path ? USE_PATH : 0) | ENFORCE_SAFE_MODE | REPORT_ERRORS, NULL, context);
-@@ -1397,6 +1426,10 @@ PHP_FUNCTION(mkdir)
- 		RETURN_FALSE;
- 	}
- 
-+	if (strlen(dir) != dir_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	context = php_stream_context_from_zval(zcontext, 0);
- 
- 	RETURN_BOOL(php_stream_mkdir(dir, mode, (recursive ? PHP_STREAM_MKDIR_RECURSIVE : 0) | REPORT_ERRORS, context));
-@@ -1416,6 +1449,10 @@ PHP_FUNCTION(rmdir)
- 		RETURN_FALSE;
- 	}
- 
-+	if (strlen(dir) != dir_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	context = php_stream_context_from_zval(zcontext, 0);
- 
- 	RETURN_BOOL(php_stream_rmdir(dir, REPORT_ERRORS, context));
-@@ -1438,6 +1475,10 @@ PHP_FUNCTION(readfile)
- 		RETURN_FALSE;
- 	}
- 
-+	if (strlen(filename) != filename_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	context = php_stream_context_from_zval(zcontext, 0);
- 
- 	stream = php_stream_open_wrapper_ex(filename, "rb", (use_include_path ? USE_PATH : 0) | ENFORCE_SAFE_MODE | REPORT_ERRORS, NULL, context);
-@@ -1511,6 +1552,14 @@ PHP_FUNCTION(rename)
- 		RETURN_FALSE;
- 	}
- 
-+	if (strlen(old_name) != old_name_len) {
-+		RETURN_FALSE;
-+	}
-+
-+	if (strlen(new_name) != new_name_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	wrapper = php_stream_locate_url_wrapper(old_name, NULL, 0 TSRMLS_CC);
- 
- 	if (!wrapper || !wrapper->wops) {
-@@ -1548,6 +1597,10 @@ PHP_FUNCTION(unlink)
- 		RETURN_FALSE;
- 	}
- 
-+	if (strlen(filename) != filename_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	context = php_stream_context_from_zval(zcontext, 0);
- 
- 	wrapper = php_stream_locate_url_wrapper(filename, NULL, 0 TSRMLS_CC);
-@@ -1684,6 +1737,14 @@ PHP_FUNCTION(copy)
- 		return;
- 	}
- 
-+	if (strlen(source) != source_len) {
-+		RETURN_FALSE;
-+	}
-+
-+	if (strlen(target) != target_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	if (PG(safe_mode) &&(!php_checkuid(source, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
- 		RETURN_FALSE;
- 	}
-@@ -2375,6 +2436,10 @@ PHP_FUNCTION(realpath)
- 		return;
- 	}
- 
-+	if (strlen(filename) != filename_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	if (VCWD_REALPATH(filename, resolved_path_buff)) {
- 		if (PG(safe_mode) && (!php_checkuid(resolved_path_buff, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
- 			RETURN_FALSE;
-@@ -2517,6 +2582,14 @@ PHP_FUNCTION(fnmatch)
- 		return;
- 	}
- 
-+	if (strlen(pattern) != pattern_len) {
-+		RETURN_FALSE;
-+	}
-+
-+	if (strlen(filename) != filename_len) {
-+		RETURN_FALSE;
-+	}
-+	
- 	if (filename_len >= MAXPATHLEN) {
- 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Filename exceeds the maximum allowed length of %d characters", MAXPATHLEN);
- 		RETURN_FALSE;
---- a/ext/standard/link.c
-+++ b/ext/standard/link.c
-@@ -64,6 +64,10 @@ PHP_FUNCTION(readlink)
- 		return;
- 	}
- 
-+	if (strlen(link) != link_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	if (PG(safe_mode) && !php_checkuid(link, NULL, CHECKUID_CHECK_FILE_AND_DIR)) {
- 		RETURN_FALSE;
- 	}
-@@ -123,6 +127,14 @@ PHP_FUNCTION(symlink)
- 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &topath, &topath_len, &frompath, &frompath_len) == FAILURE) {
- 		return;
- 	}
-+
-+	if (strlen(topath) != topath_len) {
-+		RETURN_FALSE;
-+	}
-+
-+	if (strlen(frompath) != frompath_len) {
-+		RETURN_FALSE;
-+	}
- 	
- 	if (!expand_filepath(frompath, source_p TSRMLS_CC)) {
- 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "No such file or directory");
-@@ -188,6 +200,14 @@ PHP_FUNCTION(link)
- 		return;
- 	}
- 
-+	if (strlen(topath) != topath_len) {
-+		RETURN_FALSE;
-+	}
-+
-+	if (strlen(frompath) != frompath_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	if (!expand_filepath(frompath, source_p TSRMLS_CC) || !expand_filepath(topath, dest_p TSRMLS_CC)) {
- 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "No such file or directory");
- 		RETURN_FALSE;
---- a/ext/openssl/openssl.c
-+++ b/ext/openssl/openssl.c
-@@ -1771,6 +1771,10 @@ PHP_FUNCTION(openssl_pkcs12_export_to_fi
- 		return;
- 
- 	RETVAL_FALSE;
-+
-+	if (strlen(filename) != filename_len) {
-+		return;
-+	}
- 	
- 	cert = php_openssl_x509_from_zval(zcert, 0, &certresource TSRMLS_CC);
- 	if (cert == NULL) {
-@@ -2218,6 +2222,10 @@ PHP_FUNCTION(openssl_csr_export_to_file)
- 	}
- 	RETVAL_FALSE;
- 
-+	if (strlen(filename) != filename_len) {
-+		return;
-+	}
-+
- 	csr = php_openssl_csr_from_zval(&zcsr, 0, &csr_resource TSRMLS_CC);
- 	if (csr == NULL) {
- 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "cannot get CSR from parameter 1");
-@@ -3002,6 +3010,10 @@ PHP_FUNCTION(openssl_pkey_export_to_file
- 	}
- 	RETVAL_FALSE;
- 
-+	if (strlen(filename) != filename_len) {
-+		return;
-+	}
-+
- 	key = php_openssl_evp_from_zval(zpkey, 0, passphrase, 0, &key_resource TSRMLS_CC);
- 
- 	if (key == NULL) {
-@@ -3394,7 +3406,14 @@ PHP_FUNCTION(openssl_pkcs7_encrypt)
- 				&outfilename, &outfilename_len, &zrecipcerts, &zheaders, &flags, &cipherid) == FAILURE)
- 		return;
- 
--	
-+	if (strlen(infilename) != infilename_len) {
-+		return;
-+	}
-+
-+	if (strlen(outfilename) != outfilename_len) {
-+		return;
-+	}
-+
- 	if (php_openssl_safe_mode_chk(infilename TSRMLS_CC) || php_openssl_safe_mode_chk(outfilename TSRMLS_CC)) {
- 		return;
- 	}
-@@ -3526,14 +3545,22 @@ PHP_FUNCTION(openssl_pkcs7_sign)
- 	char * outfilename;	int outfilename_len;
- 	char * extracertsfilename = NULL; int extracertsfilename_len;
- 
-+	RETVAL_FALSE;
-+
- 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ssZZa!|ls",
- 				&infilename, &infilename_len, &outfilename, &outfilename_len,
- 				&zcert, &zprivkey, &zheaders, &flags, &extracertsfilename,
- 				&extracertsfilename_len) == FAILURE) {
- 		return;
- 	}
--	
--	RETVAL_FALSE;
-+
-+	if (strlen(infilename) != infilename_len) {
-+		return;
-+	}
-+
-+	if (strlen(outfilename) != outfilename_len) {
-+		return;
-+	}
- 
- 	if (extracertsfilename) {
- 		others = load_all_certs_from_file(extracertsfilename);
-@@ -3630,12 +3657,20 @@ PHP_FUNCTION(openssl_pkcs7_decrypt)
- 	char * infilename;	int infilename_len;
- 	char * outfilename;	int outfilename_len;
- 
-+	RETVAL_FALSE;
-+
- 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ssZ|Z", &infilename, &infilename_len,
- 				&outfilename, &outfilename_len, &recipcert, &recipkey) == FAILURE) {
- 		return;
- 	}
- 
--	RETVAL_FALSE;
-+	if (strlen(infilename) != infilename_len) {
-+		return;
-+	}
-+
-+	if (strlen(outfilename) != outfilename_len) {
-+		return;
-+	}
- 
- 	cert = php_openssl_x509_from_zval(recipcert, 0, &certresval TSRMLS_CC);
- 	if (cert == NULL) {
---- a/ext/sqlite3/sqlite3.c
-+++ b/ext/sqlite3/sqlite3.c
-@@ -114,6 +114,9 @@ PHP_METHOD(sqlite3, open)
- 		zend_throw_exception(zend_exception_get_default(TSRMLS_C), "Already initialised DB Object", 0 TSRMLS_CC);
- 	}
- 
-+	if (strlen(filename) != filename_len) {
-+		return;
-+	}
- 	if (strncmp(filename, ":memory:", 8) != 0) {
- 		if (!(fullpath = expand_filepath(filename, NULL TSRMLS_CC))) {
- 			zend_throw_exception(zend_exception_get_default(TSRMLS_C), "Unable to expand filepath", 0 TSRMLS_CC);
---- a/ext/pgsql/pgsql.c
-+++ b/ext/pgsql/pgsql.c
-@@ -3339,6 +3339,10 @@ PHP_FUNCTION(pg_lo_import)
- 		WRONG_PARAM_COUNT;
- 	}
- 
-+	if (strlen(file_in) != name_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	if (PG(safe_mode) &&(!php_checkuid(file_in, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
- 		RETURN_FALSE;
- 	}
-@@ -3476,6 +3480,10 @@ PHP_FUNCTION(pg_lo_export)
- 		RETURN_FALSE;
- 	}
- 
-+	if (strlen(file_out) != name_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	if (PG(safe_mode) &&(!php_checkuid(file_out, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
- 		RETURN_FALSE;
- 	}
---- a/ext/gd/gd_ctx.c
-+++ b/ext/gd/gd_ctx.c
-@@ -91,6 +91,9 @@ static void _php_image_output_ctx(INTERN
- 	}
- 
- 	if (argc > 1 && file_len) {
-+		if (strlen(file) != file_len) {
-+			RETURN_FALSE;
-+		}
- 		PHP_GD_CHECK_OPEN_BASEDIR(file, "Invalid filename");
- 
- 		fp = VCWD_FOPEN(file, "wb");
---- a/ext/gd/gd.c
-+++ b/ext/gd/gd.c
-@@ -2642,6 +2642,9 @@ static void _php_image_output(INTERNAL_F
- 	}
- 
- 	if (argc >= 2 && file_len) {
-+		if (strlen(file) != file_len) {
-+			RETURN_FALSE;
-+		}
- 		PHP_GD_CHECK_OPEN_BASEDIR(fn, "Invalid filename");
- 
- 		fp = VCWD_FOPEN(fn, "wb");
-@@ -4552,6 +4555,14 @@ static void _php_image_convert(INTERNAL_
- 	dest_width = width;
- 	int_threshold = threshold;
- 
-+	if (strlen(f_org) != f_org_len) {
-+		RETURN_FALSE;
-+	}
-+
-+	if (strlen(f_dest) != f_dest_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	/* Check threshold value */
- 	if (int_threshold < 0 || int_threshold > 8) {
- 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid threshold value '%d'", int_threshold);
---- a/ext/sqlite/sqlite.c
-+++ b/ext/sqlite/sqlite.c
-@@ -1560,6 +1560,9 @@ PHP_FUNCTION(sqlite_popen)
- 		ZVAL_NULL(errmsg);
- 	}
- 
-+	if (strlen(filename) != filename_len) {
-+		RETURN_FALSE;
-+	}
- 	if (strncmp(filename, ":memory:", sizeof(":memory:") - 1)) {
- 		/* resolve the fully-qualified path name to use as the hash key */
- 		if (!(fullpath = expand_filepath(filename, NULL TSRMLS_CC))) {
-@@ -1637,6 +1640,9 @@ PHP_FUNCTION(sqlite_open)
- 		ZVAL_NULL(errmsg);
- 	}
- 
-+	if (strlen(filename) != filename_len) {
-+		RETURN_FALSE;
-+	}
- 	if (strncmp(filename, ":memory:", sizeof(":memory:") - 1)) {
- 		/* resolve the fully-qualified path name to use as the hash key */
- 		if (!(fullpath = expand_filepath(filename, NULL TSRMLS_CC))) {
-@@ -1690,6 +1696,10 @@ PHP_FUNCTION(sqlite_factory)
- 		ZVAL_NULL(errmsg);
- 	}
- 
-+	if (strlen(filename) != filename_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	if (strncmp(filename, ":memory:", sizeof(":memory:") - 1)) {
- 		/* resolve the fully-qualified path name to use as the hash key */
- 		if (!(fullpath = expand_filepath(filename, NULL TSRMLS_CC))) {
 --- a/ext/posix/posix.c
 +++ b/ext/posix/posix.c
-@@ -842,6 +842,10 @@ PHP_FUNCTION(posix_mkfifo)
+@@ -846,6 +846,10 @@ PHP_FUNCTION(posix_mkfifo)
  		RETURN_FALSE;
  	}
  
@@ -659,7 +114,7 @@
  	if (php_check_open_basedir_ex(path, 0 TSRMLS_CC) ||
  			(PG(safe_mode) && (!php_checkuid(path, NULL, CHECKUID_ALLOW_ONLY_DIR)))) {
  		RETURN_FALSE;
-@@ -877,6 +881,10 @@ PHP_FUNCTION(posix_mknod)
+@@ -885,6 +889,10 @@ PHP_FUNCTION(posix_mknod)
  		RETURN_FALSE;
  	}
  
@@ -670,7 +125,7 @@
  	if (php_check_open_basedir_ex(path, 0 TSRMLS_CC) ||
  			(PG(safe_mode) && (!php_checkuid(path, NULL, CHECKUID_ALLOW_ONLY_DIR)))) {
  		RETURN_FALSE;
-@@ -957,6 +965,10 @@ PHP_FUNCTION(posix_access)
+@@ -965,6 +973,10 @@ PHP_FUNCTION(posix_access)
  		RETURN_FALSE;
  	}
  
@@ -678,103 +133,12 @@
 +		RETURN_FALSE;
 +	}
 +
- 	path = expand_filepath(filename, NULL TSRMLS_CC);
- 	if (!path) {
- 		POSIX_G(last_error) = EIO;
---- a/ext/xsl/xsltprocessor.c
-+++ b/ext/xsl/xsltprocessor.c
-@@ -642,6 +642,9 @@ PHP_FUNCTION(xsl_xsltprocessor_transform
- 
- 	ret = -1;
- 	if (newdocp) {
-+		if (strlen(uri) != uri_len) {
-+			RETURN_FALSE;
-+		}
- 		ret = xsltSaveResultToFilename(uri, newdocp, sheetp, 0);
- 		xmlFreeDoc(newdocp);
- 	}
-@@ -845,7 +848,7 @@ PHP_FUNCTION(xsl_xsltprocessor_set_profi
- 		if (intern->profiling) {
- 			efree(intern->profiling);
- 		}
--		if (filename != NULL) {
-+		if (filename != NULL && strlen(filename) == filename_len) {
- 			intern->profiling = estrndup(filename,filename_len);
- 		} else {
- 			intern->profiling = NULL;
---- a/ext/com_dotnet/com_persist.c
-+++ b/ext/com_dotnet/com_persist.c
-@@ -389,6 +389,9 @@ CPH_METHOD(SaveToFile)
- 		}
- 
- 		if (filename) {
-+			if (strlen(filename) != filename_len) {
-+				RETURN_FALSE;
-+			}
- 			fullpath = expand_filepath(filename, NULL TSRMLS_CC);
- 			if (!fullpath) {
- 				RETURN_FALSE;
-@@ -453,6 +456,10 @@ CPH_METHOD(LoadFromFile)
- 			return;
- 		}
- 
-+		if (strlen(filename) != filename_len) {
-+			RETURN_FALSE;
-+		}
-+
- 		if (!(fullpath = expand_filepath(filename, NULL TSRMLS_CC))) {
- 			RETURN_FALSE;
- 		}
---- a/ext/bz2/bz2.c
-+++ b/ext/bz2/bz2.c
-@@ -387,6 +387,9 @@ static PHP_FUNCTION(bzopen)
- 	if (Z_TYPE_PP(file) == IS_STRING) {
- 		convert_to_string_ex(file);
- 
-+		if (strlen(Z_STRVAL_PP(file)) != Z_STRLEN_PP(file)) {
-+			RETURN_FALSE;
-+		}
- 		if (Z_STRLEN_PP(file) == 0) {
- 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "filename cannot be empty");
- 			RETURN_FALSE;
---- a/ext/pspell/pspell.c
-+++ b/ext/pspell/pspell.c
-@@ -402,6 +402,10 @@ static PHP_FUNCTION(pspell_new_personal)
- 	}
- #endif
- 
-+	if (strlen(personal) != personal_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	if (PG(safe_mode) && (!php_checkuid(personal, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
- 		delete_pspell_config(config);
- 		RETURN_FALSE;
-@@ -834,6 +838,10 @@ static void pspell_config_path(INTERNAL_
- 		return;
- 	}
- 
-+	if (strlen(value) != value_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	PSPELL_FETCH_CONFIG;
- 
- 	if (PG(safe_mode) && (!php_checkuid(value, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
-@@ -891,6 +899,10 @@ static PHP_FUNCTION(pspell_config_repl)
- 
- 	pspell_config_replace(config, "save-repl", "true");
- 
-+	if (strlen(repl) != repl_len) {
-+		RETURN_FALSE;
-+	}
-+
- 	if (PG(safe_mode) && (!php_checkuid(repl, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
+ 	if (strlen(filename) != filename_len) {
  		RETURN_FALSE;
  	}
 --- a/ext/enchant/enchant.c
 +++ b/ext/enchant/enchant.c
-@@ -591,6 +591,10 @@ PHP_FUNCTION(enchant_broker_request_pwl_
+@@ -599,6 +599,10 @@ PHP_FUNCTION(enchant_broker_request_pwl_
  		RETURN_FALSE;
  	}
  
@@ -785,42 +149,9 @@
  #if PHP_API_VERSION < 20100412
  	if ((PG(safe_mode) && (!php_checkuid(pwl, NULL, CHECKUID_CHECK_FILE_AND_DIR))) || php_check_open_basedir(pwl TSRMLS_CC)) {
  #else
---- a/ext/imap/php_imap.c
-+++ b/ext/imap/php_imap.c
-@@ -1216,10 +1216,14 @@ static void php_imap_do_open(INTERNAL_FU
- 	}
- 
- 	/* local filename, need to perform open_basedir and safe_mode checks */
--	if (mailbox[0] != '{' &&
--			(php_check_open_basedir(mailbox TSRMLS_CC) ||
--			(PG(safe_mode) && !php_checkuid(mailbox, NULL, CHECKUID_CHECK_FILE_AND_DIR)))) {
--		RETURN_FALSE;
-+	if (mailbox[0] != '{') {
-+		if (strlen(mailbox) != mailbox_len) {
-+			RETURN_FALSE;
-+		}
-+		if (php_check_open_basedir(mailbox TSRMLS_CC) ||
-+			(PG(safe_mode) && !php_checkuid(mailbox, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
-+			RETURN_FALSE;
-+		}
- 	}
- 
- 	IMAPG(imap_user)     = estrndup(user, user_len);
---- a/ext/fileinfo/fileinfo.c
-+++ b/ext/fileinfo/fileinfo.c
-@@ -294,6 +294,9 @@ PHP_FUNCTION(finfo_open)
- 	if (file_len == 0) {
- 		file = NULL;
- 	} else if (file && *file) { /* user specified file, perform open_basedir checks */
-+		if (strlen(file) != file_len) {
-+			RETURN_FALSE;
-+		}
- 		if (!VCWD_REALPATH(file, resolved_path)) {
- 			RETURN_FALSE;
- 		}
 --- a/ext/oci8/oci8_interface.c
 +++ b/ext/oci8/oci8_interface.c
-@@ -271,6 +271,10 @@ PHP_FUNCTION(oci_lob_load)
+@@ -276,6 +276,10 @@ PHP_FUNCTION(oci_lob_load)
  			return;
  		}	
  	}
@@ -831,8 +162,8 @@
  	
  	if (zend_hash_find(Z_OBJPROP_P(z_descriptor), "descriptor", sizeof("descriptor"), (void **)&tmp) == FAILURE) {
  		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to find descriptor property");
-@@ -662,7 +666,7 @@ PHP_FUNCTION(oci_lob_erase)
- 			RETURN_FALSE;
+@@ -700,7 +704,7 @@ PHP_FUNCTION(oci_lob_flush)
+ 			return;
  		}
  	}
 -	
@@ -840,20 +171,20 @@
  	if (zend_hash_find(Z_OBJPROP_P(z_descriptor), "descriptor", sizeof("descriptor"), (void **)&tmp) == FAILURE) {
  		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to find descriptor property");
  		RETURN_FALSE;
-@@ -918,6 +922,10 @@ PHP_FUNCTION(oci_lob_export)
- 		/* nothing to write, fail silently */
- 		RETURN_FALSE;
+@@ -923,6 +927,10 @@ PHP_FUNCTION(oci_lob_export)
+ 	if (length == -1) {
+ 		length = lob_length - descriptor->lob_current_position;
  	}
 +
 +	if (strlen(filename) != filename_len) {
 +		RETURN_FALSE;
 +	}
  	
- 	if (PG(safe_mode) && (!php_checkuid(filename, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
- 		RETURN_FALSE;
+ 	if (length == 0) {
+ 		/* nothing to write, fail silently */
 --- a/ext/zip/php_zip.c
 +++ b/ext/zip/php_zip.c
-@@ -1148,6 +1148,10 @@ static PHP_NAMED_FUNCTION(zif_zip_open)
+@@ -1155,6 +1155,10 @@ static PHP_NAMED_FUNCTION(zif_zip_open)
  		RETURN_FALSE;
  	}
  
@@ -864,7 +195,7 @@
  	if (ZIP_OPENBASEDIR_CHECKPATH(filename)) {
  		RETURN_FALSE;
  	}
-@@ -1437,6 +1441,10 @@ static ZIPARCHIVE_METHOD(open)
+@@ -1448,6 +1452,10 @@ static ZIPARCHIVE_METHOD(open)
  		RETURN_FALSE;
  	}
  
@@ -875,196 +206,19 @@
  	if (ZIP_OPENBASEDIR_CHECKPATH(filename)) {
  		RETURN_FALSE;
  	}
-@@ -2363,6 +2371,10 @@ static ZIPARCHIVE_METHOD(extractTo)
- 		RETURN_FALSE;
- 	}
- 
-+	if (strlen(pathto) != pathto_len) {
-+		RETURN_FALSE;
-+	}
-+
-     if (php_stream_stat_path(pathto, &ssb) < 0) {
-         ret = php_stream_mkdir(pathto, 0777,  PHP_STREAM_MKDIR_RECURSIVE, NULL);
-         if (!ret) {
-@@ -2449,6 +2461,9 @@ static void php_zip_get_from(INTERNAL_FU
- 		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|ll", &filename, &filename_len, &len, &flags) == FAILURE) {
+@@ -2465,6 +2473,9 @@ static void php_zip_get_from(INTERNAL_FU
  			return;
  		}
-+		if (strlen(filename) != filename_len) {
+ 		if (strlen(filename) != filename_len) {
 +			return;
 +		}
- 		PHP_ZIP_STAT_PATH(intern, filename, filename_len, flags, sb);
- 	} else {
- 		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l|ll", &index, &len, &flags) == FAILURE) {
---- a/ext/odbc/php_odbc.c
-+++ b/ext/odbc/php_odbc.c
-@@ -1293,8 +1293,11 @@ PHP_FUNCTION(odbc_execute)
- 			if (Z_STRLEN_PP(tmp) > 2 &&
- 				Z_STRVAL_PP(tmp)[0] == '\'' &&
- 				Z_STRVAL_PP(tmp)[Z_STRLEN_PP(tmp) - 1] == '\'') {
-+				if (strlen(tmp) != Z_STRLEN_PP(tmp)) {
-+					RETURN_FALSE;
-+				}
-+
- 				filename = estrndup(&Z_STRVAL_PP(tmp)[1], Z_STRLEN_PP(tmp) - 2);
--				filename[strlen(filename)] = '\0';
- 
- 				/* Check for safe mode. */
- 				if (PG(safe_mode) && (!php_checkuid(filename, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
---- a/ext/tidy/tidy.c
-+++ b/ext/tidy/tidy.c
-@@ -567,6 +567,9 @@ static void php_tidy_quick_repair(INTERN
- 	}
- 	
- 	if (is_file) {
-+		if (strlen(arg1) != arg1_len) {
-+			RETURN_FALSE;
-+		}
- 		if (!(data = php_tidy_file_to_mem(arg1, use_include_path, &data_len TSRMLS_CC))) {
- 			RETURN_FALSE;
- 		}
-@@ -1221,6 +1224,9 @@ static PHP_FUNCTION(tidy_parse_file)
- 		RETURN_FALSE;
- 	}
- 
-+	if (strlen(inputfile) != input_len) {
-+		RETURN_FALSE;
-+	}
- 	tidy_instanciate(tidy_ce_doc, return_value TSRMLS_CC);
- 	obj = (PHPTidyObj *) zend_object_store_get_object(return_value TSRMLS_CC);
- 
-@@ -1534,10 +1540,13 @@ static TIDY_DOC_METHOD(__construct)
- 							  &options, &enc, &enc_len, &use_include_path) == FAILURE) {
- 		RETURN_FALSE;
- 	}
--	
-+
- 	obj = (PHPTidyObj *)zend_object_store_get_object(object TSRMLS_CC);
- 	
- 	if (inputfile) {
-+		if (strlen(inputfile) != input_len) {
-+			RETURN_FALSE;
-+		}
- 		if (!(contents = php_tidy_file_to_mem(inputfile, use_include_path, &contents_len TSRMLS_CC))) {
- 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Cannot Load '%s' into memory %s", inputfile, (use_include_path) ? "(Using include path)" : "");
++		if (strlen(filename) != filename_len) {
  			return;
-@@ -1568,7 +1577,10 @@ static TIDY_DOC_METHOD(parseFile)
- 							  &options, &enc, &enc_len, &use_include_path) == FAILURE) {
- 		RETURN_FALSE;
- 	}
--	
-+
-+	if (strlen(inputfile) != input_len) {
-+		RETURN_FALSE;
-+	}
- 	if (!(contents = php_tidy_file_to_mem(inputfile, use_include_path, &contents_len TSRMLS_CC))) {
- 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Cannot Load '%s' into memory %s", inputfile, (use_include_path) ? "(Using include path)" : "");
- 		RETURN_FALSE;
---- a/Zend/zend_vm_execute.h
-+++ b/Zend/zend_vm_execute.h
-@@ -1880,6 +1880,16 @@ static int ZEND_FASTCALL  ZEND_INCLUDE_O
- 
- 	return_value_used = RETURN_VALUE_USED(opline);
- 
-+	if (Z_LVAL(opline->op2.u.constant) != ZEND_EVAL && strlen(Z_STRVAL_P(inc_filename)) != Z_STRLEN_P(inc_filename)) {
-+		if (Z_LVAL(opline->op2.u.constant)==ZEND_INCLUDE_ONCE ||
-+		    Z_LVAL(opline->op2.u.constant)==ZEND_INCLUDE) {
-+			zend_message_dispatcher(ZMSG_FAILED_INCLUDE_FOPEN, Z_STRVAL_P(inc_filename) TSRMLS_CC);
-+		} else {
-+			zend_message_dispatcher(ZMSG_FAILED_REQUIRE_FOPEN, Z_STRVAL_P(inc_filename) TSRMLS_CC);
-+		}
-+		goto done;
-+	}
-+
- 	switch (Z_LVAL(opline->op2.u.constant)) {
- 		case ZEND_INCLUDE_ONCE:
- 		case ZEND_REQUIRE_ONCE: {
-@@ -1933,6 +1943,7 @@ static int ZEND_FASTCALL  ZEND_INCLUDE_O
- 			break;
- 		EMPTY_SWITCH_DEFAULT_CASE()
- 	}
-+done:
- 	if (inc_filename==&tmp_inc_filename) {
- 		zval_dtor(&tmp_inc_filename);
- 	}
-@@ -5154,6 +5165,16 @@ static int ZEND_FASTCALL  ZEND_INCLUDE_O
- 
- 	return_value_used = RETURN_VALUE_USED(opline);
- 
-+	if (Z_LVAL(opline->op2.u.constant) != ZEND_EVAL && strlen(Z_STRVAL_P(inc_filename)) != Z_STRLEN_P(inc_filename)) {
-+		if (Z_LVAL(opline->op2.u.constant)==ZEND_INCLUDE_ONCE ||
-+		    Z_LVAL(opline->op2.u.constant)==ZEND_INCLUDE) {
-+			zend_message_dispatcher(ZMSG_FAILED_INCLUDE_FOPEN, Z_STRVAL_P(inc_filename) TSRMLS_CC);
-+		} else {
-+			zend_message_dispatcher(ZMSG_FAILED_REQUIRE_FOPEN, Z_STRVAL_P(inc_filename) TSRMLS_CC);
-+		}
-+		goto done;
-+	}
-+
- 	switch (Z_LVAL(opline->op2.u.constant)) {
- 		case ZEND_INCLUDE_ONCE:
- 		case ZEND_REQUIRE_ONCE: {
-@@ -5207,6 +5228,7 @@ static int ZEND_FASTCALL  ZEND_INCLUDE_O
- 			break;
- 		EMPTY_SWITCH_DEFAULT_CASE()
- 	}
-+done:
- 	if (inc_filename==&tmp_inc_filename) {
- 		zval_dtor(&tmp_inc_filename);
- 	}
-@@ -8524,6 +8546,16 @@ static int ZEND_FASTCALL  ZEND_INCLUDE_O
- 
- 	return_value_used = RETURN_VALUE_USED(opline);
- 
-+	if (Z_LVAL(opline->op2.u.constant) != ZEND_EVAL && strlen(Z_STRVAL_P(inc_filename)) != Z_STRLEN_P(inc_filename)) {
-+		if (Z_LVAL(opline->op2.u.constant)==ZEND_INCLUDE_ONCE ||
-+		    Z_LVAL(opline->op2.u.constant)==ZEND_INCLUDE) {
-+			zend_message_dispatcher(ZMSG_FAILED_INCLUDE_FOPEN, Z_STRVAL_P(inc_filename) TSRMLS_CC);
-+		} else {
-+			zend_message_dispatcher(ZMSG_FAILED_REQUIRE_FOPEN, Z_STRVAL_P(inc_filename) TSRMLS_CC);
-+		}
-+		goto done;
-+	}
-+
- 	switch (Z_LVAL(opline->op2.u.constant)) {
- 		case ZEND_INCLUDE_ONCE:
- 		case ZEND_REQUIRE_ONCE: {
-@@ -8577,6 +8609,7 @@ static int ZEND_FASTCALL  ZEND_INCLUDE_O
- 			break;
- 		EMPTY_SWITCH_DEFAULT_CASE()
- 	}
-+done:
- 	if (inc_filename==&tmp_inc_filename) {
- 		zval_dtor(&tmp_inc_filename);
- 	}
-@@ -22387,6 +22420,16 @@ static int ZEND_FASTCALL  ZEND_INCLUDE_O
- 
- 	return_value_used = RETURN_VALUE_USED(opline);
- 
-+	if (Z_LVAL(opline->op2.u.constant) != ZEND_EVAL && strlen(Z_STRVAL_P(inc_filename)) != Z_STRLEN_P(inc_filename)) {
-+		if (Z_LVAL(opline->op2.u.constant)==ZEND_INCLUDE_ONCE ||
-+		    Z_LVAL(opline->op2.u.constant)==ZEND_INCLUDE) {
-+			zend_message_dispatcher(ZMSG_FAILED_INCLUDE_FOPEN, Z_STRVAL_P(inc_filename) TSRMLS_CC);
-+		} else {
-+			zend_message_dispatcher(ZMSG_FAILED_REQUIRE_FOPEN, Z_STRVAL_P(inc_filename) TSRMLS_CC);
-+		}
-+		goto done;
-+	}
-+
- 	switch (Z_LVAL(opline->op2.u.constant)) {
- 		case ZEND_INCLUDE_ONCE:
- 		case ZEND_REQUIRE_ONCE: {
-@@ -22440,6 +22483,7 @@ static int ZEND_FASTCALL  ZEND_INCLUDE_O
- 			break;
- 		EMPTY_SWITCH_DEFAULT_CASE()
- 	}
-+done:
- 	if (inc_filename==&tmp_inc_filename) {
- 		zval_dtor(&tmp_inc_filename);
- 	}
+ 		}
+ 		PHP_ZIP_STAT_PATH(intern, filename, filename_len, flags, sb);
 --- a/main/fopen_wrappers.c
 +++ b/main/fopen_wrappers.c
-@@ -519,6 +519,10 @@ PHPAPI char *php_resolve_path(const char
+@@ -540,6 +540,10 @@ PHPAPI char *php_resolve_path(const char
  		return NULL;
  	}
  

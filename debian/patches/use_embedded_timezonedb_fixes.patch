@@ -7,7 +7,7 @@ Description: Silence warnings about using the default system timezone info
 Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=571762
 --- a/ext/date/php_date.c
 +++ b/ext/date/php_date.c
-@@ -879,7 +879,7 @@ static char* guess_timezone(const timeli
+@@ -878,7 +878,7 @@ static char* guess_timezone(const timeli
  			tzid = "UTC";
  		}
  		

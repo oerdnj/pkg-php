@@ -8,11 +8,9 @@ Origin: vendor
 Forwarded: yes
 Last-Update: 2010-02-18
 
-Index: php/build/shtool
-===================================================================
---- php.orig/build/shtool
-+++ php/build/shtool
-@@ -991,7 +991,11 @@ mkdir )
+--- a/build/shtool
++++ b/build/shtool
+@@ -1003,7 +1003,11 @@ mkdir )
                      if [ ".$opt_t" = .yes ]; then
                          echo "mkdir $pathcomp" 1>&2
                      fi

@@ -189,24 +189,18 @@
  
 -#if PHP_STD_DES_CRYPT
 -#define PHP_MAX_SALT_LEN 2
-+#if defined(HAVE_CRYPT_R) && (defined(_REENTRANT) || defined(_THREAD_SAFE))
-+# define PHP_USE_SYSTEM_CRYPT_R
- #endif
- 
+-#endif
+-
 -#if PHP_EXT_DES_CRYPT
 -#undef PHP_MAX_SALT_LEN
 -#define PHP_MAX_SALT_LEN 9
 -#endif
-+#define PHP_MAX_STD_DES_SALT_LEN 2
-+#define PHP_MAX_STD_DES_HASH_LEN 11
- 
+-
 -#if PHP_MD5_CRYPT
 -#undef PHP_MAX_SALT_LEN
 -#define PHP_MAX_SALT_LEN 12
 -#endif
-+#define PHP_MAX_EXT_DES_SALT_LEN 9
-+#define PHP_MAX_EXT_DES_HASH_LEN 11
- 
+-
 -#if PHP_BLOWFISH_CRYPT
 -#undef PHP_MAX_SALT_LEN
 -#define PHP_MAX_SALT_LEN 60
@@ -215,26 +209,36 @@
 -#if PHP_SHA512_CRYPT
 -#undef PHP_MAX_SALT_LEN
 -#define PHP_MAX_SALT_LEN 123
--#endif
-+#define PHP_MAX_MD5_SALT_LEN 12
-+#define PHP_MAX_MD5_HASH_LEN 22
++#if defined(HAVE_CRYPT_R) && (defined(_REENTRANT) || defined(_THREAD_SAFE))
++# define PHP_USE_SYSTEM_CRYPT_R
+ #endif
  
-+#define PHP_MAX_BLOWFISH_SALT_LEN 29
-+#define PHP_MAX_BLOWFISH_HASH_LEN 31
-+ 
-+#define PHP_MAX_SHA256_SALT_LEN 37
-+#define PHP_MAX_SHA256_HASH_LEN 43
++#define PHP_MAX_STD_DES_SALT_LEN 2
++#define PHP_MAX_STD_DES_HASH_LEN 11
  
 -/* If the configure-time checks fail, we provide DES.
 - * XXX: This is a hack. Fix the real problem! */
-+#define PHP_MAX_SHA512_SALT_LEN 37
-+#define PHP_MAX_SHA512_HASH_LEN 86
- 
+-
 -#ifndef PHP_MAX_SALT_LEN
 -#define PHP_MAX_SALT_LEN 2
 -#undef PHP_STD_DES_CRYPT
 -#define PHP_STD_DES_CRYPT 1
 -#endif
++#define PHP_MAX_EXT_DES_SALT_LEN 9
++#define PHP_MAX_EXT_DES_HASH_LEN 11
++
++#define PHP_MAX_MD5_SALT_LEN 12
++#define PHP_MAX_MD5_HASH_LEN 22
++
++#define PHP_MAX_BLOWFISH_SALT_LEN 29
++#define PHP_MAX_BLOWFISH_HASH_LEN 31
++ 
++#define PHP_MAX_SHA256_SALT_LEN 37
++#define PHP_MAX_SHA256_HASH_LEN 43
++
++#define PHP_MAX_SHA512_SALT_LEN 37
++#define PHP_MAX_SHA512_HASH_LEN 86
++
 +/* 
 + * Maximum salt length is from Blowfish
 + * Maximum hash length is from SHA512

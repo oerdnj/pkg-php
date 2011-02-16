@@ -81,7 +81,7 @@ Last-Update: 2010-01-18
  ;
  ; Windows: "\path1;\path2"
  ;include_path = ".;c:\php\includes"
-@@ -938,53 +938,6 @@ default_socket_timeout = 60
+@@ -938,49 +938,6 @@ default_socket_timeout = 60
  ; If you only provide the name of the extension, PHP will look for it in its
  ; default extension directory.
  ;
@@ -93,8 +93,6 @@ Last-Update: 2010-01-18
 -;
 -;extension=php_bz2.dll
 -;extension=php_curl.dll
--;extension=php_dba.dll
--;extension=php_exif.dll
 -;extension=php_fileinfo.dll
 -;extension=php_gd2.dll
 -;extension=php_gettext.dll
@@ -104,8 +102,7 @@ Last-Update: 2010-01-18
 -;extension=php_interbase.dll
 -;extension=php_ldap.dll
 -;extension=php_mbstring.dll
--;extension=php_ming.dll
--;extension=php_mssql.dll
+-;extension=php_exif.dll      ; Must be after mbstring as it depends on it
 -;extension=php_mysql.dll
 -;extension=php_mysqli.dll
 -;extension=php_oci8.dll      ; Use with Oracle 10gR2 Instant Client
@@ -119,7 +116,6 @@ Last-Update: 2010-01-18
 -;extension=php_pdo_pgsql.dll
 -;extension=php_pdo_sqlite.dll
 -;extension=php_pgsql.dll
--;extension=php_phar.dll
 -;extension=php_pspell.dll
 -;extension=php_shmop.dll
 -;extension=php_snmp.dll
@@ -161,7 +157,7 @@ Last-Update: 2010-01-18
    *** Pike version:             $PIKE_VERSION"
 --- a/sapi/cli/php.1.in
 +++ b/sapi/cli/php.1.in
-@@ -309,13 +309,14 @@ Shows configuration for extension
+@@ -336,13 +336,14 @@ Shows configuration for extension
  Show configuration file names
  .SH FILES
  .TP 15
