@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: dir.c 300764 2010-06-26 16:03:39Z felipe $ */
+/* $Id: dir.c 305507 2010-11-18 15:22:22Z pajoye $ */
 
 /* {{{ includes/startup/misc */
 
@@ -325,6 +325,10 @@ PHP_FUNCTION(chdir)
 		RETURN_FALSE;
 	}
 
+	if (strlen(str) != str_len) {
+		RETURN_FALSE;
+	}
+
 	if ((PG(safe_mode) && !php_checkuid(str, NULL, CHECKUID_CHECK_FILE_AND_DIR)) || php_check_open_basedir(str TSRMLS_CC)) {
 		RETURN_FALSE;
 	}
@@ -434,6 +438,10 @@ PHP_FUNCTION(glob)
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l", &pattern, &pattern_len, &flags) == FAILURE) {
 		return;
+	}
+
+	if (strlen(pattern) != pattern_len) {
+		RETURN_FALSE;
 	}
 
 	if (pattern_len >= MAXPATHLEN) {
@@ -555,6 +563,10 @@ PHP_FUNCTION(scandir)
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|lr", &dirn, &dirn_len, &flags, &zcontext) == FAILURE) {
 		return;
+	}
+
+	if (strlen(dirn) != dirn_len) {
+		RETURN_FALSE;
 	}
 
 	if (dirn_len < 1) {

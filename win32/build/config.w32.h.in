@@ -1,6 +1,6 @@
 /*
 	Build Configuration Template for Win32.
-	$Id: config.w32.h.in 291951 2009-12-10 14:08:19Z pajoye $
+	$Id: config.w32.h.in 305778 2010-11-26 18:25:13Z pajoye $
 */
 
 /* Define the minimum supported version */
@@ -58,6 +58,7 @@
 /* its in win32/time.c */
 #define HAVE_USLEEP 1
 #define HAVE_NANOSLEEP 1
+#define PHP_SLEEP_NON_VOID 1
 
 #define HAVE_GETHOSTNAME 1
 #define HAVE_GETCWD 1

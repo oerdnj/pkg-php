@@ -16,17 +16,21 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_signal.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: php_signal.c 305020 2010-11-01 22:43:59Z lbarnaud $ */
 
 #include "php_signal.h"
 
 /* php_signal using sigaction is derrived from Advanced Programing
  * in the Unix Environment by W. Richard Stevens p 298. */
-Sigfunc *php_signal(int signo, Sigfunc *func, int restart)
+Sigfunc *php_signal4(int signo, Sigfunc *func, int restart, int mask_all)
 {
 	struct sigaction act,oact;
 	act.sa_handler = func;
-	sigemptyset(&act.sa_mask);
+	if (mask_all) {
+		sigfillset(&act.sa_mask);
+	} else {
+		sigemptyset(&act.sa_mask);
+	}
 	act.sa_flags = 0;
 	if (signo == SIGALRM || (! restart)) {
 #ifdef SA_INTERRUPT
@@ -41,6 +45,11 @@ Sigfunc *php_signal(int signo, Sigfunc *func, int restart)
 		return SIG_ERR;
  
 	return oact.sa_handler;
+}
+
+Sigfunc *php_signal(int signo, Sigfunc *func, int restart)
+{
+	return php_signal4(signo, func, restart, 0);
 }
 
 /*

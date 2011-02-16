@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 286640 2009-08-02 01:07:38Z jani $
+dnl $Id: config.m4 302549 2010-08-20 12:25:17Z andrey $
 dnl config.m4 for extension mysqli
 
 PHP_ARG_WITH(mysqli, for MySQLi support,
@@ -80,6 +80,7 @@ if test "$PHP_MYSQLI" != "no"; then
                   mysqli_exception.c $mysqli_extra_sources"
   PHP_NEW_EXTENSION(mysqli, $mysqli_sources, $ext_shared)
   PHP_SUBST(MYSQLI_SHARED_LIBADD)
+  PHP_INSTALL_HEADERS([ext/mysqli/php_mysqli_structs.h])
 
   if test "$PHP_MYSQLI" = "mysqlnd"; then
     PHP_ADD_EXTENSION_DEP(mysqli, mysqlnd)

@@ -18,7 +18,7 @@
    |          Sara Golemon <pollita@php.net>                              |
    +----------------------------------------------------------------------+
  */
-/* $Id: ftp_fopen_wrapper.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: ftp_fopen_wrapper.c 305495 2010-11-18 12:10:17Z cataphract $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -116,7 +116,6 @@ static php_stream *php_ftp_fopen_connect(php_stream_wrapper *wrapper, char *path
 	php_stream *stream = NULL, *reuseid = NULL;
 	php_url *resource = NULL;
 	int result, use_ssl, use_ssl_on_data = 0, tmp_len;
-	char *scratch;
 	char tmp_line[512];
 	char *transport;
 	int transport_len;
@@ -250,8 +249,9 @@ static php_stream *php_ftp_fopen_connect(php_stream_wrapper *wrapper, char *path
 		} else {
 			/* if the user has configured who they are,
 			   send that as the password */
-			if (cfg_get_string("from", &scratch) == SUCCESS) {
-				php_stream_printf(stream TSRMLS_CC, "PASS %s\r\n", scratch);
+			char *from_address = php_ini_string("from", sizeof("from"), 0);
+			if (from_address[0] != '\0') {
+				php_stream_printf(stream TSRMLS_CC, "PASS %s\r\n", from_address);
 			} else {
 				php_stream_write_string(stream, "PASS anonymous\r\n");
 			}

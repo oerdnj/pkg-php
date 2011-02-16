@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysql_statement.c 299574 2010-05-21 11:09:28Z andrey $ */
+/* $Id: mysql_statement.c 304072 2010-10-05 09:58:15Z kalle $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -886,7 +886,7 @@ static int pdo_mysql_stmt_col_meta(pdo_stmt_t *stmt, long colno, zval *return_va
 #endif
 	
 	add_assoc_zval(return_value, "flags", flags);
-	add_assoc_string(return_value, "table",(F->table?F->table:""), 1);
+	add_assoc_string(return_value, "table",(char *) (F->table?F->table:""), 1);
 	PDO_DBG_RETURN(SUCCESS);
 } /* }}} */
 

@@ -14,10 +14,10 @@
 #  | Author: Wez Furlong <wez@thebrainroom.com>                           |
 #  +----------------------------------------------------------------------+
 #
-# $Id: Makefile 289763 2009-10-19 19:02:12Z pajoye $
+# $Id: Makefile 302247 2010-08-15 03:38:08Z pajoye $
 # This is the makefile template for the win32 build
 
-CC="$(CL)"
+CC="$(PHP_CL)"
 LD="$(LINK)"
 MC="$(MC)"
 MT="$(MT)"
@@ -146,7 +146,7 @@ dist: all build-dist
 snap: build-snap build-dist
 
 $(BUILD_DIR)\deplister.exe:	win32\build\deplister.c
-	$(CL) /Fo$(BUILD_DIR)\ /Fd$(BUILD_DIR)\ /Fp$(BUILD_DIR)\ /FR$(BUILD_DIR) /Fe$(BUILD_DIR)\deplister.exe win32\build\deplister.c imagehlp.lib
+	$(PHP_CL) /Fo$(BUILD_DIR)\ /Fd$(BUILD_DIR)\ /Fp$(BUILD_DIR)\ /FR$(BUILD_DIR) /Fe$(BUILD_DIR)\deplister.exe win32\build\deplister.c imagehlp.lib
 
 msi-installer: dist
 	$(BUILD_DIR)\php.exe ..\php-installer\build-installer.php "$(BUILD_DIR)" "$(PHPDLL)" "$(SAPI_TARGETS)" "$(EXT_TARGETS)" "$(PECL_TARGETS)"

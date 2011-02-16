@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: pspell.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: pspell.c 305507 2010-11-18 15:22:22Z pajoye $ */
 
 #define IS_EXT_MODULE
 
@@ -401,6 +401,10 @@ static PHP_FUNCTION(pspell_new_personal)
 		}
 	}
 #endif
+
+	if (strlen(personal) != personal_len) {
+		RETURN_FALSE;
+	}
 
 	if (PG(safe_mode) && (!php_checkuid(personal, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
 		delete_pspell_config(config);
@@ -834,6 +838,10 @@ static void pspell_config_path(INTERNAL_FUNCTION_PARAMETERS, char *option)
 		return;
 	}
 
+	if (strlen(value) != value_len) {
+		RETURN_FALSE;
+	}
+
 	PSPELL_FETCH_CONFIG;
 
 	if (PG(safe_mode) && (!php_checkuid(value, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
@@ -890,6 +898,10 @@ static PHP_FUNCTION(pspell_config_repl)
 	PSPELL_FETCH_CONFIG;
 
 	pspell_config_replace(config, "save-repl", "true");
+
+	if (strlen(repl) != repl_len) {
+		RETURN_FALSE;
+	}
 
 	if (PG(safe_mode) && (!php_checkuid(repl, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
 		RETURN_FALSE;

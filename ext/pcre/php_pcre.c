@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_pcre.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: php_pcre.c 305133 2010-11-06 18:35:38Z felipe $ */
 
 #include "php.h"
 #include "php_ini.h"
@@ -350,7 +350,14 @@ PHPAPI pcre_cache_entry* pcre_get_compiled_regex_cache(char *regex, int regex_le
 			case 'S':	do_study  = 1;					break;
 			case 'U':	coptions |= PCRE_UNGREEDY;		break;
 			case 'X':	coptions |= PCRE_EXTRA;			break;
-			case 'u':	coptions |= PCRE_UTF8;			break;
+			case 'u':	coptions |= PCRE_UTF8;
+	/* In  PCRE,  by  default, \d, \D, \s, \S, \w, and \W recognize only ASCII
+       characters, even in UTF-8 mode. However, this can be changed by setting
+       the PCRE_UCP option. */
+#ifdef PCRE_UCP
+						coptions |= PCRE_UCP;
+#endif			
+				break;
 
 			/* Custom preg options */
 			case 'e':	poptions |= PREG_REPLACE_EVAL;	break;
@@ -747,7 +754,12 @@ PHPAPI void php_pcre_match_impl(pcre_cache_entry *pce, char *subject, int subjec
 	efree(offsets);
 	efree(subpat_names);
 
-	RETVAL_LONG(matched);
+	/* Did we encounter an error? */
+	if (PCRE_G(error_code) == PHP_PCRE_NO_ERROR) {
+		RETVAL_LONG(matched);
+	} else {
+		RETVAL_FALSE;
+	}
 }
 /* }}} */
 

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_date.h 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: php_date.h 305492 2010-11-18 11:24:59Z derick $ */
 
 #ifndef PHP_DATE_H
 #define PHP_DATE_H
@@ -139,6 +139,7 @@ struct _php_interval_obj {
 struct _php_period_obj {
 	zend_object       std;
 	timelib_time     *start;
+	timelib_time     *current;
 	timelib_time     *end;
 	timelib_rel_time *interval;
 	int               recurrences;
@@ -176,5 +177,10 @@ PHPAPI timelib_tzinfo *get_timezone_info(TSRMLS_D);
 /* Grabbing CE's so that other exts can use the date objects too */
 PHPAPI zend_class_entry *php_date_get_date_ce(void);
 PHPAPI zend_class_entry *php_date_get_timezone_ce(void);
+
+/* Functions for creating DateTime objects, and initializing them from a string */
+PHPAPI zval *php_date_instantiate(zend_class_entry *pce, zval *object TSRMLS_DC);
+PHPAPI int php_date_initialize(php_date_obj *dateobj, /*const*/ char *time_str, int time_str_len, char *format, zval *timezone_object, int ctor TSRMLS_DC);
+
 
 #endif /* PHP_DATE_H */

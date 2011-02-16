@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_exceptions.c 293155 2010-01-05 20:46:53Z sebastian $ */
+/* $Id: zend_exceptions.c 302311 2010-08-16 08:11:08Z dmitry $ */
 
 #include "zend.h"
 #include "zend_API.h"
@@ -137,7 +137,7 @@ static zend_object_value zend_default_exception_new_ex(zend_class_entry *class_t
 
 	ALLOC_HASHTABLE(object->properties);
 	zend_hash_init(object->properties, 0, NULL, ZVAL_PTR_DTOR, 0);
-	zend_hash_copy(object->properties, &class_type->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
+	zend_hash_copy(object->properties, &class_type->default_properties, zval_copy_property_ctor(class_type), (void *) &tmp, sizeof(zval *));
 
 	ALLOC_ZVAL(trace);
 	Z_UNSET_ISREF_P(trace);
@@ -572,6 +572,7 @@ ZEND_METHOD(exception, __toString)
 		zend_call_function(&fci, NULL TSRMLS_CC);
 
 		if (Z_TYPE_P(trace) != IS_STRING) {
+			zval_ptr_dtor(&trace);
 			trace = NULL;
 		}
 
@@ -592,16 +593,16 @@ ZEND_METHOD(exception, __toString)
 		zval_dtor(&line);
 
 		exception = zend_read_property(default_exception_ce, exception, "previous", sizeof("previous")-1, 0 TSRMLS_CC);
+
+		if (trace) {
+			zval_ptr_dtor(&trace);
+		}
 	}
 	zval_dtor(&fname);
 
 	/* We store the result in the private property string so we can access
 	 * the result in uncaught exception handlers without memleaks. */
 	zend_update_property_string(default_exception_ce, getThis(), "string", sizeof("string")-1, str TSRMLS_CC);
-
-	if (trace) {
-		zval_ptr_dtor(&trace);
-	}
 
 	RETURN_STRINGL(str, len, 0);
 }

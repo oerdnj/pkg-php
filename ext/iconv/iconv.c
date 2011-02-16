@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: iconv.c 298963 2010-05-04 11:56:59Z aharvey $ */
+/* $Id: iconv.c 305887 2010-12-01 14:03:36Z iliaa $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1457,16 +1457,43 @@ static php_iconv_err_t _php_iconv_mime_decode(smart_str *pretval, const char *st
 
 					if (cd == (iconv_t)(-1)) {
 						if ((mode & PHP_ICONV_MIME_DECODE_CONTINUE_ON_ERROR)) {
+							/* Bad character set, but the user wants us to
+							 * press on. In this case, we'll just insert the
+							 * undecoded encoded word, since there isn't really
+							 * a more sensible behaviour available; the only
+							 * other options are to swallow the encoded word
+							 * entirely or decode it with an arbitrarily chosen
+							 * single byte encoding, both of which seem to have
+							 * a higher WTF factor than leaving it undecoded.
+							 *
+							 * Given this approach, we need to skip ahead to
+							 * the end of the encoded word. */
+							int qmarks = 2;
+							while (qmarks > 0 && str_left > 1) {
+								if (*(++p1) == '?') {
+									--qmarks;
+								}
+								--str_left;
+							}
+
+							/* Look ahead to check for the terminating = that
+							 * should be there as well; if it's there, we'll
+							 * also include that. If it's not, there isn't much
+							 * we can do at this point. */
+							if (*(p1 + 1) == '=') {
+								++p1;
+								--str_left;
+							}
+
 							err = _php_iconv_appendl(pretval, encoded_word, (size_t)((p1 + 1) - encoded_word), cd_pl); 
 							if (err != PHP_ICONV_ERR_SUCCESS) {
 								goto out;
 							}
-							encoded_word = NULL;
-							if ((mode & PHP_ICONV_MIME_DECODE_STRICT)) {
-								scan_stat = 12;
-							} else {
-								scan_stat = 0;
-							}
+
+							/* Let's go back and see if there are further
+							 * encoded words or bare content, and hope they
+							 * might actually have a valid character set. */
+							scan_stat = 12;
 							break;
 						} else {
 #if ICONV_SUPPORTS_ERRNO
@@ -1671,10 +1698,10 @@ static php_iconv_err_t _php_iconv_mime_decode(smart_str *pretval, const char *st
 							if ((mode & PHP_ICONV_MIME_DECODE_CONTINUE_ON_ERROR)) {
 								/* pass the entire chunk through the converter */
 								err = _php_iconv_appendl(pretval, encoded_word, (size_t)(p1 - encoded_word), cd_pl); 
-								if (err != PHP_ICONV_ERR_SUCCESS) {
-									goto out;
-								}
 								encoded_word = NULL;
+								if (err != PHP_ICONV_ERR_SUCCESS) {
+									break;
+								}
 							} else {
 								goto out;
 							}
@@ -2340,7 +2367,13 @@ PHP_FUNCTION(ob_iconv_handler)
 				ICONVG(output_encoding), ICONVG(internal_encoding));
 		_php_iconv_show_error(err, ICONVG(output_encoding), ICONVG(internal_encoding) TSRMLS_CC);
 		if (out_buffer != NULL) {
-			int len = spprintf(&content_type, 0, "Content-Type:%s; charset=%s", mimetype, ICONVG(output_encoding));
+			int len;
+			char *p = strstr(ICONVG(output_encoding), "//"); 
+			if (p) {
+				len = spprintf(&content_type, 0, "Content-Type:%s; charset=%.*s", mimetype, (int)(p - ICONVG(output_encoding)), ICONVG(output_encoding));
+			} else {
+				len = spprintf(&content_type, 0, "Content-Type:%s; charset=%s", mimetype, ICONVG(output_encoding));
+			}
 			if (content_type && sapi_add_header(content_type, len, 0) != FAILURE) {
 				SG(sapi_headers).send_default_content_type = 0;
 			}

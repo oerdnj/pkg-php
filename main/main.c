@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: main.c 296107 2010-03-12 10:28:59Z jani $ */
+/* $Id: main.c 305266 2010-11-11 01:43:53Z kalle $ */
 
 /* {{{ includes
  */
@@ -1944,6 +1944,11 @@ int php_module_startup(sapi_module_struct *sf, zend_module_entry *additional_mod
 	REGISTER_MAIN_LONG_CONSTANT("PHP_MAXPATHLEN", MAXPATHLEN, CONST_PERSISTENT | CONST_CS);
 	REGISTER_MAIN_LONG_CONSTANT("PHP_INT_MAX", LONG_MAX, CONST_PERSISTENT | CONST_CS);
 	REGISTER_MAIN_LONG_CONSTANT("PHP_INT_SIZE", sizeof(long), CONST_PERSISTENT | CONST_CS);
+#ifdef ZEND_MULTIBYTE
+	REGISTER_MAIN_LONG_CONSTANT("ZEND_MULTIBYTE", 1, CONST_PERSISTENT | CONST_CS);
+#else
+	REGISTER_MAIN_LONG_CONSTANT("ZEND_MULTIBYTE", 0, CONST_PERSISTENT | CONST_CS);
+#endif
 
 #ifdef PHP_WIN32
 	REGISTER_MAIN_LONG_CONSTANT("PHP_WINDOWS_VERSION_MAJOR",      EG(windows_version_info).dwMajorVersion, CONST_PERSISTENT | CONST_CS);
@@ -2076,14 +2081,14 @@ int php_module_startup(sapi_module_struct *sf, zend_module_entry *additional_mod
 
 		while (*p) {
 			if (cfg_get_long((char*)*p, &val) == SUCCESS && val) {
-				zend_error(E_WARNING, "Directive '%s' is deprecated in PHP 5.3 and greater", *p);
+				zend_error(E_DEPRECATED, "Directive '%s' is deprecated in PHP 5.3 and greater", *p);
 			}
 			++p;
 		}
 
 		/* This is not too nice, but since its the only one theres no need for extra stuff here */
 		if (cfg_get_long("zend.ze1_compatibility_mode", &val) == SUCCESS && val) {
-			zend_error(E_ERROR, "zend.ze1_compatibility_mode is no longer supported in PHP 5.3 and greater");
+			zend_error(E_CORE_ERROR, "zend.ze1_compatibility_mode is no longer supported in PHP 5.3 and greater");
 		}
 	}
 	

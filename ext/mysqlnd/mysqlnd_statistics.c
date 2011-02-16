@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_statistics.c 298217 2010-04-20 13:50:34Z felipe $ */
+/* $Id: mysqlnd_statistics.c 305109 2010-11-05 20:07:34Z andrey $ */
 #include "php.h"
 #include "mysqlnd.h"
 #include "mysqlnd_priv.h"
@@ -190,7 +190,9 @@ const MYSQLND_STRING mysqlnd_stats_values_names[STAT_LAST] =
 	{ STR_W_LEN("com_stmt_reset") },
 	{ STR_W_LEN("com_stmt_set_option") },
 	{ STR_W_LEN("com_stmt_fetch") },
-	{ STR_W_LEN("com_deamon") }
+	{ STR_W_LEN("com_deamon") },
+	{ STR_W_LEN("bytes_received_real_data_normal") },
+	{ STR_W_LEN("bytes_received_real_data_ps") }
 };
 /* }}} */
 
@@ -203,14 +205,14 @@ mysqlnd_fill_stats_hash(const MYSQLND_STATS * const stats, const MYSQLND_STRING 
 
 	mysqlnd_array_init(return_value, stats->count);
 	for (i = 0; i < stats->count; i++) {
-#if PHP_MAJOR_VERSION >= 6
+#if MYSQLND_UNICODE
 		UChar *ustr, *tstr;
 		int ulen, tlen;
 #endif
 		char tmp[25];
-		
+
 		sprintf((char *)&tmp, MYSQLND_LLU_SPEC, stats->values[i]);
-#if PHP_MAJOR_VERSION >= 6
+#if MYSQLND_UNICODE
 		zend_string_to_unicode(UG(utf8_conv), &ustr, &ulen, names[i].s, names[i].l + 1 TSRMLS_CC);
 		zend_string_to_unicode(UG(utf8_conv), &tstr, &tlen, tmp, strlen(tmp) + 1 TSRMLS_CC);
 		add_u_assoc_unicode_ex(return_value, IS_UNICODE, ZSTR(ustr), ulen, tstr, 1);
@@ -274,14 +276,14 @@ mysqlnd_stats_end(MYSQLND_STATS * stats)
 
 /* {{{ mysqlnd_stats_set_trigger */
 PHPAPI mysqlnd_stat_trigger
-mysqlnd_stats_set_trigger(MYSQLND_STATS * const stats, enum_mysqlnd_collected_stats stat, mysqlnd_stat_trigger trigger TSRMLS_DC)
+mysqlnd_stats_set_trigger(MYSQLND_STATS * const stats, enum_mysqlnd_collected_stats statistic, mysqlnd_stat_trigger trigger TSRMLS_DC)
 {
 	mysqlnd_stat_trigger ret = NULL;
 	DBG_ENTER("mysqlnd_stats_set_trigger");
 	if (stats) {
 		MYSQLND_STATS_LOCK(stats);
-		ret = stats->triggers[stat];
-		stats->triggers[stat] = trigger;
+		ret = stats->triggers[statistic];
+		stats->triggers[statistic] = trigger;
 		MYSQLND_STATS_UNLOCK(stats);
 	}
 	DBG_RETURN(ret);

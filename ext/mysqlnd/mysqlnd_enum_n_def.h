@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_enum_n_def.h 298650 2010-04-27 11:02:51Z andrey $ */
+/* $Id: mysqlnd_enum_n_def.h 305904 2010-12-02 13:59:56Z andrey $ */
 #ifndef MYSQLND_ENUM_N_DEF_H
 #define MYSQLND_ENUM_N_DEF_H
 
@@ -63,7 +63,8 @@
 #define SERVER_STATUS_LAST_ROW_SENT				128
 #define SERVER_STATUS_DB_DROPPED				256 /* A database was dropped */
 #define SERVER_STATUS_NO_BACKSLASH_ESCAPES		512
-#define SERVER_QUERY_WAS_SLOW					1024
+#define SERVER_QUERY_WAS_SLOW					2048
+#define SERVER_PS_OUT_PARAMS            		4096
 
 #define MYSQLND_NO_DATA			100
 #define MYSQLND_DATA_TRUNCATED	101
@@ -94,24 +95,27 @@
 
 #define CLIENT_SSL_VERIFY_SERVER_CERT (1UL << 30)
 
+
+#define MYSQLND_NET_FLAG_USE_COMPRESSION 1
+
 typedef enum mysqlnd_extension
 {
 	MYSQLND_MYSQL = 0,
-	MYSQLND_MYSQLI,
+	MYSQLND_MYSQLI
 } enum_mysqlnd_extension;
 
 enum
 {
 	MYSQLND_FETCH_ASSOC = 1,
 	MYSQLND_FETCH_NUM = 2,
-	MYSQLND_FETCH_BOTH = 1|2,
+	MYSQLND_FETCH_BOTH = 1|2
 };
 
 /* Follow libmysql convention */
 typedef enum func_status
 {
 	PASS = 0,
-	FAIL = 1,
+	FAIL = 1
 } enum_func_status;
 
 typedef enum mysqlnd_query_type
@@ -152,7 +156,7 @@ typedef enum mysqlnd_option
 	MYSQL_REPORT_DATA_TRUNCATION,
 	MYSQL_OPT_RECONNECT,
 	MYSQL_OPT_SSL_VERIFY_SERVER_CERT,
-#if PHP_MAJOR_VERSION >= 6
+#if MYSQLND_UNICODE
 	MYSQLND_OPT_NUMERIC_AND_DATETIME_AS_UNICODE = 200,
 #endif
 #ifdef MYSQLND_STRING_TO_INT_CONVERSION
@@ -168,6 +172,15 @@ typedef enum mysqlnd_option
 	MYSQLND_OPT_SSL_PASSPHRASE = 209
 } enum_mysqlnd_option;
 
+typedef enum mysqlnd_protocol_type
+{
+	MYSQL_PROTOCOL_DEFAULT = 0,
+	MYSQL_PROTOCOL_TCP,		/* all, supported */
+	MYSQL_PROTOCOL_SOCKET,	/* unix, supported */
+	MYSQL_PROTOCOL_PIPE,	/* win32, not-supported */
+	MYSQL_PROTOCOL_MEMORY,	/* win32, not-supported */
+	MYSQL_PROTOCOL_LAST
+} enum_mysqlnd_protocol_type;
 
 typedef enum mysqlnd_field_types
 {
@@ -284,7 +297,7 @@ typedef enum mysqlnd_connection_state
 	CONN_SENDING_LOAD_DATA,
 	CONN_FETCHING_DATA,
 	CONN_NEXT_RESULT_PENDING,
-	CONN_QUIT_SENT, /* object is "destroyed" at this stage */
+	CONN_QUIT_SENT /* object is "destroyed" at this stage */
 } enum_mysqlnd_connection_state;
 
 
@@ -295,7 +308,7 @@ typedef enum mysqlnd_stmt_state
 	MYSQLND_STMT_EXECUTED,
 	MYSQLND_STMT_WAITING_USE_OR_STORE,
 	MYSQLND_STMT_USE_OR_STORE_CALLED,
-	MYSQLND_STMT_USER_FETCHING, /* fetch_row_buff or fetch_row_unbuf */
+	MYSQLND_STMT_USER_FETCHING /* fetch_row_buff or fetch_row_unbuf */
 } enum_mysqlnd_stmt_state;
 
 
@@ -490,6 +503,8 @@ typedef enum mysqlnd_collected_stats
 	STAT_COM_SET_OPTION,
 	STAT_COM_STMT_FETCH,
 	STAT_COM_DAEMON,
+	STAT_BYTES_RECEIVED_PURE_DATA_TEXT,
+	STAT_BYTES_RECEIVED_PURE_DATA_PS,
 	STAT_LAST /* Should be always the last */
 } enum_mysqlnd_collected_stats;
 
@@ -508,7 +523,7 @@ enum mysqlnd_packet_type
 	PROT_STATS_PACKET,
 	PROT_PREPARE_RESP_PACKET,
 	PROT_CHG_USER_RESP_PACKET,
-	PROT_LAST, /* should always be last */
+	PROT_LAST /* should always be last */
 };
 
 

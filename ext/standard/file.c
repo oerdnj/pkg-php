@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: file.c 298882 2010-05-02 20:11:22Z felipe $ */
+/* $Id: file.c 305507 2010-11-18 15:22:22Z pajoye $ */
 
 /* Synced with php 3.0 revision 1.218 1999-06-16 [ssb] */
 
@@ -170,6 +170,7 @@ static void file_globals_dtor(php_file_globals *file_globals_p TSRMLS_DC)
 
 PHP_INI_BEGIN()
 	STD_PHP_INI_ENTRY("user_agent", NULL, PHP_INI_ALL, OnUpdateString, user_agent, php_file_globals, file_globals)
+	PHP_INI_ENTRY("from", NULL, PHP_INI_ALL, NULL)
 	STD_PHP_INI_ENTRY("default_socket_timeout", "60", PHP_INI_ALL, OnUpdateLong, default_socket_timeout, php_file_globals, file_globals)
 	STD_PHP_INI_ENTRY("auto_detect_line_endings", "0", PHP_INI_ALL, OnUpdateLong, auto_detect_line_endings, php_file_globals, file_globals)
 PHP_INI_END()
@@ -385,6 +386,10 @@ PHP_FUNCTION(get_meta_tags)
 		return;
 	}
 
+	if (strlen(filename) != filename_len) {
+		RETURN_FALSE;
+	}
+
 	md.stream = php_stream_open_wrapper(filename, "rb",
 			(use_include_path ? USE_PATH : 0) | ENFORCE_SAFE_MODE | REPORT_ERRORS,
 			NULL);
@@ -538,6 +543,10 @@ PHP_FUNCTION(file_get_contents)
 		return;
 	}
 
+	if (strlen(filename) != filename_len) {
+		RETURN_FALSE;
+	}
+
 	if (ZEND_NUM_ARGS() == 5 && maxlen < 0) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "length must be greater than or equal to zero");
 		RETURN_FALSE;
@@ -558,7 +567,6 @@ PHP_FUNCTION(file_get_contents)
 		RETURN_FALSE;
 	}
 
-	/* uses mmap if possible */
 	if ((len = php_stream_copy_to_mem(stream, &contents, maxlen, 0)) > 0) {
 
 		if (PG(magic_quotes_runtime)) {
@@ -593,6 +601,10 @@ PHP_FUNCTION(file_put_contents)
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sz/|lr!", &filename, &filename_len, &data, &flags, &zcontext) == FAILURE) {
 		return;
+	}
+
+	if (strlen(filename) != filename_len) {
+		RETURN_FALSE;
 	}
 
 	if (Z_TYPE_P(data) == IS_RESOURCE) {
@@ -739,6 +751,11 @@ PHP_FUNCTION(file)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|lr!", &filename, &filename_len, &flags, &zcontext) == FAILURE) {
 		return;
 	}
+
+	if (strlen(filename) != filename_len) {
+		RETURN_FALSE;
+	}
+
 	if (flags < 0 || flags > (PHP_FILE_USE_INCLUDE_PATH | PHP_FILE_IGNORE_NEW_LINES | PHP_FILE_SKIP_EMPTY_LINES | PHP_FILE_NO_DEFAULT_CONTEXT)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "'%ld' flag is not supported", flags);
 		RETURN_FALSE;
@@ -836,6 +853,14 @@ PHP_FUNCTION(tempnam)
 		return;
 	}
 
+	if (strlen(dir) != dir_len) {
+		RETURN_FALSE;
+	}
+
+	if (strlen(prefix) != prefix_len) {
+		RETURN_FALSE;
+	}
+
 	if (PG(safe_mode) &&(!php_checkuid(dir, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
 		RETURN_FALSE;
 	}
@@ -891,6 +916,10 @@ PHP_NAMED_FUNCTION(php_if_fopen)
 	php_stream_context *context = NULL;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss|br", &filename, &filename_len, &mode, &mode_len, &use_include_path, &zcontext) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	if (strlen(filename) != filename_len) {
 		RETURN_FALSE;
 	}
 
@@ -1397,6 +1426,10 @@ PHP_FUNCTION(mkdir)
 		RETURN_FALSE;
 	}
 
+	if (strlen(dir) != dir_len) {
+		RETURN_FALSE;
+	}
+
 	context = php_stream_context_from_zval(zcontext, 0);
 
 	RETURN_BOOL(php_stream_mkdir(dir, mode, (recursive ? PHP_STREAM_MKDIR_RECURSIVE : 0) | REPORT_ERRORS, context));
@@ -1413,6 +1446,10 @@ PHP_FUNCTION(rmdir)
 	php_stream_context *context;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|r", &dir, &dir_len, &zcontext) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	if (strlen(dir) != dir_len) {
 		RETURN_FALSE;
 	}
 
@@ -1435,6 +1472,10 @@ PHP_FUNCTION(readfile)
 	php_stream_context *context = NULL;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|br!", &filename, &filename_len, &use_include_path, &zcontext) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	if (strlen(filename) != filename_len) {
 		RETURN_FALSE;
 	}
 
@@ -1511,6 +1552,14 @@ PHP_FUNCTION(rename)
 		RETURN_FALSE;
 	}
 
+	if (strlen(old_name) != old_name_len) {
+		RETURN_FALSE;
+	}
+
+	if (strlen(new_name) != new_name_len) {
+		RETURN_FALSE;
+	}
+
 	wrapper = php_stream_locate_url_wrapper(old_name, NULL, 0 TSRMLS_CC);
 
 	if (!wrapper || !wrapper->wops) {
@@ -1545,6 +1594,10 @@ PHP_FUNCTION(unlink)
 	php_stream_context *context = NULL;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|r", &filename, &filename_len, &zcontext) == FAILURE) {
+		RETURN_FALSE;
+	}
+
+	if (strlen(filename) != filename_len) {
 		RETURN_FALSE;
 	}
 
@@ -1684,6 +1737,14 @@ PHP_FUNCTION(copy)
 		return;
 	}
 
+	if (strlen(source) != source_len) {
+		RETURN_FALSE;
+	}
+
+	if (strlen(target) != target_len) {
+		RETURN_FALSE;
+	}
+
 	if (PG(safe_mode) &&(!php_checkuid(source, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
 		RETURN_FALSE;
 	}
@@ -1694,7 +1755,7 @@ PHP_FUNCTION(copy)
 
 	context = php_stream_context_from_zval(zcontext, 0);
 
-	if (php_copy_file(source, target TSRMLS_CC) == SUCCESS) {
+	if (php_copy_file_ctx(source, target, 0, context TSRMLS_CC) == SUCCESS) {
 		RETURN_TRUE;
 	} else {
 		RETURN_FALSE;
@@ -1702,21 +1763,31 @@ PHP_FUNCTION(copy)
 }
 /* }}} */
 
-PHPAPI int php_copy_file(char *src, char *dest TSRMLS_DC) /* {{{ */
+/* {{{ php_copy_file
+ */
+PHPAPI int php_copy_file(char *src, char *dest TSRMLS_DC)
 {
-	return php_copy_file_ex(src, dest, ENFORCE_SAFE_MODE TSRMLS_CC);
+	return php_copy_file_ctx(src, dest, ENFORCE_SAFE_MODE, NULL TSRMLS_CC);
 }
 /* }}} */
 
-/* {{{ php_copy_file
+/* {{{ php_copy_file_ex
  */
 PHPAPI int php_copy_file_ex(char *src, char *dest, int src_chk TSRMLS_DC)
+{
+	return php_copy_file_ctx(src, dest, ENFORCE_SAFE_MODE, NULL TSRMLS_CC);
+}
+/* }}} */
+
+/* {{{ php_copy_file_ctx
+ */
+PHPAPI int php_copy_file_ctx(char *src, char *dest, int src_chk, php_stream_context *context TSRMLS_DC)
 {
 	php_stream *srcstream = NULL, *deststream = NULL;
 	int ret = FAILURE;
 	php_stream_statbuf src_s, dest_s;
 
-	switch (php_stream_stat_path_ex(src, 0, &src_s, NULL)) {
+	switch (php_stream_stat_path_ex(src, 0, &src_s, context)) {
 		case -1:
 			/* non-statable stream */
 			goto safe_to_copy;
@@ -1731,7 +1802,7 @@ PHPAPI int php_copy_file_ex(char *src, char *dest, int src_chk TSRMLS_DC)
 		return FAILURE;
 	}
 
-	switch (php_stream_stat_path_ex(dest, PHP_STREAM_URL_STAT_QUIET, &dest_s, NULL)) {
+	switch (php_stream_stat_path_ex(dest, PHP_STREAM_URL_STAT_QUIET, &dest_s, context)) {
 		case -1:
 			/* non-statable stream */
 			goto safe_to_copy;
@@ -1781,13 +1852,13 @@ no_stat:
 	}
 safe_to_copy:
 
-	srcstream = php_stream_open_wrapper(src, "rb", src_chk | REPORT_ERRORS, NULL);
+	srcstream = php_stream_open_wrapper_ex(src, "rb", src_chk | REPORT_ERRORS, NULL, context);
 
 	if (!srcstream) {
 		return ret;
 	}
 
-	deststream = php_stream_open_wrapper(dest, "wb", ENFORCE_SAFE_MODE | REPORT_ERRORS, NULL);
+	deststream = php_stream_open_wrapper_ex(dest, "wb", ENFORCE_SAFE_MODE | REPORT_ERRORS, NULL, context);
 
 	if (srcstream && deststream) {
 		ret = php_stream_copy_to_stream_ex(srcstream, deststream, PHP_STREAM_COPY_ALL, NULL);
@@ -2375,6 +2446,10 @@ PHP_FUNCTION(realpath)
 		return;
 	}
 
+	if (strlen(filename) != filename_len) {
+		RETURN_FALSE;
+	}
+
 	if (VCWD_REALPATH(filename, resolved_path_buff)) {
 		if (PG(safe_mode) && (!php_checkuid(resolved_path_buff, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
 			RETURN_FALSE;
@@ -2517,6 +2592,14 @@ PHP_FUNCTION(fnmatch)
 		return;
 	}
 
+	if (strlen(pattern) != pattern_len) {
+		RETURN_FALSE;
+	}
+
+	if (strlen(filename) != filename_len) {
+		RETURN_FALSE;
+	}
+	
 	if (filename_len >= MAXPATHLEN) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Filename exceeds the maximum allowed length of %d characters", MAXPATHLEN);
 		RETURN_FALSE;

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: timelib.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: timelib.c 305315 2010-11-13 14:57:47Z derick $ */
 
 #include "timelib.h"
 #include <ctype.h>
@@ -44,6 +44,19 @@ timelib_rel_time* timelib_rel_time_ctor(void)
 	t = calloc(1, sizeof(timelib_rel_time));
 
 	return t;
+}
+
+timelib_time* timelib_time_clone(timelib_time *orig)
+{
+	timelib_time *tmp = timelib_time_ctor();
+	memcpy(tmp, orig, sizeof(timelib_time));
+	if (orig->tz_abbr) {
+		tmp->tz_abbr = strdup(orig->tz_abbr);
+	}
+	if (orig->tz_info) {
+		tmp->tz_info = orig->tz_info;
+	}
+	return tmp;
 }
 
 timelib_rel_time* timelib_rel_time_clone(timelib_rel_time *rel)
@@ -217,8 +230,6 @@ void timelib_dump_date(timelib_time *d, int options)
 				printf(" %05d%s", d->z, d->dst == 1 ? " (DST)" : "");
 				break;
 		}
-	} else {
-		printf(" GMT 00000");
 	}
 
 	if ((options & 1) == 1) {

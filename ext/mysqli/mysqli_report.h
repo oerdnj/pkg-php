@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_report.h 293036 2010-01-03 09:23:27Z sebastian $
+  $Id: mysqli_report.h 303973 2010-10-04 10:02:58Z uw $
 */
 
 #ifndef __HAVE_MYSQLI_PROFILER_H__
@@ -34,7 +34,7 @@
 #endif
 
 typedef struct {
-	struct timeval	starttime, 
+	struct timeval	starttime,
 					endtime;		/* execution time */
 } PR_TIME_INFO;
 

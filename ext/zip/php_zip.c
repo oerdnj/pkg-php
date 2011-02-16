@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_zip.c 300470 2010-06-15 18:48:33Z pajoye $ */
+/* $Id: php_zip.c 305848 2010-11-30 11:04:06Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -162,6 +162,9 @@ static int php_zip_extract_file(struct zip * za, char *dest, char *file, int fil
 	 */
 	virtual_file_ex(&new_state, file, NULL, CWD_EXPAND);
 	path_cleaned =  php_zip_make_relative_path(new_state.cwd, new_state.cwd_length);
+	if(!path_cleaned) {
+		return 0;
+	}
 	path_cleaned_len = strlen(path_cleaned);
 
 	if (path_cleaned_len >= MAXPATHLEN || zip_stat(za, file, 0, &sb) != 0) {
@@ -1148,6 +1151,10 @@ static PHP_NAMED_FUNCTION(zif_zip_open)
 		RETURN_FALSE;
 	}
 
+	if (strlen(filename) != filename_len) {
+		RETURN_FALSE;
+	}
+
 	if (ZIP_OPENBASEDIR_CHECKPATH(filename)) {
 		RETURN_FALSE;
 	}
@@ -1437,6 +1444,10 @@ static ZIPARCHIVE_METHOD(open)
 		RETURN_FALSE;
 	}
 
+	if (strlen(filename) != filename_len) {
+		RETURN_FALSE;
+	}
+
 	if (ZIP_OPENBASEDIR_CHECKPATH(filename)) {
 		RETURN_FALSE;
 	}
@@ -1649,7 +1660,7 @@ static void php_zip_add_from_pattern(INTERNAL_FUNCTION_PARAMETERS, int type) /* 
 
 				if (add_path) {
 					if ((add_path_len + file_stripped_len) > MAXPATHLEN) {
-						php_error_docref(NULL TSRMLS_CC, E_WARNING, "Entry name too long (max: %i, %i given)", 
+						php_error_docref(NULL TSRMLS_CC, E_WARNING, "Entry name too long (max: %d, %ld given)", 
 						MAXPATHLEN - 1, (add_path_len + file_stripped_len));
 						zval_dtor(return_value);
 						RETURN_FALSE;
@@ -1961,6 +1972,9 @@ static ZIPARCHIVE_METHOD(getArchiveComment)
 	}
 
 	comment = zip_get_archive_comment(intern, &comment_len, (int)flags);
+	if(comment==NULL) {
+		RETURN_FALSE;
+	}
 	RETURN_STRINGL((char *)comment, (long)comment_len, 1);
 }
 /* }}} */
@@ -2360,12 +2374,16 @@ static ZIPARCHIVE_METHOD(extractTo)
 		RETURN_FALSE;
 	}
 
-    if (php_stream_stat_path(pathto, &ssb) < 0) {
-        ret = php_stream_mkdir(pathto, 0777,  PHP_STREAM_MKDIR_RECURSIVE, NULL);
-        if (!ret) {
-            RETURN_FALSE;
-        }
-    }
+	if (strlen(pathto) != pathto_len) {
+		RETURN_FALSE;
+	}
+
+	if (php_stream_stat_path(pathto, &ssb) < 0) {
+		ret = php_stream_mkdir(pathto, 0777,  PHP_STREAM_MKDIR_RECURSIVE, NULL);
+		if (!ret) {
+			RETURN_FALSE;
+		}
+	}
 
 	ZIP_FROM_OBJECT(intern, this);
 	if (zval_files && (Z_TYPE_P(zval_files) != IS_NULL)) {
@@ -2444,6 +2462,9 @@ static void php_zip_get_from(INTERNAL_FUNCTION_PARAMETERS, int type) /* {{{ */
 
 	if (type == 1) {
 		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|ll", &filename, &filename_len, &len, &flags) == FAILURE) {
+			return;
+		}
+		if (strlen(filename) != filename_len) {
 			return;
 		}
 		PHP_ZIP_STAT_PATH(intern, filename, filename_len, flags, sb);
@@ -2779,7 +2800,7 @@ static PHP_MINFO_FUNCTION(zip)
 	php_info_print_table_start();
 
 	php_info_print_table_row(2, "Zip", "enabled");
-	php_info_print_table_row(2, "Extension Version","$Id: php_zip.c 300470 2010-06-15 18:48:33Z pajoye $");
+	php_info_print_table_row(2, "Extension Version","$Id: php_zip.c 305848 2010-11-30 11:04:06Z pajoye $");
 	php_info_print_table_row(2, "Zip version", PHP_ZIP_VERSION_STRING);
 	php_info_print_table_row(2, "Libzip version", "0.9.0");
 

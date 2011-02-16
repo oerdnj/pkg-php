@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: winutil.c 300273 2010-06-08 13:00:11Z pajoye $ */
+/* $Id: winutil.c 305778 2010-11-26 18:25:13Z pajoye $ */
 
 #include "php.h"
 #include <wincrypt.h>
@@ -70,13 +70,10 @@ PHPAPI int php_win32_get_random_bytes(unsigned char *buf, size_t size) {  /* {{{
 	ret = CryptGenRandom(hCryptProv, size, buf);
 	CryptReleaseContext(hCryptProv, 0);
 	if (ret) {
-		while (i < size && buf[i] != 0) {
-			i++;
-		}
-		if (i == size) {
-			return SUCCESS;
-		}
-   }
-	return FAILURE;
+		return SUCCESS;
+	} else {
+		return FAILURE;
+	}
 }
 /* }}} */
+

@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: logical_filters.c 297353 2010-04-02 18:27:48Z rasmus $ */
+/* $Id: logical_filters.c 305186 2010-11-08 04:36:15Z cataphract $ */
 
 #include "php_filter.h"
 #include "filter_private.h"
@@ -531,6 +531,11 @@ void php_filter_validate_email(PHP_INPUT_FILTER_PARAM_DECL) /* {{{ */
 	int         matches;
 
 
+	/* The maximum length of an e-mail address is 320 octets, per RFC 2821. */
+	if (Z_STRLEN_P(value) > 320) {
+		RETURN_VALIDATION_FAILED
+	}
+
 	re = pcre_get_compiled_regex((char *)regexp, &pcre_extra, &preg_options TSRMLS_CC);
 	if (!re) {
 		RETURN_VALIDATION_FAILED
@@ -552,9 +557,11 @@ static int _php_filter_validate_ipv4(char *str, int str_len, int *ip) /* {{{ */
 	int n = 0;
 
 	while (str < end) {
+		int leading_zero;
 		if (*str < '0' || *str > '9') {
 			return 0;
 		}
+		leading_zero = (*str == '0');
 		m = 1;
 		num = ((*(str++)) - '0');
 		while (str < end && (*str >= '0' && *str <= '9')) {
@@ -563,6 +570,10 @@ static int _php_filter_validate_ipv4(char *str, int str_len, int *ip) /* {{{ */
 				return 0;
 			}
 		}
+		/* don't allow a leading 0; that introduces octal numbers,
+		 * which we don't support */
+		if (leading_zero && (num != 0 || m > 1))
+			return 0;
 		ip[n++] = num;
 		if (n == 4) {
 			return str == end;
@@ -577,7 +588,7 @@ static int _php_filter_validate_ipv4(char *str, int str_len, int *ip) /* {{{ */
 static int _php_filter_validate_ipv6(char *str, int str_len TSRMLS_DC) /* {{{ */
 {
 	int compressed = 0;
-	int blocks = 8;
+	int blocks = 0;
 	int n;
 	char *ipv4;
 	char *end;
@@ -598,32 +609,40 @@ static int _php_filter_validate_ipv6(char *str, int str_len TSRMLS_DC) /* {{{ */
 		if (!_php_filter_validate_ipv4(ipv4, (str_len - (ipv4 - str)), ip4elm)) {
 			return 0;
 		}
-		str_len = (ipv4 - str) - 1;
-		if (str_len == 1) {
-			return *str == ':';
+
+		str_len = ipv4 - str; /* length excluding ipv4 */
+		if (str_len < 2) {
+			return 0;
 		}
-		blocks = 6;
+
+		if (ipv4[-2] != ':') {
+			/* don't include : before ipv4 unless it's a :: */
+			str_len--;
+		}
+
+		blocks = 2;
 	}
 
 	end = str + str_len;
 
 	while (str < end) {
 		if (*str == ':') {
-			if (--blocks == 0) {
-				return 0;
-			}			
 			if (++str >= end) {
+				/* cannot end in : without previous : */
 				return 0;
 			}
 			if (*str == ':') {
-				if (compressed || --blocks == 0) {
+				if (compressed) {
 					return 0;
-				}			
-				if (++str == end) {
-					return 1;
 				}
+				blocks++; /* :: means 1 or more 16-bit 0 blocks */
 				compressed = 1;
+
+				if (++str == end) {
+					return (blocks <= 8);
+				}
 			} else if ((str - 1) == s) {
+				/* dont allow leading : without another : following */
 				return 0;
 			}				
 		}
@@ -638,8 +657,10 @@ static int _php_filter_validate_ipv6(char *str, int str_len TSRMLS_DC) /* {{{ */
 		if (n < 1 || n > 4) {
 			return 0;
 		}
+		if (++blocks > 8)
+			return 0;
 	}
-	return (compressed || blocks == 1);
+	return ((compressed && blocks <= 8) || blocks == 8);
 }
 /* }}} */
 

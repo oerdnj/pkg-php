@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config9.m4 298023 2010-04-15 11:01:30Z andrey $
+dnl $Id: config9.m4 304973 2010-10-28 13:46:54Z andrey $
 dnl config.m4 for mysqlnd driver
 
 
@@ -27,13 +27,10 @@ if test "$PHP_MYSQLND_ENABLED" = "yes"; then
   dnl Windows uses config.w32 thus this code is safe for now
 
   if test "$PHP_MYSQLND_COMPRESSION_SUPPORT" != "no"; then
-    AC_DEFINE([MYSQLND_COMPRESSION_ENABLED], 1, [Enable compressed protocol support])
-    if test "$PHP_ZLIB_DIR" != "no"; then
+    if test -z "$PHP_ZLIB_DIR"; then
+      AC_DEFINE([MYSQLND_COMPRESSION_ENABLED], 1, [Enable compressed protocol support])
       PHP_ADD_LIBRARY_WITH_PATH(z, $PHP_ZLIB_DIR, MYSQLND_SHARED_LIBADD)
       MYSQLND_LIBS="$MYSQLND_LIBS -L$PHP_ZLIB_DIR/$PHP_LIBDIR -lz"
-    else
-      PHP_ADD_LIBRARY(z,, MYSQLND_SHARED_LIBADD)
-      MYSQLND_LIBS="$MYSQLND_LIBS -lz"
     fi
   fi
   AC_DEFINE([MYSQLND_SSL_SUPPORTED], 1, [Enable SSL support])

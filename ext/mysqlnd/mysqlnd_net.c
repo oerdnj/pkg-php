@@ -41,14 +41,13 @@
 
 /* {{{ mysqlnd_set_sock_no_delay */
 static int
-mysqlnd_set_sock_no_delay(php_stream * stream)
+mysqlnd_set_sock_no_delay(php_stream * stream TSRMLS_DC)
 {
 
 	int socketd = ((php_netstream_data_t*)stream->abstract)->socket;
 	int ret = SUCCESS;
 	int flag = 1;
 	int result = setsockopt(socketd, IPPROTO_TCP,  TCP_NODELAY, (char *) &flag, sizeof(int));
-	TSRMLS_FETCH();
 
 	DBG_ENTER("mysqlnd_set_sock_no_delay");
 
@@ -184,7 +183,7 @@ MYSQLND_METHOD(mysqlnd_net, connect)(MYSQLND_NET * net, const char * const schem
 
 	if (!memcmp(scheme, "tcp://", sizeof("tcp://") - 1)) {
 		/* TCP -> Set TCP_NODELAY */
-		mysqlnd_set_sock_no_delay(net->stream);
+		mysqlnd_set_sock_no_delay(net->stream TSRMLS_CC);
 	}
 
 	{
@@ -665,10 +664,8 @@ MYSQLND_METHOD(mysqlnd_net, set_client_option)(MYSQLND_NET * const net, enum mys
 			net->options.timeout_write = *(unsigned int*) value;
 			break;
 #endif
-#ifdef WHEN_SUPPORTED_BY_MYSQLI
 		case MYSQL_OPT_COMPRESS:
-#endif
-			/* currently not supported. Todo!! */
+			net->options.flags |= MYSQLND_NET_FLAG_USE_COMPRESSION;
 			break;
 		default:
 			DBG_RETURN(FAIL);

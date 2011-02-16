@@ -12,7 +12,19 @@
 #endif
 #include <sched.h>
 
-#if ( __i386__ || __i386 )
+#ifdef HAVE_BUILTIN_ATOMIC
+
+/**
+ * all the cases below (as provided by upstream) define:
+ * word as atomic_int_t, and
+ * unsigned word as atomic_uint_t
+ * and only use volatile atomic_uint_t as atomic_t
+ */
+
+typedef volatile unsigned long atomic_t;
+#define atomic_cmp_set(a,b,c) __sync_bool_compare_and_swap(a,b,c)
+
+#elif ( __i386__ || __i386 )
 
 typedef int32_t                     atomic_int_t;
 typedef uint32_t                    atomic_uint_t;
@@ -83,6 +95,8 @@ typedef uint32_t                    atomic_uint_t;
 
 #elif ( __sparc__ || __sparc ) /* Marcin Ochab */
 
+#if (__sparcv9 || __sparcv9__)
+
 #if (__arch64__ || __arch64)
 typedef uint64_t                    atomic_uint_t;
 typedef volatile atomic_uint_t      atomic_t;
@@ -119,9 +133,13 @@ static inline atomic_uint_t atomic_cmp_set(atomic_t *lock, atomic_uint_t old, at
 /* }}} */
 #endif
 
+#else /* #if (__sparcv9 || __sparcv9__) */
+#error Sparc v8 and predecessors are not and will not be supported (see bug report 53310)
+#endif /* #if (__sparcv9 || __sparcv9__) */
+
 #else
 
-#error unsupported processor. please write a patch and send it to me
+#error Unsupported processor. Please open a bug report (bugs.php.net).
 
 #endif
 

@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: string.c 300105 2010-06-02 19:26:10Z rasmus $ */
+/* $Id: string.c 305418 2010-11-16 22:16:44Z felipe $ */
 
 /* Synced with php 3.0 revision 1.193 1999-06-16 [ssb] */
 
@@ -1873,7 +1873,7 @@ PHP_FUNCTION(strrpos)
 		p = haystack + offset;
 		e = haystack + haystack_len - needle_len;
 	} else {
-		if (-offset > haystack_len || offset < -INT_MAX) {
+		if (offset < -INT_MAX || -offset > haystack_len) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Offset is greater than the length of haystack string");
 			RETURN_FALSE;
 		}
@@ -1951,7 +1951,7 @@ PHP_FUNCTION(strripos)
 			e = haystack + haystack_len - 1;
 		} else {
 			p = haystack;
-			if (-offset > haystack_len || offset < -INT_MAX) {
+			if (offset < -INT_MAX || -offset > haystack_len) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Offset is greater than the length of haystack string");
 				RETURN_FALSE;
 			}
@@ -1983,7 +1983,7 @@ PHP_FUNCTION(strripos)
 		p = haystack_dup + offset;
 		e = haystack_dup + haystack_len - needle_len;
 	} else {
-		if (-offset > haystack_len || offset < -INT_MAX) {
+		if (offset < -INT_MAX || -offset > haystack_len) {
 			efree(needle_dup);
 			efree(haystack_dup);
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Offset is greater than the length of haystack string");
@@ -2571,7 +2571,7 @@ static void php_lcfirst(char *str)
 }
 /* }}} */
 
-/* {{{ proto string ucfirst(string str)
+/* {{{ proto string lcfirst(string str)
    Make a string's first character lowercase */
 PHP_FUNCTION(lcfirst)
 {
@@ -4211,9 +4211,8 @@ int php_tag_find(char *tag, int len, char *set) {
 				if (!isspace((int)c)) {
 					if (state == 0) {
 						state=1;
-						if (c != '/')
-							*(n++) = c;
-					} else {
+					}
+					if (c != '/') {
 						*(n++) = c;
 					}
 				} else {
@@ -4861,7 +4860,7 @@ PHP_FUNCTION(str_pad)
 	long pad_length;			/* Length to pad to */
 	
 	/* Helper variables */
-	int	   num_pad_chars;		/* Number of padding characters (total - input size) */
+	size_t	   num_pad_chars;		/* Number of padding characters (total - input size) */
 	char  *result = NULL;		/* Resulting string */
 	int	   result_len = 0;		/* Length of the resulting string */
 	char  *pad_str_val = " ";	/* Pointer to padding string */
@@ -4874,11 +4873,9 @@ PHP_FUNCTION(str_pad)
 		return;
 	}
 
-	num_pad_chars = pad_length - input_len;
-
 	/* If resulting string turns out to be shorter than input string,
 	   we simply copy the input and return. */
-	if (pad_length <= 0 || num_pad_chars <= 0) {
+	if (pad_length <= 0 || (pad_length - input_len) <= 0) {
 		RETURN_STRINGL(input, input_len, 1);
 	}
 
@@ -4892,6 +4889,11 @@ PHP_FUNCTION(str_pad)
 		return;
 	}
 
+	num_pad_chars = pad_length - input_len;
+	if (num_pad_chars >= INT_MAX) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Padding length is too long");
+		return;	
+	}
 	result = (char *)emalloc(input_len + num_pad_chars + 1);
 
 	/* We need to figure out the left/right padding lengths. */

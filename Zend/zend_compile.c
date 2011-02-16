@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_compile.c 300817 2010-06-28 16:37:57Z felipe $ */
+/* $Id: zend_compile.c 305057 2010-11-03 15:40:24Z colder $ */
 
 #include <zend_language_parser.h>
 #include "zend.h"
@@ -2551,12 +2551,14 @@ static zend_bool zend_do_perform_implementation_check(const zend_function *fe, c
 		return 0;
 	}
 
-	if (proto->common.pass_rest_by_reference
+	if (fe->common.type != ZEND_USER_FUNCTION
+		&& proto->common.pass_rest_by_reference
 		&& !fe->common.pass_rest_by_reference) {
 		return 0;
 	}
 
-	if (fe->common.return_reference != proto->common.return_reference) {
+	/* by-ref constraints on return values are covariant */
+	if (proto->common.return_reference && !fe->common.return_reference) {
 		return 0;
 	}
 
@@ -2580,6 +2582,8 @@ static zend_bool zend_do_perform_implementation_check(const zend_function *fe, c
 			/* Only one has an array type hint and the other one doesn't */
 			return 0;
 		}
+
+		/* by-ref constraints on arguments are invariant */
 		if (fe->common.arg_info[i].pass_by_reference != proto->common.arg_info[i].pass_by_reference) {
 			return 0;
 		}
@@ -2817,6 +2821,9 @@ static int inherit_static_prop(zval **p TSRMLS_DC, int num_args, va_list args, c
 }
 /* }}} */
 
+#define zval_property_ctor(parent_ce, ce) \
+	((copy_ctor_func_t) (((parent_ce)->type != (ce)->type) ? zval_shared_property_ctor : zval_add_ref))
+
 ZEND_API void zend_do_inheritance(zend_class_entry *ce, zend_class_entry *parent_ce TSRMLS_DC) /* {{{ */
 {
 	if ((ce->ce_flags & ZEND_ACC_INTERFACE)
@@ -2840,7 +2847,7 @@ ZEND_API void zend_do_inheritance(zend_class_entry *ce, zend_class_entry *parent
 	zend_do_inherit_interfaces(ce, parent_ce TSRMLS_CC);
 
 	/* Inherit properties */
-	zend_hash_merge(&ce->default_properties, &parent_ce->default_properties, (void (*)(void *)) zval_add_ref, NULL, sizeof(zval *), 0);
+	zend_hash_merge(&ce->default_properties, &parent_ce->default_properties, zval_property_ctor(parent_ce, ce), NULL, sizeof(zval *), 0);
 	if (parent_ce->type != ce->type) {
 		/* User class extends internal class */
 		zend_update_class_constants(parent_ce  TSRMLS_CC);
@@ -2850,7 +2857,7 @@ ZEND_API void zend_do_inheritance(zend_class_entry *ce, zend_class_entry *parent
 	}
 	zend_hash_merge_ex(&ce->properties_info, &parent_ce->properties_info, (copy_ctor_func_t) (ce->type & ZEND_INTERNAL_CLASS ? zend_duplicate_property_info_internal : zend_duplicate_property_info), sizeof(zend_property_info), (merge_checker_func_t) do_inherit_property_access_check, ce);
 
-	zend_hash_merge(&ce->constants_table, &parent_ce->constants_table, (void (*)(void *)) zval_add_ref, NULL, sizeof(zval *), 0);
+	zend_hash_merge(&ce->constants_table, &parent_ce->constants_table, zval_property_ctor(parent_ce, ce), NULL, sizeof(zval *), 0);
 	zend_hash_merge_ex(&ce->function_table, &parent_ce->function_table, (copy_ctor_func_t) do_inherit_method, sizeof(zend_function), (merge_checker_func_t) do_inherit_method_check, ce);
 	do_inherit_parent_constructor(ce);
 

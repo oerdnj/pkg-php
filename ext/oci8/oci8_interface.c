@@ -25,7 +25,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: oci8_interface.c 293180 2010-01-06 18:58:16Z sixd $ */
+/* $Id: oci8_interface.c 305578 2010-11-20 01:29:03Z sixd $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -242,7 +242,12 @@ PHP_FUNCTION(oci_lob_import)
 			return;
 		}	
 	}
-	
+
+	if (strlen(filename) != filename_len) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Filename cannot contain null bytes");
+		RETURN_FALSE;  
+	}
+
 	if (zend_hash_find(Z_OBJPROP_P(z_descriptor), "descriptor", sizeof("descriptor"), (void **)&tmp) == FAILURE) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to find descriptor property");
 		RETURN_FALSE;
@@ -662,7 +667,7 @@ PHP_FUNCTION(oci_lob_erase)
 			RETURN_FALSE;
 		}
 	}
-	
+
 	if (zend_hash_find(Z_OBJPROP_P(z_descriptor), "descriptor", sizeof("descriptor"), (void **)&tmp) == FAILURE) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to find descriptor property");
 		RETURN_FALSE;
@@ -894,7 +899,12 @@ PHP_FUNCTION(oci_lob_export)
 			RETURN_FALSE;
 		}
 	}
-	
+
+	if (strlen(filename) != filename_len) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Filename cannot contain null bytes");
+		RETURN_FALSE;  
+	}
+
 	if (zend_hash_find(Z_OBJPROP_P(z_descriptor), "descriptor", sizeof("descriptor"), (void **)&tmp) == FAILURE) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unable to find descriptor property");
 		RETURN_FALSE;
@@ -918,7 +928,7 @@ PHP_FUNCTION(oci_lob_export)
 		/* nothing to write, fail silently */
 		RETURN_FALSE;
 	}
-	
+
 	if (PG(safe_mode) && (!php_checkuid(filename, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
 		RETURN_FALSE;
 	}
@@ -1666,8 +1676,8 @@ PHP_FUNCTION(oci_num_fields)
 }
 /* }}} */
 
-/* {{{ proto resource oci_parse(resource connection, string query)
-   Parse a query and return a statement */
+/* {{{ proto resource oci_parse(resource connection, string statement)
+   Parse a SQL or PL/SQL statement and return a statement resource */
 PHP_FUNCTION(oci_parse)
 {
 	zval *z_connection;
@@ -1719,7 +1729,7 @@ PHP_FUNCTION(oci_set_client_identifier)
 	zval *z_connection;
 	php_oci_connection *connection;
 	char *client_id;
-	long client_id_len;
+	int client_id_len;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &z_connection, &client_id, &client_id_len) == FAILURE) {
 		return;
@@ -1744,7 +1754,7 @@ PHP_FUNCTION(oci_set_edition)
 {
 #if ((OCI_MAJOR_VERSION > 11) || ((OCI_MAJOR_VERSION == 11) && (OCI_MINOR_VERSION >= 2)))
 	char *edition;
-	long edition_len;
+	int edition_len;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &edition, &edition_len) == FAILURE) {
 		return;
@@ -1777,7 +1787,7 @@ PHP_FUNCTION(oci_set_module_name)
 	zval *z_connection;
 	php_oci_connection *connection;
 	char *module;
-	long module_len;
+	int module_len;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &z_connection, &module, &module_len) == FAILURE) {
 		return;
@@ -1808,7 +1818,7 @@ PHP_FUNCTION(oci_set_action)
 	zval *z_connection;
 	php_oci_connection *connection;
 	char *action;
-	long action_len;
+	int action_len;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &z_connection, &action, &action_len) == FAILURE) {
 		return;
@@ -1839,7 +1849,7 @@ PHP_FUNCTION(oci_set_client_info)
 	zval *z_connection;
 	php_oci_connection *connection;
 	char *client_info;
-	long client_info_len;
+	int client_info_len;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", &z_connection, &client_info, &client_info_len) == FAILURE) {
 		return;

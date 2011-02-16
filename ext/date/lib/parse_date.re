@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: parse_date.re 301253 2010-07-14 00:04:43Z kalle $ */
+/* $Id: parse_date.re 305316 2010-11-13 15:01:48Z derick $ */
 
 #include "timelib.h"
 
@@ -1798,6 +1798,10 @@ timelib_time* timelib_strtotime(char *s, int len, struct timelib_error_container
 #endif
 	} while(t != EOI);
 
+	/* do funky checking whether the parsed time was valid time */
+	if (in.time->have_time && !timelib_valid_time( in.time->h, in.time->i, in.time->s)) {
+		add_warning(&in, "The parsed time was invalid");
+	}
 	/* do funky checking whether the parsed date was valid date */
 	if (in.time->have_date && !timelib_valid_date( in.time->y, in.time->m, in.time->d)) {
 		add_warning(&in, "The parsed date was invalid");
@@ -1993,7 +1997,7 @@ timelib_time *timelib_parse_from_format(char *format, char *string, int len, tim
 				break;
 
 			case '#': /* separation symbol */
-				if (*ptr == ';' || *ptr == ':' || *ptr == '/' || *ptr == '.' || *ptr == ',' || *ptr == '-') {
+				if (*ptr == ';' || *ptr == ':' || *ptr == '/' || *ptr == '.' || *ptr == ',' || *ptr == '-' || *ptr == '(' || *ptr == ')') {
 					++ptr;
 				} else {
 					add_pbf_error(s, "The separation symbol ([;:/.,-]) could not be found", string, begin);
@@ -2006,6 +2010,8 @@ timelib_time *timelib_parse_from_format(char *format, char *string, int len, tim
 			case '.':
 			case ',':
 			case '-':
+			case '(':
+			case ')':
 				if (*ptr == *fptr) {
 					++ptr;
 				} else {

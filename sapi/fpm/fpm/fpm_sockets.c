@@ -49,7 +49,7 @@ static int fpm_sockets_resolve_af_inet(char *node, char *service, struct sockadd
 	ret = getaddrinfo(node, service, &hints, &res);
 
 	if (ret != 0) {
-		zlog(ZLOG_STUFF, ZLOG_ERROR, "can't resolve hostname '%s%s%s': getaddrinfo said: %s%s%s\n",
+		zlog(ZLOG_ERROR, "can't resolve hostname '%s%s%s': getaddrinfo said: %s%s%s\n",
 					node, service ? ":" : "", service ? service : "",
 					gai_strerror(ret), ret == EAI_SYSTEM ? ", system error: " : "", ret == EAI_SYSTEM ? strerror(errno) : "");
 		return -1;
@@ -65,7 +65,7 @@ enum { FPM_GET_USE_SOCKET = 1, FPM_STORE_SOCKET = 2, FPM_STORE_USE_SOCKET = 3 };
 
 static void fpm_sockets_cleanup(int which, void *arg) /* {{{ */
 {
-	int i;
+	unsigned i;
 	char *env_value = 0;
 	int p = 0;
 	struct listening_socket_s *ls = sockets_list.data;
@@ -124,7 +124,7 @@ static int fpm_sockets_hash_op(int sock, struct sockaddr *sa, char *key, int typ
 
 		case FPM_GET_USE_SOCKET :
 		{
-			int i;
+			unsigned i;
 			struct listening_socket_s *ls = sockets_list.data;
 
 			for (i = 0; i < sockets_list.used; i++, ls++) {
@@ -171,7 +171,7 @@ static int fpm_sockets_new_listening_socket(struct fpm_worker_pool_s *wp, struct
 	sock = socket(sa->sa_family, SOCK_STREAM, 0);
 
 	if (0 > sock) {
-		zlog(ZLOG_STUFF, ZLOG_SYSERROR, "socket() failed");
+		zlog(ZLOG_SYSERROR, "socket() failed");
 		return -1;
 	}
 
@@ -179,28 +179,32 @@ static int fpm_sockets_new_listening_socket(struct fpm_worker_pool_s *wp, struct
 
 	if (wp->listen_address_domain == FPM_AF_UNIX) {
 		unlink( ((struct sockaddr_un *) sa)->sun_path);
+		saved_umask = umask(0777 ^ wp->socket_mode);
 	}
 
-	saved_umask = umask(0777 ^ wp->socket_mode);
-
 	if (0 > bind(sock, sa, socklen)) {
-		zlog(ZLOG_STUFF, ZLOG_SYSERROR, "bind() for address '%s' failed", wp->config->listen_address);
+		zlog(ZLOG_SYSERROR, "bind() for address '%s' failed", wp->config->listen_address);
+		if (wp->listen_address_domain == FPM_AF_UNIX) {
+			umask(saved_umask);
+		}
 		return -1;
 	}
 
 	if (wp->listen_address_domain == FPM_AF_UNIX) {
 		char *path = ((struct sockaddr_un *) sa)->sun_path;
+
+		umask(saved_umask);
+
 		if (wp->socket_uid != -1 || wp->socket_gid != -1) {
 			if (0 > chown(path, wp->socket_uid, wp->socket_gid)) {
-				zlog(ZLOG_STUFF, ZLOG_SYSERROR, "chown() for address '%s' failed", wp->config->listen_address);
+				zlog(ZLOG_SYSERROR, "chown() for address '%s' failed", wp->config->listen_address);
 				return -1;
 			}
 		}
 	}
-	umask(saved_umask);
 
 	if (0 > listen(sock, wp->config->listen_backlog)) {
-		zlog(ZLOG_STUFF, ZLOG_SYSERROR, "listen() for address '%s' failed", wp->config->listen_address);
+		zlog(ZLOG_SYSERROR, "listen() for address '%s' failed", wp->config->listen_address);
 		return -1;
 	}
 	return sock;
@@ -253,7 +257,7 @@ static int fpm_socket_af_inet_listening_socket(struct fpm_worker_pool_s *wp) /* 
 	}
 
 	if (port == 0) {
-		zlog(ZLOG_STUFF, ZLOG_ERROR, "invalid port value '%s'", port_str);
+		zlog(ZLOG_ERROR, "invalid port value '%s'", port_str);
 		return -1;
 	}
 
@@ -265,7 +269,7 @@ static int fpm_socket_af_inet_listening_socket(struct fpm_worker_pool_s *wp) /* 
 			if (0 > fpm_sockets_resolve_af_inet(addr, NULL, &sa_in)) {
 				return -1;
 			}
-			zlog(ZLOG_STUFF, ZLOG_NOTICE, "address '%s' resolved as %u.%u.%u.%u", addr, IPQUAD(&sa_in.sin_addr));
+			zlog(ZLOG_NOTICE, "address '%s' resolved as %u.%u.%u.%u", addr, IPQUAD(&sa_in.sin_addr));
 		}
 	} else {
 		sa_in.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -290,7 +294,7 @@ static int fpm_socket_af_unix_listening_socket(struct fpm_worker_pool_s *wp) /* 
 
 int fpm_sockets_init_main() /* {{{ */
 {
-	int i;
+	unsigned i;
 	struct fpm_worker_pool_s *wp;
 	char *inherited = getenv("FPM_SOCKETS");
 	struct listening_socket_s *ls;
@@ -314,7 +318,7 @@ int fpm_sockets_init_main() /* {{{ */
 			*eq = '\0';
 			fd_no = atoi(eq + 1);
 			type = fpm_sockets_domain_from_address(inherited);
-			zlog(ZLOG_STUFF, ZLOG_NOTICE, "using inherited socket fd=%d, \"%s\"", fd_no, inherited);
+			zlog(ZLOG_NOTICE, "using inherited socket fd=%d, \"%s\"", fd_no, inherited);
 			fpm_sockets_hash_op(fd_no, 0, inherited, type, FPM_STORE_SOCKET);
 		}
 
@@ -338,6 +342,10 @@ int fpm_sockets_init_main() /* {{{ */
 				}
 				wp->listening_socket = fpm_socket_af_unix_listening_socket(wp);
 				break;
+		}
+
+		if (0 > fpm_socket_get_listening_queue(wp, NULL, (unsigned *) &wp->listening_queue_len)) {
+			wp->listening_queue_len = -1;
 		}
 
 		if (wp->listening_socket == -1) {
@@ -369,3 +377,76 @@ int fpm_sockets_init_main() /* {{{ */
 }
 /* }}} */
 
+#if HAVE_FPM_LQ
+
+#ifdef HAVE_LQ_TCP_INFO
+
+#include <netinet/tcp.h>
+
+int fpm_socket_get_listening_queue(struct fpm_worker_pool_s *wp, unsigned *cur_lq, unsigned *max_lq)
+{
+	if (wp->listen_address_domain != FPM_AF_INET) {
+		return -1;
+	}
+
+	struct tcp_info info;
+	socklen_t len = sizeof(info);
+
+	if (0 > getsockopt(wp->listening_socket, IPPROTO_TCP, TCP_INFO, &info, &len)) {
+		return -1;
+	}
+
+	/* kernel >= 2.6.24 return non-zero here, that means operation is supported */
+	if (info.tcpi_sacked == 0) {
+		return -1;
+	}
+
+	if (cur_lq) {
+		*cur_lq = info.tcpi_unacked;
+	}
+
+	if (max_lq) {
+		*max_lq = info.tcpi_sacked;
+	}
+
+	return 0;
+}
+
+#endif
+
+#ifdef HAVE_LQ_SO_LISTENQ
+
+int fpm_socket_get_listening_queue(struct fpm_worker_pool_s *wp, unsigned *cur_lq, unsigned *max_lq)
+{
+	int val;
+	socklen_t len = sizeof(val);
+
+	if (cur_lq) {
+		if (0 > getsockopt(wp->listening_socket, SOL_SOCKET, SO_LISTENQLEN, &val, &len)) {
+			return -1;
+		}
+
+		*cur_lq = val;
+	}
+
+	if (max_lq) {
+		if (0 > getsockopt(wp->listening_socket, SOL_SOCKET, SO_LISTENQLIMIT, &val, &len)) {
+			return -1;
+		}
+
+		*max_lq = val;
+	}
+
+	return 0;
+}
+
+#endif
+
+#else
+
+int fpm_socket_get_listening_queue(struct fpm_worker_pool_s *wp, unsigned *cur_lq, unsigned *max_lq)
+{
+	return -1;
+}
+
+#endif

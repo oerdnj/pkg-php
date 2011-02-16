@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: math.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: math.c 301991 2010-08-08 15:45:02Z iliaa $ */
 
 #include "php.h"
 #include "php_math.h"
@@ -28,6 +28,8 @@
 #include <math.h>
 #include <float.h>
 #include <stdlib.h>
+
+#include "basic_functions.h"
 
 /* {{{ php_intlog10abs
    Returns floor(log10(fabs(val))), uses fast binary search */
@@ -127,7 +129,11 @@ PHPAPI double _php_math_round(double value, int places, int mode) {
 	double tmp_value;
 	int precision_places;
 
-	precision_places = 14 - php_intlog10abs(value);
+	if ((precision_places = php_intlog10abs(value)) > 0) {
+		precision_places = 14 - php_intlog10abs(value);
+	} else {
+		precision_places = 14;
+	}
 
 	f1 = php_intpow10(abs(places));
 
@@ -690,7 +696,11 @@ PHP_FUNCTION(log)
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "base must be greater than 0");				
 		RETURN_FALSE;
 	}
-	RETURN_DOUBLE(log(num) / log(base));
+	if (base == 1) {
+		RETURN_DOUBLE(php_get_nan());
+	} else {
+		RETURN_DOUBLE(log(num) / log(base));
+	}
 }
 /* }}} */
 

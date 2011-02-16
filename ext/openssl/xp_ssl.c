@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: xp_ssl.c 300617 2010-06-20 16:33:16Z pajoye $ */
+/* $Id: xp_ssl.c 303839 2010-09-29 01:25:35Z felipe $ */
 
 #include "php.h"
 #include "ext/standard/file.h"
@@ -502,7 +502,6 @@ static inline int php_openssl_enable_crypto(php_stream *stream,
 										zend_list_insert(mycert,
 											php_openssl_get_x509_list_id()));
 								add_next_index_zval(arr, zcert);
-								FREE_ZVAL(zcert);
 							}
 
 						} else {

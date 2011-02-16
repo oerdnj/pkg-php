@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: text.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: text.c 305837 2010-11-29 14:48:53Z iliaa $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -160,7 +160,7 @@ PHP_FUNCTION(dom_text_split_text)
 	}
 	DOM_GET_OBJ(node, id, xmlNodePtr, intern);
 
-	if (node->type != XML_TEXT_NODE) {
+	if (node->type != XML_TEXT_NODE && node->type != XML_CDATA_SECTION_NODE) {
 		RETURN_FALSE;
 	}
 

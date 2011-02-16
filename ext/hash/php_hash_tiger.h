@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_hash_tiger.h 301252 2010-07-13 23:59:54Z kalle $ */
+/* $Id: php_hash_tiger.h 305650 2010-11-22 13:12:28Z iliaa $ */
 
 #ifndef PHP_HASH_TIGER_H
 #define PHP_HASH_TIGER_H
@@ -25,9 +25,9 @@
 typedef struct {
 	php_hash_uint64 state[3];
 	php_hash_uint64 passed;
+	unsigned char buffer[64];
 	unsigned int passes:1;
 	unsigned int length:7;
-	unsigned char buffer[64];
 } PHP_TIGER_CTX;
 
 PHP_HASH_API void PHP_3TIGERInit(PHP_TIGER_CTX *context);

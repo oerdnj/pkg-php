@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: phar_object.c 298642 2010-04-27 08:23:25Z bjori $ */
+/* $Id: phar_object.c 303709 2010-09-23 04:41:14Z aharvey $ */
 
 #include "phar_internal.h"
 #include "func_interceptors.h"
@@ -1251,8 +1251,12 @@ static spl_other_handler phar_spl_foreign_handler = {
 
 /* {{{ proto void Phar::__construct(string fname [, int flags [, string alias]])
  * Construct a Phar archive object
- * {{{ proto void PharData::__construct(string fname [[, int flags [, string alias]], int file format = Phar::TAR])
+ *
+ * proto void PharData::__construct(string fname [[, int flags [, string alias]], int file format = Phar::TAR])
  * Construct a PharData archive object
+ *
+ * This function is used as the constructor for both the Phar and PharData
+ * classes, hence the two prototypes above.
  */
 PHP_METHOD(Phar, __construct)
 {

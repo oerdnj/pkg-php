@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: dblib_stmt.c 295958 2010-03-08 12:39:44Z iliaa $ */
+/* $Id: dblib_stmt.c 302196 2010-08-13 22:12:37Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -170,8 +170,8 @@ static int pdo_dblib_stmt_execute(pdo_stmt_t *stmt TSRMLS_DC)
 					case SQLMONEY4:
 					case SQLMONEYN: {
 						DBFLT8 money_value;
-						dbconvert(NULL, S->cols[i].coltype, dbdata(H->link, i+1), dbdatlen(H->link, i+1), SQLFLT8, (LPBYTE)&money_value, val->len);
-						val->len = spprintf(val->data, 0, "%.4f", money_value);
+						dbconvert(NULL, S->cols[i].coltype, dbdata(H->link, i+1), dbdatlen(H->link, i+1), SQLFLT8, (LPBYTE)&money_value, 8);
+						val->len = spprintf(&val->data, 0, "%.4f", money_value);
 						}
 						break;
 					default:

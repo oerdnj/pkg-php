@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: iptc.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: iptc.c 305507 2010-11-18 15:22:22Z pajoye $ */
 
 /*
  * Functions to parse & compse IPTC data.
@@ -188,6 +188,10 @@ PHP_FUNCTION(iptcembed)
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss|l", &iptcdata, &iptcdata_len, &jpeg_file, &jpeg_file_len, &spool) != SUCCESS) {
 		return;
+	}
+
+	if (strlen(jpeg_file) != jpeg_file_len) {
+		RETURN_FALSE;
 	}
 
 	if (PG(safe_mode) && (!php_checkuid(jpeg_file, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {

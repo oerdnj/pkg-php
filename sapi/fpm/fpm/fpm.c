@@ -23,23 +23,26 @@
 
 struct fpm_globals_s fpm_globals;
 
-int fpm_init(int argc, char **argv, char *config, struct event_base **base) /* {{{ */
+int fpm_init(int argc, char **argv, char *config, char *prefix, int test_conf) /* {{{ */
 {
 	fpm_globals.argc = argc;
 	fpm_globals.argv = argv;
-	fpm_globals.config = config;
+	if (config && *config) {
+		fpm_globals.config = strdup(config);
+	}
+	fpm_globals.prefix = prefix;
 
-	if (0 > fpm_php_init_main()            ||
+	if (0 > fpm_php_init_main()              ||
 		0 > fpm_stdio_init_main()            ||
-		0 > fpm_conf_init_main()             ||
+		0 > fpm_conf_init_main(test_conf)    ||
 		0 > fpm_unix_init_main()             ||
+		0 > fpm_pctl_init_main()             ||
 		0 > fpm_env_init_main()              ||
 		0 > fpm_signals_init_main()          ||
-		0 > fpm_pctl_init_main()             ||
 		0 > fpm_children_init_main()         ||
 		0 > fpm_sockets_init_main()          ||
 		0 > fpm_worker_pool_init_main()      ||
-		0 > fpm_event_init_main(base)) {
+		0 > fpm_event_init_main()) {
 		return -1;
 	}
 
@@ -47,7 +50,8 @@ int fpm_init(int argc, char **argv, char *config, struct event_base **base) /* {
 		return -1;
 	}
 
-	zlog(ZLOG_STUFF, ZLOG_NOTICE, "fpm is running, pid %d", (int) fpm_globals.parent_pid);
+	fpm_stdio_init_final();
+	zlog(ZLOG_NOTICE, "fpm is running, pid %d", (int) fpm_globals.parent_pid);
 
 	return 0;
 }
@@ -55,7 +59,7 @@ int fpm_init(int argc, char **argv, char *config, struct event_base **base) /* {
 
 /*	children: return listening socket
 	parent: never return */
-int fpm_run(int *max_requests, struct event_base *base) /* {{{ */
+int fpm_run(int *max_requests) /* {{{ */
 {
 	struct fpm_worker_pool_s *wp;
 
@@ -63,7 +67,7 @@ int fpm_run(int *max_requests, struct event_base *base) /* {{{ */
 	for (wp = fpm_worker_all_pools; wp; wp = wp->next) {
 		int is_parent;
 
-		is_parent = fpm_children_create_initial(wp, base);
+		is_parent = fpm_children_create_initial(wp);
 
 		if (!is_parent) {
 			goto run_child;
@@ -71,7 +75,7 @@ int fpm_run(int *max_requests, struct event_base *base) /* {{{ */
 	}
 
 	/* run event loop forever */
-	fpm_event_loop(base);
+	fpm_event_loop();
 
 run_child: /* only workers reach this point */
 

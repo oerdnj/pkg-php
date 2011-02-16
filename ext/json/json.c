@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: json.c 301028 2010-07-06 17:01:30Z scottmac $ */
+/* $Id: json.c 303350 2010-09-14 03:46:28Z aharvey $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -505,7 +505,7 @@ PHP_JSON_API void php_json_decode(zval *return_value, char *str, int str_len, ze
 	}
 
 	if (depth <= 0) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Depth must greater than zero");
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Depth must be greater than zero");
 		efree(utf16);
 		RETURN_NULL();
 	}

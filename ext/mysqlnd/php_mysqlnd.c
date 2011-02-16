@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_mysqlnd.c 300352 2010-06-10 12:24:03Z andrey $ */
+/* $Id: php_mysqlnd.c 304974 2010-10-28 14:07:36Z andrey $ */
 #include "php.h"
 #include "php_ini.h"
 #include "mysqlnd.h"
@@ -37,7 +37,7 @@ static zend_function_entry mysqlnd_functions[] = {
 
 
 /* {{{ mysqlnd_minfo_print_hash */
-#if PHP_MAJOR_VERSION >= 6
+#if MYSQLND_UNICODE
 PHPAPI void mysqlnd_minfo_print_hash(zval *values)
 {
 	zval **values_entry;
@@ -122,6 +122,8 @@ PHP_MINFO_FUNCTION(mysqlnd)
 	php_info_print_table_row(2, "Read timeout", buf);
 	php_info_print_table_row(2, "Collecting statistics", MYSQLND_G(collect_statistics)? "Yes":"No");
 	php_info_print_table_row(2, "Collecting memory statistics", MYSQLND_G(collect_memory_statistics)? "Yes":"No");
+
+	php_info_print_table_row(2, "Tracing", MYSQLND_G(debug)? MYSQLND_G(debug):"n/a");
 	php_info_print_table_end();
 
 	/* Print client stats */
@@ -136,7 +138,7 @@ PHP_MINFO_FUNCTION(mysqlnd)
 /* }}} */
 
 
-PHPAPI ZEND_DECLARE_MODULE_GLOBALS(mysqlnd);
+PHPAPI ZEND_DECLARE_MODULE_GLOBALS(mysqlnd)
 
 
 /* {{{ PHP_GINIT_FUNCTION

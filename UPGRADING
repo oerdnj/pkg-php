@@ -1,4 +1,4 @@
-$Id: UPGRADING 282950 2009-06-28 16:14:30Z johannes $
+$Id: UPGRADING 306076 2010-12-08 09:38:47Z pajoye $
 
 UPGRADE NOTES - PHP 5.3
 
@@ -39,6 +39,9 @@ UPGRADE NOTES - PHP 5.3
 =====================================
 2. Changes made to existing functions
 =====================================
+
+- Paths containing NULL (like /some/path\0foo.txt) are now considered invalid. 
+  See http://news.php.net/php.internals/50191
 
 - The HTTP stream wrapper now considers all status codes from 200 to 399 to be
   successful.
@@ -273,6 +276,8 @@ UPGRADE NOTES - PHP 5.3
         - MySQLi: Now supports persistent connections by prepending the hostname 
           with "p:".
 
+        - imagepstext now rejects invalid antialiasing steps and raises a warning.
+
      d. no longer possible to disable
 
         - PCRE
@@ -456,6 +461,14 @@ UPGRADE NOTES - PHP 5.3
 
 - Firebird and SNMP support are no longer available on Windows. Firebird support
   may be reintroduced in the future.
+
+=====================
+11.1 New in PHP 5.3.4
+=====================
+
+- open_basedir supports now symbolic links (checks the target).
+- is_link and SplFileInfo symbolic links related method are now fully supported
+  (on Windows Vista or later).
 
 ===================
 12. New in PHP 5.3:

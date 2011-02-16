@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_mssql.c 298255 2010-04-21 14:19:27Z felipe $ */
+/* $Id: php_mssql.c 303375 2010-09-15 02:12:46Z felipe $ */
 
 #ifdef COMPILE_DL_MSSQL
 #define HAVE_MSSQL 1
@@ -539,7 +539,7 @@ PHP_MINFO_FUNCTION(mssql)
 static void php_mssql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 {
 	char *host = NULL, *user = NULL, *passwd = NULL;
-	int host_len, user_len, passwd_len;
+	int host_len = 0, user_len = 0, passwd_len = 0;
 	zend_bool new_link = 0;
 	char *hashed_details;
 	int hashed_details_length;
@@ -1058,6 +1058,14 @@ static void php_mssql_get_column_content_without_type(mssql_link *mssql_ptr,int 
 		DBBINARY *bin;
 		unsigned char *res_buf;
 		int res_length = dbdatlen(mssql_ptr->link, offset);
+
+		if (res_length == 0) {
+			ZVAL_NULL(result);
+			return;
+		} else if (res_length < 0) {
+			ZVAL_FALSE(result);
+			return;
+		}
 
 		res_buf = (unsigned char *) emalloc(res_length+1);
 		bin = ((DBBINARY *)dbdata(mssql_ptr->link, offset));

@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: var.c 301144 2010-07-09 21:19:27Z scottmac $ */
+/* $Id: var.c 303330 2010-09-13 20:14:18Z kalle $ */
 
 /* {{{ includes
 */
@@ -284,9 +284,13 @@ PHPAPI void php_debug_zval_dump(zval **struc, int level TSRMLS_DC) /* {{{ */
 			return;
 		}
 		ce = Z_OBJCE_PP(struc);
-		Z_OBJ_HANDLER_PP(struc, get_class_name)(*struc, &class_name, &class_name_len, 0 TSRMLS_CC);
-		php_printf("%sobject(%s)#%d (%d) refcount(%u){\n", COMMON, class_name, Z_OBJ_HANDLE_PP(struc), myht ? zend_hash_num_elements(myht) : 0, Z_REFCOUNT_PP(struc));
-		efree(class_name);
+		if (Z_OBJ_HANDLER_PP(struc, get_class_name)) {
+			Z_OBJ_HANDLER_PP(struc, get_class_name)(*struc, &class_name, &class_name_len, 0 TSRMLS_CC);
+			php_printf("%sobject(%s)#%d (%d) refcount(%u){\n", COMMON, class_name, Z_OBJ_HANDLE_PP(struc), myht ? zend_hash_num_elements(myht) : 0, Z_REFCOUNT_PP(struc));
+			efree(class_name);
+		} else {
+			php_printf("%sobject(unknown class)#%d (%d) refcount(%u){\n", COMMON, Z_OBJ_HANDLE_PP(struc), myht ? zend_hash_num_elements(myht) : 0, Z_REFCOUNT_PP(struc));
+		}
 		zval_element_dump_func = zval_object_property_dump;
 head_done:
 		if (myht) {
@@ -353,7 +357,7 @@ static int php_array_element_export(zval **zv TSRMLS_DC, int num_args, va_list a
 
 	if (hash_key->nKeyLength == 0) { /* numeric key */
 		buffer_append_spaces(buf, level+1);
-		smart_str_append_long(buf, hash_key->h);
+		smart_str_append_long(buf, (long) hash_key->h);
 		smart_str_appendl(buf, " => ", 4);
 	} else { /* string key */
 		char *key, *tmp_str;

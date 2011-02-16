@@ -19,7 +19,7 @@
    |          Sara Golemon <pollita@php.net>                              |
    +----------------------------------------------------------------------+
  */
-/* $Id: http_fopen_wrapper.c 293998 2010-01-25 16:28:13Z jani $ */ 
+/* $Id: http_fopen_wrapper.c 305495 2010-11-18 12:10:17Z cataphract $ */ 
 
 #include "php.h"
 #include "php_globals.h"
@@ -111,6 +111,7 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 	char *user_headers = NULL;
 	int header_init = ((flags & HTTP_WRAPPER_HEADER_INIT) != 0);
 	int redirected = ((flags & HTTP_WRAPPER_REDIRECTED) != 0);
+	int follow_location = 1;
 	php_stream_filter *transfer_encoding = NULL;
 
 	tmp_line[0] = '\0';
@@ -213,7 +214,7 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
  	 		char header_line[HTTP_HEADER_BLOCK_SIZE];
 
 			/* get response header */
-			while (php_stream_gets(stream, header_line, HTTP_HEADER_BLOCK_SIZE-1) != NULL)	{
+			while (php_stream_gets(stream, header_line, HTTP_HEADER_BLOCK_SIZE-1) != NULL) {
 				if (header_line[0] == '\n' ||
 				    header_line[0] == '\r' ||
 				    header_line[0] == '\0') {
@@ -233,7 +234,7 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 		}
 	}
 
-	if (stream == NULL)	
+	if (stream == NULL)
 		goto out;
 
 	/* avoid buffering issues while reading header */
@@ -309,7 +310,7 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 		}
 
 		/* query string */
-		if (resource->query)	{
+		if (resource->query) {
 			strlcat(scratch, "?", scratch_len);
 			strlcat(scratch, resource->query, scratch_len);
 		}
@@ -442,15 +443,18 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 	}
 
 	/* if the user has configured who they are, send a From: line */
-	if (((have_header & HTTP_HEADER_FROM) == 0) && cfg_get_string("from", &tmp) == SUCCESS)	{
-		if (snprintf(scratch, scratch_len, "From: %s\r\n", tmp) > 0)
-			php_stream_write(stream, scratch, strlen(scratch));
+	{
+		char *from_address = php_ini_string("from", sizeof("from"), 0);
+		if (((have_header & HTTP_HEADER_FROM) == 0) && from_address[0] != '\0') {
+			if (snprintf(scratch, scratch_len, "From: %s\r\n", from_address) > 0)
+				php_stream_write(stream, scratch, strlen(scratch));
+		}
 	}
 
 	/* Send Host: header so name-based virtual hosts work */
 	if ((have_header & HTTP_HEADER_HOST) == 0) {
 		if ((use_ssl && resource->port != 443 && resource->port != 0) || 
-			(!use_ssl && resource->port != 80 && resource->port != 0))	{
+			(!use_ssl && resource->port != 80 && resource->port != 0)) {
 			if (snprintf(scratch, scratch_len, "Host: %s:%i\r\n", resource->host, resource->port) > 0)
 				php_stream_write(stream, scratch, strlen(scratch));
 		} else {
@@ -628,6 +632,11 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 			http_header_line[http_header_line_length] = '\0';
 
 			if (!strncasecmp(http_header_line, "Location: ", 10)) {
+				if (context && php_stream_context_get_option(context, "http", "follow_location", &tmpzval) == SUCCESS) {
+					SEPARATE_ZVAL(tmpzval);
+					convert_to_long_ex(tmpzval);
+					follow_location = Z_LVAL_PP(tmpzval);
+				}
 				strlcpy(location, http_header_line + 10, sizeof(location));
 			} else if (!strncasecmp(http_header_line, "Content-Type: ", 14)) {
 				php_stream_notify_info(context, PHP_STREAM_NOTIFY_MIME_TYPE_IS, http_header_line + 14, 0);
@@ -670,9 +679,9 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 			break;
 		}
 	}
-	
-	if (!reqok || location[0] != '\0') {
-		if (((options & STREAM_ONLY_GET_HEADERS) || ignore_errors) && redirect_max <= 1) {
+
+	if (!reqok || (location[0] != '\0' && follow_location)) {
+		if (!follow_location || (((options & STREAM_ONLY_GET_HEADERS) || ignore_errors) && redirect_max <= 1)) {
 			goto out;
 		}
 
@@ -685,7 +694,7 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 		php_stream_close(stream);
 		stream = NULL;
 
-		if (location[0] != '\0')	{
+		if (location[0] != '\0') {
 
 			char new_path[HTTP_HEADER_BLOCK_SIZE];
 			char loc_path[HTTP_HEADER_BLOCK_SIZE];
@@ -697,7 +706,7 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 							strncasecmp(location, "ftps://", sizeof("ftps://")-1))) 
 			{
 				if (*location != '/') {
-					if (*(location+1) != '\0' && resource->path) {		
+					if (*(location+1) != '\0' && resource->path) {
 						char *s = strrchr(resource->path, '/');
 						if (!s) {
 							s = resource->path;
@@ -736,20 +745,20 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path,
 				goto out;
 			}
 
-#define CHECK_FOR_CNTRL_CHARS(val) {	\
-	if (val) {	\
-		unsigned char *s, *e;	\
-		int l;	\
-		l = php_url_decode(val, strlen(val));	\
-		s = (unsigned char*)val; e = s + l;	\
-		while (s < e) {	\
-			if (iscntrl(*s)) {	\
-				php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "Invalid redirect URL! %s", new_path);	\
-				goto out;	\
-			}	\
-			s++;	\
-		}	\
-	}	\
+#define CHECK_FOR_CNTRL_CHARS(val) { \
+	if (val) { \
+		unsigned char *s, *e; \
+		int l; \
+		l = php_url_decode(val, strlen(val)); \
+		s = (unsigned char*)val; e = s + l; \
+		while (s < e) { \
+			if (iscntrl(*s)) { \
+				php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "Invalid redirect URL! %s", new_path); \
+				goto out; \
+			} \
+			s++; \
+		} \
+	} \
 }
 			/* check for control characters in login, password & path */
 			if (strncasecmp(new_path, "http://", sizeof("http://") - 1) || strncasecmp(new_path, "https://", sizeof("https://") - 1)) {
@@ -839,7 +848,7 @@ static php_stream_wrapper_ops http_stream_wops = {
 	NULL  /* rmdir */
 };
 
-PHPAPI php_stream_wrapper php_stream_http_wrapper =	{
+PHPAPI php_stream_wrapper php_stream_http_wrapper = {
 	&http_stream_wops,
 	NULL,
 	1 /* is_url */

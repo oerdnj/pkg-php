@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_persist.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: com_persist.c 305507 2010-11-18 15:22:22Z pajoye $ */
 
 /* Infrastructure for working with persistent COM objects.
  * Implements: IStream* wrapper for PHP streams.
@@ -389,6 +389,9 @@ CPH_METHOD(SaveToFile)
 		}
 
 		if (filename) {
+			if (strlen(filename) != filename_len) {
+				RETURN_FALSE;
+			}
 			fullpath = expand_filepath(filename, NULL TSRMLS_CC);
 			if (!fullpath) {
 				RETURN_FALSE;
@@ -451,6 +454,10 @@ CPH_METHOD(LoadFromFile)
 					&filename, &filename_len, &flags)) {
 			php_com_throw_exception(E_INVALIDARG, "Invalid arguments" TSRMLS_CC);
 			return;
+		}
+
+		if (strlen(filename) != filename_len) {
+			RETURN_FALSE;
 		}
 
 		if (!(fullpath = expand_filepath(filename, NULL TSRMLS_CC))) {

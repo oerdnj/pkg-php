@@ -11,7 +11,7 @@
  *
  *****************************************************************************/
 
-/* $Id: time.c 273823 2009-01-19 02:35:22Z pajoye $ */
+/* $Id: time.c 305298 2010-11-12 18:37:02Z cataphract $ */
 
  /**
   *
@@ -105,7 +105,7 @@ PHPAPI int gettimeofday(struct timeval *time_Info, struct timezone *timezone_Inf
                     dt = (double)timer/PW32G(freq);
                     time_Info->tv_sec = PW32G(starttime).tv_sec + (int)dt;
                     time_Info->tv_usec = PW32G(starttime).tv_usec + (int)((dt-(int)dt)*1000000);
-                    if (time_Info->tv_usec > 1000000) {
+                    if (time_Info->tv_usec >= 1000000) {
                         time_Info->tv_usec -= 1000000;
                         ++time_Info->tv_sec;
                     }

@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_statistics.h 298318 2010-04-22 13:03:44Z andrey $ */
+/* $Id: mysqlnd_statistics.h 303734 2010-09-23 16:03:22Z andrey $ */
 
 #ifndef MYSQLND_STATISTICS_H
 #define MYSQLND_STATISTICS_H
@@ -64,7 +64,7 @@ extern const MYSQLND_STRING mysqlnd_stats_values_names[];
 			MYSQLND_STAT_CALL_TRIGGER((stats), (statistic), (value)); \
 			MYSQLND_STATS_UNLOCK(_p_s); \
 	}
-	
+
 #define MYSQLND_DEC_STATISTIC(enabler, stats, statistic) \
  { \
 	enum_mysqlnd_collected_stats _s = (statistic);\

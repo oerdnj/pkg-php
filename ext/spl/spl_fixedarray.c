@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: spl_fixedarray.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: spl_fixedarray.c 305565 2010-11-19 20:07:32Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -158,6 +158,9 @@ static HashTable* spl_fixedarray_object_get_properties(zval *obj TSRMLS_DC) /* {
 				zend_hash_index_update(intern->std.properties, i, (void *)&intern->array->elements[i], sizeof(zval *), NULL);
 				Z_ADDREF_P(intern->array->elements[i]);
 			} else {
+				if (GC_G(gc_active)) {
+					return NULL;
+				}
 				zend_hash_index_update(intern->std.properties, i, (void *)&EG(uninitialized_zval_ptr), sizeof(zval *), NULL);
 				Z_ADDREF_P(EG(uninitialized_zval_ptr));
 			}
@@ -406,7 +409,11 @@ static void spl_fixedarray_object_write_dimension(zval *object, zval *offset, zv
 	intern = (spl_fixedarray_object *)zend_object_store_get_object(object TSRMLS_CC);
 
 	if (intern->fptr_offset_set) {
-		SEPARATE_ARG_IF_REF(offset);
+		if (!offset) {
+			ALLOC_INIT_ZVAL(offset);
+		} else {
+			SEPARATE_ARG_IF_REF(offset);
+		}
 		SEPARATE_ARG_IF_REF(value);
 		zend_call_method_with_2_params(&object, intern->std.ce, &intern->fptr_offset_set, "offsetSet", NULL, offset, value);
 		zval_ptr_dtor(&value);

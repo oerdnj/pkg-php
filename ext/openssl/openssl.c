@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: openssl.c 300764 2010-06-26 16:03:39Z felipe $ */
+/* $Id: openssl.c 305902 2010-12-02 11:37:43Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -702,7 +702,7 @@ static time_t asn1_time_to_time_t(ASN1_UTCTIME * timestr TSRMLS_DC) /* {{{ */
 #if OPENSSL_VERSION_NUMBER >= 0x10000002L
 static inline int php_openssl_config_check_syntax(const char * section_label, const char * config_filename, const char * section, LHASH_OF(CONF_VALUE) * config TSRMLS_DC) /* {{{ */
 #else
-static inline int php_openssl_config_check_syntax(const char * section_label, const char * config_filename, const char * section, LHASH * config TSRMLS_DC) /* {{{ */
+static inline int php_openssl_config_check_syntax(const char * section_label, const char * config_filename, const char * section, LHASH * config TSRMLS_DC)
 #endif
 {
 	X509V3_CTX ctx;
@@ -868,10 +868,7 @@ static int php_openssl_load_rand_file(const char * file, int *egdsocket, int *se
 
 	*egdsocket = 0;
 	*seeded = 0;
-	
-#ifdef WINDOWS
-	RAND_screen();
-#endif
+
 	if (file == NULL) {
 		file = RAND_file_name(buffer, sizeof(buffer));
 	} else if (RAND_egd(file) > 0) {
@@ -1771,6 +1768,10 @@ PHP_FUNCTION(openssl_pkcs12_export_to_file)
 		return;
 
 	RETVAL_FALSE;
+
+	if (strlen(filename) != filename_len) {
+		return;
+	}
 	
 	cert = php_openssl_x509_from_zval(zcert, 0, &certresource TSRMLS_CC);
 	if (cert == NULL) {
@@ -2117,7 +2118,8 @@ static int php_openssl_make_REQ(struct php_x509_request * req, X509_REQ * csr, z
 		if (attribs) {
 			zend_hash_internal_pointer_reset_ex(HASH_OF(attribs), &hpos);
 			while(zend_hash_get_current_data_ex(HASH_OF(attribs), (void**)&item, &hpos) == SUCCESS) {
-				char * strindex; uint strindexlen;
+				char *strindex = NULL;
+				uint strindexlen;
 				ulong intindex;
 
 				zend_hash_get_current_key_ex(HASH_OF(attribs), &strindex, &strindexlen, &intindex, 0, &hpos);
@@ -2217,6 +2219,10 @@ PHP_FUNCTION(openssl_csr_export_to_file)
 		return;
 	}
 	RETVAL_FALSE;
+
+	if (strlen(filename) != filename_len) {
+		return;
+	}
 
 	csr = php_openssl_csr_from_zval(&zcsr, 0, &csr_resource TSRMLS_CC);
 	if (csr == NULL) {
@@ -3002,6 +3008,10 @@ PHP_FUNCTION(openssl_pkey_export_to_file)
 	}
 	RETVAL_FALSE;
 
+	if (strlen(filename) != filename_len) {
+		return;
+	}
+
 	key = php_openssl_evp_from_zval(zpkey, 0, passphrase, 0, &key_resource TSRMLS_CC);
 
 	if (key == NULL) {
@@ -3394,7 +3404,14 @@ PHP_FUNCTION(openssl_pkcs7_encrypt)
 				&outfilename, &outfilename_len, &zrecipcerts, &zheaders, &flags, &cipherid) == FAILURE)
 		return;
 
-	
+	if (strlen(infilename) != infilename_len) {
+		return;
+	}
+
+	if (strlen(outfilename) != outfilename_len) {
+		return;
+	}
+
 	if (php_openssl_safe_mode_chk(infilename TSRMLS_CC) || php_openssl_safe_mode_chk(outfilename TSRMLS_CC)) {
 		return;
 	}
@@ -3526,14 +3543,22 @@ PHP_FUNCTION(openssl_pkcs7_sign)
 	char * outfilename;	int outfilename_len;
 	char * extracertsfilename = NULL; int extracertsfilename_len;
 
+	RETVAL_FALSE;
+
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ssZZa!|ls",
 				&infilename, &infilename_len, &outfilename, &outfilename_len,
 				&zcert, &zprivkey, &zheaders, &flags, &extracertsfilename,
 				&extracertsfilename_len) == FAILURE) {
 		return;
 	}
-	
-	RETVAL_FALSE;
+
+	if (strlen(infilename) != infilename_len) {
+		return;
+	}
+
+	if (strlen(outfilename) != outfilename_len) {
+		return;
+	}
 
 	if (extracertsfilename) {
 		others = load_all_certs_from_file(extracertsfilename);
@@ -3630,12 +3655,20 @@ PHP_FUNCTION(openssl_pkcs7_decrypt)
 	char * infilename;	int infilename_len;
 	char * outfilename;	int outfilename_len;
 
+	RETVAL_FALSE;
+
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ssZ|Z", &infilename, &infilename_len,
 				&outfilename, &outfilename_len, &recipcert, &recipkey) == FAILURE) {
 		return;
 	}
 
-	RETVAL_FALSE;
+	if (strlen(infilename) != infilename_len) {
+		return;
+	}
+
+	if (strlen(outfilename) != outfilename_len) {
+		return;
+	}
 
 	cert = php_openssl_x509_from_zval(recipcert, 0, &certresval TSRMLS_CC);
 	if (cert == NULL) {
@@ -4638,7 +4671,7 @@ PHP_FUNCTION(openssl_encrypt)
 {
 	zend_bool raw_output = 0;
 	char *data, *method, *password, *iv = "";
-	int data_len, method_len, password_len, iv_len = 0;
+	int data_len, method_len, password_len, iv_len = 0, max_iv_len;
 	const EVP_CIPHER *cipher_type;
 	EVP_CIPHER_CTX cipher_ctx;
 	int i, outlen, keylen;
@@ -4663,10 +4696,11 @@ PHP_FUNCTION(openssl_encrypt)
 		key = (unsigned char*)password;
 	}
 
-	if (iv_len <= 0) {
+	max_iv_len = EVP_CIPHER_iv_length(cipher_type);
+	if (iv_len <= 0 && max_iv_len > 0) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Using an empty Initialization Vector (iv) is potentially insecure and not recommended");
 	}
-	free_iv = php_openssl_validate_iv(&iv, &iv_len, EVP_CIPHER_iv_length(cipher_type) TSRMLS_CC);
+	free_iv = php_openssl_validate_iv(&iv, &iv_len, max_iv_len TSRMLS_CC);
 
 	outlen = data_len + EVP_CIPHER_block_size(cipher_type);
 	outbuf = emalloc(outlen + 1);

@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_http.c 299903 2010-05-28 12:18:03Z dmitry $ */
+/* $Id: php_http.c 304084 2010-10-05 11:43:59Z dmitry $ */
 
 #include "php_soap.h"
 #include "ext/standard/base64.h"
@@ -137,6 +137,13 @@ static php_stream* http_connect(zval* this_ptr, php_url *phpurl, int use_ssl, ph
 		smart_str_appendc(&soap_headers, ':');
 		smart_str_append_unsigned(&soap_headers, phpurl->port);
 		smart_str_append_const(&soap_headers, " HTTP/1.1\r\n");
+		smart_str_append_const(&soap_headers, "Host: ");
+		smart_str_appends(&soap_headers, phpurl->host);
+		if (phpurl->port != 80) {
+			smart_str_appendc(&soap_headers, ':');
+			smart_str_append_unsigned(&soap_headers, phpurl->port);
+		}
+		smart_str_append_const(&soap_headers, "\r\n");
 		proxy_authentication(this_ptr, &soap_headers TSRMLS_CC);
 		smart_str_append_const(&soap_headers, "\r\n");
 		if (php_stream_write(stream, soap_headers.c, soap_headers.len) != soap_headers.len) {

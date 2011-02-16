@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: formatted_print.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: formatted_print.c 305561 2010-11-19 16:36:10Z iliaa $ */
 
 #include <math.h>				/* modf() */
 #include "php.h"
@@ -41,7 +41,7 @@
 #define FLOAT_DIGITS 6
 #define FLOAT_PRECISION 6
 #define MAX_FLOAT_DIGITS 38
-#define MAX_FLOAT_PRECISION 40
+#define MAX_FLOAT_PRECISION 53
 
 #if 0
 /* trick to control varargs functions through cpp */

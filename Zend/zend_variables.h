@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_variables.h 293400 2010-01-11 10:07:10Z dmitry $ */
+/* $Id: zend_variables.h 302152 2010-08-12 17:28:08Z sas $ */
 
 #ifndef ZEND_VARIABLES_H
 #define ZEND_VARIABLES_H
@@ -75,6 +75,17 @@ ZEND_API void _zval_internal_ptr_dtor_wrapper(zval **zvalue);
 #endif
 
 ZEND_API void zval_add_ref(zval **p);
+
+ZEND_API void zval_property_ctor(zval **);
+
+#ifdef ZTS
+# define zval_shared_property_ctor zval_property_ctor
+#else
+# define zval_shared_property_ctor zval_add_ref
+#endif
+
+#define zval_copy_property_ctor(ce) ((copy_ctor_func_t) (((ce)->type == ZEND_INTERNAL_CLASS) ? zval_shared_property_ctor : zval_add_ref))
+
 
 END_EXTERN_C()
 

@@ -84,6 +84,7 @@ require_once('skipifconnectfailure.inc');
 		"MYSQLI_REPORT_ERROR"				=> true,
 		"MYSQLI_REPORT_OFF"					=> true,
 		"MYSQLI_SET_CHARSET_NAME"			=> true,
+		"MYSQLI_SET_CHARSET_DIR"			=> true,
 		"MYSQLI_REFRESH_GRANT"				=> true,
 		"MYSQLI_REFRESH_LOG"					=> true,
 		"MYSQLI_REFRESH_TABLES"				=> true,
@@ -110,6 +111,7 @@ require_once('skipifconnectfailure.inc');
 		$expected_constants['MYSQLI_OPT_NET_READ_BUFFER_SIZE'] = true;
 		$expected_constants['MYSQLI_ASYNC'] = true;
 
+		$expected_constants['MYSQLI_SERVER_PS_OUT_PARAMS'] = true;
 	} else {
 		$version = mysqli_get_client_version();
 	}
@@ -148,6 +150,10 @@ require_once('skipifconnectfailure.inc');
 		$expected_constants = array_merge($expected_constants, array(
 			"MYSQLI_STMT_ATTR_PREFETCH_ROWS"	=> true,
 		));
+	}
+
+	if ($version > 50110 || $IS_MYSQLND) {
+		$expected_constants['MYSQLI_OPT_SSL_VERIFY_SERVER_CERT'] = true;
 	}
 
 	/* pretty dump test, but that is the best way to mimic mysql.c */

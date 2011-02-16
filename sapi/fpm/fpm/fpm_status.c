@@ -1,5 +1,5 @@
 
-	/* $Id: fpm_status.c 298380 2010-04-23 15:09:28Z fat $ */
+	/* $Id: fpm_status.c 305281 2010-11-11 21:38:18Z fat $ */
 	/* (c) 2009 Jerome Loyet */
 
 #include "php.h"
@@ -20,13 +20,13 @@ static char *fpm_status_pong= NULL;
 int fpm_status_init_child(struct fpm_worker_pool_s *wp) /* {{{ */
 {
 	if (!wp || !wp->config) {
-		zlog(ZLOG_STUFF, ZLOG_ERROR, "unable to init fpm_status because conf structure is NULL");
+		zlog(ZLOG_ERROR, "unable to init fpm_status because conf structure is NULL");
 		return -1;
 	}
 	if (wp->config->pm_status_path || wp->config->ping_path) {
 		if (wp->config->pm_status_path) {
 			if (!wp->shm_status) {
-				zlog(ZLOG_STUFF, ZLOG_ERROR, "[pool %s] unable to init fpm_status because the dedicated SHM has not been set", wp->config->name);
+				zlog(ZLOG_ERROR, "[pool %s] unable to init fpm_status because the dedicated SHM has not been set", wp->config->name);
 				return -1;
 			}
 			fpm_status_shm = wp->shm_status;
@@ -37,7 +37,7 @@ int fpm_status_init_child(struct fpm_worker_pool_s *wp) /* {{{ */
 		}
 		if (wp->config->ping_path) {
 			if (!wp->config->ping_response) {
-				zlog(ZLOG_STUFF, ZLOG_ERROR, "[pool %s] ping is set (%s) but pong is not set.", wp->config->name, wp->config->ping_path);
+				zlog(ZLOG_ERROR, "[pool %s] ping is set (%s) but pong is not set.", wp->config->name, wp->config->ping_path);
 				return -1;
 			}
 			fpm_status_ping = strdup(wp->config->ping_path);
@@ -99,7 +99,41 @@ void fpm_status_update_accepted_conn(struct fpm_shm_s *shm, unsigned long int ac
 }
 /* }}} */
 
-void fpm_status_update_activity(struct fpm_shm_s *shm, int idle, int active, int total, int clear_last_update) /* {{{ */
+void fpm_status_increment_max_children_reached(struct fpm_shm_s *shm) /* {{{ */
+{
+	struct fpm_status_s status;
+
+	if (!shm) shm = fpm_status_shm;
+	if (!shm || !shm->mem) return;
+
+	/* one shot operation */
+	status = *(struct fpm_status_s *)shm->mem;
+
+	status.max_children_reached++;
+
+	/* one shot operation */
+	*(struct fpm_status_s *)shm->mem = status;
+}
+/* }}} */
+
+void fpm_status_update_max_children_reached(struct fpm_shm_s *shm, unsigned int max_children_reached) /* {{{ */
+{
+	struct fpm_status_s status;
+
+	if (!shm) shm = fpm_status_shm;
+	if (!shm || !shm->mem) return;
+
+	/* one shot operation */
+	status = *(struct fpm_status_s *)shm->mem;
+
+	status.max_children_reached = max_children_reached;
+
+	/* one shot operation */
+	*(struct fpm_status_s *)shm->mem = status;
+}
+/* }}} */
+
+void fpm_status_update_activity(struct fpm_shm_s *shm, int idle, int active, int total, unsigned cur_lq, int max_lq, int clear_last_update) /* {{{ */
 {
 	struct fpm_status_s status;
 
@@ -112,6 +146,8 @@ void fpm_status_update_activity(struct fpm_shm_s *shm, int idle, int active, int
 	status.idle = idle;
 	status.active = active;
 	status.total = total;
+	status.cur_lq = cur_lq;
+	status.max_lq = max_lq;
 	if (clear_last_update) {
 		memset(&status.last_update, 0, sizeof(status.last_update));
 	} else {
@@ -130,15 +166,30 @@ static void fpm_status_handle_status_txt(struct fpm_status_s *status, char **out
 	}
 
 	spprintf(output, 0, 
-		"accepted conn:   %lu\n"
-		"pool:             %s\n"
-		"process manager:  %s\n"
-		"idle processes:   %d\n"
-		"active processes: %d\n"
-		"total processes:  %d\n",
-		status->accepted_conn, fpm_status_pool, status->pm == PM_STYLE_STATIC ? "static" : "dynamic", status->idle, status->active, status->total);
+		"pool:                 %s\n"
+		"process manager:      %s\n"
+		"accepted conn:        %lu\n"
+#if HAVE_FPM_LQ
+		"listen queue len:     %u\n"
+		"max listen queue len: %d\n"
+#endif
+		"idle processes:       %d\n"
+		"active processes:     %d\n"
+		"total processes:      %d\n"
+		"max children reached: %u\n",
+		fpm_status_pool,
+		status->pm == PM_STYLE_STATIC ? "static" : "dynamic",
+		status->accepted_conn,
+#if HAVE_FPM_LQ
+		status->cur_lq,
+		status->max_lq,
+#endif
+		status->idle,
+		status->active,
+		status->total,
+		status->max_children_reached);
 
-	spprintf(content_type, 0, "text/plain");
+	spprintf(content_type, 0, "Content-Type: text/plain");
 }
 /* }}} */
 
@@ -150,16 +201,31 @@ static void fpm_status_handle_status_html(struct fpm_status_s *status, char **ou
 
 	spprintf(output, 0, 
 		"<table>\n"
-		"<tr><th>accepted conn</th><td>%lu</td></tr>\n"
 		"<tr><th>pool</th><td>%s</td></tr>\n"
 		"<tr><th>process manager</th><td>%s</td></tr>\n"
+		"<tr><th>accepted conn</th><td>%lu</td></tr>\n"
+#if HAVE_FPM_LQ
+		"<tr><th>listen queue len</th><td>%u</td></tr>\n"
+		"<tr><th>max listen queue len</th><td>%d</td></tr>\n"
+#endif
 		"<tr><th>idle processes</th><td>%d</td></tr>\n"
 		"<tr><th>active processes</th><td>%d</td></tr>\n"
 		"<tr><th>total processes</th><td>%d</td></tr>\n"
+		"<tr><th>max children reached</th><td>%u</td></tr>\n"
 		"</table>",
-		status->accepted_conn, fpm_status_pool, status->pm == PM_STYLE_STATIC ? "static" : "dynamic", status->idle, status->active, status->total);
+		fpm_status_pool,
+		status->pm == PM_STYLE_STATIC ? "static" : "dynamic",
+		status->accepted_conn,
+#if HAVE_FPM_LQ
+		status->cur_lq,
+		status->max_lq,
+#endif
+		status->idle,
+		status->active,
+		status->total,
+		status->max_children_reached);
 
-	spprintf(content_type, 0, "text/html");
+	spprintf(content_type, 0, "Content-Type: text/html");
 }
 /* }}} */
 
@@ -171,16 +237,31 @@ static void fpm_status_handle_status_json(struct fpm_status_s *status, char **ou
 
 	spprintf(output, 0, 
 		"{"
-		"\"accepted conn\":%lu,"
 		"\"pool\":\"%s\","
 		"\"process manager\":\"%s\","
+		"\"accepted conn\":%lu,"
+#if HAVE_FPM_LQ
+		"\"listen queue len\":%u,"
+		"\"max listen queue len\":%d,"
+#endif
 		"\"idle processes\":%d,"
 		"\"active processes\":%d,"
-		"\"total processes\":%d"
+		"\"total processes\":%d,"
+		"\"max children reached\":%u"
 		"}",
-		status->accepted_conn, fpm_status_pool, status->pm == PM_STYLE_STATIC ? "static" : "dynamic", status->idle, status->active, status->total);
+		fpm_status_pool,
+		status->pm == PM_STYLE_STATIC ? "static" : "dynamic",
+		status->accepted_conn,
+#if HAVE_FPM_LQ
+		status->cur_lq,
+		status->max_lq,
+#endif
+		status->idle,
+		status->active,
+		status->total,
+		status->max_children_reached);
 
-	spprintf(content_type, 0, "application/jsonrequest");
+	spprintf(content_type, 0, "Content-Type: application/json");
 }
 /* }}} */
 
@@ -226,7 +307,7 @@ int fpm_status_handle_status(char *uri, char *query_string, char **output, char 
 	}
 
 	if (!*output || !content_type) {
-		zlog(ZLOG_STUFF, ZLOG_ERROR, "[pool %s] unable to allocate status ouput buffer", fpm_status_pool);
+		zlog(ZLOG_ERROR, "[pool %s] unable to allocate status ouput buffer", fpm_status_pool);
 		return 1;
 	}
 

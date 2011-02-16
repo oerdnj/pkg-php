@@ -89,7 +89,7 @@
  *	directly -- and assumed always to succeed.
  */
 
-/* $Id: zend_strtod.c 277398 2009-03-18 10:18:10Z dmitry $ */
+/* $Id: zend_strtod.c 307119 2011-01-05 13:32:26Z johannes $ */
 
 #include <zend_operators.h>
 #include <zend_strtod.h>
@@ -2035,7 +2035,7 @@ ZEND_API double zend_strtod (CONST char *s00, char **se)
 	int bb2, bb5, bbe, bd2, bd5, bbbits, bs2, c, dsign,
 		e, e1, esign, i, j, k, nd, nd0, nf, nz, nz0, sign;
 	CONST char *s, *s0, *s1;
-	double aadj, aadj1, adj;
+	volatile double aadj, aadj1, adj;
 	volatile _double rv, rv0;
 	Long L;
 	ULong y, z;

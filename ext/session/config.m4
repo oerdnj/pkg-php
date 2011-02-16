@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 286445 2009-07-28 08:59:08Z tony2001 $
+dnl $Id: config.m4 305038 2010-11-02 20:51:02Z felipe $
 dnl
 
 PHP_ARG_ENABLE(session, whether to enable PHP sessions,
@@ -13,6 +13,7 @@ if test "$PHP_SESSION" != "no"; then
   PHP_PREAD_TEST
   PHP_NEW_EXTENSION(session, session.c mod_files.c mod_mm.c mod_user.c, $ext_shared)
   PHP_ADD_EXTENSION_DEP(session, hash, true)
+  PHP_ADD_EXTENSION_DEP(session, spl)
   PHP_SUBST(SESSION_SHARED_LIBADD)
   PHP_INSTALL_HEADERS(ext/session, [php_session.h mod_files.h mod_user.h])
   AC_DEFINE(HAVE_PHP_SESSION,1,[ ])

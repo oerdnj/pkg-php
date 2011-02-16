@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_result_meta.c 300635 2010-06-21 15:32:26Z andrey $ */
+/* $Id: mysqlnd_result_meta.c 304066 2010-10-05 08:29:54Z uw $ */
 #include "php.h"
 #include "mysqlnd.h"
 #include "mysqlnd_priv.h"
@@ -52,16 +52,16 @@ php_mysqlnd_free_field_metadata(MYSQLND_FIELD *meta, zend_bool persistent TSRMLS
   and modified for the needs of mysqlnd.
 */
 static zend_bool
-mysqlnd_is_key_numeric(char *key, size_t length, long *idx)
+mysqlnd_is_key_numeric(const char * key, size_t length, long *idx)
 {
-	register char * tmp = key;
+	register const char * tmp = key;
 
 	if (*tmp=='-') {
 		tmp++;
 	}
 	if ((*tmp>='0' && *tmp<='9')) {
 		do { /* possibly a numeric index */
-			char *end=key+length-1;
+			const char *end=key+length-1;
 
 			if (*tmp++=='0' && length>2) { /* don't accept numbers with leading zeros */
 				break;
@@ -92,7 +92,7 @@ mysqlnd_is_key_numeric(char *key, size_t length, long *idx)
 /* }}} */
 
 
-#if PHP_MAJOR_VERSION >= 6
+#if MYSQLND_UNICODE
 /* {{{ mysqlnd_unicode_is_key_numeric */
 static zend_bool
 mysqlnd_unicode_is_key_numeric(UChar *key, size_t length, long *idx)
@@ -142,7 +142,7 @@ MYSQLND_METHOD(mysqlnd_res_meta, read_metadata)(MYSQLND_RES_METADATA * const met
 {
 	unsigned int i = 0;
 	MYSQLND_PACKET_RES_FIELD * field_packet;
-#if PHP_MAJOR_VERSION >= 6
+#if MYSQLND_UNICODE
 	UChar *ustr;
 	int ulen;
 #endif
@@ -175,7 +175,7 @@ MYSQLND_METHOD(mysqlnd_res_meta, read_metadata)(MYSQLND_RES_METADATA * const met
 			PACKET_FREE(field_packet);
 			DBG_RETURN(FAIL);
 		}
-		
+
 		if (field_packet->stupid_list_fields_eof == TRUE) {
 			meta->field_count = i;
 			break;
@@ -224,10 +224,9 @@ MYSQLND_METHOD(mysqlnd_res_meta, read_metadata)(MYSQLND_RES_METADATA * const met
 					meta->bit_fields_total_len += 3;/* 120 */
 					break;
 			}
-			
 		}
 
-#if PHP_MAJOR_VERSION >= 6
+#if MYSQLND_UNICODE
 		zend_string_to_unicode(UG(utf8_conv), &ustr, &ulen,
 							   meta->fields[i].name,
 							   meta->fields[i].name_length TSRMLS_CC);
@@ -284,7 +283,7 @@ MYSQLND_METHOD(mysqlnd_res_meta, free)(MYSQLND_RES_METADATA * meta TSRMLS_DC)
 
 	if (meta->zend_hash_keys) {
 		DBG_INF("Freeing zend_hash_keys");
-#if PHP_MAJOR_VERSION >= 6
+#if MYSQLND_UNICODE
 		if (UG(unicode)) {
 			for (i = 0; i < meta->field_count; i++) {
 				if (meta->zend_hash_keys[i].ustr.v) {
@@ -380,7 +379,7 @@ MYSQLND_METHOD(mysqlnd_res_meta, clone_metadata)(const MYSQLND_RES_METADATA * co
 			/* copy the trailing \0 too */
 			memcpy(new_fields[i].def, orig_fields[i].def, orig_fields[i].def_length + 1);
 		}
-#if PHP_MAJOR_VERSION >= 6
+#if MYSQLND_UNICODE
 		if (new_meta->zend_hash_keys[i].ustr.u) {
 			new_meta->zend_hash_keys[i].ustr.u =
 					eustrndup(new_meta->zend_hash_keys[i].ustr.u, new_meta->zend_hash_keys[i].ulen);
@@ -455,7 +454,7 @@ MYSQLND_METHOD(mysqlnd_res_meta, field_tell)(const MYSQLND_RES_METADATA * const 
 /* }}} */
 
 
-static 
+static
 MYSQLND_CLASS_METHODS_START(mysqlnd_res_meta)
 	MYSQLND_METHOD(mysqlnd_res_meta, fetch_field),
 	MYSQLND_METHOD(mysqlnd_res_meta, fetch_field_direct),
@@ -475,7 +474,7 @@ mysqlnd_result_meta_init(unsigned int field_count, zend_bool persistent TSRMLS_D
 	MYSQLND_RES_METADATA *ret = mnd_pecalloc(1, alloc_size, persistent);
 	DBG_ENTER("mysqlnd_result_meta_init");
 	DBG_INF_FMT("persistent=%u", persistent);
-	
+
 	do {
 		if (!ret) {
 			break;
