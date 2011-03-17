@@ -22,11 +22,21 @@ SSD_OPTIONS="--oknodo --quiet --pidfile $FPM_PID --exec $FPM_CMD"
 
 . /lib/lsb/init-functions
 
+# Test the correctness of the config file
+FPM_ERROR=$($FPM_CMD $FPM_OPTIONS -t | grep "\[ERROR\]")
+
+if [ -n "${FPM_ERROR}" ]; then
+    echo "Please check your configuration file..."
+    echo $FPM_ERROR
+    exit 1
+fi
+
 case "$1" in
     start)
 	log_begin_msg "Starting $DAEMON..."
 
 	/sbin/start-stop-daemon --start $SSD_OPTIONS -- $FPM_OPTIONS
+
 	log_end_msg $?
     ;;
     stop)

@@ -59,3 +59,4 @@ fix-segfault-in-pgsql_stmt_execute-when-postgres-is-down.patch
 fix-segfault-when-node-is-NULL-in-simplexml.patch
 fix-segfault-when-using-several-cloned-intl-objects.patch
 debbug#615770.patch
+php-fpm-sysconfdir.patch

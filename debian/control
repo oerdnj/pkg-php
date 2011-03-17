@@ -6,6 +6,7 @@ Uploaders: Ondřej Surý <ondrej@debian.org>,
 	   Sean Finney <seanius@debian.org>,
 	   Thijs Kinkhorst <thijs@debian.org>,
 	   Raphael Geissert <geissert@debian.org>
+Pre-Depends: dpkg (>= 1.15.7.2)
 Build-Depends: apache2-prefork-dev,
 	       autoconf (>= 2.63),
 	       automake (>= 1.11) | automake1.11,
