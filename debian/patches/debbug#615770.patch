@@ -1,0 +1,13 @@
+diff --git a/ext/openssl/config0.m4 b/ext/openssl/config0.m4
+index ee5e85c..c1c10ee 100644
+--- a/ext/openssl/config0.m4
++++ b/ext/openssl/config0.m4
+@@ -12,6 +12,8 @@ if test "$PHP_OPENSSL" != "no"; then
+   PHP_NEW_EXTENSION(openssl, openssl.c xp_ssl.c, $ext_shared)
+   PHP_SUBST(OPENSSL_SHARED_LIBADD)
+ 
++  PHP_ADD_LIBRARY(crypto)
++
+   if test "$PHP_KERBEROS" != "no"; then
+     PHP_SETUP_KERBEROS(OPENSSL_SHARED_LIBADD)
+   fi
