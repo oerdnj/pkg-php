@@ -60,3 +60,4 @@ fix-segfault-when-node-is-NULL-in-simplexml.patch
 fix-segfault-when-using-several-cloned-intl-objects.patch
 php-fpm-sysconfdir.patch
 configure-as-needed.patch
+lp564920-fix-big-files.patch
