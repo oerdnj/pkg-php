@@ -529,8 +529,8 @@ install: build
 	    debian/php5-fpm/etc/php5/fpm/php-fpm.conf
 	# extract the first pool, called "www," from the config file:
 	sed -nr '/('"'"'|\[)www('"'"'|\])/{h;p;d};x;/www/{x;p}' < fpm-build/sapi/fpm/php-fpm.conf \
-	| sed -e 's/;chdir = \/var\/www/chdir = \"/tmp"' \
 	    > debian/php5-fpm/etc/php5/fpm/pool.d/www.conf
+	sed -i -e 's/;chdir = \/var\/www/chdir = \/tmp/' debian/php5-fpm/etc/php5/fpm/pool.d/www.conf
 
 	# move and install -dev files
 	dh_movefiles --sourcedir=debian/libapache2-mod-php5
