@@ -246,6 +246,7 @@ build-pear-stamp: build-cgi-stamp
 	       -e 's/-d output_buffering=1 -d open_basedir="" -d safe_mode=0/-d output_buffering=1 -d open_basedir="" -d safe_mode=0 -d memory_limit="-1"/' \
 	       $(CURDIR)/pear-build/usr/bin/peardev
 	sed -i -re "s#('PEAR_CONFIG_SYSCONFDIR', PHP_SYSCONFDIR)#\1 . '/pear'#" $(CURDIR)/pear-build/usr/share/php/PEAR/Config.php
+	patch -s -d $(CURDIR)/pear-build/usr/share/php/ -p1 -i $(CURDIR)/debian/patches/CVE-2011-1144.patch
 	touch build-pear-stamp
 
 configure: configure-apache2-stamp configure-apache2filter-stamp configure-cli-stamp configure-fpm-stamp configure-cgi-stamp
