@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 2006-2010 The PHP Group                                |
+  | Copyright (c) 2006-2011 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_result.c 304183 2010-10-07 13:49:00Z andrey $ */
+/* $Id: mysqlnd_result.c 308540 2011-02-21 16:24:37Z andrey $ */
 #include "php.h"
 #include "mysqlnd.h"
 #include "mysqlnd_wireprotocol.h"
@@ -431,6 +431,7 @@ mysqlnd_query_read_result_set_header(MYSQLND *conn, MYSQLND_STMT * s TSRMLS_DC)
 				zend_bool is_warning;
 				DBG_INF("LOAD DATA");
 				conn->last_query_type = QUERY_LOAD_LOCAL;
+				conn->field_count = 0; /* overwrite previous value, or the last value could be used and lead to bug#53503 */
 				CONN_SET_STATE(conn, CONN_SENDING_LOAD_DATA);
 				ret = mysqlnd_handle_local_infile(conn, rset_header->info_or_local_file, &is_warning TSRMLS_CC);
 				CONN_SET_STATE(conn,  (ret == PASS || is_warning == TRUE)? CONN_READY:CONN_QUIT_SENT);
@@ -1270,8 +1271,8 @@ MYSQLND_METHOD(mysqlnd_res, store_result_fetch_data)(MYSQLND * const conn, MYSQL
 		/* libmysql's documentation says it should be so for SELECT statements */
 		conn->upsert_status.affected_rows = set->row_count;
 	}
-	DBG_INF_FMT("ret=%s row_count=%u warnings=%u server_status=%u", ret == PASS? "PASS":"FAIL",
-				set->row_count, conn->upsert_status.warning_count, conn->upsert_status.server_status);
+	DBG_INF_FMT("ret=%s row_count=%u warnings=%u server_status=%u",
+				ret == PASS? "PASS":"FAIL", (uint) set->row_count, conn->upsert_status.warning_count, conn->upsert_status.server_status);
 end:
 	PACKET_FREE(row_packet);
 
@@ -1400,7 +1401,7 @@ static uint64_t
 MYSQLND_METHOD(mysqlnd_res, num_rows)(const MYSQLND_RES * const result TSRMLS_DC)
 {
 	/* Be compatible with libmysql. We count row_count, but will return 0 */
-	return result->stored_data? result->stored_data->row_count:0;
+	return result->stored_data? result->stored_data->row_count:(result->unbuf && result->unbuf->eof_reached? result->unbuf->row_count:0);
 }
 /* }}} */
 

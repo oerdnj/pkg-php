@@ -1,4 +1,4 @@
-/* $Id: zip_stream.c 305467 2010-11-17 17:55:18Z pierrick $ */
+/* $Id: zip_stream.c 307917 2011-02-01 14:44:29Z cataphract $ */
 #ifdef HAVE_CONFIG_H
 #   include "config.h"
 #endif
@@ -30,11 +30,11 @@ struct php_zip_stream_data_t {
 /* {{{ php_zip_ops_read */
 static size_t php_zip_ops_read(php_stream *stream, char *buf, size_t count TSRMLS_DC)
 {
-	size_t n = 0;
+	ssize_t n = 0;
 	STREAM_DATA_FROM_STREAM();
 
 	if (self->za && self->zf) {
-		n = (size_t)zip_fread(self->zf, buf, (int)count);
+		n = zip_fread(self->zf, buf, count);
 		if (n < 0) {
 			int ze, se;
 			zip_file_error_get(self->zf, &ze, &se);
@@ -42,13 +42,15 @@ static size_t php_zip_ops_read(php_stream *stream, char *buf, size_t count TSRML
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Zip stream error: %s", zip_file_strerror(self->zf));
 			return 0;
 		}
-		if (n == 0 || n < count) {
+		/* cast count to signed value to avoid possibly negative n
+		 * being cast to unsigned value */
+		if (n == 0 || n < (ssize_t)count) {
 			stream->eof = 1;
 		} else {
 			self->cursor += n;
 		}
 	}
-	return (n < 1 ? 0 : n);
+	return (n < 1 ? 0 : (size_t)n);
 }
 /* }}} */
 
@@ -216,6 +218,7 @@ php_stream *php_stream_zip_open(char *filename, char *path, char *mode STREAMS_D
 			self->stream = NULL;
 			self->cursor = 0;
 			stream = php_stream_alloc(&php_stream_zipio_ops, self, NULL, mode);
+			stream->orig_path = estrdup(path);
 		} else {
 			zip_close(stream_za);
 		}

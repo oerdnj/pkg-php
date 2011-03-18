@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: openssl.c 305902 2010-12-02 11:37:43Z pajoye $ */
+/* $Id: openssl.c 308534 2011-02-21 12:47:38Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -3543,14 +3543,13 @@ PHP_FUNCTION(openssl_pkcs7_sign)
 	char * outfilename;	int outfilename_len;
 	char * extracertsfilename = NULL; int extracertsfilename_len;
 
-	RETVAL_FALSE;
-
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ssZZa!|ls",
 				&infilename, &infilename_len, &outfilename, &outfilename_len,
 				&zcert, &zprivkey, &zheaders, &flags, &extracertsfilename,
 				&extracertsfilename_len) == FAILURE) {
 		return;
 	}
+	RETVAL_FALSE;
 
 	if (strlen(infilename) != infilename_len) {
 		return;
@@ -4731,6 +4730,7 @@ PHP_FUNCTION(openssl_encrypt)
 	if (free_iv) {
 		efree(iv);
 	}
+	EVP_CIPHER_CTX_cleanup(&cipher_ctx);
 }
 /* }}} */
 
@@ -4804,6 +4804,7 @@ PHP_FUNCTION(openssl_decrypt)
 	if (base64_str) {
 		efree(base64_str);
 	}
+ 	EVP_CIPHER_CTX_cleanup(&cipher_ctx);
 }
 /* }}} */
 

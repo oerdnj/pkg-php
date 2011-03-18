@@ -37,7 +37,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -51,7 +51,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: xmlrpc-epi-php.c 296153 2010-03-13 20:26:51Z felipe $ */
+/* $Id: xmlrpc-epi-php.c 306939 2011-01-01 02:19:59Z felipe $ */
 
 /**********************************************************************
 * BUGS:                                                               *
@@ -67,6 +67,7 @@
 
 #include "php.h"
 #include "ext/standard/info.h"
+#include "ext/standard/php_string.h"
 #include "ext/date/php_date.h"
 #include "php_ini.h"
 #include "php_xmlrpc.h"

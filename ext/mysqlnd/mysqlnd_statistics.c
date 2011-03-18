@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 2006-2010 The PHP Group                                |
+  | Copyright (c) 2006-2011 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_statistics.c 305109 2010-11-05 20:07:34Z andrey $ */
+/* $Id: mysqlnd_statistics.c 307593 2011-01-19 18:09:17Z andrey $ */
 #include "php.h"
 #include "mysqlnd.h"
 #include "mysqlnd_priv.h"
@@ -247,6 +247,9 @@ PHPAPI void
 mysqlnd_stats_init(MYSQLND_STATS ** stats, size_t statistic_count)
 {
 	*stats = calloc(1, sizeof(MYSQLND_STATS));
+	if (*stats == NULL) {
+		return;
+	}
 	(*stats)->values = calloc(statistic_count, sizeof(uint64_t));
 	(*stats)->triggers = calloc(statistic_count, sizeof(mysqlnd_stat_trigger));
 	(*stats)->in_trigger = FALSE;

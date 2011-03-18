@@ -1,8 +1,8 @@
 /*
    +----------------------------------------------------------------------+
-   | PHP version 4                                                        |
+   | PHP version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    |          Ilia Alshanetsky <ilia@prohost.org>                         |
    +----------------------------------------------------------------------+
  */
-/* $Id: shmop.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: shmop.c 309032 2011-03-08 18:24:04Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -256,7 +256,7 @@ PHP_FUNCTION(shmop_read)
 		RETURN_FALSE;
 	}
 
-	if (start + count > shmop->size || count < 0) {
+	if (count < 0 || start > (INT_MAX - count) || start + count > shmop->size) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "count is out of range");
 		RETURN_FALSE;
 	}

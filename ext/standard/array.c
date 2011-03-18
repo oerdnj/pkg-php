@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: array.c 305570 2010-11-19 22:06:44Z felipe $ */
+/* $Id: array.c 306939 2011-01-01 02:19:59Z felipe $ */
 
 #include "php.h"
 #include "php_ini.h"
@@ -4048,10 +4048,10 @@ PHP_FUNCTION(array_product)
 		return;
 	}
 
-	if (!zend_hash_num_elements(Z_ARRVAL_P(input))) {
-		RETURN_LONG(0);
-	}
 	ZVAL_LONG(return_value, 1);
+	if (!zend_hash_num_elements(Z_ARRVAL_P(input))) {
+		return;
+	}
 
 	for (zend_hash_internal_pointer_reset_ex(Z_ARRVAL_P(input), &pos);
 		zend_hash_get_current_data_ex(Z_ARRVAL_P(input), (void **)&entry, &pos) == SUCCESS;

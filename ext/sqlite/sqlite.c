@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    |          Marcus Boerger <helly@php.net>                              |
    +----------------------------------------------------------------------+
 
-   $Id: sqlite.c 305507 2010-11-18 15:22:22Z pajoye $
+   $Id: sqlite.c 306939 2011-01-01 02:19:59Z felipe $
 */
 
 #ifdef HAVE_CONFIG_H
@@ -1458,7 +1458,7 @@ PHP_MINFO_FUNCTION(sqlite)
 {
 	php_info_print_table_start();
 	php_info_print_table_header(2, "SQLite support", "enabled");
-	php_info_print_table_row(2, "PECL Module version", PHP_SQLITE_MODULE_VERSION " $Id: sqlite.c 305507 2010-11-18 15:22:22Z pajoye $");
+	php_info_print_table_row(2, "PECL Module version", PHP_SQLITE_MODULE_VERSION " $Id: sqlite.c 306939 2011-01-01 02:19:59Z felipe $");
 	php_info_print_table_row(2, "SQLite Library", sqlite_libversion());
 	php_info_print_table_row(2, "SQLite Encoding", sqlite_libencoding());
 	php_info_print_table_end();
@@ -1641,8 +1641,10 @@ PHP_FUNCTION(sqlite_open)
 	}
 
 	if (strlen(filename) != filename_len) {
+		zend_restore_error_handling(&error_handling TSRMLS_CC);
 		RETURN_FALSE;
 	}
+
 	if (strncmp(filename, ":memory:", sizeof(":memory:") - 1)) {
 		/* resolve the fully-qualified path name to use as the hash key */
 		if (!(fullpath = expand_filepath(filename, NULL TSRMLS_CC))) {
@@ -1697,6 +1699,7 @@ PHP_FUNCTION(sqlite_factory)
 	}
 
 	if (strlen(filename) != filename_len) {
+		zend_restore_error_handling(&error_handling TSRMLS_CC);
 		RETURN_FALSE;
 	}
 

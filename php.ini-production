@@ -317,7 +317,7 @@ unserialize_callback_func =
 ; When floats & doubles are serialized store serialize_precision significant
 ; digits after the floating point. The default value ensures that when floats
 ; are decoded with unserialize, the data will remain the same.
-serialize_precision = 100
+serialize_precision = 17
 
 ; This directive allows you to enable and disable warnings which PHP will issue
 ; if you pass a value by reference at function call time. Passing values by
@@ -621,13 +621,13 @@ html_errors = Off
 ; this setting blank.
 ; http://php.net/error-prepend-string
 ; Example:
-;error_prepend_string = "<font color=#ff0000>"
+;error_prepend_string = "<span style='color: #ff0000'>"
 
 ; String to output after an error message. PHP's default behavior is to leave
 ; this setting blank.
 ; http://php.net/error-append-string
 ; Example:
-;error_append_string = "</font>"
+;error_append_string = "</span>"
 
 ; Log errors to specified file. PHP's default behavior is to leave this value
 ; empty.
@@ -971,7 +971,11 @@ default_socket_timeout = 60
 ;extension=php_pgsql.dll
 ;extension=php_pspell.dll
 ;extension=php_shmop.dll
+
+; The MIBS data available in the PHP distribution must be installed. 
+; See http://www.php.net/manual/en/snmp.installation.php 
 ;extension=php_snmp.dll
+
 ;extension=php_soap.dll
 ;extension=php_sockets.dll
 ;extension=php_sqlite.dll

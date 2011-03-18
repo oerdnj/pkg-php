@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -15,7 +15,7 @@
    | Author: Jim Winstead <jimw@php.net>                                  |
    +----------------------------------------------------------------------+
  */
-/* $Id: url.c 305159 2010-11-07 12:59:22Z felipe $ */
+/* $Id: url.c 309175 2011-03-13 17:14:18Z pierrick $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -176,19 +176,27 @@ PHPAPI php_url *php_url_parse_ex(char const *str, int length)
 				}	
 			}
 		}	
-	} else if (e) { /* no scheme, look for port */
+	} else if (e) { /* no scheme; starts with colon: look for port */
 		parse_port:
 		p = e + 1;
 		pp = p;
-		
+
 		while (pp-p < 6 && isdigit(*pp)) {
 			pp++;
 		}
-		
-		if (pp-p < 6 && (*pp == '/' || *pp == '\0')) {
-			memcpy(port_buf, p, (pp-p));
-			port_buf[pp-p] = '\0';
-			ret->port = atoi(port_buf);
+
+		if (pp - p > 0 && pp - p < 6 && (*pp == '/' || *pp == '\0')) {
+			long port;
+			memcpy(port_buf, p, (pp - p));
+			port_buf[pp - p] = '\0';
+			port = strtol(port_buf, NULL, 10);
+			if (port > 0 && port <= 65535) {
+				ret->port = (unsigned short) port;
+			} else {
+				STR_FREE(ret->scheme);
+				efree(ret);
+				return NULL;
+			}
 		} else {
 			goto just_path;
 		}
@@ -264,9 +272,19 @@ PHPAPI php_url *php_url_parse_ex(char const *str, int length)
 				efree(ret);
 				return NULL;
 			} else if (e - p > 0) {
-				memcpy(port_buf, p, (e-p));
-				port_buf[e-p] = '\0';
-				ret->port = atoi(port_buf);
+				long port;
+				memcpy(port_buf, p, (e - p));
+				port_buf[e - p] = '\0';
+				port = strtol(port_buf, NULL, 10);
+				if (port > 0 && port <= 65535) {
+					ret->port = (unsigned short)port;
+				} else {
+					STR_FREE(ret->scheme);
+					STR_FREE(ret->user);
+					STR_FREE(ret->pass);
+					efree(ret);
+					return NULL;
+				}
 			}
 			p--;
 		}	

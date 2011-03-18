@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2010 The PHP Group                                |
+  | Copyright (c) 1997-2011 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: json.c 303350 2010-09-14 03:46:28Z aharvey $ */
+/* $Id: json.c 308529 2011-02-21 08:09:02Z scottmac $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -431,7 +431,6 @@ static void json_escape_string(smart_str *buf, char *s, int len, int options TSR
 
 PHP_JSON_API void php_json_encode(smart_str *buf, zval *val, int options TSRMLS_DC) /* {{{ */
 {
-	JSON_G(error_code) = PHP_JSON_ERROR_NONE;
 	switch (Z_TYPE_P(val))
 	{
 		case IS_NULL:
@@ -566,6 +565,8 @@ static PHP_FUNCTION(json_encode)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z|l", &parameter, &options) == FAILURE) {
 		return;
 	}
+
+	JSON_G(error_code) = PHP_JSON_ERROR_NONE;
 
 	php_json_encode(&buf, parameter, options TSRMLS_CC);
 

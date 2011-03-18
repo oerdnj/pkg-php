@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2010 The PHP Group                                |
+  | Copyright (c) 1997-2011 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysql_statement.c 304072 2010-10-05 09:58:15Z kalle $ */
+/* $Id: mysql_statement.c 307478 2011-01-14 14:57:57Z johannes $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -142,8 +142,7 @@ static int pdo_mysql_stmt_execute_prepared_libmysql(pdo_stmt_t *stmt TSRMLS_DC) 
 	/* (re)bind the parameters */
 	if (mysql_stmt_bind_param(S->stmt, S->params) || mysql_stmt_execute(S->stmt)) {
 		if (S->params) {
-			efree(S->params);
-			S->params = 0;
+			memset(S->params, 0, S->num_params * sizeof(MYSQL_BIND));
 		}
 		pdo_mysql_error_stmt(stmt);
 		if (mysql_stmt_errno(S->stmt) == 2057) {

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: network.c 303958 2010-10-02 18:32:20Z cataphract $ */
+/* $Id: network.c 307922 2011-02-01 18:10:35Z cataphract $ */
 
 /*#define DEBUG_MAIN_NETWORK 1*/
 
@@ -1133,7 +1133,8 @@ PHPAPI int php_poll2(php_pollfd *ufds, unsigned int nfds, int timeout)
 {
 	fd_set rset, wset, eset;
 	php_socket_t max_fd = SOCK_ERR;
-	unsigned int i, n;
+	unsigned int i;
+	int n;
 	struct timeval tv;
 
 	/* check the highest numbered descriptor */

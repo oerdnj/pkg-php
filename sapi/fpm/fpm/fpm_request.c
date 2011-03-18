@@ -26,6 +26,7 @@ void fpm_request_accepting() /* {{{ */
 	slot = fpm_shm_slots_acquire(0, 0);
 	slot->request_stage = FPM_REQUEST_ACCEPTING;
 	fpm_clock_get(&slot->tv);
+	memset(slot->request_uri, 0, sizeof(slot->request_uri));
 	memset(slot->request_method, 0, sizeof(slot->request_method));
 	slot->content_length = 0;
 	memset(slot->script_filename, 0, sizeof(slot->script_filename));
@@ -51,6 +52,7 @@ void fpm_request_info() /* {{{ */
 {
 	TSRMLS_FETCH();
 	struct fpm_shm_slot_s *slot;
+	char *request_uri = fpm_php_request_uri(TSRMLS_C);
 	char *request_method = fpm_php_request_method(TSRMLS_C);
 	char *script_filename = fpm_php_script_filename(TSRMLS_C);
 
@@ -58,8 +60,12 @@ void fpm_request_info() /* {{{ */
 	slot->request_stage = FPM_REQUEST_INFO;
 	fpm_clock_get(&slot->tv);
 
+	if (request_uri) {
+		strlcpy(slot->request_uri, request_uri, sizeof(slot->request_uri));
+	}
+
 	if (request_method) {
-		cpystrn(slot->request_method, request_method, sizeof(slot->request_method));
+		strlcpy(slot->request_method, request_method, sizeof(slot->request_method));
 	}
 
 	slot->content_length = fpm_php_content_length(TSRMLS_C);
@@ -67,7 +73,7 @@ void fpm_request_info() /* {{{ */
 	/* if cgi.fix_pathinfo is set to "1" and script cannot be found (404)
 		the sapi_globals.request_info.path_translated is set to NULL */
 	if (script_filename) {
-		cpystrn(slot->script_filename, script_filename, sizeof(slot->script_filename));
+		strlcpy(slot->script_filename, script_filename, sizeof(slot->script_filename));
 	}
 
 	fpm_shm_slots_release(slot);
@@ -136,8 +142,9 @@ void fpm_request_check_timed_out(struct fpm_child_s *child, struct timeval *now,
 
 			fpm_trace_signal(child->pid);
 
-			zlog(ZLOG_WARNING, "[pool %s] child %d, script '%s' executing too slow (%d.%06d sec), logging",
-				child->wp->config->name, (int) child->pid, purified_script_filename, (int) tv.tv_sec, (int) tv.tv_usec);
+			zlog(ZLOG_WARNING, "[pool %s] child %d, script '%s' (request: \"%s %s\") executing too slow (%d.%06d sec), logging",
+				child->wp->config->name, (int) child->pid, purified_script_filename, slot_c.request_method, slot_c.request_uri,
+				(int) tv.tv_sec, (int) tv.tv_usec);
 		}
 		else
 #endif
@@ -145,8 +152,9 @@ void fpm_request_check_timed_out(struct fpm_child_s *child, struct timeval *now,
 			str_purify_filename(purified_script_filename, slot_c.script_filename, sizeof(slot_c.script_filename));
 			fpm_pctl_kill(child->pid, FPM_PCTL_TERM);
 
-			zlog(ZLOG_WARNING, "[pool %s] child %d, script '%s' execution timed out (%d.%06d sec), terminating",
-				child->wp->config->name, (int) child->pid, purified_script_filename, (int) tv.tv_sec, (int) tv.tv_usec);
+			zlog(ZLOG_WARNING, "[pool %s] child %d, script '%s' (request: \"%s %s\") execution timed out (%d.%06d sec), terminating",
+				child->wp->config->name, (int) child->pid, purified_script_filename, slot_c.request_method, slot_c.request_uri,
+				(int) tv.tv_sec, (int) tv.tv_usec);
 		}
 	}
 }

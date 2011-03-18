@@ -1,4 +1,4 @@
-<?php # $Id: mkdist.php 289905 2009-10-24 19:52:23Z pajoye $
+<?php # $Id: mkdist.php 306376 2010-12-15 02:01:21Z pajoye $
 /* piece together a windows binary distro */
 
 $build_dir = $argv[1];
@@ -55,6 +55,9 @@ function get_depends($module)
 
 		/* sybase */
 		'libcs.dll', 'libct.dll',
+
+		/* firebird */
+		'fbclient.dll',
 
 		/* visual C++; mscvrt.dll is present on everyones system,
 		 * but the debug version (msvcrtd.dll) and those from visual studio.net

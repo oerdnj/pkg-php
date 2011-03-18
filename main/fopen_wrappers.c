@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: fopen_wrappers.c 305698 2010-11-23 22:14:54Z pajoye $ */
+/* $Id: fopen_wrappers.c 307563 2011-01-18 22:20:09Z pajoye $ */
 
 /* {{{ includes
  */
@@ -229,7 +229,11 @@ PHPAPI int php_check_specific_open_basedir(const char *basedir, const char *path
 	if (expand_filepath(local_open_basedir, resolved_basedir TSRMLS_CC) != NULL) {
 		/* Handler for basedirs that end with a / */
 		resolved_basedir_len = strlen(resolved_basedir);
+#if defined(PHP_WIN32) || defined(NETWARE)
+		if (basedir[strlen(basedir) - 1] == PHP_DIR_SEPARATOR || basedir[strlen(basedir) - 1] == '/') {
+#else
 		if (basedir[strlen(basedir) - 1] == PHP_DIR_SEPARATOR) {
+#endif
 			if (resolved_basedir[resolved_basedir_len - 1] != PHP_DIR_SEPARATOR) {
 				resolved_basedir[resolved_basedir_len] = PHP_DIR_SEPARATOR;
 				resolved_basedir[++resolved_basedir_len] = '\0';

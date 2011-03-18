@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_olechar.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: com_olechar.c 307626 2011-01-20 13:57:40Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -70,7 +70,6 @@ PHPAPI char *php_com_olestring_to_string(OLECHAR *olestring, uint *string_len, i
 	char *string;
 	uint length = 0;
 	BOOL ok;
-	LONG err;
 
 	length = WideCharToMultiByte(codepage, 0, olestring, -1, NULL, 0, NULL, NULL);
 
@@ -79,7 +78,6 @@ PHPAPI char *php_com_olestring_to_string(OLECHAR *olestring, uint *string_len, i
 		length = WideCharToMultiByte(codepage, 0, olestring, -1, string, length, NULL, NULL);
 		ok = length > 0;
 	} else {
-		err = GetLastError();
 		string = (char*)emalloc(sizeof(char));
 		*string = '\0';
 		ok = FALSE;
@@ -87,7 +85,7 @@ PHPAPI char *php_com_olestring_to_string(OLECHAR *olestring, uint *string_len, i
 	}
 
 	if (!ok) {
-		char *msg = php_win_err(err);
+		char *msg = php_win_err(GetLastError());
 
 		php_error_docref(NULL TSRMLS_CC, E_WARNING,
 			"Could not convert string from unicode: `%s'", msg);

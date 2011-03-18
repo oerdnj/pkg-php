@@ -1,5 +1,5 @@
 // vim:ft=javascript
-// $Id: config.w32 305923 2010-12-02 23:23:14Z pajoye $
+// $Id: config.w32 308863 2011-03-02 18:35:10Z moriyoshi $
 // "Master" config file; think of it as a configure.in
 // equivalent.
 
@@ -102,7 +102,7 @@ if (PHP_DEBUG == "yes" && PHP_DEBUG_PACK == "yes") {
 }
 ARG_ENABLE('zts', 'Thread safety', 'yes');
 // Configures the hard-coded installation dir
-ARG_ENABLE('prefix', 'where PHP will be installed', '');
+ARG_WITH('prefix', 'where PHP will be installed', '');
 if (PHP_PREFIX == '') {
 	PHP_PREFIX = "C:\\php";
 	if (PHP_DEBUG == "yes")
@@ -199,6 +199,9 @@ if (PHP_DEBUG == "yes") {
 
 if (PHP_ZTS == "yes") {
 	ADD_FLAG("CFLAGS", "/D ZTS=1");
+	ADD_FLAG("ZTS", "1");
+} else {
+	ADD_FLAG("ZTS", "0");
 }
 
 DEFINE("PHP_ZTS_ARCHIVE_POSTFIX", PHP_ZTS == "yes" ? '' : "-nts");
@@ -263,7 +266,7 @@ var php_usual_include_suspects = PHP_PHP_BUILD+"\\include";
 var php_usual_lib_suspects = PHP_PHP_BUILD+"\\lib";
 
 ADD_FLAG("CFLAGS", '/I "' + php_usual_include_suspects + '" ');
-ADD_FLAG("LDFLAGS", '/libpath:"\\"' + php_usual_lib_suspects + '\\"" ');
+ADD_FLAG("LDFLAGS", '/libpath:"' + php_usual_lib_suspects + '" ');
 
 // Poke around for some headers
 function probe_basic_headers()
@@ -351,6 +354,8 @@ ADD_SOURCES("main/streams", "streams.c cast.c memory.c filter.c plain_wrapper.c 
 ADD_SOURCES("win32", "glob.c readdir.c \
 	registry.c select.c sendmail.c time.c winutil.c wsyslog.c globals.c");
 
+PHP_INSTALL_HEADERS("", "Zend/ TSRM/ main/ main/streams/ win32/");
+
 STDOUT.WriteBlankLines(1);
 
 /* Can we build with IPv6 support? */
@@ -401,4 +406,15 @@ if (PHP_DSP != "no") {
 		FSO.DeleteFolder("tmp");
 	}
 	FSO.CreateFolder("tmp");
+}
+
+ARG_ENABLE("security-flags", "Enable the compiler security flags", "no");
+if (PHP_SECURITY_FLAGS == "yes") {
+	ADD_FLAG("LDFLAGS", "/NXCOMPAT /DYNAMICBASE ");
+}
+
+ARG_ENABLE("static-analyze", "Enable the VC compiler static analyze", "no");
+if (PHP_STATIC_ANALYZE == "yes" && PHP_SNAPSHOT_BUILD == "no") {
+	ADD_FLAG("CFLAGS", " /analyze ");
+	ADD_FLAG("CFLAGS", " /wd6308 ");
 }

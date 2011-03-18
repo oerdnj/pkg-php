@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 2006-2010 The PHP Group                                |
+  | Copyright (c) 2006-2011 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_ps.c 306051 2010-12-07 11:13:55Z andrey $ */
+/* $Id: mysqlnd_ps.c 307921 2011-02-01 16:55:20Z andrey $ */
 #include "php.h"
 #include "mysqlnd.h"
 #include "mysqlnd_wireprotocol.h"
@@ -561,8 +561,7 @@ mysqlnd_stmt_execute_parse_response(MYSQLND_STMT * const s TSRMLS_DC)
 			}
 		}
 	}
-/* #ifndef MYSQLND_DONT_SKIP_OUT_PARAMS_RESULTSET */
-#if A0
+#ifndef MYSQLND_DONT_SKIP_OUT_PARAMS_RESULTSET
 	if (stmt->upsert_status.server_status & SERVER_PS_OUT_PARAMS) {
 		s->m->free_stmt_content(s TSRMLS_CC);
 		DBG_INF("PS OUT Variable RSet, skipping");
@@ -736,7 +735,7 @@ mysqlnd_fetch_stmt_row_buffered(MYSQLND_RES *result, void *param, unsigned int f
 
 	DBG_ENTER("mysqlnd_fetch_stmt_row_buffered");
 	*fetched_anything = FALSE;
-	DBG_INF_FMT("stmt=%lu", stmt->stmt_id);
+	DBG_INF_FMT("stmt=%lu", stmt != NULL ? stmt->stmt_id : 0L);
 
 	/* If we haven't read everything */
 	if (set->data_cursor &&
@@ -1478,7 +1477,7 @@ MYSQLND_METHOD(mysqlnd_stmt, bind_one_parameter)(MYSQLND_STMT * const s, unsigne
 		DBG_RETURN(FAIL);
 	}
 
-	if (param_no < 0 || param_no >= stmt->param_count) {
+	if (param_no >= stmt->param_count) {
 		SET_STMT_ERROR(stmt, CR_INVALID_PARAMETER_NO, UNKNOWN_SQLSTATE, "Invalid parameter number");
 		DBG_ERR("invalid param_no");
 		DBG_RETURN(FAIL);
@@ -1618,7 +1617,7 @@ MYSQLND_METHOD(mysqlnd_stmt, bind_one_result)(MYSQLND_STMT * const s, unsigned i
 		DBG_RETURN(FAIL);
 	}
 
-	if (param_no < 0 || param_no >= stmt->field_count) {
+	if (param_no >= stmt->field_count) {
 		SET_STMT_ERROR(stmt, CR_INVALID_PARAMETER_NO, UNKNOWN_SQLSTATE, "Invalid parameter number");
 		DBG_ERR("invalid param_no");
 		DBG_RETURN(FAIL);
@@ -2224,9 +2223,9 @@ MYSQLND_METHOD_PRIVATE(mysqlnd_stmt, net_close)(MYSQLND_STMT * const s, zend_boo
 static enum_func_status
 MYSQLND_METHOD(mysqlnd_stmt, dtor)(MYSQLND_STMT * const s, zend_bool implicit TSRMLS_DC)
 {
-	MYSQLND_STMT_DATA * stmt = s? s->data:NULL;
+	MYSQLND_STMT_DATA * stmt = (s != NULL) ? s->data:NULL;
 	enum_func_status ret = FAIL;
-	zend_bool persistent = s->persistent;
+	zend_bool persistent = (s != NULL) ? s->persistent : 0;
 
 	DBG_ENTER("mysqlnd_stmt::dtor");
 	if (stmt) {

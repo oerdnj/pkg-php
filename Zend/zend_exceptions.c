@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2010 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2011 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_exceptions.c 302311 2010-08-16 08:11:08Z dmitry $ */
+/* $Id: zend_exceptions.c 307523 2011-01-16 21:24:43Z stas $ */
 
 #include "zend.h"
 #include "zend_API.h"
@@ -91,6 +91,9 @@ void zend_throw_exception_internal(zval *exception TSRMLS_DC) /* {{{ */
 		}
 	}
 	if (!EG(current_execute_data)) {
+		if(EG(exception)) {
+			zend_exception_error(EG(exception), E_ERROR TSRMLS_CC);
+		}
 		zend_error(E_ERROR, "Exception thrown without a stack frame");
 	}
 

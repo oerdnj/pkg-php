@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    |          Hartmut Holzgraefe <hholzgra@php.net>                       |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_fopen_wrapper.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: php_fopen_wrapper.c 307536 2011-01-17 13:44:54Z iliaa $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -256,6 +256,39 @@ php_stream * php_stream_url_wrap_php(php_stream_wrapper *wrapper, char *path, ch
 			}
 		} else {
 			fd = dup(STDERR_FILENO);
+		}
+	} else if (!strncasecmp(path, "fd/", 3)) {
+		char	   *start,
+				   *end;
+		long	   fildes_ori;
+		int		   dtablesize;
+
+		start = &path[3];
+		fildes_ori = strtol(start, &end, 10);
+		if (end == start || *end != '\0') {
+			php_stream_wrapper_log_error(wrapper, options TSRMLS_CC,
+				"php://fd/ stream must be specified in the form php://fd/<orig fd>");
+			return NULL;
+		}
+
+#if HAVE_UNISTD_H
+		dtablesize = getdtablesize();
+#else
+		dtablesize = INT_MAX;
+#endif
+
+		if (fildes_ori < 0 || fildes_ori >= dtablesize) {
+			php_stream_wrapper_log_error(wrapper, options TSRMLS_CC,
+				"The file descriptors must be non-negative numbers smaller than %d", dtablesize);
+			return NULL;
+		}
+		
+		fd = dup(fildes_ori);
+		if (fd == -1) {
+			php_stream_wrapper_log_error(wrapper, options TSRMLS_CC,
+				"Error duping file descriptor %ld; possibly it doesn't exist: "
+				"[%d]: %s", fildes_ori, errno, strerror(errno));
+			return NULL;
 		}
 	} else if (!strncasecmp(path, "filter/", 7)) {
 		/* Save time/memory when chain isn't specified */

@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2010 The PHP Group                                |
+  | Copyright (c) 1997-2011 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: filter_private.h 297245 2010-03-31 22:59:09Z rasmus $ */
+/* $Id: filter_private.h 307670 2011-01-23 09:46:06Z pajoye $ */
 
 #ifndef FILTER_PRIVATE_H
 #define FILTER_PRIVATE_H
@@ -114,10 +114,10 @@
 
 #define PHP_FILTER_GET_LONG_OPT(zv, opt) { \
 	if (Z_TYPE_PP(zv) != IS_LONG) {                                                                      \
-		zval tmp = **zv;                                                                                 \
-		zval_copy_ctor(&tmp);                                                                                    \
-		convert_to_long(&tmp);                                                                                   \
-		opt = Z_LVAL(tmp);                                                                                  \
+		zval ___tmp = **zv;                                                                                 \
+		zval_copy_ctor(&___tmp);                                                                                    \
+		convert_to_long(&___tmp);                                                                                   \
+		opt = Z_LVAL(___tmp);                                                                                  \
 	} else {                                                                                                     \
 		opt = Z_LVAL_PP(zv);                                                                        \
 	}                                                                                                            \

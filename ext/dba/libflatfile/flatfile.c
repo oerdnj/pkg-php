@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: flatfile.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: flatfile.c 306527 2010-12-20 23:00:11Z iliaa $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -54,24 +54,24 @@ int flatfile_store(flatfile *dba, datum key_datum, datum value_datum, int mode T
 			return 1;
 		}
 		php_stream_seek(dba->fp, 0L, SEEK_END);
-		php_stream_printf(dba->fp TSRMLS_CC, "%d\n", key_datum.dsize);
+		php_stream_printf(dba->fp TSRMLS_CC, "%zu\n", key_datum.dsize);
 		php_stream_flush(dba->fp);
 		if (php_stream_write(dba->fp, key_datum.dptr, key_datum.dsize) < key_datum.dsize) {
 			return -1;
 		}
-		php_stream_printf(dba->fp TSRMLS_CC, "%d\n", value_datum.dsize);
+		php_stream_printf(dba->fp TSRMLS_CC, "%zu\n", value_datum.dsize);
 		php_stream_flush(dba->fp);
 		if (php_stream_write(dba->fp, value_datum.dptr, value_datum.dsize) < value_datum.dsize) {
 			return -1;
 		}
 	} else { /* FLATFILE_REPLACE */
 		flatfile_delete(dba, key_datum TSRMLS_CC);
-		php_stream_printf(dba->fp TSRMLS_CC, "%d\n", key_datum.dsize);
+		php_stream_printf(dba->fp TSRMLS_CC, "%zu\n", key_datum.dsize);
 		php_stream_flush(dba->fp);
 		if (php_stream_write(dba->fp, key_datum.dptr, key_datum.dsize) < key_datum.dsize) {
 			return -1;
 		}
-		php_stream_printf(dba->fp TSRMLS_CC, "%d\n", value_datum.dsize);
+		php_stream_printf(dba->fp TSRMLS_CC, "%zu\n", value_datum.dsize);
 		if (php_stream_write(dba->fp, value_datum.dptr, value_datum.dsize) < value_datum.dsize) {
 			return -1;
 		}
@@ -307,7 +307,7 @@ datum flatfile_nextkey(flatfile *dba TSRMLS_DC) {
 /* {{{ flatfile_version */
 char *flatfile_version() 
 {
-	return "1.0, $Revision: 293036 $";
+	return "1.0, $Revision: 306527 $";
 }
 /* }}} */ 
 

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: interbase.c 300764 2010-06-26 16:03:39Z felipe $ */
+/* $Id: interbase.c 308618 2011-02-24 02:42:38Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1422,6 +1422,11 @@ PHP_FUNCTION(ibase_gen_id)
 
 	if (FAILURE == zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|lr", &generator, &gen_len,
 			&inc, &link)) {
+		RETURN_FALSE;
+	}
+	
+	if (gen_len > 31) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid generator name");
 		RETURN_FALSE;
 	}
 

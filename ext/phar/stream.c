@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | phar:// stream wrapper support                                       |
   +----------------------------------------------------------------------+
-  | Copyright (c) 2005-2009 The PHP Group                                |
+  | Copyright (c) 2005-2011 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -250,7 +250,7 @@ static php_stream * phar_wrapper_open_url(php_stream_wrapper *wrapper, char *pat
 		if (!*internal_file && (options & STREAM_OPEN_FOR_INCLUDE)) {
 			/* retrieve the stub */
 			if (FAILURE == phar_get_archive(&phar, resource->host, host_len, NULL, 0, NULL TSRMLS_CC)) {
-				php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "file %s is not a valid phar archive");
+				php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "file %s is not a valid phar archive", resource->host);
 				efree(internal_file);
 				php_url_free(resource);
 				return NULL;

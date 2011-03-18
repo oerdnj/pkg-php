@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: userspace.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: userspace.c 307934 2011-02-01 22:55:17Z cataphract $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -856,6 +856,7 @@ static int statbuf_from_array(zval *array, php_stream_statbuf *ssb TSRMLS_DC)
 
 #define STAT_PROP_ENTRY_EX(name, name2)                        \
 	if (SUCCESS == zend_hash_find(Z_ARRVAL_P(array), #name, sizeof(#name), (void**)&elem)) {     \
+		SEPARATE_ZVAL(elem);																	 \
 		convert_to_long(*elem);                                                                   \
 		ssb->sb.st_##name2 = Z_LVAL_PP(elem);                                                      \
 	}
