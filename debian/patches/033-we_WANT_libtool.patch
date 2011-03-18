@@ -11,8 +11,8 @@ Origin: vendor
 Forwarded: no
 Last-Update: 2010-01-18
 
---- pkg-php.orig/build/build2.mk
-+++ pkg-php/build/build2.mk
+--- a/build/build2.mk
++++ b/build/build2.mk
 @@ -52,7 +52,8 @@ $(TOUCH_FILES):
  
  aclocal.m4: configure.in acinclude.m4

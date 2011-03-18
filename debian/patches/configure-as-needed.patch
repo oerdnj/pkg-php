@@ -25,7 +25,7 @@ Bug-Ubuntu: https://bugs.launchpad.net/ubuntu/+source/php5/+bug/676672
    [
 --- a/acinclude.m4
 +++ b/acinclude.m4
-@@ -2395,6 +2395,7 @@ AC_DEFUN([PHP_SETUP_OPENSSL],[
+@@ -2396,6 +2396,7 @@ AC_DEFUN([PHP_SETUP_OPENSSL],[
      ])
      LIBS=$old_LIBS
      PHP_ADD_LIBRARY(ssl,,$1)
@@ -35,7 +35,7 @@ Bug-Ubuntu: https://bugs.launchpad.net/ubuntu/+source/php5/+bug/676672
    fi
 --- a/aclocal.m4
 +++ b/aclocal.m4
-@@ -2397,6 +2397,7 @@ AC_DEFUN([PHP_SETUP_OPENSSL],[
+@@ -2398,6 +2398,7 @@ AC_DEFUN([PHP_SETUP_OPENSSL],[
      ])
      LIBS=$old_LIBS
      PHP_ADD_LIBRARY(ssl,,$1)

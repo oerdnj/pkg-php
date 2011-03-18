@@ -1,7 +1,7 @@
 --- a/configure.in
 +++ b/configure.in
 @@ -1,7 +1,7 @@
- ## $Id: configure.in 307133 2011-01-05 16:35:33Z johannes $ -*- autoconf -*-
+ ## $Id: configure.in 309329 2011-03-17 07:48:29Z johannes $ -*- autoconf -*-
  dnl ## Process this file with autoconf to produce a configure script.
  
 -divert(1)

@@ -75,7 +75,7 @@ Last-Update: 2010-02-17
  /* }}} */
  
  PHPAPI int (*php_register_internal_extensions_func)(TSRMLS_D) = php_register_internal_extensions;
-@@ -1192,6 +1194,17 @@ PHPAPI int php_stream_open_for_zend_ex(c
+@@ -1194,6 +1196,17 @@ PHPAPI int php_stream_open_for_zend_ex(c
  	char *p;
  	size_t len, mapped_len;
  	php_stream *stream = php_stream_open_wrapper((char *)filename, "rb", mode, &handle->opened_path);
@@ -93,7 +93,7 @@ Last-Update: 2010-02-17
  
  	if (stream) {
  		handle->filename = (char*)filename;
-@@ -1204,7 +1217,7 @@ PHPAPI int php_stream_open_for_zend_ex(c
+@@ -1206,7 +1219,7 @@ PHPAPI int php_stream_open_for_zend_ex(c
  		memset(&handle->handle.stream.mmap, 0, sizeof(handle->handle.stream.mmap));
  		len = php_zend_stream_fsizer(stream TSRMLS_CC);
  		if (len != 0

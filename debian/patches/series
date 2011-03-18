@@ -50,14 +50,6 @@ session_save_path.patch
 php-fpm-man-section-and-cleanup.patch
 fpm-config.patch
 fix_crash_in__php_mssql_get_column_content_without_type.patch
-bug53070.patch
-fix-crash-with-entity-declarations-in-simplexml.patch
-fix-integer-overflow-in-SdnToJulian.patch
-fix-leak-and-possible-crash-introduced-by-the-null-poisoning-patch.patch
-fix-memory-leak-inside-highlight_string.patch
-fix-segfault-in-pgsql_stmt_execute-when-postgres-is-down.patch
-fix-segfault-when-node-is-NULL-in-simplexml.patch
-fix-segfault-when-using-several-cloned-intl-objects.patch
 php-fpm-sysconfdir.patch
 configure-as-needed.patch
 lp564920-fix-big-files.patch

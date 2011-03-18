@@ -4,7 +4,7 @@ Forwarded: no
 Last-Update: 2010-01-18
 
 --- /dev/null
-+++ pkg-php/php.ini-paranoid
++++ b/php.ini-paranoid
 @@ -0,0 +1,1504 @@
 +[PHP]
 +

@@ -8,7 +8,7 @@ Forwarded: no
 Last-Update: 2010-01-18
 
 --- /dev/null
-+++ pkg-php/ext/zlib/zconf.h
++++ b/ext/zlib/zconf.h
 @@ -0,0 +1,326 @@
 +/* zconf.h -- configuration of the zlib compression library
 + * Copyright (C) 1995-2003 Jean-loup Gailly.
@@ -337,7 +337,7 @@ Last-Update: 2010-01-18
 +
 +#endif /* ZCONF_H */
 --- /dev/null
-+++ pkg-php/ext/zlib/zlib.h
++++ b/ext/zlib/zlib.h
 @@ -0,0 +1,1200 @@
 +/* zlib.h -- interface of the 'zlib' general purpose compression library
 +  version 1.2.1.1, January 9th, 2004

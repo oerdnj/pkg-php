@@ -1,5 +1,5 @@
---- pkg-php.orig/ext/standard/dl.c
-+++ pkg-php/ext/standard/dl.c
+--- a/ext/standard/dl.c
++++ b/ext/standard/dl.c
 @@ -77,12 +77,7 @@ PHPAPI PHP_FUNCTION(dl)
  		(strcmp(sapi_module.name, "cli") != 0) &&
  		(strncmp(sapi_module.name, "embed", 5) != 0)

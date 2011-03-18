@@ -1,5 +1,5 @@
---- pkg-php.orig/scripts/phpize.in
-+++ pkg-php/scripts/phpize.in
+--- a/scripts/phpize.in
++++ b/scripts/phpize.in
 @@ -5,10 +5,16 @@ prefix='@prefix@'
  exec_prefix="`eval echo @exec_prefix@`"
  phpdir="$prefix/lib/php5/build"

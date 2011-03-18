@@ -7,7 +7,7 @@ Last-Update: 2010-01-18
 
 --- a/configure.in
 +++ b/configure.in
-@@ -615,50 +615,50 @@ AC_CACHE_CHECK([for nanosleep], ac_cv_fu
+@@ -615,50 +615,50 @@ PHP_CHECK_FUNC_LIB(nanosleep, rt)
  
  dnl Check for getaddrinfo, should be a better way, but...
  dnl Also check for working getaddrinfo

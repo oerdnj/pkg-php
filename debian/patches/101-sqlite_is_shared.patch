@@ -1,5 +1,5 @@
---- pkg-php.orig/ext/sqlite/config.m4
-+++ pkg-php/ext/sqlite/config.m4
+--- a/ext/sqlite/config.m4
++++ b/ext/sqlite/config.m4
 @@ -84,7 +84,7 @@ if test "$PHP_SQLITE" != "no"; then
      ])
      SQLITE_MODULE_TYPE=external
