@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2004 The PHP Group                                |
+  | Copyright (c) 1997-2011 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_fileinfo.h 265634 2008-08-29 13:29:42Z derick $ */
+/* $Id: php_fileinfo.h 306943 2011-01-01 02:51:27Z felipe $ */
 
 #ifndef PHP_FILEINFO_H
 #define PHP_FILEINFO_H

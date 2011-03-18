@@ -1,5 +1,5 @@
 dnl
-dnl $Id: acinclude.m4 305553 2010-11-19 08:26:47Z jani $
+dnl $Id: acinclude.m4 308352 2011-02-15 08:28:22Z pajoye $
 dnl
 dnl This file contains local autoconf functions.
 dnl
@@ -2228,6 +2228,7 @@ AC_DEFUN([PHP_SETUP_ICU],[
       AC_MSG_ERROR([ICU version 3.4 or later is required])
     fi
 
+    ICU_VERSION=$icu_version
     ICU_INCS=`$ICU_CONFIG --cppflags-searchpath`
     ICU_LIBS=`$ICU_CONFIG --ldflags --ldflags-icuio`
     PHP_EVAL_INCLINE($ICU_INCS)

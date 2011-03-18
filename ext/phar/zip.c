@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | ZIP archive support for Phar                                         |
   +----------------------------------------------------------------------+
-  | Copyright (c) 2007-2009 The PHP Group                                |
+  | Copyright (c) 2007-2011 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -1434,9 +1434,9 @@ nocentralerror:
 	php_stream_seek(pass.centralfp, 0, SEEK_SET);
 
 	{
-		size_t len;
-		int ret = phar_stream_copy_to_stream(pass.centralfp, pass.filefp, PHP_STREAM_COPY_ALL, &len);
-		if (SUCCESS != ret || len != cdir_size) {
+		size_t clen;
+		int ret = phar_stream_copy_to_stream(pass.centralfp, pass.filefp, PHP_STREAM_COPY_ALL, &clen);
+		if (SUCCESS != ret || clen != cdir_size) {
 			if (error) {
 				spprintf(error, 4096, "phar zip flush of \"%s\" failed: unable to write central-directory", phar->fname);
 			}

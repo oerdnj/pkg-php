@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2010 The PHP Group                                |
+  | Copyright (c) 1997-2011 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -19,7 +19,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: filter.c 298196 2010-04-20 04:31:11Z aharvey $ */
+/* $Id: filter.c 306939 2011-01-01 02:19:59Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -316,7 +316,7 @@ PHP_MINFO_FUNCTION(filter)
 {
 	php_info_print_table_start();
 	php_info_print_table_row( 2, "Input Validation and Filtering", "enabled" );
-	php_info_print_table_row( 2, "Revision", "$Revision: 298196 $");
+	php_info_print_table_row( 2, "Revision", "$Revision: 306939 $");
 	php_info_print_table_end();
 
 	DISPLAY_INI_ENTRIES();
@@ -559,7 +559,7 @@ static zval *php_filter_get_storage(long arg TSRMLS_DC)/* {{{ */
 			if (jit_initialization) {
 				zend_is_auto_global("_ENV", sizeof("_ENV")-1 TSRMLS_CC);
 			}
-			array_ptr = IF_G(env_array);
+			array_ptr = IF_G(env_array) ? IF_G(env_array) : PG(http_globals)[TRACK_VARS_ENV];
 			break;
 		case PARSE_SESSION:
 			/* FIXME: Implement session source */

@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2010 The PHP Group                                |
+  | Copyright (c) 1997-2011 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysql_driver.c 298626 2010-04-26 23:55:03Z kalle $ */
+/* $Id: mysql_driver.c 307529 2011-01-17 09:54:22Z kalle $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -710,6 +710,13 @@ static int pdo_mysql_handle_factory(pdo_dbh_t *dbh, zval *driver_options TSRMLS_
 		}
 #endif
 	}
+
+#ifdef PDO_MYSQL_HAS_CHARSET
+	if (vars[0].optval && mysql_options(H->server, MYSQL_SET_CHARSET_NAME, vars[0].optval)) {
+		pdo_mysql_error(dbh);
+		goto cleanup;
+	}
+#endif
 
 	dbname = vars[1].optval;
 	host = vars[2].optval;	

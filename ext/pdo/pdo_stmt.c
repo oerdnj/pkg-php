@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2010 The PHP Group                                |
+  | Copyright (c) 1997-2011 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_stmt.c 305381 2010-11-15 18:48:48Z felipe $ */
+/* $Id: pdo_stmt.c 308569 2011-02-22 15:48:25Z iliaa $ */
 
 /* The PDO Statement Handle Class */
 
@@ -2183,7 +2183,7 @@ static PHP_METHOD(PDOStatement, debugDumpParams)
 				php_stream_printf(out TSRMLS_CC, "Key: Name: [%d] %.*s\n", len, len, str);
 			}
 
-			php_stream_printf(out TSRMLS_CC, "paramno=%d\nname=[%d] \"%.*s\"\nis_param=%d\nparam_type=%d\n",
+			php_stream_printf(out TSRMLS_CC, "paramno=%ld\nname=[%d] \"%.*s\"\nis_param=%d\nparam_type=%d\n",
 				param->paramno, param->namelen, param->namelen, param->name ? param->name : "",
 				param->is_param,
 				param->param_type);

@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2010 The PHP Group                                |
+  | Copyright (c) 1997-2011 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pgsql_driver.c 300464 2010-06-15 11:13:20Z iliaa $ */
+/* $Id: pgsql_driver.c 306939 2011-01-01 02:19:59Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

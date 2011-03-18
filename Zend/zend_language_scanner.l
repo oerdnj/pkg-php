@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2010 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2011 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_language_scanner.l 305464 2010-11-17 16:46:19Z pajoye $ */
+/* $Id: zend_language_scanner.l 307028 2011-01-03 14:39:48Z iliaa $ */
 
 #if 0
 # define YYDEBUG(s, c) printf("state: %d char: %c\n", s, c)
@@ -227,6 +227,12 @@ ZEND_API void zend_restore_lexical_state(zend_lex_state *lex_state TSRMLS_DC)
 	SCNG(script_encoding) = lex_state->script_encoding;
 	SCNG(internal_encoding) = lex_state->internal_encoding;
 #endif /* ZEND_MULTIBYTE */
+
+	if (CG(heredoc)) {
+		efree(CG(heredoc));
+		CG(heredoc) = NULL;
+		CG(heredoc_len) = 0;
+	}
 }
 
 ZEND_API void zend_destroy_file_handle(zend_file_handle *file_handle TSRMLS_DC)

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: plain_wrapper.c 305108 2010-11-05 18:53:48Z cataphract $ */
+/* $Id: plain_wrapper.c 308011 2011-02-04 10:47:41Z aharvey $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -713,6 +713,8 @@ static int php_stdiop_set_option(php_stream *stream, int option, int value, void
 								acc = FILE_MAP_READ | FILE_MAP_WRITE;
 								/* TODO: we should assign a name for the mapping */
 								break;
+							default:
+								return PHP_STREAM_OPTION_RETURN_ERR;
 						}
 
 						/* create a mapping capable of viewing the whole file (this costs no real resources) */
@@ -853,9 +855,11 @@ static php_stream *php_plain_files_dir_opener(php_stream_wrapper *wrapper, char 
 	DIR *dir = NULL;
 	php_stream *stream = NULL;
 
+#ifdef HAVE_GLOB
 	if (options & STREAM_USE_GLOB_DIR_OPEN) {
 		return php_glob_stream_wrapper.wops->dir_opener(&php_glob_stream_wrapper, path, mode, options, opened_path, context STREAMS_REL_CC TSRMLS_CC);
 	}
+#endif
 
 	if (((options & STREAM_DISABLE_OPEN_BASEDIR) == 0) && php_check_open_basedir(path TSRMLS_CC)) {
 		return NULL;

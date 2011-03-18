@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_mysql.c 304071 2010-10-05 09:48:07Z kalle $ */
+/* $Id: php_mysql.c 308323 2011-02-14 14:05:46Z iliaa $ */
 
 /* TODO:
  *
@@ -371,11 +371,11 @@ void timeout(int sig);
 	if (mysql->active_result_id) { \
 		do {					\
 			int type;			\
-			MYSQL_RES *mysql_result;	\
+			MYSQL_RES *_mysql_result;	\
 							\
-			mysql_result = (MYSQL_RES *) zend_list_find(mysql->active_result_id, &type);	\
-			if (mysql_result && type==le_result) {						\
-				if (mysql_result_is_unbuffered(mysql_result) && !mysql_eof(mysql_result)) { \
+			_mysql_result = (MYSQL_RES *) zend_list_find(mysql->active_result_id, &type);	\
+			if (_mysql_result && type==le_result) {						\
+				if (mysql_result_is_unbuffered(_mysql_result) && !mysql_eof(_mysql_result)) { \
 					php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Function called without first fetching all rows from a previous unbuffered query");	\
 				}						\
 				zend_list_delete(mysql->active_result_id);	\
@@ -762,6 +762,7 @@ static void php_mysql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 		}
 		if (!passwd) {
 			passwd = MySG(default_password);
+			passwd_len = passwd? strlen(passwd):0;
 		}
 
 		/* disable local infile option for open_basedir */
@@ -848,7 +849,7 @@ static void php_mysql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 #ifndef MYSQL_USE_MYSQLND
 			if (mysql_real_connect(mysql->conn, host, user, passwd, NULL, port, socket, client_flags)==NULL)
 #else
-			if (mysqlnd_connect(mysql->conn, host, user, passwd, 0, NULL, 0, port, socket, client_flags TSRMLS_CC) == NULL)
+			if (mysqlnd_connect(mysql->conn, host, user, passwd, passwd_len, NULL, 0, port, socket, client_flags TSRMLS_CC) == NULL)
 #endif
 			{
 				/* Populate connect error globals so that the error functions can read them */
@@ -896,7 +897,7 @@ static void php_mysql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 #ifndef MYSQL_USE_MYSQLND
 					if (mysql_real_connect(mysql->conn, host, user, passwd, NULL, port, socket, client_flags)==NULL)
 #else
-					if (mysqlnd_connect(mysql->conn, host, user, passwd, 0, NULL, 0, port, socket, client_flags TSRMLS_CC) == NULL)
+					if (mysqlnd_connect(mysql->conn, host, user, passwd, passwd_len, NULL, 0, port, socket, client_flags TSRMLS_CC) == NULL)
 #endif
 					{
 						php_error_docref(NULL TSRMLS_CC, E_WARNING, "Link to server lost, unable to reconnect");
@@ -975,7 +976,7 @@ static void php_mysql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 #ifndef MYSQL_USE_MYSQLND
 		if (mysql_real_connect(mysql->conn, host, user, passwd, NULL, port, socket, client_flags)==NULL)
 #else
-		if (mysqlnd_connect(mysql->conn, host, user, passwd, 0, NULL, 0, port, socket, client_flags TSRMLS_CC) == NULL)
+		if (mysqlnd_connect(mysql->conn, host, user, passwd, passwd_len, NULL, 0, port, socket, client_flags TSRMLS_CC) == NULL)
 #endif
 		{
 			/* Populate connect error globals so that the error functions can read them */
@@ -2125,12 +2126,12 @@ static void php_mysql_fetch_hash(INTERNAL_FUNCTION_PARAMETERS, long result_type,
 			fci.retval_ptr_ptr = &retval_ptr;
 			if (ctor_params && Z_TYPE_P(ctor_params) != IS_NULL) {
 				if (Z_TYPE_P(ctor_params) == IS_ARRAY) {
-					HashTable *ht = Z_ARRVAL_P(ctor_params);
+					HashTable *htl = Z_ARRVAL_P(ctor_params);
 					Bucket *p;
 
 					fci.param_count = 0;
-					fci.params = safe_emalloc(sizeof(zval*), ht->nNumOfElements, 0);
-					p = ht->pListHead;
+					fci.params = safe_emalloc(sizeof(zval*), htl->nNumOfElements, 0);
+					p = htl->pListHead;
 					while (p != NULL) {
 						fci.params[fci.param_count++] = (zval**)p->pData;
 						p = p->pListNext;

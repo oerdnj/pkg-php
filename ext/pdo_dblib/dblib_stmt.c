@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2010 The PHP Group                                |
+  | Copyright (c) 1997-2011 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: dblib_stmt.c 302196 2010-08-13 22:12:37Z felipe $ */
+/* $Id: dblib_stmt.c 308972 2011-03-06 13:36:44Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -67,7 +67,6 @@ static int pdo_dblib_stmt_dtor(pdo_stmt_t *stmt TSRMLS_DC)
 
 static int pdo_dblib_stmt_execute(pdo_stmt_t *stmt TSRMLS_DC)
 {
-	pdo_dbh_t *dbh = stmt->dbh;
 	pdo_dblib_stmt *S = (pdo_dblib_stmt*)stmt->driver_data;
 	pdo_dblib_db_handle *H = S->H;
 	RETCODE resret, ret;

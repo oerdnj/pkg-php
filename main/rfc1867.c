@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: rfc1867.c 303970 2010-10-04 01:27:33Z cataphract $ */
+/* $Id: rfc1867.c 307583 2011-01-19 13:09:05Z iliaa $ */
 
 /*
  *  This product includes software developed by the Apache Group
@@ -989,8 +989,8 @@ SAPI_API SAPI_POST_HANDLER_FUNC(rfc1867_post_handler) /* {{{ */
 
 			/* New Rule: never repair potential malicious user input */
 			if (!skip_upload) {
-				char *tmp = param;
 				long c = 0;
+				tmp = param;
 
 				while (*tmp) {
 					if (*tmp == '[') {

@@ -1,4 +1,4 @@
-$Id: UPGRADING 306076 2010-12-08 09:38:47Z pajoye $
+$Id: UPGRADING 308266 2011-02-11 22:31:52Z salathe $
 
 UPGRADE NOTES - PHP 5.3
 
@@ -670,7 +670,9 @@ UPGRADE NOTES - PHP 5.3
                        ReflectionClass::inNamespace()
                        ReflectionClass::getNamespaceName()
                        ReflectionClass::getShortName()
-       - SPL           SplObjectStorage::addAll()
+       - SPL:          DirectoryIterator::getExtension()
+                       SplFileInfo::getExtension()
+                       SplObjectStorage::addAll()
                        SplObjectStorage::removeAll()
        - XSL:          XSLTProcessor::setProfiling()
 

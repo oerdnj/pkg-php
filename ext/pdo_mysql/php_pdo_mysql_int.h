@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2010 The PHP Group                                |
+  | Copyright (c) 1997-2011 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_mysql_int.h 304627 2010-10-22 15:46:26Z andrey $ */
+/* $Id: php_pdo_mysql_int.h 307529 2011-01-17 09:54:22Z kalle $ */
 
 #ifndef PHP_PDO_MYSQL_INT_H
 #define PHP_PDO_MYSQL_INT_H
@@ -31,6 +31,10 @@
 #else
 #	include <mysql.h>
 #	define PDO_MYSQL_PARAM_BIND MYSQL_BIND
+#endif
+
+#if (MYSQL_VERSION_ID >= 40113 && MYSQL_VERSION_ID < 50000) || MYSQL_VERSION_ID >= 50007 || defined(MYSQL_USE_MYSQLND)
+# define PDO_MYSQL_HAS_CHARSET
 #endif
 
 #if defined(PDO_USE_MYSQLND) && PHP_DEBUG && !defined(PHP_WIN32)

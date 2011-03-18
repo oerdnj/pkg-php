@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is SplSubject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_observer.c 305335 2010-11-14 18:40:08Z felipe $ */
+/* $Id: spl_observer.c 308784 2011-03-01 00:13:23Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -485,6 +485,36 @@ SPL_METHOD(SplObjectStorage, removeAll)
 	RETURN_LONG(zend_hash_num_elements(&intern->storage));
 } /* }}} */
 
+/* {{{ proto bool SplObjectStorage::removeAllExcept(SplObjectStorage $os)
+ Remove elements not common to both this SplObjectStorage instance and $os */
+SPL_METHOD(SplObjectStorage, removeAllExcept)
+{
+	zval *obj;
+	spl_SplObjectStorage *intern = (spl_SplObjectStorage *)zend_object_store_get_object(getThis() TSRMLS_CC);
+	spl_SplObjectStorage *other;
+	spl_SplObjectStorageElement *element;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &obj, spl_ce_SplObjectStorage) == FAILURE) {
+		return;
+	}
+
+	other = (spl_SplObjectStorage *)zend_object_store_get_object(obj TSRMLS_CC);
+
+	zend_hash_internal_pointer_reset(&intern->storage);
+	while (zend_hash_get_current_data(&intern->storage, (void **)&element) == SUCCESS) {
+		if (!spl_object_storage_contains(other, element->obj TSRMLS_CC)) {
+			spl_object_storage_detach(intern, element->obj TSRMLS_CC);
+		}
+		zend_hash_move_forward(&intern->storage);
+	}
+
+	zend_hash_internal_pointer_reset_ex(&intern->storage, &intern->pos);
+	intern->index = 0;
+
+	RETURN_LONG(zend_hash_num_elements(&intern->storage));
+}
+/* }}} */
+
 /* {{{ proto bool SplObjectStorage::contains($obj)
  Determine whethe an object is contained in the storage */
 SPL_METHOD(SplObjectStorage, contains)
@@ -813,11 +843,6 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_offsetGet, 0, 0, 1)
 	ZEND_ARG_INFO(0, object)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_offsetSet, 0, 0, 2)
-	ZEND_ARG_INFO(0, object)
-	ZEND_ARG_INFO(0, info)
-ZEND_END_ARG_INFO()
-
 ZEND_BEGIN_ARG_INFO(arginfo_splobject_void, 0)
 ZEND_END_ARG_INFO()
 
@@ -827,6 +852,7 @@ static const zend_function_entry spl_funcs_SplObjectStorage[] = {
 	SPL_ME(SplObjectStorage,  contains,    arginfo_Object,        0)
 	SPL_ME(SplObjectStorage,  addAll,      arginfo_Object,        0)
 	SPL_ME(SplObjectStorage,  removeAll,   arginfo_Object,        0)
+	SPL_ME(SplObjectStorage,  removeAllExcept, arginfo_Object,    0)
 	SPL_ME(SplObjectStorage,  getInfo,     arginfo_splobject_void,0)
 	SPL_ME(SplObjectStorage,  setInfo,     arginfo_setInfo,       0)
 	/* Countable */
@@ -842,7 +868,7 @@ static const zend_function_entry spl_funcs_SplObjectStorage[] = {
 	SPL_ME(SplObjectStorage,  serialize,   arginfo_splobject_void,0)
 	/* ArrayAccess */
 	SPL_MA(SplObjectStorage, offsetExists, SplObjectStorage, contains, arginfo_offsetGet, 0)
-	SPL_MA(SplObjectStorage, offsetSet,    SplObjectStorage, attach,   arginfo_offsetSet, 0)
+	SPL_MA(SplObjectStorage, offsetSet,    SplObjectStorage, attach,   arginfo_attach, 0)
 	SPL_MA(SplObjectStorage, offsetUnset,  SplObjectStorage, detach,   arginfo_offsetGet, 0)
 	SPL_ME(SplObjectStorage, offsetGet,    arginfo_offsetGet,     0)
 	{NULL, NULL, NULL}

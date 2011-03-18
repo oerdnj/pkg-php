@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_variant.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: com_variant.c 307617 2011-01-20 06:58:04Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -593,6 +593,9 @@ static void variant_binary_operation(enum variant_binary_opcode op, INTERNAL_FUN
 		case VOP_XOR:
 			result = VarXor(vleft, vright, &vres);
 			break;
+		/*Let say it fails as no valid op has been given */
+		default:
+			result = E_INVALIDARG;
 	}
 
 	if (SUCCEEDED(result)) {
@@ -752,6 +755,8 @@ static void variant_unary_operation(enum variant_unary_opcode op, INTERNAL_FUNCT
 		case VOP_NOT:
 			result = VarNot(vleft, &vres);
 			break;
+		default:
+			result = E_INVALIDARG;
 	}
 
 	if (SUCCEEDED(result)) {

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: spprintf.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: spprintf.c 308525 2011-02-21 06:53:24Z cataphract $ */
 
 /* This is the spprintf implementation.
  * It has emerged from apache snprintf. See original header:
@@ -285,10 +285,6 @@ static void xbuf_format_converter(smart_str *xbuf, const char *fmt, va_list ap) 
 
 				/*
 				 * Check if a precision was specified
-				 *
-				 * XXX: an unreasonable amount of precision may be specified
-				 * resulting in overflow of num_buf. Currently we
-				 * ignore this possibility.
 				 */
 				if (*fmt == '.') {
 					adjust_precision = YES;
@@ -302,6 +298,10 @@ static void xbuf_format_converter(smart_str *xbuf, const char *fmt, va_list ap) 
 							precision = 0;
 					} else
 						precision = 0;
+					
+					if (precision > FORMAT_CONV_MAX_PRECISION) {
+						precision = FORMAT_CONV_MAX_PRECISION;
+					}
 				} else
 					adjust_precision = NO;
 			} else

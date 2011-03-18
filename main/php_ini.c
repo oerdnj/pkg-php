@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_ini.c 303199 2010-09-09 05:11:05Z aharvey $ */
+/* $Id: php_ini.c 307587 2011-01-19 14:21:46Z pajoye $ */
 
 #include "php.h"
 #include "ext/standard/info.h"
@@ -650,14 +650,14 @@ int php_init_config(TSRMLS_D)
 		struct stat sb;
 		char ini_file[MAXPATHLEN];
 		char *p;
-		zend_file_handle fh;
+		zend_file_handle fh2;
 		zend_llist scanned_ini_list;
 		zend_llist_element *element;
 		int l, total_l = 0;
 
 		if ((ndir = php_scandir(php_ini_scanned_path, &namelist, 0, php_alphasort)) > 0) {
 			zend_llist_init(&scanned_ini_list, sizeof(char *), (llist_dtor_func_t) free_estring, 1);
-			memset(&fh, 0, sizeof(fh));
+			memset(&fh2, 0, sizeof(fh2));
 
 			for (i = 0; i < ndir; i++) {
 
@@ -676,11 +676,11 @@ int php_init_config(TSRMLS_D)
 				}
 				if (VCWD_STAT(ini_file, &sb) == 0) {
 					if (S_ISREG(sb.st_mode)) {
-						if ((fh.handle.fp = VCWD_FOPEN(ini_file, "r"))) {
-							fh.filename = ini_file;
-							fh.type = ZEND_HANDLE_FP;
+						if ((fh2.handle.fp = VCWD_FOPEN(ini_file, "r"))) {
+							fh2.filename = ini_file;
+							fh2.type = ZEND_HANDLE_FP;
 
-							if (zend_parse_ini_file(&fh, 1, ZEND_INI_SCANNER_NORMAL, (zend_ini_parser_cb_t) php_ini_parser_cb, &configuration_hash TSRMLS_CC) == SUCCESS) {
+							if (zend_parse_ini_file(&fh2, 1, ZEND_INI_SCANNER_NORMAL, (zend_ini_parser_cb_t) php_ini_parser_cb, &configuration_hash TSRMLS_CC) == SUCCESS) {
 								/* Here, add it to the list of ini files read */
 								l = strlen(ini_file);
 								total_l += l + 2;
@@ -819,13 +819,20 @@ PHPAPI int php_ini_has_per_dir_config(void)
  */
 PHPAPI void php_ini_activate_per_dir_config(char *path, uint path_len TSRMLS_DC)
 {
-	zval *tmp;
+	zval *tmp2;
 	char *ptr;
 
 #if PHP_WIN32
 	char path_bak[MAXPATHLEN];
+#endif
+
+	if (path_len > MAXPATHLEN) {
+		return;
+	}
+
+#if PHP_WIN32
 	memcpy(path_bak, path, path_len);
-	path_bak[path_len] = 0;
+	path_bak[path_len - 1] = 0;
 	TRANSLATE_SLASHES_LOWER(path_bak);
 	path = path_bak;
 #endif
@@ -836,8 +843,8 @@ PHPAPI void php_ini_activate_per_dir_config(char *path, uint path_len TSRMLS_DC)
 		while ((ptr = strchr(ptr, '/')) != NULL) {
 			*ptr = 0;
 			/* Search for source array matching the path from configuration_hash */
-			if (zend_hash_find(&configuration_hash, path, strlen(path) + 1, (void **) &tmp) == SUCCESS) {
-				php_ini_activate_config(Z_ARRVAL_P(tmp), PHP_INI_SYSTEM, PHP_INI_STAGE_ACTIVATE TSRMLS_CC);
+			if (zend_hash_find(&configuration_hash, path, strlen(path) + 1, (void **) &tmp2) == SUCCESS) {
+				php_ini_activate_config(Z_ARRVAL_P(tmp2), PHP_INI_SYSTEM, PHP_INI_STAGE_ACTIVATE TSRMLS_CC);
 			}
 			*ptr = '/';
 			ptr++;

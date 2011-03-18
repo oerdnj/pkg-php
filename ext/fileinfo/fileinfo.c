@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2004 The PHP Group                                |
+  | Copyright (c) 1997-2011 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: fileinfo.c 305507 2010-11-18 15:22:22Z pajoye $ */
+/* $Id: fileinfo.c 308327 2011-02-14 15:32:02Z bjori $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -478,21 +478,10 @@ static void _php_finfo_get_type(INTERNAL_FUNCTION_PARAMETERS, int mode, int mime
 			/* determine if the file is a local file or remote URL */
 			char *tmp2;
 			php_stream_wrapper *wrap;
-			struct stat sb;
+			php_stream_statbuf ssb;
 
 			if (buffer == NULL || !*buffer) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Empty filename or path");
-				RETVAL_FALSE;
-				goto clean;
-			}
-
-			if (php_sys_stat(buffer, &sb) == 0) {
-					  if (sb.st_mode & _S_IFDIR) {
-								 ret_val = mime_directory;
-								 goto common;
-					  }
-			} else {
-				php_error_docref(NULL TSRMLS_CC, E_WARNING, "File or path not found '%s'", buffer);
 				RETVAL_FALSE;
 				goto clean;
 			}
@@ -512,7 +501,14 @@ static void _php_finfo_get_type(INTERNAL_FUNCTION_PARAMETERS, int mode, int mime
 					goto clean;
 				}
 
-				ret_val = (char *)magic_stream(magic, stream);
+				if (php_stream_stat(stream, &ssb) == SUCCESS) {
+					if (ssb.sb.st_mode & S_IFDIR) {
+						ret_val = mime_directory;
+					} else {
+						ret_val = (char *)magic_stream(magic, stream);
+					}
+				}
+
 				php_stream_close(stream);
 			}
 			break;

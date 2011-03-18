@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: pspell.c 305507 2010-11-18 15:22:22Z pajoye $ */
+/* $Id: pspell.c 306939 2011-01-01 02:19:59Z felipe $ */
 
 #define IS_EXT_MODULE
 
@@ -403,6 +403,7 @@ static PHP_FUNCTION(pspell_new_personal)
 #endif
 
 	if (strlen(personal) != personal_len) {
+		delete_pspell_config(config);
 		RETURN_FALSE;
 	}
 

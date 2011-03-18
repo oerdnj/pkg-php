@@ -1,5 +1,5 @@
 /*
- * $Id: gdcache.c 262909 2008-07-18 01:16:25Z scottmac $
+ * $Id: gdcache.c 307588 2011-01-19 15:23:07Z pajoye $
  *
  * Caches of pointers to user structs in which the least-recently-used
  * element is replaced in the event of a cache miss after the cache has
@@ -159,6 +159,9 @@ cacheFetch( char **error, void *key )
 	key_value_t *map;
 
 	map = (key_value_t *)malloc(sizeof(key_value_t));
+	if (map == NULL) {
+		return NULL;
+	}
 	map->key = *(int *)key;
 	map->value = 3;
 

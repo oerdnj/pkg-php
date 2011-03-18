@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: document.c 297374 2010-04-02 20:08:15Z rrichards $ */
+/* $Id: document.c 307571 2011-01-19 00:22:06Z cataphract $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -2284,33 +2284,68 @@ Convenience method to output as html
 */
 PHP_FUNCTION(dom_document_save_html)
 {
-	zval *id;
+	zval *id, *nodep = NULL;
 	xmlDoc *docp;
-	dom_object *intern;
-	xmlChar *mem;
+	xmlNode *node;
+	xmlBufferPtr buf;
+	dom_object *intern, *nodeobj;
+	xmlChar *mem = NULL;
 	int size, format;
 	dom_doc_propsptr doc_props;
 
-	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "O", &id, dom_document_class_entry) == FAILURE) {
+	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(),
+		"O|O!", &id, dom_document_class_entry, &nodep, dom_node_class_entry)
+		== FAILURE) {
 		return;
 	}
 
 	DOM_GET_OBJ(docp, id, xmlDocPtr, intern);
 
-#if LIBXML_VERSION >= 20623
 	doc_props = dom_get_doc_props(intern->document);
 	format = doc_props->formatoutput;
-	htmlDocDumpMemoryFormat(docp, &mem, &size, format);
+
+	if (nodep != NULL) {
+		/* Dump contents of Node */
+		DOM_GET_OBJ(node, nodep, xmlNodePtr, nodeobj);
+		if (node->doc != docp) {
+			php_dom_throw_error(WRONG_DOCUMENT_ERR, dom_get_strict_error(intern->document) TSRMLS_CC);
+			RETURN_FALSE;
+		}
+		
+		buf = xmlBufferCreate();
+		if (!buf) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Could not fetch buffer");
+			RETURN_FALSE;
+		}
+		
+		size = htmlNodeDump(buf, docp, node);
+		if (size >= 0) {
+			mem = (xmlChar*) xmlBufferContent(buf);
+			if (!mem) {
+				RETVAL_FALSE;
+			} else {
+				RETVAL_STRINGL((const char*) mem, size, 1);
+			}
+		} else {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Error dumping HTML node");
+			RETVAL_FALSE;
+		}
+		xmlBufferFree(buf);
+	} else {
+#if LIBXML_VERSION >= 20623
+		htmlDocDumpMemoryFormat(docp, &mem, &size, format);
 #else
-	htmlDocDumpMemory(docp, &mem, &size);
+		htmlDocDumpMemory(docp, &mem, &size);
 #endif
-	if (!size) {
+		if (!size) {
+			RETVAL_FALSE;
+		} else {
+			RETVAL_STRINGL((const char*) mem, size, 1);
+		}
 		if (mem)
 			xmlFree(mem);
-		RETURN_FALSE;
 	}
-	RETVAL_STRINGL(mem, size, 1);
-	xmlFree(mem);
+
 }
 /* }}} end dom_document_save_html */
 

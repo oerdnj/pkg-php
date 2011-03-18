@@ -1,4 +1,4 @@
-// $Id: config.w32 270880 2008-12-09 14:28:54Z pajoye $
+// $Id: config.w32 306365 2010-12-14 13:10:25Z pajoye $
 // vim:ft=javascript
 
 EXTENSION("date", "php_date.c", false, "-Iext/date/lib");
@@ -10,3 +10,5 @@ ADD_FLAG('CFLAGS_DATE', "/wd4244");
 var tl_config = FSO.CreateTextFile("ext/date/lib/timelib_config.h", true);
 tl_config.WriteLine("#include \"config.w32.h\"");
 tl_config.Close();
+
+PHP_INSTALL_HEADERS("ext/date/", "php_date.h lib/timelib.h lib/timelib_structs.h lib/timelib_config.h");

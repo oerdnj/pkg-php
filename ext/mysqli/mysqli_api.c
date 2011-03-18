@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2010 The PHP Group                                |
+  | Copyright (c) 1997-2011 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   |          Ulf Wendel <uw@php.net>                                     |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_api.c 305244 2010-11-10 13:57:09Z andrey $
+  $Id: mysqli_api.c 307533 2011-01-17 11:20:54Z kalle $
 */
 
 #ifdef HAVE_CONFIG_H
@@ -1052,6 +1052,8 @@ static void php_add_field_properties(zval *value, const MYSQL_FIELD *field TSRML
 	add_property_string(value, "table", (char *) (field->table ? field->table : ""), 1);
 	add_property_string(value, "orgtable", (char *) (field->org_table ? field->org_table : ""), 1);
 	add_property_string(value, "def", (field->def ? field->def : ""), 1);
+	add_property_string(value, "db", (field->db ? field->db : ""), 1);
+	add_property_string(value, "catalog", (field->catalog ? field->catalog : ""), 1);
 
 	add_property_long(value, "max_length", field->max_length);
 	add_property_long(value, "length", field->length);

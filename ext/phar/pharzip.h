@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | phar php single-file executable PHP extension                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 2006-2009 The PHP Group                                |
+  | Copyright (c) 2006-2011 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pharzip.h 284658 2009-07-23 16:30:27Z cellog $ */
+/* $Id: pharzip.h 306941 2011-01-01 02:48:19Z felipe $ */
 
 typedef struct _phar_zip_file_header {
 	char signature[4];       /* local file header signature     4 bytes  (0x04034b50) */

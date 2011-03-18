@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 2006-2010 The PHP Group                                |
+  | Copyright (c) 2006-2011 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd.c 306008 2010-12-06 13:50:51Z andrey $ */
+/* $Id: mysqlnd.c 308671 2011-02-25 12:52:21Z andrey $ */
 #include "php.h"
 #include "mysqlnd.h"
 #include "mysqlnd_wireprotocol.h"
@@ -1812,6 +1812,9 @@ MYSQLND_METHOD(mysqlnd_conn, next_result)(MYSQLND * const conn TSRMLS_DC)
 			DBG_INF_FMT("Error from the server : (%u) %s", conn->error_info.error_no, conn->error_info.error);
 		}
 	}
+	if (ret == PASS && conn->last_query_type == QUERY_UPSERT && conn->upsert_status.affected_rows) {
+		MYSQLND_INC_CONN_STATISTIC_W_VALUE(conn->stats, STAT_ROWS_AFFECTED_NORMAL, conn->upsert_status.affected_rows);
+	}
 
 	DBG_RETURN(ret);
 }
@@ -2222,6 +2225,43 @@ MYSQLND_METHOD(mysqlnd_conn, get_connection_stats)(const MYSQLND * const conn,
 /* }}} */
 
 
+/* {{{ mysqlnd_conn::set_autocommit */
+static enum_func_status
+MYSQLND_METHOD(mysqlnd_conn, set_autocommit)(MYSQLND * conn, unsigned int mode TSRMLS_DC)
+{
+	enum_func_status ret;
+	DBG_ENTER("mysqlnd_conn::set_autocommit");
+	ret = conn->m->query(conn, (mode) ? "SET AUTOCOMMIT=1":"SET AUTOCOMMIT=0", sizeof("SET AUTOCOMMIT=1") - 1 TSRMLS_CC);
+	DBG_RETURN(ret);
+}
+/* }}} */
+
+
+/* {{{ mysqlnd_conn::tx_commit */
+static enum_func_status
+MYSQLND_METHOD(mysqlnd_conn, tx_commit)(MYSQLND * conn TSRMLS_DC)
+{
+	enum_func_status ret;
+	DBG_ENTER("mysqlnd_conn::tx_commit");
+	ret = conn->m->query(conn, "COMMIT", sizeof("COMMIT") - 1 TSRMLS_CC);
+	DBG_RETURN(ret);
+}
+/* }}} */
+
+
+/* {{{ mysqlnd_conn::tx_rollback */
+static enum_func_status
+MYSQLND_METHOD(mysqlnd_conn, tx_rollback)(MYSQLND * conn TSRMLS_DC)
+{
+	enum_func_status ret;
+	DBG_ENTER("mysqlnd_conn::tx_rollback");
+	ret = conn->m->query(conn, "ROLLBACK", sizeof("ROLLBACK") - 1 TSRMLS_CC);
+	DBG_RETURN(ret);
+}
+/* }}} */
+
+
+
 MYSQLND_STMT * _mysqlnd_stmt_init(MYSQLND * const conn TSRMLS_DC);
 static enum_func_status MYSQLND_METHOD(mysqlnd_conn, init)(MYSQLND * conn TSRMLS_DC);
 
@@ -2296,6 +2336,11 @@ MYSQLND_CLASS_METHODS_START(mysqlnd_conn)
 
 	MYSQLND_METHOD(mysqlnd_conn, ssl_set),
 	mysqlnd_result_init
+#ifdef AUTOCOMMIT_TX_COMMIT_ROLLBACK
+	,MYSQLND_METHOD(mysqlnd_conn, set_autocommit),
+	MYSQLND_METHOD(mysqlnd_conn, tx_commit),
+	MYSQLND_METHOD(mysqlnd_conn, tx_rollback)
+#endif
 MYSQLND_CLASS_METHODS_END;
 
 

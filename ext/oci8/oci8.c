@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -26,7 +26,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: oci8.c 305257 2010-11-10 18:59:56Z sixd $ */
+/* $Id: oci8.c 306939 2011-01-01 02:19:59Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1299,7 +1299,7 @@ PHP_MINFO_FUNCTION(oci)
 	php_info_print_table_start();
 	php_info_print_table_row(2, "OCI8 Support", "enabled");
 	php_info_print_table_row(2, "Version", PHP_OCI8_VERSION);
-	php_info_print_table_row(2, "Revision", "$Revision: 305257 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 306939 $");
 
 	snprintf(buf, sizeof(buf), "%ld", OCI_G(num_persistent));
 	php_info_print_table_row(2, "Active Persistent Connections", buf);

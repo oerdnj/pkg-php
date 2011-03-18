@@ -89,7 +89,7 @@
  *	directly -- and assumed always to succeed.
  */
 
-/* $Id: zend_strtod.c 307119 2011-01-05 13:32:26Z johannes $ */
+/* $Id: zend_strtod.c 307192 2011-01-06 22:48:20Z rasmus $ */
 
 #include <zend_operators.h>
 #include <zend_strtod.h>
@@ -164,6 +164,7 @@ typedef unsigned long int uint32_t;
 
 #ifdef __vax__
 #define VAX
+#undef IEEE_LITTLE_ENDIAN
 #endif
 
 #if defined(_MSC_VER)
@@ -2030,6 +2031,10 @@ ret1:
 	return s0;
 }
 
+/* F* VC6 */
+#if _MSC_VER <= 1300
+# pragma optimize( "", off )
+#endif
 ZEND_API double zend_strtod (CONST char *s00, char **se)
 {
 	int bb2, bb5, bbe, bd2, bd5, bbbits, bs2, c, dsign,

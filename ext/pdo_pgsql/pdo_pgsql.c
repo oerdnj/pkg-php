@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2010 The PHP Group                                |
+  | Copyright (c) 1997-2011 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_pgsql.c 300351 2010-06-10 12:11:19Z iliaa $ */
+/* $Id: pdo_pgsql.c 306939 2011-01-01 02:19:59Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -134,7 +134,7 @@ PHP_MINFO_FUNCTION(pdo_pgsql)
 	php_info_print_table_row(2, "PostgreSQL(libpq) Version", PG_VERSION);
 #endif	
 	php_info_print_table_row(2, "Module version", pdo_pgsql_module_entry.version);
-	php_info_print_table_row(2, "Revision", " $Id: pdo_pgsql.c 300351 2010-06-10 12:11:19Z iliaa $ ");
+	php_info_print_table_row(2, "Revision", " $Id: pdo_pgsql.c 306939 2011-01-01 02:19:59Z felipe $ ");
 
 	php_info_print_table_end();
 }

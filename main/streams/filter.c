@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: filter.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: filter.c 307922 2011-02-01 18:10:35Z cataphract $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -360,7 +360,7 @@ PHPAPI int php_stream_filter_append_ex(php_stream_filter_chain *chain, php_strea
 		php_stream_bucket_append(brig_inp, bucket TSRMLS_CC);
 		status = filter->fops->filter(stream, filter, brig_inp, brig_outp, &consumed, PSFS_FLAG_NORMAL TSRMLS_CC);
 
-		if (stream->readpos + consumed > (uint)stream->writepos || consumed < 0) {
+		if (stream->readpos + consumed > (uint)stream->writepos) {
 			/* No behaving filter should cause this. */
 			status = PSFS_ERR_FATAL;
 		}

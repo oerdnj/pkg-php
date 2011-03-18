@@ -1,4 +1,4 @@
-// $Id: config.w32 295968 2010-03-08 15:51:08Z kalle $
+// $Id: config.w32 306344 2010-12-13 18:43:10Z pajoye $
 // vim: ft=javascript
 
 ARG_WITH("iconv", "iconv support", "yes");
@@ -19,6 +19,7 @@ if (PHP_ICONV != "no") {
 		if (!PHP_ICONV_SHARED) {
 			ADD_DEF_FILE("ext\\iconv\\php_iconv.def");
 		}
+		PHP_INSTALL_HEADERS("", "ext/iconv");
 	} else {
 		WARNING("iconv support can't be enabled, libraries or headers are missing")
 		PHP_ICONV = "no";

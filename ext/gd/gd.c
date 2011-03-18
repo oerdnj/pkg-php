@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: gd.c 306075 2010-12-08 08:45:56Z pajoye $ */
+/* $Id: gd.c 306939 2011-01-01 02:19:59Z felipe $ */
 
 /* gd 1.2 is copyright 1994, 1995, Quest Protein Database Center,
    Cold Spring Harbor Labs. */
@@ -4228,8 +4228,8 @@ PHP_FUNCTION(imagepstext)
 		return;
 	}
 
-	if (aa_steps != 4 || aa_steps != 16) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "AA steps must be 4 or 16");
+	if (aa_steps != 4 && aa_steps != 16) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Antialias steps must be 4 or 16");
 		RETURN_FALSE;
 	}
 

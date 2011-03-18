@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: xsltprocessor.c 305507 2010-11-18 15:22:22Z pajoye $ */
+/* $Id: xsltprocessor.c 306939 2011-01-01 02:19:59Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -643,6 +643,7 @@ PHP_FUNCTION(xsl_xsltprocessor_transform_to_uri)
 	ret = -1;
 	if (newdocp) {
 		if (strlen(uri) != uri_len) {
+			xmlFreeDoc(newdocp);
 			RETURN_FALSE;
 		}
 		ret = xsltSaveResultToFilename(uri, newdocp, sheetp, 0);

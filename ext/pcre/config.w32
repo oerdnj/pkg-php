@@ -1,4 +1,4 @@
-// $Id: config.w32 272550 2009-01-02 04:59:41Z andi $
+// $Id: config.w32 306344 2010-12-13 18:43:10Z pajoye $
 // vim:ft=javascript
 
 EXTENSION("pcre", "php_pcre.c", false /* never shared */,
@@ -9,3 +9,4 @@ ADD_DEF_FILE("ext\\pcre\\php_pcre.def");
 AC_DEFINE('HAVE_BUNDLED_PCRE', 1, 'Using bundled PCRE library');
 AC_DEFINE('HAVE_PCRE', 1, 'Have PCRE library');
 PHP_PCRE="yes";
+PHP_INSTALL_HEADERS("ext/pcre", "php_pcre.h pcrelib/");

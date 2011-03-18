@@ -1,4 +1,4 @@
-// $Id: config.w32 261548 2008-06-23 18:40:29Z pajoye $
+// $Id: config.w32 306344 2010-12-13 18:43:10Z pajoye $
 // vim:ft=javascript
 
 // Note: The extension name is "mysqli", you enable it with "--with-mysqli".
@@ -27,6 +27,7 @@ if (PHP_MYSQLI != "no") {
 		AC_DEFINE('HAVE_MYSQLILIB', 1, 'Have MySQLi library');
 		ADD_EXTENSION_DEP('mysqli', 'mysqlnd', true);
 		MESSAGE("\tmysqlnd build");
+		PHP_INSTALL_HEADERS("ext/mysqli", "php_mysqli_structs.h");
 	} else {
 		if (CHECK_LIB("libmysql.lib", "mysqli", PHP_MYSQLI) &&
 			CHECK_HEADER_ADD_INCLUDE("mysql.h", "CFLAGS_MYSQLI", PHP_MYSQLI + 
@@ -35,6 +36,7 @@ if (PHP_MYSQLI != "no") {
 			EXTENSION("mysqli", mysqli_source);
 			AC_DEFINE('HAVE_MYSQLILIB', 1, 'Have MySQLi library');
 			MESSAGE("\tlibmysql build");
+			PHP_INSTALL_HEADERS("ext/mysqli", "php_mysqli_structs.h");
 		} else {
 			WARNING("mysqli not enabled; libraries and headers not found");
 			PHP_MYSQLI = "no"

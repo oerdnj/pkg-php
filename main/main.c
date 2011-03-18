@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: main.c 305266 2010-11-11 01:43:53Z kalle $ */
+/* $Id: main.c 308150 2011-02-08 21:40:51Z cataphract $ */
 
 /* {{{ includes
  */
@@ -179,7 +179,9 @@ static void php_disable_functions(TSRMLS_D)
 	}
 
 	e = PG(disable_functions) = strdup(INI_STR("disable_functions"));
-
+	if (e == NULL) {
+		return;
+	}
 	while (*e) {
 		switch (*e) {
 			case ' ':
@@ -475,7 +477,7 @@ PHP_INI_BEGIN()
 	STD_PHP_INI_BOOLEAN("y2k_compliance",		"1",		PHP_INI_ALL,		OnUpdateBool,			y2k_compliance,			php_core_globals,	core_globals)
 
 	STD_PHP_INI_ENTRY("unserialize_callback_func",	NULL,	PHP_INI_ALL,		OnUpdateString,			unserialize_callback_func,	php_core_globals,	core_globals)
-	STD_PHP_INI_ENTRY("serialize_precision",	"100",	PHP_INI_ALL,		OnUpdateLongGEZero,			serialize_precision,	php_core_globals,	core_globals)
+	STD_PHP_INI_ENTRY("serialize_precision",	"17",	PHP_INI_ALL,		OnUpdateLongGEZero,			serialize_precision,	php_core_globals,	core_globals)
 	STD_PHP_INI_ENTRY("arg_separator.output",	"&",		PHP_INI_ALL,		OnUpdateStringUnempty,	arg_separator.output,	php_core_globals,	core_globals)
 	STD_PHP_INI_ENTRY("arg_separator.input",	"&",		PHP_INI_SYSTEM|PHP_INI_PERDIR,	OnUpdateStringUnempty,	arg_separator.input,	php_core_globals,	core_globals)
 
@@ -1672,8 +1674,9 @@ PHPAPI void php_com_initialize(TSRMLS_D)
 {
 #ifdef PHP_WIN32
 	if (!PG(com_initialized)) {
-		CoInitialize(NULL);
-		PG(com_initialized) = 1;
+		if (CoInitialize(NULL) == S_OK) {
+			PG(com_initialized) = 1;
+		}
 	}
 #endif
 }

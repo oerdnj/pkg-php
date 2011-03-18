@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | phar php single-file executable PHP extension                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 2005-2009 The PHP Group                                |
+  | Copyright (c) 2005-2011 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: phar.c 305584 2010-11-20 20:59:28Z kalle $ */
+/* $Id: phar.c 307915 2011-02-01 14:01:00Z iliaa $ */
 
 #define PHAR_MAIN 1
 #include "phar_internal.h"
@@ -1265,7 +1265,7 @@ int phar_open_or_create_filename(char *fname, int fname_len, char *alias, int al
 			if (ext_len == -2) {
 				spprintf(error, 0, "Cannot create a phar archive from a URL like \"%s\". Phar objects can only be created from local files", fname);
 			} else {
-				spprintf(error, 0, "Cannot create phar '%s', file extension (or combination) not recognised", fname);
+				spprintf(error, 0, "Cannot create phar '%s', file extension (or combination) not recognised or the directory does not exist", fname);
 			}
 		}
 		return FAILURE;
@@ -3668,7 +3668,7 @@ PHP_MINFO_FUNCTION(phar) /* {{{ */
 	php_info_print_table_header(2, "Phar: PHP Archive support", "enabled");
 	php_info_print_table_row(2, "Phar EXT version", PHP_PHAR_VERSION);
 	php_info_print_table_row(2, "Phar API version", PHP_PHAR_API_VERSION);
-	php_info_print_table_row(2, "SVN revision", "$Revision: 305584 $");
+	php_info_print_table_row(2, "SVN revision", "$Revision: 307915 $");
 	php_info_print_table_row(2, "Phar-based phar archives", "enabled");
 	php_info_print_table_row(2, "Tar-based phar archives", "enabled");
 	php_info_print_table_row(2, "ZIP-based phar archives", "enabled");

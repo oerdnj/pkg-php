@@ -1,4 +1,4 @@
-// $Id: config.w32 292204 2009-12-16 12:59:38Z andrey $
+// $Id: config.w32 307880 2011-01-31 12:47:28Z kalle $
 // vim:ft=javascript
 
 ARG_WITH("mysqlnd", "Mysql Native Client Driver", "yes");
@@ -24,6 +24,8 @@ if (PHP_MYSQLND != "no") {
 			(PHP_ZLIB_SHARED && CHECK_LIB("zlib.lib", "mysqlnd", PHP_MYSQLND)) || (PHP_ZLIB == "yes" && (!PHP_ZLIB_SHARED)))
 		{
 			AC_DEFINE("MYSQLND_COMPRESSION_ENABLED", 1, "Compression support");
+			AC_DEFINE("MYSQLND_SSL_SUPPORTED", 1, "SSL support");
 		}
+		PHP_INSTALL_HEADERS("", "ext/mysqlnd");
 	}
 }

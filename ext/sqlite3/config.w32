@@ -1,4 +1,4 @@
-// $Id: config.w32 289692 2009-10-16 02:22:48Z scottmac $
+// $Id: config.w32 306344 2010-12-13 18:43:10Z pajoye $
 // vim:ft=javascript
 
 ARG_WITH("sqlite3", "SQLite 3 support", "no");
@@ -10,4 +10,5 @@ if (PHP_SQLITE3 != "no") {
 	ADD_SOURCES(configure_module_dirname + "/libsqlite", "sqlite3.c", "sqlite3");
 
 	AC_DEFINE("HAVE_SQLITE3", 1, "SQLite support");
+	PHP_INSTALL_HEADERS("ext/sqlite3", "libsqlite/sqlite3.h");
 }

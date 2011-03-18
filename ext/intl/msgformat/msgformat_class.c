@@ -25,6 +25,7 @@
 #include "msgformat_attr.h"
 
 zend_class_entry *MessageFormatter_ce_ptr = NULL;
+static zend_object_handlers MessageFormatter_handlers;
 
 /*
  * Auxiliary functions needed by objects of 'MessageFormatter' class
@@ -66,9 +67,33 @@ zend_object_value MessageFormatter_object_create(zend_class_entry *ce TSRMLS_DC)
 		(zend_objects_free_object_storage_t)MessageFormatter_object_free,
 		NULL TSRMLS_CC );
 
-	retval.handlers = zend_get_std_object_handlers();
+	retval.handlers = &MessageFormatter_handlers;
 
 	return retval;
+}
+/* }}} */
+
+/* {{{ MessageFormatter_object_clone */
+zend_object_value MessageFormatter_object_clone(zval *object TSRMLS_DC)
+{
+	zend_object_value new_obj_val;
+	zend_object_handle handle = Z_OBJ_HANDLE_P(object);
+	MessageFormatter_object *mfo, *new_mfo;
+
+	MSG_FORMAT_METHOD_FETCH_OBJECT;
+	new_obj_val = MessageFormatter_ce_ptr->create_object(MessageFormatter_ce_ptr TSRMLS_CC);
+	new_mfo = (MessageFormatter_object *)zend_object_store_get_object_by_handle(new_obj_val.handle TSRMLS_CC);
+	/* clone standard parts */	
+	zend_objects_clone_members(&new_mfo->zo, new_obj_val, &mfo->zo, handle TSRMLS_CC);
+	/* clone formatter object */
+	MSG_FORMAT_OBJECT(new_mfo) = umsg_clone(MSG_FORMAT_OBJECT(mfo),  &INTL_DATA_ERROR_CODE(new_mfo));
+	if(U_FAILURE(INTL_DATA_ERROR_CODE(new_mfo))) {
+		/* set up error in case error handler is interested */
+		intl_error_set( NULL, INTL_DATA_ERROR_CODE(new_mfo), "Failed to clone MessageFormatter object", 0 TSRMLS_CC );
+		MessageFormatter_object_dtor(new_mfo, new_obj_val.handle TSRMLS_CC); /* free new object */
+		zend_error(E_ERROR, "Failed to clone MessageFormatter object");
+	}
+	return new_obj_val;
 }
 /* }}} */
 
@@ -134,6 +159,10 @@ void msgformat_register_class( TSRMLS_D )
 	INIT_CLASS_ENTRY( ce, "MessageFormatter", MessageFormatter_class_functions );
 	ce.create_object = MessageFormatter_object_create;
 	MessageFormatter_ce_ptr = zend_register_internal_class( &ce TSRMLS_CC );
+
+	memcpy(&MessageFormatter_handlers, zend_get_std_object_handlers(),
+		sizeof MessageFormatter_handlers);
+	MessageFormatter_handlers.clone_obj = MessageFormatter_object_clone;
 
 	/* Declare 'MessageFormatter' class properties. */
 	if( !MessageFormatter_ce_ptr )

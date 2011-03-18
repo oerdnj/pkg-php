@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: sqlite3.c 305954 2010-12-03 21:05:44Z felipe $ */
+/* $Id: sqlite3.c 307203 2011-01-07 01:11:16Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -40,7 +40,7 @@ ZEND_DECLARE_MODULE_GLOBALS(sqlite3)
 static PHP_GINIT_FUNCTION(sqlite3);
 static int php_sqlite3_authorizer(void *autharg, int access_type, const char *arg3, const char *arg4, const char *arg5, const char *arg6);
 static void sqlite3_param_dtor(void *data);
-static int php_sqlite3_compare_stmt_zval_free( php_sqlite3_free_list **free_list, zval *statement );
+static int php_sqlite3_compare_stmt_zval_free(php_sqlite3_free_list **free_list, zval *statement);
 
 /* {{{ Error Handler
 */
@@ -152,8 +152,6 @@ PHP_METHOD(sqlite3, open)
 		return;
 	}
 
-	db_obj->initialised = 1;
-
 #if SQLITE_HAS_CODEC
 	if (encryption_key_len > 0) {
 		if (sqlite3_key(db_obj->db, encryption_key, encryption_key_len) != SQLITE_OK) {
@@ -162,6 +160,8 @@ PHP_METHOD(sqlite3, open)
 		}
 	}
 #endif
+
+	db_obj->initialised = 1;
 
 #if PHP_API_VERSION < 20100412
 	if (PG(safe_mode) || (PG(open_basedir) && *PG(open_basedir))) {
@@ -1081,10 +1081,9 @@ static int php_sqlite3_stream_cast(php_stream *stream, int castas, void **ret TS
 
 static int php_sqlite3_stream_stat(php_stream *stream, php_stream_statbuf *ssb TSRMLS_DC)
 {
-	/* TODO: fill in details based on Data: and Content-Length: headers, and/or data
-	 * from curl_easy_getinfo().
-	 * For now, return -1 to indicate that it doesn't make sense to stat this stream */
-	return -1;
+	php_stream_sqlite3_data *sqlite3_stream = (php_stream_sqlite3_data *) stream->abstract;
+	ssb->sb.st_size = sqlite3_stream->size;
+	return 0;
 }
 
 static php_stream_ops php_stream_sqlite3_ops = {
@@ -1231,6 +1230,27 @@ PHP_METHOD(sqlite3stmt, clear)
 	}
 
 	RETURN_TRUE;
+}
+/* }}} */
+
+/* {{{ proto bool SQLite3Stmt::readOnly()
+   Returns true if a statement is definitely read only */
+PHP_METHOD(sqlite3stmt, readOnly)
+{
+	php_sqlite3_stmt *stmt_obj;
+	zval *object = getThis();
+	stmt_obj = (php_sqlite3_stmt *)zend_object_store_get_object(object TSRMLS_CC);
+
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
+
+#if SQLITE_VERSION_NUMBER >= 3007004
+	if (sqlite3_stmt_readonly(stmt_obj->stmt)) {
+		RETURN_TRUE;
+	}
+#endif
+	RETURN_FALSE;
 }
 /* }}} */
 
@@ -1565,6 +1585,10 @@ PHP_METHOD(sqlite3result, columnType)
 		return;
 	}
 
+	if (result_obj->complete) {
+		RETURN_FALSE;
+	}
+
 	RETURN_LONG(sqlite3_column_type(result_obj->stmt_obj->stmt, column));
 }
 /* }}} */
@@ -1614,6 +1638,7 @@ PHP_METHOD(sqlite3result, fetchArray)
 			break;
 
 		case SQLITE_DONE:
+			result_obj->complete = 1;
 			RETURN_FALSE;
 			break;
 
@@ -1804,6 +1829,7 @@ static zend_function_entry php_sqlite3_stmt_class_methods[] = {
 	PHP_ME(sqlite3stmt, execute,	arginfo_sqlite3_void, ZEND_ACC_PUBLIC)
 	PHP_ME(sqlite3stmt, bindParam,	arginfo_sqlite3stmt_bindparam, ZEND_ACC_PUBLIC)
 	PHP_ME(sqlite3stmt, bindValue,	arginfo_sqlite3stmt_bindvalue, ZEND_ACC_PUBLIC)
+	PHP_ME(sqlite3stmt, readOnly,	arginfo_sqlite3_void, ZEND_ACC_PUBLIC)
 	PHP_ME(sqlite3stmt, __construct, arginfo_sqlite3stmt_construct, ZEND_ACC_PRIVATE|ZEND_ACC_CTOR)
 	{NULL, NULL, NULL}
 };
@@ -1938,7 +1964,7 @@ static void php_sqlite3_stmt_object_free_storage(void *object TSRMLS_DC) /* {{{ 
 	}
 
 	if (intern->db_obj_zval) {
-		Z_DELREF_P(intern->db_obj_zval);
+		zval_ptr_dtor(&intern->db_obj_zval);
 	}
 
 	zend_object_std_dtor(&intern->zo TSRMLS_CC);

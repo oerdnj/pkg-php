@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2010 The PHP Group                                |
+  | Copyright (c) 1997-2011 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: logical_filters.c 305186 2010-11-08 04:36:15Z cataphract $ */
+/* $Id: logical_filters.c 307678 2011-01-23 16:44:58Z iliaa $ */
 
 #include "php_filter.h"
 #include "filter_private.h"
@@ -88,7 +88,7 @@ static int php_filter_parse_int(const char *str, unsigned int str_len, long *ret
 	}
 
 	if ((end - str > MAX_LENGTH_OF_LONG - 1) /* number too long */
-	 || (SIZEOF_LONG == 4 && end - str == MAX_LENGTH_OF_LONG - 1 && *str > '2')) {
+	 || (SIZEOF_LONG == 4 && (end - str == MAX_LENGTH_OF_LONG - 1) && *str > '2')) {
 		/* overflow */
 		return -1;
 	}
@@ -710,8 +710,11 @@ void php_filter_validate_ip(PHP_INPUT_FILTER_PARAM_DECL) /* {{{ */
 			if (flags & FILTER_FLAG_NO_RES_RANGE) {
 				if (
 					(ip[0] == 0) ||
+					(ip[0] == 128 && ip[1] == 0) ||
+					(ip[0] == 191 && ip[1] == 255) ||
 					(ip[0] == 169 && ip[1] == 254) ||
 					(ip[0] == 192 && ip[1] == 0 && ip[2] == 2) ||
+					(ip[0] == 127 && ip[1] == 0 && ip[2] == 0 && ip[3] == 1) ||
 					(ip[0] >= 224 && ip[0] <= 255)
 				) {
 					RETURN_VALIDATION_FAILED
@@ -730,6 +733,41 @@ void php_filter_validate_ip(PHP_INPUT_FILTER_PARAM_DECL) /* {{{ */
 				if (flags & FILTER_FLAG_NO_PRIV_RANGE) {
 					if (Z_STRLEN_P(value) >=2 && (!strncasecmp("FC", Z_STRVAL_P(value), 2) || !strncasecmp("FD", Z_STRVAL_P(value), 2))) {
 						RETURN_VALIDATION_FAILED
+					}
+				}
+				if (flags & FILTER_FLAG_NO_RES_RANGE) {
+					switch (Z_STRLEN_P(value)) {
+						case 1: case 0:
+							break;
+						case 2:
+							if (!strcmp("::", Z_STRVAL_P(value))) {
+								RETURN_VALIDATION_FAILED
+							}
+							break;
+						case 3:
+							if (!strcmp("::1", Z_STRVAL_P(value)) || !strcmp("5f:", Z_STRVAL_P(value))) {
+								RETURN_VALIDATION_FAILED
+							}
+							break;
+						default:
+							if (Z_STRLEN_P(value) >= 5) {
+								if (
+									!strncasecmp("fe8", Z_STRVAL_P(value), 3) ||
+									!strncasecmp("fe9", Z_STRVAL_P(value), 3) ||
+									!strncasecmp("fea", Z_STRVAL_P(value), 3) ||
+									!strncasecmp("feb", Z_STRVAL_P(value), 3)
+								) {
+									RETURN_VALIDATION_FAILED
+								}
+							}
+							if (
+								(Z_STRLEN_P(value) >= 9 &&  !strncasecmp("2001:0db8", Z_STRVAL_P(value), 9)) ||
+								(Z_STRLEN_P(value) >= 2 &&  !strncasecmp("5f", Z_STRVAL_P(value), 2)) ||
+								(Z_STRLEN_P(value) >= 4 &&  !strncasecmp("3ff3", Z_STRVAL_P(value), 4)) ||
+								(Z_STRLEN_P(value) >= 8 &&  !strncasecmp("2001:001", Z_STRVAL_P(value), 8))
+							) {
+								RETURN_VALIDATION_FAILED
+							}
 					}
 				}
 			}

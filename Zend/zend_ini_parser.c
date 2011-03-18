@@ -116,7 +116,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2010 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2011 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -131,7 +131,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_ini_parser.y 300737 2010-06-24 22:32:42Z felipe $ */
+/* $Id: zend_ini_parser.y 306939 2011-01-01 02:19:59Z felipe $ */
 
 #define DEBUG_CFG_PARSER 0
 

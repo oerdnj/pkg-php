@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -26,7 +26,7 @@
    | PHP 4.0 updates:  Zeev Suraski <zeev@zend.com>                       |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_imap.c 305507 2010-11-18 15:22:22Z pajoye $ */
+/* $Id: php_imap.c 307691 2011-01-24 03:52:00Z stas $ */
 
 #define IMAP41
 
@@ -482,6 +482,7 @@ const zend_function_entry imap_functions[] = {
 	PHP_FE(imap_body,								arginfo_imap_body)
 	PHP_FE(imap_bodystruct,							arginfo_imap_bodystruct)
 	PHP_FE(imap_fetchbody,							arginfo_imap_fetchbody)
+	PHP_FE(imap_fetchmime,							arginfo_imap_fetchbody)
 	PHP_FE(imap_savebody,							arginfo_imap_savebody)
 	PHP_FE(imap_fetchheader,						arginfo_imap_fetchheader)
 	PHP_FE(imap_fetchstructure,						arginfo_imap_fetchstructure)
@@ -2369,6 +2370,46 @@ PHP_FUNCTION(imap_fetchbody)
 
 /* }}} */
 
+
+/* {{{ proto string imap_fetchmime(resource stream_id, int msg_no, string section [, int options])
+   Get a specific body section's MIME headers */
+PHP_FUNCTION(imap_fetchmime)
+{
+	zval *streamind;
+	long msgno, flags = 0;
+	pils *imap_le_struct;
+	char *body, *sec;
+	int sec_len;
+	unsigned long len;
+	int argc = ZEND_NUM_ARGS();
+
+	if (zend_parse_parameters(argc TSRMLS_CC, "rls|l", &streamind, &msgno, &sec, &sec_len, &flags) == FAILURE) {
+		return;
+	}
+
+	if (flags && ((flags & ~(FT_UID|FT_PEEK|FT_INTERNAL)) != 0)) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "invalid value for the options parameter");
+		RETURN_FALSE;
+	}
+
+	ZEND_FETCH_RESOURCE(imap_le_struct, pils *, &streamind, -1, "imap", le_imap);
+
+	if (argc < 4 || !(flags & FT_UID)) {
+		/* only perform the check if the msgno is a message number and not a UID */
+		PHP_IMAP_CHECK_MSGNO(msgno);
+	}
+
+	body = mail_fetch_mime(imap_le_struct->imap_stream, msgno, sec, &len, (argc == 4 ? flags : NIL));
+
+	if (!body) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "No body MIME information available");
+		RETURN_FALSE;
+	}
+	RETVAL_STRINGL(body, len, 1);
+}
+
+/* }}} */
+
 /* {{{ proto bool imap_savebody(resource stream_id, string|resource file, int msg_no[, string section = ""[, int options = 0]])
 	Save a specific body section to a file */
 PHP_FUNCTION(imap_savebody)
@@ -4243,7 +4284,7 @@ PHP_FUNCTION(imap_mime_header_decode)
 					}
 
 					offset = end_token+2;
-					for (i = 0; (string[offset + i] == ' ') || (string[offset + i] == 0x0a) || (string[offset + i] == 0x0d); i++);
+					for (i = 0; (string[offset + i] == ' ') || (string[offset + i] == 0x0a) || (string[offset + i] == 0x0d) || (string[offset + i] == '\t'); i++);
 					if ((string[offset + i] == '=') && (string[offset + i + 1] == '?') && (offset + i < end)) {
 						offset += i;
 					}

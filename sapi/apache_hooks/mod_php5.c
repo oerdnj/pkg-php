@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5													      |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group								  |
+   | Copyright (c) 1997-2011 The PHP Group								  |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,	  |
    | that is bundled with this package in the file LICENSE, and is		  |
@@ -17,7 +17,7 @@
    | PHP 4.0 patches by Zeev Suraski <zeev@zend.com>					  |
    +----------------------------------------------------------------------+
  */
-/* $Id: mod_php5.c 296107 2010-03-12 10:28:59Z jani $ */
+/* $Id: mod_php5.c 306939 2011-01-01 02:19:59Z felipe $ */
 
 #include "php_apache_http.h"
 

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2010 The PHP Group                                |
+   | Copyright (c) 1997-2011 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: cast.c 305108 2010-11-05 18:53:48Z cataphract $ */
+/* $Id: cast.c 307611 2011-01-20 06:32:59Z pajoye $ */
 
 #define _GNU_SOURCE
 #include "php.h"
@@ -271,7 +271,7 @@ PHPAPI int _php_stream_cast(php_stream *stream, int castas, void **ret, int show
 
 			newstream = php_stream_fopen_tmpfile();
 			if (newstream) {
-				int ret = php_stream_copy_to_stream_ex(stream, newstream, PHP_STREAM_COPY_ALL, NULL);
+				int retval = php_stream_copy_to_stream_ex(stream, newstream, PHP_STREAM_COPY_ALL, NULL);
 
 				if (ret != SUCCESS) {
 					php_stream_close(newstream);
@@ -279,7 +279,7 @@ PHPAPI int _php_stream_cast(php_stream *stream, int castas, void **ret, int show
 					int retcode = php_stream_cast(newstream, castas | flags, (void **)ret, show_err);
 
 					if (retcode == SUCCESS) {
-						rewind(*(FILE**)ret);
+						rewind(*(FILE**)retval);
 					}
 
 					/* do some specialized cleanup */
@@ -366,8 +366,9 @@ PHPAPI FILE * _php_stream_open_wrapper_as_file(char *path, char *mode, int optio
 /* {{{ php_stream_make_seekable */
 PHPAPI int _php_stream_make_seekable(php_stream *origstream, php_stream **newstream, int flags STREAMS_DC TSRMLS_DC)
 {
-	assert(newstream != NULL);
-
+	if (newstream == NULL) {
+		return PHP_STREAM_FAILED;
+	}
 	*newstream = NULL;
 
 	if (((flags & PHP_STREAM_FORCE_CONVERSION) == 0) && origstream->ops->seek != NULL) {
