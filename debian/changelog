@@ -1,6 +1,8 @@
 php5 (5.3.6-1) unstable; urgency=low
 
   * Imported Upstream version 5.3.6
+    + PEAR updated to 1.9.2 (CVE-2011-1072)
+  * Cherry-pick CVE-2011-1144 from PEAR 1.9.3 (Closes: #546164)
   * Debian packaging:
     + Start using pristine-tar
     + Remove patches merged upstream or otherwise deprecated
