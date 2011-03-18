@@ -1,3 +1,24 @@
+php5 (5.3.6-1) unstable; urgency=low
+
+  * Imported Upstream version 5.3.6
+  * Debian packaging:
+    + Start using pristine-tar
+    + Remove patches merged upstream or otherwise deprecated
+    + Move php5-fpm.postrm extras to debian/rules
+  * FPM SAPI changes:
+    + Set initial chdir to /tmp in www pool (Closes: #601243)
+    + Rename main configuration file to php-fpm.conf to match upstream
+    + Enable error reporting in init.d file
+    + Patch FPM SAPI to use Debian php-fpm.conf as default
+  * Fix regression with missing CRYPT_SALT_LENGTH (Closes: #603012)
+  * Generate SHA512 salt string when provided salt is null (Closes: #581170)
+  * Fix FTBFS with gold or ld --no-add-needed (Closes: #615770)
+  * Don't mmap large >4GB files
+  * CVE-2011-0441: Be more careful when removing session files
+    (Closes: #618489)
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 18 Mar 2011 15:51:50 +0100
+
 php5 (5.3.5-1) unstable; urgency=low
 
   * Imported Upstream version 5.3.5
