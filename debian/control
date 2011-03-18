@@ -6,7 +6,6 @@ Uploaders: Ondřej Surý <ondrej@debian.org>,
 	   Sean Finney <seanius@debian.org>,
 	   Thijs Kinkhorst <thijs@debian.org>,
 	   Raphael Geissert <geissert@debian.org>
-Pre-Depends: dpkg (>= 1.15.7.2)
 Build-Depends: apache2-prefork-dev,
 	       autoconf (>= 2.63),
 	       automake (>= 1.11) | automake1.11,
@@ -185,6 +184,7 @@ Description: command-line interpreter for the php5 scripting language
 
 Package: php5-fpm
 Architecture: any
+Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support, php5-common (= ${binary:Version}), libmagic1, ucf, tzdata
 Provides: ${php:Provides}
 Suggests: php-pear
