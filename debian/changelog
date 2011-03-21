@@ -1,4 +1,4 @@
-php5 (5.3.6-2) maverick; urgency=low
+php5 (5.3.6-2) unstable; urgency=low
 
   * Update default configuration file for php5-fpm (Closes: #619104)
   * Depend only on libdb4.8-dev | libdb4.6-dev to match apache2
