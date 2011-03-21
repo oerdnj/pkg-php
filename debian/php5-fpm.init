@@ -13,7 +13,7 @@ set -u
 
 DAEMON="PHP5 FPM"
 FPM_CMD=/usr/sbin/php5-fpm
-FPM_CONF=/etc/php5/fpm/main.conf
+FPM_CONF=/etc/php5/fpm/php-fpm.conf
 FPM_PID=/var/run/php5-fpm.pid
 TIMEOUT=30
 
