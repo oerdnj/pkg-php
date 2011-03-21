@@ -1,3 +1,12 @@
+php5 (5.3.6-2) maverick; urgency=low
+
+  * Update default configuration file for php5-fpm (Closes: #619104)
+  * Depend only on libdb4.8-dev | libdb4.6-dev to match apache2
+    (Closes: #619036)
+    + Will coordinate change to db5.1 with apache2 maintainer
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 21 Mar 2011 11:54:04 +0100
+
 php5 (5.3.6-1) unstable; urgency=low
 
   * Imported Upstream version 5.3.6
