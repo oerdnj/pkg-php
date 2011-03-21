@@ -1,3 +1,13 @@
+php5 (5.3.6-3) unstable; urgency=low
+
+  * Update php-fpm.conf(pool.d/www.conf) to do initial chdir to / as
+    suggested by Olaf van der Spek to detect early problems if php5-fpm
+    needs a write access to initial chdir.  Also fix brown-paper-bug
+    which made the setting new chdir not work because we already modify
+    it elsewhere (Closes: #601243)
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 21 Mar 2011 16:27:01 +0100
+
 php5 (5.3.6-2) unstable; urgency=low
 
   * Update default configuration file for php5-fpm (Closes: #619104)
