@@ -61,7 +61,7 @@ Last-Update: 2010-07-30
  ; Note: relative path can be used.
  ; Default Value: current directory or / when chroot
 -;chdir = /var/www
-+chdir = /var/www
++chdir = /
   
  ; Redirect worker stdout and stderr into main error log. If not set, stdout and
  ; stderr will be redirected to /dev/null according to FastCGI specs.
