@@ -1,3 +1,20 @@
+php5 (5.3.6-4) unstable; urgency=low
+
+  * Merged r308688 fix s/raiseErro/raiseError/ and fixed parenthese in
+    r309043 (Closes: #619307) (Courtesy of upstream and Ernesto Domato)
+  * Make locales-all build dependency useful by fixing language tests
+    to use de_DE.UTF-8
+  * Debian packaging:
+    + Allow easy porting to Ubuntu by adding alternate dependency for
+      locales-all -> language-pack-de, because only german locale is used
+      in the tests
+    + Fix missing debhelper token in php5-fpm.preinst
+  * Explicitly set pm.start_servers in php5-fpm to make it quiet
+  * Update php5-fpm.init according to latest /etc/init.d/skeleton
+    (Closes: #619383)
+
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 23 Mar 2011 16:44:28 +0100
+
 php5 (5.3.6-3) unstable; urgency=low
 
   * Update php-fpm.conf(pool.d/www.conf) to do initial chdir to / as
