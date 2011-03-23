@@ -41,7 +41,13 @@ Last-Update: 2010-07-30
  ; Start a new pool named 'www'.
  ; the variable $pool can we used in any directive and will be replaced by the
  ; pool name ('www' here)
-@@ -159,12 +163,12 @@ pm.max_children = 50
+@@ -154,17 +158,17 @@ pm.max_children = 50
+ ; The number of child processes created on startup.
+ ; Note: Used only when pm is set to 'dynamic'
+ ; Default Value: min_spare_servers + (max_spare_servers - min_spare_servers) / 2
+-;pm.start_servers = 20
++pm.start_servers = 20
+ 
  ; The desired minimum number of idle server processes.
  ; Note: Used only when pm is set to 'dynamic'
  ; Note: Mandatory when pm is set to 'dynamic'
