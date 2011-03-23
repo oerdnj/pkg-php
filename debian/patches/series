@@ -53,3 +53,4 @@ fix_crash_in__php_mssql_get_column_content_without_type.patch
 php-fpm-sysconfdir.patch
 configure-as-needed.patch
 lp564920-fix-big-files.patch
+lang-test-use-utf8.patch
