@@ -38,11 +38,12 @@ SCRIPTNAME=/etc/init.d/$NAME
 #
 do_check()
 {
-    FPM_ERROR=$($DAEMON $DAEMON_ARGS -t 2>&1| grep "\[ERROR\]")
+    [ "$1" != "no" ] && $DAEMON $DAEMON_ARGS -t 2>&1 | grep -v "\[ERROR\]"
+    FPM_ERROR=$($DAEMON $DAEMON_ARGS -t 2>&1 | grep "\[ERROR\]")
 
     if [ -n "${FPM_ERROR}" ]; then
-	echo "Please check your configuration file..."
-	echo $FPM_ERROR
+	echo "Please fix your configuration file..."
+	$DAEMON $DAEMON_ARGS -t 2>&1 | grep "\[ERROR\]"
 	return 1
     fi
     return 0
@@ -60,7 +61,7 @@ do_start()
 	start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --test > /dev/null \
 		|| return 1
 	start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON -- \
-		$DAEMON_ARGS \
+		$DAEMON_ARGS 2>/dev/null \
 		|| return 2
 	# Add code here, if necessary, that waits for the process to be ready
 	# to handle requests from services started subsequently which depend
@@ -108,8 +109,8 @@ do_reload() {
 
 case "$1" in
     start)
+	do_check $VERBOSE
 	[ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
-	do_check
 	case "$?" in
 	    0)
 		do_start
@@ -133,7 +134,7 @@ case "$1" in
         status_of_proc "$DAEMON" "$NAME" && exit 0 || exit $?
         ;;
     check)
-        do_check
+        do_check yes
 	;;
     reload|force-reload)
 	log_daemon_msg "Reloading $DESC" "$NAME"
