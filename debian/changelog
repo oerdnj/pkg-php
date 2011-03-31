@@ -1,3 +1,10 @@
+php5 (5.3.6-6) unstable; urgency=low
+
+  * Fix order of do_check in php5-fpm.init to check for the right return
+    code
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 31 Mar 2011 11:46:49 +0200
+
 php5 (5.3.6-5) unstable; urgency=low
 
   * Don't fail the php5-fpm init.d script if VERBOSE is `no'
