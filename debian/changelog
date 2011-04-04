@@ -1,3 +1,9 @@
+php5 (5.3.6-7) unstable; urgency=low
+
+  * Disable SSLv2 when disabled in OpenSSL (Closes: #620776)
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 04 Apr 2011 08:40:25 +0200
+
 php5 (5.3.6-6) unstable; urgency=low
 
   * Fix order of do_check in php5-fpm.init to check for the right return
