@@ -1,3 +1,10 @@
+php5 (5.3.6-8) unstable; urgency=low
+
+  * Provides/Replaces/Conflicts: php5-idn (Closes: #547117)
+  * Build depend on libdb-dev (>= 5.1) (Closes: #621443)
+
+ -- Ondřej Surý <ondrej@debian.org>  Sun, 10 Apr 2011 23:27:44 +0200
+
 php5 (5.3.6-7) unstable; urgency=low
 
   * Disable SSLv2 when disabled in OpenSSL (Closes: #620776)
