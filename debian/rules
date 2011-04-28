@@ -574,7 +574,8 @@ install: build
 	for sapi in php5-cli php5-fpm php5-cgi libapache2-mod-php5 libapache2-mod-php5filter; do \
 		mkdir -p $(CURDIR)/debian/"$$sapi"/usr/share/lintian/overrides/; \
 		sed "s/@sapi@/$$sapi/g;s,@extdir@,$$ext,g" \
-		    < $(CURDIR)/debian/php5-sapi.lintian-overrides \
+		    < $(CURDIR)/debian/php5-sapi.lintian-overrides | \
+		grep -E "^$${sapi}: " \
 		    >> $(CURDIR)/debian/"$$sapi"/usr/share/lintian/overrides/"$$sapi"; \
 	done
 
