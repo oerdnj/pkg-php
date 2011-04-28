@@ -1,3 +1,23 @@
+php5 (5.3.6-9) unstable; urgency=low
+
+  * Make sure even harded to not left any stale file after purging the
+    package (Closes: #607520)
+  * Move libapache2-mod-php5filter to extra to satisfy policy
+  * Remove oldstable dependcy on firebird2.0-dev
+  * Enable php5-interbase on all platforms and update build dependency
+    on firebird2.5-dev
+  * Import backported upstream fix for fopen fails on some SSL urls
+  * Remove windows devel file from php5-dev
+  * Add more lintian-overrides:
+    + Missing dependency on phpapi for php5-common is not missing
+    + php-pear is keeping it's original directory structure
+    + Double the filenames (./usr vs usr) to fix difference between
+      lintian versions
+    + the embedded file library (libmagic) is unfortunately a custom
+      one and cannot be replaced by system one (it's on the TODO list)
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 28 Apr 2011 13:37:07 +0200
+
 php5 (5.3.6-8) unstable; urgency=low
 
   * Provides/Replaces/Conflicts: php5-idn (Closes: #547117)
