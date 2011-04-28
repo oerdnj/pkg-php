@@ -126,6 +126,7 @@ Description: server-side, HTML-embedded scripting language (Apache 2 module)
 
 Package: libapache2-mod-php5filter
 Section: httpd
+Priority: extra
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support, ${apache2:Depends}, php5-common (= ${binary:Version}), libmagic1, ucf, tzdata
 Conflicts: libapache2-mod-php4, libapache2-mod-php5
