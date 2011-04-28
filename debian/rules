@@ -558,6 +558,8 @@ install: build
 		mv debian/php5-dev/usr/bin/$$i debian/php5-dev/usr/bin/"$$i"5; \
 		mv debian/php5-dev/usr/share/man/man1/"$$i".1 debian/php5-dev/usr/share/man/man1/"$$i"5.1; \
 	done
+	# remove windows devel file
+	rm $(CURDIR)/debian/php5-dev/usr/share/php5/skeleton/skeleton.dsp
 
 	# install common files
 	install -m755 debian/maxlifetime debian/php5-common/usr/lib/php5
