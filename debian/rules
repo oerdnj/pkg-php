@@ -567,6 +567,7 @@ install: build
 	# install lintian overrides
 	cp debian/php5.lintian-overrides $(CURDIR)/debian/php5-common/usr/share/lintian/overrides/php5-common
 	cp debian/php5-dev.lintian-overrides $(CURDIR)/debian/php5-dev/usr/share/lintian/overrides/php5-dev
+	cp debian/php-pear.lintian-overrides $(CURDIR)/debian/php-pear/usr/share/lintian/overrides/php-pear
 
 	# install some generic lintian overrides
 	ext=`debian/php5-dev/usr/bin/php-config5 --extension-dir | cut -b2- `; \
