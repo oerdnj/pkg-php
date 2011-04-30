@@ -13,5 +13,6 @@ fi
 phpini="/etc/php5/fpm/php.ini"
 
 ucf /usr/share/php5/php.ini-production $phpini
+ucfr php5-fpm $phpini
 
 exit 0

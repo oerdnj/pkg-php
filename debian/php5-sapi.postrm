@@ -17,6 +17,9 @@ purge)
 	if which ucf >/dev/null; then
 	    ucf --purge $phpini
 	fi
+	if which ucfr >/dev/null; then
+	    ucfr --purge @package@ $phpini
+	fi
 	;;
 esac
 
