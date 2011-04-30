@@ -1,3 +1,10 @@
+php5 (5.3.6-10) unstable; urgency=low
+
+  * Purge .start files in postrm, not in prerm (Closes: #607520)
+  * Register config files to UCF Registry
+
+ -- Ondřej Surý <ondrej@debian.org>  Sat, 30 Apr 2011 13:16:27 +0200
+
 php5 (5.3.6-9) unstable; urgency=low
 
   * Make sure even harded to not left any stale file after purging the
