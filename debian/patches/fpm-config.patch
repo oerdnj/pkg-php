@@ -41,24 +41,30 @@ Last-Update: 2010-07-30
  ; Start a new pool named 'www'.
  ; the variable $pool can we used in any directive and will be replaced by the
  ; pool name ('www' here)
-@@ -154,17 +158,17 @@ pm.max_children = 50
+@@ -149,22 +153,22 @@ pm = dynamic
+ ; CGI.
+ ; Note: Used when pm is set to either 'static' or 'dynamic'
+ ; Note: This value is mandatory.
+-pm.max_children = 50
++pm.max_children = 10
+ 
  ; The number of child processes created on startup.
  ; Note: Used only when pm is set to 'dynamic'
  ; Default Value: min_spare_servers + (max_spare_servers - min_spare_servers) / 2
 -;pm.start_servers = 20
-+pm.start_servers = 20
++pm.start_servers = 4
  
  ; The desired minimum number of idle server processes.
  ; Note: Used only when pm is set to 'dynamic'
  ; Note: Mandatory when pm is set to 'dynamic'
 -;pm.min_spare_servers = 5
-+pm.min_spare_servers = 5
++pm.min_spare_servers = 2
  
  ; The desired maximum number of idle server processes.
  ; Note: Used only when pm is set to 'dynamic'
  ; Note: Mandatory when pm is set to 'dynamic'
 -;pm.max_spare_servers = 35
-+pm.max_spare_servers = 35
++pm.max_spare_servers = 6
   
  ; The number of requests each child process should execute before respawning.
  ; This can be useful to work around memory leaks in 3rd party libraries. For
