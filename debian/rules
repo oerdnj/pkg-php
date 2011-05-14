@@ -268,7 +268,7 @@ configure-apache2-stamp: prepared-stamp
 		--with-imap=shared,/usr \
 		--with-imap-ssl \
 		--with-interbase=shared,/usr \
-		--with-pdo-firebird=shared,/usr
+		--with-pdo-firebird=shared,/usr \
 		--enable-intl=shared \
 		--with-ttf=shared,/usr \
 		--with-t1lib=shared,/usr \
