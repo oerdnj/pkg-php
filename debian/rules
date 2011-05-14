@@ -424,7 +424,7 @@ install: DH_OPTIONS=
 install: build
 	dh_testdir
 	dh_testroot
-	dh_clean -k
+	dh_prep
 	dh_installdirs
 
 	chmod 01733 debian/php5-common/var/lib/php5
