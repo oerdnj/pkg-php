@@ -317,6 +317,7 @@ Description: IMAP module for php5
  with the Suhosin patch.
 
 Package: php5-interbase
+Architecture: any
 Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${binary:Version})
 Description: interbase/firebird module for php5
  This package provides a module for interbase/firebird functions in PHP scripts.
