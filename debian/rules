@@ -75,12 +75,6 @@ else
 LIBTOOL_CONFLICTS:=$(error "could not resolve path to ltmain.sh")
 endif
 
-# only enable interbase support on archs where it is supported
-ifneq (,$(filter $(DEB_HOST_ARCH),amd64 armel armhf i386 ia64 kfreebsd-amd64 kfreebsd-i386 mips mipsel powerpc s390 sparc))
-	IBFLAGS=--with-interbase=shared,/usr \
-		--with-pdo-firebird=shared,/usr
-endif
-
 ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
     NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
     MAKEFLAGS += -j$(NUMJOBS)
@@ -273,7 +267,8 @@ configure-apache2-stamp: prepared-stamp
 		--with-freetype-dir=shared,/usr \
 		--with-imap=shared,/usr \
 		--with-imap-ssl \
-		$(IBFLAGS) \
+		--with-interbase=shared,/usr \
+		--with-pdo-firebird=shared,/usr
 		--enable-intl=shared \
 		--with-ttf=shared,/usr \
 		--with-t1lib=shared,/usr \
