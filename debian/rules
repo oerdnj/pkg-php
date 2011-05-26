@@ -337,7 +337,8 @@ configure-cgi-stamp: prepared-stamp
 		--without-mm \
 		--disable-pdo \
 		--without-mysql --without-sybase-ct --without-mssql \
-		--without-sqlite --without-sqlite3
+		--without-sqlite --without-sqlite3 \
+		--enable-pcntl
 	cd cgi-build && \
 	cp ../Zend/zend_ini_scanner.c ../Zend/zend_language_scanner.c \
 	   ../Zend/zend_ini_parser.h ../Zend/zend_language_parser.h \
