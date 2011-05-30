@@ -422,6 +422,8 @@ clean: unprepared unpatch
 		done; \
 	done
 
+PCNTL_FUNCTIONS := $(shell < ext/pcntl/php_pcntl.h sed -ne "/^PHP_FUNCTION/ s/PHP_FUNCTION(\(.*\));/\1/;t end;d;:end p" | tr '\n' ',')
+
 install: DH_OPTIONS=
 install: build
 	dh_testdir
@@ -450,7 +452,7 @@ install: build
 		debian/libapache2-mod-php5filter/etc/apache2/mods-available/php5filter.conf
 
 	# sanitize php.ini file
-	cat php.ini-production | tr "\t" " " | sed -e'/short_open_tag =/ s/Off/On/g;/session.gc_probability =/ s/1/0/g;s/disable_functions =/ s/$/ pcntl_alarm,pcntl_exec,pcntl_fork,pcntl_getpriority,pcntl_setpriority,pcntl_signal,pcntl_signal,pcntl_sigprocmask,pcntl_sigtimedwait,pcntl_sigwaitinfo,pcntl_wait,pcntl_waitpid,pcntl_wexitstatus,pcntl_wifexited,pcntl_wifsignaled,pcntl_wifstopped,pcntl_wstopsig,pcntl_wtermsig' > debian/php5-common/usr/share/php5/php.ini-production
+	cat php.ini-production | tr "\t" " " | sed -e'/short_open_tag =/ s/Off/On/g;/session.gc_probability =/ s/1/0/g;/disable_functions =/ s/$$/ $(PCNTL_FUNCTIONS)/g;' > debian/php5-common/usr/share/php5/php.ini-production
 	cat php.ini-production | tr "\t" " " | sed -e'/memory_limit =/ s/128M/-1/g;/short_open_tag =/ s/Off/On/g;/session.gc_probability =/ s/1/0/g' > debian/php5-common/usr/share/php5/php.ini-production.cli
 	cat php.ini-development | tr "\t" " " > debian/php5-common/usr/share/doc/php5-common/examples/php.ini-development
 	cp test-results.txt debian/php5-common/usr/share/doc/php5-common/
