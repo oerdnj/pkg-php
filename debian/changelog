@@ -1,3 +1,18 @@
+php5 (5.3.6-12) unstable; urgency=low
+
+  * Bump standards version to 3.9.2
+  * Update cron.d code to even safer variant (Courtesy of Bob Proulx)
+  * Small optimization in cron.d script (Courtesy of Marcus Cobden)
+  * Add firebird2.1-dev option to allow backports
+  * Pull (and fix broken patch) multiarch workaround from Ubuntu natty
+  * Add error message when phpize is not found (Closes: #627937)
+  * Enable pcntl extension for CGI builds (Closes: #627941), but
+    disable all pcntl functions by default
+  * File path injection vulnerability in RFC1867 File upload filename
+    [CVE-2011-2202]
+
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 15 Jun 2011 11:06:40 +0200
+
 php5 (5.3.6-11) unstable; urgency=low
 
   * Use more reasonable default number of processes for PHP5-FPM
