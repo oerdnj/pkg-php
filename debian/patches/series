@@ -59,3 +59,4 @@ backport-upstream-lp592442.patch
 temporary-path-fixes-for-multiarch.patch
 CVE-2011-2202.patch
 CVE-2011-2483.patch
+CVE-2011-1938.patch
