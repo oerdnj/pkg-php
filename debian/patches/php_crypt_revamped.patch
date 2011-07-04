@@ -289,7 +289,7 @@
  
  static unsigned char itoa64[] = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
  
-@@ -150,158 +143,166 @@ static void php_to64(char *s, long v, in
+@@ -150,158 +143,160 @@ static void php_to64(char *s, long v, in
  PHP_FUNCTION(crypt)
  {
  	char salt[PHP_MAX_SALT_LEN + 1];
@@ -458,18 +458,11 @@
  				salt[3] == '$' &&
 -				salt[4] >= '0' && salt[4] <= '3' &&
 -				salt[5] >= '0' && salt[5] <= '9' &&
--				salt[6] == '$') {
+ 				salt[6] == '$') {
 -			char output[PHP_MAX_SALT_LEN + 1];
 -
 -			memset(output, 0, PHP_MAX_SALT_LEN + 1);
 -
-+				salt[6] == '$' &&
-+				((salt[4] == '0' &&
-+				  salt[5] >= '4' && salt[5] <= '9') ||
-+				 (salt[4] >= '1' && salt[4] <= '2' &&
-+				  salt[5] >= '0' && salt[5] <= '9') ||
-+				 (salt[4] == '3' &&
-+				  salt[5] >= '0' && salt[5] <= '1'))) {
 +			/* CRYPT_BLOWFISH */
 +#if PHP_BLOWFISH_CRYPT
 +# error Using system BlowFish crypt function, should not happen on Debian system

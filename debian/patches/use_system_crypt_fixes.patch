@@ -9,30 +9,3 @@
  else echo 'Not OK';
  
  ?>
---- a/ext/standard/tests/strings/crypt_blowfish_variation1.phpt
-+++ b/ext/standard/tests/strings/crypt_blowfish_variation1.phpt
-@@ -17,9 +17,12 @@ $salts = array(b'32' => b'$2a$32$CCCCCCC
-                b'37' => b'$2a$37$CCCCCCCCCCCCCCCCCCCCCC$',
-                b'38' => b'$2a$38$CCCCCCCCCCCCCCCCCCCCCC$',);
- 
-+$results = array(b'32' => 
-+
- foreach($salts as $i=>$salt) {
-   $crypt = crypt(b'U*U', $salt);
--  if ($crypt === b'*0' || $crypt === b'*1') {
-+  /* Debian patch.  If the invalid salt is used then standard DES is used per system library */
-+  if ($crypt === b'$2SHYF.wPGyfE' || $crypt === b'*0' || $crypt === b'*1') {
-     echo "$i. OK\n";
-   } else {
-     echo "$i. Not OK\n";
-@@ -28,6 +31,10 @@ foreach($salts as $i=>$salt) {
- 
- ?>
- --EXPECT--
-+0. OK
-+1. OK
-+2. OK
-+3. OK
- 32. OK
- 33. OK
- 34. OK
