@@ -1,3 +1,15 @@
+php5 (5.3.6-13) unstable; urgency=low
+
+  * Updated blowfish crypt() algorithm fixes the 8-bit character handling
+    vulnerability (CVE-2011-2483) and adds more self-tests.  Unfortunately
+    this change is incompatible with some old (wrong) generated hashes for
+    passwords containing 8-bit characters.  Therefore the new salt prefix
+    '$2x$' was introduced which can be used as a replacement for '$2a$'
+    salt prefix in the password database in case the incompatibility is
+    found.
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 04 Jul 2011 10:31:16 +0200
+
 php5 (5.3.1-3) unstable; urgency=low
 
   * mod_php disabled in userdirs.
