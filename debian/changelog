@@ -1,3 +1,18 @@
+php5 (5.3.6-13) unstable; urgency=low
+
+  * Fix CVE-2011-2483: 8-bit character mishandling allows different
+    password pairs to produce the same hash (Closes: #631347)
+  * Add support for $2x$ identifier as blowfish variant in crypt.c to
+    allow backward compatibility with old invalid hashes
+  * Return fail string (*0) on invalid Blowfish salt rounds
+  * Add NEWS item about incompatible blowfish hashes
+  * Fix CVE-2011-1938: Stack-based buffer overflow in the socket_connect
+    function in ext/sockets/sockets.c in PHP 5.3.3 through 5.3.6 might
+    allow context-dependent attackers to execute arbitrary code via a
+    long pathname for a UNIX socket.
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 04 Jul 2011 12:41:07 +0200
+
 php5 (5.3.6-12) unstable; urgency=low
 
   * Bump standards version to 3.9.2
