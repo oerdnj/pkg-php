@@ -1,6 +1,6 @@
 --- a/ext/mssql/php_mssql.c
 +++ b/ext/mssql/php_mssql.c
-@@ -1099,6 +1099,14 @@ static void php_mssql_get_column_content
+@@ -1106,6 +1106,14 @@ static void php_mssql_get_column_content
  			return;
  		}
  

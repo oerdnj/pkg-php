@@ -51,12 +51,6 @@ php-fpm-man-section-and-cleanup.patch
 fpm-config.patch
 fix_crash_in__php_mssql_get_column_content_without_type.patch
 php-fpm-sysconfdir.patch
-configure-as-needed.patch
 lp564920-fix-big-files.patch
-lang-test-use-utf8.patch
-disable_SSLv2_for_openssl_1_0_0.patch
 backport-upstream-lp592442.patch
 temporary-path-fixes-for-multiarch.patch
-CVE-2011-2202.patch
-CVE-2011-2483.patch
-CVE-2011-1938.patch

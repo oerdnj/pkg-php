@@ -36,6 +36,6 @@
 +        PHP_FALIAS(sybase_free_statement, mssql_free_statement,	arginfo_mssql_free_statement)
 +        PHP_FALIAS(sybase_guid_string, mssql_guid_string,	arginfo_mssql_guid_string)
 +#endif
- 	{NULL, NULL, NULL}
+ 	PHP_FE_END
  };
  /* }}} */

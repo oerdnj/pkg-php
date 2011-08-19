@@ -289,7 +289,7 @@
  
  static unsigned char itoa64[] = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
  
-@@ -150,158 +143,160 @@ static void php_to64(char *s, long v, in
+@@ -150,160 +143,160 @@ static void php_to64(char *s, long v, in
  PHP_FUNCTION(crypt)
  {
  	char salt[PHP_MAX_SALT_LEN + 1];
@@ -329,7 +329,7 @@
 -	/* The automatic salt generation covers standard DES, md5-crypt and Blowfish (simple) */
 -	if (!*salt) {
 -#if PHP_MD5_CRYPT
--		strcpy(salt, "$1$");
+-		strncpy(salt, "$1$", PHP_MAX_SALT_LEN);
 +	if (salt_in && (salt_in_len > 0)) {
 +		salt_len = MIN(PHP_MAX_SALT_LEN, salt_in_len);
 +		memcpy(salt, salt_in, salt_len);
@@ -339,12 +339,14 @@
 +		salt[0] = '$'; salt[1] = '6'; salt[2] = '$';
  		php_to64(&salt[3], PHP_CRYPT_RAND, 4);
  		php_to64(&salt[7], PHP_CRYPT_RAND, 4);
--		strcpy(&salt[11], "$");
+-		strncpy(&salt[11], "$", PHP_MAX_SALT_LEN - 11);
 -#elif PHP_STD_DES_CRYPT
 -		php_to64(&salt[0], PHP_CRYPT_RAND, 2);
 -		salt[2] = '\0';
 -#endif
 -		salt_in_len = strlen(salt);
+-	} else {
+-		salt_in_len = MIN(PHP_MAX_SALT_LEN, salt_in_len);
 +		salt[11] = '$'; salt[12] = '\0';
 +		salt_len = 12;
  	}
@@ -454,7 +456,7 @@
  		} else if (
  				salt[0] == '$' &&
  				salt[1] == '2' &&
- 				salt[2] == 'a' &&
+ 				salt[2] >= 'a' && salt[2] <= 'z' &&
  				salt[3] == '$' &&
 -				salt[4] >= '0' && salt[4] <= '3' &&
 -				salt[5] >= '0' && salt[5] <= '9' &&

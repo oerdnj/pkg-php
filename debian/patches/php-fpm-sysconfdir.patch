@@ -1,6 +1,6 @@
 --- a/sapi/fpm/fpm/fpm_conf.c
 +++ b/sapi/fpm/fpm/fpm_conf.c
-@@ -1182,7 +1182,7 @@ int fpm_conf_init_main(int test_conf) /*
+@@ -1228,7 +1228,7 @@ int fpm_conf_init_main(int test_conf) /*
  		char *tmp;
  
  		if (fpm_globals.prefix == NULL) {

@@ -3735,7 +3735,7 @@ the following modifications have been made:
  	char char_pos_buf[32];
 --- a/Zend/zend_compile.h
 +++ b/Zend/zend_compile.h
-@@ -606,6 +606,11 @@ ZEND_API zend_bool zend_is_auto_global(c
+@@ -607,6 +607,11 @@ ZEND_API zend_bool zend_is_auto_global(c
  ZEND_API int zend_auto_global_disable_jit(const char *varname, zend_uint varname_length TSRMLS_DC);
  ZEND_API size_t zend_dirname(char *path, size_t len);
  
@@ -3852,7 +3852,7 @@ the following modifications have been made:
 --- a/Zend/zend_hash.c
 +++ b/Zend/zend_hash.c
 @@ -20,6 +20,7 @@
- /* $Id: zend_hash.c 306939 2011-01-01 02:19:59Z felipe $ */
+ /* $Id: zend_hash.c 314482 2011-08-08 11:30:56Z pierrick $ */
  
  #include "zend.h"
 +#include "zend_compile.h"
@@ -4107,21 +4107,21 @@ the following modifications have been made:
  	while (p != NULL) {
  		q = p;
  		p = p->pListNext;
-@@ -548,6 +748,7 @@ ZEND_API void zend_hash_clean(HashTable
- 	SET_INCONSISTENT(HT_CLEANING);
+@@ -608,6 +808,7 @@ static Bucket *zend_hash_apply_deleter(H
+ 	ht->nNumOfElements--;
+ 	HANDLE_UNBLOCK_INTERRUPTIONS();
+ 
++    zend_hash_check_destructor(ht->pDestructor);
+ 	if (ht->pDestructor) {
+ 		ht->pDestructor(p->pData);
+ 	}
+@@ -628,6 +829,7 @@ ZEND_API void zend_hash_graceful_destroy
+ 	IS_CONSISTENT(ht);
  
  	p = ht->pListHead;
 +	zend_hash_check_destructor(ht->pDestructor);
  	while (p != NULL) {
- 		q = p;
- 		p = p->pListNext;
-@@ -610,6 +811,7 @@ static Bucket *zend_hash_apply_deleter(H
- 	ht->nNumOfElements--;
- 	HANDLE_UNBLOCK_INTERRUPTIONS();
- 
-+        zend_hash_check_destructor(ht->pDestructor);
- 	if (ht->pDestructor) {
- 		ht->pDestructor(p->pData);
+ 		p = zend_hash_apply_deleter(ht, p);
  	}
 --- a/Zend/zend_llist.c
 +++ b/Zend/zend_llist.c
@@ -4473,7 +4473,7 @@ the following modifications have been made:
  
  dnl divert(2)
  
-@@ -1399,7 +1400,7 @@ PHP_ADD_SOURCES(main, main.c snprintf.c
+@@ -1401,7 +1402,7 @@ PHP_ADD_SOURCES(main, main.c snprintf.c
         php_ini.c SAPI.c rfc1867.c php_content_types.c strlcpy.c \
         strlcat.c mergesort.c reentrancy.c php_variables.c php_ticks.c \
         network.c php_open_temporary_file.c php_logos.c \
@@ -4482,7 +4482,7 @@ the following modifications have been made:
  
  PHP_ADD_SOURCES(main/streams, streams.c cast.c memory.c filter.c \
         plain_wrapper.c userspace.c transports.c xp_socket.c mmap.c \
-@@ -1427,7 +1428,7 @@ PHP_ADD_SOURCES(Zend, \
+@@ -1429,7 +1430,7 @@ PHP_ADD_SOURCES(Zend, \
      zend_list.c zend_indent.c zend_builtin_functions.c zend_sprintf.c \
      zend_ini.c zend_qsort.c zend_multibyte.c zend_ts_hash.c zend_stream.c \
      zend_iterators.c zend_interfaces.c zend_exceptions.c zend_strtod.c zend_gc.c \
@@ -4590,7 +4590,7 @@ the following modifications have been made:
  		/* We're in a PHP_INI_SYSTEM context, no restrictions */
 --- a/main/main.c
 +++ b/main/main.c
-@@ -90,6 +90,9 @@
+@@ -91,6 +91,9 @@
  
  #include "SAPI.h"
  #include "rfc1867.h"
@@ -4600,7 +4600,7 @@ the following modifications have been made:
  
  #if !HAVE_UNISTD_H || (!defined(_SC_PAGESIZE) && !defined(_SC_PAGE_SIZE))
  # if HAVE_SYS_MMAN_H
-@@ -492,7 +495,7 @@ PHP_INI_BEGIN()
+@@ -495,7 +498,7 @@ PHP_INI_BEGIN()
  	STD_PHP_INI_ENTRY("extension_dir",			PHP_EXTENSION_DIR,		PHP_INI_SYSTEM,		OnUpdateStringUnempty,	extension_dir,			php_core_globals,	core_globals)
  	STD_PHP_INI_ENTRY("include_path",			PHP_INCLUDE_PATH,		PHP_INI_ALL,		OnUpdateStringUnempty,	include_path,			php_core_globals,	core_globals)
  	PHP_INI_ENTRY("max_execution_time",			"30",		PHP_INI_ALL,			OnUpdateTimeout)
@@ -4609,7 +4609,7 @@ the following modifications have been made:
  	STD_PHP_INI_ENTRY("safe_mode_exec_dir",		PHP_SAFE_MODE_EXEC_DIR,	PHP_INI_SYSTEM,		OnUpdateString,			safe_mode_exec_dir,		php_core_globals,	core_globals)
  
  	STD_PHP_INI_BOOLEAN("file_uploads",			"1",		PHP_INI_SYSTEM,		OnUpdateBool,			file_uploads,			php_core_globals,	core_globals)
-@@ -1794,6 +1797,10 @@ void dummy_invalid_parameter_handler(
+@@ -1799,6 +1802,10 @@ void dummy_invalid_parameter_handler(
  }
  #endif
  
@@ -4620,8 +4620,8 @@ the following modifications have been made:
  /* {{{ php_module_startup
   */
  int php_module_startup(sapi_module_struct *sf, zend_module_entry *additional_modules, uint num_additional_modules)
-@@ -1838,6 +1845,10 @@ int php_module_startup(sapi_module_struc
- 	tsrm_ls = ts_resource(0);
+@@ -1847,6 +1854,10 @@ int php_module_startup(sapi_module_struc
+ 	php_win32_init_rng_lock();
  #endif
  
 +#if SUHOSIN_PATCH
@@ -4631,7 +4631,7 @@ the following modifications have been made:
  	module_shutdown = 0;
  	module_startup = 1;
  	sapi_initialize_empty_request(TSRMLS_C);
-@@ -1957,7 +1968,11 @@ int php_module_startup(sapi_module_struc
+@@ -1969,7 +1980,11 @@ int php_module_startup(sapi_module_struc
  	REGISTER_MAIN_STRINGL_CONSTANT("PHP_CONFIG_FILE_SCAN_DIR", PHP_CONFIG_FILE_SCAN_DIR, sizeof(PHP_CONFIG_FILE_SCAN_DIR)-1, CONST_PERSISTENT | CONST_CS);
  	REGISTER_MAIN_STRINGL_CONSTANT("PHP_SHLIB_SUFFIX", PHP_SHLIB_SUFFIX, sizeof(PHP_SHLIB_SUFFIX)-1, CONST_PERSISTENT | CONST_CS);
  	REGISTER_MAIN_STRINGL_CONSTANT("PHP_EOL", PHP_EOL, sizeof(PHP_EOL)-1, CONST_PERSISTENT | CONST_CS);
@@ -4646,7 +4646,7 @@ the following modifications have been made:
  #ifdef ZEND_MULTIBYTE
 --- a/main/php.h
 +++ b/main/php.h
-@@ -457,6 +457,10 @@ END_EXTERN_C()
+@@ -458,6 +458,10 @@ END_EXTERN_C()
  #endif
  #endif /* !XtOffsetOf */
  
@@ -4683,7 +4683,7 @@ the following modifications have been made:
  
 --- a/main/snprintf.c
 +++ b/main/snprintf.c
-@@ -780,6 +780,10 @@ static int format_converter(register buf
+@@ -782,6 +782,10 @@ static int format_converter(register buf
  			 */
  			switch (*fmt) {
  				case 'Z':
@@ -4694,7 +4694,7 @@ the following modifications have been made:
  					zvp = (zval*) va_arg(ap, zval*);
  					zend_make_printable_zval(zvp, &zcopy, &free_zcopy);
  					if (free_zcopy) {
-@@ -790,6 +794,7 @@ static int format_converter(register buf
+@@ -792,6 +796,7 @@ static int format_converter(register buf
  					if (adjust_precision && precision < s_len) {
  						s_len = precision;
  					}
@@ -4702,7 +4702,7 @@ the following modifications have been made:
  					break;
  				case 'u':
  					switch(modifier) {
-@@ -1091,7 +1096,11 @@ static int format_converter(register buf
+@@ -1093,7 +1098,11 @@ static int format_converter(register buf
  
  
  				case 'n':
@@ -4716,7 +4716,7 @@ the following modifications have been made:
  					/*
 --- a/main/spprintf.c
 +++ b/main/spprintf.c
-@@ -388,6 +388,10 @@ static void xbuf_format_converter(smart_
+@@ -390,6 +390,10 @@ static void xbuf_format_converter(smart_
  			 */
  			switch (*fmt) {
  				case 'Z':
@@ -4727,7 +4727,7 @@ the following modifications have been made:
  					zvp = (zval*) va_arg(ap, zval*);
  					zend_make_printable_zval(zvp, &zcopy, &free_zcopy);
  					if (free_zcopy) {
-@@ -398,6 +402,7 @@ static void xbuf_format_converter(smart_
+@@ -400,6 +404,7 @@ static void xbuf_format_converter(smart_
  					if (adjust_precision && precision < s_len) {
  						s_len = precision;
  					}
@@ -4735,7 +4735,7 @@ the following modifications have been made:
  					break;
  				case 'u':
  					switch(modifier) {
-@@ -698,7 +703,11 @@ static void xbuf_format_converter(smart_
+@@ -700,7 +705,11 @@ static void xbuf_format_converter(smart_
  
  
  				case 'n':
@@ -5596,7 +5596,7 @@ the following modifications have been made:
  #endif
 --- a/sapi/cgi/cgi_main.c
 +++ b/sapi/cgi/cgi_main.c
-@@ -1929,10 +1929,18 @@ consult the installation file that came
+@@ -1932,10 +1932,18 @@ consult the installation file that came
  								SG(headers_sent) = 1;
  								SG(request_info).no_headers = 1;
  							}
@@ -5619,7 +5619,7 @@ the following modifications have been made:
  							fcgi_shutdown();
 --- a/sapi/cli/php_cli.c
 +++ b/sapi/cli/php_cli.c
-@@ -832,7 +832,11 @@ int main(int argc, char *argv[])
+@@ -826,7 +826,11 @@ int main(int argc, char *argv[])
  				}
  
  				request_started = 1;
@@ -5634,7 +5634,7 @@ the following modifications have been made:
  					"(DEBUG GCOV)",
 --- a/sapi/litespeed/lsapi_main.c
 +++ b/sapi/litespeed/lsapi_main.c
-@@ -710,10 +710,18 @@ static int cli_main( int argc, char * ar
+@@ -711,10 +711,18 @@ static int cli_main( int argc, char * ar
                  break;
              case 'v':
                  if (php_request_startup(TSRMLS_C) != FAILURE) {

@@ -39,7 +39,7 @@ Last-Update: 2010-01-18
      ;;
  esac
  
-@@ -1161,7 +1161,7 @@ EXPANDED_SYSCONFDIR=`eval echo $sysconfd
+@@ -1162,7 +1162,7 @@ EXPANDED_SYSCONFDIR=`eval echo $sysconfd
  EXPANDED_DATADIR=$datadir
  EXPANDED_PHP_CONFIG_FILE_PATH=`eval echo "$PHP_CONFIG_FILE_PATH"`
  EXPANDED_PHP_CONFIG_FILE_SCAN_DIR=`eval echo "$PHP_CONFIG_FILE_SCAN_DIR"`
