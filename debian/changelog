@@ -1,3 +1,12 @@
+php5 (5.3.7-1) unstable; urgency=low
+
+  * Imported Upstream version 5.3.7
+  * Update patches to the new 5.3.7 release
+  * Don't require autoconf 2.59 and lower, we'll deal with consequences
+  * Add MultiArch fix for LDAP libraries
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 19 Aug 2011 13:49:49 +0200
+
 php5 (5.3.6-13) unstable; urgency=low
 
   * Fix CVE-2011-2483: 8-bit character mishandling allows different
