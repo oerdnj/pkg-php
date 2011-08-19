@@ -15,7 +15,7 @@
    | Author: Rasmus Lerdorf <rasmus@lerdorf.on.ca>                        |
    +----------------------------------------------------------------------+
  */
-/* $Id: head.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: head.c 314486 2011-08-08 12:10:27Z iliaa $ */
 
 #include <stdio.h>
 #include "php.h"
@@ -115,10 +115,9 @@ PHPAPI int php_setcookie(char *name, int name_len, char *value, int value_len, t
 		/* 
 		 * MSIE doesn't delete a cookie when you set it to a null value
 		 * so in order to force cookies to be deleted, even on MSIE, we
-		 * pick an expiry date 1 year and 1 second in the past
+		 * pick an expiry date in the past
 		 */
-		time_t t = time(NULL) - 31536001;
-		dt = php_format_date("D, d-M-Y H:i:s T", sizeof("D, d-M-Y H:i:s T")-1, t, 0 TSRMLS_CC);
+		dt = php_format_date("D, d-M-Y H:i:s T", sizeof("D, d-M-Y H:i:s T")-1, 1, 0 TSRMLS_CC);
 		snprintf(cookie, len + 100, "Set-Cookie: %s=deleted; expires=%s", name, dt);
 		efree(dt);
 	} else {
@@ -129,7 +128,7 @@ PHPAPI int php_setcookie(char *name, int name_len, char *value, int value_len, t
 			dt = php_format_date("D, d-M-Y H:i:s T", sizeof("D, d-M-Y H:i:s T")-1, expires, 0 TSRMLS_CC);
 			/* check to make sure that the year does not exceed 4 digits in length */
 			p = zend_memrchr(dt, '-', strlen(dt));
-			if (*(p + 5) != ' ') {
+			if (!p || *(p + 5) != ' ') {
 				efree(dt);
 				efree(cookie);
 				efree(encoded_value);

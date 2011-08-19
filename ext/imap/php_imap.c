@@ -26,7 +26,7 @@
    | PHP 4.0 updates:  Zeev Suraski <zeev@zend.com>                       |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_imap.c 307691 2011-01-24 03:52:00Z stas $ */
+/* $Id: php_imap.c 314376 2011-08-06 14:47:44Z felipe $ */
 
 #define IMAP41
 
@@ -551,14 +551,14 @@ const zend_function_entry imap_functions[] = {
 	PHP_FALIAS(imap_scan,			imap_listscan,		arginfo_imap_listscan)
 	PHP_FALIAS(imap_create,			imap_createmailbox,	arginfo_imap_createmailbox)
 	PHP_FALIAS(imap_rename,			imap_renamemailbox,	arginfo_imap_renamemailbox)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 
 /* {{{ imap dependencies */
 static const zend_module_dep imap_deps[] = {
 	ZEND_MOD_REQUIRED("standard")
-	{NULL, NULL, NULL}
+	ZEND_MOD_END
 };
 /* }}} */
 
@@ -1233,7 +1233,7 @@ static void php_imap_do_open(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 	IMAPG(imap_password) = estrndup(passwd, passwd_len);
 
 #ifdef SET_MAXLOGINTRIALS
-	if (argc == 5) {
+	if (argc >= 5) {
 		if (retries < 0) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING ,"Retries must be greater or equal to 0");
 		} else {
@@ -4299,7 +4299,7 @@ PHP_FUNCTION(imap_mime_header_decode)
 			charset_token = offset;
 		}
 		/* Return the rest of the data as unencoded, as it was either unencoded or was missing separators
-		   which rendered the the remainder of the string impossible for us to decode. */
+		   which rendered the remainder of the string impossible for us to decode. */
 		memcpy(text, &string[charset_token], end - charset_token);	/* Extract unencoded text from string */
 		text[end - charset_token] = 0x00;
 		MAKE_STD_ZVAL(myobject);

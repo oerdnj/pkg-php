@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: link_win32.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: link_win32.c 313176 2011-07-12 15:15:17Z pajoye $ */
 #ifdef PHP_WIN32
 
 #include "php.h"
@@ -69,6 +69,7 @@ PHP_FUNCTION(readlink)
 
 	if (php_sys_readlink(link, target, MAXPATHLEN) == -1) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "readlink failed to read the symbolic link (%s), error %d)", link, GetLastError());
+		RETURN_FALSE;
 	}
 	RETURN_STRING(target, 1);
 }

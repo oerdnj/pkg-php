@@ -21,6 +21,7 @@
 #include "fpm_children.h"
 #include "zlog.h"
 #include "fpm_clock.h"
+#include "fpm_log.h"
 
 #define fpm_event_set_timeout(ev, now) timeradd(&(now), &(ev)->frequency, &(ev)->timeout);
 
@@ -55,8 +56,8 @@ static void fpm_event_cleanup(int which, void *arg) /* {{{ */
 static void fpm_got_signal(struct fpm_event_s *ev, short which, void *arg) /* {{{ */
 {
 	char c;
-	int res;
-	int fd = ev->fd;;
+	int res, ret;
+	int fd = ev->fd;
 
 	do {
 		do {
@@ -93,10 +94,19 @@ static void fpm_got_signal(struct fpm_event_s *ev, short which, void *arg) /* {{
 			case '1' :                  /* SIGUSR1 */
 				zlog(ZLOG_DEBUG, "received SIGUSR1");
 				if (0 == fpm_stdio_open_error_log(1)) {
-					zlog(ZLOG_NOTICE, "log file re-opened");
+					zlog(ZLOG_NOTICE, "error log file re-opened");
 				} else {
-					zlog(ZLOG_ERROR, "unable to re-opened log file");
+					zlog(ZLOG_ERROR, "unable to re-opened error log file");
 				}
+
+				ret = fpm_log_open(1);
+				if (ret == 0) {
+					zlog(ZLOG_NOTICE, "access log file re-opened");
+				} else if (ret == -1) {
+					zlog(ZLOG_ERROR, "unable to re-opened access log file");
+				}
+				/* else no access log are set */
+
 				break;
 			case '2' :                  /* SIGUSR2 */
 				zlog(ZLOG_DEBUG, "received SIGUSR2");
@@ -235,7 +245,7 @@ int fpm_event_init_main() /* {{{ */
 }
 /* }}} */
 
-void fpm_event_loop() /* {{{ */
+void fpm_event_loop(int err) /* {{{ */
 {
 	static struct fpm_event_s signal_fd_event;
 
@@ -249,9 +259,13 @@ void fpm_event_loop() /* {{{ */
 
 	/* add timers */
 	fpm_pctl_heartbeat(NULL, 0, NULL);
-	fpm_pctl_perform_idle_server_maintenance_heartbeat(NULL, 0, NULL);
 
-	zlog(ZLOG_NOTICE, "ready to handle connections");
+	if (!err) {
+		fpm_pctl_perform_idle_server_maintenance_heartbeat(NULL, 0, NULL);
+
+		zlog(ZLOG_DEBUG, "%zu bytes have been reserved in SHM", fpm_shm_get_size_allocated());
+		zlog(ZLOG_NOTICE, "ready to handle connections");
+	}
 
 	while (1) {
 		struct fpm_event_queue_s *q, *q2;

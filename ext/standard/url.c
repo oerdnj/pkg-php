@@ -15,7 +15,7 @@
    | Author: Jim Winstead <jimw@php.net>                                  |
    +----------------------------------------------------------------------+
  */
-/* $Id: url.c 309175 2011-03-13 17:14:18Z pierrick $ */
+/* $Id: url.c 314783 2011-08-11 13:01:52Z iliaa $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -197,6 +197,10 @@ PHPAPI php_url *php_url_parse_ex(char const *str, int length)
 				efree(ret);
 				return NULL;
 			}
+		} else if (p == pp && *pp == '\0') {
+			STR_FREE(ret->scheme);
+			efree(ret);
+			return NULL;
 		} else {
 			goto just_path;
 		}
@@ -316,6 +320,10 @@ PHPAPI php_url *php_url_parse_ex(char const *str, int length)
 		pp = strchr(s, '#');
 
 		if (pp && pp < p) {
+			if (pp - s) {
+				ret->path = estrndup(s, (pp-s));
+				php_replace_controlchars_ex(ret->path, (pp - s));
+			}
 			p = pp;
 			goto label_parse;
 		}

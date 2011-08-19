@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tokenizer.c 308761 2011-02-28 15:18:27Z iliaa $ */
+/* $Id: tokenizer.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -52,7 +52,7 @@ ZEND_END_ARG_INFO()
 const zend_function_entry tokenizer_functions[] = {
 	PHP_FE(token_get_all,	arginfo_token_get_all)
 	PHP_FE(token_name,		arginfo_token_name)
-	{NULL, NULL, NULL}	/* Must be the last line in tokenizer_functions[] */
+	PHP_FE_END
 };
 /* }}} */
 

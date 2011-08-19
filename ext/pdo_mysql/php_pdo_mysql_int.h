@@ -18,14 +18,13 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_mysql_int.h 307529 2011-01-17 09:54:22Z kalle $ */
+/* $Id: php_pdo_mysql_int.h 310850 2011-05-09 11:34:17Z johannes $ */
 
 #ifndef PHP_PDO_MYSQL_INT_H
 #define PHP_PDO_MYSQL_INT_H
 
 #if defined(PDO_USE_MYSQLND)
 #	include "ext/mysqlnd/mysqlnd.h"
-#	include "ext/mysql/mysql_mysqlnd.h"
 #	include "ext/mysqlnd/mysqlnd_libmysql_compat.h"
 #	define PDO_MYSQL_PARAM_BIND MYSQLND_PARAM_BIND
 #else
@@ -168,7 +167,12 @@ enum {
 #endif
 	PDO_MYSQL_ATTR_DIRECT_QUERY,
 	PDO_MYSQL_ATTR_FOUND_ROWS,
-	PDO_MYSQL_ATTR_IGNORE_SPACE
+	PDO_MYSQL_ATTR_IGNORE_SPACE,
+	PDO_MYSQL_ATTR_SSL_KEY,
+	PDO_MYSQL_ATTR_SSL_CERT,
+	PDO_MYSQL_ATTR_SSL_CA,
+	PDO_MYSQL_ATTR_SSL_CAPATH,
+	PDO_MYSQL_ATTR_SSL_CIPHER
 };
 
 #endif

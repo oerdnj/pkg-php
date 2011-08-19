@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: firebird_statement.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: firebird_statement.c 312225 2011-06-17 02:00:20Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -191,7 +191,7 @@ static int firebird_stmt_describe(pdo_stmt_t *stmt, int colno TSRMLS_DC) /* {{{ 
 	char *cp;
 	
 	/* allocate storage for the column */
-	var->sqlind = (void*)emalloc(var->sqllen + 2*sizeof(short));
+	var->sqlind = (void*)ecalloc(1, var->sqllen + 2*sizeof(short));
 	var->sqldata = &((char*)var->sqlind)[sizeof(short)];
 
 	colname_len = (S->H->fetch_table_names && var->relname_length)

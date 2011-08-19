@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: file.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: file.c 312285 2011-06-19 14:50:44Z felipe $ */
 
 /* Synced with php 3.0 revision 1.218 1999-06-16 [ssb] */
 
@@ -1498,20 +1498,20 @@ PHP_FUNCTION(umask)
 {
 	long arg1 = 0;
 	int oldumask;
-	int arg_count = ZEND_NUM_ARGS();
-
+	
 	oldumask = umask(077);
 
 	if (BG(umask) == -1) {
 		BG(umask) = oldumask;
 	}
+	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &arg1) == FAILURE) {
+		RETURN_FALSE;
+	}
 
-	if (arg_count == 0) {
+	if (ZEND_NUM_ARGS() == 0) {
 		umask(oldumask);
 	} else {
-		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &arg1) == FAILURE) {
-			RETURN_FALSE;
-		}
 		umask(arg1);
 	}
 
@@ -2196,30 +2196,17 @@ PHPAPI void php_fgetcsv(php_stream *stream, char delimiter, char enclosure, char
 		char *comp_end, *hunk_begin;
 
 		tptr = temp;
-
-		/* 1. Strip any leading space */
-		for (;;) {
-			inc_len = (bptr < limit ? (*bptr == '\0' ? 1: php_mblen(bptr, limit - bptr)): 0);
-			switch (inc_len) {
-				case -2:
-				case -1:
-					inc_len = 1;
-					php_mblen(NULL, 0);
-					break;
-				case 0:
-					goto quit_loop_1;
-				case 1:
-					if (!isspace((int)*(unsigned char *)bptr) || *bptr == delimiter) {
-						goto quit_loop_1;
-					}
-					break;
-				default:
-					goto quit_loop_1;
+		inc_len = (bptr < limit ? (*bptr == '\0' ? 1: php_mblen(bptr, limit - bptr)): 0);
+		if (inc_len == 1) {
+			char *tmp = bptr;
+			while (isspace((int)*(unsigned char *)tmp)) {
+				tmp++;
 			}
-			bptr += inc_len;
+			if (*tmp == enclosure) {
+				bptr = tmp;
+			}
 		}
 
-	quit_loop_1:
 		if (first_field && bptr == line_end) {
 			add_next_index_null(return_value);
 			break;
@@ -2618,6 +2605,9 @@ PHP_FUNCTION(fnmatch)
    Returns directory path used for temporary files */
 PHP_FUNCTION(sys_get_temp_dir)
 {
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
 	RETURN_STRING((char *)php_get_temporary_directory(), 1);
 }
 /* }}} */

@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_pgsql.h 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: php_pdo_pgsql.h 311631 2011-05-31 08:59:32Z iliaa $ */
 
 #ifndef PHP_PDO_PGSQL_H
 #define PHP_PDO_PGSQL_H
@@ -32,8 +32,6 @@ extern zend_module_entry pdo_pgsql_module_entry;
 
 PHP_MINIT_FUNCTION(pdo_pgsql);
 PHP_MSHUTDOWN_FUNCTION(pdo_pgsql);
-PHP_RINIT_FUNCTION(pdo_pgsql);
-PHP_RSHUTDOWN_FUNCTION(pdo_pgsql);
 PHP_MINFO_FUNCTION(pdo_pgsql);
 
 #endif	/* PHP_PDO_PGSQL_H */

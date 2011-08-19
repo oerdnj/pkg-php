@@ -17,7 +17,7 @@
    |          David Sklar <sklar@student.net>                             |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_apache.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: php_apache.c 314352 2011-08-06 01:22:27Z felipe $ */
 
 #include "php_apache_http.h"
 
@@ -1384,7 +1384,7 @@ const static zend_function_entry php_apache_request_class_functions[] = {
     PHP_FALIAS(method_uri,                  apache_request_sub_req_method_uri,      NULL)
     PHP_FALIAS(run,                         apache_request_run,                     NULL)
     PHP_FALIAS(internal_redirect,           apache_request_internal_redirect,       NULL)
-	{ NULL, NULL, NULL }
+	PHP_FE_END
 };
 /* }}} */
 

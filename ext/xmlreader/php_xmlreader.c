@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_xmlreader.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: php_xmlreader.c 314376 2011-08-06 14:47:44Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -320,7 +320,7 @@ static xmlRelaxNGPtr _xmlreader_get_relaxNG(char *source, int source_len, int ty
 
 static const zend_module_dep xmlreader_deps[] = {
 	ZEND_MOD_REQUIRED("libxml")
-	{NULL, NULL, NULL}
+	ZEND_MOD_END
 };
 
 /* {{{ xmlreader_module_entry
@@ -860,7 +860,7 @@ PHP_METHOD(xmlreader, next)
 /* }}} */
 
 /* {{{ proto boolean XMLReader::open(string URI [, string encoding [, int options]])
-Sets the URI that the the XMLReader will parse. */
+Sets the URI that the XMLReader will parse. */
 PHP_METHOD(xmlreader, open)
 {
 	zval *id;
@@ -1021,7 +1021,7 @@ PHP_METHOD(xmlreader, setParserProperty)
 /* }}} */
 
 /* {{{ proto boolean XMLReader::setRelaxNGSchema(string filename)
-Sets the string that the the XMLReader will parse. */
+Sets the string that the XMLReader will parse. */
 PHP_METHOD(xmlreader, setRelaxNGSchema)
 {
 	php_xmlreader_set_relaxng_schema(INTERNAL_FUNCTION_PARAM_PASSTHRU, XMLREADER_LOAD_FILE);
@@ -1029,7 +1029,7 @@ PHP_METHOD(xmlreader, setRelaxNGSchema)
 /* }}} */
 
 /* {{{ proto boolean XMLReader::setRelaxNGSchemaSource(string source)
-Sets the string that the the XMLReader will parse. */
+Sets the string that the XMLReader will parse. */
 PHP_METHOD(xmlreader, setRelaxNGSchemaSource)
 {
 	php_xmlreader_set_relaxng_schema(INTERNAL_FUNCTION_PARAM_PASSTHRU, XMLREADER_LOAD_STRING);
@@ -1043,7 +1043,7 @@ XMLPUBFUN int XMLCALL
 */
 
 /* {{{ proto boolean XMLReader::XML(string source [, string encoding [, int options]])
-Sets the string that the the XMLReader will parse. */
+Sets the string that the XMLReader will parse. */
 PHP_METHOD(xmlreader, XML)
 {
 	zval *id;
@@ -1092,9 +1092,7 @@ PHP_METHOD(xmlreader, XML)
 			uri = (char *) xmlCanonicPath((const xmlChar *) resolved_path);
 		}
 		reader = xmlNewTextReader(inputbfr, uri);
-		if (uri) {
-			xmlFree(uri);
-		}
+
 		if (reader != NULL) {
 #if LIBXML_VERSION >= 20628
 			ret = xmlTextReaderSetup(reader, NULL, uri, encoding, options);
@@ -1108,9 +1106,18 @@ PHP_METHOD(xmlreader, XML)
 				}
 				intern->input = inputbfr;
 				intern->ptr = reader;
+
+				if (uri) {
+					xmlFree(uri);
+				}
+
 				return;
 			}
 		}
+	}
+
+	if (uri) {
+		xmlFree(uri);
 	}
 
 	if (inputbfr) {
@@ -1299,7 +1306,7 @@ static const zend_function_entry xmlreader_functions[] = {
 	PHP_ME(xmlreader, setRelaxNGSchemaSource, arginfo_xmlreader_setRelaxNGSchemaSource, ZEND_ACC_PUBLIC)
 	PHP_ME(xmlreader, XML, arginfo_xmlreader_XML, ZEND_ACC_PUBLIC|ZEND_ACC_ALLOW_STATIC)
 	PHP_ME(xmlreader, expand, arginfo_xmlreader_expand, ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 /* {{{ PHP_MINIT_FUNCTION

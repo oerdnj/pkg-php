@@ -25,7 +25,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: oci8_statement.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: oci8_statement.c 313754 2011-07-27 00:04:23Z sixd $ */
 
 
 #ifdef HAVE_CONFIG_H
@@ -887,7 +887,7 @@ int php_oci_bind_post_exec(void *data TSRMLS_DC)
 		 * their reallocation but (i) any IN binds either interned or
 		 * not should already be null terminated and (ii) for OUT
 		 * binds, php_oci_bind_out_callback() should have allocated a
-		 * new string that can be realloced.
+		 * new string that we can modify here.
 		 */
 		Z_STRVAL_P(bind->zval) = erealloc(Z_STRVAL_P(bind->zval), Z_STRLEN_P(bind->zval)+1);
 		Z_STRVAL_P(bind->zval)[ Z_STRLEN_P(bind->zval) ] = '\0';
@@ -1480,7 +1480,7 @@ int php_oci_bind_array_by_name(php_oci_statement *statement, char *name, int nam
 								name_len,
 								(dvoid *) bindp->array.elements,
 								(sb4) bind->array.max_length,
-								type,
+								(ub2)type,
 								(dvoid *)bindp->array.indicators,
 								(ub2 *)bind->array.element_lengths,
 								(ub2 *)0, /* bindp->array.retcodes, */

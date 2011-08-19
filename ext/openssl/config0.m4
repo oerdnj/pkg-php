@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config0.m4 226663 2007-01-07 18:38:22Z iliaa $
+dnl $Id: config0.m4 309398 2011-03-18 18:47:09Z geissert $
 dnl
 
 PHP_ARG_WITH(openssl, for OpenSSL support,
@@ -17,6 +17,7 @@ if test "$PHP_OPENSSL" != "no"; then
   fi
 
   AC_CHECK_LIB(ssl, DSA_get_default_method, AC_DEFINE(HAVE_DSA_DEFAULT_METHOD, 1, [OpenSSL 0.9.7 or later]))
+  AC_CHECK_LIB(crypto, X509_free, AC_DEFINE(HAVE_DSA_DEFAULT_METHOD, 1, [OpenSSL 0.9.7 or later]))
 
   PHP_SETUP_OPENSSL(OPENSSL_SHARED_LIBADD, 
   [

@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: tidy.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: tidy.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -404,7 +404,7 @@ static const zend_function_entry tidy_functions[] = {
 	PHP_FE(tidy_get_html,		arginfo_tidy_get_html)
 	PHP_FE(tidy_get_body,		arginfo_tidy_get_body)
 	PHP_FE(ob_tidyhandler,		arginfo_ob_tidyhandler)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 static const zend_function_entry tidy_funcs_doc[] = {
@@ -429,7 +429,7 @@ static const zend_function_entry tidy_funcs_doc[] = {
 	TIDY_METHOD_MAP(html, tidy_get_html, NULL)
 	TIDY_METHOD_MAP(body, tidy_get_body, NULL)
 	TIDY_DOC_ME(__construct, NULL)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 static const zend_function_entry tidy_funcs_node[] = {
@@ -443,7 +443,7 @@ static const zend_function_entry tidy_funcs_node[] = {
 	TIDY_NODE_ME(isPhp, NULL)
 	TIDY_NODE_ME(getParent, NULL)
 	TIDY_NODE_PRIVATE_ME(__construct, NULL)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 static zend_class_entry *tidy_ce_doc, *tidy_ce_node;
@@ -985,6 +985,10 @@ static void php_tidy_create_node(INTERNAL_FUNCTION_PARAMETERS, tidy_base_nodetyp
 		case is_body_node:
 			node = tidyGetBody(obj->ptdoc->doc);
 			break;
+
+		default:
+			RETURN_NULL();
+			break;
 	}
 
 	if (!node) {
@@ -1088,7 +1092,7 @@ static PHP_MINFO_FUNCTION(tidy)
 	php_info_print_table_start();
 	php_info_print_table_header(2, "Tidy support", "enabled");
 	php_info_print_table_row(2, "libTidy Release", (char *)tidyReleaseDate());
-	php_info_print_table_row(2, "Extension Version", PHP_TIDY_MODULE_VERSION " ($Id: tidy.c 306939 2011-01-01 02:19:59Z felipe $)");
+	php_info_print_table_row(2, "Extension Version", PHP_TIDY_MODULE_VERSION " ($Id: tidy.c 313665 2011-07-25 11:42:53Z felipe $)");
 	php_info_print_table_end();
 
 	DISPLAY_INI_ENTRIES();

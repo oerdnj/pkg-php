@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: lsapi_main.c 306212 2010-12-10 22:51:08Z gwang $ */
+/* $Id: lsapi_main.c 311680 2011-05-31 22:40:42Z gwang $ */
 
 #include "php.h"
 #include "SAPI.h"
@@ -660,6 +660,7 @@ static int cli_main( int argc, char * argv[] )
         "implicit_flush",       "1",
         "output_buffering",     "0",
         "max_execution_time",   "0",
+        "max_input_time",       "-1",
         NULL
     };
 

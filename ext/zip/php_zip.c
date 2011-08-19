@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_zip.c 308107 2011-02-07 16:20:16Z pajoye $ */
+/* $Id: php_zip.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -494,6 +494,28 @@ static char * php_zipobj_get_zip_comment(struct zip *za, int *len TSRMLS_DC) /* 
 #else
 #define GLOB_FLAGMASK (~0)
 #endif
+#ifndef GLOB_BRACE
+# define GLOB_BRACE 0
+#endif
+#ifndef GLOB_MARK
+# define GLOB_MARK 0
+#endif
+#ifndef GLOB_NOSORT
+# define GLOB_NOSORT 0
+#endif
+#ifndef GLOB_NOCHECK
+# define GLOB_NOCHECK 0
+#endif
+#ifndef GLOB_NOESCAPE
+# define GLOB_NOESCAPE 0
+#endif
+#ifndef GLOB_ERR
+# define GLOB_ERR 0
+#endif
+
+/* This is used for checking validity of passed flags (passing invalid flags causes segfault in glob()!! */
+#define GLOB_AVAILABLE_FLAGS (0 | GLOB_BRACE | GLOB_MARK | GLOB_NOSORT | GLOB_NOCHECK | GLOB_NOESCAPE | GLOB_ERR | GLOB_ONLYDIR)
+
 #endif /* }}} */
 
 int php_zip_glob(char *pattern, int pattern_len, long flags, zval *return_value TSRMLS_DC) /* {{{ */
@@ -508,6 +530,16 @@ int php_zip_glob(char *pattern, int pattern_len, long flags, zval *return_value 
 	glob_t globbuf;
 	int n;
 	int ret;
+	
+	if (pattern_len >= MAXPATHLEN) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Pattern exceeds the maximum allowed length of %d characters", MAXPATHLEN);
+		return -1;
+	}
+
+	if ((GLOB_AVAILABLE_FLAGS & flags) != flags) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "At least one of the passed flags is invalid or not supported on this platform");
+		return -1;
+	}
 
 #ifdef ZTS 
 	if (!IS_ABSOLUTE_PATH(pattern, pattern_len)) {
@@ -750,8 +782,7 @@ static const zend_function_entry zip_functions[] = {
 	PHP_FE(zip_entry_name,		arginfo_zip_entry_name)
 	PHP_FE(zip_entry_compressedsize,		arginfo_zip_entry_compressedsize)
 	PHP_FE(zip_entry_compressionmethod,		arginfo_zip_entry_compressionmethod)
-
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 
@@ -2841,7 +2872,7 @@ static PHP_MINFO_FUNCTION(zip)
 	php_info_print_table_start();
 
 	php_info_print_table_row(2, "Zip", "enabled");
-	php_info_print_table_row(2, "Extension Version","$Id: php_zip.c 308107 2011-02-07 16:20:16Z pajoye $");
+	php_info_print_table_row(2, "Extension Version","$Id: php_zip.c 313665 2011-07-25 11:42:53Z felipe $");
 	php_info_print_table_row(2, "Zip version", PHP_ZIP_VERSION_STRING);
 	php_info_print_table_row(2, "Libzip version", "0.9.0");
 

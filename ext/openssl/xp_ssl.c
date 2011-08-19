@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: xp_ssl.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: xp_ssl.c 313616 2011-07-23 01:29:44Z scottmac $ */
 
 #include "php.h"
 #include "ext/standard/file.h"
@@ -145,7 +145,7 @@ static int handle_ssl_error(php_stream *stream, int nr_bytes, zend_bool is_init 
 
 				default:
 					do {
-						// NULL is automatically added
+						/* NULL is automatically added */
 						ERR_error_string_n(ecode, esbuf, sizeof(esbuf));
 						if (ebuf.c) {
 							smart_str_appendc(&ebuf, '\n');
@@ -204,6 +204,36 @@ static size_t php_openssl_sockop_write(php_stream *stream, const char *buf, size
 	return didwrite;
 }
 
+static void php_openssl_stream_wait_for_data(php_stream *stream, php_netstream_data_t *sock TSRMLS_DC)
+{
+	int retval;
+	struct timeval *ptimeout;
+
+	if (sock->socket == -1) {
+		return;
+	}
+	
+	sock->timeout_event = 0;
+
+	if (sock->timeout.tv_sec == -1)
+		ptimeout = NULL;
+	else
+		ptimeout = &sock->timeout;
+
+	while(1) {
+		retval = php_pollfd_for(sock->socket, PHP_POLLREADABLE, ptimeout);
+
+		if (retval == 0)
+			sock->timeout_event = 1;
+
+		if (retval >= 0)
+			break;
+
+		if (php_socket_errno() != EINTR)
+			break;
+	}
+}
+
 static size_t php_openssl_sockop_read(php_stream *stream, char *buf, size_t count TSRMLS_DC)
 {
 	php_openssl_netstream_data_t *sslsock = (php_openssl_netstream_data_t*)stream->abstract;
@@ -213,6 +243,13 @@ static size_t php_openssl_sockop_read(php_stream *stream, char *buf, size_t coun
 		int retry = 1;
 
 		do {
+			if (sslsock->s.is_blocked) {
+				php_openssl_stream_wait_for_data(stream, &(sslsock->s) TSRMLS_CC);
+				if (sslsock->s.timeout_event) {
+					break;
+				}
+				/* there is no guarantee that there is application data available but something is there */
+			}
 			nr_bytes = SSL_read(sslsock->ssl_handle, buf, count);
 
 			if (nr_bytes <= 0) {
@@ -329,9 +366,14 @@ static inline int php_openssl_setup_crypto(php_stream *stream,
 			method = SSLv23_client_method();
 			break;
 		case STREAM_CRYPTO_METHOD_SSLv2_CLIENT:
+#ifdef OPENSSL_NO_SSL2
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "SSLv2 support is not compiled into the OpenSSL library PHP is linked against");
+			return -1;
+#else
 			sslsock->is_client = 1;
 			method = SSLv2_client_method();
 			break;
+#endif
 		case STREAM_CRYPTO_METHOD_SSLv3_CLIENT:
 			sslsock->is_client = 1;
 			method = SSLv3_client_method();
@@ -349,9 +391,14 @@ static inline int php_openssl_setup_crypto(php_stream *stream,
 			method = SSLv3_server_method();
 			break;
 		case STREAM_CRYPTO_METHOD_SSLv2_SERVER:
+#ifdef OPENSSL_NO_SSL2
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "SSLv2 support is not compiled into the OpenSSL library PHP is linked against");
+			return -1;
+#else
 			sslsock->is_client = 0;
 			method = SSLv2_server_method();
 			break;
+#endif
 		case STREAM_CRYPTO_METHOD_TLS_SERVER:
 			sslsock->is_client = 0;
 			method = TLSv1_server_method();
@@ -505,6 +552,7 @@ static inline int php_openssl_enable_crypto(php_stream *stream,
 
 			if (FAILURE == php_openssl_apply_verification_policy(sslsock->ssl_handle, peer_cert, stream TSRMLS_CC)) {
 				SSL_shutdown(sslsock->ssl_handle);
+				n = -1;
 			} else {	
 				sslsock->ssl_active = 1;
 
@@ -912,8 +960,13 @@ php_stream *php_openssl_ssl_socket_factory(const char *proto, long protolen,
 		sslsock->enable_on_connect = 1;
 		sslsock->method = STREAM_CRYPTO_METHOD_SSLv23_CLIENT;
 	} else if (strncmp(proto, "sslv2", protolen) == 0) {
+#ifdef OPENSSL_NO_SSL2
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "SSLv2 support is not compiled into the OpenSSL library PHP is linked against");
+		return NULL;
+#else
 		sslsock->enable_on_connect = 1;
 		sslsock->method = STREAM_CRYPTO_METHOD_SSLv2_CLIENT;
+#endif
 	} else if (strncmp(proto, "sslv3", protolen) == 0) {
 		sslsock->enable_on_connect = 1;
 		sslsock->method = STREAM_CRYPTO_METHOD_SSLv3_CLIENT;

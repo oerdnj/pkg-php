@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: wddx.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: wddx.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -141,7 +141,7 @@ const zend_function_entry wddx_functions[] = {
 	PHP_FE(wddx_packet_end,		arginfo_wddx_packet_end)
 	PHP_FE(wddx_add_vars,		arginfo_wddx_add_vars)
 	PHP_FE(wddx_deserialize,	arginfo_wddx_deserialize)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 

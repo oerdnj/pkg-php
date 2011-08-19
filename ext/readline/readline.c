@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: readline.c 307343 2011-01-10 18:19:02Z iliaa $ */
+/* $Id: readline.c 313831 2011-07-28 10:42:45Z pajoye $ */
 
 /* {{{ includes & prototypes */
 
@@ -143,7 +143,7 @@ static const zend_function_entry php_readline_functions[] = {
 	PHP_FE(readline_redisplay, arginfo_readline_redisplay)
 	PHP_FE(readline_on_new_line, arginfo_readline_on_new_line)
 #endif
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 zend_module_entry readline_module_entry = { 
@@ -465,6 +465,9 @@ static char **_readline_completion_cb(const char *text, int start, int end)
 				matches = rl_completion_matches(text,_readline_command_generator);
 			} else {
 				matches = malloc(sizeof(char *) * 2);
+				if (!matches) {
+					return NULL;
+				}
 				matches[0] = strdup("");
 				matches[1] = '\0';
 			}
@@ -505,7 +508,10 @@ PHP_FUNCTION(readline_completion_function)
 	zval_copy_ctor(_readline_completion);
 
 	rl_attempted_completion_function = _readline_completion_cb;
-
+	if (rl_attempted_completion_function == NULL) {
+		efree(name);
+		RETURN_FALSE;
+	}
 	RETURN_TRUE;
 }
 

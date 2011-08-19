@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: filter.c 307922 2011-02-01 18:10:35Z cataphract $ */
+/* $Id: filter.c 314641 2011-08-09 12:16:58Z laruence $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -270,7 +270,7 @@ PHPAPI php_stream_filter *php_stream_filter_create(const char *filtername, zval 
 		period = wildname + (period - filtername);
 		while (period && !filter) {
 			*period = '\0';
-			strcat(wildname, ".*");
+			strncat(wildname, ".*", 2);
 			if (SUCCESS == zend_hash_find(filter_hash, wildname, strlen(wildname) + 1, (void**)&factory)) {
 				filter = factory->create_filter(filtername, filterparams, persistent TSRMLS_CC);
 			}

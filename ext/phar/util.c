@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: util.c 306941 2011-01-01 02:48:19Z felipe $ */
+/* $Id: util.c 314419 2011-08-07 11:13:27Z laruence $ */
 
 #include "phar_internal.h"
 #ifdef PHAR_HASH_OK
@@ -153,6 +153,9 @@ int phar_seek_efp(phar_entry_info *entry, off_t offset, int whence, off_t positi
 			break;
 		case SEEK_SET:
 			temp = eoffset + offset;
+			break;
+		default:
+			temp = 0;
 			break;
 	}
 
@@ -1203,7 +1206,7 @@ int phar_get_archive(phar_archive_data **archive, char *fname, int fname_len, ch
 	phar_archive_data *fd, **fd_ptr;
 	char *my_realpath, *save;
 	int save_len;
-	ulong fhash, ahash;
+	ulong fhash, ahash = 0;
 
 	phar_request_initialize(TSRMLS_C);
 

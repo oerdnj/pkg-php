@@ -1,6 +1,9 @@
 
 	/* $Id: fpm_request.c,v 1.9.2.1 2008/11/15 00:57:24 anight Exp $ */
 	/* (c) 2007,2008 Andrei Nigmatulin */
+#ifdef HAVE_TIMES
+#include <sys/times.h>
+#endif
 
 #include "fpm_config.h"
 
@@ -13,147 +16,247 @@
 #include "fpm_php_trace.h"
 #include "fpm_process_ctl.h"
 #include "fpm_children.h"
-#include "fpm_shm_slots.h"
+#include "fpm_scoreboard.h"
 #include "fpm_status.h"
 #include "fpm_request.h"
+#include "fpm_log.h"
 
 #include "zlog.h"
 
 void fpm_request_accepting() /* {{{ */
 {
-	struct fpm_shm_slot_s *slot;
+	struct fpm_scoreboard_proc_s *proc;
+	struct timeval now;
 
-	slot = fpm_shm_slots_acquire(0, 0);
-	slot->request_stage = FPM_REQUEST_ACCEPTING;
-	fpm_clock_get(&slot->tv);
-	memset(slot->request_uri, 0, sizeof(slot->request_uri));
-	memset(slot->request_method, 0, sizeof(slot->request_method));
-	slot->content_length = 0;
-	memset(slot->script_filename, 0, sizeof(slot->script_filename));
-	fpm_shm_slots_release(slot);
+	fpm_clock_get(&now);
+
+	proc = fpm_scoreboard_proc_acquire(NULL, -1, 0);
+	if (proc == NULL) {
+		zlog(ZLOG_WARNING, "unable to acquire proc scoreboard");
+		return;
+	}
+
+	proc->request_stage = FPM_REQUEST_ACCEPTING;
+	proc->tv = now;
+	proc->request_uri[0] = '\0';
+	proc->request_method[0] = '\0';
+	proc->script_filename[0] = '\0';
+	proc->content_length = 0;
+	fpm_scoreboard_proc_release(proc);
+
+	/* idle++, active-- */
+	fpm_scoreboard_update(1, -1, 0, 0, 0, 0, FPM_SCOREBOARD_ACTION_INC, NULL);
 }
 /* }}} */
 
 void fpm_request_reading_headers() /* {{{ */
 {
-	struct fpm_shm_slot_s *slot;
+	struct fpm_scoreboard_proc_s *proc;
 
-	slot = fpm_shm_slots_acquire(0, 0);
-	slot->request_stage = FPM_REQUEST_READING_HEADERS;
-	fpm_clock_get(&slot->tv);
-	slot->accepted = slot->tv;
-	fpm_shm_slots_release(slot);
+	struct timeval now;
+	clock_t now_epoch;
+#ifdef HAVE_TIMES
+	struct tms cpu;
+#endif
 
-	fpm_status_increment_accepted_conn(fpm_status_shm);
+	fpm_clock_get(&now);
+	now_epoch = time(NULL);
+#ifdef HAVE_TIMES
+	times(&cpu);
+#endif
+
+	proc = fpm_scoreboard_proc_acquire(NULL, -1, 0);
+	if (proc == NULL) {
+		zlog(ZLOG_WARNING, "unable to acquire proc scoreboard");
+		return;
+	}
+
+	proc->request_stage = FPM_REQUEST_READING_HEADERS;
+	proc->tv = now;
+	proc->accepted = now;
+	proc->accepted_epoch = now_epoch;
+#ifdef HAVE_TIMES
+	proc->cpu_accepted = cpu;
+#endif
+	fpm_scoreboard_proc_release(proc);
+
+	/* idle--, active++, request++ */
+	fpm_scoreboard_update(-1, 1, 0, 0, 1, 0, FPM_SCOREBOARD_ACTION_INC, NULL);
 }
 /* }}} */
 
 void fpm_request_info() /* {{{ */
 {
 	TSRMLS_FETCH();
-	struct fpm_shm_slot_s *slot;
+	struct fpm_scoreboard_proc_s *proc;
 	char *request_uri = fpm_php_request_uri(TSRMLS_C);
 	char *request_method = fpm_php_request_method(TSRMLS_C);
 	char *script_filename = fpm_php_script_filename(TSRMLS_C);
+	char *query_string = fpm_php_query_string(TSRMLS_C);
+	char *auth_user = fpm_php_auth_user(TSRMLS_C);
+	size_t content_length = fpm_php_content_length(TSRMLS_C);
+	struct timeval now;
 
-	slot = fpm_shm_slots_acquire(0, 0);
-	slot->request_stage = FPM_REQUEST_INFO;
-	fpm_clock_get(&slot->tv);
+	fpm_clock_get(&now);
+
+	proc = fpm_scoreboard_proc_acquire(NULL, -1, 0);
+	if (proc == NULL) {
+		zlog(ZLOG_WARNING, "unable to acquire proc scoreboard");
+		return;
+	}
+
+	proc->request_stage = FPM_REQUEST_INFO;
+	proc->tv = now;
 
 	if (request_uri) {
-		strlcpy(slot->request_uri, request_uri, sizeof(slot->request_uri));
+		strlcpy(proc->request_uri, request_uri, sizeof(proc->request_uri));
 	}
 
 	if (request_method) {
-		strlcpy(slot->request_method, request_method, sizeof(slot->request_method));
+		strlcpy(proc->request_method, request_method, sizeof(proc->request_method));
 	}
 
-	slot->content_length = fpm_php_content_length(TSRMLS_C);
+	if (query_string) {
+		strlcpy(proc->query_string, query_string, sizeof(proc->query_string));
+	}
+
+	if (auth_user) {
+		strlcpy(proc->auth_user, auth_user, sizeof(proc->auth_user));
+	}
+
+	proc->content_length = content_length;
 
 	/* if cgi.fix_pathinfo is set to "1" and script cannot be found (404)
 		the sapi_globals.request_info.path_translated is set to NULL */
 	if (script_filename) {
-		strlcpy(slot->script_filename, script_filename, sizeof(slot->script_filename));
+		strlcpy(proc->script_filename, script_filename, sizeof(proc->script_filename));
 	}
 
-	fpm_shm_slots_release(slot);
+	fpm_scoreboard_proc_release(proc);
 }
 /* }}} */
 
 void fpm_request_executing() /* {{{ */
 {
-	struct fpm_shm_slot_s *slot;
+	struct fpm_scoreboard_proc_s *proc;
+	struct timeval now;
 
-	slot = fpm_shm_slots_acquire(0, 0);
-	slot->request_stage = FPM_REQUEST_EXECUTING;
-	fpm_clock_get(&slot->tv);
-	fpm_shm_slots_release(slot);
+	fpm_clock_get(&now);
+
+	proc = fpm_scoreboard_proc_acquire(NULL, -1, 0);
+	if (proc == NULL) {
+		zlog(ZLOG_WARNING, "unable to acquire proc scoreboard");
+		return;
+	}
+
+	proc->request_stage = FPM_REQUEST_EXECUTING;
+	proc->tv = now;
+	fpm_scoreboard_proc_release(proc);
+}
+/* }}} */
+
+void fpm_request_end(TSRMLS_D) /* {{{ */
+{
+	struct fpm_scoreboard_proc_s *proc;
+	struct timeval now;
+#ifdef HAVE_TIMES
+	struct tms cpu;
+#endif
+	size_t memory = zend_memory_peak_usage(1 TSRMLS_CC);
+
+	fpm_clock_get(&now);
+#ifdef HAVE_TIMES
+	times(&cpu);
+#endif
+
+	proc = fpm_scoreboard_proc_acquire(NULL, -1, 0);
+	if (proc == NULL) {
+		zlog(ZLOG_WARNING, "unable to acquire proc scoreboard");
+		return;
+	}
+	proc->request_stage = FPM_REQUEST_FINISHED;
+	proc->tv = now;
+#ifdef HAVE_TIMES
+	proc->cpu_finished = cpu;
+	timersub(&proc->tv, &proc->accepted, &proc->cpu_duration);
+#endif
+	proc->memory = memory;
+	fpm_scoreboard_proc_release(proc);
 }
 /* }}} */
 
 void fpm_request_finished() /* {{{ */
 {
-	struct fpm_shm_slot_s *slot;
+	struct fpm_scoreboard_proc_s *proc;
+	struct timeval now;
 
-	slot = fpm_shm_slots_acquire(0, 0);
-	slot->request_stage = FPM_REQUEST_FINISHED;
-	fpm_clock_get(&slot->tv);
-	memset(&slot->accepted, 0, sizeof(slot->accepted));
-	fpm_shm_slots_release(slot);
+	fpm_clock_get(&now);
+
+	proc = fpm_scoreboard_proc_acquire(NULL, -1, 0);
+	if (proc == NULL) {
+		zlog(ZLOG_WARNING, "unable to acquire proc scoreboard");
+		return;
+	}
+
+	proc->request_stage = FPM_REQUEST_FINISHED;
+	proc->tv = now;
+	memset(&proc->accepted, 0, sizeof(proc->accepted));
+	proc->accepted_epoch = 0;
+	fpm_scoreboard_proc_release(proc);
 }
 /* }}} */
 
 void fpm_request_check_timed_out(struct fpm_child_s *child, struct timeval *now, int terminate_timeout, int slowlog_timeout) /* {{{ */
 {
-	struct fpm_shm_slot_s *slot;
-	struct fpm_shm_slot_s slot_c;
+	struct fpm_scoreboard_proc_s proc, *proc_p;
 
-	slot = fpm_shm_slot(child);
-	if (!fpm_shm_slots_acquire(slot, 1)) {
+	proc_p = fpm_scoreboard_proc_acquire(child->wp->scoreboard, child->scoreboard_i, 1);
+	if (!proc_p) {
+		zlog(ZLOG_WARNING, "unable to acquire scoreboard");
 		return;
 	}
 
-	slot_c = *slot;
-	fpm_shm_slots_release(slot);
+	proc = *proc_p;
+	fpm_scoreboard_proc_release(proc_p);
 
 #if HAVE_FPM_TRACE
 	if (child->slow_logged.tv_sec) {
-		if (child->slow_logged.tv_sec != slot_c.accepted.tv_sec || child->slow_logged.tv_usec != slot_c.accepted.tv_usec) {
+		if (child->slow_logged.tv_sec != proc.accepted.tv_sec || child->slow_logged.tv_usec != proc.accepted.tv_usec) {
 			child->slow_logged.tv_sec = 0;
 			child->slow_logged.tv_usec = 0;
 		}
 	}
 #endif
 
-	if (slot_c.request_stage > FPM_REQUEST_ACCEPTING && slot_c.request_stage < FPM_REQUEST_FINISHED) {
-		char purified_script_filename[sizeof(slot_c.script_filename)];
+	if (proc.request_stage > FPM_REQUEST_ACCEPTING && proc.request_stage < FPM_REQUEST_END) {
+		char purified_script_filename[sizeof(proc.script_filename)];
 		struct timeval tv;
 
-		timersub(now, &slot_c.accepted, &tv);
+		timersub(now, &proc.accepted, &tv);
 
 #if HAVE_FPM_TRACE
 		if (child->slow_logged.tv_sec == 0 && slowlog_timeout &&
-				slot_c.request_stage == FPM_REQUEST_EXECUTING && tv.tv_sec >= slowlog_timeout) {
+				proc.request_stage == FPM_REQUEST_EXECUTING && tv.tv_sec >= slowlog_timeout) {
 			
-			str_purify_filename(purified_script_filename, slot_c.script_filename, sizeof(slot_c.script_filename));
+			str_purify_filename(purified_script_filename, proc.script_filename, sizeof(proc.script_filename));
 
-			child->slow_logged = slot_c.accepted;
+			child->slow_logged = proc.accepted;
 			child->tracer = fpm_php_trace;
 
 			fpm_trace_signal(child->pid);
 
 			zlog(ZLOG_WARNING, "[pool %s] child %d, script '%s' (request: \"%s %s\") executing too slow (%d.%06d sec), logging",
-				child->wp->config->name, (int) child->pid, purified_script_filename, slot_c.request_method, slot_c.request_uri,
+				child->wp->config->name, (int) child->pid, purified_script_filename, proc.request_method, proc.request_uri,
 				(int) tv.tv_sec, (int) tv.tv_usec);
 		}
 		else
 #endif
 		if (terminate_timeout && tv.tv_sec >= terminate_timeout) {
-			str_purify_filename(purified_script_filename, slot_c.script_filename, sizeof(slot_c.script_filename));
+			str_purify_filename(purified_script_filename, proc.script_filename, sizeof(proc.script_filename));
 			fpm_pctl_kill(child->pid, FPM_PCTL_TERM);
 
 			zlog(ZLOG_WARNING, "[pool %s] child %d, script '%s' (request: \"%s %s\") execution timed out (%d.%06d sec), terminating",
-				child->wp->config->name, (int) child->pid, purified_script_filename, slot_c.request_method, slot_c.request_uri,
+				child->wp->config->name, (int) child->pid, purified_script_filename, proc.request_method, proc.request_uri,
 				(int) tv.tv_sec, (int) tv.tv_usec);
 		}
 	}
@@ -162,11 +265,14 @@ void fpm_request_check_timed_out(struct fpm_child_s *child, struct timeval *now,
 
 int fpm_request_is_idle(struct fpm_child_s *child) /* {{{ */
 {
-	struct fpm_shm_slot_s slot;
+	struct fpm_scoreboard_proc_s *proc;
 
 	/* no need in atomicity here */
-	slot = *fpm_shm_slot(child);
+	proc = fpm_scoreboard_proc_get(child->wp->scoreboard, child->scoreboard_i);
+	if (!proc) {
+		return 0;
+	}
 
-	return slot.request_stage == FPM_REQUEST_ACCEPTING;
+	return proc->request_stage == FPM_REQUEST_ACCEPTING;
 }
 /* }}} */

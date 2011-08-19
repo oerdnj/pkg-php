@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_API.c 307424 2011-01-12 22:17:10Z felipe $ */
+/* $Id: zend_API.c 314352 2011-08-06 01:22:27Z felipe $ */
 
 #include "zend.h"
 #include "zend_execute.h"
@@ -941,6 +941,7 @@ ZEND_API int zend_parse_method_parameters_ex(int flags, int num_args TSRMLS_DC, 
 				zend_error(E_CORE_ERROR, "%s::%s() must be derived from %s::%s",
 					ce->name, get_active_function_name(TSRMLS_C), Z_OBJCE_P(this_ptr)->name, get_active_function_name(TSRMLS_C));
 			}
+			va_end(va);
 			return FAILURE;
 		}
 
@@ -2082,6 +2083,22 @@ ZEND_API int zend_get_module_started(const char *module_name) /* {{{ */
 }
 /* }}} */
 
+static int clean_module_class(const zend_class_entry **ce, int *module_number TSRMLS_DC) /* {{{ */
+{
+	if ((*ce)->type == ZEND_INTERNAL_CLASS && (*ce)->module->module_number == *module_number) {
+		return ZEND_HASH_APPLY_REMOVE;
+	} else {
+		return ZEND_HASH_APPLY_KEEP;
+	}
+}
+/* }}} */
+
+static void clean_module_classes(int module_number TSRMLS_DC) /* {{{ */
+{
+	zend_hash_apply_with_argument(EG(class_table), (apply_func_arg_t) clean_module_class, (void *) &module_number TSRMLS_CC);
+}
+/* }}} */
+
 void module_destructor(zend_module_entry *module) /* {{{ */
 {
 	TSRMLS_FETCH();
@@ -2089,6 +2106,7 @@ void module_destructor(zend_module_entry *module) /* {{{ */
 	if (module->type == MODULE_TEMPORARY) {
 		zend_clean_module_rsrc_dtors(module->module_number TSRMLS_CC);
 		clean_module_constants(module->module_number TSRMLS_CC);
+		clean_module_classes(module->module_number TSRMLS_CC);
 	}
 
 	if (module->module_started && module->module_shutdown_func) {
@@ -2290,7 +2308,7 @@ ZEND_API ZEND_FUNCTION(display_disabled_function)
 
 static zend_function_entry disabled_function[] = {
 	ZEND_FE(display_disabled_function,			NULL)
-	{ NULL, NULL, NULL }
+	ZEND_FE_END
 };
 
 ZEND_API int zend_disable_function(char *function_name, uint function_name_length TSRMLS_DC) /* {{{ */
@@ -2316,7 +2334,7 @@ static zend_object_value display_disabled_class(zend_class_entry *class_type TSR
 /* }}} */
 
 static const zend_function_entry disabled_class_new[] = {
-	{ NULL, NULL, NULL }
+	ZEND_FE_END
 };
 
 ZEND_API int zend_disable_class(char *class_name, uint class_name_length TSRMLS_DC) /* {{{ */
@@ -2573,6 +2591,11 @@ get_function_via_handler:
 			if (fcc->function_handler) {
 				retval = 1;
 				call_via_handler = (fcc->function_handler->common.fn_flags & ZEND_ACC_CALL_VIA_HANDLER) != 0;
+				if (call_via_handler && !fcc->object_ptr && EG(This) &&
+				    Z_OBJ_HT_P(EG(This))->get_class_entry &&
+				    instanceof_function(Z_OBJCE_P(EG(This)), fcc->calling_scope TSRMLS_CC)) {
+					fcc->object_ptr = EG(This);
+				}
 			}
 		}
 	}

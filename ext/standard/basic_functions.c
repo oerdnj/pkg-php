@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: basic_functions.c 308127 2011-02-08 16:29:34Z cataphract $ */
+/* $Id: basic_functions.c 314452 2011-08-08 00:47:40Z laruence $ */
 
 #include "php.h"
 #include "php_streams.h"
@@ -3360,7 +3360,7 @@ const zend_function_entry basic_functions[] = { /* {{{ */
 
 	PHP_FE(sys_get_temp_dir,												arginfo_sys_get_temp_dir)
 
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 
@@ -3401,7 +3401,7 @@ PHP_INI_END()
 
 static const zend_module_dep standard_deps[] = { /* {{{ */
 	ZEND_MOD_OPTIONAL("session")
-	{NULL, NULL, NULL}
+	ZEND_MOD_END
 };
 /* }}} */
 
@@ -3803,6 +3803,7 @@ PHP_RSHUTDOWN_FUNCTION(basic) /* {{{ */
 	}
 
 	PHP_RSHUTDOWN(user_filters)(SHUTDOWN_FUNC_ARGS_PASSTHRU);
+	PHP_RSHUTDOWN(browscap)(SHUTDOWN_FUNC_ARGS_PASSTHRU);
 
  	BG(page_uid) = -1;
  	BG(page_gid) = -1;
@@ -4257,7 +4258,8 @@ PHP_FUNCTION(getopt)
 	/* Get argv from the global symbol table. We calculate argc ourselves
 	 * in order to be on the safe side, even though it is also available
 	 * from the symbol table. */
-	if ((zend_hash_find(HASH_OF(PG(http_globals)[TRACK_VARS_SERVER]), "argv", sizeof("argv"), (void **) &args) != FAILURE ||
+	if (PG(http_globals)[TRACK_VARS_SERVER] &&
+		(zend_hash_find(HASH_OF(PG(http_globals)[TRACK_VARS_SERVER]), "argv", sizeof("argv"), (void **) &args) != FAILURE ||
 		zend_hash_find(&EG(symbol_table), "argv", sizeof("argv"), (void **) &args) != FAILURE) && Z_TYPE_PP(args) == IS_ARRAY
 	) {
 		int pos = 0;
@@ -4315,10 +4317,6 @@ PHP_FUNCTION(getopt)
 		opts += len;
 
 		memset(opts, 0, count * sizeof(opt_struct));
-
-		if (!opts) {
-			RETURN_FALSE;
-		}
 
 		/* Reset the array indexes. */
 		zend_hash_internal_pointer_reset(Z_ARRVAL_P(p_longopts));
@@ -4676,7 +4674,7 @@ PHP_FUNCTION(error_log)
 		opt_err = erropt;
 	}
 
-	if (opt_err == 3) {
+	if (opt_err == 3 && opt) {
 		if (strlen(opt) != opt_len) {
 			RETURN_FALSE;
 		}

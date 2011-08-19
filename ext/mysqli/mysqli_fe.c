@@ -17,7 +17,7 @@
   |          Ulf Wendel <uw@php.net>                                     |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_fe.c 306939 2011-01-01 02:19:59Z felipe $
+  $Id: mysqli_fe.c 313665 2011-07-25 11:42:53Z felipe $
 */
 
 #ifdef HAVE_CONFIG_H
@@ -468,7 +468,7 @@ const zend_function_entry mysqli_functions[] = {
 	PHP_FALIAS(mysqli_send_long_data,	mysqli_stmt_send_long_data,	NULL)
 	PHP_FALIAS(mysqli_set_opt,			mysqli_options,				NULL)
 
-	{NULL, NULL, NULL}	/* Must be the last line in mysqli_functions[] */
+	PHP_FE_END
 };
 /* }}} */
 

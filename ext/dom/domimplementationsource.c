@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: domimplementationsource.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: domimplementationsource.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -48,7 +48,7 @@ ZEND_END_ARG_INFO();
 const zend_function_entry php_dom_domimplementationsource_class_functions[] = {
 	PHP_FALIAS(getDomimplementation, dom_domimplementationsource_get_domimplementation, arginfo_dom_implementationsource_getdomimplementation)
 	PHP_FALIAS(getDomimplementations, dom_domimplementationsource_get_domimplementations, arginfo_dom_implementationsource_getdomimplementations)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 /* {{{ attribute protos, not implemented yet */

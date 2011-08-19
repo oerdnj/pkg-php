@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: snmp.c 307876 2011-01-31 11:34:12Z lytboris $ */
+/* $Id: snmp.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -331,7 +331,7 @@ const zend_function_entry snmp_functions[] = {
 	PHP_FE(snmp_get_valueretrieval, arginfo_snmp_get_valueretrieval)
 
 	PHP_FE(snmp_read_mib, 			arginfo_snmp_read_mib)
-	{NULL,NULL,NULL}
+	PHP_FE_END
 };
 /* }}} */
 
@@ -1160,7 +1160,7 @@ PHP_FUNCTION(snmp2_set)
 /* {{{ proto void php_snmpv3(INTERNAL_FUNCTION_PARAMETERS, int st)
 *
 * Generic SNMPv3 object fetcher
-* From here is passed on the the common internal object fetcher.
+* From here is passed on the common internal object fetcher.
 *
 * st=SNMP_CMD_GET   snmp3_get() - query an agent and return a single value.
 * st=SNMP_CMD_GETNEXT   snmp3_getnext() - query an agent and return the next single value.

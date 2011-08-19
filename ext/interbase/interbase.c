@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: interbase.c 308618 2011-02-24 02:42:38Z felipe $ */
+/* $Id: interbase.c 313830 2011-07-28 10:39:19Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -441,7 +441,7 @@ const zend_function_entry ibase_functions[] = {
 	PHP_FALIAS(fbird_wait_event,	ibase_wait_event, 	arginfo_ibase_wait_event)
 	PHP_FALIAS(fbird_set_event_handler,	ibase_set_event_handler, 	arginfo_ibase_set_event_handler)
 	PHP_FALIAS(fbird_free_event_handler,	ibase_free_event_handler, arginfo_ibase_free_event_handler)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 zend_module_entry ibase_module_entry = {
@@ -998,9 +998,12 @@ static void _php_ibase_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent) /* 
 			ZEND_REGISTER_RESOURCE(return_value, ib_link, le_link);
 		} else {
 			zend_rsrc_list_entry new_le;
-			
+
 			ib_link = (ibase_db_link *) malloc(sizeof(ibase_db_link));
-	
+			if (!ib_link) {
+				RETURN_FALSE;
+			}
+
 			/* hash it up */
 			Z_TYPE(new_le) = le_plink;
 			new_le.ptr = ib_link;

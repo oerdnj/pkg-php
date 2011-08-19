@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: sqlite3.c 307203 2011-01-07 01:11:16Z felipe $ */
+/* $Id: sqlite3.c 314749 2011-08-10 15:30:07Z iliaa $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -89,7 +89,7 @@ zend_class_entry *php_sqlite3_sc_entry;
 zend_class_entry *php_sqlite3_stmt_entry;
 zend_class_entry *php_sqlite3_result_entry;
 
-/* {{{ proto bool SQLite3::open(String filename [, int Flags [, string Encryption Key]])
+/* {{{ proto void SQLite3::open(String filename [, int Flags [, string Encryption Key]])
    Opens a SQLite 3 Database, if the build includes encryption then it will attempt to use the key. */
 PHP_METHOD(sqlite3, open)
 {
@@ -1816,7 +1816,7 @@ static zend_function_entry php_sqlite3_class_methods[] = {
 	PHP_ME(sqlite3,		enableExceptions,	argingo_sqlite3_enableexceptions, ZEND_ACC_PUBLIC)
 	/* Aliases */
 	PHP_MALIAS(sqlite3,	__construct, open, arginfo_sqlite3_open, ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 
@@ -1831,7 +1831,7 @@ static zend_function_entry php_sqlite3_stmt_class_methods[] = {
 	PHP_ME(sqlite3stmt, bindValue,	arginfo_sqlite3stmt_bindvalue, ZEND_ACC_PUBLIC)
 	PHP_ME(sqlite3stmt, readOnly,	arginfo_sqlite3_void, ZEND_ACC_PUBLIC)
 	PHP_ME(sqlite3stmt, __construct, arginfo_sqlite3stmt_construct, ZEND_ACC_PRIVATE|ZEND_ACC_CTOR)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 
@@ -1844,7 +1844,7 @@ static zend_function_entry php_sqlite3_result_class_methods[] = {
 	PHP_ME(sqlite3result, reset,			arginfo_sqlite3_void, ZEND_ACC_PUBLIC)
 	PHP_ME(sqlite3result, finalize,			arginfo_sqlite3_void, ZEND_ACC_PUBLIC)
 	PHP_ME(sqlite3result, __construct, 		arginfo_sqlite3_void, ZEND_ACC_PRIVATE|ZEND_ACC_CTOR)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 
@@ -2006,7 +2006,7 @@ static zend_object_value php_sqlite3_object_new(zend_class_entry *class_type TSR
 
 	/* Allocate memory for it */
 	intern = emalloc(sizeof(php_sqlite3_db_object));
-	memset(&intern->zo, 0, sizeof(php_sqlite3_db_object));
+	memset(intern, 0, sizeof(php_sqlite3_db_object));
 	intern->exception = 0;
 
 	/* Need to keep track of things to free */
@@ -2030,7 +2030,7 @@ static zend_object_value php_sqlite3_stmt_object_new(zend_class_entry *class_typ
 
 	/* Allocate memory for it */
 	intern = emalloc(sizeof(php_sqlite3_stmt));
-	memset(&intern->zo, 0, sizeof(php_sqlite3_stmt));
+	memset(intern, 0, sizeof(php_sqlite3_stmt));
 
 	intern->db_obj_zval = NULL;
 
@@ -2052,7 +2052,7 @@ static zend_object_value php_sqlite3_result_object_new(zend_class_entry *class_t
 
 	/* Allocate memory for it */
 	intern = emalloc(sizeof(php_sqlite3_result));
-	memset(&intern->zo, 0, sizeof(php_sqlite3_result));
+	memset(intern, 0, sizeof(php_sqlite3_result));
 
 	intern->complete = 0;
 	intern->is_prepared_statement = 0;

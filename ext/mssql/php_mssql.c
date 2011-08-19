@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_mssql.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: php_mssql.c 313835 2011-07-28 11:01:04Z pajoye $ */
 
 #ifdef COMPILE_DL_MSSQL
 #define HAVE_MSSQL 1
@@ -178,7 +178,7 @@ const zend_function_entry mssql_functions[] = {
  	PHP_FE(mssql_execute,				arginfo_mssql_execute)
 	PHP_FE(mssql_free_statement,		arginfo_mssql_free_statement)
  	PHP_FE(mssql_guid_string,			arginfo_mssql_guid_string)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 
@@ -685,6 +685,13 @@ static void php_mssql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 
 			/* hash it up */
 			mssql_ptr = (mssql_link *) malloc(sizeof(mssql_link));
+			if (!mssql_ptr) {
+				efree(hashed_details);
+				dbfreelogin(mssql.login);
+				dbclose(mssql.link);
+				RETURN_FALSE;
+			}
+
 			memcpy(mssql_ptr, &mssql, sizeof(mssql_link));
 			Z_TYPE(new_le) = le_plink;
 			new_le.ptr = mssql_ptr;

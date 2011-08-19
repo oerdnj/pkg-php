@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_directory.c 309035 2011-03-08 19:56:29Z felipe $ */
+/* $Id: spl_directory.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -48,6 +48,8 @@
 
 /* declare the class handlers */
 static zend_object_handlers spl_filesystem_object_handlers;
+/* includes handler to validate object state when retrieving methods */
+static zend_object_handlers spl_filesystem_object_check_handlers;
 
 /* decalre the class entry */
 PHPAPI zend_class_entry *spl_ce_SplFileInfo;
@@ -162,6 +164,16 @@ static zend_object_value spl_filesystem_object_new(zend_class_entry *class_type 
 }
 /* }}} */
 
+/* {{{ spl_filesystem_object_new_ex */
+static zend_object_value spl_filesystem_object_new_check(zend_class_entry *class_type TSRMLS_DC)
+{
+	zend_object_value ret = spl_filesystem_object_new_ex(class_type, NULL TSRMLS_CC);
+	ret.handlers = &spl_filesystem_object_check_handlers;
+	return ret;
+}
+/* }}} */
+
+
 PHPAPI char* spl_filesystem_object_get_path(spl_filesystem_object *intern, int *len TSRMLS_DC) /* {{{ */
 {
 #ifdef HAVE_GLOB
@@ -233,8 +245,12 @@ static void spl_filesystem_dir_open(spl_filesystem_object* intern, char *path TS
 	intern->u.dir.index = 0;
 
 	if (EG(exception) || intern->u.dir.dirp == NULL) {
-		/* throw exception: should've been already happened */
 		intern->u.dir.entry.d_name[0] = '\0';
+		if (!EG(exception)) {
+			/* open failed w/out notice (turned to exception due to EH_THROW) */
+			zend_throw_exception_ex(spl_ce_UnexpectedValueException, 0
+				TSRMLS_CC, "Failed to open directory \"%s\"", path);
+		}
 	} else {
 		do {
 			spl_filesystem_dir_read(intern TSRMLS_CC);
@@ -610,6 +626,19 @@ static HashTable* spl_filesystem_object_get_debug_info(zval *obj, int *is_temp T
 	}
 
 	return rv;
+}
+/* }}} */
+
+zend_function *spl_filesystem_object_get_method_check(zval **object_ptr, char *method, int method_len TSRMLS_DC) /* {{{ */
+{
+	spl_filesystem_object *fsobj = zend_object_store_get_object(*object_ptr TSRMLS_CC);
+	
+	if (fsobj->u.dir.entry.d_name[0] == '\0' && fsobj->orig_path == NULL) {
+		method = "_bad_state_ex";
+		method_len = sizeof("_bad_state_ex") - 1;
+	}
+	
+	return zend_get_std_object_handlers()->get_method(object_ptr, method, method_len TSRMLS_CC);
 }
 /* }}} */
 
@@ -1350,6 +1379,15 @@ SPL_METHOD(SplFileInfo, getPathInfo)
 }
 /* }}} */
 
+/* {{{ */
+SPL_METHOD(SplFileInfo, _bad_state_ex)
+{
+	zend_throw_exception_ex(spl_ce_LogicException, 0 TSRMLS_CC,
+		"The parent constructor was not called: the object is in an "
+		"invalid state ");
+}
+/* }}} */
+
 /* {{{ proto void FilesystemIterator::__construct(string path [, int flags])
  Cronstructs a new dir iterator from a path. */
 SPL_METHOD(FilesystemIterator, __construct)
@@ -1887,8 +1925,9 @@ static const zend_function_entry spl_SplFileInfo_functions[] = {
 	SPL_ME(SplFileInfo,       openFile,      arginfo_info_openFile,         ZEND_ACC_PUBLIC)
 	SPL_ME(SplFileInfo,       setFileClass,  arginfo_info_optinalFileClass, ZEND_ACC_PUBLIC)
 	SPL_ME(SplFileInfo,       setInfoClass,  arginfo_info_optinalFileClass, ZEND_ACC_PUBLIC)
+	SPL_ME(SplFileInfo,       _bad_state_ex, NULL,							ZEND_ACC_PUBLIC|ZEND_ACC_FINAL)
 	SPL_MA(SplFileInfo,       __toString, SplFileInfo, getPathname, arginfo_splfileinfo_void, ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 ZEND_BEGIN_ARG_INFO(arginfo_dir___construct, 0) 
@@ -1914,7 +1953,7 @@ static const zend_function_entry spl_DirectoryIterator_functions[] = {
 	SPL_ME(DirectoryIterator, next,          arginfo_splfileinfo_void, ZEND_ACC_PUBLIC)
 	SPL_ME(DirectoryIterator, seek,          arginfo_dir_it_seek, ZEND_ACC_PUBLIC)
 	SPL_MA(DirectoryIterator, __toString, DirectoryIterator, getFilename, arginfo_splfileinfo_void, ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_r_dir___construct, 0, 0, 1) 
@@ -1938,7 +1977,7 @@ static const zend_function_entry spl_FilesystemIterator_functions[] = {
 	SPL_ME(FilesystemIterator, current,       arginfo_splfileinfo_void, ZEND_ACC_PUBLIC)
 	SPL_ME(FilesystemIterator, getFlags,      arginfo_splfileinfo_void, ZEND_ACC_PUBLIC)
 	SPL_ME(FilesystemIterator, setFlags,      arginfo_r_dir_setFlags, ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 static const zend_function_entry spl_RecursiveDirectoryIterator_functions[] = {
@@ -1947,14 +1986,14 @@ static const zend_function_entry spl_RecursiveDirectoryIterator_functions[] = {
 	SPL_ME(RecursiveDirectoryIterator, getChildren,   arginfo_splfileinfo_void, ZEND_ACC_PUBLIC)
 	SPL_ME(RecursiveDirectoryIterator, getSubPath,    arginfo_splfileinfo_void, ZEND_ACC_PUBLIC)
 	SPL_ME(RecursiveDirectoryIterator, getSubPathname,arginfo_splfileinfo_void, ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 #ifdef HAVE_GLOB
 static const zend_function_entry spl_GlobIterator_functions[] = {
 	SPL_ME(GlobIterator, __construct,   arginfo_r_dir___construct, ZEND_ACC_PUBLIC)
 	SPL_ME(GlobIterator, count,         arginfo_splfileinfo_void,  ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 #endif
 /* }}} */
@@ -2205,15 +2244,22 @@ SPL_METHOD(SplFileObject, __construct)
 
 	zend_replace_error_handling(EH_THROW, spl_ce_RuntimeException, &error_handling TSRMLS_CC);
 
-	intern->u.file.open_mode = "r";
-	intern->u.file.open_mode_len = 1;
+	intern->u.file.open_mode = NULL;
+	intern->u.file.open_mode_len = 0;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|sbr", 
 			&intern->file_name, &intern->file_name_len,
 			&intern->u.file.open_mode, &intern->u.file.open_mode_len, 
-			&use_include_path, &intern->u.file.zcontext) == FAILURE) {
+			&use_include_path, &intern->u.file.zcontext) == FAILURE) {		
+		intern->u.file.open_mode = NULL;
+		intern->file_name = NULL;
 		zend_restore_error_handling(&error_handling TSRMLS_CC);
 		return;
+	}
+	
+	if (intern->u.file.open_mode == NULL) {
+		intern->u.file.open_mode = "r";
+		intern->u.file.open_mode_len = 1;
 	}
 	
 	if (spl_filesystem_file_open(intern, use_include_path, 0 TSRMLS_CC) == SUCCESS) {
@@ -2862,7 +2908,7 @@ static const zend_function_entry spl_SplFileObject_functions[] = {
 	/* mappings */
 	SPL_MA(SplFileObject, getCurrentLine, SplFileObject, fgets,      arginfo_splfileinfo_void, ZEND_ACC_PUBLIC)
 	SPL_MA(SplFileObject, __toString,     SplFileObject, current,    arginfo_splfileinfo_void, ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_temp_file_object___construct, 0, 0, 0)
@@ -2871,7 +2917,7 @@ ZEND_END_ARG_INFO()
 
 static const zend_function_entry spl_SplTempFileObject_functions[] = {
 	SPL_ME(SplTempFileObject, __construct, arginfo_temp_file_object___construct,  ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 
@@ -2911,13 +2957,16 @@ PHP_MINIT_FUNCTION(spl_directory)
 
 	REGISTER_SPL_SUB_CLASS_EX(RecursiveDirectoryIterator, FilesystemIterator, spl_filesystem_object_new, spl_RecursiveDirectoryIterator_functions);
 	REGISTER_SPL_IMPLEMENTS(RecursiveDirectoryIterator, RecursiveIterator);
+	
+	memcpy(&spl_filesystem_object_check_handlers, &spl_filesystem_object_handlers, sizeof(zend_object_handlers));
+	spl_filesystem_object_check_handlers.get_method = spl_filesystem_object_get_method_check;
 
 #ifdef HAVE_GLOB
-	REGISTER_SPL_SUB_CLASS_EX(GlobIterator, FilesystemIterator, spl_filesystem_object_new, spl_GlobIterator_functions);
+	REGISTER_SPL_SUB_CLASS_EX(GlobIterator, FilesystemIterator, spl_filesystem_object_new_check, spl_GlobIterator_functions);
 	REGISTER_SPL_IMPLEMENTS(GlobIterator, Countable);
 #endif
 
-	REGISTER_SPL_SUB_CLASS_EX(SplFileObject, SplFileInfo, spl_filesystem_object_new, spl_SplFileObject_functions);
+	REGISTER_SPL_SUB_CLASS_EX(SplFileObject, SplFileInfo, spl_filesystem_object_new_check, spl_SplFileObject_functions);
 	REGISTER_SPL_IMPLEMENTS(SplFileObject, RecursiveIterator);
 	REGISTER_SPL_IMPLEMENTS(SplFileObject, SeekableIterator);
 
@@ -2926,7 +2975,7 @@ PHP_MINIT_FUNCTION(spl_directory)
 	REGISTER_SPL_CLASS_CONST_LONG(SplFileObject, "SKIP_EMPTY",    SPL_FILE_OBJECT_SKIP_EMPTY);
 	REGISTER_SPL_CLASS_CONST_LONG(SplFileObject, "READ_CSV",      SPL_FILE_OBJECT_READ_CSV);
 	
-	REGISTER_SPL_SUB_CLASS_EX(SplTempFileObject, SplFileObject, spl_filesystem_object_new, spl_SplTempFileObject_functions);
+	REGISTER_SPL_SUB_CLASS_EX(SplTempFileObject, SplFileObject, spl_filesystem_object_new_check, spl_SplTempFileObject_functions);
 	return SUCCESS;
 }
 /* }}} */

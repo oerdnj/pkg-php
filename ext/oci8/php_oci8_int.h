@@ -25,7 +25,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_oci8_int.h 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: php_oci8_int.h 313754 2011-07-27 00:04:23Z sixd $ */
 
 #if HAVE_OCI8
 # ifndef PHP_OCI8_INT_H
@@ -385,6 +385,7 @@ int php_oci_connection_commit(php_oci_connection * TSRMLS_DC);
 int php_oci_connection_release(php_oci_connection *connection TSRMLS_DC);
 
 int php_oci_password_change(php_oci_connection *, char *, int, char *, int, char *, int TSRMLS_DC);
+void php_oci_client_get_version(char ** TSRMLS_DC);
 int php_oci_server_get_version(php_oci_connection *, char ** TSRMLS_DC);
 
 void php_oci_fetch_row(INTERNAL_FUNCTION_PARAMETERS, int, int);
@@ -404,7 +405,7 @@ int php_oci_lob_get_buffering (php_oci_descriptor *);
 int php_oci_lob_copy (php_oci_descriptor *, php_oci_descriptor *, long TSRMLS_DC);
 int php_oci_lob_close (php_oci_descriptor * TSRMLS_DC);
 int php_oci_temp_lob_close (php_oci_descriptor * TSRMLS_DC);
-int php_oci_lob_write_tmp (php_oci_descriptor *, ub1, char *, int TSRMLS_DC);
+int php_oci_lob_write_tmp (php_oci_descriptor *, long, char *, int TSRMLS_DC);
 void php_oci_lob_free(php_oci_descriptor * TSRMLS_DC);
 int php_oci_lob_import(php_oci_descriptor *descriptor, char * TSRMLS_DC);
 int php_oci_lob_append (php_oci_descriptor *, php_oci_descriptor * TSRMLS_DC);

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute.c 309328 2011-03-17 07:46:57Z johannes $ */
+/* $Id: zend_execute.c 309342 2011-03-17 11:49:18Z johannes $ */
 
 #define ZEND_INTENSIVE_DEBUGGING 0
 
@@ -536,10 +536,22 @@ static inline void zend_assign_to_object(znode *result, zval **object_ptr, zval 
 		    (Z_TYPE_P(object) == IS_BOOL && Z_LVAL_P(object) == 0) ||
 		    (Z_TYPE_P(object) == IS_STRING && Z_STRLEN_P(object) == 0)) {
 			SEPARATE_ZVAL_IF_NOT_REF(object_ptr);
-			zval_dtor(*object_ptr);
-			object_init(*object_ptr);
 			object = *object_ptr;
+			Z_ADDREF_P(object);
 			zend_error(E_STRICT, "Creating default object from empty value");
+			if (Z_REFCOUNT_P(object) == 1) {
+				/* object was removed by error handler, nothing to assign to */
+				zval_ptr_dtor(&object);
+				if (retval) {
+					*retval = &EG(uninitialized_zval);
+					PZVAL_LOCK(*retval);
+				}
+				FREE_OP(free_value);
+				return;
+			}
+			Z_DELREF_P(object);
+			zval_dtor(object);
+			object_init(object);
 		} else {
 			zend_error(E_WARNING, "Attempt to assign property of non-object");
 			if (!RETURN_VALUE_UNUSED(result)) {

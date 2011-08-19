@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: info.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: info.c 313538 2011-07-21 14:49:55Z pajoye $ */
 
 #include "php.h"
 #include "php_ini.h"
@@ -289,7 +289,7 @@ char* php_get_windows_name()
 					major = "Windows Server 2008";
 				}
 			} else
-			if ( osvi.dwMinorVersion == 2 ) {
+			if ( osvi.dwMinorVersion == 1 ) {
 				if( osvi.wProductType == VER_NT_WORKSTATION )  {
 					major = "Windows 7";
 				} else {

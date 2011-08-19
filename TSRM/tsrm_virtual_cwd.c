@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_virtual_cwd.c 307316 2011-01-10 00:43:08Z pajoye $ */
+/* $Id: tsrm_virtual_cwd.c 311275 2011-05-19 23:18:55Z rasmus $ */
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -629,7 +629,14 @@ CWD_API void realpath_cache_del(const char *path, int path_len TSRMLS_DC) /* {{{
 					memcmp(path, (*bucket)->path, path_len) == 0) {
 			realpath_cache_bucket *r = *bucket;
 			*bucket = (*bucket)->next;
-			CWDG(realpath_cache_size) -= sizeof(realpath_cache_bucket) + r->path_len + 1 + r->realpath_len + 1;
+		   
+			/* if the pointers match then only subtract the length of the path */
+		   	if(r->path == r->realpath) {
+				CWDG(realpath_cache_size) -= sizeof(realpath_cache_bucket) + r->path_len + 1;
+			} else {
+				CWDG(realpath_cache_size) -= sizeof(realpath_cache_bucket) + r->path_len + 1 + r->realpath_len + 1;
+			}
+		   
 			free(r);
 			return;
 		} else {
@@ -704,7 +711,14 @@ static inline realpath_cache_bucket* realpath_cache_find(const char *path, int p
 		if (CWDG(realpath_cache_ttl) && (*bucket)->expires < t) {
 			realpath_cache_bucket *r = *bucket;
 			*bucket = (*bucket)->next;
-			CWDG(realpath_cache_size) -= sizeof(realpath_cache_bucket) + r->path_len + 1 + r->realpath_len + 1;
+
+			/* if the pointers match then only subtract the length of the path */		   
+		   	if(r->path == r->realpath) {
+				CWDG(realpath_cache_size) -= sizeof(realpath_cache_bucket) + r->path_len + 1;
+			} else {
+				CWDG(realpath_cache_size) -= sizeof(realpath_cache_bucket) + r->path_len + 1 + r->realpath_len + 1;
+			}
+		   
 			free(r);
 		} else if (key == (*bucket)->key && path_len == (*bucket)->path_len &&
 					memcmp(path, (*bucket)->path, path_len) == 0) {
@@ -1079,6 +1093,7 @@ static int tsrm_realpath_r(char *path, int start, int len, int *ll, time_t *t, i
 				}
 				if (is_dir && !directory) {
 					/* not a directory */
+					tsrm_free_alloca(tmp, use_heap);
 					return -1;
 				}
 			}

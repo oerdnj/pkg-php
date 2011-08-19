@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: pdo.c 314450 2011-08-07 23:46:00Z iliaa $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -125,7 +125,7 @@ ZEND_END_ARG_INFO()
 /* {{{ pdo_functions[] */
 const zend_function_entry pdo_functions[] = {
 	PHP_FE(pdo_drivers,             arginfo_pdo_drivers)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 
@@ -135,7 +135,7 @@ static const zend_module_dep pdo_deps[] = {
 #ifdef HAVE_SPL
 	ZEND_MOD_REQUIRED("spl")
 #endif
-	{NULL, NULL, NULL}
+	ZEND_MOD_END
 };
 #endif
 /* }}} */
@@ -191,7 +191,7 @@ PDO_API int php_pdo_register_driver(pdo_driver_t *driver)
 	}
 
 	return zend_hash_add(&pdo_driver_hash, (char*)driver->driver_name, driver->driver_name_len,
-			(void**)&driver, sizeof(driver), NULL);
+			(void**)&driver, sizeof(pdo_driver_t *), NULL);
 }
 
 PDO_API void php_pdo_unregister_driver(pdo_driver_t *driver)

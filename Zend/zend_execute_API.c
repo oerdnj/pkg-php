@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute_API.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: zend_execute_API.c 310938 2011-05-11 06:58:33Z dmitry $ */
 
 #include <stdio.h>
 #include <signal.h>
@@ -296,7 +296,9 @@ void shutdown_executor(TSRMLS_D) /* {{{ */
 			zend_hash_reverse_apply(EG(function_table), (apply_func_t) zend_cleanup_function_data TSRMLS_CC);
 		}
 		zend_hash_apply(EG(class_table), (apply_func_t) zend_cleanup_class_data TSRMLS_CC);
+	} zend_end_try();
 
+	zend_try {
 		zend_vm_stack_destroy(TSRMLS_C);
 
 		zend_objects_store_free_object_storage(&EG(objects_store) TSRMLS_CC);
@@ -431,26 +433,28 @@ ZEND_API zend_bool zend_is_executing(TSRMLS_D) /* {{{ */
 
 ZEND_API void _zval_ptr_dtor(zval **zval_ptr ZEND_FILE_LINE_DC) /* {{{ */
 {
+	zval *zv = *zval_ptr;
+
 #if DEBUG_ZEND>=2
 	printf("Reducing refcount for %x (%x): %d->%d\n", *zval_ptr, zval_ptr, Z_REFCOUNT_PP(zval_ptr), Z_REFCOUNT_PP(zval_ptr) - 1);
 #endif
-	Z_DELREF_PP(zval_ptr);
-	if (Z_REFCOUNT_PP(zval_ptr) == 0) {
+	Z_DELREF_P(zv);
+	if (Z_REFCOUNT_P(zv) == 0) {
 		TSRMLS_FETCH();
 
-		if (*zval_ptr != &EG(uninitialized_zval)) {
-			GC_REMOVE_ZVAL_FROM_BUFFER(*zval_ptr);
-			zval_dtor(*zval_ptr);
-			efree_rel(*zval_ptr);
+		if (zv != &EG(uninitialized_zval)) {
+			GC_REMOVE_ZVAL_FROM_BUFFER(zv);
+			zval_dtor(zv);
+			efree_rel(zv);
 		}
 	} else {
 		TSRMLS_FETCH();
 
-		if (Z_REFCOUNT_PP(zval_ptr) == 1) {
-			Z_UNSET_ISREF_PP(zval_ptr);
+		if (Z_REFCOUNT_P(zv) == 1) {
+			Z_UNSET_ISREF_P(zv);
 		}
 
-		GC_ZVAL_CHECK_POSSIBLE_ROOT(*zval_ptr);
+		GC_ZVAL_CHECK_POSSIBLE_ROOT(zv);
 	}
 }
 /* }}} */

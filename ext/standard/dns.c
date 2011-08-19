@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: dns.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: dns.c 314766 2011-08-10 17:40:56Z rasmus $ */
 
 /* {{{ includes */
 #include "php.h"
@@ -60,6 +60,16 @@
 /* Borrowed from SYS/SOCKET.H */
 #if defined(NETWARE) && defined(USE_WINSOCK)
 #define AF_INET 2   /* internetwork: UDP, TCP, etc. */
+#endif
+
+#ifndef MAXHOSTNAMELEN
+#define MAXHOSTNAMELEN 255
+#endif
+
+/* For the local hostname obtained via gethostname which is different from the
+   dns-related MAXHOSTNAMELEN constant above */
+#ifndef HOST_NAME_MAX
+#define HOST_NAME_MAX 255
 #endif
 
 #include "php_dns.h"
@@ -118,7 +128,7 @@ static char *php_gethostbyname(char *name);
    Get the host name of the current machine */
 PHP_FUNCTION(gethostname)
 {
-	char buf[4096];
+	char buf[HOST_NAME_MAX];
 
 	if (zend_parse_parameters_none() == FAILURE) {
 		return;
@@ -794,12 +804,14 @@ PHP_FUNCTION(dns_get_record)
 #if defined(HAVE_DNS_SEARCH)
 			handle = dns_open(NULL);
 			if (handle == NULL) {
+				zval_dtor(return_value);
 				RETURN_FALSE;
 			}
 #elif defined(HAVE_RES_NSEARCH)
 		    memset(&state, 0, sizeof(state));
 		    if (res_ninit(handle)) {
-					RETURN_FALSE;
+		    	zval_dtor(return_value);
+				RETURN_FALSE;
 			}
 #else
 			res_init();

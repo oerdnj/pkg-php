@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: lsapilib.c 306212 2010-12-10 22:51:08Z gwang $ */
+/* $Id: lsapilib.c 311935 2011-06-08 16:51:59Z gwang $ */
 
 /*
 Copyright (c) 2007, Lite Speed Technologies Inc.
@@ -1453,7 +1453,7 @@ int LSAPI_ParseSockAddr( const char * pBind, struct sockaddr * pAddr )
         return -1;
     }
 
-    while( isspace( *p ) ) {
+    while( isspace( *pBind ) ) {
         ++pBind;
     }
 
@@ -1509,7 +1509,7 @@ int LSAPI_ParseSockAddr( const char * pBind, struct sockaddr * pAddr )
     }
         
     port = atoi( pEnd );
-    if (( port <= 0 )||( port > 655535 )) {
+    if (( port <= 0 )||( port > 65535 )) {
         return -1;
     }
     if ( doAddrInfo ) {

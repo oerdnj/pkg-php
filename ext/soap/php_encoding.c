@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_encoding.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: php_encoding.c 314737 2011-08-10 13:44:48Z dmitry $ */
 
 #include <time.h>
 
@@ -110,6 +110,26 @@ static void set_ns_and_type(xmlNodePtr node, encodeTypePtr type);
 			if (null) { \
 				ZVAL_NULL(zval); \
 				return zval; \
+			} \
+		} \
+	}
+
+#define CHECK_XML_NULL(xml) \
+	{ \
+		xmlAttrPtr null; \
+		if (!xml) { \
+			zval *ret; \
+			ALLOC_INIT_ZVAL(ret); \
+			ZVAL_NULL(ret); \
+			return ret; \
+		} \
+		if (xml->properties) { \
+			null = get_attribute(xml->properties, "nil"); \
+			if (null) { \
+				zval *ret; \
+				ALLOC_INIT_ZVAL(ret); \
+				ZVAL_NULL(ret); \
+				return ret; \
 			} \
 		} \
 	}
@@ -336,6 +356,19 @@ static zend_bool soap_check_zval_ref(zval *data, xmlNodePtr node TSRMLS_DC) {
 		}
 	}
 	return 0;
+}
+
+static zval* soap_find_xml_ref(xmlNodePtr node TSRMLS_DC)
+{
+	zval **data_ptr;
+
+	if (SOAP_GLOBAL(ref_map) && 
+	    zend_hash_index_find(SOAP_GLOBAL(ref_map), (ulong)node, (void**)&data_ptr) == SUCCESS) {
+		Z_SET_ISREF_PP(data_ptr);
+		Z_ADDREF_PP(data_ptr);
+		return *data_ptr;
+	}
+	return NULL;
 }
 
 static zend_bool soap_check_xml_ref(zval **data, xmlNodePtr node TSRMLS_DC)
@@ -1513,6 +1546,11 @@ static zval *to_zval_object_ex(encodeTypePtr type, xmlNodePtr data, zend_class_e
 			    sdlType->encode->details.sdl_type->kind != XSD_TYPEKIND_LIST &&
 			    sdlType->encode->details.sdl_type->kind != XSD_TYPEKIND_UNION) {
 
+				CHECK_XML_NULL(data);
+				if ((ret = soap_find_xml_ref(data TSRMLS_CC)) != NULL) {
+					return ret;
+				}
+
 			    if (ce != ZEND_STANDARD_CLASS_DEF_PTR &&
 			        sdlType->encode->to_zval == sdl_guess_convert_zval &&
 			        sdlType->encode->details.sdl_type != NULL &&
@@ -1526,7 +1564,6 @@ static zval *to_zval_object_ex(encodeTypePtr type, xmlNodePtr data, zend_class_e
 			    } else {
 					ret = master_to_zval_int(sdlType->encode, data);
 				}
-				FIND_XML_NULL(data, ret);
 				if (soap_check_xml_ref(&ret, data TSRMLS_CC)) {
 					return ret;
 				}
@@ -2984,6 +3021,9 @@ static xmlNodePtr to_xml_datetime_ex(encodeTypePtr type, zval *data, char *forma
 		timestamp = Z_LVAL_P(data);
 		ta = php_localtime_r(&timestamp, &tmbuf);
 		/*ta = php_gmtime_r(&timestamp, &tmbuf);*/
+		if (!ta) {
+			soap_error1(E_ERROR, "Encoding: Invalid timestamp %ld", Z_LVAL_P(data));
+		}
 
 		buf = (char *) emalloc(buf_len);
 		while ((real_len = strftime(buf, buf_len, format, ta)) == buf_len || real_len == 0) {

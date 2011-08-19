@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_mysql.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: pdo_mysql.c 314376 2011-08-06 14:47:44Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -79,7 +79,11 @@ static PHP_MINIT_FUNCTION(pdo_mysql)
 	REGISTER_PDO_CLASS_CONST_LONG("MYSQL_ATTR_DIRECT_QUERY", (long)PDO_MYSQL_ATTR_DIRECT_QUERY);
 	REGISTER_PDO_CLASS_CONST_LONG("MYSQL_ATTR_FOUND_ROWS", (long)PDO_MYSQL_ATTR_FOUND_ROWS);
 	REGISTER_PDO_CLASS_CONST_LONG("MYSQL_ATTR_IGNORE_SPACE", (long)PDO_MYSQL_ATTR_IGNORE_SPACE);
-
+	REGISTER_PDO_CLASS_CONST_LONG("MYSQL_ATTR_SSL_KEY", (long)PDO_MYSQL_ATTR_SSL_KEY);
+	REGISTER_PDO_CLASS_CONST_LONG("MYSQL_ATTR_SSL_CERT", (long)PDO_MYSQL_ATTR_SSL_CERT);
+	REGISTER_PDO_CLASS_CONST_LONG("MYSQL_ATTR_SSL_CA", (long)PDO_MYSQL_ATTR_SSL_CA);
+	REGISTER_PDO_CLASS_CONST_LONG("MYSQL_ATTR_SSL_CAPATH", (long)PDO_MYSQL_ATTR_SSL_CAPATH);
+	REGISTER_PDO_CLASS_CONST_LONG("MYSQL_ATTR_SSL_CIPHER", (long)PDO_MYSQL_ATTR_SSL_CIPHER);
 	return php_pdo_register_driver(&pdo_mysql_driver);
 }
 /* }}} */
@@ -166,7 +170,7 @@ static PHP_GINIT_FUNCTION(pdo_mysql)
 
 /* {{{ pdo_mysql_functions[] */
 const zend_function_entry pdo_mysql_functions[] = {
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 
@@ -177,7 +181,7 @@ static const zend_module_dep pdo_mysql_deps[] = {
 #ifdef PDO_USE_MYSQLND
 	ZEND_MOD_REQUIRED("mysqlnd")
 #endif
-	{NULL, NULL, NULL}
+	ZEND_MOD_END
 };
 #endif
 /* }}} */

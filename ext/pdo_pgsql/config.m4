@@ -1,4 +1,4 @@
-dnl $Id: config.m4 291414 2009-11-29 06:13:22Z rasmus $
+dnl $Id: config.m4 311041 2011-05-15 05:49:34Z rasmus $
 dnl config.m4 for extension pdo_pgsql
 dnl vim:et:sw=2:ts=2:
 
@@ -69,7 +69,8 @@ if test "$PHP_PDO_PGSQL" != "no"; then
   AC_DEFINE(HAVE_PDO_PGSQL,1,[Whether to build PostgreSQL for PDO support or not])
 
   AC_MSG_CHECKING([for openssl dependencies])
-  if grep -q openssl $PGSQL_INCLUDE/libpq-fe.h ; then
+  grep openssl $PGSQL_INCLUDE/libpq-fe.h >/dev/null 2>&1
+  if test $? -eq 0 ; then
     AC_MSG_RESULT([yes])
     dnl First try to find pkg-config
     AC_PATH_PROG(PKG_CONFIG, pkg-config, no)

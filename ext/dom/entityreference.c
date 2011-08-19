@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: entityreference.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: entityreference.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -42,7 +42,7 @@ ZEND_END_ARG_INFO();
 
 const zend_function_entry php_dom_entityreference_class_functions[] = {
 	PHP_ME(domentityreference, __construct, arginfo_dom_entityreference_construct, ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 /* {{{ proto void DOMEntityReference::__construct(string name); */

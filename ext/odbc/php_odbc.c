@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_odbc.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: php_odbc.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -383,7 +383,7 @@ const zend_function_entry odbc_functions[] = {
 #endif
 	PHP_FALIAS(odbc_do, odbc_exec, arginfo_odbc_exec)
 	PHP_FALIAS(odbc_field_precision, odbc_field_len, arginfo_odbc_field_len)
-	{ NULL, NULL, NULL }
+	PHP_FE_END
 };
 /* }}} */
 

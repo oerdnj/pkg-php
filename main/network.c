@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: network.c 307922 2011-02-01 18:10:35Z cataphract $ */
+/* $Id: network.c 309579 2011-03-23 00:51:22Z cataphract $ */
 
 /*#define DEBUG_MAIN_NETWORK 1*/
 
@@ -1095,7 +1095,9 @@ PHPAPI int php_set_sock_blocking(int socketd, int block TSRMLS_DC)
 	} else {
 		flags &= ~myflag;
 	}
-	fcntl(socketd, F_SETFL, flags);
+	if (fcntl(socketd, F_SETFL, flags) == -1) {
+		ret = FAILURE;
+	}
 #endif
 	return ret;
 }

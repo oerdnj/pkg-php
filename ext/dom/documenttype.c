@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: documenttype.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: documenttype.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -35,7 +35,7 @@
 */
 
 const zend_function_entry php_dom_documenttype_class_functions[] = {
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 /* {{{ name	string	

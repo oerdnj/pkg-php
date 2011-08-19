@@ -28,13 +28,10 @@
 #include <errno.h>
 #include <limits.h>
 
-#ifdef FPM_AUTOCONFIG_H
-#include <fpm_autoconfig.h>
-#else
 #include <php_config.h>
-#endif
 #include <fpm/fpm.h>
 #include <fpm/fpm_request.h>
+#include <fpm/zlog.h>
 
 #ifdef _WIN32
 
@@ -149,6 +146,8 @@ static int is_fastcgi = 0;
 static int in_shutdown = 0;
 static in_addr_t *allowed_clients = NULL;
 
+static sa_t client_sa;
+
 #ifdef _WIN32
 
 static DWORD WINAPI fcgi_shutdown_thread(LPVOID arg)
@@ -192,7 +191,7 @@ int fcgi_init(void)
 		socklen_t len = sizeof(sa);
 #endif
 		zend_hash_init(&fcgi_mgmt_vars, 0, NULL, fcgi_free_mgmt_var_cb, 1);
-		fcgi_set_mgmt_var("FCGI_MPXS_CONNS", sizeof("FCGI_MPXS_CONNS")-1, "0", sizeof("0")-1);
+		fcgi_set_mgmt_var("FCGI_MPXS_CONNS", sizeof("FCGI_MPXS_CONNS") - 1, "0", sizeof("0")-1);
 
 		is_initialized = 1;
 #ifdef _WIN32
@@ -833,7 +832,9 @@ int fcgi_accept_request(fcgi_request *req)
 					FCGI_LOCK(req->listen_socket);
 					req->fd = accept(listen_socket, (struct sockaddr *)&sa, &len);
 					FCGI_UNLOCK(req->listen_socket);
-					if (req->fd >= 0 && allowed_clients) {
+
+					client_sa = sa;
+					if (sa.sa.sa_family == AF_INET && req->fd >= 0 && allowed_clients) {
 						int n = 0;
 						int allowed = 0;
 
@@ -1118,6 +1119,14 @@ void fcgi_free_mgmt_var_cb(void * ptr)
 	pefree(*var, 1);
 }
 
+char *fcgi_get_last_client_ip() /* {{{ */
+{
+	if (client_sa.sa.sa_family == AF_UNIX) {
+		return NULL;
+	}
+	return inet_ntoa(client_sa.sa_inet.sin_addr);
+}
+/* }}} */
 /*
  * Local variables:
  * tab-width: 4

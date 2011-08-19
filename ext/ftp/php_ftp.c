@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_ftp.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: php_ftp.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -278,7 +278,7 @@ const zend_function_entry php_ftp_functions[] = {
 	PHP_FE(ftp_nb_put,			arginfo_ftp_nb_put)
 	PHP_FE(ftp_nb_fput,			arginfo_ftp_nb_fput)
 	PHP_FALIAS(ftp_quit, ftp_close, arginfo_ftp_close)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 zend_module_entry php_ftp_module_entry = {

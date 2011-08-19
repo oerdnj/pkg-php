@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: streams.c 307922 2011-02-01 18:10:35Z cataphract $ */
+/* $Id: streams.c 312937 2011-07-05 16:09:06Z cataphract $ */
 
 #define _GNU_SOURCE
 #include "php.h"
@@ -112,9 +112,32 @@ PHPAPI int php_stream_from_persistent_id(const char *persistent_id, php_stream *
 	if (zend_hash_find(&EG(persistent_list), (char*)persistent_id, strlen(persistent_id)+1, (void*) &le) == SUCCESS) {
 		if (Z_TYPE_P(le) == le_pstream) {
 			if (stream) {
+				HashPosition pos;
+				zend_rsrc_list_entry *regentry;
+				ulong index = -1; /* intentional */
+
+				/* see if this persistent resource already has been loaded to the
+				 * regular list; allowing the same resource in several entries in the
+				 * regular list causes trouble (see bug #54623) */
+				zend_hash_internal_pointer_reset_ex(&EG(regular_list), &pos);
+				while (zend_hash_get_current_data_ex(&EG(regular_list),
+						(void **)&regentry, &pos) == SUCCESS) {
+					if (regentry->ptr == le->ptr) {
+						zend_hash_get_current_key_ex(&EG(regular_list), NULL, NULL,
+							&index, 0, &pos);
+						break;
+					}
+					zend_hash_move_forward_ex(&EG(regular_list), &pos);
+				}
+				
 				*stream = (php_stream*)le->ptr;
-				le->refcount++;
-				(*stream)->rsrc_id = ZEND_REGISTER_RESOURCE(NULL, *stream, le_pstream);
+				if (index == -1) { /* not found in regular list */
+					le->refcount++;
+					(*stream)->rsrc_id = ZEND_REGISTER_RESOURCE(NULL, *stream, le_pstream);
+				} else {
+					regentry->refcount++;
+					(*stream)->rsrc_id = index;
+				}
 			}
 			return PHP_STREAM_PERSISTENT_SUCCESS;
 		}
@@ -131,6 +154,7 @@ void php_stream_display_wrapper_errors(php_stream_wrapper *wrapper, const char *
 	char *tmp = estrdup(path);
 	char *msg;
 	int free_msg = 0;
+	php_stream_wrapper orig_wrapper;
 
 	if (wrapper) {
 		if (wrapper->err_count > 0) {
@@ -175,7 +199,16 @@ void php_stream_display_wrapper_errors(php_stream_wrapper *wrapper, const char *
 	}
 
 	php_strip_url_passwd(tmp);
+	if (wrapper) {
+		/* see bug #52935 */
+		orig_wrapper = *wrapper;
+		wrapper->err_stack = NULL;
+		wrapper->err_count = 0;
+	}
 	php_error_docref1(NULL TSRMLS_CC, tmp, E_WARNING, "%s: %s", caption, msg);
+	if (wrapper) {
+		*wrapper = orig_wrapper;
+	}
 	efree(tmp);
 	if (free_msg) {
 		efree(msg);
@@ -332,7 +365,12 @@ fprintf(stderr, "stream_free: %s:%p[%s] preserve_handle=%d release_cast=%d remov
 
 	/* If not called from the resource dtor, remove the stream from the resource list. */
 	if ((close_options & PHP_STREAM_FREE_RSRC_DTOR) == 0 && remove_rsrc) {
-		zend_list_delete(stream->rsrc_id);
+		/* zend_list_delete actually only decreases the refcount; if we're
+		 * releasing the stream, we want to actually delete the resource from
+		 * the resource list, otherwise the resource will point to invalid memory.
+		 * In any case, let's always completely delete it from the resource list,
+		 * not only when PHP_STREAM_FREE_RELEASE_STREAM is set */
+		while (zend_list_delete(stream->rsrc_id) == SUCCESS) {}
 	}
 
 	/* Remove stream from any context link list */
@@ -1156,7 +1194,7 @@ PHPAPI int _php_stream_seek(php_stream *stream, off_t offset, int whence TSRMLS_
 	}
 
 	/* emulate forward moving seeks with reads */
-	if (whence == SEEK_CUR && offset > 0) {
+	if (whence == SEEK_CUR && offset >= 0) {
 		char tmp[1024];
 		size_t didread;
 		while(offset > 0) {
@@ -1263,6 +1301,9 @@ PHPAPI size_t _php_stream_copy_to_mem(php_stream *src, char **buf, size_t maxlen
 		ptr = *buf = pemalloc_rel_orig(maxlen + 1, persistent);
 		while ((len < maxlen) && !php_stream_eof(src)) {
 			ret = php_stream_read(src, ptr, maxlen - len);
+			if (!ret) {
+				break;
+			}
 			len += ret;
 			ptr += ret;
 		}

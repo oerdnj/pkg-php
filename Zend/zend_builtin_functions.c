@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_builtin_functions.c 307522 2011-01-16 20:39:22Z stas $ */
+/* $Id: zend_builtin_functions.c 314527 2011-08-08 14:54:50Z colder $ */
 
 #include "zend.h"
 #include "zend_API.h"
@@ -283,7 +283,7 @@ static const zend_function_entry builtin_functions[] = { /* {{{ */
 	ZEND_FE(gc_enabled, 		arginfo_zend__void)
 	ZEND_FE(gc_enable, 			arginfo_zend__void)
 	ZEND_FE(gc_disable, 		arginfo_zend__void)
-	{ NULL, NULL, NULL }
+	ZEND_FE_END
 };
 /* }}} */
 
@@ -822,45 +822,25 @@ static void is_a_impl(INTERNAL_FUNCTION_PARAMETERS, zend_bool only_subclass)
 		return;
 	}
 	
-	if (only_subclass && Z_TYPE_P(obj) == IS_STRING) {
+	if (Z_TYPE_P(obj) == IS_STRING) {
 		zend_class_entry **the_ce;
 		if (zend_lookup_class(Z_STRVAL_P(obj), Z_STRLEN_P(obj), &the_ce TSRMLS_CC) == FAILURE) {
-			zend_error(E_WARNING, "Unknown class passed as parameter");
 			RETURN_FALSE;
 		}
 		instance_ce = *the_ce;
-	} else if (Z_TYPE_P(obj) != IS_OBJECT) {
-		RETURN_FALSE;
+	} else if (Z_TYPE_P(obj) == IS_OBJECT && HAS_CLASS_ENTRY(*obj)) {
+		instance_ce = Z_OBJCE_P(obj);
 	} else {
-		instance_ce = NULL;
-	}
-
-	/* TBI!! new object handlers */
-	if (Z_TYPE_P(obj) == IS_OBJECT && !HAS_CLASS_ENTRY(*obj)) {
 		RETURN_FALSE;
 	}
 
 	if (zend_lookup_class_ex(class_name, class_name_len, 0, &ce TSRMLS_CC) == FAILURE) {
 		retval = 0;
 	} else {
-		if (only_subclass) {
-			if (!instance_ce) {
-				instance_ce = Z_OBJCE_P(obj)->parent;
-			} else {
-				instance_ce = instance_ce->parent;
-			}
-		} else {
-			instance_ce = Z_OBJCE_P(obj);
-		}
-
-		if (!instance_ce) {
-			RETURN_FALSE;
- 		}
-
-		if (instanceof_function(instance_ce, *ce TSRMLS_CC)) {
-			retval = 1;
-		} else {
+		if (only_subclass && instance_ce == *ce) {
 			retval = 0;
+		} else {
+			retval = instanceof_function(instance_ce, *ce TSRMLS_CC);
 		}
 	}
 
@@ -1733,7 +1713,7 @@ ZEND_FUNCTION(create_function)
 		function_name[0] = '\0';
 
 		do {
-			function_name_length = 1 + sprintf(function_name + 1, "lambda_%d", ++EG(lambda_count));
+			function_name_length = 1 + snprintf(function_name + 1, sizeof("lambda_")+MAX_LENGTH_OF_LONG, "lambda_%d", ++EG(lambda_count));
 		} while (zend_hash_add(EG(function_table), function_name, function_name_length+1, &new_function, sizeof(zend_function), NULL)==FAILURE);
 		zend_hash_del(EG(function_table), LAMBDA_TEMP_FUNCNAME, sizeof(LAMBDA_TEMP_FUNCNAME));
 		RETURN_STRINGL(function_name, function_name_length, 0);
@@ -2067,7 +2047,7 @@ ZEND_FUNCTION(debug_print_backtrace)
 			ZEND_PUTS(class_name);
 			ZEND_PUTS(call_type);
 		}
-		zend_printf("%s(", function_name?function_name:"main");
+		zend_printf("%s(", function_name);
 		if (arg_array) {
 			debug_print_backtrace_args(arg_array TSRMLS_CC);
 			zval_ptr_dtor(&arg_array);

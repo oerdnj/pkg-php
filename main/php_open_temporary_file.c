@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_open_temporary_file.c 307375 2011-01-11 12:57:19Z iliaa $ */
+/* $Id: php_open_temporary_file.c 309792 2011-03-28 16:43:49Z pajoye $ */
 
 #include "php.h"
 
@@ -204,9 +204,13 @@ PHPAPI const char* php_get_temporary_directory(void)
 	 */
 	{
 		char sTemp[MAX_PATH];
-		DWORD n = GetTempPath(sizeof(sTemp),sTemp);
-		assert(0 < n);  /* should *never* fail! */
-		temporary_directory = strdup(sTemp);
+		DWORD len = GetTempPath(sizeof(sTemp),sTemp);
+		assert(0 < len);  /* should *never* fail! */
+		if (sTemp[len - 1] == DEFAULT_SLASH) {
+			temporary_directory = zend_strndup(sTemp, len - 1);
+		} else {
+			temporary_directory = zend_strndup(sTemp, len);
+		}
 		return temporary_directory;
 	}
 #else

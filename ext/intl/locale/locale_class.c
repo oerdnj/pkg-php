@@ -14,7 +14,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: locale_class.c 269153 2008-11-17 11:28:01Z felipe $ */
+/* $Id: locale_class.c 314352 2011-08-06 01:22:27Z felipe $ */
 
 #include <unicode/uloc.h>
 #include "php_intl.h"
@@ -85,7 +85,7 @@ function_entry Locale_class_functions[] = {
 	ZEND_FENTRY( lookup, ZEND_FN( locale_lookup ), locale_4_args, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC )
 	ZEND_FENTRY( canonicalize, ZEND_FN( locale_canonicalize ), locale_1_arg , ZEND_ACC_PUBLIC|ZEND_ACC_STATIC )
 	ZEND_FENTRY( acceptFromHttp, ZEND_FN( locale_accept_from_http ), locale_1_arg , ZEND_ACC_PUBLIC|ZEND_ACC_STATIC )
-	{ NULL, NULL, NULL }
+	PHP_FE_END
 };
 /* }}} */
 

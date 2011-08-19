@@ -1,4 +1,4 @@
-/* $Id: php_crypt_r.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: php_crypt_r.c 314438 2011-08-07 16:10:34Z rasmus $ */
 /*
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
@@ -94,7 +94,8 @@ void _crypt_extended_init_r(void)
 	if (!initialized) {
 #ifdef PHP_WIN32
 		InterlockedIncrement(&initialized);
-#elif (defined(__GNUC__) && (__GNUC__ >= 4 && __GNUC_MINOR__ >= 2))
+#elif (defined(__GNUC__) && !defined(__hpux) && (__GNUC__ > 4 || \
+    (__GNUC__ == 4 && (__GNUC_MINOR__ > 1 || (__GNUC_MINOR__ == 1 && __GNUC_PATCHLEVEL__ > 1)))))
 		__sync_fetch_and_add(&initialized, 1);
 #elif defined(HAVE_ATOMIC_H) /* Solaris 10 defines atomic API within */
 		membar_producer();
@@ -197,7 +198,7 @@ char * php_md5_crypt_r(const char *pw, const char *salt, char *out) {
 		goto _destroyCtx1;
 	}
 
-	dwHashLen = pwl + sl + pwl;
+	dwHashLen = 16;
 	CryptGetHashParam(ctx1, HP_HASHVAL, final, &dwHashLen, 0);
 	/*  MD5(pw,salt,pw). Valid. */
 
@@ -381,7 +382,7 @@ char * php_md5_crypt_r(const char *pw, const char *salt, char *out)
 	/* Now make the output string */
 	memcpy(passwd, MD5_MAGIC, MD5_MAGIC_LEN);
 	strlcpy(passwd + MD5_MAGIC_LEN, sp, sl + 1);
-	strcat(passwd, "$");
+	strlcat(passwd, "$", 1);
 
 	PHP_MD5Final(final, &ctx);
 

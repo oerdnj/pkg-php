@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_extension.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: com_extension.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -228,7 +228,7 @@ const zend_function_entry com_dotnet_functions[] = {
 	PHP_FE(com_message_pump, arginfo_com_message_pump)
 	PHP_FE(com_load_typelib, arginfo_com_load_typelib)
 	PHP_FE(com_get_active_object, arginfo_com_get_active_object)
-	{ NULL, NULL, NULL }
+	PHP_FE_END
 };
 
 /* {{{ com_dotnet_module_entry

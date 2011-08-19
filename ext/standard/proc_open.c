@@ -15,7 +15,7 @@
    | Author: Wez Furlong <wez@thebrainroom.com>                           |
    +----------------------------------------------------------------------+
  */
-/* $Id: proc_open.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: proc_open.c 314641 2011-08-09 12:16:58Z laruence $ */
 
 #if 0 && (defined(__linux__) || defined(sun) || defined(__IRIX__))
 # define _BSD_SOURCE 		/* linux wants this when XOPEN mode is on */
@@ -183,8 +183,8 @@ static php_process_env_t _php_array_to_envp(zval *environment, int is_persistent
 
 				l = string_length + el_len + 1;
 				memcpy(p, string_key, string_length);
-				strcat(p, "=");
-				strcat(p, data);
+				strncat(p, "=", 1);
+				strncat(p, data, el_len);
 
 #ifndef PHP_WIN32
 				*ep = p;

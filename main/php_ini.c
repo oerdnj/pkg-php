@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_ini.c 307587 2011-01-19 14:21:46Z pajoye $ */
+/* $Id: php_ini.c 314383 2011-08-06 21:10:29Z rasmus $ */
 
 #include "php.h"
 #include "ext/standard/info.h"
@@ -486,7 +486,7 @@ int php_init_config(TSRMLS_D)
 
 				if ((envpath = getenv("PATH")) != NULL) {
 					char *search_dir, search_path[MAXPATHLEN];
-					char *last;
+					char *last = NULL;
 
 					path = estrdup(envpath);
 					search_dir = php_strtok_r(path, ":", &last);
@@ -832,7 +832,7 @@ PHPAPI void php_ini_activate_per_dir_config(char *path, uint path_len TSRMLS_DC)
 
 #if PHP_WIN32
 	memcpy(path_bak, path, path_len);
-	path_bak[path_len - 1] = 0;
+	path_bak[path_len] = 0;
 	TRANSLATE_SLASHES_LOWER(path_bak);
 	path = path_bak;
 #endif

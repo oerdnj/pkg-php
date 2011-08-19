@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_object_handlers.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: zend_object_handlers.c 310009 2011-04-07 13:35:27Z dmitry $ */
 
 #include "zend.h"
 #include "zend_globals.h"
@@ -374,7 +374,11 @@ zval *zend_std_read_property(zval *object, zval *member, int type TSRMLS_DC) /* 
 			} else {
 				retval = &EG(uninitialized_zval_ptr);
 			}
-			zval_ptr_dtor(&object);
+			if (EXPECTED(*retval != object)) {
+				zval_ptr_dtor(&object);
+			} else {
+				Z_DELREF_P(object);
+			}
 		} else {
 			if (zobj->ce->__get && guard && guard->in_get == 1) {
 				if (Z_STRVAL_P(member)[0] == '\0') {

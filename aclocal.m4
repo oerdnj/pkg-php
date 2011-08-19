@@ -1,5 +1,5 @@
 dnl
-dnl $Id: acinclude.m4 308352 2011-02-15 08:28:22Z pajoye $
+dnl $Id: acinclude.m4 311223 2011-05-19 05:43:48Z scottmac $
 dnl
 dnl This file contains local autoconf functions.
 dnl
@@ -2398,6 +2398,7 @@ AC_DEFUN([PHP_SETUP_OPENSSL],[
     ])
     LIBS=$old_LIBS
     PHP_ADD_LIBRARY(ssl,,$1)
+    PHP_ADD_LIBRARY(crypto,,$1)
 
     PHP_ADD_LIBPATH($OPENSSL_LIBDIR, $1)
   fi
@@ -2591,7 +2592,7 @@ dnl This macro is used to get a comparable
 dnl version for apache1/2.
 dnl
 AC_DEFUN([PHP_AP_EXTRACT_VERSION],[
-  ac_output=`$1 -v 2>&1 | grep version`
+  ac_output=`$1 -v 2>&1 | grep version | $SED -e 's/Oracle-HTTP-//'`
   ac_IFS=$IFS
 IFS="- /.
 "

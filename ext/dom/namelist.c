@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: namelist.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: namelist.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -47,7 +47,7 @@ ZEND_END_ARG_INFO();
 const zend_function_entry php_dom_namelist_class_functions[] = {
 	PHP_FALIAS(getName, dom_namelist_get_name, arginfo_dom_namelist_get_name)
 	PHP_FALIAS(getNamespaceURI, dom_namelist_get_namespace_uri, arginfo_dom_namelist_get_namespace_uri)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 /* {{{ length	int	

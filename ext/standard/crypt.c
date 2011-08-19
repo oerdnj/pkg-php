@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: crypt.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: crypt.c 314641 2011-08-09 12:16:58Z laruence $ */
 
 #include <stdlib.h>
 
@@ -170,15 +170,17 @@ PHP_FUNCTION(crypt)
 	/* The automatic salt generation covers standard DES, md5-crypt and Blowfish (simple) */
 	if (!*salt) {
 #if PHP_MD5_CRYPT
-		strcpy(salt, "$1$");
+		strncpy(salt, "$1$", PHP_MAX_SALT_LEN);
 		php_to64(&salt[3], PHP_CRYPT_RAND, 4);
 		php_to64(&salt[7], PHP_CRYPT_RAND, 4);
-		strcpy(&salt[11], "$");
+		strncpy(&salt[11], "$", PHP_MAX_SALT_LEN - 11);
 #elif PHP_STD_DES_CRYPT
 		php_to64(&salt[0], PHP_CRYPT_RAND, 2);
 		salt[2] = '\0';
 #endif
 		salt_in_len = strlen(salt);
+	} else {
+		salt_in_len = MIN(PHP_MAX_SALT_LEN, salt_in_len);
 	}
 
 /* Windows (win32/crypt) has a stripped down version of libxcrypt and 
@@ -240,7 +242,7 @@ PHP_FUNCTION(crypt)
 		} else if (
 				salt[0] == '$' &&
 				salt[1] == '2' &&
-				salt[2] == 'a' &&
+				salt[2] >= 'a' && salt[2] <= 'z' &&
 				salt[3] == '$' &&
 				salt[4] >= '0' && salt[4] <= '3' &&
 				salt[5] >= '0' && salt[5] <= '9' &&

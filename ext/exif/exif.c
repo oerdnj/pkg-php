@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: exif.c 308362 2011-02-15 14:02:26Z pajoye $ */
+/* $Id: exif.c 314376 2011-08-06 14:47:44Z felipe $ */
 
 /*  ToDos
  *
@@ -144,11 +144,11 @@ const zend_function_entry exif_functions[] = {
 	PHP_FE(exif_tagname, arginfo_exif_tagname)
 	PHP_FE(exif_thumbnail, arginfo_exif_thumbnail)
 	PHP_FE(exif_imagetype, arginfo_exif_imagetype)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 
-#define EXIF_VERSION "1.4 $Id: exif.c 308362 2011-02-15 14:02:26Z pajoye $"
+#define EXIF_VERSION "1.4 $Id: exif.c 314376 2011-08-06 14:47:44Z felipe $"
 
 /* {{{ PHP_MINFO_FUNCTION
  */
@@ -254,7 +254,7 @@ static const zend_module_dep exif_module_deps[] = {
 #if EXIF_USE_MBSTRING
 	ZEND_MOD_REQUIRED("mbstring")
 #endif
-	{NULL, NULL, NULL}
+	ZEND_MOD_END
 };
 /* }}} */
 
@@ -2909,7 +2909,7 @@ static int exif_process_IFD_TAG(image_info_type *ImageInfo, char *dir_entry, cha
 			fgot = php_stream_tell(ImageInfo->infile);
 			if (fgot!=offset_val) {
 				EFREE_IF(outside);
-				exif_error_docref(NULL EXIFERR_CC, ImageInfo, E_WARNING, "Wrong file pointer: 0x%08X != 0x08X", fgot, offset_val);
+				exif_error_docref(NULL EXIFERR_CC, ImageInfo, E_WARNING, "Wrong file pointer: 0x%08X != 0x%08X", fgot, offset_val);
 				return FALSE;
 			}
 			fgot = php_stream_read(ImageInfo->infile, value_ptr, byte_count);

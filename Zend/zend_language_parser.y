@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_language_parser.y 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: zend_language_parser.y 312076 2011-06-12 01:43:10Z felipe $ */
 
 /*
  * LALR shift/reduce conflicts and how they are resolved:
@@ -211,7 +211,7 @@ inner_statement:
 
 
 statement:
-		unticked_statement { zend_do_ticks(TSRMLS_C); }
+		unticked_statement { DO_TICKS(); }
 	|	T_STRING ':' { zend_do_label(&$1 TSRMLS_CC); }
 ;
 
@@ -291,11 +291,11 @@ unset_variable:
 ;
 
 function_declaration_statement:
-		unticked_function_declaration_statement	{ zend_do_ticks(TSRMLS_C); }
+		unticked_function_declaration_statement	{ DO_TICKS(); }
 ;
 
 class_declaration_statement:
-		unticked_class_declaration_statement	{ zend_do_ticks(TSRMLS_C); }
+		unticked_class_declaration_statement	{ DO_TICKS(); }
 ;
 
 

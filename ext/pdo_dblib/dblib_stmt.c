@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: dblib_stmt.c 308972 2011-03-06 13:36:44Z felipe $ */
+/* $Id: dblib_stmt.c 312860 2011-07-03 19:01:42Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -25,6 +25,7 @@
 
 #include "php.h"
 #include "php_ini.h"
+#include "ext/standard/php_string.h"
 #include "ext/standard/info.h"
 #include "pdo/php_pdo.h"
 #include "pdo/php_pdo_driver.h"
@@ -38,7 +39,7 @@ static void free_rows(pdo_dblib_stmt *S TSRMLS_DC)
 	
 	for (i = 0; i < S->nrows; i++) {
 		for (j = 0; j < S->ncols; j++) {
-			pdo_dblib_colval *val = &S->rows[i] + j;
+			pdo_dblib_colval *val = &S->rows[i*S->ncols] + j;
 			if (val->data) {
 				efree(val->data);
 				val->data = NULL;
@@ -173,6 +174,23 @@ static int pdo_dblib_stmt_execute(pdo_stmt_t *stmt TSRMLS_DC)
 						val->len = spprintf(&val->data, 0, "%.4f", money_value);
 						}
 						break;
+#ifdef SQLUNIQUE
+					case SQLUNIQUE: {
+#else
+					case 36: { /* FreeTDS hack, also used by ext/mssql */
+#endif
+						val->len = 36+1;
+						val->data = emalloc(val->len + 1);
+
+						/* uniqueidentifier is a 16-byte binary number, convert to 32 char hex string */
+#ifdef SQLUNIQUE
+						val->len = dbconvert(NULL, SQLUNIQUE, dbdata(H->link, i+1), dbdatlen(H->link, i+1), SQLCHAR, val->data, val->len);
+#else
+						val->len = dbconvert(NULL, 36, dbdata(H->link, i+1), dbdatlen(H->link, i+1), SQLCHAR, val->data, val->len);
+#endif
+						php_strtoupper(val->data, val->len);
+						break;
+						}
 					default:
 						if (dbwillconvert(S->cols[i].coltype, SQLCHAR)) {
 							val->len = 32 + (2 * dbdatlen(H->link, i+1));

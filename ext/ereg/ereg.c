@@ -17,7 +17,7 @@
    |          Jaakko Hyvätti <jaakko@hyvatti.iki.fi>                      | 
    +----------------------------------------------------------------------+
  */
-/* $Id: ereg.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: ereg.c 314398 2011-08-07 05:08:08Z rasmus $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -59,7 +59,7 @@ const zend_function_entry ereg_functions[] = {
 	PHP_DEP_FE(split,			arginfo_split)
 	PHP_DEP_FE(spliti,			arginfo_split)
 	PHP_DEP_FE(sql_regcase,		arginfo_sql_regcase)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 
@@ -474,7 +474,7 @@ PHPAPI char *php_ereg_replace(const char *pattern, const char *replace, const ch
 			if (new_l + 1 > buf_len) {
 				buf_len = 1 + buf_len + 2 * new_l;
 				nbuf = emalloc(buf_len);
-				strcpy(nbuf, buf);
+				strncpy(nbuf, buf, buf_len-1);
 				efree(buf);
 				buf = nbuf;
 			}
@@ -511,7 +511,7 @@ PHPAPI char *php_ereg_replace(const char *pattern, const char *replace, const ch
 				if (new_l + 1 > buf_len) {
 					buf_len = 1 + buf_len + 2 * new_l;
 					nbuf = safe_emalloc(buf_len, sizeof(char), 0);
-					strcpy(nbuf, buf);
+					strncpy(nbuf, buf, buf_len-1);
 					efree(buf);
 					buf = nbuf;
 				}
@@ -526,7 +526,7 @@ PHPAPI char *php_ereg_replace(const char *pattern, const char *replace, const ch
 			if (new_l + 1 > buf_len) {
 				buf_len = new_l + 1; /* now we know exactly how long it is */
 				nbuf = safe_emalloc(buf_len, sizeof(char), 0);
-				strcpy(nbuf, buf);
+				strncpy(nbuf, buf, buf_len-1);
 				efree(buf);
 				buf = nbuf;
 			}

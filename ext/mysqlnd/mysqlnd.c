@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd.c 308671 2011-02-25 12:52:21Z andrey $ */
+/* $Id: mysqlnd.c 314740 2011-08-10 14:12:24Z andrey $ */
 #include "php.h"
 #include "mysqlnd.h"
 #include "mysqlnd_wireprotocol.h"
@@ -156,6 +156,7 @@ MYSQLND_METHOD(mysqlnd_conn, free_contents)(MYSQLND * conn TSRMLS_DC)
 		mnd_pefree(conn->unix_socket, pers);
 		conn->unix_socket = NULL;
 	}
+	DBG_INF_FMT("scheme=%s", conn->scheme);
 	if (conn->scheme) {
 		DBG_INF("Freeing scheme");
 		mnd_pefree(conn->scheme, pers);
@@ -635,7 +636,7 @@ MYSQLND_METHOD(mysqlnd_conn, connect)(MYSQLND * conn,
 			SET_OOM_ERROR(conn->error_info);
 			goto err; /* OOM */
 		}
-		DBG_INF_FMT("transport=%s", transport);
+		DBG_INF_FMT("transport=%s conn->scheme=%s", transport, conn->scheme);
 		conn->scheme = mnd_pestrndup(transport, transport_len, conn->persistent);
 		conn->scheme_len = transport_len;
 		efree(transport); /* allocated by spprintf */
@@ -830,13 +831,13 @@ err:
 	PACKET_FREE(greet_packet);
 
 	if (errstr) {
-		DBG_ERR_FMT("[%u] %.64s (trying to connect via %s)", errcode, errstr, conn->scheme);
+		DBG_ERR_FMT("[%u] %.128s (trying to connect via %s)", errcode, errstr, conn->scheme);
 		SET_CLIENT_ERROR(conn->error_info, errcode? errcode:CR_CONNECTION_ERROR, UNKNOWN_SQLSTATE, errstr);
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "[%u] %.64s (trying to connect via %s)", errcode, errstr, conn->scheme);
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "[%u] %.128s (trying to connect via %s)", errcode, errstr, conn->scheme);
 		/* no mnd_ since we don't allocate it */
 		efree(errstr);
 	}
-
+	conn->m->free_contents(conn TSRMLS_CC);
 	MYSQLND_INC_CONN_STATISTIC(conn->stats, STAT_CONNECT_FAILURE);
 
 	DBG_RETURN(FAIL);
@@ -877,9 +878,6 @@ PHPAPI MYSQLND * mysqlnd_connect(MYSQLND * conn,
 			  object - we are free to kill it!
 			*/
 			conn->m->dtor(conn TSRMLS_CC);
-		} else {
-			/* This will also close conn->net->stream if it has been opened */
-			conn->m->free_contents(conn TSRMLS_CC);
 		}
 		DBG_RETURN(NULL);
 	}
@@ -896,25 +894,18 @@ PHPAPI MYSQLND * mysqlnd_connect(MYSQLND * conn,
 static enum_func_status
 MYSQLND_METHOD(mysqlnd_conn, query)(MYSQLND * conn, const char * query, unsigned int query_len TSRMLS_DC)
 {
-	enum_func_status ret;
+	enum_func_status ret = FAIL;
 	DBG_ENTER("mysqlnd_conn::query");
 	DBG_INF_FMT("conn=%llu query=%s", conn->thread_id, query);
 
-	if (PASS != conn->m->simple_command(conn, COM_QUERY, query, query_len,
-									   PROT_LAST /* we will handle the OK packet*/,
-									   FALSE, FALSE TSRMLS_CC)) {
-		DBG_RETURN(FAIL);
+	if (PASS == conn->m->send_query(conn, query, query_len TSRMLS_CC) &&
+		PASS == conn->m->reap_query(conn TSRMLS_CC))
+	{
+		ret = PASS;
+		if (conn->last_query_type == QUERY_UPSERT && conn->upsert_status.affected_rows) {
+			MYSQLND_INC_CONN_STATISTIC_W_VALUE(conn->stats, STAT_ROWS_AFFECTED_NORMAL, conn->upsert_status.affected_rows);
+		}
 	}
-	CONN_SET_STATE(conn, CONN_QUERY_SENT);
-	/*
-	  Here read the result set. We don't do it in simple_command because it need
-	  information from the ok packet. We will fetch it ourselves.
-	*/
-	ret = conn->m->query_read_result_set_header(conn, NULL TSRMLS_CC);
-	if (ret == PASS && conn->last_query_type == QUERY_UPSERT && conn->upsert_status.affected_rows) {
-		MYSQLND_INC_CONN_STATISTIC_W_VALUE(conn->stats, STAT_ROWS_AFFECTED_NORMAL, conn->upsert_status.affected_rows);
-	}
-
 	DBG_RETURN(ret);
 }
 /* }}} */
@@ -931,7 +922,9 @@ MYSQLND_METHOD(mysqlnd_conn, send_query)(MYSQLND * conn, const char * query, uns
 	ret = conn->m->simple_command(conn, COM_QUERY, query, query_len,
 								 PROT_LAST /* we will handle the OK packet*/,
 								 FALSE, FALSE TSRMLS_CC);
-	CONN_SET_STATE(conn, CONN_QUERY_SENT);
+	if (PASS == ret) {
+		CONN_SET_STATE(conn, CONN_QUERY_SENT);
+	}
 	DBG_RETURN(ret);
 }
 /* }}} */
@@ -950,6 +943,10 @@ MYSQLND_METHOD(mysqlnd_conn, reap_query)(MYSQLND * conn TSRMLS_DC)
 		DBG_ERR_FMT("Connection not opened, clear or has been closed. State=%u", state);
 		DBG_RETURN(FAIL);
 	}
+	/*
+	  Here read the result set. We don't do it in simple_command because it need
+	  information from the ok packet. We will fetch it ourselves.
+	*/
 	DBG_RETURN(conn->m->query_read_result_set_header(conn, NULL TSRMLS_CC));
 }
 /* }}} */
@@ -1291,7 +1288,7 @@ MYSQLND_METHOD(mysqlnd_conn, ssl_set)(MYSQLND * const conn, const char * key, co
 
 /* {{{ mysqlnd_conn::escape_string */
 static ulong
-MYSQLND_METHOD(mysqlnd_conn, escape_string)(const MYSQLND * const conn, char *newstr, const char *escapestr, size_t escapestr_len TSRMLS_DC)
+MYSQLND_METHOD(mysqlnd_conn, escape_string)(MYSQLND * const conn, char *newstr, const char *escapestr, size_t escapestr_len TSRMLS_DC)
 {
 	DBG_ENTER("mysqlnd_conn::escape_string");
 	DBG_INF_FMT("conn=%llu", conn->thread_id);

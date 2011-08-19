@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_compile.c 308443 2011-02-17 23:24:50Z felipe $ */
+/* $Id: zend_compile.c 313073 2011-07-08 16:29:33Z felipe $ */
 
 #include <zend_language_parser.h>
 #include "zend.h"
@@ -2529,7 +2529,7 @@ static void do_inherit_method(zend_function *function) /* {{{ */
 }
 /* }}} */
 
-static zend_bool zend_do_perform_implementation_check(const zend_function *fe, const zend_function *proto) /* {{{ */
+static zend_bool zend_do_perform_implementation_check(const zend_function *fe, const zend_function *proto TSRMLS_DC) /* {{{ */
 {
 	zend_uint i;
 
@@ -2572,11 +2572,24 @@ static zend_bool zend_do_perform_implementation_check(const zend_function *fe, c
 			&& strcasecmp(fe->common.arg_info[i].class_name, proto->common.arg_info[i].class_name)!=0) {
 			char *colon;
 
-			if (fe->common.type != ZEND_USER_FUNCTION ||
-					strchr(proto->common.arg_info[i].class_name, '\\') != NULL ||
-					(colon = zend_memrchr(fe->common.arg_info[i].class_name, '\\', fe->common.arg_info[i].class_name_len)) == NULL ||
-					strcasecmp(colon+1, proto->common.arg_info[i].class_name) != 0) {
+			if (fe->common.type != ZEND_USER_FUNCTION) {
 				return 0;
+			} else if (strchr(proto->common.arg_info[i].class_name, '\\') != NULL ||
+			    (colon = zend_memrchr(fe->common.arg_info[i].class_name, '\\', fe->common.arg_info[i].class_name_len)) == NULL ||
+			    strcasecmp(colon+1, proto->common.arg_info[i].class_name) != 0) {
+				zend_class_entry **fe_ce, **proto_ce;
+				int found, found2;
+				
+				found = zend_lookup_class(fe->common.arg_info[i].class_name, fe->common.arg_info[i].class_name_len, &fe_ce TSRMLS_CC);
+				found2 = zend_lookup_class(proto->common.arg_info[i].class_name, proto->common.arg_info[i].class_name_len, &proto_ce TSRMLS_CC);
+				
+				/* Check for class alias */
+				if (found != SUCCESS || found2 != SUCCESS ||
+					(*fe_ce)->type == ZEND_INTERNAL_CLASS ||
+					(*proto_ce)->type == ZEND_INTERNAL_CLASS ||
+					*fe_ce != *proto_ce) {
+					return 0;
+				}
 			}
 		}
 		if (fe->common.arg_info[i].array_type_hint != proto->common.arg_info[i].array_type_hint) {
@@ -2668,11 +2681,11 @@ static zend_bool do_inherit_method_check(HashTable *child_function_table, zend_f
 	}
 
 	if (child->common.prototype && (child->common.prototype->common.fn_flags & ZEND_ACC_ABSTRACT)) {
-		if (!zend_do_perform_implementation_check(child, child->common.prototype)) {
+		if (!zend_do_perform_implementation_check(child, child->common.prototype TSRMLS_CC)) {
 			zend_error(E_COMPILE_ERROR, "Declaration of %s::%s() must be compatible with that of %s::%s()", ZEND_FN_SCOPE_NAME(child), child->common.function_name, ZEND_FN_SCOPE_NAME(child->common.prototype), child->common.prototype->common.function_name);
 		}
 	} else if (EG(error_reporting) & E_STRICT || EG(user_error_handler)) { /* Check E_STRICT (or custom error handler) before the check so that we save some time */
-		if (!zend_do_perform_implementation_check(child, parent)) {
+		if (!zend_do_perform_implementation_check(child, parent TSRMLS_CC)) {
 			zend_error(E_STRICT, "Declaration of %s::%s() should be compatible with that of %s::%s()", ZEND_FN_SCOPE_NAME(child), child->common.function_name, ZEND_FN_SCOPE_NAME(parent), parent->common.function_name);
 		}
 	}
@@ -3749,6 +3762,10 @@ void zend_do_halt_compiler_register(TSRMLS_D) /* {{{ */
 	zend_mangle_property_name(&name, &len, haltoff, sizeof(haltoff) - 1, cfilename, clen, 0);
 	zend_register_long_constant(name, len+1, zend_get_scanned_file_offset(TSRMLS_C), CONST_CS, 0 TSRMLS_CC);
 	pefree(name, 0);
+	
+	if (CG(in_namespace)) {
+		zend_do_end_namespace(TSRMLS_C);
+	}
 }
 /* }}} */
 
@@ -4897,14 +4914,12 @@ void zend_do_extended_fcall_end(TSRMLS_D) /* {{{ */
 
 void zend_do_ticks(TSRMLS_D) /* {{{ */
 {
-	if (Z_LVAL(CG(declarables).ticks)) {
-		zend_op *opline = get_next_op(CG(active_op_array) TSRMLS_CC);
+	zend_op *opline = get_next_op(CG(active_op_array) TSRMLS_CC);
 
-		opline->opcode = ZEND_TICKS;
-		opline->op1.u.constant = CG(declarables).ticks;
-		opline->op1.op_type = IS_CONST;
-		SET_UNUSED(opline->op2);
-	}
+	opline->opcode = ZEND_TICKS;
+	opline->op1.u.constant = CG(declarables).ticks;
+	opline->op1.op_type = IS_CONST;
+	SET_UNUSED(opline->op2);
 }
 /* }}} */
 
@@ -5304,6 +5319,12 @@ void zend_do_end_namespace(TSRMLS_D) /* {{{ */
 		zend_hash_destroy(CG(current_import));
 		efree(CG(current_import));
 		CG(current_import) = NULL;
+	}
+	
+	if (CG(doc_comment)) {
+		efree(CG(doc_comment));
+		CG(doc_comment) = NULL;
+		CG(doc_comment_len) = 0;
 	}
 }
 /* }}} */

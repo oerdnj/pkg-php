@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: xml.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: xml.c 314641 2011-08-09 12:16:58Z laruence $ */
 
 #define IS_EXT_MODULE
 
@@ -237,13 +237,13 @@ const zend_function_entry xml_functions[] = {
 	PHP_FE(xml_parser_get_option,				arginfo_xml_parser_get_option)
 	PHP_FE(utf8_encode, 						arginfo_utf8_encode)
 	PHP_FE(utf8_decode, 						arginfo_utf8_decode)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 #ifdef LIBXML_EXPAT_COMPAT
 static const zend_module_dep xml_deps[] = {
 	ZEND_MOD_REQUIRED("libxml")
-	{NULL, NULL, NULL}
+	ZEND_MOD_END
 };
 #endif
 
@@ -1050,7 +1050,7 @@ void _xml_characterDataHandler(void *userData, const XML_Char *s, int len)
 					if (zend_hash_find(Z_ARRVAL_PP(parser->ctag),"value",sizeof("value"),(void **) &myval) == SUCCESS) {
 						int newlen = Z_STRLEN_PP(myval) + decoded_len;
 						Z_STRVAL_PP(myval) = erealloc(Z_STRVAL_PP(myval),newlen+1);
-						strcpy(Z_STRVAL_PP(myval) + Z_STRLEN_PP(myval),decoded_value);
+						strncpy(Z_STRVAL_PP(myval) + Z_STRLEN_PP(myval), decoded_value, decoded_len + 1);
 						Z_STRLEN_PP(myval) += decoded_len;
 						efree(decoded_value);
 					} else {
@@ -1070,7 +1070,7 @@ void _xml_characterDataHandler(void *userData, const XML_Char *s, int len)
 								if (zend_hash_find(Z_ARRVAL_PP(curtag),"value",sizeof("value"),(void **) &myval) == SUCCESS) {
 									int newlen = Z_STRLEN_PP(myval) + decoded_len;
 									Z_STRVAL_PP(myval) = erealloc(Z_STRVAL_PP(myval),newlen+1);
-									strcpy(Z_STRVAL_PP(myval) + Z_STRLEN_PP(myval),decoded_value);
+									strncpy(Z_STRVAL_PP(myval) + Z_STRLEN_PP(myval), decoded_value, decoded_len + 1);
 									Z_STRLEN_PP(myval) += decoded_len;
 									efree(decoded_value);
 									return;

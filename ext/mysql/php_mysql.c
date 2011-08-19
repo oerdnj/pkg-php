@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_mysql.c 308323 2011-02-14 14:05:46Z iliaa $ */
+/* $Id: php_mysql.c 314376 2011-08-06 14:47:44Z felipe $ */
 
 /* TODO:
  *
@@ -320,7 +320,7 @@ static const zend_function_entry mysql_functions[] = {
 	PHP_FALIAS(mysql_dbname,		mysql_result,		arginfo_mysql_result)
 	PHP_FALIAS(mysql_tablename,		mysql_result,		arginfo_mysql_result)
 	PHP_FALIAS(mysql_table_name,	mysql_result,		arginfo_mysql_result)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 
@@ -329,7 +329,7 @@ static const zend_module_dep mysql_deps[] = {
 #if defined(MYSQL_USE_MYSQLND)
 	ZEND_MOD_REQUIRED("mysqlnd")
 #endif
-	{NULL, NULL, NULL}
+	ZEND_MOD_END
 };
 
 /* {{{ mysql_module_entry
@@ -608,7 +608,7 @@ PHP_RINIT_FUNCTION(mysql)
 /* }}} */
 
 
-#ifdef MYSQL_USE_MYSQLND
+#if defined(A0) && defined(MYSQL_USE_MYSQLND)
 static int php_mysql_persistent_helper(zend_rsrc_list_entry *le TSRMLS_DC)
 {
 	if (le->type == le_plink) {
@@ -637,7 +637,7 @@ PHP_RSHUTDOWN_FUNCTION(mysql)
 		efree(MySG(connect_error));
 	}
 
-#if defined(A0) && MYSQL_USE_MYSQLND
+#if defined(A0) && defined(MYSQL_USE_MYSQLND)
 	zend_hash_apply(&EG(persistent_list), (apply_func_t) php_mysql_persistent_helper TSRMLS_CC);
 #endif
 
@@ -830,6 +830,9 @@ static void php_mysql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 			}
 			/* create the link */
 			mysql = (php_mysql_conn *) malloc(sizeof(php_mysql_conn));
+			if (!mysql) {
+				php_error_docref(NULL TSRMLS_CC, E_ERROR, "Out of memory while allocating memory for a persistent link");
+			}
 			mysql->active_result_id = 0;
 #ifdef CLIENT_MULTI_STATEMENTS
 			mysql->multi_query = client_flags & CLIENT_MULTI_STATEMENTS? 1:0;

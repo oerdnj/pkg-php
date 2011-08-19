@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: sanitizing_filters.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: sanitizing_filters.c 309920 2011-04-03 16:30:31Z iliaa $ */
 
 #include "php_filter.h"
 #include "filter_private.h"
@@ -205,7 +205,11 @@ void php_filter_string(PHP_INPUT_FILTER_PARAM_DECL)
 
 	if (new_len == 0) {
 		zval_dtor(value);
-		ZVAL_EMPTY_STRING(value);
+		if (flags & FILTER_FLAG_EMPTY_STRING_NULL) {
+			ZVAL_NULL(value);
+		} else {
+			ZVAL_EMPTY_STRING(value);			
+		}
 		return;
 	}
 }
@@ -280,6 +284,9 @@ void php_filter_unsafe_raw(PHP_INPUT_FILTER_PARAM_DECL)
 		}
 
 		php_filter_encode_html(value, enc);	
+	} else if (flags & FILTER_FLAG_EMPTY_STRING_NULL && Z_STRLEN_P(value) == 0) {
+		zval_dtor(value);
+		ZVAL_NULL(value);
 	}
 }
 /* }}} */

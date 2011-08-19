@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_iterators.c 308503 2011-02-20 16:09:50Z felipe $ */
+/* $Id: spl_iterators.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -67,7 +67,7 @@ ZEND_END_ARG_INFO()
 const zend_function_entry spl_funcs_RecursiveIterator[] = {
 	SPL_ABSTRACT_ME(RecursiveIterator, hasChildren,  arginfo_recursive_it_void)
 	SPL_ABSTRACT_ME(RecursiveIterator, getChildren,  arginfo_recursive_it_void)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 typedef enum {
@@ -124,6 +124,17 @@ typedef struct _spl_recursive_it_iterator {
 
 static zend_object_handlers spl_handlers_rec_it_it;
 static zend_object_handlers spl_handlers_dual_it;
+
+#define SPL_FETCH_AND_CHECK_DUAL_IT(var, objzval) \
+	do { \
+		spl_dual_it_object *it = zend_object_store_get_object((objzval) TSRMLS_CC); \
+		if (it->dit_type == DIT_Unknown) { \
+			zend_throw_exception_ex(spl_ce_LogicException, 0 TSRMLS_CC, \
+				"The object is in an invalid state as the parent constructor was not called"); \
+			return; \
+		} \
+		(var) = it; \
+	} while (0)
 
 static void spl_recursive_it_dtor(zend_object_iterator *_iter TSRMLS_DC)
 {
@@ -360,6 +371,10 @@ next_step:
 static void spl_recursive_it_rewind_ex(spl_recursive_it_object *object, zval *zthis TSRMLS_DC)
 {
 	zend_object_iterator      *sub_iter;
+	
+	if (!object->iterators) {
+		php_error_docref(NULL TSRMLS_CC, E_ERROR, "The %s instance wasn't initialized properly", Z_OBJCE_P(zthis)->name);
+	}
 
 	while (object->level) {
 		sub_iter = object->iterators[object->level].iterator;
@@ -402,6 +417,10 @@ static zend_object_iterator *spl_recursive_it_get_iterator(zend_class_entry *ce,
 	}
 	iterator = emalloc(sizeof(spl_recursive_it_iterator));
 	object   = (spl_recursive_it_object*)zend_object_store_get_object(zobject TSRMLS_CC);
+	if (object->iterators == NULL) {
+		zend_error(E_ERROR, "The object to be iterated is in an invalid state: "
+				"the parent constructor has not been called");
+	}
 
 	Z_ADDREF_P(zobject);
 	iterator->intern.data = (void*)object;
@@ -957,7 +976,7 @@ static const zend_function_entry spl_funcs_RecursiveIteratorIterator[] = {
 	SPL_ME(RecursiveIteratorIterator, nextElement,       arginfo_recursive_it_void,           ZEND_ACC_PUBLIC)
 	SPL_ME(RecursiveIteratorIterator, setMaxDepth,       arginfo_recursive_it_setMaxDepth,    ZEND_ACC_PUBLIC)
 	SPL_ME(RecursiveIteratorIterator, getMaxDepth,       arginfo_recursive_it_void,           ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 static void spl_recursive_tree_iterator_get_prefix(spl_recursive_it_object *object, zval *return_value TSRMLS_DC)
@@ -1235,7 +1254,7 @@ static const zend_function_entry spl_funcs_RecursiveTreeIterator[] = {
 	SPL_ME(RecursiveTreeIterator,     setPrefixPart,     arginfo_recursive_tree_it_setPrefixPart, ZEND_ACC_PUBLIC)
 	SPL_ME(RecursiveTreeIterator,     getEntry,          arginfo_recursive_it_void,               ZEND_ACC_PUBLIC)
 	SPL_ME(RecursiveTreeIterator,     getPostfix,        arginfo_recursive_it_void,               ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 #if MBO_0
@@ -1512,12 +1531,12 @@ SPL_METHOD(FilterIterator, __construct)
 SPL_METHOD(dual_it, getInnerIterator)
 {
 	spl_dual_it_object   *intern;
-
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
 	
 	if (zend_parse_parameters_none() == FAILURE) {
 		return;
 	}
+	
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	if (intern->inner.zobject) {
 		RETVAL_ZVAL(intern->inner.zobject, 1, 0);
@@ -1616,12 +1635,12 @@ static inline void spl_dual_it_next(spl_dual_it_object *intern, int do_free TSRM
 SPL_METHOD(dual_it, rewind)
 {
 	spl_dual_it_object   *intern;
-
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
 	
 	if (zend_parse_parameters_none() == FAILURE) {
 		return;
 	}
+	
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 	
 	spl_dual_it_rewind(intern TSRMLS_CC);
 	spl_dual_it_fetch(intern, 1 TSRMLS_CC);
@@ -1640,7 +1659,7 @@ SPL_METHOD(dual_it, valid)
 		return;
 	}
 	
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	RETURN_BOOL(intern->current.data);
 } /* }}} */
@@ -1661,7 +1680,7 @@ SPL_METHOD(dual_it, key)
 		return;
 	}
 	
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	if (intern->current.data) {
 		if (intern->current.key_type == HASH_KEY_IS_STRING) {
@@ -1689,7 +1708,7 @@ SPL_METHOD(dual_it, current)
 		return;
 	}
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	if (intern->current.data) {
 		RETVAL_ZVAL(intern->current.data, 1, 0);
@@ -1710,7 +1729,7 @@ SPL_METHOD(dual_it, next)
 		return;
 	}
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	spl_dual_it_next(intern, 1 TSRMLS_CC);
 	spl_dual_it_fetch(intern, 1 TSRMLS_CC);
@@ -1759,7 +1778,7 @@ SPL_METHOD(FilterIterator, rewind)
 		return;
 	}
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 	spl_filter_it_rewind(getThis(), intern TSRMLS_CC);
 } /* }}} */
 
@@ -1773,7 +1792,7 @@ SPL_METHOD(FilterIterator, next)
 		return;
 	}
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 	spl_filter_it_next(getThis(), intern TSRMLS_CC);
 } /* }}} */
 
@@ -1795,7 +1814,7 @@ SPL_METHOD(RecursiveFilterIterator, hasChildren)
 		return;
 	}
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	zend_call_method_with_0_params(&intern->inner.zobject, intern->inner.ce, NULL, "haschildren", &retval);
 	if (retval) {
@@ -1816,7 +1835,7 @@ SPL_METHOD(RecursiveFilterIterator, getChildren)
 		return;
 	}
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	zend_call_method_with_0_params(&intern->inner.zobject, intern->inner.ce, NULL, "getchildren", &retval);
 	if (!EG(exception) && retval) {
@@ -1846,7 +1865,7 @@ SPL_METHOD(RegexIterator, __construct)
    Match (string)current() against regular expression */
 SPL_METHOD(RegexIterator, accept)
 {
-	spl_dual_it_object *intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	spl_dual_it_object *intern;
 	char       *subject, tmp[32], *result;
 	int        subject_len, use_copy, count = 0, result_len;
 	zval       subject_copy, zcount, *replacement;
@@ -1854,6 +1873,8 @@ SPL_METHOD(RegexIterator, accept)
 	if (zend_parse_parameters_none() == FAILURE) {
 		return;
 	}
+	
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 	
 	if (intern->current.data == NULL) {
 		RETURN_FALSE;
@@ -1946,11 +1967,13 @@ SPL_METHOD(RegexIterator, accept)
    Returns current operation mode */
 SPL_METHOD(RegexIterator, getMode)
 {
-	spl_dual_it_object *intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	spl_dual_it_object *intern;
 
 	if (zend_parse_parameters_none() == FAILURE) {
 		return;
 	}
+	
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 	
 	RETURN_LONG(intern->u.regex.mode);
 } /* }}} */
@@ -1959,7 +1982,7 @@ SPL_METHOD(RegexIterator, getMode)
    Set new operation mode */
 SPL_METHOD(RegexIterator, setMode)
 {
-	spl_dual_it_object *intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	spl_dual_it_object *intern;
 	long mode;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &mode) == FAILURE) {
@@ -1970,6 +1993,8 @@ SPL_METHOD(RegexIterator, setMode)
 		zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0 TSRMLS_CC, "Illegal mode %ld", mode);
 		return;/* NULL */
 	}
+	
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	intern->u.regex.mode = mode;
 } /* }}} */
@@ -1978,11 +2003,13 @@ SPL_METHOD(RegexIterator, setMode)
    Returns current operation flags */
 SPL_METHOD(RegexIterator, getFlags)
 {
-	spl_dual_it_object *intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	spl_dual_it_object *intern;
 
 	if (zend_parse_parameters_none() == FAILURE) {
 		return;
 	}
+	
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 	
 	RETURN_LONG(intern->u.regex.flags);
 } /* }}} */
@@ -1991,12 +2018,14 @@ SPL_METHOD(RegexIterator, getFlags)
    Set operation flags */
 SPL_METHOD(RegexIterator, setFlags)
 {
-	spl_dual_it_object *intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	spl_dual_it_object *intern;
 	long flags;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &flags) == FAILURE) {
 		return;
 	}
+	
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	intern->u.regex.flags = flags;
 } /* }}} */
@@ -2005,11 +2034,13 @@ SPL_METHOD(RegexIterator, setFlags)
    Returns current PREG flags (if in use or NULL) */
 SPL_METHOD(RegexIterator, getPregFlags)
 {
-	spl_dual_it_object *intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	spl_dual_it_object *intern;
 	
 	if (zend_parse_parameters_none() == FAILURE) {
 		return;
 	}
+	
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	if (intern->u.regex.use_flags) {
 		RETURN_LONG(intern->u.regex.preg_flags);
@@ -2022,12 +2053,14 @@ SPL_METHOD(RegexIterator, getPregFlags)
    Set PREG flags */
 SPL_METHOD(RegexIterator, setPregFlags)
 {
-	spl_dual_it_object *intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	spl_dual_it_object *intern;
 	long preg_flags;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &preg_flags) == FAILURE) {
 		return;
 	}
+	
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	intern->u.regex.preg_flags = preg_flags;
 	intern->u.regex.use_flags = 1;
@@ -2051,7 +2084,7 @@ SPL_METHOD(RecursiveRegexIterator, getChildren)
 		return;
 	}
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	zend_call_method_with_0_params(&intern->inner.zobject, intern->inner.ce, NULL, "getchildren", &retval);
 	if (!EG(exception)) {
@@ -2156,7 +2189,7 @@ static const zend_function_entry spl_funcs_FilterIterator[] = {
 	SPL_ME(FilterIterator,  next,             arginfo_recursive_it_void, ZEND_ACC_PUBLIC)
 	SPL_ME(dual_it,         getInnerIterator, arginfo_recursive_it_void, ZEND_ACC_PUBLIC)
 	SPL_ABSTRACT_ME(FilterIterator, accept,   arginfo_recursive_it_void)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 ZEND_BEGIN_ARG_INFO(arginfo_parent_it___construct, 0) 
@@ -2167,13 +2200,13 @@ static const zend_function_entry spl_funcs_RecursiveFilterIterator[] = {
 	SPL_ME(RecursiveFilterIterator,  __construct,      arginfo_parent_it___construct, ZEND_ACC_PUBLIC)
 	SPL_ME(RecursiveFilterIterator,  hasChildren,      arginfo_recursive_it_void, ZEND_ACC_PUBLIC)
 	SPL_ME(RecursiveFilterIterator,  getChildren,      arginfo_recursive_it_void, ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 static const zend_function_entry spl_funcs_ParentIterator[] = {
 	SPL_ME(ParentIterator,  __construct,      arginfo_parent_it___construct, ZEND_ACC_PUBLIC)
 	SPL_MA(ParentIterator,  accept,           RecursiveFilterIterator, hasChildren, arginfo_recursive_it_void, ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 #if HAVE_PCRE || HAVE_BUNDLED_PCRE
@@ -2206,7 +2239,7 @@ static const zend_function_entry spl_funcs_RegexIterator[] = {
 	SPL_ME(RegexIterator,   setFlags,         arginfo_regex_it_set_flags,      ZEND_ACC_PUBLIC)
 	SPL_ME(RegexIterator,   getPregFlags,     arginfo_recursive_it_void,       ZEND_ACC_PUBLIC)
 	SPL_ME(RegexIterator,   setPregFlags,     arginfo_regex_it_set_preg_flags, ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_rec_regex_it___construct, 0, 0, 2) 
@@ -2221,7 +2254,7 @@ static const zend_function_entry spl_funcs_RecursiveRegexIterator[] = {
 	SPL_ME(RecursiveRegexIterator,  __construct,      arginfo_rec_regex_it___construct, ZEND_ACC_PUBLIC)
 	SPL_ME(RecursiveFilterIterator, hasChildren,      arginfo_recursive_it_void, ZEND_ACC_PUBLIC)
 	SPL_ME(RecursiveRegexIterator,  getChildren,      arginfo_recursive_it_void, ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 #endif
 
@@ -2288,7 +2321,7 @@ SPL_METHOD(LimitIterator, rewind)
 {
 	spl_dual_it_object   *intern;
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 	spl_dual_it_rewind(intern TSRMLS_CC);
 	spl_limit_it_seek(intern, intern->u.limit.offset TSRMLS_CC);
 } /* }}} */
@@ -2299,7 +2332,7 @@ SPL_METHOD(LimitIterator, valid)
 {
 	spl_dual_it_object   *intern;
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 /*	RETURN_BOOL(spl_limit_it_valid(intern TSRMLS_CC) == SUCCESS);*/
 	RETURN_BOOL((intern->u.limit.count == -1 || intern->current.pos < intern->u.limit.offset + intern->u.limit.count) && intern->current.data);
@@ -2311,7 +2344,7 @@ SPL_METHOD(LimitIterator, next)
 {
 	spl_dual_it_object   *intern;
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	spl_dual_it_next(intern, 1 TSRMLS_CC);
 	if (intern->u.limit.count == -1 || intern->current.pos < intern->u.limit.offset + intern->u.limit.count) {
@@ -2330,7 +2363,7 @@ SPL_METHOD(LimitIterator, seek)
 		return;
 	}
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 	spl_limit_it_seek(intern, pos TSRMLS_CC);
 	RETURN_LONG(intern->current.pos);
 } /* }}} */
@@ -2340,7 +2373,7 @@ SPL_METHOD(LimitIterator, seek)
 SPL_METHOD(LimitIterator, getPosition)
 {
 	spl_dual_it_object   *intern;
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 	RETURN_LONG(intern->current.pos);
 } /* }}} */
 
@@ -2350,7 +2383,7 @@ ZEND_END_ARG_INFO();
 
 static const zend_function_entry spl_funcs_SeekableIterator[] = {
 	SPL_ABSTRACT_ME(SeekableIterator, seek, arginfo_seekable_it_seek)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_limit_it___construct, 0, 0, 1) 
@@ -2373,7 +2406,7 @@ static const zend_function_entry spl_funcs_LimitIterator[] = {
 	SPL_ME(LimitIterator,   seek,             arginfo_limit_it_seek, ZEND_ACC_PUBLIC)
 	SPL_ME(LimitIterator,   getPosition,      arginfo_recursive_it_void, ZEND_ACC_PUBLIC)
 	SPL_ME(dual_it,         getInnerIterator, arginfo_recursive_it_void, ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 static inline int spl_caching_it_valid(spl_dual_it_object *intern TSRMLS_DC)
@@ -2495,7 +2528,7 @@ SPL_METHOD(CachingIterator, rewind)
 		return;
 	}
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	spl_caching_it_rewind(intern TSRMLS_CC);
 } /* }}} */
@@ -2510,7 +2543,7 @@ SPL_METHOD(CachingIterator, valid)
 		return;
 	}
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	RETURN_BOOL(spl_caching_it_valid(intern TSRMLS_CC) == SUCCESS);
 } /* }}} */
@@ -2525,7 +2558,7 @@ SPL_METHOD(CachingIterator, next)
 		return;
 	}
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	spl_caching_it_next(intern TSRMLS_CC);
 } /* }}} */
@@ -2540,7 +2573,7 @@ SPL_METHOD(CachingIterator, hasNext)
 		return;
 	}
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	RETURN_BOOL(spl_caching_it_has_next(intern TSRMLS_CC) == SUCCESS);
 } /* }}} */
@@ -2551,7 +2584,7 @@ SPL_METHOD(CachingIterator, __toString)
 {
 	spl_dual_it_object   *intern;
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	if (!(intern->u.caching.flags & (CIT_CALL_TOSTRING|CIT_TOSTRING_USE_KEY|CIT_TOSTRING_USE_CURRENT|CIT_TOSTRING_USE_INNER)))	{
 		zend_throw_exception_ex(spl_ce_BadMethodCallException, 0 TSRMLS_CC, "%s does not fetch string value (see CachingIterator::__construct)", Z_OBJCE_P(getThis())->name);
@@ -2586,7 +2619,7 @@ SPL_METHOD(CachingIterator, offsetSet)
 	uint nKeyLength;
 	zval *value;
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	if (!(intern->u.caching.flags & CIT_FULL_CACHE))	{
 		zend_throw_exception_ex(spl_ce_BadMethodCallException, 0 TSRMLS_CC, "%s does not use a full cache (see CachingIterator::__construct)", Z_OBJCE_P(getThis())->name);
@@ -2611,7 +2644,7 @@ SPL_METHOD(CachingIterator, offsetGet)
 	uint nKeyLength;
 	zval **value;
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	if (!(intern->u.caching.flags & CIT_FULL_CACHE))	{
 		zend_throw_exception_ex(spl_ce_BadMethodCallException, 0 TSRMLS_CC, "%s does not use a full cache (see CachingIterator::__construct)", Z_OBJCE_P(getThis())->name);
@@ -2639,7 +2672,7 @@ SPL_METHOD(CachingIterator, offsetUnset)
 	char *arKey;
 	uint nKeyLength;
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	if (!(intern->u.caching.flags & CIT_FULL_CACHE))	{
 		zend_throw_exception_ex(spl_ce_BadMethodCallException, 0 TSRMLS_CC, "%s does not use a full cache (see CachingIterator::__construct)", Z_OBJCE_P(getThis())->name);
@@ -2662,7 +2695,7 @@ SPL_METHOD(CachingIterator, offsetExists)
 	char *arKey;
 	uint nKeyLength;
 	
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	if (!(intern->u.caching.flags & CIT_FULL_CACHE))	{
 		zend_throw_exception_ex(spl_ce_BadMethodCallException, 0 TSRMLS_CC, "%s does not use a full cache (see CachingIterator::__construct)", Z_OBJCE_P(getThis())->name);
@@ -2687,7 +2720,7 @@ SPL_METHOD(CachingIterator, getCache)
 		return;
 	}
 	
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	if (!(intern->u.caching.flags & CIT_FULL_CACHE))	{
 		zend_throw_exception_ex(spl_ce_BadMethodCallException, 0 TSRMLS_CC, "%v does not use a full cache (see CachingIterator::__construct)", Z_OBJCE_P(getThis())->name);
@@ -2708,7 +2741,7 @@ SPL_METHOD(CachingIterator, getFlags)
 		return;
 	}
 	
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	RETURN_LONG(intern->u.caching.flags);
 }
@@ -2721,7 +2754,7 @@ SPL_METHOD(CachingIterator, setFlags)
 	spl_dual_it_object   *intern;
 	long flags;
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &flags) == FAILURE) {
 		return;
@@ -2757,7 +2790,7 @@ SPL_METHOD(CachingIterator, count)
 		return;
 	}
 	
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	if (!(intern->u.caching.flags & CIT_FULL_CACHE))	{
 		zend_throw_exception_ex(spl_ce_BadMethodCallException, 0 TSRMLS_CC, "%v does not use a full cache (see CachingIterator::__construct)", Z_OBJCE_P(getThis())->name);
@@ -2804,7 +2837,7 @@ static const zend_function_entry spl_funcs_CachingIterator[] = {
 	SPL_ME(CachingIterator, offsetExists,     arginfo_caching_it_offsetGet,   ZEND_ACC_PUBLIC)
 	SPL_ME(CachingIterator, getCache,         arginfo_recursive_it_void,      ZEND_ACC_PUBLIC)
 	SPL_ME(CachingIterator, count,            arginfo_recursive_it_void,      ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 /* {{{ proto void RecursiveCachingIterator::__construct(RecursiveIterator it [, flags = CIT_CALL_TOSTRING])
@@ -2824,7 +2857,7 @@ SPL_METHOD(RecursiveCachingIterator, hasChildren)
 		return;
 	}
 	
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	RETURN_BOOL(intern->u.caching.zchildren);
 } /* }}} */
@@ -2839,7 +2872,7 @@ SPL_METHOD(RecursiveCachingIterator, getChildren)
 		return;
 	}
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	if (intern->u.caching.zchildren) {
 		RETURN_ZVAL(intern->u.caching.zchildren, 1, 0);
@@ -2857,7 +2890,7 @@ static const zend_function_entry spl_funcs_RecursiveCachingIterator[] = {
 	SPL_ME(RecursiveCachingIterator, __construct,   arginfo_caching_rec_it___construct, ZEND_ACC_PUBLIC)
 	SPL_ME(RecursiveCachingIterator, hasChildren,   arginfo_recursive_it_void, ZEND_ACC_PUBLIC)
 	SPL_ME(RecursiveCachingIterator, getChildren,   arginfo_recursive_it_void, ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 /* {{{ proto void IteratorIterator::__construct(Traversable it)
@@ -2879,7 +2912,7 @@ static const zend_function_entry spl_funcs_IteratorIterator[] = {
 	SPL_ME(dual_it,          current,          arginfo_recursive_it_void, ZEND_ACC_PUBLIC)
 	SPL_ME(dual_it,          next,             arginfo_recursive_it_void, ZEND_ACC_PUBLIC)
 	SPL_ME(dual_it,          getInnerIterator, arginfo_recursive_it_void, ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 /* {{{ proto void NoRewindIterator::__construct(Iterator it)
@@ -2909,7 +2942,7 @@ SPL_METHOD(NoRewindIterator, valid)
 		return;
 	}
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 	RETURN_BOOL(intern->inner.iterator->funcs->valid(intern->inner.iterator TSRMLS_CC) == SUCCESS);
 } /* }}} */
 
@@ -2923,7 +2956,7 @@ SPL_METHOD(NoRewindIterator, key)
 		return;
 	}
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	if (intern->inner.iterator->funcs->get_current_key) {
 		char *str_key;
@@ -2955,7 +2988,7 @@ SPL_METHOD(NoRewindIterator, current)
 		return;
 	}
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 	intern->inner.iterator->funcs->get_current_data(intern->inner.iterator, &data TSRMLS_CC);
 	if (data && *data) {
 		RETURN_ZVAL(*data, 1, 0);
@@ -2972,7 +3005,7 @@ SPL_METHOD(NoRewindIterator, next)
 		return;
 	}
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 	intern->inner.iterator->funcs->move_forward(intern->inner.iterator TSRMLS_CC);
 } /* }}} */
 
@@ -2988,7 +3021,7 @@ static const zend_function_entry spl_funcs_NoRewindIterator[] = {
 	SPL_ME(NoRewindIterator, current,          arginfo_recursive_it_void, ZEND_ACC_PUBLIC)
 	SPL_ME(NoRewindIterator, next,             arginfo_recursive_it_void, ZEND_ACC_PUBLIC)
 	SPL_ME(dual_it,          getInnerIterator, arginfo_recursive_it_void, ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 /* {{{ proto void InfiniteIterator::__construct(Iterator it)
@@ -3008,7 +3041,7 @@ SPL_METHOD(InfiniteIterator, next)
 		return;
 	}
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	spl_dual_it_next(intern, 1 TSRMLS_CC);
 	if (spl_dual_it_valid(intern TSRMLS_CC) == SUCCESS) {
@@ -3024,7 +3057,7 @@ SPL_METHOD(InfiniteIterator, next)
 static const zend_function_entry spl_funcs_InfiniteIterator[] = {
 	SPL_ME(InfiniteIterator, __construct,      arginfo_norewind_it___construct, ZEND_ACC_PUBLIC)
 	SPL_ME(InfiniteIterator, next,             arginfo_recursive_it_void, ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 /* {{{ proto void EmptyIterator::rewind()
@@ -3081,7 +3114,7 @@ static const zend_function_entry spl_funcs_EmptyIterator[] = {
 	SPL_ME(EmptyIterator, key,              arginfo_recursive_it_void, ZEND_ACC_PUBLIC)
 	SPL_ME(EmptyIterator, current,          arginfo_recursive_it_void, ZEND_ACC_PUBLIC)
 	SPL_ME(EmptyIterator, next,             arginfo_recursive_it_void, ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 int spl_append_it_next_iterator(spl_dual_it_object *intern TSRMLS_DC) /* {{{*/
@@ -3147,9 +3180,7 @@ SPL_METHOD(AppendIterator, append)
 	spl_dual_it_object   *intern;
 	zval *it;
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
-	
-	APPENDIT_CHECK_CTOR(intern);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS() TSRMLS_CC, "O", &it, zend_ce_iterator) == FAILURE) {
 		return;
@@ -3177,7 +3208,7 @@ SPL_METHOD(AppendIterator, rewind)
 		return;
 	}
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 	
 	intern->u.append.iterator->funcs->rewind(intern->u.append.iterator TSRMLS_CC);
 	if (spl_append_it_next_iterator(intern TSRMLS_CC) == SUCCESS) {
@@ -3195,7 +3226,7 @@ SPL_METHOD(AppendIterator, valid)
 		return;
 	}
 	
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	RETURN_BOOL(intern->current.data);
 } /* }}} */
@@ -3210,7 +3241,7 @@ SPL_METHOD(AppendIterator, next)
 		return;
 	}
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 	
 	spl_append_it_next(intern TSRMLS_CC);
 } /* }}} */
@@ -3225,7 +3256,7 @@ SPL_METHOD(AppendIterator, getIteratorIndex)
 		return;
 	}
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
 	APPENDIT_CHECK_CTOR(intern);
 	spl_array_iterator_key(intern->u.append.zarrayit, return_value TSRMLS_CC);
@@ -3241,9 +3272,8 @@ SPL_METHOD(AppendIterator, getArrayIterator)
 		return;
 	}
 
-	intern = (spl_dual_it_object*)zend_object_store_get_object(getThis() TSRMLS_CC);
+	SPL_FETCH_AND_CHECK_DUAL_IT(intern, getThis());
 
-	APPENDIT_CHECK_CTOR(intern);
 	RETURN_ZVAL(intern->u.append.zarrayit, 1, 0);
 } /* }}} */
 
@@ -3262,7 +3292,7 @@ static const zend_function_entry spl_funcs_AppendIterator[] = {
 	SPL_ME(dual_it,        getInnerIterator, arginfo_recursive_it_void, ZEND_ACC_PUBLIC)
 	SPL_ME(AppendIterator, getIteratorIndex, arginfo_recursive_it_void, ZEND_ACC_PUBLIC)
 	SPL_ME(AppendIterator, getArrayIterator, arginfo_recursive_it_void, ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 PHPAPI int spl_iterator_apply(zval *obj, spl_iterator_apply_func_t apply_func, void *puser TSRMLS_DC)
@@ -3276,6 +3306,7 @@ PHPAPI int spl_iterator_apply(zval *obj, spl_iterator_apply_func_t apply_func, v
 		goto done;
 	}
 
+	iter->index = 0;
 	if (iter->funcs->rewind) {
 		iter->funcs->rewind(iter TSRMLS_CC);
 		if (EG(exception)) {
@@ -3290,6 +3321,7 @@ PHPAPI int spl_iterator_apply(zval *obj, spl_iterator_apply_func_t apply_func, v
 		if (apply_func(iter, puser TSRMLS_CC) == ZEND_HASH_APPLY_STOP || EG(exception)) {
 			goto done;
 		}
+		iter->index++;
 		iter->funcs->move_forward(iter TSRMLS_CC);
 		if (EG(exception)) {
 			goto done;
@@ -3452,12 +3484,12 @@ PHP_FUNCTION(iterator_apply)
 
 static const zend_function_entry spl_funcs_OuterIterator[] = {
 	SPL_ABSTRACT_ME(OuterIterator, getInnerIterator,   arginfo_recursive_it_void)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 static const zend_function_entry spl_funcs_Countable[] = {
 	SPL_ABSTRACT_ME(Countable, count,   arginfo_recursive_it_void)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 /* {{{ PHP_MINIT_FUNCTION(spl_iterators)
