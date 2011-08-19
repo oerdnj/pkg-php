@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: sysvmsg.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: sysvmsg.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -95,7 +95,7 @@ const zend_function_entry sysvmsg_functions[] = {
 	PHP_FE(msg_stat_queue,				arginfo_msg_stat_queue)
 	PHP_FE(msg_set_queue,				arginfo_msg_set_queue)
 	PHP_FE(msg_queue_exists,			arginfo_msg_queue_exists)
-	{NULL, NULL, NULL}	/* Must be the last line in sysvmsg_functions[] */
+	PHP_FE_END
 };
 /* }}} */
 
@@ -145,7 +145,7 @@ PHP_MINFO_FUNCTION(sysvmsg)
 {
 	php_info_print_table_start();
 	php_info_print_table_row(2, "sysvmsg support", "enabled");
-	php_info_print_table_row(2, "Revision", "$Revision: 306939 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 313665 $");
 	php_info_print_table_end();
 }
 /* }}} */

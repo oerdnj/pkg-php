@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_dotnet.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: com_dotnet.c 313827 2011-07-28 10:34:16Z pajoye $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -129,6 +129,9 @@ static HRESULT dotnet_init(char **p_where TSRMLS_DC)
 	char *where = "";
 
 	stuff = malloc(sizeof(*stuff));
+	if (!stuff) {
+		return S_FALSE;
+	}
 	memset(stuff, 0, sizeof(*stuff));
 
 	where = "CoCreateInstance";

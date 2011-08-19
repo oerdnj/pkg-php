@@ -983,6 +983,12 @@
 /* do we have SO_LISTENQxxx? */
 #undef HAVE_LQ_SO_LISTENQ
 
+/* do we have sysconf? */
+#undef HAVE_SYSCONF
+
+/* do we have times? */
+#undef HAVE_TIMES
+
 /* fpm user name */
 #undef PHP_FPM_USER
 
@@ -1288,6 +1294,9 @@
 
 /* Whether to build openssl as dynamic module */
 #undef COMPILE_DL_OPENSSL
+
+/* OpenSSL 0.9.7 or later */
+#undef HAVE_DSA_DEFAULT_METHOD
 
 /* OpenSSL 0.9.7 or later */
 #undef HAVE_DSA_DEFAULT_METHOD
@@ -2804,14 +2813,14 @@
 /* Whether to build zip as dynamic module */
 #undef COMPILE_DL_ZIP
 
-/* Whether to build mysqlnd as dynamic module */
-#undef COMPILE_DL_MYSQLND
-
 /* Enable compressed protocol support */
-#undef MYSQLND_COMPRESSION_ENABLED
+#undef MYSQLND_COMPRESSION_WANTED
 
 /* Enable SSL support */
 #undef MYSQLND_SSL_SUPPORTED
+
+/* Whether to build mysqlnd as dynamic module */
+#undef COMPILE_DL_MYSQLND
 
 /* Define if int32_t type is present.  */
 #undef HAVE_INT32_T

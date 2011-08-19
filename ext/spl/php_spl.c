@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_spl.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: php_spl.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -877,7 +877,7 @@ const zend_function_entry spl_functions[] = {
 	PHP_FE(iterator_count,          arginfo_iterator)
 	PHP_FE(iterator_apply,          arginfo_iterator_apply)
 #endif /* SPL_ITERATORS_H */
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 

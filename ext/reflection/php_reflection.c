@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_reflection.c 307971 2011-02-03 12:45:30Z cataphract $ */
+/* $Id: php_reflection.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1085,13 +1085,18 @@ static void _extension_string(string *str, zend_module_entry *module, char *inde
 
 		/* Is there a better way of doing this? */
 		while (func->fname) {
-			if (zend_hash_find(EG(function_table), func->fname, strlen(func->fname) + 1, (void**) &fptr) == FAILURE) {
+			int fname_len = strlen(func->fname);
+			char *lc_name = zend_str_tolower_dup(func->fname, fname_len);
+			
+			if (zend_hash_find(EG(function_table), lc_name, fname_len+1, (void**) &fptr) == FAILURE) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Internal error: Cannot find extension function %s in global function table", func->fname);
 				func++;
+				efree(lc_name);
 				continue;
 			}
 			
 			_function_string(str, fptr, NULL, "    " TSRMLS_CC);
+			efree(lc_name);
 			func++;
 		}
 		string_printf(str, "%s  }\n", indent);
@@ -4849,16 +4854,21 @@ ZEND_METHOD(reflection_extension, getFunctions)
 
 		/* Is there a better way of doing this? */
 		while (func->fname) {
-			if (zend_hash_find(EG(function_table), func->fname, strlen(func->fname) + 1, (void**) &fptr) == FAILURE) {
+			int fname_len = strlen(func->fname);
+			char *lc_name = zend_str_tolower_dup(func->fname, fname_len);
+			
+			if (zend_hash_find(EG(function_table), lc_name, fname_len + 1, (void**) &fptr) == FAILURE) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "Internal error: Cannot find extension function %s in global function table", func->fname);
 				func++;
+				efree(lc_name);
 				continue;
 			}
 			
 			ALLOC_ZVAL(function);
 			reflection_function_factory(fptr, NULL, function TSRMLS_CC);
-			add_assoc_zval_ex(return_value, func->fname, strlen(func->fname)+1, function);
+			add_assoc_zval_ex(return_value, func->fname, fname_len+1, function);
 			func++;
+			efree(lc_name);
 		}
 	}
 }
@@ -5057,7 +5067,7 @@ ZEND_METHOD(reflection_extension, info)
 
 /* {{{ method tables */
 static const zend_function_entry reflection_exception_functions[] = {
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 ZEND_BEGIN_ARG_INFO(arginfo_reflection__void, 0)
@@ -5076,13 +5086,13 @@ ZEND_END_ARG_INFO()
 static const zend_function_entry reflection_functions[] = {
 	ZEND_ME(reflection, getModifierNames, arginfo_reflection_getModifierNames, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
 	ZEND_ME(reflection, export, arginfo_reflection_export, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 static const zend_function_entry reflector_functions[] = {
 	ZEND_FENTRY(export, NULL, NULL, ZEND_ACC_STATIC|ZEND_ACC_ABSTRACT|ZEND_ACC_PUBLIC)
 	ZEND_ABSTRACT_ME(reflector, __toString, arginfo_reflection__void)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_reflection_function_export, 0, 0, 1)
@@ -5124,7 +5134,7 @@ static const zend_function_entry reflection_function_abstract_functions[] = {
 	ZEND_ME(reflection_function, getStartLine, arginfo_reflection__void, 0)
 	ZEND_ME(reflection_function, getStaticVariables, arginfo_reflection__void, 0)
 	ZEND_ME(reflection_function, returnsReference, arginfo_reflection__void, 0)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 static const zend_function_entry reflection_function_functions[] = {
@@ -5134,7 +5144,7 @@ static const zend_function_entry reflection_function_functions[] = {
 	ZEND_ME(reflection_function, isDisabled, arginfo_reflection__void, 0)
 	ZEND_ME(reflection_function, invoke, arginfo_reflection_function_invoke, 0)
 	ZEND_ME(reflection_function, invokeArgs, arginfo_reflection_function_invokeArgs, 0)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_reflection_method_export, 0, 0, 2)
@@ -5180,7 +5190,7 @@ static const zend_function_entry reflection_method_functions[] = {
 	ZEND_ME(reflection_method, getDeclaringClass, arginfo_reflection__void, 0)
 	ZEND_ME(reflection_method, getPrototype, arginfo_reflection__void, 0)
 	ZEND_ME(reflection_property, setAccessible, arginfo_reflection_method_setAccessible, 0)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 
@@ -5300,7 +5310,7 @@ static const zend_function_entry reflection_class_functions[] = {
 	ZEND_ME(reflection_class, inNamespace, arginfo_reflection__void, 0)
 	ZEND_ME(reflection_class, getNamespaceName, arginfo_reflection__void, 0)
 	ZEND_ME(reflection_class, getShortName, arginfo_reflection__void, 0)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 
@@ -5316,7 +5326,7 @@ ZEND_END_ARG_INFO()
 static const zend_function_entry reflection_object_functions[] = {
 	ZEND_ME(reflection_object, export, arginfo_reflection_object_export, ZEND_ACC_STATIC|ZEND_ACC_PUBLIC)
 	ZEND_ME(reflection_object, __construct, arginfo_reflection_object___construct, 0)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 
@@ -5361,7 +5371,7 @@ static const zend_function_entry reflection_property_functions[] = {
 	ZEND_ME(reflection_property, getDeclaringClass, arginfo_reflection__void, 0)
 	ZEND_ME(reflection_property, getDocComment, arginfo_reflection__void, 0)
 	ZEND_ME(reflection_property, setAccessible, arginfo_reflection_property_setAccessible, 0)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_reflection_parameter_export, 0, 0, 2)
@@ -5391,7 +5401,7 @@ static const zend_function_entry reflection_parameter_functions[] = {
 	ZEND_ME(reflection_parameter, isOptional, arginfo_reflection__void, 0)
 	ZEND_ME(reflection_parameter, isDefaultValueAvailable, arginfo_reflection__void, 0)
 	ZEND_ME(reflection_parameter, getDefaultValue, arginfo_reflection__void, 0)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_reflection_extension_export, 0, 0, 1)
@@ -5417,12 +5427,12 @@ static const zend_function_entry reflection_extension_functions[] = {
 	ZEND_ME(reflection_extension, getClassNames, arginfo_reflection__void, 0)
 	ZEND_ME(reflection_extension, getDependencies, arginfo_reflection__void, 0)
 	ZEND_ME(reflection_extension, info, arginfo_reflection__void, 0)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 
 const zend_function_entry reflection_ext_functions[] = { /* {{{ */
-	{NULL, NULL, NULL}
+	PHP_FE_END
 }; /* }}} */
 
 static zend_object_handlers *zend_std_obj_handlers;
@@ -5535,7 +5545,7 @@ PHP_MINFO_FUNCTION(reflection) /* {{{ */
 	php_info_print_table_start();
 	php_info_print_table_header(2, "Reflection", "enabled");
 
-	php_info_print_table_row(2, "Version", "$Revision: 307971 $");
+	php_info_print_table_row(2, "Version", "$Revision: 313665 $");
 
 	php_info_print_table_end();
 } /* }}} */
@@ -5549,7 +5559,7 @@ zend_module_entry reflection_module_entry = { /* {{{ */
 	NULL,
 	NULL,
 	PHP_MINFO(reflection),
-	"$Revision: 307971 $",
+	"$Revision: 313665 $",
 	STANDARD_MODULE_PROPERTIES
 }; /* }}} */
 

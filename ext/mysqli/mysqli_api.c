@@ -17,7 +17,7 @@
   |          Ulf Wendel <uw@php.net>                                     |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_api.c 307533 2011-01-17 11:20:54Z kalle $
+  $Id: mysqli_api.c 314116 2011-08-02 15:30:58Z andrey $
 */
 
 #ifdef HAVE_CONFIG_H
@@ -2233,7 +2233,9 @@ PHP_FUNCTION(mysqli_stmt_attr_set)
 	MY_STMT	*stmt;
 	zval	*mysql_stmt;
 	long	mode_in;
+#if MYSQL_VERSION_ID >= 50107
 	my_bool	mode_b;
+#endif
 	ulong	mode;
 	ulong	attr;
 	void	*mode_p;

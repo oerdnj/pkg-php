@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: odbc_stmt.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: odbc_stmt.c 312506 2011-06-27 01:36:39Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -164,7 +164,7 @@ static int odbc_stmt_execute(pdo_stmt_t *stmt TSRMLS_DC)
 	RETCODE rc;
 	pdo_odbc_stmt *S = (pdo_odbc_stmt*)stmt->driver_data;
 	char *buf = NULL;
-	long row_count = -1;
+	SQLLEN row_count = -1;
 
 	if (stmt->executed) {
 		SQLCloseCursor(S->stmt);

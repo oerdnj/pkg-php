@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: string_extend.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: string_extend.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -47,7 +47,7 @@ ZEND_END_ARG_INFO();
 const zend_function_entry php_dom_string_extend_class_functions[] = {
 	PHP_FALIAS(findOffset16, dom_string_extend_find_offset16, arginfo_dom_string_extend_find_offset16)
 	PHP_FALIAS(findOffset32, dom_string_extend_find_offset32, arginfo_dom_string_extend_find_offset32)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 /* {{{ attribute protos, not implemented yet */

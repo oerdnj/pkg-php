@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: var.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: var.c 314403 2011-08-07 06:04:11Z pierrick $ */
 
 /* {{{ includes
 */
@@ -242,7 +242,6 @@ PHPAPI void php_debug_zval_dump(zval **struc, int level TSRMLS_DC) /* {{{ */
 	HashTable *myht = NULL;
 	char *class_name;
 	zend_uint class_name_len;
-	zend_class_entry *ce;
 	int (*zval_element_dump_func)(zval** TSRMLS_DC, int, va_list, zend_hash_key*);
 	int is_temp = 0;
 
@@ -283,7 +282,6 @@ PHPAPI void php_debug_zval_dump(zval **struc, int level TSRMLS_DC) /* {{{ */
 			PUTS("*RECURSION*\n");
 			return;
 		}
-		ce = Z_OBJCE_PP(struc);
 		if (Z_OBJ_HANDLER_PP(struc, get_class_name)) {
 			Z_OBJ_HANDLER_PP(struc, get_class_name)(*struc, &class_name, &class_name_len, 0 TSRMLS_CC);
 			php_printf("%sobject(%s)#%d (%d) refcount(%u){\n", COMMON, class_name, Z_OBJ_HANDLE_PP(struc), myht ? zend_hash_num_elements(myht) : 0, Z_REFCOUNT_PP(struc));
@@ -387,18 +385,26 @@ static int php_object_element_export(zval **zv TSRMLS_DC, int num_args, va_list 
 {
 	int level;
 	smart_str *buf;
-	char *prop_name, *class_name;
 
 	level = va_arg(args, int);
 	buf = va_arg(args, smart_str *);
 
 	buffer_append_spaces(buf, level + 2);
 	if (hash_key->nKeyLength != 0) {
-		zend_unmangle_property_name(hash_key->arKey, hash_key->nKeyLength - 1, &class_name, &prop_name);
+		char *class_name, /* ignored, but must be passed to unmangle */
+			 *pname,
+			 *pname_esc;
+		int  pname_esc_len;
+		
+		zend_unmangle_property_name(hash_key->arKey, hash_key->nKeyLength - 1,
+				&class_name, &pname);
+		pname_esc = php_addcslashes(pname, strlen(pname), &pname_esc_len, 0,
+			"'\\", 2 TSRMLS_CC);
 
 		smart_str_appendc(buf, '\'');
-		smart_str_appends(buf, prop_name);
+		smart_str_appendl(buf, pname_esc, pname_esc_len);
 		smart_str_appendc(buf, '\'');
+		efree(pname_esc);
 	} else {
 		smart_str_append_long(buf, hash_key->h);
 	}

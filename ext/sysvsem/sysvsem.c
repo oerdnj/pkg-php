@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: sysvsem.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: sysvsem.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 /* Latest update build anc tested on Linux 2.2.14
  *
@@ -84,7 +84,7 @@ const zend_function_entry sysvsem_functions[] = {
 	PHP_FE(sem_acquire,		arginfo_sem_acquire)
 	PHP_FE(sem_release,		arginfo_sem_release)
 	PHP_FE(sem_remove,		arginfo_sem_remove)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 

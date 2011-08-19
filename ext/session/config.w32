@@ -1,4 +1,4 @@
-// $Id: config.w32 306344 2010-12-13 18:43:10Z pajoye $
+// $Id: config.w32 312200 2011-06-16 01:21:01Z pajoye $
 // vim:ft=javascript
 
 ARG_ENABLE("session", "session support", "yes");
@@ -6,5 +6,5 @@ ARG_ENABLE("session", "session support", "yes");
 if (PHP_SESSION == "yes") {
 	EXTENSION("session", "session.c mod_files.c mod_mm.c mod_user.c", false /* never shared */);
 	AC_DEFINE("HAVE_PHP_SESSION", 1, "Session support");
-	PHP_INSTALL_HEADERS("ext/session/", "mod_mm.h");
+	PHP_INSTALL_HEADERS("ext/session/", "mod_mm.h php_session.h mod_files.h mod_user.h");
 }

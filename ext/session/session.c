@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: session.c 307671 2011-01-23 10:02:06Z pajoye $ */
+/* $Id: session.c 314376 2011-08-06 14:47:44Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -2119,7 +2119,7 @@ static const zend_function_entry session_functions[] = {
 	PHP_FE(session_get_cookie_params, arginfo_session_void)
 	PHP_FE(session_write_close,       arginfo_session_void)
 	PHP_FALIAS(session_commit, session_write_close, arginfo_session_void)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 
@@ -2283,7 +2283,7 @@ static PHP_MINFO_FUNCTION(session) /* {{{ */
 static const zend_module_dep session_deps[] = { /* {{{ */
 	ZEND_MOD_OPTIONAL("hash")
 	ZEND_MOD_REQUIRED("spl")
-	{NULL, NULL, NULL}
+	ZEND_MOD_END
 };
 /* }}} */
 

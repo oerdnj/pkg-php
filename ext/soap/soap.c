@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: soap.c 307975 2011-02-03 13:33:10Z iliaa $ */
+/* $Id: soap.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -279,6 +279,9 @@ PHP_METHOD(SoapHeader, SoapHeader);
 
 /* {{{ arginfo */
 #ifdef ZEND_ENGINE_2
+ZEND_BEGIN_ARG_INFO(arginfo_soap__void, 0)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_soapparam_soapparam, 0, 0, 2)
 	ZEND_ARG_INFO(0, data)
 	ZEND_ARG_INFO(0, name)
@@ -457,15 +460,15 @@ unsigned char arginfo_soapclient___soapcall[] = { 5, BYREF_NONE, BYREF_NONE, BYR
 static const zend_function_entry soap_functions[] = {
 	PHP_FE(use_soap_error_handler, 	arginfo_soap_use_soap_error_handler)
 	PHP_FE(is_soap_fault, 			arginfo_soap_is_soap_fault)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 static const zend_function_entry soap_fault_functions[] = {
 	SOAP_CTOR(SoapFault, SoapFault, arginfo_soapfault_soapfault, 0)
 #ifdef ZEND_ENGINE_2
-	PHP_ME(SoapFault, __toString, NULL, 0)
+	PHP_ME(SoapFault, __toString, arginfo_soap__void, 0)
 #endif
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 static const zend_function_entry soap_server_functions[] = {
@@ -478,7 +481,7 @@ static const zend_function_entry soap_server_functions[] = {
 	PHP_ME(SoapServer, handle, 			arginfo_soapserver_handle, 0)
 	PHP_ME(SoapServer, fault, 			arginfo_soapserver_fault, 0)
 	PHP_ME(SoapServer, addSoapHeader, 	arginfo_soapserver_addsoapheader, 0)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 static const zend_function_entry soap_client_functions[] = {
@@ -495,22 +498,22 @@ static const zend_function_entry soap_client_functions[] = {
 	PHP_ME(SoapClient, __setCookie, 				arginfo_soapclient___setcookie, 0)
 	PHP_ME(SoapClient, __setLocation, 				arginfo_soapclient___setlocation, 0)
 	PHP_ME(SoapClient, __setSoapHeaders, 			arginfo_soapclient___setsoapheaders, 0)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 static const zend_function_entry soap_var_functions[] = {
 	SOAP_CTOR(SoapVar, SoapVar, arginfo_soapvar_soapvar, 0)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 static const zend_function_entry soap_param_functions[] = {
 	SOAP_CTOR(SoapParam, SoapParam, arginfo_soapparam_soapparam, 0)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 static const zend_function_entry soap_header_functions[] = {
 	SOAP_CTOR(SoapHeader, SoapHeader, arginfo_soapheader_soapheader, 0)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 zend_module_entry soap_module_entry = {
@@ -1213,9 +1216,11 @@ PHP_METHOD(SoapServer, SoapServer)
 		zval **tmp;
 
 		if (zend_hash_find(ht, "soap_version", sizeof("soap_version"), (void**)&tmp) == SUCCESS) {
-			if (Z_TYPE_PP(tmp) == IS_LONG ||
-			    (Z_LVAL_PP(tmp) == SOAP_1_1 && Z_LVAL_PP(tmp) == SOAP_1_2)) {
+			if (Z_TYPE_PP(tmp) == IS_LONG &&
+			    (Z_LVAL_PP(tmp) == SOAP_1_1 || Z_LVAL_PP(tmp) == SOAP_1_2)) {
 				version = Z_LVAL_PP(tmp);
+			} else {
+				php_error_docref(NULL TSRMLS_CC, E_ERROR, "'soap_version' option must be SOAP_1_1 or SOAP_1_2");
 			}
 		}
 
@@ -2282,7 +2287,7 @@ static void soap_error_handler(int error_num, const char *error_filename, const 
 	_old_http_response_code = SG(sapi_headers).http_response_code;
 	_old_http_status_line = SG(sapi_headers).http_status_line;
 
-	if (!SOAP_GLOBAL(use_soap_error_handler)) {
+	if (!SOAP_GLOBAL(use_soap_error_handler) || !EG(objects_store).object_buckets) {
 		call_old_error_handler(error_num, error_filename, error_lineno, format, args);
 		return;
 	}

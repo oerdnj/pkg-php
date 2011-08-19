@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
  
-/* $Id: bz2.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: bz2.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -107,7 +107,7 @@ static const zend_function_entry bz2_functions[] = {
 	PHP_FE(bzerror,      arginfo_bzerror)
 	PHP_FE(bzcompress,   arginfo_bzcompress)
 	PHP_FE(bzdecompress, arginfo_bzdecompress)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 zend_module_entry bz2_module_entry = {

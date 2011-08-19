@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: posix.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: posix.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -301,7 +301,7 @@ const zend_function_entry posix_functions[] = {
 	PHP_FE(posix_initgroups,	arginfo_posix_initgroups)
 #endif
 
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 
@@ -310,7 +310,7 @@ const zend_function_entry posix_functions[] = {
 static PHP_MINFO_FUNCTION(posix)
 {
 	php_info_print_table_start();
-	php_info_print_table_row(2, "Revision", "$Revision: 306939 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 313665 $");
 	php_info_print_table_end();
 }
 /* }}} */

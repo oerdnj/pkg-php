@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: snprintf.c 308525 2011-02-21 06:53:24Z cataphract $ */
+/* $Id: snprintf.c 314582 2011-08-09 02:42:25Z pierrick $ */
 
 
 #include "php.h"
@@ -497,8 +497,11 @@ char * ap_php_conv_p2(register u_wide_int num, register int nbits, char format, 
  * NUM_BUF_SIZE is the size of the buffer used for arithmetic conversions
  *
  * XXX: this is a magic number; do not decrease it
+ * Emax = 1023
+ * NDIG = 320
+ * NUM_BUF_SIZE >= strlen("-") + Emax + strlrn(".") + NDIG + strlen("E+1023") + 1;
  */
-#define NUM_BUF_SIZE		512
+#define NUM_BUF_SIZE		2048
 
 
 /*
@@ -584,7 +587,6 @@ static int format_converter(register buffy * odp, const char *fmt, va_list ap) /
 	int i;
 
 	char *s = NULL;
-	char *q;
 	int s_len, free_zcopy;
 	zval *zvp, zcopy;
 
@@ -1068,7 +1070,7 @@ static int format_converter(register buffy * odp, const char *fmt, va_list ap) /
 
 					s_len = strlen(s);
 
-					if (alternate_form && (q = strchr(s, '.')) == NULL) {
+					if (alternate_form && (strchr(s, '.')) == NULL) {
 						s[s_len++] = '.';
 					}
 					break;

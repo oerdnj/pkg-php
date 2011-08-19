@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_odbc.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: pdo_odbc.c 314376 2011-08-06 14:47:44Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -40,7 +40,7 @@ const function_entry pdo_odbc_functions[] = {
 #if ZEND_MODULE_API_NO >= 20050922
 static const zend_module_dep pdo_odbc_deps[] = {
 	ZEND_MOD_REQUIRED("pdo")
-	{NULL, NULL, NULL}
+	ZEND_MOD_END
 };
 #endif
 /* }}} */
@@ -98,6 +98,9 @@ PHP_MINIT_FUNCTION(pdo_odbc)
 		char *instance = INI_STR("pdo_odbc.db2_instance_name");
 		if (instance) {
 			char *env = malloc(sizeof("DB2INSTANCE=") + strlen(instance));
+			if (!env) {
+				return FAILURE;
+			}
 			strcpy(env, "DB2INSTANCE=");
 			strcat(env, instance);
 			putenv(env);

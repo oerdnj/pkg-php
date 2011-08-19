@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_cli.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: php_cli.c 314468 2011-08-08 07:12:12Z laruence $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -29,9 +29,7 @@
 #include "zend_modules.h"
 #include "zend_interfaces.h"
 
-#ifdef HAVE_REFLECTION
 #include "ext/reflection/php_reflection.h"
-#endif
 
 #include "SAPI.h"
 
@@ -159,14 +157,12 @@ static const opt_struct OPTIONS[] = {
 	{'?', 0, "usage"},/* help alias (both '?' and 'usage') */
 	{'v', 0, "version"},
 	{'z', 1, "zend-extension"},
-#ifdef HAVE_REFLECTION
 	{10,  1, "rf"},
 	{10,  1, "rfunction"},
 	{11,  1, "rc"},
 	{11,  1, "rclass"},
 	{12,  1, "re"},
 	{12,  1, "rextension"},
-#endif
 	{13,  1, "ri"},
 	{13,  1, "rextinfo"},
 	{14,  0, "ini"},
@@ -519,11 +515,9 @@ static void php_cli_usage(char *argv0)
 				"\n"
 				"  --ini            Show configuration file names\n"
 				"\n"
-#if (HAVE_REFLECTION)
 				"  --rf <name>      Show information about function <name>.\n"
 				"  --rc <name>      Show information about class <name>.\n"
 				"  --re <name>      Show information about extension <name>.\n"
-#endif
 				"  --ri <name>      Show configuration for extension <name>.\n"
 				"\n"
 				, prog, prog, prog, prog, prog, prog);
@@ -602,7 +596,7 @@ static const char *param_mode_conflict = "Either execute direct code, process st
  */
 static int cli_seek_file_begin(zend_file_handle *file_handle, char *script_file, int *lineno TSRMLS_DC)
 {
-	char c;
+	int c;
 
 	*lineno = 1;
 
@@ -799,7 +793,7 @@ int main(int argc, char *argv[])
 				request_started = 1;
 				php_cli_usage(argv[0]);
 				php_end_ob_buffers(1 TSRMLS_CC);
-				exit_status=0;
+				exit_status = (c == '?' && argc > 1 && !strchr(argv[1],  c));
 				goto out;
 
 			case 'i': /* php info & quit */
@@ -1005,8 +999,6 @@ int main(int argc, char *argv[])
 			case 'H':
 				hide_argv = 1;
 				break;
-
-#ifdef HAVE_REFLECTION
 			case 10:
 				behavior=PHP_MODE_REFLECTION_FUNCTION;
 				reflection_what = php_optarg;
@@ -1019,7 +1011,6 @@ int main(int argc, char *argv[])
 				behavior=PHP_MODE_REFLECTION_EXTENSION;
 				reflection_what = php_optarg;
 				break;
-#endif
 			case 13:
 				behavior=PHP_MODE_REFLECTION_EXT_INFO;
 				reflection_what = php_optarg;
@@ -1285,7 +1276,6 @@ int main(int argc, char *argv[])
 
 				break;
 			}
-#ifdef HAVE_REFLECTION
 			case PHP_MODE_REFLECTION_FUNCTION:
 			case PHP_MODE_REFLECTION_CLASS:
 			case PHP_MODE_REFLECTION_EXTENSION:
@@ -1336,7 +1326,6 @@ int main(int argc, char *argv[])
 
 					break;
 				}
-#endif /* reflection */
 			case PHP_MODE_REFLECTION_EXT_INFO:
 				{
 					int len = strlen(reflection_what);
@@ -1361,7 +1350,7 @@ int main(int argc, char *argv[])
 				{
 					zend_printf("Configuration File (php.ini) Path: %s\n", PHP_CONFIG_FILE_PATH);
 					zend_printf("Loaded Configuration File:         %s\n", php_ini_opened_path ? php_ini_opened_path : "(none)");
-					zend_printf("Scan for additional .ini files in: %s\n", *PHP_CONFIG_FILE_SCAN_DIR ? PHP_CONFIG_FILE_SCAN_DIR : "(none)");
+					zend_printf("Scan for additional .ini files in: %s\n", php_ini_scanned_path ? php_ini_scanned_path : "(none)");
 					zend_printf("Additional .ini files parsed:      %s\n", php_ini_scanned_files ? php_ini_scanned_files : "(none)");
 					break;
 				}

@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_dom.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: php_dom.c 314493 2011-08-08 12:29:32Z iliaa $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -212,7 +212,7 @@ int dom_set_doc_classmap(php_libxml_ref_obj *document, zend_class_entry *basece,
 			zend_hash_init(doc_props->classmap, 0, NULL, NULL, 0);
 		}
 		if (ce) {
-			return zend_hash_update(doc_props->classmap, basece->name, basece->name_length + 1, &ce, sizeof(ce), NULL);
+			return zend_hash_update(doc_props->classmap, basece->name, basece->name_length + 1, &ce, sizeof(zend_class_entry *), NULL);
 		} else {
 			zend_hash_del(doc_props->classmap, basece->name, basece->name_length + 1);
 		}
@@ -543,7 +543,7 @@ ZEND_END_ARG_INFO()
 
 static const zend_function_entry dom_functions[] = {
 	PHP_FE(dom_import_simplexml, arginfo_dom_import_simplexml)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 static zend_object_handlers* dom_get_obj_handlers(TSRMLS_D) {
@@ -553,7 +553,7 @@ static zend_object_handlers* dom_get_obj_handlers(TSRMLS_D) {
 static const zend_module_dep dom_deps[] = {
 	ZEND_MOD_REQUIRED("libxml")
 	ZEND_MOD_CONFLICTS("domxml")
-	{NULL, NULL, NULL}
+	ZEND_MOD_END
 };
 
 zend_module_entry dom_module_entry = { /* {{{ */

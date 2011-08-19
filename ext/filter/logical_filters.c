@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: logical_filters.c 307678 2011-01-23 16:44:58Z iliaa $ */
+/* $Id: logical_filters.c 311403 2011-05-24 22:34:07Z felipe $ */
 
 #include "php_filter.h"
 #include "filter_private.h"
@@ -682,7 +682,7 @@ void php_filter_validate_ip(PHP_INPUT_FILTER_PARAM_DECL) /* {{{ */
 		RETURN_VALIDATION_FAILED
 	}
 
-	if (flags & (FILTER_FLAG_IPV4 || FILTER_FLAG_IPV6)) {
+	if ((flags & FILTER_FLAG_IPV4) && (flags & FILTER_FLAG_IPV6)) {
 		/* Both formats are cool */
 	} else if ((flags & FILTER_FLAG_IPV4) && mode == FORMAT_IPV6) {
 		RETURN_VALIDATION_FAILED

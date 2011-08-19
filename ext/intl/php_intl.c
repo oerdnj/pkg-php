@@ -487,7 +487,7 @@ zend_function_entry intl_functions[] = {
 	PHP_FE( intl_is_failure, intl_1_arg )
 	PHP_FE( intl_error_name, intl_1_arg )
 
-	{ NULL, NULL, NULL }
+	PHP_FE_END
 };
 /* }}} */
 
@@ -543,6 +543,10 @@ PHP_MINIT_FUNCTION( intl )
 	REGISTER_INI_ENTRIES();
 
 	REGISTER_LONG_CONSTANT("INTL_MAX_LOCALE_LEN", INTL_MAX_LOCALE_LEN, CONST_CS);
+	REGISTER_STRING_CONSTANT("INTL_ICU_VERSION", U_ICU_VERSION, CONST_PERSISTENT | CONST_CS);
+#ifdef U_ICU_DATA_VERSION
+	REGISTER_STRING_CONSTANT("INTL_ICU_DATA_VERSION", U_ICU_DATA_VERSION, CONST_PERSISTENT | CONST_CS);
+#endif	
 
 	/* Register 'Collator' PHP class */
 	collator_register_Collator_class( TSRMLS_C );
@@ -647,6 +651,9 @@ PHP_MINFO_FUNCTION( intl )
 	php_info_print_table_header( 2, "Internationalization support", "enabled" );
 	php_info_print_table_row( 2, "version", INTL_MODULE_VERSION );
 	php_info_print_table_row( 2, "ICU version", U_ICU_VERSION );
+#ifdef U_ICU_DATA_VERSION
+	php_info_print_table_row( 2, "ICU Data version", U_ICU_DATA_VERSION );
+#endif
 	php_info_print_table_end();
 
     /* For the default locale php.ini setting */

@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_sybase_ct.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: php_sybase_ct.c 313903 2011-07-28 21:16:51Z pajoye $ */
 
 
 #ifdef HAVE_CONFIG_H
@@ -204,7 +204,7 @@ const zend_function_entry sybase_functions[] = {
 	PHP_FALIAS(mssql_set_message_handler, 	sybase_set_message_handler, 	arginfo_sybase_set_message_handler)
 	PHP_FALIAS(mssql_deadlock_retry_count, 	sybase_deadlock_retry_count, 	arginfo_sybase_deadlock_retry_count)
 #endif
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 zend_module_entry sybase_module_entry = {
@@ -388,7 +388,7 @@ static CS_RETCODE CS_PUBLIC _client_message_handler(CS_CONTEXT *context, CS_CONN
 	TSRMLS_FETCH();
 
 	if (CS_SEVERITY(errmsg->msgnumber) >= SybCtG(min_client_severity)) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Sybase:  Client message:  %s (severity %d)", errmsg->msgstring, CS_SEVERITY(errmsg->msgnumber));
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Sybase:  Client message:  %s (severity %ld)", errmsg->msgstring, (long)CS_SEVERITY(errmsg->msgnumber));
 	}
 	STR_FREE(SybCtG(server_message));
 	SybCtG(server_message) = estrdup(errmsg->msgstring);
@@ -728,7 +728,7 @@ static int php_sybase_do_connect_internal(sybase_link *sybase, char *host, char 
 
 static void php_sybase_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 {
-	char *user, *passwd, *host, *charset, *appname;
+	char *user = NULL, *passwd = NULL, *host = NULL, *charset = NULL, *appname = NULL;
 	char *hashed_details;
 	int hashed_details_length, len;
 	zend_bool new = 0;
@@ -777,6 +777,10 @@ static void php_sybase_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 			}
 
 			sybase_ptr = (sybase_link *) malloc(sizeof(sybase_link));
+			if (!sybase_ptr) {
+				efree(hashed_details);
+				RETURN_FALSE;
+			}
 			if (!php_sybase_do_connect_internal(sybase_ptr, host, user, passwd, charset, appname TSRMLS_CC)) {
 				free(sybase_ptr);
 				efree(hashed_details);

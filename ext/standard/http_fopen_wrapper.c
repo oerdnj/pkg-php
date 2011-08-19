@@ -19,7 +19,7 @@
    |          Sara Golemon <pollita@php.net>                              |
    +----------------------------------------------------------------------+
  */
-/* $Id: http_fopen_wrapper.c 307815 2011-01-28 10:33:47Z dmitry $ */ 
+/* $Id: http_fopen_wrapper.c 314641 2011-08-09 12:16:58Z laruence $ */ 
 
 #include "php.h"
 #include "php_globals.h"
@@ -330,7 +330,7 @@ finish:
 				scratch_len = strlen(path) + 29 + Z_STRLEN_PP(tmpzval);
 				scratch = emalloc(scratch_len);
 				strlcpy(scratch, Z_STRVAL_PP(tmpzval), Z_STRLEN_PP(tmpzval) + 1);
-				strcat(scratch, " ");
+				strncat(scratch, " ", 1);
 			}
 		}
 	}
@@ -344,7 +344,7 @@ finish:
 	if (!scratch) {
 		scratch_len = strlen(path) + 29 + protocol_version_len;
 		scratch = emalloc(scratch_len);
-		strcpy(scratch, "GET ");
+		strncpy(scratch, "GET ", scratch_len);
 	}
 
 	/* Should we send the entire path in the request line, default to no. */
@@ -545,7 +545,7 @@ finish:
 	/* if the user has configured who they are, send a From: line */
 	{
 		char *from_address = php_ini_string("from", sizeof("from"), 0);
-		if (((have_header & HTTP_HEADER_FROM) == 0) && from_address[0] != '\0') {
+		if (((have_header & HTTP_HEADER_FROM) == 0) && from_address && from_address[0] != '\0') {
 			if (snprintf(scratch, scratch_len, "From: %s\r\n", from_address) > 0)
 				php_stream_write(stream, scratch, strlen(scratch));
 		}
@@ -631,7 +631,6 @@ finish:
 		}
 		php_stream_write(stream, "\r\n", sizeof("\r\n")-1);
 		php_stream_write(stream, Z_STRVAL_PP(tmpzval), Z_STRLEN_PP(tmpzval));
-		php_stream_write(stream, "\r\n\r\n", sizeof("\r\n\r\n")-1);
 	} else {
 		php_stream_write(stream, "\r\n", sizeof("\r\n")-1);
 	}

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: tsrm_win32.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: tsrm_win32.c 313782 2011-07-27 14:23:06Z pajoye $ */
 
 #include <stdio.h>
 #include <fcntl.h>
@@ -532,6 +532,10 @@ TSRM_API FILE *popen_ex(const char *command, const char *type, const char *cwd, 
 	}
 
 	cmd = (char*)malloc(strlen(command)+strlen(TWG(comspec))+sizeof(" /c ")+2);
+	if (!cmd) {
+		return NULL;
+	}
+
 	sprintf(cmd, "%s /c \"%s\"", TWG(comspec), command);
 	if (asuser) {
 		res = CreateProcessAsUser(token_user, NULL, cmd, &security, &security, security.bInheritHandle, dwCreateFlags, env, cwd, &startup, &process);

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_date.c 307853 2011-01-30 10:18:12Z stas $ */
+/* $Id: php_date.c 314445 2011-08-07 18:12:52Z gwynne $ */
 
 #include "php.h"
 #include "php_streams.h"
@@ -425,7 +425,7 @@ const zend_function_entry date_functions[] = {
 	PHP_FE(date_sunrise, arginfo_date_sunrise)
 	PHP_FE(date_sunset, arginfo_date_sunset)
 	PHP_FE(date_sun_info, arginfo_date_sun_info)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 const zend_function_entry date_funcs_date[] = {
@@ -447,7 +447,7 @@ const zend_function_entry date_funcs_date[] = {
 	PHP_ME_MAPPING(setTimestamp,	date_timestamp_set, arginfo_date_method_timestamp_set, 0)
 	PHP_ME_MAPPING(getTimestamp,	date_timestamp_get, arginfo_date_method_timestamp_get, 0)
 	PHP_ME_MAPPING(diff,			date_diff, arginfo_date_method_diff, 0)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 const zend_function_entry date_funcs_timezone[] = {
@@ -458,19 +458,19 @@ const zend_function_entry date_funcs_timezone[] = {
 	PHP_ME_MAPPING(getLocation,       timezone_location_get,       arginfo_timezone_method_location_get, 0)
 	PHP_ME_MAPPING(listAbbreviations, timezone_abbreviations_list, arginfo_timezone_abbreviations_list, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
 	PHP_ME_MAPPING(listIdentifiers,   timezone_identifiers_list,   arginfo_timezone_identifiers_list, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 const zend_function_entry date_funcs_interval[] = {
 	PHP_ME(DateInterval,              __construct,                 arginfo_date_interval_construct, ZEND_ACC_CTOR|ZEND_ACC_PUBLIC)
 	PHP_ME_MAPPING(format,            date_interval_format,        arginfo_date_method_interval_format, 0)
 	PHP_ME_MAPPING(createFromDateString, date_interval_create_from_date_string,	arginfo_date_interval_create_from_date_string, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 const zend_function_entry date_funcs_period[] = {
 	PHP_ME(DatePeriod,                __construct,                 arginfo_date_period_construct, ZEND_ACC_CTOR|ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 static char* guess_timezone(const timelib_tzdb *tzdb TSRMLS_DC);
@@ -2378,7 +2378,7 @@ static void update_errors_warnings(timelib_error_container *last_errors TSRMLS_D
 PHPAPI int php_date_initialize(php_date_obj *dateobj, /*const*/ char *time_str, int time_str_len, char *format, zval *timezone_object, int ctor TSRMLS_DC)
 {
 	timelib_time   *now;
-	timelib_tzinfo *tzi;
+	timelib_tzinfo *tzi = NULL;
 	timelib_error_container *err = NULL;
 	int type = TIMELIB_ZONETYPE_ID, new_dst;
 	char *new_abbr;
@@ -2860,14 +2860,13 @@ PHP_FUNCTION(date_add)
 		if (intobj->diff->invert) {
 			bias = -1;
 		}
+		memset(&dateobj->time->relative, 0, sizeof(struct timelib_rel_time));
 		dateobj->time->relative.y = intobj->diff->y * bias;
 		dateobj->time->relative.m = intobj->diff->m * bias;
 		dateobj->time->relative.d = intobj->diff->d * bias;
 		dateobj->time->relative.h = intobj->diff->h * bias;
 		dateobj->time->relative.i = intobj->diff->i * bias;
 		dateobj->time->relative.s = intobj->diff->s * bias;
-		dateobj->time->relative.weekday = 0;
-		dateobj->time->relative.have_weekday_relative = 0;
 	}
 	dateobj->time->have_relative = 1;
 	dateobj->time->sse_uptodate = 0;
@@ -2907,6 +2906,7 @@ PHP_FUNCTION(date_sub)
 		bias = -1;
 	}
 
+	memset(&dateobj->time->relative, 0, sizeof(struct timelib_rel_time));
 	dateobj->time->relative.y = 0 - (intobj->diff->y * bias);
 	dateobj->time->relative.m = 0 - (intobj->diff->m * bias);
 	dateobj->time->relative.d = 0 - (intobj->diff->d * bias);
@@ -2914,8 +2914,6 @@ PHP_FUNCTION(date_sub)
 	dateobj->time->relative.i = 0 - (intobj->diff->i * bias);
 	dateobj->time->relative.s = 0 - (intobj->diff->s * bias);
 	dateobj->time->have_relative = 1;
-	dateobj->time->relative.weekday = 0;
-	dateobj->time->relative.have_weekday_relative = 0;
 	dateobj->time->sse_uptodate = 0;
 
 	timelib_update_ts(dateobj->time, NULL);
@@ -3769,7 +3767,7 @@ PHP_METHOD(DatePeriod, __construct)
 	dpobj = zend_object_store_get_object(getThis() TSRMLS_CC);
 	dpobj->current = NULL;
 
-	if (isostr_len) {
+	if (isostr) {
 		date_period_initialize(&(dpobj->start), &(dpobj->end), &(dpobj->interval), &recurrences, isostr, isostr_len TSRMLS_CC);
 		if (dpobj->start == NULL) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "The ISO interval '%s' did not contain a start date.", isostr);

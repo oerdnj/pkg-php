@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_xsl.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: php_xsl.c 314376 2011-08-06 14:47:44Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -35,13 +35,13 @@ static zend_object_handlers xsl_object_handlers;
  * Every user visible function must have an entry in xsl_functions[].
  */
 const zend_function_entry xsl_functions[] = {
-	{NULL, NULL, NULL}  /* Must be the last line in xsl_functions[] */
+	PHP_FE_END
 };
 /* }}} */
 
 static const zend_module_dep xsl_deps[] = {
 	ZEND_MOD_REQUIRED("libxml")
-	{NULL, NULL, NULL}
+	ZEND_MOD_END
 };
 
 /* {{{ xsl_module_entry

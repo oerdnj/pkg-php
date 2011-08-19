@@ -1,5 +1,5 @@
 
-	/* $Id: fpm_status.h 305267 2010-11-11 02:34:47Z fat $ */
+	/* $Id: fpm_status.h 312263 2011-06-18 17:46:16Z felipe $ */
 	/* (c) 2009 Jerome Loyet */
 
 #ifndef FPM_STATUS_H
@@ -28,8 +28,7 @@ void fpm_status_increment_accepted_conn(struct fpm_shm_s *shm);
 void fpm_status_set_pm(struct fpm_shm_s *shm, int pm);
 void fpm_status_update_max_children_reached(struct fpm_shm_s *shm, unsigned int max_children_reached);
 void fpm_status_increment_max_children_reached(struct fpm_shm_s *shm);
-int fpm_status_handle_status(char *uri, char *query_string, char **output, char **content_type);
-char* fpm_status_handle_ping(char *uri);
+int fpm_status_handle_request(TSRMLS_D);
 
 extern struct fpm_shm_s *fpm_status_shm;
 

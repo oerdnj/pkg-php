@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: cgi_main.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: cgi_main.c 314773 2011-08-11 06:38:42Z dmitry $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -725,7 +725,7 @@ static void php_cgi_ini_activate_user_config(char *path, int path_len, const cha
 
 	/* Check whether cache entry has expired and rescan if it is */
 	if (request_time > entry->expires) {
-		char * real_path;
+		char *real_path = NULL;
 		int real_path_len;
 		char *s1, *s2;
 		int s_len;
@@ -774,6 +774,9 @@ static void php_cgi_ini_activate_user_config(char *path, int path_len, const cha
 			php_parse_user_ini_file(path, PG(user_ini_filename), entry->user_config TSRMLS_CC);
 		}
 
+		if (real_path) {
+			free(real_path);
+		}
 		entry->expires = request_time + PG(user_ini_cache_ttl);
 	}
 

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: pspell.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: pspell.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #define IS_EXT_MODULE
 
@@ -198,7 +198,7 @@ static const zend_function_entry pspell_functions[] = {
 	PHP_FE(pspell_config_data_dir,		arginfo_pspell_config_data_dir)
 	PHP_FE(pspell_config_repl,			arginfo_pspell_config_repl)
 	PHP_FE(pspell_config_save_repl,		arginfo_pspell_config_save_repl)
-	{NULL, NULL, NULL} 
+	PHP_FE_END
 };
 /* }}} */
 

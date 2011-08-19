@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_hash.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: zend_hash.c 314482 2011-08-08 11:30:56Z pierrick $ */
 
 #include "zend.h"
 
@@ -545,9 +545,15 @@ ZEND_API void zend_hash_clean(HashTable *ht)
 
 	IS_CONSISTENT(ht);
 
-	SET_INCONSISTENT(HT_CLEANING);
-
 	p = ht->pListHead;
+
+	memset(ht->arBuckets, 0, ht->nTableSize*sizeof(Bucket *));
+	ht->pListHead = NULL;
+	ht->pListTail = NULL;
+	ht->nNumOfElements = 0;
+	ht->nNextFreeElement = 0;
+	ht->pInternalPointer = NULL;
+
 	while (p != NULL) {
 		q = p;
 		p = p->pListNext;
@@ -559,14 +565,6 @@ ZEND_API void zend_hash_clean(HashTable *ht)
 		}
 		pefree(q, ht->persistent);
 	}
-	memset(ht->arBuckets, 0, ht->nTableSize*sizeof(Bucket *));
-	ht->pListHead = NULL;
-	ht->pListTail = NULL;
-	ht->nNumOfElements = 0;
-	ht->nNextFreeElement = 0;
-	ht->pInternalPointer = NULL;
-
-	SET_INCONSISTENT(HT_OK);
 }
 
 /* This function is used by the various apply() functions.
@@ -737,6 +735,7 @@ ZEND_API void zend_hash_apply_with_arguments(HashTable *ht TSRMLS_DC, apply_func
 			p = p->pListNext;
 		}
 		if (result & ZEND_HASH_APPLY_STOP) {
+			va_end(args);
 			break;
 		}
 		va_end(args);
@@ -1170,12 +1169,12 @@ ZEND_API int zend_hash_get_current_data_ex(HashTable *ht, void **pData, HashPosi
 	}
 }
 
-/* This function changes key of currevt element without changing elements'
+/* This function changes key of current element without changing elements'
  * order. If element with target key already exists, it will be deleted first.
  */
 ZEND_API int zend_hash_update_current_key_ex(HashTable *ht, int key_type, const char *str_index, uint str_length, ulong num_index, int mode, HashPosition *pos)
 {
-	Bucket *p;
+	Bucket *p, *q;
 
 	p = pos ? (*pos) : ht->pInternalPointer;
 
@@ -1188,100 +1187,124 @@ ZEND_API int zend_hash_update_current_key_ex(HashTable *ht, int key_type, const 
 				return SUCCESS;
 			}
 
-			if (mode != HASH_UPDATE_KEY_ANYWAY) {
-				Bucket *q = ht->arBuckets[num_index & ht->nTableMask];
-				int found = 0;
-
-				while (q != NULL) {
-					if (q == p) {
-						found = 1;
-					} else if (!q->nKeyLength && q->h == num_index) {
-						if (found) {
-							if (mode & HASH_UPDATE_KEY_IF_BEFORE) {
-								break;
-							} else {
-								if (p->nKeyLength) {
-									zend_hash_del(ht, p->arKey, p->nKeyLength);
-								} else {
-									zend_hash_index_del(ht, p->h);
-								}
-								return FAILURE;
-							}
-						} else {
-							if (mode & HASH_UPDATE_KEY_IF_AFTER) {
-								break;
-							} else {
-								if (p->nKeyLength) {
-									zend_hash_del(ht, p->arKey, p->nKeyLength);
-								} else {
-									zend_hash_index_del(ht, p->h);
-								}
-								return FAILURE;
-							}
-						}
-					}
-					q = q->pNext;
+			q = ht->arBuckets[num_index & ht->nTableMask];
+			while (q != NULL) {
+				if (!q->nKeyLength && q->h == num_index) {
+					break;
 				}
+				q = q->pNext;
 			}
-
-			zend_hash_index_del(ht, num_index);
 		} else if (key_type == HASH_KEY_IS_STRING) {
+			ulong h;
+
 			if (p->nKeyLength == str_length &&
 			    memcmp(p->arKey, str_index, str_length) == 0) {
 				return SUCCESS;
 			}
 
-			if (mode != HASH_UPDATE_KEY_ANYWAY) {
-				ulong h = zend_inline_hash_func(str_index, str_length);
-				Bucket *q = ht->arBuckets[h & ht->nTableMask];
-				int found = 0;
+			h = zend_inline_hash_func(str_index, str_length);
+			q = ht->arBuckets[h & ht->nTableMask];
 
-				while (q != NULL) {
-					if (q == p) {
-						found = 1;
-					} else if (q->h == h && q->nKeyLength == str_length && 
-					           memcmp(q->arKey, str_index, str_length) == 0) {
-					    if (found) {
-							if (mode & HASH_UPDATE_KEY_IF_BEFORE) {
-								break;
-							} else {
-								if (p->nKeyLength) {
-									zend_hash_del(ht, p->arKey, p->nKeyLength);
-								} else {
-									zend_hash_index_del(ht, p->h);
-								}
-								return FAILURE;
-							}
-						} else {
-							if (mode & HASH_UPDATE_KEY_IF_AFTER) {
-								break;
-							} else {
-								if (p->nKeyLength) {
-									zend_hash_del(ht, p->arKey, p->nKeyLength);
-								} else {
-									zend_hash_index_del(ht, p->h);
-								}
-								return FAILURE;
-							}
-						}
-					}
-					q = q->pNext;
+			while (q != NULL) {
+				if (q->h == h && q->nKeyLength == str_length && 
+				           memcmp(q->arKey, str_index, str_length) == 0) {
+					break;
 				}
+				q = q->pNext;
 			}
-
-			zend_hash_del(ht, str_index, str_length);
 		} else {
 			return FAILURE;
 		}
 
 		HANDLE_BLOCK_INTERRUPTIONS();
 
+		if (q) {
+			if (mode != HASH_UPDATE_KEY_ANYWAY) {
+				Bucket *r = p->pListLast;
+				int found = HASH_UPDATE_KEY_IF_BEFORE;
+						
+				while (r) {
+					if (r == q) {
+						found = HASH_UPDATE_KEY_IF_AFTER;
+						break;
+					}
+					r = r->pListLast;
+				}
+				if (mode & found) {
+					/* delete current bucket */
+					if (p == ht->arBuckets[p->h & ht->nTableMask]) {
+						ht->arBuckets[p->h & ht->nTableMask] = p->pNext;
+					} else {
+						p->pLast->pNext = p->pNext;
+					}
+					if (p->pNext) {
+						p->pNext->pLast = p->pLast;
+					}
+					if (p->pListLast != NULL) {
+						p->pListLast->pListNext = p->pListNext;
+					} else { 
+						/* Deleting the head of the list */
+						ht->pListHead = p->pListNext;
+					}
+					if (p->pListNext != NULL) {
+						p->pListNext->pListLast = p->pListLast;
+					} else {
+						ht->pListTail = p->pListLast;
+					}
+					if (ht->pInternalPointer == p) {
+						ht->pInternalPointer = p->pListNext;
+					}
+					if (ht->pDestructor) {
+						ht->pDestructor(p->pData);
+					}
+					if (p->pData != &p->pDataPtr) {
+						pefree(p->pData, ht->persistent);
+					}
+					pefree(p, ht->persistent);
+					ht->nNumOfElements--;
+					HANDLE_UNBLOCK_INTERRUPTIONS();
+					return FAILURE;
+				}
+			}
+			/* delete another bucket with the same key */
+			if (q == ht->arBuckets[q->h & ht->nTableMask]) {
+				ht->arBuckets[q->h & ht->nTableMask] = q->pNext;
+			} else {
+				q->pLast->pNext = q->pNext;
+			}
+			if (q->pNext) {
+				q->pNext->pLast = q->pLast;
+			}
+			if (q->pListLast != NULL) {
+				q->pListLast->pListNext = q->pListNext;
+			} else { 
+				/* Deleting the head of the list */
+				ht->pListHead = q->pListNext;
+			}
+			if (q->pListNext != NULL) {
+				q->pListNext->pListLast = q->pListLast;
+			} else {
+				ht->pListTail = q->pListLast;
+			}
+			if (ht->pInternalPointer == q) {
+				ht->pInternalPointer = q->pListNext;
+			}
+			if (ht->pDestructor) {
+				ht->pDestructor(q->pData);
+			}
+			if (q->pData != &q->pDataPtr) {
+				pefree(q->pData, ht->persistent);
+			}
+			pefree(q, ht->persistent);
+			ht->nNumOfElements--;
+		}
+
 		if (p->pNext) {
 			p->pNext->pLast = p->pLast;
 		}
 		if (p->pLast) {
 			p->pLast->pNext = p->pNext;
-		} else{
+		} else {
 			ht->arBuckets[p->h & ht->nTableMask] = p->pNext;
 		}
 

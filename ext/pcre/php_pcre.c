@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_pcre.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: php_pcre.c 314349 2011-08-05 22:39:40Z rasmus $ */
 
 #include "php.h"
 #include "php_ini.h"
@@ -115,7 +115,7 @@ static PHP_GSHUTDOWN_FUNCTION(pcre) /* {{{ */
 /* }}} */
 
 PHP_INI_BEGIN()
-	STD_PHP_INI_ENTRY("pcre.backtrack_limit", "100000", PHP_INI_ALL, OnUpdateLong, backtrack_limit, zend_pcre_globals, pcre_globals)
+	STD_PHP_INI_ENTRY("pcre.backtrack_limit", "1000000", PHP_INI_ALL, OnUpdateLong, backtrack_limit, zend_pcre_globals, pcre_globals)
 	STD_PHP_INI_ENTRY("pcre.recursion_limit", "100000", PHP_INI_ALL, OnUpdateLong, recursion_limit, zend_pcre_globals, pcre_globals)
 PHP_INI_END()
 
@@ -644,6 +644,7 @@ PHPAPI void php_pcre_match_impl(pcre_cache_entry *pce, char *subject, int subjec
 				if (pcre_get_substring_list(subject, offsets, count, &stringlist) < 0) {
 					efree(subpat_names);
 					efree(offsets);
+					if (match_sets) efree(match_sets);
 					php_error_docref(NULL TSRMLS_CC, E_WARNING, "Get subpatterns list failed");
 					RETURN_FALSE;
 				}
@@ -1894,7 +1895,7 @@ static const zend_function_entry pcre_functions[] = {
 	PHP_FE(preg_quote,				arginfo_preg_quote)
 	PHP_FE(preg_grep,				arginfo_preg_grep)
 	PHP_FE(preg_last_error,			arginfo_preg_last_error)
-	{NULL, 		NULL,				NULL}
+	PHP_FE_END
 };
 
 zend_module_entry pcre_module_entry = {

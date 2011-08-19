@@ -9,6 +9,7 @@ require_once('skipifconnectfailure.inc');
 --FILE--
 <?php
 	require_once("connect.inc");
+	require_once("table.inc");
 
 	$tmp    = NULL;
 	$link   = NULL;
@@ -55,18 +56,47 @@ require_once('skipifconnectfailure.inc');
 		mysqli_free_result($res);
 	}
 
-	mysqli_report(MYSQLI_REPORT_OFF);
+	if (!$link->select_db($db))
+		printf("[012] Failed to set '%s' as current DB; [%d] %s\n", $link->errno, $link->error);
+
+	if (!$res = mysqli_query($link, "SELECT DATABASE() AS dbname"))
+		printf("[013] [%d] %s\n", mysqli_errno($link), mysqli_error($link));
+
+	if (!$row = mysqli_fetch_assoc($res))
+		printf("[014] [%d] %s\n", mysqli_errno($link), mysqli_error($link));
+
+	$current_db = $row['dbname'];
+
+	mysqli_report(MYSQLI_REPORT_OFF);	  
 	mysqli_select_db($link, 'I can not imagine that this database exists');
 	mysqli_report(MYSQLI_REPORT_ERROR);
 	mysqli_select_db($link, 'I can not imagine that this database exists');
 
+	if (!$res = mysqli_query($link, "SELECT DATABASE() AS dbname"))
+		printf("[015] [%d] %s\n", mysqli_errno($link), mysqli_error($link));
+
+	if (!$row = mysqli_fetch_assoc($res))
+		printf("[016] [%d] %s\n", mysqli_errno($link), mysqli_error($link));
+
+	if (strtolower($row['dbname']) != strtolower($current_db))
+		printf("[017] Current DB should not change if set fails\n");
+
+	
+	if (!$res = $link->query("SELECT id FROM test WHERE id = 1"))
+		printf("[018] [%d] %s\n");
+
+	$row = $res->fetch_assoc();
+	$res->free();
+
 	mysqli_close($link);
 
 	if (NULL !== ($tmp = mysqli_select_db($link, $db)))
-		printf("[012] Expecting NULL, got %s/%s\n", gettype($tmp), $tmp);
+		printf("[017] Expecting NULL, got %s/%s\n", gettype($tmp), $tmp);
 
 	print "done!\n";
 ?>
+--CLEAN--
+<?php require_once("clean_table.inc"); ?>
 --EXPECTF--
 Warning: mysqli_select_db(): (%d/%d): Unknown database '%s' in %s on line %d
 

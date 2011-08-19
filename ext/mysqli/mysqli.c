@@ -17,7 +17,7 @@
   |          Ulf Wendel <uw@php.net>                                     |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli.c 306939 2011-01-01 02:19:59Z felipe $
+  $Id: mysqli.c 314376 2011-08-06 14:47:44Z felipe $
 */
 
 #ifdef HAVE_CONFIG_H
@@ -865,7 +865,7 @@ PHP_RINIT_FUNCTION(mysqli)
 }
 /* }}} */
 
-#ifdef MYSQLI_USE_MYSQLND
+#if defined(A0) && defined(MYSQLI_USE_MYSQLND)
 static void php_mysqli_persistent_helper_for_every(void *p)
 {
 	TSRMLS_FETCH();
@@ -896,7 +896,7 @@ PHP_RSHUTDOWN_FUNCTION(mysqli)
 	if (MyG(error_msg)) {
 		efree(MyG(error_msg));
 	}
-#if defined(A0) && MYSQLI_USE_MYSQLND
+#if defined(A0) && defined(MYSQLI_USE_MYSQLND)
 	/* psession is being called when the connection is freed - explicitly or implicitly */
 	zend_hash_apply(&EG(persistent_list), (apply_func_t) php_mysqli_persistent_helper_once TSRMLS_CC);
 #endif
@@ -939,7 +939,7 @@ static const  zend_module_dep mysqli_deps[] = {
 #if defined(MYSQLI_USE_MYSQLND)
 	ZEND_MOD_REQUIRED("mysqlnd")
 #endif
-	{NULL, NULL, NULL}
+	ZEND_MOD_END
 };
 
 /* {{{ mysqli_module_entry

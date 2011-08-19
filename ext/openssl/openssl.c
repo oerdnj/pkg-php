@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: openssl.c 308534 2011-02-21 12:47:38Z pajoye $ */
+/* $Id: openssl.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -439,7 +439,7 @@ const zend_function_entry openssl_functions[] = {
 
 	PHP_FE(openssl_random_pseudo_bytes,    arginfo_openssl_random_pseudo_bytes)
 	PHP_FE(openssl_error_string, arginfo_openssl_error_string)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 
@@ -988,8 +988,8 @@ PHP_MINIT_FUNCTION(openssl)
 	ERR_load_crypto_strings();
 	ERR_load_EVP_strings();
 
-	/* register a resource id number with openSSL so that we can map SSL -> stream structures in
-	 * openSSL callbacks */
+	/* register a resource id number with OpenSSL so that we can map SSL -> stream structures in
+	 * OpenSSL callbacks */
 	ssl_stream_data_index = SSL_get_ex_new_index(0, "PHP stream index", NULL, NULL, NULL);
 	
 	REGISTER_STRING_CONSTANT("OPENSSL_VERSION_TEXT", OPENSSL_VERSION_TEXT, CONST_CS|CONST_PERSISTENT);
@@ -1074,7 +1074,9 @@ PHP_MINIT_FUNCTION(openssl)
 
 	php_stream_xport_register("ssl", php_openssl_ssl_socket_factory TSRMLS_CC);
 	php_stream_xport_register("sslv3", php_openssl_ssl_socket_factory TSRMLS_CC);
+#ifndef OPENSSL_NO_SSL2
 	php_stream_xport_register("sslv2", php_openssl_ssl_socket_factory TSRMLS_CC);
+#endif
 	php_stream_xport_register("tls", php_openssl_ssl_socket_factory TSRMLS_CC);
 
 	/* override the default tcp socket provider */
@@ -1109,7 +1111,9 @@ PHP_MSHUTDOWN_FUNCTION(openssl)
 	php_unregister_url_stream_wrapper("ftps" TSRMLS_CC);
 
 	php_stream_xport_unregister("ssl" TSRMLS_CC);
+#ifndef OPENSSL_NO_SSL2
 	php_stream_xport_unregister("sslv2" TSRMLS_CC);
+#endif
 	php_stream_xport_unregister("sslv3" TSRMLS_CC);
 	php_stream_xport_unregister("tls" TSRMLS_CC);
 
@@ -4704,7 +4708,11 @@ PHP_FUNCTION(openssl_encrypt)
 	outlen = data_len + EVP_CIPHER_block_size(cipher_type);
 	outbuf = emalloc(outlen + 1);
 
-	EVP_EncryptInit(&cipher_ctx, cipher_type, key, (unsigned char *)iv);
+	EVP_EncryptInit(&cipher_ctx, cipher_type, NULL, NULL);
+	if (password_len > keylen) {
+		EVP_CIPHER_CTX_set_key_length(&cipher_ctx, password_len);
+	}
+	EVP_EncryptInit_ex(&cipher_ctx, NULL, NULL, key, (unsigned char *)iv);
 	EVP_EncryptUpdate(&cipher_ctx, outbuf, &i, (unsigned char *)data, data_len);
 	outlen = i;
 	if (EVP_EncryptFinal(&cipher_ctx, (unsigned char *)outbuf + i, &i)) {
@@ -4784,7 +4792,11 @@ PHP_FUNCTION(openssl_decrypt)
 	outlen = data_len + EVP_CIPHER_block_size(cipher_type);
 	outbuf = emalloc(outlen + 1);
 
-	EVP_DecryptInit(&cipher_ctx, cipher_type, key, (unsigned char *)iv);
+	EVP_DecryptInit(&cipher_ctx, cipher_type, NULL, NULL);
+	if (password_len > keylen) {
+		EVP_CIPHER_CTX_set_key_length(&cipher_ctx, password_len);
+	}
+	EVP_DecryptInit_ex(&cipher_ctx, NULL, NULL, key, (unsigned char *)iv);
 	EVP_DecryptUpdate(&cipher_ctx, outbuf, &i, (unsigned char *)data, data_len);
 	outlen = i;
 	if (EVP_DecryptFinal(&cipher_ctx, (unsigned char *)outbuf + i, &i)) {
@@ -4895,10 +4907,6 @@ PHP_FUNCTION(openssl_random_pseudo_bytes)
 	}
 
 	buffer = emalloc(buffer_length + 1);
-
-#ifdef WINDOWS
-        RAND_screen();
-#endif
 
 	if ((strong_result = RAND_pseudo_bytes(buffer, buffer_length)) < 0) {
 		efree(buffer);

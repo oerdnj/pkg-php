@@ -16,7 +16,7 @@
    |          Ilia Alshanetsky <ilia@prohost.org>                         |
    +----------------------------------------------------------------------+
  */
-/* $Id: shmop.c 309032 2011-03-08 18:24:04Z felipe $ */
+/* $Id: shmop.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -87,7 +87,7 @@ const zend_function_entry shmop_functions[] = {
 	PHP_FE(shmop_size, 		arginfo_shmop_size)
 	PHP_FE(shmop_write, 	arginfo_shmop_write)
 	PHP_FE(shmop_delete, 	arginfo_shmop_delete)
-	{NULL, NULL, NULL}	/* Must be the last line in shmop_functions[] */
+	PHP_FE_END
 };
 /* }}} */
 

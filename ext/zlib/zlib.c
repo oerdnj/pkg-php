@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: zlib.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: zlib.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -214,7 +214,7 @@ static const zend_function_entry php_zlib_functions[] = {
 	PHP_FE(gzencode,						arginfo_gzencode)
 	PHP_FE(ob_gzhandler,					arginfo_ob_gzhandler)
 	PHP_FE(zlib_get_coding_type,			arginfo_zlib_get_coding_type)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 

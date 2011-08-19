@@ -24,7 +24,6 @@
 #include "mysqlnd_wireprotocol.h"
 #include "mysqlnd_statistics.h"
 #include "mysqlnd_debug.h"
-#include "mysqlnd_block_alloc.h"
 #include "ext/standard/sha1.h"
 #include "php_network.h"
 #include "zend_ini.h"
@@ -907,11 +906,11 @@ mysqlnd_net_init(zend_bool persistent TSRMLS_DC)
 PHPAPI void
 mysqlnd_net_free(MYSQLND_NET * const net TSRMLS_DC)
 {
-	zend_bool pers = net->persistent;
-
 	DBG_ENTER("mysqlnd_net_free");
 
 	if (net) {
+		zend_bool pers = net->persistent;
+
 		net->m.free_contents(net TSRMLS_CC);
 		if (net->cmd_buffer.buffer) {
 			DBG_INF("Freeing cmd buffer");

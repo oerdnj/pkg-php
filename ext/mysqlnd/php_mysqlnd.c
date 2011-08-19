@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_mysqlnd.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: php_mysqlnd.c 314376 2011-08-06 14:47:44Z felipe $ */
 #include "php.h"
 #include "php_ini.h"
 #include "mysqlnd.h"
@@ -31,7 +31,7 @@
  * Every user visible function must have an entry in mysqlnd_functions[].
  */
 static zend_function_entry mysqlnd_functions[] = {
-	{NULL, NULL, NULL}	/* Must be the last line in mysqlnd_functions[] */
+	PHP_FE_END
 };
 /* }}} */
 
@@ -266,7 +266,7 @@ static PHP_RSHUTDOWN_FUNCTION(mysqlnd)
 
 static const zend_module_dep mysqlnd_deps[] = {
 	ZEND_MOD_REQUIRED("standard")
-	{NULL, NULL, NULL}
+	ZEND_MOD_END
 };
 
 /* {{{ mysqlnd_module_entry

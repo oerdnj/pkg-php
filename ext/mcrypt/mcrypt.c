@@ -16,7 +16,7 @@
    |          Derick Rethans <derick@derickrethans.nl>                    |
    +----------------------------------------------------------------------+
  */
-/* $Id: mcrypt.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: mcrypt.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -280,7 +280,7 @@ const zend_function_entry mcrypt_functions[] = { /* {{{ */
 	PHP_FE(mcrypt_module_get_supported_key_sizes, 	arginfo_mcrypt_module_get_supported_key_sizes)
 
 	PHP_FE(mcrypt_module_close, 					arginfo_mcrypt_module_close)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 
@@ -1394,7 +1394,7 @@ PHP_FUNCTION(mcrypt_create_iv)
 		BYTE *iv_b = (BYTE *) iv;
 		if (php_win32_get_random_bytes(iv_b, (size_t) size) == FAILURE){
 			efree(iv);
-			php_error_docref(NULL TSRMLS_CC, E_ERROR, "Could not gather sufficient random data");
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Could not gather sufficient random data");
 			RETURN_FALSE;
 		}
 		n = size;

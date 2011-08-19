@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 242949 2007-09-26 15:44:16Z cvs2svn $
+dnl $Id: config.m4 309398 2011-03-18 18:47:09Z geissert $
 dnl
 
 AC_DEFUN([PHP_LDAP_CHECKS], [
@@ -50,7 +50,7 @@ AC_DEFUN([PHP_LDAP_SASL_CHECKS], [
     SASL_LIB="-L$LDAP_SASL_LIBDIR -lsasl2"
   fi
   
-  PHP_CHECK_LIBRARY(ldap, sasl_version,
+  PHP_CHECK_LIBRARY(sasl2, sasl_version,
   [
     PHP_ADD_INCLUDE($LDAP_SASL_INCDIR)
     PHP_ADD_LIBRARY_WITH_PATH(sasl2, $LDAP_SASL_LIBDIR, LDAP_SHARED_LIBADD)

@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: filters.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: filters.c 311407 2011-05-24 23:49:26Z felipe $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -1050,20 +1050,16 @@ static php_conv_err_t php_conv_qprint_decode_convert(php_conv_qprint_decode *ins
 				}
 			} /* break is missing intentionally */
 
-			case 2: {
-				unsigned int nbl;
-	
+			case 2: {	
 				if (icnt <= 0) {
 					goto out;
 				}
-				nbl = (*ps >= 'A' ? *ps - 0x37 : *ps - 0x30);
 
-				if (nbl > 15) {
+				if (!isxdigit((int) *ps)) {
 					err = PHP_CONV_ERR_INVALID_SEQ;
 					goto out;
 				}
-				next_char = (next_char << 4) | nbl;
-
+				next_char = (next_char << 4) | (*ps >= 'A' ? *ps - 0x37 : *ps - 0x30);
 				scan_stat++;
 				ps++, icnt--;
 				if (scan_stat != 3) {

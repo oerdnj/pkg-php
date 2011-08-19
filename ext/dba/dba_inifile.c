@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: dba_inifile.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: dba_inifile.c 309341 2011-03-17 11:43:05Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -102,7 +102,7 @@ DBA_UPDATE_FUNC(inifile)
 		return SUCCESS;
 	case 1:
 		php_error_docref1(NULL TSRMLS_CC, key, E_WARNING, "Key already exists");
-		return SUCCESS;
+		return FAILURE;
 	}
 }
 

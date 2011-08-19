@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: mbstring.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: mbstring.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 /*
  * PHP 4 Multibyte String module "mbstring"
@@ -557,7 +557,7 @@ const zend_function_entry mbstring_functions[] = {
 #if HAVE_MBREGEX
 	PHP_MBREGEX_FUNCTION_ENTRIES
 #endif
-	{ NULL, NULL, NULL }
+	PHP_FE_END
 };
 /* }}} */
 

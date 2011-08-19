@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_sql_parser.re 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: pdo_sql_parser.re 314451 2011-08-08 00:07:54Z iliaa $ */
 
 #include "php.h"
 #include "php_pdo_driver.h"
@@ -28,7 +28,7 @@
 #define PDO_PARSER_EOI 4
 
 #define RET(i) {s->cur = cursor; return i; }
-#define SKIP_ONE(i) {s->cur = s->tok + 1; return 1; }
+#define SKIP_ONE(i) {s->cur = s->tok + 1; return i; }
 
 #define YYCTYPE         unsigned char
 #define YYCURSOR        cursor
@@ -48,6 +48,7 @@ static int scan(Scanner *s)
 	/*!re2c
 	BINDCHR		= [:][a-zA-Z0-9_]+;
 	QUESTION	= [?];
+	COMMENTS	= ("/*"([^*]+|[*]+[^/*])*[*]*"*/"|"--"[^\r\n]*);
 	SPECIALS	= [:?"'];
 	MULTICHAR	= [:?];
 	EOF			= [\000];
@@ -61,6 +62,7 @@ static int scan(Scanner *s)
 		BINDCHR									{ RET(PDO_PARSER_BIND); }
 		QUESTION								{ RET(PDO_PARSER_BIND_POS); }
 		SPECIALS								{ SKIP_ONE(PDO_PARSER_TEXT); }
+		COMMENTS								{ RET(PDO_PARSER_TEXT); }
 		(ANYNOEOF\SPECIALS)+ 					{ RET(PDO_PARSER_TEXT); }
 		EOF										{ RET(PDO_PARSER_EOI); }
 	*/	
@@ -211,7 +213,7 @@ safe:
 								param->param_type TSRMLS_CC)) {
 							/* bork */
 							ret = -1;
-							strcpy(stmt->error_code, stmt->dbh->error_code);
+							strncpy(stmt->error_code, stmt->dbh->error_code, 6);
 							if (buf) {
 								efree(buf);
 							}
@@ -234,6 +236,9 @@ safe:
 							plc->freeq = 0;
 							break;
 
+						case IS_BOOL:
+							convert_to_long(param->parameter);
+
 						case IS_LONG:
 						case IS_DOUBLE:
 							convert_to_string(param->parameter);
@@ -242,8 +247,6 @@ safe:
 							plc->freeq = 0;
 							break;
 
-						case IS_BOOL:
-							convert_to_long(param->parameter);
 						default:
 							convert_to_string(param->parameter);
 							if (!stmt->dbh->methods->quoter(stmt->dbh, Z_STRVAL_P(param->parameter),
@@ -251,7 +254,7 @@ safe:
 									param->param_type TSRMLS_CC)) {
 								/* bork */
 								ret = -1;
-								strcpy(stmt->error_code, stmt->dbh->error_code);
+								strncpy(stmt->error_code, stmt->dbh->error_code, 6);
 								goto clean_up;
 							}
 							plc->freeq = 1;

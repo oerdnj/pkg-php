@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: zend.c 314457 2011-08-08 03:08:59Z pierrick $ */
 
 #include "zend.h"
 #include "zend_extensions.h"
@@ -808,6 +808,7 @@ ZEND_API void _zend_bailout(char *filename, uint lineno) /* {{{ */
 		exit(-1);
 	}
 	CG(unclean_shutdown) = 1;
+	CG(active_class_entry) = NULL;
 	CG(in_compilation) = EG(in_execution) = 0;
 	EG(current_execute_data) = NULL;
 	LONGJMP(*EG(bailout), FAILURE);
@@ -820,7 +821,7 @@ void zend_append_version_info(const zend_extension *extension) /* {{{ */
 	char *new_info;
 	uint new_info_length;
 
-	new_info_length = sizeof("    with  v,  by \n")
+	new_info_length = sizeof("    with  v, , by \n")
 						+ strlen(extension->name)
 						+ strlen(extension->version)
 						+ strlen(extension->copyright)
@@ -828,10 +829,10 @@ void zend_append_version_info(const zend_extension *extension) /* {{{ */
 
 	new_info = (char *) malloc(new_info_length + 1);
 
-	sprintf(new_info, "    with %s v%s, %s, by %s\n", extension->name, extension->version, extension->copyright, extension->author);
+	snprintf(new_info, new_info_length, "    with %s v%s, %s, by %s\n", extension->name, extension->version, extension->copyright, extension->author);
 
 	zend_version_info = (char *) realloc(zend_version_info, zend_version_info_length+new_info_length + 1);
-	strcat(zend_version_info, new_info);
+	strncat(zend_version_info, new_info, new_info_length);
 	zend_version_info_length += new_info_length;
 	free(new_info);
 }
@@ -957,6 +958,23 @@ ZEND_API int zend_get_configuration_directive(const char *name, uint name_length
 }
 /* }}} */
 
+#define SAVE_STACK(stack) do { \
+		if (CG(stack).top) { \
+			memcpy(&stack, &CG(stack), sizeof(zend_stack)); \
+			CG(stack).top = CG(stack).max = 0; \
+			CG(stack).elements = NULL; \
+		} else { \
+			stack.top = 0; \
+		} \
+	} while (0)
+
+#define RESTORE_STACK(stack) do { \
+		if (stack.top) { \
+			zend_stack_destroy(&CG(stack)); \
+			memcpy(&CG(stack), &stack, sizeof(zend_stack)); \
+		} \
+	} while (0)
+
 ZEND_API void zend_error(int type, const char *format, ...) /* {{{ */
 {
 	va_list args;
@@ -969,6 +987,14 @@ ZEND_API void zend_error(int type, const char *format, ...) /* {{{ */
 	zval *orig_user_error_handler;
 	zend_bool in_compilation;
 	zend_class_entry *saved_class_entry;
+	zend_stack bp_stack;
+	zend_stack function_call_stack;
+	zend_stack switch_cond_stack;
+	zend_stack foreach_copy_stack;
+	zend_stack object_stack;
+	zend_stack declare_stack;
+	zend_stack list_stack;
+	zend_stack labels_stack;
 	TSRMLS_FETCH();
 
 	/* Obtain relevant filename and lineno */
@@ -1096,6 +1122,14 @@ ZEND_API void zend_error(int type, const char *format, ...) /* {{{ */
 			if (in_compilation) {
 				saved_class_entry = CG(active_class_entry);
 				CG(active_class_entry) = NULL;
+				SAVE_STACK(bp_stack);
+				SAVE_STACK(function_call_stack);
+				SAVE_STACK(switch_cond_stack);
+				SAVE_STACK(foreach_copy_stack);
+				SAVE_STACK(object_stack);
+				SAVE_STACK(declare_stack);
+				SAVE_STACK(list_stack);
+				SAVE_STACK(labels_stack);
 			}
 
 			if (call_user_function_ex(CG(function_table), NULL, orig_user_error_handler, &retval, 5, params, 1, NULL TSRMLS_CC) == SUCCESS) {
@@ -1112,6 +1146,14 @@ ZEND_API void zend_error(int type, const char *format, ...) /* {{{ */
 
 			if (in_compilation) {
 				CG(active_class_entry) = saved_class_entry;
+				RESTORE_STACK(bp_stack);
+				RESTORE_STACK(function_call_stack);
+				RESTORE_STACK(switch_cond_stack);
+				RESTORE_STACK(foreach_copy_stack);
+				RESTORE_STACK(object_stack);
+				RESTORE_STACK(declare_stack);
+				RESTORE_STACK(list_stack);
+				RESTORE_STACK(labels_stack);
 			}
 
 			if (!EG(user_error_handler)) {

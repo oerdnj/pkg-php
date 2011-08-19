@@ -10,10 +10,6 @@
 
 #define FPM_CONF_MAX_PONG_LENGTH 64
 
-#define STR2STR(a) (a ? a : "undefined")
-#define BOOL2STR(a) (a ? "yes" : "no")
-#define PM2STR(a) (a == PM_STYLE_STATIC ? "static" : "dynamic")
-
 struct key_value_s;
 
 struct key_value_s {
@@ -29,6 +25,8 @@ struct fpm_global_config_s {
 	int daemonize;
 	char *pid_file;
 	char *error_log;
+	int rlimit_files;
+	int rlimit_core;
 };
 
 extern struct fpm_global_config_s fpm_global_config;
@@ -55,6 +53,8 @@ struct fpm_worker_pool_config_s {
 	int pm_max_spare_servers;
 	char *ping_path;
 	char *ping_response;
+	char *access_log;
+	char *access_format;
 	char *listen_address;
 	int listen_backlog;
 	char *listen_owner;
@@ -72,7 +72,10 @@ struct ini_value_parser_s {
 	intptr_t offset;
 };
 
-enum { PM_STYLE_STATIC = 1, PM_STYLE_DYNAMIC = 2 };
+enum {
+	PM_STYLE_STATIC = 1,
+	PM_STYLE_DYNAMIC = 2
+};
 
 int fpm_conf_init_main(int test_conf);
 int fpm_worker_pool_config_free(struct fpm_worker_pool_config_s *wpc);

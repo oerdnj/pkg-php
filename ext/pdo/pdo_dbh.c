@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_dbh.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: pdo_dbh.c 314450 2011-08-07 23:46:00Z iliaa $ */
 
 /* The PDO Database Handle Class */
 
@@ -57,7 +57,7 @@ void pdo_raise_impl_error(pdo_dbh_t *dbh, pdo_stmt_t *stmt, const char *sqlstate
 		pdo_err = &stmt->error_code;
 	}
 
-	strcpy(*pdo_err, sqlstate);
+	strncpy(*pdo_err, sqlstate, 6);
 
 	/* hash sqlstate to error messages */
 	msg = pdo_sqlstate_state_to_description(*pdo_err);

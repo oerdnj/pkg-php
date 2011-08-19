@@ -19,7 +19,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: filter.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: filter.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -96,11 +96,13 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(arginfo_filter_input_array, 0, 0, 1)
 	ZEND_ARG_INFO(0, type)
 	ZEND_ARG_INFO(0, definition)
+	ZEND_ARG_INFO(0, add_empty)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_filter_var_array, 0, 0, 1)
 	ZEND_ARG_INFO(0, data)
 	ZEND_ARG_INFO(0, definition)
+	ZEND_ARG_INFO(0, add_empty)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO(arginfo_filter_list, 0)
@@ -126,7 +128,7 @@ static const zend_function_entry filter_functions[] = {
 	PHP_FE(filter_list,		arginfo_filter_list)
 	PHP_FE(filter_has_var,		arginfo_filter_has_var)
 	PHP_FE(filter_id,		arginfo_filter_id)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 
@@ -316,7 +318,7 @@ PHP_MINFO_FUNCTION(filter)
 {
 	php_info_print_table_start();
 	php_info_print_table_row( 2, "Input Validation and Filtering", "enabled" );
-	php_info_print_table_row( 2, "Revision", "$Revision: 306939 $");
+	php_info_print_table_row( 2, "Revision", "$Revision: 313665 $");
 	php_info_print_table_end();
 
 	DISPLAY_INI_ENTRIES();
@@ -689,7 +691,7 @@ static void php_filter_call(zval **filtered, long filter, zval **filter_args, co
 }
 /* }}} */
 
-static void php_filter_array_handler(zval *input, zval **op, zval *return_value TSRMLS_DC) /* {{{ */
+static void php_filter_array_handler(zval *input, zval **op, zval *return_value, zend_bool add_empty TSRMLS_DC) /* {{{ */
 {
 	char *arg_key;
 	uint arg_key_len;
@@ -724,7 +726,9 @@ static void php_filter_array_handler(zval *input, zval **op, zval *return_value 
 				RETURN_FALSE;
 			}
 			if (zend_hash_find(Z_ARRVAL_P(input), arg_key, arg_key_len, (void **)&tmp) != SUCCESS) {
-				add_assoc_null_ex(return_value, arg_key, arg_key_len);
+				if (add_empty) {
+					add_assoc_null_ex(return_value, arg_key, arg_key_len);
+				}
 			} else {
 				zval *nval;
 
@@ -821,15 +825,16 @@ PHP_FUNCTION(filter_var)
 }
 /* }}} */
 
-/* {{{ proto mixed filter_input_array(constant type, [, mixed options]])
+/* {{{ proto mixed filter_input_array(constant type, [, mixed options [, bool add_empty]]])
  * Returns an array with all arguments defined in 'definition'.
  */
 PHP_FUNCTION(filter_input_array)
 {
 	long    fetch_from;
 	zval   *array_input = NULL, **op = NULL;
+	zend_bool add_empty = 1;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l|Z",  &fetch_from, &op) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l|Zb",  &fetch_from, &op, &add_empty) == FAILURE) {
 		return;
 	}
 
@@ -865,18 +870,19 @@ PHP_FUNCTION(filter_input_array)
 		}
 	}
 
-	php_filter_array_handler(array_input, op, return_value TSRMLS_CC);
+	php_filter_array_handler(array_input, op, return_value, add_empty TSRMLS_CC);
 }
 /* }}} */
 
-/* {{{ proto mixed filter_var_array(array data, [, mixed options]])
+/* {{{ proto mixed filter_var_array(array data, [, mixed options [, bool add_empty]]])
  * Returns an array with all arguments defined in 'definition'.
  */
 PHP_FUNCTION(filter_var_array)
 {
 	zval *array_input = NULL, **op = NULL;
+	zend_bool add_empty = 1;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a|Z",  &array_input, &op) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a|Zb",  &array_input, &op, &add_empty) == FAILURE) {
 		return;
 	}
 
@@ -887,7 +893,7 @@ PHP_FUNCTION(filter_var_array)
 		RETURN_FALSE;
 	}
 
-	php_filter_array_handler(array_input, op, return_value TSRMLS_CC);
+	php_filter_array_handler(array_input, op, return_value, add_empty TSRMLS_CC);
 }
 /* }}} */
 

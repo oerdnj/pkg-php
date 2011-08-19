@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: userdatahandler.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: userdatahandler.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -37,7 +37,7 @@
 
 const zend_function_entry php_dom_userdatahandler_class_functions[] = {
 	PHP_FALIAS(handle, dom_userdatahandler_handle, NULL)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 
 /* {{{ attribute protos, not implemented yet */

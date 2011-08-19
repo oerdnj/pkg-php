@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: user_filters.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: user_filters.c 314641 2011-08-09 12:16:58Z laruence $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -71,7 +71,7 @@ static const zend_function_entry user_filter_class_funcs[] = {
 	PHP_NAMED_FE(filter,	PHP_FN(user_filter_nop),		arginfo_php_user_filter_filter)
 	PHP_NAMED_FE(onCreate,	PHP_FN(user_filter_nop),		arginfo_php_user_filter_onCreate)
 	PHP_NAMED_FE(onClose,	PHP_FN(user_filter_nop),		arginfo_php_user_filter_onClose)
-	{ NULL, NULL, NULL }
+	PHP_FE_END
 };
 
 static zend_class_entry user_filter_class_entry;
@@ -311,7 +311,7 @@ static php_stream_filter *user_filter_factory_create(const char *filtername,
 			period = wildcard + (period - filtername);
 			while (period) {
 				*period = '\0';
-				strcat(wildcard, ".*");
+				strncat(wildcard, ".*", 2);
 				if (SUCCESS == zend_hash_find(BG(user_filter_map), wildcard, strlen(wildcard) + 1, (void**)&fdat)) {
 					period = NULL;
 				} else {

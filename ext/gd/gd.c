@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: gd.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: gd.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 /* gd 1.2 is copyright 1994, 1995, Quest Protein Database Center,
    Cold Spring Harbor Labs. */
@@ -1045,7 +1045,7 @@ const zend_function_entry gd_functions[] = {
 	PHP_FE(imagefilter,     						arginfo_imagefilter)
 	PHP_FE(imageconvolution,						arginfo_imageconvolution)
 
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 

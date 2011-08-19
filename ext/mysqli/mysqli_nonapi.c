@@ -17,7 +17,7 @@
   |          Ulf Wendel <uw@php.net>                                     |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_nonapi.c 307223 2011-01-07 14:22:30Z andrey $
+  $Id: mysqli_nonapi.c 314838 2011-08-12 14:55:00Z andrey $
 */
 
 #ifdef HAVE_CONFIG_H
@@ -141,10 +141,12 @@ void mysqli_common_connect(INTERNAL_FUNCTION_PARAMETERS, zend_bool is_real_conne
 		hostname = MyG(default_host);
 	}
 
-       if (mysql->mysql && mysqli_resource && (mysqli_resource->status > MYSQLI_STATUS_INITIALIZED || (strlen(SAFE_STR(hostname)) > 2 && !strncasecmp(hostname, "p:", 2)))) {
-                /* already connected, we should close the connection */
-                php_mysqli_close(mysql, MYSQLI_CLOSE_IMPLICIT, mysqli_resource->status TSRMLS_CC);
-        }
+	if (mysql->mysql && mysqli_resource &&
+		(mysqli_resource->status > MYSQLI_STATUS_INITIALIZED))
+	{
+		/* already connected, we should close the connection */
+		php_mysqli_close(mysql, MYSQLI_CLOSE_IMPLICIT, mysqli_resource->status TSRMLS_CC);
+	}
 
 	if (strlen(SAFE_STR(hostname)) > 2 && !strncasecmp(hostname, "p:", 2)) {
 		hostname += 2;
@@ -914,7 +916,6 @@ PHP_FUNCTION(mysqli_get_charset)
 	}
 	MYSQLI_FETCH_RESOURCE_CONN(mysql, &mysql_link, MYSQLI_STATUS_VALID);
 
-	object_init(return_value);
 
 #if !defined(MYSQLI_USE_MYSQLND)
 	mysql_get_character_set_info(mysql->mysql, &cs);
@@ -928,6 +929,10 @@ PHP_FUNCTION(mysqli_get_charset)
 	comment = cs.comment;
 #else
 	cs = mysql->mysql->charset;
+	if (!cs) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "The connection has no charset associated");
+		RETURN_NULL();
+	}
 	name = cs->name;
 	collation = cs->collation;
 	minlength = cs->char_minlen;
@@ -936,6 +941,7 @@ PHP_FUNCTION(mysqli_get_charset)
 	comment = cs->comment;
 	state = 1;	/* all charsets are compiled in */
 #endif
+	object_init(return_value);
 
 	add_property_string(return_value, "charset", (name) ? (char *)name : "", 1);
 	add_property_string(return_value, "collation",(collation) ? (char *)collation : "", 1);

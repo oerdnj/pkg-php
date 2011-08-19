@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: main.c 308150 2011-02-08 21:40:51Z cataphract $ */
+/* $Id: main.c 312201 2011-06-16 01:31:10Z pajoye $ */
 
 /* {{{ includes
  */
@@ -32,6 +32,7 @@
 #include "win32/time.h"
 #include "win32/signal.h"
 #include "win32/php_win32_globals.h"
+#include "win32/winutil.h"
 #include <process.h>
 #elif defined(NETWARE)
 #include <sys/timeval.h>
@@ -399,6 +400,8 @@ static PHP_INI_MH(OnChangeMailForceExtra)
 }
 /* }}} */
 
+/* defined in browscap.c */
+PHP_INI_MH(OnChangeBrowscap);
 
 /* Need to convert to strings and make use of:
  * PHP_SAFE_MODE
@@ -510,7 +513,7 @@ PHP_INI_BEGIN()
 	PHP_INI_ENTRY("smtp_port",					"25",		PHP_INI_ALL,		NULL)
 	STD_PHP_INI_BOOLEAN("mail.add_x_header",			"0",		PHP_INI_SYSTEM|PHP_INI_PERDIR,		OnUpdateBool,			mail_x_header,			php_core_globals,	core_globals)
 	STD_PHP_INI_ENTRY("mail.log",					NULL,		PHP_INI_SYSTEM|PHP_INI_PERDIR,		OnUpdateMailLog,			mail_log,			php_core_globals,	core_globals)
-	PHP_INI_ENTRY("browscap",					NULL,		PHP_INI_SYSTEM,		NULL)
+	PHP_INI_ENTRY("browscap",					NULL,		PHP_INI_SYSTEM,		OnChangeBrowscap)
 	PHP_INI_ENTRY("memory_limit",				"128M",		PHP_INI_ALL,		OnChangeMemoryLimit)
 	PHP_INI_ENTRY("precision",					"14",		PHP_INI_ALL,		OnSetPrecision)
 	PHP_INI_ENTRY("sendmail_from",				NULL,		PHP_INI_ALL,		NULL)
@@ -908,9 +911,11 @@ static void php_error_cb(int type, const char *error_filename, const uint error_
 	if (display) {
 		if (PG(last_error_message)) {
 			free(PG(last_error_message));
+			PG(last_error_message) = NULL;
 		}
 		if (PG(last_error_file)) {
 			free(PG(last_error_file));
+			PG(last_error_file) = NULL;
 		}
 		if (!error_filename) {
 			error_filename = "Unknown";
@@ -1825,6 +1830,10 @@ int php_module_startup(sapi_module_struct *sf, zend_module_entry *additional_mod
 	tsrm_ls = ts_resource(0);
 #endif
 
+#ifdef PHP_WIN32
+	php_win32_init_rng_lock();
+#endif
+
 	module_shutdown = 0;
 	module_startup = 1;
 	sapi_initialize_empty_request(TSRMLS_C);
@@ -1936,6 +1945,9 @@ int php_module_startup(sapi_module_struct *sf, zend_module_entry *additional_mod
 	REGISTER_MAIN_STRINGL_CONSTANT("PHP_EXTENSION_DIR", PHP_EXTENSION_DIR, sizeof(PHP_EXTENSION_DIR)-1, CONST_PERSISTENT | CONST_CS);
 	REGISTER_MAIN_STRINGL_CONSTANT("PHP_PREFIX", PHP_PREFIX, sizeof(PHP_PREFIX)-1, CONST_PERSISTENT | CONST_CS);
 	REGISTER_MAIN_STRINGL_CONSTANT("PHP_BINDIR", PHP_BINDIR, sizeof(PHP_BINDIR)-1, CONST_PERSISTENT | CONST_CS);
+#ifndef PHP_WIN32
+	REGISTER_MAIN_STRINGL_CONSTANT("PHP_MANDIR", PHP_MANDIR, sizeof(PHP_MANDIR)-1, CONST_PERSISTENT | CONST_CS);
+#endif
 	REGISTER_MAIN_STRINGL_CONSTANT("PHP_LIBDIR", PHP_LIBDIR, sizeof(PHP_LIBDIR)-1, CONST_PERSISTENT | CONST_CS);
 	REGISTER_MAIN_STRINGL_CONSTANT("PHP_DATADIR", PHP_DATADIR, sizeof(PHP_DATADIR)-1, CONST_PERSISTENT | CONST_CS);
 	REGISTER_MAIN_STRINGL_CONSTANT("PHP_SYSCONFDIR", PHP_SYSCONFDIR, sizeof(PHP_SYSCONFDIR)-1, CONST_PERSISTENT | CONST_CS);
@@ -2139,6 +2151,10 @@ void php_module_shutdown(TSRMLS_D)
 #if defined(PHP_WIN32) || (defined(NETWARE) && defined(USE_WINSOCK))
 	/*close winsock */
 	WSACleanup();
+#endif
+
+#ifdef PHP_WIN32
+	php_win32_free_rng_lock();
 #endif
 
 	sapi_flush(TSRMLS_C);

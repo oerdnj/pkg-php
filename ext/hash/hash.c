@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: hash.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: hash.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1060,7 +1060,7 @@ const zend_function_entry hash_functions[] = {
 	PHP_FE(mhash, arginfo_mhash)
 #endif
 
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 

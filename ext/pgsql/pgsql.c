@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
  
-/* $Id: pgsql.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: pgsql.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #include <stdlib.h>
 
@@ -697,7 +697,7 @@ const zend_function_entry pgsql_functions[] = {
 	PHP_FALIAS(pg_clientencoding,		pg_client_encoding,		arginfo_pg_client_encoding)
 	PHP_FALIAS(pg_setclientencoding,	pg_set_client_encoding,	arginfo_pg_set_client_encoding)
 #endif
-	{NULL, NULL, NULL} 
+	PHP_FE_END
 };
 /* }}} */
 

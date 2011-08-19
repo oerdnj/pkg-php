@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: spl_fixedarray.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: spl_fixedarray.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -152,17 +152,21 @@ static HashTable* spl_fixedarray_object_get_properties(zval *obj TSRMLS_DC) /* {
 	spl_fixedarray_object *intern  = (spl_fixedarray_object*)zend_object_store_get_object(obj TSRMLS_CC);
 	int  i = 0;
 
-	if (intern->array) {
+	if (intern->array && !GC_G(gc_active)) {
+		int j = zend_hash_num_elements(intern->std.properties);
+
 		for (i = 0; i < intern->array->size; i++) {
 			if (intern->array->elements[i]) {
 				zend_hash_index_update(intern->std.properties, i, (void *)&intern->array->elements[i], sizeof(zval *), NULL);
 				Z_ADDREF_P(intern->array->elements[i]);
 			} else {
-				if (GC_G(gc_active)) {
-					return NULL;
-				}
 				zend_hash_index_update(intern->std.properties, i, (void *)&EG(uninitialized_zval_ptr), sizeof(zval *), NULL);
 				Z_ADDREF_P(EG(uninitialized_zval_ptr));
+			}
+		}
+		if (j > intern->array->size) {
+			for (i = intern->array->size; i < j; ++i) {
+				zend_hash_index_del(intern->std.properties, i);
 			}
 		}
 	}
@@ -1069,7 +1073,7 @@ static zend_function_entry spl_funcs_SplFixedArray[] = { /* {{{ */
 	SPL_ME(SplFixedArray, key,             arginfo_splfixedarray_void,     ZEND_ACC_PUBLIC)
 	SPL_ME(SplFixedArray, next,            arginfo_splfixedarray_void,     ZEND_ACC_PUBLIC)
 	SPL_ME(SplFixedArray, valid,           arginfo_splfixedarray_void,     ZEND_ACC_PUBLIC)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 

@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: dl.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: dl.c 311444 2011-05-26 14:37:13Z pajoye $ */
 
 #include "php.h"
 #include "dl.h"
@@ -148,7 +148,7 @@ PHPAPI int php_load_extension(char *filename, int type, int start_now TSRMLS_DC)
 	if (!handle) {
 #if PHP_WIN32
 		char *err = GET_DL_ERROR();
-		if (err) {
+		if (err && (*err != "")) {
 			php_error_docref(NULL TSRMLS_CC, error_type, "Unable to load dynamic library '%s' - %s", libpath, err);
 			LocalFree(err);
 		} else {

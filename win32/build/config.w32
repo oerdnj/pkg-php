@@ -1,5 +1,5 @@
 // vim:ft=javascript
-// $Id: config.w32 308863 2011-03-02 18:35:10Z moriyoshi $
+// $Id: config.w32 309779 2011-03-28 10:55:34Z pajoye $
 // "Master" config file; think of it as a configure.in
 // equivalent.
 
@@ -414,7 +414,7 @@ if (PHP_SECURITY_FLAGS == "yes") {
 }
 
 ARG_ENABLE("static-analyze", "Enable the VC compiler static analyze", "no");
-if (PHP_STATIC_ANALYZE == "yes" && PHP_SNAPSHOT_BUILD == "no") {
+if (PHP_STATIC_ANALYZE == "yes") {
 	ADD_FLAG("CFLAGS", " /analyze ");
 	ADD_FLAG("CFLAGS", " /wd6308 ");
 }

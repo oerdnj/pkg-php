@@ -16,7 +16,7 @@
   |         Ilia Alshanetsky <ilia@prohost.org>                          |
   +----------------------------------------------------------------------+
 
-  $Id: enchant.c 306939 2011-01-01 02:19:59Z felipe $
+  $Id: enchant.c 313665 2011-07-25 11:42:53Z felipe $
 */
 
 #ifdef HAVE_CONFIG_H
@@ -146,8 +146,7 @@ function_entry enchant_functions[] = {
 	PHP_FE(enchant_dict_get_error, 			arginfo_enchant_broker_free_dict)
 	PHP_FE(enchant_dict_describe, 			arginfo_enchant_broker_free_dict)
 	PHP_FE(enchant_dict_quick_check, 		arginfo_enchant_dict_quick_check)
-
-	{NULL, NULL, NULL}	/* Must be the last line in enchant_functions[] */
+	PHP_FE_END
 };
 /* }}} */
 
@@ -327,7 +326,7 @@ PHP_MINFO_FUNCTION(enchant)
 #elif defined(HAVE_ENCHANT_BROKER_SET_PARAM)
 	php_info_print_table_row(2, "Libenchant Version", "1.5.0 or later");
 #endif
-	php_info_print_table_row(2, "Revision", "$Revision: 306939 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 313665 $");
 	php_info_print_table_end();
 
 	php_info_print_table_start();

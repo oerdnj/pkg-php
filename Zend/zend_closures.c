@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_closures.c 308320 2011-02-14 10:52:16Z dmitry $ */
+/* $Id: zend_closures.c 310389 2011-04-20 12:59:18Z dmitry $ */
 
 #include "zend.h"
 #include "zend_API.h"
@@ -347,6 +347,7 @@ static int zval_copy_static_var(zval **p TSRMLS_DC, int num_args, va_list args, 
 			} else if (Z_ISREF_PP(p)) {
 				ALLOC_INIT_ZVAL(tmp);
 				*tmp = **p;
+				zval_copy_ctor(tmp);
 				Z_SET_REFCOUNT_P(tmp, 0);
 				Z_UNSET_ISREF_P(tmp);
 			} else {
@@ -372,6 +373,7 @@ ZEND_API void zend_create_closure(zval *res, zend_function *func TSRMLS_DC) /* {
 	closure = (zend_closure *)zend_object_store_get_object(res TSRMLS_CC);
 
 	closure->func = *func;
+	closure->func.common.prototype = NULL;
 
 	if (closure->func.type == ZEND_USER_FUNCTION) {
 		if (closure->func.op_array.static_variables) {

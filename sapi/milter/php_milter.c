@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_milter.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: php_milter.c 314352 2011-08-06 01:22:27Z felipe $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -833,7 +833,7 @@ const static zend_function_entry milter_functions[] = {
 	PHP_FE(smfi_addrcpt, 		arginfo_smfi_addrcpt)
 	PHP_FE(smfi_delrcpt, 		arginfo_smfi_delrcpt)
 	PHP_FE(smfi_replacebody, 	arginfo_smfi_replacebody)
-	{ NULL, NULL, NULL }
+	PHP_FE_END
 };
 /* }}} */
 

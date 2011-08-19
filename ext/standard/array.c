@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: array.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: array.c 309986 2011-04-06 10:23:06Z aharvey $ */
 
 #include "php.h"
 #include "php_ini.h"
@@ -606,7 +606,7 @@ static int php_array_user_compare(const void *a, const void *b TSRMLS_DC) /* {{{
 
 	/* Clear FCI cache otherwise : for example the same or other array with
 	 * (partly) the same key values has been sorted with uasort() or
-	 * other sorting function the comparison is cached, however the the name
+	 * other sorting function the comparison is cached, however the name
 	 * of the function for comparison is not respected. see bug #28739 AND #33295
 	 *
 	 * Following defines will assist in backup / restore values. */
@@ -1688,28 +1688,32 @@ PHP_FUNCTION(range)
 		}
 
 	} else if (Z_TYPE_P(zlow) == IS_DOUBLE || Z_TYPE_P(zhigh) == IS_DOUBLE || is_step_double) {
-		double low, high;
+		double low, high, value;
+		long i;
 double_str:
 		convert_to_double(zlow);
 		convert_to_double(zhigh);
 		low = Z_DVAL_P(zlow);
 		high = Z_DVAL_P(zhigh);
+		i = 0;
 
 		if (low > high) { 		/* Negative steps */
 			if (low - high < step || step <= 0) {
 				err = 1;
 				goto err;
 			}
-			for (; low >= (high - DOUBLE_DRIFT_FIX); low -= step) {
-				add_next_index_double(return_value, low);
+
+			for (value = low; value >= (high - DOUBLE_DRIFT_FIX); value = low - (++i * step)) {
+				add_next_index_double(return_value, value);
 			}
 		} else if (high > low) { 	/* Positive steps */
 			if (high - low < step || step <= 0) {
 				err = 1;
 				goto err;
 			}
-			for (; low <= (high + DOUBLE_DRIFT_FIX); low += step) {
-				add_next_index_double(return_value, low);
+
+			for (value = low; value <= (high + DOUBLE_DRIFT_FIX); value = low + (++i * step)) {
+				add_next_index_double(return_value, value);
 			}
 		} else {
 			add_next_index_double(return_value, low);

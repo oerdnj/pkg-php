@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_ibase_includes.h 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: php_ibase_includes.h 311341 2011-05-22 19:06:21Z felipe $ */
 
 #ifndef PHP_IBASE_INCLUDES_H
 #define PHP_IBASE_INCLUDES_H
@@ -51,7 +51,7 @@ extern int le_link, le_plink, le_trans;
 #define LE_PLINK "Firebird/InterBase persistent link"
 #define LE_TRANS "Firebird/InterBase transaction"
 
-#define IBASE_MSGSIZE 256
+#define IBASE_MSGSIZE 512
 #define MAX_ERRMSG (IBASE_MSGSIZE*2)
 
 #define IB_DEF_DATE_FMT "%Y-%m-%d"

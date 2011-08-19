@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_xmlwriter.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: php_xmlwriter.c 313665 2011-07-25 11:42:53Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -528,7 +528,7 @@ static const zend_function_entry xmlwriter_functions[] = {
 #endif
 	PHP_FE(xmlwriter_output_memory,		arginfo_xmlwriter_output_memory)
 	PHP_FE(xmlwriter_flush,				arginfo_xmlwriter_flush)
-	{NULL, NULL, NULL}
+	PHP_FE_END
 };
 /* }}} */
 

@@ -41,7 +41,14 @@
 #include "fpm_sockets.h"
 #include "fpm_shm.h"
 #include "fpm_status.h"
+#include "fpm_log.h"
 #include "zlog.h"
+
+#define STR2STR(a) (a ? a : "undefined")
+#define BOOL2STR(a) (a ? "yes" : "no")
+#define PM2STR(a) (a == PM_STYLE_STATIC ? "static" : "dynamic")
+#define GO(field) offsetof(struct fpm_global_config_s, field)
+#define WPO(field) offsetof(struct fpm_worker_pool_config_s, field)
 
 static int fpm_conf_load_ini_file(char *filename TSRMLS_DC);
 static char *fpm_conf_set_integer(zval *value, void **config, intptr_t offset);
@@ -59,47 +66,48 @@ static char *ini_filename = NULL;
 static int ini_lineno = 0;
 static char *ini_include = NULL;
 
-#define GO(field) offsetof(struct fpm_global_config_s, field)
-#define WPO(field) offsetof(struct fpm_worker_pool_config_s, field)
-
 static struct ini_value_parser_s ini_fpm_global_options[] = {
-	{ "emergency_restart_threshold", 	&fpm_conf_set_integer, 	GO(emergency_restart_threshold) },
-	{ "emergency_restart_interval",		&fpm_conf_set_time,			GO(emergency_restart_interval) },
-	{ "process_control_timeout",			&fpm_conf_set_time,			GO(process_control_timeout) },
-	{ "daemonize",										&fpm_conf_set_boolean,	GO(daemonize) },
-	{ "pid",													&fpm_conf_set_string,		GO(pid_file) },
-	{ "error_log",										&fpm_conf_set_string,		GO(error_log) },
-	{ "log_level",										&fpm_conf_set_log_level,	0 },
+	{ "emergency_restart_threshold", &fpm_conf_set_integer,     GO(emergency_restart_threshold) },
+	{ "emergency_restart_interval",  &fpm_conf_set_time,        GO(emergency_restart_interval) },
+	{ "process_control_timeout",     &fpm_conf_set_time,        GO(process_control_timeout) },
+	{ "daemonize",                   &fpm_conf_set_boolean,     GO(daemonize) },
+	{ "pid",                         &fpm_conf_set_string,      GO(pid_file) },
+	{ "error_log",                   &fpm_conf_set_string,      GO(error_log) },
+	{ "log_level",                   &fpm_conf_set_log_level,   0 },
+	{ "rlimit_files",                &fpm_conf_set_integer,     GO(rlimit_files) },
+	{ "rlimit_core",                 &fpm_conf_set_rlimit_core, GO(rlimit_core) },
 	{ 0, 0, 0 }
 };
 
 static struct ini_value_parser_s ini_fpm_pool_options[] = {
-	{ "prefix", &fpm_conf_set_string, WPO(prefix) },
-	{ "user", &fpm_conf_set_string, WPO(user) },
-	{ "group", &fpm_conf_set_string, WPO(group) },
-	{ "chroot", &fpm_conf_set_string, WPO(chroot) },
-	{ "chdir", &fpm_conf_set_string, WPO(chdir) },
-	{ "request_terminate_timeout", &fpm_conf_set_time, WPO(request_terminate_timeout) },
-	{ "request_slowlog_timeout", &fpm_conf_set_time, WPO(request_slowlog_timeout) },
-	{ "slowlog", &fpm_conf_set_string, WPO(slowlog) },
-	{ "rlimit_files", &fpm_conf_set_integer, WPO(rlimit_files) },
-	{ "rlimit_core", &fpm_conf_set_rlimit_core, WPO(rlimit_core) },
-	{ "catch_workers_output", &fpm_conf_set_boolean, WPO(catch_workers_output) },
-	{ "listen", &fpm_conf_set_string, WPO(listen_address) },
-	{ "listen.owner", &fpm_conf_set_string, WPO(listen_owner) },
-	{ "listen.group", &fpm_conf_set_string, WPO(listen_group) },
-	{ "listen.mode", &fpm_conf_set_string, WPO(listen_mode) },
-	{ "listen.backlog", &fpm_conf_set_integer, WPO(listen_backlog) },
-	{ "listen.allowed_clients", &fpm_conf_set_string, WPO(listen_allowed_clients) },
-	{ "pm", &fpm_conf_set_pm, WPO(pm) },
-	{ "pm.max_requests", &fpm_conf_set_integer, WPO(pm_max_requests) },
-	{ "pm.max_children", &fpm_conf_set_integer, WPO(pm_max_children) },
-	{ "pm.start_servers", &fpm_conf_set_integer, WPO(pm_start_servers) },
-	{ "pm.min_spare_servers", &fpm_conf_set_integer, WPO(pm_min_spare_servers) },
-	{ "pm.max_spare_servers", &fpm_conf_set_integer, WPO(pm_max_spare_servers) },
-	{ "pm.status_path", &fpm_conf_set_string, WPO(pm_status_path) },
-	{ "ping.path", &fpm_conf_set_string, WPO(ping_path) },
-	{ "ping.response", &fpm_conf_set_string, WPO(ping_response) },
+	{ "prefix",                    &fpm_conf_set_string,      WPO(prefix) },
+	{ "user",                      &fpm_conf_set_string,      WPO(user) },
+	{ "group",                     &fpm_conf_set_string,      WPO(group) },
+	{ "chroot",                    &fpm_conf_set_string,      WPO(chroot) },
+	{ "chdir",                     &fpm_conf_set_string,      WPO(chdir) },
+	{ "request_terminate_timeout", &fpm_conf_set_time,        WPO(request_terminate_timeout) },
+	{ "request_slowlog_timeout",   &fpm_conf_set_time,        WPO(request_slowlog_timeout) },
+	{ "slowlog",                   &fpm_conf_set_string,      WPO(slowlog) },
+	{ "rlimit_files",              &fpm_conf_set_integer,     WPO(rlimit_files) },
+	{ "rlimit_core",               &fpm_conf_set_rlimit_core, WPO(rlimit_core) },
+	{ "catch_workers_output",      &fpm_conf_set_boolean,     WPO(catch_workers_output) },
+	{ "listen",                    &fpm_conf_set_string,      WPO(listen_address) },
+	{ "listen.owner",              &fpm_conf_set_string,      WPO(listen_owner) },
+	{ "listen.group",              &fpm_conf_set_string,      WPO(listen_group) },
+	{ "listen.mode",               &fpm_conf_set_string,      WPO(listen_mode) },
+	{ "listen.backlog",            &fpm_conf_set_integer,     WPO(listen_backlog) },
+	{ "listen.allowed_clients",    &fpm_conf_set_string,      WPO(listen_allowed_clients) },
+	{ "pm",                        &fpm_conf_set_pm,          WPO(pm) },
+	{ "pm.max_requests",           &fpm_conf_set_integer,     WPO(pm_max_requests) },
+	{ "pm.max_children",           &fpm_conf_set_integer,     WPO(pm_max_children) },
+	{ "pm.start_servers",          &fpm_conf_set_integer,     WPO(pm_start_servers) },
+	{ "pm.min_spare_servers",      &fpm_conf_set_integer,     WPO(pm_min_spare_servers) },
+	{ "pm.max_spare_servers",      &fpm_conf_set_integer,     WPO(pm_max_spare_servers) },
+	{ "pm.status_path",            &fpm_conf_set_string,      WPO(pm_status_path) },
+	{ "ping.path",                 &fpm_conf_set_string,      WPO(ping_path) },
+	{ "ping.response",             &fpm_conf_set_string,      WPO(ping_response) },
+	{ "access.log",                &fpm_conf_set_string,      WPO(access_log) },
+	{ "access.format",             &fpm_conf_set_string,      WPO(access_format) },
 	{ 0, 0, 0 }
 };
 
@@ -115,6 +123,9 @@ static int fpm_conf_is_dir(char *path) /* {{{ */
 }
 /* }}} */
 
+/*
+ * Expands the '$pool' token in a dynamically allocated string
+ */
 static int fpm_conf_expand_pool_name(char **value) {
 	char *token;
 
@@ -122,15 +133,23 @@ static int fpm_conf_expand_pool_name(char **value) {
 		return 0;
 	}
 
-	while ((token = strstr(*value, "$pool"))) {
+	while (*value && (token = strstr(*value, "$pool"))) {
 		char *buf;
-		char *p1 = *value;
 		char *p2 = token + strlen("$pool");
+
+		/* If we are not in a pool, we cannot expand this name now */
 		if (!current_wp || !current_wp->config  || !current_wp->config->name) {
 			return -1;
 		}
+
+		/* "aaa$poolbbb" becomes "aaa\0oolbbb" */
 		token[0] = '\0';
-		spprintf(&buf, 0, "%s%s%s", p1, current_wp->config->name, p2);
+
+		/* Build a brand new string with the expanded token */
+		spprintf(&buf, 0, "%s%s%s", *value, current_wp->config->name, p2);
+
+		/* Free the previous value and save the new one */
+		free(*value);
 		*value = strdup(buf);
 		efree(buf);
 	}
@@ -179,7 +198,7 @@ static char *fpm_conf_set_integer(zval *value, void **config, intptr_t offset) /
 	char *val = Z_STRVAL_P(value);
 	char *p;
 
-	for(p=val; *p; p++) {
+	for (p = val; *p; p++) {
 		if ( p == val && *p == '-' ) continue;
 		if (*p < '0' || *p > '9') {
 			return "is not a valid number (greater or equal than zero)";
@@ -255,10 +274,10 @@ static char *fpm_conf_set_log_level(zval *value, void **config, intptr_t offset)
 static char *fpm_conf_set_rlimit_core(zval *value, void **config, intptr_t offset) /* {{{ */
 {
 	char *val = Z_STRVAL_P(value);
-	struct fpm_worker_pool_config_s *c = *config;
+	int *ptr = (int *) ((char *) *config + offset);
 
 	if (!strcasecmp(val, "unlimited")) {
-		c->rlimit_core = -1;
+		*ptr = -1;
 	} else {
 		int int_value;
 		void *subconf = &int_value;
@@ -274,7 +293,7 @@ static char *fpm_conf_set_rlimit_core(zval *value, void **config, intptr_t offse
 			return "must be greater than zero or 'unlimited'";
 		}
 
-		c->rlimit_core = int_value;
+		*ptr = int_value;
 	}
 
 	return NULL;
@@ -412,6 +431,8 @@ int fpm_worker_pool_config_free(struct fpm_worker_pool_config_s *wpc) /* {{{ */
 	free(wpc->chdir);
 	free(wpc->slowlog);
 	free(wpc->prefix);
+	free(wpc->access_log);
+	free(wpc->access_format);
 
 	return 0;
 }
@@ -606,7 +627,7 @@ static int fpm_conf_process_all_pools() /* {{{ */
 				return -1;
 			}
 
-			for (i=0; i<strlen(ping); i++) {
+			for (i = 0; i < strlen(ping); i++) {
 				if (!isalnum(ping[i]) && ping[i] != '/' && ping[i] != '-' && ping[i] != '_' && ping[i] != '.') {
 					zlog(ZLOG_ERROR, "[pool %s] the ping path '%s' must containt only the following characters '[alphanum]/_-.'", wp->config->name, ping);
 					return -1;
@@ -643,22 +664,19 @@ static int fpm_conf_process_all_pools() /* {{{ */
 				return -1;
 			}
 
-			for (i=0; i<strlen(status); i++) {
+			for (i = 0; i < strlen(status); i++) {
 				if (!isalnum(status[i]) && status[i] != '/' && status[i] != '-' && status[i] != '_' && status[i] != '.') {
 					zlog(ZLOG_ERROR, "[pool %s] the status path '%s' must contain only the following characters '[alphanum]/_-.'", wp->config->name, status);
 					return -1;
 				}
 			}
-			wp->shm_status = fpm_shm_alloc(sizeof(struct fpm_status_s));
-			if (!wp->shm_status) {
-				zlog(ZLOG_ERROR, "[pool %s] unable to allocate shared memory for status page '%s'", wp->config->name, status);
-				return -1;
+		}
+
+		if (wp->config->access_log && *wp->config->access_log) {
+			fpm_evaluate_full_path(&wp->config->access_log, wp, NULL, 0);
+			if (!wp->config->access_format) {
+				wp->config->access_format = strdup("%R - %u %t \"%m %r\" %s");
 			}
-			fpm_status_update_accepted_conn(wp->shm_status, 0);
-			fpm_status_update_activity(wp->shm_status, -1, -1, -1, 0, -1, 1);
-			fpm_status_update_max_children_reached(wp->shm_status, 0);
-			fpm_status_set_pm(wp->shm_status, wp->config->pm);
-			/* memset(&fpm_status.last_update, 0, sizeof(fpm_status.last_update)); */
 		}
 
 		if (wp->config->chroot && *wp->config->chroot) {
@@ -709,14 +727,14 @@ static int fpm_conf_process_all_pools() /* {{{ */
 			char **p;
 
 			for (kv = wp->config->php_values; kv; kv = kv->next) {
-				for (p=options; *p; p++) {
+				for (p = options; *p; p++) {
 					if (!strcasecmp(kv->key, *p)) {
 						fpm_evaluate_full_path(&kv->value, wp, NULL, 0);
 					}
 				}
 			}
 			for (kv = wp->config->php_admin_values; kv; kv = kv->next) {
-				for (p=options; *p; p++) {
+				for (p = options; *p; p++) {
 					if (!strcasecmp(kv->key, *p)) {
 						fpm_evaluate_full_path(&kv->value, wp, NULL, 0);
 					}
@@ -768,8 +786,10 @@ int fpm_conf_write_pid() /* {{{ */
 }
 /* }}} */
 
-static int fpm_conf_post_process() /* {{{ */
+static int fpm_conf_post_process(TSRMLS_D) /* {{{ */
 {
+	struct fpm_worker_pool_s *wp;
+
 	if (fpm_global_config.pid_file) {
 		fpm_evaluate_full_path(&fpm_global_config.pid_file, NULL, PHP_LOCALSTATEDIR, 0);
 	}
@@ -784,7 +804,25 @@ static int fpm_conf_post_process() /* {{{ */
 		return -1;
 	}
 
-	return fpm_conf_process_all_pools();
+	if (0 > fpm_log_open(0)) {
+		return -1;
+	}
+
+	if (0 > fpm_conf_process_all_pools()) {
+		return -1;
+	}
+
+	for (wp = fpm_worker_all_pools; wp; wp = wp->next) {
+		if (!wp->config->access_log || !*wp->config->access_log) {
+			continue;
+		}
+		if (0 > fpm_log_write(wp->config->access_format TSRMLS_CC)) {
+			zlog(ZLOG_ERROR, "[pool %s] wrong format for access.format '%s'", wp->config->name, wp->config->access_format);
+			return -1;
+		}
+	}
+
+	return 0;
 }
 /* }}} */
 
@@ -826,7 +864,7 @@ static void fpm_conf_ini_parser_include(char *inc, void *arg TSRMLS_DC) /* {{{ *
 			return;
 		}
 
-		for(i=0; i<g.gl_pathc; i++) {
+		for (i = 0; i < g.gl_pathc; i++) {
 			int len = strlen(g.gl_pathv[i]);
 			if (len < 1) continue;
 			if (g.gl_pathv[i][len - 1] == '/') continue; /* don't parse directories */
@@ -920,7 +958,7 @@ static void fpm_conf_ini_parser_entry(zval *name, zval *value, void *arg TSRMLS_
 		config = current_wp->config;
 	}
 
-	for (;parser->name; parser++) {
+	for (; parser->name; parser++) {
 		if (!strcasecmp(parser->name, Z_STRVAL_P(name))) {
 			char *ret;
 			if (!parser->parser) {
@@ -1069,7 +1107,7 @@ int fpm_conf_load_ini_file(char *filename TSRMLS_DC) /* {{{ */
 	while (nb_read > 0) {
 		int tmp;
 		memset(buf, 0, sizeof(char) * (1024 + 1));
-		for (n=0; n<1024 && (nb_read = read(fd, &c, sizeof(char))) == sizeof(char) && c != '\n'; n++) {
+		for (n = 0; n < 1024 && (nb_read = read(fd, &c, sizeof(char))) == sizeof(char) && c != '\n'; n++) {
 			buf[n] = c;
 		}
 		buf[n++] = '\n';
@@ -1110,45 +1148,49 @@ static void fpm_conf_dump() /* {{{ */
 	struct fpm_worker_pool_s *wp;
 
 	zlog(ZLOG_NOTICE, "[General]");
-	zlog(ZLOG_NOTICE, "\tpid = %s", STR2STR(fpm_global_config.pid_file));
-	zlog(ZLOG_NOTICE, "\tdaemonize = %s", BOOL2STR(fpm_global_config.daemonize));
-	zlog(ZLOG_NOTICE, "\terror_log = %s", STR2STR(fpm_global_config.error_log));
-	zlog(ZLOG_NOTICE, "\tlog_level = %s", zlog_get_level_name());
-	zlog(ZLOG_NOTICE, "\tprocess_control_timeout = %ds", fpm_global_config.process_control_timeout);
+	zlog(ZLOG_NOTICE, "\tpid = %s",                         STR2STR(fpm_global_config.pid_file));
+	zlog(ZLOG_NOTICE, "\tdaemonize = %s",                   BOOL2STR(fpm_global_config.daemonize));
+	zlog(ZLOG_NOTICE, "\terror_log = %s",                   STR2STR(fpm_global_config.error_log));
+	zlog(ZLOG_NOTICE, "\tlog_level = %s",                   zlog_get_level_name(fpm_globals.log_level));
+	zlog(ZLOG_NOTICE, "\tprocess_control_timeout = %ds",    fpm_global_config.process_control_timeout);
 	zlog(ZLOG_NOTICE, "\temergency_restart_interval = %ds", fpm_global_config.emergency_restart_interval);
 	zlog(ZLOG_NOTICE, "\temergency_restart_threshold = %d", fpm_global_config.emergency_restart_threshold);
+	zlog(ZLOG_NOTICE, "\trlimit_files = %d",                fpm_global_config.rlimit_files);
+	zlog(ZLOG_NOTICE, "\trlimit_core = %d",                 fpm_global_config.rlimit_core);
 	zlog(ZLOG_NOTICE, " ");
 
 	for (wp = fpm_worker_all_pools; wp; wp = wp->next) {
 		struct key_value_s *kv;
 		if (!wp->config) continue;
-		zlog(ZLOG_NOTICE, "[%s]", STR2STR(wp->config->name));
-		zlog(ZLOG_NOTICE, "\tprefix = %s", STR2STR(wp->config->prefix));
-		zlog(ZLOG_NOTICE, "\tuser = %s", STR2STR(wp->config->user));
-		zlog(ZLOG_NOTICE, "\tgroup = %s", STR2STR(wp->config->group));
-		zlog(ZLOG_NOTICE, "\tchroot = %s", STR2STR(wp->config->chroot));
-		zlog(ZLOG_NOTICE, "\tchdir = %s", STR2STR(wp->config->chdir));
-		zlog(ZLOG_NOTICE, "\tlisten = %s", STR2STR(wp->config->listen_address));
-		zlog(ZLOG_NOTICE, "\tlisten.backlog = %d", wp->config->listen_backlog);
-		zlog(ZLOG_NOTICE, "\tlisten.owner = %s", STR2STR(wp->config->listen_owner));
-		zlog(ZLOG_NOTICE, "\tlisten.group = %s", STR2STR(wp->config->listen_group));
-		zlog(ZLOG_NOTICE, "\tlisten.mode = %s", STR2STR(wp->config->listen_mode));
-		zlog(ZLOG_NOTICE, "\tlisten.allowed_clients = %s", STR2STR(wp->config->listen_allowed_clients));
-		zlog(ZLOG_NOTICE, "\tpm = %s", PM2STR(wp->config->pm));
-		zlog(ZLOG_NOTICE, "\tpm.max_children = %d", wp->config->pm_max_children);
-		zlog(ZLOG_NOTICE, "\tpm.max_requests = %d", wp->config->pm_max_requests);
-		zlog(ZLOG_NOTICE, "\tpm.start_servers = %d", wp->config->pm_start_servers);
-		zlog(ZLOG_NOTICE, "\tpm.min_spare_servers = %d", wp->config->pm_min_spare_servers);
-		zlog(ZLOG_NOTICE, "\tpm.max_spare_servers = %d", wp->config->pm_max_spare_servers);
-		zlog(ZLOG_NOTICE, "\tpm.status_path = %s", STR2STR(wp->config->pm_status_path));
-		zlog(ZLOG_NOTICE, "\tping.path = %s", STR2STR(wp->config->ping_path));
-		zlog(ZLOG_NOTICE, "\tping.response = %s", STR2STR(wp->config->ping_response));
-		zlog(ZLOG_NOTICE, "\tcatch_workers_output = %s", BOOL2STR(wp->config->catch_workers_output));
+		zlog(ZLOG_NOTICE, "[%s]",                              STR2STR(wp->config->name));
+		zlog(ZLOG_NOTICE, "\tprefix = %s",                     STR2STR(wp->config->prefix));
+		zlog(ZLOG_NOTICE, "\tuser = %s",                       STR2STR(wp->config->user));
+		zlog(ZLOG_NOTICE, "\tgroup = %s",                      STR2STR(wp->config->group));
+		zlog(ZLOG_NOTICE, "\tchroot = %s",                     STR2STR(wp->config->chroot));
+		zlog(ZLOG_NOTICE, "\tchdir = %s",                      STR2STR(wp->config->chdir));
+		zlog(ZLOG_NOTICE, "\tlisten = %s",                     STR2STR(wp->config->listen_address));
+		zlog(ZLOG_NOTICE, "\tlisten.backlog = %d",             wp->config->listen_backlog);
+		zlog(ZLOG_NOTICE, "\tlisten.owner = %s",               STR2STR(wp->config->listen_owner));
+		zlog(ZLOG_NOTICE, "\tlisten.group = %s",               STR2STR(wp->config->listen_group));
+		zlog(ZLOG_NOTICE, "\tlisten.mode = %s",                STR2STR(wp->config->listen_mode));
+		zlog(ZLOG_NOTICE, "\tlisten.allowed_clients = %s",     STR2STR(wp->config->listen_allowed_clients));
+		zlog(ZLOG_NOTICE, "\tpm = %s",                         PM2STR(wp->config->pm));
+		zlog(ZLOG_NOTICE, "\tpm.max_children = %d",            wp->config->pm_max_children);
+		zlog(ZLOG_NOTICE, "\tpm.max_requests = %d",            wp->config->pm_max_requests);
+		zlog(ZLOG_NOTICE, "\tpm.start_servers = %d",           wp->config->pm_start_servers);
+		zlog(ZLOG_NOTICE, "\tpm.min_spare_servers = %d",       wp->config->pm_min_spare_servers);
+		zlog(ZLOG_NOTICE, "\tpm.max_spare_servers = %d",       wp->config->pm_max_spare_servers);
+		zlog(ZLOG_NOTICE, "\tpm.status_path = %s",             STR2STR(wp->config->pm_status_path));
+		zlog(ZLOG_NOTICE, "\tping.path = %s",                  STR2STR(wp->config->ping_path));
+		zlog(ZLOG_NOTICE, "\tping.response = %s",              STR2STR(wp->config->ping_response));
+		zlog(ZLOG_NOTICE, "\taccess.log = %s",                 STR2STR(wp->config->access_log));
+		zlog(ZLOG_NOTICE, "\taccess.format = %s",              STR2STR(wp->config->access_format));
+		zlog(ZLOG_NOTICE, "\tcatch_workers_output = %s",       BOOL2STR(wp->config->catch_workers_output));
 		zlog(ZLOG_NOTICE, "\trequest_terminate_timeout = %ds", wp->config->request_terminate_timeout);
-		zlog(ZLOG_NOTICE, "\trequest_slowlog_timeout = %ds", wp->config->request_slowlog_timeout);
-		zlog(ZLOG_NOTICE, "\tslowlog = %s", STR2STR(wp->config->slowlog));
-		zlog(ZLOG_NOTICE, "\trlimit_files = %d", wp->config->rlimit_files);
-		zlog(ZLOG_NOTICE, "\trlimit_core = %d", wp->config->rlimit_core);
+		zlog(ZLOG_NOTICE, "\trequest_slowlog_timeout = %ds",   wp->config->request_slowlog_timeout);
+		zlog(ZLOG_NOTICE, "\tslowlog = %s",                    STR2STR(wp->config->slowlog));
+		zlog(ZLOG_NOTICE, "\trlimit_files = %d",               wp->config->rlimit_files);
+		zlog(ZLOG_NOTICE, "\trlimit_core = %d",                wp->config->rlimit_core);
 
 		for (kv = wp->config->env; kv; kv = kv->next) {
 			zlog(ZLOG_NOTICE, "\tenv[%s] = %s", kv->key, kv->value);
@@ -1176,6 +1218,10 @@ int fpm_conf_init_main(int test_conf) /* {{{ */
 			zlog(ZLOG_ERROR, "the global prefix '%s' does not exist or is not a directory", fpm_globals.prefix);
 			return -1;
 		}
+	}
+
+	if (fpm_globals.pid && *fpm_globals.pid) {
+		fpm_global_config.pid_file = strdup(fpm_globals.pid);
 	}
 
 	if (fpm_globals.config == NULL) {
@@ -1208,7 +1254,7 @@ int fpm_conf_init_main(int test_conf) /* {{{ */
 		return -1;
 	}
 
-	if (0 > fpm_conf_post_process()) {
+	if (0 > fpm_conf_post_process(TSRMLS_C)) {
 		zlog(ZLOG_ERROR, "failed to post process the configuration");
 		return -1;
 	}

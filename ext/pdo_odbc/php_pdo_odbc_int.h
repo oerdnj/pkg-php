@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_odbc_int.h 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: php_pdo_odbc_int.h 312506 2011-06-27 01:36:39Z felipe $ */
 
 #ifdef PHP_WIN32
 # define PDO_ODBC_TYPE	"Win32"
@@ -136,7 +136,7 @@ typedef struct {
 typedef struct {
 	char *data;
 	unsigned long datalen;
-	long fetched_len;
+	SQLLEN fetched_len;
 	SWORD	coltype;
 	char colname[128];
 	unsigned is_long;
