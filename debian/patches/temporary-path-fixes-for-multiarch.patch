@@ -62,3 +62,25 @@ Reviewed-by: Steve Langasek <steve.langasek@ubuntu.com>
      PHP_ADD_LIBRARY_WITH_PATH(lber, $LDAP_LIBDIR, LDAP_SHARED_LIBADD)
      PHP_ADD_LIBRARY_WITH_PATH(ldap, $LDAP_LIBDIR, LDAP_SHARED_LIBADD)
  
+--- a/ext/mssql/config.m4
++++ b/ext/mssql/config.m4
+@@ -38,7 +38,7 @@ if test "$PHP_MSSQL" != "no"; then
+     fi
+   fi  
+ 
+-  if test ! -r "$FREETDS_INSTALLATION_DIR/$PHP_LIBDIR/libsybdb.a" && test ! -r "$FREETDS_INSTALLATION_DIR/$PHP_LIBDIR/libsybdb.so"; then
++  if test ! -r "$FREETDS_INSTALLATION_DIR/$PHP_LIBDIR/libsybdb.a" && test ! -r "$FREETDS_INSTALLATION_DIR/$PHP_LIBDIR/$DEB_HOST_MULTIARCH/libsybdb.so" && test ! -r "$FREETDS_INSTALLATION_DIR/$PHP_LIBDIR/libsybdb.so"; then
+      AC_MSG_ERROR(Could not find $FREETDS_INSTALLATION_DIR/$PHP_LIBDIR/libsybdb.[a|so])
+   fi
+ 
+--- a/ext/pdo_dblib/config.m4
++++ b/ext/pdo_dblib/config.m4
+@@ -46,7 +46,7 @@ if test "$PHP_PDO_DBLIB" != "no"; then
+     PHP_LIBDIR=lib
+   fi
+ 
+-  if test ! -r "$PDO_FREETDS_INSTALLATION_DIR/$PHP_LIBDIR/libsybdb.a" && test ! -r "$PDO_FREETDS_INSTALLATION_DIR/$PHP_LIBDIR/libsybdb.so"; then
++  if test ! -r "$PDO_FREETDS_INSTALLATION_DIR/$PHP_LIBDIR/libsybdb.a" && test ! -r "$PDO_FREETDS_INSTALLATION_DIR/$PHP_LIBDIR/$DEB_HOST_MULTIARCH/libsybdb.so" && test ! -r "$PDO_FREETDS_INSTALLATION_DIR/$PHP_LIBDIR/libsybdb.so"; then
+      AC_MSG_ERROR(Could not find $PDO_FREETDS_INSTALLATION_DIR/$PHP_LIBDIR/libsybdb.[a|so])
+   fi
+ 
