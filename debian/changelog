@@ -1,3 +1,12 @@
+php5 (5.3.8-1) unstable; urgency=low
+
+  * Imported Upstream version 5.3.8
+  * Refresh patches to 5.3.8 release
+  * Pull fixes for DateTime tests from upstream SVN
+  * Add additional temporary fix for MultiArch for sybase/mssql
+
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 24 Aug 2011 13:13:51 +0200
+
 php5 (5.3.7-1) unstable; urgency=low
 
   * Imported Upstream version 5.3.7
