@@ -1,4 +1,4 @@
-/* $Id: php_crypt_r.c 314438 2011-08-07 16:10:34Z rasmus $ */
+/* $Id: php_crypt_r.c 315338 2011-08-23 08:09:55Z johannes $ */
 /*
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
@@ -382,7 +382,7 @@ char * php_md5_crypt_r(const char *pw, const char *salt, char *out)
 	/* Now make the output string */
 	memcpy(passwd, MD5_MAGIC, MD5_MAGIC_LEN);
 	strlcpy(passwd + MD5_MAGIC_LEN, sp, sl + 1);
-	strlcat(passwd, "$", 1);
+	strcat(passwd, "$");
 
 	PHP_MD5Final(final, &ctx);
 
