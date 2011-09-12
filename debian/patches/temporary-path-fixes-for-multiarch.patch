@@ -51,6 +51,15 @@ Reviewed-by: Steve Langasek <steve.langasek@ubuntu.com>
          PHP_KERBEROS_DIR=$i
          break
        fi
+@@ -2348,7 +2348,7 @@ AC_DEFUN([PHP_SETUP_OPENSSL],[
+       if test -r $i/include/openssl/evp.h; then
+         OPENSSL_INCDIR=$i/include
+       fi
+-      if test -r $i/$PHP_LIBDIR/libssl.a -o -r $i/$PHP_LIBDIR/libssl.$SHLIB_SUFFIX_NAME; then
++      if test -r $i/$PHP_LIBDIR/libssl.a -o -r $i/$PHP_LIBDIR/$DEB_HOST_MULTIARCH/libssl.$SHLIB_SUFFIX_NAME -o -r $i/$PHP_LIBDIR/libssl.$SHLIB_SUFFIX_NAME; then
+         OPENSSL_LIBDIR=$i/$PHP_LIBDIR
+       fi
+       test -n "$OPENSSL_INCDIR" && test -n "$OPENSSL_LIBDIR" && break
 --- a/ext/ldap/config.m4
 +++ b/ext/ldap/config.m4
 @@ -95,7 +95,7 @@ if test "$PHP_LDAP" != "no"; then
