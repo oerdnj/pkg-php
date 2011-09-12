@@ -2,8 +2,9 @@ php5 (5.3.8-2) unstable; urgency=low
 
   * Fix botched upload when git-buildpackage didn't play well with
     bz2 upstream archive
+  * Add additional temporary fix for MultiArch OpenSSL
 
- -- Ondřej Surý <ondrej@debian.org>  Sun, 11 Sep 2011 18:24:50 +0200
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 12 Sep 2011 09:06:10 +0200
 
 php5 (5.3.8-1) unstable; urgency=low
 
