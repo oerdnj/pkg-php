@@ -282,7 +282,7 @@ configure-apache2-stamp: prepared-stamp
 		--with-recode=shared,/usr \
 		--with-xsl=shared,/usr \
 		--with-snmp=shared,/usr \
-		--with-sqlite=shared,/usr \
+		--without-sqlite \
 		--with-sqlite3=shared,/usr \
 		--with-mssql=shared,/usr \
 		--with-tidy=shared,/usr \

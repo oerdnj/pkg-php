@@ -13,7 +13,7 @@ pgsql PostgreSQL
 pspell pspell
 recode recode
 snmp SNMP
-sqlite SQLite
+sqlite SQLite sqlite3
 sybase Sybase mssql
 tidy tidy
 xmlrpc XML-RPC
