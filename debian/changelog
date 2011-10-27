@@ -1,3 +1,10 @@
+php5 (5.3.8.0-1) unstable; urgency=low
+
+  * Re-re-imported upstream version 5.3.8, as a new sourceful update,
+    in order to prevent the package from remaining as a native package.
+
+ -- Sean Finney <seanius@debian.org>  Thu, 27 Oct 2011 17:17:02 +0200
+
 php5 (5.3.8-2) unstable; urgency=low
 
   * Fix botched upload when git-buildpackage didn't play well with
