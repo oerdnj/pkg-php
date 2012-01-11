@@ -16,9 +16,10 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: interval.c 312235 2011-06-17 16:38:23Z derick $ */
+/* $Id: interval.c 320563 2011-12-07 08:39:43Z pajoye $ */
 
 #include "timelib.h"
+#include <math.h>
 
 timelib_rel_time *timelib_diff(timelib_time *one, timelib_time *two)
 {

@@ -3,7 +3,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2011 The PHP Group                                |
+  | Copyright (c) 1997-2012 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_sql_parser.c 311812 2011-06-04 22:54:40Z felipe $ */
+/* $Id: pdo_sql_parser.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #include "php.h"
 #include "php_pdo_driver.h"

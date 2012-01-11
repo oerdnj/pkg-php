@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | phar php single-file executable PHP extension generated stub         |
   +----------------------------------------------------------------------+
-  | Copyright (c) 2005-2011 The PHP Group                                |
+  | Copyright (c) 2005-2012 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: stub.h 306941 2011-01-01 02:48:19Z felipe $ */
+/* $Id: stub.h 321634 2012-01-01 13:15:04Z felipe $ */
 
 static inline void phar_get_stub(const char *index_php, const char *web, size_t *len, char **stub, const int name_len, const int web_len TSRMLS_DC)
 {

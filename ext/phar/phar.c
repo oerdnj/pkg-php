@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | phar php single-file executable PHP extension                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 2005-2011 The PHP Group                                |
+  | Copyright (c) 2005-2012 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: phar.c 314419 2011-08-07 11:13:27Z laruence $ */
+/* $Id: phar.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #define PHAR_MAIN 1
 #include "phar_internal.h"
@@ -1569,7 +1569,9 @@ static int phar_open_from_fp(php_stream* fp, char *fname, int fname_len, char *a
 	const char zip_magic[] = "PK\x03\x04";
 	const char gz_magic[] = "\x1f\x8b\x08";
 	const char bz_magic[] = "BZh";
-	char *pos, buffer[1024 + sizeof(token)], test = '\0';
+	char *pos, test = '\0';
+	const int window_size = 1024;
+	char buffer[1024 + sizeof(token)]; /* a 1024 byte window + the size of the halt_compiler token (moving window) */
 	const long readsize = sizeof(buffer) - sizeof(token);
 	const long tokenlen = sizeof(token) - 1;
 	long halt_offset;
@@ -1717,7 +1719,7 @@ static int phar_open_from_fp(php_stream* fp, char *fname, int fname_len, char *a
 		}
 
 		halt_offset += got;
-		memmove(buffer, buffer + tokenlen, got + 1);
+		memmove(buffer, buffer + window_size, tokenlen); /* move the memory buffer by the size of the window */
 	}
 
 	MAPPHAR_ALLOC_FAIL("internal corruption of phar \"%s\" (__HALT_COMPILER(); not found)")
@@ -3103,9 +3105,7 @@ int phar_flush(phar_archive_data *phar, char *user_stub, long len, int convert, 
 		/* this will have changed for all files that have either changed compression or been modified */
 		entry->offset = entry->offset_abs = offset;
 		offset += entry->compressed_filesize;
-		phar_stream_copy_to_stream(file, newfile, entry->compressed_filesize, &wrote);
-
-		if (entry->compressed_filesize != wrote) {
+		if (phar_stream_copy_to_stream(file, newfile, entry->compressed_filesize, &wrote) == FAILURE) {
 			if (closeoldfile) {
 				php_stream_close(oldfile);
 			}
@@ -3669,7 +3669,7 @@ PHP_MINFO_FUNCTION(phar) /* {{{ */
 	php_info_print_table_header(2, "Phar: PHP Archive support", "enabled");
 	php_info_print_table_row(2, "Phar EXT version", PHP_PHAR_VERSION);
 	php_info_print_table_row(2, "Phar API version", PHP_PHAR_API_VERSION);
-	php_info_print_table_row(2, "SVN revision", "$Revision: 314419 $");
+	php_info_print_table_row(2, "SVN revision", "$Revision: 321634 $");
 	php_info_print_table_row(2, "Phar-based phar archives", "enabled");
 	php_info_print_table_row(2, "Tar-based phar archives", "enabled");
 	php_info_print_table_row(2, "ZIP-based phar archives", "enabled");

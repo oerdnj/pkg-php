@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2011 The PHP Group                                |
+   | Copyright (c) 1997-2012 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: filters.c 311407 2011-05-24 23:49:26Z felipe $ */
+/* $Id: filters.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -1897,7 +1897,6 @@ php_stream_filter_factory consumed_filter_factory = {
 typedef enum _php_chunked_filter_state {
 	CHUNK_SIZE_START,
 	CHUNK_SIZE,
-	CHUNK_SIZE_EXT_START,
 	CHUNK_SIZE_EXT,
 	CHUNK_SIZE_CR,
 	CHUNK_SIZE_LF,
@@ -1937,7 +1936,7 @@ static int php_dechunk(char *buf, int len, php_chunked_filter_data *data)
 						data->state = CHUNK_ERROR;
 						break;
 					} else {
-						data->state = CHUNK_SIZE_EXT_START;
+						data->state = CHUNK_SIZE_EXT;
 						break;
 					}
 					data->state = CHUNK_SIZE;
@@ -1947,13 +1946,6 @@ static int php_dechunk(char *buf, int len, php_chunked_filter_data *data)
 					continue;
 				} else if (p == end) {
 					return out_len;
-				}
-			case CHUNK_SIZE_EXT_START:
-				if (*p == ';'|| *p == '\r' || *p == '\n') {
-					data->state = CHUNK_SIZE_EXT;
- 				} else {
-					data->state = CHUNK_ERROR;
-					continue;
 				}
 			case CHUNK_SIZE_EXT:
 				/* skip extension */

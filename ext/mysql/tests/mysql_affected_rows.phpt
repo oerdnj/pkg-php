@@ -4,11 +4,11 @@ mysql_affected_rows()
 <?php
 require_once('skipif.inc');
 require_once('skipifconnectfailure.inc');
-require_once('skipifdefaultconnectfailure.inc');
 ?>
 --FILE--
 <?php
 include_once("connect.inc");
+include_once('setupdefault.inc');
 
 $tmp    = NULL;
 $link   = NULL;

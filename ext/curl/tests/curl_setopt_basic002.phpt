@@ -4,7 +4,7 @@ curl_setopt basic tests with CURLOPT_STDERR.
 Paul Sohier
 #phptestfest utrecht
 --SKIPIF--
-<?php if (!extension_loaded("curl") || false === getenv('PHP_CURL_HTTP_REMOTE_SERVER')) print "skip"; ?>
+<?php if (!extension_loaded("curl") || false === getenv('PHP_CURL_HTTP_REMOTE_SERVER')) print "skip need PHP_CURL_HTTP_REMOTE_SERVER environment variable"; ?>
 --FILE--
 <?php
 
@@ -26,7 +26,7 @@ $curl_content = curl_exec($ch);
 
 fclose($handle);
 unset($handle);
-var_dump( file_get_contents($temp_file) );
+var_dump(preg_replace('/[\r\n]/', ' ', file_get_contents($temp_file)));
 @unlink($temp_file);
 
 ob_start(); // start output buffering
@@ -38,7 +38,7 @@ ob_end_clean();
 
 fclose($handle);
 unset($handle);
-var_dump( file_get_contents($temp_file) );
+var_dump(preg_replace('/[\r\n]/', ' ', file_get_contents($temp_file)));
 @unlink($temp_file);
 
 curl_close($ch);
@@ -48,3 +48,5 @@ curl_close($ch);
 *** Testing curl_setopt with CURLOPT_STDERR
 string(%d) "%S"
 string(%d) "%S"
+* Closing connection #%d
+

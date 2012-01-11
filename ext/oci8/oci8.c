@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2011 The PHP Group                                |
+   | Copyright (c) 1997-2012 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -26,7 +26,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: oci8.c 313688 2011-07-25 23:40:57Z sixd $ */
+/* $Id: oci8.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -79,11 +79,14 @@ static PHP_GSHUTDOWN_FUNCTION(oci);
 #endif
 
 /* For a user friendly message about environment setup */
-/* TODO: add cases for SHLIB_PATH, LIBPATH, LD_LIBRARY_PATH_64 etc */
 #if defined(PHP_WIN32)
 #define PHP_OCI8_LIB_PATH_MSG "PATH"
 #elif defined(__APPLE__)
 #define PHP_OCI8_LIB_PATH_MSG "DYLD_LIBRARY_PATH"
+#elif defined(_AIX)
+#define PHP_OCI8_LIB_PATH_MSG "LIBPATH"
+#elif defined(__hpux)
+#define PHP_OCI8_LIB_PATH_MSG "SHLIB_PATH"
 #else
 #define PHP_OCI8_LIB_PATH_MSG "LD_LIBRARY_PATH"
 #endif
@@ -106,7 +109,12 @@ zend_class_entry *oci_coll_class_entry_ptr;
 #define SQLT_CFILEE 115
 #endif
 
-#define PHP_OCI_ERRBUF_LEN 1024
+#ifdef OCI_ERROR_MAXMSG_SIZE2
+/* Bigger size is defined from 11.2.0.3 onwards */
+#define PHP_OCI_ERRBUF_LEN OCI_ERROR_MAXMSG_SIZE2
+#else
+#define PHP_OCI_ERRBUF_LEN OCI_ERROR_MAXMSG_SIZE
+#endif 
 
 #if ZEND_MODULE_API_NO > 20020429
 #define ONUPDATELONGFUNC OnUpdateLong
@@ -1063,7 +1071,7 @@ static void php_oci_init_global_handles(TSRMLS_D)
 {
 	sword errstatus;
 	sb4   ora_error_code = 0;
-	text  tmp_buf[PHP_OCI_ERRBUF_LEN];
+	text  tmp_buf[OCI_ERROR_MAXMSG_SIZE];  /* Use traditional smaller size: non-PL/SQL errors should fit and it keeps the stack smaller */
 
 	errstatus = OCIEnvNlsCreate(&OCI_G(env), PHP_OCI_INIT_MODE, 0, NULL, NULL, NULL, 0, NULL, 0, 0);
 
@@ -1074,7 +1082,7 @@ static void php_oci_init_global_handles(TSRMLS_D)
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "OCIEnvNlsCreate() failed. There is something wrong with your system - please check that ORACLE_HOME and " PHP_OCI8_LIB_PATH_MSG " are set and point to the right directories");
 #endif
 		if (OCI_G(env)
-			&& OCIErrorGet(OCI_G(env), (ub4)1, NULL, &ora_error_code, tmp_buf, (ub4)PHP_OCI_ERRBUF_LEN, (ub4)OCI_HTYPE_ENV) == OCI_SUCCESS
+			&& OCIErrorGet(OCI_G(env), (ub4)1, NULL, &ora_error_code, tmp_buf, (ub4)OCI_ERROR_MAXMSG_SIZE, (ub4)OCI_HTYPE_ENV) == OCI_SUCCESS
 			&& *tmp_buf) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", tmp_buf);
 		}
@@ -1103,7 +1111,7 @@ static void php_oci_init_global_handles(TSRMLS_D)
 		PHP_OCI_CALL(OCIHandleFree, (cpoolh, OCI_HTYPE_CPOOL));
 #endif
 	} else {
-		OCIErrorGet(OCI_G(env), (ub4)1, NULL, &ora_error_code, tmp_buf, (ub4)PHP_OCI_ERRBUF_LEN, (ub4)OCI_HTYPE_ERROR);
+		OCIErrorGet(OCI_G(env), (ub4)1, NULL, &ora_error_code, tmp_buf, (ub4)OCI_ERROR_MAXMSG_SIZE, (ub4)OCI_HTYPE_ERROR);
 
 		if (ora_error_code) {
 			int tmp_buf_len = strlen((char *)tmp_buf);
@@ -1333,7 +1341,7 @@ PHP_MINFO_FUNCTION(oci)
 	php_info_print_table_start();
 	php_info_print_table_row(2, "OCI8 Support", "enabled");
 	php_info_print_table_row(2, "Version", PHP_OCI8_VERSION);
-	php_info_print_table_row(2, "Revision", "$Revision: 313688 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 321634 $");
 
 	snprintf(buf, sizeof(buf), "%ld", OCI_G(num_persistent));
 	php_info_print_table_row(2, "Active Persistent Connections", buf);
@@ -1624,9 +1632,9 @@ sb4 php_oci_error(OCIError *err_p, sword status TSRMLS_DC)
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "OCI_NEED_DATA");
 			break;
 		case OCI_NO_DATA:
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "OCI_NO_DATA");
 			errcode = php_oci_fetch_errmsg(err_p, &errbuf TSRMLS_CC);
 			if (errbuf) {
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", errbuf);
 				efree(errbuf);
 			} else {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "OCI_NO_DATA: failed to fetch error message");
@@ -2046,7 +2054,14 @@ php_oci_connection *php_oci_do_connect_ex(char *username, int username_len, char
 			connection->is_persistent = 0;
 		} else {
 			connection = (php_oci_connection *) calloc(1, sizeof(php_oci_connection));
+			if (connection == NULL) {
+				return NULL;
+			}
 			connection->hash_key = zend_strndup(hashed_details.c, hashed_details.len);
+			if (connection->hash_key == NULL) {
+				free(connection);
+				return NULL;
+			}
 			connection->is_persistent = 1;
 		}
 	} else {
@@ -2181,10 +2196,10 @@ static int php_oci_connection_ping(php_oci_connection *connection TSRMLS_DC)
 		return 1;
 	} else {
 		sb4 error_code = 0;
-		text tmp_buf[PHP_OCI_ERRBUF_LEN];
+		text tmp_buf[OCI_ERROR_MAXMSG_SIZE];
 
 		/* Treat ORA-1010 as a successful Ping */
-		OCIErrorGet(OCI_G(err), (ub4)1, NULL, &error_code, tmp_buf, (ub4)PHP_OCI_ERRBUF_LEN, (ub4)OCI_HTYPE_ERROR);
+		OCIErrorGet(OCI_G(err), (ub4)1, NULL, &error_code, tmp_buf, (ub4)OCI_ERROR_MAXMSG_SIZE, (ub4)OCI_HTYPE_ERROR);
 		if (error_code == 1010) {
 			return 1;
 		}
@@ -2696,12 +2711,20 @@ static php_oci_spool *php_oci_create_spool(char *username, int username_len, cha
 	ub4 poolmode = OCI_DEFAULT;	/* Mode to be passed to OCISessionPoolCreate */
 	OCIAuthInfo *spoolAuth = NULL;
 
-	/*Allocate sessionpool out of persistent memory */
+	/* Allocate sessionpool out of persistent memory */
 	session_pool = (php_oci_spool *) calloc(1, sizeof(php_oci_spool));
+	if (session_pool == NULL) {
+		iserror = 1;
+		goto exit_create_spool;
+	}
 
 	/* Populate key if passed */
 	if (hash_key_len) {
 		session_pool->spool_hash_key = zend_strndup(hash_key, hash_key_len);
+		if (session_pool->spool_hash_key == NULL) {
+			iserror = 1;
+			goto exit_create_spool;
+		}
 	}
 
 	/* Create the session pool's env */
@@ -2893,11 +2916,20 @@ static OCIEnv *php_oci_create_env(ub2 charsetid TSRMLS_DC)
 	PHP_OCI_CALL_RETURN(OCI_G(errcode), OCIEnvNlsCreate, (&retenv, OCI_G(events) ? PHP_OCI_INIT_MODE | OCI_EVENTS : PHP_OCI_INIT_MODE, 0, NULL, NULL, NULL, 0, NULL, charsetid, charsetid));
 
 	if (OCI_G(errcode) != OCI_SUCCESS) {
+		sb4   ora_error_code = 0;
+		text  ora_msg_buf[OCI_ERROR_MAXMSG_SIZE];  /* Use traditional smaller size: non-PL/SQL errors should fit and it keeps the stack smaller */
+
 #ifdef HAVE_OCI_INSTANT_CLIENT
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "OCIEnvNlsCreate() failed. There is something wrong with your system - please check that " PHP_OCI8_LIB_PATH_MSG " includes the directory with Oracle Instant Client libraries");
 #else
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "OCIEnvNlsCreate() failed. There is something wrong with your system - please check that ORACLE_HOME and " PHP_OCI8_LIB_PATH_MSG " are set and point to the right directories");
 #endif
+		if (retenv
+			&& OCIErrorGet(retenv, (ub4)1, NULL, &ora_error_code, ora_msg_buf, (ub4)OCI_ERROR_MAXMSG_SIZE, (ub4)OCI_HTYPE_ENV) == OCI_SUCCESS
+			&& *ora_msg_buf) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", ora_msg_buf);
+		}
+		
 		return NULL;
 	}
 	return retenv;

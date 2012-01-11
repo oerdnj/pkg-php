@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2011 The PHP Group                                |
+   | Copyright (c) 1997-2012 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -15,7 +15,7 @@
    | Author: Wez Furlong <wez@thebrainroom.com>                           |
    +----------------------------------------------------------------------+
  */
-/* $Id: proc_open.c 314641 2011-08-09 12:16:58Z laruence $ */
+/* $Id: proc_open.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #if 0 && (defined(__linux__) || defined(sun) || defined(__IRIX__))
 # define _BSD_SOURCE 		/* linux wants this when XOPEN mode is on */
@@ -451,10 +451,9 @@ PHP_FUNCTION(proc_get_status)
 
 /* {{{ handy definitions for portability/readability */
 #ifdef PHP_WIN32
-# define pipe(pair)		(CreatePipe(&pair[0], &pair[1], &security, 2048L) ? 0 : -1)
+# define pipe(pair)		(CreatePipe(&pair[0], &pair[1], &security, 0) ? 0 : -1)
 
 # define COMSPEC_NT	"cmd.exe"
-# define COMSPEC_9X	"command.com"
 
 static inline HANDLE dup_handle(HANDLE src, BOOL inherit, BOOL closeorig)
 {
@@ -800,7 +799,7 @@ PHP_FUNCTION(proc_open)
 	if (bypass_shell) {
 		newprocok = CreateProcess(NULL, command, &security, &security, TRUE, dwCreateFlags, env.envp, cwd, &si, &pi);
 	} else {
-		spprintf(&command_with_cmd, 0, "%s /c %s", GetVersion() < 0x80000000 ? COMSPEC_NT : COMSPEC_9X, command);
+		spprintf(&command_with_cmd, 0, "%s /c %s", COMSPEC_NT, command);
 
 		newprocok = CreateProcess(NULL, command_with_cmd, &security, &security, TRUE, dwCreateFlags, env.envp, cwd, &si, &pi);
 

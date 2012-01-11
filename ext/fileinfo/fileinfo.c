@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2011 The PHP Group                                |
+  | Copyright (c) 1997-2012 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: fileinfo.c 314584 2011-08-09 05:11:19Z laruence $ */
+/* $Id: fileinfo.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -289,6 +289,16 @@ PHP_FUNCTION(finfo_open)
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|ls", &options, &file, &file_len) == FAILURE) {
 		RETURN_FALSE;
+	}
+	
+	if (object) {
+		struct finfo_object *finfo_obj = (struct finfo_object*)zend_object_store_get_object(object TSRMLS_CC);
+		
+		if (finfo_obj->ptr) {
+			magic_close(finfo_obj->ptr->magic);
+			efree(finfo_obj->ptr);
+			finfo_obj->ptr = NULL;
+		}
 	}
 
 	if (file_len == 0) {

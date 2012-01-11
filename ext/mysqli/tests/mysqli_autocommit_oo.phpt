@@ -7,25 +7,14 @@ mysqli->autocommit()
 	require_once('skipifconnectfailure.inc');
 	require_once('connect.inc');
 
-	if (!$mysqli = new my_mysqli($host, $user, $passwd, $db, $port, $socket)) {
+	if (!$link = new my_mysqli($host, $user, $passwd, $db, $port, $socket)) {
 		printf("skip Cannot connect to the server using host=%s, user=%s, passwd=***, dbname=%s, port=%s, socket=%s\n",
 			$host, $user, $db, $port, $socket);
 		exit(1);
 	}
 
-	if (!$res = $mysqli->query("SHOW VARIABLES LIKE 'have_innodb'")) {
-		printf("skip Cannot fetch have_innodb variable\n");
-		exit(1);
-	}
-
-	$row = $res->fetch_row();
-	$res->free_result();
-	$mysqli->close();
-
-	if ($row[1] == "DISABLED" || $row[1] == "NO") {
-		printf ("skip Innodb support is not installed or enabled.");
-		exit(1);
-	}
+	if (!have_innodb($link))
+		die(sprintf("Needs InnoDB support, [%d] %s", $link->errno, $link->error));
 ?>
 --FILE--
 <?php

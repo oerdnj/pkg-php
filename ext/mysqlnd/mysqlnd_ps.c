@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 2006-2011 The PHP Group                                |
+  | Copyright (c) 2006-2012 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_ps.c 307921 2011-02-01 16:55:20Z andrey $ */
+/* $Id: mysqlnd_ps.c 321634 2012-01-01 13:15:04Z felipe $ */
 #include "php.h"
 #include "mysqlnd.h"
 #include "mysqlnd_wireprotocol.h"
@@ -41,7 +41,7 @@ static struct st_mysqlnd_stmt_methods *mysqlnd_stmt_methods;
 /* Exported by mysqlnd_ps_codec.c */
 enum_func_status mysqlnd_stmt_execute_generate_request(MYSQLND_STMT * const s, zend_uchar ** request, size_t *request_len, zend_bool * free_buffer TSRMLS_DC);
 
-enum_func_status mysqlnd_fetch_stmt_row_buffered(MYSQLND_RES *result, void *param,
+enum_func_status mysqlnd_stmt_fetch_row_buffered(MYSQLND_RES *result, void *param,
 												unsigned int flags,
 												zend_bool *fetched_anything TSRMLS_DC);
 
@@ -97,7 +97,7 @@ MYSQLND_METHOD(mysqlnd_stmt, store_result)(MYSQLND_STMT * const s TSRMLS_DC)
 
 	result = stmt->result;
 	result->type			= MYSQLND_RES_PS_BUF;
-	result->m.fetch_row		= mysqlnd_fetch_stmt_row_buffered;
+	result->m.fetch_row		= mysqlnd_stmt_fetch_row_buffered;
 	result->m.fetch_lengths	= NULL;/* makes no sense */
 
 	result->result_set_memory_pool = mysqlnd_mempool_create(MYSQLND_G(mempool_default_size) TSRMLS_CC);
@@ -724,16 +724,16 @@ MYSQLND_METHOD(mysqlnd_stmt, execute)(MYSQLND_STMT * const s TSRMLS_DC)
 /* }}} */
 
 
-/* {{{ mysqlnd_fetch_stmt_row_buffered */
+/* {{{ mysqlnd_stmt_fetch_row_buffered */
 enum_func_status
-mysqlnd_fetch_stmt_row_buffered(MYSQLND_RES *result, void *param, unsigned int flags, zend_bool *fetched_anything TSRMLS_DC)
+mysqlnd_stmt_fetch_row_buffered(MYSQLND_RES *result, void *param, unsigned int flags, zend_bool *fetched_anything TSRMLS_DC)
 {
 	MYSQLND_STMT * s = (MYSQLND_STMT *) param;
 	MYSQLND_STMT_DATA * stmt = s? s->data:NULL;
 	MYSQLND_RES_BUFFERED *set = result->stored_data;
 	unsigned int field_count = result->meta->field_count;
 
-	DBG_ENTER("mysqlnd_fetch_stmt_row_buffered");
+	DBG_ENTER("mysqlnd_stmt_fetch_row_buffered");
 	*fetched_anything = FALSE;
 	DBG_INF_FMT("stmt=%lu", stmt != NULL ? stmt->stmt_id : 0L);
 

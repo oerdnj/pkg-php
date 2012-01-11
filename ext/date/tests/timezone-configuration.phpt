@@ -4,10 +4,10 @@ timezone configuration [1]
 date.timezone=GMT
 --FILE--
 <?php
-	putenv('TZ=Europe/Oslo');
+	date_default_timezone_set('Europe/Oslo');
 	echo strtotime("2005-06-18 22:15:44"), "\n";
 
-	putenv('TZ=Europe/London');
+	date_default_timezone_set('Europe/London');
 	echo strtotime("2005-06-18 22:15:44"), "\n";
 
 	date_default_timezone_set('Europe/Oslo');

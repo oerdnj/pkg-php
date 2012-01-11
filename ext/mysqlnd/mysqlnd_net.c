@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 2006-2011 The PHP Group                                |
+  | Copyright (c) 2006-2012 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -119,6 +119,17 @@ MYSQLND_METHOD(mysqlnd_net, connect)(MYSQLND_NET * net, const char * const schem
 	}
 
 	net->packet_no = net->compressed_envelope_packet_no = 0;
+
+	if (net->stream) {
+		/* close before opening a new one */
+		DBG_INF_FMT("Freeing stream. abstract=%p", net->stream->abstract);
+		if (net->persistent) {
+			php_stream_free(net->stream, PHP_STREAM_FREE_CLOSE_PERSISTENT | PHP_STREAM_FREE_RSRC_DTOR);
+		} else {
+			php_stream_free(net->stream, PHP_STREAM_FREE_CLOSE);
+		}
+		net->stream = NULL;
+	}
 
 	if (net->options.timeout_connect) {
 		tv.tv_sec = net->options.timeout_connect;
@@ -254,7 +265,7 @@ MYSQLND_METHOD(mysqlnd_net, send)(MYSQLND * const conn, char * const buf, size_t
 			STORE_HEADER_SIZE(safe_storage, uncompressed_payload);
 			int3store(uncompressed_payload, to_be_sent);
 			int1store(uncompressed_payload + 3, net->packet_no);
-			if (PASS == net->m.encode((compress_buf + COMPRESSED_HEADER_SIZE + MYSQLND_HEADER_SIZE), tmp_complen,
+			if (PASS == net->m.encode((compress_buf + COMPRESSED_HEADER_SIZE + MYSQLND_HEADER_SIZE), &tmp_complen,
 									   uncompressed_payload, to_be_sent + MYSQLND_HEADER_SIZE TSRMLS_CC))
 			{
 				int3store(compress_buf + MYSQLND_HEADER_SIZE, to_be_sent + MYSQLND_HEADER_SIZE);
@@ -480,20 +491,22 @@ MYSQLND_METHOD(mysqlnd_net, decode)(zend_uchar * uncompressed_data, size_t uncom
 
 /* {{{ mysqlnd_net::encode */
 static enum_func_status
-MYSQLND_METHOD(mysqlnd_net, encode)(zend_uchar * compress_buffer, size_t compress_buffer_len,
+MYSQLND_METHOD(mysqlnd_net, encode)(zend_uchar * compress_buffer, size_t * compress_buffer_len,
 									const zend_uchar * const uncompressed_data, size_t uncompressed_data_len TSRMLS_DC)
 {
 #ifdef MYSQLND_COMPRESSION_ENABLED
 	int error;
-	uLongf tmp_complen = compress_buffer_len;
+	uLongf tmp_complen = *compress_buffer_len;
 	DBG_ENTER("mysqlnd_net::encode");
 	error = compress(compress_buffer, &tmp_complen, uncompressed_data, uncompressed_data_len);
 
 	if (error != Z_OK) {
 		DBG_INF_FMT("compression NOT successful. error=%d Z_OK=%d Z_BUF_ERROR=%d Z_MEM_ERROR=%d", error, Z_OK, Z_BUF_ERROR, Z_MEM_ERROR);
 	} else {
+		*compress_buffer_len = tmp_complen;
 		DBG_INF_FMT("compression successful. compressed size=%lu", tmp_complen);
 	}
+	
 	DBG_RETURN(error == Z_OK? PASS:FAIL);
 #else
 	DBG_ENTER("mysqlnd_net::encode");

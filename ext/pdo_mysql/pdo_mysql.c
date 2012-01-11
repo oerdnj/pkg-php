@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2011 The PHP Group                                |
+  | Copyright (c) 1997-2012 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_mysql.c 314376 2011-08-06 14:47:44Z felipe $ */
+/* $Id: pdo_mysql.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -37,12 +37,22 @@ ZEND_GET_MODULE(pdo_mysql)
 
 ZEND_DECLARE_MODULE_GLOBALS(pdo_mysql);
 
-#ifndef PHP_WIN32
-# ifndef PDO_MYSQL_UNIX_ADDR
-#  ifdef PHP_MYSQL_UNIX_SOCK_ADDR
-#   define PDO_MYSQL_UNIX_ADDR PHP_MYSQL_UNIX_SOCK_ADDR
-#  else
+/*
+ The default socket location is sometimes defined by configure.
+ With libmysql `mysql_config --socket` will fill PDO_MYSQL_UNIX_ADDR
+ and the user can use --with-mysql-sock=SOCKET which will fill
+ PDO_MYSQL_UNIX_ADDR. If both aren't set we're using mysqlnd and use
+ /tmp/mysql.sock as default on *nix and NULL for Windows (default 
+ named pipe name is set in mysqlnd).
+*/
+#ifndef PDO_MYSQL_UNIX_ADDR
+# ifdef PHP_MYSQL_UNIX_SOCK_ADDR
+#  define PDO_MYSQL_UNIX_ADDR PHP_MYSQL_UNIX_SOCK_ADDR
+# else
+#  if !PHP_WIN32
 #   define PDO_MYSQL_UNIX_ADDR "/tmp/mysql.sock"
+#  else
+#   define PDO_MYSQL_UNIX_ADDR NULL
 #  endif
 # endif
 #endif
@@ -112,7 +122,7 @@ static PHP_MINFO_FUNCTION(pdo_mysql)
 
 	php_info_print_table_end();
 
-#ifdef PDO_USE_MYSQLND
+#ifndef PHP_WIN32
 	DISPLAY_INI_ENTRIES();
 #endif
 }

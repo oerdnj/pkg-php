@@ -1,12 +1,12 @@
 --TEST--
-Bug #48678 DateInterval segfaults when unserialising
+Bug #48678 (DateInterval segfaults when unserialising)
 --FILE--
 <?php
-$x = new dateinterval("P3Y6M4DT12H30M5S");
+$x = new DateInterval("P3Y6M4DT12H30M5S");
 print_r($x);
 $y = unserialize(serialize($x));
 print_r($y);
---EXPECT--
+--EXPECTF--
 DateInterval Object
 (
     [y] => 3
@@ -16,7 +16,7 @@ DateInterval Object
     [i] => 30
     [s] => 5
     [invert] => 0
-    [days] => 
+    [days] =>%s
 )
 DateInterval Object
 (
@@ -27,5 +27,5 @@ DateInterval Object
     [i] => 30
     [s] => 5
     [invert] => 0
-    [days] => 
+    [days] =>%s
 )

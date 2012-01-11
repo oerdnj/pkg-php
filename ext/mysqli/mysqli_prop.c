@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2011 The PHP Group                                |
+  | Copyright (c) 1997-2012 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_prop.c 306939 2011-01-01 02:19:59Z felipe $
+  $Id: mysqli_prop.c 321634 2012-01-01 13:15:04Z felipe $
 */
 
 #ifdef HAVE_CONFIG_H
@@ -202,6 +202,36 @@ MYSQLI_MAP_PROPERTY_FUNC_LONG(link_server_version_read, mysql_get_server_version
 MYSQLI_MAP_PROPERTY_FUNC_STRING(link_sqlstate_read, mysql_sqlstate, MYSQLI_GET_MYSQL(MYSQLI_STATUS_VALID))
 MYSQLI_MAP_PROPERTY_FUNC_LONG(link_thread_id_read, mysql_thread_id, MYSQLI_GET_MYSQL(MYSQLI_STATUS_VALID), ulong, "%lu")
 MYSQLI_MAP_PROPERTY_FUNC_LONG(link_warning_count_read, mysql_warning_count, MYSQLI_GET_MYSQL(MYSQLI_STATUS_VALID), ulong, "%lu")
+
+/* {{{ property link_stat_read */
+static int link_stat_read(mysqli_object *obj, zval **retval TSRMLS_DC)\
+{\
+	MY_MYSQL *mysql;
+
+	MAKE_STD_ZVAL(*retval);
+	ZVAL_NULL(*retval);
+
+	CHECK_STATUS(MYSQLI_STATUS_INITIALIZED);
+
+ 	mysql = (MY_MYSQL *)((MYSQLI_RESOURCE *)(obj->ptr))->ptr;
+
+	if (mysql) {
+		char * stat_msg;
+#if defined(MYSQLI_USE_MYSQLND)
+		uint stat_msg_len;
+		if (mysqlnd_stat(mysql->mysql, &stat_msg, &stat_msg_len) == PASS) {
+			ZVAL_STRINGL(*retval, stat_msg, stat_msg_len, 0);
+		}
+#else
+		if ((stat_msg = (char *) mysql_stat(mysql->mysql))) {
+			ZVAL_STRING(*retval, stat_msg, 1);
+		}
+#endif
+	}
+	return SUCCESS;
+}
+/* }}} */
+
 /* result properties */
 
 /* {{{ property result_type_read */
@@ -329,6 +359,7 @@ const mysqli_property_entry mysqli_link_property_entries[] = {
 	{"insert_id",		sizeof("insert_id") - 1,		link_insert_id_read, NULL},
 	{"server_info",		sizeof("server_info") - 1,		link_server_info_read, NULL},
 	{"server_version",	sizeof("server_version") - 1,	link_server_version_read, NULL},
+	{"stat",			sizeof("stat") - 1,				link_stat_read, NULL},
 	{"sqlstate",		sizeof("sqlstate") - 1,			link_sqlstate_read, NULL},
 	{"protocol_version",sizeof("protocol_version") - 1,	link_protocol_version_read, NULL},
 	{"thread_id",		sizeof("thread_id") - 1, 		link_thread_id_read, NULL},
@@ -351,6 +382,7 @@ zend_property_info mysqli_link_property_info_entries[] = {
 	{ZEND_ACC_PUBLIC, "insert_id",		sizeof("insert_id") - 1,		0, NULL, 0, NULL},
 	{ZEND_ACC_PUBLIC, "server_info",	sizeof("server_info") - 1,		0, NULL, 0, NULL},
 	{ZEND_ACC_PUBLIC, "server_version",	sizeof("server_version") - 1,	0, NULL, 0, NULL},
+	{ZEND_ACC_PUBLIC, "stat",			sizeof("stat") - 1,				0, NULL, 0, NULL},
 	{ZEND_ACC_PUBLIC, "sqlstate",		sizeof("sqlstate") - 1,			0, NULL, 0, NULL},
 	{ZEND_ACC_PUBLIC, "protocol_version", sizeof("protocol_version")-1, 0, NULL, 0, NULL},
 	{ZEND_ACC_PUBLIC, "thread_id", 		sizeof("thread_id") - 1,		0, NULL, 0, NULL},

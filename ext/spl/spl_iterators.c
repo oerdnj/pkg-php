@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2011 The PHP Group                                |
+   | Copyright (c) 1997-2012 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_iterators.c 313665 2011-07-25 11:42:53Z felipe $ */
+/* $Id: spl_iterators.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -1868,7 +1868,7 @@ SPL_METHOD(RegexIterator, accept)
 	spl_dual_it_object *intern;
 	char       *subject, tmp[32], *result;
 	int        subject_len, use_copy, count = 0, result_len;
-	zval       subject_copy, zcount, *replacement;
+	zval       subject_copy, zcount, *replacement, tmp_replacement;
 	
 	if (zend_parse_parameters_none() == FAILURE) {
 		return;
@@ -1937,6 +1937,12 @@ SPL_METHOD(RegexIterator, accept)
 
 	case REGIT_MODE_REPLACE:
 		replacement = zend_read_property(intern->std.ce, getThis(), "replacement", sizeof("replacement")-1, 1 TSRMLS_CC);
+		if (Z_TYPE_P(replacement) != IS_STRING) {
+			tmp_replacement = *replacement;
+			zval_copy_ctor(&tmp_replacement);
+			convert_to_string(&tmp_replacement);
+			replacement = &tmp_replacement;
+		}
 		result = php_pcre_replace_impl(intern->u.regex.pce, subject, subject_len, replacement, 0, &result_len, -1, &count TSRMLS_CC);
 		
 		if (intern->u.regex.flags & REGIT_USE_KEY) {
@@ -1950,6 +1956,10 @@ SPL_METHOD(RegexIterator, accept)
 			zval_ptr_dtor(&intern->current.data);
 			MAKE_STD_ZVAL(intern->current.data);
 			ZVAL_STRINGL(intern->current.data, result, result_len, 0);
+		}
+
+		if (replacement == &tmp_replacement) {
+			zval_dtor(replacement);
 		}
 		RETVAL_BOOL(count > 0);
 	}

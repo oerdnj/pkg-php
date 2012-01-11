@@ -4,7 +4,7 @@ Test curl_copy_handle() after exec() with POST
 Rick Buitenman <rick@meritos.nl>
 #testfest Utrecht 2009
 --SKIPIF--
-<?php if (!extension_loaded("curl") || false === getenv('PHP_CURL_HTTP_REMOTE_SERVER')) print "skip"; ?>
+<?php if (!extension_loaded("curl") || false === getenv('PHP_CURL_HTTP_REMOTE_SERVER')) print "skip need PHP_CURL_HTTP_REMOTE_SERVER environment variable"; ?>
 --FILE--
 <?php
 
@@ -32,8 +32,6 @@ Rick Buitenman <rick@meritos.nl>
   var_dump( $curl_content_copy );
 ?>
 ===DONE===
---XFAIL--
-This test fails, the output of the copy seems to be corrupted if the original is closed after exec()
 --EXPECTF--
 *** Test curl_copy_handle() after exec() with POST ***
 string(163) "array(1) {

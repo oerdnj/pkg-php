@@ -89,7 +89,7 @@
  *	directly -- and assumed always to succeed.
  */
 
-/* $Id: zend_strtod.c 307192 2011-01-06 22:48:20Z rasmus $ */
+/* $Id: zend_strtod.c 316591 2011-09-13 07:07:06Z dmitry $ */
 
 #include <zend_operators.h>
 #include <zend_strtod.h>
@@ -444,6 +444,12 @@ static MUTEX_T pow5mult_mutex;
 #define _THREAD_PRIVATE_MUTEX_UNLOCK(x)
 
 #endif /* ZTS */
+
+#ifdef DEBUG
+static void Bug(const char *message) {
+	fprintf(stderr, "%s\n", message);
+}
+#endif
 
 ZEND_API int zend_startup_strtod(void) /* {{{ */
 {

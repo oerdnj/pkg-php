@@ -3,7 +3,7 @@ PDO_Firebird: rowCount
 --SKIPIF--
 <?php extension_loaded("pdo_firebird") or die("skip"); ?>
 --FILE--
-<?php /* $Id: rowCount.phpt 305476 2010-11-18 01:24:00Z felipe $ */
+<?php /* $Id: rowCount.phpt 316542 2011-09-12 13:43:42Z mariuz $ */
 
 require("testdb.inc");
 
@@ -38,6 +38,7 @@ $dbh->commit();
 
 $dbh->exec('DROP TABLE testz');
 
+unset($stmt);
 unset($dbh);
 
 ?>

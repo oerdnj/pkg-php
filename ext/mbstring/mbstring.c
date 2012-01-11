@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2011 The PHP Group                                |
+   | Copyright (c) 1997-2012 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: mbstring.c 313665 2011-07-25 11:42:53Z felipe $ */
+/* $Id: mbstring.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 /*
  * PHP 4 Multibyte String module "mbstring"
@@ -3017,7 +3017,7 @@ PHP_FUNCTION(mb_detect_encoding)
 	/* make encoding list */
 	list = NULL;
 	size = 0;
-	if (ZEND_NUM_ARGS() >= 2 && Z_STRVAL_P(encoding_list)) {
+	if (ZEND_NUM_ARGS() >= 2 && !ZVAL_IS_NULL(encoding_list)) {
 		switch (Z_TYPE_P(encoding_list)) {
 		case IS_ARRAY:
 			if (!php_mb_parse_encoding_array(encoding_list, &list, &size, 0 TSRMLS_CC)) {

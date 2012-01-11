@@ -29,9 +29,9 @@
 #include <limits.h>
 
 #include <php_config.h>
-#include <fpm/fpm.h>
-#include <fpm/fpm_request.h>
-#include <fpm/zlog.h>
+#include "fpm.h"
+#include "fpm_request.h"
+#include "zlog.h"
 
 #ifdef _WIN32
 
@@ -142,7 +142,6 @@ typedef union _sa_t {
 static HashTable fcgi_mgmt_vars;
 
 static int is_initialized = 0;
-static int is_fastcgi = 0;
 static int in_shutdown = 0;
 static in_addr_t *allowed_clients = NULL;
 
@@ -186,10 +185,6 @@ static void fcgi_setup_signals(void)
 int fcgi_init(void)
 {
 	if (!is_initialized) {
-#ifndef _WIN32
-		sa_t sa;
-		socklen_t len = sizeof(sa);
-#endif
 		zend_hash_init(&fcgi_mgmt_vars, 0, NULL, fcgi_free_mgmt_var_cb, 1);
 		fcgi_set_mgmt_var("FCGI_MPXS_CONNS", sizeof("FCGI_MPXS_CONNS") - 1, "0", sizeof("0")-1);
 
@@ -204,9 +199,7 @@ int fcgi_init(void)
 			return 0;
 		}
 # endif
-		if ((GetStdHandle(STD_OUTPUT_HANDLE) == INVALID_HANDLE_VALUE) &&
-		    (GetStdHandle(STD_ERROR_HANDLE)  == INVALID_HANDLE_VALUE) &&
-		    (GetStdHandle(STD_INPUT_HANDLE)  != INVALID_HANDLE_VALUE)) {
+		{
 			char *str;
 			DWORD pipe_mode = PIPE_READMODE_BYTE | PIPE_WAIT;
 			HANDLE pipe = GetStdHandle(STD_INPUT_HANDLE);
@@ -225,36 +218,14 @@ int fcgi_init(void)
 			if (str != NULL) {
 				fcgi_accept_mutex = (HANDLE) atoi(str);
 			}
-			return is_fastcgi = 1;
-		} else {
-			return is_fastcgi = 0;
+			return 1;
 		}
 #else
-		errno = 0;
-		if (getpeername(0, (struct sockaddr *)&sa, &len) != 0 && errno == ENOTCONN) {
-			fcgi_setup_signals();
-			return is_fastcgi = 1;
-		} else {
-			return is_fastcgi = 0;
-		}
+		fcgi_setup_signals();
+		return 1;
 #endif
 	}
-	return is_fastcgi;
-}
-
-
-int fcgi_is_fastcgi(void)
-{
-	if (!is_initialized) {
-		return fcgi_init();
-	} else {
-		return is_fastcgi;
-	}
-}
-
-void fcgi_set_is_fastcgi(int new_value)
-{
-	    is_fastcgi = new_value;
+	return 1;
 }
 
 void fcgi_set_in_shutdown(int new_value)
@@ -267,7 +238,6 @@ void fcgi_shutdown(void)
 	if (is_initialized) {
 		zend_hash_destroy(&fcgi_mgmt_vars);
 	}
-	is_fastcgi = 0;
 	if (allowed_clients) {
 		free(allowed_clients);
 	}
@@ -298,7 +268,7 @@ void fcgi_set_allowed_clients(char *ip)
 			}
 			allowed_clients[n] = inet_addr(cur);
 			if (allowed_clients[n] == INADDR_NONE) {
-				fprintf(stderr, "Wrong IP address '%s' in FCGI_WEB_SERVER_ADDRS or listen.allowed_clients\n", cur);
+				zlog(ZLOG_ERROR, "Wrong IP address '%s' in listen.allowed_clients", cur);
 			}
 			n++;
 			cur = end;
@@ -846,7 +816,7 @@ int fcgi_accept_request(fcgi_request *req)
 							n++;
 						}
 						if (!allowed) {
-							fprintf(stderr, "Connection from disallowed IP address '%s' is dropped.\n", inet_ntoa(sa.sa_inet.sin_addr));
+							zlog(ZLOG_ERROR, "Connection disallowed: IP address '%s' has been dropped.", inet_ntoa(sa.sa_inet.sin_addr));
 							closesocket(req->fd);
 							req->fd = -1;
 							continue;
@@ -902,7 +872,7 @@ int fcgi_accept_request(fcgi_request *req)
 						}
 						fcgi_close(req, 1, 0);
 					} else {
-						fprintf(stderr, "Too many open file descriptors. FD_SETSIZE limit exceeded.");
+						zlog(ZLOG_ERROR, "Too many open file descriptors. FD_SETSIZE limit exceeded.");
 						fcgi_close(req, 1, 0);
 					}
 #endif
@@ -976,7 +946,7 @@ int fcgi_flush(fcgi_request *req, int close)
 	return 1;
 }
 
-int fcgi_write(fcgi_request *req, fcgi_request_type type, const char *str, int len)
+ssize_t fcgi_write(fcgi_request *req, fcgi_request_type type, const char *str, int len)
 {
 	int limit, rest;
 

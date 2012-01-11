@@ -4,7 +4,8 @@ MySQL PDO class interface
 <?php
 require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'skipif.inc');
 require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'mysql_pdo_test.inc');
-$db = MySQLPDOTest::getDriver();
+MySQLPDOTest::skip();
+$db = MySQLPDOTest::factory();
 if (false == MySQLPDOTest::detect_transactional_mysql_engine($db))
 	die("skip Transactional engine not found");
 ?>

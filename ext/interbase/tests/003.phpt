@@ -3,7 +3,7 @@ InterBase: misc sql types (may take a while)
 --SKIPIF--
 <?php include("skipif.inc"); ?>
 --FILE--
-<?php /* $Id: 003.phpt 160078 2004-05-30 16:20:25Z abies $ */
+<?php /* $Id: 003.phpt 321992 2012-01-10 05:26:20Z mariuz $ */
 
     require("interbase.inc");
     ibase_connect($test_base);
@@ -21,7 +21,7 @@ InterBase: misc sql types (may take a while)
    	 		v_numeric15_0  	numeric(15,0),
             v_double  	double precision,
             v_float     float,
-    		v_integer   integer,
+            v_integer   integer,
             v_smallint  smallint,
             v_varchar   varchar(10000)
             )");
@@ -157,27 +157,27 @@ array(22) {
   int(10)
   ["ID_10"]=>
   int(11)
-  ["FIELD_00"]=>
+  ["CONSTANT"]=>
   int(12)
-  ["FIELD_01"]=>
+  ["CONSTANT_01"]=>
   int(13)
-  ["FIELD_02"]=>
+  ["CONSTANT_02"]=>
   int(14)
-  ["FIELD_03"]=>
+  ["CONSTANT_03"]=>
   int(15)
-  ["FIELD_04"]=>
+  ["CONSTANT_04"]=>
   int(16)
-  ["FIELD_05"]=>
+  ["CONSTANT_05"]=>
   int(17)
-  ["FIELD_06"]=>
+  ["CONSTANT_06"]=>
   int(18)
-  ["FIELD_07"]=>
+  ["CONSTANT_07"]=>
   int(19)
-  ["FIELD_08"]=>
+  ["CONSTANT_08"]=>
   int(20)
-  ["FIELD_09"]=>
+  ["CONSTANT_09"]=>
   int(21)
-  ["FIELD_10"]=>
+  ["CONSTANT_10"]=>
   int(22)
 }
 end of test

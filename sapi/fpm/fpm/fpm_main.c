@@ -100,12 +100,13 @@ int __riscosify_control = __RISCOSIFY_STRICT_UNIX_SPECS;
 #include "fastcgi.h"
 
 #include <php_config.h>
-#include <fpm/fpm.h>
-#include <fpm/fpm_request.h>
-#include <fpm/fpm_status.h>
-#include <fpm/fpm_conf.h>
-#include <fpm/fpm_php.h>
-#include <fpm/fpm_log.h>
+#include "fpm.h"
+#include "fpm_request.h"
+#include "fpm_status.h"
+#include "fpm_conf.h"
+#include "fpm_php.h"
+#include "fpm_log.h"
+#include "zlog.h"
 
 #ifndef PHP_WIN32
 /* XXX this will need to change later when threaded fastcgi is implemented.  shane */
@@ -124,6 +125,7 @@ static int parent = 1;
 #endif
 
 static int request_body_fd;
+static int fpm_is_running = 0;
 
 static char *sapi_cgibin_getenv(char *name, size_t name_len TSRMLS_DC);
 static void fastcgi_ini_parser(zval *arg1, zval *arg2, zval *arg3, int callback_type, void *arg TSRMLS_DC);
@@ -260,34 +262,33 @@ static void print_extensions(TSRMLS_D)
 	zend_llist_destroy(&sorted_exts);
 }
 
-#ifndef STDOUT_FILENO
-#define STDOUT_FILENO 1
+#ifndef STDOUT_FILENO	 
+#define STDOUT_FILENO 1	 
 #endif
 
 static inline size_t sapi_cgibin_single_write(const char *str, uint str_length TSRMLS_DC)
 {
-#ifdef PHP_WRITE_STDOUT
-	long ret;
-#else
-	size_t ret;
-#endif
+	ssize_t ret;
 
-	if (fcgi_is_fastcgi()) {
+	/* sapi has started which means everyhting must be send through fcgi */
+	if (fpm_is_running) {
 		fcgi_request *request = (fcgi_request*) SG(server_context);
-		long ret = fcgi_write(request, FCGI_STDOUT, str, str_length);
+		ret = fcgi_write(request, FCGI_STDOUT, str, str_length);
 		if (ret <= 0) {
 			return 0;
 		}
-		return ret;
+		return (size_t)ret;
 	}
 
-#ifdef PHP_WRITE_STDOUT
-	ret = write(STDOUT_FILENO, str, str_length);
-	if (ret <= 0) return 0;
-	return ret;
+	/* sapi has not started, output to stdout instead of fcgi */
+#ifdef PHP_WRITE_STDOUT	 
+	ret = write(STDOUT_FILENO, str, str_length);	 
+	if (ret <= 0) {
+		return 0;
+	}
+	return (size_t)ret;
 #else
-	ret = fwrite(str, 1, MIN(str_length, 16384), stdout);
-	return ret;
+	return fwrite(str, 1, MIN(str_length, 16384), stdout);
 #endif
 }
 
@@ -313,17 +314,20 @@ static int sapi_cgibin_ub_write(const char *str, uint str_length TSRMLS_DC)
 
 static void sapi_cgibin_flush(void *server_context)
 {
-	if (fcgi_is_fastcgi()) {
+	/* fpm has started, let use fcgi instead of stdout */
+	if (fpm_is_running) {
 		fcgi_request *request = (fcgi_request*) server_context;
 		if (
 #ifndef PHP_WIN32
-		!parent &&
+	      !parent &&
 #endif
-		request && !fcgi_flush(request, 0)) {
+	      request && !fcgi_flush(request, 0)) {
 			php_handle_aborted_connection();
 		}
 		return;
 	}
+
+	/* fpm has not started yet, let use stdout instead of fcgi */
 	if (fflush(stdout) == EOF) {
 		php_handle_aborted_connection();
 	}
@@ -490,31 +494,27 @@ static int sapi_cgi_read_post(char *buffer, uint count_bytes TSRMLS_DC)
 
 	count_bytes = MIN(count_bytes, (uint) SG(request_info).content_length - SG(read_post_bytes));
 	while (read_bytes < count_bytes) {
-		if (fcgi_is_fastcgi()) {
-			fcgi_request *request = (fcgi_request*) SG(server_context);
-			if (request_body_fd == -1) {
-				char *request_body_filename = sapi_cgibin_getenv((char *) "REQUEST_BODY_FILE",
-						sizeof("REQUEST_BODY_FILE") - 1 TSRMLS_CC);
+		fcgi_request *request = (fcgi_request*) SG(server_context);
+		if (request_body_fd == -1) {
+			char *request_body_filename = sapi_cgibin_getenv((char *) "REQUEST_BODY_FILE",
+					sizeof("REQUEST_BODY_FILE") - 1 TSRMLS_CC);
 
-				if (request_body_filename && *request_body_filename) {
-					request_body_fd = open(request_body_filename, O_RDONLY);
+			if (request_body_filename && *request_body_filename) {
+				request_body_fd = open(request_body_filename, O_RDONLY);
 
-					if (0 > request_body_fd) {
-						php_error(E_WARNING, "REQUEST_BODY_FILE: open('%s') failed: %s (%d)",
-								request_body_filename, strerror(errno), errno);
-						return 0;
-					}
+				if (0 > request_body_fd) {
+					php_error(E_WARNING, "REQUEST_BODY_FILE: open('%s') failed: %s (%d)",
+							request_body_filename, strerror(errno), errno);
+					return 0;
 				}
 			}
+		}
 
-			/* If REQUEST_BODY_FILE variable not available - read post body from fastcgi stream */
-			if (request_body_fd < 0) {
-				tmp_read_bytes = fcgi_read(request, buffer + read_bytes, count_bytes - read_bytes);
-			} else {
-				tmp_read_bytes = read(request_body_fd, buffer + read_bytes, count_bytes - read_bytes);
-			}
+		/* If REQUEST_BODY_FILE variable not available - read post body from fastcgi stream */
+		if (request_body_fd < 0) {
+			tmp_read_bytes = fcgi_read(request, buffer + read_bytes, count_bytes - read_bytes);
 		} else {
-			tmp_read_bytes = read(STDIN_FILENO, buffer + read_bytes, count_bytes - read_bytes);
+			tmp_read_bytes = read(request_body_fd, buffer + read_bytes, count_bytes - read_bytes);
 		}
 		if (tmp_read_bytes <= 0) {
 			break;
@@ -526,77 +526,27 @@ static int sapi_cgi_read_post(char *buffer, uint count_bytes TSRMLS_DC)
 
 static char *sapi_cgibin_getenv(char *name, size_t name_len TSRMLS_DC)
 {
-	/* when php is started by mod_fastcgi, no regular environment
-	 * is provided to PHP.  It is always sent to PHP at the start
-	 * of a request.  So we have to do our own lookup to get env
-	 * vars.  This could probably be faster somehow.  */
-	if (fcgi_is_fastcgi()) {
+	/* if fpm has started, use fcgi env */
+	if (fpm_is_running) {
 		fcgi_request *request = (fcgi_request*) SG(server_context);
 		return fcgi_getenv(request, name, name_len);
 	}
-	/*  if cgi, or fastcgi and not found in fcgi env
-		check the regular environment */
+
+	/* if fpm has not started yet, use std env */
 	return getenv(name);
 }
 
 static char *_sapi_cgibin_putenv(char *name, char *value TSRMLS_DC)
 {
 	int name_len;
-#if !HAVE_SETENV || !HAVE_UNSETENV
-	int len;
-	char *buf;
-#endif
 
 	if (!name) {
 		return NULL;
 	}
 	name_len = strlen(name);
 
-	/* when php is started by mod_fastcgi, no regular environment
-	 * is provided to PHP.  It is always sent to PHP at the start
-	 * of a request.  So we have to do our own lookup to get env
-	 * vars.  This could probably be faster somehow.  */
-	if (fcgi_is_fastcgi()) {
-		fcgi_request *request = (fcgi_request*) SG(server_context);
-		return fcgi_putenv(request, name, name_len, value);
-	}
-
-#if HAVE_SETENV
-	if (value) {
-		setenv(name, value, 1);
-	}
-#endif
-#if HAVE_UNSETENV
-	if (!value) {
-		unsetenv(name);
-	}
-#endif
-
-#if !HAVE_SETENV || !HAVE_UNSETENV
-	/*  if cgi, or fastcgi and not found in fcgi env
-		check the regular environment
-		this leaks, but it's only cgi anyway, we'll fix
-		it for 5.0
-	*/
-	len = name_len + (value ? strlen(value) : 0) + sizeof("=") + 2;
-	buf = (char *) malloc(len);
-	if (buf == NULL) {
-		return getenv(name);
-	}
-#endif
-#if !HAVE_SETENV
-	if (value) {
-		len = slprintf(buf, len - 1, "%s=%s", name, value);
-		putenv(buf);
-	}
-#endif
-#if !HAVE_UNSETENV
-	if (!value) {
-		len = slprintf(buf, len - 1, "%s=", name);
-		putenv(buf);
-	}
-#endif
-	return getenv(name);
+	fcgi_request *request = (fcgi_request*) SG(server_context);
+	return fcgi_putenv(request, name, name_len, value);
 }
 
 static char *sapi_cgi_read_cookies(TSRMLS_D)
@@ -606,6 +556,15 @@ static char *sapi_cgi_read_cookies(TSRMLS_D)
 
 void cgi_php_import_environment_variables(zval *array_ptr TSRMLS_DC)
 {
+	fcgi_request *request;
+	HashPosition pos;
+	int magic_quotes_gpc;;
+	char *var, **val;
+	uint var_len;
+	ulong idx;
+	int filter_arg;
+
+
 	if (PG(http_globals)[TRACK_VARS_ENV] &&
 		array_ptr != PG(http_globals)[TRACK_VARS_ENV] &&
 		Z_TYPE_P(PG(http_globals)[TRACK_VARS_ENV]) == IS_ARRAY &&
@@ -631,30 +590,24 @@ void cgi_php_import_environment_variables(zval *array_ptr TSRMLS_DC)
 	/* call php's original import as a catch-all */
 	php_php_import_environment_variables(array_ptr TSRMLS_CC);
 
-	if (fcgi_is_fastcgi()) {
-		fcgi_request *request = (fcgi_request*) SG(server_context);
-		HashPosition pos;
-		int magic_quotes_gpc = PG(magic_quotes_gpc);
-		char *var, **val;
-		uint var_len;
-		ulong idx;
-		int filter_arg = (array_ptr == PG(http_globals)[TRACK_VARS_ENV])?PARSE_ENV:PARSE_SERVER;
+	request = (fcgi_request*) SG(server_context);
+	magic_quotes_gpc = PG(magic_quotes_gpc);
+	filter_arg = (array_ptr == PG(http_globals)[TRACK_VARS_ENV])?PARSE_ENV:PARSE_SERVER;
 
-		/* turn off magic_quotes while importing environment variables */
-		PG(magic_quotes_gpc) = 0;
-		for (zend_hash_internal_pointer_reset_ex(request->env, &pos);
-			zend_hash_get_current_key_ex(request->env, &var, &var_len, &idx, 0, &pos) == HASH_KEY_IS_STRING &&
-			zend_hash_get_current_data_ex(request->env, (void **) &val, &pos) == SUCCESS;
-			zend_hash_move_forward_ex(request->env, &pos)
-		) {
-			unsigned int new_val_len;
+	/* turn off magic_quotes while importing environment variables */
+	PG(magic_quotes_gpc) = 0;
+	for (zend_hash_internal_pointer_reset_ex(request->env, &pos);
+	     zend_hash_get_current_key_ex(request->env, &var, &var_len, &idx, 0, &pos) == HASH_KEY_IS_STRING &&
+	     zend_hash_get_current_data_ex(request->env, (void **) &val, &pos) == SUCCESS;
+	     zend_hash_move_forward_ex(request->env, &pos)
+	) {
+		unsigned int new_val_len;
 
-			if (sapi_module.input_filter(filter_arg, var, val, strlen(*val), &new_val_len TSRMLS_CC)) {
-				php_register_variable_safe(var, *val, new_val_len, array_ptr TSRMLS_CC);
-			}
+		if (sapi_module.input_filter(filter_arg, var, val, strlen(*val), &new_val_len TSRMLS_CC)) {
+			php_register_variable_safe(var, *val, new_val_len, array_ptr TSRMLS_CC);
 		}
-		PG(magic_quotes_gpc) = magic_quotes_gpc;
 	}
+	PG(magic_quotes_gpc) = magic_quotes_gpc;
 }
 
 static void sapi_cgi_register_variables(zval *track_vars_array TSRMLS_DC)
@@ -702,24 +655,8 @@ static void sapi_cgi_log_message(char *message)
 {
 	TSRMLS_FETCH();
 
-	if (fcgi_is_fastcgi() && CGIG(fcgi_logging)) {
-		fcgi_request *request;
-
-		request = (fcgi_request*) SG(server_context);
-		if (request) {
-			int len = strlen(message);
-			char *buf = malloc(len+2);
-
-			memcpy(buf, message, len);
-			memcpy(buf + len, "\n", sizeof("\n"));
-			fcgi_write(request, FCGI_STDERR, buf, len+1);
-			free(buf);
-		} else {
-			fprintf(stderr, "%s\n", message);
-		}
-		/* ignore return code */
-	} else {
-		fprintf(stderr, "%s\n", message);
+	if (CGIG(fcgi_logging)) {
+		zlog(ZLOG_NOTICE, "PHP message: %s", message);
 	}
 }
 
@@ -877,16 +814,12 @@ static int sapi_cgi_deactivate(TSRMLS_D)
 		2. When the first call occurs and the request is not set up, flush fails on FastCGI.
 	*/
 	if (SG(sapi_started)) {
-		if (fcgi_is_fastcgi()) {
-			if (
+		if (
 #ifndef PHP_WIN32
-				!parent &&
+		    !parent &&
 #endif
-				!fcgi_finish_request((fcgi_request*)SG(server_context), 0)) {
-				php_handle_aborted_connection();
-			}
-		} else {
-			sapi_cgibin_flush(SG(server_context));
+		    !fcgi_finish_request((fcgi_request*)SG(server_context), 0)) {
+			php_handle_aborted_connection();
 		}
 	}
 	return SUCCESS;
@@ -1399,7 +1332,7 @@ static void init_request_info(TSRMLS_D)
 		/* FIXME - Work out proto_num here */
 		SG(request_info).query_string = sapi_cgibin_getenv("QUERY_STRING", sizeof("QUERY_STRING") - 1 TSRMLS_CC);
 		SG(request_info).content_type = (content_type ? content_type : "" );
-		SG(request_info).content_length = (content_length ? atoi(content_length) : 0);
+		SG(request_info).content_length = (content_length ? atol(content_length) : 0);
 
 		/* The CGI RFC allows servers to pass on unvalidated Authorization data */
 		auth = sapi_cgibin_getenv("HTTP_AUTHORIZATION", sizeof("HTTP_AUTHORIZATION") - 1 TSRMLS_CC);
@@ -1437,14 +1370,14 @@ static void fastcgi_ini_parser(zval *arg1, zval *arg2, zval *arg3, int callback_
 	if (!mode || !arg1) return;
 
 	if (callback_type != ZEND_INI_PARSER_ENTRY) {
-		fprintf(stderr, "Passing INI directive through FastCGI: only classic entries are allowed\n");
+		zlog(ZLOG_ERROR, "Passing INI directive through FastCGI: only classic entries are allowed");
 		return;
 	}
 
 	key = Z_STRVAL_P(arg1);
 
 	if (!key || strlen(key) < 1) {
-		fprintf(stderr, "Passing INI directive through FastCGI: empty key\n");
+		zlog(ZLOG_ERROR, "Passing INI directive through FastCGI: empty key");
 		return;
 	}
 
@@ -1453,7 +1386,7 @@ static void fastcgi_ini_parser(zval *arg1, zval *arg2, zval *arg3, int callback_
 	}
 
 	if (!value) {
-		fprintf(stderr, "Passing INI directive through FastCGI: empty value for key '%s'\n", key);
+		zlog(ZLOG_ERROR, "Passing INI directive through FastCGI: empty value for key '%s'", key);
 		return;
 	}
 
@@ -1461,7 +1394,7 @@ static void fastcgi_ini_parser(zval *arg1, zval *arg2, zval *arg3, int callback_
 	kv.value = value;
 	kv.next = NULL;
 	if (fpm_php_apply_defines_ex(&kv, *mode) == -1) {
-		fprintf(stderr, "Passing INI directive through FastCGI: unable to set '%s'\n", key);
+		zlog(ZLOG_ERROR, "Passing INI directive through FastCGI: unable to set '%s'", key);
 	}
 }
 /* }}} */
@@ -1536,7 +1469,7 @@ PHP_FUNCTION(fastcgi_finish_request) /* {{{ */
 {
 	fcgi_request *request = (fcgi_request*) SG(server_context);
 
-	if (fcgi_is_fastcgi() && request->fd >= 0) {
+	if (request->fd >= 0) {
 
 		php_end_ob_buffers(1 TSRMLS_CC);
 		php_header(TSRMLS_C);
@@ -1595,6 +1528,7 @@ int main(int argc, char *argv[])
 	char *fpm_prefix = NULL;
 	char *fpm_pid = NULL;
 	int test_conf = 0;
+	int php_information = 0;
 
 	fcgi_init();
 
@@ -1705,20 +1639,8 @@ int main(int argc, char *argv[])
 				goto out;
 
 			case 'i': /* php info & quit */
-				cgi_sapi_module.phpinfo_as_text = 1;
-				cgi_sapi_module.startup(&cgi_sapi_module);
-				if (php_request_startup(TSRMLS_C) == FAILURE) {
-					SG(server_context) = NULL;
-					php_module_shutdown(TSRMLS_C);
-					return FAILURE;
-				}
-				SG(headers_sent) = 1;
-				SG(request_info).no_headers = 1;
-				php_print_info(0xFFFFFFFF TSRMLS_CC);
-				php_request_shutdown((void *) 0);
-				fcgi_shutdown();
-				exit_status = 0;
-				goto out;
+				php_information = 1;
+				break;
 
 			default:
 			case 'h':
@@ -1753,6 +1675,23 @@ int main(int argc, char *argv[])
 				exit_status = 0;
 				goto out;
 		}
+	}
+
+	if (php_information) {
+		cgi_sapi_module.phpinfo_as_text = 1;
+		cgi_sapi_module.startup(&cgi_sapi_module);
+		if (php_request_startup(TSRMLS_C) == FAILURE) {
+			SG(server_context) = NULL;
+			php_module_shutdown(TSRMLS_C);
+			return FAILURE;
+		}
+		SG(headers_sent) = 1;
+		SG(request_info).no_headers = 1;
+		php_print_info(0xFFFFFFFF TSRMLS_CC);
+		php_request_shutdown((void *) 0);
+		fcgi_shutdown();
+		exit_status = 0;
+		goto out;
 	}
 
 	/* No other args are permitted here as there is not interactive mode */
@@ -1830,9 +1769,10 @@ consult the installation file that came with this distribution, or visit \n\
 		return FAILURE;
 	}
 
+	fpm_is_running = 1;
+
 	fcgi_fd = fpm_run(&max_requests);
 	parent = 0;
-	fcgi_set_is_fastcgi(1);
 
 	/* make php call us to get _ENV vars */
 	php_php_import_environment_variables = php_import_environment_variables;
@@ -1847,6 +1787,7 @@ consult the installation file that came with this distribution, or visit \n\
 			SG(server_context) = (void *) &request;
 			init_request_info(TSRMLS_C);
 			CG(interactive) = 0;
+			char *primary_script = NULL;
 
 			fpm_request_info();
 
@@ -1872,15 +1813,30 @@ consult the installation file that came with this distribution, or visit \n\
 			/* If path_translated is NULL, terminate here with a 404 */
 			if (!SG(request_info).path_translated) {
 				zend_try {
+					zlog(ZLOG_DEBUG, "Primary script unknown");
 					SG(sapi_headers).http_response_code = 404;
+					PUTS("File not found.\n");
 				} zend_catch {
 				} zend_end_try();
 				goto fastcgi_request_done;
 			}
 
+			if (fpm_php_limit_extensions(SG(request_info).path_translated)) {
+				SG(sapi_headers).http_response_code = 403;
+				PUTS("Access denied.\n");
+				goto fastcgi_request_done;
+			}
+
+			/* 
+			 * have to duplicate SG(request_info).path_translated to be able to log errrors
+			 * php_fopen_primary_script seems to delete SG(request_info).path_translated on failure
+			 */
+			primary_script = estrdup(SG(request_info).path_translated);
+
 			/* path_translated exists, we can continue ! */
 			if (php_fopen_primary_script(&file_handle TSRMLS_CC) == FAILURE) {
 				zend_try {
+					zlog(ZLOG_ERROR, "Unable to open primary script: %s (%s)", primary_script, strerror(errno));
 					if (errno == EACCES) {
 						SG(sapi_headers).http_response_code = 403;
 						PUTS("Access denied.\n");
@@ -1902,6 +1858,10 @@ consult the installation file that came with this distribution, or visit \n\
 			php_execute_script(&file_handle TSRMLS_CC);
 
 fastcgi_request_done:
+			if (primary_script) {
+				efree(primary_script);
+			}
+
 			if (request_body_fd != -1) {
 				close(request_body_fd);
 			}

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2011 The PHP Group                                |
+   | Copyright (c) 1997-2012 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_directory.c 313665 2011-07-25 11:42:53Z felipe $ */
+/* $Id: spl_directory.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -1215,7 +1215,10 @@ SPL_METHOD(SplFileInfo, getLinkTarget)
 	zend_replace_error_handling(EH_THROW, spl_ce_RuntimeException, &error_handling TSRMLS_CC);
 
 #if defined(PHP_WIN32) || HAVE_SYMLINK
-	if (!IS_ABSOLUTE_PATH(intern->file_name, intern->file_name_len)) {
+	if (intern->file_name == NULL) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Empty filename");
+		RETURN_FALSE;
+	} else if (!IS_ABSOLUTE_PATH(intern->file_name, intern->file_name_len)) {
 		char expanded_path[MAXPATHLEN];
 
 		/* TODO: Fix expand_filepath to do not resolve links but only expand the path

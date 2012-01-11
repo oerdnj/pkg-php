@@ -2,14 +2,17 @@
 mysqli_set_local_infile_handler() - open basedir restrictions
 --SKIPIF--
 <?php
-require_once('skipif.inc');
-require_once('skipifemb.inc');
-require_once('skipifconnectfailure.inc');
+if (!$fp = @fopen('skipif.inc', 'r'))
+  die("skip open_basedir restrictions forbid opening include files");
+
+include_once('skipif.inc');
+include_once('skipifemb.inc');
+include_once('skipifconnectfailure.inc');
 
 if (!function_exists('mysqli_set_local_infile_handler'))
 	die("skip - function not available.");
 
-require_once('connect.inc');
+include_once('connect.inc');
 if (!$link = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket))
 	die("skip Cannot connect to MySQL");
 
@@ -18,13 +21,11 @@ if (!$res = mysqli_query($link, 'SHOW VARIABLES LIKE "local_infile"')) {
 	die("skip Cannot check if Server variable 'local_infile' is set to 'ON'");
 }
 
-$row = mysqli_fetch_assoc($res);
-mysqli_free_result($res);
-mysqli_close($link);
+include_once("local_infile_tools.inc");
+if ($msg = check_local_infile_support($link, $engine))
+	die(sprintf("skip %s, [%d] %s", $msg, $link->errno, $link->error));
 
-if ('ON' != $row['Value'])
-	die(sprintf("skip Server variable 'local_infile' seems not set to 'ON', found '%s'",
-		$row['Value']));
+mysqli_close($link);
 ?>
 --INI--
 open_basedir="."

@@ -114,12 +114,10 @@ typedef struct _fcgi_request {
 
 int fcgi_init(void);
 void fcgi_shutdown(void);
-int fcgi_is_fastcgi(void);
 void fcgi_init_request(fcgi_request *req, int listen_socket);
 int fcgi_accept_request(fcgi_request *req);
 int fcgi_finish_request(fcgi_request *req, int force_close);
 
-void fcgi_set_is_fastcgi(int new_value);
 void fcgi_set_in_shutdown(int);
 void fcgi_set_allowed_clients(char *);
 void fcgi_close(fcgi_request *req, int force, int destroy);
@@ -129,7 +127,7 @@ char* fcgi_putenv(fcgi_request *req, char* var, int var_len, char* val);
 
 int fcgi_read(fcgi_request *req, char *str, int len);
 
-int fcgi_write(fcgi_request *req, fcgi_request_type type, const char *str, int len);
+ssize_t fcgi_write(fcgi_request *req, fcgi_request_type type, const char *str, int len);
 int fcgi_flush(fcgi_request *req, int close);
 
 void fcgi_set_mgmt_var(const char * name, size_t name_len, const char * value, size_t value_len);

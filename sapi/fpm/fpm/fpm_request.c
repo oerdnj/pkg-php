@@ -23,6 +23,19 @@
 
 #include "zlog.h"
 
+static const char *requests_stages[] = {
+	[FPM_REQUEST_ACCEPTING]       = "Idle",
+	[FPM_REQUEST_READING_HEADERS] = "Reading headers",
+	[FPM_REQUEST_INFO]            = "Getting request informations",
+	[FPM_REQUEST_EXECUTING]       = "Running",
+	[FPM_REQUEST_END]             = "Ending",
+	[FPM_REQUEST_FINISHED]        = "Finishing",
+};
+
+const char *fpm_request_get_stage_name(int stage) {
+	return requests_stages[stage];
+}
+
 void fpm_request_accepting() /* {{{ */
 {
 	struct fpm_scoreboard_proc_s *proc;
@@ -32,16 +45,12 @@ void fpm_request_accepting() /* {{{ */
 
 	proc = fpm_scoreboard_proc_acquire(NULL, -1, 0);
 	if (proc == NULL) {
-		zlog(ZLOG_WARNING, "unable to acquire proc scoreboard");
+		zlog(ZLOG_WARNING, "failed to acquire proc scoreboard");
 		return;
 	}
 
 	proc->request_stage = FPM_REQUEST_ACCEPTING;
 	proc->tv = now;
-	proc->request_uri[0] = '\0';
-	proc->request_method[0] = '\0';
-	proc->script_filename[0] = '\0';
-	proc->content_length = 0;
 	fpm_scoreboard_proc_release(proc);
 
 	/* idle++, active-- */
@@ -67,7 +76,7 @@ void fpm_request_reading_headers() /* {{{ */
 
 	proc = fpm_scoreboard_proc_acquire(NULL, -1, 0);
 	if (proc == NULL) {
-		zlog(ZLOG_WARNING, "unable to acquire proc scoreboard");
+		zlog(ZLOG_WARNING, "failed to acquire proc scoreboard");
 		return;
 	}
 
@@ -78,6 +87,14 @@ void fpm_request_reading_headers() /* {{{ */
 #ifdef HAVE_TIMES
 	proc->cpu_accepted = cpu;
 #endif
+	proc->requests++;
+	proc->request_uri[0] = '\0';
+	proc->request_method[0] = '\0';
+	proc->script_filename[0] = '\0';
+	proc->query_string[0] = '\0';
+	proc->query_string[0] = '\0';
+	proc->auth_user[0] = '\0';
+	proc->content_length = 0;
 	fpm_scoreboard_proc_release(proc);
 
 	/* idle--, active++, request++ */
@@ -101,7 +118,7 @@ void fpm_request_info() /* {{{ */
 
 	proc = fpm_scoreboard_proc_acquire(NULL, -1, 0);
 	if (proc == NULL) {
-		zlog(ZLOG_WARNING, "unable to acquire proc scoreboard");
+		zlog(ZLOG_WARNING, "failed to acquire proc scoreboard");
 		return;
 	}
 
@@ -145,7 +162,7 @@ void fpm_request_executing() /* {{{ */
 
 	proc = fpm_scoreboard_proc_acquire(NULL, -1, 0);
 	if (proc == NULL) {
-		zlog(ZLOG_WARNING, "unable to acquire proc scoreboard");
+		zlog(ZLOG_WARNING, "failed to acquire proc scoreboard");
 		return;
 	}
 
@@ -171,14 +188,18 @@ void fpm_request_end(TSRMLS_D) /* {{{ */
 
 	proc = fpm_scoreboard_proc_acquire(NULL, -1, 0);
 	if (proc == NULL) {
-		zlog(ZLOG_WARNING, "unable to acquire proc scoreboard");
+		zlog(ZLOG_WARNING, "failed to acquire proc scoreboard");
 		return;
 	}
 	proc->request_stage = FPM_REQUEST_FINISHED;
 	proc->tv = now;
+	timersub(&now, &proc->accepted, &proc->duration);
 #ifdef HAVE_TIMES
-	proc->cpu_finished = cpu;
 	timersub(&proc->tv, &proc->accepted, &proc->cpu_duration);
+	proc->last_request_cpu.tms_utime = cpu.tms_utime - proc->cpu_accepted.tms_utime;
+	proc->last_request_cpu.tms_stime = cpu.tms_stime - proc->cpu_accepted.tms_stime;
+	proc->last_request_cpu.tms_cutime = cpu.tms_cutime - proc->cpu_accepted.tms_cutime;
+	proc->last_request_cpu.tms_cstime = cpu.tms_cstime - proc->cpu_accepted.tms_cstime;
 #endif
 	proc->memory = memory;
 	fpm_scoreboard_proc_release(proc);
@@ -194,7 +215,7 @@ void fpm_request_finished() /* {{{ */
 
 	proc = fpm_scoreboard_proc_acquire(NULL, -1, 0);
 	if (proc == NULL) {
-		zlog(ZLOG_WARNING, "unable to acquire proc scoreboard");
+		zlog(ZLOG_WARNING, "failed to acquire proc scoreboard");
 		return;
 	}
 
@@ -212,7 +233,7 @@ void fpm_request_check_timed_out(struct fpm_child_s *child, struct timeval *now,
 
 	proc_p = fpm_scoreboard_proc_acquire(child->wp->scoreboard, child->scoreboard_i, 1);
 	if (!proc_p) {
-		zlog(ZLOG_WARNING, "unable to acquire scoreboard");
+		zlog(ZLOG_WARNING, "failed to acquire scoreboard");
 		return;
 	}
 
@@ -274,5 +295,22 @@ int fpm_request_is_idle(struct fpm_child_s *child) /* {{{ */
 	}
 
 	return proc->request_stage == FPM_REQUEST_ACCEPTING;
+}
+/* }}} */
+
+int fpm_request_last_activity(struct fpm_child_s *child, struct timeval *tv) /* {{{ */
+{
+	struct fpm_scoreboard_proc_s *proc;
+
+	if (!tv) return -1;
+
+	proc = fpm_scoreboard_proc_get(child->wp->scoreboard, child->scoreboard_i);
+	if (!proc) {
+		return -1;
+	}
+
+	*tv = proc->tv;
+
+	return 1;
 }
 /* }}} */

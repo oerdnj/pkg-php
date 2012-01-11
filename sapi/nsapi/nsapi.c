@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2011 The PHP Group                                |
+   | Copyright (c) 1997-2012 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: nsapi.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: nsapi.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 /*
  * PHP includes
@@ -312,7 +312,7 @@ PHP_MSHUTDOWN_FUNCTION(nsapi)
 PHP_MINFO_FUNCTION(nsapi)
 {
 	php_info_print_table_start();
-	php_info_print_table_row(2, "NSAPI Module Revision", "$Revision: 306939 $");
+	php_info_print_table_row(2, "NSAPI Module Revision", "$Revision: 321634 $");
 	php_info_print_table_row(2, "Server Software", system_version());
 	php_info_print_table_row(2, "Sub-requests with nsapi_virtual()",
 	 (nsapi_servact_service)?((zend_ini_long("zlib.output_compression", sizeof("zlib.output_compression"), 0))?"not supported with zlib.output_compression":"enabled"):"not supported on this platform" );
@@ -727,7 +727,9 @@ static void sapi_nsapi_register_server_variables(zval *track_vars_array TSRMLS_D
 	nsapi_free(value);
 
 	php_register_variable("SERVER_SOFTWARE", system_version(), track_vars_array TSRMLS_CC);
-	php_register_variable("HTTPS", (security_active ? "ON" : "OFF"), track_vars_array TSRMLS_CC);
+	if (security_active) {
+		php_register_variable("HTTPS", "ON", track_vars_array TSRMLS_CC);
+	}
 	php_register_variable("GATEWAY_INTERFACE", "CGI/1.1", track_vars_array TSRMLS_CC);
 
 	/* DOCUMENT_ROOT */

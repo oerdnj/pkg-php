@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2011 The PHP Group                                |
+   | Copyright (c) 1997-2012 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: streams.c 312937 2011-07-05 16:09:06Z cataphract $ */
+/* $Id: streams.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #define _GNU_SOURCE
 #include "php.h"
@@ -918,9 +918,8 @@ PHPAPI char *php_stream_get_record(php_stream *stream, size_t maxlen, size_t *re
 		just_read = (stream->writepos - stream->readpos) - len;
 		len += just_read;
 
-		/* read operation have less data than request; assume the stream is
-		 * temporarily or permanently out of data */
-		if (just_read < toread) {
+		/* Assume the stream is temporarily or permanently out of data */
+		if (just_read == 0) {
 			break;
 		}
 	}

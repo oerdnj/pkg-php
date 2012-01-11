@@ -73,6 +73,13 @@ static int collator_regular_compare_function(zval *result, zval *op1, zval *op2 
 		/* Fetch collator object. */
 		co = (Collator_object *) zend_object_store_get_object( INTL_G(current_collator) TSRMLS_CC );
 
+		if (!co || !co->ucoll) {
+			intl_error_set_code( NULL, COLLATOR_ERROR_CODE( co ) TSRMLS_CC );
+			intl_errors_set_custom_msg( COLLATOR_ERROR_P( co ),
+				"Object not initialized", 0 TSRMLS_CC );
+			php_error_docref(NULL TSRMLS_CC, E_RECOVERABLE_ERROR, "Object not initialized");
+		}
+
 		/* Compare the strings using ICU. */
 		result->value.lval = ucol_strcoll(
 				co->ucoll,
@@ -387,6 +394,14 @@ PHP_FUNCTION( collator_sort_with_sort_keys )
 	/* Fetch the object. */
 	COLLATOR_METHOD_FETCH_OBJECT;
 
+	if (!co || !co->ucoll) {
+		intl_error_set_code( NULL, COLLATOR_ERROR_CODE( co ) TSRMLS_CC );
+		intl_errors_set_custom_msg( COLLATOR_ERROR_P( co ),
+			"Object not initialized", 0 TSRMLS_CC );
+		php_error_docref(NULL TSRMLS_CC, E_RECOVERABLE_ERROR, "Object not initialized");
+
+		RETURN_FALSE;
+	}
 
 	/*
 	 * Sort specified array.
@@ -551,6 +566,14 @@ PHP_FUNCTION( collator_get_sort_key )
 	/* Fetch the object. */
 	COLLATOR_METHOD_FETCH_OBJECT;
 
+	if (!co || !co->ucoll) {
+		intl_error_set_code( NULL, COLLATOR_ERROR_CODE( co ) TSRMLS_CC );
+		intl_errors_set_custom_msg( COLLATOR_ERROR_P( co ),
+			"Object not initialized", 0 TSRMLS_CC );
+		php_error_docref(NULL TSRMLS_CC, E_RECOVERABLE_ERROR, "Object not initialized");
+
+		RETURN_FALSE;
+	}
 
 	/*
 	 * Compare given strings (converting them to UTF-16 first).
