@@ -1,3 +1,12 @@
+php5 (5.3.9-1) unstable; urgency=low
+
+  * Remove obsolete sqlite(2) module from php5-sqlite
+  * Use correct signals in php5-fpm init script (Closes: #645934)
+  * Imported Upstream version 5.3.9
+  * Adapt debian/patches to 5.3.9 release
+
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 11 Jan 2012 16:33:20 +0100
+
 php5 (5.3.8.0-1) unstable; urgency=low
 
   * Re-re-imported upstream version 5.3.8, as a new sourceful update,
