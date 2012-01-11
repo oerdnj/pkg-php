@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2011 The PHP Group                                |
+   | Copyright (c) 1997-2012 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: interface.c 313826 2011-07-28 10:31:34Z pajoye $ */
+/* $Id: interface.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #define ZEND_INCLUDE_FULL_WINDOWS_HEADERS
 
@@ -150,6 +150,7 @@ static struct gcry_thread_cbs php_curl_gnutls_tsl = {
 static void _php_curl_close_ex(php_curl *ch TSRMLS_DC);
 static void _php_curl_close(zend_rsrc_list_entry *rsrc TSRMLS_DC);
 
+
 #define SAVE_CURL_ERROR(__handle, __err) (__handle)->err.no = (int) __err;
 
 #define CAAL(s, v) add_assoc_long_ex(return_value, s, sizeof(s), (long) v);
@@ -197,10 +198,76 @@ static int php_curl_option_url(php_curl *ch, const char *url, const int len) /* 
 #else
 	copystr = estrndup(url, len);
 	error = curl_easy_setopt(ch->cp, CURLOPT_URL, copystr);
-	zend_llist_add_element(&ch->to_free.str, &copystr);
+	zend_llist_add_element(&ch->to_free->str, &copystr);
 #endif
 
 	return (error == CURLE_OK ? 1 : 0);
+}
+/* }}} */
+
+int _php_curl_verify_handlers(php_curl *ch, int reporterror TSRMLS_DC) /* {{{ */
+{
+	php_stream *stream;
+	if (!ch || !ch->handlers) {
+		return 0;
+	}
+
+	if (ch->handlers->std_err) {
+		stream = (php_stream *) zend_fetch_resource(&ch->handlers->std_err TSRMLS_CC, -1, NULL, NULL, 2, php_file_le_stream(), php_file_le_pstream());
+		if (stream == NULL) {
+			if (reporterror) {
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "CURLOPT_STDERR resource has gone away, resetting to stderr");
+			}
+			zval_ptr_dtor(&ch->handlers->std_err);
+			ch->handlers->std_err = NULL;
+
+			curl_easy_setopt(ch->cp, CURLOPT_STDERR, stderr);
+		}
+	}
+	if (ch->handlers->read && ch->handlers->read->stream) {
+		stream = (php_stream *) zend_fetch_resource(&ch->handlers->read->stream TSRMLS_CC, -1, NULL, NULL, 2, php_file_le_stream(), php_file_le_pstream());
+		if (stream == NULL) {
+			if (reporterror) {
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "CURLOPT_INFILE resource has gone away, resetting to default");
+			}
+			zval_ptr_dtor(&ch->handlers->read->stream);
+			ch->handlers->read->fd = 0;
+			ch->handlers->read->fp = 0;
+			ch->handlers->read->stream = NULL;
+
+			curl_easy_setopt(ch->cp, CURLOPT_INFILE, (void *) ch);
+		}
+	}
+	if (ch->handlers->write_header && ch->handlers->write_header->stream) {
+		stream = (php_stream *) zend_fetch_resource(&ch->handlers->write_header->stream TSRMLS_CC, -1, NULL, NULL, 2, php_file_le_stream(), php_file_le_pstream());
+		if (stream == NULL) {
+			if (reporterror) {
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "CURLOPT_WRITEHEADER resource has gone away, resetting to default");
+			}
+			zval_ptr_dtor(&ch->handlers->write_header->stream);
+			ch->handlers->write_header->fp = 0;
+			ch->handlers->write_header->stream = NULL;
+
+			ch->handlers->write_header->method = PHP_CURL_IGNORE;
+			curl_easy_setopt(ch->cp, CURLOPT_WRITEHEADER, (void *) ch);
+		}
+	}
+	if (ch->handlers->write && ch->handlers->write->stream) {
+		stream = (php_stream *) zend_fetch_resource(&ch->handlers->write->stream TSRMLS_CC, -1, NULL, NULL, 2, php_file_le_stream(), php_file_le_pstream());
+		if (stream == NULL) {
+			if (reporterror) {
+				php_error_docref(NULL TSRMLS_CC, E_WARNING, "CURLOPT_FILE resource has gone away, resetting to default");
+			}
+			zval_ptr_dtor(&ch->handlers->write->stream);
+			ch->handlers->write->fp = 0;
+			ch->handlers->write->stream = NULL;
+
+			ch->handlers->write->method = PHP_CURL_STDOUT;
+			ch->handlers->write->type   = PHP_CURL_ASCII;
+			curl_easy_setopt(ch->cp, CURLOPT_FILE, (void *) ch);
+		}
+	}
+	return 1;
 }
 /* }}} */
 
@@ -337,7 +404,6 @@ PHP_INI_BEGIN()
 PHP_INI_END()
 /* }}} */
 
-/* }}} */
 /* {{{ PHP_MINFO_FUNCTION
  */
 PHP_MINFO_FUNCTION(curl)
@@ -1346,6 +1412,7 @@ PHP_FUNCTION(curl_version)
 static void alloc_curl_handle(php_curl **ch)
 {
 	*ch                           = emalloc(sizeof(php_curl));
+	(*ch)->to_free                = ecalloc(1, sizeof(struct _php_curl_free));
 	(*ch)->handlers               = ecalloc(1, sizeof(php_curl_handlers));
 	(*ch)->handlers->write        = ecalloc(1, sizeof(php_curl_write));
 	(*ch)->handlers->write_header = ecalloc(1, sizeof(php_curl_write));
@@ -1356,10 +1423,13 @@ static void alloc_curl_handle(php_curl **ch)
 	(*ch)->header.str_len = 0;
 
 	memset(&(*ch)->err, 0, sizeof((*ch)->err));
+	(*ch)->handlers->write->stream = NULL;
+	(*ch)->handlers->write_header->stream = NULL;
+	(*ch)->handlers->read->stream = NULL;
 
-	zend_llist_init(&(*ch)->to_free.str,   sizeof(char *),            (llist_dtor_func_t) curl_free_string, 0);
-	zend_llist_init(&(*ch)->to_free.slist, sizeof(struct curl_slist), (llist_dtor_func_t) curl_free_slist,  0);
-	zend_llist_init(&(*ch)->to_free.post,  sizeof(struct HttpPost),   (llist_dtor_func_t) curl_free_post,   0);
+	zend_llist_init(&(*ch)->to_free->str,   sizeof(char *),            (llist_dtor_func_t) curl_free_string, 0);
+	zend_llist_init(&(*ch)->to_free->slist, sizeof(struct curl_slist), (llist_dtor_func_t) curl_free_slist,  0);
+	zend_llist_init(&(*ch)->to_free->post,  sizeof(struct HttpPost),   (llist_dtor_func_t) curl_free_post,   0);
 }
 /* }}} */
 
@@ -1394,6 +1464,7 @@ static void split_certinfo(char *string, zval *hash)
 		efree(org);
 	}
 }
+/* }}} */
 
 /* {{{ create_certinfo
  */
@@ -1537,6 +1608,7 @@ PHP_FUNCTION(curl_copy_handle)
 
 	dupch->cp = cp;
 	dupch->uses = 0;
+	ch->uses++;
 	if (ch->handlers->write->stream) {
 		Z_ADDREF_P(dupch->handlers->write->stream);
 		dupch->handlers->write->stream = ch->handlers->write->stream;
@@ -1577,18 +1649,21 @@ PHP_FUNCTION(curl_copy_handle)
 		zval_add_ref(&ch->handlers->write_header->func_name);
 		dupch->handlers->write_header->func_name = ch->handlers->write_header->func_name;
 	}
+	
+	if (ch->handlers->progress->func_name) {
+		zval_add_ref(&ch->handlers->progress->func_name);
+		dupch->handlers->progress->func_name = ch->handlers->progress->func_name;
+	}
+	dupch->handlers->progress->method = ch->handlers->progress->method;
 
 	curl_easy_setopt(dupch->cp, CURLOPT_ERRORBUFFER,       dupch->err.str);
 	curl_easy_setopt(dupch->cp, CURLOPT_FILE,              (void *) dupch);
 	curl_easy_setopt(dupch->cp, CURLOPT_INFILE,            (void *) dupch);
 	curl_easy_setopt(dupch->cp, CURLOPT_WRITEHEADER,       (void *) dupch);
+	curl_easy_setopt(dupch->cp, CURLOPT_PROGRESSDATA,      (void *) dupch); 
 
-	zend_llist_copy(&dupch->to_free.str, &ch->to_free.str);
-	/* Don't try to free copied strings, they're free'd when the original handle is destroyed */
-	dupch->to_free.str.dtor = NULL;
-
-	zend_llist_copy(&dupch->to_free.slist, &ch->to_free.slist);
-	zend_llist_copy(&dupch->to_free.post, &ch->to_free.post);
+	efree(dupch->to_free);
+	dupch->to_free = ch->to_free;
 
 	/* Keep track of cloned copies to avoid invoking curl destructors for every clone */
 	Z_ADDREF_P(ch->clone);
@@ -1782,7 +1857,7 @@ string_copy:
 #endif
 					copystr = estrndup(Z_STRVAL_PP(zvalue), Z_STRLEN_PP(zvalue));
 					error = curl_easy_setopt(ch->cp, option, copystr);
-					zend_llist_add_element(&ch->to_free.str, &copystr);
+					zend_llist_add_element(&ch->to_free->str, &copystr);
 				} else {
 #if LIBCURL_VERSION_NUM >= 0x071100
 					/* Strings passed to libcurl as ’char *’ arguments, are copied by the library... NOTE: before 7.17.0 strings were not copied. */
@@ -1822,6 +1897,9 @@ string_copy:
 			switch (option) {
 				case CURLOPT_FILE:
 					if (((php_stream *) what)->mode[0] != 'r' || ((php_stream *) what)->mode[1] == '+') {
+						if (ch->handlers->write->stream) {
+							Z_DELREF_P(ch->handlers->write->stream);
+						}
 						Z_ADDREF_PP(zvalue);
 						ch->handlers->write->fp = fp;
 						ch->handlers->write->method = PHP_CURL_FILE;
@@ -1834,6 +1912,9 @@ string_copy:
 					break;
 				case CURLOPT_WRITEHEADER:
 					if (((php_stream *) what)->mode[0] != 'r' || ((php_stream *) what)->mode[1] == '+') {
+						if (ch->handlers->write_header->stream) {
+							Z_DELREF_P(ch->handlers->write_header->stream);
+						}
 						Z_ADDREF_PP(zvalue);
 						ch->handlers->write_header->fp = fp;
 						ch->handlers->write_header->method = PHP_CURL_FILE;
@@ -1845,6 +1926,9 @@ string_copy:
 					}
 					break;
 				case CURLOPT_INFILE:
+					if (ch->handlers->read->stream) {
+						Z_DELREF_P(ch->handlers->read->stream);
+					}
 					Z_ADDREF_PP(zvalue);
 					ch->handlers->read->fp = fp;
 					ch->handlers->read->fd = Z_LVAL_PP(zvalue);
@@ -2014,7 +2098,7 @@ string_copy:
 					return 1;
 				}
 
-				zend_llist_add_element(&ch->to_free.post, &first);
+				zend_llist_add_element(&ch->to_free->post, &first);
 				error = curl_easy_setopt(ch->cp, CURLOPT_HTTPPOST, first);
 
 			} else {
@@ -2028,7 +2112,7 @@ string_copy:
 
 				convert_to_string_ex(zvalue);
 				post = estrndup(Z_STRVAL_PP(zvalue), Z_STRLEN_PP(zvalue));
-				zend_llist_add_element(&ch->to_free.str, &post);
+				zend_llist_add_element(&ch->to_free->str, &post);
 
 				error = curl_easy_setopt(ch->cp, CURLOPT_POSTFIELDS, post);
 				error = curl_easy_setopt(ch->cp, CURLOPT_POSTFIELDSIZE, Z_STRLEN_PP(zvalue));
@@ -2064,7 +2148,7 @@ string_copy:
 					return 1;
 				}
 			}
-			zend_llist_add_element(&ch->to_free.slist, &slist);
+			zend_llist_add_element(&ch->to_free->slist, &slist);
 
 			error = curl_easy_setopt(ch->cp, option, slist);
 
@@ -2094,7 +2178,7 @@ string_copy:
 			copystr = estrndup(Z_STRVAL_PP(zvalue), Z_STRLEN_PP(zvalue));
 
 			error = curl_easy_setopt(ch->cp, option, copystr);
-			zend_llist_add_element(&ch->to_free.str, &copystr);
+			zend_llist_add_element(&ch->to_free->str, &copystr);
 #endif
 			break;
 		}
@@ -2211,6 +2295,8 @@ PHP_FUNCTION(curl_exec)
 
 	ZEND_FETCH_RESOURCE(ch, php_curl *, &zid, -1, le_curl_name, le_curl);
 
+	_php_curl_verify_handlers(ch, 1 TSRMLS_CC);
+
 	_php_curl_cleanup_handle(ch);
 
 	error = curl_easy_perform(ch->cp);
@@ -2221,6 +2307,14 @@ PHP_FUNCTION(curl_exec)
 			smart_str_free(&ch->handlers->write->buf);
 		}
 		RETURN_FALSE;
+	}
+
+	if (ch->handlers->std_err) {
+		php_stream  *stream;
+		stream = (php_stream*)zend_fetch_resource(&ch->handlers->std_err TSRMLS_CC, -1, NULL, NULL, 2, php_file_le_stream(), php_file_le_pstream());
+		if (stream) {
+			php_stream_flush(stream);
+		}
 	}
 
 	if (ch->handlers->write->method == PHP_CURL_RETURN && ch->handlers->write->buf.len > 0) {
@@ -2500,25 +2594,18 @@ static void _php_curl_close_ex(php_curl *ch TSRMLS_DC)
 	fprintf(stderr, "DTOR CALLED, ch = %x\n", ch);
 #endif
 
-	/* Prevent crash inside cURL if passed file has already been closed */
-	if (ch->handlers->std_err && Z_REFCOUNT_P(ch->handlers->std_err) <= 0) {
-		curl_easy_setopt(ch->cp, CURLOPT_STDERR, stderr);
-	}
-
+	_php_curl_verify_handlers(ch, 0 TSRMLS_CC);
 	curl_easy_cleanup(ch->cp);
-	zend_llist_clean(&ch->to_free.str);
 
 	/* cURL destructors should be invoked only by last curl handle */
 	if (Z_REFCOUNT_P(ch->clone) <= 1) {
-		zend_llist_clean(&ch->to_free.slist);
-		zend_llist_clean(&ch->to_free.post);
+		zend_llist_clean(&ch->to_free->str);
+		zend_llist_clean(&ch->to_free->slist);
+		zend_llist_clean(&ch->to_free->post);
+		efree(ch->to_free);
 		FREE_ZVAL(ch->clone);
 	} else {
 		Z_DELREF_P(ch->clone);
-		ch->to_free.slist.dtor = NULL;
-		ch->to_free.post.dtor = NULL;
-		zend_llist_clean(&ch->to_free.slist);
-		zend_llist_clean(&ch->to_free.post);
 	}
 
 	if (ch->handlers->write->buf.len > 0) {

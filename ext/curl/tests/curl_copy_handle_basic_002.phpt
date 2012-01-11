@@ -4,7 +4,7 @@ Test curl_copy_handle() with simple POST
 Rick Buitenman <rick@meritos.nl>
 #testfest Utrecht 2009
 --SKIPIF--
-<?php if (!extension_loaded("curl") || false === getenv('PHP_CURL_HTTP_REMOTE_SERVER')) print "skip"; ?>
+<?php if (!extension_loaded("curl") || false === getenv('PHP_CURL_HTTP_REMOTE_SERVER')) print "skip need PHP_CURL_HTTP_REMOTE_SERVER environment variable"; ?>
 --FILE--
 <?php
   $host = getenv('PHP_CURL_HTTP_REMOTE_SERVER');
@@ -29,8 +29,6 @@ Rick Buitenman <rick@meritos.nl>
   var_dump( $curl_content );
 ?>
 ===DONE===
---XFAIL--
-This test fails, the copy seems to be missing the CURLOPT_POSTFIELDS after the original is closed
 --EXPECTF--
 *** Testing curl copy handle with simple POST ***
 string(163) "array(1) {

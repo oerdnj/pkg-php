@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2011 The PHP Group                                |
+   | Copyright (c) 1997-2012 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: mod_mm.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: mod_mm.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #include "php.h"
 
@@ -278,7 +278,7 @@ PHP_MINIT_FUNCTION(ps_mm)
 	ps_mm_path = emalloc(save_path_len + 1 + (sizeof(PS_MM_FILE) - 1) + mod_name_len + euid_len + 1);
 
 	memcpy(ps_mm_path, PS(save_path), save_path_len);
-	if (PS(save_path)[save_path_len - 1] != DEFAULT_SLASH) {
+	if (save_path_len && PS(save_path)[save_path_len - 1] != DEFAULT_SLASH) {
 		ps_mm_path[save_path_len] = DEFAULT_SLASH;
 		save_path_len++;
 	}

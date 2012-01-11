@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2011 The PHP Group                                |
+  | Copyright (c) 1997-2012 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: firebird_statement.c 312225 2011-06-17 02:00:20Z felipe $ */
+/* $Id: firebird_statement.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -582,6 +582,12 @@ static int firebird_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_dat
 			break;
 
 		case PDO_PARAM_EVT_FETCH_POST:
+                        if (param->paramno == -1) {
+                            return 0;
+                        }
+			if (param->is_param) {
+				break;
+			}
 			value = NULL;
 			value_len = 0;
 			caller_frees = 0;
@@ -598,6 +604,15 @@ static int firebird_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_dat
 							ZVAL_LONG(param->parameter, *(long*)value);
 							break;
 						}
+                                        case PDO_PARAM_EVT_NORMALIZE:
+                                                 if (!param->is_param) {
+                                                      char *s = param->name;
+                                                      while (*s != '\0') {
+                                                           *s = toupper(*s);
+                                                            s++;
+                                                      }
+                                                 }
+                                                        break;
 					default:
 						ZVAL_NULL(param->parameter);
 				}

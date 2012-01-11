@@ -1,9 +1,9 @@
-/* $Id: php_crypt_r.c 315338 2011-08-23 08:09:55Z johannes $ */
+/* $Id: php_crypt_r.c 321634 2012-01-01 13:15:04Z felipe $ */
 /*
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2011 The PHP Group                                |
+   | Copyright (c) 1997-2012 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -94,8 +94,7 @@ void _crypt_extended_init_r(void)
 	if (!initialized) {
 #ifdef PHP_WIN32
 		InterlockedIncrement(&initialized);
-#elif (defined(__GNUC__) && !defined(__hpux) && (__GNUC__ > 4 || \
-    (__GNUC__ == 4 && (__GNUC_MINOR__ > 1 || (__GNUC_MINOR__ == 1 && __GNUC_PATCHLEVEL__ > 1)))))
+#elif defined(HAVE_SYNC_FETCH_AND_ADD)
 		__sync_fetch_and_add(&initialized, 1);
 #elif defined(HAVE_ATOMIC_H) /* Solaris 10 defines atomic API within */
 		membar_producer();

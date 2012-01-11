@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2011 The PHP Group                                |
+   | Copyright (c) 1997-2012 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_array.c 313665 2011-07-25 11:42:53Z felipe $ */
+/* $Id: spl_array.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -77,6 +77,7 @@ typedef struct _spl_array_object {
 	php_serialize_data_t   *serialize_data;
 	php_unserialize_data_t *unserialize_data;
 	HashTable              *debug_info;
+	unsigned char		   nApplyCount;
 } spl_array_object;
 
 static inline HashTable *spl_array_get_hash_table(spl_array_object* intern, int check_std_props TSRMLS_DC) { /* {{{ */
@@ -728,8 +729,16 @@ SPL_METHOD(Array, getArrayCopy)
 static HashTable *spl_array_get_properties(zval *object TSRMLS_DC) /* {{{ */
 {
 	spl_array_object *intern = (spl_array_object*)zend_object_store_get_object(object TSRMLS_CC);
+	HashTable *result;
 
-	return spl_array_get_hash_table(intern, 1 TSRMLS_CC);
+	if (intern->nApplyCount > 1) {
+		php_error_docref(NULL TSRMLS_CC, E_ERROR, "Nesting level too deep - recursive dependency?");
+	}
+
+	intern->nApplyCount++;
+	result = spl_array_get_hash_table(intern, 1 TSRMLS_CC);
+	intern->nApplyCount--;
+	return result;
 } /* }}} */
 
 static HashTable* spl_array_get_debug_info(zval *obj, int *is_temp TSRMLS_DC) /* {{{ */

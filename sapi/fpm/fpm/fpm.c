@@ -36,7 +36,8 @@ struct fpm_globals_s fpm_globals = {
 	.listening_socket = 0,
 	.max_requests = 0,
 	.is_child = 0,
-	.test_successful = 0
+	.test_successful = 0,
+	.heartbeat = 0
 };
 
 int fpm_init(int argc, char **argv, char *config, char *prefix, char *pid, int test_conf) /* {{{ */
@@ -51,7 +52,6 @@ int fpm_init(int argc, char **argv, char *config, char *prefix, char *pid, int t
 
 	if (0 > fpm_php_init_main()           ||
 	    0 > fpm_stdio_init_main()         ||
-	    0 > fpm_log_init_main()           ||
 	    0 > fpm_conf_init_main(test_conf) ||
 	    0 > fpm_unix_init_main()          ||
 	    0 > fpm_scoreboard_init_main()    ||
@@ -66,11 +66,13 @@ int fpm_init(int argc, char **argv, char *config, char *prefix, char *pid, int t
 		if (fpm_globals.test_successful) {
 			exit(0);
 		} else {
+			zlog(ZLOG_ERROR, "FPM initialization failed");
 			return -1;
 		}
 	}
 
 	if (0 > fpm_conf_write_pid()) {
+		zlog(ZLOG_ERROR, "FPM initialization failed");
 		return -1;
 	}
 

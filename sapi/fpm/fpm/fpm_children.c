@@ -147,13 +147,13 @@ static void fpm_child_init(struct fpm_worker_pool_s *wp) /* {{{ */
 {
 	fpm_globals.max_requests = wp->config->pm_max_requests;
 
-	if (0 > fpm_stdio_init_child(wp) ||
-		0 > fpm_log_init_child(wp) ||
-		0 > fpm_status_init_child(wp) ||
-		0 > fpm_unix_init_child(wp) ||
-		0 > fpm_signals_init_child() ||
-		0 > fpm_env_init_child(wp) ||
-		0 > fpm_php_init_child(wp)) {
+	if (0 > fpm_stdio_init_child(wp)  ||
+	    0 > fpm_log_init_child(wp)    ||
+	    0 > fpm_status_init_child(wp) ||
+	    0 > fpm_unix_init_child(wp)   ||
+	    0 > fpm_signals_init_child()  ||
+	    0 > fpm_env_init_child(wp)    ||
+	    0 > fpm_php_init_child(wp)) {
 
 		zlog(ZLOG_ERROR, "[pool %s] child failed to initialize", wp->config->name);
 		exit(255);
@@ -292,7 +292,7 @@ void fpm_children_bury() /* {{{ */
 				}
 			}
 		} else {
-			zlog(ZLOG_ALERT, "oops, unknown child (%d) exited %s", pid, buf);
+			zlog(ZLOG_ALERT, "oops, unknown child (%d) exited %s. Please open a bug report (https://bugs.php.net).", pid, buf);
 		}
 	}
 }
@@ -305,7 +305,7 @@ static struct fpm_child_s *fpm_resources_prepare(struct fpm_worker_pool_s *wp) /
 	c = fpm_child_alloc();
 
 	if (!c) {
-		zlog(ZLOG_ERROR, "[pool %s] malloc failed", wp->config->name);
+		zlog(ZLOG_ERROR, "[pool %s] unable to malloc new child", wp->config->name);
 		return 0;
 	}
 
@@ -344,6 +344,7 @@ static void fpm_child_resources_use(struct fpm_child_s *child) /* {{{ */
 		}
 		fpm_scoreboard_free(wp->scoreboard);
 	}
+
 	fpm_scoreboard_child_use(child->wp->scoreboard, child->scoreboard_i, getpid());
 	fpm_stdio_child_use_pipes(child);
 	fpm_child_free(child);
@@ -362,6 +363,7 @@ int fpm_children_make(struct fpm_worker_pool_s *wp, int in_event_loop, int nb_to
 	pid_t pid;
 	struct fpm_child_s *child;
 	int max;
+	static int warned = 0;
 
 	if (wp->config->pm == PM_STYLE_DYNAMIC) {
 		if (!in_event_loop) { /* starting */
@@ -369,11 +371,26 @@ int fpm_children_make(struct fpm_worker_pool_s *wp, int in_event_loop, int nb_to
 		} else {
 			max = wp->running_children + nb_to_spawn;
 		}
+	} else if (wp->config->pm == PM_STYLE_ONDEMAND) {
+		if (!in_event_loop) { /* starting */
+			max = 0; /* do not create any child at startup */
+		} else {
+			max = wp->running_children + nb_to_spawn;
+		}
 	} else { /* PM_STYLE_STATIC */
 		max = wp->config->pm_max_children;
 	}
 
-	while (fpm_pctl_can_spawn_children() && wp->running_children < max) {
+	/*
+	 * fork children while:
+	 *   - fpm_pctl_can_spawn_children : FPM is running in a NORMAL state (aka not restart, stop or reload)
+	 *   - wp->running_children < max  : there is less than the max process for the current pool
+	 *   - (fpm_global_config.process_max < 1 || fpm_globals.running_children < fpm_global_config.process_max):
+	 *     if fpm_global_config.process_max is set, FPM has not fork this number of processes (globaly)
+	 */
+	while (fpm_pctl_can_spawn_children() && wp->running_children < max && (fpm_global_config.process_max < 1 || fpm_globals.running_children < fpm_global_config.process_max)) {
+
+		warned = 0;
 		child = fpm_resources_prepare(wp);
 
 		if (!child) {
@@ -406,12 +423,33 @@ int fpm_children_make(struct fpm_worker_pool_s *wp, int in_event_loop, int nb_to
 
 	}
 
+	if (!warned && fpm_global_config.process_max > 0 && fpm_globals.running_children >= fpm_global_config.process_max) {
+		warned = 1;
+		zlog(ZLOG_WARNING, "The maximum number of processes has been reached. Please review your configuration and consider raising 'process.max'");
+	}
+
 	return 1; /* we are done */
 }
 /* }}} */
 
 int fpm_children_create_initial(struct fpm_worker_pool_s *wp) /* {{{ */
 {
+	if (wp->config->pm == PM_STYLE_ONDEMAND) {
+		wp->ondemand_event = (struct fpm_event_s *)malloc(sizeof(struct fpm_event_s));
+
+		if (!wp->ondemand_event) {
+			zlog(ZLOG_ERROR, "[pool %s] unable to malloc the ondemand socket event", wp->config->name);
+			// FIXME handle crash
+			return 1;
+		}
+
+		memset(wp->ondemand_event, 0, sizeof(struct fpm_event_s));
+		fpm_event_set(wp->ondemand_event, wp->listening_socket, FPM_EV_READ | FPM_EV_EDGE, fpm_pctl_on_socket_accept, wp);
+		wp->socket_event_set = 1;
+		fpm_event_add(wp->ondemand_event, 0);
+
+		return 1;
+	}
 	return fpm_children_make(wp, 0 /* not in event loop yet */, 0, 1);
 }
 /* }}} */

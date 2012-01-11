@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: unixtime2tm.c 307103 2011-01-05 04:13:23Z iliaa $ */
+/* $Id: unixtime2tm.c 319767 2011-11-24 17:13:47Z derick $ */
 
 #include "timelib.h"
 
@@ -146,7 +146,7 @@ void timelib_update_from_sse(timelib_time *tm)
 			int z = tm->z;
 			signed int dst = tm->dst;
 			
-			timelib_unixtime2gmt(tm, tm->sse - (tm->z * 60));
+			timelib_unixtime2gmt(tm, tm->sse - (tm->z * 60) + (tm->dst * 3600));
 
 			tm->z = z;
 			tm->dst = dst;
@@ -184,7 +184,7 @@ void timelib_unixtime2local(timelib_time *tm, timelib_sll ts)
 			int z = tm->z;
 			signed int dst = tm->dst;
 			
-			timelib_unixtime2gmt(tm, ts - (tm->z * 60));
+			timelib_unixtime2gmt(tm, ts - (tm->z * 60) + (tm->dst * 3600));
 
 			tm->z = z;
 			tm->dst = dst;

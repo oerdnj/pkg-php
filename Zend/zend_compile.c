@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2011 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2012 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_compile.c 313073 2011-07-08 16:29:33Z felipe $ */
+/* $Id: zend_compile.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #include <zend_language_parser.h>
 #include "zend.h"
@@ -2628,7 +2628,8 @@ static zend_bool do_inherit_method_check(HashTable *child_function_table, zend_f
 		return 1; /* method doesn't exist in child, copy from parent */
 	}
 
-	if (parent->common.fn_flags & ZEND_ACC_ABSTRACT
+	if ((parent->common.scope->ce_flags & ZEND_ACC_INTERFACE) == 0
+		&& parent->common.fn_flags & ZEND_ACC_ABSTRACT
 		&& parent->common.scope != (child->common.prototype ? child->common.prototype->common.scope : child->common.scope)
 		&& child->common.fn_flags & (ZEND_ACC_ABSTRACT|ZEND_ACC_IMPLEMENTED_ABSTRACT)) {
 		zend_error(E_COMPILE_ERROR, "Can't inherit abstract function %s::%s() (previously declared abstract in %s)", 
@@ -3757,6 +3758,11 @@ void zend_do_halt_compiler_register(TSRMLS_D) /* {{{ */
 	char *name, *cfilename;
 	char haltoff[] = "__COMPILER_HALT_OFFSET__";
 	int len, clen;
+	
+	if (CG(has_bracketed_namespaces) && CG(in_namespace)) {
+		zend_error(E_COMPILE_ERROR, "__HALT_COMPILER() can only be used from the outermost scope");
+	}
+	
 	cfilename = zend_get_compiled_filename(TSRMLS_C);
 	clen = strlen(cfilename);
 	zend_mangle_property_name(&name, &len, haltoff, sizeof(haltoff) - 1, cfilename, clen, 0);
@@ -5183,6 +5189,12 @@ void zend_do_begin_namespace(const znode *name, zend_bool with_bracket TSRMLS_DC
 		zend_hash_destroy(CG(current_import));
 		efree(CG(current_import));
 		CG(current_import) = NULL;
+	}
+
+	if (CG(doc_comment)) {
+		efree(CG(doc_comment));
+		CG(doc_comment) = NULL;
+		CG(doc_comment_len) = 0;
 	}
 }
 /* }}} */

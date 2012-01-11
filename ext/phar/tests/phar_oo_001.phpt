@@ -30,14 +30,14 @@ try
 	$phar = new MyPhar();
 	var_dump($phar->getVersion());
 }
-catch (BadMethodCallException $e)
+catch (LogicException $e)
 {
 	var_dump($e->getMessage());
 }
 try {
 	$phar = new Phar('test.phar');
 	$phar->__construct('oops');
-} catch (BadMethodCallException $e)
+} catch (LogicException $e)
 {
 	var_dump($e->getMessage());
 }

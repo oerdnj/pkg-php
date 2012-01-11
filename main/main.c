@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2011 The PHP Group                                |
+   | Copyright (c) 1997-2012 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: main.c 312201 2011-06-16 01:31:10Z pajoye $ */
+/* $Id: main.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 /* {{{ includes
  */
@@ -92,14 +92,25 @@
 #include "SAPI.h"
 #include "rfc1867.h"
 
-#if HAVE_SYS_MMAN_H
-# include <sys/mman.h>
-# ifndef PAGE_SIZE
-#  define PAGE_SIZE 4096
+#if HAVE_MMAP
+# if HAVE_UNISTD_H
+#  include <unistd.h>
+#  if defined(_SC_PAGESIZE)
+#    define REAL_PAGE_SIZE sysconf(_SC_PAGESIZE);
+#  elif defined(_SC_PAGE_SIZE)
+#    define REAL_PAGE_SIZE sysconf(_SC_PAGE_SIZE);
+#  endif
 # endif
-#endif
-#ifdef PHP_WIN32
-# define PAGE_SIZE 4096
+# if HAVE_SYS_MMAN_H
+#  include <sys/mman.h>
+# endif
+# ifndef REAL_PAGE_SIZE
+#  ifdef PAGE_SIZE
+#   define REAL_PAGE_SIZE PAGE_SIZE
+#  else
+#   define REAL_PAGE_SIZE 4096
+#  endif
+# endif
 #endif
 /* }}} */
 
@@ -501,6 +512,7 @@ PHP_INI_BEGIN()
 	STD_PHP_INI_ENTRY("post_max_size",			"8M",		PHP_INI_SYSTEM|PHP_INI_PERDIR,		OnUpdateLong,			post_max_size,			sapi_globals_struct,sapi_globals)
 	STD_PHP_INI_ENTRY("upload_tmp_dir",			NULL,		PHP_INI_SYSTEM,		OnUpdateStringUnempty,	upload_tmp_dir,			php_core_globals,	core_globals)
 	STD_PHP_INI_ENTRY("max_input_nesting_level", "64",		PHP_INI_SYSTEM|PHP_INI_PERDIR,		OnUpdateLongGEZero,	max_input_nesting_level,			php_core_globals,	core_globals)
+	STD_PHP_INI_ENTRY("max_input_vars",			"1000",		PHP_INI_SYSTEM|PHP_INI_PERDIR,		OnUpdateLongGEZero,	max_input_vars,						php_core_globals,	core_globals)
 
 	STD_PHP_INI_ENTRY("user_dir",				NULL,		PHP_INI_SYSTEM,		OnUpdateString,			user_dir,				php_core_globals,	core_globals)
 	STD_PHP_INI_ENTRY("variables_order",		"EGPCS",	PHP_INI_SYSTEM|PHP_INI_PERDIR,		OnUpdateStringUnempty,	variables_order,		php_core_globals,	core_globals)
@@ -533,6 +545,9 @@ PHP_INI_BEGIN()
 	STD_PHP_INI_ENTRY("user_ini.filename",		".user.ini",	PHP_INI_SYSTEM,		OnUpdateString,		user_ini_filename,	php_core_globals,		core_globals)
 	STD_PHP_INI_ENTRY("user_ini.cache_ttl",		"300",			PHP_INI_SYSTEM,		OnUpdateLong,		user_ini_cache_ttl,	php_core_globals,		core_globals)
 	STD_PHP_INI_BOOLEAN("exit_on_timeout",		"0",		PHP_INI_ALL,		OnUpdateBool,			exit_on_timeout,			php_core_globals,	core_globals)
+#ifdef PHP_WIN32
+	STD_PHP_INI_BOOLEAN("windows.show_crt_warning",		"0",		PHP_INI_ALL,		OnUpdateBool,			windows_show_crt_warning,			php_core_globals,	core_globals)
+#endif
 PHP_INI_END()
 /* }}} */
 
@@ -585,7 +600,7 @@ PHPAPI void php_log_err(char *log_message TSRMLS_DC)
 			char *error_time_str;
 
 			time(&error_time);
-			error_time_str = php_format_date("d-M-Y H:i:s", 11, error_time, 1 TSRMLS_CC);
+			error_time_str = php_format_date("d-M-Y H:i:s e", 13, error_time, 0 TSRMLS_CC);
 			len = spprintf(&tmp, 0, "[%s] %s%s", error_time_str, log_message, PHP_EOL);
 #ifdef PHP_WIN32
 			php_flock(fd, 2);
@@ -1201,6 +1216,10 @@ PHPAPI int php_stream_open_for_zend_ex(const char *filename, zend_file_handle *h
 	php_stream *stream = php_stream_open_wrapper((char *)filename, "rb", mode, &handle->opened_path);
 
 	if (stream) {
+#if HAVE_MMAP
+		size_t page_size = REAL_PAGE_SIZE;
+#endif
+
 		handle->filename = (char*)filename;
 		handle->free_filename = 0;
 		handle->handle.stream.handle  = stream;
@@ -1211,7 +1230,9 @@ PHPAPI int php_stream_open_for_zend_ex(const char *filename, zend_file_handle *h
 		memset(&handle->handle.stream.mmap, 0, sizeof(handle->handle.stream.mmap));
 		len = php_zend_stream_fsizer(stream TSRMLS_CC);
 		if (len != 0
-		&& ((len - 1) % PAGE_SIZE) <= PAGE_SIZE - ZEND_MMAP_AHEAD
+#if HAVE_MMAP
+		&& ((len - 1) % page_size) <= page_size - ZEND_MMAP_AHEAD
+#endif
 		&& php_stream_mmap_possible(stream)
 		&& (p = php_stream_mmap_range(stream, 0, len, PHP_STREAM_MAP_MODE_SHARED_READONLY, &mapped_len)) != NULL) {
 			handle->handle.stream.closer   = php_zend_stream_mmap_closer;
@@ -1770,18 +1791,21 @@ void dummy_invalid_parameter_handler(
 	int len;
 
 	if (!called) {
-		called = 1;
-		if (function) {
-			if (file) {
-				len = _snprintf(buf, sizeof(buf)-1, "Invalid parameter detected in CRT function '%ws' (%ws:%d)", function, file, line);
+		TSRMLS_FETCH();
+		if(PG(windows_show_crt_warning)) {
+			called = 1;
+			if (function) {
+				if (file) {
+					len = _snprintf(buf, sizeof(buf)-1, "Invalid parameter detected in CRT function '%ws' (%ws:%d)", function, file, line);
+				} else {
+					len = _snprintf(buf, sizeof(buf)-1, "Invalid parameter detected in CRT function '%ws'", function);
+				}
 			} else {
-				len = _snprintf(buf, sizeof(buf)-1, "Invalid parameter detected in CRT function '%ws'", function);
+				len = _snprintf(buf, sizeof(buf)-1, "Invalid CRT parameter detected (function not known)");
 			}
-		} else {
-			len = _snprintf(buf, sizeof(buf)-1, "Invalid CRT parameters detected");
+			zend_error(E_WARNING, "%s", buf);
+			called = 0;
 		}
-		zend_error(E_WARNING, "%s", buf);
-		called = 0;
 	}
 }
 #endif

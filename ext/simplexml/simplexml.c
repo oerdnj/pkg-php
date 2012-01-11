@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2011 The PHP Group                                |
+  | Copyright (c) 1997-2012 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: simplexml.c 314376 2011-08-06 14:47:44Z felipe $ */
+/* $Id: simplexml.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1264,8 +1264,9 @@ SXE_METHOD(xpath)
 
 	result = retval->nodesetval;
 
+	array_init(return_value);
+		
 	if (result != NULL) {
-		array_init(return_value);
 		for (i = 0; i < result->nodeNr; ++i) {
 			nodeptr = result->nodeTab[i];
 			if (nodeptr->type == XML_TEXT_NODE || nodeptr->type == XML_ELEMENT_NODE || nodeptr->type == XML_ATTRIBUTE_NODE) {
@@ -1286,8 +1287,6 @@ SXE_METHOD(xpath)
 				add_next_index_zval(return_value, value);
 			}
 		}
-	} else {
-		RETVAL_FALSE;
 	}
 
 	xmlXPathFreeObject(retval);
@@ -2609,7 +2608,7 @@ PHP_MINFO_FUNCTION(simplexml)
 {
 	php_info_print_table_start();
 	php_info_print_table_header(2, "Simplexml support", "enabled");
-	php_info_print_table_row(2, "Revision", "$Revision: 314376 $");
+	php_info_print_table_row(2, "Revision", "$Revision: 321634 $");
 	php_info_print_table_row(2, "Schema support",
 #ifdef LIBXML_SCHEMAS_ENABLED
 		"enabled");

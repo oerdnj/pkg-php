@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2011 The PHP Group                                |
+   | Copyright (c) 1997-2012 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    | PHP 4.0 patches by Zeev Suraski <zeev@zend.com>                      |
    +----------------------------------------------------------------------+
  */
-/* $Id: mod_php5.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: mod_php5.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #include "php_apache_http.h"
 #include "http_conf_globals.h"
@@ -533,7 +533,7 @@ static void init_request_info(TSRMLS_D)
 	SG(request_info).request_uri = r->uri;
 	SG(request_info).request_method = (char *)r->method;
 	SG(request_info).content_type = (char *) table_get(r->subprocess_env, "CONTENT_TYPE");
-	SG(request_info).content_length = (content_length ? atoi(content_length) : 0);
+	SG(request_info).content_length = (content_length ? atol(content_length) : 0);
 	SG(sapi_headers).http_response_code = r->status;
 	SG(request_info).proto_num = r->proto_num;
 

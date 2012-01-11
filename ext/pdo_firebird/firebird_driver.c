@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2011 The PHP Group                                |
+  | Copyright (c) 1997-2012 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: firebird_driver.c 312225 2011-06-17 02:00:20Z felipe $ */
+/* $Id: firebird_driver.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -433,14 +433,17 @@ static int firebird_alloc_prepare_stmt(pdo_dbh_t *dbh, const char *sql, long sql
 					case ':':
 						in_param = 1;
 						ppname = pname;
+						*ppname++ = sql[l];
 					case '?':
 						*c++ = '?';
 						++pindex;
 					continue;
 				}
 			} else {
-				if ((in_param &= (sql[l] == '_') || (sql[l] >= 'A' && sql[l] <= 'Z') 
-						|| (sql[l] >= 'a' && sql[l] <= 'z') || (sql[l] >= '0' && sql[l] <= '9'))) {
+                                if ((in_param &= ((sql[l] >= 'A' && sql[l] <= 'Z') || (sql[l] >= 'a' && sql[l] <= 'z')
+                                        || (sql[l] >= '0' && sql[l] <= '9') || sql[l] == '_' || sql[l] == '-'))) { 
+
+					
 					*ppname++ = sql[l];
 					continue;
 				} else {

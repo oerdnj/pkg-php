@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2011 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2012 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        | 
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_closures.c 310389 2011-04-20 12:59:18Z dmitry $ */
+/* $Id: zend_closures.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #include "zend.h"
 #include "zend_API.h"
@@ -280,6 +280,18 @@ static HashTable *zend_closure_get_debug_info(zval *object, int *is_temp TSRMLS_
 }
 /* }}} */
 
+static HashTable *zend_closure_get_properties(zval *obj TSRMLS_DC) /* {{{ */
+{
+	zend_closure *closure = (zend_closure *)zend_object_store_get_object(obj TSRMLS_CC);	
+
+	if (GC_G(gc_active)) {
+		return (closure->func.type == ZEND_USER_FUNCTION) ? closure->func.op_array.static_variables : NULL;
+	}
+
+	return closure->std.properties;
+}
+/* }}} */
+
 /* {{{ proto Closure::__construct()
    Private constructor preventing instantiation */
 ZEND_METHOD(Closure, __construct)
@@ -316,6 +328,7 @@ void zend_register_closure_ce(TSRMLS_D) /* {{{ */
 	closure_handlers.clone_obj = NULL;
 	closure_handlers.get_debug_info = zend_closure_get_debug_info;
 	closure_handlers.get_closure = zend_closure_get_closure;
+	closure_handlers.get_properties = zend_closure_get_properties;
 }
 /* }}} */
 

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2011 The PHP Group                                |
+   | Copyright (c) 1997-2012 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_reflection.c 313665 2011-07-25 11:42:53Z felipe $ */
+/* $Id: php_reflection.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -2635,7 +2635,7 @@ ZEND_METHOD(reflection_method, invoke)
 	fcc.initialized = 1;
 	fcc.function_handler = mptr;
 	fcc.calling_scope = obj_ce;
-	fcc.called_scope = obj_ce;
+	fcc.called_scope = intern->ce;
 	fcc.object_ptr = object_ptr;
 
 	result = zend_call_function(&fci, &fcc TSRMLS_CC);
@@ -5545,7 +5545,7 @@ PHP_MINFO_FUNCTION(reflection) /* {{{ */
 	php_info_print_table_start();
 	php_info_print_table_header(2, "Reflection", "enabled");
 
-	php_info_print_table_row(2, "Version", "$Revision: 313665 $");
+	php_info_print_table_row(2, "Version", "$Revision: 321634 $");
 
 	php_info_print_table_end();
 } /* }}} */
@@ -5559,7 +5559,7 @@ zend_module_entry reflection_module_entry = { /* {{{ */
 	NULL,
 	NULL,
 	PHP_MINFO(reflection),
-	"$Revision: 313665 $",
+	"$Revision: 321634 $",
 	STANDARD_MODULE_PROPERTIES
 }; /* }}} */
 

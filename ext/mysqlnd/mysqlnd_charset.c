@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 2006-2011 The PHP Group                                |
+  | Copyright (c) 2006-2012 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -122,11 +122,11 @@ static unsigned int check_mb_utf8_sequence(const char *start, const char *end)
 		  [F4][80..8F][80..BF][80..BF]
 		*/
 
-		if (!((start[1] ^ 0x80) < 0x40 &&
-			(start[2] ^ 0x80) < 0x40 &&
-			(start[3] ^ 0x80) < 0x40 &&
-				(c >= 0xf1 || start[1] >= 0x90) &&
-				(c <= 0xf3 || start[1] <= 0x8F)))
+		if (!(((zend_uchar)start[1] ^ 0x80) < 0x40 &&
+			((zend_uchar)start[2] ^ 0x80) < 0x40 &&
+			((zend_uchar)start[3] ^ 0x80) < 0x40 &&
+				(c >= 0xf1 || (zend_uchar)start[1] >= 0x90) &&
+				(c <= 0xf3 || (zend_uchar)start[1] <= 0x8F)))
 		{
 			return 0;	/* invalid utf8 character */
 		}

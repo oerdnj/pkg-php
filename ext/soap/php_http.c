@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2011 The PHP Group                                |
+  | Copyright (c) 1997-2012 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_http.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: php_http.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #include "php_soap.h"
 #include "ext/standard/base64.h"
@@ -1383,7 +1383,7 @@ static int get_http_body(php_stream *stream, int close, char *headers,  char **r
 		}
 
 	} else if (header_length) {
-		if (header_length < 0) {
+		if (header_length < 0 || header_length >= INT_MAX) {
 			return FALSE;
 		}
 		http_buf = emalloc(header_length + 1);

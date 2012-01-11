@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2011 The PHP Group                                |
+   | Copyright (c) 1997-2012 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: string.c 310401 2011-04-21 01:51:24Z pierrick $ */
+/* $Id: string.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 /* Synced with php 3.0 revision 1.193 1999-06-16 [ssb] */
 
@@ -2336,6 +2336,10 @@ PHP_FUNCTION(substr_replace)
 			RETURN_STRINGL(Z_STRVAL_PP(str), Z_STRLEN_PP(str), 1);	
 		}
 	} else { /* str is array of strings */
+		char *str_index = NULL;
+		uint str_index_len;
+		ulong num_index;
+
 		array_init(return_value);
 
 		if (Z_TYPE_PP(from) == IS_ARRAY) {
@@ -2471,7 +2475,13 @@ PHP_FUNCTION(substr_replace)
 			}
 
 			result[result_len] = '\0';
-			add_next_index_stringl(return_value, result, result_len, 0);
+
+			if (zend_hash_get_current_key_ex(Z_ARRVAL_PP(str), &str_index, &str_index_len, &num_index, 0, &pos_str) == HASH_KEY_IS_STRING) {
+				add_assoc_stringl_ex(return_value, str_index, str_index_len, result, result_len, 0);
+			} else {
+				add_index_stringl(return_value, num_index, result, result_len, 0);
+			}
+
 			if(Z_TYPE_PP(tmp_str) != IS_STRING) {
 				zval_dtor(orig_str);
 			}

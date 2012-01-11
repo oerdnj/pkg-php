@@ -97,11 +97,11 @@ array(1) {
   %unicode|string%(0) ""
 }
 
-Warning: syntax error, unexpected '=' in Unknown on line 2
+Warning: syntax error, unexpected '='%sin Unknown on line 2
  in %s
 bool(false)
 
-Warning: syntax error, unexpected '=' in Unknown on line 2
+Warning: syntax error, unexpected '='%sin Unknown on line 2
  in %s
 bool(false)
 array(1) {

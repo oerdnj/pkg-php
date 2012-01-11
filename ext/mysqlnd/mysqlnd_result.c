@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 2006-2011 The PHP Group                                |
+  | Copyright (c) 2006-2012 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_result.c 311122 2011-05-17 09:44:11Z andrey $ */
+/* $Id: mysqlnd_result.c 321634 2012-01-01 13:15:04Z felipe $ */
 #include "php.h"
 #include "mysqlnd.h"
 #include "mysqlnd_wireprotocol.h"
@@ -616,19 +616,18 @@ mysqlnd_fetch_lengths_buffered(MYSQLND_RES * const result TSRMLS_DC)
 static unsigned long *
 mysqlnd_fetch_lengths_unbuffered(MYSQLND_RES * const result TSRMLS_DC)
 {
-	return result->lengths;
+	/* simulate output of libmysql */
+	return (!result->unbuf || result->unbuf->last_row_data || result->unbuf->eof_reached)? result->lengths:NULL;
 }
 /* }}} */
 
 
-#if !defined(MYSQLND_USE_OPTIMISATIONS) || MYSQLND_USE_OPTIMISATIONS == 0
 /* {{{ mysqlnd_res::fetch_lengths */
 PHPAPI unsigned long * _mysqlnd_fetch_lengths(MYSQLND_RES * const result TSRMLS_DC)
 {
 	return result->m.fetch_lengths? result->m.fetch_lengths(result TSRMLS_CC) : NULL;
 }
 /* }}} */
-#endif
 
 
 /* {{{ mysqlnd_fetch_row_unbuffered_c */

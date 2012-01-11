@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2011 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2012 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute_API.c 310938 2011-05-11 06:58:33Z dmitry $ */
+/* $Id: zend_execute_API.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #include <stdio.h>
 #include <signal.h>
@@ -865,10 +865,11 @@ int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci_cache TS
 			&& (EX(function_state).function->common.fn_flags & ZEND_ACC_CALL_VIA_HANDLER) == 0 
 			&& !ARG_SHOULD_BE_SENT_BY_REF(EX(function_state).function, i + 1)
 			&& PZVAL_IS_REF(*fci->params[i])) {
-			SEPARATE_ZVAL(fci->params[i]);
-		}
-
-		if (ARG_SHOULD_BE_SENT_BY_REF(EX(function_state).function, i + 1)
+			ALLOC_ZVAL(param);
+			*param = **(fci->params[i]);
+			INIT_PZVAL(param);
+			zval_copy_ctor(param);
+		} else if (ARG_SHOULD_BE_SENT_BY_REF(EX(function_state).function, i + 1)
 			&& !PZVAL_IS_REF(*fci->params[i])) {
 
 			if (Z_REFCOUNT_PP(fci->params[i]) > 1) {

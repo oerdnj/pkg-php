@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2011 The PHP Group                                |
+   | Copyright (c) 1997-2012 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -19,7 +19,7 @@
    |          Sara Golemon <pollita@php.net>                              |
    +----------------------------------------------------------------------+
  */
-/* $Id: http_fopen_wrapper.c 314641 2011-08-09 12:16:58Z laruence $ */ 
+/* $Id: http_fopen_wrapper.c 321634 2012-01-01 13:15:04Z felipe $ */ 
 
 #include "php.h"
 #include "php_globals.h"
@@ -719,7 +719,10 @@ finish:
 			char *e = http_header_line + http_header_line_length - 1;
 			if (*e != '\n') {
 				do { /* partial header */
-					php_stream_get_line(stream, http_header_line, HTTP_HEADER_BLOCK_SIZE, &http_header_line_length);
+					if (php_stream_get_line(stream, http_header_line, HTTP_HEADER_BLOCK_SIZE, &http_header_line_length) == NULL) {
+						php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "Failed to read HTTP headers");
+						goto out;
+					}
 					e = http_header_line + http_header_line_length - 1;
 				} while (*e != '\n');
 				continue;
@@ -787,9 +790,6 @@ finish:
 		if (location[0] != '\0')
 			php_stream_notify_info(context, PHP_STREAM_NOTIFY_REDIRECTED, location, 0);
 
-		if (context) { /* keep the context for the next try */
-			zend_list_addref(context->rsrc_id);
-		}
 		php_stream_close(stream);
 		stream = NULL;
 

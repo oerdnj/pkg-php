@@ -29,9 +29,6 @@
 
 static char *fpm_log_format = NULL;
 static int fpm_log_fd = -1;
-#ifdef HAVE_TIMES
-static float tick;
-#endif
 
 int fpm_log_open(int reopen) /* {{{ */
 {
@@ -47,7 +44,7 @@ int fpm_log_open(int reopen) /* {{{ */
 		
 		fd = open(wp->config->access_log, O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);
 		if (0 > fd) {
-			zlog(ZLOG_SYSERROR, "open(\"%s\") failed", wp->config->access_log);
+			zlog(ZLOG_SYSERROR, "failed to open access log (%s)", wp->config->access_log);
 			return -1;
 		}
 
@@ -64,24 +61,6 @@ int fpm_log_open(int reopen) /* {{{ */
 	}
 
 	return ret;
-}
-/* }}} */
-
-int fpm_log_init_main() /* {{{ */
-{
-#ifdef HAVE_TIMES
-#if (defined(HAVE_SYSCONF) && defined(_SC_CLK_TCK))
-	tick = sysconf(_SC_CLK_TCK);
-#else /* _SC_CLK_TCK */
-#ifdef HZ
-	tick = HZ;
-#else /* HZ */
-	tick = 100;
-#endif /* HZ */
-#endif /* _SC_CLK_TCK */
-	zlog(ZLOG_DEBUG, "got clock tick '%.0f'", tick);
-#endif /* HAVE_TIMES */
-	return 0;
 }
 /* }}} */
 
@@ -122,7 +101,6 @@ int fpm_log_write(char *log_format TSRMLS_DC) /* {{{ */
 	size_t len, len2;
 	struct fpm_scoreboard_proc_s proc, *proc_p;
 	struct fpm_scoreboard_s *scoreboard;
-	struct timeval uptime, now;
 	char tmp[129];
 	char format[129];
 	time_t now_epoch;
@@ -141,24 +119,21 @@ int fpm_log_write(char *log_format TSRMLS_DC) /* {{{ */
 		test = 1;
 	}
 
-	fpm_clock_get(&now);
 	now_epoch = time(NULL);
 
 	if (!test) {
 		scoreboard = fpm_scoreboard_get();
 		if (!scoreboard) {
-			zlog(ZLOG_WARNING, "unable to get scoreboard");
+			zlog(ZLOG_WARNING, "unable to get scoreboard while preparing the access log");
 			return -1;
 		}
 		proc_p = fpm_scoreboard_proc_acquire(NULL, -1, 0);
 		if (!proc_p) {
-			zlog(ZLOG_WARNING, "[pool %s] Unable to acquire shm slot", scoreboard->pool);
+			zlog(ZLOG_WARNING, "[pool %s] Unable to acquire shm slot while preparing the access log", scoreboard->pool);
 			return -1;
 		}
 		proc = *proc_p;
 		fpm_scoreboard_proc_release(proc_p);
-
-		timersub(&now, &proc.accepted, &uptime);
 	}
 
 	token = 0;
@@ -172,7 +147,7 @@ int fpm_log_write(char *log_format TSRMLS_DC) /* {{{ */
 
 	while (*s != '\0') {
 		if (len > FPM_LOG_BUFFER) {
-			zlog(ZLOG_NOTICE, "the log buffer is full (%d). The log request has been truncated.", FPM_LOG_BUFFER);
+			zlog(ZLOG_NOTICE, "the log buffer is full (%d). The access log request has been truncated.", FPM_LOG_BUFFER);
 			len = FPM_LOG_BUFFER - 1;
 			break;
 		}
@@ -198,19 +173,15 @@ int fpm_log_write(char *log_format TSRMLS_DC) /* {{{ */
 				case 'C': /* %CPU */
 					if (format[0] == '\0' || !strcasecmp(format, "total")) {
 						if (!test) {
-							tms_total = 
-								(proc.cpu_finished.tms_utime + proc.cpu_finished.tms_stime + proc.cpu_finished.tms_cutime + proc.cpu_finished.tms_cstime)
-								- 
-								(proc.cpu_accepted.tms_utime + proc.cpu_accepted.tms_stime + proc.cpu_accepted.tms_cutime + proc.cpu_accepted.tms_cstime)
-								;
+							tms_total = proc.last_request_cpu.tms_utime + proc.last_request_cpu.tms_stime + proc.last_request_cpu.tms_cutime + proc.last_request_cpu.tms_cstime;
 						}
 					} else if (!strcasecmp(format, "user")) {
 						if (!test) {
-							tms_total = (proc.cpu_finished.tms_utime + proc.cpu_finished.tms_cutime) - (proc.cpu_accepted.tms_utime + proc.cpu_accepted.tms_cutime);
+							tms_total = proc.last_request_cpu.tms_utime + proc.last_request_cpu.tms_cutime;
 						}
 					} else if (!strcasecmp(format, "system")) {
 						if (!test) {
-							tms_total = (proc.cpu_finished.tms_stime + proc.cpu_finished.tms_cstime) - (proc.cpu_accepted.tms_stime + proc.cpu_accepted.tms_cstime);
+							tms_total = proc.last_request_cpu.tms_stime + proc.last_request_cpu.tms_cstime;
 						}
 					} else {
 						zlog(ZLOG_WARNING, "only 'total', 'user' or 'system' are allowed as a modifier for %%%c ('%s')", *s, format);
@@ -219,7 +190,7 @@ int fpm_log_write(char *log_format TSRMLS_DC) /* {{{ */
 
 					format[0] = '\0';
 					if (!test) {
-						len2 = snprintf(b, FPM_LOG_BUFFER - len, "%.2f", tms_total / tick / (proc.cpu_duration.tv_sec + proc.cpu_duration.tv_usec / 1000000.) * 100.);
+						len2 = snprintf(b, FPM_LOG_BUFFER - len, "%.2f", tms_total / fpm_scoreboard_get_tick() / (proc.cpu_duration.tv_sec + proc.cpu_duration.tv_usec / 1000000.) * 100.);
 					}
 					break;
 #endif
@@ -228,19 +199,19 @@ int fpm_log_write(char *log_format TSRMLS_DC) /* {{{ */
 					/* seconds */
 					if (format[0] == '\0' || !strcasecmp(format, "seconds")) {
 						if (!test) {
-							len2 = snprintf(b, FPM_LOG_BUFFER - len, "%.3f", uptime.tv_sec + uptime.tv_usec / 1000000.);
+							len2 = snprintf(b, FPM_LOG_BUFFER - len, "%.3f", proc.duration.tv_sec + proc.duration.tv_usec / 1000000.);
 						}
 
 					/* miliseconds */
 					} else if (!strcasecmp(format, "miliseconds") || !strcasecmp(format, "mili")) {
 						if (!test) {
-							len2 = snprintf(b, FPM_LOG_BUFFER - len, "%.3f", uptime.tv_sec * 1000. + uptime.tv_usec / 1000.);
+							len2 = snprintf(b, FPM_LOG_BUFFER - len, "%.3f", proc.duration.tv_sec * 1000. + proc.duration.tv_usec / 1000.);
 						}
 
 					/* microseconds */
 					} else if (!strcasecmp(format, "microseconds") || !strcasecmp(format, "micro")) {
 						if (!test) {
-							len2 = snprintf(b, FPM_LOG_BUFFER - len, "%lu", uptime.tv_sec * 1000000UL + uptime.tv_usec);
+							len2 = snprintf(b, FPM_LOG_BUFFER - len, "%lu", proc.duration.tv_sec * 1000000UL + proc.duration.tv_usec);
 						}
 
 					} else {

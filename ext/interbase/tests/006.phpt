@@ -3,7 +3,7 @@ InterBase: binding (may take a while)
 --SKIPIF--
 <?php include("skipif.inc"); ?>
 --FILE--
-<?php /* $Id: 006.phpt 160078 2004-05-30 16:20:25Z abies $ */
+<?php /* $Id: 006.phpt 316521 2011-09-12 09:56:45Z mariuz $ */
 
 	require("interbase.inc");
 	
@@ -210,7 +210,7 @@ InterBase: binding (may take a while)
 	out_result($res, "test6");
 	ibase_free_result($res);
 
-	$res = ibase_execute($query, "5", 7.5);
+	$res = ibase_execute($query, "5", 7.499);
 	out_result($res, "test6");
 	ibase_free_result($res);
 

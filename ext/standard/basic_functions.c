@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2011 The PHP Group                                |
+   | Copyright (c) 1997-2012 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: basic_functions.c 314452 2011-08-08 00:47:40Z laruence $ */
+/* $Id: basic_functions.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #include "php.h"
 #include "php_streams.h"
@@ -4022,7 +4022,13 @@ PHP_FUNCTION(getenv)
 
 		ptr = emalloc(size);
 		size = GetEnvironmentVariableA(str, ptr, size);
-		RETURN_STRING(ptr, 0);
+		if (size == 0) {
+				/* has been removed between the two calls */
+				efree(ptr);
+				RETURN_EMPTY_STRING();
+		} else {
+			RETURN_STRING(ptr, 0);
+		}
 	}
 #else
 	/* system method returns a const */
@@ -4819,7 +4825,9 @@ PHP_FUNCTION(call_user_method)
 		Z_TYPE_P(object) != IS_STRING
 	) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Second argument is not an object or class name");
-		efree(params);
+		if (params) {
+			efree(params);
+		}
 		RETURN_FALSE;
 	}
 
@@ -5849,7 +5857,6 @@ PHP_FUNCTION(move_uploaded_file)
 		RETURN_FALSE;
 	}
 
-	VCWD_UNLINK(new_path);
 	if (VCWD_RENAME(path, new_path) == 0) {
 		successful = 1;
 #ifndef PHP_WIN32
@@ -6030,6 +6037,10 @@ PHP_FUNCTION(parse_ini_string)
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|bl", &str, &str_len, &process_sections, &scanner_mode) == FAILURE) {
 		RETURN_FALSE;
+	}
+
+	if (INT_MAX - str_len < ZEND_MMAP_AHEAD) {
+		RETVAL_FALSE;
 	}
 
 	/* Set callback function */

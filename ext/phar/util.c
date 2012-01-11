@@ -3,7 +3,7 @@
   | phar php single-file executable PHP extension                        |
   | utility functions                                                    |
   +----------------------------------------------------------------------+
-  | Copyright (c) 2005-2011 The PHP Group                                |
+  | Copyright (c) 2005-2012 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: util.c 314419 2011-08-07 11:13:27Z laruence $ */
+/* $Id: util.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #include "phar_internal.h"
 #ifdef PHAR_HASH_OK
@@ -1000,10 +1000,12 @@ int phar_open_entry_fp(phar_entry_info *entry, char **error, int follow_links TS
 	php_stream_filter_append(&ufp->writefilters, filter);
 	php_stream_seek(phar_get_entrypfp(entry TSRMLS_CC), phar_get_fp_offset(entry TSRMLS_CC), SEEK_SET);
 
-	if (SUCCESS != phar_stream_copy_to_stream(phar_get_entrypfp(entry TSRMLS_CC), ufp, entry->compressed_filesize, NULL)) {
-		spprintf(error, 4096, "phar error: internal corruption of phar \"%s\" (actual filesize mismatch on file \"%s\")", phar->fname, entry->filename);
-		php_stream_filter_remove(filter, 1 TSRMLS_CC);
-		return FAILURE;
+	if (entry->uncompressed_filesize) {
+		if (SUCCESS != phar_stream_copy_to_stream(phar_get_entrypfp(entry TSRMLS_CC), ufp, entry->compressed_filesize, NULL)) {
+			spprintf(error, 4096, "phar error: internal corruption of phar \"%s\" (actual filesize mismatch on file \"%s\")", phar->fname, entry->filename);
+			php_stream_filter_remove(filter, 1 TSRMLS_CC);
+			return FAILURE;
+		}
 	}
 
 	php_stream_filter_flush(filter, 1);

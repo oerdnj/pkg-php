@@ -4,7 +4,7 @@ XMLWriter: libxml2 XML Writer, file buffer, flush
 <?php if (!extension_loaded("xmlwriter")) print "skip"; ?>
 --FILE--
 <?php 
-/* $Id: 004.phpt 201860 2005-12-02 02:05:26Z iliaa $ */
+/* $Id: 004.phpt 316312 2011-09-07 09:37:56Z pajoye $ */
 
 $doc_dest = '001.xml';
 $xw = xmlwriter_open_uri($doc_dest);

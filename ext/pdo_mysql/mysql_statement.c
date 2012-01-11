@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2011 The PHP Group                                |
+  | Copyright (c) 1997-2012 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysql_statement.c 311088 2011-05-16 15:37:39Z johannes $ */
+/* $Id: mysql_statement.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -335,7 +335,7 @@ static int pdo_mysql_stmt_execute(pdo_stmt_t *stmt TSRMLS_DC) /* {{{ */
 
 	PDO_DBG_RETURN(1);
 }
-/* {{{ */
+/* }}} */
 
 static int pdo_mysql_stmt_next_rowset(pdo_stmt_t *stmt TSRMLS_DC) /* {{{ */
 {
@@ -461,8 +461,7 @@ static const char * const pdo_param_event_names[] =
 };
 
 
-static int pdo_mysql_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_data *param,
-		enum pdo_param_event event_type TSRMLS_DC) /* {{{ */
+static int pdo_mysql_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_data *param, enum pdo_param_event event_type TSRMLS_DC) /* {{{ */
 {
 #ifndef PDO_USE_MYSQLND
 	PDO_MYSQL_PARAM_BIND *b;
@@ -604,8 +603,7 @@ static int pdo_mysql_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_da
 }
 /* }}} */
 
-static int pdo_mysql_stmt_fetch(pdo_stmt_t *stmt,
-	enum pdo_fetch_orientation ori, long offset TSRMLS_DC) /* {{{ */
+static int pdo_mysql_stmt_fetch(pdo_stmt_t *stmt, enum pdo_fetch_orientation ori, long offset TSRMLS_DC) /* {{{ */
 {
 	pdo_mysql_stmt *S = (pdo_mysql_stmt*)stmt->driver_data;
 #if PDO_USE_MYSQLND
@@ -777,7 +775,7 @@ static int pdo_mysql_stmt_get_col(pdo_stmt_t *stmt, int colno, char **ptr, unsig
 	PDO_DBG_RETURN(1);
 } /* }}} */
 
-static char *type_to_name_native(int type) /* }}} */
+static char *type_to_name_native(int type) /* {{{ */
 {
 #define PDO_MYSQL_NATIVE_TYPE_NAME(x)	case FIELD_TYPE_##x: return #x;
 

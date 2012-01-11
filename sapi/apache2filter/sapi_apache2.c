@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2011 The PHP Group                                |
+   | Copyright (c) 1997-2012 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: sapi_apache2.c 306939 2011-01-01 02:19:59Z felipe $ */
+/* $Id: sapi_apache2.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #include <fcntl.h>
 
@@ -420,7 +420,7 @@ static void php_apache_request_ctor(ap_filter_t *f, php_struct *ctx TSRMLS_DC)
 	efree(content_type);
 
 	content_length = (char *) apr_table_get(f->r->headers_in, "Content-Length");
-	SG(request_info).content_length = (content_length ? atoi(content_length) : 0);
+	SG(request_info).content_length = (content_length ? atol(content_length) : 0);
 	
 	apr_table_unset(f->r->headers_out, "Content-Length");
 	apr_table_unset(f->r->headers_out, "Last-Modified");

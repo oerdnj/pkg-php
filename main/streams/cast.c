@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2011 The PHP Group                                |
+   | Copyright (c) 1997-2012 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: cast.c 307611 2011-01-20 06:32:59Z pajoye $ */
+/* $Id: cast.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #define _GNU_SOURCE
 #include "php.h"
@@ -271,15 +271,15 @@ PHPAPI int _php_stream_cast(php_stream *stream, int castas, void **ret, int show
 
 			newstream = php_stream_fopen_tmpfile();
 			if (newstream) {
-				int retval = php_stream_copy_to_stream_ex(stream, newstream, PHP_STREAM_COPY_ALL, NULL);
+				size_t retcopy = php_stream_copy_to_stream_ex(stream, newstream, PHP_STREAM_COPY_ALL, NULL);
 
-				if (ret != SUCCESS) {
+				if (retcopy != SUCCESS) {
 					php_stream_close(newstream);
 				} else {
-					int retcode = php_stream_cast(newstream, castas | flags, (void **)ret, show_err);
+					int retcast = php_stream_cast(newstream, castas | flags, (void **)ret, show_err);
 
-					if (retcode == SUCCESS) {
-						rewind(*(FILE**)retval);
+					if (retcast == SUCCESS) {
+						rewind(*(FILE**)ret);
 					}
 
 					/* do some specialized cleanup */
@@ -287,7 +287,9 @@ PHPAPI int _php_stream_cast(php_stream *stream, int castas, void **ret, int show
 						php_stream_free(stream, PHP_STREAM_FREE_CLOSE_CASTED);
 					}
 
-					return retcode;
+					/* TODO: we probably should be setting .stdiocast and .fclose_stdiocast or
+					 * we may be leaking the FILE*. Needs investigation, though. */
+					return retcast;
 				}
 			}
 		}

@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2011 The PHP Group                                |
+  | Copyright (c) 1997-2012 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
   |          Ulf Wendel <uw@php.net>                                     |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_api.c 314116 2011-08-02 15:30:58Z andrey $
+  $Id: mysqli_api.c 321634 2012-01-01 13:15:04Z felipe $
 */
 
 #ifdef HAVE_CONFIG_H
@@ -1053,7 +1053,12 @@ static void php_add_field_properties(zval *value, const MYSQL_FIELD *field TSRML
 	add_property_string(value, "orgtable", (char *) (field->org_table ? field->org_table : ""), 1);
 	add_property_string(value, "def", (field->def ? field->def : ""), 1);
 	add_property_string(value, "db", (field->db ? field->db : ""), 1);
-	add_property_string(value, "catalog", (field->catalog ? field->catalog : ""), 1);
+
+	/* FIXME: manually set the catalog to "def" due to bug in
+	 * libmysqlclient which does not initialize field->catalog
+	 * and in addition, the catalog is always be "def"
+	 */
+	add_property_string(value, "catalog", "def", 1);
 
 	add_property_long(value, "max_length", field->max_length);
 	add_property_long(value, "length", field->length);
@@ -1608,7 +1613,7 @@ PHP_FUNCTION(mysqli_num_rows)
 	}
 	MYSQLI_FETCH_RESOURCE(result, MYSQL_RES *, &mysql_result, "mysqli_result", MYSQLI_STATUS_VALID);
 
-	if (mysqli_result_is_unbuffered(result)) {
+	if (mysqli_result_is_unbuffered_and_not_everything_is_fetched(result)) {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Function cannot be used with MYSQL_USE_RESULT");
 		RETURN_LONG(0);
 	}

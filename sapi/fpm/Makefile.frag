@@ -2,6 +2,7 @@ fpm: $(SAPI_FPM_PATH)
 
 $(builddir)/fpm: 
 	@mkdir -p $(builddir)/fpm
+	@mkdir -p $(builddir)/fpm/events
 
 $(SAPI_FPM_PATH): $(builddir)/fpm $(PHP_GLOBAL_OBJS) $(PHP_SAPI_OBJS) $(SAPI_EXTRA_DEPS)
 	$(BUILD_FPM)
@@ -26,3 +27,6 @@ install-fpm: install-sapi
 	@$(mkinstalldirs) $(INSTALL_ROOT)$(mandir)/man8
 	@$(INSTALL_DATA) sapi/fpm/php-fpm.8 $(INSTALL_ROOT)$(mandir)/man8/php-fpm$(program_suffix).8
 
+	@echo "Installing PHP FPM status page:      $(INSTALL_ROOT)$(datadir)/fpm/"
+	@$(mkinstalldirs) $(INSTALL_ROOT)$(datadir)/fpm
+	@$(INSTALL_DATA) sapi/fpm/status.html $(INSTALL_ROOT)$(datadir)/fpm/status.html

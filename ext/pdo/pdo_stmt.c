@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2011 The PHP Group                                |
+  | Copyright (c) 1997-2012 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_stmt.c 312258 2011-06-18 15:56:14Z felipe $ */
+/* $Id: pdo_stmt.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 /* The PDO Statement Handle Class */
 
@@ -2351,6 +2351,7 @@ static zend_object_value dbstmt_clone_obj(zval *zobject TSRMLS_DC)
 }
 
 zend_object_handlers pdo_dbstmt_object_handlers;
+static int pdo_row_serialize(zval *object, unsigned char **buffer, zend_uint *buf_len, zend_serialize_data *data TSRMLS_DC);
 
 void pdo_stmt_init(TSRMLS_D)
 {
@@ -2374,6 +2375,7 @@ void pdo_stmt_init(TSRMLS_D)
 	pdo_row_ce = zend_register_internal_class(&ce TSRMLS_CC);
 	pdo_row_ce->ce_flags |= ZEND_ACC_FINAL_CLASS; /* when removing this a lot of handlers need to be redone */
 	pdo_row_ce->create_object = pdo_row_new;
+	pdo_row_ce->serialize = pdo_row_serialize;
 }
 
 static void free_statement(pdo_stmt_t *stmt TSRMLS_DC)
@@ -2796,6 +2798,12 @@ zend_object_value pdo_row_new(zend_class_entry *ce TSRMLS_DC)
 	retval.handlers = &pdo_row_object_handlers;
 
 	return retval;
+}
+
+static int pdo_row_serialize(zval *object, unsigned char **buffer, zend_uint *buf_len, zend_serialize_data *data TSRMLS_DC)
+{
+	php_error_docref(NULL TSRMLS_CC, E_WARNING, "PDORow instances may not be serialized");
+	return FAILURE;
 }
 /* }}} */
 

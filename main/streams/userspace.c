@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2011 The PHP Group                                |
+   | Copyright (c) 1997-2012 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: userspace.c 307934 2011-02-01 22:55:17Z cataphract $ */
+/* $Id: userspace.c 321634 2012-01-01 13:15:04Z felipe $ */
 
 #include "php.h"
 #include "php_globals.h"
@@ -863,6 +863,7 @@ static int statbuf_from_array(zval *array, php_stream_statbuf *ssb TSRMLS_DC)
 
 #define STAT_PROP_ENTRY(name) STAT_PROP_ENTRY_EX(name,name)
 
+	memset(ssb, 0, sizeof(php_stream_statbuf));
 	STAT_PROP_ENTRY(dev);
 	STAT_PROP_ENTRY(ino);
 	STAT_PROP_ENTRY(mode);

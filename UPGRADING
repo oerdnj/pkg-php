@@ -1,4 +1,4 @@
-$Id: UPGRADING 308266 2011-02-11 22:31:52Z salathe $
+$Id: UPGRADING 321040 2011-12-15 10:31:02Z dmitry $
 
 UPGRADE NOTES - PHP 5.3
 
@@ -153,6 +153,20 @@ UPGRADE NOTES - PHP 5.3
 
 - SplObjectStorage now has ArrayAccess support. It is also now possible to
   store associative information with objects in SplObjectStorage.
+  
+=====================
+4.1 New in PHP 5.3.9
+=====================
+
+- Write operations within XSLT (for example with the extension sax:output) are
+  disabled by default. You can define what is forbidden with the INI option
+  xsl.security_prefs. This option will be marked as deprecated in 5.4 again. 
+  Use the method XsltProcess::setSecurityPrefs($options) there.
+
+- the following new directives were added
+
+  - max_input_vars - specifies how many GET/POST/COOKIE input variables may be
+    accepted. default value 1000. 
 
 =============
 5. Deprecated
@@ -334,6 +348,9 @@ UPGRADE NOTES - PHP 5.3
 
 - A new directive, request_order, controls the behavior of $_REQUEST
   independently of variables_order.
+- A new directive, called windows.show_crt_warning, has been introduced.
+  This directive shows the CRT warnings when enabled. These warnings were
+  displayed by default until now. It is disabled by default.
 
 - New INI directives: 
   - mail.add_x_header

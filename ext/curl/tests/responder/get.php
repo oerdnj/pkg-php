@@ -1,5 +1,6 @@
 <?php
-  switch($_GET['test']) {
+  $test = isset($_GET['test']) ? $_GET['test'] : null;
+  switch($test) {
     case 'post':
       var_dump($_POST);
       break;
@@ -24,6 +25,11 @@
       break;
     case 'contenttype':
       header('Content-Type: text/plain;charset=utf-8');
+      break;
+    case 'file':
+      if (isset($_FILES['file'])) {
+          echo $_FILES['file']['name'] . '|' . $_FILES['file']['type'];
+      }
       break;
     default:
       echo "Hello World!\n";

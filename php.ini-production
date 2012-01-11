@@ -419,6 +419,10 @@ disable_classes =
 ; http://php.net/realpath-cache-ttl
 ;realpath_cache_ttl = 120
 
+; Enables or disables the circular reference collector.
+; http://php.net/zend.enable-gc
+zend.enable_gc = On
+
 ;;;;;;;;;;;;;;;;;
 ; Miscellaneous ;
 ;;;;;;;;;;;;;;;;;
@@ -452,6 +456,9 @@ max_input_time = 60
 ; Maximum input variable nesting level
 ; http://php.net/max-input-nesting-level
 ;max_input_nesting_level = 64
+
+; How many GET/POST/COOKIE input variables may be accepted
+; max_input_vars = 1000
 
 ; Maximum amount of memory a script may consume (128MB)
 ; http://php.net/memory-limit
@@ -636,6 +643,11 @@ html_errors = Off
 ;error_log = php_errors.log
 ; Log errors to syslog (Event Log on NT, not valid in Windows 95).
 ;error_log = syslog
+
+;windows.show_crt_warning
+; Default value: 0
+; Development value: 0
+; Production value: 0
 
 ;;;;;;;;;;;;;;;;;
 ; Data Handling ;
@@ -959,7 +971,7 @@ default_socket_timeout = 60
 ;extension=php_mysql.dll
 ;extension=php_mysqli.dll
 ;extension=php_oci8.dll      ; Use with Oracle 10gR2 Instant Client
-;extension=php_oci8_11g.dll  ; Use with Oracle 11g Instant Client
+;extension=php_oci8_11g.dll  ; Use with Oracle 11gR2 Instant Client
 ;extension=php_openssl.dll
 ;extension=php_pdo_firebird.dll
 ;extension=php_pdo_mssql.dll
@@ -1295,12 +1307,12 @@ mysqli.default_pw =
 mysqli.reconnect = Off
 
 [mysqlnd]
-; Enable / Disable collection of general statstics by mysqlnd which can be
+; Enable / Disable collection of general statistics by mysqlnd which can be
 ; used to tune and monitor MySQL operations.
 ; http://php.net/mysqlnd.collect_statistics
 mysqlnd.collect_statistics = On
 
-; Enable / Disable collection of memory usage statstics by mysqlnd which can be
+; Enable / Disable collection of memory usage statistics by mysqlnd which can be
 ; used to tune and monitor MySQL operations.
 ; http://php.net/mysqlnd.collect_memory_statistics
 mysqlnd.collect_memory_statistics = Off
@@ -1367,7 +1379,7 @@ mysqlnd.collect_memory_statistics = Off
 ; http://php.net/oci8.old-oci-close-semantics
 ;oci8.old_oci_close_semantics = Off
 
-[PostgresSQL]
+[PostgreSQL]
 ; Allow or prevent persistent links.
 ; http://php.net/pgsql.allow-persistent
 pgsql.allow_persistent = On
@@ -1702,7 +1714,7 @@ mssql.secure_connection = Off
 ;mssql.max_procs = -1
 
 ; Specify client character set.
-; If empty or not set the client charset from freetds.comf is used
+; If empty or not set the client charset from freetds.conf is used
 ; This is only used when compiled with FreeTDS
 ;mssql.charset = "ISO-8859-1"
 
@@ -1894,6 +1906,12 @@ ldap.max_links = -1
 
 [dba]
 ;dba.default_handler=
+
+[xsl]
+; Write operations from within XSLT are disabled by default.
+; XSL_SECPREF_CREATE_DIRECTORY | XSL_SECPREF_WRITE_NETWORK | XSL_SECPREF_WRITE_FILE = 44
+; Set it to 0 to allow all operations
+;xsl.security_prefs = 44
 
 ; Local Variables:
 ; tab-width: 4
