@@ -1,7 +1,7 @@
 --- a/configure.in
 +++ b/configure.in
 @@ -1,7 +1,7 @@
- ## $Id: configure.in 315343 2011-08-23 08:56:29Z johannes $ -*- autoconf -*-
+ ## $Id: configure.in 322014 2012-01-10 11:21:57Z johannes $ -*- autoconf -*-
  dnl ## Process this file with autoconf to produce a configure script.
  
 -divert(1)
@@ -27,7 +27,7 @@
  
  dnl ## In diversion 3 we check for compile-time options to the PHP
  dnl ## core and how to deal with different system dependencies. 
-@@ -675,7 +675,7 @@ if test "x$php_crypt_r" = "x1"; then
+@@ -683,7 +683,7 @@ if test "x$php_crypt_r" = "x1"; then
    PHP_CRYPT_R_STYLE
  fi
  
@@ -36,7 +36,7 @@
  
  dnl ## In diversion 4 we check user-configurable general settings.
  
-@@ -916,7 +916,7 @@ else
+@@ -924,7 +924,7 @@ else
    AC_MSG_RESULT([using system default])
  fi
  

@@ -6,7 +6,7 @@ Last-Update: 2010-01-18
 
 --- a/configure.in
 +++ b/configure.in
-@@ -1005,7 +1005,7 @@ if test "$PHP_CLI" = "no"; then
+@@ -1013,7 +1013,7 @@ if test "$PHP_CLI" = "no"; then
  fi
  
  PHP_ARG_WITH(pear, [whether to install PEAR],
@@ -15,7 +15,7 @@ Last-Update: 2010-01-18
    --without-pear          Do not install PEAR], DEFAULT, yes)
  
  if test "$PHP_PEAR" != "no"; then
-@@ -1035,7 +1035,7 @@ dnl
+@@ -1043,7 +1043,7 @@ dnl
    if test "$PHP_PEAR" = "DEFAULT" || test "$PHP_PEAR" = "yes"; then
      case $PHP_LAYOUT in
        GNU) PEAR_INSTALLDIR=$datadir/pear;;
@@ -24,7 +24,7 @@ Last-Update: 2010-01-18
      esac
    fi
  
-@@ -1090,12 +1090,12 @@ test "$program_suffix" = "NONE" && progr
+@@ -1098,12 +1098,12 @@ test "$program_suffix" = "NONE" && progr
  
  case $libdir in
    '${exec_prefix}/lib')
@@ -39,7 +39,7 @@ Last-Update: 2010-01-18
      ;;
  esac
  
-@@ -1162,7 +1162,7 @@ EXPANDED_SYSCONFDIR=`eval echo $sysconfd
+@@ -1170,7 +1170,7 @@ EXPANDED_SYSCONFDIR=`eval echo $sysconfd
  EXPANDED_DATADIR=$datadir
  EXPANDED_PHP_CONFIG_FILE_PATH=`eval echo "$PHP_CONFIG_FILE_PATH"`
  EXPANDED_PHP_CONFIG_FILE_SCAN_DIR=`eval echo "$PHP_CONFIG_FILE_SCAN_DIR"`
@@ -61,7 +61,7 @@ Last-Update: 2010-01-18
  ## convert skel_dir to full path
 --- a/php.ini-development
 +++ b/php.ini-development
-@@ -781,7 +781,7 @@ default_mimetype = "text/html"
+@@ -793,7 +793,7 @@ default_mimetype = "text/html"
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
  ; UNIX: "/path1:/path2"
@@ -72,7 +72,7 @@ Last-Update: 2010-01-18
  ;include_path = ".;c:\php\includes"
 --- a/php.ini-production
 +++ b/php.ini-production
-@@ -781,7 +781,7 @@ default_mimetype = "text/html"
+@@ -793,7 +793,7 @@ default_mimetype = "text/html"
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
  ; UNIX: "/path1:/path2"
@@ -81,7 +81,7 @@ Last-Update: 2010-01-18
  ;
  ; Windows: "\path1;\path2"
  ;include_path = ".;c:\php\includes"
-@@ -937,54 +937,6 @@ default_socket_timeout = 60
+@@ -949,54 +949,6 @@ default_socket_timeout = 60
  ;
  ; If you only provide the name of the extension, PHP will look for it in its
  ; default extension directory.
@@ -107,7 +107,7 @@ Last-Update: 2010-01-18
 -;extension=php_mysql.dll
 -;extension=php_mysqli.dll
 -;extension=php_oci8.dll      ; Use with Oracle 10gR2 Instant Client
--;extension=php_oci8_11g.dll  ; Use with Oracle 11g Instant Client
+-;extension=php_oci8_11g.dll  ; Use with Oracle 11gR2 Instant Client
 -;extension=php_openssl.dll
 -;extension=php_pdo_firebird.dll
 -;extension=php_pdo_mssql.dll

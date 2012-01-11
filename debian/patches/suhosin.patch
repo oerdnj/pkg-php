@@ -3852,7 +3852,7 @@ the following modifications have been made:
 --- a/Zend/zend_hash.c
 +++ b/Zend/zend_hash.c
 @@ -20,6 +20,7 @@
- /* $Id: zend_hash.c 314482 2011-08-08 11:30:56Z pierrick $ */
+ /* $Id: zend_hash.c 321634 2012-01-01 13:15:04Z felipe $ */
  
  #include "zend.h"
 +#include "zend_compile.h"
@@ -4473,7 +4473,7 @@ the following modifications have been made:
  
  dnl divert(2)
  
-@@ -1401,7 +1402,7 @@ PHP_ADD_SOURCES(main, main.c snprintf.c
+@@ -1409,7 +1410,7 @@ PHP_ADD_SOURCES(main, main.c snprintf.c
         php_ini.c SAPI.c rfc1867.c php_content_types.c strlcpy.c \
         strlcat.c mergesort.c reentrancy.c php_variables.c php_ticks.c \
         network.c php_open_temporary_file.c php_logos.c \
@@ -4482,7 +4482,7 @@ the following modifications have been made:
  
  PHP_ADD_SOURCES(main/streams, streams.c cast.c memory.c filter.c \
         plain_wrapper.c userspace.c transports.c xp_socket.c mmap.c \
-@@ -1429,7 +1430,7 @@ PHP_ADD_SOURCES(Zend, \
+@@ -1437,7 +1438,7 @@ PHP_ADD_SOURCES(Zend, \
      zend_list.c zend_indent.c zend_builtin_functions.c zend_sprintf.c \
      zend_ini.c zend_qsort.c zend_multibyte.c zend_ts_hash.c zend_stream.c \
      zend_iterators.c zend_interfaces.c zend_exceptions.c zend_strtod.c zend_gc.c \
@@ -4598,9 +4598,9 @@ the following modifications have been made:
 +#include "suhosin_globals.h"
 +#endif
  
- #if !HAVE_UNISTD_H || (!defined(_SC_PAGESIZE) && !defined(_SC_PAGE_SIZE))
- # if HAVE_SYS_MMAN_H
-@@ -495,7 +498,7 @@ PHP_INI_BEGIN()
+ #if HAVE_MMAP
+ # if HAVE_UNISTD_H
+@@ -504,7 +507,7 @@ PHP_INI_BEGIN()
  	STD_PHP_INI_ENTRY("extension_dir",			PHP_EXTENSION_DIR,		PHP_INI_SYSTEM,		OnUpdateStringUnempty,	extension_dir,			php_core_globals,	core_globals)
  	STD_PHP_INI_ENTRY("include_path",			PHP_INCLUDE_PATH,		PHP_INI_ALL,		OnUpdateStringUnempty,	include_path,			php_core_globals,	core_globals)
  	PHP_INI_ENTRY("max_execution_time",			"30",		PHP_INI_ALL,			OnUpdateTimeout)
@@ -4609,7 +4609,7 @@ the following modifications have been made:
  	STD_PHP_INI_ENTRY("safe_mode_exec_dir",		PHP_SAFE_MODE_EXEC_DIR,	PHP_INI_SYSTEM,		OnUpdateString,			safe_mode_exec_dir,		php_core_globals,	core_globals)
  
  	STD_PHP_INI_BOOLEAN("file_uploads",			"1",		PHP_INI_SYSTEM,		OnUpdateBool,			file_uploads,			php_core_globals,	core_globals)
-@@ -1799,6 +1802,10 @@ void dummy_invalid_parameter_handler(
+@@ -1810,6 +1813,10 @@ void dummy_invalid_parameter_handler(
  }
  #endif
  
@@ -4620,7 +4620,7 @@ the following modifications have been made:
  /* {{{ php_module_startup
   */
  int php_module_startup(sapi_module_struct *sf, zend_module_entry *additional_modules, uint num_additional_modules)
-@@ -1847,6 +1854,10 @@ int php_module_startup(sapi_module_struc
+@@ -1858,6 +1865,10 @@ int php_module_startup(sapi_module_struc
  	php_win32_init_rng_lock();
  #endif
  
@@ -4631,7 +4631,7 @@ the following modifications have been made:
  	module_shutdown = 0;
  	module_startup = 1;
  	sapi_initialize_empty_request(TSRMLS_C);
-@@ -1969,7 +1980,11 @@ int php_module_startup(sapi_module_struc
+@@ -1980,7 +1991,11 @@ int php_module_startup(sapi_module_struc
  	REGISTER_MAIN_STRINGL_CONSTANT("PHP_CONFIG_FILE_SCAN_DIR", PHP_CONFIG_FILE_SCAN_DIR, sizeof(PHP_CONFIG_FILE_SCAN_DIR)-1, CONST_PERSISTENT | CONST_CS);
  	REGISTER_MAIN_STRINGL_CONSTANT("PHP_SHLIB_SUFFIX", PHP_SHLIB_SUFFIX, sizeof(PHP_SHLIB_SUFFIX)-1, CONST_PERSISTENT | CONST_CS);
  	REGISTER_MAIN_STRINGL_CONSTANT("PHP_EOL", PHP_EOL, sizeof(PHP_EOL)-1, CONST_PERSISTENT | CONST_CS);
@@ -5602,17 +5602,17 @@ the following modifications have been made:
  							}
 +#if SUHOSIN_PATCH
  #if ZEND_DEBUG
--							php_printf("PHP %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2011 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
-+							php_printf("PHP %s with Suhosin-Patch (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2011 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
+-							php_printf("PHP %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2012 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
++							php_printf("PHP %s with Suhosin-Patch (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2012 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
  #else
--							php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2011 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
-+							php_printf("PHP %s with Suhosin-Patch (%s) (built: %s %s)\nCopyright (c) 1997-2011 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
+-							php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2012 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
++							php_printf("PHP %s with Suhosin-Patch (%s) (built: %s %s)\nCopyright (c) 1997-2012 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 +#endif
 +#else
 +  #if ZEND_DEBUG
-+  							php_printf("PHP %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2011 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
++  							php_printf("PHP %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2012 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 +  #else
-+  							php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2011 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
++  							php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2012 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 +  #endif
  #endif
  							php_request_shutdown((void *) 0);
@@ -5623,18 +5623,18 @@ the following modifications have been made:
  				}
  
  				request_started = 1;
--				php_printf("PHP %s (%s) (built: %s %s) %s\nCopyright (c) 1997-2011 The PHP Group\n%s",
+-				php_printf("PHP %s (%s) (built: %s %s) %s\nCopyright (c) 1997-2012 The PHP Group\n%s",
 +				php_printf("PHP %s "
 +#if SUHOSIN_PATCH
 +                                "with Suhosin-Patch "
 +#endif
-+				        "(%s) (built: %s %s) %s\nCopyright (c) 1997-2011 The PHP Group\n%s",
++				        "(%s) (built: %s %s) %s\nCopyright (c) 1997-2012 The PHP Group\n%s",
  					PHP_VERSION, sapi_module.name, __DATE__, __TIME__,
  #if ZEND_DEBUG && defined(HAVE_GCOV)
  					"(DEBUG GCOV)",
 --- a/sapi/litespeed/lsapi_main.c
 +++ b/sapi/litespeed/lsapi_main.c
-@@ -711,10 +711,18 @@ static int cli_main( int argc, char * ar
+@@ -718,10 +718,18 @@ static int cli_main( int argc, char * ar
                  break;
              case 'v':
                  if (php_request_startup(TSRMLS_C) != FAILURE) {
@@ -5662,9 +5662,9 @@ the following modifications have been made:
  				SG(headers_sent) = 1;
  				SG(request_info).no_headers = 1;
 +#if SUHOSIN_PATCH
-+				php_printf("PHP %s with Suhosin-Patch (%s) (built: %s %s)\nCopyright (c) 1997-2011 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
++				php_printf("PHP %s with Suhosin-Patch (%s) (built: %s %s)\nCopyright (c) 1997-2012 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 +#else
- 				php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2011 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
+ 				php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2012 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 +#endif
  				php_end_ob_buffers(1 TSRMLS_CC);
  				exit(1);

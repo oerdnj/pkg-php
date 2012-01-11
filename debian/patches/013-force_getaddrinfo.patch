@@ -7,7 +7,7 @@ Last-Update: 2010-01-18
 
 --- a/configure.in
 +++ b/configure.in
-@@ -615,50 +615,50 @@ PHP_CHECK_FUNC_LIB(nanosleep, rt)
+@@ -616,50 +616,50 @@ PHP_CHECK_FUNC_LIB(nanosleep, rt)
  
  dnl Check for getaddrinfo, should be a better way, but...
  dnl Also check for working getaddrinfo
@@ -99,5 +99,5 @@ Last-Update: 2010-01-18
 -fi
 +dnl fi
  
- AC_REPLACE_FUNCS(strlcat strlcpy getopt)
- AC_FUNC_UTIME_NULL
+ dnl Check for the __sync_fetch_and_add builtin
+ AC_CACHE_CHECK([for __sync_fetch_and_add], ac_cv_func_sync_fetch_and_add,

@@ -15,22 +15,23 @@ Last-Update: 2010-07-30
  
  ;;;;;;;;;;;;;;;;;;
  ; Global Options ;
-@@ -22,12 +22,12 @@
- ; Pid file
+@@ -23,6 +23,7 @@
  ; Note: the default prefix is @EXPANDED_LOCALSTATEDIR@
  ; Default Value: none
--;pid = run/php-fpm.pid
+ ;pid = run/php-fpm.pid
 +pid = @EXPANDED_LOCALSTATEDIR@/run/php5-fpm.pid
  
  ; Error log file
+ ; If it's set to "syslog", log is sent to syslogd instead of being written
+@@ -30,6 +31,7 @@
  ; Note: the default prefix is @EXPANDED_LOCALSTATEDIR@
  ; Default Value: log/php-fpm.log
--;error_log = log/php-fpm.log
+ ;error_log = log/php-fpm.log
 +error_log = @EXPANDED_LOCALSTATEDIR@/log/php5-fpm.log
  
- ; Log level
- ; Possible Values: alert, error, warning, notice, debug
-@@ -76,6 +76,10 @@
+ ; syslog_facility is used to specify what type of program is logging the
+ ; message. This lets syslogd specify that messages from different facilities
+@@ -108,6 +110,10 @@
  ; used in logs and stats. There is no limitation on the number of pools which
  ; FPM can handle. Your system will tell you anyway :)
  
@@ -41,34 +42,34 @@ Last-Update: 2010-07-30
  ; Start a new pool named 'www'.
  ; the variable $pool can we used in any directive and will be replaced by the
  ; pool name ('www' here)
-@@ -158,22 +162,22 @@ pm = dynamic
- ; CGI.
- ; Note: Used when pm is set to either 'static' or 'dynamic'
+@@ -198,22 +204,22 @@ pm = dynamic
+ ; forget to tweak pm.* to fit your needs.
+ ; Note: Used when pm is set to 'static', 'dynamic' or 'ondemand'
  ; Note: This value is mandatory.
--pm.max_children = 50
+-pm.max_children = 5
 +pm.max_children = 10
  
  ; The number of child processes created on startup.
  ; Note: Used only when pm is set to 'dynamic'
  ; Default Value: min_spare_servers + (max_spare_servers - min_spare_servers) / 2
--;pm.start_servers = 20
+-pm.start_servers = 2
 +pm.start_servers = 4
  
  ; The desired minimum number of idle server processes.
  ; Note: Used only when pm is set to 'dynamic'
  ; Note: Mandatory when pm is set to 'dynamic'
--;pm.min_spare_servers = 5
+-pm.min_spare_servers = 1
 +pm.min_spare_servers = 2
  
  ; The desired maximum number of idle server processes.
  ; Note: Used only when pm is set to 'dynamic'
  ; Note: Mandatory when pm is set to 'dynamic'
--;pm.max_spare_servers = 35
+-pm.max_spare_servers = 3
 +pm.max_spare_servers = 6
-  
- ; The number of requests each child process should execute before respawning.
- ; This can be useful to work around memory leaks in 3rd party libraries. For
-@@ -333,7 +337,7 @@ pm.max_children = 50
+ 
+ ; The number of seconds after which an idle process will be killed.
+ ; Note: Used only when pm is set to 'ondemand'
+@@ -442,7 +448,7 @@ pm.max_spare_servers = 3
  ; Chdir to this directory at the start.
  ; Note: relative path can be used.
  ; Default Value: current directory or / when chroot

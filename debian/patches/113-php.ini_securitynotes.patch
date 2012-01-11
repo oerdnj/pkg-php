@@ -30,7 +30,7 @@ Last-Update: 2010-01-18
  ;open_basedir =
  
  ; This directive allows you to disable certain functions for security reasons.
-@@ -688,6 +699,11 @@ request_order = "GP"
+@@ -700,6 +711,11 @@ request_order = "GP"
  ; register_globals to be on;  Using form variables as globals can easily lead
  ; to possible security problems, if the code is not very well thought of.
  ; http://php.net/register-globals
