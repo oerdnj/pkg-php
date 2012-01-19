@@ -4,3 +4,5 @@ set -e
 
 #EXTRA#
 #DEBHELPER#
+
+exit 0

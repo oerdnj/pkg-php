@@ -627,6 +627,9 @@ binary-arch: build install
 		[ "$$c" != "0" ] || $(RM) debian/php5-$${package}.postinst; \
 	done
 
+	# handle sqlite.so removal
+	sed -i -e 's|exit 0|dpkg-maintscript-helper rm_conffile /etc/php5/conf.d/sqlite.ini 5.3.8.0-1 -- \"\$\@\"\n\nexit 0/' debian/php5-sqlite.postinst
+
 	# generate the config snippets for various php
 	# modules from the templates.
 	cat debian/modulelist debian/extramodulelist | while read package extname dsoname; do \
