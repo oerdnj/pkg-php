@@ -450,6 +450,7 @@ Description: SNMP module for php5
 
 Package: php5-sqlite
 Architecture: any
+Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
 Breaks: roundcube-sqlite
 Description: SQLite module for php5
