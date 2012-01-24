@@ -1,3 +1,10 @@
+php5 (5.3.9-2) unstable; urgency=low
+
+  * Handle sqlite.so removal (remove conffile) (Closes: #656495)
+  * Add Breaks: roundcube-sqlite since we no longer ship sqlite.so
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 24 Jan 2012 09:55:56 +0100
+
 php5 (5.3.9-1) unstable; urgency=low
 
   * Remove obsolete sqlite(2) module from php5-sqlite
