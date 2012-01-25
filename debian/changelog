@@ -1,3 +1,16 @@
+php5 (5.3.9-3) unstable; urgency=low
+
+  * Remove firebird2.1 from Build-depends as firebird2.5 has been built
+    on all supported archs
+
+  [ Missing from 5.3.9-2 changelog ]
+  * Add correct dependency on dpkg to prevent failures from missing
+    dpkg-maintscript-helper
+  * Don't build firebird extension on hurd (Closes: #651070)
+  * Avoid ptrace hungs when building on hurd
+  
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 25 Jan 2012 12:35:26 +0100
+
 php5 (5.3.9-2) unstable; urgency=low
 
   * Handle sqlite.so removal (remove conffile) (Closes: #656495)
