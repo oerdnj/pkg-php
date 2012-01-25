@@ -19,6 +19,7 @@ PHP5_COMPAT=no
 DEB_HOST_GNU_TYPE    ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 DEB_HOST_ARCH   ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
+DEB_HOST_ARCH_OS     ?= $(shell dpkg-architecture -qDEB_HOST_ARCH_OS)
 
 PHP5_SOURCE_VERSION   = $(shell dpkg-parsechangelog | grep ^Version | sed "s/Version: //")
 PHP5_UPSTREAM_VERSION = $(shell echo $(PHP5_SOURCE_VERSION) | sed -e "s/-.*//" -e "s/.*://")
@@ -57,6 +58,10 @@ ifeq ($(DEB_HOST_GNU_TYPE), $(findstring $(DEB_HOST_GNU_TYPE), ia64-linux-gnu po
   CFLAGS += -g
 else
   CFLAGS += -gstabs
+endif
+
+ifneq ($(DEB_HOST_ARCH_OS),hurd)
+  CONFIGURE_APACHE_ARGS = --with-interbase=shared,/usr --with-pdo-firebird=shared,/usr
 endif
 
 # some other helpful (for readability at least) shorthand variables
@@ -267,8 +272,6 @@ configure-apache2-stamp: prepared-stamp
 		--with-freetype-dir=shared,/usr \
 		--with-imap=shared,/usr \
 		--with-imap-ssl \
-		--with-interbase=shared,/usr \
-		--with-pdo-firebird=shared,/usr \
 		--enable-intl=shared \
 		--with-ttf=shared,/usr \
 		--with-t1lib=shared,/usr \
@@ -294,7 +297,8 @@ configure-apache2-stamp: prepared-stamp
 		--with-pdo-odbc=shared,unixODBC,/usr \
 		--with-pdo-pgsql=shared,/usr/bin/pg_config \
 		--with-pdo-sqlite=shared,/usr \
-		--with-pdo-dblib=shared,/usr
+		--with-pdo-dblib=shared,/usr \
+		$(CONFIGURE_APACHE_ARGS)
 	cd apache2-build && \
 	cp ../Zend/zend_ini_scanner.c ../Zend/zend_language_scanner.c \
 	   ../Zend/zend_ini_parser.h ../Zend/zend_language_parser.h \
