@@ -54,3 +54,4 @@ lp564920-fix-big-files.patch
 backport-upstream-lp592442.patch
 temporary-path-fixes-for-multiarch.patch
 dont_require_autoconf2.59_or_lower.patch
+hurd-noptrace.diff
