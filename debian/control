@@ -185,7 +185,6 @@ Description: command-line interpreter for the php5 scripting language
 
 Package: php5-fpm
 Architecture: any
-Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support, php5-common (= ${binary:Version}), libmagic1, ucf, tzdata
 Provides: ${php:Provides}
 Suggests: php-pear
@@ -450,7 +449,6 @@ Description: SNMP module for php5
 
 Package: php5-sqlite
 Architecture: any
-Pre-Depends: dpkg (>= 1.15.7.2)
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
 Breaks: roundcube-sqlite
 Description: SQLite module for php5

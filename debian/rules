@@ -632,7 +632,7 @@ binary-arch: build install
 	done
 
 	# handle sqlite.so removal
-	sed -i -e 's|exit 0|dpkg-maintscript-helper rm_conffile /etc/php5/conf.d/sqlite.ini 5.3.8.0-1 -- \"\$\@\"\n\nexit 0|' debian/php5-sqlite.postinst
+	sed -i -e 's|exit 0|[ -x /usr/bin/dpkg-maintscript-helper ] && dpkg-maintscript-helper rm_conffile /etc/php5/conf.d/sqlite.ini 5.3.8.0-1 -- \"\$\@\"\n\nexit 0|' debian/php5-sqlite.postinst
 
 	# generate the config snippets for various php
 	# modules from the templates.
@@ -661,7 +661,7 @@ binary-arch: build install
 		  > debian/libapache2-mod-php5filter.$$tmpl; \
 	done
 
-	sed -i -e 's/exit 0/dpkg-maintscript-helper mv_conffile \/etc\/php5\/fpm\/main.conf \/etc\/php5\/fpm\/php-fpm.conf 5.3.5-1 -- \"\$\@\"\n\nexit 0/' debian/php5-fpm.postrm
+	sed -i -e 's/exit 0/[ -x /usr/bin/dpkg-maintscript-helper ] && dpkg-maintscript-helper mv_conffile \/etc\/php5\/fpm\/main.conf \/etc\/php5\/fpm\/php-fpm.conf 5.3.5-1 -- \"\$\@\"\n\nexit 0/' debian/php5-fpm.postrm
 
 	cat debian/copyright.header LICENSE Zend/LICENSE > debian/copyright
 	dh_installdocs -s
