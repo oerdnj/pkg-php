@@ -571,7 +571,7 @@
  #endif
 --- a/configure.in
 +++ b/configure.in
-@@ -679,11 +679,6 @@ PHP_TIME_R_TYPE
+@@ -678,11 +678,6 @@ PHP_TIME_R_TYPE
  PHP_READDIR_R_TYPE
  PHP_CHECK_IN_ADDR_T
  
