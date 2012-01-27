@@ -25,7 +25,6 @@ libtool2.2.patch
 115-autoconf_ftbfs.patch
 116-posixness_fix.patch
 libdb_is_-ldb
-suhosin.patch
 fix_broken_upstream_tests.patch
 use_embedded_timezonedb.patch
 force_libmysqlclient_r.patch
