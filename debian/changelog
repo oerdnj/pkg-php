@@ -1,3 +1,12 @@
+php5 (5.3.9-4) unstable; urgency=low
+
+  * Remove suhosin patch from description and add short NEWS about
+    disabling Suhosin patch (Closes: #657697)
+  * Re-enable firebird extension build on armhf and powerpcspe
+    (Closes: #657691)
+
+ -- Ondřej Surý <ondrej@debian.org>  Sat, 28 Jan 2012 08:50:42 +0100
+
 php5 (5.3.9-3) unstable; urgency=low
 
   * Don't build firebird extension on hurd, m68k, hppa, ppc64, armhf and
