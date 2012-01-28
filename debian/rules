@@ -63,8 +63,10 @@ else
   CFLAGS += -gstabs
 endif
 
-ifneq ($(DEB_HOST_ARCH_OS), $(findstring $(DEB_HOST_ARCH_OS), hurd m68k hppa ppc64 armhf powerpcspe))
+ifneq ($(DEB_HOST_ARCH_OS), $(findstring $(DEB_HOST_ARCH_OS), hurd m68k hppa ppc64))
   CONFIGURE_APACHE_ARGS = --with-interbase=shared,/usr --with-pdo-firebird=shared,/usr
+else
+  CONFIGURE_APACHE_ARGS = --without-interbase --without-pdo-firebird
 endif
 
 # some other helpful (for readability at least) shorthand variables
