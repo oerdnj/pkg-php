@@ -1,3 +1,12 @@
+php5 (5.3.9-4) unstable; urgency=low
+
+  * The Suhosin patch is now disabled in the default build.
+
+  If you want to re-enable it again for your installation, you can
+  set the option PHP5_SUHOSIN=yes in debian/rules and recompile PHP.
+
+ -- Ondřej Surý <ondrej@debian.org>  Sat, 28 Jan 2012 08:39:36 +0100
+
 php5 (5.3.6-13) unstable; urgency=low
 
   * Updated blowfish crypt() algorithm fixes the 8-bit character handling
