@@ -192,6 +192,7 @@ Description: server-side, HTML-embedded scripting language (FPM-CGI binary)
  from C, Java and Perl with a couple of unique PHP-specific features thrown
  in. The goal of the language is to allow web developers to write dynamically
  generated pages quickly.
+
 Package: php5-dev
 Depends: ${misc:Depends}, autoconf (>= 2.63), automake (>= 1.11), libssl-dev, libtool (>= 2.2), shtool, php5-common (>= ${binary:Version})
 Conflicts: ${libtool:Conflicts}
