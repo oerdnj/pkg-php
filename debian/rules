@@ -21,19 +21,32 @@ PHP5_SUHOSIN=no
 
 DEB_HOST_GNU_TYPE    ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
-DEB_HOST_ARCH   ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
-DEB_HOST_ARCH_OS     ?= $(shell dpkg-architecture -qDEB_HOST_ARCH_OS)
+DEB_HOST_ARCH        ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
 
 PHP5_SOURCE_VERSION   = $(shell dpkg-parsechangelog | grep ^Version | sed "s/Version: //")
 PHP5_UPSTREAM_VERSION = $(shell echo $(PHP5_SOURCE_VERSION) | sed -e "s/-.*//" -e "s/.*://")
 PHP5_DEBIAN_REVISION  = $(shell echo $(PHP5_SOURCE_VERSION) | sed "s/.*-//")
 
-MYSQL_PORT := $(shell for i in $$(seq 1025 3600); do nc -z localhost $$i || { echo $$i; exit; } ; done)
-MYSQL_DATA_DIR ?= $(shell readlink -f mysql_db)
-ifeq (,$(MYSQL_PORT))
-    $(error Could not find available port for mysql server)
+RUN_TESTS = yes
+ifeq (nocheck,$(findstring nocheck,$(DEB_BUILD_OPTIONS)))
+  RUN_TESTS=no
 endif
-MYSQL_SOCKET = $(MYSQL_DATA_DIR)/mysql.sock
+
+ifneq ($(DEB_HOST_ARCH),$(findstring $(DEB_HOST_ARCH),hurd-i386 m68k hppa ppc64))
+  CONFIGURE_APACHE_ARGS = --with-interbase=shared,/usr --with-pdo-firebird=shared,/usr
+else
+  CONFIGURE_APACHE_ARGS = --without-interbase --without-pdo-firebird
+  RUN_TESTS=no
+endif
+
+ifneq (no,$(RUN_TESTS))
+  MYSQL_PORT := $(shell for i in $$(seq 1025 3600); do nc -z localhost $$i || { echo $$i; exit; } ; done)
+  MYSQL_DATA_DIR ?= $(shell readlink -f mysql_db)
+  ifeq (,$(MYSQL_PORT))
+      $(error Could not find available port for mysql server)
+  endif
+  MYSQL_SOCKET = $(MYSQL_DATA_DIR)/mysql.sock
+endif
 
 # specify some options to our patch system
 QUILT_DIFF_OPTS=-p
@@ -61,12 +74,6 @@ ifeq ($(DEB_HOST_GNU_TYPE), $(findstring $(DEB_HOST_GNU_TYPE), ia64-linux-gnu po
   CFLAGS += -g
 else
   CFLAGS += -gstabs
-endif
-
-ifneq ($(DEB_HOST_ARCH_OS), $(findstring $(DEB_HOST_ARCH_OS), hurd m68k hppa ppc64))
-  CONFIGURE_APACHE_ARGS = --with-interbase=shared,/usr --with-pdo-firebird=shared,/usr
-else
-  CONFIGURE_APACHE_ARGS = --without-interbase --without-pdo-firebird
 endif
 
 # some other helpful (for readability at least) shorthand variables
@@ -165,7 +172,7 @@ unprepared:
 	rm -f prepared-stamp
 
 test-results.txt: build-apache2-stamp build-cli-stamp build-cgi-stamp
-ifeq (,$(findstring nocheck,$(DEB_BUILD_OPTIONS)))
+ifneq (no,$(RUN_TESTS))
 	mkdir -p temp_session_store
 	# start our own mysql server for the tests
 	$(SHELL) debian/setup-mysql.sh $(MYSQL_PORT) $(MYSQL_DATA_DIR)
@@ -197,7 +204,7 @@ ifeq (,$(findstring nocheck,$(DEB_BUILD_OPTIONS)))
 	done | tee -a test-results.txt
 	$(SHELL) debian/setup-mysql.sh $(MYSQL_PORT) $(MYSQL_DATA_DIR) stop
 else
-	echo 'nocheck found in DEB_BUILD_OPTIONS' | tee test-results.txt
+	echo 'nocheck found in DEB_BUILD_OPTIONS or unsupported architecture' | tee test-results.txt
 endif
 
 build: build-apache2-stamp build-apache2filter-stamp build-cgi-stamp build-cli-stamp build-fpm-stamp build-pear-stamp test-results.txt
