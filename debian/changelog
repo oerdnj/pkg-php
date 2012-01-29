@@ -1,3 +1,13 @@
+php5 (5.3.9-5) unstable; urgency=low
+
+  * Use DEB_HOST_ARCH, not DEB_HOST_ARCH_OS to check where to build
+    firebird module (Closes: #645401)
+  * Add back firebird2.5-dev and firebird2.1-dev to allow backports
+  * Disable tests on hurd-i386 for now, because it FTBFS
+  * Don't fail if suhosin is not enabled (Closes: #657808)
+
+ -- Ondřej Surý <ondrej@debian.org>  Sun, 29 Jan 2012 09:27:28 +0100
+
 php5 (5.3.9-4) unstable; urgency=low
 
   * Remove suhosin patch from description and add short NEWS about
