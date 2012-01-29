@@ -417,7 +417,8 @@ clean: unprepared unpatch
 
 ifeq (yes,$(PHP5_SUHOSIN))
 	QUILT_PATCHES=$(QUILT_PATCH_DIR) \
-		quilt --quiltrc /dev/null delete debian/patches/suhosin.patch
+		quilt --quiltrc /dev/null delete debian/patches/suhosin.patch \
+	        || return 0
 endif
 
 	rm -f configure-apache2-stamp build-apache2-stamp
