@@ -29,17 +29,21 @@ PHP5_DEBIAN_REVISION  = $(shell echo $(PHP5_SOURCE_VERSION) | sed "s/.*-//")
 
 RUN_TESTS = yes
 ifeq (nocheck,$(findstring nocheck,$(DEB_BUILD_OPTIONS)))
-  RUN_TESTS=no
+  $(warning Disabling checks due DEB_BUILD_OPTIONS)
+  RUN_TESTS = no
+endif
+ifeq ($(DEB_HOST_ARCH),$(findstring $(DEB_HOST_ARCH),hurd-i386))
+  $(warning Disabling checks on hurd-i386)
+  RUN_TESTS = no
 endif
 
 ifneq ($(DEB_HOST_ARCH),$(findstring $(DEB_HOST_ARCH),hurd-i386 m68k hppa ppc64))
   CONFIGURE_APACHE_ARGS = --with-interbase=shared,/usr --with-pdo-firebird=shared,/usr
 else
   CONFIGURE_APACHE_ARGS = --without-interbase --without-pdo-firebird
-  RUN_TESTS=no
 endif
 
-ifneq (no,$(RUN_TESTS))
+ifeq (yes,$(RUN_TESTS))
   MYSQL_PORT := $(shell for i in $$(seq 1025 3600); do nc -z localhost $$i || { echo $$i; exit; } ; done)
   MYSQL_DATA_DIR ?= $(shell readlink -f mysql_db)
   ifeq (,$(MYSQL_PORT))
@@ -172,7 +176,7 @@ unprepared:
 	rm -f prepared-stamp
 
 test-results.txt: build-apache2-stamp build-cli-stamp build-cgi-stamp
-ifneq (no,$(RUN_TESTS))
+ifeq (yes,$(RUN_TESTS))
 	mkdir -p temp_session_store
 	# start our own mysql server for the tests
 	$(SHELL) debian/setup-mysql.sh $(MYSQL_PORT) $(MYSQL_DATA_DIR)
