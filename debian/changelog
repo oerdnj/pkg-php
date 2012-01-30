@@ -1,3 +1,24 @@
+php5 (5.3.9-6) unstable; urgency=low
+
+  * Build MySQL extensions with Native Driver as an alternative
+    (Closes: #576412)
+  * Set default mysql socket location to /var/run/mysqld/mysqld.sock
+  * Move php5-sqlite postinst code to postinst.extra
+  * Cherry-pick patches from Fedora:
+    + Fix mysqlnd socket location fix
+    + Define _GNU_SOURCE in the configure.in
+    + Typing fixes in dba extension
+    + Don't add RPATH to extensions
+  * Add missing check for dpkg-maintscript-helper in sqlite preinst
+    and postrm
+  * Add code to specify priority of modules to load mysqlnd.so before
+    mysql.so and mysqli.so in php5-mysqlnd package
+  * Alter version in rm_conffile call to 5.3.9~ to handle all possible
+    versions due binNMUs (Closes: #656495)
+  * Add more condition when to remove empty postinst script
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 31 Jan 2012 15:25:57 +0100
+
 php5 (5.3.9-5) unstable; urgency=low
 
   * Use DEB_HOST_ARCH, not DEB_HOST_ARCH_OS to check where to build
