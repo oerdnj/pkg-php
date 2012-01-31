@@ -349,14 +349,33 @@ Description: MCrypt module for php5
 Package: php5-mysql
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
-Conflicts: php5-mysqli
-Replaces: php5-mysqli
+Conflicts: php5-mysqli, php5-mysqlnd
+Replaces: php5-mysqli, php5-mysqlnd
 Description: MySQL module for php5
  This package provides modules for MySQL database connections directly from
  PHP scripts.  It includes the generic "mysql" module which can be used
  to connect to all versions of MySQL, an improved "mysqli" module for
  MySQL version 4.1 or later, and the pdo_mysql module for use with
  the PHP Data Object extension.
+ .
+ PHP5 is a widely-used general-purpose scripting language that is
+ especially suited for Web development and can be embedded into HTML.
+ The goal of the language is to allow web developers to write
+ dynamically generated pages quickly.
+
+Package: php5-mysqlnd
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
+Conflicts: php5-mysqli, php5-mysql
+Replaces: php5-mysqli, php5-mysql
+Description: MySQL module for php5 (Native Driver)
+ This package provides modules for MySQL database connections directly from
+ PHP scripts.  It includes the generic "mysql" module which can be used
+ to connect to all versions of MySQL, an improved "mysqli" module for
+ MySQL version 4.1 or later, and the pdo_mysql module for use with
+ the PHP Data Object extension.
+ .
+ This package use the MySQL Native Driver.
  .
  PHP5 is a widely-used general-purpose scripting language that is
  especially suited for Web development and can be embedded into HTML.

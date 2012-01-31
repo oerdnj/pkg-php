@@ -360,8 +360,13 @@ configure-cgi-stamp: prepared-stamp
 		--with-config-file-scan-dir=/etc/php5/cgi/conf.d \
 		$(COMMON_CONFIG) \
 		--without-mm \
-		--disable-pdo \
-		--without-mysql --without-sybase-ct --without-mssql \
+		--enable-pdo=shared \
+		--enable-mysqlnd=shared \
+		--with-mysql=shared,mysqlnd \
+		--with-mysqli=shared,mysqlnd \
+		--with-pdo-mysql=shared,mysqlnd \
+		--without-pdo-sqlite \
+		--without-sybase-ct --without-mssql \
 		--without-sqlite --without-sqlite3 \
 		--enable-pcntl
 	cd cgi-build && \
@@ -545,6 +550,17 @@ install: build
 	cp cgi-build/sapi/cgi/cgi-bin.php5 debian/php5-cgi/usr/lib/cgi-bin/php5
 	cp cgi-build/sapi/cgi/usr.bin.php5-cgi debian/php5-cgi/usr/bin/php5-cgi
 	cp cli-build/sapi/cli/php.1 debian/php5-cgi/usr/share/man/man1/php5-cgi.1
+
+	# install MySQLnd from CGI build
+	package=mysqlnd
+	for dsoname in mysql mysqlnd mysqli pdo_mysql; do \
+		mkdir -p debian/php5-$$package$${ext}; \
+		chrpath cgi-build/modules/$$dsoname.so; \
+		chrpath -d cgi-build/modules/$$dsoname.so; \
+		install -m 644 -o root -g root \
+			cgi-build/modules/$$dsoname.so \
+			debian/php5-$$package$${ext}; \
+	done
 
 	# install CLI
 	cp cli-build/sapi/cli/php debian/php5-cli/usr/bin/php5
