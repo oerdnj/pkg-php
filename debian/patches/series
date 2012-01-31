@@ -56,3 +56,4 @@ dont_require_autoconf2.59_or_lower.patch
 hurd-noptrace.diff
 php-5.3.9-mysqlnd.patch
 php-5.3.9-gnusrc.patch
+php-5.3.3-macropen.patch
