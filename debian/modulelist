@@ -8,6 +8,7 @@ intl Internationalisation
 ldap LDAP
 mcrypt MCrypt
 mysql MySQL
+mysqlnd MySQL
 odbc ODBC
 pgsql PostgreSQL
 pspell pspell

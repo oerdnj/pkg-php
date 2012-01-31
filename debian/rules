@@ -536,12 +536,17 @@ install: build
 		mkdir -p debian/$$i/$${ext}; \
 	done; \
 	cat debian/modulelist debian/extramodulelist | while read package extname dsoname; do \
+		if [ "$$package" = "mysqlnd" ]; then \
+			modulepath=cgi-build/modules; \
+		else \
+			modulepath=debian/libapache2-mod-php5/$${ext}; \
+		fi; \
 		if [ -z "$$dsoname" ]; then dsoname=$$package; fi; \
 		mkdir -p debian/php5-$$package$${ext}; \
-		chrpath debian/libapache2-mod-php5/$${ext}/$$dsoname.so; \
-		chrpath -d debian/libapache2-mod-php5/$${ext}/$$dsoname.so; \
+		chrpath $${modulepath}/$$dsoname.so; \
+		chrpath -d $${modulepath}/$$dsoname.so; \
 		install -m 644 -o root -g root \
-			debian/libapache2-mod-php5/$${ext}/$$dsoname.so \
+			$${modulepath}/$$dsoname.so \
 			debian/php5-$$package$${ext}/$$dsoname.so; \
 		rm debian/libapache2-mod-php5/$${ext}/$$dsoname.so; \
 	done
@@ -550,17 +555,6 @@ install: build
 	cp cgi-build/sapi/cgi/cgi-bin.php5 debian/php5-cgi/usr/lib/cgi-bin/php5
 	cp cgi-build/sapi/cgi/usr.bin.php5-cgi debian/php5-cgi/usr/bin/php5-cgi
 	cp cli-build/sapi/cli/php.1 debian/php5-cgi/usr/share/man/man1/php5-cgi.1
-
-	# install MySQLnd from CGI build
-	package=mysqlnd
-	for dsoname in mysql mysqlnd mysqli pdo_mysql; do \
-		mkdir -p debian/php5-$$package$${ext}; \
-		chrpath cgi-build/modules/$$dsoname.so; \
-		chrpath -d cgi-build/modules/$$dsoname.so; \
-		install -m 644 -o root -g root \
-			cgi-build/modules/$$dsoname.so \
-			debian/php5-$$package$${ext}; \
-	done
 
 	# install CLI
 	cp cli-build/sapi/cli/php debian/php5-cli/usr/bin/php5
