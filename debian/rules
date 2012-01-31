@@ -663,7 +663,7 @@ binary-arch: build install
 		  < debian/php5-module.postinst \
 		| sed -e'/#EXTRA#/ d' \
 		  > debian/php5-$${package}.postinst; \
-		c=`grep -vE '^(#|set|$$)' < debian/php5-$${package}.postinst | wc -l`; \
+		c=`grep -vE '^(#|set|$$|exit 0)' < debian/php5-$${package}.postinst | wc -l`; \
 		[ "$$c" != "0" ] || $(RM) debian/php5-$${package}.postinst; \
 	done
 
