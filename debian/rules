@@ -543,8 +543,6 @@ install: build
 		fi; \
 		if [ -z "$$dsoname" ]; then dsoname=$$package; fi; \
 		mkdir -p debian/php5-$$package$${ext}; \
-		chrpath $${modulepath}/$$dsoname.so; \
-		chrpath -d $${modulepath}/$$dsoname.so; \
 		install -m 644 -o root -g root \
 			$${modulepath}/$$dsoname.so \
 			debian/php5-$$package$${ext}/$$dsoname.so; \
