@@ -22,4 +22,6 @@ support for flaws in:
   involve some kind of higher-level DoS or privilege escalation that would
   not otherwise be available.
 
- -- sean finney <seanius@debian.org>  Tue, 10 Oct 2006 12:42:06 +0200
+PHP upstream has published a statement regarding their view on security
+and the PHP interpreter:
+http://www.php.net/security-note.php
