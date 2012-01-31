@@ -44,7 +44,7 @@ else
 endif
 
 ifeq (yes,$(RUN_TESTS))
-  MYSQL_PORT := $(shell for i in $$(seq 1025 3600); do nc -z localhost $$i || { echo $$i; exit; } ; done)
+  MYSQL_PORT := $(shell for i in $$(seq 1025 3600 | sort -R); do nc -z localhost $$i || { echo $$i; exit; } ; done)
   MYSQL_DATA_DIR ?= $(shell readlink -f mysql_db)
   ifeq (,$(MYSQL_PORT))
       $(error Could not find available port for mysql server)
