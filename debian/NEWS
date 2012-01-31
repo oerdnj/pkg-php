@@ -12,10 +12,16 @@ php5 (5.3.6-13) unstable; urgency=low
   * Updated blowfish crypt() algorithm fixes the 8-bit character handling
     vulnerability (CVE-2011-2483) and adds more self-tests.  Unfortunately
     this change is incompatible with some old (wrong) generated hashes for
-    passwords containing 8-bit characters.  Therefore the new salt prefix
-    '$2x$' was introduced which can be used as a replacement for '$2a$'
-    salt prefix in the password database in case the incompatibility is
-    found.
+    passwords containing 8-bit characters.
+
+    It is recommended that any passwords containing characters with
+    the 8th bit set be changed after this upgrade. In order to allow users
+    to log in after the upgrade even if they have a potentially affected
+    password, the newly introduced backwards compatibility hash encoding
+    prefix of "$2x$" may be used (in place of the usual "$2a$"). Such
+    password hashes should only be used during a transition period; when
+    passwords are changed, the usual "$2a$" prefix is used, denoting the
+    correct algorithm.
 
  -- Ondřej Surý <ondrej@debian.org>  Mon, 04 Jul 2011 10:31:16 +0200
 
