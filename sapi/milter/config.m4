@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 242949 2007-09-26 15:44:16Z cvs2svn $
+dnl $Id: config.m4 305331 2010-11-13 23:13:07Z jani $
 dnl
 
 PHP_ARG_WITH(milter, for Milter support,
@@ -25,8 +25,7 @@ if test "$PHP_MILTER" != "no"; then
   PHP_ADD_MAKEFILE_FRAGMENT($abs_srcdir/sapi/milter/Makefile.frag)
   PHP_SELECT_SAPI(milter, program, php_milter.c getopt.c,,'$(SAPI_MILTER_PATH)') 
   PHP_ADD_LIBRARY_WITH_PATH(milter, $MILTERPATH,)
-  BUILD_MILTER="\$(LIBTOOL) --mode=link \$(CC) -export-dynamic \$(CFLAGS_CLEAN) \$(EXTRA_CFLAGS) \$(EXTRA_LDFLAGS) \$(LDFLAGS) \$(PHP_RPATHS) \$(PHP_GLOBAL_OBJS) \$(PHP_SAPI_OBJS) \$(EXTRA_LIBS) \$(ZEND_EXTRA_LIBS) -o \$(SAPI_MILTER_PATH)"
-  INSTALL_IT="\$(INSTALL) -m 0755 \$(SAPI_MILTER_PATH) \$(bindir)/php-milter"
+  BUILD_MILTER="\$(LIBTOOL) --mode=link \$(CC) -export-dynamic \$(CFLAGS_CLEAN) \$(EXTRA_CFLAGS) \$(EXTRA_LDFLAGS) \$(LDFLAGS) \$(PHP_RPATHS) \$(PHP_GLOBAL_OBJS) \$(PHP_BINARY_OBJS) \$(PHP_MILTER_OBJS) \$(EXTRA_LIBS) \$(ZEND_EXTRA_LIBS) -o \$(SAPI_MILTER_PATH)"
   PHP_SUBST(SAPI_MILTER_PATH)
   PHP_SUBST(BUILD_MILTER)
 fi

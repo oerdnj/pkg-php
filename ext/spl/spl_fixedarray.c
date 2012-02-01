@@ -150,28 +150,29 @@ static void spl_fixedarray_copy(spl_fixedarray *to, spl_fixedarray *from TSRMLS_
 static HashTable* spl_fixedarray_object_get_properties(zval *obj TSRMLS_DC) /* {{{{ */
 {
 	spl_fixedarray_object *intern  = (spl_fixedarray_object*)zend_object_store_get_object(obj TSRMLS_CC);
+	HashTable *ht = zend_std_get_properties(obj TSRMLS_CC);
 	int  i = 0;
 
 	if (intern->array && !GC_G(gc_active)) {
-		int j = zend_hash_num_elements(intern->std.properties);
+		int j = zend_hash_num_elements(ht);
 
 		for (i = 0; i < intern->array->size; i++) {
 			if (intern->array->elements[i]) {
-				zend_hash_index_update(intern->std.properties, i, (void *)&intern->array->elements[i], sizeof(zval *), NULL);
+				zend_hash_index_update(ht, i, (void *)&intern->array->elements[i], sizeof(zval *), NULL);
 				Z_ADDREF_P(intern->array->elements[i]);
 			} else {
-				zend_hash_index_update(intern->std.properties, i, (void *)&EG(uninitialized_zval_ptr), sizeof(zval *), NULL);
+				zend_hash_index_update(ht, i, (void *)&EG(uninitialized_zval_ptr), sizeof(zval *), NULL);
 				Z_ADDREF_P(EG(uninitialized_zval_ptr));
 			}
 		}
 		if (j > intern->array->size) {
 			for (i = intern->array->size; i < j; ++i) {
-				zend_hash_index_del(intern->std.properties, i);
+				zend_hash_index_del(ht, i);
 			}
 		}
 	}
 
-	return intern->std.properties;
+	return ht;
 }
 /* }}}} */
 
@@ -206,7 +207,6 @@ static zend_object_value spl_fixedarray_object_new_ex(zend_class_entry *class_ty
 {
 	zend_object_value     retval;
 	spl_fixedarray_object *intern;
-	zval                 *tmp;
 	zend_class_entry     *parent = class_type;
 	int                   inherited = 0;
 
@@ -215,7 +215,7 @@ static zend_object_value spl_fixedarray_object_new_ex(zend_class_entry *class_ty
 	ALLOC_INIT_ZVAL(intern->retval);
 
 	zend_object_std_init(&intern->std, class_type TSRMLS_CC);
-	zend_hash_copy(intern->std.properties, &class_type->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
+	object_properties_init(&intern->std, class_type);
 
 	intern->current = 0;
 	intern->flags = 0;
@@ -602,15 +602,12 @@ SPL_METHOD(SplFixedArray, count)
 */
 SPL_METHOD(SplFixedArray, toArray)
 {
-	spl_fixedarray_object *intern;
 	zval *ret, *tmp;
 	HashTable *ret_ht, *obj_ht;
 
 	if (FAILURE == zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "")) {
 		return;
 	}
-
-	intern = (spl_fixedarray_object *)zend_object_store_get_object(getThis() TSRMLS_CC);
 
 	ALLOC_HASHTABLE(ret_ht);
 	zend_hash_init(ret_ht, 0, NULL, ZVAL_PTR_DTOR, 0);

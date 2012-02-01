@@ -5,7 +5,7 @@
 #
 # Written by Sascha Schumann
 #
-# $Id: build.mk 14329 1999-10-10 02:02:13Z sascha $ 
+# $Id: build.mk 311067 2011-05-16 00:14:47Z rasmus $ 
 
 
 LT_TARGETS = ltmain.sh ltconfig
@@ -33,7 +33,7 @@ $(makefile_in_files): $(makefile_am_files)
 aclocal.m4: configure.in acinclude.m4
 	aclocal
 
-$(config_h_in): configure.in acconfig.h
+$(config_h_in): configure.in
 # explicitly remove target since autoheader does not seem to work 
 # correctly otherwise (timestamps are not updated)
 	@rm -f $@

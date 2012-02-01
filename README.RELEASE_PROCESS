@@ -115,7 +115,7 @@ Derick) run the following commands for you:
 
 4. Update ``web/php/trunk/include/version.inc`` (x=major version number)
 
- a. ``$PHP_x_RC`` = "5.3.0RC1"
+ a. ``$PHP_x_RC`` = "5.4.0RC1"
 
  b. ``$PHP_x_RC_DATE`` = "06 September 2007"
 

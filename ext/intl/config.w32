@@ -1,4 +1,4 @@
-// $Id: config.w32 293114 2010-01-04 21:44:45Z stas $
+// $Id: config.w32 308353 2011-02-15 08:48:24Z pajoye $
 // vim:ft=javascript
 
 ARG_ENABLE("intl", "Enable internationalization support", "no");
@@ -70,6 +70,22 @@ if (PHP_INTL != "no") {
 				resourcebundle.c \
 				resourcebundle_class.c \
 				resourcebundle_iterator.c",
+				"intl");
+
+		if (CHECK_HEADER_ADD_INCLUDE("unicode/uspoof.h", "CFLAGS_INTL")) {
+			ADD_SOURCES(configure_module_dirname + "/spoofchecker", "\
+					spoofchecker.c \
+					spoofchecker_class.c \
+					spoofchecker_create.c \
+					spoofchecker_main.c",
+					"intl");
+					AC_DEFINE("HAVE_INTL", 1, "Internationalization support enabled");
+		}
+
+		ADD_SOURCES(configure_module_dirname + "/transliterator", "\
+				transliterator.c \
+				transliterator_class.c \
+				transliterator_methods.c",
 				"intl");
 		ADD_FLAG("LIBS_INTL", "icudt.lib icuin.lib icuio.lib icule.lib iculx.lib");
 		AC_DEFINE("HAVE_INTL", 1, "Internationalization support enabled");

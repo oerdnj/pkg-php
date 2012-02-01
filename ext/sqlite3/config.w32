@@ -1,4 +1,4 @@
-// $Id: config.w32 306344 2010-12-13 18:43:10Z pajoye $
+// $Id: config.w32 306241 2010-12-11 22:18:10Z pajoye $
 // vim:ft=javascript
 
 ARG_WITH("sqlite3", "SQLite 3 support", "no");

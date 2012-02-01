@@ -1,8 +1,9 @@
 // vim:ft=javascript
-// $Id: config.w32 146968 2003-12-19 23:19:19Z wez $
+// $Id: config.w32 306241 2010-12-11 22:18:10Z pajoye $
 
 ARG_ENABLE('embed', 'Embedded SAPI library', 'no');
 
 if (PHP_EMBED != "no") {
 	SAPI('embed', 'php_embed.c', 'php' + PHP_VERSION + 'embed.lib');
+	PHP_INSTALL_HEADERS("sapi/embed", "php_embed.h");
 }

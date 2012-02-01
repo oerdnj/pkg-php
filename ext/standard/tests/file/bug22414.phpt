@@ -1,14 +1,13 @@
 --TEST--
 Bug #22414 (passthru() does not read data correctly)
 --INI--
-safe_mode=
 output_handler=
 --FILE--
 <?php
 
 	$php = getenv('TEST_PHP_EXECUTABLE');
 	$tmpfile = tempnam(__DIR__, 'phpt');
-	$args = ' -n -dsafe_mode=off ';
+	$args = ' -n ';
 	
 	/* Regular Data Test */
 	passthru($php . $args . ' -r " echo \"HELLO\"; "');

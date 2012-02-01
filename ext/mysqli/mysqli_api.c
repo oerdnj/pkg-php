@@ -535,7 +535,11 @@ PHP_FUNCTION(mysqli_change_user)
 	old_charset = mysql->mysql->charset;
 #endif
 
+#if defined(MYSQLI_USE_MYSQLND)
+	rc = mysqlnd_change_user_ex(mysql->mysql, user, password, dbname, FALSE, (size_t) password_len);
+#else
 	rc = mysql_change_user(mysql->mysql, user, password, dbname);
+#endif
 	MYSQLI_REPORT_MYSQL_ERROR(mysql->mysql);
 
 	if (rc) {
@@ -883,7 +887,7 @@ void mysqli_stmt_fetch_libmysql(INTERNAL_FUNCTION_PARAMETERS)
 			*/
 			/* Even if the string is of length zero there is one byte alloced so efree() in all cases */
 			if (Z_TYPE_P(stmt->result.vars[i]) == IS_STRING) {
-				efree(stmt->result.vars[i]->value.str.val);
+				STR_FREE(stmt->result.vars[i]->value.str.val);
 			}
 			if (!stmt->result.is_null[i]) {
 				switch (stmt->result.buf[i].type) {
@@ -1047,12 +1051,12 @@ PHP_FUNCTION(mysqli_stmt_fetch)
 /* {{{  php_add_field_properties */
 static void php_add_field_properties(zval *value, const MYSQL_FIELD *field TSRMLS_DC)
 {
-	add_property_string(value, "name", (char *) (field->name ? field->name : ""), 1);
-	add_property_string(value, "orgname", (char *) (field->org_name ? field->org_name : ""), 1);
-	add_property_string(value, "table", (char *) (field->table ? field->table : ""), 1);
-	add_property_string(value, "orgtable", (char *) (field->org_table ? field->org_table : ""), 1);
-	add_property_string(value, "def", (field->def ? field->def : ""), 1);
-	add_property_string(value, "db", (field->db ? field->db : ""), 1);
+	add_property_string(value, "name",(field->name ? field->name : ""), 1);
+	add_property_string(value, "orgname",(field->org_name ? field->org_name : ""), 1);
+	add_property_string(value, "table",(field->table ? field->table : ""), 1);
+	add_property_string(value, "orgtable",(field->org_table ? field->org_table : ""), 1);
+	add_property_string(value, "def",(field->def ? field->def : ""), 1);
+	add_property_string(value, "db",(field->db ? field->db : ""), 1);
 
 	/* FIXME: manually set the catalog to "def" due to bug in
 	 * libmysqlclient which does not initialize field->catalog
@@ -1287,8 +1291,11 @@ PHP_FUNCTION(mysqli_get_host_info)
 		return;
 	}
 	MYSQLI_FETCH_RESOURCE_CONN(mysql, &mysql_link, MYSQLI_STATUS_VALID);
-
+#if !defined(MYSQLI_USE_MYSQLND)
 	RETURN_STRING((mysql->mysql->host_info) ? mysql->mysql->host_info : "", 1);
+#else
+	RETURN_STRING((mysql->mysql->data->host_info) ? mysql->mysql->data->host_info : "", 1);
+#endif
 }
 /* }}} */
 
@@ -1800,7 +1807,7 @@ PHP_FUNCTION(mysqli_prepare)
 			memcpy(last_error, stmt->stmt->last_error, MYSQL_ERRMSG_SIZE);
 			memcpy(sqlstate, mysql->mysql->net.sqlstate, SQLSTATE_LENGTH+1);
 #else
-			MYSQLND_ERROR_INFO error_info = mysql->mysql->error_info;
+			MYSQLND_ERROR_INFO error_info = *mysql->mysql->data->error_info;
 #endif
 			mysqli_stmt_close(stmt->stmt, FALSE);
 			stmt->stmt = NULL;
@@ -1811,7 +1818,7 @@ PHP_FUNCTION(mysqli_prepare)
 			memcpy(mysql->mysql->net.last_error, last_error, MYSQL_ERRMSG_SIZE);
 			memcpy(mysql->mysql->net.sqlstate, sqlstate, SQLSTATE_LENGTH+1);
 #else
-			mysql->mysql->error_info = error_info;
+			*mysql->mysql->data->error_info = error_info;
 #endif
 		}
 	}

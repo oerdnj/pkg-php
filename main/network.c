@@ -148,7 +148,7 @@ static const char *php_gai_strerror(int code)
 
 /* {{{ php_network_freeaddresses
  */
-static void php_network_freeaddresses(struct sockaddr **sal)
+PHPAPI void php_network_freeaddresses(struct sockaddr **sal)
 {
 	struct sockaddr **sap;
 
@@ -163,7 +163,7 @@ static void php_network_freeaddresses(struct sockaddr **sal)
 /* {{{ php_network_getaddresses
  * Returns number of addresses, 0 for none/error
  */
-static int php_network_getaddresses(const char *host, int socktype, struct sockaddr ***sal, char **error_string TSRMLS_DC)
+PHPAPI int php_network_getaddresses(const char *host, int socktype, struct sockaddr ***sal, char **error_string TSRMLS_DC)
 {
 	struct sockaddr **sap;
 	int n;
@@ -1058,7 +1058,7 @@ PHPAPI php_stream *_php_stream_sock_open_host(const char *host, unsigned short p
 
 	reslen = spprintf(&res, 0, "tcp://%s:%d", host, port);
 
-	stream = php_stream_xport_create(res, reslen, ENFORCE_SAFE_MODE | REPORT_ERRORS,
+	stream = php_stream_xport_create(res, reslen, REPORT_ERRORS,
 			STREAM_XPORT_CLIENT | STREAM_XPORT_CONNECT, persistent_id, timeout, NULL, NULL, NULL);
 
 	efree(res);

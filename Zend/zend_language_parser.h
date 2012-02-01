@@ -1,23 +1,24 @@
-
-/* A Bison parser, made by GNU Bison 2.4.1.  */
+/* A Bison parser, made by GNU Bison 2.3.  */
 
 /* Skeleton interface for Bison's Yacc-like parsers in C
-   
-      Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+
+   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
-   
-   This program is free software: you can redistribute it and/or modify
+
+   This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-   
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street, Fifth Floor,
+   Boston, MA 02110-1301, USA.  */
 
 /* As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -28,10 +29,9 @@
    special exception, which will cause the skeleton and the resulting
    Bison output files to be licensed under the GNU General Public
    License without this special exception.
-   
+
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
-
 
 /* Tokens.  */
 #ifndef YYTOKENTYPE
@@ -39,6 +39,7 @@
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
+     END = 0,
      T_REQUIRE_ONCE = 258,
      T_REQUIRE = 259,
      T_EVAL = 260,
@@ -122,49 +123,54 @@
      T_CATCH = 338,
      T_THROW = 339,
      T_USE = 340,
-     T_GLOBAL = 341,
-     T_PUBLIC = 342,
-     T_PROTECTED = 343,
-     T_PRIVATE = 344,
-     T_FINAL = 345,
-     T_ABSTRACT = 346,
-     T_STATIC = 347,
-     T_VAR = 348,
-     T_UNSET = 349,
-     T_ISSET = 350,
-     T_EMPTY = 351,
-     T_HALT_COMPILER = 352,
-     T_CLASS = 353,
-     T_INTERFACE = 354,
-     T_EXTENDS = 355,
-     T_IMPLEMENTS = 356,
-     T_OBJECT_OPERATOR = 357,
-     T_DOUBLE_ARROW = 358,
-     T_LIST = 359,
-     T_ARRAY = 360,
-     T_CLASS_C = 361,
-     T_METHOD_C = 362,
-     T_FUNC_C = 363,
-     T_LINE = 364,
-     T_FILE = 365,
-     T_COMMENT = 366,
-     T_DOC_COMMENT = 367,
-     T_OPEN_TAG = 368,
-     T_OPEN_TAG_WITH_ECHO = 369,
-     T_CLOSE_TAG = 370,
-     T_WHITESPACE = 371,
-     T_START_HEREDOC = 372,
-     T_END_HEREDOC = 373,
-     T_DOLLAR_OPEN_CURLY_BRACES = 374,
-     T_CURLY_OPEN = 375,
-     T_PAAMAYIM_NEKUDOTAYIM = 376,
-     T_NAMESPACE = 377,
-     T_NS_C = 378,
-     T_DIR = 379,
-     T_NS_SEPARATOR = 380
+     T_INSTEADOF = 341,
+     T_GLOBAL = 342,
+     T_PUBLIC = 343,
+     T_PROTECTED = 344,
+     T_PRIVATE = 345,
+     T_FINAL = 346,
+     T_ABSTRACT = 347,
+     T_STATIC = 348,
+     T_VAR = 349,
+     T_UNSET = 350,
+     T_ISSET = 351,
+     T_EMPTY = 352,
+     T_HALT_COMPILER = 353,
+     T_CLASS = 354,
+     T_TRAIT = 355,
+     T_INTERFACE = 356,
+     T_EXTENDS = 357,
+     T_IMPLEMENTS = 358,
+     T_OBJECT_OPERATOR = 359,
+     T_DOUBLE_ARROW = 360,
+     T_LIST = 361,
+     T_ARRAY = 362,
+     T_CALLABLE = 363,
+     T_CLASS_C = 364,
+     T_TRAIT_C = 365,
+     T_METHOD_C = 366,
+     T_FUNC_C = 367,
+     T_LINE = 368,
+     T_FILE = 369,
+     T_COMMENT = 370,
+     T_DOC_COMMENT = 371,
+     T_OPEN_TAG = 372,
+     T_OPEN_TAG_WITH_ECHO = 373,
+     T_CLOSE_TAG = 374,
+     T_WHITESPACE = 375,
+     T_START_HEREDOC = 376,
+     T_END_HEREDOC = 377,
+     T_DOLLAR_OPEN_CURLY_BRACES = 378,
+     T_CURLY_OPEN = 379,
+     T_PAAMAYIM_NEKUDOTAYIM = 380,
+     T_NAMESPACE = 381,
+     T_NS_C = 382,
+     T_DIR = 383,
+     T_NS_SEPARATOR = 384
    };
 #endif
 /* Tokens.  */
+#define END 0
 #define T_REQUIRE_ONCE 258
 #define T_REQUIRE 259
 #define T_EVAL 260
@@ -248,57 +254,60 @@
 #define T_CATCH 338
 #define T_THROW 339
 #define T_USE 340
-#define T_GLOBAL 341
-#define T_PUBLIC 342
-#define T_PROTECTED 343
-#define T_PRIVATE 344
-#define T_FINAL 345
-#define T_ABSTRACT 346
-#define T_STATIC 347
-#define T_VAR 348
-#define T_UNSET 349
-#define T_ISSET 350
-#define T_EMPTY 351
-#define T_HALT_COMPILER 352
-#define T_CLASS 353
-#define T_INTERFACE 354
-#define T_EXTENDS 355
-#define T_IMPLEMENTS 356
-#define T_OBJECT_OPERATOR 357
-#define T_DOUBLE_ARROW 358
-#define T_LIST 359
-#define T_ARRAY 360
-#define T_CLASS_C 361
-#define T_METHOD_C 362
-#define T_FUNC_C 363
-#define T_LINE 364
-#define T_FILE 365
-#define T_COMMENT 366
-#define T_DOC_COMMENT 367
-#define T_OPEN_TAG 368
-#define T_OPEN_TAG_WITH_ECHO 369
-#define T_CLOSE_TAG 370
-#define T_WHITESPACE 371
-#define T_START_HEREDOC 372
-#define T_END_HEREDOC 373
-#define T_DOLLAR_OPEN_CURLY_BRACES 374
-#define T_CURLY_OPEN 375
-#define T_PAAMAYIM_NEKUDOTAYIM 376
-#define T_NAMESPACE 377
-#define T_NS_C 378
-#define T_DIR 379
-#define T_NS_SEPARATOR 380
+#define T_INSTEADOF 341
+#define T_GLOBAL 342
+#define T_PUBLIC 343
+#define T_PROTECTED 344
+#define T_PRIVATE 345
+#define T_FINAL 346
+#define T_ABSTRACT 347
+#define T_STATIC 348
+#define T_VAR 349
+#define T_UNSET 350
+#define T_ISSET 351
+#define T_EMPTY 352
+#define T_HALT_COMPILER 353
+#define T_CLASS 354
+#define T_TRAIT 355
+#define T_INTERFACE 356
+#define T_EXTENDS 357
+#define T_IMPLEMENTS 358
+#define T_OBJECT_OPERATOR 359
+#define T_DOUBLE_ARROW 360
+#define T_LIST 361
+#define T_ARRAY 362
+#define T_CALLABLE 363
+#define T_CLASS_C 364
+#define T_TRAIT_C 365
+#define T_METHOD_C 366
+#define T_FUNC_C 367
+#define T_LINE 368
+#define T_FILE 369
+#define T_COMMENT 370
+#define T_DOC_COMMENT 371
+#define T_OPEN_TAG 372
+#define T_OPEN_TAG_WITH_ECHO 373
+#define T_CLOSE_TAG 374
+#define T_WHITESPACE 375
+#define T_START_HEREDOC 376
+#define T_END_HEREDOC 377
+#define T_DOLLAR_OPEN_CURLY_BRACES 378
+#define T_CURLY_OPEN 379
+#define T_PAAMAYIM_NEKUDOTAYIM 380
+#define T_NAMESPACE 381
+#define T_NS_C 382
+#define T_DIR 383
+#define T_NS_SEPARATOR 384
 
 
 
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef int YYSTYPE;
-# define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
+# define YYSTYPE_IS_TRIVIAL 1
 #endif
-
 
 
 

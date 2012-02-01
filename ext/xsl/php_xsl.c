@@ -115,7 +115,6 @@ zend_object_value xsl_objects_new(zend_class_entry *class_type TSRMLS_DC)
 {
 	zend_object_value retval;
 	xsl_object *intern;
-	zval *tmp;
 
 	intern = emalloc(sizeof(xsl_object));
 	intern->ptr = NULL;
@@ -127,9 +126,11 @@ zend_object_value xsl_objects_new(zend_class_entry *class_type TSRMLS_DC)
 	intern->node_list = NULL;
 	intern->doc = NULL;
 	intern->profiling = NULL;
+	intern->securityPrefs = XSL_SECPREF_DEFAULT;
+	intern->securityPrefsSet = 0;
 
 	zend_object_std_init(&intern->std, class_type TSRMLS_CC);
-	zend_hash_copy(intern->std.properties, &class_type->default_properties, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
+	object_properties_init(&intern->std, class_type);
 	ALLOC_HASHTABLE(intern->parameter);
 	zend_hash_init(intern->parameter, 0, NULL, ZVAL_PTR_DTOR, 0);
 	ALLOC_HASHTABLE(intern->registered_phpfunctions);
@@ -181,7 +182,7 @@ PHP_MINIT_FUNCTION(xsl)
 	REGISTER_LONG_CONSTANT("XSL_SECPREF_READ_NETWORK",     XSL_SECPREF_READ_NETWORK,     CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("XSL_SECPREF_WRITE_NETWORK",    XSL_SECPREF_WRITE_NETWORK,    CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("XSL_SECPREF_DEFAULT",          XSL_SECPREF_DEFAULT,          CONST_CS | CONST_PERSISTENT);
-
+	
 	REGISTER_LONG_CONSTANT("LIBXSLT_VERSION",           LIBXSLT_VERSION,            CONST_CS | CONST_PERSISTENT);
 	REGISTER_STRING_CONSTANT("LIBXSLT_DOTTED_VERSION",  LIBXSLT_DOTTED_VERSION,     CONST_CS | CONST_PERSISTENT);
 

@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 292683 2009-12-27 01:00:50Z mkoppanen $
+dnl $Id: config.m4 310670 2011-04-30 15:56:07Z cataphract $
 dnl
 
 PHP_ARG_ENABLE(sockets, whether to enable sockets support,
@@ -18,8 +18,8 @@ if test "$PHP_SOCKETS" != "no"; then
     AC_DEFINE(HAVE_CMSGHDR,1,[Whether you have struct cmsghdr])
   fi 
 
-  AC_CHECK_FUNCS([hstrerror socketpair])
-  AC_CHECK_HEADERS([netdb.h netinet/tcp.h sys/un.h errno.h])
+  AC_CHECK_FUNCS([hstrerror socketpair if_nametoindex if_indextoname])
+  AC_CHECK_HEADERS([netdb.h netinet/tcp.h sys/un.h sys/sockio.h errno.h]) 
   AC_TRY_COMPILE([
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -28,6 +28,6 @@ if test "$PHP_SOCKETS" != "no"; then
   )
   AC_DEFINE([HAVE_SOCKETS], 1, [ ])
 
-  PHP_NEW_EXTENSION([sockets], [sockets.c], [$ext_shared])
+  PHP_NEW_EXTENSION([sockets], [sockets.c multicast.c], [$ext_shared])
   PHP_INSTALL_HEADERS([ext/sockets/], [php_sockets.h])
 fi

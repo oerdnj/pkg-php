@@ -33,7 +33,7 @@
 #include "mysqli_fe.h"
 #include "mysqli_priv.h"
 
-#if PHP_VERSION_ID >= 50399
+#ifdef MYSQLI_USE_FULL_TYPED_ARGINFO_0
 #define MYSQLI_ZEND_ARG_OBJ_INFO_LINK() ZEND_ARG_OBJ_INFO(0, link, mysqli, 0)
 #define MYSQLI_ZEND_ARG_OBJ_INFO_RESULT() ZEND_ARG_OBJ_INFO(0, result, mysqli_result, 0)
 #define MYSQLI_ZEND_ARG_OBJ_INFO_STMT() ZEND_ARG_OBJ_INFO(0, stmt, mysqli_stmt, 0)
@@ -352,6 +352,7 @@ const zend_function_entry mysqli_functions[] = {
 #endif
 	PHP_FE(mysqli_errno,								arginfo_mysqli_only_link)
 	PHP_FE(mysqli_error,								arginfo_mysqli_only_link)
+	PHP_FE(mysqli_error_list,							arginfo_mysqli_only_link)
 	PHP_FE(mysqli_stmt_execute,							arginfo_mysqli_only_statement)
 	PHP_FALIAS(mysqli_execute, mysqli_stmt_execute,		arginfo_mysqli_only_statement)
 	PHP_FE(mysqli_fetch_field,							arginfo_mysqli_only_result)
@@ -370,7 +371,6 @@ const zend_function_entry mysqli_functions[] = {
 	PHP_FE(mysqli_field_tell,							arginfo_mysqli_only_result)
 	PHP_FE(mysqli_free_result,							arginfo_mysqli_only_result)
 #if defined(MYSQLI_USE_MYSQLND)
-	PHP_FE(mysqli_get_cache_stats,						arginfo_mysqli_no_params)
 	PHP_FE(mysqli_get_connection_stats,					arginfo_mysqli_only_link)
 	PHP_FE(mysqli_get_client_stats,						arginfo_mysqli_no_params)
 #endif
@@ -425,6 +425,7 @@ const zend_function_entry mysqli_functions[] = {
 	PHP_FE(mysqli_stmt_data_seek,						arginfo_mysqli_stmt_data_seek)
 	PHP_FE(mysqli_stmt_errno,							arginfo_mysqli_only_statement)
 	PHP_FE(mysqli_stmt_error,							arginfo_mysqli_only_statement)
+	PHP_FE(mysqli_stmt_error_list,						arginfo_mysqli_only_statement)
 	PHP_FE(mysqli_stmt_fetch,							arginfo_mysqli_only_statement)
 	PHP_FE(mysqli_stmt_field_count,						arginfo_mysqli_only_statement)
 	PHP_FE(mysqli_stmt_free_result,						arginfo_mysqli_only_statement)
@@ -458,14 +459,7 @@ const zend_function_entry mysqli_functions[] = {
 	PHP_FE(mysqli_refresh,								arginfo_mysqli_refresh)
 
 	/* Aliases */
-	PHP_FALIAS(mysqli_bind_param,		mysqli_stmt_bind_param,		arginfo_mysqli_stmt_bind_param)
-	PHP_FALIAS(mysqli_bind_result,		mysqli_stmt_bind_result,	arginfo_mysqli_stmt_bind_result)
-	PHP_FALIAS(mysqli_client_encoding,	mysqli_character_set_name,	NULL)
 	PHP_FALIAS(mysqli_escape_string,	mysqli_real_escape_string,	arginfo_mysqli_query)
-	PHP_FALIAS(mysqli_fetch,			mysqli_stmt_fetch,			NULL)
-	PHP_FALIAS(mysqli_param_count,		mysqli_stmt_param_count,	NULL)
-	PHP_FALIAS(mysqli_get_metadata,		mysqli_stmt_result_metadata,NULL)
-	PHP_FALIAS(mysqli_send_long_data,	mysqli_stmt_send_long_data,	NULL)
 	PHP_FALIAS(mysqli_set_opt,			mysqli_options,				NULL)
 
 	PHP_FE_END
@@ -480,7 +474,6 @@ const zend_function_entry mysqli_link_methods[] = {
 	PHP_FALIAS(autocommit, mysqli_autocommit, arginfo_class_mysqli_autocommit)
 	PHP_FALIAS(change_user,mysqli_change_user, arginfo_class_mysqli_change_user)
 	PHP_FALIAS(character_set_name, mysqli_character_set_name, arginfo_mysqli_no_params)
-	PHP_FALIAS(client_encoding, mysqli_character_set_name, arginfo_mysqli_no_params) /* deprecated */
 	PHP_FALIAS(close, mysqli_close, arginfo_mysqli_no_params)
 	PHP_FALIAS(commit, mysqli_commit, arginfo_mysqli_no_params)
 	PHP_FALIAS(connect, mysqli_connect, arginfo_mysqli_connect)

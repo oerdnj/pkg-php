@@ -1,10 +1,10 @@
 dnl
-dnl $Id: config9.m4 316281 2011-09-06 16:38:22Z johannes $
+dnl $Id: config9.m4 322156 2012-01-12 23:23:05Z sixd $
 dnl config.m4 for mysqlnd driver
 
 PHP_ARG_ENABLE(mysqlnd, whether to enable mysqlnd,
-  [  --enable-mysqlnd       Enable mysqlnd expliciely, will be done implicitly
-                         when required by other extensions], no, yes)
+  [  --enable-mysqlnd        Enable mysqlnd explicitly, will be done implicitly
+                          when required by other extensions], no, yes)
 
 PHP_ARG_ENABLE(mysqlnd_compression_support, whether to disable compressed protocol support in mysqlnd,
 [  --disable-mysqlnd-compression-support
@@ -18,10 +18,11 @@ fi
 dnl If some extension uses mysqlnd it will get compiled in PHP core
 if test "$PHP_MYSQLND" != "no" || test "$PHP_MYSQLND_ENABLED" = "yes"; then
   mysqlnd_ps_sources="mysqlnd_ps.c mysqlnd_ps_codec.c"
-  mysqlnd_base_sources="mysqlnd.c mysqlnd_charset.c mysqlnd_wireprotocol.c \
-                   mysqlnd_loaddata.c mysqlnd_net.c mysqlnd_statistics.c \
+  mysqlnd_base_sources="mysqlnd.c mysqlnd_alloc.c mysqlnd_bt.c mysqlnd_charset.c mysqlnd_wireprotocol.c \
+                   mysqlnd_loaddata.c mysqlnd_reverse_api.c mysqlnd_net.c \
+                   mysqlnd_statistics.c mysqlnd_driver.c mysqlnd_ext_plugin.c mysqlnd_auth.c \
 				   mysqlnd_result.c mysqlnd_result_meta.c mysqlnd_debug.c\
-				   mysqlnd_block_alloc.c php_mysqlnd.c"
+				   mysqlnd_block_alloc.c mysqlnd_plugin.c php_mysqlnd.c"
 
 
   if test "$PHP_MYSQLND_COMPRESSION_SUPPORT" != "no"; then

@@ -1,12 +1,12 @@
 /*
 	Build Configuration Template for Win32.
-	$Id: config.w32.h.in 305778 2010-11-26 18:25:13Z pajoye $
+	$Id: config.w32.h.in 313575 2011-07-22 11:25:30Z pajoye $
 */
 
 /* Define the minimum supported version */
 #undef _WIN32_WINNT
 #undef NTDDI_VERSION
-#define _WIN32_WINNT 0x500
+#define _WIN32_WINNT 0x502
 #define NTDDI_VERSION  _WIN32_WIN2K
 
 /* Default PHP / PEAR directories */
@@ -33,8 +33,6 @@
 
 /* PHP Runtime Configuration */
 #define PHP_URL_FOPEN 1
-#define PHP_SAFE_MODE 0
-#define MAGIC_QUOTES 0
 #define USE_CONFIG_FILE 1
 #define DEFAULT_SHORT_OPEN_TAG "1"
 

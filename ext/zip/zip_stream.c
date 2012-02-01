@@ -1,4 +1,4 @@
-/* $Id: zip_stream.c 307917 2011-02-01 14:44:29Z cataphract $ */
+/* $Id: zip_stream.c 307916 2011-02-01 14:43:52Z cataphract $ */
 #ifdef HAVE_CONFIG_H
 #   include "config.h"
 #endif

@@ -1,4 +1,4 @@
-dnl $Id: config.m4 311041 2011-05-15 05:49:34Z rasmus $
+dnl $Id: config.m4 311040 2011-05-15 05:24:34Z rasmus $
 dnl config.m4 for extension pdo_odbc
 dnl vim:et:sw=2:ts=2:
 
@@ -47,15 +47,15 @@ if test "$PHP_PDO_ODBC" != "no"; then
   ],[
     AC_MSG_CHECKING([for PDO includes])
     if test -f $abs_srcdir/include/php/ext/pdo/php_pdo_driver.h; then
-      pdo_inc_path=$abs_srcdir/ext
+      pdo_cv_inc_path=$abs_srcdir/ext
     elif test -f $abs_srcdir/ext/pdo/php_pdo_driver.h; then
-      pdo_inc_path=$abs_srcdir/ext
+      pdo_cv_inc_path=$abs_srcdir/ext
     elif test -f $prefix/include/php/ext/pdo/php_pdo_driver.h; then
-      pdo_inc_path=$prefix/include/php/ext
+      pdo_cv_inc_path=$prefix/include/php/ext
     else
       AC_MSG_ERROR([Cannot find php_pdo_driver.h.])
     fi
-    AC_MSG_RESULT($pdo_inc_path)
+    AC_MSG_RESULT($pdo_cv_inc_path)
   ])
 
   AC_MSG_CHECKING([for selected PDO ODBC flavour])
@@ -165,7 +165,7 @@ functions required for PDO support.
     AC_MSG_ERROR([Your ODBC library does not exist or there was an error. Check config.log for more information])
   ], $PDO_ODBC_LDFLAGS)
 
-  PHP_NEW_EXTENSION(pdo_odbc, pdo_odbc.c odbc_driver.c odbc_stmt.c, $ext_shared,,-I$pdo_inc_path $PDO_ODBC_INCLUDE)
+  PHP_NEW_EXTENSION(pdo_odbc, pdo_odbc.c odbc_driver.c odbc_stmt.c, $ext_shared,,-I$pdo_cv_inc_path $PDO_ODBC_INCLUDE)
   PHP_SUBST(PDO_ODBC_SHARED_LIBADD)
   ifdef([PHP_ADD_EXTENSION_DEP],
   [
