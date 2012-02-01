@@ -506,7 +506,7 @@ static void php_do_pcre_match(INTERNAL_FUNCTION_PARAMETERS, int global) /* {{{ *
 	long			  flags = 0;		/* Match control flags */
 	long			  start_offset = 0;	/* Where the new search starts */
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, ((global) ? "ssz|ll" : "ss|zll"), &regex, &regex_len,
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss|zll", &regex, &regex_len,
 							  &subject, &subject_len, &subpats, &flags, &start_offset) == FAILURE) {
 		RETURN_FALSE;
 	}
@@ -608,7 +608,7 @@ PHPAPI void php_pcre_match_impl(pcre_cache_entry *pce, char *subject, int subjec
 	offsets = (int *)safe_emalloc(size_offsets, sizeof(int), 0);
 
 	/* Allocate match sets array and initialize the values. */
-	if (global && subpats_order == PREG_PATTERN_ORDER) {
+	if (global && subpats && subpats_order == PREG_PATTERN_ORDER) {
 		match_sets = (zval **)safe_emalloc(num_subpats, sizeof(zval *), 0);
 		for (i=0; i<num_subpats; i++) {
 			ALLOC_ZVAL(match_sets[i]);
@@ -650,7 +650,7 @@ PHPAPI void php_pcre_match_impl(pcre_cache_entry *pce, char *subject, int subjec
 				}
 
 				if (global) {	/* global pattern matching */
-					if (subpats_order == PREG_PATTERN_ORDER) {
+					if (subpats && subpats_order == PREG_PATTERN_ORDER) {
 						/* For each subpattern, insert it into the appropriate array. */
 						for (i = 0; i < count; i++) {
 							if (offset_capture) {
@@ -740,7 +740,7 @@ PHPAPI void php_pcre_match_impl(pcre_cache_entry *pce, char *subject, int subjec
 	} while (global);
 
 	/* Add the match sets to the output array and clean up */
-	if (global && subpats_order == PREG_PATTERN_ORDER) {
+	if (global && subpats && subpats_order == PREG_PATTERN_ORDER) {
 		for (i = 0; i < num_subpats; i++) {
 			if (subpat_names[i]) {
 				zend_hash_update(Z_ARRVAL_P(subpats), subpat_names[i],
@@ -772,7 +772,7 @@ static PHP_FUNCTION(preg_match)
 }
 /* }}} */
 
-/* {{{ proto int preg_match_all(string pattern, string subject, array &subpatterns [, int flags [, int offset]])
+/* {{{ proto int preg_match_all(string pattern, string subject [, array &subpatterns [, int flags [, int offset]]])
    Perform a Perl-style global regular expression match */
 static PHP_FUNCTION(preg_match_all)
 {
@@ -899,7 +899,7 @@ static int preg_do_eval(char *eval_str, int eval_str_len, char *subject,
 					match = subject + offsets[backref<<1];
 					match_len = offsets[(backref<<1)+1] - offsets[backref<<1];
 					if (match_len) {
-						esc_match = php_addslashes_ex(match, match_len, &esc_match_len, 0, 1 TSRMLS_CC);
+						esc_match = php_addslashes(match, match_len, &esc_match_len, 0 TSRMLS_CC);
 					} else {
 						esc_match = match;
 						esc_match_len = 0;

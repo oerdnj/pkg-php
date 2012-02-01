@@ -1,5 +1,5 @@
 /* This is a template RC file.
- * $Id: template.rc 302265 2010-08-15 13:40:29Z pajoye $
+ * $Id: template.rc 298283 2010-04-21 23:07:54Z kalle $
  * Do not edit with MSVC */
 #ifdef APSTUDIO_INVOKED
 # error dont edit with MSVC

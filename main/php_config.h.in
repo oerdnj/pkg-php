@@ -1,25 +1,5 @@
 /* main/php_config.h.in.  Generated from configure.in by autoheader.  */
-/* Leave this file alone */
-/*
-   +----------------------------------------------------------------------+
-   | Zend Engine                                                          |
-   +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2012 Zend Technologies Ltd. (http://www.zend.com) |
-   +----------------------------------------------------------------------+
-   | This source file is subject to version 2.00 of the Zend license,     |
-   | that is bundled with this package in the file LICENSE, and is        |
-   | available through the world-wide-web at the following url:           |
-   | http://www.zend.com/license/2_00.txt.                                |
-   | If you did not receive a copy of the Zend license and are unable to  |
-   | obtain it through the world-wide-web, please send a note to          |
-   | license@zend.com so we can mail you a copy immediately.              |
-   +----------------------------------------------------------------------+
-   | Authors: Andi Gutmans <andi@zend.com>                                |
-   |          Zeev Suraski <zeev@zend.com>                                |
-   +----------------------------------------------------------------------+
-*/
 
-/* $Id: acconfig.h 321634 2012-01-01 13:15:04Z felipe $ */
 
 #if defined(__GNUC__) && __GNUC__ >= 4
 # define ZEND_API __attribute__ ((visibility("default")))
@@ -30,7 +10,6 @@
 #endif
 
 #define ZEND_DLIMPORT
-
 
 #undef uint
 #undef ulong
@@ -44,6 +23,9 @@
 
 /* Whether to use native BeOS threads */
 #undef BETHREADS
+
+/* */
+#undef BUGGY_SNMPRINT_VALUE
 
 /* */
 #undef CDB_INCLUDE_FILE
@@ -225,9 +207,6 @@
 /* Whether to build spl as dynamic module */
 #undef COMPILE_DL_SPL
 
-/* Whether to build sqlite as dynamic module */
-#undef COMPILE_DL_SQLITE
-
 /* Whether to build sqlite3 as dynamic module */
 #undef COMPILE_DL_SQLITE3
 
@@ -355,6 +334,9 @@
 
 /* */
 #undef DBA_QDBM
+
+/* */
+#undef DBA_TCADB
 
 /* */
 #undef DBM_INCLUDE_FILE
@@ -599,11 +581,11 @@
    */
 #undef HAVE_DECL_TZNAME
 
-/* Define to 1 if you have the <default_store.h> header file. */
-#undef HAVE_DEFAULT_STORE_H
-
 /* do we have /dev/poll? */
 #undef HAVE_DEVPOLL
+
+/* Define if the target system has /dev/arandom device */
+#undef HAVE_DEV_ARANDOM
 
 /* Define if the target system has /dev/urandom device */
 #undef HAVE_DEV_URANDOM
@@ -643,6 +625,9 @@
 
 /* OpenSSL 0.9.7 or later */
 #undef HAVE_DSA_DEFAULT_METHOD
+
+/* Whether to enable DTrace support */
+#undef HAVE_DTRACE
 
 /* embedded MySQL support enabled */
 #undef HAVE_EMBEDDED_MYSQLI
@@ -789,6 +774,9 @@
 #undef HAVE_GD_WBMP
 
 /* */
+#undef HAVE_GD_WEBP
+
+/* */
 #undef HAVE_GD_XBM
 
 /* */
@@ -919,6 +907,12 @@
 
 /* Define to 1 if you have the <ieeefp.h> header file. */
 #undef HAVE_IEEEFP_H
+
+/* Define to 1 if you have the `if_indextoname' function. */
+#undef HAVE_IF_INDEXTONAME
+
+/* Define to 1 if you have the `if_nametoindex' function. */
+#undef HAVE_IF_NAMETOINDEX
 
 /* */
 #undef HAVE_IMAP
@@ -1216,18 +1210,6 @@
 /* */
 #undef HAVE_MYSQLILIB
 
-/* Define to 1 if you have the `mysql_commit' function. */
-#undef HAVE_MYSQL_COMMIT
-
-/* Define to 1 if you have the `mysql_next_result' function. */
-#undef HAVE_MYSQL_NEXT_RESULT
-
-/* Define to 1 if you have the `mysql_sqlstate' function. */
-#undef HAVE_MYSQL_SQLSTATE
-
-/* Define to 1 if you have the `mysql_stmt_prepare' function. */
-#undef HAVE_MYSQL_STMT_PREPARE
-
 /* Define to 1 if you have the `nanosleep' function. */
 #undef HAVE_NANOSLEEP
 
@@ -1242,9 +1224,6 @@
 
 /* Define to 1 if you have the <netinet/tcp.h> header file. */
 #undef HAVE_NETINET_TCP_H
-
-/* */
-#undef HAVE_NET_SNMP
 
 /* Whether utf8_mime2text() has new signature */
 #undef HAVE_NEW_MIME2TEXT
@@ -1507,6 +1486,9 @@
 /* Define to 1 if you have the `rl_completion_matches' function. */
 #undef HAVE_RL_COMPLETION_MATCHES
 
+/* */
+#undef HAVE_RL_ON_NEW_LINE
+
 /* Whether you use Roxen */
 #undef HAVE_ROXEN
 
@@ -1562,6 +1544,9 @@
 #undef HAVE_SHUTDOWN
 
 /* */
+#undef HAVE_SHUTDOWN_SNMP_LOGGING
+
+/* Whether sigaction() is available */
 #undef HAVE_SIGACTION
 
 /* Define to 1 if you have the <signal.h> header file. */
@@ -1587,9 +1572,6 @@
 
 /* */
 #undef HAVE_SNMP
-
-/* */
-#undef HAVE_SNMP_PARSE_OID
 
 /* Define to 1 if you have the `snprintf' function. */
 #undef HAVE_SNPRINTF
@@ -1768,16 +1750,16 @@
 /* whether you have struct flock */
 #undef HAVE_STRUCT_FLOCK
 
-/* Define to 1 if `st_blksize' is member of `struct stat'. */
+/* Define to 1 if `st_blksize' is a member of `struct stat'. */
 #undef HAVE_STRUCT_STAT_ST_BLKSIZE
 
-/* Define to 1 if `st_blocks' is member of `struct stat'. */
+/* Define to 1 if `st_blocks' is a member of `struct stat'. */
 #undef HAVE_STRUCT_STAT_ST_BLOCKS
 
-/* Define to 1 if `st_rdev' is member of `struct stat'. */
+/* Define to 1 if `st_rdev' is a member of `struct stat'. */
 #undef HAVE_STRUCT_STAT_ST_RDEV
 
-/* Define to 1 if `tm_zone' is member of `struct tm'. */
+/* Define to 1 if `tm_zone' is a member of `struct tm'. */
 #undef HAVE_STRUCT_TM_TM_ZONE
 
 /* Define to 1 if your `struct stat' has `st_blksize'. Deprecated, use
@@ -1860,11 +1842,17 @@
 /* Define to 1 if you have the <sys/resource.h> header file. */
 #undef HAVE_SYS_RESOURCE_H
 
+/* Define to 1 if you have the <sys/sdt.h> header file. */
+#undef HAVE_SYS_SDT_H
+
 /* Define to 1 if you have the <sys/select.h> header file. */
 #undef HAVE_SYS_SELECT_H
 
 /* Define to 1 if you have the <sys/socket.h> header file. */
 #undef HAVE_SYS_SOCKET_H
+
+/* Define to 1 if you have the <sys/sockio.h> header file. */
+#undef HAVE_SYS_SOCKIO_H
 
 /* Define to 1 if you have the <sys/statfs.h> header file. */
 #undef HAVE_SYS_STATFS_H
@@ -2066,9 +2054,6 @@
 /* */
 #undef LINUX
 
-/* */
-#undef MAGIC_QUOTES
-
 /* Whether asctime_r is declared */
 #undef MISSING_ASCTIME_R_DECL
 
@@ -2122,6 +2107,9 @@
 
 /* Define to the one symbol short name of this package. */
 #undef PACKAGE_TARNAME
+
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
@@ -2207,12 +2195,6 @@
 /* whether pwrite64 is default */
 #undef PHP_PWRITE_64
 
-/* */
-#undef PHP_SAFE_MODE
-
-/* */
-#undef PHP_SAFE_MODE_EXEC_DIR
-
 /* Whether the system supports SHA256 salt */
 #undef PHP_SHA256_CRYPT
 
@@ -2221,9 +2203,6 @@
 
 /* */
 #undef PHP_SIGCHILD
-
-/* Have PDO */
-#undef PHP_SQLITE2_HAVE_PDO
 
 /* Whether the system supports standard DES salt */
 #undef PHP_STD_DES_CRYPT
@@ -2257,9 +2236,6 @@
 
 /* The size of `char', as computed by sizeof. */
 #undef SIZEOF_CHAR
-
-/* The size of `char *', as computed by sizeof. */
-#undef SIZEOF_CHAR_P
 
 /* The size of `int', as computed by sizeof. */
 #undef SIZEOF_INT
@@ -2297,12 +2273,6 @@
 /* have sqlite3 with extension support */
 #undef SQLITE_OMIT_LOAD_EXTENSION
 
-/* Size of a pointer */
-#undef SQLITE_PTR_SZ
-
-/* */
-#undef SQLITE_UTF8
-
 /* Needed in sqlunix.h for wchar defs */
 #undef SS_FBX
 
@@ -2320,6 +2290,9 @@
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
+/* */
+#undef TCADB_INCLUDE_FILE
+
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME
 
@@ -2328,9 +2301,6 @@
 
 /* */
 #undef TSRM_ST
-
-/* */
-#undef UCD_SNMP_HACK
 
 /* */
 #undef UNDEF_THREADS_HACK
@@ -2399,8 +2369,8 @@
 /* */
 #undef ZEND_MM_ALIGNMENT_LOG2
 
-/* */
-#undef ZEND_MULTIBYTE
+/* Use zend signal handling */
+#undef ZEND_SIGNALS
 
 /* virtual machine dispatch method */
 #undef ZEND_VM_KIND
@@ -2444,6 +2414,7 @@
 
 /* Define to `unsigned long ' if <sys/types.h> does not define. */
 #undef ulong
+
 
 #ifndef ZEND_ACCONFIG_H_NO_C_PROTOS
 
@@ -2524,11 +2495,5 @@ int zend_sprintf(char *buffer, const char *format, ...);
 #endif
 #endif
 
-/*
- * Local variables:
- * tab-width: 4
- * c-basic-offset: 4
- * indent-tabs-mode: t
- * End:
- */
 #undef PTHREADS
+

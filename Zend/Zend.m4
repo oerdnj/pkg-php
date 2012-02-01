@@ -1,5 +1,5 @@
 dnl
-dnl $Id: Zend.m4 286859 2009-08-06 01:33:54Z scottmac $
+dnl $Id: Zend.m4 312377 2011-06-22 14:23:21Z iliaa $
 dnl
 dnl This file contains Zend specific autoconf functions.
 dnl
@@ -176,13 +176,6 @@ AC_ARG_ENABLE(inline-optimization,
   ZEND_INLINE_OPTIMIZATION=yes
 ])
 
-AC_ARG_ENABLE(zend-multibyte,
-[  --enable-zend-multibyte Compile with zend multibyte support], [
-  ZEND_MULTIBYTE=$enableval
-],[
-  ZEND_MULTIBYTE=no
-])
-
 AC_MSG_CHECKING([virtual machine dispatch method])
 AC_MSG_RESULT($PHP_ZEND_VM)
 
@@ -194,9 +187,6 @@ AC_MSG_RESULT($ZEND_INLINE_OPTIMIZATION)
 
 AC_MSG_CHECKING(whether to enable Zend debugging)
 AC_MSG_RESULT($ZEND_DEBUG)
-
-AC_MSG_CHECKING(whether to enable Zend multibyte)
-AC_MSG_RESULT($ZEND_MULTIBYTE)
 
 case $PHP_ZEND_VM in
   SWITCH)
@@ -231,10 +221,6 @@ if test "$ZEND_MAINTAINER_ZTS" = "yes"; then
   CFLAGS="$CFLAGS -DZTS"
   LIBZEND_CPLUSPLUS_CHECKS
 fi  
-
-if test "$ZEND_MULTIBYTE" = "yes"; then
-  AC_DEFINE(ZEND_MULTIBYTE, 1, [ ])
-fi
 
 changequote({,})
 if test -n "$GCC" && test "$ZEND_INLINE_OPTIMIZATION" != "yes"; then
@@ -406,8 +392,22 @@ int main()
 
 AC_CHECK_FUNCS(mremap)
 
-])
 
+AC_CHECK_FUNC(sigaction, [
+	ZEND_SIGNALS=yes
+	AC_DEFINE(ZEND_SIGNALS, 1, [Use zend signal handling])
+	AC_DEFINE(HAVE_SIGACTION, 1, [Whether sigaction() is available])
+], [
+	ZEND_SIGNALS=no
+])
+if test "$ZEND_SIGNALS" = "yes"; then
+	CFLAGS="$CFLAGS -DZEND_SIGNALS"
+fi
+
+AC_MSG_CHECKING(whether to enable zend signal handling)
+AC_MSG_RESULT($ZEND_SIGNALS)
+
+])
 
 AC_DEFUN([LIBZEND_CPLUSPLUS_CHECKS],[
 
@@ -419,4 +419,11 @@ if test -r "/dev/urandom" && test -c "/dev/urandom"; then
   AC_MSG_RESULT(yes) 
 else 
   AC_MSG_RESULT(no) 
+  AC_MSG_CHECKING(whether /dev/arandom exists) 
+  if test -r "/dev/arandom" && test -c "/dev/arandom"; then 
+    AC_DEFINE([HAVE_DEV_ARANDOM], 1, [Define if the target system has /dev/arandom device])
+    AC_MSG_RESULT(yes) 
+  else 
+    AC_MSG_RESULT(no) 
+  fi 
 fi 

@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: hash.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id: hash.c 322437 2012-01-18 09:15:34Z mike $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -43,7 +43,7 @@ struct mhash_bc_entry {
 	int value;
 };
 
-#define MHASH_NUM_ALGOS 29
+#define MHASH_NUM_ALGOS 34
 
 static struct mhash_bc_entry mhash_to_hash[MHASH_NUM_ALGOS] = {
 	{"CRC32", "crc32", 0},
@@ -74,7 +74,12 @@ static struct mhash_bc_entry mhash_to_hash[MHASH_NUM_ALGOS] = {
 	{"RIPEMD320", "ripemd320", 25},
 	{NULL, NULL, 26}, /* support needs to be added for snefru 128 */
 	{"SNEFRU256", "snefru256", 27},
-	{"MD2", "md2", 28}
+	{"MD2", "md2", 28},
+	{"FNV132", "fnv132", 29},
+	{"FNV1A32", "fnv1a32", 30},
+	{"FNV164", "fnv164", 31},
+	{"FNV1A64", "fnv1a64", 32},
+	{"JOAAT", "joaat", 33},
 };
 #endif
 
@@ -136,7 +141,10 @@ static void php_hash_do_hash(INTERNAL_FUNCTION_PARAMETERS, int isfilename, zend_
 		RETURN_FALSE;
 	}
 	if (isfilename) {
-		stream = php_stream_open_wrapper_ex(data, "rb", REPORT_ERRORS | ENFORCE_SAFE_MODE, NULL, DEFAULT_CONTEXT);
+		if (CHECK_NULL_PATH(data, data_len)) {
+			RETURN_FALSE;
+		}
+		stream = php_stream_open_wrapper_ex(data, "rb", REPORT_ERRORS, NULL, DEFAULT_CONTEXT);
 		if (!stream) {
 			/* Stream will report errors opening file */
 			RETURN_FALSE;
@@ -214,7 +222,7 @@ static void php_hash_do_hash_hmac(INTERNAL_FUNCTION_PARAMETERS, int isfilename, 
 		RETURN_FALSE;
 	}
 	if (isfilename) {
-		stream = php_stream_open_wrapper_ex(data, "rb", REPORT_ERRORS | ENFORCE_SAFE_MODE, NULL, DEFAULT_CONTEXT);
+		stream = php_stream_open_wrapper_ex(data, "rb", REPORT_ERRORS, NULL, DEFAULT_CONTEXT);
 		if (!stream) {
 			/* Stream will report errors opening file */
 			RETURN_FALSE;
@@ -448,7 +456,7 @@ PHP_FUNCTION(hash_update_file)
 	ZEND_FETCH_RESOURCE(hash, php_hash_data*, &zhash, -1, PHP_HASH_RESNAME, php_hash_le_hash);
 	context = php_stream_context_from_zval(zcontext, 0);
 
-	stream = php_stream_open_wrapper_ex(filename, "rb", REPORT_ERRORS | ENFORCE_SAFE_MODE, NULL, context);
+	stream = php_stream_open_wrapper_ex(filename, "rb", REPORT_ERRORS, NULL, context);
 	if (!stream) {
 		/* Stream will report errors opening file */
 		RETURN_FALSE;
@@ -843,8 +851,9 @@ PHP_MINIT_FUNCTION(hash)
 	php_hash_register_algo("adler32",		&php_hash_adler32_ops);
 	php_hash_register_algo("crc32",			&php_hash_crc32_ops);
 	php_hash_register_algo("crc32b",		&php_hash_crc32b_ops);
-	php_hash_register_algo("salsa10",		&php_hash_salsa10_ops);
-	php_hash_register_algo("salsa20",		&php_hash_salsa20_ops);
+	php_hash_register_algo("fnv132",		&php_hash_fnv132_ops);
+	php_hash_register_algo("fnv164",		&php_hash_fnv164_ops);
+	php_hash_register_algo("joaat",			&php_hash_joaat_ops);
 
 	PHP_HASH_HAVAL_REGISTER(3,128);
 	PHP_HASH_HAVAL_REGISTER(3,160);

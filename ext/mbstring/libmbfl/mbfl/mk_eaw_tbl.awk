@@ -1,6 +1,6 @@
 #!/usr/bin/awk -f
 #
-# $Id: mk_eaw_tbl.awk 180252 2005-02-20 22:18:09Z moriyoshi $
+# $Id: mk_eaw_tbl.awk 314082 2011-08-02 03:50:10Z hirokawa $
 #
 # Description: a script to generate east asian width table.
 #
@@ -18,7 +18,8 @@ BEGIN {
 
 /^[0-9a-fA-F]+;/ {
 	if ($2 == "W" || $2 == "F") {
-		v = ( "0x" $1 ) + 0
+
+		v = strtonum( "0x" $1 )
 		if (prev < 0) {
 			first = v
 		} else if (v - prev > 1) {
@@ -44,8 +45,8 @@ BEGIN {
 
 /^[0-9a-fA-F]+\.\./ {
 	if ($4 == "W" || $4 == "F") {
-		vs = ( "0x" $1 ) + 0
-		ve = ( "0x" $3 ) + 0
+		vs = strtonum( "0x" $1 )
+		ve = strtonum( "0x" $3 )
 		if (prev < 0) {
 			first = vs
 		} else if (vs - prev > 1) {

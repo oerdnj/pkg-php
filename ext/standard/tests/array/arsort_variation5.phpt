@@ -73,18 +73,16 @@ bool(true)
 array(12) {
   ["\xhh"]=>
   string(4) "\xhh"
-  ["\e"]=>
-  string(2) "\e"
   ["\ddd"]=>
   string(4) "\ddd"
   ["\cx"]=>
   string(3) "\cx"
   ["\a"]=>
   string(2) "\a"
-  ["
-"]=>
-  string(1) "
-"
+  [""]=>
+  string(1) ""
+  [""]=>
+  string(1) ""
   [""]=>
   string(1) ""
   [""]=>
@@ -105,18 +103,16 @@ bool(true)
 array(12) {
   ["\xhh"]=>
   string(4) "\xhh"
-  ["\e"]=>
-  string(2) "\e"
   ["\ddd"]=>
   string(4) "\ddd"
   ["\cx"]=>
   string(3) "\cx"
   ["\a"]=>
   string(2) "\a"
-  ["
-"]=>
-  string(1) "
-"
+  [""]=>
+  string(1) ""
+  [""]=>
+  string(1) ""
   [""]=>
   string(1) ""
   [""]=>
@@ -137,18 +133,16 @@ bool(true)
 array(12) {
   ["\xhh"]=>
   string(4) "\xhh"
-  ["\e"]=>
-  string(2) "\e"
   ["\ddd"]=>
   string(4) "\ddd"
   ["\cx"]=>
   string(3) "\cx"
   ["\a"]=>
   string(2) "\a"
-  ["
-"]=>
-  string(1) "
-"
+  [""]=>
+  string(1) ""
+  [""]=>
+  string(1) ""
   [""]=>
   string(1) ""
   [""]=>

@@ -31,7 +31,6 @@
 #endif
 
 #include "php_globals.h"
-#include "safe_mode.h"
 
 
 /* Implementation of the language Header() function */
@@ -123,7 +122,7 @@ PHPAPI int php_setcookie(char *name, int name_len, char *value, int value_len, t
 	} else {
 		snprintf(cookie, len + 100, "Set-Cookie: %s=%s", name, value ? encoded_value : "");
 		if (expires > 0) {
-			char *p;
+			const char *p;
 			strlcat(cookie, "; expires=", len + 100);
 			dt = php_format_date("D, d-M-Y H:i:s T", sizeof("D, d-M-Y H:i:s T")-1, expires, 0 TSRMLS_CC);
 			/* check to make sure that the year does not exceed 4 digits in length */
@@ -221,15 +220,15 @@ PHP_FUNCTION(setrawcookie)
 PHP_FUNCTION(headers_sent)
 {
 	zval *arg1 = NULL, *arg2 = NULL;
-	char *file="";
+	const char *file="";
 	int line=0;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|zz", &arg1, &arg2) == FAILURE)
 		return;
 
 	if (SG(headers_sent)) {
-		line = php_get_output_start_lineno(TSRMLS_C);
-		file = php_get_output_start_filename(TSRMLS_C);
+		line = php_output_get_start_lineno(TSRMLS_C);
+		file = php_output_get_start_filename(TSRMLS_C);
 	}
 
 	switch(ZEND_NUM_ARGS()) {
@@ -278,6 +277,38 @@ PHP_FUNCTION(headers_list)
 	}
 	array_init(return_value);
 	zend_llist_apply_with_argument(&SG(sapi_headers).headers, php_head_apply_header_list_to_hash, return_value TSRMLS_CC);
+}
+/* }}} */
+
+/* {{{ proto long http_response_code([int response_code])
+   Sets a response code, or returns the current HTTP response code */
+PHP_FUNCTION(http_response_code)
+{
+	long response_code = 0;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &response_code) == FAILURE) {
+		return;
+	}
+
+	if (response_code)
+	{
+		long old_response_code;
+
+		old_response_code = SG(sapi_headers).http_response_code;
+		SG(sapi_headers).http_response_code = response_code;
+
+		if (old_response_code) {
+			RETURN_LONG(old_response_code);
+		}
+
+		RETURN_TRUE;
+	}
+
+	if (!SG(sapi_headers).http_response_code) {
+		RETURN_FALSE;
+	}
+
+	RETURN_LONG(SG(sapi_headers).http_response_code);
 }
 /* }}} */
 

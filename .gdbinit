@@ -37,9 +37,60 @@ end
 define dump_bt
 	set $t = $arg0
 	while $t
-		printf "[0x%08x] ", $t
+		printf "[%p] ", $t
 		if $t->function_state.function->common.function_name
-			printf "%s() ", $t->function_state.function->common.function_name
+			if $t->function_state.arguments
+				set $count = (int)*($t->function_state.arguments)
+				printf "%s(", $t->function_state.function->common.function_name
+				while $count > 0
+					set $zvalue = *(zval **)($t->function_state.arguments - $count)
+					set $type = $zvalue->type
+					if $type == 0
+						printf "NULL"
+					end
+					if $type == 1
+						printf "%ld", $zvalue->value.lval
+					end
+					if $type == 2
+						printf "%lf", $zvalue->value.dval
+					end
+					if $type == 3
+						if $zvalue->value.lval
+							printf "true"
+						else
+							printf "false"
+						end
+					end
+					if $type == 4
+						printf "array(%d)[%p]", $zvalue->value.ht->nNumOfElements, $zvalue
+					end
+					if $type == 5
+						printf "object[%p]", $zvalue
+					end
+					if $type == 6
+						____print_str $zvalue->value.str.val $zvalue->value.str.len
+					end
+					if $type == 7
+						printf "resource(#%d)", $zvalue->value.lval
+					end
+					if $type == 8 
+						printf "constant"
+					end
+					if $type == 9
+						printf "const_array"
+					end
+					if $type > 9
+						printf "unknown type %d", $type
+					end
+					set $count = $count -1
+					if $count > 0
+						printf ", "
+					end
+				end
+				printf ") "
+			else
+				printf "%s() ", $t->function_state.function->common.function_name
+			end
 		else
 			printf "??? "
 		end
@@ -167,7 +218,7 @@ define ____printzv
 	____executor_globals
 	set $zvalue = $arg0
 
-	printf "[0x%08x] ", $zvalue
+	printf "[%p] ", $zvalue
 
 	if $zvalue == $eg.uninitialized_zval_ptr
 		printf "*uninitialized* "
@@ -208,7 +259,7 @@ end
 
 define print_const_table
 	set $ind = 1
-	printf "[0x%08x] {\n", $arg0
+	printf "[%p] {\n", $arg0
 	____print_const_table $arg0
 	printf "}\n"
 end
@@ -248,7 +299,7 @@ end
 
 define print_ht
 	set $ind = 1
-	printf "[0x%08x] {\n", $arg0
+	printf "[%p] {\n", $arg0
 	____print_ht $arg0 1
 	printf "}\n"
 end
@@ -259,7 +310,7 @@ end
 
 define print_htptr
 	set $ind = 1
-	printf "[0x%08x] {\n", $arg0
+	printf "[%p] {\n", $arg0
 	____print_ht $arg0 0
 	printf "}\n"
 end
@@ -270,7 +321,7 @@ end
 
 define print_htstr
 	set $ind = 1
-	printf "[0x%08x] {\n", $arg0
+	printf "[%p] {\n", $arg0
 	____print_ht $arg0 2
 	printf "}\n"
 end
@@ -306,7 +357,7 @@ end
 
 define print_ft
 	set $ind = 1
-	printf "[0x%08x] {\n", $arg0
+	printf "[%p] {\n", $arg0
 	____print_ft $arg0
 	printf "}\n"
 end
@@ -383,7 +434,7 @@ end
 
 define print_pi
 	set $pi = $arg0
-	printf "[0x%08x] {\n", $pi
+	printf "[%p] {\n", $pi
 	printf "    h     = %lu\n", $pi->h
 	printf "    flags = %d (", $pi->flags
 	if $pi->flags & 0x100
@@ -439,7 +490,7 @@ define printzn
 		set $optype = "IS_UNUSED"
 	end
 
-	printf "[0x%08x] %s", $znode, $optype
+	printf "[%p] %s", $znode, $optype
 
 	if $znode->op_type == 1
 		printf ": "
@@ -519,7 +570,7 @@ define zmemcheck
 			else
 				set $filename = $filename + 1
 			end
-			printf " 0x%08x ", $aptr
+			printf " %p ", $aptr
 			if $p->size == sizeof(struct _zval_struct) && ((struct _zval_struct *)$aptr)->type >= 0 && ((struct _zval_struct *)$aptr)->type < 10
 				printf "ZVAL?(%-2d) ", $p->size
 			else
@@ -549,7 +600,7 @@ define zmemcheck
 		end
 	end
 	if $not_found
-		printf "no such block that begins at 0x%08x.\n", $aptr 
+		printf "no such block that begins at %p.\n", $aptr 
 	end
 	if $arg0 == 0
 		printf "-------------------------------------------------------------------------------\n"

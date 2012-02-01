@@ -2503,12 +2503,8 @@ static void php_pgsql_fetch_hash(INTERNAL_FUNCTION_PARAMETERS, long result_type,
 				int should_copy=0;
 				const uint element_len = strlen(element);
 
-				if (PG(magic_quotes_runtime)) {
-					data = php_addslashes(element, element_len, &data_len, 0 TSRMLS_CC);
-				} else {
-					data = safe_estrndup(element, element_len);
-					data_len = element_len;
-				}
+				data = safe_estrndup(element, element_len);
+				data_len = element_len;
 			
 				if (result_type & PGSQL_NUM) {
 					add_index_stringl(return_value, i, data, data_len, should_copy);
@@ -2883,7 +2879,7 @@ PHP_FUNCTION(pg_trace)
 
 	ZEND_FETCH_RESOURCE2(pgsql, PGconn *, &pgsql_link, id, "PostgreSQL link", le_link, le_plink);
 
-	stream = php_stream_open_wrapper(z_filename, mode, ENFORCE_SAFE_MODE|REPORT_ERRORS, NULL);
+	stream = php_stream_open_wrapper(z_filename, mode, REPORT_ERRORS, NULL);
 
 	if (!stream) {
 		RETURN_FALSE;
@@ -3173,7 +3169,7 @@ PHP_FUNCTION(pg_lo_open)
 				} else {
 					pgsql_lofp->conn = pgsql;
 					pgsql_lofp->lofd = pgsql_lofd;
-					Z_LVAL_P(return_value) = zend_list_insert(pgsql_lofp, le_lofp);
+					Z_LVAL_P(return_value) = zend_list_insert(pgsql_lofp, le_lofp TSRMLS_CC);
 					Z_TYPE_P(return_value) = IS_LONG;
 				}
 			}
@@ -3326,29 +3322,21 @@ PHP_FUNCTION(pg_lo_import)
 	Oid returned_oid;
 
 	if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, argc TSRMLS_CC,
-								 "rs|z", &pgsql_link, &file_in, &name_len, &oid) == SUCCESS) {
+								 "rp|z", &pgsql_link, &file_in, &name_len, &oid) == SUCCESS) {
 		;
 	}
 	else if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, argc TSRMLS_CC,
-									  "s|z", &file_in, &name_len, &oid) == SUCCESS) {
+									  "p|z", &file_in, &name_len, &oid) == SUCCESS) {
 		id = PGG(default_link);
 		CHECK_DEFAULT_LINK(id);
 	}
 	/* old calling convention, deprecated since PHP 4.2 */
 	else if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, argc TSRMLS_CC,
-									  "sr", &file_in, &name_len, &pgsql_link ) == SUCCESS) {
+									  "pr", &file_in, &name_len, &pgsql_link ) == SUCCESS) {
 		php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Old API is used");
 	}
 	else {
 		WRONG_PARAM_COUNT;
-	}
-
-	if (strlen(file_in) != name_len) {
-		RETURN_FALSE;
-	}
-
-	if (PG(safe_mode) &&(!php_checkuid(file_in, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
-		RETURN_FALSE;
 	}
 	
 	if (php_check_open_basedir(file_in TSRMLS_CC)) {
@@ -3424,7 +3412,7 @@ PHP_FUNCTION(pg_lo_export)
 
 	/* allow string to handle large OID value correctly */
 	if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, argc TSRMLS_CC,
-								 "rls", &pgsql_link, &oid_long, &file_out, &name_len) == SUCCESS) {
+								 "rlp", &pgsql_link, &oid_long, &file_out, &name_len) == SUCCESS) {
 		if (oid_long <= InvalidOid) {
 			php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Invalid OID specified");
 			RETURN_FALSE;
@@ -3441,7 +3429,7 @@ PHP_FUNCTION(pg_lo_export)
 		}
 	}
 	else if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, argc TSRMLS_CC,
-									  "ls",  &oid_long, &file_out, &name_len) == SUCCESS) {
+									  "lp",  &oid_long, &file_out, &name_len) == SUCCESS) {
 		if (oid_long <= InvalidOid) {
 			php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Invalid OID specified");
 			RETURN_FALSE;
@@ -3451,7 +3439,7 @@ PHP_FUNCTION(pg_lo_export)
 		CHECK_DEFAULT_LINK(id);
 	}
 	else if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, argc TSRMLS_CC,
-								 "ss", &oid_string, &oid_strlen, &file_out, &name_len) == SUCCESS) {
+								 "sp", &oid_string, &oid_strlen, &file_out, &name_len) == SUCCESS) {
 		oid = (Oid)strtoul(oid_string, &end_ptr, 10);
 		if ((oid_string+oid_strlen) != end_ptr) {
 			/* wrong integer format */
@@ -3462,7 +3450,7 @@ PHP_FUNCTION(pg_lo_export)
 		CHECK_DEFAULT_LINK(id);
 	}
 	else if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, argc TSRMLS_CC,
-								 "ssr", &oid_string, &oid_strlen, &file_out, &name_len, &pgsql_link) == SUCCESS) {
+								 "spr", &oid_string, &oid_strlen, &file_out, &name_len, &pgsql_link) == SUCCESS) {
 		oid = (Oid)strtoul(oid_string, &end_ptr, 10);
 		if ((oid_string+oid_strlen) != end_ptr) {
 			/* wrong integer format */
@@ -3471,7 +3459,7 @@ PHP_FUNCTION(pg_lo_export)
 		}
 	}
 	else if (zend_parse_parameters_ex(ZEND_PARSE_PARAMS_QUIET, argc TSRMLS_CC,
-									  "lsr", &oid_long, &file_out, &name_len, &pgsql_link) == SUCCESS) {
+									  "lpr", &oid_long, &file_out, &name_len, &pgsql_link) == SUCCESS) {
 		php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Old API is used");
 		if (oid_long <= InvalidOid) {
 			php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Invalid OID specified");
@@ -3481,14 +3469,6 @@ PHP_FUNCTION(pg_lo_export)
 	}
 	else {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Requires 2 or 3 arguments");
-		RETURN_FALSE;
-	}
-
-	if (strlen(file_out) != name_len) {
-		RETURN_FALSE;
-	}
-
-	if (PG(safe_mode) &&(!php_checkuid(file_out, NULL, CHECKUID_CHECK_FILE_AND_DIR))) {
 		RETURN_FALSE;
 	}
 	
@@ -6233,12 +6213,9 @@ PHP_PGSQL_API int php_pgsql_result2array(PGresult *pg_result, zval *ret_array TS
 					size_t data_len;
 					const size_t element_len = strlen(element);
 
-					if (PG(magic_quotes_runtime)) {
-						data = php_addslashes(element, element_len, &data_len, 0 TSRMLS_CC);
-					} else {
-						data = safe_estrndup(element, element_len);
-						data_len = element_len;
-					}
+					data = safe_estrndup(element, element_len);
+					data_len = element_len;
+					
 					field_name = PQfname(pg_result, i);
 					add_assoc_stringl(row, field_name, data, data_len, 0);
 				}

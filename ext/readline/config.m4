@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 292081 2009-12-13 17:06:47Z felipe $
+dnl $Id: config.m4 316265 2011-09-06 15:07:24Z bjori $
 dnl
 
 PHP_ARG_WITH(libedit,for libedit readline replacement, 
@@ -60,6 +60,13 @@ if test "$PHP_READLINE" && test "$PHP_READLINE" != "no"; then
     -L$READLINE_DIR/$PHP_LIBDIR $PHP_READLINE_LIBS
   ])
 
+  PHP_CHECK_LIBRARY(edit, rl_on_new_line,
+  [
+    AC_DEFINE(HAVE_RL_ON_NEW_LINE, 1, [ ])
+  ],[],[
+    -L$READLINE_DIR/$PHP_LIBDIR $PHP_READLINE_LIBS
+  ])
+
   AC_DEFINE(HAVE_LIBREADLINE, 1, [ ])
 
 elif test "$PHP_LIBEDIT" != "no"; then
@@ -93,11 +100,25 @@ elif test "$PHP_LIBEDIT" != "no"; then
     -L$READLINE_DIR/$PHP_LIBDIR 
   ])
 
+  PHP_CHECK_LIBRARY(edit, rl_callback_read_char,
+  [
+    AC_DEFINE(HAVE_RL_CALLBACK_READ_CHAR, 1, [ ])
+  ],[],[
+    -L$READLINE_DIR/$PHP_LIBDIR
+  ])
+
+  PHP_CHECK_LIBRARY(edit, rl_on_new_line,
+  [
+    AC_DEFINE(HAVE_RL_ON_NEW_LINE, 1, [ ])
+  ],[],[
+    -L$READLINE_DIR/$PHP_LIBDIR
+  ])
+
   AC_DEFINE(HAVE_LIBEDIT, 1, [ ])
 fi
 
 if test "$PHP_READLINE" != "no" || test "$PHP_LIBEDIT" != "no"; then
   AC_CHECK_FUNCS([rl_completion_matches])
-  PHP_NEW_EXTENSION(readline, readline.c, $ext_shared, cli)
+  PHP_NEW_EXTENSION(readline, readline.c readline_cli.c, $ext_shared, cli)
   PHP_SUBST(READLINE_SHARED_LIBADD)
 fi

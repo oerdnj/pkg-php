@@ -12,9 +12,9 @@
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
   +----------------------------------------------------------------------+
-  | Authors: Georg Richter <georg@mysql.com>                             |
-  |          Andrey Hristov <andrey@mysql.com>                           |
+  | Authors: Andrey Hristov <andrey@mysql.com>                           |
   |          Ulf Wendel <uwendel@mysql.com>                              |
+  |          Georg Richter <georg@mysql.com>                             |
   +----------------------------------------------------------------------+
 */
 
@@ -258,18 +258,14 @@ void ps_fetch_time(zval *zv, const MYSQLND_FIELD * const field,
 		t.time_type = MYSQLND_TIMESTAMP_TIME;
 	}
 
-	/*
-	  QQ : How to make this unicode without copying two times the buffer -
-	  Unicode equivalent of spprintf?
-	*/
-	length = spprintf(&value, 0, "%s%02u:%02u:%02u", (t.neg ? "-" : ""), t.hour, t.minute, t.second);
+	length = mnd_sprintf(&value, 0, "%s%02u:%02u:%02u", (t.neg ? "-" : ""), t.hour, t.minute, t.second);
 
 	DBG_INF_FMT("%s", value);
 #if MYSQLND_UNICODE
 	if (!as_unicode) {
 #endif
 		ZVAL_STRINGL(zv, value, length, 1);
-		efree(value);  /* allocated by spprintf */
+		mnd_sprintf_free(value);
 #if MYSQLND_UNICODE
 	} else {
 		ZVAL_UTF8_STRINGL(zv, value, length, ZSTR_AUTOFREE);
@@ -309,18 +305,14 @@ void ps_fetch_date(zval *zv, const MYSQLND_FIELD * const field,
 		t.time_type = MYSQLND_TIMESTAMP_DATE;
 	}
 
-	/*
-	  QQ : How to make this unicode without copying two times the buffer -
-	  Unicode equivalent of spprintf?
-	*/
-	length = spprintf(&value, 0, "%04u-%02u-%02u", t.year, t.month, t.day);
+	length = mnd_sprintf(&value, 0, "%04u-%02u-%02u", t.year, t.month, t.day);
 
 	DBG_INF_FMT("%s", value);
 #if MYSQLND_UNICODE
 	if (!as_unicode) {
 #endif
 		ZVAL_STRINGL(zv, value, length, 1);
-		efree(value); /* allocated by spprintf */
+		mnd_sprintf_free(value);
 #if MYSQLND_UNICODE
 	} else {
 		ZVAL_UTF8_STRINGL(zv, value, length, ZSTR_AUTOFREE);
@@ -367,19 +359,14 @@ void ps_fetch_datetime(zval *zv, const MYSQLND_FIELD * const field,
 		t.time_type = MYSQLND_TIMESTAMP_DATETIME;
 	}
 
-	/*
-	  QQ : How to make this unicode without copying two times the buffer -
-	  Unicode equivalent of spprintf?
-	*/
-	length = spprintf(&value, 0, "%04u-%02u-%02u %02u:%02u:%02u",
-					  t.year, t.month, t.day, t.hour, t.minute, t.second);
+	length = mnd_sprintf(&value, 0, "%04u-%02u-%02u %02u:%02u:%02u", t.year, t.month, t.day, t.hour, t.minute, t.second);
 
 	DBG_INF_FMT("%s", value);
 #if MYSQLND_UNICODE
 	if (!as_unicode) {
 #endif
 		ZVAL_STRINGL(zv, value, length, 1);
-		efree(value); /* allocated by spprintf */
+		mnd_sprintf_free(value);
 #if MYSQLND_UNICODE
 	} else {
 		ZVAL_UTF8_STRINGL(zv, to, length, ZSTR_AUTOFREE);
@@ -621,7 +608,7 @@ mysqlnd_stmt_execute_store_params(MYSQLND_STMT * s, zend_uchar **buf, zend_uchar
 			*buf_len = offset + null_count + 20;
 			tmp_buf = mnd_emalloc(*buf_len);
 			if (!tmp_buf) {
-				SET_OOM_ERROR(stmt->error_info);
+				SET_OOM_ERROR(*stmt->error_info);
 				goto end;
 			}
 			memcpy(tmp_buf, *buf, offset);
@@ -655,7 +642,7 @@ mysqlnd_stmt_execute_store_params(MYSQLND_STMT * s, zend_uchar **buf, zend_uchar
 			if (Z_TYPE_P(stmt->param_bind[i].zv) != IS_LONG &&
 				PASS != mysqlnd_stmt_copy_it(&copies, stmt->param_bind[i].zv, stmt->param_count, i TSRMLS_CC))
 			{
-				SET_OOM_ERROR(stmt->error_info);
+				SET_OOM_ERROR(*stmt->error_info);
 				goto end;
 			}
 			/*
@@ -683,7 +670,7 @@ mysqlnd_stmt_execute_store_params(MYSQLND_STMT * s, zend_uchar **buf, zend_uchar
 			*buf_len = offset + stmt->param_count * 2 + 20;
 			tmp_buf = mnd_emalloc(*buf_len);
 			if (!tmp_buf) {
-				SET_OOM_ERROR(stmt->error_info);
+				SET_OOM_ERROR(*stmt->error_info);
 				goto end;
 			}
 			memcpy(tmp_buf, *buf, offset);
@@ -746,7 +733,7 @@ mysqlnd_stmt_execute_store_params(MYSQLND_STMT * s, zend_uchar **buf, zend_uchar
 				/* Double binding of the same zval, make a copy */
 				if (!copies || !copies[i]) {
 					if (PASS != mysqlnd_stmt_copy_it(&copies, the_var, stmt->param_count, i TSRMLS_CC)) {
-						SET_OOM_ERROR(stmt->error_info);
+						SET_OOM_ERROR(*stmt->error_info);
 						goto end;
 					}
 				}
@@ -760,7 +747,7 @@ mysqlnd_stmt_execute_store_params(MYSQLND_STMT * s, zend_uchar **buf, zend_uchar
 				if (Z_TYPE_P(the_var) != IS_DOUBLE) {
 					if (!copies || !copies[i]) {
 						if (PASS != mysqlnd_stmt_copy_it(&copies, the_var, stmt->param_count, i TSRMLS_CC)) {
-							SET_OOM_ERROR(stmt->error_info);
+							SET_OOM_ERROR(*stmt->error_info);
 							goto end;
 						}
 					}
@@ -807,7 +794,7 @@ use_string:
 				{
 					if (!copies || !copies[i]) {
 						if (PASS != mysqlnd_stmt_copy_it(&copies, the_var, stmt->param_count, i TSRMLS_CC)) {
-							SET_OOM_ERROR(stmt->error_info);
+							SET_OOM_ERROR(*stmt->error_info);
 							goto end;
 						}
 					}
@@ -832,7 +819,7 @@ use_string:
 		*buf_len = offset + data_size + 10; /* Allocate + 10 for safety */
 		tmp_buf = mnd_emalloc(*buf_len);
 		if (!tmp_buf) {
-			SET_OOM_ERROR(stmt->error_info);
+			SET_OOM_ERROR(*stmt->error_info);
 			goto end;
 		}
 		memcpy(tmp_buf, *buf, offset);

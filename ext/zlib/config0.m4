@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config0.m4 296107 2010-03-12 10:28:59Z jani $
+dnl $Id: config0.m4 299980 2010-05-31 10:29:43Z mike $
 dnl
 
 PHP_ARG_WITH(zlib,for ZLIB support,
@@ -41,10 +41,17 @@ if test "$PHP_ZLIB" != "no" || test "$PHP_ZLIB_DIR" != "no"; then
   *) ac_extra=-L$ZLIB_DIR/$PHP_LIBDIR ;;
   esac
 
+  AC_MSG_CHECKING([for zlib version >= 1.2.0.4])
+  ZLIB_VERSION=`$EGREP "define ZLIB_VERSION" $ZLIB_DIR/include/zlib.h | $SED -e 's/[[^0-9\.]]//g'`
+  AC_MSG_RESULT([$ZLIB_VERSION])
+  if test `echo $ZLIB_VERSION | $SED -e 's/[[^0-9]]/ /g' | $AWK '{print $1*1000000 + $2*10000 + $3*100 + $4}'` -lt 1020004; then
+    AC_MSG_ERROR([libz version greater or equal to 1.2.0.4 required])
+  fi
+
   PHP_CHECK_LIBRARY(z, gzgets, [
     AC_DEFINE(HAVE_ZLIB,1,[ ]) 
   ],[
-    AC_MSG_ERROR(ZLIB extension requires zlib >= 1.0.9)
+    AC_MSG_ERROR(ZLIB extension requires gzgets in zlib)
   ],[
     $ac_extra
   ])

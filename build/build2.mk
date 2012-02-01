@@ -14,7 +14,7 @@
 #  | Author: Sascha Schumann <sascha@schumann.cx>                         |
 #  +----------------------------------------------------------------------+
 #
-# $Id: build2.mk 226204 2007-01-01 19:32:10Z iliaa $ 
+# $Id: build2.mk 311067 2011-05-16 00:14:47Z rasmus $ 
 #
 
 include generated_lists
@@ -25,8 +25,6 @@ LT_TARGETS = ltmain.sh config.guess config.sub
 
 config_h_in = main/php_config.h.in
 
-acconfig_h_SOURCES = acconfig.h.in $(config_h_files)
-
 targets = $(TOUCH_FILES) configure $(config_h_in)
 
 PHP_AUTOCONF ?= 'autoconf'
@@ -36,11 +34,7 @@ SUPPRESS_WARNINGS ?= 2>&1 | (egrep -v '(AC_TRY_RUN called without default to all
 
 all: $(targets)
 
-acconfig.h: $(acconfig_h_SOURCES)
-	@echo rebuilding $@
-	cat $(acconfig_h_SOURCES) > $@
-
-$(config_h_in): configure acconfig.h
+$(config_h_in): configure
 # explicitly remove target since autoheader does not seem to work 
 # correctly otherwise (timestamps are not updated)
 	@echo rebuilding $@

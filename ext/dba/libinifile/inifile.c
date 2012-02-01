@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: inifile.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id: inifile.c 298625 2010-04-26 23:53:30Z kalle $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -24,7 +24,6 @@
 
 #include "php.h"
 #include "php_globals.h"
-#include "safe_mode.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -43,7 +42,7 @@
 /* {{{ inifile_version */
 char *inifile_version() 
 {
-	return "1.0, $Revision: 293036 $";
+	return "1.0, $Revision: 298625 $";
 }
 /* }}} */ 
 

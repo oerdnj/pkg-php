@@ -558,7 +558,6 @@ void cgi_php_import_environment_variables(zval *array_ptr TSRMLS_DC)
 {
 	fcgi_request *request;
 	HashPosition pos;
-	int magic_quotes_gpc;;
 	char *var, **val;
 	uint var_len;
 	ulong idx;
@@ -591,11 +590,8 @@ void cgi_php_import_environment_variables(zval *array_ptr TSRMLS_DC)
 	php_php_import_environment_variables(array_ptr TSRMLS_CC);
 
 	request = (fcgi_request*) SG(server_context);
-	magic_quotes_gpc = PG(magic_quotes_gpc);
 	filter_arg = (array_ptr == PG(http_globals)[TRACK_VARS_ENV])?PARSE_ENV:PARSE_SERVER;
 
-	/* turn off magic_quotes while importing environment variables */
-	PG(magic_quotes_gpc) = 0;
 	for (zend_hash_internal_pointer_reset_ex(request->env, &pos);
 	     zend_hash_get_current_key_ex(request->env, &var, &var_len, &idx, 0, &pos) == HASH_KEY_IS_STRING &&
 	     zend_hash_get_current_data_ex(request->env, (void **) &val, &pos) == SUCCESS;
@@ -607,7 +603,6 @@ void cgi_php_import_environment_variables(zval *array_ptr TSRMLS_DC)
 			php_register_variable_safe(var, *val, new_val_len, array_ptr TSRMLS_CC);
 		}
 	}
-	PG(magic_quotes_gpc) = magic_quotes_gpc;
 }
 
 static void sapi_cgi_register_variables(zval *track_vars_array TSRMLS_DC)
@@ -651,10 +646,8 @@ static void sapi_cgi_register_variables(zval *track_vars_array TSRMLS_DC)
 	}
 }
 
-static void sapi_cgi_log_message(char *message)
+static void sapi_cgi_log_message(char *message TSRMLS_DC)
 {
-	TSRMLS_FETCH();
-
 	if (CGIG(fcgi_logging)) {
 		zlog(ZLOG_NOTICE, "PHP message: %s", message);
 	}
@@ -1471,7 +1464,7 @@ PHP_FUNCTION(fastcgi_finish_request) /* {{{ */
 
 	if (request->fd >= 0) {
 
-		php_end_ob_buffers(1 TSRMLS_CC);
+		php_output_end_all(TSRMLS_C);
 		php_header(TSRMLS_C);
 
 		fcgi_flush(request, 1);
@@ -1507,7 +1500,7 @@ static zend_module_entry cgi_module_entry = {
 int main(int argc, char *argv[])
 {
 	int exit_status = SUCCESS;
-	int cgi = 0, c;
+	int cgi = 0, c, use_extended_info = 0;
 	zend_file_handle file_handle;
 
 	/* temporary locals */
@@ -1530,8 +1523,6 @@ int main(int argc, char *argv[])
 	int test_conf = 0;
 	int php_information = 0;
 
-	fcgi_init();
-
 #ifdef HAVE_SIGNAL_H
 #if defined(SIGPIPE) && defined(SIG_IGN)
 	signal(SIGPIPE, SIG_IGN); /* ignore SIGPIPE in standalone mode so
@@ -1550,6 +1541,9 @@ int main(int argc, char *argv[])
 
 	sapi_startup(&cgi_sapi_module);
 	cgi_sapi_module.php_ini_path_override = NULL;
+	cgi_sapi_module.php_ini_ignore_cwd = 1;
+	
+	fcgi_init();
 
 #ifdef PHP_WIN32
 	_fmode = _O_BINARY; /* sets default for file streams to binary */
@@ -1616,7 +1610,7 @@ int main(int argc, char *argv[])
 				break;
 
 			case 'e': /* enable extended info output */
-				CG(compiler_options) |= ZEND_COMPILE_EXTENDED_INFO;
+				use_extended_info = 1;
 				break;
 
 			case 't': 
@@ -1625,7 +1619,6 @@ int main(int argc, char *argv[])
 
 			case 'm': /* list compiled in modules */
 				cgi_sapi_module.startup(&cgi_sapi_module);
-				php_output_startup();
 				php_output_activate(TSRMLS_C);
 				SG(headers_sent) = 1;
 				php_printf("[PHP Modules]\n");
@@ -1633,7 +1626,8 @@ int main(int argc, char *argv[])
 				php_printf("\n[Zend Modules]\n");
 				print_extensions(TSRMLS_C);
 				php_printf("\n");
-				php_end_ob_buffers(1 TSRMLS_CC);
+				php_output_end_all(TSRMLS_C);
+				php_output_deactivate(TSRMLS_C);
 				fcgi_shutdown();
 				exit_status = 0;
 				goto out;
@@ -1646,11 +1640,11 @@ int main(int argc, char *argv[])
 			case 'h':
 			case '?':
 				cgi_sapi_module.startup(&cgi_sapi_module);
-				php_output_startup();
 				php_output_activate(TSRMLS_C);
 				SG(headers_sent) = 1;
 				php_cgi_usage(argv[0]);
-				php_end_ob_buffers(1 TSRMLS_CC);
+				php_output_end_all(TSRMLS_C);
+				php_output_deactivate(TSRMLS_C);
 				fcgi_shutdown();
 				exit_status = 0;
 				goto out;
@@ -1694,16 +1688,16 @@ int main(int argc, char *argv[])
 		goto out;
 	}
 
-	/* No other args are permitted here as there is not interactive mode */
+	/* No other args are permitted here as there is no interactive mode */
 	if (argc != php_optind) {
 		cgi_sapi_module.startup(&cgi_sapi_module);
-		php_output_startup();
 		php_output_activate(TSRMLS_C);
 		SG(headers_sent) = 1;
 		php_cgi_usage(argv[0]);
-		php_end_ob_buffers(1 TSRMLS_CC);
-		exit_status = 0;
+		php_output_end_all(TSRMLS_C);
+		php_output_deactivate(TSRMLS_C);
 		fcgi_shutdown();
+		exit_status = 0;
 		goto out;
 	}
 
@@ -1723,6 +1717,10 @@ int main(int argc, char *argv[])
 		tsrm_shutdown();
 #endif
 		return FAILURE;
+	}
+	
+	if (use_extended_info) {
+		CG(compiler_options) |= ZEND_COMPILE_EXTENDED_INFO;
 	}
 
 	/* check force_cgi after startup, so we have proper output */

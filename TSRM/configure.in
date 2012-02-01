@@ -1,4 +1,4 @@
-dnl $Id: configure.in 53832 2001-08-08 10:26:21Z zeev $
+dnl $Id: configure.in 311067 2011-05-16 00:14:47Z rasmus $
 dnl
 dnl Minimalistic configure.in for TSRM.
 dnl
@@ -6,6 +6,10 @@ dnl
 AC_INIT(TSRM.c)
 AM_INIT_AUTOMAKE(TSRM, 1.0, nodefine)
 AM_CONFIG_HEADER(tsrm_config.h)
+
+AH_TOP([
+#undef PTHREADS
+])
 
 sinclude(tsrm.m4)
 	

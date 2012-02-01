@@ -1,5 +1,5 @@
 
-	/* $Id: fpm_status.c 317901 2011-10-08 14:04:09Z fat $ */
+	/* $Id: fpm_status.c 313454 2011-07-19 22:18:08Z fat $ */
 	/* (c) 2009 Jerome Loyet */
 
 #include "php.h"
@@ -377,7 +377,8 @@ int fpm_status_handle_request(TSRMLS_D) /* {{{ */
 
 		/* no need to test the var 'full' */
 		if (full_syntax) {
-			int i, len, first;
+			int i, first;
+			size_t len;
 			char *query_string;
 			struct timeval duration, now;
 #ifdef HAVE_FPM_LQ
