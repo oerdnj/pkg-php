@@ -14,16 +14,4 @@ while read dsoname priority; do
 	5.4.0~rc6-1 -- "$@";
 done < /usr/lib/php5/@package@.modules
 
-case "$1" in
-    configure)
-	dsolist=""
-	[ -f /usr/lib/php5/@package@.modules ] && \
-	while read dsoname priority; do
-	    [ -n "${priority}" ] && dsoname=${dsoname}/${priority}
-	    dsolist="$dsolist ${dsoname}"
-	done < /usr/lib/php5/@package@.modules && \
-	[ -n "${dsolist}" ] && php5enmod ${dsolist}
-    ;;
-esac
-
 exit 0

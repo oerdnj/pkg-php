@@ -1,3 +1,36 @@
+php5 (5.4.0~rc6-2) unstable; urgency=low
+
+  t1lib support was removed from PHP 5.4.  t1lib has many security
+  issues and is unmaintained by upstream for a very long time (3 years).
+
+  For more information see:
+    + http://bugs.debian.org/637488
+    + http://bugs.debian.org/638755
+  
+  This unfortunately also means that following functions are not
+  available in PHP5 from now:
+  
+    - imagepsloadfont
+    - imagepsfreefont
+    - imagepsencodefont
+    - imagepsextendfont
+    - imagepsslantfont
+    - imagepstext
+    - imagepsbbox
+
+  If you really need those functions you will need to install t1lib from
+  sources.  You will need to install php5-dev and recompile GD extension
+  (roughly) using following commands:
+
+    cd <path_to_php5_sources>/ext/gd/
+    phpize
+    configure --with-gd=shared,/usr --enable-gd-native-ttf \
+      --with-t1lib=<location_of_your_t1lib>
+    make
+    make install
+
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 01 Feb 2012 18:19:45 +0100
+
 php5 (5.3.9-4) unstable; urgency=low
 
   * The Suhosin patch is now disabled in the default build.

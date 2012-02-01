@@ -1,4 +1,5 @@
 curl CURL
+common PDO pdo 10
 enchant Enchant
 gd GD
 gmp GMP

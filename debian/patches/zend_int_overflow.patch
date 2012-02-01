@@ -8,7 +8,7 @@ Bug-Debian: http://bugs.debian.org/570144
 +++ b/Zend/zend_hash.h
 @@ -306,9 +306,11 @@ END_EXTERN_C()
  
- #define ZEND_HANDLE_NUMERIC(key, length, func) do {							\
+ #define ZEND_HANDLE_NUMERIC_EX(key, length, idx, func) do {					\
  	register const char *tmp = key;											\
 +	int negative = 0;											\
  																			\
@@ -18,7 +18,7 @@ Bug-Debian: http://bugs.debian.org/570144
  	}																		\
  	if (*tmp >= '0' && *tmp <= '9') { /* possibly a numeric index */		\
  		const char *end = key + length - 1;									\
-@@ -322,19 +324,19 @@ END_EXTERN_C()
+@@ -321,19 +323,19 @@ END_EXTERN_C()
  		     *tmp > '2')) { /* overflow */									\
  			break;															\
  		}																	\
@@ -45,7 +45,7 @@ Bug-Debian: http://bugs.debian.org/570144
  			}																\
 +		}																	\
 +		if (tmp == end) {													\
- 			return func;													\
+ 			func;															\
  		}																	\
  	}																		\
 --- a/Zend/tests/bug45877.phpt

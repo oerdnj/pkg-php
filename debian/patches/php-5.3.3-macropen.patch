@@ -1,6 +1,6 @@
 --- a/ext/dba/dba.c
 +++ b/ext/dba/dba.c
-@@ -912,7 +912,7 @@ static void php_dba_open(INTERNAL_FUNCTI
+@@ -907,7 +907,7 @@ static void php_dba_open(INTERNAL_FUNCTI
  		}
  	}
  

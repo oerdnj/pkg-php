@@ -1,5 +1,5 @@
---- php-5.2.4/acinclude.m4.norpath
-+++ php-5.2.4/acinclude.m4
+--- a/acinclude.m4
++++ b/acinclude.m4
 @@ -432,6 +432,7 @@ AC_DEFUN([PHP_EVAL_INCLINE],[
  dnl internal, don't use
  AC_DEFUN([_PHP_ADD_LIBPATH_GLOBAL],[

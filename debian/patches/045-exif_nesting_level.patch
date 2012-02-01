@@ -5,7 +5,7 @@ Last-Update: 2010-01-18
 
 --- a/ext/exif/exif.c
 +++ b/ext/exif/exif.c
-@@ -109,7 +109,7 @@ typedef unsigned char uchar;
+@@ -99,7 +99,7 @@ typedef unsigned char uchar;
  
  #define EFREE_IF(ptr)	if (ptr) efree(ptr)
  

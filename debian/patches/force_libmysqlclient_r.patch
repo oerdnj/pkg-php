@@ -8,7 +8,7 @@ Last-Update: 2010-01-18
 
 --- a/ext/mysql/config.m4
 +++ b/ext/mysql/config.m4
-@@ -78,7 +78,7 @@ elif test "$PHP_MYSQL" != "no"; then
+@@ -76,7 +76,7 @@ elif test "$PHP_MYSQL" != "no"; then
  Note that the MySQL client library is not bundled anymore!])
    fi
  
@@ -19,7 +19,7 @@ Last-Update: 2010-01-18
      MYSQL_LIBNAME=mysqlclient
 --- a/ext/mysqli/config.m4
 +++ b/ext/mysqli/config.m4
-@@ -29,7 +29,7 @@ elif test "$PHP_MYSQLI" != "no"; then
+@@ -25,7 +25,7 @@ elif test "$PHP_MYSQLI" != "no"; then
      MYSQL_LIB_CFG='--libmysqld-libs'
      dnl mysqlnd doesn't support embedded, so we have to add some extra stuff
      mysqli_extra_sources="mysqli_embedded.c"
@@ -30,7 +30,7 @@ Last-Update: 2010-01-18
    else
 --- a/ext/pdo_mysql/config.m4
 +++ b/ext/pdo_mysql/config.m4
-@@ -64,7 +64,7 @@ if test "$PHP_PDO_MYSQL" != "no"; then
+@@ -55,7 +55,7 @@ if test "$PHP_PDO_MYSQL" != "no"; then
        if test "x$SED" = "x"; then
          AC_PATH_PROG(SED, sed)
        fi

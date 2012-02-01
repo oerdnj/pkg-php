@@ -1,6 +1,6 @@
 --- a/acinclude.m4
 +++ b/acinclude.m4
-@@ -2379,9 +2379,7 @@ AC_DEFUN([PHP_SETUP_OPENSSL],[
+@@ -2390,9 +2390,7 @@ AC_DEFUN([PHP_SETUP_OPENSSL],[
  
      PHP_ADD_INCLUDE($OPENSSL_INCDIR)
    

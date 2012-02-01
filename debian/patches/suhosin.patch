@@ -11,18 +11,19 @@ the following modifications have been made:
  * "quilt refresh" has been run to clean up the offsets, etc
 --- a/Zend/Makefile.am
 +++ b/Zend/Makefile.am
-@@ -17,7 +17,7 @@ libZend_la_SOURCES=\
+@@ -17,7 +17,8 @@ libZend_la_SOURCES=\
  	zend_objects_API.c zend_ts_hash.c zend_stream.c \
  	zend_default_classes.c \
  	zend_iterators.c zend_interfaces.c zend_exceptions.c \
--	zend_strtod.c zend_closures.c zend_float.c
-+	zend_strtod.c zend_closures.c zend_float.c zend_canary.c zend_alloc_canary.c 
+-	zend_strtod.c zend_closures.c zend_float.c zend_string.c zend_signal.c
++	zend_strtod.c zend_closures.c zend_float.c zend_string.c zend_signal.c \
++	zend_canary.c zend_alloc_canary.c
  
  libZend_la_LDFLAGS =
  libZend_la_LIBADD = @ZEND_EXTRA_LIBS@
 --- a/Zend/Zend.dsp
 +++ b/Zend/Zend.dsp
-@@ -247,6 +247,14 @@ SOURCE=.\zend_strtod.c
+@@ -251,6 +251,14 @@ SOURCE=.\zend_strtod.c
  # End Source File
  # Begin Source File
  
@@ -39,7 +40,7 @@ the following modifications have been made:
  # Begin Source File
 --- a/Zend/ZendTS.dsp
 +++ b/Zend/ZendTS.dsp
-@@ -277,6 +277,14 @@ SOURCE=.\zend_strtod.c
+@@ -281,6 +281,14 @@ SOURCE=.\zend_strtod.c
  # End Source File
  # Begin Source File
  
@@ -56,7 +57,7 @@ the following modifications have been made:
  # Begin Source File
 --- a/Zend/zend.c
 +++ b/Zend/zend.c
-@@ -60,6 +60,10 @@ int (*zend_vspprintf)(char **pbuf, size_
+@@ -61,6 +61,10 @@ int (*zend_vspprintf)(char **pbuf, size_
  ZEND_API char *(*zend_getenv)(char *name, size_t name_len TSRMLS_DC);
  ZEND_API char *(*zend_resolve_path)(const char *filename, int filename_len TSRMLS_DC);
  
@@ -66,10 +67,10 @@ the following modifications have been made:
 +
  void (*zend_on_timeout)(int seconds TSRMLS_DC);
  
- static void (*zend_message_dispatcher_p)(long message, void *data TSRMLS_DC);
-@@ -88,6 +92,74 @@ static ZEND_INI_MH(OnUpdateGCEnabled) /*
- }
+ static void (*zend_message_dispatcher_p)(long message, const void *data TSRMLS_DC);
+@@ -102,6 +106,74 @@ static ZEND_INI_MH(OnUpdateScriptEncodin
  /* }}} */
+ 
  
 +#if SUHOSIN_PATCH
 +static ZEND_INI_MH(OnUpdateSuhosin_log_syslog)
@@ -144,7 +145,7 @@ the following modifications have been made:
  	STD_ZEND_INI_BOOLEAN("zend.enable_gc",				"1",	ZEND_INI_ALL,		OnUpdateGCEnabled,      gc_enabled,     zend_gc_globals,        gc_globals)
 --- a/Zend/zend.h
 +++ b/Zend/zend.h
-@@ -627,6 +627,9 @@ extern ZEND_API int (*zend_stream_open_f
+@@ -688,6 +688,9 @@ extern ZEND_API int (*zend_stream_open_f
  extern int (*zend_vspprintf)(char **pbuf, size_t max_len, const char *format, va_list ap);
  extern ZEND_API char *(*zend_getenv)(char *name, size_t name_len TSRMLS_DC);
  extern ZEND_API char *(*zend_resolve_path)(const char *filename, int filename_len TSRMLS_DC);
@@ -154,7 +155,7 @@ the following modifications have been made:
  
  ZEND_API void zend_error(int type, const char *format, ...) ZEND_ATTRIBUTE_FORMAT(printf, 2, 3);
  
-@@ -774,6 +777,16 @@ ZEND_API void zend_restore_error_handlin
+@@ -849,6 +852,16 @@ ZEND_API void zend_restore_error_handlin
  #define DEBUG_BACKTRACE_PROVIDE_OBJECT (1<<0)
  #define DEBUG_BACKTRACE_IGNORE_ARGS    (1<<1)
  
@@ -249,7 +250,7 @@ the following modifications have been made:
  	int                 use_zend_alloc;
  	void               *(*_malloc)(size_t);
  	void                (*_free)(void*);
-@@ -447,6 +470,9 @@ struct _zend_mm_heap {
+@@ -448,6 +471,9 @@ struct _zend_mm_heap {
  		int miss;
  	} cache_stat[ZEND_MM_NUM_BUCKETS+1];
  #endif
@@ -259,7 +260,7 @@ the following modifications have been made:
  };
  
  #define ZEND_MM_SMALL_FREE_BUCKET(heap, index) \
-@@ -520,18 +546,31 @@ static unsigned int _zend_mm_cookie = 0;
+@@ -525,18 +551,31 @@ static unsigned int _zend_mm_cookie = 0;
  /* optimized access */
  #define ZEND_MM_FREE_BLOCK_SIZE(b)		(b)->info._size
  
@@ -294,7 +295,7 @@ the following modifications have been made:
  
  #define ZEND_MM_BUCKET_INDEX(true_size)		((true_size>>ZEND_MM_ALIGNMENT_LOG2)-(ZEND_MM_ALIGNED_MIN_HEADER_SIZE>>ZEND_MM_ALIGNMENT_LOG2))
  
-@@ -593,6 +632,44 @@ static unsigned int _zend_mm_cookie = 0;
+@@ -598,6 +637,44 @@ static unsigned int _zend_mm_cookie = 0;
  
  #endif
  
@@ -339,29 +340,8 @@ the following modifications have been made:
  
  #if ZEND_MM_HEAP_PROTECTION
  
-@@ -715,7 +792,7 @@ static inline unsigned int zend_mm_low_b
+@@ -720,7 +797,7 @@ static inline unsigned int zend_mm_low_b
  #endif
- }
- 
--static inline void zend_mm_add_to_rest_list(zend_mm_heap *heap, zend_mm_free_block *mm_block)
-+static void zend_mm_add_to_rest_list(zend_mm_heap *heap, zend_mm_free_block *mm_block)
- {
- 	zend_mm_free_block *prev, *next;
- 
-@@ -725,14 +802,14 @@ static inline void zend_mm_add_to_rest_l
- 		mm_block->parent = NULL;
- 	}
- 
--	prev = heap->rest_buckets[0];
--	next = prev->next_free_block;
--	mm_block->prev_free_block = prev;
--	mm_block->next_free_block = next;
--	prev->next_free_block = next->prev_free_block = mm_block;
-+	prev = SUHOSIN_MANGLE_PTR(heap->rest_buckets[0]);
-+	next = SUHOSIN_MANGLE_PTR(prev->next_free_block);
-+	mm_block->prev_free_block = SUHOSIN_MANGLE_PTR(prev);
-+	mm_block->next_free_block = SUHOSIN_MANGLE_PTR(next);
-+	prev->next_free_block = next->prev_free_block = SUHOSIN_MANGLE_PTR(mm_block);
  }
  
 -static inline void zend_mm_add_to_free_list(zend_mm_heap *heap, zend_mm_free_block *mm_block)
@@ -369,7 +349,7 @@ the following modifications have been made:
  {
  	size_t size;
  	size_t index;
-@@ -749,7 +826,7 @@ static inline void zend_mm_add_to_free_l
+@@ -737,7 +814,7 @@ static inline void zend_mm_add_to_free_l
  		if (!*p) {
  			*p = mm_block;
  			mm_block->parent = p;
@@ -378,7 +358,7 @@ the following modifications have been made:
  			heap->large_free_bitmap |= (ZEND_MM_LONG_CONST(1) << index);
  		} else {
  			size_t m;
-@@ -762,15 +839,15 @@ static inline void zend_mm_add_to_free_l
+@@ -750,15 +827,15 @@ static inline void zend_mm_add_to_free_l
  					if (!*p) {
  						*p = mm_block;
  						mm_block->parent = p;
@@ -399,7 +379,7 @@ the following modifications have been made:
  					mm_block->parent = NULL;
  					break;
  				}
-@@ -782,27 +859,33 @@ static inline void zend_mm_add_to_free_l
+@@ -770,14 +847,14 @@ static inline void zend_mm_add_to_free_l
  		index = ZEND_MM_BUCKET_INDEX(size);
  
  		prev = ZEND_MM_SMALL_FREE_BUCKET(heap, index);
@@ -419,38 +399,29 @@ the following modifications have been made:
  	}
  }
  
--static inline void zend_mm_remove_from_free_list(zend_mm_heap *heap, zend_mm_free_block *mm_block)
-+static void zend_mm_remove_from_free_list(zend_mm_heap *heap, zend_mm_free_block *mm_block)
- {
--	zend_mm_free_block *prev = mm_block->prev_free_block;
--	zend_mm_free_block *next = mm_block->next_free_block;
-+	zend_mm_free_block *prev = SUHOSIN_MANGLE_PTR(mm_block->prev_free_block);
-+	zend_mm_free_block *next = SUHOSIN_MANGLE_PTR(mm_block->next_free_block);
- 
- 	ZEND_MM_CHECK_MAGIC(mm_block, MEM_BLOCK_FREED);
- 
+@@ -791,6 +868,12 @@ static inline void zend_mm_remove_from_f
  	if (EXPECTED(prev == mm_block)) {
  		zend_mm_free_block **rp, **cp;
  
 +#if SUHOSIN_PATCH
-+                if (next != mm_block) {
-+                        zend_suhosin_log(S_MEMORY, "zend_mm_heap corrupted at %p", mm_block);
-+                        _exit(1);
-+                }
++		if (next != mm_block) {
++			zend_suhosin_log(S_MEMORY, "zend_mm_heap corrupted at %p", mm_block);
++			_exit(1);
++		}
 +#endif
  #if ZEND_MM_SAFE_UNLINKING
  		if (UNEXPECTED(next != mm_block)) {
  			zend_mm_panic("zend_mm_heap corrupted");
-@@ -841,14 +924,21 @@ subst_block:
+@@ -829,14 +912,21 @@ subst_block:
  		}
  	} else {
  
 +#if SUHOSIN_PATCH
-+                if (SUHOSIN_MANGLE_PTR(prev->next_free_block) != mm_block || SUHOSIN_MANGLE_PTR(next->prev_free_block) != mm_block) {
-+                        zend_suhosin_log(S_MEMORY, "zend_mm_head corrupted at %p", mm_block);
-+		        _exit(1);
-+                }
-+#endif    
++		if (SUHOSIN_MANGLE_PTR(prev->next_free_block) != mm_block || SUHOSIN_MANGLE_PTR(next->prev_free_block) != mm_block) {
++			zend_suhosin_log(S_MEMORY, "zend_mm_head corrupted at %p", mm_block);
++			_exit(1);
++		}
++#endif
 +
  #if ZEND_MM_SAFE_UNLINKING
 -		if (UNEXPECTED(prev->next_free_block != mm_block) || UNEXPECTED(next->prev_free_block != mm_block)) {
@@ -466,8 +437,29 @@ the following modifications have been made:
  
  		if (EXPECTED(ZEND_MM_SMALL_SIZE(ZEND_MM_FREE_BLOCK_SIZE(mm_block)))) {
  			if (EXPECTED(prev == next)) {
-@@ -864,7 +954,7 @@ subst_block:
+@@ -854,7 +944,7 @@ subst_block:
  	}
+ }
+ 
+-static inline void zend_mm_add_to_rest_list(zend_mm_heap *heap, zend_mm_free_block *mm_block)
++static void zend_mm_add_to_rest_list(zend_mm_heap *heap, zend_mm_free_block *mm_block)
+ {
+ 	zend_mm_free_block *prev, *next;
+ 
+@@ -878,14 +968,14 @@ static inline void zend_mm_add_to_rest_l
+ 
+ 	ZEND_MM_SET_MAGIC(mm_block, MEM_BLOCK_FREED);
+ 
+-	prev = heap->rest_buckets[0];
+-	next = prev->next_free_block;
+-	mm_block->prev_free_block = prev;
+-	mm_block->next_free_block = next;
+-	prev->next_free_block = next->prev_free_block = mm_block;
++	prev = SUHOSIN_MANGLE_PTR(heap->rest_buckets[0]);
++	next = SUHOSIN_MANGLE_PTR(prev->next_free_block);
++	mm_block->prev_free_block = SUHOSIN_MANGLE_PTR(prev);
++	mm_block->next_free_block = SUHOSIN_MANGLE_PTR(next);
++	prev->next_free_block = next->prev_free_block = SUHOSIN_MANGLE_PTR(mm_block);
  }
  
 -static inline void zend_mm_init(zend_mm_heap *heap)
@@ -475,7 +467,7 @@ the following modifications have been made:
  {
  	zend_mm_free_block* p;
  	int i;
-@@ -882,12 +972,19 @@ static inline void zend_mm_init(zend_mm_
+@@ -903,13 +993,21 @@ static inline void zend_mm_init(zend_mm_
  #endif
  	p = ZEND_MM_SMALL_FREE_BUCKET(heap, 0);
  	for (i = 0; i < ZEND_MM_NUM_BUCKETS; i++) {
@@ -488,17 +480,19 @@ the following modifications have been made:
  	}
 -	heap->rest_buckets[0] = heap->rest_buckets[1] = ZEND_MM_REST_BUCKET(heap);
 +	heap->rest_buckets[0] = heap->rest_buckets[1] = SUHOSIN_MANGLE_PTR(ZEND_MM_REST_BUCKET(heap));
+ 	heap->rest_count = 0;
++
 +#if SUHOSIN_PATCH
-+        if (SUHOSIN_CONFIG(SUHOSIN_MM_USE_CANARY_PROTECTION)) {
-+	        zend_canary(&heap->canary_1, sizeof(heap->canary_1));
-+	        zend_canary(&heap->canary_2, sizeof(heap->canary_2));
-+	        zend_canary(&heap->canary_3, sizeof(heap->canary_3));
++	if (SUHOSIN_CONFIG(SUHOSIN_MM_USE_CANARY_PROTECTION)) {
++		zend_canary(&heap->canary_1, sizeof(heap->canary_1));
++		zend_canary(&heap->canary_2, sizeof(heap->canary_2));
++		zend_canary(&heap->canary_3, sizeof(heap->canary_3));
 +	}
 +#endif
  }
  
  static void zend_mm_del_segment(zend_mm_heap *heap, zend_mm_segment *segment)
-@@ -908,12 +1005,13 @@ static void zend_mm_free_cache(zend_mm_h
+@@ -930,12 +1028,13 @@ static void zend_mm_free_cache(zend_mm_h
  	int i;
  
  	for (i = 0; i < ZEND_MM_NUM_BUCKETS; i++) {
@@ -514,7 +508,7 @@ the following modifications have been made:
  				zend_mm_block *next_block = ZEND_MM_NEXT_BLOCK(mm_block);
  
  				heap->cached -= size;
-@@ -1009,14 +1107,20 @@ static void zend_mm_random(unsigned char
+@@ -1031,14 +1130,20 @@ static void zend_mm_random(unsigned char
  /* }}} */
  #endif
  
@@ -536,7 +530,7 @@ the following modifications have been made:
  
  #if 0
  	int i;
-@@ -1050,6 +1154,12 @@ ZEND_API zend_mm_heap *zend_mm_startup_e
+@@ -1072,6 +1177,12 @@ ZEND_API zend_mm_heap *zend_mm_startup_e
  	}
  #endif
  
@@ -549,7 +543,7 @@ the following modifications have been made:
  	if (zend_mm_low_bit(block_size) != zend_mm_high_bit(block_size)) {
  		fprintf(stderr, "'block_size' must be a power of two\n");
  /* See http://support.microsoft.com/kb/190351 */
-@@ -1097,12 +1207,12 @@ ZEND_API zend_mm_heap *zend_mm_startup_e
+@@ -1119,12 +1230,12 @@ ZEND_API zend_mm_heap *zend_mm_startup_e
  	heap->reserve = NULL;
  	heap->reserve_size = reserve_size;
  	if (reserve_size > 0) {
@@ -564,7 +558,7 @@ the following modifications have been made:
  
  		*mm_heap = *heap;
  
-@@ -1110,22 +1220,22 @@ ZEND_API zend_mm_heap *zend_mm_startup_e
+@@ -1132,22 +1243,22 @@ ZEND_API zend_mm_heap *zend_mm_startup_e
  		orig = ZEND_MM_SMALL_FREE_BUCKET(heap, 0);
  		for (i = 0; i < ZEND_MM_NUM_BUCKETS; i++) {
  			q = p;
@@ -591,10 +585,10 @@ the following modifications have been made:
  		}
 -		mm_heap->rest_buckets[0] = mm_heap->rest_buckets[1] = ZEND_MM_REST_BUCKET(mm_heap);
 +		mm_heap->rest_buckets[0] = mm_heap->rest_buckets[1] = SUHOSIN_MANGLE_PTR(ZEND_MM_REST_BUCKET(mm_heap));
+ 		mm_heap->rest_count = 0;
  
  		free(heap);
- 		heap = mm_heap;
-@@ -1133,7 +1243,11 @@ ZEND_API zend_mm_heap *zend_mm_startup_e
+@@ -1156,7 +1267,11 @@ ZEND_API zend_mm_heap *zend_mm_startup_e
  	return heap;
  }
  
@@ -607,7 +601,7 @@ the following modifications have been made:
  {
  	int i;
  	size_t seg_size;
-@@ -1203,6 +1317,27 @@ ZEND_API zend_mm_heap *zend_mm_startup(v
+@@ -1226,6 +1341,27 @@ ZEND_API zend_mm_heap *zend_mm_startup(v
  	return heap;
  }
  
@@ -635,7 +629,7 @@ the following modifications have been made:
  #if ZEND_DEBUG
  static long zend_mm_find_leaks(zend_mm_segment *segment, zend_mm_block *b)
  {
-@@ -1571,7 +1706,11 @@ static int zend_mm_check_heap(zend_mm_he
+@@ -1594,7 +1730,11 @@ static int zend_mm_check_heap(zend_mm_he
  }
  #endif
  
@@ -648,7 +642,7 @@ the following modifications have been made:
  {
  	zend_mm_storage *storage;
  	zend_mm_segment *segment;
-@@ -1581,7 +1720,7 @@ ZEND_API void zend_mm_shutdown(zend_mm_h
+@@ -1611,7 +1751,7 @@ ZEND_API void zend_mm_shutdown(zend_mm_h
  	if (heap->reserve) {
  #if ZEND_DEBUG
  		if (!silent) {
@@ -657,9 +651,9 @@ the following modifications have been made:
  		}
  #endif
  		heap->reserve = NULL;
-@@ -1664,12 +1803,23 @@ ZEND_API void zend_mm_shutdown(zend_mm_h
- 		heap->size = 0;
- 		heap->peak = 0;
+@@ -1730,12 +1870,23 @@ ZEND_API void zend_mm_shutdown(zend_mm_h
+ 			zend_mm_add_to_free_list(heap, b);
+ 		}
  		if (heap->reserve_size) {
 -			heap->reserve = _zend_mm_alloc_int(heap, heap->reserve_size  ZEND_FILE_LINE_CC ZEND_FILE_LINE_EMPTY_CC);
 +			heap->reserve = _zend_mm_alloc(heap, heap->reserve_size  ZEND_FILE_LINE_CC ZEND_FILE_LINE_EMPTY_CC);
@@ -682,7 +676,7 @@ the following modifications have been made:
  static void zend_mm_safe_error(zend_mm_heap *heap,
  	const char *format,
  	size_t limit,
-@@ -1680,7 +1830,11 @@ static void zend_mm_safe_error(zend_mm_h
+@@ -1746,7 +1897,11 @@ static void zend_mm_safe_error(zend_mm_h
  	size_t size)
  {
  	if (heap->reserve) {
@@ -694,7 +688,7 @@ the following modifications have been made:
  		heap->reserve = NULL;
  	}
  	if (heap->overflow == 0) {
-@@ -1755,7 +1909,7 @@ static zend_mm_free_block *zend_mm_searc
+@@ -1821,7 +1976,7 @@ static zend_mm_free_block *zend_mm_searc
  		p = heap->large_free_buckets[index];
  		for (m = true_size << (ZEND_MM_NUM_BUCKETS - index); ; m <<= 1) {
  			if (UNEXPECTED(ZEND_MM_FREE_BLOCK_SIZE(p) == true_size)) {
@@ -703,7 +697,7 @@ the following modifications have been made:
  			} else if (ZEND_MM_FREE_BLOCK_SIZE(p) >= true_size &&
  			           ZEND_MM_FREE_BLOCK_SIZE(p) < best_size) {
  				best_size = ZEND_MM_FREE_BLOCK_SIZE(p);
-@@ -1779,7 +1933,7 @@ static zend_mm_free_block *zend_mm_searc
+@@ -1845,7 +2000,7 @@ static zend_mm_free_block *zend_mm_searc
  
  		for (p = rst; p; p = p->child[p->child[0] != NULL]) {
  			if (UNEXPECTED(ZEND_MM_FREE_BLOCK_SIZE(p) == true_size)) {
@@ -712,7 +706,7 @@ the following modifications have been made:
  			} else if (ZEND_MM_FREE_BLOCK_SIZE(p) > true_size &&
  			           ZEND_MM_FREE_BLOCK_SIZE(p) < best_size) {
  				best_size = ZEND_MM_FREE_BLOCK_SIZE(p);
-@@ -1788,7 +1942,7 @@ static zend_mm_free_block *zend_mm_searc
+@@ -1854,7 +2009,7 @@ static zend_mm_free_block *zend_mm_searc
  		}
  
  		if (best_fit) {
@@ -721,7 +715,7 @@ the following modifications have been made:
  		}
  		bitmap = bitmap >> 1;
  		if (!bitmap) {
-@@ -1804,9 +1958,12 @@ static zend_mm_free_block *zend_mm_searc
+@@ -1870,9 +2025,12 @@ static zend_mm_free_block *zend_mm_searc
  			best_fit = p;
  		}
  	}
@@ -735,16 +729,7 @@ the following modifications have been made:
  static void *_zend_mm_alloc_int(zend_mm_heap *heap, size_t size ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_DC)
  {
  	zend_mm_free_block *best_fit;
-@@ -1816,7 +1973,7 @@ static void *_zend_mm_alloc_int(zend_mm_
- 	size_t segment_size;
- 	zend_mm_segment *segment;
- 	int keep_rest = 0;
--
-+	
- 	if (EXPECTED(ZEND_MM_SMALL_SIZE(true_size))) {
- 		size_t index = ZEND_MM_BUCKET_INDEX(true_size);
- 		size_t bitmap;
-@@ -1831,9 +1988,14 @@ static void *_zend_mm_alloc_int(zend_mm_
+@@ -1902,9 +2060,14 @@ static void *_zend_mm_alloc_int(zend_mm_
  			heap->cache_stat[index].count--;
  			heap->cache_stat[index].hit++;
  #endif
@@ -759,8 +744,8 @@ the following modifications have been made:
 +#endif			
  			ZEND_MM_CHECK_MAGIC(best_fit, MEM_BLOCK_CACHED);
  			ZEND_MM_SET_DEBUG_INFO(best_fit, size, 1, 0);
- 			return ZEND_MM_DATA_OF(best_fit);
-@@ -1847,7 +2009,7 @@ static void *_zend_mm_alloc_int(zend_mm_
+ 			HANDLE_UNBLOCK_INTERRUPTIONS();
+@@ -1919,7 +2082,7 @@ static void *_zend_mm_alloc_int(zend_mm_
  		if (bitmap) {
  			/* Found some "small" free block that can be used */
  			index += zend_mm_low_bit(bitmap);
@@ -769,7 +754,7 @@ the following modifications have been made:
  #if ZEND_MM_CACHE_STAT
  			heap->cache_stat[ZEND_MM_NUM_BUCKETS].hit++;
  #endif
-@@ -1862,7 +2024,7 @@ static void *_zend_mm_alloc_int(zend_mm_
+@@ -1934,7 +2097,7 @@ static void *_zend_mm_alloc_int(zend_mm_
  	best_fit = zend_mm_search_large_block(heap, true_size);
  
  	if (!best_fit && heap->real_size >= heap->limit - heap->block_size) {
@@ -778,7 +763,7 @@ the following modifications have been made:
  		size_t best_size = -1;
  
  		while (p != ZEND_MM_REST_BUCKET(heap)) {
-@@ -1874,7 +2036,7 @@ static void *_zend_mm_alloc_int(zend_mm_
+@@ -1946,7 +2109,7 @@ static void *_zend_mm_alloc_int(zend_mm_
  				best_size = ZEND_MM_FREE_BLOCK_SIZE(p);
  				best_fit = p;
  			}
@@ -787,7 +772,7 @@ the following modifications have been made:
  		}
  	}
  
-@@ -1973,13 +2135,19 @@ zend_mm_finished_searching_for_block:
+@@ -2042,13 +2205,19 @@ zend_mm_finished_searching_for_block:
  
  	ZEND_MM_SET_DEBUG_INFO(best_fit, size, 1, 1);
  
@@ -808,7 +793,7 @@ the following modifications have been made:
  	return ZEND_MM_DATA_OF(best_fit);
  }
  
-@@ -1996,19 +2164,26 @@ static void _zend_mm_free_int(zend_mm_he
+@@ -2069,19 +2238,26 @@ static void _zend_mm_free_int(zend_mm_he
  
  	mm_block = ZEND_MM_HEADER_OF(p);
  	size = ZEND_MM_BLOCK_SIZE(mm_block);
@@ -837,7 +822,7 @@ the following modifications have been made:
  		heap->cached += size;
  		ZEND_MM_SET_MAGIC(mm_block, MEM_BLOCK_CACHED);
  #if ZEND_MM_CACHE_STAT
-@@ -2044,6 +2219,9 @@ static void _zend_mm_free_int(zend_mm_he
+@@ -2116,6 +2292,9 @@ static void _zend_mm_free_int(zend_mm_he
  	HANDLE_UNBLOCK_INTERRUPTIONS();
  }
  
@@ -847,9 +832,9 @@ the following modifications have been made:
  static void *_zend_mm_realloc_int(zend_mm_heap *heap, void *p, size_t size ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_DC)
  {
  	zend_mm_block *mm_block = ZEND_MM_HEADER_OF(p);
-@@ -2053,11 +2231,18 @@ static void *_zend_mm_realloc_int(zend_m
- 	void *ptr;
- 
+@@ -2127,7 +2306,11 @@ static void *_zend_mm_realloc_int(zend_m
+ 	TSRMLS_FETCH();
+ #endif
  	if (UNEXPECTED(!p) || !ZEND_MM_VALID_PTR(p)) {
 +#ifdef SUHOSIN_MM_WITH_CANARY_PROTECTION
 +		return _zend_mm_alloc_canary_int(heap, size ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_ORIG_RELAY_CC);
@@ -857,28 +842,31 @@ the following modifications have been made:
  		return _zend_mm_alloc_int(heap, size ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_ORIG_RELAY_CC);
 +#endif
  	}
+ 
+ 	HANDLE_BLOCK_INTERRUPTIONS();
+@@ -2135,6 +2318,9 @@ static void *_zend_mm_realloc_int(zend_m
  	mm_block = ZEND_MM_HEADER_OF(p);
  	true_size = ZEND_MM_TRUE_SIZE(size);
  	orig_size = ZEND_MM_BLOCK_SIZE(mm_block);
 +#if SUHOSIN_PATCH
-+        SUHOSIN_MM_CHECK_CANARIES(mm_block, "erealloc()");
++	SUHOSIN_MM_CHECK_CANARIES(mm_block, "erealloc()");
 +#endif	
  	ZEND_MM_CHECK_PROTECTION(mm_block);
  
  	if (UNEXPECTED(true_size < size)) {
-@@ -2089,6 +2274,11 @@ static void *_zend_mm_realloc_int(zend_m
- 			HANDLE_UNBLOCK_INTERRUPTIONS();
+@@ -2165,6 +2351,11 @@ static void *_zend_mm_realloc_int(zend_m
  		}
  		ZEND_MM_SET_DEBUG_INFO(mm_block, size, 0, 0);
+ 		HANDLE_UNBLOCK_INTERRUPTIONS();
 +#if SUHOSIN_PATCH
-+                SUHOSIN_MM_SET_CANARIES(mm_block);
-+                ((zend_mm_block*)mm_block)->info.size = size;
-+                SUHOSIN_MM_SET_END_CANARY(mm_block);
++		SUHOSIN_MM_SET_CANARIES(mm_block);
++		((zend_mm_block*)mm_block)->info.size = size;
++		SUHOSIN_MM_SET_END_CANARY(mm_block);
 +#endif
  		return p;
  	}
  
-@@ -2104,17 +2294,22 @@ static void *_zend_mm_realloc_int(zend_m
+@@ -2180,17 +2371,22 @@ static void *_zend_mm_realloc_int(zend_m
  			heap->cache_stat[index].count--;
  			heap->cache_stat[index].hit++;
  #endif
@@ -905,7 +893,7 @@ the following modifications have been made:
  #endif
  
  			heap->cached -= true_size - orig_size;
-@@ -2123,14 +2318,13 @@ static void *_zend_mm_realloc_int(zend_m
+@@ -2199,7 +2395,7 @@ static void *_zend_mm_realloc_int(zend_m
  			cache = &heap->cache[index];
  
  			((zend_mm_free_block*)mm_block)->prev_free_block = *cache;
@@ -914,33 +902,26 @@ the following modifications have been made:
  			ZEND_MM_SET_MAGIC(mm_block, MEM_BLOCK_CACHED);
  #if ZEND_MM_CACHE_STAT
  			if (++heap->cache_stat[index].count > heap->cache_stat[index].max_count) {
- 				heap->cache_stat[index].max_count = heap->cache_stat[index].count;
- 			}
- #endif
--
- 			return ptr;
- 		}
- 	}
-@@ -2173,6 +2367,11 @@ static void *_zend_mm_realloc_int(zend_m
+@@ -2249,6 +2445,11 @@ static void *_zend_mm_realloc_int(zend_m
  				heap->peak = heap->size;
  			}
  			HANDLE_UNBLOCK_INTERRUPTIONS();
 +#if SUHOSIN_PATCH
-+                        SUHOSIN_MM_SET_CANARIES(mm_block);
-+                        ((zend_mm_block*)mm_block)->info.size = size;
-+                        SUHOSIN_MM_SET_END_CANARY(mm_block);
++			SUHOSIN_MM_SET_CANARIES(mm_block);
++			((zend_mm_block*)mm_block)->info.size = size;
++			SUHOSIN_MM_SET_END_CANARY(mm_block);
 +#endif
  			return p;
  		} else if (ZEND_MM_IS_FIRST_BLOCK(mm_block) &&
  				   ZEND_MM_IS_GUARD_BLOCK(ZEND_MM_BLOCK_AT(next_block, ZEND_MM_FREE_BLOCK_SIZE(next_block)))) {
-@@ -2275,38 +2474,90 @@ out_of_memory:
+@@ -2349,39 +2550,75 @@ out_of_memory:
  		}
  
  		HANDLE_UNBLOCK_INTERRUPTIONS();
 +#if SUHOSIN_PATCH
-+                SUHOSIN_MM_SET_CANARIES(mm_block);
-+                ((zend_mm_block*)mm_block)->info.size = size;
-+                SUHOSIN_MM_SET_END_CANARY(mm_block);
++		SUHOSIN_MM_SET_CANARIES(mm_block);
++		((zend_mm_block*)mm_block)->info.size = size;
++		SUHOSIN_MM_SET_END_CANARY(mm_block);
 +#endif
  		return ZEND_MM_DATA_OF(mm_block);
  	}
@@ -955,12 +936,14 @@ the following modifications have been made:
  #else
 -	memcpy(ptr, p, orig_size - ZEND_MM_ALIGNED_HEADER_SIZE);
 +	memcpy(ptr, p, orig_size - ZEND_MM_ALIGNED_HEADER_SIZE - CANARY_SIZE);
- #endif
++#endif
 +#ifdef SUHOSIN_MM_WITH_CANARY_PROTECTION
 +	_zend_mm_free_canary_int(heap, p ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_ORIG_RELAY_CC);
 +#else
- 	_zend_mm_free_int(heap, p ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_ORIG_RELAY_CC);
-+#endif
++ 	_zend_mm_free_int(heap, p ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_ORIG_RELAY_CC);
+ #endif
+-	_zend_mm_free_int(heap, p ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_ORIG_RELAY_CC);
+ 	HANDLE_UNBLOCK_INTERRUPTIONS();
  	return ptr;
  }
  
@@ -971,9 +954,9 @@ the following modifications have been made:
 +#if SUHOSIN_PATCH	
 +	if (UNEXPECTED(SUHOSIN_CONFIG(SUHOSIN_MM_USE_CANARY_PROTECTION) == 0))
 +#endif
-+	        return _zend_mm_alloc_int(heap, size ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_ORIG_RELAY_CC);
++		return _zend_mm_alloc_int(heap, size ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_ORIG_RELAY_CC);
 +#if SUHOSIN_PATCH
-+        return _zend_mm_alloc_canary_int((zend_mm_heap_canary *)heap, size ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_ORIG_RELAY_CC);
++	return _zend_mm_alloc_canary_int((zend_mm_heap_canary *)heap, size ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_ORIG_RELAY_CC);
 +#endif
  }
  
@@ -983,9 +966,9 @@ the following modifications have been made:
 +#if SUHOSIN_PATCH	
 +	if (UNEXPECTED(SUHOSIN_CONFIG(SUHOSIN_MM_USE_CANARY_PROTECTION) == 0))
 +#endif
-+                { _zend_mm_free_int(heap, p ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_ORIG_RELAY_CC); return; }
++	{ _zend_mm_free_int(heap, p ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_ORIG_RELAY_CC); return; }
 +#if SUHOSIN_PATCH
-+        _zend_mm_free_canary_int((zend_mm_heap_canary *)heap, p ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_ORIG_RELAY_CC);
++	_zend_mm_free_canary_int((zend_mm_heap_canary *)heap, p ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_ORIG_RELAY_CC);
 +#endif
  }
  
@@ -995,7 +978,7 @@ the following modifications have been made:
 +#if SUHOSIN_PATCH	
 +	if (UNEXPECTED(SUHOSIN_CONFIG(SUHOSIN_MM_USE_CANARY_PROTECTION) == 0))
 +#endif
-+        	return _zend_mm_realloc_int(heap, ptr, size ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_ORIG_RELAY_CC);
++		return _zend_mm_realloc_int(heap, ptr, size ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_ORIG_RELAY_CC);
 +#if SUHOSIN_PATCH	
 +	return _zend_mm_realloc_canary_int((zend_mm_heap_canary *)heap, ptr, size ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_ORIG_RELAY_CC);
 +#endif
@@ -1006,8 +989,20 @@ the following modifications have been made:
  	zend_mm_block *mm_block;
  
 +	if (SUHOSIN_CONFIG(SUHOSIN_MM_USE_CANARY_PROTECTION) != 0) {
-+                return _zend_mm_block_size_canary((zend_mm_heap_canary *)heap, p ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_ORIG_RELAY_CC);
++		return _zend_mm_block_size_canary((zend_mm_heap_canary *)heap, p ZEND_FILE_LINE_RELAY_CC ZEND_FILE_LINE_ORIG_RELAY_CC);
 +	}
++
+ 	if (!ZEND_MM_VALID_PTR(p)) {
+ 		return 0;
+ 	}
+@@ -2393,6 +2630,24 @@ ZEND_API size_t _zend_mm_block_size(zend
+ 	return ZEND_MM_BLOCK_SIZE(mm_block);
+ #endif
+ }
++#else
++ZEND_API size_t _zend_mm_block_size_canary(zend_mm_heap *heap, void *p ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_DC)
++{
++	zend_mm_block *mm_block;
 +
 +	if (!ZEND_MM_VALID_PTR(p)) {
 +		return 0;
@@ -1020,24 +1015,12 @@ the following modifications have been made:
 +	return ZEND_MM_BLOCK_SIZE(mm_block);
 +#endif
 +}
-+#else
-+ZEND_API size_t _zend_mm_block_size_canary(zend_mm_heap *heap, void *p ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_DC)
-+{
-+	zend_mm_block *mm_block;
 +
- 	if (!ZEND_MM_VALID_PTR(p)) {
- 		return 0;
- 	}
-@@ -2319,6 +2570,8 @@ ZEND_API size_t _zend_mm_block_size(zend
- #endif
- }
- 
 +#endif
-+
+ 
  /**********************/
  /* Allocation Manager */
- /**********************/
-@@ -2335,6 +2588,7 @@ static int alloc_globals_id;
+@@ -2410,6 +2665,7 @@ static int alloc_globals_id;
  static zend_alloc_globals alloc_globals;
  #endif
  
@@ -1045,7 +1028,7 @@ the following modifications have been made:
  ZEND_API int is_zend_mm(TSRMLS_D)
  {
  	return AG(mm_heap)->use_zend_alloc;
-@@ -2347,7 +2601,13 @@ ZEND_API void *_emalloc(size_t size ZEND
+@@ -2422,7 +2678,13 @@ ZEND_API void *_emalloc(size_t size ZEND
  	if (UNEXPECTED(!AG(mm_heap)->use_zend_alloc)) {
  		return AG(mm_heap)->_malloc(size);
  	}
@@ -1059,7 +1042,7 @@ the following modifications have been made:
  }
  
  ZEND_API void _efree(void *ptr ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_DC)
-@@ -2358,7 +2618,13 @@ ZEND_API void _efree(void *ptr ZEND_FILE
+@@ -2433,7 +2695,13 @@ ZEND_API void _efree(void *ptr ZEND_FILE
  		AG(mm_heap)->_free(ptr);
  		return;
  	}
@@ -1074,7 +1057,7 @@ the following modifications have been made:
  }
  
  ZEND_API void *_erealloc(void *ptr, size_t size, int allow_failure ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_DC)
-@@ -2368,7 +2634,13 @@ ZEND_API void *_erealloc(void *ptr, size
+@@ -2443,7 +2711,13 @@ ZEND_API void *_erealloc(void *ptr, size
  	if (UNEXPECTED(!AG(mm_heap)->use_zend_alloc)) {
  		return AG(mm_heap)->_realloc(ptr, size);
  	}
@@ -1088,7 +1071,7 @@ the following modifications have been made:
  }
  
  ZEND_API size_t _zend_mem_block_size(void *ptr TSRMLS_DC ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_DC)
-@@ -2376,8 +2648,15 @@ ZEND_API size_t _zend_mem_block_size(voi
+@@ -2451,8 +2725,15 @@ ZEND_API size_t _zend_mem_block_size(voi
  	if (UNEXPECTED(!AG(mm_heap)->use_zend_alloc)) {
  		return 0;
  	}
@@ -1105,7 +1088,7 @@ the following modifications have been made:
  
  #if defined(__GNUC__) && defined(i386)
  
-@@ -2448,7 +2727,7 @@ static inline size_t safe_address(size_t
+@@ -2523,7 +2804,7 @@ static inline size_t safe_address(size_t
  }
  #endif
  
@@ -1114,7 +1097,7 @@ the following modifications have been made:
  ZEND_API void *_safe_emalloc(size_t nmemb, size_t size, size_t offset ZEND_FILE_LINE_DC ZEND_FILE_LINE_ORIG_DC)
  {
  	return emalloc_rel(safe_address(nmemb, size, offset));
-@@ -2561,6 +2840,7 @@ ZEND_API void shutdown_memory_manager(in
+@@ -2663,6 +2944,7 @@ ZEND_API void shutdown_memory_manager(in
  {
  	zend_mm_shutdown(AG(mm_heap), full_shutdown, silent TSRMLS_CC);
  }
@@ -1122,7 +1105,7 @@ the following modifications have been made:
  
  static void alloc_globals_ctor(zend_alloc_globals *alloc_globals TSRMLS_DC)
  {
-@@ -2585,6 +2865,7 @@ static void alloc_globals_dtor(zend_allo
+@@ -2687,6 +2969,7 @@ static void alloc_globals_dtor(zend_allo
  }
  #endif
  
@@ -1130,7 +1113,7 @@ the following modifications have been made:
  ZEND_API void start_memory_manager(TSRMLS_D)
  {
  #ifdef ZTS
-@@ -2649,6 +2930,7 @@ ZEND_API void _full_mem_check(int silent
+@@ -2751,6 +3034,7 @@ ZEND_API void _full_mem_check(int silent
  	zend_debug_alloc_output("------------------------------------------------\n");
  }
  #endif
@@ -1140,7 +1123,7 @@ the following modifications have been made:
   * Local variables:
 --- a/Zend/zend_alloc.h
 +++ b/Zend/zend_alloc.h
-@@ -203,6 +203,8 @@ END_EXTERN_C()
+@@ -189,6 +189,8 @@ END_EXTERN_C()
  
  /* Heap functions */
  typedef struct _zend_mm_heap zend_mm_heap;
@@ -3721,7 +3704,7 @@ the following modifications have been made:
 + */
 --- a/Zend/zend_compile.c
 +++ b/Zend/zend_compile.c
-@@ -73,6 +73,11 @@ static void zend_destroy_property_info_i
+@@ -141,6 +141,11 @@ static void zend_destroy_property_info_i
  }
  /* }}} */
  
@@ -3735,8 +3718,8 @@ the following modifications have been made:
  	char char_pos_buf[32];
 --- a/Zend/zend_compile.h
 +++ b/Zend/zend_compile.h
-@@ -607,6 +607,11 @@ ZEND_API zend_bool zend_is_auto_global(c
- ZEND_API int zend_auto_global_disable_jit(const char *varname, zend_uint varname_length TSRMLS_DC);
+@@ -685,6 +685,11 @@ ZEND_API zend_bool zend_is_auto_global(c
+ ZEND_API zend_bool zend_is_auto_global_quick(const char *name, uint name_len, ulong hashval TSRMLS_DC);
  ZEND_API size_t zend_dirname(char *path, size_t len);
  
 +#if SUHOSIN_PATCH
@@ -3746,10 +3729,10 @@ the following modifications have been made:
 +
  int zendlex(znode *zendlval TSRMLS_DC);
  
- /* BEGIN: OPCODES */
+ int zend_add_literal(zend_op_array *op_array, const zval *zv TSRMLS_DC);
 --- a/Zend/zend_constants.c
 +++ b/Zend/zend_constants.c
-@@ -115,6 +115,76 @@ void zend_register_standard_constants(TS
+@@ -117,6 +117,76 @@ void zend_register_standard_constants(TS
  
  	REGISTER_MAIN_LONG_CONSTANT("DEBUG_BACKTRACE_PROVIDE_OBJECT", DEBUG_BACKTRACE_PROVIDE_OBJECT, CONST_PERSISTENT | CONST_CS);
  	REGISTER_MAIN_LONG_CONSTANT("DEBUG_BACKTRACE_IGNORE_ARGS", DEBUG_BACKTRACE_IGNORE_ARGS, CONST_PERSISTENT | CONST_CS);
@@ -3829,7 +3812,7 @@ the following modifications have been made:
 --- a/Zend/zend_errors.h
 +++ b/Zend/zend_errors.h
 @@ -41,6 +41,20 @@
- #define E_ALL (E_ERROR | E_WARNING | E_PARSE | E_NOTICE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_USER_ERROR | E_USER_WARNING | E_USER_NOTICE | E_RECOVERABLE_ERROR | E_DEPRECATED | E_USER_DEPRECATED)
+ #define E_ALL (E_ERROR | E_WARNING | E_PARSE | E_NOTICE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_USER_ERROR | E_USER_WARNING | E_USER_NOTICE | E_RECOVERABLE_ERROR | E_DEPRECATED | E_USER_DEPRECATED | E_STRICT)
  #define E_CORE (E_CORE_ERROR | E_CORE_WARNING)
  
 +#if SUHOSIN_PATCH
@@ -3851,17 +3834,17 @@ the following modifications have been made:
  /*
 --- a/Zend/zend_hash.c
 +++ b/Zend/zend_hash.c
-@@ -20,6 +20,7 @@
- /* $Id: zend_hash.c 321634 2012-01-01 13:15:04Z felipe $ */
+@@ -21,6 +21,7 @@
  
  #include "zend.h"
+ #include "zend_globals.h"
 +#include "zend_compile.h"
  
  #define CONNECT_TO_BUCKET_DLLIST(element, list_head)		\
  	(element)->pNext = (list_head);							\
-@@ -136,6 +137,199 @@ ZEND_API ulong zend_hash_func(const char
- 	}
- 
+@@ -103,6 +104,199 @@ ZEND_API ulong zend_hash_func(const char
+ 	return zend_inline_hash_func(arKey, nKeyLength);
+ }
  
 +#if SUHOSIN_PATCH
 +#ifdef ZTS
@@ -4057,17 +4040,17 @@ the following modifications have been made:
 +#define zend_hash_check_destructor(pDestructor) do {} while(0)
 +#endif
  
- ZEND_API int _zend_hash_init(HashTable *ht, uint nSize, hash_func_t pHashFunction, dtor_func_t pDestructor, zend_bool persistent ZEND_FILE_LINE_DC)
- {
-@@ -156,6 +350,7 @@ ZEND_API int _zend_hash_init(HashTable *
+ #define UPDATE_DATA(ht, p, pData, nDataSize)											\
+ 	if (nDataSize == sizeof(void*)) {													\
+@@ -163,6 +357,7 @@ ZEND_API int _zend_hash_init(HashTable *
  
- 	ht->nTableMask = ht->nTableSize - 1;
+ 	ht->nTableMask = 0;	/* 0 means that ht->arBuckets is uninitialized */
  	ht->pDestructor = pDestructor;
 +	zend_hash_add_destructor(pDestructor);
- 	ht->arBuckets = NULL;
+ 	ht->arBuckets = (Bucket**)&uninitialized_bucket;
  	ht->pListHead = NULL;
  	ht->pListTail = NULL;
-@@ -233,6 +428,7 @@ ZEND_API int _zend_hash_add_or_update(Ha
+@@ -230,6 +425,7 @@ ZEND_API int _zend_hash_add_or_update(Ha
  					return FAILURE;
  				}
  #endif
@@ -4075,7 +4058,7 @@ the following modifications have been made:
  				if (ht->pDestructor) {
  					ht->pDestructor(p->pData);
  				}
-@@ -298,6 +494,7 @@ ZEND_API int _zend_hash_quick_add_or_upd
+@@ -307,6 +503,7 @@ ZEND_API int _zend_hash_quick_add_or_upd
  					return FAILURE;
  				}
  #endif
@@ -4083,7 +4066,7 @@ the following modifications have been made:
  				if (ht->pDestructor) {
  					ht->pDestructor(p->pData);
  				}
-@@ -373,6 +570,7 @@ ZEND_API int _zend_hash_index_update_or_
+@@ -394,6 +591,7 @@ ZEND_API int _zend_hash_index_update_or_
  				return FAILURE;
  			}
  #endif
@@ -4091,7 +4074,7 @@ the following modifications have been made:
  			if (ht->pDestructor) {
  				ht->pDestructor(p->pData);
  			}
-@@ -496,6 +694,7 @@ ZEND_API int zend_hash_del_key_or_index(
+@@ -527,6 +725,7 @@ ZEND_API int zend_hash_del_key_or_index(
  			if (ht->pInternalPointer == p) {
  				ht->pInternalPointer = p->pListNext;
  			}
@@ -4099,7 +4082,7 @@ the following modifications have been made:
  			if (ht->pDestructor) {
  				ht->pDestructor(p->pData);
  			}
-@@ -522,6 +721,7 @@ ZEND_API void zend_hash_destroy(HashTabl
+@@ -553,6 +752,7 @@ ZEND_API void zend_hash_destroy(HashTabl
  	SET_INCONSISTENT(HT_IS_DESTROYING);
  
  	p = ht->pListHead;
@@ -4107,7 +4090,7 @@ the following modifications have been made:
  	while (p != NULL) {
  		q = p;
  		p = p->pListNext;
-@@ -608,6 +808,7 @@ static Bucket *zend_hash_apply_deleter(H
+@@ -646,6 +846,7 @@ static Bucket *zend_hash_apply_deleter(H
  	ht->nNumOfElements--;
  	HANDLE_UNBLOCK_INTERRUPTIONS();
  
@@ -4115,7 +4098,7 @@ the following modifications have been made:
  	if (ht->pDestructor) {
  		ht->pDestructor(p->pData);
  	}
-@@ -628,6 +829,7 @@ ZEND_API void zend_hash_graceful_destroy
+@@ -666,6 +867,7 @@ ZEND_API void zend_hash_graceful_destroy
  	IS_CONSISTENT(ht);
  
  	p = ht->pListHead;
@@ -4354,7 +4337,7 @@ the following modifications have been made:
  			old_tail->prev->next = NULL;
 --- a/Zend/zend_operators.c
 +++ b/Zend/zend_operators.c
-@@ -153,9 +153,14 @@ ZEND_API void convert_scalar_to_number(z
+@@ -150,9 +150,14 @@ ZEND_API void convert_scalar_to_number(z
  		case IS_STRING:
  			{
  				char *strval;
@@ -4370,7 +4353,7 @@ the following modifications have been made:
  					ZVAL_LONG(op, 0);
  				}
  				STR_FREE(strval);
-@@ -187,7 +192,8 @@ ZEND_API void convert_scalar_to_number(z
+@@ -184,7 +189,8 @@ ZEND_API void convert_scalar_to_number(z
  	} else {														\
  		switch (Z_TYPE_P(op)) {										\
  			case IS_STRING:											\
@@ -4380,7 +4363,7 @@ the following modifications have been made:
  					if ((Z_TYPE(holder)=is_numeric_string(Z_STRVAL_P(op), Z_STRLEN_P(op), &Z_LVAL(holder), &Z_DVAL(holder), 1)) == 0) {	\
  						ZVAL_LONG(&(holder), 0);							\
  					}														\
-@@ -229,6 +235,7 @@ ZEND_API void convert_scalar_to_number(z
+@@ -226,6 +232,7 @@ ZEND_API void convert_scalar_to_number(z
  				Z_LVAL(holder) = zend_dval_to_lval(Z_DVAL_P(op));	\
  				break;												\
  			case IS_STRING:											\
@@ -4388,7 +4371,7 @@ the following modifications have been made:
  				Z_LVAL(holder) = strtol(Z_STRVAL_P(op), NULL, 10);	\
  				break;												\
  			case IS_ARRAY:											\
-@@ -271,6 +278,7 @@ ZEND_API void convert_scalar_to_number(z
+@@ -268,6 +275,7 @@ ZEND_API void convert_scalar_to_number(z
  				Z_LVAL(holder) = (Z_DVAL_P(op) ? 1 : 0);			\
  				break;												\
  			case IS_STRING:											\
@@ -4396,7 +4379,7 @@ the following modifications have been made:
  				if (Z_STRLEN_P(op) == 0								\
  					|| (Z_STRLEN_P(op)==1 && Z_STRVAL_P(op)[0]=='0')) {	\
  					Z_LVAL(holder) = 0;								\
-@@ -356,6 +364,9 @@ ZEND_API void convert_to_long_base(zval
+@@ -353,6 +361,9 @@ ZEND_API void convert_to_long_base(zval
  			{
  				char *strval = Z_STRVAL_P(op);
  
@@ -4406,7 +4389,7 @@ the following modifications have been made:
  				Z_LVAL_P(op) = strtol(strval, NULL, base);
  				STR_FREE(strval);
  			}
-@@ -416,6 +427,9 @@ ZEND_API void convert_to_double(zval *op
+@@ -413,6 +424,9 @@ ZEND_API void convert_to_double(zval *op
  			{
  				char *strval = Z_STRVAL_P(op);
  
@@ -4416,7 +4399,7 @@ the following modifications have been made:
  				Z_DVAL_P(op) = zend_strtod(strval, NULL);
  				STR_FREE(strval);
  			}
-@@ -502,8 +516,14 @@ ZEND_API void convert_to_boolean(zval *o
+@@ -499,8 +513,14 @@ ZEND_API void convert_to_boolean(zval *o
  
  				if (Z_STRLEN_P(op) == 0
  					|| (Z_STRLEN_P(op)==1 && Z_STRVAL_P(op)[0]=='0')) {
@@ -4431,7 +4414,7 @@ the following modifications have been made:
  					Z_LVAL_P(op) = 1;
  				}
  				STR_FREE(strval);
-@@ -617,6 +637,9 @@ static void convert_scalar_to_array(zval
+@@ -614,6 +634,9 @@ static void convert_scalar_to_array(zval
  	*entry = *op;
  	INIT_PZVAL(entry);
  
@@ -4456,24 +4439,24 @@ the following modifications have been made:
 @@ -78,6 +81,9 @@ ZEND_API void _zval_internal_dtor(zval *
  		case IS_CONSTANT:
  			CHECK_ZVAL_STRING_REL(zvalue);
- 			free(zvalue->value.str.val);
+ 			str_free(zvalue->value.str.val);
 +#if SUHOSIN_PATCH
-+                        zvalue->value.str.len = 0;
++			zvalue->value.str.len = 0;
 +#endif
  			break;
  		case IS_ARRAY:
  		case IS_CONSTANT_ARRAY:
 --- a/configure.in
 +++ b/configure.in
-@@ -289,6 +289,7 @@ sinclude(Zend/Zend.m4)
- sinclude(TSRM/threads.m4)
- sinclude(TSRM/tsrm.m4)
+@@ -359,6 +359,7 @@ case $host_alias in
+     ;;
+ esac
  
 +sinclude(main/suhosin_patch.m4)
  
- dnl divert(2)
- 
-@@ -1404,7 +1405,7 @@ PHP_ADD_SOURCES(main, main.c snprintf.c
+ dnl Include Zend and TSRM configurations.
+ dnl -------------------------------------------------------------------------
+@@ -1440,7 +1441,7 @@ PHP_ADD_SOURCES(main, main.c snprintf.c
         php_ini.c SAPI.c rfc1867.c php_content_types.c strlcpy.c \
         strlcat.c mergesort.c reentrancy.c php_variables.c php_ticks.c \
         network.c php_open_temporary_file.c php_logos.c \
@@ -4482,18 +4465,18 @@ the following modifications have been made:
  
  PHP_ADD_SOURCES(main/streams, streams.c cast.c memory.c filter.c \
         plain_wrapper.c userspace.c transports.c xp_socket.c mmap.c \
-@@ -1432,7 +1433,7 @@ PHP_ADD_SOURCES(Zend, \
+@@ -1468,7 +1469,7 @@ PHP_ADD_SOURCES(Zend, \
      zend_list.c zend_indent.c zend_builtin_functions.c zend_sprintf.c \
      zend_ini.c zend_qsort.c zend_multibyte.c zend_ts_hash.c zend_stream.c \
      zend_iterators.c zend_interfaces.c zend_exceptions.c zend_strtod.c zend_gc.c \
--    zend_closures.c zend_float.c)
-+    zend_closures.c zend_float.c zend_canary.c zend_alloc_canary.c )
+-    zend_closures.c zend_float.c zend_string.c zend_signal.c)
++    zend_closures.c zend_float.c zend_string.c zend_signal.c zend_canary.c zend_alloc_canary.c )
  
  if test -r "$abs_srcdir/Zend/zend_objects.c"; then
    PHP_ADD_SOURCES(Zend, zend_objects.c zend_object_handlers.c zend_objects_API.c zend_default_classes.c)
 --- a/ext/standard/dl.c
 +++ b/ext/standard/dl.c
-@@ -249,6 +249,23 @@ PHPAPI int php_load_extension(char *file
+@@ -246,6 +246,23 @@ PHPAPI int php_load_extension(char *file
  			return FAILURE;
  		}
  	}
@@ -4519,8 +4502,8 @@ the following modifications have been made:
  /* }}} */
 --- a/ext/standard/info.c
 +++ b/ext/standard/info.c
-@@ -878,6 +878,33 @@ PHPAPI void php_print_info(int flag TSRM
- 		
+@@ -785,6 +785,33 @@ PHPAPI void php_print_info(int flag TSRM
+ 
  		php_info_print_table_end();
  
 +		/* Suhosin Patch */
@@ -4555,7 +4538,7 @@ the following modifications have been made:
  		if (expose_php && !sapi_module.phpinfo_as_text) {
 --- a/ext/standard/syslog.c
 +++ b/ext/standard/syslog.c
-@@ -42,6 +42,7 @@ static void start_syslog(TSRMLS_D);
+@@ -40,6 +40,7 @@
   */
  PHP_MINIT_FUNCTION(syslog)
  {
@@ -4563,7 +4546,7 @@ the following modifications have been made:
  	/* error levels */
  	REGISTER_LONG_CONSTANT("LOG_EMERG", LOG_EMERG, CONST_CS | CONST_PERSISTENT); /* system unusable */
  	REGISTER_LONG_CONSTANT("LOG_ALERT", LOG_ALERT, CONST_CS | CONST_PERSISTENT); /* immediate action required */
-@@ -97,6 +98,7 @@ PHP_MINIT_FUNCTION(syslog)
+@@ -95,6 +96,7 @@ PHP_MINIT_FUNCTION(syslog)
  	/* AIX doesn't have LOG_PERROR */
  	REGISTER_LONG_CONSTANT("LOG_PERROR", LOG_PERROR, CONST_CS | CONST_PERSISTENT); /*log to stderr*/
  #endif
@@ -4573,7 +4556,7 @@ the following modifications have been made:
  	return SUCCESS;
 --- a/main/fopen_wrappers.c
 +++ b/main/fopen_wrappers.c
-@@ -85,13 +85,8 @@ or a tightening during activation/runtim
+@@ -84,13 +84,8 @@ or a tightening during activation/runtim
  PHPAPI ZEND_INI_MH(OnUpdateBaseDir)
  {
  	char **p, *pathbuf, *ptr, *end;
@@ -4590,7 +4573,7 @@ the following modifications have been made:
  		/* We're in a PHP_INI_SYSTEM context, no restrictions */
 --- a/main/main.c
 +++ b/main/main.c
-@@ -91,6 +91,9 @@
+@@ -92,6 +92,9 @@
  
  #include "SAPI.h"
  #include "rfc1867.h"
@@ -4600,16 +4583,16 @@ the following modifications have been made:
  
  #if HAVE_MMAP
  # if HAVE_UNISTD_H
-@@ -504,7 +507,7 @@ PHP_INI_BEGIN()
+@@ -473,7 +476,7 @@ PHP_INI_BEGIN()
  	STD_PHP_INI_ENTRY("extension_dir",			PHP_EXTENSION_DIR,		PHP_INI_SYSTEM,		OnUpdateStringUnempty,	extension_dir,			php_core_globals,	core_globals)
  	STD_PHP_INI_ENTRY("include_path",			PHP_INCLUDE_PATH,		PHP_INI_ALL,		OnUpdateStringUnempty,	include_path,			php_core_globals,	core_globals)
  	PHP_INI_ENTRY("max_execution_time",			"30",		PHP_INI_ALL,			OnUpdateTimeout)
 -	STD_PHP_INI_ENTRY("open_basedir",			NULL,		PHP_INI_ALL,		OnUpdateBaseDir,			open_basedir,			php_core_globals,	core_globals)
 +	PHP_INI_ENTRY("open_basedir",			NULL,		PHP_INI_ALL,		OnUpdateBaseDir)
- 	STD_PHP_INI_ENTRY("safe_mode_exec_dir",		PHP_SAFE_MODE_EXEC_DIR,	PHP_INI_SYSTEM,		OnUpdateString,			safe_mode_exec_dir,		php_core_globals,	core_globals)
  
  	STD_PHP_INI_BOOLEAN("file_uploads",			"1",		PHP_INI_SYSTEM,		OnUpdateBool,			file_uploads,			php_core_globals,	core_globals)
-@@ -1810,6 +1813,10 @@ void dummy_invalid_parameter_handler(
+ 	STD_PHP_INI_ENTRY("upload_max_filesize",	"2M",		PHP_INI_SYSTEM|PHP_INI_PERDIR,		OnUpdateLong,			upload_max_filesize,	php_core_globals,	core_globals)
+@@ -1884,6 +1887,10 @@ void dummy_invalid_parameter_handler(
  }
  #endif
  
@@ -4620,7 +4603,7 @@ the following modifications have been made:
  /* {{{ php_module_startup
   */
  int php_module_startup(sapi_module_struct *sf, zend_module_entry *additional_modules, uint num_additional_modules)
-@@ -1858,6 +1865,10 @@ int php_module_startup(sapi_module_struc
+@@ -1927,6 +1934,10 @@ int php_module_startup(sapi_module_struc
  	php_win32_init_rng_lock();
  #endif
  
@@ -4631,7 +4614,7 @@ the following modifications have been made:
  	module_shutdown = 0;
  	module_startup = 1;
  	sapi_initialize_empty_request(TSRMLS_C);
-@@ -1980,7 +1991,11 @@ int php_module_startup(sapi_module_struc
+@@ -2051,7 +2062,11 @@ int php_module_startup(sapi_module_struc
  	REGISTER_MAIN_STRINGL_CONSTANT("PHP_CONFIG_FILE_SCAN_DIR", PHP_CONFIG_FILE_SCAN_DIR, sizeof(PHP_CONFIG_FILE_SCAN_DIR)-1, CONST_PERSISTENT | CONST_CS);
  	REGISTER_MAIN_STRINGL_CONSTANT("PHP_SHLIB_SUFFIX", PHP_SHLIB_SUFFIX, sizeof(PHP_SHLIB_SUFFIX)-1, CONST_PERSISTENT | CONST_CS);
  	REGISTER_MAIN_STRINGL_CONSTANT("PHP_EOL", PHP_EOL, sizeof(PHP_EOL)-1, CONST_PERSISTENT | CONST_CS);
@@ -4643,10 +4626,10 @@ the following modifications have been made:
 +        REGISTER_MAIN_LONG_CONSTANT("PHP_MAXPATHLEN", MAXPATHLEN, CONST_PERSISTENT | CONST_CS);
  	REGISTER_MAIN_LONG_CONSTANT("PHP_INT_MAX", LONG_MAX, CONST_PERSISTENT | CONST_CS);
  	REGISTER_MAIN_LONG_CONSTANT("PHP_INT_SIZE", sizeof(long), CONST_PERSISTENT | CONST_CS);
- #ifdef ZEND_MULTIBYTE
+ 
 --- a/main/php.h
 +++ b/main/php.h
-@@ -458,6 +458,10 @@ END_EXTERN_C()
+@@ -453,6 +453,10 @@ END_EXTERN_C()
  #endif
  #endif /* !XtOffsetOf */
  
@@ -5380,7 +5363,7 @@ the following modifications have been made:
 +		zval *result = NULL;
 +		
 +		/*long orig_execution_depth = SPG(execution_depth);*/
-+		zend_bool orig_safe_mode = PG(safe_mode);
++		/*zend_bool orig_safe_mode = PG(safe_mode);*/
 +		char *orig_basedir = PG(open_basedir);
 +		
 +		char *phpscript = SPG(log_phpscriptname);
@@ -5417,14 +5400,14 @@ the following modifications have been made:
 +				
 +				/*SPG(execution_depth) = 0;*/
 +				if (SPG(log_phpscript_is_safe)) {
-+					PG(safe_mode) = 0;
++					/*PG(safe_mode) = 0;*/
 +					PG(open_basedir) = NULL;
 +				}
 +				
 +				zend_execute(new_op_array TSRMLS_CC);
 +				
 +				/*SPG(execution_depth) = orig_execution_depth;*/
-+				PG(safe_mode) = orig_safe_mode;
++				/*PG(safe_mode) = orig_safe_mode;*/
 +				PG(open_basedir) = orig_basedir;
 +				
 +#ifdef ZEND_ENGINE_2
@@ -5540,7 +5523,7 @@ the following modifications have been made:
 +
 --- a/sapi/apache/mod_php5.c
 +++ b/sapi/apache/mod_php5.c
-@@ -969,7 +969,11 @@ static void php_init_handler(server_rec
+@@ -965,7 +965,11 @@ static void php_init_handler(server_rec
  	{
  		TSRMLS_FETCH();
  		if (PG(expose_php)) {
@@ -5554,7 +5537,7 @@ the following modifications have been made:
  #endif
 --- a/sapi/apache2filter/sapi_apache2.c
 +++ b/sapi/apache2filter/sapi_apache2.c
-@@ -583,7 +583,11 @@ static void php_apache_add_version(apr_p
+@@ -581,7 +581,11 @@ static void php_apache_add_version(apr_p
  {
  	TSRMLS_FETCH();
  	if (PG(expose_php)) {
@@ -5568,7 +5551,7 @@ the following modifications have been made:
  
 --- a/sapi/apache2handler/sapi_apache2.c
 +++ b/sapi/apache2handler/sapi_apache2.c
-@@ -407,7 +407,11 @@ static void php_apache_add_version(apr_p
+@@ -406,7 +406,11 @@ static void php_apache_add_version(apr_p
  {
  	TSRMLS_FETCH();
  	if (PG(expose_php)) {
@@ -5582,7 +5565,7 @@ the following modifications have been made:
  
 --- a/sapi/apache_hooks/mod_php5.c
 +++ b/sapi/apache_hooks/mod_php5.c
-@@ -1256,7 +1256,11 @@ static void php_init_handler(server_rec
+@@ -1251,7 +1251,11 @@ static void php_init_handler(server_rec
  	{
  		TSRMLS_FETCH();
  		if (PG(expose_php)) {
@@ -5596,92 +5579,90 @@ the following modifications have been made:
  #endif
 --- a/sapi/cgi/cgi_main.c
 +++ b/sapi/cgi/cgi_main.c
-@@ -1932,10 +1932,18 @@ consult the installation file that came
+@@ -2188,10 +2188,18 @@ consult the installation file that came
  								SG(headers_sent) = 1;
  								SG(request_info).no_headers = 1;
  							}
 +#if SUHOSIN_PATCH
  #if ZEND_DEBUG
--							php_printf("PHP %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2012 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
-+							php_printf("PHP %s with Suhosin-Patch (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2012 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
+-							php_printf("PHP %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2011 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
++							php_printf("PHP %s with Suhosin-Patch (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2011 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
  #else
--							php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2012 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
-+							php_printf("PHP %s with Suhosin-Patch (%s) (built: %s %s)\nCopyright (c) 1997-2012 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
+-							php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2011 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
++							php_printf("PHP %s with Suhosin-Patch (%s) (built: %s %s)\nCopyright (c) 1997-2011 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 +#endif
 +#else
 +  #if ZEND_DEBUG
-+  							php_printf("PHP %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2012 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
++  							php_printf("PHP %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2011 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 +  #else
-+  							php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2012 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
++  							php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2011 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 +  #endif
  #endif
  							php_request_shutdown((void *) 0);
  							fcgi_shutdown();
 --- a/sapi/cli/php_cli.c
 +++ b/sapi/cli/php_cli.c
-@@ -826,7 +826,11 @@ int main(int argc, char *argv[])
- 				}
+@@ -687,7 +687,11 @@ static int do_cli(int argc, char **argv
+ 				goto out;
  
- 				request_started = 1;
--				php_printf("PHP %s (%s) (built: %s %s) %s\nCopyright (c) 1997-2012 The PHP Group\n%s",
-+				php_printf("PHP %s "
+ 			case 'v': /* show php version & quit */
 +#if SUHOSIN_PATCH
-+                                "with Suhosin-Patch "
++				php_printf("PHP %s with Suhosin-Patch (%s) (built: %s %s) %s\nCopyright (c) 1997-2011 The PHP Group\n%s",
++#else
+ 				php_printf("PHP %s (%s) (built: %s %s) %s\nCopyright (c) 1997-2011 The PHP Group\n%s",
 +#endif
-+				        "(%s) (built: %s %s) %s\nCopyright (c) 1997-2012 The PHP Group\n%s",
- 					PHP_VERSION, sapi_module.name, __DATE__, __TIME__,
+ 					PHP_VERSION, cli_sapi_module.name, __DATE__, __TIME__,
  #if ZEND_DEBUG && defined(HAVE_GCOV)
  					"(DEBUG GCOV)",
 --- a/sapi/litespeed/lsapi_main.c
 +++ b/sapi/litespeed/lsapi_main.c
-@@ -718,10 +718,18 @@ static int cli_main( int argc, char * ar
-                 break;
-             case 'v':
-                 if (php_request_startup(TSRMLS_C) != FAILURE) {
+@@ -546,11 +546,19 @@ static int cli_main( int argc, char * ar
+ 				break;
+ 			case 'v':
+ 				if (php_request_startup(TSRMLS_C) != FAILURE) {
 +#if SUHOSIN_PATCH
- #if ZEND_DEBUG
--                    php_printf("PHP %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2004 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
-+					php_printf("PHP %s with Suhosin-Patch (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2011 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
- #else
--                    php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2004 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
-+					php_printf("PHP %s with Suhosin-Patch (%s) (built: %s %s)\nCopyright (c) 1997-2011 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
-+#endif
-+#else
 +#if ZEND_DEBUG
-+                    php_printf("PHP %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2011 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
++					php_printf("PHP %s with Suhosin-Patch (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2004 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 +#else
-+                    php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2011 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
++					php_printf("PHP %s with Suhosin-Patch (%s) (built: %s %s)\nCopyright (c) 1997-2004 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 +#endif
++#else
+ #if ZEND_DEBUG
+ 					php_printf("PHP %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2004 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
+ #else
+ 					php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2004 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
  #endif
++#endif
  #ifdef PHP_OUTPUT_NEWAPI
                      php_output_end_all(TSRMLS_C);
+ #else
 --- a/sapi/milter/php_milter.c
 +++ b/sapi/milter/php_milter.c
-@@ -1111,7 +1111,11 @@ int main(int argc, char *argv[])
+@@ -1109,7 +1109,11 @@ int main(int argc, char *argv[])
  				}
  				SG(headers_sent) = 1;
  				SG(request_info).no_headers = 1;
 +#if SUHOSIN_PATCH
-+				php_printf("PHP %s with Suhosin-Patch (%s) (built: %s %s)\nCopyright (c) 1997-2012 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
++				php_printf("PHP with Suhosin-Patch %s (%s) (built: %s %s)\nCopyright (c) 1997-2011 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 +#else
- 				php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2012 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
+ 				php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2011 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 +#endif
- 				php_end_ob_buffers(1 TSRMLS_CC);
+ 				php_output_teardown();
  				exit(1);
  				break;
 --- a/win32/build/config.w32
 +++ b/win32/build/config.w32
-@@ -328,7 +328,7 @@ ADD_SOURCES("Zend", "zend_language_parse
+@@ -333,7 +333,7 @@ ADD_SOURCES("Zend", "zend_language_parse
  	zend_stream.c zend_iterators.c zend_interfaces.c zend_objects.c \
  	zend_object_handlers.c zend_objects_API.c \
  	zend_default_classes.c zend_execute.c zend_strtod.c zend_gc.c zend_closures.c \
--	zend_float.c");
-+	zend_float.c zend_canary.c zend_alloc_canary.c");
+-	zend_float.c zend_string.c");
++	zend_float.c zend_string.c zend_canary.c zend_alloc_canary.c");
  
  if (VCVERS == 1200) {
  	AC_DEFINE('ZEND_DVAL_TO_LVAL_CAST_OK', 1);
-@@ -385,6 +385,7 @@ if (PHP_ZEND_MULTIBYTE == "yes") {
-  
+@@ -385,6 +385,7 @@ ADD_FLAG("CFLAGS", "/D FD_SETSIZE=" + pa
+ 
  AC_DEFINE('HAVE_USLEEP', 1);
  AC_DEFINE('HAVE_STRCOLL', 1);
 +AC_DEFINE('SUHOSIN_PATCH', 1);
@@ -5690,7 +5671,7 @@ the following modifications have been made:
   * files that make up the snapshot template? */
 --- a/win32/build/config.w32.h.in
 +++ b/win32/build/config.w32.h.in
-@@ -152,6 +152,9 @@
+@@ -150,6 +150,9 @@
  /* Win32 supports strcoll */
  #define HAVE_STRCOLL 1
  

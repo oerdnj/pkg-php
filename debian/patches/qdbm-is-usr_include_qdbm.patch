@@ -7,7 +7,7 @@ Last-Update: 2010-02-21
 
 --- a/ext/dba/config.m4
 +++ b/ext/dba/config.m4
-@@ -109,6 +109,10 @@ if test "$PHP_QDBM" != "no"; then
+@@ -113,6 +113,10 @@ if test "$PHP_QDBM" != "no"; then
        THIS_PREFIX=$i
        THIS_INCLUDE=$i/include/depot.h
        break

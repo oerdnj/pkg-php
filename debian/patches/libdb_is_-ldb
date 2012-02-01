@@ -6,7 +6,7 @@ Last-Update: 2010-01-18
 
 --- a/ext/dba/config.m4
 +++ b/ext/dba/config.m4
-@@ -327,7 +327,7 @@ if test "$PHP_DB4" != "no"; then
+@@ -362,7 +362,7 @@ if test "$PHP_DB4" != "no"; then
        break
      fi
    done

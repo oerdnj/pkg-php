@@ -1,7 +1,6 @@
-diff -up php-5.3.9/configure.in.gnusrc php-5.3.9/configure.in
---- php-5.3.9/configure.in.gnusrc	2012-01-10 12:21:57.000000000 +0100
-+++ php-5.3.9/configure.in	2012-01-10 18:53:24.020907113 +0100
-@@ -58,6 +58,8 @@ AC_DEFUN([PHP_EXT_DIR],[ext/$1])dnl
+--- a/configure.in
++++ b/configure.in
+@@ -136,6 +136,8 @@ AC_DEFUN([PHP_EXT_DIR],[ext/$1])dnl
  AC_DEFUN([PHP_EXT_SRCDIR],[$abs_srcdir/ext/$1])dnl
  AC_DEFUN([PHP_ALWAYS_SHARED],[])dnl
  
@@ -10,9 +9,8 @@ diff -up php-5.3.9/configure.in.gnusrc php-5.3.9/configure.in
  dnl Setting up the PHP version based on the information above.
  dnl -------------------------------------------------------------------------
  
-diff -up php-5.3.9/ext/interbase/interbase.c.gnusrc php-5.3.9/ext/interbase/interbase.c
---- php-5.3.9/ext/interbase/interbase.c.gnusrc	2012-01-01 14:15:04.000000000 +0100
-+++ php-5.3.9/ext/interbase/interbase.c	2012-01-10 18:53:24.021907113 +0100
+--- a/ext/interbase/interbase.c
++++ b/ext/interbase/interbase.c
 @@ -24,7 +24,6 @@
  #include "config.h"
  #endif
@@ -21,9 +19,8 @@ diff -up php-5.3.9/ext/interbase/interbase.c.gnusrc php-5.3.9/ext/interbase/inte
  
  #include "php.h"
  
-diff -up php-5.3.9/ext/pdo_firebird/firebird_driver.c.gnusrc php-5.3.9/ext/pdo_firebird/firebird_driver.c
---- php-5.3.9/ext/pdo_firebird/firebird_driver.c.gnusrc	2012-01-01 14:15:04.000000000 +0100
-+++ php-5.3.9/ext/pdo_firebird/firebird_driver.c	2012-01-10 18:53:24.022907113 +0100
+--- a/ext/pdo_firebird/firebird_driver.c
++++ b/ext/pdo_firebird/firebird_driver.c
 @@ -22,7 +22,6 @@
  #include "config.h"
  #endif
@@ -32,10 +29,9 @@ diff -up php-5.3.9/ext/pdo_firebird/firebird_driver.c.gnusrc php-5.3.9/ext/pdo_f
  
  #include "php.h"
  #ifdef ZEND_ENGINE_2
-diff -up php-5.3.9/ext/standard/file.c.gnusrc php-5.3.9/ext/standard/file.c
---- php-5.3.9/ext/standard/file.c.gnusrc	2012-01-01 14:15:04.000000000 +0100
-+++ php-5.3.9/ext/standard/file.c	2012-01-10 18:53:24.023907113 +0100
-@@ -113,9 +113,6 @@ php_file_globals file_globals;
+--- a/ext/standard/file.c
++++ b/ext/standard/file.c
+@@ -112,9 +112,6 @@ php_file_globals file_globals;
  #endif
  
  #if defined(HAVE_FNMATCH) && !defined(PHP_WIN32)
@@ -45,9 +41,8 @@ diff -up php-5.3.9/ext/standard/file.c.gnusrc php-5.3.9/ext/standard/file.c
  # include <fnmatch.h>
  #endif
  
-diff -up php-5.3.9/ext/zlib/zlib_fopen_wrapper.c.gnusrc php-5.3.9/ext/zlib/zlib_fopen_wrapper.c
---- php-5.3.9/ext/zlib/zlib_fopen_wrapper.c.gnusrc	2012-01-01 14:15:04.000000000 +0100
-+++ php-5.3.9/ext/zlib/zlib_fopen_wrapper.c	2012-01-10 18:53:52.308907791 +0100
+--- a/ext/zlib/zlib_fopen_wrapper.c
++++ b/ext/zlib/zlib_fopen_wrapper.c
 @@ -19,8 +19,6 @@
  
  /* $Id: zlib_fopen_wrapper.c 321634 2012-01-01 13:15:04Z felipe $ */
@@ -57,9 +52,8 @@ diff -up php-5.3.9/ext/zlib/zlib_fopen_wrapper.c.gnusrc php-5.3.9/ext/zlib/zlib_
  #include "php.h"
  #include "php_zlib.h"
  #include "fopen_wrappers.h"
-diff -up php-5.3.9/main/php.h.gnusrc php-5.3.9/main/php.h
---- php-5.3.9/main/php.h.gnusrc	2012-01-01 14:15:04.000000000 +0100
-+++ php-5.3.9/main/php.h	2012-01-10 18:53:24.025907114 +0100
+--- a/main/php.h
++++ b/main/php.h
 @@ -30,6 +30,7 @@
  #define PHP_HAVE_STREAMS
  #define YYDEBUG 0
@@ -68,9 +62,8 @@ diff -up php-5.3.9/main/php.h.gnusrc php-5.3.9/main/php.h
  #include "php_version.h"
  #include "zend.h"
  #include "zend_qsort.h"
-diff -up php-5.3.9/main/streams/cast.c.gnusrc php-5.3.9/main/streams/cast.c
---- php-5.3.9/main/streams/cast.c.gnusrc	2012-01-01 14:15:04.000000000 +0100
-+++ php-5.3.9/main/streams/cast.c	2012-01-10 18:54:09.479908202 +0100
+--- a/main/streams/cast.c
++++ b/main/streams/cast.c
 @@ -18,7 +18,6 @@
  
  /* $Id: cast.c 321634 2012-01-01 13:15:04Z felipe $ */
@@ -79,9 +72,8 @@ diff -up php-5.3.9/main/streams/cast.c.gnusrc php-5.3.9/main/streams/cast.c
  #include "php.h"
  #include "php_globals.h"
  #include "php_network.h"
-diff -up php-5.3.9/main/streams/memory.c.gnusrc php-5.3.9/main/streams/memory.c
---- php-5.3.9/main/streams/memory.c.gnusrc	2012-01-01 14:15:04.000000000 +0100
-+++ php-5.3.9/main/streams/memory.c	2012-01-10 18:54:25.102908576 +0100
+--- a/main/streams/memory.c
++++ b/main/streams/memory.c
 @@ -18,7 +18,6 @@
  
  /* $Id: memory.c 321634 2012-01-01 13:15:04Z felipe $ */
@@ -90,9 +82,8 @@ diff -up php-5.3.9/main/streams/memory.c.gnusrc php-5.3.9/main/streams/memory.c
  #include "php.h"
  
  PHPAPI int php_url_decode(char *str, int len);
-diff -up php-5.3.9/main/streams/streams.c.gnusrc php-5.3.9/main/streams/streams.c
---- php-5.3.9/main/streams/streams.c.gnusrc	2012-01-01 14:15:04.000000000 +0100
-+++ php-5.3.9/main/streams/streams.c	2012-01-10 18:54:42.953909003 +0100
+--- a/main/streams/streams.c
++++ b/main/streams/streams.c
 @@ -21,7 +21,6 @@
  
  /* $Id: streams.c 321634 2012-01-01 13:15:04Z felipe $ */
@@ -101,15 +92,14 @@ diff -up php-5.3.9/main/streams/streams.c.gnusrc php-5.3.9/main/streams/streams.
  #include "php.h"
  #include "php_globals.h"
  #include "php_network.h"
-diff -up php-5.3.9/Zend/zend_language_parser.c.gnusrc php-5.3.9/Zend/zend_language_parser.c
---- php-5.3.9/Zend/zend_language_parser.c.gnusrc	2012-01-10 14:37:07.000000000 +0100
-+++ php-5.3.9/Zend/zend_language_parser.c	2012-01-10 18:53:24.031907115 +0100
-@@ -112,6 +112,8 @@
- #include "zend_API.h"
- #include "zend_constants.h"
+--- a/Zend/zend_language_parser.c
++++ b/Zend/zend_language_parser.c
+@@ -67,6 +67,8 @@
+ #define yydebug zenddebug
+ #define yynerrs zendnerrs
  
 +#include <string.h>
 +
  
- #define YYERROR_VERBOSE
- #define YYSTYPE znode
+ /* Tokens.  */
+ #ifndef YYTOKENTYPE

@@ -15,14 +15,14 @@ while read dsoname priority; do
 done < /usr/lib/php5/@package@.modules
 
 case "$1" in
-    configure)
+    remove)
 	dsolist=""
 	[ -f /usr/lib/php5/@package@.modules ] && \
 	while read dsoname priority; do
 	    [ -n "${priority}" ] && dsoname=${dsoname}/${priority}
 	    dsolist="$dsolist ${dsoname}"
 	done < /usr/lib/php5/@package@.modules && \
-	[ -n "${dsolist}" ] && php5enmod ${dsolist}
+	[ -n "${dsolist}" ] && php5dismod ${dsolist}
     ;;
 esac
 

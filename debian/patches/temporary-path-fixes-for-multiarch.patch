@@ -9,7 +9,7 @@ Reviewed-by: Steve Langasek <steve.langasek@ubuntu.com>
 
 --- a/ext/dba/config.m4
 +++ b/ext/dba/config.m4
-@@ -204,7 +204,7 @@ AC_DEFUN([PHP_DBA_DB_CHECK],[
+@@ -239,7 +239,7 @@ AC_DEFUN([PHP_DBA_DB_CHECK],[
      AC_MSG_ERROR([DBA: Could not find necessary header file(s).])
    fi
    for LIB in $2; do
@@ -20,7 +20,7 @@ Reviewed-by: Steve Langasek <steve.langasek@ubuntu.com>
          AC_TRY_LINK([
 --- a/ext/gd/config.m4
 +++ b/ext/gd/config.m4
-@@ -128,7 +128,7 @@ AC_DEFUN([PHP_GD_XPM],[
+@@ -159,7 +159,7 @@ AC_DEFUN([PHP_GD_XPM],[
    if test "$PHP_XPM_DIR" != "no"; then
  
      for i in $PHP_XPM_DIR /usr/local /usr/X11R6 /usr; do
@@ -42,7 +42,7 @@ Reviewed-by: Steve Langasek <steve.langasek@ubuntu.com>
      
 --- a/acinclude.m4
 +++ b/acinclude.m4
-@@ -2271,7 +2271,7 @@ AC_DEFUN([PHP_SETUP_KERBEROS],[
+@@ -2282,7 +2282,7 @@ AC_DEFUN([PHP_SETUP_KERBEROS],[
      fi
  
      for i in $PHP_KERBEROS; do
@@ -51,7 +51,7 @@ Reviewed-by: Steve Langasek <steve.langasek@ubuntu.com>
          PHP_KERBEROS_DIR=$i
          break
        fi
-@@ -2348,7 +2348,7 @@ AC_DEFUN([PHP_SETUP_OPENSSL],[
+@@ -2359,7 +2359,7 @@ AC_DEFUN([PHP_SETUP_OPENSSL],[
        if test -r $i/include/openssl/evp.h; then
          OPENSSL_INCDIR=$i/include
        fi

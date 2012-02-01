@@ -1,6 +1,6 @@
 --- a/scripts/phpize.in
 +++ b/scripts/phpize.in
-@@ -5,10 +5,16 @@ prefix='@prefix@'
+@@ -6,10 +6,16 @@ datarootdir='@datarootdir@'
  exec_prefix="`eval echo @exec_prefix@`"
  phpdir="$prefix/lib/php5/build"
  includedir="$prefix/include/php5"
@@ -18,7 +18,7 @@
  FILES="acinclude.m4 Makefile.global config.sub config.guess ltmain.sh run-tests*.php"
  CLEAN_FILES="$FILES *.o *.lo *.la .deps .libs/ build/ include/ modules/ install-sh \
  	mkinstalldirs missing config.nice config.sub config.guess configure configure.in \
-@@ -144,8 +150,9 @@ phpize_copy_files()
+@@ -145,8 +151,9 @@ phpize_copy_files()
    test -d build || mkdir build
   
    (cd "$phpdir" && cp $FILES_BUILD "$builddir"/build)

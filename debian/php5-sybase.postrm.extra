@@ -1,0 +1,2 @@
+[ -x /usr/bin/dpkg-maintscript-helper ] && \
+	dpkg-maintscript-helper rm_conffile /etc/php5/conf.d/mssql.ini 5.2.3-1 -- "$@"

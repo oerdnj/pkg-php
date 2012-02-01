@@ -5,7 +5,7 @@ Last-Update: 2010-01-18
 
 --- a/ext/sockets/sockets.c
 +++ b/ext/sockets/sockets.c
-@@ -721,6 +721,7 @@ static int php_sock_array_to_fd_set(zval
+@@ -889,6 +889,7 @@ static int php_sock_array_to_fd_set(zval
  
  		php_sock = (php_socket*) zend_fetch_resource(element TSRMLS_CC, -1, le_socket_name, NULL, 1, le_socket);
  		if (!php_sock) continue; /* If element is not a resource, skip it */
@@ -15,7 +15,7 @@ Last-Update: 2010-01-18
  		if (php_sock->bsd_socket > *max_fd) {
 --- a/ext/standard/streamsfuncs.c
 +++ b/ext/standard/streamsfuncs.c
-@@ -635,6 +635,8 @@ static int stream_array_to_fd_set(zval *
+@@ -625,6 +625,8 @@ static int stream_array_to_fd_set(zval *
  		 * is not displayed.
  		 * */
  		if (SUCCESS == php_stream_cast(stream, PHP_STREAM_AS_FD_FOR_SELECT | PHP_STREAM_CAST_INTERNAL, (void*)&this_fd, 1) && this_fd != -1) {

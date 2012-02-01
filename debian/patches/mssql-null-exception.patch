@@ -1,6 +1,6 @@
 --- a/ext/pdo_dblib/dblib_driver.c
 +++ b/ext/pdo_dblib/dblib_driver.c
-@@ -230,8 +230,10 @@ static int pdo_dblib_handle_factory(pdo_
+@@ -308,8 +308,10 @@ static int pdo_dblib_handle_factory(pdo_
  		goto cleanup;
  	}
  
@@ -8,6 +8,6 @@
  	/* dblib do not return more than this length from text/image */
  	DBSETOPT(H->link, DBTEXTLIMIT, "2147483647");
 +#endif
- 	
+ 
  	/* limit text/image from network */
  	DBSETOPT(H->link, DBTEXTSIZE, "2147483647");

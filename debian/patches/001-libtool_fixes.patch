@@ -1,6 +1,6 @@
 --- a/TSRM/configure.in
 +++ b/TSRM/configure.in
-@@ -13,9 +13,6 @@ TSRM_BASIC_CHECKS
+@@ -17,9 +17,6 @@ TSRM_BASIC_CHECKS
  TSRM_THREADS_CHECKS
  	
  AM_PROG_LIBTOOL
@@ -12,7 +12,7 @@
  
 --- a/configure.in
 +++ b/configure.in
-@@ -1353,9 +1353,6 @@ AC_PROVIDE_IFELSE([PHP_REQUIRE_CXX], [],
+@@ -1399,9 +1399,6 @@ AC_PROVIDE_IFELSE([PHP_REQUIRE_CXX], [],
  ])
  AC_PROG_LIBTOOL
  

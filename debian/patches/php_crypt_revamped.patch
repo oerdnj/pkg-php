@@ -1,6 +1,6 @@
 --- a/ext/standard/config.m4
 +++ b/ext/standard/config.m4
-@@ -60,6 +60,12 @@ if test "$ac_cv_func_crypt" = "no"; then
+@@ -58,6 +58,12 @@ if test "$ac_cv_func_crypt" = "no"; then
      AC_DEFINE(HAVE_CRYPT, 1, [ ])
    ])
  fi
@@ -13,7 +13,7 @@
    
  AC_CACHE_CHECK(for standard DES crypt, ac_cv_crypt_des,[
    AC_TRY_RUN([
-@@ -231,11 +237,68 @@ main() {
+@@ -229,11 +235,68 @@ main() {
    ac_cv_crypt_SHA256=no
  ])])
  
@@ -83,7 +83,7 @@
  
    dnl
    dnl Check for __alignof__ support in the compiler
-@@ -269,74 +332,15 @@ if test "$ac_cv_crypt_blowfish" = "no" |
+@@ -267,74 +330,15 @@ if test "$ac_cv_crypt_blowfish" = "no" |
      AC_DEFINE([HAVE_ATTRIBUTE_ALIGNED], 1, [whether the compiler supports __attribute__ ((__aligned__))])
    fi
      
@@ -289,7 +289,7 @@
  
  static unsigned char itoa64[] = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
  
-@@ -150,160 +143,160 @@ static void php_to64(char *s, long v, in
+@@ -150,160 +143,157 @@ static void php_to64(char *s, long v, in
  PHP_FUNCTION(crypt)
  {
  	char salt[PHP_MAX_SALT_LEN + 1];
@@ -351,8 +351,8 @@
 +		salt_len = 12;
  	}
  
- /* Windows (win32/crypt) has a stripped down version of libxcrypt and 
- 	a CryptoApi md5_crypt implementation */
+-/* Windows (win32/crypt) has a stripped down version of libxcrypt and 
+-	a CryptoApi md5_crypt implementation */
 -#if PHP_USE_PHP_CRYPT_R
  	{
 -		struct php_crypt_extended_data buffer;
@@ -390,7 +390,7 @@
 -			int needed = (sizeof(sha512_salt_prefix) - 1
 -						+ sizeof(sha512_rounds_prefix) + 9 + 1
 -						+ strlen(salt) + 1 + 43 + 1);
--			output = emalloc(needed * sizeof(char *));
+-			output = emalloc(needed);
 -			salt[salt_in_len] = '\0';
 -
 -			crypt_res = php_sha512_crypt_r(str, salt, output, needed);
@@ -425,7 +425,7 @@
 -			int needed = (sizeof(sha256_salt_prefix) - 1
 -						+ sizeof(sha256_rounds_prefix) + 9 + 1
 -						+ strlen(salt) + 1 + 43 + 1);
--			output = emalloc(needed * sizeof(char *));
+-			output = emalloc(needed);
 -			salt[salt_in_len] = '\0';
 -
 -			crypt_res = php_sha256_crypt_r(str, salt, output, needed);
@@ -516,10 +516,7 @@
 +#elif PHP_USE_PHP_CRYPT_R
 +# error Using PHP standard DES crypt function, should not happen on Debian system
  			_crypt_extended_init_r();
-+			crypt_res = _crypt_extended_r(str, salt, &extended_buffer);
-+#endif
-+		}
- 
+-
 -			crypt_res = _crypt_extended_r(str, salt, &buffer);
 -			if (!crypt_res) {
 -				if (salt[0]=='*' && salt[1]=='0') {
@@ -527,15 +524,11 @@
 -				} else {
 -					RETURN_STRING("*0", 1);
 -				}
-+		if (!crypt_res) {
-+			if (salt[0]=='*' && salt[1]=='0') {
-+				RETVAL_STRING("*1", 1);
- 			} else {
+-			} else {
 -				RETURN_STRING(crypt_res, 1);
-+				RETVAL_STRING("*0", 1);
- 			}
-+		} else {
-+			RETVAL_STRING(crypt_res, 1);
+-			}
++			crypt_res = _crypt_extended_r(str, salt, &extended_buffer);
++#endif
  		}
 -	}
 -#else
@@ -551,14 +544,21 @@
 -#    error Data struct used by crypt_r() is unknown. Please report.
 -#  endif
 -		crypt_res = crypt_r(str, salt, &buffer);
--		if (!crypt_res) {
+ 		if (!crypt_res) {
 -				if (salt[0]=='*' && salt[1]=='0') {
 -					RETURN_STRING("*1", 1);
 -				} else {
 -					RETURN_STRING("*0", 1);
 -				}
--		} else {
++			if (salt[0]=='*' && salt[1]=='0') {
++				RETVAL_STRING("*1", 1);
++			} else {
++				RETVAL_STRING("*0", 1);
++			}
+ 		} else {
 -			RETURN_STRING(crypt_res, 1);
++			RETVAL_STRING(crypt_res, 1);
++		}
 +		memset(salt, 0, sizeof(salt));
 +		if (output[0]!='\0') {
 +			memset(output, 0, sizeof(output));
@@ -569,17 +569,3 @@
  }
  /* }}} */
  #endif
---- a/configure.in
-+++ b/configure.in
-@@ -678,11 +678,6 @@ PHP_TIME_R_TYPE
- PHP_READDIR_R_TYPE
- PHP_CHECK_IN_ADDR_T
- 
--AC_CHECK_FUNCS(crypt_r, [ php_crypt_r="1" ], [ php_crypt_r="0" ])
--if test "x$php_crypt_r" = "x1"; then
--  PHP_CRYPT_R_STYLE
--fi
--
- dnl divert(4)
- 
- dnl ## In diversion 4 we check user-configurable general settings.

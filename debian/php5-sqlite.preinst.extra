@@ -1,9 +1,2 @@
-#!/bin/sh
-set -e
-
 [ -x /usr/bin/dpkg-maintscript-helper ] && \
 	dpkg-maintscript-helper rm_conffile /etc/php5/conf.d/sqlite.ini 5.3.9~ -- "$@"
-
-#DEBHELPER#
-
-exit 0
