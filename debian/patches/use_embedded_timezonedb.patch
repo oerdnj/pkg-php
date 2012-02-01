@@ -624,9 +624,9 @@ r1: initial revision
 +
 +			/* Now done with the mmap segment - discard it. */
 +			munmap(memmap, maplen);
++		} else
 +#endif
-+		}
-+		else {
++		{
 +			/* PHP-style - use the embedded info. */
 +			read_location(&tzf, tmp);
 +		}
