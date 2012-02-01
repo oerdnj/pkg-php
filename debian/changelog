@@ -1,9 +1,47 @@
-php5 (5.3.9-7) UNRELEASED; urgency=low
+php5 (5.4.0~rc6-2) experimental; urgency=low
 
-  * Textual improvements to README.Debian.security, NEWS
-    (closes: #632675,#643015,#658208).
+  * Merge all changes from Debian unstable branch (up to 5.3.9-6)
+  * Fix -Wformat-security error in mysqlnd
+  * Add php5{en,dis}mod to enable/disable modules from maintainer
+    scripts (Closes: #447826, #582320, #627145)
+    (Initial work courtesy of Clint Byrum)
+  * Modify comments in php.inis to match compiled default session
+  * Adjust new 5.3 patches for 5.4 branch
+  * Ensure pdo.so is loaded before all other modules
+  * Add trigger to restart php5-fpm when module is installed/removed
+  * Remove --with-ttf and --with-t1lib (Closes: #658248, #638755)
+  * Add debian/NEWS item about missing t1lib functions
 
- -- Thijs Kinkhorst <thijs@debian.org>  Thu, 02 Feb 2012 10:20:19 +0100
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 01 Feb 2012 18:27:30 +0100
+
+php5 (5.4.0~rc6-1) experimental; urgency=low
+
+  * Imported Upstream version 5.4.0~rc6
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 20 Jan 2012 15:30:48 +0100
+
+php5 (5.4.0~rc5-1) experimental; urgency=low
+
+  * Imported Upstream version 5.4.0~rc5
+  * Update patches for new release
+  * Disable suhosin patch
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 19 Jan 2012 19:23:36 +0100
+
+php5 (5.4.0~beta2-1) experimental; urgency=low
+
+  * Remove obsolete sqlite(2) module from php5-sqlite
+  * Use correct signals in php5-fpm init script (Closes: #645934)
+  * Update gbp.conf for experimental branch
+  * Imported Upstream version 5.4.0~beta2
+  * Refresh patches for the 5.4.0beta2 release
+  * Remove php.ini-paranoid, it's almost useless now
+  * Remove safe_mode setting from suhosin, it has been removed upstream
+  * Remove the php_stream stuff to allow compiling with system-wide
+    libgd
+  * php5-common.docs: Don't install non-existant TODO file
+
+ -- Ondřej Surý <ondrej@debian.org>  Sat, 22 Oct 2011 18:39:33 +0200
 
 php5 (5.3.9-6) unstable; urgency=low
 
