@@ -84,7 +84,7 @@ enmod() {
                 return
             fi
         fi
-        error "${modname} module symlink already exists in /etc/php5/conf.d"
+        error "${modname} module symlink already exists in /etc/php5/conf.d with different content"
     fi
     ln -s "${live_link_content}" "${live_link}"
     ENABLED=$((${ENABLED}+1))
@@ -93,7 +93,6 @@ enmod() {
 dismod() {
     local modname="$(basename "${1%/[0-9]*}")"
     local live_link=""
-    local FOUND=0
 
     local live_link_content="../mods-available/${modname}.ini"
     for live_link in $(ls -1 /etc/php5/conf.d/*.ini); do
@@ -104,10 +103,9 @@ dismod() {
 	[ "$(readlink "${live_link}")" != "${live_link_content}" ] && continue
 	# remove the symlink
 	rm -f "${live_link}"
-	FOUND=$(($FOUND+1))
+	FOUND=1
     done
-    [ ${FOUND} -eq 0 ] && error "${modname} symlink not found in /etc/php5/conf.d"
-    DISABLED=$(($DISABLED+1))
+    [ "${FOUND}" -gt 0 ] && DISABLED=$(($DISABLED+1))
 }
 
 # parse args
