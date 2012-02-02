@@ -5,13 +5,15 @@ set -e
 #EXTRA#
 #DEBHELPER#
 
-[ -f /usr/lib/php5/@package@.modules ] && \
-while read dsoname priority; do
-    [ -x /usr/bin/dpkg-maintscript-helper ] && \
-    dpkg-maintscript-helper mv_conffile \
-	/etc/php5/conf.d/${dsoname}.ini \
-        /etc/php5/mods-available/${dsoname}.ini \
-	5.4.0~rc6-1 -- "$@";
-done < /usr/lib/php5/@package@.modules
+for dsoname in @modules@; do
+    inifile=${dsoname}.ini
+
+    if [ -x /usr/bin/dpkg-maintscript-helper ]; then
+	dpkg-maintscript-helper mv_conffile \
+	    /etc/php5/conf.d/${inifile} \
+	    /etc/php5/mods-available/${inifile} \
+	    5.4.0~rc6-1 -- "$@";
+    fi
+done
 
 exit 0

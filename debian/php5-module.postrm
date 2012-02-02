@@ -5,13 +5,28 @@ set -e
 #EXTRA#
 #DEBHELPER#
 
-[ -f /usr/lib/php5/@package@.modules ] && \
-while read dsoname priority; do
-    [ -x /usr/bin/dpkg-maintscript-helper ] && \
-    dpkg-maintscript-helper mv_conffile \
-	/etc/php5/conf.d/${dsoname}.ini \
-        /etc/php5/mods-available/${dsoname}.ini \
-	5.4.0~rc6-1 -- "$@";
-done < /usr/lib/php5/@package@.modules
+inidir=/etc/php5/mods-available
+for dsoname in @modules@; do
+    inifile=${dsoname}.ini
+
+    if [ -x /usr/bin/dpkg-maintscript-helper ]; then
+	dpkg-maintscript-helper mv_conffile \
+	    /etc/php5/conf.d/${inifile} \
+	    ${inidir}/${inifile} \
+	    5.4.0~rc6-1 -- "$@";
+    fi
+    if [ "$1" = "purge" ]; then
+	for ext in '~' '%' .bak .ucf-new .ucf-old .ucf-dist;  do
+	    rm -f ${inidir}/${inifile}${ext}
+	done
+	rm -f ${inidir}/${inifile}
+	if which ucf >/dev/null; then
+	    ucf --purge ${inidir}/${inifile}
+	fi
+	if which ucfr >/dev/null; then
+	    ucfr --purge php5-@package@ ${inidir}/${inifile}
+	fi
+    fi
+done
 
 exit 0

@@ -550,7 +550,6 @@ install: build
 			$${modulepath}/$$dsoname.so \
 			debian/php5-$$package$${ext}/$$dsoname.so; \
 		rm $${modulepath}/$$dsoname.so; \
-		echo "$$dsoname $$priority" >> debian/php5-$$package/usr/lib/php5/$$package.modules; \
 	done
 
 	# install CGI
@@ -659,27 +658,34 @@ binary-arch: build install
 	dh_testroot
 	# Do this first so we don't overwrite any debhelper-generated files
 	#
+	# generate the config snippets for various php
+	# modules from the templates.
+	cat debian/modulelist debian/extramodulelist | while read package extname dsoname priority; do \
+		if [ -z "$${dsoname}" ]; then dsoname=$$package; fi; \
+		if [ -z "$${priority}" ]; then priority=20; fi; \
+		mkdir -p debian/php5-$$package/usr/share/php5/$$package; \
+		sed -e"s|@extname@|$${extname}|g; \
+		       s/@dsoname@/$${dsoname}/g; \
+		       s/@priority@/$${priority}/g" \
+		  < debian/php5-module.ini \
+		  > debian/php5-$$package/usr/share/php5/$$package/$${dsoname}.ini; \
+		echo -n "$$dsoname " >> debian/php5-$$package.modules; \
+	done
+
 	# generate the maintscripts for various php
 	# modules from the templates.
 	cat debian/modulelist | while read package extname dsoname priority; do \
+	    modules=$$(cat debian/php5-$$package.modules); \
 	    for script in postinst preinst postrm prerm; do \
-	        sed -e"s/@package@/$$package/g; \
-	               /#EXTRA#/ r debian/php5-$${package}.$${script}.extra" \
+	        sed -e"s/@package@/$${package}/g; \
+	               s/@modules@/$${modules}/g; \
+	                /#EXTRA#/ r debian/php5-$${package}.$${script}.extra" \
 	          < debian/php5-module.$${script} \
 	        | sed -e'/#EXTRA#/ d' \
 	          > debian/php5-$${package}.$${script}; \
 	    done; \
 	    cp debian/php5-module.triggers debian/php5-$${package}.triggers; \
-	done
-
-	# generate the config snippets for various php
-	# modules from the templates.
-	cat debian/modulelist debian/extramodulelist | while read package extname dsoname priority; do \
-		if [ -z "$$dsoname" ]; then dsoname=$$package; fi; \
-		mkdir -p debian/php5-$$package/etc/php5/mods-available; \
-		sed -e"s/@extname@/$$extname/g; s/@dsoname@/$$dsoname/g" \
-		  < debian/php5-module.ini \
-		  > debian/php5-$${package}/etc/php5/mods-available/$${dsoname}.ini; \
+	    rm debian/php5-$$package.modules; \
 	done
 
 	# likewise, for the different sapi implementations
