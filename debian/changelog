@@ -6,8 +6,8 @@ php5 (5.4.0~rc7-1) experimental; urgency=low
 
   [ Ondřej Surý ]
   * Imported Upstream version 5.4.0~rc7
-    + CVE-2012-0830: Fixed arbitrary remote code execution vulnerability
-      reported by Stefan Esser.
+    + CVE-2012-0830: Fix PHP remote vulnerability (code injection) in the
+      implementation of the max_input_vars configuration variable
     + CVE-2011-3389: Fix possible attack in SSL sockets with SSL 3.0/TLS 1.0.
 
  -- Ondřej Surý <ondrej@debian.org>  Fri, 03 Feb 2012 11:03:39 +0100
