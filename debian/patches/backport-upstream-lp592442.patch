@@ -1,6 +1,6 @@
 --- a/ext/openssl/xp_ssl.c
 +++ b/ext/openssl/xp_ssl.c
-@@ -391,6 +391,18 @@ static inline int php_openssl_setup_cryp
+@@ -395,6 +395,18 @@ static inline int php_openssl_setup_cryp
  	}
  #endif
  
