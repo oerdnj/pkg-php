@@ -1,13 +1,16 @@
-php5 (5.4.0~rc7-1) UNRELEASED; urgency=low
+php5 (5.4.0~rc7-1) experimental; urgency=low
 
   [ Thijs Kinkhorst ]
   * Textual improvements to README.Debian.security, NEWS
     (closes: #632675,#643015,#658208).
 
   [ Ondřej Surý ]
-  * Upload to unstable
+  * Imported Upstream version 5.4.0~rc7
+    + CVE-2012-0830: Fixed arbitrary remote code execution vulnerability
+      reported by Stefan Esser.
+    + CVE-2011-3389: Fix possible attack in SSL sockets with SSL 3.0/TLS 1.0.
 
- -- Ondřej Surý <ondrej@debian.org>  Thu, 02 Feb 2012 12:25:54 +0100
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 03 Feb 2012 11:03:39 +0100
 
 php5 (5.4.0~rc6-3) experimental; urgency=low
 
