@@ -1,13 +1,35 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-?? Jan 2012, PHP 5.4.0
+?? Feb 2012, PHP 5.4.0 RC 8
+
+02 Feb 2012, PHP 5.4.0 RC 7
+- Core:
+  . Fix bug #60895 (Possible invalid handler usage in windows random
+    functions). (Pierre)
+  . Fixed bug #51860 (Include fails with toplevel symlink to /). (Dmitry)
+  . Fixed (disabled) inline-caching for ZEND_OVERLOADED_FUNCTION methods.
+    (Dmitry)
+
+- OpenSSL:
+  . Fix possible attack in SSL sockets with SSL 3.0 / TLS 1.0.
+    CVE-2011-3389. (Scott)
+    
+- Session:
+  . Fixed bug #60860 (session.save_handler=user without defined function core
+    dumps). (Felipe)
+
+- SOAP:
+  . Fixed basic HTTP authentication for WSDL sub requests. (Dmitry)
 
 19 Jan 2012, PHP 5.4.0 RC6
 
 - Core:
   . Restoring $_SERVER['REQUEST_TIME'] as a long and introducing
     $_SERVER['REQUEST_TIME_FLOAT'] to include microsecond precision. (Patrick)
+  . Fixed bug #60809 (TRAITS - PHPDoc Comment Style Bug). (Dmitry)
   . Fixed bug #60768 (Output buffer not discarded) (Mike)
+  . Fixed bug #60825 (Segfault when running symfony 2 tests).
+    (Dmitry, Laruence)
 
 - Hash
   . Fixed bug #60221 (Tiger hash output byte order) (Mike)
