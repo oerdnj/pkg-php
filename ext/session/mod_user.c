@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: mod_user.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id: mod_user.c 322909 2012-01-28 21:02:09Z felipe $ */
 
 #include "php.h"
 #include "php_session.h"
@@ -80,6 +80,13 @@ PS_OPEN_FUNC(user)
 {
 	zval *args[2];
 	STDVARS;
+	
+	if (PSF(open) == NULL) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING,
+			"user session functions not defined");
+			
+		return FAILURE;
+	}
 
 	SESS_ZVAL_STRING((char*)save_path, args[0]);
 	SESS_ZVAL_STRING((char*)session_name, args[1]);

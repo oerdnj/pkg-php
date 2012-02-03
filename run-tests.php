@@ -24,7 +24,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: run-tests.php 320475 2011-12-06 05:44:54Z derick $ */
+/* $Id: run-tests.php 322899 2012-01-28 02:43:31Z rasmus $ */
 
 /* Sanity check to ensure that pcre extension needed by this script is available.
  * In the event it is not, print a nice error message indicating that this script will
@@ -666,7 +666,7 @@ if (isset($argc) && $argc > 1) {
 					$html_output = is_resource($html_file);
 					break;
 				case '--version':
-					echo '$Revision: 320475 $' . "\n";
+					echo '$Revision: 322899 $' . "\n";
 					exit(1);
 
 				default:
@@ -1518,7 +1518,7 @@ TEST $file
 			if ($JUNIT) {
 				$test_started_at	= microtime(true);
 			}
-			$output = system_with_timeout("$extra $php $pass_options -q $ini_settings -d display_errors=0 $test_skipif", $env);
+			$output = system_with_timeout("$extra $php $pass_options -q $ini_settings -d display_errors=0 \"$test_skipif\"", $env);
 			if ($JUNIT) {
 				$test_finished_at   = microtime(true);
 				$test_execution_time= number_format($test_finished_at-$test_started_at, 2);
@@ -1713,7 +1713,7 @@ TEST $file
 		}
 
 		save_text($tmp_post, $request);
-		$cmd = "$php $pass_options $ini_settings -f \"$test_file\" 2>&1 < $tmp_post";
+		$cmd = "$php $pass_options $ini_settings -f \"$test_file\" 2>&1 < \"$tmp_post\"";
 
 	} else if (array_key_exists('POST', $section_text) && !empty($section_text['POST'])) {
 
@@ -1734,7 +1734,7 @@ TEST $file
 		$env['CONTENT_TYPE']   = 'application/x-www-form-urlencoded';
 		$env['CONTENT_LENGTH'] = $content_length;
 
-		$cmd = "$php $pass_options $ini_settings -f \"$test_file\" 2>&1 < $tmp_post";
+		$cmd = "$php $pass_options $ini_settings -f \"$test_file\" 2>&1 < \"$tmp_post\"";
 
 	} else {
 
@@ -1792,7 +1792,7 @@ COMMAND $cmd
 				settings2params($clean_params);
 				$extra = substr(PHP_OS, 0, 3) !== "WIN" ?
 					"unset REQUEST_METHOD; unset QUERY_STRING; unset PATH_TRANSLATED; unset SCRIPT_FILENAME; unset REQUEST_METHOD;": "";
-				system_with_timeout("$extra $php $pass_options -q $clean_params $test_clean", $env);
+				system_with_timeout("$extra $php $pass_options -q $clean_params \"$test_clean\"", $env);
 			}
 
 			if (!$cfg['keep']['clean']) {

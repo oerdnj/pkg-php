@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_output.h 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id: php_output.h 322743 2012-01-25 17:22:46Z mike $ */
 
 #ifndef PHP_OUTPUT_H
 #define PHP_OUTPUT_H
@@ -67,6 +67,8 @@ typedef enum _php_output_handler_status_t {
 /* supplementary flags for php_output_get_status() */
 #define PHP_OUTPUT_ACTIVE				0x10
 #define PHP_OUTPUT_LOCKED				0x20
+/* output layer is ready to use */
+#define PHP_OUTPUT_ACTIVATED		0x100000
 
 /* handler hooks */
 typedef enum _php_output_handler_hook_t {

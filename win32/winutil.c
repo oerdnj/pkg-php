@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: winutil.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id: winutil.c 322843 2012-01-27 10:56:33Z pajoye $ */
 
 #include "php.h"
 #include <wincrypt.h>
@@ -62,8 +62,10 @@ void php_win32_init_rng_lock()
 void php_win32_free_rng_lock()
 {
 	tsrm_mutex_lock(php_lock_win32_cryptoctx);
-	CryptReleaseContext(hCryptProv, 0);
-	has_crypto_ctx = 0;
+	if (has_crypto_ctx == 1) {
+		CryptReleaseContext(hCryptProv, 0);
+		has_crypto_ctx = 0;
+	}
 	tsrm_mutex_unlock(php_lock_win32_cryptoctx);
 	tsrm_mutex_free(php_lock_win32_cryptoctx);
 
