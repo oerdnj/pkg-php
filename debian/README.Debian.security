@@ -2,11 +2,11 @@ the Debian stable security team does not provide security support
 for certain configurations known to be inherently insecure.  This
 includes the interpreter itself, extensions, and code written in the
 PHP language. Most specifically, the security team will not provide
-support for flaws in:
+support for (supposed) flaws in:
 
 - functionality which is not flawed in the design of PHP but can be
-  problematic when used by sloppy developers (for example: not
-  checking the contents of a tar file before extracting it, using
+  problematic when used by sloppy application developers (for example:
+  not checking the contents of a tar file before extracting it, using
   unserialize() on untrusted data, or relying on a specific value
   of short_open_tag).
 
