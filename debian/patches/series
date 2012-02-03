@@ -55,4 +55,3 @@ php-5.3.9-gnusrc.patch
 php-5.3.3-macropen.patch
 php-5.2.4-norpath.patch
 mysqlnd-format-error-fix.patch
-memory_leaks.patch
