@@ -11,7 +11,7 @@ Last-Update: 2010-01-18
  
  ZEND_MODULE_API_NO=`$EGREP '#define ZEND_MODULE_API_NO ' $srcdir/Zend/zend_modules.h|$SED 's/#define ZEND_MODULE_API_NO //'`
  
-+DEBIAN_PHP_API=`egrep -h '^#define ZEND_EXTENSION_API_NO|^#define ZEND_MODULE_API_NO|#define PHP_API_VERSION' $srcdir/Zend/zend_extensions.h $srcdir/Zend/zend_modules.h $srcdir/main/php.h | awk '{print $3}' | sed -e 's/^2200/200/' | sort -n | tail -n 1`
++DEBIAN_PHP_API=`egrep -h '^#define ZEND_EXTENSION_API_NO|^#define ZEND_MODULE_API_NO|#define PHP_API_VERSION' $srcdir/Zend/zend_extensions.h $srcdir/Zend/zend_modules.h $srcdir/main/php.h | awk '{print $3}' | sed -e 's/^220/20/' | sort -n | tail -n 1`
 +if echo "$CPPFLAGS $CFLAGS" | grep -q -- -D_FILE_OFFSET_BITS=64; then
 +  DEBIAN_PHP_API="${DEBIAN_PHP_API}+lfs"
 +fi
