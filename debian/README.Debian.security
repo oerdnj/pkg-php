@@ -10,10 +10,6 @@ support for (supposed) flaws in:
   unserialize() on untrusted data, or relying on a specific value
   of short_open_tag).
 
-- vulnerabilities involving register_globals being activated, unless
-  specifically the vulnerability activates this setting when it was
-  configured as deactivated.
-
 - vulnerabilities involving any kind of safe_mode or open_basedir
   violation, as these are security models flawed by design and no longer
   have upstream support either.
