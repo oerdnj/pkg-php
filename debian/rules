@@ -730,6 +730,8 @@ binary-arch: build install
 	dh_shlibdeps -s
 
 	phpapi=`./debian/php5-dev/usr/bin/php-config5 --phpapi`; \
+	stored=`cat debian/phpapi`; \
+	[ "$${phpapi%+lfs}" = "$${stored}" ] || echo "PHPAPI has changed, please modify debian/phpapi"; \
 	for i in libapache2-mod-php5 libapache2-mod-php5filter php5-cgi php5-cli php5-fpm; do \
 		echo "php:Provides=phpapi-$${phpapi}" >> debian/$$i.substvars; \
 	done; \
