@@ -1,21 +1,19 @@
-the Debian stable security team does not provide security support
-for certain configurations known to be inherently insecure.  This
-includes the interpreter itself, extensions, and code written in the
-PHP language. Most specifically, the security team will not provide
-support for (supposed) flaws in:
+The Debian stable security team does not provide security support for
+certain configurations known to be inherently insecure.  This includes
+the interpreter itself, extensions, and code written in the PHP
+language. Most specifically, but not exclusively, the security team
+will not provide support for (supposed) flaws in:
 
-- functionality which is not flawed in the design of PHP but can be
-  problematic when used by sloppy application developers (for example:
-  not checking the contents of a tar file before extracting it, using
-  unserialize() on untrusted data, or relying on a specific value
-  of short_open_tag).
+- security issues which are caused by careless programming, such as:
+   * not checking the contents of a tar file before extracting it
+   * using unserialize() on untrusted data
+   * relying on a specific value of short_open_tag
 
-- vulnerabilities involving any kind of safe_mode or open_basedir
-  violation, as these are security models flawed by design and no longer
-  have upstream support either.
+- vulnerabilities involving any kind of open_basedir violation, as
+  this is not considered security model neither by us nor PHP upstream.
 
 - any "works as expected" vulnerabilities, such as "user can cause php
-  to crash by writing a malcious php script", unless such vulnerabilities
+  to crash by writing a malicious php script", unless such vulnerabilities
   involve some kind of higher-level DoS or privilege escalation that would
   not otherwise be available.
 
