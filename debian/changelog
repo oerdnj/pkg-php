@@ -15,8 +15,12 @@ php5 (5.4.0~rc7-2) experimental; urgency=low
   * Add -ignore_readdir_race to find call in session cleanup (#634864)
   * Don't prefix extension list automatically, it's done by subsvars now
     (Closes: #633491)
+  * Depends on non-forking fuser in psmisc (Closes: #633100)
+  * Add a paragraph about PHP_INI_SCAN_DIR (Closes: #659123)
+  * Reformat README.Debian to common format and mention php5-fpm instead
+    of php5-cgi
 
- -- Ondřej Surý <ondrej@debian.org>  Wed, 08 Feb 2012 21:29:55 +0100
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 08 Feb 2012 23:53:27 +0100
 
 php5 (5.4.0~rc7-1) experimental; urgency=low
 
