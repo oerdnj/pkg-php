@@ -1,21 +1,22 @@
-php5 (5.4.0~rc7-3) experimental; urgency=low
-
-  * Update debian/README.Debian.security:
-    + register_globals was removed from PHP 5.4
-    + Remove safe_mode (removed upstream) and update and reformat text
-      slightly
-  * [php5-fpm]: Listen on socket instead of localhost by default
-  * Add NEWS about change of default location of php5-fpm socket
-
- -- Ondřej Surý <ondrej@debian.org>  Wed, 08 Feb 2012 08:27:23 +0100
-
 php5 (5.4.0~rc7-2) experimental; urgency=low
 
   * Use corrected module PHPAPI (20100525) and not (220100525)
   * Use $ZEND_MODULE_API_NO for $DEBIAN_PHP_API. Check for PHPAPI
     changes, so we don't become binary incompatible without knowing it.
+  * Update debian/README.Debian.security:
+    + register_globals was removed from PHP 5.4
+    + Remove safe_mode (removed upstream) and update and reformat text
+      slightly
+    + Reviewed by english l10n team (thanks a lot)
+  * php5-fpm now listen on socket instead of localhost by default
+    (Closes: #650204)
+  * Add NEWS about change of default location of php5-fpm socket
+  * Stop php5-fpm on runlevels 0 1 6 (Closes: #650203)
+  * Add -ignore_readdir_race to find call in session cleanup (#634864)
+  * Don't prefix extension list automatically, it's done by subsvars now
+    (Closes: #633491)
 
- -- Ondřej Surý <ondrej@debian.org>  Tue, 07 Feb 2012 08:47:51 +0100
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 08 Feb 2012 21:29:55 +0100
 
 php5 (5.4.0~rc7-1) experimental; urgency=low
 
