@@ -1,3 +1,12 @@
+php5 (5.4.0~rc7-3) unstable; urgency=low
+
+  php5-fpm default www spool now listens on unix socket located
+  in /var/run/php5-fpm.sock instead of localhost:9000.  If you
+  have configured your webserver to use localhost:9000, you will
+  have to change your settings.
+
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 08 Feb 2012 08:25:30 +0100
+
 php5 (5.4.0~rc6-2) unstable; urgency=low
 
   t1lib support was removed from PHP 5.4.  t1lib has many security
