@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: tidy.c 322536 2012-01-21 11:32:56Z nlopess $ */
+/* $Id: tidy.c 323118 2012-02-07 20:49:10Z tony2001 $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -191,6 +191,7 @@ struct _PHPTidyDoc {
 	TidyDoc			doc;
 	TidyBuffer		*errbuf;
 	unsigned int	ref_count;
+	unsigned int    initialized:1;
 };
 
 struct _PHPTidyObj {
@@ -688,6 +689,7 @@ static void tidy_object_new(zend_class_entry *class_type, zend_object_handlers *
 			intern->ptdoc = emalloc(sizeof(PHPTidyDoc));
 			intern->ptdoc->doc = tidyCreate();
 			intern->ptdoc->ref_count = 1;
+			intern->ptdoc->initialized = 0;
 			intern->ptdoc->errbuf = emalloc(sizeof(TidyBuffer));
 			tidyBufInit(intern->ptdoc->errbuf);
 
@@ -1047,7 +1049,9 @@ static int php_tidy_parse_string(PHPTidyObj *obj, char *string, int len, char *e
 			return FAILURE;
 		}
 	}
-	
+
+	obj->ptdoc->initialized = 1;
+
 	tidyBufInit(&buf);
 	tidyBufAttach(&buf, (byte *) string, len);
 	if (tidyParseBuffer(obj->ptdoc->doc, &buf) < 0) {
@@ -1099,7 +1103,7 @@ static PHP_MINFO_FUNCTION(tidy)
 	php_info_print_table_start();
 	php_info_print_table_header(2, "Tidy support", "enabled");
 	php_info_print_table_row(2, "libTidy Release", (char *)tidyReleaseDate());
-	php_info_print_table_row(2, "Extension Version", PHP_TIDY_MODULE_VERSION " ($Id: tidy.c 322536 2012-01-21 11:32:56Z nlopess $)");
+	php_info_print_table_row(2, "Extension Version", PHP_TIDY_MODULE_VERSION " ($Id: tidy.c 323118 2012-02-07 20:49:10Z tony2001 $)");
 	php_info_print_table_end();
 
 	DISPLAY_INI_ENTRIES();
@@ -1336,7 +1340,7 @@ static PHP_FUNCTION(tidy_diagnose)
 {
 	TIDY_FETCH_OBJECT;
 
-	if (tidyRunDiagnostics(obj->ptdoc->doc) >= 0) {
+	if (obj->ptdoc->initialized && tidyRunDiagnostics(obj->ptdoc->doc) >= 0) {
 		tidy_doc_update_properties(obj TSRMLS_CC);
 		RETURN_TRUE;
 	}

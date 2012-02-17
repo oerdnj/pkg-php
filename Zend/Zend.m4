@@ -1,5 +1,5 @@
 dnl
-dnl $Id: Zend.m4 312377 2011-06-22 14:23:21Z iliaa $
+dnl $Id: Zend.m4 323245 2012-02-16 01:51:45Z stas $
 dnl
 dnl This file contains Zend specific autoconf functions.
 dnl
@@ -393,14 +393,20 @@ int main()
 AC_CHECK_FUNCS(mremap)
 
 
+AC_ARG_ENABLE(zend-signals,
+[  --enable-zend-signals   Use zend signal handling],[
+  ZEND_SIGNALS=$enableval
+],[
+  ZEND_SIGNALS=no
+])  
+
 AC_CHECK_FUNC(sigaction, [
-	ZEND_SIGNALS=yes
-	AC_DEFINE(ZEND_SIGNALS, 1, [Use zend signal handling])
 	AC_DEFINE(HAVE_SIGACTION, 1, [Whether sigaction() is available])
 ], [
 	ZEND_SIGNALS=no
 ])
 if test "$ZEND_SIGNALS" = "yes"; then
+	AC_DEFINE(ZEND_SIGNALS, 1, [Use zend signal handling])
 	CFLAGS="$CFLAGS -DZEND_SIGNALS"
 fi
 
