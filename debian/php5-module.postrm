@@ -9,12 +9,8 @@ inidir=/etc/php5/mods-available
 for dsoname in @modules@; do
     inifile=${dsoname}.ini
 
-    if [ -x /usr/bin/dpkg-maintscript-helper ]; then
-	dpkg-maintscript-helper mv_conffile \
-	    /etc/php5/conf.d/${inifile} \
-	    ${inidir}/${inifile} \
-	    5.4.0~rc6-1 -- "$@";
-    fi
+    dpkg-maintscript-helper mv_conffile /etc/php5/conf.d/${inifile} ${inidir}/${inifile} 5.4.0~rc6-1 -- "$@";
+
     if [ "$1" = "purge" ]; then
 	for ext in '~' '%' .bak .ucf-new .ucf-old .ucf-dist;  do
 	    rm -f ${inidir}/${inifile}${ext}

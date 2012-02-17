@@ -16,12 +16,7 @@ if [ "$1" = "configure" ]; then
 	ucfr php5-@package@ ${inidir}/${inifile}
 
 	# Move pre-extension manager conffile
-	if [ -x /usr/bin/dpkg-maintscript-helper ]; then
-	    dpkg-maintscript-helper mv_conffile \
-		/etc/php5/conf.d/${inifile} \
-		${inidir}/${inifile} \
-		5.4.0~rc6-1 -- "$@";
-	fi
+	dpkg-maintscript-helper mv_conffile /etc/php5/conf.d/${inifile} ${inidir}/${inifile} 5.4.0~rc6-1 -- "$@";
 
 	if [ -f "${inidir}/${inifile}.dpkg-new" ]; then
 	    local md5sum="$(md5sum ${inidir}/${inifile}.dpkg-new | sed -e 's/ .*//')"
