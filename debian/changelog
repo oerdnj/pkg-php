@@ -1,3 +1,17 @@
+php5 (5.4.0~rc8-1) experimental; urgency=low
+
+  * Imported Upstream version 5.4.0~rc8
+  * Improve maxlifetime script to scan for more SAPIs and scan all *.ini
+    in conf.d directory
+  * Move php5-mysqlnd to Priority: extra to make debcheck happy
+  * Check for dpkg-maintscript-helper existence in php5-fpm maintainer
+    scripts
+  * Add Pre-Depends: dpkg (>= 1.15.7.2~) | dpkg-maintscript-helper to
+    allow single upgrade path (dpkg-maintscript-helper package will be
+    provided for Ubuntu Lucid PPA)
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 17 Feb 2012 21:37:05 +0100
+
 php5 (5.4.0~rc7-2) experimental; urgency=low
 
   * Use corrected module PHPAPI (20100525) and not (220100525)
