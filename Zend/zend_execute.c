@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id: zend_execute.c 323204 2012-02-14 09:27:08Z dmitry $ */
 
 #define ZEND_INTENSIVE_DEBUGGING 0
 
@@ -1512,7 +1512,12 @@ ZEND_API void execute_internal(zend_execute_data *execute_data_ptr, int return_v
 ZEND_API int zend_set_user_opcode_handler(zend_uchar opcode, user_opcode_handler_t handler)
 {
 	if (opcode != ZEND_USER_OPCODE) {
-		zend_user_opcodes[opcode] = ZEND_USER_OPCODE;
+		if (handler == NULL) {
+			/* restore the original handler */			
+			zend_user_opcodes[opcode] = opcode;
+		} else {
+			zend_user_opcodes[opcode] = ZEND_USER_OPCODE;
+		}
 		zend_user_opcode_handlers[opcode] = handler;
 		return SUCCESS;
 	}

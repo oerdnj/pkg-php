@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: credits.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id: credits.c 323192 2012-02-13 19:54:51Z dsp $ */
 
 #include "php.h"
 #include "info.h"
@@ -68,6 +68,7 @@ PHPAPI void php_print_credits(int flag TSRMLS_DC) /* {{{ */
 		CREDIT_LINE("Server API (SAPI) Abstraction Layer", "Andi Gutmans, Shane Caraveo, Zeev Suraski");
 		CREDIT_LINE("Streams Abstraction Layer", "Wez Furlong, Sara Golemon");
 		CREDIT_LINE("PHP Data Objects Layer", "Wez Furlong, Marcus Boerger, Sterling Hughes, George Schlossnagle, Ilia Alshanetsky");
+		CREDIT_LINE("Output Handler", "Zeev Suraski, Thies C. Arntzen, Marcus Boerger, Michael Wallner");
 		php_info_print_table_end();
 	}
 
