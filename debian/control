@@ -375,6 +375,7 @@ Description: MySQL module for php5
 
 Package: php5-mysqlnd
 Architecture: any
+Priority: extra
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
 Conflicts: php5-mysqli, php5-mysql
 Replaces: php5-mysqli, php5-mysql
