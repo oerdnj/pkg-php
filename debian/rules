@@ -32,12 +32,12 @@ ifeq (nocheck,$(findstring nocheck,$(DEB_BUILD_OPTIONS)))
   $(warning Disabling checks due DEB_BUILD_OPTIONS)
   RUN_TESTS = no
 endif
-ifeq ($(DEB_HOST_ARCH),$(findstring $(DEB_HOST_ARCH),hurd-i386))
+ifeq ($(DEB_HOST_ARCH),$(filter $(DEB_HOST_ARCH),hurd-i386))
   $(warning Disabling checks on hurd-i386)
   RUN_TESTS = no
 endif
 
-ifneq ($(DEB_HOST_ARCH),$(findstring $(DEB_HOST_ARCH),hurd-i386 m68k hppa ppc64))
+ifneq ($(DEB_HOST_ARCH),$(filter $(DEB_HOST_ARCH),hurd-i386 m68k hppa ppc64))
   CONFIGURE_APACHE_ARGS = --with-interbase=shared,/usr --with-pdo-firebird=shared,/usr
 else
   CONFIGURE_APACHE_ARGS = --without-interbase --without-pdo-firebird
@@ -74,7 +74,7 @@ ifeq (alpha-linux-gnu,$(DEB_HOST_GNU_TYPE))
   CFLAGS += -mieee
 endif
 
-ifeq ($(DEB_HOST_GNU_TYPE), $(findstring $(DEB_HOST_GNU_TYPE), ia64-linux-gnu powerpc64-linux-gnu avr32-linux-gnu))
+ifeq ($(DEB_HOST_GNU_TYPE),$(filter $(DEB_HOST_GNU_TYPE),ia64-linux-gnu powerpc64-linux-gnu avr32-linux-gnu))
   CFLAGS += -g
 else
   CFLAGS += -gstabs
