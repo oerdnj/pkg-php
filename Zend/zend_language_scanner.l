@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_language_scanner.l 322378 2012-01-17 08:09:13Z dmitry $ */
+/* $Id: zend_language_scanner.l 323394 2012-02-20 18:28:57Z colder $ */
 
 #if 0
 # define YYDEBUG(s, c) printf("state: %d char: %c\n", s, c)
@@ -1523,7 +1523,11 @@ NEWLINE ("\r"|"\n"|"\r\n")
 	}
 
 	if (len < SIZEOF_LONG * 2 || (len == SIZEOF_LONG * 2 && *hex <= '7')) {
-		zendlval->value.lval = strtol(hex, NULL, 16);
+		if (len == 0) {
+			zendlval->value.lval = 0;
+		} else {
+			zendlval->value.lval = strtol(hex, NULL, 16);
+		}
 		zendlval->type = IS_LONG;
 		return T_LNUMBER;
 	} else {

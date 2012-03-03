@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: var_unserializer.re 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id: var_unserializer.re 323633 2012-02-28 18:36:10Z pajoye $ */
 
 #include "php.h"
 #include "ext/standard/php_var.h"
@@ -379,6 +379,9 @@ static inline long object_common1(UNSERIALIZE_PARAMETER, zend_class_entry *ce)
 	return elements;
 }
 
+#ifdef PHP_WIN32
+# pragma optimize("", off)
+#endif
 static inline int object_common2(UNSERIALIZE_PARAMETER, long elements)
 {
 	zval *retval_ptr = NULL;
@@ -403,6 +406,9 @@ static inline int object_common2(UNSERIALIZE_PARAMETER, long elements)
 	return finish_nested_data(UNSERIALIZE_PASSTHRU);
 
 }
+#ifdef PHP_WIN32
+# pragma optimize("", on)
+#endif
 
 PHPAPI int php_var_unserialize(UNSERIALIZE_PARAMETER)
 {

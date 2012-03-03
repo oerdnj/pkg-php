@@ -16,12 +16,12 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_sqlite3.h 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id: php_sqlite3.h 323634 2012-02-28 18:43:44Z stas $ */
 
 #ifndef PHP_SQLITE3_H
 #define PHP_SQLITE3_H
 
-#define PHP_SQLITE3_VERSION	 "0.7-dev"
+#define PHP_SQLITE3_VERSION	 "0.7"
 
 extern zend_module_entry sqlite3_module_entry;
 #define phpext_sqlite3_ptr &sqlite3_module_entry

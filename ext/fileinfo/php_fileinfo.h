@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_fileinfo.h 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id: php_fileinfo.h 323634 2012-02-28 18:43:44Z stas $ */
 
 #ifndef PHP_FILEINFO_H
 #define PHP_FILEINFO_H
@@ -24,7 +24,7 @@
 extern zend_module_entry fileinfo_module_entry;
 #define phpext_fileinfo_ptr &fileinfo_module_entry
 
-#define PHP_FILEINFO_VERSION "1.0.5-dev"
+#define PHP_FILEINFO_VERSION "1.0.5"
 
 #ifdef PHP_WIN32
 #define PHP_FILEINFO_API __declspec(dllexport)

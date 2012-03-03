@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: openssl.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id: openssl.c 323440 2012-02-23 01:26:46Z scottmac $ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -4803,6 +4803,10 @@ PHP_FUNCTION(openssl_decrypt)
 
 	if (!(options & OPENSSL_RAW_DATA)) {
 		base64_str = (char*)php_base64_decode((unsigned char*)data, data_len, &base64_str_len);
+		if (!base64_str) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to base64 decode the input");
+			RETURN_FALSE;
+		}
 		data_len = base64_str_len;
 		data = base64_str;
 	}
