@@ -460,8 +460,8 @@ Description: SNMP module for php5
 
 Package: php5-sqlite
 Architecture: any
-Breaks: roundcube-sqlite
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version}), ucf
+Breaks: roundcube-sqlite (<< 0.7.1-2)
 Pre-Depends: dpkg (>= 1.15.7.2~) | dpkg-maintscript-helper
 Description: SQLite module for php5
  This package provides a module allowing you to use the SQLite self-contained
