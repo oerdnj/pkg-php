@@ -1,3 +1,9 @@
+php5 (5.4.0-2) unstable; urgency=low
+
+  * Build depend on libpng-dev | libpng12-dev (Closes: #662466)
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 05 Mar 2012 13:26:06 +0100
+
 php5 (5.4.0-1) unstable; urgency=low
 
   * PHP 5.4 has landed in unstable
