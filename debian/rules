@@ -759,4 +759,7 @@ binary-arch: build install
 	dh_builddeb -s
 
 binary: binary-arch binary-indep
-.PHONY: build clean binary-indep binary-arch binary install configure
+build-arch: build
+build-indep: build
+
+.PHONY: build build-arch build-indep clean binary-indep binary-arch binary install configure
