@@ -64,7 +64,7 @@ Build-Depends: apache2-prefork-dev,
 	       zlib1g-dev,
 	       tzdata
 Build-Conflicts: bind-dev
-Standards-Version: 3.9.2
+Standards-Version: 3.9.3
 Vcs-Git: git://git.debian.org/pkg-php/php.git
 Vcs-Browser: http://git.debian.org/?p=pkg-php/php.git
 Homepage: http://www.php.net/
