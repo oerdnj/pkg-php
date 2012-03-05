@@ -85,7 +85,7 @@ Description: server-side, HTML-embedded scripting language (metapackage)
 
 Package: php5-common
 Architecture: any
-Depends: ${misc:Depends}, sed (>= 4.1.1-1), psmisc (>= 22.15-1~), ${shlibs:Depends}
+Depends: ${misc:Depends}, sed (>= 4.1.1-1), psmisc (>= 22.15-1~), ${shlibs:Depends}, ucf
 Pre-Depends: dpkg (>= 1.15.7.2~) | dpkg-maintscript-helper
 Provides: php5-json, php5-mhash
 Conflicts: php5-json, php5-mhash
@@ -243,7 +243,7 @@ Description: PEAR - PHP Extension and Application Repository
 
 Package: php5-curl
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version}), ucf
 Pre-Depends: dpkg (>= 1.15.7.2~) | dpkg-maintscript-helper
 Description: CURL module for php5
  CURL is a library for getting files from  FTP, GOPHER, HTTP server.
@@ -255,7 +255,7 @@ Description: CURL module for php5
 
 Package: php5-enchant
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version}), ucf
 Pre-Depends: dpkg (>= 1.15.7.2~) | dpkg-maintscript-helper
 Description: Enchant module for php5
  This package provides a module for the generic spell checking library
@@ -268,7 +268,7 @@ Description: Enchant module for php5
 
 Package: php5-gd
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version}), ucf
 Pre-Depends: dpkg (>= 1.15.7.2~) | dpkg-maintscript-helper
 Description: GD module for php5
  This package provides a module for handling graphics directly from PHP
@@ -281,7 +281,7 @@ Description: GD module for php5
 
 Package: php5-gmp
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version}), ucf
 Pre-Depends: dpkg (>= 1.15.7.2~) | dpkg-maintscript-helper
 Description: GMP module for php5
  This package provides a module for arbitrary precision arithmetic via the 
@@ -294,7 +294,7 @@ Description: GMP module for php5
 
 Package: php5-imap
 Architecture: any
-Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${binary:Version}), ucf
 Pre-Depends: dpkg (>= 1.15.7.2~) | dpkg-maintscript-helper
 Description: IMAP module for php5
  This package provides a module for IMAP functions in PHP scripts.
@@ -306,7 +306,7 @@ Description: IMAP module for php5
 
 Package: php5-interbase
 Architecture: linux-any kfreebsd-any
-Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${binary:Version}), ucf
 Pre-Depends: dpkg (>= 1.15.7.2~) | dpkg-maintscript-helper
 Description: interbase/firebird module for php5
  This package provides a module for interbase/firebird functions in PHP scripts.
@@ -318,7 +318,7 @@ Description: interbase/firebird module for php5
 
 Package: php5-intl
 Architecture: any
-Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${binary:Version}), ucf
 Conflicts: php5-idn
 Replaces: php5-idn
 Provides: php5-idn
@@ -333,7 +333,7 @@ Description: internationalisation module for php5
 
 Package: php5-ldap
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version}), ucf
 Pre-Depends: dpkg (>= 1.15.7.2~) | dpkg-maintscript-helper
 Description: LDAP module for php5
  This package provides a module for LDAP functions in PHP scripts.
@@ -345,7 +345,7 @@ Description: LDAP module for php5
 
 Package: php5-mcrypt
 Architecture: any
-Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${binary:Version}), ucf
 Pre-Depends: dpkg (>= 1.15.7.2~) | dpkg-maintscript-helper
 Description: MCrypt module for php5
  This package provides a module for MCrypt functions in PHP scripts.
@@ -357,7 +357,7 @@ Description: MCrypt module for php5
 
 Package: php5-mysql
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version}), ucf
 Conflicts: php5-mysqli, php5-mysqlnd
 Replaces: php5-mysqli, php5-mysqlnd
 Pre-Depends: dpkg (>= 1.15.7.2~) | dpkg-maintscript-helper
@@ -376,7 +376,7 @@ Description: MySQL module for php5
 Package: php5-mysqlnd
 Architecture: any
 Priority: extra
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version}), ucf
 Conflicts: php5-mysqli, php5-mysql
 Replaces: php5-mysqli, php5-mysql
 Pre-Depends: dpkg (>= 1.15.7.2~) | dpkg-maintscript-helper
@@ -396,7 +396,7 @@ Description: MySQL module for php5 (Native Driver)
 
 Package: php5-odbc
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version}), ucf
 Pre-Depends: dpkg (>= 1.15.7.2~) | dpkg-maintscript-helper
 Description: ODBC module for php5
  This package provides a module for database access through ODBC drivers.
@@ -410,7 +410,7 @@ Description: ODBC module for php5
 
 Package: php5-pgsql
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version}), ucf
 Pre-Depends: dpkg (>= 1.15.7.2~) | dpkg-maintscript-helper
 Description: PostgreSQL module for php5
  This package provides a module for PostgreSQL database connections
@@ -424,7 +424,7 @@ Description: PostgreSQL module for php5
 
 Package: php5-pspell
 Architecture: any
-Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${binary:Version}), ucf
 Pre-Depends: dpkg (>= 1.15.7.2~) | dpkg-maintscript-helper
 Description: pspell module for php5
  This package provides a module for pspell functions in PHP scripts.
@@ -436,7 +436,7 @@ Description: pspell module for php5
 
 Package: php5-recode
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version}), ucf
 Pre-Depends: dpkg (>= 1.15.7.2~) | dpkg-maintscript-helper
 Description: recode module for php5
  This package provides a module for recode - character set recoding.
@@ -448,7 +448,7 @@ Description: recode module for php5
 
 Package: php5-snmp
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version}), ucf
 Pre-Depends: dpkg (>= 1.15.7.2~) | dpkg-maintscript-helper
 Description: SNMP module for php5
  This package provides a module for SNMP functions in PHP scripts.
@@ -460,8 +460,8 @@ Description: SNMP module for php5
 
 Package: php5-sqlite
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
 Breaks: roundcube-sqlite
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version}), ucf
 Pre-Depends: dpkg (>= 1.15.7.2~) | dpkg-maintscript-helper
 Description: SQLite module for php5
  This package provides a module allowing you to use the SQLite self-contained
@@ -476,7 +476,7 @@ Description: SQLite module for php5
 
 Package: php5-sybase
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version}), ucf
 Provides: php5-mssql
 Pre-Depends: dpkg (>= 1.15.7.2~) | dpkg-maintscript-helper
 Description: Sybase / MS SQL Server module for php5
@@ -491,7 +491,7 @@ Description: Sybase / MS SQL Server module for php5
 
 Package: php5-tidy
 Architecture: any
-Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${binary:Version}), ucf
 Pre-Depends: dpkg (>= 1.15.7.2~) | dpkg-maintscript-helper
 Description: tidy module for php5
  This package provides a module for tidy functions in PHP scripts.
@@ -508,7 +508,7 @@ Description: tidy module for php5
 
 Package: php5-xmlrpc
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version}), ucf
 Pre-Depends: dpkg (>= 1.15.7.2~) | dpkg-maintscript-helper
 Description: XML-RPC module for php5
  This package provides a module for XML-RPC functions in PHP scripts.
@@ -520,7 +520,7 @@ Description: XML-RPC module for php5
 
 Package: php5-xsl
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${php:Depends}, php5-common (= ${binary:Version}), ucf
 Pre-Depends: dpkg (>= 1.15.7.2~) | dpkg-maintscript-helper
 Description: XSL module for php5
  This package provides a module for XSL using the libxslt XSL parser.
