@@ -1,3 +1,19 @@
+php5 (5.4.0-3) unstable; urgency=low
+
+  [ Thijs Kinkhorst ]
+  * Correct version number; 5.4.0~rc7-3 never existed
+  * Add placeholder build-arch, build-indep targets
+  * Each module needs to depend on ucf, as it's used in postinst
+  * Newer version of roundcube available that isn't broken anymore
+  * Checked for policy 3.9.3
+
+  [ Ondřej Surý ]
+  * Remove Pre-Depends on dpkg-maintscript-helper
+  * Remove obsolete configure options
+  * Add support for *.extra.{post,pre}{inst,rm} files
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 12 Mar 2012 22:59:22 +0100
+
 php5 (5.4.0-2) unstable; urgency=low
 
   * Build depend on libpng-dev | libpng12-dev (Closes: #662466)
