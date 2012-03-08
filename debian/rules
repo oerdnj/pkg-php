@@ -691,21 +691,20 @@ binary-arch: build install
 	# likewise, for the different sapi implementations
 	for tmpl in postrm links; do \
 		for sapi in cgi cli fpm; do \
-			sed -e "s/@sapi@/$$sapi/g;s/@package@/php5-$${sapi}/g" \
-		  	< debian/php5-sapi.$$tmpl \
-		  	> debian/php5-$${sapi}.$$tmpl; \
+			sed -e "s/@sapi@/$${sapi}/g; \
+	                        s/@package@/php5-$${sapi}/g; \
+	                         /#EXTRA#/ r debian/php5-$${sapi}.$${tmpl}.extra;" \
+		  	< debian/php5-sapi.$${tmpl} \
+		  	> debian/php5-$${sapi}.$${tmpl}; \
 		done; \
+	        for sapi in "" "filter"; do \
+		        sed -e "s/@sapi@/apache2$${sapi}/g; \
+	                        s/@package@/libapache2-mod-php5$${sapi}/g; \
+	                         /#EXTRA#/ r debian/libapache2-mod-php5$${sapi}.$${tmpl}.extra;" \
+		        < debian/php5-sapi.$${tmpl} \
+		        > debian/libapache2-mod-php5$${sapi}.$${tmpl}; \
+	        done; \
 	done
-	for tmpl in postrm links; do \
-		sed -e "s/@sapi@/apache2/g;s/@package@/libapache2-mod-php5/g" \
-		  < debian/php5-sapi.$$tmpl \
-		  > debian/libapache2-mod-php5.$$tmpl; \
-		sed -e "s/@sapi@/apache2filter/g;s/@package@/libapache2-mod-php5filter/g" \
-		  < debian/php5-sapi.$$tmpl \
-		  > debian/libapache2-mod-php5filter.$$tmpl; \
-	done
-
-	sed -i -e 's|exit 0|dpkg-maintscript-helper mv_conffile /etc/php5/fpm/main.conf /etc/php5/fpm/php-fpm.conf 5.3.5-1 -- \"\$\@\"\n\nexit 0|' debian/php5-fpm.postrm
 
 	cat debian/copyright.header LICENSE Zend/LICENSE > debian/copyright
 	dh_installdocs -s
