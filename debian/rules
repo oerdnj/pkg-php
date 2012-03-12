@@ -146,7 +146,6 @@ COMMON_CONFIG=--build=$(DEB_BUILD_GNU_TYPE) \
 		--enable-soap \
 		--enable-zip \
 		--with-mhash=yes \
-		--with-exec-dir=/usr/lib/php5/libexec \
 		--with-system-tzdata \
 		--with-mysql-sock=/var/run/mysqld/mysqld.sock
 
@@ -307,7 +306,6 @@ configure-apache2-stamp: prepared-stamp
 		--with-recode=shared,/usr \
 		--with-xsl=shared,/usr \
 		--with-snmp=shared,/usr \
-		--without-sqlite \
 		--with-sqlite3=shared,/usr \
 		--with-mssql=shared,/usr \
 		--with-tidy=shared,/usr \
@@ -341,7 +339,7 @@ configure-apache2filter-stamp: prepared-stamp
 		--without-mm \
 		--disable-pdo \
 		--without-mysql --without-sybase-ct --without-mssql \
-		--without-sqlite --without-sqlite3
+		--without-sqlite3
 	cd apache2filter-build && \
 	cp ../Zend/zend_ini_scanner.c ../Zend/zend_language_scanner.c \
 	   ../Zend/zend_ini_parser.h ../Zend/zend_language_parser.h \
@@ -367,7 +365,7 @@ configure-cgi-stamp: prepared-stamp
 		--with-pdo-mysql=shared,mysqlnd \
 		--without-pdo-sqlite \
 		--without-sybase-ct --without-mssql \
-		--without-sqlite --without-sqlite3 \
+		--without-sqlite3 \
 		--enable-pcntl
 	cd cgi-build && \
 	cp ../Zend/zend_ini_scanner.c ../Zend/zend_language_scanner.c \
@@ -388,7 +386,7 @@ configure-cli-stamp: prepared-stamp
 		$(COMMON_CONFIG) \
 		--without-mm \
 		--disable-pdo \
-		--without-mysql --without-sybase-ct --without-sqlite \
+		--without-mysql --without-sybase-ct \
 		--without-mssql --without-sqlite3 --enable-pcntl
 	cd cli-build && \
 	cp ../Zend/zend_ini_scanner.c ../Zend/zend_language_scanner.c \
@@ -411,7 +409,7 @@ configure-fpm-stamp: prepared-stamp
 		--with-libevent-dir=/usr \
 		--without-mm \
 		--disable-pdo \
-		--without-mysql --without-sybase-ct --without-sqlite \
+		--without-mysql --without-sybase-ct \
 		--without-mssql --without-sqlite3
 	cd fpm-build && \
 	cp ../Zend/zend_ini_scanner.c ../Zend/zend_language_scanner.c \
