@@ -11,8 +11,10 @@ php5 (5.4.0-3) unstable; urgency=low
   * Remove Pre-Depends on dpkg-maintscript-helper
   * Remove obsolete configure options
   * Add support for *.extra.{post,pre}{inst,rm} files
+  * Add support for MultiArch libgd2-xpm-dev
+  * Add support for MultiArch libmysqlclient-dev
 
- -- Ondřej Surý <ondrej@debian.org>  Mon, 12 Mar 2012 22:59:22 +0100
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 13 Mar 2012 09:30:54 +0100
 
 php5 (5.4.0-2) unstable; urgency=low
 
