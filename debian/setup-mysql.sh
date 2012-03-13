@@ -11,13 +11,18 @@ set -eu
 port=$1
 datadir=$2
 action=${3:-start}
+if [ "$(id -u)" -eq 0 ]; then
+    user="mysql"
+else
+    user="$(getent passwd $(id -u) | cut -f 1 -d :)"
+fi
 
 # Some vars #
 
 socket=$datadir/mysql.sock
 # Commands:
 mysqladmin="mysqladmin -u root -P $port -h localhost --socket=$socket"
-mysqld="/usr/sbin/mysqld --no-defaults --bind-address=localhost --port=$port --socket=$socket --datadir=$datadir"
+mysqld="/usr/sbin/mysqld --no-defaults --user=$user --bind-address=localhost --port=$port --socket=$socket --datadir=$datadir"
 
 # Main code #
 
@@ -29,8 +34,9 @@ fi
 rm -rf $datadir
 mkdir -p $datadir
 chmod go-rx $datadir
+chown $user: $datadir
 
-mysql_install_db --datadir=$datadir --rpm --force >> $datadir/bootstrap.log 2>&1
+mysql_install_db --user=$user --datadir=$datadir --rpm --force >> $datadir/bootstrap.log 2>&1
 
 tmpf=$(mktemp)
 cat > "$tmpf" <<EOF
