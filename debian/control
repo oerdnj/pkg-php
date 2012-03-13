@@ -4,7 +4,8 @@ Priority: optional
 Maintainer: Debian PHP Maintainers <pkg-php-maint@lists.alioth.debian.org>
 Uploaders: Ondřej Surý <ondrej@debian.org>,
 	   Sean Finney <seanius@debian.org>,
-	   Thijs Kinkhorst <thijs@debian.org>
+	   Thijs Kinkhorst <thijs@debian.org>,
+	   Lior Kaplan <kaplan@debian.org>
 Build-Depends: apache2-prefork-dev,
 	       autoconf (>= 2.63),
 	       automake (>= 1.11) | automake1.11,
