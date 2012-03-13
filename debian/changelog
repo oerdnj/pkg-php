@@ -13,8 +13,12 @@ php5 (5.4.0-3) unstable; urgency=low
   * Add support for *.extra.{post,pre}{inst,rm} files
   * Add support for MultiArch libgd2-xpm-dev
   * Add support for MultiArch libmysqlclient-dev
+  * Add Lior to maintainers
+  * setup-mysql.sh changed to:
+    + never run as root (fix needed for MySQL 5.5 in pbuilder)
+    + drop and create database test which may or may not exist
 
- -- Ondřej Surý <ondrej@debian.org>  Tue, 13 Mar 2012 09:30:54 +0100
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 13 Mar 2012 11:16:50 +0100
 
 php5 (5.4.0-2) unstable; urgency=low
 
