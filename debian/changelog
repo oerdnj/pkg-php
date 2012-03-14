@@ -17,8 +17,10 @@ php5 (5.4.0-3) unstable; urgency=low
   * setup-mysql.sh changed to:
     + never run as root (fix needed for MySQL 5.5 in pbuilder)
     + drop and create database test which may or may not exist
+  * Restart apache2 instead of reloading on first install
+    (Closes: #589386)
 
- -- Ondřej Surý <ondrej@debian.org>  Tue, 13 Mar 2012 11:16:50 +0100
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 14 Mar 2012 08:49:32 +0100
 
 php5 (5.4.0-2) unstable; urgency=low
 
