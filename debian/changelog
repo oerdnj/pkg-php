@@ -20,6 +20,10 @@ php5 (5.4.0-3) unstable; urgency=low
   * Restart apache2 instead of reloading on first install
     (Closes: #589386)
 
+  [ Julien Cristau ]
+  * Fix postinst scripts to not use 'local' outside functions (Closes:
+    #664853, #664849)
+
  -- Ondřej Surý <ondrej@debian.org>  Wed, 14 Mar 2012 08:49:32 +0100
 
 php5 (5.4.0-2) unstable; urgency=low
