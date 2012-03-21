@@ -1,4 +1,4 @@
-php5 (5.4.0-3) unstable; urgency=low
+php5 (5.4.0-3) unstable; urgency=high
 
   [ Thijs Kinkhorst ]
   * Correct version number; 5.4.0~rc7-3 never existed
