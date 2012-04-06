@@ -1,3 +1,13 @@
+php5 (5.4.0-4) unstable; urgency=low
+
+  * Change id -u+getent combo to whoami (Courtesy of Michiel van
+    Leening)
+  * Fix missing FOUND declaration (pulled from dotdeb)
+  * Add Breaks for all known broken packages not working with PHP 5.4
+    (Closes: #666411)
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 06 Apr 2012 12:46:14 +0200
+
 php5 (5.4.0-3) unstable; urgency=high
 
   [ Thijs Kinkhorst ]
