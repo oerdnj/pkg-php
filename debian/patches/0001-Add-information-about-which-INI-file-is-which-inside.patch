@@ -1,0 +1,39 @@
+From d2852f2e53437f5f2cfda4d6f623a5c97faf1408 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Ond=C5=99ej=20Sur=C3=BD?= <ondrej@sury.org>
+Date: Fri, 6 Apr 2012 14:30:10 +0200
+Subject: [PATCH] Add information about which INI file is which inside respective files
+
+---
+ php.ini-development |    2 ++
+ php.ini-production  |    2 ++
+ 2 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/php.ini-development b/php.ini-development
+index 867a9f2..4d2e047 100644
+--- a/php.ini-development
++++ b/php.ini-development
+@@ -83,6 +83,8 @@
+ ; development version only in development environments as errors shown to
+ ; application users can inadvertently leak otherwise secure information.
+ 
++; This is php.ini-development INI file.
++
+ ;;;;;;;;;;;;;;;;;;;
+ ; Quick Reference ;
+ ;;;;;;;;;;;;;;;;;;;
+diff --git a/php.ini-production b/php.ini-production
+index ee830c3..1f7dfaf 100644
+--- a/php.ini-production
++++ b/php.ini-production
+@@ -83,6 +83,8 @@
+ ; development version only in development environments as errors shown to
+ ; application users can inadvertently leak otherwise secure information.
+ 
++; This is php.ini-production INI file.
++
+ ;;;;;;;;;;;;;;;;;;;
+ ; Quick Reference ;
+ ;;;;;;;;;;;;;;;;;;;
+-- 
+1.7.2.5
+
