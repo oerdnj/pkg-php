@@ -1,4 +1,4 @@
-// $Id: config.w32 280344 2009-05-11 10:44:12Z pajoye $
+// $Id$
 // vim:ft=javascript
 
 ARG_WITH("pgsql", "PostgreSQL support", "no");

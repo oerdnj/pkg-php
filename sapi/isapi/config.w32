@@ -1,5 +1,5 @@
 // vim:ft=javascript
-// $Id: config.w32 259731 2008-05-14 03:13:17Z auroraeosrose $
+// $Id$
 
 ARG_ENABLE('isapi', 'Build ISAPI version of PHP', 'no');
 

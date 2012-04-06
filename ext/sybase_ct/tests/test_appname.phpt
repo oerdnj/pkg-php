@@ -6,7 +6,7 @@ Sybase-CT application name
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: test_appname.phpt 268571 2008-11-08 11:46:06Z thekid $ 
+ * $Id$ 
  */
 
   require('test.inc');

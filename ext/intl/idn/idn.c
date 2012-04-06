@@ -16,7 +16,7 @@
    |         Gustavo Lopes  <cataphract@php.net>                          |
    +----------------------------------------------------------------------+
  */
-/* $Id: idn.c 319781 2011-11-24 22:45:50Z cataphract $ */
+/* $Id$ */
 
 /* {{{ includes */
 #ifdef HAVE_CONFIG_H

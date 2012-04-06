@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: pdo_dbh.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 /* The PDO Database Handle Class */
 
@@ -343,6 +343,7 @@ static PHP_METHOD(PDO, dbh_constructor)
 				pdbh->def_stmt_ce = dbh->def_stmt_ce;
 				pdbh->def_stmt_ctor_args = dbh->def_stmt_ctor_args;
 				pdbh->std.properties = dbh->std.properties;
+				pdbh->std.properties_table = dbh->std.properties_table;
 			}
 			/* kill the non-persistent thingamy */
 			efree(dbh);

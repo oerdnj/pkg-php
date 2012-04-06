@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: info.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #include "php.h"
 #include "php_ini.h"
@@ -117,7 +117,7 @@ static void php_info_print_stream_hash(const char *name, HashTable *ht TSRMLS_DC
 			HashPosition pos;
 
 			if (!sapi_module.phpinfo_as_text) {
-				php_info_printf("<tr class=\"v\"><td>Registered %s</td><td>", name);
+				php_info_printf("<tr><td class=\"e\">Registered %s</td><td class=\"v\">", name);
 			} else {
 				php_info_printf("\nRegistered %s => ", name);
 			}

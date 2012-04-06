@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_stream_plain_wrapper.h 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 /* definitions for the plain files wrapper */
 

@@ -1,4 +1,4 @@
-// $Id: config.w32 315428 2011-08-24 15:29:17Z hirokawa $
+// $Id$
 // vim:ft=javascript
 
 ARG_ENABLE("mbstring", "multibyte string functions", "no");

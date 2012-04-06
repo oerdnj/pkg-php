@@ -1,4 +1,4 @@
-// $Id: config.w32 264037 2008-08-01 15:07:59Z pajoye $
+// $Id$
 // vim:ft=javascript
 
 if (PHP_OCI8 != "no" && PHP_OCI8_11G != "no") {

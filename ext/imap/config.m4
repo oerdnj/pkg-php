@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 294699 2010-02-07 13:06:54Z pajoye $
+dnl $Id$
 dnl
 
 AC_DEFUN([IMAP_INC_CHK],[if test -r "$i$1/c-client.h"; then

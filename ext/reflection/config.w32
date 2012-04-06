@@ -1,4 +1,4 @@
-// $Id: config.w32 261527 2008-06-23 10:22:42Z pajoye $
+// $Id$
 // vim:ft=javascript
 
 EXTENSION("reflection", "php_reflection.c", false /* never shared */);

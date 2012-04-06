@@ -1,4 +1,4 @@
-// $Id: config.w32 262125 2008-07-06 16:52:59Z pajoye $
+// $Id$
 // vim:ft=javascript
 
 ARG_WITH("xmlrpc", "XMLRPC-EPI support", "no");

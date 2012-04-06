@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 305331 2010-11-13 23:13:07Z jani $
+dnl $Id$
 dnl
 
 AC_MSG_CHECKING(for LiteSpeed support)

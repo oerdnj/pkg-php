@@ -3,7 +3,7 @@ bzip2.decompress (with convert.base64-decode)
 --SKIPIF--
 <?php if (!extension_loaded("bz2")) print "skip"; ?>
 --FILE--
-<?php /* $Id: bz2_filter_decompress.phpt 242949 2007-09-26 15:44:16Z cvs2svn $ */
+<?php /* $Id$ */
 $text = 'QlpoNDFBWSZTWRN6QG0AAAoVgECFACA395UgIABIintI1N6mpowIQ0E1MTTAQGYTNcRyMZm5kgW3ib7hVboE7Tmqj3ToGZ5G3q1ZauD2G58hibSck8KS95EEAbx1Cn+LuSKcKEgJvSA2gA==';
 
 $fp = fopen('php://stdout', 'w');

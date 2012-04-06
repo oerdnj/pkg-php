@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_functions.h 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #ifndef PHP_FUNCTIONS_H
 #define PHP_FUNCTIONS_H

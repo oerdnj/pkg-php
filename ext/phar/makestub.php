@@ -48,7 +48,7 @@ $stub = '/*
   +----------------------------------------------------------------------+
 */
 
-/* $Id: makestub.php 264018 2008-08-01 13:48:45Z sfox $ */
+/* $Id$ */
 
 static inline void phar_get_stub(const char *index_php, const char *web, size_t *len, char **stub, const int name_len, const int web_len TSRMLS_DC)
 {

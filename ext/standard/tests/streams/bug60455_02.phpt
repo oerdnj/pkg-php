@@ -28,3 +28,4 @@ while (!feof($f)) {
 }
 --EXPECT--
 string(1) "a"
+bool(false)

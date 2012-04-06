@@ -20,7 +20,7 @@
    | Based on code from: Shawn Cokus <Cokus@math.washington.edu>          |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_rand.h 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #ifndef PHP_RAND_H
 #define	PHP_RAND_H

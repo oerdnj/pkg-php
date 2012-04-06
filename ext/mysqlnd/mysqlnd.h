@@ -17,12 +17,12 @@
   |          Georg Richter <georg@mysql.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: mysqlnd.h 323634 2012-02-28 18:43:44Z stas $ */
+/* $Id$ */
 
 #ifndef MYSQLND_H
 #define MYSQLND_H
 
-#define MYSQLND_VERSION "mysqlnd 5.0.10 - 20111026 - $Revision: 323634 $"
+#define MYSQLND_VERSION "mysqlnd 5.0.10 - 20111026 - $Id$"
 #define MYSQLND_VERSION_ID 50010
 
 #define MYSQLND_PLUGIN_API_VERSION 1

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_hash_ripemd.h 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #ifndef PHP_HASH_RIPEMD_H
 #define PHP_HASH_RIPEMD_H

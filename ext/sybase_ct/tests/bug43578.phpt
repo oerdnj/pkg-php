@@ -6,7 +6,7 @@ Sybase-CT bug #43578 (Incurred fault #6 - if returned textfield ist empty)
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: bug43578.phpt 268629 2008-11-09 10:44:03Z thekid $
+ * $Id$
  */
 
   require('test.inc');

@@ -1,4 +1,4 @@
-// $Id: config.w32 322437 2012-01-18 09:15:34Z mike $
+// $Id$
 // vim:ft=javascript
 
 ARG_ENABLE("hash", "enable hash support", "yes");

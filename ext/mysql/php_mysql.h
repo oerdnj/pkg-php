@@ -17,7 +17,7 @@
 */
 
 
-/* $Id: php_mysql.h 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #ifndef PHP_MYSQL_H
 #define PHP_MYSQL_H

@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 316688 2011-09-13 22:28:15Z arpad $
+dnl $Id$
 dnl
 
 PHP_ARG_ENABLE(session, whether to enable PHP sessions,

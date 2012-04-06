@@ -1,4 +1,4 @@
-// $Id: config.w32 280331 2009-05-11 06:43:05Z kalle $
+// $Id$
 // vim:ft=javascript
 
 ARG_ENABLE("phar", "disable phar support", "yes");

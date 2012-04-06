@@ -1,4 +1,4 @@
-dnl $Id: config.m4 311042 2011-05-15 06:09:21Z rasmus $ -*- autoconf -*-
+dnl $Id$ -*- autoconf -*-
 
 dnl
 dnl Check if flush should be called explicitly after buffered io

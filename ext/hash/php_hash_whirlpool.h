@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_hash_whirlpool.h 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #ifndef PHP_HASH_WHIRLPOOL_H
 #define PHP_HASH_WHIRLPOOL_H

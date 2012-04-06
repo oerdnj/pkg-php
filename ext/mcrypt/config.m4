@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 293594 2010-01-15 21:02:20Z stas $
+dnl $Id$
 dnl 
 
 AC_DEFUN([PHP_MCRYPT_CHECK_VERSION],[

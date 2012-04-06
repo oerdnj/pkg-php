@@ -1,5 +1,5 @@
 // vim:ft=javascript
-// $Id: config.w32 277527 2009-03-20 18:49:37Z pajoye $
+// $Id$
 
 ARG_ENABLE('nsapi', 'Build NSAPI for Netscape/iPlanet/SunONE webservers', 'no');
 

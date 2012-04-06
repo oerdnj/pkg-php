@@ -21,7 +21,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: array.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #include "php.h"
 #include "php_ini.h"
@@ -1050,7 +1050,7 @@ PHP_FUNCTION(max)
 }
 /* }}} */
 
-static int php_array_walk(HashTable *target_hash, zval **userdata, int recursive TSRMLS_DC) /* {{{ */
+static int php_array_walk(HashTable *target_hash, zval *userdata, int recursive TSRMLS_DC) /* {{{ */
 {
 	zval **args[3],			/* Arguments to userland function */
 		  *retval_ptr,		/* Return value - unused */
@@ -1062,9 +1062,9 @@ static int php_array_walk(HashTable *target_hash, zval **userdata, int recursive
 
 	/* Set up known arguments */
 	args[1] = &key;
-	args[2] = userdata;
+	args[2] = &userdata;
 	if (userdata) {
-		Z_ADDREF_PP(userdata);
+		Z_ADDREF_P(userdata);
 	}
 
 	zend_hash_internal_pointer_reset_ex(target_hash, &pos);
@@ -1086,7 +1086,7 @@ static int php_array_walk(HashTable *target_hash, zval **userdata, int recursive
 			if (thash->nApplyCount > 1) {
 				php_error_docref(NULL TSRMLS_CC, E_WARNING, "recursion detected");
 				if (userdata) {
-					zval_ptr_dtor(userdata);
+					zval_ptr_dtor(&userdata);
 				}
 				return 0;
 			}
@@ -1139,7 +1139,7 @@ static int php_array_walk(HashTable *target_hash, zval **userdata, int recursive
 	}
 
 	if (userdata) {
-		zval_ptr_dtor(userdata);
+		zval_ptr_dtor(&userdata);
 	}
 	return 0;
 }
@@ -1163,7 +1163,7 @@ PHP_FUNCTION(array_walk)
 		return;
 	}
 
-	php_array_walk(array, userdata ? &userdata : NULL, 0 TSRMLS_CC);
+	php_array_walk(array, userdata, 0 TSRMLS_CC);
 	BG(array_walk_fci) = orig_array_walk_fci;
 	BG(array_walk_fci_cache) = orig_array_walk_fci_cache;
 	RETURN_TRUE;
@@ -1188,7 +1188,7 @@ PHP_FUNCTION(array_walk_recursive)
 		return;
 	}
 
-	php_array_walk(array, userdata ? &userdata : NULL, 1 TSRMLS_CC);
+	php_array_walk(array, userdata, 1 TSRMLS_CC);
 	BG(array_walk_fci) = orig_array_walk_fci;
 	BG(array_walk_fci_cache) = orig_array_walk_fci_cache;
 	RETURN_TRUE;
@@ -1563,12 +1563,17 @@ PHP_FUNCTION(array_fill)
 	array_init_size(return_value, num);
 
 	num--;
-	zval_add_ref(&val);
 	zend_hash_index_update(Z_ARRVAL_P(return_value), start_key, &val, sizeof(zval *), NULL);
+	zval_add_ref(&val);
 
 	while (num--) {
-		zval_add_ref(&val);
-		zend_hash_next_index_insert(Z_ARRVAL_P(return_value), &val, sizeof(zval *), NULL);
+		if (zend_hash_next_index_insert(Z_ARRVAL_P(return_value), &val, sizeof(zval *), NULL) == SUCCESS) {
+			zval_add_ref(&val);
+		} else {
+			zval_dtor(return_value);
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Cannot add element to the array as the next element is already occupied");
+			RETURN_FALSE;
+		}
 	}
 }
 /* }}} */

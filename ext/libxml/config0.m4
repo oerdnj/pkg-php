@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config0.m4 239118 2007-07-03 17:25:43Z sniper $
+dnl $Id$
 dnl
 
 PHP_ARG_ENABLE(libxml, whether to enable LIBXML support,

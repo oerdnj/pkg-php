@@ -31,7 +31,7 @@
 */
 
 
-static const char rcsid[] = "#(@) $Id: xml_to_xmlrpc.c 242949 2007-09-26 15:44:16Z cvs2svn $";
+static const char rcsid[] = "#(@) $Id$";
 
 #include "php.h"
 #include "main/snprintf.h"

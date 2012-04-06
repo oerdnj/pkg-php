@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: streams.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #define _GNU_SOURCE
 #include "php.h"
@@ -157,20 +157,35 @@ PHPAPI int php_stream_from_persistent_id(const char *persistent_id, php_stream *
 
 /* }}} */
 
+static zend_llist *php_get_wrapper_errors_list(php_stream_wrapper *wrapper TSRMLS_DC)
+{
+    zend_llist *list = NULL;
+    if (!FG(wrapper_errors)) {
+        return NULL;
+    } else {
+        zend_hash_find(FG(wrapper_errors), (const char*)&wrapper,
+            sizeof wrapper, (void**)&list);
+        return list;
+    }
+}
+
 /* {{{ wrapper error reporting */
 void php_stream_display_wrapper_errors(php_stream_wrapper *wrapper, const char *path, const char *caption TSRMLS_DC)
 {
 	char *tmp = estrdup(path);
 	char *msg;
 	int free_msg = 0;
-	php_stream_wrapper orig_wrapper;
 
 	if (wrapper) {
-		if (wrapper->err_count > 0) {
-			int i;
-			size_t l;
+		zend_llist *err_list = php_get_wrapper_errors_list(wrapper TSRMLS_CC);
+		if (err_list) {
+			size_t l = 0;
 			int brlen;
-			char *br;
+			int i;
+			int count = zend_llist_count(err_list);
+			const char *br;
+			const char **err_buf_p;
+			zend_llist_position pos;
 
 			if (PG(html_errors)) {
 				brlen = 7;
@@ -180,17 +195,21 @@ void php_stream_display_wrapper_errors(php_stream_wrapper *wrapper, const char *
 				br = "\n";
 			}
 
-			for (i = 0, l = 0; i < wrapper->err_count; i++) {
-				l += strlen(wrapper->err_stack[i]);
-				if (i < wrapper->err_count - 1) {
+			for (err_buf_p = zend_llist_get_first_ex(err_list, &pos), i = 0;
+					err_buf_p;
+					err_buf_p = zend_llist_get_next_ex(err_list, &pos), i++) {
+				l += strlen(*err_buf_p);
+				if (i < count - 1) {
 					l += brlen;
 				}
 			}
 			msg = emalloc(l + 1);
 			msg[0] = '\0';
-			for (i = 0; i < wrapper->err_count; i++) {
-				strcat(msg, wrapper->err_stack[i]);
-				if (i < wrapper->err_count - 1) {
+			for (err_buf_p = zend_llist_get_first_ex(err_list, &pos), i = 0;
+					err_buf_p;
+					err_buf_p = zend_llist_get_next_ex(err_list, &pos), i++) {
+				strcat(msg, *err_buf_p);
+				if (i < count - 1) {
 					strcat(msg, br);
 				}
 			}
@@ -198,7 +217,7 @@ void php_stream_display_wrapper_errors(php_stream_wrapper *wrapper, const char *
 			free_msg = 1;
 		} else {
 			if (wrapper == &php_plain_files_wrapper) {
-				msg = strerror(errno);
+				msg = strerror(errno); /* TODO: not ts on linux */
 			} else {
 				msg = "operation failed";
 			}
@@ -208,16 +227,7 @@ void php_stream_display_wrapper_errors(php_stream_wrapper *wrapper, const char *
 	}
 
 	php_strip_url_passwd(tmp);
-	if (wrapper) {
-		/* see bug #52935 */
-		orig_wrapper = *wrapper;
-		wrapper->err_stack = NULL;
-		wrapper->err_count = 0;
-	}
 	php_error_docref1(NULL TSRMLS_CC, tmp, E_WARNING, "%s: %s", caption, msg);
-	if (wrapper) {
-		*wrapper = orig_wrapper;
-	}
 	efree(tmp);
 	if (free_msg) {
 		efree(msg);
@@ -226,19 +236,14 @@ void php_stream_display_wrapper_errors(php_stream_wrapper *wrapper, const char *
 
 void php_stream_tidy_wrapper_error_log(php_stream_wrapper *wrapper TSRMLS_DC)
 {
-	if (wrapper) {
-		/* tidy up the error stack */
-		int i;
-
-		for (i = 0; i < wrapper->err_count; i++) {
-			efree(wrapper->err_stack[i]);
-		}
-		if (wrapper->err_stack) {
-			efree(wrapper->err_stack);
-		}
-		wrapper->err_stack = NULL;
-		wrapper->err_count = 0;
+	if (wrapper && FG(wrapper_errors)) {
+		zend_hash_del(FG(wrapper_errors), (const char*)&wrapper, sizeof wrapper);
 	}
+}
+
+static void wrapper_error_dtor(void *error)
+{
+	efree(*(char**)error);
 }
 
 PHPAPI void php_stream_wrapper_log_error(php_stream_wrapper *wrapper, int options TSRMLS_DC, const char *fmt, ...)
@@ -254,11 +259,25 @@ PHPAPI void php_stream_wrapper_log_error(php_stream_wrapper *wrapper, int option
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", buffer);
 		efree(buffer);
 	} else {
-		/* append to stack */
-		wrapper->err_stack = erealloc(wrapper->err_stack, (wrapper->err_count + 1) * sizeof(char *));
-		if (wrapper->err_stack) {
-			wrapper->err_stack[wrapper->err_count++] = buffer;
+		zend_llist *list = NULL;
+		if (!FG(wrapper_errors)) {
+			ALLOC_HASHTABLE(FG(wrapper_errors));
+			zend_hash_init(FG(wrapper_errors), 8, NULL,
+					(dtor_func_t)zend_llist_destroy, 0);
+		} else {
+			zend_hash_find(FG(wrapper_errors), (const char*)&wrapper,
+				sizeof wrapper, (void**)&list);
 		}
+
+		if (!list) {
+			zend_llist new_list;
+			zend_llist_init(&new_list, sizeof buffer, wrapper_error_dtor, 0);
+			zend_hash_update(FG(wrapper_errors), (const char*)&wrapper,
+				sizeof wrapper, &new_list, sizeof new_list, (void**)&list);
+		}
+
+		/* append to linked list */
+		zend_llist_add_element(list, &buffer);
 	}
 }
 
@@ -366,7 +385,14 @@ PHPAPI int _php_stream_free(php_stream *stream, int close_options TSRMLS_DC) /* 
 	int ret = 1;
 	int preserve_handle = close_options & PHP_STREAM_FREE_PRESERVE_HANDLE ? 1 : 0;
 	int release_cast = 1;
-	php_stream_context *context = stream->context;
+	php_stream_context *context = NULL;
+
+	/* on an resource list destruction, the context, another resource, may have
+	 * already been freed (if it was created after the stream resource), so
+	 * don't reference it */
+	if (EG(active)) {
+		context = stream->context;
+	}
 
 	if (stream->flags & PHP_STREAM_FLAG_NO_CLOSE) {
 		preserve_handle = 1;
@@ -445,8 +471,8 @@ fprintf(stderr, "stream_free: %s:%p[%s] preserve_handle=%d release_cast=%d remov
 	}
 
 	/* Remove stream from any context link list */
-	if (stream->context && stream->context->links) {
-		php_stream_context_del_link(stream->context, stream);
+	if (context && context->links) {
+		php_stream_context_del_link(context, stream);
 	}
 
 	if (close_options & PHP_STREAM_FREE_CALL_DTOR) {
@@ -970,77 +996,111 @@ PHPAPI char *_php_stream_get_line(php_stream *stream, char *buf, size_t maxlen,
 	return bufstart;
 }
 
+#define STREAM_BUFFERED_AMOUNT(stream) \
+	((size_t)(((stream)->writepos) - (stream)->readpos))
+
+static char *_php_stream_search_delim(php_stream *stream,
+									  size_t maxlen,
+									  size_t skiplen,
+									  char *delim, /* non-empty! */
+									  size_t delim_len TSRMLS_DC)
+{
+	size_t	seek_len;
+
+	/* set the maximum number of bytes we're allowed to read from buffer */
+	seek_len = MIN(STREAM_BUFFERED_AMOUNT(stream), maxlen);
+	if (seek_len <= skiplen) {
+		return NULL;
+	}
+
+	if (delim_len == 1) {
+		return memchr(&stream->readbuf[stream->readpos + skiplen],
+			delim[0], seek_len - skiplen);
+	} else {
+		return php_memnstr((char*)&stream->readbuf[stream->readpos + skiplen],
+				delim, delim_len,
+				(char*)&stream->readbuf[stream->readpos + seek_len]);
+	}
+}
+
 PHPAPI char *php_stream_get_record(php_stream *stream, size_t maxlen, size_t *returned_len, char *delim, size_t delim_len TSRMLS_DC)
 {
-	char *e, *buf;
-	size_t toread, len;
-	int skip = 0;
+	char	*ret_buf,				/* returned buffer */
+			*found_delim = NULL;
+	size_t	buffered_len,
+			tent_ret_len;			/* tentative returned length*/
+	int		has_delim	 = delim_len > 0 && delim[0] != '\0';
 
-	len = stream->writepos - stream->readpos;
+	if (maxlen == 0) {
+		return NULL;
+	}
 
-	/* make sure the stream read buffer has maxlen bytes */
-	while (len < maxlen) {
+	if (has_delim) {
+		found_delim = _php_stream_search_delim(
+			stream, maxlen, 0, delim, delim_len TSRMLS_CC);
+	}
 
-		size_t just_read;
-		toread = MIN(maxlen - len, stream->chunk_size);
+	buffered_len = STREAM_BUFFERED_AMOUNT(stream);
+	/* try to read up to maxlen length bytes while we don't find the delim */
+	while (!found_delim && buffered_len < maxlen) {
+		size_t	just_read,
+				to_read_now;
 
-		php_stream_fill_read_buffer(stream, len + toread TSRMLS_CC);
+		to_read_now = MIN(maxlen - buffered_len, stream->chunk_size);
 
-		just_read = (stream->writepos - stream->readpos) - len;
-		len += just_read;
+		php_stream_fill_read_buffer(stream, buffered_len + to_read_now TSRMLS_CC);
+
+		just_read = STREAM_BUFFERED_AMOUNT(stream) - buffered_len;
 
 		/* Assume the stream is temporarily or permanently out of data */
 		if (just_read == 0) {
 			break;
 		}
-	}
 
-	if (delim_len == 0 || !delim) {
-		toread = maxlen;
-	} else {
-		size_t seek_len;
-
-		/* set the maximum number of bytes we're allowed to read from buffer */
-		seek_len = stream->writepos - stream->readpos;
-		if (seek_len > maxlen) {
-			seek_len = maxlen;
-		}
-
-		if (delim_len == 1) {
-			e = memchr(stream->readbuf + stream->readpos, *delim, seek_len);
-		} else {
-			e = php_memnstr(stream->readbuf + stream->readpos, delim, delim_len, (stream->readbuf + stream->readpos + seek_len));
-		}
-
-		if (!e) {
-			/* return with error if the delimiter string was not found, we
-			 * could not completely fill the read buffer with maxlen bytes
-			 * and we don't know we've reached end of file. Added with
-			 * non-blocking streams in mind, where this situation is frequent */
-			if (seek_len < maxlen && !stream->eof) {
-				return NULL;
+		if (has_delim) {
+			/* search for delimiter, but skip buffered_len (the number of bytes
+			 * buffered before this loop iteration), as they have already been
+			 * searched for the delimiter */
+			found_delim = _php_stream_search_delim(
+				stream, maxlen, buffered_len, delim, delim_len TSRMLS_CC);
+			if (found_delim) {
+				break;
 			}
-			toread = maxlen;
+		}
+		buffered_len += just_read;
+	}
+
+	if (has_delim && found_delim) {
+		tent_ret_len = found_delim - (char*)&stream->readbuf[stream->readpos];
+	} else if (!has_delim && STREAM_BUFFERED_AMOUNT(stream) >= maxlen) {
+		tent_ret_len = maxlen;
+	} else {
+		/* return with error if the delimiter string (if any) was not found, we
+		 * could not completely fill the read buffer with maxlen bytes and we
+		 * don't know we've reached end of file. Added with non-blocking streams
+		 * in mind, where this situation is frequent */
+		if (STREAM_BUFFERED_AMOUNT(stream) < maxlen && !stream->eof) {
+			return NULL;
+		} else if (STREAM_BUFFERED_AMOUNT(stream) == 0 && stream->eof) {
+			/* refuse to return an empty string just because by accident
+			 * we knew of EOF in a read that returned no data */
+			return NULL;
 		} else {
-			toread = e - (char *) stream->readbuf - stream->readpos;
-			/* we found the delimiter, so advance the read pointer past it */
-			skip = 1;
+			tent_ret_len = MIN(STREAM_BUFFERED_AMOUNT(stream), maxlen);
 		}
 	}
 
-	if (toread > maxlen && maxlen > 0) {
-		toread = maxlen;
-	}
+	ret_buf = emalloc(tent_ret_len + 1);
+	/* php_stream_read will not call ops->read here because the necessary
+	 * data is guaranteedly buffered */
+	*returned_len = php_stream_read(stream, ret_buf, tent_ret_len);
 
-	buf = emalloc(toread + 1);
-	*returned_len = php_stream_read(stream, buf, toread);
-
-	if (skip) {
+	if (found_delim) {
 		stream->readpos += delim_len;
 		stream->position += delim_len;
 	}
-	buf[*returned_len] = '\0';
-	return buf;
+	ret_buf[*returned_len] = '\0';
+	return ret_buf;
 }
 
 /* Writes a buffer directly to a stream, using multiple of the chunk size */
@@ -1563,6 +1623,12 @@ void php_shutdown_stream_hashes(TSRMLS_D)
 		efree(FG(stream_filters));
 		FG(stream_filters) = NULL;
 	}
+    
+    if (FG(wrapper_errors)) {
+		zend_hash_destroy(FG(wrapper_errors));
+		efree(FG(wrapper_errors));
+		FG(wrapper_errors) = NULL;
+    }
 }
 
 int php_init_stream_wrappers(int module_number TSRMLS_DC)

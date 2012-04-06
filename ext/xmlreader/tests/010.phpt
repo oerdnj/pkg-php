@@ -4,7 +4,7 @@ XMLReader: libxml2 XML Reader, next
 <?php if (!extension_loaded("xmlreader")) print "skip"; ?>
 --FILE--
 <?php 
-/* $Id: 010.phpt 203342 2005-12-21 03:58:59Z pajoye $ */
+/* $Id$ */
 $xmlstring = '<?xml version="1.0" encoding="UTF-8"?>
 <prefix:books xmlns:prefix="uri" isbn="" prefix:isbn="12isbn">book1</prefix:books>';
 

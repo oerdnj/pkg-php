@@ -6,7 +6,7 @@ Sybase-CT bug #30312 (sybase_unbuffered_query calls, with free)
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: bug30312-withfree.phpt 268625 2008-11-09 10:26:31Z thekid $
+ * $Id$
  */
 
   require('test.inc');

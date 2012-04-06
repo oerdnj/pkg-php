@@ -15,7 +15,7 @@
 // | Authors: Shane Caraveo <Shane@Caraveo.com>                           |
 // +----------------------------------------------------------------------+
 //
-// $Id: client_round2_run.php 242949 2007-09-26 15:44:16Z cvs2svn $
+// $Id$
 //
 
 set_time_limit(0);

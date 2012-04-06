@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: dom_properties.h 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 #ifndef DOM_PROPERTIES_H
 #define DOM_PROPERTIES_H
 

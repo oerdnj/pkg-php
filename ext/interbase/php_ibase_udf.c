@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_ibase_udf.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 /**
 * This UDF library adds the ability to call PHP functions from SQL

@@ -5,7 +5,7 @@ XMLReader: Schema validation
 <?php if (!method_exists('XMLReader','setSchema')) die('skip XMLReader::setSchema() not supported');?>
 --FILE--
 <?php 
-/* $Id: 013.phpt 212752 2006-05-10 12:04:46Z rrichards $ */
+/* $Id$ */
 
 $xml =<<<EOF
 <?xml version="1.0" encoding="UTF-8" ?>

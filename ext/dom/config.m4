@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 239118 2007-07-03 17:25:43Z sniper $
+dnl $Id$
 dnl
 
 PHP_ARG_ENABLE(dom, whether to enable DOM support,

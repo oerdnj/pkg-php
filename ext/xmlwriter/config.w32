@@ -1,4 +1,4 @@
-// $Id: config.w32 201877 2005-12-02 10:55:33Z mike $
+// $Id$
 // vim:ft=javascript
 
 ARG_ENABLE("xmlwriter", "XMLWriter support", "yes");

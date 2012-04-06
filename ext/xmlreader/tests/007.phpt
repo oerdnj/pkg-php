@@ -4,7 +4,7 @@ XMLReader: libxml2 XML Reader, setRelaxNGSchema
 <?php if (!extension_loaded("xmlreader")) print "skip"; ?>
 --FILE--
 <?php 
-/* $Id: 007.phpt 203342 2005-12-21 03:58:59Z pajoye $ */
+/* $Id$ */
 
 $xmlstring = '<TEI.2>hello</TEI.2>';
 $relaxngfile = dirname(__FILE__) . '/relaxNG.rng'; 

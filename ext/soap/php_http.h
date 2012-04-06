@@ -17,7 +17,7 @@
   |          Dmitry Stogov <dmitry@zend.com>                             |
   +----------------------------------------------------------------------+
 */
-/* $Id: php_http.h 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #ifndef PHP_HTTP_H
 #define PHP_HTTP_H
@@ -31,6 +31,11 @@ int make_http_soap_request(zval  *this_ptr,
                            char **response, 
                            int   *response_len TSRMLS_DC);
 
-void proxy_authentication(zval* this_ptr, smart_str* soap_headers TSRMLS_DC);
-void basic_authentication(zval* this_ptr, smart_str* soap_headers TSRMLS_DC);
+int proxy_authentication(zval* this_ptr, smart_str* soap_headers TSRMLS_DC);
+int basic_authentication(zval* this_ptr, smart_str* soap_headers TSRMLS_DC);
+void http_context_headers(php_stream_context* context,
+                          zend_bool has_authorization,
+                          zend_bool has_proxy_authorization,
+                          zend_bool has_cookies,
+                          smart_str* soap_headers TSRMLS_DC);
 #endif

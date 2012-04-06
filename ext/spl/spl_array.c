@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: spl_array.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -601,49 +601,46 @@ static int spl_array_has_dimension_ex(int check_inherited, zval *object, zval *o
 	}
 	
 	switch(Z_TYPE_P(offset)) {
-	case IS_STRING:
-		if (check_empty) {
-			if (zend_symtable_find(spl_array_get_hash_table(intern, 0 TSRMLS_CC), Z_STRVAL_P(offset), Z_STRLEN_P(offset)+1, (void **) &tmp) != FAILURE) {
-				switch (check_empty) {
-					case 0:
-						return Z_TYPE_PP(tmp) != IS_NULL;
-					case 2:
-						return 1;
-					default:
-						return zend_is_true(*tmp);
+		case IS_STRING:
+			{
+				HashTable *ht = spl_array_get_hash_table(intern, 0 TSRMLS_CC);
+				if (zend_symtable_find(ht, Z_STRVAL_P(offset), Z_STRLEN_P(offset)+1, (void **) &tmp) != FAILURE) {
+					switch (check_empty) {
+						case 0:
+							return Z_TYPE_PP(tmp) != IS_NULL;
+						case 2:
+							return 1;
+						default:
+							return zend_is_true(*tmp);
+					}
 				}
 			}
 			return 0;
-		} else {
-			return zend_symtable_exists(spl_array_get_hash_table(intern, 0 TSRMLS_CC), Z_STRVAL_P(offset), Z_STRLEN_P(offset)+1);
-		}
-	case IS_DOUBLE:
-	case IS_RESOURCE:
-	case IS_BOOL: 
-	case IS_LONG: 
-		if (offset->type == IS_DOUBLE) {
-			index = (long)Z_DVAL_P(offset);
-		} else {
-			index = Z_LVAL_P(offset);
-		}
-		if (check_empty) {
-			HashTable *ht = spl_array_get_hash_table(intern, 0 TSRMLS_CC);
-			if (zend_hash_index_find(ht, index, (void **)&tmp) != FAILURE) {
-				switch (check_empty) {
-					case 0:
-						return Z_TYPE_PP(tmp) != IS_NULL;
-					case 2:
-						return 1;
-					default:
-						return zend_is_true(*tmp);
+		case IS_DOUBLE:
+		case IS_RESOURCE:
+		case IS_BOOL: 
+		case IS_LONG:
+			{	
+				HashTable *ht = spl_array_get_hash_table(intern, 0 TSRMLS_CC);
+				if (offset->type == IS_DOUBLE) {
+					index = (long)Z_DVAL_P(offset);
+				} else {
+					index = Z_LVAL_P(offset);
 				}
+				if (zend_hash_index_find(ht, index, (void **)&tmp) != FAILURE) {
+					switch (check_empty) {
+						case 0:
+							return Z_TYPE_PP(tmp) != IS_NULL;
+						case 2:
+							return 1;
+						default:
+							return zend_is_true(*tmp);
+					}
+				}
+				return 0;
 			}
-			return 0;
-		} else {
-			return zend_hash_index_exists(spl_array_get_hash_table(intern, 0 TSRMLS_CC), index);
-		}
-	default:
-		zend_error(E_WARNING, "Illegal offset type");
+		default:
+			zend_error(E_WARNING, "Illegal offset type");
 	}
 	return 0;
 } /* }}} */
@@ -662,7 +659,7 @@ SPL_METHOD(Array, offsetExists)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &index) == FAILURE) {
 		return;
 	}
-	RETURN_BOOL(spl_array_has_dimension_ex(0, getThis(), index, 0 TSRMLS_CC));
+	RETURN_BOOL(spl_array_has_dimension_ex(0, getThis(), index, 2 TSRMLS_CC));
 } /* }}} */
 
 /* {{{ proto mixed ArrayObject::offsetGet(mixed $index)
@@ -860,6 +857,30 @@ static void spl_array_unset_property(zval *object, zval *member, const zend_lite
 		return;
 	}
 	std_object_handlers.unset_property(object, member, key TSRMLS_CC);
+} /* }}} */
+
+static int spl_array_compare_objects(zval *o1, zval *o2 TSRMLS_DC) /* {{{ */
+{
+	HashTable			*ht1,
+						*ht2;
+	spl_array_object	*intern1,
+						*intern2;
+	int					result	= 0;
+	zval				temp_zv;
+
+	intern1	= (spl_array_object*)zend_object_store_get_object(o1 TSRMLS_CC);
+	intern2	= (spl_array_object*)zend_object_store_get_object(o2 TSRMLS_CC);
+	ht1		= spl_array_get_hash_table(intern1, 0 TSRMLS_CC);
+	ht2		= spl_array_get_hash_table(intern2, 0 TSRMLS_CC);
+
+	zend_compare_symbol_tables(&temp_zv, ht1, ht2 TSRMLS_CC);
+	result = (int)Z_LVAL(temp_zv);
+	/* if we just compared std.properties, don't do it again */
+	if (result == 0 &&
+			!(ht1 == intern1->std.properties && ht2 == intern2->std.properties)) {
+		result = std_object_handlers.compare_objects(o1, o2 TSRMLS_CC);
+	}
+	return result;
 } /* }}} */
 
 static int spl_array_skip_protected(spl_array_object *intern, HashTable *aht TSRMLS_DC) /* {{{ */
@@ -1938,6 +1959,8 @@ PHP_MINIT_FUNCTION(spl_array)
 	spl_handler_ArrayObject.get_property_ptr_ptr = spl_array_get_property_ptr_ptr;
 	spl_handler_ArrayObject.has_property = spl_array_has_property;
 	spl_handler_ArrayObject.unset_property = spl_array_unset_property;
+
+	spl_handler_ArrayObject.compare_objects = spl_array_compare_objects;
 
 	REGISTER_SPL_STD_CLASS_EX(ArrayIterator, spl_array_object_new, spl_funcs_ArrayIterator);
 	REGISTER_SPL_IMPLEMENTS(ArrayIterator, Iterator);

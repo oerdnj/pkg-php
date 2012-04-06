@@ -19,7 +19,7 @@
 // | Authors: Shane Caraveo <Shane@Caraveo.com>                           |
 // +----------------------------------------------------------------------+
 //
-// $Id: client_round2_results.php 242949 2007-09-26 15:44:16Z cvs2svn $
+// $Id$
 //
 require_once 'client_round2_interop.php';
 ?>

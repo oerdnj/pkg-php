@@ -7,7 +7,7 @@ if (!function_exists("xmlwriter_start_comment")) die("skip: libxml2 2.6.7+ requi
 ?>
 --FILE--
 <?php 
-/* $Id: 005.phpt 201860 2005-12-02 02:05:26Z iliaa $ */
+/* $Id$ */
 
 $doc_dest = '001.xml';
 $xw = xmlwriter_open_uri($doc_dest);

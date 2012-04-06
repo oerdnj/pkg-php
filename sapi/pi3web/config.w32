@@ -1,5 +1,5 @@
 // vim:ft=javascript
-// $Id: config.w32 149024 2004-01-17 13:00:38Z sniper $
+// $Id$
 
 ARG_WITH('pi3web', 'Pi3Web', 'no');
 

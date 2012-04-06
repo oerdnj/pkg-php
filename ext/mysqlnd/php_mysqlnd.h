@@ -17,7 +17,7 @@
   |          Georg Richter <georg@mysql.com>                             |
   +----------------------------------------------------------------------+
 
-  $Id: php_mysqlnd.h 321634 2012-01-01 13:15:04Z felipe $ 
+  $Id$ 
 */
 
 #ifndef PHP_MYSQLND_H

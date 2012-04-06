@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_exceptions.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #include "zend.h"
 #include "zend_API.h"
@@ -205,7 +205,7 @@ ZEND_METHOD(exception, __construct)
 	object = getThis();
 
 	if (message) {
-		zend_update_property_string(default_exception_ce, object, "message", sizeof("message")-1, message TSRMLS_CC);
+		zend_update_property_stringl(default_exception_ce, object, "message", sizeof("message")-1, message, message_len TSRMLS_CC);
 	}
 
 	if (code) {

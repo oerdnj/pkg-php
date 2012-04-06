@@ -2,7 +2,7 @@
 PDO OCI Bug #41996 (Problem accessing Oracle ROWID)
 --SKIPIF--
 <?php
-/* $Id: bug41996.phpt 263114 2008-07-21 17:35:50Z pajoye $ */
+/* $Id$ */
 if (!extension_loaded('pdo') || !extension_loaded('pdo_oci')) die('skip not loaded');
 require dirname(__FILE__).'/../../pdo/tests/pdo_test.inc';
 PDOTest::skip();

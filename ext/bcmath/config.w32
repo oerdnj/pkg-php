@@ -1,4 +1,4 @@
-// $Id: config.w32 146077 2003-12-10 00:47:02Z wez $
+// $Id$
 // vim:ft=javascript
 
 ARG_ENABLE("bcmath", "bc style precision math functions", "yes");

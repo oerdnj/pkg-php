@@ -1,6 +1,6 @@
 OpenSSL extension for PHP
 
-$Id: README 242949 2007-09-26 15:44:16Z cvs2svn $
+$Id$
 
 The functions implemented so far make it possible to seal and open data, and
 also create and verify signatures.

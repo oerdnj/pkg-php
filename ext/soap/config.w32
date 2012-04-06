@@ -1,4 +1,4 @@
-// $Id: config.w32 279159 2009-04-22 19:06:47Z pajoye $
+// $Id$
 // vim:ft=javascript
 
 ARG_ENABLE("soap", "SOAP support", "no");

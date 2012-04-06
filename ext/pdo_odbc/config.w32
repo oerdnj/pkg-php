@@ -1,4 +1,4 @@
-// $Id: config.w32 279202 2009-04-23 18:03:05Z pajoye $
+// $Id$
 // vim:ft=javascript
 
 ARG_WITH("pdo-odbc", "ODBC support for PDO", "no");

@@ -1,4 +1,4 @@
-<?php /* $Id: testdb.inc 161049 2004-06-11 01:37:06Z abies $ */
+<?php /* $Id$ */
 
 $user = 'SYSDBA';
 $password = 'masterkey';

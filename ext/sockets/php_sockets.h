@@ -22,7 +22,7 @@
 #ifndef PHP_SOCKETS_H
 #define PHP_SOCKETS_H
 
-/* $Id: php_sockets.h 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #if HAVE_SOCKETS
 

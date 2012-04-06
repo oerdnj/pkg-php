@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 264447 2008-08-08 09:47:15Z pajoye $
+dnl $Id$
 dnl
 
 PHP_ARG_ENABLE(zip, for zip archive read/writesupport,

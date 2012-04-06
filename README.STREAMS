@@ -1,6 +1,6 @@
 An Overview of the PHP Streams abstraction
 ==========================================
-$Id: README.STREAMS 242949 2007-09-26 15:44:16Z cvs2svn $
+$Id$
 
 WARNING: some prototypes in this file are out of date.
 The information contained here is being integrated into

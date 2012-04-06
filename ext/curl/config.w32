@@ -1,4 +1,4 @@
-// $Id: config.w32 279244 2009-04-24 09:25:25Z pajoye $
+// $Id$
 // vim:ft=javascript
 
 ARG_WITH("curl", "cURL support", "no");

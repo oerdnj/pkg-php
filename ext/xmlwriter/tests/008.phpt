@@ -6,7 +6,7 @@ if (!extension_loaded("xmlwriter")) die("skip");
 ?>
 --FILE--
 <?php 
-/* $Id: 008.phpt 226551 2007-01-06 15:53:33Z bjori $ */
+/* $Id$ */
 
 $xw = xmlwriter_open_memory();
 xmlwriter_set_indent($xw, TRUE);

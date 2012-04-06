@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 310936 2011-05-10 20:04:26Z lytboris $
+dnl $Id$
 dnl
 
 PHP_ARG_WITH(snmp,for SNMP support,

@@ -1,7 +1,7 @@
 --TEST--
 Simple math tests
 --FILE--
-<?php // $Id: round.phpt 242949 2007-09-26 15:44:16Z cvs2svn $
+<?php // $Id$
 
 define('LONG_MAX', is_int(5000000000)? 9223372036854775807 : 0x7FFFFFFF);
 define('LONG_MIN', -LONG_MAX - 1);

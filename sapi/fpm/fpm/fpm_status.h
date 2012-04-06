@@ -1,5 +1,5 @@
 
-	/* $Id: fpm_status.h 312263 2011-06-18 17:46:16Z felipe $ */
+	/* $Id$ */
 	/* (c) 2009 Jerome Loyet */
 
 #ifndef FPM_STATUS_H

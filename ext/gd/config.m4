@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 310964 2011-05-12 08:19:37Z rasmus $
+dnl $Id$
 dnl
 
 dnl

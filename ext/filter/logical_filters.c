@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: logical_filters.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #include "php_filter.h"
 #include "filter_private.h"

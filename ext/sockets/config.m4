@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 310670 2011-04-30 15:56:07Z cataphract $
+dnl $Id$
 dnl
 
 PHP_ARG_ENABLE(sockets, whether to enable sockets support,

@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_compile.c 322495 2012-01-20 12:30:57Z dmitry $ */
+/* $Id$ */
 
 #include <zend_language_parser.h>
 #include "zend.h"
@@ -2958,30 +2958,57 @@ static zend_bool zend_do_perform_implementation_check(const zend_function *fe, c
 			/* Only one has a type hint and the other one doesn't */
 			return 0;
 		}
-		if (fe->common.arg_info[i].class_name
-			&& strcasecmp(fe->common.arg_info[i].class_name, proto->common.arg_info[i].class_name)!=0) {
-			const char *colon;
 
-			if (fe->common.type != ZEND_USER_FUNCTION) {
-				return 0;
-			} else if (strchr(proto->common.arg_info[i].class_name, '\\') != NULL ||
-			    (colon = zend_memrchr(fe->common.arg_info[i].class_name, '\\', fe->common.arg_info[i].class_name_len)) == NULL ||
-			    strcasecmp(colon+1, proto->common.arg_info[i].class_name) != 0) {
-				zend_class_entry **fe_ce, **proto_ce;
-				int found, found2;
-				
-				found = zend_lookup_class(fe->common.arg_info[i].class_name, fe->common.arg_info[i].class_name_len, &fe_ce TSRMLS_CC);
-				found2 = zend_lookup_class(proto->common.arg_info[i].class_name, proto->common.arg_info[i].class_name_len, &proto_ce TSRMLS_CC);
-				
-				/* Check for class alias */
-				if (found != SUCCESS || found2 != SUCCESS ||
-					(*fe_ce)->type == ZEND_INTERNAL_CLASS ||
-					(*proto_ce)->type == ZEND_INTERNAL_CLASS ||
-					*fe_ce != *proto_ce) {
-					return 0;
-				}
+		if (fe->common.arg_info[i].class_name) {
+			const char *fe_class_name, *proto_class_name;
+			zend_uint fe_class_name_len, proto_class_name_len;
+
+			if (!strcasecmp(fe->common.arg_info[i].class_name, "parent") && proto->common.scope) {
+				fe_class_name = proto->common.scope->name;
+				fe_class_name_len = proto->common.scope->name_length;
+			} else if (!strcasecmp(fe->common.arg_info[i].class_name, "self") && fe->common.scope) {
+				fe_class_name = fe->common.scope->name;
+				fe_class_name_len = fe->common.scope->name_length;
+			} else {
+				fe_class_name = fe->common.arg_info[i].class_name;
+				fe_class_name_len = fe->common.arg_info[i].class_name_len;
 			}
-		}
+
+			if (!strcasecmp(proto->common.arg_info[i].class_name, "parent") && proto->common.scope && proto->common.scope->parent) {
+				proto_class_name = proto->common.scope->parent->name;
+				proto_class_name_len = proto->common.scope->parent->name_length;
+			} else if (!strcasecmp(proto->common.arg_info[i].class_name, "self") && proto->common.scope) {
+				proto_class_name = proto->common.scope->name;
+				proto_class_name_len = proto->common.scope->name_length;
+			} else {
+				proto_class_name = proto->common.arg_info[i].class_name;
+				proto_class_name_len = proto->common.arg_info[i].class_name_len;
+			}
+
+			if (strcasecmp(fe_class_name, proto_class_name)!=0) {
+				const char *colon;
+
+				if (fe->common.type != ZEND_USER_FUNCTION) {
+					return 0;
+			    } else if (strchr(proto_class_name, '\\') != NULL ||
+						(colon = zend_memrchr(fe_class_name, '\\', fe_class_name_len)) == NULL ||
+						strcasecmp(colon+1, proto_class_name) != 0) {
+					zend_class_entry **fe_ce, **proto_ce;
+					int found, found2;
+
+					found = zend_lookup_class(fe_class_name, fe_class_name_len, &fe_ce TSRMLS_CC);
+					found2 = zend_lookup_class(proto_class_name, proto_class_name_len, &proto_ce TSRMLS_CC);
+
+					/* Check for class alias */
+					if (found != SUCCESS || found2 != SUCCESS ||
+							(*fe_ce)->type == ZEND_INTERNAL_CLASS ||
+							(*proto_ce)->type == ZEND_INTERNAL_CLASS ||
+							*fe_ce != *proto_ce) {
+						return 0;
+					}
+				}
+			} 
+		} 
 		if (fe->common.arg_info[i].type_hint != proto->common.arg_info[i].type_hint) {
 			/* Incompatible type hint */
 			return 0;
@@ -3043,9 +3070,21 @@ static char * zend_get_function_declaration(zend_function *fptr TSRMLS_DC) /* {{
 		required = fptr->common.required_num_args;
 		for (i = 0; i < fptr->common.num_args;) {
 			if (arg_info->class_name) {
-				REALLOC_BUF_IF_EXCEED(buf, offset, length, arg_info->class_name_len);
-				memcpy(offset, arg_info->class_name, arg_info->class_name_len);
-				offset += arg_info->class_name_len;
+				const char *class_name;
+				zend_uint class_name_len;
+				if (!strcasecmp(arg_info->class_name, "self") && fptr->common.scope ) {
+					class_name = fptr->common.scope->name;
+					class_name_len = fptr->common.scope->name_length;
+				} else if (!strcasecmp(arg_info->class_name, "parent") && fptr->common.scope->parent) {
+					class_name = fptr->common.scope->parent->name;
+					class_name_len = fptr->common.scope->parent->name_length;
+				} else {
+					class_name = arg_info->class_name;
+					class_name_len = arg_info->class_name_len;
+				}
+				REALLOC_BUF_IF_EXCEED(buf, offset, length, class_name_len);
+				memcpy(offset, class_name, class_name_len);
+				offset += class_name_len;
 				*(offset++) = ' ';
 			} else if (arg_info->type_hint) {
 				zend_uint type_name_len;
@@ -3584,6 +3623,18 @@ ZEND_API void zend_do_implement_trait(zend_class_entry *ce, zend_class_entry *tr
 }
 /* }}} */
 
+static zend_bool zend_traits_method_compatibility_check(zend_function *fn, zend_function *other_fn TSRMLS_DC) /* {{{ */
+{
+	zend_uint    fn_flags = fn->common.scope->ce_flags;
+	zend_uint other_flags = other_fn->common.scope->ce_flags;
+	
+	return zend_do_perform_implementation_check(fn, other_fn TSRMLS_CC)
+		&& zend_do_perform_implementation_check(other_fn, fn TSRMLS_CC)
+		&& ((fn_flags & ZEND_ACC_FINAL) == (other_flags & ZEND_ACC_FINAL))   /* equal final qualifier */
+		&& ((fn_flags & ZEND_ACC_STATIC)== (other_flags & ZEND_ACC_STATIC)); /* equal static qualifier */
+}
+/* }}} */
+
 static int zend_traits_merge_functions(zend_function *fn TSRMLS_DC, int num_args, va_list args, zend_hash_key *hash_key) /* {{{ */
 {
 	size_t current;
@@ -3606,22 +3657,16 @@ static int zend_traits_merge_functions(zend_function *fn TSRMLS_DC, int num_args
 		if (i == current) {
 			continue; /* just skip this, cause its the table this function is applied on */
 		}
-
+		
 		if (zend_hash_quick_find(function_tables[i], hash_key->arKey, hash_key->nKeyLength, hash_key->h, (void **)&other_trait_fn) == SUCCESS) {
 			/* if it is an abstract method, there is no collision */
 			if (other_trait_fn->common.fn_flags & ZEND_ACC_ABSTRACT) {
 				/* Make sure they are compatible */
-				if (fn->common.fn_flags & ZEND_ACC_ABSTRACT) {
-					/* In case both are abstract, just check prototype, but need to do that in both directions */
-					if (   !zend_do_perform_implementation_check(fn, other_trait_fn TSRMLS_CC)
-						|| !zend_do_perform_implementation_check(other_trait_fn, fn TSRMLS_CC)) {
-						zend_error(E_COMPILE_ERROR, "Declaration of %s must be compatible with %s", //ZEND_FN_SCOPE_NAME(fn), fn->common.function_name, //::%s()
-													zend_get_function_declaration(fn TSRMLS_CC),
-													zend_get_function_declaration(other_trait_fn TSRMLS_CC));
-					}
-				} else {
-					/* otherwise, do the full check */
-					do_inheritance_check_on_method(fn, other_trait_fn TSRMLS_CC);
+				/* In case both are abstract, just check prototype, but need to do that in both directions */
+				if (!zend_traits_method_compatibility_check(fn, other_trait_fn TSRMLS_CC)) {
+					zend_error(E_COMPILE_ERROR, "Declaration of %s must be compatible with %s",
+												zend_get_function_declaration(fn TSRMLS_CC),
+												zend_get_function_declaration(other_trait_fn TSRMLS_CC));
 				}
 				
 				/* we can savely free and remove it from other table */
@@ -3633,7 +3678,11 @@ static int zend_traits_merge_functions(zend_function *fn TSRMLS_DC, int num_args
 				if (fn->common.fn_flags & ZEND_ACC_ABSTRACT) {
 					/* Make sure they are compatible.
 					   Here, we already know other_trait_fn cannot be abstract, full check ok. */
-					do_inheritance_check_on_method(other_trait_fn, fn TSRMLS_CC);
+					if (!zend_traits_method_compatibility_check(fn, other_trait_fn TSRMLS_CC)) {
+						zend_error(E_COMPILE_ERROR, "Declaration of %s must be compatible with %s",
+													zend_get_function_declaration(fn TSRMLS_CC),
+													zend_get_function_declaration(other_trait_fn TSRMLS_CC));
+					}
 					
 					/* just mark as solved, will be added if its own trait is processed */
 					abstract_solved = 1;
@@ -3935,13 +3984,28 @@ static void zend_traits_init_trait_structures(zend_class_entry *ce TSRMLS_DC) /*
 			
 				/** With the other traits, we are more permissive.
 					We do not give errors for those. This allows to be more
-					defensive in such definitions. */
+					defensive in such definitions.
+					However, we want to make sure that the insteadof declartion
+					is consistent in itself.
+				 */
 				j = 0;
 				while (cur_precedence->exclude_from_classes[j]) {
 					char* class_name = (char*)cur_precedence->exclude_from_classes[j];
 					zend_uint name_length = strlen(class_name);
 
 					cur_precedence->exclude_from_classes[j] = zend_fetch_class(class_name, name_length, ZEND_FETCH_CLASS_TRAIT TSRMLS_CC);
+					
+					/* make sure that the trait method is not from a class mentioned in
+					 exclude_from_classes, for consistency */
+					if (cur_precedence->trait_method->ce == cur_precedence->exclude_from_classes[i]) {
+						zend_error(E_COMPILE_ERROR,
+								   "Inconsistent insteadof definition. " 
+								   "The method %s is to be used from %s, but %s is also on the exclude list",
+								   cur_method_ref->method_name,
+								   cur_precedence->trait_method->ce->name,
+								   cur_precedence->trait_method->ce->name);
+					}
+					
 					efree(class_name);
 					j++;
 				}
@@ -4946,7 +5010,7 @@ void zend_do_begin_class_declaration(const znode *class_token, znode *class_name
 	if (doing_inheritance) {
        /* Make sure a trait does not try to extend a class */
        if ((new_class_entry->ce_flags & ZEND_ACC_TRAIT) == ZEND_ACC_TRAIT) {
-           zend_error(E_COMPILE_ERROR, "A trait (%s) cannot extend a class", new_class_entry->name);
+           zend_error(E_COMPILE_ERROR, "A trait (%s) cannot extend a class. Traits can only be composed from other traits with the 'use' keyword. Error", new_class_entry->name);
        }
     
 		opline->extended_value = parent_class_name->u.op.var;

@@ -1,4 +1,4 @@
-dnl $Id: config0.m4 300694 2010-06-23 15:11:02Z johannes $
+dnl $Id$
 dnl config.m4 for extension sqlite3
 dnl vim:et:ts=2:sw=2
 

@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mmap.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 /* Memory Mapping interface for streams */
 #include "php.h"

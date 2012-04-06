@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_stream_context.h 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 /* Stream context and status notification related definitions */
 

@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: hash_ripemd.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 /* Heavily borrowed from md5.c & sha1.c of PHP archival fame
    Note that ripemd laughs in the face of logic and uses

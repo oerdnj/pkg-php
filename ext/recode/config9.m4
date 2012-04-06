@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config9.m4 270272 2008-12-01 23:30:21Z johannes $
+dnl $Id$
 dnl
 
 dnl Check for extensions with which Recode can not work

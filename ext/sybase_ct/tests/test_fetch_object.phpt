@@ -8,7 +8,7 @@ Sybase-CT sybase_fetch_object
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: test_fetch_object.phpt 236100 2007-05-22 11:33:36Z thekid $
+ * $Id$
  */
 
   require('test.inc');

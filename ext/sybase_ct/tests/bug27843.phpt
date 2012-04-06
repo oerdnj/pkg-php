@@ -6,7 +6,7 @@ Sybase-CT bug #27843 (notices when query is a stored procedure)
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: bug27843.phpt 236101 2007-05-22 11:35:47Z thekid $ 
+ * $Id$ 
  */
 
   require('test.inc');

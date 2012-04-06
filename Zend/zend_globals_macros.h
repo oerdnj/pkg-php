@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_globals_macros.h 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #ifndef ZEND_GLOBALS_MACROS_H
 #define ZEND_GLOBALS_MACROS_H

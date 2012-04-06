@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 282645 2009-06-23 13:09:34Z johannes $
+dnl $Id$
 dnl
 
 PHP_ARG_ENABLE(json, whether to enable JavaScript Object Serialization support,

@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 203466 2005-12-22 08:57:38Z helly $
+dnl $Id$
 dnl
 
 PHP_ARG_ENABLE(xml,whether to enable XML support,

@@ -15,7 +15,7 @@
   | Author: Georg Richter <georg@php.net>                                |
   +----------------------------------------------------------------------+
 
-  $Id: mysqli_report.h 321634 2012-01-01 13:15:04Z felipe $
+  $Id$
 */
 
 #ifndef __HAVE_MYSQLI_PROFILER_H__

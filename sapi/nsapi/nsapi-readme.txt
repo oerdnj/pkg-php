@@ -151,4 +151,4 @@ for the correct DLL name. The DLL with the biggest filesize is the right one.
 But be warned: SUPPORT FOR nsapi_virtual() IS EXPERIMENTAL !!!
 
 
-$Id: nsapi-readme.txt 242949 2007-09-26 15:44:16Z cvs2svn $
+$Id$

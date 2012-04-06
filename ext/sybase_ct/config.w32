@@ -1,5 +1,5 @@
 
-// $Id: config.w32 242949 2007-09-26 15:44:16Z cvs2svn $
+// $Id$
 // vim:ft=javascript
 
 ARG_WITH("sybase-ct", "SYBASE_CT support", "no");

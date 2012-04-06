@@ -4,7 +4,7 @@ XMLWriter: libxml2 XML Writer, membuffer, flush, attribute
 <?php if (!extension_loaded("xmlwriter")) print "skip"; ?>
 --FILE--
 <?php 
-/* $Id: 003.phpt 201860 2005-12-02 02:05:26Z iliaa $ */
+/* $Id$ */
 
 $doc_dest = '001.xml';
 $xw = xmlwriter_open_memory($doc_dest);

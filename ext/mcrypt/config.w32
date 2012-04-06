@@ -1,4 +1,4 @@
-// $Id: config.w32 307599 2011-01-19 21:19:45Z pajoye $
+// $Id$
 // vim:ft=javascript
 
 ARG_WITH("mcrypt", "mcrypt support", "no");

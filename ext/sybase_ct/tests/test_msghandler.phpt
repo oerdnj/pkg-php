@@ -6,7 +6,7 @@ Sybase-CT server message handler
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: test_msghandler.phpt 268570 2008-11-08 11:45:03Z thekid $ 
+ * $Id$ 
  */
 
   require('test.inc');

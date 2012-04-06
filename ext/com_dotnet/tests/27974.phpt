@@ -4,7 +4,7 @@ COM: mapping a safearray
 <?php # vim:ft=php
 if (!extension_loaded("com_dotnet")) print "skip COM/.Net support not present"; ?>
 --FILE--
-<?php // $Id: 27974.phpt 206395 2006-02-04 10:57:28Z rrichards $
+<?php // $Id$
 error_reporting(E_ALL);
 
 try {

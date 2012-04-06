@@ -3,7 +3,7 @@ gzdeflate()/gzinflate()
 --SKIPIF--
 <?php if (!extension_loaded("zlib")) print "skip"; ?>
 --FILE--
-<?php /* $Id: 001.phpt 316410 2011-09-08 10:20:38Z pajoye $ */
+<?php /* $Id$ */
 $original = str_repeat("hallo php",4096);
 $packed=gzdeflate($original);
 echo strlen($packed)." ".strlen($original)."\n";

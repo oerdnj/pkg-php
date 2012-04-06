@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: exif.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 /*  ToDos
  *
@@ -138,7 +138,7 @@ const zend_function_entry exif_functions[] = {
 };
 /* }}} */
 
-#define EXIF_VERSION "1.4 $Id: exif.c 321634 2012-01-01 13:15:04Z felipe $"
+#define EXIF_VERSION "1.4 $Id$"
 
 /* {{{ PHP_MINFO_FUNCTION
  */

@@ -1,4 +1,4 @@
-<?php # $Id: mkdist.php 321952 2012-01-09 13:56:46Z pajoye $
+<?php # $Id$
 /* piece together a windows binary distro */
 
 $build_dir = $argv[1];

@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: uuencode.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 /*
  * Portions of this code are based on Berkeley's uuencode/uudecode

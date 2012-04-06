@@ -1,4 +1,4 @@
-dnl $Id: config.m4 263549 2008-07-25 13:46:24Z jani $
+dnl $Id$
 dnl config.m4 for extension pdo
 dnl vim:se ts=2 sw=2 et:
 

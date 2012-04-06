@@ -2,7 +2,7 @@
 Bug #11216 (::addEmptyDir() crashes when the directory already exists)
 --SKIPIF--
 <?php
-/* $Id: bug11216.phpt 273126 2009-01-08 22:03:32Z tony2001 $ */
+/* $Id$ */
 if(!extension_loaded('zip')) die('skip');
  ?>
 --FILE--
