@@ -1,3 +1,10 @@
+php5 (5.4.0-5) UNRELEASED; urgency=low
+
+  * Add information about flavor of INI file inside the INI file,
+    install php.ini-development INI to /usr/share/php5 (Closes: #667711)
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 06 Apr 2012 14:36:03 +0200
+
 php5 (5.4.0-4) unstable; urgency=low
 
   * Change id -u+getent combo to whoami (Courtesy of Michiel van
