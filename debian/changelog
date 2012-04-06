@@ -1,9 +1,10 @@
-php5 (5.4.0-5) UNRELEASED; urgency=low
+php5 (5.4.1~rc1-1) UNRELEASED; urgency=low
 
   * Add information about flavor of INI file inside the INI file,
     install php.ini-development INI to /usr/share/php5 (Closes: #667711)
+  * Imported Upstream version 5.4.1~rc1
 
- -- Ondřej Surý <ondrej@debian.org>  Fri, 06 Apr 2012 14:36:03 +0200
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 06 Apr 2012 14:52:10 +0200
 
 php5 (5.4.0-4) unstable; urgency=low
 
