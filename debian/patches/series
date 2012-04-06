@@ -54,6 +54,5 @@ php-5.3.9-mysqlnd.patch
 php-5.3.9-gnusrc.patch
 php-5.3.3-macropen.patch
 php-5.2.4-norpath.patch
-mysqlnd-format-error-fix.patch
 php-fpm-listen-on-unix-socket.patch
 0001-Add-information-about-which-INI-file-is-which-inside.patch
