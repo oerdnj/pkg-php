@@ -15,7 +15,7 @@
   | Author: Sara Golemon <pollita@php.net>                               |
   +----------------------------------------------------------------------+
 
-  $Id: php_mcrypt_filter.h 321634 2012-01-01 13:15:04Z felipe $ 
+  $Id$ 
 */
 
 #ifndef PHP_MCRYPT_FILTER_H

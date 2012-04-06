@@ -1,4 +1,4 @@
-// $Id: config.w32 308353 2011-02-15 08:48:24Z pajoye $
+// $Id$
 // vim:ft=javascript
 
 ARG_ENABLE("intl", "Enable internationalization support", "no");

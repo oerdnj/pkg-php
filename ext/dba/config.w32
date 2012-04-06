@@ -1,4 +1,4 @@
-// $Id: config.w32 180813 2005-02-26 01:05:33Z helly $
+// $Id$
 // vim:ft=javascript
 
 ARG_WITH("dba", "DBA support", "no");

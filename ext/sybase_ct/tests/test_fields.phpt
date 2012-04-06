@@ -6,7 +6,7 @@ Sybase-CT sybase_field_* functions
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: test_fields.phpt 231839 2007-03-14 11:44:24Z thekid $ 
+ * $Id$ 
  */
 
   require('test.inc');

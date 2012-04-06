@@ -15,7 +15,7 @@
    | Author: Jim Winstead <jimw@php.net>                                  |
    +----------------------------------------------------------------------+
  */
-/* $Id: url.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #include <stdlib.h>
 #include <string.h>

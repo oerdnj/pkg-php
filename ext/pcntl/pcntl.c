@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: pcntl.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #define PCNTL_DEBUG 0
 
@@ -760,7 +760,7 @@ PHP_FUNCTION(pcntl_exec)
 	}
 	
 	if (ZEND_NUM_ARGS() > 1) {
-		/* Build argumnent list */
+		/* Build argument list */
 		args_hash = HASH_OF(args);
 		argc = zend_hash_num_elements(args_hash);
 		

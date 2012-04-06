@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: zlib.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -400,7 +400,7 @@ retry_raw_inflate:
 		status = inflateInit2(&Z, encoding);
 		if (Z_OK == status) {
 			Z.next_in = (Bytef *) in_buf;
-			Z.avail_in = in_len;
+			Z.avail_in = in_len + 1; /* NOTE: data must be zero terminated */
 
 			switch (status = php_zlib_inflate_rounds(&Z, max_len, out_buf, out_len)) {
 				case Z_STREAM_END:
@@ -938,7 +938,6 @@ static PHP_MINIT_FUNCTION(zlib)
 	REGISTER_LONG_CONSTANT("ZLIB_ENCODING_GZIP", PHP_ZLIB_ENCODING_GZIP, CONST_CS|CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("ZLIB_ENCODING_DEFLATE", PHP_ZLIB_ENCODING_DEFLATE, CONST_CS|CONST_PERSISTENT);
 	REGISTER_INI_ENTRIES();
-	ZLIBG(ob_gzhandler) = NULL;
 	return SUCCESS;
 }
 /* }}} */
@@ -989,6 +988,13 @@ static PHP_MINFO_FUNCTION(zlib)
 }
 /* }}} */
 
+/* {{{ ZEND_MODULE_GLOBALS_CTOR */
+static ZEND_MODULE_GLOBALS_CTOR_D(zlib)
+{
+	zlib_globals->ob_gzhandler = NULL;
+}
+/* }}} */
+
 /* {{{ php_zlib_module_entry */
 zend_module_entry php_zlib_module_entry = {
 	STANDARD_MODULE_HEADER,
@@ -1001,7 +1007,7 @@ zend_module_entry php_zlib_module_entry = {
 	PHP_MINFO(zlib),
 	"2.0",
 	PHP_MODULE_GLOBALS(zlib),
-	NULL,
+	ZEND_MODULE_GLOBALS_CTOR_N(zlib),
 	NULL,
 	NULL,
 	STANDARD_MODULE_PROPERTIES_EX

@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_wireprotocol.c 323020 2012-02-02 15:00:42Z andrey $ */
+/* $Id$ */
 #include "php.h"
 #include "php_globals.h"
 #include "mysqlnd.h"
@@ -500,7 +500,7 @@ size_t php_mysqlnd_auth_write(void * _packet, MYSQLND_CONN_DATA * conn TSRMLS_DC
 			const char * const msg = "Authentication data too long. "
 				"Won't fit into the buffer and will be truncated. Authentication will thus fail";
 			SET_CLIENT_ERROR(*conn->error_info, CR_UNKNOWN_ERROR, UNKNOWN_SQLSTATE, msg);
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, msg);
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", msg);
 			DBG_RETURN(0);
 		}		
 		

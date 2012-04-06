@@ -17,7 +17,7 @@
    | PHP 4.0 patches by Zeev Suraski <zeev@zend.com>			  |
    +----------------------------------------------------------------------+
  */
-/* $Id: mod_php5.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #include "php_apache_http.h"
 

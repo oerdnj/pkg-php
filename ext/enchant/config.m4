@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 289366 2009-10-08 20:28:21Z pajoye $
+dnl $Id$
 dnl
 
 PHP_ARG_WITH(enchant,for ENCHANT support,

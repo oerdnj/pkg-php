@@ -3,7 +3,7 @@ PDO_Firebird: connect/disconnect
 --SKIPIF--
 <?php include("skipif.inc"); ?>
 --FILE--
-<?php /* $Id: connect.phpt 161049 2004-06-11 01:37:06Z abies $ */
+<?php /* $Id$ */
 
 	require("testdb.inc");
     

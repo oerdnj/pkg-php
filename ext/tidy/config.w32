@@ -1,4 +1,4 @@
-// $Id: config.w32 264000 2008-08-01 11:21:50Z pajoye $
+// $Id$
 // vim:ft=javascript
 
 ARG_WITH("tidy", "TIDY support", "no");

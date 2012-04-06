@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config0.m4 287118 2009-08-11 21:40:15Z scottmac $
+dnl $Id$
 dnl
 
 dnl By default we'll compile and link against the bundled PCRE library

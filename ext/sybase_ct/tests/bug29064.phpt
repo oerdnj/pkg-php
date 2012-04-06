@@ -6,7 +6,7 @@ Sybase-CT bug #29064 (Exact numeric/decimal/money datatypes lose precision)
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: bug29064.phpt 268583 2008-11-08 13:32:29Z thekid $
+ * $Id$
  */
 
   require('test.inc');

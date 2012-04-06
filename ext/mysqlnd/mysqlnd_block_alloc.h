@@ -18,7 +18,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: mysqlnd_block_alloc.h 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #ifndef MYSQLND_BLOCK_ALLOC_H
 #define MYSQLND_BLOCK_ALLOC_H

@@ -1,4 +1,4 @@
-// $Id: config.w32 261548 2008-06-23 18:40:29Z pajoye $
+// $Id$
 // vim:ft=javascript
 
 ARG_ENABLE("exif", "exif", "no");

@@ -14,7 +14,7 @@
 #  | Author: Sascha Schumann <sascha@schumann.cx>                         |
 #  +----------------------------------------------------------------------+
 #
-# $Id: build.mk 313218 2011-07-13 23:28:48Z fat $ 
+# $Id$ 
 #
 #
 # Makefile to generate build tools

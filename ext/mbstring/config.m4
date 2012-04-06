@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 315428 2011-08-24 15:29:17Z hirokawa $
+dnl $Id$
 dnl
 
 AC_DEFUN([PHP_MBSTRING_ADD_SOURCES], [

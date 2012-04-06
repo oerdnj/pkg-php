@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: rfc1867.c 323202 2012-02-14 08:58:52Z dmitry $ */
+/* $Id$ */
 
 /*
  *  This product includes software developed by the Apache Group

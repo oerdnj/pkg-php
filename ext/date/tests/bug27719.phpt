@@ -4,7 +4,7 @@ Bug #27719 (mktime returns incorrect timestamp for dst days)
 date.timezone=EST
 error_reporting=2047
 --FILE--
-<?php /* $Id: bug27719.phpt 280398 2009-05-12 19:46:58Z felipe $ */
+<?php /* $Id$ */
 	$a = mktime(0, 0, 0, 4, 4, 2004, 0);
 	$b = mktime(0, 0, 0, 4, 4, 2004, 1);
 	$c = mktime(0, 0, 0, 4, 4, 2004, -1);

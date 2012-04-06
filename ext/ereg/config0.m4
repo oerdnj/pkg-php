@@ -1,4 +1,4 @@
-dnl $Id: config0.m4 243563 2007-10-05 15:00:09Z jani $
+dnl $Id$
 dnl config.m4 for extension ereg
 
 dnl

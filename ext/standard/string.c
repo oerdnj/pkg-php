@@ -18,7 +18,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: string.c 321669 2012-01-02 00:47:57Z stas $ */
+/* $Id$ */
 
 /* Synced with php 3.0 revision 1.193 1999-06-16 [ssb] */
 
@@ -2518,6 +2518,9 @@ PHP_FUNCTION(substr_replace)
 
 					if(Z_REFCOUNT_P(orig_str) != refcount) {
 						php_error_docref(NULL TSRMLS_CC, E_WARNING, "Argument was modified while replacing");
+						if(Z_TYPE_PP(tmp_repl) != IS_STRING) {
+							zval_dtor(repl_str);
+						}
 						break;
 					}
 
@@ -5312,7 +5315,7 @@ PHP_FUNCTION(strpbrk)
 {
 	char *haystack, *char_list;
 	int haystack_len, char_list_len;
-	char *p;
+	char *haystack_ptr, *cl_ptr;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &haystack, &haystack_len, &char_list, &char_list_len) == FAILURE) {
 		RETURN_FALSE;
@@ -5323,11 +5326,15 @@ PHP_FUNCTION(strpbrk)
 		RETURN_FALSE;
 	}
 
-	if ((p = strpbrk(haystack, char_list))) {
-		RETURN_STRINGL(p, (haystack + haystack_len - p), 1);
-	} else {
-		RETURN_FALSE;
+	for (haystack_ptr = haystack; haystack_ptr < (haystack + haystack_len); ++haystack_ptr) {
+		for (cl_ptr = char_list; cl_ptr < (char_list + char_list_len); ++cl_ptr) {
+			if (*cl_ptr == *haystack_ptr) {
+				RETURN_STRINGL(haystack_ptr, (haystack + haystack_len - haystack_ptr), 1);
+			}
+		}
 	}
+
+	RETURN_FALSE;
 }
 /* }}} */
 

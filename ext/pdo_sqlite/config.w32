@@ -1,4 +1,4 @@
-// $Id: config.w32 289692 2009-10-16 02:22:48Z scottmac $
+// $Id$
 // vim:ft=javascript
 
 ARG_WITH("pdo-sqlite", "for pdo_sqlite support", "no");

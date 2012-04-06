@@ -6,7 +6,7 @@ Sybase-CT query without storing
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: test_query_nostore.phpt 242949 2007-09-26 15:44:16Z cvs2svn $
+ * $Id$
  */
 
   require('test.inc');

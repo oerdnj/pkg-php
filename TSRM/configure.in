@@ -1,4 +1,4 @@
-dnl $Id: configure.in 311067 2011-05-16 00:14:47Z rasmus $
+dnl $Id$
 dnl
 dnl Minimalistic configure.in for TSRM.
 dnl

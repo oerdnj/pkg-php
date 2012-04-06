@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 242949 2007-09-26 15:44:16Z cvs2svn $
+dnl $Id$
 dnl
 AC_DEFUN([PHP_APACHE_FD_CHECK], [
 AC_CACHE_CHECK([for member fd in BUFF *],ac_cv_php_fd_in_buff,[

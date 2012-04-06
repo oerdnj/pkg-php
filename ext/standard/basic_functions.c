@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: basic_functions.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #include "php.h"
 #include "php_streams.h"
@@ -3719,6 +3719,8 @@ PHP_RINIT_FUNCTION(basic) /* {{{ */
 	/* Default to global filters only */
 	FG(stream_filters) = NULL;
 
+	FG(wrapper_errors) = NULL;
+
 	return SUCCESS;
 }
 /* }}} */
@@ -4428,6 +4430,15 @@ PHP_FUNCTION(time_nanosleep)
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ll", &tv_sec, &tv_nsec) == FAILURE) {
 		return;
+	}
+
+	if (tv_sec < 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "The seconds value must be greater than 0");
+		RETURN_FALSE;
+	}
+	if (tv_nsec < 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "The nanoseconds value must be greater than 0");
+		RETURN_FALSE;
 	}
 
 	php_req.tv_sec = (time_t) tv_sec;

@@ -34,7 +34,7 @@
  * SUCH DAMAGE.
  *
  * From FreeBSD fnmatch.c 1.11
- * $Id: fnmatch.c 273994 2009-01-20 01:37:48Z pajoye $
+ * $Id$
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)

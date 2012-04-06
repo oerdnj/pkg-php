@@ -1,4 +1,4 @@
-// $Id: config.w32 281934 2009-06-10 15:44:51Z pajoye $
+// $Id$
 // vim:ft=javascript
 
 ARG_WITH("bz2", "BZip2", "no");

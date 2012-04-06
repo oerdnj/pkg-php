@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_exif.h 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #if HAVE_EXIF
 extern zend_module_entry exif_module_entry;

@@ -1,4 +1,4 @@
-dnl $Id: config.m4 316350 2011-09-07 13:33:56Z johannes $
+dnl $Id$
 dnl config.m4 for extension pdo_mysql
 dnl vim: se ts=2 sw=2 et:
 

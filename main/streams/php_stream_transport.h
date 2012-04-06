@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_stream_transport.h 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 #ifdef PHP_WIN32
 #include "config.w32.h"
 #include <Ws2tcpip.h>

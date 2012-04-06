@@ -1,4 +1,4 @@
-// $Id: config.w32 309198 2011-03-14 00:08:29Z cataphract $
+// $Id$
 // vim:ft=javascript
 
 ARG_ENABLE("sockets", "SOCKETS support", "no");

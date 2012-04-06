@@ -1,7 +1,8 @@
 --TEST--
-locale_get_display_script()
+locale_get_display_script() icu <= 4.2
 --SKIPIF--
 <?php if( !extension_loaded( 'intl' ) ) print 'skip'; ?>
+<?php if(version_compare(INTL_ICU_VERSION, '4.3', '<') != 1) print 'skip'; ?>
 --FILE--
 <?php
 

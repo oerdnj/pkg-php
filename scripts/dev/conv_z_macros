@@ -16,7 +16,7 @@
 #  | Author: Sascha Schumann <sascha@schumann.cx>                         |
 #  +----------------------------------------------------------------------+
 #
-# $Id: conv_z_macros 226204 2007-01-01 19:32:10Z iliaa $
+# $Id$
 
 for i in $@; do
 	echo -n "Processing $i... "

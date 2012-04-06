@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_smart_str_public.h 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #ifndef PHP_SMART_STR_PUBLIC_H
 #define PHP_SMART_STR_PUBLIC_H

@@ -1,4 +1,4 @@
-// $Id: config.w32 226663 2007-01-07 18:38:22Z iliaa $
+// $Id$
 // vim:ft=javascript
 
 ARG_WITH("openssl", "OpenSSL support", "no");

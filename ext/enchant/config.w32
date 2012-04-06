@@ -1,4 +1,4 @@
-// $Id: config.w32 289372 2009-10-08 20:59:50Z pajoye $
+// $Id$
 // vim:ft=javascript
 
 ARG_WITH("enchant", "Enchant Support", "no");

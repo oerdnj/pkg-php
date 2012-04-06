@@ -326,6 +326,6 @@ boolean callback(&$value, $characterset);
     *input_get()* or *input_get_array()*. If the *$characterset* parameter was
     not passed, it defaults to *'null'*.
 
-Version: $Id: filter.txt 213641 2006-05-24 11:51:55Z pajoye $
+Version: $Id$
 .. vim: et syn=rst tw=78
 

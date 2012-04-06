@@ -3,7 +3,7 @@ zlib.inflate (with convert.base64-decode)
 --SKIPIF--
 <?php if (!extension_loaded("zlib")) print "skip"; ?>
 --FILE--
-<?php /* $Id: zlib_filter_inflate.phpt 201145 2005-11-24 04:37:47Z pollita $ */
+<?php /* $Id$ */
 $text = 'HctBDoAgDETRq8zOjfEeHKOGATG0TRpC4u1Vdn/xX4IoxkVMxgP1zA4vkJVhULk9UGkM6TvSNolmxUNlNLePVQ45O3eINf0fsQxtCxwv';
 
 $fp = fopen('php://stdout', 'w');

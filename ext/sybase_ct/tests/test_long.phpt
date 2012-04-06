@@ -6,7 +6,7 @@ Sybase-CT select LONG_MAX / LONG_MIN
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: test_long.phpt 236104 2007-05-22 12:16:32Z thekid $ 
+ * $Id$ 
  */
 
   require('test.inc');

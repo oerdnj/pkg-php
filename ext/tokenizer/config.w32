@@ -1,4 +1,4 @@
-// $Id: config.w32 240568 2007-08-01 15:13:40Z pajoye $
+// $Id$
 // vim:ft=javascript
 
 ARG_ENABLE("tokenizer", "tokenizer support", "yes");

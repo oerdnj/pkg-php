@@ -3,7 +3,7 @@ InterBase: array handling
 --SKIPIF--
 <?php include("skipif.inc"); ?>
 --FILE--
-<?php /* $Id: 007.phpt 160078 2004-05-30 16:20:25Z abies $ */
+<?php /* $Id$ */
 
 	require("interbase.inc");
 	

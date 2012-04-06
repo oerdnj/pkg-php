@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_execute_API.c 323120 2012-02-08 03:03:05Z laruence $ */
+/* $Id$ */
 
 #include <stdio.h>
 #include <signal.h>
@@ -859,7 +859,7 @@ int zend_call_function(zend_fcall_info *fci, zend_fcall_info_cache *fci_cache TS
 
 				if (fci->no_separation &&
 				    !ARG_MAY_BE_SENT_BY_REF(EX(function_state).function, i + 1)) {
-					if(i) {
+					if (i || UNEXPECTED(ZEND_VM_STACK_ELEMETS(EG(argument_stack)) == (EG(argument_stack)->top))) {
 						/* hack to clean up the stack */
 						zend_vm_stack_push_nocheck((void *) (zend_uintptr_t)i TSRMLS_CC);
 						zend_vm_stack_clear_multiple(TSRMLS_C);
@@ -1195,7 +1195,13 @@ ZEND_API int zend_eval_stringl(char *str, int str_len, zval *retval_ptr, char *s
 		}
 		CG(interactive) = 0;
 
-		zend_execute(new_op_array TSRMLS_CC);
+		zend_try {
+			zend_execute(new_op_array TSRMLS_CC);
+		} zend_catch {
+			destroy_op_array(new_op_array TSRMLS_CC);
+			efree(new_op_array);
+			zend_bailout();
+		} zend_end_try();
 
 		CG(interactive) = orig_interactive;
 		if (local_retval_ptr) {

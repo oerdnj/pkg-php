@@ -7,7 +7,7 @@ if (LIBXML_VERSION < 20629) die("skip: libxml2 2.6.29+ required");
 ?>
 --FILE--
 <?php 
-/* $Id: 007.phpt 238660 2007-06-26 12:12:31Z tony2001 $ */
+/* $Id$ */
 
 $xw = xmlwriter_open_memory();
 xmlwriter_set_indent($xw, TRUE);

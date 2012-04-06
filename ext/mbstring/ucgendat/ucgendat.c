@@ -1,5 +1,5 @@
 /* Further modified for PHP */
-/* $Id: ucgendat.c 304057 2010-10-05 02:34:35Z cataphract $ */
+/* $Id$ */
 
 /* $OpenLDAP: pkg/ldap/libraries/liblunicode/ucdata/ucgendat.c,v 1.36.2.4 2007/01/02 21:43:51 kurt Exp $ */
 /* This work is part of OpenLDAP Software <http://www.openldap.org/>.

@@ -3,7 +3,7 @@ PDO_Firebird: DDL/transactions
 --SKIPIF--
 <?php include("skipif.inc"); ?>
 --FILE--
-<?php /* $Id: ddl.phpt 275414 2009-02-09 12:56:00Z felipe $ */
+<?php /* $Id$ */
 
 	require("testdb.inc");
     

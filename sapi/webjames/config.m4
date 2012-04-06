@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 239540 2007-07-11 23:20:37Z jani $
+dnl $Id$
 dnl
 
 PHP_ARG_WITH(webjames,,

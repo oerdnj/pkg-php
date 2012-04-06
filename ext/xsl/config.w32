@@ -1,4 +1,4 @@
-// $Id: config.w32 271909 2008-12-26 14:05:05Z pajoye $
+// $Id$
 // vim: ft=javascript
 
 ARG_WITH("xsl", "xsl support", "no");

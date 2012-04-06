@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config.m4 316353 2011-09-07 13:47:31Z bjori $
+dnl $Id$
 dnl
 
 PHP_ARG_ENABLE(pcntl, whether to enable pcntl support,

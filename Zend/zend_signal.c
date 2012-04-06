@@ -25,7 +25,7 @@
    All other licensing and usage conditions are those of the PHP Group.
 */
 
- /* $Id: zend_signal.c 320281 2011-12-02 12:14:16Z dmitry $ */
+ /* $Id$ */
 
 #define _GNU_SOURCE
 #include <string.h>

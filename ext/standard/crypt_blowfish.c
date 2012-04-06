@@ -1,4 +1,4 @@
-/* $Id: crypt_blowfish.c 313406 2011-07-18 21:26:29Z pajoye $ */
+/* $Id$ */
 /*
  * The crypt_blowfish homepage is:
  *

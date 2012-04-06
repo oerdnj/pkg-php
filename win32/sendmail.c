@@ -17,7 +17,7 @@
  *
  */
 
-/* $Id: sendmail.c 287783 2009-08-26 21:59:54Z pajoye $ */
+/* $Id$ */
 
 #include "php.h"				/*php specific */
 #include <stdio.h>

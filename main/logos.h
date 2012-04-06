@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: logos.h 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #define CONTEXT_TYPE_IMAGE_GIF "Content-Type: image/gif"
 

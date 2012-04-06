@@ -1,4 +1,4 @@
-// $Id: config.w32 318301 2011-10-21 15:28:58Z andrey $
+// $Id$
 // vim:ft=javascript
 
 ARG_WITH("mysqlnd", "Mysql Native Client Driver", "yes");

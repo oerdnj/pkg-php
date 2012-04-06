@@ -6,7 +6,7 @@ Sybase-CT bug #22403 (crash when executing a stored procedure without parameters
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: bug22403.phpt 236101 2007-05-22 11:35:47Z thekid $ 
+ * $Id$ 
  */
 
   require('test.inc');

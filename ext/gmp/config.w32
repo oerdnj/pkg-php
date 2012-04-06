@@ -1,4 +1,4 @@
-// $Id: config.w32 291937 2009-12-10 02:25:47Z pajoye $
+// $Id$
 // vim:ft=javascript
 
 ARG_WITH("gmp", "Include GNU MP support.", "no");

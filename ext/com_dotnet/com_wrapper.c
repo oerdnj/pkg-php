@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: com_wrapper.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 /* This module exports a PHP object as a COM object by wrapping it
  * using IDispatchEx */

@@ -6,7 +6,7 @@ Sybase-CT bug #26407 (Result set fetching broken around transactions)
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: bug26407.phpt 236100 2007-05-22 11:33:36Z thekid $ 
+ * $Id$ 
  */
 
   require('test.inc');

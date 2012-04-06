@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: multicast.h 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #if defined(MCAST_JOIN_GROUP) && \
 	(!defined(PHP_WIN32) || (_WIN32_WINNT >= 0x600 && SOCKETS_ENABLE_VISTA_API))

@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config0.m4 309398 2011-03-18 18:47:09Z geissert $
+dnl $Id$
 dnl
 
 PHP_ARG_WITH(openssl, for OpenSSL support,

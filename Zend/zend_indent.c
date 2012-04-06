@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_indent.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 /* This indenter doesn't really work, it's here for no particular reason. */
 

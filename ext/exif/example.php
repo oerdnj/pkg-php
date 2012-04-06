@@ -1,7 +1,7 @@
 <?php
 // (c) M.Boerger
 //
-// $Id: example.php 72471 2002-03-08 11:33:46Z helly $
+// $Id$
 //
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional">
 <html>

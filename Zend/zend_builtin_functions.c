@@ -17,7 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: zend_builtin_functions.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #include "zend.h"
 #include "zend_API.h"
@@ -1615,8 +1615,7 @@ ZEND_FUNCTION(set_exception_handler)
 		RETURN_TRUE;
 	}
 
-	*EG(user_exception_handler) = *exception_handler;
-	zval_copy_ctor(EG(user_exception_handler));
+	MAKE_COPY_ZVAL(&exception_handler, EG(user_exception_handler))
 
 	if (!had_orig_exception_handler) {
 		RETURN_NULL();

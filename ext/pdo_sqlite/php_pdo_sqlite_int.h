@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: php_pdo_sqlite_int.h 322916 2012-01-29 04:22:23Z rasmus $ */
+/* $Id$ */
 
 #ifndef PHP_PDO_SQLITE_INT_H
 #define PHP_PDO_SQLITE_INT_H

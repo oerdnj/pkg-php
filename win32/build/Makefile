@@ -14,7 +14,7 @@
 #  | Author: Wez Furlong <wez@thebrainroom.com>                           |
 #  +----------------------------------------------------------------------+
 #
-# $Id: Makefile 322075 2012-01-11 15:47:37Z pajoye $
+# $Id$
 # This is the makefile template for the win32 build
 
 CC="$(PHP_CL)"

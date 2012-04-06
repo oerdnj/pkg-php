@@ -1,4 +1,4 @@
-// $Id: config.w32 295508 2010-02-25 17:08:17Z kalle $
+// $Id$
 // vim:ft=javascript
 
 ARG_WITH("simplexml", "Simple XML support", "yes");

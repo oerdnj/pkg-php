@@ -1,4 +1,4 @@
-// $Id: config.w32 177602 2005-01-18 22:38:24Z fmk $
+// $Id$
 // vim:ft=javascript
 
 ARG_WITH("mssql", "mssql support", "no");

@@ -17,7 +17,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: var_unserializer.c 323633 2012-02-28 18:36:10Z pajoye $ */
+/* $Id$ */
 
 #include "php.h"
 #include "ext/standard/php_var.h"

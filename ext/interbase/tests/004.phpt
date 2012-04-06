@@ -3,7 +3,7 @@ InterBase: BLOB test
 --SKIPIF--
 <?php include("skipif.inc"); ?>
 --FILE--
-<?php /* $Id: 004.phpt 158958 2004-05-19 08:56:50Z helly $ */
+<?php /* $Id$ */
 
     require("interbase.inc");
     

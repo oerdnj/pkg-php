@@ -6,7 +6,7 @@ Sybase-CT close default connection
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: test_close_default.phpt 268631 2008-11-09 11:38:17Z thekid $ 
+ * $Id$ 
  */
 
   require('test.inc');

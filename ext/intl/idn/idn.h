@@ -15,7 +15,7 @@
    | Author: Pierre A. Joye <pierre@php.net>                              |
    +----------------------------------------------------------------------+
  */
-/* $Id: idn.h 274679 2009-01-26 22:30:57Z pajoye $ s*/
+/* $Id$ s*/
 
 #ifndef IDN_IDN_H
 #define IDN_IDN_H

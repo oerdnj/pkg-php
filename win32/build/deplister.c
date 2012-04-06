@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: deplister.c 293036 2010-01-03 09:23:27Z sebastian $ */
+/* $Id$ */
 
 /* This little application will list the DLL dependencies for a PE
  * module to it's stdout for use by distro/installer building tools */

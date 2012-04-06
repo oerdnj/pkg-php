@@ -18,7 +18,7 @@
 
  */
 
-/* $Id: zend_signal.h 321753 2012-01-04 08:25:06Z laruence $ */
+/* $Id$ */
 
 #ifndef ZEND_SIGNAL_H
 #define ZEND_SIGNAL_H

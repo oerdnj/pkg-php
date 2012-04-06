@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: ibase_service.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -321,6 +321,7 @@ query_loop:
 					heap_p = heap_buf + res_size;
 				}
 				result += 2;
+				*(result+line_len) = 0;
 				snprintf(heap_p, heap_buf_size - (heap_buf - heap_p), "%s\n", result);
 				heap_p += line_len +2;
 				goto query_loop; /* repeat until result is exhausted */

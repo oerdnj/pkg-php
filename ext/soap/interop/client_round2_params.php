@@ -16,7 +16,7 @@
 // | Authors: Shane Caraveo <Shane@Caraveo.com>                           |
 // +----------------------------------------------------------------------+
 //
-// $Id: client_round2_params.php 242949 2007-09-26 15:44:16Z cvs2svn $
+// $Id$
 //
 
 define('SOAP_TEST_ACTOR_OTHER','http://some/other/actor');

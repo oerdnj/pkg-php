@@ -6,7 +6,7 @@ Sybase-CT connection caching
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: test_connection_caching.phpt 268732 2008-11-10 11:00:48Z thekid $ 
+ * $Id$ 
  */
 
   require('test.inc');

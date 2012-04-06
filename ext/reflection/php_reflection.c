@@ -20,7 +20,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: php_reflection.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -2920,7 +2920,7 @@ ZEND_METHOD(reflection_method, invokeArgs)
 	fcc.initialized = 1;
 	fcc.function_handler = mptr;
 	fcc.calling_scope = obj_ce;
-	fcc.called_scope = obj_ce;
+	fcc.called_scope = intern->ce;
 	fcc.object_ptr = object;
 
 	result = zend_call_function(&fci, &fcc TSRMLS_CC);
@@ -3831,6 +3831,13 @@ static int _adddynproperty(zval **pptr TSRMLS_DC, int num_args, va_list args, ze
 	zval *property;
 	zend_class_entry *ce = *va_arg(args, zend_class_entry**);
 	zval *retval = va_arg(args, zval*), member;
+
+	/* under some circumstances, the properties hash table may contain numeric
+	 * properties (e.g. when casting from array). This is a WONT FIX bug, at
+	 * least for the moment. Ignore these */
+	if (hash_key->nKeyLength == 0) {
+		return 0;
+	}
 
 	if (hash_key->arKey[0] == '\0') {
 		return 0; /* non public cannot be dynamic */
@@ -6065,7 +6072,7 @@ PHP_MINFO_FUNCTION(reflection) /* {{{ */
 	php_info_print_table_start();
 	php_info_print_table_header(2, "Reflection", "enabled");
 
-	php_info_print_table_row(2, "Version", "$Revision: 321634 $");
+	php_info_print_table_row(2, "Version", "$Id$");
 
 	php_info_print_table_end();
 } /* }}} */
@@ -6079,7 +6086,7 @@ zend_module_entry reflection_module_entry = { /* {{{ */
 	NULL,
 	NULL,
 	PHP_MINFO(reflection),
-	"$Revision: 321634 $",
+	"$Id$",
 	STANDARD_MODULE_PROPERTIES
 }; /* }}} */
 

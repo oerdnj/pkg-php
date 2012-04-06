@@ -1,4 +1,4 @@
-dnl $Id: config.m4 268395 2008-11-06 00:37:13Z colder $
+dnl $Id$
 dnl config.m4 for extension simplexml
 
 PHP_ARG_ENABLE(simplexml, whether to enable SimpleXML support,

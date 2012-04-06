@@ -1,4 +1,4 @@
-// $Id: config.w32 201797 2005-12-01 08:54:22Z sniper $
+// $Id$
 // vim:ft=javascript
 
 ARG_ENABLE("xmlreader", "XMLReader support", "yes");

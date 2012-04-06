@@ -4,7 +4,7 @@ XMLReader: libxml2 XML Reader, DTD
 <?php if (!extension_loaded("xmlreader")) print "skip"; ?>
 --FILE--
 <?php 
-/* $Id: 008.phpt 204555 2006-01-04 19:44:46Z rrichards $ */
+/* $Id$ */
 
 $xmlstring = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE LIST SYSTEM "dtdexample.dtd">

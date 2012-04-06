@@ -23,7 +23,7 @@
    |                     Shawn Cokus <Cokus@math.washington.edu>          |
    +----------------------------------------------------------------------+
  */
-/* $Id: rand.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #include <stdlib.h>
 

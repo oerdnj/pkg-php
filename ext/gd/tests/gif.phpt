@@ -2,7 +2,7 @@
 gif in/out
 --SKIPIF--
 <?php 
-// $Id: gif.phpt 222747 2006-11-03 14:51:02Z bjori $
+// $Id$
 	if (!extension_loaded('gd')) {
 		die("skip gd extension not available.");
 	}

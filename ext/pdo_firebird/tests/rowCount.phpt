@@ -3,7 +3,7 @@ PDO_Firebird: rowCount
 --SKIPIF--
 <?php extension_loaded("pdo_firebird") or die("skip"); ?>
 --FILE--
-<?php /* $Id: rowCount.phpt 316540 2011-09-12 13:41:28Z mariuz $ */
+<?php /* $Id$ */
 
 require("testdb.inc");
 

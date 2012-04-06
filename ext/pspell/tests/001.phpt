@@ -8,7 +8,7 @@ if (!@pspell_new ("en", "", "", "", (PSPELL_FAST|PSPELL_RUN_TOGETHER))) {
 }
 ?>
 --FILE--
-<?php // $Id: 001.phpt 215479 2006-06-28 14:36:23Z nlopess $
+<?php // $Id$
 
 error_reporting(E_ALL);
 $string = "";

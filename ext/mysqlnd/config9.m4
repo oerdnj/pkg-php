@@ -1,5 +1,5 @@
 dnl
-dnl $Id: config9.m4 322156 2012-01-12 23:23:05Z sixd $
+dnl $Id$
 dnl config.m4 for mysqlnd driver
 
 PHP_ARG_ENABLE(mysqlnd, whether to enable mysqlnd,

@@ -6,7 +6,7 @@ Sybase-CT bug #6339 (invalid Sybase-link resource)
 <?php
 /* This file is part of PHP test framework for ext/sybase_ct
  *
- * $Id: bug6339.phpt 242949 2007-09-26 15:44:16Z cvs2svn $ 
+ * $Id$ 
  */
 
   require('test.inc');

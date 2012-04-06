@@ -19,7 +19,7 @@
    +----------------------------------------------------------------------+
 */
 
-/* $Id: html.c 323074 2012-02-05 09:59:33Z cataphract $ */
+/* $Id$ */
 
 /*
  * HTML entity resources:
@@ -1004,8 +1004,9 @@ static void traverse_for_entities(
 				/* && code2 == '\0' always true for current maps */)
 			goto invalid_code;
 
-		/* deal with encodings other than utf-8/iso-8859-1 */
-		if (!CHARSET_UNICODE_COMPAT(charset)) {
+		/* UTF-8 doesn't need mapping (ISO-8859-1 doesn't either, but
+		 * the call is needed to ensure the codepoint <= U+00FF)  */
+		if (charset != cs_utf_8) {
 			/* replace unicode code point */
 			if (map_from_unicode(code, charset, &code) == FAILURE || code2 != 0)
 				goto invalid_code; /* not representable in target charset */
@@ -1257,9 +1258,13 @@ PHPAPI char *php_escape_html_entities_ex(unsigned char *old, size_t oldlen, size
 		maxlen = 128;	
 	} else {
 		maxlen = 2 * oldlen;
+		if (maxlen < oldlen) {
+			zend_error_noreturn(E_ERROR, "Input string is too long");
+			return NULL;
+		}
 	}
 
-	replaced = emalloc(maxlen + 1);
+	replaced = emalloc(maxlen + 1); /* adding 1 is safe: maxlen is even */
 	len = 0;
 	cursor = 0;
 	while (cursor < oldlen) {
@@ -1271,8 +1276,9 @@ PHPAPI char *php_escape_html_entities_ex(unsigned char *old, size_t oldlen, size
 
 		/* guarantee we have at least 40 bytes to write.
 		 * In HTML5, entities may take up to 33 bytes */
-		if (len + 40 > maxlen) {
-			replaced = erealloc(replaced, (maxlen += 128) + 1);
+		if (len > maxlen - 40) { /* maxlen can never be smaller than 128 */
+			replaced = safe_erealloc(replaced, maxlen , 1, 128 + 1);
+			maxlen += 128;
 		}
 
 		if (status == FAILURE) {
@@ -1401,8 +1407,11 @@ encode_amp:
 				}
 				/* checks passed; copy entity to result */
 				/* entity size is unbounded, we may need more memory */
-				if (maxlen < len + ent_len + 2 /* & and ; */) {
-					replaced = erealloc(replaced, (maxlen += ent_len + 128) + 1);
+				/* at this point maxlen - len >= 40 */
+				if (maxlen - len < ent_len + 2 /* & and ; */) {
+					/* ent_len < oldlen, which is certainly <= SIZE_MAX/2 */
+					replaced = safe_erealloc(replaced, maxlen, 1, ent_len + 128 + 1);
+					maxlen += ent_len + 128;
 				}
 				replaced[len++] = '&';
 				memcpy(&replaced[len], &old[cursor], ent_len);

@@ -17,7 +17,7 @@
    |          Hartmut Holzgraefe <hholzgra@php.net>                       |
    +----------------------------------------------------------------------+
  */
-/* $Id: php_fopen_wrapper.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #include <stdio.h>
 #include <stdlib.h>

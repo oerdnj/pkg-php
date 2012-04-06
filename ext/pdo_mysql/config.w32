@@ -1,4 +1,4 @@
-// $Id: config.w32 263092 2008-07-21 13:09:28Z johannes $
+// $Id$
 // vim:ft=javascript
 
 ARG_WITH("pdo-mysql", "MySQL support for PDO", "no");

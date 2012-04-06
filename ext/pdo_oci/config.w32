@@ -1,4 +1,4 @@
-// $Id: config.w32 264051 2008-08-01 19:09:47Z pajoye $
+// $Id$
 // vim:ft=javascript
 
 ARG_WITH("pdo-oci", "Oracle OCI support for PDO", "no");

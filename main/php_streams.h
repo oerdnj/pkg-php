@@ -16,7 +16,7 @@
    +----------------------------------------------------------------------+
  */
 
-/* $Id: php_streams.h 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 #ifndef PHP_STREAMS_H
 #define PHP_STREAMS_H
@@ -164,8 +164,8 @@ struct _php_stream_wrapper	{
 	int is_url;						/* so that PG(allow_url_fopen) can be respected */
 
 	/* support for wrappers to return (multiple) error messages to the stream opener */
-	int err_count;
-	char **err_stack;
+	int err_count;					/* unused */
+	char **err_stack;				/* unusued */
 };
 
 #define PHP_STREAM_FLAG_NO_SEEK						1

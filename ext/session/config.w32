@@ -1,4 +1,4 @@
-// $Id: config.w32 316688 2011-09-13 22:28:15Z arpad $
+// $Id$
 // vim:ft=javascript
 
 ARG_ENABLE("session", "session support", "yes");

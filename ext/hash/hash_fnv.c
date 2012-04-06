@@ -16,7 +16,7 @@
   +----------------------------------------------------------------------+
 */
 
-/* $Id: hash_fnv.c 321634 2012-01-01 13:15:04Z felipe $ */
+/* $Id$ */
 
 /*  Based on the public domain algorithm found at
 	http://www.isthe.com/chongo/tech/comp/fnv/index.html */

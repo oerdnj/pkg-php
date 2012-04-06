@@ -1,5 +1,5 @@
 // vim:ft=javascript
-// $Id: config.w32 307225 2011-01-07 14:57:51Z pajoye $
+// $Id$
 
 ARG_WITH("config-file-scan-dir", "Dir to check for additional php ini files", "");
 
