@@ -206,6 +206,21 @@ Description: server-side, HTML-embedded scripting language (FPM-CGI binary)
  open source general-purpose scripting language that is especially suited
  for web development and can be embedded into HTML.
 
+Package: libphp5-embed
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support, php5-common (= ${binary:Version}), libmagic1, ucf, tzdata
+Provides: ${php:Provides}
+Suggests: php-pear
+Description: HTML-embedded scripting language (Embedded SAPI library)
+ This package provides the library /usr/lib/libphp5.so which can
+ be used by application developers to embed PHP scripting functionality.
+ .
+ ${php:Extensions}
+ .
+ PHP (recursive acronym for PHP: Hypertext Preprocessor) is a widely-used
+ open source general-purpose scripting language that is especially suited
+ for web development and can be embedded into HTML.
+
 Package: php5-dev
 Depends: ${misc:Depends}, autoconf (>= 2.63), automake (>= 1.11), libssl-dev, libtool (>= 2.2), shtool, php5-common (>= ${binary:Version})
 Conflicts: ${libtool:Conflicts}
