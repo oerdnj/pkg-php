@@ -1,3 +1,12 @@
+php5 (5.4.1~rc1-2) unstable; urgency=low
+
+  * Add better configuration snippet for CGI (Closes: #571795)
+  * Update a description of PHP language based on the text from upstream
+    web page (http://www.php.net/manual/en/intro-whatis.php)
+  * Enable embed SAPI (Closes: #380731)
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 09 Apr 2012 11:18:53 +0200
+
 php5 (5.4.1~rc1-1) unstable; urgency=low
 
   * Add information about flavor of INI file inside the INI file,
