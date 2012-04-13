@@ -2,7 +2,7 @@
 +++ b/ext/standard/datetime.c
 @@ -20,6 +20,9 @@
  
- /* $Id: datetime.c 321634 2012-01-01 13:15:04Z felipe $ */
+ /* $Id$ */
  
 +#define _XOPEN_SOURCE	/* needed to get strptime() declared */
 +#define _BSD_SOURCE		/* needed to get ulong declared */

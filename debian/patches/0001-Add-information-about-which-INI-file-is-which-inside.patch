@@ -8,8 +8,6 @@ Subject: [PATCH] Add information about which INI file is which inside respective
  php.ini-production  |    2 ++
  2 files changed, 4 insertions(+), 0 deletions(-)
 
-diff --git a/php.ini-development b/php.ini-development
-index 867a9f2..4d2e047 100644
 --- a/php.ini-development
 +++ b/php.ini-development
 @@ -83,6 +83,8 @@
@@ -21,8 +19,6 @@ index 867a9f2..4d2e047 100644
  ;;;;;;;;;;;;;;;;;;;
  ; Quick Reference ;
  ;;;;;;;;;;;;;;;;;;;
-diff --git a/php.ini-production b/php.ini-production
-index ee830c3..1f7dfaf 100644
 --- a/php.ini-production
 +++ b/php.ini-production
 @@ -83,6 +83,8 @@
@@ -34,6 +30,3 @@ index ee830c3..1f7dfaf 100644
  ;;;;;;;;;;;;;;;;;;;
  ; Quick Reference ;
  ;;;;;;;;;;;;;;;;;;;
--- 
-1.7.2.5
-
