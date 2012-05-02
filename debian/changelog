@@ -14,8 +14,10 @@ php5 (5.4.1-1) unstable; urgency=low
   * Update a description of PHP language based on the text from upstream
     web page (http://www.php.net/manual/en/intro-whatis.php)
   * Enable embed SAPI (Closes: #380731)
+  * Add lintian override for libphp5-embed: embedded-library
+    usr/lib/libphp5.so: file
 
- -- Ondřej Surý <ondrej@debian.org>  Wed, 02 May 2012 08:31:42 +0200
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 02 May 2012 15:59:15 +0200
 
 php5 (5.4.1~rc1-1) unstable; urgency=low
 
