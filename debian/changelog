@@ -1,13 +1,21 @@
-php5 (5.4.1~rc2-1) unstable; urgency=low
+php5 (5.4.1-1) unstable; urgency=low
 
+  * Imported Upstream version 5.4.1
+    + Fixed insufficient validating of upload name leading to corrupted
+      $_FILES indices). (CVE-2012-1172).
+    + Add open_basedir checks to readline_write_history and
+      readline_read_history.
+    + Add Apache 2.4 support (.deb package in experimental comming soon)
+    + Added debug info handler to DOM objects.
+  * Remove Breaks: on php applications on maintainer requests:
+    + simplesamlphp
+    + php-horde-auth
   * Add better configuration snippet for CGI (Closes: #571795)
   * Update a description of PHP language based on the text from upstream
     web page (http://www.php.net/manual/en/intro-whatis.php)
   * Enable embed SAPI (Closes: #380731)
-  * Imported Upstream version 5.4.1~rc2
-  * Update patches to 5.4.1~rc2 release
 
- -- Ondřej Surý <ondrej@debian.org>  Fri, 13 Apr 2012 15:10:26 +0200
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 02 May 2012 08:31:42 +0200
 
 php5 (5.4.1~rc1-1) unstable; urgency=low
 
