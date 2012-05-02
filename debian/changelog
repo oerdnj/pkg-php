@@ -16,6 +16,8 @@ php5 (5.4.1-1) unstable; urgency=low
   * Enable embed SAPI (Closes: #380731)
   * Add lintian override for libphp5-embed: embedded-library
     usr/lib/libphp5.so: file
+  * Add ldconfig to libphp5-embed.{postinst,postrm}, fix generated
+    @sapi@ postrm bug
 
  -- Ondřej Surý <ondrej@debian.org>  Wed, 02 May 2012 15:59:15 +0200
 
