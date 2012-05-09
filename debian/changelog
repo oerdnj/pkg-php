@@ -1,7 +1,17 @@
+php5 (5.4.3-1) unstable; urgency=low
+
+  * Imported Upstream version 5.4.3
+    + CVE-2012-2311: Complete fix for PHP-CGI query string parameter
+      vulnerability
+    + CVE-2012-2329: Fix a buffer overflow vulnerability in the
+      apache_request_headers() (PHP 5.3 is not vulnerable)
+
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 09 May 2012 08:48:10 +0200
+
 php5 (5.4.2-1) unstable; urgency=low
 
   * Imported Upstream version 5.4.2
-    + [CVE-2012-1823] Fix PHP-CGI query string parameter vulnerability.
+    + CVE-2012-1823: Fix PHP-CGI query string parameter vulnerability.
 
  -- Ondřej Surý <ondrej@debian.org>  Fri, 04 May 2012 08:47:42 +0200
 
