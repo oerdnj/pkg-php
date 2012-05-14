@@ -179,7 +179,7 @@ test-results.txt: build-apache2-stamp build-cli-stamp build-cgi-stamp
 ifeq (yes,$(RUN_TESTS))
 	mkdir -p temp_session_store
 	# start our own mysql server for the tests
-	$(SHELL) debian/setup-mysql.sh $(MYSQL_PORT) $(MYSQL_DATA_DIR)
+	$(SHELL) -x debian/setup-mysql.sh $(MYSQL_PORT) $(MYSQL_DATA_DIR)
 	extensions=""; \
 	for f in $(CURDIR)/apache2-build/modules/*.so; do \
 	    ext=`basename "$$f"`; \
@@ -206,7 +206,7 @@ ifeq (yes,$(RUN_TESTS))
 	    cat $$test; \
 	    echo; \
 	done | tee -a test-results.txt
-	$(SHELL) debian/setup-mysql.sh $(MYSQL_PORT) $(MYSQL_DATA_DIR) stop
+	$(SHELL) -x debian/setup-mysql.sh $(MYSQL_PORT) $(MYSQL_DATA_DIR) stop
 else
 	echo 'nocheck found in DEB_BUILD_OPTIONS or unsupported architecture' | tee test-results.txt
 endif
