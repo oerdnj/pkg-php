@@ -1,9 +1,11 @@
 php5 (5.4.3-2) unstable; urgency=low
 
-  * Add debugging info to debian/setup-mysql.sh as I cannot reproduce
-    #672588 on my local system
+  * Add --no-defaults to rest of the mysql commands in setup-mysql.sh
+    script (Closes: #672588)
+  * Add debugging info to debian/setup-mysql.sh to help diagnose any
+    further problems
 
- -- Ondřej Surý <ondrej@debian.org>  Mon, 14 May 2012 15:28:55 +0200
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 15 May 2012 10:26:34 +0200
 
 php5 (5.4.3-1) unstable; urgency=low
 
