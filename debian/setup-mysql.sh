@@ -36,7 +36,7 @@ mkdir -p $datadir
 chmod go-rx $datadir
 chown $user: $datadir
 
-mysql_install_db --no-defaults --user=$user --datadir=$datadir --rpm --force >> $datadir/bootstrap.log 2>&1
+mysql_install_db --no-defaults --user=$user --datadir=$datadir --rpm --force
 
 tmpf=$(mktemp)
 cat > "$tmpf" <<EOF
@@ -45,12 +45,12 @@ UPDATE user SET password=PASSWORD('') WHERE user='root';
 FLUSH PRIVILEGES;
 EOF
 
-$mysqld --bootstrap --skip-grant-tables < "$tmpf" >> $datadir/bootstrap.log 2>&1
+$mysqld --bootstrap --skip-grant-tables < "$tmpf"
 
 unlink "$tmpf"
 
 # Start the daemon
-$mysqld > $datadir/run.log 2>&1 &
+$mysqld &
 
 pid=$!
 
