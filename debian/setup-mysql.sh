@@ -21,8 +21,8 @@ fi
 
 socket=$datadir/mysql.sock
 # Commands:
-mysqladmin="mysqladmin --no-defaults --user root --port $port --host localhost --socket=$socket --no-beep"
-mysqld="/usr/sbin/mysqld --no-defaults --user=$user --bind-address=localhost --port=$port --socket=$socket --datadir=$datadir"
+mysqladmin="mysqladmin --no-defaults --user root --port $port --host 127.0.0.1 --socket=$socket --no-beep"
+mysqld="/usr/sbin/mysqld --no-defaults --user=$user --bind-address=127.0.0.1 --port=$port --socket=$socket --datadir=$datadir"
 
 # Main code #
 
@@ -56,7 +56,7 @@ pid=$!
 
 # Wait for the server to be actually available
 c=0;
-while ! nc -z localhost $port; do
+while ! nc -z 127.0.0.1 $port; do
     c=$(($c+1));
     sleep 3;
     if [ $c -gt 20 ]; then
