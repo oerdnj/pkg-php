@@ -1,3 +1,11 @@
+php5 (5.4.3-3) unstable; urgency=low
+
+  * Disable log redirection in debian/setup-mysql.sh to help diagnose
+    the setup-mysql.sh failure (still not fixed, but not reproduceable
+    on my local box)
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 15 May 2012 14:27:12 +0200
+
 php5 (5.4.3-2) unstable; urgency=low
 
   * Add --no-defaults to rest of the mysql commands in setup-mysql.sh
