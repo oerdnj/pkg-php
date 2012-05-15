@@ -21,7 +21,7 @@ fi
 
 socket=$datadir/mysql.sock
 # Commands:
-mysqladmin="mysqladmin --user root --port $port --host localhost --socket=$socket --no-beep"
+mysqladmin="mysqladmin --no-defaults --user root --port $port --host localhost --socket=$socket --no-beep"
 mysqld="/usr/sbin/mysqld --no-defaults --user=$user --bind-address=localhost --port=$port --socket=$socket --datadir=$datadir"
 
 # Main code #
@@ -36,7 +36,7 @@ mkdir -p $datadir
 chmod go-rx $datadir
 chown $user: $datadir
 
-mysql_install_db --user=$user --datadir=$datadir --rpm --force >> $datadir/bootstrap.log 2>&1
+mysql_install_db --no-defaults --user=$user --datadir=$datadir --rpm --force >> $datadir/bootstrap.log 2>&1
 
 tmpf=$(mktemp)
 cat > "$tmpf" <<EOF
