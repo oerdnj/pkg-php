@@ -58,3 +58,4 @@ php-fpm-listen-on-unix-socket.patch
 0001-Add-information-about-which-INI-file-is-which-inside.patch
 php-5.2.4-embed.patch
 php-5.4.0-dlopen.patch
+php-5.4.1-system-libzip.patch
