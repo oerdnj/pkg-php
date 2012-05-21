@@ -6,8 +6,9 @@ php5 (5.4.3-5) unstable; urgency=low
     + Add ldconfig post/postun for -embedded (Hans de Goede)
     + Use RTLD_NOW instead of RTLD_LAZY (pulled from Fedora)
     + Use system libzip (pulled from Fedora)
+  * Disable undefined ZIP_OVERWRITE to allow compile with system libzip
 
- -- Ondřej Surý <ondrej@debian.org>  Mon, 21 May 2012 12:57:55 +0200
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 21 May 2012 13:37:35 +0200
 
 php5 (5.4.3-4) unstable; urgency=low
 
