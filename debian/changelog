@@ -1,3 +1,14 @@
+php5 (5.4.3-5) unstable; urgency=low
+
+  * Pull patches from Fedora:
+    + Update use_embedded_timezonedb.patch to r8: fix compile error
+      without --with-system-tzdata configured
+    + Add ldconfig post/postun for -embedded (Hans de Goede)
+    + Use RTLD_NOW instead of RTLD_LAZY (pulled from Fedora)
+    + Use system libzip (pulled from Fedora)
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 21 May 2012 12:57:55 +0200
+
 php5 (5.4.3-4) unstable; urgency=low
 
   * Fix tests ([ERROR] Can't start server: bind-address refers to
