@@ -252,6 +252,39 @@ php5 (5.4.0~beta2-1) experimental; urgency=low
 
  -- Ondřej Surý <ondrej@debian.org>  Sat, 22 Oct 2011 18:39:33 +0200
 
+php5 (5.3.10-2) unstable; urgency=low
+
+  * Use $(filter pattern...,text) instead of $(findstring find,in) in
+    debian/rules to match against space separated list of words and not
+    substrings (Closes: #660647)
+  * CVE-2012-0831: magic_quotes_gpc remote disable vulnerability (NOTE:
+    magic_quotes_gpc is DEPRECATED and will be removed from PHP 5.4,
+    e.g. you should not use them!), also fix regression in CVE-2012-0831
+    (LP#930115)
+  * Depends on non-forking fuser in psmisc (Closes: #633100)
+  * Add Pre-Depends: dpkg (>= 1.15.7.2~) | dpkg-maintscript-helper to
+    allow single upgrade path (dpkg-maintscript-helper package will be
+    provided for Ubuntu Lucid PPA)
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 20 Feb 2012 17:40:24 +0100
+
+php5 (5.3.10-1) unstable; urgency=high
+
+  [ Raphael Geissert ]
+  * Remove myself from uploaders
+  * Randomly choose the mysql server's port
+
+  [ Ondřej Surý ]
+  * Fix use_embedded_timezonedb.patch in custom builds (Courtesy of
+    Dominic Scheirlinck) (Closes: #652599)
+  * Fix typo in firebird2.1-dev build dependency
+  * Update gbp.conf for 5.3.x branch
+  * Imported Upstream version 5.3.10
+    + CVE-2012-0830: Fix PHP remote vulnerability (code injection) in the
+      implementation of the max_input_vars configuration variable
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 03 Feb 2012 09:38:06 +0100
+
 php5 (5.3.9-6) unstable; urgency=low
 
   * Build MySQL extensions with Native Driver as an alternative
