@@ -3,10 +3,8 @@ Origin: libgcc 4.7
 Bug: https://bugs.php.net/bug.php?id=60925
 Author: Thorsten Glaser <tg@debian.org>
 
-Index: php5-5.4.2/sapi/fpm/fpm/fpm_atomic.h
-===================================================================
---- php5-5.4.2.orig/sapi/fpm/fpm/fpm_atomic.h	2012-03-11 20:06:12.000000000 +0000
-+++ php5-5.4.2/sapi/fpm/fpm/fpm_atomic.h	2012-05-06 18:42:08.000000000 +0000
+--- a/sapi/fpm/fpm/fpm_atomic.h
++++ b/sapi/fpm/fpm/fpm_atomic.h
 @@ -5,6 +5,12 @@
  #ifndef FPM_ATOMIC_H
  #define FPM_ATOMIC_H 1
@@ -20,7 +18,7 @@ Index: php5-5.4.2/sapi/fpm/fpm/fpm_atomic.h
  #if HAVE_INTTYPES_H
  # include <inttypes.h>
  #else
-@@ -137,6 +143,34 @@
+@@ -137,6 +143,34 @@ static inline atomic_uint_t atomic_cmp_s
  #error Sparc v8 and predecessors are not and will not be supported (see bug report 53310)
  #endif /* #if (__sparcv9 || __sparcv9__) */
  

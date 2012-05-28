@@ -20,4 +20,4 @@
 +	xmlSetStructuredErrorFunc(NULL, NULL);
  
  	if (LIBXML(stream_context)) {
- 		zval_ptr_dtor(&LIBXML(stream_context));
+ 		/* the steam_context resource will be released by resource list destructor */
