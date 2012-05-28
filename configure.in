@@ -9,7 +9,7 @@ dnl Basic autoconf + automake initialization, generation of config.nice.
 dnl -------------------------------------------------------------------------
 
 AC_PREREQ(2.59)
-AC_INIT(README.SVN-RULES)
+AC_INIT(README.GIT-RULES)
 ifdef([AC_PRESERVE_HELP_ORDER], [AC_PRESERVE_HELP_ORDER], [])
 
 PHP_CONFIG_NICE(config.nice)
@@ -119,8 +119,8 @@ int zend_sprintf(char *buffer, const char *format, ...);
 
 PHP_MAJOR_VERSION=5
 PHP_MINOR_VERSION=4
-PHP_RELEASE_VERSION=3
-PHP_EXTRA_VERSION=""
+PHP_RELEASE_VERSION=4
+PHP_EXTRA_VERSION="-RC1"
 PHP_VERSION="$PHP_MAJOR_VERSION.$PHP_MINOR_VERSION.$PHP_RELEASE_VERSION$PHP_EXTRA_VERSION"
 PHP_VERSION_ID=`expr [$]PHP_MAJOR_VERSION \* 10000 + [$]PHP_MINOR_VERSION \* 100 + [$]PHP_RELEASE_VERSION`
 

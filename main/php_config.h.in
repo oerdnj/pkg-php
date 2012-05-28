@@ -1366,6 +1366,9 @@
 /* PostgreSQL 7.2.0 or later */
 #undef HAVE_PQESCAPE
 
+/* PostgreSQL 9.0 or later */
+#undef HAVE_PQESCAPELITERAL
+
 /* PostgreSQL 8.1.4 or later */
 #undef HAVE_PQESCAPE_BYTEA_CONN
 
