@@ -1,3 +1,20 @@
+php5 (5.4.3-6) unstable; urgency=low
+
+  [ Ondřej Surý ]
+  * Merge 5.3.10-1 and 5.3.10-2 changelog
+  * Remove *.patch from .gitignore, it broke adding quilt patches
+  * Revert "Use system libzip (Pulled from Fedora)" (Closes: #674151)
+  * Add patch to fix tt-rss backend php crash (Closes: #666200)
+
+  [ Thorsten Glaser ]
+  * Add support for Linux/m68k atomics needed by the FPM SAPI
+    (Closes: #672277)
+
+  [ Gedalya ]
+  * Add logrotate script for php5-fpm (Closes: #673558)
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 28 May 2012 10:43:44 +0200
+
 php5 (5.4.3-5) unstable; urgency=low
 
   * Pull patches from Fedora:
