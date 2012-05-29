@@ -60,3 +60,4 @@ php-5.2.4-embed.patch
 php-5.4.0-dlopen.patch
 php-fpm-m68k.patch
 libxml-reset-the-handler.patch
+CVE-2012-2386-1.patch
