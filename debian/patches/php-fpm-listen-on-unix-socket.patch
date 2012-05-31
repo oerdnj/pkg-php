@@ -1,6 +1,6 @@
 --- a/sapi/fpm/php-fpm.conf.in
 +++ b/sapi/fpm/php-fpm.conf.in
-@@ -144,7 +144,7 @@ group = @php_fpm_group@
+@@ -152,7 +152,7 @@ group = @php_fpm_group@
  ;                            specific port;
  ;   '/path/to/unix/socket' - to listen on a unix socket.
  ; Note: This value is mandatory.
