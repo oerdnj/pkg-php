@@ -1,11 +1,7 @@
 --TEST--
 gmp_nextprime()
 --SKIPIF--
-<?php if (!extension_loaded("gmp")) print "skip";
-if (substr(PHP_OS, 0, 3) == 'WIN') {
-    die('skip.. only for Non Windows Systems');
-}
-?>
+<?php if (!extension_loaded("gmp")) print "skip"; ?>
 --FILE--
 <?php
 

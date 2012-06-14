@@ -1498,9 +1498,6 @@
 /* */
 #undef HAVE_SAPDB
 
-/* Whether you have sockaddr_storage.ss_family */
-#undef HAVE_SA_SS_FAMILY
-
 /* Define to 1 if you have the `scandir' function. */
 #undef HAVE_SCANDIR
 
