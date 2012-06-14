@@ -39,10 +39,7 @@ $arr = array("ggg", "ddd", "aaa", "sss");
 // 
 // since we can't depend on PHP.ini being set a certain way, 
 // have to put the absolute path here.
-
-$sysroot = exec('echo %SYSTEMROOT%');
-
-$file_handle = popen("$sysroot/system32/sort", "w");
+$file_handle = popen("/windows/system32/sort", "w");
 $newline = "\n";
 foreach($arr as $str) {
   fwrite($file_handle, (binary)$str);

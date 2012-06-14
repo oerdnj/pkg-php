@@ -4,6 +4,8 @@ Bug #61367: open_basedir bypass in libxml RSHUTDOWN: write test
 <?php if(!extension_loaded('dom')) echo 'skip'; ?>
 --INI--
 open_basedir=.
+; Suppress spurious "Trying to get property of non-object" notices
+error_reporting=E_ALL & ~E_NOTICE
 --FILE--
 <?php
 

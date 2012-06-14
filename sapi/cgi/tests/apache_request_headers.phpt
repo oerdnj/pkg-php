@@ -1,7 +1,5 @@
 --TEST--
 apache_request_headers() stack overflow.
---INI--
-default_charset="UTF-8"
 --SKIPIF--
 <?php 
 include "skipif.inc"; 
@@ -31,7 +29,7 @@ echo "Done\n";
 ?>
 --EXPECTF--	
 X-Powered-By: PHP/%s
-Content-type: text/html; charset=UTF-8
+Content-type: text/html
 
 Array
 (
