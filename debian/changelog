@@ -1,3 +1,11 @@
+php5 (5.4.4-2) unstable; urgency=high
+
+  * Fix PHP5-FPM not reporting errors to web server (nginx)
+    (Closes: #677994)
+  * Bump urgency to high to replace the RC2 version in testing sooner.
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 19 Jun 2012 09:09:13 +0200
+
 php5 (5.4.4-1) unstable; urgency=low
 
   * Imported Upstream version 5.4.4
