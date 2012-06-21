@@ -1,3 +1,10 @@
+php5 (5.4.4-3) UNRELEASED; urgency=low
+
+  * Update ucf/ucfr scripts to not conflict between mysql and mysqlnd
+    extension (Closes: #678371)
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 21 Jun 2012 11:22:05 +0200
+
 php5 (5.4.4-2) unstable; urgency=high
 
   * Fix PHP5-FPM not reporting errors to web server (nginx)
