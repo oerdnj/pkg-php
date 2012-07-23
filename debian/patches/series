@@ -60,4 +60,3 @@ php-5.2.4-embed.patch
 php-5.4.0-dlopen.patch
 php-fpm-m68k.patch
 libxml-reset-the-handler.patch
-php-fpm-error-reporting.patch

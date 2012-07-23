@@ -391,7 +391,7 @@
 -			char *output;
 -			int needed = (sizeof(sha512_salt_prefix) - 1
 -						+ sizeof(sha512_rounds_prefix) + 9 + 1
--						+ strlen(salt) + 1 + 43 + 1);
+-						+ salt_in_len + 1 + 86 + 1);
 -			output = emalloc(needed);
 -			salt[salt_in_len] = '\0';
 -
@@ -406,7 +406,7 @@
 -				RETVAL_STRING(output, 1);
 -			}
 -
--			memset(output, 0, PHP_MAX_SALT_LEN + 1);
+-			memset(output, 0, needed);
 -			efree(output);
 +			/* CRYPT_SHA512 */
 +#if PHP_SHA512_CRYPT
@@ -426,7 +426,7 @@
 -			char *output;
 -			int needed = (sizeof(sha256_salt_prefix) - 1
 -						+ sizeof(sha256_rounds_prefix) + 9 + 1
--						+ strlen(salt) + 1 + 43 + 1);
+-						+ salt_in_len + 1 + 43 + 1);
 -			output = emalloc(needed);
 -			salt[salt_in_len] = '\0';
 -
@@ -441,7 +441,7 @@
 -				RETVAL_STRING(output, 1);
 -			}
 -
--			memset(output, 0, PHP_MAX_SALT_LEN + 1);
+-			memset(output, 0, needed);
 -			efree(output);
 +			/* CRYPT_SHA256 */
 +#if PHP_SHA256_CRYPT
