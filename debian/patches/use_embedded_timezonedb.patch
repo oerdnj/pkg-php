@@ -1,8 +1,8 @@
-
 Add support for use of the system timezone database, rather
 than embedding a copy.  Discussed upstream but was not desired.
 
 History:
+r9: fix another compile error without --with-system-tzdata configured
 r8: fix compile error without --with-system-tzdata configured
 r7: improve check for valid timezone id to exclude directories
 r6: fix fd leak in r5, fix country code/BC flag use in 
@@ -473,6 +473,7 @@ r1: initial revision
 +			       char **map, size_t *maplen,
 +			       const timelib_tzdb *tzdb)
 +{
++#ifdef HAVE_SYSTEM_TZDATA
 +	if (tzdb == timezonedb_system) {
 +		char *orig;
 +
@@ -486,7 +487,9 @@ r1: initial revision
 +                
 +                return 1;
 +	}
-+	else {
++       else
++#endif
++       {
 +		return inmem_seek_to_tz_position(tzf, timezone, tzdb);
 +	}
 +}
