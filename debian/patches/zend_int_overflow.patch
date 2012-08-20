@@ -32,7 +32,7 @@ Bug-Debian: http://bugs.debian.org/570144
 -				if (idx-1 > LONG_MAX) { /* overflow */						\
 -					break;													\
 -				}															\
--				idx = -idx;               									\
+-				idx = 0 - idx;               									\
 -			} else if (idx > LONG_MAX) { /* overflow */						\
 +			int digit = (*tmp - '0');										\
 +			if ( (!negative) && idx <= (LONG_MAX-digit)/10 ) {				\
