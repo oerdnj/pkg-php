@@ -1,5 +1,64 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+16 Aug 2012, PHP 5.4.6
+
+- CLI Server:
+  . Implemented FR #62700 (have the console output 'Listening on 
+    http://localhost:8000'). (pascal.chevrel@free.fr)
+
+- Core:
+  . Fixed bug #62661 (Interactive php-cli crashes if include() is used in
+    auto_prepend_file). (Laruence)
+  . Fixed bug #62653: (unset($array[$float]) causes a crash). (Nikita Popov,
+    Laruence)
+  . Fixed bug #62565 (Crashes due non-initialized internal properties_table).
+    (Felipe)
+  . Fixed bug #60194 (--with-zend-multibyte and --enable-debug reports LEAK
+    with run-test.php). (Laruence)
+
+- CURL:
+  . Fixed bug #62499 (curl_setopt($ch, CURLOPT_COOKIEFILE, "") returns false).
+    (r.hampartsumyan@gmail.com, Laruence)
+
+- DateTime:
+  . Fixed Bug #62500 (Segfault in DateInterval class when extended). (Laruence)
+  
+- Fileinfo:
+  . Fixed bug #61964 (finfo_open with directory causes invalid free). 
+    (reeze.xia@gmail.com)
+
+- Intl:
+  . Fixed bug #62564 (Extending MessageFormatter and adding property causes 
+    crash). (Felipe)
+
+- MySQLnd:
+  . Fixed bug #62594 (segfault in mysqlnd_res_meta::set_mode). (Laruence)
+
+- readline:
+  . Fixed bug #62612 (readline extension compilation fails with
+    sapi/cli/cli.h: No such file). (Johannes)
+
+- Reflection:
+  . Implemented FR #61602 (Allow access to name of constant used as default 
+    value). (reeze.xia@gmail.com)
+  
+- SimpleXML:
+  . Implemented FR #55218 Get namespaces from current node. (Lonny)
+
+- SPL:
+  . Fixed bug #62616 (ArrayIterator::count() from IteratorIterator instance
+    gives Segmentation fault). (Laruence, Gustavo)
+  . Fixed bug #61527 (ArrayIterator gives misleading notice on next() when 
+    moved to the end). (reeze.xia@gmail.com)
+
+- Streams:
+  . Fixed bug #62597 (segfault in php_stream_wrapper_log_error with ZTS build).
+    (Laruence)
+
+- Zlib:
+  . Fixed bug #55544 (ob_gzhandler always conflicts with
+    zlib.output_compression). (Laruence)
+
 19 Jul 2012, PHP 5.4.5
 
 - Core:
