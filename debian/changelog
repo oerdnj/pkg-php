@@ -3,7 +3,8 @@ php5 (5.4.6-1) experimental; urgency=low
   * Imported Upstream version 5.4.6
   * Apply another fix to compile --without-system-tzdata
     (Courtesy of Michael Heimpold)
-  * Get rid of empty examples directory (Closes: #684108)
+  * Get rid of empty examples directory (Closes: #684108), but
+    keep parent directory to store test-results.txt among others
   * Provide sensible default configuration for PHP-CGI files
     (Closes: #685340)
 
