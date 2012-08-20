@@ -1,15 +1,11 @@
 php5 (5.4.6-1) experimental; urgency=low
 
   * Imported Upstream version 5.4.6
-  * Update patches for 5.4.6 release
-  * Apply another fix to compile --without-system-tzdata (Courtesy of
-    Michael Heimpold)
-  * Fix garbled timezone patch
-  * Improve CGI section in README.Debian (Closes: #674205)
+  * Apply another fix to compile --without-system-tzdata
+    (Courtesy of Michael Heimpold)
   * Get rid of empty examples directory (Closes: #684108)
-  * Add NEWS about mime-types change where PHP got affected by #674089
-  * Provide sensible default configuration for PHP-CGI files (Closes:
-    #685340)
+  * Provide sensible default configuration for PHP-CGI files
+    (Closes: #685340)
 
  -- Ondřej Surý <ondrej@debian.org>  Mon, 20 Aug 2012 14:07:23 +0200
 
@@ -20,6 +16,15 @@ php5 (5.4.5-1) experimental; urgency=low
   * Compile with system libzip (upstream has added support for that)
 
  -- Ondřej Surý <ondrej@debian.org>  Mon, 23 Jul 2012 11:12:08 +0200
+
+php5 (5.4.4-4) unstable; urgency=low
+
+  * Fix php5-fpm segfault (PHP#62205)
+  * CVE-2012-2688: potential overflow in _php_stream_scandir
+    (Closes: #683274)
+  * Improve security in CGI section in README.Debian (Closes: #674205)
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 06 Aug 2012 13:01:42 +0200
 
 php5 (5.4.4-3) unstable; urgency=low
 
