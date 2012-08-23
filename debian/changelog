@@ -14,6 +14,33 @@ php5 (5.4.5-1) experimental; urgency=low
 
  -- Ondřej Surý <ondrej@debian.org>  Mon, 23 Jul 2012 11:12:08 +0200
 
+php5 (5.4.4-6) unstable; urgency=low
+
+  * Merge a fix for zlib.output_compression from the upstream git
+    (Closes: #683432)
+  * Re-add logic to guess default timezone from system (Closes: #673763)
+    and remove the spurious warning about the selection.
+  * Fix invalid generated tar files from PEAR Archive/Tar package
+    (Closes: #680251)
+  * Merge a couple of upstream fixes from PHP 5.4.5 and 5.4.6:
+    + Fixed bug #62653: (unset($array[$float]) causes a crash).
+    + Fixed bug #62565 (Crashes due non-initialized internal
+      properties_table).
+    + Fixed bug #61964 (finfo_open with directory causes invalid free).
+    + Fixed bug #62564 (Extending MessageFormatter and adding property causes
+      crash).
+    + Fixed bug #62594 (segfault in mysqlnd_res_meta::set_mode).
+    + Fixed bug #62616 (ArrayIterator::count() from IteratorIterator instance
+      gives Segmentation fault).
+    + Fixed bug #62373 (serialize() generates wrong reference to the object).
+    + Fixed bug #61998 (Using traits with method aliases appears to result in
+      crash during execution).
+    + Fixed bug #55042 (Erealloc in iconv.c unsafe).
+    + Fixed bug #62266 (Custom extension segfaults during xmlParseFile with
+      FPM SAPI)
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 23 Aug 2012 13:59:49 +0200
+
 php5 (5.4.4-5) unstable; urgency=low
 
   * Get rid of empty examples directory (Closes: #684108)
