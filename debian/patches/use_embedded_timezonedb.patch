@@ -616,7 +616,7 @@ r1: initial revision
 +
 --- a/ext/date/php_date.c
 +++ b/ext/date/php_date.c
-@@ -863,6 +863,24 @@ static char* guess_timezone(const timeli
+@@ -863,6 +863,23 @@ static char* guess_timezone(const timeli
  	} else if (*DATEG(default_timezone) && timelib_timezone_id_is_valid(DATEG(default_timezone), tzdb)) {
  		return DATEG(default_timezone);
  	}
@@ -635,7 +635,6 @@ r1: initial revision
 +			tzid = "UTC";
 +		}
 +
-+		php_error_docref(NULL TSRMLS_CC, E_WARNING, DATE_TZ_ERRMSG "We selected '%s' for '%s/%.1f/%s' instead", tzid, ta ? ta->tm_zone : "Unknown", ta ? (float) (ta->tm_gmtoff / 3600) : 0, ta ? (ta->tm_isdst ? "DST" : "no DST") : "Unknown");
 +		return tzid;
 +	}
  	/* Fallback to UTC */
