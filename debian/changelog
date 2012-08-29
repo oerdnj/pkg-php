@@ -17,7 +17,8 @@ php5 (5.4.5-1) experimental; urgency=low
 php5 (5.4.4-7) unstable; urgency=low
 
   * Add explanatory text about MultiViews negotiation support to
-    README.Debian (Closes: #670945)
+    README.Debian with additions from Christoph Anton Mitterer
+    (Closes: #670945)
 
  -- Ondřej Surý <ondrej@debian.org>  Wed, 29 Aug 2012 09:18:14 +0200
 
