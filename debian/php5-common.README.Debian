@@ -4,6 +4,7 @@ Table of Contents:
 * Problems starting Apache HTTP Server with PHP 5
 * Session storage
 * Other caveats
+* PHP 5 and Apache 2 Multiviews
 * PHP 5 CGI and Apache HTTP Server
 * Configuration layout
 * Timezone data from system timezone database
@@ -60,6 +61,27 @@ Other caveats
   commented out, unless you need special settings for them so PHP will
   look in compiled-in paths. If you set them, you should also add
   appropriate PHP install directories there.
+
+PHP 5 and Apache 2 Multiviews
+----------------------------------------------------------------------
+
+ Apache 2 mod_negotiation's MultiViews needs php scripts to have a
+ MIME-Type to make the negotiation work.  We are using Apache 2 handlers
+ (SetHandler directive) to enable PHP processing, so by default the
+ MultiViews support is disabled in Debian packages.  You can explicitly
+ add extra MIME-Types (different from magic application/x-httpd-* types)
+ which will not cause any special PHP processing, but just enable
+ MultiViews negotiation support.
+
+ Add these two lines to you Apache 2 config to enable MultiViews:
+
+   AddType application/x-php         php phtml php3
+   AddType application/x-php-source  phps
+
+ Also most likely what you really want would be better accomplished by
+ mod_rewrite rules where you can explicitly specify what gets
+ rewritten to what (e.g. http://localhost/file gets rewritten to
+ file.php, but not to file.html or file.js).
 
 PHP 5 CGI and Apache HTTP Server
 ----------------------------------------------------------------------
@@ -148,4 +170,4 @@ Further documentation, errata, misc.
   If after reading the documentation in this file you still have
   unanswered questions, that's a good next place to go.
 
- -- Ondřej Surý <ondrej@debian.org>, Tue, 21 Aug 2012 09:12:53 +0200
+ -- Ondřej Surý <ondrej@debian.org>, Wed, 29 Aug 2012 09:17:50 +0200
