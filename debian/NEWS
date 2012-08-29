@@ -1,3 +1,15 @@
+php5 (5.4.4-7) unstable; urgency=low
+
+  * As a side effect of MIME-Type changes in the mime-support package, the
+    default Apache 2 configuration doesn't support MultiViews negotiation,
+    which was very fragile anyway.  If you want to re-enable this support
+    please see /usr/share/doc/php5-common/README.Debian file for
+    instructions to re-add MIME-Types in Apache 2 configuration or how to
+    use mod_rewrite to accomplish the same without the fragility of Multi-
+    Views.
+
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 29 Aug 2012 09:18:41 +0200
+
 php5 (5.4.4-5) unstable; urgency=low
 
   * As a security measure the default configuration for Apache 2 has been
