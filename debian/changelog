@@ -1,3 +1,9 @@
+php5 (5.4.6-2) experimental; urgency=low
+
+  * Merge 5.4.4-5, 5.4.4-6 and 5.4.4-7 changes
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 30 Aug 2012 13:30:54 +0200
+
 php5 (5.4.6-1) experimental; urgency=low
 
   * Imported Upstream version 5.4.6
