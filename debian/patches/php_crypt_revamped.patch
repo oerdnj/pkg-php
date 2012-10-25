@@ -289,7 +289,7 @@
  
  static unsigned char itoa64[] = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
  
-@@ -150,160 +143,158 @@ static void php_to64(char *s, long v, in
+@@ -150,160 +143,157 @@ static void php_to64(char *s, long v, in
  PHP_FUNCTION(crypt)
  {
  	char salt[PHP_MAX_SALT_LEN + 1];
@@ -490,8 +490,7 @@
 -
 -			memset(output, 0, PHP_MAX_SALT_LEN + 1);
 +#endif
-+		} else if (salt[0]=='_' && 
-+				   salt_len == 9) {
++		} else if (salt[0]=='_') {
 +			/* CRYPT_EXT_DES */
 +#if PHP_EXT_DES_CRYPT
 +# error Using system extended DES crypt function, should not happen on Debian system

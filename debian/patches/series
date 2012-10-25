@@ -38,7 +38,6 @@ zend_int_overflow.patch
 use_embedded_timezonedb_fixes.patch
 fix_broken_sha2_test.patch
 php_crypt_revamped.patch
-use_system_crypt_fixes.patch
 session_save_path.patch
 #install-programs_parallel_FTBFS.patch
 php-fpm-man-section-and-cleanup.patch
