@@ -194,17 +194,19 @@ Last-Update: 2010-01-18
  	scripts/phpize.m4 \
 --- a/scripts/php-config.in
 +++ b/scripts/php-config.in
-@@ -6,8 +6,8 @@ datarootdir="@datarootdir@"
+@@ -6,9 +6,9 @@ datarootdir="@datarootdir@"
  exec_prefix="@exec_prefix@"
  version="@PHP_VERSION@"
  vernum="@PHP_VERSION_ID@"
 -include_dir="@includedir@/php"
 -includes="-I$include_dir -I$include_dir/main -I$include_dir/TSRM -I$include_dir/Zend -I$include_dir/ext -I$include_dir/ext/date/lib"
+-ldflags="@PHP_LDFLAGS@"
 +include_dir="@includedir@/php5"
 +includes="-I$include_dir -I$include_dir/main -I$include_dir/TSRM -I$include_dir/Zend -I$include_dir/ext -I$include_dir/ext/date/lib $(getconf LFS_CFLAGS)"
- ldflags="@PHP_LDFLAGS@"
++ldflags="-L$prefix/lib/php5 @PHP_LDFLAGS@"
  libs="@EXTRA_LIBS@"
  extension_dir='@EXTENSION_DIR@'
+ man_dir=`eval echo @mandir@`
 --- a/scripts/phpize.in
 +++ b/scripts/phpize.in
 @@ -4,8 +4,8 @@
