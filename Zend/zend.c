@@ -258,6 +258,9 @@ ZEND_API void zend_make_printable_zval(zval *expr, zval *expr_copy, int *use_cop
 			{
 				TSRMLS_FETCH();
 
+				if (zend_std_cast_object_tostring(expr, expr_copy, IS_STRING TSRMLS_CC) == SUCCESS) {
+					break;
+				}
 				if (Z_OBJ_HANDLER_P(expr, cast_object)) {
 					zval *val;
 
@@ -269,12 +272,6 @@ ZEND_API void zend_make_printable_zval(zval *expr, zval *expr_copy, int *use_cop
 						break;
 					}
 					zval_ptr_dtor(&val);
-				}
-				/* Standard PHP objects */
-				if (Z_OBJ_HT_P(expr) == &std_object_handlers || !Z_OBJ_HANDLER_P(expr, cast_object)) {
-					if (zend_std_cast_object_tostring(expr, expr_copy, IS_STRING TSRMLS_CC) == SUCCESS) {
-						break;
-					}
 				}
 				if (!Z_OBJ_HANDLER_P(expr, cast_object) && Z_OBJ_HANDLER_P(expr, get)) {
 					zval *z = Z_OBJ_HANDLER_P(expr, get)(expr TSRMLS_CC);
@@ -1030,6 +1027,29 @@ ZEND_API void zend_error(int type, const char *format, ...) /* {{{ */
 	zend_stack list_stack;
 	zend_stack context_stack;
 	TSRMLS_FETCH();
+
+	/* Report about uncaught exception in case of fatal errors */
+	if (EG(exception)) {
+		switch (type) {
+			case E_CORE_ERROR:
+			case E_ERROR:
+			case E_RECOVERABLE_ERROR:
+			case E_PARSE:
+			case E_COMPILE_ERROR:
+			case E_USER_ERROR:
+				if (zend_is_executing(TSRMLS_C)) {
+					error_lineno = zend_get_executed_lineno(TSRMLS_C);
+				}
+				zend_exception_error(EG(exception), E_WARNING TSRMLS_CC);
+				EG(exception) = NULL;
+				if (zend_is_executing(TSRMLS_C) && EG(opline_ptr)) {
+					active_opline->lineno = error_lineno;
+				}
+				break;
+			default:
+				break;
+		}
+	}
 
 	/* Obtain relevant filename and lineno */
 	switch (type) {
