@@ -201,9 +201,13 @@ PHPAPI php_url *php_url_parse_ex(char const *str, int length)
 			STR_FREE(ret->scheme);
 			efree(ret);
 			return NULL;
+		} else if (*s == '/' && *(s+1) == '/') { /* relative-scheme URL */
+			s += 2;
 		} else {
 			goto just_path;
 		}
+	} else if (*s == '/' && *(s+1) == '/') { /* relative-scheme URL */
+		s += 2;
 	} else {
 		just_path:
 		ue = s + length;
@@ -220,14 +224,14 @@ PHPAPI php_url *php_url_parse_ex(char const *str, int length)
 
 		if (query && fragment) {
 			if (query > fragment) {
-				p = e = fragment;
+				e = fragment;
 			} else {
-				p = e = query;
+				e = query;
 			}
 		} else if (query) {
-			p = e = query;
+			e = query;
 		} else if (fragment) {
-			p = e = fragment;
+			e = fragment;
 		}
 	} else {
 		e = p;
