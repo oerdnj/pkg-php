@@ -7,6 +7,10 @@ php5 (5.4.8-1) experimental; urgency=low
   * Fix libphp5-embed linking:
     + Expose all installed (and not built time) SAPIs via php-config --php-sapis
     + Add /usr/lib/php5 to php-config --ldflags output to allow linking with libphp5.so
+  * Add new lintian-overrides for libphp5-embed
+  * Add logrotate script for php5-fpm (Closes: #683415)
+  * Add more warning text about new php5_cgi apache2 module (Closes: #687307)
+  * Add Breaks: php5-suhosin so people don't try to use it with PHP 5.4
 
  -- Ondřej Surý <ondrej@debian.org>  Thu, 25 Oct 2012 16:05:34 +0200
 
