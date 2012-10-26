@@ -105,7 +105,8 @@ Breaks: jffnms (<= 0.9.1-1),
 	phpreports (<= 0.4.9-2),
 	php-kolab-filter (<= 0.1.9-4),
 	horde3 (<= 3.3.12+debian0-1),
-	moodle (<= 1.9.9.dfsg2-4)
+	moodle (<= 1.9.9.dfsg2-4),
+	php5-suhosin
 Description: Common files for packages built from the php5 source
  This package contains the documentation and example files relevant to all
  the other packages built from the php5 source.
