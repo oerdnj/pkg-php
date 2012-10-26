@@ -18,6 +18,16 @@ php5 (5.4.4-5) unstable; urgency=low
  good idea to check your apache2 site-wide configuration as well as
  any specific PHP configuration for websites running on your system.
 
+ The new (dummy) php5_cgi configuration uses SetHandler directive and
+ thus it might interfere with your existing custom configuration like
+ FastCGI (mod_fcgid or mod_fastcgi).  In that case please disable
+ php5_cgi module (a2dismod php5_cgi) to reenable the existing
+ functionality of your custom configuration.  It is also advised that
+ you check your custom configuration whether it's not vulnerable to
+ foo.php.jpeg attacks.  The php5_cgi configuration snippet can be used
+ as base - it's important to use FilesMatch or Files directive to
+ limit the handling to the last extension.
+
  As far as we know definitions from the mime-support packages are not
  used in any other webserver included in Debian, but it might affect
  any application which relies on system MIME types to interpret PHP
