@@ -248,6 +248,7 @@ PHPAPI pcre_cache_entry* pcre_get_compiled_regex_cache(char *regex, int regex_le
 #endif
 	pcre_cache_entry	*pce;
 	pcre_cache_entry	 new_entry;
+	char                *tmp = NULL;
 
 	/* Try to lookup the cached regex entry, and if successful, just pass
 	   back the compiled pattern, otherwise go on and compile it. */
@@ -438,8 +439,25 @@ PHPAPI pcre_cache_entry* pcre_get_compiled_regex_cache(char *regex, int regex_le
 	new_entry.locale = pestrdup(locale, 1);
 	new_entry.tables = tables;
 #endif
+
+	/*
+	 * Interned strings are not duplicated when stored in HashTable,
+	 * but all the interned strings created during HTTP request are removed
+	 * at end of request. However PCRE_G(pcre_cache) must be consistent
+	 * on the next request as well. So we disable usage of interned strings
+	 * as hash keys especually for this table.
+	 * See bug #63180 
+	 */
+	if (IS_INTERNED(regex)) {
+		regex = tmp = estrndup(regex, regex_len);
+	}
+
 	zend_hash_update(&PCRE_G(pcre_cache), regex, regex_len+1, (void *)&new_entry,
 						sizeof(pcre_cache_entry), (void**)&pce);
+
+	if (tmp) {
+		efree(tmp);
+	}
 
 	return pce;
 }
@@ -1025,6 +1043,10 @@ PHPAPI char *php_pcre_replace_impl(pcre_cache_entry *pce, char *subject, int sub
 		replace = Z_STRVAL_P(replace_val);
 		replace_len = Z_STRLEN_P(replace_val);
 		replace_end = replace + replace_len;
+	}
+
+	if (eval) {
+		php_error_docref(NULL TSRMLS_CC, E_DEPRECATED, "The /e modifier is deprecated, use preg_replace_callback instead");
 	}
 
 	/* Calculate the size of the offsets array, and allocate memory for it. */
@@ -1848,7 +1870,7 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_preg_match, 0, 0, 2)
     ZEND_ARG_INFO(0, offset)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_preg_match_all, 0, 0, 3)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_preg_match_all, 0, 0, 2)
     ZEND_ARG_INFO(0, pattern)
     ZEND_ARG_INFO(0, subject)
     ZEND_ARG_INFO(1, subpatterns) /* array */
