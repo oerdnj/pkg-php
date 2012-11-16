@@ -104,29 +104,27 @@ Reviewed-by: Steve Langasek <steve.langasek@ubuntu.com>
  
 --- a/ext/mysql/config.m4
 +++ b/ext/mysql/config.m4
-@@ -2,16 +2,6 @@ dnl
- dnl $Id$
- dnl
- 
--AC_DEFUN([MYSQL_LIB_CHK], [
--  str="$MYSQL_DIR/$1/lib$MYSQL_LIBNAME.*"
--  for j in `echo $str`; do
--    if test -r $j; then
--      MYSQL_LIB_DIR=$MYSQL_DIR/$1
--      break 2
--    fi
--  done
--])
--
- AC_DEFUN([PHP_MYSQL_SOCKET_SEARCH], [
-   for i in  \
-     /var/run/mysqld/mysqld.sock \
-@@ -93,7 +83,7 @@ Note that the MySQL client library is no
+@@ -93,17 +93,15 @@ Note that the MySQL client library is no
    fi
  
    for i in $PHP_LIBDIR $PHP_LIBDIR/mysql; do
 -    MYSQL_LIB_CHK($i)
-+    test -f "$MYSQL_DIR/$i/lib$MYSQL_LIBNAME.$SHLIB_SUFFIX_NAME" || test -f "$MYSQL_DIR/$i/$DEB_HOST_MULTIARCH/lib$MYSQL_LIBNAME.$SHLIB_SUFFIX_NAME" || test -r "$MYSQL_DIR/$i/lib$MYSQL_LIBNAME.a" && MYSQL_LIB_DIR=$MYSQL_DIR/$i
++    MYSQL_LIB_CHK($i/$DEB_HOST_MULTIARCH)
++    if test -z "$MYSQL_LIB_DIR"; then
++      MYSQL_LIB_CHK($i)
++    else
++      MYSQL_LIB_DIR=$MYSQL_DIR/$i
++    fi
    done
  
    if test -z "$MYSQL_LIB_DIR"; then
+-    MYSQL_LIB_CHK(lib/x86_64-linux-gnu)
+-  fi
+-  if test -z "$MYSQL_LIB_DIR"; then
+-    MYSQL_LIB_CHK(lib/i386-linux-gnu)
+-  fi
+-
+-  if test -z "$MYSQL_LIB_DIR"; then
+     AC_MSG_ERROR([Cannot find lib$MYSQL_LIBNAME under $MYSQL_DIR.
+ Note that the MySQL client library is not bundled anymore!])
+   fi
