@@ -1,3 +1,17 @@
+php5 (5.5.0~alpha1-1) experimental; urgency=low
+
+  * Imported Upstream version 5.5.0~alpha1
+  * Return to PHP versions of crypt() functions, it's to big burden to
+    carry on the patch
+  * fix_crash_in__php_mssql_get_column_content_without_type.patch: remove
+    patch, it has been merged upstream
+  * Update&refresh patches to PHP 5.5 branch
+  * Slim down the 006-debian_quirks.patch by removing PIKE related patch
+  * Remove number of old possibly unneeded patches
+  * Remove broken MultiArch patch from upstream and replace it with new Debian's version
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 16 Nov 2012 15:22:45 +0100
+
 php5 (5.4.9-2) experimental; urgency=low
 
   * Introduce new (hopefully slightly smarter) way of not deleting still
