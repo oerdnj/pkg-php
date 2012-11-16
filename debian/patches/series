@@ -3,11 +3,7 @@
 004-ldap_fix.patch
 006-debian_quirks.patch
 libtool2.2.patch
-013-force_getaddrinfo.patch
-017-pread_pwrite_disable.patch
-019-z_off_t_as_long.patch
 033-we_WANT_libtool.patch
-034-apache2_umask_fix.patch
 036-fd_setsize_fix.patch
 043-recode_size_t.patch
 044-strtod_arm_fix.patch
@@ -34,7 +30,6 @@ dont-gitclean-in-build.patch
 #broken_5.3_test-posix_uname.patch
 shtool_mkdir_-p_-race-condition.patch
 qdbm-is-usr_include_qdbm.patch
-zend_int_overflow.patch
 use_embedded_timezonedb_fixes.patch
 fix_broken_sha2_test.patch
 session_save_path.patch
@@ -43,7 +38,6 @@ php-fpm-man-section-and-cleanup.patch
 fpm-config.patch
 php-fpm-sysconfdir.patch
 lp564920-fix-big-files.patch
-backport-upstream-lp592442.patch
 temporary-path-fixes-for-multiarch.patch
 gdIOCtx.patch
 hurd-noptrace.diff
