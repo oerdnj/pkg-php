@@ -94,12 +94,12 @@
  #include "php_network.h"
 --- a/Zend/zend_language_parser.c
 +++ b/Zend/zend_language_parser.c
-@@ -67,6 +67,8 @@
- #define yydebug zenddebug
- #define yynerrs zendnerrs
+@@ -70,6 +70,8 @@
+ #define yydebug         zenddebug
+ #define yynerrs         zendnerrs
  
 +#include <string.h>
 +
  
- /* Tokens.  */
- #ifndef YYTOKENTYPE
+ /* Copy the first part of user declarations.  */
+ 
