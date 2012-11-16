@@ -41,7 +41,6 @@ session_save_path.patch
 #install-programs_parallel_FTBFS.patch
 php-fpm-man-section-and-cleanup.patch
 fpm-config.patch
-fix_crash_in__php_mssql_get_column_content_without_type.patch
 php-fpm-sysconfdir.patch
 lp564920-fix-big-files.patch
 backport-upstream-lp592442.patch
