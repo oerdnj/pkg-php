@@ -14,11 +14,6 @@ It was downloaded from www.php.net/version5/downloads
 Changes: removed ext/dbase dir (non-free)
 
 Noteworthy/non-trivial patches:
-	patch: suhosin.patch
-	contributor: http://www.hardened-php.net/
-	copyright © 2006-2007 Stefan Esser <sesser@hardened-php.net>
-	may be used/modified/redistributed under the terms of PHP itself
-
 	patch: use_embedded_timezonedb.patch
 	contributor: Joe Orton <jorton@redhat.com>
 	copyright © 2008 Red Hat, Inc.
