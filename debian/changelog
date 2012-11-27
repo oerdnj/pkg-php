@@ -1,3 +1,21 @@
+php5 (5.4.9-1) experimental; urgency=low
+
+  [ Lior Kaplan ]
+  * Support removing dangling symlinks, users are allowed to remove
+    configuration files
+  * Exit with code 0 even if module symlink doesn't exist (Closes: #692013)
+
+  [ Ondřej Surý ]
+  * Imported Upstream version 5.4.9
+  * Remove all traces of suhosin patch from debian sources
+  * Convert to 3.0 (quilt) debian source format (Closes: #694543)
+  * Remove broken MultiArch patch from upstream and replace it with new
+    Debian's version
+  * Replace Breaks with Conflict for php5-suhosin
+  * Remove useless .la file from libphp5-embed
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 27 Nov 2012 16:54:48 +0100
+
 php5 (5.4.8-1) experimental; urgency=low
 
   * Imported Upstream version 5.4.8
