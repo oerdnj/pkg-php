@@ -1,3 +1,10 @@
+php5 (5.4.9-2) experimental; urgency=low
+
+  * Introduce new (hopefully slightly smarter) way of not deleting still
+    used session files
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 29 Nov 2012 08:48:24 +0100
+
 php5 (5.4.9-1) experimental; urgency=low
 
   [ Lior Kaplan ]
