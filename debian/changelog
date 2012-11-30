@@ -1,3 +1,9 @@
+php5 (5.4.9-4) experimental; urgency=low
+
+  * Make the sessionclean script compatible with awk != gawk
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 30 Nov 2012 11:13:40 +0100
+
 php5 (5.4.9-3) experimental; urgency=low
 
   * Fix typo in path to session clean script in cron file
