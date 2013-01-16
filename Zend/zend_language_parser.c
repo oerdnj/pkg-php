@@ -78,7 +78,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2012 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2013 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -3793,7 +3793,7 @@ yyreduce:
 
   case 62:
 
-    { (yyval) = (yyvsp[(1) - (2)]); }
+    { zend_do_free(&(yyvsp[(1) - (2)]) TSRMLS_CC); }
     break;
 
   case 66:
@@ -3993,7 +3993,7 @@ yyreduce:
 
   case 109:
 
-    { zend_do_end_class_declaration(&(yyvsp[(1) - (8)]), &(yyvsp[(2) - (8)]) TSRMLS_CC); }
+    { zend_do_end_class_declaration(&(yyvsp[(1) - (8)]), &(yyvsp[(3) - (8)]) TSRMLS_CC); }
     break;
 
   case 110:
@@ -4003,7 +4003,7 @@ yyreduce:
 
   case 111:
 
-    { zend_do_end_class_declaration(&(yyvsp[(1) - (7)]), &(yyvsp[(2) - (7)]) TSRMLS_CC); }
+    { zend_do_end_class_declaration(&(yyvsp[(1) - (7)]), NULL TSRMLS_CC); }
     break;
 
   case 112:
@@ -4323,27 +4323,17 @@ yyreduce:
 
   case 203:
 
-    { zend_do_implements_trait(&(yyvsp[(1) - (1)]) TSRMLS_CC); }
+    { zend_do_use_trait(&(yyvsp[(1) - (1)]) TSRMLS_CC); }
     break;
 
   case 204:
 
-    { zend_do_implements_trait(&(yyvsp[(3) - (3)]) TSRMLS_CC); }
-    break;
-
-  case 211:
-
-    { zend_add_trait_precedence(&(yyvsp[(1) - (2)]) TSRMLS_CC); }
-    break;
-
-  case 212:
-
-    { zend_add_trait_alias(&(yyvsp[(1) - (2)]) TSRMLS_CC); }
+    { zend_do_use_trait(&(yyvsp[(3) - (3)]) TSRMLS_CC); }
     break;
 
   case 213:
 
-    { zend_prepare_trait_precedence(&(yyval), &(yyvsp[(1) - (3)]), &(yyvsp[(3) - (3)]) TSRMLS_CC); }
+    { zend_add_trait_precedence(&(yyvsp[(1) - (3)]), &(yyvsp[(3) - (3)]) TSRMLS_CC); }
     break;
 
   case 214:
@@ -4373,12 +4363,12 @@ yyreduce:
 
   case 219:
 
-    { zend_prepare_trait_alias(&(yyval), &(yyvsp[(1) - (4)]), &(yyvsp[(3) - (4)]), &(yyvsp[(4) - (4)]) TSRMLS_CC); }
+    { zend_add_trait_alias(&(yyvsp[(1) - (4)]), &(yyvsp[(3) - (4)]), &(yyvsp[(4) - (4)]) TSRMLS_CC); }
     break;
 
   case 220:
 
-    { zend_prepare_trait_alias(&(yyval), &(yyvsp[(1) - (3)]), &(yyvsp[(3) - (3)]), NULL TSRMLS_CC); }
+    { zend_add_trait_alias(&(yyvsp[(1) - (3)]), &(yyvsp[(3) - (3)]), NULL TSRMLS_CC); }
     break;
 
   case 221:
