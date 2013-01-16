@@ -1,3 +1,15 @@
+php5 (5.5.0~alpha3-1) experimental; urgency=low
+
+  * Merged changes from wheezy/sid
+   + Fix typo in path to session clean script in cron file
+   + Install logrotate script in php5-fpm package
+  * Imported Upstream version 5.5.0~alpha3
+  * Update patches for new release
+   + Patch debian/patches/libxml-reset-the-handler.patch has been merged
+     upstream
+
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 16 Jan 2013 09:17:30 +0100
+
 php5 (5.5.0~alpha1-1) experimental; urgency=low
 
   * Imported Upstream version 5.5.0~alpha1
