@@ -559,9 +559,6 @@
 /* Have cURL with SSL support */
 #undef HAVE_CURL_SSL
 
-/* */
-#undef HAVE_CURL_VERSION_INFO
-
 /* Define to 1 if you have the `cuserid' function. */
 #undef HAVE_CUSERID
 
@@ -2087,7 +2084,10 @@
 /* Enable compressed protocol support */
 #undef MYSQLND_COMPRESSION_WANTED
 
-/* Enable SSL support */
+/* Enable mysqlnd code that uses OpenSSL directly */
+#undef MYSQLND_HAVE_SSL
+
+/* Enable core mysqlnd SSL code */
 #undef MYSQLND_SSL_SUPPORTED
 
 /* Whether mysqlnd is enabled */

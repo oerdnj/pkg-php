@@ -22,7 +22,7 @@
 #ifndef ZEND_H
 #define ZEND_H
 
-#define ZEND_VERSION "2.4.0"
+#define ZEND_VERSION "2.5.0-dev"
 
 #define ZEND_ENGINE_2
 
@@ -133,6 +133,11 @@ char *alloca ();
 # endif
 #endif
 
+/* Compatibility with non-clang compilers */
+#ifndef __has_attribute
+# define __has_attribute(x) 0
+#endif
+
 /* GCC x.y.z supplies __GNUC__ = x and __GNUC_MINOR__ = y */
 #ifdef __GNUC__
 # define ZEND_GCC_VERSION (__GNUC__ * 1000 + __GNUC_MINOR__)
@@ -144,6 +149,14 @@ char *alloca ();
 # define ZEND_ATTRIBUTE_MALLOC __attribute__ ((__malloc__))
 #else
 # define ZEND_ATTRIBUTE_MALLOC
+#endif
+
+#if ZEND_GCC_VERSION >= 4003 || __has_attribute(alloc_size)
+# define ZEND_ATTRIBUTE_ALLOC_SIZE(X) __attribute__ ((alloc_size(X)))
+# define ZEND_ATTRIBUTE_ALLOC_SIZE2(X,Y) __attribute__ ((alloc_size(X,Y)))
+#else
+# define ZEND_ATTRIBUTE_ALLOC_SIZE(X)
+# define ZEND_ATTRIBUTE_ALLOC_SIZE2(X,Y)
 #endif
 
 #if ZEND_GCC_VERSION >= 2007
@@ -263,10 +276,10 @@ static const char long_min_digits[] = "9223372036854775808";
 
 #define MAX_LENGTH_OF_DOUBLE 32
 
-#undef SUCCESS
-#undef FAILURE
-#define SUCCESS 0
-#define FAILURE -1				/* this MUST stay a negative number, or it may affect functions! */
+typedef enum {
+  SUCCESS =  0,
+  FAILURE = -1,		/* this MUST stay a negative number, or it may affect functions! */
+} ZEND_RESULT_CODE;
 
 #include "zend_hash.h"
 #include "zend_ts_hash.h"

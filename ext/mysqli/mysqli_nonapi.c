@@ -259,9 +259,6 @@ void mysqli_common_connect(INTERNAL_FUNCTION_PARAMETERS, zend_bool is_real_conne
 
 #if !defined(MYSQLI_USE_MYSQLND)
 	mysql->mysql->reconnect = MyG(reconnect);
-
-	/* set our own local_infile handler */
-	php_set_local_infile_handler_default(mysql);
 #endif
 
 	mysql_options(mysql->mysql, MYSQL_OPT_LOCAL_INFILE, (char *)&MyG(allow_local_infile));
@@ -731,7 +728,7 @@ static int mysqlnd_dont_poll_zval_array_from_mysqlnd_array(MYSQLND **in_array, z
 	int ret = 0;
 
 	ALLOC_HASHTABLE(new_hash);
-	zend_hash_init(new_hash, zend_hash_num_elements(Z_ARRVAL_P(in_zval_array)), NULL, ZVAL_PTR_DTOR, 0);
+	zend_hash_init(new_hash, in_zval_array? zend_hash_num_elements(Z_ARRVAL_P(in_zval_array)):0, NULL, ZVAL_PTR_DTOR, 0);
 	if (in_array) {
 		for (zend_hash_internal_pointer_reset(Z_ARRVAL_P(in_zval_array));
 			 zend_hash_get_current_data(Z_ARRVAL_P(in_zval_array), (void **) &elem) == SUCCESS;

@@ -35,6 +35,7 @@
 #include "zend_exceptions.h"
 #include "zend_interfaces.h"
 #include "zend_closures.h"
+#include "zend_generators.h"
 #include "zend_vm.h"
 #include "zend_dtrace.h"
 
@@ -1474,10 +1475,18 @@ static int zend_check_symbol(zval **pz TSRMLS_DC)
 
 ZEND_API opcode_handler_t *zend_opcode_handlers;
 
-ZEND_API void execute_internal(zend_execute_data *execute_data_ptr, int return_value_used TSRMLS_DC)
+ZEND_API void execute_internal(zend_execute_data *execute_data_ptr, zend_fcall_info *fci, int return_value_used TSRMLS_DC)
 {
-	zval **return_value_ptr = &(*(temp_variable *)((char *) execute_data_ptr->Ts + execute_data_ptr->opline->result.var)).var.ptr;
-	((zend_internal_function *) execute_data_ptr->function_state.function)->handler(execute_data_ptr->opline->extended_value, *return_value_ptr, (execute_data_ptr->function_state.function->common.fn_flags & ZEND_ACC_RETURN_REFERENCE)?return_value_ptr:NULL, execute_data_ptr->object, return_value_used TSRMLS_CC);
+	if(fci != NULL) {
+		((zend_internal_function *) execute_data_ptr->function_state.function)->handler(fci->param_count,
+				*fci->retval_ptr_ptr, fci->retval_ptr_ptr, fci->object_ptr, 1 TSRMLS_CC);
+
+	} else {
+		zval **return_value_ptr = &(*(temp_variable *)((char *) execute_data_ptr->Ts + execute_data_ptr->opline->result.var)).var.ptr;
+		((zend_internal_function *) execute_data_ptr->function_state.function)->handler(execute_data_ptr->opline->extended_value, *return_value_ptr,
+					(execute_data_ptr->function_state.function->common.fn_flags & ZEND_ACC_RETURN_REFERENCE)?return_value_ptr:NULL,
+					execute_data_ptr->object, return_value_used TSRMLS_CC);
+	}
 }
 
 #define ZEND_VM_NEXT_OPCODE() \
@@ -1512,7 +1521,7 @@ ZEND_API int zend_set_user_opcode_handler(zend_uchar opcode, user_opcode_handler
 {
 	if (opcode != ZEND_USER_OPCODE) {
 		if (handler == NULL) {
-			/* restore the original handler */			
+			/* restore the original handler */
 			zend_user_opcodes[opcode] = opcode;
 		} else {
 			zend_user_opcodes[opcode] = ZEND_USER_OPCODE;
@@ -1535,6 +1544,50 @@ ZEND_API zval *zend_get_zval_ptr(int op_type, const znode_op *node, const temp_v
 ZEND_API zval **zend_get_zval_ptr_ptr(int op_type, const znode_op *node, const temp_variable *Ts, zend_free_op *should_free, int type TSRMLS_DC) {
 	return get_zval_ptr_ptr(op_type, node, Ts, should_free, type);
 }
+
+void zend_clean_and_cache_symbol_table(HashTable *symbol_table TSRMLS_DC) /* {{{ */
+{
+	if (EG(symtable_cache_ptr) >= EG(symtable_cache_limit)) {
+		zend_hash_destroy(symbol_table);
+		FREE_HASHTABLE(symbol_table);
+	} else {
+		/* clean before putting into the cache, since clean
+		   could call dtors, which could use cached hash */
+		zend_hash_clean(symbol_table);
+		*(++EG(symtable_cache_ptr)) = symbol_table;
+	}
+}
+/* }}} */
+
+void zend_free_compiled_variables(zval ***CVs, int num) /* {{{ */
+{
+	int i;
+	for (i = 0; i < num; ++i) {
+		if (CVs[i]) {
+			zval_ptr_dtor(CVs[i]);
+		}
+	}
+}
+/* }}} */
+
+void** zend_copy_arguments(void **arguments_end) /* {{{ */
+{
+	int arguments_count = (int) (zend_uintptr_t) *arguments_end;
+	size_t arguments_size = (arguments_count + 1) * sizeof(void **);
+	void **arguments_start = arguments_end - arguments_count;
+	void **copied_arguments_start = emalloc(arguments_size);
+	void **copied_arguments_end = copied_arguments_start + arguments_count;
+	int i;
+
+	memcpy(copied_arguments_start, arguments_start, arguments_size);
+
+	for (i = 0; i < arguments_count; i++) {
+		Z_ADDREF_P((zval *) arguments_start[i]);
+	}
+
+	return copied_arguments_end;
+}
+/* }}} */
 
 /*
  * Local variables:
