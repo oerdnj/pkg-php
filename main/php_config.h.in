@@ -2276,6 +2276,9 @@
 /* */
 #undef SOLARIS
 
+/* have sqlite3 with column metadata enabled */
+#undef SQLITE_ENABLE_COLUMN_METADATA
+
 /* have sqlite3 with extension support */
 #undef SQLITE_OMIT_LOAD_EXTENSION
 
