@@ -1,3 +1,11 @@
+php5 (5.4.11-1) experimental; urgency=low
+
+  * Install logrotate script in php5-fpm package (Closes: #673558)
+  * Imported Upstream version 5.4.11
+  * Update patches for 5.4.11 release
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 21 Jan 2013 14:10:12 +0100
+
 php5 (5.4.9-4) experimental; urgency=low
 
   * Make the sessionclean script compatible with awk != gawk
