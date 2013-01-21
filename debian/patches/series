@@ -51,3 +51,4 @@ php-5.2.4-embed.patch
 php-5.4.0-dlopen.patch
 php-fpm-m68k.patch
 expose_all_built_and_installed_apis.patch
+use_updated_install-pear-nozlib.phar.patch
