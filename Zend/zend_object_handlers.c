@@ -363,9 +363,10 @@ ZEND_API int zend_check_property_access(zend_object *zobj, const char *prop_info
 	zend_property_info *property_info;
 	const char *class_name, *prop_name;
 	zval member;
+	int prop_name_len;
 
-	zend_unmangle_property_name(prop_info_name, prop_info_name_len, &class_name, &prop_name);
-	ZVAL_STRING(&member, prop_name, 0);
+	zend_unmangle_property_name_ex(prop_info_name, prop_info_name_len, &class_name, &prop_name, &prop_name_len);
+	ZVAL_STRINGL(&member, prop_name, prop_name_len, 0);
 	property_info = zend_get_property_info_quick(zobj->ce, &member, 1, NULL TSRMLS_CC);
 	if (!property_info) {
 		return FAILURE;
@@ -393,6 +394,16 @@ static int zend_get_property_guard(zend_object *zobj, zend_property_info *proper
 		info.name = Z_STRVAL_P(member);
 		info.name_length = Z_STRLEN_P(member);
 		info.h = zend_get_hash_value(Z_STRVAL_P(member), Z_STRLEN_P(member) + 1);
+	} else if(property_info->name[0] == '\0'){
+		const char *class_name = NULL, *prop_name = NULL;
+		zend_unmangle_property_name(property_info->name, property_info->name_length, &class_name, &prop_name);
+		if(class_name) {
+			/* use unmangled name for protected properties */
+			info.name = prop_name;
+			info.name_length = strlen(prop_name);
+			info.h = zend_get_hash_value(info.name, info.name_length+1);
+			property_info = &info;
+		}
 	}
 	if (!zobj->guards) {
 		ALLOC_HASHTABLE(zobj->guards);
@@ -435,7 +446,7 @@ zval *zend_std_read_property(zval *object, zval *member, int type, const zend_li
 #endif
 
 	/* make zend_get_property_info silent if we have getter - we may want to use it */
-	property_info = zend_get_property_info_quick(zobj->ce, member, (zobj->ce->__get != NULL), key TSRMLS_CC);
+	property_info = zend_get_property_info_quick(zobj->ce, member, silent || (zobj->ce->__get != NULL), key TSRMLS_CC);
 
 	if (UNEXPECTED(!property_info) ||
 	    ((EXPECTED((property_info->flags & ZEND_ACC_STATIC) == 0) &&
