@@ -2119,6 +2119,53 @@ void zend_resolve_non_class_name(znode *element_name, zend_bool check_namespace 
 }
 /* }}} */
 
+void zend_do_resolve_class_name(znode *result, znode *class_name, int is_static TSRMLS_DC) /* {{{ */
+{
+	char *lcname;
+	int lctype;
+	znode constant_name;
+
+	lcname = zend_str_tolower_dup(Z_STRVAL(class_name->u.constant), class_name->u.constant.value.str.len);
+	lctype = zend_get_class_fetch_type(lcname, strlen(lcname));
+	switch (lctype) {
+		case ZEND_FETCH_CLASS_SELF:
+			if (!CG(active_class_entry)) {
+				zend_error(E_COMPILE_ERROR, "Cannot access self::class when no class scope is active");
+			}
+			zval_dtor(&class_name->u.constant);
+			class_name->op_type = IS_CONST;
+			ZVAL_STRINGL(&class_name->u.constant, CG(active_class_entry)->name, CG(active_class_entry)->name_length, 1);
+			*result = *class_name;
+			break;
+        case ZEND_FETCH_CLASS_STATIC:
+        case ZEND_FETCH_CLASS_PARENT:
+			if (is_static) {
+				zend_error(E_COMPILE_ERROR,
+					"%s::class cannot be used for compile-time class name resolution",
+					lctype == ZEND_FETCH_CLASS_STATIC ? "static" : "parent"
+					);
+			}
+			if (!CG(active_class_entry)) {
+				zend_error(E_COMPILE_ERROR,
+					"Cannot access %s::class when no class scope is active",
+					lctype == ZEND_FETCH_CLASS_STATIC ? "static" : "parent"
+					);
+			}
+			constant_name.op_type = IS_CONST;
+			ZVAL_STRINGL(&constant_name.u.constant, "class", sizeof("class")-1, 1);
+			zend_do_fetch_constant(result, class_name, &constant_name, ZEND_RT, 1 TSRMLS_CC);
+			break;
+		case ZEND_FETCH_CLASS_DEFAULT:
+			zend_resolve_class_name(class_name, ZEND_FETCH_CLASS_GLOBAL, 1 TSRMLS_CC);
+			*result = *class_name;
+			break;
+	}
+
+	efree(lcname);
+
+}
+/* }}} */
+
 void zend_resolve_class_name(znode *class_name, ulong fetch_type, int check_ns_name TSRMLS_DC) /* {{{ */
 {
 	char *compound;
@@ -4221,9 +4268,8 @@ static void zend_do_traits_property_binding(zend_class_entry *ce TSRMLS_DC) /* {
 				prop_name_length = property_info->name_length;
 			} else {
 				/* for private and protected we need to unmangle the names */
-				zend_unmangle_property_name(property_info->name, property_info->name_length,
-											&class_name_unused, &prop_name);
-				prop_name_length = strlen(prop_name);
+				zend_unmangle_property_name_ex(property_info->name, property_info->name_length,
+											&class_name_unused, &prop_name, &prop_name_length);
 				prop_hash = zend_get_hash_value(prop_name, prop_name_length + 1);
 			}
 
@@ -5178,7 +5224,7 @@ static int zend_strnlen(const char* s, int maxlen) /* {{{ */
 }
 /* }}} */
 
-ZEND_API int zend_unmangle_property_name(const char *mangled_property, int len, const char **class_name, const char **prop_name) /* {{{ */
+ZEND_API int zend_unmangle_property_name_ex(const char *mangled_property, int len, const char **class_name, const char **prop_name, int *prop_len) /* {{{ */
 {
 	int class_name_len;
 
@@ -5186,22 +5232,34 @@ ZEND_API int zend_unmangle_property_name(const char *mangled_property, int len, 
 
 	if (mangled_property[0]!=0) {
 		*prop_name = mangled_property;
+		if (prop_len) {
+			*prop_len = len;
+		}
 		return SUCCESS;
 	}
 	if (len < 3 || mangled_property[1]==0) {
 		zend_error(E_NOTICE, "Illegal member variable name");
 		*prop_name = mangled_property;
+		if (prop_len) {
+			*prop_len = len;
+		}
 		return FAILURE;
 	}
 
-	class_name_len = zend_strnlen(mangled_property+1, --len - 1) + 1;
+	class_name_len = zend_strnlen(mangled_property + 1, --len - 1) + 1;
 	if (class_name_len >= len || mangled_property[class_name_len]!=0) {
 		zend_error(E_NOTICE, "Corrupt member variable name");
 		*prop_name = mangled_property;
+		if (prop_len) {
+			*prop_len = len + 1;
+		}
 		return FAILURE;
 	}
-	*class_name = mangled_property+1;
-	*prop_name = (*class_name)+class_name_len;
+	*class_name = mangled_property + 1;
+	*prop_name = (*class_name) + class_name_len;
+	if (prop_len) {
+		*prop_len = len - class_name_len;
+	}
 	return SUCCESS;
 }
 /* }}} */
