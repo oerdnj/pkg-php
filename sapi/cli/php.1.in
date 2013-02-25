@@ -18,21 +18,21 @@ php \- PHP Command Line Interface 'CLI'
 .LP
 .B php
 [options] [\-B 
-.IR begin_code ]
+.IR code ] 
 .B \-R 
 .IR code
 [\-E 
-.IR end_code ]
+.IR code ]
 [[\-\-]
 .IR args.\|.\|. ]
 .LP
 .B php
 [options] [\-B 
-.IR begin_code ]
+.IR code ]
 .B \-F 
 .IR file
 [\-E 
-.IR end_code ]
+.IR code ] 
 [[\-\-]
 .IR args.\|.\|. ]
 .LP
@@ -223,9 +223,9 @@ without using script tags
 .B \-\-process\-begin \fIcode\fP
 .TP
 .PD 1
-.B \-B \fIbegin_code\fP
+.B \-B \fIcode\fP
 Run PHP 
-.IR begin_code
+.IR code
 before processing input lines
 .TP
 .PD 0
@@ -250,9 +250,9 @@ for every input line
 .B \-\-process\-end \fIcode\fP
 .TP
 .PD 1
-.B \-E \fIend_code\fP
+.B \-E \fIcode\fP
 Run PHP 
-.IR end_code
+.IR code
 after processing all input lines
 .TP
 .PD 0
@@ -261,16 +261,6 @@ after processing all input lines
 .PD 1
 .B \-s
 Output HTML syntax highlighted source
-.TP
-.PD 1
-.B \-S \fIaddress:port\fP
-Run with built-in web server
-.TP
-.PD 1
-.B \-t \fIdocroot\fP
-Specify document root
-.IR docroot
-for built-in web server
 .TP
 .PD 0
 .B \-\-version
