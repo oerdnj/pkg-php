@@ -236,12 +236,16 @@ static php_cli_server_http_reponse_status_code_pair status_map[] = {
 	{ 415, "Unsupported Media Type" },
 	{ 416, "Requested Range Not Satisfiable" },
 	{ 417, "Expectation Failed" },
+	{ 428, "Precondition Required" },
+	{ 429, "Too Many Requests" },
+	{ 431, "Request Header Fields Too Large" },
 	{ 500, "Internal Server Error" },
 	{ 501, "Not Implemented" },
 	{ 502, "Bad Gateway" },
 	{ 503, "Service Unavailable" },
 	{ 504, "Gateway Timeout" },
 	{ 505, "HTTP Version Not Supported" },
+	{ 511, "Network Authentication Required" },
 };
 
 static php_cli_server_http_reponse_status_code_pair template_map[] = {
@@ -712,10 +716,9 @@ static void php_cli_server_poller_remove(php_cli_server_poller *poller, int mode
 	if (fd == poller->max_fd) {
 		while (fd > 0) {
 			fd--;
-			if (((unsigned int *)&poller->rfds)[fd / (8 * sizeof(unsigned int))] || ((unsigned int *)&poller->wfds)[fd / (8 * sizeof(unsigned int))]) {
+			if (PHP_SAFE_FD_ISSET(fd, &poller->rfds) || PHP_SAFE_FD_ISSET(fd, &poller->wfds)) {
 				break;
 			}
-			fd -= fd % (8 * sizeof(unsigned int));
 		}
 		poller->max_fd = fd;
 	}
@@ -774,23 +777,20 @@ static int php_cli_server_poller_iter_on_active(php_cli_server_poller *poller, v
 	}
 
 #else
-	php_socket_t fd = 0;
+	php_socket_t fd;
 	const php_socket_t max_fd = poller->max_fd;
-	const unsigned int *pr = (unsigned int *)&poller->active.rfds,
-	                   *pw = (unsigned int *)&poller->active.wfds,
-	                   *e = pr + (max_fd + (8 * sizeof(unsigned int)) - 1) / (8 * sizeof(unsigned int));
-	unsigned int mask;
-	while (pr < e && fd <= max_fd) {
-		for (mask = 1; mask; mask <<= 1, fd++) {
-			int events = (*pr & mask ? POLLIN: 0) | (*pw & mask ? POLLOUT: 0);
-			if (events) {
-				if (SUCCESS != callback(opaque, fd, events)) {
-					retval = FAILURE;
-				}
-			}
+
+	for (fd=0 ; fd<=max_fd ; fd++)  {
+		if (PHP_SAFE_FD_ISSET(fd, &poller->active.rfds)) {
+                if (SUCCESS != callback(opaque, fd, POLLIN)) {
+                    retval = FAILURE;
+                }
 		}
-		pr++;
-		pw++;
+		if (PHP_SAFE_FD_ISSET(fd, &poller->active.wfds)) {
+                if (SUCCESS != callback(opaque, fd, POLLOUT)) {
+                    retval = FAILURE;
+                }
+		}
 	}
 #endif
 	return retval;

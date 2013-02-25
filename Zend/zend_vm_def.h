@@ -974,27 +974,15 @@ ZEND_VM_HANDLER(40, ZEND_ECHO, CONST|TMP|VAR|CV, ANY)
 {
 	USE_OPLINE
 	zend_free_op free_op1;
-	zval z_copy;
 	zval *z;
 
 	SAVE_OPLINE();
 	z = GET_OP1_ZVAL_PTR(BP_VAR_R);
 
-	if (OP1_TYPE != IS_CONST &&
-	    UNEXPECTED(Z_TYPE_P(z) == IS_OBJECT) &&
-	    Z_OBJ_HT_P(z)->get_method != NULL) {
-	    if (OP1_TYPE == IS_TMP_VAR) {
-	    	INIT_PZVAL(z);
-	    }
-		if (zend_std_cast_object_tostring(z, &z_copy, IS_STRING TSRMLS_CC) == SUCCESS) {
-			zend_print_variable(&z_copy);
-			zval_dtor(&z_copy);
-		} else {
-			zend_print_variable(z);
-		}
-	} else {
-		zend_print_variable(z);
+	if (OP1_TYPE == IS_TMP_VAR && Z_TYPE_P(z) == IS_OBJECT) {
+		INIT_PZVAL(z);
 	}
+	zend_print_variable(z);
 
 	FREE_OP1();
 	CHECK_EXCEPTION();
@@ -2417,6 +2405,9 @@ ZEND_VM_HANDLER(109, ZEND_FETCH_CLASS, ANY, CONST|TMP|VAR|UNUSED|CV)
 		} else if (Z_TYPE_P(class_name) == IS_STRING) {
 			EX_T(opline->result.var).class_entry = zend_fetch_class(Z_STRVAL_P(class_name), Z_STRLEN_P(class_name), opline->extended_value TSRMLS_CC);
 		} else {
+			if (UNEXPECTED(EG(exception) != NULL)) {
+				HANDLE_EXCEPTION();
+			}
 			zend_error_noreturn(E_ERROR, "Class name must be a valid object or a string");
 		}
 
@@ -2441,6 +2432,9 @@ ZEND_VM_HANDLER(112, ZEND_INIT_METHOD_CALL, TMP|VAR|UNUSED|CV, CONST|TMP|VAR|CV)
 
 	if (OP2_TYPE != IS_CONST &&
 	    UNEXPECTED(Z_TYPE_P(function_name) != IS_STRING)) {
+		if (UNEXPECTED(EG(exception) != NULL)) {
+			HANDLE_EXCEPTION();
+		}
 		zend_error_noreturn(E_ERROR, "Method name must be a string");
 	}
 
@@ -2474,6 +2468,10 @@ ZEND_VM_HANDLER(112, ZEND_INIT_METHOD_CALL, TMP|VAR|UNUSED|CV, CONST|TMP|VAR|CV)
 			}
 		}
 	} else {
+		if (UNEXPECTED(EG(exception) != NULL)) {
+			FREE_OP2();
+			HANDLE_EXCEPTION();
+		}
 		zend_error_noreturn(E_ERROR, "Call to a member function %s() on a non-object", function_name_strval);
 	}
 
@@ -2552,6 +2550,9 @@ ZEND_VM_HANDLER(113, ZEND_INIT_STATIC_METHOD_CALL, CONST|VAR, CONST|TMP|VAR|UNUS
 			function_name = GET_OP2_ZVAL_PTR(BP_VAR_R);
 
 			if (UNEXPECTED(Z_TYPE_P(function_name) != IS_STRING)) {
+				if (UNEXPECTED(EG(exception) != NULL)) {
+					HANDLE_EXCEPTION();
+				}
 				zend_error_noreturn(E_ERROR, "Function name must be a string");
 			} else {
 				function_name_strval = Z_STRVAL_P(function_name);
@@ -2755,6 +2756,9 @@ ZEND_VM_HANDLER(59, ZEND_INIT_FCALL_BY_NAME, ANY, CONST|TMP|VAR|CV)
 			CHECK_EXCEPTION();
 			ZEND_VM_NEXT_OPCODE();
 		} else {
+			if (UNEXPECTED(EG(exception) != NULL)) {
+				HANDLE_EXCEPTION();
+			}
 			zend_error_noreturn(E_ERROR, "Function name must be a string");
 			ZEND_VM_NEXT_OPCODE(); /* Never reached */
 		}
@@ -2967,8 +2971,12 @@ ZEND_VM_HANDLER(108, ZEND_THROW, CONST|TMP|VAR|CV, ANY)
 	value = GET_OP1_ZVAL_PTR(BP_VAR_R);
 
 	if (OP1_TYPE == IS_CONST || UNEXPECTED(Z_TYPE_P(value) != IS_OBJECT)) {
+		if (UNEXPECTED(EG(exception) != NULL)) {
+			HANDLE_EXCEPTION();
+		}
 		zend_error_noreturn(E_ERROR, "Can only throw objects");
 	}
+
 	zend_exception_save(TSRMLS_C);
 	/* Not sure if a complete copy is what we want here */
 	ALLOC_ZVAL(exception);
@@ -3431,6 +3439,9 @@ ZEND_VM_HANDLER(110, ZEND_CLONE, CONST|TMP|VAR|UNUSED|CV, ANY)
 
 	if (OP1_TYPE == IS_CONST ||
 	    UNEXPECTED(Z_TYPE_P(obj) != IS_OBJECT)) {
+		if (UNEXPECTED(EG(exception) != NULL)) {
+			HANDLE_EXCEPTION();
+		}
 		zend_error_noreturn(E_ERROR, "__clone method called on non-object");
 	}
 

@@ -79,7 +79,8 @@ static zend_always_inline long zend_dval_to_lval(double d)
 #else
 static zend_always_inline long zend_dval_to_lval(double d)
 {
-	if (d > LONG_MAX) {
+	/* >= as (double)LONG_MAX is outside signed range */
+	if (d >= LONG_MAX) {
 		return (long)(unsigned long) d;
 	}
 	return (long) d;
@@ -476,6 +477,10 @@ ZEND_API void zend_update_current_locale(void);
 #define zend_update_current_locale()
 #endif
 
+/* The offset in bytes between the value and type fields of a zval */
+#define ZVAL_OFFSETOF_TYPE	\
+	(__builtin_offsetof(zval,type) - __builtin_offsetof(zval,value))
+
 static zend_always_inline int fast_increment_function(zval *op1)
 {
 	if (EXPECTED(Z_TYPE_P(op1) == IS_LONG)) {
@@ -485,20 +490,26 @@ static zend_always_inline int fast_increment_function(zval *op1)
 			"jno  0f\n\t"
 			"movl $0x0, (%0)\n\t"
 			"movl $0x41e00000, 0x4(%0)\n\t"
-			"movb $0x2,0xc(%0)\n"
+			"movb %1, %c2(%0)\n"
 			"0:"
 			:
-			: "r"(op1));
+			: "r"(&op1->value),
+			  "n"(IS_DOUBLE),
+			  "n"(ZVAL_OFFSETOF_TYPE)
+			: "cc");
 #elif defined(__GNUC__) && defined(__x86_64__)
 		__asm__(
 			"incq (%0)\n\t"
 			"jno  0f\n\t"
 			"movl $0x0, (%0)\n\t"
 			"movl $0x43e00000, 0x4(%0)\n\t"
-			"movb $0x2,0x14(%0)\n"
+			"movb %1, %c2(%0)\n"
 			"0:"
 			:
-			: "r"(op1));
+			: "r"(&op1->value),
+			  "n"(IS_DOUBLE),
+			  "n"(ZVAL_OFFSETOF_TYPE)
+			: "cc");
 #else
 		if (UNEXPECTED(Z_LVAL_P(op1) == LONG_MAX)) {
 			/* switch to double */
@@ -522,20 +533,26 @@ static zend_always_inline int fast_decrement_function(zval *op1)
 			"jno  0f\n\t"
 			"movl $0x00200000, (%0)\n\t"
 			"movl $0xc1e00000, 0x4(%0)\n\t"
-			"movb $0x2,0xc(%0)\n"
+			"movb %1,%c2(%0)\n"
 			"0:"
 			:
-			: "r"(op1));
+			: "r"(&op1->value),
+			  "n"(IS_DOUBLE),
+			  "n"(ZVAL_OFFSETOF_TYPE)
+			: "cc");
 #elif defined(__GNUC__) && defined(__x86_64__)
 		__asm__(
 			"decq (%0)\n\t"
 			"jno  0f\n\t"
 			"movl $0x00000000, (%0)\n\t"
 			"movl $0xc3e00000, 0x4(%0)\n\t"
-			"movb $0x2,0x14(%0)\n"
+			"movb %1,%c2(%0)\n"
 			"0:"
 			:
-			: "r"(op1));
+			: "r"(&op1->value),
+			  "n"(IS_DOUBLE),
+			  "n"(ZVAL_OFFSETOF_TYPE)
+			: "cc");
 #else
 		if (UNEXPECTED(Z_LVAL_P(op1) == LONG_MIN)) {
 			/* switch to double */
@@ -560,40 +577,46 @@ static zend_always_inline int fast_add_function(zval *result, zval *op1, zval *o
 			"addl   (%2), %%eax\n\t"
 			"jo     0f\n\t"     
 			"movl   %%eax, (%0)\n\t"
-			"movb   $0x1,0xc(%0)\n\t"
+			"movb   %3, %c5(%0)\n\t"
 			"jmp    1f\n"
 			"0:\n\t"
 			"fildl	(%1)\n\t"
 			"fildl	(%2)\n\t"
 			"faddp	%%st, %%st(1)\n\t"
-			"movb   $0x2,0xc(%0)\n\t"
+			"movb   %4, %c5(%0)\n\t"
 			"fstpl	(%0)\n"
 			"1:"
 			: 
-			: "r"(result),
-			  "r"(op1),
-			  "r"(op2)
-			: "eax");
+			: "r"(&result->value),
+			  "r"(&op1->value),
+			  "r"(&op2->value),
+			  "n"(IS_LONG),
+			  "n"(IS_DOUBLE),
+			  "n"(ZVAL_OFFSETOF_TYPE)
+			: "eax","cc");
 #elif defined(__GNUC__) && defined(__x86_64__)
 		__asm__(
 			"movq	(%1), %%rax\n\t"
 			"addq   (%2), %%rax\n\t"
 			"jo     0f\n\t"     
 			"movq   %%rax, (%0)\n\t"
-			"movb   $0x1,0x14(%0)\n\t"
+			"movb   %3, %c5(%0)\n\t"
 			"jmp    1f\n"
 			"0:\n\t"
 			"fildq	(%1)\n\t"
 			"fildq	(%2)\n\t"
 			"faddp	%%st, %%st(1)\n\t"
-			"movb   $0x2,0x14(%0)\n\t"
+			"movb   %4, %c5(%0)\n\t"
 			"fstpl	(%0)\n"
 			"1:"
 			: 
-			: "r"(result),
-			  "r"(op1),
-			  "r"(op2)
-			: "rax");
+			: "r"(&result->value),
+			  "r"(&op1->value),
+			  "r"(&op2->value),
+			  "n"(IS_LONG),
+			  "n"(IS_DOUBLE),
+			  "n"(ZVAL_OFFSETOF_TYPE)
+			: "rax","cc");
 #else
 			Z_LVAL_P(result) = Z_LVAL_P(op1) + Z_LVAL_P(op2);
 
@@ -635,7 +658,7 @@ static zend_always_inline int fast_sub_function(zval *result, zval *op1, zval *o
 			"subl   (%2), %%eax\n\t"
 			"jo     0f\n\t"     
 			"movl   %%eax, (%0)\n\t"
-			"movb   $0x1,0xc(%0)\n\t"
+			"movb   %3, %c5(%0)\n\t"
 			"jmp    1f\n"
 			"0:\n\t"
 			"fildl	(%2)\n\t"
@@ -645,21 +668,24 @@ static zend_always_inline int fast_sub_function(zval *result, zval *op1, zval *o
 #else
 			"fsubp	%%st, %%st(1)\n\t"
 #endif
-			"movb   $0x2,0xc(%0)\n\t"
+			"movb   %4, %c5(%0)\n\t"
 			"fstpl	(%0)\n"
 			"1:"
 			: 
-			: "r"(result),
-			  "r"(op1),
-			  "r"(op2)
-			: "eax");
+			: "r"(&result->value),
+			  "r"(&op1->value),
+			  "r"(&op2->value),
+			  "n"(IS_LONG),
+			  "n"(IS_DOUBLE),
+			  "n"(ZVAL_OFFSETOF_TYPE)
+			: "eax","cc");
 #elif defined(__GNUC__) && defined(__x86_64__)
 		__asm__(
 			"movq	(%1), %%rax\n\t"
 			"subq   (%2), %%rax\n\t"
 			"jo     0f\n\t"     
 			"movq   %%rax, (%0)\n\t"
-			"movb   $0x1,0x14(%0)\n\t"
+			"movb   %3, %c5(%0)\n\t"
 			"jmp    1f\n"
 			"0:\n\t"
 			"fildq	(%2)\n\t"
@@ -669,14 +695,17 @@ static zend_always_inline int fast_sub_function(zval *result, zval *op1, zval *o
 #else
 			"fsubp	%%st, %%st(1)\n\t"
 #endif
-			"movb   $0x2,0x14(%0)\n\t"
+			"movb   %4, %c5(%0)\n\t"
 			"fstpl	(%0)\n"
 			"1:"
 			: 
-			: "r"(result),
-			  "r"(op1),
-			  "r"(op2)
-			: "rax");
+			: "r"(&result->value),
+			  "r"(&op1->value),
+			  "r"(&op2->value),
+			  "n"(IS_LONG),
+			  "n"(IS_DOUBLE),
+			  "n"(ZVAL_OFFSETOF_TYPE)
+			: "rax","cc");
 #else
 			Z_LVAL_P(result) = Z_LVAL_P(op1) - Z_LVAL_P(op2);
 
