@@ -18,7 +18,7 @@ Last-Update: 2010-05-01
  	STD_PHP_INI_BOOLEAN("session.auto_start",       "0",         PHP_INI_ALL, OnUpdateBool,   auto_start,         php_ps_globals,    ps_globals)
 --- a/php.ini-development
 +++ b/php.ini-development
-@@ -1399,7 +1399,7 @@ session.save_handler = files
+@@ -1403,7 +1403,7 @@ session.save_handler = files
  ; where MODE is the octal representation of the mode. Note that this
  ; does not overwrite the process's umask.
  ; http://php.net/session.save-path
@@ -29,7 +29,7 @@ Last-Update: 2010-05-01
  ; http://php.net/session.use-cookies
 --- a/php.ini-production
 +++ b/php.ini-production
-@@ -1348,7 +1348,7 @@ session.save_handler = files
+@@ -1352,7 +1352,7 @@ session.save_handler = files
  ; where MODE is the octal representation of the mode. Note that this
  ; does not overwrite the process's umask.
  ; http://php.net/session.save-path
