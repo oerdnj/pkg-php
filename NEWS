@@ -1,5 +1,54 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+21 Feb 2013, PHP 5.5.0 Alpha 5
+
+- Core:
+  . Implemented FR #64175 (Added HTTP codes as of RFC 6585). (Jonh Wendell)
+  . Fixed bug #64135 (Exceptions from set_error_handler are not always
+    propagated). (Laruence)
+  . Fixed bug #63830 (Segfault on undefined function call in nested generator).
+    (Nikita Popov)
+  . Fixed bug #60833 (self, parent, static behave inconsistently 
+    case-sensitive). (Stas, mario at include-once dot org)
+  . Implemented FR #60524 (specify temp dir by php.ini). (ALeX Kazik).
+  . Fixed bug #64142 (dval to lval different behavior on ppc64). (Remi)
+  . Added ARMv7/v8 versions of various Zend arithmetic functions that are
+    implemented using inline assembler (Ard Biesheuvel)
+
+- CLI server:
+  . Fixed bug #64128 (buit-in web server is broken on ppc64). (Remi)
+
+- cURL:
+  . Implemented FR #46439 - added CURLFile for safer file uploads.
+    (Stas)
+
+- Intl:
+  . Cherry-picked UConverter wrapper, which had accidentaly been committed only
+    to master.
+
+- mysqli
+  . Added mysqli_begin_transaction()/mysqli::begin_transaction(). Implemented all
+    options, per MySQL 5.6, which can be used with START TRANSACTION, COMMIT
+	and ROLLBACK through options to mysqli_commit()/mysqli_rollback() and their
+	respective OO counterparts. They work in libmysql and mysqlnd mode. (Andrey)
+  . Added mysqli_savepoint(), mysqli_release_savepoint(). (Andrey)
+
+- mysqlnd
+  . Add new begin_transaction() call to the connection object. Implemented all
+    options, per MySQL 5.6, which can be used with START TRANSACTION, COMMIT
+	and ROLLBACK. (Andrey)
+  . Added mysqlnd_savepoint(), mysqlnd_release_savepoint(). (Andrey)
+
+- Sockets:
+  . Added recvmsg() and sendmsg() wrappers. (Gustavo)
+    See https://wiki.php.net/rfc/sendrecvmsg
+
+- Filter:
+  . Implemented FR #49180 - added MAC address validation. (Martin)
+
+- SNMP:
+  . Fixed bug #64124 (IPv6 malformed). (Boris Lytochkin)
+
 24 Jan 2013, PHP 5.5.0 Alpha 4
 
 - Core:
