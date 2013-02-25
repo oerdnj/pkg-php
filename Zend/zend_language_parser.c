@@ -3934,7 +3934,7 @@ yyreduce:
 
   case 102:
 
-    { zend_do_end_class_declaration(&(yyvsp[(1) - (8)]), &(yyvsp[(2) - (8)]) TSRMLS_CC); }
+    { zend_do_end_class_declaration(&(yyvsp[(1) - (8)]), &(yyvsp[(3) - (8)]) TSRMLS_CC); }
     break;
 
   case 103:
@@ -3944,7 +3944,7 @@ yyreduce:
 
   case 104:
 
-    { zend_do_end_class_declaration(&(yyvsp[(1) - (7)]), &(yyvsp[(2) - (7)]) TSRMLS_CC); }
+    { zend_do_end_class_declaration(&(yyvsp[(1) - (7)]), NULL TSRMLS_CC); }
     break;
 
   case 105:
