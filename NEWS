@@ -1,11 +1,61 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-17 Jan 2013, PHP 5.4.11
+21 Feb 2012, PHP 5.4.12
+
+- Core:
+  . Fixed bug #64099 (Wrong TSRM usage in zend_Register_class alias). (Johannes)
+  . Fixed bug #64011 (get_html_translation_table() output incomplete with
+    HTML_ENTITIES and ISO-8859-1). (Gustavo)
+  . Fixed bug #63982 (isset() inconsistently produces a fatal error on
+    protected property). (Stas)
+  . Fixed bug #63943 (Bad warning text from strpos() on empty needle).
+    (Laruence)
+  . Fixed bug #63899 (Use after scope error in zend_compile). (Laruence)
+  . Fixed bug #63893 (Poor efficiency of strtr() using array with keys of very
+    different length). (Gustavo)
+  . Fixed bug #63882 (zend_std_compare_objects crash on recursion). (Dmitry)
+  . Fixed bug #63462 (Magic methods called twice for unset protected 
+    properties). (Stas)
+  . Fixed bug #62524 (fopen follows redirects for non-3xx statuses). 
+    (Wes Mason) 
+  . Support BITMAPV5HEADER in getimagesize(). (AsamK, Lars)
+
+- Date:
+  . Fixed bug #63699 (Performance improvements for various ext/date functions).
+    (Lars, original patch by njaguar at gmail dot com)
+  . Fixed bug #55397: Comparsion of incomplete DateTime causes SIGSEGV. 
+    (Derick)
+
+- FPM:
+  . Fixed bug #63999 (php with fpm fails to build on Solaris 10 or 11). (Adam)
+
+- Litespeed:
+  . Fixed bug #63228 (-Werror=format-security error in lsapi code). (George)
+
+- SOAP
+  . Added check that soap.wsdl_cache_dir conforms to open_basedir 
+    (CVE-2013-1635). (Dmitry)
+  . Disabled external entities loading (CVE-2013-1643). (Dmitry)
+
+- sqlite3:
+  . Fixed bug #63921 (sqlite3::bindvalue and relative PHP functions aren't
+    using sqlite3_*_int64 API). (srgoogleguy, Lars)
+
+- PDO_OCI
+  . Fixed bug #57702 (Multi-row BLOB fetches). (hswong3i, Laruence)
+  . Fixed bug #52958 (Segfault in PDO_OCI on cleanup after running a long
+    testsuite). (hswong3i, Lars)
+
+- PDO_sqlite:
+  . Fixed bug #63916 (PDO::PARAM_INT casts to 32bit int internally even
+    on 64bit builds in pdo_sqlite). (srgoogleguy, Lars)
+
+17 Jan 2012, PHP 5.4.11
 
 - Core:
   . Fixed bug #63762 (Sigsegv when Exception::$trace is changed by user).
     (Johannes)
-  . Fixed bug #43177 (Errors in eval()'ed code produce status code 500). 
+  . Fixed bug #43177 (Errors in eval()'ed code produce status code 500).
     (Todd Ruth, Stas).
 
 - Filter:
