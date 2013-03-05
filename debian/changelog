@@ -1,3 +1,9 @@
+php5 (5.5.0~alpha5-2) experimental; urgency=low
+
+  * Enable interactive mode in php5-cli (Closes: #341868)
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 05 Mar 2013 16:39:21 +0100
+
 php5 (5.5.0~alpha5-1) experimental; urgency=low
 
   * Imported Upstream version 5.5.0~alpha5
