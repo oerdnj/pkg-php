@@ -381,7 +381,8 @@ configure-cli-stamp: prepared-stamp
 		--without-mm \
 		--disable-pdo \
 		--without-mysql --without-sybase-ct \
-		--without-mssql --without-sqlite3 --enable-pcntl
+		--without-mssql --without-sqlite3 --enable-pcntl \
+		--with-libedit=shared,/usr
 	cd cli-build && \
 	cp ../Zend/zend_ini_scanner.c ../Zend/zend_language_scanner.c \
 	   ../Zend/zend_ini_parser.h ../Zend/zend_language_parser.h \

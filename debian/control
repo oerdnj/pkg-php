@@ -21,6 +21,7 @@ Build-Depends: apache2-prefork-dev,
 	       libc-client-dev,
 	       libcurl4-openssl-dev | libcurl-dev,
 	       libdb-dev,
+	       libedit-dev (>= 2.11-20080614-4),
 	       libenchant-dev,
 	       libevent-dev (>= 1.4.11),
 	       libexpat1-dev (>= 1.95.2-2.1),
@@ -173,7 +174,7 @@ Description: server-side, HTML-embedded scripting language (CGI binary)
 
 Package: php5-cli
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support, php5-common (= ${binary:Version}), libmagic1, ucf, tzdata
+Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support, php5-common (= ${binary:Version}), libmagic1, ucf, tzdata, libedit2 (>= 2.11-20080614-4)
 Provides: ${php:Provides}
 Suggests: php-pear
 Description: command-line interpreter for the php5 scripting language
