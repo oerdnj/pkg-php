@@ -1,5 +1,48 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+14 Mar 2012, PHP 5.4.13
+
+- Core:
+  . Fixed bug #64235 (Insteadof not work for class method in 5.4.11).
+    (Laruence)
+  . Implemented FR #64175 (Added HTTP codes as of RFC 6585). (Jonh Wendell)
+  . Fixed bug #64142 (dval to lval different behavior on ppc64). (Remi)
+  . Fixed bug #64070 (Inheritance with Traits failed with error). (Dmitry)
+
+- CLI server:
+  . Fixed bug #64128 (buit-in web server is broken on ppc64). (Remi)
+
+- Mbstring:
+  . mb_split() can now handle empty matches like preg_split() does. (Moriyoshi)
+
+- OpenSSL:
+  . Fixed bug #61930 (openssl corrupts ssl key resource when using 
+    openssl_get_publickey()). (Stas)
+
+- PDO_mysql:
+  . Fixed bug #60840 (undefined symbol: mysqlnd_debug_std_no_trace_funcs).
+    (Johannes)
+
+- Phar:
+  . Fixed timestamp update on Phar contents modification. (Dmitry)
+
+- SOAP
+  . Added check that soap.wsdl_cache_dir conforms to open_basedir
+    (CVE-2013-1635). (Dmitry)
+  . Disabled external entities loading (CVE-2013-1643). (Dmitry)
+
+- SPL:
+  . Fixed bug #64264 (SPLFixedArray toArray problem). (Laruence)
+  . Fixed bug #64228 (RecursiveDirectoryIterator always assumes SKIP_DOTS).
+    (patch by kriss@krizalys.com, Laruence)
+  . Fixed bug #64106 (Segfault on SplFixedArray[][x] = y when extended). 
+    (Nikita Popov)
+  . Fixed bug #52861 (unset fails with ArrayObject and deep arrays).
+    (Mike Willbanks)
+
+- SNMP:
+  . Fixed bug #64124 (IPv6 malformed). (Boris Lytochkin)
+
 21 Feb 2012, PHP 5.4.12
 
 - Core:
@@ -32,12 +75,7 @@ PHP                                                                        NEWS
 - Litespeed:
   . Fixed bug #63228 (-Werror=format-security error in lsapi code). (George)
 
-- SOAP
-  . Added check that soap.wsdl_cache_dir conforms to open_basedir 
-    (CVE-2013-1635). (Dmitry)
-  . Disabled external entities loading (CVE-2013-1643). (Dmitry)
-
-- sqlite3:
+- ext/sqlite3:
   . Fixed bug #63921 (sqlite3::bindvalue and relative PHP functions aren't
     using sqlite3_*_int64 API). (srgoogleguy, Lars)
 
@@ -49,6 +87,10 @@ PHP                                                                        NEWS
 - PDO_sqlite:
   . Fixed bug #63916 (PDO::PARAM_INT casts to 32bit int internally even
     on 64bit builds in pdo_sqlite). (srgoogleguy, Lars)
+
+- OpenSSL:
+  . New SSL stream context option to prevent CRIME attack vector. (Daniel Lowrey,
+    Lars)
 
 17 Jan 2012, PHP 5.4.11
 
