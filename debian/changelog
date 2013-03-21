@@ -1,3 +1,12 @@
+php5 (5.4.13-2) experimental; urgency=low
+
+  * Add php5-readline based on libedit (Courtesy of Andreas Pour)
+  * Add -n to run-tests.php for php to not pick-up any local php.ini.
+    It's not a problem on sbuilds, but it might break when building
+    locally. (Courtesy of Andreas Pour)
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 21 Mar 2013 08:03:37 +0100
+
 php5 (5.4.13-1) experimental; urgency=low
 
   * Imported Upstream version 5.4.13
