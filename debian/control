@@ -232,7 +232,7 @@ Description: Files for PHP5 module development
  for web development and can be embedded into HTML.
 
 Package: php5-dbg
-Depends: ${misc:Depends}, php5-common (= ${binary:Version}), libapache2-mod-php5 (= ${binary:Version}) | libapache2-mod-php5filter (= ${binary:Version}) | php5-cgi (= ${binary:Version}) | php5-cli (= ${binary:Version}) | php5-fpm (= ${binary:Version}) | php5-curl (= ${binary:Version}) | php5-enchant (= ${binary:Version}) | php5-gd (= ${binary:Version}) | php5-gmp (= ${binary:Version}) | php5-imap (= ${binary:Version}) | php5-interbase (= ${binary:Version}) | php5-intl (= ${binary:Version}) | php5-ldap (= ${binary:Version}) | php5-mcrypt (= ${binary:Version}) | php5-mysql (= ${binary:Version}) | php5-odbc (= ${binary:Version}) | php5-pgsql (= ${binary:Version}) | php5-pspell (= ${binary:Version}) | php5-recode (= ${binary:Version}) | php5-snmp (= ${binary:Version}) | php5-sqlite (= ${binary:Version}) | php5-sybase (= ${binary:Version}) | php5-tidy (= ${binary:Version}) | php5-xmlrpc (= ${binary:Version}) | php5-xsl (= ${binary:Version})
+Depends: ${misc:Depends}, php5-common (= ${binary:Version}), libapache2-mod-php5 (= ${binary:Version}) | libapache2-mod-php5filter (= ${binary:Version}) | php5-cgi (= ${binary:Version}) | php5-cli (= ${binary:Version}) | php5-fpm (= ${binary:Version}) | php5-curl (= ${binary:Version}) | php5-enchant (= ${binary:Version}) | php5-gd (= ${binary:Version}) | php5-gmp (= ${binary:Version}) | php5-imap (= ${binary:Version}) | php5-interbase (= ${binary:Version}) | php5-intl (= ${binary:Version}) | php5-ldap (= ${binary:Version}) | php5-mcrypt (= ${binary:Version}) | php5-mysql (= ${binary:Version}) | php5-odbc (= ${binary:Version}) | php5-pgsql (= ${binary:Version}) | php5-pspell (= ${binary:Version}) | php5-readline (= ${binary:Version}) | php5-recode (= ${binary:Version}) | php5-snmp (= ${binary:Version}) | php5-sqlite (= ${binary:Version}) | php5-sybase (= ${binary:Version}) | php5-tidy (= ${binary:Version}) | php5-xmlrpc (= ${binary:Version}) | php5-xsl (= ${binary:Version})
 Recommends: gdb
 Section: debug
 Priority: extra
@@ -364,6 +364,17 @@ Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${bi
 Pre-Depends: dpkg (>= 1.15.7.2~)
 Description: MCrypt module for php5
  This package provides a module for MCrypt functions in PHP scripts.
+ .
+ PHP (recursive acronym for PHP: Hypertext Preprocessor) is a widely-used
+ open source general-purpose scripting language that is especially suited
+ for web development and can be embedded into HTML.
+
+Package: php5-readline
+Architecture: any
+Depends: ${shlibs:Depends}, ${php:Depends}, ${misc:Depends}, php5-common (= ${binary:Version}), php5-cli (= ${binary:Version}), ucf
+Pre-Depends: dpkg (>= 1.15.7.2~)
+Description: Readline module for php5
+ This package provides a module for readline functions (based on libedit) in PHP scripts.
  .
  PHP (recursive acronym for PHP: Hypertext Preprocessor) is a widely-used
  open source general-purpose scripting language that is especially suited

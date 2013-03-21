@@ -558,6 +558,8 @@ install: build
 	cat debian/modulelist debian/extramodulelist | while read package extname dsoname priority; do \
 		if [ "$$package" = "mysqlnd" ]; then \
 			modulepath=cgi-build/modules; \
+		elif [ "$$package" = "readline" ]; then \
+			modulepath=cli-build/modules; \
 		else \
 			modulepath=debian/libapache2-mod-php5/$${ext}; \
 		fi; \
