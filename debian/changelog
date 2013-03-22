@@ -1,3 +1,12 @@
+php5 (5.5.0~beta1-1) experimental; urgency=low
+
+  * Imported Upstream version 5.5.0~beta1
+   + Includes Zend OPCache (Closes: #700577)
+  * Refresh patches for release 5.5.0~beta1
+  * Add Breaks for other low-level Zend OpCache and debug packages
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 22 Mar 2013 08:39:49 +0100
+
 php5 (5.5.0~alpha5-2) experimental; urgency=low
 
   * Enable interactive mode in php5-cli (Closes: #341868)
