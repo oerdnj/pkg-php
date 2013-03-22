@@ -132,6 +132,9 @@
 /* Whether to build odbc as dynamic module */
 #undef COMPILE_DL_ODBC
 
+/* Whether to build opcache as dynamic module */
+#undef COMPILE_DL_OPCACHE
+
 /* Whether to build openssl as dynamic module */
 #undef COMPILE_DL_OPENSSL
 
@@ -1195,6 +1198,9 @@
 /* Define to 1 if you have the <monetary.h> header file. */
 #undef HAVE_MONETARY_H
 
+/* Define if you have mprotect() function */
+#undef HAVE_MPROTECT
+
 /* Define to 1 if you have the `mremap' function. */
 #undef HAVE_MREMAP
 
@@ -1435,6 +1441,9 @@
 /* */
 #undef HAVE_PSPELL
 
+/* Define to 1 if the PS_STRINGS thing exists. */
+#undef HAVE_PS_STRINGS
+
 /* do we have ptrace? */
 #undef HAVE_PTRACE
 
@@ -1542,6 +1551,21 @@
 
 /* */
 #undef HAVE_SHMOP
+
+/* Define if you have SysV IPC SHM support */
+#undef HAVE_SHM_IPC
+
+/* Define if you have mmap(MAP_ANON) SHM support */
+#undef HAVE_SHM_MMAP_ANON
+
+/* Define if you have mmap() SHM support */
+#undef HAVE_SHM_MMAP_FILE
+
+/* Define if you have POSIX mmap() SHM support */
+#undef HAVE_SHM_MMAP_POSIX
+
+/* Define if you have mmap("/dev/zero") SHM support */
+#undef HAVE_SHM_MMAP_ZERO
 
 /* Define to 1 if you have the `shutdown' function. */
 #undef HAVE_SHUTDOWN
@@ -1841,6 +1865,9 @@
 
 /* Define to 1 if you have the <sys/poll.h> header file. */
 #undef HAVE_SYS_POLL_H
+
+/* Define to 1 if you have the <sys/pstat.h> header file. */
+#undef HAVE_SYS_PSTAT_H
 
 /* Define to 1 if you have the <sys/resource.h> header file. */
 #undef HAVE_SYS_RESOURCE_H
