@@ -1048,6 +1048,7 @@ with_iodbc
 with_esoob
 with_unixODBC
 with_dbmaker
+enable_opcache
 enable_pcntl
 enable_pdo
 with_pdo_dblib
@@ -1933,6 +1934,7 @@ Extensions:
   --with-esoob=DIR      Include Easysoft OOB support /usr/local/easysoft/oob/client
   --with-unixODBC=DIR   Include unixODBC support /usr/local
   --with-dbmaker=DIR    Include DBMaker support
+  --enable-opcache Enable Zend OPcache support
   --enable-pcntl          Enable pcntl support (CLI/CGI only)
   --disable-pdo           Disable PHP Data Objects support
   --with-pdo-dblib=DIR    PDO: DBLIB-DB support.  DIR is the FreeTDS home directory
@@ -3684,7 +3686,7 @@ ac_config_headers="$ac_config_headers main/php_config.h"
 PHP_MAJOR_VERSION=5
 PHP_MINOR_VERSION=5
 PHP_RELEASE_VERSION=0
-PHP_EXTRA_VERSION="alpha6"
+PHP_EXTRA_VERSION="beta1"
 PHP_VERSION="$PHP_MAJOR_VERSION.$PHP_MINOR_VERSION.$PHP_RELEASE_VERSION$PHP_EXTRA_VERSION"
 PHP_VERSION_ID=`expr $PHP_MAJOR_VERSION \* 10000 + $PHP_MINOR_VERSION \* 100 + $PHP_RELEASE_VERSION`
 
@@ -10801,6 +10803,66 @@ ext_output=$PHP_CLI
 
 
 
+for ac_func in setproctitle
+do :
+  ac_fn_c_check_func "$LINENO" "setproctitle" "ac_cv_func_setproctitle"
+if test "x$ac_cv_func_setproctitle" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SETPROCTITLE 1
+_ACEOF
+
+fi
+done
+
+
+for ac_header in sys/pstat.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "sys/pstat.h" "ac_cv_header_sys_pstat_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_pstat_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYS_PSTAT_H 1
+_ACEOF
+
+fi
+
+done
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for PS_STRINGS" >&5
+$as_echo_n "checking for PS_STRINGS... " >&6; }
+if ${cli_cv_var_PS_STRINGS+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <machine/vmparam.h>
+#include <sys/exec.h>
+
+int
+main ()
+{
+PS_STRINGS->ps_nargvstr = 1;
+PS_STRINGS->ps_argvstr = "foo";
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  cli_cv_var_PS_STRINGS=yes
+else
+  cli_cv_var_PS_STRINGS=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $cli_cv_var_PS_STRINGS" >&5
+$as_echo "$cli_cv_var_PS_STRINGS" >&6; }
+if test "$cli_cv_var_PS_STRINGS" = yes ; then
+
+$as_echo "#define HAVE_PS_STRINGS /**/" >>confdefs.h
+
+fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for CLI build" >&5
 $as_echo_n "checking for CLI build... " >&6; }
 if test "$PHP_CLI" != "no"; then
@@ -10884,7 +10946,7 @@ if test "$PHP_CLI" != "no"; then
 
 
   old_IFS=$IFS
-  for ac_src in php_cli.c php_http_parser.c php_cli_server.c; do
+  for ac_src in php_cli.c php_http_parser.c php_cli_server.c ps_title.c php_cli_process_title.c; do
 
       IFS=.
       set $ac_src
@@ -67126,6 +67188,817 @@ fi
 
 
 
+php_enable_opcache=yes
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to enable Zend OPcache support" >&5
+$as_echo_n "checking whether to enable Zend OPcache support... " >&6; }
+# Check whether --enable-opcache was given.
+if test "${enable_opcache+set}" = set; then :
+  enableval=$enable_opcache; PHP_OPCACHE=$enableval
+else
+
+  PHP_OPCACHE=yes
+  test "$PHP_ENABLE_ALL" && PHP_OPCACHE=$PHP_ENABLE_ALL
+
+fi
+
+
+
+ext_output="yes, shared"
+ext_shared=yes
+case $PHP_OPCACHE in
+shared,*)
+  PHP_OPCACHE=`echo "$PHP_OPCACHE"|$SED 's/^shared,//'`
+  ;;
+shared)
+  PHP_OPCACHE=yes
+  ;;
+no)
+  ext_output=no
+  ext_shared=no
+  ;;
+*)
+  ext_output=yes
+  ext_shared=no
+  ;;
+esac
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ext_output" >&5
+$as_echo "$ext_output" >&6; }
+
+
+
+
+if test "$PHP_OPCACHE" != "no"; then
+
+  ac_fn_c_check_func "$LINENO" "mprotect" "ac_cv_func_mprotect"
+if test "x$ac_cv_func_mprotect" = xyes; then :
+
+
+$as_echo "#define HAVE_MPROTECT 1" >>confdefs.h
+
+
+fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sysvipc shared memory support" >&5
+$as_echo_n "checking for sysvipc shared memory support... " >&6; }
+  if test "$cross_compiling" = yes; then :
+  msg=no
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <unistd.h>
+#include <string.h>
+
+int main() {
+  pid_t pid;
+  int status;
+  int ipc_id;
+  char *shm;
+  struct shmid_ds shmbuf;
+
+  ipc_id = shmget(IPC_PRIVATE, 4096, (IPC_CREAT | SHM_R | SHM_W));
+  if (ipc_id == -1) {
+    return 1;
+  }
+
+  shm = shmat(ipc_id, NULL, 0);
+  if (shm == (void *)-1) {
+    shmctl(ipc_id, IPC_RMID, NULL);
+    return 2;
+  }
+
+  if (shmctl(ipc_id, IPC_STAT, &shmbuf) != 0) {
+    shmdt(shm);
+    shmctl(ipc_id, IPC_RMID, NULL);
+    return 3;
+  }
+
+  shmbuf.shm_perm.uid = getuid();
+  shmbuf.shm_perm.gid = getgid();
+  shmbuf.shm_perm.mode = 0600;
+
+  if (shmctl(ipc_id, IPC_SET, &shmbuf) != 0) {
+    shmdt(shm);
+    shmctl(ipc_id, IPC_RMID, NULL);
+    return 4;
+  }
+
+  shmctl(ipc_id, IPC_RMID, NULL);
+
+  strcpy(shm, "hello");
+
+  pid = fork();
+  if (pid < 0) {
+    return 5;
+  } else if (pid == 0) {
+    strcpy(shm, "bye");
+    return 6;
+  }
+  if (wait(&status) != pid) {
+    return 7;
+  }
+  if (!WIFEXITED(status) || WEXITSTATUS(status) != 6) {
+    return 8;
+  }
+  if (strcmp(shm, "bye") != 0) {
+    return 9;
+  }
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+
+$as_echo "#define HAVE_SHM_IPC 1" >>confdefs.h
+
+    msg=yes
+else
+  msg=no
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $msg" >&5
+$as_echo "$msg" >&6; }
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for mmap() using MAP_ANON shared memory support" >&5
+$as_echo_n "checking for mmap() using MAP_ANON shared memory support... " >&6; }
+  if test "$cross_compiling" = yes; then :
+  msg=no
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#include <string.h>
+
+#ifndef MAP_ANON
+# ifdef MAP_ANONYMOUS
+#  define MAP_ANON MAP_ANONYMOUS
+# endif
+#endif
+#ifndef MAP_FAILED
+# define MAP_FAILED ((void*)-1)
+#endif
+
+int main() {
+  pid_t pid;
+  int status;
+  char *shm;
+
+  shm = mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0);
+  if (shm == MAP_FAILED) {
+    return 1;
+  }
+
+  strcpy(shm, "hello");
+
+  pid = fork();
+  if (pid < 0) {
+    return 5;
+  } else if (pid == 0) {
+    strcpy(shm, "bye");
+    return 6;
+  }
+  if (wait(&status) != pid) {
+    return 7;
+  }
+  if (!WIFEXITED(status) || WEXITSTATUS(status) != 6) {
+    return 8;
+  }
+  if (strcmp(shm, "bye") != 0) {
+    return 9;
+  }
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+
+$as_echo "#define HAVE_SHM_MMAP_ANON 1" >>confdefs.h
+
+    msg=yes
+else
+  msg=no
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $msg" >&5
+$as_echo "$msg" >&6; }
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for mmap() using /dev/zero shared memory support" >&5
+$as_echo_n "checking for mmap() using /dev/zero shared memory support... " >&6; }
+  if test "$cross_compiling" = yes; then :
+  msg=no
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <string.h>
+
+#ifndef MAP_FAILED
+# define MAP_FAILED ((void*)-1)
+#endif
+
+int main() {
+  pid_t pid;
+  int status;
+  int fd;
+  char *shm;
+
+  fd = open("/dev/zero", O_RDWR, S_IRUSR | S_IWUSR);
+  if (fd == -1) {
+    return 1;
+  }
+
+  shm = mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  if (shm == MAP_FAILED) {
+    return 2;
+  }
+
+  strcpy(shm, "hello");
+
+  pid = fork();
+  if (pid < 0) {
+    return 5;
+  } else if (pid == 0) {
+    strcpy(shm, "bye");
+    return 6;
+  }
+  if (wait(&status) != pid) {
+    return 7;
+  }
+  if (!WIFEXITED(status) || WEXITSTATUS(status) != 6) {
+    return 8;
+  }
+  if (strcmp(shm, "bye") != 0) {
+    return 9;
+  }
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+
+$as_echo "#define HAVE_SHM_MMAP_ZERO 1" >>confdefs.h
+
+    msg=yes
+else
+  msg=no
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $msg" >&5
+$as_echo "$msg" >&6; }
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for mmap() using shm_open() shared memory support" >&5
+$as_echo_n "checking for mmap() using shm_open() shared memory support... " >&6; }
+  if test "$cross_compiling" = yes; then :
+  msg=no
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+#ifndef MAP_FAILED
+# define MAP_FAILED ((void*)-1)
+#endif
+
+int main() {
+  pid_t pid;
+  int status;
+  int fd;
+  char *shm;
+  char tmpname[4096];
+
+  sprintf(tmpname,"test.shm.%dXXXXXX", getpid());
+  if (mktemp(tmpname) == NULL) {
+    return 1;
+  }
+  fd = shm_open(tmpname, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+  if (fd == -1) {
+    return 2;
+  }
+  if (ftruncate(fd, 4096) < 0) {
+    close(fd);
+    shm_unlink(tmpname);
+    return 3;
+  }
+
+  shm = mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  if (shm == MAP_FAILED) {
+    return 4;
+  }
+  shm_unlink(tmpname);
+  close(fd);
+
+  strcpy(shm, "hello");
+
+  pid = fork();
+  if (pid < 0) {
+    return 5;
+  } else if (pid == 0) {
+    strcpy(shm, "bye");
+    return 6;
+  }
+  if (wait(&status) != pid) {
+    return 7;
+  }
+  if (!WIFEXITED(status) || WEXITSTATUS(status) != 6) {
+    return 8;
+  }
+  if (strcmp(shm, "bye") != 0) {
+    return 9;
+  }
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+
+$as_echo "#define HAVE_SHM_MMAP_POSIX 1" >>confdefs.h
+
+    msg=yes
+else
+  msg=no
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $msg" >&5
+$as_echo "$msg" >&6; }
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for mmap() using regular file shared memory support" >&5
+$as_echo_n "checking for mmap() using regular file shared memory support... " >&6; }
+  if test "$cross_compiling" = yes; then :
+  msg=no
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+#ifndef MAP_FAILED
+# define MAP_FAILED ((void*)-1)
+#endif
+
+int main() {
+  pid_t pid;
+  int status;
+  int fd;
+  char *shm;
+  char tmpname[4096];
+
+  sprintf(tmpname,"test.shm.%dXXXXXX", getpid());
+  if (mktemp(tmpname) == NULL) {
+    return 1;
+  }
+  fd = open(tmpname, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+  if (fd == -1) {
+    return 2;
+  }
+  if (ftruncate(fd, 4096) < 0) {
+    close(fd);
+    unlink(tmpname);
+    return 3;
+  }
+
+  shm = mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  if (shm == MAP_FAILED) {
+    return 4;
+  }
+  unlink(tmpname);
+  close(fd);
+
+  strcpy(shm, "hello");
+
+  pid = fork();
+  if (pid < 0) {
+    return 5;
+  } else if (pid == 0) {
+    strcpy(shm, "bye");
+    return 6;
+  }
+  if (wait(&status) != pid) {
+    return 7;
+  }
+  if (!WIFEXITED(status) || WEXITSTATUS(status) != 6) {
+    return 8;
+  }
+  if (strcmp(shm, "bye") != 0) {
+    return 9;
+  }
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+
+$as_echo "#define HAVE_SHM_MMAP_FILE 1" >>confdefs.h
+
+    msg=yes
+else
+  msg=no
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $msg" >&5
+$as_echo "$msg" >&6; }
+
+
+  ext_builddir=ext/opcache
+  ext_srcdir=$abs_srcdir/ext/opcache
+
+  ac_extra=
+
+  if test "shared" != "shared" && test "shared" != "yes" && test "" != "cli"; then
+    PHP_OPCACHE_SHARED=no
+
+
+  case ext/opcache in
+  "") ac_srcdir="$abs_srcdir/"; unset ac_bdir; ac_inc="-I. -I$abs_srcdir" ;;
+  /*) ac_srcdir=`echo "ext/opcache"|cut -c 2-`"/"; ac_bdir=$ac_srcdir; ac_inc="-I$ac_bdir -I$abs_srcdir/$ac_bdir" ;;
+  *) ac_srcdir="$abs_srcdir/ext/opcache/"; ac_bdir="ext/opcache/"; ac_inc="-I$ac_bdir -I$ac_srcdir" ;;
+  esac
+
+
+
+  b_c_pre=$php_c_pre
+  b_cxx_pre=$php_cxx_pre
+  b_c_meta=$php_c_meta
+  b_cxx_meta=$php_cxx_meta
+  b_c_post=$php_c_post
+  b_cxx_post=$php_cxx_post
+  b_lo=$php_lo
+
+
+  old_IFS=$IFS
+  for ac_src in ZendAccelerator.c \
+	zend_accelerator_blacklist.c \
+	zend_accelerator_debug.c \
+	zend_accelerator_hash.c \
+	zend_accelerator_module.c \
+	zend_persist.c \
+	zend_persist_calc.c \
+	zend_shared_alloc.c \
+	zend_accelerator_util_funcs.c \
+	shared_alloc_shm.c \
+	shared_alloc_mmap.c \
+	shared_alloc_posix.c \
+	Optimizer/zend_optimizer.c; do
+
+      IFS=.
+      set $ac_src
+      ac_obj=$1
+      IFS=$old_IFS
+
+      PHP_GLOBAL_OBJS="$PHP_GLOBAL_OBJS $ac_bdir$ac_obj.lo"
+
+      case $ac_src in
+        *.c) ac_comp="$b_c_pre $ac_extra $ac_inc $b_c_meta -c $ac_srcdir$ac_src -o $ac_bdir$ac_obj.$b_lo $b_c_post" ;;
+        *.s) ac_comp="$b_c_pre $ac_extra $ac_inc $b_c_meta -c $ac_srcdir$ac_src -o $ac_bdir$ac_obj.$b_lo $b_c_post" ;;
+        *.S) ac_comp="$b_c_pre $ac_extra $ac_inc $b_c_meta -c $ac_srcdir$ac_src -o $ac_bdir$ac_obj.$b_lo $b_c_post" ;;
+        *.cpp|*.cc|*.cxx) ac_comp="$b_cxx_pre $ac_extra $ac_inc $b_cxx_meta -c $ac_srcdir$ac_src -o $ac_bdir$ac_obj.$b_lo $b_cxx_post" ;;
+      esac
+
+    cat >>Makefile.objects<<EOF
+$ac_bdir$ac_obj.lo: $ac_srcdir$ac_src
+	$ac_comp
+EOF
+  done
+
+
+    EXT_STATIC="$EXT_STATIC opcache"
+    if test "shared" != "nocli"; then
+      EXT_CLI_STATIC="$EXT_CLI_STATIC opcache"
+    fi
+  else
+    if test "shared" = "shared" || test "shared" = "yes"; then
+      PHP_OPCACHE_SHARED=yes
+
+  case ext/opcache in
+  "") ac_srcdir="$abs_srcdir/"; unset ac_bdir; ac_inc="-I. -I$abs_srcdir" ;;
+  /*) ac_srcdir=`echo "ext/opcache"|cut -c 2-`"/"; ac_bdir=$ac_srcdir; ac_inc="-I$ac_bdir -I$abs_srcdir/$ac_bdir" ;;
+  *) ac_srcdir="$abs_srcdir/ext/opcache/"; ac_bdir="ext/opcache/"; ac_inc="-I$ac_bdir -I$ac_srcdir" ;;
+  esac
+
+
+
+  b_c_pre=$shared_c_pre
+  b_cxx_pre=$shared_cxx_pre
+  b_c_meta=$shared_c_meta
+  b_cxx_meta=$shared_cxx_meta
+  b_c_post=$shared_c_post
+  b_cxx_post=$shared_cxx_post
+  b_lo=$shared_lo
+
+
+  old_IFS=$IFS
+  for ac_src in ZendAccelerator.c \
+	zend_accelerator_blacklist.c \
+	zend_accelerator_debug.c \
+	zend_accelerator_hash.c \
+	zend_accelerator_module.c \
+	zend_persist.c \
+	zend_persist_calc.c \
+	zend_shared_alloc.c \
+	zend_accelerator_util_funcs.c \
+	shared_alloc_shm.c \
+	shared_alloc_mmap.c \
+	shared_alloc_posix.c \
+	Optimizer/zend_optimizer.c; do
+
+      IFS=.
+      set $ac_src
+      ac_obj=$1
+      IFS=$old_IFS
+
+      shared_objects_opcache="$shared_objects_opcache $ac_bdir$ac_obj.lo"
+
+      case $ac_src in
+        *.c) ac_comp="$b_c_pre $ac_extra $ac_inc $b_c_meta -c $ac_srcdir$ac_src -o $ac_bdir$ac_obj.$b_lo $b_c_post" ;;
+        *.s) ac_comp="$b_c_pre $ac_extra $ac_inc $b_c_meta -c $ac_srcdir$ac_src -o $ac_bdir$ac_obj.$b_lo $b_c_post" ;;
+        *.S) ac_comp="$b_c_pre $ac_extra $ac_inc $b_c_meta -c $ac_srcdir$ac_src -o $ac_bdir$ac_obj.$b_lo $b_c_post" ;;
+        *.cpp|*.cc|*.cxx) ac_comp="$b_cxx_pre $ac_extra $ac_inc $b_cxx_meta -c $ac_srcdir$ac_src -o $ac_bdir$ac_obj.$b_lo $b_cxx_post" ;;
+      esac
+
+    cat >>Makefile.objects<<EOF
+$ac_bdir$ac_obj.lo: $ac_srcdir$ac_src
+	$ac_comp
+EOF
+  done
+
+      case $host_alias in
+        *netware*)
+
+  install_modules="install-modules"
+
+  case $host_alias in
+    *aix*)
+      suffix=so
+      link_cmd='$(LIBTOOL) --mode=link $(CC) $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS) $(LDFLAGS) -Wl,-G -o '$ext_builddir'/phpopcache.la -export-dynamic -avoid-version -prefer-pic -module -rpath $(phplibdir) $(EXTRA_LDFLAGS) $(shared_objects_opcache) $(PHPOPCACHE_SHARED_LIBADD) && mv -f '$ext_builddir'/.libs/phpopcache.so '$ext_builddir'/phpopcache.so'
+      ;;
+    *netware*)
+      suffix=nlm
+      link_cmd='$(LIBTOOL) --mode=link $(CC) $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS) $(LDFLAGS) -o $@ -shared -export-dynamic -avoid-version -prefer-pic -module -rpath $(phplibdir) $(EXTRA_LDFLAGS) $(shared_objects_opcache) -L$(top_builddir)/netware -lphp5lib $(OPCACHE_SHARED_LIBADD)'
+      ;;
+    *)
+      suffix=la
+      link_cmd='$(LIBTOOL) --mode=link $(CC) $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS) $(LDFLAGS) -o $@ -export-dynamic -avoid-version -prefer-pic -module -rpath $(phplibdir) $(EXTRA_LDFLAGS) $(shared_objects_opcache) $(PHPOPCACHE_SHARED_LIBADD)'
+      ;;
+  esac
+
+  if test "xyes" = "xyes"; then
+    PHP_ZEND_EX="$PHP_ZEND_EX \$(phplibdir)/phpopcache.$suffix"
+  else
+    PHP_MODULES="$PHP_MODULES \$(phplibdir)/phpopcache.$suffix"
+  fi
+
+  PHP_VAR_SUBST="$PHP_VAR_SUBST shared_objects_opcache"
+
+  cat >>Makefile.objects<<EOF
+\$(phplibdir)/phpopcache.$suffix: $ext_builddir/phpopcache.$suffix
+	\$(LIBTOOL) --mode=install cp $ext_builddir/phpopcache.$suffix \$(phplibdir)
+
+$ext_builddir/phpopcache.$suffix: \$(shared_objects_opcache) \$(PHPOPCACHE_SHARED_DEPENDENCIES)
+	$link_cmd
+
+EOF
+
+          ;;
+        *)
+
+  install_modules="install-modules"
+
+  case $host_alias in
+    *aix*)
+      suffix=so
+      link_cmd='$(LIBTOOL) --mode=link $(CC) $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS) $(LDFLAGS) -Wl,-G -o '$ext_builddir'/opcache.la -export-dynamic -avoid-version -prefer-pic -module -rpath $(phplibdir) $(EXTRA_LDFLAGS) $(shared_objects_opcache) $(OPCACHE_SHARED_LIBADD) && mv -f '$ext_builddir'/.libs/opcache.so '$ext_builddir'/opcache.so'
+      ;;
+    *netware*)
+      suffix=nlm
+      link_cmd='$(LIBTOOL) --mode=link $(CC) $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS) $(LDFLAGS) -o $@ -shared -export-dynamic -avoid-version -prefer-pic -module -rpath $(phplibdir) $(EXTRA_LDFLAGS) $(shared_objects_opcache) -L$(top_builddir)/netware -lphp5lib $(ACHE_SHARED_LIBADD)'
+      ;;
+    *)
+      suffix=la
+      link_cmd='$(LIBTOOL) --mode=link $(CC) $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS) $(LDFLAGS) -o $@ -export-dynamic -avoid-version -prefer-pic -module -rpath $(phplibdir) $(EXTRA_LDFLAGS) $(shared_objects_opcache) $(OPCACHE_SHARED_LIBADD)'
+      ;;
+  esac
+
+  if test "xyes" = "xyes"; then
+    PHP_ZEND_EX="$PHP_ZEND_EX \$(phplibdir)/opcache.$suffix"
+  else
+    PHP_MODULES="$PHP_MODULES \$(phplibdir)/opcache.$suffix"
+  fi
+
+  PHP_VAR_SUBST="$PHP_VAR_SUBST shared_objects_opcache"
+
+  cat >>Makefile.objects<<EOF
+\$(phplibdir)/opcache.$suffix: $ext_builddir/opcache.$suffix
+	\$(LIBTOOL) --mode=install cp $ext_builddir/opcache.$suffix \$(phplibdir)
+
+$ext_builddir/opcache.$suffix: \$(shared_objects_opcache) \$(OPCACHE_SHARED_DEPENDENCIES)
+	$link_cmd
+
+EOF
+
+          ;;
+      esac
+
+cat >>confdefs.h <<_ACEOF
+#define COMPILE_DL_OPCACHE 1
+_ACEOF
+
+    fi
+  fi
+
+  if test "shared" != "shared" && test "shared" != "yes" && test "" = "cli"; then
+    PHP_OPCACHE_SHARED=no
+    case "$PHP_SAPI" in
+      cgi|embed)
+
+
+  case ext/opcache in
+  "") ac_srcdir="$abs_srcdir/"; unset ac_bdir; ac_inc="-I. -I$abs_srcdir" ;;
+  /*) ac_srcdir=`echo "ext/opcache"|cut -c 2-`"/"; ac_bdir=$ac_srcdir; ac_inc="-I$ac_bdir -I$abs_srcdir/$ac_bdir" ;;
+  *) ac_srcdir="$abs_srcdir/ext/opcache/"; ac_bdir="ext/opcache/"; ac_inc="-I$ac_bdir -I$ac_srcdir" ;;
+  esac
+
+
+
+  b_c_pre=$php_c_pre
+  b_cxx_pre=$php_cxx_pre
+  b_c_meta=$php_c_meta
+  b_cxx_meta=$php_cxx_meta
+  b_c_post=$php_c_post
+  b_cxx_post=$php_cxx_post
+  b_lo=$php_lo
+
+
+  old_IFS=$IFS
+  for ac_src in ZendAccelerator.c \
+	zend_accelerator_blacklist.c \
+	zend_accelerator_debug.c \
+	zend_accelerator_hash.c \
+	zend_accelerator_module.c \
+	zend_persist.c \
+	zend_persist_calc.c \
+	zend_shared_alloc.c \
+	zend_accelerator_util_funcs.c \
+	shared_alloc_shm.c \
+	shared_alloc_mmap.c \
+	shared_alloc_posix.c \
+	Optimizer/zend_optimizer.c; do
+
+      IFS=.
+      set $ac_src
+      ac_obj=$1
+      IFS=$old_IFS
+
+      PHP_GLOBAL_OBJS="$PHP_GLOBAL_OBJS $ac_bdir$ac_obj.lo"
+
+      case $ac_src in
+        *.c) ac_comp="$b_c_pre $ac_extra $ac_inc $b_c_meta -c $ac_srcdir$ac_src -o $ac_bdir$ac_obj.$b_lo $b_c_post" ;;
+        *.s) ac_comp="$b_c_pre $ac_extra $ac_inc $b_c_meta -c $ac_srcdir$ac_src -o $ac_bdir$ac_obj.$b_lo $b_c_post" ;;
+        *.S) ac_comp="$b_c_pre $ac_extra $ac_inc $b_c_meta -c $ac_srcdir$ac_src -o $ac_bdir$ac_obj.$b_lo $b_c_post" ;;
+        *.cpp|*.cc|*.cxx) ac_comp="$b_cxx_pre $ac_extra $ac_inc $b_cxx_meta -c $ac_srcdir$ac_src -o $ac_bdir$ac_obj.$b_lo $b_cxx_post" ;;
+      esac
+
+    cat >>Makefile.objects<<EOF
+$ac_bdir$ac_obj.lo: $ac_srcdir$ac_src
+	$ac_comp
+EOF
+  done
+
+
+        EXT_STATIC="$EXT_STATIC opcache"
+        ;;
+      *)
+
+
+  case ext/opcache in
+  "") ac_srcdir="$abs_srcdir/"; unset ac_bdir; ac_inc="-I. -I$abs_srcdir" ;;
+  /*) ac_srcdir=`echo "ext/opcache"|cut -c 2-`"/"; ac_bdir=$ac_srcdir; ac_inc="-I$ac_bdir -I$abs_srcdir/$ac_bdir" ;;
+  *) ac_srcdir="$abs_srcdir/ext/opcache/"; ac_bdir="ext/opcache/"; ac_inc="-I$ac_bdir -I$ac_srcdir" ;;
+  esac
+
+
+
+  b_c_pre=$php_c_pre
+  b_cxx_pre=$php_cxx_pre
+  b_c_meta=$php_c_meta
+  b_cxx_meta=$php_cxx_meta
+  b_c_post=$php_c_post
+  b_cxx_post=$php_cxx_post
+  b_lo=$php_lo
+
+
+  old_IFS=$IFS
+  for ac_src in ZendAccelerator.c \
+	zend_accelerator_blacklist.c \
+	zend_accelerator_debug.c \
+	zend_accelerator_hash.c \
+	zend_accelerator_module.c \
+	zend_persist.c \
+	zend_persist_calc.c \
+	zend_shared_alloc.c \
+	zend_accelerator_util_funcs.c \
+	shared_alloc_shm.c \
+	shared_alloc_mmap.c \
+	shared_alloc_posix.c \
+	Optimizer/zend_optimizer.c; do
+
+      IFS=.
+      set $ac_src
+      ac_obj=$1
+      IFS=$old_IFS
+
+      PHP_GLOBAL_OBJS="$PHP_GLOBAL_OBJS $ac_bdir$ac_obj.lo"
+
+      case $ac_src in
+        *.c) ac_comp="$b_c_pre $ac_extra $ac_inc $b_c_meta -c $ac_srcdir$ac_src -o $ac_bdir$ac_obj.$b_lo $b_c_post" ;;
+        *.s) ac_comp="$b_c_pre $ac_extra $ac_inc $b_c_meta -c $ac_srcdir$ac_src -o $ac_bdir$ac_obj.$b_lo $b_c_post" ;;
+        *.S) ac_comp="$b_c_pre $ac_extra $ac_inc $b_c_meta -c $ac_srcdir$ac_src -o $ac_bdir$ac_obj.$b_lo $b_c_post" ;;
+        *.cpp|*.cc|*.cxx) ac_comp="$b_cxx_pre $ac_extra $ac_inc $b_cxx_meta -c $ac_srcdir$ac_src -o $ac_bdir$ac_obj.$b_lo $b_cxx_post" ;;
+      esac
+
+    cat >>Makefile.objects<<EOF
+$ac_bdir$ac_obj.lo: $ac_srcdir$ac_src
+	$ac_comp
+EOF
+  done
+
+
+        ;;
+    esac
+    EXT_CLI_STATIC="$EXT_CLI_STATIC opcache"
+  fi
+
+
+    BUILD_DIR="$BUILD_DIR $ext_builddir"
+
+
+
+  if test "$ext_builddir" = "."; then
+    PHP_PECL_EXTENSION=opcache
+
+  PHP_VAR_SUBST="$PHP_VAR_SUBST PHP_PECL_EXTENSION"
+
+  fi
+
+
+
+
+    $php_shtool mkdir -p $ext_builddir/Optimizer
+
+
+fi
+
+
+
 php_enable_pcntl=no
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to enable pcntl support" >&5
@@ -104780,7 +105653,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 104783 "configure"
+#line 105656 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -106692,7 +107565,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 106695 "configure"' > conftest.$ac_ext
+  echo '#line 107568 "configure"' > conftest.$ac_ext
   if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -108084,7 +108957,7 @@ else
       LDFLAGS="$LDFLAGS -Wl,-exported_symbols_list,conftest.sym"
 
 cat > conftest.$ac_ext <<EOF
-#line 108087 "configure"
+#line 108960 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -108242,11 +109115,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:108245: $lt_compile\"" >&5)
+   (eval echo "\"configure:109118: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "configure:108249: \$? = $ac_status" >&5
+   echo "configure:109122: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -108540,11 +109413,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:108543: $lt_compile\"" >&5)
+   (eval echo "\"configure:109416: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "configure:108547: \$? = $ac_status" >&5
+   echo "configure:109420: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -108644,11 +109517,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:108647: $lt_compile\"" >&5)
+   (eval echo "\"configure:109520: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "configure:108651: \$? = $ac_status" >&5
+   echo "configure:109524: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -109108,7 +109981,7 @@ _LT_EOF
        # Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 109111 "configure"
+#line 109984 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -109150,7 +110023,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	 # Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 109153 "configure"
+#line 110026 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -110675,7 +111548,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 110678 "configure"
+#line 111551 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -110775,7 +111648,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 110778 "configure"
+#line 111651 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -111840,7 +112713,7 @@ case $host_os in
       # Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 111843 "configure"
+#line 112716 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -111883,7 +112756,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	# Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 111886 "configure"
+#line 112759 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -113135,11 +114008,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:113138: $lt_compile\"" >&5)
+   (eval echo "\"configure:114011: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "configure:113142: \$? = $ac_status" >&5
+   echo "configure:114015: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -113239,11 +114112,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:113242: $lt_compile\"" >&5)
+   (eval echo "\"configure:114115: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "configure:113246: \$? = $ac_status" >&5
+   echo "configure:114119: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
