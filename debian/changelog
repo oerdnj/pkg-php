@@ -1,11 +1,15 @@
-php5 (5.5.0~beta1-2) UNRELEASED; urgency=low
+php5 (5.5.0~beta1-2) experimental; urgency=low
 
   * Add php5-readline based on libedit (Courtesy of Andreas Pour)
   * Add -n to run-tests.php for php to not pick-up any local php.ini.
     It's not a problem on sbuilds, but it might break when building
     locally. (Courtesy of Andreas Pour)
+  * XCache will support PHP 5.5 from version 3.1
+  * Disable -gstabs usage, which was breaking clang builds and is not needed.
+  * Remove .gitignore from git
+  * Pull upstream fix for kFreeBSD builds
 
- -- Ondřej Surý <ondrej@debian.org>  Fri, 22 Mar 2013 13:23:23 +0100
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 26 Mar 2013 21:26:33 +0100
 
 php5 (5.5.0~beta1-1) experimental; urgency=low
 
