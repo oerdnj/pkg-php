@@ -1,0 +1,15 @@
+X-Git-Url: http://git.php.net/?p=php-src.git;a=blobdiff_plain;f=ext%2Fopcache%2FZendAccelerator.h;h=ddcb7a16e45b737ae24e7d8a2972a89964e9f369;hp=3f10630ac83e117a83e2bdd74b11bece63871023;hb=bd0b09c6103490437a30592d2adf1d3935f8e90c;hpb=c08e1d2be948d63f7a9309344a0ed4092ac8dace
+
+diff --git a/ext/opcache/ZendAccelerator.h b/ext/opcache/ZendAccelerator.h
+index 3f10630..ddcb7a1 100644
+--- a/ext/opcache/ZendAccelerator.h
++++ b/ext/opcache/ZendAccelerator.h
+@@ -93,7 +93,7 @@
+ #ifndef ZEND_WIN32
+ extern int lock_file;
+ 
+-# if defined(__FreeBSD__) || (defined(__APPLE__) && defined(__MACH__)/* Darwin */) || defined(__OpenBSD__) || defined(__NetBSD__)
++# if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || (defined(__APPLE__) && defined(__MACH__)/* Darwin */) || defined(__OpenBSD__) || defined(__NetBSD__)
+ #  define FLOCK_STRUCTURE(name, type, whence, start, len) \
+ 		struct flock name = {start, len, -1, type, whence}
+ # elif defined(__svr4__)
