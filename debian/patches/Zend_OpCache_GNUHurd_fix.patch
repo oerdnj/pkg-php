@@ -10,7 +10,7 @@
  # include <sys/param.h>
  #endif
  
-@@ -99,7 +102,7 @@ extern int lock_file;
+@@ -100,7 +103,7 @@ extern int lock_file;
  # elif defined(__svr4__)
  #  define FLOCK_STRUCTURE(name, type, whence, start, len) \
  		struct flock name = {type, whence, start, len}
