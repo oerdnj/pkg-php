@@ -1,3 +1,11 @@
+php5 (5.5.0~beta2-1) experimental; urgency=low
+
+  * Imported Upstream version 5.5.0~beta2
+  * Fix compilation on GNU Hurd (Courtesy of Svante Signell)
+  * Refresh and delete merged patches in php 5.5.0beta2
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 29 Mar 2013 01:38:38 +0100
+
 php5 (5.5.0~beta1-2) experimental; urgency=low
 
   * Add php5-readline based on libedit (Courtesy of Andreas Pour)
