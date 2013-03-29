@@ -53,3 +53,4 @@ php-fpm-m68k.patch
 expose_all_built_and_installed_apis.patch
 use_updated_install-pear-nozlib.phar.patch
 Zend_OpCache_kFreeBSD_fix.patch
+Zend_OpCache_GNUHurd_fix.patch
