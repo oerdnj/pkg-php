@@ -1,3 +1,11 @@
+php5 (5.5.0~beta2-2) experimental; urgency=low
+
+  * Fix gd_compat by moving gdImagePaletteToTrueColor to gd_color.c
+    (Closes: #704457)
+  * Fix GNU Hurd check in also in ext/opcache/config.m4 and configure
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 02 Apr 2013 08:51:48 +0200
+
 php5 (5.5.0~beta2-1) experimental; urgency=low
 
   * Imported Upstream version 5.5.0~beta2
