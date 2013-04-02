@@ -19,3 +19,25 @@
  #  define FLOCK_STRUCTURE(name, type, whence, start, len) \
  		struct flock name = {type, whence, start, len, 0}
  # elif defined(_AIX)
+--- a/ext/opcache/config.m4
++++ b/ext/opcache/config.m4
+@@ -341,7 +341,7 @@ extern int lock_file;
+ # elif defined(__svr4__)
+ #  define FLOCK_STRUCTURE(name, type, whence, start, len) \
+                 struct flock name = {type, whence, start, len}
+-# elif defined(__linux__) || defined(__hpux)
++# elif defined(__linux__) || defined(__hpux) || defined(__GNU__)
+ #  define FLOCK_STRUCTURE(name, type, whence, start, len) \
+                 struct flock name = {type, whence, start, len, 0}
+ # elif defined(_AIX)
+--- a/configure
++++ b/configure
+@@ -67671,7 +67671,7 @@ extern int lock_file;
+ # elif defined(__svr4__)
+ #  define FLOCK_STRUCTURE(name, type, whence, start, len) \
+                 struct flock name = {type, whence, start, len}
+-# elif defined(__linux__) || defined(__hpux)
++# elif defined(__linux__) || defined(__hpux) || defined(__GNU__)
+ #  define FLOCK_STRUCTURE(name, type, whence, start, len) \
+                 struct flock name = {type, whence, start, len, 0}
+ # elif defined(_AIX)
