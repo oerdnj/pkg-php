@@ -616,7 +616,7 @@ r1: initial revision
 +
 --- a/ext/date/php_date.c
 +++ b/ext/date/php_date.c
-@@ -941,6 +941,23 @@ static char* guess_timezone(const timeli
+@@ -963,6 +963,23 @@ static char* guess_timezone(const timeli
  		DATEG(timezone_valid) = 1;
  		return DATEG(default_timezone);
  	}
