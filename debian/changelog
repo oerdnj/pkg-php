@@ -1,10 +1,12 @@
-php5 (5.5.0~beta2-2) experimental; urgency=low
+php5 (5.5.0~beta3-1) experimental; urgency=low
 
-  * Fix gd_compat by moving gdImagePaletteToTrueColor to gd_color.c
-    (Closes: #704457)
+  * Imported Upstream version 5.5.0~beta3
+  * Update patches to 5.5.0~beta3 release
   * Fix GNU Hurd check in also in ext/opcache/config.m4 and configure
+  * GD Extension is still broken and will be fixed when the new GD Library
+    2.1.0 is out, don't use PHP 5.5.0 if you want to use GD Extension
 
- -- Ondřej Surý <ondrej@debian.org>  Tue, 02 Apr 2013 08:51:48 +0200
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 11 Apr 2013 17:25:42 +0200
 
 php5 (5.5.0~beta2-1) experimental; urgency=low
 
