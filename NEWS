@@ -1,10 +1,42 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-14 Mar 2012, PHP 5.4.13
+11 Apr 2013, PHP 5.4.14
+- Core
+  . Fixed bug #64529 (Ran out of opcode space). (Dmitry)
+  . Fixed bug #64515 (Memoryleak when using the same variablename two times in
+    function declaration). (Laruence)
+  . Fixed bug #64432 (more empty delimiter warning in strX methods). (Laruence)
+  . Fixed bug #64417 (ArrayAccess::&offsetGet() in a trait causes fatal error).
+    (Dmitry)
+  . Fixed bug #64370 (microtime(true) less than $_SERVER['REQUEST_TIME_FLOAT']).
+    (Anatol)
+  . Fixed bug #64239 (Debug backtrace changed behavior since 5.4.10 or 5.4.11).
+    (Dmitry, Laruence)
+  . Fixed bug #63976 (Parent class incorrectly using child constant in class
+    property). (Dmitry)
+  . Fixed bug #63914 (zend_do_fcall_common_helper_SPEC does not handle
+    exceptions properly). (Jeff Welch)
+  . Fixed bug #62343 (Show class_alias In get_declared_classes()) (Dmitry)
+
+- PCRE:
+  . Merged PCRE 8.32. (Anatol)
+
+- SNMP:
+  . Fixed bug #61981 (OO API, walk: $suffix_as_key is not working correctly).
+	(Boris Lytochkin)
+
+- Zip:
+  . Bug #64452 (Zip crash intermittently). (Anatol)
+
+14 Mar 2013, PHP 5.4.13
 
 - Core:
+  . Fixed bug #64354 (Unserialize array of objects whose class can't
+    be autoloaded fail). (Laruence)
   . Fixed bug #64235 (Insteadof not work for class method in 5.4.11).
     (Laruence)
+  . Fixed bug #64197 (_Offsetof() macro used but not defined on ARM/Clang). 
+    (Ard Biesheuvel)
   . Implemented FR #64175 (Added HTTP codes as of RFC 6585). (Jonh Wendell)
   . Fixed bug #64142 (dval to lval different behavior on ppc64). (Remi)
   . Fixed bug #64070 (Inheritance with Traits failed with error). (Dmitry)
@@ -15,7 +47,13 @@ PHP                                                                        NEWS
 - Mbstring:
   . mb_split() can now handle empty matches like preg_split() does. (Moriyoshi)
 
+- mysqlnd
+  . Fixed bug #63530 (mysqlnd_stmt::bind_one_parameter crashes, uses wrong alloc
+    for stmt->param_bind). (Andrey)
+
 - OpenSSL:
+  . New SSL stream context option to prevent CRIME attack vector. (Daniel Lowrey,
+	Lars)
   . Fixed bug #61930 (openssl corrupts ssl key resource when using 
     openssl_get_publickey()). (Stas)
 
@@ -29,7 +67,11 @@ PHP                                                                        NEWS
 - SOAP
   . Added check that soap.wsdl_cache_dir conforms to open_basedir
     (CVE-2013-1635). (Dmitry)
-  . Disabled external entities loading (CVE-2013-1643). (Dmitry)
+  . Disabled external entities loading (CVE-2013-1643, CVE-2013-1824). 
+    (Dmitry)
+
+- Phar:
+  . Fixed timestamp update on Phar contents modification. (Dmitry)
 
 - SPL:
   . Fixed bug #64264 (SPLFixedArray toArray problem). (Laruence)
@@ -43,7 +85,7 @@ PHP                                                                        NEWS
 - SNMP:
   . Fixed bug #64124 (IPv6 malformed). (Boris Lytochkin)
 
-21 Feb 2012, PHP 5.4.12
+21 Feb 2013, PHP 5.4.12
 
 - Core:
   . Fixed bug #64099 (Wrong TSRM usage in zend_Register_class alias). (Johannes)
@@ -88,11 +130,7 @@ PHP                                                                        NEWS
   . Fixed bug #63916 (PDO::PARAM_INT casts to 32bit int internally even
     on 64bit builds in pdo_sqlite). (srgoogleguy, Lars)
 
-- OpenSSL:
-  . New SSL stream context option to prevent CRIME attack vector. (Daniel Lowrey,
-    Lars)
-
-17 Jan 2012, PHP 5.4.11
+17 Jan 2013, PHP 5.4.11
 
 - Core:
   . Fixed bug #63762 (Sigsegv when Exception::$trace is changed by user).
