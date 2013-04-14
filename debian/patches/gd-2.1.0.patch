@@ -1,0 +1,473 @@
+--- a/ext/gd/config.m4
++++ b/ext/gd/config.m4
+@@ -283,6 +283,7 @@ AC_DEFUN([PHP_GD_CHECK_VERSION],[
+   PHP_CHECK_LIBRARY(gd, gdFreeFontCache,        [AC_DEFINE(HAVE_GD_FREEFONTCACHE,    1, [ ])], [], [ -L$GD_LIB $GD_SHARED_LIBADD ])
+   PHP_CHECK_LIBRARY(gd, gdFontCacheMutexSetup,  [AC_DEFINE(HAVE_GD_FONTMUTEX,        1, [ ])], [], [ -L$GD_LIB $GD_SHARED_LIBADD ])
+   PHP_CHECK_LIBRARY(gd, gdNewDynamicCtxEx,      [AC_DEFINE(HAVE_GD_DYNAMIC_CTX_EX,   1, [ ])], [], [ -L$GD_LIB $GD_SHARED_LIBADD ])
++  PHP_CHECK_LIBRARY(gd, gdSetErrorMethod,	[AC_DEFINE(HAVE_LIBGD21,	     1, [ ])], [], [ -L$GD_LIB $GD_SHARED_LIBADD ])
+ ])
+ 
+ dnl
+@@ -323,6 +324,7 @@ dnl These are always available with bund
+   AC_DEFINE(HAVE_LIBGD15,             1, [ ])
+   AC_DEFINE(HAVE_LIBGD20,             1, [ ])
+   AC_DEFINE(HAVE_LIBGD204,            1, [ ])
++  AC_DEFINE(HAVE_LIBGD21,	      1, [ ])
+   AC_DEFINE(HAVE_GD_IMAGESETTILE,     1, [ ])
+   AC_DEFINE(HAVE_GD_IMAGESETBRUSH,    1, [ ])
+   AC_DEFINE(HAVE_GDIMAGECOLORRESOLVE, 1, [ ])
+@@ -377,8 +379,7 @@ else
+ 
+  if test "$PHP_GD" != "no"; then
+   GD_MODULE_TYPE=external
+-  extra_sources="gdcache.c libgd/gd_compat.c libgd/gd_filter.c libgd/gd_pixelate.c libgd/gd_arc.c \
+-                 libgd/gd_rotate.c libgd/gd_color.c"
++  extra_sources="libgd/gd_compat.c"
+ 
+ dnl Various checks for GD features
+   PHP_GD_ZLIB
+@@ -412,22 +413,26 @@ dnl Library path
+ 
+   PHP_EXPAND_PATH($GD_INCLUDE, GD_INCLUDE)
+ 
+-  dnl
+-  dnl Check for gd 2.0.4 greater availability
+-  dnl
+-  old_CPPFLAGS=$CPPFLAGS
+-  CPPFLAGS=-I$GD_INCLUDE
+-  AC_TRY_COMPILE([
++  if test -n "$HAVE_LIBGD21"; then
++    AC_DEFINE(HAVE_LIBGD204, 1, [ ])
++  else
++    dnl
++    dnl Check for gd 2.0.4 greater availability
++    dnl
++    old_CPPFLAGS=$CPPFLAGS
++    CPPFLAGS=-I$GD_INCLUDE
++    AC_TRY_COMPILE([
+ #include <gd.h>
+ #include <stdlib.h>
+   ], [
+ gdIOCtx *ctx;
+ ctx = malloc(sizeof(gdIOCtx));
+ ctx->gd_free = 1;
+-  ], [
+-    AC_DEFINE(HAVE_LIBGD204, 1, [ ])
+-  ])
+-  CPPFLAGS=$old_CPPFLAGS
++    ], [
++      AC_DEFINE(HAVE_LIBGD204, 1, [ ])
++    ])
++    CPPFLAGS=$old_CPPFLAGS
++  fi
+ 
+  fi
+ fi
+@@ -438,9 +443,8 @@ dnl
+ if test "$PHP_GD" != "no"; then
+   PHP_NEW_EXTENSION(gd, gd.c $extra_sources, $ext_shared,, \\$(GDLIB_CFLAGS))
+ 
+-  PHP_ADD_BUILD_DIR($ext_builddir/libgd)
+-
+-  if test "$GD_MODULE_TYPE" = "builtin"; then
++  if test "$GD_MODULE_TYPE" = "builtin"; then 
++    PHP_ADD_BUILD_DIR($ext_builddir/libgd)
+     GDLIB_CFLAGS="-I$ext_srcdir/libgd $GDLIB_CFLAGS"
+     GD_HEADER_DIRS="ext/gd/ ext/gd/libgd/"
+ 
+--- a/ext/gd/gd.c
++++ b/ext/gd/gd.c
+@@ -54,7 +54,7 @@
+ #endif
+ 
+ #if HAVE_LIBGD
+-#if !HAVE_GD_BUNDLED
++#if !defined(HAVE_GD_BUNDLED)
+ # include "libgd/gd_compat.h"
+ #endif
+ 
+@@ -74,7 +74,7 @@ static void php_free_ps_enc(zend_rsrc_li
+ #include <gdfontg.h>  /* 5 Giant font */
+ 
+ #ifdef HAVE_GD_WBMP
+-#include "libgd/wbmp.h"
++/* #include "libgd/wbmp.h" */
+ #endif
+ #ifdef ENABLE_GD_TTF
+ # ifdef HAVE_LIBFREETYPE
+@@ -239,7 +239,7 @@ ZEND_BEGIN_ARG_INFO(arginfo_imagesavealp
+ 	ZEND_ARG_INFO(0, save)
+ ZEND_END_ARG_INFO()
+ 
+-#if HAVE_GD_BUNDLED
++#if defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21)
+ ZEND_BEGIN_ARG_INFO(arginfo_imagelayereffect, 0)
+ 	ZEND_ARG_INFO(0, im)
+ 	ZEND_ARG_INFO(0, effect)
+@@ -366,7 +366,7 @@ ZEND_BEGIN_ARG_INFO(arginfo_imagecreatef
+ ZEND_END_ARG_INFO()
+ #endif
+ 
+-#if defined(HAVE_GD_XPM) && defined(HAVE_GD_BUNDLED)
++#if defined(HAVE_GD_XPM) && (defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21))
+ ZEND_BEGIN_ARG_INFO(arginfo_imagecreatefromxpm, 0)
+ 	ZEND_ARG_INFO(0, filename)
+ ZEND_END_ARG_INFO()
+@@ -396,7 +396,7 @@ ZEND_BEGIN_ARG_INFO(arginfo_imagecreatef
+ ZEND_END_ARG_INFO()
+ #endif
+ 
+-#if HAVE_GD_BUNDLED
++#if defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21)
+ ZEND_BEGIN_ARG_INFO_EX(arginfo_imagexbm, 0, 0, 2)
+ 	ZEND_ARG_INFO(0, im)
+ 	ZEND_ARG_INFO(0, filename)
+@@ -883,7 +883,7 @@ ZEND_BEGIN_ARG_INFO(arginfo_imageconvolu
+ 	ZEND_ARG_INFO(0, offset)
+ ZEND_END_ARG_INFO()
+ 
+-#ifdef HAVE_GD_BUNDLED
++#if defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21)
+ ZEND_BEGIN_ARG_INFO(arginfo_imageantialias, 0)
+ 	ZEND_ARG_INFO(0, im)
+ 	ZEND_ARG_INFO(0, on)
+@@ -992,7 +992,7 @@ const zend_function_entry gd_functions[]
+ 
+ 	PHP_FE(imagerotate,     						arginfo_imagerotate)
+ 
+-#ifdef HAVE_GD_BUNDLED
++#if defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21)
+ 	PHP_FE(imageantialias,							arginfo_imageantialias)
+ 	PHP_FE(imageflip,								arginfo_imageflip)
+ 	PHP_FE(imagecrop,								arginfo_imagecrop)
+@@ -1032,7 +1032,7 @@ const zend_function_entry gd_functions[]
+ #ifdef HAVE_GD_XBM
+ 	PHP_FE(imagecreatefromxbm,						arginfo_imagecreatefromxbm)
+ #endif
+-#if defined(HAVE_GD_XPM) && defined(HAVE_GD_BUNDLED)
++#if defined(HAVE_GD_XPM) && (defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21))
+ 	PHP_FE(imagecreatefromxpm,						arginfo_imagecreatefromxpm)
+ #endif
+ 	PHP_FE(imagecreatefromgd,						arginfo_imagecreatefromgd)
+@@ -1112,7 +1112,7 @@ const zend_function_entry gd_functions[]
+ #ifdef HAVE_GD_WBMP
+ 	PHP_FE(image2wbmp,								arginfo_image2wbmp)
+ #endif
+-#if HAVE_GD_BUNDLED
++#if defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21)
+ 	PHP_FE(imagelayereffect,						arginfo_imagelayereffect)
+ 	PHP_FE(imagexbm,                                arginfo_imagexbm)
+ #endif
+@@ -1180,6 +1180,22 @@ static void php_free_gd_font(zend_rsrc_l
+ }
+ /* }}} */
+ 
++#ifdef HAVE_LIBGD21
++/* {{{ php_gd_error_method
++ */
++void php_gd_error_method(int type, const char *format, ...)
++{
++	va_list args;
++
++	TSRMLS_FETCH();
++
++	va_start(args, format);
++	php_verror(NULL, "", type, format, args TSRMLS_CC);
++	va_end(args);
++}
++/* }}} */
++#endif
++
+ /* {{{ PHP_MSHUTDOWN_FUNCTION
+  */
+ #if HAVE_LIBT1 || HAVE_GD_FONTMUTEX
+@@ -1215,7 +1231,9 @@ PHP_MINIT_FUNCTION(gd)
+ 	le_ps_font = zend_register_list_destructors_ex(php_free_ps_font, NULL, "gd PS font", module_number);
+ 	le_ps_enc = zend_register_list_destructors_ex(php_free_ps_enc, NULL, "gd PS encoding", module_number);
+ #endif
+-
++#ifdef HAVE_LIBGD21
++	gdSetErrorMethod(php_gd_error_method);
++#endif
+ 	REGISTER_INI_ENTRIES();
+ 
+ 	REGISTER_LONG_CONSTANT("IMG_GIF", 1, CONST_CS | CONST_PERSISTENT);
+@@ -1246,7 +1264,7 @@ PHP_MINIT_FUNCTION(gd)
+ #ifdef GD2_FMT_COMPRESSED
+ 	REGISTER_LONG_CONSTANT("IMG_GD2_COMPRESSED", GD2_FMT_COMPRESSED, CONST_CS | CONST_PERSISTENT);
+ #endif
+-#if HAVE_GD_BUNDLED
++#if defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21)
+ 	REGISTER_LONG_CONSTANT("IMG_EFFECT_REPLACE", gdEffectReplace, CONST_CS | CONST_PERSISTENT);
+ 	REGISTER_LONG_CONSTANT("IMG_EFFECT_ALPHABLEND", gdEffectAlphaBlend, CONST_CS | CONST_PERSISTENT);
+ 	REGISTER_LONG_CONSTANT("IMG_EFFECT_NORMAL", gdEffectNormal, CONST_CS | CONST_PERSISTENT);
+@@ -1359,8 +1377,10 @@ PHP_RSHUTDOWN_FUNCTION(gd)
+ #endif
+ /* }}} */
+ 
+-#if HAVE_GD_BUNDLED
++#if defined(HAVE_GD_BUNDLED)
+ #define PHP_GD_VERSION_STRING "bundled (2.0.34 compatible)"
++#elif defined(HAVE_LIBGD21)
++#define PHP_GD_VERSION_STRING "2.1"
+ #else
+ #define PHP_GD_VERSION_STRING "2.0"
+ #endif
+@@ -1401,8 +1421,6 @@ PHP_MINFO_FUNCTION(gd)
+ 	php_info_print_table_row(2, "T1Lib Support", "enabled");
+ #endif
+ 
+-/* this next part is stupid ... if I knew better, I'd put them all on one row (cmv) */
+-
+ #ifdef HAVE_GD_GIF_READ
+ 	php_info_print_table_row(2, "GIF Read Support", "enabled");
+ #endif
+@@ -1411,13 +1429,10 @@ PHP_MINFO_FUNCTION(gd)
+ #endif
+ #ifdef HAVE_GD_JPG
+ 	{
+-		char tmp[12];
+-		snprintf(tmp, sizeof(tmp), "%s", gdJpegGetVersionString());
+ 		php_info_print_table_row(2, "JPEG Support", "enabled");
+-		php_info_print_table_row(2, "libJPEG Version", tmp);
++		php_info_print_table_row(2, "libJPEG Version", gdJpegGetVersionString());
+ 	}
+ #endif
+-
+ #ifdef HAVE_GD_PNG
+ 	php_info_print_table_row(2, "PNG Support", "enabled");
+ 	php_info_print_table_row(2, "libPNG Version", gdPngGetVersionString());
+@@ -1425,7 +1440,7 @@ PHP_MINFO_FUNCTION(gd)
+ #ifdef HAVE_GD_WBMP
+ 	php_info_print_table_row(2, "WBMP Support", "enabled");
+ #endif
+-#if defined(HAVE_GD_XPM) && defined(HAVE_GD_BUNDLED)
++#if defined(HAVE_GD_XPM) && (defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21))
+ 	php_info_print_table_row(2, "XPM Support", "enabled");
+ 	{
+ 		char tmp[12];
+@@ -1436,7 +1451,7 @@ PHP_MINFO_FUNCTION(gd)
+ #ifdef HAVE_GD_XBM
+ 	php_info_print_table_row(2, "XBM Support", "enabled");
+ #endif
+-#if defined(USE_GD_JISX0208) && defined(HAVE_GD_BUNDLED)
++#if defined(USE_GD_JISX0208) && (defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21))
+ 	php_info_print_table_row(2, "JIS-mapped Japanese Font Support", "enabled");
+ #endif
+ #ifdef HAVE_GD_WEBP
+@@ -1500,7 +1515,7 @@ PHP_FUNCTION(gd_info)
+ #else
+ 	add_assoc_bool(return_value, "WBMP Support", 0);
+ #endif
+-#if defined(HAVE_GD_XPM) && defined(HAVE_GD_BUNDLED)
++#if defined(HAVE_GD_XPM) && (defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21))
+ 	add_assoc_bool(return_value, "XPM Support", 1);
+ #else
+ 	add_assoc_bool(return_value, "XPM Support", 0);
+@@ -1510,7 +1525,7 @@ PHP_FUNCTION(gd_info)
+ #else
+ 	add_assoc_bool(return_value, "XBM Support", 0);
+ #endif
+-#if defined(USE_GD_JISX0208) && defined(HAVE_GD_BUNDLED)
++#if defined(USE_GD_JISX0208) && (defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21))
+ 	add_assoc_bool(return_value, "JIS-mapped Japanese Font Support", 1);
+ #else
+ 	add_assoc_bool(return_value, "JIS-mapped Japanese Font Support", 0);
+@@ -1643,13 +1658,9 @@ PHP_FUNCTION(imageloadfont)
+ 		body_size = font->w * font->h * font->nchars;
+ 	}
+ 
+-	if (overflow2(font->nchars, font->h)) {
+-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Error reading font, invalid font header");
+-		efree(font);
+-		php_stream_close(stream);
+-		RETURN_FALSE;
+-	}
+-	if (overflow2(font->nchars * font->h, font->w )) {
++	if ((font->nchars <= 0 || font->h <= 0 || font->w <= 0 ) || \
++		(font->nchars > INT_MAX / font->h) || \
++		(font->nchars * font->h > INT_MAX / font->w)) {
+ 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Error reading font, invalid font header");
+ 		efree(font);
+ 		php_stream_close(stream);
+@@ -1972,7 +1983,7 @@ PHP_FUNCTION(imagesavealpha)
+ }
+ /* }}} */
+ 
+-#if HAVE_GD_BUNDLED
++#if defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21)
+ /* {{{ proto bool imagelayereffect(resource im, int effect)
+    Set the alpha blending flag to use the bundled libgd layering effects */
+ PHP_FUNCTION(imagelayereffect)
+@@ -2363,7 +2374,7 @@ PHP_FUNCTION(imagetypes)
+ #ifdef HAVE_GD_WBMP
+ 	ret |= 8;
+ #endif
+-#if defined(HAVE_GD_XPM) && defined(HAVE_GD_BUNDLED)
++#if defined(HAVE_GD_XPM) && (defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21))
+ 	ret |= 16;
+ #endif
+ 
+@@ -2375,6 +2386,23 @@ PHP_FUNCTION(imagetypes)
+ }
+ /* }}} */
+ 
++/* {{{ _php_ctx_getmbi
++ */
++
++static _php_ctx_getmbi(gdIOCtx *ctx)
++{
++	int i, mbi = 0;
++
++	do {
++		i = (ctx->getC)(ctx);
++		if (i < 0) {
++			break;
++		}
++		mbi = (mbi << 7) | (i & 0x7f);
++	} while (i & 0x80);
++}
++/* }}} */
++
+ /* {{{ _php_image_type
+  */
+ static const char php_sig_gd2[3] = {'g', 'd', '2'};
+@@ -2402,9 +2430,11 @@ static int _php_image_type (char data[8]
+ #ifdef HAVE_GD_WBMP
+ 	else {
+ 		gdIOCtx *io_ctx;
++		int i, mbi = 0;
++
+ 		io_ctx = gdNewDynamicCtxEx(8, data, 0);
+ 		if (io_ctx) {
+-			if (getmbi((int(*)(void *)) gdGetC, io_ctx) == 0 && skipheader((int(*)(void *)) gdGetC, io_ctx) == 0 ) {
++			if (_php_ctx_getmbi(io_ctx) == 0 && _php_ctx_getmbi(io_ctx) >= 0) {
+ #if HAVE_LIBGD204
+ 				io_ctx->gd_free(io_ctx);
+ #else
+@@ -2650,7 +2680,7 @@ static void _php_image_create_from(INTER
+ 			case PHP_GDIMG_TYPE_GD2PART:
+ 				im = (*func_p)(fp, srcx, srcy, width, height);
+ 				break;
+-#if defined(HAVE_GD_XPM) && defined(HAVE_GD_BUNDLED)
++#if defined(HAVE_GD_XPM) && (defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21))
+ 			case PHP_GDIMG_TYPE_XPM:
+ 				im = gdImageCreateFromXpm(file);
+ 				break;
+@@ -2661,6 +2691,8 @@ static void _php_image_create_from(INTER
+ 				ignore_warning = INI_INT("gd.jpeg_ignore_warning");
+ #ifdef HAVE_GD_BUNDLED
+ 				im = gdImageCreateFromJpeg(fp, ignore_warning);
++#elif HAVE_LIBGD21
++				im = gdImageCreateFromJpegEx(fp, ignore_warning);
+ #else
+ 				im = gdImageCreateFromJpeg(fp);
+ #endif
+@@ -2740,7 +2772,7 @@ PHP_FUNCTION(imagecreatefromxbm)
+ /* }}} */
+ #endif /* HAVE_GD_XBM */
+ 
+-#if defined(HAVE_GD_XPM) && defined(HAVE_GD_BUNDLED)
++#if defined(HAVE_GD_XPM) && (defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21))
+ /* {{{ proto resource imagecreatefromxpm(string filename)
+    Create a new image from XPM file or URL */
+ PHP_FUNCTION(imagecreatefromxpm)
+@@ -2948,7 +2980,7 @@ static void _php_image_output(INTERNAL_F
+ 
+ /* {{{ proto int imagexbm(int im, string filename [, int foreground])
+    Output XBM image to browser or file */
+-#if HAVE_GD_BUNDLED
++#if defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21)
+ PHP_FUNCTION(imagexbm)
+ {
+ 	_php_image_output_ctx(INTERNAL_FUNCTION_PARAM_PASSTHRU, PHP_GDIMG_TYPE_XBM, "GIF", gdImageXbmCtx);
+@@ -3354,6 +3386,7 @@ PHP_FUNCTION(imageline)
+ 	zval *IM;
+ 	long x1, y1, x2, y2, col;
+ 	gdImagePtr im;
++	int AA_color_save;
+ 
+ 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rlllll", &IM, &x1, &y1, &x2, &y2, &col) == FAILURE) {
+ 		return;
+@@ -3361,9 +3394,12 @@ PHP_FUNCTION(imageline)
+ 
+ 	ZEND_FETCH_RESOURCE(im, gdImagePtr, &IM, -1, "Image", le_gd);
+ 
+-#ifdef HAVE_GD_BUNDLED
++#if defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21)
+ 	if (im->antialias) {
+-		gdImageAALine(im, x1, y1, x2, y2, col);
++		AA_color_save = im->AA_color;
++		im->AA_color = col;
++		gdImageLine(im, x1, y1, x2, y2, gdAntiAliased);
++		im->AA_color = AA_color_save;
+ 	} else
+ #endif
+ 	{
+@@ -4772,8 +4808,10 @@ static void _php_image_convert(INTERNAL_
+ #ifdef HAVE_GD_JPG
+ 		case PHP_GDIMG_TYPE_JPG:
+ 			ignore_warning = INI_INT("gd.jpeg_ignore_warning");
+-#ifdef HAVE_GD_BUNDLED
++#if defined(HAVE_GD_BUNDLED)
+ 			im_org = gdImageCreateFromJpeg(org, ignore_warning);
++#elif defined(HAVE_LIBGD21)
++			im_org = gdImageCreateFromJpegEx(org, ignore_warning);
+ #else
+ 			im_org = gdImageCreateFromJpeg(org);
+ #endif
+@@ -5185,7 +5223,7 @@ PHP_FUNCTION(imageconvolution)
+ /* }}} */
+ /* End section: Filters */
+ 
+-#ifdef HAVE_GD_BUNDLED
++#if defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21)
+ /* {{{ proto bool imageantialias(resource im, bool on)
+    Should antialiased functions used or not*/
+ PHP_FUNCTION(imageantialias)
+--- a/ext/gd/libgd/gd_compat.h
++++ b/ext/gd/libgd/gd_compat.h
+@@ -10,6 +10,8 @@
+ const char * gdPngGetVersionString();
+ const char * gdJpegGetVersionString();
+ int gdJpegGetVersionInt();
++
++#if !defined(HAVE_LIBGD21)
+ int overflow2(int a, int b);
+ 
+ /* filters section
+@@ -57,3 +59,5 @@ int gdImageColorMatch (gdImagePtr im1, g
+ 
+ #endif
+ 
++#endif
++
+--- a/ext/gd/php_gd.h
++++ b/ext/gd/php_gd.h
+@@ -123,7 +123,7 @@ PHP_FUNCTION(imagegrabscreen);
+ 
+ PHP_FUNCTION(imagerotate);
+ 
+-#ifdef HAVE_GD_BUNDLED
++#if defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21)
+ PHP_FUNCTION(imageantialias);
+ PHP_FUNCTION(imageflip);
+ PHP_FUNCTION(imagecrop);
+@@ -151,7 +151,7 @@ PHP_FUNCTION(imagecreatefromwbmp);
+ PHP_FUNCTION(imagecreatefromgd);
+ PHP_FUNCTION(imagecreatefromgd2);
+ PHP_FUNCTION(imagecreatefromgd2part);
+-#if defined(HAVE_GD_XPM) && defined(HAVE_GD_BUNDLED)
++#if defined(HAVE_GD_XPM) && (defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21))
+ PHP_FUNCTION(imagecreatefromxpm);
+ #endif
+ 
+@@ -202,7 +202,7 @@ PHP_FUNCTION(image2wbmp);
+ 
+ PHP_FUNCTION(imagecolormatch);
+ 
+-#if HAVE_GD_BUNDLED
++#if defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21)
+ PHP_FUNCTION(imagelayereffect);
+ PHP_FUNCTION(imagexbm);
+ #endif
