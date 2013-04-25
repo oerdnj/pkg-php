@@ -1,6 +1,16 @@
 --- a/ext/opcache/ZendAccelerator.h
 +++ b/ext/opcache/ZendAccelerator.h
-@@ -111,6 +111,12 @@ extern int lock_file;
+@@ -80,6 +80,9 @@
+ # endif
+ # include <direct.h>
+ #else
++# ifndef MAXPATHLEN
++#  define MAXPATHLEN     4096
++# endif
+ # include <sys/param.h>
+ #endif
+ 
+@@ -111,6 +114,12 @@ extern int lock_file;
  #   define FLOCK_STRUCTURE(name, type, whence, start, len) \
  		struct flock name = {type, whence, start, len}
  #  endif
