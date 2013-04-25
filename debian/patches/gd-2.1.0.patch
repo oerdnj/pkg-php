@@ -122,25 +122,35 @@
  ZEND_BEGIN_ARG_INFO_EX(arginfo_imagexbm, 0, 0, 2)
  	ZEND_ARG_INFO(0, im)
  	ZEND_ARG_INFO(0, filename)
-@@ -883,7 +883,7 @@ ZEND_BEGIN_ARG_INFO(arginfo_imageconvolu
+@@ -883,12 +883,14 @@ ZEND_BEGIN_ARG_INFO(arginfo_imageconvolu
  	ZEND_ARG_INFO(0, offset)
  ZEND_END_ARG_INFO()
  
 -#ifdef HAVE_GD_BUNDLED
-+#if defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21)
++#if defined(HAVE_GD_BUNDLED)
  ZEND_BEGIN_ARG_INFO(arginfo_imageantialias, 0)
  	ZEND_ARG_INFO(0, im)
  	ZEND_ARG_INFO(0, on)
-@@ -992,7 +992,7 @@ const zend_function_entry gd_functions[]
+ ZEND_END_ARG_INFO()
++#endif
+ 
++#if defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21)
+ ZEND_BEGIN_ARG_INFO(arginfo_imageflip, 0)
+ 	ZEND_ARG_INFO(0, im)
+ 	ZEND_ARG_INFO(0, mode)
+@@ -992,8 +994,10 @@ const zend_function_entry gd_functions[]
  
  	PHP_FE(imagerotate,     						arginfo_imagerotate)
  
 -#ifdef HAVE_GD_BUNDLED
-+#if defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21)
++#if defined(HAVE_GD_BUNDLED)
  	PHP_FE(imageantialias,							arginfo_imageantialias)
++#endif
++#if defined(HAVE_GD_BUNDLED) || defined(HAVE_LIBGD21)
  	PHP_FE(imageflip,								arginfo_imageflip)
  	PHP_FE(imagecrop,								arginfo_imagecrop)
-@@ -1032,7 +1032,7 @@ const zend_function_entry gd_functions[]
+ 	PHP_FE(imagecropauto,							arginfo_imagecropauto)
+@@ -1032,7 +1036,7 @@ const zend_function_entry gd_functions[]
  #ifdef HAVE_GD_XBM
  	PHP_FE(imagecreatefromxbm,						arginfo_imagecreatefromxbm)
  #endif
@@ -149,7 +159,7 @@
  	PHP_FE(imagecreatefromxpm,						arginfo_imagecreatefromxpm)
  #endif
  	PHP_FE(imagecreatefromgd,						arginfo_imagecreatefromgd)
-@@ -1112,7 +1112,7 @@ const zend_function_entry gd_functions[]
+@@ -1112,7 +1116,7 @@ const zend_function_entry gd_functions[]
  #ifdef HAVE_GD_WBMP
  	PHP_FE(image2wbmp,								arginfo_image2wbmp)
  #endif
@@ -158,22 +168,18 @@
  	PHP_FE(imagelayereffect,						arginfo_imagelayereffect)
  	PHP_FE(imagexbm,                                arginfo_imagexbm)
  #endif
-@@ -1180,6 +1180,22 @@ static void php_free_gd_font(zend_rsrc_l
+@@ -1180,6 +1184,18 @@ static void php_free_gd_font(zend_rsrc_l
  }
  /* }}} */
  
 +#ifdef HAVE_LIBGD21
 +/* {{{ php_gd_error_method
 + */
-+void php_gd_error_method(int type, const char *format, ...)
++void php_gd_error_method(int type, const char *format, va_list args)
 +{
-+	va_list args;
-+
 +	TSRMLS_FETCH();
 +
-+	va_start(args, format);
 +	php_verror(NULL, "", type, format, args TSRMLS_CC);
-+	va_end(args);
 +}
 +/* }}} */
 +#endif
