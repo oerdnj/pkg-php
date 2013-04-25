@@ -756,6 +756,12 @@
 #undef HAVE_GD_IMAGESETTILE
 
 /* */
+#undef HAVE_GD_IMAGE_CONVOLUTION
+
+/* */
+#undef HAVE_GD_IMAGE_PIXELATE
+
+/* */
 #undef HAVE_GD_JPG
 
 /* */
@@ -2170,9 +2176,6 @@
 
 /* Define if your system has fork/vfork/CreateProcess */
 #undef PHP_CAN_SUPPORT_PROC_OPEN
-
-/* */
-#undef PHP_CURL_URL_WRAPPERS
 
 /* Whether the system supports extended DES salt */
 #undef PHP_EXT_DES_CRYPT
