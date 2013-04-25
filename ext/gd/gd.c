@@ -1360,9 +1360,13 @@ PHP_RSHUTDOWN_FUNCTION(gd)
 /* }}} */
 
 #if HAVE_GD_BUNDLED
-#define PHP_GD_VERSION_STRING "bundled (2.0.34 compatible)"
+#define PHP_GD_VERSION_STRING "bundled (2.1.0 compatible)"
 #else
-#define PHP_GD_VERSION_STRING "2.0"
+# ifdef GD_VERSION_STRING
+#  define PHP_GD_VERSION_STRING GD_VERSION_STRING
+# else
+#  define PHP_GD_VERSION_STRING "2.0"
+# endif
 #endif
 
 /* {{{ PHP_MINFO_FUNCTION
@@ -2404,7 +2408,7 @@ static int _php_image_type (char data[8])
 		gdIOCtx *io_ctx;
 		io_ctx = gdNewDynamicCtxEx(8, data, 0);
 		if (io_ctx) {
-			if (getmbi((int(*)(void *)) gdGetC, io_ctx) == 0 && skipheader((int(*)(void *)) gdGetC, io_ctx) == 0 ) {
+			if (getmbi((int(*)(void *)) io_ctx->getC, io_ctx) == 0 && skipheader((int(*)(void *)) io_ctx->getC, io_ctx) == 0 ) {
 #if HAVE_LIBGD204
 				io_ctx->gd_free(io_ctx);
 #else
@@ -2951,7 +2955,7 @@ static void _php_image_output(INTERNAL_FUNCTION_PARAMETERS, int image_type, char
 #if HAVE_GD_BUNDLED
 PHP_FUNCTION(imagexbm)
 {
-	_php_image_output_ctx(INTERNAL_FUNCTION_PARAM_PASSTHRU, PHP_GDIMG_TYPE_XBM, "GIF", gdImageXbmCtx);
+	_php_image_output_ctx(INTERNAL_FUNCTION_PARAM_PASSTHRU, PHP_GDIMG_TYPE_XBM, "XBM", gdImageXbmCtx);
 }
 #endif
 /* }}} */
@@ -2971,7 +2975,7 @@ PHP_FUNCTION(imagegif)
    Output PNG image to browser or file */
 PHP_FUNCTION(imagepng)
 {
-	_php_image_output_ctx(INTERNAL_FUNCTION_PARAM_PASSTHRU, PHP_GDIMG_TYPE_PNG, "GIF", gdImagePngCtxEx);
+	_php_image_output_ctx(INTERNAL_FUNCTION_PARAM_PASSTHRU, PHP_GDIMG_TYPE_PNG, "PNG", gdImagePngCtxEx);
 }
 /* }}} */
 #endif /* HAVE_GD_PNG */
@@ -2982,7 +2986,7 @@ PHP_FUNCTION(imagepng)
    Output PNG image to browser or file */
 PHP_FUNCTION(imagewebp)
 {
-	_php_image_output_ctx(INTERNAL_FUNCTION_PARAM_PASSTHRU, PHP_GDIMG_TYPE_WEBP, "GIF", gdImageWebpCtx);
+	_php_image_output_ctx(INTERNAL_FUNCTION_PARAM_PASSTHRU, PHP_GDIMG_TYPE_WEBP, "WEBP", gdImageWebpCtx);
 }
 /* }}} */
 #endif /* HAVE_GD_WEBP */
@@ -2993,7 +2997,7 @@ PHP_FUNCTION(imagewebp)
    Output JPEG image to browser or file */
 PHP_FUNCTION(imagejpeg)
 {
-	_php_image_output_ctx(INTERNAL_FUNCTION_PARAM_PASSTHRU, PHP_GDIMG_TYPE_JPG, "GIF", gdImageJpegCtx);
+	_php_image_output_ctx(INTERNAL_FUNCTION_PARAM_PASSTHRU, PHP_GDIMG_TYPE_JPG, "JPEG", gdImageJpegCtx);
 }
 /* }}} */
 #endif /* HAVE_GD_JPG */
@@ -3003,7 +3007,7 @@ PHP_FUNCTION(imagejpeg)
    Output WBMP image to browser or file */
 PHP_FUNCTION(imagewbmp)
 {
-	_php_image_output_ctx(INTERNAL_FUNCTION_PARAM_PASSTHRU, PHP_GDIMG_TYPE_WBM, "GIF", gdImageWBMPCtx);
+	_php_image_output_ctx(INTERNAL_FUNCTION_PARAM_PASSTHRU, PHP_GDIMG_TYPE_WBM, "WBMP", gdImageWBMPCtx);
 }
 /* }}} */
 #endif /* HAVE_GD_WBMP */
@@ -5336,7 +5340,7 @@ PHP_FUNCTION(imagecropauto)
 			break;
 
 		default:
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unknown flip mode");
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Unknown crop mode");
 			RETURN_FALSE;
 	}
 	if (im_crop == NULL) {
