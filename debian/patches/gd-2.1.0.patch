@@ -1,14 +1,5 @@
 --- a/ext/gd/config.m4
 +++ b/ext/gd/config.m4
-@@ -159,7 +159,7 @@ AC_DEFUN([PHP_GD_XPM],[
-   if test "$PHP_XPM_DIR" != "no"; then
- 
-     for i in $PHP_XPM_DIR /usr/local /usr/X11R6 /usr; do
--      test -f $i/$PHP_LIBDIR/libXpm.$SHLIB_SUFFIX_NAME || test -f $i/$PHP_LIBDIR/$DEB_HOST_MULTIARCH/libXpm.$SHLIB_SUFFIX_NAME || test -f $i/$PHP_LIBDIR/libXpm.a && GD_XPM_DIR=$i && break
-+      test -f $i/$PHP_LIBDIR/libXpm.$SHLIB_SUFFIX_NAME || test -f $i/$PHP_LIBDIR/libXpm.a && GD_XPM_DIR=$i && break
-     done
- 
-     if test -z "$GD_XPM_DIR"; then
 @@ -286,6 +286,9 @@ AC_DEFUN([PHP_GD_CHECK_VERSION],[
    PHP_CHECK_LIBRARY(gd, gdNewDynamicCtxEx,      [AC_DEFINE(HAVE_GD_DYNAMIC_CTX_EX,   1, [ ])], [], [ -L$GD_LIB $GD_SHARED_LIBADD ])
    PHP_CHECK_LIBRARY(gd, gdImageConvolution,     [AC_DEFINE(HAVE_GD_IMAGE_CONVOLUTION,      1, [ ])], [], [ -L$GD_LIB $GD_SHARED_LIBADD ])
@@ -58,15 +49,6 @@
  
  dnl Various checks for GD features
    PHP_GD_ZLIB
-@@ -400,7 +410,7 @@ dnl Header path
- 
- dnl Library path
-   for i in $PHP_LIBDIR/gd1.3 $PHP_LIBDIR/gd $PHP_LIBDIR gd1.3 gd ""; do
--    test -f "$PHP_GD/$i/libgd.$SHLIB_SUFFIX_NAME" || test -f "$PHP_GD/$i/$DEB_HOST_MULTIARCH/libgd.$SHLIB_SUFFIX_NAME" || test -f "$PHP_GD/$i/libgd.a" && GD_LIB="$PHP_GD/$i"
-+    test -f "$PHP_GD/$i/libgd.$SHLIB_SUFFIX_NAME" || test -f "$PHP_GD/$i/libgd.a" && GD_LIB="$PHP_GD/$i"
-   done
- 
-   if test -n "$GD_INCLUDE" && test -n "$GD_LIB"; then
 @@ -415,22 +425,26 @@ dnl Library path
  
    PHP_EXPAND_PATH($GD_INCLUDE, GD_INCLUDE)
