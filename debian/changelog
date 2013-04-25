@@ -1,3 +1,12 @@
+php5 (5.5.0~beta4-1) experimental; urgency=low
+
+  * Imported Upstream version 5.5.0~beta4
+  * Hardcode MAXPATHLEN to 4096 if undefined to fix GNU Hurd build
+  * Update gd-2.1.0 patch to not include antialias functions not provided
+    by GD 2.1.0 library
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 25 Apr 2013 13:07:28 +0200
+
 php5 (5.5.0~beta3-1) experimental; urgency=low
 
   * Imported Upstream version 5.5.0~beta3
