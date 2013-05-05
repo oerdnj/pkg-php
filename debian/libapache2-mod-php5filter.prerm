@@ -7,11 +7,14 @@ set -e
 case "$1" in
     remove)
 	if [ -e /etc/apache2/apache2.conf -a -e /etc/apache2/mods-enabled/php5.load ]; then
-	    # set a flag to remember the original state
-	    #  useful when reinstalling the same version.
+	    # set a flag to remember the original state useful when
+	    # reinstalling the same version.
 	    touch /etc/php5/apache2filter/.start
 	fi
-	a2dismod php5filter || true
+	if [ -e /usr/share/apache2/apache2-maintscript-helper ]; then
+	    . /usr/share/apache2/apache2-maintscript-helper
+	    apache2_invoke dismod php5filter
+	fi
 	;;
 esac
 

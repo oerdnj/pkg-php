@@ -1,0 +1,3 @@
+mod apache2-build/.libs/libphp5.so
+mod debian/php5.load
+mod debian/php5.conf
