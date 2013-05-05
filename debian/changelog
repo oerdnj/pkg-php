@@ -1,3 +1,14 @@
+php5 (5.5.0~beta4-2) experimental; urgency=low
+
+  * Pull upstream git fixes to have the latest ext/gd tree
+  * Update patches on top of current php.git
+  * Update package to use Apache 2.4 (Closes: #666820)
+  * Update Build-Depends to apache2-dev (>= 2.4)
+  * short_open_tag now defaults to Off (Closes: #142178)
+  * Add opcache.so to list of forbidden extensions in test run
+
+ -- Ondřej Surý <ondrej@debian.org>  Sun, 05 May 2013 18:19:40 +0200
+
 php5 (5.5.0~beta4-1) experimental; urgency=low
 
   * Imported Upstream version 5.5.0~beta4
