@@ -1,3 +1,11 @@
+php5 (5.5.0~beta4-3) experimental; urgency=low
+
+  [Thijs Kinkhorst]
+  * debian/control: Remove ${apache2:Depends} substvar to allow installing
+    the modules with Apache 2.4.
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 06 May 2013 19:35:44 +0200
+
 php5 (5.5.0~beta4-2) experimental; urgency=low
 
   * Pull upstream git fixes to have the latest ext/gd tree
@@ -7,7 +15,7 @@ php5 (5.5.0~beta4-2) experimental; urgency=low
   * short_open_tag now defaults to Off (Closes: #142178)
   * Add opcache.so to list of forbidden extensions in test run
 
- -- Ondřej Surý <ondrej@debian.org>  Sun, 05 May 2013 18:19:40 +0200
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 06 May 2013 19:35:25 +0200
 
 php5 (5.5.0~beta4-1) experimental; urgency=low
 
