@@ -179,6 +179,7 @@ ifeq (yes,$(RUN_TESTS))
 	    test "$$ext" != "pdo_odbc.so" || continue; \
 	    test "$$ext" != "pdo_pgsql.so" || continue; \
 	    test "$$ext" != "snmp.so" || continue; \
+	    test "$$ext" != "opcache.so" || continue; \
 	    extensions="$$extensions -d extension=$$ext"; \
 	done; \
 	[ "$$extensions" ] || { echo "extensions list is empty"; exit 1; }; \
