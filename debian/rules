@@ -787,9 +787,6 @@ binary-arch: build install
 			>> debian/lib"$$i"-mod-php5filter.substvars; \
 	done
 
-	echo "apache2:Depends=apache2-mpm-prefork (>> 2.0.52) | apache2-mpm-itk, apache2.2-common" >>debian/libapache2-mod-php5.substvars
-	echo "apache2:Depends=apache2-mpm-prefork (>> 2.0.52) | apache2-mpm-itk, apache2.2-common" >>debian/libapache2-mod-php5filter.substvars
-
 	echo "libtool:Conflicts=$(LIBTOOL_CONFLICTS)" >>debian/php5-dev.substvars
 	dh_gencontrol -s
 	dh_md5sums -s
