@@ -480,7 +480,8 @@ install: build
 	chmod 01733 debian/php5-common/var/lib/php5
 
 	# install apache2 DSO module
-	dh_apache2
+	dh_apache2 -Nphp5-cgi --conditional=require_prefork
+	dh_apache2 -pphp5-cgi --conditional=enable_cgi
 
 	# sanitize php.ini file
 	cat php.ini-production | tr "\t" " " | sed -e'/session.gc_probability =/ s/1/0/g;/disable_functions =/ s/$$/ $(PCNTL_FUNCTIONS)/g;' > debian/php5-common/usr/share/php5/php.ini-production

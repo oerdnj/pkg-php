@@ -2,8 +2,6 @@
 
 set -e
 
-#DEBHELPER#
-
 # we've registered a trigger to handle extension updates.
 if [ "$1" = "triggered" ] && [ "$2" = "/etc/php5/conf.d" ]; then
     if [ -e /usr/share/apache2/apache2-maintscript-helper ]; then
@@ -20,34 +18,18 @@ phpini="/etc/php5/apache2filter/php.ini"
 ucf /usr/share/php5/php.ini-production $phpini
 ucfr libapache2-mod-php5filter $phpini
 
-[ -e /usr/share/apache2/apache2-maintscript-helper ] || exit 0
-
-DO_START=yes
-
-if [ -n "$2" ]; then
-    # recover the previous state
-    if [ -e /etc/php5/apache2filter/.start ]; then
-	rm -f /etc/php5/apache2filter/.start
-    else
-	DO_START=no
-    fi
-fi
-
-if [ "$DO_START" = "yes" ]; then
-    if [ -e /usr/share/apache2/apache2-maintscript-helper ]; then
-	. /usr/share/apache2/apache2-maintscript-helper
-
-        # php5filter requires the prefork MPM
-	if [ $(a2query -M) != 'prefork' ] ; then
-	    if apache2_switch_mpm prefork ; then
-		apache2_invoke enmod php5filter
-	    else
-		apache2_msg err "Could not switch to prefork, not enabling php5filter"
-	    fi
+require_prefork() {
+    if [ $(a2query -M) != 'prefork' ] ; then
+	if apache2_switch_mpm prefork ; then
+	    return 0
 	else
-	    apache2_invoke enmod php5filter
+	    apache2_msg err "Could not switch to prefork, not enabling php5filter"
+	    return 1
 	fi
     fi
-fi
+    return 0
+}
+
+#DEBHELPER#
 
 exit 0

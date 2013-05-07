@@ -2,7 +2,7 @@
 
 set -e
 
-#DEBHELPER#
+VERSION=$2
 
 if dpkg-maintscript-helper supports mv_conffile 2>/dev/null; then
     dpkg-maintscript-helper mv_conffile \
@@ -33,14 +33,15 @@ update-alternatives \
 update-alternatives \
     --install /usr/lib/cgi-bin/php php-cgi-bin /usr/lib/cgi-bin/php5 50
 
-if [ -e /usr/share/apache2/apache2-maintscript-helper ]; then
-    . /usr/share/apache2/apache2-maintscript-helper
-
-    # Enable php5-cgi if upgrading from older versions of php5-cgi
-    if [ -n "$2" ] && dpkg --compare-versions "$2" lt 5.4.4-5; then
-        # Only enable php5-cgi if apache2 is installed
-	apache2_invoke enconf php5-cgi
+enable_cgi() {
+    # Enable php5-cgi only if upgrading from older versions of php5-cgi
+    if [ -n "$VERSION" ] && dpkg --compare-versions "$VERSION" lt 5.4.4-5; then
+	return 0
+    else
+	return 1
     fi
-fi
+}
+
+#DEBHELPER#
 
 exit 0
