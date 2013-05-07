@@ -4,7 +4,7 @@ set -e
 
 #EXTRA#
 
-php5_enable() { return 0 }
+php5_enable() { return 0; }
 
 if [ "$1" = "purge" ]; then
     phpini=/etc/php5/@sapi@/php.ini
