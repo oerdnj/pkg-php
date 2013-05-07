@@ -2,7 +2,7 @@
 
 set -e
 
-require_prefork() {
+php5_enable() {
     if [ $(a2query -M) != 'prefork' ] ; then
 	if apache2_switch_mpm prefork ; then
 	    return 0

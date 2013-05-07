@@ -4,7 +4,7 @@ set -e
 
 VERSION=$2
 
-enable_cgi() {
+php5_enable()
     # Enable php5-cgi only if upgrading from older versions of php5-cgi
     if [ -n "$VERSION" ] && dpkg --compare-versions "$VERSION" lt 5.4.4-5; then
 	return 0
