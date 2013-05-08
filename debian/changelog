@@ -1,7 +1,8 @@
 php5 (5.5.0~beta4-4) experimental; urgency=low
 
   * Use #DEBHELPER# capability of dh_apache2 to install/remove modules
-  * Unify dpkg maintfiles
+  * Rewrite and unify dpkg maintfiles and fix php5-cgi postinst script
+    (Closes: #707131)
 
  -- Ondřej Surý <ondrej@debian.org>  Tue, 07 May 2013 11:04:25 +0200
 
