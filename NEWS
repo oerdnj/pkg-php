@@ -1,14 +1,47 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+09 May 2013, PHP 5.5.0 Release Candidate 1
+
+- FPM:
+  . Ignore QUERY_STRING when sent in SCRIPT_FILENAME. (Remi)
+  . Fixed some possible memory or resource leaks and possible null dereference
+    detected by code coverity scan. (Remi)
+  . Log a warning when a syscall fails. (Remi)
+
+- GD:
+  . Fix build with system libgd >= 2.1 which is now the minimal
+    version required (as build with previous version is broken).
+    No change when bundled libgd is used.  (Ondrej Sury, Remi)
+
+- SNMP:
+  . Fixed bug #64765 (Some IPv6 addresses get interpreted wrong).
+    (Boris Lytochkin)
+  . Fixed bug #64159 (Truncated snmpget). (Boris Lytochkin)
+
+- Streams:
+  . Fixed bug #64770 (stream_select() fails with pipes returned by proc_open()
+    on Windows x64). (Anatol)
+
 25 Apr 2013, PHP 5.5.0 Beta 4
 
 - Core:
   . Fixed bug #64677 (execution operator `` stealing surrounding arguments). 
     (Laruence)
 
+- CURL:
+  . Remove curl stream wrappers. (Pierrick)
+
+- MySQLi:
+  . Fixed bug #64726 (Segfault when calling fetch_object on a use_result and DB
+    pointer has closed). (Laruence)
+
 - Zip:
   . Fixed bug #64342 (ZipArchive::addFile() has to check for file existence).
     (Anatol)
+
+- SOAP:
+  . Added SoapClient constructor option 'ssl_method' to specify ssl method.
+    (Eric Iversen)
 
 - Streams:
   . Fixed Windows x64 version of stream_socket_pair() and improved error handling
