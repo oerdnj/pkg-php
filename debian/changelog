@@ -1,3 +1,10 @@
+php5 (5.5.0~rc1-1) experimental; urgency=low
+
+  * Imported Upstream version 5.5.0~rc1
+  * Remove php5-5.5.0~rc1~0~78c79a2d5b.patch since PHP 5.5.0RC1 is out
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 09 May 2013 19:21:03 +0200
+
 php5 (5.5.0~beta4-4) experimental; urgency=low
 
   * Use #DEBHELPER# capability of dh_apache2 to install/remove modules
