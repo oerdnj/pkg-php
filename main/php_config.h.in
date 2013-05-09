@@ -25,9 +25,6 @@
 #undef BETHREADS
 
 /* */
-#undef BUGGY_SNMPRINT_VALUE
-
-/* */
 #undef CDB_INCLUDE_FILE
 
 /* Define if system uses EBCDIC */
@@ -517,9 +514,6 @@
 /* */
 #undef HAVE_CODBC
 
-/* */
-#undef HAVE_COLORCLOSESTHWB
-
 /* Whether you have a Continuity Server */
 #undef HAVE_CONTINUITY
 
@@ -714,52 +708,13 @@
 #undef HAVE_GCVT
 
 /* */
-#undef HAVE_GDIMAGECOLORRESOLVE
-
-/* */
 #undef HAVE_GD_BUNDLED
 
 /* */
 #undef HAVE_GD_CACHE_CREATE
 
 /* */
-#undef HAVE_GD_DYNAMIC_CTX_EX
-
-/* */
-#undef HAVE_GD_FONTCACHESHUTDOWN
-
-/* */
-#undef HAVE_GD_FONTMUTEX
-
-/* */
-#undef HAVE_GD_FREEFONTCACHE
-
-/* */
-#undef HAVE_GD_GD2
-
-/* */
-#undef HAVE_GD_GIF_CREATE
-
-/* */
-#undef HAVE_GD_GIF_CTX
-
-/* */
-#undef HAVE_GD_GIF_READ
-
-/* */
-#undef HAVE_GD_IMAGEELLIPSE
-
-/* */
-#undef HAVE_GD_IMAGESETBRUSH
-
-/* */
-#undef HAVE_GD_IMAGESETTILE
-
-/* */
-#undef HAVE_GD_IMAGE_CONVOLUTION
-
-/* */
-#undef HAVE_GD_IMAGE_PIXELATE
+#undef HAVE_GD_FREETYPE
 
 /* */
 #undef HAVE_GD_JPG
@@ -768,22 +723,7 @@
 #undef HAVE_GD_PNG
 
 /* */
-#undef HAVE_GD_STRINGFT
-
-/* */
-#undef HAVE_GD_STRINGFTEX
-
-/* */
-#undef HAVE_GD_STRINGTTF
-
-/* */
-#undef HAVE_GD_WBMP
-
-/* */
 #undef HAVE_GD_WEBP
-
-/* */
-#undef HAVE_GD_XBM
 
 /* */
 #undef HAVE_GD_XPM
@@ -1054,18 +994,6 @@
 
 /* */
 #undef HAVE_LIBGD
-
-/* */
-#undef HAVE_LIBGD13
-
-/* */
-#undef HAVE_LIBGD15
-
-/* */
-#undef HAVE_LIBGD20
-
-/* */
-#undef HAVE_LIBGD204
 
 /* */
 #undef HAVE_LIBICONV
