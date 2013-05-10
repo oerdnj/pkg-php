@@ -1,3 +1,9 @@
+php5 (5.5.0~rc1-2) experimental; urgency=low
+
+  * Load Apache 2.4 helper script also in subroutine (Closes: #707659)
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 10 May 2013 08:21:48 +0200
+
 php5 (5.5.0~rc1-1) experimental; urgency=low
 
   * Imported Upstream version 5.5.0~rc1
