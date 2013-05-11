@@ -1,7 +1,28 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+09 May 2013, PHP 5.4.15
+- Core:
+  . Fixed bug #64578 (debug_backtrace in set_error_handler corrupts zend heap: 
+    segfault). (Laruence)
+  . Fixed bug #64458 (dns_get_record result with string of length -1). (Stas)
+  . Fixed bug #64433 (follow_location parameter of context is ignored for most 
+    response codes). (Sergey Akbarov)
+  . Fixed bugs #47675 and #64577 (fd leak on Solaris)
+
+- Fileinfo:
+  . Upgraded libmagic to 5.14. (Anatol)
+
+- Zip:
+  . Fixed bug #64342 (ZipArchive::addFile() has to check for file existence).
+    (Anatol)
+
+- Streams:
+  . Fixed Windows x64 version of stream_socket_pair() and improved error handling
+    (Anatol Belski)
+
 11 Apr 2013, PHP 5.4.14
-- Core
+
+- Core:
   . Fixed bug #64529 (Ran out of opcode space). (Dmitry)
   . Fixed bug #64515 (Memoryleak when using the same variablename two times in
     function declaration). (Laruence)

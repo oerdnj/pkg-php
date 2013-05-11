@@ -1,23 +1,24 @@
-
-/* A Bison parser, made by GNU Bison 2.4.1.  */
+/* A Bison parser, made by GNU Bison 2.3.  */
 
 /* Skeleton implementation for Bison's Yacc-like parsers in C
-   
-      Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005, 2006
+
+   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
-   
-   This program is free software: you can redistribute it and/or modify
+
+   This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-   
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street, Fifth Floor,
+   Boston, MA 02110-1301, USA.  */
 
 /* As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -28,7 +29,7 @@
    special exception, which will cause the skeleton and the resulting
    Bison output files to be licensed under the GNU General Public
    License without this special exception.
-   
+
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
@@ -46,7 +47,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "2.4.1"
+#define YYBISON_VERSION "2.3"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -54,96 +55,17 @@
 /* Pure parsers.  */
 #define YYPURE 1
 
-/* Push parsers.  */
-#define YYPUSH 0
-
-/* Pull parsers.  */
-#define YYPULL 1
-
 /* Using locations.  */
 #define YYLSP_NEEDED 0
 
 /* Substitute the variable and function names.  */
-#define yyparse         zendparse
-#define yylex           zendlex
-#define yyerror         zenderror
-#define yylval          zendlval
-#define yychar          zendchar
-#define yydebug         zenddebug
-#define yynerrs         zendnerrs
-
-
-/* Copy the first part of user declarations.  */
-
-
-/*
-   +----------------------------------------------------------------------+
-   | Zend Engine                                                          |
-   +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2013 Zend Technologies Ltd. (http://www.zend.com) |
-   +----------------------------------------------------------------------+
-   | This source file is subject to version 2.00 of the Zend license,     |
-   | that is bundled with this package in the file LICENSE, and is        |
-   | available through the world-wide-web at the following url:           |
-   | http://www.zend.com/license/2_00.txt.                                |
-   | If you did not receive a copy of the Zend license and are unable to  |
-   | obtain it through the world-wide-web, please send a note to          |
-   | license@zend.com so we can mail you a copy immediately.              |
-   +----------------------------------------------------------------------+
-   | Authors: Andi Gutmans <andi@zend.com>                                |
-   |          Zeev Suraski <zeev@zend.com>                                |
-   +----------------------------------------------------------------------+
-*/
-
-/* $Id$ */
-
-/*
- * LALR shift/reduce conflicts and how they are resolved:
- *
- * - 2 shift/reduce conflicts due to the dangling elseif/else ambiguity. Solved by shift.
- *
- */
-
-
-#include "zend_compile.h"
-#include "zend.h"
-#include "zend_list.h"
-#include "zend_globals.h"
-#include "zend_API.h"
-#include "zend_constants.h"
-
-#define YYSIZE_T size_t
-#define yytnamerr zend_yytnamerr
-static YYSIZE_T zend_yytnamerr(char*, const char*);
-
-#define YYERROR_VERBOSE
-#define YYSTYPE znode
-#ifdef ZTS
-# define YYPARSE_PARAM tsrm_ls
-# define YYLEX_PARAM tsrm_ls
-#endif
-
-
-
-
-
-/* Enabling traces.  */
-#ifndef YYDEBUG
-# define YYDEBUG 0
-#endif
-
-/* Enabling verbose error messages.  */
-#ifdef YYERROR_VERBOSE
-# undef YYERROR_VERBOSE
-# define YYERROR_VERBOSE 1
-#else
-# define YYERROR_VERBOSE 0
-#endif
-
-/* Enabling the token table.  */
-#ifndef YYTOKEN_TABLE
-# define YYTOKEN_TABLE 0
-#endif
+#define yyparse zendparse
+#define yylex   zendlex
+#define yyerror zenderror
+#define yylval  zendlval
+#define yychar  zendchar
+#define yydebug zenddebug
+#define yynerrs zendnerrs
 
 
 /* Tokens.  */
@@ -415,16 +337,90 @@ static YYSIZE_T zend_yytnamerr(char*, const char*);
 
 
 
+/* Copy the first part of user declarations.  */
+
+
+/*
+   +----------------------------------------------------------------------+
+   | Zend Engine                                                          |
+   +----------------------------------------------------------------------+
+   | Copyright (c) 1998-2013 Zend Technologies Ltd. (http://www.zend.com) |
+   +----------------------------------------------------------------------+
+   | This source file is subject to version 2.00 of the Zend license,     |
+   | that is bundled with this package in the file LICENSE, and is        |
+   | available through the world-wide-web at the following url:           |
+   | http://www.zend.com/license/2_00.txt.                                |
+   | If you did not receive a copy of the Zend license and are unable to  |
+   | obtain it through the world-wide-web, please send a note to          |
+   | license@zend.com so we can mail you a copy immediately.              |
+   +----------------------------------------------------------------------+
+   | Authors: Andi Gutmans <andi@zend.com>                                |
+   |          Zeev Suraski <zeev@zend.com>                                |
+   +----------------------------------------------------------------------+
+*/
+
+/* $Id$ */
+
+/*
+ * LALR shift/reduce conflicts and how they are resolved:
+ *
+ * - 2 shift/reduce conflicts due to the dangling elseif/else ambiguity. Solved by shift.
+ *
+ */
+
+
+#include "zend_compile.h"
+#include "zend.h"
+#include "zend_list.h"
+#include "zend_globals.h"
+#include "zend_API.h"
+#include "zend_constants.h"
+
+#define YYSIZE_T size_t
+#define yytnamerr zend_yytnamerr
+static YYSIZE_T zend_yytnamerr(char*, const char*);
+
+#define YYERROR_VERBOSE
+#define YYSTYPE znode
+#ifdef ZTS
+# define YYPARSE_PARAM tsrm_ls
+# define YYLEX_PARAM tsrm_ls
+#endif
+
+
+
+
+/* Enabling traces.  */
+#ifndef YYDEBUG
+# define YYDEBUG 0
+#endif
+
+/* Enabling verbose error messages.  */
+#ifdef YYERROR_VERBOSE
+# undef YYERROR_VERBOSE
+# define YYERROR_VERBOSE 1
+#else
+# define YYERROR_VERBOSE 0
+#endif
+
+/* Enabling the token table.  */
+#ifndef YYTOKEN_TABLE
+# define YYTOKEN_TABLE 0
+#endif
+
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef int YYSTYPE;
-# define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
+# define YYSTYPE_IS_TRIVIAL 1
 #endif
+
 
 
 /* Copy the second part of user declarations.  */
 
+
+/* Line 216 of yacc.c.  */
 
 
 #ifdef short
@@ -475,7 +471,7 @@ typedef short int yytype_int16;
 #define YYSIZE_MAXIMUM ((YYSIZE_T) -1)
 
 #ifndef YY_
-# if YYENABLE_NLS
+# if defined YYENABLE_NLS && YYENABLE_NLS
 #  if ENABLE_NLS
 #   include <libintl.h> /* INFRINGES ON USER NAME SPACE */
 #   define YY_(msgid) dgettext ("bison-runtime", msgid)
@@ -500,14 +496,14 @@ typedef short int yytype_int16;
 #if (defined __STDC__ || defined __C99__FUNC__ \
      || defined __cplusplus || defined _MSC_VER)
 static int
-YYID (int yyi)
+YYID (int i)
 #else
 static int
-YYID (yyi)
-    int yyi;
+YYID (i)
+    int i;
 #endif
 {
-  return yyi;
+  return i;
 }
 #endif
 
@@ -588,9 +584,9 @@ void free (void *); /* INFRINGES ON USER NAME SPACE */
 /* A type that is properly aligned for any stack member.  */
 union yyalloc
 {
-  yytype_int16 yyss_alloc;
-  YYSTYPE yyvs_alloc;
-};
+  yytype_int16 yyss;
+  YYSTYPE yyvs;
+  };
 
 /* The size of the maximum gap between one aligned stack and the next.  */
 # define YYSTACK_GAP_MAXIMUM (sizeof (union yyalloc) - 1)
@@ -624,12 +620,12 @@ union yyalloc
    elements in the stack, and YYPTR gives the new location of the
    stack.  Advance YYPTR to a properly aligned location for the next
    stack.  */
-# define YYSTACK_RELOCATE(Stack_alloc, Stack)				\
+# define YYSTACK_RELOCATE(Stack)					\
     do									\
       {									\
 	YYSIZE_T yynewbytes;						\
-	YYCOPY (&yyptr->Stack_alloc, Stack, yysize);			\
-	Stack = &yyptr->Stack_alloc;					\
+	YYCOPY (&yyptr->Stack, Stack, yysize);				\
+	Stack = &yyptr->Stack;						\
 	yynewbytes = yystacksize * sizeof (*Stack) + YYSTACK_GAP_MAXIMUM; \
 	yyptr += yynewbytes / sizeof (*yyptr);				\
       }									\
@@ -1059,28 +1055,27 @@ static const char *const yytname[] =
   "\":: (T_PAAMAYIM_NEKUDOTAYIM)\"", "\"namespace (T_NAMESPACE)\"",
   "\"__NAMESPACE__ (T_NS_C)\"", "\"__DIR__ (T_DIR)\"",
   "\"\\\\ (T_NS_SEPARATOR)\"", "'('", "')'", "';'", "'{'", "'}'", "'$'",
-  "']'", "'`'", "'\"'", "$accept", "start", "top_statement_list", "$@1",
-  "namespace_name", "top_statement", "$@2", "$@3", "use_declarations",
-  "use_declaration", "constant_declaration", "inner_statement_list", "$@4",
-  "inner_statement", "statement", "unticked_statement", "$@5", "$@6",
-  "$@7", "$@8", "$@9", "$@10", "$@11", "$@12", "$@13", "$@14", "$@15",
-  "$@16", "$@17", "$@18", "$@19", "$@20", "$@21", "$@22", "$@23", "$@24",
-  "$@25", "$@26", "additional_catches", "non_empty_additional_catches",
-  "additional_catch", "@27", "$@28", "unset_variables", "unset_variable",
+  "']'", "'`'", "'\"'", "$accept", "start", "top_statement_list", "@1",
+  "namespace_name", "top_statement", "@2", "@3", "use_declarations",
+  "use_declaration", "constant_declaration", "inner_statement_list", "@4",
+  "inner_statement", "statement", "unticked_statement", "@5", "@6", "@7",
+  "@8", "@9", "@10", "@11", "@12", "@13", "@14", "@15", "@16", "@17",
+  "@18", "@19", "@20", "@21", "@22", "@23", "@24", "@25", "@26",
+  "additional_catches", "non_empty_additional_catches", "additional_catch",
+  "@27", "@28", "unset_variables", "unset_variable",
   "function_declaration_statement", "class_declaration_statement",
-  "is_reference", "unticked_function_declaration_statement", "$@29",
-  "unticked_class_declaration_statement", "$@30", "$@31",
-  "class_entry_type", "extends_from", "interface_entry",
-  "interface_extends_list", "implements_list", "interface_list",
-  "foreach_optional_arg", "foreach_variable", "for_statement",
-  "foreach_statement", "declare_statement", "declare_list",
-  "switch_case_list", "case_list", "$@32", "$@33", "case_separator",
-  "while_statement", "elseif_list", "$@34", "new_elseif_list", "$@35",
-  "else_single", "new_else_single", "parameter_list",
-  "non_empty_parameter_list", "optional_class_type",
+  "is_reference", "unticked_function_declaration_statement", "@29",
+  "unticked_class_declaration_statement", "@30", "@31", "class_entry_type",
+  "extends_from", "interface_entry", "interface_extends_list",
+  "implements_list", "interface_list", "foreach_optional_arg",
+  "foreach_variable", "for_statement", "foreach_statement",
+  "declare_statement", "declare_list", "switch_case_list", "case_list",
+  "@32", "@33", "case_separator", "while_statement", "elseif_list", "@34",
+  "new_elseif_list", "@35", "else_single", "new_else_single",
+  "parameter_list", "non_empty_parameter_list", "optional_class_type",
   "function_call_parameter_list", "non_empty_function_call_parameter_list",
   "global_var_list", "global_var", "static_var_list",
-  "class_statement_list", "class_statement", "$@36", "$@37",
+  "class_statement_list", "class_statement", "@36", "@37",
   "trait_use_statement", "trait_list", "trait_adaptations",
   "trait_adaptation_list", "non_empty_trait_adaptation_list",
   "trait_adaptation_statement", "trait_precedence", "trait_reference_list",
@@ -1088,33 +1083,32 @@ static const char *const yytname[] =
   "trait_alias", "trait_modifiers", "method_body", "variable_modifiers",
   "method_modifiers", "non_empty_member_modifiers", "member_modifier",
   "class_variable_declaration", "class_constant_declaration",
-  "echo_expr_list", "for_expr", "non_empty_for_expr", "$@38",
+  "echo_expr_list", "for_expr", "non_empty_for_expr", "@38",
   "chaining_method_or_property", "chaining_dereference",
-  "chaining_instance_call", "$@39", "instance_call", "$@40", "new_expr",
-  "$@41", "expr_without_variable", "$@42", "$@43", "$@44", "$@45", "$@46",
-  "$@47", "@48", "$@49", "$@50", "$@51", "$@52", "@53", "@54", "function",
-  "lexical_vars", "lexical_var_list", "function_call", "$@55", "$@56",
-  "$@57", "$@58", "$@59", "$@60", "$@61", "$@62", "class_name",
+  "chaining_instance_call", "@39", "instance_call", "@40", "new_expr",
+  "@41", "expr_without_variable", "@42", "@43", "@44", "@45", "@46", "@47",
+  "@48", "@49", "@50", "@51", "@52", "@53", "@54", "function",
+  "lexical_vars", "lexical_var_list", "function_call", "@55", "@56", "@57",
+  "@58", "@59", "@60", "@61", "@62", "class_name",
   "fully_qualified_class_name", "class_name_reference",
-  "dynamic_class_name_reference", "$@63", "$@64",
+  "dynamic_class_name_reference", "@63", "@64",
   "dynamic_class_name_variable_properties",
   "dynamic_class_name_variable_property", "exit_expr", "backticks_expr",
   "ctor_arguments", "common_scalar", "static_scalar",
   "static_class_constant", "scalar", "static_array_pair_list",
   "possible_comma", "non_empty_static_array_pair_list", "expr",
-  "r_variable", "w_variable", "rw_variable", "variable", "$@65", "$@66",
-  "variable_properties", "variable_property", "$@67",
-  "array_method_dereference", "method", "$@68", "method_or_not",
+  "r_variable", "w_variable", "rw_variable", "variable", "@65", "@66",
+  "variable_properties", "variable_property", "@67",
+  "array_method_dereference", "method", "@68", "method_or_not",
   "variable_without_objects", "static_member", "variable_class_name",
-  "array_function_dereference", "$@69",
-  "base_variable_with_function_calls", "base_variable",
-  "reference_variable", "compound_variable", "dim_offset",
-  "object_property", "$@70", "object_dim_list", "variable_name",
+  "array_function_dereference", "@69", "base_variable_with_function_calls",
+  "base_variable", "reference_variable", "compound_variable", "dim_offset",
+  "object_property", "@70", "object_dim_list", "variable_name",
   "simple_indirect_reference", "assignment_list",
-  "assignment_list_element", "$@71", "array_pair_list",
-  "non_empty_array_pair_list", "encaps_list", "encaps_var", "$@72",
+  "assignment_list_element", "@71", "array_pair_list",
+  "non_empty_array_pair_list", "encaps_list", "encaps_var", "@72",
   "encaps_var_offset", "internal_functions_in_yacc", "isset_variables",
-  "$@73", "class_constant", 0
+  "@73", "class_constant", 0
 };
 #endif
 
@@ -2773,7 +2767,7 @@ while (YYID (0))
    we won't break user code: when these are the locations we know.  */
 
 #ifndef YY_LOCATION_PRINT
-# if YYLTYPE_IS_TRIVIAL
+# if defined YYLTYPE_IS_TRIVIAL && YYLTYPE_IS_TRIVIAL
 #  define YY_LOCATION_PRINT(File, Loc)			\
      fprintf (File, "%d.%d-%d.%d",			\
 	      (Loc).first_line, (Loc).first_column,	\
@@ -2884,20 +2878,17 @@ yy_symbol_print (yyoutput, yytype, yyvaluep)
 #if (defined __STDC__ || defined __C99__FUNC__ \
      || defined __cplusplus || defined _MSC_VER)
 static void
-yy_stack_print (yytype_int16 *yybottom, yytype_int16 *yytop)
+yy_stack_print (yytype_int16 *bottom, yytype_int16 *top)
 #else
 static void
-yy_stack_print (yybottom, yytop)
-    yytype_int16 *yybottom;
-    yytype_int16 *yytop;
+yy_stack_print (bottom, top)
+    yytype_int16 *bottom;
+    yytype_int16 *top;
 #endif
 {
   YYFPRINTF (stderr, "Stack now");
-  for (; yybottom <= yytop; yybottom++)
-    {
-      int yybot = *yybottom;
-      YYFPRINTF (stderr, " %d", yybot);
-    }
+  for (; bottom <= top; ++bottom)
+    YYFPRINTF (stderr, " %d", *bottom);
   YYFPRINTF (stderr, "\n");
 }
 
@@ -2931,11 +2922,11 @@ yy_reduce_print (yyvsp, yyrule)
   /* The symbols being reduced.  */
   for (yyi = 0; yyi < yynrhs; yyi++)
     {
-      YYFPRINTF (stderr, "   $%d = ", yyi + 1);
+      fprintf (stderr, "   $%d = ", yyi + 1);
       yy_symbol_print (stderr, yyrhs[yyprhs[yyrule] + yyi],
 		       &(yyvsp[(yyi + 1) - (yynrhs)])
 		       		       );
-      YYFPRINTF (stderr, "\n");
+      fprintf (stderr, "\n");
     }
 }
 
@@ -3215,8 +3206,10 @@ yydestruct (yymsg, yytype, yyvaluep)
 	break;
     }
 }
+
 
 /* Prevent warnings from -Wmissing-prototypes.  */
+
 #ifdef YYPARSE_PARAM
 #if defined __STDC__ || defined __cplusplus
 int yyparse (void *YYPARSE_PARAM);
@@ -3235,9 +3228,10 @@ int yyparse ();
 
 
 
-/*-------------------------.
-| yyparse or yypush_parse.  |
-`-------------------------*/
+
+/*----------.
+| yyparse.  |
+`----------*/
 
 #ifdef YYPARSE_PARAM
 #if (defined __STDC__ || defined __C99__FUNC__ \
@@ -3261,46 +3255,22 @@ yyparse ()
 #endif
 #endif
 {
-/* The lookahead symbol.  */
+  /* The look-ahead symbol.  */
 int yychar;
 
-/* The semantic value of the lookahead symbol.  */
+/* The semantic value of the look-ahead symbol.  */
 YYSTYPE yylval;
 
-    /* Number of syntax errors so far.  */
-    int yynerrs;
+/* Number of syntax errors so far.  */
+int yynerrs;
 
-    int yystate;
-    /* Number of tokens to shift before error messages enabled.  */
-    int yyerrstatus;
-
-    /* The stacks and their tools:
-       `yyss': related to states.
-       `yyvs': related to semantic values.
-
-       Refer to the stacks thru separate pointers, to allow yyoverflow
-       to reallocate them elsewhere.  */
-
-    /* The state stack.  */
-    yytype_int16 yyssa[YYINITDEPTH];
-    yytype_int16 *yyss;
-    yytype_int16 *yyssp;
-
-    /* The semantic value stack.  */
-    YYSTYPE yyvsa[YYINITDEPTH];
-    YYSTYPE *yyvs;
-    YYSTYPE *yyvsp;
-
-    YYSIZE_T yystacksize;
-
+  int yystate;
   int yyn;
   int yyresult;
-  /* Lookahead token as an internal (translated) token number.  */
-  int yytoken;
-  /* The variables used to return semantic value and location from the
-     action routines.  */
-  YYSTYPE yyval;
-
+  /* Number of tokens to shift before error messages enabled.  */
+  int yyerrstatus;
+  /* Look-ahead token as an internal (translated) token number.  */
+  int yytoken = 0;
 #if YYERROR_VERBOSE
   /* Buffer for error messages, and its allocated size.  */
   char yymsgbuf[128];
@@ -3308,28 +3278,51 @@ YYSTYPE yylval;
   YYSIZE_T yymsg_alloc = sizeof yymsgbuf;
 #endif
 
+  /* Three stacks and their tools:
+     `yyss': related to states,
+     `yyvs': related to semantic values,
+     `yyls': related to locations.
+
+     Refer to the stacks thru separate pointers, to allow yyoverflow
+     to reallocate them elsewhere.  */
+
+  /* The state stack.  */
+  yytype_int16 yyssa[YYINITDEPTH];
+  yytype_int16 *yyss = yyssa;
+  yytype_int16 *yyssp;
+
+  /* The semantic value stack.  */
+  YYSTYPE yyvsa[YYINITDEPTH];
+  YYSTYPE *yyvs = yyvsa;
+  YYSTYPE *yyvsp;
+
+
+
 #define YYPOPSTACK(N)   (yyvsp -= (N), yyssp -= (N))
+
+  YYSIZE_T yystacksize = YYINITDEPTH;
+
+  /* The variables used to return semantic value and location from the
+     action routines.  */
+  YYSTYPE yyval;
+
 
   /* The number of symbols on the RHS of the reduced rule.
      Keep to zero when no symbol should be popped.  */
   int yylen = 0;
-
-  yytoken = 0;
-  yyss = yyssa;
-  yyvs = yyvsa;
-  yystacksize = YYINITDEPTH;
 
   YYDPRINTF ((stderr, "Starting parse\n"));
 
   yystate = 0;
   yyerrstatus = 0;
   yynerrs = 0;
-  yychar = YYEMPTY; /* Cause a token to be read.  */
+  yychar = YYEMPTY;		/* Cause a token to be read.  */
 
   /* Initialize stack pointers.
      Waste one element of value and location stack
      so that they stay on the same level as the state stack.
      The wasted elements are never initialized.  */
+
   yyssp = yyss;
   yyvsp = yyvs;
 
@@ -3359,6 +3352,7 @@ YYSTYPE yylval;
 	YYSTYPE *yyvs1 = yyvs;
 	yytype_int16 *yyss1 = yyss;
 
+
 	/* Each stack pointer address is followed by the size of the
 	   data in use in that stack, in bytes.  This used to be a
 	   conditional around just the two extra args, but that might
@@ -3366,6 +3360,7 @@ YYSTYPE yylval;
 	yyoverflow (YY_("memory exhausted"),
 		    &yyss1, yysize * sizeof (*yyssp),
 		    &yyvs1, yysize * sizeof (*yyvsp),
+
 		    &yystacksize);
 
 	yyss = yyss1;
@@ -3388,8 +3383,9 @@ YYSTYPE yylval;
 	  (union yyalloc *) YYSTACK_ALLOC (YYSTACK_BYTES (yystacksize));
 	if (! yyptr)
 	  goto yyexhaustedlab;
-	YYSTACK_RELOCATE (yyss_alloc, yyss);
-	YYSTACK_RELOCATE (yyvs_alloc, yyvs);
+	YYSTACK_RELOCATE (yyss);
+	YYSTACK_RELOCATE (yyvs);
+
 #  undef YYSTACK_RELOCATE
 	if (yyss1 != yyssa)
 	  YYSTACK_FREE (yyss1);
@@ -3400,6 +3396,7 @@ YYSTYPE yylval;
       yyssp = yyss + yysize - 1;
       yyvsp = yyvs + yysize - 1;
 
+
       YYDPRINTF ((stderr, "Stack size increased to %lu\n",
 		  (unsigned long int) yystacksize));
 
@@ -3409,9 +3406,6 @@ YYSTYPE yylval;
 
   YYDPRINTF ((stderr, "Entering state %d\n", yystate));
 
-  if (yystate == YYFINAL)
-    YYACCEPT;
-
   goto yybackup;
 
 /*-----------.
@@ -3420,16 +3414,16 @@ YYSTYPE yylval;
 yybackup:
 
   /* Do appropriate processing given the current state.  Read a
-     lookahead token if we need one and don't already have one.  */
+     look-ahead token if we need one and don't already have one.  */
 
-  /* First try to decide what to do without reference to lookahead token.  */
+  /* First try to decide what to do without reference to look-ahead token.  */
   yyn = yypact[yystate];
   if (yyn == YYPACT_NINF)
     goto yydefault;
 
-  /* Not known => get a lookahead token if don't already have one.  */
+  /* Not known => get a look-ahead token if don't already have one.  */
 
-  /* YYCHAR is either YYEMPTY or YYEOF or a valid lookahead symbol.  */
+  /* YYCHAR is either YYEMPTY or YYEOF or a valid look-ahead symbol.  */
   if (yychar == YYEMPTY)
     {
       YYDPRINTF ((stderr, "Reading a token: "));
@@ -3461,16 +3455,20 @@ yybackup:
       goto yyreduce;
     }
 
+  if (yyn == YYFINAL)
+    YYACCEPT;
+
   /* Count tokens shifted since error; after three, turn off error
      status.  */
   if (yyerrstatus)
     yyerrstatus--;
 
-  /* Shift the lookahead token.  */
+  /* Shift the look-ahead token.  */
   YY_SYMBOL_PRINT ("Shifting", yytoken, &yylval, &yylloc);
 
-  /* Discard the shifted token.  */
-  yychar = YYEMPTY;
+  /* Discard the shifted token unless it is eof.  */
+  if (yychar != YYEOF)
+    yychar = YYEMPTY;
 
   yystate = yyn;
   *++yyvsp = yylval;
@@ -5792,6 +5790,7 @@ yyreduce:
     break;
 
 
+/* Line 1267 of yacc.c.  */
 
       default: break;
     }
@@ -5802,6 +5801,7 @@ yyreduce:
   YY_STACK_PRINT (yyss, yyssp);
 
   *++yyvsp = yyval;
+
 
   /* Now `shift' the result of the reduction.  Determine what state
      that goes to, based on the state we popped back to and the rule
@@ -5867,7 +5867,7 @@ yyerrlab:
 
   if (yyerrstatus == 3)
     {
-      /* If just tried and failed to reuse lookahead token after an
+      /* If just tried and failed to reuse look-ahead token after an
 	 error, discard it.  */
 
       if (yychar <= YYEOF)
@@ -5884,7 +5884,7 @@ yyerrlab:
 	}
     }
 
-  /* Else will try to reuse lookahead token after shifting the error
+  /* Else will try to reuse look-ahead token after shifting the error
      token.  */
   goto yyerrlab1;
 
@@ -5941,6 +5941,9 @@ yyerrlab1:
       YY_STACK_PRINT (yyss, yyssp);
     }
 
+  if (yyn == YYFINAL)
+    YYACCEPT;
+
   *++yyvsp = yylval;
 
 
@@ -5965,7 +5968,7 @@ yyabortlab:
   yyresult = 1;
   goto yyreturn;
 
-#if !defined(yyoverflow) || YYERROR_VERBOSE
+#ifndef yyoverflow
 /*-------------------------------------------------.
 | yyexhaustedlab -- memory exhaustion comes here.  |
 `-------------------------------------------------*/
@@ -5976,7 +5979,7 @@ yyexhaustedlab:
 #endif
 
 yyreturn:
-  if (yychar != YYEMPTY)
+  if (yychar != YYEOF && yychar != YYEMPTY)
      yydestruct ("Cleanup: discarding lookahead",
 		 yytoken, &yylval);
   /* Do not reclaim the symbols of the rule which action triggered
