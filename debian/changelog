@@ -1,3 +1,10 @@
+php5 (5.4.15-1) experimental; urgency=low
+
+  * Imported Upstream version 5.4.15
+  * Update patches for new release
+
+ -- Ondřej Surý <ondrej@debian.org>  Sat, 11 May 2013 23:41:25 +0200
+
 php5 (5.4.14-1) experimental; urgency=low
 
   * Disable -gstabs usage, which was breaking clang builds and is not needed.
