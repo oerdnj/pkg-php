@@ -29,7 +29,7 @@ Reviewed-by: Steve Langasek <steve.langasek@ubuntu.com>
      done
  
      if test -z "$GD_XPM_DIR"; then
-@@ -396,7 +396,7 @@ dnl Header path
+@@ -398,7 +398,7 @@ dnl Header path
  
  dnl Library path
    for i in $PHP_LIBDIR/gd1.3 $PHP_LIBDIR/gd $PHP_LIBDIR gd1.3 gd ""; do
@@ -60,7 +60,7 @@ Reviewed-by: Steve Langasek <steve.langasek@ubuntu.com>
          PHP_KERBEROS_DIR=$i
          break
        fi
-@@ -2359,7 +2359,7 @@ AC_DEFUN([PHP_SETUP_OPENSSL],[
+@@ -2361,7 +2361,7 @@ AC_DEFUN([PHP_SETUP_OPENSSL],[
        if test -r $i/include/openssl/evp.h; then
          OPENSSL_INCDIR=$i/include
        fi
