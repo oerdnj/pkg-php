@@ -1,3 +1,11 @@
+php5 (5.5.0~rc1-3) experimental; urgency=low
+
+  * Add dependency on lsof (Closes: #708087)
+  * Add versioned conflicts with php-apc (<< 4.0.0) that is in fact
+    php5-apcu, and php5-xdebug (<< 2.2.2) that added support for PHP 5.5
+
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 15 May 2013 10:13:02 +0200
+
 php5 (5.5.0~rc1-2) experimental; urgency=low
 
   * Load Apache 2.4 maintainer script helper and conditionally define the
