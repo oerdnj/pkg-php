@@ -112,8 +112,8 @@ Breaks: jffnms (<= 0.9.1-1),
 	php-kolab-filter (<= 0.1.9-4),
 	horde3 (<= 3.3.12+debian0-1),
 	moodle (<= 1.9.9.dfsg2-4),
-	php5-xdebug,
-	php-apc,
+	php5-xdebug (<< 2.2.2),
+	php-apc (<< 4.0.0),
 	php5-xcache (<< 3.1)
 Description: Common files for packages built from the php5 source
  This package contains the documentation and example files relevant to all
