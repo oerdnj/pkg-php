@@ -3,6 +3,7 @@ php5 (5.5.0~rc1-3) experimental; urgency=low
   * Add dependency on lsof (Closes: #708087)
   * Add versioned conflicts with php-apc (<< 4.0.0) that is in fact
     php5-apcu, and php5-xdebug (<< 2.2.2) that added support for PHP 5.5
+  * Prepare for libgd2-dev to libgd-dev rename
 
  -- Ondřej Surý <ondrej@debian.org>  Wed, 15 May 2013 10:13:02 +0200
 
