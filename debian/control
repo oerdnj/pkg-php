@@ -67,8 +67,8 @@ Build-Depends: apache2-dev (>= 2.4),
 	       tzdata
 Build-Conflicts: bind-dev
 Standards-Version: 3.9.3
-Vcs-Git: git://git.debian.org/pkg-php/php.git
-Vcs-Browser: http://git.debian.org/?p=pkg-php/php.git
+Vcs-Git: git://anonscm.debian.org/pkg-php/php.git
+Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-php/php.git
 Homepage: http://www.php.net/
 
 Package: php5
