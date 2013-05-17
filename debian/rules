@@ -95,11 +95,9 @@ ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
     MAKEFLAGS += -j$(NUMJOBS)
 endif
 
-# enable the hardening wrapper
-DEB_BUILD_HARDENING = 1
-# but disable PIE
-DEB_BUILD_HARDENING_PIE = 0
-export DEB_BUILD_HARDENING DEB_BUILD_HARDENING_PIE
+# enable dpkg build flags
+DPKG_EXPORT_BUILDFLAGS = 1
+include /usr/share/dpkg/buildflags.mk
 
 COMMON_CONFIG=--build=$(DEB_BUILD_GNU_TYPE) \
 		--host=$(DEB_HOST_GNU_TYPE) \
