@@ -93,8 +93,8 @@ Depends: ${misc:Depends},
 	 lsof,
 	 ucf
 Pre-Depends: dpkg (>= 1.15.7.2~)
-Provides: php5-json, php5-mhash
-Conflicts: php5-json, php5-mhash, php5-suhosin
+Provides: php5-mhash
+Conflicts: php5-mhash, php5-suhosin
 Breaks: jffnms (<= 0.9.1-1),
 	d-push (<= 1.5.5-1),
 	dotclear (<= 2.4.0+dfsg-1),
