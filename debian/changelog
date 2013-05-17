@@ -1,3 +1,13 @@
+php5 (5.5.0~rc1+dfsg-1) experimental; urgency=low
+
+  * Imported Upstream version 5.5.0~rc1+dfsg
+  * Enable VPX (WEBP) support in GD extension
+  * Add dfsg-repack.sh script to remove non-free JSON module
+    (Closes: #692613)
+  * Remove php5-json from Provides, since that's no longer true
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 17 May 2013 14:41:41 +0200
+
 php5 (5.5.0~rc1-3) experimental; urgency=low
 
   * Add dependency on lsof (Closes: #708087)
