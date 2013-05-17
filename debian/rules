@@ -282,6 +282,7 @@ configure-apache2-stamp: prepared-stamp
 		--with-xpm-dir=shared,/usr/X11R6 \
 		--with-png-dir=shared,/usr \
 		--with-freetype-dir=shared,/usr \
+	        --with-vpx-dir=shared,/usr \
 		--with-imap=shared,/usr \
 		--with-imap-ssl \
 		--enable-intl=shared \
