@@ -1,3 +1,17 @@
+php5 (5.5.0~rc1+dfsg-2) unstable; urgency=low
+
+  [ Thijs Kinkhorst ]
+  * Wrap long line in php5-readline extended description.
+  * Switch from hardening-wrapper to dpkg-buildflags.
+  * Canonicalise Vcs-* fields as suggested by Lintian.
+  * Checked for policy 3.9.4, no changes necessary.
+
+  [ Ondřej Surý ]
+  * Install Zend Opcache into php5-common (Closes: #709314)
+  * Upload to unstable
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 23 May 2013 09:07:41 +0200
+
 php5 (5.5.0~rc1+dfsg-1) experimental; urgency=low
 
   * Imported Upstream version 5.5.0~rc1+dfsg
