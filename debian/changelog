@@ -8,6 +8,8 @@ php5 (5.5.0~rc1+dfsg-2) unstable; urgency=low
 
   [ Ondřej Surý ]
   * Install Zend Opcache into php5-common (Closes: #709314)
+  * Add support for handling zend_extension(s) in addition to extensions
+    (Thanks to Yaacov Akiba Slama for catching that)
   * Upload to unstable
 
  -- Ondřej Surý <ondrej@debian.org>  Thu, 23 May 2013 09:07:41 +0200
