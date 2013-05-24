@@ -664,12 +664,14 @@ binary-arch: build install
 	#
 	# generate the config snippets for various php
 	# modules from the templates.
-	cat debian/modulelist debian/extramodulelist | while read package extname dsoname priority; do \
+	cat debian/modulelist debian/extramodulelist | while read package extname dsoname priority extension; do \
 		if [ -z "$${dsoname}" ]; then dsoname=$$package; fi; \
 		if [ -z "$${priority}" ]; then priority=20; fi; \
+		if [ -z "$${extension}" ]; then extension=extension; fi; \
 		mkdir -p debian/php5-$$package/usr/share/php5/$$package; \
 		sed -e"s|@extname@|$${extname}|g; \
 		       s/@dsoname@/$${dsoname}/g; \
+		       s/@extension@/$${extension}/g; \
 		       s/@priority@/$${priority}/g" \
 		  < debian/php5-module.ini \
 		  > debian/php5-$$package/usr/share/php5/$$package/$${dsoname}.ini; \
