@@ -848,6 +848,7 @@ php_fpm_localstatedir
 php_fpm_sysconfdir
 php_fpm_group
 php_fpm_user
+php_fpm_systemd
 SHLIB_DL_SUFFIX_NAME
 SHLIB_SUFFIX_NAME
 RE2C
@@ -940,6 +941,7 @@ enable_embed
 enable_fpm
 with_fpm_user
 with_fpm_group
+with_fpm_systemd
 with_isapi
 with_litespeed
 with_milter
@@ -1770,6 +1772,7 @@ SAPI modules:
   --with-fpm-user=USER  Set the user for php-fpm to run as. (default: nobody)
   --with-fpm-group=GRP  Set the group for php-fpm to run as. For a system user, this
                   should usually be set to match the fpm username (default: nobody)
+  --with-fpm-systemd      Activate systemd integration
   --with-isapi=DIR      Build PHP as an ISAPI module for use with Zeus
   --with-litespeed        Build PHP as litespeed module
   --with-milter=DIR     Build PHP as Milter application
@@ -3684,7 +3687,7 @@ ac_config_headers="$ac_config_headers main/php_config.h"
 PHP_MAJOR_VERSION=5
 PHP_MINOR_VERSION=5
 PHP_RELEASE_VERSION=0
-PHP_EXTRA_VERSION="RC1"
+PHP_EXTRA_VERSION="RC2"
 PHP_VERSION="$PHP_MAJOR_VERSION.$PHP_MINOR_VERSION.$PHP_RELEASE_VERSION$PHP_EXTRA_VERSION"
 PHP_VERSION_ID=`expr $PHP_MAJOR_VERSION \* 10000 + $PHP_MINOR_VERSION \* 100 + $PHP_RELEASE_VERSION`
 
@@ -12651,6 +12654,117 @@ ext_output=$PHP_FPM_GROUP
 
 
 
+
+php_with_fpm_systemd=no
+
+
+
+# Check whether --with-fpm-systemd was given.
+if test "${with_fpm_systemd+set}" = set; then :
+  withval=$with_fpm_systemd; PHP_FPM_SYSTEMD=$withval
+else
+
+  PHP_FPM_SYSTEMD=no
+
+
+fi
+
+
+ext_output=$PHP_FPM_SYSTEMD
+
+
+
+
+
+  if test "$PHP_FPM_SYSTEMD" != "no" ; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sd_notify in -lsystemd-daemon" >&5
+$as_echo_n "checking for sd_notify in -lsystemd-daemon... " >&6; }
+if ${ac_cv_lib_systemd_daemon_sd_notify+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lsystemd-daemon  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char sd_notify ();
+int
+main ()
+{
+return sd_notify ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_systemd_daemon_sd_notify=yes
+else
+  ac_cv_lib_systemd_daemon_sd_notify=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_systemd_daemon_sd_notify" >&5
+$as_echo "$ac_cv_lib_systemd_daemon_sd_notify" >&6; }
+if test "x$ac_cv_lib_systemd_daemon_sd_notify" = xyes; then :
+  SYSTEMD_LIBS="-lsystemd-daemon"
+fi
+
+    for ac_header in systemd/sd-daemon.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "systemd/sd-daemon.h" "ac_cv_header_systemd_sd_daemon_h" "$ac_includes_default"
+if test "x$ac_cv_header_systemd_sd_daemon_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYSTEMD_SD_DAEMON_H 1
+_ACEOF
+ HAVE_SD_DAEMON_H="yes"
+else
+  HAVE_SD_DAEMON_H="no"
+fi
+
+done
+
+    if test $HAVE_SD_DAEMON_H = "no" || test -z "${SYSTEMD_LIBS}"; then
+      as_fn_error $? "Your system does not support systemd." "$LINENO" 5
+    else
+
+$as_echo "#define HAVE_SYSTEMD 1" >>confdefs.h
+
+      PHP_FPM_SD_FILES="fpm/fpm_systemd.c"
+
+
+  case systemd-daemon in
+  c|c_r|pthread*) ;;
+  *)
+      LIBS="-lsystemd-daemon $LIBS"
+   ;;
+  esac
+
+
+      php_fpm_systemd=notify
+    fi
+  else
+    php_fpm_systemd=simple
+  fi
+
+
+  PHP_VAR_SUBST="$PHP_VAR_SUBST php_fpm_systemd"
+
+
+
+
+cat >>confdefs.h <<_ACEOF
+#define PHP_FPM_SYSTEMD "$php_fpm_systemd"
+_ACEOF
+
+
   if test -z "$PHP_FPM_USER" -o "$PHP_FPM_USER" = "yes" -o "$PHP_FPM_USER" = "no"; then
     php_fpm_user="nobody"
   else
@@ -12838,7 +12952,7 @@ _ACEOF
 
 
   old_IFS=$IFS
-  for ac_src in $PHP_FPM_FILES $PHP_FPM_TRACE_FILES; do
+  for ac_src in $PHP_FPM_FILES $PHP_FPM_TRACE_FILES $PHP_FPM_SD_FILES; do
 
       IFS=.
       set $ac_src
@@ -102827,7 +102941,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 102830 "configure"
+#line 102944 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -104739,7 +104853,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 104742 "configure"' > conftest.$ac_ext
+  echo '#line 104856 "configure"' > conftest.$ac_ext
   if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -106131,7 +106245,7 @@ else
       LDFLAGS="$LDFLAGS -Wl,-exported_symbols_list,conftest.sym"
 
 cat > conftest.$ac_ext <<EOF
-#line 106134 "configure"
+#line 106248 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -106289,11 +106403,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:106292: $lt_compile\"" >&5)
+   (eval echo "\"configure:106406: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "configure:106296: \$? = $ac_status" >&5
+   echo "configure:106410: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -106587,11 +106701,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:106590: $lt_compile\"" >&5)
+   (eval echo "\"configure:106704: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "configure:106594: \$? = $ac_status" >&5
+   echo "configure:106708: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -106691,11 +106805,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:106694: $lt_compile\"" >&5)
+   (eval echo "\"configure:106808: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "configure:106698: \$? = $ac_status" >&5
+   echo "configure:106812: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -107155,7 +107269,7 @@ _LT_EOF
        # Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 107158 "configure"
+#line 107272 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -107197,7 +107311,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	 # Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 107200 "configure"
+#line 107314 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -108722,7 +108836,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 108725 "configure"
+#line 108839 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -108822,7 +108936,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 108825 "configure"
+#line 108939 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -109887,7 +110001,7 @@ case $host_os in
       # Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 109890 "configure"
+#line 110004 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -109930,7 +110044,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	# Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 109933 "configure"
+#line 110047 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -111182,11 +111296,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:111185: $lt_compile\"" >&5)
+   (eval echo "\"configure:111299: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "configure:111189: \$? = $ac_status" >&5
+   echo "configure:111303: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -111286,11 +111400,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:111289: $lt_compile\"" >&5)
+   (eval echo "\"configure:111403: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "configure:111293: \$? = $ac_status" >&5
+   echo "configure:111407: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
