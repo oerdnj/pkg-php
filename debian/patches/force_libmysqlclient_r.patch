@@ -6,8 +6,8 @@ Origin: other, http://bugs.debian.org/469081
 Forwarded: not-needed
 Last-Update: 2010-01-18
 
---- a/ext/mysql/config.m4
-+++ b/ext/mysql/config.m4
+--- php5.orig/ext/mysql/config.m4
++++ php5/ext/mysql/config.m4
 @@ -76,7 +76,7 @@ elif test "$PHP_MYSQL" != "no"; then
  Note that the MySQL client library is not bundled anymore!])
    fi
@@ -17,8 +17,8 @@ Last-Update: 2010-01-18
      MYSQL_LIBNAME=mysqlclient_r
    else
      MYSQL_LIBNAME=mysqlclient
---- a/ext/mysqli/config.m4
-+++ b/ext/mysqli/config.m4
+--- php5.orig/ext/mysqli/config.m4
++++ php5/ext/mysqli/config.m4
 @@ -25,7 +25,7 @@ elif test "$PHP_MYSQLI" != "no"; then
      MYSQL_LIB_CFG='--libmysqld-libs'
      dnl mysqlnd doesn't support embedded, so we have to add some extra stuff
@@ -28,8 +28,8 @@ Last-Update: 2010-01-18
      MYSQL_LIB_CFG='--libs_r'
      MYSQL_LIB_NAME='mysqlclient_r'
    else
---- a/ext/pdo_mysql/config.m4
-+++ b/ext/pdo_mysql/config.m4
+--- php5.orig/ext/pdo_mysql/config.m4
++++ php5/ext/pdo_mysql/config.m4
 @@ -55,7 +55,7 @@ if test "$PHP_PDO_MYSQL" != "no"; then
        if test "x$SED" = "x"; then
          AC_PATH_PROG(SED, sed)

@@ -1,5 +1,5 @@
---- a/sapi/embed/config.m4
-+++ b/sapi/embed/config.m4
+--- php5.orig/sapi/embed/config.m4
++++ php5/sapi/embed/config.m4
 @@ -12,7 +12,8 @@ if test "$PHP_EMBED" != "no"; then
    case "$PHP_EMBED" in
      yes|shared)

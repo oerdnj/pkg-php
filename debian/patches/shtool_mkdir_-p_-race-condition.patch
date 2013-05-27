@@ -8,8 +8,8 @@ Origin: vendor
 Forwarded: yes
 Last-Update: 2010-02-18
 
---- a/build/shtool
-+++ b/build/shtool
+--- php5.orig/build/shtool
++++ php5/build/shtool
 @@ -1003,7 +1003,11 @@ mkdir )
                      if [ ".$opt_t" = .yes ]; then
                          echo "mkdir $pathcomp" 1>&2

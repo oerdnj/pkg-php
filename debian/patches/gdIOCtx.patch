@@ -1,5 +1,5 @@
---- a/ext/gd/gd_ctx.c
-+++ b/ext/gd/gd_ctx.c
+--- php5.orig/ext/gd/gd_ctx.c
++++ php5/ext/gd/gd_ctx.c
 @@ -46,33 +46,6 @@ static void _php_image_output_ctxfree(st
  	}
  }

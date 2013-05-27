@@ -1,5 +1,5 @@
---- a/Zend/zend_strtod.c
-+++ b/Zend/zend_strtod.c
+--- php5.orig/Zend/zend_strtod.c
++++ php5/Zend/zend_strtod.c
 @@ -152,14 +152,25 @@ typedef unsigned long int uint32_t;
  #define IEEE_LITTLE_ENDIAN
  #endif

@@ -5,8 +5,8 @@ Description: Silence warnings about using the default system timezone info
  set the timezone explicitly), though with our use of the system timezonedb
  patch, we actually feel quite comfortable using the default timezone info.
 Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=571762
---- a/ext/date/tests/date_default_timezone_set-1.phpt
-+++ b/ext/date/tests/date_default_timezone_set-1.phpt
+--- php5.orig/ext/date/tests/date_default_timezone_set-1.phpt
++++ php5/ext/date/tests/date_default_timezone_set-1.phpt
 @@ -22,9 +22,6 @@ date.timezone=
  	echo date(DATE_ISO8601, $date4), "\n";
  ?>

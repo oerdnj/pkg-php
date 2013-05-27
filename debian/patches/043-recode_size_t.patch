@@ -4,8 +4,8 @@ Bug-Debian: http://bugs.debian.org/294986, http://bugs.debian.org/459020
 Forwarded: no
 Last-Update: 2010-01-18
 
---- a/ext/recode/recode.c
-+++ b/ext/recode/recode.c
+--- php5.orig/ext/recode/recode.c
++++ php5/ext/recode/recode.c
 @@ -149,7 +149,7 @@ PHP_FUNCTION(recode_string)
  	int req_len, str_len;
  	char *req, *str;

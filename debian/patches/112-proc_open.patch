@@ -1,5 +1,5 @@
---- a/ext/standard/proc_open.c
-+++ b/ext/standard/proc_open.c
+--- php5.orig/ext/standard/proc_open.c
++++ php5/ext/standard/proc_open.c
 @@ -61,7 +61,7 @@
   * */
  #ifdef PHP_CAN_SUPPORT_PROC_OPEN

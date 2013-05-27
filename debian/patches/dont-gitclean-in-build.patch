@@ -7,8 +7,8 @@ Description: Don't run git-clean via buildconf
  .
  This patch doesn't need to go upstream, as they likely don't want to support
  having a patch system on top of their source.
---- a/build/build.mk
-+++ b/build/build.mk
+--- php5.orig/build/build.mk
++++ php5/build/build.mk
 @@ -75,6 +75,5 @@ gitclean-work:
  	@if (test ! -f '.git/info/exclude' || grep -s "git-ls-files" .git/info/exclude); then \
  		(echo "Rebuild .git/info/exclude" && echo '*.o' > .git/info/exclude && git svn propget svn:ignore | grep -v config.nice >> .git/info/exclude); \

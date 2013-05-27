@@ -1,5 +1,5 @@
---- a/ext/standard/datetime.c
-+++ b/ext/standard/datetime.c
+--- php5.orig/ext/standard/datetime.c
++++ php5/ext/standard/datetime.c
 @@ -20,6 +20,9 @@
  
  /* $Id$ */

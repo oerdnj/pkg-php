@@ -15,8 +15,8 @@ Description: Fix another small batch of broken test cases
    variable hardcoded to 9 instead.  Did i mention that this test is
    sketchy?
 Origin: vendor
---- a/ext/posix/tests/posix_errno_variation2.phpt
-+++ b/ext/posix/tests/posix_errno_variation2.phpt
+--- php5.orig/ext/posix/tests/posix_errno_variation2.phpt
++++ php5/ext/posix/tests/posix_errno_variation2.phpt
 @@ -21,7 +21,9 @@ do {
    $result = shell_exec("ps -p " . $pid);
  } while (strstr($pid, $result)); 

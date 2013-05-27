@@ -3,8 +3,8 @@ Origin: vendor
 Forwarded: http://bugs.php.net/50796
 Last-Update: 2010-01-18
 
---- a/ext/soap/tests/server009.phpt
-+++ b/ext/soap/tests/server009.phpt
+--- php5.orig/ext/soap/tests/server009.phpt
++++ php5/ext/soap/tests/server009.phpt
 @@ -10,6 +10,7 @@ SOAP Server 9: setclass and setpersisten
  --INI--
  session.auto_start=1
@@ -13,8 +13,8 @@ Last-Update: 2010-01-18
  --FILE--
  <?php
  class foo {
---- a/ext/standard/tests/general_functions/phpinfo.phpt
-+++ b/ext/standard/tests/general_functions/phpinfo.phpt
+--- php5.orig/ext/standard/tests/general_functions/phpinfo.phpt
++++ php5/ext/standard/tests/general_functions/phpinfo.phpt
 @@ -1,5 +1,7 @@
  --TEST--
  phpinfo()

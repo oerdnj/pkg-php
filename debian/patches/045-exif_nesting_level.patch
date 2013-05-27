@@ -3,8 +3,8 @@ Origin: vendor
 Forwarded: no
 Last-Update: 2010-01-18
 
---- a/ext/exif/exif.c
-+++ b/ext/exif/exif.c
+--- php5.orig/ext/exif/exif.c
++++ php5/ext/exif/exif.c
 @@ -99,7 +99,7 @@ typedef unsigned char uchar;
  
  #define EFREE_IF(ptr)	if (ptr) efree(ptr)

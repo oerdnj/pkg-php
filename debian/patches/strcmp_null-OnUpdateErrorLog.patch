@@ -1,5 +1,5 @@
 --- /dev/null
-+++ b/tests/func/null-new_val.phpt
++++ php5/tests/func/null-new_val.phpt
 @@ -0,0 +1,10 @@
 +--TEST--
 +ini_restore strcmp NULL new_val

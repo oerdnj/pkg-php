@@ -1,5 +1,5 @@
---- a/ext/standard/dl.c
-+++ b/ext/standard/dl.c
+--- php5.orig/ext/standard/dl.c
++++ php5/ext/standard/dl.c
 @@ -74,12 +74,7 @@ PHPAPI PHP_FUNCTION(dl)
  		(strcmp(sapi_module.name, "cli") != 0) &&
  		(strncmp(sapi_module.name, "embed", 5) != 0)

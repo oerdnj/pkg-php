@@ -1,5 +1,5 @@
---- a/ext/opcache/ZendAccelerator.h
-+++ b/ext/opcache/ZendAccelerator.h
+--- php5.orig/ext/opcache/ZendAccelerator.h
++++ php5/ext/opcache/ZendAccelerator.h
 @@ -80,6 +80,9 @@
  # endif
  # include <direct.h>
@@ -32,8 +32,8 @@
  # else
  #  error "Don't know how to define struct flock"
  # endif
---- a/ext/opcache/config.m4
-+++ b/ext/opcache/config.m4
+--- php5.orig/ext/opcache/config.m4
++++ php5/ext/opcache/config.m4
 @@ -326,38 +326,42 @@ int main() {
      msg=yes,msg=no,msg=no)
    AC_MSG_RESULT([$msg])

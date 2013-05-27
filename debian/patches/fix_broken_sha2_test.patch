@@ -1,5 +1,5 @@
---- a/ext/standard/config.m4
-+++ b/ext/standard/config.m4
+--- php5.orig/ext/standard/config.m4
++++ php5/ext/standard/config.m4
 @@ -182,12 +182,12 @@ AC_TRY_RUN([
  
  main() {
