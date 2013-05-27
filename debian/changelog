@@ -1,3 +1,10 @@
+php5 (5.5.0~rc2+dfsg-1) unstable; urgency=low
+
+  * Imported Upstream version 5.5.0~rc2+dfsg
+  * Update patches for 5.5.0~rc2 release
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 27 May 2013 21:39:36 +0200
+
 php5 (5.5.0~rc1+dfsg-2) unstable; urgency=low
 
   [ Thijs Kinkhorst ]
