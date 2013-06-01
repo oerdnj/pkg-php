@@ -1,8 +1,9 @@
-
 Add support for use of the system timezone database, rather
 than embedding a copy.  Discussed upstream but was not desired.
 
 History:
+r10 : make timezone case insensitive
+r9: fix another compile error without --with-system-tzdata configured (Michael Heimpold)
 r8: fix compile error without --with-system-tzdata configured
 r7: improve check for valid timezone id to exclude directories
 r6: fix fd leak in r5, fix country code/BC flag use in 
@@ -66,7 +67,7 @@ r1: initial revision
  	/* read BC flag */
  	tz->bc = (**tzf == '\1');
  	*tzf += 1;
-@@ -260,7 +280,397 @@ void timelib_dump_tzinfo(timelib_tzinfo
+@@ -260,7 +280,405 @@ void timelib_dump_tzinfo(timelib_tzinfo
  	}
  }
  
@@ -80,7 +81,7 @@ r1: initial revision
 +#endif
 +
 +/* System timezone database pointer. */
-+static const timelib_tzdb *timezonedb_system = NULL;
++static const timelib_tzdb *timezonedb_system;
 +
 +/* Hash table entry for the cache of the zone.tab mapping table. */
 +struct location_info {
@@ -98,13 +99,14 @@ r1: initial revision
 + * prevent too many collisions. */
 +#define LOCINFO_HASH_SIZE (1021)
 +
++/* Compute a case insensitive hash of str */
 +static uint32_t tz_hash(const char *str)
 +{
 +    const unsigned char *p = (const unsigned char *)str;
 +    uint32_t hash = 5381;
 +    int c;
 +    
-+    while ((c = *p++) != '\0') {
++    while ((c = tolower(*p++)) != '\0') {
 +        hash = (hash << 5) ^ hash ^ c;
 +    }
 +    
@@ -442,6 +444,13 @@ r1: initial revision
 +		return NULL;
 +	}
 +
++    if (system_location_table) {
++        const struct location_info *li;
++        if ((li = find_zone_info(system_location_table, timezone)) != NULL) {
++            /* Use the stored name to avoid case issue */
++            timezone = li->name;
++        }
++    }
 +	snprintf(fname, sizeof fname, ZONEINFO_PREFIX "/%s", timezone);
 +	
 +	fd = open(fname, O_RDONLY);
@@ -465,7 +474,7 @@ r1: initial revision
  {
  	int left = 0, right = tzdb->index_size - 1;
  #ifdef HAVE_SETLOCALE
-@@ -299,36 +709,125 @@ static int seek_to_tz_position(const uns
+@@ -299,36 +717,135 @@ static int seek_to_tz_position(const uns
  	return 0;
  }
  
@@ -487,8 +496,11 @@ r1: initial revision
 +                
 +                return 1;
 +	}
++       else
 +#endif
-+	return inmem_seek_to_tz_position(tzf, timezone, tzdb);
++       {
++		return inmem_seek_to_tz_position(tzf, timezone, tzdb);
++	}
 +}
 +
  const timelib_tzdb *timelib_builtin_db(void)
@@ -534,7 +546,14 @@ r1: initial revision
 +            struct stat st;
 +
 +            if (timezone[0] == '\0' || strstr(timezone, "..") != NULL) {
-+		return 0;
++		        return 0;
++            }
++
++            if (system_location_table) {
++                if (find_zone_info(system_location_table, timezone) != NULL) {
++                    /* found in cache */
++                    return 1;
++                }
 +            }
 +            
 +            snprintf(fname, sizeof fname, ZONEINFO_PREFIX "/%s", timezone);
@@ -614,29 +633,3 @@ r1: initial revision
 +   fi
 +fi
 +
---- php5.orig/ext/date/php_date.c
-+++ php5/ext/date/php_date.c
-@@ -961,6 +961,23 @@ static char* guess_timezone(const timeli
- 		DATEG(timezone_valid) = 1;
- 		return DATEG(default_timezone);
- 	}
-+	/* Try to guess timezone from system information */
-+	{
-+		struct tm *ta, tmbuf;
-+		time_t     the_time;
-+		char      *tzid = NULL;
-+
-+		the_time = time(NULL);
-+		ta = php_localtime_r(&the_time, &tmbuf);
-+		if (ta) {
-+			tzid = timelib_timezone_id_from_abbr(ta->tm_zone, ta->tm_gmtoff, ta->tm_isdst);
-+		}
-+		if (! tzid) {
-+			tzid = "UTC";
-+		}
-+
-+		return tzid;
-+	}
- 	/* Fallback to UTC */
- 	php_error_docref(NULL TSRMLS_CC, E_WARNING, DATE_TZ_ERRMSG "We selected the timezone 'UTC' for now, but please set date.timezone to select your timezone.");
- 	return "UTC";
