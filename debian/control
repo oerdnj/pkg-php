@@ -90,7 +90,7 @@ Depends: ${misc:Depends},
 	 ${shlibs:Depends},
 	 sed (>= 4.1.1-1),
 	 psmisc (>= 22.15-1~),
-	 lsof,
+	 lsof [!kfreebsd-any !hurd-any],
 	 ucf
 Pre-Depends: dpkg (>= 1.15.7.2~)
 Provides: php5-mhash
