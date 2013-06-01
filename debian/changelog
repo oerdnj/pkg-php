@@ -1,3 +1,15 @@
+php5 (5.5.0~rc2+dfsg-2) unstable; urgency=low
+
+  * Don't depend on lsof on hurd-any and kfreebsd-any and make the call in
+    sessionclean optional (Closes: #710684)
+  * Add initial support to php5-fpm for systemd service and upstart job in
+    addition to sysvinit script
+  * Update systzdata patch to v10
+  * Add php5-json to Recommends to declare strong dependency at least in
+    jessie
+
+ -- Ondřej Surý <ondrej@debian.org>  Sat, 01 Jun 2013 17:58:09 +0200
+
 php5 (5.5.0~rc2+dfsg-1) unstable; urgency=low
 
   * Imported Upstream version 5.5.0~rc2+dfsg
