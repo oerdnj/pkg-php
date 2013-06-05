@@ -1,3 +1,13 @@
+php5 (5.5.0~rc2+dfsg-3) unstable; urgency=low
+
+  * php5-common now suggests php5-user-cache virtual package which is
+    provided by php5-apcu, php5-yac and php5-xcache.
+  * Make the Breaks on php5-suhosin versioned to allow suhosin backports
+    when there's a new upstream version (Acked by suhosin maintainer)
+  * Disable checks on mipsen until #710937 is fixed
+
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 05 Jun 2013 11:05:11 +0200
+
 php5 (5.5.0~rc2+dfsg-2) unstable; urgency=low
 
   * Don't depend on lsof on hurd-any and kfreebsd-any and make the call in
