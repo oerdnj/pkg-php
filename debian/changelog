@@ -1,3 +1,9 @@
+php5 (5.5.0~rc3-1) unstable; urgency=low
+
+  * New upstream version 5.5.0~rc3
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 06 Jun 2013 20:53:09 +0200
+
 php5 (5.5.0~rc2+dfsg-3) unstable; urgency=low
 
   * php5-common now suggests php5-user-cache virtual package which is
