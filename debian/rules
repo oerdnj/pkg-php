@@ -450,7 +450,6 @@ clean: unprepared
 	rm -rf embed-build
 	rm -rf fpm-build
 	rm -rf pear-build pear-build-download
-	rm -f debian/copyright
 	rm -rf test-results.txt $(MYSQL_DATA_DIR)
 	dh_clean -Xorig
 
@@ -638,7 +637,6 @@ binary-indep: build install
 	# Need this version of debhelper for DH_OPTIONS to work.
 	dh_testdir
 	dh_testroot
-	cat debian/copyright.header LICENSE Zend/LICENSE > debian/copyright
 
 	dh_installdocs
 
@@ -722,7 +720,6 @@ binary-arch: build install
 	        done; \
 	done
 
-	cat debian/copyright.header LICENSE Zend/LICENSE > debian/copyright
 	dh_installdocs -s
 
 	cat debian/modulelist | grep -v common | while read package extname dsoname priority; do \
