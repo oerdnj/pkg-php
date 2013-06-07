@@ -1,6 +1,7 @@
 php5 (5.5.0~rc3-1) unstable; urgency=low
 
   * New upstream version 5.5.0~rc3
+  * Pre-Depend on apache2 (>= 2.4) to workaround #711454
 
  -- Ondřej Surý <ondrej@debian.org>  Thu, 06 Jun 2013 20:53:09 +0200
 
