@@ -1,6 +1,6 @@
-php5 (5.5.0~rc3-1) unstable; urgency=low
+php5 (5.5.0~rc3+dfsg-1) unstable; urgency=low
 
-  * New upstream version 5.5.0~rc3
+  * New upstream version 5.5.0~rc3+dfsg
   * Pre-Depend on apache2 (>= 2.4) to workaround #711454
   * php5-common now suggests php5-user-cache virtual package which is
     provided by php5-apcu, php5-yac and php5-xcache.
