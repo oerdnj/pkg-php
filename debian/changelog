@@ -1,9 +1,14 @@
 php5 (5.5.0~rc3+dfsg-2) unstable; urgency=low
 
+  [Ondřej Surý]
   * Make the php5{en,dis}mod less picky on removed files or changed
     symlinks to prevent breakages on upgrades where users have mangled
     with the files and symlinks in /etc/php5/{mods-available,conf.d}.
 
+  [Thijs Kinkhorst]
+  * Override license-problem-json-evil for README.REDIST.BINS.
+  * Put all licences statically in debian/copyright.
+  
  -- Ondřej Surý <ondrej@debian.org>  Tue, 11 Jun 2013 10:02:33 +0200
 
 php5 (5.5.0~rc3+dfsg-1) unstable; urgency=low
