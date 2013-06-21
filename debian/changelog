@@ -1,3 +1,11 @@
+php5 (5.5.0+dfsg-1) unstable; urgency=low
+
+  * New upstream version 5.5.0+dfsg
+  * Update dfsg-repack.sh script to handle upstream .xz tarballs better
+  * Update patches to 5.5.0+dfsg release
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 21 Jun 2013 13:55:06 +0200
+
 php5 (5.5.0~rc3+dfsg-2) unstable; urgency=low
 
   [Ondřej Surý]
