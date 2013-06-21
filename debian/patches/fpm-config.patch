@@ -8,7 +8,7 @@ Last-Update: 2010-07-30
 +++ php5/sapi/fpm/php-fpm.conf.in
 @@ -12,7 +12,7 @@
  ; Relative path can also be used. They will be prefixed by:
- ;  - the global prefix if it's been set (-p arguement)
+ ;  - the global prefix if it's been set (-p argument)
  ;  - @prefix@ otherwise
 -;include=etc/fpm.d/*.conf
 +;include=@EXPANDED_SYSCONFDIR@/php5/fpm/*.conf
