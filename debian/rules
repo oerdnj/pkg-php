@@ -423,7 +423,8 @@ configure-fpm-stamp: prepared-stamp
 		--without-mm \
 		--disable-pdo \
 		--without-mysql --without-sybase-ct \
-		--without-mssql --without-sqlite3
+		--without-mssql --without-sqlite3 \
+		--with-fpm-systemd
 	cd fpm-build && \
 	cp ../Zend/zend_ini_scanner.c ../Zend/zend_language_scanner.c \
 	   ../Zend/zend_ini_parser.h ../Zend/zend_language_parser.h \
