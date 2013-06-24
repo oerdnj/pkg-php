@@ -1,3 +1,10 @@
+php5 (5.5.0+dfsg-4) unstable; urgency=low
+
+  * Install systemd service file only to php5-fpm package
+    (Closes: #713948)
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 24 Jun 2013 09:13:43 +0200
+
 php5 (5.5.0+dfsg-3) unstable; urgency=low
 
   * Utilize new php5-fpm --nodaemonize and --daemonize options
