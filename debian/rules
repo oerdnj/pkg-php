@@ -735,9 +735,9 @@ binary-arch: build install
 	dh_installlogrotate -pphp5-fpm
 	dh_installcron -pphp5-common --name=php5
 	dh_installchangelogs -pphp5-common NEWS
-	dh_systemd_enable --name=php5-fpm
+	dh_systemd_enable -pphp5-fpm --name=php5-fpm
 	dh_installinit
-	dh_systemd_start
+	dh_systemd_start -pphp5-fpm --name=php5-fpm
 	dh_strip -s --dbg-package=php5-dbg
 	dh_link -s
 	dh_compress -s -Xphp.ini
