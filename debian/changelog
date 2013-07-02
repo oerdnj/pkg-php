@@ -1,3 +1,9 @@
+php5 (5.5.0+dfsg-5) unstable; urgency=low
+
+  * Build with systemd only on linux-any (Closes: #714728)
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 02 Jul 2013 13:38:11 +0200
+
 php5 (5.5.0+dfsg-4) unstable; urgency=low
 
   * Install systemd service file only to php5-fpm package
