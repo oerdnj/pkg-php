@@ -1,6 +1,7 @@
 php5 (5.5.0+dfsg-5) unstable; urgency=low
 
   * Build with systemd only on linux-any (Closes: #714728)
+  * Fix FTBFS introduced by multiarched libgmp-dev (affected by #675577)
 
  -- Ondřej Surý <ondrej@debian.org>  Tue, 02 Jul 2013 13:38:11 +0200
 
