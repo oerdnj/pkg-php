@@ -485,6 +485,9 @@ install: build
 
 	chmod 01733 debian/php5-common/var/lib/php5
 
+	# Mangle apache2filter DSO name before running dh_apache2
+	mv apache2filter-build/.libs/libphp5.so apache2filter-build/.libs/libphp5filter.so
+
 	# install apache2 DSO module
 	dh_apache2 --conditional=php5_enable
 
