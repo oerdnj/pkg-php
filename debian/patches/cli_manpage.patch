@@ -1,0 +1,75 @@
+Description: manpage: Add -S, -t options. Align -B, -E with the cli usage
+Author: Lior Kaplan <kaplan@debian.org>
+Origin: vendor
+Bug: https://bugs.php.net/bug.php?id=64180
+Bug-Debian: http://bugs.debian.org/698525
+
+--- a/sapi/cli/php.1.in
++++ b/sapi/cli/php.1.in
+@@ -18,21 +18,21 @@
+ .LP
+ .B php
+ [options] [\-B 
+-.IR code ] 
++.IR begin_code ]
+ .B \-R 
+ .IR code
+ [\-E 
+-.IR code ]
++.IR end_code ]
+ [[\-\-]
+ .IR args.\|.\|. ]
+ .LP
+ .B php
+ [options] [\-B 
+-.IR code ]
++.IR begin_code ]
+ .B \-F 
+ .IR file
+ [\-E 
+-.IR code ] 
++.IR end_code ]
+ [[\-\-]
+ .IR args.\|.\|. ]
+ .LP
+@@ -235,9 +235,9 @@
+ .B \-\-process\-begin \fIcode\fP
+ .TP
+ .PD 1
+-.B \-B \fIcode\fP
++.B \-B \fIbegin_code\fP
+ Run PHP 
+-.IR code
++.IR begin_code
+ before processing input lines
+ .TP
+ .PD 0
+@@ -262,9 +262,9 @@
+ .B \-\-process\-end \fIcode\fP
+ .TP
+ .PD 1
+-.B \-E \fIcode\fP
++.B \-E \fIend_code\fP
+ Run PHP 
+-.IR code
++.IR end_code
+ after processing all input lines
+ .TP
+ .PD 0
+@@ -274,6 +274,16 @@
+ .B \-s
+ Output HTML syntax highlighted source
+ .TP
++.PD 1
++.B \-S \fIaddress:port\fP
++Run with built-in web server
++.TP
++.PD 1
++.B \-t \fIdocroot\fP
++Specify document root
++.IR docroot
++for built-in web server
++.TP
+ .PD 0
+ .B \-\-server \fIaddr:port\fP
+ .TP
