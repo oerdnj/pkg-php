@@ -2,7 +2,8 @@
 
 set -e
 
-CONFDIR=/etc/php5/cli/conf.d
+SAPI=cli
+CONFDIR=/etc/php5/$SAPI/conf.d
 
 if [ -L $CONFDIR ]; then
     rm $CONFDIR
@@ -18,6 +19,15 @@ if [ "$1" = "configure" ]; then
     update-alternatives \
 	--install /usr/bin/php php /usr/bin/php5 50 \
 	--slave /usr/share/man/man1/php.1.gz php.1.gz /usr/share/man/man1/php5.1.gz
+
+    if [ -e /usr/share/php5/php5-maintscript-helper ]; then
+	. /usr/share/php5/php5-maintscript-helper
+
+	mods=$(php5query -M)
+	for mod in $mods; do
+	    php5_invoke enmod $SAPI $mod restart
+	done
+    fi
 fi
 
 #DEBHELPER#

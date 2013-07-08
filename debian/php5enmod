@@ -36,24 +36,13 @@
 set -ue
 
 SCRIPT_NAME=${0##*/}
-VERBOSE=no
+QUIET=no
 NEED_RESTART=no
 MAINT_MODE=no
 PURGE=no
 FORCE=no
 
 . /usr/share/php5/php5-helper
-
-cleanup() {
-    if [ "${VERBOSE}" != "no" ]; then
-	if [ "${NEED_RESTART}" = "yes" ] ; then
-            echo "PHP 5 modules configuration has changed, you may need to restart any running"
-	    echo "PHP processes."
-	fi
-    fi
-}
-
-trap cleanup EXIT
 
 usage() {
     [ -n "$@" ] && warning $@
@@ -74,7 +63,7 @@ enmods() {
 	    case $enmod_ret in
 		0)
 		    NEED_RESTART=yes
-		    record_state enabled $sapi $modname
+		    record_state enabled $sapi $mod
 		    ;;
 	    esac
 	done
@@ -94,12 +83,12 @@ dismods() {
 	    case $dismod_ret in
 		0)
 		    NEED_RESTART=yes
-		    record_state disabled $sapi $modname
+		    record_state disabled $sapi $mod
 		    ;;
 	    esac
 	    if [ "$PURGE" = "yes" ]; then
-		remove_state enabled $sapi $modname
-		remove_state disabled $sapi $modname
+		remove_state enabled $sapi $mod
+		remove_state disabled $sapi $mod
 	    fi
 	done
     done
@@ -114,14 +103,16 @@ enmod() {
 	return 1
     fi
 
-    local priority=$(get_priority $@)
-    local live_link=$(get_live_link $@)
-    local live_link_content=$(get_live_link_content $@)
+    local priority=$(get_priority $sapi $modname)
+    local live_link=$(get_live_link $sapi $modname $priority)
+    local live_link_content=$(get_live_link_content $sapi $modname $priority)
+
+    module_cleanup $sapi $modname $priority
 
     local module_state=0
-    php5query -q -s $sapi -m $module || module_state=$?
+    php5query -q -s $sapi -m $modname || module_state=$?
 
-    case module_state in
+    case $module_state in
 	# module enabled
 	0)
 	    return 0
@@ -148,12 +139,15 @@ enmod() {
 	    ;;
 	# fail if we get any different result
 	*)
-	    warning "Unable to get module state, run php5query -s $sapi -m $module manually"
+	    warning "Unable to get module state, run php5query -s $sapi -m $modname manually"
 	    warning "and fix the module state."
 	    return 1
     esac
 
-    ln -s "${live_link_content}" "${live_link}"
+    if [ -d "/etc/php5/$sapi/conf.d" ]; then
+	ln -s "${live_link_content}" "${live_link}"
+    fi
+
     return 0
 }
 
@@ -166,14 +160,16 @@ dismod() {
 	return 1
     fi
 
-    local priority=$(get_priority $@)
-    local live_link=$(get_live_link $@)
-    local live_link_content=$(get_live_link_content $@)
+    local priority=$(get_priority $sapi $modname)
+    local live_link=$(get_live_link $sapi $modname $priority)
+    local live_link_content=$(get_live_link_content $sapi $modname $priority)
+
+    module_cleanup $sapi $modname $priority
 
     local module_state=0
-    php5query -s $sapi -m $module || module_state=$?
+    php5query -q -s $sapi -m $modname || module_state=$?
 
-    case module_state in
+    case $module_state in
 	# module enabled
 	0)
 	    ;;
@@ -193,15 +189,18 @@ dismod() {
 	    return 1
     esac
 
-    rm $live_link
+    if [ -d "/etc/php5/$sapi/conf.d" ]; then
+	rm -f $live_link
+    fi
 
     return 0
 }
 
-while getopts pfs:m opt; do
+sapis=
+while getopts pfs:mq opt; do
     case $opt in
 	s)
-	    if [ "$sapis" = "ALL" -o "$OPTARG" = "ALL" -a -n "$sapis" ]; then
+	    if [ "$sapis" = "ALL" -o \( "$OPTARG" = "ALL" -a -n "$sapis" \) ]; then
 		warning "You cannot specify ALL and individual sapis"
 		usage
 	    fi
@@ -210,6 +209,7 @@ while getopts pfs:m opt; do
 	m) MAINT_MODE=yes;;
 	p) PURGE=yes;;
 	f) FORCE=yes;;
+	q) QUIET=yes;;
 	\?) usage;;
     esac
 done

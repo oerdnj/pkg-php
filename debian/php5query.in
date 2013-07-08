@@ -56,9 +56,9 @@ check_mod() {
 	return 1
     fi
 
-    local priority=$(get_priority $@)
-    local live_link=$(get_live_link $@)
-    local live_link_content=$(get_live_link_content $@)
+    local priority=$(get_priority $sapi $modname)
+    local live_link=$(get_live_link $sapi $modname $priority)
+    local live_link_content=$(get_live_link_content $sapi $modname $priority)
 
     found=no
     if [ -e "${live_link}" ] ; then
@@ -66,11 +66,12 @@ check_mod() {
 	    local content="$(readlink "${live_link}")"
 	    if [ "${content}" = "${live_link_content}" ] ; then
 		found=yes
-		break
 	    fi
 	fi
-	output "Module $modname symlink was modified by local administrator."
-	return 34
+	if [ "$found" != "yes" ]; then
+	    output "Module $modname symlink was modified by local administrator."
+	    return 34
+	fi
     fi
 
     local state_dir="/var/lib/php5/module/${sapi}"
@@ -80,7 +81,7 @@ check_mod() {
 	return 0
     elif [ -e "${state_dir}/enabled_by_maint/$modname" ]; then
 	output "$modname (Enabled by maintainer script)"
-	return 30
+	return 0
     elif [ -e "${state_dir}/disabled_by_admin/$modname" ]; then
 	output "No module matches $modname (Disabled by local administrator)"
 	return 32
@@ -97,10 +98,11 @@ check_mod() {
 }
 
 list_mod() {
-    if [ -d /etc/php5/mods_available ]; then
-	cd /etc/php5/mods_available
-	for mod in *; do
-	    echo ${mod%.ini}
+    if [ -d /etc/php5/mods-available ]; then
+	for mod in /etc/php5/mods-available/*; do
+	    mod=${mod##*/}
+	    mod=${mod%.ini}
+	    echo $mod
 	done
 	return 0
     else

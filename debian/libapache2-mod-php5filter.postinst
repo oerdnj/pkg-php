@@ -34,7 +34,8 @@ if [ "$1" = "triggered" ] && [ "$2" = "/etc/php5/apache2filter/conf.d" ]; then
     fi
 fi
 
-CONFDIR=/etc/php5/apache2/conf.d
+SAPI=apache2filter
+CONFDIR=/etc/php5/$SAPI/conf.d
 
 if [ -L $CONFDIR ]; then
     rm $CONFDIR
@@ -47,7 +48,14 @@ if [ "$1" = "configure" ]; then
     ucf /usr/share/php5/php.ini-production $phpini
     ucfr libapache2-mod-php5filter $phpini
 
-    for mod in $(php5query -M 
+    if [ -e /usr/share/php5/php5-maintscript-helper ]; then
+	. /usr/share/php5/php5-maintscript-helper
+
+	mods=$(php5query -M)
+	for mod in $mods; do
+	    php5_invoke enmod $SAPI $mod restart
+	done
+    fi
 
 fi
 

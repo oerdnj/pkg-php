@@ -8,7 +8,8 @@ fi
 
 dpkg-maintscript-helper mv_conffile /etc/php5/fpm/main.conf /etc/php5/fpm/php-fpm.conf 5.3.5-1 -- "$@"
 
-CONFDIR=/etc/php5/fpm/conf.d
+SAPI=fpm
+CONFDIR=/etc/php5/$SAPI/conf.d
 
 if [ -L $CONFDIR ]; then
     rm $CONFDIR
@@ -20,6 +21,16 @@ if [ "$1" = "configure" ]; then
 
     ucf /usr/share/php5/php.ini-production $phpini
     ucfr php5-fpm $phpini
+
+    if [ -e /usr/share/php5/php5-maintscript-helper ]; then
+	. /usr/share/php5/php5-maintscript-helper
+
+	mods=$(php5query -M)
+	for mod in $mods; do
+	    php5_invoke enmod $SAPI $mod restart
+	done
+    fi
+
 fi
 
 #DEBHELPER#

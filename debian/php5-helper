@@ -43,10 +43,8 @@ remove_state() {
     local modname=$3
 
     local state_dir="/var/lib/php5/module/${sapi}"
-    local admin_state="${state_dir}/${action}_by_admin/$modname"
-    local maint_state="${state_dir}/${action}_by_maint/$modname"
-
-    rm -f "$admin_state" "$maint_state"
+    rm -f "${state_dir}/${action}_by_admin/$modname"
+    rm -f "${state_dir}/${action}_by_maint/$modname"
 
     return 0
 }
@@ -73,11 +71,8 @@ record_state() {
     fi
 
     # cleanup previous state
-    if [ "action" = "enable" ]; then
-	remove_state disable $sapi $modname
-    else
-	remove_state enable $sapi $modname
-    fi
+    remove_state disabled $sapi $modname
+    remove_state enabled $sapi $modname
 
     if [ "$MAINT_MODE" = "yes" ]; then
 	mkdir -p "$(dirname $maint_state)"
@@ -91,7 +86,7 @@ record_state() {
 }
 
 output() {
-    if [ "QUIET" != "yes" ]; then
+    if [ "$QUIET" != "yes" ]; then
 	echo "$@"
     fi
 }
@@ -99,7 +94,7 @@ output() {
 get_priority() {
     local sapi=$1
     local modname=$2
-    local priority=$3
+
     local source_ini="/etc/php5/mods-available/${modname}.ini"
 
     if module_exists $modname; then
@@ -134,4 +129,14 @@ module_exists() {
 	return 1
     fi
     return 0
+}
+
+module_cleanup() {
+    local sapi=$1
+    local modname=$2
+    local priority=$3
+
+    if [ -L "/etc/php5/conf.d/$priority-$modname.ini" ]; then
+	rm "/etc/php5/conf.d/$priority-$modname.ini";
+    fi
 }

@@ -18,7 +18,8 @@ dpkg-maintscript-helper mv_conffile /etc/apache2/mods-available/php5_cgi.conf \
 
 dpkg-maintscript-helper rm_conffile /etc/apache2/mods-available/php5_cgi.load 5.5.0~beta4-1 -- "$@"
 
-CONFDIR=/etc/php5/cgi/conf.d
+SAPI=cgi
+CONFDIR=/etc/php5/$SAPI/conf.d
 
 if [ -L $CONFDIR ]; then
     rm $CONFDIR
@@ -38,6 +39,16 @@ if [ "$1" = "configure" ]; then
 
     update-alternatives \
 	--install /usr/lib/cgi-bin/php php-cgi-bin /usr/lib/cgi-bin/php5 50
+
+    if [ -e /usr/share/php5/php5-maintscript-helper ]; then
+	. /usr/share/php5/php5-maintscript-helper
+
+	mods=$(php5query -M)
+	for mod in $mods; do
+	    php5_invoke enmod $SAPI $mod restart
+	done
+    fi
+
 fi
 
 #DEBHELPER#
