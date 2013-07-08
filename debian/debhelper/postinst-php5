@@ -1,8 +1,6 @@
-if #CONDITIONAL_VARIABLE#; then
-	if [ -e /usr/share/php5/php5-maintscript-helper ] ; then
-		. /usr/share/php5/php5-maintscript-helper
-		for conf in #NAMES# ; do
-			php5_invoke #HELPER# ALL $conf #ACTION# || #ERROR_HANDLER#
-		done
-	fi
+if [ -e /usr/share/php5/php5-maintscript-helper ] ; then
+	. /usr/share/php5/php5-maintscript-helper
+	for conf in #NAMES# ; do
+		php5_invoke #HELPER# ALL $conf #ACTION# || #ERROR_HANDLER#
+	done
 fi

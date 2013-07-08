@@ -1,0 +1,10 @@
+debian/tmp/usr/bin/php-config
+debian/tmp/usr/bin/phpize
+debian/tmp/usr/share/man/man1/php-config.1
+debian/tmp/usr/share/man/man1/phpize.1
+debian/tmp/usr/include
+debian/tmp/usr/lib/php5/build
+debian/debhelper/dh_* /usr/bin
+debian/debhelper/*-php5 /usr/share/debhelper/autoscripts/
+debian/debhelper/php5.pm /usr/share/perl5/Debian/Debhelper/Sequence
+debian/debhelper/php5-maintscript-helper /usr/share/php5/

@@ -49,7 +49,7 @@ my @delete_directories = (
     "autom4te.cache/");
 
 # Cleanup
-$opt_sourcedir = "." unless !$opt_sourcedir;
+$opt_sourcedir = "." unless $opt_sourcedir;
 if (-e "$opt_sourcedir/config.m4") {
     my $cwd = getcwd;
     chdir $opt_sourcedir;

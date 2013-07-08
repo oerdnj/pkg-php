@@ -617,6 +617,7 @@ install: build
 	install -m755 debian/sessionclean debian/php5-common/usr/lib/php5
 	install -m755 debian/php5enmod debian/php5-common/usr/sbin/php5enmod
 	ln -s php5enmod debian/php5-common/usr/sbin/php5dismod
+	install -m755 debian/php5query debian/php5-common/usr/sbin/php5query
 
 	# remove libtool files
 	rm $(CURDIR)/debian/libphp5-embed/usr/lib/php5/libphp5.la

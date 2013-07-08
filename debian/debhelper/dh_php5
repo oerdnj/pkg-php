@@ -48,9 +48,9 @@ dh_php5 - register configuration snippets to the Apache web server
 =cut
 
 # auto-generated do not edit
-our $API = "__API__";
-our $MODULE_DIR = "__MODULE_DIR__";
-our $SERVER_VERSION = "__SERVER_VERSION__";
+our $API = `php-config --phpapi`;
+our $MODULE_DIR = `php-config --extension-dir`;
+our $SERVER_VERSION = `php-config --version`;
 
 
 
@@ -339,10 +339,10 @@ foreach my $package ((@{$dh{DOPACKAGES}}))
 
 			if ($type eq "mods")
 			{
-				if ($basesource =~ m/\.load$/)
+				if ($basesource =~ m/\.ini$/)
 				{
 					my $enablename = $basesource;
-					$enablename =~ s/\.load$//;
+					$enablename =~ s/\.ini$//;
 					push @{$PACKAGE_TYPE{'has_a_module'}}, $enablename;
 					verbose_print("Installing module configuration $enablename into $installdir\n");
 				}
@@ -359,25 +359,7 @@ foreach my $package ((@{$dh{DOPACKAGES}}))
 					next;
 				}
 
-				error("module: \"$basesource\" needs .conf, .so or .load suffix") if $basesource !~ m/\.(conf|load|so)/;
-			}
-			elsif($type eq "conf")
-			{
-
-				if ($#arguments > 0)
-				{
-					$PACKAGE_TYPE{'dependency_line'} .= " | " . join("", @arguments);
-				}
-
-				if ($basesource =~ m/\.conf/)
-				{
-					my $enablename = $basesource;
-					$enablename =~ s/\.conf$//;
-					push
-					@{$PACKAGE_TYPE{'has_a_conf_file'}}, $enablename;
-					verbose_print("Installing global configuration $enablename into $installdir\n");
-				}
-				error("configuration file: \"$basesource\" needs .conf suffix") if $basesource !~ m/\.conf/;
+				error("module: \"$basesource\" needs .so or .ini suffix") if $basesource !~ m/\.(ini|so)/;
 			}
 
 			if (! -d $installdir)

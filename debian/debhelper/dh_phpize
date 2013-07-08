@@ -28,14 +28,14 @@ my($opt_sourcedir);
 init(options => { "D=s" => \$opt_sourcedir,
 		  "sourcedirectory=s" => \$opt_sourcedir });
 
-$opt_sourcedir = "." unless !$opt_sourcedir;
+$opt_sourcedir = "." unless $opt_sourcedir;
 if (-e "$opt_sourcedir/config.m4") {
     my $cwd = getcwd;
     chdir $opt_sourcedir;
     doit('phpize');
     chdir $cwd;
 } else {
-    die "Cannot find config.m4."
+    die "Cannot find config.m4 in $opt_sourcedir/config.m4."
 }
 
 =head1 SEE ALSO
