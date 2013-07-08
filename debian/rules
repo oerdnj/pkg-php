@@ -501,6 +501,7 @@ install: build
 
 	# Install helper shell fragment
 	install -m644 debian/php5-helper $(CURDIR)/debian/php5-common/usr/share/php5/
+	install -m644 debian/debhelper/php5-maintscript-helper $(CURDIR)/debian/php5-common/usr/share/php5/
 
 	# install embed SAPI
 	cd embed-build && make install-headers install-build install-sapi install-programs INSTALL_ROOT=$(CURDIR)/debian/libphp5-embed
@@ -621,7 +622,6 @@ install: build
 	install -m644 debian/debhelper/*-php5 $(CURDIR)/debian/php5-dev/usr/share/debhelper/autoscripts/
 	install -d -m755 $(CURDIR)/debian/php5-dev/usr/share/perl5/Debian/Debhelper/Sequence
 	install -m644 debian/debhelper/php5.pm $(CURDIR)/debian/php5-dev/usr/share/perl5/Debian/Debhelper/Sequence
-	install -m644 debian/debhelper/php5-maintscript-helper $(CURDIR)/debian/php5-dev/usr/share/php5/
 
 	# install common files
 	install -m755 debian/maxlifetime debian/php5-common/usr/lib/php5
