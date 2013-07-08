@@ -1,0 +1,31 @@
+#!/bin/sh
+
+set -e
+
+if [ -e /usr/share/apache2/apache2-maintscript-helper ] ; then
+    . /usr/share/apache2/apache2-maintscript-helper
+
+    php5_enable() {
+        if [ $(a2query -M) != 'prefork' ] ; then
+            if apache2_switch_mpm prefork ; then
+                return 0
+            else
+                apache2_msg err "Could not switch to prefork, not enabling php5"
+                return 1
+            fi
+        fi
+        return 0
+    }
+
+else
+    echo "Warning: Could not load Apache 2.4 maintainer script helper."
+
+    php5_enable() {
+        return 1;
+    }
+
+fi
+
+#DEBHELPER#
+
+exit 0
