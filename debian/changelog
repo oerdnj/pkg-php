@@ -1,3 +1,13 @@
+php5 (5.5.0+dfsg-7~1.gbp27c768) UNRELEASED; urgency=low
+
+  ** SNAPSHOT build @27c7681d3d6771b3ea9f20bd92c46964b5169e3d **
+
+  * Add php5_enable shell function to Apache 2 modules postrm scripts
+  * Add preliminary php5-maintscript-helper scripts
+  * Disable tests, nobody looks at the results anyway.
+
+ -- Ondřej Surý <ondrej@sury.org>  Mon, 08 Jul 2013 13:03:58 +0200
+
 php5 (5.5.0+dfsg-6) unstable; urgency=low
 
   [ Gianfranco Costamagna ]
