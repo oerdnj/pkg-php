@@ -1,5 +1,8 @@
-php5 (5.5.0+dfsg-7~3.gbpb0c53d) UNRELEASED; urgency=low
+php5 (5.5.0+dfsg-7~4.gbp74b5f9) UNRELEASED; urgency=low
 
+  ** SNAPSHOT build @74b5f9e1fc331d7e8155617eb00895442c8e87c2 **
+
+  [ Ondřej Surý ]
   ** SNAPSHOT build @b0c53d4ea3c13c731227560db7b0e5f06f130a9b **
 
   * Add php5_enable shell function to Apache 2 modules postrm scripts
@@ -13,6 +16,28 @@ php5 (5.5.0+dfsg-7~3.gbpb0c53d) UNRELEASED; urgency=low
   * prepare 5.5.0+dfsg-7~2.gbp9beb4a release
   * Provide dh-php5 from php5-dev
   * Install extra debhelper files from debian/rules
+
+  [ Lior Kaplan ]
+  * manpage: Add -S, -t options. Align -B, -E with the cli usage (Closes: #698525)
+  * Revert "manpage: Add -S, -t options. Align -B, -E with the cli usage (Closes: #698525)" This reverts commit f6a91e92cf85ca8edfe1c61deca27f5a5f2e9166.
+
+  [ Ondřej Surý ]
+  * Add php5_enable shell function to Apache 2 modules postrm scripts
+  * Disable tests, nobody looks at the results anyway.
+  * Add preliminary php5-maintscript-helper scripts
+  * prepare 5.5.0+dfsg-7~1.gbp27c768 release
+  * Add dh_phpize and dh_phpize_clean helpers
+  * Some more fixes (APCu now builds with very simple debian/rules)
+  * prepare 5.5.0+dfsg-7~2.gbp9beb4a release
+  * Provide dh-php5 from php5-dev
+  * Install extra debhelper files from debian/rules
+  * prepare 5.5.0+dfsg-7~3.gbpb0c53d release
+  * Fix php5query script build
+  * Install php5-helper shell fragment
+  * Install php5-helper and use . instead of source
+  * Make /etc/php5/SAPI/conf.d directories instead of links
+  * Install /usr/share/php5/php5-maintscript-helper to php5-common
+  * Get the scripts into semi-working state and enable all existing modules in SAPI postinsts
 
  -- Ondřej Surý <ondrej@sury.org>  Mon, 08 Jul 2013 13:03:58 +0200
 
