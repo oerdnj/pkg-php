@@ -473,6 +473,7 @@ clean: unprepared
 			rm -f debian/$${sapi}.$${cruft}; \
 		done; \
 	done
+	rm -f debian/php5query
 
 PCNTL_FUNCTIONS := $(shell < ext/pcntl/php_pcntl.h sed -ne "/^PHP_FUNCTION/ s/PHP_FUNCTION(\(.*\));/\1/;t end;d;:end p" | tr '\n' ',')
 
@@ -704,6 +705,10 @@ binary-arch: build install
 	done
 
 	# likewise, for the different sapi implementations
+	sed -e "s/@SAPI@/apache2 apache2filter cgi cli fpm embed/" \
+	< debian/php5query.in \
+	> debian/php5query
+
 	for tmpl in postrm links; do \
 		for sapi in cgi cli fpm; do \
 			sed -e "s/@sapi@/$${sapi}/g; \

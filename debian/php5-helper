@@ -1,0 +1,137 @@
+#!/bin/sh
+#
+#  php5enmod - a php5 module manager for Debian
+#
+#  Copyright 2013 Ondřej Surý <ondrej@sury.org>
+#
+# This program is licensed at your choice under the terms of the GNU General
+# Public License version 2+ or under the terms of the PHP License 3.01.
+#
+# For GPL-2+:
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+# USA.
+#
+# For PHP 3.01:
+# This source file is subject to version 3.01 of the PHP license,
+# that is bundled with this package in the file LICENSE, and is
+# available through the world-wide-web at the following url:
+# http://www.php.net/license/3_01.txt
+# If you did not receive a copy of the PHP license and are unable to
+# obtain it through the world-wide-web, please send a note to
+# license@php.net so we can mail you a copy immediately.
+#
+
+warning() {
+    echo "WARNING: ${@}" >&2
+}
+
+remove_state() {
+    local action=$1
+    local sapi=$2
+    local modname=$3
+
+    local state_dir="/var/lib/php5/module/${sapi}"
+    local admin_state="${state_dir}/${action}_by_admin/$modname"
+    local maint_state="${state_dir}/${action}_by_maint/$modname"
+
+    rm -f "$admin_state" "$maint_state"
+
+    return 0
+}
+
+record_state() {
+    local action=$1
+    local sapi=$2
+    local modname=$3
+
+    local state_dir="/var/lib/php5/module/${sapi}"
+    local admin_state="${state_dir}/${action}_by_admin/$modname"
+    local maint_state="${state_dir}/${action}_by_maint/$modname"
+
+    if [ -e "$admin_state" ]; then
+	return
+    fi
+
+    if [ -e "$maint_state" ]; then
+	if [ "$MAINT_MODE" = "yes" ]; then
+	    return
+	else
+	    rm "$maint_state"
+	fi
+    fi
+
+    # cleanup previous state
+    if [ "action" = "enable" ]; then
+	remove_state disable $sapi $modname
+    else
+	remove_state enable $sapi $modname
+    fi
+
+    if [ "$MAINT_MODE" = "yes" ]; then
+	mkdir -p "$(dirname $maint_state)"
+	touch "$maint_state"
+    else
+	mkdir -p "$(dirname $admin_state)"
+	touch "$admin_state"
+    fi
+
+    return 0
+}
+
+output() {
+    if [ "QUIET" != "yes" ]; then
+	echo "$@"
+    fi
+}
+
+get_priority() {
+    local sapi=$1
+    local modname=$2
+    local priority=$3
+    local source_ini="/etc/php5/mods-available/${modname}.ini"
+
+    if module_exists $modname; then
+	priority=$(sed -ne "s/^; priority=\([0-9]\+\)$/\\1/p" $source_ini)
+	[ -z "$priority" ] && priority=20
+	
+	echo $priority
+	return 0
+    fi
+    return $?
+}
+
+get_live_link() {
+    local sapi=$1
+    local modname=$2
+    local priority=$3
+    echo "/etc/php5/$sapi/conf.d/$priority-$modname.ini"
+}
+
+get_live_link_content() {
+    local sapi=$1
+    local modname=$2
+    local priority=$3
+    echo "../../mods-available/$modname.ini"
+}
+
+module_exists() {
+    local modname=$1
+    local source_ini="/etc/php5/mods-available/${modname}.ini"
+
+    if [ ! -e "${source_ini}" ]; then
+	return 1
+    fi
+    return 0
+}

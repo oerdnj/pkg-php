@@ -29,6 +29,16 @@ for dsoname in @modules@; do
 		ucfr --purge php5-@package@ ${inidir}/${inifile}
 	    fi
 	fi
+	
+	if [ -e /usr/share/php5/php5-maintscript-helper ] ; then
+	    . /usr/share/php5/php5-maintscript-helper
+
+	    for dsoname in @modules@; do
+		inifile=${dsoname}.ini
+		priority=$(sed -ne "s/^; priority=\([0-9]\+\)$/\\1/p" /usr/share/php5/@package@/${inifile})
+		php5_invoke dismod ALL ${dsoname}/${priority:-20} restart
+	    done
+	fi
     fi
 done
 
