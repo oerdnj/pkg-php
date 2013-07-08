@@ -1,0 +1,71 @@
+#!/usr/bin/perl -w
+
+=head1 NAME
+
+dh_phpize_clean - Clean all changes made by dh_phpize
+
+=cut
+
+use strict;
+use Cwd;
+use Debian::Debhelper::Dh_Lib;
+
+=head1 SYNOPSIS
+
+B<dh_phpize_clean> [S<I<build system options>>] [S<I<debhelper options>>]
+
+=head1 DESCRIPTION
+
+dh_phpize_clean removes all files which have been created or changed
+during the phpize call.
+
+dh_phpize accepts the -D | --sourcedirectory option of DEBHELPER.
+
+=cut
+
+my $opt_sourcedir;
+
+init(options => { "D=s" => \$opt_sourcedir,
+		  "sourcedirectory=s" => \$opt_sourcedir });
+
+# An array of the names of the files which should be removed.
+my @delete = (
+    "Makefile.global",
+    "acinclude.m4",
+    "aclocal.m4",
+    "config.guess",
+    "config.h.in",
+    "config.sub",
+    "configure",
+    "configure.in",
+    "install-sh",
+    "ltmain.sh",
+    "missing",
+    "mkinstalldirs",
+    "run-tests.php");
+
+my @delete_directories = (
+    "build/",
+    "autom4te.cache/");
+
+# Cleanup
+$opt_sourcedir = "." unless !$opt_sourcedir;
+if (-e "$opt_sourcedir/config.m4") {
+    my $cwd = getcwd;
+    chdir $opt_sourcedir;
+    doit("rm", "-f", "--", @delete) if @delete;
+    doit("rm", "-rf", "--", @delete_directories) if @delete_directories;
+    chdir $cwd;
+} else {
+    die "Cannot find config.m4."
+}
+
+=head1 SEE ALSO
+
+L<debhelper(7)>, L<dh_phpize(1)>
+
+=head1 AUTHOR
+
+Ondřej Surý <ondrej@debian.org>
+
+=cut
