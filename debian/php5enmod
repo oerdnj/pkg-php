@@ -42,7 +42,7 @@ MAINT_MODE=no
 PURGE=no
 FORCE=no
 
-source /usr/share/php5/php5-helper
+. /usr/share/php5/php5-helper
 
 cleanup() {
     if [ "${VERBOSE}" != "no" ]; then
