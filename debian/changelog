@@ -1,6 +1,6 @@
-php5 (5.5.0+dfsg-7~4.gbp74b5f9) UNRELEASED; urgency=low
+php5 (5.5.0+dfsg-7~5.gbped6787) UNRELEASED; urgency=low
 
-  ** SNAPSHOT build @74b5f9e1fc331d7e8155617eb00895442c8e87c2 **
+  ** SNAPSHOT build @ed67876662d44ac52c8c94260784bf3e56548463 **
 
   [ Ondřej Surý ]
   ** SNAPSHOT build @b0c53d4ea3c13c731227560db7b0e5f06f130a9b **
@@ -38,6 +38,8 @@ php5 (5.5.0+dfsg-7~4.gbp74b5f9) UNRELEASED; urgency=low
   * Make /etc/php5/SAPI/conf.d directories instead of links
   * Install /usr/share/php5/php5-maintscript-helper to php5-common
   * Get the scripts into semi-working state and enable all existing modules in SAPI postinsts
+  * prepare 5.5.0+dfsg-7~4.gbp74b5f9 release
+  * List only installes PHP 5 SAPIs and more fixes
 
  -- Ondřej Surý <ondrej@sury.org>  Mon, 08 Jul 2013 13:03:58 +0200
 
