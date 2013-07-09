@@ -20,7 +20,6 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-
 #
 # VARIABLES
 #
@@ -223,8 +222,9 @@ php5_needs_action()
 #	invokes an Apache 2 configuration helper to enable or disable a
 #	particular piece of configuration, a site or a module. It carefully
 #	checks whether the supplied configuration snippet exists and reloads the
-#	web server if the site administrator desires that by calling the
-#	php5_reload function.
+#	web server if the site administrator desires that by call dpkg trigger
+#       /etc/php5/SAPI/conf.d which is defined for apache2, apache2filter and fpm.
+#
 # Parameters:
 #	command - The command to invoke. Recognized commands are "enconf",
 #		"enmod", "ensite", "disconf", "dismod", "dissite"
@@ -234,14 +234,8 @@ php5_needs_action()
 #
 #	arguments
 #		- A single argument (e.g. a module) which shall be
-#		  enabled or disabled respectively. Do not enable module
-#		  dependencies that way, instead use module dependencies as
-#		  documented in </usr/share/doc/php5/PACKAGING>.
+#		  enabled or disabled respectively.
 #
-#	rcd-action
-#		- An optional rc.d action to override the default which is to
-#		  reload the web server for sites and configurations but restart
-#		  it for modules. Recognized arguments are "restart" and "reload"
 # Returns
 #	0 if the changes could be activated
 #	1 otherwise
@@ -253,7 +247,7 @@ php5_invoke()
     local MOD=$3
     local check_switch=""
     local invoke_string=""
-    local rcd_action="restart"
+    local rcd_action=""
     local rcd_scripts=""
     local sapi_list=""
 
@@ -262,17 +256,12 @@ php5_invoke()
 
     sapi_list="$SAPI"
     case "$SAPI" in
-	apache2|apache2filter)
-	    rcd_scripts="apache2"
-	    ;;
-	fpm)
-	    rcd_scripts="php5-fpm"
+	apache2|apache2filter|fpm)
+	    rcd_action="restart"
 	    ;;
 	cli|cgi|embed)
-	    rcd_scripts=""
 	    ;;
 	ALL)
-	    rcd_scripts="apache2 php5-fpm"
 	    sapi_list="$(php5query -S)"
 	    ;;
 	*)
@@ -336,71 +325,10 @@ php5_invoke()
 		return 1
 		;;
 	esac
-    done
-	
-    if [ -n "$rcd_scripts" -a -n "${PHP5_NEED_ACTION:-}" ] ; then
-	php5_reload "$rcd_action" "$rcd_scripts"
-    fi
-}
-
-#
-# Function php5_reload
-#	reloads the web server to activate a changed configuration. It does not
-#	actually reload the web server if the current configuration fails to
-#	parse.
-# Parameters:
-#	action - optional, can be 'reload' (default) or 'restart'
-# Returns:
-#	0 if the changes could be activated
-#	1 otherwise
-# Since: 2.4.1-1
-php5_reload()
-{
-	local rcd_action
-	local rcd_scripts="$2"
-
-	if ! php5_needs_action ; then
-		return 0
+	if [ -n "${PHP_NEED_ACTION:-}" -a -n "$rcd_action" ]; then
+	    dpkg-trigger /etc/php5/$SAPI/conf.d
 	fi
-
-	case "${1:-}" in
-	""|reload)
-		rcd_action=reload
-		;;
-	restart)
-		rcd_action=restart
-		;;
-	*)
-		return 1
-		;;
-	esac
-
-	for rcd_script in "$rcd_scripts"; do
-		local rcd_ret=0
-		invoke-rc.d --query $rcd_script $rcd_action > /dev/null 2>&1 || rcd_ret=$?
-		case "$rcd_ret" in
-			100)
-				break
-				;;
-			104)
-				;;
-			*)
-				php5_msg "err" "php5_reload: Your configuration is broken. Not ${rcd_action}ing ${rcd_script}."
-				;;
-		esac
-		case "$rcd_script" in
-			apache2)
-				if apache2ctl configtest 2>/dev/null; then
-					invoke-rc.d $rcd_script $rcd_action || true
-				else
-					php5_msg "err" "php5_reload: Your Apache 2 configuration is broken. Not ${action}ing Apache 2"
-				fi
-				;;
-			*)
-				invoke-rc.d $rcd_script $rcd_action
-				;;
-		esac
-	done
+    done
 }
 
 # vim: syntax=sh sw=8 sts=8 sr noet

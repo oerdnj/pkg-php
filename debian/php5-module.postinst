@@ -28,7 +28,7 @@ if [ "$1" = "configure" ]; then
 		fi
 	    fi
 	
-	    php5_invoke enmod ALL ${dsoname} restart
+	    php5_invoke enmod ALL ${dsoname}
 	done
     fi
 fi

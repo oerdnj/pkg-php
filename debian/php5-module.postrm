@@ -34,7 +34,7 @@ for dsoname in @modules@; do
 	    . /usr/share/php5/php5-maintscript-helper
 
 	    for dsoname in @modules@; do
-		php5_invoke dismod ALL ${dsoname} restart
+		php5_invoke dismod ALL ${dsoname}
 	    done
 	fi
     fi

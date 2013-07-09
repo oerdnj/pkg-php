@@ -22,7 +22,7 @@ if [ "$1" = "configure" ]; then
 
 	mods=$(php5query -M)
 	for mod in $mods; do
-	    php5_invoke enmod @sapi@ $mod restart
+	    php5_invoke enmod @sapi@ $mod
 	done
     fi
 
