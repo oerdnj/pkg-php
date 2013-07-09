@@ -715,7 +715,7 @@ binary-arch: build install
 	done
 
 	# likewise, for the different sapi implementations
-	for tmpl in postrm links; do \
+	for tmpl in postrm prerm postinst; do \
 		for sapi in cgi cli fpm; do \
 			sed -e "s/@sapi@/$${sapi}/g; \
 	                        s/@package@/php5-$${sapi}/g; \

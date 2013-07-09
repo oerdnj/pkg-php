@@ -2,14 +2,9 @@
 
 set -e
 
-if [ "$1" = "triggered" ] && [ "$2" = "/etc/php5/fpm/conf.d" ]; then
-    invoke-rc.d php5-fpm restart
-fi
+#EXTRA#
 
-dpkg-maintscript-helper mv_conffile /etc/php5/fpm/main.conf /etc/php5/fpm/php-fpm.conf 5.3.5-1 -- "$@"
-
-SAPI=fpm
-CONFDIR=/etc/php5/$SAPI/conf.d
+CONFDIR=/etc/php5/@sapi@/conf.d
 
 if [ -L $CONFDIR ]; then
     rm $CONFDIR
@@ -17,17 +12,17 @@ if [ -L $CONFDIR ]; then
 fi
 
 if [ "$1" = "configure" ]; then
-    phpini="/etc/php5/fpm/php.ini"
+    phpini="/etc/php5/@sapi@/php.ini"
 
     ucf /usr/share/php5/php.ini-production $phpini
-    ucfr php5-fpm $phpini
+    ucfr @package@ $phpini
 
     if [ -e /usr/share/php5/php5-maintscript-helper ]; then
 	. /usr/share/php5/php5-maintscript-helper
 
 	mods=$(php5query -M)
 	for mod in $mods; do
-	    php5_invoke enmod $SAPI $mod restart
+	    php5_invoke enmod @sapi@ $mod restart
 	done
     fi
 
