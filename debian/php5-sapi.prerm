@@ -11,7 +11,7 @@ if [ -e /usr/share/php5/php5-maintscript-helper ]; then
 
     mods=$(php5query -M)
     for mod in $mods; do
-	php5_invoke rmmod @sapi@ $mod restart
+	php5_invoke dismod @sapi@ $mod restart
     done
 fi
 
