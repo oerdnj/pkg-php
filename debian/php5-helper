@@ -97,14 +97,17 @@ get_priority() {
 
     local source_ini="/etc/php5/mods-available/${modname}.ini"
 
-    if module_exists $modname; then
+    module_ret=0
+    module_exists $modname || module_ret=$?
+
+    if [ "$module_ret" -eq 0 ]; then
 	priority=$(sed -ne "s/^; priority=\([0-9]\+\)$/\\1/p" $source_ini)
 	[ -z "$priority" ] && priority=20
-	
 	echo $priority
 	return 0
     fi
-    return $?
+
+    return $module_ret
 }
 
 get_live_link() {
@@ -125,7 +128,7 @@ module_exists() {
     local modname=$1
     local source_ini="/etc/php5/mods-available/${modname}.ini"
 
-    if [ ! -e "${source_ini}" ]; then
+    if [ ! -r "${source_ini}" ]; then
 	return 1
     fi
     return 0

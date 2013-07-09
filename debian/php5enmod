@@ -156,8 +156,10 @@ dismod() {
     local modname=$2
 
     if ! module_exists $modname; then
-	warning "Module $module ini file doesn't exist under /etc/php5/mods-available"
-	return 1
+	if [ "$PURGE" != "no" ]; then
+	    warning "Module $module ini file doesn't exist under /etc/php5/mods-available"
+	    return 1
+	fi
     fi
 
     local priority=$(get_priority $sapi $modname)

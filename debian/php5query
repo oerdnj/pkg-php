@@ -37,7 +37,6 @@ set -ue
 
 SCRIPT_NAME=${0##*/}
 QUIET=no
-SAPI="@SAPI@"
 
 . /usr/share/php5/php5-helper
 
@@ -111,18 +110,18 @@ list_mod() {
 }
 
 list_sapi() {
-    for sapi in $SAPI; do
-	echo $sapi
-    done
+    if [ -d /usr/share/php5/sapi ]; then
+	for sapi in /usr/share/php5/sapi/*; do
+	    echo ${sapi##*/}
+	done
+    fi
 }
 
 check_sapi() {
     local sapi=$1
-    for available in $SAPI; do
-	if [ "$sapi" = "$available" ]; then
-	    return 0
-	fi
-    done
+    if [ -e /usr/share/php5/sapi/$sapi ]; then
+	return 0
+    fi
     return 1
 }
 
@@ -133,15 +132,25 @@ sapi=
 while getopts s:m:SMq opt; do
     case $opt in
 	s)
-	    action="check_sapi"
+	    if [ -n "$action" ]; then
+		if [ "$action" != "check_mod" ]; then
+		    usage "Only one mode of operation can be used at the same time."
+		else
+		    action="check_sapi"
+		fi
+	    fi
 	    sapi="$OPTARG"
 	    ;;
 	S)
-	    [ -n "$action" ] && usage "Only one mode of operation can be used at the same time."
+	    if [ -n "$action" ]; then
+		usage "Only one mode of operation can be used at the same time."
+	    fi
 	    action="list_sapi"
 	    ;;
 	m)
-	    [ -n "$action" -a "$action" != "check_sapi" ] && usage "Only one mode of operation can be used at the same time."
+	    if [ -n "$action" -a "$action" != "check_sapi" ]; then
+		usage "Only one mode of operation can be used at the same time."
+	    fi
 	    action="check_mod"
 	    mod="$OPTARG"
 	    ;;

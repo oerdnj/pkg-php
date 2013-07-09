@@ -16,8 +16,6 @@ export DH_OPTIONS
 # compatibility to upstream
 PHP5_COMPAT=no
 
-SAPIs = apache2 apache2filter cgi cli fpm embed
-
 DEB_HOST_GNU_TYPE    ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 DEB_HOST_ARCH        ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
@@ -628,11 +626,7 @@ install: build
 	install -m755 debian/sessionclean debian/php5-common/usr/lib/php5
 	install -m755 debian/php5enmod debian/php5-common/usr/sbin/php5enmod
 	ln -s php5enmod debian/php5-common/usr/sbin/php5dismod
-
-	sed -e "s/@SAPI@/$(SAPIs)/" \
-	< debian/php5query.in \
-	> $(CURDIR)/debian/php5-common/usr/sbin/php5query
-	chmod 755 $(CURDIR)/debian/php5-common/usr/sbin/php5query
+	install -m755 debian/php5query $(CURDIR)/debian/php5-common/usr/sbin/php5query
 
 	# remove libtool files
 	rm $(CURDIR)/debian/libphp5-embed/usr/lib/php5/libphp5.la
@@ -729,6 +723,8 @@ binary-arch: build install
 		  	< debian/php5-sapi.$${tmpl} \
 	                | sed -e'/#EXTRA#/ d' \
 		  	> debian/php5-$${sapi}.$${tmpl}; \
+			mkdir -p "$(CURDIR)/debian/php5-$$sapi/usr/share/php5/sapi/"; \
+			touch "$(CURDIR)/debian/php5-$$sapi/usr/share/php5/sapi/$$sapi"; \
 		done; \
 		for sapi in embed; do \
 			sed -e "s/@sapi@/$${sapi}/g; \
@@ -737,6 +733,8 @@ binary-arch: build install
 		  	< debian/php5-sapi.$${tmpl} \
 	                | sed -e'/#EXTRA#/ d' \
 		  	> debian/libphp5-$${sapi}.$${tmpl}; \
+			mkdir -p "$(CURDIR)/debian/libphp5-$$sapi/usr/share/php5/sapi/"; \
+			touch "$(CURDIR)/debian/libphp5-$$sapi/usr/share/php5/sapi/$$sapi"; \
 		done; \
 	        for sapi in "" "filter"; do \
 		        sed -e "s/@sapi@/apache2$${sapi}/g; \
@@ -745,6 +743,8 @@ binary-arch: build install
 		        < debian/php5-sapi.$${tmpl} \
 	                | sed -e'/#EXTRA#/ d' \
 		        > debian/libapache2-mod-php5$${sapi}.$${tmpl}; \
+			mkdir -p "$(CURDIR)/debian/libapache2-mod-php5$$sapi/usr/share/php5/sapi/"; \
+			touch "$(CURDIR)/debian/libapache2-mod-php5$$sapi/usr/share/php5/sapi/$$sapi"; \
 	        done; \
 	done
 

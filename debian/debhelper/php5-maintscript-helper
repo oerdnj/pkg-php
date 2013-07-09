@@ -218,34 +218,6 @@ php5_needs_action()
 }
 
 
-
-#
-# Function php5_has_module
-#	checks whether a supplied module is enabled in the current Apache server
-#	configuration
-# Parameters:
-#       sapi - Either the specific SAPI (apache2, apache2filter, fpm,
-#              cgi, cli, embed) or ALL
-#
-#	module - the module name which should be checked. Can be a regular
-#		string or a Perl compatible regular expression e.g. cgi(d|)
-# Returns:
-#	0 if the module(s) was/were found
-#	1 otherwise
-# Since: 5.5.0+dfsg-7
-php5_has_module()
-{
-	[ -x /usr/sbin/php5query ] || return 1
-	local SAPI="$1"
-	local MODULE="$2"
-	if php5query -s "$SAPI" -m "$MODULE" > /dev/null ; then
-		return 0
-	fi
-
-	return 1
-}
-
-
 #
 # Function php5_invoke
 #	invokes an Apache 2 configuration helper to enable or disable a
@@ -276,112 +248,99 @@ php5_has_module()
 # Since: 5.5.0+dsfg-7
 php5_invoke()
 {
-	local CMD=$1
-	local SAPI=$2
-	local MOD=$3
-	local RCD_ACTION=$4
-	local check_switch=""
-	local invoke_string=""
-	local rcd_action=""
-	local rcd_scripts=""
+    local CMD=$1
+    local SAPI=$2
+    local MOD=$3
+    local check_switch=""
+    local invoke_string=""
+    local rcd_action="restart"
+    local rcd_scripts=""
+    local sapi_list=""
 
-	[ -x "/usr/sbin/php5$CMD" ] || return 1
-	[ -x "/usr/sbin/php5query" ] || return 1
+    [ -x "/usr/sbin/php5$CMD" ] || return 1
+    [ -x "/usr/sbin/php5query" ] || return 1
 
-	case "$SAPI" in
-		apache2|apache2filter)
-			rcd_scripts="apache2"
-			;;
-		fpm)
-			rcd_scripts="php5-fpm"
-			;;
-		ALL)
-			rcd_scripts="apache2 php5-fpm"
-			;;
-		*)
-			rcd_scripts=""
-			;;
-	esac
+    sapi_list="$SAPI"
+    case "$SAPI" in
+	apache2|apache2filter)
+	    rcd_scripts="apache2"
+	    ;;
+	fpm)
+	    rcd_scripts="php5-fpm"
+	    ;;
+	cli|cgi|embed)
+	    rcd_scripts=""
+	    ;;
+	ALL)
+	    rcd_scripts="apache2 php5-fpm"
+	    sapi_list="$(php5query -S)"
+	    ;;
+	*)
+	    return 1
+	    ;;
+    esac
 
-	case "${RCD_ACTION:-}" in
-		""|reload|restart)
-			;;
-		*)
-			return 1
-			;;
-	esac
-
+    for SAPI in $sapi_list; do
 	case "$CMD" in
-		*mod)
-			check_switch="-m"
-			invoke_string="module"
-			rcd_action="${RCD_ACTION:-restart}"
-			;;
-		*)
-			;;
-	esac
-
-
-	case "$CMD" in
-		enmod)
-			local php5query_ret=0
-			php5query -s "$SAPI" $check_switch "$MOD" > /dev/null 2>&1 || php5query_ret=$?
-			if [ "$php5query_ret" -eq 0 ] ; then
-				# configuration is already enabled
-				php5_msg "info" "php5_invoke $MOD: already enabled for $SAPI SAPI"
-				PHP5_NEED_ACTION=1
-			elif [ "$php5query_ret" -eq 32	 ] ; then
-				# the maintainer disabled the module
-				php5_msg "info" "php5_invoke $MOD: no action - $invoke_string was disabled by maintainer for $SAPI SAPI"
-				return 0
-			else
-				# coming here either means:
-				# a) we have no clue about the module (e.g. for upgrades prior to maintscript-helper
-				# b) it's a fresh install
-				PHP5_NEED_ACTION=1
-				php5$CMD -m -s "$SAPI" -q "$MOD" > /dev/null 2>&1 || return 1
-				php5_msg "info" "php5_invoke: Enable $invoke_string $MOD for $SAPI SAPI"
+	    enmod)
+		local php5query_ret=0
+		php5query -s "$SAPI" -m "$MOD" > /dev/null 2>&1 || php5query_ret=$?
+		if [ "$php5query_ret" -eq 0 ] ; then
+		    # configuration is already enabled
+		    php5_msg "info" "php5_invoke $MOD: already enabled for $SAPI SAPI"
+		    PHP5_NEED_ACTION=1
+		elif [ "$php5query_ret" -eq 32	 ] ; then
+		    # the maintainer disabled the module
+		    php5_msg "info" "php5_invoke $MOD: no action - module was disabled by maintainer for $SAPI SAPI"
+		    return 0
+		else
+		    # coming here either means:
+		    # a) we have no clue about the module (e.g. for upgrades prior to maintscript-helper
+		    # b) it's a fresh install
+		    PHP5_NEED_ACTION=1
+		    php5$CMD -m -s "$SAPI" -q "$MOD" > /dev/null 2>&1 || return 1
+		    php5_msg "info" "php5_invoke: Enable module $MOD for $SAPI SAPI"
+		fi
+		;;
+	    dismod)
+		local php5query_ret=0
+		php5query -s "$SAPI" -m "$MOD" > /dev/null 2>&1 || php5query_ret=$?
+		if [ "$php5query_ret" -eq 0 ] ; then
+		    if [ "$PHP5_MAINTSCRIPT_NAME" = 'postrm' ] && [ "$PHP5_MAINTSCRIPT_METHOD" = "purge" ] ; then
+			php5$CMD -p -f -s "$SAPI" -q "$MOD" || return 1
+			php5_msg "info" "php5_invoke $PHP5_MAINTSCRIPT_NAME: Purging module $MOD for $SAPI SAPI"
+			PHP5_NEED_ACTION=1
+		    elif [ "$PHP5_MAINTSCRIPT_NAME" = 'postrm' ] || [ "$PHP5_MAINTSCRIPT_NAME" = 'prerm' ] ; then
+			if [ "$PHP5_MAINTSCRIPT_METHOD" = "remove" ] ; then
+			    php5$CMD -m -f -s "$SAPI" -q "$MOD" || return 1
+			    php5_msg "info" "php5_invoke $PHP5_MAINTSCRIPT_NAME: Disable module $MOD for $SAPI SAPI"
+			    PHP5_NEED_ACTION=1
 			fi
-			;;
-		dismod)
-			local php5query_ret=0
-			php5query -s "$SAPI" $check_switch "$MOD" > /dev/null 2>&1 || php5query_ret=$?
-			if [ "$php5query_ret" -eq 0 ] ; then
-				if [ "$PHP5_MAINTSCRIPT_NAME" = 'postrm' ] && [ "$PHP5_MAINTSCRIPT_METHOD" = "purge" ] ; then
-					php5$CMD -p -f -s "$SAPI" -q "$CONF" || return 1
-					php5_msg "info" "php5_invoke $PHP5_MAINTSCRIPT_NAME: Purging $invoke_string $CONF for $SAPI SAPI"
-					PHP5_NEED_ACTION=1
-				elif [ "$PHP5_MAINTSCRIPT_NAME" = 'postrm' ] || [ "$PHP5_MAINTSCRIPT_NAME" = 'prerm' ] ; then
-					if [ "$PHP5_MAINTSCRIPT_METHOD" = "remove" ] ; then
-						php5$CMD -m -f -s "$SAPI" -q "$CONF" || return 1
-						php5_msg "info" "php5_invoke $PHP5_MAINTSCRIPT_NAME: Disable $invoke_string $CONF for $SAPI SAPI"
-						PHP5_NEED_ACTION=1
-					fi
-				else
-					php5_msg "error" "php5_invoke: $invoke_string $CONF not supported in $PHP5_MAINTSCRIPT_NAME for $SAPI SAPI"
-					return 1
-				fi
-			elif [ "$php5query_ret" -eq 32 ] || [ "$php5query_ret" -eq 33 ] ; then
-				if [ "$PHP5_MAINTSCRIPT_NAME" = 'postrm' ] && [ "$PHP5_MAINTSCRIPT_METHOD" = "purge" ] ; then
-					php5_msg "info" "php5_invoke $PHP5_MAINTSCRIPT_NAME: Purging state for $CONF for $SAPI SAPI"
-					# this will return RC=1
-					( php52$CMD -p -f -s "$SAPI" -q "$CONF" > /dev/null 2>&1 )
-				else
-					php5_msg "info" "php5_invoke $CONF $PHP5_MAINTSCRIPT_NAME: No action required for $SAPI SAPI"
-				fi
-			else
-				php5_msg "info" "php5_invoke $CONF $PHP5_MAINTSCRIPT_NAME: No action required for $SAPI SAPI"
-			fi
-			;;
-		*)
+		    else
+			php5_msg "error" "php5_invoke: module $MOD not supported in $PHP5_MAINTSCRIPT_NAME for $SAPI SAPI"
 			return 1
-			;;
+		    fi
+		elif [ "$php5query_ret" -eq 32 ] || [ "$php5query_ret" -eq 33 ] ; then
+		    if [ "$PHP5_MAINTSCRIPT_NAME" = 'postrm' ] && [ "$PHP5_MAINTSCRIPT_METHOD" = "purge" ] ; then
+			php5_msg "info" "php5_invoke $PHP5_MAINTSCRIPT_NAME: Purging state for $MOD for $SAPI SAPI"
+			# this will return RC=1
+			( php5$CMD -p -f -s "$SAPI" -q "$MOD" > /dev/null 2>&1 )
+		    else
+			php5_msg "info" "php5_invoke $MOD $PHP5_MAINTSCRIPT_NAME: No action required for $SAPI SAPI"
+		    fi
+		else
+		    php5_msg "info" "php5_invoke $MOD $PHP5_MAINTSCRIPT_NAME: No action required for $SAPI SAPI"
+		fi
+		;;
+	    *)
+		return 1
+		;;
 	esac
-
-	if [ -n "${PHP5_NEED_ACTION:-}" ] ; then
-		php5_reload "$rcd_action" "$rcd_scripts"
-	fi
-
+    done
+	
+    if [ -n "$rcd_scripts" -a -n "${PHP5_NEED_ACTION:-}" ] ; then
+	php5_reload "$rcd_action" "$rcd_scripts"
+    fi
 }
 
 #
