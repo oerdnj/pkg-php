@@ -43,7 +43,7 @@ use Debian::Debhelper::Dh_Lib;
 
 =head1 NAME
 
-dh_php5 - register configuration snippets to the Apache web server
+dh_php5 - register configuration snippets to the PHP 5
 
 =cut
 
@@ -163,11 +163,6 @@ Is interpreted as existing file name within the source package. No path
 expansion is effectuated. Just like L<dh_install(1)>, B<dh_php5> can not
 rename files.
 
-=head3 I<sapis>
-
-You can optionally specify the SAPIs where the module will be enabled.
-If unspecified it defaults to ALL.
-
 =head2 GLOBAL CONFIGURATION FILES
 
 Global configuration files (determined by the B<conf> type) must have a I<.conf>
@@ -210,23 +205,6 @@ Call the named shell I<function> if running the maintainer script fails.  The
 function should be provided in the F<prerm> and F<postinst> scripts, before the
 B<#DEBHELPER#> token.
 
-=item S<B<--conditional>>=I<function>
-
-Only execute maintainer scripts if the named shell I<function> evaluates to a
-true value at installation time.  This is useful to web applications which want
-to install Apache configuration files depending on a user input, for example if
-they interface to the user through L<debconf(1)>.
-
-The defaults is to always execute the scripts.  The named function should be
-provided in the F<prerm> and F<postinst> scripts, before the B<#DEBHELPER#>
-token.
-
-=item S<B<--restart>> S<B<-r>>
-
-In maintainer scripts, do not try to reload the web server, but restart it.
-Otherwise the default action is used, which means global configuration and
-sites make the web server to be reloaded on success, modules are restarted.
-
 =item B<-e>, B<--noenable>
 
 Install maintainer scripts accordingly, but do not enable the scripts or
@@ -248,26 +226,11 @@ instances of the same text to be added to maintainer scripts.
 =head1 EXAMPLES
 
 The examples below lists valid entries for a debian/I<package>.php5 file.  For
-example, the two lines below install a fictional I<mod_foo> Apache module along
-a Debian specific I<.load> file:
+example, the two lines below install a fictional I<mod_foo> PHP 5 module along
+a Debian specific I<.ini> file:
 
  mod src/foo/mod_foo.so
- mod debian/foo.load
-
-The example below installs a fictional web application called phpmyfoo supplied
-in a package which also supports Lighttpd and nginx:
-
- conf debian/phpmyfoo.conf lighttpd (>= 1.4.30) | nginx-full
-
-Or, the same example again this time without support for other web servers:
-
- conf debian/phpmyfoo.conf
-
-As a final example, install a module called I<foobar>:
-
- mod  debian/tmp/usr/lib/php5/*/foobar.so
- mod  debian/foobar.load
- mod  debian/foobar.conf
+ mod debian/foo.ini
 
 =head1 SEE ALSO
 
@@ -286,27 +249,8 @@ for Apache 2 and modified for PHP 5 by Ondřej Surý <ondrej@sury.org>.
 ##
 
 init(options => {
-	"conditional=s" => \$dh{CONDITIONAL},
-	"r|restart" => \$dh{RESTART},
 	"e|noenable" => \$dh{NOENABLE},
 });
-
-if (!$dh{CONDITIONAL})
-{
-	$dh{CONDITIONAL} = 'true';
-}
-elsif ($dh{CONDITIONAL} !~ /^\w+$/) {
-	die "The conditional function name must only contain ASCII letters, numbers, and underscores\n";
-}
-
-if ($dh{RESTART})
-{
-	$dh{RESTART} = 'restart';
-}
-else
-{
-	$dh{RESTART} = '';
-}
 
 foreach my $package ((@{$dh{DOPACKAGES}}))
 {
@@ -315,7 +259,6 @@ foreach my $package ((@{$dh{DOPACKAGES}}))
 		has_a_conf_file => [],
 		dependency_line => "",
 		handler => $dh{ERROR_HANDLER},
-		conditional => $dh{CONDITIONAL}
 	);
 
 	my $file = pkgfile($package, "php5");
@@ -330,8 +273,6 @@ foreach my $package ((@{$dh{DOPACKAGES}}))
 
 		$type .= "s" unless $type eq "conf";
 		my $installdir = $tmp . "/" . php5_conf_installdir($type);
-
-		#verbose_print("$type -- $source -- @arguments\n\n");
 
 		if ($type eq "mods" or $type eq "conf")
 		{
@@ -458,9 +399,7 @@ foreach my $package ((@{$dh{DOPACKAGES}}))
 				my %replacements = (
 					HELPER => $ref->[0],
 					NAMES  => $ref->[1],
-					ERROR_HANDLER => $PACKAGE_TYPE{handler},
-					CONDITIONAL_VARIABLE => $PACKAGE_TYPE{conditional},
-					ACTION => $dh{RESTART},
+					ERROR_HANDLER => $PACKAGE_TYPE{handler}
 				);
 
 				if ($script_type eq "prerm" || $script_type eq "postrm")
