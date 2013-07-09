@@ -1,6 +1,6 @@
-php5 (5.5.0+dfsg-7~7.gbpa9cb54) UNRELEASED; urgency=low
+php5 (5.5.0+dfsg-7~8.gbp6eeb25) UNRELEASED; urgency=low
 
-  ** SNAPSHOT build @a9cb541a776f81ad6daf65b475a1db25c5b4d801 **
+  ** SNAPSHOT build @6eeb25185ef6cb281766b3927e1cf96db668e0a3 **
 
   [ Ondřej Surý ]
   ** SNAPSHOT build @b0c53d4ea3c13c731227560db7b0e5f06f130a9b **
@@ -45,6 +45,9 @@ php5 (5.5.0+dfsg-7~7.gbpa9cb54) UNRELEASED; urgency=low
   * Generate postinst and postrm script from php5-sapi.{postinst,postrm} templates
   * prepare 5.5.0+dfsg-7~6.gbp30ad38 release
   * Fix typo s/rmmod/dismod/ in SAPI prerm/postrm scripts
+  * prepare 5.5.0+dfsg-7~7.gbpa9cb54 release
+  * Replace php5_reload logic with simple dpkg-trigger
+  * Remove CONDITIONAL and RESTART from dh_php5
 
  -- Ondřej Surý <ondrej@sury.org>  Mon, 08 Jul 2013 13:03:58 +0200
 
