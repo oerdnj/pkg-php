@@ -1,55 +1,28 @@
-php5 (5.5.0+dfsg-7~8.gbp6eeb25) UNRELEASED; urgency=low
-
-  ** SNAPSHOT build @6eeb25185ef6cb281766b3927e1cf96db668e0a3 **
+php5 (5.5.0+dfsg-7) unstable; urgency=low
 
   [ Ondřej Surý ]
-  ** SNAPSHOT build @b0c53d4ea3c13c731227560db7b0e5f06f130a9b **
+  * This release introduces several major packaging changes:
+   + php5{en,dis}mod now accepts -s <SAPI> argument to selectively
+     enable/disable module for specific SAPI; The -s also accepts ALL
+     as an argument (Closes: #505743)
+   + php5{en,dis}mod now records a state for a module and has two
+     modi operandi: local administrator and maintainer script
+     This has been lousely modeled after apache2 packaging scripts.
+     Thanks Arno Töll for his work on dh_apache2, I have used some
+     parts of it.
+   + Packages can now depend on dh_php5 (provided by php5-dev) which
+     provides: dh_php5, dh_phpize and dh_phpize_clean (also with dh
+     integration).  See php-apcu for an example how to build an PHP 5
+     extension now.  The scripts definitely needs some improvements
+     since I can't read nor write perl code without getting dizzy.
+   + There's a new php5query script (again lousely modeled after
+     Apache 2 a2query script) which you can use to query status of
+     module (-m) and/or SAPI (-s) and also to list modules (-M) and
+     SAPIs (-S).
+   + This still needs more documentation and less ducktape.  Contributions
+     are welcome and to be discussed in pkg-php-maint mailing list first.
 
-  * Add php5_enable shell function to Apache 2 modules postrm scripts
-  * Add preliminary php5-maintscript-helper scripts
-  * Disable tests, nobody looks at the results anyway.
-  * Disable tests, nobody looks at the results anyway.
-  * Add preliminary php5-maintscript-helper scripts
-  * prepare 5.5.0+dfsg-7~1.gbp27c768 release
-  * Add dh_phpize and dh_phpize_clean helpers
-  * Some more fixes (APCu now builds with very simple debian/rules)
-  * prepare 5.5.0+dfsg-7~2.gbp9beb4a release
-  * Provide dh-php5 from php5-dev
-  * Install extra debhelper files from debian/rules
-
-  [ Lior Kaplan ]
-  * manpage: Add -S, -t options. Align -B, -E with the cli usage (Closes: #698525)
-  * Revert "manpage: Add -S, -t options. Align -B, -E with the cli usage (Closes: #698525)" This reverts commit f6a91e92cf85ca8edfe1c61deca27f5a5f2e9166.
-
-  [ Ondřej Surý ]
-  * Add php5_enable shell function to Apache 2 modules postrm scripts
-  * Disable tests, nobody looks at the results anyway.
-  * Add preliminary php5-maintscript-helper scripts
-  * prepare 5.5.0+dfsg-7~1.gbp27c768 release
-  * Add dh_phpize and dh_phpize_clean helpers
-  * Some more fixes (APCu now builds with very simple debian/rules)
-  * prepare 5.5.0+dfsg-7~2.gbp9beb4a release
-  * Provide dh-php5 from php5-dev
-  * Install extra debhelper files from debian/rules
-  * prepare 5.5.0+dfsg-7~3.gbpb0c53d release
-  * Fix php5query script build
-  * Install php5-helper shell fragment
-  * Install php5-helper and use . instead of source
-  * Make /etc/php5/SAPI/conf.d directories instead of links
-  * Install /usr/share/php5/php5-maintscript-helper to php5-common
-  * Get the scripts into semi-working state and enable all existing modules in SAPI postinsts
-  * prepare 5.5.0+dfsg-7~4.gbp74b5f9 release
-  * List only installes PHP 5 SAPIs and more fixes
-  * List only installes PHP 5 SAPIs and more fixes
-  * prepare 5.5.0+dfsg-7~5.gbped6787 release
-  * Generate postinst and postrm script from php5-sapi.{postinst,postrm} templates
-  * prepare 5.5.0+dfsg-7~6.gbp30ad38 release
-  * Fix typo s/rmmod/dismod/ in SAPI prerm/postrm scripts
-  * prepare 5.5.0+dfsg-7~7.gbpa9cb54 release
-  * Replace php5_reload logic with simple dpkg-trigger
-  * Remove CONDITIONAL and RESTART from dh_php5
-
- -- Ondřej Surý <ondrej@sury.org>  Mon, 08 Jul 2013 13:03:58 +0200
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 09 Jul 2013 11:37:57 +0200
 
 php5 (5.5.0+dfsg-6) unstable; urgency=low
 
