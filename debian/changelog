@@ -1,5 +1,8 @@
 php5 (5.5.0+dfsg-8) unstable; urgency=low
 
+  * NOTE: The php5_invoke script is still too chatty, but we need that to
+    debug possible bugs.  It will be made less chatty when we feel more
+    confident that everything works as it should be.
   * Drop dh_phpize scripts in favor of dh_phppear
   * Add Recommends on pkg-php-tools in php5-dev
   * Add missing libapache2-mod-php5filter.postinst.extra
