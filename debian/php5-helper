@@ -42,9 +42,40 @@ remove_state() {
     local sapi=$2
     local modname=$3
 
-    local state_dir="/var/lib/php5/module/${sapi}"
+    local state_dir="$(get_state_dir $sapi)"
     rm -f "${state_dir}/${action}_by_admin/$modname"
     rm -f "${state_dir}/${action}_by_maint/$modname"
+
+    return 0
+}
+
+mod_registry() {
+    local action=$1
+    local modname=$2
+    local registry_dir="$(get_registry_dir)"
+    local registry_file="$registry_dir/$modname"
+
+    case $action in
+	register)
+	    if [ ! -d "$registry_dir" ]; then
+		mkdir -p "$registry_dir"
+	    fi
+	    touch "$registry_file"
+	    ;;
+	unregister)
+	    rm -f "$registry_file"
+	    ;;
+	status)
+	    if [ -e "$registry_file" ]; then
+		return 0
+	    else
+		return 1
+	    fi
+	    ;;
+	*)
+	    return 1
+	    ;;
+    esac
 
     return 0
 }
@@ -54,7 +85,7 @@ record_state() {
     local sapi=$2
     local modname=$3
 
-    local state_dir="/var/lib/php5/module/${sapi}"
+    local state_dir="/var/lib/php5/modules/${sapi}"
     local admin_state="${state_dir}/${action}_by_admin/$modname"
     local maint_state="${state_dir}/${action}_by_maint/$modname"
 
@@ -142,4 +173,15 @@ module_cleanup() {
     if [ -L "/etc/php5/conf.d/$priority-$modname.ini" ]; then
 	rm "/etc/php5/conf.d/$priority-$modname.ini";
     fi
+}
+
+get_state_dir() {
+    local sapi=$1
+    echo "/var/lib/php5/modules/$sapi"
+    return 0
+}
+
+get_registry_dir() {
+    echo "/var/lib/php5/modules/registry"
+    return 0
 }

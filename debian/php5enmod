@@ -39,8 +39,6 @@ SCRIPT_NAME=${0##*/}
 QUIET=no
 NEED_RESTART=no
 MAINT_MODE=no
-PURGE=no
-FORCE=no
 
 . /usr/share/php5/php5-helper
 
@@ -53,11 +51,12 @@ usage() {
 enmods() {
     local sapis="$1"
     local mods="$2"
+    local register="$3"
     local sapi
     local mod
 
-    for sapi in $sapis; do
-	for mod in $mods; do
+    for mod in $mods; do
+	for sapi in $sapis; do
 	    enmod_ret=0
             enmod $sapi $mod || enmod_ret=$?
 	    case $enmod_ret in
@@ -67,30 +66,38 @@ enmods() {
 		    ;;
 	    esac
 	done
+	if [ "$register" = "yes" ]; then
+	    mod_registry register $mod
+	fi
     done
 }
 
 dismods() {
     local sapis="$1"
     local mods="$2"
+    local register="$3"
+    local purge="$4"
     local sapi
     local mod
 
-    for sapi in $sapis; do
-	for mod in $mods; do
+    for mod in $mods; do
+	for sapi in $sapis; do
 	    local dismod_ret=0
-            dismod $sapi $mod || dismod_ret=$?
+            dismod $sapi $mod $purge || dismod_ret=$?
 	    case $dismod_ret in
 		0)
 		    NEED_RESTART=yes
 		    record_state disabled $sapi $mod
 		    ;;
 	    esac
-	    if [ "$PURGE" = "yes" ]; then
-		remove_state enabled $sapi $mod
-		remove_state disabled $sapi $mod
-	    fi
 	done
+	if [ "$purge" = "yes" ]; then
+	    remove_state enabled $sapi $mod
+	    remove_state disabled $sapi $mod
+	    mod_registry unregister $mod
+	elif [ "$register" = "yes" ]; then
+	    mod_registry unregister $mod
+	fi
     done
 }
 
@@ -154,9 +161,10 @@ enmod() {
 dismod() {
     local sapi=$1
     local modname=$2
+    local purge=$3
 
     if ! module_exists $modname; then
-	if [ "$PURGE" != "no" ]; then
+	if [ "$purge" = "no" ]; then
 	    warning "Module $module ini file doesn't exist under /etc/php5/mods-available"
 	    return 1
 	fi
@@ -199,8 +207,11 @@ dismod() {
 }
 
 sapis=
-while getopts pfs:mq opt; do
+register=no
+purge=no
+while getopts pfs:mqr opt; do
     case $opt in
+	r) register=yes;;
 	s)
 	    if [ "$sapis" = "ALL" -o \( "$OPTARG" = "ALL" -a -n "$sapis" \) ]; then
 		warning "You cannot specify ALL and individual sapis"
@@ -209,31 +220,33 @@ while getopts pfs:mq opt; do
 	    sapis="${sapis}${sapis:+ }$OPTARG"
 	    ;;
 	m) MAINT_MODE=yes;;
-	p) PURGE=yes;;
-	f) FORCE=yes;;
+	p) purge=yes;;
 	q) QUIET=yes;;
 	\?) usage;;
     esac
 done
 shift $(expr $OPTIND - 1)
 mods="$@"
-sapis="${sapis:-ALL}"
+if [ "$register" = "no" ]; then
+    sapis="${sapis:-ALL}"
 
-if [ "$sapis" = "ALL" ]; then
-    sapis=$(php5query -S)
+    if [ "$sapis" = "ALL" ]; then
+	sapis=$(php5query -S)
+	register=yes
+    fi
 fi
 
 [ -z "$mods" ] && usage
 
 case "${SCRIPT_NAME}" in
-php5enmod)
-    enmods "$sapis" "$mods"
-    ;;
-php5dismod)
-    dismods "$sapis" "$mods"
-    ;;
-*)
-    usage
-    ;;
+    php5enmod)
+	enmods "$sapis" "$mods" "$register"
+	;;
+    php5dismod)
+	dismods "$sapis" "$mods" "$register" "$purge"
+	;;
+    *)
+	usage
+	;;
 esac
 exit 0

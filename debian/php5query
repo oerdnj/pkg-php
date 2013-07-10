@@ -73,22 +73,22 @@ check_mod() {
 	fi
     fi
 
-    local state_dir="/var/lib/php5/module/${sapi}"
+    local state_dir="$(get_state_dir $sapi)"
 
     if [ -e "${state_dir}/enabled_by_admin/$modname" ]; then
-	output "$modname (Enabled by local administrator)"
+	output "$modname (Enabled for $sapi by local administrator)"
 	return 0
     elif [ -e "${state_dir}/enabled_by_maint/$modname" ]; then
-	output "$modname (Enabled by maintainer script)"
+	output "$modname (Enabled for $sapi by maintainer script)"
 	return 0
     elif [ -e "${state_dir}/disabled_by_admin/$modname" ]; then
-	output "No module matches $modname (Disabled by local administrator)"
+	output "No module matches $modname (Disabled for $sapi by local administrator)"
 	return 32
     elif [ -e "${state_dir}/disabled_by_maint/$modname" ]; then
-	output "No module matches $modname (Disabled by maintainer script)"
+	output "No module matches $modname (Disabled for $sapi by maintainer script)"
 	return 33
     elif [ "$found" = "yes" ]; then
-	output "$modname (Enabled by unknown)"
+	output "$modname (Enabled for $sapi by unknown)"
 	return 0
     else
 	output "No module matches $modname"
@@ -97,11 +97,21 @@ check_mod() {
 }
 
 list_mod() {
-    if [ -d /etc/php5/mods-available ]; then
-	for mod in /etc/php5/mods-available/*; do
+    local verbose=$1
+    local registry_dir="$(get_registry_dir)"
+
+    sapis=$(list_sapi)
+    if [ -d "$registry_dir" ]; then
+	for mod in "$registry_dir"/*; do
 	    mod=${mod##*/}
 	    mod=${mod%.ini}
-	    echo $mod
+	    if [ "$verbose" = "yes" ]; then
+		for sapi in $sapis; do
+		    check_mod $sapi $mod
+		done
+	    else
+		echo $mod
+	    fi
 	done
 	return 0
     else
@@ -126,10 +136,11 @@ check_sapi() {
 }
 
 QUIET=no
+verbose=no
 action=
 sapi=
 
-while getopts s:m:SMq opt; do
+while getopts s:m:SMqv opt; do
     case $opt in
 	s)
 	    if [ -n "$action" ]; then
@@ -161,6 +172,9 @@ while getopts s:m:SMq opt; do
 	q)
 	    QUIET=yes
 	    ;;
+	v)
+	    verbose=yes
+	    ;;
 	\?) usage "Unknown parameter specified";;
     esac
 done
@@ -186,7 +200,7 @@ case "$action" in
 	    output "$sapi"
 	fi
 	;;
-    list_mod) list_mod || ret=$?;;
+    list_mod) list_mod $verbose || ret=$?;;
     list_sapi) list_sapi || ret=$?;;
     *) usage "Unknown action $action"
 esac
