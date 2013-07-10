@@ -1,10 +1,10 @@
-php5 (5.5.0+dfsg-9~1.gbpb21cd0) UNRELEASED; urgency=low
+php5 (5.5.0+dfsg-9) unstable; urgency=low
 
-  ** SNAPSHOT build @b21cd01773c2f556a7375b6633db88fe16fb3da1 **
+  * Add Breaks: php5-json (<< 1.3.1) to unbreak php5-json
+    (and in turn pkg-php-tools that depends on php5-json)
+  * Cleanup old Breaks: from 5.3 to 5.4 transition
 
-  * Breaks: php5-json (<< 1.3.1) and cleanup old Breaks: from 5.3 to 5.4 transition
-
- -- Ondřej Surý <ondrej@sury.org>  Wed, 10 Jul 2013 12:56:50 +0200
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 10 Jul 2013 13:02:57 +0200
 
 php5 (5.5.0+dfsg-8) unstable; urgency=low
 
