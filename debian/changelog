@@ -8,6 +8,8 @@ php5 (5.5.0+dfsg-8) unstable; urgency=low
   * Add missing libapache2-mod-php5filter.postinst.extra
   * Introduce automatic module registry, which add or remove module from
     the registry if called with -s ALL (Closes: #715493)
+  * Finish renaming /var/lib/php5/module/ to /var/lib/php5/modules/ and
+    don't create /var/lib/php5/sessions/
 
  -- Ondřej Surý <ondrej@debian.org>  Wed, 10 Jul 2013 09:55:28 +0200
 
