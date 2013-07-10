@@ -1,10 +1,12 @@
-php5 (5.5.0+dfsg-8~1.gbp56e40d) UNRELEASED; urgency=low
-
-  ** SNAPSHOT build @56e40dafa95d5c695dbf48e876051c1cc202eedb **
+php5 (5.5.0+dfsg-8) unstable; urgency=low
 
   * Drop dh_phpize scripts in favor of dh_phppear
+  * Add Recommends on pkg-php-tools in php5-dev
+  * Add missing libapache2-mod-php5filter.postinst.extra
+  * Introduce automatic module registry, which add or remove module from
+    the registry if called with -s ALL (Closes: #715493)
 
- -- Ondřej Surý <ondrej@sury.org>  Tue, 09 Jul 2013 14:54:04 +0200
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 10 Jul 2013 09:55:28 +0200
 
 php5 (5.5.0+dfsg-7) unstable; urgency=low
 
