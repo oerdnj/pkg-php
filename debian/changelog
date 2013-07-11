@@ -1,3 +1,15 @@
+php5 (5.5.0+dfsg-10) unstable; urgency=low
+
+  * Install correct SAPI names to /usr/share/php5/sapi/ for
+    libapache2-mod-php5(filter) (Closes: #716659)
+  * Introduce list_parts helper function in php5-helper
+   + Don't fail php5query -M if the module list is empty
+   + Don't list current directory if the SAPI list is empty
+  * Fix even more different glitches when something bad happends in
+    php5enmod and php5query helper scripts
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 11 Jul 2013 09:10:03 +0200
+
 php5 (5.5.0+dfsg-9) unstable; urgency=low
 
   * Add Breaks: php5-json (<< 1.3.1) to unbreak php5-json
