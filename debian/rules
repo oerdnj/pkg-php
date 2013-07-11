@@ -497,6 +497,10 @@ install: build
 	cat php.ini-development | tr "\t" " " | sed -e'/session.gc_probability =/ s/1/0/g;/disable_functions =/ s/$$/ $(PCNTL_FUNCTIONS)/g;' > debian/php5-common/usr/share/php5/php.ini-development
 	cp test-results.txt debian/php5-common/usr/share/doc/php5-common/
 
+	# Install reportbug for php5 package
+	mkdir -p debian/php5/usr/share/reporbug/php5
+	install -m644 debian/php5.bug.control debian/php5/usr/share/reporbug/php5/control
+
 	# Install helper shell fragment
 	install -m644 debian/php5-helper $(CURDIR)/debian/php5-common/usr/share/php5/
 	install -m644 debian/debhelper/php5-maintscript-helper $(CURDIR)/debian/php5-common/usr/share/php5/
@@ -712,6 +716,15 @@ binary-arch: build install
 	    done; \
 	    cp debian/php5-module.triggers debian/php5-$${package}.triggers; \
 	    rm debian/php5-$$package.modules; \
+	    mkdir -p debian/php5-$$package/usr/share/bug/php5-$$package; \
+	    sed -e"s|@extname@|$${extname}|g; \
+	           s/@dsoname@/$${dsoname}/g; \
+	           s/@extension@/$${extension}/g; \
+	           s/@priority@/$${priority}/g" \
+	      < debian/php5-module.bug.script \
+	      > debian/php5-$$package/usr/share/bug/php5-$$package/script; \
+	    chmod 755 debian/php5-$$package/usr/share/bug/php5-$$package/script; \
+	    cp debian/php5-module.bug.control debian/php5-$$package/usr/share/bug/php5-$$package/control; \
 	done
 
 	# likewise, for the different sapi implementations
@@ -725,6 +738,13 @@ binary-arch: build install
 		  	> debian/php5-$${sapi}.$${tmpl}; \
 			mkdir -p "$(CURDIR)/debian/php5-$$sapi/usr/share/php5/sapi/"; \
 			touch "$(CURDIR)/debian/php5-$$sapi/usr/share/php5/sapi/$$sapi"; \
+			mkdir -p debian/php5-$$sapi/usr/share/bug/php5-$$sapi; \
+			sed -e "s/@sapi@/$${sapi}/g; \
+	                        s/@package@/php5-$${sapi}/g;" \
+			  < debian/php5-sapi.bug.script \
+			  > debian/php5-$$sapi/usr/share/bug/php5-$$sapi/script; \
+			chmod 755 debian/php5-$$sapi/usr/share/bug/php5-$$sapi/script; \
+			cp debian/php5-sapi.bug.control debian/php5-$$sapi/usr/share/bug/php5-$$sapi/control; \
 		done; \
 		for sapi in embed; do \
 			sed -e "s/@sapi@/$${sapi}/g; \
@@ -735,6 +755,13 @@ binary-arch: build install
 		  	> debian/libphp5-$${sapi}.$${tmpl}; \
 			mkdir -p "$(CURDIR)/debian/libphp5-$$sapi/usr/share/php5/sapi/"; \
 			touch "$(CURDIR)/debian/libphp5-$$sapi/usr/share/php5/sapi/$$sapi"; \
+			mkdir -p debian/libphp5-$$sapi/usr/share/bug/libphp5-$$sapi; \
+			sed -e "s/@sapi@/$${sapi}/g; \
+	                        s/@package@/libphp5-$${sapi}/g;" \
+			  < debian/php5-sapi.bug.script \
+			  > debian/libphp5-$$sapi/usr/share/bug/libphp5-$$sapi/script; \
+			chmod 755 debian/libphp5-$$sapi/usr/share/bug/libphp5-$$sapi/script; \
+			cp debian/php5-sapi.bug.control debian/libphp5-$$sapi/usr/share/bug/libphp5-$$sapi/control; \
 		done; \
 	        for sapi in "" "filter"; do \
 		        sed -e "s/@sapi@/apache2$${sapi}/g; \
@@ -745,6 +772,13 @@ binary-arch: build install
 		        > debian/libapache2-mod-php5$${sapi}.$${tmpl}; \
 			mkdir -p "$(CURDIR)/debian/libapache2-mod-php5$$sapi/usr/share/php5/sapi/"; \
 			touch "$(CURDIR)/debian/libapache2-mod-php5$$sapi/usr/share/php5/sapi/apache2$$sapi"; \
+			mkdir -p debian/libapache2-mod-php5$$sapi/usr/share/bug/libapache2-mod-php5$$sapi; \
+		        sed -e "s/@sapi@/apache2$${sapi}/g; \
+	                        s/@package@/libapache2-mod-php5$${sapi}/g;" \
+			  < debian/php5-sapi.bug.script \
+			  > debian/libapache2-mod-php5$$sapi/usr/share/bug/libapache2-mod-php5$$sapi/script; \
+			chmod 755 debian/libapache2-mod-php5$$sapi/usr/share/bug/libapache2-mod-php5$$sapi/script; \
+			cp debian/php5-sapi.bug.control debian/libapache2-mod-php5$$sapi/usr/share/bug/libapache2-mod-php5$$sapi/control; \
 	        done; \
 	done
 
