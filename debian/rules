@@ -500,6 +500,7 @@ install: build
 	# Install reportbug for php5 package
 	mkdir -p debian/php5/usr/share/reporbug/php5
 	install -m644 debian/php5.bug.control debian/php5/usr/share/reporbug/php5/control
+	ln -s ../php5-common/script debian/php5/usr/share/reporbug/php5/script
 
 	# Install helper shell fragment
 	install -m644 debian/php5-helper $(CURDIR)/debian/php5-common/usr/share/php5/
