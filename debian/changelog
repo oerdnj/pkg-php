@@ -1,3 +1,12 @@
+php5 (5.5.0+dfsg-11) unstable; urgency=low
+
+  * Make php5 compatible with php5-xcache 3.1~svn1282+1-1
+  * Add reportbug scripts and controls for php5-sapi and php5-module
+    (+ simple php5 redirect to php5-common).  This should make the
+    bugreports from people using reportbug more informative.
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 11 Jul 2013 13:22:39 +0200
+
 php5 (5.5.0+dfsg-10) unstable; urgency=low
 
   * Install correct SAPI names to /usr/share/php5/sapi/ for
