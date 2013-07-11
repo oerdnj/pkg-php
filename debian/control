@@ -100,7 +100,7 @@ Recommends: php5-json
 Suggests: php5-user-cache
 Breaks: php5-xdebug (<< 2.2.2),
 	php-apc (<< 4.0.0),
-	php5-xcache (<< 3.1),
+	php5-xcache (<< 3.1~),
 	php5-suhosin (<< 0.9.34),
 	php5-json (<< 1.3.1-1~)
 Description: Common files for packages built from the php5 source
