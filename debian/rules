@@ -718,10 +718,8 @@ binary-arch: build install
 	    cp debian/php5-module.triggers debian/php5-$${package}.triggers; \
 	    rm debian/php5-$$package.modules; \
 	    mkdir -p debian/php5-$$package/usr/share/bug/php5-$$package; \
-	    sed -e"s|@extname@|$${extname}|g; \
-	           s/@dsoname@/$${dsoname}/g; \
-	           s/@extension@/$${extension}/g; \
-	           s/@priority@/$${priority}/g" \
+	    sed -e"s/@package@/$${package}/g; \
+	           s/@modules@/$${modules}/g;" \
 	      < debian/php5-module.bug.script \
 	      > debian/php5-$$package/usr/share/bug/php5-$$package/script; \
 	    chmod 755 debian/php5-$$package/usr/share/bug/php5-$$package/script; \
