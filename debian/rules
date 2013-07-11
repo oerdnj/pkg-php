@@ -744,7 +744,7 @@ binary-arch: build install
 	                | sed -e'/#EXTRA#/ d' \
 		        > debian/libapache2-mod-php5$${sapi}.$${tmpl}; \
 			mkdir -p "$(CURDIR)/debian/libapache2-mod-php5$$sapi/usr/share/php5/sapi/"; \
-			touch "$(CURDIR)/debian/libapache2-mod-php5$$sapi/usr/share/php5/sapi/$$sapi"; \
+			touch "$(CURDIR)/debian/libapache2-mod-php5$$sapi/usr/share/php5/sapi/apache2$$sapi"; \
 	        done; \
 	done
 
