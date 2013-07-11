@@ -185,3 +185,24 @@ get_registry_dir() {
     echo "/var/lib/php5/modules/registry"
     return 0
 }
+
+get_sapi_dir() {
+    echo "/usr/share/php5/sapi"
+    return 0
+}
+
+list_parts() {
+    local dir=$1
+    local regex=${2:-}
+    local args="! ( -name '*.dpkg-old' -name '*.dpkg-new' -name '*.dpkg-dist' -name '*~' -name '*.bak' -name '*.ucf-old' -name '*.ucf-new' -name '*.ucf-dist' -name '*%' )"
+
+    if [ -d "$dir" ]; then
+	if [ -n "$regex" ]; then
+	    args="${args} -regex '$regex'"
+	fi
+	find "$dir" -mindepth 1 -maxdepth 1 -printf '%f\n' $args
+	return $?
+    else
+	return 1
+    fi    
+}

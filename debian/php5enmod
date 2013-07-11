@@ -106,7 +106,7 @@ enmod() {
     local modname=$2
 
     if ! module_exists $modname; then
-	warning "Module $module ini file doesn't exist under /etc/php5/mods-available"
+	warning "Module $modname ini file doesn't exist under /etc/php5/mods-available"
 	return 1
     fi
 
@@ -165,7 +165,7 @@ dismod() {
 
     if ! module_exists $modname; then
 	if [ "$purge" = "no" ]; then
-	    warning "Module $module ini file doesn't exist under /etc/php5/mods-available"
+	    warning "Module $modname ini file doesn't exist under /etc/php5/mods-available"
 	    return 1
 	fi
     fi
@@ -188,13 +188,13 @@ dismod() {
 	    return 0
 	    ;;
 	34)
-	    warning "Not disabling module $module for $sapi SAPI.  The configuration was"
+	    warning "Not disabling module $modname for $sapi SAPI.  The configuration was"
 	    warning "modified by local administrator."
 	    return 1
 	    ;;
 	# fail if we get any different result
 	*)
-	    warning "Unable to get module state, run php5query -s $sapi -m $module manually"
+	    warning "Unable to get module state, run php5query -s $sapi -m $modname manually"
 	    warning "and fix the module state."
 	    return 1
     esac
@@ -231,9 +231,12 @@ if [ "$register" = "no" ]; then
     sapis="${sapis:-ALL}"
 
     if [ "$sapis" = "ALL" ]; then
-	sapis=$(php5query -S)
 	register=yes
     fi
+fi
+
+if [ "$sapis" = "ALL" ]; then
+    sapis=$(php5query -S)
 fi
 
 [ -z "$mods" ] && usage

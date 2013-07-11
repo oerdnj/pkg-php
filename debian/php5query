@@ -102,9 +102,7 @@ list_mod() {
 
     sapis=$(list_sapi)
     if [ -d "$registry_dir" ]; then
-	for mod in "$registry_dir"/*; do
-	    mod=${mod##*/}
-	    mod=${mod%.ini}
+	for mod in $(list_parts "$registry_dir"); do
 	    if [ "$verbose" = "yes" ]; then
 		for sapi in $sapis; do
 		    check_mod $sapi $mod
@@ -118,16 +116,20 @@ list_mod() {
 }
 
 list_sapi() {
-    if [ -d /usr/share/php5/sapi ]; then
-	for sapi in /usr/share/php5/sapi/*; do
-	    echo ${sapi##*/}
+    local sapi_dir="$(get_sapi_dir)"
+
+    if [ -d "$sapi_dir" ]; then
+	for sapi in $(list_parts "$sapi_dir"); do
+	    echo $sapi;
 	done
     fi
 }
 
 check_sapi() {
     local sapi=$1
-    if [ -e /usr/share/php5/sapi/$sapi ]; then
+    local sapi_dir="$(get_sapi_dir)"
+
+    if [ -e "$sapi_dir/$sapi" ]; then
 	return 0
     fi
     return 1
