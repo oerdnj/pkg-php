@@ -5,7 +5,7 @@ php5 (5.5.0+dfsg-11) unstable; urgency=low
     (+ simple php5 redirect to php5-common).  This should make the
     bugreports from people using reportbug more informative.
 
- -- Ondřej Surý <ondrej@debian.org>  Thu, 11 Jul 2013 13:22:39 +0200
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 11 Jul 2013 13:51:14 +0200
 
 php5 (5.5.0+dfsg-10) unstable; urgency=low
 
