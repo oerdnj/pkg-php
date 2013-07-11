@@ -4,8 +4,10 @@ php5 (5.5.0+dfsg-11) unstable; urgency=low
   * Add reportbug scripts and controls for php5-sapi and php5-module
     (+ simple php5 redirect to php5-common).  This should make the
     bugreports from people using reportbug more informative.
+  * Make .ini files in reportbug more terse (remove comments and blank
+    lines)
 
- -- Ondřej Surý <ondrej@debian.org>  Thu, 11 Jul 2013 13:51:14 +0200
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 11 Jul 2013 14:30:59 +0200
 
 php5 (5.5.0+dfsg-10) unstable; urgency=low
 
