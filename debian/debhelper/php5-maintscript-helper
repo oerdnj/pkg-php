@@ -220,6 +220,7 @@ php5_invoke()
 		php5query -s "$SAPI" -m "$MOD" > /dev/null 2>&1 || php5query_ret=$?
 		if [ "$php5query_ret" -eq 0 ] ; then
 		    # configuration is already enabled
+ 		    php5$CMD -m -s "$SAPI" -q "$MOD" > /dev/null 2>&1 || return 1
 		    php5_msg "info" "php5_invoke $MOD: already enabled for $SAPI SAPI"
 		    PHP5_NEED_ACTION=1
 		elif [ "$php5query_ret" -eq 32	 ] ; then
@@ -231,7 +232,7 @@ php5_invoke()
 		    # a) we have no clue about the module (e.g. for upgrades prior to maintscript-helper
 		    # b) it's a fresh install
 		    PHP5_NEED_ACTION=1
-		    php5$CMD -m -s "$SAPI" -q "$MOD" > /dev/null 2>&1 || return 1
+ 		    php5$CMD -m -s "$SAPI" -q "$MOD" > /dev/null 2>&1 || return 1
 		    php5_msg "info" "php5_invoke: Enable module $MOD for $SAPI SAPI"
 		fi
 		;;

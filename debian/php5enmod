@@ -120,9 +120,8 @@ enmod() {
     php5query -q -s $sapi -m $modname || module_state=$?
 
     case $module_state in
-	# module enabled
+	# module enabled, but re-enable the conf.d link just in case
 	0)
-	    return 0
 	    ;;
 	# module not yet enabled
 	1)
@@ -152,7 +151,12 @@ enmod() {
     esac
 
     if [ -d "/etc/php5/$sapi/conf.d" ]; then
-	ln -s "${live_link_content}" "${live_link}"
+	if [ ! -h "${live_link}" ]; then
+	    ln -s "${live_link_content}" "${live_link}"
+	fi
+    else
+	warning "Directory /etc/php5/$sapi/conf.d doesn't exist, not enabling the module"
+	return 1
     fi
 
     return 0
@@ -183,9 +187,8 @@ dismod() {
 	# module enabled
 	0)
 	    ;;
-	# module not enabled
+	# module not enabled, but re-remove the link just in case
 	1|32|33)
-	    return 0
 	    ;;
 	34)
 	    warning "Not disabling module $modname for $sapi SAPI.  The configuration was"
@@ -200,7 +203,9 @@ dismod() {
     esac
 
     if [ -d "/etc/php5/$sapi/conf.d" ]; then
-	rm -f $live_link
+	if [ -h "$live_link" ]; then
+	    rm -f "$live_link"
+	fi
     fi
 
     return 0
