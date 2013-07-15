@@ -231,7 +231,10 @@ while getopts pfs:mqr opt; do
     esac
 done
 shift $(expr $OPTIND - 1)
-mods="$@"
+mods=""
+for mod in $@; do
+    mods="${mods}${mods:+ }${mod%%/*}"
+done
 if [ "$register" = "no" ]; then
     sapis="${sapis:-ALL}"
 
