@@ -1,3 +1,13 @@
+php5 (5.5.0+dfsg-12) unstable; urgency=low
+
+  * Re-create (and re-remove) conf.d symlinks when module is already
+    enabled (disabled) (Closes: #716893)
+  * Add backwards compatibility for modules with priority
+    (Closes: #716833)
+  * Add Breaks: php-crypt-gpg (<< 1.3.2) to php5-common (Closes: #716856)
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 15 Jul 2013 09:19:34 +0200
+
 php5 (5.5.0+dfsg-11) unstable; urgency=low
 
   * Make php5 compatible with php5-xcache 3.1~svn1282+1-1
