@@ -5,10 +5,10 @@ MATCH="^[[:space:]]*($|;)"
 echo "==== Additional PHP 5 information ====" >&3
 echo "" >&3
 echo "++++ PHP 5 SAPI (php5query -S): ++++" >&3
-php5query -S >&3
+/usr/sbin/php5query -S >&3
 echo "" >&3
 echo "++++ PHP 5 Extensions (php5query -M -v): ++++" >&3
-php5query -M -v >&3
+/usr/sbin/php5query -M -v >&3
 echo "" >&3
 
 echo "++++ Configuration files: ++++" >&3
