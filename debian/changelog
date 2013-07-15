@@ -5,6 +5,7 @@ php5 (5.5.0+dfsg-12) unstable; urgency=low
   * Add backwards compatibility for modules with priority
     (Closes: #716833)
   * Add Breaks: php-crypt-gpg (<< 1.3.2) to php5-common (Closes: #716856)
+  * Add php5-fpm.dirs with needed /etc/php5/fpm/conf.d directory
 
  -- Ondřej Surý <ondrej@debian.org>  Mon, 15 Jul 2013 09:19:34 +0200
 
