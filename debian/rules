@@ -635,6 +635,7 @@ install: build
 
 	# remove libtool files
 	rm $(CURDIR)/debian/libphp5-embed/usr/lib/php5/libphp5.la
+	mv $(CURDIR)/debian/libphp5-embed/usr/lib/php5/* $(CURDIR)/debian/libphp5-embed/usr/lib/
 
 	# install lintian overrides
 	cp debian/php5.lintian-overrides $(CURDIR)/debian/php5-common/usr/share/lintian/overrides/php5-common
