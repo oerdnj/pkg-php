@@ -94,7 +94,7 @@ Depends: ${misc:Depends},
 	 psmisc (>= 22.15-1~),
 	 lsof [!kfreebsd-any !hurd-any],
 	 ucf
-Provides: php5-mhash
+Provides: php5-mhash, ${php:Provides}
 Conflicts: php5-mhash
 Recommends: php5-json
 Suggests: php5-user-cache
