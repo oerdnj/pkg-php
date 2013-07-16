@@ -1,3 +1,17 @@
+php5 (5.5.0+dfsg-13) unstable; urgency=low
+
+  * Call php5query from reportbug with the full path to executable
+    (Closes: #716952)
+  * Create conf.d directories also in php5-common postinst
+    (the real fix for #716893)
+  * Move Provides: phpapi-version to php5-common to fix invalid resolving
+    of dependencies (Closes: #709027)
+  * Move libphp5.so to /usr/lib (Closes: #708112)
+  * Fail the build if phpapi has changed, not just warning which nobody notices
+  * Fix typo in bug script installation path reporbug -> reportbug
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 16 Jul 2013 10:32:05 +0200
+
 php5 (5.5.0+dfsg-12) unstable; urgency=low
 
   * Re-create (and re-remove) conf.d symlinks when module is already
