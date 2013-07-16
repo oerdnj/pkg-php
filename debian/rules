@@ -794,19 +794,19 @@ binary-arch: build install
 		ln -s php5-common debian/$$package/usr/share/doc/$$package; \
 	done
 	dh_perl
-	dh_makeshlibs
 	dh_installlogrotate -pphp5-fpm
 	dh_installcron -pphp5-common --name=php5
 	dh_installchangelogs -pphp5-common NEWS
 	dh_systemd_enable -pphp5-fpm --name=php5-fpm
 	dh_installinit
 	dh_systemd_start -pphp5-fpm --name=php5-fpm
-	dh_strip -s --dbg-package=php5-dbg
 	dh_link -s
 	dh_compress -s -Xphp.ini
-	dh_fixperms -s -X /var/lib/php5
-	dh_installdeb -s
+	dh_fixperms -s -X/var/lib/php5
+	dh_strip -s --dbg-package=php5-dbg
+	dh_makeshlibs -s -plibphp5-embed -V 'libphp5-embed (>= 5.5.0)'
 	dh_shlibdeps -s
+	dh_installdeb -s
 
 	phpapi=`./debian/php5-dev/usr/bin/php-config5 --phpapi`; \
 	stored=`cat debian/phpapi`; \
