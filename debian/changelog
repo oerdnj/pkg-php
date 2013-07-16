@@ -9,6 +9,10 @@ php5 (5.5.0+dfsg-13) unstable; urgency=low
   * Move libphp5.so to /usr/lib (Closes: #708112)
   * Fail the build if phpapi has changed, not just warning which nobody notices
   * Fix typo in bug script installation path reporbug -> reportbug
+  * Remove ${release} from libphp5 SONAME, so it doesn't break with every
+    new debian release
+  * Add symbols file for libphp5.so
+  * Correctly call dh_makeshlibs now when libphp5.so is in /usr/lib
 
  -- Ondřej Surý <ondrej@debian.org>  Tue, 16 Jul 2013 10:32:05 +0200
 
