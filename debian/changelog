@@ -1,3 +1,10 @@
+php5 (5.5.0+dfsg-14) unstable; urgency=low
+
+  * Fix FTBFS: Remove symbols file and add an warning about embed SAPI
+    API/ABI to libphp5-embed package description.
+
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 17 Jul 2013 12:02:46 +0200
+
 php5 (5.5.0+dfsg-13) unstable; urgency=low
 
   * Call php5query from reportbug with the full path to executable
