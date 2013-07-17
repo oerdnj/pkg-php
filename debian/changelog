@@ -1,3 +1,9 @@
+php5 (5.5.0+dfsg-15) unstable; urgency=low
+
+  * CVE-2013-4113: Fix heap corruption in xml parser (Closes: #717139)
+
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 17 Jul 2013 16:12:39 +0200
+
 php5 (5.5.0+dfsg-14) unstable; urgency=low
 
   * Fix FTBFS: Remove symbols file and add an warning about embed SAPI
