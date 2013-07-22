@@ -138,7 +138,7 @@ static inline int is_stream_path(const char *filename)
 	return ((*p == ':') && (p - filename > 1) && (p[1] == '/') && (p[2] == '/'));
 }
 
-static inline int is_cachable_stream_path(const char *filename)
+static inline int is_cacheable_stream_path(const char *filename)
 {
 	return memcmp(filename, "file://", sizeof("file://") - 1) == 0 ||
 	       memcmp(filename, "phar://", sizeof("phar://") - 1) == 0;
@@ -1455,7 +1455,7 @@ static zend_op_array *persistent_compile_file(zend_file_handle *file_handle, int
 	    CG(interactive) ||
 	    (ZCSG(restart_in_progress) && accel_restart_is_active(TSRMLS_C)) ||
 	    (is_stream_path(file_handle->filename) && 
-	     !is_cachable_stream_path(file_handle->filename))) {
+	     !is_cacheable_stream_path(file_handle->filename))) {
 		/* The Accelerator is disabled, act as if without the Accelerator */
 		return accelerator_orig_compile_file(file_handle, type TSRMLS_CC);
 	}
@@ -2163,7 +2163,10 @@ static void accel_fast_zval_ptr_dtor(zval **zval_ptr)
 			case IS_CONSTANT_ARRAY: {
 					TSRMLS_FETCH();
 
+					GC_REMOVE_ZVAL_FROM_BUFFER(zvalue);
 					if (zvalue->value.ht && (zvalue->value.ht != &EG(symbol_table))) {
+						/* break possible cycles */
+						Z_TYPE_P(zvalue) = IS_NULL;
 						zvalue->value.ht->pDestructor = (dtor_func_t)accel_fast_zval_ptr_dtor;
 						accel_fast_hash_destroy(zvalue->value.ht);
 					}
@@ -2173,6 +2176,7 @@ static void accel_fast_zval_ptr_dtor(zval **zval_ptr)
 				{
 					TSRMLS_FETCH();
 
+					GC_REMOVE_ZVAL_FROM_BUFFER(zvalue);
 					Z_OBJ_HT_P(zvalue)->del_ref(zvalue TSRMLS_CC);
 				}
 				break;
@@ -2375,6 +2379,7 @@ static inline int accel_find_sapi(TSRMLS_D)
 		"isapi",
 		"apache2filter",
 		"apache2handler",
+		"litespeed",
 		NULL
 	};
 	const char **sapi_name;
@@ -2499,7 +2504,7 @@ static int accel_startup(zend_extension *extension)
 		    strcmp(sapi_module.name, "cli") == 0) {
 			zps_startup_failure("Opcode Caching is disabled for CLI", NULL, accelerator_remove_cb TSRMLS_CC);
 		} else {
-			zps_startup_failure("Opcode Caching is only supported in Apache, ISAPI, FPM and FastCGI SAPIs", NULL, accelerator_remove_cb TSRMLS_CC);
+			zps_startup_failure("Opcode Caching is only supported in Apache, ISAPI, FPM, FastCGI and LiteSpeed SAPIs", NULL, accelerator_remove_cb TSRMLS_CC);
 		}
 		return SUCCESS;
 	}

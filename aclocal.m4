@@ -66,10 +66,10 @@ AC_DEFUN([PHP_EXPAND_PATH],[
     $2=$1
   else
     changequote({,})
-    ep_dir="`echo $1|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $1|$SED 's%/*[^/][^/]*/*$%%'`
     changequote([,])
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    $2="$ep_realdir/`basename \"$1\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    $2="$ep_realdir"/`basename "$1"`
   fi
 ])
 
@@ -4206,7 +4206,7 @@ if test -n "$_LT_AC_TAGVAR(hardcode_libdir_flag_spec, $1)" || \
    test -n "$_LT_AC_TAGVAR(runpath_var, $1)" || \
    test "X$_LT_AC_TAGVAR(hardcode_automatic, $1)" = "Xyes" ; then
 
-  # We can hardcode non-existant directories.
+  # We can hardcode non-existent directories.
   if test "$_LT_AC_TAGVAR(hardcode_direct, $1)" != no &&
      # If the only mechanism to avoid hardcoding is shlibpath_var, we
      # have to relink, otherwise we might link with an installed library
