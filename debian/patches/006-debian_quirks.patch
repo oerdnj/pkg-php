@@ -135,7 +135,7 @@ Last-Update: 2010-01-18
  ; Module Settings ;
 --- php5.orig/sapi/cli/php.1.in
 +++ php5/sapi/cli/php.1.in
-@@ -372,13 +372,14 @@ Shows configuration for extension
+@@ -374,13 +374,14 @@ Shows configuration for extension
  Show configuration file names
  .SH FILES
  .TP 15
