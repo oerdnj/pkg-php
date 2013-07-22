@@ -3686,7 +3686,7 @@ ac_config_headers="$ac_config_headers main/php_config.h"
 
 PHP_MAJOR_VERSION=5
 PHP_MINOR_VERSION=5
-PHP_RELEASE_VERSION=0
+PHP_RELEASE_VERSION=1
 PHP_EXTRA_VERSION=""
 PHP_VERSION="$PHP_MAJOR_VERSION.$PHP_MINOR_VERSION.$PHP_RELEASE_VERSION$PHP_EXTRA_VERSION"
 PHP_VERSION_ID=`expr $PHP_MAJOR_VERSION \* 10000 + $PHP_MINOR_VERSION \* 100 + $PHP_RELEASE_VERSION`
@@ -6069,10 +6069,10 @@ if test "$PHP_AOLSERVER" != "no"; then
     ai_p=$PHP_AOLSERVER_SRC/include
   else
 
-    ep_dir="`echo $PHP_AOLSERVER_SRC/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_AOLSERVER_SRC/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_AOLSERVER_SRC/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_AOLSERVER_SRC/include"`
   fi
 
 
@@ -6302,10 +6302,10 @@ if test "$PHP_APXS" != "no"; then
     APXS=$PHP_APXS
   else
 
-    ep_dir="`echo $PHP_APXS|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_APXS|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    APXS="$ep_realdir/`basename \"$PHP_APXS\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    APXS="$ep_realdir"/`basename "$PHP_APXS"`
   fi
 
   fi
@@ -6623,10 +6623,10 @@ $as_echo "#define HAVE_APACHE 1" >>confdefs.h
     PHP_APACHE=$PHP_APACHE
   else
 
-    ep_dir="`echo $PHP_APACHE|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_APACHE|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    PHP_APACHE="$ep_realdir/`basename \"$PHP_APACHE\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    PHP_APACHE="$ep_realdir"/`basename "$PHP_APACHE"`
   fi
 
   # For Apache 1.2.x
@@ -7566,10 +7566,10 @@ if test "$PHP_APXS2FILTER" != "no"; then
     APXS=$PHP_APXS2FILTER
   else
 
-    ep_dir="`echo $PHP_APXS2FILTER|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_APXS2FILTER|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    APXS="$ep_realdir/`basename \"$PHP_APXS2FILTER\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    APXS="$ep_realdir"/`basename "$PHP_APXS2FILTER"`
   fi
 
   fi
@@ -8390,10 +8390,10 @@ if test "$PHP_APXS2" != "no"; then
     APXS=$PHP_APXS2
   else
 
-    ep_dir="`echo $PHP_APXS2|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_APXS2|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    APXS="$ep_realdir/`basename \"$PHP_APXS2\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    APXS="$ep_realdir"/`basename "$PHP_APXS2"`
   fi
 
   fi
@@ -9215,10 +9215,10 @@ if test "$PHP_APACHE_HOOKS" != "no"; then
     APXS=$PHP_APACHE_HOOKS
   else
 
-    ep_dir="`echo $PHP_APACHE_HOOKS|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_APACHE_HOOKS|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    APXS="$ep_realdir/`basename \"$PHP_APACHE_HOOKS\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    APXS="$ep_realdir"/`basename "$PHP_APACHE_HOOKS"`
   fi
 
   fi
@@ -9536,10 +9536,10 @@ $as_echo "#define HAVE_APACHE 1" >>confdefs.h
     PHP_APACHE_HOOKS_STATIC=$PHP_APACHE_HOOKS_STATIC
   else
 
-    ep_dir="`echo $PHP_APACHE_HOOKS_STATIC|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_APACHE_HOOKS_STATIC|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    PHP_APACHE_HOOKS_STATIC="$ep_realdir/`basename \"$PHP_APACHE_HOOKS_STATIC\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    PHP_APACHE_HOOKS_STATIC="$ep_realdir"/`basename "$PHP_APACHE_HOOKS_STATIC"`
   fi
 
   # For Apache 1.2.x
@@ -10506,10 +10506,10 @@ $as_echo "yes" >&6; }
     ai_p=$PIKE_INCLUDE_DIR
   else
 
-    ep_dir="`echo $PIKE_INCLUDE_DIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PIKE_INCLUDE_DIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PIKE_INCLUDE_DIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PIKE_INCLUDE_DIR"`
   fi
 
 
@@ -10566,10 +10566,10 @@ $as_echo_n "checking for C includes in $PIKE_C_INCLUDE... " >&6; }
     ai_p=$PIKE_C_INCLUDE
   else
 
-    ep_dir="`echo $PIKE_C_INCLUDE|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PIKE_C_INCLUDE|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PIKE_C_INCLUDE\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PIKE_C_INCLUDE"`
   fi
 
 
@@ -11234,10 +11234,10 @@ EOF
     ai_p=$CAPI_INCLUDE
   else
 
-    ep_dir="`echo $CAPI_INCLUDE|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $CAPI_INCLUDE|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$CAPI_INCLUDE\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$CAPI_INCLUDE"`
   fi
 
 
@@ -13049,10 +13049,10 @@ $as_echo "#define WITH_ZEUS 1" >>confdefs.h
     ai_p=$ZEUSPATH/web/include
   else
 
-    ep_dir="`echo $ZEUSPATH/web/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ZEUSPATH/web/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ZEUSPATH/web/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ZEUSPATH/web/include"`
   fi
 
 
@@ -13568,10 +13568,10 @@ EOF
     ai_p=$MILTERPATH
   else
 
-    ep_dir="`echo $MILTERPATH|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $MILTERPATH|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$MILTERPATH\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$MILTERPATH"`
   fi
 
 
@@ -13701,10 +13701,10 @@ done
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -13944,10 +13944,10 @@ if test "$PHP_PHTTPD" != "no"; then
     ai_p=$PHP_PHTTPD/include
   else
 
-    ep_dir="`echo $PHP_PHTTPD/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_PHTTPD/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_PHTTPD/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_PHTTPD/include"`
   fi
 
 
@@ -14182,10 +14182,10 @@ $as_echo "#define WITH_PI3WEB 1" >>confdefs.h
     ai_p=$PI3PATH/PiAPI
   else
 
-    ep_dir="`echo $PI3PATH/PiAPI|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PI3PATH/PiAPI|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PI3PATH/PiAPI\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PI3PATH/PiAPI"`
   fi
 
 
@@ -14213,10 +14213,10 @@ $as_echo "#define WITH_PI3WEB 1" >>confdefs.h
     ai_p=$PI3PATH/Pi2API
   else
 
-    ep_dir="`echo $PI3PATH/Pi2API|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PI3PATH/Pi2API|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PI3PATH/Pi2API\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PI3PATH/Pi2API"`
   fi
 
 
@@ -14244,10 +14244,10 @@ $as_echo "#define WITH_PI3WEB 1" >>confdefs.h
     ai_p=$PI3PATH/Pi3API
   else
 
-    ep_dir="`echo $PI3PATH/Pi3API|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PI3PATH/Pi3API|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PI3PATH/Pi3API\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PI3PATH/Pi3API"`
   fi
 
 
@@ -14275,10 +14275,10 @@ $as_echo "#define WITH_PI3WEB 1" >>confdefs.h
     ai_p=$PI3PATH/PHP5
   else
 
-    ep_dir="`echo $PI3PATH/PHP5|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PI3PATH/PHP5|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PI3PATH/PHP5\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PI3PATH/PHP5"`
   fi
 
 
@@ -14540,10 +14540,10 @@ if test "$PHP_ROXEN" != "no"; then
     ai_p=$PIKE_INCLUDE_DIR
   else
 
-    ep_dir="`echo $PIKE_INCLUDE_DIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PIKE_INCLUDE_DIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PIKE_INCLUDE_DIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PIKE_INCLUDE_DIR"`
   fi
 
 
@@ -14786,10 +14786,10 @@ $as_echo "thttpd directory does not exist ($PHP_THTTPD)" >&6; }
     THTTPD=$PHP_THTTPD
   else
 
-    ep_dir="`echo $PHP_THTTPD|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_THTTPD|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    THTTPD="$ep_realdir/`basename \"$PHP_THTTPD\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    THTTPD="$ep_realdir"/`basename "$PHP_THTTPD"`
   fi
 
 
@@ -14853,10 +14853,10 @@ $as_echo "$ac_cv_gcc_arg_rdynamic" >&6; }
     ai_p=$THTTPD
   else
 
-    ep_dir="`echo $THTTPD|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $THTTPD|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$THTTPD\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$THTTPD"`
   fi
 
 
@@ -15237,10 +15237,10 @@ if test "$PHP_WEBJAMES" != "no"; then
     PHP_WEBJAMES=$PHP_WEBJAMES
   else
 
-    ep_dir="`echo $PHP_WEBJAMES|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_WEBJAMES|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    PHP_WEBJAMES="$ep_realdir/`basename \"$PHP_WEBJAMES\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    PHP_WEBJAMES="$ep_realdir"/`basename "$PHP_WEBJAMES"`
   fi
 
   INSTALL_IT="\
@@ -15254,10 +15254,10 @@ if test "$PHP_WEBJAMES" != "no"; then
     ai_p=$PHP_WEBJAMES
   else
 
-    ep_dir="`echo $PHP_WEBJAMES|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_WEBJAMES|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_WEBJAMES\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_WEBJAMES"`
   fi
 
 
@@ -15663,6 +15663,10 @@ EOF
 
   PHP_VAR_SUBST="$PHP_VAR_SUBST BUILD_CGI"
 
+
+
+  PHP_OUTPUT_FILES="$PHP_OUTPUT_FILES sapi/cgi/php-cgi.1"
+
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
@@ -15939,10 +15943,10 @@ test -d /usr/ucblib &&
     ai_p=/usr/ucblib
   else
 
-    ep_dir="`echo /usr/ucblib|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo /usr/ucblib|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"/usr/ucblib\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "/usr/ucblib"`
   fi
 
 
@@ -20508,10 +20512,10 @@ if test "$PHP_LIBGCC" = "yes"; then
     ai_p=$libgcc_libpath
   else
 
-    ep_dir="`echo $libgcc_libpath|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $libgcc_libpath|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$libgcc_libpath\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$libgcc_libpath"`
   fi
 
 
@@ -21376,10 +21380,10 @@ EOF
     ai_p=$ext_builddir/lib
   else
 
-    ep_dir="`echo $ext_builddir/lib|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ext_builddir/lib|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ext_builddir/lib\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ext_builddir/lib"`
   fi
 
 
@@ -21407,10 +21411,10 @@ EOF
     ai_p=$ext_srcdir/lib
   else
 
-    ep_dir="`echo $ext_srcdir/lib|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ext_srcdir/lib|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ext_srcdir/lib\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ext_srcdir/lib"`
   fi
 
 
@@ -21849,10 +21853,10 @@ $as_echo "#define REGEX 1" >>confdefs.h
     ai_p=$ext_srcdir/regex
   else
 
-    ep_dir="`echo $ext_srcdir/regex|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ext_srcdir/regex|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ext_srcdir/regex\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ext_srcdir/regex"`
   fi
 
 
@@ -22069,10 +22073,10 @@ $as_echo "$ac_cv_php_xml2_config_path" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -22116,10 +22120,10 @@ $as_echo "$ac_cv_php_xml2_config_path" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -23008,10 +23012,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -23055,10 +23059,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -23108,10 +23112,10 @@ fi
     ai_p=$PHP_KERBEROS_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $PHP_KERBEROS_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_KERBEROS_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_KERBEROS_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_KERBEROS_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -23238,10 +23242,10 @@ fi
     ai_p=$PHP_KERBEROS_DIR/include
   else
 
-    ep_dir="`echo $PHP_KERBEROS_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_KERBEROS_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_KERBEROS_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_KERBEROS_DIR/include"`
   fi
 
 
@@ -23480,10 +23484,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -23529,10 +23533,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -23619,10 +23623,10 @@ rm -f conftest*
     ai_p=$OPENSSL_INCDIR
   else
 
-    ep_dir="`echo $OPENSSL_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $OPENSSL_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$OPENSSL_INCDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$OPENSSL_INCDIR"`
   fi
 
 
@@ -23706,10 +23710,10 @@ rm -f conftest*
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -23883,10 +23887,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -24028,10 +24032,10 @@ fi
     ai_p=$OPENSSL_LIBDIR
   else
 
-    ep_dir="`echo $OPENSSL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $OPENSSL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$OPENSSL_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$OPENSSL_LIBDIR"`
   fi
 
 
@@ -24149,10 +24153,10 @@ $as_echo "$PCRE_LIBDIR" >&6; }
     ai_p=$PCRE_LIBDIR
   else
 
-    ep_dir="`echo $PCRE_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PCRE_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PCRE_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PCRE_LIBDIR"`
   fi
 
 
@@ -24199,10 +24203,10 @@ $as_echo "#define HAVE_PCRE 1" >>confdefs.h
     ai_p=$PCRE_INCDIR
   else
 
-    ep_dir="`echo $PCRE_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PCRE_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PCRE_INCDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PCRE_INCDIR"`
   fi
 
 
@@ -25013,10 +25017,10 @@ $as_echo_n "checking for SQLite 3.3.9+... " >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -25103,10 +25107,10 @@ $as_echo "found" >&6; }
     ai_p=$SQLITE3_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $SQLITE3_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $SQLITE3_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$SQLITE3_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$SQLITE3_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -25146,10 +25150,10 @@ $as_echo "found" >&6; }
     ai_p=$SQLITE3_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $SQLITE3_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $SQLITE3_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$SQLITE3_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$SQLITE3_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -25195,10 +25199,10 @@ $as_echo "found" >&6; }
     ai_p=$SQLITE3_DIR/include
   else
 
-    ep_dir="`echo $SQLITE3_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $SQLITE3_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$SQLITE3_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$SQLITE3_DIR/include"`
   fi
 
 
@@ -25295,10 +25299,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -25445,10 +25449,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -25596,10 +25600,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -26508,10 +26512,10 @@ $as_echo "$ZLIB_VERSION" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -26608,10 +26612,10 @@ fi
     ai_p=$ZLIB_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $ZLIB_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ZLIB_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ZLIB_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ZLIB_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -26671,10 +26675,10 @@ fi
     ai_p=$ZLIB_INCDIR
   else
 
-    ep_dir="`echo $ZLIB_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ZLIB_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ZLIB_INCDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ZLIB_INCDIR"`
   fi
 
 
@@ -27193,10 +27197,10 @@ $as_echo "not found" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -27276,10 +27280,10 @@ if test "x$ac_cv_lib_bz2_BZ2_bzerror" = xyes; then :
     ai_p=$BZIP_DIR/include
   else
 
-    ep_dir="`echo $BZIP_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $BZIP_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$BZIP_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$BZIP_DIR/include"`
   fi
 
 
@@ -27312,10 +27316,10 @@ if test "x$ac_cv_lib_bz2_BZ2_bzerror" = xyes; then :
     ai_p=$BZIP_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $BZIP_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $BZIP_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$BZIP_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$BZIP_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -27355,10 +27359,10 @@ if test "x$ac_cv_lib_bz2_BZ2_bzerror" = xyes; then :
     ai_p=$BZIP_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $BZIP_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $BZIP_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$BZIP_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$BZIP_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -28498,10 +28502,10 @@ $as_echo "$curl_version_full" >&6; }
     ai_p=$CURL_DIR/include
   else
 
-    ep_dir="`echo $CURL_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $CURL_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$CURL_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$CURL_DIR/include"`
   fi
 
 
@@ -28576,10 +28580,10 @@ $as_echo "$curl_version_full" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -28623,10 +28627,10 @@ $as_echo "$curl_version_full" >&6; }
     ai_p=$CURL_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $CURL_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $CURL_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$CURL_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$CURL_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -28666,10 +28670,10 @@ $as_echo "$curl_version_full" >&6; }
     ai_p=$CURL_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $CURL_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $CURL_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$CURL_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$CURL_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -29039,10 +29043,10 @@ $as_echo "no" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -29194,10 +29198,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -29347,10 +29351,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -30068,10 +30072,10 @@ if test "$PHP_QDBM" != "no"; then
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -30199,10 +30203,10 @@ fi
     ai_p=$THIS_LFLAGS
   else
 
-    ep_dir="`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$THIS_LFLAGS\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$THIS_LFLAGS"`
   fi
 
 
@@ -30242,10 +30246,10 @@ fi
     ai_p=$THIS_LFLAGS
   else
 
-    ep_dir="`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$THIS_LFLAGS\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$THIS_LFLAGS"`
   fi
 
 
@@ -30410,10 +30414,10 @@ $as_echo "no" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -30535,10 +30539,10 @@ fi
     ai_p=$THIS_LFLAGS
   else
 
-    ep_dir="`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$THIS_LFLAGS\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$THIS_LFLAGS"`
   fi
 
 
@@ -30578,10 +30582,10 @@ fi
     ai_p=$THIS_LFLAGS
   else
 
-    ep_dir="`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$THIS_LFLAGS\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$THIS_LFLAGS"`
   fi
 
 
@@ -30726,10 +30730,10 @@ if test "$PHP_NDBM" != "no"; then
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -30857,10 +30861,10 @@ fi
     ai_p=$THIS_LFLAGS
   else
 
-    ep_dir="`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$THIS_LFLAGS\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$THIS_LFLAGS"`
   fi
 
 
@@ -30900,10 +30904,10 @@ fi
     ai_p=$THIS_LFLAGS
   else
 
-    ep_dir="`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$THIS_LFLAGS\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$THIS_LFLAGS"`
   fi
 
 
@@ -30983,10 +30987,10 @@ if test "$PHP_TCADB" != "no"; then
     ai_p=$THIS_PREFIX/include
   else
 
-    ep_dir="`echo $THIS_PREFIX/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $THIS_PREFIX/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$THIS_PREFIX/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$THIS_PREFIX/include"`
   fi
 
 
@@ -31074,10 +31078,10 @@ if test "$PHP_TCADB" != "no"; then
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -31205,10 +31209,10 @@ fi
     ai_p=$THIS_LFLAGS
   else
 
-    ep_dir="`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$THIS_LFLAGS\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$THIS_LFLAGS"`
   fi
 
 
@@ -31248,10 +31252,10 @@ fi
     ai_p=$THIS_LFLAGS
   else
 
-    ep_dir="`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$THIS_LFLAGS\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$THIS_LFLAGS"`
   fi
 
 
@@ -31532,10 +31536,10 @@ _ACEOF
     ai_p=$THIS_LFLAGS
   else
 
-    ep_dir="`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$THIS_LFLAGS\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$THIS_LFLAGS"`
   fi
 
 
@@ -31575,10 +31579,10 @@ _ACEOF
     ai_p=$THIS_LFLAGS
   else
 
-    ep_dir="`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$THIS_LFLAGS\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$THIS_LFLAGS"`
   fi
 
 
@@ -31853,10 +31857,10 @@ _ACEOF
     ai_p=$THIS_LFLAGS
   else
 
-    ep_dir="`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$THIS_LFLAGS\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$THIS_LFLAGS"`
   fi
 
 
@@ -31896,10 +31900,10 @@ _ACEOF
     ai_p=$THIS_LFLAGS
   else
 
-    ep_dir="`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$THIS_LFLAGS\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$THIS_LFLAGS"`
   fi
 
 
@@ -32174,10 +32178,10 @@ _ACEOF
     ai_p=$THIS_LFLAGS
   else
 
-    ep_dir="`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$THIS_LFLAGS\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$THIS_LFLAGS"`
   fi
 
 
@@ -32217,10 +32221,10 @@ _ACEOF
     ai_p=$THIS_LFLAGS
   else
 
-    ep_dir="`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$THIS_LFLAGS\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$THIS_LFLAGS"`
   fi
 
 
@@ -32420,10 +32424,10 @@ rm -f core conftest.err conftest.$ac_objext \
     ai_p=$THIS_LFLAGS
   else
 
-    ep_dir="`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$THIS_LFLAGS\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$THIS_LFLAGS"`
   fi
 
 
@@ -32463,10 +32467,10 @@ rm -f core conftest.err conftest.$ac_objext \
     ai_p=$THIS_LFLAGS
   else
 
-    ep_dir="`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$THIS_LFLAGS\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$THIS_LFLAGS"`
   fi
 
 
@@ -32636,10 +32640,10 @@ $as_echo "no" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -32786,10 +32790,10 @@ fi
     ai_p=$THIS_LFLAGS
   else
 
-    ep_dir="`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$THIS_LFLAGS\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$THIS_LFLAGS"`
   fi
 
 
@@ -32829,10 +32833,10 @@ fi
     ai_p=$THIS_LFLAGS
   else
 
-    ep_dir="`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$THIS_LFLAGS\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$THIS_LFLAGS"`
   fi
 
 
@@ -33055,10 +33059,10 @@ elif test "$PHP_CDB" != "no"; then
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -33186,10 +33190,10 @@ fi
     ai_p=$THIS_LFLAGS
   else
 
-    ep_dir="`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$THIS_LFLAGS\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$THIS_LFLAGS"`
   fi
 
 
@@ -33229,10 +33233,10 @@ fi
     ai_p=$THIS_LFLAGS
   else
 
-    ep_dir="`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $THIS_LFLAGS|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$THIS_LFLAGS\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$THIS_LFLAGS"`
   fi
 
 
@@ -33851,10 +33855,10 @@ $as_echo "$ac_cv_php_xml2_config_path" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -33898,10 +33902,10 @@ $as_echo "$ac_cv_php_xml2_config_path" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -34748,10 +34752,10 @@ $as_echo "#define HAVE_ENCHANT 1" >>confdefs.h
     ai_p=$ENCHANT_LIBDIR
   else
 
-    ep_dir="`echo $ENCHANT_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ENCHANT_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ENCHANT_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ENCHANT_LIBDIR"`
   fi
 
 
@@ -34791,10 +34795,10 @@ $as_echo "#define HAVE_ENCHANT 1" >>confdefs.h
     ai_p=$ENCHANT_LIBDIR
   else
 
-    ep_dir="`echo $ENCHANT_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ENCHANT_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ENCHANT_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ENCHANT_LIBDIR"`
   fi
 
 
@@ -34840,10 +34844,10 @@ $as_echo "#define HAVE_ENCHANT 1" >>confdefs.h
     ai_p=$ENCHANT_INCDIR
   else
 
-    ep_dir="`echo $ENCHANT_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ENCHANT_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ENCHANT_INCDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ENCHANT_INCDIR"`
   fi
 
 
@@ -34924,10 +34928,10 @@ $as_echo "#define HAVE_ENCHANT 1" >>confdefs.h
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -36687,10 +36691,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -36736,10 +36740,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -36826,10 +36830,10 @@ rm -f conftest*
     ai_p=$OPENSSL_INCDIR
   else
 
-    ep_dir="`echo $OPENSSL_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $OPENSSL_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$OPENSSL_INCDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$OPENSSL_INCDIR"`
   fi
 
 
@@ -36913,10 +36917,10 @@ rm -f conftest*
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -37090,10 +37094,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -37235,10 +37239,10 @@ fi
     ai_p=$OPENSSL_LIBDIR
   else
 
-    ep_dir="`echo $OPENSSL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $OPENSSL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$OPENSSL_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$OPENSSL_LIBDIR"`
   fi
 
 
@@ -37679,10 +37683,10 @@ $as_echo "#define USE_GD_IMGSTRTTF 1" >>confdefs.h
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -37762,10 +37766,10 @@ if test "x$ac_cv_lib_vpx_vpx_codec_destroy" = xyes; then :
     ai_p=$GD_VPX_DIR/include
   else
 
-    ep_dir="`echo $GD_VPX_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_VPX_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_VPX_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_VPX_DIR/include"`
   fi
 
 
@@ -37808,10 +37812,10 @@ if test "x$ac_cv_lib_vpx_vpx_codec_destroy" = xyes; then :
     ai_p=$GD_VPX_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GD_VPX_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_VPX_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_VPX_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_VPX_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -37851,10 +37855,10 @@ if test "x$ac_cv_lib_vpx_vpx_codec_destroy" = xyes; then :
     ai_p=$GD_VPX_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GD_VPX_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_VPX_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_VPX_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_VPX_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -37984,10 +37988,10 @@ $as_echo "If configure fails try --with-vpx-dir=<DIR>" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -38067,10 +38071,10 @@ if test "x$ac_cv_lib_jpeg_jpeg_read_header" = xyes; then :
     ai_p=$GD_JPEG_DIR/include
   else
 
-    ep_dir="`echo $GD_JPEG_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_JPEG_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_JPEG_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_JPEG_DIR/include"`
   fi
 
 
@@ -38103,10 +38107,10 @@ if test "x$ac_cv_lib_jpeg_jpeg_read_header" = xyes; then :
     ai_p=$GD_JPEG_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GD_JPEG_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_JPEG_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_JPEG_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_JPEG_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -38146,10 +38150,10 @@ if test "x$ac_cv_lib_jpeg_jpeg_read_header" = xyes; then :
     ai_p=$GD_JPEG_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GD_JPEG_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_JPEG_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_JPEG_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_JPEG_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -38283,10 +38287,10 @@ $as_echo "If configure fails try --with-jpeg-dir=<DIR>" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -38366,10 +38370,10 @@ if test "x$ac_cv_lib_png_png_write_image" = xyes; then :
     ai_p=$GD_PNG_DIR/include
   else
 
-    ep_dir="`echo $GD_PNG_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_PNG_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_PNG_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_PNG_DIR/include"`
   fi
 
 
@@ -38402,10 +38406,10 @@ if test "x$ac_cv_lib_png_png_write_image" = xyes; then :
     ai_p=$PHP_ZLIB_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $PHP_ZLIB_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_ZLIB_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_ZLIB_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_ZLIB_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -38445,10 +38449,10 @@ if test "x$ac_cv_lib_png_png_write_image" = xyes; then :
     ai_p=$PHP_ZLIB_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $PHP_ZLIB_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_ZLIB_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_ZLIB_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_ZLIB_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -38499,10 +38503,10 @@ if test "x$ac_cv_lib_png_png_write_image" = xyes; then :
     ai_p=$GD_PNG_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GD_PNG_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_PNG_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_PNG_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_PNG_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -38542,10 +38546,10 @@ if test "x$ac_cv_lib_png_png_write_image" = xyes; then :
     ai_p=$GD_PNG_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GD_PNG_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_PNG_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_PNG_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_PNG_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -38677,10 +38681,10 @@ $as_echo "If configure fails try --with-png-dir=<DIR> and --with-zlib-dir=<DIR>"
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -38760,10 +38764,10 @@ if test "x$ac_cv_lib_Xpm_XpmFreeXpmImage" = xyes; then :
     ai_p=$GD_XPM_INC
   else
 
-    ep_dir="`echo $GD_XPM_INC|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_XPM_INC|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_XPM_INC\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_XPM_INC"`
   fi
 
 
@@ -38796,10 +38800,10 @@ if test "x$ac_cv_lib_Xpm_XpmFreeXpmImage" = xyes; then :
     ai_p=$GD_XPM_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GD_XPM_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_XPM_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_XPM_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_XPM_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -38839,10 +38843,10 @@ if test "x$ac_cv_lib_Xpm_XpmFreeXpmImage" = xyes; then :
     ai_p=$GD_XPM_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GD_XPM_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_XPM_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_XPM_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_XPM_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -38893,10 +38897,10 @@ if test "x$ac_cv_lib_Xpm_XpmFreeXpmImage" = xyes; then :
     ai_p=$GD_XPM_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GD_XPM_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_XPM_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_XPM_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_XPM_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -38936,10 +38940,10 @@ if test "x$ac_cv_lib_Xpm_XpmFreeXpmImage" = xyes; then :
     ai_p=$GD_XPM_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GD_XPM_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_XPM_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_XPM_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_XPM_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -39073,10 +39077,10 @@ $as_echo "If configure fails try --with-xpm-dir=<DIR>" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -39161,10 +39165,10 @@ if test "x$ac_cv_lib_freetype_FT_New_Face" = xyes; then :
     ai_p=$FREETYPE2_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $FREETYPE2_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $FREETYPE2_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$FREETYPE2_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$FREETYPE2_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -39204,10 +39208,10 @@ if test "x$ac_cv_lib_freetype_FT_New_Face" = xyes; then :
     ai_p=$FREETYPE2_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $FREETYPE2_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $FREETYPE2_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$FREETYPE2_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$FREETYPE2_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -39253,10 +39257,10 @@ if test "x$ac_cv_lib_freetype_FT_New_Face" = xyes; then :
     ai_p=$FREETYPE2_DIR/include
   else
 
-    ep_dir="`echo $FREETYPE2_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $FREETYPE2_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$FREETYPE2_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$FREETYPE2_DIR/include"`
   fi
 
 
@@ -39284,10 +39288,10 @@ if test "x$ac_cv_lib_freetype_FT_New_Face" = xyes; then :
     ai_p=$FREETYPE2_INC_DIR
   else
 
-    ep_dir="`echo $FREETYPE2_INC_DIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $FREETYPE2_INC_DIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$FREETYPE2_INC_DIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$FREETYPE2_INC_DIR"`
   fi
 
 
@@ -39408,10 +39412,10 @@ $as_echo "If configure fails try --with-freetype-dir=<DIR>" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -39494,10 +39498,10 @@ $as_echo "#define HAVE_LIBT1 1" >>confdefs.h
     ai_p=$GD_T1_DIR/include
   else
 
-    ep_dir="`echo $GD_T1_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_T1_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_T1_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_T1_DIR/include"`
   fi
 
 
@@ -39530,10 +39534,10 @@ $as_echo "#define HAVE_LIBT1 1" >>confdefs.h
     ai_p=$GD_T1_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GD_T1_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_T1_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_T1_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_T1_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -39573,10 +39577,10 @@ $as_echo "#define HAVE_LIBT1 1" >>confdefs.h
     ai_p=$GD_T1_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GD_T1_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_T1_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_T1_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_T1_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -39821,10 +39825,10 @@ $as_echo "#define USE_GD_IMGSTRTTF 1" >>confdefs.h
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -39904,10 +39908,10 @@ if test "x$ac_cv_lib_vpx_vpx_codec_destroy" = xyes; then :
     ai_p=$GD_VPX_DIR/include
   else
 
-    ep_dir="`echo $GD_VPX_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_VPX_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_VPX_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_VPX_DIR/include"`
   fi
 
 
@@ -39950,10 +39954,10 @@ if test "x$ac_cv_lib_vpx_vpx_codec_destroy" = xyes; then :
     ai_p=$GD_VPX_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GD_VPX_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_VPX_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_VPX_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_VPX_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -39993,10 +39997,10 @@ if test "x$ac_cv_lib_vpx_vpx_codec_destroy" = xyes; then :
     ai_p=$GD_VPX_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GD_VPX_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_VPX_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_VPX_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_VPX_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -40126,10 +40130,10 @@ $as_echo "If configure fails try --with-vpx-dir=<DIR>" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -40209,10 +40213,10 @@ if test "x$ac_cv_lib_jpeg_jpeg_read_header" = xyes; then :
     ai_p=$GD_JPEG_DIR/include
   else
 
-    ep_dir="`echo $GD_JPEG_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_JPEG_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_JPEG_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_JPEG_DIR/include"`
   fi
 
 
@@ -40245,10 +40249,10 @@ if test "x$ac_cv_lib_jpeg_jpeg_read_header" = xyes; then :
     ai_p=$GD_JPEG_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GD_JPEG_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_JPEG_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_JPEG_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_JPEG_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -40288,10 +40292,10 @@ if test "x$ac_cv_lib_jpeg_jpeg_read_header" = xyes; then :
     ai_p=$GD_JPEG_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GD_JPEG_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_JPEG_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_JPEG_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_JPEG_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -40425,10 +40429,10 @@ $as_echo "If configure fails try --with-jpeg-dir=<DIR>" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -40508,10 +40512,10 @@ if test "x$ac_cv_lib_png_png_write_image" = xyes; then :
     ai_p=$GD_PNG_DIR/include
   else
 
-    ep_dir="`echo $GD_PNG_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_PNG_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_PNG_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_PNG_DIR/include"`
   fi
 
 
@@ -40544,10 +40548,10 @@ if test "x$ac_cv_lib_png_png_write_image" = xyes; then :
     ai_p=$PHP_ZLIB_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $PHP_ZLIB_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_ZLIB_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_ZLIB_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_ZLIB_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -40587,10 +40591,10 @@ if test "x$ac_cv_lib_png_png_write_image" = xyes; then :
     ai_p=$PHP_ZLIB_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $PHP_ZLIB_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_ZLIB_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_ZLIB_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_ZLIB_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -40641,10 +40645,10 @@ if test "x$ac_cv_lib_png_png_write_image" = xyes; then :
     ai_p=$GD_PNG_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GD_PNG_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_PNG_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_PNG_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_PNG_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -40684,10 +40688,10 @@ if test "x$ac_cv_lib_png_png_write_image" = xyes; then :
     ai_p=$GD_PNG_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GD_PNG_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_PNG_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_PNG_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_PNG_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -40819,10 +40823,10 @@ $as_echo "If configure fails try --with-png-dir=<DIR> and --with-zlib-dir=<DIR>"
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -40902,10 +40906,10 @@ if test "x$ac_cv_lib_Xpm_XpmFreeXpmImage" = xyes; then :
     ai_p=$GD_XPM_INC
   else
 
-    ep_dir="`echo $GD_XPM_INC|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_XPM_INC|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_XPM_INC\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_XPM_INC"`
   fi
 
 
@@ -40938,10 +40942,10 @@ if test "x$ac_cv_lib_Xpm_XpmFreeXpmImage" = xyes; then :
     ai_p=$GD_XPM_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GD_XPM_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_XPM_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_XPM_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_XPM_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -40981,10 +40985,10 @@ if test "x$ac_cv_lib_Xpm_XpmFreeXpmImage" = xyes; then :
     ai_p=$GD_XPM_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GD_XPM_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_XPM_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_XPM_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_XPM_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -41035,10 +41039,10 @@ if test "x$ac_cv_lib_Xpm_XpmFreeXpmImage" = xyes; then :
     ai_p=$GD_XPM_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GD_XPM_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_XPM_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_XPM_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_XPM_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -41078,10 +41082,10 @@ if test "x$ac_cv_lib_Xpm_XpmFreeXpmImage" = xyes; then :
     ai_p=$GD_XPM_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GD_XPM_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_XPM_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_XPM_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_XPM_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -41215,10 +41219,10 @@ $as_echo "If configure fails try --with-xpm-dir=<DIR>" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -41303,10 +41307,10 @@ if test "x$ac_cv_lib_freetype_FT_New_Face" = xyes; then :
     ai_p=$FREETYPE2_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $FREETYPE2_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $FREETYPE2_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$FREETYPE2_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$FREETYPE2_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -41346,10 +41350,10 @@ if test "x$ac_cv_lib_freetype_FT_New_Face" = xyes; then :
     ai_p=$FREETYPE2_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $FREETYPE2_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $FREETYPE2_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$FREETYPE2_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$FREETYPE2_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -41395,10 +41399,10 @@ if test "x$ac_cv_lib_freetype_FT_New_Face" = xyes; then :
     ai_p=$FREETYPE2_DIR/include
   else
 
-    ep_dir="`echo $FREETYPE2_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $FREETYPE2_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$FREETYPE2_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$FREETYPE2_DIR/include"`
   fi
 
 
@@ -41426,10 +41430,10 @@ if test "x$ac_cv_lib_freetype_FT_New_Face" = xyes; then :
     ai_p=$FREETYPE2_INC_DIR
   else
 
-    ep_dir="`echo $FREETYPE2_INC_DIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $FREETYPE2_INC_DIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$FREETYPE2_INC_DIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$FREETYPE2_INC_DIR"`
   fi
 
 
@@ -41550,10 +41554,10 @@ $as_echo "If configure fails try --with-freetype-dir=<DIR>" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -41636,10 +41640,10 @@ $as_echo "#define HAVE_LIBT1 1" >>confdefs.h
     ai_p=$GD_T1_DIR/include
   else
 
-    ep_dir="`echo $GD_T1_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_T1_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_T1_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_T1_DIR/include"`
   fi
 
 
@@ -41672,10 +41676,10 @@ $as_echo "#define HAVE_LIBT1 1" >>confdefs.h
     ai_p=$GD_T1_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GD_T1_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_T1_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_T1_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_T1_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -41715,10 +41719,10 @@ $as_echo "#define HAVE_LIBT1 1" >>confdefs.h
     ai_p=$GD_T1_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GD_T1_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_T1_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_T1_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_T1_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -41844,10 +41848,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -41932,10 +41936,10 @@ if test "x$ac_cv_lib_gd_gdSetErrorMethod" = xyes; then :
     ai_p=$PHP_GD/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $PHP_GD/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_GD/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_GD/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_GD/$PHP_LIBDIR"`
   fi
 
 
@@ -41975,10 +41979,10 @@ if test "x$ac_cv_lib_gd_gdSetErrorMethod" = xyes; then :
     ai_p=$PHP_GD/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $PHP_GD/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_GD/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_GD/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_GD/$PHP_LIBDIR"`
   fi
 
 
@@ -42094,10 +42098,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -42242,10 +42246,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -42390,10 +42394,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -42538,10 +42542,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -42686,10 +42690,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -42781,10 +42785,10 @@ fi
     GD_INCLUDE=$GD_INCLUDE
   else
 
-    ep_dir="`echo $GD_INCLUDE|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_INCLUDE|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    GD_INCLUDE="$ep_realdir/`basename \"$GD_INCLUDE\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    GD_INCLUDE="$ep_realdir"/`basename "$GD_INCLUDE"`
   fi
 
  fi
@@ -43141,10 +43145,10 @@ fi
     ai_p=$GD_INCLUDE
   else
 
-    ep_dir="`echo $GD_INCLUDE|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GD_INCLUDE|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GD_INCLUDE\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GD_INCLUDE"`
   fi
 
 
@@ -43225,10 +43229,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -43808,10 +43812,10 @@ EOF
     ai_p=$GETTEXT_LIBDIR
   else
 
-    ep_dir="`echo $GETTEXT_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GETTEXT_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GETTEXT_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GETTEXT_LIBDIR"`
   fi
 
 
@@ -43851,10 +43855,10 @@ EOF
     ai_p=$GETTEXT_LIBDIR
   else
 
-    ep_dir="`echo $GETTEXT_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GETTEXT_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GETTEXT_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GETTEXT_LIBDIR"`
   fi
 
 
@@ -43902,10 +43906,10 @@ EOF
     ai_p=$GETTEXT_INCDIR
   else
 
-    ep_dir="`echo $GETTEXT_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GETTEXT_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GETTEXT_INCDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GETTEXT_INCDIR"`
   fi
 
 
@@ -44224,10 +44228,10 @@ if test "$PHP_GMP" != "no"; then
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -44369,10 +44373,10 @@ else
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -44474,10 +44478,10 @@ fi
     ai_p=$GMP_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GMP_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GMP_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GMP_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GMP_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -44517,10 +44521,10 @@ fi
     ai_p=$GMP_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $GMP_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GMP_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GMP_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GMP_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -44566,10 +44570,10 @@ fi
     ai_p=$GMP_DIR/include
   else
 
-    ep_dir="`echo $GMP_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $GMP_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$GMP_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$GMP_DIR/include"`
   fi
 
 
@@ -45682,10 +45686,10 @@ $as_echo "#define HAVE_GICONV_H 1" >>confdefs.h
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -45843,10 +45847,10 @@ else
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -45960,10 +45964,10 @@ $as_echo "#define HAVE_ICONV 1" >>confdefs.h
     ai_p=$ICONV_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $ICONV_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ICONV_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ICONV_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ICONV_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -46003,10 +46007,10 @@ $as_echo "#define HAVE_ICONV 1" >>confdefs.h
     ai_p=$ICONV_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $ICONV_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ICONV_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ICONV_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ICONV_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -46052,10 +46056,10 @@ $as_echo "#define HAVE_ICONV 1" >>confdefs.h
     ai_p=$ICONV_DIR/include
   else
 
-    ep_dir="`echo $ICONV_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ICONV_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ICONV_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ICONV_DIR/include"`
   fi
 
 
@@ -46270,10 +46274,10 @@ $as_echo "#define PHP_ICONV_IMPL \"libiconv\"" >>confdefs.h
     ai_p="$PHP_ICONV_PREFIX/$PHP_LIBDIR"
   else
 
-    ep_dir="`echo "$PHP_ICONV_PREFIX/$PHP_LIBDIR"|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo "$PHP_ICONV_PREFIX/$PHP_LIBDIR"|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \""$PHP_ICONV_PREFIX/$PHP_LIBDIR"\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename ""$PHP_ICONV_PREFIX/$PHP_LIBDIR""`
   fi
 
 
@@ -46313,10 +46317,10 @@ $as_echo "#define PHP_ICONV_IMPL \"libiconv\"" >>confdefs.h
     ai_p="$PHP_ICONV_PREFIX/$PHP_LIBDIR"
   else
 
-    ep_dir="`echo "$PHP_ICONV_PREFIX/$PHP_LIBDIR"|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo "$PHP_ICONV_PREFIX/$PHP_LIBDIR"|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \""$PHP_ICONV_PREFIX/$PHP_LIBDIR"\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename ""$PHP_ICONV_PREFIX/$PHP_LIBDIR""`
   fi
 
 
@@ -47493,10 +47497,10 @@ rm -f conftest*
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -47667,10 +47671,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -47786,10 +47790,10 @@ fi
     IMAP_DIR=$IMAP_DIR
   else
 
-    ep_dir="`echo $IMAP_DIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $IMAP_DIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    IMAP_DIR="$ep_realdir/`basename \"$IMAP_DIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    IMAP_DIR="$ep_realdir"/`basename "$IMAP_DIR"`
   fi
 
 
@@ -47830,10 +47834,10 @@ fi
     ai_p=$IMAP_INC_DIR
   else
 
-    ep_dir="`echo $IMAP_INC_DIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $IMAP_INC_DIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$IMAP_INC_DIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$IMAP_INC_DIR"`
   fi
 
 
@@ -47884,10 +47888,10 @@ fi
     ai_p=$IMAP_LIBDIR
   else
 
-    ep_dir="`echo $IMAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $IMAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$IMAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$IMAP_LIBDIR"`
   fi
 
 
@@ -48027,10 +48031,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -48074,10 +48078,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -48127,10 +48131,10 @@ fi
     ai_p=$PHP_KERBEROS_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $PHP_KERBEROS_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_KERBEROS_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_KERBEROS_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_KERBEROS_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -48257,10 +48261,10 @@ fi
     ai_p=$PHP_KERBEROS_DIR/include
   else
 
-    ep_dir="`echo $PHP_KERBEROS_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_KERBEROS_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_KERBEROS_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_KERBEROS_DIR/include"`
   fi
 
 
@@ -48445,10 +48449,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -48494,10 +48498,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -48584,10 +48588,10 @@ rm -f conftest*
     ai_p=$OPENSSL_INCDIR
   else
 
-    ep_dir="`echo $OPENSSL_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $OPENSSL_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$OPENSSL_INCDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$OPENSSL_INCDIR"`
   fi
 
 
@@ -48671,10 +48675,10 @@ rm -f conftest*
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -48848,10 +48852,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -48993,10 +48997,10 @@ fi
     ai_p=$OPENSSL_LIBDIR
   else
 
-    ep_dir="`echo $OPENSSL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $OPENSSL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$OPENSSL_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$OPENSSL_LIBDIR"`
   fi
 
 
@@ -49454,10 +49458,10 @@ if test "$PHP_INTERBASE" != "no"; then
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -49601,10 +49605,10 @@ else
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -49748,10 +49752,10 @@ else
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -49859,10 +49863,10 @@ fi
     ai_p=$IBASE_LIBDIR
   else
 
-    ep_dir="`echo $IBASE_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $IBASE_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$IBASE_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$IBASE_LIBDIR"`
   fi
 
 
@@ -49902,10 +49906,10 @@ fi
     ai_p=$IBASE_LIBDIR
   else
 
-    ep_dir="`echo $IBASE_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $IBASE_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$IBASE_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$IBASE_LIBDIR"`
   fi
 
 
@@ -49951,10 +49955,10 @@ fi
     ai_p=$IBASE_INCDIR
   else
 
-    ep_dir="`echo $IBASE_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $IBASE_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$IBASE_INCDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$IBASE_INCDIR"`
   fi
 
 
@@ -50438,10 +50442,10 @@ $as_echo "found $icu_version_full" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -50520,10 +50524,10 @@ $as_echo "found $icu_version_full" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -52530,10 +52534,10 @@ EOF
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -52573,10 +52577,10 @@ EOF
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -52627,10 +52631,10 @@ EOF
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -52670,10 +52674,10 @@ EOF
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -52726,10 +52730,10 @@ EOF
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -52769,10 +52773,10 @@ EOF
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -52837,10 +52841,10 @@ EOF
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -52880,10 +52884,10 @@ EOF
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -52934,10 +52938,10 @@ EOF
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -52977,10 +52981,10 @@ EOF
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -53031,10 +53035,10 @@ EOF
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -53074,10 +53078,10 @@ EOF
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -53128,10 +53132,10 @@ EOF
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -53171,10 +53175,10 @@ EOF
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -53225,10 +53229,10 @@ EOF
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -53268,10 +53272,10 @@ EOF
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -53322,10 +53326,10 @@ EOF
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -53365,10 +53369,10 @@ EOF
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -53419,10 +53423,10 @@ EOF
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -53462,10 +53466,10 @@ EOF
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -53533,10 +53537,10 @@ $as_echo "#define HAVE_NSLDAP 1" >>confdefs.h
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -53576,10 +53580,10 @@ $as_echo "#define HAVE_NSLDAP 1" >>confdefs.h
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -53630,10 +53634,10 @@ $as_echo "#define HAVE_NSLDAP 1" >>confdefs.h
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -53673,10 +53677,10 @@ $as_echo "#define HAVE_NSLDAP 1" >>confdefs.h
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -53727,10 +53731,10 @@ $as_echo "#define HAVE_NSLDAP 1" >>confdefs.h
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -53770,10 +53774,10 @@ $as_echo "#define HAVE_NSLDAP 1" >>confdefs.h
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -53824,10 +53828,10 @@ $as_echo "#define HAVE_NSLDAP 1" >>confdefs.h
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -53867,10 +53871,10 @@ $as_echo "#define HAVE_NSLDAP 1" >>confdefs.h
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -53938,10 +53942,10 @@ $as_echo "#define HAVE_NSLDAP 1" >>confdefs.h
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -53981,10 +53985,10 @@ $as_echo "#define HAVE_NSLDAP 1" >>confdefs.h
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -54052,10 +54056,10 @@ $as_echo "#define HAVE_NSLDAP 1" >>confdefs.h
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -54095,10 +54099,10 @@ $as_echo "#define HAVE_NSLDAP 1" >>confdefs.h
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -54154,10 +54158,10 @@ $as_echo "#define HAVE_NSLDAP 1" >>confdefs.h
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -54197,10 +54201,10 @@ $as_echo "#define HAVE_NSLDAP 1" >>confdefs.h
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -54251,10 +54255,10 @@ $as_echo "#define HAVE_NSLDAP 1" >>confdefs.h
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -54294,10 +54298,10 @@ $as_echo "#define HAVE_NSLDAP 1" >>confdefs.h
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -54350,10 +54354,10 @@ $as_echo "#define HAVE_NSLDAP 1" >>confdefs.h
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -54393,10 +54397,10 @@ $as_echo "#define HAVE_NSLDAP 1" >>confdefs.h
     ai_p=$LDAP_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_LIBDIR"`
   fi
 
 
@@ -54454,10 +54458,10 @@ $as_echo "#define HAVE_ORALDAP_10 1" >>confdefs.h
     ai_p=$LDAP_INCDIR
   else
 
-    ep_dir="`echo $LDAP_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_INCDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_INCDIR"`
   fi
 
 
@@ -54633,10 +54637,10 @@ $as_echo "#define HAVE_LDAP_SASL_H 1" >>confdefs.h
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -54716,10 +54720,10 @@ if test "x$ac_cv_lib_sasl2_sasl_version" = xyes; then :
     ai_p=$LDAP_SASL_INCDIR
   else
 
-    ep_dir="`echo $LDAP_SASL_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_SASL_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_SASL_INCDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_SASL_INCDIR"`
   fi
 
 
@@ -54752,10 +54756,10 @@ if test "x$ac_cv_lib_sasl2_sasl_version" = xyes; then :
     ai_p=$LDAP_SASL_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_SASL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_SASL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_SASL_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_SASL_LIBDIR"`
   fi
 
 
@@ -54795,10 +54799,10 @@ if test "x$ac_cv_lib_sasl2_sasl_version" = xyes; then :
     ai_p=$LDAP_SASL_LIBDIR
   else
 
-    ep_dir="`echo $LDAP_SASL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LDAP_SASL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LDAP_SASL_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LDAP_SASL_LIBDIR"`
   fi
 
 
@@ -55661,10 +55665,10 @@ $as_echo "#define HAVE_ONIG 1" >>confdefs.h
     ai_p=$PHP_ONIG/include
   else
 
-    ep_dir="`echo $PHP_ONIG/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_ONIG/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_ONIG/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_ONIG/include"`
   fi
 
 
@@ -55748,10 +55752,10 @@ $as_echo "#define HAVE_ONIG 1" >>confdefs.h
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -55836,10 +55840,10 @@ if test "x$ac_cv_lib_onig_onig_init" = xyes; then :
     ai_p=$PHP_ONIG/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $PHP_ONIG/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_ONIG/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_ONIG/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_ONIG/$PHP_LIBDIR"`
   fi
 
 
@@ -55879,10 +55883,10 @@ if test "x$ac_cv_lib_onig_onig_init" = xyes; then :
     ai_p=$PHP_ONIG/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $PHP_ONIG/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_ONIG/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_ONIG/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_ONIG/$PHP_LIBDIR"`
   fi
 
 
@@ -55993,10 +55997,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -56224,10 +56228,10 @@ $as_echo "#define HAVE_MBREGEX 1" >>confdefs.h
     ai_p=$PHP_LIBMBFL_INCLUDE
   else
 
-    ep_dir="`echo $PHP_LIBMBFL_INCLUDE|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_LIBMBFL_INCLUDE|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_LIBMBFL_INCLUDE\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_LIBMBFL_INCLUDE"`
   fi
 
 
@@ -56312,10 +56316,10 @@ $as_echo "#define HAVE_MBREGEX 1" >>confdefs.h
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -56400,10 +56404,10 @@ if test "x$ac_cv_lib_mbfl_mbfl_buffer_converter_new" = xyes; then :
     ai_p=$PHP_LIBMBFL/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $PHP_LIBMBFL/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_LIBMBFL/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_LIBMBFL/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_LIBMBFL/$PHP_LIBDIR"`
   fi
 
 
@@ -56443,10 +56447,10 @@ if test "x$ac_cv_lib_mbfl_mbfl_buffer_converter_new" = xyes; then :
     ai_p=$PHP_LIBMBFL/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $PHP_LIBMBFL/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_LIBMBFL/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_LIBMBFL/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_LIBMBFL/$PHP_LIBDIR"`
   fi
 
 
@@ -56814,10 +56818,10 @@ EOF
     ai_p=$ext_srcdir/$dir
   else
 
-    ep_dir="`echo $ext_srcdir/$dir|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ext_srcdir/$dir|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ext_srcdir/$dir\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ext_srcdir/$dir"`
   fi
 
 
@@ -56845,10 +56849,10 @@ EOF
     ai_p=$ext_builddir/$dir
   else
 
-    ep_dir="`echo $ext_builddir/$dir|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ext_builddir/$dir|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ext_builddir/$dir\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ext_builddir/$dir"`
   fi
 
 
@@ -57148,10 +57152,10 @@ rm -f conftest*
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -57320,10 +57324,10 @@ else
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -57429,10 +57433,10 @@ fi
     ai_p=$MCRYPT_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $MCRYPT_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $MCRYPT_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$MCRYPT_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$MCRYPT_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -57472,10 +57476,10 @@ fi
     ai_p=$MCRYPT_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $MCRYPT_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $MCRYPT_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$MCRYPT_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$MCRYPT_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -57521,10 +57525,10 @@ fi
     ai_p=$MCRYPT_DIR/include
   else
 
-    ep_dir="`echo $MCRYPT_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $MCRYPT_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$MCRYPT_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$MCRYPT_DIR/include"`
   fi
 
 
@@ -57933,10 +57937,10 @@ if test "$PHP_MSSQL" != "no"; then
     ai_p=$FREETDS_INCLUDE_DIR
   else
 
-    ep_dir="`echo $FREETDS_INCLUDE_DIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $FREETDS_INCLUDE_DIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$FREETDS_INCLUDE_DIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$FREETDS_INCLUDE_DIR"`
   fi
 
 
@@ -57969,10 +57973,10 @@ if test "$PHP_MSSQL" != "no"; then
     ai_p=$FREETDS_INSTALLATION_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $FREETDS_INSTALLATION_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $FREETDS_INSTALLATION_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$FREETDS_INSTALLATION_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$FREETDS_INSTALLATION_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -58012,10 +58016,10 @@ if test "$PHP_MSSQL" != "no"; then
     ai_p=$FREETDS_INSTALLATION_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $FREETDS_INSTALLATION_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $FREETDS_INSTALLATION_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$FREETDS_INSTALLATION_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$FREETDS_INSTALLATION_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -58397,10 +58401,10 @@ if test "x$ac_cv_lib_dnet_stub_dnet_addr" = xyes; then :
     ai_p=
   else
 
-    ep_dir="`echo |$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo |$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename ""`
   fi
 
 
@@ -58440,10 +58444,10 @@ if test "x$ac_cv_lib_dnet_stub_dnet_addr" = xyes; then :
     ai_p=
   else
 
-    ep_dir="`echo |$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo |$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename ""`
   fi
 
 
@@ -58739,10 +58743,10 @@ Note that the MySQL client library is not bundled anymore!" "$LINENO" 5
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -58837,10 +58841,10 @@ else
     ai_p=$PHP_ZLIB_DIR
   else
 
-    ep_dir="`echo $PHP_ZLIB_DIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_ZLIB_DIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_ZLIB_DIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_ZLIB_DIR"`
   fi
 
 
@@ -58880,10 +58884,10 @@ else
     ai_p=$PHP_ZLIB_DIR
   else
 
-    ep_dir="`echo $PHP_ZLIB_DIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_ZLIB_DIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_ZLIB_DIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_ZLIB_DIR"`
   fi
 
 
@@ -58984,10 +58988,10 @@ else
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -59161,10 +59165,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -59270,10 +59274,10 @@ fi
     ai_p=$MYSQL_LIB_DIR
   else
 
-    ep_dir="`echo $MYSQL_LIB_DIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $MYSQL_LIB_DIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$MYSQL_LIB_DIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$MYSQL_LIB_DIR"`
   fi
 
 
@@ -59313,10 +59317,10 @@ fi
     ai_p=$MYSQL_LIB_DIR
   else
 
-    ep_dir="`echo $MYSQL_LIB_DIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $MYSQL_LIB_DIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$MYSQL_LIB_DIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$MYSQL_LIB_DIR"`
   fi
 
 
@@ -59362,10 +59366,10 @@ fi
     ai_p=$MYSQL_INC_DIR
   else
 
-    ep_dir="`echo $MYSQL_INC_DIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $MYSQL_INC_DIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$MYSQL_INC_DIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$MYSQL_INC_DIR"`
   fi
 
 
@@ -59947,10 +59951,10 @@ $as_echo "mysql_config not found" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -60037,10 +60041,10 @@ if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -60119,10 +60123,10 @@ if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -60217,10 +60221,10 @@ $as_echo "#define HAVE_MYSQLILIB 1" >>confdefs.h
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -60382,10 +60386,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -61089,10 +61093,10 @@ $as_echo "$OCI8_LIB_DIR" >&6; }
     ai_p=$OCI8_DIR/rdbms/public
   else
 
-    ep_dir="`echo $OCI8_DIR/rdbms/public|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $OCI8_DIR/rdbms/public|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$OCI8_DIR/rdbms/public\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$OCI8_DIR/rdbms/public"`
   fi
 
 
@@ -61123,10 +61127,10 @@ $as_echo "$OCI8_LIB_DIR" >&6; }
     ai_p=$OCI8_DIR/rdbms/demo
   else
 
-    ep_dir="`echo $OCI8_DIR/rdbms/demo|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $OCI8_DIR/rdbms/demo|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$OCI8_DIR/rdbms/demo\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$OCI8_DIR/rdbms/demo"`
   fi
 
 
@@ -61157,10 +61161,10 @@ $as_echo "$OCI8_LIB_DIR" >&6; }
     ai_p=$OCI8_DIR/network/public
   else
 
-    ep_dir="`echo $OCI8_DIR/network/public|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $OCI8_DIR/network/public|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$OCI8_DIR/network/public\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$OCI8_DIR/network/public"`
   fi
 
 
@@ -61191,10 +61195,10 @@ $as_echo "$OCI8_LIB_DIR" >&6; }
     ai_p=$OCI8_DIR/plsql/public
   else
 
-    ep_dir="`echo $OCI8_DIR/plsql/public|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $OCI8_DIR/plsql/public|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$OCI8_DIR/plsql/public\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$OCI8_DIR/plsql/public"`
   fi
 
 
@@ -61273,10 +61277,10 @@ $as_echo "$OCI8_LIB_DIR" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -61363,10 +61367,10 @@ $as_echo "$OCI8_LIB_DIR" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -61497,10 +61501,10 @@ $as_echo "$OCI8_ORACLE_VERSION" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -61626,10 +61630,10 @@ $as_echo "#define HAVE_OCI_LOB_READ2 1" >>confdefs.h
     ai_p=$OCI8_DIR/$OCI8_LIB_DIR
   else
 
-    ep_dir="`echo $OCI8_DIR/$OCI8_LIB_DIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $OCI8_DIR/$OCI8_LIB_DIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$OCI8_DIR/$OCI8_LIB_DIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$OCI8_DIR/$OCI8_LIB_DIR"`
   fi
 
 
@@ -62019,10 +62023,10 @@ $as_echo "$OCISDKRPMINC" >&6; }
     ai_p=$OCISDKRPMINC
   else
 
-    ep_dir="`echo $OCISDKRPMINC|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $OCISDKRPMINC|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$OCISDKRPMINC\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$OCISDKRPMINC"`
   fi
 
 
@@ -62054,10 +62058,10 @@ $as_echo "$OCISDKZIPINC" >&6; }
     ai_p=$OCISDKZIPINC
   else
 
-    ep_dir="`echo $OCISDKZIPINC|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $OCISDKZIPINC|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$OCISDKZIPINC\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$OCISDKZIPINC"`
   fi
 
 
@@ -62089,10 +62093,10 @@ $as_echo "$OCISDKMANINC" >&6; }
     ai_p=$OCISDKMANINC
   else
 
-    ep_dir="`echo $OCISDKMANINC|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $OCISDKMANINC|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$OCISDKMANINC\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$OCISDKMANINC"`
   fi
 
 
@@ -62174,10 +62178,10 @@ $as_echo "$OCISDKMANINC" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -62258,10 +62262,10 @@ $as_echo "$OCI8_ORACLE_VERSION" >&6; }
     ai_p=$PHP_OCI8_INSTANT_CLIENT
   else
 
-    ep_dir="`echo $PHP_OCI8_INSTANT_CLIENT|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_OCI8_INSTANT_CLIENT|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_OCI8_INSTANT_CLIENT\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_OCI8_INSTANT_CLIENT"`
   fi
 
 
@@ -62684,10 +62688,10 @@ $as_echo_n "checking for Adabas support... " >&6; }
     ai_p=$PHP_ADABAS/incl
   else
 
-    ep_dir="`echo $PHP_ADABAS/incl|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_ADABAS/incl|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_ADABAS/incl\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_ADABAS/incl"`
   fi
 
 
@@ -62715,10 +62719,10 @@ $as_echo_n "checking for Adabas support... " >&6; }
     ai_p=$PHP_ADABAS/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $PHP_ADABAS/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_ADABAS/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_ADABAS/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_ADABAS/$PHP_LIBDIR"`
   fi
 
 
@@ -62776,10 +62780,10 @@ $as_echo_n "checking for Adabas support... " >&6; }
     ai_p=$abs_builddir/ext/odbc
   else
 
-    ep_dir="`echo $abs_builddir/ext/odbc|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $abs_builddir/ext/odbc|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$abs_builddir/ext/odbc\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$abs_builddir/ext/odbc"`
   fi
 
 
@@ -62887,10 +62891,10 @@ $as_echo_n "checking for SAP DB support... " >&6; }
     ai_p=$PHP_SAPDB/incl
   else
 
-    ep_dir="`echo $PHP_SAPDB/incl|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_SAPDB/incl|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_SAPDB/incl\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_SAPDB/incl"`
   fi
 
 
@@ -62918,10 +62922,10 @@ $as_echo_n "checking for SAP DB support... " >&6; }
     ai_p=$PHP_SAPDB/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $PHP_SAPDB/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_SAPDB/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_SAPDB/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_SAPDB/$PHP_LIBDIR"`
   fi
 
 
@@ -63685,10 +63689,10 @@ $as_echo_n "checking for iODBC support... " >&6; }
     ai_p=$PHP_IODBC/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $PHP_IODBC/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_IODBC/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_IODBC/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_IODBC/$PHP_LIBDIR"`
   fi
 
 
@@ -63731,10 +63735,10 @@ $as_echo_n "checking for iODBC support... " >&6; }
     ai_p=$PHP_IODBC/include
   else
 
-    ep_dir="`echo $PHP_IODBC/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_IODBC/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_IODBC/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_IODBC/include"`
   fi
 
 
@@ -64001,10 +64005,10 @@ $as_echo "yes (static)" >&6; }
     ai_p=$ODBC_LIBDIR
   else
 
-    ep_dir="`echo $ODBC_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ODBC_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ODBC_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ODBC_LIBDIR"`
   fi
 
 
@@ -64047,10 +64051,10 @@ $as_echo "yes (static)" >&6; }
     ai_p=$ODBC_INCDIR
   else
 
-    ep_dir="`echo $ODBC_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ODBC_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ODBC_INCDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ODBC_INCDIR"`
   fi
 
 
@@ -64132,10 +64136,10 @@ if test -n "$ODBC_TYPE"; then
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -66301,10 +66305,10 @@ if test "$PHP_PDO_DBLIB" != "no"; then
     ai_p=$PDO_FREETDS_INCLUDE_DIR
   else
 
-    ep_dir="`echo $PDO_FREETDS_INCLUDE_DIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PDO_FREETDS_INCLUDE_DIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PDO_FREETDS_INCLUDE_DIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PDO_FREETDS_INCLUDE_DIR"`
   fi
 
 
@@ -66337,10 +66341,10 @@ if test "$PHP_PDO_DBLIB" != "no"; then
     ai_p=$PDO_FREETDS_INSTALLATION_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $PDO_FREETDS_INSTALLATION_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PDO_FREETDS_INSTALLATION_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PDO_FREETDS_INSTALLATION_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PDO_FREETDS_INSTALLATION_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -66380,10 +66384,10 @@ if test "$PHP_PDO_DBLIB" != "no"; then
     ai_p=$PDO_FREETDS_INSTALLATION_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $PDO_FREETDS_INSTALLATION_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PDO_FREETDS_INSTALLATION_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PDO_FREETDS_INSTALLATION_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PDO_FREETDS_INSTALLATION_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -66795,10 +66799,10 @@ if test "x$ac_cv_lib_dnet_stub_dnet_addr" = xyes; then :
     ai_p=
   else
 
-    ep_dir="`echo |$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo |$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename ""`
   fi
 
 
@@ -66838,10 +66842,10 @@ if test "x$ac_cv_lib_dnet_stub_dnet_addr" = xyes; then :
     ai_p=
   else
 
-    ep_dir="`echo |$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo |$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename ""`
   fi
 
 
@@ -67043,10 +67047,10 @@ if test "$PHP_PDO_FIREBIRD" != "no"; then
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -67190,10 +67194,10 @@ else
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -67337,10 +67341,10 @@ else
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -67475,10 +67479,10 @@ as_fn_error $? "Cannot find php_pdo_driver.h." "$LINENO" 5
     ai_p=$FIREBIRD_LIBDIR
   else
 
-    ep_dir="`echo $FIREBIRD_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $FIREBIRD_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$FIREBIRD_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$FIREBIRD_LIBDIR"`
   fi
 
 
@@ -67518,10 +67522,10 @@ as_fn_error $? "Cannot find php_pdo_driver.h." "$LINENO" 5
     ai_p=$FIREBIRD_LIBDIR
   else
 
-    ep_dir="`echo $FIREBIRD_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $FIREBIRD_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$FIREBIRD_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$FIREBIRD_LIBDIR"`
   fi
 
 
@@ -67567,10 +67571,10 @@ as_fn_error $? "Cannot find php_pdo_driver.h." "$LINENO" 5
     ai_p=$FIREBIRD_INCDIR
   else
 
-    ep_dir="`echo $FIREBIRD_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $FIREBIRD_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$FIREBIRD_INCDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$FIREBIRD_INCDIR"`
   fi
 
 
@@ -68102,10 +68106,10 @@ $as_echo "can not find it" >&6; }
     ai_p=$PDO_MYSQL_INC_DIR
   else
 
-    ep_dir="`echo $PDO_MYSQL_INC_DIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PDO_MYSQL_INC_DIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PDO_MYSQL_INC_DIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PDO_MYSQL_INC_DIR"`
   fi
 
 
@@ -68195,10 +68199,10 @@ $as_echo "not found" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -68285,10 +68289,10 @@ if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -68367,10 +68371,10 @@ if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -68423,10 +68427,10 @@ else
     ai_p=$PHP_ZLIB_DIR
   else
 
-    ep_dir="`echo $PHP_ZLIB_DIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_ZLIB_DIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_ZLIB_DIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_ZLIB_DIR"`
   fi
 
 
@@ -68466,10 +68470,10 @@ else
     ai_p=$PHP_ZLIB_DIR
   else
 
-    ep_dir="`echo $PHP_ZLIB_DIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_ZLIB_DIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_ZLIB_DIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_ZLIB_DIR"`
   fi
 
 
@@ -68570,10 +68574,10 @@ else
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -68747,10 +68751,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -68852,10 +68856,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -68934,10 +68938,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -69362,7 +69366,7 @@ but you've either not enabled mysqlnd, or have disabled it.
 fi
 
 
-SUPPORTED_LIB_VERS="9.0 10.1 11.1"  # This caters for all Oracle 9.x, 10.x and 11.1 installs
+SUPPORTED_LIB_VERS="9.0 10.1 11.1 12.1"  # The lib vers are not bumped when the DB version is bumped
 
 
 
@@ -69497,10 +69501,10 @@ $as_echo_n "checking for oci.h... " >&6; }
     ai_p=$PDO_OCI_IC_PREFIX/include/oracle/$PDO_OCI_IC_VERS/$PDO_OCI_CLIENT_DIR
   else
 
-    ep_dir="`echo $PDO_OCI_IC_PREFIX/include/oracle/$PDO_OCI_IC_VERS/$PDO_OCI_CLIENT_DIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PDO_OCI_IC_PREFIX/include/oracle/$PDO_OCI_IC_VERS/$PDO_OCI_CLIENT_DIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PDO_OCI_IC_PREFIX/include/oracle/$PDO_OCI_IC_VERS/$PDO_OCI_CLIENT_DIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PDO_OCI_IC_PREFIX/include/oracle/$PDO_OCI_IC_VERS/$PDO_OCI_CLIENT_DIR"`
   fi
 
 
@@ -69531,10 +69535,10 @@ $as_echo "$PDO_OCI_IC_PREFIX/include/oracle/$PDO_OCI_IC_VERS/$PDO_OCI_CLIENT_DIR
     ai_p=$PDO_OCI_IC_PREFIX/lib/oracle/$PDO_OCI_IC_VERS/$PDO_OCI_CLIENT_DIR/include
   else
 
-    ep_dir="`echo $PDO_OCI_IC_PREFIX/lib/oracle/$PDO_OCI_IC_VERS/$PDO_OCI_CLIENT_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PDO_OCI_IC_PREFIX/lib/oracle/$PDO_OCI_IC_VERS/$PDO_OCI_CLIENT_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PDO_OCI_IC_PREFIX/lib/oracle/$PDO_OCI_IC_VERS/$PDO_OCI_CLIENT_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PDO_OCI_IC_PREFIX/lib/oracle/$PDO_OCI_IC_VERS/$PDO_OCI_CLIENT_DIR/include"`
   fi
 
 
@@ -69565,10 +69569,10 @@ $as_echo "$PDO_OCI_IC_PREFIX/lib/oracle/$PDO_OCI_IC_VERS/$PDO_OCI_CLIENT_DIR/inc
     ai_p=$PDO_OCI_IC_PREFIX/sdk/include
   else
 
-    ep_dir="`echo $PDO_OCI_IC_PREFIX/sdk/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PDO_OCI_IC_PREFIX/sdk/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PDO_OCI_IC_PREFIX/sdk/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PDO_OCI_IC_PREFIX/sdk/include"`
   fi
 
 
@@ -69599,10 +69603,10 @@ $as_echo "$PDO_OCI_IC_PREFIX/sdk/include" >&6; }
     ai_p=$PDO_OCI_IC_PREFIX/$PDO_OCI_CLIENT_DIR/include
   else
 
-    ep_dir="`echo $PDO_OCI_IC_PREFIX/$PDO_OCI_CLIENT_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PDO_OCI_IC_PREFIX/$PDO_OCI_CLIENT_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PDO_OCI_IC_PREFIX/$PDO_OCI_CLIENT_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PDO_OCI_IC_PREFIX/$PDO_OCI_CLIENT_DIR/include"`
   fi
 
 
@@ -69708,10 +69712,10 @@ $as_echo "$PDO_OCI_LIB_DIR" >&6; }
     ai_p=$PDO_OCI_DIR/rdbms/public
   else
 
-    ep_dir="`echo $PDO_OCI_DIR/rdbms/public|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PDO_OCI_DIR/rdbms/public|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PDO_OCI_DIR/rdbms/public\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PDO_OCI_DIR/rdbms/public"`
   fi
 
 
@@ -69742,10 +69746,10 @@ $as_echo "$PDO_OCI_LIB_DIR" >&6; }
     ai_p=$PDO_OCI_DIR/rdbms/demo
   else
 
-    ep_dir="`echo $PDO_OCI_DIR/rdbms/demo|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PDO_OCI_DIR/rdbms/demo|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PDO_OCI_DIR/rdbms/demo\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PDO_OCI_DIR/rdbms/demo"`
   fi
 
 
@@ -69776,10 +69780,10 @@ $as_echo "$PDO_OCI_LIB_DIR" >&6; }
     ai_p=$PDO_OCI_DIR/network/public
   else
 
-    ep_dir="`echo $PDO_OCI_DIR/network/public|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PDO_OCI_DIR/network/public|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PDO_OCI_DIR/network/public\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PDO_OCI_DIR/network/public"`
   fi
 
 
@@ -69810,10 +69814,10 @@ $as_echo "$PDO_OCI_LIB_DIR" >&6; }
     ai_p=$PDO_OCI_DIR/plsql/public
   else
 
-    ep_dir="`echo $PDO_OCI_DIR/plsql/public|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PDO_OCI_DIR/plsql/public|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PDO_OCI_DIR/plsql/public\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PDO_OCI_DIR/plsql/public"`
   fi
 
 
@@ -69844,10 +69848,10 @@ $as_echo "$PDO_OCI_LIB_DIR" >&6; }
     ai_p=$PDO_OCI_DIR/include
   else
 
-    ep_dir="`echo $PDO_OCI_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PDO_OCI_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PDO_OCI_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PDO_OCI_DIR/include"`
   fi
 
 
@@ -69926,10 +69930,10 @@ $as_echo "$PDO_OCI_LIB_DIR" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -70016,10 +70020,10 @@ $as_echo "$PDO_OCI_LIB_DIR" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -70069,7 +70073,7 @@ $as_echo "$PDO_OCI_VERSION" >&6; }
   fi
 
   case $PDO_OCI_VERSION in
-    9.0|10.1|10.2|11.1|11.2)
+    9.0|10.1|10.2|11.1|11.2|12.1)
 
 
   case clntsh in
@@ -70107,10 +70111,10 @@ $as_echo "$PDO_OCI_VERSION" >&6; }
     ai_p=$PDO_OCI_LIB_DIR
   else
 
-    ep_dir="`echo $PDO_OCI_LIB_DIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PDO_OCI_LIB_DIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PDO_OCI_LIB_DIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PDO_OCI_LIB_DIR"`
   fi
 
 
@@ -70201,10 +70205,10 @@ $as_echo "$PDO_OCI_VERSION" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -70354,10 +70358,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -70507,10 +70511,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -70656,10 +70660,10 @@ else
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -70836,10 +70840,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -70989,10 +70993,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -71952,10 +71956,10 @@ $as_echo "no" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -72048,10 +72052,10 @@ $as_echo "no" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -72186,10 +72190,10 @@ if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -72670,10 +72674,10 @@ if test "$PHP_PDO_PGSQL" != "no"; then
     PGSQL_INCLUDE=$PGSQL_INCLUDE
   else
 
-    ep_dir="`echo $PGSQL_INCLUDE|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PGSQL_INCLUDE|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    PGSQL_INCLUDE="$ep_realdir/`basename \"$PGSQL_INCLUDE\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    PGSQL_INCLUDE="$ep_realdir"/`basename "$PGSQL_INCLUDE"`
   fi
 
 
@@ -73032,10 +73036,10 @@ fi
     ai_p=$PGSQL_LIBDIR
   else
 
-    ep_dir="`echo $PGSQL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PGSQL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PGSQL_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PGSQL_LIBDIR"`
   fi
 
 
@@ -73075,10 +73079,10 @@ fi
     ai_p=$PGSQL_LIBDIR
   else
 
-    ep_dir="`echo $PGSQL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PGSQL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PGSQL_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PGSQL_LIBDIR"`
   fi
 
 
@@ -73128,10 +73132,10 @@ fi
     ai_p=$PGSQL_INCLUDE
   else
 
-    ep_dir="`echo $PGSQL_INCLUDE|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PGSQL_INCLUDE|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PGSQL_INCLUDE\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PGSQL_INCLUDE"`
   fi
 
 
@@ -73610,10 +73614,10 @@ $as_echo "not found" >&6; }
     ai_p=$PDO_SQLITE_DIR/include
   else
 
-    ep_dir="`echo $PDO_SQLITE_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PDO_SQLITE_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PDO_SQLITE_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PDO_SQLITE_DIR/include"`
   fi
 
 
@@ -73700,10 +73704,10 @@ $as_echo "not found" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -73790,10 +73794,10 @@ if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
     ai_p=$PDO_SQLITE_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $PDO_SQLITE_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PDO_SQLITE_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PDO_SQLITE_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PDO_SQLITE_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -73833,10 +73837,10 @@ if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
     ai_p=$PDO_SQLITE_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $PDO_SQLITE_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PDO_SQLITE_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PDO_SQLITE_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PDO_SQLITE_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -73951,10 +73955,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -74721,10 +74725,10 @@ but you've either not enabled sqlite3, or have disabled it.
     ai_p=$abs_srcdir/ext/sqlite3/libsqlite
   else
 
-    ep_dir="`echo $abs_srcdir/ext/sqlite3/libsqlite|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $abs_srcdir/ext/sqlite3/libsqlite|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$abs_srcdir/ext/sqlite3/libsqlite\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$abs_srcdir/ext/sqlite3/libsqlite"`
   fi
 
 
@@ -74832,10 +74836,10 @@ done
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -75016,10 +75020,10 @@ if test "$PHP_PGSQL" != "no"; then
     PGSQL_INCLUDE=$PGSQL_INCLUDE
   else
 
-    ep_dir="`echo $PGSQL_INCLUDE|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PGSQL_INCLUDE|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    PGSQL_INCLUDE="$ep_realdir/`basename \"$PGSQL_INCLUDE\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    PGSQL_INCLUDE="$ep_realdir"/`basename "$PGSQL_INCLUDE"`
   fi
 
 
@@ -76281,10 +76285,10 @@ fi
     ai_p=$PGSQL_LIBDIR
   else
 
-    ep_dir="`echo $PGSQL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PGSQL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PGSQL_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PGSQL_LIBDIR"`
   fi
 
 
@@ -76324,10 +76328,10 @@ fi
     ai_p=$PGSQL_LIBDIR
   else
 
-    ep_dir="`echo $PGSQL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PGSQL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PGSQL_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PGSQL_LIBDIR"`
   fi
 
 
@@ -76377,10 +76381,10 @@ fi
     ai_p=$PGSQL_INCLUDE
   else
 
-    ep_dir="`echo $PGSQL_INCLUDE|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PGSQL_INCLUDE|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PGSQL_INCLUDE\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PGSQL_INCLUDE"`
   fi
 
 
@@ -77108,6 +77112,10 @@ but you've either not enabled spl, or have disabled it.
   ac_srcdir=$ext_srcdir
   ac_builddir=$ext_builddir
   test -f "$src" && $SED -e "s#\$(srcdir)#$ac_srcdir#g" -e "s#\$(builddir)#$ac_builddir#g" $src  >> Makefile.fragments
+
+
+
+  PHP_OUTPUT_FILES="$PHP_OUTPUT_FILES ext/phar/phar.1 ext/phar/phar.phar.1"
 
 fi
 
@@ -77936,10 +77944,10 @@ EOF
     ai_p=$PSPELL_LIBDIR
   else
 
-    ep_dir="`echo $PSPELL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PSPELL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PSPELL_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PSPELL_LIBDIR"`
   fi
 
 
@@ -77979,10 +77987,10 @@ EOF
     ai_p=$PSPELL_LIBDIR
   else
 
-    ep_dir="`echo $PSPELL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PSPELL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PSPELL_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PSPELL_LIBDIR"`
   fi
 
 
@@ -78084,10 +78092,10 @@ EOF
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -78172,10 +78180,10 @@ if test "x$ac_cv_lib_aspell_new_aspell_config" = xyes; then :
     ai_p=$PSPELL_LIBDIR
   else
 
-    ep_dir="`echo $PSPELL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PSPELL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PSPELL_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PSPELL_LIBDIR"`
   fi
 
 
@@ -78215,10 +78223,10 @@ if test "x$ac_cv_lib_aspell_new_aspell_config" = xyes; then :
     ai_p=$PSPELL_LIBDIR
   else
 
-    ep_dir="`echo $PSPELL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PSPELL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PSPELL_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PSPELL_LIBDIR"`
   fi
 
 
@@ -78276,10 +78284,10 @@ fi
     ai_p=$PSPELL_INCDIR
   else
 
-    ep_dir="`echo $PSPELL_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PSPELL_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PSPELL_INCDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PSPELL_INCDIR"`
   fi
 
 
@@ -78419,10 +78427,10 @@ if test "$PHP_READLINE" && test "$PHP_READLINE" != "no"; then
     ai_p=$READLINE_DIR/include
   else
 
-    ep_dir="`echo $READLINE_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $READLINE_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$READLINE_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$READLINE_DIR/include"`
   fi
 
 
@@ -78641,10 +78649,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -78729,10 +78737,10 @@ if test "x$ac_cv_lib_readline_readline" = xyes; then :
     ai_p=$READLINE_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $READLINE_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $READLINE_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$READLINE_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$READLINE_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -78772,10 +78780,10 @@ if test "x$ac_cv_lib_readline_readline" = xyes; then :
     ai_p=$READLINE_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $READLINE_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $READLINE_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$READLINE_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$READLINE_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -78890,10 +78898,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -79041,10 +79049,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -79194,10 +79202,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -79306,10 +79314,10 @@ elif test "$PHP_LIBEDIT" != "no"; then
     ai_p=$LIBEDIT_DIR/include
   else
 
-    ep_dir="`echo $LIBEDIT_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LIBEDIT_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LIBEDIT_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LIBEDIT_DIR/include"`
   fi
 
 
@@ -79525,10 +79533,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -79613,10 +79621,10 @@ if test "x$ac_cv_lib_edit_readline" = xyes; then :
     ai_p=$LIBEDIT_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $LIBEDIT_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LIBEDIT_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LIBEDIT_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LIBEDIT_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -79656,10 +79664,10 @@ if test "x$ac_cv_lib_edit_readline" = xyes; then :
     ai_p=$LIBEDIT_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $LIBEDIT_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $LIBEDIT_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$LIBEDIT_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$LIBEDIT_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -79774,10 +79782,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -79927,10 +79935,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -80467,10 +80475,10 @@ if test "$PHP_RECODE" != "no"; then
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -80555,10 +80563,10 @@ if test "x$ac_cv_lib_recode_recode_format_table" = xyes; then :
     ai_p=$RECODE_DIR/$RECODE_LIB
   else
 
-    ep_dir="`echo $RECODE_DIR/$RECODE_LIB|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $RECODE_DIR/$RECODE_LIB|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$RECODE_DIR/$RECODE_LIB\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$RECODE_DIR/$RECODE_LIB"`
   fi
 
 
@@ -80598,10 +80606,10 @@ if test "x$ac_cv_lib_recode_recode_format_table" = xyes; then :
     ai_p=$RECODE_DIR/$RECODE_LIB
   else
 
-    ep_dir="`echo $RECODE_DIR/$RECODE_LIB|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $RECODE_DIR/$RECODE_LIB|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$RECODE_DIR/$RECODE_LIB\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$RECODE_DIR/$RECODE_LIB"`
   fi
 
 
@@ -80681,10 +80689,10 @@ if ac_fn_c_try_link "$LINENO"; then :
     ai_p=$RECODE_DIR/$RECODE_LIB
   else
 
-    ep_dir="`echo $RECODE_DIR/$RECODE_LIB|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $RECODE_DIR/$RECODE_LIB|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$RECODE_DIR/$RECODE_LIB\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$RECODE_DIR/$RECODE_LIB"`
   fi
 
 
@@ -80724,10 +80732,10 @@ if ac_fn_c_try_link "$LINENO"; then :
     ai_p=$RECODE_DIR/$RECODE_LIB
   else
 
-    ep_dir="`echo $RECODE_DIR/$RECODE_LIB|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $RECODE_DIR/$RECODE_LIB|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$RECODE_DIR/$RECODE_LIB\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$RECODE_DIR/$RECODE_LIB"`
   fi
 
 
@@ -80794,10 +80802,10 @@ $as_echo "#define HAVE_LIBRECODE 1" >>confdefs.h
     ai_p=$RECODE_DIR/$RECODE_INC
   else
 
-    ep_dir="`echo $RECODE_DIR/$RECODE_INC|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $RECODE_DIR/$RECODE_INC|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$RECODE_DIR/$RECODE_INC\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$RECODE_DIR/$RECODE_INC"`
   fi
 
 
@@ -82098,10 +82106,10 @@ if test "$PHP_MM" != "no"; then
     ai_p=$MM_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $MM_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $MM_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$MM_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$MM_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -82141,10 +82149,10 @@ if test "$PHP_MM" != "no"; then
     ai_p=$MM_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $MM_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $MM_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$MM_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$MM_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -82190,10 +82198,10 @@ if test "$PHP_MM" != "no"; then
     ai_p=$MM_DIR/include
   else
 
-    ep_dir="`echo $MM_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $MM_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$MM_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$MM_DIR/include"`
   fi
 
 
@@ -82740,10 +82748,10 @@ $as_echo "$ac_cv_php_xml2_config_path" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -82787,10 +82795,10 @@ $as_echo "$ac_cv_php_xml2_config_path" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -83360,10 +83368,10 @@ fi
     ai_p=${SNMP_PREFIX}/include
   else
 
-    ep_dir="`echo $SNMP_PREFIX/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $SNMP_PREFIX/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"${SNMP_PREFIX}/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "${SNMP_PREFIX}/include"`
   fi
 
 
@@ -83438,10 +83446,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -83546,10 +83554,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -83703,10 +83711,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -84254,10 +84262,10 @@ $as_echo "$ac_cv_php_xml2_config_path" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -84301,10 +84309,10 @@ $as_echo "$ac_cv_php_xml2_config_path" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -86337,7 +86345,29 @@ else
 $as_echo "no" >&6; }
 fi
 
-if test "$PHP_SAPI" = "cgi" || test "$PHP_SAPI" = "cli" || test "$PHP_SAPI" = "embed"; then
+PHP_ENABLE_CHROOT_FUNC=no
+case "$PHP_SAPI" in
+  embed)
+    PHP_ENABLE_CHROOT_FUNC=yes
+  ;;
+
+  none)
+    for PROG in $PHP_BINARIES; do
+      case "$PROG" in
+        cgi|cli)
+          PHP_ENABLE_CHROOT_FUNC=yes
+        ;;
+
+        *)
+          PHP_ENABLE_CHROOT_FUNC=no
+          break
+        ;;
+      esac
+   done
+  ;;
+esac
+
+if test "$PHP_ENABLE_CHROOT_FUNC" = "yes"; then
 
 $as_echo "#define ENABLE_CHROOT_FUNC 1" >>confdefs.h
 
@@ -89671,10 +89701,10 @@ $as_echo "found in $SYBASE_CT_INCDIR" >&6; }
     ai_p=$SYBASE_CT_INCDIR
   else
 
-    ep_dir="`echo $SYBASE_CT_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $SYBASE_CT_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$SYBASE_CT_INCDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$SYBASE_CT_INCDIR"`
   fi
 
 
@@ -89714,10 +89744,10 @@ $as_echo_n "checking Checking for Sybase platform libraries... " >&6; }
     ai_p=$SYBASE_CT_LIBDIR
   else
 
-    ep_dir="`echo $SYBASE_CT_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $SYBASE_CT_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$SYBASE_CT_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$SYBASE_CT_LIBDIR"`
   fi
 
 
@@ -89937,10 +89967,10 @@ $as_echo "Sybase64: $SYBASE_CT_LIBS" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -90132,10 +90162,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -90300,10 +90330,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -90568,10 +90598,10 @@ $as_echo "Sybase32 syb-prefix: $SYBASE_CT_LIBS" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -90763,10 +90793,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -90931,10 +90961,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -91199,10 +91229,10 @@ $as_echo "Sybase32 default: $SYBASE_CT_LIBS" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -91394,10 +91424,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -91562,10 +91592,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -92840,10 +92870,10 @@ if test "$PHP_TIDY" != "no"; then
     ai_p=$TIDY_LIBDIR
   else
 
-    ep_dir="`echo $TIDY_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $TIDY_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$TIDY_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$TIDY_LIBDIR"`
   fi
 
 
@@ -92883,10 +92913,10 @@ if test "$PHP_TIDY" != "no"; then
     ai_p=$TIDY_LIBDIR
   else
 
-    ep_dir="`echo $TIDY_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $TIDY_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$TIDY_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$TIDY_LIBDIR"`
   fi
 
 
@@ -92932,10 +92962,10 @@ if test "$PHP_TIDY" != "no"; then
     ai_p=$TIDY_INCDIR
   else
 
-    ep_dir="`echo $TIDY_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $TIDY_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$TIDY_INCDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$TIDY_INCDIR"`
   fi
 
 
@@ -93017,10 +93047,10 @@ if test "$PHP_TIDY" != "no"; then
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -93943,10 +93973,10 @@ $as_echo "$ac_cv_php_xml2_config_path" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -93990,10 +94020,10 @@ $as_echo "$ac_cv_php_xml2_config_path" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -94158,10 +94188,10 @@ else
     ai_p=$EXPAT_DIR/include
   else
 
-    ep_dir="`echo $EXPAT_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $EXPAT_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$EXPAT_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$EXPAT_DIR/include"`
   fi
 
 
@@ -94194,10 +94224,10 @@ else
     ai_p=$EXPAT_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $EXPAT_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $EXPAT_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$EXPAT_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$EXPAT_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -94237,10 +94267,10 @@ else
     ai_p=$EXPAT_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $EXPAT_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $EXPAT_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$EXPAT_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$EXPAT_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -94790,10 +94820,10 @@ $as_echo "$ac_cv_php_xml2_config_path" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -94837,10 +94867,10 @@ $as_echo "$ac_cv_php_xml2_config_path" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -94975,10 +95005,10 @@ else
     ai_p=$EXPAT_DIR/include
   else
 
-    ep_dir="`echo $EXPAT_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $EXPAT_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$EXPAT_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$EXPAT_DIR/include"`
   fi
 
 
@@ -95011,10 +95041,10 @@ else
     ai_p=$EXPAT_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $EXPAT_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $EXPAT_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$EXPAT_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$EXPAT_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -95054,10 +95084,10 @@ else
     ai_p=$EXPAT_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $EXPAT_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $EXPAT_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$EXPAT_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$EXPAT_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -95580,10 +95610,10 @@ $as_echo "$ac_cv_php_xml2_config_path" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -95627,10 +95657,10 @@ $as_echo "$ac_cv_php_xml2_config_path" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -96294,10 +96324,10 @@ $as_echo "$ac_cv_php_xml2_config_path" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -96341,10 +96371,10 @@ $as_echo "$ac_cv_php_xml2_config_path" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -96507,10 +96537,10 @@ $as_echo "#define HAVE_LIBEXPAT 1" >>confdefs.h
     ai_p=$i/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $i/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $i/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$i/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$i/$PHP_LIBDIR"`
   fi
 
 
@@ -96550,10 +96580,10 @@ $as_echo "#define HAVE_LIBEXPAT 1" >>confdefs.h
     ai_p=$i/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $i/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $i/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$i/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$i/$PHP_LIBDIR"`
   fi
 
 
@@ -96599,10 +96629,10 @@ $as_echo "#define HAVE_LIBEXPAT 1" >>confdefs.h
     ai_p=$i/include
   else
 
-    ep_dir="`echo $i/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $i/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$i/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$i/include"`
   fi
 
 
@@ -96776,10 +96806,10 @@ $as_echo "#define HAVE_GICONV_H 1" >>confdefs.h
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -96937,10 +96967,10 @@ else
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -97054,10 +97084,10 @@ $as_echo "#define HAVE_ICONV 1" >>confdefs.h
     ai_p=$ICONV_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $ICONV_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ICONV_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ICONV_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ICONV_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -97097,10 +97127,10 @@ $as_echo "#define HAVE_ICONV 1" >>confdefs.h
     ai_p=$ICONV_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $ICONV_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ICONV_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ICONV_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ICONV_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -97146,10 +97176,10 @@ $as_echo "#define HAVE_ICONV 1" >>confdefs.h
     ai_p=$ICONV_DIR/include
   else
 
-    ep_dir="`echo $ICONV_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ICONV_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ICONV_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ICONV_DIR/include"`
   fi
 
 
@@ -98041,10 +98071,10 @@ $as_echo "not found" >&6; }
     ai_p=$XMLRPC_DIR
   else
 
-    ep_dir="`echo $XMLRPC_DIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $XMLRPC_DIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$XMLRPC_DIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$XMLRPC_DIR"`
   fi
 
 
@@ -98077,10 +98107,10 @@ $as_echo "not found" >&6; }
     ai_p=$XMLRPC_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $XMLRPC_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $XMLRPC_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$XMLRPC_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$XMLRPC_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -98120,10 +98150,10 @@ $as_echo "not found" >&6; }
     ai_p=$XMLRPC_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $XMLRPC_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $XMLRPC_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$XMLRPC_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$XMLRPC_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -98618,10 +98648,10 @@ $as_echo "$ac_cv_php_xml2_config_path" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -98665,10 +98695,10 @@ $as_echo "$ac_cv_php_xml2_config_path" >&6; }
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -99192,10 +99222,10 @@ if test "$PHP_XSL" != "no"; then
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -99239,10 +99269,10 @@ if test "$PHP_XSL" != "no"; then
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -99294,10 +99324,10 @@ $as_echo "found" >&6; }
     ai_p=$PHP_XSL_EXSL_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $PHP_XSL_EXSL_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_XSL_EXSL_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_XSL_EXSL_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_XSL_EXSL_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -99337,10 +99367,10 @@ $as_echo "found" >&6; }
     ai_p=$PHP_XSL_EXSL_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $PHP_XSL_EXSL_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_XSL_EXSL_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_XSL_EXSL_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_XSL_EXSL_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -99386,10 +99416,10 @@ $as_echo "found" >&6; }
     ai_p=$PHP_XSL_EXSL_DIR/include
   else
 
-    ep_dir="`echo $PHP_XSL_EXSL_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_XSL_EXSL_DIR/include|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_XSL_EXSL_DIR/include\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_XSL_EXSL_DIR/include"`
   fi
 
 
@@ -99879,10 +99909,10 @@ $as_echo "$PHP_ZLIB_DIR" >&6; }
     ai_p=$PHP_ZLIB_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $PHP_ZLIB_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_ZLIB_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_ZLIB_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_ZLIB_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -99922,10 +99952,10 @@ $as_echo "$PHP_ZLIB_DIR" >&6; }
     ai_p=$PHP_ZLIB_DIR/$PHP_LIBDIR
   else
 
-    ep_dir="`echo $PHP_ZLIB_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_ZLIB_DIR/$PHP_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_ZLIB_DIR/$PHP_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_ZLIB_DIR/$PHP_LIBDIR"`
   fi
 
 
@@ -99971,10 +100001,10 @@ $as_echo "$PHP_ZLIB_DIR" >&6; }
     ai_p=$PHP_ZLIB_INCDIR
   else
 
-    ep_dir="`echo $PHP_ZLIB_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $PHP_ZLIB_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$PHP_ZLIB_INCDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$PHP_ZLIB_INCDIR"`
   fi
 
 
@@ -100706,10 +100736,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -100755,10 +100785,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -100845,10 +100875,10 @@ rm -f conftest*
     ai_p=$OPENSSL_INCDIR
   else
 
-    ep_dir="`echo $OPENSSL_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $OPENSSL_INCDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$OPENSSL_INCDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$OPENSSL_INCDIR"`
   fi
 
 
@@ -100932,10 +100962,10 @@ rm -f conftest*
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -101109,10 +101139,10 @@ fi
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -101254,10 +101284,10 @@ fi
     ai_p=$OPENSSL_LIBDIR
   else
 
-    ep_dir="`echo $OPENSSL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $OPENSSL_LIBDIR|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$OPENSSL_LIBDIR\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$OPENSSL_LIBDIR"`
   fi
 
 
@@ -101777,10 +101807,10 @@ if test "$PHP_RECODE" != "no"; then
     ai_p=$ac_ii
   else
 
-    ep_dir="`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`"
+    ep_dir=`echo $ac_ii|$SED 's%/*[^/][^/]*/*$%%'`
 
-    ep_realdir="`(cd \"$ep_dir\" && pwd)`"
-    ai_p="$ep_realdir/`basename \"$ac_ii\"`"
+    ep_realdir=`(cd "$ep_dir" && pwd)`
+    ai_p="$ep_realdir"/`basename "$ac_ii"`
   fi
 
 
@@ -102941,7 +102971,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 102944 "configure"
+#line 102974 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -104853,7 +104883,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 104856 "configure"' > conftest.$ac_ext
+  echo '#line 104886 "configure"' > conftest.$ac_ext
   if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -106245,7 +106275,7 @@ else
       LDFLAGS="$LDFLAGS -Wl,-exported_symbols_list,conftest.sym"
 
 cat > conftest.$ac_ext <<EOF
-#line 106248 "configure"
+#line 106278 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -106403,11 +106433,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:106406: $lt_compile\"" >&5)
+   (eval echo "\"configure:106436: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "configure:106410: \$? = $ac_status" >&5
+   echo "configure:106440: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -106701,11 +106731,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:106704: $lt_compile\"" >&5)
+   (eval echo "\"configure:106734: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "configure:106708: \$? = $ac_status" >&5
+   echo "configure:106738: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -106805,11 +106835,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:106808: $lt_compile\"" >&5)
+   (eval echo "\"configure:106838: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "configure:106812: \$? = $ac_status" >&5
+   echo "configure:106842: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -107269,7 +107299,7 @@ _LT_EOF
        # Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 107272 "configure"
+#line 107302 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -107311,7 +107341,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	 # Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 107314 "configure"
+#line 107344 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -108489,7 +108519,7 @@ if test -n "$hardcode_libdir_flag_spec" || \
    test -n "$runpath_var" || \
    test "X$hardcode_automatic" = "Xyes" ; then
 
-  # We can hardcode non-existant directories.
+  # We can hardcode non-existent directories.
   if test "$hardcode_direct" != no &&
      # If the only mechanism to avoid hardcoding is shlibpath_var, we
      # have to relink, otherwise we might link with an installed library
@@ -108836,7 +108866,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 108839 "configure"
+#line 108869 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -108936,7 +108966,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 108939 "configure"
+#line 108969 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -110001,7 +110031,7 @@ case $host_os in
       # Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 110004 "configure"
+#line 110034 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -110044,7 +110074,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	# Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 110047 "configure"
+#line 110077 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -111296,11 +111326,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:111299: $lt_compile\"" >&5)
+   (eval echo "\"configure:111329: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "configure:111303: \$? = $ac_status" >&5
+   echo "configure:111333: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -111400,11 +111430,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:111403: $lt_compile\"" >&5)
+   (eval echo "\"configure:111433: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "configure:111407: \$? = $ac_status" >&5
+   echo "configure:111437: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -112126,7 +112156,7 @@ if test -n "$hardcode_libdir_flag_spec_CXX" || \
    test -n "$runpath_var_CXX" || \
    test "X$hardcode_automatic_CXX" = "Xyes" ; then
 
-  # We can hardcode non-existant directories.
+  # We can hardcode non-existent directories.
   if test "$hardcode_direct_CXX" != no &&
      # If the only mechanism to avoid hardcoding is shlibpath_var, we
      # have to relink, otherwise we might link with an installed library
