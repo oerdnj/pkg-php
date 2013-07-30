@@ -1,3 +1,13 @@
+php5 (5.5.1+dfsg-2~1.gbpc9cf7d) UNRELEASED; urgency=low
+
+  ** SNAPSHOT build @c9cf7dc90adf679f7bcbd74f36d06eb29d7d2332 **
+
+  * Fix the reverse check for phpapi version change
+  * Bump phpapi version to 20121212
+  * Move apache2 (>= 2.4) from Pre-Depend to Depends (Closes: #711454)
+
+ -- Ondřej Surý <ondrej@sury.org>  Tue, 30 Jul 2013 18:04:38 +0200
+
 php5 (5.5.1+dfsg-1) unstable; urgency=low
 
   * New upstream version 5.5.1+dfsg
