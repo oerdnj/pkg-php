@@ -115,9 +115,16 @@ Description: Common files for packages built from the php5 source
 Package: libapache2-mod-php5
 Section: httpd
 Architecture: any
-Pre-Depends: apache2 (>= 2.4)
-Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support, php5-common (= ${binary:Version}), libmagic1, ucf, tzdata
-Conflicts: libapache2-mod-php4, libapache2-mod-php5filter
+Depends: ${shlibs:Depends},
+	 ${misc:Depends},
+	 apache2 (>= 2.4),
+	 mime-support,
+	 php5-common (= ${binary:Version}),
+	 libmagic1,
+	 ucf,
+	 tzdata
+Conflicts: libapache2-mod-php4,
+	   libapache2-mod-php5filter
 Provides: ${php:Provides}
 Recommends: php5-cli
 Suggests: php-pear
@@ -136,8 +143,14 @@ Package: libapache2-mod-php5filter
 Section: httpd
 Priority: extra
 Architecture: any
-Pre-Depends: apache2 (>= 2.4)
-Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support, php5-common (= ${binary:Version}), libmagic1, ucf, tzdata
+Depends: ${shlibs:Depends},
+	 ${misc:Depends},
+	 apache2 (>= 2.4),
+	 mime-support,
+	 php5-common (= ${binary:Version}),
+	 libmagic1,
+	 ucf,
+	 tzdata
 Conflicts: libapache2-mod-php4, libapache2-mod-php5
 Provides: ${php:Provides}
 Suggests: php-pear
