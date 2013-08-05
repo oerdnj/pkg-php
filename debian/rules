@@ -513,7 +513,7 @@ install: build
 	cd apache2-build && $(MAKE) install-headers install-build install-modules install-programs INSTALL_ROOT=$(CURDIR)/debian/libapache2-mod-php5
 
 	# install the headers from cgi-build
-	cd cgi-build && $(MAKE) install-headers INSTALL_ROOT=$(CURDIR)/debian/php5-cgi
+	cd cgi-build && $(MAKE) install-headers INSTALL_ROOT=$(CURDIR)/debian/php5-dev
 
 	# remove netware and win32 headers that we don't want
 	cd debian/libapache2-mod-php5/usr/include/php5/ && \
@@ -595,7 +595,6 @@ install: build
 	install -m 755 debian/php5-fpm-checkconf debian/php5-fpm/usr/lib/php5/
 
 	# move and install -dev files
-	dh_movefiles --sourcedir=debian/php5-cgi
 	dh_movefiles --sourcedir=debian/libphp5-embed
 	dh_movefiles --sourcedir=debian/libapache2-mod-php5
 	rm -rf debian/libphp5-embed/usr/include/ \
