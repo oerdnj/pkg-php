@@ -2,3 +2,4 @@
 /etc/php5/fpm/conf.d
 /etc/php5/fpm/pool.d
 /usr/sbin
+/usr/lib/php5
