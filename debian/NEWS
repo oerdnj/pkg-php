@@ -1,4 +1,21 @@
-php5 (5.6.0~rc3+dfsg-2) unstable; urgency=medium
+php5 (5.5.29+dfsg-1) unstable; urgency=low
+
+  * BITCOIN DONATE ADDRESS: 15WRQCrVHWUdcn3sbT7PF6u2FJGfbb8GW5
+    .
+    DONATE: Thank you for using this PPA.  Please consider donating any
+    amount if you find my PPAs useful.  Details can be found at the
+    mentioned webpages (https://deb.sury.org/pages/donate.html).
+    .
+    ANNOUNCEMENT: This PPA and other packages now have webpages, where you
+    can discuss your problems or subscribe to announcements (RSS
+    provided).  The webpage is located at https://deb.sury.org/.
+    .
+    BUG REPORTING: DEB.SURY.ORG has now public lightweight issue tracker
+    at https://github.com/oerdnj/deb.sury.org
+
+ -- Ondřej Surý <ondrej@debian.org>  Sun, 16 Aug 2015 11:16:47 +0200
+
+php5 (5.5.15+dfsg-2) unstable; urgency=medium
 
   * The default session.save_path has been changed from /var/lib/php5
     to /var/lib/php5/sessions.
