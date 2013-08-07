@@ -189,6 +189,7 @@ Package: php5-cli
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support, php5-common (= ${binary:Version}), libmagic1, ucf, tzdata, libedit2 (>= 2.11-20080614-4)
 Provides: ${php:Provides}
+Recommends: php5-readline
 Suggests: php-pear
 Description: command-line interpreter for the php5 scripting language
  This package provides the /usr/bin/php5 command interpreter, useful for
