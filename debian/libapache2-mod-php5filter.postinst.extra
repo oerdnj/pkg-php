@@ -1,16 +1,14 @@
-if [ -e /usr/share/apache2/apache2-maintscript-helper ] ; then
+if [ -e /usr/share/apache2/apache2-maintscript-helper ]; then
     . /usr/share/apache2/apache2-maintscript-helper
 
     php5_enable() {
-        if [ $(a2query -M) != 'prefork' ] ; then
-            if apache2_switch_mpm prefork ; then
-                return 0
-            else
-                apache2_msg err "Could not switch to prefork MPM, not enabling php5"
-                return 1
-            fi
-        fi
-        return 0
+	mpm=$(a2query -M)
+	case "$(a2query -M)" in
+	    prefork|itk) return 0;;
+	    *) if apache2_switch_mpm prefork; then return 0; fi;;
+	esac
+        apache2_msg err "Could not switch to prefork MPM, not enabling php5"
+	return 1
     }
 
 else
