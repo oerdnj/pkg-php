@@ -1,7 +1,7 @@
 php5 (5.5.2+dfsg-1) unstable; urgency=low
 
   * New upstream version 5.5.2+dfsg
-  * Update patches for 5.5.2 release
+  * Update and refresh patches for 5.5.2 release
   * Add handling for mpm_itk to libapache2-mod-php5{,filter}
     (Closes: #720278)
   * Add php5-readline to php5-cli Recommends to hint that it's needed
