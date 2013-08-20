@@ -1743,15 +1743,15 @@ Optional Features and Packages:
 SAPI modules:
 
   --with-aolserver=DIR    Specify path to the installed AOLserver
-  --with-apxs=FILE      Build shared Apache 1.x module. FILE is the optional
+  --with-apxs=FILE        Build shared Apache 1.x module. FILE is the optional
                           pathname to the Apache apxs tool apxs
-  --with-apache=DIR     Build Apache 1.x module. DIR is the top-level Apache
+  --with-apache=DIR       Build Apache 1.x module. DIR is the top-level Apache
                           build directory /usr/local/apache
-  --enable-mod-charset      APACHE: Enable transfer tables for mod_charset (Rus Apache)
+  --enable-mod-charset    APACHE: Enable transfer tables for mod_charset (Rus Apache)
   --with-apxs2filter=FILE
                           EXPERIMENTAL: Build shared Apache 2.0 Filter module. FILE is the optional
                           pathname to the Apache apxs tool apxs
-  --with-apxs2=FILE     Build shared Apache 2.0 Handler module. FILE is the optional
+  --with-apxs2=FILE       Build shared Apache 2.0 Handler module. FILE is the optional
                           pathname to the Apache apxs tool apxs
   --with-apache-hooks=FILE
                           EXPERIMENTAL: Build shared Apache 1.x module. FILE is the optional
@@ -1759,29 +1759,29 @@ SAPI modules:
   --with-apache-hooks-static=DIR
                           EXPERIMENTAL: Build Apache 1.x module. DIR is the top-level Apache
                           build directory /usr/local/apache
-  --enable-mod-charset      APACHE (hooks): Enable transfer tables for mod_charset (Rus Apache)
-  --with-caudium=DIR    Build PHP as a Pike module for use with Caudium.
+  --enable-mod-charset    APACHE (hooks): Enable transfer tables for mod_charset (Rus Apache)
+  --with-caudium=DIR      Build PHP as a Pike module for use with Caudium.
                           DIR is the Caudium server dir /usr/local/caudium/server
   --disable-cli           Disable building CLI version of PHP
                           (this forces --without-pear)
   --with-continuity=DIR   Build PHP as Continuity Server module.
                           DIR is path to the installed Continuity Server root
-  --enable-embed=TYPE   EXPERIMENTAL: Enable building of embedded SAPI library
+  --enable-embed=TYPE     EXPERIMENTAL: Enable building of embedded SAPI library
                           TYPE is either 'shared' or 'static'. TYPE=shared
-  --enable-fpm              Enable building of the fpm SAPI executable
-  --with-fpm-user=USER  Set the user for php-fpm to run as. (default: nobody)
-  --with-fpm-group=GRP  Set the group for php-fpm to run as. For a system user, this
-                  should usually be set to match the fpm username (default: nobody)
+  --enable-fpm            Enable building of the fpm SAPI executable
+  --with-fpm-user=USER    Set the user for php-fpm to run as. (default: nobody)
+  --with-fpm-group=GRP    Set the group for php-fpm to run as. For a system user, this
+                          should usually be set to match the fpm username (default: nobody)
   --with-fpm-systemd      Activate systemd integration
-  --with-isapi=DIR      Build PHP as an ISAPI module for use with Zeus
+  --with-isapi=DIR        Build PHP as an ISAPI module for use with Zeus
   --with-litespeed        Build PHP as litespeed module
-  --with-milter=DIR     Build PHP as Milter application
+  --with-milter=DIR       Build PHP as Milter application
   --with-nsapi=DIR        Build PHP as NSAPI module for Netscape/iPlanet/Sun Webserver
   --with-phttpd=DIR       Build PHP as phttpd module
-  --with-pi3web=DIR     Build PHP as Pi3Web module
+  --with-pi3web=DIR       Build PHP as Pi3Web module
   --with-roxen=DIR        Build PHP as a Pike module. DIR is the base Roxen
                           directory, normally /usr/local/roxen/server
-  --enable-roxen-zts        ROXEN: Build the Roxen module using Zend Thread Safety
+  --enable-roxen-zts      ROXEN: Build the Roxen module using Zend Thread Safety
   --with-thttpd=SRCDIR    Build PHP as thttpd module
   --with-tux=MODULEDIR    Build PHP as a TUX module (Linux only)
   --with-webjames=SRCDIR  Build PHP as a WebJames module (RISC OS only)
@@ -1817,25 +1817,25 @@ Extensions:
       o foobar package install prefix is /usr/local/foobar/
 
 
- --disable-all   Disable all extensions which are enabled by default
+  --disable-all           Disable all extensions which are enabled by default
 
-  --with-regex=TYPE       regex library type: system, php. TYPE=php
+  --with-regex=TYPE       Regex library type: system, php. TYPE=php
                           WARNING: Do NOT use unless you know what you are doing!
   --disable-libxml        Disable LIBXML support
   --with-libxml-dir=DIR   LIBXML: libxml2 install prefix
-  --with-openssl=DIR    Include OpenSSL support (requires OpenSSL >= 0.9.6)
+  --with-openssl=DIR      Include OpenSSL support (requires OpenSSL >= 0.9.6)
   --with-kerberos=DIR     OPENSSL: Include Kerberos support
   --with-pcre-regex=DIR   Include Perl Compatible Regular Expressions support.
                           DIR is the PCRE install prefix BUNDLED
-  --without-sqlite3=DIR Do not include SQLite3 support. DIR is the prefix to
+  --without-sqlite3=DIR   Do not include SQLite3 support. DIR is the prefix to
                           SQLite3 installation directory.
-  --with-zlib=DIR       Include ZLIB support (requires zlib >= 1.0.9)
+  --with-zlib=DIR         Include ZLIB support (requires zlib >= 1.0.9)
   --with-zlib-dir=<DIR>   Define the location of zlib install directory
   --enable-bcmath         Enable bc style precision math functions
-  --with-bz2=DIR        Include BZip2 support
+  --with-bz2=DIR          Include BZip2 support
   --enable-calendar       Enable support for calendar conversion
   --disable-ctype         Disable ctype functions
-  --with-curl=DIR       Include cURL support
+  --with-curl=DIR         Include cURL support
   --enable-dba            Build DBA with bundled modules. To build shared DBA
                           extension use --enable-dba=shared
   --with-qdbm=DIR         DBA: QDBM support
@@ -1848,182 +1848,183 @@ Extensions:
   --with-dbm=DIR          DBA: DBM support
   --with-tcadb=DIR        DBA: Tokyo Cabinet abstract DB support
   --without-cdb=DIR       DBA: CDB support (bundled)
-  --disable-inifile         DBA: INI support (bundled)
-  --disable-flatfile        DBA: FlatFile support (bundled)
+  --disable-inifile       DBA: INI support (bundled)
+  --disable-flatfile      DBA: FlatFile support (bundled)
   --disable-dom           Disable DOM support
   --with-libxml-dir=DIR   DOM: libxml2 install prefix
-  --with-enchant=DIR     Include enchant support.
+  --with-enchant=DIR      Include enchant support.
                           GNU Aspell version 1.1.3 or higher required.
   --enable-exif           Enable EXIF (metadata from images) support
   --disable-fileinfo      Disable fileinfo support
   --disable-filter        Disable input filter support
-  --with-pcre-dir           FILTER: pcre install prefix
+  --with-pcre-dir         FILTER: pcre install prefix
   --enable-ftp            Enable FTP support
   --with-openssl-dir=DIR  FTP: openssl install prefix
-  --with-gd=DIR         Include GD support.  DIR is the GD library base
+  --with-gd=DIR           Include GD support.  DIR is the GD library base
                           install directory BUNDLED
-  --with-vpx-dir=DIR     GD: Set the path to libvpx install prefix
+  --with-vpx-dir=DIR      GD: Set the path to libvpx install prefix
   --with-jpeg-dir=DIR     GD: Set the path to libjpeg install prefix
   --with-png-dir=DIR      GD: Set the path to libpng install prefix
   --with-zlib-dir=DIR     GD: Set the path to libz install prefix
   --with-xpm-dir=DIR      GD: Set the path to libXpm install prefix
   --with-freetype-dir=DIR GD: Set the path to FreeType 2 install prefix
   --with-t1lib=DIR        GD: Include T1lib support. T1lib version >= 5.0.0 required
-  --enable-gd-native-ttf    GD: Enable TrueType string function
-  --enable-gd-jis-conv      GD: Enable JIS-mapped Japanese font support
-  --with-gettext=DIR    Include GNU gettext support
-  --with-gmp=DIR        Include GNU MP support
-  --with-mhash=DIR      Include mhash support
+  --enable-gd-native-ttf  GD: Enable TrueType string function
+  --enable-gd-jis-conv    GD: Enable JIS-mapped Japanese font support
+  --with-gettext=DIR      Include GNU gettext support
+  --with-gmp=DIR          Include GNU MP support
+  --with-mhash=DIR        Include mhash support
   --disable-hash          Disable hash support
-  --without-iconv=DIR   Exclude iconv support
-  --with-imap=DIR       Include IMAP support. DIR is the c-client install prefix
+  --without-iconv=DIR     Exclude iconv support
+  --with-imap=DIR         Include IMAP support. DIR is the c-client install prefix
   --with-kerberos=DIR     IMAP: Include Kerberos support. DIR is the Kerberos install prefix
   --with-imap-ssl=DIR     IMAP: Include SSL support. DIR is the OpenSSL install prefix
-  --with-interbase=DIR  Include InterBase support.  DIR is the InterBase base
+  --with-interbase=DIR    Include InterBase support.  DIR is the InterBase base
                           install directory /usr/interbase
   --enable-intl           Enable internationalization support
   --with-icu-dir=DIR      Specify where ICU libraries and headers can be found
   --disable-json          Disable JavaScript Object Serialization support
-  --with-ldap=DIR       Include LDAP support
+  --with-ldap=DIR         Include LDAP support
   --with-ldap-sasl=DIR    LDAP: Include Cyrus SASL support
   --enable-mbstring       Enable multibyte string support
-  --disable-mbregex         MBSTRING: Disable multibyte regex support
+  --disable-mbregex       MBSTRING: Disable multibyte regex support
   --disable-mbregex-backtrack
-                            MBSTRING: Disable multibyte regex backtrack check
+                          MBSTRING: Disable multibyte regex backtrack check
   --with-libmbfl=DIR      MBSTRING: Use external libmbfl.  DIR is the libmbfl base
-                            install directory BUNDLED
+                          install directory BUNDLED
   --with-onig=DIR         MBSTRING: Use external oniguruma. DIR is the oniguruma install prefix.
-                            If DIR is not set, the bundled oniguruma will be used
-  --with-mcrypt=DIR     Include mcrypt support
-  --with-mssql=DIR      Include MSSQL-DB support.  DIR is the FreeTDS home
+                          If DIR is not set, the bundled oniguruma will be used
+  --with-mcrypt=DIR       Include mcrypt support
+  --with-mssql=DIR        Include MSSQL-DB support.  DIR is the FreeTDS home
                           directory /usr/local/freetds
-  --with-mysql=DIR      Include MySQL support.  DIR is the MySQL base
+  --with-mysql=DIR        Include MySQL support.  DIR is the MySQL base
                           directory, if no DIR is passed or the value is
                           mysqlnd the MySQL native driver will be used
-  --with-mysql-sock=DIR   MySQL/MySQLi/PDO_MYSQL: Location of the MySQL unix socket pointer.
-                            If unspecified, the default locations are searched
+  --with-mysql-sock=SOCKPATH
+                          MySQL/MySQLi/PDO_MYSQL: Location of the MySQL unix socket pointer.
+                          If unspecified, the default locations are searched
   --with-zlib-dir=DIR     MySQL: Set the path to libz install prefix
-  --with-mysqli=FILE    Include MySQLi support.  FILE is the path
+  --with-mysqli=FILE      Include MySQLi support.  FILE is the path
                           to mysql_config.  If no value or mysqlnd is passed
                           as FILE, the MySQL native driver will be used
-  --enable-embedded-mysqli  MYSQLi: Enable embedded support
-                            Note: Does not work with MySQL native driver!
-  --with-oci8=DIR       Include Oracle Database OCI8 support. DIR defaults to \$ORACLE_HOME.
+  --enable-embedded-mysqli
+                          MYSQLi: Enable embedded support
+                          Note: Does not work with MySQL native driver!
+  --with-oci8=DIR         Include Oracle Database OCI8 support. DIR defaults to \$ORACLE_HOME.
                           Use --with-oci8=instantclient,/path/to/instant/client/lib
                           to use an Oracle Instant Client installation
-  --with-adabas=DIR     Include Adabas D support /usr/local
-  --with-sapdb=DIR      Include SAP DB support /usr/local
-  --with-solid=DIR      Include Solid support /usr/local/solid
-  --with-ibm-db2=DIR    Include IBM DB2 support /home/db2inst1/sqllib
-  --with-ODBCRouter=DIR Include ODBCRouter.com support /usr
-  --with-empress=DIR    Include Empress support \$EMPRESSPATH
+  --with-adabas=DIR       Include Adabas D support /usr/local
+  --with-sapdb=DIR        Include SAP DB support /usr/local
+  --with-solid=DIR        Include Solid support /usr/local/solid
+  --with-ibm-db2=DIR      Include IBM DB2 support /home/db2inst1/sqllib
+  --with-ODBCRouter=DIR   Include ODBCRouter.com support /usr
+  --with-empress=DIR      Include Empress support \$EMPRESSPATH
                           (Empress Version >= 8.60 required)
   --with-empress-bcs=DIR
                           Include Empress Local Access support \$EMPRESSPATH
                           (Empress Version >= 8.60 required)
-  --with-birdstep=DIR   Include Birdstep support /usr/local/birdstep
-  --with-custom-odbc=DIR
-                          Include user defined ODBC support. DIR is ODBC install base
+  --with-birdstep=DIR     Include Birdstep support /usr/local/birdstep
+  --with-custom-odbc=DIR  Include user defined ODBC support. DIR is ODBC install base
                           directory /usr/local. Make sure to define CUSTOM_ODBC_LIBS and
                           have some odbc.h in your include dirs. f.e. you should define
                           following for Sybase SQL Anywhere 5.5.00 on QNX, prior to
                           running this configure script:
-                              CPPFLAGS=\"-DODBC_QNX -DSQLANY_BUG\"
-                              LDFLAGS=-lunix
-                              CUSTOM_ODBC_LIBS=\"-ldblib -lodbc\"
-  --with-iodbc=DIR      Include iODBC support /usr/local
-  --with-esoob=DIR      Include Easysoft OOB support /usr/local/easysoft/oob/client
-  --with-unixODBC=DIR   Include unixODBC support /usr/local
-  --with-dbmaker=DIR    Include DBMaker support
-  --enable-opcache Enable Zend OPcache support
+                            CPPFLAGS=\"-DODBC_QNX -DSQLANY_BUG\"
+                            LDFLAGS=-lunix
+                            CUSTOM_ODBC_LIBS=\"-ldblib -lodbc\"
+  --with-iodbc=DIR        Include iODBC support /usr/local
+  --with-esoob=DIR        Include Easysoft OOB support /usr/local/easysoft/oob/client
+  --with-unixODBC=DIR     Include unixODBC support /usr/local
+  --with-dbmaker=DIR      Include DBMaker support
+  --enable-opcache        Enable Zend OPcache support
   --enable-pcntl          Enable pcntl support (CLI/CGI only)
   --disable-pdo           Disable PHP Data Objects support
   --with-pdo-dblib=DIR    PDO: DBLIB-DB support.  DIR is the FreeTDS home directory
   --with-pdo-firebird=DIR PDO: Firebird support.  DIR is the Firebird base
-                            install directory /opt/firebird
+                          install directory /opt/firebird
   --with-pdo-mysql=DIR    PDO: MySQL support. DIR is the MySQL base directory
-                                 If no value or mysqlnd is passed as DIR, the
-                                 MySQL native driver will be used
-  --with-zlib-dir=DIR       PDO_MySQL: Set the path to libz install prefix
+                          If no value or mysqlnd is passed as DIR, the
+                          MySQL native driver will be used
+  --with-zlib-dir=DIR     PDO_MySQL: Set the path to libz install prefix
   --with-pdo-oci=DIR      PDO: Oracle OCI support. DIR defaults to \$ORACLE_HOME.
-                            Use --with-pdo-oci=instantclient,prefix,version
-                            for an Oracle Instant Client SDK.
-                            For example on Linux with 11.2 RPMs use:
+                          Use --with-pdo-oci=instantclient,prefix,version
+                          for an Oracle Instant Client SDK.
+                          For example on Linux with 11.2 RPMs use:
                             --with-pdo-oci=instantclient,/usr,11.2
-                            With 10.2 RPMs use:
+                          With 10.2 RPMs use:
                             --with-pdo-oci=instantclient,/usr,10.2.0.4
   --with-pdo-odbc=flavour,dir
-                            PDO: Support for 'flavour' ODBC driver.
-                            include and lib dirs are looked for under 'dir'.
+                          PDO: Support for 'flavour' ODBC driver.
+			  include and lib dirs are looked for under 'dir'.
 
-                            'flavour' can be one of:  ibm-db2, iODBC, unixODBC, generic
-                            If ',dir' part is omitted, default for the flavour
-                            you have selected will used. e.g.:
+			  'flavour' can be one of:  ibm-db2, iODBC, unixODBC, generic
+			  If ',dir' part is omitted, default for the flavour
+			  you have selected will be used. e.g.:
 
-                              --with-pdo-odbc=unixODBC
+			    --with-pdo-odbc=unixODBC
 
-                            will check for unixODBC under /usr/local. You may attempt
-                            to use an otherwise unsupported driver using the \"generic\"
-                            flavour.  The syntax for generic ODBC support is:
+			  will check for unixODBC under /usr/local. You may attempt
+			  to use an otherwise unsupported driver using the \"generic\"
+			  flavour.  The syntax for generic ODBC support is:
 
-                              --with-pdo-odbc=generic,dir,libname,ldflags,cflags
+			    --with-pdo-odbc=generic,dir,libname,ldflags,cflags
 
-                            When build as shared the extension filename is always pdo_odbc.so
+			  When built as 'shared' the extension filename is always pdo_odbc.so
   --with-pdo-pgsql=DIR    PDO: PostgreSQL support.  DIR is the PostgreSQL base
-                            install directory or the path to pg_config
+                          install directory or the path to pg_config
   --without-pdo-sqlite=DIR
-                            PDO: sqlite 3 support.  DIR is the sqlite base
-                            install directory BUNDLED
-  --with-pgsql=DIR      Include PostgreSQL support.  DIR is the PostgreSQL
+                          PDO: sqlite 3 support.  DIR is the sqlite base
+                          install directory BUNDLED
+  --with-pgsql=DIR        Include PostgreSQL support.  DIR is the PostgreSQL
                           base install directory or the path to pg_config
   --disable-phar          Disable phar support
   --disable-posix         Disable POSIX-like functions
-  --with-pspell=DIR     Include PSPELL support.
+  --with-pspell=DIR       Include PSPELL support.
                           GNU Aspell version 0.50.0 or higher required
-  --with-libedit=DIR    Include libedit readline replacement (CLI/CGI only)
-  --with-readline=DIR   Include readline support (CLI/CGI only)
-  --with-recode=DIR     Include recode support
+  --with-libedit=DIR      Include libedit readline replacement (CLI/CGI only)
+  --with-readline=DIR     Include readline support (CLI/CGI only)
+  --with-recode=DIR       Include recode support
   --disable-session       Disable session support
   --with-mm=DIR           SESSION: Include mm support for session storage
   --enable-shmop          Enable shmop support
   --disable-simplexml     Disable SimpleXML support
-  --with-libxml-dir=DIR     SimpleXML: libxml2 install prefix
-  --with-snmp=DIR       Include SNMP support
+  --with-libxml-dir=DIR   SimpleXML: libxml2 install prefix
+  --with-snmp=DIR         Include SNMP support
   --with-openssl-dir=DIR  SNMP: openssl install prefix
   --enable-soap           Enable SOAP support
-  --with-libxml-dir=DIR     SOAP: libxml2 install prefix
+  --with-libxml-dir=DIR   SOAP: libxml2 install prefix
   --enable-sockets        Enable sockets support
-  --with-sybase-ct=DIR  Include Sybase-CT support.  DIR is the Sybase home
+  --with-sybase-ct=DIR    Include Sybase-CT support.  DIR is the Sybase home
                           directory /home/sybase
   --enable-sysvmsg        Enable sysvmsg support
   --enable-sysvsem        Enable System V semaphore support
   --enable-sysvshm        Enable the System V shared memory support
-  --with-tidy=DIR       Include TIDY support
+  --with-tidy=DIR         Include TIDY support
   --disable-tokenizer     Disable tokenizer support
   --enable-wddx           Enable WDDX support
-  --with-libxml-dir=DIR     WDDX: libxml2 install prefix
-  --with-libexpat-dir=DIR   WDDX: libexpat dir for XMLRPC-EPI (deprecated)
+  --with-libxml-dir=DIR   WDDX: libxml2 install prefix
+  --with-libexpat-dir=DIR WDDX: libexpat dir for XMLRPC-EPI (deprecated)
   --disable-xml           Disable XML support
-  --with-libxml-dir=DIR     XML: libxml2 install prefix
-  --with-libexpat-dir=DIR   XML: libexpat install prefix (deprecated)
+  --with-libxml-dir=DIR   XML: libxml2 install prefix
+  --with-libexpat-dir=DIR XML: libexpat install prefix (deprecated)
   --disable-xmlreader     Disable XMLReader support
-  --with-libxml-dir=DIR     XMLReader: libxml2 install prefix
-  --with-xmlrpc=DIR     Include XMLRPC-EPI support
-  --with-libxml-dir=DIR     XMLRPC-EPI: libxml2 install prefix
-  --with-libexpat-dir=DIR   XMLRPC-EPI: libexpat dir for XMLRPC-EPI (deprecated)
-  --with-iconv-dir=DIR      XMLRPC-EPI: iconv dir for XMLRPC-EPI
+  --with-libxml-dir=DIR   XMLReader: libxml2 install prefix
+  --with-xmlrpc=DIR       Include XMLRPC-EPI support
+  --with-libxml-dir=DIR   XMLRPC-EPI: libxml2 install prefix
+  --with-libexpat-dir=DIR XMLRPC-EPI: libexpat dir for XMLRPC-EPI (deprecated)
+  --with-iconv-dir=DIR    XMLRPC-EPI: iconv dir for XMLRPC-EPI
   --disable-xmlwriter     Disable XMLWriter support
-  --with-libxml-dir=DIR     XMLWriter: libxml2 install prefix
-  --with-xsl=DIR        Include XSL support.  DIR is the libxslt base
+  --with-libxml-dir=DIR   XMLWriter: libxml2 install prefix
+  --with-xsl=DIR          Include XSL support.  DIR is the libxslt base
                           install directory (libxslt >= 1.1.0 required)
   --enable-zip            Include Zip read/write support
   --with-zlib-dir=DIR     ZIP: Set the path to libz install prefix
-  --with-pcre-dir           ZIP: pcre install prefix
+  --with-pcre-dir         ZIP: pcre install prefix
   --enable-mysqlnd        Enable mysqlnd explicitly, will be done implicitly
                           when required by other extensions
   --disable-mysqlnd-compression-support
-                            Disable support for the MySQL compressed protocol in mysqlnd
-  --with-zlib-dir=DIR       mysqlnd: Set the path to libz install prefix
+                          Disable support for the MySQL compressed protocol in mysqlnd
+  --with-zlib-dir=DIR     mysqlnd: Set the path to libz install prefix
 
 PEAR:
 
@@ -2048,13 +2049,14 @@ TSRM:
 
 Libtool:
 
-  --enable-shared=PKGS  build shared libraries default=yes
-  --enable-static=PKGS  build static libraries default=yes
-  --enable-fast-install=PKGS  optimize for fast installation default=yes
-  --with-gnu-ld           assume the C compiler uses GNU ld default=no
-  --disable-libtool-lock  avoid locking (might break parallel builds)
-  --with-pic              try to use only PIC/non-PIC objects default=use both
-  --with-tags=TAGS      include additional configurations automatic
+  --enable-shared=PKGS    Build shared libraries default=yes
+  --enable-static=PKGS    Build static libraries default=yes
+  --enable-fast-install=PKGS
+                          Optimize for fast installation default=yes
+  --with-gnu-ld           Assume the C compiler uses GNU ld default=no
+  --disable-libtool-lock  Avoid locking (might break parallel builds)
+  --with-pic              Try to use only PIC/non-PIC objects default=use both
+  --with-tags=TAGS        Include additional configurations automatic
 
 
 Some influential environment variables:
@@ -3686,7 +3688,7 @@ ac_config_headers="$ac_config_headers main/php_config.h"
 
 PHP_MAJOR_VERSION=5
 PHP_MINOR_VERSION=5
-PHP_RELEASE_VERSION=1
+PHP_RELEASE_VERSION=2
 PHP_EXTRA_VERSION=""
 PHP_VERSION="$PHP_MAJOR_VERSION.$PHP_MINOR_VERSION.$PHP_RELEASE_VERSION$PHP_EXTRA_VERSION"
 PHP_VERSION_ID=`expr $PHP_MAJOR_VERSION \* 10000 + $PHP_MINOR_VERSION \* 100 + $PHP_RELEASE_VERSION`
@@ -6350,7 +6352,7 @@ IFS="- /.
   APACHE_VERSION=`expr $4 \* 1000000 + $5 \* 1000 + $6`
 
   if test "$APACHE_VERSION" -ge 2000000; then
-    as_fn_error $? "You have enabled Apache 1.3 support while your server is Apache 2.  Please use the appropiate switch --with-apxs2" "$LINENO" 5
+    as_fn_error $? "You have enabled Apache 1.3 support while your server is Apache 2.  Please use the appropriate switch --with-apxs2" "$LINENO" 5
   fi
 
   for flag in $APXS_CFLAGS; do
@@ -7634,7 +7636,7 @@ IFS="- /.
   APACHE_VERSION=`expr $4 \* 1000000 + $5 \* 1000 + $6`
 
   if test "$APACHE_VERSION" -le 2000000; then
-    as_fn_error $? "You have enabled Apache 2 support while your server is Apache 1.3.  Please use the appropiate switch --with-apxs (without the 2)" "$LINENO" 5
+    as_fn_error $? "You have enabled Apache 2 support while your server is Apache 1.3.  Please use the appropriate switch --with-apxs (without the 2)" "$LINENO" 5
   elif test "$APACHE_VERSION" -lt 2000040; then
     as_fn_error $? "Please note that Apache version >= 2.0.40 is required" "$LINENO" 5
   fi
@@ -8458,7 +8460,7 @@ IFS="- /.
   APACHE_VERSION=`expr $4 \* 1000000 + $5 \* 1000 + $6`
 
   if test "$APACHE_VERSION" -le 2000000; then
-    as_fn_error $? "You have enabled Apache 2 support while your server is Apache 1.3.  Please use the appropiate switch --with-apxs (without the 2)" "$LINENO" 5
+    as_fn_error $? "You have enabled Apache 2 support while your server is Apache 1.3.  Please use the appropriate switch --with-apxs (without the 2)" "$LINENO" 5
   elif test "$APACHE_VERSION" -lt 2000044; then
     as_fn_error $? "Please note that Apache version >= 2.0.44 is required" "$LINENO" 5
   fi
@@ -9263,7 +9265,7 @@ IFS="- /.
   APACHE_VERSION=`expr $4 \* 1000000 + $5 \* 1000 + $6`
 
   if test "$APACHE_VERSION" -ge 2000000; then
-    as_fn_error $? "You have enabled Apache 1.3 support while your server is Apache 2.  Please use the appropiate switch --with-apxs2" "$LINENO" 5
+    as_fn_error $? "You have enabled Apache 1.3 support while your server is Apache 2.  Please use the appropriate switch --with-apxs2" "$LINENO" 5
   fi
 
   for flag in $APXS_CFLAGS; do
@@ -20783,8 +20785,10 @@ _ACEOF
 
   cat>>Makefile.objects<<EOF
 
+$abs_srcdir/$ac_provsrc:;
+
 $ac_bdir$ac_hdrobj: $abs_srcdir/$ac_provsrc
-	CFLAGS="\$(CFLAGS_CLEAN)" dtrace -h -C -s $ac_srcdir$ac_provsrc -o \$@ && \$(SED) -ibak 's,PHP_,DTRACE_,g' \$@
+	CFLAGS="\$(CFLAGS_CLEAN)" dtrace -h -C -s $ac_srcdir$ac_provsrc -o \$@.bak && \$(SED) 's,PHP_,DTRACE_,g' \$@.bak > \$@
 
 \$(PHP_DTRACE_OBJS): $ac_bdir$ac_hdrobj
 
@@ -65014,7 +65018,8 @@ int main() { return 0; }
 
 _ACEOF
 if ac_fn_c_try_run "$LINENO"; then :
-
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: done" >&5
+$as_echo "done" >&6; }
 else
   as_fn_error $? "Don't know how to define struct flock on this system, set --enable-opcache=no" "$LINENO" 5
 fi
@@ -71586,21 +71591,21 @@ $as_echo_n "checking for selected PDO ODBC flavour... " >&6; }
 
       *)
         as_fn_error $? "Unknown ODBC flavour $pdo_odbc_flavour
-                            include and lib dirs are looked for under 'dir'.
+			  include and lib dirs are looked for under 'dir'.
 
-                            'flavour' can be one of:  ibm-db2, iODBC, unixODBC, generic
-                            If ',dir' part is omitted, default for the flavour
-                            you have selected will used. e.g.:
+			  'flavour' can be one of:  ibm-db2, iODBC, unixODBC, generic
+			  If ',dir' part is omitted, default for the flavour
+			  you have selected will be used. e.g.:
 
-                              --with-pdo-odbc=unixODBC
+			    --with-pdo-odbc=unixODBC
 
-                            will check for unixODBC under /usr/local. You may attempt
-                            to use an otherwise unsupported driver using the \"generic\"
-                            flavour.  The syntax for generic ODBC support is:
+			  will check for unixODBC under /usr/local. You may attempt
+			  to use an otherwise unsupported driver using the \"generic\"
+			  flavour.  The syntax for generic ODBC support is:
 
-                              --with-pdo-odbc=generic,dir,libname,ldflags,cflags
+			    --with-pdo-odbc=generic,dir,libname,ldflags,cflags
 
-                            When build as shared the extension filename is always pdo_odbc.so" "$LINENO" 5
+			  When built as 'shared' the extension filename is always pdo_odbc.so" "$LINENO" 5
         ;;
   esac
 
@@ -102971,7 +102976,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 102974 "configure"
+#line 102979 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -104883,7 +104888,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 104886 "configure"' > conftest.$ac_ext
+  echo '#line 104891 "configure"' > conftest.$ac_ext
   if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -106275,7 +106280,7 @@ else
       LDFLAGS="$LDFLAGS -Wl,-exported_symbols_list,conftest.sym"
 
 cat > conftest.$ac_ext <<EOF
-#line 106278 "configure"
+#line 106283 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -106433,11 +106438,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:106436: $lt_compile\"" >&5)
+   (eval echo "\"configure:106441: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "configure:106440: \$? = $ac_status" >&5
+   echo "configure:106445: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -106731,11 +106736,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:106734: $lt_compile\"" >&5)
+   (eval echo "\"configure:106739: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "configure:106738: \$? = $ac_status" >&5
+   echo "configure:106743: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -106835,11 +106840,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:106838: $lt_compile\"" >&5)
+   (eval echo "\"configure:106843: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "configure:106842: \$? = $ac_status" >&5
+   echo "configure:106847: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -107299,7 +107304,7 @@ _LT_EOF
        # Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 107302 "configure"
+#line 107307 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -107341,7 +107346,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	 # Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 107344 "configure"
+#line 107349 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -108866,7 +108871,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 108869 "configure"
+#line 108874 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -108966,7 +108971,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 108969 "configure"
+#line 108974 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -110031,7 +110036,7 @@ case $host_os in
       # Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 110034 "configure"
+#line 110039 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -110074,7 +110079,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	# Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 110077 "configure"
+#line 110082 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -111326,11 +111331,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:111329: $lt_compile\"" >&5)
+   (eval echo "\"configure:111334: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "configure:111333: \$? = $ac_status" >&5
+   echo "configure:111338: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -111430,11 +111435,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:111433: $lt_compile\"" >&5)
+   (eval echo "\"configure:111438: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "configure:111437: \$? = $ac_status" >&5
+   echo "configure:111442: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -114004,7 +114009,7 @@ cat <<X
 | see the file debug.log for error messages.                         |
 |                                                                    |
 | If you are unable to fix this, send the file debug.log to the      |
-| php-install@lists.php.net mailing list and include appropiate      |
+| php-install@lists.php.net mailing list and include appropriate      |
 | information about your setup.                                      |
 X
   fi

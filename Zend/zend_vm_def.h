@@ -2920,9 +2920,12 @@ ZEND_VM_HANDLER(111, ZEND_RETURN_BY_REF, CONST|TMP|VAR|CV, ANY)
 			} else if (EX_T(opline->op1.var).var.ptr_ptr == &EX_T(opline->op1.var).var.ptr) {
 				zend_error(E_NOTICE, "Only variable references should be returned by reference");
 				if (EG(return_value_ptr_ptr)) {
-					retval_ptr = *retval_ptr_ptr;
-					*EG(return_value_ptr_ptr) = retval_ptr;
-					Z_ADDREF_P(retval_ptr);
+					zval *ret;
+
+					ALLOC_ZVAL(ret);
+					INIT_PZVAL_COPY(ret, *retval_ptr_ptr);
+					zval_copy_ctor(ret);
+					*EG(return_value_ptr_ptr) = ret;
 				}
 				break;
 			}
@@ -3007,7 +3010,7 @@ ZEND_VM_HANDLER(107, ZEND_CATCH, CONST, CV)
 
 #ifdef HAVE_DTRACE
 	if (DTRACE_EXCEPTION_CAUGHT_ENABLED()) {
-		DTRACE_EXCEPTION_CAUGHT(ce->name);
+		DTRACE_EXCEPTION_CAUGHT((char *)ce->name);
 	}
 #endif /* HAVE_DTRACE */
 
@@ -4211,7 +4214,7 @@ ZEND_VM_HANDLER(77, ZEND_FE_RESET, CONST|TMP|VAR|CV, ANY)
 				zend_uchar key_type;
 
 				key_type = zend_hash_get_current_key_ex(fe_ht, &str_key, &str_key_len, &int_key, 0, NULL);
-				if (key_type != HASH_KEY_NON_EXISTANT &&
+				if (key_type != HASH_KEY_NON_EXISTENT &&
 					(key_type == HASH_KEY_IS_LONG ||
 				     zend_check_property_access(zobj, str_key, str_key_len-1 TSRMLS_CC) == SUCCESS)) {
 					break;
