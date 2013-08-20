@@ -34,7 +34,7 @@
  # endif
 --- php5.orig/ext/opcache/config.m4
 +++ php5/ext/opcache/config.m4
-@@ -326,38 +326,42 @@ int main() {
+@@ -326,40 +326,42 @@ int main() {
      msg=yes,msg=no,msg=no)
    AC_MSG_RESULT([$msg])
  
@@ -100,7 +100,9 @@
 -# endif
 -#endif
 -int main() { return 0; }
--], [], [AC_MSG_ERROR([Don't know how to define struct flock on this system[,] set --enable-opcache=no])], [])
+-],
+-[AC_MSG_RESULT([done])],
+-[AC_MSG_ERROR([Don't know how to define struct flock on this system[,] set --enable-opcache=no])], [])
 +if test "$flock_type" == "unknown"; then
 +	AC_MSG_ERROR([Don't know how to define struct flock on this system[,] set --enable-opcache=no])
 +fi
