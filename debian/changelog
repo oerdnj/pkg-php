@@ -1,3 +1,14 @@
+php5 (5.5.2+dfsg-1) unstable; urgency=low
+
+  * New upstream version 5.5.2+dfsg
+  * Update patches for 5.5.2 release
+  * Add handling for mpm_itk to libapache2-mod-php5{,filter}
+    (Closes: #720278)
+  * Add php5-readline to php5-cli Recommends to hint that it's needed
+    for functional php -a
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 20 Aug 2013 13:17:24 +0200
+
 php5 (5.5.1+dfsg-2) unstable; urgency=low
 
   * Move apache2 (>= 2.4) from Pre-Depend to Depends (Closes: #711454)
