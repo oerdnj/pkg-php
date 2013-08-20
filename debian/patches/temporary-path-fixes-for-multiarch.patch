@@ -84,7 +84,7 @@ Reviewed-by: Steve Langasek <steve.langasek@ubuntu.com>
  
 --- php5.orig/ext/mysql/config.m4
 +++ php5/ext/mysql/config.m4
-@@ -93,17 +93,15 @@ Note that the MySQL client library is no
+@@ -94,17 +94,15 @@ Note that the MySQL client library is no
    fi
  
    for i in $PHP_LIBDIR $PHP_LIBDIR/mysql; do
