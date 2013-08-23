@@ -94,7 +94,7 @@
  #include "php_network.h"
 --- php5.orig/Zend/zend_language_parser.c
 +++ php5/Zend/zend_language_parser.c
-@@ -75,6 +75,8 @@
+@@ -70,6 +70,8 @@
  
  /* Copy the first part of user declarations.  */
  
