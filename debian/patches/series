@@ -24,13 +24,16 @@ force_libmysqlclient_r.patch
 mssql-null-exception.patch
 sybase-alias.patch
 strcmp_null-OnUpdateErrorLog.patch
+#deprecate_short_open_tag
 fix_broken_5.3_tests.patch
 dont-gitclean-in-build.patch
+#broken_5.3_test-posix_uname.patch
 shtool_mkdir_-p_-race-condition.patch
 qdbm-is-usr_include_qdbm.patch
 use_embedded_timezonedb_fixes.patch
 fix_broken_sha2_test.patch
 session_save_path.patch
+#install-programs_parallel_FTBFS.patch
 php-fpm-man-section-and-cleanup.patch
 fpm-config.patch
 php-fpm-sysconfdir.patch
