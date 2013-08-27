@@ -93,10 +93,10 @@ Depends: ${misc:Depends},
 	 sed (>= 4.1.1-1),
 	 psmisc (>= 22.15-1~),
 	 lsof [!kfreebsd-any !hurd-any],
-	 ucf
+	 ucf,
+	 php5-json
 Provides: php5-mhash, ${php:Provides}
 Conflicts: php5-mhash
-Recommends: php5-json
 Suggests: php5-user-cache
 Breaks: php5-xdebug (<< 2.2.2),
 	php-apc (<< 4.0.0),
