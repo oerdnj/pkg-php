@@ -1,3 +1,10 @@
+php5 (5.5.3+dfsg-2) UNRELEASED; urgency=low
+
+  * In maintscripts not emit 'no action required' messages to
+    console (closes: #724001).
+
+ -- Thijs Kinkhorst <thijs@debian.org>  Sun, 22 Sep 2013 12:31:22 +0200
+
 php5 (5.5.3+dfsg-1) unstable; urgency=low
 
   * New upstream version 5.5.3+dfs
