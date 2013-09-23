@@ -1,6 +1,7 @@
 Description: Check for possible overflows in recode_string()
-Origin: vendor
-Bug-Debian: http://bugs.debian.org/294986, http://bugs.debian.org/459020
+Author: Sean Finney <seanius@debian.org>
+Bug-Debian: http://bugs.debian.org/459020
+Bug: https://bugs.php.net/bug.php?id=41765
 Forwarded: no
 Last-Update: 2010-01-18
 
