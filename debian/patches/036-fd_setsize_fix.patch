@@ -1,5 +1,5 @@
 Description: Fixes misuse of FD_SET()
-Origin: vendor
+Origin: Fedora
 Forwarded: no
 Last-Update: 2010-01-18
 
