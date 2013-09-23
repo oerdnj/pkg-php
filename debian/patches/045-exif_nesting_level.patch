@@ -1,5 +1,6 @@
 Description: Increase maximum exif nesting level.
-Origin: vendor
+Author: Adam Conrad <adconrad@0c3.net>
+Bug: https://bugs.php.net/bug.php?id=31986
 Forwarded: no
 Last-Update: 2010-01-18
 
