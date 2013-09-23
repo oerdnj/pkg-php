@@ -1,3 +1,10 @@
+Description: re-enable the dl() function in debian builds
+ Despite upstream's claim that it "might not be threadsafe on all platforms".
+ It is on ours.
+Author: Steve Langasek <vorlon@debian.org>
+Bug-Debian: http://bugs.debian.org/297839
+Forwarded: no
+
 --- php5.orig/ext/standard/dl.c
 +++ php5/ext/standard/dl.c
 @@ -74,12 +74,7 @@ PHPAPI PHP_FUNCTION(dl)
