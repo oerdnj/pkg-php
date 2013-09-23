@@ -1,3 +1,8 @@
+Description: Correct non posix code (fixing FTBFS on hurd-i386)
+Author: "Marc Dequènes" <Duck@DuckCorp.org>
+Bug-Debian: http://bugs.debian.org/530281
+Bug: https://bugs.php.net/bug.php?id=48389
+
 --- php5.orig/TSRM/tsrm_config_common.h
 +++ php5/TSRM/tsrm_config_common.h
 @@ -1,6 +1,10 @@
