@@ -1,6 +1,5 @@
 001-libtool_fixes.patch
 002-static_openssl.patch
-004-ldap_fix.patch
 006-debian_quirks.patch
 libtool2.2.patch
 033-we_WANT_libtool.patch
