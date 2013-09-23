@@ -1,7 +1,11 @@
 php5 (5.5.3+dfsg-2) UNRELEASED; urgency=low
 
+  [ Thijs Kinkhorst ]
   * In maintscripts not emit 'no action required' messages to
     console (closes: #724001).
+
+  [ Lior Kaplan ]
+  * Remove obsolete patches: 004-ldap_fix and 036-fd_setsize_fix.
 
  -- Thijs Kinkhorst <thijs@debian.org>  Sun, 22 Sep 2013 12:31:22 +0200
 
