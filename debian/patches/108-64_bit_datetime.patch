@@ -1,3 +1,8 @@
+Description:  Patch to fix possible segfault on systems where sizeof(void*) > sizeof(int);
+Author: "David Mosberger-Tang" <David.Mosberger@acm.org>
+Bug-Debian: http://bugs.debian.org/346550
+Forwarded: no
+
 --- php5.orig/ext/standard/datetime.c
 +++ php5/ext/standard/datetime.c
 @@ -20,6 +20,9 @@
