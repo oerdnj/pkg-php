@@ -5,7 +5,9 @@ php5 (5.5.3+dfsg-2) UNRELEASED; urgency=low
     console (closes: #724001).
 
   [ Lior Kaplan ]
-  * Remove obsolete patches: 004-ldap_fix and 036-fd_setsize_fix.
+  * Remove obsolete patches: 004-ldap_fix, 036-fd_setsize_fix,
+    043-recode_size_t, 045-exif_nesting_level, 047-zts_with_dl and 
+    108-64_bit_datetime.
 
  -- Thijs Kinkhorst <thijs@debian.org>  Sun, 22 Sep 2013 12:31:22 +0200
 
