@@ -4,7 +4,6 @@
 libtool2.2.patch
 033-we_WANT_libtool.patch
 044-strtod_arm_fix.patch
-047-zts_with_dl.patch
 052-phpinfo_no_configure.patch
 053-extension_api.patch
 057-no_apache_installed.patch
