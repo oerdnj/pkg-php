@@ -3,7 +3,6 @@
 006-debian_quirks.patch
 libtool2.2.patch
 033-we_WANT_libtool.patch
-043-recode_size_t.patch
 044-strtod_arm_fix.patch
 045-exif_nesting_level.patch
 047-zts_with_dl.patch
