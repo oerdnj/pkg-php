@@ -1,4 +1,5 @@
-Description: Correct non posix code (fixing FTBFS on hurd-i386)
+Description: Correct non posix code (fixing FTBFS on GNU/Hurd)
+ See http://www.gnu.org/software/hurd/hurd/porting/guidelines.html#PATH_MAX_tt_MAX_PATH_tt_MAXPATHL
 Author: "Marc Dequènes" <Duck@DuckCorp.org>
 Bug-Debian: http://bugs.debian.org/530281
 Bug: https://bugs.php.net/bug.php?id=48389
