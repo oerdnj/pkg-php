@@ -12,7 +12,6 @@ libtool2.2.patch
 113-php.ini_securitynotes.patch
 116-posixness_fix.patch
 libdb_is_-ldb
-fix_broken_upstream_tests.patch
 use_embedded_timezonedb.patch
 force_libmysqlclient_r.patch
 mssql-null-exception.patch
