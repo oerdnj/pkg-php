@@ -19,7 +19,6 @@ mssql-null-exception.patch
 sybase-alias.patch
 strcmp_null-OnUpdateErrorLog.patch
 #deprecate_short_open_tag
-fix_broken_5.3_tests.patch
 dont-gitclean-in-build.patch
 #broken_5.3_test-posix_uname.patch
 shtool_mkdir_-p_-race-condition.patch
