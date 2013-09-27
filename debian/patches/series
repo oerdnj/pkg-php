@@ -25,7 +25,6 @@ dont-gitclean-in-build.patch
 shtool_mkdir_-p_-race-condition.patch
 qdbm-is-usr_include_qdbm.patch
 use_embedded_timezonedb_fixes.patch
-fix_broken_sha2_test.patch
 session_save_path.patch
 #install-programs_parallel_FTBFS.patch
 php-fpm-man-section-and-cleanup.patch
