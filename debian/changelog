@@ -1,4 +1,4 @@
-php5 (5.5.3+dfsg-2) UNRELEASED; urgency=low
+php5 (5.5.4+dfsg-1) unstable; urgency=low
 
   [ Thijs Kinkhorst ]
   * In maintscripts not emit 'no action required' messages to
@@ -8,8 +8,14 @@ php5 (5.5.3+dfsg-2) UNRELEASED; urgency=low
   * Remove obsolete patches: 004-ldap_fix, 036-fd_setsize_fix,
     043-recode_size_t, 045-exif_nesting_level, 047-zts_with_dl and 
     108-64_bit_datetime.
+  * Add patch info (description, author and bug number)
+  * Delete patches we don't apply during build
+  * Add a reference to GNU/Hurd porting guidelines
 
- -- Thijs Kinkhorst <thijs@debian.org>  Sun, 22 Sep 2013 12:31:22 +0200
+  [ Ondřej Surý ]
+  * New upstream version 5.5.4+dfsg
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 27 Sep 2013 11:28:59 +0200
 
 php5 (5.5.3+dfsg-1) unstable; urgency=low
 
