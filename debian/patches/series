@@ -13,11 +13,9 @@ libtool2.2.patch
 libdb_is_-ldb
 use_embedded_timezonedb.patch
 force_libmysqlclient_r.patch
-mssql-null-exception.patch
 sybase-alias.patch
 strcmp_null-OnUpdateErrorLog.patch
 dont-gitclean-in-build.patch
-shtool_mkdir_-p_-race-condition.patch
 qdbm-is-usr_include_qdbm.patch
 use_embedded_timezonedb_fixes.patch
 session_save_path.patch
@@ -33,9 +31,7 @@ php-5.3.9-gnusrc.patch
 php-5.3.3-macropen.patch
 php-5.2.4-norpath.patch
 php-fpm-listen-on-unix-socket.patch
-0001-Add-information-about-which-INI-file-is-which-inside.patch
 php-5.2.4-embed.patch
 php-5.4.0-dlopen.patch
 php-fpm-m68k.patch
 expose_all_built_and_installed_apis.patch
-Zend_OpCache_GNUHurd_fix.patch
