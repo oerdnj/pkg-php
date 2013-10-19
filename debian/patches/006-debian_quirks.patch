@@ -61,7 +61,7 @@ Last-Update: 2010-01-18
  ## convert skel_dir to full path
 --- php5.orig/php.ini-development
 +++ php5/php.ini-development
-@@ -701,7 +701,7 @@ default_mimetype = "text/html"
+@@ -703,7 +703,7 @@ default_mimetype = "text/html"
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
  ; UNIX: "/path1:/path2"
@@ -72,7 +72,7 @@ Last-Update: 2010-01-18
  ;include_path = ".;c:\php\includes"
 --- php5.orig/php.ini-production
 +++ php5/php.ini-production
-@@ -701,7 +701,7 @@ default_mimetype = "text/html"
+@@ -703,7 +703,7 @@ default_mimetype = "text/html"
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
  ; UNIX: "/path1:/path2"
@@ -81,7 +81,7 @@ Last-Update: 2010-01-18
  ;
  ; Windows: "\path1;\path2"
  ;include_path = ".;c:\php\includes"
-@@ -862,50 +862,6 @@ default_socket_timeout = 60
+@@ -864,50 +864,6 @@ default_socket_timeout = 60
  ; If you only provide the name of the extension, PHP will look for it in its
  ; default extension directory.
  ;

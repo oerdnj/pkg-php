@@ -51,7 +51,7 @@ Reviewed-by: Steve Langasek <steve.langasek@ubuntu.com>
        test -n "$OPENSSL_INCDIR" && test -n "$OPENSSL_LIBDIR" && break
 --- php5.orig/ext/ldap/config.m4
 +++ php5/ext/ldap/config.m4
-@@ -95,7 +95,7 @@ if test "$PHP_LDAP" != "no"; then
+@@ -117,7 +117,7 @@ if test "$PHP_LDAP" != "no"; then
      LDAP_PTHREAD=
    fi
  
