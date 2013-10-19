@@ -1,3 +1,13 @@
+php5 (5.5.5+dfsg-1) unstable; urgency=low
+
+  * New upstream version 5.5.5+dfsg
+    - Remove merged patches: shtool_mkdir_-p_-race-condition,
+      0001-Add-information-about-which-INI-file-is-which-inside,
+      Zend_OpCache_GNUHurd_fix and mssql-null-exception
+  * Delete 116-posixness_fix patch, Hurd builds successfully without it
+
+ -- Lior Kaplan <kaplan@debian.org>  Sat, 19 Oct 2013 15:49:21 +0300
+
 php5 (5.5.4+dfsg-1) unstable; urgency=low
 
   [ Thijs Kinkhorst ]
