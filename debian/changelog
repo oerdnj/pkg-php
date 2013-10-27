@@ -1,3 +1,80 @@
+php5 (5.4.21-1) unstable; urgency=low
+
+  * Update NEWS file for 5.4.21 release
+  * New upstream version 5.4.21
+  * Update patches for 5.4.21 release
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 21 Oct 2013 09:24:48 +0200
+
+php5 (5.4.20-1) unstable; urgency=low
+
+  * New upstream version 5.4.20
+  * Update patches for 5.4.20 release
+  * Don't run tests as nobody checks the result anyway (yet)
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 27 Sep 2013 09:42:51 +0200
+
+php5 (5.4.19-1) unstable; urgency=low
+
+  * Add php5-readline to php5-cli Recommends to hint that it's needed for php -a
+  * New upstream version 5.4.19
+  * Update patches for new release
+  * Remove obsolete patches
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 27 Aug 2013 08:39:28 +0200
+
+php5 (5.4.17-5) unstable; urgency=low
+
+  * PHP GD extension in PHP 5.4 needs GD 2.0.x
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 06 Aug 2013 12:47:44 +0200
+
+php5 (5.4.17-4) unstable; urgency=low
+
+  * Install the headers from CGI build to get mysqlnd headers into
+    php5-dev package (Closes: #690395)
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 05 Aug 2013 19:26:21 +0200
+
+php5 (5.4.17-1) unstable; urgency=low
+
+  * New upstream version 5.4.17
+  * CVE-2013-4113: Fix heap corruption in xml parser (Closes: #717139)
+
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 17 Jul 2013 17:24:52 +0200
+
+php5 (5.4.17~rc1-2) unstable; urgency=low
+
+  * Fix FreeTDS 0.8x compatibility
+
+ -- Ondřej Surý <ondrej@debian.org>  Sat, 22 Jun 2013 07:46:23 +0200
+
+php5 (5.4.17~rc1-1) unstable; urgency=low
+
+  * New upstream version 5.4.17~rc1
+  * Update patches for 5.4.17~rc1 release.
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 21 Jun 2013 17:06:54 +0200
+
+php5 (5.4.16-2) unstable; urgency=low
+
+  * Fix 036-fd_setsize_fix.patch
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 21 Jun 2013 15:35:56 +0200
+
+php5 (5.4.16-1) unstable; urgency=low
+
+  * New upstream version 5.4.16
+  * Update patches for 5.4.16 release
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 21 Jun 2013 14:22:24 +0200
+
+php5 (5.4.15-2) unstable; urgency=low
+
+  * Add dependency on lsof (Closes: #708087)
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 13 May 2013 09:37:55 +0200
+
 php5 (5.4.15-1) unstable; urgency=low
 
   * Imported Upstream version 5.4.15
