@@ -4,7 +4,7 @@ php5 (5.4.21-1) unstable; urgency=low
   * New upstream version 5.4.21
   * Update patches for 5.4.21 release
 
- -- Ondřej Surý <ondrej@debian.org>  Mon, 21 Oct 2013 09:24:48 +0200
+ -- Ondřej Surý <ondrej@debian.org>  Sun, 27 Oct 2013 20:39:00 +0100
 
 php5 (5.4.20-1) unstable; urgency=low
 
