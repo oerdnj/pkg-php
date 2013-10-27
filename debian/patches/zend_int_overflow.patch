@@ -4,8 +4,8 @@ Description: Another integer overflow/underflow logic fix.
  the overflow/underflow conditions intelligently.
 Bug: http://bugs.php.net/bug.php?id=51008
 Bug-Debian: http://bugs.debian.org/570144
---- a/Zend/zend_hash.h
-+++ b/Zend/zend_hash.h
+--- php5.4.orig/Zend/zend_hash.h
++++ php5.4/Zend/zend_hash.h
 @@ -306,9 +306,11 @@ END_EXTERN_C()
  
  #define ZEND_HANDLE_NUMERIC_EX(key, length, idx, func) do {					\
@@ -48,8 +48,8 @@ Bug-Debian: http://bugs.debian.org/570144
  			func;															\
  		}																	\
  	}																		\
---- a/Zend/tests/bug45877.phpt
-+++ b/Zend/tests/bug45877.phpt
+--- php5.4.orig/Zend/tests/bug45877.phpt
++++ php5.4/Zend/tests/bug45877.phpt
 @@ -1,23 +1,40 @@
  --TEST--
  Bug #45877 (Array key '2147483647' left as string)

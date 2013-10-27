@@ -7,8 +7,8 @@ Bug-Debian: http://bugs.debian.org/286225
 Forwarded: no
 Last-Update: 2010-01-18
 
---- a/sapi/apache2handler/sapi_apache2.c
-+++ b/sapi/apache2handler/sapi_apache2.c
+--- php5.4.orig/sapi/apache2handler/sapi_apache2.c
++++ php5.4/sapi/apache2handler/sapi_apache2.c
 @@ -468,6 +468,19 @@ static apr_status_t php_server_context_c
  	return APR_SUCCESS;
  }

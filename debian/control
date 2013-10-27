@@ -85,7 +85,12 @@ Description: server-side, HTML-embedded scripting language (metapackage)
 
 Package: php5-common
 Architecture: any
-Depends: ${misc:Depends}, sed (>= 4.1.1-1), psmisc (>= 22.15-1~), ${shlibs:Depends}, ucf
+Depends: ${misc:Depends},
+	 ${shlibs:Depends},
+	 sed (>= 4.1.1-1),
+	 psmisc (>= 22.15-1~),
+	 lsof,
+	 ucf
 Pre-Depends: dpkg (>= 1.15.7.2~)
 Provides: php5-json, php5-mhash
 Conflicts: php5-json, php5-mhash, php5-suhosin
@@ -177,6 +182,7 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support, php5-common (= ${binary:Version}), libmagic1, ucf, tzdata, libedit2 (>= 2.11-20080614-4)
 Provides: ${php:Provides}
 Suggests: php-pear
+Recommends: php5-readline
 Description: command-line interpreter for the php5 scripting language
  This package provides the /usr/bin/php5 command interpreter, useful for
  testing PHP scripts from a shell or performing general shell scripting tasks.

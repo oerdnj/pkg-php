@@ -1,5 +1,5 @@
---- a/sapi/fpm/config.m4
-+++ b/sapi/fpm/config.m4
+--- php5.4.orig/sapi/fpm/config.m4
++++ php5.4/sapi/fpm/config.m4
 @@ -147,6 +147,11 @@ AC_DEFUN([AC_FPM_TRACE],
          pid_t child;
          int status;

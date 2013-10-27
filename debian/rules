@@ -24,7 +24,7 @@ PHP5_SOURCE_VERSION   = $(shell dpkg-parsechangelog | grep ^Version | sed "s/Ver
 PHP5_UPSTREAM_VERSION = $(shell echo $(PHP5_SOURCE_VERSION) | sed -e "s/-.*//" -e "s/.*://")
 PHP5_DEBIAN_REVISION  = $(shell echo $(PHP5_SOURCE_VERSION) | sed "s/.*-//")
 
-RUN_TESTS = yes
+RUN_TESTS = no
 ifeq (nocheck,$(findstring nocheck,$(DEB_BUILD_OPTIONS)))
   $(warning Disabling checks due DEB_BUILD_OPTIONS)
   RUN_TESTS = no
@@ -511,6 +511,10 @@ install: build
 
 	# install the apache modules' files
 	cd apache2-build && $(MAKE) install-headers install-build install-modules install-programs INSTALL_ROOT=$(CURDIR)/debian/libapache2-mod-php5
+
+	# install the headers from cgi-build
+	cd cgi-build && $(MAKE) install-headers INSTALL_ROOT=$(CURDIR)/debian/php5-dev
+
 	# remove netware and win32 headers that we don't want
 	cd debian/libapache2-mod-php5/usr/include/php5/ && \
 		  $(RM) TSRM/readdir.h \

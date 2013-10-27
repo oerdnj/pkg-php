@@ -16,8 +16,8 @@ r3: fix a crash if /usr/share/zoneinfo doesn't exist (Raphael Geissert)
 r2: add filesystem trawl to set up name alias index
 r1: initial revision
 
---- a/ext/date/lib/parse_tz.c
-+++ b/ext/date/lib/parse_tz.c
+--- php5.4.orig/ext/date/lib/parse_tz.c
++++ php5.4/ext/date/lib/parse_tz.c
 @@ -24,6 +24,16 @@
  
  #include "timelib.h"
@@ -594,8 +594,8 @@ r1: initial revision
  	} else {
  		tmp = NULL;
  	}
---- a/ext/date/lib/timelib.m4
-+++ b/ext/date/lib/timelib.m4
+--- php5.4.orig/ext/date/lib/timelib.m4
++++ php5.4/ext/date/lib/timelib.m4
 @@ -78,3 +78,17 @@ stdlib.h
  
  dnl Check for strtoll, atoll
@@ -614,9 +614,9 @@ r1: initial revision
 +   fi
 +fi
 +
---- a/ext/date/php_date.c
-+++ b/ext/date/php_date.c
-@@ -897,6 +897,23 @@ static char* guess_timezone(const timeli
+--- php5.4.orig/ext/date/php_date.c
++++ php5.4/ext/date/php_date.c
+@@ -917,6 +917,23 @@ static char* guess_timezone(const timeli
  		DATEG(timezone_valid) = 1;
  		return DATEG(default_timezone);
  	}
