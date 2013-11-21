@@ -1,5 +1,44 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+14 Nov 2013, PHP 5.5.6
+
+- Core:
+  . Fixed bug #65947 (basename is no more working after fgetcsv in certain 
+    situation). (Laruence)
+  . Improved performance of array_merge() and func_get_args() by eliminating
+    useless copying. (Dmitry)
+  . Fixed bug #65939 (Space before ";" breaks php.ini parsing).
+    (brainstorm at nopcode dot org)
+  . Fixed bug #65911 (scope resolution operator - strange behavior with $this).
+    (Bob Weinand)
+  . Fixed bug #65936 (dangling context pointer causes crash). (Tony)
+
+- FPM:
+  . Changed default listen() backlog to 65535. (Tony)
+
+- MySQLi:
+  . Fixed bug #66043 (Segfault calling bind_param() on mysqli). (Laruence)
+
+- OPcache
+  . Increased limit for opcache.max_accelerated_files to 1,000,000. (Chris)
+  . Fixed issue #115 (path issue when using phar). (Dmitry)
+  . Fixed issue #149 (Phar mount points not working with OPcache enabled).
+  (Dmitry)
+
+- ODBC
+  . Fixed bug #65950 (Field name truncation if the field name is bigger than
+    32 characters). (patch submitted by: michael dot y at zend dot com, Yasuo)
+
+- PDO:
+  . Fixed bug #66033 (Segmentation Fault when constructor of PDO statement 
+    throws an exception). (Laruence)
+  . Fixed bug 65946 (sql_parser permanently converts values bound to strings)
+
+- Standard:
+  . Fixed bug #64760 (var_export() does not use full precision for floating-point
+    numbers) (Yasuo)
+
+
 17 Oct 2013, PHP 5.5.5
 
 - Core:
