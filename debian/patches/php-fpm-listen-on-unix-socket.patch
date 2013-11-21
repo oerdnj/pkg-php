@@ -8,4 +8,4 @@
 +listen = /var/run/php5-fpm.sock
  
  ; Set listen(2) backlog.
- ; Default Value: 128 (-1 on FreeBSD and OpenBSD)
+ ; Default Value: 65535 (-1 on FreeBSD and OpenBSD)
