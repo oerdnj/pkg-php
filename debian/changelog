@@ -1,3 +1,9 @@
+php5 (5.5.7+dfsg-2) unstable; urgency=low
+
+  * Enable dtrace only on architectures that support it
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 12 Dec 2013 23:54:26 +0100
+
 php5 (5.5.7+dfsg-1) unstable; urgency=high
 
   * New upstream version 5.5.7+dfsg
