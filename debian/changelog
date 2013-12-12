@@ -1,8 +1,10 @@
-php5 (5.5.6+dfsg-3) unstable; urgency=low
+php5 (5.5.7+dfsg-1) unstable; urgency=high
 
+  * New upstream version 5.5.7+dfsg
+   + [CVE-2013-6420]: Fix memory corruption in openssl_x509_parse (Closes: #731895)
   * Enable dtrace/systemtap support (Closes: #730528)
 
- -- Ondřej Surý <ondrej@debian.org>  Thu, 12 Dec 2013 11:33:13 +0100
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 12 Dec 2013 20:49:21 +0100
 
 php5 (5.5.6+dfsg-2) unstable; urgency=high
 
