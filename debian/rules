@@ -57,6 +57,12 @@ else
   CONFIGURE_SYSTEMD = --without-fpm-systemd
 endif
 
+ifeq ($(DEB_HOST_ARCH),$(filter $(DEB_HOST_ARCH),amd64 armel armhf i386 ia64 powerpc))
+  CONFIGURE_DTRACE_ARGS = --enable-dtrace
+else
+  CONFIGURE_DTRACE_ARGS = --disable-dtrace
+endif
+
 # specify some options to our patch system
 QUILT_DIFF_OPTS=-p
 QUILT_NO_DIFF_TIMESTAMPS=1 
@@ -148,7 +154,7 @@ COMMON_CONFIG=--build=$(DEB_BUILD_GNU_TYPE) \
 		--with-mhash=yes \
 		--with-system-tzdata \
 		--with-mysql-sock=/var/run/mysqld/mysqld.sock \
-		--enable-dtrace
+		$(CONFIGURE_DTRACE_ARGS)
 
 BUILTIN_EXTENSION_CHECK=$$e=get_loaded_extensions(); natcasesort($$e); \
 			$$s="The following extensions are built in:"; \
