@@ -1,4 +1,4 @@
-php5 (5.5.6+dfsg-2) unstable; urgency=low
+php5 (5.5.6+dfsg-2) unstable; urgency=high
 
   * [CVE-2013-6420]: Fix memory corruption in openssl_x509_parse (Closes: #731895)
   * [CVE-2013-6712] Fix heap buffer over-read in DateInterval (Closes: #731112)
