@@ -2,8 +2,9 @@ php5 (5.5.6+dfsg-2) unstable; urgency=low
 
   * [CVE-2013-6420]: Fix memory corruption in openssl_x509_parse (Closes: #731895)
   * [CVE-2013-6712] Fix heap buffer over-read in DateInterval (Closes: #731112)
+  * Add patch to fix freetype2 include directory
 
- -- Ondřej Surý <ondrej@debian.org>  Thu, 12 Dec 2013 09:57:09 +0100
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 12 Dec 2013 11:07:11 +0100
 
 php5 (5.5.6+dfsg-1) unstable; urgency=low
 
