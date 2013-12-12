@@ -1,5 +1,29 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+12 Dec 2013, PHP 5.5.7
+
+- CLI server:
+  . Added some MIME types to the CLI web server (Chris Jones)
+  . Implemented FR #65917 (getallheaders() is not supported by the built-in web
+    server) - also implements apache_response_headers() (Andrea Faulds)
+
+- Core:
+  . Fixed bug #66094 (unregister_tick_function tries to cast a Closure to a 
+    string). (Laruence)
+
+- OPCache
+  . Fixed bug #66176 (Invalid constant substitution). (Dmitry)
+  . Fixed bug #65915 (Inconsistent results with require return value). (Dmitry)
+  . Fixed bug #65559 (Opcache: cache not cleared if changes occur while
+    running). (Dmitry)
+
+- OpenSSL:
+  . Fixed memory corruption in openssl_x509_parse() (CVE-2013-6420).
+    (Stefan Esser).
+
+- readline
+  . Fixed Bug #65714 (PHP cli forces the tty to cooked mode). (Remi)
+
 14 Nov 2013, PHP 5.5.6
 
 - Core:
@@ -15,6 +39,10 @@ PHP                                                                        NEWS
 
 - FPM:
   . Changed default listen() backlog to 65535. (Tony)
+
+- JSON
+  . Fixed whitespace part of bug #64874 ("json_decode handles whitespace and
+    case-sensitivity incorrectly"). (Andrea Faulds)
 
 - MySQLi:
   . Fixed bug #66043 (Segfault calling bind_param() on mysqli). (Laruence)
