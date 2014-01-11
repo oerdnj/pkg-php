@@ -22,7 +22,7 @@ r1: initial revision
 @@ -18,8 +18,22 @@
  
  /* $Id$ */
-
+ 
 +#ifndef PATH_MAX
 +#define PATH_MAX 4096
 +#endif
