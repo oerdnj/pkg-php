@@ -1,3 +1,18 @@
+php5 (5.5.8+dfsg-2) unstable; urgency=medium
+
+  * Re-enable dtrace only on architectures that support it
+
+ -- Lior Kaplan <kaplan@debian.org>  Sun, 12 Jan 2014 00:56:04 +0200
+
+php5 (5.5.8+dfsg-1) unstable; urgency=medium
+
+  * New upstream version 5.5.8+dfsg
+    - Includes fix for CVE-2013-6712
+    - Includes fix for freetype2 include directory (replaces our patch)
+  * Add missing PATH_MAX in use_embedded_timezonedb patch to fix hurd-i386 FTBFS
+
+ -- Lior Kaplan <kaplan@debian.org>  Sat, 11 Jan 2014 14:37:19 +0200
+
 php5 (5.5.7+dfsg-2) unstable; urgency=low
 
   * Enable dtrace only on architectures that support it

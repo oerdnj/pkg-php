@@ -472,7 +472,7 @@ static int odbc_stmt_param_hook(pdo_stmt_t *stmt, struct pdo_bound_param_data *p
 					if (P->outbuf) {
 						unsigned long ulen;
 						char *srcbuf;
-						unsigned long srclen;
+						unsigned long srclen = 0;
 
 						switch (P->len) {
 							case SQL_NULL_DATA:
@@ -551,7 +551,8 @@ static int odbc_stmt_describe(pdo_stmt_t *stmt, int colno TSRMLS_DC)
 	struct pdo_column_data *col = &stmt->columns[colno];
 	RETCODE rc;
 	SWORD	colnamelen;
-	SDWORD	colsize, displaysize;
+	SDWORD	colsize;
+	SQLLEN displaysize;
 
 	rc = SQLDescribeCol(S->stmt, colno+1, S->cols[colno].colname,
 			sizeof(S->cols[colno].colname)-1, &colnamelen,

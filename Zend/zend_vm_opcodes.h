@@ -18,6 +18,11 @@
    +----------------------------------------------------------------------+
 */
 
+#ifndef ZEND_VM_OPCODES_H
+#define ZEND_VM_OPCODES_H
+
+ZEND_API const char *zend_get_opcode_name(zend_uchar opcode);
+
 #define ZEND_NOP                               0
 #define ZEND_ADD                               1
 #define ZEND_SUB                               2
@@ -164,3 +169,5 @@
 #define ZEND_GENERATOR_RETURN                161
 #define ZEND_FAST_CALL                       162
 #define ZEND_FAST_RET                        163
+
+#endif

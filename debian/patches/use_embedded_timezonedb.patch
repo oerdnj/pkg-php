@@ -19,8 +19,14 @@ r1: initial revision
 
 --- php5.orig/ext/date/lib/parse_tz.c
 +++ php5/ext/date/lib/parse_tz.c
-@@ -20,6 +20,16 @@
+@@ -18,8 +18,22 @@
  
+ /* $Id$ */
+ 
++#ifndef PATH_MAX
++#define PATH_MAX 4096
++#endif
++
  #include "timelib.h"
  
 +#ifdef HAVE_SYSTEM_TZDATA
