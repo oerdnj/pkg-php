@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 2006-2013 The PHP Group                                |
+  | Copyright (c) 2006-2014 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -104,7 +104,7 @@
 
 #define MYSQLND_CAPABILITIES (CLIENT_LONG_PASSWORD | CLIENT_LONG_FLAG | CLIENT_TRANSACTIONS | \
 				CLIENT_PROTOCOL_41 | CLIENT_SECURE_CONNECTION | \
-				CLIENT_MULTI_RESULTS | CLIENT_PS_MULTI_RESULTS | CLIENT_LOCAL_FILES | CLIENT_PLUGIN_AUTH)
+				CLIENT_MULTI_RESULTS  | CLIENT_LOCAL_FILES | CLIENT_PLUGIN_AUTH)
 
 #define MYSQLND_NET_FLAG_USE_COMPRESSION 1
 

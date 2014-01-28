@@ -399,6 +399,9 @@
 /* */
 #undef HAVE_APACHE_HOOKS
 
+/* do we have apparmor support? */
+#undef HAVE_APPARMOR
+
 /* Define to 1 if you have the <ApplicationServices/ApplicationServices.h>
    header file. */
 #undef HAVE_APPLICATIONSERVICES_APPLICATIONSERVICES_H
@@ -908,8 +911,29 @@
 /* Define to 1 if you have the `initgroups' function. */
 #undef HAVE_INITGROUPS
 
+/* Define to 1 if the system has the type `int16'. */
+#undef HAVE_INT16
+
+/* Define to 1 if the system has the type `int16_t'. */
+#undef HAVE_INT16_T
+
+/* Define to 1 if the system has the type `int32'. */
+#undef HAVE_INT32
+
 /* Define if int32_t type is present. */
 #undef HAVE_INT32_T
+
+/* Define to 1 if the system has the type `int64'. */
+#undef HAVE_INT64
+
+/* Define to 1 if the system has the type `int64_t'. */
+#undef HAVE_INT64_T
+
+/* Define to 1 if the system has the type `int8'. */
+#undef HAVE_INT8
+
+/* Define to 1 if the system has the type `int8_t'. */
+#undef HAVE_INT8_T
 
 /* Whether intmax_t is available */
 #undef HAVE_INTMAX_T
@@ -1048,6 +1072,9 @@
 
 /* */
 #undef HAVE_LIBXML
+
+/* */
+#undef HAVE_LIBZIP
 
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
@@ -1189,8 +1216,11 @@
 /* */
 #undef HAVE_NSLDAP
 
-/* */
+/* Defined to 1 if the PHP OCI8 extension for Oracle Database is configured */
 #undef HAVE_OCI8
+
+/* Defined to 1 if PHP OCI8 DTrace support was enabled during configuration */
+#undef HAVE_OCI8_DTRACE
 
 /* */
 #undef HAVE_OCICOLLASSIGN
@@ -1207,11 +1237,9 @@
 /* */
 #undef HAVE_OCISTMTFETCH2
 
-/* */
+/* Defined to 1 if OCI8 configuration located Oracle's Instant Client
+   libraries */
 #undef HAVE_OCI_INSTANT_CLIENT
-
-/* */
-#undef HAVE_OCI_LOB_READ2
 
 /* */
 #undef HAVE_ODBC2
@@ -1285,11 +1313,20 @@
 /* Whether to have pg_config.h */
 #undef HAVE_PG_CONFIG_H
 
+/* PostgreSQL 9.3 or later */
+#undef HAVE_PG_LO64
+
 /* PostgreSQL 8.1 or later */
 #undef HAVE_PG_LO_CREATE
 
 /* PostgreSQL 8.4 or later */
 #undef HAVE_PG_LO_IMPORT_WITH_OID
+
+/* PostgreSQL 8.3 or later */
+#undef HAVE_PG_LO_TRUNCATE
+
+/* */
+#undef HAVE_PHPDBG
 
 /* */
 #undef HAVE_PHP_SESSION
@@ -1621,7 +1658,7 @@
 /* Define to 1 if you have the `srandom' function. */
 #undef HAVE_SRANDOM
 
-/* Whether ssize_t is available */
+/* Define to 1 if the system has the type `ssize_t'. */
 #undef HAVE_SSIZE_T
 
 /* Define to 1 if you have the `statfs' function. */
@@ -1919,8 +1956,29 @@
 /* */
 #undef HAVE_UDBCEXT_H
 
+/* Define to 1 if the system has the type `uint16'. */
+#undef HAVE_UINT16
+
+/* Define to 1 if the system has the type `uint16_t'. */
+#undef HAVE_UINT16_T
+
+/* Define to 1 if the system has the type `uint32'. */
+#undef HAVE_UINT32
+
 /* Define if uint32_t type is present. */
 #undef HAVE_UINT32_T
+
+/* Define to 1 if the system has the type `uint64'. */
+#undef HAVE_UINT64
+
+/* Define to 1 if the system has the type `uint64_t'. */
+#undef HAVE_UINT64_T
+
+/* Define to 1 if the system has the type `uint8'. */
+#undef HAVE_UINT8
+
+/* Define to 1 if the system has the type `uint8_t'. */
+#undef HAVE_UINT8_T
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
@@ -1957,6 +2015,18 @@
 
 /* Whether struct utsname has domainname */
 #undef HAVE_UTSNAME_DOMAINNAME
+
+/* Define to 1 if the system has the type `u_int16_t'. */
+#undef HAVE_U_INT16_T
+
+/* Define to 1 if the system has the type `u_int32_t'. */
+#undef HAVE_U_INT32_T
+
+/* Define to 1 if the system has the type `u_int64_t'. */
+#undef HAVE_U_INT64_T
+
+/* Define to 1 if the system has the type `u_int8_t'. */
+#undef HAVE_U_INT8_T
 
 /* Define to 1 if you have the `vasprintf' function. */
 #undef HAVE_VASPRINTF
@@ -2115,6 +2185,9 @@
 #undef PHAR_HAVE_OPENSSL
 
 /* */
+#undef PHPDBG_DEBUG
+
+/* */
 #undef PHP_APACHE_HAVE_CLIENT_FD
 
 /* Whether the system supports BlowFish salt */
@@ -2137,6 +2210,9 @@
 
 /* fpm user name */
 #undef PHP_FPM_USER
+
+/* Checked for stdint types */
+#undef PHP_HAVE_STDINT_TYPES
 
 /* Whether you have HP-UX 10.x */
 #undef PHP_HPUX_TIME_R
@@ -2242,6 +2318,9 @@
 
 /* The size of `long long int', as computed by sizeof. */
 #undef SIZEOF_LONG_LONG_INT
+
+/* The size of `off_t', as computed by sizeof. */
+#undef SIZEOF_OFF_T
 
 /* Size of ptrdiff_t */
 #undef SIZEOF_PTRDIFF_T
@@ -2487,4 +2566,18 @@ int zend_sprintf(char *buffer, const char *format, ...);
 #endif
 
 #undef PTHREADS
+
+
+
+#ifndef HAVE_SSIZE_T
+#  if SIZEOF_SIZE_T == SIZEOF_INT
+typedef int ssize_t;
+#  elif SIZEOF_SIZE_T == SIZEOF_LONG
+typedef long ssize_t;
+#  elif SIZEOF_SIZE_T == SIZEOF_LONG_LONG
+typedef long long ssize_t;
+#  else
+#error no suitable type for ssize_t found
+#  endif
+#endif
 
