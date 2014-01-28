@@ -1,6 +1,6 @@
 --- php5.orig/sapi/fpm/fpm/fpm_conf.c
 +++ php5/sapi/fpm/fpm/fpm_conf.c
-@@ -1638,7 +1638,7 @@ int fpm_conf_init_main(int test_conf, in
+@@ -1644,7 +1644,7 @@ int fpm_conf_init_main(int test_conf, in
  		char *tmp;
  
  		if (fpm_globals.prefix == NULL) {
