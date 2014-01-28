@@ -1,3 +1,16 @@
+php5 (5.6.0~alpha1+dfsg-1) experimental; urgency=medium
+
+  * THIS IS A DEVELOPMENT PREVIEW - DO NOT USE IT IN PRODUCTION! 
+  * PHP 5.6.0alpha1 comes with new features such as (incomplete list) :
+    + constant scalar expressions,
+    + variadic functions,
+    + argument unpacking,
+    + support for large(>2GiB) file uploads,
+    + SSL/TLS improvements,
+    + a new command line debugger called phpdbg.
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 28 Jan 2014 11:02:20 +0100
+
 php5 (5.5.0~rc1+dfsg-1) experimental; urgency=low
 
   * Starting from this version, the JSON module is no longer compiled in
