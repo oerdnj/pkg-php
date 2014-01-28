@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2013 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2014 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -896,11 +896,8 @@ ZEND_API void zend_std_call_user_call(INTERNAL_FUNCTION_PARAMETERS) /* {{{ */
 	zend_call_method_with_2_params(&this_ptr, ce, &ce->__call, ZEND_CALL_FUNC_NAME, &method_result_ptr, method_name_ptr, method_args_ptr);
 
 	if (method_result_ptr) {
-		if (Z_ISREF_P(method_result_ptr) || Z_REFCOUNT_P(method_result_ptr) > 1) {
-			RETVAL_ZVAL(method_result_ptr, 1, 1);
-		} else {
-			RETVAL_ZVAL(method_result_ptr, 0, 1);
-		}
+		RETVAL_ZVAL_FAST(method_result_ptr);
+		zval_ptr_dtor(&method_result_ptr);
 	}
 
 	/* now destruct all auxiliaries */
@@ -1113,11 +1110,8 @@ ZEND_API void zend_std_callstatic_user_call(INTERNAL_FUNCTION_PARAMETERS) /* {{{
 	zend_call_method_with_2_params(NULL, ce, &ce->__callstatic, ZEND_CALLSTATIC_FUNC_NAME, &method_result_ptr, method_name_ptr, method_args_ptr);
 
 	if (method_result_ptr) {
-		if (Z_ISREF_P(method_result_ptr) || Z_REFCOUNT_P(method_result_ptr) > 1) {
-			RETVAL_ZVAL(method_result_ptr, 1, 1);
-		} else {
-			RETVAL_ZVAL(method_result_ptr, 0, 1);
-		}
+		RETVAL_ZVAL_FAST(method_result_ptr);
+		zval_ptr_dtor(&method_result_ptr);
 	}
 
 	/* now destruct all auxiliaries */
@@ -1379,10 +1373,6 @@ static int zend_std_compare_objects(zval *o1, zval *o2 TSRMLS_DC) /* {{{ */
 					Z_OBJ_UNPROTECT_RECURSION(o1);
 					Z_OBJ_UNPROTECT_RECURSION(o2);
 					return 1;
-				} else {
-					Z_OBJ_UNPROTECT_RECURSION(o1);
-					Z_OBJ_UNPROTECT_RECURSION(o2);
-					return 0;
 				}
 			}
 		}
@@ -1651,6 +1641,8 @@ ZEND_API zend_object_handlers std_object_handlers = {
 	NULL,									/* get_debug_info */
 	zend_std_get_closure,					/* get_closure */
 	zend_std_get_gc,						/* get_gc */
+	NULL,									/* do_operation */
+	NULL,									/* compare */
 };
 
 /*

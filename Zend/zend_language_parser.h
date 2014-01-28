@@ -178,7 +178,8 @@
      T_NAMESPACE = 383,
      T_NS_C = 384,
      T_DIR = 385,
-     T_NS_SEPARATOR = 386
+     T_NS_SEPARATOR = 386,
+     T_ELLIPSIS = 387
    };
 #endif
 /* Tokens.  */
@@ -312,6 +313,7 @@
 #define T_NS_C 384
 #define T_DIR 385
 #define T_NS_SEPARATOR 386
+#define T_ELLIPSIS 387
 
 
 
