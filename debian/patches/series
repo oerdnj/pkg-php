@@ -37,3 +37,4 @@ php-fpm-m68k.patch
 expose_all_built_and_installed_apis.patch
 use_system_timezone.patch
 Wformat-security_fixes.patch
+kill-tmpnam-usage.patch

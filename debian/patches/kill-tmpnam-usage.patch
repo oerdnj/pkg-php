@@ -1,0 +1,31 @@
+--- php5.orig/sapi/phpdbg/phpdbg.c
++++ php5/sapi/phpdbg/phpdbg.c
+@@ -871,11 +871,26 @@ int main(int argc, char **argv) /* {{{ *
+ 
+ phpdbg_main:
+ 	if (!cleaning) {
+-		bp_tmp_file = malloc(L_tmpnam);
+-		tmpnam(bp_tmp_file);
++		int tfd = -1;
++		bp_tmp_file = strdup("/tmp/phpdbg.XXXXXX");
+ 		if (bp_tmp_file == NULL) {
+ 			phpdbg_error("Unable to create temporary file");
+ 		}
++#ifndef HAVE_MKSTEMP
++		{
++			char *ptr = mktemp(bp_tmp_file);
++			tfd = open(ptr, O_RDWR|O_TRUNC|O_EXCL|O_CREAT, 0600);
++		}
++#else
++		{
++			tfd = mkstemp(bp_tmp_file);
++		}
++#endif
++		if (tfd == -1) {
++			phpdbg_error("Unable to create temporary file");
++		} else {
++			close(tfd);
++		}
+ 	}
+ 	ini_entries = NULL;
+ 	ini_entries_len = 0;
