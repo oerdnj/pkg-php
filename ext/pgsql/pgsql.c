@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2013 The PHP Group                                |
+   | Copyright (c) 1997-2014 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -37,6 +37,9 @@
 #include "ext/standard/php_standard.h"
 #include "ext/standard/php_smart_str.h"
 #include "ext/ereg/php_regex.h"
+#ifdef PHP_WIN32
+# include "win32/time.h"
+#endif
 
 #undef PACKAGE_BUGREPORT
 #undef PACKAGE_NAME
