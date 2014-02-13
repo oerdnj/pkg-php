@@ -243,8 +243,7 @@ Package: php5-dev
 Depends: ${misc:Depends}, autoconf (>= 2.63), automake (>= 1.11), libssl-dev, libtool (>= 2.2), shtool, php5-common (>= ${binary:Version}), ${perl:Depends}
 Conflicts: ${libtool:Conflicts}
 Architecture: any
-Provides: dh-php5
-Recommends: pkg-php-tools
+Recommends: pkg-php-tools, dh-php5
 Description: Files for PHP5 module development
  This package provides the files from the PHP5 source needed for compiling
  additional modules.
