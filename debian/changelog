@@ -1,6 +1,9 @@
-php5 (5.5.9+dfsg-2) unstable; urgency=low
+php5 (5.5.9+dfsg-2) UNRELEASED; urgency=low
 
   * Run dh_systemd_{enable,start} without arguments (Closes: #737282)
+  !!!DON'T UPLOAD BEFORE dh-php5 HITS UNSTABLE OR REVERT THIS CHANGE!!!
+  * Split dh-php5 into a separate package
+  !!!DON'T UPLOAD BEFORE dh-php5 HITS UNSTABLE OR REVERT THIS CHANGE!!!
 
  -- Ondřej Surý <ondrej@debian.org>  Thu, 13 Feb 2014 16:18:58 +0100
 
