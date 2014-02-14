@@ -36,6 +36,4 @@ php-5.4.0-dlopen.patch
 php-fpm-m68k.patch
 expose_all_built_and_installed_apis.patch
 use_system_timezone.patch
-Wformat-security_fixes.patch
-kill-tmpnam-usage.patch
 fix-apache2filter-missing-post_data.patch
