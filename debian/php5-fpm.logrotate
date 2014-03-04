@@ -6,6 +6,6 @@
 	compress
 	delaycompress
 	postrotate
-		kill -USR1 $(cat /run/php5-fpm.pid) > /dev/null
+		/usr/lib/php5/php5-fpm-reopenlogs
 	endscript
 }
