@@ -1,3 +1,11 @@
+php5 (5.6.0~alpha3+dfsg-1~1.gbp6427c9) UNRELEASED; urgency=low
+
+  ** SNAPSHOT build @6427c93987a2ba35aad6ca77d178c734b9ed2091 **
+
+  * New upstream version 5.6.0~alpha3+dfsg
+
+ -- Ondřej Surý <ondrej@sury.org>  Thu, 27 Mar 2014 15:35:57 +0100
+
 php5 (5.6.0~alpha2+dfsg-1) experimental; urgency=medium
 
   * New upstream version 5.6.0~alpha2+dfsg
