@@ -20,7 +20,7 @@ trap '[ ! -d "$tdir" ] || rm -r "$tdir"' EXIT
 
 xzcat "$tarball" | \
     tar --wildcards \
-        --delete '.gitignore' \
+        --delete '*/.gitignore' \
         --delete '*/ext/json/*' \
     > "$tdir/${fname/.xz}"
 xz "$tdir/${fname/.xz}"
