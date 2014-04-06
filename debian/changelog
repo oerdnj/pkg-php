@@ -1,3 +1,13 @@
+php5 (5.5.11+dfsg-1) unstable; urgency=medium
+
+  [ Ondřej Surý ]
+  * Reenable LARGEFILE support (Closes: #738984)
+
+  [ Lior Kaplan ]
+  * New Upstream version 5.5.11+dfsg
+
+ -- Lior Kaplan <kaplan@debian.org>  Sun, 06 Apr 2014 17:46:53 +0300
+
 php5 (5.5.10+dfsg-1) unstable; urgency=low
 
   [ Ondřej Surý ]
