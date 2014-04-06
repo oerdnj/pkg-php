@@ -1529,6 +1529,7 @@ ZEND_FUNCTION(gmp_testbit)
 	if (mpz_tstbit(*gmpnum_a, index)) {
 		RETURN_TRUE;
 	}
+
 	RETURN_FALSE;
 }
 /* }}} */

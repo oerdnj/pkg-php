@@ -77,6 +77,10 @@
 #endif
 #define DEBUG_SMIME	0
 
+#if !defined(OPENSSL_NO_EC) && defined(EVP_PKEY_EC)
+#define HAVE_EVP_PKEY_EC 1
+#endif
+
 /* FIXME: Use the openssl constants instead of
  * enum. It is now impossible to match real values
  * against php constants. Also sorry to break the
@@ -87,7 +91,7 @@ enum php_openssl_key_type {
 	OPENSSL_KEYTYPE_DSA,
 	OPENSSL_KEYTYPE_DH,
 	OPENSSL_KEYTYPE_DEFAULT = OPENSSL_KEYTYPE_RSA,
-#ifdef EVP_PKEY_EC
+#ifdef HAVE_EVP_PKEY_EC
 	OPENSSL_KEYTYPE_EC = OPENSSL_KEYTYPE_DH +1
 #endif
 };
@@ -866,7 +870,7 @@ static int php_openssl_parse_config(struct php_x509_request * req, zval * option
 		req->digest = req->md_alg = EVP_get_digestbyname(req->digest_name);
 	}
 	if (req->md_alg == NULL) {
-		req->md_alg = req->digest = EVP_md5();
+		req->md_alg = req->digest = EVP_sha1();
 	}
 
 	PHP_SSL_CONFIG_SYNTAX_CHECK(extensions_section);
@@ -1128,7 +1132,7 @@ PHP_MINIT_FUNCTION(openssl)
 	REGISTER_LONG_CONSTANT("OPENSSL_KEYTYPE_DSA", OPENSSL_KEYTYPE_DSA, CONST_CS|CONST_PERSISTENT);
 #endif
 	REGISTER_LONG_CONSTANT("OPENSSL_KEYTYPE_DH", OPENSSL_KEYTYPE_DH, CONST_CS|CONST_PERSISTENT);
-#ifdef EVP_PKEY_EC
+#ifdef HAVE_EVP_PKEY_EC
 	REGISTER_LONG_CONSTANT("OPENSSL_KEYTYPE_EC", OPENSSL_KEYTYPE_EC, CONST_CS|CONST_PERSISTENT);
 #endif
 
@@ -3026,7 +3030,7 @@ static int php_openssl_is_private_key(EVP_PKEY* pkey TSRMLS_DC)
 			}
 			break;
 #endif
-#if OPENSSL_VERSION_NUMBER >= 0x0090800fL && !defined(OPENSSL_NO_EC) && defined(EVP_PKEY_EC)
+#ifdef HAVE_EVP_PKEY_EC
 		case EVP_PKEY_EC:
 			assert(pkey->pkey.ec != NULL);
 
@@ -3435,7 +3439,7 @@ PHP_FUNCTION(openssl_pkey_get_details)
 			}
 
 			break;
-#ifdef EVP_PKEY_EC 
+#ifdef HAVE_EVP_PKEY_EC
 		case EVP_PKEY_EC:
 			ktype = OPENSSL_KEYTYPE_EC;
 			break;
@@ -5073,7 +5077,7 @@ PHP_FUNCTION(openssl_cipher_iv_length)
 
 
 /* {{{ proto string openssl_dh_compute_key(string pub_key, resource dh_key)
-   Computes shared sicret for public value of remote DH key and local DH key */
+   Computes shared secret for public value of remote DH key and local DH key */
 PHP_FUNCTION(openssl_dh_compute_key)
 {
 	zval *key;
