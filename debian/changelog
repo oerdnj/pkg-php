@@ -1,3 +1,9 @@
+php5 (5.5.11+dfsg-2) unstable; urgency=medium
+
+  * Revert "Reenable LARGEFILE support" (Closes: #743842)
+
+ -- Lior Kaplan <kaplan@debian.org>  Tue, 08 Apr 2014 11:02:48 +0300
+
 php5 (5.5.11+dfsg-1) unstable; urgency=medium
 
   [ Ondřej Surý ]
