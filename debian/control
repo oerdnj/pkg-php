@@ -76,7 +76,7 @@ Homepage: http://www.php.net/
 
 Package: php5
 Architecture: all
-Depends: ${misc:Depends}, libapache2-mod-php5 (>= ${source:Version}) | libapache2-mod-php5filter (>= ${source:Version}) | php5-cgi (>= ${source:Version}) | php5-fpm (>= ${source:Version}), php5-common (>= ${source:Version})
+Depends: ${misc:Depends}, libapache2-mod-php5 (>= ${source:Version}~) | libapache2-mod-php5filter (>= ${source:Version}~) | php5-cgi (>= ${source:Version}~) | php5-fpm (>= ${source:Version}~), php5-common (>= ${source:Version}~)
 Description: server-side, HTML-embedded scripting language (metapackage)
  This package is a metapackage that, when installed, guarantees that you
  have at least one of the four server-side versions of the PHP5 interpreter
@@ -268,7 +268,7 @@ Description: Debug symbols for PHP5
 
 Package: php-pear
 Architecture: all
-Depends: ${misc:Depends}, php5-common (>= ${source:Version}), php5-cli
+Depends: ${misc:Depends}, php5-common (>= ${source:Version}~), php5-cli
 Recommends: gnupg
 Conflicts: php-xml-util
 Suggests: php5-dev
