@@ -1049,6 +1049,9 @@
 /* */
 #undef HAVE_LIBPAM
 
+/* Define to 1 if you have the `pq' library (-lpq). */
+#undef HAVE_LIBPQ
+
 /* */
 #undef HAVE_LIBRARYMANAGER_H
 
