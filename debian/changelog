@@ -1,3 +1,12 @@
+php5 (5.5.11+dfsg-3) unstable; urgency=medium
+
+  * Add ~ to ${source:Version} everywhere, so backports don't break
+  * Resolve the dependency hell between php5-common and php5-json by
+    moving the php5-json dependecy to SAPIs (except libphp5-embed)
+    (Closes: #743890, #719942)
+  
+ -- Ondřej Surý <ondrej@debian.org>  Sat, 19 Apr 2014 15:19:27 +0200
+
 php5 (5.5.11+dfsg-2) unstable; urgency=medium
 
   * Revert "Reenable LARGEFILE support" (Closes: #743842)
