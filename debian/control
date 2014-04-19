@@ -94,8 +94,7 @@ Depends: ${misc:Depends},
 	 sed (>= 4.1.1-1),
 	 psmisc (>= 22.15-1~),
 	 lsof [!kfreebsd-any !hurd-any],
-	 ucf,
-	 php5-json
+	 ucf
 Provides: php5-mhash, ${php:Provides}
 Conflicts: php5-mhash
 Suggests: php5-user-cache
@@ -121,6 +120,7 @@ Depends: ${shlibs:Depends},
 	 apache2 (>= 2.4),
 	 mime-support,
 	 php5-common (= ${binary:Version}),
+	 php5-json,
 	 libmagic1,
 	 ucf,
 	 tzdata
@@ -149,6 +149,7 @@ Depends: ${shlibs:Depends},
 	 apache2 (>= 2.4),
 	 mime-support,
 	 php5-common (= ${binary:Version}),
+	 php5-json,
 	 libmagic1,
 	 ucf,
 	 tzdata
@@ -171,7 +172,14 @@ Description: server-side, HTML-embedded scripting language (apache 2 filter modu
 
 Package: php5-cgi
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support, php5-common (= ${binary:Version}), libmagic1, ucf, tzdata
+Depends: ${shlibs:Depends},
+	 ${misc:Depends},
+	 mime-support,
+	 php5-common (= ${binary:Version}),
+	 php5-json,
+	libmagic1,
+	ucf,
+	tzdata
 Provides: ${php:Provides}
 Suggests: php-pear
 Description: server-side, HTML-embedded scripting language (CGI binary)
@@ -188,7 +196,15 @@ Description: server-side, HTML-embedded scripting language (CGI binary)
 
 Package: php5-cli
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support, php5-common (= ${binary:Version}), libmagic1, ucf, tzdata, libedit2 (>= 2.11-20080614-4)
+Depends: ${shlibs:Depends},
+	 ${misc:Depends},
+	 mime-support,
+	 php5-common (= ${binary:Version}),
+	 php5-json,
+	 libmagic1,
+	 ucf,
+	 tzdata,
+	 libedit2 (>= 2.11-20080614-4)
 Provides: ${php:Provides}
 Recommends: php5-readline
 Suggests: php-pear
@@ -204,7 +220,14 @@ Description: command-line interpreter for the php5 scripting language
 
 Package: php5-fpm
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support, php5-common (= ${binary:Version}), libmagic1, ucf, tzdata
+Depends: ${shlibs:Depends},
+	 ${misc:Depends},
+	 mime-support,
+	 php5-common (= ${binary:Version}),
+	 php5-json,
+	 libmagic1,
+	 ucf,
+	 tzdata
 Provides: ${php:Provides}
 Suggests: php-pear
 Pre-Depends: dpkg (>= 1.15.7.2~)
@@ -221,7 +244,13 @@ Description: server-side, HTML-embedded scripting language (FPM-CGI binary)
 
 Package: libphp5-embed
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, mime-support, php5-common (= ${binary:Version}), libmagic1, ucf, tzdata
+Depends: ${shlibs:Depends},
+	 ${misc:Depends},
+	 mime-support,
+	 php5-common (= ${binary:Version}),
+	 libmagic1,
+	 ucf,
+	 tzdata
 Provides: ${php:Provides}
 Suggests: php-pear
 Priority: optional
@@ -240,7 +269,14 @@ Description: HTML-embedded scripting language (Embedded SAPI library)
  have been warned.
 
 Package: php5-dev
-Depends: ${misc:Depends}, autoconf (>= 2.63), automake (>= 1.11), libssl-dev, libtool (>= 2.2), shtool, php5-common (>= ${binary:Version}), ${perl:Depends}
+Depends: ${misc:Depends},
+	 autoconf (>= 2.63),
+	 automake (>= 1.11),
+	 libssl-dev,
+	 libtool (>= 2.2),
+	 shtool,
+	 php5-common (>= ${binary:Version}),
+	 ${perl:Depends}
 Conflicts: ${libtool:Conflicts}
 Architecture: any
 Recommends: pkg-php-tools, dh-php5
