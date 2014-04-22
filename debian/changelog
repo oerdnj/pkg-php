@@ -1,3 +1,10 @@
+php5 (5.6.0~beta1+dfsg-2) experimental; urgency=medium
+
+  * Merge remaining changes from PHP 5.5 packaging
+  * Reenable LARGEFILE support (Closes: #738984)
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 22 Apr 2014 13:24:32 +0200
+
 php5 (5.6.0~beta1+dfsg-1) experimental; urgency=low
 
   * Reenable LARGEFILE support (Closes: #738984)
