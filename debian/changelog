@@ -33,6 +33,62 @@ php5 (5.6.0~alpha1+dfsg-1) experimental; urgency=medium
 
  -- Ondřej Surý <ondrej@debian.org>  Tue, 28 Jan 2014 13:47:52 +0100
 
+php5 (5.5.11+dfsg-3) unstable; urgency=medium
+
+  * Add ~ to ${source:Version} everywhere, so backports don't break
+  * Resolve the dependency hell between php5-common and php5-json by
+    moving the php5-json dependecy to SAPIs (except libphp5-embed)
+    (Closes: #743890, #719942)
+  
+ -- Ondřej Surý <ondrej@debian.org>  Sat, 19 Apr 2014 15:19:27 +0200
+
+php5 (5.5.11+dfsg-2) unstable; urgency=medium
+
+  * Revert "Reenable LARGEFILE support" (Closes: #743842)
+
+ -- Lior Kaplan <kaplan@debian.org>  Tue, 08 Apr 2014 11:02:48 +0300
+
+php5 (5.5.11+dfsg-1) unstable; urgency=medium
+
+  [ Ondřej Surý ]
+  * Reenable LARGEFILE support (Closes: #738984)
+
+  [ Lior Kaplan ]
+  * New Upstream version 5.5.11+dfsg
+
+ -- Lior Kaplan <kaplan@debian.org>  Sun, 06 Apr 2014 17:46:53 +0300
+
+php5 (5.5.10+dfsg-1) unstable; urgency=low
+
+  [ Ondřej Surý ]
+  * Run dh_systemd_{enable,start} without arguments (Closes: #737282)
+  * Split dh-php5 into a separate package
+  * Don't use reopen-logs in logrotate script, but send USR1 directly to
+    main pid of php5-fpm; #compat-non-sysv-rc
+  * Move PIDFILE to /run
+  * Implement more robust way of handling php5-fpm reopen logs from
+    logrotate
+
+  [ Thijs Kinkhorst ]
+  * Add virtual-mysql-server to mysql-server B-D.
+  * Checked for policy 3.9.5, no changes.
+
+  [ Ondřej Surý ]
+  * New upstream version 5.5.10+dfsg
+  * Update dfsg-repack.sh script to remove upstream .gitignore from
+    repacked tarball
+  * Update patches for 5.5.10 release
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 27 Mar 2014 14:07:57 +0100
+
+php5 (5.5.9+dfsg-1) unstable; urgency=medium
+
+  * New upstream version 5.5.9+dfsg
+  * Install CLI specific ini file with PCNTL enabled (Closes: #720434)
+  * Use php_admin_flag in Apache settings (Closes: #690964)
+
+ -- Lior Kaplan <kaplan@debian.org>  Fri, 07 Feb 2014 16:21:04 +0200
+
 php5 (5.5.8+dfsg-3) unstable; urgency=low
 
   * Fix regression in system fallback for date_default_timezone_get()

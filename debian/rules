@@ -16,10 +16,6 @@ export DH_OPTIONS
 # compatibility to upstream
 PHP5_COMPAT=no
 
-# enable dpkg build flags
-DPKG_EXPORT_BUILDFLAGS = 1
-include /usr/share/dpkg/buildflags.mk
-
 DEB_HOST_GNU_TYPE    ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 DEB_HOST_ARCH        ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
@@ -112,6 +108,10 @@ ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
     NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
     MAKEFLAGS += -j$(NUMJOBS)
 endif
+
+# enable dpkg build flags
+DPKG_EXPORT_BUILDFLAGS = 1
+include /usr/share/dpkg/buildflags.mk
 
 COMMON_CONFIG=--build=$(DEB_BUILD_GNU_TYPE) \
 		--host=$(DEB_HOST_GNU_TYPE) \
@@ -594,13 +594,15 @@ install: build
 	cp fpm-build/sapi/fpm/php-fpm debian/php5-fpm/usr/sbin/php5-fpm
 	cp fpm-build/sapi/fpm/php-fpm.8 debian/php5-fpm/usr/share/man/man8/php5-fpm.8
 	# we don't want the pool definitions on the main file itself:
-	sed -r '/('"'"'|\[)www('"'"'|\])/Q' < fpm-build/sapi/fpm/php-fpm.conf > \
+	sed -r '/('"'"'|\[)www('"'"'|\])/Q' < fpm-build/sapi/fpm/php-fpm.conf | \
+	sed -e's{pid = /var/run/php5-fpm.pid{pid = /run/php5-fpm.pid{' > \
 	    debian/php5-fpm/etc/php5/fpm/php-fpm.conf
 	# extract the first pool, called "www," from the config file:
 	sed -nr '/('"'"'|\[)www('"'"'|\])/{h;p;d};x;/www/{x;p}' < fpm-build/sapi/fpm/php-fpm.conf \
 	    > debian/php5-fpm/etc/php5/fpm/pool.d/www.conf
 	# install a helper script for checking PHP FPM configuration
 	install -m 755 debian/php5-fpm-checkconf debian/php5-fpm/usr/lib/php5/
+	install -m 755 debian/php5-fpm-reopenlogs debian/php5-fpm/usr/lib/php5/
 
 	# move and install -dev files
 	dh_movefiles --sourcedir=debian/libphp5-embed
@@ -633,12 +635,6 @@ install: build
 	done
 	# remove windows devel file
 	rm $(CURDIR)/debian/php5-dev/usr/share/php5/skeleton/skeleton.dsp
-
-	install -m755 debian/debhelper/dh_* $(CURDIR)/debian/php5-dev/usr/bin
-	install -d -m755 $(CURDIR)/debian/php5-dev/usr/share/debhelper/autoscripts/
-	install -m644 debian/debhelper/*-php5 $(CURDIR)/debian/php5-dev/usr/share/debhelper/autoscripts/
-	install -d -m755 $(CURDIR)/debian/php5-dev/usr/share/perl5/Debian/Debhelper/Sequence
-	install -m644 debian/debhelper/php5.pm $(CURDIR)/debian/php5-dev/usr/share/perl5/Debian/Debhelper/Sequence
 
 	# install common files
 	install -m755 debian/maxlifetime debian/php5-common/usr/lib/php5
@@ -811,14 +807,14 @@ binary-arch: build install
 	dh_installlogrotate -pphp5-fpm
 	dh_installcron -pphp5-common --name=php5
 	dh_installchangelogs -pphp5-common NEWS
-	dh_systemd_enable -pphp5-fpm --name=php5-fpm
+	dh_systemd_enable
 	dh_installinit
-	dh_systemd_start -pphp5-fpm --name=php5-fpm
+	dh_systemd_start
 	dh_link -s
 	dh_compress -s -Xphp.ini
 	dh_fixperms -s -X/var/lib/php5
 	dh_strip -s --dbg-package=php5-dbg
-	dh_makeshlibs -s -plibphp5-embed -V 'libphp5-embed (>= 5.5.0)'
+	dh_makeshlibs -s -plibphp5-embed -V 'libphp5-embed (>= 5.6.0)'
 	dh_shlibdeps -s
 	dh_installdeb -s
 
