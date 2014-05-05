@@ -1,3 +1,14 @@
+php5 (5.5.12+dfsg-1) unstable; urgency=medium
+
+  * New upstream version 5.5.12+dfsg
+   + [CVE-2014-0185]: Fix possible privilege escalation due to insecure
+     default configuration in php5-fpm.
+  * Update patches for 5.5.12 release
+  * Add a patch to fix zlib extension naming in LFS builds
+    (Ubuntu#1315888)
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 05 May 2014 10:20:28 +0200
+
 php5 (5.5.11+dfsg-3) unstable; urgency=medium
 
   * Add ~ to ${source:Version} everywhere, so backports don't break
