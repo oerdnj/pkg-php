@@ -1758,7 +1758,7 @@ SAPI modules:
   --with-milter=DIR       Build PHP as Milter application
   --with-nsapi=DIR        Build PHP as NSAPI module for Netscape/iPlanet/Sun Webserver
   --enable-phpdbg         Build phpdbg
-  --enable-phpdbg-debug         Build phpdbg in debug mode
+  --enable-phpdbg-debug   Build phpdbg in debug mode
   --with-phttpd=DIR       Build PHP as phttpd module
   --with-pi3web=DIR       Build PHP as Pi3Web module
   --with-roxen=DIR        Build PHP as a Pike module. DIR is the base Roxen
@@ -3666,7 +3666,7 @@ ac_config_headers="$ac_config_headers main/php_config.h"
 PHP_MAJOR_VERSION=5
 PHP_MINOR_VERSION=6
 PHP_RELEASE_VERSION=0
-PHP_EXTRA_VERSION="beta1"
+PHP_EXTRA_VERSION="beta2"
 PHP_VERSION="$PHP_MAJOR_VERSION.$PHP_MINOR_VERSION.$PHP_RELEASE_VERSION$PHP_EXTRA_VERSION"
 PHP_VERSION_ID=`expr $PHP_MAJOR_VERSION \* 10000 + $PHP_MINOR_VERSION \* 100 + $PHP_RELEASE_VERSION`
 
@@ -13931,7 +13931,7 @@ fi
 
 
 
-php_enable_phpdbg=yes
+php_enable_phpdbg=no
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for phpdbg support" >&5
 $as_echo_n "checking for phpdbg support... " >&6; }
@@ -13940,34 +13940,13 @@ if test "${enable_phpdbg+set}" = set; then :
   enableval=$enable_phpdbg; PHP_PHPDBG=$enableval
 else
 
-  PHP_PHPDBG=yes
-  test "$PHP_ENABLE_ALL" && PHP_PHPDBG=$PHP_ENABLE_ALL
+  PHP_PHPDBG=no
+
 
 fi
 
 
-
-ext_output="yes, shared"
-ext_shared=yes
-case $PHP_PHPDBG in
-shared,*)
-  PHP_PHPDBG=`echo "$PHP_PHPDBG"|$SED 's/^shared,//'`
-  ;;
-shared)
-  PHP_PHPDBG=yes
-  ;;
-no)
-  ext_output=no
-  ext_shared=no
-  ;;
-*)
-  ext_output=yes
-  ext_shared=no
-  ;;
-esac
-
-
-
+ext_output=$PHP_PHPDBG
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ext_output" >&5
 $as_echo "$ext_output" >&6; }
 
@@ -14013,13 +13992,20 @@ $as_echo "#define PHPDBG_DEBUG 0" >>confdefs.h
   fi
 
   PHP_PHPDBG_CFLAGS="-D_GNU_SOURCE"
-  PHP_PHPDBG_FILES="phpdbg.c phpdbg_prompt.c phpdbg_help.c phpdbg_break.c phpdbg_print.c phpdbg_bp.c phpdbg_opcode.c phpdbg_list.c phpdbg_utils.c phpdbg_info.c phpdbg_cmd.c phpdbg_set.c phpdbg_frame.c"
+  PHP_PHPDBG_FILES="phpdbg.c phpdbg_parser.c phpdbg_lexer.c phpdbg_prompt.c phpdbg_help.c phpdbg_break.c phpdbg_print.c phpdbg_bp.c phpdbg_opcode.c phpdbg_list.c phpdbg_utils.c phpdbg_info.c phpdbg_cmd.c phpdbg_set.c phpdbg_frame.c phpdbg_watch.c phpdbg_btree.c"
+
+  if test "$PHP_READLINE" != "no"; then
+  	PHPDBG_EXTRA_LIBS="-lreadline"
+  fi
 
 
   PHP_VAR_SUBST="$PHP_VAR_SUBST PHP_PHPDBG_CFLAGS"
 
 
   PHP_VAR_SUBST="$PHP_VAR_SUBST PHP_PHPDBG_FILES"
+
+
+  PHP_VAR_SUBST="$PHP_VAR_SUBST PHPDBG_EXTRA_LIBS"
 
 
 
@@ -36201,6 +36187,62 @@ if test "$PHP_FILEINFO" != "no"; then
     libmagic/is_tar.c libmagic/magic.c libmagic/print.c \
     libmagic/readcdf.c libmagic/readelf.c libmagic/softmagic.c"
 
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for strcasestr" >&5
+$as_echo_n "checking for strcasestr... " >&6; }
+  if test "$cross_compiling" = yes; then :
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "cannot run test program while cross compiling
+See \`config.log' for more details" "$LINENO" 5 ; }
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <string.h>
+#include <strings.h>
+#include <stdlib.h>
+
+int main(void)
+{
+        char *s0, *s1, *ret;
+
+        s0 = (char *) malloc(42);
+        s1 = (char *) malloc(8);
+
+        memset(s0, 'X', 42);
+        s0[24] = 'Y';
+        s0[26] = 'Z';
+        s0[41] = '\0';
+        memset(s1, 'x', 8);
+        s1[0] = 'y';
+        s1[2] = 'Z';
+        s1[7] = '\0';
+
+        ret = strcasestr(s0, s1);
+
+        return !(NULL != ret);
+}
+
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+else
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: using libmagic strcasestr implementation" >&5
+$as_echo "$as_me: using libmagic strcasestr implementation" >&6;}
+    libmagic_sources="$libmagic_sources libmagic/strcasestr.c"
+
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+
 
   ext_builddir=ext/fileinfo
   ext_srcdir=$abs_srcdir/ext/fileinfo
@@ -49763,7 +49805,6 @@ fi
 
 
 fi
-
 
 
 php_with_interbase=no
@@ -67038,7 +67079,7 @@ but you've either not enabled spl, or have disabled it.
 
 
     header_path=ext/pdo
-    for header_file in php_pdo.h php_pdo_driver.h; do
+    for header_file in php_pdo.h php_pdo_driver.h php_pdo_error.h; do
       hp_hf="$header_path/$header_file"
 
 
@@ -67781,7 +67822,6 @@ but you've either not enabled pdo, or have disabled it.
 
 
 fi
-
 
 
 php_with_pdo_firebird=no
@@ -104976,7 +105016,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 104979 "configure"
+#line 105019 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -106888,7 +106928,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 106891 "configure"' > conftest.$ac_ext
+  echo '#line 106931 "configure"' > conftest.$ac_ext
   if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -108280,7 +108320,7 @@ else
       LDFLAGS="$LDFLAGS -Wl,-exported_symbols_list,conftest.sym"
 
 cat > conftest.$ac_ext <<EOF
-#line 108283 "configure"
+#line 108323 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -108438,11 +108478,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:108441: $lt_compile\"" >&5)
+   (eval echo "\"configure:108481: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "configure:108445: \$? = $ac_status" >&5
+   echo "configure:108485: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -108736,11 +108776,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:108739: $lt_compile\"" >&5)
+   (eval echo "\"configure:108779: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "configure:108743: \$? = $ac_status" >&5
+   echo "configure:108783: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -108840,11 +108880,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:108843: $lt_compile\"" >&5)
+   (eval echo "\"configure:108883: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "configure:108847: \$? = $ac_status" >&5
+   echo "configure:108887: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -109304,7 +109344,7 @@ _LT_EOF
        # Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 109307 "configure"
+#line 109347 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -109346,7 +109386,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	 # Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 109349 "configure"
+#line 109389 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -110871,7 +110911,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 110874 "configure"
+#line 110914 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -110971,7 +111011,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 110974 "configure"
+#line 111014 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -112036,7 +112076,7 @@ case $host_os in
       # Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 112039 "configure"
+#line 112079 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -112079,7 +112119,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	# Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 112082 "configure"
+#line 112122 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -113331,11 +113371,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:113334: $lt_compile\"" >&5)
+   (eval echo "\"configure:113374: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "configure:113338: \$? = $ac_status" >&5
+   echo "configure:113378: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -113435,11 +113475,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:113438: $lt_compile\"" >&5)
+   (eval echo "\"configure:113478: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "configure:113442: \$? = $ac_status" >&5
+   echo "configure:113482: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized

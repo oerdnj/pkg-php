@@ -1,5 +1,0 @@
-.libs/
-./phpdbg
-*.lo
-*.o
-build
