@@ -1,0 +1,48 @@
+From 06a03bbfa60bedb3f30bb2908449fc30d54f848e Mon Sep 17 00:00:00 2001
+From: Adam Harvey <aharvey@php.net>
+Date: Fri, 2 May 2014 14:33:52 -0700
+Subject: [PATCH] Fix mysqli build when building against libmysqlclient.
+
+---
+ NEWS                       |    3 +++
+ ext/mysqli/mysqli_nonapi.c |    8 ++++++++
+ 2 files changed, 11 insertions(+)
+
+--- php5.orig/NEWS
++++ php5/NEWS
+@@ -64,6 +64,9 @@ PHP
+   . Fixed bug #63228 (-Werror=format-security error in lsapi code).
+     (George Wang)
+ 
++- mysqli:
++  . Fixed building against an external libmysqlclient. (Adam)
++
+ - mysqlnd:
+   . Added a new fetching mode to mysqlnd. (Andrey)
+ 
+--- php5.orig/ext/mysqli/mysqli_nonapi.c
++++ php5/ext/mysqli/mysqli_nonapi.c
+@@ -575,7 +575,11 @@ PHP_FUNCTION(mysqli_query)
+ 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Empty query");
+ 		RETURN_FALSE;
+ 	}
++#ifdef MYSQLI_USE_MYSQLND
+ 	if ((resultmode & ~MYSQLI_ASYNC) != MYSQLI_USE_RESULT && (resultmode & ~(MYSQLI_ASYNC | MYSQLI_STORE_RESULT_COPY_DATA)) != MYSQLI_STORE_RESULT) {
++#else
++	if ((resultmode & ~MYSQLI_ASYNC) != MYSQLI_USE_RESULT && (resultmode & ~MYSQLI_ASYNC) != MYSQLI_STORE_RESULT) {
++#endif
+ 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid value for resultmode");
+ 		RETURN_FALSE;
+ 	}
+@@ -609,7 +613,11 @@ PHP_FUNCTION(mysqli_query)
+ 		RETURN_TRUE;
+ 	}
+ 
++#ifdef MYSQLI_USE_MYSQLND
+ 	switch (resultmode & ~(MYSQLI_ASYNC | MYSQLI_STORE_RESULT_COPY_DATA)) {
++#else
++	switch (resultmode & ~MYSQLI_ASYNC) {
++#endif
+ 		case MYSQLI_STORE_RESULT:
+ #ifdef MYSQLI_USE_MYSQLND
+ 			if (resultmode & MYSQLI_STORE_RESULT_COPY_DATA) {
