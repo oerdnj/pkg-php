@@ -1,3 +1,12 @@
+php5 (5.6.0~beta2+dfsg-1) experimental; urgency=medium
+
+  * Update patches for 5.6.0~beta2 release
+  * New upstream version 5.6.0~beta2+dfsg
+  * Import patch to fix zlib extension naming in LFS builds
+    (Ubuntu#1315888)
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 05 May 2014 11:23:05 +0200
+
 php5 (5.6.0~beta1+dfsg-2) experimental; urgency=medium
 
   * Merge remaining changes from PHP 5.5 packaging
