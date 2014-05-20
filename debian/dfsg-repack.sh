@@ -27,4 +27,4 @@ xz "$tdir/${fname/.xz}"
 
 bare=$(dirname "$tarball")/$(basename "$(basename "${tarball}" .tar.xz)" .orig)
 
-mv "$tdir/$fname" "${bare}+dfsg.orig.tar.xz"
+mv "$tdir/$fname" "${bare/#php-/php5_}+dfsg.orig.tar.xz"
