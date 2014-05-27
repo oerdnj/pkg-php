@@ -3666,7 +3666,7 @@ ac_config_headers="$ac_config_headers main/php_config.h"
 PHP_MAJOR_VERSION=5
 PHP_MINOR_VERSION=6
 PHP_RELEASE_VERSION=0
-PHP_EXTRA_VERSION="beta2"
+PHP_EXTRA_VERSION="beta3"
 PHP_VERSION="$PHP_MAJOR_VERSION.$PHP_MINOR_VERSION.$PHP_RELEASE_VERSION$PHP_EXTRA_VERSION"
 PHP_VERSION_ID=`expr $PHP_MAJOR_VERSION \* 10000 + $PHP_MINOR_VERSION \* 100 + $PHP_RELEASE_VERSION`
 
@@ -13995,7 +13995,7 @@ $as_echo "#define PHPDBG_DEBUG 0" >>confdefs.h
   PHP_PHPDBG_FILES="phpdbg.c phpdbg_parser.c phpdbg_lexer.c phpdbg_prompt.c phpdbg_help.c phpdbg_break.c phpdbg_print.c phpdbg_bp.c phpdbg_opcode.c phpdbg_list.c phpdbg_utils.c phpdbg_info.c phpdbg_cmd.c phpdbg_set.c phpdbg_frame.c phpdbg_watch.c phpdbg_btree.c"
 
   if test "$PHP_READLINE" != "no"; then
-  	PHPDBG_EXTRA_LIBS="-lreadline"
+  	PHPDBG_EXTRA_LIBS="$PHP_READLINE_LIBS"
   fi
 
 
