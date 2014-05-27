@@ -1,3 +1,17 @@
+php5 (5.6.0~beta3+dfsg-1) experimental; urgency=medium
+
+  * Set default listen.{owner,group} to www-data:www-data
+  * Add more bash magick to the dfsg repack script
+  * Merge some minor changes from Ubuntu
+    + d/rules: export DEB_HOST_MULTIARCH properly
+    + d/rules: stop mysql instance on clean just in case we failed in
+      tests.
+    + d/tests/{cgi,cli,mod-php}: dep8 tests for common use cases.
+  * New upstream version 5.6.0~beta3+dfsg
+  * Update patches for 5.6.0~beta3+dfsg release
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 27 May 2014 16:56:30 +0200
+
 php5 (5.6.0~beta2+dfsg-1) experimental; urgency=medium
 
   * Update patches for 5.6.0~beta2 release
