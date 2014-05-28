@@ -837,7 +837,7 @@ binary-arch: build install
 
 	phpapi=`./debian/php5-dev/usr/bin/php-config5 --phpapi`; \
 	stored=`cat debian/phpapi`; \
-	if [ "$${phpapi%+lfs}" != "$${stored}" ]; then echo "PHPAPI has changed, please modify debian/phpapi"; exit 1; fi; \
+	if [ "$${phpapi}" != "$${stored}" ]; then echo "PHPAPI has changed, please modify debian/phpapi"; exit 1; fi; \
 	for i in php5-common; do \
 		echo "php:Provides=phpapi-$${phpapi}" >> debian/$$i.substvars; \
 	done; \
