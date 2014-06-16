@@ -3,7 +3,7 @@
   | phar php single-file executable PHP extension                        |
   | utility functions                                                    |
   +----------------------------------------------------------------------+
-  | Copyright (c) 2005-2013 The PHP Group                                |
+  | Copyright (c) 2005-2014 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -1262,8 +1262,10 @@ alias_success:
 					spprintf(error, 0, "alias \"%s\" is already used for archive \"%s\" cannot be overloaded with \"%s\"", alias, (*fd_ptr)->fname, fname);
 				}
 				if (SUCCESS == phar_free_alias(*fd_ptr, alias, alias_len TSRMLS_CC)) {
-					efree(*error);
-					*error = NULL;
+					if (error) {
+						efree(*error);
+						*error = NULL;
+					}
 				}
 				return FAILURE;
 			}

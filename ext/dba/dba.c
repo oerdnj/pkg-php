@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2013 The PHP Group                                |
+   | Copyright (c) 1997-2014 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -625,7 +625,8 @@ static void php_dba_open(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 	char *file_mode;
 	char mode[4], *pmode, *lock_file_mode = NULL;
 	int persistent_flag = persistent ? STREAM_OPEN_PERSISTENT : 0;
-	char *opened_path, *lock_name;
+	char *opened_path = NULL;
+	char *lock_name;
 	
 	if(ac < 2) {
 		WRONG_PARAM_COUNT;
@@ -848,8 +849,10 @@ static void php_dba_open(INTERNAL_FUNCTION_PARAMETERS, int persistent)
 				if (!persistent) {
 					info->lock.name = opened_path;
 				} else {
-					info->lock.name = pestrdup(opened_path, persistent);
-					efree(opened_path);
+					if (opened_path) {
+						info->lock.name = pestrdup(opened_path, persistent);
+						efree(opened_path);
+					}
 				}
 			}
 		}

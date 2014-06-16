@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2013 The PHP Group                                |
+   | Copyright (c) 1997-2014 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -752,6 +752,14 @@ PHP_RSHUTDOWN_FUNCTION(date)
 
 #define DATE_FORMAT_ISO8601  "Y-m-d\\TH:i:sO"
 
+/*
+ * This comes from various sources that like to contradict. I'm going with the
+ * format here because of:
+ * http://msdn.microsoft.com/en-us/library/windows/desktop/aa384321%28v=vs.85%29.aspx
+ * and http://curl.haxx.se/rfc/cookie_spec.html
+ */
+#define DATE_FORMAT_COOKIE   "l, d-M-Y H:i:s T"
+
 #define DATE_TZ_ERRMSG \
 	"It is not safe to rely on the system's timezone settings. You are " \
 	"*required* to use the date.timezone setting or the " \
@@ -783,7 +791,7 @@ PHP_MINIT_FUNCTION(date)
  *   with the variations that the only legal time zone is GMT
  *   and the separators between the elements of the date must be dashes."
  */
-	REGISTER_STRING_CONSTANT("DATE_COOKIE",  DATE_FORMAT_RFC850,  CONST_CS | CONST_PERSISTENT);
+	REGISTER_STRING_CONSTANT("DATE_COOKIE",  DATE_FORMAT_COOKIE,  CONST_CS | CONST_PERSISTENT);
 	REGISTER_STRING_CONSTANT("DATE_ISO8601", DATE_FORMAT_ISO8601, CONST_CS | CONST_PERSISTENT);
 	REGISTER_STRING_CONSTANT("DATE_RFC822",  DATE_FORMAT_RFC822,  CONST_CS | CONST_PERSISTENT);
 	REGISTER_STRING_CONSTANT("DATE_RFC850",  DATE_FORMAT_RFC850,  CONST_CS | CONST_PERSISTENT);
@@ -1362,6 +1370,7 @@ PHPAPI signed long php_parse_date(char *string, signed long *now)
 
 	parsed_time = timelib_strtotime(string, strlen(string), &error, DATE_TIMEZONEDB, php_date_parse_tzfile_wrapper);
 	if (error->error_count) {
+		timelib_time_dtor(parsed_time);
 		timelib_error_container_dtor(error);
 		return -1;
 	}
@@ -1947,7 +1956,7 @@ static void date_register_classes(TSRMLS_D)
 	zend_declare_class_constant_stringl(date_ce_date, const_name, sizeof(const_name)-1, value, sizeof(value)-1 TSRMLS_CC);
 
 	REGISTER_DATE_CLASS_CONST_STRING("ATOM",    DATE_FORMAT_RFC3339);
-	REGISTER_DATE_CLASS_CONST_STRING("COOKIE",  DATE_FORMAT_RFC850);
+	REGISTER_DATE_CLASS_CONST_STRING("COOKIE",  DATE_FORMAT_COOKIE);
 	REGISTER_DATE_CLASS_CONST_STRING("ISO8601", DATE_FORMAT_ISO8601);
 	REGISTER_DATE_CLASS_CONST_STRING("RFC822",  DATE_FORMAT_RFC822);
 	REGISTER_DATE_CLASS_CONST_STRING("RFC850",  DATE_FORMAT_RFC850);
@@ -2478,6 +2487,7 @@ PHPAPI int php_date_initialize(php_date_obj *dateobj, /*const*/ char *time_str, 
 
 	timelib_fill_holes(dateobj->time, now, TIMELIB_NO_CLONE);
 	timelib_update_ts(dateobj->time, tzi);
+	timelib_update_from_sse(dateobj->time);
 
 	dateobj->time->have_relative = 0;
 
@@ -2538,7 +2548,9 @@ PHP_METHOD(DateTime, __construct)
 
 	zend_replace_error_handling(EH_THROW, NULL, &error_handling TSRMLS_CC);
 	if (SUCCESS == zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|sO!", &time_str, &time_str_len, &timezone_object, date_ce_timezone)) {
-		php_date_initialize(zend_object_store_get_object(getThis() TSRMLS_CC), time_str, time_str_len, NULL, timezone_object, 1 TSRMLS_CC);
+		if (!php_date_initialize(zend_object_store_get_object(getThis() TSRMLS_CC), time_str, time_str_len, NULL, timezone_object, 1 TSRMLS_CC)) {
+			ZVAL_NULL(getThis());
+		}
 	}
 	zend_restore_error_handling(&error_handling TSRMLS_CC);
 }
@@ -2576,6 +2588,10 @@ static int php_date_initialize_from_hash(zval **return_value, php_date_obj **dat
 						convert_to_string(*z_timezone);
 
 						tzi = php_date_parse_tzfile(Z_STRVAL_PP(z_timezone), DATE_TIMEZONEDB TSRMLS_CC);
+
+						if (tzi == NULL) {
+							return 0;
+						}
 
 						ALLOC_INIT_ZVAL(tmp_obj);
 						tzobj = zend_object_store_get_object(php_date_instantiate(date_ce_timezone, tmp_obj TSRMLS_CC) TSRMLS_CC);
@@ -2879,7 +2895,7 @@ PHP_FUNCTION(date_add)
 	zval         *object, *interval;
 	php_date_obj *dateobj;
 	php_interval_obj *intobj;
-	int               bias = 1;
+	timelib_time     *new_time;
 
 	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "OO", &object, date_ce_date, &interval, date_ce_interval) == FAILURE) {
 		RETURN_FALSE;
@@ -2889,27 +2905,9 @@ PHP_FUNCTION(date_add)
 	intobj = (php_interval_obj *) zend_object_store_get_object(interval TSRMLS_CC);
 	DATE_CHECK_INITIALIZED(intobj->initialized, DateInterval);
 
-
-	if (intobj->diff->have_weekday_relative || intobj->diff->have_special_relative) {
-		memcpy(&dateobj->time->relative, intobj->diff, sizeof(struct timelib_rel_time));
-	} else {
-		if (intobj->diff->invert) {
-			bias = -1;
-		}
-		memset(&dateobj->time->relative, 0, sizeof(struct timelib_rel_time));
-		dateobj->time->relative.y = intobj->diff->y * bias;
-		dateobj->time->relative.m = intobj->diff->m * bias;
-		dateobj->time->relative.d = intobj->diff->d * bias;
-		dateobj->time->relative.h = intobj->diff->h * bias;
-		dateobj->time->relative.i = intobj->diff->i * bias;
-		dateobj->time->relative.s = intobj->diff->s * bias;
-	}
-	dateobj->time->have_relative = 1;
-	dateobj->time->sse_uptodate = 0;
-
-	timelib_update_ts(dateobj->time, NULL);
-	timelib_update_from_sse(dateobj->time);
-	dateobj->time->have_relative = 0;
+	new_time = timelib_add(dateobj->time, intobj->diff);
+	timelib_time_dtor(dateobj->time);
+	dateobj->time = new_time;
 
 	RETURN_ZVAL(object, 1, 0);
 }
@@ -2923,7 +2921,7 @@ PHP_FUNCTION(date_sub)
 	zval         *object, *interval;
 	php_date_obj *dateobj;
 	php_interval_obj *intobj;
-	int               bias = 1;
+	timelib_time     *new_time;
 
 	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "OO", &object, date_ce_date, &interval, date_ce_interval) == FAILURE) {
 		RETURN_FALSE;
@@ -2938,24 +2936,9 @@ PHP_FUNCTION(date_sub)
 		return;
 	}
 
-	if (intobj->diff->invert) {
-		bias = -1;
-	}
-
-	memset(&dateobj->time->relative, 0, sizeof(struct timelib_rel_time));
-	dateobj->time->relative.y = 0 - (intobj->diff->y * bias);
-	dateobj->time->relative.m = 0 - (intobj->diff->m * bias);
-	dateobj->time->relative.d = 0 - (intobj->diff->d * bias);
-	dateobj->time->relative.h = 0 - (intobj->diff->h * bias);
-	dateobj->time->relative.i = 0 - (intobj->diff->i * bias);
-	dateobj->time->relative.s = 0 - (intobj->diff->s * bias);
-	dateobj->time->have_relative = 1;
-	dateobj->time->sse_uptodate = 0;
-
-	timelib_update_ts(dateobj->time, NULL);
-	timelib_update_from_sse(dateobj->time);
-
-	dateobj->time->have_relative = 0;
+	new_time = timelib_sub(dateobj->time, intobj->diff);
+	timelib_time_dtor(dateobj->time);
+	dateobj->time = new_time;
 
 	RETURN_ZVAL(object, 1, 0);
 }
@@ -3015,11 +2998,18 @@ PHP_FUNCTION(date_timezone_set)
 	dateobj = (php_date_obj *) zend_object_store_get_object(object TSRMLS_CC);
 	DATE_CHECK_INITIALIZED(dateobj->time, DateTime);
 	tzobj = (php_timezone_obj *) zend_object_store_get_object(timezone_object TSRMLS_CC);
-	if (tzobj->type != TIMELIB_ZONETYPE_ID) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Can only do this for zones with ID for now");
-		return;
+
+	switch (tzobj->type) {
+		case TIMELIB_ZONETYPE_OFFSET:
+			timelib_set_timezone_from_offset(dateobj->time, tzobj->tzi.utc_offset);
+			break;
+		case TIMELIB_ZONETYPE_ABBR:
+			timelib_set_timezone_from_abbr(dateobj->time, tzobj->tzi.z);
+			break;
+		case TIMELIB_ZONETYPE_ID:
+			timelib_set_timezone(dateobj->time, tzobj->tzi.tz);
+			break;
 	}
-	timelib_set_timezone(dateobj->time, tzobj->tzi.tz);
 	timelib_unixtime2local(dateobj->time, dateobj->time->sse);
 
 	RETURN_ZVAL(object, 1, 0);
