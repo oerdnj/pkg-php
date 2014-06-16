@@ -1,3 +1,10 @@
+php5 (5.5.13+dfsg-1) unstable; urgency=medium
+
+  * New upstream version 5.5.13+dfsg
+  * [CVE-2014-4049]: Fix potential segfault in dns_get_record()
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 16 Jun 2014 16:16:12 +0200
+
 php5 (5.5.12+dfsg-2) unstable; urgency=medium
 
   * Set default listen.{owner,group} to www-data:www-data (Closes: #747195)
