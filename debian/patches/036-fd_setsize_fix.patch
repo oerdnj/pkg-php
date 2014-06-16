@@ -5,7 +5,7 @@ Last-Update: 2010-01-18
 
 --- php5.4.orig/ext/sockets/sockets.c
 +++ php5.4/ext/sockets/sockets.c
-@@ -937,6 +937,7 @@ static int php_sock_array_to_fd_set(zval
+@@ -962,6 +962,7 @@ static int php_sock_array_to_fd_set(zval
  
  		php_sock = (php_socket*) zend_fetch_resource(element TSRMLS_CC, -1, le_socket_name, NULL, 1, le_socket);
  		if (!php_sock) continue; /* If element is not a resource, skip it */

@@ -1,6 +1,6 @@
 --- php5.4.orig/ext/dba/dba.c
 +++ php5.4/ext/dba/dba.c
-@@ -919,7 +919,7 @@ static void php_dba_open(INTERNAL_FUNCTI
+@@ -922,7 +922,7 @@ static void php_dba_open(INTERNAL_FUNCTI
  		}
  	}
  

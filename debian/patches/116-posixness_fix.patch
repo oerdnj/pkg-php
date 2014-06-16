@@ -9,7 +9,7 @@
 +#endif
 +
  #ifndef __CYGWIN__
- # if WINNT|WIN32
+ # ifdef _WIN32
  #  define TSRM_WIN32
 --- php5.4.orig/ext/date/lib/parse_tz.c
 +++ php5.4/ext/date/lib/parse_tz.c

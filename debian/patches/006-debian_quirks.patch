@@ -61,7 +61,7 @@ Last-Update: 2010-01-18
  ## convert skel_dir to full path
 --- php5.4.orig/php.ini-development
 +++ php5.4/php.ini-development
-@@ -703,7 +703,7 @@ default_mimetype = "text/html"
+@@ -693,7 +693,7 @@ default_mimetype = "text/html"
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
  ; UNIX: "/path1:/path2"
@@ -72,7 +72,7 @@ Last-Update: 2010-01-18
  ;include_path = ".;c:\php\includes"
 --- php5.4.orig/php.ini-production
 +++ php5.4/php.ini-production
-@@ -703,7 +703,7 @@ default_mimetype = "text/html"
+@@ -693,7 +693,7 @@ default_mimetype = "text/html"
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
  ; UNIX: "/path1:/path2"
@@ -81,7 +81,7 @@ Last-Update: 2010-01-18
  ;
  ; Windows: "\path1;\path2"
  ;include_path = ".;c:\php\includes"
-@@ -860,50 +860,6 @@ default_socket_timeout = 60
+@@ -850,50 +850,6 @@ default_socket_timeout = 60
  ; If you only provide the name of the extension, PHP will look for it in its
  ; default extension directory.
  ;
@@ -158,7 +158,7 @@ Last-Update: 2010-01-18
    *** Pike version:             $PIKE_VERSION"
 --- php5.4.orig/sapi/cli/php.1.in
 +++ php5.4/sapi/cli/php.1.in
-@@ -374,13 +374,14 @@ Shows configuration for extension
+@@ -365,13 +365,14 @@ Shows configuration for extension
  Show configuration file names
  .SH FILES
  .TP 15
