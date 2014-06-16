@@ -1,3 +1,10 @@
+php5 (5.4.29-1) unstable; urgency=medium
+
+  * New upstream version 5.4.29
+  * Update patches for 5.4.29 release
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 16 Jun 2014 16:01:51 +0200
+
 php5 (5.4.28-1) unstable; urgency=medium
 
   * New upstream version 5.4.28
