@@ -5,8 +5,8 @@ Origin: vendor
 Forwarded: no
 Last-Update: 2010-01-18
 
---- php5.4.orig/configure.in
-+++ php5.4/configure.in
+--- php5.orig/configure.in
++++ php5/configure.in
 @@ -692,50 +692,50 @@ PHP_CHECK_FUNC_LIB(nanosleep, rt)
  
  dnl Check for getaddrinfo, should be a better way, but...

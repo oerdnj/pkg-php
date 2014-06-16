@@ -1,5 +1,5 @@
---- php5.4.orig/ext/mssql/php_mssql.c
-+++ php5.4/ext/mssql/php_mssql.c
+--- php5.orig/ext/mssql/php_mssql.c
++++ php5/ext/mssql/php_mssql.c
 @@ -1106,6 +1106,14 @@ static void php_mssql_get_column_content
  			return;
  		}

@@ -4,8 +4,8 @@ Bug-Debian: http://bugs.debian.org/205405
 Forwarded: no
 Last-Update: 2010-01-18
 
---- php5.4.orig/ext/ldap/ldap.c
-+++ php5.4/ext/ldap/ldap.c
+--- php5.orig/ext/ldap/ldap.c
++++ php5/ext/ldap/ldap.c
 @@ -1231,7 +1231,7 @@ PHP_FUNCTION(ldap_explode_dn)
  	}
  

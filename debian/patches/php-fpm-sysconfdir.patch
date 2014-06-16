@@ -1,5 +1,5 @@
---- php5.4.orig/sapi/fpm/fpm/fpm_conf.c
-+++ php5.4/sapi/fpm/fpm/fpm_conf.c
+--- php5.orig/sapi/fpm/fpm/fpm_conf.c
++++ php5/sapi/fpm/fpm/fpm_conf.c
 @@ -1641,7 +1641,7 @@ int fpm_conf_init_main(int test_conf, in
  		char *tmp;
  

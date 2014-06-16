@@ -3,8 +3,8 @@ Author: Marc Deslauriers <marc.deslauriers@ubuntu.com>
 Bug: http://bugs.php.net/bug.php?id=52102
 Ubuntu-Bug: https://bugs.edge.launchpad.net/ubuntu/+source/php5/+bug/564920
 
---- php5.4.orig/main/streams/plain_wrapper.c
-+++ php5.4/main/streams/plain_wrapper.c
+--- php5.orig/main/streams/plain_wrapper.c
++++ php5/main/streams/plain_wrapper.c
 @@ -633,7 +633,13 @@ static int php_stdiop_set_option(php_str
  
  				switch (value) {

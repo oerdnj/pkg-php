@@ -8,8 +8,8 @@ Subject: [PATCH] Add information about which INI file is which inside respective
  php.ini-production  |    2 ++
  2 files changed, 4 insertions(+), 0 deletions(-)
 
---- php5.4.orig/php.ini-development
-+++ php5.4/php.ini-development
+--- php5.orig/php.ini-development
++++ php5/php.ini-development
 @@ -85,6 +85,8 @@
  
  ; This is php.ini-development INI file.
@@ -19,8 +19,8 @@ Subject: [PATCH] Add information about which INI file is which inside respective
  ;;;;;;;;;;;;;;;;;;;
  ; Quick Reference ;
  ;;;;;;;;;;;;;;;;;;;
---- php5.4.orig/php.ini-production
-+++ php5.4/php.ini-production
+--- php5.orig/php.ini-production
++++ php5/php.ini-production
 @@ -85,6 +85,8 @@
  
  ; This is php.ini-production INI file.
