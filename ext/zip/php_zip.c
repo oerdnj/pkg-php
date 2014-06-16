@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2013 The PHP Group                                |
+  | Copyright (c) 1997-2014 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -102,12 +102,12 @@ static char * php_zip_make_relative_path(char *path, int path_len) /* {{{ */
 	char *path_begin = path;
 	size_t i;
 
-	if (IS_SLASH(path[0])) {
-		return path + 1;
-	}
-
 	if (path_len < 1 || path == NULL) {
 		return NULL;
+	}
+
+	if (IS_SLASH(path[0])) {
+		return path + 1;
 	}
 
 	i = path_len;
@@ -1537,7 +1537,7 @@ static ZIPARCHIVE_METHOD(open)
 		RETURN_LONG((long)err);
 	}
 	ze_obj->filename = estrdup(resolved_path);
-	ze_obj->filename_len = filename_len;
+	ze_obj->filename_len = strlen(resolved_path);
 	ze_obj->za = intern;
 	RETURN_TRUE;
 }
@@ -1856,15 +1856,16 @@ static ZIPARCHIVE_METHOD(addFromString)
 	/* TODO: fix  _zip_replace */
 	if (cur_idx >= 0) {
 		if (zip_delete(intern, cur_idx) == -1) {
-			RETURN_FALSE;
+			goto fail;
 		}
 	}
 
-	if (zip_add(intern, name, zs) == -1) {
-		RETURN_FALSE;
-	} else {
+	if (zip_add(intern, name, zs) != -1) {
 		RETURN_TRUE;
 	}
+fail:
+	zip_source_free(zs);
+	RETURN_FALSE;	
 }
 /* }}} */
 

@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2013 The PHP Group                                |
+  | Copyright (c) 1997-2014 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -588,7 +588,8 @@ static inline int php_tcp_sockop_bind(php_stream *stream, php_netstream_data_t *
 
 		parse_unix_address(xparam, &unix_addr TSRMLS_CC);
 
-		return bind(sock->socket, (struct sockaddr *)&unix_addr, sizeof(unix_addr));
+		return bind(sock->socket, (const struct sockaddr *)&unix_addr,
+			(socklen_t) XtOffsetOf(struct sockaddr_un, sun_path) + xparam->inputs.namelen);
 	}
 #endif
 

@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2013 The PHP Group                                |
+   | Copyright (c) 1997-2014 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -1589,6 +1589,7 @@ static int php_cli_server_client_read_request_on_body(php_http_parser *parser, c
 		}
 		client->request.content_len = 0;
 	}
+	client->request.content = perealloc(client->request.content, client->request.content_len + length, 1);
 	memmove(client->request.content + client->request.content_len, at, length);
 	client->request.content_len += length;
 	return 0;

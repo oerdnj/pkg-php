@@ -401,8 +401,11 @@ static timelib_sll timelib_meridian_with_check(char **ptr, timelib_sll h)
 {
 	timelib_sll retval = 0;
 
-	while (!strchr("AaPp", **ptr)) {
+	while (**ptr && !strchr("AaPp", **ptr)) {
 		++*ptr;
+	}
+	if(!**ptr) {
+		return TIMELIB_UNSET;
 	}
 	if (**ptr == 'a' || **ptr == 'A') {
 		if (h == 12) {
@@ -750,7 +753,7 @@ const static timelib_tz_lookup_table* zone_search(const char *word, long gmtoffs
 	/* Still didn't find anything, let's find the zone solely based on
 	 * offset/isdst then */
 	for (fmp = timelib_timezone_fallbackmap; fmp->name; fmp++) {
-		if ((fmp->gmtoffset * 3600) == gmtoffset && fmp->type == isdst) {
+		if ((fmp->gmtoffset * 60) == gmtoffset && fmp->type == isdst) {
 			return fmp;
 		}
 	}
@@ -2131,6 +2134,10 @@ timelib_time *timelib_parse_from_format(char *format, char *string, int len, tim
 				break;
 
 			case '\\': /* escaped char */
+				if(!fptr[1]) {
+					add_pbf_error(s, "Escaped character expected", string, begin);
+					break;
+				}
 				fptr++;
 				if (*ptr == *fptr) {
 					++ptr;
