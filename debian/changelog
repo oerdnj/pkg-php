@@ -1,10 +1,61 @@
+php5 (5.4.28-1) unstable; urgency=medium
+
+  * New upstream version 5.4.28
+  * Update patches for 5.4.28 release
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 05 May 2014 10:37:32 +0200
+
+php5 (5.4.27-1) unstable; urgency=low
+
+  * New upstream version 5.4.27
+  * Update patches for 5.4.27 release
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 08 Apr 2014 11:02:15 +0200
+
+php5 (5.4.26-1) unstable; urgency=low
+
+  * New upstream version 5.4.26
+  * Update patches for 5.4.26 release
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 27 Mar 2014 15:26:42 +0100
+
+php5 (5.4.25-1) unstable; urgency=low
+
+  * New upstream version 5.4.25
+  * Update patches for 5.4.25 release
+
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 12 Feb 2014 10:21:29 +0100
+
+php5 (5.4.24-1) unstable; urgency=low
+
+  * New upstream version 5.4.24
+  * Update patches for 5.4.24 release
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 24 Jan 2014 11:12:43 +0100
+
+php5 (5.4.23-1) unstable; urgency=low
+
+  * New upstream version 5.4.23
+    + [CVE-2013-6420]: Fix memory corruption in openssl_x509_parse (Closes: #731895)
+  * [CVE-2013-6712] Fix heap buffer over-read in DateInterval (Closes: #731112)
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 12 Dec 2013 09:47:24 +0100
+
+php5 (5.4.22-1) unstable; urgency=low
+
+  * Don't do versioned depends on libgd2-xmp-dev
+  * New upstream version 5.4.22
+  * Update patches for 5.4.22 release
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 21 Nov 2013 10:31:32 +0100
+
 php5 (5.4.21-1) unstable; urgency=low
 
   * Update NEWS file for 5.4.21 release
   * New upstream version 5.4.21
   * Update patches for 5.4.21 release
 
- -- Ondřej Surý <ondrej@debian.org>  Sun, 27 Oct 2013 20:39:00 +0100
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 21 Oct 2013 09:24:48 +0200
 
 php5 (5.4.20-1) unstable; urgency=low
 
