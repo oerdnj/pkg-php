@@ -61,3 +61,4 @@ expose_all_built_and_installed_apis.patch
 CVE-2014-4049.patch
 php-reg67072.patch
 php-bug67326.patch
+php-reg67118.patch
