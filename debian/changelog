@@ -1,3 +1,10 @@
+php5 (5.6.0~beta4+dfsg-4) unstable; urgency=medium
+
+  * Fixed regression introduced by patch for bug #67072
+  * Fix regression introduce in fix for bug #67118
+
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 18 Jun 2014 09:51:49 +0200
+
 php5 (5.6.0~beta4+dfsg-3) unstable; urgency=high
 
   * [CVE-2014-4049]: Fix potential segfault in dns_get_record()
