@@ -39,3 +39,4 @@ use_system_timezone.patch
 zlib-largefile-function-renaming.patch
 CVE-2014-4049.patch
 php-reg67072.patch
+php-bug67326.patch
