@@ -1,3 +1,12 @@
+php5 (5.4.29-3) unstable; urgency=medium
+
+  * Fixed regression introduced by patch for bug #67072
+  * Fix bug #67326 fileinfo: cdf_read_short_sector insufficient
+    boundary check
+  * Fix regression introduce in fix for bug #67118
+
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 18 Jun 2014 09:44:19 +0200
+
 php5 (5.4.29-2) unstable; urgency=medium
 
   * [CVE-2014-4049]: Fix potential segfault in dns_get_record()
