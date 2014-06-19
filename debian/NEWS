@@ -1,8 +1,8 @@
 php5 (5.6.0~beta4+dfsg-2) unstable; urgency=medium
   
-  * Please read full upgrade notes available from
-    /usr/share/doc/php5-common/UPGRADING
-  * Here are the backwards incompatible changes as listed by upstream:
+  * Full upstream upgrade notes are available at:
+    /usr/share/doc/php5-common/UPGRADING.gz
+  * The backwards incompatible changes introduced in PHP 5.6:
 
     - Core:
       By fixing bug #66015 it is no longer possible to overwrite keys in static scalar

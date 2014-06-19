@@ -1,7 +1,7 @@
 php5 (5.6.0~beta4+dfsg-4) unstable; urgency=medium
 
-  * Fixed regression introduced by patch for bug #67072
-  * Fix regression introduce in fix for bug #67118
+  * Fixed regression introduced by patch for bug PHP#67072
+  * Fix regression introduced in fix for bug PHP#67118
 
  -- Ondřej Surý <ondrej@debian.org>  Wed, 18 Jun 2014 09:51:49 +0200
 
