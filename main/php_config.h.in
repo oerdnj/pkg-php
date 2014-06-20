@@ -365,6 +365,9 @@
 /* Whether you use GNU Pth */
 #undef GNUPTH
 
+/* Define to 1 if `TIOCGWINSZ' requires <sys/ioctl.h>. */
+#undef GWINSZ_IN_SYS_IOCTL
+
 /* Whether 3 arg set_rebind_proc() */
 #undef HAVE_3ARG_SETREBINDPROC
 
