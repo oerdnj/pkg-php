@@ -38,4 +38,3 @@ expose_all_built_and_installed_apis.patch
 use_system_timezone.patch
 zlib-largefile-function-renaming.patch
 php-reg67072.patch
-php-reg67118.patch
