@@ -45,6 +45,8 @@ php5 (5.6.0~beta4+dfsg-2) unstable; urgency=medium
       longer accept keys or IVs with incorrect sizes. Furthermore an IV is now
       required if the used block cipher mode requires it.
 
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 23 Jun 2014 14:09:53 +0200
+
 php5 (5.5.0~rc1+dfsg-1) experimental; urgency=low
 
   * Starting from this version, the JSON module is no longer compiled in
