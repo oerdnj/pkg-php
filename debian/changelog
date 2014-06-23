@@ -1,11 +1,11 @@
 php5 (5.6.0~rc1+dfsg-1) unstable; urgency=medium
 
   * New upstream version 5.6.0~rc1+dfsg
-  * Switch the repack script to use dpt repack from pkg-perl-tools
-  * Remove CVE-2014-4049.patch; merged upstream
-  * Remove php-reg67118.patch; merged upstream
+  * Add new phpdbg SAPI for easier PHP debugging
+  * d/repack.sh: Switch the repack script to use dpt repack from
+    pkg-perl-tools
 
- -- Ondřej Surý <ondrej@debian.org>  Fri, 20 Jun 2014 13:01:00 +0200
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 23 Jun 2014 14:16:54 +0200
 
 php5 (5.6.0~beta4+dfsg-4) unstable; urgency=medium
 
