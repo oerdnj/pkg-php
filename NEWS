@@ -1,6 +1,64 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-29 May 2014, PHP 5.4.29 
+26 Jun 2014, PHP 5.4.30
+
+- Core:
+  . Fixed BC break introduced by patch for bug #67072. (Anatol, Stas)
+  . Fixed bug #66622 (Closures do not correctly capture the late bound class 
+    (static::) in some cases). (Levi Morrison)
+  . Fixed bug #67390 (insecure temporary file use in the configure script).
+    (CVE-2014-3981) (Remi)
+  . Fixed bug #67399 (putenv with empty variable may lead to crash). (Stas)
+  . Fixed bug #67498 (phpinfo() Type Confusion Information Leak Vulnerability). 
+    (Stefan Esser)
+
+- CLI server:
+  . Fixed Bug #67406 (built-in web-server segfaults on startup). (Remi)
+
+- Date:
+  . Fixed bug #67308 (Serialize of DateTime truncates fractions of second).
+    (Adam)
+  . Fixed regression in fix for bug #67118 (constructor can't be called twice).
+    (Remi)
+
+- Fileinfo:
+  . Fixed bug #67326 (fileinfo: cdf_read_short_sector insufficient boundary 
+    check). (CVE-2014-0207) 
+  . Fixed bug #67410 (fileinfo: mconvert incorrect handling of truncated pascal
+    string size). (CVE-2014-3478) (Francisco Alonso, Jan Kaluza, Remi) 
+  . Fixed bug #67411 (fileinfo: cdf_check_stream_offset insufficient boundary
+    check). (CVE-2014-3479) (Francisco Alonso, Jan Kaluza, Remi)
+  . Fixed bug #67412 (fileinfo: cdf_count_chain insufficient boundary check).
+    (CVE-2014-3480) (Francisco Alonso, Jan Kaluza, Remi)
+  . Fixed bug #67413 (fileinfo: cdf_read_property_info insufficient boundary
+    check). (CVE-2014-3487) (Francisco Alonso, Jan Kaluza, Remi)
+
+- Intl:
+  . Fixed bug #67349 (Locale::parseLocale Double Free). (Stas)
+  . Fixed bug #67397 (Buffer overflow in locale_get_display_name and
+    uloc_getDisplayName (libicu 4.8.1)). (Stas)
+
+- Network:
+  . Fixed bug #67432 (Fix potential segfault in dns_get_record()). 
+    (CVE-2014-4049). (Sara)
+
+- OpenSSL:
+  . Fixed bug #65698 (certificates validity parsing does not work past 2050). 
+    (Paul Oehler)
+  . Fixed bug #66636 (openssl_x509_parse warning with V_ASN1_GENERALIZEDTIME). 
+    (Paul Oehler)
+
+- SOAP:
+  . Implemented FR #49898 (Add SoapClient::__getCookies()). (Boro Sitnikovski)
+
+- SPL:
+  . Fixed bug #66127 (Segmentation fault with ArrayObject unset). (Stas)
+  . Fixed bug #67359 (Segfault in recursiveDirectoryIterator). (Laruence)
+  . Fixed bug #67360 (Missing element after ArrayObject::getIterator). (Adam)
+  . Fixed bug #67492 (unserialize() SPL ArrayObject / SPLObjectStorage Type 
+    Confusion) (CVE-2014-3515). (Stefan Esser)
+
+29 May 2014, PHP 5.4.29
 
 - COM:
   . Fixed bug #66431 (Special Character via COM Interface (CP_UTF8)). (Anatol)
@@ -25,12 +83,12 @@ PHP                                                                        NEWS
   . Fixed bug #67081 (DOMDocumentType->internalSubset returns entire DOCTYPE tag,
     not only the subset). (Anatol)
 
- - Fileinfo:
-   . Fixed bug #66307 (Fileinfo crashes with powerpoint files). (Anatol)
-   . Fixed bug #67327 (fileinfo: CDF infinite loop in nelements DoS).
-     (CVE-2014-0238)
-   . Fixed bug #67328 (fileinfo: fileinfo: numerous file_printf calls resulting in
-     performance degradation). (CVE-2014-0237)
+- Fileinfo:
+  . Fixed bug #66307 (Fileinfo crashes with powerpoint files). (Anatol)
+  . Fixed bug #67327 (fileinfo: CDF infinite loop in nelements DoS). 
+    (CVE-2014-0238)
+  . Fixed bug #67328 (fileinfo: fileinfo: numerous file_printf calls resulting in
+    performance degradation). (CVE-2014-0237)
 
 - FPM:
   . Fixed bug #66908 (php-fpm reload leaks epoll_create() file descriptor). 
