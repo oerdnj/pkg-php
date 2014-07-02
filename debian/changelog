@@ -1,3 +1,17 @@
+php5 (5.6.0~rc2+dfsg-1) unstable; urgency=medium
+
+  * New upstream version 5.6.0~rc2+dfsg
+  * Update patches for 5.6.0~rc2+dfsg release
+  * Align our patches with Fedora packaging (Courtesy of Remi Collet)
+  * Enable the tests again (Closes: #752099)
+  * Use Apache 2.4 updated Allow/Deny directives (Closes: #738959)
+  * Strip /usr from libedit, so the libedit is correctly found
+  * Hack around the configure ordering that checks for phpdbg before
+    checking for libedit (https://github.com/krakjoe/phpdbg/issues/103)
+  * Add builtin extension list to phpdbg
+
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 02 Jul 2014 15:50:39 +0200
+
 php5 (5.6.0~rc1+dfsg-3) unstable; urgency=medium
 
   * Add a duplicate signal handler to php5-fpm to issue reload on SIGHUP
