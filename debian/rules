@@ -30,7 +30,7 @@ PHP5_SOURCE_VERSION   = $(shell dpkg-parsechangelog | grep ^Version | sed "s/Ver
 PHP5_UPSTREAM_VERSION = $(shell echo $(PHP5_SOURCE_VERSION) | sed -e "s/-.*//" -e "s/.*://")
 PHP5_DEBIAN_REVISION  = $(shell echo $(PHP5_SOURCE_VERSION) | sed "s/.*-//")
 
-RUN_TESTS = no
+RUN_TESTS = yes
 ifeq (nocheck,$(findstring nocheck,$(DEB_BUILD_OPTIONS)))
   $(warning Disabling checks due DEB_BUILD_OPTIONS)
   RUN_TESTS = no
@@ -535,7 +535,9 @@ install: build
 	cat php.ini-production | tr "\t" " " | sed -e'/session.gc_probability =/ s/1/0/g;/disable_functions =/ s/$$/ $(PCNTL_FUNCTIONS)/g;' > debian/php5-common/usr/share/php5/php.ini-production
 	cat php.ini-production | tr "\t" " " | sed -e'/memory_limit =/ s/128M/-1/g;/session.gc_probability =/ s/1/0/g' > debian/php5-common/usr/share/php5/php.ini-production.cli
 	cat php.ini-development | tr "\t" " " | sed -e'/session.gc_probability =/ s/1/0/g;/disable_functions =/ s/$$/ $(PCNTL_FUNCTIONS)/g;' > debian/php5-common/usr/share/php5/php.ini-development
+ifeq (yes,$(RUN_TESTS))
 	cp test-results.txt debian/php5-common/usr/share/doc/php5-common/
+endif
 
 	# Install reportbug for php5 package
 	mkdir -p debian/php5/usr/share/reportbug/php5
