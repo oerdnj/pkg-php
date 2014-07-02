@@ -400,7 +400,7 @@ configure-cli-stamp: prepared-stamp
 		--disable-pdo \
 		--without-mysql --without-sybase-ct \
 		--without-mssql --without-sqlite3 --enable-pcntl \
-		--with-libedit=shared,/usr
+		--with-libedit=shared
 	cd cli-build && \
 	cp ../Zend/zend_ini_scanner.c ../Zend/zend_language_scanner.c \
 	   ../Zend/zend_ini_parser.h ../Zend/zend_language_parser.h \
@@ -422,7 +422,7 @@ configure-phpdbg-stamp: prepared-stamp
 		--disable-pdo \
 		--without-mysql --without-sybase-ct \
 		--without-mssql --without-sqlite3 --enable-pcntl \
-		--with-libedit=shared,/usr
+		--with-libedit=shared
 	cd phpdbg-build && \
 	cp ../Zend/zend_ini_scanner.c ../Zend/zend_language_scanner.c \
 	   ../Zend/zend_ini_parser.h ../Zend/zend_language_parser.h \
