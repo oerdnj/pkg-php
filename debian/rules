@@ -868,7 +868,7 @@ binary-arch: build install
 		echo "php:Depends=phpapi-$${phpapi}" >> debian/php5-$$package.substvars; \
 	done
 
-	for i in cgi cli fpm; do \
+	for i in cgi cli fpm phpdbg; do \
 		"$$i"-build/sapi/cli/php -n -r '$(BUILTIN_EXTENSION_CHECK)' \
 			>> debian/php5-"$$i".substvars; \
 	done
