@@ -3666,7 +3666,7 @@ ac_config_headers="$ac_config_headers main/php_config.h"
 PHP_MAJOR_VERSION=5
 PHP_MINOR_VERSION=6
 PHP_RELEASE_VERSION=0
-PHP_EXTRA_VERSION="RC1"
+PHP_EXTRA_VERSION="RC2"
 PHP_VERSION="$PHP_MAJOR_VERSION.$PHP_MINOR_VERSION.$PHP_RELEASE_VERSION$PHP_EXTRA_VERSION"
 PHP_VERSION_ID=`expr $PHP_MAJOR_VERSION \* 10000 + $PHP_MINOR_VERSION \* 100 + $PHP_RELEASE_VERSION`
 
@@ -14054,7 +14054,7 @@ $as_echo "#define PHPDBG_DEBUG 0" >>confdefs.h
   PHP_PHPDBG_CFLAGS="-D_GNU_SOURCE"
   PHP_PHPDBG_FILES="phpdbg.c phpdbg_parser.c phpdbg_lexer.c phpdbg_prompt.c phpdbg_help.c phpdbg_break.c phpdbg_print.c phpdbg_bp.c phpdbg_opcode.c phpdbg_list.c phpdbg_utils.c phpdbg_info.c phpdbg_cmd.c phpdbg_set.c phpdbg_frame.c phpdbg_watch.c phpdbg_btree.c"
 
-  if test "$PHP_READLINE" != "no"; then
+  if test "$PHP_READLINE" != "no" -o  "$PHP_LIBEDIT" != "no"; then
   	PHPDBG_EXTRA_LIBS="$PHP_READLINE_LIBS"
   fi
 
@@ -109579,10 +109579,6 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
       hardcode_shlibpath_var=no
       ;;
 
-    freebsd1*)
-      ld_shlibs=no
-      ;;
-
     # FreeBSD 2.2.[012] allows us to include c++rt0.o to get C++ constructor
     # support.  Future versions do this automatically, but an explicit c++rt0.o
     # does not break anything, and helps significantly (at the cost of a little
@@ -110226,10 +110222,6 @@ dgux*)
   library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname$shared_ext'
   soname_spec='${libname}${release}${shared_ext}$major'
   shlibpath_var=LD_LIBRARY_PATH
-  ;;
-
-freebsd1*)
-  dynamic_linker=no
   ;;
 
 freebsd* | dragonfly*)
@@ -110971,7 +110963,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 110974 "configure"
+#line 110966 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -111071,7 +111063,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 111074 "configure"
+#line 111066 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -112136,7 +112128,7 @@ case $host_os in
       # Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 112139 "configure"
+#line 112131 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -112179,7 +112171,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	# Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 112182 "configure"
+#line 112174 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -113431,11 +113423,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:113434: $lt_compile\"" >&5)
+   (eval echo "\"configure:113426: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "configure:113438: \$? = $ac_status" >&5
+   echo "configure:113430: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -113535,11 +113527,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:113538: $lt_compile\"" >&5)
+   (eval echo "\"configure:113530: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "configure:113542: \$? = $ac_status" >&5
+   echo "configure:113534: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -113863,10 +113855,6 @@ dgux*)
   library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major $libname$shared_ext'
   soname_spec='${libname}${release}${shared_ext}$major'
   shlibpath_var=LD_LIBRARY_PATH
-  ;;
-
-freebsd1*)
-  dynamic_linker=no
   ;;
 
 freebsd* | dragonfly*)
