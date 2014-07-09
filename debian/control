@@ -3,7 +3,6 @@ Section: php
 Priority: optional
 Maintainer: Debian PHP Maintainers <pkg-php-maint@lists.alioth.debian.org>
 Uploaders: Ondřej Surý <ondrej@debian.org>,
-	   Sean Finney <seanius@debian.org>,
 	   Thijs Kinkhorst <thijs@debian.org>,
 	   Lior Kaplan <kaplan@debian.org>
 Build-Depends: apache2-dev (>= 2.4),
