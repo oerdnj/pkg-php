@@ -44,3 +44,4 @@ php-5.4.9-fixheader.patch
 php-5.6.0-noNO.patch
 php-5.6.0-oldpcre.patch
 hack-phpdbg-to-explicitly-link-with-libedit.patch
+php-fpm-getallheaders.patch
