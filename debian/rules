@@ -622,6 +622,8 @@ endif
 	# install CLI
 	cp cli-build/sapi/cli/php debian/php5-cli/usr/bin/php5
 	cp cli-build/sapi/cli/php.1 debian/php5-cli/usr/share/man/man1/php5.1
+	cp cli-build/ext/phar/phar.phar debian/php5-cli/usr/bin/phar
+	cp cli-build/ext/phar/phar.1 debian/php5-cli/usr/share/man/man1/phar.1
 
 	# install PHPDBG
 	cp phpdbg-build/sapi/phpdbg/phpdbg debian/php5-phpdbg/usr/bin/php5dbg
