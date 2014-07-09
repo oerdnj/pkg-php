@@ -1,3 +1,13 @@
+php5 (5.6.0~rc2+dfsg-2) unstable; urgency=medium
+
+  * d/rules: Remove /usr from ./configure invocation to help multiarch
+  * Add getallheaders() function to php5-fpm (Closes: #742497)
+  * Install phar executable and its man page (Closes: #740876)
+  * Move some php5-maintscript-helper messages to debug severity (Closes: #752102)
+  * Disable expose_php in standard php.ini-production (Closes: #582204)
+
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 09 Jul 2014 15:20:18 +0200
+
 php5 (5.6.0~rc2+dfsg-1) unstable; urgency=medium
 
   * New upstream version 5.6.0~rc2+dfsg
