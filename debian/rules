@@ -532,9 +532,19 @@ install: build
 	dh_apache2 --conditional=php5_enable
 
 	# sanitize php.ini file
-	cat php.ini-production | tr "\t" " " | sed -e'/session.gc_probability =/ s/1/0/g;/disable_functions =/ s/$$/ $(PCNTL_FUNCTIONS)/g;' > debian/php5-common/usr/share/php5/php.ini-production
-	cat php.ini-production | tr "\t" " " | sed -e'/memory_limit =/ s/128M/-1/g;/session.gc_probability =/ s/1/0/g' > debian/php5-common/usr/share/php5/php.ini-production.cli
-	cat php.ini-development | tr "\t" " " | sed -e'/session.gc_probability =/ s/1/0/g;/disable_functions =/ s/$$/ $(PCNTL_FUNCTIONS)/g;' > debian/php5-common/usr/share/php5/php.ini-development
+	cat php.ini-production | tr "\t" " " | \
+	sed -e'/session.gc_probability =/ s/1/0/g;' \
+	    -e'/disable_functions =/ s/$$/ $(PCNTL_FUNCTIONS)/g;'
+	    -e'/expose_php =/ s/On/Off/g;' \
+	  > debian/php5-common/usr/share/php5/php.ini-production
+	cat php.ini-production | tr "\t" " " | \
+	sed -e'/memory_limit =/ s/128M/-1/g;' \
+	    -e'/session.gc_probability =/ s/1/0/g' \
+	  > debian/php5-common/usr/share/php5/php.ini-production.cli
+	cat php.ini-development | tr "\t" " " | \
+	sed -e'/session.gc_probability =/ s/1/0/g;' \
+	    -e'/disable_functions =/ s/$$/ $(PCNTL_FUNCTIONS)/g;' \
+	  > debian/php5-common/usr/share/php5/php.ini-development
 ifeq (yes,$(RUN_TESTS))
 	cp test-results.txt debian/php5-common/usr/share/doc/php5-common/
 endif
