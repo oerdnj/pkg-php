@@ -45,3 +45,4 @@ php-5.6.0-noNO.patch
 php-5.6.0-oldpcre.patch
 hack-phpdbg-to-explicitly-link-with-libedit.patch
 php-fpm-getallheaders.patch
+php-fpm-mod_fastcgi-compatibility.patch
