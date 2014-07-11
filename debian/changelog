@@ -1,3 +1,10 @@
+php5 (5.6.0~rc2+dfsg-3) unstable; urgency=medium
+
+  * Remove Sean Finney from Uploaders; Thanks for all the hard work!
+  * Revert upstream patch that broke mod_fastcgi (Closes: #754384)
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 11 Jul 2014 09:29:36 +0200
+
 php5 (5.6.0~rc2+dfsg-2) unstable; urgency=medium
 
   * d/rules: Remove /usr from ./configure invocation to help multiarch
