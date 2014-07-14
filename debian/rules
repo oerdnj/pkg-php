@@ -550,9 +550,9 @@ ifeq (yes,$(RUN_TESTS))
 endif
 
 	# Install reportbug for php5 package
-	mkdir -p debian/php5/usr/share/reportbug/php5
-	install -m644 debian/php5.bug.control debian/php5/usr/share/reportbug/php5/control
-	ln -s ../php5-common/script debian/php5/usr/share/reportbug/php5/script
+	mkdir -p debian/php5/usr/share/bug/php5
+	install -m644 debian/php5.bug.control debian/php5/usr/share/bug/php5/control
+	ln -s ../php5-common/script debian/php5/usr/share/bug/php5/script
 
 	# Install helper shell fragment
 	install -m644 debian/php5-helper $(CURDIR)/debian/php5-common/usr/share/php5/
