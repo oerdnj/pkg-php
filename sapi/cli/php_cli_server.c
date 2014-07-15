@@ -223,6 +223,7 @@ static php_cli_server_http_response_status_code_pair status_map[] = {
 	{ 304, "Not Modified" },
 	{ 305, "Use Proxy" },
 	{ 307, "Temporary Redirect" },
+	{ 308, "Permanent Redirect" },
 	{ 400, "Bad Request" },
 	{ 401, "Unauthorized" },
 	{ 402, "Payment Required" },
@@ -241,6 +242,7 @@ static php_cli_server_http_response_status_code_pair status_map[] = {
 	{ 415, "Unsupported Media Type" },
 	{ 416, "Requested Range Not Satisfiable" },
 	{ 417, "Expectation Failed" },
+	{ 426, "Upgrade Required" },
 	{ 428, "Precondition Required" },
 	{ 429, "Too Many Requests" },
 	{ 431, "Request Header Fields Too Large" },
@@ -664,11 +666,10 @@ static int sapi_cli_server_send_headers(sapi_headers_struct *sapi_headers TSRMLS
 
 	h = (sapi_header_struct*)zend_llist_get_first_ex(&sapi_headers->headers, &pos);
 	while (h) {
-		if (!h->header_len) {
-			continue;
+		if (h->header_len) {
+			smart_str_appendl(&buffer, h->header, h->header_len);
+			smart_str_appendl(&buffer, "\r\n", 2);
 		}
-		smart_str_appendl(&buffer, h->header, h->header_len);
-		smart_str_appendl(&buffer, "\r\n", 2);
 		h = (sapi_header_struct*)zend_llist_get_next_ex(&sapi_headers->headers, &pos);
 	}
 	smart_str_appendl(&buffer, "\r\n", 2);
