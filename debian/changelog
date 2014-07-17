@@ -1,3 +1,14 @@
+php5 (5.6.0~rc2+dfsg-4) unstable; urgency=medium
+
+  [ Ondřej Surý ]
+  * Fix invalid reportbug script directory in the php5 package (Closes: #754775)
+  * Fix missing backslash that made php.ini-production empty (Closes: #755057)
+
+  [ Andreas Schwab ]
+  * Fix double free or corruption (!prev) on m68k (Closes: #714041)
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 17 Jul 2014 12:46:05 +0200
+
 php5 (5.6.0~rc2+dfsg-3) unstable; urgency=medium
 
   * Remove Sean Finney from Uploaders; Thanks for all the hard work!
