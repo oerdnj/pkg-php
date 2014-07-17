@@ -534,7 +534,7 @@ install: build
 	# sanitize php.ini file
 	cat php.ini-production | tr "\t" " " | \
 	sed -e'/session.gc_probability =/ s/1/0/g;' \
-	    -e'/disable_functions =/ s/$$/ $(PCNTL_FUNCTIONS)/g;'
+	    -e'/disable_functions =/ s/$$/ $(PCNTL_FUNCTIONS)/g;' \
 	    -e'/expose_php =/ s/On/Off/g;' \
 	  > debian/php5-common/usr/share/php5/php.ini-production
 	cat php.ini-production | tr "\t" " " | \
