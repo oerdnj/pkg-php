@@ -1,3 +1,10 @@
+php5 (5.6.0~rc2+dfsg-5) unstable; urgency=medium
+
+  * Fix null byte suffix after keys in getallheaders() result
+    (Closes: #755115)
+
+ -- Ondřej Surý <ondrej@debian.org>  Sun, 20 Jul 2014 16:57:51 +0200
+
 php5 (5.6.0~rc2+dfsg-4) unstable; urgency=medium
 
   [ Ondřej Surý ]
