@@ -63,7 +63,7 @@ Subject: [PATCH 1/2] getallheaders for php-fpm #62596
 +	} else {
 +		return;
 +	}
-+	add_assoc_stringl_ex(return_value, var, var_len+1, val, val_len, 1);
++	add_assoc_stringl_ex(return_value, var, var_len, val, val_len, 1);
 +	if (str) {
 +		free_alloca(var, use_heap);
 +	}
