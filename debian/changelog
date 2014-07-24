@@ -1,3 +1,9 @@
+php5 (5.5.15+dfsg-1) unstable; urgency=medium
+
+  * New upstream version 5.5.15+dfsg
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 24 Jul 2014 16:55:10 +0200
+
 php5 (5.5.15~rc1+dfsg-1) unstable; urgency=medium
 
   * New upstream version 5.5.15~rc1+dfsg
