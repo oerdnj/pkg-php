@@ -1,3 +1,10 @@
+php5 (5.4.31-1) unstable; urgency=medium
+
+  * New upstream version 5.4.31
+  * Update patches for 5.4.31 release
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 25 Jul 2014 08:04:33 +0200
+
 php5 (5.4.30-2) unstable; urgency=medium
 
   * Add a duplicate signal handler to php5-fpm to issue reload on SIGHUP
