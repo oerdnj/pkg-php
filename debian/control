@@ -226,7 +226,7 @@ Description: HTML-embedded scripting language (Embedded SAPI library)
  for web development and can be embedded into HTML.
 
 Package: php5-dev
-Depends: ${misc:Depends}, autoconf (>= 2.63), automake (>= 1.11), libssl-dev, libtool (>= 2.2), shtool, php5-common (>= ${binary:Version})
+Depends: ${misc:Depends}, autoconf (>= 2.63), automake (>= 1.11), libssl-dev, libtool (>= 2.2), shtool, php5-common (>= ${binary:Version}), libpcre3-dev
 Conflicts: ${libtool:Conflicts}
 Architecture: any
 Description: Files for PHP5 module development
