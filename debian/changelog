@@ -6,8 +6,12 @@ php5 (5.6.0~rc3+dfsg-2) unstable; urgency=medium
   * Clean session files sorted into subdirectories (Closes: #719982)
   * Make sessionclean script also respect session.save_path and
     session.save_handler (Closes: #720381)
+  * Limit the session cleanup only to sess_* files to prevent accidental
+    deletion of other files
+  * Use \0 as a new line delimiter when reading the session directory list
+    (Thanks Goswin Brederlow for review and tips)
 
- -- Ondřej Surý <ondrej@debian.org>  Thu, 14 Aug 2014 10:24:03 +0200
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 14 Aug 2014 15:04:08 +0200
 
 php5 (5.6.0~rc3+dfsg-1) unstable; urgency=medium
 
