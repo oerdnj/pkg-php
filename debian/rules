@@ -699,7 +699,7 @@ endif
 	mv $(CURDIR)/debian/libphp5-embed/usr/lib/php5/* $(CURDIR)/debian/libphp5-embed/usr/lib/
 
 	# install lintian overrides
-	cp debian/php5.lintian-overrides $(CURDIR)/debian/php5-common/usr/share/lintian/overrides/php5-common
+	cp debian/php5-common.lintian-overrides $(CURDIR)/debian/php5-common/usr/share/lintian/overrides/php5-common
 	cp debian/php5-dev.lintian-overrides $(CURDIR)/debian/php5-dev/usr/share/lintian/overrides/php5-dev
 	cp debian/php-pear.lintian-overrides $(CURDIR)/debian/php-pear/usr/share/lintian/overrides/php-pear
 
