@@ -1,3 +1,14 @@
+php5 (5.6.0~rc3+dfsg-2) unstable; urgency=medium
+
+  * Add WARNING about the need to modify the cron job if the session
+    handling has been modified
+  * Change the default session.save_path to /var/lib/php5/sessions
+  * Clean session files sorted into subdirectories (Closes: #719982)
+  * Make sessionclean script also respect session.save_path and
+    session.save_handler (Closes: #720381)
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 14 Aug 2014 10:24:03 +0200
+
 php5 (5.6.0~rc3+dfsg-1) unstable; urgency=medium
 
   * Add dependency on libpcre3-dev in php5-dev package (PHP#67658)
