@@ -13,7 +13,7 @@ done ) | sort -u | while IFS=: read save_handler save_path gc_maxlifetime; do
 	[ -x /usr/bin/lsof ] && /usr/bin/lsof -w -l +d "$save_path" | awk -- '{ if (NR > 1) { print $9; } }' | xargs -i touch -c {}
     
 	# find all files older then maxlifetime
-	find -L -O3 "$save_path" -depth -mindepth 1 -maxdepth 1 -ignore_readdir_race -type f -cmin "+$gc_maxlifetime" -delete
+	find -L -O3 "$save_path" -depth -mindepth 1 -ignore_readdir_race -type f -cmin "+$gc_maxlifetime" -delete
     fi
 done
 
