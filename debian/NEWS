@@ -1,3 +1,10 @@
+php5 (5.6.0~rc3+dfsg-2) unstable; urgency=medium
+
+  * The default session.save_path has been changed from /var/lib/php5
+    to /var/lib/php5/sessions.
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 14 Aug 2014 10:20:59 +0200
+
 php5 (5.6.0~beta4+dfsg-2) unstable; urgency=medium
   
   * Full upstream upgrade notes are available at:

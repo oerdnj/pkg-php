@@ -6,3 +6,6 @@ for sapi in apache2 apache2filter cli cgi embed fpm; do
 	mkdir $CONFDIR
     fi
 done
+
+# Move the existing sessions to /var/lib/php5/sessions
+find "/var/lib/php5" -depth -mindepth 1 -maxdepth 1 -ignore_readdir_race -type f -execdir mv "{}" "/var/lib/php5/sessions" \;

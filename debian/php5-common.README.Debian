@@ -45,14 +45,15 @@ Problems starting Apache HTTP Server with PHP 5
 Session storage
 ----------------------------------------------------------------------
 
-  Session files are stored in /var/lib/php5. For security purposes,
-  this directory is unreadable to non-root users. This means that PHP
-  5 running from Apache HTTP Server, for example, will not be able to
-  clean up stale session files. Instead, we have a cron job run every
-  30 minutes that cleans up stale session files; /etc/cron.d/php5. You
-  may need to modify how often this runs, if you've modified
-  session.gc_maxlifetime in your php.ini; otherwise, it may be too lax
-  or overly aggressive in cleaning out stale session files.
+  Session files are stored in /var/lib/php5/sessions. For security
+  purposes, this directory is unreadable to non-root users. This means
+  that PHP 5 running from Apache HTTP Server, for example, will not be
+  able to clean up stale session files. Instead, we have a cron job
+  run every 30 minutes that cleans up stale session files;
+  /etc/cron.d/php5. You may need to modify how often this runs, if
+  you've modified session.gc_maxlifetime in your php.ini; otherwise,
+  it may be too lax or overly aggressive in cleaning out stale session
+  files.
 
   WARNING: If you modify the session handling in any way (e.g. put
   session files in subdirectories, use different session handler), you
@@ -207,4 +208,4 @@ Further documentation, errata, misc.
   If after reading the documentation in this file you still have
   unanswered questions, that's a good next place to go.
 
- -- Ondřej Surý <ondrej@debian.org>, Thu, 14 Aug 2014 10:15:57 +0200
+ -- Ondřej Surý <ondrej@debian.org>, Thu, 14 Aug 2014 10:17:49 +0200
