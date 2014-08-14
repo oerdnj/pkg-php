@@ -5,7 +5,7 @@ The available extensions are not related to this command.
 
 --- php5.orig/ext/standard/info.c
 +++ php5/ext/standard/info.c
-@@ -735,9 +735,6 @@ PHPAPI void php_print_info(int flag TSRM
+@@ -743,9 +743,6 @@ PHPAPI void php_print_info(int flag TSRM
  #ifdef ARCHITECTURE
  		php_info_print_table_row(2, "Architecture", ARCHITECTURE);
  #endif
