@@ -54,6 +54,11 @@ Session storage
   session.gc_maxlifetime in your php.ini; otherwise, it may be too lax
   or overly aggressive in cleaning out stale session files.
 
+  WARNING: If you modify the session handling in any way (e.g. put
+  session files in subdirectories, use different session handler), you
+  always have to check and possibly disable or modify the session
+  cleanup cron job that is located in /etc/cron.d/php5.
+
 Other caveats
 ----------------------------------------------------------------------
 
@@ -202,4 +207,4 @@ Further documentation, errata, misc.
   If after reading the documentation in this file you still have
   unanswered questions, that's a good next place to go.
 
- -- Ondřej Surý <ondrej@debian.org>, Sun,  5 May 2013 22:00:06 +0200
+ -- Ondřej Surý <ondrej@debian.org>, Thu, 14 Aug 2014 10:15:57 +0200
