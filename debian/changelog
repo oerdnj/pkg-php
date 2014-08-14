@@ -10,6 +10,7 @@ php5 (5.6.0~rc3+dfsg-2) unstable; urgency=medium
     deletion of other files
   * Use \0 as a new line delimiter when reading the session directory list
     (Thanks Goswin Brederlow for review and tips)
+  * Bump debhelper compat version to v9 (Closes: #696590)
 
  -- Ondřej Surý <ondrej@debian.org>  Thu, 14 Aug 2014 15:04:08 +0200
 
