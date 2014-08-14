@@ -689,7 +689,6 @@ endif
 	rm $(CURDIR)/debian/php5-dev/usr/share/php5/skeleton/skeleton.dsp
 
 	# install common files
-	install -m755 debian/maxlifetime debian/php5-common/usr/lib/php5
 	install -m755 debian/sessionclean debian/php5-common/usr/lib/php5
 	install -m755 debian/php5enmod debian/php5-common/usr/sbin/php5enmod
 	ln -s php5enmod debian/php5-common/usr/sbin/php5dismod
