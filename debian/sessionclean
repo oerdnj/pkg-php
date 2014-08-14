@@ -1,13 +1,14 @@
-#!/bin/sh -e
+#!/bin/bash -e
 
+# Iterate through all web SAPIs
 ( for sapi in apache2 apache2filter cgi fpm; do
     if [ -e /etc/php5/${sapi}/php.ini ]; then
 	save_handler=$(php5 -c /etc/php5/${sapi}/php.ini -d "error_reporting='~E_ALL'" -r 'print ini_get("session.save_handler");' | sed -e 's/.*;//')
 	save_path=$(php5 -c /etc/php5/${sapi}/php.ini -d "error_reporting='~E_ALL'" -r 'print ini_get("session.save_path");' | sed -e 's/.*;//')
 	gc_maxlifetime=$(php5 -c /etc/php5/${sapi}/php.ini -d "error_reporting='~E_ALL'" -r 'print ini_get("session.gc_maxlifetime");')
-	echo "$save_handler:$save_path:$gc_maxlifetime"
+	printf "%s:%s:%s\0" "$save_handler" "$save_path" "$gc_maxlifetime"
     fi
-done ) | sort -u | while IFS=: read save_handler save_path gc_maxlifetime; do
+done ) | sort -zu | while IFS=: read -d\0 -r save_handler save_path gc_maxlifetime; do
     if [ "$save_handler" = "files" -a -d "$save_path" ]; then
 	# first find all used files and touch them (hope it's not massive amount of files)
 	[ -x /usr/bin/lsof ] && /usr/bin/lsof -w -l +d "$save_path" | awk -- '{ if (NR > 1) { print $9; } }' | xargs -i touch -c {}
