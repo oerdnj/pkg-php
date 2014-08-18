@@ -3,7 +3,9 @@
 SAPIS="apache2:apache2 apache2filter:apache2 cgi:php5 fpm:php5-fpm"
 
 # Iterate through all web SAPIs
-( for sapi in $SAPIS; do
+(
+PROC_NAMES=""
+for sapi in $SAPIS; do
     conf_dir=$(echo "$sapi" | cut -d: -f1)
     proc_name=$(echo "$sapi" | cut -d: -f2)
 
@@ -13,14 +15,16 @@ SAPIS="apache2:apache2 apache2filter:apache2 cgi:php5 fpm:php5-fpm"
         gc_maxlifetime=$(php5 -c /etc/php5/${conf_dir}/php.ini -d "error_reporting='~E_ALL'" -r 'print ini_get("session.gc_maxlifetime")/60;')
 
 	if [ "$save_handler" = "files" -a -d "$save_path" ]; then
-            # first find all open session files and touch them (hope it's not massive amount of files)
-            for pid in $(pidof "$proc_name"); do
-		find "/proc/$pid/fd" -ignore_readdir_race -lname "$save_path/sess_\*" -exec touch -c {} \;
-            done
+	    proc_names="$proc_names $proc_name";
             printf "%s:%s:%s\n" "$save_path" "$gc_maxlifetime"
 	fi
     fi
-done ) | sort -r | sort -u -t: -k 1,1 | while IFS=: read -r save_path gc_maxlifetime; do
+done
+# first find all open session files and touch them (hope it's not massive amount of files)
+for pid in $(pidof $proc_names); do
+    find "/proc/$pid/fd" -ignore_readdir_race -lname "$save_path/sess_\*" -exec touch -c {} \;
+done
+) | sort -r | sort -u -t: -k 1,1 | while IFS=: read -r save_path gc_maxlifetime; do
     # find all files older then maxlifetime and delete them
     find -O3 "$save_path" -depth -mindepth 1 -name 'sess_*' -ignore_readdir_race -type f -cmin "+$gc_maxlifetime" -delete
 done
