@@ -1,3 +1,12 @@
+php5 (5.6.0~rc4+dfsg-2) unstable; urgency=medium
+
+  * Sanitize $PATH in php5-common postinst script (Closes: #758185)
+  * Update the sessionclean script to only check for SAPI processes
+    (Courtesy of Steve Kamerman)
+  * Other various minor improvements in the session cleanup script
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 18 Aug 2014 12:16:56 +0200
+
 php5 (5.6.0~rc4+dfsg-1) unstable; urgency=medium
 
   * New upstream version 5.6.0~rc4+dfsg
