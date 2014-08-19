@@ -3,7 +3,8 @@
 /usr/share/doc/php5-common
 /usr/share/php5
 /usr/share/php5/sapi
-/var/lib/php5/modules
-/usr/lib/php5
 /etc/php5/mods-available
 /usr/sbin
+/var/lib/php5
+/var/lib/php5/sessions
+/var/lib/php5/modules

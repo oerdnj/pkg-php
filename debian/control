@@ -3,7 +3,6 @@ Section: php
 Priority: optional
 Maintainer: Debian PHP Maintainers <pkg-php-maint@lists.alioth.debian.org>
 Uploaders: Ondřej Surý <ondrej@debian.org>,
-	   Sean Finney <seanius@debian.org>,
 	   Thijs Kinkhorst <thijs@debian.org>,
 	   Lior Kaplan <kaplan@debian.org>
 Build-Depends: apache2-dev (>= 2.4),
@@ -14,7 +13,7 @@ Build-Depends: apache2-dev (>= 2.4),
 	       automake (>= 1.11) | automake1.11,
 	       bison,
 	       chrpath,
-	       debhelper (>= 5),
+	       debhelper (>= 9),
 	       dpkg-dev (>= 1.16.1~),
 	       firebird-dev [!hurd-any !m68k !hppa !ppc64] | firebird2.5-dev [!hurd-any !m68k !hppa !ppc64] | firebird2.1-dev [!hurd-any !m68k !hppa !ppc64],
 	       flex,
@@ -30,7 +29,7 @@ Build-Depends: apache2-dev (>= 2.4),
 	       libexpat1-dev (>= 1.95.2-2.1),
 	       libfreetype6-dev,
 	       libgcrypt11-dev,
-	       libgd-dev | libgd2-dev,
+	       libgd-dev (>= 2.1.0) | libgd2-dev,
 	       libglib2.0-dev,
 	       libgmp3-dev,
 	       libicu-dev,
@@ -73,6 +72,7 @@ Standards-Version: 3.9.5
 Vcs-Git: git://anonscm.debian.org/pkg-php/php.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-php/php.git
 Homepage: http://www.php.net/
+XS-Testsuite: autopkgtest
 
 Package: php5
 Architecture: all
@@ -120,6 +120,7 @@ Depends: ${shlibs:Depends},
 	 apache2 (>= 2.4),
 	 mime-support,
 	 php5-common (= ${binary:Version}),
+	 php5-cli,
 	 php5-json,
 	 libmagic1,
 	 ucf,
@@ -127,7 +128,6 @@ Depends: ${shlibs:Depends},
 Conflicts: libapache2-mod-php4,
 	   libapache2-mod-php5filter
 Provides: ${php:Provides}
-Recommends: php5-cli
 Suggests: php-pear
 Description: server-side, HTML-embedded scripting language (Apache 2 module)
  This package provides the PHP5 module for the Apache 2 webserver (as
@@ -149,6 +149,7 @@ Depends: ${shlibs:Depends},
 	 apache2 (>= 2.4),
 	 mime-support,
 	 php5-common (= ${binary:Version}),
+	 php5-cli,
 	 php5-json,
 	 libmagic1,
 	 ucf,
@@ -176,6 +177,7 @@ Depends: ${shlibs:Depends},
 	 ${misc:Depends},
 	 mime-support,
 	 php5-common (= ${binary:Version}),
+	 php5-cli,
 	 php5-json,
 	libmagic1,
 	ucf,
@@ -224,6 +226,7 @@ Depends: ${shlibs:Depends},
 	 ${misc:Depends},
 	 mime-support,
 	 php5-common (= ${binary:Version}),
+	 php5-cli,
 	 php5-json,
 	 libmagic1,
 	 ucf,

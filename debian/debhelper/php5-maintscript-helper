@@ -221,7 +221,7 @@ php5_invoke()
 		if [ "$php5query_ret" -eq 0 ] ; then
 		    # configuration is already enabled
  		    php5$CMD -m -s "$SAPI" -q "$MOD" > /dev/null 2>&1 || return 1
-		    php5_msg "info" "php5_invoke $MOD: already enabled for $SAPI SAPI"
+		    php5_msg "debug" "php5_invoke $MOD: already enabled for $SAPI SAPI"
 		    PHP5_NEED_ACTION=1
 		elif [ "$php5query_ret" -eq 32	 ] ; then
 		    # the maintainer disabled the module
@@ -242,7 +242,7 @@ php5_invoke()
 		if [ "$php5query_ret" -eq 0 ] ; then
 		    if [ "$PHP5_MAINTSCRIPT_NAME" = 'postrm' ] && [ "$PHP5_MAINTSCRIPT_METHOD" = "purge" ] ; then
 			php5$CMD -p -f -s "$SAPI" -q "$MOD" || return 1
-			php5_msg "info" "php5_invoke $PHP5_MAINTSCRIPT_NAME: Purging module $MOD for $SAPI SAPI"
+			php5_msg "debug" "php5_invoke $PHP5_MAINTSCRIPT_NAME: Purging module $MOD for $SAPI SAPI"
 			PHP5_NEED_ACTION=1
 		    elif [ "$PHP5_MAINTSCRIPT_NAME" = 'postrm' ] || [ "$PHP5_MAINTSCRIPT_NAME" = 'prerm' ] ; then
 			if [ "$PHP5_MAINTSCRIPT_METHOD" = "remove" ] ; then
@@ -256,7 +256,7 @@ php5_invoke()
 		    fi
 		elif [ "$php5query_ret" -eq 32 ] || [ "$php5query_ret" -eq 33 ] ; then
 		    if [ "$PHP5_MAINTSCRIPT_NAME" = 'postrm' ] && [ "$PHP5_MAINTSCRIPT_METHOD" = "purge" ] ; then
-			php5_msg "info" "php5_invoke $PHP5_MAINTSCRIPT_NAME: Purging state for $MOD for $SAPI SAPI"
+			php5_msg "debug" "php5_invoke $PHP5_MAINTSCRIPT_NAME: Purging state for $MOD for $SAPI SAPI"
 			# this will return RC=1
 			( php5$CMD -p -f -s "$SAPI" -q "$MOD" > /dev/null 2>&1 )
 		    else

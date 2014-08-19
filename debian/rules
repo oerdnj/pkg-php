@@ -16,17 +16,21 @@ export DH_OPTIONS
 # compatibility to upstream
 PHP5_COMPAT=no
 
+# enable dpkg build flags
+DPKG_EXPORT_BUILDFLAGS = 1
+include /usr/share/dpkg/buildflags.mk
+
 DEB_HOST_GNU_TYPE    ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 DEB_HOST_ARCH        ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
 DEB_HOST_ARCH_OS     ?= $(shell dpkg-architecture -qDEB_HOST_ARCH_OS)
 DEB_HOST_MULTIARCH   ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
-
+export DEB_HOST_MULTIARCH
 PHP5_SOURCE_VERSION   = $(shell dpkg-parsechangelog | grep ^Version | sed "s/Version: //")
 PHP5_UPSTREAM_VERSION = $(shell echo $(PHP5_SOURCE_VERSION) | sed -e "s/-.*//" -e "s/.*://")
 PHP5_DEBIAN_REVISION  = $(shell echo $(PHP5_SOURCE_VERSION) | sed "s/.*-//")
 
-RUN_TESTS = no
+RUN_TESTS = yes
 ifeq (nocheck,$(findstring nocheck,$(DEB_BUILD_OPTIONS)))
   $(warning Disabling checks due DEB_BUILD_OPTIONS)
   RUN_TESTS = no
@@ -108,10 +112,6 @@ ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
     NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
     MAKEFLAGS += -j$(NUMJOBS)
 endif
-
-# enable dpkg build flags
-DPKG_EXPORT_BUILDFLAGS = 1
-include /usr/share/dpkg/buildflags.mk
 
 COMMON_CONFIG=--build=$(DEB_BUILD_GNU_TYPE) \
 		--host=$(DEB_HOST_GNU_TYPE) \
@@ -466,6 +466,8 @@ clean: unprepared
 	rm -rf embed-build
 	rm -rf fpm-build
 	rm -rf pear-build pear-build-download
+	# just in case the build tests failed, kill the running mysqld
+	$(SHELL) debian/setup-mysql.sh $(MYSQL_PORT) $(MYSQL_DATA_DIR) stop > /dev/null 2>&1 || exit 0
 	rm -rf test-results.txt $(MYSQL_DATA_DIR)
 	dh_clean -Xorig
 
@@ -491,7 +493,7 @@ install: build
 	dh_prep
 	dh_installdirs
 
-	chmod 01733 debian/php5-common/var/lib/php5
+	chmod 01733 debian/php5-common/var/lib/php5/sessions/
 
 	# Mangle apache2filter DSO name before running dh_apache2
 	mv apache2filter-build/.libs/libphp5.so apache2filter-build/.libs/libphp5filter.so
@@ -500,15 +502,27 @@ install: build
 	dh_apache2 --conditional=php5_enable
 
 	# sanitize php.ini file
-	cat php.ini-production | tr "\t" " " | sed -e'/session.gc_probability =/ s/1/0/g;/disable_functions =/ s/$$/ $(PCNTL_FUNCTIONS)/g;' > debian/php5-common/usr/share/php5/php.ini-production
-	cat php.ini-production | tr "\t" " " | sed -e'/memory_limit =/ s/128M/-1/g;/session.gc_probability =/ s/1/0/g' > debian/php5-common/usr/share/php5/php.ini-production.cli
-	cat php.ini-development | tr "\t" " " | sed -e'/session.gc_probability =/ s/1/0/g;/disable_functions =/ s/$$/ $(PCNTL_FUNCTIONS)/g;' > debian/php5-common/usr/share/php5/php.ini-development
+	cat php.ini-production | tr "\t" " " | \
+	sed -e'/session.gc_probability =/ s/1/0/g;' \
+	    -e'/disable_functions =/ s/$$/ $(PCNTL_FUNCTIONS)/g;' \
+	    -e'/expose_php =/ s/On/Off/g;' \
+	  > debian/php5-common/usr/share/php5/php.ini-production
+	cat php.ini-production | tr "\t" " " | \
+	sed -e'/memory_limit =/ s/128M/-1/g;' \
+	    -e'/session.gc_probability =/ s/1/0/g' \
+	  > debian/php5-common/usr/share/php5/php.ini-production.cli
+	cat php.ini-development | tr "\t" " " | \
+	sed -e'/session.gc_probability =/ s/1/0/g;' \
+	    -e'/disable_functions =/ s/$$/ $(PCNTL_FUNCTIONS)/g;' \
+	  > debian/php5-common/usr/share/php5/php.ini-development
+ifeq (yes,$(RUN_TESTS))
 	cp test-results.txt debian/php5-common/usr/share/doc/php5-common/
+endif
 
 	# Install reportbug for php5 package
-	mkdir -p debian/php5/usr/share/reportbug/php5
-	install -m644 debian/php5.bug.control debian/php5/usr/share/reportbug/php5/control
-	ln -s ../php5-common/script debian/php5/usr/share/reportbug/php5/script
+	mkdir -p debian/php5/usr/share/bug/php5
+	install -m644 debian/php5.bug.control debian/php5/usr/share/bug/php5/control
+	ln -s ../php5-common/script debian/php5/usr/share/bug/php5/script
 
 	# Install helper shell fragment
 	install -m644 debian/php5-helper $(CURDIR)/debian/php5-common/usr/share/php5/
@@ -588,6 +602,8 @@ install: build
 	# install CLI
 	cp cli-build/sapi/cli/php debian/php5-cli/usr/bin/php5
 	cp cli-build/sapi/cli/php.1 debian/php5-cli/usr/share/man/man1/php5.1
+	cp cli-build/ext/phar/phar.phar debian/php5-cli/usr/bin/phar
+	cp cli-build/ext/phar/phar.1 debian/php5-cli/usr/share/man/man1/phar.1
 
 	# install FPM
 	mkdir -p debian/php5-fpm/usr/sbin debian/php5-fpm/usr/share/man/man8/ debian/php5-fpm/etc/php5/fpm/pool.d
@@ -639,7 +655,6 @@ install: build
 	rm $(CURDIR)/debian/php5-dev/usr/share/php5/skeleton/skeleton.dsp
 
 	# install common files
-	install -m755 debian/maxlifetime debian/php5-common/usr/lib/php5
 	install -m755 debian/sessionclean debian/php5-common/usr/lib/php5
 	install -m755 debian/php5enmod debian/php5-common/usr/sbin/php5enmod
 	ln -s php5enmod debian/php5-common/usr/sbin/php5dismod
@@ -650,7 +665,7 @@ install: build
 	mv $(CURDIR)/debian/libphp5-embed/usr/lib/php5/* $(CURDIR)/debian/libphp5-embed/usr/lib/
 
 	# install lintian overrides
-	cp debian/php5.lintian-overrides $(CURDIR)/debian/php5-common/usr/share/lintian/overrides/php5-common
+	cp debian/php5-common.lintian-overrides $(CURDIR)/debian/php5-common/usr/share/lintian/overrides/php5-common
 	cp debian/php5-dev.lintian-overrides $(CURDIR)/debian/php5-dev/usr/share/lintian/overrides/php5-dev
 	cp debian/php-pear.lintian-overrides $(CURDIR)/debian/php-pear/usr/share/lintian/overrides/php-pear
 
