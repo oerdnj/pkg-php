@@ -1,3 +1,9 @@
+php5 (5.5.15+dfsg-3) unstable; urgency=medium
+
+  * Remove unnoticed bashism from sessionclean script
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 19 Aug 2014 17:15:12 +0200
+
 php5 (5.5.15+dfsg-2) unstable; urgency=medium
 
   * Add dependency on libpcre3-dev in php5-dev package (PHP#67658)
