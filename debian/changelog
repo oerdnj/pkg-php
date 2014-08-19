@@ -1,3 +1,9 @@
+php5 (5.6.0~rc4+dfsg-3) unstable; urgency=medium
+
+  * Even more fixes and improvements to session cleaning script
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 19 Aug 2014 10:46:05 +0200
+
 php5 (5.6.0~rc4+dfsg-2) unstable; urgency=medium
 
   * Sanitize $PATH in php5-common postinst script (Closes: #758185)
