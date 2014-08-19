@@ -1,3 +1,20 @@
+php5 (5.5.15+dfsg-2) unstable; urgency=medium
+
+  * Add dependency on libpcre3-dev in php5-dev package (PHP#67658)
+  * Align PHP-5.5 packaging with PHP-5.6 packaging
+   + Bump DEBHELPER compat level to 9 (fixes debug symbols)
+   + Add new updated and more efficient session cleaning script
+   + Silent most messages from php5-maintscript-helper
+   + Call ldconfig in libphp5-embed postinst script
+   + Update apache2 directives to apache2.4 syntax
+   + Move session files to /var/lib/php5/sessions
+   + Enable the tests again
+   + Disable expose_php by default
+   + Fix the reportbug scripts
+   + Add autopkgtests
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 19 Aug 2014 10:13:20 +0200
+
 php5 (5.5.15+dfsg-1) unstable; urgency=medium
 
   * New upstream version 5.5.15+dfsg
