@@ -1,11 +1,11 @@
 #!/bin/sh -e
 
-SAPIS="apache2:apache2\napache2filter:apache2\ncgi:php5\nfpm:php5-fpm"
+SAPIS="apache2:apache2\napache2filter:apache2\ncgi:php5\nfpm:php5-fpm\n"
 
 # Iterate through all web SAPIs
 (
 proc_names=""
-echo "$SAPIS" | \
+printf "$SAPIS" | \
 while IFS=: read -r conf_dir proc_name; do
     if [ -e /etc/php5/${conf_dir}/php.ini ]; then
         # Get all session variables once so we don't need to start PHP to get each config option
