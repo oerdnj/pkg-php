@@ -1,3 +1,9 @@
+php5 (5.5.15+dfsg-4) unstable; urgency=medium
+
+  * Drop the +lfs from phpapi we don't need it for transition anymore
+
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 20 Aug 2014 11:08:18 +0200
+
 php5 (5.5.15+dfsg-3) unstable; urgency=medium
 
   * Remove unnoticed bashism from sessionclean script
