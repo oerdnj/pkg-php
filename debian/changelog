@@ -1,3 +1,12 @@
+php5 (5.5.16+dfsg-1) unstable; urgency=medium
+
+  * Use printf instead of echo to print all SAPIS
+    (https://wiki.ubuntu.com/DashAsBinSh#echo)
+  * New upstream version 5.5.16+dfsg
+  * Update patches for 5.5.16 release
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 25 Aug 2014 11:46:52 +0200
+
 php5 (5.5.15+dfsg-4) unstable; urgency=medium
 
   * Drop the +lfs from phpapi we don't need it for transition anymore
