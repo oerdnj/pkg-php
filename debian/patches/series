@@ -24,7 +24,6 @@ fpm-config.patch
 php-fpm-sysconfdir.patch
 lp564920-fix-big-files.patch
 temporary-path-fixes-for-multiarch.patch
-gdIOCtx.patch
 hurd-noptrace.diff
 php-5.3.9-mysqlnd.patch
 php-5.3.9-gnusrc.patch

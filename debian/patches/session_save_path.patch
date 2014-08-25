@@ -7,7 +7,7 @@ Last-Update: 2010-05-01
 
 --- php5.orig/ext/session/session.c
 +++ php5/ext/session/session.c
-@@ -780,7 +780,7 @@ static ZEND_INI_MH(OnUpdateSmartStr) /*
+@@ -781,7 +781,7 @@ static ZEND_INI_MH(OnUpdateSmartStr) /*
  /* {{{ PHP_INI
   */
  PHP_INI_BEGIN()
