@@ -1,5 +1,55 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+07 Aug 2014, PHP 5.4.32
+
+- Core:
+  . Fixed bug #67717 (segfault in dns_get_record). (CVE-2014-3597) (Remi) 
+
+- COM:
+  . Fixed missing type checks in com_event_sink. (Yussuf Khalil, Stas)
+
+- Fileinfo:
+  . Fixed bug #67705 (extensive backtracking in rule regular expression).
+    (CVE-2014-3538) (Remi)
+  . Fixed bug #67716 (Segfault in cdf.c). (CVE-2014-3587) (Remi)
+
+- GD:
+  . Fixed bug #66901 (php-gd 'c_color' NULL pointer dereference).
+    (CVE-2014-2497) (Remi)
+  . Fixed bug #67730 (Null byte injection possible with imagexxx functions).
+    (CVE-2014-5120) (Ryan Mauger)
+
+- Milter:
+  . Fixed bug #67715 (php-milter does not build and crashes randomly). (Mike)
+
+- OpenSSL:
+  . Fixed missing type checks in OpenSSL options (Yussuf Khalil, Stas).
+
+- Readline:
+  . Fixed bug #55496 (Interactive mode doesn't force a newline before the
+    prompt). (Bob, Johannes)
+  . Fixed bug #67496 (Save command history when exiting interactive shell
+    with control-c). (Dmitry Saprykin, Johannes)
+
+- Sessions:
+  . Fixed missing type checks in php_session_create_id (Yussuf Khalil, Stas).
+
+- SPL:
+  . Fixed bug #67539 (ArrayIterator use-after-free due to object change during
+    sorting). (research at insighti dot org, Laruence)
+  . Fixed bug #67538 (SPL Iterators use-after-free). (CVE-2014-4670) (Laruence)
+
+- Core:
+  . Fixed bug #67693 (incorrect push to the empty array) (Tjerk)
+
+- ODBC:
+  . Fixed bug #60616 (odbc_fetch_into returns junk data at end of multi-byte
+    char fields). (Keyur)
+
+- Zlib:
+  . Fixed bug #67724 (chained zlib filters silently fail with large amounts of 
+    data). (Mike)
+
 24 Jul 2014, PHP 5.4.31
 
 - Core:
@@ -12,6 +62,7 @@ PHP                                                                        NEWS
   . Fixed bug #67151 (strtr with empty array crashes). (Nikita)
   . Fixed bug #67407 (Windows 8.1/Server 2012 R2 reported as Windows 8/Server
     2012). (Christian Wenz)
+  . Implemented FR #34407 (ucwords and Title Case). (Tjerk)
 
 - CLI server:
   . Implemented FR #67429 (CLI server is missing some new HTTP response codes).
@@ -36,6 +87,10 @@ PHP                                                                        NEWS
 
 - Streams:
   . Fixed bug #67430 (http:// wrapper doesn't follow 308 redirects). (Adam)
+
+- Session:
+  . Fixed bug #66827 (Session raises E_NOTICE when session name variable is array).
+    (Yasuo)
 
 26 Jun 2014, PHP 5.4.30
 
