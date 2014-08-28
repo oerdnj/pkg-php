@@ -1,3 +1,12 @@
+php5 (5.6.0+dfsg-1) unstable; urgency=medium
+
+  * New upstream version 5.6.0+dfsg
+  * Drop debian/patches/gdIOCtx.patch as it's no longer needed
+  * Use printf instead of echo to print all SAPIS
+    (https://wiki.ubuntu.com/DashAsBinSh#echo)
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 28 Aug 2014 14:47:48 +0200
+
 php5 (5.6.0~rc4+dfsg-4) unstable; urgency=medium
 
   * Remove unnoticed bashism from sessionclean script
