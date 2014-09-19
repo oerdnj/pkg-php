@@ -153,7 +153,7 @@ Last-Update: 2010-01-18
 +The configuration file for the version of PHP that apache2 uses.
  .SH EXAMPLES
  .TP 5
- \fIphp \-r 'echo "Hello World\\n";'\fP
+ \fI@program_prefix@php \-r 'echo "Hello World\\n";'\fP
 --- php5.orig/scripts/Makefile.frag
 +++ php5/scripts/Makefile.frag
 @@ -3,8 +3,8 @@
