@@ -1,5 +1,48 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+18 Sep 2014, PHP 5.5.17
+
+- Core:
+  . Fixed bug #47358 (glob returns error, should be empty array()). (Pierre)
+  . Fixed bug #65463 (SIGSEGV during zend_shutdown()). (Keyur Govande)
+  . Fixed bug #66036 (Crash on SIGTERM in apache process). (Keyur Govande)
+  . Fixed bug #67878 (program_prefix not honoured in man pages). (Remi)
+
+- COM:
+  . Fixed bug #41577 (DOTNET is successful once per server run)
+    (Aidas Kasparas)
+
+- FPM:
+  . Fixed #67606 (FPM with mod_fastcgi/apache2.4 is broken). (David Zuelke)
+
+- OpenSSL:
+  . Fixed bug #41631 (socket timeouts not honored in blocking SSL reads).
+    (Daniel Lowrey)
+  . Fixed bug #67850 (extension won't build if openssl compiled without SSLv3)
+    (Daniel Lowrey)
+
+- SPL:
+  . Fixed bug #67813 (CachingIterator::__construct InvalidArgumentException
+    wrong message). (tim_siebels_aurich at yahoo dot de)
+
+- Date:
+  . Fixed bug #66091 (memory leaks in DateTime constructor). (Tjerk)
+  . Fixed bug #66985 (Some timezones are no longer valid in PHP 5.5.10).
+    (Derick)
+  . Fixed bug #67109 (First uppercase letter breaks date string parsing).
+    (Derick)
+
+- GD
+  . Made fontFetch's path parser thread-safe. (Sara).
+
+- MySQLi:
+  . Fixed bug #67839 (mysqli does not handle 4-byte floats correctly). (Keyur)
+
+- Zlib:
+  . Fixed bug #67724 (chained zlib filters silently fail with large amounts of 
+    data). (Mike)
+  . Fixed bug #67865 (internal corruption phar error). Mike
+
 21 Aug 2014, PHP 5.5.16
 
 - COM:
@@ -8,7 +51,7 @@ PHP                                                                        NEWS
 - Fileinfo:
   . Fixed bug #67705 (extensive backtracking in rule regular expression).
     (CVE-2014-3538) (Remi)
-  . Fixed bug #67716 (Segfault in cdf.c). (CVE-2014-3587) (Remi)  
+  . Fixed bug #67716 (Segfault in cdf.c). (CVE-2014-3587) (Remi)
 
 - FPM:
   . Fixed bug #67635 (php links to systemd libraries without using pkg-config).
@@ -23,8 +66,11 @@ PHP                                                                        NEWS
 - Milter:
   . Fixed bug #67715 (php-milter does not build and crashes randomly). (Mike)
   
+- Network:
+  . Fixed bug #67717 (segfault in dns_get_record). (CVE-2014-3597) (Remi)
+
 - OpenSSL:
-  . Fixed missing type checks in OpenSSL options (Yussuf Khalil, Stas).
+  . Fixed missing type checks in OpenSSL options. (Yussuf Khalil, Stas)
 
 - readline:
   . Fixed bug #55496 (Interactive mode doesn't force a newline before the
@@ -37,7 +83,6 @@ PHP                                                                        NEWS
 
 - Core:
   . Fixed bug #67693 (incorrect push to the empty array) (Tjerk)
-  . Fixed bug #67717 (segfault in dns_get_record). (CVE-2014-3597) (Remi) 
 
 - ODBC:
   . Fixed bug #60616 (odbc_fetch_into returns junk data at end of multi-byte
@@ -155,6 +200,8 @@ PHP                                                                        NEWS
   . Fixed bug #66127 (Segmentation fault with ArrayObject unset). (Stas)
   . Fixed bug #67359 (Segfault in recursiveDirectoryIterator). (Laruence)
   . Fixed bug #67360 (Missing element after ArrayObject::getIterator). (Adam)
+  . Fixed bug #67492 (unserialize() SPL ArrayObject / SPLObjectStorage Type
+    Confusion). (CVE-2014-3515) (Stefan Esser)
 
 29 May 2014, PHP 5.5.13
 
