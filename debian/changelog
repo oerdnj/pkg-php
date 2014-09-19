@@ -1,3 +1,11 @@
+php5 (5.5.17-1) unstable; urgency=medium
+
+  * Set default session path to /var/lib/php5/sessions (DSO#17)
+  * New upstream version 5.5.17
+  * Update patches for 5.5.17 release
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 19 Sep 2014 12:45:48 +0200
+
 php5 (5.5.16+dfsg-1) unstable; urgency=medium
 
   * Use printf instead of echo to print all SAPIS
