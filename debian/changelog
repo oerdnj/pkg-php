@@ -1,3 +1,10 @@
+php5 (5.4.33-1) unstable; urgency=medium
+
+  * New upstream version 5.4.33
+  * Update patches for 5.4.33 release
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 19 Sep 2014 12:43:19 +0200
+
 php5 (5.4.32-2) unstable; urgency=medium
 
   * Put back the gdIOCtx.patch to compile PHP with system libgd
