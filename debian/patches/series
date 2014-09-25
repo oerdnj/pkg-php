@@ -59,3 +59,5 @@ php-fpm-m68k.patch
 expose_all_built_and_installed_apis.patch
 php5-fpm-do-reload-on-SIGHUP.patch
 gdIOCtx.patch
+bug41631.patch
+bug67965.patch
