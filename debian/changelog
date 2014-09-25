@@ -1,3 +1,9 @@
+php5 (5.4.33-2) unstable; urgency=medium
+
+  * Fix blocking behavior in non-blocking crypto streams (PHP#41631)
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 25 Sep 2014 10:22:19 +0200
+
 php5 (5.4.33-1) unstable; urgency=medium
 
   * New upstream version 5.4.33
