@@ -11,7 +11,7 @@ The current maintainers can be contacted via the debian php packaging list:
 	pkg-php-maint@lists.alioth.debian.org
 
 It was downloaded from www.php.net/version5/downloads
-Changes: removed ext/dbase dir (non-free)
+Changes: removed ext/json dir (non-free)
 
 Noteworthy/non-trivial patches:
 	patch: use_embedded_timezonedb.patch
