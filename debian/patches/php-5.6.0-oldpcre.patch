@@ -1,5 +1,5 @@
---- php5.orig/ext/pcre/tests/bug37911.phpt
-+++ php5/ext/pcre/tests/bug37911.phpt
+--- a/ext/pcre/tests/bug37911.phpt
++++ b/ext/pcre/tests/bug37911.phpt
 @@ -37,5 +37,5 @@ array(3) {
    string(4) "blub"
  }
@@ -7,8 +7,8 @@
 -Warning: preg_replace_callback(): Compilation failed: group name must start with a non-digit at offset %d in %sbug37911.php on line %d
 +Warning: preg_replace_callback(): Numeric named subpatterns are not allowed in %sbug37911.php on line %d
  NULL
---- php5.orig/ext/pcre/tests/grep2.phpt
-+++ php5/ext/pcre/tests/grep2.phpt
+--- a/ext/pcre/tests/grep2.phpt
++++ b/ext/pcre/tests/grep2.phpt
 @@ -40,12 +40,6 @@ array(1) {
    string(1) "1"
  }
@@ -24,8 +24,8 @@
  }
 -bool(false)
 +bool(true)
---- php5.orig/ext/pcre/tests/match_flags3.phpt
-+++ php5/ext/pcre/tests/match_flags3.phpt
+--- a/ext/pcre/tests/match_flags3.phpt
++++ b/ext/pcre/tests/match_flags3.phpt
 @@ -42,5 +42,5 @@ array(1) {
    }
  }

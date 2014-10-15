@@ -4,9 +4,9 @@ Origin: vendor
 Forwarded: not-needed
 Last-Update: 2010-01-18
 
---- php5.orig/configure.in
-+++ php5/configure.in
-@@ -1071,7 +1071,7 @@ if test "$PHP_CLI" = "no"; then
+--- a/configure.in
++++ b/configure.in
+@@ -1085,7 +1085,7 @@ if test "$PHP_CLI" = "no"; then
  fi
  
  PHP_ARG_WITH(pear, [whether to install PEAR],
@@ -15,7 +15,7 @@ Last-Update: 2010-01-18
    --without-pear          Do not install PEAR], DEFAULT, yes)
  
  if test "$PHP_PEAR" != "no"; then
-@@ -1101,7 +1101,7 @@ dnl
+@@ -1115,7 +1115,7 @@ dnl
    if test "$PHP_PEAR" = "DEFAULT" || test "$PHP_PEAR" = "yes"; then
      case $PHP_LAYOUT in
        GNU) PEAR_INSTALLDIR=$datadir/pear;;
@@ -24,7 +24,7 @@ Last-Update: 2010-01-18
      esac
    fi
  
-@@ -1156,12 +1156,12 @@ test "$program_suffix" = "NONE" && progr
+@@ -1170,12 +1170,12 @@ test "$program_suffix" = "NONE" && progr
  
  case $libdir in
    '${exec_prefix}/lib')
@@ -39,7 +39,7 @@ Last-Update: 2010-01-18
      ;;
  esac
  
-@@ -1228,7 +1228,7 @@ EXPANDED_SYSCONFDIR=`eval echo $sysconfd
+@@ -1242,7 +1242,7 @@ EXPANDED_SYSCONFDIR=`eval echo $sysconfd
  EXPANDED_DATADIR=$datadir
  EXPANDED_PHP_CONFIG_FILE_PATH=`eval echo "$PHP_CONFIG_FILE_PATH"`
  EXPANDED_PHP_CONFIG_FILE_SCAN_DIR=`eval echo "$PHP_CONFIG_FILE_SCAN_DIR"`
@@ -48,8 +48,8 @@ Last-Update: 2010-01-18
  
  exec_prefix=$old_exec_prefix
  libdir=$old_libdir
---- php5.orig/ext/ext_skel
-+++ php5/ext/ext_skel
+--- a/ext/ext_skel
++++ b/ext/ext_skel
 @@ -70,7 +70,7 @@ if test -d "$extname" ; then
  fi
  
@@ -59,8 +59,8 @@ Last-Update: 2010-01-18
  fi
  
  ## convert skel_dir to full path
---- php5.orig/php.ini-development
-+++ php5/php.ini-development
+--- a/php.ini-development
++++ b/php.ini-development
 @@ -711,7 +711,7 @@ default_charset = "UTF-8"
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
@@ -70,8 +70,8 @@ Last-Update: 2010-01-18
  ;
  ; Windows: "\path1;\path2"
  ;include_path = ".;c:\php\includes"
---- php5.orig/php.ini-production
-+++ php5/php.ini-production
+--- a/php.ini-production
++++ b/php.ini-production
 @@ -709,7 +709,7 @@ default_charset = "UTF-8"
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
@@ -131,8 +131,8 @@ Last-Update: 2010-01-18
  
  ;;;;;;;;;;;;;;;;;;;
  ; Module Settings ;
---- php5.orig/sapi/cli/php.1.in
-+++ php5/sapi/cli/php.1.in
+--- a/sapi/cli/php.1.in
++++ b/sapi/cli/php.1.in
 @@ -365,13 +365,14 @@ Shows configuration for extension
  Show configuration file names
  .SH FILES
@@ -152,9 +152,9 @@ Last-Update: 2010-01-18
 +The configuration file for the version of PHP that apache2 uses.
  .SH EXAMPLES
  .TP 5
- \fIphp \-r 'echo "Hello World\\n";'\fP
---- php5.orig/scripts/Makefile.frag
-+++ php5/scripts/Makefile.frag
+ \fI@program_prefix@php \-r 'echo "Hello World\\n";'\fP
+--- a/scripts/Makefile.frag
++++ b/scripts/Makefile.frag
 @@ -3,8 +3,8 @@
  # Build environment install
  #
@@ -166,8 +166,8 @@ Last-Update: 2010-01-18
  
  BUILD_FILES = \
  	scripts/phpize.m4 \
---- php5.orig/scripts/php-config.in
-+++ php5/scripts/php-config.in
+--- a/scripts/php-config.in
++++ b/scripts/php-config.in
 @@ -6,9 +6,9 @@ datarootdir="@datarootdir@"
  exec_prefix="@exec_prefix@"
  version="@PHP_VERSION@"
@@ -181,8 +181,8 @@ Last-Update: 2010-01-18
  libs="@EXTRA_LIBS@"
  extension_dir='@EXTENSION_DIR@'
  man_dir=`eval echo @mandir@`
---- php5.orig/scripts/phpize.in
-+++ php5/scripts/phpize.in
+--- a/scripts/phpize.in
++++ b/scripts/phpize.in
 @@ -4,8 +4,8 @@
  prefix='@prefix@'
  datarootdir='@datarootdir@'

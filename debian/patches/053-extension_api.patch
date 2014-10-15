@@ -5,9 +5,9 @@ Origin: vendor
 Forwarded: no
 Last-Update: 2010-01-18
 
---- php5.orig/configure.in
-+++ php5/configure.in
-@@ -1180,8 +1180,10 @@ dnl Build extension directory path
+--- a/configure.in
++++ b/configure.in
+@@ -1194,8 +1194,10 @@ dnl Build extension directory path
  
  ZEND_MODULE_API_NO=`$EGREP '#define ZEND_MODULE_API_NO ' $srcdir/Zend/zend_modules.h|$SED 's/#define ZEND_MODULE_API_NO //'`
  
@@ -19,7 +19,7 @@ Last-Update: 2010-01-18
    if test "$oldstyleextdir" = "yes"; then
      if test "$PHP_DEBUG" = "1"; then
        part1=debug
-@@ -1324,6 +1326,7 @@ PHP_SUBST(CXX)
+@@ -1338,6 +1340,7 @@ PHP_SUBST(CXX)
  PHP_SUBST(CXXFLAGS)
  PHP_SUBST(CXXFLAGS_CLEAN)
  PHP_SUBST_OLD(DEBUG_CFLAGS)
@@ -27,8 +27,8 @@ Last-Update: 2010-01-18
  PHP_SUBST_OLD(EXTENSION_DIR)
  PHP_SUBST_OLD(EXTRA_LDFLAGS)
  PHP_SUBST_OLD(EXTRA_LDFLAGS_PROGRAM)
---- php5.orig/scripts/php-config.in
-+++ php5/scripts/php-config.in
+--- a/scripts/php-config.in
++++ b/scripts/php-config.in
 @@ -19,6 +19,7 @@ php_cli_binary=NONE
  php_cgi_binary=NONE
  configure_options="@CONFIGURE_OPTIONS@"

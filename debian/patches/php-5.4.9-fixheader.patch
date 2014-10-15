@@ -1,9 +1,9 @@
 
 Make generated php_config.h constant across rebuilds.
 
---- php5.orig/configure.in
-+++ php5/configure.in
-@@ -1265,7 +1265,7 @@ fi
+--- a/configure.in
++++ b/configure.in
+@@ -1279,7 +1279,7 @@ fi
  EXTRA_LDFLAGS="$EXTRA_LDFLAGS $PHP_LDFLAGS"
  EXTRA_LDFLAGS_PROGRAM="$EXTRA_LDFLAGS_PROGRAM $PHP_LDFLAGS"
  
@@ -12,7 +12,7 @@ Make generated php_config.h constant across rebuilds.
  AC_DEFINE_UNQUOTED(PHP_BUILD_DATE,"$PHP_BUILD_DATE",[PHP build date])
  
  case $host_alias in
-@@ -1276,7 +1276,7 @@ case $host_alias in
+@@ -1290,7 +1290,7 @@ case $host_alias in
    AC_DEFINE_UNQUOTED(PHP_UNAME,"$PHP_UNAME",[hardcode for each of the cross compiler host])
    ;;
  *)
