@@ -1,3 +1,9 @@
+php5 (5.6.1+dfsg-1) unstable; urgency=medium
+
+  * New upstream version 5.6.1+dfsg
+
+ -- Thijs Kinkhorst <thijs@debian.org>  Wed, 15 Oct 2014 13:25:54 +0000
+
 php5 (5.6.0+dfsg-1) unstable; urgency=medium
 
   * New upstream version 5.6.0+dfsg
