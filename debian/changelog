@@ -1,3 +1,10 @@
+php5 (5.5.18+dfsg-1) unstable; urgency=medium
+
+  * New upstream version 5.5.18+dfsg
+  * Update patches for 5.5.18 release
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 17 Oct 2014 16:25:51 +0200
+
 php5 (5.5.17+dfsg-2) unstable; urgency=medium
 
   * Fix blocking behavior in non-blocking crypto streams (PHP#41631)
