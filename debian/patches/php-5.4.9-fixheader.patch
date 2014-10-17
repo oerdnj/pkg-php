@@ -1,8 +1,8 @@
 
 Make generated php_config.h constant across rebuilds.
 
---- a/configure.in
-+++ b/configure.in
+--- php5.orig/configure.in
++++ php5/configure.in
 @@ -1279,7 +1279,7 @@ fi
  EXTRA_LDFLAGS="$EXTRA_LDFLAGS $PHP_LDFLAGS"
  EXTRA_LDFLAGS_PROGRAM="$EXTRA_LDFLAGS_PROGRAM $PHP_LDFLAGS"

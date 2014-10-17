@@ -7,8 +7,8 @@ Subject: [PATCH] Fixed bug #63171, script hangs if odbc call during timeout
  ext/odbc/php_odbc.c |   21 ++++++++++++++-------
  1 file changed, 14 insertions(+), 7 deletions(-)
 
---- a/ext/odbc/php_odbc.c
-+++ b/ext/odbc/php_odbc.c
+--- php5.orig/ext/odbc/php_odbc.c
++++ php5/ext/odbc/php_odbc.c
 @@ -431,7 +431,8 @@ static void _free_odbc_result(zend_rsrc_
  			efree(res->values);
  			res->values = NULL;

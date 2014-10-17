@@ -1,5 +1,5 @@
---- a/scripts/man1/php-config.1.in
-+++ b/scripts/man1/php-config.1.in
+--- php5.orig/scripts/man1/php-config.1.in
++++ php5/scripts/man1/php-config.1.in
 @@ -44,7 +44,7 @@ Full path to php CLI or CGI binary
  .TP
  .PD 0
@@ -9,8 +9,8 @@
  .TP
  .PD 0
  .B \-\-configure-options
---- a/scripts/php-config.in
-+++ b/scripts/php-config.in
+--- php5.orig/scripts/php-config.in
++++ php5/scripts/php-config.in
 @@ -18,9 +18,12 @@ exe_extension="@EXEEXT@"
  php_cli_binary=NONE
  php_cgi_binary=NONE

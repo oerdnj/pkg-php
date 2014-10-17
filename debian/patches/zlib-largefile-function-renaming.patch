@@ -1,5 +1,5 @@
---- a/ext/zlib/zlib.c
-+++ b/ext/zlib/zlib.c
+--- php5.orig/ext/zlib/zlib.c
++++ php5/ext/zlib/zlib.c
 @@ -34,6 +34,18 @@
  #include "ext/standard/php_string.h"
  #include "php_zlib.h"

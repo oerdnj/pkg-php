@@ -1,5 +1,5 @@
---- a/ext/dba/config.m4
-+++ b/ext/dba/config.m4
+--- php5.orig/ext/dba/config.m4
++++ php5/ext/dba/config.m4
 @@ -312,57 +312,13 @@ if test "$PHP_DB4" != "no"; then
    dbdp4="/usr/local/BerkeleyDB.4."
    dbdp5="/usr/local/BerkeleyDB.5."
@@ -60,8 +60,8 @@
  fi
  PHP_DBA_STD_RESULT(db4,Berkeley DB4)
  
---- a/ext/dba/dba.c
-+++ b/ext/dba/dba.c
+--- php5.orig/ext/dba/dba.c
++++ php5/ext/dba/dba.c
 @@ -52,6 +52,10 @@
  #include "php_qdbm.h"
  #include "php_tcadb.h"

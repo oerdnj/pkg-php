@@ -1,5 +1,5 @@
---- a/Zend/zend.h
-+++ b/Zend/zend.h
+--- php5.orig/Zend/zend.h
++++ php5/Zend/zend.h
 @@ -90,11 +90,11 @@
  # endif
  
