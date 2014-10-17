@@ -6,7 +6,7 @@ Last-Update: 2010-01-18
 
 --- php5.orig/ext/ldap/ldap.c
 +++ php5/ext/ldap/ldap.c
-@@ -1231,7 +1231,7 @@ PHP_FUNCTION(ldap_explode_dn)
+@@ -1250,7 +1250,7 @@ PHP_FUNCTION(ldap_explode_dn)
  	}
  
  	i=0;
@@ -15,7 +15,7 @@ Last-Update: 2010-01-18
  	count = i;
  
  	array_init(return_value);
-@@ -1241,7 +1241,8 @@ PHP_FUNCTION(ldap_explode_dn)
+@@ -1260,7 +1260,8 @@ PHP_FUNCTION(ldap_explode_dn)
  		add_index_string(return_value, i, ldap_value[i], 1);
  	}
  

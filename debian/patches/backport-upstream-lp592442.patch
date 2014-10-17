@@ -1,6 +1,6 @@
 --- php5.orig/ext/openssl/xp_ssl.c
 +++ php5/ext/openssl/xp_ssl.c
-@@ -453,6 +453,18 @@ static inline int php_openssl_setup_cryp
+@@ -407,6 +407,18 @@ static inline int php_openssl_setup_cryp
  	}
  #endif
  
