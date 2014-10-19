@@ -67,7 +67,8 @@ Build-Depends: apache2-dev (>= 2.4),
 	       re2c,
 	       unixodbc-dev,
 	       zlib1g-dev,
-	       tzdata
+	       tzdata,
+	       libapparmor-dev
 Build-Conflicts: bind-dev
 Standards-Version: 3.9.6
 Vcs-Git: git://anonscm.debian.org/pkg-php/php.git
