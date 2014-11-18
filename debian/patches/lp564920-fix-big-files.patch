@@ -5,7 +5,7 @@ Ubuntu-Bug: https://bugs.edge.launchpad.net/ubuntu/+source/php5/+bug/564920
 
 --- php5.orig/main/streams/plain_wrapper.c
 +++ php5/main/streams/plain_wrapper.c
-@@ -627,7 +627,13 @@ static int php_stdiop_set_option(php_str
+@@ -655,7 +655,13 @@ static int php_stdiop_set_option(php_str
  				
  				switch (value) {
  					case PHP_STREAM_MMAP_SUPPORTED:

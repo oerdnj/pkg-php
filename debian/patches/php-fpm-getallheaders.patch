@@ -18,7 +18,7 @@ Subject: [PATCH 1/2] getallheaders for php-fpm #62596
  #ifndef PHP_WIN32
  /* these globals used for forking children on unix systems */
  
-@@ -1535,8 +1537,89 @@ PHP_FUNCTION(fastcgi_finish_request) /*
+@@ -1546,8 +1548,89 @@ PHP_FUNCTION(fastcgi_finish_request) /*
  }
  /* }}} */
  

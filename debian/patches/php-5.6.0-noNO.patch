@@ -1,6 +1,6 @@
 --- php5.orig/ext/standard/tests/strings/setlocale_variation2.phpt
 +++ php5/ext/standard/tests/strings/setlocale_variation2.phpt
-@@ -52,6 +52,7 @@ $all_system_locales = list_system_locale
+@@ -55,6 +55,7 @@ $all_system_locales = list_system_locale
  //try different locale names	
  $failure_locale = array();
  $success_count = 0;
@@ -8,7 +8,7 @@
  
  echo "-- Test setlocale() with all available locale in the system --\n";
  // gather all locales installed in the system(stored $all_system_locales),
-@@ -61,6 +62,10 @@ foreach($all_system_locales as $value){
+@@ -64,6 +65,10 @@ foreach($all_system_locales as $value){
    if(setlocale(LC_ALL,$value )){
     $success_count++;
    }
@@ -19,7 +19,7 @@
    else{
     //failure values are put in to an array $failure_locale
     $failure_locale[] = $value;
-@@ -69,11 +74,11 @@ foreach($all_system_locales as $value){
+@@ -72,11 +77,11 @@ foreach($all_system_locales as $value){
  
  echo "No of locales found on the machine = ".count($all_system_locales)."\n";
  echo "No of setlocale() success = ".$success_count."\n";
@@ -33,7 +33,7 @@
    echo "FAILED\n";
    echo "Names of locale() for which setlocale() failed ...\n";
    var_dump($failure_locale);
-@@ -89,6 +94,6 @@ echo "Done\n";
+@@ -92,6 +97,6 @@ echo "Done\n";
  -- Test setlocale() with all available locale in the system --
  No of locales found on the machine = %d
  No of setlocale() success = %d
