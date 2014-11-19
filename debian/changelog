@@ -1,3 +1,10 @@
+php5 (5.4.35-1) unstable; urgency=medium
+
+  * New upstream version 5.4.35
+  * Use perl instead of sed for improved sessionclean script
+
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 19 Nov 2014 11:46:33 +0100
+
 php5 (5.4.34-1) unstable; urgency=medium
 
   * New upstream version 5.4.34
