@@ -7,7 +7,13 @@ php5 (5.6.3+dfsg-1) unstable; urgency=medium
   * New upstream version 5.6.3+dfsg
   * Update patches for 5.6.3+dfsg release
   * Fix couple of PHP-FPM bugs unsuitable for release
-  
+   + Fixed bug #68420 (listen=9000 listens to ipv6 localhost instead of
+     all addresses).
+   + Fixed bug #68421 (access.format='%R' doesn't log ipv6 address).
+   + Fixed bug #68423 (PHP-FPM will no longer load all pools).
+   + Fixed bug #68428 (listen.allowed_clients is IPv4 only).
+   + Fixed bug #68381 (fpm_unix_init_main ignores log_level).
+
  -- Ondřej Surý <ondrej@debian.org>  Wed, 19 Nov 2014 12:11:38 +0100
 
 php5 (5.6.2+dfsg-1) unstable; urgency=medium
