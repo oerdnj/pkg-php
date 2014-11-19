@@ -1,0 +1,148 @@
+--- php5.orig/Zend/zend_execute_API.c
++++ php5/Zend/zend_execute_API.c
+@@ -1236,6 +1236,10 @@ ZEND_API void zend_timeout(int dummy) /*
+ #ifdef ZEND_WIN32
+ static LRESULT CALLBACK zend_timeout_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) /* {{{ */
+ {
++#ifdef ZTS
++	THREAD_T thread_id = (THREAD_T)wParam;
++#endif
++
+ 	switch (message) {
+ 		case WM_DESTROY:
+ 			PostQuitMessage(0);
+@@ -1250,7 +1254,7 @@ static LRESULT CALLBACK zend_timeout_Wnd
+ #endif
+ 				SetTimer(timeout_window, wParam, lParam*1000, NULL);
+ #ifdef ZTS
+-				tsrm_ls = ts_resource_ex(0, &wParam);
++				tsrm_ls = ts_resource_ex(0, &thread_id);
+ 				if (!tsrm_ls) {
+ 					/* shouldn't normally happen */
+ 					break;
+@@ -1267,7 +1271,7 @@ static LRESULT CALLBACK zend_timeout_Wnd
+ #ifdef ZTS
+ 				void ***tsrm_ls;
+ 
+-				tsrm_ls = ts_resource_ex(0, &wParam);
++				tsrm_ls = ts_resource_ex(0, &thread_id);
+ 				if (!tsrm_ls) {
+ 					/* Thread died before receiving its timeout? */
+ 					break;
+--- php5.orig/sapi/fpm/fpm/fastcgi.c
++++ php5/sapi/fpm/fpm/fastcgi.c
+@@ -144,7 +144,7 @@ static HashTable fcgi_mgmt_vars;
+ 
+ static int is_initialized = 0;
+ static int in_shutdown = 0;
+-static in_addr_t *allowed_clients = NULL;
++static sa_t *allowed_clients = NULL;
+ 
+ static sa_t client_sa;
+ 
+@@ -267,14 +267,18 @@ void fcgi_set_allowed_clients(char *ip)
+ 				*end = 0;
+ 				end++;
+ 			}
+-			allowed_clients[n] = inet_addr(cur);
+-			if (allowed_clients[n] == INADDR_NONE) {
++			if (inet_pton(AF_INET, cur, &allowed_clients[n].sa_inet.sin_addr)>0) {
++				allowed_clients[n].sa.sa_family = AF_INET;
++				n++;
++			} else if (inet_pton(AF_INET6, cur, &allowed_clients[n].sa_inet6.sin6_addr)>0) {
++				allowed_clients[n].sa.sa_family = AF_INET6;
++				n++;
++			} else {
+ 				zlog(ZLOG_ERROR, "Wrong IP address '%s' in listen.allowed_clients", cur);
+ 			}
+-			n++;
+ 			cur = end;
+ 		}
+-		allowed_clients[n] = INADDR_NONE;
++		allowed_clients[n].sa.sa_family = 0;
+ 		free(ip);
+ 	}
+ }
+@@ -760,6 +764,43 @@ void fcgi_close(fcgi_request *req, int f
+ 	}
+ }
+ 
++static int fcgi_is_allowed() {
++	int i;
++
++	if (client_sa.sa.sa_family == AF_UNIX) {
++		return 1;
++	}
++	if (!allowed_clients) {
++		return 1;
++	}
++	if (client_sa.sa.sa_family == AF_INET) {
++		for (i=0 ; allowed_clients[i].sa.sa_family ; i++) {
++			if (allowed_clients[i].sa.sa_family == AF_INET
++				&& !memcmp(&client_sa.sa_inet.sin_addr, &allowed_clients[i].sa_inet.sin_addr, 4)) {
++				return 1;
++			}
++		}
++	}
++	if (client_sa.sa.sa_family == AF_INET6) {
++		for (i=0 ; allowed_clients[i].sa.sa_family ; i++) {
++			if (allowed_clients[i].sa.sa_family == AF_INET6
++				&& !memcmp(&client_sa.sa_inet6.sin6_addr, &allowed_clients[i].sa_inet6.sin6_addr, 12)) {
++				return 1;
++			}
++#ifdef IN6_IS_ADDR_V4MAPPED
++			if (allowed_clients[i].sa.sa_family == AF_INET
++			    && IN6_IS_ADDR_V4MAPPED(&client_sa.sa_inet6.sin6_addr)
++				&& !memcmp(((char *)&client_sa.sa_inet6.sin6_addr)+12, &allowed_clients[i].sa_inet.sin_addr, 4)) {
++				return 1;
++			}
++#endif
++		}
++	}
++
++	zlog(ZLOG_ERROR, "Connection disallowed: IP address '%s' has been dropped.", fcgi_get_last_client_ip());
++	return 0;
++}
++
+ int fcgi_accept_request(fcgi_request *req)
+ {
+ #ifdef _WIN32
+@@ -810,23 +851,10 @@ int fcgi_accept_request(fcgi_request *re
+ 					FCGI_UNLOCK(req->listen_socket);
+ 
+ 					client_sa = sa;
+-					if (sa.sa.sa_family == AF_INET && req->fd >= 0 && allowed_clients) {
+-						int n = 0;
+-						int allowed = 0;
+-
+-						while (allowed_clients[n] != INADDR_NONE) {
+-							if (allowed_clients[n] == sa.sa_inet.sin_addr.s_addr) {
+-								allowed = 1;
+-								break;
+-							}
+-							n++;
+-						}
+-						if (!allowed) {
+-							zlog(ZLOG_ERROR, "Connection disallowed: IP address '%s' has been dropped.", inet_ntoa(sa.sa_inet.sin_addr));
+-							closesocket(req->fd);
+-							req->fd = -1;
+-							continue;
+-						}
++					if (req->fd >= 0 && !fcgi_is_allowed()) {
++						closesocket(req->fd);
++						req->fd = -1;
++						continue;
+ 					}
+ 				}
+ 
+--- php5.orig/sapi/fpm/php-fpm.conf.in
++++ php5/sapi/fpm/php-fpm.conf.in
+@@ -177,7 +177,7 @@ listen = /var/run/php5-fpm.sock
+ ;listen.group = @php_fpm_group@
+ ;listen.mode = 0660
+  
+-; List of ipv4 addresses of FastCGI clients which are allowed to connect.
++; List of addresses (IPv4/IPv6) of FastCGI clients which are allowed to connect.
+ ; Equivalent to the FCGI_WEB_SERVER_ADDRS environment variable in the original
+ ; PHP FCGI (5.2.2+). Makes sense only with a tcp listening socket. Each address
+ ; must be separated by a comma. If this value is left blank, connections will be
