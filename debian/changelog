@@ -1,3 +1,15 @@
+php5 (5.6.3+dfsg-1) unstable; urgency=medium
+
+  * Apply patch from PHP#68104 to fix segfaults in Zend OpCache
+    (Closes: #754432)
+  * Add libapparmor-dev to Build-Depends to enable apparmor chagehat in php5-fpm
+    (Closes: #764173)
+  * New upstream version 5.6.3+dfsg
+  * Update patches for 5.6.3+dfsg release
+  * Fix couple of PHP-FPM bugs unsuitable for release
+  
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 19 Nov 2014 12:11:38 +0100
+
 php5 (5.6.2+dfsg-1) unstable; urgency=medium
 
   [ Thijs Kinkhorst ]
