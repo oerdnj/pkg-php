@@ -1,3 +1,10 @@
+php5 (5.6.4+dfsg-1) unstable; urgency=medium
+
+  * New upstream version 5.6.4+dfsg
+  * Update patches for 5.6.4+dfsg release
+
+ -- Ondřej Surý <ondrej@debian.org>  Sun, 21 Dec 2014 19:11:08 +0100
+
 php5 (5.6.3+dfsg-1) unstable; urgency=medium
 
   * Apply patch from PHP#68104 to fix segfaults in Zend OpCache
@@ -6,7 +13,7 @@ php5 (5.6.3+dfsg-1) unstable; urgency=medium
     (Closes: #764173)
   * New upstream version 5.6.3+dfsg
   * Update patches for 5.6.3+dfsg release
-  * Fix couple of PHP-FPM bugs unsuitable for release
+  * Fix couple of PHP-FPM bugs unsuitable for release (Courtesy of Remi Collet)
    + Fixed bug #68420 (listen=9000 listens to ipv6 localhost instead of
      all addresses).
    + Fixed bug #68421 (access.format='%R' doesn't log ipv6 address).
