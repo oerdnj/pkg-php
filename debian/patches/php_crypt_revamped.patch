@@ -194,17 +194,13 @@
 -#if PHP_EXT_DES_CRYPT
 -#undef PHP_MAX_SALT_LEN
 -#define PHP_MAX_SALT_LEN 9
-+#if defined(HAVE_CRYPT_R) && (defined(_REENTRANT) || defined(_THREAD_SAFE))
-+# define PHP_USE_SYSTEM_CRYPT_R
- #endif
- 
+-#endif
+-
 -#if PHP_MD5_CRYPT
 -#undef PHP_MAX_SALT_LEN
 -#define PHP_MAX_SALT_LEN 12
 -#endif
-+#define PHP_MAX_STD_DES_SALT_LEN 2
-+#define PHP_MAX_STD_DES_HASH_LEN 11
- 
+-
 -#if PHP_BLOWFISH_CRYPT
 -#undef PHP_MAX_SALT_LEN
 -#define PHP_MAX_SALT_LEN 60
@@ -213,9 +209,13 @@
 -#if PHP_SHA512_CRYPT
 -#undef PHP_MAX_SALT_LEN
 -#define PHP_MAX_SALT_LEN 123
--#endif
--
--
++#if defined(HAVE_CRYPT_R) && (defined(_REENTRANT) || defined(_THREAD_SAFE))
++# define PHP_USE_SYSTEM_CRYPT_R
+ #endif
+ 
++#define PHP_MAX_STD_DES_SALT_LEN 2
++#define PHP_MAX_STD_DES_HASH_LEN 11
+ 
 -/* If the configure-time checks fail, we provide DES.
 - * XXX: This is a hack. Fix the real problem! */
 -
@@ -289,7 +289,7 @@
  
  static unsigned char itoa64[] = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
  
-@@ -150,160 +143,157 @@ static void php_to64(char *s, long v, in
+@@ -150,159 +143,157 @@ static void php_to64(char *s, long v, in
  PHP_FUNCTION(crypt)
  {
  	char salt[PHP_MAX_SALT_LEN + 1];
@@ -396,7 +396,7 @@
 -			salt[salt_in_len] = '\0';
 -
 -			crypt_res = php_sha512_crypt_r(str, salt, output, needed);
--			if (!crypt_res) {
+-			if (!crypt_res || (salt[0]=='*' && salt[1]=='0')) {
 -				if (salt[0]=='*' && salt[1]=='0') {
 -					RETVAL_STRING("*1", 1);
 -				} else {
@@ -431,7 +431,7 @@
 -			salt[salt_in_len] = '\0';
 -
 -			crypt_res = php_sha256_crypt_r(str, salt, output, needed);
--			if (!crypt_res) {
+-			if (!crypt_res || (salt[0]=='*' && salt[1]=='0')) {
 -				if (salt[0]=='*' && salt[1]=='0') {
 -					RETVAL_STRING("*1", 1);
 -				} else {
@@ -458,7 +458,7 @@
  		} else if (
  				salt[0] == '$' &&
  				salt[1] == '2' &&
- 				salt[2] >= 'a' && salt[2] <= 'z' &&
++				salt[2] >= 'a' && salt[2] <= 'z' &&
  				salt[3] == '$' &&
 -				salt[4] >= '0' && salt[4] <= '3' &&
 -				salt[5] >= '0' && salt[5] <= '9' &&
@@ -478,7 +478,7 @@
 +#elif PHP_USE_PHP_CRYPT_R
 +# warning Using PHP BlowFish crypt function, which is OK on Debian system
  			crypt_res = php_crypt_blowfish_rn(str, salt, output, sizeof(output));
--			if (!crypt_res) {
+-			if (!crypt_res || (salt[0]=='*' && salt[1]=='0')) {
 -				if (salt[0]=='*' && salt[1]=='0') {
 -					RETVAL_STRING("*1", 1);
 -				} else {
@@ -517,23 +517,28 @@
 +#elif PHP_USE_PHP_CRYPT_R
 +# error Using PHP standard DES crypt function, should not happen on Debian system
  			_crypt_extended_init_r();
--
++			crypt_res = _crypt_extended_r(str, salt, &extended_buffer);
++#endif
++		}
+ 
 -			crypt_res = _crypt_extended_r(str, salt, &buffer);
--			if (!crypt_res) {
+-			if (!crypt_res || (salt[0]=='*' && salt[1]=='0')) {
 -				if (salt[0]=='*' && salt[1]=='0') {
 -					RETURN_STRING("*1", 1);
 -				} else {
 -					RETURN_STRING("*0", 1);
 -				}
--			} else {
++		if (!crypt_res) {
++			if (salt[0]=='*' && salt[1]=='0') {
++				RETVAL_STRING("*1", 1);
+ 			} else {
 -				RETURN_STRING(crypt_res, 1);
--			}
-+			crypt_res = _crypt_extended_r(str, salt, &extended_buffer);
-+#endif
- 		}
++				RETVAL_STRING("*0", 1);
+ 			}
+-		}
 -	}
 -#else
- 
+-
 -# if defined(HAVE_CRYPT_R) && (defined(_REENTRANT) || defined(_THREAD_SAFE))
 -	{
 -#  if defined(CRYPT_R_STRUCT_CRYPT_DATA)
@@ -545,17 +550,12 @@
 -#    error Data struct used by crypt_r() is unknown. Please report.
 -#  endif
 -		crypt_res = crypt_r(str, salt, &buffer);
- 		if (!crypt_res) {
+-		if (!crypt_res || (salt[0]=='*' && salt[1]=='0')) {
 -				if (salt[0]=='*' && salt[1]=='0') {
 -					RETURN_STRING("*1", 1);
 -				} else {
 -					RETURN_STRING("*0", 1);
 -				}
-+			if (salt[0]=='*' && salt[1]=='0') {
-+				RETVAL_STRING("*1", 1);
-+			} else {
-+				RETVAL_STRING("*0", 1);
-+			}
  		} else {
 -			RETURN_STRING(crypt_res, 1);
 +			RETVAL_STRING(crypt_res, 1);
