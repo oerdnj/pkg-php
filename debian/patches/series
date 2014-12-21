@@ -45,10 +45,3 @@ php-5.6.0-oldpcre.patch
 hack-phpdbg-to-explicitly-link-with-libedit.patch
 php-fpm-getallheaders.patch
 0001-Fix-ZEND_MM_ALIGNMENT-on-m64k.patch
-php68104.patch
-bug68421.patch
-bug68423.patch
-bug68420.patch
-bug68428.patch
-bug68381.patch
-fpm-ipv6-comments.patch
