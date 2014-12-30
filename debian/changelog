@@ -1,3 +1,11 @@
+php5 (5.6.4+dfsg-2) unstable; urgency=medium
+
+  * Pull upstream fixes for severe performance issues on pathological
+    input in ext/fileinfo/libmagic/ copy (CVE-2014-8116, CVE-2014-8117)
+  * Use ${misc:Pre-Depends} instead of hardcoded pre-dependency on dpkg
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 30 Dec 2014 22:12:33 +0100
+
 php5 (5.6.4+dfsg-1) unstable; urgency=medium
 
   * New upstream version 5.6.4+dfsg
