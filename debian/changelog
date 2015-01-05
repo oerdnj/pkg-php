@@ -1,3 +1,10 @@
+php5 (5.6.4+dfsg-3) unstable; urgency=medium
+
+  * Use noawait variants for deb-triggers to break the dependency loop
+    (Closes: #774559)
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 05 Jan 2015 14:27:19 +0100
+
 php5 (5.6.4+dfsg-2) unstable; urgency=medium
 
   * Pull upstream fixes for severe performance issues on pathological
