@@ -1,3 +1,9 @@
+php5 (5.6.4+dfsg-3+exp1) experimental; urgency=medium
+
+  * Disable tests on ppc64* to workaround crashing mysql-server on ppc64el
+
+ -- Ondřej Surý <ondrej@debian.org>  Thu, 08 Jan 2015 15:41:29 +0100
+
 php5 (5.6.4+dfsg-3) unstable; urgency=medium
 
   * Use noawait variants for deb-triggers to break the dependency loop
