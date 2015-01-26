@@ -6,10 +6,9 @@ define ("PHP_CLI_SERVER_ADDRESS", PHP_CLI_SERVER_HOSTNAME.":".PHP_CLI_SERVER_POR
 function php_cli_server_start($code = 'echo "Hello world";', $router = 'index.php') {
 	$php_executable = getenv('TEST_PHP_EXECUTABLE');
 	$doc_root = __DIR__;
-	$router = "index.php";
 
 	if ($code) {
-		file_put_contents($doc_root . '/' . $router, '<?php ' . $code . ' ?>');
+		file_put_contents($doc_root . '/' . ($router ?: 'index.php'), '<?php ' . $code . ' ?>');
 	}
 
 	$descriptorspec = array(
