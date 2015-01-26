@@ -54,9 +54,9 @@
  #include "fopen_wrappers.h"
 --- php5.orig/main/php.h
 +++ php5/main/php.h
-@@ -31,6 +31,7 @@
+@@ -30,6 +30,7 @@
+ #define PHP_HAVE_STREAMS
  #define YYDEBUG 0
- #define PHP_DEFAULT_CHARSET "UTF-8"
  
 +#include "php_config.h"
  #include "php_version.h"

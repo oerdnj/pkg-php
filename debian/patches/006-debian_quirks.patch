@@ -6,7 +6,7 @@ Last-Update: 2010-01-18
 
 --- php5.orig/configure.in
 +++ php5/configure.in
-@@ -1085,7 +1085,7 @@ if test "$PHP_CLI" = "no"; then
+@@ -1082,7 +1082,7 @@ if test "$PHP_CLI" = "no"; then
  fi
  
  PHP_ARG_WITH(pear, [whether to install PEAR],
@@ -15,7 +15,7 @@ Last-Update: 2010-01-18
    --without-pear          Do not install PEAR], DEFAULT, yes)
  
  if test "$PHP_PEAR" != "no"; then
-@@ -1115,7 +1115,7 @@ dnl
+@@ -1112,7 +1112,7 @@ dnl
    if test "$PHP_PEAR" = "DEFAULT" || test "$PHP_PEAR" = "yes"; then
      case $PHP_LAYOUT in
        GNU) PEAR_INSTALLDIR=$datadir/pear;;
@@ -24,7 +24,7 @@ Last-Update: 2010-01-18
      esac
    fi
  
-@@ -1170,12 +1170,12 @@ test "$program_suffix" = "NONE" && progr
+@@ -1167,12 +1167,12 @@ test "$program_suffix" = "NONE" && progr
  
  case $libdir in
    '${exec_prefix}/lib')
@@ -39,7 +39,7 @@ Last-Update: 2010-01-18
      ;;
  esac
  
-@@ -1242,7 +1242,7 @@ EXPANDED_SYSCONFDIR=`eval echo $sysconfd
+@@ -1239,7 +1239,7 @@ EXPANDED_SYSCONFDIR=`eval echo $sysconfd
  EXPANDED_DATADIR=$datadir
  EXPANDED_PHP_CONFIG_FILE_PATH=`eval echo "$PHP_CONFIG_FILE_PATH"`
  EXPANDED_PHP_CONFIG_FILE_SCAN_DIR=`eval echo "$PHP_CONFIG_FILE_SCAN_DIR"`
@@ -61,7 +61,7 @@ Last-Update: 2010-01-18
  ## convert skel_dir to full path
 --- php5.orig/php.ini-development
 +++ php5/php.ini-development
-@@ -708,7 +708,7 @@ default_charset = "UTF-8"
+@@ -690,7 +690,7 @@ default_mimetype = "text/html"
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
  ; UNIX: "/path1:/path2"
@@ -72,7 +72,7 @@ Last-Update: 2010-01-18
  ;include_path = ".;c:\php\includes"
 --- php5.orig/php.ini-production
 +++ php5/php.ini-production
-@@ -708,7 +708,7 @@ default_charset = "UTF-8"
+@@ -690,7 +690,7 @@ default_mimetype = "text/html"
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
  ; UNIX: "/path1:/path2"
