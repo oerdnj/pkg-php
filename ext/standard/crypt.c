@@ -196,7 +196,6 @@ PHPAPI int php_crypt(const char *password, const int pass_len, const char *salt,
 		} else if (
 				salt[0] == '$' &&
 				salt[1] == '2' &&
-				salt[2] >= 'a' && salt[2] <= 'z' &&
 				salt[3] == '$' &&
 				salt[4] >= '0' && salt[4] <= '3' &&
 				salt[5] >= '0' && salt[5] <= '9' &&
@@ -219,7 +218,7 @@ PHPAPI int php_crypt(const char *password, const int pass_len, const char *salt,
 			_crypt_extended_init_r();
 
 			crypt_res = _crypt_extended_r(password, salt, &buffer);
-			if (!crypt_res) {
+			if (!crypt_res || (salt[0] == '*' && salt[1] == '0')) {
 				return FAILURE;
 			} else {
 				*result = estrdup(crypt_res);
@@ -240,7 +239,7 @@ PHPAPI int php_crypt(const char *password, const int pass_len, const char *salt,
 #    error Data struct used by crypt_r() is unknown. Please report.
 #  endif
 		crypt_res = crypt_r(password, salt, &buffer);
-		if (!crypt_res) {
+		if (!crypt_res || (salt[0] == '*' && salt[1] == '0')) {
 			return FAILURE;
 		} else {
 			*result = estrdup(crypt_res);
@@ -272,6 +271,8 @@ PHP_FUNCTION(crypt)
 
 	if (salt_in) {
 		memcpy(salt, salt_in, MIN(PHP_MAX_SALT_LEN, salt_in_len));
+	} else {
+		php_error_docref(NULL TSRMLS_CC, E_NOTICE, "No salt parameter was specified. You must use a randomly generated salt and a strong hash function to produce a secure hash.");
 	}
 
 	/* The automatic salt generation covers standard DES, md5-crypt and Blowfish (simple) */
