@@ -1,3 +1,10 @@
+php5 (5.5.21+dfsg-1) unstable; urgency=medium
+
+  * New upstream version 5.5.21+dfsg
+  * Update patches for 5.5.21 release
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 26 Jan 2015 11:46:50 +0100
+
 php5 (5.5.20+dfsg-1) unstable; urgency=medium
 
   * New upstream version 5.5.20+dfsg
