@@ -32,7 +32,7 @@ Last-Update: 2010-01-18
 +    libdir=$libdir/php5
      ;;
  esac
- case $datadir in
+ case `eval echo $datadir` in
    '${prefix}/share')
 -    datadir=$datadir/php
 +    datadir=$datadir/php5
