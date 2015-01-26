@@ -1,3 +1,20 @@
+php5 (5.6.5+dfsg-1) unstable; urgency=medium
+
+  * New upstream version 5.6.5+dfsg
+  * Security vulnerabilities fixed:
+   + Core
+    - Fixed bug #68710 (Use After Free Vulnerability in PHP's
+      unserialize()). (CVE-2015-0231)
+   + CGI:
+    - Fixed bug #68618 (out of bounds read crashes
+      php-cgi). (CVE-2014-9427)
+   + EXIF:
+    - Fixed bug #68799: Free called on unitialized
+      pointer. (CVE-2015-0232)
+  * Update patches for 5.6.5 release
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 26 Jan 2015 12:00:58 +0100
+
 php5 (5.6.4+dfsg-4) unstable; urgency=medium
 
   * Disable tests on ppc64* to workaround crashing mysql-server on ppc64el
