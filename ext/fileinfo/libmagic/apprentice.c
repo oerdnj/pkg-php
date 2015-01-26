@@ -34,7 +34,7 @@
 #include "file.h"
 
 #ifndef	lint
-FILE_RCSID("@(#)$File: apprentice.c,v 1.196 2013/11/19 21:01:12 christos Exp $")
+FILE_RCSID("@(#)$File: apprentice.c,v 1.191 2013/02/26 21:02:48 christos Exp $")
 #endif	/* lint */
 
 #include "magic.h"
@@ -94,12 +94,6 @@ struct magic_entry {
 	uint32_t max_count;
 };
 
-struct magic_entry_set {
-	struct magic_entry *me;
-	uint32_t count;
-	uint32_t max;
-};
-
 struct magic_map {
 	void *p;
 	size_t len;
@@ -145,6 +139,7 @@ private int parse_strength(struct magic_set *, struct magic_entry *, const char 
 private int parse_apple(struct magic_set *, struct magic_entry *, const char *);
 
 
+private size_t maxmagic[MAGIC_SETS] = { 0 };
 private size_t magicsize = sizeof(struct magic);
 
 private const char usg_hdr[] = "cont\toffset\ttype\topcode\tmask\tvalue\tdesc";
@@ -184,7 +179,7 @@ static const struct type_tbl_s type_tbl[] = {
 	{ XX("invalid"),	FILE_INVALID,		FILE_FMT_NONE },
 	{ XX("byte"),		FILE_BYTE,		FILE_FMT_NUM },
 	{ XX("short"),		FILE_SHORT,		FILE_FMT_NUM },
-	{ XX("default"),	FILE_DEFAULT,		FILE_FMT_NONE },
+	{ XX("default"),	FILE_DEFAULT,		FILE_FMT_STR },
 	{ XX("long"),		FILE_LONG,		FILE_FMT_NUM },
 	{ XX("string"),		FILE_STRING,		FILE_FMT_STR },
 	{ XX("date"),		FILE_DATE,		FILE_FMT_STR },
@@ -228,7 +223,6 @@ static const struct type_tbl_s type_tbl[] = {
 	{ XX("beqwdate"),	FILE_BEQWDATE,		FILE_FMT_STR },
 	{ XX("name"),		FILE_NAME,		FILE_FMT_NONE },
 	{ XX("use"),		FILE_USE,		FILE_FMT_NONE },
-	{ XX("clear"),		FILE_CLEAR,		FILE_FMT_NONE },
 	{ XX_NULL,		FILE_INVALID,		FILE_FMT_NONE },
 };
 
@@ -549,9 +543,6 @@ file_apprentice(struct magic_set *ms, const char *fn, int action)
 	char *p, *mfn;
 	int file_err, errs = -1;
 	size_t i;
-
-	file_reset(ms);
-
 /* XXX disabling default magic loading so the compiled in data is used */
 #if 0
 	if ((fn = magic_getpath(fn, action)) == NULL)
@@ -616,10 +607,6 @@ file_apprentice(struct magic_set *ms, const char *fn, int action)
 		return -1;
 	}
 
-#if 0
-	/*
-	 * Always leave the database loaded
-	 */
 	if (action == FILE_LOAD)
 		return 0;
 
@@ -627,10 +614,8 @@ file_apprentice(struct magic_set *ms, const char *fn, int action)
 		mlist_free(ms->mlist[i]);
 		ms->mlist[i] = NULL;
 	}
-#endif
 
 	switch (action) {
-	case FILE_LOAD:
 	case FILE_COMPILE:
 	case FILE_CHECK:
 	case FILE_LIST:
@@ -923,24 +908,24 @@ set_test_type(struct magic *mstart, struct magic *m)
 
 private int
 addentry(struct magic_set *ms, struct magic_entry *me,
-   struct magic_entry_set *mset)
+   struct magic_entry **mentry, uint32_t *mentrycount)
 {
 	size_t i = me->mp->type == FILE_NAME ? 1 : 0;
-	if (mset[i].count == mset[i].max) {
+	if (mentrycount[i] == maxmagic[i]) {
 		struct magic_entry *mp;
 
-		mset[i].max += ALLOC_INCR;
+		maxmagic[i] += ALLOC_INCR;
 		if ((mp = CAST(struct magic_entry *,
-		    erealloc(mset[i].me, sizeof(*mp) * mset[i].max))) ==
+		    erealloc(mentry[i], sizeof(*mp) * maxmagic[i]))) ==
 		    NULL) {
-			file_oomem(ms, sizeof(*mp) * mset[i].max);
+			file_oomem(ms, sizeof(*mp) * maxmagic[i]);
 			return -1;
 		}
-		(void)memset(&mp[mset[i].count], 0, sizeof(*mp) *
+		(void)memset(&mp[mentrycount[i]], 0, sizeof(*mp) *
 		    ALLOC_INCR);
-		mset[i].me = mp;
+		mentry[i] = mp;
 	}
-	mset[i].me[mset[i].count++] = *me;
+	mentry[i][mentrycount[i]++] = *me;
 	memset(me, 0, sizeof(*me));
 	return 0;
 }
@@ -950,7 +935,7 @@ addentry(struct magic_set *ms, struct magic_entry *me,
  */
 private void
 load_1(struct magic_set *ms, int action, const char *fn, int *errs,
-   struct magic_entry_set *mset)
+   struct magic_entry **mentry, uint32_t *mentrycount)
 {
 	char buffer[BUFSIZ + 1];
 	char *line = NULL;
@@ -963,7 +948,11 @@ load_1(struct magic_set *ms, int action, const char *fn, int *errs,
 	TSRMLS_FETCH();
 
 	ms->file = fn;
+#if PHP_API_VERSION < 20100412
+	stream = php_stream_open_wrapper((char *)fn, "rb", REPORT_ERRORS|ENFORCE_SAFE_MODE, NULL);
+#else
 	stream = php_stream_open_wrapper((char *)fn, "rb", REPORT_ERRORS, NULL);
+#endif
 
 	if (stream == NULL) {
 		if (errno != ENOENT)
@@ -1023,16 +1012,16 @@ load_1(struct magic_set *ms, int action, const char *fn, int *errs,
 			case 0:
 				continue;
 			case 1:
-				(void)addentry(ms, &me, mset);
+				(void)addentry(ms, &me, mentry, mentrycount);
 				goto again;
 			default:
 				(*errs)++;
-				break;
-			}
+			break;
 		}
 	}
+	}
 	if (me.mp)
-		(void)addentry(ms, &me, mset);
+		(void)addentry(ms, &me, mentry, mentrycount);
 	php_stream_close(stream);
 }
 
@@ -1141,24 +1130,22 @@ magic_entry_free(struct magic_entry *me, uint32_t nme)
 private struct magic_map *
 apprentice_load(struct magic_set *ms, const char *fn, int action)
 {
-	int errs = 0;
+	int errs = 0; 
+	struct magic_entry *mentry[MAGIC_SETS] = { NULL };
+	uint32_t mentrycount[MAGIC_SETS] = { 0 };
 	uint32_t i, j;
 	size_t files = 0, maxfiles = 0;
 	char **filearr = NULL;
 	struct stat st;
 	struct magic_map *map;
-	struct magic_entry_set mset[MAGIC_SETS];
 	php_stream *dir;
 	php_stream_dirent d;
- 
+
 	TSRMLS_FETCH();
 
-	memset(mset, 0, sizeof(mset));
 	ms->flags |= MAGIC_CHECK;	/* Enable checks for parsed files */
 
-
-	if ((map = CAST(struct magic_map *, ecalloc(1, sizeof(*map)))) == NULL)
-	{
+	if ((map = CAST(struct magic_map *, ecalloc(1, sizeof(*map)))) == NULL) {
 		file_oomem(ms, sizeof(*map));
 		return NULL;
 	}
@@ -1166,6 +1153,16 @@ apprentice_load(struct magic_set *ms, const char *fn, int action)
 	/* print silly verbose header for USG compat. */
 	if (action == FILE_CHECK)
 		(void)fprintf(stderr, "%s\n", usg_hdr);
+
+	{
+		/* XXX the maxmagic has to be reset each time we load some new magic file.
+		Where file commando is used it's not essential as the CLI process
+		ends, multiple loading within the same process wouldn't work. */
+		int k;
+		for (k = 0; k < MAGIC_SETS; k++) {
+			maxmagic[k] = 0;
+		}
+	}
 
 	/* load directory or file */
 	/* FIXME: Read file names and sort them to prevent
@@ -1207,35 +1204,36 @@ apprentice_load(struct magic_set *ms, const char *fn, int action)
 		php_stream_closedir(dir);
 		qsort(filearr, files, sizeof(*filearr), cmpstrp);
 		for (i = 0; i < files; i++) {
-			load_1(ms, action, filearr[i], &errs, mset);
+			load_1(ms, action, filearr[i], &errs, mentry,
+			    mentrycount);
 			efree(filearr[i]);
 		}
 		efree(filearr);
 	} else
-		load_1(ms, action, fn, &errs, mset);
+		load_1(ms, action, fn, &errs, mentry, mentrycount);
 	if (errs)
 		goto out;
 
 	for (j = 0; j < MAGIC_SETS; j++) {
 		/* Set types of tests */
-		for (i = 0; i < mset[j].count; ) {
-			if (mset[j].me[i].mp->cont_level != 0) {
+		for (i = 0; i < mentrycount[j]; ) {
+			if (mentry[j][i].mp->cont_level != 0) {
 				i++;
 				continue;
 			}
-			i = set_text_binary(ms, mset[j].me, mset[j].count, i);
+			i = set_text_binary(ms, mentry[j], mentrycount[j], i);
 		}
-		qsort(mset[j].me, mset[j].count, sizeof(*mset[j].me),
+		qsort(mentry[j], mentrycount[j], sizeof(*mentry[j]),
 		    apprentice_sort);
 
 		/*
 		 * Make sure that any level 0 "default" line is last
 		 * (if one exists).
 		 */
-		set_last_default(ms, mset[j].me, mset[j].count);
+		set_last_default(ms, mentry[j], mentrycount[j]);
 
 		/* coalesce per file arrays into a single one */
-		if (coalesce_entries(ms, mset[j].me, mset[j].count,
+		if (coalesce_entries(ms, mentry[j], mentrycount[j],
 		    &map->magic[j], &map->nmagic[j]) == -1) {
 			errs++;
 			goto out;
@@ -1244,7 +1242,7 @@ apprentice_load(struct magic_set *ms, const char *fn, int action)
 
 out:
 	for (j = 0; j < MAGIC_SETS; j++)
-		magic_entry_free(mset[j].me, mset[j].count);
+		magic_entry_free(mentry[j], mentrycount[j]);
 
 	if (errs) {
 		for (j = 0; j < MAGIC_SETS; j++) {
@@ -1322,7 +1320,6 @@ file_signextend(struct magic_set *ms, struct magic *m, uint64_t v)
 		case FILE_INDIRECT:
 		case FILE_NAME:
 		case FILE_USE:
-		case FILE_CLEAR:
 			break;
 		default:
 			if (ms->flags & MAGIC_CHECK)
@@ -1740,10 +1737,10 @@ parse(struct magic_set *ms, struct magic_entry *me, const char *line,
 	if (m->type == FILE_INVALID) {
 		if (ms->flags & MAGIC_CHECK)
 			file_magwarn(ms, "type `%s' invalid", l);
-		/*if (me->mp) {
+		if (me->mp) {
 			efree(me->mp);
 			me->mp = NULL;
-		}*/
+		}
 		return -1;
 	}
 
@@ -1972,11 +1969,6 @@ parse_strength(struct magic_set *ms, struct magic_entry *me, const char *line)
 		file_magwarn(ms,
 		    "Current entry already has a strength type: %c %d",
 		    m->factor_op, m->factor);
-		return -1;
-	}
-	if (m->type == FILE_NAME) {
-		file_magwarn(ms, "%s: Strength setting is not supported in "
-		    "\"name\" magic entries", m->value.s);
 		return -1;
 	}
 	EATAB;
@@ -2634,7 +2626,11 @@ apprentice_map(struct magic_set *ms, const char *fn)
 	if (dbname == NULL)
 		goto error;
 
+#if PHP_API_VERSION < 20100412
+		stream = php_stream_open_wrapper((char *)fn, "rb", REPORT_ERRORS|ENFORCE_SAFE_MODE, NULL);
+#else
 		stream = php_stream_open_wrapper((char *)fn, "rb", REPORT_ERRORS, NULL);
+#endif
 
 	if (!stream) {
 		goto error;
@@ -2767,8 +2763,12 @@ apprentice_compile(struct magic_set *ms, struct magic_map *map, const char *fn)
 	if (dbname == NULL) 
 		goto out;
 
-	/* wb+ == O_WRONLY|O_CREAT|O_TRUNC|O_BINARY */
+/* wb+ == O_WRONLY|O_CREAT|O_TRUNC|O_BINARY */
+#if PHP_API_VERSION < 20100412
+	stream = php_stream_open_wrapper((char *)fn, "wb+", REPORT_ERRORS|ENFORCE_SAFE_MODE, NULL);
+#else
 	stream = php_stream_open_wrapper((char *)fn, "wb+", REPORT_ERRORS, NULL);
+#endif
 
 	if (!stream) {
 		file_error(ms, errno, "cannot open `%s'", dbname);

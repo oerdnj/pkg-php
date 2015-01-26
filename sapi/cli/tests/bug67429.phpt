@@ -40,10 +40,10 @@ HEADER
 HTTP/1.1 308 Permanent Redirect
 Connection: close
 X-Powered-By: %s
-Content-type: text/html; charset=UTF-8
+Content-type: text/html
 
 HTTP/1.1 426 Upgrade Required
 Connection: close
 X-Powered-By: %s
-Content-type: text/html; charset=UTF-8
+Content-type: text/html
 

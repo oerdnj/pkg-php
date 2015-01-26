@@ -244,15 +244,12 @@ PHP_FUNCTION(curl_multi_getcontent)
 
 	ZEND_FETCH_RESOURCE(ch, php_curl *, &z_ch, -1, le_curl_name, le_curl);
 
-	if (ch->handlers->write->method == PHP_CURL_RETURN) {
-		if (ch->handlers->write->buf.len == 0) {
-			RETURN_EMPTY_STRING();
-		}
+	if (ch->handlers->write->method == PHP_CURL_RETURN && ch->handlers->write->buf.len > 0) {
 		smart_str_0(&ch->handlers->write->buf);
 		RETURN_STRINGL(ch->handlers->write->buf.c, ch->handlers->write->buf.len, 1);
 	}
 
-	RETURN_NULL();
+        RETURN_EMPTY_STRING();
 }
 /* }}} */
 

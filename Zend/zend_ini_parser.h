@@ -52,8 +52,7 @@
      TC_QUOTED_STRING = 268,
      BOOL_TRUE = 269,
      BOOL_FALSE = 270,
-     NULL_NULL = 271,
-     END_OF_LINE = 272
+     END_OF_LINE = 271
    };
 #endif
 /* Tokens.  */
@@ -70,8 +69,7 @@
 #define TC_QUOTED_STRING 268
 #define BOOL_TRUE 269
 #define BOOL_FALSE 270
-#define NULL_NULL 271
-#define END_OF_LINE 272
+#define END_OF_LINE 271
 
 
 

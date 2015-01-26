@@ -9,9 +9,7 @@ require_once('skipifconnectfailure.inc');
 <?php
 	require_once("connect.inc");
 
-	if (!$mysqli = my_mysqli_connect($host, $user, $passwd, $db, $port, $socket)) {
-		printf("[001] Connect failed, [%d] %s\n", mysqli_connect_errno(), mysqli_connect_error());
-	}
+	$mysqli = new mysqli($host, $user, $passwd, $db);
 
 	$read_stmt = $mysqli->prepare("SELECT 1");
 
@@ -19,6 +17,7 @@ require_once('skipifconnectfailure.inc');
 
 	unset($mysqli);
 	var_dump($read_stmt->bind_result($data));
+	
 ?>
 done!
 --EXPECT--

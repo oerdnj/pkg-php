@@ -583,7 +583,7 @@ SPL_METHOD(SplFixedArray, __construct)
 	spl_fixedarray_object *intern;
 	long size = 0;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &size) == FAILURE) {
+	if (FAILURE == zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &size)) {
 		return;
 	}
 
@@ -613,7 +613,7 @@ SPL_METHOD(SplFixedArray, __wakeup)
 	HashTable *intern_ht = zend_std_get_properties(getThis() TSRMLS_CC);
 	zval **data;
 
-	if (zend_parse_parameters_none() == FAILURE) {
+	if (FAILURE == zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "")) {
 		return;
 	}
 
@@ -643,7 +643,7 @@ SPL_METHOD(SplFixedArray, count)
 	zval *object = getThis();
 	spl_fixedarray_object *intern;
 
-	if (zend_parse_parameters_none() == FAILURE) {
+	if (FAILURE == zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "")) {
 		return;
 	}
 
@@ -661,7 +661,7 @@ SPL_METHOD(SplFixedArray, toArray)
 {
 	spl_fixedarray_object *intern;
 
-	if (zend_parse_parameters_none() == FAILURE) {
+	if (FAILURE == zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "")) {
 		return;
 	}
 
@@ -693,7 +693,7 @@ SPL_METHOD(SplFixedArray, fromArray)
 	int num;
 	zend_bool save_indexes = 1;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a|b", &data, &save_indexes) == FAILURE) {
+	if (FAILURE == zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a|b", &data, &save_indexes)) {
 		return;
 	}
 
@@ -777,7 +777,7 @@ SPL_METHOD(SplFixedArray, getSize)
 	zval *object = getThis();
 	spl_fixedarray_object *intern;
 
-	if (zend_parse_parameters_none() == FAILURE) {
+	if (FAILURE == zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "")) {
 		return;
 	}
 
@@ -797,7 +797,7 @@ SPL_METHOD(SplFixedArray, setSize)
 	spl_fixedarray_object *intern;
 	long size;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &size) == FAILURE) {
+	if (FAILURE == zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &size)) {
 		return;
 	}
 

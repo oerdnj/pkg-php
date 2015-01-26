@@ -4,7 +4,7 @@ DirectoryIterator::getBasename() - Basic Test
 PHPNW Testfest 2009 - Adrian Hardy
 --FILE--
 <?php
-   $targetDir = __DIR__.DIRECTORY_SEPARATOR.md5('directoryIterator::getbasename1');
+   $targetDir = __DIR__.DIRECTORY_SEPARATOR.md5('directoryIterator::getbasename');
    mkdir($targetDir);
    touch($targetDir.DIRECTORY_SEPARATOR.'getBasename_test.txt');
    $dir = new DirectoryIterator($targetDir.DIRECTORY_SEPARATOR);
@@ -15,7 +15,7 @@ PHPNW Testfest 2009 - Adrian Hardy
 ?>
 --CLEAN--
 <?php
-   $targetDir = __DIR__.DIRECTORY_SEPARATOR.md5('directoryIterator::getbasename1');
+   $targetDir = __DIR__.DIRECTORY_SEPARATOR.md5('directoryIterator::getbasename');
    unlink($targetDir.DIRECTORY_SEPARATOR.'getBasename_test.txt');
    rmdir($targetDir);
 ?>

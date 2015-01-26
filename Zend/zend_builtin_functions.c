@@ -435,7 +435,9 @@ ZEND_FUNCTION(func_get_arg)
 	}
 
 	arg = *(p-(arg_count-requested_offset));
-	RETURN_ZVAL_FAST(arg);
+	*return_value = *arg;
+	zval_copy_ctor(return_value);
+	INIT_PZVAL(return_value);
 }
 /* }}} */
 
@@ -459,17 +461,12 @@ ZEND_FUNCTION(func_get_args)
 
 	array_init_size(return_value, arg_count);
 	for (i=0; i<arg_count; i++) {
-		zval *element, *arg;
+		zval *element;
 
-		arg = *((zval **) (p-(arg_count-i)));
-		if (!Z_ISREF_P(arg)) {
-			element = arg;
-			Z_ADDREF_P(element);
-		} else {
-			ALLOC_ZVAL(element);
-			INIT_PZVAL_COPY(element, arg);
-			zval_copy_ctor(element);
-	    }
+		ALLOC_ZVAL(element);
+		*element = **((zval **) (p-(arg_count-i)));
+		zval_copy_ctor(element);
+		INIT_PZVAL(element);
 		zend_hash_next_index_insert(return_value->value.ht, &element, sizeof(zval *), NULL);
 	}
 }
@@ -609,9 +606,9 @@ ZEND_FUNCTION(each)
 	Z_ADDREF_P(entry);
 
 	/* add the key elements */
-	switch (zend_hash_get_current_key_ex(target_hash, &string_key, &string_key_len, &num_key, 0, NULL)) {
+	switch (zend_hash_get_current_key_ex(target_hash, &string_key, &string_key_len, &num_key, 1, NULL)) {
 		case HASH_KEY_IS_STRING:
-			add_get_index_stringl(return_value, 0, string_key, string_key_len-1, (void **) &inserted_pointer, !IS_INTERNED(string_key));
+			add_get_index_stringl(return_value, 0, string_key, string_key_len-1, (void **) &inserted_pointer, 0);
 			break;
 		case HASH_KEY_IS_LONG:
 			add_get_index_long(return_value, 0, num_key, (void **) &inserted_pointer);
@@ -709,7 +706,7 @@ repeat:
 		zval_ptr_dtor(&val_free);
 	}
 	c.flags = case_sensitive; /* non persistent */
-	c.name = str_strndup(name, name_len);
+	c.name = IS_INTERNED(name) ? name : zend_strndup(name, name_len);
 	if(c.name == NULL) {
 		RETURN_FALSE;
 	}
@@ -946,11 +943,11 @@ static void add_class_vars(zend_class_entry *ce, int statics, zval *return_value
 
 		/* this is necessary to make it able to work with default array
 		 * properties, returned to user */
-		if (IS_CONSTANT_TYPE(Z_TYPE_P(prop_copy))) {
+		if (Z_TYPE_P(prop_copy) == IS_CONSTANT_ARRAY || (Z_TYPE_P(prop_copy) & IS_CONSTANT_TYPE_MASK) == IS_CONSTANT) {
 			zval_update_constant(&prop_copy, 0 TSRMLS_CC);
 		}
 
-		zend_hash_update(Z_ARRVAL_P(return_value), key, key_len, &prop_copy, sizeof(zval*), NULL);
+		add_assoc_zval(return_value, key, prop_copy);
 	}
 }
 /* }}} */
@@ -1020,14 +1017,7 @@ ZEND_FUNCTION(get_object_vars)
 				zend_unmangle_property_name_ex(key, key_len - 1, &class_name, &prop_name, (int*) &prop_len);
 				/* Not separating references */
 				Z_ADDREF_PP(value);
-				if (IS_INTERNED(key) && prop_name != key) {
-					/* we can't use substring of interned string as a new key */
-					char *tmp = estrndup(prop_name, prop_len);
-					add_assoc_zval_ex(return_value, tmp, prop_len + 1, *value);
-					efree(tmp);
-				} else {
-					add_assoc_zval_ex(return_value, prop_name, prop_len + 1, *value);
-				}
+				add_assoc_zval_ex(return_value, prop_name, prop_len + 1, *value);
 			}
 		}
 		zend_hash_move_forward_ex(properties, &pos);
@@ -1398,11 +1388,12 @@ ZEND_FUNCTION(function_exists)
    Creates an alias for user defined class */
 ZEND_FUNCTION(class_alias)
 {
-	char *class_name, *alias_name;
+	char *class_name, *lc_name, *alias_name;
 	zend_class_entry **ce;
 	int class_name_len, alias_name_len;
 	int found;
 	zend_bool autoload = 1;
+	ALLOCA_FLAG(use_heap)
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss|b", &class_name, &class_name_len, &alias_name, &alias_name_len, &autoload) == FAILURE) {
 		return;
@@ -1483,7 +1474,6 @@ ZEND_FUNCTION(crash)
 ZEND_FUNCTION(get_included_files)
 {
 	char *entry;
-	uint entry_len;
 
 	if (zend_parse_parameters_none() == FAILURE) {
 		return;
@@ -1491,8 +1481,8 @@ ZEND_FUNCTION(get_included_files)
 
 	array_init(return_value);
 	zend_hash_internal_pointer_reset(&EG(included_files));
-	while (zend_hash_get_current_key_ex(&EG(included_files), &entry, &entry_len, NULL, 0, NULL) == HASH_KEY_IS_STRING) {
-		add_next_index_stringl(return_value, entry, entry_len-1, !IS_INTERNED(entry));
+	while (zend_hash_get_current_key(&EG(included_files), &entry, NULL, 1) == HASH_KEY_IS_STRING) {
+		add_next_index_string(return_value, entry, 0);
 		zend_hash_move_forward(&EG(included_files));
 	}
 }

@@ -1,6 +1,5 @@
 --TEST--
 CURL file uploading
---INI--
 --SKIPIF--
 <?php include 'skipif.inc'; ?>
 --FILE--
@@ -43,7 +42,6 @@ var_dump($file->getPostFilename());
 curl_setopt($ch, CURLOPT_POSTFIELDS, array("file" => $file));
 var_dump(curl_exec($ch));
 
-curl_setopt($ch, CURLOPT_SAFE_UPLOAD, 0);
 $params = array('file' => '@' . __DIR__ . '/curl_testdata1.txt');
 curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
 var_dump(curl_exec($ch));

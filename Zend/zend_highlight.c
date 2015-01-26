@@ -150,7 +150,7 @@ ZEND_API void zend_highlight(zend_syntax_highlighter_ini *syntax_highlighter_ini
 				case T_DOC_COMMENT:
 					break;
 				default:
-					str_efree(token.value.str.val);
+					efree(token.value.str.val);
 					break;
 			}
 		}
@@ -211,7 +211,7 @@ ZEND_API void zend_strip(TSRMLS_D)
 					break;
 
 				default:
-					STR_FREE(token.value.str.val);
+					efree(token.value.str.val);
 					break;
 			}
 		}

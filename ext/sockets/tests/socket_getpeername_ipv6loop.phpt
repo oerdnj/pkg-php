@@ -15,23 +15,17 @@ require 'ipv6_skipif.inc';
 	/* Bind and connect sockets to localhost */
 	$localhost = '::1';
 
+	/* Hold the port associated to address */
+	$port = 31337;
+	
         /* Setup socket server */
         $server = socket_create(AF_INET6, SOCK_STREAM, getprotobyname('tcp'));
         if (!$server) {
                 die('Unable to create AF_INET6 socket [server]');
         }
-
-	$minport = 31337;
-	$maxport = 31356;
-	$bound = false;
-	for($port = $minport; $port <= $maxport; ++$port) {
-        	if (socket_bind($server, $localhost, $port)) {
-			$bound = true;
-			break;
-		}
-	}
-	if (!$bound) {
-                die('Unable to bind to '.$localhost);
+	
+        if (!socket_bind($server, $localhost, $port)) {
+                die('Unable to bind to '.$localhost.':'.$port);
         }
         if (!socket_listen($server, 2)) {
                 die('Unable to listen on socket');
@@ -52,10 +46,10 @@ require 'ipv6_skipif.inc';
 	        die('Unable to accept connection');
         }
 
-	if (!socket_getpeername($client, $address, $peerport)) {
+	if (!socket_getpeername($client, $address, $port)) {
 	   	die('Unable to retrieve peer name');
 	}
-        var_dump($address, $port === $peerport);
+        var_dump($address, $port);
 
         socket_close($client);
         socket_close($socket);
@@ -63,4 +57,4 @@ require 'ipv6_skipif.inc';
 ?>
 --EXPECT--
 string(3) "::1"
-bool(true)
+int(31337)

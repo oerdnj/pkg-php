@@ -39,7 +39,7 @@
 
 
 
-struct zip_source *
+ZIP_EXTERN(struct zip_source *)
 zip_source_pop(struct zip_source *src)
 {
     struct zip_source *lower;

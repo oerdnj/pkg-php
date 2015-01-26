@@ -37,8 +37,8 @@
 
 
 
-zip_encryption_implementation
-_zip_get_encryption_implementation(zip_uint16_t em)
+ZIP_EXTERN(zip_encryption_implementation)
+zip_get_encryption_implementation(zip_uint16_t em)
 {
     if (em == ZIP_EM_TRAD_PKWARE)
 	return zip_source_pkware;

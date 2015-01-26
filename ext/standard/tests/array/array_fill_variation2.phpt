@@ -106,7 +106,7 @@ array(2) {
 }
 -- Iteration 2 --
 
-Warning: array_fill(): Number of elements can't be negative in %s on line %d
+Warning: array_fill(): Number of elements must be positive in %s on line %d
 bool(false)
 -- Iteration 3 --
 array(5) {
@@ -122,11 +122,13 @@ array(5) {
   int(100)
 }
 -- Iteration 4 --
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 -- Iteration 5 --
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 -- Iteration 6 --
 
 Warning: array_fill() expects parameter 2 to be long, array given in %s on line %d
@@ -148,27 +150,31 @@ NULL
 Warning: array_fill() expects parameter 2 to be long, array given in %s on line %d
 NULL
 -- Iteration 11 --
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 -- Iteration 12 --
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 -- Iteration 13 --
 array(1) {
   [0]=>
   int(100)
 }
 -- Iteration 14 --
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 -- Iteration 15 --
 array(1) {
   [0]=>
   int(100)
 }
 -- Iteration 16 --
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 -- Iteration 17 --
 
 Warning: array_fill() expects parameter 2 to be long, string given in %s on line %d
@@ -190,9 +196,11 @@ NULL
 Warning: array_fill() expects parameter 2 to be long, object given in %s on line %d
 NULL
 -- Iteration 22 --
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 -- Iteration 23 --
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 Done

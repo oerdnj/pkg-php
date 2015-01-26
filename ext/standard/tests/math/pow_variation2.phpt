@@ -145,7 +145,7 @@ float(1)
 float(1)
 
 -- Iteration 19 --
-int(1)
+float(1)
 
 -- Iteration 20 --
 float(1)

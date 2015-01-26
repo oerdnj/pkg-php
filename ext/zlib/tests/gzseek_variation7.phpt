@@ -8,7 +8,7 @@ if (!extension_loaded("zlib")) {
 ?>
 --FILE--
 <?php
-$f = "gzseek_variation7.gz";
+$f = "temp3.txt.gz";
 $h = gzopen($f, 'w'); 
 $str1 = "This is the first line.";
 $str2 = "This is the second line.";

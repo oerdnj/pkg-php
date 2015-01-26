@@ -28,11 +28,7 @@
 #include "zend_accelerator_blacklist.h"
 #include "php_ini.h"
 #include "SAPI.h"
-#if ZEND_EXTENSION_API_NO > PHP_5_5_X_API_NO
-# include "zend_virtual_cwd.h"
-#else
-# include "TSRM/tsrm_virtual_cwd.h"
-#endif
+#include "TSRM/tsrm_virtual_cwd.h"
 #include "ext/standard/info.h"
 #include "ext/standard/php_filestat.h"
 
@@ -779,7 +775,7 @@ static ZEND_FUNCTION(opcache_compile_file)
 		op_array = persistent_compile_file(&handle, ZEND_INCLUDE TSRMLS_CC);
 	} zend_catch {
 		EG(current_execute_data) = orig_execute_data;
-		zend_error(E_WARNING, ACCELERATOR_PRODUCT_NAME " could not compile file %s", handle.filename);
+		zend_error(E_WARNING, ACCELERATOR_PRODUCT_NAME " could not compile file %s" TSRMLS_CC, handle.filename);
 	} zend_end_try();
 
 	if(op_array != NULL) {

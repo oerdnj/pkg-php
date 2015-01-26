@@ -87,7 +87,7 @@ struct _sdlBinding {
 	void           *bindingAttributes; /* sdlSoapBindingPtr */
 };
 
-/* Soap Binding Specific stuff */
+/* Soap Binding Specfic stuff */
 struct _sdlSoapBinding {
 	sdlEncodingStyle  style;
 	sdlTransport      transport; /* not implemented yet */

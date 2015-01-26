@@ -588,6 +588,9 @@ PHP_METHOD(xmlreader, getAttributeNo)
 	if (retchar) {
 		RETVAL_STRING(retchar, 1);
 		xmlFree(retchar);
+		return;
+	} else {
+		RETURN_EMPTY_STRING();
 	}
 }
 /* }}} */
@@ -619,6 +622,9 @@ PHP_METHOD(xmlreader, getAttributeNs)
 	if (retchar) {
 		RETVAL_STRING(retchar, 1);
 		xmlFree(retchar);
+		return;
+	} else {
+		RETURN_EMPTY_STRING();
 	}
 }
 /* }}} */

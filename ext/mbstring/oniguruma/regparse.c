@@ -262,14 +262,6 @@ strdup_with_null(OnigEncoding enc, UChar* s, UChar* end)
   p += ONIGENC_MBC_ENC_LEN(enc, p); \
 } while (0)
 
-#define PINC_S     do { \
-  p += ONIGENC_MBC_ENC_LEN(enc, p); \
-} while (0)
-#define PFETCH_S(c) do { \
-  c = ONIGENC_MBC_TO_CODE(enc, p, end); \
-  p += ONIGENC_MBC_ENC_LEN(enc, p); \
-} while (0)
-
 #define PPEEK        (p < end ? ONIGENC_MBC_TO_CODE(enc, p, end) : PEND_VALUE)
 #define PPEEK_IS(c)  (PPEEK == (OnigCodePoint )c)
 
@@ -2412,21 +2404,22 @@ fetch_escaped_value(UChar** src, UChar* end, ScanEnv* env)
   OnigCodePoint c;
   OnigEncoding enc = env->enc;
   UChar* p = *src;
+  PFETCH_READY;
 
   if (PEND) return ONIGERR_END_PATTERN_AT_ESCAPE;
 
-  PFETCH_S(c);
+  PFETCH(c);
   switch (c) {
   case 'M':
     if (IS_SYNTAX_OP2(env->syntax, ONIG_SYN_OP2_ESC_CAPITAL_M_BAR_META)) {
       if (PEND) return ONIGERR_END_PATTERN_AT_META;
-      PFETCH_S(c);
+      PFETCH(c);
       if (c != '-') return ONIGERR_META_CODE_SYNTAX;
       if (PEND) return ONIGERR_END_PATTERN_AT_META;
-      PFETCH_S(c);
+      PFETCH(c);
       if (c == MC_ESC(env->syntax)) {
-        v = fetch_escaped_value(&p, end, env);
-        if (v < 0) return v;
+	v = fetch_escaped_value(&p, end, env);
+	if (v < 0) return v;
         c = (OnigCodePoint )v;
       }
       c = ((c & 0xff) | 0x80);
@@ -2438,7 +2431,7 @@ fetch_escaped_value(UChar** src, UChar* end, ScanEnv* env)
   case 'C':
     if (IS_SYNTAX_OP2(env->syntax, ONIG_SYN_OP2_ESC_CAPITAL_C_BAR_CONTROL)) {
       if (PEND) return ONIGERR_END_PATTERN_AT_CONTROL;
-      PFETCH_S(c);
+      PFETCH(c);
       if (c != '-') return ONIGERR_CONTROL_CODE_SYNTAX;
       goto control;
     }
@@ -2449,9 +2442,9 @@ fetch_escaped_value(UChar** src, UChar* end, ScanEnv* env)
     if (IS_SYNTAX_OP(env->syntax, ONIG_SYN_OP_ESC_C_CONTROL)) {
     control:
       if (PEND) return ONIGERR_END_PATTERN_AT_CONTROL;
-      PFETCH_S(c);
+      PFETCH(c);
       if (c == '?') {
-        c = 0177;
+	c = 0177;
       }
       else {
         if (c == MC_ESC(env->syntax)) {
@@ -2459,7 +2452,7 @@ fetch_escaped_value(UChar** src, UChar* end, ScanEnv* env)
           if (v < 0) return v;
           c = (OnigCodePoint )v;
         }
-        c &= 0x9f;
+	c &= 0x9f;
       }
       break;
     }
@@ -2553,11 +2546,11 @@ fetch_name_with_level(OnigCodePoint start_code, UChar** src, UChar* end,
 
     if (is_num != 0) {
       if (ONIGENC_IS_CODE_DIGIT(enc, c)) {
-        is_num = 1;
+	is_num = 1;
       }
       else {
-        r = ONIGERR_INVALID_GROUP_NAME;
-        is_num = 0;
+	r = ONIGERR_INVALID_GROUP_NAME;
+	is_num = 0;
       }
     }
     else if (!ONIGENC_IS_CODE_WORD(enc, c)) {
@@ -2624,6 +2617,7 @@ fetch_name(OnigCodePoint start_code, UChar** src, UChar* end,
   UChar *name_end;
   UChar *pnum_head;
   UChar *p = *src;
+  PFETCH_READY;
 
   *rback_num = 0;
 
@@ -2638,27 +2632,27 @@ fetch_name(OnigCodePoint start_code, UChar** src, UChar* end,
     return ONIGERR_EMPTY_GROUP_NAME;
   }
   else {
-    PFETCH_S(c);
+    PFETCH(c);
     if (c == end_code)
       return ONIGERR_EMPTY_GROUP_NAME;
 
     if (ONIGENC_IS_CODE_DIGIT(enc, c)) {
       if (ref == 1)
-        is_num = 1;
+	is_num = 1;
       else {
-        r = ONIGERR_INVALID_GROUP_NAME;
-        is_num = 0;
+	r = ONIGERR_INVALID_GROUP_NAME;
+	is_num = 0;
       }
     }
     else if (c == '-') {
       if (ref == 1) {
-        is_num = 2;
-        sign = -1;
-        pnum_head = p;
+	is_num = 2;
+	sign = -1;
+	pnum_head = p;
       }
       else {
-        r = ONIGERR_INVALID_GROUP_NAME;
-        is_num = 0;
+	r = ONIGERR_INVALID_GROUP_NAME;
+	is_num = 0;	
       }
     }
     else if (!ONIGENC_IS_CODE_WORD(enc, c)) {
@@ -2669,28 +2663,29 @@ fetch_name(OnigCodePoint start_code, UChar** src, UChar* end,
   if (r == 0) {
     while (!PEND) {
       name_end = p;
-      PFETCH_S(c);
+      PFETCH(c);
       if (c == end_code || c == ')') {
-        if (is_num == 2) 	r = ONIGERR_INVALID_GROUP_NAME;
-        break;
+	if (is_num == 2) 	r = ONIGERR_INVALID_GROUP_NAME;
+	break;
       }
 
       if (is_num != 0) {
-        if (ONIGENC_IS_CODE_DIGIT(enc, c)) {
-          is_num = 1;
-        }
-        else {
-          if (!ONIGENC_IS_CODE_WORD(enc, c))
-            r = ONIGERR_INVALID_CHAR_IN_GROUP_NAME;
-          else
-            r = ONIGERR_INVALID_GROUP_NAME;
-          is_num = 0;
-        }
+	if (ONIGENC_IS_CODE_DIGIT(enc, c)) {
+	  is_num = 1;
+	}
+	else {
+	  if (!ONIGENC_IS_CODE_WORD(enc, c))
+	    r = ONIGERR_INVALID_CHAR_IN_GROUP_NAME;
+	  else
+	    r = ONIGERR_INVALID_GROUP_NAME;
+
+	  is_num = 0;
+	}
       }
       else {
-        if (!ONIGENC_IS_CODE_WORD(enc, c)) {
-          r = ONIGERR_INVALID_CHAR_IN_GROUP_NAME;
-        }
+	if (!ONIGENC_IS_CODE_WORD(enc, c)) {
+	  r = ONIGERR_INVALID_CHAR_IN_GROUP_NAME;
+	}
       }
     }
 
@@ -2703,8 +2698,8 @@ fetch_name(OnigCodePoint start_code, UChar** src, UChar* end,
       *rback_num = onig_scan_unsigned_number(&pnum_head, name_end, enc);
       if (*rback_num < 0) return ONIGERR_TOO_BIG_NUMBER;
       else if (*rback_num == 0) {
-        r = ONIGERR_INVALID_GROUP_NAME;
-        goto err;
+	r = ONIGERR_INVALID_GROUP_NAME;
+	goto err;
       }
 
       *rback_num *= sign;
@@ -2717,9 +2712,9 @@ fetch_name(OnigCodePoint start_code, UChar** src, UChar* end,
   else {
     while (!PEND) {
       name_end = p;
-      PFETCH_S(c);
+      PFETCH(c);
       if (c == end_code || c == ')')
-        break;
+	break;
     }
     if (PEND)
       name_end = end;
@@ -3940,9 +3935,10 @@ parse_posix_bracket(CClassNode* cc, UChar** src, UChar* end, ScanEnv* env)
   OnigCodePoint c;
   OnigEncoding enc = env->enc;
   UChar *p = *src;
+  PFETCH_READY;
 
   if (PPEEK_IS('^')) {
-    PINC_S;
+    PINC;
     not = 1;
   }
   else
@@ -3955,12 +3951,12 @@ parse_posix_bracket(CClassNode* cc, UChar** src, UChar* end, ScanEnv* env)
     if (onigenc_with_ascii_strncmp(enc, p, end, pb->name, pb->len) == 0) {
       p = (UChar* )onigenc_step(enc, p, end, pb->len);
       if (onigenc_with_ascii_strncmp(enc, p, end, (UChar* )":]", 2) != 0)
-        return ONIGERR_INVALID_POSIX_BRACKET_TYPE;
+	return ONIGERR_INVALID_POSIX_BRACKET_TYPE;
 
       r = add_ctype_to_cc(cc, pb->ctype, not, env);
       if (r != 0) return r;
 
-      PINC_S; PINC_S;
+      PINC; PINC;
       *src = p;
       return 0;
     }
@@ -3970,15 +3966,15 @@ parse_posix_bracket(CClassNode* cc, UChar** src, UChar* end, ScanEnv* env)
   c = 0;
   i = 0;
   while (!PEND && ((c = PPEEK) != ':') && c != ']') {
-    PINC_S;
+    PINC;
     if (++i > POSIX_BRACKET_CHECK_LIMIT_LENGTH) break;
   }
   if (c == ':' && ! PEND) {
-    PINC_S;
+    PINC;
     if (! PEND) {
-      PFETCH_S(c);
+      PFETCH(c);
       if (c == ']')
-        return ONIGERR_INVALID_POSIX_BRACKET_TYPE;
+	return ONIGERR_INVALID_POSIX_BRACKET_TYPE;
     }
   }
 
@@ -3992,13 +3988,14 @@ fetch_char_property_to_ctype(UChar** src, UChar* end, ScanEnv* env)
   OnigCodePoint c;
   OnigEncoding enc = env->enc;
   UChar *prev, *start, *p = *src;
+  PFETCH_READY;
 
   r = 0;
   start = prev = p;
 
   while (!PEND) {
     prev = p;
-    PFETCH_S(c);
+    PFETCH(c);
     if (c == '}') {
       r = ONIGENC_PROPERTY_NAME_TO_CTYPE(enc, start, prev);
       if (r < 0) break;
@@ -4156,6 +4153,7 @@ code_exist_check(OnigCodePoint c, UChar* from, UChar* end, int ignore_escaped,
   OnigCodePoint code;
   OnigEncoding enc = env->enc;
   UChar* p = from;
+  PFETCH_READY;
 
   in_esc = 0;
   while (! PEND) {
@@ -4163,7 +4161,7 @@ code_exist_check(OnigCodePoint c, UChar* from, UChar* end, int ignore_escaped,
       in_esc = 0;
     }
     else {
-      PFETCH_S(code);
+      PFETCH(code);
       if (code == c) return 1;
       if (code == MC_ESC(env->syntax)) in_esc = 1;
     }

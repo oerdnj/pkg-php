@@ -30,8 +30,7 @@ Check for number base recognition
                 printf("%s\n", gmp_strval($test[$i]));
         }
 ?>
---EXPECTF--
-Warning: gmp_init(): Unable to convert variable to GMP - string is not an integer in %s on line %d
+--EXPECT--
 1234
 1234
 10011010010

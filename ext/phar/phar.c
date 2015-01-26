@@ -1639,7 +1639,7 @@ static int phar_open_from_fp(php_stream* fp, char *fname, int fname_len, char *a
 
 				php_stream_filter_append(&temp->writefilters, filter);
 
-				if (SUCCESS != php_stream_copy_to_stream_ex(fp, temp, PHP_STREAM_COPY_ALL, NULL)) {
+				if (SUCCESS != phar_stream_copy_to_stream(fp, temp, PHP_STREAM_COPY_ALL, NULL)) {
 					if (err) {
 						php_stream_close(temp);
 						MAPPHAR_ALLOC_FAIL("unable to decompress gzipped phar archive \"%s\", ext/zlib is buggy in PHP versions older than 5.2.6")
@@ -1681,7 +1681,7 @@ static int phar_open_from_fp(php_stream* fp, char *fname, int fname_len, char *a
 
 				php_stream_filter_append(&temp->writefilters, filter);
 
-				if (SUCCESS != php_stream_copy_to_stream_ex(fp, temp, PHP_STREAM_COPY_ALL, NULL)) {
+				if (SUCCESS != phar_stream_copy_to_stream(fp, temp, PHP_STREAM_COPY_ALL, NULL)) {
 					php_stream_close(temp);
 					MAPPHAR_ALLOC_FAIL("unable to decompress bzipped phar archive \"%s\" to temporary file")
 				}
@@ -1954,45 +1954,67 @@ woohoo:
 				goto woohoo;
 			}
 		} else {
+			phar_zstr key;
 			char *str_key;
 			uint keylen;
 			ulong unused;
 
-			for (zend_hash_internal_pointer_reset(&(PHAR_GLOBALS->phar_fname_map));
-				HASH_KEY_NON_EXISTENT != zend_hash_get_current_key_ex(&(PHAR_GLOBALS->phar_fname_map), &str_key, &keylen, &unused, 0, NULL);
-				zend_hash_move_forward(&(PHAR_GLOBALS->phar_fname_map))
-			) {
+			zend_hash_internal_pointer_reset(&(PHAR_GLOBALS->phar_fname_map));
+
+			while (FAILURE != zend_hash_has_more_elements(&(PHAR_GLOBALS->phar_fname_map))) {
+				if (HASH_KEY_NON_EXISTENT == zend_hash_get_current_key_ex(&(PHAR_GLOBALS->phar_fname_map), &key, &keylen, &unused, 0, NULL)) {
+					break;
+				}
+
+				PHAR_STR(key, str_key);
+
 				if (keylen > (uint) filename_len) {
+					zend_hash_move_forward(&(PHAR_GLOBALS->phar_fname_map));
+					PHAR_STR_FREE(str_key);
 					continue;
 				}
 
 				if (!memcmp(filename, str_key, keylen) && ((uint)filename_len == keylen
 					|| filename[keylen] == '/' || filename[keylen] == '\0')) {
+					PHAR_STR_FREE(str_key);
 					if (FAILURE == zend_hash_get_current_data(&(PHAR_GLOBALS->phar_fname_map), (void **) &pphar)) {
 						break;
 					}
 					*ext_str = filename + (keylen - (*pphar)->ext_len);
 					goto woohoo;
 				}
+
+				PHAR_STR_FREE(str_key);
+				zend_hash_move_forward(&(PHAR_GLOBALS->phar_fname_map));
 			}
 
 			if (PHAR_G(manifest_cached)) {
-				for (zend_hash_internal_pointer_reset(&cached_phars);
-					HASH_KEY_NON_EXISTENT != zend_hash_get_current_key_ex(&cached_phars, &str_key, &keylen, &unused, 0, NULL);
-					zend_hash_move_forward(&cached_phars)
-				) {
+				zend_hash_internal_pointer_reset(&cached_phars);
+
+				while (FAILURE != zend_hash_has_more_elements(&cached_phars)) {
+					if (HASH_KEY_NON_EXISTENT == zend_hash_get_current_key_ex(&cached_phars, &key, &keylen, &unused, 0, NULL)) {
+						break;
+					}
+
+					PHAR_STR(key, str_key);
+
 					if (keylen > (uint) filename_len) {
+						zend_hash_move_forward(&cached_phars);
+						PHAR_STR_FREE(str_key);
 						continue;
 					}
 
 					if (!memcmp(filename, str_key, keylen) && ((uint)filename_len == keylen
 						|| filename[keylen] == '/' || filename[keylen] == '\0')) {
+						PHAR_STR_FREE(str_key);
 						if (FAILURE == zend_hash_get_current_data(&cached_phars, (void **) &pphar)) {
 							break;
 						}
 						*ext_str = filename + (keylen - (*pphar)->ext_len);
 						goto woohoo;
 					}
+					PHAR_STR_FREE(str_key);
+					zend_hash_move_forward(&cached_phars);
 				}
 			}
 		}
@@ -2227,13 +2249,13 @@ last_time:
  *
  * This is used by phar_parse_url()
  */
-int phar_split_fname(const char *filename, int filename_len, char **arch, int *arch_len, char **entry, int *entry_len, int executable, int for_create TSRMLS_DC) /* {{{ */
+int phar_split_fname(char *filename, int filename_len, char **arch, int *arch_len, char **entry, int *entry_len, int executable, int for_create TSRMLS_DC) /* {{{ */
 {
 	const char *ext_str;
 #ifdef PHP_WIN32
 	char *save;
 #endif
-	int ext_len;
+	int ext_len, free_filename = 0;
 
 	if (!strncasecmp(filename, "phar://", 7)) {
 		filename += 7;
@@ -2242,6 +2264,7 @@ int phar_split_fname(const char *filename, int filename_len, char **arch, int *a
 
 	ext_len = 0;
 #ifdef PHP_WIN32
+	free_filename = 1;
 	save = filename;
 	filename = estrndup(filename, filename_len);
 	phar_unixify_path_separators(filename, filename_len);
@@ -2257,9 +2280,10 @@ int phar_split_fname(const char *filename, int filename_len, char **arch, int *a
 #endif
 			}
 
-#ifdef PHP_WIN32
-			efree(filename);
-#endif
+			if (free_filename) {
+				efree(filename);
+			}
+
 			return FAILURE;
 		}
 
@@ -2282,9 +2306,9 @@ int phar_split_fname(const char *filename, int filename_len, char **arch, int *a
 		*entry = estrndup("/", 1);
 	}
 
-#ifdef PHP_WIN32
-	efree(filename);
-#endif
+	if (free_filename) {
+		efree(filename);
+	}
 
 	return SUCCESS;
 }
@@ -2677,7 +2701,7 @@ int phar_flush(phar_archive_data *phar, char *user_stub, long len, int convert, 
 		size_t written;
 
 		if (!user_stub && phar->halt_offset && oldfile && !phar->is_brandnew) {
-			php_stream_copy_to_stream_ex(oldfile, newfile, phar->halt_offset, &written);
+			phar_stream_copy_to_stream(oldfile, newfile, phar->halt_offset, &written);
 			newstub = NULL;
 		} else {
 			/* this is either a brand new phar or a default stub overwrite */
@@ -2865,7 +2889,7 @@ int phar_flush(phar_archive_data *phar, char *user_stub, long len, int convert, 
 			return EOF;
 		}
 		php_stream_filter_append((&entry->cfp->writefilters), filter);
-		if (SUCCESS != php_stream_copy_to_stream_ex(file, entry->cfp, entry->uncompressed_filesize, NULL)) {
+		if (SUCCESS != phar_stream_copy_to_stream(file, entry->cfp, entry->uncompressed_filesize, NULL)) {
 			if (closeoldfile) {
 				php_stream_close(oldfile);
 			}
@@ -3097,7 +3121,7 @@ int phar_flush(phar_archive_data *phar, char *user_stub, long len, int convert, 
 		/* this will have changed for all files that have either changed compression or been modified */
 		entry->offset = entry->offset_abs = offset;
 		offset += entry->compressed_filesize;
-		if (php_stream_copy_to_stream_ex(file, newfile, entry->compressed_filesize, &wrote) == FAILURE) {
+		if (phar_stream_copy_to_stream(file, newfile, entry->compressed_filesize, &wrote) == FAILURE) {
 			if (closeoldfile) {
 				php_stream_close(oldfile);
 			}
@@ -3243,7 +3267,7 @@ int phar_flush(phar_archive_data *phar, char *user_stub, long len, int convert, 
 			}
 
 			php_stream_filter_append(&phar->fp->writefilters, filter);
-			php_stream_copy_to_stream_ex(newfile, phar->fp, PHP_STREAM_COPY_ALL, NULL);
+			phar_stream_copy_to_stream(newfile, phar->fp, PHP_STREAM_COPY_ALL, NULL);
 			php_stream_filter_flush(filter, 1);
 			php_stream_filter_remove(filter, 1 TSRMLS_CC);
 			php_stream_close(phar->fp);
@@ -3252,14 +3276,14 @@ int phar_flush(phar_archive_data *phar, char *user_stub, long len, int convert, 
 		} else if (phar->flags & PHAR_FILE_COMPRESSED_BZ2) {
 			filter = php_stream_filter_create("bzip2.compress", NULL, php_stream_is_persistent(phar->fp) TSRMLS_CC);
 			php_stream_filter_append(&phar->fp->writefilters, filter);
-			php_stream_copy_to_stream_ex(newfile, phar->fp, PHP_STREAM_COPY_ALL, NULL);
+			phar_stream_copy_to_stream(newfile, phar->fp, PHP_STREAM_COPY_ALL, NULL);
 			php_stream_filter_flush(filter, 1);
 			php_stream_filter_remove(filter, 1 TSRMLS_CC);
 			php_stream_close(phar->fp);
 			/* use the temp stream as our base */
 			phar->fp = newfile;
 		} else {
-			php_stream_copy_to_stream_ex(newfile, phar->fp, PHP_STREAM_COPY_ALL, NULL);
+			phar_stream_copy_to_stream(newfile, phar->fp, PHP_STREAM_COPY_ALL, NULL);
 			/* we could also reopen the file in "rb" mode but there is no need for that */
 			php_stream_close(newfile);
 		}

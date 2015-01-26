@@ -54,7 +54,7 @@ static void php_sqlite3_error(php_sqlite3_db_object *db_obj, char *format, ...)
 	vspprintf(&message, 0, format, arg);
 	va_end(arg);
 
-	if (db_obj && db_obj->exception) {
+	if (db_obj->exception) {
 		zend_throw_exception(zend_exception_get_default(TSRMLS_C), message, 0 TSRMLS_CC);
 	} else {
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "%s", message);
@@ -67,14 +67,8 @@ static void php_sqlite3_error(php_sqlite3_db_object *db_obj, char *format, ...)
 /* }}} */
 
 #define SQLITE3_CHECK_INITIALIZED(db_obj, member, class_name) \
-	if (!(db_obj) || !(member)) { \
-		php_sqlite3_error(db_obj, "The " #class_name " object has not been correctly initialised"); \
-		RETURN_FALSE; \
-	}
-
-#define SQLITE3_CHECK_INITIALIZED_STMT(member, class_name) \
 	if (!(member)) { \
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "The " #class_name " object has not been correctly initialised"); \
+		php_sqlite3_error(db_obj, "The " #class_name " object has not been correctly initialised"); \
 		RETURN_FALSE; \
 	}
 
@@ -197,14 +191,12 @@ PHP_METHOD(sqlite3, close)
 	}
 
 	if (db_obj->initialised) {
-        zend_llist_clean(&(db_obj->free_list));
-		if(db_obj->db) {
-            errcode = sqlite3_close(db_obj->db);
-            if (errcode != SQLITE_OK) {
-			    php_sqlite3_error(db_obj, "Unable to close database: %d, %s", errcode, sqlite3_errmsg(db_obj->db));
-                RETURN_FALSE;
-		    }
-        }
+		zend_llist_clean(&(db_obj->free_list));
+		errcode = sqlite3_close(db_obj->db);
+		if (errcode != SQLITE_OK) {
+			php_sqlite3_error(db_obj, "Unable to close database: %d, %s", errcode, sqlite3_errmsg(db_obj->db));
+			RETURN_FALSE;
+		}
 		db_obj->initialised = 0;
 	}
 
@@ -1287,8 +1279,6 @@ PHP_METHOD(sqlite3stmt, paramCount)
 		return;
 	}
 
-	SQLITE3_CHECK_INITIALIZED_STMT(stmt_obj->stmt, SQLite3Stmt);
-
 	RETURN_LONG(sqlite3_bind_parameter_count(stmt_obj->stmt));
 }
 /* }}} */
@@ -1305,9 +1295,7 @@ PHP_METHOD(sqlite3stmt, close)
 		return;
 	}
 
-	if(stmt_obj->db_obj) {
-        	zend_llist_del_element(&(stmt_obj->db_obj->free_list), object, (int (*)(void *, void *)) php_sqlite3_compare_stmt_zval_free);
-	}
+	zend_llist_del_element(&(stmt_obj->db_obj->free_list), object, (int (*)(void *, void *)) php_sqlite3_compare_stmt_zval_free);
 
 	RETURN_TRUE;
 }
@@ -1324,8 +1312,6 @@ PHP_METHOD(sqlite3stmt, reset)
 	if (zend_parse_parameters_none() == FAILURE) {
 		return;
 	}
-
-	SQLITE3_CHECK_INITIALIZED_STMT(stmt_obj->stmt, SQLite3Stmt);
 
 	if (sqlite3_reset(stmt_obj->stmt) != SQLITE_OK) {
 		php_sqlite3_error(stmt_obj->db_obj, "Unable to reset statement: %s", sqlite3_errmsg(sqlite3_db_handle(stmt_obj->stmt)));
@@ -1347,8 +1333,6 @@ PHP_METHOD(sqlite3stmt, clear)
 		return;
 	}
 
-	SQLITE3_CHECK_INITIALIZED_STMT(stmt_obj->stmt, SQLite3Stmt);
-
 	if (sqlite3_clear_bindings(stmt_obj->stmt) != SQLITE_OK) {
 		php_sqlite3_error(stmt_obj->db_obj, "Unable to clear statement: %s", sqlite3_errmsg(sqlite3_db_handle(stmt_obj->stmt)));
 		RETURN_FALSE;
@@ -1369,8 +1353,6 @@ PHP_METHOD(sqlite3stmt, readOnly)
 	if (zend_parse_parameters_none() == FAILURE) {
 		return;
 	}
-
-	SQLITE3_CHECK_INITIALIZED_STMT(stmt_obj->stmt, SQLite3Stmt);
 
 #if SQLITE_VERSION_NUMBER >= 3007004
 	if (sqlite3_stmt_readonly(stmt_obj->stmt)) {
@@ -1444,8 +1426,6 @@ PHP_METHOD(sqlite3stmt, bindParam)
 		}
 	}
 
-	SQLITE3_CHECK_INITIALIZED_STMT(stmt_obj->stmt, SQLite3Stmt);
-
 	Z_ADDREF_P(param.parameter);
 
 	if (!register_bound_parameter_to_sqlite(&param, stmt_obj TSRMLS_CC)) {
@@ -1476,8 +1456,6 @@ PHP_METHOD(sqlite3stmt, bindValue)
 			return;
 		}
 	}
-
-	SQLITE3_CHECK_INITIALIZED_STMT(stmt_obj->stmt, SQLite3Stmt);
 
 	Z_ADDREF_P(param.parameter);
 
@@ -1912,7 +1890,7 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_sqlite3stmt_bindvalue, 0, 0, 2)
 	ZEND_ARG_INFO(0, type)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_sqlite3stmt_construct, 0, 0, 1)
+ZEND_BEGIN_ARG_INFO(arginfo_sqlite3stmt_construct, 1)
 	ZEND_ARG_INFO(0, sqlite3)
 ZEND_END_ARG_INFO()
 
