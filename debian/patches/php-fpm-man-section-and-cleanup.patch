@@ -7,7 +7,7 @@ Last-Update: 2010-07-29
 
 --- php5.orig/sapi/fpm/php-fpm.8.in
 +++ php5/sapi/fpm/php-fpm.8.in
-@@ -132,22 +132,8 @@ The configuration file for the php-fpm d
+@@ -139,22 +139,8 @@ The configuration file for the php-fpm d
  .TP
  .B php.ini
  The standard php configuration file.
@@ -32,7 +32,7 @@ Last-Update: 2010-07-29
  .P
  .PD 0
  .RS
-@@ -161,10 +147,6 @@ If your installation has no appropriate
+@@ -168,10 +154,6 @@ If your installation has no appropriate
  .RE
  .PD 1
  .P
