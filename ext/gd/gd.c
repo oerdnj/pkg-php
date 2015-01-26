@@ -82,6 +82,10 @@ static void php_free_ps_enc(zend_rsrc_list_entry *rsrc TSRMLS_DC);
 # endif
 #endif
 
+#if defined(HAVE_GD_XPM) && defined(HAVE_GD_BUNDLED)
+# include "X11/xpm.h"
+#endif
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -91,6 +95,10 @@ static void php_imagettftext_common(INTERNAL_FUNCTION_PARAMETERS, int, int);
 #endif
 
 #include "gd_ctx.c"
+
+/* as it is not really public, duplicate declaration here to avoid 
+   pointless warnings */
+int overflow2(int a, int b);
 
 /* Section Filters Declarations */
 /* IMPORTANT NOTE FOR NEW FILTER
@@ -1281,7 +1289,14 @@ PHP_MINFO_FUNCTION(gd)
 
 	/* need to use a PHPAPI function here because it is external module in windows */
 
+#if defined(HAVE_GD_BUNDLED)
 	php_info_print_table_row(2, "GD Version", PHP_GD_VERSION_STRING);
+#else
+	php_info_print_table_row(2, "GD headers Version", PHP_GD_VERSION_STRING);
+#if defined(HAVE_GD_LIBVERSION)
+	php_info_print_table_row(2, "GD library Version", gdVersionString());
+#endif
+#endif
 
 #ifdef ENABLE_GD_TTF
 	php_info_print_table_row(2, "FreeType Support", "enabled");
@@ -2088,7 +2103,7 @@ PHP_FUNCTION(imagerotate)
 
 	ZEND_FETCH_RESOURCE(im_src, gdImagePtr, &SIM, -1, "Image", le_gd);
 
-	im_dst = gdImageRotateInterpolated(im_src, (float)degrees, color);
+	im_dst = gdImageRotateInterpolated(im_src, (const float)degrees, color);
 
 	if (im_dst != NULL) {
 		ZEND_REGISTER_RESOURCE(return_value, im_dst, le_gd);
@@ -5260,8 +5275,6 @@ PHP_FUNCTION(imageaffine)
 		pRect = NULL;
 	}
 
-
-	//int gdTransformAffineGetImage(gdImagePtr *dst, const gdImagePtr src, gdRectPtr src_area, const double affine[6]);
 	if (gdTransformAffineGetImage(&dst, src, pRect, affine) != GD_TRUE) {
 		RETURN_FALSE;
 	}

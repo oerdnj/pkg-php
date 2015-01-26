@@ -7,7 +7,7 @@ include "skipif.inc";
 --FILE--
 <?php
 include "php_cli_server.inc";
-php_cli_server_start('var_dump($_SERVER["PHP_SELF"], $_SERVER["SCRIPT_NAME"], $_SERVER["PATH_INFO"], $_SERVER["QUERY_STRING"]);', TRUE);
+php_cli_server_start('var_dump($_SERVER["PHP_SELF"], $_SERVER["SCRIPT_NAME"], $_SERVER["PATH_INFO"], $_SERVER["QUERY_STRING"]);', null);
 
 list($host, $port) = explode(':', PHP_CLI_SERVER_ADDRESS);
 $port = intval($port)?:80;
@@ -57,7 +57,7 @@ HTTP/1.1 200 OK
 Host: %s
 Connection: close
 X-Powered-By: PHP/%s
-Content-type: text/html
+Content-type: text/html; charset=UTF-8
 
 string(18) "/index.php/foo/bar"
 string(10) "/index.php"
@@ -67,7 +67,7 @@ HTTP/1.0 200 OK
 Host: %s
 Connection: close
 X-Powered-By: PHP/%s
-Content-type: text/html
+Content-type: text/html; charset=UTF-8
 
 string(19) "/index.php/foo/bar/"
 string(10) "/index.php"

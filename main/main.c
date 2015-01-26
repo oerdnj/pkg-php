@@ -417,6 +417,45 @@ static PHP_INI_DISP(display_errors_mode)
 
 /* {{{ PHP_INI_MH
  */
+static PHP_INI_MH(OnUpdateInternalEncoding)
+{
+	if (new_value) {
+		OnUpdateString(entry, new_value, new_value_length, mh_arg1, mh_arg2, mh_arg3, stage TSRMLS_CC);
+	} else {
+		OnUpdateString(entry, SG(default_charset), strlen(SG(default_charset))+1, mh_arg1, mh_arg2, mh_arg3, stage TSRMLS_CC);
+	}
+	return SUCCESS;
+}
+/* }}} */
+
+/* {{{ PHP_INI_MH
+ */
+static PHP_INI_MH(OnUpdateInputEncoding)
+{
+	if (new_value) {
+		OnUpdateString(entry, new_value, new_value_length, mh_arg1, mh_arg2, mh_arg3, stage TSRMLS_CC);
+	} else {
+		OnUpdateString(entry, SG(default_charset), strlen(SG(default_charset))+1, mh_arg1, mh_arg2, mh_arg3, stage TSRMLS_CC);
+	}
+	return SUCCESS;
+}
+/* }}} */
+
+/* {{{ PHP_INI_MH
+ */
+static PHP_INI_MH(OnUpdateOutputEncoding)
+{
+	if (new_value) {
+		OnUpdateString(entry, new_value, new_value_length, mh_arg1, mh_arg2, mh_arg3, stage TSRMLS_CC);
+	} else {
+		OnUpdateString(entry, SG(default_charset), strlen(SG(default_charset))+1, mh_arg1, mh_arg2, mh_arg3, stage TSRMLS_CC);
+	}
+	return SUCCESS;
+}
+/* }}} */
+
+/* {{{ PHP_INI_MH
+ */
 static PHP_INI_MH(OnUpdateErrorLog)
 {
 	/* Only do the safemode/open_basedir check at runtime */
@@ -460,6 +499,40 @@ static PHP_INI_MH(OnChangeMailForceExtra)
 /* defined in browscap.c */
 PHP_INI_MH(OnChangeBrowscap);
 
+/* {{{ PHP_INI_MH
+ */
+static PHP_INI_MH(OnChangeAlwaysPopulateRawPostData)
+{
+	signed char *p;
+#ifndef ZTS
+	char *base = (char *) mh_arg2;
+#else
+	char *base;
+
+	base = (char *) ts_resource(*((int *) mh_arg2));
+#endif
+
+	p = (signed char *) (base+(size_t) mh_arg1);
+
+	*p = zend_atol(new_value, new_value_length);
+	if (new_value_length == 2 && strcasecmp("on", new_value) == 0) {
+		*p = (signed char) 1;
+	}
+	else if (new_value_length == 3 && strcasecmp("yes", new_value) == 0) {
+		*p = (signed char) 1;
+	}
+	else if (new_value_length == 4 && strcasecmp("true", new_value) == 0) {
+		*p = (signed char) 1;
+	}
+	else if (new_value_length == 5 && strcasecmp("never", new_value) == 0) {
+		*p = (signed char) -1;
+	}
+	else {
+		*p = (signed char) atoi(new_value);
+	}
+	return SUCCESS;
+}
+/* }}} */
 
 /* Need to be read from the environment (?):
  * PHP_AUTO_PREPEND_FILE
@@ -522,8 +595,11 @@ PHP_INI_BEGIN()
 	STD_PHP_INI_ENTRY("auto_append_file",		NULL,		PHP_INI_SYSTEM|PHP_INI_PERDIR,		OnUpdateString,			auto_append_file,		php_core_globals,	core_globals)
 	STD_PHP_INI_ENTRY("auto_prepend_file",		NULL,		PHP_INI_SYSTEM|PHP_INI_PERDIR,		OnUpdateString,			auto_prepend_file,		php_core_globals,	core_globals)
 	STD_PHP_INI_ENTRY("doc_root",				NULL,		PHP_INI_SYSTEM,		OnUpdateStringUnempty,	doc_root,				php_core_globals,	core_globals)
-	STD_PHP_INI_ENTRY("default_charset",		SAPI_DEFAULT_CHARSET,	PHP_INI_ALL,	OnUpdateString,			default_charset,		sapi_globals_struct,sapi_globals)
-	STD_PHP_INI_ENTRY("default_mimetype",		SAPI_DEFAULT_MIMETYPE,	PHP_INI_ALL,	OnUpdateString,			default_mimetype,		sapi_globals_struct,sapi_globals)
+	STD_PHP_INI_ENTRY("default_charset",		PHP_DEFAULT_CHARSET,	PHP_INI_ALL,	OnUpdateString,			default_charset,		sapi_globals_struct, sapi_globals)
+	STD_PHP_INI_ENTRY("default_mimetype",		SAPI_DEFAULT_MIMETYPE,	PHP_INI_ALL,	OnUpdateString,			default_mimetype,		sapi_globals_struct, sapi_globals)
+	STD_PHP_INI_ENTRY("internal_encoding",		NULL,			PHP_INI_ALL,	OnUpdateInternalEncoding,	internal_encoding,	php_core_globals, core_globals)
+	STD_PHP_INI_ENTRY("input_encoding",			NULL,			PHP_INI_ALL,	OnUpdateInputEncoding,				input_encoding,		php_core_globals, core_globals)
+	STD_PHP_INI_ENTRY("output_encoding",		NULL,			PHP_INI_ALL,	OnUpdateOutputEncoding,				output_encoding,	php_core_globals, core_globals)
 	STD_PHP_INI_ENTRY("error_log",				NULL,		PHP_INI_ALL,		OnUpdateErrorLog,			error_log,				php_core_globals,	core_globals)
 	STD_PHP_INI_ENTRY("extension_dir",			PHP_EXTENSION_DIR,		PHP_INI_SYSTEM,		OnUpdateStringUnempty,	extension_dir,			php_core_globals,	core_globals)
 	STD_PHP_INI_ENTRY("sys_temp_dir",			NULL,		PHP_INI_SYSTEM,		OnUpdateStringUnempty,	sys_temp_dir,			php_core_globals,	core_globals)
@@ -562,7 +638,7 @@ PHP_INI_BEGIN()
 	STD_PHP_INI_BOOLEAN("allow_url_fopen",		"1",		PHP_INI_SYSTEM,		OnUpdateBool,		allow_url_fopen,		php_core_globals,		core_globals)
 	STD_PHP_INI_BOOLEAN("allow_url_include",	"0",		PHP_INI_SYSTEM,		OnUpdateBool,		allow_url_include,		php_core_globals,		core_globals)
 	STD_PHP_INI_BOOLEAN("enable_post_data_reading",	"1",	PHP_INI_SYSTEM|PHP_INI_PERDIR,	OnUpdateBool,	enable_post_data_reading,	php_core_globals,	core_globals)
-	STD_PHP_INI_BOOLEAN("always_populate_raw_post_data",	"0",	PHP_INI_SYSTEM|PHP_INI_PERDIR,	OnUpdateBool,	always_populate_raw_post_data,	php_core_globals,	core_globals)
+	STD_PHP_INI_ENTRY("always_populate_raw_post_data", "0",	PHP_INI_SYSTEM|PHP_INI_PERDIR,	OnChangeAlwaysPopulateRawPostData,	always_populate_raw_post_data,	php_core_globals,	core_globals)
 
 	STD_PHP_INI_ENTRY("realpath_cache_size",	"16K",		PHP_INI_SYSTEM,		OnUpdateLong,	realpath_cache_size_limit,	virtual_cwd_globals,	cwd_globals)
 	STD_PHP_INI_ENTRY("realpath_cache_ttl",		"120",		PHP_INI_SYSTEM,		OnUpdateLong,	realpath_cache_ttl,			virtual_cwd_globals,	cwd_globals)
@@ -1066,8 +1142,8 @@ static void php_error_cb(int type, const char *error_filename, const uint error_
 		if (!module_initialized || PG(log_errors)) {
 			char *log_buffer;
 #ifdef PHP_WIN32
-			if ((type == E_CORE_ERROR || type == E_CORE_WARNING) && PG(display_startup_errors)) {
-				MessageBox(NULL, buffer, error_type_str, MB_OK|ZEND_SERVICE_MB_STYLE);
+			if (type == E_CORE_ERROR || type == E_CORE_WARNING) {
+				syslog(LOG_ALERT, "PHP %s: %s (%s)", error_type_str, buffer, GetCommandLine());
 			}
 #endif
 			spprintf(&log_buffer, 0, "PHP %s:  %s in %s on line %d", error_type_str, buffer, error_filename, error_lineno);
@@ -1340,7 +1416,7 @@ PHPAPI int php_stream_open_for_zend_ex(const char *filename, zend_file_handle *h
 		handle->handle.stream.reader  = (zend_stream_reader_t)_php_stream_read;
 		handle->handle.stream.fsizer  = php_zend_stream_fsizer;
 		handle->handle.stream.isatty  = 0;
-		/* can we mmap immeadiately? */
+		/* can we mmap immediately? */
 		memset(&handle->handle.stream.mmap, 0, sizeof(handle->handle.stream.mmap));
 		len = php_zend_stream_fsizer(stream TSRMLS_CC);
 		if (len != 0
@@ -1817,6 +1893,9 @@ void php_request_shutdown(void *dummy)
 		sapi_deactivate(TSRMLS_C);
 	} zend_end_try();
 
+	/* 9.5 free virtual CWD memory */
+	virtual_cwd_deactivate(TSRMLS_C);
+
 	/* 10. Destroy stream hashes */
 	zend_try {
 		php_shutdown_stream_hashes(TSRMLS_C);
@@ -2209,7 +2288,7 @@ int php_module_startup(sapi_module_struct *sf, zend_module_entry *additional_mod
 	zend_set_utility_values(&zuv);
 	php_startup_sapi_content_types(TSRMLS_C);
 
-	/* startup extensions staticly compiled in */
+	/* startup extensions statically compiled in */
 	if (php_register_internal_extensions_func(TSRMLS_C) == FAILURE) {
 		php_printf("Unable to start builtin modules\n");
 		return FAILURE;
@@ -2261,9 +2340,7 @@ int php_module_startup(sapi_module_struct *sf, zend_module_entry *additional_mod
 	}
 #endif
 
-#ifdef ZTS
 	zend_post_startup(TSRMLS_C);
-#endif
 
 	module_initialized = 1;
 
@@ -2333,6 +2410,7 @@ int php_module_startup(sapi_module_struct *sf, zend_module_entry *additional_mod
 
 	shutdown_memory_manager(1, 0 TSRMLS_CC);
 	zend_interned_strings_snapshot(TSRMLS_C);
+ 	virtual_cwd_activate(TSRMLS_C);
 
 	/* we're done */
 	return retval;

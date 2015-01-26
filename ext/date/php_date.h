@@ -82,6 +82,7 @@ PHP_METHOD(DateTimeImmutable, setTime);
 PHP_METHOD(DateTimeImmutable, setDate);
 PHP_METHOD(DateTimeImmutable, setISODate);
 PHP_METHOD(DateTimeImmutable, setTimestamp);
+PHP_METHOD(DateTimeImmutable, createFromMutable);
 
 PHP_METHOD(DateTimeZone, __construct);
 PHP_METHOD(DateTimeZone, __wakeup);
@@ -105,6 +106,9 @@ PHP_FUNCTION(date_interval_create_from_date_string);
 PHP_METHOD(DatePeriod, __construct);
 PHP_METHOD(DatePeriod, __wakeup);
 PHP_METHOD(DatePeriod, __set_state);
+PHP_METHOD(DatePeriod, getStartDate);
+PHP_METHOD(DatePeriod, getEndDate);
+PHP_METHOD(DatePeriod, getDateInterval);
 
 /* Options and Configuration */
 PHP_FUNCTION(date_default_timezone_set);

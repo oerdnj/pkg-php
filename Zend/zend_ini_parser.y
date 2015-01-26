@@ -29,6 +29,10 @@
 #include "zend_ini_scanner.h"
 #include "zend_extensions.h"
 
+#ifdef PHP_WIN32
+#include "win32/syslog.h"
+#endif
+
 #define YYERROR_VERBOSE
 #define YYSTYPE zval
 
@@ -179,10 +183,9 @@ static void ini_error(char *msg)
 
 	if (CG(ini_parser_unbuffered_errors)) {
 #ifdef PHP_WIN32
-		MessageBox(NULL, error_buf, "PHP Error", MB_OK|MB_TOPMOST|0x00200000L);
-#else
-		fprintf(stderr, "PHP:  %s", error_buf);
+		syslog(LOG_ALERT, "PHP: %s (%s)", error_buf, GetCommandLine());
 #endif
+		fprintf(stderr, "PHP:  %s", error_buf);
 	} else {
 		zend_error(E_WARNING, "%s", error_buf);
 	}
@@ -265,6 +268,7 @@ ZEND_API int zend_parse_ini_string(char *str, zend_bool unbuffered_errors, int s
 %token TC_QUOTED_STRING
 %token BOOL_TRUE
 %token BOOL_FALSE
+%token NULL_NULL
 %token END_OF_LINE
 %token '=' ':' ',' '.' '"' '\'' '^' '+' '-' '/' '*' '%' '$' '~' '<' '>' '?' '@' '{' '}'
 %left '|' '&' '^'
@@ -291,7 +295,7 @@ statement:
 #endif
 			ZEND_INI_PARSER_CB(&$1, &$3, NULL, ZEND_INI_PARSER_ENTRY, ZEND_INI_PARSER_ARG TSRMLS_CC);
 			free(Z_STRVAL($1));
-			free(Z_STRVAL($3));
+			zval_internal_dtor(&$3);
 		}
 	|	TC_OFFSET option_offset ']' '=' string_or_value {
 #if DEBUG_CFG_PARSER
@@ -300,7 +304,7 @@ statement:
 			ZEND_INI_PARSER_CB(&$1, &$5, &$2, ZEND_INI_PARSER_POP_ENTRY, ZEND_INI_PARSER_ARG TSRMLS_CC);
 			free(Z_STRVAL($1));
 			free(Z_STRVAL($2));
-			free(Z_STRVAL($5));
+			zval_internal_dtor(&$5);
 		}
 	|	TC_LABEL	{ ZEND_INI_PARSER_CB(&$1, NULL, NULL, ZEND_INI_PARSER_ENTRY, ZEND_INI_PARSER_ARG TSRMLS_CC); free(Z_STRVAL($1)); }
 	|	END_OF_LINE
@@ -315,6 +319,7 @@ string_or_value:
 		expr							{ $$ = $1; }
 	|	BOOL_TRUE						{ $$ = $1; }
 	|	BOOL_FALSE						{ $$ = $1; }
+	|	NULL_NULL						{ $$ = $1; }
 	|	END_OF_LINE						{ zend_ini_init_string(&$$); }
 ;
 
