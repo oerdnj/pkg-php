@@ -1,3 +1,10 @@
+php5 (5.5.21+dfsg1-1) unstable; urgency=medium
+
+  * New upstream version 5.5.21+dfsg1
+  * Bump upstream dfsg version by one to fix botched upstream import
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 26 Jan 2015 20:22:37 +0100
+
 php5 (5.5.21+dfsg-1) unstable; urgency=medium
 
   * New upstream version 5.5.21+dfsg
