@@ -106,7 +106,7 @@ define dump_bt
 						printf "%ld", $zvalue->value.lval
 					end
 					if $type == 2
-						printf "%f", $zvalue->value.dval
+						printf "%lf", $zvalue->value.dval
 					end
 					if $type == 3
 						if $zvalue->value.lval
@@ -185,7 +185,7 @@ define ____printzv_contents
 		printf "long: %ld", $zvalue->value.lval
 	end
 	if $type == 2
-		printf "double: %f", $zvalue->value.dval
+		printf "double: %lf", $zvalue->value.dval
 	end
 	if $type == 3
 		printf "bool: "

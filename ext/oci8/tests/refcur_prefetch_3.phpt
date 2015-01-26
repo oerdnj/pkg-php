@@ -6,20 +6,12 @@ oci8.default_prefetch=5
 <?php if (!extension_loaded('oci8')) die("skip no oci8 extension");
 if (!extension_loaded('oci8')) die("skip no oci8 extension");
 require(dirname(__FILE__)."/connect.inc");
-preg_match('/.*Release ([[:digit:]]+)\.([[:digit:]]+)\.([[:digit:]]+)\.([[:digit:]]+)\.([[:digit:]]+)*/', oci_server_version($c), $matches);
-if (!(isset($matches[0]) && 
-      (($matches[1] == 11 && $matches[2] >= 2) ||
-       ($matches[1] >= 12)
-       ))) {
-       	die("skip expected output only valid when using Oracle 11gR2 or greater database server");
-}
-preg_match('/^([[:digit:]]+)\.([[:digit:]]+)\.([[:digit:]]+)\.([[:digit:]]+)\.([[:digit:]]+)/', oci_client_version(), $matches);
-if (!(isset($matches[0]) &&
-    (($matches[1] == 11 && $matches[2] >= 2) ||
-     ($matches[1] >= 12)
-     ))) {
+if (preg_match('/Release (11\.2|12)\./', oci_server_version($c), $matches) !== 1) {
+	die("skip expected output only valid when using Oracle 11gR2 or greater databases");
+} else if (preg_match('/^(11\.2|12)\./', oci_client_version()) != 1) {
     die("skip test expected to work only with Oracle 11gR2 or greater version of client");
 }
+
 ?>
 --FILE--
 <?php
@@ -94,52 +86,52 @@ Test with Nested Cursors
 Fetch Row using Nested cursor Query
 array(1) {
   [0]=>
-  string(%d) "test0"
+  %unicode|string%(%d) "test0"
 }
 Fetch Row using Nested cursor Query
 array(1) {
   [0]=>
-  string(%d) "test1"
+  %unicode|string%(%d) "test1"
 }
 Fetch Row using Nested cursor Query
 array(1) {
   [0]=>
-  string(%d) "test2"
+  %unicode|string%(%d) "test2"
 }
 Fetch Row using Nested cursor Query
 array(1) {
   [0]=>
-  string(%d) "test3"
+  %unicode|string%(%d) "test3"
 }
 Fetch Row using Nested cursor Query
 array(1) {
   [0]=>
-  string(%d) "test4"
+  %unicode|string%(%d) "test4"
 }
 Fetch Row using Nested cursor Query
 array(1) {
   [0]=>
-  string(%d) "test5"
+  %unicode|string%(%d) "test5"
 }
 Fetch Row using Nested cursor Query
 array(1) {
   [0]=>
-  string(%d) "test6"
+  %unicode|string%(%d) "test6"
 }
 Fetch Row using Nested cursor Query
 array(1) {
   [0]=>
-  string(%d) "test7"
+  %unicode|string%(%d) "test7"
 }
 Fetch Row using Nested cursor Query
 array(1) {
   [0]=>
-  string(%d) "test8"
+  %unicode|string%(%d) "test8"
 }
 Fetch Row using Nested cursor Query
 array(1) {
   [0]=>
-  string(%d) "test9"
+  %unicode|string%(%d) "test9"
 }
 Number of roundtrips made with prefetch count 5 for 10 rows is  3
 Done

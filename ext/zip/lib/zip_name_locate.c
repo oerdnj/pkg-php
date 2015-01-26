@@ -34,28 +34,26 @@
 
 
 #include <string.h>
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
 
 #include "zipint.h"
 
 
 
-ZIP_EXTERN zip_int64_t
-zip_name_locate(struct zip *za, const char *fname, zip_flags_t flags)
+ZIP_EXTERN(int)
+zip_name_locate(struct zip *za, const char *fname, int flags)
 {
     return _zip_name_locate(za, fname, flags, &za->error);
 }
 
 
 
-zip_int64_t
-_zip_name_locate(struct zip *za, const char *fname, zip_flags_t flags, struct zip_error *error)
+int
+_zip_name_locate(struct zip *za, const char *fname, int flags,
+		 struct zip_error *error)
 {
     int (*cmp)(const char *, const char *);
     const char *fn, *p;
-    zip_uint64_t i;
+    int i, n;
 
     if (za == NULL)
 	return -1;
@@ -65,12 +63,21 @@ _zip_name_locate(struct zip *za, const char *fname, zip_flags_t flags, struct zi
 	return -1;
     }
 
-    cmp = (flags & ZIP_FL_NOCASE) ? strcasecmp : strcmp;
+    if ((flags & ZIP_FL_UNCHANGED)  && za->cdir == NULL) {
+        _zip_error_set(error, ZIP_ER_NOENT, 0);
+        return -1;
+    }
 
-    for (i=0; i<za->nentry; i++) {
-	fn = _zip_get_name(za, i, flags, error);
+    cmp = (flags & ZIP_FL_NOCASE) ? strcmpi : strcmp;
 
-	/* newly added (partially filled) entry or error */
+    n = (flags & ZIP_FL_UNCHANGED) ? za->cdir->nentry : za->nentry;
+    for (i=0; i<n; i++) {
+	if (flags & ZIP_FL_UNCHANGED)
+	    fn = za->cdir->entry[i].filename;
+	else
+	    fn = _zip_get_name(za, i, flags, error);
+
+	/* newly added (partially filled) entry */
 	if (fn == NULL)
 	    continue;
 	
@@ -80,12 +87,11 @@ _zip_name_locate(struct zip *za, const char *fname, zip_flags_t flags, struct zi
 		fn = p+1;
 	}
 
-	if (cmp(fname, fn) == 0) {
-	    _zip_error_clear(error);
-	    return (zip_int64_t)i;
-	}
+	if (cmp(fname, fn) == 0)
+	    return i;
     }
 
-    _zip_error_set(error, ZIP_ER_NOENT, 0);
+/* Look for an entry should not raise an error  */
+/*    _zip_error_set(error, ZIP_ER_NOENT, 0);*/
     return -1;
 }

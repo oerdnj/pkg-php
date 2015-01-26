@@ -1431,6 +1431,7 @@ XMLRPC_VALUE_TYPE get_zval_xmlrpc_type(zval* value, zval** newvalue) /* {{{ */
 				type = xmlrpc_string;
 				break;
 			case IS_ARRAY:
+			case IS_CONSTANT_ARRAY:
 				type = xmlrpc_vector;
 				break;
 			case IS_OBJECT:

@@ -2,16 +2,16 @@
 SplFileObject::fgetcsv with alternative delimiter
 --FILE--
 <?php
-$fp = fopen('SplFileObject__fgetcsv6.csv', 'w+');
+$fp = fopen('SplFileObject__fgetcsv.csv', 'w+');
 fwrite($fp, '"aaa","b""bb","ccc"');
 fclose($fp);
 
-$fo = new SplFileObject('SplFileObject__fgetcsv6.csv');
+$fo = new SplFileObject('SplFileObject__fgetcsv.csv');
 var_dump($fo->fgetcsv(',', '"', '"'));
 ?>
 --CLEAN--
 <?php
-unlink('SplFileObject__fgetcsv6.csv');
+unlink('SplFileObject__fgetcsv.csv');
 ?>
 --EXPECTF--
 array(3) {

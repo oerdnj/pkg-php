@@ -49,6 +49,10 @@ struct trad_pkware {
 #define KEY1		591751049
 #define KEY2		878082192
 
+static const uLongf *crc = NULL;
+
+#define CRC32(c, b) (crc[((c) ^ (b)) & 0xff] ^ ((c) >> 8))
+
 
 
 static void decrypt(struct trad_pkware *, zip_uint8_t *,
@@ -60,7 +64,7 @@ static void pkware_free(struct trad_pkware *);
 
 
 
-struct zip_source *
+ZIP_EXTERN(struct zip_source *)
 zip_source_pkware(struct zip *za, struct zip_source *src,
 		  zip_uint16_t em, int flags, const char *password)
 {
@@ -75,6 +79,9 @@ zip_source_pkware(struct zip *za, struct zip_source *src,
 	_zip_error_set(&za->error, ZIP_ER_ENCRNOTSUPP, 0);
 	return NULL;
     }
+
+    if (crc == NULL)
+	crc = get_crc_table();
 
     if ((ctx=(struct trad_pkware *)malloc(sizeof(*ctx))) == NULL) {
 	_zip_error_set(&za->error, ZIP_ER_MEMORY, 0);
@@ -111,7 +118,7 @@ decrypt(struct trad_pkware *ctx, zip_uint8_t *out, const zip_uint8_t *in,
 
 	if (!update_only) {
 	    /* decrypt next byte */
-	    tmp = (zip_uint16_t)(ctx->key[2] | 2);
+	    tmp = ctx->key[2] | 2;
 	    tmp = (tmp * (tmp ^ 1)) >> 8;
 	    b ^= tmp;
 	}
@@ -121,10 +128,10 @@ decrypt(struct trad_pkware *ctx, zip_uint8_t *out, const zip_uint8_t *in,
 	    out[i] = b;
 
 	/* update keys */
-	ctx->key[0] = (zip_uint32_t)crc32(ctx->key[0] ^ 0xffffffffUL, &b, 1) ^ 0xffffffffUL;
+	ctx->key[0] = CRC32(ctx->key[0], b);
 	ctx->key[1] = (ctx->key[1] + (ctx->key[0] & 0xff)) * 134775813 + 1;
 	b = ctx->key[1] >> 24;
-	ctx->key[2] = (zip_uint32_t)crc32(ctx->key[2] ^ 0xffffffffUL, &b, 1) ^ 0xffffffffUL;
+	ctx->key[2] = CRC32(ctx->key[2], b);
     }
 }
 
@@ -189,7 +196,7 @@ pkware_decrypt(struct zip_source *src, void *ud, void *data,
 	if ((n=zip_source_read(src, data, len)) < 0)
 	    return ZIP_SOURCE_ERR_LOWER;
 
-	decrypt((struct trad_pkware *)ud, (zip_uint8_t *)data, (zip_uint8_t *)data, (zip_uint64_t)n,
+	decrypt(ud, (zip_uint8_t *)data, (zip_uint8_t *)data, (zip_uint64_t)n,
 		0);
 	return n;
 
@@ -204,7 +211,7 @@ pkware_decrypt(struct zip_source *src, void *ud, void *data,
 
 	    st->encryption_method = ZIP_EM_NONE;
 	    st->valid |= ZIP_STAT_ENCRYPTION_METHOD;
-	    /* TODO: deduce HEADERLEN from size for uncompressed */
+	    /* XXX: deduce HEADERLEN from size for uncompressed */
 	    if (st->valid & ZIP_STAT_COMP_SIZE)
 		st->comp_size -= HEADERLEN;
 	}

@@ -23,28 +23,34 @@ echo '== Done ==';
 --EXPECTF--
 ===========================
 start: 0 num: 0 value: 1
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 ===========================
 start: 0 num: 0 value: 
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 ===========================
 start: 0 num: 0 value: 
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 ===========================
 start: 0 num: 0 value: d
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 ===========================
 start: 0 num: 0 value: e
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 ===========================
 start: 0 num: 0 value: f
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 ===========================
 start: 0 num: 1 value: 1
 array(1) {
@@ -131,28 +137,34 @@ array(2) {
 }
 ===========================
 start: 1 num: 0 value: 1
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 ===========================
 start: 1 num: 0 value: 
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 ===========================
 start: 1 num: 0 value: 
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 ===========================
 start: 1 num: 0 value: d
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 ===========================
 start: 1 num: 0 value: e
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 ===========================
 start: 1 num: 0 value: f
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 ===========================
 start: 1 num: 1 value: 1
 array(1) {
@@ -239,28 +251,34 @@ array(2) {
 }
 ===========================
 start: 2.5 num: 0 value: 1
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 ===========================
 start: 2.5 num: 0 value: 
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 ===========================
 start: 2.5 num: 0 value: 
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 ===========================
 start: 2.5 num: 0 value: d
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 ===========================
 start: 2.5 num: 0 value: e
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 ===========================
 start: 2.5 num: 0 value: f
-array(0) {
-}
+
+Warning: array_fill(): Number of elements must be positive in %s on line %d
+bool(false)
 ===========================
 start: 2.5 num: 1 value: 1
 array(1) {

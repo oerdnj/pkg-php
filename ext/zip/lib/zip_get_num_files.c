@@ -33,17 +33,15 @@
 
 
 
-#define _ZIP_COMPILING_DEPRECATED
 #include "zipint.h"
 
 
 
-ZIP_EXTERN int
+ZIP_EXTERN(int)
 zip_get_num_files(struct zip *za)
 {
     if (za == NULL)
 	return -1;
 
-    /* TODO: check for overflow */
-    return (int)za->nentry;
+    return za->nentry;
 }

@@ -39,6 +39,6 @@ HTTP/1.1 200 OK
 Host: %s
 Connection: close
 X-Powered-By: %s
-Content-type: text/html; charset=UTF-8
+Content-type: text/html
 
 string(5) "PATCH"

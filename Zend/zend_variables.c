@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include "zend.h"
 #include "zend_API.h"
-#include "zend_ast.h"
 #include "zend_globals.h"
 #include "zend_constants.h"
 #include "zend_list.h"
@@ -34,9 +33,10 @@ ZEND_API void _zval_dtor_func(zval *zvalue ZEND_FILE_LINE_DC)
 		case IS_STRING:
 		case IS_CONSTANT:
 			CHECK_ZVAL_STRING_REL(zvalue);
-			str_efree_rel(zvalue->value.str.val);
+			STR_FREE_REL(zvalue->value.str.val);
 			break;
-		case IS_ARRAY: {
+		case IS_ARRAY:
+		case IS_CONSTANT_ARRAY: {
 				TSRMLS_FETCH();
 
 				if (zvalue->value.ht && (zvalue->value.ht != &EG(symbol_table))) {
@@ -46,9 +46,6 @@ ZEND_API void _zval_dtor_func(zval *zvalue ZEND_FILE_LINE_DC)
 					FREE_HASHTABLE(zvalue->value.ht);
 				}
 			}
-			break;
-		case IS_CONSTANT_AST:
-			zend_ast_destroy(Z_AST_P(zvalue));
 			break;
 		case IS_OBJECT:
 			{
@@ -85,7 +82,7 @@ ZEND_API void _zval_internal_dtor(zval *zvalue ZEND_FILE_LINE_DC)
 			str_free(zvalue->value.str.val);
 			break;
 		case IS_ARRAY:
-		case IS_CONSTANT_AST:
+		case IS_CONSTANT_ARRAY:
 		case IS_OBJECT:
 		case IS_RESOURCE:
 			zend_error(E_CORE_ERROR, "Internal zval's can't be arrays, objects or resources");
@@ -126,7 +123,8 @@ ZEND_API void _zval_copy_ctor_func(zval *zvalue ZEND_FILE_LINE_DC)
 				zvalue->value.str.val = (char *) estrndup_rel(zvalue->value.str.val, zvalue->value.str.len);
 			}
 			break;
-		case IS_ARRAY: {
+		case IS_ARRAY:
+		case IS_CONSTANT_ARRAY: {
 				zval *tmp;
 				HashTable *original_ht = zvalue->value.ht;
 				HashTable *tmp_ht = NULL;
@@ -141,9 +139,6 @@ ZEND_API void _zval_copy_ctor_func(zval *zvalue ZEND_FILE_LINE_DC)
 				zend_hash_copy(tmp_ht, original_ht, (copy_ctor_func_t) zval_add_ref, (void *) &tmp, sizeof(zval *));
 				tmp_ht->nNextFreeElement = original_ht->nNextFreeElement;
 			}
-			break;
-		case IS_CONSTANT_AST:
-			Z_AST_P(zvalue) = zend_ast_copy(Z_AST_P(zvalue));
 			break;
 		case IS_OBJECT:
 			{

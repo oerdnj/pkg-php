@@ -41,15 +41,23 @@ Name: arr1
 Is passed by reference: yes
 Can be passed by value: yes
 
-Name: sort_order
+Name: SORT_ASC_or_SORT_DESC
 Is passed by reference: yes
 Can be passed by value: yes
 
-Name: sort_flags
+Name: SORT_REGULAR_or_SORT_NUMERIC_or_SORT_STRING
 Is passed by reference: yes
 Can be passed by value: yes
 
 Name: arr2
+Is passed by reference: yes
+Can be passed by value: yes
+
+Name: SORT_ASC_or_SORT_DESC
+Is passed by reference: yes
+Can be passed by value: yes
+
+Name: SORT_REGULAR_or_SORT_NUMERIC_or_SORT_STRING
 Is passed by reference: yes
 Can be passed by value: yes
 

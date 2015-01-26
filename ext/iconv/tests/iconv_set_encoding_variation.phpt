@@ -5,8 +5,6 @@ Test iconv_set_encoding() function : error functionality
 extension_loaded('iconv') or die('skip');
 function_exists('iconv_set_encoding') or die("skip iconv_set_encoding() is not available in this build");
 ?>
---INI--
-error_reporting=E_ALL & ~E_DEPRECATED
 --FILE--
 <?php
 /* Prototype  : bool iconv_set_encoding(string type, string charset)
@@ -185,17 +183,17 @@ string(3) "0.5"
 bool(true)
 bool(true)
 bool(true)
-string(5) "UTF-8"
-string(5) "UTF-8"
-string(5) "UTF-8"
+string(0) ""
+string(0) ""
+string(0) ""
 
 -- Iteration 11 --
 bool(true)
 bool(true)
 bool(true)
-string(5) "UTF-8"
-string(5) "UTF-8"
-string(5) "UTF-8"
+string(0) ""
+string(0) ""
+string(0) ""
 
 -- Iteration 12 --
 bool(true)
@@ -209,9 +207,9 @@ string(1) "1"
 bool(true)
 bool(true)
 bool(true)
-string(5) "UTF-8"
-string(5) "UTF-8"
-string(5) "UTF-8"
+string(0) ""
+string(0) ""
+string(0) ""
 
 -- Iteration 14 --
 bool(true)
@@ -225,25 +223,25 @@ string(1) "1"
 bool(true)
 bool(true)
 bool(true)
-string(5) "UTF-8"
-string(5) "UTF-8"
-string(5) "UTF-8"
+string(0) ""
+string(0) ""
+string(0) ""
 
 -- Iteration 16 --
 bool(true)
 bool(true)
 bool(true)
-string(5) "UTF-8"
-string(5) "UTF-8"
-string(5) "UTF-8"
+string(0) ""
+string(0) ""
+string(0) ""
 
 -- Iteration 17 --
 bool(true)
 bool(true)
 bool(true)
-string(5) "UTF-8"
-string(5) "UTF-8"
-string(5) "UTF-8"
+string(0) ""
+string(0) ""
+string(0) ""
 
 -- Iteration 18 --
 bool(true)
@@ -281,17 +279,17 @@ string(5) "UTF-8"
 bool(true)
 bool(true)
 bool(true)
-string(5) "UTF-8"
-string(5) "UTF-8"
-string(5) "UTF-8"
+string(0) ""
+string(0) ""
+string(0) ""
 
 -- Iteration 23 --
 bool(true)
 bool(true)
 bool(true)
-string(5) "UTF-8"
-string(5) "UTF-8"
-string(5) "UTF-8"
+string(0) ""
+string(0) ""
+string(0) ""
 
 -- Iteration 24 --
 
@@ -303,7 +301,7 @@ NULL
 
 Warning: iconv_set_encoding() expects parameter 2 to be string, resource given in %s on line %d
 NULL
-string(5) "UTF-8"
-string(5) "UTF-8"
-string(5) "UTF-8"
+string(0) ""
+string(0) ""
+string(0) ""
 Done

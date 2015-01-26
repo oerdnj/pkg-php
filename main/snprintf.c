@@ -38,12 +38,7 @@
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
-#ifdef ZTS
-#include "ext/standard/php_string.h"
-#define LCONV_DECIMAL_POINT (*lconv.decimal_point)
-#else
 #define LCONV_DECIMAL_POINT (*lconv->decimal_point)
-#endif
 #else
 #define LCONV_DECIMAL_POINT '.'
 #endif
@@ -316,7 +311,7 @@ PHPAPI char *php_gcvt(double value, int ndigit, char dec_point, char exponent, c
  * is declared as buf[ 100 ], buf_end should be &buf[ 100 ])
  */
 /* char * ap_php_conv_10() {{{ */
-PHPAPI char * ap_php_conv_10(register wide_int num, register bool_int is_unsigned,
+char * ap_php_conv_10(register wide_int num, register bool_int is_unsigned,
 	   register bool_int * is_negative, char *buf_end, register int *len)
 {
 	register char *p = buf_end;
@@ -479,7 +474,7 @@ PHPAPI char * php_conv_fp(register char format, register double num,
  * which is a pointer to the END of the buffer + 1 (i.e. if the buffer
  * is declared as buf[ 100 ], buf_end should be &buf[ 100 ])
  */
-PHPAPI char * ap_php_conv_p2(register u_wide_int num, register int nbits, char format, char *buf_end, register int *len) /* {{{ */
+char * ap_php_conv_p2(register u_wide_int num, register int nbits, char format, char *buf_end, register int *len) /* {{{ */
 {
 	register int mask = (1 << nbits) - 1;
 	register char *p = buf_end;
@@ -611,11 +606,7 @@ static int format_converter(register buffy * odp, const char *fmt, va_list ap) /
 	char char_buf[2];			/* for printing %% and %<unknown> */
 
 #ifdef HAVE_LOCALE_H
-#ifdef ZTS
-	struct lconv lconv;
-#else
 	struct lconv *lconv = NULL;
-#endif
 #endif
 
 	/*
@@ -1007,13 +998,9 @@ static int format_converter(register buffy * odp, const char *fmt, va_list ap) /
 						s_len = 3;
 					} else {
 #ifdef HAVE_LOCALE_H
-#ifdef ZTS
-						localeconv_r(&lconv);
-#else
 						if (!lconv) {
 							lconv = localeconv();
 						}
-#endif
 #endif
 						s = php_conv_fp((*fmt == 'f')?'F':*fmt, fp_num, alternate_form,
 						 (adjust_precision == NO) ? FLOAT_DIGITS : precision,
@@ -1068,13 +1055,9 @@ static int format_converter(register buffy * odp, const char *fmt, va_list ap) /
 					 * * We use &num_buf[ 1 ], so that we have room for the sign
 					 */
 #ifdef HAVE_LOCALE_H
-#ifdef ZTS
-					localeconv_r(&lconv);
-#else
 					if (!lconv) {
 						lconv = localeconv();
 					}
-#endif
 #endif
 					s = php_gcvt(fp_num, precision, (*fmt=='H' || *fmt == 'k') ? '.' : LCONV_DECIMAL_POINT, (*fmt == 'G' || *fmt == 'H')?'E':'e', &num_buf[1]);
 					if (*s == '-') {

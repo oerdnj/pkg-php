@@ -50,11 +50,11 @@ foreach(new RecursiveIteratorIterator($phar) as $name => $ent)
 ===DONE===
 --CLEAN--
 <?php 
-unlink(dirname(__FILE__) . '/files/phar_oo_002.phar.php');
+unlink(dirname(__FILE__) . '/files/phar_oo_test.phar.php');
 __halt_compiler();
 ?>
 --EXPECTF--
-string(41) "phar://*/files/phar_oo_002.phar.php%ca.php"
+string(42) "phar://*/files/phar_oo_test.phar.php%ca.php"
 string(5) "a.php"
 int(32)
 string(4) "file"
@@ -67,7 +67,7 @@ bool(false)
 int(%d)
 int(%d)
 int(%d)
-string(37) "phar://*/files/phar_oo_002.phar.php%cb"
+string(38) "phar://*/files/phar_oo_test.phar.php%cb"
 string(1) "b"
 int(0)
 string(3) "dir"
@@ -80,7 +80,7 @@ bool(false)
 int(%d)
 int(%d)
 int(%d)
-string(41) "phar://*/files/phar_oo_002.phar.php%cb.php"
+string(42) "phar://*/files/phar_oo_test.phar.php%cb.php"
 string(5) "b.php"
 int(32)
 string(4) "file"
@@ -93,7 +93,7 @@ bool(false)
 int(%d)
 int(%d)
 int(%d)
-string(41) "phar://*/files/phar_oo_002.phar.php%ce.php"
+string(42) "phar://*/files/phar_oo_test.phar.php%ce.php"
 string(5) "e.php"
 int(32)
 string(4) "file"
@@ -107,31 +107,31 @@ int(%d)
 int(%d)
 int(%d)
 ==RECURSIVE==
-string(41) "phar://*/files/phar_oo_002.phar.php%ca.php"
+string(42) "phar://*/files/phar_oo_test.phar.php%ca.php"
 string(5) "a.php"
 int(32)
 bool(false)
 NULL
 int(0)
-string(43) "phar://*/files/phar_oo_002.phar.php/b%cc.php"
+string(44) "phar://*/files/phar_oo_test.phar.php/b%cc.php"
 string(5) "c.php"
 int(34)
 bool(false)
 NULL
 int(0)
-string(43) "phar://*/files/phar_oo_002.phar.php/b%cd.php"
+string(44) "phar://*/files/phar_oo_test.phar.php/b%cd.php"
 string(5) "d.php"
 int(34)
 bool(false)
 NULL
 int(0)
-string(41) "phar://*/files/phar_oo_002.phar.php%cb.php"
+string(42) "phar://*/files/phar_oo_test.phar.php%cb.php"
 string(5) "b.php"
 int(32)
 bool(false)
 NULL
 int(0)
-string(41) "phar://*/files/phar_oo_002.phar.php%ce.php"
+string(42) "phar://*/files/phar_oo_test.phar.php%ce.php"
 string(5) "e.php"
 int(32)
 bool(false)

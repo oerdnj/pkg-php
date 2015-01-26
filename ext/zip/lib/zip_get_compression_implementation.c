@@ -37,10 +37,10 @@
 
 
 
-zip_compression_implementation
-_zip_get_compression_implementation(zip_int32_t cm)
+ZIP_EXTERN(zip_compression_implementation)
+zip_get_compression_implementation(zip_uint16_t cm)
 {
-    if (cm == ZIP_CM_DEFLATE || ZIP_CM_IS_DEFAULT(cm))
+    if (cm == ZIP_CM_DEFLATE)
 	return zip_source_deflate;
     return NULL;
 }

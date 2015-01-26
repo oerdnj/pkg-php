@@ -17,7 +17,6 @@ $ids = array('num'=>'1234');
 
 pg_update($db, $table_name, $fields, $ids) or print "Error in test 1\n";
 echo pg_update($db, $table_name, $fields, $ids, PGSQL_DML_STRING)."\n";
-echo pg_update($db, $table_name, $fields, $ids, PGSQL_DML_STRING|PGSQL_DML_ESCAPE)."\n";
 
 echo "Ok\n";
 ?>

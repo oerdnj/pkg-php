@@ -1,4 +1,8 @@
-language: c
+language: php
+
+php:
+    # We only specify one version so we only get one worker
+    - 5.4
 
 notifications:
     email: 
@@ -21,11 +25,8 @@ env:
       - ENABLE_MAINTAINER_ZTS=1 ENABLE_DEBUG=1
 
 before_install:
-    - sudo apt-get update -qq
-    - sudo apt-get install -y libenchant-dev libaspell-dev libpspell-dev librecode-dev
     - sudo cp ./travis/de /var/lib/locales/supported.d/de
     - sudo dpkg-reconfigure locales
-    - ./travis/install.sh
 
 before_script:
     # Compile PHP
@@ -38,6 +39,4 @@ before_script:
     - . ./travis/ext/pdo_pgsql/setup.sh
 
 # Run PHPs run-tests.php 
-script:
-    - ./sapi/cli/php run-tests.php -p `pwd`/sapi/cli/php -g "FAIL,XFAIL,BORK,WARN,LEAK,SKIP" --show-diff --set-timeout 120
-    - ./sapi/cli/php sapi/phpdbg/tests/run-tests.php -diff2stdout --phpdbg sapi/phpdbg/phpdbg
+script: ./sapi/cli/php run-tests.php -p `pwd`/sapi/cli/php -g "FAIL,XFAIL,BORK,WARN,LEAK,SKIP" --show-diff --set-timeout 120 -s

@@ -4,7 +4,6 @@ zend multibyte (9)
 --XFAIL--
 https://bugs.php.net/bug.php?id=66582
 --INI--
-error_reporting=E_ALL & ~E_DEPRECATED
 zend.multibyte=On
 zend.script_encoding=cp1251
 mbstring.internal_encoding=UTF-8

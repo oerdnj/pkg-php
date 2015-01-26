@@ -1,8 +1,9 @@
 --TEST--
 IntlTimeZone::getCanonicalID(): second argument
 --SKIPIF--
-<?php if (!extension_loaded('intl')) die('skip intl extension not enabled'); ?>
-<?php if (version_compare(INTL_ICU_VERSION, '53.1') >=  0) die('skip for ICU < 53.1'); ?>
+<?php
+if (!extension_loaded('intl'))
+	die('skip intl extension not enabled');
 --FILE--
 <?php
 ini_set("intl.error_level", E_WARNING);
@@ -20,4 +21,4 @@ string(13) "Europe/Lisbon"
 bool(true)
 string(0) ""
 bool(false)
-==DONE==
+==DONE==

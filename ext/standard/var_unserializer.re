@@ -21,6 +21,7 @@
 #include "php.h"
 #include "ext/standard/php_var.h"
 #include "php_incomplete_class.h"
+#include "Zend/zend_interfaces.h"
 
 /* {{{ reference-handling for unserializer: var_* */
 #define VAR_ENTRIES_MAX 1024
@@ -346,7 +347,7 @@ static inline int process_nested_data(UNSERIALIZE_PARAMETER, HashTable *ht, long
 		} else {
 			/* object properties should include no integers */
 			convert_to_string(key);
-			if (zend_hash_find(ht, Z_STRVAL_P(key), Z_STRLEN_P(key) + 1, (void **)&old_data)==SUCCESS) {
+			if (zend_symtable_find(ht, Z_STRVAL_P(key), Z_STRLEN_P(key) + 1, (void **)&old_data)==SUCCESS) {
 				var_push_dtor(var_hash, old_data);
 			}
 			zend_hash_update(ht, Z_STRVAL_P(key), Z_STRLEN_P(key) + 1, &data,
@@ -409,7 +410,11 @@ static inline long object_common1(UNSERIALIZE_PARAMETER, zend_class_entry *ce)
 
 	(*p) += 2;
 	
-	if (ce->serialize == NULL) {
+	/* The internal class check here is a BC fix only, userspace classes implementing the
+	Serializable interface have eventually an inconsistent behavior at this place when
+	unserialized from a manipulated string. Additionaly the interal classes can possibly
+	crash PHP so they're still disabled here. */
+	if (ce->serialize == NULL || ce->unserialize == zend_user_unserialize || (ZEND_INTERNAL_CLASS != ce->type && ce->create_object == NULL)) {
 		object_init_ex(*rval, ce);
 	} else {
 		/* If this class implements Serializable, it should not land here but in object_custom(). The passed string

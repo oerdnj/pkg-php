@@ -536,22 +536,6 @@ AC_DEFUN([AC_FPM_SELECT],
 ])
 dnl }}}
 
-AC_DEFUN([AC_FPM_APPARMOR],
-[
-	AC_MSG_CHECKING([for apparmor])
-
-	SAVED_LIBS="$LIBS"
-	LIBS="$LIBS -lapparmor"
-
-	AC_TRY_LINK([ #include <sys/apparmor.h> ], [change_hat("test", 0);], [
-		AC_DEFINE([HAVE_APPARMOR], 1, [do we have apparmor support?])
-		AC_MSG_RESULT([yes])
-	], [
-		LIBS="$SAVED_LIBS"
-		AC_MSG_RESULT([no])
-	])
-])
-
 
 AC_MSG_CHECKING(for FPM build)
 if test "$PHP_FPM" != "no"; then
@@ -563,15 +547,14 @@ if test "$PHP_FPM" != "no"; then
   AC_FPM_TRACE
   AC_FPM_BUILTIN_ATOMIC
   AC_FPM_LQ
-  AC_FPM_SYSCONF
-  AC_FPM_TIMES
-  AC_FPM_KQUEUE
-  AC_FPM_PORT
-  AC_FPM_DEVPOLL
-  AC_FPM_EPOLL
-  AC_FPM_POLL
-  AC_FPM_SELECT
-  AC_FPM_APPARMOR
+	AC_FPM_SYSCONF
+	AC_FPM_TIMES
+	AC_FPM_KQUEUE
+	AC_FPM_PORT
+	AC_FPM_DEVPOLL
+	AC_FPM_EPOLL
+	AC_FPM_POLL
+	AC_FPM_SELECT
 
   PHP_ARG_WITH(fpm-user,,
   [  --with-fpm-user[=USER]    Set the user for php-fpm to run as. (default: nobody)], nobody, no)
@@ -582,9 +565,6 @@ if test "$PHP_FPM" != "no"; then
 
   PHP_ARG_WITH(fpm-systemd,,
   [  --with-fpm-systemd      Activate systemd integration], no, no)
-
-  PHP_ARG_WITH(fpm-acl,,
-  [  --with-fpm-acl          Use POSIX Access Control Lists], no, no)
 
   if test "$PHP_FPM_SYSTEMD" != "no" ; then
     if test -z "$PKG_CONFIG"; then
@@ -627,17 +607,6 @@ if test "$PHP_FPM" != "no"; then
   else
     php_fpm_systemd=simple
   fi
-
-  if test "$PHP_FPM_ACL" != "no" ; then
-    AC_CHECK_HEADERS([sys/acl.h])
-    AC_CHECK_LIB(acl, acl_free, [
-      PHP_ADD_LIBRARY(acl)
-      AC_DEFINE(HAVE_FPM_ACL, 1, [ POSIX Access Control List ])
-    ],[
-      AC_MSG_ERROR(libacl required not found)
-    ])
-  fi
-
   PHP_SUBST_OLD(php_fpm_systemd)
   AC_DEFINE_UNQUOTED(PHP_FPM_SYSTEMD, "$php_fpm_systemd", [fpm systemd service type])
 

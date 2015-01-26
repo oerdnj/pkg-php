@@ -39,11 +39,10 @@
 
 
 
-ZIP_EXTERN int
+ZIP_EXTERN(int)
 zip_unchange_all(struct zip *za)
 {
-    int ret;
-    zip_uint64_t i;
+    int ret, i;
 
     ret = 0;
     for (i=0; i<za->nentry; i++)

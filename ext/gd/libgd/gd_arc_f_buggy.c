@@ -1,6 +1,6 @@
 /* This is potentially great stuff, but fails against the test
    program at the end. This would probably be much more
-   efficient than the implementation currently in gd.c if the
+   efficent than the implementation currently in gd.c if the
    errors in the output were corrected. TBB */
 
 #if 0

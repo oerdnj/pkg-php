@@ -80,7 +80,6 @@
 #define HTTP_HEADER_FROM			8
 #define HTTP_HEADER_CONTENT_LENGTH	16
 #define HTTP_HEADER_TYPE			32
-#define HTTP_HEADER_CONNECTION		64
 
 #define HTTP_WRAPPER_HEADER_INIT    1
 #define HTTP_WRAPPER_REDIRECTED     2
@@ -109,9 +108,7 @@ static inline void strip_header(char *header_bag, char *lc_header_bag,
 	}
 }
 
-php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, 
-		const char *path, const char *mode, int options, char **opened_path, 
-		php_stream_context *context, int redirect_max, int flags STREAMS_DC TSRMLS_DC) /* {{{ */
+php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper, char *path, char *mode, int options, char **opened_path, php_stream_context *context, int redirect_max, int flags STREAMS_DC TSRMLS_DC) /* {{{ */
 {
 	php_stream *stream = NULL;
 	php_url *resource = NULL;
@@ -120,7 +117,7 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper,
 	char *scratch = NULL;
 	char *tmp = NULL;
 	char *ua_str = NULL;
-	zval **ua_zval = NULL, **tmpzval = NULL, *ssl_proxy_peer_name = NULL;
+	zval **ua_zval = NULL, **tmpzval = NULL;
 	int scratch_len = 0;
 	int body = 0;
 	char location[HTTP_HEADER_BLOCK_SIZE];
@@ -226,13 +223,6 @@ php_stream *php_stream_url_wrap_http_ex(php_stream_wrapper *wrapper,
 	if (stream && use_proxy && use_ssl) {
 		smart_str header = {0};
 
-		/* Set peer_name or name verification will try to use the proxy server name */
-		if (!context || php_stream_context_get_option(context, "ssl", "peer_name", &tmpzval) == FAILURE) {
-			MAKE_STD_ZVAL(ssl_proxy_peer_name);
-			ZVAL_STRING(ssl_proxy_peer_name, resource->host, 1);
-			php_stream_context_set_option(stream->context, "ssl", "peer_name", ssl_proxy_peer_name);
-		}
-
 		smart_str_appendl(&header, "CONNECT ", sizeof("CONNECT ")-1);
 		smart_str_appends(&header, resource->host);
 		smart_str_appendc(&header, ':');
@@ -323,7 +313,7 @@ finish:
 
 		/* enable SSL transport layer */
 		if (stream) {
-			if (php_stream_xport_crypto_setup(stream, STREAM_CRYPTO_METHOD_ANY_CLIENT, NULL TSRMLS_CC) < 0 ||
+			if (php_stream_xport_crypto_setup(stream, STREAM_CRYPTO_METHOD_SSLv23_CLIENT, NULL TSRMLS_CC) < 0 ||
 			    php_stream_xport_crypto_enable(stream, 1 TSRMLS_CC) < 0) {
 				php_stream_wrapper_log_error(wrapper, options TSRMLS_CC, "Cannot connect to HTTPS server through proxy");
 				php_stream_close(stream);
@@ -419,6 +409,8 @@ finish:
 		strlcat(scratch, " HTTP/", scratch_len);
 		strlcat(scratch, protocol_version, scratch_len);
 		strlcat(scratch, "\r\n", scratch_len);
+		efree(protocol_version);
+		protocol_version = NULL;
 	} else {
 		strlcat(scratch, " HTTP/1.0\r\n", scratch_len);
 	}
@@ -498,11 +490,6 @@ finish:
 			                 *(s-1) == '\t' || *(s-1) == ' ')) {
 				 have_header |= HTTP_HEADER_TYPE;
 			}
-			if ((s = strstr(tmp, "connection:")) &&
-			    (s == tmp || *(s-1) == '\r' || *(s-1) == '\n' || 
-			                 *(s-1) == '\t' || *(s-1) == ' ')) {
-				 have_header |= HTTP_HEADER_CONNECTION;
-			}
 			/* remove Proxy-Authorization header */
 			if (use_proxy && use_ssl && (s = strstr(tmp, "proxy-authorization:")) &&
 			    (s == tmp || *(s-1) == '\r' || *(s-1) == '\n' || 
@@ -574,16 +561,6 @@ finish:
 				php_stream_write(stream, scratch, strlen(scratch));
 			}
 		}
-	}
-
-	/* Send a Connection: close header when using HTTP 1.1 or later to avoid
-	 * hanging when the server interprets the RFC literally and establishes a
-	 * keep-alive connection, unless the user specifically requests something
-	 * else by specifying a Connection header in the context options. */
-	if (protocol_version &&
-	    ((have_header & HTTP_HEADER_CONNECTION) == 0) &&
-	    (strncmp(protocol_version, "1.0", MIN(protocol_version_len, 3)) > 0)) {
-		php_stream_write_string(stream, "Connection: close\r\n");
 	}
 
 	if (context && 
@@ -946,7 +923,7 @@ out:
 }
 /* }}} */
 
-php_stream *php_stream_url_wrap_http(php_stream_wrapper *wrapper, const char *path, const char *mode, int options, char **opened_path, php_stream_context *context STREAMS_DC TSRMLS_DC) /* {{{ */
+php_stream *php_stream_url_wrap_http(php_stream_wrapper *wrapper, char *path, char *mode, int options, char **opened_path, php_stream_context *context STREAMS_DC TSRMLS_DC) /* {{{ */
 {
 	return php_stream_url_wrap_http_ex(wrapper, path, mode, options, opened_path, context, PHP_URL_REDIRECT_MAX, HTTP_WRAPPER_HEADER_INIT STREAMS_CC TSRMLS_CC);
 }

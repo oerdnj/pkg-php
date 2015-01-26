@@ -37,7 +37,7 @@
 
 
 
-void
+ZIP_EXTERN(void)
 zip_source_close(struct zip_source *src)
 {
     if (!src->is_open)

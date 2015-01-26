@@ -86,7 +86,7 @@ PHP_METHOD(SessionHandler, read)
 	}
 
 	RETVAL_STRINGL(val, val_len, 1);
-	str_efree(val);
+	efree(val);
 	return;
 }
 /* }}} */

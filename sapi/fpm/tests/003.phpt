@@ -8,13 +8,12 @@ FPM: Test IPv6 support
 include "include.inc";
 
 $logfile = dirname(__FILE__).'/php-fpm.log.tmp';
-$port = 9000+PHP_INT_SIZE;
 
 $cfg = <<<EOT
 [global]
 error_log = $logfile
 [unconfined]
-listen = [::1]:$port
+listen = [::1]:9000
 pm = dynamic
 pm.max_children = 5
 pm.start_servers = 2
@@ -24,9 +23,10 @@ EOT;
 
 $fpm = run_fpm($cfg, $tail);
 if (is_resource($fpm)) {
-    fpm_display_log($tail, 2);
+    var_dump(fgets($tail));
+    var_dump(fgets($tail));
     $i = 0;
-    while (($i++ < 30) && !($fp = fsockopen('[::1]', $port))) {
+    while (($i++ < 30) && !($fp = fsockopen('[::1]', 9000))) {
         usleep(10000);
     }
     if ($fp) {
@@ -41,8 +41,10 @@ if (is_resource($fpm)) {
 
 ?>
 --EXPECTF--
-[%d-%s-%d %d:%d:%d] NOTICE: fpm is running, pid %d
-[%d-%s-%d %d:%d:%d] NOTICE: ready to handle connections
+string(%d) "[%d-%s-%d %d:%d:%d] NOTICE: fpm is running, pid %d
+"
+string(%d) "[%d-%s-%d %d:%d:%d] NOTICE: ready to handle connections
+"
 Done
 --CLEAN--
 <?php
