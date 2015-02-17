@@ -37,3 +37,5 @@ expose_all_built_and_installed_apis.patch
 use_system_timezone.patch
 zlib-largefile-function-renaming.patch
 php5-fpm-do-reload-on-SIGHUP.patch
+revert-f07b8f36ae8099e29d19fbe8806bc07b21dcd4ac.patch
+
