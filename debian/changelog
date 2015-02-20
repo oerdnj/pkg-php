@@ -5,6 +5,8 @@ php5 (5.4.38-1) unstable; urgency=medium
   * Pull patch from DragonFly BSD Project to limit the pattern space to
     avoid a 32-bit overflow in Henry Spencer regular expressions (regex)
     library (Closes: #778389)
+  * Drop PHP use system libs crypt patch, it has been broken and it's not
+    strictly needed
 
  -- Ondřej Surý <ondrej@debian.org>  Fri, 20 Feb 2015 11:39:14 +0100
 
