@@ -1,5 +1,5 @@
 reverted:
---- a/ext/standard/tests/file/bug68532.phpt
+--- php5.orig/ext/standard/tests/file/bug68532.phpt
 +++ /dev/null
 @@ -1,25 +0,0 @@
 ---TEST--
@@ -27,9 +27,9 @@ reverted:
 ---EXPECT--
 -memoryStream = dGVzdA==
 -fileStream = dGVzdA==
---- a/ext/standard/tests/file/stream_rfc2397_007.phpt
-+++ b/ext/standard/tests/file/stream_rfc2397_007.phpt
-@@ -95,7 +95,6 @@
+--- php5.orig/ext/standard/tests/file/stream_rfc2397_007.phpt
++++ php5/ext/standard/tests/file/stream_rfc2397_007.phpt
+@@ -95,7 +95,6 @@ int(5)
  bool(false)
  ===GETC===
  string(1) "5"
@@ -37,9 +37,9 @@ reverted:
  int(6)
  bool(true)
  ===REWIND===
---- a/main/streams/memory.c
-+++ b/main/streams/memory.c
-@@ -87,19 +87,15 @@
+--- php5.orig/main/streams/memory.c
++++ php5/main/streams/memory.c
+@@ -86,19 +86,15 @@ static size_t php_stream_memory_read(php
  	php_stream_memory_data *ms = (php_stream_memory_data*)stream->abstract;
  	assert(ms != NULL);
  
