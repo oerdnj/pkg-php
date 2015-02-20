@@ -14,7 +14,7 @@
  AC_CACHE_CHECK(for standard DES crypt, ac_cv_crypt_des,[
    AC_TRY_RUN([
 @@ -229,11 +235,68 @@ main() {
-   ac_cv_crypt_SHA256=no
+   ac_cv_crypt_sha256=no
  ])])
  
 +dnl
