@@ -1,3 +1,14 @@
+php5 (5.5.22+dfsg-1) unstable; urgency=medium
+
+  * New upstream version 5.5.22+dfsg
+  * Add patch to revert upstream commit on feof that broke Horde and
+    others (Courtesy of Mike Gabriel) (Closes: #778374)
+  * Pull patch from DragonFly BSD Project to limit the pattern space to
+    avoid a 32-bit overflow in Henry Spencer regular expressions (regex)
+    library (Closes: #778389)
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 20 Feb 2015 11:37:06 +0100
+
 php5 (5.5.21+dfsg1-1) unstable; urgency=medium
 
   * New upstream version 5.5.21+dfsg1
