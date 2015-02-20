@@ -1,3 +1,13 @@
+php5 (5.4.38-1) unstable; urgency=medium
+
+  * New upstream version 5.4.38
+  * Update patches for 5.4.38 release
+  * Pull patch from DragonFly BSD Project to limit the pattern space to
+    avoid a 32-bit overflow in Henry Spencer regular expressions (regex)
+    library (Closes: #778389)
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 20 Feb 2015 11:39:14 +0100
+
 php5 (5.4.37-1) unstable; urgency=medium
 
   * New upstream version 5.4.37
