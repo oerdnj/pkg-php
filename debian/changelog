@@ -1,3 +1,10 @@
+php5 (5.6.6+dfsg-2) unstable; urgency=medium
+
+  * Fix use after free in 'opcache' component of PHP (CVE-2015-1351)
+  * Fix NULL Pointer Deference in pgsql (CVE-2015-1352) (Closes: #777033)
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 24 Feb 2015 07:54:59 +0100
+
 php5 (5.6.6+dfsg-1) unstable; urgency=medium
 
   * New upstream version 5.6.6+dfsg
