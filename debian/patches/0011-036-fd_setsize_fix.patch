@@ -1,0 +1,36 @@
+From: Debian PHP Maintainers <pkg-php-maint@lists.alioth.debian.org>
+Date: Sun, 1 Mar 2015 10:41:49 +0100
+Subject: 036-fd_setsize_fix
+
+---
+ ext/sockets/sockets.c       | 1 +
+ ext/standard/streamsfuncs.c | 3 ++-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/ext/sockets/sockets.c b/ext/sockets/sockets.c
+index 7768d1f..eb26a08 100644
+--- a/ext/sockets/sockets.c
++++ b/ext/sockets/sockets.c
+@@ -962,6 +962,7 @@ static int php_sock_array_to_fd_set(zval *sock_array, fd_set *fds, PHP_SOCKET *m
+ 
+ 		php_sock = (php_socket*) zend_fetch_resource(element TSRMLS_CC, -1, le_socket_name, NULL, 1, le_socket);
+ 		if (!php_sock) continue; /* If element is not a resource, skip it */
++		if (php_sock->bsd_socket > FD_SETSIZE) continue; /* must ignore it */
+ 
+ 		PHP_SAFE_FD_SET(php_sock->bsd_socket, fds);
+ 		if (php_sock->bsd_socket > *max_fd) {
+diff --git a/ext/standard/streamsfuncs.c b/ext/standard/streamsfuncs.c
+index b1b3180..f6a768b 100644
+--- a/ext/standard/streamsfuncs.c
++++ b/ext/standard/streamsfuncs.c
+@@ -629,8 +629,9 @@ static int stream_array_to_fd_set(zval *stream_array, fd_set *fds, php_socket_t
+ 		 * is not displayed.
+ 		 * */
+ 		if (SUCCESS == php_stream_cast(stream, PHP_STREAM_AS_FD_FOR_SELECT | PHP_STREAM_CAST_INTERNAL, (void*)&tmp_fd, 1) && tmp_fd != -1) {
+-
+ 			php_socket_t this_fd = (php_socket_t)tmp_fd;
++			if (this_fd > FD_SETSIZE)
++				continue;
+ 
+ 			PHP_SAFE_FD_SET(this_fd, fds);
+ 

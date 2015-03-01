@@ -1,0 +1,25 @@
+From: Debian PHP Maintainers <pkg-php-maint@lists.alioth.debian.org>
+Date: Sun, 1 Mar 2015 10:41:51 +0100
+Subject: 113-php.ini_securitynotes
+
+---
+ php.ini-development | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/php.ini-development b/php.ini-development
+index 32b6692..bda1fe0 100644
+--- a/php.ini-development
++++ b/php.ini-development
+@@ -296,6 +296,12 @@ serialize_precision = 17
+ ; or per-virtualhost web server configuration file. This directive is
+ ; *NOT* affected by whether Safe Mode is turned On or Off.
+ ; http://php.net/open-basedir
++ 
++; NOTE: this is considered a "broken" security measure.
++;       Applications relying on this feature will not receive full
++;       support by the security team.  For more information please
++;       see /usr/share/doc/php5-common/README.Debian.security
++;
+ ;open_basedir =
+ 
+ ; This directive allows you to disable certain functions for security reasons.

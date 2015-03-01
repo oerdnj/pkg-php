@@ -1,0 +1,35 @@
+From: =?utf-8?q?Ond=C5=99ej_Sur=C3=BD?= <ondrej@sury.org>
+Date: Fri, 6 Apr 2012 14:30:10 +0200
+Subject: Add information about which INI file is which inside respective files
+
+---
+ php.ini-development | 2 ++
+ php.ini-production  | 2 ++
+ 2 files changed, 4 insertions(+)
+
+diff --git a/php.ini-development b/php.ini-development
+index 0eb9f4f..d782aa8 100644
+--- a/php.ini-development
++++ b/php.ini-development
+@@ -85,6 +85,8 @@
+ 
+ ; This is php.ini-development INI file.
+ 
++; This is php.ini-development INI file.
++
+ ;;;;;;;;;;;;;;;;;;;
+ ; Quick Reference ;
+ ;;;;;;;;;;;;;;;;;;;
+diff --git a/php.ini-production b/php.ini-production
+index ba64ec2..1d2fc1b 100644
+--- a/php.ini-production
++++ b/php.ini-production
+@@ -85,6 +85,8 @@
+ 
+ ; This is php.ini-production INI file.
+ 
++; This is php.ini-production INI file.
++
+ ;;;;;;;;;;;;;;;;;;;
+ ; Quick Reference ;
+ ;;;;;;;;;;;;;;;;;;;

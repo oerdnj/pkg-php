@@ -1,0 +1,40 @@
+From: Debian PHP Maintainers <pkg-php-maint@lists.alioth.debian.org>
+Date: Sun, 1 Mar 2015 10:41:55 +0100
+Subject: expose_all_built_and_installed_apis
+
+---
+ scripts/man1/php-config.1.in | 2 +-
+ scripts/php-config.in        | 5 ++++-
+ 2 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/scripts/man1/php-config.1.in b/scripts/man1/php-config.1.in
+index 5c60408..2f5e641 100644
+--- a/scripts/man1/php-config.1.in
++++ b/scripts/man1/php-config.1.in
+@@ -44,7 +44,7 @@ Full path to php CLI or CGI binary
+ .TP
+ .PD 0
+ .B \-\-php-sapis
+-Show all SAPI modules available
++Show all SAPI modules installed on the Debian system
+ .TP
+ .PD 0
+ .B \-\-configure-options
+diff --git a/scripts/php-config.in b/scripts/php-config.in
+index d7faf21..a40e961 100644
+--- a/scripts/php-config.in
++++ b/scripts/php-config.in
+@@ -18,9 +18,12 @@ exe_extension="@EXEEXT@"
+ php_cli_binary=NONE
+ php_cgi_binary=NONE
+ configure_options="@CONFIGURE_OPTIONS@"
+-php_sapis="@PHP_INSTALLED_SAPIS@"
++#php_sapis="@PHP_INSTALLED_SAPIS@"
+ phpapi="@DEBIAN_PHP_API@"
+ 
++# Query the dpkg database for available PHP5 sapis
++php_sapis=$(dpkg-query -W -f='${binary:Package} ' libapache2-mod-php5 libapache2-mod-php5filter php5-cgi php5-cli php5-fpm libphp5-embed 2>/dev/null | sed -e 's|libapache2-mod-php5|apache2handler|;s|libapache2-mod-php5filter|apache2filter|;s|php5-cgi|cgi|;s|php5-cli|cli|;s|php5-fpm|fpm|;s|libphp5-embed|embed|;')
++
+ # Set php_cli_binary and php_cgi_binary if available
+ for sapi in $php_sapis; do
+   case $sapi in

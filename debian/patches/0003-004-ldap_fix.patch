@@ -1,0 +1,31 @@
+From: Debian PHP Maintainers <pkg-php-maint@lists.alioth.debian.org>
+Date: Sun, 1 Mar 2015 10:41:48 +0100
+Subject: 004-ldap_fix
+
+---
+ ext/ldap/ldap.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/ext/ldap/ldap.c b/ext/ldap/ldap.c
+index 2dabc34..2092b5e 100644
+--- a/ext/ldap/ldap.c
++++ b/ext/ldap/ldap.c
+@@ -1250,7 +1250,7 @@ PHP_FUNCTION(ldap_explode_dn)
+ 	}
+ 
+ 	i=0;
+-	while (ldap_value[i] != NULL) i++;
++	while (ldap_value && ldap_value[i] != NULL) i++;
+ 	count = i;
+ 
+ 	array_init(return_value);
+@@ -1260,7 +1260,8 @@ PHP_FUNCTION(ldap_explode_dn)
+ 		add_index_string(return_value, i, ldap_value[i], 1);
+ 	}
+ 
+-	ldap_value_free(ldap_value);
++	if (ldap_value)
++		ldap_value_free(ldap_value);
+ }
+ /* }}} */
+ 

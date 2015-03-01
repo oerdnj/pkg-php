@@ -1,0 +1,21 @@
+From: Debian PHP Maintainers <pkg-php-maint@lists.alioth.debian.org>
+Date: Sun, 1 Mar 2015 10:41:55 +0100
+Subject: php-fpm-listen-on-unix-socket
+
+---
+ sapi/fpm/php-fpm.conf.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sapi/fpm/php-fpm.conf.in b/sapi/fpm/php-fpm.conf.in
+index 45fd85e..58852f7 100644
+--- a/sapi/fpm/php-fpm.conf.in
++++ b/sapi/fpm/php-fpm.conf.in
+@@ -160,7 +160,7 @@ group = @php_fpm_group@
+ ;                            specific port;
+ ;   '/path/to/unix/socket' - to listen on a unix socket.
+ ; Note: This value is mandatory.
+-listen = 127.0.0.1:9000
++listen = /var/run/php5-fpm.sock
+ 
+ ; Set listen(2) backlog.
+ ; Default Value: 128 (-1 on FreeBSD and OpenBSD)

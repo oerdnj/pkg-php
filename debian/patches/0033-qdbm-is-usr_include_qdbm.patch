@@ -1,0 +1,23 @@
+From: Debian PHP Maintainers <pkg-php-maint@lists.alioth.debian.org>
+Date: Sun, 1 Mar 2015 10:41:52 +0100
+Subject: qdbm-is-usr_include_qdbm
+
+---
+ ext/dba/config.m4 | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/ext/dba/config.m4 b/ext/dba/config.m4
+index fa9b993..1fcdb83 100644
+--- a/ext/dba/config.m4
++++ b/ext/dba/config.m4
+@@ -113,6 +113,10 @@ if test "$PHP_QDBM" != "no"; then
+       THIS_PREFIX=$i
+       THIS_INCLUDE=$i/include/depot.h
+       break
++    elif test -f "$i/include/qdbm/depot.h"; then
++      THIS_PREFIX=$i
++      THIS_INCLUDE=$i/include/qdbm/depot.h
++      break
+     fi
+   done
+ 

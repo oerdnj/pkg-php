@@ -1,0 +1,22 @@
+From: Debian PHP Maintainers <pkg-php-maint@lists.alioth.debian.org>
+Date: Sun, 1 Mar 2015 10:41:51 +0100
+Subject: 108-64_bit_datetime
+
+---
+ ext/standard/datetime.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/ext/standard/datetime.c b/ext/standard/datetime.c
+index 69e1724..f652966 100644
+--- a/ext/standard/datetime.c
++++ b/ext/standard/datetime.c
+@@ -20,6 +20,9 @@
+ 
+ /* $Id$ */
+ 
++#define _XOPEN_SOURCE	/* needed to get strptime() declared */
++#define _BSD_SOURCE		/* needed to get ulong declared */
++
+ #include "php.h"
+ #include "zend_operators.h"
+ #include "datetime.h"
