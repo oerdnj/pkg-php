@@ -1,3 +1,11 @@
+php5 (5.5.23+dfsg-1) unstable; urgency=medium
+
+  * Switch to gbp pq patch management
+  * New upstream version 5.5.23+dfsg
+  * Rebase patches on top of 5.5.23 release
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 24 Mar 2015 10:55:55 +0100
+
 php5 (5.5.22+dfsg-1) unstable; urgency=medium
 
   * New upstream version 5.5.22+dfsg
