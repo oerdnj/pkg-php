@@ -1,3 +1,77 @@
+php5 (5.6.7+dfsg-1) unstable; urgency=medium
+
+  * New upstream version 5.6.7+dfsg
+   - Core:
+    . Fixed bug #69174 (leaks when unused inner class use traits
+      precedence).
+    . Fixed bug #69139 (Crash in gc_zval_possible_root on unserialize).
+    . Fixed bug #69121 (Segfault in get_current_user when script owner is
+      not in passwd with ZTS build).
+    . Fixed bug #65593 (Segfault when calling ob_start from output
+      buffering callback).
+    . Fixed bug #68986 (pointer returned by
+      php_stream_fopen_temporary_file not validated in memory.c).
+    . Fixed bug #68166 (Exception with invalid character causes segv).
+    . Fixed bug #69141 (Missing arguments in reflection info for some
+      builtin functions).
+    . Fixed bug #68976 (Use After Free Vulnerability in unserialize())
+      (CVE-2015-0231).
+    . Fixed bug #69134 (Per Directory Values overrides PHP_INI_SYSTEM
+      configuration options).
+    . Fixed bug #69207 (move_uploaded_file allows nulls in path).
+   - CGI:
+    . Fixed bug #69015 (php-cgi's getopt does not see $argv).
+   - CLI:
+    . Fixed bug #67741 (auto_prepend_file messes up __LINE__).
+   - cURL:
+    . Fixed bug #69088 (PHP_MINIT_FUNCTION does not fully initialize cURL
+      on Win32).
+    . Add CURLPROXY_SOCKS4A and CURLPROXY_SOCKS5_HOSTNAME constants if
+      supported by libcurl.
+   - Ereg:
+    . Fixed bug #69248 (heap overflow vulnerability in regcomp.c)
+      (CVE-2015-2305).
+   - FPM:
+    . Fixed bug #68822 (request time is reset too early).
+   - ODBC:
+    . Fixed bug #68964 (Allowed memory size exhausted with odbc_exec).
+   - Opcache:
+    . Fixed bug #69159 (Opcache causes problem when passing a variable
+      variable to a function).
+    . Fixed bug #69125 (Array numeric string as key). 
+    . Fixed bug #69038 (switch(SOMECONSTANT) misbehaves).
+   - OpenSSL:
+    . Fixed bug #68912 (Segmentation fault at openssl_spki_new).
+    . Fixed bug #61285, #68329, #68046, #41631 (encrypted streams don't
+      observe socket timeouts).
+    . Fixed bug #68920 (use strict peer_fingerprint input checks)
+    . Fixed bug #68879 (IP Address fields in subjectAltNames not used)
+    . Fixed bug #68265 (SAN match fails with trailing DNS dot)
+    . Fixed bug #67403 (Add signatureType to openssl_x509_parse)
+    . Fixed bug (#69195 Inconsistent stream crypto values across versions)
+   - pgsql:
+    . Fixed bug #68638 (pg_update() fails to store infinite values).
+   - Readline:
+    . Fixed bug #69054 (Null dereference in
+      readline_(read|write)_history() without parameters).
+   - SOAP:
+    . Fixed bug #69085 (SoapClient's __call() type confusion through
+      unserialize()).
+   - SPL:
+    . Fixed bug #69108 ("Segmentation fault" when (de)serializing
+      SplObjectStorage).
+    . Fixed bug #68557 (RecursiveDirectoryIterator::seek(0) broken after
+      calling getChildren()).
+   - ZIP:
+    . Fixed bug #69253 (ZIP Integer Overflow leads to writing past heap
+      boundary) (CVE-2015-2331).
+  * Refresh patches for 5.6.7 release
+  * Pull a patch to fix SQL_DESC_OCTET_LENGTH not supported by ADS ODBC
+    driver (PHP#68350) from Debian wheezy PHP 5.4 branch
+  * Fix PHP segfault in zend_hash_find (PHP#68486)
+
+ -- Ondřej Surý <ondrej@debian.org>  Tue, 24 Mar 2015 11:19:21 +0100
+
 php5 (5.6.6+dfsg-2) unstable; urgency=medium
 
   * Fix use after free in 'opcache' component of PHP (CVE-2015-1351)
