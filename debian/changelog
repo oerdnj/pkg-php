@@ -69,6 +69,8 @@ php5 (5.6.7+dfsg-1) unstable; urgency=medium
   * Pull a patch to fix SQL_DESC_OCTET_LENGTH not supported by ADS ODBC
     driver (PHP#68350) from Debian wheezy PHP 5.4 branch
   * Fix PHP segfault in zend_hash_find (PHP#68486)
+  * Move PEAR-Builder-print-info-about-php5-dev.patch to debian/ as it's
+    not a quilt patch
 
  -- Ondřej Surý <ondrej@debian.org>  Tue, 24 Mar 2015 11:19:21 +0100
 
