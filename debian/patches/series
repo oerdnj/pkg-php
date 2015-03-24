@@ -55,4 +55,3 @@
 0055-expose_all_built_and_installed_apis.patch
 0056-php5-fpm-do-reload-on-SIGHUP.patch
 0057-gdIOCtx.patch
-0058-VU695940.patch
