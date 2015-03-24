@@ -29,7 +29,7 @@ index 3ee9bed..817fb37 100644
  /*
     +----------------------------------------------------------------------+
 diff --git a/configure.in b/configure.in
-index 124f7fe..f76239c 100644
+index b1c595d..5e47416 100644
 --- a/configure.in
 +++ b/configure.in
 @@ -136,6 +136,8 @@ AC_DEFUN([PHP_EXT_DIR],[ext/$1])dnl
@@ -66,7 +66,7 @@ index 2621fcb..9718f10 100644
  #include "php.h"
  #ifdef ZEND_ENGINE_2
 diff --git a/ext/standard/file.c b/ext/standard/file.c
-index c15dd50..382a965 100644
+index c2e71d1..75f197e 100644
 --- a/ext/standard/file.c
 +++ b/ext/standard/file.c
 @@ -112,9 +112,6 @@ php_file_globals file_globals;
@@ -117,7 +117,7 @@ index e895610..0be461a 100644
  #include "php_globals.h"
  #include "php_network.h"
 diff --git a/main/streams/memory.c b/main/streams/memory.c
-index 0d00505..abfb87a 100644
+index d0f2511..3912879 100644
 --- a/main/streams/memory.c
 +++ b/main/streams/memory.c
 @@ -18,7 +18,6 @@

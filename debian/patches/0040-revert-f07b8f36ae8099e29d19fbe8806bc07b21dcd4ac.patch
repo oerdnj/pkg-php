@@ -53,7 +53,7 @@ index b62f19c..4b22ca3 100644
  bool(true)
  ===REWIND===
 diff --git a/main/streams/memory.c b/main/streams/memory.c
-index abfb87a..024b8e4 100644
+index 3912879..0773ccb 100644
 --- a/main/streams/memory.c
 +++ b/main/streams/memory.c
 @@ -86,19 +86,15 @@ static size_t php_stream_memory_read(php_stream *stream, char *buf, size_t count
