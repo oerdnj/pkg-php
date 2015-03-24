@@ -11,6 +11,8 @@ php5 (5.4.39-1) unstable; urgency=medium
    + 0062-PHP-SegFault-zend_hash_find-PHP-68486.patch
    + 0063-Fix-use-after-free-in-phar_object.c-PHP-68901-CVE-20.patch
    + 0064-Fixed-bug-68740-Null-pointer-deference-in-ext-ereg-r.patch
+  * Move PEAR-Builder-print-info-about-php5-dev.patch to debian/ as it's
+    not a quilt patch
 
  -- Ondřej Surý <ondrej@debian.org>  Tue, 24 Mar 2015 09:41:10 +0100
 
