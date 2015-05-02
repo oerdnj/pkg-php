@@ -7,7 +7,7 @@ Subject: 043-recode_size_t
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/ext/recode/recode.c b/ext/recode/recode.c
-index d95ffdf..e6da11e 100644
+index 3fff0a7..3381d51 100644
 --- a/ext/recode/recode.c
 +++ b/ext/recode/recode.c
 @@ -149,7 +149,7 @@ PHP_FUNCTION(recode_string)

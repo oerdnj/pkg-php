@@ -7,7 +7,7 @@ Subject: sybase-alias
  1 file changed, 32 insertions(+)
 
 diff --git a/ext/mssql/php_mssql.c b/ext/mssql/php_mssql.c
-index 20bb552..92cddc4 100644
+index 5b50216..0eea32d 100644
 --- a/ext/mssql/php_mssql.c
 +++ b/ext/mssql/php_mssql.c
 @@ -178,6 +178,38 @@ const zend_function_entry mssql_functions[] = {

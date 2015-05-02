@@ -7,7 +7,7 @@ Subject: 017-pread_pwrite_disable
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/acinclude.m4 b/acinclude.m4
-index 2af021f..940be97 100644
+index fce024c..bc1b8e6 100644
 --- a/acinclude.m4
 +++ b/acinclude.m4
 @@ -1235,7 +1235,7 @@ $1

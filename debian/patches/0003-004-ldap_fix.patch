@@ -7,7 +7,7 @@ Subject: 004-ldap_fix
  1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/ext/ldap/ldap.c b/ext/ldap/ldap.c
-index 4db15e5..4950116 100644
+index 2dabc34..2092b5e 100644
 --- a/ext/ldap/ldap.c
 +++ b/ext/ldap/ldap.c
 @@ -1250,7 +1250,7 @@ PHP_FUNCTION(ldap_explode_dn)

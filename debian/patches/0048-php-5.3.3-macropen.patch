@@ -9,7 +9,7 @@ Subject: php-5.3.3-macropen
  3 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/ext/dba/dba.c b/ext/dba/dba.c
-index dc6db4b..d8c7ee8 100644
+index 9df7f34..4741226 100644
 --- a/ext/dba/dba.c
 +++ b/ext/dba/dba.c
 @@ -922,7 +922,7 @@ static void php_dba_open(INTERNAL_FUNCTION_PARAMETERS, int persistent)
@@ -22,7 +22,7 @@ index dc6db4b..d8c7ee8 100644
  		php_error_docref2(NULL TSRMLS_CC, Z_STRVAL_PP(args[0]), Z_STRVAL_PP(args[1]), E_WARNING, "Driver initialization failed for handler: %s%s%s", hptr->name, error?": ":"", error?error:"");
  		FREENOW;
 diff --git a/ext/dba/dba_db3.c b/ext/dba/dba_db3.c
-index cae0f20..a6e3629 100644
+index e248be8..3c24e35 100644
 --- a/ext/dba/dba_db3.c
 +++ b/ext/dba/dba_db3.c
 @@ -91,7 +91,7 @@ DBA_OPEN_FUNC(db3)
@@ -35,7 +35,7 @@ index cae0f20..a6e3629 100644
  
  			data = pemalloc(sizeof(*data), info->flags&DBA_PERSISTENT);
 diff --git a/ext/dba/dba_db4.c b/ext/dba/dba_db4.c
-index b067285..db53adb 100644
+index 7f9dfed..6b9b43c 100644
 --- a/ext/dba/dba_db4.c
 +++ b/ext/dba/dba_db4.c
 @@ -126,9 +126,9 @@ DBA_OPEN_FUNC(db4)

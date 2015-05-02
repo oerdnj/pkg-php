@@ -8,10 +8,10 @@ Subject: 053-extension_api
  2 files changed, 11 insertions(+), 1 deletion(-)
 
 diff --git a/configure.in b/configure.in
-index 84a3d20..7bcdab0 100644
+index a3b6cf8..9a4c95e 100644
 --- a/configure.in
 +++ b/configure.in
-@@ -1191,8 +1191,13 @@ dnl Build extension directory path
+@@ -1177,8 +1177,13 @@ dnl Build extension directory path
  
  ZEND_MODULE_API_NO=`$EGREP '#define ZEND_MODULE_API_NO ' $srcdir/Zend/zend_modules.h|$SED 's/#define ZEND_MODULE_API_NO //'`
  
@@ -26,7 +26,7 @@ index 84a3d20..7bcdab0 100644
    if test "$oldstyleextdir" = "yes"; then
      if test "$PHP_DEBUG" = "1"; then
        part1=debug
-@@ -1335,6 +1340,7 @@ PHP_SUBST(CXX)
+@@ -1321,6 +1326,7 @@ PHP_SUBST(CXX)
  PHP_SUBST(CXXFLAGS)
  PHP_SUBST(CXXFLAGS_CLEAN)
  PHP_SUBST_OLD(DEBUG_CFLAGS)

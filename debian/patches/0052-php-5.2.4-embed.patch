@@ -7,7 +7,7 @@ Subject: php-5.2.4-embed
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/sapi/embed/config.m4 b/sapi/embed/config.m4
-index 5ffb9b3..e1c124c 100644
+index 3a61b45..46418a9 100644
 --- a/sapi/embed/config.m4
 +++ b/sapi/embed/config.m4
 @@ -12,7 +12,8 @@ if test "$PHP_EMBED" != "no"; then

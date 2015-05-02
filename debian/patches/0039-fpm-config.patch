@@ -7,7 +7,7 @@ Subject: fpm-config
  1 file changed, 8 insertions(+), 4 deletions(-)
 
 diff --git a/sapi/fpm/php-fpm.conf.in b/sapi/fpm/php-fpm.conf.in
-index 833a4f4..c2e2899 100644
+index 9205d42..45fd85e 100644
 --- a/sapi/fpm/php-fpm.conf.in
 +++ b/sapi/fpm/php-fpm.conf.in
 @@ -12,7 +12,7 @@
@@ -47,7 +47,7 @@ index 833a4f4..c2e2899 100644
  ; Start a new pool named 'www'.
  ; the variable $pool can we used in any directive and will be replaced by the
  ; pool name ('www' here)
-@@ -471,7 +475,7 @@ pm.max_spare_servers = 3
+@@ -466,7 +470,7 @@ pm.max_spare_servers = 3
  ; Chdir to this directory at the start.
  ; Note: relative path can be used.
  ; Default Value: current directory or / when chroot

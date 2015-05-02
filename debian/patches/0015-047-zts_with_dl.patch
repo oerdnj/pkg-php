@@ -7,7 +7,7 @@ Subject: 047-zts_with_dl
  1 file changed, 5 deletions(-)
 
 diff --git a/ext/standard/dl.c b/ext/standard/dl.c
-index dcbd918..8575505 100644
+index 9bf3e44..c441d81 100644
 --- a/ext/standard/dl.c
 +++ b/ext/standard/dl.c
 @@ -74,12 +74,7 @@ PHPAPI PHP_FUNCTION(dl)
