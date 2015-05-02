@@ -1,79 +1,38 @@
 php5 (5.4.40-1) unstable; urgency=medium
 
-  * New upstream version 5.4.40
+  * New upstream version 5.4.40 (this is real 5.4.40)
    - Apache2handler:
      . Fixed bug #69218 (potential remote code execution with apache 2.4
        apache2handler). (Gerrit Venema)
    - Core:
-     . Fixed bug #66609 (php crashes with __get() and ++ operator in some cases).
-       (Dmitry, Laruence)
-     . Fixed bug #67626 (User exceptions not properly handled in streams). 
-       (Julian)
-     . Fixed bug #68021 (get_browser() browser_name_regex returns non-utf-8
-       characters). (Tjerk)
-     . Fixed bug #68917 (parse_url fails on some partial urls). (Wei Dai)
-     . Fixed bug #69134 (Per Directory Values overrides PHP_INI_SYSTEM
-       configuration options). (Anatol Belski)
      . Additional fix for bug #69152 (Type confusion vulnerability in
        exception::getTraceAsString). (Stas)
-     . Fixed bug #69212 (Leaking VIA_HANDLER func when exception thrown in
-       __call/... arg passing). (Nikita)
-     . Fixed bug #69221 (Segmentation fault when using a generator in combination
-       with an Iterator). (Nikita)
      . Fixed bug #69337 (php_stream_url_wrap_http_ex() type-confusion
        vulnerability). (Stas)
      . Fixed bug #69353 (Missing null byte checks for paths in various PHP
        extensions). (Stas)
-   - Curl:
-     . Implemented FR#69278 (HTTP2 support). (Masaki Kagaya)
+   - cURL:
      . Fixed bug #69316 (Use-after-free in php_curl related to
        CURLOPT_FILE/_INFILE/_WRITEHEADER). (Laruence)
-   - Date:
-     . Export date_get_immutable_ce so that it can be used by extensions. (Derick
-       Rethans)
-     . Fixed bug #69336 (Issues with "last day of <monthname>"). (Derick Rethans)
-   - Enchant:
-     . Fixed bug #65406 (Enchant broker plugins are in the wrong place in windows
-       builds). (Anatol)
+   - Ereg:
+     . Fixed bug #68740 (NULL Pointer Dereference). (Laruence)
    - Fileinfo:
      . Fixed bug #68819 (Fileinfo on specific file causes spurious OOM and/or
        segfault). (Anatol Belski)
-   - Filter:
-     . Fixed bug #69202 (FILTER_FLAG_STRIP_BACKTICK ignored unless other
-       flags are used). (Jeff Welch)
-     . Fixed bug #69203 (FILTER_FLAG_STRIP_HIGH doesn't strip ASCII 127). (Jeff
-       Welch)
-   - Mbstring:
-     . Fixed bug #68846 (False detection of CJK Unified Ideographs Extension E).
-       (Masaki Kagaya)
-   - OPCache
-      . Fixed bug #68677 (Use After Free). (CVE-2015-1351) (Laruence)
-      . Fixed bug #69281 (opcache_is_script_cached no longer works). (danack)
-   - OpenSSL:
-     . Fixed bug #67403 (Add signatureType to openssl_x509_parse).
-     . Add a check for RAND_egd to allow compiling against LibreSSL (Leigh)
+   - GD:
+     . Fixed bug #68601 (buffer read overflow in gd_gif_in.c). (Remi)
    - Phar:
-     . Fixed bug #64343 (PharData::extractTo fails for tarball created by BSD tar).
-       (Mike)
-     . Fixed bug #64931 (phar_add_file is too restrictive on filename). (Mike)
-     . Fixed bug #65467 (Call to undefined method cli_arg_typ_string). (Mike)
-     . Fixed bug #67761 (Phar::mapPhar fails for Phars inside a path containing 
-       ".tar"). (Mike)
+     . Fixed bug #68901 (use after free). (bugreports at internot dot info)
      . Fixed bug #69324 (Buffer Over-read in unserialize when parsing Phar). (Stas)
      . Fixed bug #69441 (Buffer Overflow when parsing tar/zip/phar in
        phar_set_inode). (Stas)
    - Postgres:
-     . Fixed bug #68741 (Null pointer dereference). (CVE-2015-1352) (Laruence)
-   - SPL:
-     . Fixed bug #69227 (Use after free in zval_scan caused by
-        spl_object_storage_get_gc). (adam dot scarr at 99designs dot com)
+     . Fixed bug #68741 (Null pointer deference) (CVE-2015-1352). (Xinchen Hui)
    - SOAP:
-     . Fixed bug #69293 (NEW segfault when using SoapClient::__setSoapHeader 
-        (bisected, regression)). (thomas at shadowweb dot org, Laruence)
-   - SQLITE:
-     . Fixed bug #68760 (SQLITE segfaults if custom collator throws an exception).
-        (Dan Ackroyd)
-     . Fixed bug #69287 (Upgrade bundled sqlite to 3.8.8.3). (Anatol)
+     . Fixed bug #69152 (Type Confusion Infoleak Vulnerability in unserialize()
+       with SoapFault). (Dmitry)   
+   - Sqlite3:
+     . Fixed bug #66550 (SQLite prepared statement use-after-free). (Sean Heelan)
   * Update d/gbp.conf to new config style
   * Update patches using gbp pq rebase and export
 
