@@ -34,5 +34,7 @@ Warning: json_encode() expects at least 1 parameter, 0 given in %s on line %d
 NULL
 
 -- Testing json_encode() function with more than expected no. of arguments --
-string(5) ""abc""
+
+Warning: json_encode() expects at most 2 parameters, 3 given in %s on line %d
+NULL
 ===Done===

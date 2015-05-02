@@ -1,9 +1,7 @@
 --TEST--
 readline_write_history(): Basic test
 --SKIPIF--
-<?php if (!extension_loaded("readline") || !function_exists('readline_add_history')) die("skip");
-if (READLINE_LIB == "libedit") die("skip readline only");
-?>
+<?php if (!extension_loaded("readline") || !function_exists('readline_add_history')) die("skip"); ?>
 --FILE--
 <?php
 

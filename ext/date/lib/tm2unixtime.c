@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2015 The PHP Group                                |
+   | Copyright (c) 1997-2014 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -205,68 +205,69 @@ static void do_adjust_relative(timelib_time* time)
 		time->m += time->relative.m;
 		time->y += time->relative.y;
 	}
-
 	switch (time->relative.first_last_day_of) {
-		case TIMELIB_SPECIAL_FIRST_DAY_OF_MONTH: /* first */
+		case 1: /* first */
 			time->d = 1;
 			break;
-		case TIMELIB_SPECIAL_LAST_DAY_OF_MONTH: /* last */
+		case 2: /* last */
 			time->d = 0;
 			time->m++;
 			break;
 	}
-
 	timelib_do_normalize(time);
 }
 
 static void do_adjust_special_weekday(timelib_time* time)
 {
-	timelib_sll count, dow, rem;
+	timelib_sll current_dow, count;
 
 	count = time->relative.special.amount;
-	dow = timelib_day_of_week(time->y, time->m, time->d);
 
-	/* Add increments of 5 weekdays as a week, leaving the DOW unchanged. */
-	time->d += (count / 5) * 7;
-
-	/* Deal with the remainder. */
-	rem = (count % 5);
-
-	if (count > 0) {
-		if (rem == 0) {
-			/* Head back to Friday if we stop on the weekend. */
-			if (dow == 0) {
-				time->d -= 2;
-			} else if (dow == 6) {
-				time->d -= 1;
-			}
-		} else if (dow == 6) {
-			/* We ended up on Saturday, but there's still work to do, so move
-			 * to Sunday and continue from there. */
-			time->d += 1;
-		} else if (dow + rem > 5) {
-			/* We're on a weekday, but we're going past Friday, so skip right
-			 * over the weekend. */
+	current_dow = timelib_day_of_week(time->y, time->m, time->d);
+	if (count == 0) {
+		/* skip over saturday and sunday */
+		if (current_dow == 6) {
 			time->d += 2;
 		}
-	} else {
-		/* Completely mirror the forward direction. This also covers the 0
-		 * case, since if we start on the weekend, we want to move forward as
-		 * if we stopped there while going backwards. */
-		if (rem == 0) {
-			if (dow == 6) {
-				time->d += 2;
-			} else if (dow == 0) {
-				time->d += 1;
-			}
-		} else if (dow == 0) {
+		/* skip over sunday */
+		if (current_dow == 0) {
+			time->d += 1;
+		}
+	} else if (count > 0) {
+		/* skip over saturday and sunday */
+		if (current_dow == 5) {
+			time->d += 2;
+		}
+		/* skip over sunday */
+		if (current_dow == 6) {
+			time->d += 1;
+		}
+		/* add increments of 5 weekdays as a week */
+		time->d += (count / 5) * 7;
+		/* if current DOW plus the remainder > 5, add two days */
+		current_dow = timelib_day_of_week(time->y, time->m, time->d);
+		time->d += (count % 5);
+		if ((count % 5) + current_dow > 5) {
+			time->d += 2;
+		}
+	} else if (count < 0) {
+		/* skip over sunday and saturday */
+		if (current_dow == 1) {
+			time->d -= 2;
+		}
+		/* skip over satruday */
+		if (current_dow == 0 ) {
 			time->d -= 1;
-		} else if (dow + rem < 1) {
+		}
+		/* subtract increments of 5 weekdays as a week */
+		time->d += (count / 5) * 7;
+		/* if current DOW minus the remainder < 0, subtract two days */
+		current_dow = timelib_day_of_week(time->y, time->m, time->d);
+		time->d += (count % 5);
+		if ((count % 5) + current_dow < 1) {
 			time->d -= 2;
 		}
 	}
-
-	time->d += rem;
 }
 
 static void do_adjust_special(timelib_time* time)
@@ -297,15 +298,6 @@ static void do_adjust_special_early(timelib_time* time)
 				time->relative.m = 0;
 				break;
 		}
-	}
-	switch (time->relative.first_last_day_of) {
-		case TIMELIB_SPECIAL_FIRST_DAY_OF_MONTH: /* first */
-			time->d = 1;
-			break;
-		case TIMELIB_SPECIAL_LAST_DAY_OF_MONTH: /* last */
-			time->d = 0;
-			time->m++;
-			break;
 	}
 	timelib_do_normalize(time);
 }

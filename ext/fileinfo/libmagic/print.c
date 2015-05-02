@@ -28,6 +28,7 @@
 /*
  * print.c - debugging printout routines
  */
+
 #define _GNU_SOURCE
 #include "php.h"
 
@@ -59,19 +60,16 @@ protected void
 file_magwarn(struct magic_set *ms, const char *f, ...)
 {
 	va_list va;
-	char *expanded_format = NULL;
-	int expanded_len;
+	char *expanded_format;
 	TSRMLS_FETCH();
 
 	va_start(va, f);
-	expanded_len = vasprintf(&expanded_format, f, va);
+	if (vasprintf(&expanded_format, f, va)); /* silence */
 	va_end(va);
 	
-	if (expanded_len >= 0 && expanded_format) {
-		php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Warning: %s", expanded_format);
+	php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Warning: %s", expanded_format);
 
-		free(expanded_format);
-	}
+	free(expanded_format);
 }
 
 protected const char *

@@ -3,7 +3,6 @@ Test << operator : various numbers as strings
 --SKIPIF--
 <?php
 if (PHP_INT_SIZE != 4) die("skip this test is for 32bit platform only");
-if ((65<<65)==0) die("skip this test is for Intel only");
 ?>
 --FILE--
 <?php
@@ -21,6 +20,7 @@ foreach ($strVals as $strVal) {
       var_dump(bin2hex($strVal<<$otherVal));
    }
 }
+
    
 ?>
 ===DONE===

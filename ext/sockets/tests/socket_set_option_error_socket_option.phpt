@@ -3,10 +3,7 @@ Test if socket_set_option() returns 'unable to set socket option' failure for in
 --SKIPIF--
 <?php
 if (!extension_loaded('sockets')) {
-    die('SKIP sockets extension not available.');
-}
-if (PHP_OS == 'Darwin') {
-    die('skip Not for OSX');
+        die('SKIP sockets extension not available.');
 }
 $filename = dirname(__FILE__) . '/006_root_check.tmp';
 $fp = fopen($filename, 'w');

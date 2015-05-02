@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2015 The PHP Group                                |
+  | Copyright (c) 1997-2014 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -96,15 +96,13 @@ DBA_FETCH_FUNC(qdbm)
 DBA_UPDATE_FUNC(qdbm)
 {
 	QDBM_DATA;
+	int result;
 
-	if (dpput(dba->dbf, key, keylen, val, vallen, mode == 1 ? DP_DKEEP : DP_DOVER)) {
+	result = dpput(dba->dbf, key, keylen, val, vallen, mode == 1 ? DP_DKEEP : DP_DOVER);
+	if (result)
 		return SUCCESS;
-	}
 
-	if (dpecode != DP_EKEEP) {
-		php_error_docref2(NULL TSRMLS_CC, key, val, E_WARNING, "%s", dperrmsg(dpecode));
-	}
-
+	php_error_docref2(NULL TSRMLS_CC, key, val, E_WARNING, "%s", dperrmsg(dpecode));
 	return FAILURE;
 }
 

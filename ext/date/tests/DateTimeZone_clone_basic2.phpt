@@ -31,27 +31,19 @@ var_dump($d2_clone);
 ===DONE===
 --EXPECTF--
 *** Testing clone on objects whoose class derived from DateTimeZone class ***
-object(DateTimeZoneExt1)#%d (4) {
+object(DateTimeZoneExt1)#%d (2) {
   ["property1"]=>
   int(99)
   ["property2"]=>
   string(5) "Hello"
-  ["timezone_type"]=>
-  int(3)
-  ["timezone"]=>
-  string(13) "Europe/London"
 }
-object(DateTimeZoneExt1)#%d (4) {
+object(DateTimeZoneExt1)#%d (2) {
   ["property1"]=>
   int(99)
   ["property2"]=>
   string(5) "Hello"
-  ["timezone_type"]=>
-  int(3)
-  ["timezone"]=>
-  string(13) "Europe/London"
 }
-object(DateTimeZoneExt2)#%d (6) {
+object(DateTimeZoneExt2)#%d (4) {
   ["property3"]=>
   bool(true)
   ["property4"]=>
@@ -60,12 +52,8 @@ object(DateTimeZoneExt2)#%d (6) {
   int(99)
   ["property2"]=>
   string(5) "Hello"
-  ["timezone_type"]=>
-  int(3)
-  ["timezone"]=>
-  string(13) "Europe/London"
 }
-object(DateTimeZoneExt2)#%d (6) {
+object(DateTimeZoneExt2)#%d (4) {
   ["property3"]=>
   bool(true)
   ["property4"]=>
@@ -74,9 +62,5 @@ object(DateTimeZoneExt2)#%d (6) {
   int(99)
   ["property2"]=>
   string(5) "Hello"
-  ["timezone_type"]=>
-  int(3)
-  ["timezone"]=>
-  string(13) "Europe/London"
 }
 ===DONE===

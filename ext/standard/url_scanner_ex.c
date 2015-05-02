@@ -3,7 +3,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2015 The PHP Group                                |
+  | Copyright (c) 1997-2014 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -519,61 +519,48 @@ state_next_arg:
 	};
 	if ((YYLIMIT - YYCURSOR) < 2) YYFILL(2);
 	yych = *YYCURSOR;
-	if (yych <= '.') {
+	if (yych <= ' ') {
 		if (yych <= '\f') {
-			if (yych <= 0x08) goto yy36;
-			if (yych <= '\v') goto yy32;
-			goto yy36;
+			if (yych <= 0x08) goto yy34;
+			if (yych <= '\v') goto yy30;
+			goto yy34;
 		} else {
-			if (yych <= '\r') goto yy32;
-			if (yych == ' ') goto yy32;
-			goto yy36;
+			if (yych <= '\r') goto yy30;
+			if (yych <= 0x1F) goto yy34;
+			goto yy30;
 		}
 	} else {
 		if (yych <= '@') {
-			if (yych <= '/') goto yy28;
-			if (yych == '>') goto yy30;
-			goto yy36;
+			if (yych != '>') goto yy34;
 		} else {
-			if (yych <= 'Z') goto yy34;
-			if (yych <= '`') goto yy36;
-			if (yych <= 'z') goto yy34;
-			goto yy36;
+			if (yych <= 'Z') goto yy32;
+			if (yych <= '`') goto yy34;
+			if (yych <= 'z') goto yy32;
+			goto yy34;
 		}
 	}
-yy28:
 	++YYCURSOR;
-	if ((yych = *YYCURSOR) == '>') goto yy39;
-yy29:
-	{ passthru(STD_ARGS); goto state_plain_begin; }
+	{ passthru(STD_ARGS); handle_form(STD_ARGS); goto state_plain_begin; }
 yy30:
 	++YYCURSOR;
+	yych = *YYCURSOR;
+	goto yy37;
 yy31:
-	{ passthru(STD_ARGS); handle_form(STD_ARGS); goto state_plain_begin; }
+	{ passthru(STD_ARGS); goto state_next_arg; }
 yy32:
 	++YYCURSOR;
-	yych = *YYCURSOR;
-	goto yy38;
-yy33:
-	{ passthru(STD_ARGS); goto state_next_arg; }
+	{ --YYCURSOR; STATE = STATE_ARG; goto state_arg; }
 yy34:
 	++YYCURSOR;
-	{ --YYCURSOR; STATE = STATE_ARG; goto state_arg; }
+	{ passthru(STD_ARGS); goto state_plain_begin; }
 yy36:
-	yych = *++YYCURSOR;
-	goto yy29;
-yy37:
 	++YYCURSOR;
 	if (YYLIMIT <= YYCURSOR) YYFILL(1);
 	yych = *YYCURSOR;
-yy38:
+yy37:
 	if (yybm[0+yych] & 128) {
-		goto yy37;
+		goto yy36;
 	}
-	goto yy33;
-yy39:
-	++YYCURSOR;
-	yych = *YYCURSOR;
 	goto yy31;
 }
 
@@ -619,28 +606,28 @@ state_arg:
 	};
 	if ((YYLIMIT - YYCURSOR) < 2) YYFILL(2);
 	yych = *YYCURSOR;
-	if (yych <= '@') goto yy44;
-	if (yych <= 'Z') goto yy42;
-	if (yych <= '`') goto yy44;
-	if (yych >= '{') goto yy44;
-yy42:
+	if (yych <= '@') goto yy42;
+	if (yych <= 'Z') goto yy40;
+	if (yych <= '`') goto yy42;
+	if (yych >= '{') goto yy42;
+yy40:
 	++YYCURSOR;
 	yych = *YYCURSOR;
-	goto yy47;
-yy43:
+	goto yy45;
+yy41:
 	{ passthru(STD_ARGS); handle_arg(STD_ARGS); STATE = STATE_BEFORE_VAL; goto state_before_val; }
-yy44:
+yy42:
 	++YYCURSOR;
 	{ passthru(STD_ARGS); STATE = STATE_NEXT_ARG; goto state_next_arg; }
-yy46:
+yy44:
 	++YYCURSOR;
 	if (YYLIMIT <= YYCURSOR) YYFILL(1);
 	yych = *YYCURSOR;
-yy47:
+yy45:
 	if (yybm[0+yych] & 128) {
-		goto yy46;
+		goto yy44;
 	}
-	goto yy43;
+	goto yy41;
 }
 
 
@@ -685,41 +672,41 @@ state_before_val:
 	};
 	if ((YYLIMIT - YYCURSOR) < 2) YYFILL(2);
 	yych = *YYCURSOR;
-	if (yych == ' ') goto yy50;
-	if (yych == '=') goto yy52;
-	goto yy54;
-yy50:
+	if (yych == ' ') goto yy48;
+	if (yych == '=') goto yy50;
+	goto yy52;
+yy48:
 	yych = *(YYMARKER = ++YYCURSOR);
-	if (yych == ' ') goto yy57;
-	if (yych == '=') goto yy55;
-yy51:
+	if (yych == ' ') goto yy55;
+	if (yych == '=') goto yy53;
+yy49:
 	{ --YYCURSOR; goto state_next_arg_begin; }
-yy52:
+yy50:
 	++YYCURSOR;
 	yych = *YYCURSOR;
-	goto yy56;
-yy53:
+	goto yy54;
+yy51:
 	{ passthru(STD_ARGS); STATE = STATE_VAL; goto state_val; }
-yy54:
+yy52:
 	yych = *++YYCURSOR;
+	goto yy49;
+yy53:
+	++YYCURSOR;
+	if (YYLIMIT <= YYCURSOR) YYFILL(1);
+	yych = *YYCURSOR;
+yy54:
+	if (yybm[0+yych] & 128) {
+		goto yy53;
+	}
 	goto yy51;
 yy55:
 	++YYCURSOR;
 	if (YYLIMIT <= YYCURSOR) YYFILL(1);
 	yych = *YYCURSOR;
-yy56:
-	if (yybm[0+yych] & 128) {
-		goto yy55;
-	}
-	goto yy53;
-yy57:
-	++YYCURSOR;
-	if (YYLIMIT <= YYCURSOR) YYFILL(1);
-	yych = *YYCURSOR;
-	if (yych == ' ') goto yy57;
-	if (yych == '=') goto yy55;
+	if (yych == ' ') goto yy55;
+	if (yych == '=') goto yy53;
 	YYCURSOR = YYMARKER;
-	goto yy51;
+	goto yy49;
 }
 
 
@@ -767,73 +754,73 @@ state_val:
 	yych = *YYCURSOR;
 	if (yych <= ' ') {
 		if (yych <= '\f') {
-			if (yych <= 0x08) goto yy65;
-			if (yych <= '\n') goto yy67;
-			goto yy65;
+			if (yych <= 0x08) goto yy63;
+			if (yych <= '\n') goto yy65;
+			goto yy63;
 		} else {
-			if (yych <= '\r') goto yy67;
-			if (yych <= 0x1F) goto yy65;
-			goto yy67;
+			if (yych <= '\r') goto yy65;
+			if (yych <= 0x1F) goto yy63;
+			goto yy65;
 		}
 	} else {
 		if (yych <= '&') {
-			if (yych != '"') goto yy65;
+			if (yych != '"') goto yy63;
 		} else {
-			if (yych <= '\'') goto yy64;
-			if (yych == '>') goto yy67;
-			goto yy65;
+			if (yych <= '\'') goto yy62;
+			if (yych == '>') goto yy65;
+			goto yy63;
 		}
 	}
 	yych = *(YYMARKER = ++YYCURSOR);
-	if (yych != '>') goto yy76;
-yy63:
+	if (yych != '>') goto yy74;
+yy61:
 	{ passthru(STD_ARGS); goto state_next_arg_begin; }
-yy64:
+yy62:
 	yych = *(YYMARKER = ++YYCURSOR);
-	if (yych == '>') goto yy63;
-	goto yy71;
-yy65:
+	if (yych == '>') goto yy61;
+	goto yy69;
+yy63:
 	++YYCURSOR;
 	yych = *YYCURSOR;
-	goto yy69;
-yy66:
+	goto yy67;
+yy64:
 	{ handle_val(STD_ARGS, 0, ' '); goto state_next_arg_begin; }
-yy67:
+yy65:
 	yych = *++YYCURSOR;
-	goto yy63;
+	goto yy61;
+yy66:
+	++YYCURSOR;
+	if (YYLIMIT <= YYCURSOR) YYFILL(1);
+	yych = *YYCURSOR;
+yy67:
+	if (yybm[0+yych] & 32) {
+		goto yy66;
+	}
+	goto yy64;
 yy68:
 	++YYCURSOR;
 	if (YYLIMIT <= YYCURSOR) YYFILL(1);
 	yych = *YYCURSOR;
 yy69:
-	if (yybm[0+yych] & 32) {
+	if (yybm[0+yych] & 64) {
 		goto yy68;
 	}
-	goto yy66;
+	if (yych <= '=') goto yy71;
 yy70:
-	++YYCURSOR;
-	if (YYLIMIT <= YYCURSOR) YYFILL(1);
-	yych = *YYCURSOR;
-yy71:
-	if (yybm[0+yych] & 64) {
-		goto yy70;
-	}
-	if (yych <= '=') goto yy73;
-yy72:
 	YYCURSOR = YYMARKER;
-	goto yy63;
-yy73:
+	goto yy61;
+yy71:
 	++YYCURSOR;
 	{ handle_val(STD_ARGS, 1, '\''); goto state_next_arg_begin; }
-yy75:
+yy73:
 	++YYCURSOR;
 	if (YYLIMIT <= YYCURSOR) YYFILL(1);
 	yych = *YYCURSOR;
-yy76:
+yy74:
 	if (yybm[0+yych] & 128) {
-		goto yy75;
+		goto yy73;
 	}
-	if (yych >= '>') goto yy72;
+	if (yych >= '>') goto yy70;
 	++YYCURSOR;
 	{ handle_val(STD_ARGS, 1, '"'); goto state_next_arg_begin; }
 }
@@ -955,7 +942,7 @@ static void php_url_scanner_output_handler(char *output, uint output_len, char *
 
 PHPAPI int php_url_scanner_add_var(char *name, int name_len, char *value, int value_len, int urlencode TSRMLS_DC)
 {
-	char *encoded = NULL;
+	char *encoded;
 	int encoded_len;
 	smart_str val;
 	

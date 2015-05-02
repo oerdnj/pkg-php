@@ -302,8 +302,6 @@ them both to 0; an emulation function will be used. */
    */
 /* #undef NO_RECURSE */
 
-#define PARENS_NEST_LIMIT 250
-
 /* Name of package */
 #define PACKAGE "pcre"
 
@@ -432,7 +430,7 @@ them both to 0; an emulation function will be used. */
 
 /* Version number of package */
 #ifndef VERSION
-#define VERSION "8.34"
+#define VERSION "8.32"
 #endif
 
 /* Define to empty if `const' does not conform to ANSI C. */

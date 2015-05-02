@@ -34,15 +34,6 @@ OnigSyntaxType OnigSyntaxASIS = {
   , ONIG_SYN_OP2_INEFFECTIVE_ESCAPE
   , 0
   , ONIG_OPTION_NONE
-  ,
-  {
-      (OnigCodePoint )'\\'                       /* esc */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anychar '.'  */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anytime '*'  */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* zero or one time '?' */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* one or more time '+' */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anychar anytime */
-  }
 };
 
 OnigSyntaxType OnigSyntaxPosixBasic = {
@@ -51,15 +42,6 @@ OnigSyntaxType OnigSyntaxPosixBasic = {
   , 0
   , 0
   , ( ONIG_OPTION_SINGLELINE | ONIG_OPTION_MULTILINE )
-  ,
-  {
-      (OnigCodePoint )'\\'                       /* esc */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anychar '.'  */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anytime '*'  */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* zero or one time '?' */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* one or more time '+' */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anychar anytime */
-  }
 };
 
 OnigSyntaxType OnigSyntaxPosixExtended = {
@@ -72,15 +54,6 @@ OnigSyntaxType OnigSyntaxPosixExtended = {
       ONIG_SYN_ALLOW_UNMATCHED_CLOSE_SUBEXP |
       ONIG_SYN_ALLOW_DOUBLE_RANGE_OP_IN_CC )
   , ( ONIG_OPTION_SINGLELINE | ONIG_OPTION_MULTILINE )
-  ,
-  {
-      (OnigCodePoint )'\\'                       /* esc */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anychar '.'  */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anytime '*'  */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* zero or one time '?' */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* one or more time '+' */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anychar anytime */
-  }
 };
 
 OnigSyntaxType OnigSyntaxEmacs = {
@@ -93,15 +66,6 @@ OnigSyntaxType OnigSyntaxEmacs = {
   , ONIG_SYN_OP2_ESC_GNU_BUF_ANCHOR
   , ONIG_SYN_ALLOW_EMPTY_RANGE_IN_CC
   , ONIG_OPTION_NONE
-  ,
-  {
-      (OnigCodePoint )'\\'                       /* esc */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anychar '.'  */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anytime '*'  */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* zero or one time '?' */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* one or more time '+' */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anychar anytime */
-  }
 };
 
 OnigSyntaxType OnigSyntaxGrep = {
@@ -115,15 +79,6 @@ OnigSyntaxType OnigSyntaxGrep = {
   , 0
   , ( ONIG_SYN_ALLOW_EMPTY_RANGE_IN_CC | ONIG_SYN_NOT_NEWLINE_IN_NEGATIVE_CC )
   , ONIG_OPTION_NONE
-  ,
-  {
-      (OnigCodePoint )'\\'                       /* esc */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anychar '.'  */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anytime '*'  */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* zero or one time '?' */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* one or more time '+' */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anychar anytime */
-  }
 };
 
 OnigSyntaxType OnigSyntaxGnuRegex = {
@@ -131,15 +86,6 @@ OnigSyntaxType OnigSyntaxGnuRegex = {
   , 0
   , SYN_GNU_REGEX_BV
   , ONIG_OPTION_NONE
-  ,
-  {
-      (OnigCodePoint )'\\'                       /* esc */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anychar '.'  */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anytime '*'  */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* zero or one time '?' */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* one or more time '+' */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anychar anytime */
-  }
 };
 
 OnigSyntaxType OnigSyntaxJava = {
@@ -154,15 +100,6 @@ OnigSyntaxType OnigSyntaxJava = {
       ONIG_SYN_OP2_ESC_P_BRACE_CHAR_PROPERTY )
   , ( SYN_GNU_REGEX_BV | ONIG_SYN_DIFFERENT_LEN_ALT_LOOK_BEHIND )
   , ONIG_OPTION_SINGLELINE
-  ,
-  {
-      (OnigCodePoint )'\\'                       /* esc */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anychar '.'  */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anytime '*'  */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* zero or one time '?' */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* one or more time '+' */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anychar anytime */
-  }
 };
 
 OnigSyntaxType OnigSyntaxPerl = {
@@ -174,18 +111,10 @@ OnigSyntaxType OnigSyntaxPerl = {
   , ( ONIG_SYN_OP2_ESC_CAPITAL_Q_QUOTE |
       ONIG_SYN_OP2_QMARK_GROUP_EFFECT | ONIG_SYN_OP2_OPTION_PERL |
       ONIG_SYN_OP2_ESC_P_BRACE_CHAR_PROPERTY |
-      ONIG_SYN_OP2_ESC_P_BRACE_CIRCUMFLEX_NOT )
+      ONIG_SYN_OP2_ESC_P_BRACE_CIRCUMFLEX_NOT |
+      ONIG_SYN_OP2_CHAR_PROPERTY_PREFIX_IS )
   , SYN_GNU_REGEX_BV
   , ONIG_OPTION_SINGLELINE
-  ,
-  {
-      (OnigCodePoint )'\\'                       /* esc */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anychar '.'  */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anytime '*'  */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* zero or one time '?' */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* one or more time '+' */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anychar anytime */
-  }
 };
 
 /* Perl + named group */
@@ -199,6 +128,7 @@ OnigSyntaxType OnigSyntaxPerl_NG = {
       ONIG_SYN_OP2_QMARK_GROUP_EFFECT | ONIG_SYN_OP2_OPTION_PERL |
       ONIG_SYN_OP2_ESC_P_BRACE_CHAR_PROPERTY  |
       ONIG_SYN_OP2_ESC_P_BRACE_CIRCUMFLEX_NOT |
+      ONIG_SYN_OP2_CHAR_PROPERTY_PREFIX_IS    |
       ONIG_SYN_OP2_QMARK_LT_NAMED_GROUP       |
       ONIG_SYN_OP2_ESC_K_NAMED_BACKREF        |
       ONIG_SYN_OP2_ESC_G_SUBEXP_CALL )
@@ -206,15 +136,6 @@ OnigSyntaxType OnigSyntaxPerl_NG = {
       ONIG_SYN_CAPTURE_ONLY_NAMED_GROUP |
       ONIG_SYN_ALLOW_MULTIPLEX_DEFINITION_NAME )
   , ONIG_OPTION_SINGLELINE
-  ,
-  {
-      (OnigCodePoint )'\\'                       /* esc */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anychar '.'  */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anytime '*'  */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* zero or one time '?' */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* one or more time '+' */
-    , (OnigCodePoint )ONIG_INEFFECTIVE_META_CHAR /* anychar anytime */
-  }
 };
 
 
@@ -284,7 +205,7 @@ onig_get_syntax_options(OnigSyntaxType* syntax)
 }
 
 #ifdef USE_VARIABLE_META_CHARS
-extern int onig_set_meta_char(OnigSyntaxType* enc,
+extern int onig_set_meta_char(OnigEncoding enc,
                               unsigned int what, OnigCodePoint code)
 {
   switch (what) {

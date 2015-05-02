@@ -1005,7 +1005,7 @@ array(145) {
   [122]=>
   array(3) {
     [0]=>
-    int(%d)
+    int(288)
     [1]=>
     string(10) "instanceof"
     [2]=>

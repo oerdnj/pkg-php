@@ -3,7 +3,7 @@ Test curl_multi_exec() function with basic functionality
 --CREDITS--
 TestFest 2009 - AFUP - Thomas Rabaix <thomas.rabaix@gmail.com>
 --SKIPIF--
-<?php include 'skipif.inc'; ?>
+<?php if (!extension_loaded("curl") || false === getenv('PHP_CURL_HTTP_REMOTE_SERVER')) print "skip"; ?>
 --FILE--
 <?php
 /* Prototype  : bool curl_multi_exec(resource ch)
@@ -12,8 +12,7 @@ TestFest 2009 - AFUP - Thomas Rabaix <thomas.rabaix@gmail.com>
  * Alias to functions: 
  */
 	
-  include 'server.inc';
-  $host = curl_cli_server_start();
+  $host = getenv('PHP_CURL_HTTP_REMOTE_SERVER');
 
   // start testing
   echo "*** Testing curl_exec() : basic functionality ***\n";

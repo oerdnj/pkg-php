@@ -3,9 +3,6 @@ ReflectionClass::getDocComment()
 --CREDITS--
 Robin Fernandes <robinf@php.net>
 Steve Seear <stevseea@php.net>
---INI--
-opcache.save_comments=1
-opcache.load_comments=1
 --FILE--
 <?php
 /**

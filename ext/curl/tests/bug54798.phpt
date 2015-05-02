@@ -2,7 +2,12 @@
 Bug #54798 (Segfault when CURLOPT_STDERR file pointer is closed before calling curl_exec)
 --SKIPIF--
 <?php 
-include 'skipif.inc';
+if (!extension_loaded("curl")) {
+	exit("skip curl extension not loaded");
+}
+if (false === getenv('PHP_CURL_HTTP_REMOTE_SERVER'))  {
+	exit("skip PHP_CURL_HTTP_REMOTE_SERVER env variable is not defined");
+}
 ?>
 --FILE--
 <?php
@@ -42,20 +47,26 @@ $options_to_check = array(
     "CURLOPT_INFILE"
 );
 
-include 'server.inc';
-$host = curl_cli_server_start();
+$host = getenv('PHP_CURL_HTTP_REMOTE_SERVER');
 foreach($options_to_check as $option) {
 	checkForClosedFilePointer($host, constant($option), $option);
 }
 
 ?>
-===DONE===
 --CLEAN--
 <?php @unlink(dirname(__FILE__) . '/bug54798.tmp'); ?>
 --EXPECTF--
+Warning: curl_exec(): CURLOPT_STDERR resource has gone away, resetting to stderr in %sbug54798.php on line %d
+* About to connect() %a
+* Closing connection #%d
+Ok for CURLOPT_STDERR
+
+Warning: curl_exec(): CURLOPT_WRITEHEADER resource has gone away, resetting to default in %sbug54798.php on line 24
+Ok for CURLOPT_WRITEHEADER
+
+Warning: curl_exec(): CURLOPT_FILE resource has gone away, resetting to default in %sbug54798.php on line 24
 %a
-%aOk for CURLOPT_STDERR
-%aOk for CURLOPT_WRITEHEADER
-%aOk for CURLOPT_FILE
-%aOk for CURLOPT_INFILE
-===DONE===
+Ok for CURLOPT_FILE
+
+Warning: curl_exec(): CURLOPT_INFILE resource has gone away, resetting to default in %sbug54798.php on line %d
+Ok for CURLOPT_INFILE

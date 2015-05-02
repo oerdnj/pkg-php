@@ -8,8 +8,6 @@ if (!extension_loaded("mcrypt")) {
 ?>
 --FILE--
 <?php
-error_reporting(E_ALL & ~E_DEPRECATED);
-
 /* Prototype  : string mcrypt_ecb(string cipher, string key, string data, int mode, string iv)
  * Description: ECB crypt/decrypt data using key key with cipher cipher starting with iv 
  * Source code: ext/mcrypt/mcrypt.c
@@ -20,7 +18,7 @@ echo "*** Testing mcrypt_ecb() : usage variation ***\n";
 
 // Define error handler
 function test_error_handler($err_no, $err_msg, $filename, $linenum, $vars) {
-	if ($err_no & error_reporting()) {
+	if (error_reporting() != 0) {
 		// report non-silenced errors
 		echo "Error: $err_no - $err_msg, $filename($linenum)\n";
 	}

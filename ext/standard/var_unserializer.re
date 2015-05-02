@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2015 The PHP Group                                |
+  | Copyright (c) 1997-2014 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -324,7 +324,8 @@ static inline int process_nested_data(UNSERIALIZE_PARAMETER, HashTable *ht, long
 		if (!php_var_unserialize(&data, p, max, var_hash TSRMLS_CC)) {
 			zval_dtor(key);
 			FREE_ZVAL(key);
-			zval_ptr_dtor(&data);
+			zval_dtor(data);
+			FREE_ZVAL(data);
 			return 0;
 		}
 

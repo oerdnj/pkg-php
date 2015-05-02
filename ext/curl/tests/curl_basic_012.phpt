@@ -3,7 +3,7 @@ Test curl_opt() function with CURLOPT_HTTP_VERSION/CURL_HTTP_VERSION_1_0
 --CREDITS--
 TestFest 2009 - AFUP - Xavier Gorse <xgorse@elao.com>   
 --SKIPIF--
-<?php include 'skipif.inc'; ?>
+<?php if (!extension_loaded("curl") || false === getenv(b'PHP_CURL_HTTP_REMOTE_SERVER')) print "skip"; ?>
 --FILE--
 <?php
 /* Prototype  : bool curl_setopt(resource ch, int option, mixed value)
@@ -12,8 +12,7 @@ TestFest 2009 - AFUP - Xavier Gorse <xgorse@elao.com>
  * Alias to functions:
  */
 
-  include 'server.inc';
-  $host = curl_cli_server_start();
+  $host = getenv('PHP_CURL_HTTP_REMOTE_SERVER');
 
   // start testing
   echo '*** Testing curl with HTTP/1.0 ***' . "\n";

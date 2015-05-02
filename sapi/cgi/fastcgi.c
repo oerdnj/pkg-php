@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2015 The PHP Group                                |
+   | Copyright (c) 1997-2014 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -998,7 +998,6 @@ static int fcgi_read_request(fcgi_request *req)
 		q = req->env.list;
 		while (q != NULL) {
 			if (zend_hash_find(&fcgi_mgmt_vars, q->var, q->var_len, (void**) &value) != SUCCESS) {
-				q = q->list_next;
 				continue;
 			}
 			zlen = Z_STRLEN_PP(value);
@@ -1025,7 +1024,6 @@ static int fcgi_read_request(fcgi_request *req)
 			p += q->var_len;
 			memcpy(p, Z_STRVAL_PP(value), zlen);
 			p += zlen;
-			q = q->list_next;
 		}
 		len = p - buf - sizeof(fcgi_header);
 		len += fcgi_make_header((fcgi_header*)buf, FCGI_GET_VALUES_RESULT, 0, len);
@@ -1122,7 +1120,7 @@ static inline void fcgi_close(fcgi_request *req, int force, int destroy)
 
 				shutdown(req->fd, 1);
 				/* read the last FCGI_STDIN header (it may be omitted) */
-				recv(req->fd, (char *)(&buf), sizeof(buf), 0);
+				recv(req->fd, &buf, sizeof(buf), 0);
 			}
 			closesocket(req->fd);
 		}
@@ -1132,7 +1130,7 @@ static inline void fcgi_close(fcgi_request *req, int force, int destroy)
 
 			shutdown(req->fd, 1);
 			/* read the last FCGI_STDIN header (it may be omitted) */
-			recv(req->fd, (char *)(&buf), sizeof(buf), 0);
+			recv(req->fd, &buf, sizeof(buf), 0);
 		}
 		close(req->fd);
 #endif
@@ -1331,7 +1329,6 @@ int fcgi_flush(fcgi_request *req, int close)
 
 	if (safe_write(req, req->out_buf, len) != len) {
 		req->keep = 0;
-		req->out_pos = req->out_buf;
 		return 0;
 	}
 

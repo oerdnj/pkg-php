@@ -1233,8 +1233,6 @@ function ADD_EXTENSION_DEP(extname, dependson, optional)
 	return true;
 }
 
-var static_pgo_enabled = false;
-
 function EXTENSION(extname, file_list, shared, cflags, dllname, obj_dir)
 {
 	var objs = null;
@@ -1325,19 +1323,6 @@ function EXTENSION(extname, file_list, shared, cflags, dllname, obj_dir)
 		ADD_FLAG("STATIC_EXT_LIBS", "$(LIBS_" + EXT + ")");
 		ADD_FLAG("STATIC_EXT_LDFLAGS", "$(LDFLAGS_" + EXT + ")");
 		ADD_FLAG("STATIC_EXT_CFLAGS", "$(CFLAGS_" + EXT + ")");
-		if (is_pgo_desired(extname) && (PHP_PGI == "yes" || PHP_PGO != "no")) {
-			if (!static_pgo_enabled) {
-				if (PHP_DEBUG != "yes" && PHP_PGI == "yes") {
-					ADD_FLAG('STATIC_EXT_LDFLAGS', "/LTCG:PGINSTRUMENT");
-				}
-				else if (PHP_DEBUG != "yes" && PHP_PGO != "no") {
-					ADD_FLAG('STATIC_EXT_LDFLAGS', "/LTCG:PGUPDATE");
-				}
-
-				ADD_FLAG("STATIC_EXT_CFLAGS", "/GL /O2");
-				static_pgo_enabled = true;
-			}
-		}
 
 		/* find the header that declares the module pointer,
 		 * so we can include it in internal_functions.c */
@@ -1968,7 +1953,6 @@ function generate_makefile()
 			var lib = "php_" + extensions_enabled[i][0] + ".lib";
 			var dll = "php_" + extensions_enabled[i][0] + ".dll";
 			MF.WriteLine("	@copy $(BUILD_DIR)\\" + lib + " $(BUILD_DIR_DEV)\\lib");
-			MF.WriteLine("  @if not exist $(PHP_PREFIX) mkdir $(PHP_PREFIX) >nul");
 			MF.WriteLine("	@copy $(BUILD_DIR)\\" + dll + " $(PHP_PREFIX)");
 		}
 	} else {

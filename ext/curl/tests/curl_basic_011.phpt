@@ -3,7 +3,7 @@ Test curl_opt() function with COOKIE
 --CREDITS--
 TestFest 2009 - AFUP - Xavier Gorse <xgorse@elao.com>      
 --SKIPIF--
-<?php include 'skipif.inc'; ?>
+<?php if (!extension_loaded("curl") || false === getenv(b'PHP_CURL_HTTP_REMOTE_SERVER')) print "skip need PHP_CURL_HTTP_REMOTE_SERVER environment variable"; ?>
 --FILE--
 <?php
 /* Prototype  : bool curl_setopt(resource ch, int option, mixed value)
@@ -12,8 +12,7 @@ TestFest 2009 - AFUP - Xavier Gorse <xgorse@elao.com>
  * Alias to functions:
  */
 
-  include 'server.inc';
-  $host = curl_cli_server_start();
+  $host = getenv('PHP_CURL_HTTP_REMOTE_SERVER');
 
   // start testing
   echo '*** Testing curl with cookie ***' . "\n";

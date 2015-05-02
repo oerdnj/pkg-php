@@ -1,9 +1,5 @@
 --TEST--
 Test >> operator : various numbers as strings
---SKIPIF--
-<?php
-if ((65<<65)==0) die("skip this test is for Intel only");
-?>
 --FILE--
 <?php
 

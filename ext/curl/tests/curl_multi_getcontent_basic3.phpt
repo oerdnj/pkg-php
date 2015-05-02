@@ -4,7 +4,12 @@ Curl_multi_getcontent() basic test with different sources (local file/http)
 Rein Velt (rein@velt.org)
 #TestFest Utrecht 20090509
 --SKIPIF--
-<?php include 'skipif.inc'; ?>
+<?php
+if (!extension_loaded('curl')) print 'skip need ext/curl';
+if (false === getenv('PHP_CURL_HTTP_REMOTE_SERVER'))  {
+	exit("skip PHP_CURL_HTTP_REMOTE_SERVER env variable is not defined");
+}
+?>
 --FILE--
 <?php
 	//CURL_MULTI_GETCONTENT TEST
@@ -14,8 +19,7 @@ Rein Velt (rein@velt.org)
 	$ch2=curl_init();
 
 	//SET URL AND OTHER OPTIONS
-    include 'server.inc';
-    $host = curl_cli_server_start();
+	$host = getenv('PHP_CURL_HTTP_REMOTE_SERVER');
 	curl_setopt($ch1, CURLOPT_URL, "{$host}/get.php?test=getpost&get_param=Hello%20World");
 	curl_setopt($ch2, CURLOPT_URL, "file://".dirname(__FILE__). DIRECTORY_SEPARATOR . "curl_testdata2.txt");
 	curl_setopt($ch1, CURLOPT_RETURNTRANSFER, true);

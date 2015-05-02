@@ -66,13 +66,7 @@ require_once('skipifconnectfailure.inc');
 		printf("[002] Expecting NULL, got %s/%s\n", gettype($tmp), $tmp);
 
 	require('table.inc');
-
-	// Make sure that client, connection and result charsets are all the
-	// same. Not sure whether this is strictly necessary.
-	if (!mysqli_set_charset($link, 'utf8'))
-		printf("[%d] %s\n", mysqli_errno($link), mysqli_errno($link));
-
-	$charsetInfo = mysqli_get_charset($link);
+	$charsets = my_get_charsets($link);
 
 	if (!$res = mysqli_query($link, "SELECT id, label FROM test ORDER BY id LIMIT 1", MYSQLI_USE_RESULT)) {
 		printf("[003] [%d] %s\n", mysqli_errno($link), mysqli_error($link));
@@ -87,13 +81,15 @@ require_once('skipifconnectfailure.inc');
 	$field = mysqli_fetch_field($res);
 	var_dump($field);
 	/* label column, result set charset */
-	if ($field->charsetnr != $charsetInfo->number) {
+	if ($field->charsetnr != $charsets['results']['nr']) {
 		printf("[004] Expecting charset %s/%d got %d\n",
-			$charsetInfo->charset, $charsetInfo->number, $field->charsetnr);
+			$charsets['results']['charset'],
+			$charsets['results']['nr'], $field->charsetnr);
 	}
-	if ($field->length != $charsetInfo->max_length) {
+	if ($field->length != (1 * $charsets['results']['maxlen'])) {
 		printf("[005] Expecting length %d got %d\n",
-			$charsetInfo->max_length, $field->max_length);
+			$charsets['results']['maxlen'],
+			$field->max_length);
 	}
 
 	var_dump(mysqli_field_tell($res));
@@ -221,7 +217,7 @@ bool(false)
 Warning: mysqli_field_seek(): Invalid field offset in %s on line %d
 bool(false)
 bool(true)
-object(stdClass)#%d (13) {
+object(stdClass)#3 (13) {
   [%u|b%"name"]=>
   %unicode|string%(5) "_null"
   [%u|b%"orgname"]=>

@@ -27,12 +27,7 @@ require_once('skipifconnectfailure.inc');
 	if (!is_null($tmp = @$res->fetch_field($link)))
 		printf("[003] Expecting NULL, got %s/%s\n", gettype($tmp), $tmp);
 
-	// Make sure that client, connection and result charsets are all the
-	// same. Not sure whether this is strictly necessary.
-	if (!$mysqli->set_charset('utf8'))
-		printf("[%d] %s\n", $mysqli->errno, $mysqli->errno);
-
-	$charsetInfo = $mysqli->get_charset();
+	$charsets = my_get_charsets($link);
 
 	if (!$res = $mysqli->query("SELECT id AS ID, label FROM test AS TEST ORDER BY id LIMIT 1")) {
 		printf("[004] [%d] %s\n", $mysqli->errno, $mysqli->error);
@@ -42,16 +37,18 @@ require_once('skipifconnectfailure.inc');
 
 	$tmp = $res->fetch_field();
 	var_dump($tmp);
-	if ($tmp->charsetnr != $charsetInfo->number) {
+	if ($tmp->charsetnr != $charsets['results']['nr']) {
 		printf("[005] Expecting charset %s/%d got %d\n",
-			$charsetInfo->charset, $charsetInfo->number, $tmp->charsetnr);
+			$charsets['results']['charset'],
+			$charsets['results']['nr'], $tmp->charsetnr);
 	}
-	if ($tmp->length != $charsetInfo->max_length) {
+	if ($tmp->length != (1 * $charsets['results']['maxlen'])) {
 		printf("[006] Expecting length %d got %d\n",
-			$charsetInfo->max_length, $tmp->max_length);
+			$charsets['results']['maxlen'],
+			$tmp->max_length);
 	}
 	if ($tmp->db != $db) {
-		printf("[007] Expecting database '%s' got '%s'\n",
+		printf("008] Expecting database '%s' got '%s'\n",
 		  $db, $tmp->db);
 	}
 

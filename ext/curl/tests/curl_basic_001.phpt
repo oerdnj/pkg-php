@@ -4,7 +4,10 @@ Test curl_exec() function with basic functionality
 Sebastian Deutsch <sebastian.deutsch@9elements.com>
 TestFest 2009 - AFUP - Jean-Marc Fontaine <jmf@durcommefaire.net>
 --SKIPIF--
-<?php include 'skipif.inc'; ?>
+<?php 
+if (!extension_loaded("curl")) exit("skip curl extension not loaded");
+if (false === getenv('PHP_CURL_HTTP_REMOTE_SERVER'))  exit("skip PHP_CURL_HTTP_REMOTE_SERVER env variable is not defined");
+?>
 --FILE--
 <?php
 /* Prototype  : bool curl_exec(resource ch)
@@ -12,8 +15,8 @@ TestFest 2009 - AFUP - Jean-Marc Fontaine <jmf@durcommefaire.net>
  * Source code: ext/curl/interface.c
  * Alias to functions: 
  */
-  include 'server.inc';
-  $host = curl_cli_server_start();
+	
+  $host = getenv('PHP_CURL_HTTP_REMOTE_SERVER');
 
   // start testing
   echo "*** Testing curl_exec() : basic functionality ***\n";

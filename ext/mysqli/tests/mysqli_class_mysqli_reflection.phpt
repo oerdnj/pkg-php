@@ -6,6 +6,8 @@ require_once('skipif.inc');
 require_once('skipifemb.inc');
 require_once('connect.inc');
 
+if (($tmp = substr(PHP_VERSION, 0, strpos(PHP_VERSION, '.'))) && ($tmp < 5))
+	die("skip Reflection not available before PHP 5 (found PHP $tmp)");
 /*
 Let's not deal with cross-version issues in the EXPECTF/UEXPECTF.
 Most of the things which we test are covered by mysqli_class_*_interface.phpt.
@@ -118,36 +120,6 @@ isPassedByReference: no
 isOptional: no
 isDefaultValueAvailable: no
 
-Inspecting method 'begin_transaction'
-isFinal: no
-isAbstract: no
-isPublic: yes
-isPrivate: no
-isProtected: no
-isStatic: no
-isConstructor: no
-isDestructor: no
-isInternal: yes
-isUserDefined: no
-returnsReference: no
-Modifiers: 256
-Number of Parameters: 2
-Number of Required Parameters: 0
-
-Inspecting parameter 'flags' of method 'begin_transaction'
-isArray: no
-allowsNull: no
-isPassedByReference: no
-isOptional: yes
-isDefaultValueAvailable: no
-
-Inspecting parameter 'name' of method 'begin_transaction'
-isArray: no
-allowsNull: no
-isPassedByReference: no
-isOptional: yes
-isDefaultValueAvailable: no
-
 Inspecting method 'change_user'
 isFinal: no
 isAbstract: no
@@ -230,22 +202,8 @@ isInternal: yes
 isUserDefined: no
 returnsReference: no
 Modifiers: 256
-Number of Parameters: 2
+Number of Parameters: 0
 Number of Required Parameters: 0
-
-Inspecting parameter 'flags' of method 'commit'
-isArray: no
-allowsNull: no
-isPassedByReference: no
-isOptional: yes
-isDefaultValueAvailable: no
-
-Inspecting parameter 'name' of method 'commit'
-isArray: no
-allowsNull: no
-isPassedByReference: no
-isOptional: yes
-isDefaultValueAvailable: no
 
 Inspecting method 'connect'
 isFinal: no
@@ -892,29 +850,6 @@ isPassedByReference: no
 isOptional: no
 isDefaultValueAvailable: no
 
-Inspecting method 'release_savepoint'
-isFinal: no
-isAbstract: no
-isPublic: yes
-isPrivate: no
-isProtected: no
-isStatic: no
-isConstructor: no
-isDestructor: no
-isInternal: yes
-isUserDefined: no
-returnsReference: no
-Modifiers: 256
-Number of Parameters: 1
-Number of Required Parameters: 1
-
-Inspecting parameter 'name' of method 'release_savepoint'
-isArray: no
-allowsNull: no
-isPassedByReference: no
-isOptional: no
-isDefaultValueAvailable: no
-
 Inspecting method 'rollback'
 isFinal: no
 isAbstract: no
@@ -928,45 +863,8 @@ isInternal: yes
 isUserDefined: no
 returnsReference: no
 Modifiers: 256
-Number of Parameters: 2
+Number of Parameters: 0
 Number of Required Parameters: 0
-
-Inspecting parameter 'flags' of method 'rollback'
-isArray: no
-allowsNull: no
-isPassedByReference: no
-isOptional: yes
-isDefaultValueAvailable: no
-
-Inspecting parameter 'name' of method 'rollback'
-isArray: no
-allowsNull: no
-isPassedByReference: no
-isOptional: yes
-isDefaultValueAvailable: no
-
-Inspecting method 'savepoint'
-isFinal: no
-isAbstract: no
-isPublic: yes
-isPrivate: no
-isProtected: no
-isStatic: no
-isConstructor: no
-isDestructor: no
-isInternal: yes
-isUserDefined: no
-returnsReference: no
-Modifiers: 256
-Number of Parameters: 1
-Number of Required Parameters: 1
-
-Inspecting parameter 'name' of method 'savepoint'
-isArray: no
-allowsNull: no
-isPassedByReference: no
-isOptional: no
-isDefaultValueAvailable: no
 
 Inspecting method 'select_db'
 isFinal: no

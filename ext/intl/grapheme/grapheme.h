@@ -19,6 +19,7 @@
 
 #include <php.h>
 #include <unicode/utypes.h>
+#include <unicode/ubrk.h>
 
 PHP_FUNCTION(grapheme_strlen);
 PHP_FUNCTION(grapheme_strpos);
