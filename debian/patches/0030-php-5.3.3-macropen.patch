@@ -8,9 +8,11 @@ Subject: php-5.3.3-macropen
  ext/dba/dba_db4.c | 4 ++--
  3 files changed, 4 insertions(+), 4 deletions(-)
 
---- php5.orig/ext/dba/dba.c
-+++ php5/ext/dba/dba.c
-@@ -922,7 +922,7 @@ static void php_dba_open(INTERNAL_FUNCTI
+diff --git a/ext/dba/dba.c b/ext/dba/dba.c
+index dc6db4b..d8c7ee8 100644
+--- a/ext/dba/dba.c
++++ b/ext/dba/dba.c
+@@ -922,7 +922,7 @@ static void php_dba_open(INTERNAL_FUNCTION_PARAMETERS, int persistent)
  		}
  	}
  
@@ -19,8 +21,10 @@ Subject: php-5.3.3-macropen
  		dba_close(info TSRMLS_CC);
  		php_error_docref2(NULL TSRMLS_CC, Z_STRVAL_PP(args[0]), Z_STRVAL_PP(args[1]), E_WARNING, "Driver initialization failed for handler: %s%s%s", hptr->name, error?": ":"", error?error:"");
  		FREENOW;
---- php5.orig/ext/dba/dba_db3.c
-+++ php5/ext/dba/dba_db3.c
+diff --git a/ext/dba/dba_db3.c b/ext/dba/dba_db3.c
+index cae0f20..a6e3629 100644
+--- a/ext/dba/dba_db3.c
++++ b/ext/dba/dba_db3.c
 @@ -91,7 +91,7 @@ DBA_OPEN_FUNC(db3)
  
  	if ((err=db_create(&dbp, NULL, 0)) == 0) {
@@ -30,8 +34,10 @@ Subject: php-5.3.3-macropen
  			dba_db3_data *data;
  
  			data = pemalloc(sizeof(*data), info->flags&DBA_PERSISTENT);
---- php5.orig/ext/dba/dba_db4.c
-+++ php5/ext/dba/dba_db4.c
+diff --git a/ext/dba/dba_db4.c b/ext/dba/dba_db4.c
+index b067285..db53adb 100644
+--- a/ext/dba/dba_db4.c
++++ b/ext/dba/dba_db4.c
 @@ -126,9 +126,9 @@ DBA_OPEN_FUNC(db4)
  	    dbp->set_errcall(dbp, php_dba_db4_errcall_fcn);
  	    if (

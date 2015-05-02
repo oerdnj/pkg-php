@@ -6,8 +6,10 @@ Subject: php-fpm-m68k
  sapi/fpm/fpm/fpm_atomic.h | 34 ++++++++++++++++++++++++++++++++++
  1 file changed, 34 insertions(+)
 
---- php5.orig/sapi/fpm/fpm/fpm_atomic.h
-+++ php5/sapi/fpm/fpm/fpm_atomic.h
+diff --git a/sapi/fpm/fpm/fpm_atomic.h b/sapi/fpm/fpm/fpm_atomic.h
+index 662dd47..a50272f 100644
+--- a/sapi/fpm/fpm/fpm_atomic.h
++++ b/sapi/fpm/fpm/fpm_atomic.h
 @@ -5,6 +5,12 @@
  #ifndef FPM_ATOMIC_H
  #define FPM_ATOMIC_H 1
@@ -21,7 +23,7 @@ Subject: php-fpm-m68k
  #if HAVE_INTTYPES_H
  # include <inttypes.h>
  #else
-@@ -137,6 +143,34 @@ static inline atomic_uint_t atomic_cmp_s
+@@ -137,6 +143,34 @@ static inline atomic_uint_t atomic_cmp_set(atomic_t *lock, atomic_uint_t old, at
  #error Sparc v8 and predecessors are not and will not be supported (see bug report 53310)
  #endif /* #if (__sparcv9 || __sparcv9__) */
  

@@ -6,8 +6,10 @@ Subject: 100-recode_is_shared
  ext/recode/config9.m4 | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- php5.orig/ext/recode/config9.m4
-+++ php5/ext/recode/config9.m4
+diff --git a/ext/recode/config9.m4 b/ext/recode/config9.m4
+index 66df50e..f0a98ca 100644
+--- a/ext/recode/config9.m4
++++ b/ext/recode/config9.m4
 @@ -13,6 +13,6 @@ if test "$PHP_RECODE" != "no"; then
    fi
  

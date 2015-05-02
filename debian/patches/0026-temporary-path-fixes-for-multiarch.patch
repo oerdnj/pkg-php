@@ -13,8 +13,10 @@ Subject: temporary-path-fixes-for-multiarch
  ext/pdo_dblib/config.m4 |  2 +-
  8 files changed, 15 insertions(+), 15 deletions(-)
 
---- php5.orig/acinclude.m4
-+++ php5/acinclude.m4
+diff --git a/acinclude.m4 b/acinclude.m4
+index 2af021f..d5e5dd6 100644
+--- a/acinclude.m4
++++ b/acinclude.m4
 @@ -2282,7 +2282,7 @@ AC_DEFUN([PHP_SETUP_KERBEROS],[
      fi
  
@@ -33,8 +35,10 @@ Subject: temporary-path-fixes-for-multiarch
          OPENSSL_LIBDIR=$i/$PHP_LIBDIR
        fi
        test -n "$OPENSSL_INCDIR" && test -n "$OPENSSL_LIBDIR" && break
---- php5.orig/ext/dba/config.m4
-+++ php5/ext/dba/config.m4
+diff --git a/ext/dba/config.m4 b/ext/dba/config.m4
+index 3748702..caaf345 100644
+--- a/ext/dba/config.m4
++++ b/ext/dba/config.m4
 @@ -239,7 +239,7 @@ AC_DEFUN([PHP_DBA_DB_CHECK],[
      AC_MSG_ERROR([DBA: Could not find necessary header file(s).])
    fi
@@ -44,8 +48,10 @@ Subject: temporary-path-fixes-for-multiarch
        lib_found="";
        PHP_TEMP_LDFLAGS(-L$THIS_PREFIX/$PHP_LIBDIR, -l$LIB,[
          AC_TRY_LINK([
---- php5.orig/ext/gmp/config.m4
-+++ php5/ext/gmp/config.m4
+diff --git a/ext/gmp/config.m4 b/ext/gmp/config.m4
+index 2140aaf..90f4800 100644
+--- a/ext/gmp/config.m4
++++ b/ext/gmp/config.m4
 @@ -9,6 +9,7 @@ if test "$PHP_GMP" != "no"; then
  
    for i in $PHP_GMP /usr/local /usr; do
@@ -62,8 +68,10 @@ Subject: temporary-path-fixes-for-multiarch
  
    PHP_NEW_EXTENSION(gmp, gmp.c, $ext_shared)
    PHP_SUBST(GMP_SHARED_LIBADD)
---- php5.orig/ext/ldap/config.m4
-+++ php5/ext/ldap/config.m4
+diff --git a/ext/ldap/config.m4 b/ext/ldap/config.m4
+index 2804cd5..ad28777 100644
+--- a/ext/ldap/config.m4
++++ b/ext/ldap/config.m4
 @@ -117,7 +117,7 @@ if test "$PHP_LDAP" != "no"; then
      LDAP_PTHREAD=
    fi
@@ -73,8 +81,10 @@ Subject: temporary-path-fixes-for-multiarch
      PHP_ADD_LIBRARY_WITH_PATH(lber, $LDAP_LIBDIR, LDAP_SHARED_LIBADD)
      PHP_ADD_LIBRARY_WITH_PATH(ldap, $LDAP_LIBDIR, LDAP_SHARED_LIBADD)
  
---- php5.orig/ext/mssql/config.m4
-+++ php5/ext/mssql/config.m4
+diff --git a/ext/mssql/config.m4 b/ext/mssql/config.m4
+index 2a298af..90725ee 100644
+--- a/ext/mssql/config.m4
++++ b/ext/mssql/config.m4
 @@ -38,7 +38,7 @@ if test "$PHP_MSSQL" != "no"; then
      fi
    fi  
@@ -84,9 +94,11 @@ Subject: temporary-path-fixes-for-multiarch
       AC_MSG_ERROR(Could not find $FREETDS_INSTALLATION_DIR/$PHP_LIBDIR/libsybdb.[a|so])
    fi
  
---- php5.orig/ext/mysql/config.m4
-+++ php5/ext/mysql/config.m4
-@@ -94,17 +94,15 @@ Note that the MySQL client library is no
+diff --git a/ext/mysql/config.m4 b/ext/mysql/config.m4
+index 999c47b..838010b 100644
+--- a/ext/mysql/config.m4
++++ b/ext/mysql/config.m4
+@@ -94,17 +94,15 @@ Note that the MySQL client library is not bundled anymore!])
    fi
  
    for i in $PHP_LIBDIR $PHP_LIBDIR/mysql; do
@@ -110,8 +122,10 @@ Subject: temporary-path-fixes-for-multiarch
      AC_MSG_ERROR([Cannot find lib$MYSQL_LIBNAME under $MYSQL_DIR.
  Note that the MySQL client library is not bundled anymore!])
    fi
---- php5.orig/ext/pcre/config0.m4
-+++ php5/ext/pcre/config0.m4
+diff --git a/ext/pcre/config0.m4 b/ext/pcre/config0.m4
+index 4f8af76..6b1dcf6 100644
+--- a/ext/pcre/config0.m4
++++ b/ext/pcre/config0.m4
 @@ -21,7 +21,7 @@ PHP_ARG_WITH(pcre-regex,,
      AC_MSG_RESULT([$PCRE_INCDIR])
  
@@ -121,8 +135,10 @@ Subject: temporary-path-fixes-for-multiarch
        test -f $j/libpcre.a || test -f $j/libpcre.$SHLIB_SUFFIX_NAME && PCRE_LIBDIR=$j
      done
      
---- php5.orig/ext/pdo_dblib/config.m4
-+++ php5/ext/pdo_dblib/config.m4
+diff --git a/ext/pdo_dblib/config.m4 b/ext/pdo_dblib/config.m4
+index ba8244c..04d3838 100644
+--- a/ext/pdo_dblib/config.m4
++++ b/ext/pdo_dblib/config.m4
 @@ -46,7 +46,7 @@ if test "$PHP_PDO_DBLIB" != "no"; then
      PHP_LIBDIR=lib
    fi

@@ -6,9 +6,11 @@ Subject: sybase-alias
  ext/mssql/php_mssql.c | 32 ++++++++++++++++++++++++++++++++
  1 file changed, 32 insertions(+)
 
---- php5.orig/ext/mssql/php_mssql.c
-+++ php5/ext/mssql/php_mssql.c
-@@ -178,6 +178,38 @@ const zend_function_entry mssql_function
+diff --git a/ext/mssql/php_mssql.c b/ext/mssql/php_mssql.c
+index 20bb552..92cddc4 100644
+--- a/ext/mssql/php_mssql.c
++++ b/ext/mssql/php_mssql.c
+@@ -178,6 +178,38 @@ const zend_function_entry mssql_functions[] = {
   	PHP_FE(mssql_execute,				arginfo_mssql_execute)
  	PHP_FE(mssql_free_statement,		arginfo_mssql_free_statement)
   	PHP_FE(mssql_guid_string,			arginfo_mssql_guid_string)

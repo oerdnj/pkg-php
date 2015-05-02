@@ -13,8 +13,10 @@ Subject: 006-debian_quirks
  scripts/phpize.in     |  4 ++--
  8 files changed, 21 insertions(+), 20 deletions(-)
 
---- php5.orig/configure.in
-+++ php5/configure.in
+diff --git a/configure.in b/configure.in
+index b3f3422..1584c1b 100644
+--- a/configure.in
++++ b/configure.in
 @@ -1082,7 +1082,7 @@ if test "$PHP_CLI" = "no"; then
  fi
  
@@ -33,7 +35,7 @@ Subject: 006-debian_quirks
      esac
    fi
  
-@@ -1167,12 +1167,12 @@ test "$program_suffix" = "NONE" && progr
+@@ -1167,12 +1167,12 @@ test "$program_suffix" = "NONE" && program_suffix=
  
  case $libdir in
    '${exec_prefix}/lib')
@@ -48,7 +50,7 @@ Subject: 006-debian_quirks
      ;;
  esac
  
-@@ -1239,7 +1239,7 @@ EXPANDED_SYSCONFDIR=`eval echo $sysconfd
+@@ -1239,7 +1239,7 @@ EXPANDED_SYSCONFDIR=`eval echo $sysconfdir`
  EXPANDED_DATADIR=$datadir
  EXPANDED_PHP_CONFIG_FILE_PATH=`eval echo "$PHP_CONFIG_FILE_PATH"`
  EXPANDED_PHP_CONFIG_FILE_SCAN_DIR=`eval echo "$PHP_CONFIG_FILE_SCAN_DIR"`
@@ -57,8 +59,10 @@ Subject: 006-debian_quirks
  
  exec_prefix=$old_exec_prefix
  libdir=$old_libdir
---- php5.orig/ext/ext_skel
-+++ php5/ext/ext_skel
+diff --git a/ext/ext_skel b/ext/ext_skel
+index cd545ec..871e4fc 100755
+--- a/ext/ext_skel
++++ b/ext/ext_skel
 @@ -70,7 +70,7 @@ if test -d "$extname" ; then
  fi
  
@@ -68,8 +72,10 @@ Subject: 006-debian_quirks
  fi
  
  ## convert skel_dir to full path
---- php5.orig/php.ini-development
-+++ php5/php.ini-development
+diff --git a/php.ini-development b/php.ini-development
+index 726e302..22edcdb 100644
+--- a/php.ini-development
++++ b/php.ini-development
 @@ -690,7 +690,7 @@ default_mimetype = "text/html"
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
@@ -79,8 +85,10 @@ Subject: 006-debian_quirks
  ;
  ; Windows: "\path1;\path2"
  ;include_path = ".;c:\php\includes"
---- php5.orig/php.ini-production
-+++ php5/php.ini-production
+diff --git a/php.ini-production b/php.ini-production
+index 7cdd069..6036adb 100644
+--- a/php.ini-production
++++ b/php.ini-production
 @@ -690,7 +690,7 @@ default_mimetype = "text/html"
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
@@ -90,8 +98,10 @@ Subject: 006-debian_quirks
  ;
  ; Windows: "\path1;\path2"
  ;include_path = ".;c:\php\includes"
---- php5.orig/sapi/cli/php.1.in
-+++ php5/sapi/cli/php.1.in
+diff --git a/sapi/cli/php.1.in b/sapi/cli/php.1.in
+index c062f3d..07ff030 100644
+--- a/sapi/cli/php.1.in
++++ b/sapi/cli/php.1.in
 @@ -365,13 +365,14 @@ Shows configuration for extension
  Show configuration file names
  .SH FILES
@@ -112,8 +122,10 @@ Subject: 006-debian_quirks
  .SH EXAMPLES
  .TP 5
  \fI@program_prefix@php \-r 'echo "Hello World\\n";'\fP
---- php5.orig/scripts/Makefile.frag
-+++ php5/scripts/Makefile.frag
+diff --git a/scripts/Makefile.frag b/scripts/Makefile.frag
+index 7cd78fa..15ae302 100644
+--- a/scripts/Makefile.frag
++++ b/scripts/Makefile.frag
 @@ -3,8 +3,8 @@
  # Build environment install
  #
@@ -125,8 +137,10 @@ Subject: 006-debian_quirks
  
  BUILD_FILES = \
  	scripts/phpize.m4 \
---- php5.orig/scripts/php-config.in
-+++ php5/scripts/php-config.in
+diff --git a/scripts/php-config.in b/scripts/php-config.in
+index d6c62cc..78ae11b 100644
+--- a/scripts/php-config.in
++++ b/scripts/php-config.in
 @@ -6,9 +6,9 @@ datarootdir="@datarootdir@"
  exec_prefix="@exec_prefix@"
  version="@PHP_VERSION@"
@@ -140,8 +154,10 @@ Subject: 006-debian_quirks
  libs="@EXTRA_LIBS@"
  extension_dir='@EXTENSION_DIR@'
  man_dir=`eval echo @mandir@`
---- php5.orig/scripts/phpize.in
-+++ php5/scripts/phpize.in
+diff --git a/scripts/phpize.in b/scripts/phpize.in
+index b86925e..27e4f1d 100644
+--- a/scripts/phpize.in
++++ b/scripts/phpize.in
 @@ -4,8 +4,8 @@
  prefix='@prefix@'
  datarootdir='@datarootdir@'

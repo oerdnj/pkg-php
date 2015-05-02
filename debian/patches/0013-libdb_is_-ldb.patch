@@ -6,8 +6,10 @@ Subject: libdb_is_-ldb
  ext/dba/config.m4 | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- php5.orig/ext/dba/config.m4
-+++ php5/ext/dba/config.m4
+diff --git a/ext/dba/config.m4 b/ext/dba/config.m4
+index 5442bb1..e47c36f 100644
+--- a/ext/dba/config.m4
++++ b/ext/dba/config.m4
 @@ -362,7 +362,7 @@ if test "$PHP_DB4" != "no"; then
        break
      fi

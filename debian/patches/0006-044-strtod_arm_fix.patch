@@ -6,8 +6,10 @@ Subject: 044-strtod_arm_fix
  Zend/zend_strtod.c | 27 +++++++++++++++++++--------
  1 file changed, 19 insertions(+), 8 deletions(-)
 
---- php5.orig/Zend/zend_strtod.c
-+++ php5/Zend/zend_strtod.c
+diff --git a/Zend/zend_strtod.c b/Zend/zend_strtod.c
+index 4546614..a53b3f5 100644
+--- a/Zend/zend_strtod.c
++++ b/Zend/zend_strtod.c
 @@ -152,14 +152,25 @@ typedef unsigned long int uint32_t;
  #define IEEE_LITTLE_ENDIAN
  #endif
