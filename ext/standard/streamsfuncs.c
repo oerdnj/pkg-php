@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2015 The PHP Group                                |
+  | Copyright (c) 1997-2014 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -587,7 +587,7 @@ PHP_FUNCTION(stream_get_wrappers)
 		HashPosition pos;
 		array_init(return_value);
 		for (zend_hash_internal_pointer_reset_ex(url_stream_wrappers_hash, &pos);
-			(key_flags = zend_hash_get_current_key_ex(url_stream_wrappers_hash, &stream_protocol, &stream_protocol_len, &num_key, 0, &pos)) != HASH_KEY_NON_EXISTENT;
+			(key_flags = zend_hash_get_current_key_ex(url_stream_wrappers_hash, &stream_protocol, &stream_protocol_len, &num_key, 0, &pos)) != HASH_KEY_NON_EXISTANT;
 			zend_hash_move_forward_ex(url_stream_wrappers_hash, &pos)) {
 				if (key_flags == HASH_KEY_IS_STRING) {
 					add_next_index_stringl(return_value, stream_protocol, stream_protocol_len - 1, 1);
@@ -672,7 +672,7 @@ static int stream_array_from_fd_set(zval *stream_array, fd_set *fds TSRMLS_DC)
 
 		type = zend_hash_get_current_key_ex(Z_ARRVAL_P(stream_array),
 				&key, &key_len, &num_ind, 0, NULL);
-		if (type == HASH_KEY_NON_EXISTENT ||
+		if (type == HASH_KEY_NON_EXISTANT ||
 			zend_hash_get_current_data(Z_ARRVAL_P(stream_array), (void **) &elem) == FAILURE) {
 			continue; /* should not happen */
 		}

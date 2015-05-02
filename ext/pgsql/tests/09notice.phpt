@@ -20,9 +20,6 @@ $db = pg_connect($conn_str);
 
 _set_lc_messages();
 
-$res = pg_query($db, 'SET client_min_messages TO NOTICE;'); 
-var_dump($res);
-
 pg_query($db, "BEGIN;");
 pg_query($db, "BEGIN;");
 
@@ -36,8 +33,6 @@ echo "pg_last_notice() is Ok\n";
 
 ?>
 --EXPECTF--
-resource(%d) of type (pgsql result)
-
 Notice: pg_query(): %s already a transaction in progress in %s on line %d
 %s already a transaction in progress
 pg_last_notice() is Ok

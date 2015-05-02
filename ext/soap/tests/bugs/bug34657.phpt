@@ -25,6 +25,11 @@ try {
 }
 ?>
 --EXPECTF--
+Warning: SoapClient::SoapClient(): %s %sbug34657.php on line 3
+
+Warning: SoapClient::SoapClient(http://i_dont_exist.com/some.wsdl): failed to open stream: %sbug34657.php on line 3
+
+Warning: SoapClient::SoapClient(): I/O warning : failed to load external entity "http://i_dont_exist.com/some.wsdl" in %sbug34657.php on line 3
 SoapFault
-SOAP-ERROR: Parsing WSDL: Couldn't load from 'http://i_dont_exist.com/some.wsdl'%A
+SOAP-ERROR: Parsing WSDL: Couldn't load from 'http://i_dont_exist.com/some.wsdl'%S
 ok

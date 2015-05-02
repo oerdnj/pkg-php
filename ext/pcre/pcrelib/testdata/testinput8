@@ -1,8 +1,5 @@
-/-- This set of tests check the DFA matching functionality of pcre_dfa_exec(),
-    excluding UTF and Unicode property support. The -dfa flag must be used with
-    pcretest when running it. --/
-    
-< forbid 8W 
+/-- This set of tests check the DFA matching functionality of pcre_dfa_exec().
+    The -dfa flag must be used with pcretest when running it. --/
      
 /abc/
     abc
@@ -19,7 +16,7 @@
     ac
     ab
     
-/a*/O
+/a*/
     a
     aaaaaaaaaaaaaaaaa
     aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa 
@@ -180,19 +177,19 @@
     ayzq
     axyzq
       
-/[^a]+/O
+/[^a]+/
     bac
     bcdefax
     *** Failers
     aaaaa   
 
-/[^a]*/O
+/[^a]*/
     bac
     bcdefax
     *** Failers
     aaaaa   
     
-/[^a]{3,5}/O
+/[^a]{3,5}/
     xyz
     awxyza
     abcdefa
@@ -940,16 +937,16 @@
     *** Failers
     the abc
 
-/^[ab]{1,3}(ab*|b)/O
+/^[ab]{1,3}(ab*|b)/
     aabbbbb
 
-/^[ab]{1,3}?(ab*|b)/O
+/^[ab]{1,3}?(ab*|b)/
     aabbbbb
 
-/^[ab]{1,3}?(ab*?|b)/O
+/^[ab]{1,3}?(ab*?|b)/
     aabbbbb
 
-/^[ab]{1,3}(ab*?|b)/O
+/^[ab]{1,3}(ab*?|b)/
     aabbbbb
 
 /  (?: [\040\t] |  \(
@@ -1926,16 +1923,14 @@
     abc\100\060
     abc\100\60
 
-/^A\8B\9C$/
-    A8B9C
-    *** Failers
-    A\08B\09C  
-    
-/^[A\8B\9C]+$/
-    A8B9C
-    *** Failers 
-    A8B9C\x00
-    
+/abc\81/
+    abc\081
+    abc\0\x38\x31
+
+/abc\91/
+    abc\091
+    abc\0\x39\x31
+
 /(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)(k)\12\123/
     abcdefghijk\12S
 
@@ -2054,13 +2049,13 @@
 /foo(.*?)bar/  
     The food is under the bar in the barn.
 
-/(.*)(\d*)/O
+/(.*)(\d*)/
     I have 2 numbers: 53147
     
 /(.*)(\d+)/
     I have 2 numbers: 53147
  
-/(.*?)(\d*)/O
+/(.*?)(\d*)/
     I have 2 numbers: 53147
 
 /(.*?)(\d+)/
@@ -3830,6 +3825,13 @@
 /a*/g
     abbab
 
+/^[a-\d]/
+    abcde
+    -things
+    0digit
+    *** Failers
+    bcdef    
+
 /^[\d-a]/
     abcde
     -things
@@ -4697,7 +4699,7 @@
 /(?(R)a*(?1)|((?R))b)/
     aaaabcde
 
-/(a+)/O
+/(a+)/
     \O6aaaa
     \O8aaaa
 
@@ -4795,40 +4797,5 @@
 /^(.{4}){2}+abc|^\w\w.x\w\w\w\wabcd/
     xxxxxxxxabcd
     xx\xa0xxxxxabcd 
-
-/abcd/
-    abcd\O0
-
-/-- These tests show up auto-possessification --/
-
-/[ab]*/
-    aaaa
-    
-/[ab]*?/
-    aaaa
-    
-/[ab]?/
-    aaaa
-    
-/[ab]??/
-    aaaa
-    
-/[ab]+/
-    aaaa
-    
-/[ab]+?/
-    aaaa
-    
-/[ab]{2,3}/
-    aaaa
-    
-/[ab]{2,3}?/
-    aaaa
-    
-/[ab]{2,}/
-    aaaa    
-
-/[ab]{2,}?/
-    aaaa    
 
 /-- End of testinput8 --/

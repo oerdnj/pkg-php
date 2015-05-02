@@ -4,7 +4,10 @@ Test curl_opt() function with CURLOPT_RETURNTRANSFER parameter set to 1
 Sebastian Deutsch <sebastian.deutsch@9elements.com>
 TestFest 2009 - AFUP - Jean-Marc Fontaine <jmf@durcommefaire.net>
 --SKIPIF--
-<?php include 'skipif.inc'; ?>
+<?php 
+if (!extension_loaded("curl")) exit("skip curl extension not loaded");
+if (false === getenv('PHP_CURL_HTTP_REMOTE_SERVER'))  exit("skip PHP_CURL_HTTP_REMOTE_SERVER env variable is not defined");
+?>
 --FILE--
 <?php
 /* Prototype  : bool curl_setopt(resource ch, int option, mixed value)
@@ -13,8 +16,7 @@ TestFest 2009 - AFUP - Jean-Marc Fontaine <jmf@durcommefaire.net>
  * Alias to functions:
  */
 
-  include 'server.inc';
-  $host = curl_cli_server_start();
+  $host = getenv('PHP_CURL_HTTP_REMOTE_SERVER');
 
   // start testing
   echo '*** Testing curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); ***' . "\n";

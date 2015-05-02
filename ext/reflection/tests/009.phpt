@@ -1,8 +1,5 @@
 --TEST--
 ReflectionFunction basic tests
---INI--
-opcache.save_comments=1
-opcache.load_comments=1
 --FILE--
 <?php
 

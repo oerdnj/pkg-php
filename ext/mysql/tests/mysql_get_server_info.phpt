@@ -36,5 +36,4 @@ if (NULL !== ($tmp = @mysql_get_server_info('too many', 'just too many')))
 print "done!";
 ?>
 --EXPECTF--
-Deprecated: mysql_connect(): The mysql extension is deprecated and will be removed in the future: use mysqli or PDO instead in %s on line %d
 done!

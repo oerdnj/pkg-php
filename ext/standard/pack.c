@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2015 The PHP Group                                |
+   | Copyright (c) 1997-2014 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -99,7 +99,7 @@ static void php_pack(zval **val, int size, int *map, char *output)
 /* }}} */
 
 /* pack() idea stolen from Perl (implemented formats behave the same as there)
- * Implemented formats are Z, A, a, h, H, c, C, s, S, i, I, l, L, n, N, f, d, x, X, @.
+ * Implemented formats are A, a, h, H, c, C, s, S, i, I, l, L, n, N, f, d, x, X, @.
  */
 /* {{{ proto string pack(string format, mixed arg1 [, mixed arg2 [, mixed ...]])
    Takes one or more arguments and packs them into a binary string according to the format argument */
@@ -170,7 +170,6 @@ PHP_FUNCTION(pack)
 			/* Always uses one arg */
 			case 'a': 
 			case 'A': 
-			case 'Z': 
 			case 'h': 
 			case 'H':
 				if (currentarg >= num_args) {
@@ -187,12 +186,6 @@ PHP_FUNCTION(pack)
 					}
 					convert_to_string_ex(argv[currentarg]);
 					arg = Z_STRLEN_PP(argv[currentarg]);
-					if (code == 'Z') {
-						/* add one because Z is always NUL-terminated:
-						 * pack("Z*", "aa") === "aa\0"
-						 * pack("Z2", "aa") === "a\0" */
-						arg++;
-					}
 				}
 
 				currentarg++;
@@ -257,7 +250,6 @@ PHP_FUNCTION(pack)
 
 			case 'a': 
 			case 'A':
-			case 'Z':
 			case 'c': 
 			case 'C':
 			case 'x':
@@ -323,19 +315,16 @@ PHP_FUNCTION(pack)
 		switch ((int) code) {
 			case 'a': 
 			case 'A': 
-			case 'Z': {
-				int arg_cp = (code != 'Z') ? arg : MAX(0, arg - 1);
-				memset(&output[outputpos], (code == 'a' || code == 'Z') ? '\0' : ' ', arg);
+				memset(&output[outputpos], (code == 'a') ? '\0' : ' ', arg);
 				val = argv[currentarg++];
 				if (Z_ISREF_PP(val)) {
 					SEPARATE_ZVAL(val);
 				}
 				convert_to_string_ex(val);
 				memcpy(&output[outputpos], Z_STRVAL_PP(val),
-					   (Z_STRLEN_PP(val) < arg_cp) ? Z_STRLEN_PP(val) : arg_cp);
+					   (Z_STRLEN_PP(val) < arg) ? Z_STRLEN_PP(val) : arg);
 				outputpos += arg;
 				break;
-			}
 
 			case 'h': 
 			case 'H': {
@@ -522,7 +511,7 @@ static long php_unpack(char *data, int size, int issigned, int *map)
  * chars1, chars2, and ints.
  * Numeric pack types will return numbers, a and A will return strings,
  * f and d will return doubles.
- * Implemented formats are Z, A, a, h, H, c, C, s, S, i, I, l, L, n, N, f, d, x, X, @.
+ * Implemented formats are A, a, h, H, c, C, s, S, i, I, l, L, n, N, f, d, x, X, @.
  */
 /* {{{ proto array unpack(string format, string input)
    Unpack binary string into named array elements according to format argument */
@@ -597,7 +586,6 @@ PHP_FUNCTION(unpack)
 
 			case 'a': 
 			case 'A':
-			case 'Z':
 				size = arg;
 				arg = 1;
 				break;
@@ -674,23 +662,9 @@ PHP_FUNCTION(unpack)
 
 			if ((inputpos + size) <= inputlen) {
 				switch ((int) type) {
-					case 'a': {
-						/* a will not strip any trailing whitespace or null padding */
-						int len = inputlen - inputpos;	/* Remaining string */
-
-						/* If size was given take minimum of len and size */
-						if ((size >= 0) && (len > size)) {
-							len = size;
-						}
-
-						size = len;
-
-						add_assoc_stringl(return_value, n, &input[inputpos], len, 1);
-						break;
-					}
+					case 'a': 
 					case 'A': {
-						/* A will strip any trailing whitespace */
-						char padn = '\0'; char pads = ' '; char padt = '\t'; char padc = '\r'; char padl = '\n';
+						char pad = (type == 'a') ? '\0' : ' ';
 						int len = inputlen - inputpos;	/* Remaining string */
 
 						/* If size was given take minimum of len and size */
@@ -700,45 +674,15 @@ PHP_FUNCTION(unpack)
 
 						size = len;
 
-						/* Remove trailing white space and nulls chars from unpacked data */
+						/* Remove padding chars from unpacked data */
 						while (--len >= 0) {
-							if (input[inputpos + len] != padn
-								&& input[inputpos + len] != pads
-								&& input[inputpos + len] != padt
-								&& input[inputpos + len] != padc
-								&& input[inputpos + len] != padl
-							)
+							if (input[inputpos + len] != pad)
 								break;
 						}
 
 						add_assoc_stringl(return_value, n, &input[inputpos], len + 1, 1);
 						break;
 					}
-					/* New option added for Z to remain in-line with the Perl implementation */
-					case 'Z': {
-						/* Z will strip everything after the first null character */
-						char pad = '\0';
-						int	 s,
-							 len = inputlen - inputpos;	/* Remaining string */
-
-						/* If size was given take minimum of len and size */
-						if ((size >= 0) && (len > size)) {
-							len = size;
-						}
-
-						size = len;
-
-						/* Remove everything after the first null */
-						for (s=0 ; s < len ; s++) {
-							if (input[inputpos + s] == pad)
-								break;
-						}
-						len = s;
-
-						add_assoc_stringl(return_value, n, &input[inputpos], len, 1);
-						break;
-					}
-
 					
 					case 'h': 
 					case 'H': {

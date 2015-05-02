@@ -3,7 +3,7 @@ dnl $Id$
 dnl
 
 PHP_ARG_WITH(openssl, for OpenSSL support,
-[  --with-openssl[=DIR]      Include OpenSSL support (requires OpenSSL >= 0.9.6)])
+[  --with-openssl[=DIR]    Include OpenSSL support (requires OpenSSL >= 0.9.6)])
 
 PHP_ARG_WITH(kerberos, for Kerberos support,
 [  --with-kerberos[=DIR]     OPENSSL: Include Kerberos support], no, no)
@@ -18,7 +18,6 @@ if test "$PHP_OPENSSL" != "no"; then
 
   AC_CHECK_LIB(ssl, DSA_get_default_method, AC_DEFINE(HAVE_DSA_DEFAULT_METHOD, 1, [OpenSSL 0.9.7 or later]))
   AC_CHECK_LIB(crypto, X509_free, AC_DEFINE(HAVE_DSA_DEFAULT_METHOD, 1, [OpenSSL 0.9.7 or later]))
-  AC_CHECK_FUNCS([RAND_egd])
 
   PHP_SETUP_OPENSSL(OPENSSL_SHARED_LIBADD, 
   [

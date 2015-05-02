@@ -24,7 +24,7 @@ $input = "10:00:00 AM July 2 1963";
 $tstamp = strtotime($input);
  
 $str = strftime("%r %B%e %Y %Z", $tstamp);
-var_dump(strptime($str, '%H:%M:%S %p %B %d %Y'));
+var_dump(strptime($str, '%H:%M:%S %p %B %d %Y %Z'));
 
 $str = strftime("%T %D", $tstamp);
 var_dump(strptime($str, '%H:%M:%S %m/%d/%y'));
@@ -55,7 +55,7 @@ array(9) {
   ["tm_yday"]=>
   int(182)
   ["unparsed"]=>
-  string(4) " GMT"
+  string(3) "GMT"
 }
 array(9) {
   ["tm_sec"]=>

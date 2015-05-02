@@ -79,11 +79,13 @@ static zend_object_value ResourceBundle_object_create( zend_class_entry *ce TSRM
 /* {{{ ResourceBundle_ctor */
 static void resourcebundle_ctor(INTERNAL_FUNCTION_PARAMETERS) 
 {
-	const char	*bundlename;
-	int			bundlename_len = 0;
-	const char	*locale;
-	int			locale_len = 0;
-	zend_bool	fallback = 1;
+	char *    bundlename;
+	int       bundlename_len = 0;
+	char *    locale;
+	int       locale_len = 0;
+	zend_bool fallback = 1;
+
+	char *    pbuf;
 
 	zval                  *object = return_value;
 	ResourceBundle_object *rb = (ResourceBundle_object *) zend_object_store_get_object( object TSRMLS_CC);
@@ -102,7 +104,7 @@ static void resourcebundle_ctor(INTERNAL_FUNCTION_PARAMETERS)
 	INTL_CHECK_LOCALE_LEN_OBJ(locale_len, return_value);
 	
 	if (locale == NULL) {
-		locale = intl_locale_get_default(TSRMLS_C);
+		locale = INTL_G(default_locale);
 	}
 
 	if (fallback) {
@@ -115,7 +117,6 @@ static void resourcebundle_ctor(INTERNAL_FUNCTION_PARAMETERS)
 
 	if (!fallback && (INTL_DATA_ERROR_CODE(rb) == U_USING_FALLBACK_WARNING ||
 			INTL_DATA_ERROR_CODE(rb) == U_USING_DEFAULT_WARNING)) {
-		char *pbuf;
 		intl_errors_set_code(NULL, INTL_DATA_ERROR_CODE(rb) TSRMLS_CC);
 		spprintf(&pbuf, 0, "resourcebundle_ctor: Cannot load libICU resource "
 				"'%s' without fallback from %s to %s",
@@ -163,6 +164,7 @@ static void resourcebundle_array_fetch(zval *object, zval *offset, zval *return_
 {
 	int32_t     meindex = 0;
 	char *      mekey = NULL;
+	long        mekeylen;
     zend_bool    is_numeric = 0;
 	char         *pbuf;
 	ResourceBundle_object *rb;
@@ -176,6 +178,7 @@ static void resourcebundle_array_fetch(zval *object, zval *offset, zval *return_
 		rb->child = ures_getByIndex( rb->me, meindex, rb->child, &INTL_DATA_ERROR_CODE(rb) );
 	} else if(Z_TYPE_P(offset) == IS_STRING) {
 		mekey = Z_STRVAL_P(offset);
+		mekeylen = Z_STRLEN_P(offset);
 		rb->child = ures_getByKey(rb->me, mekey, rb->child, &INTL_DATA_ERROR_CODE(rb) );
 	} else {
 		intl_errors_set(INTL_DATA_ERROR_P(rb), U_ILLEGAL_ARGUMENT_ERROR,	

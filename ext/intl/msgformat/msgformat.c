@@ -28,7 +28,7 @@
 /* {{{ */
 static void msgfmt_ctor(INTERNAL_FUNCTION_PARAMETERS) 
 {
-	const char* locale;
+	char*       locale;
 	char*       pattern;
 	int         locale_len = 0, pattern_len = 0;
 	UChar*      spattern     = NULL;
@@ -61,7 +61,7 @@ static void msgfmt_ctor(INTERNAL_FUNCTION_PARAMETERS)
 	}
 
 	if(locale_len == 0) {
-		locale = intl_locale_get_default(TSRMLS_C);
+		locale = INTL_G(default_locale);
 	}
 
 #ifdef MSG_FORMAT_QUOTE_APOS

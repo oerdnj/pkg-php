@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | Zend Engine                                                          |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1998-2015 Zend Technologies Ltd. (http://www.zend.com) |
+   | Copyright (c) 1998-2014 Zend Technologies Ltd. (http://www.zend.com) |
    +----------------------------------------------------------------------+
    | This source file is subject to version 2.00 of the Zend license,     |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -987,7 +987,7 @@ ZEND_FUNCTION(get_object_vars)
 	HashPosition pos;
 	char *key;
 	const char *prop_name, *class_name;
-	uint key_len, prop_len;
+	uint key_len;
 	ulong num_index;
 	zend_object *zobj;
 
@@ -1014,10 +1014,10 @@ ZEND_FUNCTION(get_object_vars)
 	while (zend_hash_get_current_data_ex(properties, (void **) &value, &pos) == SUCCESS) {
 		if (zend_hash_get_current_key_ex(properties, &key, &key_len, &num_index, 0, &pos) == HASH_KEY_IS_STRING) {
 			if (zend_check_property_access(zobj, key, key_len-1 TSRMLS_CC) == SUCCESS) {
-				zend_unmangle_property_name_ex(key, key_len - 1, &class_name, &prop_name, (int*) &prop_len);
+				zend_unmangle_property_name(key, key_len-1, &class_name, &prop_name);
 				/* Not separating references */
 				Z_ADDREF_PP(value);
-				add_assoc_zval_ex(return_value, prop_name, prop_len + 1, *value);
+				add_assoc_zval_ex(return_value, prop_name, strlen(prop_name)+1, *value);
 			}
 		}
 		zend_hash_move_forward_ex(properties, &pos);
@@ -1524,6 +1524,7 @@ ZEND_FUNCTION(trigger_error)
 ZEND_FUNCTION(set_error_handler)
 {
 	zval *error_handler;
+	zend_bool had_orig_error_handler=0;
 	char *error_handler_name = NULL;
 	long error_type = E_ALL;
 
@@ -1531,31 +1532,38 @@ ZEND_FUNCTION(set_error_handler)
 		return;
 	}
 
-	if (Z_TYPE_P(error_handler) != IS_NULL) { /* NULL == unset */
-		if (!zend_is_callable(error_handler, 0, &error_handler_name TSRMLS_CC)) {
-			zend_error(E_WARNING, "%s() expects the argument (%s) to be a valid callback",
-					   get_active_function_name(TSRMLS_C), error_handler_name?error_handler_name:"unknown");
-			efree(error_handler_name);
-			return;
-		}
+	if (!zend_is_callable(error_handler, 0, &error_handler_name TSRMLS_CC)) {
+		zend_error(E_WARNING, "%s() expects the argument (%s) to be a valid callback",
+				   get_active_function_name(TSRMLS_C), error_handler_name?error_handler_name:"unknown");
 		efree(error_handler_name);
+		return;
 	}
+	efree(error_handler_name);
 
 	if (EG(user_error_handler)) {
-		RETVAL_ZVAL(EG(user_error_handler), 1, 0);
-
+		had_orig_error_handler = 1;
+		*return_value = *EG(user_error_handler);
+		zval_copy_ctor(return_value);
+		INIT_PZVAL(return_value);
 		zend_stack_push(&EG(user_error_handlers_error_reporting), &EG(user_error_handler_error_reporting), sizeof(EG(user_error_handler_error_reporting)));
 		zend_ptr_stack_push(&EG(user_error_handlers), EG(user_error_handler));
 	}
+	ALLOC_ZVAL(EG(user_error_handler));
 
-	if (Z_TYPE_P(error_handler) == IS_NULL) { /* unset user-defined handler */
+	if (!zend_is_true(error_handler)) { /* unset user-defined handler */
+		FREE_ZVAL(EG(user_error_handler));
 		EG(user_error_handler) = NULL;
-		return;
+		RETURN_TRUE;
 	}
 
-	ALLOC_ZVAL(EG(user_error_handler));
-	MAKE_COPY_ZVAL(&error_handler, EG(user_error_handler));
 	EG(user_error_handler_error_reporting) = (int)error_type;
+	*EG(user_error_handler) = *error_handler;
+	zval_copy_ctor(EG(user_error_handler));
+	INIT_PZVAL(EG(user_error_handler));
+
+	if (!had_orig_error_handler) {
+		RETURN_NULL();
+	}
 }
 /* }}} */
 
@@ -1589,6 +1597,7 @@ ZEND_FUNCTION(set_exception_handler)
 {
 	zval *exception_handler;
 	char *exception_handler_name = NULL;
+	zend_bool had_orig_exception_handler=0;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &exception_handler) == FAILURE) {
 		return;
@@ -1605,18 +1614,24 @@ ZEND_FUNCTION(set_exception_handler)
 	}
 
 	if (EG(user_exception_handler)) {
-		RETVAL_ZVAL(EG(user_exception_handler), 1, 0);
-
+		had_orig_exception_handler = 1;
+		*return_value = *EG(user_exception_handler);
+		zval_copy_ctor(return_value);
 		zend_ptr_stack_push(&EG(user_exception_handlers), EG(user_exception_handler));
 	}
+	ALLOC_ZVAL(EG(user_exception_handler));
 
 	if (Z_TYPE_P(exception_handler) == IS_NULL) { /* unset user-defined handler */
+		FREE_ZVAL(EG(user_exception_handler));
 		EG(user_exception_handler) = NULL;
-		return;
+		RETURN_TRUE;
 	}
 
-	ALLOC_ZVAL(EG(user_exception_handler));
 	MAKE_COPY_ZVAL(&exception_handler, EG(user_exception_handler))
+
+	if (!had_orig_exception_handler) {
+		RETURN_NULL();
+	}
 }
 /* }}} */
 

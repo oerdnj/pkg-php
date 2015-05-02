@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2015 The PHP Group                                |
+   | Copyright (c) 1997-2014 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -157,22 +157,35 @@ static void php_dom_iterator_current_data(zend_object_iterator *iter, zval ***da
 }
 /* }}} */
 
-static void php_dom_iterator_current_key(zend_object_iterator *iter, zval *key TSRMLS_DC) /* {{{ */
+static int php_dom_iterator_current_key(zend_object_iterator *iter, char **str_key, uint *str_key_len, ulong *int_key TSRMLS_DC) /* {{{ */
 {
+	zval *curobj;
+	xmlNodePtr curnode = NULL;
+	dom_object *intern;
+	zval *object;
+	int namelen;
+
 	php_dom_iterator *iterator = (php_dom_iterator *)iter;
-	zval *object = (zval *)iterator->intern.data;
+
+	object = (zval *)iterator->intern.data;
 
 	if (instanceof_function(Z_OBJCE_P(object), dom_nodelist_class_entry TSRMLS_CC)) {
-		ZVAL_LONG(key, iter->index);
+		*int_key = iter->index;
+		return HASH_KEY_IS_LONG;
 	} else {
-		dom_object *intern = (dom_object *)zend_object_store_get_object(iterator->curobj TSRMLS_CC);
+		curobj = iterator->curobj;
 
+		intern = (dom_object *)zend_object_store_get_object(curobj TSRMLS_CC);
 		if (intern != NULL && intern->ptr != NULL) {
-			xmlNodePtr curnode = (xmlNodePtr)((php_libxml_node_ptr *)intern->ptr)->node;
-			ZVAL_STRINGL(key, (char *) curnode->name, xmlStrlen(curnode->name), 1);
+			curnode = (xmlNodePtr)((php_libxml_node_ptr *)intern->ptr)->node;
 		} else {
-			ZVAL_NULL(key);
+			return HASH_KEY_NON_EXISTANT;
 		}
+
+		namelen = xmlStrlen(curnode->name);
+		*str_key = estrndup(curnode->name, namelen);
+		*str_key_len = namelen + 1;
+		return HASH_KEY_IS_STRING;
 	}
 }
 /* }}} */

@@ -3,13 +3,11 @@ Memory corruption error if fp of just created file is closed before curl_close.
 --CREDITS--
 Alexey Shein <confik@gmail.com>
 --SKIPIF--
-<?php include 'skipif.inc'; ?>
+<?php if (!extension_loaded("curl") || false === getenv('PHP_CURL_HTTP_REMOTE_SERVER')) print "skip"; ?>
 --FILE--
 <?php
 
-include 'server.inc';
-$host = curl_cli_server_start();
-$ch = curl_init($host);
+$ch = curl_init(getenv('PHP_CURL_HTTP_REMOTE_SERVER'));
 
 $temp_file = dirname(__FILE__) . '/curl_file_deleted_before_curl_close.tmp';
 if (file_exists($temp_file)) {
@@ -35,5 +33,6 @@ echo "Closed correctly\n";
 <?php
 unlink(dirname(__FILE__) . '/curl_file_deleted_before_curl_close.tmp');
 ?>
---EXPECT--
+--EXPECTF--
+* Closing connection #%d
 Closed correctly

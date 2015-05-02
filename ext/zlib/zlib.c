@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2015 The PHP Group                                |
+   | Copyright (c) 1997-2014 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -33,18 +33,6 @@
 #include "ext/standard/file.h"
 #include "ext/standard/php_string.h"
 #include "php_zlib.h"
-
-/*
- * zlib include files can define the following preprocessor defines which rename
- * the corresponding PHP functions to gzopen64, gzseek64 and gztell64 and thereby
- * breaking some software, most notably PEAR's Archive_Tar, which halts execution
- * without error message on gzip compressed archivesa.
- *
- * This only seems to happen on 32bit systems with large file support.
- */
-#undef gzopen
-#undef gzseek
-#undef gztell
 
 ZEND_DECLARE_MODULE_GLOBALS(zlib);
 
@@ -82,8 +70,8 @@ static int php_zlib_output_encoding(TSRMLS_D)
 	zval **enc;
 
 	if (!ZLIBG(compression_coding)) {
-		if ((PG(http_globals)[TRACK_VARS_SERVER]  || zend_is_auto_global(ZEND_STRL("_SERVER") TSRMLS_CC)) && 
-				SUCCESS == zend_hash_find(Z_ARRVAL_P(PG(http_globals)[TRACK_VARS_SERVER]), "HTTP_ACCEPT_ENCODING", sizeof("HTTP_ACCEPT_ENCODING"), (void *) &enc)) {
+		zend_is_auto_global(ZEND_STRL("_SERVER") TSRMLS_CC);
+		if (PG(http_globals)[TRACK_VARS_SERVER] && SUCCESS == zend_hash_find(Z_ARRVAL_P(PG(http_globals)[TRACK_VARS_SERVER]), "HTTP_ACCEPT_ENCODING", sizeof("HTTP_ACCEPT_ENCODING"), (void *) &enc)) {
 			convert_to_string(*enc);
 			if (strstr(Z_STRVAL_PP(enc), "gzip")) {
 				ZLIBG(compression_coding) = PHP_ZLIB_ENCODING_GZIP;

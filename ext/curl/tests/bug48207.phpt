@@ -4,7 +4,7 @@ Test curl_setopt() CURLOPT_FILE readonly file handle
 Mark van der Velden
 #testfest Utrecht 2009
 --SKIPIF--
-<?php include 'skipif.inc'; ?>
+<?php if (!extension_loaded("curl")) print "skip"; ?>
 --FILE--
 <?php
 /*
@@ -14,8 +14,7 @@ Mark van der Velden
  */
 
 // Figure out what handler to use
-include 'server.inc';
-$host = curl_cli_server_start();
+$host = getenv('PHP_CURL_HTTP_REMOTE_SERVER');
 if(!empty($host)) {
 
     // Use the set Environment variable

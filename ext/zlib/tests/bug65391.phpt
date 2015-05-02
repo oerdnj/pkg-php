@@ -6,8 +6,6 @@ extension_loaded("zlib") or die("skip need zlib");
 ?>
 --GET--
 dummy=1
---INI--
-expose_php=On
 --FILE--
 <?php
 header("Vary: Cookie");

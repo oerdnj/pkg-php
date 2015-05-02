@@ -20,7 +20,7 @@ echo "*** Testing mail() : basic functionality ***\n";
 
 
 // Initialise all required variables
-$to = 'user@example.com';
+$to = 'user@company.com';
 $subject = 'Test Subject';
 $message = 'A Message';
 $additional_headers = 'KHeaders';
@@ -45,7 +45,7 @@ unlink($outFile);
 *** Testing mail() : basic functionality ***
 -- All Mail Content Parameters --
 bool(true)
-To: user@example.com
+To: user@company.com
 Subject: Test Subject
 KHeaders
 
@@ -53,7 +53,7 @@ A Message
 
 -- Mandatory Parameters --
 bool(true)
-To: user@example.com
+To: user@company.com
 Subject: Test Subject
 
 A Message

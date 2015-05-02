@@ -2,11 +2,16 @@
 Variation of bug #48203 with curl_multi_exec (Crash when file pointers passed to curl are closed before calling curl_multi_exec)
 --SKIPIF--
 <?php
-include 'skipif.inc';
+if (!extension_loaded("curl")) {
+	exit("skip curl extension not loaded");
+}
+if (false === getenv('PHP_CURL_HTTP_REMOTE_SERVER'))  {
+	exit("skip PHP_CURL_HTTP_REMOTE_SERVER env variable is not defined");
+}
 ?>
 --FILE--
 <?php
-include 'server.inc';
+
 function checkForClosedFilePointer($curl_option, $description) {
 	$fp = fopen(dirname(__FILE__) . '/bug48203.tmp', 'w');
 
@@ -16,7 +21,7 @@ function checkForClosedFilePointer($curl_option, $description) {
 	$options = array(
 		CURLOPT_RETURNTRANSFER => 1,
 		$curl_option => $fp,
-		CURLOPT_URL => curl_cli_server_start()
+		CURLOPT_URL => getenv("PHP_CURL_HTTP_REMOTE_SERVER")
 	);
 
 	// we also need to set CURLOPT_VERBOSE to test CURLOPT_STDERR properly
@@ -76,7 +81,8 @@ Ok for CURLOPT_WRITEHEADER
 Warning: curl_multi_exec(): CURLOPT_FILE resource has gone away, resetting to default in %sbug48203_multi.php on line 36
 
 Warning: curl_multi_exec(): CURLOPT_FILE resource has gone away, resetting to default in %sbug48203_multi.php on line 36
-%AOk for CURLOPT_FILE
+%A
+Ok for CURLOPT_FILE
 
 Warning: curl_multi_exec(): CURLOPT_INFILE resource has gone away, resetting to default in %sbug48203_multi.php on line 36
 

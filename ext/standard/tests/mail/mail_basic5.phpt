@@ -19,7 +19,7 @@ echo "*** Testing mail() : basic functionality ***\n";
 
 
 // Initialise all required variables
-$to = 'user@example.com';
+$to = 'user@company.com';
 $subject = 'Test Subject';
 $message = 'A Message';
 

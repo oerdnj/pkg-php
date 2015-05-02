@@ -17,16 +17,18 @@ $undefined->foo();
 --EXPECTF--
 Error handler called (Undefined variable: undefined)
 
-Fatal error: Uncaught exception 'ErrorException' with message 'Undefined variable: undefined' in %sbug61767.php:%d
+Warning: Uncaught exception 'ErrorException' with message 'Undefined variable: undefined' in %sbug61767.php:13
 Stack trace:
-#0 %sbug61767.php(%d): {closure}(%s, 'Undefined varia...', '%s', %d, Array)
+#0 %sbug61767.php(13): {closure}(8, 'Undefined varia...', '%s', 13, Array)
 #1 {main}
-  thrown in %sbug61767.php on line %d
+  thrown in %sbug61767.php on line 13
+
+Fatal error: Call to a member function foo() on a non-object in %sbug61767.php on line 13
 Shutting down
 Array
 (
     [type] => 1
-    [message] => %a
+    [message] => Call to a member function foo() on a non-object
     [file] => %sbug61767.php
-    [line] => %d
+    [line] => 13
 )

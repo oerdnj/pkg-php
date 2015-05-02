@@ -1,8 +1,6 @@
 /-- This set of tests checks UTF-8 support with the DFA matching functionality
-    of pcre_dfa_exec(), excluding Unicode property support. The -dfa flag must
-    be used with pcretest when running it. --/
-    
-< forbid W 
+    of pcre_dfa_exec(). The -dfa flag must be used with pcretest when running 
+    it. --/
 
 /\x{100}ab/8
   \x{100}ab
@@ -315,9 +313,13 @@ No match
 /[^a]+/8g
     bcd
  0: bcd
+ 1: bc
+ 2: b
     \x{100}aY\x{256}Z 
  0: \x{100}
  0: Y\x{256}Z
+ 1: Y\x{256}
+ 2: Y
     
 /^[^a]{2}/8
     \x{100}bc
@@ -326,6 +328,8 @@ No match
 /^[^a]{2,}/8
     \x{100}bcAa
  0: \x{100}bcA
+ 1: \x{100}bc
+ 2: \x{100}b
 
 /^[^a]{2,}?/8
     \x{100}bca
@@ -335,9 +339,13 @@ No match
 /[^a]+/8ig
     bcd
  0: bcd
+ 1: bc
+ 2: b
     \x{100}aY\x{256}Z 
  0: \x{100}
  0: Y\x{256}Z
+ 1: Y\x{256}
+ 2: Y
     
 /^[^a]{2}/8i
     \x{100}bc
@@ -346,6 +354,7 @@ No match
 /^[^a]{2,}/8i
     \x{100}bcAa
  0: \x{100}bc
+ 1: \x{100}b
 
 /^[^a]{2,}?/8i
     \x{100}bca
@@ -361,18 +370,28 @@ No match
  0: 
     \x{100}\x{100} 
  0: \x{100}
+ 1: 
 
 /\x{100}{0,3}/8 
     \x{100}\x{100} 
  0: \x{100}\x{100}
+ 1: \x{100}
+ 2: 
     \x{100}\x{100}\x{100}\x{100} 
  0: \x{100}\x{100}\x{100}
+ 1: \x{100}\x{100}
+ 2: \x{100}
+ 3: 
     
 /\x{100}*/8
     abce
  0: 
     \x{100}\x{100}\x{100}\x{100} 
  0: \x{100}\x{100}\x{100}\x{100}
+ 1: \x{100}\x{100}\x{100}
+ 2: \x{100}\x{100}
+ 3: \x{100}
+ 4: 
 
 /\x{100}{1,1}/8
     abcd\x{100}\x{100}\x{100}\x{100} 
@@ -381,10 +400,15 @@ No match
 /\x{100}{1,3}/8
     abcd\x{100}\x{100}\x{100}\x{100} 
  0: \x{100}\x{100}\x{100}
+ 1: \x{100}\x{100}
+ 2: \x{100}
 
 /\x{100}+/8
     abcd\x{100}\x{100}\x{100}\x{100} 
  0: \x{100}\x{100}\x{100}\x{100}
+ 1: \x{100}\x{100}\x{100}
+ 2: \x{100}\x{100}
+ 3: \x{100}
 
 /\x{100}{3}/8
     abcd\x{100}\x{100}\x{100}XX
@@ -393,8 +417,10 @@ No match
 /\x{100}{3,5}/8
     abcd\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}XX
  0: \x{100}\x{100}\x{100}\x{100}\x{100}
+ 1: \x{100}\x{100}\x{100}\x{100}
+ 2: \x{100}\x{100}\x{100}
 
-/\x{100}{3,}/8O
+/\x{100}{3,}/8
     abcd\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}XX
  0: \x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}
  1: \x{100}\x{100}\x{100}\x{100}\x{100}\x{100}
@@ -406,9 +432,9 @@ No match
     Xyyya\x{100}\x{100}bXzzz
  0: X
 
-/\D*/8O
+/\D*/8
   aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-Matched, but offsets vector is too small to show all matches
+Matched, but too many subsidiary matches
  0: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
  1: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
  2: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
@@ -432,9 +458,9 @@ Matched, but offsets vector is too small to show all matches
 20: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 21: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
-/\D*/8O
+/\D*/8
   \x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}
-Matched, but offsets vector is too small to show all matches
+Matched, but too many subsidiary matches
  0: \x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}
  1: \x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}
  2: \x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}\x{100}
@@ -481,18 +507,33 @@ Matched, but offsets vector is too small to show all matches
 /\D+/8
     12abcd34
  0: abcd
+ 1: abc
+ 2: ab
+ 3: a
     *** Failers
  0: *** Failers
+ 1: *** Failer
+ 2: *** Faile
+ 3: *** Fail
+ 4: *** Fai
+ 5: *** Fa
+ 6: *** F
+ 7: *** 
+ 8: ***
+ 9: **
+10: *
     1234  
 No match
 
 /\D{2,3}/8
     12abcd34
  0: abc
+ 1: ab
     12ab34
  0: ab
     *** Failers  
  0: ***
+ 1: **
     1234
 No match
     12a34  
@@ -515,6 +556,7 @@ No match
 /\d+/8
     12abcd34
  0: 12
+ 1: 1
     *** Failers
 No match
 
@@ -523,6 +565,7 @@ No match
  0: 12
     1234abcd
  0: 123
+ 1: 12
     *** Failers  
 No match
     1.4 
@@ -542,18 +585,30 @@ No match
 /\S+/8
     12abcd34
  0: 12abcd34
+ 1: 12abcd3
+ 2: 12abcd
+ 3: 12abc
+ 4: 12ab
+ 5: 12a
+ 6: 12
+ 7: 1
     *** Failers
  0: ***
+ 1: **
+ 2: *
     \    \ 
 No match
 
 /\S{2,3}/8
     12abcd34
  0: 12a
+ 1: 12
     1234abcd
  0: 123
+ 1: 12
     *** Failers
  0: ***
+ 1: **
     \     \  
 No match
 
@@ -599,8 +654,15 @@ No match
 /\w+/8
     12      34
  0: 12
+ 1: 1
     *** Failers
  0: Failers
+ 1: Failer
+ 2: Faile
+ 3: Fail
+ 4: Fai
+ 5: Fa
+ 6: F
     +++=*! 
 No match
 
@@ -609,8 +671,10 @@ No match
  0: ab
     abcd ce
  0: abc
+ 1: ab
     *** Failers
  0: Fai
+ 1: Fa
     a.b.c
 No match
 
@@ -629,18 +693,26 @@ No match
 /\W+/8
     12====34
  0: ====
+ 1: ===
+ 2: ==
+ 3: =
     *** Failers
  0: *** 
+ 1: ***
+ 2: **
+ 3: *
     abcd 
 No match
 
 /\W{2,3}/8
     ab====cd
  0: ===
+ 1: ==
     ab==cd
  0: ==
     *** Failers
  0: ***
+ 1: **
     a.b.c
 No match
 
@@ -753,6 +825,8 @@ No match
  0: \x{200}
    ab\x{200}\x{100}\x{200}\x{100}cd
  0: \x{200}\x{100}\x{200}
+ 1: \x{200}\x{100}
+ 2: \x{200}
    *** Failers  
 No match
 
@@ -775,6 +849,8 @@ No match
  0: \x{200}
    ab\x{200}\x{100}\x{200}\x{100}cd
  0: \x{200}\x{100}\x{200}
+ 1: \x{200}\x{100}
+ 2: \x{200}
    *** Failers  
 No match
 
@@ -1050,21 +1126,21 @@ No match
     a\r
 No match
 
-/\h+\V?\v{3,4}/8O
+/\h+\V?\v{3,4}/8 
     \x09\x20\x{a0}X\x0a\x0b\x0c\x0d\x0a
  0: \x{09} \x{a0}X\x{0a}\x{0b}\x{0c}\x{0d}
  1: \x{09} \x{a0}X\x{0a}\x{0b}\x{0c}
 
-/\V?\v{3,4}/8O 
+/\V?\v{3,4}/8 
     \x20\x{a0}X\x0a\x0b\x0c\x0d\x0a
  0: X\x{0a}\x{0b}\x{0c}\x{0d}
  1: X\x{0a}\x{0b}\x{0c}
 
-/\h+\V?\v{3,4}/8O
+/\h+\V?\v{3,4}/8
     >\x09\x20\x{a0}X\x0a\x0a\x0a<
  0: \x{09} \x{a0}X\x{0a}\x{0a}\x{0a}
 
-/\V?\v{3,4}/8O
+/\V?\v{3,4}/8
     >\x09\x20\x{a0}X\x0a\x0a\x0a<
  0: X\x{0a}\x{0a}\x{0a}
 
@@ -1078,7 +1154,7 @@ No match
     \x{a0} X\x0a   
 No match
     
-/\H*\h+\V?\v{3,4}/8O 
+/\H*\h+\V?\v{3,4}/8 
     \x09\x20\x{a0}X\x0a\x0b\x0c\x0d\x0a
  0: \x{09} \x{a0}X\x{0a}\x{0b}\x{0c}\x{0d}
  1: \x{09} \x{a0}X\x{0a}\x{0b}\x{0c}
@@ -1102,7 +1178,7 @@ No match
     \x{2009} X\x0a   
 No match
     
-/\H*\h+\V?\v{3,4}/8O 
+/\H*\h+\V?\v{3,4}/8 
     \x{1680}\x{180e}\x{2007}X\x{2028}\x{2029}\x0c\x0d\x0a
  0: \x{1680}\x{180e}\x{2007}X\x{2028}\x{2029}\x{0c}\x{0d}
  1: \x{1680}\x{180e}\x{2007}X\x{2028}\x{2029}\x{0c}
@@ -1203,28 +1279,34 @@ No match
 /abcd*/8
     xxxxabcd\P
  0: abcd
+ 1: abc
     xxxxabcd\P\P
 Partial match: abcd
 
 /abcd*/i8
     xxxxabcd\P
  0: abcd
+ 1: abc
     xxxxabcd\P\P
 Partial match: abcd
     XXXXABCD\P
  0: ABCD
+ 1: ABC
     XXXXABCD\P\P
 Partial match: ABCD
 
 /abc\d*/8
     xxxxabc1\P
  0: abc1
+ 1: abc
     xxxxabc1\P\P
 Partial match: abc1
 
 /abc[de]*/8
     xxxxabcde\P
  0: abcde
+ 1: abcd
+ 2: abc
     xxxxabcde\P\P
 Partial match: abcde
 
@@ -1258,6 +1340,7 @@ Partial match: \x{0d}
 Partial match: \x{0d}\x{0d}
     \r\r\r\P
  0: \x{0d}\x{0d}\x{0d}
+ 1: \x{0d}\x{0d}
     \r\r\r\P\P     
 Partial match: \x{0d}\x{0d}\x{0d}
 
@@ -1283,5 +1366,6 @@ Partial match: \x{0d}\x{0d}\x{0d}
 /[^\x{100}]+/8
     \x{100}\x{101}X
  0: \x{101}X
+ 1: \x{101}
 
 /-- End of testinput9 --/ 

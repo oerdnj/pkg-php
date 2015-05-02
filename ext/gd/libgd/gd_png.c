@@ -134,7 +134,6 @@ gdImagePtr gdImageCreateFromPngCtx (gdIOCtx * infile)
 	volatile int transparent = -1;
 	volatile int palette_allocated = FALSE;
 
-
 	/* Make sure the signature can't match by dumb luck -- TBB */
 	/* GRR: isn't sizeof(infile) equal to the size of the pointer? */
 	memset (sig, 0, sizeof(sig));
@@ -346,7 +345,6 @@ gdImagePtr gdImageCreateFromPngCtx (gdIOCtx * infile)
 			open[i] = 1;
 		}
 	}
-
 	/* 2.0.12: Slaven Rezic: palette images are not the only images
 	 * with a simple transparent color setting.
 	 */

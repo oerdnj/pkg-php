@@ -12,13 +12,7 @@ if (!function_exists('mysqli_stmt_get_result'))
 --FILE--
 <?php
 	require('table.inc');
-
-	// Make sure that client, connection and result charsets are all the
-	// same. Not sure whether this is strictly necessary.
-	if (!mysqli_set_charset($link, 'utf8'))
-		printf("[%d] %s\n", mysqli_errno($link), mysqli_errno($link));
-
-	$charsetInfo = mysqli_get_charset($link);
+	$charsets = my_get_charsets($link);
 
 	if (!($stmt = mysqli_stmt_init($link)) ||
 		!mysqli_stmt_prepare($stmt, "SELECT id, label, id + 1 as _id,  concat(label, '_') ___label FROM test ORDER BY id ASC LIMIT 3") ||
@@ -45,14 +39,15 @@ if (!function_exists('mysqli_stmt_get_result'))
 			Label column, result set charset.
 			All of the following columns are "too hot" - too server dependent
 			*/
-			if ($field->charsetnr != $charsetInfo->number) {
+			if ($field->charsetnr != $charsets['results']['nr']) {
 				printf("[004] Expecting charset %s/%d got %d\n",
-					$charsetInfo->charset,
-					$charsetInfo->number, $field->charsetnr);
+					$charsets['results']['charset'],
+					$charsets['results']['nr'], $field->charsetnr);
 			}
-			if ($field->length != $charsetInfo->max_length) {
+			if ($field->length != (1 * $charsets['results']['maxlen'])) {
 				printf("[005] Expecting length %d got %d\n",
-					$charsetInfo->max_length, $field->max_length);
+					$charsets['results']['maxlen'],
+					$field->max_length);
 			}
 		}
 	}

@@ -1484,13 +1484,13 @@ object_class Object
 *** Testing print_r() on resources ***
 
 -- Iteration 1 --
-Resource id #%d
-Resource id #%d
-Resource id #%d
+Resource id #5
+Resource id #5
+Resource id #5
 -- Iteration 2 --
-Resource id #%d
-Resource id #%d
-Resource id #%d
+Resource id #6
+Resource id #6
+Resource id #6
 *** Testing print_r() on different combinations of scalar 
             and non-scalar variables ***
 

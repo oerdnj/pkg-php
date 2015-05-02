@@ -18,7 +18,7 @@ if(substr(PHP_OS, 0, 3) == "WIN")
 echo "*** Testing mail() : variation ***\n";
 
 // Initialise all required variables
-$to = 'user@example.com';
+$to = 'user@company.com';
 $subject = 'Test Subject';
 $message = 'A Message';
 var_dump( mail($to, $subject, $message) );

@@ -26,11 +26,7 @@ object(DateTime)#%d (3) {
   ["timezone"]=>
   string(3) "UTC"
 }
-object(DateTimeZone)#%d (2) {
-  ["timezone_type"]=>
-  int(3)
-  ["timezone"]=>
-  string(3) "UTC"
+object(DateTimeZone)#%d (0) {
 }
 
 Warning: timezone_offset_get() expects exactly 2 parameters, 0 given in %s on line %d

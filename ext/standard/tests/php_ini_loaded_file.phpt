@@ -10,5 +10,5 @@ precision=12
 <?php
 var_dump(php_ini_loaded_file());
 ?>
---EXPECTREGEX--
-string\(\d+\) ".*php\.ini"|bool\(false\)
+--EXPECTF--
+string(%d) "%sphp.ini"

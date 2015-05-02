@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2015 The PHP Group                                |
+   | Copyright (c) 1997-2014 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -898,21 +898,16 @@ static int php_sqlite3_callback_compare(void *coll, int a_len, const void *a, in
 	efree(zargs[1]);
 	efree(zargs);
 
-	if (!retval) {
-		//Exception was thrown by callback, default to 0 for compare
-		ret = 0;
-	} else if (Z_TYPE_P(retval) != IS_LONG) {
-		//retval ought to contain a ZVAL_LONG by now
-    	// (the result of a comparison, i.e. most likely -1, 0, or 1)
-    	//I suppose we could accept any scalar return type, though.
+	//retval ought to contain a ZVAL_LONG by now
+	// (the result of a comparison, i.e. most likely -1, 0, or 1)
+	//I suppose we could accept any scalar return type, though.
+	if (Z_TYPE_P(retval) != IS_LONG){
 		php_error_docref(NULL TSRMLS_CC, E_WARNING, "An error occurred while invoking the compare callback (invalid return type).  Collation behaviour is undefined.");
-	} else {
+	}else{
 		ret = Z_LVAL_P(retval);
 	}
 
-	if (retval) {
-		zval_ptr_dtor(&retval);
-	}
+	zval_ptr_dtor(&retval);
 
 	return ret;
 }
@@ -1923,7 +1918,7 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_sqlite3result_columntype, 0, 0, 1)
 	ZEND_ARG_INFO(0, column_number)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_sqlite3result_fetcharray, 0, 0, 0)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_sqlite3result_fetcharray, 0, 0, 1)
 	ZEND_ARG_INFO(0, mode)
 ZEND_END_ARG_INFO()
 

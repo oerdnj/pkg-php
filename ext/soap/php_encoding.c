@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2015 The PHP Group                                |
+  | Copyright (c) 1997-2014 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -2320,6 +2320,10 @@ static xmlNodePtr to_xml_array(encodeTypePtr type, zval *data, int style, xmlNod
 		zend_object_iterator   *iter;
 		zend_class_entry       *ce = Z_OBJCE_P(data);
 		zval                  **val;
+		char                   *str_key;
+		uint                    str_key_len;
+		ulong                   int_key;
+		int                     key_type;
 
 		ALLOC_ZVAL(array_copy);
 		INIT_PZVAL(array_copy);
@@ -2348,14 +2352,19 @@ static xmlNodePtr to_xml_array(encodeTypePtr type, zval *data, int style, xmlNod
 				goto iterator_done;
 			}
 			if (iter->funcs->get_current_key) {
-				zval key;
-				iter->funcs->get_current_key(iter, &key TSRMLS_CC);
+				key_type = iter->funcs->get_current_key(iter, &str_key, &str_key_len, &int_key TSRMLS_CC);
 				if (EG(exception)) {
 					goto iterator_done;
 				}
-				array_set_zval_key(Z_ARRVAL_P(array_copy), &key, *val);
-				zval_ptr_dtor(val);
-				zval_dtor(&key);
+				switch(key_type) {
+					case HASH_KEY_IS_STRING:
+						add_assoc_zval_ex(array_copy, str_key, str_key_len, *val);
+						efree(str_key);
+						break;
+					case HASH_KEY_IS_LONG:
+						add_index_zval(array_copy, int_key, *val);
+						break;
+				}
 			} else {
 				add_next_index_zval(array_copy, *val);
 			}

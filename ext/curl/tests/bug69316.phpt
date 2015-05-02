@@ -1,7 +1,10 @@
 --TEST--
 Bug #69316: Use-after-free in php_curl related to CURLOPT_FILE/_INFILE/_WRITEHEADER
 --SKIPIF--
-<?php include 'skipif.inc'; ?>
+<?php 
+if (!extension_loaded("curl")) exit("skip curl extension not loaded");
+if (false === getenv('PHP_CURL_HTTP_REMOTE_SERVER'))  exit("skip PHP_CURL_HTTP_REMOTE_SERVER env variable is not defined");
+?>
 --FILE--
 <?php
   function hdr_callback($ch, $data) {
@@ -15,9 +18,8 @@ Bug #69316: Use-after-free in php_curl related to CURLOPT_FILE/_INFILE/_WRITEHEA
       }
       return strlen($data);
   }
-
-  include 'server.inc';
-  $host = curl_cli_server_start();
+  $host = getenv('PHP_CURL_HTTP_REMOTE_SERVER');
+  
   $temp_file = dirname(__FILE__) . '/body.tmp';
   $url = "{$host}/get.php?test=getpost";
   $ch = curl_init();
@@ -36,10 +38,4 @@ unlink(dirname(__FILE__) . '/body.tmp');
 ?>
 --EXPECTF--
 Warning: curl_exec(): CURLOPT_FILE resource has gone away, resetting to default in %s on line %d
-array(1) {
-  ["test"]=>
-  string(7) "getpost"
-}
-array(0) {
-}
 ===DONE===

@@ -46,8 +46,7 @@ if (!mysql_select_db($db, $link) ||
 
 mysql_close($link);
 ?>
---EXPECTF--
-Deprecated: mysql_connect(): The mysql extension is deprecated and will be removed in the future: use mysqli or PDO instead in %s on line %d
+--EXPECT--
 0.a
 1.b
 2.c

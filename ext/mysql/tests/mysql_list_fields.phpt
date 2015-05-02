@@ -64,7 +64,6 @@ if (!mysql_query("DROP TABLE IF EXISTS test2", $link))
 mysql_close($link);
 ?>
 --EXPECTF--
-Deprecated: mysql_connect(): The mysql extension is deprecated and will be removed in the future: use mysqli or PDO instead in %s on line %d
 [006] [%d] %s
 bool(false)
 Field Offset 0
@@ -74,7 +73,7 @@ mysql_field_name(): id
 mysql_field_type(): int
 Field Offset 1
 mysql_field_flags()%s
-mysql_field_len(): %s
+mysql_field_len(): 1
 mysql_field_name(): label
 mysql_field_type(): string
 done!

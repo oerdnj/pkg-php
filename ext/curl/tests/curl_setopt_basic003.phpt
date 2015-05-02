@@ -4,12 +4,11 @@ curl_setopt() call with CURLOPT_HTTPHEADER
 Paul Sohier
 #phptestfest utrecht
 --SKIPIF--
-<?php include 'skipif.inc'; ?>
+<?php if (!extension_loaded("curl") || false === getenv('PHP_CURL_HTTP_REMOTE_SERVER')) print "skip need PHP_CURL_HTTP_REMOTE_SERVER environment variable"; ?>
 --FILE--
 <?php
 
-include 'server.inc';
-$host = curl_cli_server_start();
+$host = getenv('PHP_CURL_HTTP_REMOTE_SERVER');
 
 // start testing
 echo "*** curl_setopt() call with CURLOPT_HTTPHEADER\n";
@@ -39,6 +38,6 @@ var_dump( $curl_content );
 --EXPECTF--
 *** curl_setopt() call with CURLOPT_HTTPHEADER
 
-Warning: curl_setopt(): You must pass either an object or an array with the CURLOPT_HTTPHEADER argument in %s on line %d
+Warning: curl_setopt(): You must pass either an object or an array with the CURLOPT_HTTPHEADER, CURLOPT_QUOTE, CURLOPT_HTTP200ALIASES and CURLOPT_POSTQUOTE arguments in %s on line %d
 bool(false)
 bool(true)

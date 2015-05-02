@@ -129,9 +129,6 @@
 /* Whether to build odbc as dynamic module */
 #undef COMPILE_DL_ODBC
 
-/* Whether to build opcache as dynamic module */
-#undef COMPILE_DL_OPCACHE
-
 /* Whether to build openssl as dynamic module */
 #undef COMPILE_DL_OPENSSL
 
@@ -374,9 +371,6 @@
 /* */
 #undef HAVE_ADABAS
 
-/* Whether you have AI_V4MAPPED */
-#undef HAVE_AI_V4MAPPED
-
 /* whether the compiler supports __alignof__ */
 #undef HAVE_ALIGNOF
 
@@ -517,6 +511,9 @@
 /* */
 #undef HAVE_CODBC
 
+/* */
+#undef HAVE_COLORCLOSESTHWB
+
 /* Whether you have a Continuity Server */
 #undef HAVE_CONTINUITY
 
@@ -559,6 +556,9 @@
 /* Have cURL with SSL support */
 #undef HAVE_CURL_SSL
 
+/* */
+#undef HAVE_CURL_VERSION_INFO
+
 /* Define to 1 if you have the `cuserid' function. */
 #undef HAVE_CUSERID
 
@@ -570,6 +570,9 @@
 
 /* */
 #undef HAVE_DCNGETTEXT
+
+/* Define if the compiler supports Decimal32/64/128 types. */
+#undef HAVE_DECIMAL_FP_SUPPORT
 
 /* Whether system headers declare timezone */
 #undef HAVE_DECLARED_TIMEZONE
@@ -662,12 +665,6 @@
 /* Define to 1 if you have the `flock' function. */
 #undef HAVE_FLOCK
 
-/* Struct flock is BSD-type */
-#undef HAVE_FLOCK_BSD
-
-/* Struct flock is Linux-type */
-#undef HAVE_FLOCK_LINUX
-
 /* Define to 1 if you have the `floorf' function. */
 #undef HAVE_FLOORF
 
@@ -717,13 +714,52 @@
 #undef HAVE_GCVT
 
 /* */
+#undef HAVE_GDIMAGECOLORRESOLVE
+
+/* */
 #undef HAVE_GD_BUNDLED
 
 /* */
 #undef HAVE_GD_CACHE_CREATE
 
 /* */
-#undef HAVE_GD_FREETYPE
+#undef HAVE_GD_DYNAMIC_CTX_EX
+
+/* */
+#undef HAVE_GD_FONTCACHESHUTDOWN
+
+/* */
+#undef HAVE_GD_FONTMUTEX
+
+/* */
+#undef HAVE_GD_FREEFONTCACHE
+
+/* */
+#undef HAVE_GD_GD2
+
+/* */
+#undef HAVE_GD_GIF_CREATE
+
+/* */
+#undef HAVE_GD_GIF_CTX
+
+/* */
+#undef HAVE_GD_GIF_READ
+
+/* */
+#undef HAVE_GD_IMAGEELLIPSE
+
+/* */
+#undef HAVE_GD_IMAGESETBRUSH
+
+/* */
+#undef HAVE_GD_IMAGESETTILE
+
+/* */
+#undef HAVE_GD_IMAGE_CONVOLUTION
+
+/* */
+#undef HAVE_GD_IMAGE_PIXELATE
 
 /* */
 #undef HAVE_GD_JPG
@@ -732,7 +768,22 @@
 #undef HAVE_GD_PNG
 
 /* */
+#undef HAVE_GD_STRINGFT
+
+/* */
+#undef HAVE_GD_STRINGFTEX
+
+/* */
+#undef HAVE_GD_STRINGTTF
+
+/* */
+#undef HAVE_GD_WBMP
+
+/* */
 #undef HAVE_GD_WEBP
+
+/* */
+#undef HAVE_GD_XBM
 
 /* */
 #undef HAVE_GD_XPM
@@ -1005,6 +1056,18 @@
 #undef HAVE_LIBGD
 
 /* */
+#undef HAVE_LIBGD13
+
+/* */
+#undef HAVE_LIBGD15
+
+/* */
+#undef HAVE_LIBGD20
+
+/* */
+#undef HAVE_LIBGD204
+
+/* */
 #undef HAVE_LIBICONV
 
 /* */
@@ -1141,9 +1204,6 @@
 /* Define to 1 if you have the <monetary.h> header file. */
 #undef HAVE_MONETARY_H
 
-/* Define if you have mprotect() function */
-#undef HAVE_MPROTECT
-
 /* Define to 1 if you have the `mremap' function. */
 #undef HAVE_MREMAP
 
@@ -1245,12 +1305,6 @@
 
 /* */
 #undef HAVE_ORALDAP_10
-
-/* */
-#undef HAVE_ORALDAP_11
-
-/* */
-#undef HAVE_ORALDAP_12
 
 /* Whether struct _zend_object_value is packed */
 #undef HAVE_PACKED_OBJECT_VALUE
@@ -1390,9 +1444,6 @@
 /* */
 #undef HAVE_PSPELL
 
-/* Define to 1 if the PS_STRINGS thing exists. */
-#undef HAVE_PS_STRINGS
-
 /* do we have ptrace? */
 #undef HAVE_PTRACE
 
@@ -1413,9 +1464,6 @@
 
 /* Define to 1 if you have the `random' function. */
 #undef HAVE_RANDOM
-
-/* Define to 1 if you have the `RAND_egd' function. */
-#undef HAVE_RAND_EGD
 
 /* Define to 1 if you have the `rand_r' function. */
 #undef HAVE_RAND_R
@@ -1503,21 +1551,6 @@
 
 /* */
 #undef HAVE_SHMOP
-
-/* Define if you have SysV IPC SHM support */
-#undef HAVE_SHM_IPC
-
-/* Define if you have mmap(MAP_ANON) SHM support */
-#undef HAVE_SHM_MMAP_ANON
-
-/* Define if you have mmap() SHM support */
-#undef HAVE_SHM_MMAP_FILE
-
-/* Define if you have POSIX mmap() SHM support */
-#undef HAVE_SHM_MMAP_POSIX
-
-/* Define if you have mmap("/dev/zero") SHM support */
-#undef HAVE_SHM_MMAP_ZERO
 
 /* Define to 1 if you have the `shutdown' function. */
 #undef HAVE_SHUTDOWN
@@ -1824,9 +1857,6 @@
 /* Define to 1 if you have the <sys/poll.h> header file. */
 #undef HAVE_SYS_POLL_H
 
-/* Define to 1 if you have the <sys/pstat.h> header file. */
-#undef HAVE_SYS_PSTAT_H
-
 /* Define to 1 if you have the <sys/resource.h> header file. */
 #undef HAVE_SYS_RESOURCE_H
 
@@ -2069,10 +2099,7 @@
 /* Enable compressed protocol support */
 #undef MYSQLND_COMPRESSION_WANTED
 
-/* Enable mysqlnd code that uses OpenSSL directly */
-#undef MYSQLND_HAVE_SSL
-
-/* Enable core mysqlnd SSL code */
+/* Enable SSL support */
 #undef MYSQLND_SSL_SUPPORTED
 
 /* Whether mysqlnd is enabled */
@@ -2086,9 +2113,6 @@
 
 /* Define to 1 if your C compiler doesn't accept -c and -o together. */
 #undef NO_MINUS_C_MINUS_O
-
-/* The highest supported ODBC version */
-#undef ODBCVER
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
@@ -2131,6 +2155,9 @@
 
 /* Define if your system has fork/vfork/CreateProcess */
 #undef PHP_CAN_SUPPORT_PROC_OPEN
+
+/* */
+#undef PHP_CURL_URL_WRAPPERS
 
 /* Whether the system supports extended DES salt */
 #undef PHP_EXT_DES_CRYPT
