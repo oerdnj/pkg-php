@@ -3,6 +3,7 @@ php5 (5.4.40+real-1) unstable; urgency=medium
   * New upstream version 5.4.40+real
     - The previous version used 5.5.24 sources by a mistake, sorry for any
       inconvenience this might have caused.
+  * Update patches using gbp pq rebase and export for real 5.4.40 (really)
 
  -- Ondřej Surý <ondrej@debian.org>  Sun, 03 May 2015 00:04:57 +0200
 
