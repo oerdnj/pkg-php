@@ -46,7 +46,4 @@ hack-phpdbg-to-explicitly-link-with-libedit.patch
 php-fpm-getallheaders.patch
 0001-Fix-ZEND_MM_ALIGNMENT-on-m64k.patch
 revert-f07b8f36ae8099e29d19fbe8806bc07b21dcd4ac.patch
-CVE-2015-1351.patch
-CVE-2015-1352.patch
 0057-ads_odbc_exec.patch
-0060-PHP-SegFault-zend_hash_find-PHP-68486.patch
