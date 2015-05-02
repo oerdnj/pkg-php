@@ -29,7 +29,7 @@ index 9f79625..2b98326 100644
  /*
     +----------------------------------------------------------------------+
 diff --git a/configure.in b/configure.in
-index 3e1e7e9..bd619d7 100644
+index 9a4c95e..7b7a239 100644
 --- a/configure.in
 +++ b/configure.in
 @@ -136,6 +136,8 @@ AC_DEFUN([PHP_EXT_DIR],[ext/$1])dnl

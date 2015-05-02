@@ -1,0 +1,25 @@
+From: Debian PHP Maintainers <pkg-php-maint@lists.alioth.debian.org>
+Date: Sun, 1 Mar 2015 10:41:52 +0100
+Subject: shtool_mkdir_-p_-race-condition
+
+---
+ build/shtool | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/build/shtool b/build/shtool
+index 684a01f..833b519 100755
+--- a/build/shtool
++++ b/build/shtool
+@@ -1003,7 +1003,11 @@ mkdir )
+                     if [ ".$opt_t" = .yes ]; then
+                         echo "mkdir $pathcomp" 1>&2
+                     fi
+-                    mkdir $pathcomp || errstatus=$?
++                    mkdir $pathcomp || {
++                        _errstatus=$?
++                        [ -d "$pathcomp" ] || errstatus=${_errstatus}
++                        unset _errstatus
++                    }
+                     if [ ".$opt_o" != . ]; then
+                         if [ ".$opt_t" = .yes ]; then
+                             echo "chown $opt_o $pathcomp" 1>&2
