@@ -7,10 +7,10 @@ Subject: ads_odbc_exec
  1 file changed, 9 insertions(+)
 
 diff --git a/ext/odbc/php_odbc.c b/ext/odbc/php_odbc.c
-index b9bee96..abfce07 100644
+index 19f9fe4..f4f40c9 100644
 --- a/ext/odbc/php_odbc.c
 +++ b/ext/odbc/php_odbc.c
-@@ -999,6 +999,15 @@ int odbc_bindcols(odbc_result *result TSRMLS_DC)
+@@ -998,6 +998,15 @@ int odbc_bindcols(odbc_result *result TSRMLS_DC)
  			default:
  				rc = SQLColAttributes(result->stmt, (SQLUSMALLINT)(i+1), colfieldid,
  								NULL, 0, NULL, &displaysize);

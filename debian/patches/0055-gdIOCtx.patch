@@ -3,11 +3,11 @@ Date: Sun, 1 Mar 2015 10:41:55 +0100
 Subject: gdIOCtx
 
 ---
- ext/gd/gd_ctx.c | 78 +++++++++++++--------------------------------------------
- 1 file changed, 18 insertions(+), 60 deletions(-)
+ ext/gd/gd_ctx.c | 74 ++++++++++++++-------------------------------------------
+ 1 file changed, 18 insertions(+), 56 deletions(-)
 
 diff --git a/ext/gd/gd_ctx.c b/ext/gd/gd_ctx.c
-index eafbab5..d00baa4 100644
+index eafbab5..32c5bfe 100644
 --- a/ext/gd/gd_ctx.c
 +++ b/ext/gd/gd_ctx.c
 @@ -46,33 +46,6 @@ static void _php_image_output_ctxfree(struct gdIOCtx *ctx)
@@ -120,20 +120,15 @@ index eafbab5..d00baa4 100644
  	switch(image_type) {
  		case PHP_GDIMG_CONVERT_WBM:
  			if(q<0||q>255) {
-@@ -194,11 +151,12 @@ static void _php_image_output_ctx(INTERNAL_FUNCTION_PARAMETERS, int image_type,
- 			break;
- 	}
+@@ -200,6 +157,11 @@ static void _php_image_output_ctx(INTERNAL_FUNCTION_PARAMETERS, int image_type,
+ 	ctx->free(ctx);
+ #endif
  
--#if HAVE_LIBGD204
- 	ctx->gd_free(ctx);
--#else
--	ctx->free(ctx);
--#endif
-+
 +	if(fp) {
 +		fflush(fp);
 +		fclose(fp);
 +	}
- 
++
  	RETURN_TRUE;
  }
+ /* }}} */

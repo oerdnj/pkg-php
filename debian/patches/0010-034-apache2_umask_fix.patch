@@ -7,7 +7,7 @@ Subject: 034-apache2_umask_fix
  1 file changed, 18 insertions(+)
 
 diff --git a/sapi/apache2handler/sapi_apache2.c b/sapi/apache2handler/sapi_apache2.c
-index e97f11c..2eca84c 100644
+index cfebc5f..3bf1cb8 100644
 --- a/sapi/apache2handler/sapi_apache2.c
 +++ b/sapi/apache2handler/sapi_apache2.c
 @@ -468,6 +468,19 @@ static apr_status_t php_server_context_cleanup(void *data_)
