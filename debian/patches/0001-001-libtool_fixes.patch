@@ -3,15 +3,9 @@ Date: Sun, 1 Mar 2015 10:41:48 +0100
 Subject: 001-libtool_fixes
 
 ---
- TSRM/configure.in                                  |  3 ---
- configure.in                                       |  3 ---
- ...8741-Null-pointer-deference-in-ext-pgsql-.patch | 23 ----------------------
- ...062-PHP-SegFault-zend_hash_find-PHP-68486.patch | 20 -------------------
- ...er-free-in-phar_object.c-PHP-68901-CVE-20.patch | 22 ---------------------
- 5 files changed, 71 deletions(-)
- delete mode 100644 debian/patches/0061-Fixed-bug-68741-Null-pointer-deference-in-ext-pgsql-.patch
- delete mode 100644 debian/patches/0062-PHP-SegFault-zend_hash_find-PHP-68486.patch
- delete mode 100644 debian/patches/0063-Fix-use-after-free-in-phar_object.c-PHP-68901-CVE-20.patch
+ TSRM/configure.in | 3 ---
+ configure.in      | 3 ---
+ 2 files changed, 6 deletions(-)
 
 diff --git a/TSRM/configure.in b/TSRM/configure.in
 index 6f10f5a..2bcff8d 100644
@@ -41,86 +35,3 @@ index d190017..e5be1f0 100644
  
  dnl libtool 1.4.3 needs this.
  PHP_SET_LIBTOOL_VARIABLE([--preserve-dup-deps])
-diff --git a/debian/patches/0061-Fixed-bug-68741-Null-pointer-deference-in-ext-pgsql-.patch b/debian/patches/0061-Fixed-bug-68741-Null-pointer-deference-in-ext-pgsql-.patch
-deleted file mode 100644
-index cd24585..0000000
---- a/debian/patches/0061-Fixed-bug-68741-Null-pointer-deference-in-ext-pgsql-.patch
-+++ /dev/null
-@@ -1,23 +0,0 @@
--From: Xinchen Hui <laruence@php.net>
--Date: Thu, 8 Jan 2015 16:09:02 +0800
--Subject: Fixed bug #68741 (Null pointer deference in ext/pgsql/pgsql.c)
-- (CVE-2015-1352)
--
-----
-- ext/pgsql/pgsql.c | 3 +++
-- 1 file changed, 3 insertions(+)
--
--diff --git a/ext/pgsql/pgsql.c b/ext/pgsql/pgsql.c
--index 2e73da0..62bc6d3 100644
----- a/ext/pgsql/pgsql.c
--+++ b/ext/pgsql/pgsql.c
--@@ -6117,6 +6117,9 @@ static inline void build_tablename(smart_str *querystr, PGconn *pg_link, const c
-- 	/* schame.table should be "schame"."table" */
-- 	table_copy = estrdup(table);
-- 	token = php_strtok_r(table_copy, ".", &tmp);
--+	if (token == NULL) {
--+		token = table;
--+	}
-- 	len = strlen(token);
-- 	if (_php_pgsql_detect_identifier_escape(token, len) == SUCCESS) {
-- 		smart_str_appendl(querystr, token, len);
-diff --git a/debian/patches/0062-PHP-SegFault-zend_hash_find-PHP-68486.patch b/debian/patches/0062-PHP-SegFault-zend_hash_find-PHP-68486.patch
-deleted file mode 100644
-index 8cbe76b..0000000
---- a/debian/patches/0062-PHP-SegFault-zend_hash_find-PHP-68486.patch
-+++ /dev/null
-@@ -1,20 +0,0 @@
--From: gmoniker <gmoniker@gmail.com>
--Date: Fri, 20 Mar 2015 12:13:05 +0100
--Subject: PHP SegFault zend_hash_find (PHP#68486)
--
-----
-- sapi/apache2handler/sapi_apache2.c | 1 +
-- 1 file changed, 1 insertion(+)
--
--diff --git a/sapi/apache2handler/sapi_apache2.c b/sapi/apache2handler/sapi_apache2.c
--index 2eca84c..3bf1cb8 100644
----- a/sapi/apache2handler/sapi_apache2.c
--+++ b/sapi/apache2handler/sapi_apache2.c
--@@ -706,6 +706,7 @@ zend_first_try {
-- } zend_end_try();
-- 		}
-- 		apr_brigade_cleanup(brigade);
--+		apr_pool_cleanup_run(r->pool, (void *)&SG(server_context), php_server_context_cleanup);
-- 	} else {
-- 		ctx->r = parent_req;
-- 	}
-diff --git a/debian/patches/0063-Fix-use-after-free-in-phar_object.c-PHP-68901-CVE-20.patch b/debian/patches/0063-Fix-use-after-free-in-phar_object.c-PHP-68901-CVE-20.patch
-deleted file mode 100644
-index 1f181ef..0000000
---- a/debian/patches/0063-Fix-use-after-free-in-phar_object.c-PHP-68901-CVE-20.patch
-+++ /dev/null
-@@ -1,22 +0,0 @@
--From: Xinchen Hui <laruence@php.net>
--Date: Thu, 29 Jan 2015 00:00:09 +0800
--Subject: Fix use after free in phar_object.c (PHP#68901) (CVE-2015-2301)
--
-----
-- ext/phar/phar_object.c | 2 +-
-- 1 file changed, 1 insertion(+), 1 deletion(-)
--
--diff --git a/ext/phar/phar_object.c b/ext/phar/phar_object.c
--index a021200..add1fa0 100644
----- a/ext/phar/phar_object.c
--+++ b/ext/phar/phar_object.c
--@@ -2211,8 +2211,8 @@ static zval *phar_rename_archive(phar_archive_data *phar, char *ext, zend_bool c
-- 	}
-- its_ok:
-- 	if (SUCCESS == php_stream_stat_path(newpath, &ssb)) {
---		efree(oldpath);
-- 		zend_throw_exception_ex(spl_ce_BadMethodCallException, 0 TSRMLS_CC, "phar \"%s\" exists and must be unlinked prior to conversion", newpath);
--+		efree(oldpath);
-- 		return NULL;
-- 	}
-- 	if (!phar->is_data) {
