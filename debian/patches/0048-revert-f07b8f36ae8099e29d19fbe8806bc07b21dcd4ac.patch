@@ -1,0 +1,86 @@
+From: Debian PHP Maintainers <pkg-php-maint@lists.alioth.debian.org>
+Date: Sat, 2 May 2015 10:26:57 +0200
+Subject: revert-f07b8f36ae8099e29d19fbe8806bc07b21dcd4ac
+
+---
+ ext/standard/tests/file/bug68532.phpt           | 25 -------------------------
+ ext/standard/tests/file/stream_rfc2397_007.phpt |  1 -
+ main/streams/memory.c                           | 20 ++++++++------------
+ 3 files changed, 8 insertions(+), 38 deletions(-)
+ delete mode 100644 ext/standard/tests/file/bug68532.phpt
+
+diff --git a/ext/standard/tests/file/bug68532.phpt b/ext/standard/tests/file/bug68532.phpt
+deleted file mode 100644
+index 7d1a0ce..0000000
+--- a/ext/standard/tests/file/bug68532.phpt
++++ /dev/null
+@@ -1,25 +0,0 @@
+---TEST--
+-Bug #68532: convert.base64-encode omits padding bytes
+---FILE--
+-<?php
+-$testString = 'test';
+-$stream = fopen('php://memory','r+');
+-fwrite($stream, $testString);
+-rewind($stream);
+-$filter = stream_filter_append($stream, 'convert.base64-encode');
+-echo "memoryStream = " . stream_get_contents($stream).PHP_EOL;
+-
+-
+-$fileStream = fopen(__DIR__ . '/base64test.txt','w+');
+-fwrite($fileStream , $testString);
+-rewind($fileStream );
+-$filter = stream_filter_append($fileStream , 'convert.base64-encode');
+-echo "fileStream = " . stream_get_contents($fileStream ).PHP_EOL;
+-?>
+---CLEAN--
+-<?php
+-unlink(__DIR__ . '/base64test.txt');
+-?>
+---EXPECT--
+-memoryStream = dGVzdA==
+-fileStream = dGVzdA==
+diff --git a/ext/standard/tests/file/stream_rfc2397_007.phpt b/ext/standard/tests/file/stream_rfc2397_007.phpt
+index b62f19c..4b22ca3 100644
+--- a/ext/standard/tests/file/stream_rfc2397_007.phpt
++++ b/ext/standard/tests/file/stream_rfc2397_007.phpt
+@@ -95,7 +95,6 @@ int(5)
+ bool(false)
+ ===GETC===
+ string(1) "5"
+-bool(false)
+ int(6)
+ bool(true)
+ ===REWIND===
+diff --git a/main/streams/memory.c b/main/streams/memory.c
+index cafec67..d3ad2f8 100644
+--- a/main/streams/memory.c
++++ b/main/streams/memory.c
+@@ -86,19 +86,15 @@ static size_t php_stream_memory_read(php_stream *stream, char *buf, size_t count
+ 	php_stream_memory_data *ms = (php_stream_memory_data*)stream->abstract;
+ 	assert(ms != NULL);
+ 
+-	if (ms->fpos == ms->fsize) {
++	if (ms->fpos + count >= ms->fsize) {
++		count = ms->fsize - ms->fpos;
+ 		stream->eof = 1;
+-		count = 0;
+-	} else {
+-		if (ms->fpos + count >= ms->fsize) {
+-			count = ms->fsize - ms->fpos;
+-		}
+-		if (count) {
+-			assert(ms->data!= NULL);
+-			assert(buf!= NULL);
+-			memcpy(buf, ms->data+ms->fpos, count);
+-			ms->fpos += count;
+-		}
++	}
++	if (count) {
++		assert(ms->data!= NULL);
++		assert(buf!= NULL);
++		memcpy(buf, ms->data+ms->fpos, count);
++		ms->fpos += count;
+ 	}
+ 	return count;
+ }
