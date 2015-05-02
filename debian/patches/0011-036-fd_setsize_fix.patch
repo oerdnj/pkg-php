@@ -20,7 +20,7 @@ index 7768d1f..eb26a08 100644
  		PHP_SAFE_FD_SET(php_sock->bsd_socket, fds);
  		if (php_sock->bsd_socket > *max_fd) {
 diff --git a/ext/standard/streamsfuncs.c b/ext/standard/streamsfuncs.c
-index b1b3180..f6a768b 100644
+index b8f15e3..90327ea 100644
 --- a/ext/standard/streamsfuncs.c
 +++ b/ext/standard/streamsfuncs.c
 @@ -629,8 +629,9 @@ static int stream_array_to_fd_set(zval *stream_array, fd_set *fds, php_socket_t

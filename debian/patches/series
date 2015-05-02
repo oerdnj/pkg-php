@@ -58,7 +58,3 @@
 0058-Fix-for-bug-68087-ODBC-not-reading-DATE-columns-corr.patch
 0059-ads_odbc_exec.patch
 0060-check-libpq-lo_export-return-value.patch
-0061-Fixed-bug-68741-Null-pointer-deference-in-ext-pgsql-.patch
-0062-PHP-SegFault-zend_hash_find-PHP-68486.patch
-0063-Fix-use-after-free-in-phar_object.c-PHP-68901-CVE-20.patch
-0064-Fixed-bug-68740-Null-pointer-deference-in-ext-ereg-r.patch
