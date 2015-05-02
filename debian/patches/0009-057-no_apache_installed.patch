@@ -9,10 +9,8 @@ Subject: 057-no_apache_installed
  sapi/apache_hooks/config.m4   | 6 ------
  4 files changed, 28 deletions(-)
 
-diff --git a/sapi/apache/config.m4 b/sapi/apache/config.m4
-index 7b0ee56..4ecd2ac 100644
---- a/sapi/apache/config.m4
-+++ b/sapi/apache/config.m4
+--- php5.orig/sapi/apache/config.m4
++++ php5/sapi/apache/config.m4
 @@ -56,12 +56,6 @@ if test "$PHP_APXS" != "no"; then
    APXS_HTTPD=`$APXS -q SBINDIR`/`$APXS -q TARGET`
    APACHE_INCLUDE=-I$APXS_INCLUDEDIR
@@ -26,10 +24,8 @@ index 7b0ee56..4ecd2ac 100644
    for flag in $APXS_CFLAGS; do
      case $flag in
      -D*) APACHE_CPPFLAGS="$APACHE_CPPFLAGS $flag";;
-diff --git a/sapi/apache2filter/config.m4 b/sapi/apache2filter/config.m4
-index b6524fd..1ddb3d0 100644
---- a/sapi/apache2filter/config.m4
-+++ b/sapi/apache2filter/config.m4
+--- php5.orig/sapi/apache2filter/config.m4
++++ php5/sapi/apache2filter/config.m4
 @@ -59,14 +59,6 @@ if test "$PHP_APXS2FILTER" != "no"; then
  
    APACHE_CFLAGS="$APACHE_CPPFLAGS -I$APXS_INCLUDEDIR $APR_CFLAGS $APU_CFLAGS"
@@ -45,10 +41,8 @@ index b6524fd..1ddb3d0 100644
    APXS_LIBEXECDIR='$(INSTALL_ROOT)'`$APXS -q LIBEXECDIR`
    if test -z `$APXS -q SYSCONFDIR`; then
      INSTALL_IT="\$(mkinstalldirs) '$APXS_LIBEXECDIR' && \
-diff --git a/sapi/apache2handler/config.m4 b/sapi/apache2handler/config.m4
-index 02f8a0b..f170ea9 100644
---- a/sapi/apache2handler/config.m4
-+++ b/sapi/apache2handler/config.m4
+--- php5.orig/sapi/apache2handler/config.m4
++++ php5/sapi/apache2handler/config.m4
 @@ -58,14 +58,6 @@ if test "$PHP_APXS2" != "no"; then
  
    APACHE_CFLAGS="$APACHE_CPPFLAGS -I$APXS_INCLUDEDIR $APR_CFLAGS $APU_CFLAGS"
@@ -64,11 +58,9 @@ index 02f8a0b..f170ea9 100644
    APXS_LIBEXECDIR='$(INSTALL_ROOT)'`$APXS -q LIBEXECDIR`
    if test -z `$APXS -q SYSCONFDIR`; then
      INSTALL_IT="\$(mkinstalldirs) '$APXS_LIBEXECDIR' && \
-diff --git a/sapi/apache_hooks/config.m4 b/sapi/apache_hooks/config.m4
-index e2c71b4..0b7aea0 100644
---- a/sapi/apache_hooks/config.m4
-+++ b/sapi/apache_hooks/config.m4
-@@ -57,12 +57,6 @@ if test "$PHP_APACHE_HOOKS" != "no"; then
+--- php5.orig/sapi/apache_hooks/config.m4
++++ php5/sapi/apache_hooks/config.m4
+@@ -57,12 +57,6 @@ if test "$PHP_APACHE_HOOKS" != "no"; the
    APXS_HTTPD=`$APXS -q SBINDIR`/`$APXS -q TARGET`
    APACHE_INCLUDE=-I$APXS_INCLUDEDIR
  

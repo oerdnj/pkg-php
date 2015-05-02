@@ -6,10 +6,8 @@ Subject: zlib-largefile-function-renaming
  ext/zlib/zlib.c | 12 ++++++++++++
  1 file changed, 12 insertions(+)
 
-diff --git a/ext/zlib/zlib.c b/ext/zlib/zlib.c
-index d70198c..e7d7b64 100644
---- a/ext/zlib/zlib.c
-+++ b/ext/zlib/zlib.c
+--- php5.orig/ext/zlib/zlib.c
++++ php5/ext/zlib/zlib.c
 @@ -46,6 +46,18 @@
  #undef gzseek
  #undef gztell

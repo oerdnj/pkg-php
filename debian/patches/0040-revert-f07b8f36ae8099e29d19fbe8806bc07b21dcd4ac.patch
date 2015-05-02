@@ -9,10 +9,7 @@ Subject: revert-f07b8f36ae8099e29d19fbe8806bc07b21dcd4ac
  3 files changed, 8 insertions(+), 38 deletions(-)
  delete mode 100644 ext/standard/tests/file/bug68532.phpt
 
-diff --git a/ext/standard/tests/file/bug68532.phpt b/ext/standard/tests/file/bug68532.phpt
-deleted file mode 100644
-index 7d1a0ce..0000000
---- a/ext/standard/tests/file/bug68532.phpt
+--- php5.orig/ext/standard/tests/file/bug68532.phpt
 +++ /dev/null
 @@ -1,25 +0,0 @@
 ---TEST--
@@ -40,10 +37,8 @@ index 7d1a0ce..0000000
 ---EXPECT--
 -memoryStream = dGVzdA==
 -fileStream = dGVzdA==
-diff --git a/ext/standard/tests/file/stream_rfc2397_007.phpt b/ext/standard/tests/file/stream_rfc2397_007.phpt
-index b62f19c..4b22ca3 100644
---- a/ext/standard/tests/file/stream_rfc2397_007.phpt
-+++ b/ext/standard/tests/file/stream_rfc2397_007.phpt
+--- php5.orig/ext/standard/tests/file/stream_rfc2397_007.phpt
++++ php5/ext/standard/tests/file/stream_rfc2397_007.phpt
 @@ -95,7 +95,6 @@ int(5)
  bool(false)
  ===GETC===
@@ -52,11 +47,9 @@ index b62f19c..4b22ca3 100644
  int(6)
  bool(true)
  ===REWIND===
-diff --git a/main/streams/memory.c b/main/streams/memory.c
-index 3912879..0773ccb 100644
---- a/main/streams/memory.c
-+++ b/main/streams/memory.c
-@@ -86,19 +86,15 @@ static size_t php_stream_memory_read(php_stream *stream, char *buf, size_t count
+--- php5.orig/main/streams/memory.c
++++ php5/main/streams/memory.c
+@@ -86,19 +86,15 @@ static size_t php_stream_memory_read(php
  	php_stream_memory_data *ms = (php_stream_memory_data*)stream->abstract;
  	assert(ms != NULL);
  
