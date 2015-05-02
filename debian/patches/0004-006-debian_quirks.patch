@@ -15,10 +15,10 @@ Subject: 006-debian_quirks
  9 files changed, 26 insertions(+), 67 deletions(-)
 
 diff --git a/configure.in b/configure.in
-index 2989aaf..96d63a4 100644
+index b3f3422..1584c1b 100644
 --- a/configure.in
 +++ b/configure.in
-@@ -1068,7 +1068,7 @@ if test "$PHP_CLI" = "no"; then
+@@ -1082,7 +1082,7 @@ if test "$PHP_CLI" = "no"; then
  fi
  
  PHP_ARG_WITH(pear, [whether to install PEAR],
@@ -27,7 +27,7 @@ index 2989aaf..96d63a4 100644
    --without-pear          Do not install PEAR], DEFAULT, yes)
  
  if test "$PHP_PEAR" != "no"; then
-@@ -1098,7 +1098,7 @@ dnl
+@@ -1112,7 +1112,7 @@ dnl
    if test "$PHP_PEAR" = "DEFAULT" || test "$PHP_PEAR" = "yes"; then
      case $PHP_LAYOUT in
        GNU) PEAR_INSTALLDIR=$datadir/pear;;
@@ -36,7 +36,7 @@ index 2989aaf..96d63a4 100644
      esac
    fi
  
-@@ -1153,12 +1153,12 @@ test "$program_suffix" = "NONE" && program_suffix=
+@@ -1167,12 +1167,12 @@ test "$program_suffix" = "NONE" && program_suffix=
  
  case $libdir in
    '${exec_prefix}/lib')
@@ -44,14 +44,14 @@ index 2989aaf..96d63a4 100644
 +    libdir=$libdir/php5
      ;;
  esac
- case $datadir in
+ case `eval echo $datadir` in
    '${prefix}/share')
 -    datadir=$datadir/php
 +    datadir=$datadir/php5
      ;;
  esac
  
-@@ -1225,7 +1225,7 @@ EXPANDED_SYSCONFDIR=`eval echo $sysconfdir`
+@@ -1239,7 +1239,7 @@ EXPANDED_SYSCONFDIR=`eval echo $sysconfdir`
  EXPANDED_DATADIR=$datadir
  EXPANDED_PHP_CONFIG_FILE_PATH=`eval echo "$PHP_CONFIG_FILE_PATH"`
  EXPANDED_PHP_CONFIG_FILE_SCAN_DIR=`eval echo "$PHP_CONFIG_FILE_SCAN_DIR"`
@@ -61,7 +61,7 @@ index 2989aaf..96d63a4 100644
  exec_prefix=$old_exec_prefix
  libdir=$old_libdir
 diff --git a/ext/ext_skel b/ext/ext_skel
-index 650dae1..4114e63 100755
+index cd545ec..871e4fc 100755
 --- a/ext/ext_skel
 +++ b/ext/ext_skel
 @@ -70,7 +70,7 @@ if test -d "$extname" ; then
@@ -74,10 +74,10 @@ index 650dae1..4114e63 100755
  
  ## convert skel_dir to full path
 diff --git a/php.ini-development b/php.ini-development
-index cba0679..32b6692 100644
+index 726e302..22edcdb 100644
 --- a/php.ini-development
 +++ b/php.ini-development
-@@ -693,7 +693,7 @@ default_mimetype = "text/html"
+@@ -690,7 +690,7 @@ default_mimetype = "text/html"
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
  ; UNIX: "/path1:/path2"
@@ -87,10 +87,10 @@ index cba0679..32b6692 100644
  ; Windows: "\path1;\path2"
  ;include_path = ".;c:\php\includes"
 diff --git a/php.ini-production b/php.ini-production
-index 3991cba..ea79547 100644
+index 7cdd069..4a067c4 100644
 --- a/php.ini-production
 +++ b/php.ini-production
-@@ -693,7 +693,7 @@ default_mimetype = "text/html"
+@@ -690,7 +690,7 @@ default_mimetype = "text/html"
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  
  ; UNIX: "/path1:/path2"
@@ -99,7 +99,7 @@ index 3991cba..ea79547 100644
  ;
  ; Windows: "\path1;\path2"
  ;include_path = ".;c:\php\includes"
-@@ -850,50 +850,6 @@ default_socket_timeout = 60
+@@ -851,50 +851,6 @@ default_socket_timeout = 60
  ; If you only provide the name of the extension, PHP will look for it in its
  ; default extension directory.
  ;
@@ -151,7 +151,7 @@ index 3991cba..ea79547 100644
  ;;;;;;;;;;;;;;;;;;;
  ; Module Settings ;
 diff --git a/sapi/caudium/config.m4 b/sapi/caudium/config.m4
-index 8aba33e..1dda9b1 100644
+index 5ce55f3..96468c9 100644
 --- a/sapi/caudium/config.m4
 +++ b/sapi/caudium/config.m4
 @@ -26,8 +26,8 @@ if test "$PHP_CAUDIUM" != "no"; then
@@ -177,7 +177,7 @@ index 8aba33e..1dda9b1 100644
    *** Pike include dir(s) used: $PIKE_INCLUDE_DIR
    *** Pike version:             $PIKE_VERSION"
 diff --git a/sapi/cli/php.1.in b/sapi/cli/php.1.in
-index fff4363..d0412df 100644
+index c062f3d..07ff030 100644
 --- a/sapi/cli/php.1.in
 +++ b/sapi/cli/php.1.in
 @@ -365,13 +365,14 @@ Shows configuration for extension
@@ -199,7 +199,7 @@ index fff4363..d0412df 100644
 +The configuration file for the version of PHP that apache2 uses.
  .SH EXAMPLES
  .TP 5
- \fIphp \-r 'echo "Hello World\\n";'\fP
+ \fI@program_prefix@php \-r 'echo "Hello World\\n";'\fP
 diff --git a/scripts/Makefile.frag b/scripts/Makefile.frag
 index 7cd78fa..15ae302 100644
 --- a/scripts/Makefile.frag

@@ -70,10 +70,10 @@ index ec44cb0..882f521 100644
 +min: ok
 +underflow: ok
 diff --git a/Zend/zend_hash.h b/Zend/zend_hash.h
-index 4ab811e..bc5c8ad 100644
+index f5b349c..103d1a2 100644
 --- a/Zend/zend_hash.h
 +++ b/Zend/zend_hash.h
-@@ -306,9 +306,11 @@ END_EXTERN_C()
+@@ -309,9 +309,11 @@ END_EXTERN_C()
  
  #define ZEND_HANDLE_NUMERIC_EX(key, length, idx, func) do {					\
  	register const char *tmp = key;											\
@@ -85,7 +85,7 @@ index 4ab811e..bc5c8ad 100644
  	}																		\
  	if (*tmp >= '0' && *tmp <= '9') { /* possibly a numeric index */		\
  		const char *end = key + length - 1;									\
-@@ -321,19 +323,19 @@ END_EXTERN_C()
+@@ -324,19 +326,19 @@ END_EXTERN_C()
  		     *tmp > '2')) { /* overflow */									\
  			break;															\
  		}																	\

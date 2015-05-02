@@ -10,7 +10,7 @@ Subject: 057-no_apache_installed
  4 files changed, 28 deletions(-)
 
 diff --git a/sapi/apache/config.m4 b/sapi/apache/config.m4
-index 1961289..5e07d17 100644
+index 7b0ee56..4ecd2ac 100644
 --- a/sapi/apache/config.m4
 +++ b/sapi/apache/config.m4
 @@ -56,12 +56,6 @@ if test "$PHP_APXS" != "no"; then
@@ -46,7 +46,7 @@ index b6524fd..1ddb3d0 100644
    if test -z `$APXS -q SYSCONFDIR`; then
      INSTALL_IT="\$(mkinstalldirs) '$APXS_LIBEXECDIR' && \
 diff --git a/sapi/apache2handler/config.m4 b/sapi/apache2handler/config.m4
-index 753de10..ca0f200 100644
+index 02f8a0b..f170ea9 100644
 --- a/sapi/apache2handler/config.m4
 +++ b/sapi/apache2handler/config.m4
 @@ -58,14 +58,6 @@ if test "$PHP_APXS2" != "no"; then
@@ -65,7 +65,7 @@ index 753de10..ca0f200 100644
    if test -z `$APXS -q SYSCONFDIR`; then
      INSTALL_IT="\$(mkinstalldirs) '$APXS_LIBEXECDIR' && \
 diff --git a/sapi/apache_hooks/config.m4 b/sapi/apache_hooks/config.m4
-index 672f298..6f4ebe9 100644
+index e2c71b4..0b7aea0 100644
 --- a/sapi/apache_hooks/config.m4
 +++ b/sapi/apache_hooks/config.m4
 @@ -57,12 +57,6 @@ if test "$PHP_APACHE_HOOKS" != "no"; then

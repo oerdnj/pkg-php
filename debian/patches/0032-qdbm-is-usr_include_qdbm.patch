@@ -7,7 +7,7 @@ Subject: qdbm-is-usr_include_qdbm
  1 file changed, 4 insertions(+)
 
 diff --git a/ext/dba/config.m4 b/ext/dba/config.m4
-index fa9b993..1fcdb83 100644
+index e47c36f..3748702 100644
 --- a/ext/dba/config.m4
 +++ b/ext/dba/config.m4
 @@ -113,6 +113,10 @@ if test "$PHP_QDBM" != "no"; then

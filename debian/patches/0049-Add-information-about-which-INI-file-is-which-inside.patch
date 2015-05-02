@@ -8,7 +8,7 @@ Subject: Add information about which INI file is which inside respective files
  2 files changed, 4 insertions(+)
 
 diff --git a/php.ini-development b/php.ini-development
-index 0eb9f4f..d782aa8 100644
+index e88cca2..f67c4b8 100644
 --- a/php.ini-development
 +++ b/php.ini-development
 @@ -85,6 +85,8 @@
@@ -21,7 +21,7 @@ index 0eb9f4f..d782aa8 100644
  ; Quick Reference ;
  ;;;;;;;;;;;;;;;;;;;
 diff --git a/php.ini-production b/php.ini-production
-index ba64ec2..1d2fc1b 100644
+index 24b244b..a9188b6 100644
 --- a/php.ini-production
 +++ b/php.ini-production
 @@ -85,6 +85,8 @@

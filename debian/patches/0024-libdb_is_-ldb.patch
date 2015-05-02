@@ -7,7 +7,7 @@ Subject: libdb_is_-ldb
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/ext/dba/config.m4 b/ext/dba/config.m4
-index 4b12351..fa9b993 100644
+index 5442bb1..e47c36f 100644
 --- a/ext/dba/config.m4
 +++ b/ext/dba/config.m4
 @@ -362,7 +362,7 @@ if test "$PHP_DB4" != "no"; then
