@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2014 The PHP Group                                |
+   | Copyright (c) 1997-2015 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -1007,9 +1007,12 @@ static int _extension_class_string(zend_class_entry **pce TSRMLS_DC, int num_arg
 	int *num_classes = va_arg(args, int*);
 
 	if (((*pce)->type == ZEND_INTERNAL_CLASS) && (*pce)->info.internal.module && !strcasecmp((*pce)->info.internal.module->name, module->name)) {
-		string_printf(str, "\n");
-		_class_string(str, *pce, NULL, indent TSRMLS_CC);
-		(*num_classes)++;
+		/* dump class if it is not an alias */
+		if (!zend_binary_strcasecmp((*pce)->name, (*pce)->name_length, hash_key->arKey, hash_key->nKeyLength-1)) {
+			string_printf(str, "\n");
+			_class_string(str, *pce, NULL, indent TSRMLS_CC);
+			(*num_classes)++;
+		}
 	}
 	return ZEND_HASH_APPLY_KEEP;
 }
@@ -3084,6 +3087,14 @@ ZEND_METHOD(reflection_function, isDeprecated)
 }
 /* }}} */
 
+/* {{{ proto public bool ReflectionFunction::isGenerator()
+   Returns whether this function is a generator */
+ZEND_METHOD(reflection_function, isGenerator)
+{
+	_function_check_flag(INTERNAL_FUNCTION_PARAM_PASSTHRU, ZEND_ACC_GENERATOR);
+}
+/* }}} */
+
 /* {{{ proto public bool ReflectionFunction::inNamespace()
    Returns whether this function is defined in namespace */
 ZEND_METHOD(reflection_function, inNamespace)
@@ -4182,31 +4193,39 @@ ZEND_METHOD(reflection_class, newInstance)
 {
 	zval *retval_ptr = NULL;
 	reflection_object *intern;
-	zend_class_entry *ce;
+	zend_class_entry *ce, *old_scope;
+	zend_function *constructor;
 
 	METHOD_NOTSTATIC(reflection_class_ptr);
 	GET_REFLECTION_OBJECT_PTR(ce);
 
+	object_init_ex(return_value, ce);
+
+	old_scope = EG(scope);
+	EG(scope) = ce;
+	constructor = Z_OBJ_HT_P(return_value)->get_constructor(return_value TSRMLS_CC);
+	EG(scope) = old_scope;
+
 	/* Run the constructor if there is one */
-	if (ce->constructor) {
+	if (constructor) {
 		zval ***params = NULL;
 		int num_args = 0;
 		zend_fcall_info fci;
 		zend_fcall_info_cache fcc;
 
-		if (!(ce->constructor->common.fn_flags & ZEND_ACC_PUBLIC)) {
+		if (!(constructor->common.fn_flags & ZEND_ACC_PUBLIC)) {
 			zend_throw_exception_ex(reflection_exception_ptr, 0 TSRMLS_CC, "Access to non-public constructor of class %s", ce->name);
-			return;
+			zval_dtor(return_value);
+			RETURN_NULL();
 		}
 
 		if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "*", &params, &num_args) == FAILURE) {
 			if (params) {
 				efree(params);
 			}
+			zval_dtor(return_value);
 			RETURN_FALSE;
 		}
-
-		object_init_ex(return_value, ce);
 
 		fci.size = sizeof(fci);
 		fci.function_table = EG(function_table);
@@ -4219,7 +4238,7 @@ ZEND_METHOD(reflection_class, newInstance)
 		fci.no_separation = 1;
 
 		fcc.initialized = 1;
-		fcc.function_handler = ce->constructor;
+		fcc.function_handler = constructor;
 		fcc.calling_scope = EG(scope);
 		fcc.called_scope = Z_OBJCE_P(return_value);
 		fcc.object_ptr = return_value;
@@ -4232,6 +4251,7 @@ ZEND_METHOD(reflection_class, newInstance)
 				zval_ptr_dtor(&retval_ptr);
 			}
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invocation of %s's constructor failed", ce->name);
+			zval_dtor(return_value);
 			RETURN_NULL();
 		}
 		if (retval_ptr) {
@@ -4240,9 +4260,7 @@ ZEND_METHOD(reflection_class, newInstance)
 		if (params) {
 			efree(params);
 		}
-	} else if (!ZEND_NUM_ARGS()) {
-		object_init_ex(return_value, ce);
-	} else {
+	} else if (ZEND_NUM_ARGS()) {
 		zend_throw_exception_ex(reflection_exception_ptr, 0 TSRMLS_CC, "Class %s does not have a constructor, so you cannot pass any constructor arguments", ce->name);
 	}
 }
@@ -4272,9 +4290,10 @@ ZEND_METHOD(reflection_class, newInstanceArgs)
 {
 	zval *retval_ptr = NULL;
 	reflection_object *intern;
-	zend_class_entry *ce;
+	zend_class_entry *ce, *old_scope;
 	int argc = 0;
 	HashTable *args;
+	zend_function *constructor;
 
 
 	METHOD_NOTSTATIC(reflection_class_ptr);
@@ -4283,19 +4302,28 @@ ZEND_METHOD(reflection_class, newInstanceArgs)
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|h", &args) == FAILURE) {
 		return;
 	}
+
 	if (ZEND_NUM_ARGS() > 0) {
 		argc = args->nNumOfElements;
 	}
 
+	object_init_ex(return_value, ce);
+
+	old_scope = EG(scope);
+	EG(scope) = ce;
+	constructor = Z_OBJ_HT_P(return_value)->get_constructor(return_value TSRMLS_CC);
+	EG(scope) = old_scope;
+
 	/* Run the constructor if there is one */
-	if (ce->constructor) {
+	if (constructor) {
 		zval ***params = NULL;
 		zend_fcall_info fci;
 		zend_fcall_info_cache fcc;
 
-		if (!(ce->constructor->common.fn_flags & ZEND_ACC_PUBLIC)) {
+		if (!(constructor->common.fn_flags & ZEND_ACC_PUBLIC)) {
 			zend_throw_exception_ex(reflection_exception_ptr, 0 TSRMLS_CC, "Access to non-public constructor of class %s", ce->name);
-			return;
+			zval_dtor(return_value);
+			RETURN_NULL();
 		}
 
 		if (argc) {
@@ -4303,8 +4331,6 @@ ZEND_METHOD(reflection_class, newInstanceArgs)
 			zend_hash_apply_with_argument(args, (apply_func_arg_t)_zval_array_to_c_array, &params TSRMLS_CC);
 			params -= argc;
 		}
-
-		object_init_ex(return_value, ce);
 
 		fci.size = sizeof(fci);
 		fci.function_table = EG(function_table);
@@ -4317,7 +4343,7 @@ ZEND_METHOD(reflection_class, newInstanceArgs)
 		fci.no_separation = 1;
 
 		fcc.initialized = 1;
-		fcc.function_handler = ce->constructor;
+		fcc.function_handler = constructor;
 		fcc.calling_scope = EG(scope);
 		fcc.called_scope = Z_OBJCE_P(return_value);
 		fcc.object_ptr = return_value;
@@ -4330,6 +4356,7 @@ ZEND_METHOD(reflection_class, newInstanceArgs)
 				zval_ptr_dtor(&retval_ptr);
 			}
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invocation of %s's constructor failed", ce->name);
+			zval_dtor(return_value);
 			RETURN_NULL();
 		}
 		if (retval_ptr) {
@@ -4338,9 +4365,7 @@ ZEND_METHOD(reflection_class, newInstanceArgs)
 		if (params) {
 			efree(params);
 		}
-	} else if (!ZEND_NUM_ARGS() || !argc) {
-		object_init_ex(return_value, ce);
-	} else {
+	} else if (argc) {
 		zend_throw_exception_ex(reflection_exception_ptr, 0 TSRMLS_CC, "Class %s does not have a constructor, so you cannot pass any constructor arguments", ce->name);
 	}
 }
@@ -5338,12 +5363,24 @@ static int add_extension_class(zend_class_entry **pce TSRMLS_DC, int num_args, v
 	int add_reflection_class = va_arg(args, int);
 
 	if (((*pce)->type == ZEND_INTERNAL_CLASS) && (*pce)->info.internal.module && !strcasecmp((*pce)->info.internal.module->name, module->name)) {
+		const char *name;
+		int nlen;
+
+		if (zend_binary_strcasecmp((*pce)->name, (*pce)->name_length, hash_key->arKey, hash_key->nKeyLength-1)) {
+			/* This is an class alias, use alias name */
+			name = hash_key->arKey;
+			nlen = hash_key->nKeyLength-1;
+		} else {
+			/* Use class name */
+			name = (*pce)->name;
+			nlen = (*pce)->name_length;
+		}
 		if (add_reflection_class) {
 			ALLOC_ZVAL(zclass);
 			zend_reflection_class_factory(*pce, zclass TSRMLS_CC);
-			add_assoc_zval_ex(class_array, (*pce)->name, (*pce)->name_length + 1, zclass);
+			add_assoc_zval_ex(class_array, name, nlen+1, zclass);
 		} else {
-			add_next_index_stringl(class_array, (*pce)->name, (*pce)->name_length, 1);
+			add_next_index_stringl(class_array, name, nlen, 1);
 		}
 	}
 	return ZEND_HASH_APPLY_KEEP;
@@ -5683,6 +5720,7 @@ static const zend_function_entry reflection_function_abstract_functions[] = {
 	ZEND_ME(reflection_function, isDeprecated, arginfo_reflection__void, 0)
 	ZEND_ME(reflection_function, isInternal, arginfo_reflection__void, 0)
 	ZEND_ME(reflection_function, isUserDefined, arginfo_reflection__void, 0)
+	ZEND_ME(reflection_function, isGenerator, arginfo_reflection__void, 0)
 	ZEND_ME(reflection_function, getClosureThis, arginfo_reflection__void, 0)
 	ZEND_ME(reflection_function, getClosureScopeClass, arginfo_reflection__void, 0)
 	ZEND_ME(reflection_function, getDocComment, arginfo_reflection__void, 0)
@@ -6023,7 +6061,7 @@ ZEND_END_ARG_INFO()
 static const zend_function_entry reflection_zend_extension_functions[] = {
 	ZEND_ME(reflection, __clone, arginfo_reflection__void, ZEND_ACC_PRIVATE|ZEND_ACC_FINAL)
 	ZEND_ME(reflection_zend_extension, export, arginfo_reflection_extension_export, ZEND_ACC_STATIC|ZEND_ACC_PUBLIC)
-	ZEND_ME(reflection_zend_extension, __construct, arginfo_reflection_extension___construct, 0)
+	ZEND_ME(reflection_zend_extension, __construct, arginfo_reflection_zend_extension___construct, 0)
 	ZEND_ME(reflection_zend_extension, __toString, arginfo_reflection__void, 0)
 	ZEND_ME(reflection_zend_extension, getName, arginfo_reflection__void, 0)
 	ZEND_ME(reflection_zend_extension, getVersion, arginfo_reflection__void, 0)

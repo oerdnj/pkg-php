@@ -147,7 +147,7 @@ STATUS:              Working
 COMMENT:             Tested on phpts and isapi versions
 -------------------------------------------------------------------------------
 EXTENSION:           mysql
-PRIMARY MAINTAINER:  Zak Greant <zak@mysql.com>, Georg Richter <georg@php.net>,  Johannes Schlüter <johannes@php.net>,  Ulf Wendel <uw@php.net>
+PRIMARY MAINTAINER:  Zak Greant <zak@mysql.com>, Georg Richter <georg@php.net>, Andrey Hristov <andrey@php.net>, Johannes Schlüter <johannes@php.net>,  Ulf Wendel <uw@php.net>
 MAINTENANCE:         Maintained
 STATUS:              Working
 -------------------------------------------------------------------------------
@@ -158,7 +158,7 @@ STATUS:              Working
 SINCE:               5.0
 -------------------------------------------------------------------------------
 EXTENSION:           mysqlnd
-PRIMARY MAINTAINER:  Georg Richter <georg@php.net>, Andrey Hristov <andrey@php.net>,  Johannes Schlüter <johannes@php.net>, Ulf Wendel <uw@php.net>      
+PRIMARY MAINTAINER:  Andrey Hristov <andrey@php.net>, Johannes Schlüter <johannes@php.net>, Ulf Wendel <uw@php.net>      
 MAINTENANCE:         Maintained
 STATUS:              Working
 SINCE:               5.3
@@ -443,6 +443,12 @@ EXTENSION:           ming
 PRIMARY MAINTAINER:  Frank M. Kromann
 MAINTENANCE:         Unknown
 STATUS:              Experimental
+-------------------------------------------------------------------------------
+EXTENSION:           opcache
+PRIMARY MAINTAINER:  Dmitry Stogov <dmitry@zend.com>, Xinchen Hui <laruence@php.net>
+MAINTENANCE:         Maintained
+STATUS:              Working
+SINCE:               5.5.0
 -------------------------------------------------------------------------------
 EXTENSION:           openssl
 PRIMARY MAINTAINER:  Wez Furlong <wez@php.net>, Pierre-Alain Joye <pajoye@php.net>

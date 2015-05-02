@@ -78,8 +78,8 @@ void zend_signal_handler_defer(int signo, siginfo_t *siginfo, void *context)
 
 	if (SIGG(active)) {
 		if (SIGG(depth) == 0) { /* try to handle signal */
-			if (SIGG(blocked) != -1) { /* inverse */
-				SIGG(blocked) = -1; /* signal is not blocked */
+			if (SIGG(blocked) != 0) { /* inverse */
+				SIGG(blocked) = 0; /* signal is not blocked */
 			}
 			if (SIGG(running) == 0) {
 				SIGG(running) = 1;
@@ -99,7 +99,7 @@ void zend_signal_handler_defer(int signo, siginfo_t *siginfo, void *context)
 				SIGG(running) = 0;
 			}
 		} else { /* delay signal handling */
-			SIGG(blocked) = 0; /* signal is blocked */
+			SIGG(blocked) = 1; /* signal is blocked */
 
 			if ((queue = SIGG(pavail))) { /* if none available it's simply forgotton */
 				SIGG(pavail) = queue->next;
@@ -215,7 +215,7 @@ ZEND_API int zend_sigaction(int signo, const struct sigaction *act, struct sigac
 		sa.sa_mask      = global_sigmask;
 
 		if (sigaction(signo, &sa, NULL) < 0) {
-			zend_error(E_WARNING, "Error installing signal handler for %d", signo);
+			zend_error(E_ERROR, "Error installing signal handler for %d", signo);
 		}
 
 		/* unsure this signal is not blocked */
@@ -267,7 +267,7 @@ static int zend_signal_register(int signo, void (*handler)(int, siginfo_t*, void
 		sa.sa_mask      = global_sigmask;
 
 		if (sigaction(signo, &sa, NULL) < 0) {
-			zend_error(E_WARNING, "Error installing signal handler for %d", signo);
+			zend_error(E_ERROR, "Error installing signal handler for %d", signo);
 		}
 
 		return SUCCESS;
@@ -314,7 +314,7 @@ void zend_signal_deactivate(TSRMLS_D)
 	SIGNAL_BEGIN_CRITICAL();
 	SIGG(active) = 0;
 	SIGG(running) = 0;
-	SIGG(blocked) = -1;
+	SIGG(blocked) = 0;
 	SIGG(depth) = 0;
 	SIGNAL_END_CRITICAL();
 }

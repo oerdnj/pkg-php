@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2014 The PHP Group                                |
+   | Copyright (c) 1997-2015 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -1868,7 +1868,7 @@ PHP_FUNCTION(pg_query_params)
 			} else {
 				zval tmp_val = **tmp;
 				zval_copy_ctor(&tmp_val);
-				convert_to_string(&tmp_val);
+				convert_to_cstring(&tmp_val);
 				if (Z_TYPE(tmp_val) != IS_STRING) {
 					php_error_docref(NULL TSRMLS_CC, E_WARNING,"Error converting parameter");
 					zval_dtor(&tmp_val);
@@ -3014,7 +3014,7 @@ PHP_FUNCTION(pg_trace)
 	php_stream *stream;
 	id = PGG(default_link);
 
-	if (zend_parse_parameters(argc TSRMLS_CC, "s|sr", &z_filename, &z_filename_len, &mode, &mode_len, &pgsql_link) == FAILURE) {
+	if (zend_parse_parameters(argc TSRMLS_CC, "p|sr", &z_filename, &z_filename_len, &mode, &mode_len, &pgsql_link) == FAILURE) {
 		return;
 	}
 
@@ -3631,10 +3631,10 @@ PHP_FUNCTION(pg_lo_export)
 
 	ZEND_FETCH_RESOURCE2(pgsql, PGconn *, &pgsql_link, id, "PostgreSQL link", le_link, le_plink);
 
-	if (lo_export(pgsql, oid, file_out)) {
-		RETURN_TRUE;
+	if (lo_export(pgsql, oid, file_out) == -1) {
+		RETURN_FALSE;
 	}
-	RETURN_FALSE;
+	RETURN_TRUE;
 }
 /* }}} */
 
@@ -4059,18 +4059,26 @@ PHP_FUNCTION(pg_copy_from)
 				zend_hash_internal_pointer_reset_ex(Z_ARRVAL_P(pg_rows), &pos);
 #if HAVE_PQPUTCOPYDATA
 				while (zend_hash_get_current_data_ex(Z_ARRVAL_P(pg_rows), (void **) &tmp, &pos) == SUCCESS) {
-					convert_to_string_ex(tmp);
-					query = (char *)emalloc(Z_STRLEN_PP(tmp) + 2);
-					strlcpy(query, Z_STRVAL_PP(tmp), Z_STRLEN_PP(tmp) + 2);
-					if(Z_STRLEN_PP(tmp) > 0 && *(query + Z_STRLEN_PP(tmp) - 1) != '\n') {
-						strlcat(query, "\n", Z_STRLEN_PP(tmp) + 2);
+					zval *value;
+					ALLOC_ZVAL(value);
+					INIT_PZVAL_COPY(value, *tmp);
+					zval_copy_ctor(value);
+					convert_to_string_ex(&value);
+					query = (char *)emalloc(Z_STRLEN_P(value) + 2);
+					strlcpy(query, Z_STRVAL_P(value), Z_STRLEN_P(value) + 2);
+					if(Z_STRLEN_P(value) > 0 && *(query + Z_STRLEN_P(value) - 1) != '\n') {
+						strlcat(query, "\n", Z_STRLEN_P(value) + 2);
 					}
 					if (PQputCopyData(pgsql, query, strlen(query)) != 1) {
 						efree(query);
+						zval_dtor(value);
+						efree(value);
 						PHP_PQ_ERROR("copy failed: %s", pgsql);
 						RETURN_FALSE;
 					}
 					efree(query);
+					zval_dtor(value);
+					efree(value);
 					zend_hash_move_forward_ex(Z_ARRVAL_P(pg_rows), &pos);
 				}
 				if (PQputCopyEnd(pgsql, NULL) != 1) {
@@ -4079,18 +4087,26 @@ PHP_FUNCTION(pg_copy_from)
 				}
 #else
 				while (zend_hash_get_current_data_ex(Z_ARRVAL_P(pg_rows), (void **) &tmp, &pos) == SUCCESS) {
-					convert_to_string_ex(tmp);
-					query = (char *)emalloc(Z_STRLEN_PP(tmp) + 2);
-					strlcpy(query, Z_STRVAL_PP(tmp), Z_STRLEN_PP(tmp) + 2);
-					if(Z_STRLEN_PP(tmp) > 0 && *(query + Z_STRLEN_PP(tmp) - 1) != '\n') {
-						strlcat(query, "\n", Z_STRLEN_PP(tmp) + 2);
+					zval *value;
+					ALLOC_ZVAL(value);
+					INIT_PZVAL_COPY(value, *tmp);
+					zval_copy_ctor(value);
+					convert_to_string_ex(&value);
+					query = (char *)emalloc(Z_STRLEN_P(value) + 2);
+					strlcpy(query, Z_STRVAL_P(value), Z_STRLEN_P(value) + 2);
+					if(Z_STRLEN_P(value) > 0 && *(query + Z_STRLEN_P(value) - 1) != '\n') {
+						strlcat(query, "\n", Z_STRLEN_P(value) + 2);
 					}
 					if (PQputline(pgsql, query)==EOF) {
 						efree(query);
+						zval_dtor(value);
+						efree(value);
 						PHP_PQ_ERROR("copy failed: %s", pgsql);
 						RETURN_FALSE;
 					}
 					efree(query);
+					zval_dtor(value);
+					efree(value);
 					zend_hash_move_forward_ex(Z_ARRVAL_P(pg_rows), &pos);
 				}
 				if (PQputline(pgsql, "\\.\n") == EOF) {
@@ -4337,6 +4353,7 @@ PHP_FUNCTION(pg_unescape_bytea)
 	to = (char *)php_pgsql_unescape_bytea((unsigned char*)from, &to_len);
 #endif
 	if (!to) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING,"Invalid parameter");
 		RETURN_FALSE;
 	}
 	RETVAL_STRINGL(to, to_len, 0);
@@ -5340,9 +5357,6 @@ static int php_pgsql_convert_match(const char *str, size_t str_len, const char *
 
 	regerr = regexec(&re, str, re.re_nsub+1, subs, 0);
 	if (regerr == REG_NOMATCH) {
-#ifdef PHP_DEBUG
-		php_error_docref(NULL TSRMLS_CC, E_NOTICE, "'%s' does not match with '%s'", str, regex);
-#endif
 		ret = FAILURE;
 	}
 	else if (regerr) {
@@ -5433,7 +5447,7 @@ PHP_PGSQL_API int php_pgsql_convert(PGconn *pg_link, const char *table_name, con
 		skip_field = 0;
 		new_val = NULL;
 
-		if ((key_type = zend_hash_get_current_key_ex(Z_ARRVAL_P(values), &field, &field_len, &num_idx, 0, &pos)) == HASH_KEY_NON_EXISTANT) {
+		if ((key_type = zend_hash_get_current_key_ex(Z_ARRVAL_P(values), &field, &field_len, &num_idx, 0, &pos)) == HASH_KEY_NON_EXISTENT) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Failed to get array key type");
 			err = 1;
 		}
@@ -5441,7 +5455,7 @@ PHP_PGSQL_API int php_pgsql_convert(PGconn *pg_link, const char *table_name, con
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Accepts only string key for values");
 			err = 1;
 		}
-		if (!err && key_type == HASH_KEY_NON_EXISTANT) {
+		if (!err && key_type == HASH_KEY_NON_EXISTENT) {
 			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Accepts only string key for values");
 			err = 1;
 		}
@@ -5591,7 +5605,12 @@ PHP_PGSQL_API int php_pgsql_convert(PGconn *pg_link, const char *table_name, con
 						else {
 							/* FIXME: better regex must be used */
 							if (php_pgsql_convert_match(Z_STRVAL_PP(val), Z_STRLEN_PP(val), "^([+-]{0,1}[0-9]+)|([+-]{0,1}[0-9]*[\\.][0-9]+)|([+-]{0,1}[0-9]+[\\.][0-9]*)$", 0 TSRMLS_CC) == FAILURE) {
-								err = 1;
+								if (php_pgsql_convert_match(Z_STRVAL_PP(val), Z_STRLEN_PP(val), "^[+-]{0,1}(inf)(inity){0,1}$", 1 TSRMLS_CC) == FAILURE) {
+									err = 1;
+								} else {
+									ZVAL_STRING(new_val, Z_STRVAL_PP(val), 1);
+									php_pgsql_add_quotes(new_val, 1 TSRMLS_CC);
+								}
 							}
 							else {
 								ZVAL_STRING(new_val, Z_STRVAL_PP(val), 1);
@@ -6117,6 +6136,9 @@ static inline void build_tablename(smart_str *querystr, PGconn *pg_link, const c
 	/* schame.table should be "schame"."table" */
 	table_copy = estrdup(table);
 	token = php_strtok_r(table_copy, ".", &tmp);
+	if (token == NULL) {
+		token = table;
+	}
 	len = strlen(token);
 	if (_php_pgsql_detect_identifier_escape(token, len) == SUCCESS) {
 		smart_str_appendl(querystr, token, len);
@@ -6182,7 +6204,7 @@ PHP_PGSQL_API int php_pgsql_insert(PGconn *pg_link, const char *table, zval *var
 
 	zend_hash_internal_pointer_reset_ex(Z_ARRVAL_P(var_array), &pos);
 	while ((key_type = zend_hash_get_current_key_ex(Z_ARRVAL_P(var_array), &fld,
-					&fld_len, &num_idx, 0, &pos)) != HASH_KEY_NON_EXISTANT) {
+					&fld_len, &num_idx, 0, &pos)) != HASH_KEY_NON_EXISTENT) {
 		if (key_type == HASH_KEY_IS_LONG) {
 			php_error_docref(NULL TSRMLS_CC, E_NOTICE, "Expects associative array for values to be inserted");
 			goto cleanup;

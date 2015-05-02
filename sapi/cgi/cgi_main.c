@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2014 The PHP Group                                |
+   | Copyright (c) 1997-2015 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -730,13 +730,16 @@ static void sapi_cgi_log_message(char *message TSRMLS_DC)
 
 		request = (fcgi_request*) SG(server_context);
 		if (request) {
-			int len = strlen(message);
+			int ret, len = strlen(message);
 			char *buf = malloc(len+2);
 
 			memcpy(buf, message, len);
 			memcpy(buf + len, "\n", sizeof("\n"));
-			fcgi_write(request, FCGI_STDERR, buf, len+1);
+			ret = fcgi_write(request, FCGI_STDERR, buf, len + 1);
 			free(buf);
+			if (ret < 0) {
+				php_handle_aborted_connection();
+			}
 		} else {
 			fprintf(stderr, "%s\n", message);
 		}
@@ -884,7 +887,6 @@ static int sapi_cgi_activate(TSRMLS_D)
 			} else {
 				doc_root = getenv("DOCUMENT_ROOT");
 			}
-
 			/* DOCUMENT_ROOT should also be defined at this stage..but better check it anyway */
 			if (doc_root) {
 				doc_root_len = strlen(doc_root);
@@ -1662,13 +1664,15 @@ PHP_FUNCTION(apache_request_headers) /* {{{ */
 static void add_response_header(sapi_header_struct *h, zval *return_value TSRMLS_DC) /* {{{ */
 {
 	char *s, *p;
-	int  len;
+	int  len = 0;
 	ALLOCA_FLAG(use_heap)
 
 	if (h->header_len > 0) {
 		p = strchr(h->header, ':');
-		len = p - h->header;
-		if (p && (len > 0)) {
+		if (NULL != p) {
+			len = p - h->header;
+		}
+		if (len > 0) {
 			while (len > 0 && (h->header[len-1] == ' ' || h->header[len-1] == '\t')) {
 				len--;
 			}
@@ -1689,8 +1693,8 @@ static void add_response_header(sapi_header_struct *h, zval *return_value TSRMLS
 
 PHP_FUNCTION(apache_response_headers) /* {{{ */
 {
-	if (ZEND_NUM_ARGS() > 0) {
-		WRONG_PARAM_COUNT;
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
 	}
 
 	if (!&SG(sapi_headers).headers) {
@@ -1822,7 +1826,7 @@ int main(int argc, char *argv[])
 		unsigned char *p;
 		decoded_query_string = strdup(query_string);
 		php_url_decode(decoded_query_string, strlen(decoded_query_string));
-		for (p = decoded_query_string; *p &&  *p <= ' '; p++) {
+		for (p = (unsigned char *)decoded_query_string; *p &&  *p <= ' '; p++) {
 			/* skip all leading spaces */
 		}
 		if(*p == '-') {
@@ -1956,7 +1960,11 @@ consult the installation file that came with this distribution, or visit \n\
 	}
 
 	if (bindpath) {
-		fcgi_fd = fcgi_listen(bindpath, 128);
+		int backlog = 128;
+		if (getenv("PHP_FCGI_BACKLOG")) {
+			backlog = atoi(getenv("PHP_FCGI_BACKLOG"));
+		}
+		fcgi_fd = fcgi_listen(bindpath, backlog);
 		if (fcgi_fd < 0) {
 			fprintf(stderr, "Couldn't create FastCGI listen socket on port %s\n", bindpath);
 #ifdef ZTS
@@ -2220,9 +2228,9 @@ consult the installation file that came with this distribution, or visit \n\
 								SG(request_info).no_headers = 1;
 							}
 #if ZEND_DEBUG
-							php_printf("PHP %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2014 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
+							php_printf("PHP %s (%s) (built: %s %s) (DEBUG)\nCopyright (c) 1997-2015 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 #else
-							php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2014 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
+							php_printf("PHP %s (%s) (built: %s %s)\nCopyright (c) 1997-2015 The PHP Group\n%s", PHP_VERSION, sapi_module.name, __DATE__, __TIME__, get_zend_version());
 #endif
 							php_request_shutdown((void *) 0);
 							fcgi_shutdown();

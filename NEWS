@@ -1,47 +1,258 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-19 Mar 2015 PHP 5.4.39
+16 Apr 2015, PHP 5.5.24
+
+- Apache2handler:
+  . Fixed bug #69218 (potential remote code execution with apache 2.4
+    apache2handler). (Gerrit Venema)
 
 - Core:
-  . Fixed bug #68976 (Use After Free Vulnerability in unserialize()). (Stas)
+  . Fixed bug #66609 (php crashes with __get() and ++ operator in some cases).
+    (Dmitry, Laruence)
+  . Fixed bug #67626 (User exceptions not properly handled in streams). 
+    (Julian)
+  . Fixed bug #68021 (get_browser() browser_name_regex returns non-utf-8
+    characters). (Tjerk)
+  . Fixed bug #68917 (parse_url fails on some partial urls). (Wei Dai)
   . Fixed bug #69134 (Per Directory Values overrides PHP_INI_SYSTEM
     configuration options). (Anatol Belski)
-  . Fixed bug #69207 (move_uploaded_file allows nulls in path). (Stas)
+  . Additional fix for bug #69152 (Type confusion vulnerability in
+    exception::getTraceAsString). (Stas)
+  . Fixed bug #69212 (Leaking VIA_HANDLER func when exception thrown in
+    __call/... arg passing). (Nikita)
+  . Fixed bug #69221 (Segmentation fault when using a generator in combination
+    with an Iterator). (Nikita)
+  . Fixed bug #69337 (php_stream_url_wrap_http_ex() type-confusion
+    vulnerability). (Stas)
+  . Fixed bug #69353 (Missing null byte checks for paths in various PHP
+    extensions). (Stas)
+
+- Curl:
+  . Implemented FR#69278 (HTTP2 support). (Masaki Kagaya)
+  . Fixed bug #69316 (Use-after-free in php_curl related to
+    CURLOPT_FILE/_INFILE/_WRITEHEADER). (Laruence)
+
+- Date:
+  . Export date_get_immutable_ce so that it can be used by extensions. (Derick
+    Rethans)
+  . Fixed bug #69336 (Issues with "last day of <monthname>"). (Derick Rethans)
+
+- Enchant:
+  . Fixed bug #65406 (Enchant broker plugins are in the wrong place in windows
+    builds). (Anatol)
+
+- Fileinfo:
+  . Fixed bug #68819 (Fileinfo on specific file causes spurious OOM and/or
+    segfault). (Anatol Belski)
+
+- Filter:
+  . Fixed bug #69202 (FILTER_FLAG_STRIP_BACKTICK ignored unless other
+    flags are used). (Jeff Welch)
+  . Fixed bug #69203 (FILTER_FLAG_STRIP_HIGH doesn't strip ASCII 127). (Jeff
+    Welch)
+
+- Mbstring:
+  . Fixed bug #68846 (False detection of CJK Unified Ideographs Extension E).
+    (Masaki Kagaya)
+
+- OPCache
+   . Fixed bug #68677 (Use After Free). (CVE-2015-1351) (Laruence)
+   . Fixed bug #69281 (opcache_is_script_cached no longer works). (danack)
+
+- OpenSSL:
+  . Fixed bug #67403 (Add signatureType to openssl_x509_parse).
+  . Add a check for RAND_egd to allow compiling against LibreSSL (Leigh)
+
+- Phar:
+  . Fixed bug #64343 (PharData::extractTo fails for tarball created by BSD tar).
+    (Mike)
+  . Fixed bug #64931 (phar_add_file is too restrictive on filename). (Mike)
+  . Fixed bug #65467 (Call to undefined method cli_arg_typ_string). (Mike)
+  . Fixed bug #67761 (Phar::mapPhar fails for Phars inside a path containing 
+    ".tar"). (Mike)
+  . Fixed bug #69324 (Buffer Over-read in unserialize when parsing Phar). (Stas)
+  . Fixed bug #69441 (Buffer Overflow when parsing tar/zip/phar in
+    phar_set_inode). (Stas)
+
+- Postgres:
+  . Fixed bug #68741 (Null pointer dereference). (CVE-2015-1352) (Laruence)
+
+- SPL:
+  . Fixed bug #69227 (Use after free in zval_scan caused by
+     spl_object_storage_get_gc). (adam dot scarr at 99designs dot com)
+
+- SOAP:
+  . Fixed bug #69293 (NEW segfault when using SoapClient::__setSoapHeader 
+     (bisected, regression)). (thomas at shadowweb dot org, Laruence)
+
+- SQLITE:
+  . Fixed bug #68760 (SQLITE segfaults if custom collator throws an exception).
+     (Dan Ackroyd)
+  . Fixed bug #69287 (Upgrade bundled sqlite to 3.8.8.3). (Anatol)
+
+19 Mar 2015, PHP 5.5.23
+
+- Core:
+  . Fixed bug #69174 (leaks when unused inner class use traits precedence).
+    (Laruence)
+  . Fixed bug #69139 (Crash in gc_zval_possible_root on unserialize).
+    (Laruence)
+  . Fixed bug #69121 (Segfault in get_current_user when script owner is not
+    in passwd with ZTS build). (dan at syneto dot net)
+  . Fixed bug #65593 (Segfault when calling ob_start from output buffering 
+    callback). (Mike)
+  . Fixed bug #69017 (Fail to push to the empty array with the constant value
+    defined in class scope). (Laruence)
+  . Fixed bug #68986 (pointer returned by php_stream_fopen_temporary_file
+    not validated in memory.c). (nayana at ddproperty dot com)
+  . Fixed bug #68166 (Exception with invalid character causes segv). (Rasmus)
+  . Fixed bug #69141 (Missing arguments in reflection info for some builtin
+    functions). (kostyantyn dot lysyy at oracle dot com)
+  . Fixed bug #68976 (Use After Free Vulnerability in unserialize()).
+    (CVE-2015-2787) (Stas)
+  . Fixed bug #69134 (Per Directory Values overrides PHP_INI_SYSTEM
+    configuration options). (Anatol Belski)
+  . Fixed bug #69207 (move_uploaded_file allows nulls in path). (CVE-2015-2348)
+    (Stas)
+
+- CGI:
+  . Fixed bug #69015 (php-cgi's getopt does not see $argv). (Laruence)
+
+- CLI:
+  . Fixed bug #67741 (auto_prepend_file messes up __LINE__). (Reeze Xia)
+
+- cURL:
+  . Fixed bug #69088 (PHP_MINIT_FUNCTION does not fully initialize cURL on
+    Win32). (Grant Pannell)
+  . Add CURLPROXY_SOCKS4A and CURLPROXY_SOCKS5_HOSTNAME constants if supported
+    by libcurl. (Linus Unneback)
 
 - Ereg:
-  . Fixed bug #69248 (heap overflow vulnerability in regcomp.c). (Stas)
+  . Fixed bug #69248 (heap overflow vulnerability in regcomp.c). (CVE-2015-2305) (Stas)
+
+- FPM:
+  . Fixed bug #68822 (request time is reset too early). (honghu069 at 163 dot com)
+
+- ODBC:
+  . Fixed bug #68964 (Allowed memory size exhausted with odbc_exec). (Anatol)
+
+- Opcache:
+  . Fixed bug #69125 (Array numeric string as key). (Laruence)
+  . Fixed bug #69038 (switch(SOMECONSTANT) misbehaves). (Laruence)
+
+- OpenSSL:
+  . Fixed bugs #61285, #68329, #68046, #41631 (encrypted streams don't observe
+    socket timeouts). (Brad Broerman)
+
+- pgsql:
+  . Fixed bug #68638 (pg_update() fails to store infinite values).
+    (william dot welter at 4linux dot com dot br, Laruence)
+
+- Readline:
+  . Fixed bug #69054 (Null dereference in readline_(read|write)_history() without
+    parameters). (Laruence)
 
 - SOAP:
   . Fixed bug #69085 (SoapClient's __call() type confusion through
-    unserialize()). (Dmitry)
+    unserialize()). (andrea dot palazzo at truel dot it, Laruence)
+
+- SPL:
+  . Fixed bug #69108 ("Segmentation fault" when (de)serializing
+    SplObjectStorage). (Laruence)
+  . Fixed bug #68557 (RecursiveDirectoryIterator::seek(0) broken after 
+    calling getChildren()). (Julien)
 
 - ZIP:
   . Fixed bug #69253 (ZIP Integer Overflow leads to writing past heap
-    boundary). (Stas)
+    boundary). (CVE-2015-2331) (Stas)
 
-19 Feb 2015 PHP 5.4.38
+19 Feb 2015, PHP 5.5.22
 
 - Core:
   . Removed support for multi-line headers, as the are deprecated by RFC 7230.
     (Stas)
-  . Added NULL byte protection to exec, system and passthru. (Yasuo)
-  . Fixed bug #68925 (Mitigation for CVE-2015-0235 – GHOST: glibc gethostbyname
-    buffer overflow). (Stas)
-  . Fixed bug #67827 (broken detection of system crypt sha256/sha512 support).
-    (ncopa at alpinelinux dot org)  
+  . Fixed bug #67068 (getClosure returns somethings that's not a closure). 
+    (Danack at basereality dot com)
   . Fixed bug #68942 (Use after free vulnerability in unserialize() with
     DateTimeZone). (CVE-2015-0273) (Stas)
-  
+  . Fixed bug #68925 (Mitigation for CVE-2015-0235 – GHOST: glibc gethostbyname
+    buffer overflow). (Stas)
+  . Added NULL byte protection to exec, system and passthru. (Yasuo)
+
+- Date:
+  . Fixed bug #45081 (strtotime incorrectly interprets SGT time zone). (Derick)
+
+- Dba:
+  . Fixed bug #68711 (useless comparisons). (bugreports at internot dot info)
+
 - Enchant: 
   . Fixed bug #68552 (heap buffer overflow in enchant_broker_request_dict()).
-    (Antony)
+    (CVE-2014-9705) (Antony)
 
-- SOAP:
-  . Fixed bug #67427 (SoapServer cannot handle large messages)
-    (brandt at docoloc dot de)
+- Fileinfo:
+  . Fixed bug #68827 (Double free with disabled ZMM). (Joshua Rogers)
 
-22 Jan 2015 PHP 5.4.37
+- FPM:
+  . Fixed bug #66479 (Wrong response to FCGI_GET_VALUES). (Frank Stolle)
+  . Fixed bug #68571 (core dump when webserver close the socket).
+    (redfoxli069 at gmail dot com, Laruence)
+
+- Libxml:
+  . Fixed bug #64938 (libxml_disable_entity_loader setting is shared
+    between threads). (Martin Jansen)
+
+- PDO_mysql:
+  . Fixed bug #68750 (PDOMysql with mysqlnd does not allow the usage of
+    named pipes). (steffenb198 at aol dot com)
+
+- Phar:
+  . Fixed bug #68901 (use after free). (CVE-2015-2301)
+    (bugreports at internot dot info)
+
+- Pgsql:
+  . Fixed Bug #65199 'pg_copy_from() modifies input array variable). (Yasuo)
+
+- Sqlite3:
+  . Fixed bug #68260 (SQLite3Result::fetchArray declares wrong 
+    required_num_args). (Julien)
+
+- Mysqli:
+  . Fixed bug #68114 (linker error on some OS X machines with fixed
+    width decimal support) (Keyur Govande)
+  . Fixed bug #68657 (Reading 4 byte floats with Mysqli and libmysqlclient
+    has rounding errors) (Keyur Govande)
+
+- Session:
+  . Fixed bug #68941 (mod_files.sh is a bash-script) (bugzilla at ii.nl, Yasuo)
+  . Fixed Bug #66623 (no EINTR check on flock) (Yasuo)
+  . Fixed bug #68063 (Empty session IDs do still start sessions) (Yasuo)
+
+- Standard:
+  . Fixed bug #65272 (flock() out parameter not set correctly in windows).
+    (Daniel Lowrey)
+  . Fixed bug #69033 (Request may get env. variables from previous requests
+    if PHP works as FastCGI). (Anatol)
+
+- Streams:
+  . Fixed bug which caused call after final close on streams filter. (Bob)
+
+22 Jan 2015, PHP 5.5.21
+
 - Core:
+  . Upgraded crypt_blowfish to version 1.3. (Leigh)
+  . Fixed bug #60704 (unlink() bug with some files path). 
+  . Fixed bug #65419 (Inside trait, self::class != __CLASS__). (Julien)
+  . Fixed bug #65576 (Constructor from trait conflicts with inherited
+    constructor). (dunglas at gmail dot com)
+  . Fixed bug #55541 (errors spawn MessageBox, which blocks test automation).
+    (Anatol)
+  . Fixed bug #68297 (Application Popup provides too few information). (Anatol)
+  . Fixed bug #65769 (localeconv() broken in TS builds). (Anatol)
+  . Fixed bug #65230 (setting locale randomly broken). (Anatol)
+  . Fixed bug #66764 (configure doesn't define EXPANDED_DATADIR / PHP_DATADIR
+    correctly). (Ferenc)
+  . Fixed bug #68583 (Crash in timeout thread). (Anatol)
+  . Fixed bug #68676 (Explicit Double Free). (CVE-2014-9425) (Kalle)
   . Fixed bug #68710 (Use After Free Vulnerability in PHP's unserialize()).
     (CVE-2015-0231) (Stefan Esser)
 
@@ -49,57 +260,182 @@ PHP                                                                        NEWS
   . Fixed bug #68618 (out of bounds read crashes php-cgi). (CVE-2014-9427)
     (Stas)
 
+- CLI server:
+  . Fixed bug #68745 (Invalid HTTP requests make web server segfault). (Adam)
+
+- cURL:
+  . Fixed bug #67643 (curl_multi_getcontent returns '' when
+    CURLOPT_RETURNTRANSFER isn't set). (Jille Timmermans)
+
 - EXIF:
-  . Fixed bug #68799: Free called on unitialized pointer. (CVE-2015-0232) 
+  . Fixed bug #68799 (Free called on unitialized pointer). (CVE-2015-0232)
     (Stas)
 
 - Fileinfo:
+  . Fixed bug #68671 (incorrect expression in libmagic).
+    (Joshua Rogers, Anatol Belski)
   . Removed readelf.c and related code from libmagic sources
     (Remi, Anatol)
-  . Fixed bug #68735 (fileinfo out-of-bounds memory access).
+  . Fixed bug #68735 (fileinfo out-of-bounds memory access). (CVE-2014-9652)
     (Anatol)
 
-- OpenSSL:
-  . Fixed bug #55618 (use case-insensitive cert name matching).
-    (Daniel Lowrey)
+- FPM:
+  . Fixed bug #68751 (listen.allowed_clients is broken). (Remi)
 
-18 Dec 2014 PHP 5.4.36
+- GD:
+  . Fixed bug #68601 (buffer read overflow in gd_gif_in.c). (CVE-2014-9709)
+    (Jan Bee, Remi)
 
-- Core:
-  . Upgraded crypt_blowfish to version 1.3. (Leigh)
-  . Fixed bug #68545 (NULL pointer dereference in unserialize.c). (Anatol)
-  . Fixed bug #68594 (Use after free vulnerability in unserialize()).
-    (CVE-2014-8142) (Stefan Esser)
+- Mbstring:
+  . Fixed bug #68504 (--with-libmbfl configure option not present on Windows).
+    (Ashesh Vashi)
 
 - Mcrypt:
   . Fixed possible read after end of buffer and use after free. (Dmitry)
 
-13 Nov 2014 PHP 5.4.35
+- Opcache:
+  . Fixed bug #67111 (Memory leak when using "continue 2" inside two foreach
+    loops). (Nikita)
+
+- OpenSSL:
+  . Fixed bug #55618 (use case-insensitive cert name matching). (Daniel Lowrey)
+
+- Pcntl:
+  . Fixed bug #60509 (pcntl_signal doesn't decrease ref-count of old handler
+    when setting SIG_DFL). (Julien)
+
+- PCRE:
+  . Fixed bug #66679 (Alignment Bug in PCRE 8.34 upstream).
+    (Rainer Jung, Anatol Belski)
+
+- pgsql:
+  . Fixed bug #68697 (lo_export return -1 on failure). (Ondřej Surý)
+
+- PDO:
+  . Fixed bug #68371 (PDO#getAttribute() cannot be called with platform-specific
+    attribute names). (Matteo)
+
+- PDO_mysql:
+  . Fixed bug #68424 (Add new PDO mysql connection attr to control multi
+    statements option). (peter dot wolanin at acquia dot com)
+
+- SPL:
+  . Fixed bug #66405 (RecursiveDirectoryIterator::CURRENT_AS_PATHNAME
+    breaks the RecursiveIterator). (Paul Garvin)
+  . Fixed bug #65213 (cannot cast SplFileInfo to boolean) (Tjerk)
+  . Fixed bug #68479 (Added escape parameter to SplFileObject::fputcsv). (Salathe)
+
+- SQLite:
+  . Fixed bug #68120 (Update bundled libsqlite to 3.8.7.2). (Anatol)
+
+- Streams:
+  . Fixed bug #68532 (convert.base64-encode omits padding bytes).
+    (blaesius at krumedia dot de)
+
+18 Dec 2014, PHP 5.5.20
 
 - Core:
-  . Fixed bug #68365 (zend_mm_heap corrupted after memory overflow in
-    zend_hash_copy). (Dmitry)
+  . Fixed bug #68091 (Some Zend headers lack appropriate extern "C" blocks).
+    (Adam)
+  . Fixed bug #68185 ("Inconsistent insteadof definition."- incorrectly 
+    triggered). (Julien)
+  . Fixed bug #68370 ("unset($this)" can make the program crash). (Laruence)
+  . Fixed bug #68545 (NULL pointer dereference in unserialize.c). (Anatol)
+  . Fixed bug #68594 (Use after free vulnerability in unserialize()).
+    (CVE-2014-8142) (Stefan Esser)
 
-- Fileinfo:
-  . Fixed bug #68283 (fileinfo: out-of-bounds read in elf note headers).
-    (CVE-2014-3710) (Remi)
+- Date:
+  . Fixed day_of_week function as it could sometimes return negative values
+    internally. (Derick)
 
-- GMP:
- . Fixed bug #63595 (GMP memory management conflicts with other libraries
-   using GMP). (Remi)
+- FPM:
+  . Fixed bug #68381 (fpm_unix_init_main ignores log_level).
+    (David Zuelke, Remi)
+  . Fixed bug #68420 (listen=9000 listens to ipv6 localhost instead of all
+    addresses). (Remi)
+  . Fixed bug #68421 (access.format='%R' doesn't log ipv6 address). (Remi)
+  . Fixed bug #68423 (PHP-FPM will no longer load all pools). (Remi)
+  . Fixed bug #68428 (listen.allowed_clients is IPv4 only). (Remi)
+  . Fixed bug #68452 (php-fpm man page is oudated). (Remi)
+  . Fixed request #68458 (Change pm.start_servers default warning to
+    notice). (David Zuelke, Remi)
+  . Fixed bug #68463 (listen.allowed_clients can silently result
+    in no allowed access). (Remi)
+  . Fixed request #68391 (php-fpm conf files loading order).
+    (Florian Margaine, Remi)
+  . Fixed bug #68478 (access.log don't use prefix). (Remi)
+
+- Mcrypt:
+  . Fixed possible read after end of buffer and use after free. (Dmitry)
 
 - PDO_pgsql:
   . Fixed bug #66584 (Segmentation fault on statement deallocation) (Matteo)
+  . Fixed bug #67462 (PDO_PGSQL::beginTransaction() wrongly throws exception
+  when not in transaction) (Matteo)
+  . Fixed bug #68351 (PDO::PARAM_BOOL and ATTR_EMULATE_PREPARES misbehaving)
+  (Matteo)
 
-16 Oct 2014, PHP 5.4.34
+- SOAP:
+  . Fixed bug #68361 (Segmentation fault on SoapClient::__getTypes).
+    (Laruence)
+
+- zlib:
+  . Fixed bug #53829 (Compiling PHP with large file support will replace
+    function gzopen by gzopen64) (Sascha Kettler, Matteo)
+
+13 Nov 2014, PHP 5.5.19
+
+- Core:
+  . Fixed bug #68095 (AddressSanitizer reports a heap buffer overflow in 
+    php_getopt()). (Stas)
+  . Fixed bug #68118 ($a->foo .= 'test'; can leave $a->foo undefined). (Nikita)
+  . Fixed bug #68129 (parse_url() - incomplete support for empty usernames
+    and passwords) (Tjerk)
+  . Fixed bug #68365 (zend_mm_heap corrupted after memory overflow in
+    zend_hash_copy). (Dmitry)
+
+- CURL:
+  . Add CURL_SSLVERSION_TLSv1_0, CURL_SSLVERSION_TLSv1_1, and 
+    CURL_SSLVERSION_TLSv1_2 constants if supported by libcurl (Rasmus)
 
 - Fileinfo:
   . Fixed bug #66242 (libmagic: don't assume char is signed). (ArdB)
+  . Fixed bug #68283 (fileinfo: out-of-bounds read in elf note headers).
+    (CVE-2014-3710) (Remi)
+
+- FPM:
+  . Implemented FR #55508 (listen and listen.allowed_clients should take IPv6
+    addresses). (Robin Gloster)
+
+- GD:
+  . Fixed bug #65171 (imagescale() fails without height param). (Remi)
+
+- GMP:
+  . Fixed bug #63595 (GMP memory management conflicts with other libraries
+    using GMP). (Remi)
+
+- Mysqli:
+  . Fixed bug #68114 (linker error on some OS X machines with fixed width
+    decimal support) (Keyur Govande)
+
+- ODBC:
+  . Fixed bug #68087 (ODBC not correctly reading DATE column when preceded by
+    a VARCHAR column) (Keyur Govande)
+
+- SPL:
+  . Fixed bug #68128 (Regression in RecursiveRegexIterator) (Tjerk)
+
+16 Oct 2014, PHP 5.5.18
 
 - Core:
   . Fixed bug #67985 (Incorrect last used array index copied to new array after
     unset). (Tjerk)
-  . Fixed bug #68044 (Integer overflow in unserialize() (32-bits only)). 
+  . Fixed bug #67739 (Windows 8.1/Server 2012 R2 OS build number reported
+    as 6.2 (instead of 6.3)). (Christian Wenz)
+  . Fixed bug #67633 (A foreach on an array returned from a function not doing
+    copy-on-write). (Nikita)
+  . Fixed bug #51800 (proc_open on Windows hangs forever). (Anatol)
+  . Fixed bug #68044 (Integer overflow in unserialize() (32-bits only)).
     (CVE-2014-3669) (Stas)
 
 - cURL:
@@ -109,84 +445,103 @@ PHP                                                                        NEWS
   . Fixed bug #68113 (Heap corruption in exif_thumbnail()). (CVE-2014-3670)
     (Stas)
 
+- FPM:
+  . Fixed bug #65641 (PHP-FPM incorrectly defines the SCRIPT_NAME variable
+    when using Apache, mod_proxy-fcgi and ProxyPass). (Remi)
+
 - OpenSSL:
-  . Reverted fixes for bug #41631, due to regressions. (Stas) 
+  . Revert regression introduced by fix of bug #41631
+
+- Reflection:
+  . Fixed bug #68103 (Duplicate entry in Reflection for class alias). (Remi)
+
+- Session:
+  . Fixed bug #67972 (SessionHandler Invalid memory read create_sid()). (Adam)
 
 - XMLRPC:
-  . Fixed bug #68027 (Global buffer overflow in mkgmtime() function). 
+  . Fixed bug #68027 (Global buffer overflow in mkgmtime() function).
     (CVE-2014-3668) (Stas)
 
-18 Sep 2014, PHP 5.4.33
+18 Sep 2014, PHP 5.5.17
 
 - Core:
   . Fixed bug #47358 (glob returns error, should be empty array()). (Pierre)
   . Fixed bug #65463 (SIGSEGV during zend_shutdown()). (Keyur Govande)
   . Fixed bug #66036 (Crash on SIGTERM in apache process). (Keyur Govande)
+  . Fixed bug #67878 (program_prefix not honoured in man pages). (Remi)
 
-- OpenSSL:
-  . Fixed bug #41631 (socket timeouts not honored in blocking SSL reads).
-    (Daniel Lowrey)
-
-- Date:
-  . Fixed bug #66091 (memory leaks in DateTime constructor). (Tjerk)
+- COM:
+  . Fixed bug #41577 (DOTNET is successful once per server run)
+    (Aidas Kasparas)
 
 - FPM:
   . Fixed #67606 (FPM with mod_fastcgi/apache2.4 is broken). (David Zuelke)
 
-- GD:
-  . Made fontFetch's path parser thread-safe. (Sara)
+- OpenSSL:
+  . Fixed bug #41631 (socket timeouts not honored in blocking SSL reads).
+    (Daniel Lowrey)
+  . Fixed bug #67850 (extension won't build if openssl compiled without SSLv3)
+    (Daniel Lowrey)
 
-- Wddx:
-  . Fixed bug #67873 (Segfaults in php_wddx_serialize_var). (Anatol, Remi)
+- SPL:
+  . Fixed bug #67813 (CachingIterator::__construct InvalidArgumentException
+    wrong message). (tim_siebels_aurich at yahoo dot de)
+
+- Date:
+  . Fixed bug #66091 (memory leaks in DateTime constructor). (Tjerk)
+  . Fixed bug #66985 (Some timezones are no longer valid in PHP 5.5.10).
+    (Derick)
+  . Fixed bug #67109 (First uppercase letter breaks date string parsing).
+    (Derick)
+
+- GD
+  . Made fontFetch's path parser thread-safe. (Sara).
+
+- MySQLi:
+  . Fixed bug #67839 (mysqli does not handle 4-byte floats correctly). (Keyur)
 
 - Zlib:
   . Fixed bug #67724 (chained zlib filters silently fail with large amounts of 
     data). (Mike)
-  . Fixed bug #67865 (internal corruption phar error). (Mike)
+  . Fixed bug #67865 (internal corruption phar error). Mike
 
-21 Aug 2014, PHP 5.4.32
+21 Aug 2014, PHP 5.5.16
 
 - COM:
-  . Fixed missing type checks in com_event_sink. (Yussuf Khalil, Stas)
-  . Fixed bug #41577 (DOTNET is successful once per server run).
-    (Aidas Kasparas)
+  . Fixed missing type checks in com_event_sink (Yussuf Khalil, Stas).
 
 - Fileinfo:
   . Fixed bug #67705 (extensive backtracking in rule regular expression).
     (CVE-2014-3538) (Remi)
   . Fixed bug #67716 (Segfault in cdf.c). (CVE-2014-3587) (Remi)
 
+- FPM:
+  . Fixed bug #67635 (php links to systemd libraries without using pkg-config).
+    (pacho at gentoo dot org, Remi)
+
 - GD:
   . Fixed bug #66901 (php-gd 'c_color' NULL pointer dereference).
-    (CVE-2014-2497). (Remi)
+    (CVE-2014-2497) (Remi)
   . Fixed bug #67730 (Null byte injection possible with imagexxx functions).
     (CVE-2014-5120) (Ryan Mauger)
 
-- LiteSpeed:
-  . Updated LiteSpeed SAPI code from V5.5 to V6.6 (George Wang)
-
+- Milter:
+  . Fixed bug #67715 (php-milter does not build and crashes randomly). (Mike)
+  
 - Network:
   . Fixed bug #67717 (segfault in dns_get_record). (CVE-2014-3597) (Remi)
 
-- Milter:
-  . Fixed bug #67715 (php-milter does not build and crashes randomly). (Mike)
-
 - OpenSSL:
-  . Fixed missing type checks in OpenSSL options (Yussuf Khalil, Stas).
+  . Fixed missing type checks in OpenSSL options. (Yussuf Khalil, Stas)
 
-- Readline:
+- readline:
   . Fixed bug #55496 (Interactive mode doesn't force a newline before the
     prompt). (Bob, Johannes)
   . Fixed bug #67496 (Save command history when exiting interactive shell
     with control-c). (Dmitry Saprykin, Johannes)
 
 - Sessions:
-  . Fixed missing type checks in php_session_create_id. (Yussuf Khalil, Stas).
-
-- SPL:
-  . Fixed bug #67539 (ArrayIterator use-after-free due to object change during
-    sorting). (CVE-2014-4698) (research at insighti dot org, Laruence)
-  . Fixed bug #67538 (SPL Iterators use-after-free). (CVE-2014-4670) (Laruence)
+  . Fixed missing type checks in php_session_create_id (Yussuf Khalil, Stas).
 
 - Core:
   . Fixed bug #67693 (incorrect push to the empty array) (Tjerk)
@@ -195,10 +550,7 @@ PHP                                                                        NEWS
   . Fixed bug #60616 (odbc_fetch_into returns junk data at end of multi-byte
     char fields). (Keyur)
 
-- MySQLi:
-  . Fixed bug #67839 (mysqli does not handle 4-byte floats correctly). (Keyur)
-
-24 Jul 2014, PHP 5.4.31
+24 Jul 2014, PHP 5.5.15
 
 - Core:
   . Fixed bug #67428 (header('Location: foo') will override a 308-399 response
@@ -207,9 +559,13 @@ PHP                                                                        NEWS
     match). (Bob)
   . Fixed bug #67091 (make install fails to install libphp5.so on FreeBSD 10.0).
     (Ferenc)
+  . Fixed bug #67497 (eval with parse error causes segmentation fault in
+    generator). (Nikita)
   . Fixed bug #67151 (strtr with empty array crashes). (Nikita)
   . Fixed bug #67407 (Windows 8.1/Server 2012 R2 reported as Windows 8/Server
     2012). (Christian Wenz)
+  . Fixed bug #66608 (Incorrect behavior with nested "finally" blocks).
+    (Laruence, Dmitry)
   . Implemented FR #34407 (ucwords and Title Case). (Tjerk)
 
 - CLI server:
@@ -217,14 +573,22 @@ PHP                                                                        NEWS
     (Adam)
   . Fixed bug #66830 (Empty header causes PHP built-in web server to hang).
     (Adam)
+  . Fixed bug #67594 (Unable to access to apache_request_headers() elements).
+    (Tjerk)
 
 - FPM:
   . Fixed bug #67530 (error_log=syslog ignored). (Remi)
   . Fixed bug #67531 (syslog cannot be set in pool configuration). (Remi)
 
 - Intl:
-  . Fixed bug #67052 (NumberFormatter::parse() resets LC_NUMERIC setting). 
+  . Fixed bug #66921 (Wrong argument type hint for function 
+    intltz_from_date_time_zone). (Stas)
+  . Fixed bug #67052 (NumberFormatter::parse() resets LC_NUMERIC setting).
     (Stas)
+
+- OPCache:
+  . Fixed bug #67215 (php-cgi work with opcache, may be segmentation fault
+    happen) (Dmitry, Laruence)
 
 - pgsql:
   . Fixed bug #67550 (Error in code "form" instead of "from", pgsql.c, line 756),
@@ -233,6 +597,11 @@ PHP                                                                        NEWS
 - Phar:
   . Fixed bug #67587 (Redirection loop on nginx with FPM). (Christian Weiske)
 
+- SPL:
+  . Fixed bug #67539 (ArrayIterator use-after-free due to object change during 
+    sorting). (CVE-2014-4698) (research at insighti dot org, Laruence)
+  . Fixed bug #67538 (SPL Iterators use-after-free). (CVE-2014-4670) (Laruence)
+
 - Streams:
   . Fixed bug #67430 (http:// wrapper doesn't follow 308 redirects). (Adam)
 
@@ -240,17 +609,15 @@ PHP                                                                        NEWS
   . Fixed bug #66827 (Session raises E_NOTICE when session name variable is array).
     (Yasuo)
 
-26 Jun 2014, PHP 5.4.30
+27 Jun 2014, PHP 5.5.14
 
 - Core:
   . Fixed BC break introduced by patch for bug #67072. (Anatol, Stas)
-  . Fixed bug #66622 (Closures do not correctly capture the late bound class 
+  . Fixed bug #66622 (Closures do not correctly capture the late bound class
     (static::) in some cases). (Levi Morrison)
   . Fixed bug #67390 (insecure temporary file use in the configure script).
     (Remi) (CVE-2014-3981)
   . Fixed bug #67399 (putenv with empty variable may lead to crash). (Stas)
-  . Fixed bug #67498 (phpinfo() Type Confusion Information Leak Vulnerability). 
-    (Stefan Esser)
 
 - CLI server:
   . Fixed Bug #67406 (built-in web-server segfaults on startup). (Remi)
@@ -262,31 +629,34 @@ PHP                                                                        NEWS
     (Remi)
 
 - Fileinfo:
-  . Fixed bug #67326 (fileinfo: cdf_read_short_sector insufficient boundary 
-    check). (CVE-2014-0207) 
+  . Fixed bug #67326 (fileinfo: cdf_read_short_sector insufficient boundary check).
   . Fixed bug #67410 (fileinfo: mconvert incorrect handling of truncated pascal
-    string size). (CVE-2014-3478) (Francisco Alonso, Jan Kaluza, Remi) 
+    string size). (Francisco Alonso, Jan Kaluza, Remi)
   . Fixed bug #67411 (fileinfo: cdf_check_stream_offset insufficient boundary
-    check). (CVE-2014-3479) (Francisco Alonso, Jan Kaluza, Remi)
+    check). (Francisco Alonso, Jan Kaluza, Remi)
   . Fixed bug #67412 (fileinfo: cdf_count_chain insufficient boundary check).
-    (CVE-2014-3480) (Francisco Alonso, Jan Kaluza, Remi)
+    (Francisco Alonso, Jan Kaluza, Remi)
   . Fixed bug #67413 (fileinfo: cdf_read_property_info insufficient boundary
-    check). (CVE-2014-3487) (Francisco Alonso, Jan Kaluza, Remi)
+    check). (Francisco Alonso, Jan Kaluza, Remi)
 
-- Intl:
-  . Fixed bug #67349 (Locale::parseLocale Double Free). (Stas)
-  . Fixed bug #67397 (Buffer overflow in locale_get_display_name and
-    uloc_getDisplayName (libicu 4.8.1)). (Stas)
+- LiteSpeed:
+  . Updated LiteSpeed SAPI code from V5.5 to V6.6 (George Wang)
 
 - Network:
-  . Fixed bug #67432 (Fix potential segfault in dns_get_record()). 
+  . Fixed bug #67432 (Fix potential segfault in dns_get_record()).
     (CVE-2014-4049). (Sara)
 
+- OPCache:
+  . Fixed issue #183 (TMP_VAR is not only used once). (Dmitry, Laruence)
+
 - OpenSSL:
-  . Fixed bug #65698 (certificates validity parsing does not work past 2050). 
+  . Fixed bug #65698 (certificates validity parsing does not work past 2050).
     (Paul Oehler)
-  . Fixed bug #66636 (openssl_x509_parse warning with V_ASN1_GENERALIZEDTIME). 
+  . Fixed bug #66636 (openssl_x509_parse warning with V_ASN1_GENERALIZEDTIME).
     (Paul Oehler)
+
+- PDO-ODBC:
+  . Fixed bug #50444 (PDO-ODBC changes for 64-bit).
 
 - SOAP:
   . Implemented FR #49898 (Add SoapClient::__getCookies()). (Boro Sitnikovski)
@@ -295,16 +665,19 @@ PHP                                                                        NEWS
   . Fixed bug #66127 (Segmentation fault with ArrayObject unset). (Stas)
   . Fixed bug #67359 (Segfault in recursiveDirectoryIterator). (Laruence)
   . Fixed bug #67360 (Missing element after ArrayObject::getIterator). (Adam)
-  . Fixed bug #67492 (unserialize() SPL ArrayObject / SPLObjectStorage Type 
-    Confusion) (CVE-2014-3515). (Stefan Esser)
+  . Fixed bug #67492 (unserialize() SPL ArrayObject / SPLObjectStorage Type
+    Confusion). (CVE-2014-3515) (Stefan Esser)
 
-29 May 2014, PHP 5.4.29
+29 May 2014, PHP 5.5.13
+
+- CLI server:
+  . Fixed bug #67079 (Missing MIME types for XML/XSL files). (Anatol)
 
 - COM:
   . Fixed bug #66431 (Special Character via COM Interface (CP_UTF8)). (Anatol)
 
 - Core:
-  . Fixed bug #65701 (copy() doesn't work when destination filename is created 
+  . Fixed bug #65701 (copy() doesn't work when destination filename is created
     by tempnam()). (Boro Sitnikovski)
   . Fixed bug #67072 (Echoing unserialized "SplFileObject" crash). (Anatol)
   . Fixed bug #67245 (usage of memcpy() with overlapping src and dst in
@@ -313,6 +686,9 @@ PHP                                                                        NEWS
   . Fixed bug #67249 (printf out-of-bounds read). (Stas)
   . Fixed bug #67250 (iptcparse out-of-bounds read). (Stas)
   . Fixed bug #67252 (convert_uudecode out-of-bounds read). (Stas)
+
+- Curl:
+  . Fixed bug #64247 (CURLOPT_INFILE doesn't allow reset). (Mike)
 
 - Date:
   . Fixed bug #67118 (DateTime constructor crash with invalid data). (Anatol)
@@ -325,31 +701,35 @@ PHP                                                                        NEWS
 
 - Fileinfo:
   . Fixed bug #66307 (Fileinfo crashes with powerpoint files). (Anatol)
-  . Fixed bug #67327 (fileinfo: CDF infinite loop in nelements DoS). 
-    (CVE-2014-0238)
+  . Fixed bug #67327 (fileinfo: CDF infinite loop in nelements DoS) (CVE-2014-0238).
   . Fixed bug #67328 (fileinfo: fileinfo: numerous file_printf calls resulting in
-    performance degradation). (CVE-2014-0237)
+    performance degradation) (CVE-2014-0237).
 
 - FPM:
-  . Fixed bug #66908 (php-fpm reload leaks epoll_create() file descriptor). 
+  . Fixed bug #66908 (php-fpm reload leaks epoll_create() file descriptor).
     (Julio Pintos)
 
+- GD:
+  . Fixed bug #67248 (imageaffinematrixget missing check of parameters). (Stas)
+
+- PCRE:
+  . Fixed bug #67238 (Ungreedy and min/max quantifier bug, applied patch
+    from the upstream). (Anatol)
+
 - Phar:
-  . Fix bug #64498 ($phar->buildFromDirectory can't compress file with an accent 
-    in its name). (PR #588) 
+  . Fix bug #64498 ($phar->buildFromDirectory can't compress file with an accent
+    in its name). (PR #588)
 
-01 May 2014, PHP 5.4.28
-
+30 Apr 2014, PHP 5.5.12
 - Core:
   . Fixed bug #61019 (Out of memory on command stream_get_contents). (Mike)
   . Fixed bug #64330 (stream_socket_server() creates wrong Abstract Namespace 
     UNIX sockets). (Mike)
-  . Fixed bug #66171 (Symlinks and session handler allow open_basedir bypass).
-    (Jann Horn, Stas)
-  . Fixed bug #66182 (exit in stream filter produces segfault). (Mike)
+  . Fixed bug #66182 (exit in stream filter produces segfault). (Mike)  
   . Fixed bug #66736 (fpassthru broken). (Mike)
-  . Fixed bug #67024 (getimagesize should recognize BMP files with negative 
+  . Fixed bug #67024 (getimagesize should recognize BMP files with negative
     height). (Gabor Buella)
+  . Fixed bug #67043 (substr_compare broke by previous change) (Tjerk)
   . Fixed bug #67033 (Remove reference to Windows 95). (Anatol)
 
 - cURL:
@@ -361,23 +741,29 @@ PHP                                                                        NEWS
     supplied). (Boro Sitnikovski)
 
 - Embed:
-  . Fixed bug #65715 (php5embed.lib isn't provided anymore). (Anatol)
+  . Fixed bug #65715 (php5embed.lib isn't provided anymore). (Anatol).
 
 - Fileinfo:
   . Fixed bug #66987 (Memory corruption in fileinfo ext / bigendian).
     (Remi)
 
 - FPM:
-  . Fixed bug #66482 (unknown entry 'priority' in php-fpm.conf). 
-  . Fixed bug #67060 (sapi/fpm: possible privilege escalation due to insecure 
+  . Fixed bug #66482 (unknown entry 'priority' in php-fpm.conf).
+  . Fixed bug #67060 (sapi/fpm: possible privilege escalation due to insecure
     default configuration) (CVE-2014-0185). (Stas)
 
 - JSON:
   . Fixed bug #66021 (Blank line inside empty array/object when
     JSON_PRETTY_PRINT is set). (Kevin Israel)
+  . Fixed bug #64695 (JSON_NUMERIC_CHECK has issues with strings that are 
+    numbers plus the letter e). (Jakub Zelenka)
 
 - LDAP:
   . Fixed issue with null bytes in LDAP bindings. (Matthew Daley)
+
+- mysqli:
+  . Fixed problem in mysqli_commit()/mysqli_rollback() with second parameter
+    (extra comma) and third parameters (lack of escaping). (Andrey)
 
 - OpenSSL:
   . Fix bug #66942 (memory leak in openssl_seal()). (Chuan Ma)
@@ -387,50 +773,98 @@ PHP                                                                        NEWS
   . Fixed bug #66084 (simplexml_load_string() mangles empty node name)
     (Anatol)
 
+- SQLite:
+  . Fixed bug #66967 (Updated bundled libsqlite to 3.8.4.3). (Anatol)
+
 - XSL:
   . Fixed bug #53965 (<xsl:include> cannot find files with relative paths
     when loaded with "file://"). (Anatol)
 
 - Apache2 Handler SAPI:
-  . Fixed Apache log issue caused by APR's lack of support for %zu 
+  . Fixed Apache log issue caused by APR's lack of support for %zu
     (APR issue https://issues.apache.org/bugzilla/show_bug.cgi?id=56120).
     (Jeff Trawick)
 
-03 Apr 2014, PHP 5.4.27
+03 Apr 2014, PHP 5.5.11
 
 - Core:
+  . Allow zero length comparison in substr_compare() (Tjerk)
   . Fixed bug #60602 (proc_open() changes environment array) (Tjerk)
 
+- SPL:
+  . Added feature #65545 (SplFileObject::fread()) (Tjerk)
+  . Fixed bug #66702 (RegexIterator::INVERT_MATCH does not invert). (Joshua
+    Thijssen)
+
+- cURL:
+  . Fixed bug #66109 (Can't reset CURLOPT_CUSTOMREQUEST to default behaviour) (Tjerk)
+  . Fix compilation on libcurl versions between 7.10.5 and 7.12.2, inclusive.
+    (Adam)
+
 - Fileinfo:
-  . Fixed bug #66946 (fileinfo: extensive backtracking in awk rule regular
+  . Fixed bug #66946i (fileinfo: extensive backtracking in awk rule regular
     expression). (CVE-2013-7345) (Remi)
 
 - FPM:
   . Added clear_env configuration directive to disable clearenv() call.
-    (Github PR# 598, Paul Annesley)
+  (Github PR# 598, Paul Annesley)
 
-- GMP
-  . Fixed bug #66872 (invalid argument crashes gmp_testbit) (Pierre)
+- GD:
+  . Fixed bug #66714 (imageconvolution breakage). (Brad Daily)
+  . Fixed bug #66869 (Invalid 2nd argument crashes imageaffinematrixget) (Pierre)
+  . Fixed bug #66887 (imagescale - poor quality of scaled image). (Remi)
+  . Fixed bug #66890 (imagescale segfault). (Remi)
+  . Fixed bug #66893 (imagescale ignore method argument). (Remi)
+
+- Hash:
+  . hash_pbkdf2() now works correctly if the $length argument is not specified.
+    (Nikita)
+
+- Intl:
+  . Fixed bug #66873 (A reproductible crash in UConverter when given invalid 
+    encoding) (Stas)
 
 - Mail:
   . Fixed bug #66535 (Don't add newline after X-PHP-Originating-Script) (Tjerk)
 
 - MySQLi:
   . Fixed bug #66762 (Segfault in mysqli_stmt::bind_result() when link closed)
-    (Remi)
+  (Remi)
+
+- OPCache
+  . Added function opcache_is_script_cached(). (Danack)
+  . Added information about interned strings usage. (Terry, Julien, Dmitry)
 
 - Openssl:
   . Fixed bug #66833 (Default disgest algo is still MD5, switch to SHA1). (Remi)
-  
-06 Mar 2014, PHP 5.4.26
+
+- GMP
+  . Fixed bug #66872 (invalid argument crashes gmp_testbit) (Pierre)
+
+- SQLite:
+  . Updated bundled libsqlite to 3.8.3.1 (Anatol)
+
+06 Mar 2014, PHP 5.5.10
+
+- Core:
+  . Fixed Request #66574i (Allow multiple paths in php_ini_scanned_path). (Remi)
+
+- Date:
+  . Fixed bug #45528 (Allow the DateTimeZone constructor to accept timezones
+    per offset too). (Derick)
+
+- Fileinfo:
+  . Bug #66731 (file: infinite recursion) (CVE-2014-1943). (Remi)
+  . Fixed bug #66820 (out-of-bounds memory access in fileinfo)
+    (CVE-2014-2270). (Remi)
+
+- GD
+  . Fixed Bug #66815 (imagecrop(): insufficient fix for NULL defer
+    CVE-2013-7327). (Tomas Hoger, Remi)
 
 - JSON:
   . Fixed bug #65753 (JsonSerializeable couldn't implement on module extension)
   (chobieeee@php.net)
-
-- Fileinfo:
-  . Fixed bug #66731 (file: infinite recursion). (CVE-2014-1943) (Remi)
-  . Fixed bug #66820 (out-of-bounds memory access in fileinfo). (Remi)
 
 - LDAP:
   . Implemented ldap_modify_batch (https://wiki.php.net/rfc/ldap_modify_batch).
@@ -440,42 +874,74 @@ PHP                                                                        NEWS
   . Fixed bug #66501 (Add EC key support to php_openssl_is_private_key).
   (Mark Zedwood)
 
+- PCRE:
+  . Upgraded to PCRE 8.34. (Anatol)
+
 - Pgsql:
   . Added warning for dangerous client encoding and remove possible injections
     for pg_insert()/pg_update()/pg_delete()/pg_select(). (Yasuo)
 
-06 Feb 2014, PHP 5.4.25
+
+06 Feb 2014, PHP 5.5.9
 
 - Core:
-  . Fixed bug #66286 (Incorrect object comparison with inheritance). (Nikita)
-  . Fixed bug #66509 (copy() arginfo has changed starting from 5.4). 
-    (Will Fitch)
+  . Fixed bug #66509 (copy() arginfo has changed starting from 5.4). (willfitch)
 
-- mysqlnd:
-  . Fixed bug #66283 (Segmentation fault after memory_limit). (Johannes)
+- GD:
+  . Fixed bug #66356 (Heap Overflow Vulnerability in imagecrop()).
+    (Laruence, Remi)
+
+- OPCache:
+  . Fixed bug #66474 (Optimizer bug in constant string to boolean conversion).
+    (Dmitry)
+  . Fixed bug #66461 (PHP crashes if opcache.interned_strings_buffer=0).
+    (Dmitry)
+  . Fixed bug #66298 (ext/opcache/Optimizer/zend_optimizer.c has dos-style 
+    ^M as lineend). (Laruence)
 
 - PDO_pgsql:
-  . Fixed bug #62479 (PDO-psql cannot connect if password contains spaces).
-    (Will Fitch, Ilia)
+  . Fixed bug #62479 (PDO-psql cannot connect if password contains
+spaces) (willfitch, iliaa)
 
-- Session:
-  . Fixed bug #66481 (Calls to session_name() segfault when session.name is
-    null). (Laruence)
+- Readline
+  . Fixed Bug #66412 (readline_clear_history() with libedit causes segfault after
+    #65714). (Remi)
 
-10 Jan 2014, PHP 5.4.24
+- Session
+  . Fixed bug #66469 (Session module is sending multiple set-cookie headers when
+    session.use_strict_mode=1) (Yasuo)
+  . Fixed bug #66481 (Segfaults on session_name()).
+    (cmcdermottroe at engineyard dot com, Yasuo)
+
+- Standard
+  . Fixed bug #66395 (basename function doesn't remove drive letter). (Anatol)
+
+- Sockets:
+  . Fixed bug #66381 (__ss_family was changed on AIX 5.3). (Felipe)
+
+- Zend Engine
+  . Fixed bug #66009 (Failed compilation of PHP extension with C++ std
+    library using VS 2012). (Anatol)
+
+09 Jan 2014, PHP 5.5.8
 
 - Core:
+  . Disallowed JMP into a finally block. (Laruence)
   . Added validation of class names in the autoload process. (Dmitry)
   . Fixed invalid C code in zend_strtod.c. (Lior Kaplan)
+  . Fixed ZEND_MM_MEM_TYPE=mmap_zero. (Dmitry, Tony)
+  . Fixed bug #66041 (list() fails to unpack yielded ArrayAccess object).
+    (Nikita)
+  . Fixed bug #65764 (generators/throw_rethrow FAIL with
+    ZEND_COMPILE_EXTENDED_INFO). (Nikita)
   . Fixed bug #61645 (fopen and O_NONBLOCK). (Mike)
+  . Fixed bug #66218 (zend_register_functions breaks reflection). (Remi)
 
 - Date:
-  . Fixed bug #66060 (Heap buffer over-read in DateInterval). (CVE-2013-6712) 
+  . Fixed bug #66060 (Heap buffer over-read in DateInterval) (CVE-2013-6712). 
     (Remi)
-  . Fixed bug #63391 (Incorrect/inconsistent day of week prior to the year
-    1600). (Derick, T. Carter)
-  . Fixed bug #61599 (Wrong Day of Week). (Derick, T. Carter)
-
+  . Fixed bug #65768 (DateTimeImmutable::diff does not work). (Nikita Nefedov)
+  
 - DOM:
   . Fixed bug #65196 (Passing DOMDocumentFragment to DOMDocument::saveHTML() 
     Produces invalid Markup). (Mike)
@@ -494,8 +960,24 @@ PHP                                                                        NEWS
   . Fixed bug #66311 (Stack smashing protection kills PDO/ODBC queries). 
     (michael at orlitzky dot com)
 
+- MySQLi:
+  . Fixed bug #65486 (mysqli_poll() is broken on win x64). (Anatol)
+
+- OPCache:
+  . Fixed revalidate_path=1 behavior to avoid caching of symlinks values.
+    (Dmitry)
+  . Fixed Issue #140: "opcache.enable_file_override" doesn't respect
+    "opcache.revalidate_freq". (Dmitry).
+
 - SNMP:
   . Fixed SNMP_ERR_TOOBIG handling for bulk walk operations. (Boris Lytochkin)
+
+- SOAP
+  . Fixed bug #66112 (Use after free condition in SOAP extension).
+    (martin dot koegler at brz dot gv dot at)
+
+- Sockets:
+  . Fixed bug #65923 (ext/socket assumes AI_V4MAPPED is defined). (Felipe)
 
 - XSL
   . Fixed bug #49634 (Segfault throwing an exception in a XSL registered
@@ -504,14 +986,46 @@ PHP                                                                        NEWS
 - ZIP:
   . Fixed Bug #66321 (ZipArchive::open() ze_obj->filename_len not real). (Remi)
 
-12 Dec 2013, PHP 5.4.23
+12 Dec 2013, PHP 5.5.7
+
+- CLI server:
+  . Added some MIME types to the CLI web server (Chris Jones)
+  . Implemented FR #65917 (getallheaders() is not supported by the built-in web
+    server) - also implements apache_response_headers() (Andrea Faulds)
 
 - Core:
   . Fixed bug #66094 (unregister_tick_function tries to cast a Closure to a 
     string). (Laruence)
   . Fixed bug #65969 (Chain assignment with T_LIST failure). (Dmitry)
+
+- OPCache
+  . Fixed bug #66176 (Invalid constant substitution). (Dmitry)
+  . Fixed bug #65915 (Inconsistent results with require return value). (Dmitry)
+  . Fixed bug #65559 (Opcache: cache not cleared if changes occur while
+    running). (Dmitry)
+
+- readline
+  . Fixed Bug #65714 (PHP cli forces the tty to cooked mode). (Remi)
+
+- Openssl:
+  . Fixed memory corruption in openssl_x509_parse() (CVE-2013-6420).
+    (Stefan Esser).
+
+14 Nov 2013, PHP 5.5.6
+
+- Core:
   . Fixed bug #65947 (basename is no more working after fgetcsv in certain 
     situation). (Laruence)
+  . Improved performance of array_merge() and func_get_args() by eliminating
+    useless copying. (Dmitry)
+  . Fixed bug #65939 (Space before ";" breaks php.ini parsing).
+    (brainstorm at nopcode dot org)
+  . Fixed bug #65911 (scope resolution operator - strange behavior with $this).
+    (Bob Weinand)
+  . Fixed bug #65936 (dangling context pointer causes crash). (Tony)
+
+- FPM:
+  . Changed default listen() backlog to 65535. (Tony)
 
 - JSON
   . Fixed whitespace part of bug #64874 ("json_decode handles whitespace and
@@ -520,69 +1034,49 @@ PHP                                                                        NEWS
 - MySQLi:
   . Fixed bug #66043 (Segfault calling bind_param() on mysqli). (Laruence)
 
-- mysqlnd:
-  . Fixed bug #66124 (mysqli under mysqlnd loses precision when bind_param
-    with 'i'). (Andrey)
-  . Fixed bug #66141 (mysqlnd quote function is wrong with NO_BACKSLASH_ESCAPES
-    after failed query). (Andrey)
+- OPcache
+  . Increased limit for opcache.max_accelerated_files to 1,000,000. (Chris)
+  . Fixed issue #115 (path issue when using phar). (Dmitry)
+  . Fixed issue #149 (Phar mount points not working with OPcache enabled).
+  (Dmitry)
 
-- Openssl:
-  . Fixed memory corruption in openssl_x509_parse() (CVE-2013-6420).
-    (Stefan Esser).
-
-- PDO
-  . Fixed bug 65946 (sql_parser permanently converts values bound to strings)
-
-14 Nov 2013, PHP 5.4.22
-
-- Core:
-  . Fixed bug #65911 (scope resolution operator - strange behavior with $this).
-    (Bob Weinand)
-
-- CLI server:
-  . Fixed bug #65818 (Segfault with built-in webserver and chunked transfer 
-    encoding). (Felipe)
-
-- Exif:
-  . Fixed crash on unknown encoding. (Draal)
-
-- FTP:
-  . Fixed bug #65667 (ftp_nb_continue produces segfault). (Philip Hofstetter)
-
-- ODBC:
-  . Fixed bug #65950 (Field name truncation if the field name is bigger than 
+- ODBC
+  . Fixed bug #65950 (Field name truncation if the field name is bigger than
     32 characters). (patch submitted by: michael dot y at zend dot com, Yasuo)
 
 - PDO:
   . Fixed bug #66033 (Segmentation Fault when constructor of PDO statement 
     throws an exception). (Laruence)
-
-- Sockets:
-  . Fixed bug #65808 (the socket_connect() won't work with IPv6 address).
-    (Mike)
+  . Fixed bug 65946 (sql_parser permanently converts values bound to strings)
 
 - Standard:
   . Fixed bug #64760 (var_export() does not use full precision for floating-point
     numbers) (Yasuo)
-  . Fixed bug #66395 (basename function doesn't remove drive letter). (Anatol)
-
-- XMLReader:
-  . Fixed bug #51936 (Crash with clone XMLReader). (Mike)
-  . Fixed bug #64230 (XMLReader does not suppress errors). (Mike)
 
 
-17 Oct 2013, PHP 5.4.21
+17 Oct 2013, PHP 5.5.5
 
 - Core:
+  . Fixed bug #64979 (Wrong behavior of static variables in closure generators).
+    (Nikita)
   . Fixed bug #65322 (compile time errors won't trigger auto loading). (Nikita)
+  . Fixed bug #65821 (By-ref foreach on property access of string offset
+    segfaults). (Nikita)
 
 - CLI server:
   . Fixed bug #65633 (built-in server treat some http headers as
     case-sensitive). (Adam)
+  . Fixed bug #65818 (Segfault with built-in webserver and chunked transfer 
+    encoding). (Felipe)
+  . Added application/pdf to PHP CLI Web Server mime types (Chris Jones)
 
 - Datetime:
   . Fixed bug #64157 (DateTime::createFromFormat() reports confusing error
     message). (Boro Sitnikovski)
+  . Fixed bug #65502 (DateTimeImmutable::createFromFormat returns DateTime).
+    (Boro Sitnikovski)
+  . Fixed bug #65548 (Comparison for DateTimeImmutable doesn't work).
+    (Boro Sitnikovski)
 
 - DBA extension:
   . Fixed bug #65708 (dba functions cast $key param to string in-place,
@@ -593,67 +1087,160 @@ PHP                                                                        NEWS
   . Fixed bug #64441 (FILTER_VALIDATE_URL rejects fully qualified domain names).
     (Syra)
 
+- FTP:
+  . Fixed bug #65667 (ftp_nb_continue produces segfault). (Philip Hofstetter)
+
+- GD
+  . Ensure that the defined interpolation method is used with the generic
+    scaling methods. (Pierre)
+
 - IMAP:
   . Fixed bug #65721 (configure script broken in 5.5.4 and 5.4.20 when enabling
     imap). (ryotakatsuki at gmail dot com)
+
+- OPcache:
+  . Added support for GNU Hurd. (Svante Signell)
+  . Added function opcache_compile_file() to load PHP scripts into cache
+    without execution. (Julien)
+  . Fixed bug #65845 (Error when Zend Opcache Optimizer is fully enabled).
+    (Dmitry)
+  . Fixed bug #65665 (Exception not properly caught when opcache enabled).
+    (Laruence)
+  . Fixed bug #65510 (5.5.2 crashes in _get_zval_ptr_ptr_var). (Dmitry)
+  . Fixed issue #135 (segfault in interned strings if initial memory is too
+    low). (Julien)
+
+- Sockets:
+  . Fixed bug #65808 (the socket_connect() won't work with IPv6 address).
+    (Mike)
+
+- SPL:
+  . Fix bug #64782 (SplFileObject constructor make $context optional / give it
+    a default value). (Nikita)
 
 - Standard:
   . Fixed bug #61548 (content-type must appear at the end of headers for 201 
     Location to work in http). (Mike)
 
+- XMLReader:
+  . Fixed bug #51936 (Crash with clone XMLReader). (Mike)
+  . Fixed bug #64230 (XMLReader does not suppress errors). (Mike)
+  
 - Build system:
+  . Fixed bug #51076 (race condition in shtool's mkdir -p implementation).
+    (Mike, Raphael Geissert)
   . Fixed bug #62396 ('make test' crashes starting with 5.3.14 (missing 
     gzencode())). (Mike)
 
 
-19 Sep 2013, PHP 5.4.20
+19 Sep 2013, PHP 5.5.4
 
 - Core:
   . Fixed bug #60598 (cli/apache sapi segfault on objects manipulation).
     (Laruence)
-  . Fixed bug #65579 (Using traits with get_class_methods causes segfault).
-    (Adam)
+  . Improved fputcsv() to allow specifying escape character.
   . Fixed bug #65490 (Duplicate calls to get lineno & filename for 
     DTRACE_FUNCTION_*). (Chris Jones)
   . Fixed bug #65483 (quoted-printable encode stream filter incorrectly encoding
     spaces). (Michael M Slusarz)
   . Fixed bug #65481 (shutdown segfault due to serialize) (Mike)
-  . Fixed bug #65470 (Segmentation fault in zend_error() with 
+  . Fixed bug #65470 (Segmentation fault in zend_error() with
     --enable-dtrace). (Chris Jones, Kris Van Hees)
-  . Fixed bug #65372 (Segfault in gc_zval_possible_root when return reference
-    fails). (Laruence)
-  . Fixed bug #65304 (Use of max int in array_sum). (Laruence)
-  . Fixed bug #65291 (get_defined_constants() causes PHP to crash in a very
-    limited case). (Arpad)
   . Fixed bug #65225 (PHP_BINARY incorrectly set). (Patrick Allaert)
-  . Improved fix for bug #63186 (compile failure on netbsd). (Matteo)
   . Fixed bug #62692 (PHP fails to build with DTrace). (Chris Jones, Kris Van Hees)
   . Fixed bug #61759 (class_alias() should accept classes with leading
     backslashes). (Julien)
-  . Fixed bug #61345 (CGI mode - make install don't work). (Michael Heimpold)
-  . Cherry-picked some DTrace build commits (allowing builds on Linux,
-    bug #62691, and bug #63706) from PHP 5.5 branch
-  . Fixed bug #61268 (--enable-dtrace leads make to clobber
-    Zend/zend_dtrace.d) (Chris Jones)
+  . Fixed bug #46311 (Pointer aliasing issue results in miscompile on gcc4.4).
+    (Nikita Popov)
 
 - cURL:
   . Fixed bug #65458 (curl memory leak). (Adam)
 
 - Datetime:
-  . Fixed bug #65554 (createFromFormat broken when weekday name is followed 
+  . Fixed bug #65554 (createFromFormat broken when weekday name is followed
     by some delimiters). (Valentin Logvinskiy, Stas).
   . Fixed bug #65564 (stack-buffer-overflow in DateTimeZone stuff caught
     by AddressSanitizer). (Remi).
 
+- OPCache:
+  . Fixed bug #65561 (Zend Opcache on Solaris 11 x86 needs ZEND_MM_ALIGNMENT=4).
+    (Terry Ellison)
+
 - Openssl:
-  . Fixed bug #64802 (openssl_x509_parse fails to parse subject properly in 
+  . Fixed bug #64802 (openssl_x509_parse fails to parse subject properly in
     some cases). (Mark Jones)
 
+- PDO:
+  . Fixed bug #64953 (Postgres prepared statement positional parameter 
+    casting). (Mike)
+
 - Session:
-  . Fixed bug #62129 (rfc1867 crashes php even though turned off). (gxd305 at
-    gmail dot com)
-  . Fixed bug #50308 (session id not appended properly for empty anchor tags).
-    (Arpad)
+  . Fixed bug #65475 (Session ID is not initialized properly when strict session
+    is enabled). (Yasuo)
+  . Fixed bug #51127/#65359 Request #25630/#43980/#54383 (Added php_serialize 
+    session serialize handler that uses plain serialize()). (Yasuo)
+
+- Standard:
+  . Fix issue with return types of password API helper functions. Found via
+    static analysis by cjones. (Anthony Ferrara) 
+
+- Zlib:
+  . Fixed bug #65391 (Unable to send vary header user-agent when 
+    ob_start('ob_gzhandler') is called) (Mike)
+
+22 Aug 2013, PHP 5.5.3
+
+- Openssl:
+  . Fixed UMR in fix for CVE-2013-4248.
+
+15 Aug 2013, PHP 5.5.2
+
+- Core:
+  . Fixed bug #65372 (Segfault in gc_zval_possible_root when return reference
+    fails). (Laruence)
+  . Fixed value of FILTER_SANITIZE_FULL_SPECIAL_CHARS constant (previously was
+    erroneously set to FILTER_SANITIZE_SPECIAL_CHARS value). (Andrey
+    avp200681 gmail com).
+  . Fixed bug #65304 (Use of max int in array_sum). (Laruence)
+  . Fixed bug #65291 (get_defined_constants() causes PHP to crash in a very
+    limited case). (Arpad)
+  . Fixed bug #62691 (solaris sed has no -i switch). (Chris Jones)
+  . Fixed bug #61345 (CGI mode - make install don't work). (Michael Heimpold)
+  . Fixed bug #61268 (--enable-dtrace leads make to clobber
+    Zend/zend_dtrace.d) (Chris Jones)
+
+- DOM:
+  . Added flags option to DOMDocument::schemaValidate() and 
+    DOMDocument::schemaValidateSource(). Added LIBXML_SCHEMA_CREATE flag. 
+    (Chris Wright)
+
+- OPcache:
+  . Added opcache.restrict_api configuration directive that may limit
+    usage of OPcache API functions only to particular script(s). (Dmitry)
+  . Added support for glob symbols in blacklist entries (?, *, **).
+    (Terry Elison, Dmitry)
+  . Fixed bug #65338 (Enabling both php_opcache and php_wincache AVs on
+    shutdown). (Dmitry)
+
+- Openssl:
+  . Fixed handling null bytes in subjectAltName (CVE-2013-4248).
+    (Christian Heimes)
+
+- PDO_mysql:
+  . Fixed bug #65299 (pdo mysql parsing errors). (Johannes)
+
+- Pgsql:
+  . Fixed bug #62978 (Disallow possible SQL injections with pg_select()/pg_update()
+    /pg_delete()/pg_insert()). (Yasuo)
+
+- Phar:
+  . Fixed bug #65028 (Phar::buildFromDirectory creates corrupt archives for 
+    some specific contents). (Stas)
+
+- Sessions:
+  . Implemented strict sessions RFC (https://wiki.php.net/rfc/strict_sessions)
+    which protects against session fixation attacks and session collisions.    
+    (CVE-2011-4718). (Yasuo Ohgaki)
   . Fixed possible buffer overflow under Windows. Note: Not a security fix.
     (Yasuo)
   . Changed session.auto_start to PHP_INI_PERDIR. (Yasuo)
@@ -663,53 +1250,35 @@ PHP                                                                        NEWS
 
 - SPL:
   . Fixed bug #65328 (Segfault when getting SplStack object Value). (Laruence)
+  . Added RecursiveTreeIterator setPostfix and getPostifx methods. (Joshua 
+    Thijssen)
+  . Fixed bug #61697 (spl_autoload_functions returns lambda functions 
+    incorrectly). (Laruence)
 
-- PDO:
-  . Fixed bug #64953 (Postgres prepared statement positional parameter 
-    casting). (Mike)
-
-- Phar:
-  . Fixed bug #65028 (Phar::buildFromDirectory creates corrupt archives for 
-    some specific contents). (Stas)
+- Streams:
+  . Fixed bug #65268 (select() implementation uses outdated tick API). (Anatol)
 
 - Pgsql:
-  . Fixed bug #65336 (pg_escape_literal/identifier() silently returns false).
+  . Fixed bug #65336 (pg_escape_literal/identifier() scilently returns false).
     (Yasuo)
-  . Fixed bug #62978 (Disallow possible SQL injections with pg_select()/pg_update()
-    /pg_delete()/pg_insert()). (Yasuo)
 
-- Zlib:
-  . Fixed bug #65391 (Unable to send vary header user-agent when 
-    ob_start('ob_gzhandler') is called) (Mike)
-
-22 Aug 2013, PHP 5.4.19
+18 Jul 2013, PHP 5.5.1
 
 - Core:
-  . Fixed bug #64503 (Compilation fails with error: conflicting types for
-    'zendparse'). (Laruence)
-
-- Openssl:
-  . Fixed UMR in fix for CVE-2013-4248.
-
-15 Aug 2013, PHP 5.4.18
-
-- Core:
-  . Fixed value of FILTER_SANITIZE_FULL_SPECIAL_CHARS constant (previously was
-    erroneously set to FILTER_SANITIZE_SPECIAL_CHARS value). (Andrey 
-    avp200681 gmail com).
   . Fixed bug #65254 (Exception not catchable when exception thrown in autoload
     with a namespace). (Laruence)
-  . Fixed bug #65108 (is_callable() triggers Fatal Error). 
-    (David Soria Parra, Laruence)
   . Fixed bug #65088 (Generated configure script is malformed on OpenBSD).
     (Adam)
-  . Fixed bug #62964 (Possible XSS on "Registered stream filters" info).
-    (david at nnucomputerwhiz dot com)
-  . Fixed bug #62672 (Error on serialize of ArrayObject). (Lior Kaplan)
-  . Fixed bug #62475 (variant_* functions causes crash when null given as an 
-    argument). (Felipe)
-  . Fixed bug #60732 (php_error_docref links to invalid pages). (Jakub Vrana)
+  . Fixed bug #65108 (is_callable() triggers Fatal Error). 
+    (David Soria Parra, Laruence)
+  . Fixed bug #65035 (yield / exit segfault). (Nikita)
+  . Fixed bug #65161 (Generator + autoload + syntax error = segfault). (Nikita)
+  . hex2bin() raises E_WARNING for invalid hex string. (Yasuo)
   . Fixed bug #65226 (chroot() does not get enabled). (Anatol)
+
+- OPcache
+  . Fixed bug #64827 (Segfault in zval_mark_grey (zend_gc.c)). (Laruence)
+  . OPcache must be compatible with LiteSpeed SAPI (Dmitry)
 
 - CGI:
   . Fixed Bug #65143 (Missing php-cgi man page). (Remi)
@@ -717,139 +1286,494 @@ PHP                                                                        NEWS
 - CLI server:
   . Fixed bug #65066 (Cli server not responsive when responding with 422 http
     status code). (Adam)
-    
-- CURL:
-  . Fixed bug #62665 (curl.cainfo doesn't appear in php.ini). (Lior Kaplan)
 
-- FPM:
-  . Fixed bug #63983 (enabling FPM borks compile on FreeBSD).
-    (chibisuke at web dot de, Felipe)
-    
-- FTP:
-  . Fixed bug #65228 (FTPs memory leak with SSL).
-    (marco dot beierer at mbsecurity dot ch)
-    
-- GMP:
-  . Fixed bug #65227 (Memory leak in gmp_cmp second parameter). (Felipe)
+- DateTime
+  . Fixed fug #65184 (strftime() returns insufficient-length string under
+    multibyte locales). (Anatol)
 
-- Imap:
-  . Fixed bug #64467 (Segmentation fault after imap_reopen failure).
-    (askalski at gmail dot com)
+- GD
+  . Fixed #65070 (bgcolor does not use the same format as the input image with
+    imagerotate). (Pierre)
+  . Fixed Bug #65060 (imagecreatefrom... crashes with user streams). (Remi)
+  . Fixed Bug #65084 (imagecreatefromjpeg fails with URL). (Remi)
+  . Fix gdImageCreateFromWebpCtx and use same logic to load WebP image
+    that other formats. (Remi)
 
-- Intl: 
+- Intl:
+  . Add IntlCalendar::setMinimalDaysInFirstWeek()/
+    intlcal_set_minimal_days_in_first_week().
+  . Fixed trailing space in name of constant IntlCalendar::FIELD_FIELD_COUNT.
   . Fixed bug #62759 (Buggy grapheme_substr() on edge case). (Stas)
   . Fixed bug #61860 (Offsets may be wrong for grapheme_stri* functions).
     (Stas)
 
-- mysqlnd: 
-  . Fixed segfault in mysqlnd when doing long prepare. (Andrey)
-  
-- ODBC:
-  . Fixed bug #61387 (NULL valued anonymous column causes segfault in 
-    odbc_fetch_array). (Brandon Kirsch)
-
-- Openssl:
-  . Fixed handling null bytes in subjectAltName (CVE-2013-4248).
-    (Christian Heimes)
+- OCI8:
+  . Bump PECL package info version check to allow PECL installs with PHP 5.5+
 
 - PDO:
   . Allowed PDO_OCI to compile with Oracle Database 12c client libraries.
     (Chris Jones)
 
-- PDO_dblib:
-  . Fixed bug #65219 (PDO/dblib not working anymore ("use dbName" not sent)). 
-    (Stanley Sufficool)
-
-- PDO_pgsql:
-  . Fixed meta data retrieve when OID is larger than 2^31. (Yasuo)
+- Pgsql
+  . pg_unescape_bytea() raises E_WARNING for invalid inputs. (Yasuo)
 
 - Phar:
   . Fixed Bug #65142 (Missing phar man page). (Remi)
 
-- Session
-  . Fixed bug #62535 ($_SESSION[$key]["cancel_upload"] doesn't work as
-    documented). (Arpad)
-  . Fixed bug #35703 (when session_name("123") consist only digits, 
-    should warning). (Yasuo)
-  . Fixed bug #49175 (mod_files.sh does not support hash bits). Patch by
-    oorza2k5 at gmail dot com (Yasuo)
+- Session:
+  . Added optional create_sid() argument to session_set_save_handler(),
+    SessionHandler and new SessionIdInterface. (Leigh, Arpad)
 
 - Sockets:
-  . Implemented FR #63472 (Setting SO_BINDTODEVICE with socket_set_option). 
+  . Implemented FR #63472 (Setting SO_BINDTODEVICE with socket_set_option).
     (Damjan Cvetko)
+  . Allowed specifying paths in the abstract namespace for the functions
+    socket_bind(), socket_connect() and socket_sendmsg(). (Gustavo)
+  . Fixed bug #65260 (sendmsg() ancillary data construction for SCM_RIGHTS is
+    faulty). (Gustavo)
 
 - SPL:
   . Fixed bug #65136 (RecursiveDirectoryIterator segfault). (Laruence)
   . Fixed bug #61828 (Memleak when calling Directory(Recursive)Iterator
     /Spl(Temp)FileObject ctor twice). (Laruence)
-  . Fixed bug #60560 (SplFixedArray un-/serialize, getSize(), count() return 0,
-    keys are strings). (Adam)
 
-- XML:
-  . Fixed bug #65236 (heap corruption in xml parser, CVE-2013-4113). (Rob)
+- CGI/FastCGI SAPI:
+  . Added PHP_FCGI_BACKLOG, overrides the default listen backlog. (Arnaud Le
+    Blanc)
 
-04 Jul 2013, PHP 5.4.17
+20 Jun 2013, PHP 5.5.0
 
 - Core:
+  . Added Zend Opcache extension and enable building it by default.
+    More details here: https://wiki.php.net/rfc/optimizerplus. (Dmitry)
+  . Added generators and coroutines (https://wiki.php.net/rfc/generators).
+    (Nikita Popov)
+  . Added "finally" keyword (https://wiki.php.net/rfc/finally). (Laruence)
+  . Added simplified password hashing API
+    (https://wiki.php.net/rfc/password_hash). (Anthony Ferrara)
+  . Added support for constant array/string dereferencing. (Laruence)
+  . Added array_column function which returns a column in a multidimensional
+    array. https://wiki.php.net/rfc/array_column. (Ben Ramsey)
+  . Added boolval(). (Jille Timmermans)
+  . Added "Z" option to pack/unpack. (Gustavo)
+  . Added Generator::throw() method. (Nikita Popov)
+  . Added Class Name Resolution As Scalar Via "class" Keyword.
+    (Ralph Schindler, Nikita Popov, Lars)
+  . Added optional second argument for assert() to specify custom message. Patch
+    by Lonny Kapelushnik (lonny@lonnylot.com). (Lars)
+  . Added support for using empty() on the result of function calls and
+    other expressions (https://wiki.php.net/rfc/empty_isset_exprs).
+    (Nikita Popov)
+  . Added support for non-scalar Iterator keys in foreach
+    (https://wiki.php.net/rfc/foreach-non-scalar-keys). (Nikita Popov)
+  . Added support for list in foreach (https://wiki.php.net/rfc/foreachlist).
+    (Laruence)
+  . Added support for changing the process's title in CLI/CLI-Server SAPIs.
+    The implementation is more robust that the proctitle PECL module. More
+    details here: https://wiki.php.net/rfc/cli_process_title. (Keyur)
+  . Added ARMv7/v8 versions of various Zend arithmetic functions that are
+    implemented using inline assembler (Ard Biesheuvel)
+  . Added systemtap support by enabling systemtap compatible dtrace probes on
+    linux. (David Soria Parra)
+  . Optimized access to temporary and compiled VM variables. 8% less memory
+    reads. (Dmitry)
+  . The VM stacks for passing function arguments and syntaticaly nested calls
+    were merged into a single stack. The stack size needed for op_array
+    execution is calculated at compile time and preallocated at once. As result
+    all the stack push operatins don't require checks for stack overflow
+    any more. (Dmitry)
+  . Improve set_exception_handler while doing reset. (Laruence)
+  . Return previous handler when passing NULL to set_error_handler and
+    set_exception_handler. (Nikita Popov)
+  . Remove php_logo_guid(), php_egg_logo_guid(), php_real_logo_guid(),
+    zend_logo_guid(). (Adnrew Faulds)
+  . Drop Windows XP and 2003 support. (Pierre)
+  . Implemented FR #64175 (Added HTTP codes as of RFC 6585). (Jonh Wendell)
+  . Implemented FR #60738 (Allow 'set_error_handler' to handle NULL).
+    (Laruence, Nikita Popov)
+  . Implemented FR #60524 (specify temp dir by php.ini). (ALeX Kazik).
+  . Implemented FR #46487 (Dereferencing process-handles no longer waits on
+    those processes). (Jille Timmermans)
+  . Fixed bug #65051 (count() off by one inside unset()). (Nikita)
   . Fixed bug #64988 (Class loading order affects E_STRICT warning). (Laruence)
   . Fixed bug #64966 (segfault in zend_do_fcall_common_helper_SPEC). (Laruence)
   . Fixed bug #64960 (Segfault in gc_zval_possible_root). (Laruence)
   . Fixed bug #64936 (doc comments picked up from previous scanner run). (Stas,
     Jonathan Oddy)
   . Fixed bug #64934 (Apache2 TS crash with get_browser()). (Anatol)
-  . Fixed bug #64166 (quoted-printable-encode stream filter incorrectly 
+  . Fixed bug #64879 (Heap based buffer overflow in quoted_printable_encode,
+    CVE 2013-2110). (Stas)
+  . Fixed bug #64853 (Use of no longer available ini directives causes crash
+    on TS build). (Anatol)
+  . Fixed bug #64821 (Custom Exceptions crash when internal properties overridden).
+      (Anatol)
+  . Fixed bug #64720 (SegFault on zend_deactivate). (Dmitry)
+  . Fixed bug #64677 (execution operator `` stealing surrounding arguments).
+  . Fixed bug #64660 (Segfault on memory exhaustion within function definition).
+    (Stas, reported by Juha Kylmänen)
+  . Fixed bug #64578 (debug_backtrace in set_error_handler corrupts zend heap:
+    segfault). (Laruence)
+  . Fixed bug #64565 (copy doesn't report failure on partial copy). (Remi)
+  . Fixed bug #64555 (foreach no longer copies keys if they are interned).
+    (Nikita Popov)
+  . Fixed bugs #47675 and #64577 (fd leak on Solaris)
+  . Fixed bug #64544 (Valgrind warnings after using putenv). (Laruence)
+  . Fixed bug #64515 (Memoryleak when using the same variablename 2times in
+    function declaration). (Laruence)
+  . Fixed bug #64503 (Compilation fails with error: conflicting types for
+    'zendparse'). (Laruence)
+  . Fixed bug #64239 (Debug backtrace changed behavior since 5.4.10 or 5.4.11).
+    (Dmitry, Laruence)
+  . Fixed bug #64523, allow XOR in php.ini. (Dejan Marjanovic, Lars)
+  . Fixed bug #64354 (Unserialize array of objects whose class can't
+    be autoloaded fail). (Laruence)
+  . Fixed bug #64370 (microtime(true) less than $_SERVER['REQUEST_TIME_FLOAT']).
+    (Anatol)
+  . Fixed bug #64166 (quoted-printable-encode stream filter incorrectly
     discarding whitespace). (Michael M Slusarz)
+    (Laruence)
+  . Fixed bug #64142 (dval to lval different behavior on ppc64). (Remi)
+  . Fixed bug #64135 (Exceptions from set_error_handler are not always
+    propagated). (Laruence)
+  . Fixed bug #63980 (object members get trimmed by zero bytes). (Laruence)
+  . Fixed bug #63874 (Segfault if php_strip_whitespace has heredoc). (Pierrick)
+  . Fixed bug #63830 (Segfault on undefined function call in nested generator).
+    (Nikita Popov)
+  . Fixed bug #63822 (Crash when using closures with ArrayAccess).
+    (Nikita Popov)
+  . Fixed bug #61681 (Malformed grammar). (Nikita Popov, Etienne, Laruence)
+  . Fixed bug #61038 (unpack("a5", "str\0\0") does not work as expected).
+    (srgoogleguy, Gustavo)
+  . Fixed bug #61025 (__invoke() visibility not honored). (Laruence)
+  . Fixed bug #60833 (self, parent, static behave inconsistently
+    case-sensitive). (Stas, mario at include-once dot org)
+  . Fixed Bug #52126: timestamp for mail.log (Martin Jansen, Lars)
+  . Fixed bug #49348 (Uninitialized ++$foo->bar; does not cause a notice).
+    (Stas)
+  . Fixed Bug #23955: allow specifying Max-Age attribute in setcookie() (narfbg, Lars)
+  . Fixed bug #18556 (Engine uses locale rules to handle class names). (Stas)
+  . Fix undefined behavior when converting double variables to integers.
+    The double is now always rounded towards zero, the remainder of its division
+    by 2^32 or 2^64 (depending on sizeof(long)) is calculated and it's made
+    signed assuming a two's complement representation. (Gustavo)
+  . Drop support for bison < 2.4 when building PHP from GIT source.
+    (Laruence)
 
-- DateTime:
+- Apache2 Handler SAPI:
+  . Enabled Apache 2.4 configure option for Windows (Pierre, Anatoliy)
+
+- Calendar:
+  . Fixed bug #64895 (Integer overflow in SndToJewish). (Remi)
+  . Fixed bug #54254 (cal_from_jd returns month = 6 when there is only one Adar)
+    (Stas, Eitan Mosenkis)
+
+- CLI server:
+  . Fixed bug #64128 (buit-in web server is broken on ppc64). (Remi)
+
+- CURL:
+  . Remove curl stream wrappers. (Pierrick)
+  . Implemented FR #46439 - added CURLFile for safer file uploads.
+    (Stas)
+  . Added support for CURLOPT_FTP_RESPONSE_TIMEOUT, CURLOPT_APPEND,
+    CURLOPT_DIRLISTONLY, CURLOPT_NEW_DIRECTORY_PERMS, CURLOPT_NEW_FILE_PERMS,
+    CURLOPT_NETRC_FILE, CURLOPT_PREQUOTE, CURLOPT_KRBLEVEL, CURLOPT_MAXFILESIZE,
+    CURLOPT_FTP_ACCOUNT, CURLOPT_COOKIELIST, CURLOPT_IGNORE_CONTENT_LENGTH,
+    CURLOPT_CONNECT_ONLY, CURLOPT_LOCALPORT, CURLOPT_LOCALPORTRANGE,
+    CURLOPT_FTP_ALTERNATIVE_TO_USER, CURLOPT_SSL_SESSIONID_CACHE,
+    CURLOPT_FTP_SSL_CCC, CURLOPT_HTTP_CONTENT_DECODING,
+    CURLOPT_HTTP_TRANSFER_DECODING, CURLOPT_PROXY_TRANSFER_MODE,
+    CURLOPT_ADDRESS_SCOPE, CURLOPT_CRLFILE, CURLOPT_ISSUERCERT,
+    CURLOPT_USERNAME, CURLOPT_PASSWORD, CURLOPT_PROXYUSERNAME,
+    CURLOPT_PROXYPASSWORD, CURLOPT_NOPROXY, CURLOPT_SOCKS5_GSSAPI_NEC,
+    CURLOPT_SOCKS5_GSSAPI_SERVICE, CURLOPT_TFTP_BLKSIZE,
+    CURLOPT_SSH_KNOWNHOSTS, CURLOPT_FTP_USE_PRET, CURLOPT_MAIL_FROM,
+    CURLOPT_MAIL_RCPT, CURLOPT_RTSP_CLIENT_CSEQ, CURLOPT_RTSP_SERVER_CSEQ,
+    CURLOPT_RTSP_SESSION_ID, CURLOPT_RTSP_STREAM_URI, CURLOPT_RTSP_TRANSPORT,
+    CURLOPT_RTSP_REQUEST, CURLOPT_RESOLVE, CURLOPT_ACCEPT_ENCODING,
+    CURLOPT_TRANSFER_ENCODING, CURLOPT_DNS_SERVERS and CURLOPT_USE_SSL.
+    (Pierrick)
+  . Added new functions curl_escape, curl_multi_setopt, curl_multi_strerror
+    curl_pause, curl_reset, curl_share_close, curl_share_init,
+    curl_share_setopt curl_strerror and curl_unescape. (Pierrick)
+  . Addes new curl options CURLOPT_TELNETOPTIONS, CURLOPT_GSSAPI_DELEGATION,
+    CURLOPT_ACCEPTTIMEOUT_MS, CURLOPT_SSL_OPTIONS, CURLOPT_TCP_KEEPALIVE,
+    CURLOPT_TCP_KEEPIDLE and CURLOPT_TCP_KEEPINTVL. (Pierrick)
+  . Fixed bug #55635 (CURLOPT_BINARYTRANSFER no longer used. The constant
+    still exists for backward compatibility but is doing nothing). (Pierrick)
+  . Fixed bug #54995 (Missing CURLINFO_RESPONSE_CODE support). (Pierrick)
+
+- DateTime
+  . Added DateTimeImmutable - a variant of DateTime that only returns the
+    modified state instead of changing itself. (Derick)
+  . Fixed bug #64825 (Invalid free when unserializing DateTimeZone).
+    (Anatol)
+  . Fixed bug #64359 (strftime crash with VS2012). (Anatol)
+  . Fixed bug #62852 (Unserialize Invalid Date causes crash). (Anatol)
+  . Fixed bug #61642 (modify("+5 weekdays") returns Sunday).
+    (Dmitri Iouchtchenko)
+  . Fixed bug #60774 (DateInterval::format("%a") is always zero when an
+    interval is created using the createFromDateString method) (Lonny
+    Kapelushnik, Derick)
+  . Fixed bug #54567 (DateTimeZone serialize/unserialize) (Lonny
+    Kapelushnik, Derick)
   . Fixed bug #53437 (Crash when using unserialized DatePeriod instance).
     (Gustavo, Derick, Anatol)
 
+- dba:
+  . Bug #62489: dba_insert not working as expected.
+    (marc-bennewitz at arcor dot de, Lars)
+
+- Filter:
+  . Implemented FR #49180 - added MAC address validation. (Martin)
+
+- Fileinfo:
+  . Upgraded libmagic to 5.14. (Anatol)
+  . Fixed bug #64830 (mimetype detection segfaults on mp3 file). (Anatol)
+  . Fixed bug #63590 (Different results in TS and NTS under Windows).
+    (Anatoliy)
+  . Fixed bug #63248 (Load multiple magic files from a directory under Windows).
+      (Anatoliy)
+
 - FPM:
-  . Fixed Bug #64915 (error_log ignored when daemonize=0). (Remi)
+  . Add --with-fpm-systemd option to report health to systemd, and
+    systemd_interval option to configure this. The service can now use
+    Type=notify in the systemd unit file. (Remi)
+  . Ignore QUERY_STRING when sent in SCRIPT_FILENAME. (Remi)
+  . Log a warning when a syscall fails. (Remi)
   . Implemented FR #64764 (add support for FPM init.d script). (Lior Kaplan)
+  . Fixed Bug #64915 (error_log ignored when daemonize=0). (Remi)
+  . Fixed bug #63999 (php with fpm fails to build on Solaris 10 or 11). (Adam)
+  . Fixed some possible memory or resource leaks and possible null dereference
+    detected by code coverity scan. (Remi)
+
+- GD:
+  . Fixed Bug #64962 (imagerotate produces corrupted image). (Remi)
+  . Fixed Bug #64961 (segfault in imagesetinterpolation). (Remi)
+  . Fix build with system libgd >= 2.1 which is now the minimal
+    version required (as build with previous version is broken).
+    No change when bundled libgd is used.  (Ondrej Sury, Remi)
+
+- Hash:
+  . Added support for PBKDF2 via hash_pbkdf2(). (Anthony Ferrara)
+  . Fixed Bug #64745 (hash_pbkdf2() truncates data when using default length
+    and hex output). (Anthony Ferrara)
+
+- Intl:
+  . Added UConverter wrapper.
+  . The intl extension now requires ICU 4.0+.
+  . Added intl.use_exceptions INI directive, which controls what happens when
+    global errors are set together with intl.error_level. (Gustavo)
+  . MessageFormatter::format() and related functions now accepted named
+    arguments and mixed numeric/named arguments in ICU 4.8+. (Gustavo)
+  . MessageFormatter::format() and related functions now don't error out when
+    an insufficient argument count is provided. Instead, the placeholders will
+    remain unsubstituted. (Gustavo)
+  . MessageFormatter::parse() and MessageFormat::format() (and their static
+    equivalents) don't throw away better than second precision in the arguments.
+    (Gustavo)
+  . IntlDateFormatter::__construct and datefmt_create() now accept for the
+    $timezone argument time zone identifiers, IntlTimeZone objects, DateTimeZone
+    objects and NULL. (Gustavo)
+  . IntlDateFormatter::__construct and datefmt_create() no longer accept invalid
+    timezone identifiers or empty strings. (Gustavo)
+  . The default time zone used in IntlDateFormatter::__construct and
+    datefmt_create() (when the corresponding argument is not passed or NULL is
+    passed) is now the one given by date_default_timezone_get(), not the
+    default ICU time zone. (Gustavo)
+  . The time zone passed to the IntlDateFormatter is ignored if it is NULL and
+    if the calendar passed is an IntlCalendar object -- in this case, the
+    IntlCalendar's time zone will be used instead. Otherwise, the time zone
+    specified in the $timezone argument is used instead. This does not affect
+    old code, as IntlCalendar was introduced in this version. (Gustavo)
+  . IntlDateFormatter::__construct and datefmt_create() now accept for the
+    $calendar argument also IntlCalendar objects. (Gustavo)
+  . IntlDateFormatter::getCalendar() and datefmt_get_calendar() return false
+    if the IntlDateFormatter was set up with an IntlCalendar instead of the
+    constants IntlDateFormatter::GREGORIAN/TRADITIONAL. IntlCalendar did not
+    exist before this version. (Gustavo)
+  . IntlDateFormatter::setCalendar() and datefmt_set_calendar() now also accept
+    an IntlCalendar object, in which case its time zone is taken. Passing a
+    constant is still allowed, and still keeps the time zone. (Gustavo)
+  . IntlDateFormatter::setTimeZoneID() and datefmt_set_timezone_id() are
+    deprecated. Use IntlDateFormatter::setTimeZone() or datefmt_set_timezone()
+    instead. (Gustavo)
+  . IntlDateFormatter::format() and datefmt_format() now also accept an
+    IntlCalendar object for formatting. (Gustavo)
+  . Added the classes: IntlCalendar, IntlGregorianCalendar, IntlTimeZone,
+    IntlBreakIterator, IntlRuleBasedBreakIterator and
+    IntlCodePointBreakIterator. (Gustavo)
+  . Added the functions: intlcal_get_keyword_values_for_locale(),
+    intlcal_get_now(), intlcal_get_available_locales(), intlcal_get(),
+    intlcal_get_time(), intlcal_set_time(), intlcal_add(),
+    intlcal_set_time_zone(), intlcal_after(), intlcal_before(), intlcal_set(),
+    intlcal_roll(), intlcal_clear(), intlcal_field_difference(),
+    intlcal_get_actual_maximum(), intlcal_get_actual_minimum(),
+    intlcal_get_day_of_week_type(), intlcal_get_first_day_of_week(),
+    intlcal_get_greatest_minimum(), intlcal_get_least_maximum(),
+    intlcal_get_locale(), intlcal_get_maximum(),
+    intlcal_get_minimal_days_in_first_week(), intlcal_get_minimum(),
+    intlcal_get_time_zone(), intlcal_get_type(),
+    intlcal_get_weekend_transition(), intlcal_in_daylight_time(),
+    intlcal_is_equivalent_to(), intlcal_is_lenient(), intlcal_is_set(),
+    intlcal_is_weekend(), intlcal_set_first_day_of_week(),
+    intlcal_set_lenient(), intlcal_equals(),
+    intlcal_get_repeated_wall_time_option(),
+    intlcal_get_skipped_wall_time_option(),
+    intlcal_set_repeated_wall_time_option(),
+    intlcal_set_skipped_wall_time_option(), intlcal_from_date_time(),
+    intlcal_to_date_time(), intlcal_get_error_code(),
+    intlcal_get_error_message(), intlgregcal_create_instance(),
+    intlgregcal_set_gregorian_change(), intlgregcal_get_gregorian_change() and
+    intlgregcal_is_leap_year(). (Gustavo)
+  . Added the functions: intltz_create_time_zone(), intltz_create_default(),
+    intltz_get_id(), intltz_get_gmt(), intltz_get_unknown(),
+    intltz_create_enumeration(), intltz_count_equivalent_ids(),
+    intltz_create_time_zone_id_enumeration(), intltz_get_canonical_id(),
+    intltz_get_region(), intltz_get_tz_data_version(),
+    intltz_get_equivalent_id(), intltz_use_daylight_time(), intltz_get_offset(),
+    intltz_get_raw_offset(), intltz_has_same_rules(), intltz_get_display_name(),
+    intltz_get_dst_savings(), intltz_from_date_time_zone(),
+    intltz_to_date_time_zone(), intltz_get_error_code(),
+    intltz_get_error_message(). (Gustavo)
+  . Added the methods: IntlDateFormatter::formatObject(),
+    IntlDateFormatter::getCalendarObject(), IntlDateFormatter::getTimeZone(),
+    IntlDateFormatter::setTimeZone(). (Gustavo)
+  . Added the functions: datefmt_format_object(), datefmt_get_calendar_object(),
+    datefmt_get_timezone(), datefmt_set_timezone(),
+    datefmt_get_calendar_object(), intlcal_create_instance(). (Gustavo)
+
+- mbstring:
+  . Fixed bug #64769 (mbstring PHPTs crash on Windows x64). (Anatol)
+
+- MCrypt
+  . mcrypt_ecb(), mcrypt_cbc(), mcrypt_cfb() and mcrypt_ofb() now throw
+    E_DEPRECATED. (GoogleGuy)
+
+- mysql
+  . This extension is now deprecated, and deprecation warnings will be generated
+    when connections are established to databases via mysql_connect(),
+    mysql_pconnect(), or through implicit connection: use MySQLi or PDO_MySQL
+    instead (https://wiki.php.net/rfc/mysql_deprecation). (Adam)
+  . Dropped support for LOAD DATA LOCAL INFILE handlers when using libmysql.
+    Known for stability problems. (Andrey)
+  . Added support for SHA256 authentication available with MySQL 5.6.6+.
+    (Andrey)
+
+- mysqli:
+  . Added mysqli_begin_transaction()/mysqli::begin_transaction(). Implemented
+    all options, per MySQL 5.6, which can be used with START TRANSACTION, COMMIT
+    and ROLLBACK through options to mysqli_commit()/mysqli_rollback() and their
+    respective OO counterparts. They work in libmysql and mysqlnd mode. (Andrey)
+  . Added mysqli_savepoint(), mysqli_release_savepoint(). (Andrey)
+  . Fixed bug #64726 (Segfault when calling fetch_object on a use_result and DB
+    pointer has closed). (Laruence)
+  . Fixed bug #64394 (MYSQL_OPT_CAN_HANDLE_EXPIRED_PASSWORDS undeclared when
+    using Connector/C). (Andrey)
+
+- mysqlnd
+  . Add new begin_transaction() call to the connection object. Implemented all
+    options, per MySQL 5.6, which can be used with START TRANSACTION, COMMIT
+    and ROLLBACK. (Andrey)
+  . Added mysqlnd_savepoint(), mysqlnd_release_savepoint(). (Andrey)
+  . Fixed bug #63530 (mysqlnd_stmt::bind_one_parameter crashes, uses wrong alloc
+    for stmt->param_bind). (Andrey)
+  . Fixed return value of mysqli_stmt_affected_rows() in the time after
+    prepare() and before execute(). (Andrey)
+
+- PCRE:
+  . Merged PCRE 8.32. (Anatol)
+  . Deprecated the /e modifier
+    (https://wiki.php.net/rfc/remove_preg_replace_eval_modifier). (Nikita Popov)
+  . Fixed bug #63284 (Upgrade PCRE to 8.31). (Anatoliy)
 
 - PDO:
   . Fixed bug #63176 (Segmentation fault when instantiate 2 persistent PDO to 
     the same db server). (Laruence)
 
 - PDO_DBlib:
-  . Fixed bug #63638 (Cannot connect to SQL Server 2008 with PDO dblib). 
+  . Fixed bug #63638 (Cannot connect to SQL Server 2008 with PDO dblib).
     (Stanley Sufficool)
-  . Fixed bug #64338 (pdo_dblib can't connect to Azure SQL). (Stanley 
+  . Fixed bug #64338 (pdo_dblib can't connect to Azure SQL). (Stanley
     Sufficool)
-  . Fixed bug #64808 (FreeTDS PDO getColumnMeta on a prepared but not executed 
+  . Fixed bug #64808 (FreeTDS PDO getColumnMeta on a prepared but not executed
     statement crashes). (Stanley Sufficool)
-
-- PDO_firebird:
-  . Fixed bug #64037 (Firebird return wrong value for numeric field).
-    (Matheus Degiovani, Matteo)
-  . Fixed bug #62024 (Cannot insert second row with null using parametrized
-    query). (patch by james@kenjim.com, Matheus Degiovani, Matteo)
-
-- PDO_mysql:
-  . Fixed bug #48724 (getColumnMeta() doesn't return native_type for BIT, 
-    TINYINT and YEAR). (Antony, Daniel Beardsley)
 
 - PDO_pgsql:
   . Fixed Bug #64949 (Buffer overflow in _pdo_pgsql_error). (Remi)
 
+- PDO_mysql:
+  . Fixed bug #48724 (getColumnMeta() doesn't return native_type for BIT,
+    TINYINT and YEAR). (Antony, Daniel Beardsley)
+
 - pgsql:
-  . Fixed bug #64609 (pg_convert enum type support). (Matteo)
-  . Fixed bug #65015 (pg_send_query does not flush send buffer)
-       patch submitted by: adam at vektah dot net (Yasuo)
+  . Added pg_escape_literal() and pg_escape_identifier() (Yasuo)
+  . Bug #46408: Locale number format settings can cause pg_query_params to
+    break with numerics. (asmecher, Lars)
+
+- Phar:
+  . Fixed timestamp update on Phar contents modification. (Dmitry)
 
 - Readline:
-  . Implement FR #55694 (Expose additional readline variable to prevent 
+  . Implement FR #55694 (Expose additional readline variable to prevent
     default filename completion). (Hartmel)
+
+- Reflection:
+  . Fixed bug #64007 (There is an ability to create instance of Generator by
+    hand). (Laruence)
+
+- Sockets:
+  . Added recvmsg() and sendmsg() wrappers. (Gustavo)
+    See https://wiki.php.net/rfc/sendrecvmsg
+  . Fixed bug #64508 (Fails to build with --disable-ipv6). (Gustavo)
+  . Fixed bug #64287 (sendmsg/recvmsg shutdown handler causes segfault).
+    (Gustavo)
 
 - SPL:
   . Fixed bug #64997 (Segfault while using RecursiveIteratorIterator on
     64-bits systems). (Laruence)
+  . Fixed bug #64264 (SPLFixedArray toArray problem). (Laruence)
+  . Fixed bug #64228 (RecursiveDirectoryIterator always assumes SKIP_DOTS).
+    (patch by kriss@krizalys.com, Laruence)
+  . Fixed bug #64106 (Segfault on SplFixedArray[][x] = y when extended).
+    (Nikita Popov)
+  . Fix bug #60560 (SplFixedArray un-/serialize, getSize(), count() return 0,
+    keys are strings). (Adam)
+  . Fixed bug #52861 (unset fails with ArrayObject and deep arrays).
+    (Mike Willbanks)
+  . Implement FR #48358 (Add SplDoublyLinkedList::add() to insert an element
+    at a given offset). (Mark Baker, David Soria Parra)
+
+- SNMP:
+  . Fixed bug #64765 (Some IPv6 addresses get interpreted wrong).
+    (Boris Lytochkin)
+  . Fixed bug #64159 (Truncated snmpget). (Boris Lytochkin)
+  . Fixed bug #64124 (IPv6 malformed). (Boris Lytochkin)
+  . Fixed bug #61981 (OO API, walk: $suffix_as_key is not working correctly).
+    (Boris Lytochkin)
+
+- SOAP:
+  . Added SoapClient constructor option 'ssl_method' to specify ssl method.
+    (Eric Iversen)
+
+- Streams:
+  . Fixed bug #64770 (stream_select() fails with pipes returned by proc_open()
+    on Windows x64). (Anatol)
+  . Fixed Windows x64 version of stream_socket_pair() and improved error
+    handling. (Anatol Belski)
+
+- Tokenizer:
+  . Fixed bug #60097 (token_get_all fails to lex nested heredoc). (Nikita Popov)
+
+- Zip:
+  . Upgraded libzip to 0.10.1 (Anatoliy)
+  . Bug #64452 (Zip crash intermittently). (Anatol)
+  . Fixed bug #64342 (ZipArchive::addFile() has to check for file existence).
+    (Anatol)
 
 06 Jun 2013, PHP 5.4.16
 
 - Core:
-  . Fixed bug #64879 (Heap based buffer overflow in quoted_printable_encode,
+  . Fixed bug #64879 (Heap based buffer overflow in quoted_printable_encode, 
     CVE 2013-2110). (Stas)
   . Fixed bug #64853 (Use of no longer available ini directives causes crash on
     TS build). (Anatol)
@@ -874,7 +1798,7 @@ PHP                                                                        NEWS
     Type=notify in the systemd unit file. (Remi)
 
 - MySQLi
-  . Fixed bug #64726 (Segfault when calling fetch_object on a use_result and DB
+ . Fixed bug #64726 (Segfault when calling fetch_object on a use_result and DB
     pointer has closed). (Laruence)
 
 - Phar
@@ -990,6 +1914,9 @@ PHP                                                                        NEWS
     (CVE-2013-1635). (Dmitry)
   . Disabled external entities loading (CVE-2013-1643, CVE-2013-1824).
     (Dmitry)
+
+- Phar:
+  . Fixed timestamp update on Phar contents modification. (Dmitry)
 
 - SPL:
   . Fixed bug #64264 (SPLFixedArray toArray problem). (Laruence)

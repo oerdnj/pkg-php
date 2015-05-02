@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2014 The PHP Group                                |
+   | Copyright (c) 1997-2015 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -794,7 +794,6 @@ int
 ftp_get(ftpbuf_t *ftp, php_stream *outstream, const char *path, ftptype_t type, long resumepos TSRMLS_DC)
 {
 	databuf_t		*data = NULL;
-	int			lastch;
 	size_t			rcvd;
 	char			arg[11];
 
@@ -832,7 +831,6 @@ ftp_get(ftpbuf_t *ftp, php_stream *outstream, const char *path, ftptype_t type, 
 		goto bail;
 	}
 
-	lastch = 0;
 	while ((rcvd = my_recv(ftp, data->fd, data->buf, FTP_BUFSIZE))) {
 		if (rcvd == -1) {
 			goto bail;
@@ -1191,12 +1189,9 @@ ftp_readline(ftpbuf_t *ftp)
 int
 ftp_getresp(ftpbuf_t *ftp)
 {
-	char *buf;
-
 	if (ftp == NULL) {
 		return 0;
 	}
-	buf = ftp->inbuf;
 	ftp->resp = 0;
 
 	while (1) {

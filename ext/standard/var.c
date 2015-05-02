@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2014 The PHP Group                                |
+   | Copyright (c) 1997-2015 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -647,7 +647,7 @@ static void php_var_serialize_class(smart_str *buf, zval *struc, zval *retval_pt
 		for (;; zend_hash_move_forward_ex(HASH_OF(retval_ptr), &pos)) {
 			i = zend_hash_get_current_key_ex(HASH_OF(retval_ptr), &key, NULL, &index, 0, &pos);
 
-			if (i == HASH_KEY_NON_EXISTANT) {
+			if (i == HASH_KEY_NON_EXISTENT) {
 				break;
 			}
 
@@ -858,7 +858,7 @@ static void php_var_serialize_intern(smart_str *buf, zval *struc, HashTable *var
 				zend_hash_internal_pointer_reset_ex(myht, &pos);
 				for (;; zend_hash_move_forward_ex(myht, &pos)) {
 					i = zend_hash_get_current_key_ex(myht, &key, &key_len, &index, 0, &pos);
-					if (i == HASH_KEY_NON_EXISTANT) {
+					if (i == HASH_KEY_NON_EXISTENT) {
 						break;
 					}
 					if (incomplete_class && strcmp(key, MAGIC_MEMBER) == 0) {
