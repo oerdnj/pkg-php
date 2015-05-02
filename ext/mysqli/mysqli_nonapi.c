@@ -2,7 +2,7 @@
   +----------------------------------------------------------------------+
   | PHP Version 5                                                        |
   +----------------------------------------------------------------------+
-  | Copyright (c) 1997-2014 The PHP Group                                |
+  | Copyright (c) 1997-2015 The PHP Group                                |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.01 of the PHP license,      |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -29,6 +29,7 @@
 #include "php.h"
 #include "php_ini.h"
 #include "ext/standard/info.h"
+#include "ext/standard/php_smart_str.h"
 #include "php_mysqli_structs.h"
 #include "mysqli_priv.h"
 
@@ -259,9 +260,6 @@ void mysqli_common_connect(INTERNAL_FUNCTION_PARAMETERS, zend_bool is_real_conne
 
 #if !defined(MYSQLI_USE_MYSQLND)
 	mysql->mysql->reconnect = MyG(reconnect);
-
-	/* set our own local_infile handler */
-	php_set_local_infile_handler_default(mysql);
 #endif
 
 	mysql_options(mysql->mysql, MYSQL_OPT_LOCAL_INFILE, (char *)&MyG(allow_local_infile));
@@ -737,7 +735,7 @@ static int mysqlnd_dont_poll_zval_array_from_mysqlnd_array(MYSQLND **in_array, z
 	int ret = 0;
 
 	ALLOC_HASHTABLE(new_hash);
-	zend_hash_init(new_hash, zend_hash_num_elements(Z_ARRVAL_P(in_zval_array)), NULL, ZVAL_PTR_DTOR, 0);
+	zend_hash_init(new_hash, in_zval_array? zend_hash_num_elements(Z_ARRVAL_P(in_zval_array)):0, NULL, ZVAL_PTR_DTOR, 0);
 	if (in_array) {
 		for (zend_hash_internal_pointer_reset(Z_ARRVAL_P(in_zval_array));
 			 zend_hash_get_current_data(Z_ARRVAL_P(in_zval_array), (void **) &elem) == SUCCESS;
@@ -1047,6 +1045,173 @@ PHP_FUNCTION(mysqli_get_charset)
 }
 /* }}} */
 #endif
+
+#if !defined(MYSQLI_USE_MYSQLND)
+extern char * mysqli_escape_string_for_tx_name_in_comment(const char * const name TSRMLS_DC);
+
+/* {{{ proto bool mysqli_begin_transaction_libmysql */
+static int mysqli_begin_transaction_libmysql(MYSQL * conn, const unsigned int mode, const char * const name TSRMLS_DC)
+{
+	int ret;
+	zend_bool err = FALSE;
+	smart_str tmp_str = {0, 0, 0};
+	if (mode & TRANS_START_WITH_CONSISTENT_SNAPSHOT) {
+		if (tmp_str.len) {
+			smart_str_appendl(&tmp_str, ", ", sizeof(", ") - 1);
+		}
+		smart_str_appendl(&tmp_str, "WITH CONSISTENT SNAPSHOT", sizeof("WITH CONSISTENT SNAPSHOT") - 1);
+	}
+	if (mode & (TRANS_START_READ_WRITE | TRANS_START_READ_ONLY)) {
+		if (mysql_get_server_version(conn) < 50605L) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "This server version doesn't support 'READ WRITE' and 'READ ONLY'. Minimum 5.6.5 is required");
+			err = TRUE;
+		} else if (mode & TRANS_START_READ_WRITE) {
+			if (tmp_str.len) {
+				smart_str_appendl(&tmp_str, ", ", sizeof(", ") - 1);
+			}
+			smart_str_appendl(&tmp_str, "READ WRITE", sizeof("READ WRITE") - 1);
+		} else if (mode & TRANS_START_READ_ONLY) {
+			if (tmp_str.len) {
+				smart_str_appendl(&tmp_str, ", ", sizeof(", ") - 1);
+			}
+			smart_str_appendl(&tmp_str, "READ ONLY", sizeof("READ ONLY") - 1);
+		}
+	}
+	smart_str_0(&tmp_str);
+
+	if (err == FALSE){
+		char * name_esc = mysqli_escape_string_for_tx_name_in_comment(name TSRMLS_CC);
+		char * query;
+		unsigned int query_len = spprintf(&query, 0, "START TRANSACTION%s %s",
+										  name_esc? name_esc:"", tmp_str.c? tmp_str.c:"");
+
+		smart_str_free(&tmp_str);
+		if (name_esc) {
+			efree(name_esc);
+		}
+
+		ret = mysql_real_query(conn, query, query_len);
+		efree(query);
+	}
+	return ret;
+}
+/* }}} */
+#endif
+
+/* {{{ proto bool mysqli_begin_transaction(object link, [int flags [, string name]])
+   Starts a transaction */
+PHP_FUNCTION(mysqli_begin_transaction)
+{
+	MY_MYSQL	*mysql;
+	zval		*mysql_link;
+	long		flags = TRANS_START_NO_OPT;
+	char *		name = NULL;
+	int			name_len = -1;
+	zend_bool	err = FALSE;
+
+	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "O|ls", &mysql_link, mysqli_link_class_entry, &flags, &name, &name_len) == FAILURE) {
+		return;
+	}
+	MYSQLI_FETCH_RESOURCE_CONN(mysql, &mysql_link, MYSQLI_STATUS_VALID);
+	if (flags < 0) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid value for parameter flags (%ld)", flags);
+		err = TRUE;
+	}
+	if (!name_len) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Savepoint name cannot be empty");
+		err = TRUE;
+	}
+	if (TRUE == err) {
+		RETURN_FALSE;			
+	}
+	
+#if !defined(MYSQLI_USE_MYSQLND)
+	if (mysqli_begin_transaction_libmysql(mysql->mysql, flags, name TSRMLS_CC)) {
+		RETURN_FALSE;
+	}
+#else
+	if (FAIL == mysqlnd_begin_transaction(mysql->mysql, flags, name)) {
+		RETURN_FALSE;
+	}
+#endif
+	RETURN_TRUE;
+}
+/* }}} */
+
+
+#if !defined(MYSQLI_USE_MYSQLND)
+/* {{{ proto bool mysqli_savepoint_libmysql */
+static int mysqli_savepoint_libmysql(MYSQL * conn, const char * const name, zend_bool release)
+{
+	int ret;
+	char * query;
+	unsigned int query_len = spprintf(&query, 0, release? "RELEASE SAVEPOINT `%s`":"SAVEPOINT `%s`", name);
+	ret = mysql_real_query(conn, query, query_len);
+	efree(query);
+	return ret;
+}
+/* }}} */
+#endif
+
+
+/* {{{ proto bool mysqli_savepoint(object link, string name)
+   Starts a transaction */
+PHP_FUNCTION(mysqli_savepoint)
+{
+	MY_MYSQL	*mysql;
+	zval		*mysql_link;
+	char *		name = NULL;
+	int			name_len = -1;
+
+	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "Os", &mysql_link, mysqli_link_class_entry, &name, &name_len) == FAILURE) {
+		return;
+	}
+	MYSQLI_FETCH_RESOURCE_CONN(mysql, &mysql_link, MYSQLI_STATUS_VALID);
+	if (!name || !name_len) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Savepoint name cannot be empty");
+		RETURN_FALSE;	
+	}
+
+#if !defined(MYSQLI_USE_MYSQLND)
+	if (mysqli_savepoint_libmysql(mysql->mysql, name, FALSE)) {
+#else
+	if (FAIL == mysqlnd_savepoint(mysql->mysql, name)) {
+#endif
+		RETURN_FALSE;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+
+
+/* {{{ proto bool mysqli_release_savepoint(object link, string name)
+   Starts a transaction */
+PHP_FUNCTION(mysqli_release_savepoint)
+{
+	MY_MYSQL	*mysql;
+	zval		*mysql_link;
+	char *		name = NULL;
+	int			name_len = -1;
+
+	if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "Os", &mysql_link, mysqli_link_class_entry, &name, &name_len) == FAILURE) {
+		return;
+	}
+	MYSQLI_FETCH_RESOURCE_CONN(mysql, &mysql_link, MYSQLI_STATUS_VALID);
+	if (!name || !name_len) {
+		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Savepoint name cannot be empty");	
+		RETURN_FALSE;
+	}
+#if !defined(MYSQLI_USE_MYSQLND)
+	if (mysqli_savepoint_libmysql(mysql->mysql, name, TRUE)) {
+#else
+	if (FAIL == mysqlnd_savepoint(mysql->mysql, name)) {
+#endif
+		RETURN_FALSE;
+	}
+	RETURN_TRUE;
+}
+/* }}} */
+
 
 /*
  * Local variables:

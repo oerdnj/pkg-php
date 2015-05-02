@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2014 The PHP Group                                |
+   | Copyright (c) 1997-2015 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -216,7 +216,6 @@ static php_stream_filter_status_t php_bz2_compress_filter(
 	size_t consumed = 0;
 	int status;
 	php_stream_filter_status_t exit_status = PSFS_FEED_ME;
-	bz_stream *streamp;
 
 	if (!thisfilter || !thisfilter->abstract) {
 		/* Should never happen */
@@ -224,7 +223,6 @@ static php_stream_filter_status_t php_bz2_compress_filter(
 	}
 
 	data = (php_bz2_filter_data *)(thisfilter->abstract);
-	streamp = &(data->strm);
 
 	while (buckets_in->head) {
 		size_t bin = 0, desired;

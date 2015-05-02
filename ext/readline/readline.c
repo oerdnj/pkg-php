@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2014 The PHP Group                                |
+   | Copyright (c) 1997-2015 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -170,7 +170,10 @@ ZEND_GET_MODULE(readline)
 
 PHP_MINIT_FUNCTION(readline)
 {
-    	using_history();
+#if HAVE_LIBREADLINE
+		/* libedit don't need this call which set the tty in cooked mode */
+		using_history();
+#endif
     	return PHP_MINIT(cli_readline)(INIT_FUNC_ARGS_PASSTHRU);
 }
 
@@ -351,6 +354,11 @@ PHP_FUNCTION(readline_clear_history)
 		return;
 	}
 
+#if HAVE_LIBEDIT
+	/* clear_history is the only function where rl_initialize
+	   is not call to ensure correct allocation */
+	using_history();
+#endif
 	clear_history();
 
 	RETURN_TRUE;
@@ -392,12 +400,13 @@ PHP_FUNCTION(readline_read_history)
 		return;
 	}
 
-	if (php_check_open_basedir(arg TSRMLS_CC)) {
+	if (arg && php_check_open_basedir(arg TSRMLS_CC)) {
 		RETURN_FALSE;
 	}
 
 	/* XXX from & to NYI */
 	if (read_history(arg)) {
+		/* If filename is NULL, then read from `~/.history' */
 		RETURN_FALSE;
 	} else {
 		RETURN_TRUE;
@@ -416,7 +425,7 @@ PHP_FUNCTION(readline_write_history)
 		return;
 	}
 
-	if (php_check_open_basedir(arg TSRMLS_CC)) {
+	if (arg && php_check_open_basedir(arg TSRMLS_CC)) {
 		RETURN_FALSE;
 	}
 

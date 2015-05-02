@@ -2,7 +2,7 @@
    +----------------------------------------------------------------------+
    | PHP Version 5                                                        |
    +----------------------------------------------------------------------+
-   | Copyright (c) 1997-2014 The PHP Group                                |
+   | Copyright (c) 1997-2015 The PHP Group                                |
    +----------------------------------------------------------------------+
    | This source file is subject to version 3.01 of the PHP license,      |
    | that is bundled with this package in the file LICENSE, and is        |
@@ -2488,20 +2488,26 @@ PHP_MINFO_FUNCTION(snmp)
 
 /* {{{ snmp_module_deps[]
  */
+#if ZEND_MODULE_API_NO >= 20050922
 static const zend_module_dep snmp_module_deps[] = {
 #ifdef HAVE_SPL
 	ZEND_MOD_REQUIRED("spl")
 #endif
 	ZEND_MOD_END
 };
+#endif
 /* }}} */
 
 /* {{{ snmp_module_entry
  */
 zend_module_entry snmp_module_entry = {
+#if ZEND_MODULE_API_NO >= 20050922
 	STANDARD_MODULE_HEADER_EX,
 	NULL,
 	snmp_module_deps,
+#else
+	STANDARD_MODULE_HEADER,
+#endif
 	"snmp",
 	snmp_functions,
 	PHP_MINIT(snmp),
