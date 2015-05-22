@@ -125,7 +125,7 @@ index c42b2db..b8bcb54 100644
  Note that the MySQL client library is not bundled anymore!])
    fi
 diff --git a/ext/pcre/config0.m4 b/ext/pcre/config0.m4
-index 4f8af76..6b1dcf6 100644
+index bfe2009..71b98a1 100644
 --- a/ext/pcre/config0.m4
 +++ b/ext/pcre/config0.m4
 @@ -21,7 +21,7 @@ PHP_ARG_WITH(pcre-regex,,
