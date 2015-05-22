@@ -1,3 +1,38 @@
+php5 (5.5.25+dfsg-1) unstable; urgency=medium
+
+  * New upstream version 5.5.25+dfsg
+   - Core:
+    . Fixed bug #69364 (PHP Multipart/form-data remote dos Vulnerability).
+    . Fixed bug #69403 (str_repeat() sign mismatch based memory corruption). 
+    . Fixed bug #69418 (CVE-2006-7243 fix regressions in 5.4+).
+    . Fixed bug #69522 (heap buffer overflow in unpack()).
+    . Fixed bug #69467 (Wrong checked for the interface by using Trait). 
+    . Fixed bug #69420 (Invalid read in zend_std_get_method).
+    . Fixed bug #60022 ("use statement [...] has no effect" depends on leading
+      backslash).
+    . Fixed bug #67314 (Segmentation fault in gc_remove_zval_from_buffer).
+    . Fixed bug #68652 (segmentation fault in destructor).
+    . Fixed bug #69419 (Returning compatible sub generator produces a warning).
+    . Fixed bug #69472 (php_sys_readlink ignores misc errors from 
+      GetFinalPathNameByHandleA).
+   - FTP:
+    . Fixed bug #69545 (Integer overflow in ftp_genlist() resulting in heap
+      overflow).
+   - ODBC:
+    . Fixed bug #69474 (ODBC: Query with same field name from two tables returns
+      incorrect result).
+    . Fixed bug #69381 (out of memory with sage odbc driver).
+   - OpenSSL:
+    . Fixed bug #69402 (Reading empty SSL stream hangs until timeout).
+   - PCNTL:
+    . Fixed bug #68598 (pcntl_exec() should not allow null char).
+   - Phar:
+    . Fixed bug #69453 (Memory Corruption in phar_parse_tarfile when entry filename
+      starts with null).
+  * Rebase patches on top of 5.5.25 version
+
+ -- Ondřej Surý <ondrej@debian.org>  Fri, 22 May 2015 12:33:25 +0200
+
 php5 (5.5.24+dfsg-1) unstable; urgency=medium
 
   * New upstream version 5.5.24+dfsg
