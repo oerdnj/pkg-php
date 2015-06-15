@@ -7,7 +7,7 @@ Subject: check-libpq-lo_export-return-value
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/ext/pgsql/pgsql.c b/ext/pgsql/pgsql.c
-index cd51143..f437643 100644
+index 524b185..bf0af1a 100644
 --- a/ext/pgsql/pgsql.c
 +++ b/ext/pgsql/pgsql.c
 @@ -3631,10 +3631,10 @@ PHP_FUNCTION(pg_lo_export)

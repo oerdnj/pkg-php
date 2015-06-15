@@ -7,7 +7,7 @@ Subject: 013-force_getaddrinfo
  1 file changed, 43 insertions(+), 43 deletions(-)
 
 diff --git a/configure.in b/configure.in
-index 1822bc2..e3d55aa 100644
+index 09ff3d6..f427261 100644
 --- a/configure.in
 +++ b/configure.in
 @@ -692,50 +692,50 @@ PHP_CHECK_FUNC_LIB(nanosleep, rt)
