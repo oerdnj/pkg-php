@@ -154,7 +154,7 @@ PHP 5 CGI and Apache HTTP Server
   1) activate php5_cgi module: run 'a2enconf php5-cgi'
   2) this will also activate the mod_actions module as a dependency
   3) comment out the last block of configuration in the
-     /etc/apache2/mods-enabled/php5_cgi.conf file to enable
+     /etc/apache2/conf-enabled/php5-cgi.conf file to enable
      server-wide PHP 5 CGI or add the mentioned configuration block to
      one or more virtual hosts or directories.
   4) It's advised to not mix-and-match multiple SAPIs (such as
