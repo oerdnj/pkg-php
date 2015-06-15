@@ -46,4 +46,4 @@
 0046-getallheaders-for-php-fpm-62596.patch
 0047-Fix-ZEND_MM_ALIGNMENT-on-m64k.patch
 0048-revert-f07b8f36ae8099e29d19fbe8806bc07b21dcd4ac.patch
-0049-reproducible-build.patch
+0049-Add-patch-to-remove-build-timestamps-from-generated-.patch

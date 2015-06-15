@@ -7,7 +7,7 @@ Subject: getallheaders for php-fpm #62596
  1 file changed, 84 insertions(+), 1 deletion(-)
 
 diff --git a/sapi/fpm/fpm/fpm_main.c b/sapi/fpm/fpm/fpm_main.c
-index c217d7a..06f8509 100644
+index 8b1503d..33db9a6 100644
 --- a/sapi/fpm/fpm/fpm_main.c
 +++ b/sapi/fpm/fpm/fpm_main.c
 @@ -115,6 +115,8 @@ struct sigaction act, old_term, old_quit, old_int;
