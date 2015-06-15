@@ -1,9 +1,5 @@
 php5 (5.6.10+dfsg-1) unstable; urgency=medium
 
-  [ Thijs Kinkhorst ]
-  * Add patch to remove build timestamps from binaries to make
-    the build process reproducible.
-
   [ Ondřej Surý ]
   * New upstream version 5.6.10+dfsg
    - Core:
@@ -40,6 +36,12 @@ php5 (5.6.10+dfsg-1) unstable; urgency=medium
     . Upgrade bundled sqlite to 3.8.10.2. (CVE-2015-3414, CVE-2015-3415,
       CVE-2015-3416)
   * Rebase patches using gbp pq rebase
+
+  [ Thijs Kinkhorst ]
+  * Add patch to remove build timestamps from binaries to make
+    the build process reproducible.
+  * Fix path to php5-cgi.conf in README.Debian, thanks
+    Jean-Michel Vourgere (closes: #788802).
 
  -- Ondřej Surý <ondrej@debian.org>  Mon, 15 Jun 2015 09:18:33 +0200
 
