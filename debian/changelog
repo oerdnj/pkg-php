@@ -1,3 +1,25 @@
+php5 (5.4.42-1) unstable; urgency=medium
+
+  * New upstream version 5.4.42
+   - Core:
+    . Improved fix for bug #69545 (Integer overflow in ftp_genlist() resulting in
+      heap overflow).
+    . Fixed bug #69646 (OS command injection vulnerability in escapeshellarg).
+    . Fixed bug #69719 (Incorrect handling of paths with NULs).
+   - Litespeed SAPI:
+    . Fixed bug #68812 (Unchecked return value).
+   - Mail:
+    . Fixed bug #68776 (mail() does not have mail header injection prevention for
+      additional headers).
+   - Postgres:
+    . Fixed bug #69667 (segfault in php_pgsql_meta_data).
+   - Sqlite3:
+    . Upgrade bundled sqlite to 3.8.10.2. (CVE-2015-3414, CVE-2015-3415,
+      CVE-2015-3416)
+  * Refresh patches using gbp pq rebase
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 15 Jun 2015 09:07:34 +0200
+
 php5 (5.4.41-1) unstable; urgency=medium
 
   * New upstream version 5.4.41
