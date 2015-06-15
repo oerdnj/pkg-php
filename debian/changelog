@@ -1,15 +1,53 @@
-php5 (5.6.9+dfsg-2) UNRELEASED; urgency=medium
+php5 (5.6.10+dfsg-1) unstable; urgency=medium
 
+  [ Thijs Kinkhorst ]
   * Add patch to remove build timestamps from binaries to make
-    the build process reproducible. 
+    the build process reproducible.
 
- -- Thijs Kinkhorst <thijs@debian.org>  Fri, 29 May 2015 08:21:26 +0000
+  [ Ondřej Surý ]
+  * New upstream version 5.6.10+dfsg
+   - Core:
+    . Fixed bug #66048 (temp. directory is cached during multiple requests).
+    . Fixed bug #69566 (Conditional jump or move depends on uninitialised value
+      in extension trait).
+    . Fixed bug #69599 (Strange generator+exception+variadic crash).
+    . Fixed bug #69628 (complex GLOB_BRACE fails on Windows).
+    . Fixed POST data processing slowdown due to small input buffer size
+      on Windows.
+    . Fixed bug #69646 (OS command injection vulnerability in escapeshellarg).
+    . Fixed bug #69719 (Incorrect handling of paths with NULs).
+   - FTP
+    . Improved fix for bug #69545 (Integer overflow in ftp_genlist()
+      resulting in heap overflow).
+   - GD:
+    . Fixed bug #69479 (GD fails to build with newer libvpx).
+   - Iconv:
+    . Fixed bug #48147 (iconv with //IGNORE cuts the string).
+   - Litespeed SAPI:
+    . Fixed bug #68812 (Unchecked return value).
+   - Mail:
+    . Fixed bug #68776 (mail() does not have mail header injection prevention for
+      additional headers).
+   - MCrypt:
+    . Added file descriptor caching to mcrypt_create_iv()
+   - Opcache
+    . Fixed bug #69549 (Memory leak with opcache.optimization_level=0xFFFFFFFF).
+   - Phar:
+    . Fixed bug #69680 (phar symlink in binary directory broken).
+   - Postgres:
+    . Fixed bug #69667 (segfault in php_pgsql_meta_data).
+   - Sqlite3:
+    . Upgrade bundled sqlite to 3.8.10.2. (CVE-2015-3414, CVE-2015-3415,
+      CVE-2015-3416)
+  * Rebase patches using gbp pq rebase
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 15 Jun 2015 09:18:33 +0200
 
 php5 (5.6.9+dfsg-1) unstable; urgency=medium
 
   * New upstream version 5.6.9+dfsg
    - Core:
-    . Fixed bug #69467 (Wrong checked for the interface by using Trait). 
+    . Fixed bug #69467 (Wrong checked for the interface by using Trait).
     . Fixed bug #69420 (Invalid read in zend_std_get_method).
     . Fixed bug #60022 ("use statement [...] has no effect" depends on
       leading backslash).
