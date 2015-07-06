@@ -1,6 +1,6 @@
 Table of Contents:
 ----------------------------------------------------------------------
-* Using PHP 5 with threaded webservers (e.g. apache2-mpm-worker)
+* Using PHP 5 with threaded webservers (e.g. Apache 2 Worker MPM)
 * Problems starting Apache HTTP Server with PHP 5
 * Session storage
 * Other caveats
@@ -10,7 +10,7 @@ Table of Contents:
 * Timezone data from system timezone database
 * Further documentation, errata, etc
 
-Using PHP 5 with threaded webservers (e.g. apache2-mpm-worker)
+Using PHP 5 with threaded webservers (e.g. Apache 2 Worker MPM)
 ----------------------------------------------------------------------
 
   After much back-and-forth with upstream (and even building our
