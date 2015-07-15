@@ -8,10 +8,10 @@ Subject: php-5.3.9-mysqlnd
  2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/ext/mysqlnd/mysqlnd.c b/ext/mysqlnd/mysqlnd.c
-index d265dfd..ec22500 100644
+index 61daf96..1bdddff 100644
 --- a/ext/mysqlnd/mysqlnd.c
 +++ b/ext/mysqlnd/mysqlnd.c
-@@ -693,7 +693,7 @@ MYSQLND_METHOD(mysqlnd_conn_data, connect)(MYSQLND_CONN_DATA * conn,
+@@ -708,7 +708,7 @@ MYSQLND_METHOD(mysqlnd_conn_data, connect)(MYSQLND_CONN_DATA * conn,
  		if (host_len == sizeof("localhost") - 1 && !strncasecmp(host, "localhost", host_len)) {
  			DBG_INF_FMT("socket=%s", socket_or_pipe? socket_or_pipe:"n/a");
  			if (!socket_or_pipe) {
