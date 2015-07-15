@@ -7,8 +7,10 @@ Subject: expose_all_built_and_installed_apis
  scripts/php-config.in        | 5 ++++-
  2 files changed, 5 insertions(+), 2 deletions(-)
 
---- php5.orig/scripts/man1/php-config.1.in
-+++ php5/scripts/man1/php-config.1.in
+diff --git a/scripts/man1/php-config.1.in b/scripts/man1/php-config.1.in
+index ae2ee56..05e5e2d 100644
+--- a/scripts/man1/php-config.1.in
++++ b/scripts/man1/php-config.1.in
 @@ -44,7 +44,7 @@ Full path to php CLI or CGI binary
  .TP
  .PD 0
@@ -18,8 +20,10 @@ Subject: expose_all_built_and_installed_apis
  .TP
  .PD 0
  .B \-\-configure-options
---- php5.orig/scripts/php-config.in
-+++ php5/scripts/php-config.in
+diff --git a/scripts/php-config.in b/scripts/php-config.in
+index d7faf21..a40e961 100644
+--- a/scripts/php-config.in
++++ b/scripts/php-config.in
 @@ -18,9 +18,12 @@ exe_extension="@EXEEXT@"
  php_cli_binary=NONE
  php_cgi_binary=NONE

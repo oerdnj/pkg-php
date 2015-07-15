@@ -6,8 +6,10 @@ Subject: dont-gitclean-in-build
  build/build.mk | 1 -
  1 file changed, 1 deletion(-)
 
---- php5.orig/build/build.mk
-+++ php5/build/build.mk
+diff --git a/build/build.mk b/build/build.mk
+index 2c18915..d83ccc9 100644
+--- a/build/build.mk
++++ b/build/build.mk
 @@ -63,6 +63,5 @@ gitclean-work:
  	@if (test ! -f '.git/info/exclude' || grep -s "git-ls-files" .git/info/exclude); then \
  		(echo "Rebuild .git/info/exclude" && echo '*.o' > .git/info/exclude && git svn propget svn:ignore | grep -v config.nice >> .git/info/exclude); \

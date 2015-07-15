@@ -6,8 +6,10 @@ Subject: proc_open
  ext/standard/proc_open.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- php5.orig/ext/standard/proc_open.c
-+++ php5/ext/standard/proc_open.c
+diff --git a/ext/standard/proc_open.c b/ext/standard/proc_open.c
+index ff38e75..791ea39 100644
+--- a/ext/standard/proc_open.c
++++ b/ext/standard/proc_open.c
 @@ -62,7 +62,7 @@
   * */
  #ifdef PHP_CAN_SUPPORT_PROC_OPEN

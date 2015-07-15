@@ -6,9 +6,11 @@ Subject: getallheaders for php-fpm #62596
  sapi/fpm/fpm/fpm_main.c | 85 ++++++++++++++++++++++++++++++++++++++++++++++++-
  1 file changed, 84 insertions(+), 1 deletion(-)
 
---- php5.orig/sapi/fpm/fpm/fpm_main.c
-+++ php5/sapi/fpm/fpm/fpm_main.c
-@@ -115,6 +115,8 @@ struct sigaction act, old_term, old_quit
+diff --git a/sapi/fpm/fpm/fpm_main.c b/sapi/fpm/fpm/fpm_main.c
+index 8b1503d..33db9a6 100644
+--- a/sapi/fpm/fpm/fpm_main.c
++++ b/sapi/fpm/fpm/fpm_main.c
+@@ -115,6 +115,8 @@ struct sigaction act, old_term, old_quit, old_int;
  
  static void (*php_php_import_environment_variables)(zval *array_ptr TSRMLS_DC);
  
@@ -17,7 +19,7 @@ Subject: getallheaders for php-fpm #62596
  #ifndef PHP_WIN32
  /* these globals used for forking children on unix systems */
  
-@@ -1550,8 +1552,89 @@ PHP_FUNCTION(fastcgi_finish_request) /*
+@@ -1550,8 +1552,89 @@ PHP_FUNCTION(fastcgi_finish_request) /* {{{ */
  }
  /* }}} */
  

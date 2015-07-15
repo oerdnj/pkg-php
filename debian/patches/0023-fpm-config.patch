@@ -6,8 +6,10 @@ Subject: fpm-config
  sapi/fpm/php-fpm.conf.in | 12 ++++++++----
  1 file changed, 8 insertions(+), 4 deletions(-)
 
---- php5.orig/sapi/fpm/php-fpm.conf.in
-+++ php5/sapi/fpm/php-fpm.conf.in
+diff --git a/sapi/fpm/php-fpm.conf.in b/sapi/fpm/php-fpm.conf.in
+index dd037db..a1f1df4 100644
+--- a/sapi/fpm/php-fpm.conf.in
++++ b/sapi/fpm/php-fpm.conf.in
 @@ -12,7 +12,7 @@
  ; Relative path can also be used. They will be prefixed by:
  ;  - the global prefix if it's been set (-p argument)

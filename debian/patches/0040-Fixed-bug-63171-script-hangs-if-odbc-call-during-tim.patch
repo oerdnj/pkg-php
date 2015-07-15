@@ -6,9 +6,11 @@ Subject: Fixed bug #63171, script hangs if odbc call during timeout
  ext/odbc/php_odbc.c | 21 ++++++++++++++-------
  1 file changed, 14 insertions(+), 7 deletions(-)
 
---- php5.orig/ext/odbc/php_odbc.c
-+++ php5/ext/odbc/php_odbc.c
-@@ -431,7 +431,8 @@ static void _free_odbc_result(zend_rsrc_
+diff --git a/ext/odbc/php_odbc.c b/ext/odbc/php_odbc.c
+index ddfbc4e..08bcaa6 100644
+--- a/ext/odbc/php_odbc.c
++++ b/ext/odbc/php_odbc.c
+@@ -431,7 +431,8 @@ static void _free_odbc_result(zend_rsrc_list_entry *rsrc TSRMLS_DC)
  			efree(res->values);
  			res->values = NULL;
  		}
@@ -18,7 +20,7 @@ Subject: Fixed bug #63171, script hangs if odbc call during timeout
  #if defined(HAVE_SOLID) || defined(HAVE_SOLID_30) || defined(HAVE_SOLID_35)
  			SQLTransact(res->conn_ptr->henv, res->conn_ptr->hdbc,
  						(SQLUSMALLINT) SQL_COMMIT);
-@@ -484,9 +485,12 @@ static void _close_odbc_conn(zend_rsrc_l
+@@ -484,9 +485,12 @@ static void _close_odbc_conn(zend_rsrc_list_entry *rsrc TSRMLS_DC)
  		}
  	}
  
@@ -34,7 +36,7 @@ Subject: Fixed bug #63171, script hangs if odbc call during timeout
  	efree(conn);
  	ODBCG(num_links)--;
  }
-@@ -512,9 +516,12 @@ static void _close_odbc_pconn(zend_rsrc_
+@@ -512,9 +516,12 @@ static void _close_odbc_pconn(zend_rsrc_list_entry *rsrc TSRMLS_DC)
  		}
  	}
  	
