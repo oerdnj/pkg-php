@@ -1,3 +1,10 @@
+php5 (5.5.27+dfsg-1) unstable; urgency=medium
+
+  * Imported Upstream version 5.5.27+dfsg
+  * Rebase patches using gbp pq rebase
+
+ -- Ondřej Surý <ondrej@debian.org>  Wed, 15 Jul 2015 13:34:01 +0200
+
 php5 (5.5.26+dfsg-1) unstable; urgency=medium
 
   * New upstream version 5.5.26+dfsg
