@@ -7,10 +7,8 @@ Subject: php-5.4.7-libdb
  ext/dba/dba.c     |  8 ++++++++
  2 files changed, 10 insertions(+), 46 deletions(-)
 
-diff --git a/ext/dba/config.m4 b/ext/dba/config.m4
-index 5442bb1..1e8d51b 100644
---- a/ext/dba/config.m4
-+++ b/ext/dba/config.m4
+--- php5.orig/ext/dba/config.m4
++++ php5/ext/dba/config.m4
 @@ -312,57 +312,13 @@ if test "$PHP_DB4" != "no"; then
    dbdp4="/usr/local/BerkeleyDB.4."
    dbdp5="/usr/local/BerkeleyDB.5."
@@ -71,10 +69,8 @@ index 5442bb1..1e8d51b 100644
  fi
  PHP_DBA_STD_RESULT(db4,Berkeley DB4)
  
-diff --git a/ext/dba/dba.c b/ext/dba/dba.c
-index a7aca43..5810789 100644
---- a/ext/dba/dba.c
-+++ b/ext/dba/dba.c
+--- php5.orig/ext/dba/dba.c
++++ php5/ext/dba/dba.c
 @@ -52,6 +52,10 @@
  #include "php_qdbm.h"
  #include "php_tcadb.h"
