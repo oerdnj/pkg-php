@@ -6,15 +6,15 @@ Subject: debian_quirks
  configure.in          | 10 +++++-----
  ext/ext_skel          |  2 +-
  php.ini-development   |  2 +-
- php.ini-production    | 45 +--------------------------------------------
+ php.ini-production    | 44 +-------------------------------------------
  sapi/cli/php.1.in     | 11 ++++++-----
  scripts/Makefile.frag |  4 ++--
  scripts/php-config.in |  6 +++---
  scripts/phpize.in     |  4 ++--
- 8 files changed, 21 insertions(+), 63 deletions(-)
+ 8 files changed, 21 insertions(+), 62 deletions(-)
 
 diff --git a/configure.in b/configure.in
-index f649f18..ad033f8 100644
+index 52f0845..199d874 100644
 --- a/configure.in
 +++ b/configure.in
 @@ -1085,7 +1085,7 @@ if test "$PHP_CLI" = "no"; then
@@ -73,7 +73,7 @@ index c0c398d..f63ed91 100755
  
  ## convert skel_dir to full path
 diff --git a/php.ini-development b/php.ini-development
-index 44b98b8..7e65c80 100644
+index dac7525..a4be218 100644
 --- a/php.ini-development
 +++ b/php.ini-development
 @@ -708,7 +708,7 @@ default_charset = "UTF-8"
@@ -86,7 +86,7 @@ index 44b98b8..7e65c80 100644
  ; Windows: "\path1;\path2"
  ;include_path = ".;c:\php\includes"
 diff --git a/php.ini-production b/php.ini-production
-index eeeb73f..9be92fb 100644
+index 4ee3310..9be92fb 100644
 --- a/php.ini-production
 +++ b/php.ini-production
 @@ -708,7 +708,7 @@ default_charset = "UTF-8"
@@ -98,7 +98,7 @@ index eeeb73f..9be92fb 100644
  ;
  ; Windows: "\path1;\path2"
  ;include_path = ".;c:\php\includes"
-@@ -869,49 +869,6 @@ default_socket_timeout = 60
+@@ -869,48 +869,6 @@ default_socket_timeout = 60
  ; If you only provide the name of the extension, PHP will look for it in its
  ; default extension directory.
  ;
@@ -131,7 +131,6 @@ index eeeb73f..9be92fb 100644
 -;extension=php_pdo_pgsql.dll
 -;extension=php_pdo_sqlite.dll
 -;extension=php_pgsql.dll
--;extension=php_pspell.dll
 -;extension=php_shmop.dll
 -
 -; The MIBS data available in the PHP distribution must be installed. 

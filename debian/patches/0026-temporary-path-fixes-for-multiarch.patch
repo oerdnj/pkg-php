@@ -69,7 +69,7 @@ index 2140aaf..90f4800 100644
    PHP_NEW_EXTENSION(gmp, gmp.c, $ext_shared)
    PHP_SUBST(GMP_SHARED_LIBADD)
 diff --git a/ext/ldap/config.m4 b/ext/ldap/config.m4
-index 2804cd5..ad28777 100644
+index 947cebc..b2da7b4 100644
 --- a/ext/ldap/config.m4
 +++ b/ext/ldap/config.m4
 @@ -117,7 +117,7 @@ if test "$PHP_LDAP" != "no"; then

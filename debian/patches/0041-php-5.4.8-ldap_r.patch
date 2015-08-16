@@ -8,7 +8,7 @@ Use -lldap_r by default.
  1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/ext/ldap/config.m4 b/ext/ldap/config.m4
-index ad28777..2576ebb 100644
+index b2da7b4..7ebec8d 100644
 --- a/ext/ldap/config.m4
 +++ b/ext/ldap/config.m4
 @@ -117,7 +117,10 @@ if test "$PHP_LDAP" != "no"; then

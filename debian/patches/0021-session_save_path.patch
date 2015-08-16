@@ -22,10 +22,10 @@ index b73d5ed..e5e8e4c 100644
  	PHP_INI_ENTRY("session.save_handler",           "files",     PHP_INI_ALL, OnUpdateSaveHandler)
  	STD_PHP_INI_BOOLEAN("session.auto_start",       "0",         PHP_INI_PERDIR, OnUpdateBool,   auto_start,         php_ps_globals,    ps_globals)
 diff --git a/php.ini-development b/php.ini-development
-index c44b137..23f5a2e 100644
+index efea51e..304d5a0 100644
 --- a/php.ini-development
 +++ b/php.ini-development
-@@ -1420,7 +1420,7 @@ session.save_handler = files
+@@ -1419,7 +1419,7 @@ session.save_handler = files
  ; where MODE is the octal representation of the mode. Note that this
  ; does not overwrite the process's umask.
  ; http://php.net/session.save-path
