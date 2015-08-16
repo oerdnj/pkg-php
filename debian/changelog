@@ -1,3 +1,10 @@
+php5 (5.4.44-1) unstable; urgency=medium
+
+  * Imported Upstream version 5.4.44
+  * Rebase patches using gbp pq on top of 5.4.44
+
+ -- Ondřej Surý <ondrej@debian.org>  Sun, 16 Aug 2015 11:14:18 +0200
+
 php5 (5.4.43-1) unstable; urgency=medium
 
   * New upstream version 5.4.43
