@@ -1,0 +1,60 @@
+From: =?utf-8?q?Ond=C5=99ej_Sur=C3=BD?= <ondrej@sury.org>
+Date: Sun, 16 Aug 2015 11:13:44 +0200
+Subject: Remove warning about mysql library minor version mismatch to help
+ during transition periods
+
+---
+ ext/mysql/php_mysql.c      | 14 +++++++-------
+ ext/mysqli/mysqli_nonapi.c | 14 +++++++-------
+ 2 files changed, 14 insertions(+), 14 deletions(-)
+
+diff --git a/ext/mysql/php_mysql.c b/ext/mysql/php_mysql.c
+index 44561a1..df26238 100644
+--- a/ext/mysql/php_mysql.c
++++ b/ext/mysql/php_mysql.c
+@@ -731,13 +731,13 @@ static void php_mysql_do_connect(INTERNAL_FUNCTION_PARAMETERS, int persistent)
+ 	zend_bool free_host=0, new_link=0;
+ 	long connect_timeout;
+ 
+-#if !defined(MYSQL_USE_MYSQLND)
+-	if ((MYSQL_VERSION_ID / 100) != (mysql_get_client_version() / 100)) {
+-		php_error_docref(NULL TSRMLS_CC, E_WARNING,
+-						"Headers and client library minor version mismatch. Headers:%d Library:%ld",
+-						MYSQL_VERSION_ID, mysql_get_client_version());
+-	}
+-#endif
++/* #if !defined(MYSQL_USE_MYSQLND) */
++/* 	if ((MYSQL_VERSION_ID / 100) != (mysql_get_client_version() / 100)) { */
++/* 		php_error_docref(NULL TSRMLS_CC, E_WARNING, */
++/* 						"Headers and client library minor version mismatch. Headers:%d Library:%ld", */
++/* 						MYSQL_VERSION_ID, mysql_get_client_version()); */
++/* 	} */
++/* #endif */
+ 
+ 	connect_timeout = MySG(connect_timeout);
+ 
+diff --git a/ext/mysqli/mysqli_nonapi.c b/ext/mysqli/mysqli_nonapi.c
+index 60d185d..fb89dbd 100644
+--- a/ext/mysqli/mysqli_nonapi.c
++++ b/ext/mysqli/mysqli_nonapi.c
+@@ -73,13 +73,13 @@ void mysqli_common_connect(INTERNAL_FUNCTION_PARAMETERS, zend_bool is_real_conne
+ 	zend_bool			self_alloced = 0;
+ 
+ 
+-#if !defined(MYSQL_USE_MYSQLND)
+-	if ((MYSQL_VERSION_ID / 100) != (mysql_get_client_version() / 100)) {
+-		php_error_docref(NULL TSRMLS_CC, E_WARNING,
+-						"Headers and client library minor version mismatch. Headers:%d Library:%ld",
+-						MYSQL_VERSION_ID, mysql_get_client_version());
+-	}
+-#endif
++/* #if !defined(MYSQL_USE_MYSQLND) */
++/* 	if ((MYSQL_VERSION_ID / 100) != (mysql_get_client_version() / 100)) { */
++/* 		php_error_docref(NULL TSRMLS_CC, E_WARNING, */
++/* 						"Headers and client library minor version mismatch. Headers:%d Library:%ld", */
++/* 						MYSQL_VERSION_ID, mysql_get_client_version()); */
++/* 	} */
++/* #endif */
+ 
+ 	if (getThis() && !ZEND_NUM_ARGS() && in_ctor) {
+ 		php_mysqli_init(INTERNAL_FUNCTION_PARAM_PASSTHRU);

@@ -627,7 +627,7 @@ index c725572..4c837c7 100644
 +fi
 +
 diff --git a/ext/date/php_date.c b/ext/date/php_date.c
-index 08bfd08..08c272b 100644
+index dcd1b74..735bdbe 100644
 --- a/ext/date/php_date.c
 +++ b/ext/date/php_date.c
 @@ -929,6 +929,23 @@ static char* guess_timezone(const timelib_tzdb *tzdb TSRMLS_DC)
