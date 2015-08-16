@@ -1,3 +1,12 @@
+php5 (5.6.12+dfsg-1) unstable; urgency=medium
+
+  * Drop explicit support for upstart (Closes: #792892)
+  * Imported Upstream version 5.6.12+dfsg
+  * Rebase patches using gbp pq on top of PHP 5.6.12+dfsg
+  * Silence the MySQL library mismatch warning (Closes: #794191)
+
+ -- Ondřej Surý <ondrej@debian.org>  Sun, 16 Aug 2015 10:34:01 +0200
+
 php5 (5.6.11+dfsg-1) unstable; urgency=medium
 
   * New upstream version 5.6.11+dfsg
