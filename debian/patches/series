@@ -38,3 +38,4 @@
 0038-zlib-largefile-function-renaming.patch
 0039-php5-fpm-do-reload-on-SIGHUP.patch
 0040-revert-f07b8f36ae8099e29d19fbe8806bc07b21dcd4ac.patch
+0041-Remove-warning-about-mysql-library-minor-version-mis.patch
