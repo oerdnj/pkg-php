@@ -1,3 +1,10 @@
+php5 (5.6.13+dfsg-1) unstable; urgency=medium
+
+  * New upstream version 5.6.13+dfsg
+  * Refresh patches on top of 5.6.13+dfsg release
+
+ -- Ondřej Surý <ondrej@debian.org>  Mon, 07 Sep 2015 11:54:24 +0200
+
 php5 (5.6.12+dfsg-1) unstable; urgency=medium
 
   * Drop explicit support for upstart (Closes: #792892)
