@@ -9,10 +9,10 @@ Subject: session_save_path
  3 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/ext/session/session.c b/ext/session/session.c
-index a173fca..d16c848 100644
+index f5439ea..00a7daf 100644
 --- a/ext/session/session.c
 +++ b/ext/session/session.c
-@@ -782,7 +782,7 @@ static ZEND_INI_MH(OnUpdateSmartStr) /* {{{ */
+@@ -784,7 +784,7 @@ static ZEND_INI_MH(OnUpdateSmartStr) /* {{{ */
  /* {{{ PHP_INI
   */
  PHP_INI_BEGIN()

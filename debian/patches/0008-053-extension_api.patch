@@ -8,7 +8,7 @@ Subject: 053-extension_api
  2 files changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/configure.in b/configure.in
-index 4c14492..c03832d 100644
+index f98888c..5e89bb8 100644
 --- a/configure.in
 +++ b/configure.in
 @@ -1191,8 +1191,10 @@ dnl Build extension directory path
