@@ -7,7 +7,7 @@ Subject: 045-exif_nesting_level
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/ext/exif/exif.c b/ext/exif/exif.c
-index 7f95ff4..973fc45 100644
+index 05041c5..8830ced 100644
 --- a/ext/exif/exif.c
 +++ b/ext/exif/exif.c
 @@ -99,7 +99,7 @@ typedef unsigned char uchar;
