@@ -59,6 +59,10 @@ endif
 
 ENABLE_SYSTEMD = yes
 
+ifeq (Devuan,$(DPKG_VENDOR))
+  ENABLE_SYSTEMD = no
+endif
+
 ifeq (ubuntu,$(DPKG_VENDOR))
   ifeq ($(PHP5_DISTRIBUTION),$(filter $(PHP5_DISTRIBUTION),precise trusty utopic))
     $(warning Disabling systemd on $(DPKG_VENDOR) $(PHP5_DISTRIBUTION))
